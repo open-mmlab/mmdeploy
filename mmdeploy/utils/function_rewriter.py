@@ -34,7 +34,6 @@ class FuncCaller(object):
 
 # caller decorator
 def register_rewriter(func_name, backend='default', **kwargs):
-
     def wrap(func):
         func_args = dict(func_name=func_name, backend=backend, func=func)
         func_args.update(kwargs)
@@ -49,7 +48,6 @@ FUNCTION_REWRITERS.register_rewriter = register_rewriter
 
 
 def apply_rewriter(regist_func):
-
     def wrapper(*args, **kwargs):
         return regist_func(*args, **kwargs)
 
@@ -57,13 +55,14 @@ def apply_rewriter(regist_func):
 
 
 class RewriterHook(object):
-
     def __init__(self, regist_name, cfg, **kwargs):
         func_name, backend = regist_name.split('@')
         self.func_name = func_name
         self.backend = backend
-        self.regist_func = FUNCTION_REWRITERS.build(
-            func_name, backend=self.backend, cfg=cfg, **kwargs)
+        self.regist_func = FUNCTION_REWRITERS.build(func_name,
+                                                    backend=self.backend,
+                                                    cfg=cfg,
+                                                    **kwargs)
         try:
             self.origin_func = eval_with_import(self.func_name)
         except Exception:
@@ -93,7 +92,6 @@ class RewriterHook(object):
 
 
 class RewriterContext(object):
-
     def __init__(self, cfg, backend='default', **kwargs):
         self.cfg = cfg
         func_backend_dict = {}

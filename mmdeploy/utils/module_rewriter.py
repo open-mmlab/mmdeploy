@@ -1,6 +1,8 @@
-from mmcv.utils import Registry
-from .register_utils import eval_with_import
 from copy import deepcopy
+
+from mmcv.utils import Registry
+
+from .register_utils import eval_with_import
 
 
 def build_rewrite_module(module, cfg, backend, registry, **kwargs):
@@ -22,7 +24,6 @@ def build_rewrite_module(module, cfg, backend, registry, **kwargs):
 
 
 class RewriteModuleRegistry(Registry):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._module_eval_dict = dict()
@@ -54,16 +55,18 @@ class RewriteModuleRegistry(Registry):
 
 
 # create register
-MODULE_REWRITERS = RewriteModuleRegistry(
-    'module_rewriters', build_func=build_rewrite_module, scope='.')
+MODULE_REWRITERS = RewriteModuleRegistry('module_rewriters',
+                                         build_func=build_rewrite_module,
+                                         scope='.')
 
 
 def patch_model(model, cfg, backend='default', **kwargs):
-
     def _patch_impl(model, cfg, **kwargs):
         for name, module in model.named_children():
             model._modules[name] = _patch_impl(module, cfg, **kwargs)
-        return MODULE_REWRITERS.build(
-            module=model, cfg=cfg, backend=backend, **kwargs)
+        return MODULE_REWRITERS.build(module=model,
+                                      cfg=cfg,
+                                      backend=backend,
+                                      **kwargs)
 
     return _patch_impl(deepcopy(model), cfg, **kwargs)

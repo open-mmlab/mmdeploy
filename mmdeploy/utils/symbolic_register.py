@@ -64,13 +64,11 @@ def register_symbolic(func_name,
                       is_pytorch=False,
                       arg_descriptors=None,
                       **kwargs):
-
     def wrapper(symbolic_impl):
-        symbolic_args = dict(
-            func_name=func_name,
-            backend=backend,
-            symbolic=symbolic_impl,
-            arg_descriptors=arg_descriptors)
+        symbolic_args = dict(func_name=func_name,
+                             backend=backend,
+                             symbolic=symbolic_impl,
+                             arg_descriptors=arg_descriptors)
         symbolic_args.update(kwargs)
         wrapper_name = '@'.join([func_name, backend, str(is_pytorch)])
         wrapper = type(wrapper_name, (SymbolicWrapper, ), symbolic_args)
