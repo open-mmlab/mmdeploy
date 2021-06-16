@@ -1,4 +1,5 @@
 import logging
+from typing import Dict, List, Optional
 
 from mmcv.utils import Registry
 from torch.autograd import Function
@@ -8,7 +9,11 @@ from torch.onnx.symbolic_registry import register_op
 from .register_utils import eval_with_import
 
 
-def set_symbolic(cfg, registry, backend='default', opset=11, **kwargs):
+def set_symbolic(cfg: Dict,
+                 registry: Registry,
+                 backend: str = 'default',
+                 opset: int = 11,
+                 **kwargs):
 
     # find valid symbolic
     valid_symbolic_dict = {}
@@ -52,23 +57,25 @@ class SymbolicWrapper:
     symbolic = None
     arg_descriptors = None
 
-    def __init__(self, cfg, **kwargs):
+    def __init__(self, cfg: Dict, **kwargs):
         self.cfg = cfg
 
     def __call__(self, *args, **kwargs):
         return self.symbolic(*args, **kwargs)
 
 
-def register_symbolic(func_name,
-                      backend='default',
-                      is_pytorch=False,
-                      arg_descriptors=None,
+def register_symbolic(func_name: str,
+                      backend: str = 'default',
+                      is_pytorch: bool = False,
+                      arg_descriptors: Optional[List[str]] = None,
                       **kwargs):
+
     def wrapper(symbolic_impl):
-        symbolic_args = dict(func_name=func_name,
-                             backend=backend,
-                             symbolic=symbolic_impl,
-                             arg_descriptors=arg_descriptors)
+        symbolic_args = dict(
+            func_name=func_name,
+            backend=backend,
+            symbolic=symbolic_impl,
+            arg_descriptors=arg_descriptors)
         symbolic_args.update(kwargs)
         wrapper_name = '@'.join([func_name, backend, str(is_pytorch)])
         wrapper = type(wrapper_name, (SymbolicWrapper, ), symbolic_args)

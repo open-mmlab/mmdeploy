@@ -9,8 +9,8 @@ def test_function_rewriter():
     x = torch.tensor([1, 2, 3, 4, 5])
     y = torch.tensor([2, 4, 6, 8, 10])
 
-    @FUNCTION_REWRITERS.register_rewriter(func_name='torch.add',
-                                          backend='tensorrt')
+    @FUNCTION_REWRITERS.register_rewriter(
+        func_name='torch.add', backend='tensorrt')
     def sub_func(rewriter, x, y):
         return x - y
 
@@ -29,8 +29,9 @@ def test_function_rewriter():
         # replace should not happen with wrong backend
         torch.testing.assert_allclose(result, x + y)
 
-    @FUNCTION_REWRITERS.register_rewriter(func_name='torch.Tensor.add',
-                                          backend='default')
+    # test different config
+    @FUNCTION_REWRITERS.register_rewriter(
+        func_name='torch.Tensor.add', backend='default')
     def mul_func_class(rewriter, x, y):
         return x * y
 
@@ -48,6 +49,17 @@ def test_function_rewriter():
         # replace add with multi
         torch.testing.assert_allclose(result, x * y)
 
+    # test origin_func
+    @FUNCTION_REWRITERS.register_rewriter(
+        func_name='torch.add', backend='default')
+    def origin_add_func(rewriter, x, y):
+        return rewriter.origin_func(x, y) + 1
+
+    with RewriterContext(cfg):
+        result = torch.add(x, y)
+        # replace with origin + 1
+        torch.testing.assert_allclose(result, x + y + 1)
+
 
 def test_module_rewriter():
     from mmdeploy.utils import MODULE_REWRITERS, patch_model
@@ -56,6 +68,7 @@ def test_module_rewriter():
     @MODULE_REWRITERS.register_rewrite_module(
         module_type='torchvision.models.resnet.Bottleneck', backend='tensorrt')
     class BottleneckWrapper(torch.nn.Module):
+
         def __init__(self, module, cfg, **kwargs):
             super().__init__()
             self.module = module
@@ -91,6 +104,7 @@ def test_symbolic_register():
     import onnx
 
     class TestFunc(Function):
+
         @staticmethod
         def symbolic(g, x, val):
             return g.op('mmcv::symbolic_old', x, val_i=val)
@@ -108,18 +122,18 @@ def test_symbolic_register():
     def symbolic_testfunc_default(symbolic_wrapper, g, x, val):
         return g.op('mmcv::symbolic_testfunc_default', x, val_i=val)
 
-    @SYMBOLICS_REGISTER.register_symbolic('mmdeploy.TestFunc',
-                                          backend='tensorrt')
+    @SYMBOLICS_REGISTER.register_symbolic(
+        'mmdeploy.TestFunc', backend='tensorrt')
     def symbolic_testfunc_tensorrt(symbolic_wrapper, g, x, val):
         return g.op('mmcv::symbolic_testfunc_tensorrt', x, val_i=val)
 
-    @SYMBOLICS_REGISTER.register_symbolic('cummax',
-                                          is_pytorch=True,
-                                          arg_descriptors=['v', 'i'])
+    @SYMBOLICS_REGISTER.register_symbolic(
+        'cummax', is_pytorch=True, arg_descriptors=['v', 'i'])
     def symbolic_cummax(symbolic_wrapper, g, input, dim):
         return g.op('mmcv::cummax_default', input, dim_i=dim, outputs=2)
 
     class TestModel(torch.nn.Module):
+
         def __init__(self):
             super().__init__()
 

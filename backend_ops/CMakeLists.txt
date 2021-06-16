@@ -5,6 +5,11 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+# build TensorRT ops
+if (BUILD_ONNXRUNTIME_OPS)
+    message("Build ONNXRUNTIME custom ops.")
+    add_subdirectory (onnxruntime)
+endif()
 
 # build TensorRT ops
 if (BUILD_TENSORRT_OPS)

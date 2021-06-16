@@ -1,12 +1,36 @@
 import logging
+from typing import Callable, Dict
 
 from mmcv.utils import Registry
 
 from .register_utils import eval_with_import
 
 
+# caller wrapper
+class FuncCaller(object):
+    func_name = None
+    backend = None
+    func = None
+
+    def __init__(self, cfg: Dict, **kwargs):
+        self.cfg = cfg
+        try:
+            origin_func = eval_with_import(self.func_name)
+        except Exception:
+            origin_func = None
+            logging.warning(
+                'Can not found {}, function rewrite will not be applied'.
+                format(self.func_name))
+        self.origin_func = origin_func
+        [setattr(self, k, v) for k, v in kwargs.items()]
+
+    def __call__(self, *args, **kwargs):
+        return self.func(*args, **kwargs)
+
+
 # builder of register
-def build_caller(func_name, backend, cfg, registry, **kwargs):
+def build_caller(func_name: str, backend: str, cfg: Dict, registry: Registry,
+                 **kwargs) -> FuncCaller:
     # func_caller = registry.get(func_name + '@' + backend)
     func_caller = registry.module_dict[func_name + '@' + backend]
     assert func_caller is not None, '{} with {} not exist.'.format(
@@ -18,23 +42,12 @@ def build_caller(func_name, backend, cfg, registry, **kwargs):
 FUNCTION_REWRITERS = Registry('func_rewriters', build_func=build_caller)
 
 
-# caller wrapper
-class FuncCaller(object):
-    func_name = None
-    backend = None
-    func = None
-
-    def __init__(self, cfg, **kwargs):
-        self.cfg = cfg
-        [setattr(self, k, v) for k, v in kwargs.items()]
-
-    def __call__(self, *args, **kwargs):
-        return self.func(*args, **kwargs)
-
-
 # caller decorator
-def register_rewriter(func_name, backend='default', **kwargs):
-    def wrap(func):
+def register_rewriter(func_name: str,
+                      backend: str = 'default',
+                      **kwargs) -> Callable:
+
+    def wrap(func: Callable):
         func_args = dict(func_name=func_name, backend=backend, func=func)
         func_args.update(kwargs)
         func_caller = type(func_name + '@' + backend, (FuncCaller, ),
@@ -47,7 +60,8 @@ def register_rewriter(func_name, backend='default', **kwargs):
 FUNCTION_REWRITERS.register_rewriter = register_rewriter
 
 
-def apply_rewriter(regist_func):
+def apply_rewriter(regist_func: Callable) -> Callable:
+
     def wrapper(*args, **kwargs):
         return regist_func(*args, **kwargs)
 
@@ -55,23 +69,19 @@ def apply_rewriter(regist_func):
 
 
 class RewriterHook(object):
-    def __init__(self, regist_name, cfg, **kwargs):
+
+    def __init__(self, regist_name: str, cfg: Dict, **kwargs):
         func_name, backend = regist_name.split('@')
         self.func_name = func_name
         self.backend = backend
-        self.regist_func = FUNCTION_REWRITERS.build(func_name,
-                                                    backend=self.backend,
-                                                    cfg=cfg,
-                                                    **kwargs)
-        try:
-            self.origin_func = eval_with_import(self.func_name)
-        except Exception:
+        self.regist_func = FUNCTION_REWRITERS.build(
+            func_name, backend=self.backend, cfg=cfg, **kwargs)
+        if self.regist_func is not None:
+            self.origin_func = self.regist_func.origin_func
+        else:
             self.origin_func = None
-            logging.warning(
-                'Can not found {}, function rewrite will not be applied'.
-                format(self.func_name))
 
-    def _set_func(self, rewrite_func):
+    def _set_func(self, rewrite_func: Callable):
         if self.origin_func is not None:
             # import necessary module
             split_path = self.func_name.split('.')
@@ -92,7 +102,8 @@ class RewriterHook(object):
 
 
 class RewriterContext(object):
-    def __init__(self, cfg, backend='default', **kwargs):
+
+    def __init__(self, cfg: Dict, backend: str = 'default', **kwargs):
         self.cfg = cfg
         func_backend_dict = {}
         for regist_name in FUNCTION_REWRITERS.module_dict:
