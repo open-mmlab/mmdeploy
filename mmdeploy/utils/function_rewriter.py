@@ -52,7 +52,8 @@ def register_rewriter(func_name: str,
         func_args.update(kwargs)
         func_caller = type(func_name + '@' + backend, (FuncCaller, ),
                            func_args)
-        return FUNCTION_REWRITERS.register_module()(func_caller)
+        FUNCTION_REWRITERS.register_module()(func_caller)
+        return func
 
     return wrap
 

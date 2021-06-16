@@ -10,6 +10,8 @@ def test_function_rewriter():
     y = torch.tensor([2, 4, 6, 8, 10])
 
     @FUNCTION_REWRITERS.register_rewriter(
+        func_name='torch.mul', backend='tensorrt')
+    @FUNCTION_REWRITERS.register_rewriter(
         func_name='torch.add', backend='tensorrt')
     def sub_func(rewriter, x, y):
         assert hasattr(rewriter, 'cfg')
@@ -19,6 +21,9 @@ def test_function_rewriter():
     cfg = dict()
     with RewriterContext(cfg, backend='tensorrt'):
         result = torch.add(x, y)
+        # replace add with sub
+        torch.testing.assert_allclose(result, x - y)
+        result = torch.mul(x, y)
         # replace add with sub
         torch.testing.assert_allclose(result, x - y)
 
@@ -120,6 +125,7 @@ def test_symbolic_register():
     mmdeploy.TestFunc = TestFunc
     test_func = mmdeploy.TestFunc.apply
 
+    @SYMBOLICS_REGISTER.register_symbolic('mmdeploy.TestFunc', backend='ncnn')
     @SYMBOLICS_REGISTER.register_symbolic('mmdeploy.TestFunc')
     def symbolic_testfunc_default(symbolic_wrapper, g, x, val):
         assert hasattr(symbolic_wrapper, 'cfg')
@@ -161,8 +167,18 @@ def test_symbolic_register():
     assert nodes[1].op_type == 'cummax_default'
     assert nodes[1].domain == 'mmcv'
 
+    # ncnn
+    register_extra_symbolics(cfg=cfg, backend='ncnn', opset=11)
+    torch.onnx.export(model, x, output_file, opset_version=11)
+    onnx_model = onnx.load(output_file)
+    os.remove(output_file)
+    nodes = onnx_model.graph.node
+    assert nodes[0].op_type == 'symbolic_testfunc_default'
+    assert nodes[0].domain == 'mmcv'
+    assert nodes[1].op_type == 'cummax_default'
+    assert nodes[1].domain == 'mmcv'
+
     # default
-    cfg = dict()
     register_extra_symbolics(cfg=cfg, backend='tensorrt', opset=11)
     torch.onnx.export(model, x, output_file, opset_version=11)
     onnx_model = onnx.load(output_file)

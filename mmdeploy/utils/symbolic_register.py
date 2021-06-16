@@ -79,7 +79,8 @@ def register_symbolic(func_name: str,
         symbolic_args.update(kwargs)
         wrapper_name = '@'.join([func_name, backend, str(is_pytorch)])
         wrapper = type(wrapper_name, (SymbolicWrapper, ), symbolic_args)
-        return SYMBOLICS_REGISTER.register_module(wrapper_name)(wrapper)
+        SYMBOLICS_REGISTER.register_module(wrapper_name)(wrapper)
+        return symbolic_impl
 
     return wrapper
 
