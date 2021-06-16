@@ -12,6 +12,8 @@ def test_function_rewriter():
     @FUNCTION_REWRITERS.register_rewriter(
         func_name='torch.add', backend='tensorrt')
     def sub_func(rewriter, x, y):
+        assert hasattr(rewriter, 'cfg')
+        assert hasattr(rewriter, 'origin_func')
         return x - y
 
     cfg = dict()
@@ -120,6 +122,7 @@ def test_symbolic_register():
 
     @SYMBOLICS_REGISTER.register_symbolic('mmdeploy.TestFunc')
     def symbolic_testfunc_default(symbolic_wrapper, g, x, val):
+        assert hasattr(symbolic_wrapper, 'cfg')
         return g.op('mmcv::symbolic_testfunc_default', x, val_i=val)
 
     @SYMBOLICS_REGISTER.register_symbolic(

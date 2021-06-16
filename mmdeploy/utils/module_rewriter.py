@@ -73,8 +73,9 @@ def patch_model(model: nn.Module,
                 **kwargs) -> nn.Module:
 
     def _patch_impl(model, cfg, **kwargs):
-        for name, module in model.named_children():
-            model._modules[name] = _patch_impl(module, cfg, **kwargs)
+        if hasattr(model, 'named_children'):
+            for name, module in model.named_children():
+                model._modules[name] = _patch_impl(module, cfg, **kwargs)
         return MODULE_REWRITERS.build(
             module=model, cfg=cfg, backend=backend, **kwargs)
 
