@@ -18,7 +18,7 @@ def parse_args():
         'img', help='image used to convert model and test model')
     parser.add_argument('--work-dir', help='the dir to save logs and models')
     parser.add_argument(
-        '--device', help='device used for training', default='cpu')
+        '--device', help='device used for conversion', default='cpu')
     args = parser.parse_args()
 
     return args

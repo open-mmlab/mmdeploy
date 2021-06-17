@@ -1,6 +1,10 @@
 import importlib
 import logging
 
+if importlib.util.find_spec('mmcv'):
+    from .mmcv import *  # noqa: F401,F403
+else:
+    logging.debug('mmcv is not installed.')
 if importlib.util.find_spec('mmcls'):
     from .mmcls import *  # noqa: F401,F403
 else:
