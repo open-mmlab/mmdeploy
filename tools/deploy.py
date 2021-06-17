@@ -3,6 +3,7 @@ import logging
 import os.path as osp
 
 import mmcv
+import torch.multiprocessing as mp
 from torch.multiprocessing import Process, set_start_method
 
 from mmdeploy.apis import torch2onnx
@@ -34,14 +35,22 @@ def main():
     # create work_dir if not
     mmcv.mkdir_or_exist(osp.abspath(args.work_dir))
 
+    ret_value = mp.Value('d', 0, lock=False)
+
     # convert model
     logging.info('start torch2onnx conversion.')
     process = Process(
         target=torch2onnx,
         args=(args.img, args.work_dir, deploy_cfg, model_cfg, checkpoint),
-        kwargs=dict(device=args.device))
+        kwargs=dict(device=args.device, ret_value=ret_value))
     process.start()
     process.join()
+
+    if ret_value.value != 0:
+        logging.error('torch2onnx failed.')
+        exit()
+    else:
+        logging.info('torch2onnx success.')
 
 
 if __name__ == '__main__':

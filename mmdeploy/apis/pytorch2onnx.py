@@ -3,6 +3,7 @@ from typing import Any, Optional, Union
 
 import mmcv
 import torch
+import torch.multiprocessing as mp
 
 from mmdeploy.utils import (RewriterContext, patch_model,
                             register_extra_symbolics)
@@ -14,7 +15,10 @@ def torch2onnx(img: Any,
                deploy_cfg: Union[str, mmcv.Config],
                model_cfg: Union[str, mmcv.Config],
                model_checkpoint: Optional[str] = None,
-               device: str = 'cuda:0'):
+               device: str = 'cuda:0',
+               ret_value: Optional[mp.Value] = None):
+    ret_value.value = -1
+
     # load deploy_cfg if needed
     if isinstance(deploy_cfg, str):
         deploy_cfg = mmcv.Config.fromfile(deploy_cfg)
@@ -40,8 +44,7 @@ def torch2onnx(img: Any,
 
     torch_model = init_model(codebase, model_cfg, model_checkpoint, device)
     data, model_inputs = create_input(codebase, model_cfg, img, device)
-    patched_model = patch_model(
-        torch_model, cfg=deploy_cfg, backend=backend, data=data)
+    patched_model = patch_model(torch_model, cfg=deploy_cfg, backend=backend)
 
     if not isinstance(model_inputs, torch.Tensor):
         model_inputs = model_inputs[0]
@@ -57,3 +60,5 @@ def torch2onnx(img: Any,
             dynamic_axes=pytorch2onnx_cfg.get('dynamic_axes', None),
             keep_initializers_as_inputs=pytorch2onnx_cfg[
                 'keep_initializers_as_inputs'])
+
+    ret_value.value = 0

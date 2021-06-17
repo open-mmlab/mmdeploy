@@ -70,10 +70,11 @@ MODULE_REWRITERS = RewriteModuleRegistry(
 def patch_model(model: nn.Module,
                 cfg: Dict,
                 backend: str = 'default',
+                recursive: bool = True,
                 **kwargs) -> nn.Module:
 
     def _patch_impl(model, cfg, **kwargs):
-        if hasattr(model, 'named_children'):
+        if recursive and hasattr(model, 'named_children'):
             for name, module in model.named_children():
                 model._modules[name] = _patch_impl(module, cfg, **kwargs)
         return MODULE_REWRITERS.build(
