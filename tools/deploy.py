@@ -1,9 +1,9 @@
 import argparse
-import os.path as osp
-from torch.multiprocessing import Process, set_start_method
 import logging
+import os.path as osp
 
 import mmcv
+from torch.multiprocessing import Process, set_start_method
 
 from mmdeploy.apis import torch2onnx
 
@@ -44,5 +44,5 @@ def main():
     process.join()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

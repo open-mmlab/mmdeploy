@@ -1,5 +1,6 @@
-from mmdeploy.utils import MODULE_REWRITERS
 from torch import nn
+
+from mmdeploy.utils import MODULE_REWRITERS
 
 
 @MODULE_REWRITERS.register_rewrite_module(

@@ -1,12 +1,11 @@
-from typing import Optional, Union, Any
+import os.path as osp
+from typing import Any, Optional, Union
 
 import mmcv
 import torch
-import os.path as osp
 
 from mmdeploy.utils import (RewriterContext, patch_model,
                             register_extra_symbolics)
-
 from .utils import create_input, init_model
 
 
