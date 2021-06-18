@@ -3,7 +3,6 @@ import warnings
 
 import numpy as np
 import torch
-
 from mmdet.core import bbox2result
 from mmdet.models import BaseDetector
 

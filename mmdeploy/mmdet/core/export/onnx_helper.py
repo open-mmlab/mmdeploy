@@ -1,5 +1,3 @@
-import os
-
 import torch
 
 from mmdeploy.mmcv.ops import DummyONNXNMSop
@@ -44,42 +42,6 @@ def dynamic_clip_for_onnx(x1, y1, x2, y2, max_shape):
     return x1, y1, x2, y2
 
 
-def get_k_for_topk(k, size):
-    """Get k of TopK for onnx exporting.
-
-    The K of TopK in TensorRT should not be a Tensor, while in ONNX Runtime
-      it could be a Tensor.Due to dynamic shape feature, we have to decide
-      whether to do TopK and what K it should be while exporting to ONNX.
-    If returned K is less than zero, it means we do not have to do
-      TopK operation.
-
-    Args:
-        k (int or Tensor): The set k value for nms from config file.
-        size (Tensor or torch.Size): The number of elements of \
-            TopK's input tensor
-    Returns:
-        tuple: (int or Tensor): The final K for TopK.
-    """
-    ret_k = -1
-    if k <= 0 or size <= 0:
-        return ret_k
-    if torch.onnx.is_in_onnx_export():
-        is_trt_backend = os.environ.get('ONNX_BACKEND') == 'MMCVTensorRT'
-        if is_trt_backend:
-            # TensorRT does not support dynamic K with TopK op
-            if 0 < k < size:
-                ret_k = k
-        else:
-            # Always keep topk op for dynamic input in onnx for ONNX Runtime
-            ret_k = torch.where(k < size, k, size)
-    elif k < size:
-        ret_k = k
-    else:
-        # ret_k is -1
-        pass
-    return ret_k
-
-
 def add_dummy_nms_for_onnx(boxes,
                            scores,
                            max_output_boxes_per_class=1000,
@@ -122,12 +84,9 @@ def add_dummy_nms_for_onnx(boxes,
     batch_size = scores.shape[0]
     num_class = scores.shape[2]
 
-    nms_pre = torch.tensor(pre_top_k, device=scores.device, dtype=torch.long)
-    nms_pre = get_k_for_topk(nms_pre, boxes.shape[1])
-
-    if nms_pre > 0:
+    if pre_top_k > 0:
         max_scores, _ = scores.max(-1)
-        _, topk_inds = max_scores.topk(nms_pre)
+        _, topk_inds = max_scores.topk(pre_top_k)
         batch_inds = torch.arange(batch_size).view(
             -1, 1).expand_as(topk_inds).long()
         # Avoid onnx2tensorrt issue in https://github.com/NVIDIA/TensorRT/issues/1134 # noqa: E501
@@ -178,13 +137,10 @@ def add_dummy_nms_for_onnx(boxes,
     boxes = boxes.reshape(batch_size, -1, 4)
     labels = labels.reshape(batch_size, -1)
 
-    nms_after = torch.tensor(
-        after_top_k, device=scores.device, dtype=torch.long)
-    nms_after = get_k_for_topk(nms_after, num_box * num_class)
-
-    if nms_after > 0:
-        _, topk_inds = scores.topk(nms_after)
-        batch_inds = torch.arange(batch_size).view(-1, 1).expand_as(topk_inds)
+    if after_top_k > 0:
+        _, topk_inds = scores.topk(after_top_k)
+        batch_inds = torch.arange(
+            batch_size, device=scores.device).view(-1, 1).expand_as(topk_inds)
         # Avoid onnx2tensorrt issue in https://github.com/NVIDIA/TensorRT/issues/1134 # noqa: E501
         transformed_inds = scores.shape[1] * batch_inds + topk_inds
         scores = scores.reshape(-1, 1)[transformed_inds, :].reshape(
@@ -197,6 +153,3 @@ def add_dummy_nms_for_onnx(boxes,
     scores = scores.unsqueeze(2)
     dets = torch.cat([boxes, scores], dim=2)
     return dets, labels
-
-
-

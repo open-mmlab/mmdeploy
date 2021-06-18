@@ -8,7 +8,6 @@ pytorch2onnx = dict(
             0: 'batch'
         },
         'output': {
-           0: 'batch'
+            0: 'batch'
         }
-    }
-)
+    })

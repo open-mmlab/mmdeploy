@@ -1,12 +1,16 @@
 import torch
 import torch.nn as nn
 
-from mmdeploy.utils import MODULE_REWRITERS
 from mmdeploy.mmdet.core.export import add_dummy_nms_for_onnx
+from mmdeploy.utils import MODULE_REWRITERS
 
-@MODULE_REWRITERS.register_rewrite_module(module_type='mmdet.models.AnchorHead')
-@MODULE_REWRITERS.register_rewrite_module(module_type='mmdet.models.RetinaHead')
+
+@MODULE_REWRITERS.register_rewrite_module(module_type='mmdet.models.AnchorHead'
+                                          )
+@MODULE_REWRITERS.register_rewrite_module(module_type='mmdet.models.RetinaHead'
+                                          )
 class AnchorHead(nn.Module):
+
     def __init__(self, module, cfg, **kwargs):
         super(AnchorHead, self).__init__()
         self.module = module
@@ -96,14 +100,12 @@ class AnchorHead(nn.Module):
         if not self.use_sigmoid_cls:
             num_classes = batch_mlvl_scores.shape[2] - 1
             batch_mlvl_scores = batch_mlvl_scores[..., :num_classes]
-        max_output_boxes_per_class = cfg.nms.get(
-            'max_output_boxes_per_class', 200)
+        max_output_boxes_per_class = cfg.nms.get('max_output_boxes_per_class',
+                                                 200)
         iou_threshold = cfg.nms.get('iou_threshold', 0.5)
         score_threshold = cfg.score_thr
         nms_pre = cfg.get('deploy_nms_pre', -1)
         return add_dummy_nms_for_onnx(batch_mlvl_bboxes, batch_mlvl_scores,
                                       max_output_boxes_per_class,
-                                      iou_threshold, score_threshold,
-                                      nms_pre, cfg.max_per_img)
-
-
+                                      iou_threshold, score_threshold, nms_pre,
+                                      cfg.max_per_img)
