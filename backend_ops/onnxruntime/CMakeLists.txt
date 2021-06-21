@@ -11,7 +11,9 @@ set(PLUGIN_LISTS grid_sample
                  roi_align)
 
 foreach(PLUGIN_ITER ${PLUGIN_LISTS})
-    add_subdirectory(${PLUGIN_ITER})
+    file(GLOB PLUGIN_OPS_SRCS ${PLUGIN_ITER}/*.cpp ${PLUGIN_ITER}/*.cu)
+    file(GLOB PLUGIN_OPS_HEADS ${PLUGIN_ITER}/*.h ${PLUGIN_ITER}/*.hpp ${PLUGIN_ITER}/*.cuh)
+    set(BACKEND_OPS_SRCS ${BACKEND_OPS_SRCS} ${PLUGIN_OPS_SRCS} ${PLUGIN_OPS_HEADS})
 endforeach(PLUGIN_ITER)
 
 set(INFER_PLUGIN_LIB onnxruntime)

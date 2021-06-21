@@ -41,19 +41,19 @@ if(NOT TENSORRT_FOUND)
 endif()
 INCLUDE_DIRECTORIES(${TENSORRT_INCLUDE_DIR})
 
-# include common
-add_subdirectory(common_impl)
-
 # add plugin source
 set(PLUGIN_LISTS scatternd
                  nms
                  roi_align)
 
 foreach(PLUGIN_ITER ${PLUGIN_LISTS})
-    add_subdirectory(${PLUGIN_ITER})
+        file(GLOB PLUGIN_OPS_SRCS ${PLUGIN_ITER}/*.cpp ${PLUGIN_ITER}/*.cu)
+        file(GLOB PLUGIN_OPS_HEADS ${PLUGIN_ITER}/*.h ${PLUGIN_ITER}/*.hpp ${PLUGIN_ITER}/*.cuh)
+        set(BACKEND_OPS_SRCS ${BACKEND_OPS_SRCS} ${PLUGIN_OPS_SRCS} ${PLUGIN_OPS_HEADS})
 endforeach(PLUGIN_ITER)
 
 list(APPEND BACKEND_OPS_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/trt_plugin.cpp")
+list(APPEND BACKEND_OPS_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/common_impl/trt_cuda_helper.cu")
 
 set(INFER_PLUGIN_LIB ${TENSORRT_LIBRARY})
 
