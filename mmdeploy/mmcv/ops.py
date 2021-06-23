@@ -66,9 +66,11 @@ def nms_tensorrt(symbolic_wrapper, g, boxes, scores,
         score_threshold = sym_help._maybe_get_const(score_threshold, 'f')
 
     return g.op(
-        'NonMaxSuppression',
+        'mmcv::NonMaxSuppression',
         boxes,
         scores,
         max_output_boxes_per_class_i=max_output_boxes_per_class,
         iou_threshold_f=iou_threshold,
-        score_threshold_f=score_threshold)
+        score_threshold_f=score_threshold,
+        center_point_box_i=0,
+        offset_i=0)

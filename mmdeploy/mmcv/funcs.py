@@ -45,3 +45,13 @@ def rewrite_topk_tensorrt(rewriter,
         k = int(k)
     return rewriter.origin_func(
         input, k, dim=dim, largest=largest, sorted=sorted)
+
+
+@FUNCTION_REWRITERS.register_rewriter(
+    func_name='torch.Tensor.repeat', backend='tensorrt')
+def rewrite_repeat_tensorrt(rewriter, input, *size):
+    origin_func = rewriter.origin_func
+    if input.dim() == 1 and len(size) == 1:
+        return origin_func(input.unsqueeze(0), *([1] + list(size))).squeeze(0)
+    else:
+        return origin_func(input, *size)

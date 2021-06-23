@@ -11,7 +11,8 @@ from .utils import create_input, init_model
 
 
 def torch2onnx(img: Any,
-               work_dir: Optional[str],
+               work_dir: str,
+               save_file: str,
                deploy_cfg: Union[str, mmcv.Config],
                model_cfg: Union[str, mmcv.Config],
                model_checkpoint: Optional[str] = None,
@@ -22,18 +23,18 @@ def torch2onnx(img: Any,
     # load deploy_cfg if needed
     if isinstance(deploy_cfg, str):
         deploy_cfg = mmcv.Config.fromfile(deploy_cfg)
-    elif not isinstance(deploy_cfg, mmcv.Config):
+    if not isinstance(deploy_cfg, mmcv.Config):
         raise TypeError('deploy_cfg must be a filename or Config object, '
                         f'but got {type(deploy_cfg)}')
     # load model_cfg if needed
     if isinstance(model_cfg, str):
         model_cfg = mmcv.Config.fromfile(model_cfg)
-    elif not isinstance(model_cfg, mmcv.Config):
+    if not isinstance(model_cfg, mmcv.Config):
         raise TypeError('config must be a filename or Config object, '
                         f'but got {type(model_cfg)}')
 
     mmcv.mkdir_or_exist(osp.abspath(work_dir))
-    output_file = osp.join(work_dir, 'torch2onnx.onnx')
+    output_file = osp.join(work_dir, save_file)
 
     pytorch2onnx_cfg = deploy_cfg['pytorch2onnx']
     codebase = deploy_cfg['codebase']
