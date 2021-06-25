@@ -41,10 +41,17 @@ if(NOT TENSORRT_FOUND)
 endif()
 INCLUDE_DIRECTORIES(${TENSORRT_INCLUDE_DIR})
 
+# cub
+if (NOT DEFINED CUB_ROOT_DIR)
+  set(CUB_ROOT_DIR "${PROJECT_SOURCE_DIR}/third_party/cub")
+endif()
+INCLUDE_DIRECTORIES(${CUB_ROOT_DIR})
+
 # add plugin source
 set(PLUGIN_LISTS scatternd
                  nms
-                 roi_align)
+                 roi_align
+                 batched_nms)
 
 foreach(PLUGIN_ITER ${PLUGIN_LISTS})
         file(GLOB PLUGIN_OPS_SRCS ${PLUGIN_ITER}/*.cpp ${PLUGIN_ITER}/*.cu)

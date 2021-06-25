@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from mmdeploy.mmdet.core.export import add_dummy_nms_for_onnx
+import mmdeploy
 from mmdeploy.utils import MODULE_REWRITERS
 
 
@@ -105,7 +105,11 @@ class AnchorHead(nn.Module):
         iou_threshold = cfg.nms.get('iou_threshold', 0.5)
         score_threshold = cfg.score_thr
         nms_pre = cfg.get('deploy_nms_pre', -1)
-        return add_dummy_nms_for_onnx(batch_mlvl_bboxes, batch_mlvl_scores,
-                                      max_output_boxes_per_class,
-                                      iou_threshold, score_threshold, nms_pre,
-                                      cfg.max_per_img)
+        return mmdeploy.mmdet.core.export.add_dummy_nms_for_onnx(
+            batch_mlvl_bboxes,
+            batch_mlvl_scores,
+            max_output_boxes_per_class,
+            iou_threshold=iou_threshold,
+            score_threshold=score_threshold,
+            pre_top_k=nms_pre,
+            after_top_k=cfg.max_per_img)

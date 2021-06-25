@@ -1,6 +1,7 @@
 import torch
 
-from mmdeploy.mmcv.ops import DummyONNXNMSop
+from mmdeploy.mmcv.ops import DummyONNXNMSop, TRTBatchedNMSop
+from mmdeploy.utils import FUNCTION_REWRITERS
 
 
 def dynamic_clip_for_onnx(x1, y1, x2, y2, max_shape):
@@ -152,4 +153,26 @@ def add_dummy_nms_for_onnx(boxes,
 
     scores = scores.unsqueeze(2)
     dets = torch.cat([boxes, scores], dim=2)
+    return dets, labels
+
+
+@FUNCTION_REWRITERS.register_rewriter(
+    func_name='mmdeploy.mmdet.core.export.add_dummy_nms_for_onnx',
+    backend='tensorrt')
+def add_dummy_nms_for_onnx_tensorrt(rewriter,
+                                    boxes,
+                                    scores,
+                                    max_output_boxes_per_class=1000,
+                                    iou_threshold=0.5,
+                                    score_threshold=0.05,
+                                    pre_top_k=-1,
+                                    after_top_k=-1,
+                                    labels=None):
+    boxes = boxes if boxes.dim() == 4 else boxes.unsqueeze(2)
+    after_top_k = max_output_boxes_per_class if after_top_k < 0 else min(
+        max_output_boxes_per_class, after_top_k)
+    dets, labels = TRTBatchedNMSop.apply(boxes, scores, int(scores.shape[-1]),
+                                         pre_top_k, after_top_k, iou_threshold,
+                                         score_threshold, -1)
+
     return dets, labels

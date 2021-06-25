@@ -1,13 +1,28 @@
+import logging
 import os.path as osp
 from typing import Optional, Union
 
-import tensorrt as trt
-
 import mmcv
 import onnx
+import tensorrt as trt
 import torch.multiprocessing as mp
 
 from .tensorrt_utils import onnx2trt, save_trt_engine
+
+
+def get_trt_loglevel():
+    logger = logging.getLogger()
+    level = logger.level
+
+    if level == logging.INFO:
+        return trt.Logger.INFO
+    elif level == logging.ERROR or level == logging.CRITICAL:
+        return trt.Logger.ERROR
+    elif level == logging.WARNING:
+        return trt.Logger.WARNING
+    else:
+        print('for logging level: {}, use trt.Logger.INFO'.format(level))
+        return trt.Logger.INFO
 
 
 def onnx2tensorrt(work_dir: str,
@@ -39,7 +54,7 @@ def onnx2tensorrt(work_dir: str,
     engine = onnx2trt(
         onnx_model,
         opt_shape_dict=tensorrt_param['opt_shape_dict'],
-        log_level=tensorrt_param.get('log_level', trt.Logger.WARNING),
+        log_level=tensorrt_param.get('log_level', get_trt_loglevel()),
         fp16_mode=tensorrt_param.get('fp16_mode', False),
         max_workspace_size=tensorrt_param.get('max_workspace_size', 0),
         device_id=device_id)

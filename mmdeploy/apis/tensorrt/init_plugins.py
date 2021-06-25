@@ -1,7 +1,7 @@
 import ctypes
 import glob
-import os
 import logging
+import os
 
 
 def get_tensorrt_op_path():
