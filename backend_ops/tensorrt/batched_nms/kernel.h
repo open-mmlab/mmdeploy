@@ -4,6 +4,7 @@
 #define TRT_KERNEL_H
 
 #include <cuda_runtime.h>
+
 #include <cassert>
 #include <cstdio>
 

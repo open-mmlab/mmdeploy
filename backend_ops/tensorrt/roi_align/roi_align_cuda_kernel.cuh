@@ -2,6 +2,7 @@
 #define ROI_ALIGN_CUDA_KERNEL_CUH
 
 #include <float.h>
+
 #include "common_cuda_helper.hpp"
 
 /*** Forward ***/

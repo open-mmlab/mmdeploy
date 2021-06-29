@@ -2,6 +2,7 @@
 #define NMS_CUDA_KERNEL_CUH
 
 #include <float.h>
+
 #include "common_cuda_helper.hpp"
 
 #define DIVUP(m, n) ((m) / (n) + ((m) % (n) > 0))
