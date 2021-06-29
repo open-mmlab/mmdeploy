@@ -1,9 +1,10 @@
-from mmdeploy.utils import FUNCTION_REWRITERS, mark
-from mmdeploy.utils import SYMBOLICS_REGISTER
 from mmcv.onnx.symbolic import grid_sampler
 
+from mmdeploy.utils import FUNCTION_REWRITERS, SYMBOLICS_REGISTER, mark
 
-@FUNCTION_REWRITERS.register_rewriter('mmdet.models.TwoStageDetector.extract_feat')
+
+@FUNCTION_REWRITERS.register_rewriter(
+    'mmdet.models.TwoStageDetector.extract_feat')
 @mark('extract_feat')
 def extract_feat(rewriter, self, img):
     return rewriter.origin_func(self, img)
@@ -11,7 +12,8 @@ def extract_feat(rewriter, self, img):
 
 @FUNCTION_REWRITERS.register_rewriter('mmdet.models.TwoStageDetector.forward')
 def two_stage_forward(rewriter, self, img, *args):
-    return rewriter.origin_func(self, [img], img_metas=[[{}]], return_loss=False, *args)
+    return rewriter.origin_func(
+        self, [img], img_metas=[[{}]], return_loss=False, *args)
 
 
 @SYMBOLICS_REGISTER.register_symbolic('grid_sampler', is_pytorch=True)

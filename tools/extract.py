@@ -1,8 +1,9 @@
 import argparse
 import os.path as osp
+
 import onnx
-import onnx.utils
 import onnx.helper
+import onnx.utils
 from onnx import AttributeProto
 
 
@@ -12,7 +13,8 @@ def parse_args():
     parser.add_argument('input_model', help='Input ONNX model')
     parser.add_argument('output_model', help='Output ONNX model')
     parser.add_argument(
-        '--start', help='Start markers, format: func:type, e.g. backbone:input')
+        '--start',
+        help='Start markers, format: func:type, e.g. backbone:input')
     parser.add_argument('--end', help='End markers')
 
     args = parser.parse_args()
@@ -59,7 +61,8 @@ def attribute_to_dict(attribute):
     return ret
 
 
-def _dfs_search_reacable_nodes_fast(self, node_output_name, graph_input_nodes, reachable_nodes):
+def _dfs_search_reacable_nodes_fast(self, node_output_name, graph_input_nodes,
+                                    reachable_nodes):
     outputs = {}
     for index, node in enumerate(self.graph.node):
         for name in node.output:
@@ -79,6 +82,7 @@ def _dfs_search_reacable_nodes_fast(self, node_output_name, graph_input_nodes, r
             reachable_nodes.append(node)
             for name in node.input:
                 impl(name, graph_input_nodes, reachable_nodes)
+
     impl(node_output_name, graph_input_nodes, reachable_nodes)
 
 
@@ -119,7 +123,8 @@ def extract_model(model, start, end):
             if node.op_type == 'Mark':
                 attr = attribute_to_dict(node.attribute)
                 if attr['func'] == start_name and attr['type'] == start_type:
-                    name = node.output[0] if start_type == 'input' else node.input[0]
+                    name = node.output[
+                        0] if start_type == 'input' else node.input[0]
                     if name not in inputs:
                         new_name = get_new_name(attr)
                         rename_value(model, name, new_name)
@@ -138,7 +143,8 @@ def extract_model(model, start, end):
             if node.op_type == 'Mark':
                 attr = attribute_to_dict(node.attribute)
                 if attr['func'] == end_name and attr['type'] == end_type:
-                    name = node.input[0] if end_type == 'input' else node.output[0]
+                    name = node.input[
+                        0] if end_type == 'input' else node.output[0]
                     if name not in outputs:
                         new_name = get_new_name(attr)
                         rename_value(model, name, new_name)
@@ -154,7 +160,8 @@ def extract_model(model, start, end):
             node.op_type = 'Identity'
 
     # patch extractor
-    onnx.utils.Extractor._dfs_search_reachable_nodes = _dfs_search_reacable_nodes_fast
+    setattr(onnx.utils.Extractor, '_dfs_search_reachable_nodes',
+            _dfs_search_reacable_nodes_fast)
 
     extractor = onnx.utils.Extractor(model)
     extracted_model = extractor.extract_model(inputs, outputs)
@@ -183,8 +190,9 @@ def extract_model(model, start, end):
         for x in xs:
             if not x.type.tensor_type.shape.dim:
                 print(f'fixing output shape: {x.name}')
-                x.CopyFrom(onnx.helper.make_tensor_value_info(
-                    x.name, x.type.tensor_type.elem_type, []))
+                x.CopyFrom(
+                    onnx.helper.make_tensor_value_info(
+                        x.name, x.type.tensor_type.elem_type, []))
 
     # eliminate 0-batch dimension, dirty workaround for two-stage detectors
     for input in extracted_model.graph.input:
@@ -221,7 +229,7 @@ def main():
 
     model = onnx.load(args.input_model)
     marks = collect_avaiable_marks(model)
-    print("Available marks:\n    {}".format('\n    '.join(marks)))
+    print('Available marks:\n    {}'.format('\n    '.join(marks)))
 
     extracted_model = extract_model(model, args.start, args.end)
 
