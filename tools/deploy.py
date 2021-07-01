@@ -69,15 +69,24 @@ def main():
         logging.info('torch2onnx success.')
 
     # convert backend
+    onnx_pathes = [osp.join(args.work_dir, onnx_save_file)]
+
     backend = deploy_cfg.get('backend', 'default')
-    onnx_paths = [osp.join(args.work_dir, onnx_save_file)]
     if backend == 'tensorrt':
+        assert hasattr(deploy_cfg, 'tensorrt_param')
+        tensorrt_param = deploy_cfg['tensorrt_param']
+        model_params = tensorrt_param.get('model_params', [])
+        assert len(model_params) == len(onnx_pathes)
+
         logging.info('start onnx2tensorrt conversion.')
         from mmdeploy.apis.tensorrt import onnx2tensorrt
-        for onnx_path in onnx_paths:
+        for model_id, model_param, onnx_path in zip(
+                range(len(onnx_pathes)), model_params, onnx_pathes):
+            onnx_name = osp.splitext(osp.split(onnx_path)[1])[0]
+            save_file = model_param.get('save_file', onnx_name + '.engine')
             process = Process(
                 target=onnx2tensorrt,
-                args=(args.work_dir, onnx_save_file, deploy_cfg_path,
+                args=(args.work_dir, save_file, model_id, deploy_cfg_path,
                       onnx_path),
                 kwargs=dict(device=args.device, ret_value=ret_value))
             process.start()

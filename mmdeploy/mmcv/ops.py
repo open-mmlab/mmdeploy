@@ -14,7 +14,15 @@ class DummyONNXNMSop(torch.autograd.Function):
     def forward(ctx, boxes, scores, max_output_boxes_per_class, iou_threshold,
                 score_threshold):
 
-        return DummyONNXNMSop.output
+        batch_size, num_class, num_box = scores.shape
+        # turn off tracing to create a dummy output of nms
+        # dummy indices of nms's output
+        num_fake_det = 2
+        batch_inds = torch.randint(batch_size, (num_fake_det, 1))
+        cls_inds = torch.randint(num_class, (num_fake_det, 1))
+        box_inds = torch.randint(num_box, (num_fake_det, 1))
+        indices = torch.cat([batch_inds, cls_inds, box_inds], dim=1)
+        return indices.to(scores.device)
 
     @staticmethod
     def symbolic(g, boxes, scores, max_output_boxes_per_class, iou_threshold,

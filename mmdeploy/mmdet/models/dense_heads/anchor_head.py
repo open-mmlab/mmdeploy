@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 import mmdeploy
-from mmdeploy.utils import MODULE_REWRITERS
+from mmdeploy.utils import MODULE_REWRITERS, is_dynamic_shape
 
 
 @MODULE_REWRITERS.register_rewrite_module(module_type='mmdet.models.AnchorHead'
@@ -22,6 +22,8 @@ class AnchorHead(nn.Module):
         self.use_sigmoid_cls = module.use_sigmoid_cls
         self.cls_out_channels = module.cls_out_channels
 
+        self.deploy_cfg = cfg
+
     def forward(self, *args, **kwargs):
         return self.module(*args, **kwargs)
 
@@ -33,6 +35,7 @@ class AnchorHead(nn.Module):
                    cfg=None,
                    **kwargs):
         assert len(cls_scores) == len(bbox_preds)
+        deploy_cfg = self.deploy_cfg
         num_levels = len(cls_scores)
 
         device = cls_scores[0].device
@@ -49,11 +52,12 @@ class AnchorHead(nn.Module):
         batch_size = mlvl_cls_scores[0].shape[0]
         nms_pre = cfg.get('nms_pre', -1)
 
+        # loop over features, decode boxes
         mlvl_bboxes = []
         mlvl_scores = []
-        for cls_score, bbox_pred, anchors in zip(mlvl_cls_scores,
-                                                 mlvl_bbox_preds,
-                                                 mlvl_anchors):
+        for level_id, cls_score, bbox_pred, anchors in zip(
+                range(num_levels), mlvl_cls_scores, mlvl_bbox_preds,
+                mlvl_anchors):
             assert cls_score.size()[-2:] == bbox_pred.size()[-2:]
             cls_score = cls_score.permute(0, 2, 3,
                                           1).reshape(batch_size, -1,
@@ -64,8 +68,21 @@ class AnchorHead(nn.Module):
                 scores = cls_score.softmax(-1)
             bbox_pred = bbox_pred.permute(0, 2, 3,
                                           1).reshape(batch_size, -1, 4)
+
+            # use static anchor if input shape is static
+            if not is_dynamic_shape(deploy_cfg):
+                anchors = anchors.data
+
             anchors = anchors.expand_as(bbox_pred)
-            if nms_pre > 0:
+
+            enable_nms_pre = True
+            backend = deploy_cfg['backend']
+            # topk in tensorrt does not support shape<k
+            # final level might meet the problem
+            if backend == 'tensorrt':
+                enable_nms_pre = (level_id != num_levels - 1)
+
+            if nms_pre > 0 and enable_nms_pre:
                 # Get maximum scores for foreground classes.
                 if self.use_sigmoid_cls:
                     max_scores, _ = scores.max(-1)
@@ -74,7 +91,6 @@ class AnchorHead(nn.Module):
                     # since mmdet v2.0
                     # BG cat_id: num_class
                     max_scores, _ = scores[..., :-1].max(-1)
-                # _, topk_inds = torch.topk(max_scores, nms_pre)
                 _, topk_inds = max_scores.topk(nms_pre)
                 batch_inds = torch.arange(batch_size).view(
                     -1, 1).expand_as(topk_inds)
@@ -95,11 +111,7 @@ class AnchorHead(nn.Module):
             batch_mlvl_scores = batch_mlvl_scores[..., :self.num_classes]
         if not with_nms:
             return batch_mlvl_bboxes, batch_mlvl_scores
-        # Replace multiclass_nms with ONNX::NonMaxSuppression in deployment
-        # ignore background class
-        if not self.use_sigmoid_cls:
-            num_classes = batch_mlvl_scores.shape[2] - 1
-            batch_mlvl_scores = batch_mlvl_scores[..., :num_classes]
+
         max_output_boxes_per_class = cfg.nms.get('max_output_boxes_per_class',
                                                  200)
         iou_threshold = cfg.nms.get('iou_threshold', 0.5)
