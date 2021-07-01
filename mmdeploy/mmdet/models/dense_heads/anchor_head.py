@@ -1,7 +1,6 @@
 import torch
 
 import mmdeploy
-
 from mmdeploy.utils import FUNCTION_REWRITERS, is_dynamic_shape
 
 
@@ -67,7 +66,7 @@ def anchor_head_get_bboxes(rewriter,
             if self.use_sigmoid_cls:
                 max_scores, _ = scores.max(-1)
             else:
-              
+
                 # remind that we set FG labels to [0, num_class-1]
                 # since mmdet v2.0
                 # BG cat_id: num_class
