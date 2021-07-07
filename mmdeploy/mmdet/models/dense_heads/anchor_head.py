@@ -18,6 +18,7 @@ def anchor_head_get_bboxes(rewriter,
                            **kwargs):
     assert len(cls_scores) == len(bbox_preds)
     deploy_cfg = rewriter.cfg
+    is_dynamic_flag = is_dynamic_shape(deploy_cfg)
     num_levels = len(cls_scores)
 
     device = cls_scores[0].device
@@ -49,7 +50,7 @@ def anchor_head_get_bboxes(rewriter,
         bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, 4)
 
         # use static anchor if input shape is static
-        if not is_dynamic_shape(deploy_cfg):
+        if not is_dynamic_flag:
             anchors = anchors.data
 
         anchors = anchors.expand_as(bbox_pred)
@@ -77,9 +78,6 @@ def anchor_head_get_bboxes(rewriter,
             anchors = anchors[batch_inds, topk_inds, :]
             bbox_pred = bbox_pred[batch_inds, topk_inds, :]
             scores = scores[batch_inds, topk_inds, :]
-
-        if not is_dynamic_shape(deploy_cfg):
-            img_shape = [int(val) for val in img_shape]
 
         bboxes = self.bbox_coder.decode(
             anchors, bbox_pred, max_shape=img_shape)

@@ -3,13 +3,13 @@ import tensorrt as trt
 import torch
 
 
-def onnx2trt(onnx_model,
-             opt_shape_dict,
-             log_level=trt.Logger.ERROR,
-             fp16_mode=False,
-             max_workspace_size=0,
-             device_id=0):
-    """Convert onnx model to tensorrt engine.
+def create_trt_engine(onnx_model,
+                      opt_shape_dict,
+                      log_level=trt.Logger.ERROR,
+                      fp16_mode=False,
+                      max_workspace_size=0,
+                      device_id=0):
+    """Create a tensorrt engine from ONNX.
 
     Arguments:
         onnx_model (str or onnx.ModelProto): the onnx model to convert from
@@ -24,7 +24,7 @@ def onnx2trt(onnx_model,
         tensorrt.ICudaEngine: the TensorRT engine created from onnx_model
 
     Example:
-        >>> engine = onnx2trt(
+        >>> engine = create_trt_engine(
         >>>             "onnx_model.onnx",
         >>>             {'input': [[1, 3, 160, 160],
         >>>                        [1, 3, 320, 320],

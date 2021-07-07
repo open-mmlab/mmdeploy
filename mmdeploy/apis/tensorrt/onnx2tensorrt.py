@@ -7,7 +7,7 @@ import onnx
 import tensorrt as trt
 import torch.multiprocessing as mp
 
-from .tensorrt_utils import onnx2trt, save_trt_engine
+from .tensorrt_utils import create_trt_engine, save_trt_engine
 
 
 def get_trt_loglevel():
@@ -34,7 +34,7 @@ def onnx2tensorrt(work_dir: str,
                   ret_value: Optional[mp.Value] = None):
     ret_value.value = -1
 
-    # load deploy_cfg if needed
+    # load deploy_cfg if necessary
     if isinstance(deploy_cfg, str):
         deploy_cfg = mmcv.Config.fromfile(deploy_cfg)
     elif not isinstance(deploy_cfg, mmcv.Config):
@@ -56,7 +56,7 @@ def onnx2tensorrt(work_dir: str,
     device_id = 0
     if len(device) >= 6:
         device_id = int(device[5:])
-    engine = onnx2trt(
+    engine = create_trt_engine(
         onnx_model,
         opt_shape_dict=final_param['opt_shape_dict'],
         log_level=final_param.get('log_level', get_trt_loglevel()),

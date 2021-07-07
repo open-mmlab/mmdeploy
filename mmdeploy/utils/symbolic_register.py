@@ -41,6 +41,7 @@ def set_symbolic(cfg: Dict,
                     func,
                     Function), '{} is not an torch.autograd.Function'.format(
                         func_name)
+                symbolic_impl.origin_func = getattr(func, 'symbolic', None)
                 func.symbolic = symbolic_impl
             except Exception:
                 logging.warning(

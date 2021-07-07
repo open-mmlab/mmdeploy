@@ -13,10 +13,8 @@ class DummyONNXNMSop(torch.autograd.Function):
     @staticmethod
     def forward(ctx, boxes, scores, max_output_boxes_per_class, iou_threshold,
                 score_threshold):
-
         batch_size, num_class, num_box = scores.shape
-        # turn off tracing to create a dummy output of nms
-        # dummy indices of nms's output
+        # create dummy indices of nms output
         num_fake_det = 2
         batch_inds = torch.randint(batch_size, (num_fake_det, 1))
         cls_inds = torch.randint(num_class, (num_fake_det, 1))

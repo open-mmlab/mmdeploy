@@ -55,7 +55,7 @@ def torch2onnx(img: Any,
     if ret_value is not None:
         ret_value.value = -1
 
-    # load deploy_cfg if needed
+    # load deploy_cfg if necessary
     if isinstance(deploy_cfg, str):
         deploy_cfg = mmcv.Config.fromfile(deploy_cfg)
     if not isinstance(deploy_cfg, mmcv.Config):
