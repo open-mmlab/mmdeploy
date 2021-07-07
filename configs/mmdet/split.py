@@ -1,4 +1,4 @@
-_base_ = ['./base.py', '../_base_/backends/tensorrt.py']
+_base_ = ['./base.py']
 
 backend = 'default'
 apply_marks = True

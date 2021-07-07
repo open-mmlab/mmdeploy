@@ -114,3 +114,14 @@ def create_input(codebase: str,
             raise ImportError('Can not import module: {}'.format(codebase))
     else:
         raise NotImplementedError('Unknown codebase type: {}'.format(codebase))
+
+
+def attribute_to_dict(attr):
+    from onnx.helper import get_attribute_value
+    ret = {}
+    for a in attr:
+        value = get_attribute_value(a)
+        if isinstance(value, bytes):
+            value = str(value, 'utf-8')
+        ret[a.name] = value
+    return ret
