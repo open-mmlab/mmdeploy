@@ -24,10 +24,6 @@ static const char *PLUGIN_VERSION{"1"};
 static const char *PLUGIN_NAME{"NonMaxSuppression"};
 }  // namespace
 
-nvinfer1::PluginFieldCollection NonMaxSuppressionDynamicCreator::mFC{};
-std::vector<nvinfer1::PluginField>
-    NonMaxSuppressionDynamicCreator::mPluginAttributes;
-
 NonMaxSuppressionDynamic::NonMaxSuppressionDynamic(
     const std::string &name, int centerPointBox, int maxOutputBoxesPerClass,
     float iouThreshold, float scoreThreshold, int offset)
@@ -168,8 +164,10 @@ int NonMaxSuppressionDynamic::initialize() { return 0; }
 void NonMaxSuppressionDynamic::terminate() {}
 
 size_t NonMaxSuppressionDynamic::getSerializationSize() const {
-  return sizeof(mCenterPointBox) + sizeof(mMaxOutputBoxesPerClass) +
-         sizeof(mIouThreshold) + sizeof(mScoreThreshold) + sizeof(mOffset);
+  return serialized_size(mCenterPointBox) +
+         serialized_size(mMaxOutputBoxesPerClass) +
+         serialized_size(mIouThreshold) + serialized_size(mScoreThreshold) +
+         serialized_size(mOffset);
 }
 
 void NonMaxSuppressionDynamic::serialize(void *buffer) const {
@@ -276,3 +274,5 @@ void NonMaxSuppressionDynamicCreator::setPluginNamespace(
 const char *NonMaxSuppressionDynamicCreator::getPluginNamespace() const {
   return mNamespace.c_str();
 }
+
+REGISTER_TENSORRT_PLUGIN(NonMaxSuppressionDynamicCreator);

@@ -91,8 +91,8 @@ class ONNXScatterNDDynamicCreator : public nvinfer1::IPluginCreator {
   const char *getPluginNamespace() const override;
 
  private:
-  static nvinfer1::PluginFieldCollection mFC;
-  static std::vector<nvinfer1::PluginField> mPluginAttributes;
+  nvinfer1::PluginFieldCollection mFC;
+  std::vector<nvinfer1::PluginField> mPluginAttributes;
   std::string mNamespace;
 };
 #endif  // TRT_SCATTERND_HPP

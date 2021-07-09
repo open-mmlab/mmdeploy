@@ -109,9 +109,9 @@ class TRTBatchedNMSPluginDynamicCreator : public nvinfer1::IPluginCreator {
   const char* getPluginNamespace() const override;
 
  private:
-  static nvinfer1::PluginFieldCollection mFC;
+  nvinfer1::PluginFieldCollection mFC;
   nvinfer1::plugin::NMSParameters params;
-  static std::vector<nvinfer1::PluginField> mPluginAttributes;
+  std::vector<nvinfer1::PluginField> mPluginAttributes;
   std::string mNamespace;
 };
 

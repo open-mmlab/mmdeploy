@@ -16,9 +16,6 @@ static const char* NMS_PLUGIN_VERSION{"1"};
 static const char* NMS_PLUGIN_NAME{"TRTBatchedNMS"};
 }  // namespace
 
-PluginFieldCollection TRTBatchedNMSPluginDynamicCreator::mFC{};
-std::vector<PluginField> TRTBatchedNMSPluginDynamicCreator::mPluginAttributes;
-
 TRTBatchedNMSPluginDynamic::TRTBatchedNMSPluginDynamic(NMSParameters params)
     : param(params) {}
 
@@ -268,3 +265,5 @@ void TRTBatchedNMSPluginDynamicCreator::setPluginNamespace(
 const char* TRTBatchedNMSPluginDynamicCreator::getPluginNamespace() const {
   return mNamespace.c_str();
 }
+
+REGISTER_TENSORRT_PLUGIN(TRTBatchedNMSPluginDynamicCreator);

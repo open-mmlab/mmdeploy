@@ -17,10 +17,6 @@ static const char *PLUGIN_VERSION{"1"};
 static const char *PLUGIN_NAME{"MMCVRoiAlign"};
 }  // namespace
 
-nvinfer1::PluginFieldCollection RoIAlignPluginDynamicCreator::mFC{};
-std::vector<nvinfer1::PluginField>
-    RoIAlignPluginDynamicCreator::mPluginAttributes;
-
 RoIAlignPluginDynamic::RoIAlignPluginDynamic(const std::string &name,
                                              int outWidth, int outHeight,
                                              float spatialScale,
@@ -162,8 +158,9 @@ int RoIAlignPluginDynamic::initialize() { return 0; }
 void RoIAlignPluginDynamic::terminate() {}
 
 size_t RoIAlignPluginDynamic::getSerializationSize() const {
-  return sizeof(mOutWidth) + sizeof(mOutHeight) + sizeof(mSpatialScale) +
-         sizeof(mSampleRatio) + sizeof(mPoolMode) + sizeof(mAligned);
+  return serialized_size(mOutWidth) + serialized_size(mOutHeight) +
+         serialized_size(mSpatialScale) + serialized_size(mSampleRatio) +
+         serialized_size(mPoolMode) + serialized_size(mAligned);
 }
 
 void RoIAlignPluginDynamic::serialize(void *buffer) const {
@@ -291,3 +288,5 @@ void RoIAlignPluginDynamicCreator::setPluginNamespace(
 const char *RoIAlignPluginDynamicCreator::getPluginNamespace() const {
   return mNamespace.c_str();
 }
+
+REGISTER_TENSORRT_PLUGIN(RoIAlignPluginDynamicCreator);

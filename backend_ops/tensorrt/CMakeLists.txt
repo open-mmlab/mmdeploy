@@ -51,7 +51,8 @@ INCLUDE_DIRECTORIES(${CUB_ROOT_DIR})
 set(PLUGIN_LISTS scatternd
                  nms
                  roi_align
-                 batched_nms)
+                 batched_nms
+                 multi_level_roi_align)
 
 foreach(PLUGIN_ITER ${PLUGIN_LISTS})
         file(GLOB PLUGIN_OPS_SRCS ${PLUGIN_ITER}/*.cpp ${PLUGIN_ITER}/*.cu)
@@ -59,11 +60,10 @@ foreach(PLUGIN_ITER ${PLUGIN_LISTS})
         set(BACKEND_OPS_SRCS ${BACKEND_OPS_SRCS} ${PLUGIN_OPS_SRCS} ${PLUGIN_OPS_HEADS})
 endforeach(PLUGIN_ITER)
 
-list(APPEND BACKEND_OPS_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/trt_plugin.cpp")
 list(APPEND BACKEND_OPS_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/common_impl/trt_cuda_helper.cu")
 
 set(INFER_PLUGIN_LIB ${TENSORRT_LIBRARY})
 
-cuda_add_library(${SHARED_TARGET} SHARED ${BACKEND_OPS_SRCS})
+cuda_add_library(${SHARED_TARGET} MODULE ${BACKEND_OPS_SRCS})
 target_link_libraries(${SHARED_TARGET} ${INFER_PLUGIN_LIB})
 target_include_directories(${SHARED_TARGET} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/common)

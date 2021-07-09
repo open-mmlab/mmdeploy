@@ -6,8 +6,6 @@
 #include "trt_cuda_helper.cuh"
 #include "trt_plugin_helper.hpp"
 
-static int const threadsPerBlock = sizeof(unsigned long long int) * 8;
-
 using mmlab::TensorDesc;
 
 template <typename T>
@@ -66,27 +64,17 @@ void TRTONNXScatterNDKernelLauncher(const T* data, const int* indices,
     num_update_indice *= indice_desc.shape[i];
   }
   // scatter
-  const int col_block = DIVUP(num_update_indice, threadsPerBlock);
-  onnx_scatternd_kernel<<<col_block, threadsPerBlock, 0, stream>>>(
+  const int col_block = DIVUP(num_update_indice, THREADS_PER_BLOCK);
+  onnx_scatternd_kernel<<<col_block, THREADS_PER_BLOCK, 0, stream>>>(
       num_update_indice, indices, update, output, tensor_desc, indice_desc);
 }
 
-void TRTONNXScatterNDKernelLauncher_float(const float* data, const int* indices,
-                                          const float* update, const int* dims,
-                                          int nbDims, const int* indices_dims,
-                                          int indice_nbDims, float* output,
-                                          cudaStream_t stream) {
-  TRTONNXScatterNDKernelLauncher<float>(data, indices, update, dims, nbDims,
-                                        indices_dims, indice_nbDims, output,
-                                        stream);
-}
+template void TRTONNXScatterNDKernelLauncher<float>(
+    const float* data, const int* indices, const float* update, const int* dims,
+    int nbDims, const int* indices_dims, int indice_nbDims, float* output,
+    cudaStream_t stream);
 
-void TRTONNXScatterNDKernelLauncher_int32(const int* data, const int* indices,
-                                          const int* update, const int* dims,
-                                          int nbDims, const int* indices_dims,
-                                          int indice_nbDims, int* output,
-                                          cudaStream_t stream) {
-  TRTONNXScatterNDKernelLauncher<int>(data, indices, update, dims, nbDims,
-                                      indices_dims, indice_nbDims, output,
-                                      stream);
-}
+template void TRTONNXScatterNDKernelLauncher<int>(
+    const int* data, const int* indices, const int* update, const int* dims,
+    int nbDims, const int* indices_dims, int indice_nbDims, int* output,
+    cudaStream_t stream);

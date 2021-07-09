@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "common_cuda_helper.hpp"
-#include "nms_cuda_kernel.cuh"
 #include "trt_cuda_helper.cuh"
+#include "trt_nms_kernel.cuh"
 #include "trt_plugin_helper.hpp"
 
 struct NMSBox {
@@ -72,8 +72,8 @@ __global__ void mask_to_output_kernel(const unsigned long long* dev_mask,
   int start = *output_count;
   int out_per_class_count = 0;
   for (int i = 0; i < spatial_dimension; i++) {
-    const int nblock = i / threadsPerBlock;
-    const int inblock = i % threadsPerBlock;
+    const int nblock = i / THREADS_PER_BLOCK;
+    const int inblock = i % THREADS_PER_BLOCK;
     if (!(remv[nblock] & (1ULL << inblock))) {
       if (threadIdx.x == 0) {
         output[start * 3 + 0] = batch_id;
@@ -113,7 +113,7 @@ size_t get_onnxnms_workspace_size(size_t num_batches, size_t spatial_dimension,
   size_t scores_workspace = getAlignedSize(spatial_dimension * boxes_word_size);
   size_t boxes_workspace =
       getAlignedSize(spatial_dimension * 4 * boxes_word_size);
-  const int col_blocks = DIVUP(spatial_dimension, threadsPerBlock);
+  const int col_blocks = DIVUP(spatial_dimension, THREADS_PER_BLOCK);
   size_t mask_workspace = getAlignedSize(spatial_dimension * col_blocks *
                                          sizeof(unsigned long long));
   size_t index_template_workspace =
@@ -162,7 +162,7 @@ void TRTNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
                                     size_t output_length, void* workspace,
                                     cudaStream_t stream) {
   using mmlab::getAlignedSize;
-  const int col_blocks = DIVUP(spatial_dimension, threadsPerBlock);
+  const int col_blocks = DIVUP(spatial_dimension, THREADS_PER_BLOCK);
   float* boxes_sorted = (float*)workspace;
   workspace = static_cast<char*>(workspace) +
               getAlignedSize(spatial_dimension * 4 * sizeof(float));
@@ -214,7 +214,7 @@ void TRTNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
   cudaCheckError();
 
   dim3 blocks(col_blocks, col_blocks);
-  dim3 threads(threadsPerBlock);
+  dim3 threads(THREADS_PER_BLOCK);
 
   for (int batch_id = 0; batch_id < num_batches; ++batch_id) {
     for (int cls_id = 0; cls_id < num_classes; ++cls_id) {
@@ -261,7 +261,7 @@ void TRTNMSCUDAKernelLauncher_float(const float* boxes, const float* scores,
                                                offset, boxes_sorted, dev_mask);
 
       // will be performed when dev_mask is full.
-      mask_to_output_kernel<<<1, threadsPerBlock,
+      mask_to_output_kernel<<<1, THREADS_PER_BLOCK,
                               col_blocks * sizeof(unsigned long long),
                               stream>>>(
           dev_mask, index_cache, output, output_count, batch_id, cls_id,

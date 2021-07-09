@@ -1,5 +1,6 @@
-#ifndef TRT_ROI_ALIGN_HPP
-#define TRT_ROI_ALIGN_HPP
+#ifndef TRT_MULTI_LEVEL_ROI_ALIGN_HPP
+#define TRT_MULTI_LEVEL_ROI_ALIGN_HPP
+
 #include <cublas_v2.h>
 
 #include <memory>
@@ -8,16 +9,20 @@
 
 #include "trt_plugin_helper.hpp"
 
-class RoIAlignPluginDynamic : public nvinfer1::IPluginV2DynamicExt {
+class MultiLevelRoiAlignPluginDynamic : public nvinfer1::IPluginV2DynamicExt {
  public:
-  RoIAlignPluginDynamic(const std::string &name, int outWidth, int outHeight,
-                        float spatialScale, int sampleRatio, int poolMode,
-                        bool aligned);
+  MultiLevelRoiAlignPluginDynamic(const std::string &name, int alignedHeight,
+                                  int alignedWidth, int sampleNum,
+                                  const std::vector<float> &featmapStrides,
+                                  float roiScaleFactor = -1,
+                                  int finestScale = 56, bool aligned = false);
 
-  RoIAlignPluginDynamic(const std::string name, const void *data,
-                        size_t length);
+  MultiLevelRoiAlignPluginDynamic(const std::string name, const void *data,
+                                  size_t length);
 
-  RoIAlignPluginDynamic() = delete;
+  // It doesn't make sense to make MultiLevelRoiAlignPluginDynamic without
+  // arguments, so we delete default constructor.
+  MultiLevelRoiAlignPluginDynamic() = delete;
 
   // IPluginV2DynamicExt Methods
   nvinfer1::IPluginV2DynamicExt *clone() const override;
@@ -61,11 +66,12 @@ class RoIAlignPluginDynamic : public nvinfer1::IPluginV2DynamicExt {
   const std::string mLayerName;
   std::string mNamespace;
 
-  int mOutWidth;
-  int mOutHeight;
-  float mSpatialScale;
-  int mSampleRatio;
-  int mPoolMode;  // 1:avg 0:max
+  int mAlignedHeight;
+  int mAlignedWidth;
+  int mSampleNum;
+  std::vector<float> mFeatmapStrides;
+  float mRoiScaleFactor;
+  int mFinestScale;
   bool mAligned;
 
  protected:
@@ -79,9 +85,9 @@ class RoIAlignPluginDynamic : public nvinfer1::IPluginV2DynamicExt {
   using nvinfer1::IPluginV2DynamicExt::supportsFormat;
 };
 
-class RoIAlignPluginDynamicCreator : public nvinfer1::IPluginCreator {
+class MultiLevelRoiAlignPluginDynamicCreator : public nvinfer1::IPluginCreator {
  public:
-  RoIAlignPluginDynamicCreator();
+  MultiLevelRoiAlignPluginDynamicCreator();
 
   const char *getPluginName() const override;
 
@@ -105,4 +111,5 @@ class RoIAlignPluginDynamicCreator : public nvinfer1::IPluginCreator {
   std::vector<nvinfer1::PluginField> mPluginAttributes;
   std::string mNamespace;
 };
+
 #endif  // TRT_ROI_ALIGN_HPP

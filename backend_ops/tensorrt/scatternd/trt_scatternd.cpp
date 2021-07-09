@@ -5,26 +5,13 @@
 
 #include <chrono>
 
+#include "trt_scatternd_kernel.hpp"
 #include "trt_serialize.hpp"
-
-extern void TRTONNXScatterNDKernelLauncher_float(
-    const float *data, const int *indices, const float *update, const int *dims,
-    int nbDims, const int *indices_dims, int indice_nbDims, float *output,
-    cudaStream_t stream);
-
-extern void TRTONNXScatterNDKernelLauncher_int32(
-    const int *data, const int *indices, const int *update, const int *dims,
-    int nbDims, const int *indices_dims, int indice_nbDims, int *output,
-    cudaStream_t stream);
 
 namespace {
 static const char *PLUGIN_VERSION{"1"};
 static const char *PLUGIN_NAME{"ScatterND"};
 }  // namespace
-
-nvinfer1::PluginFieldCollection ONNXScatterNDDynamicCreator::mFC{};
-std::vector<nvinfer1::PluginField>
-    ONNXScatterNDDynamicCreator::mPluginAttributes;
 
 ONNXScatterNDDynamic::ONNXScatterNDDynamic(const std::string &name)
     : mLayerName(name) {}
@@ -110,13 +97,13 @@ int ONNXScatterNDDynamic::enqueue(const nvinfer1::PluginTensorDesc *inputDesc,
 
   switch (data_type) {
     case nvinfer1::DataType::kFLOAT:
-      TRTONNXScatterNDKernelLauncher_float(
+      TRTONNXScatterNDKernelLauncher<float>(
           (float *)data, (int *)indices, (float *)update, dims, nbDims,
           indices_dims, indice_nbDims, (float *)output, stream);
       break;
 
     case nvinfer1::DataType::kINT32:
-      TRTONNXScatterNDKernelLauncher_int32(
+      TRTONNXScatterNDKernelLauncher<int>(
           (int *)data, (int *)indices, (int *)update, dims, nbDims,
           indices_dims, indice_nbDims, (int *)output, stream);
       break;
@@ -204,3 +191,5 @@ void ONNXScatterNDDynamicCreator::setPluginNamespace(const char *libNamespace) {
 const char *ONNXScatterNDDynamicCreator::getPluginNamespace() const {
   return mNamespace.c_str();
 }
+
+REGISTER_TENSORRT_PLUGIN(ONNXScatterNDDynamicCreator);

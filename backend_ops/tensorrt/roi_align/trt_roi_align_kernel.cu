@@ -1,5 +1,5 @@
 #include "common_cuda_helper.hpp"
-#include "roi_align_cuda_kernel.cuh"
+#include "trt_roi_align_kernel.cuh"
 
 template <typename scalar_t>
 void TRTRoIAlignForwardCUDAKernelLauncher(
