@@ -4,6 +4,12 @@
 
 - Build backend ops
 
+  - update submodule
+
+    ```bash
+    git submodule update --init
+    ```
+
   - Build with onnxruntime support
 
     ```bash
