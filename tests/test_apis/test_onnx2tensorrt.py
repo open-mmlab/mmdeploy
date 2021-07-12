@@ -75,8 +75,8 @@ def test_onnx2tensorrt():
     deploy_cfg = mmcv.Config(
         dict(
             backend='tensorrt',
-            tensorrt_param=dict(
-                shared_param=dict(
+            tensorrt_params=dict(
+                shared_params=dict(
                     log_level=trt.Logger.WARNING, fp16_mode=False),
                 model_params=[
                     dict(

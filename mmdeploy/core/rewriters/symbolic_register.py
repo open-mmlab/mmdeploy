@@ -39,16 +39,14 @@ def set_symbolic(cfg: Dict,
                 func = eval_with_import(func_name)
                 assert issubclass(
                     func,
-                    Function), '{} is not an torch.autograd.Function'.format(
-                        func_name)
+                    Function), f'{func_name} is not an torch.autograd.Function'
                 symbolic_impl.origin_func = getattr(func, 'symbolic', None)
                 func.symbolic = symbolic_impl
             except Exception:
-                logging.warning(
-                    'Can not add symbolic for `{}`'.format(func_name))
+                logging.warning(f'Can not add symbolic for `{func_name}`')
 
 
-SYMBOLICS_REGISTER = Registry('symbolics', build_func=set_symbolic, scope=None)
+SYMBOLIC_REGISTER = Registry('symbolics', build_func=set_symbolic, scope=None)
 
 
 class SymbolicWrapper:
@@ -80,14 +78,14 @@ def register_symbolic(func_name: str,
         symbolic_args.update(kwargs)
         wrapper_name = '@'.join([func_name, backend, str(is_pytorch)])
         wrapper = type(wrapper_name, (SymbolicWrapper, ), symbolic_args)
-        SYMBOLICS_REGISTER.register_module(wrapper_name)(wrapper)
+        SYMBOLIC_REGISTER.register_module(wrapper_name)(wrapper)
         return symbolic_impl
 
     return wrapper
 
 
-SYMBOLICS_REGISTER.register_symbolic = register_symbolic
+SYMBOLIC_REGISTER.register_symbolic = register_symbolic
 
 
 def register_extra_symbolics(cfg, backend='default', opset=11):
-    SYMBOLICS_REGISTER.build(cfg=cfg, backend=backend)
+    SYMBOLIC_REGISTER.build(cfg=cfg, backend=backend)

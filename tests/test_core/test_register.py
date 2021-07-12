@@ -4,14 +4,14 @@ import torch
 
 
 def test_function_rewriter():
-    from mmdeploy.utils import FUNCTION_REWRITERS, RewriterContext
+    from mmdeploy.core import FUNCTION_REWRITER, RewriterContext
 
     x = torch.tensor([1, 2, 3, 4, 5])
     y = torch.tensor([2, 4, 6, 8, 10])
 
-    @FUNCTION_REWRITERS.register_rewriter(
+    @FUNCTION_REWRITER.register_rewriter(
         func_name='torch.mul', backend='tensorrt')
-    @FUNCTION_REWRITERS.register_rewriter(
+    @FUNCTION_REWRITER.register_rewriter(
         func_name='torch.add', backend='tensorrt')
     def sub_func(rewriter, x, y):
         assert hasattr(rewriter, 'cfg')
@@ -37,7 +37,7 @@ def test_function_rewriter():
         torch.testing.assert_allclose(result, x + y)
 
     # test different config
-    @FUNCTION_REWRITERS.register_rewriter(
+    @FUNCTION_REWRITER.register_rewriter(
         func_name='torch.Tensor.add', backend='default')
     def mul_func_class(rewriter, x, y):
         return x * y
@@ -57,7 +57,7 @@ def test_function_rewriter():
         torch.testing.assert_allclose(result, x * y)
 
     # test origin_func
-    @FUNCTION_REWRITERS.register_rewriter(
+    @FUNCTION_REWRITER.register_rewriter(
         func_name='torch.add', backend='default')
     def origin_add_func(rewriter, x, y):
         return rewriter.origin_func(x, y) + 1
@@ -69,10 +69,10 @@ def test_function_rewriter():
 
 
 def test_module_rewriter():
-    from mmdeploy.utils import MODULE_REWRITERS, patch_model
+    from mmdeploy.core import MODULE_REWRITER, patch_model
     from torchvision.models.resnet import resnet50
 
-    @MODULE_REWRITERS.register_rewrite_module(
+    @MODULE_REWRITER.register_rewrite_module(
         module_type='torchvision.models.resnet.Bottleneck', backend='tensorrt')
     class BottleneckWrapper(torch.nn.Module):
 
@@ -106,7 +106,7 @@ def test_module_rewriter():
 
 def test_symbolic_register():
     import mmdeploy
-    from mmdeploy.utils import SYMBOLICS_REGISTER, register_extra_symbolics
+    from mmdeploy.core import SYMBOLIC_REGISTER, register_extra_symbolics
     from torch.autograd import Function
     import onnx
 
@@ -125,18 +125,18 @@ def test_symbolic_register():
     mmdeploy.TestFunc = TestFunc
     test_func = mmdeploy.TestFunc.apply
 
-    @SYMBOLICS_REGISTER.register_symbolic('mmdeploy.TestFunc', backend='ncnn')
-    @SYMBOLICS_REGISTER.register_symbolic('mmdeploy.TestFunc')
+    @SYMBOLIC_REGISTER.register_symbolic('mmdeploy.TestFunc', backend='ncnn')
+    @SYMBOLIC_REGISTER.register_symbolic('mmdeploy.TestFunc')
     def symbolic_testfunc_default(symbolic_wrapper, g, x, val):
         assert hasattr(symbolic_wrapper, 'cfg')
         return g.op('mmcv::symbolic_testfunc_default', x, val_i=val)
 
-    @SYMBOLICS_REGISTER.register_symbolic(
+    @SYMBOLIC_REGISTER.register_symbolic(
         'mmdeploy.TestFunc', backend='tensorrt')
     def symbolic_testfunc_tensorrt(symbolic_wrapper, g, x, val):
         return g.op('mmcv::symbolic_testfunc_tensorrt', x, val_i=val)
 
-    @SYMBOLICS_REGISTER.register_symbolic(
+    @SYMBOLIC_REGISTER.register_symbolic(
         'cummax', is_pytorch=True, arg_descriptors=['v', 'i'])
     def symbolic_cummax(symbolic_wrapper, g, input, dim):
         return g.op('mmcv::cummax_default', input, dim_i=dim, outputs=2)

@@ -1,4 +1,4 @@
-from .single_stage import single_stage_forward
-from .two_stage import two_stage_extract_feat
+from .single_stage import forward_of_single_stage
+from .two_stage import extract_feat_of_two_stage
 
-__all__ = ['single_stage_forward', 'two_stage_extract_feat']
+__all__ = ['forward_of_single_stage', 'extract_feat_of_two_stage']

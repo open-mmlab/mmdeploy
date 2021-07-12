@@ -1,6 +1,11 @@
 import os
-import torch
+
+import onnx
 import pytest
+import torch
+
+from mmdeploy.apis.utils import attribute_to_dict
+from mmdeploy.core import mark
 
 output_file = 'test_mark.onnx'
 
@@ -17,15 +22,13 @@ def clear_work_dir_after_test():
 
 
 def test_mark():
-    from mmdeploy.utils import mark
-    from mmdeploy.apis.utils import attribute_to_dict
-    import onnx
 
     @mark('add', inputs=['a', 'b'], outputs='c')
     def add(x, y):
         return torch.add(x, y)
 
     class TestModel(torch.nn.Module):
+
         def __init__(self):
             super().__init__()
 
@@ -61,16 +64,14 @@ def test_mark():
 
 
 def test_extract():
-    from mmdeploy.utils import mark
     from mmdeploy.apis import extract_model
-    from mmdeploy.apis.utils import attribute_to_dict
-    import onnx
 
     @mark('add', outputs='z')
     def add(x, y):
         return torch.add(x, y)
 
     class TestModel(torch.nn.Module):
+
         def __init__(self):
             super().__init__()
 

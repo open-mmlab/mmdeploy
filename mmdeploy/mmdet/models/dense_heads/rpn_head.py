@@ -1,7 +1,8 @@
-from mmdeploy.utils import FUNCTION_REWRITERS, mark
+from mmdeploy.core import FUNCTION_REWRITER, mark
 
 
-@FUNCTION_REWRITERS.register_rewriter('mmdet.models.RPNHead.forward')
-@mark('rpn_forward', inputs='feats', outputs=['rpn_cls_score', 'rpn_bbox_pred'])
-def rpn_head_forward(rewriter, self, feats):
-    return rewriter.origin_func(self, feats)
+@FUNCTION_REWRITER.register_rewriter('mmdet.models.RPNHead.forward')
+@mark(
+    'rpn_forward', inputs='feats', outputs=['rpn_cls_score', 'rpn_bbox_pred'])
+def forward_of_rpn_head(ctx, self, feats):
+    return ctx.origin_func(self, feats)

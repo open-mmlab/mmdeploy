@@ -1,23 +1,24 @@
 import torch
 
-import mmdeploy
-from mmdeploy.utils import FUNCTION_REWRITERS, is_dynamic_shape
+from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.mmdet.core import multiclass_nms
+from mmdeploy.utils import is_dynamic_shape
 
 
-@FUNCTION_REWRITERS.register_rewriter(
+@FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.AnchorHead.get_bboxes')
-@FUNCTION_REWRITERS.register_rewriter(
+@FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.RetinaHead.get_bboxes')
-def anchor_head_get_bboxes(rewriter,
-                           self,
-                           cls_scores,
-                           bbox_preds,
-                           img_shape,
-                           with_nms=True,
-                           cfg=None,
-                           **kwargs):
+def get_bboxes_of_anchor_head(ctx,
+                              self,
+                              cls_scores,
+                              bbox_preds,
+                              img_shape,
+                              with_nms=True,
+                              cfg=None,
+                              **kwargs):
     assert len(cls_scores) == len(bbox_preds)
-    deploy_cfg = rewriter.cfg
+    deploy_cfg = ctx.cfg
     is_dynamic_flag = is_dynamic_shape(deploy_cfg)
     num_levels = len(cls_scores)
 
@@ -32,7 +33,7 @@ def anchor_head_get_bboxes(rewriter,
     cfg = self.test_cfg if cfg is None else cfg
     assert len(mlvl_cls_scores) == len(mlvl_bbox_preds) == len(mlvl_anchors)
     batch_size = mlvl_cls_scores[0].shape[0]
-    nms_pre = cfg.get('nms_pre', -1)
+    pre_topk = cfg.get('nms_pre', -1)
 
     # loop over features, decode boxes
     mlvl_bboxes = []
@@ -59,20 +60,20 @@ def anchor_head_get_bboxes(rewriter,
         backend = deploy_cfg['backend']
         # topk in tensorrt does not support shape<k
         # final level might meet the problem
+        # TODO: support dynamic shape feature with TensorRT for topK op
         if backend == 'tensorrt':
             enable_nms_pre = (level_id != num_levels - 1)
 
-        if nms_pre > 0 and enable_nms_pre:
+        if pre_topk > 0 and enable_nms_pre:
             # Get maximum scores for foreground classes.
             if self.use_sigmoid_cls:
                 max_scores, _ = scores.max(-1)
             else:
-
                 # remind that we set FG labels to [0, num_class-1]
                 # since mmdet v2.0
                 # BG cat_id: num_class
                 max_scores, _ = scores[..., :-1].max(-1)
-            _, topk_inds = max_scores.topk(nms_pre)
+            _, topk_inds = max_scores.topk(pre_topk)
             batch_inds = torch.arange(batch_size).view(-1,
                                                        1).expand_as(topk_inds)
             anchors = anchors[batch_inds, topk_inds, :]
@@ -93,15 +94,17 @@ def anchor_head_get_bboxes(rewriter,
     if not with_nms:
         return batch_mlvl_bboxes, batch_mlvl_scores
 
-    max_output_boxes_per_class = cfg.nms.get('max_output_boxes_per_class', 200)
-    iou_threshold = cfg.nms.get('iou_threshold', 0.5)
-    score_threshold = cfg.score_thr
-    nms_pre = cfg.get('deploy_nms_pre', -1)
-    return mmdeploy.mmdet.core.export.add_dummy_nms_for_onnx(
+    post_params = deploy_cfg.post_processing
+    max_output_boxes_per_class = post_params.max_output_boxes_per_class
+    iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)
+    score_threshold = cfg.get('score_thr', post_params.score_threshold)
+    pre_top_k = post_params.pre_top_k
+    keep_top_k = cfg.get('max_per_img', post_params.keep_top_k)
+    return multiclass_nms(
         batch_mlvl_bboxes,
         batch_mlvl_scores,
         max_output_boxes_per_class,
         iou_threshold=iou_threshold,
         score_threshold=score_threshold,
-        pre_top_k=nms_pre,
-        after_top_k=cfg.max_per_img)
+        pre_top_k=pre_top_k,
+        keep_top_k=keep_top_k)

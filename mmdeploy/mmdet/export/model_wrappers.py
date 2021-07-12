@@ -39,8 +39,8 @@ class DeployBaseDetector(BaseDetector):
     def async_simple_test(self, img, img_metas, **kwargs):
         raise NotImplementedError('This method is not implemented.')
 
-    def forward(self, img, img_metas, return_loss=True, **kwargs):
-        outputs = self.forward_test(img, img_metas, **kwargs)
+    def forward(self, img, img_metas, *args, **kwargs):
+        outputs = self.forward_test(img, img_metas, *args, **kwargs)
         batch_dets, batch_labels = outputs[:2]
         batch_masks = outputs[2] if len(outputs) == 3 else None
         batch_size = img[0].shape[0]
@@ -99,13 +99,8 @@ class ONNXRuntimeDetector(DeployBaseDetector):
         import onnxruntime as ort
 
         # get the custom op path
-        ort_custom_op_path = ''
-        try:
-            from mmcv.ops import get_onnxruntime_op_path
-            ort_custom_op_path = get_onnxruntime_op_path()
-        except (ImportError, ModuleNotFoundError):
-            warnings.warn('If input model has custom op from mmcv, \
-                you may have to build mmcv with ONNXRuntime from source.')
+        from mmdeploy.apis.onnxruntime import get_ops_path
+        ort_custom_op_path = get_ops_path()
         session_options = ort.SessionOptions()
         # register custom op for onnxruntime
         if osp.exists(ort_custom_op_path):
@@ -125,7 +120,7 @@ class ONNXRuntimeDetector(DeployBaseDetector):
         self.output_names = [_.name for _ in sess.get_outputs()]
         self.is_cuda_available = is_cuda_available
 
-    def forward_test(self, imgs, img_metas, **kwargs):
+    def forward_test(self, imgs, *args, **kwargs):
         input_data = imgs[0]
         # set io binding for inputs/outputs
         device_type = 'cuda' if self.is_cuda_available else 'cpu'
@@ -150,30 +145,27 @@ class ONNXRuntimeDetector(DeployBaseDetector):
 class TensorRTDetector(DeployBaseDetector):
     """Wrapper for detector's inference with TensorRT."""
 
-    def __init__(self, engine_file, class_names, device_id, output_names=None):
+    def __init__(self, engine_file, class_names, device_id):
         super(TensorRTDetector, self).__init__(class_names, device_id)
-        warnings.warn('`output_names` is deprecated and will be removed in '
-                      'future releases.')
-        from mmcv.tensorrt import TRTWraper, load_tensorrt_plugin
+        from mmdeploy.apis.tensorrt import TRTWrapper, load_tensorrt_plugin
         try:
             load_tensorrt_plugin()
         except (ImportError, ModuleNotFoundError):
-            warnings.warn('If input model has custom op from mmcv, \
-                you may have to build mmcv with TensorRT from source.')
+            warnings.warn('If input model has custom plugins, \
+                you may have to build backend ops with TensorRT')
 
         output_names = ['dets', 'labels']
-        model = TRTWraper(engine_file, ['input'], output_names)
-        with_masks = False
-        if len(model.engine) == 4:
-            model.output_names = output_names + ['masks']
-            with_masks = True
+        model = TRTWrapper(engine_file)
+        if model.output_names == 3:
+            output_names.append('masks')
         self.model = model
-        self.with_masks = with_masks
+        self.output_names = output_names
+        self.with_mask_output = len(output_names) == 3
 
-    def forward_test(self, imgs, img_metas, **kwargs):
+    def forward_test(self, imgs, *args, **kwargs):
         input_data = imgs[0].contiguous()
         with torch.cuda.device(self.device_id), torch.no_grad():
             outputs = self.model({'input': input_data})
-            outputs = [outputs[name] for name in self.model.output_names]
+            outputs = [outputs[name] for name in self.output_names]
         outputs = [out.detach().cpu().numpy() for out in outputs]
         return outputs

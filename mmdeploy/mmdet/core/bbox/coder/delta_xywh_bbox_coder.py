@@ -1,13 +1,13 @@
 import numpy as np
 import torch
 
-from mmdeploy.utils import FUNCTION_REWRITERS
+from mmdeploy.core import FUNCTION_REWRITER
 
 
-@FUNCTION_REWRITERS.register_rewriter(
+@FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.core.bbox.coder.delta_xywh_bbox_coder.delta2bbox',  # noqa
     backend='default')
-def delta2bbox(rewriter,
+def delta2bbox(ctx,
                rois,
                deltas,
                means=(0., 0., 0., 0.),
@@ -61,7 +61,7 @@ def delta2bbox(rewriter,
     y2 = gy + gh * 0.5
 
     if clip_border and max_shape is not None:
-        from mmdeploy.mmdet.core.export import clip_bboxes
+        from mmdeploy.mmdet.export import clip_bboxes
         x1, y1, x2, y2 = clip_bboxes(x1, y1, x2, y2, max_shape)
 
     bboxes = torch.stack([x1, y1, x2, y2], dim=-1).view(deltas.size())

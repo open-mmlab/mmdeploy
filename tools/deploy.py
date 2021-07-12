@@ -42,7 +42,7 @@ def main():
 
     # load deploy_cfg
     deploy_cfg = mmcv.Config.fromfile(deploy_cfg_path)
-    if not isinstance(deploy_cfg, mmcv.Config):
+    if not isinstance(deploy_cfg, (mmcv.Config, mmcv.ConfigDict)):
         raise TypeError('deploy_cfg must be a filename or Config object, '
                         f'but got {type(deploy_cfg)}')
 
@@ -73,9 +73,9 @@ def main():
 
     backend = deploy_cfg.get('backend', 'default')
     if backend == 'tensorrt':
-        assert hasattr(deploy_cfg, 'tensorrt_param')
-        tensorrt_param = deploy_cfg['tensorrt_param']
-        model_params = tensorrt_param.get('model_params', [])
+        assert hasattr(deploy_cfg, 'tensorrt_params')
+        tensorrt_params = deploy_cfg['tensorrt_params']
+        model_params = tensorrt_params.get('model_params', [])
         assert len(model_params) == len(onnx_pathes)
 
         logging.info('start onnx2tensorrt conversion.')

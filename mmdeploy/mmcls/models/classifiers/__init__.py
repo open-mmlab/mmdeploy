@@ -1,3 +1,3 @@
-from .base import BaseClassifier_forward_default_wrapper
+from .base import forward_of_base_classifier
 
-__all__ = ['BaseClassifier_forward_default_wrapper']
+__all__ = ['forward_of_base_classifier']

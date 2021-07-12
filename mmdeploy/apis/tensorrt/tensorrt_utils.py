@@ -138,8 +138,6 @@ class TRTWrapper(torch.nn.Module):
 
     Arguments:
         engine (tensorrt.ICudaEngine): TensorRT engine to wrap
-        input_names (list[str]): names of each inputs
-        output_names (list[str]): names of each outputs
 
     Note:
         If the engine is converted from onnx model. The input_names and

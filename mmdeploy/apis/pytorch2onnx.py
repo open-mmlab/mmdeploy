@@ -5,8 +5,8 @@ import mmcv
 import torch
 import torch.multiprocessing as mp
 
-from mmdeploy.utils import (RewriterContext, patch_model,
-                            register_extra_symbolics)
+from mmdeploy.core import (RewriterContext, patch_model,
+                           register_extra_symbolics)
 from .utils import create_input, init_model
 
 

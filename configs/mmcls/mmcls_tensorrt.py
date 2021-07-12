@@ -1,5 +1,5 @@
 _base_ = ['./mmcls_base.py', '../_base_/backends/tensorrt.py']
-tensorrt_param = dict(model_params=[
+tensorrt_params = dict(model_params=[
     dict(
         save_file='end2end.engine',
         opt_shape_dict=dict(

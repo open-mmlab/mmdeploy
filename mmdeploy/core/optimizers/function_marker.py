@@ -2,15 +2,21 @@ import inspect
 
 import torch
 
-from .function_rewriter import FUNCTION_REWRITERS
+from mmdeploy.core.rewriters.function_rewriter import FUNCTION_REWRITER
 
 
 class Mark(torch.autograd.Function):
 
     @staticmethod
     def symbolic(g, x, func, type, name, id, attrs):
-        n = g.op("mmcv::Mark", x, func_s=func, type_s=type,
-                 name_s=name, id_i=id, **attrs)
+        n = g.op(
+            'mmcv::Mark',
+            x,
+            func_s=func,
+            type_s=type,
+            name_s=name,
+            id_i=id,
+            **attrs)
         return n
 
     @staticmethod
@@ -18,8 +24,8 @@ class Mark(torch.autograd.Function):
         return x
 
 
-@FUNCTION_REWRITERS.register_rewriter(
-    'mmdeploy.utils.function_marker.Mark.symbolic')
+@FUNCTION_REWRITER.register_rewriter(
+    'mmdeploy.core.optimizers.function_marker.Mark.symbolic')
 def mark_symbolic(rewriter, g, x, *args):
     if rewriter.cfg.get('apply_marks', False):
         return rewriter.origin_func(g, x, *args)
@@ -76,7 +82,7 @@ def mark(func_name=None, inputs=None, outputs=None, **attrs):
 
         def g(*args, **kwargs):
             if torch.onnx.is_in_onnx_export():
-                # pad param_names to avoid 'rewriter' and 'self'
+                # pad param_names to avoid 'ctx' and 'self'
                 arg_names = handle_extra_params(param_names, args)
                 if isinstance(arg_names, (list, tuple)):
                     arg_type = type(args)
@@ -84,8 +90,8 @@ def mark(func_name=None, inputs=None, outputs=None, **attrs):
                         mark_tensors(arg, func, 'input', i, name, attrs)
                         for i, (name, arg) in enumerate(zip(arg_names, args)))
                 else:
-                    args = mark_tensors(
-                        args, func, 'input', 0, arg_names, attrs)
+                    args = mark_tensors(args, func, 'input', 0, arg_names,
+                                        attrs)
 
                 rets = f(*args, **kwargs)
 
@@ -93,10 +99,11 @@ def mark(func_name=None, inputs=None, outputs=None, **attrs):
                     ret_type = type(rets)
                     return ret_type(
                         mark_tensors(ret, func, 'output', i, name, attrs)
-                        for i, (name, ret) in enumerate(zip(output_names, rets)))
+                        for i, (name,
+                                ret) in enumerate(zip(output_names, rets)))
                 else:
-                    return mark_tensors(
-                        rets, func, 'output', 0, output_names, attrs)
+                    return mark_tensors(rets, func, 'output', 0, output_names,
+                                        attrs)
             else:
                 return f(*args, **kwargs)
 

@@ -1,52 +1,11 @@
 import torch
 
+import mmdeploy
+from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.mmcv.ops import DummyONNXNMSop, TRTBatchedNMSop
-from mmdeploy.utils import FUNCTION_REWRITERS
 
 
-def clip_bboxes(x1, y1, x2, y2, max_shape):
-    """Clip bboxes for onnx.
-
-    Since torch.clamp cannot have dynamic `min` and `max`, we scale the
-      boxes by 1/max_shape and clamp in the range [0, 1] if necessary.
-
-    Args:
-        x1 (Tensor): The x1 for bounding boxes.
-        y1 (Tensor): The y1 for bounding boxes.
-        x2 (Tensor): The x2 for bounding boxes.
-        y2 (Tensor): The y2 for bounding boxes.
-        max_shape (List or Tensor): The (H,W) of original image.
-    Returns:
-        tuple(Tensor): The clipped x1, y1, x2, y2.
-    """
-    assert len(max_shape) == 2, '`max_shape` should be [h, w]'
-    if isinstance(max_shape, torch.Tensor):
-        # scale by 1/max_shape
-        x1 = x1 / max_shape[1]
-        y1 = y1 / max_shape[0]
-        x2 = x2 / max_shape[1]
-        y2 = y2 / max_shape[0]
-
-        # clamp [0, 1]
-        x1 = torch.clamp(x1, 0, 1)
-        y1 = torch.clamp(y1, 0, 1)
-        x2 = torch.clamp(x2, 0, 1)
-        y2 = torch.clamp(y2, 0, 1)
-
-        # scale back
-        x1 = x1 * max_shape[1]
-        y1 = y1 * max_shape[0]
-        x2 = x2 * max_shape[1]
-        y2 = y2 * max_shape[0]
-    else:
-        x1 = torch.clamp(x1, 0, max_shape[1])
-        y1 = torch.clamp(y1, 0, max_shape[0])
-        x2 = torch.clamp(x2, 0, max_shape[1])
-        y2 = torch.clamp(y2, 0, max_shape[0])
-    return x1, y1, x2, y2
-
-
-def select_nms_index(scores, boxes, nms_index, batch_size, after_top_k=-1):
+def select_nms_index(scores, boxes, nms_index, batch_size, keep_top_k=-1):
     batch_inds, cls_inds = nms_index[:, 0], nms_index[:, 1]
     box_inds = nms_index[:, 2]
 
@@ -69,8 +28,8 @@ def select_nms_index(scores, boxes, nms_index, batch_size, after_top_k=-1):
         batched_labels.new_ones(1) * -1)
 
     # sort
-    if after_top_k > 0:
-        _, topk_inds = batched_dets[:, :, -1].topk(after_top_k, dim=1)
+    if keep_top_k > 0:
+        _, topk_inds = batched_dets[:, :, -1].topk(keep_top_k, dim=1)
     else:
         _, topk_inds = batched_dets[:, :, -1].sort(dim=1, descending=True)
     topk_batch_inds = torch.arange(
@@ -82,14 +41,14 @@ def select_nms_index(scores, boxes, nms_index, batch_size, after_top_k=-1):
     return batched_dets, batched_labels
 
 
-def add_dummy_nms_for_onnx(boxes,
-                           scores,
-                           max_output_boxes_per_class=1000,
-                           iou_threshold=0.5,
-                           score_threshold=0.05,
-                           pre_top_k=-1,
-                           after_top_k=-1,
-                           labels=None):
+def _multiclass_nms(boxes,
+                    scores,
+                    max_output_boxes_per_class=1000,
+                    iou_threshold=0.5,
+                    score_threshold=0.05,
+                    pre_top_k=-1,
+                    keep_top_k=-1,
+                    labels=None):
     """Create a dummy onnx::NonMaxSuppression op while exporting to ONNX.
 
     This function helps exporting to onnx with batch and multiclass NMS op.
@@ -108,7 +67,7 @@ def add_dummy_nms_for_onnx(boxes,
             Defaults to 0.05.
         pre_top_k (bool): Number of top K boxes to keep before nms.
             Defaults to -1.
-        after_top_k (int): Number of top K boxes to keep after nms.
+        keep_top_k (int): Number of top K boxes to keep after nms.
             Defaults to -1.
         labels (Tensor, optional): It not None, explicit labels would be used.
             Otherwise, labels would be automatically generated using
@@ -145,27 +104,32 @@ def add_dummy_nms_for_onnx(boxes,
         labels = labels.view(1, num_class, 1).expand_as(scores)
 
     dets, labels = select_nms_index(
-        scores, boxes, selected_indices, batch_size, after_top_k=after_top_k)
+        scores, boxes, selected_indices, batch_size, keep_top_k=keep_top_k)
     return dets, labels
 
 
-@FUNCTION_REWRITERS.register_rewriter(
-    func_name='mmdeploy.mmdet.core.export.add_dummy_nms_for_onnx',
+@FUNCTION_REWRITER.register_rewriter(
+    func_name='mmdeploy.mmdet.core.post_processing._multiclass_nms',
     backend='tensorrt')
-def add_dummy_nms_for_onnx_tensorrt(rewriter,
-                                    boxes,
-                                    scores,
-                                    max_output_boxes_per_class=1000,
-                                    iou_threshold=0.5,
-                                    score_threshold=0.05,
-                                    pre_top_k=-1,
-                                    after_top_k=-1,
-                                    labels=None):
+def multiclass_nms_static(ctx,
+                          boxes,
+                          scores,
+                          max_output_boxes_per_class=1000,
+                          iou_threshold=0.5,
+                          score_threshold=0.05,
+                          pre_top_k=-1,
+                          keep_top_k=-1,
+                          labels=None):
     boxes = boxes if boxes.dim() == 4 else boxes.unsqueeze(2)
-    after_top_k = max_output_boxes_per_class if after_top_k < 0 else min(
-        max_output_boxes_per_class, after_top_k)
+    keep_top_k = max_output_boxes_per_class if keep_top_k < 0 else min(
+        max_output_boxes_per_class, keep_top_k)
     dets, labels = TRTBatchedNMSop.apply(boxes, scores, int(scores.shape[-1]),
-                                         pre_top_k, after_top_k, iou_threshold,
+                                         pre_top_k, keep_top_k, iou_threshold,
                                          score_threshold, -1)
 
     return dets, labels
+
+
+def multiclass_nms(*args, **kwargs):
+    """Wrapper function for _multiclass_nms."""
+    return mmdeploy.mmdet.core.post_processing._multiclass_nms(*args, **kwargs)

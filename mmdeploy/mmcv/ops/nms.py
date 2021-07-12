@@ -1,7 +1,7 @@
 import torch
 from torch.onnx import symbolic_helper as sym_help
 
-from mmdeploy.utils import SYMBOLICS_REGISTER
+from mmdeploy.core import SYMBOLIC_REGISTER
 
 
 class DummyONNXNMSop(torch.autograd.Function):
@@ -35,9 +35,9 @@ class DummyONNXNMSop(torch.autograd.Function):
             outputs=1)
 
 
-@SYMBOLICS_REGISTER.register_symbolic(
+@SYMBOLIC_REGISTER.register_symbolic(
     'mmdeploy.mmcv.ops.DummyONNXNMSop', backend='default')
-def nms_default(symbolic_wrapper, g, boxes, scores, max_output_boxes_per_class,
+def nms_dynamic(ctx, g, boxes, scores, max_output_boxes_per_class,
                 iou_threshold, score_threshold):
     if not sym_help._is_value(max_output_boxes_per_class):
         max_output_boxes_per_class = g.op(
@@ -57,10 +57,10 @@ def nms_default(symbolic_wrapper, g, boxes, scores, max_output_boxes_per_class,
                 iou_threshold, score_threshold)
 
 
-@SYMBOLICS_REGISTER.register_symbolic(
+@SYMBOLIC_REGISTER.register_symbolic(
     'mmdeploy.mmcv.ops.DummyONNXNMSop', backend='tensorrt')
-def nms_tensorrt(symbolic_wrapper, g, boxes, scores,
-                 max_output_boxes_per_class, iou_threshold, score_threshold):
+def nms_static(ctx, g, boxes, scores, max_output_boxes_per_class,
+               iou_threshold, score_threshold):
     if sym_help._is_value(max_output_boxes_per_class):
         max_output_boxes_per_class = sym_help._maybe_get_const(
             max_output_boxes_per_class, 'i')

@@ -131,7 +131,14 @@ def test_torch2onnx_mmdet():
                     0: 'batch',
                     2: 'height',
                     3: 'width'
-                }})))
+                }}),
+            post_processing=dict(
+                score_threshold=0.05,
+                iou_threshold=0.5,
+                max_output_boxes_per_class=200,
+                pre_top_k=-1,
+                keep_top_k=100,
+                background_label_id=-1)))
 
     img_norm_cfg = dict(
         mean=[123.675, 116.28, 103.53],

@@ -1,5 +1,7 @@
-from .anchor_head import anchor_head_get_bboxes
-from .fsaf_head import fsaf_head_forward
-from .rpn_head import rpn_head_forward
+from .anchor_head import get_bboxes_of_anchor_head
+from .fsaf_head import forward_of_fsaf_head
+from .rpn_head import forward_of_rpn_head
 
-__all__ = ['anchor_head_get_bboxes', 'rpn_head_forward', 'fsaf_head_forward']
+__all__ = [
+    'get_bboxes_of_anchor_head', 'forward_of_rpn_head', 'forward_of_fsaf_head'
+]

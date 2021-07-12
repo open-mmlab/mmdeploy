@@ -9,3 +9,11 @@ pytorch2onnx = dict(
         3: 'width'
     }},
 )
+post_processing = dict(
+    score_threshold=0.05,
+    iou_threshold=0.5,
+    max_output_boxes_per_class=200,
+    pre_top_k=-1,
+    keep_top_k=100,
+    background_label_id=-1,
+)

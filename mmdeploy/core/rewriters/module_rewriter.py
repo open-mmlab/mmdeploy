@@ -35,9 +35,9 @@ class RewriteModuleRegistry(Registry):
         if module_type_cls not in self._module_eval_dict:
             self._module_eval_dict[module_type_cls] = dict()
 
-        assert (backend not in self._module_eval_dict[module_type_cls]
-                ), '{} with backend:{} has already been registed.'.format(
-                    module_type, backend)
+        assert (
+            backend not in self._module_eval_dict[module_type_cls]
+        ), f'{module_type} with backend:{backend} has already been registered.'
         self._module_eval_dict[module_type_cls][backend] = self.module_dict[
             module_name]
 
@@ -63,8 +63,8 @@ def build_rewrite_module(module: nn.Module, cfg: Dict, backend: str,
 
 
 # create register
-MODULE_REWRITERS = RewriteModuleRegistry(
-    'module_rewriters', build_func=build_rewrite_module, scope='.')
+MODULE_REWRITER = RewriteModuleRegistry(
+    'module_rewriter', build_func=build_rewrite_module, scope='.')
 
 
 def patch_model(model: nn.Module,
@@ -77,7 +77,7 @@ def patch_model(model: nn.Module,
         if recursive and hasattr(model, 'named_children'):
             for name, module in model.named_children():
                 model._modules[name] = _patch_impl(module, cfg, **kwargs)
-        return MODULE_REWRITERS.build(
+        return MODULE_REWRITER.build(
             module=model, cfg=cfg, backend=backend, **kwargs)
 
     return _patch_impl(deepcopy(model), cfg, **kwargs)

@@ -2,8 +2,6 @@ import importlib
 from typing import Any, Dict, Optional, Union
 
 import mmcv
-import numpy as np
-from mmcv.parallel import collate, scatter
 
 
 def module_exist(module_name: str):
@@ -22,22 +20,22 @@ def init_model(codebase: str,
             model = init_model(model_cfg, model_checkpoint, device,
                                cfg_options)
         else:
-            raise ImportError('Can not import module: {}'.format(codebase))
+            raise ImportError(f'Can not import module: {codebase}')
     elif codebase == 'mmdet':
         if module_exist(codebase):
             from mmdet.apis import init_detector
             model = init_detector(model_cfg, model_checkpoint, device,
                                   cfg_options)
         else:
-            raise ImportError('Can not import module: {}'.format(codebase))
+            raise ImportError(f'Can not import module: {codebase}')
     elif codebase == 'mmseg':
         if module_exist(codebase):
             from mmseg.apis import init_segmentor
             model = init_segmentor(model_cfg, model_checkpoint, device)
         else:
-            raise ImportError('Can not import module: {}'.format(codebase))
+            raise ImportError(f'Can not import module: {codebase}')
     else:
-        raise NotImplementedError('Unknown codebase type: {}'.format(codebase))
+        raise NotImplementedError(f'Unknown codebase type: {codebase}')
 
     return model
 
@@ -48,72 +46,25 @@ def create_input(codebase: str,
                  device: str = 'cuda:0'):
     if isinstance(model_cfg, str):
         model_cfg = mmcv.Config.fromfile(model_cfg)
-    elif not isinstance(model_cfg, mmcv.Config):
+    elif not isinstance(model_cfg, (mmcv.Config, mmcv.ConfigDict)):
         raise TypeError('config must be a filename or Config object, '
                         f'but got {type(model_cfg)}')
 
     cfg = model_cfg.copy()
     if codebase == 'mmcls':
-        from mmcls.datasets.pipelines import Compose
-        if isinstance(imgs, str):
-            if cfg.data.test.pipeline[0]['type'] != 'LoadImageFromFile':
-                cfg.data.test.pipeline.insert(0,
-                                              dict(type='LoadImageFromFile'))
-            data = dict(img_info=dict(filename=imgs), img_prefix=None)
+        if module_exist(codebase):
+            from mmdeploy.mmcls.export import create_input
+            return create_input(cfg, imgs, device)
         else:
-            if cfg.data.test.pipeline[0]['type'] == 'LoadImageFromFile':
-                cfg.data.test.pipeline.pop(0)
-            data = dict(img=imgs)
-        test_pipeline = Compose(cfg.data.test.pipeline)
-        data = test_pipeline(data)
-        data = collate([data], samples_per_gpu=1)
-        if device != 'cpu':
-            data = scatter(data, [device])[0]
-        return data, data['img']
-
+            raise ImportError(f'Can not import module: {codebase}')
     elif codebase == 'mmdet':
         if module_exist(codebase):
-            from mmdet.datasets import replace_ImageToTensor
-            from mmdet.datasets.pipelines import Compose
-
-            if not isinstance(imgs, (list, tuple)):
-                imgs = [imgs]
-
-            if isinstance(imgs[0], np.ndarray):
-                cfg = cfg.copy()
-                # set loading pipeline type
-                cfg.data.test.pipeline[0].type = 'LoadImageFromWebcam'
-
-            cfg.data.test.pipeline = replace_ImageToTensor(
-                cfg.data.test.pipeline)
-            test_pipeline = Compose(cfg.data.test.pipeline)
-            datas = []
-            for img in imgs:
-                # prepare data
-                if isinstance(img, np.ndarray):
-                    # directly add img
-                    data = dict(img=img)
-                else:
-                    # add information into dict
-                    data = dict(img_info=dict(filename=img), img_prefix=None)
-                # build the data pipeline
-                data = test_pipeline(data)
-                datas.append(data)
-
-            data = collate(datas, samples_per_gpu=len(imgs))
-
-            data['img_metas'] = [
-                img_metas.data[0] for img_metas in data['img_metas']
-            ]
-            data['img'] = [img.data[0] for img in data['img']]
-            if device != 'cpu':
-                data = scatter(data, [device])[0]
-
-            return data, data['img']
+            from mmdeploy.mmdet.export import create_input
+            return create_input(cfg, imgs, device)
         else:
-            raise ImportError('Can not import module: {}'.format(codebase))
+            raise ImportError(f'Can not import module: {codebase}')
     else:
-        raise NotImplementedError('Unknown codebase type: {}'.format(codebase))
+        raise NotImplementedError(f'Unknown codebase type: {codebase}')
 
 
 def attribute_to_dict(attr):
