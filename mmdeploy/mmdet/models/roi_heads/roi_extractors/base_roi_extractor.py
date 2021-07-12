@@ -1,6 +1,6 @@
 from torch.autograd import Function
 
-from mmdeploy.utils import FUNCTION_REWRITERS
+from mmdeploy.core.rewriters import FUNCTION_REWRITER
 
 
 class MultiLevelRoiAlign(Function):
@@ -48,7 +48,7 @@ class MultiLevelRoiAlign(Function):
             (num_proposals, channel, output_size[1], output_size[0]))
 
 
-@FUNCTION_REWRITERS.register_rewriter(
+@FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.roi_heads.SingleRoIExtractor.forward',
     backend='tensorrt')
 def SingleRoIExtractor_forward_static(rewriter,
