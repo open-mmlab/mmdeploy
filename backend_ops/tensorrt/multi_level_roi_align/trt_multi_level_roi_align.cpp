@@ -6,18 +6,19 @@
 #include <chrono>
 
 #include "trt_multi_level_roi_align_kernel.hpp"
+#include "trt_plugin_helper.hpp"
 #include "trt_serialize.hpp"
-
+namespace mmlab {
 namespace {
 static const char *PLUGIN_VERSION{"1"};
 static const char *PLUGIN_NAME{"MMCVMultiLevelRoiAlign"};
 }  // namespace
 
-MultiLevelRoiAlignPluginDynamic::MultiLevelRoiAlignPluginDynamic(
+TRTMultiLevelRoiAlign::TRTMultiLevelRoiAlign(
     const std::string &name, int alignedHeight, int alignedWidth, int sampleNum,
     const std::vector<float> &featmapStrides, float roiScaleFactor,
     int finestScale, bool aligned)
-    : mLayerName(name),
+    : TRTPluginBase(name),
       mAlignedHeight(alignedHeight),
       mAlignedWidth(alignedWidth),
       mSampleNum(sampleNum),
@@ -26,9 +27,9 @@ MultiLevelRoiAlignPluginDynamic::MultiLevelRoiAlignPluginDynamic(
       mFinestScale(finestScale),
       mAligned(aligned) {}
 
-MultiLevelRoiAlignPluginDynamic::MultiLevelRoiAlignPluginDynamic(
-    const std::string name, const void *data, size_t length)
-    : mLayerName(name) {
+TRTMultiLevelRoiAlign::TRTMultiLevelRoiAlign(const std::string name,
+                                             const void *data, size_t length)
+    : TRTPluginBase(name) {
   deserialize_value(&data, &length, &mAlignedHeight);
   deserialize_value(&data, &length, &mAlignedWidth);
   deserialize_value(&data, &length, &mSampleNum);
@@ -38,8 +39,8 @@ MultiLevelRoiAlignPluginDynamic::MultiLevelRoiAlignPluginDynamic(
   deserialize_value(&data, &length, &mFeatmapStrides);
 }
 
-nvinfer1::IPluginV2DynamicExt *MultiLevelRoiAlignPluginDynamic::clone() const {
-  MultiLevelRoiAlignPluginDynamic *plugin = new MultiLevelRoiAlignPluginDynamic(
+nvinfer1::IPluginV2DynamicExt *TRTMultiLevelRoiAlign::clone() const {
+  TRTMultiLevelRoiAlign *plugin = new TRTMultiLevelRoiAlign(
       mLayerName, mAlignedHeight, mAlignedWidth, mSampleNum, mFeatmapStrides,
       mRoiScaleFactor, mFinestScale, mAligned);
   plugin->setPluginNamespace(getPluginNamespace());
@@ -47,10 +48,10 @@ nvinfer1::IPluginV2DynamicExt *MultiLevelRoiAlignPluginDynamic::clone() const {
   return plugin;
 }
 
-nvinfer1::DimsExprs MultiLevelRoiAlignPluginDynamic::getOutputDimensions(
+nvinfer1::DimsExprs TRTMultiLevelRoiAlign::getOutputDimensions(
     int outputIndex, const nvinfer1::DimsExprs *inputs, int nbInputs,
     nvinfer1::IExprBuilder &exprBuilder) {
-  assert(nbInputs == mFeatmapStrides.size() + 1);
+  ASSERT(nbInputs == mFeatmapStrides.size() + 1);
 
   nvinfer1::DimsExprs ret;
   ret.nbDims = 4;
@@ -62,33 +63,32 @@ nvinfer1::DimsExprs MultiLevelRoiAlignPluginDynamic::getOutputDimensions(
   return ret;
 }
 
-bool MultiLevelRoiAlignPluginDynamic::supportsFormatCombination(
+bool TRTMultiLevelRoiAlign::supportsFormatCombination(
     int pos, const nvinfer1::PluginTensorDesc *inOut, int nbInputs,
     int nbOutputs) {
-  const auto *in = inOut;
-  const auto *out = inOut + nbInputs;
   return inOut[pos].type == nvinfer1::DataType::kFLOAT &&
          inOut[pos].format == nvinfer1::TensorFormat::kLINEAR;
 }
 
-void MultiLevelRoiAlignPluginDynamic::configurePlugin(
+void TRTMultiLevelRoiAlign::configurePlugin(
     const nvinfer1::DynamicPluginTensorDesc *inputs, int nbInputs,
     const nvinfer1::DynamicPluginTensorDesc *outputs, int nbOutputs) {
   // Validate input arguments
-  assert(nbOutputs == 1);
-  assert(nbInputs == mFeatmapStrides.size() + 1);
+  ASSERT(nbOutputs == 1);
+  ASSERT(nbInputs == mFeatmapStrides.size() + 1);
 }
 
-size_t MultiLevelRoiAlignPluginDynamic::getWorkspaceSize(
+size_t TRTMultiLevelRoiAlign::getWorkspaceSize(
     const nvinfer1::PluginTensorDesc *inputs, int nbInputs,
     const nvinfer1::PluginTensorDesc *outputs, int nbOutputs) const {
   return 0;
 }
 
-int MultiLevelRoiAlignPluginDynamic::enqueue(
-    const nvinfer1::PluginTensorDesc *inputDesc,
-    const nvinfer1::PluginTensorDesc *outputDesc, const void *const *inputs,
-    void *const *outputs, void *workSpace, cudaStream_t stream) {
+int TRTMultiLevelRoiAlign::enqueue(const nvinfer1::PluginTensorDesc *inputDesc,
+                                   const nvinfer1::PluginTensorDesc *outputDesc,
+                                   const void *const *inputs,
+                                   void *const *outputs, void *workSpace,
+                                   cudaStream_t stream) {
   int num_rois = inputDesc[0].dims.d[0];
   int batch_size = inputDesc[1].dims.d[0];
   int channels = inputDesc[1].dims.d[1];
@@ -117,34 +117,28 @@ int MultiLevelRoiAlignPluginDynamic::enqueue(
   return 0;
 }
 
-nvinfer1::DataType MultiLevelRoiAlignPluginDynamic::getOutputDataType(
+nvinfer1::DataType TRTMultiLevelRoiAlign::getOutputDataType(
     int index, const nvinfer1::DataType *inputTypes, int nbInputs) const {
   return nvinfer1::DataType::kFLOAT;
 }
 
 // IPluginV2 Methods
-const char *MultiLevelRoiAlignPluginDynamic::getPluginType() const {
-  return PLUGIN_NAME;
-}
+const char *TRTMultiLevelRoiAlign::getPluginType() const { return PLUGIN_NAME; }
 
-const char *MultiLevelRoiAlignPluginDynamic::getPluginVersion() const {
+const char *TRTMultiLevelRoiAlign::getPluginVersion() const {
   return PLUGIN_VERSION;
 }
 
-int MultiLevelRoiAlignPluginDynamic::getNbOutputs() const { return 1; }
+int TRTMultiLevelRoiAlign::getNbOutputs() const { return 1; }
 
-int MultiLevelRoiAlignPluginDynamic::initialize() { return 0; }
-
-void MultiLevelRoiAlignPluginDynamic::terminate() {}
-
-size_t MultiLevelRoiAlignPluginDynamic::getSerializationSize() const {
+size_t TRTMultiLevelRoiAlign::getSerializationSize() const {
   return serialized_size(mFeatmapStrides) + serialized_size(mAlignedHeight) +
          serialized_size(mAlignedWidth) + serialized_size(mSampleNum) +
          serialized_size(mRoiScaleFactor) + serialized_size(mFinestScale) +
          serialized_size(mAligned);
 }
 
-void MultiLevelRoiAlignPluginDynamic::serialize(void *buffer) const {
+void TRTMultiLevelRoiAlign::serialize(void *buffer) const {
   serialize_value(&buffer, mAlignedHeight);
   serialize_value(&buffer, mAlignedWidth);
   serialize_value(&buffer, mSampleNum);
@@ -154,22 +148,7 @@ void MultiLevelRoiAlignPluginDynamic::serialize(void *buffer) const {
   serialize_value(&buffer, mFeatmapStrides);
 }
 
-void MultiLevelRoiAlignPluginDynamic::destroy() {
-  // This gets called when the network containing plugin is destroyed
-  delete this;
-}
-
-void MultiLevelRoiAlignPluginDynamic::setPluginNamespace(
-    const char *libNamespace) {
-  mNamespace = libNamespace;
-}
-
-const char *MultiLevelRoiAlignPluginDynamic::getPluginNamespace() const {
-  return mNamespace.c_str();
-}
-
-MultiLevelRoiAlignPluginDynamicCreator::
-    MultiLevelRoiAlignPluginDynamicCreator() {
+TRTMultiLevelRoiAlignCreator::TRTMultiLevelRoiAlignCreator() {
   mPluginAttributes = std::vector<nvinfer1::PluginField>(
       {nvinfer1::PluginField("output_height"),
        nvinfer1::PluginField("output_width"),
@@ -182,20 +161,15 @@ MultiLevelRoiAlignPluginDynamicCreator::
   mFC.fields = mPluginAttributes.data();
 }
 
-const char *MultiLevelRoiAlignPluginDynamicCreator::getPluginName() const {
+const char *TRTMultiLevelRoiAlignCreator::getPluginName() const {
   return PLUGIN_NAME;
 }
 
-const char *MultiLevelRoiAlignPluginDynamicCreator::getPluginVersion() const {
+const char *TRTMultiLevelRoiAlignCreator::getPluginVersion() const {
   return PLUGIN_VERSION;
 }
 
-const nvinfer1::PluginFieldCollection *
-MultiLevelRoiAlignPluginDynamicCreator::getFieldNames() {
-  return &mFC;
-}
-
-nvinfer1::IPluginV2 *MultiLevelRoiAlignPluginDynamicCreator::createPlugin(
+nvinfer1::IPluginV2 *TRTMultiLevelRoiAlignCreator::createPlugin(
     const char *name, const nvinfer1::PluginFieldCollection *fc) {
   int alignedHeight = 7;
   int alignedWidth = 7;
@@ -231,30 +205,21 @@ nvinfer1::IPluginV2 *MultiLevelRoiAlignPluginDynamicCreator::createPlugin(
     }
   }
 
-  assert(featmapStrides.size() != 0);
+  ASSERT(featmapStrides.size() != 0);
 
-  MultiLevelRoiAlignPluginDynamic *plugin = new MultiLevelRoiAlignPluginDynamic(
+  TRTMultiLevelRoiAlign *plugin = new TRTMultiLevelRoiAlign(
       name, alignedHeight, alignedWidth, sampleNum, featmapStrides,
       roiScaleFactor, finestScale, aligned);
   plugin->setPluginNamespace(getPluginNamespace());
   return plugin;
 }
 
-nvinfer1::IPluginV2 *MultiLevelRoiAlignPluginDynamicCreator::deserializePlugin(
+nvinfer1::IPluginV2 *TRTMultiLevelRoiAlignCreator::deserializePlugin(
     const char *name, const void *serialData, size_t serialLength) {
-  auto plugin =
-      new MultiLevelRoiAlignPluginDynamic(name, serialData, serialLength);
+  auto plugin = new TRTMultiLevelRoiAlign(name, serialData, serialLength);
   plugin->setPluginNamespace(getPluginNamespace());
   return plugin;
 }
 
-void MultiLevelRoiAlignPluginDynamicCreator::setPluginNamespace(
-    const char *libNamespace) {
-  mNamespace = libNamespace;
-}
-
-const char *MultiLevelRoiAlignPluginDynamicCreator::getPluginNamespace() const {
-  return mNamespace.c_str();
-}
-
-REGISTER_TENSORRT_PLUGIN(MultiLevelRoiAlignPluginDynamicCreator);
+REGISTER_TENSORRT_PLUGIN(TRTMultiLevelRoiAlignCreator);
+}  // namespace mmlab

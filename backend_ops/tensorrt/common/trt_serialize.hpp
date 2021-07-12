@@ -5,12 +5,8 @@
 #define TRT_SERIALIZE_HPP
 #include <cassert>
 #include <cstring>
-#include <iostream>
 #include <type_traits>
 #include <vector>
-using std::cerr;
-using std::cout;
-using std::endl;
 
 template <typename T>
 inline void serialize_value(void** buffer, T const& value);

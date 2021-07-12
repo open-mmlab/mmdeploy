@@ -6,18 +6,17 @@
 #include <string>
 #include <vector>
 
-#include "trt_plugin_helper.hpp"
-
-class NonMaxSuppressionDynamic : public nvinfer1::IPluginV2DynamicExt {
+#include "trt_plugin_base.hpp"
+namespace mmlab {
+class TRTNMS : public TRTPluginBase {
  public:
-  NonMaxSuppressionDynamic(const std::string &name, int centerPointBox,
-                           int maxOutputBoxesPerClass, float iouThreshold,
-                           float scoreThreshold, int offset);
+  TRTNMS(const std::string &name, int centerPointBox,
+         int maxOutputBoxesPerClass, float iouThreshold, float scoreThreshold,
+         int offset);
 
-  NonMaxSuppressionDynamic(const std::string name, const void *data,
-                           size_t length);
+  TRTNMS(const std::string name, const void *data, size_t length);
 
-  NonMaxSuppressionDynamic() = delete;
+  TRTNMS() = delete;
 
   // IPluginV2DynamicExt Methods
   nvinfer1::IPluginV2DynamicExt *clone() const override;
@@ -49,44 +48,24 @@ class NonMaxSuppressionDynamic : public nvinfer1::IPluginV2DynamicExt {
   const char *getPluginType() const override;
   const char *getPluginVersion() const override;
   int getNbOutputs() const override;
-  int initialize() override;
-  void terminate() override;
   size_t getSerializationSize() const override;
   void serialize(void *buffer) const override;
-  void destroy() override;
-  void setPluginNamespace(const char *pluginNamespace) override;
-  const char *getPluginNamespace() const override;
 
  private:
-  const std::string mLayerName;
-  std::string mNamespace;
-
   int mCenterPointBox;
   int mMaxOutputBoxesPerClass;
   float mIouThreshold;
   float mScoreThreshold;
   int mOffset;
-
- protected:
-  // To prevent compiler warnings.
-  using nvinfer1::IPluginV2DynamicExt::canBroadcastInputAcrossBatch;
-  using nvinfer1::IPluginV2DynamicExt::configurePlugin;
-  using nvinfer1::IPluginV2DynamicExt::enqueue;
-  using nvinfer1::IPluginV2DynamicExt::getOutputDimensions;
-  using nvinfer1::IPluginV2DynamicExt::getWorkspaceSize;
-  using nvinfer1::IPluginV2DynamicExt::isOutputBroadcastAcrossBatch;
-  using nvinfer1::IPluginV2DynamicExt::supportsFormat;
 };
 
-class NonMaxSuppressionDynamicCreator : public nvinfer1::IPluginCreator {
+class TRTNMSCreator : public TRTPluginCreatorBase {
  public:
-  NonMaxSuppressionDynamicCreator();
+  TRTNMSCreator();
 
   const char *getPluginName() const override;
 
   const char *getPluginVersion() const override;
-
-  const nvinfer1::PluginFieldCollection *getFieldNames() override;
 
   nvinfer1::IPluginV2 *createPlugin(
       const char *name, const nvinfer1::PluginFieldCollection *fc) override;
@@ -94,14 +73,6 @@ class NonMaxSuppressionDynamicCreator : public nvinfer1::IPluginCreator {
   nvinfer1::IPluginV2 *deserializePlugin(const char *name,
                                          const void *serialData,
                                          size_t serialLength) override;
-
-  void setPluginNamespace(const char *pluginNamespace) override;
-
-  const char *getPluginNamespace() const override;
-
- private:
-  nvinfer1::PluginFieldCollection mFC;
-  std::vector<nvinfer1::PluginField> mPluginAttributes;
-  std::string mNamespace;
 };
+}  // namespace mmlab
 #endif  // TRT_NMS_HPP

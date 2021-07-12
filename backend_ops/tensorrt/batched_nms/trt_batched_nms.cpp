@@ -6,8 +6,10 @@
 #include <cstring>
 
 #include "kernel.h"
+#include "trt_batched_nms_kernel.hpp"
 #include "trt_serialize.hpp"
 
+namespace mmlab {
 using namespace nvinfer1;
 using nvinfer1::plugin::NMSParameters;
 
@@ -16,11 +18,12 @@ static const char* NMS_PLUGIN_VERSION{"1"};
 static const char* NMS_PLUGIN_NAME{"TRTBatchedNMS"};
 }  // namespace
 
-TRTBatchedNMSPluginDynamic::TRTBatchedNMSPluginDynamic(NMSParameters params)
-    : param(params) {}
+TRTBatchedNMS::TRTBatchedNMS(const std::string& name, NMSParameters params)
+    : TRTPluginBase(name), param(params) {}
 
-TRTBatchedNMSPluginDynamic::TRTBatchedNMSPluginDynamic(const void* data,
-                                                       size_t length) {
+TRTBatchedNMS::TRTBatchedNMS(const std::string& name, const void* data,
+                             size_t length)
+    : TRTPluginBase(name) {
   deserialize_value(&data, &length, &param);
   deserialize_value(&data, &length, &boxesSize);
   deserialize_value(&data, &length, &scoresSize);
@@ -28,13 +31,9 @@ TRTBatchedNMSPluginDynamic::TRTBatchedNMSPluginDynamic(const void* data,
   deserialize_value(&data, &length, &mClipBoxes);
 }
 
-int TRTBatchedNMSPluginDynamic::getNbOutputs() const { return 2; }
+int TRTBatchedNMS::getNbOutputs() const { return 2; }
 
-int TRTBatchedNMSPluginDynamic::initialize() { return STATUS_SUCCESS; }
-
-void TRTBatchedNMSPluginDynamic::terminate() {}
-
-nvinfer1::DimsExprs TRTBatchedNMSPluginDynamic::getOutputDimensions(
+nvinfer1::DimsExprs TRTBatchedNMS::getOutputDimensions(
     int outputIndex, const nvinfer1::DimsExprs* inputs, int nbInputs,
     nvinfer1::IExprBuilder& exprBuilder) {
   ASSERT(nbInputs == 2);
@@ -60,7 +59,7 @@ nvinfer1::DimsExprs TRTBatchedNMSPluginDynamic::getOutputDimensions(
   return ret;
 }
 
-size_t TRTBatchedNMSPluginDynamic::getWorkspaceSize(
+size_t TRTBatchedNMS::getWorkspaceSize(
     const nvinfer1::PluginTensorDesc* inputs, int nbInputs,
     const nvinfer1::PluginTensorDesc* outputs, int nbOutputs) const {
   size_t batch_size = inputs[0].dims.d[0];
@@ -75,10 +74,10 @@ size_t TRTBatchedNMSPluginDynamic::getWorkspaceSize(
       num_priors, topk, DataType::kFLOAT, DataType::kFLOAT);
 }
 
-int TRTBatchedNMSPluginDynamic::enqueue(
-    const nvinfer1::PluginTensorDesc* inputDesc,
-    const nvinfer1::PluginTensorDesc* outputDesc, const void* const* inputs,
-    void* const* outputs, void* workSpace, cudaStream_t stream) {
+int TRTBatchedNMS::enqueue(const nvinfer1::PluginTensorDesc* inputDesc,
+                           const nvinfer1::PluginTensorDesc* outputDesc,
+                           const void* const* inputs, void* const* outputs,
+                           void* workSpace, cudaStream_t stream) {
   const void* const locData = inputs[0];
   const void* const confData = inputs[1];
 
@@ -103,12 +102,12 @@ int TRTBatchedNMSPluginDynamic::enqueue(
   return 0;
 }
 
-size_t TRTBatchedNMSPluginDynamic::getSerializationSize() const {
+size_t TRTBatchedNMS::getSerializationSize() const {
   // NMSParameters, boxesSize,scoresSize,numPriors
   return sizeof(NMSParameters) + sizeof(int) * 3 + sizeof(bool);
 }
 
-void TRTBatchedNMSPluginDynamic::serialize(void* buffer) const {
+void TRTBatchedNMS::serialize(void* buffer) const {
   serialize_value(&buffer, param);
   serialize_value(&buffer, boxesSize);
   serialize_value(&buffer, scoresSize);
@@ -116,13 +115,13 @@ void TRTBatchedNMSPluginDynamic::serialize(void* buffer) const {
   serialize_value(&buffer, mClipBoxes);
 }
 
-void TRTBatchedNMSPluginDynamic::configurePlugin(
+void TRTBatchedNMS::configurePlugin(
     const nvinfer1::DynamicPluginTensorDesc* inputs, int nbInputs,
     const nvinfer1::DynamicPluginTensorDesc* outputs, int nbOutputs) {
   // Validate input arguments
 }
 
-bool TRTBatchedNMSPluginDynamic::supportsFormatCombination(
+bool TRTBatchedNMS::supportsFormatCombination(
     int pos, const nvinfer1::PluginTensorDesc* inOut, int nbInputs,
     int nbOutputs) {
   if (pos == 3) {
@@ -133,18 +132,14 @@ bool TRTBatchedNMSPluginDynamic::supportsFormatCombination(
          inOut[pos].format == nvinfer1::TensorFormat::kLINEAR;
 }
 
-const char* TRTBatchedNMSPluginDynamic::getPluginType() const {
-  return NMS_PLUGIN_NAME;
-}
+const char* TRTBatchedNMS::getPluginType() const { return NMS_PLUGIN_NAME; }
 
-const char* TRTBatchedNMSPluginDynamic::getPluginVersion() const {
+const char* TRTBatchedNMS::getPluginVersion() const {
   return NMS_PLUGIN_VERSION;
 }
 
-void TRTBatchedNMSPluginDynamic::destroy() { delete this; }
-
-IPluginV2DynamicExt* TRTBatchedNMSPluginDynamic::clone() const {
-  auto* plugin = new TRTBatchedNMSPluginDynamic(param);
+IPluginV2DynamicExt* TRTBatchedNMS::clone() const {
+  auto* plugin = new TRTBatchedNMS(mLayerName, param);
   plugin->boxesSize = boxesSize;
   plugin->scoresSize = scoresSize;
   plugin->numPriors = numPriors;
@@ -153,16 +148,7 @@ IPluginV2DynamicExt* TRTBatchedNMSPluginDynamic::clone() const {
   return plugin;
 }
 
-void TRTBatchedNMSPluginDynamic::setPluginNamespace(
-    const char* pluginNamespace) {
-  mNamespace = pluginNamespace;
-}
-
-const char* TRTBatchedNMSPluginDynamic::getPluginNamespace() const {
-  return mNamespace.c_str();
-}
-
-nvinfer1::DataType TRTBatchedNMSPluginDynamic::getOutputDataType(
+nvinfer1::DataType TRTBatchedNMS::getOutputDataType(
     int index, const nvinfer1::DataType* inputTypes, int nbInputs) const {
   ASSERT(index >= 0 && index < this->getNbOutputs());
   if (index == 1) {
@@ -171,10 +157,9 @@ nvinfer1::DataType TRTBatchedNMSPluginDynamic::getOutputDataType(
   return inputTypes[0];
 }
 
-void TRTBatchedNMSPluginDynamic::setClipParam(bool clip) { mClipBoxes = clip; }
+void TRTBatchedNMS::setClipParam(bool clip) { mClipBoxes = clip; }
 
-TRTBatchedNMSPluginDynamicCreator::TRTBatchedNMSPluginDynamicCreator()
-    : params{} {
+TRTBatchedNMSCreator::TRTBatchedNMSCreator() {
   mPluginAttributes.emplace_back(
       PluginField("background_label_id", nullptr, PluginFieldType::kINT32, 1));
   mPluginAttributes.emplace_back(
@@ -196,23 +181,19 @@ TRTBatchedNMSPluginDynamicCreator::TRTBatchedNMSPluginDynamicCreator()
   mFC.fields = mPluginAttributes.data();
 }
 
-const char* TRTBatchedNMSPluginDynamicCreator::getPluginName() const {
+const char* TRTBatchedNMSCreator::getPluginName() const {
   return NMS_PLUGIN_NAME;
 }
 
-const char* TRTBatchedNMSPluginDynamicCreator::getPluginVersion() const {
+const char* TRTBatchedNMSCreator::getPluginVersion() const {
   return NMS_PLUGIN_VERSION;
 }
 
-const PluginFieldCollection*
-TRTBatchedNMSPluginDynamicCreator::getFieldNames() {
-  return &mFC;
-}
-
-IPluginV2Ext* TRTBatchedNMSPluginDynamicCreator::createPlugin(
+IPluginV2Ext* TRTBatchedNMSCreator::createPlugin(
     const char* name, const PluginFieldCollection* fc) {
   const PluginField* fields = fc->fields;
   bool clipBoxes = true;
+  nvinfer1::plugin::NMSParameters params{};
 
   for (int i = 0; i < fc->nbFields; ++i) {
     const char* attrName = fields[i].name;
@@ -241,29 +222,21 @@ IPluginV2Ext* TRTBatchedNMSPluginDynamicCreator::createPlugin(
     }
   }
 
-  TRTBatchedNMSPluginDynamic* plugin = new TRTBatchedNMSPluginDynamic(params);
+  TRTBatchedNMS* plugin = new TRTBatchedNMS(name, params);
   plugin->setClipParam(clipBoxes);
   plugin->setPluginNamespace(mNamespace.c_str());
   return plugin;
 }
 
-IPluginV2Ext* TRTBatchedNMSPluginDynamicCreator::deserializePlugin(
-    const char* name, const void* serialData, size_t serialLength) {
+IPluginV2Ext* TRTBatchedNMSCreator::deserializePlugin(const char* name,
+                                                      const void* serialData,
+                                                      size_t serialLength) {
   // This object will be deleted when the network is destroyed, which will
   // call NMS::destroy()
-  TRTBatchedNMSPluginDynamic* plugin =
-      new TRTBatchedNMSPluginDynamic(serialData, serialLength);
+  TRTBatchedNMS* plugin = new TRTBatchedNMS(name, serialData, serialLength);
   plugin->setPluginNamespace(mNamespace.c_str());
   return plugin;
 }
 
-void TRTBatchedNMSPluginDynamicCreator::setPluginNamespace(
-    const char* libNamespace) {
-  mNamespace = libNamespace;
-}
-
-const char* TRTBatchedNMSPluginDynamicCreator::getPluginNamespace() const {
-  return mNamespace.c_str();
-}
-
-REGISTER_TENSORRT_PLUGIN(TRTBatchedNMSPluginDynamicCreator);
+REGISTER_TENSORRT_PLUGIN(TRTBatchedNMSCreator);
+}  // namespace mmlab

@@ -4,7 +4,6 @@
 #include <cmath>
 
 #include "common_cuda_helper.hpp"
-#include "trt_cuda_helper.cuh"
 #include "trt_multi_level_roi_align_kernel.hpp"
 #include "trt_plugin_helper.hpp"
 
@@ -18,53 +17,6 @@ struct FeatData {
   float spatial_scale[kMAX_FEATMAP_SIZE];
   int num_featmap;
 };
-
-template <typename scalar_t>
-__device__ scalar_t bilinear_interpolate(const scalar_t *bottom_data,
-                                         const int height, const int width,
-                                         scalar_t y, scalar_t x) {
-  // deal with cases that inverse elements are out of feature map boundary
-  if (y < -1.0 || y > height || x < -1.0 || x > width) {
-    return 0;
-  }
-
-  if (y <= 0) y = 0;
-  if (x <= 0) x = 0;
-
-  int y_low = (int)y;
-  int x_low = (int)x;
-  int y_high;
-  int x_high;
-
-  if (y_low >= height - 1) {
-    y_high = y_low = height - 1;
-    y = (scalar_t)y_low;
-  } else {
-    y_high = y_low + 1;
-  }
-
-  if (x_low >= width - 1) {
-    x_high = x_low = width - 1;
-    x = (scalar_t)x_low;
-  } else {
-    x_high = x_low + 1;
-  }
-
-  scalar_t ly = y - y_low;
-  scalar_t lx = x - x_low;
-  scalar_t hy = 1. - ly;
-  scalar_t hx = 1. - lx;
-  // do bilinear interpolation
-  scalar_t lt = bottom_data[y_low * width + x_low];
-  scalar_t rt = bottom_data[y_low * width + x_high];
-  scalar_t lb = bottom_data[y_high * width + x_low];
-  scalar_t rb = bottom_data[y_high * width + x_high];
-  scalar_t w1 = hy * hx, w2 = hy * lx, w3 = ly * hx, w4 = ly * lx;
-
-  scalar_t val = (w1 * lt + w2 * rt + w3 * lb + w4 * rb);
-
-  return val;
-}
 
 template <typename scalar_t>
 __device__ scalar_t roi_align_single(

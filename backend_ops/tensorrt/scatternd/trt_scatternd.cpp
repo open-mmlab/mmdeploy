@@ -8,32 +8,32 @@
 #include "trt_scatternd_kernel.hpp"
 #include "trt_serialize.hpp"
 
+namespace mmlab {
 namespace {
 static const char *PLUGIN_VERSION{"1"};
 static const char *PLUGIN_NAME{"ScatterND"};
 }  // namespace
 
-ONNXScatterNDDynamic::ONNXScatterNDDynamic(const std::string &name)
-    : mLayerName(name) {}
+TRTScatterND::TRTScatterND(const std::string &name) : TRTPluginBase(name) {}
 
-ONNXScatterNDDynamic::ONNXScatterNDDynamic(const std::string name,
-                                           const void *data, size_t length)
-    : mLayerName(name) {}
+TRTScatterND::TRTScatterND(const std::string name, const void *data,
+                           size_t length)
+    : TRTPluginBase(name) {}
 
-nvinfer1::IPluginV2DynamicExt *ONNXScatterNDDynamic::clone() const {
-  ONNXScatterNDDynamic *plugin = new ONNXScatterNDDynamic(mLayerName);
+nvinfer1::IPluginV2DynamicExt *TRTScatterND::clone() const {
+  TRTScatterND *plugin = new TRTScatterND(mLayerName);
   plugin->setPluginNamespace(getPluginNamespace());
 
   return plugin;
 }
 
-nvinfer1::DimsExprs ONNXScatterNDDynamic::getOutputDimensions(
+nvinfer1::DimsExprs TRTScatterND::getOutputDimensions(
     int outputIndex, const nvinfer1::DimsExprs *inputs, int nbInputs,
     nvinfer1::IExprBuilder &exprBuilder) {
   return inputs[0];
 }
 
-bool ONNXScatterNDDynamic::supportsFormatCombination(
+bool TRTScatterND::supportsFormatCombination(
     int pos, const nvinfer1::PluginTensorDesc *inOut, int nbInputs,
     int nbOutputs) {
   if (pos < nbInputs) {
@@ -68,21 +68,21 @@ bool ONNXScatterNDDynamic::supportsFormatCombination(
   return true;
 }
 
-void ONNXScatterNDDynamic::configurePlugin(
+void TRTScatterND::configurePlugin(
     const nvinfer1::DynamicPluginTensorDesc *inputs, int nbInputs,
     const nvinfer1::DynamicPluginTensorDesc *outputs, int nbOutputs) {}
 
-size_t ONNXScatterNDDynamic::getWorkspaceSize(
-    const nvinfer1::PluginTensorDesc *inputs, int nbInputs,
-    const nvinfer1::PluginTensorDesc *outputs, int nbOutputs) const {
+size_t TRTScatterND::getWorkspaceSize(const nvinfer1::PluginTensorDesc *inputs,
+                                      int nbInputs,
+                                      const nvinfer1::PluginTensorDesc *outputs,
+                                      int nbOutputs) const {
   return 0;
 }
 
-int ONNXScatterNDDynamic::enqueue(const nvinfer1::PluginTensorDesc *inputDesc,
-                                  const nvinfer1::PluginTensorDesc *outputDesc,
-                                  const void *const *inputs,
-                                  void *const *outputs, void *workSpace,
-                                  cudaStream_t stream) {
+int TRTScatterND::enqueue(const nvinfer1::PluginTensorDesc *inputDesc,
+                          const nvinfer1::PluginTensorDesc *outputDesc,
+                          const void *const *inputs, void *const *outputs,
+                          void *workSpace, cudaStream_t stream) {
   const int *dims = &(inputDesc[0].dims.d[0]);
   const int *indices_dims = &(inputDesc[1].dims.d[0]);
   int nbDims = inputDesc[0].dims.nbDims;
@@ -114,82 +114,47 @@ int ONNXScatterNDDynamic::enqueue(const nvinfer1::PluginTensorDesc *inputDesc,
   return 0;
 }
 
-nvinfer1::DataType ONNXScatterNDDynamic::getOutputDataType(
+nvinfer1::DataType TRTScatterND::getOutputDataType(
     int index, const nvinfer1::DataType *inputTypes, int nbInputs) const {
   return inputTypes[0];
 }
 
 // IPluginV2 Methods
-const char *ONNXScatterNDDynamic::getPluginType() const { return PLUGIN_NAME; }
+const char *TRTScatterND::getPluginType() const { return PLUGIN_NAME; }
 
-const char *ONNXScatterNDDynamic::getPluginVersion() const {
-  return PLUGIN_VERSION;
-}
+const char *TRTScatterND::getPluginVersion() const { return PLUGIN_VERSION; }
 
-int ONNXScatterNDDynamic::getNbOutputs() const { return 1; }
+int TRTScatterND::getNbOutputs() const { return 1; }
 
-int ONNXScatterNDDynamic::initialize() { return 0; }
+size_t TRTScatterND::getSerializationSize() const { return 0; }
 
-void ONNXScatterNDDynamic::terminate() {}
+void TRTScatterND::serialize(void *buffer) const {}
 
-size_t ONNXScatterNDDynamic::getSerializationSize() const { return 0; }
-
-void ONNXScatterNDDynamic::serialize(void *buffer) const {}
-
-void ONNXScatterNDDynamic::destroy() {
-  // This gets called when the network containing plugin is destroyed
-  delete this;
-}
-
-void ONNXScatterNDDynamic::setPluginNamespace(const char *libNamespace) {
-  mNamespace = libNamespace;
-}
-
-const char *ONNXScatterNDDynamic::getPluginNamespace() const {
-  return mNamespace.c_str();
-}
-
-////////////////////// creator /////////////////////////////
-
-ONNXScatterNDDynamicCreator::ONNXScatterNDDynamicCreator() {
+TRTScatterNDCreator::TRTScatterNDCreator() {
   mPluginAttributes.clear();
   mFC.nbFields = mPluginAttributes.size();
   mFC.fields = mPluginAttributes.data();
 }
 
-const char *ONNXScatterNDDynamicCreator::getPluginName() const {
-  return PLUGIN_NAME;
-}
+const char *TRTScatterNDCreator::getPluginName() const { return PLUGIN_NAME; }
 
-const char *ONNXScatterNDDynamicCreator::getPluginVersion() const {
+const char *TRTScatterNDCreator::getPluginVersion() const {
   return PLUGIN_VERSION;
 }
 
-const nvinfer1::PluginFieldCollection *
-ONNXScatterNDDynamicCreator::getFieldNames() {
-  return &mFC;
-}
-
-nvinfer1::IPluginV2 *ONNXScatterNDDynamicCreator::createPlugin(
+nvinfer1::IPluginV2 *TRTScatterNDCreator::createPlugin(
     const char *name, const nvinfer1::PluginFieldCollection *fc) {
-  ONNXScatterNDDynamic *plugin = new ONNXScatterNDDynamic(name);
+  TRTScatterND *plugin = new TRTScatterND(name);
   plugin->setPluginNamespace(getPluginNamespace());
   return plugin;
 }
 
-nvinfer1::IPluginV2 *ONNXScatterNDDynamicCreator::deserializePlugin(
+nvinfer1::IPluginV2 *TRTScatterNDCreator::deserializePlugin(
     const char *name, const void *serialData, size_t serialLength) {
-  auto plugin = new ONNXScatterNDDynamic(name, serialData, serialLength);
+  auto plugin = new TRTScatterND(name, serialData, serialLength);
   plugin->setPluginNamespace(getPluginNamespace());
   return plugin;
 }
 
-void ONNXScatterNDDynamicCreator::setPluginNamespace(const char *libNamespace) {
-  mNamespace = libNamespace;
-}
-
-const char *ONNXScatterNDDynamicCreator::getPluginNamespace() const {
-  return mNamespace.c_str();
-}
-
-REGISTER_TENSORRT_PLUGIN(ONNXScatterNDDynamicCreator);
+REGISTER_TENSORRT_PLUGIN(TRTScatterNDCreator);
+}  // namespace mmlab

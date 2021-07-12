@@ -1,7 +1,6 @@
 // modify from
 // https://github.com/NVIDIA/TensorRT/tree/master/plugin/batchedNMSPlugin
-#include "cuda_runtime_api.h"
-#include "kernel.h"
+#include "trt_batched_nms_kernel.hpp"
 
 pluginStatus_t nmsInference(
     cudaStream_t stream, const int N, const int perBatchBoxesSize,

@@ -6,18 +6,16 @@
 #include <string>
 #include <vector>
 
-#include "trt_plugin_helper.hpp"
-
-class RoIAlignPluginDynamic : public nvinfer1::IPluginV2DynamicExt {
+#include "trt_plugin_base.hpp"
+namespace mmlab {
+class TRTRoIAlign : public TRTPluginBase {
  public:
-  RoIAlignPluginDynamic(const std::string &name, int outWidth, int outHeight,
-                        float spatialScale, int sampleRatio, int poolMode,
-                        bool aligned);
+  TRTRoIAlign(const std::string &name, int outWidth, int outHeight,
+              float spatialScale, int sampleRatio, int poolMode, bool aligned);
 
-  RoIAlignPluginDynamic(const std::string name, const void *data,
-                        size_t length);
+  TRTRoIAlign(const std::string name, const void *data, size_t length);
 
-  RoIAlignPluginDynamic() = delete;
+  TRTRoIAlign() = delete;
 
   // IPluginV2DynamicExt Methods
   nvinfer1::IPluginV2DynamicExt *clone() const override;
@@ -49,60 +47,31 @@ class RoIAlignPluginDynamic : public nvinfer1::IPluginV2DynamicExt {
   const char *getPluginType() const override;
   const char *getPluginVersion() const override;
   int getNbOutputs() const override;
-  int initialize() override;
-  void terminate() override;
   size_t getSerializationSize() const override;
   void serialize(void *buffer) const override;
-  void destroy() override;
-  void setPluginNamespace(const char *pluginNamespace) override;
-  const char *getPluginNamespace() const override;
 
  private:
-  const std::string mLayerName;
-  std::string mNamespace;
-
   int mOutWidth;
   int mOutHeight;
   float mSpatialScale;
   int mSampleRatio;
   int mPoolMode;  // 1:avg 0:max
   bool mAligned;
-
- protected:
-  // To prevent compiler warnings.
-  using nvinfer1::IPluginV2DynamicExt::canBroadcastInputAcrossBatch;
-  using nvinfer1::IPluginV2DynamicExt::configurePlugin;
-  using nvinfer1::IPluginV2DynamicExt::enqueue;
-  using nvinfer1::IPluginV2DynamicExt::getOutputDimensions;
-  using nvinfer1::IPluginV2DynamicExt::getWorkspaceSize;
-  using nvinfer1::IPluginV2DynamicExt::isOutputBroadcastAcrossBatch;
-  using nvinfer1::IPluginV2DynamicExt::supportsFormat;
 };
 
-class RoIAlignPluginDynamicCreator : public nvinfer1::IPluginCreator {
+class TRTRoIAlignCreator : public TRTPluginCreatorBase {
  public:
-  RoIAlignPluginDynamicCreator();
+  TRTRoIAlignCreator();
 
   const char *getPluginName() const override;
 
   const char *getPluginVersion() const override;
-
-  const nvinfer1::PluginFieldCollection *getFieldNames() override;
-
   nvinfer1::IPluginV2 *createPlugin(
       const char *name, const nvinfer1::PluginFieldCollection *fc) override;
 
   nvinfer1::IPluginV2 *deserializePlugin(const char *name,
                                          const void *serialData,
                                          size_t serialLength) override;
-
-  void setPluginNamespace(const char *pluginNamespace) override;
-
-  const char *getPluginNamespace() const override;
-
- private:
-  nvinfer1::PluginFieldCollection mFC;
-  std::vector<nvinfer1::PluginField> mPluginAttributes;
-  std::string mNamespace;
 };
+}  // namespace mmlab
 #endif  // TRT_ROI_ALIGN_HPP

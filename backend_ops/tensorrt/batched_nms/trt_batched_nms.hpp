@@ -5,25 +5,21 @@
 #include <string>
 #include <vector>
 
-#include "trt_plugin_helper.hpp"
-
-class TRTBatchedNMSPluginDynamic : public nvinfer1::IPluginV2DynamicExt {
+#include "trt_plugin_base.hpp"
+namespace mmlab {
+class TRTBatchedNMS : public TRTPluginBase {
  public:
-  TRTBatchedNMSPluginDynamic(nvinfer1::plugin::NMSParameters param);
+  TRTBatchedNMS(const std::string& name, nvinfer1::plugin::NMSParameters param);
 
-  TRTBatchedNMSPluginDynamic(const void* data, size_t length);
+  TRTBatchedNMS(const std::string& name, const void* data, size_t length);
 
-  ~TRTBatchedNMSPluginDynamic() override = default;
+  ~TRTBatchedNMS() override = default;
 
   int getNbOutputs() const override;
 
   nvinfer1::DimsExprs getOutputDimensions(
       int outputIndex, const nvinfer1::DimsExprs* inputs, int nbInputs,
       nvinfer1::IExprBuilder& exprBuilder) override;
-
-  int initialize() override;
-
-  void terminate() override;
 
   size_t getWorkspaceSize(const nvinfer1::PluginTensorDesc* inputs,
                           int nbInputs,
@@ -52,17 +48,11 @@ class TRTBatchedNMSPluginDynamic : public nvinfer1::IPluginV2DynamicExt {
 
   const char* getPluginVersion() const override;
 
-  void destroy() override;
-
   nvinfer1::IPluginV2DynamicExt* clone() const override;
 
   nvinfer1::DataType getOutputDataType(int index,
                                        const nvinfer1::DataType* inputType,
                                        int nbInputs) const override;
-
-  void setPluginNamespace(const char* libNamespace) override;
-
-  const char* getPluginNamespace() const override;
 
   void setClipParam(bool clip);
 
@@ -71,31 +61,18 @@ class TRTBatchedNMSPluginDynamic : public nvinfer1::IPluginV2DynamicExt {
   int boxesSize{};
   int scoresSize{};
   int numPriors{};
-  std::string mNamespace;
   bool mClipBoxes{};
-
- protected:
-  // To prevent compiler warnings.
-  using nvinfer1::IPluginV2DynamicExt::canBroadcastInputAcrossBatch;
-  using nvinfer1::IPluginV2DynamicExt::configurePlugin;
-  using nvinfer1::IPluginV2DynamicExt::enqueue;
-  using nvinfer1::IPluginV2DynamicExt::getOutputDimensions;
-  using nvinfer1::IPluginV2DynamicExt::getWorkspaceSize;
-  using nvinfer1::IPluginV2DynamicExt::isOutputBroadcastAcrossBatch;
-  using nvinfer1::IPluginV2DynamicExt::supportsFormat;
 };
 
-class TRTBatchedNMSPluginDynamicCreator : public nvinfer1::IPluginCreator {
+class TRTBatchedNMSCreator : public TRTPluginCreatorBase {
  public:
-  TRTBatchedNMSPluginDynamicCreator();
+  TRTBatchedNMSCreator();
 
-  ~TRTBatchedNMSPluginDynamicCreator() override = default;
+  ~TRTBatchedNMSCreator() override = default;
 
   const char* getPluginName() const override;
 
   const char* getPluginVersion() const override;
-
-  const nvinfer1::PluginFieldCollection* getFieldNames() override;
 
   nvinfer1::IPluginV2Ext* createPlugin(
       const char* name, const nvinfer1::PluginFieldCollection* fc) override;
@@ -103,16 +80,6 @@ class TRTBatchedNMSPluginDynamicCreator : public nvinfer1::IPluginCreator {
   nvinfer1::IPluginV2Ext* deserializePlugin(const char* name,
                                             const void* serialData,
                                             size_t serialLength) override;
-
-  void setPluginNamespace(const char* libNamespace) override;
-
-  const char* getPluginNamespace() const override;
-
- private:
-  nvinfer1::PluginFieldCollection mFC;
-  nvinfer1::plugin::NMSParameters params;
-  std::vector<nvinfer1::PluginField> mPluginAttributes;
-  std::string mNamespace;
 };
-
+}  // namespace mmlab
 #endif  // TRT_BATCHED_NMS_PLUGIN_CUSTOM_H

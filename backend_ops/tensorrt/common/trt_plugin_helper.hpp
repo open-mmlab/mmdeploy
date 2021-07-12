@@ -1,5 +1,6 @@
 #ifndef TRT_PLUGIN_HELPER_HPP
 #define TRT_PLUGIN_HELPER_HPP
+#include <iostream>
 #include <stdexcept>
 
 #include "NvInferPlugin.h"
