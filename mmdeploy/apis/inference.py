@@ -1,8 +1,9 @@
 from typing import Optional
 
+import torch.multiprocessing as mp
+
 from .utils import (check_model_outputs, create_input, get_classes_from_config,
                     init_backend_model, init_model)
-import torch.multiprocessing as mp
 
 
 def inference_model(model_cfg,

@@ -1,6 +1,7 @@
 import argparse
-import os.path as osp
 import logging
+import os.path as osp
+
 import onnx
 import onnx.helper
 

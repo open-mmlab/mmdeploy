@@ -6,8 +6,7 @@ import mmcv
 import torch.multiprocessing as mp
 from torch.multiprocessing import Process, set_start_method
 
-from mmdeploy.apis import torch2onnx
-from mmdeploy.apis import inference_model
+from mmdeploy.apis import inference_model, torch2onnx
 
 
 def parse_args():
