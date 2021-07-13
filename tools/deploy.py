@@ -7,6 +7,7 @@ import torch.multiprocessing as mp
 from torch.multiprocessing import Process, set_start_method
 
 from mmdeploy.apis import torch2onnx
+from mmdeploy.apis import inference_model
 
 
 def parse_args():
@@ -24,9 +25,25 @@ def parse_args():
         help='set log level',
         default='INFO',
         choices=list(logging._nameToLevel.keys()))
+    parser.add_argument(
+        '--show', action='store_true', help='Show detection outputs')
     args = parser.parse_args()
 
     return args
+
+
+def create_process(name, target, args, kwargs, ret_value=None):
+    logging.info(f'start {name}.')
+    process = Process(target=target, args=args, kwargs=kwargs)
+    process.start()
+    process.join()
+
+    if ret_value is not None:
+        if ret_value.value != 0:
+            logging.error(f'{name} failed.')
+            exit()
+        else:
+            logging.info(f'{name} success.')
 
 
 def main():
@@ -52,51 +69,72 @@ def main():
     ret_value = mp.Value('d', 0, lock=False)
 
     # convert onnx
-    logging.info('start torch2onnx conversion.')
     onnx_save_file = deploy_cfg['pytorch2onnx']['save_file']
-    process = Process(
+    create_process(
+        'torch2onnx',
         target=torch2onnx,
         args=(args.img, args.work_dir, onnx_save_file, deploy_cfg_path,
               model_cfg_path, checkpoint_path),
-        kwargs=dict(device=args.device, ret_value=ret_value))
-    process.start()
-    process.join()
-
-    if ret_value.value != 0:
-        logging.error('torch2onnx failed.')
-        exit()
-    else:
-        logging.info('torch2onnx success.')
+        kwargs=dict(device=args.device, ret_value=ret_value),
+        ret_value=ret_value)
 
     # convert backend
-    onnx_pathes = [osp.join(args.work_dir, onnx_save_file)]
+    onnx_files = [osp.join(args.work_dir, onnx_save_file)]
+    backend_files = onnx_files
 
     backend = deploy_cfg.get('backend', 'default')
     if backend == 'tensorrt':
         assert hasattr(deploy_cfg, 'tensorrt_params')
         tensorrt_params = deploy_cfg['tensorrt_params']
         model_params = tensorrt_params.get('model_params', [])
-        assert len(model_params) == len(onnx_pathes)
+        assert len(model_params) == len(onnx_files)
 
-        logging.info('start onnx2tensorrt conversion.')
         from mmdeploy.apis.tensorrt import onnx2tensorrt
+        backend_files = []
         for model_id, model_param, onnx_path in zip(
-                range(len(onnx_pathes)), model_params, onnx_pathes):
+                range(len(onnx_files)), model_params, onnx_files):
             onnx_name = osp.splitext(osp.split(onnx_path)[1])[0]
             save_file = model_param.get('save_file', onnx_name + '.engine')
-            process = Process(
+
+            create_process(
+                f'onnx2tensorrt of {onnx_path}',
                 target=onnx2tensorrt,
                 args=(args.work_dir, save_file, model_id, deploy_cfg_path,
                       onnx_path),
-                kwargs=dict(device=args.device, ret_value=ret_value))
-            process.start()
-            process.join()
+                kwargs=dict(device=args.device, ret_value=ret_value),
+                ret_value=ret_value)
 
-            if ret_value.value != 0:
-                logging.error('onnx2tensorrt failed.')
-                exit()
-            else:
-                logging.info('onnx2tensorrt success.')
+            backend_files.append(osp.join(args.work_dir, save_file))
+
+    # check model outputs by visualization
+    codebase = deploy_cfg['codebase']
+
+    # visualize tensorrt model
+    create_process(
+        f'visualize {backend} model',
+        target=inference_model,
+        args=(model_cfg_path, backend_files, args.img),
+        kwargs=dict(
+            codebase=codebase,
+            backend=backend,
+            device=args.device,
+            output_file=f'output_{backend}.jpg',
+            show_result=args.show,
+            ret_value=ret_value))
+
+    # visualize pytorch model
+    create_process(
+        'visualize pytorch model',
+        target=inference_model,
+        args=(model_cfg_path, [checkpoint_path], args.img),
+        kwargs=dict(
+            codebase=codebase,
+            backend='pytorch',
+            device=args.device,
+            output_file='output_pytorch.jpg',
+            show_result=args.show,
+            ret_value=ret_value),
+        ret_value=ret_value)
 
     logging.info('All process success.')
 
