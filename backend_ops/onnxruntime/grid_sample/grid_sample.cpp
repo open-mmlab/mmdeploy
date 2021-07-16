@@ -1,6 +1,7 @@
+#include "grid_sample.h"
+
 #include <cmath>
 
-#include "grid_sample.h"
 #include "ort_mmcv_utils.h"
 
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))

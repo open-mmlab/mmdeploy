@@ -52,6 +52,7 @@ set(PLUGIN_LISTS scatternd
                  nms
                  roi_align
                  batched_nms
+                 instance_norm
                  multi_level_roi_align)
 
 foreach(PLUGIN_ITER ${PLUGIN_LISTS})

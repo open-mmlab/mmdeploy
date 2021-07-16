@@ -1,13 +1,13 @@
 import torch
 
-from mmdeploy.core import FUNCTION_REWRITER, mark
+from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.mmdet.core import distance2bbox, multiclass_nms
 from mmdeploy.utils import is_dynamic_shape
 
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.FCOSHead.get_bboxes')
-def get_bboxes_of_fcos_head(rewriter,
+def get_bboxes_of_fcos_head(ctx,
                             self,
                             cls_scores,
                             bbox_preds,
@@ -17,12 +17,12 @@ def get_bboxes_of_fcos_head(rewriter,
                             cfg=None,
                             **kwargs):
     assert len(cls_scores) == len(bbox_preds)
-    deploy_cfg = rewriter.cfg
+    deploy_cfg = ctx.cfg
     is_dynamic_flag = is_dynamic_shape(deploy_cfg)
     num_levels = len(cls_scores)
 
     featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
-    mlvl_points = self.get_points(featmap_sizes, bbox_preds[0].dtype,
+    points_list = self.get_points(featmap_sizes, bbox_preds[0].dtype,
                                   bbox_preds[0].device)
 
     cls_score_list = [cls_scores[i].detach() for i in range(num_levels)]
@@ -32,8 +32,7 @@ def get_bboxes_of_fcos_head(rewriter,
     ]
 
     cfg = self.test_cfg if cfg is None else cfg
-    assert len(cls_scores) == len(bbox_preds) == len(mlvl_points)
-    device = cls_scores[0].device
+    assert len(cls_scores) == len(bbox_preds) == len(points_list)
     batch_size = cls_scores[0].shape[0]
     pre_topk = cfg.get('nms_pre', -1)
 
@@ -41,15 +40,16 @@ def get_bboxes_of_fcos_head(rewriter,
     mlvl_bboxes = []
     mlvl_scores = []
     mlvl_centerness = []
+    mlvl_points = []
     for level_id, cls_score, bbox_pred, centerness, points in zip(
             range(num_levels), cls_score_list, bbox_pred_list,
-            centerness_pred_list, mlvl_points):
+            centerness_pred_list, points_list):
         assert cls_score.size()[-2:] == bbox_pred.size()[-2:]
         scores = cls_score.permute(0, 2, 3,
                                    1).reshape(batch_size, -1,
                                               self.cls_out_channels).sigmoid()
-        centerness = centerness.permute(0, 2, 3, 1).reshape(batch_size,
-                                                            -1).sigmoid()
+        centerness = centerness.permute(0, 2, 3, 1).reshape(batch_size, -1,
+                                                            1).sigmoid()
 
         bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, 4)
 
@@ -67,47 +67,37 @@ def get_bboxes_of_fcos_head(rewriter,
             enable_nms_pre = (level_id != num_levels - 1)
 
         if pre_topk > 0 and enable_nms_pre:
-            max_scores, _ = (scores * centerness[..., None]).max(-1)
+            max_scores, _ = (scores * centerness).max(-1)
             _, topk_inds = max_scores.topk(pre_topk)
-            batch_inds = torch.arange(batch_size).view(
-                -1, 1).expand_as(topk_inds).long().to(device)
-            # Avoid onnx2tensorrt issue in https://github.com/NVIDIA/TensorRT/issues/1134 # noqa: E501
+            batch_inds = torch.arange(batch_size).view(-1,
+                                                       1).expand_as(topk_inds)
 
-            transformed_inds = bbox_pred.shape[1] * batch_inds + topk_inds
-            points = points.reshape(-1, 2)[transformed_inds, :].reshape(
-                batch_size, -1, 2)
-            bbox_pred = bbox_pred.reshape(-1, 4)[transformed_inds, :].reshape(
-                batch_size, -1, 4)
-            scores = scores.reshape(
-                -1, self.num_classes)[transformed_inds, :].reshape(
-                    batch_size, -1, self.num_classes)
-            centerness = centerness.reshape(-1, 1)[transformed_inds].reshape(
-                batch_size, -1)
+            points = points[batch_inds, topk_inds, :]
+            bbox_pred = bbox_pred[batch_inds, topk_inds, :]
+            scores = scores[batch_inds, topk_inds, :]
+            centerness = centerness[batch_inds, topk_inds, :]
 
-        bboxes = distance2bbox(points, bbox_pred, max_shape=img_shape)
-        mlvl_bboxes.append(bboxes)
+        mlvl_points.append(points)
+        mlvl_bboxes.append(bbox_pred)
         mlvl_scores.append(scores)
         mlvl_centerness.append(centerness)
 
+    batch_mlvl_points = torch.cat(mlvl_points, dim=1)
     batch_mlvl_bboxes = torch.cat(mlvl_bboxes, dim=1)
     batch_mlvl_scores = torch.cat(mlvl_scores, dim=1)
     batch_mlvl_centerness = torch.cat(mlvl_centerness, dim=1)
+    batch_mlvl_bboxes = distance2bbox(
+        batch_mlvl_points, batch_mlvl_bboxes, max_shape=img_shape)
 
     if not with_nms:
         return batch_mlvl_bboxes, batch_mlvl_scores, batch_mlvl_centerness
 
-    batch_mlvl_scores = batch_mlvl_scores * (
-        batch_mlvl_centerness.unsqueeze(2))
-    max_output_boxes_per_class = cfg.nms.get('max_output_boxes_per_class', 200)
-    iou_threshold = cfg.nms.get('iou_threshold', 0.5)
-    score_threshold = cfg.score_thr
+    batch_mlvl_scores = batch_mlvl_scores * (batch_mlvl_centerness)
+    post_params = deploy_cfg.post_processing
+    max_output_boxes_per_class = post_params.max_output_boxes_per_class
+    iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)
+    score_threshold = cfg.get('score_thr', post_params.score_threshold)
     nms_pre = cfg.get('deploy_nms_pre', -1)
     return multiclass_nms(batch_mlvl_bboxes, batch_mlvl_scores,
                           max_output_boxes_per_class, iou_threshold,
                           score_threshold, nms_pre, cfg.max_per_img)
-
-
-@FUNCTION_REWRITER.register_rewriter('mmdet.models.FCOSHead.forward')
-@mark('rpn_forward', outputs=['cls_score', 'bbox_pred', 'centerness'])
-def forward_of_fcos_head(rewriter, *args):
-    return rewriter.origin_func(*args)
