@@ -12,7 +12,7 @@ def get_bboxes_of_fcos_head(ctx,
                             cls_scores,
                             bbox_preds,
                             centernesses,
-                            img_shape,
+                            img_metas,
                             with_nms=True,
                             cfg=None,
                             **kwargs):
@@ -87,7 +87,7 @@ def get_bboxes_of_fcos_head(ctx,
     batch_mlvl_scores = torch.cat(mlvl_scores, dim=1)
     batch_mlvl_centerness = torch.cat(mlvl_centerness, dim=1)
     batch_mlvl_bboxes = distance2bbox(
-        batch_mlvl_points, batch_mlvl_bboxes, max_shape=img_shape)
+        batch_mlvl_points, batch_mlvl_bboxes, max_shape=img_metas['img_shape'])
 
     if not with_nms:
         return batch_mlvl_bboxes, batch_mlvl_scores, batch_mlvl_centerness

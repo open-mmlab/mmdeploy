@@ -114,10 +114,7 @@ def init_backend_model(model_files: Sequence[str],
         raise NotImplementedError(f'Unknown codebase type: {codebase}')
 
 
-def get_classes_from_config(
-    codebase: str,
-    model_cfg: Union[str, mmcv.Config],
-):
+def get_classes_from_config(codebase: str, model_cfg: Union[str, mmcv.Config]):
     model_cfg_str = model_cfg
     if codebase == 'mmdet':
         if module_exist(codebase):

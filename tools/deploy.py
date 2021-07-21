@@ -119,7 +119,8 @@ def main():
             device=args.device,
             output_file=f'output_{backend}.jpg',
             show_result=args.show,
-            ret_value=ret_value))
+            ret_value=ret_value),
+        ret_value=ret_value)
 
     # visualize pytorch model
     create_process(

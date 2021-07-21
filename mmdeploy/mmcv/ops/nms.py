@@ -15,7 +15,9 @@ class DummyONNXNMSop(torch.autograd.Function):
                 score_threshold):
         batch_size, num_class, num_box = scores.shape
         # create dummy indices of nms output
-        num_fake_det = 2
+        # number of detection should be large enough to
+        # cover all layers of fpn
+        num_fake_det = 100
         batch_inds = torch.randint(batch_size, (num_fake_det, 1))
         cls_inds = torch.randint(num_class, (num_fake_det, 1))
         box_inds = torch.randint(num_box, (num_fake_det, 1))

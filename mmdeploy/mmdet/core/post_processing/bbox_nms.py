@@ -47,8 +47,7 @@ def _multiclass_nms(boxes,
                     iou_threshold=0.5,
                     score_threshold=0.05,
                     pre_top_k=-1,
-                    keep_top_k=-1,
-                    labels=None):
+                    keep_top_k=-1):
     """Create a dummy onnx::NonMaxSuppression op while exporting to ONNX.
 
     This function helps exporting to onnx with batch and multiclass NMS op.
@@ -69,9 +68,6 @@ def _multiclass_nms(boxes,
             Defaults to -1.
         keep_top_k (int): Number of top K boxes to keep after nms.
             Defaults to -1.
-        labels (Tensor, optional): It not None, explicit labels would be used.
-            Otherwise, labels would be automatically generated using
-            num_classed. Defaults to None.
 
     Returns:
         tuple[Tensor, Tensor]: dets of shape [N, num_det, 5] and class labels
@@ -81,27 +77,19 @@ def _multiclass_nms(boxes,
     iou_threshold = torch.tensor([iou_threshold], dtype=torch.float32)
     score_threshold = torch.tensor([score_threshold], dtype=torch.float32)
     batch_size = scores.shape[0]
-    num_class = scores.shape[2]
 
     if pre_top_k > 0:
         max_scores, _ = scores.max(-1)
         _, topk_inds = max_scores.topk(pre_top_k)
         batch_inds = torch.arange(batch_size).view(
             -1, 1).expand_as(topk_inds).long()
-        # Avoid onnx2tensorrt issue in https://github.com/NVIDIA/TensorRT/issues/1134 # noqa: E501
         boxes = boxes[batch_inds, topk_inds, :]
         scores = scores[batch_inds, topk_inds, :]
-        if labels is not None:
-            labels = labels[batch_inds, topk_inds]
 
     scores = scores.permute(0, 2, 1)
     selected_indices = DummyONNXNMSop.apply(boxes, scores,
                                             max_output_boxes_per_class,
                                             iou_threshold, score_threshold)
-
-    if labels is None:
-        labels = torch.arange(num_class, dtype=torch.long).to(scores.device)
-        labels = labels.view(1, num_class, 1).expand_as(scores)
 
     dets, labels = select_nms_index(
         scores, boxes, selected_indices, batch_size, keep_top_k=keep_top_k)
@@ -118,8 +106,7 @@ def multiclass_nms_static(ctx,
                           iou_threshold=0.5,
                           score_threshold=0.05,
                           pre_top_k=-1,
-                          keep_top_k=-1,
-                          labels=None):
+                          keep_top_k=-1):
     boxes = boxes if boxes.dim() == 4 else boxes.unsqueeze(2)
     keep_top_k = max_output_boxes_per_class if keep_top_k < 0 else min(
         max_output_boxes_per_class, keep_top_k)
