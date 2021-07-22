@@ -108,7 +108,7 @@ def main():
     # check model outputs by visualization
     codebase = deploy_cfg['codebase']
 
-    # visualize tensorrt model
+    # visualize model of the backend
     create_process(
         f'visualize {backend} model',
         target=inference_model,

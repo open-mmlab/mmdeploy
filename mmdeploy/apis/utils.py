@@ -87,7 +87,22 @@ def init_backend_model(model_files: Sequence[str],
                        device_id: int = 0):
     if codebase == 'mmcls':
         if module_exist(codebase):
-            raise NotImplementedError(f'Unsupported codebase type: {codebase}')
+            if backend == 'onnxruntime':
+                from mmdeploy.mmcls.export import ONNXRuntimeClassifier
+                backend_model = ONNXRuntimeClassifier(
+                    model_files[0],
+                    class_names=class_names,
+                    device_id=device_id)
+            elif backend == 'tensorrt':
+                from mmdeploy.mmcls.export import TensorRTClassifier
+                backend_model = TensorRTClassifier(
+                    model_files[0],
+                    class_names=class_names,
+                    device_id=device_id)
+            else:
+                raise NotImplementedError(
+                    f'Unsupported backend type: {backend}')
+            return backend_model
         else:
             raise ImportError(f'Can not import module: {codebase}')
     elif codebase == 'mmdet':
@@ -116,6 +131,32 @@ def init_backend_model(model_files: Sequence[str],
 
 def get_classes_from_config(codebase: str, model_cfg: Union[str, mmcv.Config]):
     model_cfg_str = model_cfg
+    if codebase == 'mmcls':
+        if module_exist(codebase):
+            if isinstance(model_cfg, str):
+                model_cfg = mmcv.Config.fromfile(model_cfg)
+            elif not isinstance(model_cfg, (mmcv.Config, mmcv.ConfigDict)):
+                raise TypeError('config must be a filename or Config object, '
+                                f'but got {type(model_cfg)}')
+
+            from mmcls.datasets import DATASETS
+            module_dict = DATASETS.module_dict
+            data_cfg = model_cfg.data
+
+            if 'train' in data_cfg:
+                module = module_dict[data_cfg.train.type]
+            elif 'val' in data_cfg:
+                module = module_dict[data_cfg.val.type]
+            elif 'test' in data_cfg:
+                module = module_dict[data_cfg.test.type]
+            else:
+                raise RuntimeError(
+                    f'No dataset config found in: {model_cfg_str}')
+
+            return module.CLASSES
+        else:
+            raise ImportError(f'Can not import module: {codebase}')
+
     if codebase == 'mmdet':
         if module_exist(codebase):
             if isinstance(model_cfg, str):
@@ -155,7 +196,22 @@ def check_model_outputs(codebase: str,
     show_img = mmcv.imread(image) if isinstance(image, str) else image
     if codebase == 'mmcls':
         if module_exist(codebase):
-            raise NotImplementedError(f'Unsupported codebase type: {codebase}')
+            output_file = None if show_result else output_file
+            with torch.no_grad():
+                scores = model(**model_inputs, return_loss=False)[0]
+                pred_score = np.max(scores, axis=0)
+                pred_label = np.argmax(scores, axis=0)
+                result = {
+                    'pred_label': pred_label,
+                    'pred_score': float(pred_score)
+                }
+                result['pred_class'] = model.CLASSES[result['pred_label']]
+                model.show_result(
+                    show_img,
+                    result,
+                    show=True,
+                    win_name=backend,
+                    out_file=output_file)
         else:
             raise ImportError(f'Can not import module: {codebase}')
     elif codebase == 'mmdet':
