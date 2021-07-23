@@ -32,78 +32,83 @@ def mark_symbolic(rewriter, g, x, *args):
     return x
 
 
-def mark_tensors(xs, func, type, index, name, attrs):
+def mark_tensors(xs, func, type, ctx, attrs, is_inspecting, level):
     visit = set()
+    index = 0
 
-    def impl(ys, prefix):
+    def impl(ys, prefix, level):
         nonlocal index
+        old_index = index
+        ret = ys
+        prefix = () if level == 0 else prefix
+
         if isinstance(ys, torch.Tensor):
             if ys not in visit:
                 visit.add(ys)
+                root = ctx.names[ctx.index]
+                name = '/'.join(str(x) for x in (root, *prefix))
+                ret = Mark.apply(ys, func, type, name, index, attrs)
                 index += 1
-                return Mark.apply(ys, func, type, prefix, index - 1, attrs)
-            return ys
         elif isinstance(ys, list):
-            return [impl(y, f'{prefix}/{i}') for i, y in enumerate(ys)]
+            ret = [
+                impl(y, prefix + (i, ), level + 1) for i, y in enumerate(ys)
+            ]
         elif isinstance(ys, tuple):
-            return tuple(impl(y, f'{prefix}/{i}') for i, y in enumerate(ys))
+            ret = tuple(
+                impl(y, prefix + (i, ), level + 1) for i, y in enumerate(ys))
         elif isinstance(ys, dict):
-            return {k: impl(v, f'{prefix}/{k}') for k, v in ys.items()}
-        return ys
+            ret = {
+                k: impl(v, prefix + (k, ), level + 1)
+                for k, v in ys.items()
+            }
 
-    return impl(xs, name)
+        if level == 0 and (is_inspecting or old_index != index):
+            ctx.index += 1
 
+        return ret
 
-def handle_extra_params(params, args):
-    n_params = len(params) if isinstance(params, list) else 1
-    n_pad = len(args) - n_params
-    assert n_pad >= 0
-    if n_pad:
-        if not isinstance(params, list):
-            params = [params]
-        return ['_'] * n_pad + params
-    else:
-        return params
+    return impl(xs, (), level)
 
 
 def mark(func_name=None, inputs=None, outputs=None, **attrs):
-    if isinstance(inputs, tuple):
-        inputs = list(inputs)
+
+    class Context:
+
+        def __init__(self, names):
+            self.names = names
+            self.index = 0
 
     def decorator(f):
         func = func_name if func_name else f.__name__
-        # if no input name specified, fallback to function signature
-        param_names = inputs if inputs else list(
-            inspect.signature(f).parameters.keys())
-        # simply use func as fallback name since inspecting return statement
-        # is non-trivial
-        # TODO: maybe we can traverse the AST of f to get the retval names?
+        is_inspect = False
+        if not inputs:
+            input_names = list(inspect.signature(f).parameters.keys())
+            is_inspect = True
+        else:
+            input_names = inputs
         output_names = outputs if outputs else func
+
+        # args and retvals match corresponding names at level 0
+        args_level, rets_level = -1, -1
+
+        if isinstance(input_names, str):
+            input_names = (input_names, )
+
+        if isinstance(output_names, str):
+            output_names = (output_names, )
+            rets_level += 1
 
         def g(*args, **kwargs):
             if torch.onnx.is_in_onnx_export():
-                # pad param_names to avoid 'ctx' and 'self'
-                arg_names = handle_extra_params(param_names, args)
-                if isinstance(arg_names, (list, tuple)):
-                    arg_type = type(args)
-                    args = arg_type(
-                        mark_tensors(arg, func, 'input', i, name, attrs)
-                        for i, (name, arg) in enumerate(zip(arg_names, args)))
-                else:
-                    args = mark_tensors(args, func, 'input', 0, arg_names,
-                                        attrs)
+                ctx = Context(input_names)
+                args = mark_tensors(args, func, 'input', ctx, attrs,
+                                    is_inspect, args_level)
 
                 rets = f(*args, **kwargs)
 
-                if isinstance(output_names, (list, tuple)):
-                    ret_type = type(rets)
-                    return ret_type(
-                        mark_tensors(ret, func, 'output', i, name, attrs)
-                        for i, (name,
-                                ret) in enumerate(zip(output_names, rets)))
-                else:
-                    return mark_tensors(rets, func, 'output', 0, output_names,
-                                        attrs)
+                ctx = Context(output_names)
+                return mark_tensors(rets, func, 'output', ctx, attrs, False,
+                                    rets_level)
             else:
                 return f(*args, **kwargs)
 

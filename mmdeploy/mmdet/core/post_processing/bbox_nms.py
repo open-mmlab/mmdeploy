@@ -1,7 +1,7 @@
 import torch
 
 import mmdeploy
-from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.core import FUNCTION_REWRITER, mark
 from mmdeploy.mmcv.ops import DummyONNXNMSop, TRTBatchedNMSop
 
 
@@ -117,6 +117,7 @@ def multiclass_nms_static(ctx,
     return dets, labels
 
 
+@mark('multiclass_nms', inputs=['boxes', 'scores'], outputs=['dets', 'labels'])
 def multiclass_nms(*args, **kwargs):
     """Wrapper function for _multiclass_nms."""
     return mmdeploy.mmdet.core.post_processing._multiclass_nms(*args, **kwargs)

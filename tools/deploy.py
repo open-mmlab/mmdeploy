@@ -1,12 +1,13 @@
 import argparse
 import logging
 import os.path as osp
+from functools import partial
 
 import mmcv
 import torch.multiprocessing as mp
 from torch.multiprocessing import Process, set_start_method
 
-from mmdeploy.apis import inference_model, torch2onnx
+from mmdeploy.apis import extract_model, inference_model, torch2onnx
 
 
 def parse_args():
@@ -31,9 +32,20 @@ def parse_args():
     return args
 
 
+def target_wrapper(target, log_level, *args, **kwargs):
+    logger = logging.getLogger()
+    logger.level
+    logger.setLevel(log_level)
+    return target(*args, **kwargs)
+
+
 def create_process(name, target, args, kwargs, ret_value=None):
-    logging.info(f'start {name}.')
-    process = Process(target=target, args=args, kwargs=kwargs)
+    logging.info(f'{name} start.')
+    log_level = logging.getLogger().level
+
+    wrap_func = partial(target_wrapper, target, log_level)
+
+    process = Process(target=wrap_func, args=args, kwargs=kwargs)
     process.start()
     process.join()
 
@@ -79,8 +91,32 @@ def main():
 
     # convert backend
     onnx_files = [osp.join(args.work_dir, onnx_save_file)]
-    backend_files = onnx_files
 
+    # split model
+    apply_marks = deploy_cfg.get('apply_marks', False)
+    if apply_marks:
+        assert hasattr(deploy_cfg, 'split_params')
+        split_params = deploy_cfg.get('split_params', None)
+
+        origin_onnx_file = onnx_files[0]
+        onnx_files = []
+        for split_param in split_params:
+            save_file = split_param['save_file']
+            save_path = osp.join(args.work_dir, save_file)
+            start = split_param['start']
+            end = split_param['end']
+
+            create_process(
+                f'split model {save_file} with start: {start}, end: {end}',
+                extract_model,
+                args=(origin_onnx_file, start, end),
+                kwargs=dict(save_file=save_path, ret_value=ret_value),
+                ret_value=ret_value)
+
+            onnx_files.append(save_path)
+
+    backend_files = onnx_files
+    # convert backend
     backend = deploy_cfg.get('backend', 'default')
     if backend == 'tensorrt':
         assert hasattr(deploy_cfg, 'tensorrt_params')
