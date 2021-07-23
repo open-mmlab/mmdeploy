@@ -16,6 +16,9 @@ foreach(PLUGIN_ITER ${PLUGIN_LISTS})
     set(BACKEND_OPS_SRCS ${BACKEND_OPS_SRCS} ${PLUGIN_OPS_SRCS} ${PLUGIN_OPS_HEADS})
 endforeach(PLUGIN_ITER)
 
+file(GLOB COMMON_SRCS common/*.cpp common/*.cu)
+set(BACKEND_OPS_SRCS ${BACKEND_OPS_SRCS} ${COMMON_SRCS})
+
 set(INFER_PLUGIN_LIB onnxruntime)
 list(APPEND BACKEND_OPS_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/onnxruntime_register.cpp")
 

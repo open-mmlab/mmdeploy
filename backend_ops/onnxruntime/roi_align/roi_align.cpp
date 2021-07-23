@@ -1,7 +1,8 @@
 #include "roi_align.h"
 
-#include "ort_mmcv_utils.h"
+#include "ort_utils.h"
 
+namespace mmlab {
 // implementation taken from Caffe2
 struct PreCalc {
   int pos1;
@@ -262,3 +263,6 @@ void MMCVRoiAlignKernel::Compute(OrtKernelContext *context) {
   if (argmax_x) delete argmax_x;
   if (argmax_y) delete argmax_y;
 }
+
+REGISTER_ONNXRUNTIME_OPS(MMCVRoiAlignCustomOp);
+}  // namespace mmlab

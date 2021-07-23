@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+namespace mmlab {
 struct MMCVRoiAlignKernel {
  public:
   MMCVRoiAlignKernel(Ort::CustomOpApi ort, const OrtKernelInfo* info)
@@ -58,4 +59,6 @@ struct MMCVRoiAlignCustomOp
     return "CPUExecutionProvider";
   }
 };
+}  // namespace mmlab
+
 #endif  // ONNXRUNTIME_ROI_ALIGN_H

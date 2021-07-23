@@ -3,6 +3,8 @@
 
 #include <onnxruntime_cxx_api.h>
 
+namespace mmlab {
+
 struct GridSampleKernel {
   GridSampleKernel(OrtApi api, const OrtKernelInfo *info);
 
@@ -40,4 +42,5 @@ struct GridSampleOp : Ort::CustomOpBase<GridSampleOp, GridSampleKernel> {
     return "CPUExecutionProvider";
   };
 };
+}  // namespace mmlab
 #endif

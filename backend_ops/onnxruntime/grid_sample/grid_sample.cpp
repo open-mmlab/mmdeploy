@@ -2,8 +2,9 @@
 
 #include <cmath>
 
-#include "ort_mmcv_utils.h"
+#include "ort_utils.h"
 
+namespace mmlab {
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define MAX(a, b) (((a) < (b)) ? (b) : (a))
 #define CLIP_COORDINATES(in, out, clip_limit) \
@@ -312,3 +313,6 @@ void GridSampleKernel::Compute(OrtKernelContext *context) {
     }
   }
 }
+
+REGISTER_ONNXRUNTIME_OPS(GridSampleOp);
+}  // namespace mmlab
