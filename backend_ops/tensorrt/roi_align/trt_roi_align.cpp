@@ -36,7 +36,7 @@ TRTRoIAlign::TRTRoIAlign(const std::string name, const void *data,
   deserialize_value(&data, &length, &mAligned);
 }
 
-nvinfer1::IPluginV2DynamicExt *TRTRoIAlign::clone() const {
+nvinfer1::IPluginV2DynamicExt *TRTRoIAlign::clone() const TRT_NOEXCEPT {
   TRTRoIAlign *plugin =
       new TRTRoIAlign(mLayerName, mOutWidth, mOutHeight, mSpatialScale,
                       mSampleRatio, mPoolMode, mAligned);
@@ -47,7 +47,7 @@ nvinfer1::IPluginV2DynamicExt *TRTRoIAlign::clone() const {
 
 nvinfer1::DimsExprs TRTRoIAlign::getOutputDimensions(
     int outputIndex, const nvinfer1::DimsExprs *inputs, int nbInputs,
-    nvinfer1::IExprBuilder &exprBuilder) {
+    nvinfer1::IExprBuilder &exprBuilder) TRT_NOEXCEPT {
   nvinfer1::DimsExprs ret;
   ret.nbDims = 4;
   ret.d[0] = inputs[1].d[0];
@@ -60,19 +60,20 @@ nvinfer1::DimsExprs TRTRoIAlign::getOutputDimensions(
 
 bool TRTRoIAlign::supportsFormatCombination(
     int pos, const nvinfer1::PluginTensorDesc *inOut, int nbInputs,
-    int nbOutputs) {
+    int nbOutputs) TRT_NOEXCEPT {
   return inOut[pos].type == nvinfer1::DataType::kFLOAT &&
          inOut[pos].format == nvinfer1::TensorFormat::kLINEAR;
 }
 
 void TRTRoIAlign::configurePlugin(
     const nvinfer1::DynamicPluginTensorDesc *inputs, int nbInputs,
-    const nvinfer1::DynamicPluginTensorDesc *outputs, int nbOutputs) {}
+    const nvinfer1::DynamicPluginTensorDesc *outputs,
+    int nbOutputs) TRT_NOEXCEPT {}
 
 size_t TRTRoIAlign::getWorkspaceSize(const nvinfer1::PluginTensorDesc *inputs,
                                      int nbInputs,
                                      const nvinfer1::PluginTensorDesc *outputs,
-                                     int nbOutputs) const {
+                                     int nbOutputs) const TRT_NOEXCEPT {
   size_t output_size = 0;
   size_t word_size = 0;
   switch (mPoolMode) {
@@ -94,7 +95,7 @@ size_t TRTRoIAlign::getWorkspaceSize(const nvinfer1::PluginTensorDesc *inputs,
 int TRTRoIAlign::enqueue(const nvinfer1::PluginTensorDesc *inputDesc,
                          const nvinfer1::PluginTensorDesc *outputDesc,
                          const void *const *inputs, void *const *outputs,
-                         void *workSpace, cudaStream_t stream) {
+                         void *workSpace, cudaStream_t stream) TRT_NOEXCEPT {
   int channels = inputDesc[0].dims.d[1];
   int height = inputDesc[0].dims.d[2];
   int width = inputDesc[0].dims.d[3];
@@ -135,24 +136,29 @@ int TRTRoIAlign::enqueue(const nvinfer1::PluginTensorDesc *inputDesc,
 }
 
 nvinfer1::DataType TRTRoIAlign::getOutputDataType(
-    int index, const nvinfer1::DataType *inputTypes, int nbInputs) const {
+    int index, const nvinfer1::DataType *inputTypes,
+    int nbInputs) const TRT_NOEXCEPT {
   return inputTypes[0];
 }
 
 // IPluginV2 Methods
-const char *TRTRoIAlign::getPluginType() const { return PLUGIN_NAME; }
+const char *TRTRoIAlign::getPluginType() const TRT_NOEXCEPT {
+  return PLUGIN_NAME;
+}
 
-const char *TRTRoIAlign::getPluginVersion() const { return PLUGIN_VERSION; }
+const char *TRTRoIAlign::getPluginVersion() const TRT_NOEXCEPT {
+  return PLUGIN_VERSION;
+}
 
-int TRTRoIAlign::getNbOutputs() const { return 1; }
+int TRTRoIAlign::getNbOutputs() const TRT_NOEXCEPT { return 1; }
 
-size_t TRTRoIAlign::getSerializationSize() const {
+size_t TRTRoIAlign::getSerializationSize() const TRT_NOEXCEPT {
   return serialized_size(mOutWidth) + serialized_size(mOutHeight) +
          serialized_size(mSpatialScale) + serialized_size(mSampleRatio) +
          serialized_size(mPoolMode) + serialized_size(mAligned);
 }
 
-void TRTRoIAlign::serialize(void *buffer) const {
+void TRTRoIAlign::serialize(void *buffer) const TRT_NOEXCEPT {
   serialize_value(&buffer, mOutWidth);
   serialize_value(&buffer, mOutHeight);
   serialize_value(&buffer, mSpatialScale);
@@ -172,14 +178,16 @@ TRTRoIAlignCreator::TRTRoIAlignCreator() {
   mFC.fields = mPluginAttributes.data();
 }
 
-const char *TRTRoIAlignCreator::getPluginName() const { return PLUGIN_NAME; }
+const char *TRTRoIAlignCreator::getPluginName() const TRT_NOEXCEPT {
+  return PLUGIN_NAME;
+}
 
-const char *TRTRoIAlignCreator::getPluginVersion() const {
+const char *TRTRoIAlignCreator::getPluginVersion() const TRT_NOEXCEPT {
   return PLUGIN_VERSION;
 }
 
 nvinfer1::IPluginV2 *TRTRoIAlignCreator::createPlugin(
-    const char *name, const nvinfer1::PluginFieldCollection *fc) {
+    const char *name, const nvinfer1::PluginFieldCollection *fc) TRT_NOEXCEPT {
   int outWidth = 7;
   int outHeight = 7;
   float spatialScale = 1.0;
@@ -241,7 +249,8 @@ nvinfer1::IPluginV2 *TRTRoIAlignCreator::createPlugin(
 }
 
 nvinfer1::IPluginV2 *TRTRoIAlignCreator::deserializePlugin(
-    const char *name, const void *serialData, size_t serialLength) {
+    const char *name, const void *serialData,
+    size_t serialLength) TRT_NOEXCEPT {
   auto plugin = new TRTRoIAlign(name, serialData, serialLength);
   plugin->setPluginNamespace(getPluginNamespace());
   return plugin;

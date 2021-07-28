@@ -32,7 +32,7 @@ TRTNMS::TRTNMS(const std::string name, const void *data, size_t length)
   deserialize_value(&data, &length, &mOffset);
 }
 
-nvinfer1::IPluginV2DynamicExt *TRTNMS::clone() const {
+nvinfer1::IPluginV2DynamicExt *TRTNMS::clone() const TRT_NOEXCEPT {
   TRTNMS *plugin =
       new TRTNMS(mLayerName, mCenterPointBox, mMaxOutputBoxesPerClass,
                  mIouThreshold, mScoreThreshold, mOffset);
@@ -43,7 +43,7 @@ nvinfer1::IPluginV2DynamicExt *TRTNMS::clone() const {
 
 nvinfer1::DimsExprs TRTNMS::getOutputDimensions(
     int outputIndex, const nvinfer1::DimsExprs *inputs, int nbInputs,
-    nvinfer1::IExprBuilder &exprBuilder) {
+    nvinfer1::IExprBuilder &exprBuilder) TRT_NOEXCEPT {
   nvinfer1::DimsExprs ret;
   ret.nbDims = 2;
   auto num_batches = inputs[0].d[0];
@@ -65,7 +65,8 @@ nvinfer1::DimsExprs TRTNMS::getOutputDimensions(
 
 bool TRTNMS::supportsFormatCombination(int pos,
                                        const nvinfer1::PluginTensorDesc *inOut,
-                                       int nbInputs, int nbOutputs) {
+                                       int nbInputs,
+                                       int nbOutputs) TRT_NOEXCEPT {
   if (pos < nbInputs) {
     switch (pos) {
       case 0:
@@ -95,12 +96,12 @@ bool TRTNMS::supportsFormatCombination(int pos,
 void TRTNMS::configurePlugin(const nvinfer1::DynamicPluginTensorDesc *inputs,
                              int nbInputs,
                              const nvinfer1::DynamicPluginTensorDesc *outputs,
-                             int nbOutputs) {}
+                             int nbOutputs) TRT_NOEXCEPT {}
 
 size_t TRTNMS::getWorkspaceSize(const nvinfer1::PluginTensorDesc *inputs,
                                 int nbInputs,
                                 const nvinfer1::PluginTensorDesc *outputs,
-                                int nbOutputs) const {
+                                int nbOutputs) const TRT_NOEXCEPT {
   size_t boxes_word_size = mmlab::getElementSize(inputs[0].type);
   size_t num_batches = inputs[0].dims.d[0];
   size_t spatial_dimension = inputs[0].dims.d[1];
@@ -115,7 +116,7 @@ size_t TRTNMS::getWorkspaceSize(const nvinfer1::PluginTensorDesc *inputs,
 int TRTNMS::enqueue(const nvinfer1::PluginTensorDesc *inputDesc,
                     const nvinfer1::PluginTensorDesc *outputDesc,
                     const void *const *inputs, void *const *outputs,
-                    void *workSpace, cudaStream_t stream) {
+                    void *workSpace, cudaStream_t stream) TRT_NOEXCEPT {
   int num_batches = inputDesc[0].dims.d[0];
   int spatial_dimension = inputDesc[0].dims.d[1];
   int num_classes = inputDesc[1].dims.d[1];
@@ -133,25 +134,28 @@ int TRTNMS::enqueue(const nvinfer1::PluginTensorDesc *inputDesc,
 }
 
 nvinfer1::DataType TRTNMS::getOutputDataType(
-    int index, const nvinfer1::DataType *inputTypes, int nbInputs) const {
+    int index, const nvinfer1::DataType *inputTypes,
+    int nbInputs) const TRT_NOEXCEPT {
   return nvinfer1::DataType::kINT32;
 }
 
 // IPluginV2 Methods
-const char *TRTNMS::getPluginType() const { return PLUGIN_NAME; }
+const char *TRTNMS::getPluginType() const TRT_NOEXCEPT { return PLUGIN_NAME; }
 
-const char *TRTNMS::getPluginVersion() const { return PLUGIN_VERSION; }
+const char *TRTNMS::getPluginVersion() const TRT_NOEXCEPT {
+  return PLUGIN_VERSION;
+}
 
-int TRTNMS::getNbOutputs() const { return 1; }
+int TRTNMS::getNbOutputs() const TRT_NOEXCEPT { return 1; }
 
-size_t TRTNMS::getSerializationSize() const {
+size_t TRTNMS::getSerializationSize() const TRT_NOEXCEPT {
   return serialized_size(mCenterPointBox) +
          serialized_size(mMaxOutputBoxesPerClass) +
          serialized_size(mIouThreshold) + serialized_size(mScoreThreshold) +
          serialized_size(mOffset);
 }
 
-void TRTNMS::serialize(void *buffer) const {
+void TRTNMS::serialize(void *buffer) const TRT_NOEXCEPT {
   serialize_value(&buffer, mCenterPointBox);
   serialize_value(&buffer, mMaxOutputBoxesPerClass);
   serialize_value(&buffer, mIouThreshold);
@@ -171,12 +175,16 @@ TRTNMSCreator::TRTNMSCreator() {
   mFC.fields = mPluginAttributes.data();
 }
 
-const char *TRTNMSCreator::getPluginName() const { return PLUGIN_NAME; }
+const char *TRTNMSCreator::getPluginName() const TRT_NOEXCEPT {
+  return PLUGIN_NAME;
+}
 
-const char *TRTNMSCreator::getPluginVersion() const { return PLUGIN_VERSION; }
+const char *TRTNMSCreator::getPluginVersion() const TRT_NOEXCEPT {
+  return PLUGIN_VERSION;
+}
 
 nvinfer1::IPluginV2 *TRTNMSCreator::createPlugin(
-    const char *name, const nvinfer1::PluginFieldCollection *fc) {
+    const char *name, const nvinfer1::PluginFieldCollection *fc) TRT_NOEXCEPT {
   int centerPointBox = 0;
   int maxOutputBoxesPerClass = 0;
   float iouThreshold = 0.0f;
@@ -215,9 +223,9 @@ nvinfer1::IPluginV2 *TRTNMSCreator::createPlugin(
   return plugin;
 }
 
-nvinfer1::IPluginV2 *TRTNMSCreator::deserializePlugin(const char *name,
-                                                      const void *serialData,
-                                                      size_t serialLength) {
+nvinfer1::IPluginV2 *TRTNMSCreator::deserializePlugin(
+    const char *name, const void *serialData,
+    size_t serialLength) TRT_NOEXCEPT {
   auto plugin = new TRTNMS(name, serialData, serialLength);
   plugin->setPluginNamespace(getPluginNamespace());
   return plugin;

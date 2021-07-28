@@ -31,11 +31,11 @@ TRTBatchedNMS::TRTBatchedNMS(const std::string& name, const void* data,
   deserialize_value(&data, &length, &mClipBoxes);
 }
 
-int TRTBatchedNMS::getNbOutputs() const { return 2; }
+int TRTBatchedNMS::getNbOutputs() const TRT_NOEXCEPT { return 2; }
 
 nvinfer1::DimsExprs TRTBatchedNMS::getOutputDimensions(
     int outputIndex, const nvinfer1::DimsExprs* inputs, int nbInputs,
-    nvinfer1::IExprBuilder& exprBuilder) {
+    nvinfer1::IExprBuilder& exprBuilder) TRT_NOEXCEPT {
   ASSERT(nbInputs == 2);
   ASSERT(outputIndex >= 0 && outputIndex < this->getNbOutputs());
   ASSERT(inputs[0].nbDims == 4);
@@ -61,7 +61,8 @@ nvinfer1::DimsExprs TRTBatchedNMS::getOutputDimensions(
 
 size_t TRTBatchedNMS::getWorkspaceSize(
     const nvinfer1::PluginTensorDesc* inputs, int nbInputs,
-    const nvinfer1::PluginTensorDesc* outputs, int nbOutputs) const {
+    const nvinfer1::PluginTensorDesc* outputs,
+    int nbOutputs) const TRT_NOEXCEPT {
   size_t batch_size = inputs[0].dims.d[0];
   size_t boxes_size =
       inputs[0].dims.d[1] * inputs[0].dims.d[2] * inputs[0].dims.d[3];
@@ -77,7 +78,7 @@ size_t TRTBatchedNMS::getWorkspaceSize(
 int TRTBatchedNMS::enqueue(const nvinfer1::PluginTensorDesc* inputDesc,
                            const nvinfer1::PluginTensorDesc* outputDesc,
                            const void* const* inputs, void* const* outputs,
-                           void* workSpace, cudaStream_t stream) {
+                           void* workSpace, cudaStream_t stream) TRT_NOEXCEPT {
   const void* const locData = inputs[0];
   const void* const confData = inputs[1];
 
@@ -102,12 +103,12 @@ int TRTBatchedNMS::enqueue(const nvinfer1::PluginTensorDesc* inputDesc,
   return 0;
 }
 
-size_t TRTBatchedNMS::getSerializationSize() const {
+size_t TRTBatchedNMS::getSerializationSize() const TRT_NOEXCEPT {
   // NMSParameters, boxesSize,scoresSize,numPriors
   return sizeof(NMSParameters) + sizeof(int) * 3 + sizeof(bool);
 }
 
-void TRTBatchedNMS::serialize(void* buffer) const {
+void TRTBatchedNMS::serialize(void* buffer) const TRT_NOEXCEPT {
   serialize_value(&buffer, param);
   serialize_value(&buffer, boxesSize);
   serialize_value(&buffer, scoresSize);
@@ -117,13 +118,14 @@ void TRTBatchedNMS::serialize(void* buffer) const {
 
 void TRTBatchedNMS::configurePlugin(
     const nvinfer1::DynamicPluginTensorDesc* inputs, int nbInputs,
-    const nvinfer1::DynamicPluginTensorDesc* outputs, int nbOutputs) {
+    const nvinfer1::DynamicPluginTensorDesc* outputs,
+    int nbOutputs) TRT_NOEXCEPT {
   // Validate input arguments
 }
 
 bool TRTBatchedNMS::supportsFormatCombination(
     int pos, const nvinfer1::PluginTensorDesc* inOut, int nbInputs,
-    int nbOutputs) {
+    int nbOutputs) TRT_NOEXCEPT {
   if (pos == 3) {
     return inOut[pos].type == nvinfer1::DataType::kINT32 &&
            inOut[pos].format == nvinfer1::TensorFormat::kLINEAR;
@@ -132,13 +134,15 @@ bool TRTBatchedNMS::supportsFormatCombination(
          inOut[pos].format == nvinfer1::TensorFormat::kLINEAR;
 }
 
-const char* TRTBatchedNMS::getPluginType() const { return NMS_PLUGIN_NAME; }
+const char* TRTBatchedNMS::getPluginType() const TRT_NOEXCEPT {
+  return NMS_PLUGIN_NAME;
+}
 
-const char* TRTBatchedNMS::getPluginVersion() const {
+const char* TRTBatchedNMS::getPluginVersion() const TRT_NOEXCEPT {
   return NMS_PLUGIN_VERSION;
 }
 
-IPluginV2DynamicExt* TRTBatchedNMS::clone() const {
+IPluginV2DynamicExt* TRTBatchedNMS::clone() const TRT_NOEXCEPT {
   auto* plugin = new TRTBatchedNMS(mLayerName, param);
   plugin->boxesSize = boxesSize;
   plugin->scoresSize = scoresSize;
@@ -149,7 +153,8 @@ IPluginV2DynamicExt* TRTBatchedNMS::clone() const {
 }
 
 nvinfer1::DataType TRTBatchedNMS::getOutputDataType(
-    int index, const nvinfer1::DataType* inputTypes, int nbInputs) const {
+    int index, const nvinfer1::DataType* inputTypes,
+    int nbInputs) const TRT_NOEXCEPT {
   ASSERT(index >= 0 && index < this->getNbOutputs());
   if (index == 1) {
     return nvinfer1::DataType::kINT32;
@@ -181,16 +186,16 @@ TRTBatchedNMSCreator::TRTBatchedNMSCreator() {
   mFC.fields = mPluginAttributes.data();
 }
 
-const char* TRTBatchedNMSCreator::getPluginName() const {
+const char* TRTBatchedNMSCreator::getPluginName() const TRT_NOEXCEPT {
   return NMS_PLUGIN_NAME;
 }
 
-const char* TRTBatchedNMSCreator::getPluginVersion() const {
+const char* TRTBatchedNMSCreator::getPluginVersion() const TRT_NOEXCEPT {
   return NMS_PLUGIN_VERSION;
 }
 
 IPluginV2Ext* TRTBatchedNMSCreator::createPlugin(
-    const char* name, const PluginFieldCollection* fc) {
+    const char* name, const PluginFieldCollection* fc) TRT_NOEXCEPT {
   const PluginField* fields = fc->fields;
   bool clipBoxes = true;
   nvinfer1::plugin::NMSParameters params{};
@@ -228,9 +233,9 @@ IPluginV2Ext* TRTBatchedNMSCreator::createPlugin(
   return plugin;
 }
 
-IPluginV2Ext* TRTBatchedNMSCreator::deserializePlugin(const char* name,
-                                                      const void* serialData,
-                                                      size_t serialLength) {
+IPluginV2Ext* TRTBatchedNMSCreator::deserializePlugin(
+    const char* name, const void* serialData,
+    size_t serialLength) TRT_NOEXCEPT {
   // This object will be deleted when the network is destroyed, which will
   // call NMS::destroy()
   TRTBatchedNMS* plugin = new TRTBatchedNMS(name, serialData, serialLength);

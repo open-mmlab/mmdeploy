@@ -39,7 +39,8 @@ TRTMultiLevelRoiAlign::TRTMultiLevelRoiAlign(const std::string name,
   deserialize_value(&data, &length, &mFeatmapStrides);
 }
 
-nvinfer1::IPluginV2DynamicExt *TRTMultiLevelRoiAlign::clone() const {
+nvinfer1::IPluginV2DynamicExt *TRTMultiLevelRoiAlign::clone() const
+    TRT_NOEXCEPT {
   TRTMultiLevelRoiAlign *plugin = new TRTMultiLevelRoiAlign(
       mLayerName, mAlignedHeight, mAlignedWidth, mSampleNum, mFeatmapStrides,
       mRoiScaleFactor, mFinestScale, mAligned);
@@ -50,7 +51,7 @@ nvinfer1::IPluginV2DynamicExt *TRTMultiLevelRoiAlign::clone() const {
 
 nvinfer1::DimsExprs TRTMultiLevelRoiAlign::getOutputDimensions(
     int outputIndex, const nvinfer1::DimsExprs *inputs, int nbInputs,
-    nvinfer1::IExprBuilder &exprBuilder) {
+    nvinfer1::IExprBuilder &exprBuilder) TRT_NOEXCEPT {
   ASSERT(nbInputs == mFeatmapStrides.size() + 1);
 
   nvinfer1::DimsExprs ret;
@@ -65,14 +66,15 @@ nvinfer1::DimsExprs TRTMultiLevelRoiAlign::getOutputDimensions(
 
 bool TRTMultiLevelRoiAlign::supportsFormatCombination(
     int pos, const nvinfer1::PluginTensorDesc *inOut, int nbInputs,
-    int nbOutputs) {
+    int nbOutputs) TRT_NOEXCEPT {
   return inOut[pos].type == nvinfer1::DataType::kFLOAT &&
          inOut[pos].format == nvinfer1::TensorFormat::kLINEAR;
 }
 
 void TRTMultiLevelRoiAlign::configurePlugin(
     const nvinfer1::DynamicPluginTensorDesc *inputs, int nbInputs,
-    const nvinfer1::DynamicPluginTensorDesc *outputs, int nbOutputs) {
+    const nvinfer1::DynamicPluginTensorDesc *outputs,
+    int nbOutputs) TRT_NOEXCEPT {
   // Validate input arguments
   ASSERT(nbOutputs == 1);
   ASSERT(nbInputs == mFeatmapStrides.size() + 1);
@@ -80,7 +82,8 @@ void TRTMultiLevelRoiAlign::configurePlugin(
 
 size_t TRTMultiLevelRoiAlign::getWorkspaceSize(
     const nvinfer1::PluginTensorDesc *inputs, int nbInputs,
-    const nvinfer1::PluginTensorDesc *outputs, int nbOutputs) const {
+    const nvinfer1::PluginTensorDesc *outputs,
+    int nbOutputs) const TRT_NOEXCEPT {
   return 0;
 }
 
@@ -88,7 +91,7 @@ int TRTMultiLevelRoiAlign::enqueue(const nvinfer1::PluginTensorDesc *inputDesc,
                                    const nvinfer1::PluginTensorDesc *outputDesc,
                                    const void *const *inputs,
                                    void *const *outputs, void *workSpace,
-                                   cudaStream_t stream) {
+                                   cudaStream_t stream) TRT_NOEXCEPT {
   int num_rois = inputDesc[0].dims.d[0];
   int batch_size = inputDesc[1].dims.d[0];
   int channels = inputDesc[1].dims.d[1];
@@ -118,27 +121,30 @@ int TRTMultiLevelRoiAlign::enqueue(const nvinfer1::PluginTensorDesc *inputDesc,
 }
 
 nvinfer1::DataType TRTMultiLevelRoiAlign::getOutputDataType(
-    int index, const nvinfer1::DataType *inputTypes, int nbInputs) const {
+    int index, const nvinfer1::DataType *inputTypes,
+    int nbInputs) const TRT_NOEXCEPT {
   return nvinfer1::DataType::kFLOAT;
 }
 
 // IPluginV2 Methods
-const char *TRTMultiLevelRoiAlign::getPluginType() const { return PLUGIN_NAME; }
+const char *TRTMultiLevelRoiAlign::getPluginType() const TRT_NOEXCEPT {
+  return PLUGIN_NAME;
+}
 
-const char *TRTMultiLevelRoiAlign::getPluginVersion() const {
+const char *TRTMultiLevelRoiAlign::getPluginVersion() const TRT_NOEXCEPT {
   return PLUGIN_VERSION;
 }
 
-int TRTMultiLevelRoiAlign::getNbOutputs() const { return 1; }
+int TRTMultiLevelRoiAlign::getNbOutputs() const TRT_NOEXCEPT { return 1; }
 
-size_t TRTMultiLevelRoiAlign::getSerializationSize() const {
+size_t TRTMultiLevelRoiAlign::getSerializationSize() const TRT_NOEXCEPT {
   return serialized_size(mFeatmapStrides) + serialized_size(mAlignedHeight) +
          serialized_size(mAlignedWidth) + serialized_size(mSampleNum) +
          serialized_size(mRoiScaleFactor) + serialized_size(mFinestScale) +
          serialized_size(mAligned);
 }
 
-void TRTMultiLevelRoiAlign::serialize(void *buffer) const {
+void TRTMultiLevelRoiAlign::serialize(void *buffer) const TRT_NOEXCEPT {
   serialize_value(&buffer, mAlignedHeight);
   serialize_value(&buffer, mAlignedWidth);
   serialize_value(&buffer, mSampleNum);
@@ -161,16 +167,17 @@ TRTMultiLevelRoiAlignCreator::TRTMultiLevelRoiAlignCreator() {
   mFC.fields = mPluginAttributes.data();
 }
 
-const char *TRTMultiLevelRoiAlignCreator::getPluginName() const {
+const char *TRTMultiLevelRoiAlignCreator::getPluginName() const TRT_NOEXCEPT {
   return PLUGIN_NAME;
 }
 
-const char *TRTMultiLevelRoiAlignCreator::getPluginVersion() const {
+const char *TRTMultiLevelRoiAlignCreator::getPluginVersion() const
+    TRT_NOEXCEPT {
   return PLUGIN_VERSION;
 }
 
 nvinfer1::IPluginV2 *TRTMultiLevelRoiAlignCreator::createPlugin(
-    const char *name, const nvinfer1::PluginFieldCollection *fc) {
+    const char *name, const nvinfer1::PluginFieldCollection *fc) TRT_NOEXCEPT {
   int alignedHeight = 7;
   int alignedWidth = 7;
   int sampleNum = 2;
@@ -215,7 +222,8 @@ nvinfer1::IPluginV2 *TRTMultiLevelRoiAlignCreator::createPlugin(
 }
 
 nvinfer1::IPluginV2 *TRTMultiLevelRoiAlignCreator::deserializePlugin(
-    const char *name, const void *serialData, size_t serialLength) {
+    const char *name, const void *serialData,
+    size_t serialLength) TRT_NOEXCEPT {
   auto plugin = new TRTMultiLevelRoiAlign(name, serialData, serialLength);
   plugin->setPluginNamespace(getPluginNamespace());
   return plugin;

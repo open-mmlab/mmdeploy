@@ -63,7 +63,7 @@ endforeach(PLUGIN_ITER)
 
 list(APPEND BACKEND_OPS_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/common_impl/trt_cuda_helper.cu")
 
-set(INFER_PLUGIN_LIB ${TENSORRT_LIBRARY})
+set(INFER_PLUGIN_LIB ${TENSORRT_LIBRARY} cublas cudnn)
 
 cuda_add_library(${SHARED_TARGET} MODULE ${BACKEND_OPS_SRCS})
 target_link_libraries(${SHARED_TARGET} ${INFER_PLUGIN_LIB})

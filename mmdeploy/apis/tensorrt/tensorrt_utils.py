@@ -1,6 +1,7 @@
 import onnx
 import tensorrt as trt
 import torch
+from packaging import version
 
 
 def create_trt_engine(onnx_model,
@@ -56,7 +57,8 @@ def create_trt_engine(onnx_model,
         raise RuntimeError(f'parse onnx failed:\n{error_msgs}')
 
     # config builder
-    builder.max_workspace_size = max_workspace_size
+    if version.parse(trt.__version__) < version.parse('8'):
+        builder.max_workspace_size = max_workspace_size
 
     config = builder.create_builder_config()
     config.max_workspace_size = max_workspace_size

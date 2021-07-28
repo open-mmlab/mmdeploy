@@ -23,53 +23,55 @@ class TRTInstanceNormalization final : public TRTPluginBase {
 
   TRTInstanceNormalization() = delete;
 
-  ~TRTInstanceNormalization() override;
+  ~TRTInstanceNormalization() TRT_NOEXCEPT override;
 
-  int getNbOutputs() const override;
+  int getNbOutputs() const TRT_NOEXCEPT override;
 
   // DynamicExt plugins returns DimsExprs class instead of Dims
   nvinfer1::DimsExprs getOutputDimensions(
       int outputIndex, const nvinfer1::DimsExprs* inputs, int nbInputs,
-      nvinfer1::IExprBuilder& exprBuilder) override;
+      nvinfer1::IExprBuilder& exprBuilder) TRT_NOEXCEPT override;
 
   size_t getWorkspaceSize(const nvinfer1::PluginTensorDesc* inputs,
                           int nbInputs,
                           const nvinfer1::PluginTensorDesc* outputs,
-                          int nbOutputs) const override;
+                          int nbOutputs) const TRT_NOEXCEPT override;
 
   int enqueue(const nvinfer1::PluginTensorDesc* inputDesc,
               const nvinfer1::PluginTensorDesc* outputDesc,
               const void* const* inputs, void* const* outputs, void* workspace,
-              cudaStream_t stream) override;
+              cudaStream_t stream) TRT_NOEXCEPT override;
 
-  size_t getSerializationSize() const override;
+  size_t getSerializationSize() const TRT_NOEXCEPT override;
 
-  void serialize(void* buffer) const override;
+  void serialize(void* buffer) const TRT_NOEXCEPT override;
 
   // DynamicExt plugin supportsFormat update.
   bool supportsFormatCombination(int pos,
                                  const nvinfer1::PluginTensorDesc* inOut,
-                                 int nbInputs, int nbOutputs) override;
+                                 int nbInputs,
+                                 int nbOutputs) TRT_NOEXCEPT override;
 
-  const char* getPluginType() const override;
+  const char* getPluginType() const TRT_NOEXCEPT override;
 
-  const char* getPluginVersion() const override;
+  const char* getPluginVersion() const TRT_NOEXCEPT override;
 
-  nvinfer1::IPluginV2DynamicExt* clone() const override;
+  nvinfer1::IPluginV2DynamicExt* clone() const TRT_NOEXCEPT override;
 
-  nvinfer1::DataType getOutputDataType(int index,
-                                       const nvinfer1::DataType* inputTypes,
-                                       int nbInputs) const override;
+  nvinfer1::DataType getOutputDataType(
+      int index, const nvinfer1::DataType* inputTypes,
+      int nbInputs) const TRT_NOEXCEPT override;
 
   void attachToContext(cudnnContext* cudnn, cublasContext* cublas,
-                       nvinfer1::IGpuAllocator* allocator) override;
+                       nvinfer1::IGpuAllocator* allocator)
+      TRT_NOEXCEPT override;
 
-  void detachFromContext() override;
+  void detachFromContext() TRT_NOEXCEPT override;
 
   void configurePlugin(const nvinfer1::DynamicPluginTensorDesc* in,
                        int nbInputs,
                        const nvinfer1::DynamicPluginTensorDesc* out,
-                       int nbOutputs) override;
+                       int nbOutputs) TRT_NOEXCEPT override;
 
  private:
   float mEpsilon{};
@@ -84,15 +86,17 @@ class TRTInstanceNormalizationCreator : public TRTPluginCreatorBase {
 
   ~TRTInstanceNormalizationCreator() override = default;
 
-  const char* getPluginName() const override;
+  const char* getPluginName() const TRT_NOEXCEPT override;
 
-  const char* getPluginVersion() const override;
+  const char* getPluginVersion() const TRT_NOEXCEPT override;
 
   nvinfer1::IPluginV2DynamicExt* createPlugin(
-      const char* name, const nvinfer1::PluginFieldCollection* fc) override;
+      const char* name,
+      const nvinfer1::PluginFieldCollection* fc) TRT_NOEXCEPT override;
 
   nvinfer1::IPluginV2DynamicExt* deserializePlugin(
-      const char* name, const void* serialData, size_t serialLength) override;
+      const char* name, const void* serialData,
+      size_t serialLength) TRT_NOEXCEPT override;
 };
 }  // namespace mmlab
 #endif  // TRT_INSTANCE_NORMALIZATION_HPP

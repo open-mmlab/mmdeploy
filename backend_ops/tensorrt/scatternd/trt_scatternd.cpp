@@ -20,7 +20,7 @@ TRTScatterND::TRTScatterND(const std::string name, const void *data,
                            size_t length)
     : TRTPluginBase(name) {}
 
-nvinfer1::IPluginV2DynamicExt *TRTScatterND::clone() const {
+nvinfer1::IPluginV2DynamicExt *TRTScatterND::clone() const TRT_NOEXCEPT {
   TRTScatterND *plugin = new TRTScatterND(mLayerName);
   plugin->setPluginNamespace(getPluginNamespace());
 
@@ -29,13 +29,13 @@ nvinfer1::IPluginV2DynamicExt *TRTScatterND::clone() const {
 
 nvinfer1::DimsExprs TRTScatterND::getOutputDimensions(
     int outputIndex, const nvinfer1::DimsExprs *inputs, int nbInputs,
-    nvinfer1::IExprBuilder &exprBuilder) {
+    nvinfer1::IExprBuilder &exprBuilder) TRT_NOEXCEPT {
   return inputs[0];
 }
 
 bool TRTScatterND::supportsFormatCombination(
     int pos, const nvinfer1::PluginTensorDesc *inOut, int nbInputs,
-    int nbOutputs) {
+    int nbOutputs) TRT_NOEXCEPT {
   if (pos < nbInputs) {
     switch (pos) {
       case 0:
@@ -70,19 +70,20 @@ bool TRTScatterND::supportsFormatCombination(
 
 void TRTScatterND::configurePlugin(
     const nvinfer1::DynamicPluginTensorDesc *inputs, int nbInputs,
-    const nvinfer1::DynamicPluginTensorDesc *outputs, int nbOutputs) {}
+    const nvinfer1::DynamicPluginTensorDesc *outputs,
+    int nbOutputs) TRT_NOEXCEPT {}
 
 size_t TRTScatterND::getWorkspaceSize(const nvinfer1::PluginTensorDesc *inputs,
                                       int nbInputs,
                                       const nvinfer1::PluginTensorDesc *outputs,
-                                      int nbOutputs) const {
+                                      int nbOutputs) const TRT_NOEXCEPT {
   return 0;
 }
 
 int TRTScatterND::enqueue(const nvinfer1::PluginTensorDesc *inputDesc,
                           const nvinfer1::PluginTensorDesc *outputDesc,
                           const void *const *inputs, void *const *outputs,
-                          void *workSpace, cudaStream_t stream) {
+                          void *workSpace, cudaStream_t stream) TRT_NOEXCEPT {
   const int *dims = &(inputDesc[0].dims.d[0]);
   const int *indices_dims = &(inputDesc[1].dims.d[0]);
   int nbDims = inputDesc[0].dims.nbDims;
@@ -115,20 +116,25 @@ int TRTScatterND::enqueue(const nvinfer1::PluginTensorDesc *inputDesc,
 }
 
 nvinfer1::DataType TRTScatterND::getOutputDataType(
-    int index, const nvinfer1::DataType *inputTypes, int nbInputs) const {
+    int index, const nvinfer1::DataType *inputTypes,
+    int nbInputs) const TRT_NOEXCEPT {
   return inputTypes[0];
 }
 
 // IPluginV2 Methods
-const char *TRTScatterND::getPluginType() const { return PLUGIN_NAME; }
+const char *TRTScatterND::getPluginType() const TRT_NOEXCEPT {
+  return PLUGIN_NAME;
+}
 
-const char *TRTScatterND::getPluginVersion() const { return PLUGIN_VERSION; }
+const char *TRTScatterND::getPluginVersion() const TRT_NOEXCEPT {
+  return PLUGIN_VERSION;
+}
 
-int TRTScatterND::getNbOutputs() const { return 1; }
+int TRTScatterND::getNbOutputs() const TRT_NOEXCEPT { return 1; }
 
-size_t TRTScatterND::getSerializationSize() const { return 0; }
+size_t TRTScatterND::getSerializationSize() const TRT_NOEXCEPT { return 0; }
 
-void TRTScatterND::serialize(void *buffer) const {}
+void TRTScatterND::serialize(void *buffer) const TRT_NOEXCEPT {}
 
 TRTScatterNDCreator::TRTScatterNDCreator() {
   mPluginAttributes.clear();
@@ -136,21 +142,24 @@ TRTScatterNDCreator::TRTScatterNDCreator() {
   mFC.fields = mPluginAttributes.data();
 }
 
-const char *TRTScatterNDCreator::getPluginName() const { return PLUGIN_NAME; }
+const char *TRTScatterNDCreator::getPluginName() const TRT_NOEXCEPT {
+  return PLUGIN_NAME;
+}
 
-const char *TRTScatterNDCreator::getPluginVersion() const {
+const char *TRTScatterNDCreator::getPluginVersion() const TRT_NOEXCEPT {
   return PLUGIN_VERSION;
 }
 
 nvinfer1::IPluginV2 *TRTScatterNDCreator::createPlugin(
-    const char *name, const nvinfer1::PluginFieldCollection *fc) {
+    const char *name, const nvinfer1::PluginFieldCollection *fc) TRT_NOEXCEPT {
   TRTScatterND *plugin = new TRTScatterND(name);
   plugin->setPluginNamespace(getPluginNamespace());
   return plugin;
 }
 
 nvinfer1::IPluginV2 *TRTScatterNDCreator::deserializePlugin(
-    const char *name, const void *serialData, size_t serialLength) {
+    const char *name, const void *serialData,
+    size_t serialLength) TRT_NOEXCEPT {
   auto plugin = new TRTScatterND(name, serialData, serialLength);
   plugin->setPluginNamespace(getPluginNamespace());
   return plugin;

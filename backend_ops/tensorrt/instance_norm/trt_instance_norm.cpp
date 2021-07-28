@@ -31,18 +31,19 @@ TRTInstanceNormalization::TRTInstanceNormalization(const std::string& name,
 TRTInstanceNormalization::~TRTInstanceNormalization() {}
 
 // TRTInstanceNormalization returns one output.
-int TRTInstanceNormalization::getNbOutputs() const { return 1; }
+int TRTInstanceNormalization::getNbOutputs() const TRT_NOEXCEPT { return 1; }
 
 DimsExprs TRTInstanceNormalization::getOutputDimensions(
     int outputIndex, const nvinfer1::DimsExprs* inputs, int nbInputs,
-    nvinfer1::IExprBuilder& exprBuilder) {
+    nvinfer1::IExprBuilder& exprBuilder) TRT_NOEXCEPT {
   nvinfer1::DimsExprs output(inputs[0]);
   return output;
 }
 
 size_t TRTInstanceNormalization::getWorkspaceSize(
     const nvinfer1::PluginTensorDesc* inputs, int nbInputs,
-    const nvinfer1::PluginTensorDesc* outputs, int nbOutputs) const {
+    const nvinfer1::PluginTensorDesc* outputs,
+    int nbOutputs) const TRT_NOEXCEPT {
   int n = inputs[0].dims.d[0];
   int c = inputs[0].dims.d[1];
   int elem_size = getElementSize(inputs[1].type);
@@ -52,7 +53,7 @@ size_t TRTInstanceNormalization::getWorkspaceSize(
 int TRTInstanceNormalization::enqueue(
     const nvinfer1::PluginTensorDesc* inputDesc,
     const nvinfer1::PluginTensorDesc* outputDesc, const void* const* inputs,
-    void* const* outputs, void* workspace, cudaStream_t stream) {
+    void* const* outputs, void* workspace, cudaStream_t stream) TRT_NOEXCEPT {
   nvinfer1::Dims input_dims = inputDesc[0].dims;
   int n = input_dims.d[0];
   int c = input_dims.d[1];
@@ -97,47 +98,48 @@ int TRTInstanceNormalization::enqueue(
   return 0;
 }
 
-size_t TRTInstanceNormalization::getSerializationSize() const {
+size_t TRTInstanceNormalization::getSerializationSize() const TRT_NOEXCEPT {
   return serialized_size(mEpsilon);
 }
 
-void TRTInstanceNormalization::serialize(void* buffer) const {
+void TRTInstanceNormalization::serialize(void* buffer) const TRT_NOEXCEPT {
   serialize_value(&buffer, mEpsilon);
 }
 
 bool TRTInstanceNormalization::supportsFormatCombination(
     int pos, const nvinfer1::PluginTensorDesc* inOut, int nbInputs,
-    int nbOutputs) {
+    int nbOutputs) TRT_NOEXCEPT {
   return ((inOut[pos].type == nvinfer1::DataType::kFLOAT ||
            inOut[pos].type == nvinfer1::DataType::kHALF) &&
           inOut[pos].format == nvinfer1::PluginFormat::kLINEAR &&
           inOut[pos].type == inOut[0].type);
 }
 
-const char* TRTInstanceNormalization::getPluginType() const {
+const char* TRTInstanceNormalization::getPluginType() const TRT_NOEXCEPT {
   return PLUGIN_NAME;
 }
 
-const char* TRTInstanceNormalization::getPluginVersion() const {
+const char* TRTInstanceNormalization::getPluginVersion() const TRT_NOEXCEPT {
   return PLUGIN_VERSION;
 }
 
-IPluginV2DynamicExt* TRTInstanceNormalization::clone() const {
+IPluginV2DynamicExt* TRTInstanceNormalization::clone() const TRT_NOEXCEPT {
   auto* plugin = new TRTInstanceNormalization{mLayerName, mEpsilon};
   plugin->setPluginNamespace(mPluginNamespace.c_str());
   return plugin;
 }
 
 nvinfer1::DataType TRTInstanceNormalization::getOutputDataType(
-    int index, const nvinfer1::DataType* inputTypes, int nbInputs) const {
+    int index, const nvinfer1::DataType* inputTypes,
+    int nbInputs) const TRT_NOEXCEPT {
   return inputTypes[0];
 }
 
 // Attach the plugin object to an execution context and grant the plugin the
 // access to some context resource.
-void TRTInstanceNormalization::attachToContext(cudnnContext* cudnnContext,
-                                               cublasContext* cublasContext,
-                                               IGpuAllocator* gpuAllocator) {
+void TRTInstanceNormalization::attachToContext(
+    cudnnContext* cudnnContext, cublasContext* cublasContext,
+    IGpuAllocator* gpuAllocator) TRT_NOEXCEPT {
   _cudnn_handle = cudnnContext;
   cudnnCreateTensorDescriptor(&_b_desc);
   cudnnCreateTensorDescriptor(&_x_desc);
@@ -145,7 +147,7 @@ void TRTInstanceNormalization::attachToContext(cudnnContext* cudnnContext,
 }
 
 // Detach the plugin object from its execution context.
-void TRTInstanceNormalization::detachFromContext() {
+void TRTInstanceNormalization::detachFromContext() TRT_NOEXCEPT {
   cudnnDestroyTensorDescriptor(_y_desc);
   cudnnDestroyTensorDescriptor(_x_desc);
   cudnnDestroyTensorDescriptor(_b_desc);
@@ -153,7 +155,7 @@ void TRTInstanceNormalization::detachFromContext() {
 
 void TRTInstanceNormalization::configurePlugin(
     const nvinfer1::DynamicPluginTensorDesc* in, int nbInputs,
-    const nvinfer1::DynamicPluginTensorDesc* out, int nbOutputs) {}
+    const nvinfer1::DynamicPluginTensorDesc* out, int nbOutputs) TRT_NOEXCEPT {}
 
 // TRTInstanceNormalizationCreator methods
 TRTInstanceNormalizationCreator::TRTInstanceNormalizationCreator() {
@@ -165,16 +167,18 @@ TRTInstanceNormalizationCreator::TRTInstanceNormalizationCreator() {
   mFC.fields = mPluginAttributes.data();
 }
 
-const char* TRTInstanceNormalizationCreator::getPluginName() const {
+const char* TRTInstanceNormalizationCreator::getPluginName() const
+    TRT_NOEXCEPT {
   return PLUGIN_NAME;
 }
 
-const char* TRTInstanceNormalizationCreator::getPluginVersion() const {
+const char* TRTInstanceNormalizationCreator::getPluginVersion() const
+    TRT_NOEXCEPT {
   return PLUGIN_VERSION;
 }
 
 IPluginV2DynamicExt* TRTInstanceNormalizationCreator::createPlugin(
-    const char* name, const nvinfer1::PluginFieldCollection* fc) {
+    const char* name, const nvinfer1::PluginFieldCollection* fc) TRT_NOEXCEPT {
   float epsilon = 1e-5;
   const PluginField* fields = fc->fields;
   for (int i = 0; i < fc->nbFields; ++i) {
@@ -190,7 +194,8 @@ IPluginV2DynamicExt* TRTInstanceNormalizationCreator::createPlugin(
 }
 
 IPluginV2DynamicExt* TRTInstanceNormalizationCreator::deserializePlugin(
-    const char* name, const void* serialData, size_t serialLength) {
+    const char* name, const void* serialData,
+    size_t serialLength) TRT_NOEXCEPT {
   TRTInstanceNormalization* obj =
       new TRTInstanceNormalization{name, serialData, serialLength};
   obj->setPluginNamespace(mNamespace.c_str());
