@@ -153,14 +153,10 @@ class TensorRTDetector(DeployBaseDetector):
         except (ImportError, ModuleNotFoundError):
             warnings.warn('If input model has custom plugins, \
                 you may have to build backend ops with TensorRT')
-
-        output_names = ['dets', 'labels']
-        model = TRTWrapper(engine_file)
-        if model.output_names == 3:
-            output_names.append('masks')
-        self.model = model
-        self.output_names = output_names
-        self.with_mask_output = len(output_names) == 3
+        self.model = TRTWrapper(engine_file)
+        self.output_names = ['dets', 'labels']
+        if len(self.model.output_names) == 3:
+            self.output_names.append('masks')
 
     def forward_test(self, imgs, *args, **kwargs):
         input_data = imgs[0].contiguous()
@@ -168,4 +164,13 @@ class TensorRTDetector(DeployBaseDetector):
             outputs = self.model({'input': input_data})
             outputs = [outputs[name] for name in self.output_names]
         outputs = [out.detach().cpu().numpy() for out in outputs]
+        # filtered out invalid output filled with -1
+        batch_labels = outputs[1]
+        batch_size = batch_labels.shape[0]
+        inds = batch_labels.reshape(-1) != -1
+        for i in range(len(outputs)):
+            ori_shape = outputs[i].shape
+            outputs[i] = outputs[i].reshape(-1,
+                                            *ori_shape[2:])[inds, ...].reshape(
+                                                batch_size, -1, *ori_shape[2:])
         return outputs

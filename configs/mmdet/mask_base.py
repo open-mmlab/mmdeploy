@@ -1,8 +1,6 @@
-_base_ = ['../_base_/torch2onnx.py']
-codebase = 'mmdet'
+_base_ = ['./base.py']
 pytorch2onnx = dict(
-    input_names=['input'],
-    output_names=['dets', 'labels'],
+    output_names=['dets', 'labels', 'masks'],
     dynamic_axes={
         'input': {
             0: 'batch',
@@ -17,14 +15,11 @@ pytorch2onnx = dict(
             0: 'batch',
             1: 'num_dets',
         },
+        'masks': {
+            0: 'batch',
+            1: 'num_dets',
+            2: 'height',
+            3: 'width'
+        },
     },
-)
-
-post_processing = dict(
-    score_threshold=0.05,
-    iou_threshold=0.5,
-    max_output_boxes_per_class=200,
-    pre_top_k=-1,
-    keep_top_k=100,
-    background_label_id=-1,
 )

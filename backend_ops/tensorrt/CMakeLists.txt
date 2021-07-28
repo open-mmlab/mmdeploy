@@ -53,7 +53,8 @@ set(PLUGIN_LISTS scatternd
                  roi_align
                  batched_nms
                  instance_norm
-                 multi_level_roi_align)
+                 multi_level_roi_align
+                 grid_sampler)
 
 foreach(PLUGIN_ITER ${PLUGIN_LISTS})
         file(GLOB PLUGIN_OPS_SRCS ${PLUGIN_ITER}/*.cpp ${PLUGIN_ITER}/*.cu)

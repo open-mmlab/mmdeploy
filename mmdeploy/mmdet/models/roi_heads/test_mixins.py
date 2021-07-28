@@ -43,8 +43,6 @@ def simple_test_mask_of_mask_test_mixin(ctx, self, x, img_metas, det_bboxes,
         has not been executed this time'
 
     batch_size = det_bboxes.size(0)
-    # if det_bboxes is rescaled to the original image size, we need to
-    # rescale it back to the testing scale to obtain RoIs.
     det_bboxes = det_bboxes[..., :4]
     batch_index = torch.arange(
         det_bboxes.size(0),
