@@ -203,7 +203,11 @@ nvinfer1::IPluginV2 *TRTMultiLevelRoiAlignCreator::createPlugin(
     } else if (field_name.compare("finest_scale") == 0) {
       finestScale = static_cast<const int *>(fc->fields[i].data)[0];
     } else if (field_name.compare("featmap_strides") == 0) {
+#if NV_TENSORRT_MAJOR > 7
+      int data_size = (fc->fields[i].length);
+#else
       int data_size = (fc->fields[i].length) / sizeof(float);
+#endif
       const float *data_start = static_cast<const float *>(fc->fields[i].data);
       featmapStrides = std::vector<float>(data_start, data_start + data_size);
     } else if (field_name.compare("aligned") == 0) {
