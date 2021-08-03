@@ -2,6 +2,7 @@ import torch
 
 from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.mmdet.core import multiclass_nms
+from mmdeploy.mmdet.export import pad_with_value
 from mmdeploy.utils import is_dynamic_shape
 
 
@@ -50,6 +51,7 @@ def get_bboxes_of_rpn_head(ctx,
             # be consistent with other head since mmdet v2.0. In mmdet v2.0
             # to v2.4 we keep BG label as 0 and FG label as 1 in rpn head.
             scores = cls_score.softmax(-1)[..., 0]
+        scores = scores.reshape(batch_size, -1, 1)
         bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, 4)
 
         # use static anchor if input shape is static
@@ -58,32 +60,27 @@ def get_bboxes_of_rpn_head(ctx,
 
         anchors = anchors.expand_as(bbox_pred)
 
-        enable_nms_pre = True
         backend = deploy_cfg['backend']
         # topk in tensorrt does not support shape<k
-        # final level might meet the problem
-        # TODO: support dynamic shape feature with TensorRT for topK op
+        # concate zero to enable topk,
         if backend == 'tensorrt':
-            enable_nms_pre = (level_id != num_levels - 1)
+            scores = pad_with_value(scores, 1, pre_topk, 0.)
+            bbox_pred = pad_with_value(bbox_pred, 1, pre_topk)
+            anchors = pad_with_value(anchors, 1, pre_topk)
 
-        if pre_topk > 0 and enable_nms_pre:
-            _, topk_inds = scores.topk(pre_topk)
+        if pre_topk > 0:
+            _, topk_inds = scores.squeeze(2).topk(pre_topk)
             batch_inds = torch.arange(
                 batch_size, device=device).view(-1, 1).expand_as(topk_inds)
-            # Avoid onnx2tensorrt issue in https://github.com/NVIDIA/TensorRT/issues/1134 # noqa: E501
-            transformed_inds = scores.shape[1] * batch_inds + topk_inds
-            scores = scores.reshape(-1, 1)[transformed_inds].reshape(
-                batch_size, -1)
-            bbox_pred = bbox_pred.reshape(-1, 4)[transformed_inds, :].reshape(
-                batch_size, -1, 4)
-            anchors = anchors.reshape(-1, 4)[transformed_inds, :].reshape(
-                batch_size, -1, 4)
+            anchors = anchors[batch_inds, topk_inds, :]
+            bbox_pred = bbox_pred[batch_inds, topk_inds, :]
+            scores = scores[batch_inds, topk_inds, :]
         mlvl_valid_bboxes.append(bbox_pred)
         mlvl_scores.append(scores)
         mlvl_valid_anchors.append(anchors)
 
     batch_mlvl_bboxes = torch.cat(mlvl_valid_bboxes, dim=1)
-    batch_mlvl_scores = torch.cat(mlvl_scores, dim=1).unsqueeze(2)
+    batch_mlvl_scores = torch.cat(mlvl_scores, dim=1)
     batch_mlvl_anchors = torch.cat(mlvl_valid_anchors, dim=1)
     batch_mlvl_bboxes = self.bbox_coder.decode(
         batch_mlvl_anchors,

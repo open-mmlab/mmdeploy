@@ -1,7 +1,6 @@
 import warnings
 
 import numpy as np
-import onnxruntime as ort
 import torch
 from mmcls.models import BaseClassifier
 
@@ -11,6 +10,7 @@ class ONNXRuntimeClassifier(BaseClassifier):
 
     def __init__(self, onnx_file, class_names, device_id):
         super(ONNXRuntimeClassifier, self).__init__()
+        import onnxruntime as ort
         sess = ort.InferenceSession(onnx_file)
 
         providers = ['CPUExecutionProvider']

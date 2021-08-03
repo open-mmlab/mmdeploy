@@ -2,6 +2,7 @@ import torch
 
 from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.mmdet.core import distance2bbox, multiclass_nms
+from mmdeploy.mmdet.export import pad_with_value
 from mmdeploy.utils import is_dynamic_shape
 
 
@@ -59,14 +60,16 @@ def get_bboxes_of_fcos_head(ctx,
 
         points = points.expand(batch_size, -1, 2)
 
-        enable_nms_pre = True
         backend = deploy_cfg['backend']
         # topk in tensorrt does not support shape<k
-        # final level might meet the problem
+        # concate zero to enable topk,
         if backend == 'tensorrt':
-            enable_nms_pre = (level_id != num_levels - 1)
+            scores = pad_with_value(scores, 1, pre_topk, 0.)
+            centerness = pad_with_value(centerness, 1, pre_topk)
+            bbox_pred = pad_with_value(bbox_pred, 1, pre_topk)
+            points = pad_with_value(points, 1, pre_topk)
 
-        if pre_topk > 0 and enable_nms_pre:
+        if pre_topk > 0:
             max_scores, _ = (scores * centerness).max(-1)
             _, topk_inds = max_scores.topk(pre_topk)
             batch_inds = torch.arange(batch_size).view(-1,
@@ -92,7 +95,7 @@ def get_bboxes_of_fcos_head(ctx,
     if not with_nms:
         return batch_mlvl_bboxes, batch_mlvl_scores, batch_mlvl_centerness
 
-    batch_mlvl_scores = batch_mlvl_scores * (batch_mlvl_centerness)
+    batch_mlvl_scores = batch_mlvl_scores * batch_mlvl_centerness
     post_params = deploy_cfg.post_processing
     max_output_boxes_per_class = post_params.max_output_boxes_per_class
     iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)

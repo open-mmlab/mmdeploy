@@ -2,6 +2,7 @@ import torch
 
 from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.mmdet.core import multiclass_nms
+from mmdeploy.mmdet.export import pad_with_value
 from mmdeploy.utils import is_dynamic_shape
 
 
@@ -55,15 +56,15 @@ def get_bboxes_of_anchor_head(ctx,
 
         anchors = anchors.expand_as(bbox_pred)
 
-        enable_nms_pre = True
         backend = deploy_cfg['backend']
         # topk in tensorrt does not support shape<k
-        # final level might meet the problem
-        # TODO: support dynamic shape feature with TensorRT for topK op
+        # concate zero to enable topk,
         if backend == 'tensorrt':
-            enable_nms_pre = (level_id != num_levels - 1)
+            anchors = pad_with_value(anchors, 1, pre_topk)
+            bbox_pred = pad_with_value(bbox_pred, 1, pre_topk)
+            scores = pad_with_value(scores, 1, pre_topk, 0.)
 
-        if pre_topk > 0 and enable_nms_pre:
+        if pre_topk > 0:
             # Get maximum scores for foreground classes.
             if self.use_sigmoid_cls:
                 max_scores, _ = scores.max(-1)

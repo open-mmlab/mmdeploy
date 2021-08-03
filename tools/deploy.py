@@ -7,7 +7,8 @@ import mmcv
 import torch.multiprocessing as mp
 from torch.multiprocessing import Process, set_start_method
 
-from mmdeploy.apis import extract_model, inference_model, torch2onnx
+from mmdeploy.apis import (assert_cfg_valid, extract_model, inference_model,
+                           torch2onnx)
 
 
 def parse_args():
@@ -70,9 +71,7 @@ def main():
 
     # load deploy_cfg
     deploy_cfg = mmcv.Config.fromfile(deploy_cfg_path)
-    if not isinstance(deploy_cfg, (mmcv.Config, mmcv.ConfigDict)):
-        raise TypeError('deploy_cfg must be a filename or Config object, '
-                        f'but got {type(deploy_cfg)}')
+    assert_cfg_valid(deploy_cfg, model_cfg_path)
 
     # create work_dir if not
     mmcv.mkdir_or_exist(osp.abspath(args.work_dir))
