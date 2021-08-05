@@ -55,7 +55,7 @@ def instance_norm(g, input, num_groups, weight, bias, eps, cudnn_enabled):
 
     # Norm has shape [N, C, *] so we reshape weight and bias to [C, *]
     axes = list(range(1, input_rank - 1))
-    from torch.onnx.symbolic_opset9 import mul, add
+    from torch.onnx.symbolic_opset9 import add, mul
     return add(g, mul(g, norm, _unsqueeze_helper(g, weight, axes)),
                _unsqueeze_helper(g, bias, axes))
 

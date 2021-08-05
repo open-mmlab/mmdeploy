@@ -1,4 +1,8 @@
-from .model_wrappers import ONNXRuntimeClassifier, TensorRTClassifier
+from .model_wrappers import (NCNNClassifier, ONNXRuntimeClassifier,
+                             TensorRTClassifier)
 from .prepare_input import create_input
 
-__all__ = ['create_input', 'ONNXRuntimeClassifier', 'TensorRTClassifier']
+__all__ = [
+    'create_input', 'NCNNClassifier', 'ONNXRuntimeClassifier',
+    'TensorRTClassifier'
+]

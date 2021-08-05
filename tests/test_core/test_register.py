@@ -69,8 +69,9 @@ def test_function_rewriter():
 
 
 def test_module_rewriter():
-    from mmdeploy.core import MODULE_REWRITER, patch_model
     from torchvision.models.resnet import resnet50
+
+    from mmdeploy.core import MODULE_REWRITER, patch_model
 
     @MODULE_REWRITER.register_rewrite_module(
         module_type='torchvision.models.resnet.Bottleneck', backend='tensorrt')
@@ -105,10 +106,11 @@ def test_module_rewriter():
 
 
 def test_symbolic_register():
+    import onnx
+    from torch.autograd import Function
+
     import mmdeploy
     from mmdeploy.core import SYMBOLIC_REGISTER, register_extra_symbolics
-    from torch.autograd import Function
-    import onnx
 
     class TestFunc(Function):
 

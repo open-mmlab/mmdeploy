@@ -15,8 +15,8 @@ def is_available():
 
 if is_available():
     from .onnx2tensorrt import onnx2tensorrt
-    from .tensorrt_utils import (TRTWrapper, load_trt_engine,
-                                 create_trt_engine, save_trt_engine)
+    from .tensorrt_utils import (TRTWrapper, create_trt_engine,
+                                 load_trt_engine, save_trt_engine)
 
     # load tensorrt plugin lib
     load_tensorrt_plugin()

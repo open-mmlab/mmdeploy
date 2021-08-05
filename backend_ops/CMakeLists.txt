@@ -16,3 +16,9 @@ if (BUILD_TENSORRT_OPS)
     message("Build TensorRT custom ops.")
     add_subdirectory (tensorrt)
 endif()
+
+# build NCNN ops
+if (BUILD_NCNN_OPS)
+    message("Build NCNN custom ops")
+    add_subdirectory (ncnn)
+endif()

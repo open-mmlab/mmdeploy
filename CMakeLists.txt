@@ -26,4 +26,18 @@ if (BUILD_TENSORRT_OPS)
     endif()
 endif()
 
+# NCNN config
+
+# enable ncnn
+option(BUILD_NCNN_OPS "enable NCNN ops" OFF)
+# NCNN search path
+if (BUILD_NCNN_OPS)
+    if (NOT DEFINED NCNN_DIR)
+        set(NCNN_DIR $ENV{NCNN_DIR})
+    endif()
+    if (NOT NCNN_DIR)
+    message(ERROR " NCNN_DIR is not found.")
+    endif()
+endif()
+
 add_subdirectory (backend_ops)

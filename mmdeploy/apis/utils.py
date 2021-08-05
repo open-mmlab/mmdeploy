@@ -104,6 +104,13 @@ def init_backend_model(model_files: Sequence[str],
             from mmdeploy.mmcls.export import TensorRTClassifier
             backend_model = TensorRTClassifier(
                 model_files[0], class_names=class_names, device_id=device_id)
+        elif backend == 'ncnn':
+            from mmdeploy.mmcls.export import NCNNClassifier
+            backend_model = NCNNClassifier(
+                model_files[0],
+                model_files[1],
+                class_names=class_names,
+                device_id=device_id)
         else:
             raise NotImplementedError(f'Unsupported backend type: {backend}')
         return backend_model

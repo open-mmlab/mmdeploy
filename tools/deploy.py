@@ -1,6 +1,7 @@
 import argparse
 import logging
 import os.path as osp
+import subprocess
 from functools import partial
 
 import mmcv
@@ -139,6 +140,29 @@ def main():
                 ret_value=ret_value)
 
             backend_files.append(osp.join(args.work_dir, save_file))
+
+    elif backend == 'ncnn':
+        from mmdeploy.apis.ncnn import get_onnx2ncnn_path
+        from mmdeploy.apis.ncnn import is_available as is_available_ncnn
+
+        if not is_available_ncnn():
+            logging.error('ncnn support is not available.')
+            exit(-1)
+
+        onnx2ncnn_path = get_onnx2ncnn_path()
+
+        backend_files = []
+        for onnx_path in onnx_files:
+            onnx_name = osp.splitext(osp.split(onnx_path)[1])[0]
+            save_param = onnx_name + '.param'
+            save_bin = onnx_name + '.bin'
+
+            save_param = osp.join(args.work_dir, save_param)
+            save_bin = osp.join(args.work_dir, save_bin)
+
+            subprocess.call([onnx2ncnn_path, onnx_path, save_param, save_bin])
+
+            backend_files += [save_param, save_bin]
 
     # check model outputs by visualization
     codebase = deploy_cfg['codebase']

@@ -5,12 +5,34 @@ import torch
 from mmcls.models import BaseClassifier
 
 
-class ONNXRuntimeClassifier(BaseClassifier):
+class DeployBaseClassifier(BaseClassifier):
+    """Base Class of Wrapper for classifier's inference."""
+
+    def __init__(self, class_names, device_id):
+        super(DeployBaseClassifier, self).__init__()
+        self.CLASSES = class_names
+        self.device_id = device_id
+
+    def simple_test(self, img, *args, **kwargs):
+        raise NotImplementedError('This method is not implemented.')
+
+    def extract_feat(self, imgs):
+        raise NotImplementedError('This method is not implemented.')
+
+    def forward_train(self, imgs, **kwargs):
+        raise NotImplementedError('This method is not implemented.')
+
+    def forward_test(self, imgs, *args, **kwargs):
+        raise NotImplementedError('This method is not implemented.')
+
+
+class ONNXRuntimeClassifier(DeployBaseClassifier):
     """Wrapper for classifier's inference with ONNXRuntime."""
 
     def __init__(self, onnx_file, class_names, device_id):
-        super(ONNXRuntimeClassifier, self).__init__()
+        super(ONNXRuntimeClassifier, self).__init__(class_names, device_id)
         import onnxruntime as ort
+
         sess = ort.InferenceSession(onnx_file)
 
         providers = ['CPUExecutionProvider']
@@ -22,20 +44,9 @@ class ONNXRuntimeClassifier(BaseClassifier):
         sess.set_providers(providers, options)
 
         self.sess = sess
-        self.CLASSES = class_names
-        self.device_id = device_id
         self.io_binding = sess.io_binding()
         self.output_names = [_.name for _ in sess.get_outputs()]
         self.is_cuda_available = is_cuda_available
-
-    def simple_test(self, img, *args, **kwargs):
-        raise NotImplementedError('This method is not implemented.')
-
-    def extract_feat(self, imgs):
-        raise NotImplementedError('This method is not implemented.')
-
-    def forward_train(self, imgs, **kwargs):
-        raise NotImplementedError('This method is not implemented.')
 
     def forward_test(self, imgs, *args, **kwargs):
         input_data = imgs
@@ -59,10 +70,10 @@ class ONNXRuntimeClassifier(BaseClassifier):
         return list(results)
 
 
-class TensorRTClassifier(BaseClassifier):
+class TensorRTClassifier(DeployBaseClassifier):
 
     def __init__(self, trt_file, class_names, device_id):
-        super(TensorRTClassifier, self).__init__()
+        super(TensorRTClassifier, self).__init__(class_names, device_id)
         from mmdeploy.apis.tensorrt import TRTWrapper, load_tensorrt_plugin
         try:
             load_tensorrt_plugin()
@@ -72,17 +83,6 @@ class TensorRTClassifier(BaseClassifier):
         model = TRTWrapper(trt_file)
 
         self.model = model
-        self.device_id = device_id
-        self.CLASSES = class_names
-
-    def simple_test(self, img, *args, **kwargs):
-        raise NotImplementedError('This method is not implemented.')
-
-    def extract_feat(self, imgs):
-        raise NotImplementedError('This method is not implemented.')
-
-    def forward_train(self, imgs, **kwargs):
-        raise NotImplementedError('This method is not implemented.')
 
     def forward_test(self, imgs, *args, **kwargs):
         input_data = imgs
@@ -91,3 +91,33 @@ class TensorRTClassifier(BaseClassifier):
         results = results.detach().cpu().numpy()
 
         return list(results)
+
+
+class NCNNClassifier(DeployBaseClassifier):
+
+    def __init__(self, ncnn_param_file, ncnn_bin_file, class_names, device_id):
+        super(NCNNClassifier, self).__init__(class_names, device_id)
+        import ncnn
+        from mmdeploy.apis.ncnn import ncnn_ext
+        self.net = ncnn.Net()
+        ncnn_ext.register_mm_custom_layers(self.net)
+        self.net.load_param(ncnn_param_file)
+        self.net.load_model(ncnn_bin_file)
+
+    def forward_test(self, imgs, *args, **kwargs):
+        import ncnn
+        assert len(imgs.shape) == 4
+        # Only for batch == 1 now.
+        assert imgs.shape[0] == 1
+        input_data = imgs[0].cpu().numpy()
+        input_data = ncnn.Mat(input_data)
+        if self.device_id == -1:
+            ex = self.net.create_extractor()
+            ex.input('input', input_data)
+            ret, results = ex.extract('output')
+            results = np.array(results)
+            assert ret != -100, 'Memory allocation failed in ncnn layers'
+            assert ret == 0
+            return [results]
+        else:
+            raise NotImplementedError('GPU device is not implemented.')
