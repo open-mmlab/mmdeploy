@@ -28,6 +28,15 @@
     make -j10
     ```
 
+  - Build with ncnn support
+
+    ```bash
+    mkdir build
+    cd build
+    cmake -DBUILD_NCNN_OPS=ON -DNCNN_DIR=${PATH_TO_NCNN} ..
+    make -j10
+    ```
+
   - Or you can add multiple flags to build multiple backend ops.
 
 - Setup project
