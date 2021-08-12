@@ -74,7 +74,8 @@ class DeployBaseDetector(BaseDetector):
                 img_h, img_w = img_metas[i]['img_shape'][:2]
                 ori_h, ori_w = img_metas[i]['ori_shape'][:2]
                 masks = masks[:, :img_h, :img_w]
-                if rescale and batch_masks.shape[1] > 0:
+                # avoid to resize masks with zero dim
+                if rescale and masks.shape[0] != 0:
                     masks = masks.astype(np.float32)
                     masks = torch.from_numpy(masks)
                     masks = torch.nn.functional.interpolate(

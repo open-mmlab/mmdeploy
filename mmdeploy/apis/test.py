@@ -10,13 +10,13 @@ from mmdeploy.apis.utils import assert_module_exist
 
 
 def prepare_data_loader(codebase: str, model_cfg: Union[str, mmcv.Config]):
+    assert_module_exist(codebase)
     # load model_cfg if necessary
     if isinstance(model_cfg, str):
         model_cfg = mmcv.Config.fromfile(model_cfg)
 
     if codebase == 'mmcls':
         from mmcls.datasets import (build_dataloader, build_dataset)
-        assert_module_exist(codebase)
         # build dataset and dataloader
         dataset = build_dataset(model_cfg.data.test)
         data_loader = build_dataloader(
@@ -27,7 +27,6 @@ def prepare_data_loader(codebase: str, model_cfg: Union[str, mmcv.Config]):
             round_up=False)
 
     elif codebase == 'mmdet':
-        assert_module_exist(codebase)
         from mmdet.datasets import (build_dataloader, build_dataset,
                                     replace_ImageToTensor)
         # in case the test dataset is concatenated
@@ -58,7 +57,17 @@ def prepare_data_loader(codebase: str, model_cfg: Union[str, mmcv.Config]):
             workers_per_gpu=model_cfg.data.workers_per_gpu,
             dist=False,
             shuffle=False)
-
+    elif codebase == 'mmseg':
+        from mmseg.datasets import build_dataset, build_dataloader
+        model_cfg.data.test.test_mode = True
+        dataset = build_dataset(model_cfg.data.test)
+        samples_per_gpu = 1
+        data_loader = build_dataloader(
+            dataset,
+            samples_per_gpu=samples_per_gpu,
+            workers_per_gpu=model_cfg.data.workers_per_gpu,
+            dist=False,
+            shuffle=False)
     else:
         raise NotImplementedError(f'Unknown codebase type: {codebase}')
 
@@ -71,16 +80,18 @@ def single_gpu_test(codebase: str,
                     show: bool = False,
                     out_dir: Any = None,
                     show_score_thr: float = 0.3):
+    assert_module_exist(codebase)
+
     if codebase == 'mmcls':
-        assert_module_exist(codebase)
         from mmcls.apis import single_gpu_test
         outputs = single_gpu_test(model, data_loader, show, out_dir)
     elif codebase == 'mmdet':
-        assert_module_exist(codebase)
         from mmdet.apis import single_gpu_test
         outputs = single_gpu_test(model, data_loader, show, out_dir,
                                   show_score_thr)
-
+    elif codebase == 'mmseg':
+        from mmseg.apis import single_gpu_test
+        outputs = single_gpu_test(model, data_loader, show, out_dir)
     else:
         raise NotImplementedError(f'Unknown codebase type: {codebase}')
     return outputs
@@ -137,6 +148,16 @@ def post_process_outputs(outputs,
                 eval_kwargs.pop(key, None)
             eval_kwargs.update(dict(metric=metrics, **kwargs))
             print(dataset.evaluate(outputs, **eval_kwargs))
+
+    elif codebase == 'mmseg':
+        if out:
+            print(f'\nwriting results to {out}')
+            mmcv.dump(outputs, out)
+        kwargs = {} if metric_options is None else metric_options
+        if format_only:
+            dataset.format_results(outputs, **kwargs)
+        if metrics:
+            dataset.evaluate(outputs, metrics, **kwargs)
 
     else:
         raise NotImplementedError(f'Unknown codebase type: {codebase}')
