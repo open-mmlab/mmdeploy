@@ -111,6 +111,10 @@ def init_backend_model(model_files: Sequence[str],
                 model_files[1],
                 class_names=class_names,
                 device_id=device_id)
+        elif backend == 'ppl':
+            from mmdeploy.mmcls.export import PPLClassifier
+            backend_model = PPLClassifier(
+                model_files[0], class_names=class_names, device_id=device_id)
         else:
             raise NotImplementedError(f'Unsupported backend type: {backend}')
         return backend_model
@@ -124,6 +128,10 @@ def init_backend_model(model_files: Sequence[str],
         elif backend == 'tensorrt':
             from mmdeploy.mmdet.export import TensorRTDetector
             backend_model = TensorRTDetector(
+                model_files[0], class_names=class_names, device_id=device_id)
+        elif backend == 'ppl':
+            from mmdeploy.mmdet.export import PPLDetector
+            backend_model = PPLDetector(
                 model_files[0], class_names=class_names, device_id=device_id)
         else:
             raise NotImplementedError(f'Unsupported backend type: {backend}')

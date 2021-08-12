@@ -121,3 +121,50 @@ class NCNNClassifier(DeployBaseClassifier):
             return [results]
         else:
             raise NotImplementedError('GPU device is not implemented.')
+
+
+class PPLClassifier(DeployBaseClassifier):
+    """Wrapper for classifier's inference with PPL."""
+
+    def __init__(self, onnx_file, class_names, device_id):
+        super(PPLClassifier, self).__init__(class_names, device_id)
+        import pyppl.nn as pplnn
+        from mmdeploy.apis.ppl import register_engines
+
+        # enable quick select by default to speed up pipeline
+        # TODO: open it to users after ppl supports saving serialized models
+        # TODO: disable_avx512 will be removed or open to users in config
+        engines = register_engines(
+            device_id, disable_avx512=False, quick_select=True)
+        cuda_options = pplnn.CudaEngineOptions()
+        cuda_options.device_id = device_id
+        runtime_builder = pplnn.OnnxRuntimeBuilderFactory.CreateFromFile(
+            onnx_file, engines)
+        assert runtime_builder is not None, 'Failed to create '\
+            'ONNXRuntimeBuilder.'
+
+        runtime_options = pplnn.RuntimeOptions()
+        runtime = runtime_builder.CreateRuntime(runtime_options)
+        assert runtime is not None, 'Failed to create the instance of Runtime.'
+
+        self.runtime = runtime
+        self.CLASSES = class_names
+        self.device_id = device_id
+        self.inputs = [
+            runtime.GetInputTensor(i) for i in range(runtime.GetInputCount())
+        ]
+
+    def forward_test(self, imgs, *args, **kwargs):
+        import pyppl.common as pplcommon
+        input_data = imgs
+        self.inputs[0].ConvertFromHost(input_data.cpu().numpy())
+        status = self.runtime.Run()
+        assert status == pplcommon.RC_SUCCESS, 'Run() '\
+            'failed: ' + pplcommon.GetRetCodeStr(status)
+        status = self.runtime.Sync()
+        assert status == pplcommon.RC_SUCCESS, 'Sync() '\
+            'failed: ' + pplcommon.GetRetCodeStr(status)
+        results = self.runtime.GetOutputTensor(0).ConvertToHost()
+        results = np.array(results, copy=False)
+
+        return list(results)
