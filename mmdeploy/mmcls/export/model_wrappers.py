@@ -107,20 +107,23 @@ class NCNNClassifier(DeployBaseClassifier):
     def forward_test(self, imgs, *args, **kwargs):
         import ncnn
         assert len(imgs.shape) == 4
-        # Only for batch == 1 now.
-        assert imgs.shape[0] == 1
-        input_data = imgs[0].cpu().numpy()
-        input_data = ncnn.Mat(input_data)
-        if self.device_id == -1:
-            ex = self.net.create_extractor()
-            ex.input('input', input_data)
-            ret, results = ex.extract('output')
-            results = np.array(results)
-            assert ret != -100, 'Memory allocation failed in ncnn layers'
-            assert ret == 0
-            return [results]
-        else:
-            raise NotImplementedError('GPU device is not implemented.')
+        batch_size = imgs.shape[0]
+        results_list = []
+        for idx in range(batch_size):
+            input_data = imgs[idx].cpu().numpy()
+            input_data = ncnn.Mat(input_data)
+            if self.device_id == -1:
+                extractor = self.net.create_extractor()
+                extractor.input('input', input_data)
+                return_status, results = extractor.extract('output')
+                results = np.array(results)
+                assert return_status != -100, \
+                    'Memory allocation failed in ncnn layers'
+                assert return_status == 0
+                results_list.append(results)
+            else:
+                raise NotImplementedError('GPU device is not implemented.')
+        return results_list
 
 
 class PPLClassifier(DeployBaseClassifier):

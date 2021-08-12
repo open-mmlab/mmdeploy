@@ -14,7 +14,8 @@ def parse_args():
         description='MMDeploy test (and eval) a backend.')
     parser.add_argument('deploy_cfg', help='Deploy config path')
     parser.add_argument('model_cfg', help='Model config path')
-    parser.add_argument('model', help='Input model file.')
+    parser.add_argument(
+        '--model', type=str, nargs='+', help='Input model files.')
     parser.add_argument('--out', help='output result file in pickle format')
     parser.add_argument(
         '--format-only',
@@ -66,7 +67,6 @@ def main():
     args = parse_args()
     if args.out is not None and not args.out.endswith(('.pkl', '.pickle')):
         raise ValueError('The output file must be a pkl file.')
-
     deploy_cfg_path = args.deploy_cfg
     model_cfg_path = args.model_cfg
 
@@ -82,13 +82,12 @@ def main():
     # load the model of the backend
     device_id = -1 if args.device == 'cpu' else 0
     backend = deploy_cfg.get('backend', 'default')
-    model = init_backend_model([args.model],
-                               codebase=codebase,
-                               backend=backend,
-                               class_names=get_classes_from_config(
-                                   codebase, model_cfg),
-                               device_id=device_id)
-
+    model = init_backend_model(
+        args.model,
+        codebase=codebase,
+        backend=backend,
+        class_names=get_classes_from_config(codebase, model_cfg),
+        device_id=device_id)
     model = MMDataParallel(model, device_ids=[0])
     outputs = single_gpu_test(codebase, model, data_loader, args.show,
                               args.show_dir, args.show_score_thr)

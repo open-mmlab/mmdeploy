@@ -66,3 +66,19 @@ Before starting this tutorial, you should make sure that the prerequisites menti
     Undefined symbol: __cpu_model
     ```
     This is a bug of gcc-5, you should update to `gcc >= 6`
+
+## Performance Test
+
+### MMCls
+This table shows the performance of mmclassification models deployed on ncnn.
+
+Dataset: ImageNet `val` dataset.
+
+| Model | Top-1(%) | Top-5(%) |
+|-------|----------|----------|
+| MobileNetV2| 71.86 (71.86) | 90.42 (90.42) |
+| ResNet | 69.88 (70.07) | 89.34 (89.44) |
+| ResNeXt | 78.61 (78.71) | 94.17 (94.12) |
+
+The data in the parentheses is the inference result from pytorch.
+(According to: [mmcls model_zoo docs](https://github.com/open-mmlab/mmclassification/blob/master/docs/model_zoo.md))
