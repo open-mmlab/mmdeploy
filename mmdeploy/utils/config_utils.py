@@ -1,3 +1,4 @@
+import re
 from typing import Union
 
 import mmcv
@@ -57,3 +58,16 @@ def is_dynamic_shape(deploy_cfg: Union[str, mmcv.Config],
         return True
 
     return False
+
+
+def parse_extractor_io_string(io_str):
+    name, io_type = io_str.split(':')
+    assert io_type in ['input', 'output']
+    func_id = 0
+
+    search_result = re.search(r'^(.+)\[([0-9]+)\]$', name)
+    if search_result is not None:
+        name = search_result.group(1)
+        func_id = int(search_result.group(2))
+
+    return name, func_id, io_type

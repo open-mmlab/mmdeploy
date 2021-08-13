@@ -1,5 +1,6 @@
 from torch.autograd import Function
 
+from mmdeploy.core.optimizers import mark
 from mmdeploy.core.rewriters import FUNCTION_REWRITER
 
 
@@ -51,6 +52,7 @@ class MultiLevelRoiAlign(Function):
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.roi_heads.SingleRoIExtractor.forward',
     backend='tensorrt')
+@mark('roi_extractor', inputs=['feats', 'rois'], outputs=['bbox_feats'])
 def forward_of_single_roi_extractor_static(ctx,
                                            self,
                                            feats,
@@ -74,6 +76,7 @@ def forward_of_single_roi_extractor_static(ctx,
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.roi_heads.SingleRoIExtractor.forward')
+@mark('roi_extractor', inputs=['feats', 'rois'], outputs=['bbox_feats'])
 def forward_of_single_roi_extractor_dynamic(ctx,
                                             self,
                                             feats,

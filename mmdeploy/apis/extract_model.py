@@ -1,11 +1,12 @@
 import logging
-from typing import Iterable, Optional, Union
+from typing import Dict, Iterable, Optional, Union
 
 import onnx
 import onnx.helper
 import onnx.utils
 import torch.multiprocessing as mp
 
+from mmdeploy.utils import parse_extractor_io_string
 from .utils import attribute_to_dict
 
 
@@ -73,10 +74,20 @@ def is_identity(node):
     return node.op_type == 'Identity'
 
 
-def get_new_name(attrs):
+def get_new_name(attrs, mark_name='', name_map=None):
     if 'name' in attrs:
-        return attrs['name']
-    return '_'.join((attrs['func'], attrs['type'], str(attrs['id'])))
+        new_name = attrs['name']
+    else:
+        new_name = '_'.join((attrs['func'], attrs['type'], str(attrs['id'])))
+
+    if name_map is not None:
+        if new_name in name_map:
+            return name_map[new_name]
+
+        if f'{mark_name}:{new_name}' in name_map:
+            return name_map[f'{mark_name}:{new_name}']
+
+    return new_name
 
 
 def rename_value(model, old_name, new_name):
@@ -162,6 +173,9 @@ def optimize(model):
 def extract_model(model: Union[str, onnx.ModelProto],
                   start: Union[str, Iterable[str]],
                   end: Union[str, Iterable[str]],
+                  start_name_map: Optional[Dict[str, str]] = None,
+                  end_name_map: Optional[Dict[str, str]] = None,
+                  dynamic_axes: Optional[Dict[str, Dict[int, str]]] = None,
                   save_file: Optional[str] = None,
                   ret_value: Optional[mp.Value] = None):
 
@@ -171,21 +185,31 @@ def extract_model(model: Union[str, onnx.ModelProto],
 
     if isinstance(model, str):
         model = onnx.load(model)
+
+    num_value_info = len(model.graph.value_info)
     inputs = []
     outputs = []
     if not isinstance(start, (list, tuple)):
         start = [start]
     for s in start:
-        start_name, start_type = s.split(':')
-        assert start_type in ['input', 'output']
+        start_name, func_id, start_type = parse_extractor_io_string(s)
         for node in model.graph.node:
             if node.op_type == 'Mark':
                 attr = attribute_to_dict(node.attribute)
-                if attr['func'] == start_name and attr['type'] == start_type:
+                if attr['func'] == start_name and attr[
+                        'type'] == start_type and attr['func_id'] == func_id:
                     name = node.input[0]
                     if name not in inputs:
-                        new_name = get_new_name(attr)
+                        new_name = get_new_name(
+                            attr, mark_name=s, name_map=start_name_map)
                         rename_value(model, name, new_name)
+                        if not any([
+                                v_info.name == new_name
+                                for v_info in model.graph.value_info
+                        ]):
+                            new_val_info = onnx.helper.make_tensor_value_info(
+                                new_name, attr['dtype'], attr['shape'])
+                            model.graph.value_info.append(new_val_info)
                         inputs.append(new_name)
 
     logging.info(f'inputs: {", ".join(inputs)}')
@@ -194,16 +218,24 @@ def extract_model(model: Union[str, onnx.ModelProto],
     if not isinstance(end, (list, tuple)):
         end = [end]
     for e in end:
-        end_name, end_type = e.split(':')
-        assert end_type in ['input', 'output']
+        end_name, func_id, end_type = parse_extractor_io_string(e)
         for node in model.graph.node:
             if node.op_type == 'Mark':
                 attr = attribute_to_dict(node.attribute)
-                if attr['func'] == end_name and attr['type'] == end_type:
+                if attr['func'] == end_name and attr[
+                        'type'] == end_type and attr['func_id'] == func_id:
                     name = node.output[0]
                     if name not in outputs:
-                        new_name = get_new_name(attr)
+                        new_name = get_new_name(
+                            attr, mark_name=e, name_map=end_name_map)
                         rename_value(model, name, new_name)
+                        if not any([
+                                v_info.name == new_name
+                                for v_info in model.graph.value_info
+                        ]):
+                            new_val_info = onnx.helper.make_tensor_value_info(
+                                new_name, attr['dtype'], attr['shape'])
+                            model.graph.value_info.append(new_val_info)
                         outputs.append(new_name)
 
     logging.info(f'outputs: {", ".join(outputs)}')
@@ -261,6 +293,10 @@ def extract_model(model: Union[str, onnx.ModelProto],
 
     # eliminate duplicated value_info for inputs
     success = True
+    # num_value_info == 0 if dynamic shape
+    if num_value_info == 0:
+        while len(extracted_model.graph.value_info) > 0:
+            extracted_model.graph.value_info.pop()
     while success:
         success = False
         for i, x in enumerate(extracted_model.graph.value_info):
@@ -268,6 +304,19 @@ def extract_model(model: Union[str, onnx.ModelProto],
                 del extracted_model.graph.value_info[i]
                 success = True
                 break
+
+    # dynamic shape support
+    if dynamic_axes is not None:
+        for input_node in extracted_model.graph.input:
+            if input_node.name in dynamic_axes:
+                axes = dynamic_axes[input_node.name]
+                for k, v in axes.items():
+                    input_node.type.tensor_type.shape.dim[k].dim_value = 0
+                    input_node.type.tensor_type.shape.dim[k].dim_param = v
+        for output_node in extracted_model.graph.output:
+            for idx, dim in enumerate(output_node.type.tensor_type.shape.dim):
+                dim.dim_value = 0
+                dim.dim_param = f'dim_{idx}'
 
     # save extract_model if save_file is given
     if save_file is not None:

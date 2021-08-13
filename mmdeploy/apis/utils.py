@@ -15,10 +15,12 @@ def assert_cfg_valid(cfg: Union[str, mmcv.Config, mmcv.ConfigDict], *args):
         if not isinstance(cfg, (mmcv.Config, mmcv.ConfigDict)):
             raise TypeError('deploy_cfg must be a filename or Config object, '
                             f'but got {type(cfg)}')
+        return cfg
 
-    _assert_cfg_valid_(cfg)
-    for cfg in args:
-        _assert_cfg_valid_(cfg)
+    args = (cfg, ) + args
+    ret = [_assert_cfg_valid_(cfg) for cfg in args]
+
+    return ret
 
 
 def assert_module_exist(module_name: str):
@@ -56,12 +58,9 @@ def create_input(codebase: str,
                  model_cfg: Union[str, mmcv.Config],
                  imgs: Any,
                  device: str = 'cuda:0'):
+    model_cfg = assert_cfg_valid(model_cfg)[0]
+
     assert_module_exist(codebase)
-    if isinstance(model_cfg, str):
-        model_cfg = mmcv.Config.fromfile(model_cfg)
-    elif not isinstance(model_cfg, (mmcv.Config, mmcv.ConfigDict)):
-        raise TypeError('config must be a filename or Config object, '
-                        f'but got {type(model_cfg)}')
     cfg = model_cfg.copy()
     if codebase == 'mmcls':
         from mmdeploy.mmcls.export import create_input
@@ -91,11 +90,17 @@ def attribute_to_dict(attr):
 
 
 def init_backend_model(model_files: Sequence[str],
-                       codebase: str,
-                       backend: str,
-                       class_names: Sequence[str],
-                       device_id: int = 0):
+                       model_cfg: Union[str, mmcv.Config],
+                       deploy_cfg: Union[str, mmcv.Config],
+                       device_id: int = 0,
+                       **kwargs):
+    deploy_cfg, model_cfg = assert_cfg_valid(deploy_cfg, model_cfg)
+
+    codebase = deploy_cfg['codebase']
+    backend = deploy_cfg['backend']
     assert_module_exist(codebase)
+    class_names = get_classes_from_config(codebase, model_cfg)
+
     if codebase == 'mmcls':
         if backend == 'onnxruntime':
             from mmdeploy.mmcls.export import ONNXRuntimeClassifier
@@ -121,21 +126,9 @@ def init_backend_model(model_files: Sequence[str],
         return backend_model
 
     elif codebase == 'mmdet':
-        if backend == 'onnxruntime':
-            from mmdeploy.mmdet.export import ONNXRuntimeDetector
-            backend_model = ONNXRuntimeDetector(
-                model_files[0], class_names=class_names, device_id=device_id)
-        elif backend == 'tensorrt':
-            from mmdeploy.mmdet.export import TensorRTDetector
-            backend_model = TensorRTDetector(
-                model_files[0], class_names=class_names, device_id=device_id)
-        elif backend == 'ppl':
-            from mmdeploy.mmdet.export import PPLDetector
-            backend_model = PPLDetector(
-                model_files[0], class_names=class_names, device_id=device_id)
-        else:
-            raise NotImplementedError(f'Unsupported backend type: {backend}')
-        return backend_model
+        from mmdeploy.mmdet.export.model_wrappers import build_detector
+        return build_detector(
+            model_files, model_cfg, deploy_cfg, device_id=device_id)
 
     elif codebase == 'mmseg':
         if backend == 'onnxruntime':
@@ -157,16 +150,17 @@ def get_classes_from_config(codebase: str, model_cfg: Union[str, mmcv.Config]):
     assert_module_exist(codebase)
 
     model_cfg_str = model_cfg
-    if isinstance(model_cfg, str):
-        model_cfg = mmcv.Config.fromfile(model_cfg)
-    elif not isinstance(model_cfg, (mmcv.Config, mmcv.ConfigDict)):
-        raise TypeError('config must be a filename or Config object, '
-                        f'but got {type(model_cfg)}')
+    model_cfg = assert_cfg_valid(model_cfg)[0]
+
+    if codebase == 'mmdet':
+        from mmdeploy.mmdet.export.model_wrappers \
+            import get_classes_from_config as get_classes_mmdet
+        return get_classes_mmdet(model_cfg)
 
     if codebase == 'mmcls':
         from mmcls.datasets import DATASETS
     elif codebase == 'mmdet':
-        from mmdet.datasets import DATASETS
+        from mmcls.datasets import DATASETS
     elif codebase == 'mmseg':
         from mmseg.datasets import DATASETS
     else:
@@ -244,5 +238,15 @@ def check_model_outputs(codebase: str,
                 win_name=backend,
                 out_file=output_file,
                 opacity=0.5)
+    else:
+        raise NotImplementedError(f'Unknown codebase type: {codebase}')
+
+
+def get_split_cfg(codebase: str, split_type: str):
+    if codebase == 'mmdet':
+        assert_module_exist(codebase)
+        from mmdeploy.mmdet.export import get_split_cfg \
+            as get_split_cfg_mmdet
+        return get_split_cfg_mmdet(split_type)
     else:
         raise NotImplementedError(f'Unknown codebase type: {codebase}')

@@ -2,22 +2,28 @@ from typing import Optional
 
 import torch.multiprocessing as mp
 
-from .utils import (check_model_outputs, create_input, get_classes_from_config,
+from .utils import (assert_cfg_valid, check_model_outputs, create_input,
                     init_backend_model, init_model)
 
 
 def inference_model(model_cfg,
+                    deploy_cfg,
                     model,
                     img,
-                    codebase: str,
-                    backend: str,
                     device: str,
+                    backend: Optional[str] = None,
                     output_file: Optional[str] = None,
                     show_result=False,
                     ret_value: Optional[mp.Value] = None):
 
     if ret_value is not None:
         ret_value.value = -1
+
+    deploy_cfg, model_cfg = assert_cfg_valid(deploy_cfg, model_cfg)
+
+    codebase = deploy_cfg['codebase']
+    if backend is None:
+        backend = deploy_cfg['backend']
 
     if isinstance(model, str):
         model = [model]
@@ -28,9 +34,8 @@ def inference_model(model_cfg,
             device_id = -1 if device == 'cpu' else 0
             model = init_backend_model(
                 model,
-                codebase=codebase,
-                backend=backend,
-                class_names=get_classes_from_config(codebase, model_cfg),
+                model_cfg=model_cfg,
+                deploy_cfg=deploy_cfg,
                 device_id=device_id)
 
     model_inputs, _ = create_input(codebase, model_cfg, img, device)

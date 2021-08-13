@@ -1,4 +1,5 @@
 import torch
+from mmcv.ops import nms
 from torch.onnx import symbolic_helper as sym_help
 
 from mmdeploy.core import SYMBOLIC_REGISTER
@@ -13,16 +14,28 @@ class DummyONNXNMSop(torch.autograd.Function):
     @staticmethod
     def forward(ctx, boxes, scores, max_output_boxes_per_class, iou_threshold,
                 score_threshold):
-        batch_size, num_class, num_box = scores.shape
-        # create dummy indices of nms output
-        # number of detection should be large enough to
-        # cover all layers of fpn
-        num_fake_det = 100
-        batch_inds = torch.randint(batch_size, (num_fake_det, 1))
-        cls_inds = torch.randint(num_class, (num_fake_det, 1))
-        box_inds = torch.randint(num_box, (num_fake_det, 1))
-        indices = torch.cat([batch_inds, cls_inds, box_inds], dim=1)
-        return indices.to(scores.device)
+        batch_size, num_class, _ = scores.shape
+
+        score_threshold = float(score_threshold)
+        iou_threshold = float(iou_threshold)
+        indices = []
+        for batch_id in range(batch_size):
+            for cls_id in range(num_class):
+                _boxes = boxes[batch_id, ...]
+                _scores = scores[batch_id, cls_id, ...]
+                _, box_inds = nms(
+                    _boxes,
+                    _scores,
+                    iou_threshold,
+                    offset=0,
+                    score_threshold=score_threshold,
+                    max_num=max_output_boxes_per_class)
+                batch_inds = torch.zeros_like(box_inds) + batch_id
+                cls_inds = torch.zeros_like(box_inds) + cls_id
+                indices.append(
+                    torch.stack([batch_inds, cls_inds, box_inds], dim=-1))
+        indices = torch.cat(indices)
+        return indices
 
     @staticmethod
     def symbolic(g, boxes, scores, max_output_boxes_per_class, iou_threshold,

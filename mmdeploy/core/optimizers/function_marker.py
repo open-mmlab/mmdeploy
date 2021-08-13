@@ -1,18 +1,29 @@
 import inspect
 
 import torch
+from torch.onnx.symbolic_helper import cast_pytorch_to_onnx
 
 from mmdeploy.core.rewriters.function_rewriter import FUNCTION_REWRITER
+
+MARK_FUNCTION_COUNT = dict()
+
+
+def reset_mark_function_count():
+    for k in MARK_FUNCTION_COUNT:
+        MARK_FUNCTION_COUNT[k] = 0
 
 
 class Mark(torch.autograd.Function):
 
     @staticmethod
-    def symbolic(g, x, func, type, name, id, attrs):
+    def symbolic(g, x, shape, func, func_id, type, name, id, attrs):
         n = g.op(
             'mmcv::Mark',
             x,
+            dtype_i=cast_pytorch_to_onnx[x.type().scalarType()].value,
+            shape_i=shape,
             func_s=func,
+            func_id_i=func_id,
             type_s=type,
             name_s=name,
             id_i=id,
@@ -32,7 +43,7 @@ def mark_symbolic(rewriter, g, x, *args):
     return x
 
 
-def mark_tensors(xs, func, type, ctx, attrs, is_inspecting, level):
+def mark_tensors(xs, func, func_id, type, ctx, attrs, is_inspecting, level):
     visit = set()
     index = 0
 
@@ -47,7 +58,9 @@ def mark_tensors(xs, func, type, ctx, attrs, is_inspecting, level):
                 visit.add(ys)
                 root = ctx.names[ctx.index]
                 name = '/'.join(str(x) for x in (root, *prefix))
-                ret = Mark.apply(ys, func, type, name, index, attrs)
+                ys_shape = tuple(int(s) for s in ys.shape)
+                ret = Mark.apply(ys, ys_shape, func, func_id, type, name,
+                                 index, attrs)
                 index += 1
         elif isinstance(ys, list):
             ret = [
@@ -71,6 +84,7 @@ def mark_tensors(xs, func, type, ctx, attrs, is_inspecting, level):
 
 
 def mark(func_name=None, inputs=None, outputs=None, **attrs):
+    MARK_FUNCTION_COUNT[func_name] = 0
 
     class Context:
 
@@ -99,18 +113,18 @@ def mark(func_name=None, inputs=None, outputs=None, **attrs):
             rets_level += 1
 
         def g(*args, **kwargs):
-            if torch.onnx.is_in_onnx_export():
-                ctx = Context(input_names)
-                args = mark_tensors(args, func, 'input', ctx, attrs,
-                                    is_inspect, args_level)
+            func_id = MARK_FUNCTION_COUNT[func_name]
+            MARK_FUNCTION_COUNT[func_name] += 1
+            ctx = Context(input_names)
+            args = mark_tensors(args, func, func_id, 'input', ctx, attrs,
+                                is_inspect, args_level)
 
-                rets = f(*args, **kwargs)
+            rets = f(*args, **kwargs)
 
-                ctx = Context(output_names)
-                return mark_tensors(rets, func, 'output', ctx, attrs, False,
-                                    rets_level)
-            else:
-                return f(*args, **kwargs)
+            ctx = Context(output_names)
+            func_ret = mark_tensors(rets, func, func_id, 'output', ctx, attrs,
+                                    False, rets_level)
+            return func_ret
 
         return g
 

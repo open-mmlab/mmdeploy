@@ -28,7 +28,7 @@ def select_nms_index(scores, boxes, nms_index, batch_size, keep_top_k=-1):
         batched_labels.new_ones(1) * -1)
 
     # sort
-    if keep_top_k > 0:
+    if keep_top_k > 0 and keep_top_k < batched_dets.shape[1]:
         _, topk_inds = batched_dets[:, :, -1].topk(keep_top_k, dim=1)
     else:
         _, topk_inds = batched_dets[:, :, -1].sort(dim=1, descending=True)

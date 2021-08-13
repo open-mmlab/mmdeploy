@@ -10,6 +10,7 @@ from torch.multiprocessing import Process, set_start_method
 
 from mmdeploy.apis import (assert_cfg_valid, extract_model, inference_model,
                            torch2onnx)
+from mmdeploy.apis.utils import get_split_cfg
 
 
 def parse_args():
@@ -96,21 +97,32 @@ def main():
     apply_marks = deploy_cfg.get('apply_marks', False)
     if apply_marks:
         assert hasattr(deploy_cfg, 'split_params')
-        split_params = deploy_cfg.get('split_params', None)
+        split_params = deploy_cfg['split_params']
+
+        if 'split_cfg' in split_params:
+            split_cfgs = split_params.get('split_cfg', None)
+        else:
+            assert 'split_type' in split_params
+            split_cfgs = get_split_cfg(deploy_cfg['codebase'],
+                                       split_params['split_type'])
 
         origin_onnx_file = onnx_files[0]
         onnx_files = []
-        for split_param in split_params:
-            save_file = split_param['save_file']
+        for split_cfg in split_cfgs:
+            save_file = split_cfg['save_file']
             save_path = osp.join(args.work_dir, save_file)
-            start = split_param['start']
-            end = split_param['end']
+            start = split_cfg['start']
+            end = split_cfg['end']
+            dynamic_axes = split_cfg.get('dynamic_axes', None)
 
             create_process(
                 f'split model {save_file} with start: {start}, end: {end}',
                 extract_model,
                 args=(origin_onnx_file, start, end),
-                kwargs=dict(save_file=save_path, ret_value=ret_value),
+                kwargs=dict(
+                    dynamic_axes=dynamic_axes,
+                    save_file=save_path,
+                    ret_value=ret_value),
                 ret_value=ret_value)
 
             onnx_files.append(save_path)
@@ -125,6 +137,10 @@ def main():
         assert len(model_params) == len(onnx_files)
 
         from mmdeploy.apis.tensorrt import onnx2tensorrt
+        from mmdeploy.apis.tensorrt import is_available as trt_is_available
+        assert trt_is_available(
+        ), 'TensorRT is not available,' \
+            + ' please install TensorRT and build TensorRT custom ops first.'
         backend_files = []
         for model_id, model_param, onnx_path in zip(
                 range(len(onnx_files)), model_params, onnx_files):
@@ -165,16 +181,13 @@ def main():
             backend_files += [save_param, save_bin]
 
     # check model outputs by visualization
-    codebase = deploy_cfg['codebase']
 
     # visualize model of the backend
     create_process(
         f'visualize {backend} model',
         target=inference_model,
-        args=(model_cfg_path, backend_files, args.img),
+        args=(model_cfg_path, deploy_cfg_path, backend_files, args.img),
         kwargs=dict(
-            codebase=codebase,
-            backend=backend,
             device=args.device,
             output_file=f'output_{backend}.jpg',
             show_result=args.show,
@@ -185,11 +198,10 @@ def main():
     create_process(
         'visualize pytorch model',
         target=inference_model,
-        args=(model_cfg_path, [checkpoint_path], args.img),
+        args=(model_cfg_path, deploy_cfg_path, [checkpoint_path], args.img),
         kwargs=dict(
-            codebase=codebase,
-            backend='pytorch',
             device=args.device,
+            backend='pytorch',
             output_file='output_pytorch.jpg',
             show_result=args.show,
             ret_value=ret_value),

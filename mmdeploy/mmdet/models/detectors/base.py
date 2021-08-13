@@ -1,11 +1,13 @@
 import torch
 
-from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.core import FUNCTION_REWRITER, mark
 from mmdeploy.utils import is_dynamic_shape
 
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.BaseDetector.forward')
+@mark(
+    'detector_forward', inputs=['input'], outputs=['dets', 'labels', 'masks'])
 def forward_of_base_detector(ctx, self, img, img_metas=None, **kwargs):
     if img_metas is None:
         img_metas = {}

@@ -6,7 +6,7 @@ from mmcv.parallel import MMDataParallel
 
 from mmdeploy.apis import (init_backend_model, post_process_outputs,
                            prepare_data_loader, single_gpu_test)
-from mmdeploy.apis.utils import assert_cfg_valid, get_classes_from_config
+from mmdeploy.apis.utils import assert_cfg_valid
 
 
 def parse_args():
@@ -81,13 +81,12 @@ def main():
 
     # load the model of the backend
     device_id = -1 if args.device == 'cpu' else 0
-    backend = deploy_cfg.get('backend', 'default')
     model = init_backend_model(
         args.model,
-        codebase=codebase,
-        backend=backend,
-        class_names=get_classes_from_config(codebase, model_cfg),
+        model_cfg=args.model_cfg,
+        deploy_cfg=args.deploy_cfg,
         device_id=device_id)
+
     model = MMDataParallel(model, device_ids=[0])
     outputs = single_gpu_test(codebase, model, data_loader, args.show,
                               args.show_dir, args.show_score_thr)

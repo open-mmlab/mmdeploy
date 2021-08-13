@@ -1,16 +1,21 @@
 import os.path as osp
 import warnings
+from functools import partial
+from typing import Union
 
+import mmcv
 import numpy as np
 import torch
 from mmdet.core import bbox2result
 from mmdet.models import BaseDetector
 
+from mmdeploy.mmdet.core.post_processing import multiclass_nms
+
 
 class DeployBaseDetector(BaseDetector):
     """DeployBaseDetector."""
 
-    def __init__(self, class_names, device_id):
+    def __init__(self, class_names, device_id, **kwargs):
         super(DeployBaseDetector, self).__init__()
         self.CLASSES = class_names
         self.device_id = device_id
@@ -95,8 +100,9 @@ class DeployBaseDetector(BaseDetector):
 class ONNXRuntimeDetector(DeployBaseDetector):
     """Wrapper for detector's inference with ONNXRuntime."""
 
-    def __init__(self, onnx_file, class_names, device_id):
-        super(ONNXRuntimeDetector, self).__init__(class_names, device_id)
+    def __init__(self, model_file, class_names, device_id, **kwargs):
+        super(ONNXRuntimeDetector, self).__init__(class_names, device_id,
+                                                  **kwargs)
         import onnxruntime as ort
 
         # get the custom op path
@@ -106,7 +112,7 @@ class ONNXRuntimeDetector(DeployBaseDetector):
         # register custom op for onnxruntime
         if osp.exists(ort_custom_op_path):
             session_options.register_custom_ops_library(ort_custom_op_path)
-        sess = ort.InferenceSession(onnx_file, session_options)
+        sess = ort.InferenceSession(model_file, session_options)
         providers = ['CPUExecutionProvider']
         options = [{}]
         is_cuda_available = ort.get_device() == 'GPU'
@@ -146,15 +152,16 @@ class ONNXRuntimeDetector(DeployBaseDetector):
 class TensorRTDetector(DeployBaseDetector):
     """Wrapper for detector's inference with TensorRT."""
 
-    def __init__(self, engine_file, class_names, device_id):
-        super(TensorRTDetector, self).__init__(class_names, device_id)
+    def __init__(self, model_file, class_names, device_id, **kwargs):
+        super(TensorRTDetector, self).__init__(class_names, device_id,
+                                               **kwargs)
         from mmdeploy.apis.tensorrt import TRTWrapper, load_tensorrt_plugin
         try:
             load_tensorrt_plugin()
         except (ImportError, ModuleNotFoundError):
             warnings.warn('If input model has custom plugins, \
                 you may have to build backend ops with TensorRT')
-        self.model = TRTWrapper(engine_file)
+        self.model = TRTWrapper(model_file)
         self.output_names = ['dets', 'labels']
         if len(self.model.output_names) == 3:
             self.output_names.append('masks')
@@ -177,10 +184,305 @@ class TensorRTDetector(DeployBaseDetector):
         return outputs
 
 
+# Split Single-Stage Base
+class SplitSingleStageBaseDetector(DeployBaseDetector):
+    """Wrapper for detector's inference with TensorRT."""
+
+    def __init__(self, class_names, model_cfg, deploy_cfg, device_id,
+                 **kwargs):
+        super().__init__(class_names, device_id, **kwargs)
+        # load deploy_cfg if necessary
+        if isinstance(deploy_cfg, str):
+            deploy_cfg = mmcv.Config.fromfile(deploy_cfg)
+        if not isinstance(deploy_cfg, mmcv.Config):
+            raise TypeError('deploy_cfg must be a filename or Config object, '
+                            f'but got {type(deploy_cfg)}')
+
+        # load model_cfg if needed
+        if isinstance(model_cfg, str):
+            model_cfg = mmcv.Config.fromfile(model_cfg)
+        if not isinstance(model_cfg, mmcv.Config):
+            raise TypeError('config must be a filename or Config object, '
+                            f'but got {type(model_cfg)}')
+
+        self.model_cfg = model_cfg
+        self.deploy_cfg = deploy_cfg
+
+    def split0_postprocess(self, scores, bboxes):
+        cfg = self.model_cfg.model.test_cfg
+        deploy_cfg = self.deploy_cfg
+
+        post_params = deploy_cfg.post_processing
+        max_output_boxes_per_class = post_params.max_output_boxes_per_class
+        iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)
+        score_threshold = cfg.get('score_thr', post_params.score_threshold)
+        pre_top_k = post_params.pre_top_k
+        keep_top_k = cfg.get('max_per_img', post_params.keep_top_k)
+        return multiclass_nms(
+            bboxes,
+            scores,
+            max_output_boxes_per_class,
+            iou_threshold=iou_threshold,
+            score_threshold=score_threshold,
+            pre_top_k=pre_top_k,
+            keep_top_k=keep_top_k)
+
+
+class ONNXRuntimeSSSBDetector(SplitSingleStageBaseDetector):
+    """Wrapper for detector's inference with ONNXRuntime."""
+
+    def __init__(self, model_file, class_names, model_cfg, deploy_cfg,
+                 device_id, **kwargs):
+        super().__init__(class_names, model_cfg, deploy_cfg, device_id,
+                         **kwargs)
+        import onnxruntime as ort
+
+        # get the custom op path
+        from mmdeploy.apis.onnxruntime import get_ops_path
+        ort_custom_op_path = get_ops_path()
+        session_options = ort.SessionOptions()
+        # register custom op for onnxruntime
+        if osp.exists(ort_custom_op_path):
+            session_options.register_custom_ops_library(ort_custom_op_path)
+        sess = ort.InferenceSession(model_file, session_options)
+        providers = ['CPUExecutionProvider']
+        options = [{}]
+        is_cuda_available = ort.get_device() == 'GPU'
+        if is_cuda_available:
+            providers.insert(0, 'CUDAExecutionProvider')
+            options.insert(0, {'device_id': device_id})
+
+        sess.set_providers(providers, options)
+
+        self.sess = sess
+        self.io_binding = sess.io_binding()
+        self.output_names = ['scores', 'boxes']
+        self.is_cuda_available = is_cuda_available
+
+    def forward_test(self, imgs, *args, **kwargs):
+        input_data = imgs[0]
+        # set io binding for inputs/outputs
+        device_type = 'cuda' if self.is_cuda_available else 'cpu'
+        if not self.is_cuda_available:
+            input_data = input_data.cpu()
+        self.io_binding.bind_input(
+            name='input',
+            device_type=device_type,
+            device_id=self.device_id,
+            element_type=np.float32,
+            shape=input_data.shape,
+            buffer_ptr=input_data.data_ptr())
+
+        for name in self.output_names:
+            self.io_binding.bind_output(name)
+        # run session to get outputs
+        self.sess.run_with_iobinding(self.io_binding)
+        ort_outputs = self.io_binding.copy_outputs_to_cpu()
+        scores, bboxes = ort_outputs[:2]
+        scores = torch.from_numpy(scores).to(input_data.device)
+        bboxes = torch.from_numpy(bboxes).to(input_data.device)
+        return self.split0_postprocess(scores, bboxes)
+
+
+# Split Two-Stage Base
+class SplitTwoStageBaseDetector(DeployBaseDetector):
+    """Wrapper for detector's inference with TensorRT."""
+
+    def __init__(self, class_names, model_cfg, deploy_cfg, device_id,
+                 **kwargs):
+        super().__init__(class_names, device_id, **kwargs)
+        from mmdet.models.builder import build_roi_extractor, build_head
+        from mmdeploy.mmdet.models.roi_heads.bbox_heads import \
+            get_bboxes_of_bbox_head
+
+        # load deploy_cfg if necessary
+        if isinstance(deploy_cfg, str):
+            deploy_cfg = mmcv.Config.fromfile(deploy_cfg)
+        if not isinstance(deploy_cfg, mmcv.Config):
+            raise TypeError('deploy_cfg must be a filename or Config object, '
+                            f'but got {type(deploy_cfg)}')
+
+        # load model_cfg if needed
+        if isinstance(model_cfg, str):
+            model_cfg = mmcv.Config.fromfile(model_cfg)
+        if not isinstance(model_cfg, mmcv.Config):
+            raise TypeError('config must be a filename or Config object, '
+                            f'but got {type(model_cfg)}')
+
+        self.model_cfg = model_cfg
+        self.deploy_cfg = deploy_cfg
+
+        self.bbox_roi_extractor = build_roi_extractor(
+            model_cfg.model.roi_head.bbox_roi_extractor)
+        self.bbox_head = build_head(model_cfg.model.roi_head.bbox_head)
+
+        class Context:
+            pass
+
+        ctx = Context()
+        ctx.cfg = self.deploy_cfg
+        self.get_bboxes_of_bbox_head = partial(get_bboxes_of_bbox_head, ctx)
+
+    def split0_postprocess(self, x, scores, bboxes):
+        # rpn-nms + roi-extractor
+        cfg = self.model_cfg.model.test_cfg.rpn
+        deploy_cfg = self.deploy_cfg
+
+        post_params = deploy_cfg.post_processing
+        iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)
+        score_threshold = cfg.get('score_thr', post_params.score_threshold)
+        pre_top_k = post_params.pre_top_k
+        keep_top_k = cfg.get('max_per_img', post_params.keep_top_k)
+        # only one class in rpn
+        max_output_boxes_per_class = keep_top_k
+        proposals, _ = multiclass_nms(
+            bboxes,
+            scores,
+            max_output_boxes_per_class,
+            iou_threshold=iou_threshold,
+            score_threshold=score_threshold,
+            pre_top_k=pre_top_k,
+            keep_top_k=keep_top_k)
+
+        rois = proposals
+        batch_index = torch.arange(
+            rois.shape[0], device=rois.device).float().view(-1, 1, 1).expand(
+                rois.size(0), rois.size(1), 1)
+        rois = torch.cat([batch_index, rois[..., :4]], dim=-1)
+        batch_size = rois.shape[0]
+        num_proposals_per_img = rois.shape[1]
+
+        # Eliminate the batch dimension
+        rois = rois.view(-1, 5)
+        bbox_feats = self.bbox_roi_extractor(
+            x[:self.bbox_roi_extractor.num_inputs], rois)
+
+        rois = rois.reshape(batch_size, num_proposals_per_img, rois.size(-1))
+        return rois, bbox_feats
+
+    def split1_postprocess(self, rois, cls_score, bbox_pred, img_metas):
+
+        batch_size = rois.shape[0]
+        num_proposals_per_img = rois.shape[1]
+
+        cls_score = cls_score.reshape(batch_size, num_proposals_per_img,
+                                      cls_score.size(-1))
+
+        bbox_pred = bbox_pred.reshape(batch_size, num_proposals_per_img,
+                                      bbox_pred.size(-1))
+
+        rcnn_test_cfg = self.model_cfg.model.test_cfg.rcnn
+        return self.get_bboxes_of_bbox_head(self.bbox_head, rois, cls_score,
+                                            bbox_pred,
+                                            img_metas[0][0]['img_shape'],
+                                            rcnn_test_cfg)
+
+
+class ONNXRuntimeSTSBDetector(SplitTwoStageBaseDetector):
+    """Wrapper for detector's inference with ONNXRuntime."""
+
+    def __init__(self, model_file, class_names, model_cfg, deploy_cfg,
+                 device_id, **kwargs):
+        super().__init__(class_names, model_cfg, deploy_cfg, device_id,
+                         **kwargs)
+        import onnxruntime as ort
+
+        # get the custom op path
+        from mmdeploy.apis.onnxruntime import get_ops_path
+        ort_custom_op_path = get_ops_path()
+        session_options = ort.SessionOptions()
+        # register custom op for onnxruntime
+        if osp.exists(ort_custom_op_path):
+            session_options.register_custom_ops_library(ort_custom_op_path)
+        providers = ['CPUExecutionProvider']
+        options = [{}]
+        is_cuda_available = ort.get_device() == 'GPU'
+        if is_cuda_available:
+            providers.insert(0, 'CUDAExecutionProvider')
+            options.insert(0, {'device_id': device_id})
+
+        sess_list = []
+        io_binding_list = []
+        for m_file in model_file:
+            sess = ort.InferenceSession(m_file, session_options)
+            sess.set_providers(providers, options)
+            sess_list.append(sess)
+            io_binding_list.append(sess.io_binding())
+
+        self.sess_list = sess_list
+        self.io_binding_list = io_binding_list
+
+        output_names_list = []
+        num_split0_outputs = len(sess_list[0].get_outputs())
+        num_feat = num_split0_outputs - 2
+        output_names_list.append(
+            ['feat/{}'.format(i)
+             for i in range(num_feat)] + ['scores', 'boxes'])  # split0
+        output_names_list.append(['cls_score', 'bbox_pred'])  # split1
+        self.output_names_list = output_names_list
+
+        self.is_cuda_available = is_cuda_available
+
+    def forward_test(self, imgs, img_metas, *args, **kwargs):
+        input_data = imgs[0]
+        # set io binding for inputs/outputs
+        device_type = 'cuda' if self.is_cuda_available else 'cpu'
+
+        # split0
+        if not self.is_cuda_available:
+            input_data = input_data.cpu()
+        self.io_binding_list[0].bind_input(
+            name='input',
+            device_type=device_type,
+            device_id=self.device_id,
+            element_type=np.float32,
+            shape=input_data.shape,
+            buffer_ptr=input_data.data_ptr())
+
+        for name in self.output_names_list[0]:
+            self.io_binding_list[0].bind_output(name)
+        # run session to get outputs
+        self.sess_list[0].run_with_iobinding(self.io_binding_list[0])
+        ort_outputs = self.io_binding_list[0].copy_outputs_to_cpu()
+        feats = ort_outputs[:-2]
+        scores, bboxes = ort_outputs[-2:]
+        feats = [
+            torch.from_numpy(feat).to(input_data.device) for feat in feats
+        ]
+        scores = torch.from_numpy(scores).to(input_data.device)
+        bboxes = torch.from_numpy(bboxes).to(input_data.device)
+
+        # split0_postprocess
+        rois, bbox_feats = self.split0_postprocess(feats, scores, bboxes)
+
+        # split1
+        if not self.is_cuda_available:
+            bbox_feats = bbox_feats.cpu()
+        self.io_binding_list[1].bind_input(
+            name='bbox_feats',
+            device_type=device_type,
+            device_id=self.device_id,
+            element_type=np.float32,
+            shape=bbox_feats.shape,
+            buffer_ptr=bbox_feats.data_ptr())
+
+        for name in self.output_names_list[1]:
+            self.io_binding_list[1].bind_output(name)
+        # run session to get outputs
+        self.sess_list[1].run_with_iobinding(self.io_binding_list[1])
+        ort_outputs = self.io_binding_list[1].copy_outputs_to_cpu()
+        cls_score, bbox_pred = ort_outputs[:2]
+        cls_score = torch.from_numpy(cls_score).to(input_data.device)
+        bbox_pred = torch.from_numpy(bbox_pred).to(input_data.device)
+
+        # split1_postprocess
+        return self.split1_postprocess(rois, cls_score, bbox_pred, img_metas)
+
+
 class PPLDetector(DeployBaseDetector):
     """Wrapper for detector's inference with TensorRT."""
 
-    def __init__(self, onnx_file, class_names, device_id):
+    def __init__(self, model_file, class_names, device_id, **kwargs):
         super(PPLDetector, self).__init__(class_names, device_id)
         import pyppl.nn as pplnn
         from mmdeploy.apis.ppl import register_engines
@@ -193,7 +495,7 @@ class PPLDetector(DeployBaseDetector):
         cuda_options = pplnn.CudaEngineOptions()
         cuda_options.device_id = device_id
         runtime_builder = pplnn.OnnxRuntimeBuilderFactory.CreateFromFile(
-            onnx_file, engines)
+            model_file, engines)
         assert runtime_builder is not None, 'Failed to create '\
             'OnnxRuntimeBuilder.'
 
@@ -223,3 +525,81 @@ class PPLDetector(DeployBaseDetector):
             out_tensor = self.runtime.GetOutputTensor(i).ConvertToHost()
             outputs.append(np.array(out_tensor, copy=False))
         return outputs
+
+
+def get_classes_from_config(model_cfg: Union[str, mmcv.Config], **kwargs):
+    if isinstance(model_cfg, str):
+        model_cfg = mmcv.Config.fromfile(model_cfg)
+    elif not isinstance(model_cfg, (mmcv.Config, mmcv.ConfigDict)):
+        raise TypeError('config must be a filename or Config object, '
+                        f'but got {type(model_cfg)}')
+
+    from mmdet.datasets import DATASETS
+    module_dict = DATASETS.module_dict
+    data_cfg = model_cfg.data
+
+    if 'train' in data_cfg:
+        module = module_dict[data_cfg.train.type]
+    elif 'val' in data_cfg:
+        module = module_dict[data_cfg.val.type]
+    elif 'test' in data_cfg:
+        module = module_dict[data_cfg.test.type]
+    else:
+        raise RuntimeError(f'No dataset config found in: {model_cfg}')
+
+    return module.CLASSES
+
+
+ONNXRUNTIME_DETECTOR_MAP = dict(
+    end2end=ONNXRuntimeDetector,
+    single_stage_base=ONNXRuntimeSSSBDetector,
+    two_stage_base=ONNXRuntimeSTSBDetector)
+TENSORRT_DETECTOR_MAP = dict(end2end=TensorRTDetector)
+
+PPL_DETECTOR_MAP = dict(end2end=PPLDetector)
+
+BACKEND_DETECTOR_MAP = dict(
+    onnxruntime=ONNXRUNTIME_DETECTOR_MAP,
+    tensorrt=TENSORRT_DETECTOR_MAP,
+    ppl=PPL_DETECTOR_MAP)
+
+
+def build_detector(model_files, model_cfg, deploy_cfg, device_id, **kwargs):
+
+    if isinstance(model_cfg, str):
+        model_cfg = mmcv.Config.fromfile(model_cfg)
+    elif not isinstance(model_cfg, (mmcv.Config, mmcv.ConfigDict)):
+        raise TypeError('config must be a filename or Config object, '
+                        f'but got {type(model_cfg)}')
+
+    if isinstance(deploy_cfg, str):
+        deploy_cfg = mmcv.Config.fromfile(deploy_cfg)
+    elif not isinstance(deploy_cfg, (mmcv.Config, mmcv.ConfigDict)):
+        raise TypeError('config must be a filename or Config object, '
+                        f'but got {type(deploy_cfg)}')
+
+    backend = deploy_cfg['backend']
+    class_names = get_classes_from_config(model_cfg)
+
+    assert backend in BACKEND_DETECTOR_MAP, \
+        f'Unsupported backend type: {backend}'
+    detector_map = BACKEND_DETECTOR_MAP[backend]
+
+    split_type = 'end2end'
+    if deploy_cfg.get('apply_marks', False):
+        split_params = deploy_cfg.get('split_params', dict())
+        split_type = split_params.get('split_type', None)
+
+    assert split_type in detector_map, f'Unsupported split type: {split_type}'
+    backend_detector_class = detector_map[split_type]
+
+    model_files = model_files[0] if len(model_files) == 1 else model_files
+    backend_detector = backend_detector_class(
+        model_file=model_files,
+        class_names=class_names,
+        device_id=device_id,
+        model_cfg=model_cfg,
+        deploy_cfg=deploy_cfg,
+        **kwargs)
+
+    return backend_detector

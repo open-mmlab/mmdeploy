@@ -1,8 +1,20 @@
 import torch
 import torch.nn.functional as F
 
-from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.core import FUNCTION_REWRITER, mark
 from mmdeploy.mmdet.core import multiclass_nms
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    func_name='mmdet.models.roi_heads.BBoxHead.forward')
+@FUNCTION_REWRITER.register_rewriter(
+    func_name='mmdet.models.roi_heads.ConvFCBBoxHead.forward')
+@mark(
+    'bbox_head_forward',
+    inputs=['bbox_feats'],
+    outputs=['cls_score', 'bbox_pred'])
+def forward_of_bbox_head(ctx, self, x):
+    return ctx.origin_func(self, x)
 
 
 @FUNCTION_REWRITER.register_rewriter(
