@@ -1,3 +1,4 @@
+import torch
 from torch.autograd import Function
 
 from mmdeploy.core.optimizers import mark
@@ -97,7 +98,12 @@ def forward_of_single_roi_extractor_dynamic(ctx,
     for i in range(num_levels):
         mask = target_lvls == i
         inds = mask.nonzero(as_tuple=False).squeeze(1)
-        rois_i = rois[inds]
+
+        # expand tensor to eliminate [0, ...] tensor
+        rois_i = torch.cat((rois[inds], rois.new_zeros(1, 5)))
+
         roi_feats_t = self.roi_layers[i](feats[i], rois_i)
-        roi_feats[inds] = roi_feats_t
+
+        # slice and recover the tensor
+        roi_feats[inds] = roi_feats_t[0:-1]
     return roi_feats

@@ -27,6 +27,14 @@ def select_nms_index(scores, boxes, nms_index, batch_size, keep_top_k=-1):
         (batch_inds == batch_template.unsqueeze(1)),
         batched_labels.new_ones(1) * -1)
 
+    N = batched_dets.shape[0]
+
+    # expand tensor to eliminate [0, ...] tensor
+    batched_dets = torch.cat((batched_dets, batched_dets.new_zeros((N, 1, 5))),
+                             1)
+    batched_labels = torch.cat((batched_labels, batched_labels.new_zeros(
+        (N, 1))), 1)
+
     # sort
     if keep_top_k > 0 and keep_top_k < batched_dets.shape[1]:
         _, topk_inds = batched_dets[:, :, -1].topk(keep_top_k, dim=1)
@@ -38,7 +46,8 @@ def select_nms_index(scores, boxes, nms_index, batch_size, keep_top_k=-1):
     batched_dets = batched_dets[topk_batch_inds, topk_inds, ...]
     batched_labels = batched_labels[topk_batch_inds, topk_inds, ...]
 
-    return batched_dets, batched_labels
+    # slice and recover the tensor
+    return batched_dets[:, 0:-1, :], batched_labels[:, 0:-1]
 
 
 def _multiclass_nms(boxes,
@@ -93,6 +102,7 @@ def _multiclass_nms(boxes,
 
     dets, labels = select_nms_index(
         scores, boxes, selected_indices, batch_size, keep_top_k=keep_top_k)
+
     return dets, labels
 
 
