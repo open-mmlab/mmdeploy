@@ -1,8 +1,10 @@
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 import mmcv
 import numpy as np
 from mmcv.parallel import collate, scatter
+from mmdet.datasets import build_dataloader as build_dataloader_mmdet
+from mmdet.datasets import build_dataset as build_dataset_mmdet
 from mmdet.datasets import replace_ImageToTensor
 from mmdet.datasets.pipelines import Compose
 
@@ -48,3 +50,43 @@ def create_input(model_cfg: Union[str, mmcv.Config],
         data = scatter(data, [device])[0]
 
     return data, data['img']
+
+
+def build_dataset(dataset_cfg: Union[str, mmcv.Config],
+                  dataset_type: str = 'val',
+                  **kwargs):
+    if isinstance(dataset_cfg, str):
+        dataset_cfg = mmcv.Config.fromfile(dataset_cfg)
+    elif not isinstance(dataset_cfg, (mmcv.Config, mmcv.ConfigDict)):
+        raise TypeError('config must be a filename or Config object, '
+                        f'but got {type(dataset_cfg)}')
+
+    data = dataset_cfg.data
+    assert dataset_type in data
+
+    dataset = build_dataset_mmdet(data[dataset_type])
+
+    return dataset
+
+
+def build_dataloader(dataset,
+                     samples_per_gpu: int,
+                     workers_per_gpu: int,
+                     num_gpus: int = 1,
+                     dist: bool = True,
+                     shuffle: bool = True,
+                     seed: Optional[int] = None,
+                     **kwargs):
+    return build_dataloader_mmdet(
+        dataset,
+        samples_per_gpu,
+        workers_per_gpu,
+        num_gpus=num_gpus,
+        dist=dist,
+        shuffle=shuffle,
+        seed=seed,
+        **kwargs)
+
+
+def get_tensor_from_input(input_data):
+    return input_data['img'][0]

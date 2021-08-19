@@ -8,8 +8,8 @@ import mmcv
 import torch.multiprocessing as mp
 from torch.multiprocessing import Process, set_start_method
 
-from mmdeploy.apis import (assert_cfg_valid, extract_model, inference_model,
-                           torch2onnx)
+from mmdeploy.apis import (assert_cfg_valid, create_calib_table, extract_model,
+                           inference_model, torch2onnx)
 from mmdeploy.apis.utils import get_split_cfg
 
 
@@ -21,6 +21,10 @@ def parse_args():
     parser.add_argument(
         'img', help='image used to convert model and test model')
     parser.add_argument('--work-dir', help='the dir to save logs and models')
+    parser.add_argument(
+        '--calib-dataset-cfg',
+        help='dataset config path used to calibrate.',
+        default=None)
     parser.add_argument(
         '--device', help='device used for conversion', default='cpu')
     parser.add_argument(
@@ -127,6 +131,25 @@ def main():
 
             onnx_files.append(save_path)
 
+    # calib data
+    create_calib = deploy_cfg.get('create_calib', False)
+    if create_calib:
+        calib_params = deploy_cfg.get('calib_params', dict())
+        calib_file = calib_params.get('calib_file', 'calib_file.h5')
+        calib_file = osp.join(args.work_dir, calib_file)
+
+        create_process(
+            'calibration',
+            create_calib_table,
+            args=(calib_file, deploy_cfg_path, model_cfg_path,
+                  checkpoint_path),
+            kwargs=dict(
+                dataset_cfg=args.calib_dataset_cfg,
+                dataset_type='val',
+                device=args.device,
+                ret_value=ret_value),
+            ret_value=ret_value)
+
     backend_files = onnx_files
     # convert backend
     backend = deploy_cfg.get('backend', 'default')
@@ -136,8 +159,8 @@ def main():
         model_params = tensorrt_params.get('model_params', [])
         assert len(model_params) == len(onnx_files)
 
-        from mmdeploy.apis.tensorrt import onnx2tensorrt
         from mmdeploy.apis.tensorrt import is_available as trt_is_available
+        from mmdeploy.apis.tensorrt import onnx2tensorrt
         assert trt_is_available(
         ), 'TensorRT is not available,' \
             + ' please install TensorRT and build TensorRT custom ops first.'
@@ -147,12 +170,16 @@ def main():
             onnx_name = osp.splitext(osp.split(onnx_path)[1])[0]
             save_file = model_param.get('save_file', onnx_name + '.engine')
 
+            split_type = 'end2end' if not apply_marks else onnx_name
             create_process(
                 f'onnx2tensorrt of {onnx_path}',
                 target=onnx2tensorrt,
                 args=(args.work_dir, save_file, model_id, deploy_cfg_path,
                       onnx_path),
-                kwargs=dict(device=args.device, ret_value=ret_value),
+                kwargs=dict(
+                    device=args.device,
+                    split_type=split_type,
+                    ret_value=ret_value),
                 ret_value=ret_value)
 
             backend_files.append(osp.join(args.work_dir, save_file))

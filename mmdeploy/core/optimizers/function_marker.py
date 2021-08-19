@@ -1,7 +1,6 @@
 import inspect
 
 import torch
-from torch.onnx.symbolic_helper import cast_pytorch_to_onnx
 
 from mmdeploy.core.rewriters.function_rewriter import FUNCTION_REWRITER
 
@@ -13,14 +12,29 @@ def reset_mark_function_count():
         MARK_FUNCTION_COUNT[k] = 0
 
 
+TORCH_DTYPE_TO_ONNX = {
+    torch.uint8: torch.onnx.TensorProtoDataType.UINT8,
+    torch.int8: torch.onnx.TensorProtoDataType.INT8,
+    torch.float64: torch.onnx.TensorProtoDataType.DOUBLE,
+    torch.float32: torch.onnx.TensorProtoDataType.FLOAT,
+    torch.float16: torch.onnx.TensorProtoDataType.FLOAT16,
+    torch.int32: torch.onnx.TensorProtoDataType.INT32,
+    torch.int64: torch.onnx.TensorProtoDataType.INT64,
+    torch.int16: torch.onnx.TensorProtoDataType.INT16,
+    torch.bool: torch.onnx.TensorProtoDataType.BOOL,
+    torch.complex64: torch.onnx.TensorProtoDataType.COMPLEX64,
+    torch.complex128: torch.onnx.TensorProtoDataType.COMPLEX128,
+}
+
+
 class Mark(torch.autograd.Function):
 
     @staticmethod
-    def symbolic(g, x, shape, func, func_id, type, name, id, attrs):
+    def symbolic(g, x, dtype, shape, func, func_id, type, name, id, attrs):
         n = g.op(
             'mmcv::Mark',
             x,
-            dtype_i=cast_pytorch_to_onnx[x.type().scalarType()].value,
+            dtype_i=TORCH_DTYPE_TO_ONNX[dtype],
             shape_i=shape,
             func_s=func,
             func_id_i=func_id,
@@ -43,7 +57,60 @@ def mark_symbolic(rewriter, g, x, *args):
     return x
 
 
-def mark_tensors(xs, func, func_id, type, ctx, attrs, is_inspecting, level):
+@FUNCTION_REWRITER.register_rewriter(
+    'mmdeploy.core.optimizers.function_marker.Mark.forward')
+def forward_of_mark(rewriter, ctx, x, dtype, shape, func, func_id, type, name,
+                    id, attrs):
+    deploy_cfg = rewriter.cfg
+    # save calib data
+    apply_marks = deploy_cfg.get('apply_marks', False)
+    create_calib = getattr(rewriter, 'create_calib', False)
+    if apply_marks and create_calib:
+        codebase = deploy_cfg['codebase']
+        assert 'split_params' in deploy_cfg
+        split_params = deploy_cfg['split_params']
+        split_type = split_params['split_type']
+        from mmdeploy.apis.utils import get_split_cfg
+        split_cfgs = get_split_cfg(codebase, split_type)
+        assert hasattr(rewriter, 'calib_file')
+
+        for split_id, split_cfg in enumerate(split_cfgs):
+            start = split_cfg['start']
+            if (f'{func}:{type}' not in start) and (f'{func}[{func_id}]:{type}'
+                                                    not in start):
+                continue
+
+            input_name = name
+            dynamic_axes = split_cfg.get('dynamic_axes', None)
+            if dynamic_axes is not None:
+                input_name = name
+            calib_file = rewriter.calib_file
+
+            calib_data_group = calib_file['calib_data']
+            split_name = f'split{split_id}'
+
+            if split_name not in calib_data_group:
+                calib_data_group.create_group(split_name)
+            split_group = calib_data_group[split_name]
+
+            if input_name not in split_group:
+                split_group.create_group(input_name)
+            input_data_group = split_group[input_name]
+
+            data_id = rewriter.data_id
+            x_np = x.detach().cpu().numpy()
+            input_data_group.create_dataset(
+                str(data_id),
+                shape=x_np.shape,
+                compression='gzip',
+                compression_opts=4,
+                data=x_np)
+
+    return rewriter.origin_func(ctx, x, dtype, shape, func, func_id, type,
+                                name, id, attrs)
+
+
+def mark_tensors(xs, func, func_id, io_type, ctx, attrs, is_inspecting, level):
     visit = set()
     index = 0
 
@@ -59,8 +126,8 @@ def mark_tensors(xs, func, func_id, type, ctx, attrs, is_inspecting, level):
                 root = ctx.names[ctx.index]
                 name = '/'.join(str(x) for x in (root, *prefix))
                 ys_shape = tuple(int(s) for s in ys.shape)
-                ret = Mark.apply(ys, ys_shape, func, func_id, type, name,
-                                 index, attrs)
+                ret = Mark.apply(ys, ys.dtype, ys_shape, func, func_id,
+                                 io_type, name, index, attrs)
                 index += 1
         elif isinstance(ys, list):
             ret = [

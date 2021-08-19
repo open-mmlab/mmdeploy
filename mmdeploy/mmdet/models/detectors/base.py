@@ -4,13 +4,9 @@ from mmdeploy.core import FUNCTION_REWRITER, mark
 from mmdeploy.utils import is_dynamic_shape
 
 
-@FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdet.models.BaseDetector.forward')
 @mark(
     'detector_forward', inputs=['input'], outputs=['dets', 'labels', 'masks'])
-def forward_of_base_detector(ctx, self, img, img_metas=None, **kwargs):
-    if img_metas is None:
-        img_metas = {}
+def _forward_of_base_detector_impl(ctx, self, img, img_metas=None, **kwargs):
     assert isinstance(img_metas, dict)
     assert isinstance(img, torch.Tensor)
 
@@ -22,3 +18,21 @@ def forward_of_base_detector(ctx, self, img, img_metas=None, **kwargs):
         img_shape = [int(val) for val in img_shape]
     img_metas['img_shape'] = img_shape
     return self.simple_test(img, img_metas, **kwargs)
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    func_name='mmdet.models.BaseDetector.forward')
+def forward_of_base_detector(ctx, self, img, img_metas=None, **kwargs):
+    if img_metas is None:
+        img_metas = {}
+
+    while isinstance(img_metas, list):
+        img_metas = img_metas[0]
+
+    if isinstance(img, list):
+        img = torch.cat(img, 0)
+
+    if 'return_loss' in kwargs:
+        kwargs.pop('return_loss')
+    return _forward_of_base_detector_impl(
+        ctx, self, img, img_metas=img_metas, **kwargs)

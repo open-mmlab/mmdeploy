@@ -3,13 +3,18 @@ import tensorrt as trt
 import torch
 from packaging import version
 
+from .calib_utils import HDF5Calibrator
+
 
 def create_trt_engine(onnx_model,
                       opt_shape_dict,
                       log_level=trt.Logger.ERROR,
                       fp16_mode=False,
+                      int8_mode=False,
+                      int8_param=None,
                       max_workspace_size=0,
-                      device_id=0):
+                      device_id=0,
+                      **kwargs):
     """Create a tensorrt engine from ONNX.
 
     Arguments:
@@ -17,6 +22,8 @@ def create_trt_engine(onnx_model,
         opt_shape_dict (dict): the min/opt/max shape of each input
         log_level (TensorRT log level): the log level of TensorRT
         fp16_mode (bool): enable fp16 mode
+        int8_mode (bool): enable int8 mode
+        int8_param (None|dict): parameter of int8 mode.
         max_workspace_size (int): set max workspace size of TensorRT engine.
             some tactic and layers need large workspace.
         device_id (int): choice the device to create engine.
@@ -74,6 +81,20 @@ def create_trt_engine(onnx_model,
     if fp16_mode:
         builder.fp16_mode = fp16_mode
         config.set_flag(trt.BuilderFlag.FP16)
+
+    if int8_mode:
+        config.set_flag(trt.BuilderFlag.INT8)
+        assert int8_param is not None
+        config.int8_calibrator = HDF5Calibrator(
+            int8_param['calib_file'],
+            opt_shape_dict,
+            model_type=int8_param['model_type'],
+            device_id=device_id,
+            algorithm=int8_param.get(
+                'algorithm', trt.CalibrationAlgoType.ENTROPY_CALIBRATION_2))
+
+        builder.int8_mode = int8_mode
+        builder.int8_calibrator = config.int8_calibrator
 
     # create engine
     with torch.cuda.device(device):

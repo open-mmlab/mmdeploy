@@ -218,6 +218,16 @@ def get_classes_from_config(codebase: str, model_cfg: Union[str, mmcv.Config]):
     return module.CLASSES
 
 
+def _inference(codebase: str, model_inputs, model):
+    assert_module_exist(codebase)
+    if codebase == 'mmcls':
+        return model(**model_inputs, return_loss=False)
+    elif codebase == 'mmdet':
+        return model(**model_inputs, return_loss=False, rescale=True)
+    else:
+        raise NotImplementedError(f'Unknown codebase type: {codebase}')
+
+
 def check_model_outputs(codebase: str,
                         image: Union[str, np.ndarray],
                         model_inputs,
@@ -232,7 +242,7 @@ def check_model_outputs(codebase: str,
     if codebase == 'mmcls':
         output_file = None if show_result else output_file
         with torch.no_grad():
-            scores = model(**model_inputs, return_loss=False)[0]
+            scores = _inference(codebase, model_inputs, model)[0]
             pred_score = np.max(scores, axis=0)
             pred_label = np.argmax(scores, axis=0)
             result = {
@@ -251,7 +261,7 @@ def check_model_outputs(codebase: str,
         output_file = None if show_result else output_file
         score_thr = 0.3
         with torch.no_grad():
-            results = model(**model_inputs, return_loss=False, rescale=True)[0]
+            results = _inference(codebase, model_inputs, model)[0]
             model.show_result(
                 show_img,
                 results,
@@ -294,10 +304,58 @@ def check_model_outputs(codebase: str,
 
 
 def get_split_cfg(codebase: str, split_type: str):
+    assert_module_exist(codebase)
     if codebase == 'mmdet':
-        assert_module_exist(codebase)
         from mmdeploy.mmdet.export import get_split_cfg \
             as get_split_cfg_mmdet
         return get_split_cfg_mmdet(split_type)
+    else:
+        raise NotImplementedError(f'Unknown codebase type: {codebase}')
+
+
+def build_dataset(codebase: str,
+                  dataset_cfg: Union[str, mmcv.Config],
+                  dataset_type: str = 'val',
+                  **kwargs):
+    assert_module_exist(codebase)
+    if codebase == 'mmcls':
+        from mmdeploy.mmcls.export import build_dataset \
+            as build_dataset_mmcls
+        return build_dataset_mmcls(dataset_cfg, dataset_type, **kwargs)
+    elif codebase == 'mmdet':
+        from mmdeploy.mmdet.export import build_dataset \
+            as build_dataset_mmdet
+        return build_dataset_mmdet(dataset_cfg, dataset_type, **kwargs)
+    else:
+        raise NotImplementedError(f'Unknown codebase type: {codebase}')
+
+
+def build_dataloader(codebase: str, dataset, samples_per_gpu: int,
+                     workers_per_gpu: int, **kwargs):
+    assert_module_exist(codebase)
+    if codebase == 'mmcls':
+        from mmdeploy.mmcls.export import build_dataloader \
+            as build_dataloader_mmcls
+        return build_dataloader_mmcls(dataset, samples_per_gpu,
+                                      workers_per_gpu, **kwargs)
+    elif codebase == 'mmdet':
+        from mmdeploy.mmdet.export import build_dataloader \
+            as build_dataloader_mmdet
+        return build_dataloader_mmdet(dataset, samples_per_gpu,
+                                      workers_per_gpu, **kwargs)
+    else:
+        raise NotImplementedError(f'Unknown codebase type: {codebase}')
+
+
+def get_tensor_from_input(codebase: str, input_data):
+    assert_module_exist(codebase)
+    if codebase == 'mmcls':
+        from mmdeploy.mmcls.export import get_tensor_from_input \
+            as get_tensor_from_input_mmcls
+        return get_tensor_from_input_mmcls(input_data)
+    elif codebase == 'mmdet':
+        from mmdeploy.mmdet.export import get_tensor_from_input \
+            as get_tensor_from_input_mmdet
+        return get_tensor_from_input_mmdet(input_data)
     else:
         raise NotImplementedError(f'Unknown codebase type: {codebase}')
