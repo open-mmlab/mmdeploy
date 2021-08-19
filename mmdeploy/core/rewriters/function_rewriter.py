@@ -19,8 +19,8 @@ class FuncCaller(object):
         except Exception:
             origin_func = None
             logging.warning(
-                f'Can not found {self.func_name}, function rewrite will \
-                    not be applied')
+                f'Can not find {self.func_name}, function rewrite will '
+                'not be applied')
         self.origin_func = origin_func
         [setattr(self, k, v) for k, v in kwargs.items()]
 

@@ -100,52 +100,15 @@ class DeployBaseDetector(BaseDetector):
 class ONNXRuntimeDetector(DeployBaseDetector):
     """Wrapper for detector's inference with ONNXRuntime."""
 
-    def __init__(self, model_file, class_names, device_id, **kwargs):
+    def __init__(self, onnx_file, class_names, device_id, **kwargs):
         super(ONNXRuntimeDetector, self).__init__(class_names, device_id,
                                                   **kwargs)
-        import onnxruntime as ort
-
-        # get the custom op path
-        from mmdeploy.apis.onnxruntime import get_ops_path
-        ort_custom_op_path = get_ops_path()
-        session_options = ort.SessionOptions()
-        # register custom op for onnxruntime
-        if osp.exists(ort_custom_op_path):
-            session_options.register_custom_ops_library(ort_custom_op_path)
-        sess = ort.InferenceSession(model_file, session_options)
-        providers = ['CPUExecutionProvider']
-        options = [{}]
-        is_cuda_available = ort.get_device() == 'GPU'
-        if is_cuda_available:
-            providers.insert(0, 'CUDAExecutionProvider')
-            options.insert(0, {'device_id': device_id})
-
-        sess.set_providers(providers, options)
-
-        self.sess = sess
-        self.io_binding = sess.io_binding()
-        self.output_names = [_.name for _ in sess.get_outputs()]
-        self.is_cuda_available = is_cuda_available
+        from mmdeploy.apis.onnxruntime import ORTWrapper
+        self.model = ORTWrapper(onnx_file, device_id)
 
     def forward_test(self, imgs, *args, **kwargs):
         input_data = imgs[0]
-        # set io binding for inputs/outputs
-        device_type = 'cuda' if self.is_cuda_available else 'cpu'
-        if not self.is_cuda_available:
-            input_data = input_data.cpu()
-        self.io_binding.bind_input(
-            name='input',
-            device_type=device_type,
-            device_id=self.device_id,
-            element_type=np.float32,
-            shape=input_data.shape,
-            buffer_ptr=input_data.data_ptr())
-
-        for name in self.output_names:
-            self.io_binding.bind_output(name)
-        # run session to get outputs
-        self.sess.run_with_iobinding(self.io_binding)
-        ort_outputs = self.io_binding.copy_outputs_to_cpu()
+        ort_outputs = self.model(input_data)
         return ort_outputs
 
 

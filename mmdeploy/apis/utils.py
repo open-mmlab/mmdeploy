@@ -48,6 +48,11 @@ def init_model(codebase: str,
         model = init_segmentor(model_cfg, model_checkpoint, device)
         model = convert_syncbatchnorm(model)
 
+    elif codebase == 'mmocr':
+        from mmdet.apis import init_detector
+        from mmocr.models import build_detector  # noqa: F401
+        model = init_detector(model_cfg, model_checkpoint, device, cfg_options)
+
     else:
         raise NotImplementedError(f'Unknown codebase type: {codebase}')
 
@@ -68,6 +73,10 @@ def create_input(codebase: str,
 
     elif codebase == 'mmdet':
         from mmdeploy.mmdet.export import create_input
+        return create_input(cfg, imgs, device)
+
+    elif codebase == 'mmocr':
+        from mmdeploy.mmocr.export import create_input
         return create_input(cfg, imgs, device)
 
     elif codebase == 'mmseg':
@@ -99,7 +108,8 @@ def init_backend_model(model_files: Sequence[str],
     codebase = deploy_cfg['codebase']
     backend = deploy_cfg['backend']
     assert_module_exist(codebase)
-    class_names = get_classes_from_config(codebase, model_cfg)
+    if codebase != 'mmocr':
+        class_names = get_classes_from_config(codebase, model_cfg)
 
     if codebase == 'mmcls':
         if backend == 'onnxruntime':
@@ -142,6 +152,31 @@ def init_backend_model(model_files: Sequence[str],
         else:
             raise NotImplementedError(f'Unsupported backend type: {backend}')
         return backend_model
+
+    elif codebase == 'mmocr':
+        algorithm_type = deploy_cfg['algorithm_type']
+        if backend == 'onnxruntime':
+            if algorithm_type == 'det':
+                from mmdeploy.mmocr.export import ONNXRuntimeDetector
+                backend_model = ONNXRuntimeDetector(
+                    model_files[0], cfg=model_cfg, device_id=device_id)
+            elif algorithm_type == 'recog':
+                from mmdeploy.mmocr.export import ONNXRuntimeRecognizer
+                backend_model = ONNXRuntimeRecognizer(
+                    model_files[0], cfg=model_cfg, device_id=device_id)
+        elif backend == 'tensorrt':
+            if algorithm_type == 'det':
+                from mmdeploy.mmocr.export import TensorRTDetector
+                backend_model = TensorRTDetector(
+                    model_files[0], cfg=model_cfg, device_id=device_id)
+            elif algorithm_type == 'recog':
+                from mmdeploy.mmocr.export import TensorRTRecognizer
+                backend_model = TensorRTRecognizer(
+                    model_files[0], cfg=model_cfg, device_id=device_id)
+        else:
+            raise NotImplementedError(f'Unsupported backend type: {backend}')
+        return backend_model
+
     else:
         raise NotImplementedError(f'Unknown codebase type: {codebase}')
 
@@ -160,9 +195,11 @@ def get_classes_from_config(codebase: str, model_cfg: Union[str, mmcv.Config]):
     if codebase == 'mmcls':
         from mmcls.datasets import DATASETS
     elif codebase == 'mmdet':
-        from mmcls.datasets import DATASETS
+        from mmdet.datasets import DATASETS
     elif codebase == 'mmseg':
         from mmseg.datasets import DATASETS
+    elif codebase == 'mmocr':
+        from mmocr.datasets import DATASETS
     else:
         raise NotImplementedError(f'Unknown codebase type: {codebase}')
 
@@ -211,6 +248,20 @@ def check_model_outputs(codebase: str,
                 out_file=output_file)
 
     elif codebase == 'mmdet':
+        output_file = None if show_result else output_file
+        score_thr = 0.3
+        with torch.no_grad():
+            results = model(**model_inputs, return_loss=False, rescale=True)[0]
+            model.show_result(
+                show_img,
+                results,
+                score_thr=score_thr,
+                show=True,
+                win_name=backend,
+                out_file=output_file)
+
+    elif codebase == 'mmocr':
+        assert_module_exist(codebase)
         output_file = None if show_result else output_file
         score_thr = 0.3
         with torch.no_grad():

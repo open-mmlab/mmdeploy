@@ -14,7 +14,7 @@ from mmdeploy.apis.utils import get_split_cfg
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Export model to backend.')
+    parser = argparse.ArgumentParser(description='Export model to backends.')
     parser.add_argument('deploy_cfg', help='deploy config path')
     parser.add_argument('model_cfg', help='model config path')
     parser.add_argument('checkpoint', help='model checkpoint path')
@@ -181,7 +181,6 @@ def main():
             backend_files += [save_param, save_bin]
 
     # check model outputs by visualization
-
     # visualize model of the backend
     create_process(
         f'visualize {backend} model',
