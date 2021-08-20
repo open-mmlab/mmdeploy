@@ -18,8 +18,9 @@ def parse_args():
     parser.add_argument('deploy_cfg', help='deploy config path')
     parser.add_argument('model_cfg', help='model config path')
     parser.add_argument('checkpoint', help='model checkpoint path')
+    parser.add_argument('img', help='image used to convert model model')
     parser.add_argument(
-        'img', help='image used to convert model and test model')
+        '--test-img', default=None, help='image used to test model')
     parser.add_argument('--work-dir', help='the dir to save logs and models')
     parser.add_argument(
         '--calib-dataset-cfg',
@@ -207,12 +208,13 @@ def main():
 
             backend_files += [save_param, save_bin]
 
-    # check model outputs by visualization
+    if args.test_img is None:
+        args.test_img = args.img
     # visualize model of the backend
     create_process(
         f'visualize {backend} model',
         target=inference_model,
-        args=(model_cfg_path, deploy_cfg_path, backend_files, args.img),
+        args=(model_cfg_path, deploy_cfg_path, backend_files, args.test_img),
         kwargs=dict(
             device=args.device,
             output_file=f'output_{backend}.jpg',
@@ -224,7 +226,8 @@ def main():
     create_process(
         'visualize pytorch model',
         target=inference_model,
-        args=(model_cfg_path, deploy_cfg_path, [checkpoint_path], args.img),
+        args=(model_cfg_path, deploy_cfg_path, [checkpoint_path],
+              args.test_img),
         kwargs=dict(
             device=args.device,
             backend='pytorch',

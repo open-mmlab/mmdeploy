@@ -28,6 +28,15 @@ def assert_module_exist(module_name: str):
         raise ImportError(f'Can not import module: {module_name}')
 
 
+def load_config(cfg):
+    if isinstance(cfg, str):
+        cfg = mmcv.Config.fromfile(cfg)
+    elif not isinstance(cfg, (mmcv.Config, mmcv.ConfigDict)):
+        raise TypeError('config must be a filename or Config object, '
+                        f'but got {type(cfg)}')
+    return cfg
+
+
 def init_model(codebase: str,
                model_cfg: Union[str, mmcv.Config],
                model_checkpoint: Optional[str] = None,

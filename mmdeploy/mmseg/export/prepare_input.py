@@ -6,17 +6,14 @@ from mmcv.parallel import collate, scatter
 from mmseg.apis.inference import LoadImage
 from mmseg.datasets.pipelines import Compose
 
+from mmdeploy.apis.utils import load_config
+
 
 def create_input(model_cfg: Union[str, mmcv.Config],
                  imgs: Any,
                  device: str = 'cuda:0'):
-    if isinstance(model_cfg, str):
-        model_cfg = mmcv.Config.fromfile(model_cfg)
-    elif not isinstance(model_cfg, (mmcv.Config, mmcv.ConfigDict)):
-        raise TypeError('config must be a filename or Config object, '
-                        f'but got {type(model_cfg)}')
-    cfg = model_cfg.copy()
 
+    cfg = load_config(model_cfg).copy()
     if not isinstance(imgs, (list, tuple)):
         imgs = [imgs]
 
@@ -24,7 +21,7 @@ def create_input(model_cfg: Union[str, mmcv.Config],
         cfg = cfg.copy()
         # set loading pipeline type
         cfg.data.test.pipeline[0].type = 'LoadImageFromWebcam'
-
+    cfg.data.test.pipeline[1]['img_scale'] = (1024, 512)
     cfg.data.test.pipeline[1]['transforms'][0]['keep_ratio'] = False
     cfg.data.test.pipeline = [LoadImage()] + cfg.data.test.pipeline[1:]
 
