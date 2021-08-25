@@ -53,6 +53,7 @@ set(PLUGIN_LISTS scatternd
                  roi_align
                  batched_nms
                  instance_norm
+                 modulated_deform_conv
                  multi_level_roi_align
                  grid_sampler)
 

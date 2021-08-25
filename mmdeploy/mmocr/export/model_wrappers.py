@@ -1,4 +1,3 @@
-import warnings
 from typing import Iterable, Union
 
 import mmcv
@@ -177,14 +176,8 @@ class TensorRTDetector(DeployBaseTextDetector):
                  device_id: int,
                  show_score: bool = False):
         super(TensorRTDetector, self).__init__(cfg, device_id, show_score)
-        from mmcv.tensorrt import TRTWrapper, load_tensorrt_plugin
-        try:
-            load_tensorrt_plugin()
-        except (ImportError, ModuleNotFoundError):
-            warnings.warn('If input model has custom op from mmcv, \
-                you may have to build mmcv with TensorRT from source.')
-        model = TRTWrapper(
-            trt_file, input_names=['input'], output_names=['output'])
+        from mmdeploy.apis.tensorrt import TRTWrapper
+        model = TRTWrapper(trt_file)
         self.model = model
 
     def forward_of_backend(self,
@@ -205,14 +198,8 @@ class TensorRTRecognizer(DeployBaseRecognizer):
                  device_id: int,
                  show_score: bool = False):
         super(TensorRTRecognizer, self).__init__(cfg, device_id, show_score)
-        from mmcv.tensorrt import TRTWrapper, load_tensorrt_plugin
-        try:
-            load_tensorrt_plugin()
-        except (ImportError, ModuleNotFoundError):
-            warnings.warn('If input model has custom op from mmcv, \
-                you may have to build mmcv with TensorRT from source.')
-        model = TRTWrapper(
-            trt_file, input_names=['input'], output_names=['output'])
+        from mmdeploy.apis.tensorrt import TRTWrapper
+        model = TRTWrapper(trt_file)
         self.model = model
 
     def forward_of_backend(self,

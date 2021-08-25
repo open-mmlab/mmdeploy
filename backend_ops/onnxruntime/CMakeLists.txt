@@ -8,7 +8,8 @@ link_directories(${ONNXRUNTIME_DIR}/lib)
 
 # add plugin source
 set(PLUGIN_LISTS grid_sample
-                 roi_align)
+                 roi_align
+                 modulated_deform_conv)
 
 foreach(PLUGIN_ITER ${PLUGIN_LISTS})
     file(GLOB PLUGIN_OPS_SRCS ${PLUGIN_ITER}/*.cpp ${PLUGIN_ITER}/*.cu)
