@@ -8,7 +8,7 @@ find_package(ncnn)
 if (ncnn_FOUND)
     message(STATUS "ncnn library found!")
 else ()
-    message(FATAL_ERROR "Could not locate ncnn" \n)
+    message(FATAL_ERROR "Could not locate ncnn")
 endif()
 
 add_subdirectory (ops)

@@ -1,7 +1,10 @@
 # add plugin source
-set(PLUGIN_LISTS custom_reshape
-                 gather
-                 shape)
+set(PLUGIN_LISTS constantofshape
+		expand
+		gather
+		shape
+		tensorslice
+		topk)
 
 foreach(PLUGIN_ITER ${PLUGIN_LISTS})
     file(GLOB PLUGIN_OPS_SRCS ${PLUGIN_ITER}/*.cpp)

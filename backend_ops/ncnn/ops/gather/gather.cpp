@@ -102,10 +102,8 @@ int Gather::forward(const std::vector<Mat> &bottom_blobs,
     const float *ptr = bottom_blob;
     float *outptr = top_blob;
     for (int i = 0; i < indices.w; i++) {
-      for (int j = 0; j < w; j++) {
-        int selected = (float)(indices_ptr[i] + 0.5);
-        outptr[i * w + j] = ptr[selected * w + j];
-      }
+      const int selected = (int)(indices_ptr[i] + 0.5);
+      memcpy(top_blob.row(i), bottom_blob.row(selected), w * elemsize);
     }
 
     return 0;
@@ -114,7 +112,7 @@ int Gather::forward(const std::vector<Mat> &bottom_blobs,
   if (dims == 2 && positive_axis == 1 && indices_dims == 1) {
     int w = bottom_blob.w;
     int h = bottom_blob.h;
-    top_blob.create(h, indices.w, elemsize, opt.blob_allocator);
+    top_blob.create(indices.w, h, elemsize, opt.blob_allocator);
     // w -> h
     // h -> indices.w
     // h * w -> indices.w * h
@@ -123,10 +121,10 @@ int Gather::forward(const std::vector<Mat> &bottom_blobs,
     }
     const float *ptr = bottom_blob;
     float *outptr = top_blob;
-    for (int i = 0; i < indices.w; i++) {
-      for (int j = 0; j < h; j++) {
+    for (int j = 0; j < h; j++) {
+      for (int i = 0; i < indices.w; i++) {
         int selected = (int)(indices_ptr[i] + 0.5);
-        outptr[i * h + j] = ptr[j * w + selected];
+        outptr[j * indices.w + i] = ptr[j * w + selected];
       }
     }
     return 0;

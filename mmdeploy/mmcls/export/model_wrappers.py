@@ -67,32 +67,14 @@ class NCNNClassifier(DeployBaseClassifier):
 
     def __init__(self, ncnn_param_file, ncnn_bin_file, class_names, device_id):
         super(NCNNClassifier, self).__init__(class_names, device_id)
-        import ncnn
-        from mmdeploy.apis.ncnn import ncnn_ext
-        self.net = ncnn.Net()
-        ncnn_ext.register_mm_custom_layers(self.net)
-        self.net.load_param(ncnn_param_file)
-        self.net.load_model(ncnn_bin_file)
+        from mmdeploy.apis.ncnn import NCNNWrapper
+        self.model = NCNNWrapper(
+            ncnn_param_file, ncnn_bin_file, output_names=['output'])
 
     def forward_test(self, imgs, *args, **kwargs):
-        import ncnn
-        assert len(imgs.shape) == 4
-        batch_size = imgs.shape[0]
-        results_list = []
-        for idx in range(batch_size):
-            input_data = imgs[idx].cpu().numpy()
-            input_data = ncnn.Mat(input_data)
-            if self.device_id == -1:
-                extractor = self.net.create_extractor()
-                extractor.input('input', input_data)
-                return_status, results = extractor.extract('output')
-                results = np.array(results)
-                assert return_status != -100, \
-                    'Memory allocation failed in ncnn layers'
-                assert return_status == 0
-                results_list.append(results)
-            else:
-                raise NotImplementedError('GPU device is not implemented.')
+        results = self.model({'input': imgs})['output']
+        results = results.detach().cpu().numpy()
+        results_list = list(results)
         return results_list
 
 

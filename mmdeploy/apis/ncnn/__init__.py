@@ -15,3 +15,9 @@ def is_available():
         'mmdeploy.apis.ncnn.ncnn_ext') is not None
 
     return has_pyncnn and has_pyncnn_ext
+
+
+if is_available():
+    from .ncnn_utils import NCNNWrapper
+
+    __all__ += ['NCNNWrapper']

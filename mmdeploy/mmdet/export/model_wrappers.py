@@ -247,6 +247,29 @@ class ONNXRuntimeSSSBDetector(SplitSingleStageBaseDetector):
         return self.split0_postprocess(scores, bboxes)
 
 
+class NCNNSSSBDetector(SplitSingleStageBaseDetector):
+    """Wrapper for detector's inference with NCNN."""
+
+    def __init__(self, model_file, class_names, model_cfg, deploy_cfg,
+                 device_id, **kwargs):
+        super().__init__(class_names, model_cfg, deploy_cfg, device_id,
+                         **kwargs)
+        from mmdeploy.apis.ncnn import NCNNWrapper
+        assert len(model_file) == 2
+        ncnn_param_file = model_file[0]
+        ncnn_bin_file = model_file[1]
+        self.model = NCNNWrapper(
+            ncnn_param_file, ncnn_bin_file, output_names=['boxes', 'scores'])
+
+    def forward_test(self, imgs, *args, **kwargs):
+        imgs = imgs[0]
+
+        outputs = self.model({'input': imgs})
+        boxes = outputs['boxes']
+        scores = outputs['scores']
+        return self.split0_postprocess(scores, boxes)
+
+
 # Split Two-Stage Base
 class SplitTwoStageBaseDetector(DeployBaseDetector):
     """Wrapper for detector's inference with TensorRT."""
@@ -490,144 +513,6 @@ class PPLDetector(DeployBaseDetector):
         return outputs
 
 
-# Split Single-Stage Base
-class SplitSingleStageBaseDetector(DeployBaseDetector):
-    """Wrapper for detector's inference with TensorRT."""
-
-    def __init__(self, class_names, model_cfg, deploy_cfg, device_id,
-                 **kwargs):
-        super().__init__(class_names, device_id, **kwargs)
-        # load deploy_cfg if necessary
-        if isinstance(deploy_cfg, str):
-            deploy_cfg = mmcv.Config.fromfile(deploy_cfg)
-        if not isinstance(deploy_cfg, mmcv.Config):
-            raise TypeError('deploy_cfg must be a filename or Config object, '
-                            f'but got {type(deploy_cfg)}')
-
-        # load model_cfg if needed
-        if isinstance(model_cfg, str):
-            model_cfg = mmcv.Config.fromfile(model_cfg)
-        if not isinstance(model_cfg, mmcv.Config):
-            raise TypeError('config must be a filename or Config object, '
-                            f'but got {type(model_cfg)}')
-
-        self.model_cfg = model_cfg
-        self.deploy_cfg = deploy_cfg
-
-    def split0_postprocess(self, scores, bboxes):
-        cfg = self.model_cfg.model.test_cfg
-        deploy_cfg = self.deploy_cfg
-
-        post_params = deploy_cfg.post_processing
-        max_output_boxes_per_class = post_params.max_output_boxes_per_class
-        iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)
-        score_threshold = cfg.get('score_thr', post_params.score_threshold)
-        pre_top_k = post_params.pre_top_k
-        keep_top_k = cfg.get('max_per_img', post_params.keep_top_k)
-        return multiclass_nms(
-            bboxes,
-            scores,
-            max_output_boxes_per_class,
-            iou_threshold=iou_threshold,
-            score_threshold=score_threshold,
-            pre_top_k=pre_top_k,
-            keep_top_k=keep_top_k)
-
-
-# Split Two-Stage Base
-class SplitTwoStageBaseDetector(DeployBaseDetector):
-    """Wrapper for detector's inference with TensorRT."""
-
-    def __init__(self, class_names, model_cfg, deploy_cfg, device_id,
-                 **kwargs):
-        super().__init__(class_names, device_id, **kwargs)
-        from mmdet.models.builder import build_roi_extractor, build_head
-        from mmdeploy.mmdet.models.roi_heads.bbox_heads import \
-            get_bboxes_of_bbox_head
-
-        # load deploy_cfg if necessary
-        if isinstance(deploy_cfg, str):
-            deploy_cfg = mmcv.Config.fromfile(deploy_cfg)
-        if not isinstance(deploy_cfg, mmcv.Config):
-            raise TypeError('deploy_cfg must be a filename or Config object, '
-                            f'but got {type(deploy_cfg)}')
-
-        # load model_cfg if needed
-        if isinstance(model_cfg, str):
-            model_cfg = mmcv.Config.fromfile(model_cfg)
-        if not isinstance(model_cfg, mmcv.Config):
-            raise TypeError('config must be a filename or Config object, '
-                            f'but got {type(model_cfg)}')
-
-        self.model_cfg = model_cfg
-        self.deploy_cfg = deploy_cfg
-
-        self.bbox_roi_extractor = build_roi_extractor(
-            model_cfg.model.roi_head.bbox_roi_extractor)
-        self.bbox_head = build_head(model_cfg.model.roi_head.bbox_head)
-
-        class Context:
-            pass
-
-        ctx = Context()
-        ctx.cfg = self.deploy_cfg
-        self.get_bboxes_of_bbox_head = partial(get_bboxes_of_bbox_head, ctx)
-
-    def split0_postprocess(self, x, scores, bboxes):
-        # rpn-nms + roi-extractor
-        cfg = self.model_cfg.model.test_cfg.rpn
-        deploy_cfg = self.deploy_cfg
-
-        post_params = deploy_cfg.post_processing
-        iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)
-        score_threshold = cfg.get('score_thr', post_params.score_threshold)
-        pre_top_k = post_params.pre_top_k
-        keep_top_k = cfg.get('max_per_img', post_params.keep_top_k)
-        # only one class in rpn
-        max_output_boxes_per_class = keep_top_k
-        proposals, _ = multiclass_nms(
-            bboxes,
-            scores,
-            max_output_boxes_per_class,
-            iou_threshold=iou_threshold,
-            score_threshold=score_threshold,
-            pre_top_k=pre_top_k,
-            keep_top_k=keep_top_k)
-
-        rois = proposals
-        batch_index = torch.arange(
-            rois.shape[0], device=rois.device).float().view(-1, 1, 1).expand(
-                rois.size(0), rois.size(1), 1)
-        rois = torch.cat([batch_index, rois[..., :4]], dim=-1)
-        batch_size = rois.shape[0]
-        num_proposals_per_img = rois.shape[1]
-
-        # Eliminate the batch dimension
-        rois = rois.view(-1, 5)
-        bbox_feats = self.bbox_roi_extractor(
-            x[:self.bbox_roi_extractor.num_inputs], rois)
-
-        rois = rois.reshape(batch_size, num_proposals_per_img, rois.size(-1))
-        return rois, bbox_feats
-
-    def split1_postprocess(self, rois, cls_score, bbox_pred, img_metas):
-
-        batch_size = rois.shape[0]
-        num_proposals_per_img = rois.shape[1]
-
-        cls_score = cls_score.reshape(batch_size, num_proposals_per_img,
-                                      cls_score.size(-1))
-
-        bbox_pred = bbox_pred.reshape(batch_size, num_proposals_per_img,
-                                      bbox_pred.size(-1))
-
-        rcnn_test_cfg = self.model_cfg.model.test_cfg.rcnn
-        return self.get_bboxes_of_bbox_head(self.bbox_head, rois, cls_score,
-                                            bbox_pred,
-                                            img_metas[0][0]['img_shape'],
-                                            rcnn_test_cfg)
-
-
 class TensorRTSTSBDetector(SplitTwoStageBaseDetector):
     """Wrapper for detector's inference with TensorRT."""
 
@@ -686,6 +571,68 @@ class TensorRTSTSBDetector(SplitTwoStageBaseDetector):
         return outputs
 
 
+class NCNNSTSBDetector(SplitTwoStageBaseDetector):
+    """Wrapper for detector's inference with NCNN."""
+
+    def __init__(self, model_file, class_names, model_cfg, deploy_cfg,
+                 device_id, **kwargs):
+        super().__init__(class_names, model_cfg, deploy_cfg, device_id,
+                         **kwargs)
+        from mmdeploy.apis.ncnn import NCNNWrapper
+        assert self.device_id == -1
+        assert len(model_file) == 4
+
+        model_list = []
+        for ncnn_param_file, ncnn_bin_file in zip(model_file[::2],
+                                                  model_file[1::2]):
+            model = NCNNWrapper(ncnn_param_file, ncnn_bin_file)
+            model_list.append(model)
+
+        # TODO: update this after refactor
+        if isinstance(model_cfg, str):
+            model_cfg = mmcv.Config.fromfile(model_cfg)
+        num_output_stage1 = model_cfg['model']['neck']['num_outs']
+
+        output_names_list = []
+        output_names_list.append(
+            ['feat/{}'.format(i)
+             for i in range(num_output_stage1)] + ['scores', 'boxes'])
+        output_names_list.append(['cls_score', 'bbox_pred'])
+
+        model_list[0].set_output_names(output_names_list[0])
+        model_list[1].set_output_names(output_names_list[1])
+
+        self.model_list = model_list
+        self.output_names_list = output_names_list
+
+    def forward_test(self, imgs, img_metas, *args, **kwargs):
+        img = imgs[0]
+
+        # stage0 forward
+        out_stage0 = self.model_list[0]({'input': img})
+
+        outputs = []
+        for name in self.output_names_list[0]:
+            out = out_stage0[name]
+            outputs.append(out)
+        feats = outputs[:-2]
+        scores, bboxes = outputs[-2:]
+
+        # stage0_postprocess
+        rois, bbox_feats = self.split0_postprocess(feats, scores, bboxes)
+
+        # stage1 forward
+        out_stage1 = self.model_list[1]({'bbox_feats': bbox_feats})
+        cls_score = out_stage1['cls_score']
+        bbox_pred = out_stage1['bbox_pred']
+
+        # stage1_postprocess
+        outputs = self.split1_postprocess(rois, cls_score, bbox_pred,
+                                          img_metas)
+        outputs = [out.detach().cpu() for out in outputs]
+        return outputs
+
+
 def get_classes_from_config(model_cfg: Union[str, mmcv.Config], **kwargs):
     if isinstance(model_cfg, str):
         model_cfg = mmcv.Config.fromfile(model_cfg)
@@ -717,11 +664,14 @@ TENSORRT_DETECTOR_MAP = dict(
     end2end=TensorRTDetector, two_stage_base=TensorRTSTSBDetector)
 
 PPL_DETECTOR_MAP = dict(end2end=PPLDetector)
+NCNN_DETECTOR_MAP = dict(
+    single_stage_base=NCNNSSSBDetector, two_stage_base=NCNNSTSBDetector)
 
 BACKEND_DETECTOR_MAP = dict(
     onnxruntime=ONNXRUNTIME_DETECTOR_MAP,
     tensorrt=TENSORRT_DETECTOR_MAP,
-    ppl=PPL_DETECTOR_MAP)
+    ppl=PPL_DETECTOR_MAP,
+    ncnn=NCNN_DETECTOR_MAP)
 
 
 def build_detector(model_files, model_cfg, deploy_cfg, device_id, **kwargs):

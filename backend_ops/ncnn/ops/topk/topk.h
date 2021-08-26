@@ -1,24 +1,24 @@
-#ifndef LAYER_GATHER_H
-#define LAYER_GATHER_H
+#ifndef LAYER_TOPK_H
+#define LAYER_TOPK_H
 
 #include "layer.h"
 
 namespace mmlab {
 
-class Gather : public ncnn::Layer {
+class TopK : public ncnn::Layer {
  public:
-  Gather();
-
+  TopK();
   virtual int load_param(const ncnn::ParamDict& pd);
-
   virtual int forward(const std::vector<ncnn::Mat>& bottom_blobs,
                       std::vector<ncnn::Mat>& top_blobs,
                       const ncnn::Option& opt) const;
 
  public:
   int axis;
+  int largest;
+  int sorted;
 };
 
 }  // namespace mmlab
 
-#endif  // LAYER_GATHER_H
+#endif  // LAYER_TOPK_H
