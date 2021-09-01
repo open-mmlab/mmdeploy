@@ -38,7 +38,7 @@ Before starting this tutorial, you should make sure that the prerequisites menti
     cd build
     cmake -DBUILD_NCNN_OPS=ON -DNCNN_DIR=${PATH_TO_NCNN}/ncnn ..
     ```
-    The `${PATH_TO_NCNN}` refers as the root direction of ncnn source code.
+    The `${PATH_TO_NCNN}` refers as the root directory of ncnn source code.
 - Install mmdeploy module
     ```bash
     cd deploy_prototype

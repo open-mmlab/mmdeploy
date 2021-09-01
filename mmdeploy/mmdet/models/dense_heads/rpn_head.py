@@ -4,6 +4,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.mmdet.core import multiclass_nms
 from mmdeploy.mmdet.export import pad_with_value
 from mmdeploy.utils import is_dynamic_shape
+from mmdeploy.utils.config_utils import Backend, get_backend
 
 
 @FUNCTION_REWRITER.register_rewriter('mmdet.models.RPNHead.get_bboxes')
@@ -60,10 +61,10 @@ def get_bboxes_of_rpn_head(ctx,
 
         anchors = anchors.expand_as(bbox_pred)
 
-        backend = deploy_cfg['backend']
+        backend = get_backend(deploy_cfg)
         # topk in tensorrt does not support shape<k
         # concate zero to enable topk,
-        if backend == 'tensorrt':
+        if backend == Backend.TENSORRT:
             scores = pad_with_value(scores, 1, pre_topk, 0.)
             bbox_pred = pad_with_value(bbox_pred, 1, pre_topk)
             anchors = pad_with_value(anchors, 1, pre_topk)

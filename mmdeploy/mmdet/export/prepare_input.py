@@ -8,16 +8,13 @@ from mmdet.datasets import build_dataset as build_dataset_mmdet
 from mmdet.datasets import replace_ImageToTensor
 from mmdet.datasets.pipelines import Compose
 
+from mmdeploy.utils.config_utils import load_config
+
 
 def create_input(model_cfg: Union[str, mmcv.Config],
                  imgs: Any,
                  device: str = 'cuda:0'):
-    if isinstance(model_cfg, str):
-        model_cfg = mmcv.Config.fromfile(model_cfg)
-    elif not isinstance(model_cfg, (mmcv.Config, mmcv.ConfigDict)):
-        raise TypeError('config must be a filename or Config object, '
-                        f'but got {type(model_cfg)}')
-    cfg = model_cfg.copy()
+    cfg = load_config(model_cfg)[0].copy()
 
     if not isinstance(imgs, (list, tuple)):
         imgs = [imgs]
@@ -55,16 +52,26 @@ def create_input(model_cfg: Union[str, mmcv.Config],
 def build_dataset(dataset_cfg: Union[str, mmcv.Config],
                   dataset_type: str = 'val',
                   **kwargs):
-    if isinstance(dataset_cfg, str):
-        dataset_cfg = mmcv.Config.fromfile(dataset_cfg)
-    elif not isinstance(dataset_cfg, (mmcv.Config, mmcv.ConfigDict)):
-        raise TypeError('config must be a filename or Config object, '
-                        f'but got {type(dataset_cfg)}')
+    dataset_cfg = load_config(dataset_cfg)[0].copy()
 
-    data = dataset_cfg.data
-    assert dataset_type in data
-
-    dataset = build_dataset_mmdet(data[dataset_type])
+    assert dataset_type in dataset_cfg.data
+    data_cfg = dataset_cfg.data[dataset_type]
+    # in case the dataset is concatenated
+    if isinstance(data_cfg, dict):
+        data_cfg.test_mode = True
+        samples_per_gpu = data_cfg.get('samples_per_gpu', 1)
+        if samples_per_gpu > 1:
+            # Replace 'ImageToTensor' to 'DefaultFormatBundle'
+            data_cfg.pipeline = replace_ImageToTensor(data_cfg.pipeline)
+    elif isinstance(data_cfg, list):
+        for ds_cfg in data_cfg:
+            ds_cfg.test_mode = True
+        samples_per_gpu = max(
+            [ds_cfg.get('samples_per_gpu', 1) for ds_cfg in data_cfg])
+        if samples_per_gpu > 1:
+            for ds_cfg in data_cfg:
+                ds_cfg.pipeline = replace_ImageToTensor(ds_cfg.pipeline)
+    dataset = build_dataset_mmdet(data_cfg)
 
     return dataset
 
@@ -73,8 +80,8 @@ def build_dataloader(dataset,
                      samples_per_gpu: int,
                      workers_per_gpu: int,
                      num_gpus: int = 1,
-                     dist: bool = True,
-                     shuffle: bool = True,
+                     dist: bool = False,
+                     shuffle: bool = False,
                      seed: Optional[int] = None,
                      **kwargs):
     return build_dataloader_mmdet(

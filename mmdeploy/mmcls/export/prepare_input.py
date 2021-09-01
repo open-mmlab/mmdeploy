@@ -6,17 +6,13 @@ from mmcls.datasets import build_dataset as build_dataset_mmcls
 from mmcls.datasets.pipelines import Compose
 from mmcv.parallel import collate, scatter
 
+from mmdeploy.utils.config_utils import load_config
+
 
 def create_input(model_cfg: Union[str, mmcv.Config],
                  imgs: Any,
                  device: str = 'cuda:0'):
-    if isinstance(model_cfg, str):
-        model_cfg = mmcv.Config.fromfile(model_cfg)
-    elif not isinstance(model_cfg, (mmcv.Config, mmcv.ConfigDict)):
-        raise TypeError('config must be a filename or Config object, '
-                        f'but got {type(model_cfg)}')
-
-    cfg = model_cfg.copy()
+    cfg = load_config(model_cfg)[0].copy()
     if isinstance(imgs, str):
         if cfg.data.test.pipeline[0]['type'] != 'LoadImageFromFile':
             cfg.data.test.pipeline.insert(0, dict(type='LoadImageFromFile'))
@@ -36,12 +32,7 @@ def create_input(model_cfg: Union[str, mmcv.Config],
 def build_dataset(dataset_cfg: Union[str, mmcv.Config],
                   dataset_type: str = 'val',
                   **kwargs):
-    if isinstance(dataset_cfg, str):
-        dataset_cfg = mmcv.Config.fromfile(dataset_cfg)
-    elif not isinstance(dataset_cfg, (mmcv.Config, mmcv.ConfigDict)):
-        raise TypeError('config must be a filename or Config object, '
-                        f'but got {type(dataset_cfg)}')
-
+    dataset_cfg = load_config(dataset_cfg)[0]
     data = dataset_cfg.data
     assert dataset_type in data
 
@@ -54,8 +45,8 @@ def build_dataloader(dataset,
                      samples_per_gpu: int,
                      workers_per_gpu: int,
                      num_gpus: int = 1,
-                     dist: bool = True,
-                     shuffle: bool = True,
+                     dist: bool = False,
+                     shuffle: bool = False,
                      round_up: bool = True,
                      seed: Optional[int] = None,
                      pin_memory: bool = True,

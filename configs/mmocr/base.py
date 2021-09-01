@@ -1,8 +1,9 @@
 _base_ = ['../_base_/torch2onnx.py']
 codebase = 'mmocr'
 
-# 'det' for text detection and 'recog' for text recognition
-algorithm_type = 'det'
+# 'TextDetection' or 'TextRecognition'
+task = 'TextDetection'
+
 pytorch2onnx = dict(
     input_names=['input'],
     output_names=['output'],
@@ -12,5 +13,5 @@ pytorch2onnx = dict(
         3: 'width'
     }})
 
-if algorithm_type == 'recog':
+if task == 'TextRecognition':
     pytorch2onnx['dynamic_axes'] = {'input': {0: 'batch', 3: 'width'}}

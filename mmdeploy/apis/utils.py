@@ -1,110 +1,75 @@
-import importlib
 from typing import Any, Dict, Optional, Sequence, Union
 
 import mmcv
 import numpy as np
-import torch
+
+from mmdeploy.utils import Backend, Codebase, get_codebase, load_config
 
 
-def assert_cfg_valid(cfg: Union[str, mmcv.Config, mmcv.ConfigDict], *args):
-    """Check config validation."""
-
-    def _assert_cfg_valid_(cfg):
-        if isinstance(cfg, str):
-            cfg = mmcv.Config.fromfile(cfg)
-        if not isinstance(cfg, (mmcv.Config, mmcv.ConfigDict)):
-            raise TypeError('deploy_cfg must be a filename or Config object, '
-                            f'but got {type(cfg)}')
-        return cfg
-
-    args = (cfg, ) + args
-    ret = [_assert_cfg_valid_(cfg) for cfg in args]
-
-    return ret
-
-
-def assert_module_exist(module_name: str):
-    if importlib.util.find_spec(module_name) is None:
-        raise ImportError(f'Can not import module: {module_name}')
-
-
-def load_config(cfg):
-    if isinstance(cfg, str):
-        cfg = mmcv.Config.fromfile(cfg)
-    elif not isinstance(cfg, (mmcv.Config, mmcv.ConfigDict)):
-        raise TypeError('config must be a filename or Config object, '
-                        f'but got {type(cfg)}')
-    return cfg
-
-
-def init_model(codebase: str,
-               model_cfg: Union[str, mmcv.Config],
-               model_checkpoint: Optional[str] = None,
-               device: str = 'cuda:0',
-               cfg_options: Optional[Dict] = None):
-    assert_module_exist(codebase)
-    if codebase == 'mmcls':
+def init_pytorch_model(codebase: Codebase,
+                       model_cfg: Union[str, mmcv.Config],
+                       model_checkpoint: Optional[str] = None,
+                       device: str = 'cuda:0',
+                       cfg_options: Optional[Dict] = None):
+    if codebase == Codebase.MMCLS:
         from mmcls.apis import init_model
         model = init_model(model_cfg, model_checkpoint, device, cfg_options)
 
-    elif codebase == 'mmdet':
+    elif codebase == Codebase.MMDET:
         from mmdet.apis import init_detector
         model = init_detector(model_cfg, model_checkpoint, device, cfg_options)
 
-    elif codebase == 'mmseg':
+    elif codebase == Codebase.MMSEG:
         from mmseg.apis import init_segmentor
         from mmdeploy.mmseg.export import convert_syncbatchnorm
         model = init_segmentor(model_cfg, model_checkpoint, device)
         model = convert_syncbatchnorm(model)
 
-    elif codebase == 'mmocr':
+    elif codebase == Codebase.MMOCR:
         from mmdet.apis import init_detector
         from mmocr.models import build_detector  # noqa: F401
         model = init_detector(model_cfg, model_checkpoint, device, cfg_options)
 
+    elif codebase == Codebase.MMEDIT:
+        from mmedit.apis import init_model
+        model = init_model(model_cfg, model_checkpoint, device)
+        model.forward = model.forward_dummy
     else:
-        raise NotImplementedError(f'Unknown codebase type: {codebase}')
+        raise NotImplementedError(f'Unknown codebase type: {codebase.value}')
 
     return model.eval()
 
 
-def create_input(codebase: str,
+def create_input(codebase: Codebase,
                  model_cfg: Union[str, mmcv.Config],
                  imgs: Any,
-                 device: str = 'cuda:0'):
-    model_cfg = assert_cfg_valid(model_cfg)[0]
+                 device: str = 'cuda:0',
+                 **kwargs):
+    model_cfg = load_config(model_cfg)[0]
 
-    assert_module_exist(codebase)
     cfg = model_cfg.copy()
-    if codebase == 'mmcls':
+    if codebase == Codebase.MMCLS:
         from mmdeploy.mmcls.export import create_input
-        return create_input(cfg, imgs, device)
+        return create_input(cfg, imgs, device, **kwargs)
 
-    elif codebase == 'mmdet':
+    elif codebase == Codebase.MMDET:
         from mmdeploy.mmdet.export import create_input
-        return create_input(cfg, imgs, device)
+        return create_input(cfg, imgs, device, **kwargs)
 
-    elif codebase == 'mmocr':
+    elif codebase == Codebase.MMOCR:
         from mmdeploy.mmocr.export import create_input
-        return create_input(cfg, imgs, device)
+        return create_input(cfg, imgs, device, **kwargs)
 
-    elif codebase == 'mmseg':
+    elif codebase == Codebase.MMSEG:
         from mmdeploy.mmseg.export import create_input
-        return create_input(cfg, imgs, device)
+        return create_input(cfg, imgs, device, **kwargs)
+
+    elif codebase == Codebase.MMEDIT:
+        from mmdeploy.mmedit.export import create_input
+        return create_input(cfg, imgs, device, **kwargs)
 
     else:
-        raise NotImplementedError(f'Unknown codebase type: {codebase}')
-
-
-def attribute_to_dict(attr):
-    from onnx.helper import get_attribute_value
-    ret = {}
-    for a in attr:
-        value = get_attribute_value(a)
-        if isinstance(value, bytes):
-            value = str(value, 'utf-8')
-        ret[a.name] = value
-    return ret
+        raise NotImplementedError(f'Unknown codebase type: {codebase.value}')
 
 
 def init_backend_model(model_files: Sequence[str],
@@ -112,259 +77,173 @@ def init_backend_model(model_files: Sequence[str],
                        deploy_cfg: Union[str, mmcv.Config],
                        device_id: int = 0,
                        **kwargs):
-    deploy_cfg, model_cfg = assert_cfg_valid(deploy_cfg, model_cfg)
+    deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
 
-    codebase = deploy_cfg['codebase']
-    backend = deploy_cfg['backend']
-    assert_module_exist(codebase)
-    if codebase != 'mmocr':
-        class_names = get_classes_from_config(codebase, model_cfg)
+    codebase = get_codebase(deploy_cfg)
 
-    if codebase == 'mmcls':
-        if backend == 'onnxruntime':
-            from mmdeploy.mmcls.export import ONNXRuntimeClassifier
-            backend_model = ONNXRuntimeClassifier(
-                model_files[0], class_names=class_names, device_id=device_id)
-        elif backend == 'tensorrt':
-            from mmdeploy.mmcls.export import TensorRTClassifier
-            backend_model = TensorRTClassifier(
-                model_files[0], class_names=class_names, device_id=device_id)
-        elif backend == 'ncnn':
-            from mmdeploy.mmcls.export import NCNNClassifier
-            backend_model = NCNNClassifier(
-                model_files[0],
-                model_files[1],
-                class_names=class_names,
-                device_id=device_id)
-        elif backend == 'ppl':
-            from mmdeploy.mmcls.export import PPLClassifier
-            backend_model = PPLClassifier(
-                model_files[0], class_names=class_names, device_id=device_id)
-        else:
-            raise NotImplementedError(f'Unsupported backend type: {backend}')
-        return backend_model
+    if codebase == Codebase.MMCLS:
+        from mmdeploy.mmcls.apis import build_classifier
+        return build_classifier(
+            model_files, model_cfg, deploy_cfg, device_id=device_id)
 
-    elif codebase == 'mmdet':
-        from mmdeploy.mmdet.export.model_wrappers import build_detector
+    elif codebase == Codebase.MMDET:
+        from mmdeploy.mmdet.apis import build_detector
         return build_detector(
             model_files, model_cfg, deploy_cfg, device_id=device_id)
 
-    elif codebase == 'mmseg':
-        if backend == 'onnxruntime':
-            from mmdeploy.mmseg.export import ONNXRuntimeSegmentor
-            backend_model = ONNXRuntimeSegmentor(
-                model_files[0], class_names=class_names, device_id=device_id)
-        elif backend == 'tensorrt':
-            from mmdeploy.mmseg.export import TensorRTSegmentor
-            backend_model = TensorRTSegmentor(
-                model_files[0], class_names=class_names, device_id=device_id)
-        else:
-            raise NotImplementedError(f'Unsupported backend type: {backend}')
-        return backend_model
+    elif codebase == Codebase.MMSEG:
+        from mmdeploy.mmseg.apis import build_segmentor
+        return build_segmentor(
+            model_files, model_cfg, deploy_cfg, device_id=device_id)
 
-    elif codebase == 'mmocr':
-        algorithm_type = deploy_cfg['algorithm_type']
-        if backend == 'onnxruntime':
-            if algorithm_type == 'det':
-                from mmdeploy.mmocr.export import ONNXRuntimeDetector
-                backend_model = ONNXRuntimeDetector(
-                    model_files[0], cfg=model_cfg, device_id=device_id)
-            elif algorithm_type == 'recog':
-                from mmdeploy.mmocr.export import ONNXRuntimeRecognizer
-                backend_model = ONNXRuntimeRecognizer(
-                    model_files[0], cfg=model_cfg, device_id=device_id)
-        elif backend == 'tensorrt':
-            if algorithm_type == 'det':
-                from mmdeploy.mmocr.export import TensorRTDetector
-                backend_model = TensorRTDetector(
-                    model_files[0], cfg=model_cfg, device_id=device_id)
-            elif algorithm_type == 'recog':
-                from mmdeploy.mmocr.export import TensorRTRecognizer
-                backend_model = TensorRTRecognizer(
-                    model_files[0], cfg=model_cfg, device_id=device_id)
-        else:
-            raise NotImplementedError(f'Unsupported backend type: {backend}')
-        return backend_model
+    elif codebase == Codebase.MMOCR:
+        from mmdeploy.mmocr.apis import build_ocr_processor
+        return build_ocr_processor(
+            model_files, model_cfg, deploy_cfg, device_id=device_id)
+
+    elif codebase == Codebase.MMEDIT:
+        from mmdeploy.mmedit.apis import build_editing_processor
+        return build_editing_processor(model_files, model_cfg, deploy_cfg,
+                                       device_id)
 
     else:
-        raise NotImplementedError(f'Unknown codebase type: {codebase}')
+        raise NotImplementedError(f'Unknown codebase type: {codebase.value}')
 
 
-def get_classes_from_config(codebase: str, model_cfg: Union[str, mmcv.Config]):
-    assert_module_exist(codebase)
-
-    model_cfg_str = model_cfg
-    model_cfg = assert_cfg_valid(model_cfg)[0]
-
-    if codebase == 'mmdet':
-        from mmdeploy.mmdet.export.model_wrappers \
-            import get_classes_from_config as get_classes_mmdet
-        return get_classes_mmdet(model_cfg)
-
-    if codebase == 'mmcls':
-        from mmcls.datasets import DATASETS
-    elif codebase == 'mmdet':
-        from mmdet.datasets import DATASETS
-    elif codebase == 'mmseg':
-        from mmseg.datasets import DATASETS
-    elif codebase == 'mmocr':
-        from mmocr.datasets import DATASETS
-    else:
-        raise NotImplementedError(f'Unknown codebase type: {codebase}')
-
-    module_dict = DATASETS.module_dict
-    data_cfg = model_cfg.data
-
-    if 'train' in data_cfg:
-        module = module_dict[data_cfg.train.type]
-    elif 'val' in data_cfg:
-        module = module_dict[data_cfg.val.type]
-    elif 'test' in data_cfg:
-        module = module_dict[data_cfg.test.type]
-    else:
-        raise RuntimeError(f'No dataset config found in: {model_cfg_str}')
-
-    return module.CLASSES
-
-
-def _inference(codebase: str, model_inputs, model):
-    assert_module_exist(codebase)
-    if codebase == 'mmcls':
+def run_inference(codebase: Codebase, model_inputs, model):
+    if codebase == Codebase.MMCLS:
+        return model(**model_inputs, return_loss=False)[0]
+    elif codebase == Codebase.MMDET:
+        return model(**model_inputs, return_loss=False, rescale=True)[0]
+    elif codebase == Codebase.MMSEG:
         return model(**model_inputs, return_loss=False)
-    elif codebase == 'mmdet':
-        return model(**model_inputs, return_loss=False, rescale=True)
+    elif codebase == Codebase.MMOCR:
+        return model(**model_inputs, return_loss=False, rescale=True)[0]
+    elif codebase == Codebase.MMEDIT:
+        result = model(model_inputs['lq'])[0]
+        # TODO: (For mmedit codebase)
+        # The data type of pytorch backend is not consistent
+        if not isinstance(result, np.ndarray):
+            result = result.detach().cpu().numpy()
+        return result
     else:
-        raise NotImplementedError(f'Unknown codebase type: {codebase}')
+        raise NotImplementedError(f'Unknown codebase type: {codebase.value}')
 
 
-def check_model_outputs(codebase: str,
-                        image: Union[str, np.ndarray],
-                        model_inputs,
-                        model,
-                        output_file: str,
-                        backend: str,
-                        dataset: str = None,
-                        show_result=False):
-    assert_module_exist(codebase)
+def visualize(codebase: Codebase,
+              image: Union[str, np.ndarray],
+              result,
+              model,
+              output_file: str,
+              backend: Backend,
+              show_result=False):
+
     show_img = mmcv.imread(image) if isinstance(image, str) else image
+    output_file = None if show_result else output_file
 
-    if codebase == 'mmcls':
-        output_file = None if show_result else output_file
-        with torch.no_grad():
-            scores = _inference(codebase, model_inputs, model)[0]
-            pred_score = np.max(scores, axis=0)
-            pred_label = np.argmax(scores, axis=0)
-            result = {
-                'pred_label': pred_label,
-                'pred_score': float(pred_score)
-            }
-            result['pred_class'] = model.CLASSES[result['pred_label']]
-            model.show_result(
-                show_img,
-                result,
-                show=True,
-                win_name=backend,
-                out_file=output_file)
+    if codebase == Codebase.MMCLS:
+        from mmdeploy.mmcls.apis import show_result as show_result_mmcls
+        show_result_mmcls(model, show_img, result, output_file, backend,
+                          show_result)
+    elif codebase == Codebase.MMDET:
+        from mmdeploy.mmdet.apis import show_result as show_result_mmdet
+        show_result_mmdet(model, show_img, result, output_file, backend,
+                          show_result)
+    elif codebase == Codebase.MMSEG:
+        from mmdeploy.mmseg.apis import show_result as show_result_mmseg
+        show_result_mmseg(model, show_img, result, output_file, backend,
+                          show_result)
+    elif codebase == Codebase.MMOCR:
+        from mmdeploy.mmocr.apis import show_result as show_result_mmocr
+        show_result_mmocr(model, show_img, result, output_file, backend,
+                          show_result)
+    elif codebase == Codebase.MMEDIT:
+        from mmdeploy.mmedit.apis import show_result as show_result_mmedit
+        show_result_mmedit(result, output_file, backend, show_result)
 
-    elif codebase == 'mmdet':
-        output_file = None if show_result else output_file
-        score_thr = 0.3
-        with torch.no_grad():
-            results = _inference(codebase, model_inputs, model)[0]
-            model.show_result(
-                show_img,
-                results,
-                score_thr=score_thr,
-                show=True,
-                win_name=backend,
-                out_file=output_file)
 
-    elif codebase == 'mmocr':
-        assert_module_exist(codebase)
-        output_file = None if show_result else output_file
-        score_thr = 0.3
-        with torch.no_grad():
-            results = model(**model_inputs, return_loss=False, rescale=True)[0]
-            model.show_result(
-                show_img,
-                results,
-                score_thr=score_thr,
-                show=True,
-                win_name=backend,
-                out_file=output_file)
-
-    elif codebase == 'mmseg':
-        output_file = None if show_result else output_file
-        from mmseg.core.evaluation import get_palette
-        dataset = 'cityscapes' if dataset is None else dataset
-        palette = get_palette(dataset)
-        with torch.no_grad():
-            results = model(**model_inputs, return_loss=False, rescale=True)
-            model.show_result(
-                show_img,
-                results,
-                palette=palette,
-                show=True,
-                win_name=backend,
-                out_file=output_file,
-                opacity=0.5)
+def get_partition_cfg(codebase: Codebase, partition_type: str):
+    if codebase == Codebase.MMDET:
+        from mmdeploy.mmdet.export import get_partition_cfg \
+            as get_partition_cfg_mmdet
+        return get_partition_cfg_mmdet(partition_type)
     else:
-        raise NotImplementedError(f'Unknown codebase type: {codebase}')
+        raise NotImplementedError(f'Unknown codebase type: {codebase.value}')
 
 
-def get_split_cfg(codebase: str, split_type: str):
-    assert_module_exist(codebase)
-    if codebase == 'mmdet':
-        from mmdeploy.mmdet.export import get_split_cfg \
-            as get_split_cfg_mmdet
-        return get_split_cfg_mmdet(split_type)
-    else:
-        raise NotImplementedError(f'Unknown codebase type: {codebase}')
-
-
-def build_dataset(codebase: str,
+def build_dataset(codebase: Codebase,
                   dataset_cfg: Union[str, mmcv.Config],
                   dataset_type: str = 'val',
                   **kwargs):
-    assert_module_exist(codebase)
-    if codebase == 'mmcls':
+    if codebase == Codebase.MMCLS:
         from mmdeploy.mmcls.export import build_dataset \
             as build_dataset_mmcls
         return build_dataset_mmcls(dataset_cfg, dataset_type, **kwargs)
-    elif codebase == 'mmdet':
+    elif codebase == Codebase.MMDET:
         from mmdeploy.mmdet.export import build_dataset \
             as build_dataset_mmdet
         return build_dataset_mmdet(dataset_cfg, dataset_type, **kwargs)
+    elif codebase == Codebase.MMSEG:
+        from mmdeploy.mmseg.export import build_dataset as build_dataset_mmseg
+        return build_dataset_mmseg(dataset_cfg, dataset_type, **kwargs)
+    elif codebase == Codebase.MMEDIT:
+        from mmdeploy.mmedit.export import build_dataset \
+            as build_dataset_mmedit
+        return build_dataset_mmedit(dataset_cfg, **kwargs)
+    elif codebase == Codebase.MMOCR:
+        from mmdeploy.mmocr.export import build_dataset as build_dataset_mmocr
+        return build_dataset_mmocr(dataset_cfg, dataset_type, **kwargs)
     else:
-        raise NotImplementedError(f'Unknown codebase type: {codebase}')
+        raise NotImplementedError(f'Unknown codebase type: {codebase.value}')
 
 
-def build_dataloader(codebase: str, dataset, samples_per_gpu: int,
+def build_dataloader(codebase: Codebase, dataset, samples_per_gpu: int,
                      workers_per_gpu: int, **kwargs):
-    assert_module_exist(codebase)
-    if codebase == 'mmcls':
+    if codebase == Codebase.MMCLS:
         from mmdeploy.mmcls.export import build_dataloader \
             as build_dataloader_mmcls
         return build_dataloader_mmcls(dataset, samples_per_gpu,
                                       workers_per_gpu, **kwargs)
-    elif codebase == 'mmdet':
+    elif codebase == Codebase.MMDET:
         from mmdeploy.mmdet.export import build_dataloader \
             as build_dataloader_mmdet
         return build_dataloader_mmdet(dataset, samples_per_gpu,
                                       workers_per_gpu, **kwargs)
+    elif codebase == Codebase.MMSEG:
+        from mmdeploy.mmseg.export import build_dataloader \
+            as build_dataloader_mmseg
+        return build_dataloader_mmseg(dataset, samples_per_gpu,
+                                      workers_per_gpu, **kwargs)
+    elif codebase == Codebase.MMEDIT:
+        from mmdeploy.mmedit.export import build_dataloader \
+            as build_dataloader_mmedit
+        return build_dataloader_mmedit(dataset, samples_per_gpu,
+                                       workers_per_gpu, **kwargs)
+    elif codebase == Codebase.MMOCR:
+        from mmdeploy.mmocr.export import build_dataloader \
+            as build_dataloader_mmocr
+        return build_dataloader_mmocr(dataset, samples_per_gpu,
+                                      workers_per_gpu, **kwargs)
     else:
-        raise NotImplementedError(f'Unknown codebase type: {codebase}')
+        raise NotImplementedError(f'Unknown codebase type: {codebase.value}')
 
 
-def get_tensor_from_input(codebase: str, input_data):
-    assert_module_exist(codebase)
-    if codebase == 'mmcls':
+def get_tensor_from_input(codebase: Codebase, input_data):
+    if codebase == Codebase.MMCLS:
         from mmdeploy.mmcls.export import get_tensor_from_input \
             as get_tensor_from_input_mmcls
         return get_tensor_from_input_mmcls(input_data)
-    elif codebase == 'mmdet':
+    elif codebase == Codebase.MMDET:
         from mmdeploy.mmdet.export import get_tensor_from_input \
             as get_tensor_from_input_mmdet
         return get_tensor_from_input_mmdet(input_data)
+    elif codebase == Codebase.MMSEG:
+        from mmdeploy.mmseg.export import get_tensor_from_input \
+            as get_tensor_from_input_mmseg
+        return get_tensor_from_input_mmseg(input_data)
+    elif codebase == Codebase.MMOCR:
+        from mmdeploy.mmocr.export import get_tensor_from_input \
+            as get_tensor_from_input_mmocr
+        return get_tensor_from_input_mmocr(input_data)
     else:
-        raise NotImplementedError(f'Unknown codebase type: {codebase}')
+        raise NotImplementedError(f'Unknown codebase type: {codebase.value}')

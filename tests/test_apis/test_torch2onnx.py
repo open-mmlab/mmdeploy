@@ -4,12 +4,10 @@ import shutil
 import mmcv
 import numpy as np
 import pytest
-import torch.multiprocessing as mp
 
 from mmdeploy.apis import torch2onnx
 
 backend = 'default'
-ret_value = mp.Value('d', 0, lock=False)
 work_dir = './tmp/'
 save_file = 'tmp.onnx'
 
@@ -103,10 +101,8 @@ def test_torch2onnx_mmcls():
         save_file=save_file,
         deploy_cfg=deploy_cfg,
         model_cfg=model_cfg,
-        device='cpu',
-        ret_value=ret_value)
+        device='cpu')
 
-    assert ret_value.value == 0
     assert osp.exists(work_dir)
     assert osp.exists(osp.join(work_dir, save_file))
 
@@ -238,9 +234,7 @@ def test_torch2onnx_mmdet():
         save_file=save_file,
         deploy_cfg=deploy_cfg,
         model_cfg=model_cfg,
-        device='cpu',
-        ret_value=ret_value)
+        device='cpu')
 
-    assert ret_value.value == 0
     assert osp.exists(work_dir)
     assert osp.exists(osp.join(work_dir, save_file))

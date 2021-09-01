@@ -8,9 +8,11 @@ import mmcv
 import torch.multiprocessing as mp
 from torch.multiprocessing import Process, set_start_method
 
-from mmdeploy.apis import (assert_cfg_valid, create_calib_table, extract_model,
-                           inference_model, torch2onnx)
-from mmdeploy.apis.utils import get_split_cfg
+from mmdeploy.apis import (create_calib_table, extract_model, inference_model,
+                           torch2onnx)
+from mmdeploy.apis.utils import get_partition_cfg
+from mmdeploy.utils.config_utils import (Backend, get_backend, get_codebase,
+                                         load_config)
 
 
 def parse_args():
@@ -40,18 +42,25 @@ def parse_args():
     return args
 
 
-def target_wrapper(target, log_level, *args, **kwargs):
+def target_wrapper(target, log_level, ret_value, *args, **kwargs):
     logger = logging.getLogger()
     logger.level
     logger.setLevel(log_level)
-    return target(*args, **kwargs)
+    if ret_value is not None:
+        ret_value.value = 0
+    try:
+        return target(*args, **kwargs)
+    except Exception as e:
+        logging.error(e)
+        if ret_value is not None:
+            ret_value.value = -1
 
 
 def create_process(name, target, args, kwargs, ret_value=None):
     logging.info(f'{name} start.')
     log_level = logging.getLogger().level
 
-    wrap_func = partial(target_wrapper, target, log_level)
+    wrap_func = partial(target_wrapper, target, log_level, ret_value)
 
     process = Process(target=wrap_func, args=args, kwargs=kwargs)
     process.start()
@@ -77,8 +86,7 @@ def main():
     checkpoint_path = args.checkpoint
 
     # load deploy_cfg
-    deploy_cfg = mmcv.Config.fromfile(deploy_cfg_path)
-    assert_cfg_valid(deploy_cfg, model_cfg_path)
+    deploy_cfg = load_config(deploy_cfg_path)[0]
 
     # create work_dir if not
     mmcv.mkdir_or_exist(osp.abspath(args.work_dir))
@@ -92,42 +100,39 @@ def main():
         target=torch2onnx,
         args=(args.img, args.work_dir, onnx_save_file, deploy_cfg_path,
               model_cfg_path, checkpoint_path),
-        kwargs=dict(device=args.device, ret_value=ret_value),
+        kwargs=dict(device=args.device),
         ret_value=ret_value)
 
     # convert backend
     onnx_files = [osp.join(args.work_dir, onnx_save_file)]
 
-    # split model
+    # partition model
     apply_marks = deploy_cfg.get('apply_marks', False)
     if apply_marks:
-        assert hasattr(deploy_cfg, 'split_params')
-        split_params = deploy_cfg['split_params']
+        assert hasattr(deploy_cfg, 'partition_params')
+        partition_params = deploy_cfg['partition_params']
 
-        if 'split_cfg' in split_params:
-            split_cfgs = split_params.get('split_cfg', None)
+        if 'partition_cfg' in partition_params:
+            partition_cfgs = partition_params.get('partition_cfg', None)
         else:
-            assert 'split_type' in split_params
-            split_cfgs = get_split_cfg(deploy_cfg['codebase'],
-                                       split_params['split_type'])
+            assert 'partition_type' in partition_params
+            partition_cfgs = get_partition_cfg(
+                get_codebase(deploy_cfg), partition_params['partition_type'])
 
         origin_onnx_file = onnx_files[0]
         onnx_files = []
-        for split_cfg in split_cfgs:
-            save_file = split_cfg['save_file']
+        for partition_cfg in partition_cfgs:
+            save_file = partition_cfg['save_file']
             save_path = osp.join(args.work_dir, save_file)
-            start = split_cfg['start']
-            end = split_cfg['end']
-            dynamic_axes = split_cfg.get('dynamic_axes', None)
+            start = partition_cfg['start']
+            end = partition_cfg['end']
+            dynamic_axes = partition_cfg.get('dynamic_axes', None)
 
             create_process(
-                f'split model {save_file} with start: {start}, end: {end}',
+                f'partition model {save_file} with start: {start}, end: {end}',
                 extract_model,
                 args=(origin_onnx_file, start, end),
-                kwargs=dict(
-                    dynamic_axes=dynamic_axes,
-                    save_file=save_path,
-                    ret_value=ret_value),
+                kwargs=dict(dynamic_axes=dynamic_axes, save_file=save_path),
                 ret_value=ret_value)
 
             onnx_files.append(save_path)
@@ -147,14 +152,13 @@ def main():
             kwargs=dict(
                 dataset_cfg=args.calib_dataset_cfg,
                 dataset_type='val',
-                device=args.device,
-                ret_value=ret_value),
+                device=args.device),
             ret_value=ret_value)
 
     backend_files = onnx_files
     # convert backend
-    backend = deploy_cfg.get('backend', 'default')
-    if backend == 'tensorrt':
+    backend = get_backend(deploy_cfg, 'default')
+    if backend == Backend.TENSORRT:
         assert hasattr(deploy_cfg, 'tensorrt_params')
         tensorrt_params = deploy_cfg['tensorrt_params']
         model_params = tensorrt_params.get('model_params', [])
@@ -171,21 +175,18 @@ def main():
             onnx_name = osp.splitext(osp.split(onnx_path)[1])[0]
             save_file = model_param.get('save_file', onnx_name + '.engine')
 
-            split_type = 'end2end' if not apply_marks else onnx_name
+            partition_type = 'end2end' if not apply_marks else onnx_name
             create_process(
                 f'onnx2tensorrt of {onnx_path}',
                 target=onnx2tensorrt,
                 args=(args.work_dir, save_file, model_id, deploy_cfg_path,
                       onnx_path),
-                kwargs=dict(
-                    device=args.device,
-                    split_type=split_type,
-                    ret_value=ret_value),
+                kwargs=dict(device=args.device, partition_type=partition_type),
                 ret_value=ret_value)
 
             backend_files.append(osp.join(args.work_dir, save_file))
 
-    elif backend == 'ncnn':
+    elif backend == Backend.NCNN:
         from mmdeploy.apis.ncnn import get_onnx2ncnn_path
         from mmdeploy.apis.ncnn import is_available as is_available_ncnn
 
@@ -212,14 +213,14 @@ def main():
         args.test_img = args.img
     # visualize model of the backend
     create_process(
-        f'visualize {backend} model',
+        f'visualize {backend.value} model',
         target=inference_model,
-        args=(model_cfg_path, deploy_cfg_path, backend_files, args.test_img),
+        args=(model_cfg_path, deploy_cfg_path, backend_files, args.test_img,
+              args.device),
         kwargs=dict(
-            device=args.device,
-            output_file=f'output_{backend}.jpg',
-            show_result=args.show,
-            ret_value=ret_value),
+            backend=backend,
+            output_file=f'output_{backend.value}.jpg',
+            show_result=args.show),
         ret_value=ret_value)
 
     # visualize pytorch model
@@ -227,13 +228,11 @@ def main():
         'visualize pytorch model',
         target=inference_model,
         args=(model_cfg_path, deploy_cfg_path, [checkpoint_path],
-              args.test_img),
+              args.test_img, args.device),
         kwargs=dict(
-            device=args.device,
-            backend='pytorch',
+            backend=Backend.PYTORCH,
             output_file='output_pytorch.jpg',
-            show_result=args.show,
-            ret_value=ret_value),
+            show_result=args.show),
         ret_value=ret_value)
 
     logging.info('All process success.')

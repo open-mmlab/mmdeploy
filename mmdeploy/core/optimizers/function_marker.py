@@ -3,6 +3,7 @@ import inspect
 import torch
 
 from mmdeploy.core.rewriters.function_rewriter import FUNCTION_REWRITER
+from mmdeploy.utils import get_codebase
 
 MARK_FUNCTION_COUNT = dict()
 
@@ -66,36 +67,36 @@ def forward_of_mark(rewriter, ctx, x, dtype, shape, func, func_id, type, name,
     apply_marks = deploy_cfg.get('apply_marks', False)
     create_calib = getattr(rewriter, 'create_calib', False)
     if apply_marks and create_calib:
-        codebase = deploy_cfg['codebase']
-        assert 'split_params' in deploy_cfg
-        split_params = deploy_cfg['split_params']
-        split_type = split_params['split_type']
-        from mmdeploy.apis.utils import get_split_cfg
-        split_cfgs = get_split_cfg(codebase, split_type)
+        codebase = get_codebase(deploy_cfg)
+        assert 'partition_params' in deploy_cfg
+        partition_params = deploy_cfg['partition_params']
+        partition_type = partition_params['partition_type']
+        from mmdeploy.apis.utils import get_partition_cfg
+        partition_cfgs = get_partition_cfg(codebase, partition_type)
         assert hasattr(rewriter, 'calib_file')
 
-        for split_id, split_cfg in enumerate(split_cfgs):
-            start = split_cfg['start']
+        for partition_id, partition_cfg in enumerate(partition_cfgs):
+            start = partition_cfg['start']
             if (f'{func}:{type}' not in start) and (f'{func}[{func_id}]:{type}'
                                                     not in start):
                 continue
 
             input_name = name
-            dynamic_axes = split_cfg.get('dynamic_axes', None)
+            dynamic_axes = partition_cfg.get('dynamic_axes', None)
             if dynamic_axes is not None:
                 input_name = name
             calib_file = rewriter.calib_file
 
             calib_data_group = calib_file['calib_data']
-            split_name = f'split{split_id}'
+            partition_name = f'partition{partition_id}'
 
-            if split_name not in calib_data_group:
-                calib_data_group.create_group(split_name)
-            split_group = calib_data_group[split_name]
+            if partition_name not in calib_data_group:
+                calib_data_group.create_group(partition_name)
+            partition_group = calib_data_group[partition_name]
 
-            if input_name not in split_group:
-                split_group.create_group(input_name)
-            input_data_group = split_group[input_name]
+            if input_name not in partition_group:
+                partition_group.create_group(input_name)
+            input_data_group = partition_group[input_name]
 
             data_id = rewriter.data_id
             x_np = x.detach().cpu().numpy()

@@ -4,8 +4,8 @@ import onnx
 import pytest
 import torch
 
-from mmdeploy.apis.utils import attribute_to_dict
 from mmdeploy.core import mark
+from mmdeploy.core.optimizers import attribute_to_dict
 
 output_file = 'test_mark.onnx'
 

@@ -5,7 +5,6 @@ import shutil
 import mmcv
 import pytest
 import torch
-import torch.multiprocessing as mp
 from torch import nn
 
 import mmdeploy.apis.tensorrt as trt_apis
@@ -21,7 +20,6 @@ if not torch.cuda.is_available():
 TRTWrapper = trt_apis.TRTWrapper
 onnx2tensorrt = trt_apis.onnx2tensorrt
 
-ret_value = mp.Value('d', 0, lock=False)
 work_dir = './tmp/'
 onnx_file = 'tmp.onnx'
 save_file = 'tmp.engine'
@@ -88,14 +86,8 @@ def test_onnx2tensorrt():
 
     # convert to engine
     onnx2tensorrt(
-        work_dir,
-        save_file,
-        0,
-        deploy_cfg=deploy_cfg,
-        onnx_model=onnx_path,
-        ret_value=ret_value)
+        work_dir, save_file, 0, deploy_cfg=deploy_cfg, onnx_model=onnx_path)
 
-    assert ret_value.value == 0
     assert osp.exists(work_dir)
     assert osp.exists(osp.join(work_dir, save_file))
 

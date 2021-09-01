@@ -189,7 +189,7 @@ class TRTWrapper(torch.nn.Module):
         self.input_names = input_names
         self.output_names = output_names
 
-    def _on_state_dict(self, state_dict, prefix, local_metadata):
+    def _on_state_dict(self, state_dict, prefix):
         state_dict[prefix + 'engine'] = bytearray(self.engine.serialize())
         state_dict[prefix + 'input_names'] = self.input_names
         state_dict[prefix + 'output_names'] = self.output_names

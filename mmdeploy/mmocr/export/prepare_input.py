@@ -1,9 +1,13 @@
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 import mmcv
 import numpy as np
 from mmcv.parallel import collate, scatter
 from mmdet.datasets import replace_ImageToTensor
+from mmocr.datasets import build_dataloader as build_dataloader_mmocr
+from mmocr.datasets import build_dataset as build_dataset_mmocr
+
+from mmdeploy.utils.config_utils import load_config
 
 
 def create_input(model_cfg: Union[str, mmcv.Config],
@@ -76,3 +80,38 @@ def create_input(model_cfg: Union[str, mmcv.Config],
         data = scatter(data, [device])[0]
 
     return data, data['img']
+
+
+def build_dataset(dataset_cfg: Union[str, mmcv.Config],
+                  dataset_type: str = 'val',
+                  **kwargs):
+    dataset_cfg = load_config(dataset_cfg)[0].copy()
+
+    data = dataset_cfg.data
+    assert dataset_type in data
+    dataset = build_dataset_mmocr(data[dataset_type])
+
+    return dataset
+
+
+def build_dataloader(dataset,
+                     samples_per_gpu: int,
+                     workers_per_gpu: int,
+                     num_gpus: int = 1,
+                     dist: bool = False,
+                     shuffle: bool = False,
+                     seed: Optional[int] = None,
+                     **kwargs):
+    return build_dataloader_mmocr(
+        dataset,
+        samples_per_gpu,
+        workers_per_gpu,
+        num_gpus=num_gpus,
+        dist=dist,
+        shuffle=shuffle,
+        seed=seed,
+        **kwargs)
+
+
+def get_tensor_from_input(input_data):
+    return input_data['img']

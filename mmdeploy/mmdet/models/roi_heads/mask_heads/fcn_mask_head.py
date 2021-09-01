@@ -2,6 +2,7 @@ import torch
 import torch.nn.functional as F
 
 from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.utils.config_utils import Backend, get_backend
 
 
 @FUNCTION_REWRITER.register_rewriter(
@@ -21,7 +22,7 @@ def get_seg_masks_of_fcn_mask_head(ctx, self, mask_pred, det_bboxes,
     Returns:
         Tensor: a mask of shape (N, img_h, img_w).
     """
-    backend = ctx.cfg.get('backend', 'default')
+    backend = get_backend(ctx.cfg, 'default')
     mask_pred = mask_pred.sigmoid()
     bboxes = det_bboxes[:, :4]
     labels = det_labels
@@ -31,7 +32,7 @@ def get_seg_masks_of_fcn_mask_head(ctx, self, mask_pred, det_bboxes,
         mask_pred = mask_pred[box_inds, labels][:, None]
     masks, _ = _do_paste_mask(
         mask_pred, bboxes, ori_shape[0], ori_shape[1], skip_empty=False)
-    if backend == 'tensorrt':
+    if backend == Backend.TENSORRT:
         return masks
     if threshold >= 0:
         masks = (masks >= threshold).to(dtype=torch.bool)

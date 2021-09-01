@@ -1,90 +1,12 @@
 import warnings
-from typing import Any, Union
+from typing import Any
 
 import mmcv
 import numpy as np
 from torch import nn
 from torch.utils.data import DataLoader
 
-from mmdeploy.apis.utils import assert_module_exist
-
-
-def prepare_data_loader(codebase: str, model_cfg: Union[str, mmcv.Config]):
-    assert_module_exist(codebase)
-    # load model_cfg if necessary
-    if isinstance(model_cfg, str):
-        model_cfg = mmcv.Config.fromfile(model_cfg)
-
-    if codebase == 'mmcls':
-        from mmcls.datasets import (build_dataloader, build_dataset)
-        # build dataset and dataloader
-        dataset = build_dataset(model_cfg.data.test)
-        data_loader = build_dataloader(
-            dataset,
-            samples_per_gpu=model_cfg.data.samples_per_gpu,
-            workers_per_gpu=model_cfg.data.workers_per_gpu,
-            shuffle=False,
-            round_up=False)
-
-    elif codebase == 'mmdet':
-        from mmdet.datasets import (build_dataloader, build_dataset,
-                                    replace_ImageToTensor)
-        # in case the test dataset is concatenated
-        samples_per_gpu = 1
-        if isinstance(model_cfg.data.test, dict):
-            model_cfg.data.test.test_mode = True
-            samples_per_gpu = model_cfg.data.test.pop('samples_per_gpu', 1)
-            if samples_per_gpu > 1:
-                # Replace 'ImageToTensor' to 'DefaultFormatBundle'
-                model_cfg.data.test.pipeline = replace_ImageToTensor(
-                    model_cfg.data.test.pipeline)
-        elif isinstance(model_cfg.data.test, list):
-            for ds_cfg in model_cfg.data.test:
-                ds_cfg.test_mode = True
-            samples_per_gpu = max([
-                ds_cfg.pop('samples_per_gpu', 1)
-                for ds_cfg in model_cfg.data.test
-            ])
-            if samples_per_gpu > 1:
-                for ds_cfg in model_cfg.data.test:
-                    ds_cfg.pipeline = replace_ImageToTensor(ds_cfg.pipeline)
-
-        # build the dataloader
-        dataset = build_dataset(model_cfg.data.test)
-        data_loader = build_dataloader(
-            dataset,
-            samples_per_gpu=samples_per_gpu,
-            workers_per_gpu=model_cfg.data.workers_per_gpu,
-            dist=False,
-            shuffle=False)
-
-    elif codebase == 'mmseg':
-        from mmseg.datasets import build_dataset, build_dataloader
-        model_cfg.data.test.test_mode = True
-        dataset = build_dataset(model_cfg.data.test)
-        samples_per_gpu = 1
-        data_loader = build_dataloader(
-            dataset,
-            samples_per_gpu=samples_per_gpu,
-            workers_per_gpu=model_cfg.data.workers_per_gpu,
-            dist=False,
-            shuffle=False)
-
-    elif codebase == 'mmocr':
-        from mmocr.datasets import build_dataset, build_dataloader
-        model_cfg.data.test.test_mode = True
-        dataset = build_dataset(model_cfg.data.test)
-        samples_per_gpu = 1
-        data_loader = build_dataloader(
-            dataset,
-            samples_per_gpu=samples_per_gpu,
-            workers_per_gpu=model_cfg.data.workers_per_gpu,
-            dist=False,
-            shuffle=False)
-    else:
-        raise NotImplementedError(f'Unknown codebase type: {codebase}')
-
-    return dataset, data_loader
+from mmdeploy.utils import Codebase
 
 
 def single_gpu_test(codebase: str,
@@ -93,23 +15,24 @@ def single_gpu_test(codebase: str,
                     show: bool = False,
                     out_dir: Any = None,
                     show_score_thr: float = 0.3):
-    assert_module_exist(codebase)
-
-    if codebase == 'mmcls':
+    if codebase == Codebase.MMCLS:
         from mmcls.apis import single_gpu_test
         outputs = single_gpu_test(model, data_loader, show, out_dir)
-    elif codebase == 'mmdet':
+    elif codebase == Codebase.MMDET:
         from mmdet.apis import single_gpu_test
         outputs = single_gpu_test(model, data_loader, show, out_dir,
                                   show_score_thr)
-    elif codebase == 'mmseg':
+    elif codebase == Codebase.MMSEG:
         from mmseg.apis import single_gpu_test
         outputs = single_gpu_test(model, data_loader, show, out_dir)
-    elif codebase == 'mmocr':
+    elif codebase == Codebase.MMOCR:
         from mmdet.apis import single_gpu_test
         outputs = single_gpu_test(model, data_loader, show, out_dir)
+    elif codebase == Codebase.MMEDIT:
+        from mmedit.apis import single_gpu_test
+        outputs = single_gpu_test(model, data_loader, show, out_dir)
     else:
-        raise NotImplementedError(f'Unknown codebase type: {codebase}')
+        raise NotImplementedError(f'Unknown codebase type: {codebase.value}')
     return outputs
 
 
@@ -121,7 +44,7 @@ def post_process_outputs(outputs,
                          out: str = None,
                          metric_options: dict = None,
                          format_only: bool = False):
-    if codebase == 'mmcls':
+    if codebase == Codebase.MMCLS:
         if metrics:
             results = dataset.evaluate(outputs, metrics, metric_options)
             for k, v in results.items():
@@ -147,7 +70,7 @@ def post_process_outputs(outputs,
             print(f'\nwriting results to {out}')
             mmcv.dump(results, out)
 
-    elif codebase == 'mmdet':
+    elif codebase == Codebase.MMDET:
         if out:
             print(f'\nwriting results to {out}')
             mmcv.dump(outputs, out)
@@ -165,7 +88,7 @@ def post_process_outputs(outputs,
             eval_kwargs.update(dict(metric=metrics, **kwargs))
             print(dataset.evaluate(outputs, **eval_kwargs))
 
-    elif codebase == 'mmseg':
+    elif codebase == Codebase.MMSEG:
         if out:
             print(f'\nwriting results to {out}')
             mmcv.dump(outputs, out)
@@ -175,7 +98,7 @@ def post_process_outputs(outputs,
         if metrics:
             dataset.evaluate(outputs, metrics, **kwargs)
 
-    elif codebase == 'mmocr':
+    elif codebase == Codebase.MMOCR:
         if out:
             print(f'\nwriting results to {out}')
             mmcv.dump(outputs, out)
@@ -193,5 +116,16 @@ def post_process_outputs(outputs,
             eval_kwargs.update(dict(metric=metrics, **kwargs))
             print(dataset.evaluate(outputs, **eval_kwargs))
 
+    elif codebase == Codebase.MMEDIT:
+        if out:
+            print(f'\nwriting results to {out}')
+            mmcv.dump(outputs, out)
+        # The Dataset doesn't need metrics
+        print('')
+        # print metrics
+        stats = dataset.evaluate(outputs)
+        for stat in stats:
+            print('Eval-{}: {}'.format(stat, stats[stat]))
+
     else:
-        raise NotImplementedError(f'Unknown codebase type: {codebase}')
+        raise NotImplementedError(f'Unknown codebase type: {codebase.value}')

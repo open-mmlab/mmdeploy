@@ -3,11 +3,11 @@ from typing import Any, Optional, Union
 
 import mmcv
 import torch
-import torch.multiprocessing as mp
 
 from mmdeploy.core import (RewriterContext, patch_model,
                            register_extra_symbolics)
-from .utils import create_input, init_model
+from mmdeploy.utils import get_backend, get_codebase, load_config
+from .utils import create_input, init_pytorch_model
 
 
 def torch2onnx_impl(model: torch.nn.Module, input: torch.Tensor,
@@ -20,7 +20,7 @@ def torch2onnx_impl(model: torch.nn.Module, input: torch.Tensor,
                         f'but got {type(deploy_cfg)}')
 
     pytorch2onnx_cfg = deploy_cfg['pytorch2onnx']
-    backend = deploy_cfg['backend']
+    backend = get_backend(deploy_cfg).value
     opset_version = pytorch2onnx_cfg.get('opset_version', 11)
 
     # load registed symbolic
@@ -29,7 +29,7 @@ def torch2onnx_impl(model: torch.nn.Module, input: torch.Tensor,
     # patch model
     patched_model = patch_model(model, cfg=deploy_cfg, backend=backend)
 
-    with RewriterContext(cfg=deploy_cfg, backend=backend):
+    with RewriterContext(cfg=deploy_cfg, backend=backend), torch.no_grad():
         torch.onnx.export(
             patched_model,
             input,
@@ -49,31 +49,18 @@ def torch2onnx(img: Any,
                deploy_cfg: Union[str, mmcv.Config],
                model_cfg: Union[str, mmcv.Config],
                model_checkpoint: Optional[str] = None,
-               device: str = 'cuda:0',
-               ret_value: Optional[mp.Value] = None):
-
-    if ret_value is not None:
-        ret_value.value = -1
+               device: str = 'cuda:0'):
 
     # load deploy_cfg if necessary
-    if isinstance(deploy_cfg, str):
-        deploy_cfg = mmcv.Config.fromfile(deploy_cfg)
-    if not isinstance(deploy_cfg, mmcv.Config):
-        raise TypeError('deploy_cfg must be a filename or Config object, '
-                        f'but got {type(deploy_cfg)}')
-    # load model_cfg if needed
-    if isinstance(model_cfg, str):
-        model_cfg = mmcv.Config.fromfile(model_cfg)
-    if not isinstance(model_cfg, mmcv.Config):
-        raise TypeError('config must be a filename or Config object, '
-                        f'but got {type(model_cfg)}')
+    deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
 
     mmcv.mkdir_or_exist(osp.abspath(work_dir))
     output_file = osp.join(work_dir, save_file)
 
-    codebase = deploy_cfg['codebase']
+    codebase = get_codebase(deploy_cfg)
 
-    torch_model = init_model(codebase, model_cfg, model_checkpoint, device)
+    torch_model = init_pytorch_model(codebase, model_cfg, model_checkpoint,
+                                     device)
     data, model_inputs = create_input(codebase, model_cfg, img, device)
     if not isinstance(model_inputs, torch.Tensor):
         model_inputs = model_inputs[0]
@@ -83,6 +70,3 @@ def torch2onnx(img: Any,
         model_inputs,
         deploy_cfg=deploy_cfg,
         output_file=output_file)
-
-    if ret_value is not None:
-        ret_value.value = 0

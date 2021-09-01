@@ -33,3 +33,8 @@ if importlib.util.find_spec('mmocr'):
     importlib.import_module('mmdeploy.mmocr')
 else:
     logging.debug('mmocr is not installed.')
+
+if importlib.util.find_spec('mmedit'):
+    importlib.import_module('mmdeploy.mmedit')
+else:
+    logging.debug('mmedit is not installed.')

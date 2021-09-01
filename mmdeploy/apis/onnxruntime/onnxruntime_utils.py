@@ -1,8 +1,11 @@
 import os.path as osp
+from typing import Sequence
 
 import numpy as np
 import onnxruntime as ort
 import torch
+
+from .init_plugins import get_ops_path
 
 
 class ORTWrapper(torch.nn.Module):
@@ -13,10 +16,12 @@ class ORTWrapper(torch.nn.Module):
         device_id (int): The device id to put model
     """
 
-    def __init__(self, onnx_file: str, device_id: int):
+    def __init__(self,
+                 onnx_file: str,
+                 device_id: int,
+                 output_names: Sequence[str] = None):
         super(ORTWrapper, self).__init__()
         # get the custom op path
-        from mmdeploy.apis.onnxruntime import get_ops_path
         ort_custom_op_path = get_ops_path()
         session_options = ort.SessionOptions()
         # register custom op for onnxruntime
@@ -31,10 +36,11 @@ class ORTWrapper(torch.nn.Module):
             providers.insert(0, 'CUDAExecutionProvider')
             options.insert(0, {'device_id': device_id})
         sess.set_providers(providers, options)
-
+        if output_names is None:
+            output_names = [_.name for _ in sess.get_outputs()]
         self.sess = sess
         self.io_binding = sess.io_binding()
-        self.output_names = [_.name for _ in sess.get_outputs()]
+        self.output_names = output_names
         self.device_id = device_id
         self.is_cuda_available = is_cuda_available
         self.device_type = 'cuda' if is_cuda_available else 'cpu'
@@ -42,21 +48,22 @@ class ORTWrapper(torch.nn.Module):
     def forward(self, inputs):
         """
         Arguments:
-            inputs (tensor): the input tensor
-
+            inputs (dict): the input name and tensor pairs
+            input_names: list of input name
         Return:
-            dict: dict of output name-tensors pair
+            list[np.ndarray]: list of output numpy array
         """
-        # set io binding for inputs/outputs
-        if not self.is_cuda_available:
-            inputs = inputs.cpu()
-        self.io_binding.bind_input(
-            name='input',
-            device_type=self.device_type,
-            device_id=self.device_id,
-            element_type=np.float32,
-            shape=inputs.shape,
-            buffer_ptr=inputs.data_ptr())
+        for name, input_tensor in inputs.items():
+            # set io binding for inputs/outputs
+            if not self.is_cuda_available:
+                input_tensor = input_tensor.cpu()
+            self.io_binding.bind_input(
+                name=name,
+                device_type=self.device_type,
+                device_id=self.device_id,
+                element_type=np.float32,
+                shape=input_tensor.shape,
+                buffer_ptr=input_tensor.data_ptr())
 
         for name in self.output_names:
             self.io_binding.bind_output(name)

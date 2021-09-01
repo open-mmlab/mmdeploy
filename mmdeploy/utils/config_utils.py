@@ -1,20 +1,60 @@
-import re
 from typing import Union
 
 import mmcv
+
+from .constants import Backend, Codebase, Task
+
+
+def load_config(*args):
+    """Load the configuration and check the validity."""
+
+    def _load_config(cfg):
+        if isinstance(cfg, str):
+            cfg = mmcv.Config.fromfile(cfg)
+        if not isinstance(cfg, (mmcv.Config, mmcv.ConfigDict)):
+            raise TypeError('deploy_cfg must be a filename or Config object, '
+                            f'but got {type(cfg)}')
+        return cfg
+
+    assert len(args) > 0
+    configs = [_load_config(cfg) for cfg in args]
+
+    return configs
+
+
+def get_task_type(deploy_cfg: Union[str, mmcv.Config], default=None) -> Task:
+    """Get the task type of the algorithm."""
+
+    deploy_cfg = load_config(deploy_cfg)[0]
+    task_pairs = {i.value: i for i in Task}
+    task = task_pairs.get(deploy_cfg.get('task', default), default)
+    return task
+
+
+def get_codebase(deploy_cfg: Union[str, mmcv.Config],
+                 default=None) -> Codebase:
+    """Get the codebase of the config."""
+
+    deploy_cfg = load_config(deploy_cfg)[0]
+    codebase_pairs = {i.value: i for i in Codebase}
+    codebase = codebase_pairs.get(deploy_cfg.get('codebase', default), default)
+    return codebase
+
+
+def get_backend(deploy_cfg: Union[str, mmcv.Config], default=None) -> Backend:
+    """Get the backend of the config."""
+
+    deploy_cfg = load_config(deploy_cfg)[0]
+    backend_pairs = {i.value: i for i in Backend}
+    backend = backend_pairs.get(deploy_cfg.get('backend', default), default)
+    return backend
 
 
 def is_dynamic_batch(deploy_cfg: Union[str, mmcv.Config],
                      input_name: str = 'input'):
     """Check if input batch is dynamic."""
 
-    # load deploy_cfg
-    if isinstance(deploy_cfg, str):
-        deploy_cfg = mmcv.Config.fromfile(deploy_cfg)
-    if not isinstance(deploy_cfg, mmcv.Config):
-        raise TypeError('deploy_cfg must be a filename or Config object, '
-                        f'but got {type(deploy_cfg)}')
-
+    deploy_cfg = load_config(deploy_cfg)[0]
     # check if dynamic axes exist
     dynamic_axes = deploy_cfg['pytorch2onnx'].get('dynamic_axes', None)
     if dynamic_axes is None:
@@ -36,13 +76,7 @@ def is_dynamic_shape(deploy_cfg: Union[str, mmcv.Config],
                      input_name: str = 'input'):
     """Check if input shape is dynamic."""
 
-    # load deploy_cfg
-    if isinstance(deploy_cfg, str):
-        deploy_cfg = mmcv.Config.fromfile(deploy_cfg)
-    if not isinstance(deploy_cfg, mmcv.Config):
-        raise TypeError('deploy_cfg must be a filename or Config object, '
-                        f'but got {type(deploy_cfg)}')
-
+    deploy_cfg = load_config(deploy_cfg)[0]
     # check if dynamic axes exist
     dynamic_axes = deploy_cfg['pytorch2onnx'].get('dynamic_axes', None)
     if dynamic_axes is None:
@@ -58,16 +92,3 @@ def is_dynamic_shape(deploy_cfg: Union[str, mmcv.Config],
         return True
 
     return False
-
-
-def parse_extractor_io_string(io_str):
-    name, io_type = io_str.split(':')
-    assert io_type in ['input', 'output']
-    func_id = 0
-
-    search_result = re.search(r'^(.+)\[([0-9]+)\]$', name)
-    if search_result is not None:
-        name = search_result.group(1)
-        func_id = int(search_result.group(2))
-
-    return name, func_id, io_type

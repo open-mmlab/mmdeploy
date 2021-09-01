@@ -1,12 +1,11 @@
 import argparse
 
-import mmcv
 from mmcv import DictAction
 from mmcv.parallel import MMDataParallel
 
-from mmdeploy.apis import (init_backend_model, post_process_outputs,
-                           prepare_data_loader, single_gpu_test)
-from mmdeploy.apis.utils import assert_cfg_valid
+from mmdeploy.apis import (build_dataloader, build_dataset, init_backend_model,
+                           post_process_outputs, single_gpu_test)
+from mmdeploy.utils.config_utils import get_codebase, load_config
 
 
 def parse_args():
@@ -71,13 +70,17 @@ def main():
     model_cfg_path = args.model_cfg
 
     # load deploy_cfg
-    deploy_cfg = mmcv.Config.fromfile(deploy_cfg_path)
-    model_cfg = mmcv.Config.fromfile(model_cfg_path)
-    assert_cfg_valid(deploy_cfg, model_cfg)
+    deploy_cfg, model_cfg = load_config(deploy_cfg_path, model_cfg_path)
 
     # prepare the dataset loader
-    codebase = deploy_cfg['codebase']
-    dataset, data_loader = prepare_data_loader(codebase, model_cfg)
+    codebase = get_codebase(deploy_cfg)
+    dataset_type = 'test'
+    dataset = build_dataset(codebase, model_cfg, dataset_type)
+    data_loader = build_dataloader(
+        codebase,
+        dataset,
+        samples_per_gpu=1,
+        workers_per_gpu=model_cfg.data.workers_per_gpu)
 
     # load the model of the backend
     device_id = -1 if args.device == 'cpu' else 0

@@ -1,4 +1,4 @@
-_base_ = ['./base.py']
+_base_ = ['./base_dynamic.py']
 pytorch2onnx = dict(
     output_names=['dets', 'labels', 'masks'],
     dynamic_axes={

@@ -1,10 +1,9 @@
 import os.path as osp
-from typing import Optional, Union
+from typing import Union
 
 import mmcv
 import onnx
 import tensorrt as trt
-import torch.multiprocessing as mp
 
 from .tensorrt_utils import create_trt_engine, save_trt_engine
 
@@ -22,10 +21,8 @@ def onnx2tensorrt(work_dir: str,
                   deploy_cfg: Union[str, mmcv.Config],
                   onnx_model: Union[str, onnx.ModelProto],
                   device: str = 'cuda:0',
-                  split_type: str = 'end2end',
-                  ret_value: Optional[mp.Value] = None,
+                  partition_type: str = 'end2end',
                   **kwargs):
-    ret_value.value = -1
 
     # load deploy_cfg if necessary
     if isinstance(deploy_cfg, str):
@@ -50,7 +47,7 @@ def onnx2tensorrt(work_dir: str,
         calib_params = deploy_cfg.get('calib_params', dict())
         calib_file = calib_params.get('calib_file', 'calib_file.h5')
         int8_param['calib_file'] = osp.join(work_dir, calib_file)
-        int8_param['model_type'] = split_type
+        int8_param['model_type'] = partition_type
 
     assert device.startswith('cuda')
     device_id = parse_device_id(device)
@@ -65,5 +62,3 @@ def onnx2tensorrt(work_dir: str,
         device_id=device_id)
 
     save_trt_engine(engine, osp.join(work_dir, save_file))
-
-    ret_value.value = 0

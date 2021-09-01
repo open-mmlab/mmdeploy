@@ -1,1 +1,1 @@
-_base_ = ['./base.py', './tensorrt_int8_base.py']
+_base_ = ['./base_dynamic.py', './tensorrt_int8_base.py']

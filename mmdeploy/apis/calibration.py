@@ -3,13 +3,13 @@ from typing import Optional, Union
 import h5py
 import mmcv
 import torch
-import torch.multiprocessing as mp
 from mmcv.parallel import MMDataParallel
 
 from mmdeploy.core import (RewriterContext, patch_model,
                            reset_mark_function_count)
-from .utils import (_inference, build_dataloader, build_dataset,
-                    get_tensor_from_input, init_model)
+from mmdeploy.utils import get_codebase, load_config
+from .utils import (build_dataloader, build_dataset, get_tensor_from_input,
+                    init_pytorch_model, run_inference)
 
 
 def create_calib_table(calib_file: str,
@@ -19,45 +19,28 @@ def create_calib_table(calib_file: str,
                        dataset_cfg: Optional[Union[str, mmcv.Config]] = None,
                        dataset_type: str = 'val',
                        device: str = 'cuda:0',
-                       ret_value: Optional[mp.Value] = None,
                        **kwargs) -> None:
-
-    if ret_value is not None:
-        ret_value.value = -1
 
     if dataset_cfg is None:
         dataset_cfg = model_cfg
 
-    # load deploy_cfg if necessary
-    if isinstance(deploy_cfg, str):
-        deploy_cfg = mmcv.Config.fromfile(deploy_cfg)
-    if not isinstance(deploy_cfg, mmcv.Config):
-        raise TypeError('deploy_cfg must be a filename or Config object, '
-                        f'but got {type(deploy_cfg)}')
-    # load model_cfg if needed
-    if isinstance(model_cfg, str):
-        model_cfg = mmcv.Config.fromfile(model_cfg)
-    if not isinstance(model_cfg, mmcv.Config):
-        raise TypeError('config must be a filename or Config object, '
-                        f'but got {type(model_cfg)}')
-
+    # load cfg if necessary
+    deploy_cfg = load_config(deploy_cfg)[0]
+    model_cfg = load_config(model_cfg)[0]
     device_id = torch.device(device).index
     if device_id is None:
         device_id = 0
 
-    # load dataset_cfg if needed
     if dataset_cfg is None:
         dataset_cfg = model_cfg
-    elif isinstance(dataset_cfg, str):
-        dataset_cfg = mmcv.Config.fromfile(dataset_cfg)
-    if not isinstance(dataset_cfg, mmcv.Config):
-        raise TypeError('config must be a filename or Config object, '
-                        f'but got {type(dataset_cfg)}')
+    # load dataset_cfg if necessary
+    dataset_cfg = load_config(dataset_cfg)[0]
 
-    codebase = deploy_cfg.codebase
+    codebase = get_codebase(deploy_cfg)
     apply_marks = deploy_cfg.get('apply_marks', False)
     backend = 'default'
-    model = init_model(codebase, model_cfg, model_checkpoint, device=device)
+    model = init_pytorch_model(
+        codebase, model_cfg, model_checkpoint, device=device)
     dataset = build_dataset(codebase, dataset_cfg, dataset_type)
 
     # patch model
@@ -94,10 +77,7 @@ def create_calib_table(calib_file: str,
                     calib_file=calib_file,
                     data_id=data_id):
                 reset_mark_function_count()
-                _ = _inference(codebase, input_data, patched_model)
+                _ = run_inference(codebase, input_data, patched_model)
             calib_file.flush()
 
             prog_bar.update()
-
-    if ret_value is not None:
-        ret_value.value = 0
