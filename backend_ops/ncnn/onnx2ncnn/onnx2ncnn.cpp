@@ -3296,6 +3296,8 @@ int main(int argc, char** argv) {
       fprintf(pp, "%-16s", "UnaryOp");
     } else if (op == "Add") {
       fprintf(pp, "%-16s", "BinaryOp");
+    } else if (op == "ArgMax") {
+      fprintf(pp, "%-16s", "TopK");
     } else if (op == "Asin") {
       fprintf(pp, "%-16s", "UnaryOp");
     } else if (op == "Atan") {
@@ -3604,6 +3606,11 @@ int main(int argc, char** argv) {
         fprintf(pp, " 1=%d", with_scalar);
         fprintf(pp, " 2=%e", b);
       }
+    } else if (op == "ArgMax") {
+      int axis = get_node_attr_i(node, "axis");
+      int keepdims = get_node_attr_i(node, "keepdims");
+      fprintf(pp, " 0=%d", axis - 1);
+      fprintf(pp, " 3=%d", keepdims);
     } else if (op == "Asin") {
       int op_type = 12;
       fprintf(pp, " 0=%d", op_type);

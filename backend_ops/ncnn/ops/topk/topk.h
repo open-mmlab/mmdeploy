@@ -17,6 +17,7 @@ class TopK : public ncnn::Layer {
   int axis;
   int largest;
   int sorted;
+  int keep_dims;
 };
 
 }  // namespace mmlab

@@ -35,6 +35,8 @@ class DeployBaseSegmentor(BaseSegmentor):
         raise NotImplementedError('This method is not implemented.')
 
     def forward(self, img, img_metas, **kwargs):
+        if isinstance(img, (list, tuple)):
+            img = img[0]
         seg_pred = self.forward_test(img, img_metas, **kwargs)
         # whole mode supports dynamic shape
         ori_shape = img_metas[0][0]['ori_shape']
@@ -60,8 +62,6 @@ class ONNXRuntimeSegmentor(DeployBaseSegmentor):
         self.model = ORTWrapper(model_file, device_id)
 
     def forward_test(self, imgs, img_metas, **kwargs):
-        if isinstance(imgs, (list, tuple)):
-            imgs = imgs[0]
         seg_pred = self.model({'input': imgs})[0]
         return seg_pred
 
@@ -79,20 +79,41 @@ class TensorRTSegmentor(DeployBaseSegmentor):
         self.output_name = self.model.output_names[0]
 
     def forward_test(self, imgs, img_metas, **kwargs):
-        input_data = imgs[0].contiguous()
+        input_data = imgs.contiguous()
         with torch.cuda.device(self.device_id), torch.no_grad():
             seg_pred = self.model({'input': input_data})[self.output_name]
         seg_pred = seg_pred.detach().cpu().numpy()
         return seg_pred
 
 
+class NCNNSegmentor(DeployBaseSegmentor):
+
+    def __init__(self, model_file: Sequence[str], class_names: Sequence[str],
+                 palette: np.ndarray, device_id: int):
+        super(NCNNSegmentor, self).__init__(class_names, palette, device_id)
+        from mmdeploy.apis.ncnn import NCNNWrapper
+        assert len(model_file) == 2
+        ncnn_param_file = model_file[0]
+        ncnn_bin_file = model_file[1]
+        self.model = NCNNWrapper(
+            ncnn_param_file, ncnn_bin_file, output_names=['output'])
+
+    def forward_test(self, imgs, *args, **kwargs):
+        results = self.model({'input': imgs})['output']
+        results = results.detach().cpu().numpy()
+        return results
+
+
 ONNXRUNTIME_SEGMENTOR_MAP = dict(end2end=ONNXRuntimeSegmentor)
 
 TENSORRT_SEGMENTOR_MAP = dict(end2end=TensorRTSegmentor)
 
+NCNN_SEGMENTOR_MAP = dict(end2end=NCNNSegmentor)
+
 BACKEND_SEGMENTOR_MAP = {
     Backend.ONNXRUNTIME: ONNXRUNTIME_SEGMENTOR_MAP,
-    Backend.TENSORRT: TENSORRT_SEGMENTOR_MAP
+    Backend.TENSORRT: TENSORRT_SEGMENTOR_MAP,
+    Backend.NCNN: NCNN_SEGMENTOR_MAP
 }
 
 
@@ -130,9 +151,9 @@ def build_segmentor(model_files, model_cfg, deploy_cfg, device_id):
     model_type = 'end2end'
     assert model_type in segmentor_map, f'Unsupported model type: {model_type}'
     backend_segmentor_class = segmentor_map[model_type]
-
+    model_files = model_files[0] if len(model_files) == 1 else model_files
     backend_segmentor = backend_segmentor_class(
-        *model_files,
+        model_files,
         class_names=class_names,
         device_id=device_id,
         palette=palette)

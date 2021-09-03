@@ -20,7 +20,7 @@ class NCNNWrapper(torch.nn.Module):
                  bin_file: str,
                  output_names: Optional[Iterable[str]] = None,
                  **kwargs):
-        super().__init__()
+        super(NCNNWrapper, self).__init__()
 
         net = ncnn.Net()
         ncnn_ext.register_mm_custom_layers(net)
@@ -41,11 +41,12 @@ class NCNNWrapper(torch.nn.Module):
             return self._net.output_names()
 
     def forward(self, inputs: Dict[str, torch.Tensor]):
-        batch_size = next(iter(inputs.values())).size(0)
-        for k, v in inputs.items():
-            assert v.size(
+        input_list = list(inputs.values())
+        batch_size = input_list[0].size(0)
+        for tensor in input_list[1:]:
+            assert tensor.size(
                 0) == batch_size, 'All tensor should have same batch size'
-            assert v.device.type == 'cpu', 'NCNN only support cpu device'
+            assert tensor.device.type == 'cpu', 'NCNN only support cpu device'
 
         # set output names
         output_names = self.get_output_names()
