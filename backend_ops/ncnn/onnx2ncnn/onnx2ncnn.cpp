@@ -1917,6 +1917,7 @@ static void fuse_lstm_gru_rnn(onnx::GraphProto* mutable_graph,
     onnx::NodeProto* node = mutable_graph->mutable_node(i);
 
     // LSTM(bi) <= LSTM(bi) - Transpose - Reshape - Transpose
+    // or LSTM(bi) <= LSTM(bi) - Transpose Constant - Reshape - Transpose
     if (node->op_type() == "LSTM" || node->op_type() == "GRU" ||
         node->op_type() == "RNN") {
       if (node_reference[node->output(0)] != 1) continue;
@@ -1925,6 +1926,13 @@ static void fuse_lstm_gru_rnn(onnx::GraphProto* mutable_graph,
 
       onnx::NodeProto* node2 = mutable_graph->mutable_node(i + 1);
       onnx::NodeProto* node3 = mutable_graph->mutable_node(i + 2);
+
+      // skip if second ops is constant
+      if (node3->op_type() == "Constant") {
+        if (i + 3 >= node_count) continue;
+        node3 = mutable_graph->mutable_node(i + 3);
+        i += 1;
+      }
 
       if (node2->op_type() != "Transpose" || node3->op_type() != "Reshape")
         continue;

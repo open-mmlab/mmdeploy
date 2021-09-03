@@ -240,6 +240,48 @@ class TensorRTRecognizer(DeployBaseRecognizer):
         return trt_pred
 
 
+class NCNNDetector(DeployBaseTextDetector):
+    """The class for evaluating NCNN file of text detection."""
+
+    def __init__(self,
+                 model_file: Iterable[str],
+                 cfg: Union[mmcv.Config, mmcv.ConfigDict],
+                 device_id: int,
+                 show_score: bool = False):
+        super(NCNNDetector, self).__init__(cfg, device_id, show_score)
+        from mmdeploy.apis.ncnn import NCNNWrapper
+        self.model = NCNNWrapper(
+            model_file[0], model_file[1], output_names=['output'])
+
+    def forward_of_backend(self,
+                           img: torch.Tensor,
+                           img_metas: Iterable,
+                           rescale: bool = False):
+        pred = self.model({'input': img})['output']
+        return pred
+
+
+class NCNNRecognizer(DeployBaseRecognizer):
+    """The class for evaluating NCNN file of recognition."""
+
+    def __init__(self,
+                 model_file: Iterable[str],
+                 cfg: Union[mmcv.Config, mmcv.ConfigDict],
+                 device_id: int,
+                 show_score: bool = False):
+        super(NCNNRecognizer, self).__init__(cfg, device_id, show_score)
+        from mmdeploy.apis.ncnn import NCNNWrapper
+        self.model = NCNNWrapper(
+            model_file[0], model_file[1], output_names=['output'])
+
+    def forward_of_backend(self,
+                           img: torch.Tensor,
+                           img_metas: Iterable,
+                           rescale: bool = False):
+        pred = self.model({'input': img})['output']
+        return pred
+
+
 def get_classes_from_config(model_cfg: Union[str, mmcv.Config], **kwargs):
     # load cfg if necessary
     model_cfg = load_config(model_cfg)[0]
@@ -268,9 +310,15 @@ TASK_TENSORRT_MAP = {
     Task.TEXT_RECOGNITION: TensorRTRecognizer
 }
 
+TASK_NCNN_MAP = {
+    Task.TEXT_DETECTION: NCNNDetector,
+    Task.TEXT_RECOGNITION: NCNNRecognizer
+}
+
 BACKEND_TASK_MAP = {
     Backend.ONNXRUNTIME: TASK_ONNXRUNTIME_MAP,
-    Backend.TENSORRT: TASK_TENSORRT_MAP
+    Backend.TENSORRT: TASK_TENSORRT_MAP,
+    Backend.NCNN: TASK_NCNN_MAP
 }
 
 
