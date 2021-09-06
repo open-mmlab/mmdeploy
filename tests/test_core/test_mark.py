@@ -48,19 +48,37 @@ def test_mark():
     assert nodes[0].op_type == 'Mark'
     assert nodes[0].domain == 'mmcv'
     assert attribute_to_dict(nodes[0].attribute) == dict(
-        func='add', id=0, type='input', name='a')
+        dtype=1,
+        func='add',
+        func_id=0,
+        id=0,
+        type='input',
+        name='a',
+        shape=[2, 3, 4])
 
     assert nodes[1].op_type == 'Mark'
     assert nodes[1].domain == 'mmcv'
     assert attribute_to_dict(nodes[1].attribute) == dict(
-        func='add', id=1, type='input', name='b')
+        dtype=1,
+        func='add',
+        func_id=0,
+        id=1,
+        type='input',
+        name='b',
+        shape=[2, 3, 4])
 
     assert nodes[2].op_type == 'Add'
 
     assert nodes[3].op_type == 'Mark'
     assert nodes[3].domain == 'mmcv'
     assert attribute_to_dict(nodes[3].attribute) == dict(
-        func='add', id=0, type='output', name='c')
+        dtype=1,
+        func='add',
+        func_id=0,
+        id=0,
+        type='output',
+        name='c',
+        shape=[2, 3, 4])
 
 
 def test_extract():
