@@ -282,6 +282,61 @@ class NCNNRecognizer(DeployBaseRecognizer):
         return pred
 
 
+class PPLDetector(DeployBaseTextDetector):
+    """The class for evaluating ppl backend of text detection."""
+
+    def __init__(self,
+                 model_file: str,
+                 cfg: Union[mmcv.Config, mmcv.ConfigDict],
+                 device_id: int,
+                 show_score: bool = False,
+                 *args,
+                 **kwargs):
+        super(PPLDetector, self).__init__(cfg, device_id, show_score)
+        from mmdeploy.apis.ppl import PPLWrapper
+        model = PPLWrapper(model_file, device_id)
+        self.model = model
+
+    def forward_of_backend(self,
+                           img: torch.Tensor,
+                           img_metas: Iterable,
+                           rescale: bool = False,
+                           *args,
+                           **kwargs):
+        with torch.cuda.device(self.device_id), torch.no_grad():
+            ppl_pred = self.model({'input': img})
+
+        ppl_pred = torch.from_numpy(ppl_pred[0])
+        return ppl_pred
+
+
+class PPLRecognizer(DeployBaseRecognizer):
+    """The class for evaluating ppl backend of recognition."""
+
+    def __init__(self,
+                 model_file: str,
+                 cfg: Union[mmcv.Config, mmcv.ConfigDict],
+                 device_id: int,
+                 show_score: bool = False,
+                 *args,
+                 **kwargs):
+        super(PPLRecognizer, self).__init__(cfg, device_id, show_score)
+        from mmdeploy.apis.ppl import PPLWrapper
+        model = PPLWrapper(model_file, device_id)
+        self.model = model
+
+    def forward_of_backend(self,
+                           img: torch.Tensor,
+                           img_metas: Iterable,
+                           rescale: bool = False,
+                           *args,
+                           **kwargs):
+        with torch.cuda.device(self.device_id), torch.no_grad():
+            ppl_pred = self.model({'input': img})[0]
+        ppl_pred = torch.from_numpy(ppl_pred[0])
+        return ppl_pred
+
+
 def get_classes_from_config(model_cfg: Union[str, mmcv.Config], **kwargs):
     # load cfg if necessary
     model_cfg = load_config(model_cfg)[0]
@@ -310,6 +365,11 @@ TASK_TENSORRT_MAP = {
     Task.TEXT_RECOGNITION: TensorRTRecognizer
 }
 
+TASK_PPL_MAP = {
+    Task.TEXT_DETECTION: PPLDetector,
+    Task.TEXT_RECOGNITION: PPLRecognizer
+}
+
 TASK_NCNN_MAP = {
     Task.TEXT_DETECTION: NCNNDetector,
     Task.TEXT_RECOGNITION: NCNNRecognizer
@@ -318,6 +378,7 @@ TASK_NCNN_MAP = {
 BACKEND_TASK_MAP = {
     Backend.ONNXRUNTIME: TASK_ONNXRUNTIME_MAP,
     Backend.TENSORRT: TASK_TENSORRT_MAP,
+    Backend.PPL: TASK_PPL_MAP,
     Backend.NCNN: TASK_NCNN_MAP
 }
 

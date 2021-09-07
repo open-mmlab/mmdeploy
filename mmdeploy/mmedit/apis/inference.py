@@ -115,19 +115,38 @@ class TensorRTRestorer(DeployBaseRestorer):
         return pred
 
 
+class PPLRestorer(DeployBaseRestorer):
+    """Wrapper for restorer's inference with ppl."""
+
+    def __init__(self, model_file, device_id, test_cfg=None, **kwargs):
+        super(PPLRestorer, self).__init__(
+            device_id, test_cfg=test_cfg, **kwargs)
+
+        from mmdeploy.apis.ppl import PPLWrapper
+        self.model = PPLWrapper(model_file, device_id)
+
+    def forward_dummy(self, lq, *args, **kwargs):
+        ppl_outputs = self.model({'input': lq})
+        # only concern pred_alpha value
+        if isinstance(ppl_outputs, (tuple, list)):
+            ppl_outputs = ppl_outputs[0]
+        return ppl_outputs
+
+
 ONNXRUNTIME_RESTORER_MAP = dict(end2end=ONNXRuntimeRestorer)
 
 TENSORRT_RESTORER_MAP = dict(end2end=TensorRTRestorer)
 
+PPL_RESTORER_MAP = dict(end2end=PPLRestorer)
+
 # TODO: Coming Soon
-# PPL_RESTORER_MAP = dict(end2end=PPLClassifier)
 # NCNN_RESTORER_MAP = dict(end2end=NCNNClassifier)
 
 BACKEND_RESTORER_MAP = {
     Backend.ONNXRUNTIME: ONNXRUNTIME_RESTORER_MAP,
     Backend.TENSORRT: TENSORRT_RESTORER_MAP,
+    Backend.PPL: PPL_RESTORER_MAP,
     # TODO: Coming Soon
-    # Backend.PPL: PPL_RESTORER_MAP,
     # Backend.NCNN: NCNN_RESTORER_MAP
 }
 
