@@ -40,9 +40,10 @@ int TopK::forward(const std::vector<Mat>& bottom_blobs,
 
   // To do: Cut the top_val_blob after unit test. And we should change them in
   // param files.
+  // Adaptive outputs. For onnx TopK, we output 2 blobs, for ArgMax, we output
+  // 1 blob.
   Mat& top_val_blob = top_blobs[0];
-  Mat& top_ind_blob = top_val_blob;  // fill the reference
-  if (top_blobs.size() == 2) top_ind_blob = top_blobs[1];
+  Mat& top_ind_blob = top_blobs.size() == 2 ? top_blobs[1] : top_val_blob;
 
   if (topk > 1) {
     // real topk
