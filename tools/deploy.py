@@ -13,6 +13,7 @@ from mmdeploy.apis import (create_calib_table, extract_model, inference_model,
 from mmdeploy.apis.utils import get_partition_cfg
 from mmdeploy.utils.config_utils import (Backend, get_backend, get_codebase,
                                          load_config)
+from mmdeploy.utils.export_info import dump_info
 
 
 def parse_args():
@@ -37,6 +38,8 @@ def parse_args():
         choices=list(logging._nameToLevel.keys()))
     parser.add_argument(
         '--show', action='store_true', help='Show detection outputs')
+    parser.add_argument(
+        '--dump-info', action='store_true', help='Output information for SDK')
     args = parser.parse_args()
 
     return args
@@ -87,7 +90,10 @@ def main():
     checkpoint_path = args.checkpoint
 
     # load deploy_cfg
-    deploy_cfg = load_config(deploy_cfg_path)[0]
+    deploy_cfg, model_cfg = load_config(deploy_cfg_path, model_cfg_path)
+
+    if args.dump_info:
+        dump_info(deploy_cfg, model_cfg, args.work_dir, args.img, args.device)
 
     # create work_dir if not
     mmcv.mkdir_or_exist(osp.abspath(args.work_dir))
