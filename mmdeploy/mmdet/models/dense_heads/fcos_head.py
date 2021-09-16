@@ -3,8 +3,8 @@ import torch
 from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.mmdet.core import distance2bbox, multiclass_nms
 from mmdeploy.mmdet.export import pad_with_value
-from mmdeploy.utils import is_dynamic_shape
-from mmdeploy.utils.config_utils import Backend, get_backend
+from mmdeploy.utils import (Backend, get_backend, get_mmdet_params,
+                            is_dynamic_shape)
 
 
 @FUNCTION_REWRITER.register_rewriter(
@@ -97,7 +97,7 @@ def get_bboxes_of_fcos_head(ctx,
         return batch_mlvl_bboxes, batch_mlvl_scores, batch_mlvl_centerness
 
     batch_mlvl_scores = batch_mlvl_scores * batch_mlvl_centerness
-    post_params = deploy_cfg.post_processing
+    post_params = get_mmdet_params(deploy_cfg)
     max_output_boxes_per_class = post_params.max_output_boxes_per_class
     iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)
     score_threshold = cfg.get('score_thr', post_params.score_threshold)
@@ -189,7 +189,7 @@ def get_bboxes_of_fcos_head_ncnn(ctx,
     batch_mlvl_scores = (_batch_mlvl_scores * _batch_mlvl_centerness). \
         reshape(batch_mlvl_scores.shape)
     batch_mlvl_bboxes = batch_mlvl_bboxes.reshape(batch_size, -1, 4)
-    post_params = deploy_cfg.post_processing
+    post_params = get_mmdet_params(deploy_cfg)
     max_output_boxes_per_class = post_params.max_output_boxes_per_class
     iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)
     score_threshold = cfg.get('score_thr', post_params.score_threshold)

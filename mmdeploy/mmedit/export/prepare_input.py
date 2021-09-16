@@ -1,4 +1,4 @@
-from typing import Any, Union
+from typing import Any, Sequence, Union
 
 import mmcv
 import numpy as np
@@ -7,7 +7,7 @@ from mmedit.datasets import build_dataloader as build_dataloadeer_mmedit
 from mmedit.datasets import build_dataset as build_dataset_mmedit
 from mmedit.datasets.pipelines import Compose
 
-from mmdeploy.utils.config_utils import Task, load_config
+from mmdeploy.utils import Task, load_config
 
 
 def _preprocess_cfg(config):
@@ -27,10 +27,11 @@ def _preprocess_cfg(config):
                 pipeline['meta_keys'].remove(key)
 
 
-def create_input(model_cfg: Union[str, mmcv.Config],
+def create_input(task: Task,
+                 model_cfg: Union[str, mmcv.Config],
                  imgs: Any,
-                 device: str = 'cuda:0',
-                 task: Task = Task.SUPER_RESOLUTION):
+                 input_shape: Sequence[int] = None,
+                 device: str = 'cuda:0'):
     if isinstance(imgs, (list, tuple)):
         if not isinstance(imgs[0], (np.ndarray, str)):
             raise AssertionError('imgs must be strings or numpy arrays')
@@ -45,7 +46,19 @@ def create_input(model_cfg: Union[str, mmcv.Config],
     if isinstance(imgs[0], np.ndarray):
         cfg = cfg.copy()
         # set loading pipeline type
-        cfg.data.test.pipeline[0].type = 'LoadImageFromWebcam'
+        cfg.test_pipeline[0].type = 'LoadImageFromWebcam'
+
+    # for static exporting
+    if input_shape is not None:
+        if task == Task.SUPER_RESOLUTION:
+            resize = {
+                'type': 'Resize',
+                'scale': (input_shape[0], input_shape[1]),
+                'keys': ['lq']
+            }
+            cfg.test_pipeline.insert(1, resize)
+        else:
+            raise NotImplementedError(f'Unknown task type: {task.value}')
 
     test_pipeline = Compose(cfg.test_pipeline)
 

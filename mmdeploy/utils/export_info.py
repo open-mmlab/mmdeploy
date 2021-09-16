@@ -31,6 +31,10 @@ def dump_info(deploy_cfg: Union[str, mmcv.Config],
         sort_keys=False,
         indent=4)
 
+    if 'trt' in deploy_cfg:
+        deploy_cfg._cfg_dict.pop('trt')
+        deploy_cfg.backend_config.common_config.log_level = str(
+            deploy_cfg.backend_config.common_config.log_level)
     mmcv.dump(
         deploy_cfg._cfg_dict,
         '{}/deploy_cfg.json'.format(work_dir),

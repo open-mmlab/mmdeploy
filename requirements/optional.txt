@@ -1,0 +1,5 @@
+mmocr>=0.3.0
+ncnn
+onnxruntime>=1.8.0
+pyppl
+tensorrt

@@ -6,7 +6,8 @@ import torch
 
 from mmdeploy.core import (RewriterContext, patch_model,
                            register_extra_symbolics)
-from mmdeploy.utils import get_backend, get_codebase, load_config
+from mmdeploy.utils import (get_backend, get_codebase, get_input_shape,
+                            get_onnx_config, get_task_type, load_config)
 from .utils import create_input, init_pytorch_model
 
 
@@ -19,7 +20,7 @@ def torch2onnx_impl(model: torch.nn.Module, input: torch.Tensor,
         raise TypeError('deploy_cfg must be a filename or Config object, '
                         f'but got {type(deploy_cfg)}')
 
-    pytorch2onnx_cfg = deploy_cfg['pytorch2onnx']
+    pytorch2onnx_cfg = get_onnx_config(deploy_cfg)
     backend = get_backend(deploy_cfg).value
     opset_version = pytorch2onnx_cfg.get('opset_version', 11)
 
@@ -53,15 +54,17 @@ def torch2onnx(img: Any,
 
     # load deploy_cfg if necessary
     deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
-
     mmcv.mkdir_or_exist(osp.abspath(work_dir))
     output_file = osp.join(work_dir, save_file)
 
     codebase = get_codebase(deploy_cfg)
+    task = get_task_type(deploy_cfg)
+    input_shape = get_input_shape(deploy_cfg)
 
     torch_model = init_pytorch_model(codebase, model_cfg, model_checkpoint,
                                      device)
-    data, model_inputs = create_input(codebase, model_cfg, img, device)
+    data, model_inputs = create_input(codebase, task, model_cfg, img,
+                                      input_shape, device)
     if not isinstance(model_inputs, torch.Tensor):
         model_inputs = model_inputs[0]
 

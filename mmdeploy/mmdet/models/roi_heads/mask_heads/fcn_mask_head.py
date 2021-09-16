@@ -2,7 +2,7 @@ import torch
 import torch.nn.functional as F
 
 from mmdeploy.core import FUNCTION_REWRITER
-from mmdeploy.utils.config_utils import Backend, get_backend
+from mmdeploy.utils import Backend, get_backend
 
 
 @FUNCTION_REWRITER.register_rewriter(

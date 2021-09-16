@@ -5,6 +5,8 @@ import mmcv
 import onnx
 import tensorrt as trt
 
+from mmdeploy.utils import (get_calib_filename, get_common_config,
+                            get_model_inputs, load_config)
 from .tensorrt_utils import create_trt_engine, save_trt_engine
 
 
@@ -25,27 +27,19 @@ def onnx2tensorrt(work_dir: str,
                   **kwargs):
 
     # load deploy_cfg if necessary
-    if isinstance(deploy_cfg, str):
-        deploy_cfg = mmcv.Config.fromfile(deploy_cfg)
-    elif not isinstance(deploy_cfg, mmcv.Config):
-        raise TypeError('deploy_cfg must be a filename or Config object, '
-                        f'but got {type(deploy_cfg)}')
+    deploy_cfg = load_config(deploy_cfg)[0]
 
     mmcv.mkdir_or_exist(osp.abspath(work_dir))
 
-    assert 'tensorrt_params' in deploy_cfg
+    common_params = get_common_config(deploy_cfg)
+    model_params = get_model_inputs(deploy_cfg)[model_id]
 
-    tensorrt_params = deploy_cfg['tensorrt_params']
-    shared_params = tensorrt_params.get('shared_params', dict())
-    model_params = tensorrt_params['model_params'][model_id]
-
-    final_params = shared_params
+    final_params = common_params
     final_params.update(model_params)
 
     int8_param = final_params.get('int8_param', dict())
-    if deploy_cfg.get('create_calib', False):
-        calib_params = deploy_cfg.get('calib_params', dict())
-        calib_file = calib_params.get('calib_file', 'calib_file.h5')
+    calib_file = get_calib_filename(deploy_cfg)
+    if calib_file is not None:
         int8_param['calib_file'] = osp.join(work_dir, calib_file)
         int8_param['model_type'] = partition_type
 
@@ -53,7 +47,7 @@ def onnx2tensorrt(work_dir: str,
     device_id = parse_device_id(device)
     engine = create_trt_engine(
         onnx_model,
-        opt_shape_dict=final_params['opt_shape_dict'],
+        opt_shape_dict=final_params['input_shapes'],
         log_level=final_params.get('log_level', trt.Logger.WARNING),
         fp16_mode=final_params.get('fp16_mode', False),
         int8_mode=final_params.get('int8_mode', False),

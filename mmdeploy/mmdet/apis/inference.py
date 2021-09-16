@@ -9,7 +9,8 @@ from mmdet.datasets import DATASETS
 from mmdet.models import BaseDetector
 
 from mmdeploy.mmdet.core.post_processing import multiclass_nms
-from mmdeploy.utils.config_utils import Backend, get_backend, load_config
+from mmdeploy.utils import (Backend, get_backend, get_mmdet_params,
+                            get_partition_config, load_config)
 
 
 class DeployBaseDetector(BaseDetector):
@@ -176,7 +177,7 @@ class PartitionSingleStageDetector(DeployBaseDetector):
         cfg = self.model_cfg.model.test_cfg
         deploy_cfg = self.deploy_cfg
 
-        post_params = deploy_cfg.post_processing
+        post_params = get_mmdet_params(deploy_cfg)
         max_output_boxes_per_class = post_params.max_output_boxes_per_class
         iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)
         score_threshold = cfg.get('score_thr', post_params.score_threshold)
@@ -271,7 +272,7 @@ class PartitionTwoStageDetector(DeployBaseDetector):
         cfg = self.model_cfg.model.test_cfg.rpn
         deploy_cfg = self.deploy_cfg
 
-        post_params = deploy_cfg.post_processing
+        post_params = get_mmdet_params(deploy_cfg)
         iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)
         score_threshold = cfg.get('score_thr', post_params.score_threshold)
         pre_top_k = post_params.pre_top_k
@@ -499,14 +500,16 @@ def get_classes_from_config(model_cfg: Union[str, mmcv.Config], **kwargs):
 
 ONNXRUNTIME_DETECTOR_MAP = dict(
     end2end=ONNXRuntimeDetector,
-    single_stage_base=ONNXRuntimePSSDetector,
-    two_stage_base=ONNXRuntimePTSDetector)
+    single_stage=ONNXRuntimePSSDetector,
+    two_stage=ONNXRuntimePTSDetector)
+
 TENSORRT_DETECTOR_MAP = dict(
-    end2end=TensorRTDetector, two_stage_base=TensorRTPTSDetector)
+    end2end=TensorRTDetector, two_stage=TensorRTPTSDetector)
 
 PPL_DETECTOR_MAP = dict(end2end=PPLDetector)
+
 NCNN_DETECTOR_MAP = dict(
-    single_stage_base=NCNNPSSDetector, two_stage_base=NCNNPTSDetector)
+    single_stage=NCNNPSSDetector, two_stage=NCNNPTSDetector)
 
 BACKEND_DETECTOR_MAP = {
     Backend.ONNXRUNTIME: ONNXRUNTIME_DETECTOR_MAP,
@@ -518,8 +521,7 @@ BACKEND_DETECTOR_MAP = {
 
 def build_detector(model_files, model_cfg, deploy_cfg, device_id, **kwargs):
     # load cfg if necessary
-    deploy_cfg = load_config(deploy_cfg)[0]
-    model_cfg = load_config(model_cfg)[0]
+    deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
 
     backend = get_backend(deploy_cfg)
     class_names = get_classes_from_config(model_cfg)
@@ -529,9 +531,9 @@ def build_detector(model_files, model_cfg, deploy_cfg, device_id, **kwargs):
     detector_map = BACKEND_DETECTOR_MAP[backend]
 
     partition_type = 'end2end'
-    if deploy_cfg.get('apply_marks', False):
-        partition_params = deploy_cfg.get('partition_params', dict())
-        partition_type = partition_params.get('partition_type', None)
+    partition_config = get_partition_config(deploy_cfg)
+    if partition_config is not None:
+        partition_type = partition_config.get('type', None)
 
     assert partition_type in detector_map,\
         f'Unsupported partition type: {partition_type}'

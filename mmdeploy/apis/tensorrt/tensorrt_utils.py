@@ -34,9 +34,9 @@ def create_trt_engine(onnx_model,
     Example:
         >>> engine = create_trt_engine(
         >>>             "onnx_model.onnx",
-        >>>             {'input': [[1, 3, 160, 160],
-        >>>                        [1, 3, 320, 320],
-        >>>                        [1, 3, 640, 640]]},
+        >>>             {'input': {"min_shape" : [1, 3, 160, 160],
+        >>>                        "opt_shape" :[1, 3, 320, 320],
+        >>>                        "max_shape" :[1, 3, 640, 640]}},
         >>>             log_level=trt.Logger.WARNING,
         >>>             fp16_mode=True,
         >>>             max_workspace_size=1 << 30,
@@ -72,9 +72,9 @@ def create_trt_engine(onnx_model,
     profile = builder.create_optimization_profile()
 
     for input_name, param in opt_shape_dict.items():
-        min_shape = tuple(param[0][:])
-        opt_shape = tuple(param[1][:])
-        max_shape = tuple(param[2][:])
+        min_shape = param['min_shape']
+        opt_shape = param['opt_shape']
+        max_shape = param['max_shape']
         profile.set_shape(input_name, min_shape, opt_shape, max_shape)
     config.add_optimization_profile(profile)
 

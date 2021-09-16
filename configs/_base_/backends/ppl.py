@@ -1,1 +1,1 @@
-backend = 'ppl'
+backend_config = dict(type='ppl')

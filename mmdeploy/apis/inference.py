@@ -2,7 +2,8 @@ from typing import Optional
 
 import torch
 
-from mmdeploy.utils import Backend, get_backend, get_codebase, load_config
+from mmdeploy.utils import (Backend, get_backend, get_codebase,
+                            get_input_shape, get_task_type, load_config)
 from .utils import (create_input, init_backend_model, init_pytorch_model,
                     run_inference, visualize)
 
@@ -19,6 +20,8 @@ def inference_model(model_cfg,
     deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
 
     codebase = get_codebase(deploy_cfg)
+    task = get_task_type(deploy_cfg)
+    input_shape = get_input_shape(deploy_cfg)
     if backend is None:
         backend = get_backend(deploy_cfg)
 
@@ -35,7 +38,8 @@ def inference_model(model_cfg,
                 deploy_cfg=deploy_cfg,
                 device_id=device_id)
 
-    model_inputs, _ = create_input(codebase, model_cfg, img, device)
+    model_inputs, _ = create_input(codebase, task, model_cfg, img, input_shape,
+                                   device)
 
     with torch.no_grad():
         result = run_inference(codebase, model_inputs, model)

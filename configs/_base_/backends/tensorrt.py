@@ -1,5 +1,6 @@
 import tensorrt as trt
 
-backend = 'tensorrt'
-tensorrt_params = dict(
-    shared_params=dict(fp16_mode=False, log_level=trt.Logger.INFO))
+backend_config = dict(
+    type='tensorrt',
+    common_config=dict(
+        fp16_mode=False, log_level=trt.Logger.INFO, max_workspace_size=0))

@@ -3,7 +3,7 @@ import inspect
 import torch
 
 from mmdeploy.core.rewriters.function_rewriter import FUNCTION_REWRITER
-from mmdeploy.utils import get_codebase
+from mmdeploy.utils import cfg_apply_marks, get_codebase, get_partition_config
 
 MARK_FUNCTION_COUNT = dict()
 
@@ -53,7 +53,7 @@ class Mark(torch.autograd.Function):
 @FUNCTION_REWRITER.register_rewriter(
     'mmdeploy.core.optimizers.function_marker.Mark.symbolic')
 def mark_symbolic(rewriter, g, x, *args):
-    if rewriter.cfg.get('apply_marks', False):
+    if cfg_apply_marks(rewriter.cfg):
         return rewriter.origin_func(g, x, *args)
     return x
 
@@ -64,13 +64,13 @@ def forward_of_mark(rewriter, ctx, x, dtype, shape, func, func_id, type, name,
                     id, attrs):
     deploy_cfg = rewriter.cfg
     # save calib data
-    apply_marks = deploy_cfg.get('apply_marks', False)
+    apply_marks = cfg_apply_marks(deploy_cfg)
     create_calib = getattr(rewriter, 'create_calib', False)
     if apply_marks and create_calib:
         codebase = get_codebase(deploy_cfg)
-        assert 'partition_params' in deploy_cfg
-        partition_params = deploy_cfg['partition_params']
-        partition_type = partition_params['partition_type']
+        partition_params = get_partition_config(deploy_cfg)
+        assert partition_params is not None, 'No partition config.'
+        partition_type = partition_params['type']
         from mmdeploy.apis.utils import get_partition_cfg
         partition_cfgs = get_partition_cfg(codebase, partition_type)
         assert hasattr(rewriter, 'calib_file')

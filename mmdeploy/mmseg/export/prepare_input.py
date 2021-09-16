@@ -1,4 +1,4 @@
-from typing import Any, Union
+from typing import Any, Sequence, Union
 
 import mmcv
 import numpy as np
@@ -8,13 +8,16 @@ from mmseg.datasets import build_dataloader as build_dataloader_mmseg
 from mmseg.datasets import build_dataset as build_dataset_mmseg
 from mmseg.datasets.pipelines import Compose
 
-from mmdeploy.utils.config_utils import load_config
+from mmdeploy.utils import Task, load_config
 
 
-def create_input(model_cfg: Union[str, mmcv.Config],
+def create_input(task: Task,
+                 model_cfg: Union[str, mmcv.Config],
                  imgs: Any,
+                 input_shape: Sequence[int] = None,
                  device: str = 'cuda:0'):
 
+    assert task == Task.SEGMENTATION
     cfg = load_config(model_cfg)[0].copy()
     if not isinstance(imgs, (list, tuple)):
         imgs = [imgs]
@@ -23,8 +26,9 @@ def create_input(model_cfg: Union[str, mmcv.Config],
         cfg = cfg.copy()
         # set loading pipeline type
         cfg.data.test.pipeline[0].type = 'LoadImageFromWebcam'
-    # TODO remove hard code
-    cfg.data.test.pipeline[1]['img_scale'] = (1024, 512)
+    # for static exporting
+    if input_shape is not None:
+        cfg.data.test.pipeline[1]['img_scale'] = tuple(input_shape)
     cfg.data.test.pipeline[1]['transforms'][0]['keep_ratio'] = False
     cfg.data.test.pipeline = [LoadImage()] + cfg.data.test.pipeline[1:]
 

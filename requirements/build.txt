@@ -1,0 +1,4 @@
+cython
+numpy
+packaging
+setuptools

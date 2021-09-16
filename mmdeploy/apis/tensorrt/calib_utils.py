@@ -55,7 +55,7 @@ class HDF5Calibrator(trt.IInt8Calibrator):
                 data_torch = torch.from_numpy(data_np)
 
                 # tile the tensor so we can keep the same distribute
-                opt_shape = self.opt_shape_dict[name][1]
+                opt_shape = self.opt_shape_dict[name]['opt_shape']
                 data_shape = data_torch.shape
 
                 reps = [

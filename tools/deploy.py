@@ -10,9 +10,10 @@ from torch.multiprocessing import Process, set_start_method
 
 from mmdeploy.apis import (create_calib_table, extract_model, inference_model,
                            torch2onnx)
-from mmdeploy.apis.utils import get_partition_cfg
-from mmdeploy.utils.config_utils import (Backend, get_backend, get_codebase,
-                                         load_config)
+from mmdeploy.apis.utils import get_partition_cfg as parse_partition_cfg
+from mmdeploy.utils import (Backend, get_backend, get_calib_filename,
+                            get_codebase, get_model_inputs, get_onnx_config,
+                            get_partition_config, load_config)
 from mmdeploy.utils.export_info import dump_info
 
 
@@ -93,7 +94,7 @@ def main():
     deploy_cfg, model_cfg = load_config(deploy_cfg_path, model_cfg_path)
 
     if args.dump_info:
-        dump_info(deploy_cfg, model_cfg, args.work_dir, args.img, args.device)
+        dump_info(deploy_cfg, model_cfg, args.work_dir)
 
     # create work_dir if not
     mmcv.mkdir_or_exist(osp.abspath(args.work_dir))
@@ -101,7 +102,7 @@ def main():
     ret_value = mp.Value('d', 0, lock=False)
 
     # convert onnx
-    onnx_save_file = deploy_cfg['pytorch2onnx']['save_file']
+    onnx_save_file = get_onnx_config(deploy_cfg)['save_file']
     create_process(
         'torch2onnx',
         target=torch2onnx,
@@ -114,17 +115,16 @@ def main():
     onnx_files = [osp.join(args.work_dir, onnx_save_file)]
 
     # partition model
-    apply_marks = deploy_cfg.get('apply_marks', False)
-    if apply_marks:
-        assert hasattr(deploy_cfg, 'partition_params')
-        partition_params = deploy_cfg['partition_params']
+    partition_cfgs = get_partition_config(deploy_cfg)
 
-        if 'partition_cfg' in partition_params:
-            partition_cfgs = partition_params.get('partition_cfg', None)
+    if partition_cfgs is not None:
+
+        if 'partition_cfg' in partition_cfgs:
+            partition_cfgs = partition_cfgs.get('partition_cfg', None)
         else:
-            assert 'partition_type' in partition_params
-            partition_cfgs = get_partition_cfg(
-                get_codebase(deploy_cfg), partition_params['partition_type'])
+            assert 'type' in partition_cfgs
+            partition_cfgs = parse_partition_cfg(
+                get_codebase(deploy_cfg), partition_cfgs['type'])
 
         origin_onnx_file = onnx_files[0]
         onnx_files = []
@@ -145,16 +145,14 @@ def main():
             onnx_files.append(save_path)
 
     # calib data
-    create_calib = deploy_cfg.get('create_calib', False)
-    if create_calib:
-        calib_params = deploy_cfg.get('calib_params', dict())
-        calib_file = calib_params.get('calib_file', 'calib_file.h5')
-        calib_file = osp.join(args.work_dir, calib_file)
+    calib_filename = get_calib_filename(deploy_cfg)
+    if calib_filename is not None:
+        calib_path = osp.join(args.work_dir, calib_filename)
 
         create_process(
             'calibration',
             create_calib_table,
-            args=(calib_file, deploy_cfg_path, model_cfg_path,
+            args=(calib_path, deploy_cfg_path, model_cfg_path,
                   checkpoint_path),
             kwargs=dict(
                 dataset_cfg=args.calib_dataset_cfg,
@@ -166,9 +164,7 @@ def main():
     # convert backend
     backend = get_backend(deploy_cfg, 'default')
     if backend == Backend.TENSORRT:
-        assert hasattr(deploy_cfg, 'tensorrt_params')
-        tensorrt_params = deploy_cfg['tensorrt_params']
-        model_params = tensorrt_params.get('model_params', [])
+        model_params = get_model_inputs(deploy_cfg)
         assert len(model_params) == len(onnx_files)
 
         from mmdeploy.apis.tensorrt import is_available as trt_is_available
@@ -182,7 +178,8 @@ def main():
             onnx_name = osp.splitext(osp.split(onnx_path)[1])[0]
             save_file = model_param.get('save_file', onnx_name + '.engine')
 
-            partition_type = 'end2end' if not apply_marks else onnx_name
+            partition_type = 'end2end' if partition_cfgs is None \
+                else onnx_name
             create_process(
                 f'onnx2tensorrt of {onnx_path}',
                 target=onnx2tensorrt,

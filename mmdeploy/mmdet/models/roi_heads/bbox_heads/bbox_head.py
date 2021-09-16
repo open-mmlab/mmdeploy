@@ -3,6 +3,7 @@ import torch.nn.functional as F
 
 from mmdeploy.core import FUNCTION_REWRITER, mark
 from mmdeploy.mmdet.core import multiclass_nms
+from mmdeploy.utils import get_mmdet_params
 
 
 @FUNCTION_REWRITER.register_rewriter(
@@ -56,7 +57,7 @@ def get_bboxes_of_bbox_head(ctx, self, rois, cls_score, bbox_pred, img_shape,
         bboxes = bboxes[dim0_inds, max_inds].reshape(batch_size, -1, 4)
 
     # get nms params
-    post_params = ctx.cfg.post_processing
+    post_params = get_mmdet_params(ctx.cfg)
     max_output_boxes_per_class = post_params.max_output_boxes_per_class
     iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)
     score_threshold = cfg.get('score_thr', post_params.score_threshold)

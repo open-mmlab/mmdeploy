@@ -1,4 +1,4 @@
-from typing import Any, Optional, Union
+from typing import Any, Optional, Sequence, Union
 
 import mmcv
 import numpy as np
@@ -8,12 +8,15 @@ from mmdet.datasets import build_dataset as build_dataset_mmdet
 from mmdet.datasets import replace_ImageToTensor
 from mmdet.datasets.pipelines import Compose
 
-from mmdeploy.utils.config_utils import load_config
+from mmdeploy.utils import Task, load_config
 
 
-def create_input(model_cfg: Union[str, mmcv.Config],
+def create_input(task: Task,
+                 model_cfg: Union[str, mmcv.Config],
                  imgs: Any,
+                 input_shape: Sequence[int] = None,
                  device: str = 'cuda:0'):
+    assert task == Task.OBJECT_DETECTION
     cfg = load_config(model_cfg)[0].copy()
 
     if not isinstance(imgs, (list, tuple)):
@@ -23,6 +26,16 @@ def create_input(model_cfg: Union[str, mmcv.Config],
         cfg = cfg.copy()
         # set loading pipeline type
         cfg.data.test.pipeline[0].type = 'LoadImageFromWebcam'
+    # for static exporting
+    if input_shape is not None:
+        cfg.data.test.pipeline[1]['img_scale'] = tuple(input_shape)
+        transforms = cfg.data.test.pipeline[1]['transforms']
+        for trans in transforms:
+            trans_type = trans['type']
+            if trans_type == 'Resize':
+                trans['keep_ratio'] = False
+            elif trans_type == 'Pad':
+                trans['size_divisor'] = 1
 
     cfg.data.test.pipeline = replace_ImageToTensor(cfg.data.test.pipeline)
     test_pipeline = Compose(cfg.data.test.pipeline)

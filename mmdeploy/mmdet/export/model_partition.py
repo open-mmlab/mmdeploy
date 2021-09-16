@@ -1,5 +1,5 @@
 MMDET_PARTITION_CFG = dict(
-    single_stage_base=[
+    single_stage=[
         dict(
             save_file='partition0.onnx',
             start='detector_forward:input',
@@ -21,7 +21,7 @@ MMDET_PARTITION_CFG = dict(
             },
         )
     ],
-    two_stage_base=[
+    two_stage=[
         dict(
             save_file='partition0.onnx',
             start='detector_forward:input',

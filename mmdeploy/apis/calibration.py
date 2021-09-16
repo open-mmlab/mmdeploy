@@ -7,7 +7,7 @@ from mmcv.parallel import MMDataParallel
 
 from mmdeploy.core import (RewriterContext, patch_model,
                            reset_mark_function_count)
-from mmdeploy.utils import get_codebase, load_config
+from mmdeploy.utils import cfg_apply_marks, get_codebase, load_config
 from .utils import (build_dataloader, build_dataset, get_tensor_from_input,
                     init_pytorch_model, run_inference)
 
@@ -37,7 +37,7 @@ def create_calib_table(calib_file: str,
     dataset_cfg = load_config(dataset_cfg)[0]
 
     codebase = get_codebase(deploy_cfg)
-    apply_marks = deploy_cfg.get('apply_marks', False)
+    apply_marks = cfg_apply_marks(deploy_cfg)
     backend = 'default'
     model = init_pytorch_model(
         codebase, model_cfg, model_checkpoint, device=device)

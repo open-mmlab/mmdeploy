@@ -1,13 +1,26 @@
 from enum import Enum
 
 
-class Task(Enum):
+class AdvancedEnum(Enum):
+
+    @classmethod
+    def get(cls, str, a):
+        for k in cls:
+            if k.value == str:
+                return k
+        return a
+
+
+class Task(AdvancedEnum):
     TEXT_DETECTION = 'TextDetection'
     TEXT_RECOGNITION = 'TextRecognition'
+    SEGMENTATION = 'Segmentation'
     SUPER_RESOLUTION = 'SuperResolution'
+    CLASSIFICATION = 'Classification'
+    OBJECT_DETECTION = 'ObjectDetection'
 
 
-class Codebase(Enum):
+class Codebase(AdvancedEnum):
     MMDET = 'mmdet'
     MMSEG = 'mmseg'
     MMCLS = 'mmcls'
@@ -15,7 +28,7 @@ class Codebase(Enum):
     MMEDIT = 'mmedit'
 
 
-class Backend(Enum):
+class Backend(AdvancedEnum):
     PYTORCH = 'pytorch'
     TENSORRT = 'tensorrt'
     ONNXRUNTIME = 'onnxruntime'

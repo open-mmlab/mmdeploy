@@ -3,7 +3,7 @@ from typing import Any, Dict, Optional, Sequence, Union
 import mmcv
 import numpy as np
 
-from mmdeploy.utils import Backend, Codebase, get_codebase, load_config
+from mmdeploy.utils import Backend, Codebase, Task, get_codebase, load_config
 
 
 def init_pytorch_model(codebase: Codebase,
@@ -26,8 +26,7 @@ def init_pytorch_model(codebase: Codebase,
         model = convert_syncbatchnorm(model)
 
     elif codebase == Codebase.MMOCR:
-        from mmdet.apis import init_detector
-        from mmocr.models import build_detector  # noqa: F401
+        from mmocr.apis import init_detector
         model = init_detector(model_cfg, model_checkpoint, device, cfg_options)
 
     elif codebase == Codebase.MMEDIT:
@@ -41,8 +40,10 @@ def init_pytorch_model(codebase: Codebase,
 
 
 def create_input(codebase: Codebase,
+                 task: Task,
                  model_cfg: Union[str, mmcv.Config],
                  imgs: Any,
+                 input_shape: Sequence[int] = None,
                  device: str = 'cuda:0',
                  **kwargs):
     model_cfg = load_config(model_cfg)[0]
@@ -50,23 +51,23 @@ def create_input(codebase: Codebase,
     cfg = model_cfg.copy()
     if codebase == Codebase.MMCLS:
         from mmdeploy.mmcls.export import create_input
-        return create_input(cfg, imgs, device, **kwargs)
+        return create_input(task, cfg, imgs, input_shape, device, **kwargs)
 
     elif codebase == Codebase.MMDET:
         from mmdeploy.mmdet.export import create_input
-        return create_input(cfg, imgs, device, **kwargs)
+        return create_input(task, cfg, imgs, input_shape, device, **kwargs)
 
     elif codebase == Codebase.MMOCR:
         from mmdeploy.mmocr.export import create_input
-        return create_input(cfg, imgs, device, **kwargs)
+        return create_input(task, cfg, imgs, input_shape, device, **kwargs)
 
     elif codebase == Codebase.MMSEG:
         from mmdeploy.mmseg.export import create_input
-        return create_input(cfg, imgs, device, **kwargs)
+        return create_input(task, cfg, imgs, input_shape, device, **kwargs)
 
     elif codebase == Codebase.MMEDIT:
         from mmdeploy.mmedit.export import create_input
-        return create_input(cfg, imgs, device, **kwargs)
+        return create_input(task, cfg, imgs, input_shape, device, **kwargs)
 
     else:
         raise NotImplementedError(f'Unknown codebase type: {codebase.value}')

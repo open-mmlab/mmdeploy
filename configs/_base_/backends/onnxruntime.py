@@ -1,1 +1,1 @@
-backend = 'onnxruntime'
+backend_config = dict(type='onnxruntime')

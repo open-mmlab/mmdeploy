@@ -1,1 +1,1 @@
-backend = 'ncnn'
+backend_config = dict(type='ncnn')

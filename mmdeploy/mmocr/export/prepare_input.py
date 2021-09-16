@@ -1,4 +1,4 @@
-from typing import Any, Optional, Union
+from typing import Any, Optional, Sequence, Union
 
 import mmcv
 import numpy as np
@@ -7,11 +7,13 @@ from mmdet.datasets import replace_ImageToTensor
 from mmocr.datasets import build_dataloader as build_dataloader_mmocr
 from mmocr.datasets import build_dataset as build_dataset_mmocr
 
-from mmdeploy.utils.config_utils import load_config
+from mmdeploy.utils import Task, load_config
 
 
-def create_input(model_cfg: Union[str, mmcv.Config],
+def create_input(task: Task,
+                 model_cfg: Union[str, mmcv.Config],
                  imgs: Any,
+                 input_shape: Sequence[int] = None,
                  device: str = 'cuda:0'):
     if isinstance(imgs, (list, tuple)):
         if not isinstance(imgs[0], (np.ndarray, str)):
@@ -35,6 +37,21 @@ def create_input(model_cfg: Union[str, mmcv.Config],
 
     model_cfg.data.test.pipeline = replace_ImageToTensor(
         model_cfg.data.test.pipeline)
+    # for static exporting
+    if input_shape is not None:
+        if task == Task.TEXT_DETECTION:
+            model_cfg.data.test.pipeline[1].img_scale = tuple(input_shape)
+            model_cfg.data.test.pipeline[1].transforms[0].keep_ratio = False
+            model_cfg.data.test.pipeline[1].transforms[0].img_scale = tuple(
+                input_shape)
+        elif task == Task.TEXT_RECOGNITION:
+            resize = {
+                'height': input_shape[0],
+                'min_width': input_shape[1],
+                'max_width': input_shape[1],
+                'keep_aspect_ratio': False
+            }
+            model_cfg.data.test.pipeline[1].update(resize)
     from mmdet.datasets.pipelines import Compose
     from mmocr.datasets import build_dataset  # noqa: F401
     test_pipeline = Compose(model_cfg.data.test.pipeline)

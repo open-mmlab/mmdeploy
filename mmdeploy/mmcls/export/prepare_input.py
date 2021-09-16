@@ -1,4 +1,5 @@
-from typing import Any, Optional, Union
+import logging
+from typing import Any, Optional, Sequence, Union
 
 import mmcv
 from mmcls.datasets import build_dataloader as build_dataloader_mmcls
@@ -6,12 +7,15 @@ from mmcls.datasets import build_dataset as build_dataset_mmcls
 from mmcls.datasets.pipelines import Compose
 from mmcv.parallel import collate, scatter
 
-from mmdeploy.utils.config_utils import load_config
+from mmdeploy.utils import Task, load_config
 
 
-def create_input(model_cfg: Union[str, mmcv.Config],
+def create_input(task: Task,
+                 model_cfg: Union[str, mmcv.Config],
                  imgs: Any,
+                 input_shape: Sequence[int] = None,
                  device: str = 'cuda:0'):
+    assert task == Task.CLASSIFICATION
     cfg = load_config(model_cfg)[0].copy()
     if isinstance(imgs, str):
         if cfg.data.test.pipeline[0]['type'] != 'LoadImageFromFile':
@@ -21,6 +25,14 @@ def create_input(model_cfg: Union[str, mmcv.Config],
         if cfg.data.test.pipeline[0]['type'] == 'LoadImageFromFile':
             cfg.data.test.pipeline.pop(0)
         data = dict(img=imgs)
+    # for static exporting
+    if input_shape is not None:
+        if 'crop_size' in cfg.data.test.pipeline[2]:
+            crop_size = cfg.data.test.pipeline[2]['crop_size']
+            if tuple(input_shape) != (crop_size, crop_size):
+                logging.warning(
+                    f'`input shape` should be equal to `crop_size`: {crop_size},\
+                     but given: {input_shape}')
     test_pipeline = Compose(cfg.data.test.pipeline)
     data = test_pipeline(data)
     data = collate([data], samples_per_gpu=1)
