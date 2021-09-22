@@ -5,6 +5,7 @@ import numpy as np
 import torch
 
 from mmdeploy.apis.ncnn import ncnn_ext
+from mmdeploy.utils.timer import TimeCounter
 
 
 class NCNNWrapper(torch.nn.Module):
@@ -65,13 +66,22 @@ class NCNNWrapper(torch.nn.Module):
                 ex.input(k, in_data)
 
             # get output
+            result = self.ncnn_execute(extractor=ex, output_names=output_names)
             for name in output_names:
-                out_ret, out = ex.extract(name)
-                assert out_ret == 0, f'output {out} extract failed.'
-                outputs[name][batch_id] = torch.from_numpy(np.array(out))
+                outputs[name][batch_id] = torch.from_numpy(
+                    np.array(result[name]))
 
         # stack outputs together
         for k, v in outputs.items():
             outputs[k] = torch.stack(v)
 
         return outputs
+
+    @TimeCounter.count_time()
+    def ncnn_execute(self, extractor, output_names):
+        result = {}
+        for name in output_names:
+            out_ret, out = extractor.extract(name)
+            assert out_ret == 0, f'Failed to extract output : {out}.'
+            result[name] = out
+        return result

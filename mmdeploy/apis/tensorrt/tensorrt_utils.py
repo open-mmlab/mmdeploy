@@ -3,6 +3,7 @@ import tensorrt as trt
 import torch
 from packaging import version
 
+from mmdeploy.utils.timer import TimeCounter
 from .calib_utils import HDF5Calibrator
 
 
@@ -237,7 +238,11 @@ class TRTWrapper(torch.nn.Module):
             outputs[output_name] = output
             bindings[idx] = output.data_ptr()
 
-        self.context.execute_async_v2(bindings,
-                                      torch.cuda.current_stream().cuda_stream)
+        self.trt_execute(bindings=bindings)
 
         return outputs
+
+    @TimeCounter.count_time()
+    def trt_execute(self, bindings):
+        self.context.execute_async_v2(bindings,
+                                      torch.cuda.current_stream().cuda_stream)

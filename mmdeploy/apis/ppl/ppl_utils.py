@@ -6,6 +6,8 @@ import pyppl.common as pplcommon
 import pyppl.nn as pplnn
 import torch
 
+from mmdeploy.utils.timer import TimeCounter
+
 
 def register_engines(device_id: int,
                      disable_avx512: bool = False,
@@ -95,14 +97,18 @@ class PPLWrapper(torch.nn.Module):
         for name, input_tensor in input_data.items():
             input_tensor = input_tensor.contiguous()
             self.inputs[name].ConvertFromHost(input_tensor.cpu().numpy())
+        self.ppl_execute()
+        outputs = []
+        for i in range(self.runtime.GetOutputCount()):
+            out_tensor = self.runtime.GetOutputTensor(i).ConvertToHost()
+            outputs.append(np.array(out_tensor, copy=False))
+        return outputs
+
+    @TimeCounter.count_time()
+    def ppl_execute(self):
         status = self.runtime.Run()
         assert status == pplcommon.RC_SUCCESS, 'Run() '\
             'failed: ' + pplcommon.GetRetCodeStr(status)
         status = self.runtime.Sync()
         assert status == pplcommon.RC_SUCCESS, 'Sync() '\
             'failed: ' + pplcommon.GetRetCodeStr(status)
-        outputs = []
-        for i in range(self.runtime.GetOutputCount()):
-            out_tensor = self.runtime.GetOutputTensor(i).ConvertToHost()
-            outputs.append(np.array(out_tensor, copy=False))
-        return outputs

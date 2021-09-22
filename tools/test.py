@@ -1,4 +1,5 @@
 import argparse
+import sys
 
 from mmcv import DictAction
 from mmcv.parallel import MMDataParallel
@@ -6,6 +7,7 @@ from mmcv.parallel import MMDataParallel
 from mmdeploy.apis import (build_dataloader, build_dataset, init_backend_model,
                            post_process_outputs, single_gpu_test)
 from mmdeploy.utils.config_utils import get_codebase, load_config
+from mmdeploy.utils.timer import TimeCounter
 
 
 def parse_args():
@@ -57,8 +59,26 @@ def parse_args():
         action=DictAction,
         help='custom options for evaluation, the key-value pair in xxx=yyy '
         'format will be kwargs for dataset.evaluate() function')
-    args = parser.parse_args()
+    parser.add_argument(
+        '--speed-test', action='store_true', help='activate speed test')
+    parser.add_argument(
+        '--warmup',
+        type=int,
+        help='warmup before counting inference elaps, require setting '
+        'speed-test first',
+        default=10)
+    parser.add_argument(
+        '--log-interval',
+        type=int,
+        help='the interval between each log, require setting '
+        'speed-test first',
+        default=100)
+    parser.add_argument(
+        '--log2file',
+        type=str,
+        help='log speed in file format ,need speed-test first')
 
+    args = parser.parse_args()
     return args
 
 
@@ -91,9 +111,22 @@ def main():
         device_id=device_id)
 
     model = MMDataParallel(model, device_ids=[0])
-    outputs = single_gpu_test(codebase, model, data_loader, args.show,
-                              args.show_dir, args.show_score_thr)
+    if args.speed_test:
+        with_sync = device_id == 0
+        output_file = sys.stdout
+        if args.log2file:
+            output_file = args.log2file
 
+        with TimeCounter.activate(
+                warmup=args.warmup,
+                log_interval=args.log_interval,
+                with_sync=with_sync,
+                file=output_file):
+            outputs = single_gpu_test(codebase, model, data_loader, args.show,
+                                      args.show_dir, args.show_score_thr)
+    else:
+        outputs = single_gpu_test(codebase, model, data_loader, args.show,
+                                  args.show_dir, args.show_score_thr)
     post_process_outputs(outputs, dataset, model_cfg, codebase, args.metrics,
                          args.out, args.metric_options, args.format_only)
 

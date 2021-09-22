@@ -5,6 +5,7 @@ import numpy as np
 import onnxruntime as ort
 import torch
 
+from mmdeploy.utils.timer import TimeCounter
 from .init_plugins import get_ops_path
 
 
@@ -68,7 +69,11 @@ class ORTWrapper(torch.nn.Module):
         for name in self.output_names:
             self.io_binding.bind_output(name)
         # run session to get outputs
-        self.sess.run_with_iobinding(self.io_binding)
+        self.ort_execute(self.io_binding)
         outputs = self.io_binding.copy_outputs_to_cpu()
 
         return outputs
+
+    @TimeCounter.count_time()
+    def ort_execute(self, io_binding):
+        self.sess.run_with_iobinding(io_binding)
