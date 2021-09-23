@@ -43,7 +43,7 @@ def onnx2tensorrt(work_dir: str,
         int8_param['calib_file'] = osp.join(work_dir, calib_file)
         int8_param['model_type'] = partition_type
 
-    assert device.startswith('cuda')
+    assert device.startswith('cuda'), 'TensorRT require cuda device.'
     device_id = parse_device_id(device)
     engine = create_trt_engine(
         onnx_model,

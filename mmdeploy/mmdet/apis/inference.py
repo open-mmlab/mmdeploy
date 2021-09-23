@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Union
+from typing import Sequence, Tuple, Union
 
 import mmcv
 import numpy as np
@@ -183,7 +183,7 @@ class PartitionSingleStageDetector(DeployBaseDetector):
         score_threshold = cfg.get('score_thr', post_params.score_threshold)
         pre_top_k = post_params.pre_top_k
         keep_top_k = cfg.get('max_per_img', post_params.keep_top_k)
-        return multiclass_nms(
+        ret = multiclass_nms(
             bboxes,
             scores,
             max_output_boxes_per_class,
@@ -191,6 +191,8 @@ class PartitionSingleStageDetector(DeployBaseDetector):
             score_threshold=score_threshold,
             pre_top_k=pre_top_k,
             keep_top_k=keep_top_k)
+        ret = [r.cpu() for r in ret]
+        return ret
 
 
 class ONNXRuntimePSSDetector(PartitionSingleStageDetector):
@@ -211,6 +213,48 @@ class ONNXRuntimePSSDetector(PartitionSingleStageDetector):
         scores, bboxes = ort_outputs[:2]
         scores = torch.from_numpy(scores).to(input_data.device)
         bboxes = torch.from_numpy(bboxes).to(input_data.device)
+        return self.partition0_postprocess(scores, bboxes)
+
+
+class TensorRTPSSDetector(PartitionSingleStageDetector):
+    """TensorRT Wrapper for paritition single stage detector.
+
+    Args:
+        model_file (str): Path of the engine file.
+        class_names (list[str] | tuple[str]): Class names of the detector.
+        model_cfg (str | mmcv.Config): Model config file or Config object.
+        deploy_cfg (str | mmcv.Config): Deployment config file or Config
+            object.
+        device_id (int): Device index, should be same as the engine.
+    """
+
+    def __init__(self, model_file: str, class_names: Sequence[str],
+                 model_cfg: Union[str, mmcv.Config],
+                 deploy_cfg: Union[str,
+                                   mmcv.Config], device_id: int, **kwargs):
+        super(TensorRTPSSDetector,
+              self).__init__(class_names, model_cfg, deploy_cfg, device_id,
+                             **kwargs)
+        from mmdeploy.apis.tensorrt import TRTWrapper
+
+        self.model = TRTWrapper(model_file)
+        self.output_names = ['scores', 'boxes']
+
+    def forward_test(self, imgs: Sequence[torch.Tensor], *args,
+                     **kwargs) -> Tuple[torch.Tensor, torch.Tensor]:
+        """Run forward test.
+
+        Args:
+            imgs (Sequence[torch.Tensor]): The input images.
+
+        Return:
+            Tuple[torch.Tensor, torch.Tensor]: Output dets and labels.
+        """
+        input_data = imgs[0].contiguous()
+        with torch.cuda.device(self.device_id), torch.no_grad():
+            outputs = self.model({'input': input_data})
+            outputs = [outputs[name] for name in self.output_names]
+        scores, bboxes = outputs[:2]
         return self.partition0_postprocess(scores, bboxes)
 
 
@@ -504,7 +548,9 @@ ONNXRUNTIME_DETECTOR_MAP = dict(
     two_stage=ONNXRuntimePTSDetector)
 
 TENSORRT_DETECTOR_MAP = dict(
-    end2end=TensorRTDetector, two_stage=TensorRTPTSDetector)
+    end2end=TensorRTDetector,
+    single_stage=TensorRTPSSDetector,
+    two_stage=TensorRTPTSDetector)
 
 PPL_DETECTOR_MAP = dict(end2end=PPLDetector)
 
