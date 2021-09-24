@@ -107,7 +107,8 @@ def create_trt_engine(onnx_model: Union[str, onnx.ModelProto],
     # create engine
     with torch.cuda.device(device):
         engine = builder.build_engine(network, config)
-    assert engine is not None, f'Failed to create engine from {onnx_model}'
+
+    assert engine is not None, 'Failed to create TensorRT engine'
     return engine
 
 

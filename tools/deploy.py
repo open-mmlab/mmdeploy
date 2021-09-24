@@ -2,6 +2,8 @@ import argparse
 import logging
 import os.path as osp
 import subprocess
+import sys
+import traceback
 from functools import partial
 
 import mmcv
@@ -59,6 +61,7 @@ def target_wrapper(target, log_level, ret_value, *args, **kwargs):
         return result
     except Exception as e:
         logging.error(e)
+        traceback.print_exc(file=sys.stdout)
 
 
 def create_process(name, target, args, kwargs, ret_value=None):
