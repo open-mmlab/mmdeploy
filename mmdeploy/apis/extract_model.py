@@ -17,7 +17,27 @@ def extract_model(model: Union[str, onnx.ModelProto],
                   end_name_map: Optional[Dict[str, str]] = None,
                   dynamic_axes: Optional[Dict[str, Dict[int, str]]] = None,
                   save_file: Optional[str] = None):
+    """Extract sub-model from an ONNX model.
 
+    The sub-model is defined by the names of the input and output tensors
+    exactly.
+
+    Args:
+        model (str | onnx.ModelProto): Input ONNX model to be extracted.
+        start (str | Sequence[str]): Start marker(s) to extract.
+        end (str | Sequence[str]): End marker(s) to extract.
+        start_name_map (Dict[str, str]): A mapping of start names, defaults to
+            `None`.
+        end_name_map (Dict[str, str]): A mapping of end names, defaults to
+            `None`.
+        dynamic_axes (Dict[str, Dict[int, str]]): A dictionary to specify
+            dynamic axes of input/output, defaults to `None`.
+        save_file (str): A file to save the extracted model, defaults to
+            `None`.
+
+    Returns:
+        onnx.ModelProto: The extracted sub-model.
+    """
     if isinstance(model, str):
         model = onnx.load(model)
 

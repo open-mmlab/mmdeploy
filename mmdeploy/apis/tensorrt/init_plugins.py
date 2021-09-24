@@ -5,7 +5,11 @@ import os
 
 
 def get_ops_path():
-    """Get TensorRT plugins library path."""
+    """Get path of the TensorRT plugin library.
+
+    Returns:
+        str: A path of the TensorRT plugin library.
+    """
     wildcard = os.path.abspath(
         os.path.join(
             os.path.dirname(__file__),
@@ -17,11 +21,18 @@ def get_ops_path():
 
 
 def load_tensorrt_plugin():
-    """load TensorRT plugins library."""
+    """Load TensorRT plugins library.
+
+    Returns:
+        bool: True if TensorRT plugin library is successfully loaded.
+    """
     lib_path = get_ops_path()
+    success = False
     if os.path.exists(lib_path):
         ctypes.CDLL(lib_path)
-        return 0
+        logging.info(f'Successfully loaded tensorrt plugins from {lib_path}')
+        success = True
     else:
-        logging.warning('Can not load tensorrt custom ops.')
-        return -1
+        logging.warning(f'Could not load the library of tensorrt plugins. \
+            Because the file does not exist: {lib_path}')
+    return success

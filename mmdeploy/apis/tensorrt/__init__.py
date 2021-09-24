@@ -6,6 +6,11 @@ from .init_plugins import get_ops_path, load_tensorrt_plugin
 
 
 def is_available():
+    """Check whether TensorRT and plugins are installed.
+
+    Returns:
+        bool: True if TensorRT and plugins are installed.
+    """
     tensorrt_op_path = get_ops_path()
     if not osp.exists(tensorrt_op_path):
         return False

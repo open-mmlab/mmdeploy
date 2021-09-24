@@ -42,7 +42,15 @@ def _dfs_search_reacable_nodes_fast(self, node_output_name, graph_input_nodes,
     impl(node_output_name, graph_input_nodes, reachable_nodes)
 
 
-def create_extractor(model):
+def create_extractor(model: onnx.ModelProto):
+    """Create Extractor for ONNX.
+
+    Args:
+        model (onnx.ModelProto): An input onnx model.
+
+    Returns:
+        Extractor: Extractor for the onnx.
+    """
     assert version.parse(onnx.__version__) >= version.parse('1.8.0')
     # patch extractor
     onnx.utils.Extractor._dfs_search_reachable_nodes = \

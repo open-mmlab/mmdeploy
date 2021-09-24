@@ -1,5 +1,6 @@
 import logging
 import sys
+from typing import Dict
 
 import numpy as np
 import pyppl.common as pplcommon
@@ -15,9 +16,14 @@ def register_engines(device_id: int,
     """Register engines for ppl runtime.
 
     Args:
-        device_id (int): -1 for cpu.
+        device_id (int): Specifying device index. `-1` for cpu.
         disable_avx512 (bool): Whether to disable avx512 for x86.
+            Defaults to `False`.
         quick_select (bool): Whether to use default algorithms.
+            Defaults to `False`.
+
+    Returns:
+        list[pplnn.Engine]: A list of registered ppl engines.
     """
     engines = []
     if device_id == -1:
@@ -59,11 +65,21 @@ def register_engines(device_id: int,
 
 
 class PPLWrapper(torch.nn.Module):
-    """PPLWrapper Wrapper.
+    """PPL wrapper for inference.
 
-    Arguments:
-        model_file (str): Input onnx model file
-        device_id (int): The device id to put model
+    Args:
+        model_file (str): Input onnx model file.
+        device_id (int): Device id to put model.
+
+    Examples:
+        >>> from mmdeploy.apis.ppl import PPLWrapper
+        >>> import torch
+        >>>
+        >>> onnx_file = 'model.onnx'
+        >>> model = PPLWrapper(onnx_file, 0)
+        >>> inputs = dict(input=torch.randn(1, 3, 224, 224))
+        >>> outputs = model(inputs)
+        >>> print(outputs)
     """
 
     def __init__(self, model_file: str, device_id: int):
@@ -87,14 +103,16 @@ class PPLWrapper(torch.nn.Module):
             for i in range(runtime.GetInputCount())
         }
 
-    def forward(self, input_data):
-        """
-        Arguments:
-            input_data (dict): the input name and tensor pairs
+    def forward(self, inputs: Dict[str, torch.Tensor]):
+        """Run forward inference.
+
+        Args:
+            inputs (Dict[str, torch.Tensor]): Input name and tensor pairs.
+
         Return:
-            list[np.ndarray]: list of output numpy array
+            list[np.ndarray]: A list of output numpy array.
         """
-        for name, input_tensor in input_data.items():
+        for name, input_tensor in inputs.items():
             input_tensor = input_tensor.contiguous()
             self.inputs[name].ConvertFromHost(input_tensor.cpu().numpy())
         self.ppl_execute()
@@ -106,6 +124,7 @@ class PPLWrapper(torch.nn.Module):
 
     @TimeCounter.count_time()
     def ppl_execute(self):
+        """Run inference with PPL."""
         status = self.runtime.Run()
         assert status == pplcommon.RC_SUCCESS, 'Run() '\
             'failed: ' + pplcommon.GetRetCodeStr(status)

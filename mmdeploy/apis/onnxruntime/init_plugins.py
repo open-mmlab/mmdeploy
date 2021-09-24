@@ -3,7 +3,11 @@ import os
 
 
 def get_ops_path():
-    """Get ONNX Runtime plugins library path."""
+    """Get the library path of onnxruntime custom ops.
+
+    Returns:
+        str: The library path to onnxruntime custom ops.
+    """
     wildcard = os.path.abspath(
         os.path.join(
             os.path.dirname(__file__),

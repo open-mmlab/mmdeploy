@@ -20,13 +20,23 @@ def create_calib_table(calib_file: str,
                        dataset_type: str = 'val',
                        device: str = 'cuda:0',
                        **kwargs) -> None:
+    """Create calibration table.
 
+    Args:
+        calib_file (str): Input calibration file.
+        deploy_cfg (str | mmcv.Config): Deployment config.
+        model_cfg (str | mmcv.Config): The model config.
+        model_checkpoint (str): PyTorch model checkpoint, defaults to `None`.
+        dataset_cfg (str | mmcv.Config): Dataset config, defaults to `None`
+        dataset_type (str): A string specifying dataset type, e.g.: 'test',
+            'val', defaults to 'val'.
+        device (str): Specifying the device to run on, defaults to 'cuda:0'.
+    """
     if dataset_cfg is None:
         dataset_cfg = model_cfg
 
     # load cfg if necessary
-    deploy_cfg = load_config(deploy_cfg)[0]
-    model_cfg = load_config(model_cfg)[0]
+    deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
     device_id = torch.device(device).index
     if device_id is None:
         device_id = 0

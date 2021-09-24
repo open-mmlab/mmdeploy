@@ -1,3 +1,5 @@
+from typing import Dict, Sequence, Union
+
 import onnx
 import tensorrt as trt
 import torch
@@ -7,37 +9,42 @@ from mmdeploy.utils.timer import TimeCounter
 from .calib_utils import HDF5Calibrator
 
 
-def create_trt_engine(onnx_model,
-                      opt_shape_dict,
-                      log_level=trt.Logger.ERROR,
-                      fp16_mode=False,
-                      int8_mode=False,
-                      int8_param=None,
-                      max_workspace_size=0,
-                      device_id=0,
+def create_trt_engine(onnx_model: Union[str, onnx.ModelProto],
+                      input_shapes: Dict[str, Sequence[int]],
+                      log_level: trt.Logger.Severity = trt.Logger.ERROR,
+                      fp16_mode: bool = False,
+                      int8_mode: bool = False,
+                      int8_param: dict = None,
+                      max_workspace_size: int = 0,
+                      device_id: int = 0,
                       **kwargs):
     """Create a tensorrt engine from ONNX.
 
-    Arguments:
-        onnx_model (str or onnx.ModelProto): the onnx model to convert from
-        opt_shape_dict (dict): the min/opt/max shape of each input
-        log_level (TensorRT log level): the log level of TensorRT
-        fp16_mode (bool): enable fp16 mode
-        int8_mode (bool): enable int8 mode
-        int8_param (None|dict): parameter of int8 mode.
-        max_workspace_size (int): set max workspace size of TensorRT engine.
-            some tactic and layers need large workspace.
-        device_id (int): choice the device to create engine.
+    Args:
+        onnx_model (str or onnx.ModelProto): Input onnx model to convert from.
+        input_shapes (Dict[str, Sequence[int]]): The min/opt/max shape of
+            each input.
+        log_level (trt.Logger.Severity): The log level of TensorRT. Defaults to
+            `trt.Logger.ERROR`.
+        fp16_mode (bool): Specifying whether to enable fp16 mode.
+            Defaults to `False`.
+        int8_mode (bool): Specifying whether to enable int8 mode.
+            Defaults to `False`.
+        int8_param (dict): A dict of parameter  int8 mode. Defaults to `None`.
+        max_workspace_size (int): To set max workspace size of TensorRT engine.
+            some tactics and layers need large workspace. Defaults to `0`.
+        device_id (int): Choice the device to create engine. Defaults to `0`.
 
     Returns:
-        tensorrt.ICudaEngine: the TensorRT engine created from onnx_model
+        tensorrt.ICudaEngine: The TensorRT engine created from onnx_model.
 
     Example:
+        >>> from mmdeploy.apis.tensorrt import create_trt_engine
         >>> engine = create_trt_engine(
         >>>             "onnx_model.onnx",
         >>>             {'input': {"min_shape" : [1, 3, 160, 160],
-        >>>                        "opt_shape" :[1, 3, 320, 320],
-        >>>                        "max_shape" :[1, 3, 640, 640]}},
+        >>>                        "opt_shape" : [1, 3, 320, 320],
+        >>>                        "max_shape" : [1, 3, 640, 640]}},
         >>>             log_level=trt.Logger.WARNING,
         >>>             fp16_mode=True,
         >>>             max_workspace_size=1 << 30,
@@ -62,7 +69,7 @@ def create_trt_engine(onnx_model,
         error_msgs = ''
         for error in range(parser.num_errors):
             error_msgs += f'{parser.get_error(error)}\n'
-        raise RuntimeError(f'parse onnx failed:\n{error_msgs}')
+        raise RuntimeError(f'Failed to parse onnx: {onnx_model}\n{error_msgs}')
 
     # config builder
     if version.parse(trt.__version__) < version.parse('8'):
@@ -72,7 +79,7 @@ def create_trt_engine(onnx_model,
     config.max_workspace_size = max_workspace_size
     profile = builder.create_optimization_profile()
 
-    for input_name, param in opt_shape_dict.items():
+    for input_name, param in input_shapes.items():
         min_shape = param['min_shape']
         opt_shape = param['opt_shape']
         max_shape = param['max_shape']
@@ -88,7 +95,7 @@ def create_trt_engine(onnx_model,
         assert int8_param is not None
         config.int8_calibrator = HDF5Calibrator(
             int8_param['calib_file'],
-            opt_shape_dict,
+            input_shapes,
             model_type=int8_param['model_type'],
             device_id=device_id,
             algorithm=int8_param.get(
@@ -100,29 +107,29 @@ def create_trt_engine(onnx_model,
     # create engine
     with torch.cuda.device(device):
         engine = builder.build_engine(network, config)
-
+    assert engine is not None, f'Failed to create engine from {onnx_model}'
     return engine
 
 
-def save_trt_engine(engine, path):
+def save_trt_engine(engine: trt.ICudaEngine, path: str):
     """Serialize TensorRT engine to disk.
 
-    Arguments:
-        engine (tensorrt.ICudaEngine): TensorRT engine to serialize
-        path (str): disk path to write the engine
+    Args:
+        engine (tensorrt.ICudaEngine): TensorRT engine to be serialized.
+        path (str): The disk path to write the engine.
     """
     with open(path, mode='wb') as f:
         f.write(bytearray(engine.serialize()))
 
 
-def load_trt_engine(path):
+def load_trt_engine(path: str):
     """Deserialize TensorRT engine from disk.
 
-    Arguments:
-        path (str): disk path to read the engine
+    Args:
+        path (str): The disk path to read the engine.
 
     Returns:
-        tensorrt.ICudaEngine: the TensorRT engine loaded from disk
+        tensorrt.ICudaEngine: The TensorRT engine loaded from disk.
     """
     with trt.Logger() as logger, trt.Runtime(logger) as runtime:
         with open(path, mode='rb') as f:
@@ -131,8 +138,16 @@ def load_trt_engine(path):
         return engine
 
 
-def torch_dtype_from_trt(dtype):
-    """Convert pytorch dtype to TensorRT dtype."""
+def torch_dtype_from_trt(dtype: trt.DataType):
+    """Convert pytorch dtype to TensorRT dtype.
+
+    Args:
+        dtype (str.DataType): The data type in tensorrt.
+
+    Returns:
+        torch.dtype: The corresponding data type in torch.
+    """
+
     if dtype == trt.bool:
         return torch.bool
     elif dtype == trt.int8:
@@ -144,38 +159,54 @@ def torch_dtype_from_trt(dtype):
     elif dtype == trt.float32:
         return torch.float32
     else:
-        raise TypeError('%s is not supported by torch' % dtype)
+        raise TypeError(f'{dtype} is not supported by torch')
 
 
-def torch_device_from_trt(device):
-    """Convert pytorch device to TensorRT device."""
+def torch_device_from_trt(device: trt.TensorLocation):
+    """Convert pytorch device to TensorRT device.
+
+    Args:
+        device (trt.TensorLocation): The device in tensorrt.
+
+    Returns:
+        torch.device: The corresponding device in torch.
+    """
     if device == trt.TensorLocation.DEVICE:
         return torch.device('cuda')
     elif device == trt.TensorLocation.HOST:
         return torch.device('cpu')
     else:
-        return TypeError('%s is not supported by torch' % device)
+        return TypeError(f'{device} is not supported by torch')
 
 
 class TRTWrapper(torch.nn.Module):
-    """TensorRT engine Wrapper.
+    """TensorRT engine wrapper for inference.
 
-    Arguments:
-        engine (tensorrt.ICudaEngine): TensorRT engine to wrap
+    Args:
+        engine (tensorrt.ICudaEngine): TensorRT engine to wrap.
 
     Note:
         If the engine is converted from onnx model. The input_names and
         output_names should be the same as onnx model.
+
+    Examples:
+        >>> from mmdeploy.apis.tensorrt import TRTWrapper
+        >>> engine_file = 'resnet.engine'
+        >>> model = TRTWrapper(engine_file)
+        >>> inputs = dict(input=torch.randn(1, 3, 224, 224))
+        >>> outputs = model(inputs)
+        >>> print(outputs)
     """
 
-    def __init__(self, engine):
+    def __init__(self, engine: Union[str, trt.ICudaEngine]):
         super(TRTWrapper, self).__init__()
         self.engine = engine
         if isinstance(self.engine, str):
             self.engine = load_trt_engine(engine)
 
         if not isinstance(self.engine, trt.ICudaEngine):
-            raise TypeError('engine should be str or trt.ICudaEngine')
+            raise TypeError(f'`engine` should be str or trt.ICudaEngine, \
+                but given: {type(self.engine)}')
 
         self._register_state_dict_hook(TRTWrapper._on_state_dict)
         self.context = self.engine.create_execution_context()
@@ -206,13 +237,14 @@ class TRTWrapper(torch.nn.Module):
         self.input_names = state_dict[prefix + 'input_names']
         self.output_names = state_dict[prefix + 'output_names']
 
-    def forward(self, inputs):
-        """
-        Arguments:
-            inputs (dict): dict of input name-tensors pair
+    def forward(self, inputs: Dict[str, torch.Tensor]):
+        """Run forward inference.
+
+        Args:
+            inputs (Dict[str, torch.Tensor]): The input name and tensor pairs.
 
         Return:
-            dict: dict of output name-tensors pair
+            Dict[str, torch.Tensor]: The output name and tensor pairs.
         """
         assert self.input_names is not None
         assert self.output_names is not None
@@ -243,6 +275,11 @@ class TRTWrapper(torch.nn.Module):
         return outputs
 
     @TimeCounter.count_time()
-    def trt_execute(self, bindings):
+    def trt_execute(self, bindings: Sequence[int]):
+        """Run inference with TensorRT.
+
+        Args:
+            bindings (list[int]): A list of integer binding the input/output.
+        """
         self.context.execute_async_v2(bindings,
                                       torch.cuda.current_stream().cuda_stream)

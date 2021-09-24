@@ -7,6 +7,11 @@ __all__ = ['get_ops_path', 'get_onnx2ncnn_path']
 
 
 def is_available():
+    """Check whether ncnn with extension is installed.
+
+    Returns:
+        bool: True if ncnn and its extension are installed.
+    """
     ncnn_ops_path = get_ops_path()
     if not osp.exists(ncnn_ops_path):
         return False

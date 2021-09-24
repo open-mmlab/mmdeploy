@@ -1,5 +1,6 @@
+import logging
 import os.path as osp
-from typing import Sequence
+from typing import Dict, Sequence
 
 import numpy as np
 import onnxruntime as ort
@@ -10,11 +11,22 @@ from .init_plugins import get_ops_path
 
 
 class ORTWrapper(torch.nn.Module):
-    """ONNXRuntime Wrapper.
+    """ONNXRuntime wrapper for inference.
 
-    Arguments:
-        onnx_file (str): Input onnx model file
-        device_id (int): The device id to put model
+    Args:
+        onnx_file (str): Input onnx model file.
+        device_id (int): The device id to input model.
+        output_names (list[str] | tuple[str]): Names to model outputs.
+
+    Examples:
+        >>> from mmdeploy.apis.onnxruntime import ORTWrapper
+        >>> import torch
+        >>>
+        >>> onnx_file = 'model.onnx'
+        >>> model = ORTWrapper(onnx_file, -1)
+        >>> inputs = dict(input=torch.randn(1, 3, 224, 224, device='cpu'))
+        >>> outputs = model(inputs)
+        >>> print(outputs)
     """
 
     def __init__(self,
@@ -28,6 +40,12 @@ class ORTWrapper(torch.nn.Module):
         # register custom op for onnxruntime
         if osp.exists(ort_custom_op_path):
             session_options.register_custom_ops_library(ort_custom_op_path)
+            logging.info(f'Successfully loaded onnxruntime custom ops from \
+                {ort_custom_op_path}')
+        else:
+            logging.warning(f'The library of onnxruntime custom ops does \
+                not exist: {ort_custom_op_path}')
+
         sess = ort.InferenceSession(onnx_file, session_options)
 
         providers = ['CPUExecutionProvider']
@@ -46,13 +64,14 @@ class ORTWrapper(torch.nn.Module):
         self.is_cuda_available = is_cuda_available
         self.device_type = 'cuda' if is_cuda_available else 'cpu'
 
-    def forward(self, inputs):
-        """
-        Arguments:
-            inputs (dict): the input name and tensor pairs
-            input_names: list of input name
-        Return:
-            list[np.ndarray]: list of output numpy array
+    def forward(self, inputs: Dict[str, torch.Tensor]):
+        """Run forward inference.
+
+        Args:
+            inputs (Dict[str, torch.Tensor]): The input name and tensor pairs.
+
+        Returns:
+            list[np.ndarray]: A list of output numpy array.
         """
         for name, input_tensor in inputs.items():
             # set io binding for inputs/outputs
@@ -75,5 +94,11 @@ class ORTWrapper(torch.nn.Module):
         return outputs
 
     @TimeCounter.count_time()
-    def ort_execute(self, io_binding):
+    def ort_execute(self, io_binding: ort.IOBinding):
+        """Run inference with ONNXRuntime session.
+
+        Args:
+            io_binding (ort.IOBinding): To bind input/output to a specified
+                device, e.g. GPU.
+        """
         self.sess.run_with_iobinding(io_binding)

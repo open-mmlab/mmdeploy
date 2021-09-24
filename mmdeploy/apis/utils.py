@@ -2,6 +2,8 @@ from typing import Any, Dict, Optional, Sequence, Union
 
 import mmcv
 import numpy as np
+import torch
+from torch.utils.data import Dataset
 
 from mmdeploy.utils import Backend, Codebase, Task, get_codebase, load_config
 
@@ -11,6 +13,19 @@ def init_pytorch_model(codebase: Codebase,
                        model_checkpoint: Optional[str] = None,
                        device: str = 'cuda:0',
                        cfg_options: Optional[Dict] = None):
+    """Initialize torch model.
+
+    Args:
+        codebase (Codebase): Specifying codebase type.
+        model_cfg (str | mmcv.Config): Model config file or Config object.
+        model_checkpoint (str): The checkpoint file of torch model, defaults
+            to `None`.
+        device (str): A string specifying device type, defaults to 'cuda:0'.
+        cfg_options (dict): Optional config key-pair parameters.
+
+    Returns:
+        nn.Module: An initialized torch model.
+    """
     if codebase == Codebase.MMCLS:
         from mmcls.apis import init_model
         model = init_model(model_cfg, model_checkpoint, device, cfg_options)
@@ -46,6 +61,22 @@ def create_input(codebase: Codebase,
                  input_shape: Sequence[int] = None,
                  device: str = 'cuda:0',
                  **kwargs):
+    """Create input for model.
+
+    Args:
+        codebase (Codebase): Specifying codebase type.
+        task (Task): Specifying task type.
+        model_cfg (str | mmcv.Config): model config file or loaded Config
+            object.
+        imgs (str | np.ndarray): Input image(s).
+        input_shape (list[int]): Input shape of image in (width, height)
+            format, defaults to `None`.
+        device (str): A string specifying device type, defaults to 'cuda:0'.
+
+    Returns:
+        tuple: (data, img), meta information for the input image and input
+            image tensor.
+    """
     model_cfg = load_config(model_cfg)[0]
 
     cfg = model_cfg.copy()
@@ -78,6 +109,19 @@ def init_backend_model(model_files: Sequence[str],
                        deploy_cfg: Union[str, mmcv.Config],
                        device_id: int = 0,
                        **kwargs):
+    """Initialize backend model.
+
+    Args:
+        model_files (list[str]): Input model files.
+        model_cfg (str | mmcv.Config): Model config file or
+            loaded Config object.
+        deploy_cfg (str | mmcv.Config): Deployment config file or
+            loaded Config object.
+        device_id (int): An integer specifying device index.
+
+    Returns:
+        nn.Module: An initialized model.
+    """
     deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
 
     codebase = get_codebase(deploy_cfg)
@@ -111,7 +155,19 @@ def init_backend_model(model_files: Sequence[str],
         raise NotImplementedError(f'Unknown codebase type: {codebase.value}')
 
 
-def run_inference(codebase: Codebase, model_inputs, model):
+def run_inference(codebase: Codebase, model_inputs: dict,
+                  model: torch.nn.Module):
+    """Run once inference for a model of nn.Module.
+
+    Args:
+        codebase (Codebase): Specifying codebase type.
+        model_inputs (dict): A dict containing model inputs tensor and
+            meta info.
+        model (nn.Module): Input model.
+
+    Returns:
+        list: The predictions of model inference.
+    """
     if codebase == Codebase.MMCLS:
         return model(**model_inputs, return_loss=False)[0]
     elif codebase == Codebase.MMDET:
@@ -133,12 +189,23 @@ def run_inference(codebase: Codebase, model_inputs, model):
 
 def visualize(codebase: Codebase,
               image: Union[str, np.ndarray],
-              result,
-              model,
+              result: list,
+              model: torch.nn.Module,
               output_file: str,
               backend: Backend,
-              show_result=False):
+              show_result: bool = False):
+    """Visualize predictions of a model.
 
+    Args:
+        codebase (Codebase): Specifying codebase type.
+        image (str | np.ndarray): Input image to draw predictions on.
+        result (list): A list of predictions.
+        model (nn.Module): Input model.
+        output_file (str): Output file to save drawn image.
+        backend (Backend): Specifying backend type.
+        show_result (bool): Whether to show result in windows, defaults
+            to `False`.
+    """
     show_img = mmcv.imread(image) if isinstance(image, str) else image
     output_file = None if show_result else output_file
 
@@ -164,6 +231,18 @@ def visualize(codebase: Codebase,
 
 
 def get_partition_cfg(codebase: Codebase, partition_type: str):
+    """Get a certain partition config.
+
+    Notes:
+        Currently only support mmdet codebase.
+
+    Args:
+        codebase (Codebase): Specifying codebase type.
+        partition_type (str): A string specifying partition type.
+
+    Returns:
+        dict: A dictionary of partition config.
+    """
     if codebase == Codebase.MMDET:
         from mmdeploy.mmdet.export import get_partition_cfg \
             as get_partition_cfg_mmdet
@@ -176,6 +255,17 @@ def build_dataset(codebase: Codebase,
                   dataset_cfg: Union[str, mmcv.Config],
                   dataset_type: str = 'val',
                   **kwargs):
+    """Build dataset for different codebase.
+
+    Args:
+        codebase (Codebase): Specifying codebase type.
+        dataset_cfg (str | mmcv.Config): Dataset config file or Config object.
+        dataset_type (str): Specifying dataset type, e.g.: 'train', 'test',
+            'val', defaults to 'val'.
+
+    Returns:
+        Dataset: The built dataset.
+    """
     if codebase == Codebase.MMCLS:
         from mmdeploy.mmcls.export import build_dataset \
             as build_dataset_mmcls
@@ -198,8 +288,21 @@ def build_dataset(codebase: Codebase,
         raise NotImplementedError(f'Unknown codebase type: {codebase.value}')
 
 
-def build_dataloader(codebase: Codebase, dataset, samples_per_gpu: int,
-                     workers_per_gpu: int, **kwargs):
+def build_dataloader(codebase: Codebase, dataset: Dataset,
+                     samples_per_gpu: int, workers_per_gpu: int, **kwargs):
+    """Build PyTorch dataloader.
+
+    Args:
+        codebase (Codebase): Specifying codebase type.
+        dataset (Dataset): A PyTorch dataset.
+        samples_per_gpu (int): Number of training samples on each GPU, i.e.,
+            batch size of each GPU.
+        workers_per_gpu (int): How many subprocesses to use for data loading
+            for each GPU.
+
+    Returns:
+        DataLoader: A PyTorch dataloader.
+    """
     if codebase == Codebase.MMCLS:
         from mmdeploy.mmcls.export import build_dataloader \
             as build_dataloader_mmcls
@@ -229,7 +332,16 @@ def build_dataloader(codebase: Codebase, dataset, samples_per_gpu: int,
         raise NotImplementedError(f'Unknown codebase type: {codebase.value}')
 
 
-def get_tensor_from_input(codebase: Codebase, input_data):
+def get_tensor_from_input(codebase: Codebase, input_data: tuple):
+    """Get input tensor from input data.
+
+    Args:
+        codebase (Codebase): Specifying codebase type.
+        input_data (tuple): Input data containing meta info and image tensor.
+
+    Returns:
+        torch.Tensor: Input tensor of image.
+    """
     if codebase == Codebase.MMCLS:
         from mmdeploy.mmcls.export import get_tensor_from_input \
             as get_tensor_from_input_mmcls

@@ -3,7 +3,11 @@ import os
 
 
 def get_ops_path():
-    """Get NCNN custom ops library path."""
+    """Get NCNN custom ops library path.
+
+    Returns:
+        str: The library path of NCNN custom ops.
+    """
     wildcard = os.path.abspath(
         os.path.join(
             os.path.dirname(__file__),
@@ -15,7 +19,11 @@ def get_ops_path():
 
 
 def get_onnx2ncnn_path():
-    """Get onnx2ncnn path."""
+    """Get onnx2ncnn path.
+
+    Returns:
+        str: A path of onnx2ncnn tool.
+    """
     wildcard = os.path.abspath(
         os.path.join(
             os.path.dirname(__file__), '../../../build/bin/onnx2ncnn'))

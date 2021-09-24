@@ -1,3 +1,5 @@
+from typing import Dict, Sequence, Union
+
 import h5py
 import numpy as np
 import tensorrt as trt
@@ -7,14 +9,26 @@ DEFAULT_CALIBRATION_ALGORITHM = trt.CalibrationAlgoType.ENTROPY_CALIBRATION_2
 
 
 class HDF5Calibrator(trt.IInt8Calibrator):
+    """HDF5 calibrator.
 
-    def __init__(self,
-                 calib_file,
-                 opt_shape_dict,
-                 model_type='end2end',
-                 device_id=0,
-                 algorithm=DEFAULT_CALIBRATION_ALGORITHM,
-                 **kwargs):
+    Args:
+        calib_file (str | h5py.File):  Input calibration file.
+        input_shapes (Dict[str, Sequence[int]]): The min/opt/max shape of
+            each input.
+        model_type (str): Input model type, defaults to 'end2end'.
+        device_id (int): Cuda device id, defaults to 0.
+        algorithm (trt.CalibrationAlgoType): Calibration algo type, defaults
+            to `trt.CalibrationAlgoType.ENTROPY_CALIBRATION_2`.
+    """
+
+    def __init__(
+            self,
+            calib_file: Union[str, h5py.File],
+            input_shapes: Dict[str, Sequence[int]],
+            model_type: str = 'end2end',
+            device_id: int = 0,
+            algorithm: trt.CalibrationAlgoType = DEFAULT_CALIBRATION_ALGORITHM,
+            **kwargs):
         super().__init__()
 
         if isinstance(calib_file, str):
@@ -29,7 +43,7 @@ class HDF5Calibrator(trt.IInt8Calibrator):
         self.calib_data = calib_data
         self.device_id = device_id
         self.algorithm = algorithm
-        self.opt_shape_dict = opt_shape_dict
+        self.input_shapes = input_shapes
         self.kwargs = kwargs
 
         # create buffers that will hold data batches
@@ -45,7 +59,7 @@ class HDF5Calibrator(trt.IInt8Calibrator):
         if hasattr(self, 'calib_file'):
             self.calib_file.close()
 
-    def get_batch(self, names, **kwargs):
+    def get_batch(self, names: Sequence[str], **kwargs):
         if self.count < self.dataset_length:
 
             ret = []
@@ -55,7 +69,7 @@ class HDF5Calibrator(trt.IInt8Calibrator):
                 data_torch = torch.from_numpy(data_np)
 
                 # tile the tensor so we can keep the same distribute
-                opt_shape = self.opt_shape_dict[name]['opt_shape']
+                opt_shape = self.input_shapes[name]['opt_shape']
                 data_shape = data_torch.shape
 
                 reps = [
@@ -87,7 +101,7 @@ class HDF5Calibrator(trt.IInt8Calibrator):
         return self.batch_size
 
     def read_calibration_cache(self, *args, **kwargs):
-        return None
+        pass
 
     def write_calibration_cache(self, cache, *args, **kwargs):
         pass

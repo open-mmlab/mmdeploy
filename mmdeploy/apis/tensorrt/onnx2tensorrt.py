@@ -10,7 +10,16 @@ from mmdeploy.utils import (get_calib_filename, get_common_config,
 from .tensorrt_utils import create_trt_engine, save_trt_engine
 
 
-def parse_device_id(device: str):
+def parse_device_id(device: str) -> int:
+    """Parse cuda device index from a string.
+
+    Args:
+        device (str): The typical style of string specifying cuda device,
+            e.g.: 'cuda:0'.
+
+    Returns:
+        int: The parsed device id, defaults to `0`.
+    """
     device_id = 0
     if len(device) >= 6:
         device_id = int(device[5:])
@@ -25,6 +34,18 @@ def onnx2tensorrt(work_dir: str,
                   device: str = 'cuda:0',
                   partition_type: str = 'end2end',
                   **kwargs):
+    """Convert ONNX to TensorRT.
+
+    Args:
+        work_dir (str): A working directory.
+        save_file (str): File path to save TensorRT engine.
+        model_id (int): Index of input model.
+        deploy_cfg (str | mmcv.Config): Deployment config.
+        onnx_model (str | onnx.ModelProto): input onnx model.
+        device (str): A string specifying cuda device, defaults to 'cuda:0'.
+        partition_type (str): Specifying partition type of a model, defaults to
+            'end2end'.
+    """
 
     # load deploy_cfg if necessary
     deploy_cfg = load_config(deploy_cfg)[0]
@@ -43,11 +64,13 @@ def onnx2tensorrt(work_dir: str,
         int8_param['calib_file'] = osp.join(work_dir, calib_file)
         int8_param['model_type'] = partition_type
 
-    assert device.startswith('cuda'), 'TensorRT require cuda device.'
+    assert device.startswith('cuda'), f'TensorRT requires cuda device, \
+        but given: {device}'
+
     device_id = parse_device_id(device)
     engine = create_trt_engine(
         onnx_model,
-        opt_shape_dict=final_params['input_shapes'],
+        input_shapes=final_params['input_shapes'],
         log_level=final_params.get('log_level', trt.Logger.WARNING),
         fp16_mode=final_params.get('fp16_mode', False),
         int8_mode=final_params.get('int8_mode', False),
