@@ -101,17 +101,22 @@ class TestTensorRTExporter:
 
         deploy_cfg = mmcv.Config(
             dict(
-                backend='tensorrt',
-                tensorrt_params=dict(model_params=[
-                    dict(
-                        opt_shape_dict=dict(
-                            zip(input_names, [[
-                                list(data.shape),
-                                list(data.shape),
-                                list(data.shape)
-                            ] for data in inputs_list])),
-                        max_workspace_size=0)
-                ])))
+                backend_config=dict(
+                    type='tensorrt',
+                    common_config=dict(
+                        fp16_mode=False, max_workspace_size=1 << 30),
+                    model_inputs=[
+                        dict(
+                            input_shapes=dict(
+                                zip(input_names, [
+                                    dict(
+                                        min_shape=data.shape,
+                                        opt_shape=data.shape,
+                                        max_shape=data.shape)
+                                    for data in inputs_list
+                                ])))
+                    ])))
+
         onnx_model = onnx.load(onnx_file_path)
         trt_apis.onnx2tensorrt(
             os.path.dirname(trt_file_path),

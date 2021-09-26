@@ -1,6 +1,7 @@
 import pytest
 import torch
 
+from mmdeploy.core import register_extra_symbolics
 from mmdeploy.utils.test import WrapFunction
 from .utils import TestOnnxRTExporter, TestTensorRTExporter
 
@@ -20,7 +21,8 @@ def test_roi_align(backend,
                    inputs=None,
                    work_dir=None):
     backend.check_env()
-    # TODO: check if mmcv-full is installed
+    # using rewriter of roi_align to bypass mmcv has_custom_ops check.
+    register_extra_symbolics(cfg=dict(), backend='default', opset=11)
     from mmcv.ops import roi_align
 
     def wrapped_function(torch_input, torch_rois):
@@ -33,7 +35,7 @@ def test_roi_align(backend,
         single_roi = torch.tensor([[0, 0, 0, 4, 4]], dtype=torch.float32)
     else:
         input = torch.tensor(inputs[0], dtype=torch.float32)
-        single_roi = torch.tensor(input[1], dtype=torch.float32)
+        single_roi = torch.tensor(inputs[1], dtype=torch.float32)
 
     backend.run_and_validate(
         wrapped_model, [input, single_roi],
