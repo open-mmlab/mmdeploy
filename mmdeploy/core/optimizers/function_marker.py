@@ -1,4 +1,5 @@
 import inspect
+from typing import Any, Dict, Optional, Sequence
 
 import torch
 
@@ -29,6 +30,11 @@ TORCH_DTYPE_TO_ONNX = {
 
 
 class Mark(torch.autograd.Function):
+    """The mark node function.
+
+    The function does nothing but inserts a mark node to ONNX model. The mark
+    can ease the process of model partition.
+    """
 
     @staticmethod
     def symbolic(g, x, dtype, shape, func, func_id, type, name, id, attrs):
@@ -111,7 +117,23 @@ def forward_of_mark(rewriter, ctx, x, dtype, shape, func, func_id, type, name,
                                 name, id, attrs)
 
 
-def mark_tensors(xs, func, func_id, io_type, ctx, attrs, is_inspecting, level):
+def mark_tensors(xs: Any, func: str, func_id: int, io_type: str, ctx: Any,
+                 attrs: Dict, is_inspecting: bool, level: int):
+    """Add mark node recursively.
+
+    Args:
+        xs (Any): Input structure which contains tensor.
+        func (str): Function name of the function which xs comes from.
+        func_id (int): Function index of `func` in the model.
+        io_type (str): The io type of xs, `input` or `output`.
+        ctx (Any): The context instance.
+        attrs (Dict): The extra attributes provided by mark decorator.
+        is_inspecting (bool): The names of xs are inspected or not.
+        level (int): The recursive level.
+
+    Returns:
+        Any: The same structure as xs, all tensor has been replaced with Mark.
+    """
     visit = set()
     index = 0
 
@@ -151,7 +173,35 @@ def mark_tensors(xs, func, func_id, io_type, ctx, attrs, is_inspecting, level):
     return impl(xs, (), level)
 
 
-def mark(func_name=None, inputs=None, outputs=None, **attrs):
+def mark(func_name: Optional[str] = None,
+         inputs: Optional[Sequence[str]] = None,
+         outputs: Optional[Sequence[str]] = None,
+         **attrs):
+    """The decorator used to add mark node.
+
+    Mark node can be used to support model partition.
+
+    Args:
+        func_name (str): The name of the function where marks come from.
+        inputs (Sequence[str]): The input names of the marks. The final name \
+            might have suffix if inputs is list or dictionary.
+        outputs (Sequence[str]): The output names of the marks. The final \
+            name might have suffix if outputs is list or dictionary.
+
+    Returns:
+        Callable: The process of mark decorator.
+
+    Examples:
+        >>> from mmdeploy.core import FUNCTION_REWRITER, mark
+        >>> @FUNCTION_REWRITER.register_rewriter(
+        >>>     func_name='mmdet.models.roi_heads.ConvFCBBoxHead.forward')
+        >>> @mark(
+        >>>     'bbox_head_forward',
+        >>>     inputs=['bbox_feats'],
+        >>>     outputs=['cls_score', 'bbox_pred'])
+        >>> def forward_of_bbox_head(ctx, self, x):
+        >>>     return ctx.origin_func(self, x)
+    """
     MARK_FUNCTION_COUNT[func_name] = 0
 
     class Context:

@@ -6,8 +6,8 @@ import onnx.helper
 import onnx.utils
 
 from mmdeploy.core.optimizers import (attribute_to_dict, create_extractor,
-                                      get_new_name, optimize,
-                                      parse_extractor_io_string, rename_value)
+                                      get_new_name, parse_extractor_io_string,
+                                      remove_identity, rename_value)
 
 
 def extract_model(model: Union[str, onnx.ModelProto],
@@ -106,7 +106,7 @@ def extract_model(model: Union[str, onnx.ModelProto],
     extracted_model = extractor.extract_model(inputs, outputs)
 
     # remove all Identity, this may be done by onnx simplifier
-    optimize(extracted_model)
+    remove_identity(extracted_model)
 
     # collect all used inputs
     used = set()

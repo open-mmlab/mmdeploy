@@ -8,6 +8,11 @@ from .register_utils import eval_with_import
 
 # caller wrapper
 class FuncCaller(object):
+    """The function wrapper used to call rewrite function.
+
+    Args:
+        cfg (Dict): Config dictionary of deployment.
+    """
     func_name = None
     backend = None
     func = None
@@ -31,6 +36,17 @@ class FuncCaller(object):
 # builder of register
 def build_caller(func_name: str, backend: str, cfg: Dict, registry: Registry,
                  **kwargs) -> FuncCaller:
+    """Build the caller of the given function name and backend.
+
+    Args:
+        func_name (str): The function name/path to rewrite.
+        backend (str): The inference engine name.
+        cfg (Dict): Config dictionary of deployment.
+        registry (Registry): The registry to apply this build function.
+
+    Returns:
+        FuncCaller: The caller instance of rewrite.
+    """
     func_caller = registry.module_dict[func_name + '@' + backend]
     assert func_caller is not None, f'{func_name} with {backend} not exist.'
     return func_caller(cfg, **kwargs)
@@ -44,6 +60,27 @@ FUNCTION_REWRITER = Registry('func_rewriters', build_func=build_caller)
 def register_rewriter(func_name: str,
                       backend: str = 'default',
                       **kwargs) -> Callable:
+    """Decorator of the rewrite function.
+
+    Args:
+        func_name (str): The function name/path to rewrite.
+        backend (str): The inference engine name.
+
+    Returns:
+        Callable: The process of registering function.
+
+    Examples:
+        >>> @FUNCTION_REWRITER.register_rewriter(
+        >>>     func_name='torch.Tensor.size', backend='ncnn')
+        >>> def size_of_tensor_static(ctx, self, *args):
+        >>>     ret = ctx.origin_func(self, *args)
+        >>>     if isinstance(ret, torch.Tensor):
+        >>>         ret = int(ret)
+        >>>     else:
+        >>>         ret = [int(r) for r in ret]
+        >>>         ret = tuple(ret)
+        >>>     return ret
+    """
 
     def wrap(func: Callable):
         func_args = dict(func_name=func_name, backend=backend, func=func)
@@ -59,24 +96,38 @@ def register_rewriter(func_name: str,
 FUNCTION_REWRITER.register_rewriter = register_rewriter
 
 
-def apply_rewriter(regist_func: Callable) -> Callable:
+def apply_rewriter(register_func: Callable) -> Callable:
+    """Apply the rewrite function.
+
+    Args:
+        register_func (Callable): The registered function.
+
+    Returns:
+        Callable: The wrap of registered function.
+    """
 
     def wrapper(*args, **kwargs):
-        return regist_func(*args, **kwargs)
+        return register_func(*args, **kwargs)
 
     return wrapper
 
 
 class RewriterHook(object):
+    """The hook of the rewrite function.
 
-    def __init__(self, regist_name: str, cfg: Dict, **kwargs):
-        func_name, backend = regist_name.split('@')
+    Args:
+        register_name (str): The name of registered rewrite.
+        cfg (Dict): Config dictionary of deployment.
+    """
+
+    def __init__(self, register_name: str, cfg: Dict, **kwargs):
+        func_name, backend = register_name.split('@')
         self.func_name = func_name
         self.backend = backend
-        self.regist_func = FUNCTION_REWRITER.build(
+        self.register_func = FUNCTION_REWRITER.build(
             func_name, backend=self.backend, cfg=cfg, **kwargs)
-        if self.regist_func is not None:
-            self.origin_func = self.regist_func.origin_func
+        if self.register_func is not None:
+            self.origin_func = self.register_func.origin_func
         else:
             self.origin_func = None
 
@@ -94,25 +145,39 @@ class RewriterHook(object):
             exec(f'{self.func_name} = rewrite_func')
 
     def __enter__(self):
-        self._set_func(apply_rewriter(self.regist_func))
+        self._set_func(apply_rewriter(self.register_func))
 
     def __exit__(self, type, val, tb):
         self._set_func(self.origin_func)
 
 
 class RewriterContext(object):
+    """The rewrite context.
+
+    The context is used to manage the rewrite functions and the backend.
+
+    Args:
+        cfg (Dict): Config dictionary of deployment.
+        backend (str): The inference engine name.
+
+    Examples:
+        >>> from mmdeploy.core import RewriterContext
+        >>> with RewriterContext(cfg, backend='onnxruntime'):
+        >>>     # the rewrite has been actived inside the context
+        >>>     torch.onnx.export(model, inputs, onnx_file)
+    """
 
     def __init__(self, cfg: Dict, backend: str = 'default', **kwargs):
         self.cfg = cfg
         func_backend_dict = {}
-        for regist_name in FUNCTION_REWRITER.module_dict:
-            regist_func, regist_backend = regist_name.split('@')
+        for register_name in FUNCTION_REWRITER.module_dict:
+            register_func, register_backend = register_name.split('@')
             # only build `backend` or `default`
-            if regist_backend not in [backend, 'default']:
+            if register_backend not in [backend, 'default']:
                 continue
-            if regist_func not in func_backend_dict or func_backend_dict[
-                    regist_func] == 'default':
-                func_backend_dict[regist_func] = regist_backend
+            if register_func not in func_backend_dict or func_backend_dict[
+                    register_func] == 'default':
+                func_backend_dict[register_func] = register_backend
 
         self.hooks = [
             RewriterHook(k + '@' + v, cfg, **kwargs)

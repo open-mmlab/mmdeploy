@@ -1,9 +1,11 @@
 import logging
+from typing import Callable, Dict, Iterable, Optional
 
+import onnx
 from onnx.helper import get_attribute_value
 
 
-def attribute_to_dict(attr):
+def attribute_to_dict(attr: onnx.AttributeProto):
     ret = {}
     for a in attr:
         value = get_attribute_value(a)
@@ -13,7 +15,7 @@ def attribute_to_dict(attr):
     return ret
 
 
-def remove_nodes(model, predicate):
+def remove_nodes(model: onnx.ModelProto, predicate: Callable):
     # ! this doesn't handle inputs/outputs
     while True:
         connect = None
@@ -35,7 +37,7 @@ def remove_nodes(model, predicate):
     return model
 
 
-def is_unused_mark(marks):
+def is_unused_mark(marks: Iterable[onnx.NodeProto]):
 
     def f(node):
         if node.op_type == 'Mark':
@@ -48,11 +50,13 @@ def is_unused_mark(marks):
     return f
 
 
-def is_identity(node):
+def is_identity(node: onnx.NodeProto):
     return node.op_type == 'Identity'
 
 
-def get_new_name(attrs, mark_name='', name_map=None):
+def get_new_name(attrs: onnx.ModelProto,
+                 mark_name: str = '',
+                 name_map: Optional[Dict[str, str]] = None):
     if 'name' in attrs:
         new_name = attrs['name']
     else:
@@ -68,7 +72,7 @@ def get_new_name(attrs, mark_name='', name_map=None):
     return new_name
 
 
-def rename_value(model, old_name, new_name):
+def rename_value(model: onnx.ModelProto, old_name: str, new_name: str):
     if old_name == new_name:
         return
     logging.info(f'rename {old_name} -> {new_name}')
@@ -90,7 +94,7 @@ def rename_value(model, old_name, new_name):
             output.name = new_name
 
 
-def optimize(model):
+def remove_identity(model: onnx.ModelProto):
     graph = model.graph
 
     def simplify_inputs():
