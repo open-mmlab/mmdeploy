@@ -113,7 +113,7 @@ int TRTRoIAlign::enqueue(const nvinfer1::PluginTensorDesc *inputDesc,
   switch (mPoolMode) {
     case 0:  // max
       argmax_y = workSpace;
-      argmax_x = argmax_y + output_size * word_size;
+      argmax_x = (char *)argmax_y + output_size * word_size;
       break;
     case 1:  // avg
       break;

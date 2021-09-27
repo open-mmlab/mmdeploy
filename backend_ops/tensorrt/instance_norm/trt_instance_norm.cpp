@@ -62,15 +62,15 @@ int TRTInstanceNormalization::enqueue(
   int elem_size = getElementSize(inputDesc[1].type);
 
   void* n_scales = (void*)workspace;
-  void* n_bias = (void*)(workspace + getAlignedSize(n * c * elem_size));
+  void* n_bias = (void*)((char*)workspace + getAlignedSize(n * c * elem_size));
 
   const void* scales = (const void*)inputs[1];
   const void* bias = (const void*)inputs[2];
 
   for (int i = 0; i < n; ++i) {
-    cudaMemcpyAsync(n_scales + i * c * elem_size, scales, c * elem_size,
+    cudaMemcpyAsync((char*)n_scales + i * c * elem_size, scales, c * elem_size,
                     cudaMemcpyDeviceToDevice, stream);
-    cudaMemcpyAsync(n_bias + i * c * elem_size, bias, c * elem_size,
+    cudaMemcpyAsync((char*)n_bias + i * c * elem_size, bias, c * elem_size,
                     cudaMemcpyDeviceToDevice, stream);
   }
 
