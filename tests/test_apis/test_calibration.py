@@ -2,9 +2,20 @@ import os.path as osp
 import tempfile
 
 import mmcv
+import pytest
+import torch
 
 from mmdeploy.apis import create_calib_table
-from mmdeploy.apis.tensorrt.calib_utils import HDF5Calibrator
+
+try:
+    from mmdeploy.apis.tensorrt.calib_utils import HDF5Calibrator
+except ImportError:
+    pytest.skip(
+        'TensorRT should be installed from source.', allow_module_level=True)
+
+if not torch.cuda.is_available():
+    pytest.skip(
+        'CUDA is required for this test module', allow_module_level=True)
 
 calib_file = tempfile.NamedTemporaryFile(suffix='.h5').name
 data_prefix = 'tests/data/tiger'

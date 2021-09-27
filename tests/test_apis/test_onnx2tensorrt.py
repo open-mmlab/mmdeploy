@@ -3,11 +3,10 @@ import tempfile
 
 import mmcv
 import pytest
-import tensorrt as trt
 import torch
 import torch.nn as nn
 
-from mmdeploy.apis.tensorrt import is_available, load_trt_engine, onnx2tensorrt
+from mmdeploy.apis.tensorrt import is_available
 
 onnx_file = tempfile.NamedTemporaryFile(suffix='.onnx').name
 engine_file = tempfile.NamedTemporaryFile(suffix='.engine').name
@@ -30,7 +29,7 @@ test_model = TestModel().eval().cuda()
 
 
 def get_deploy_cfg():
-
+    import tensorrt as trt
     deploy_cfg = mmcv.Config(
         dict(
             backend_config=dict(
@@ -79,6 +78,7 @@ def generate_onnx_file(model):
 @pytest.mark.skipif(trt_skip, reason='TensorRT not avaiable')
 @pytest.mark.skipif(cuda_skip, reason='Cuda not avaiable')
 def test_onnx2tensorrt():
+    from mmdeploy.apis.tensorrt import load_trt_engine, onnx2tensorrt
     model = test_model
     generate_onnx_file(model)
     deploy_cfg = get_deploy_cfg()

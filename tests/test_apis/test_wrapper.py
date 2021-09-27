@@ -4,8 +4,6 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mmdeploy.apis.tensorrt import (TRTWrapper, create_trt_engine,
-                                    save_trt_engine)
 from mmdeploy.utils.constants import Backend
 
 onnx_file = tempfile.NamedTemporaryFile(suffix='.onnx').name
@@ -61,8 +59,8 @@ def check_backend_avaiable(backend):
 
 
 def onnx2backend(backend, onnx_file):
-
     if backend == Backend.TENSORRT:
+        from mmdeploy.apis.tensorrt import create_trt_engine, save_trt_engine
         backend_file = tempfile.NamedTemporaryFile(suffix='.engine').name
         engine = create_trt_engine(
             onnx_file, {
@@ -78,6 +76,7 @@ def onnx2backend(backend, onnx_file):
 
 def create_wrapper(backend, engine_file):
     if backend == Backend.TENSORRT:
+        from mmdeploy.apis.tensorrt import TRTWrapper
         trt_model = TRTWrapper(engine_file)
         return trt_model
 

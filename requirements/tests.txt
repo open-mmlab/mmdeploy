@@ -1,3 +1,7 @@
+asynctest
+coverage
 flake8
+interrogate
+isort==4.3.21
 pytest
 yapf

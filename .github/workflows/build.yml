@@ -23,3 +23,40 @@ jobs:
           source: backend_ops
           extensions: h,c,cpp,hpp,cu,cuh
           style: google
+      - name: Check docstring coverage
+        run: |
+          pip install interrogate
+          interrogate -v --ignore-init-method --ignore-module --ignore-nested-functions --ignore-regex "__repr__" --fail-under 30 mmdeploy
+
+  build_cpu:
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        python-version: [3.7]
+        torch: [1.8.0]
+        include:
+          - torch: 1.8.0
+            torchvision: 0.9.0
+            mmcv: "latest+torch1.8.0+cpu"
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install PyTorch
+        run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
+      - name: Install MMCV
+        run: |
+          pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cpu/torch${{matrix.torch}}/index.html
+          python -c 'import mmcv; print(mmcv.__version__)'
+      - name: Install unittest dependencies
+        run: |
+          pip install -r requirements/tests.txt -r requirements/optional.txt
+      - name: Build and install
+        run: rm -rf .eggs && pip install -e .
+      - name: Run unittests and generate coverage report
+        run: |
+          coverage run --branch --source mmdeploy -m pytest tests/
+          coverage xml
+          coverage report -m

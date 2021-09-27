@@ -18,6 +18,8 @@ def is_available():
     return importlib.util.find_spec('tensorrt') is not None
 
 
+__all__ = ['is_available']
+
 if is_available():
     from .onnx2tensorrt import onnx2tensorrt
     from .tensorrt_utils import (TRTWrapper, create_trt_engine,
@@ -26,7 +28,7 @@ if is_available():
     # load tensorrt plugin lib
     load_tensorrt_plugin()
 
-    __all__ = [
+    __all__ += [
         'create_trt_engine', 'save_trt_engine', 'load_trt_engine',
         'TRTWrapper', 'onnx2tensorrt'
     ]
