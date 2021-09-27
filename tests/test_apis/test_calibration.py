@@ -1,21 +1,10 @@
 import os.path as osp
 import tempfile
 
+import h5py
 import mmcv
-import pytest
-import torch
 
 from mmdeploy.apis import create_calib_table
-
-try:
-    from mmdeploy.apis.tensorrt.calib_utils import HDF5Calibrator
-except ImportError:
-    pytest.skip(
-        'TensorRT should be installed from source.', allow_module_level=True)
-
-if not torch.cuda.is_available():
-    pytest.skip(
-        'CUDA is required for this test module', allow_module_level=True)
 
 calib_file = tempfile.NamedTemporaryFile(suffix='.h5').name
 data_prefix = 'tests/data/tiger'
@@ -190,13 +179,14 @@ def test_create_calib_end2end():
         None,
         dataset_cfg=model_cfg,
         dataset_type='val',
-        device='cuda:0')
+        device='cpu')
     assert osp.exists(calib_file)
 
-    calibrator = HDF5Calibrator(calib_file, None, 'end2end')
-    assert calibrator is not None
-    assert calibrator.calib_data['input']
-    assert calibrator.calib_data['input']['0']
+    with h5py.File(calib_file, mode='r') as calibrator:
+        assert calibrator['calib_data'] is not None
+        assert calibrator['calib_data']['end2end'] is not None
+        assert calibrator['calib_data']['end2end']['input'] is not None
+        assert calibrator['calib_data']['end2end']['input']['0'] is not None
 
 
 def test_create_calib_parittion():
@@ -209,13 +199,15 @@ def test_create_calib_parittion():
         None,
         dataset_cfg=model_cfg,
         dataset_type='val',
-        device='cuda:0')
+        device='cpu')
     assert osp.exists(calib_file)
 
     input_names = ['input', 'bbox_feats']
-    for i in range(2):
-        partition_name = f'partition{i}'
-        calibrator = HDF5Calibrator(calib_file, None, partition_name)
-        assert calibrator is not None
-        assert calibrator.calib_data[input_names[i]]
-        assert calibrator.calib_data[input_names[i]]['0']
+    with h5py.File(calib_file, mode='r') as calibrator:
+        assert calibrator['calib_data'] is not None
+        calib_data = calibrator['calib_data']
+        for i in range(2):
+            partition_name = f'partition{i}'
+            assert calib_data[partition_name] is not None
+            assert calib_data[partition_name][input_names[i]] is not None
+            assert calib_data[partition_name][input_names[i]]['0'] is not None
