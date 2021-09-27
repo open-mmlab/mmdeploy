@@ -16,6 +16,7 @@ trt_skip = not is_available()
 cuda_skip = not torch.cuda.is_available()
 
 
+@pytest.mark.skip(reason='This a not test class but a utility class.')
 class TestModel(nn.Module):
 
     def __init__(self):

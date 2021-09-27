@@ -57,6 +57,6 @@ jobs:
         run: rm -rf .eggs && pip install -e .
       - name: Run unittests and generate coverage report
         run: |
-          coverage run --branch --source mmdeploy -m pytest tests/
+          coverage run --branch --source mmdeploy -m pytest -rsE tests/
           coverage xml
           coverage report -m

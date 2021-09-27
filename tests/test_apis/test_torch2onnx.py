@@ -3,6 +3,7 @@ import tempfile
 
 import mmcv
 import onnx
+import pytest
 import torch
 import torch.nn as nn
 
@@ -11,6 +12,7 @@ from mmdeploy.apis import torch2onnx_impl
 onnx_file = tempfile.NamedTemporaryFile(suffix='.onnx').name
 
 
+@pytest.mark.skip(reason='This a not test class but a utility class.')
 class TestModel(nn.Module):
 
     def __init__(self):

@@ -10,6 +10,7 @@ onnx_file = tempfile.NamedTemporaryFile(suffix='.onnx').name
 test_img = torch.rand([1, 3, 64, 64])
 
 
+@pytest.mark.skip(reason='This a not test class but a utility class.')
 class TestModel(nn.Module):
 
     def __init__(self):

@@ -10,11 +10,8 @@ import mmdeploy.apis.onnxruntime as ort_apis
 import mmdeploy.apis.tensorrt as trt_apis
 from mmdeploy.utils.test import assert_allclose
 
-# PytestCollectionWarning: cannot collect test class 'TestOnnxRTExporter'
-# because it has a __init__ constructor
-pytest.skip('Skip test this file.', allow_module_level=True)
 
-
+@pytest.mark.skip(reason='This a not test class but a utility class.')
 class TestOnnxRTExporter:
 
     def __init__(self):
@@ -69,6 +66,7 @@ class TestOnnxRTExporter:
         assert_allclose(model_outputs, onnx_outputs, tolerate_small_mismatch)
 
 
+@pytest.mark.skip(reason='This a not test class but a utility class.')
 class TestTensorRTExporter:
 
     def __init__(self):
