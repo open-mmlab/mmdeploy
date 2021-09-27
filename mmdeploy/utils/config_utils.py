@@ -103,6 +103,7 @@ def get_onnx_config(deploy_cfg: Union[str, mmcv.Config]) -> str:
         dict: The config dictionary of onnx parameters
     """
 
+    deploy_cfg = load_config(deploy_cfg)[0]
     return deploy_cfg['onnx_config']
 
 
