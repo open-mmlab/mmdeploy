@@ -13,30 +13,33 @@ from mmdeploy.utils.test import assert_allclose
 
 class TestOnnxRTExporter:
 
+    def __init__(self):
+        self.backend_name = 'onnxruntime'
+
     def check_env(self):
         if not ort_apis.is_available():
             pytest.skip('Custom ops of ONNXRuntime are not compiled.')
 
     def run_and_validate(self,
                          model,
-                         inputs_list,
+                         input_list,
                          model_name='tmp',
                          tolerate_small_mismatch=False,
                          do_constant_folding=True,
                          dynamic_axes=None,
                          output_names=None,
                          input_names=None,
-                         work_dir=None):
+                         save_dir=None):
 
-        if not work_dir:
+        if save_dir is None:
             onnx_file_path = tempfile.NamedTemporaryFile().name
         else:
-            onnx_file_path = os.path.join(work_dir, model_name + '.onnx')
+            onnx_file_path = os.path.join(save_dir, model_name + '.onnx')
 
         with torch.no_grad():
             torch.onnx.export(
                 model,
-                tuple(inputs_list),
+                tuple(input_list),
                 onnx_file_path,
                 export_params=True,
                 keep_initializers_as_inputs=True,
@@ -47,7 +50,7 @@ class TestOnnxRTExporter:
                 opset_version=11)
 
         with torch.no_grad():
-            model_outputs = model(*inputs_list)
+            model_outputs = model(*input_list)
 
         if isinstance(model_outputs, torch.Tensor):
             model_outputs = [model_outputs]
@@ -57,11 +60,15 @@ class TestOnnxRTExporter:
         onnx_model = ort_apis.ORTWrapper(onnx_file_path, 0, output_names)
         with torch.no_grad():
             onnx_outputs = onnx_model.forward(
-                dict(zip(input_names, inputs_list)))
+                dict(zip(input_names, input_list)))
+
         assert_allclose(model_outputs, onnx_outputs, tolerate_small_mismatch)
 
 
 class TestTensorRTExporter:
+
+    def __init__(self):
+        self.backend_name = 'tensorrt'
 
     def check_env(self):
         if not trt_apis.is_available():
@@ -72,24 +79,24 @@ class TestTensorRTExporter:
 
     def run_and_validate(self,
                          model,
-                         inputs_list,
+                         input_list,
                          model_name='tmp',
                          tolerate_small_mismatch=False,
                          do_constant_folding=True,
                          dynamic_axes=None,
                          output_names=None,
                          input_names=None,
-                         work_dir=None):
-        if not work_dir:
+                         save_dir=None):
+        if save_dir is None:
             onnx_file_path = tempfile.NamedTemporaryFile().name
             trt_file_path = tempfile.NamedTemporaryFile().name
         else:
-            onnx_file_path = os.path.join(work_dir, model_name + '.onnx')
-            trt_file_path = os.path.join(work_dir, model_name + '.trt')
+            onnx_file_path = os.path.join(save_dir, model_name + '.onnx')
+            trt_file_path = os.path.join(save_dir, model_name + '.trt')
         with torch.no_grad():
             torch.onnx.export(
                 model,
-                tuple(inputs_list),
+                tuple(input_list),
                 onnx_file_path,
                 export_params=True,
                 keep_initializers_as_inputs=True,
@@ -113,7 +120,7 @@ class TestTensorRTExporter:
                                         min_shape=data.shape,
                                         opt_shape=data.shape,
                                         max_shape=data.shape)
-                                    for data in inputs_list
+                                    for data in input_list
                                 ])))
                     ])))
 
@@ -126,15 +133,17 @@ class TestTensorRTExporter:
             onnx_model=onnx_model)
 
         with torch.no_grad():
-            model_outputs = model(*inputs_list)
+            model_outputs = model(*input_list)
 
-        inputs_list = [data.cuda() for data in inputs_list]
         if isinstance(model_outputs, torch.Tensor):
-            model_outputs = [model_outputs.cuda()]
+            model_outputs = [model_outputs.cpu().float()]
         else:
-            model_outputs = [tensor.cuda() for tensor in model_outputs]
+            model_outputs = [data.cpu().float() for data in model_outputs]
+
         trt_model = trt_apis.TRTWrapper(trt_file_path)
-        with torch.no_grad():
-            trt_outputs = trt_model(dict(zip(input_names, inputs_list)))
-        trt_outputs = [trt_outputs[name] for name in output_names]
+        inputs_list = [data.cuda() for data in input_list]
+        trt_outputs = trt_model(dict(zip(input_names, inputs_list)))
+        trt_outputs = [
+            trt_outputs[name].cpu().float() for name in output_names
+        ]
         assert_allclose(model_outputs, trt_outputs, tolerate_small_mismatch)
