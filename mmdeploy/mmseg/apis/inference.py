@@ -11,6 +11,13 @@ from mmdeploy.utils.config_utils import Backend, get_backend, load_config
 
 
 class DeployBaseSegmentor(BaseSegmentor):
+    """Base Class of wrapper for segmentation's inference.
+
+    Args:
+        class_names (Sequence[str]): A list of string specifying class names.
+        palette (np.ndarray): The palette of segmentation map.
+        device_id (int): An integer represents device index.
+    """
 
     def __init__(self, class_names: Sequence[str], palette: np.ndarray,
                  device_id: int):
@@ -34,9 +41,21 @@ class DeployBaseSegmentor(BaseSegmentor):
     def aug_test(self, imgs, img_metas, **kwargs):
         raise NotImplementedError('This method is not implemented.')
 
-    def forward(self, img, img_metas, **kwargs):
+    def forward(self, img: Sequence[torch.Tensor], img_metas: Sequence[dict],
+                **kwargs):
+        """Run forward test.
+
+        Args:
+            img (Sequence[torch.Tensor]]): A list of input image tensor(s).
+            img_metas (Sequence[dict]]): A list of dict containing image(s)
+                meta information.
+
+        Returns:
+            list[np.ndarray]: A list of segmentation result.
+        """
         if isinstance(img, (list, tuple)):
             img = img[0]
+        img = img.contiguous()
         seg_pred = self.forward_test(img, img_metas, **kwargs)
         # whole mode supports dynamic shape
         ori_shape = img_metas[0][0]['ori_shape']
@@ -53,6 +72,14 @@ class DeployBaseSegmentor(BaseSegmentor):
 
 
 class ONNXRuntimeSegmentor(DeployBaseSegmentor):
+    """Wrapper for segmentation's inference with ONNX Runtime.
+
+    Args:
+        model_file (str): The path of input model file.
+        class_names (Sequence[str]): A list of string specifying class names.
+        palette (np.ndarray): The palette of segmentation map.
+        device_id (int): An integer represents device index.
+    """
 
     def __init__(self, model_file: str, class_names: Sequence[str],
                  palette: np.ndarray, device_id: int):
@@ -61,12 +88,30 @@ class ONNXRuntimeSegmentor(DeployBaseSegmentor):
         from mmdeploy.apis.onnxruntime import ORTWrapper
         self.model = ORTWrapper(model_file, device_id)
 
-    def forward_test(self, imgs, img_metas, **kwargs):
+    def forward_test(self, imgs: torch.Tensor, img_metas: Sequence[dict],
+                     **kwargs):
+        """Run forward test to get predictions.
+
+        Args:
+            imgs (torch.Tensor): Input tensor of the model.
+            img_metas (Sequence[dict]]): A list of dict containing image(s)
+                meta information.
+        Returns:
+            torch.Tensor: Segmentation result.
+        """
         seg_pred = self.model({'input': imgs})[0]
         return seg_pred
 
 
 class TensorRTSegmentor(DeployBaseSegmentor):
+    """Wrapper for segmentation's inference with TensorRT.
+
+    Args:
+        model_file (str): The path of input model file.
+        class_names (Sequence[str]): A list of string specifying class names.
+        palette (np.ndarray): The palette of segmentation map.
+        device_id (int): An integer represents device index.
+    """
 
     def __init__(self, model_file: str, class_names: Sequence[str],
                  palette: np.ndarray, device_id: int):
@@ -78,15 +123,32 @@ class TensorRTSegmentor(DeployBaseSegmentor):
         self.model = model
         self.output_name = self.model.output_names[0]
 
-    def forward_test(self, imgs, img_metas, **kwargs):
-        input_data = imgs.contiguous()
+    def forward_test(self, imgs: torch.Tensor, img_metas: Sequence[dict],
+                     **kwargs):
+        """Run forward test to get predictions.
+
+        Args:
+            imgs (torch.Tensor): Input tensor of the model.
+            img_metas (Sequence[dict]]): A list of dict containing image(s)
+                meta information.
+        Returns:
+            np.ndarray: Segmentation result.
+        """
         with torch.cuda.device(self.device_id), torch.no_grad():
-            seg_pred = self.model({'input': input_data})[self.output_name]
+            seg_pred = self.model({'input': imgs})[self.output_name]
         seg_pred = seg_pred.detach().cpu().numpy()
         return seg_pred
 
 
 class PPLSegmentor(DeployBaseSegmentor):
+    """Wrapper for segmentation's inference with PPL.
+
+    Args:
+        model_file (str): The path of input model file.
+        class_names (Sequence[str]): A list of string specifying class names.
+        palette (np.ndarray): The palette of segmentation map.
+        device_id (int): An integer represents device index.
+    """
 
     def __init__(self, model_file: str, class_names: Sequence[str],
                  palette: np.ndarray, device_id: int):
@@ -94,26 +156,54 @@ class PPLSegmentor(DeployBaseSegmentor):
         from mmdeploy.apis.ppl import PPLWrapper
         self.model = PPLWrapper(model_file, device_id)
 
-    def forward_test(self, imgs, img_metas, **kwargs):
-        if isinstance(imgs, (list, tuple)):
-            imgs = imgs[0]
+    def forward_test(self, imgs: torch.Tensor, img_metas: Sequence[dict],
+                     **kwargs):
+        """Run forward test to get predictions.
+
+        Args:
+            imgs (torch.Tensor): Input tensor of the model.
+            img_metas (Sequence[dict]]): A list of dict containing image(s)
+                meta information.
+        Returns:
+            np.ndarray: Segmentation result.
+        """
         seg_pred = self.model({'input': imgs})[0]
         return seg_pred
 
 
 class NCNNSegmentor(DeployBaseSegmentor):
+    """Wrapper for segmentation's inference with NCNN.
+
+    Args:
+        model_file (Sequence[str]): Paths of input params and bin files.
+        class_names (Sequence[str]): A list of string specifying class names.
+        palette (np.ndarray): The palette of segmentation map.
+        device_id (int): An integer represents device index.
+    """
 
     def __init__(self, model_file: Sequence[str], class_names: Sequence[str],
                  palette: np.ndarray, device_id: int):
         super(NCNNSegmentor, self).__init__(class_names, palette, device_id)
         from mmdeploy.apis.ncnn import NCNNWrapper
-        assert len(model_file) == 2
+        assert len(model_file) == 2, f'`model_file` should be [param_file, \
+            bin_file], but given {model_file}'
+
         ncnn_param_file = model_file[0]
         ncnn_bin_file = model_file[1]
         self.model = NCNNWrapper(
             ncnn_param_file, ncnn_bin_file, output_names=['output'])
 
-    def forward_test(self, imgs, *args, **kwargs):
+    def forward_test(self, imgs: torch.Tensor, img_metas: Sequence[dict],
+                     **kwargs):
+        """Run forward test to get predictions.
+
+        Args:
+            imgs (torch.Tensor): Input tensor of the model.
+            img_metas (Sequence[dict]]): A list of dict containing image(s)
+                meta information.
+        Returns:
+            np.ndarray: Segmentation result.
+        """
         results = self.model({'input': imgs})['output']
         results = results.detach().cpu().numpy()
         return results
@@ -135,6 +225,16 @@ BACKEND_SEGMENTOR_MAP = {
 
 
 def get_classes_palette_from_config(model_cfg: Union[str, mmcv.Config]):
+    """Get class name and palette from config.
+
+    Args:
+        model_cfg (str | mmcv.Config): Input model config file or
+            Config object.
+
+    Returns:
+        tuple(Sequence[str], np.ndarray): A list of string specifying names of
+            different class and the palette of segmentation map.
+    """
     # load cfg if necessary
     model_cfg = load_config(model_cfg)[0]
 
@@ -154,10 +254,21 @@ def get_classes_palette_from_config(model_cfg: Union[str, mmcv.Config]):
 
 
 def build_segmentor(model_files, model_cfg, deploy_cfg, device_id):
+    """Build segmentor for different backend.
 
+    Args:
+        model_files (list[str]): Input model file(s).
+        model_cfg (str | mmcv.Config): Input model config file or Config
+            object.
+        deploy_cfg (str | mmcv.Config): Input deployment config file or
+            Config object.
+        device_id (int): An integer represents device index.
+
+    Returns:
+        DeployBaseSegmentor: Segmentor for a configured backend.
+    """
     # load cfg if necessary
-    model_cfg = load_config(model_cfg)[0]
-    deploy_cfg = load_config(deploy_cfg)[0]
+    model_cfg, deploy_cfg = load_config(model_cfg, deploy_cfg)
 
     backend = get_backend(deploy_cfg)
     class_names, palette = get_classes_palette_from_config(model_cfg)

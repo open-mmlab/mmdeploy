@@ -1,4 +1,4 @@
-from typing import Iterable, Union
+from typing import Iterable, Sequence, Union
 
 import mmcv
 import torch
@@ -14,7 +14,13 @@ from mmdeploy.utils.config_utils import (Backend, Task, get_backend,
 
 @DETECTORS.register_module()
 class DeployBaseTextDetector(TextDetectorMixin, SingleStageTextDetector):
-    """DeployBaseTextDetector."""
+    """Base Class of Wrapper for TextDetector.
+
+    Args:
+        cfg (str | mmcv.ConfigDict): Input model config.
+        device_id (int): An integer represents device index.
+        show_score (bool): Whether to show scores. Defaults to `False`.
+    """
 
     def __init__(self,
                  cfg: Union[mmcv.Config, mmcv.ConfigDict],
@@ -38,30 +44,41 @@ class DeployBaseTextDetector(TextDetectorMixin, SingleStageTextDetector):
     def extract_feat(self, imgs):
         raise NotImplementedError('This method is not implemented.')
 
-    def simple_test(self,
-                    img: torch.Tensor,
-                    img_metas: Iterable,
-                    rescale: bool = False,
-                    *args,
+    def simple_test(self, img: torch.Tensor, img_metas: Sequence[dict], *args,
                     **kwargs):
-        pred = self.forward_of_backend(img, img_metas, rescale, *args,
-                                       **kwargs)
+        """Run forward test.
+
+        Args:
+            img (torch.Tensor): Input image tensor.
+            img_metas (Sequence[dict]): A list of meta info for image(s).
+
+        Returns:
+            list: A list of predictions.
+        """
+        pred = self.forward_of_backend(img, img_metas, *args, **kwargs)
         if len(img_metas) > 1:
             boundaries = [
-                self.bbox_head.get_boundary(*(pred[i].unsqueeze(0)),
-                                            [img_metas[i]], rescale)
+                self.bbox_head.get_boundary(
+                    *(pred[i].unsqueeze(0)), [img_metas[i]], rescale=False)
                 for i in range(len(img_metas))
             ]
 
         else:
             boundaries = [
-                self.bbox_head.get_boundary(*pred, img_metas, rescale)
+                self.bbox_head.get_boundary(*pred, img_metas, rescale=False)
             ]
         return boundaries
 
 
 @DETECTORS.register_module()
 class DeployBaseRecognizer(EncodeDecodeRecognizer):
+    """Base Class of Wrapper for TextRecognizer.
+
+    Args:
+        cfg (str | mmcv.ConfigDict): Input model config.
+        device_id (int): An integer represents device index.
+        show_score (bool): Whether to show scores. Defaults to `False`.
+    """
 
     def __init__(self,
                  cfg: Union[mmcv.Config, mmcv.ConfigDict],
@@ -86,16 +103,17 @@ class DeployBaseRecognizer(EncodeDecodeRecognizer):
     def extract_feat(self, imgs):
         raise NotImplementedError('This method is not implemented.')
 
-    def forward(self, img, img_metas, return_loss=True, **kwargs):
-        """Calls either :func:`forward_train` or :func:`forward_test` depending
-        on whether ``return_loss`` is ``True``.
+    def forward(self, img: torch.Tensor, img_metas: Sequence[dict], *args,
+                **kwargs):
+        """Run forward.
 
-        Note that img and img_meta are single-nested (i.e. tensor and
-        list[dict]).
+        Args:
+            imgs (torch.Tensor): Image input tensor.
+            img_metas (Sequence[dict]): List of image information.
+
+        Returns:
+            list[str]: Text label result of each image.
         """
-
-        if return_loss:
-            return self.forward_train(img, img_metas, **kwargs)
 
         if isinstance(img, list):
             for idx, each_img in enumerate(img):
@@ -109,23 +127,18 @@ class DeployBaseRecognizer(EncodeDecodeRecognizer):
 
         return self.simple_test(img, img_metas, **kwargs)
 
-    def simple_test(self,
-                    img: torch.Tensor,
-                    img_metas: Iterable,
-                    rescale: bool = False,
-                    *args,
+    def simple_test(self, img: torch.Tensor, img_metas: Sequence[dict], *args,
                     **kwargs):
-        """Test function.
+        """Run forward test.
 
         Args:
             imgs (torch.Tensor): Image input tensor.
-            img_metas (list[dict]): List of image information.
+            img_metas (Sequence[dict]): List of image information.
 
         Returns:
             list[str]: Text label result of each image.
         """
-        pred = self.forward_of_backend(img, img_metas, rescale, *args,
-                                       **kwargs)
+        pred = self.forward_of_backend(img, img_metas, *args, **kwargs)
         label_indexes, label_scores = self.label_convertor.tensor2idx(
             pred, img_metas)
         label_strings = self.label_convertor.idx2str(label_indexes)
@@ -139,7 +152,14 @@ class DeployBaseRecognizer(EncodeDecodeRecognizer):
 
 
 class ONNXRuntimeDetector(DeployBaseTextDetector):
-    """The class for evaluating onnx file of detection."""
+    """Wrapper for TextDetector with ONNX Runtime.
+
+    Args:
+        model_file (str): The path of input model file.
+        cfg (str | mmcv.ConfigDict): Input model config.
+        device_id (int): An integer represents device index.
+        show_score (bool): Whether to show scores. Defaults to `False`.
+    """
 
     def __init__(self,
                  model_file: str,
@@ -152,19 +172,30 @@ class ONNXRuntimeDetector(DeployBaseTextDetector):
         from mmdeploy.apis.onnxruntime import ORTWrapper
         self.model = ORTWrapper(model_file, device_id)
 
-    def forward_of_backend(self,
-                           img: torch.Tensor,
-                           img_metas: Iterable,
-                           rescale: bool = False,
-                           *args,
+    def forward_of_backend(self, img: torch.Tensor, img_metas: Iterable, *args,
                            **kwargs):
+        """Implement forward test with a backend.
+
+        Args:
+            imgs (torch.Tensor): Input image(s) in [N x C x H x W] format.
+            img_metas (Sequence[dict]]): List of image information.
+        Returns:
+            np.ndarray: Prediction of input model.
+        """
         onnx_pred = self.model({'input': img})
         onnx_pred = torch.from_numpy(onnx_pred[0])
         return onnx_pred
 
 
 class ONNXRuntimeRecognizer(DeployBaseRecognizer):
-    """The class for evaluating onnx file of recognition."""
+    """Wrapper for TextRecognizer with ONNX Runtime.
+
+    Args:
+        model_file (str): The path of input model file.
+        cfg (str | mmcv.ConfigDict): Input model config.
+        device_id (int): An integer represents device index.
+        show_score (bool): Whether to show scores. Defaults to `False`.
+    """
 
     def __init__(self,
                  model_file: str,
@@ -177,19 +208,30 @@ class ONNXRuntimeRecognizer(DeployBaseRecognizer):
         from mmdeploy.apis.onnxruntime import ORTWrapper
         self.model = ORTWrapper(model_file, device_id)
 
-    def forward_of_backend(self,
-                           img: torch.Tensor,
-                           img_metas: Iterable,
-                           rescale: bool = False,
-                           *args,
-                           **kwargs):
+    def forward_of_backend(self, img: torch.Tensor, img_metas: Sequence[dict],
+                           *args, **kwargs):
+        """Implement forward test with a backend.
+
+        Args:
+            imgs (torch.Tensor): Input image(s) in [N x C x H x W] format.
+            img_metas (Sequence[dict]]): List of image information.
+        Returns:
+            np.ndarray: Prediction of input model.
+        """
         onnx_pred = self.model({'input': img})
         onnx_pred = torch.from_numpy(onnx_pred[0])
         return onnx_pred
 
 
 class TensorRTDetector(DeployBaseTextDetector):
-    """The class for evaluating TensorRT file of text detection."""
+    """Wrapper for TextDetector with TensorRT.
+
+    Args:
+        model_file (str): The path of input model file.
+        cfg (str | mmcv.ConfigDict): Input model config.
+        device_id (int): An integer represents device index.
+        show_score (bool): Whether to show scores. Defaults to `False`.
+    """
 
     def __init__(self,
                  model_file: str,
@@ -203,19 +245,30 @@ class TensorRTDetector(DeployBaseTextDetector):
         model = TRTWrapper(model_file)
         self.model = model
 
-    def forward_of_backend(self,
-                           img: torch.Tensor,
-                           img_metas: Iterable,
-                           rescale: bool = False,
-                           *args,
-                           **kwargs):
+    def forward_of_backend(self, img: torch.Tensor, img_metas: Sequence[dict],
+                           *args, **kwargs):
+        """Implement forward test with a backend.
+
+        Args:
+            imgs (torch.Tensor): Input image(s) in [N x C x H x W] format.
+            img_metas (Sequence[dict]]): List of image information.
+        Returns:
+            np.ndarray: Prediction of input model.
+        """
         with torch.cuda.device(self.device_id), torch.no_grad():
             trt_pred = self.model({'input': img})['output']
         return trt_pred
 
 
 class TensorRTRecognizer(DeployBaseRecognizer):
-    """The class for evaluating TensorRT file of recognition."""
+    """Wrapper for TextRecognizer with TensorRT.
+
+    Args:
+        model_file (str): The path of input model file.
+        cfg (str | mmcv.ConfigDict): Input model config.
+        device_id (int): An integer represents device index.
+        show_score (bool): Whether to show scores. Defaults to `False`.
+    """
 
     def __init__(self,
                  model_file: str,
@@ -229,22 +282,33 @@ class TensorRTRecognizer(DeployBaseRecognizer):
         model = TRTWrapper(model_file)
         self.model = model
 
-    def forward_of_backend(self,
-                           img: torch.Tensor,
-                           img_metas: Iterable,
-                           rescale: bool = False,
-                           *args,
-                           **kwargs):
+    def forward_of_backend(self, img: torch.Tensor, img_metas: Sequence[dict],
+                           *args, **kwargs):
+        """Implement forward test with a backend.
+
+        Args:
+            imgs (torch.Tensor): Input image(s) in [N x C x H x W] format.
+            img_metas (Sequence[dict]]): List of image information.
+        Returns:
+            torch.Tensor: Prediction of input model.
+        """
         with torch.cuda.device(self.device_id), torch.no_grad():
             trt_pred = self.model({'input': img})['output']
         return trt_pred
 
 
 class NCNNDetector(DeployBaseTextDetector):
-    """The class for evaluating NCNN file of text detection."""
+    """Wrapper for TextDetector with NCNN.
+
+    Args:
+        model_file (Sequence[str]): Paths of input model files.
+        cfg (str | mmcv.ConfigDict): Input model config.
+        device_id (int): An integer represents device index.
+        show_score (bool): Whether to show scores. Defaults to `False`.
+    """
 
     def __init__(self,
-                 model_file: Iterable[str],
+                 model_file: Sequence[str],
                  cfg: Union[mmcv.Config, mmcv.ConfigDict],
                  device_id: int,
                  show_score: bool = False):
@@ -253,19 +317,32 @@ class NCNNDetector(DeployBaseTextDetector):
         self.model = NCNNWrapper(
             model_file[0], model_file[1], output_names=['output'])
 
-    def forward_of_backend(self,
-                           img: torch.Tensor,
-                           img_metas: Iterable,
-                           rescale: bool = False):
+    def forward_of_backend(self, img: torch.Tensor, img_metas: Sequence[dict],
+                           *args, **kwargs):
+        """Implement forward test with a backend.
+
+        Args:
+            imgs (torch.Tensor): Input image(s) in [N x C x H x W] format.
+            img_metas (Sequence[dict]]): List of image information.
+        Returns:
+            torch.Tensor: Prediction of input model.
+        """
         pred = self.model({'input': img})['output']
         return pred
 
 
 class NCNNRecognizer(DeployBaseRecognizer):
-    """The class for evaluating NCNN file of recognition."""
+    """Wrapper for TextRecognizer with NCNN.
+
+    Args:
+        model_file (Sequence[str]): Paths of input model files.
+        cfg (str | mmcv.ConfigDict): Input model config.
+        device_id (int): An integer represents device index.
+        show_score (bool): Whether to show scores. Defaults to `False`.
+    """
 
     def __init__(self,
-                 model_file: Iterable[str],
+                 model_file: Sequence[str],
                  cfg: Union[mmcv.Config, mmcv.ConfigDict],
                  device_id: int,
                  show_score: bool = False):
@@ -274,16 +351,29 @@ class NCNNRecognizer(DeployBaseRecognizer):
         self.model = NCNNWrapper(
             model_file[0], model_file[1], output_names=['output'])
 
-    def forward_of_backend(self,
-                           img: torch.Tensor,
-                           img_metas: Iterable,
-                           rescale: bool = False):
+    def forward_of_backend(self, img: torch.Tensor, img_metas: Sequence[dict],
+                           *args, **kwargs):
+        """Implement forward test with a backend.
+
+        Args:
+            imgs (torch.Tensor): Input image(s) in [N x C x H x W] format.
+            img_metas (Sequence[dict]]): List of image information.
+        Returns:
+            torch.Tensor: Prediction of input model.
+        """
         pred = self.model({'input': img})['output']
         return pred
 
 
 class PPLDetector(DeployBaseTextDetector):
-    """The class for evaluating ppl backend of text detection."""
+    """Wrapper for TextDetector with PPL.
+
+    Args:
+        model_file (str): The path of input model file.
+        cfg (str | mmcv.ConfigDict): Input model config.
+        device_id (int): An integer represents device index.
+        show_score (bool): Whether to show scores. Defaults to `False`.
+    """
 
     def __init__(self,
                  model_file: str,
@@ -297,12 +387,16 @@ class PPLDetector(DeployBaseTextDetector):
         model = PPLWrapper(model_file, device_id)
         self.model = model
 
-    def forward_of_backend(self,
-                           img: torch.Tensor,
-                           img_metas: Iterable,
-                           rescale: bool = False,
-                           *args,
-                           **kwargs):
+    def forward_of_backend(self, img: torch.Tensor, img_metas: Sequence[dict],
+                           *args, **kwargs):
+        """Implement forward test with a backend.
+
+        Args:
+            imgs (torch.Tensor): Input image(s) in [N x C x H x W] format.
+            img_metas (Sequence[dict]]): List of image information.
+        Returns:
+            torch.Tensor: Prediction of input model.
+        """
         with torch.cuda.device(self.device_id), torch.no_grad():
             ppl_pred = self.model({'input': img})
 
@@ -311,7 +405,14 @@ class PPLDetector(DeployBaseTextDetector):
 
 
 class PPLRecognizer(DeployBaseRecognizer):
-    """The class for evaluating ppl backend of recognition."""
+    """Wrapper for TextRecognizer with PPL.
+
+    Args:
+        model_file (str): The path of input model file.
+        cfg (str | mmcv.ConfigDict): Input model config.
+        device_id (int): An integer represents device index.
+        show_score (bool): Whether to show scores. Defaults to `False`.
+    """
 
     def __init__(self,
                  model_file: str,
@@ -325,12 +426,16 @@ class PPLRecognizer(DeployBaseRecognizer):
         model = PPLWrapper(model_file, device_id)
         self.model = model
 
-    def forward_of_backend(self,
-                           img: torch.Tensor,
-                           img_metas: Iterable,
-                           rescale: bool = False,
-                           *args,
-                           **kwargs):
+    def forward_of_backend(self, img: torch.Tensor, img_metas: Sequence[dict],
+                           *args, **kwargs):
+        """Implement forward test with a backend.
+
+        Args:
+            imgs (torch.Tensor): Input image(s) in [N x C x H x W] format.
+            img_metas (Sequence[dict]]): List of image information.
+        Returns:
+            torch.Tensor: Prediction of input model.
+        """
         with torch.cuda.device(self.device_id), torch.no_grad():
             ppl_pred = self.model({'input': img})[0]
         ppl_pred = torch.from_numpy(ppl_pred[0])
@@ -338,6 +443,15 @@ class PPLRecognizer(DeployBaseRecognizer):
 
 
 def get_classes_from_config(model_cfg: Union[str, mmcv.Config], **kwargs):
+    """Get class name from config.
+
+    Args:
+        model_cfg (str | mmcv.Config): Input model config file or
+            Config object.
+
+    Returns:
+        list[str]: A list of string specifying names of different class.
+    """
     # load cfg if necessary
     model_cfg = load_config(model_cfg)[0]
     module_dict = DATASETS.module_dict
@@ -383,11 +497,25 @@ BACKEND_TASK_MAP = {
 }
 
 
-def build_ocr_processor(model_files, model_cfg, deploy_cfg, device_id,
+def build_ocr_processor(model_files: Sequence[str],
+                        model_cfg: Union[str, mmcv.Config],
+                        deploy_cfg: Union[str, mmcv.Config], device_id: int,
                         **kwargs):
+    """Build text detector or recognizer for a backend.
+
+    Args:
+        model_files (Sequence[str]): Input model file(s).
+        model_cfg (str | mmcv.Config): Input model config file or Config
+            object.
+        deploy_cfg (str | mmcv.Config): Input deployment config file or
+            Config object.
+        device_id (int): An integer represents device index.
+
+    Returns:
+        nn.Module: An instance of text detector or recognizer.
+    """
     # load cfg if necessary
-    deploy_cfg = load_config(deploy_cfg)[0]
-    model_cfg = load_config(model_cfg)[0]
+    deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
 
     backend = get_backend(deploy_cfg)
     task = get_task_type(deploy_cfg)

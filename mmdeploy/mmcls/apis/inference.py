@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Sequence, Union
 
 import mmcv
 import torch
@@ -9,9 +9,14 @@ from mmdeploy.utils.config_utils import Backend, get_backend, load_config
 
 
 class DeployBaseClassifier(BaseClassifier):
-    """Base Class of Wrapper for classifier's inference."""
+    """Base Class of Wrapper for classifier's inference.
 
-    def __init__(self, class_names, device_id):
+    Args:
+        class_names (Sequence[str]): A list of string specifying class names.
+        device_id (int): An integer represents device index.
+    """
+
+    def __init__(self, class_names: Sequence[str], device_id: int):
         super(DeployBaseClassifier, self).__init__()
         self.CLASSES = class_names
         self.device_id = device_id
@@ -30,29 +35,60 @@ class DeployBaseClassifier(BaseClassifier):
 
 
 class ONNXRuntimeClassifier(DeployBaseClassifier):
-    """Wrapper for classifier's inference with ONNXRuntime."""
+    """Wrapper for classifier's inference with ONNXRuntime.
 
-    def __init__(self, model_file, class_names, device_id):
+    Args:
+        model_file (str): The path of input model file.
+        class_names (Sequence[str]): A list of string specifying class names.
+        device_id (int): An integer represents device index.
+    """
+
+    def __init__(self, model_file: str, class_names: Sequence[str],
+                 device_id: int):
         super(ONNXRuntimeClassifier, self).__init__(class_names, device_id)
         from mmdeploy.apis.onnxruntime import ORTWrapper
         self.model = ORTWrapper(model_file, device_id)
 
-    def forward_test(self, imgs, *args, **kwargs):
+    def forward_test(self, imgs: torch.Tensor, *args, **kwargs):
+        """Run test inference.
+
+        Args:
+            imgs (torch.Tensor): Input tensor of the model.
+
+        Returns:
+            list[np.ndarray]: Predictions of a classifier.
+        """
         input_data = imgs
         results = self.model({'input': input_data})[0]
         return list(results)
 
 
 class TensorRTClassifier(DeployBaseClassifier):
+    """Wrapper for classifier's inference with TensorRT.
 
-    def __init__(self, model_file, class_names, device_id):
+    Args:
+        model_file (str): The path of input model file.
+        class_names (Sequence[str]): A list of string specifying class names.
+        device_id (int): An integer represents device index.
+    """
+
+    def __init__(self, model_file: str, class_names: Sequence[str],
+                 device_id: int):
         super(TensorRTClassifier, self).__init__(class_names, device_id)
         from mmdeploy.apis.tensorrt import TRTWrapper
         model = TRTWrapper(model_file)
 
         self.model = model
 
-    def forward_test(self, imgs, *args, **kwargs):
+    def forward_test(self, imgs: torch.Tensor, *args, **kwargs):
+        """Run test inference.
+
+        Args:
+            imgs (torch.Tensor): Input tensor of the model.
+
+        Returns:
+            list[np.ndarray]: Predictions of a classifier.
+        """
         input_data = imgs
         with torch.cuda.device(self.device_id), torch.no_grad():
             results = self.model({'input': input_data})['output']
@@ -62,13 +98,30 @@ class TensorRTClassifier(DeployBaseClassifier):
 
 
 class NCNNClassifier(DeployBaseClassifier):
+    """Wrapper for classifier's inference with NCNN.
 
-    def __init__(self, param_file, bin_file, class_names, device_id):
+    Args:
+        param_file (str): Path of parameter file.
+        bin_file (str): Path of bin file.
+        class_names (Sequence[str]): A list of string specifying class names.
+        device_id (int): An integer represents device index.
+    """
+
+    def __init__(self, param_file: str, bin_file: str,
+                 class_names: Sequence[str], device_id: int):
         super(NCNNClassifier, self).__init__(class_names, device_id)
         from mmdeploy.apis.ncnn import NCNNWrapper
         self.model = NCNNWrapper(param_file, bin_file, output_names=['output'])
 
-    def forward_test(self, imgs, *args, **kwargs):
+    def forward_test(self, imgs: torch.Tensor, *args, **kwargs):
+        """Run test inference.
+
+        Args:
+            imgs (torch.Tensor): Input tensor of the model.
+
+        Returns:
+            list[np.ndarray]: Predictions of a classifier.
+        """
         results = self.model({'input': imgs})['output']
         results = results.detach().cpu().numpy()
         results_list = list(results)
@@ -76,7 +129,13 @@ class NCNNClassifier(DeployBaseClassifier):
 
 
 class PPLClassifier(DeployBaseClassifier):
-    """Wrapper for classifier's inference with PPL."""
+    """Wrapper for classifier's inference with PPL.
+
+    Args:
+        model_file (str): Path of input ONNX model file.
+        class_names (Sequence[str]): A list of string specifying class names.
+        device_id (int): An integer represents device index.
+    """
 
     def __init__(self, model_file, class_names, device_id):
         super(PPLClassifier, self).__init__(class_names, device_id)
@@ -85,7 +144,15 @@ class PPLClassifier(DeployBaseClassifier):
         self.model = model
         self.CLASSES = class_names
 
-    def forward_test(self, imgs, *args, **kwargs):
+    def forward_test(self, imgs: torch.Tensor, *args, **kwargs):
+        """Run test inference.
+
+        Args:
+            imgs (torch.Tensor): Input tensor of the model.
+
+        Returns:
+            list[np.ndarray]: Predictions of a classifier.
+        """
         input_data = imgs
         results = self.model({'input': input_data})[0]
 
@@ -109,6 +176,15 @@ BACKEND_CLASSIFIER_MAP = {
 
 
 def get_classes_from_config(model_cfg: Union[str, mmcv.Config]):
+    """Get class name from config.
+
+    Args:
+        model_cfg (str | mmcv.Config): Input model config file or
+            Config object.
+
+    Returns:
+        list[str]: A list of string specifying names of different class.
+    """
     model_cfg = load_config(model_cfg)[0]
     module_dict = DATASETS.module_dict
     data_cfg = model_cfg.data
@@ -125,9 +201,24 @@ def get_classes_from_config(model_cfg: Union[str, mmcv.Config]):
     return module.CLASSES
 
 
-def build_classifier(model_files, model_cfg, deploy_cfg, device_id, **kwargs):
-    model_cfg = load_config(model_cfg)[0]
-    deploy_cfg = load_config(deploy_cfg)[0]
+def build_classifier(model_files: Sequence[str], model_cfg: Union[str,
+                                                                  mmcv.Config],
+                     deploy_cfg: Union[str,
+                                       mmcv.Config], device_id: int, **kwargs):
+    """Build classifier for different backend.
+
+    Args:
+        model_files (list[str]): Input model file(s).
+        model_cfg (str | mmcv.Config): Input model config file or Config
+            object.
+        deploy_cfg (str | mmcv.Config): Input deployment config file or
+            Config object.
+        device_id (int): An integer represents device index.
+
+    Returns:
+        DeployBaseClassifier: Classifier for a configured backend.
+    """
+    model_cfg, deploy_cfg = load_config(model_cfg, deploy_cfg)
 
     backend = get_backend(deploy_cfg)
     class_names = get_classes_from_config(model_cfg)

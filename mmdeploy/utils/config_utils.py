@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Optional, Union
 
 import mmcv
 
@@ -9,7 +9,7 @@ def load_config(*args):
     """Load the configuration and check the validity.
 
     Args:
-        arg (str | list[str]): The path to the config file(s).
+        args (list[str]): The path to the config file(s).
 
     Returns:
         mmcv.Config: The content of config.
@@ -51,7 +51,7 @@ def get_task_type(deploy_cfg: Union[str, mmcv.Config], default=None) -> Task:
 
 
 def get_codebase(deploy_cfg: Union[str, mmcv.Config],
-                 default=None) -> Codebase:
+                 default: Optional[str] = None) -> Codebase:
     """Get the codebase from the config.
 
     Args:
@@ -138,7 +138,7 @@ def is_dynamic_batch(deploy_cfg: Union[str, mmcv.Config],
 
 
 def is_dynamic_shape(deploy_cfg: Union[str, mmcv.Config],
-                     input_name: str = 'input'):
+                     input_name: str = 'input') -> bool:
     """Check if input shape is dynamic.
 
     Args:
@@ -182,7 +182,7 @@ def get_input_shape(deploy_cfg: Union[str, mmcv.Config]):
     return input_shape
 
 
-def cfg_apply_marks(deploy_cfg: Union[str, mmcv.Config]):
+def cfg_apply_marks(deploy_cfg: Union[str, mmcv.Config]) -> bool:
     """Check if the model needs to be partitioned by checking if the config
     contains 'apply_marks'.
 
@@ -258,22 +258,46 @@ def get_calib_filename(deploy_cfg: Union[str, mmcv.Config]):
 
 
 def get_common_config(deploy_cfg: Union[str, mmcv.Config]):
+    """Get common parameters from config.
+
+    Args:
+        deploy_cfg (str | mmcv.Config): The path or content of config.
+
+    Returns:
+        dict: A dict of common parameters for a model.
+    """
     backend_config = deploy_cfg['backend_config']
     model_params = backend_config.get('common_config', dict())
     return model_params
 
 
 def get_model_inputs(deploy_cfg: Union[str, mmcv.Config]):
+    """Get model input parameters from config.
+
+    Args:
+        deploy_cfg (str | mmcv.Config): The path or content of config.
+
+    Returns:
+        list[dict]: A list of dict containing input parameters for a model.
+    """
     backend_config = deploy_cfg['backend_config']
     model_params = backend_config.get('model_inputs', [])
     return model_params
 
 
 def get_mmdet_params(deploy_cfg: Union[str, mmcv.Config]):
+    """Get mmdet post-processing parameters from config.
+
+    Args:
+        deploy_cfg (str | mmcv.Config): The path or content of config.
+
+    Returns:
+        dict: A dict of parameters for mmdet.
+    """
     deploy_cfg = load_config(deploy_cfg)[0]
     codebase_key = 'codebase_config'
     assert codebase_key in deploy_cfg
     codebase_config = deploy_cfg[codebase_key]
     post_params = codebase_config.get('post_processing', None)
-    assert post_params is not None
+    assert post_params is not None, 'Failed to get `post_processing`.'
     return post_params

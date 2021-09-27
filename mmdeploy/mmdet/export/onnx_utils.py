@@ -1,7 +1,11 @@
+from typing import Sequence, Union
+
 import torch
+from torch import Tensor
 
 
-def clip_bboxes(x1, y1, x2, y2, max_shape):
+def clip_bboxes(x1: Tensor, y1: Tensor, x2: Tensor, y2: Tensor,
+                max_shape: Union[Tensor, Sequence[int]]):
     """Clip bboxes for onnx.
 
     Since torch.clamp cannot have dynamic `min` and `max`, we scale the
@@ -12,7 +16,7 @@ def clip_bboxes(x1, y1, x2, y2, max_shape):
         y1 (Tensor): The y1 for bounding boxes.
         x2 (Tensor): The x2 for bounding boxes.
         y2 (Tensor): The y2 for bounding boxes.
-        max_shape (List or Tensor): The (H,W) of original image.
+        max_shape (Tensor | Sequence[int]): The (H,W) of original image.
     Returns:
         tuple(Tensor): The clipped x1, y1, x2, y2.
     """

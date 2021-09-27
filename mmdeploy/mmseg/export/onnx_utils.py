@@ -1,7 +1,15 @@
 import torch
 
 
-def convert_syncbatchnorm(module):
+def convert_syncbatchnorm(module: torch.nn.Module):
+    """Convert sync batch-norm to batch-norm for inference.
+
+    Args:
+        module (nn.Module): Input PyTorch model.
+
+    Returns:
+        nn.Module: PyTorch model without sync batch-norm.
+    """
     module_output = module
     if isinstance(module, torch.nn.SyncBatchNorm):
         module_output = torch.nn.BatchNorm2d(module.num_features, module.eps,

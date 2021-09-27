@@ -66,9 +66,10 @@ def create_input(codebase: Codebase,
     Args:
         codebase (Codebase): Specifying codebase type.
         task (Task): Specifying task type.
-        model_cfg (str | mmcv.Config): model config file or loaded Config
+        model_cfg (str | mmcv.Config): Model config file or loaded Config
             object.
-        imgs (str | np.ndarray): Input image(s).
+        imgs (Any): Input image(s), accpeted data type are `str`,
+            `np.ndarray`, `torch.Tensor`.
         input_shape (list[int]): Input shape of image in (width, height)
             format, defaults to `None`.
         device (str): A string specifying device type, defaults to 'cuda:0'.
@@ -340,7 +341,7 @@ def get_tensor_from_input(codebase: Codebase, input_data: tuple):
         input_data (tuple): Input data containing meta info and image tensor.
 
     Returns:
-        torch.Tensor: Input tensor of image.
+        torch.Tensor: An image in `Tensor`.
     """
     if codebase == Codebase.MMCLS:
         from mmdeploy.mmcls.export import get_tensor_from_input \

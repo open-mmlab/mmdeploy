@@ -9,7 +9,22 @@ from mmdeploy.utils import Backend
 
 # BaseModel in mmedit doesn't implement show_result
 # TODO: add show_result to different tasks
-def show_result(result, output_file, backend: Backend, show=True):
+def show_result(result: np.ndarray,
+                output_file: str,
+                backend: Backend,
+                show: bool = True):
+    """Show high resolution image of mmedit.
+
+    Args:
+        result: (np.ndarray): Input high resolution image.
+        output_file (str): Output image file to save image.
+        backend (Backend): Specifying backend type.
+        show (bool): Whether to show plotted image in windows. Defaults to
+            `True`.
+
+    Returns:
+        np.ndarray: Drawn image, only if not `show` or `out_file`.
+    """
     win_name = backend.value
     with torch.no_grad():
         result = result.transpose(1, 2, 0)

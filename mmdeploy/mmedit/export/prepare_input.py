@@ -1,16 +1,23 @@
-from typing import Any, Sequence, Union
+from typing import Optional, Sequence, Union
 
 import mmcv
 import numpy as np
 from mmcv.parallel import collate, scatter
-from mmedit.datasets import build_dataloader as build_dataloadeer_mmedit
+from mmedit.datasets import build_dataloader as build_dataloader_mmedit
 from mmedit.datasets import build_dataset as build_dataset_mmedit
 from mmedit.datasets.pipelines import Compose
+from torch.utils.data.dataset import Dataset
 
 from mmdeploy.utils import Task, load_config
 
 
-def _preprocess_cfg(config):
+def _preprocess_cfg(config: Union[str, mmcv.Config]):
+    """Remove unnecessary information in config.
+
+    Args:
+        model_cfg (str | mmcv.Config): The input model config.
+    """
+
     # TODO: Differentiate the editting tasks (e.g. restorers and mattors
     # preprocess the data in differenet ways)
 
@@ -29,9 +36,22 @@ def _preprocess_cfg(config):
 
 def create_input(task: Task,
                  model_cfg: Union[str, mmcv.Config],
-                 imgs: Any,
-                 input_shape: Sequence[int] = None,
-                 device: str = 'cuda:0'):
+                 imgs: Union[str, mmcv.Config],
+                 input_shape: Optional[Sequence[int]] = None,
+                 device: Optional[str] = 'cuda:0'):
+    """Create input for editing processor.
+
+    Args:
+        task (Task): Specifying editing task type.
+        model_cfg (str | mmcv.Config): The input model config.
+        imgs (str | np.ndarray): Input image(s).
+        input_shape (Sequence[int]): A list of two integer in (width, height)
+            format specifying input shape. Defaults to `None`.
+        device (str): A string represents device type. Default is 'cuda:0'.
+
+    Returns:
+        tuple: (data, img), meta information for the input image and input.
+    """
     if isinstance(imgs, (list, tuple)):
         if not isinstance(imgs[0], (np.ndarray, str)):
             raise AssertionError('imgs must be strings or numpy arrays')
@@ -82,6 +102,14 @@ def create_input(task: Task,
 
 
 def build_dataset(dataset_cfg: Union[str, mmcv.Config], **kwargs):
+    """Build dataset for processor.
+
+    Args:
+        dataset_cfg (str | mmcv.Config): The input dataset config.
+
+    Returns:
+        Dataset: A PyTorch dataset.
+    """
     dataset_cfg = load_config(dataset_cfg)[0]
     data = dataset_cfg.data
 
@@ -89,18 +117,49 @@ def build_dataset(dataset_cfg: Union[str, mmcv.Config], **kwargs):
     return dataset
 
 
-def build_dataloader(dataset,
+def build_dataloader(dataset: Dataset,
                      samples_per_gpu: int,
                      workers_per_gpu: int,
-                     num_gpus=1,
-                     dist=False,
-                     shuffle=False,
-                     seed=None,
-                     drop_last=False,
-                     pin_memory=True,
-                     persistent_workers=True,
+                     num_gpus: int = 1,
+                     dist: bool = False,
+                     shuffle: bool = False,
+                     seed: Optional[int] = None,
+                     drop_last: bool = False,
+                     pin_memory: bool = True,
+                     persistent_workers: bool = True,
                      **kwargs):
+    """Build PyTorch DataLoader.
 
-    return build_dataloadeer_mmedit(dataset, samples_per_gpu, workers_per_gpu,
-                                    num_gpus, dist, shuffle, seed, drop_last,
-                                    pin_memory, persistent_workers, **kwargs)
+    In distributed training, each GPU/process has a dataloader.
+    In non-distributed training, there is only one dataloader for all GPUs.
+
+    Args:
+        dataset (:obj:`Dataset`): A PyTorch dataset.
+        samples_per_gpu (int): Number of samples on each GPU, i.e.,
+            batch size of each GPU.
+        workers_per_gpu (int): How many subprocesses to use for data
+            loading for each GPU.
+        num_gpus (int): Number of GPUs. Only used in non-distributed
+            training. Default: 1.
+        dist (bool): Distributed training/test or not. Default: True.
+        shuffle (bool): Whether to shuffle the data at every epoch.
+            Default: True.
+        seed (int | None): Seed to be used. Default: None.
+        drop_last (bool): Whether to drop the last incomplete batch in epoch.
+            Default: False
+        pin_memory (bool): Whether to use pin_memory in DataLoader.
+            Default: True
+        persistent_workers (bool): If True, the data loader will not shutdown
+            the worker processes after a dataset has been consumed once.
+            This allows to maintain the workers Dataset instances alive.
+            The argument also has effect in PyTorch>=1.7.0.
+            Default: True
+        kwargs (dict, optional): Any keyword argument to be used to initialize
+            DataLoader.
+
+    Returns:
+        DataLoader: A PyTorch dataloader.
+    """
+    return build_dataloader_mmedit(dataset, samples_per_gpu, workers_per_gpu,
+                                   num_gpus, dist, shuffle, seed, drop_last,
+                                   pin_memory, persistent_workers, **kwargs)

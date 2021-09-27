@@ -10,9 +10,9 @@ def dump_info(deploy_cfg: Union[str, mmcv.Config],
     """Export information to SDK.
 
     Args:
-        deploy_cfg (str | mmcv.Config): deploy config file or dict
-        model_cfg (str | mmcv.Config): model config file or dict
-        work_dir (str): work dir to save json files
+        deploy_cfg (str | mmcv.Config): Deploy config file or dict.
+        model_cfg (str | mmcv.Config): Model config file or dict.
+        work_dir (str): Work dir to save json files.
     """
     # TODO dump default values of transformation function to json
     deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)

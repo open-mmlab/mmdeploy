@@ -1,15 +1,31 @@
 import numpy as np
+import torch
 
 from mmdeploy.utils import Backend
 
 
-def show_result(model,
+def show_result(model: torch.nn.Module,
                 image: np.ndarray,
-                result,
+                result: list,
                 output_file: str,
                 backend: Backend,
-                show=True,
-                score_thr=0.3):
+                show: bool = True,
+                score_thr: float = 0.3):
+    """Show predictions of text detector or recognizer.
+
+    Args:
+        model (nn.Module): Input model which has `show_result` method.
+        image: (np.ndarray): Input image to draw predictions.
+        result (list): A list of predictions.
+        output_file (str): Output image file to save drawn predictions.
+        backend (Backend): Specifying backend type.
+        show (bool): Whether to show plotted image in windows. Defaults to
+            `True`.
+        score_thr (float): Score threshold for result, defaults to `0.3`.
+
+    Returns:
+        np.ndarray: Drawn image, only if not `show` or `out_file`.
+    """
     return model.show_result(
         image,
         result,

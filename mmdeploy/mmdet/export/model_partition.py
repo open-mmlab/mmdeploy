@@ -61,7 +61,15 @@ MMDET_PARTITION_CFG = dict(
     ])
 
 
-def get_partition_cfg(partition_type):
+def get_partition_cfg(partition_type: str):
+    """Get a certain partition config for mmdet.
+
+    Args:
+        partition_type (str): A string specifying partition type.
+
+    Returns:
+        dict: A dictionary of partition config.
+    """
     assert (partition_type
             in MMDET_PARTITION_CFG), f'Unknown partition_type {partition_type}'
     return MMDET_PARTITION_CFG[partition_type]
