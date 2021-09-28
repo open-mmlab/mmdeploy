@@ -4,10 +4,11 @@ import torch.nn as nn
 
 from mmdeploy.core import register_extra_symbolics
 from mmdeploy.utils.test import WrapFunction
-from .utils import TestOnnxRTExporter, TestTensorRTExporter
+from .utils import TestNCNNExporter, TestOnnxRTExporter, TestTensorRTExporter
 
 TEST_ONNXRT = TestOnnxRTExporter()
 TEST_TENSORRT = TestTensorRTExporter()
+TEST_NCNN = TestNCNNExporter()
 
 
 @pytest.mark.parametrize('backend', [TEST_TENSORRT, TEST_ONNXRT])
@@ -185,3 +186,49 @@ def test_instance_norm(backend,
         dynamic_axes=dynamic_axes,
         output_names=['output'],
         save_dir=save_dir)
+
+
+@pytest.mark.parametrize('backend', [TEST_NCNN])
+@pytest.mark.parametrize('k', [1, 3, 5])
+@pytest.mark.parametrize('dim', [1, 2, 3])
+@pytest.mark.parametrize('largest', [True, False])
+@pytest.mark.parametrize('sorted', [True, False])
+def test_topk(backend,
+              k,
+              dim,
+              largest,
+              sorted,
+              input_list=None,
+              save_dir=None):
+    backend.check_env()
+
+    if not input_list:
+        input = torch.rand(1, 8, 12, 17)
+    assert input.shape[0] == 1, (f'ncnn batch must be 1, \
+        but not {input.shape[0]}')
+    cfg = dict()
+    register_extra_symbolics(cfg=cfg, opset=11)
+
+    def wrapped_function(inputs):
+        return torch.Tensor.topk(inputs, k, dim, largest, sorted)
+
+    wrapped_model = WrapFunction(wrapped_function)
+
+    # when the 'sorted' attribute is False, pytorch will return
+    # a hard to expect result, which only features that the topk
+    # number is right. So the Topk unittest only check whether the
+    # topk elements are right, all the possible order will be accepted.
+    if not sorted:
+        backend.run_and_validate(
+            wrapped_model, [input.float()],
+            'topk' + f'_no_sorted_dim_{dim}',
+            input_names=['inputs'],
+            output_names=['data', 'index'],
+            save_dir=save_dir)
+    else:
+        backend.run_and_validate(
+            wrapped_model, [input.float()],
+            'topk',
+            input_names=['inputs'],
+            output_names=['data', 'index'],
+            save_dir=save_dir)

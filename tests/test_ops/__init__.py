@@ -1,3 +1,3 @@
-from .utils import TestOnnxRTExporter, TestTensorRTExporter
+from .utils import TestNCNNExporter, TestOnnxRTExporter, TestTensorRTExporter
 
-__all__ = ['TestTensorRTExporter', 'TestOnnxRTExporter']
+__all__ = ['TestTensorRTExporter', 'TestOnnxRTExporter', 'TestNCNNExporter']
