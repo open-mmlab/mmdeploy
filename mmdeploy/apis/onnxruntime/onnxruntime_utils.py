@@ -69,7 +69,6 @@ class ORTWrapper(torch.nn.Module):
 
         Args:
             inputs (Dict[str, torch.Tensor]): The input name and tensor pairs.
-
         Returns:
             list[np.ndarray]: A list of output numpy array.
         """

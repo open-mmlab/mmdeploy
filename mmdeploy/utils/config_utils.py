@@ -9,10 +9,10 @@ def load_config(*args):
     """Load the configuration and check the validity.
 
     Args:
-        args (list[str]): The path to the config file(s).
+        args (str | Sequence[str]): The path to the config file(s).
 
     Returns:
-        mmcv.Config: The content of config.
+        List[mmcv.Config]: The content of config.
     """
 
     def _load_config(cfg):
@@ -174,7 +174,7 @@ def get_input_shape(deploy_cfg: Union[str, mmcv.Config]):
         deploy_cfg (str | mmcv.Config): The path or content of config.
 
     Returns:
-        list: The input shape for backend model (axis 2 and 3), e.g [512, 512].
+        List: The input shape for backend model (axis 2 and 3), e.g [512, 512].
     """
     input_shape = get_onnx_config(deploy_cfg)['input_shape']
     if input_shape is not None:
