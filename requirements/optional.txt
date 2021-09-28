@@ -1,8 +1,7 @@
-mmcls
+mmcls>=0.15.0
 mmdet
 mmedit
 mmocr>=0.3.0
-mmocr
 mmsegmentation
 ncnn
 onnxruntime>=1.8.0
