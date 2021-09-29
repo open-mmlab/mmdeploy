@@ -1,6 +1,6 @@
 #ifndef TRT_PLUGIN_BASE_HPP
 #define TRT_PLUGIN_BASE_HPP
-#include "NvInferPlugin.h"
+#include "NvInferRuntime.h"
 #include "NvInferVersion.h"
 #include "trt_plugin_helper.hpp"
 

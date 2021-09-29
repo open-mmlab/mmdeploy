@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "NvInferPluginUtils.h"
 #include "trt_plugin_base.hpp"
 namespace mmlab {
 class TRTBatchedNMS : public TRTPluginBase {

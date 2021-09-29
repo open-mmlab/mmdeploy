@@ -58,12 +58,10 @@ void ModulatedDeformConvForwardCUDAKernelLauncher(
     int pad_w, int pad_h, int dilation_w, int dilation_h, int group,
     int deformable_group, int im2col_step, cublasHandle_t cublas_handle,
     cudaStream_t stream) {
-  size_t sizeof_dtype = sizeof(scalar_t);
   bool with_bias = (bias != nullptr);
 
   im2col_step = std::min(int(batch), im2col_step);
   assert(batch % im2col_step == 0);
-  const int channels_kernel = channels / group;
 
   const int height_out =
       (height + 2 * pad_h - (dilation_h * (kernel_h - 1) + 1)) / stride_h + 1;

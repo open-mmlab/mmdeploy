@@ -33,7 +33,7 @@ int TopK::forward(const std::vector<Mat>& bottom_blobs,
   } else if (bottom_blobs.size() == 1) {
     topk = 1;
   } else {
-    fprintf(stderr, "topk input blobs should be 1 or 2, but not %d\n",
+    fprintf(stderr, "topk input blobs should be 1 or 2, but not %ld\n",
             bottom_blobs.size());
     return -103;
   }

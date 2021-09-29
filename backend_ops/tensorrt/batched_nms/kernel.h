@@ -12,7 +12,6 @@
 #include "trt_plugin_helper.hpp"
 
 using namespace nvinfer1;
-using namespace nvinfer1::plugin;
 #define DEBUG_ENABLE 0
 
 template <typename T>

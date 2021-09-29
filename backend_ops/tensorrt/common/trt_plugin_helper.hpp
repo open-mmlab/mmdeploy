@@ -5,7 +5,7 @@
 #include <iostream>
 #include <stdexcept>
 
-#include "NvInferPlugin.h"
+#include "NvInferRuntime.h"
 
 cudnnStatus_t convert_trt2cudnn_dtype(nvinfer1::DataType trt_dtype,
                                       cudnnDataType_t* cudnn_dtype);
