@@ -3734,11 +3734,7 @@ int main(int argc, char** argv) {
       // never reach here
     } else if (op == "ConstantOfShape") {
       float value = 0.f;
-      onnx::TensorProto value_tensor = get_node_attr_tensor(node, "value");
-      if (value_tensor.dims_size() > 0) {
-        // fprintf(stderr, "ok11!\n");
-        value = get_node_attr_from_input_f(value_tensor);
-      }
+      value = get_node_attr_f(node, "value", 0.f);
       fprintf(pp, " 0=%f", value);
     } else if (op == "Conv") {
       const onnx::TensorProto& W = weights[node.input(1)];
