@@ -6,6 +6,14 @@ from onnx.helper import get_attribute_value
 
 
 def attribute_to_dict(attr: onnx.AttributeProto):
+    """Convert onnx op attribute to dict.
+
+    Args:
+        attr (onnx.AttributeProto): Input onnx op attribute.
+
+    Returns:
+        dict: A dict contains info from op attribute.
+    """
     ret = {}
     for a in attr:
         value = get_attribute_value(a)
@@ -16,6 +24,15 @@ def attribute_to_dict(attr: onnx.AttributeProto):
 
 
 def remove_nodes(model: onnx.ModelProto, predicate: Callable):
+    """Remove nodes from ONNX model.
+
+    Args:
+        model (onnx.ModelProto): Input onnx model.
+        predicate (Callable): A function to predicate a node.
+
+    Returns:
+        onnx.ModelProto: Modified onnx model.
+    """
     # ! this doesn't handle inputs/outputs
     while True:
         connect = None
@@ -38,6 +55,14 @@ def remove_nodes(model: onnx.ModelProto, predicate: Callable):
 
 
 def is_unused_mark(marks: Iterable[onnx.NodeProto]):
+    """Check whether a mark is unused.
+
+    Args:
+        marks (Iterable[onnx.NodeProto]): A list of onnx NodeProto.
+
+    Returns:
+        bool: `True` if a mark node is in `marks`.
+    """
 
     def f(node):
         if node.op_type == 'Mark':
@@ -51,6 +76,7 @@ def is_unused_mark(marks: Iterable[onnx.NodeProto]):
 
 
 def is_identity(node: onnx.NodeProto):
+    """Check if an op is identity."""
     return node.op_type == 'Identity'
 
 
@@ -73,6 +99,13 @@ def get_new_name(attrs: onnx.ModelProto,
 
 
 def rename_value(model: onnx.ModelProto, old_name: str, new_name: str):
+    """Rename a node in an ONNX model.
+
+    Args:
+        model (onnx.ModelProto): Input onnx model.
+        old_name (str): Original node name in the model.
+        new_name (str): New node name in the model.
+    """
     if old_name == new_name:
         return
     logging.info(f'rename {old_name} -> {new_name}')
@@ -95,6 +128,11 @@ def rename_value(model: onnx.ModelProto, old_name: str, new_name: str):
 
 
 def remove_identity(model: onnx.ModelProto):
+    """Remove identity node from an ONNX model.
+
+    Args:
+        model (onnx.ModelProto): Input onnx model.
+    """
     graph = model.graph
 
     def simplify_inputs():

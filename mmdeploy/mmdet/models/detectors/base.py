@@ -7,6 +7,7 @@ from mmdeploy.utils import is_dynamic_shape
 @mark(
     'detector_forward', inputs=['input'], outputs=['dets', 'labels', 'masks'])
 def _forward_of_base_detector_impl(ctx, self, img, img_metas=None, **kwargs):
+    """Rewrite and adding mark for `forward`."""
     assert isinstance(img_metas, dict)
     assert isinstance(img, torch.Tensor)
 
@@ -23,6 +24,7 @@ def _forward_of_base_detector_impl(ctx, self, img, img_metas=None, **kwargs):
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.BaseDetector.forward')
 def forward_of_base_detector(ctx, self, img, img_metas=None, **kwargs):
+    """Rewrite `forward` for default backend."""
     if img_metas is None:
         img_metas = {}
 

@@ -10,6 +10,8 @@ def interpolate_static(ctx,
                        mode='nearest',
                        align_corners=None,
                        recompute_scale_factor=None):
+    """Rewrite `interpolate` for NCNN backend."""
+
     input_size = input.shape
     if scale_factor is None:
         scale_factor = [

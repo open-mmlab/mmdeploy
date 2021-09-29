@@ -2,10 +2,29 @@ import torch
 
 import mmdeploy
 from mmdeploy.core import FUNCTION_REWRITER, mark
-from mmdeploy.mmcv.ops import DummyONNXNMSop, TRTBatchedNMSop
+from mmdeploy.mmcv.ops import ONNXNMSop, TRTBatchedNMSop
 
 
-def select_nms_index(scores, boxes, nms_index, batch_size, keep_top_k=-1):
+def select_nms_index(scores: torch.Tensor,
+                     boxes: torch.Tensor,
+                     nms_index: torch.Tensor,
+                     batch_size: int,
+                     keep_top_k: int = -1):
+    """Transform NMS output.
+
+    Args:
+        scores (Tensor): The detection scores of shape
+            [N, num_classes, num_boxes].
+        boxes (Tensor): The bounding boxes of shape [N, num_boxes, 4].
+        nms_index (Tensor): NMS output of bounding boxes indexing.
+        batch_size (int): Batch size of the input image.
+        keep_top_k (int): Number of top K boxes to keep after nms.
+            Defaults to -1.
+
+    Returns:
+        tuple[Tensor, Tensor]: (dets, labels), `dets` of shape [N, num_det, 5]
+            and `labels` of shape [N, num_det].
+    """
     batch_inds, cls_inds = nms_index[:, 0], nms_index[:, 1]
     box_inds = nms_index[:, 2]
 
@@ -65,9 +84,9 @@ def _multiclass_nms(boxes,
     (N, num_boxes, 4).
 
     Args:
-        boxes (Tensor): The bounding boxes of shape [N, num_boxes, 4]
+        boxes (Tensor): The bounding boxes of shape [N, num_boxes, 4].
         scores (Tensor): The detection scores of shape
-            [N, num_boxes, num_classes]
+            [N, num_boxes, num_classes].
         max_output_boxes_per_class (int): Maximum number of output
             boxes per class of nms. Defaults to 1000.
         iou_threshold (float): IOU threshold of nms. Defaults to 0.5
@@ -79,8 +98,8 @@ def _multiclass_nms(boxes,
             Defaults to -1.
 
     Returns:
-        tuple[Tensor, Tensor]: dets of shape [N, num_det, 5] and class labels
-            of shape [N, num_det].
+        tuple[Tensor, Tensor]: (dets, labels), `dets` of shape [N, num_det, 5]
+            and `labels` of shape [N, num_det].
     """
     max_output_boxes_per_class = torch.LongTensor([max_output_boxes_per_class])
     iou_threshold = torch.tensor([iou_threshold], dtype=torch.float32)
@@ -96,9 +115,9 @@ def _multiclass_nms(boxes,
         scores = scores[batch_inds, topk_inds, :]
 
     scores = scores.permute(0, 2, 1)
-    selected_indices = DummyONNXNMSop.apply(boxes, scores,
-                                            max_output_boxes_per_class,
-                                            iou_threshold, score_threshold)
+    selected_indices = ONNXNMSop.apply(boxes, scores,
+                                       max_output_boxes_per_class,
+                                       iou_threshold, score_threshold)
 
     dets, labels = select_nms_index(
         scores, boxes, selected_indices, batch_size, keep_top_k=keep_top_k)
@@ -117,6 +136,7 @@ def multiclass_nms_static(ctx,
                           score_threshold=0.05,
                           pre_top_k=-1,
                           keep_top_k=-1):
+    """Wrapper for `multiclass_nms` with TensorRT."""
     boxes = boxes if boxes.dim() == 4 else boxes.unsqueeze(2)
     keep_top_k = max_output_boxes_per_class if keep_top_k < 0 else min(
         max_output_boxes_per_class, keep_top_k)
@@ -129,5 +149,5 @@ def multiclass_nms_static(ctx,
 
 @mark('multiclass_nms', inputs=['boxes', 'scores'], outputs=['dets', 'labels'])
 def multiclass_nms(*args, **kwargs):
-    """Wrapper function for _multiclass_nms."""
+    """Wrapper function for `_multiclass_nms`."""
     return mmdeploy.mmdet.core.post_processing._multiclass_nms(*args, **kwargs)

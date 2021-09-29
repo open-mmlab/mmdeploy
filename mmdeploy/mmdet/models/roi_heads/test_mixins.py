@@ -8,6 +8,7 @@ from mmdeploy.core import FUNCTION_REWRITER
      BBoxTestMixin.simple_test_bboxes')
 def simple_test_bboxes_of_bbox_test_mixin(ctx, self, x, img_metas, proposals,
                                           rcnn_test_cfg, **kwargs):
+    """Rewrite `simple_test_bboxes` for default backend."""
     rois = proposals
     batch_index = torch.arange(
         rois.shape[0], device=rois.device).float().view(-1, 1, 1).expand(

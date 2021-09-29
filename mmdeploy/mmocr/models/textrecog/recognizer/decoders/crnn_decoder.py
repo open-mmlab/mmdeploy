@@ -6,6 +6,7 @@ from mmdeploy.core import FUNCTION_REWRITER
     backend='ncnn')
 def forward_train_of_crnndecoder(ctx, self, feat, out_enc, targets_dict,
                                  img_metas):
+    """Rewrite `forward_train` for NCNN backend."""
     assert feat.size(2) == 1, 'feature height must be 1'
     if self.rnn_flag:
         x = feat.squeeze(2)  # [N, C, W]

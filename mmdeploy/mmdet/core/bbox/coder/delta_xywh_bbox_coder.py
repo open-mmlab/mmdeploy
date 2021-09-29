@@ -17,6 +17,7 @@ def delta2bbox(ctx,
                clip_border=True,
                add_ctr_clamp=False,
                ctr_clamp=32):
+    """Rewrite for ONNX exporting of default backend."""
     means = deltas.new_tensor(means).view(1,
                                           -1).repeat(1,
                                                      deltas.size(-1) // 4)
@@ -81,6 +82,7 @@ def delta2bbox_ncnn(ctx,
                     clip_border=True,
                     add_ctr_clamp=False,
                     ctr_clamp=32):
+    """Rewrite for ONNX exporting of NCNN backend."""
     means = deltas.new_tensor(means).view(1, 1,
                                           -1).repeat(1, deltas.size(-2),
                                                      deltas.size(-1) // 4).data

@@ -41,7 +41,9 @@ class SRCNNWrapper(nn.Module):
             align_corners=False)
 
     def forward(self, *args, **kwargs):
+        """Run forward."""
         return self._module(*args, **kwargs)
 
     def init_weights(self, *args, **kwargs):
+        """Initialize weights."""
         return self._module.init_weights(*args, **kwargs)

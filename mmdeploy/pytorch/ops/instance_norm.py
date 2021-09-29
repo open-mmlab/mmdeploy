@@ -11,6 +11,7 @@ from mmdeploy.core import SYMBOLIC_REGISTER
 
 @parse_args('v', 'i', 'v', 'v', 'f', 'i')
 def instance_norm(g, input, num_groups, weight, bias, eps, cudnn_enabled):
+    """Symbolic function for `instance_norm`."""
     channel_size = _get_tensor_dim_size(input, 1)
     if channel_size is not None:
         assert channel_size % num_groups == 0
@@ -60,8 +61,12 @@ def instance_norm(g, input, num_groups, weight, bias, eps, cudnn_enabled):
                _unsqueeze_helper(g, bias, axes))
 
 
-# instance normalization is implemented in group norm in pytorch
 @SYMBOLIC_REGISTER.register_symbolic(
     'group_norm', backend='tensorrt', is_pytorch=True)
 def instance_norm_trt(ctx, *args):
+    """Register symbolic function for TensorRT backend.
+
+    Notes:
+        Instance normalization is implemented in group norm in pytorch.
+    """
     return instance_norm(*args)

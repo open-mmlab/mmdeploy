@@ -7,6 +7,7 @@ from mmdeploy.utils import is_dynamic_shape
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmseg.models.decode_heads.psp_head.PPM.forward')
 def forward_of_ppm(ctx, self, x):
+    """Rewrite `forward` for default backend."""
     deploy_cfg = ctx.cfg
     is_dynamic_flag = is_dynamic_shape(deploy_cfg)
     # get origin input shape as tensor to support onnx dynamic shape

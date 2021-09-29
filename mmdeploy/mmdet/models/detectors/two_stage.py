@@ -5,6 +5,7 @@ from mmdeploy.core import FUNCTION_REWRITER, mark
     'mmdet.models.TwoStageDetector.extract_feat')
 @mark('extract_feat', inputs='img', outputs='feat')
 def extract_feat_of_two_stage(ctx, self, img):
+    """Rewrite `extract_feat` for default backend."""
     return ctx.origin_func(self, img)
 
 
@@ -16,6 +17,7 @@ def simple_test_of_two_stage(ctx,
                              img_metas,
                              proposals=None,
                              **kwargs):
+    """Rewrite `simple_test` for default backend."""
     assert self.with_bbox, 'Bbox head must be implemented.'
     x = self.extract_feat(img)
     if proposals is None:

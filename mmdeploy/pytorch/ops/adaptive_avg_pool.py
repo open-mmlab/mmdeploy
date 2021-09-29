@@ -8,6 +8,7 @@ from mmdeploy.core import SYMBOLIC_REGISTER
 
 
 def _adaptive_pool(name, type, tuple_fn, fn=None):
+    """Generic adaptive pooling."""
 
     @parse_args('v', 'is')
     def symbolic_fn(g, input, output_size):
@@ -53,14 +54,17 @@ adaptive_avg_pool3d = _adaptive_pool('adaptive_avg_pool3d', 'AveragePool',
 
 @SYMBOLIC_REGISTER.register_symbolic('adaptive_avg_pool1d', is_pytorch=True)
 def adaptive_avg_pool1d_op(ctx, *args):
+    """Register default symbolic function for `adaptive_avg_pool1d`."""
     return adaptive_avg_pool1d(*args)
 
 
 @SYMBOLIC_REGISTER.register_symbolic('adaptive_avg_pool2d', is_pytorch=True)
 def adaptive_avg_pool2d_op(ctx, *args):
+    """Register default symbolic function for `adaptive_avg_pool2d`."""
     return adaptive_avg_pool2d(*args)
 
 
 @SYMBOLIC_REGISTER.register_symbolic('adaptive_avg_pool3d', is_pytorch=True)
 def adaptive_avg_pool3d_op(ctx, *args):
+    """Register default symbolic function for `adaptive_avg_pool3d`."""
     return adaptive_avg_pool3d(*args)

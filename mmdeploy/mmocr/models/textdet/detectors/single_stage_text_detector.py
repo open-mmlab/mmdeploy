@@ -9,6 +9,7 @@ def simple_test_of_single_stage_text_detector(ctx,
                                               img_metas,
                                               rescale=False,
                                               **kwargs):
+    """Rewrite `simple_test` for default backend."""
     x = self.extract_feat(img)
     outs = self.bbox_head(x)
     return outs

@@ -59,6 +59,7 @@ def forward_of_single_roi_extractor_static(ctx,
                                            feats,
                                            rois,
                                            roi_scale_factor=None):
+    """Rewrite `forward` for TensorRT backend."""
     featmap_strides = self.featmap_strides
     finest_scale = self.finest_scale
 
@@ -83,6 +84,7 @@ def forward_of_single_roi_extractor_dynamic(ctx,
                                             feats,
                                             rois,
                                             roi_scale_factor=None):
+    """Rewrite `forward` for default backend."""
     out_size = self.roi_layers[0].output_size
     num_levels = len(feats)
     roi_feats = feats[0].new_zeros(rois.shape[0], self.out_channels, *out_size)

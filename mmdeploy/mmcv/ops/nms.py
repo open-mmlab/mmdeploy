@@ -5,15 +5,13 @@ from torch.onnx import symbolic_helper as sym_help
 from mmdeploy.core import SYMBOLIC_REGISTER
 
 
-class DummyONNXNMSop(torch.autograd.Function):
-    """DummyONNXNMSop.
-
-    This class is only for creating onnx::NonMaxSuppression.
-    """
+class ONNXNMSop(torch.autograd.Function):
+    """Create onnx::NonMaxSuppression op."""
 
     @staticmethod
     def forward(ctx, boxes, scores, max_output_boxes_per_class, iou_threshold,
                 score_threshold):
+        """Forward of onnx nms."""
         batch_size, num_class, _ = scores.shape
 
         score_threshold = float(score_threshold)
@@ -51,9 +49,11 @@ class DummyONNXNMSop(torch.autograd.Function):
 
 
 @SYMBOLIC_REGISTER.register_symbolic(
-    'mmdeploy.mmcv.ops.DummyONNXNMSop', backend='default')
+    'mmdeploy.mmcv.ops.ONNXNMSop', backend='default')
 def nms_dynamic(ctx, g, boxes, scores, max_output_boxes_per_class,
                 iou_threshold, score_threshold):
+    """Rewrite symbolic function for default backend."""
+
     if not sym_help._is_value(max_output_boxes_per_class):
         max_output_boxes_per_class = g.op(
             'Constant',
@@ -73,9 +73,11 @@ def nms_dynamic(ctx, g, boxes, scores, max_output_boxes_per_class,
 
 
 @SYMBOLIC_REGISTER.register_symbolic(
-    'mmdeploy.mmcv.ops.DummyONNXNMSop', backend='tensorrt')
+    'mmdeploy.mmcv.ops.ONNXNMSop', backend='tensorrt')
 def nms_static(ctx, g, boxes, scores, max_output_boxes_per_class,
                iou_threshold, score_threshold):
+    """Rewrite symbolic function for TensorRT backend."""
+
     if sym_help._is_value(max_output_boxes_per_class):
         max_output_boxes_per_class = sym_help._maybe_get_const(
             max_output_boxes_per_class, 'i')
@@ -98,6 +100,7 @@ def nms_static(ctx, g, boxes, scores, max_output_boxes_per_class,
 
 
 class TRTBatchedNMSop(torch.autograd.Function):
+    """Create mmcv::TRTBatchedNMS op for TensorRT backend."""
 
     @staticmethod
     def forward(ctx,
@@ -109,6 +112,7 @@ class TRTBatchedNMSop(torch.autograd.Function):
                 iou_threshold,
                 score_threshold,
                 background_label_id=-1):
+        """Forward of batched nms."""
         batch_size, num_boxes, num_classes = scores.shape
 
         out_boxes = min(num_boxes, after_topk)

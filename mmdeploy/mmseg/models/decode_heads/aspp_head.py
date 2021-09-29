@@ -8,6 +8,7 @@ from mmdeploy.utils import is_dynamic_shape
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmseg.models.decode_heads.ASPPHead.forward')
 def forward_of_aspp_head(ctx, self, inputs):
+    """Rewrite `forward` for default backend."""
     x = self._transform_inputs(inputs)
     deploy_cfg = ctx.cfg
     is_dynamic_flag = is_dynamic_shape(deploy_cfg)

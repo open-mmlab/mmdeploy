@@ -60,6 +60,7 @@ class HDF5Calibrator(trt.IInt8Calibrator):
             self.calib_file.close()
 
     def get_batch(self, names: Sequence[str], **kwargs):
+        """Get batch data."""
         if self.count < self.dataset_length:
 
             ret = []
@@ -95,13 +96,33 @@ class HDF5Calibrator(trt.IInt8Calibrator):
             return None
 
     def get_algorithm(self):
+        """Get Calibration algo type.
+
+        Returns:
+            trt.CalibrationAlgoType: Calibration algo type.
+        """
         return self.algorithm
 
     def get_batch_size(self):
+        """Get batch size.
+
+        Returns:
+            int: An integer represents batch size.
+        """
         return self.batch_size
 
     def read_calibration_cache(self, *args, **kwargs):
+        """Read calibration cache.
+
+        Notes:
+            No need to implement this function.
+        """
         pass
 
     def write_calibration_cache(self, cache, *args, **kwargs):
+        """Write calibration cache.
+
+        Notes:
+            No need to implement this function.
+        """
         pass

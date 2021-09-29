@@ -215,7 +215,7 @@ class TRTWrapper(torch.nn.Module):
         self._load_io_names()
 
     def _load_io_names(self):
-        # get input and output names from engine
+        """Load input/output names from engine."""
         names = [_ for _ in self.engine]
         input_names = list(filter(self.engine.binding_is_input, names))
         output_names = list(set(names) - set(input_names))

@@ -12,6 +12,7 @@ from mmdeploy.utils import Backend, get_backend, get_onnx_config
 
 
 class WrapFunction(nn.Module):
+    """Simple wrapper for a function."""
 
     def __init__(self, wrapped_function, **kwargs):
         super(WrapFunction, self).__init__()

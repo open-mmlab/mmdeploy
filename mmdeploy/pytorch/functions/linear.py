@@ -13,6 +13,8 @@ def linear_ncnn(
     weight: torch.Tensor,
     bias: Union[torch.Tensor, torch.NoneType] = None,
 ):
+    """Rewrite `linear` for NCNN backend."""
+
     origin_func = ctx.origin_func
 
     dim = input.dim()

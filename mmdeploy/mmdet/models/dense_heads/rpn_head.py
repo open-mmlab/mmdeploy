@@ -16,6 +16,7 @@ def get_bboxes_of_rpn_head(ctx,
                            with_nms=True,
                            cfg=None,
                            **kwargs):
+    """Rewrite `get_bboxes` for default backend."""
     assert len(cls_scores) == len(bbox_preds)
     deploy_cfg = ctx.cfg
     is_dynamic_flag = is_dynamic_shape(deploy_cfg)
@@ -120,6 +121,7 @@ def get_bboxes_of_rpn_head_ncnn(ctx,
                                 with_nms=True,
                                 cfg=None,
                                 **kwargs):
+    """Rewrite `get_bboxes` for NCNN backend."""
     assert len(cls_scores) == len(bbox_preds)
     deploy_cfg = ctx.cfg
     assert not is_dynamic_shape(deploy_cfg)

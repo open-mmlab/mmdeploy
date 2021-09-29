@@ -6,6 +6,8 @@ from mmdeploy.core import FUNCTION_REWRITER
     '.BidirectionalLSTM.forward',
     backend='ncnn')
 def forward_of_bidirectionallstm(ctx, self, input):
+    """Rewrite `forward` for NCNN backend."""
+
     self.rnn.batch_first = True
     recurrent, _ = self.rnn(input)
     self.rnn.batch_first = False

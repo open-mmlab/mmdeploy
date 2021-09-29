@@ -15,6 +15,7 @@ from mmdeploy.utils import get_mmdet_params
     inputs=['bbox_feats'],
     outputs=['cls_score', 'bbox_pred'])
 def forward_of_bbox_head(ctx, self, x):
+    """Rewrite `forward` for default backend."""
     return ctx.origin_func(self, x)
 
 
@@ -22,7 +23,7 @@ def forward_of_bbox_head(ctx, self, x):
     func_name='mmdet.models.roi_heads.BBoxHead.get_bboxes')
 def get_bboxes_of_bbox_head(ctx, self, rois, cls_score, bbox_pred, img_shape,
                             cfg, **kwargs):
-
+    """Rewrite `get_bboxes` for default backend."""
     assert rois.ndim == 3, 'Only support export two stage ' \
                            'model to ONNX ' \
                            'with batch dimension. '

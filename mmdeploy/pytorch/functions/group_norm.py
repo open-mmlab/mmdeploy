@@ -15,6 +15,7 @@ def group_norm_ncnn(
     bias: Union[torch.Tensor, torch.NoneType] = None,
     eps: float = 1e-05,
 ) -> torch.Tensor:
+    """Rewrite `group_norm` for NCNN backend."""
     input_shape = input.shape
     batch_size = input_shape[0]
     # We cannot use input.reshape(batch_size, num_groups, -1, 1)

@@ -10,6 +10,7 @@ MARK_FUNCTION_COUNT = dict()
 
 
 def reset_mark_function_count():
+    """Reset counter of mark function."""
     for k in MARK_FUNCTION_COUNT:
         MARK_FUNCTION_COUNT[k] = 0
 
@@ -59,6 +60,7 @@ class Mark(torch.autograd.Function):
 @FUNCTION_REWRITER.register_rewriter(
     'mmdeploy.core.optimizers.function_marker.Mark.symbolic')
 def mark_symbolic(rewriter, g, x, *args):
+    """Rewrite symbolic of mark op."""
     if cfg_apply_marks(rewriter.cfg):
         return rewriter.origin_func(g, x, *args)
     return x
@@ -68,6 +70,7 @@ def mark_symbolic(rewriter, g, x, *args):
     'mmdeploy.core.optimizers.function_marker.Mark.forward')
 def forward_of_mark(rewriter, ctx, x, dtype, shape, func, func_id, type, name,
                     id, attrs):
+    """Rewrite forward of mark op."""
     deploy_cfg = rewriter.cfg
     # save calib data
     apply_marks = cfg_apply_marks(deploy_cfg)

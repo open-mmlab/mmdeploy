@@ -13,6 +13,7 @@ def tblr2bboxes(ctx,
                 normalize_by_wh=True,
                 max_shape=None,
                 clip_border=True):
+    """Rewrite for ONNX exporting of default backend."""
     if not isinstance(normalizer, float):
         normalizer = torch.tensor(normalizer, device=priors.device)
         assert len(normalizer) == 4, 'Normalizer must have length = 4'
@@ -54,6 +55,7 @@ def delta2bbox_ncnn(ctx,
                     normalize_by_wh=True,
                     max_shape=None,
                     clip_border=True):
+    """Rewrite for ONNX exporting of NCNN backend."""
     assert priors.size(0) == tblr.size(0)
     if priors.ndim == 3:
         assert priors.size(1) == tblr.size(1)

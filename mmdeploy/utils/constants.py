@@ -2,6 +2,7 @@ from enum import Enum
 
 
 class AdvancedEnum(Enum):
+    """Define an enumeration class."""
 
     @classmethod
     def get(cls, str, a):
@@ -12,6 +13,7 @@ class AdvancedEnum(Enum):
 
 
 class Task(AdvancedEnum):
+    """Define task enumerations."""
     TEXT_DETECTION = 'TextDetection'
     TEXT_RECOGNITION = 'TextRecognition'
     SEGMENTATION = 'Segmentation'
@@ -21,6 +23,7 @@ class Task(AdvancedEnum):
 
 
 class Codebase(AdvancedEnum):
+    """Define codebase enumerations."""
     MMDET = 'mmdet'
     MMSEG = 'mmseg'
     MMCLS = 'mmcls'
@@ -29,6 +32,7 @@ class Codebase(AdvancedEnum):
 
 
 class Backend(AdvancedEnum):
+    """Define backend enumerations."""
     PYTORCH = 'pytorch'
     TENSORRT = 'tensorrt'
     ONNXRUNTIME = 'onnxruntime'

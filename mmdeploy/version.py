@@ -4,7 +4,15 @@ __version__ = '0.1.0'
 short_version = __version__
 
 
-def parse_version_info(version_str):
+def parse_version_info(version_str: str):
+    """Parse version from a string.
+
+    Args:
+        version_str (str): A string represents a version info.
+
+    Returns:
+        tuple: A sequence of integer and string represents version.
+    """
     version_info = []
     for x in version_str.split('.'):
         if x.isdigit():

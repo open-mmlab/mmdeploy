@@ -5,6 +5,7 @@ from mmdeploy.core import SYMBOLIC_REGISTER
 
 @SYMBOLIC_REGISTER.register_symbolic('squeeze', is_pytorch=True)
 def squeeze_default(ctx, g, self, dim=None):
+    """Register default symbolic function for `squeeze`."""
     if dim is None:
         dims = []
         for i, size in enumerate(self.type().sizes()):

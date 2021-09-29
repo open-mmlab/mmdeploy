@@ -5,6 +5,7 @@ from packaging import version
 
 
 def parse_extractor_io_string(io_str):
+    """Parse IO string for extractor."""
     name, io_type = io_str.split(':')
     assert io_type in ['input', 'output']
     func_id = 0
@@ -17,8 +18,9 @@ def parse_extractor_io_string(io_str):
     return name, func_id, io_type
 
 
-def _dfs_search_reacable_nodes_fast(self, node_output_name, graph_input_nodes,
-                                    reachable_nodes):
+def _dfs_search_reachable_nodes_fast(self, node_output_name, graph_input_nodes,
+                                     reachable_nodes):
+    """Using DFS to search reachable nodes."""
     outputs = {}
     for index, node in enumerate(self.graph.node):
         for name in node.output:
@@ -54,7 +56,7 @@ def create_extractor(model: onnx.ModelProto):
     assert version.parse(onnx.__version__) >= version.parse('1.8.0')
     # patch extractor
     onnx.utils.Extractor._dfs_search_reachable_nodes = \
-        _dfs_search_reacable_nodes_fast
+        _dfs_search_reachable_nodes_fast
 
     extractor = onnx.utils.Extractor(model)
     return extractor

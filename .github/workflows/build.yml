@@ -26,7 +26,7 @@ jobs:
       - name: Check docstring coverage
         run: |
           pip install interrogate
-          interrogate -v --ignore-init-method --ignore-module --ignore-nested-functions --ignore-regex "__repr__" --fail-under 30 mmdeploy
+          interrogate -v --ignore-init-method --ignore-module --ignore-nested-functions --ignore-regex "__repr__" --fail-under 80 mmdeploy
 
   build_cpu:
     runs-on: ubuntu-18.04

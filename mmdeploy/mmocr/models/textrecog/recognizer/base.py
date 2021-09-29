@@ -12,6 +12,7 @@ def forward_of_base_recognizer(ctx,
                                img_metas=None,
                                return_loss=False,
                                **kwargs):
+    """Rewrite `forward` for NCNN backend."""
     if img_metas is None:
         img_metas = {}
     assert isinstance(img_metas, dict)
