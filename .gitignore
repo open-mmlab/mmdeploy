@@ -65,6 +65,8 @@ instance/
 
 # Sphinx documentation
 docs/_build/
+docs_zh_CN/_build/
+src/pytorch-sphinx-theme/
 
 # PyBuilder
 target/

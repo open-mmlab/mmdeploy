@@ -1,59 +1,67 @@
-# MMDeployment
+## Introduction
+
+English | [简体中文](README_zh-CN.md)
+
+MMDeploy is an open-source deep learning model deployment toolset. It is
+a part of the [OpenMMLab](https://openmmlab.com/) project.
+
+### Major features
+
+- **OpenMMLab model support**
+  Models in OpenMMLab can be deployed with this project. Such as MMClassification, MMDetection, etc.
+
+- **Multiple inference engine support**
+  Models can be export and inference with different backend. Such as ONNX Runtime, TensorRT, etc.
+
+- **Model rewrite**
+  Modules and functions used in models can be rewrited to meet the demond of different backend. It is easy to add new model support.
+
+## License
+
+This project is released under the [Apache 2.0 license](LICENSE).
+
+## Codebase and Backend support
+
+Supported codebase:
+
+- [x] MMClassification
+- [x] MMDetection
+- [x] MMSegmentation
+- [x] MMEditing
+- [x] MMOCR
+
+Supported backend:
+
+- [x] ONNX Runtime
+- [x] TensorRT
+- [x] PPL
+- [x] ncnn
 
 ## Installation
 
-- Build backend ops
+Please refer to [build.md](docs/build.md) for installation.
 
-  - update submodule
+## Getting Started
 
-    ```bash
-    git submodule update --init
-    ```
+Please read [how_to_convert_model.md](docs/tutorials/how_to_convert_model.md) for the basic usage of MMDeploy. There are also tutorials for [how to create config](docs/tutorials/how_to_create_config.md), [how to support new model](docs/tutorials/how_to_support_new_model.md) and [how to test model](docs/tutorials/how_to_test_model.md).
 
-  - Build with onnxruntime support
+Please refer to [FAQ](docs/faq.md) for frequently asked questions.
 
-    ```bash
-    mkdir build
-    cd build
-    cmake -DBUILD_ONNXRUNTIME_OPS=ON -DONNXRUNTIME_DIR=${PATH_TO_ONNXRUNTIME} ..
-    make -j10
-    ```
+## Contributing
 
-  - Build with tensorrt support
+We appreciate all contributions to improve MMDeploy. Please refer to [CONTRIBUTING.md](.github/CONTRIBUTING.md) for the contributing guideline.
 
-    ```bash
-    mkdir build
-    cd build
-    cmake -DBUILD_TENSORRT_OPS=ON -DTENSORRT_DIR=${PATH_TO_TENSORRT} ..
-    make -j10
-    ```
+## Projects in OpenMMLab
 
-  - Build with ncnn support
-
-    ```bash
-    mkdir build
-    cd build
-    cmake -DBUILD_NCNN_OPS=ON -DNCNN_DIR=${PATH_TO_NCNN} ..
-    make -j10
-    ```
-
-  - Or you can add multiple flags to build multiple backend ops.
-
-- Setup project
-
-    ```bash
-    python setup.py develop
-    ```
-
-## Usage
-
-```bash
-python ./tools/deploy.py \
-    ${DEPLOY_CFG_PATH} \
-    ${MODEL_CFG_PATH} \
-    ${MODEL_CHECKPOINT_PATH} \
-    ${INPUT_IMG} \
-    --work-dir ${WORK_DIR} \
-    --device ${DEVICE} \
-    --log-level INFO
-```
+- [MMCV](https://github.com/open-mmlab/mmcv): OpenMMLab foundational library for computer vision.
+- [MIM](https://github.com/open-mmlab/mim): MIM Installs OpenMMLab Packages.
+- [MMClassification](https://github.com/open-mmlab/mmclassification): OpenMMLab image classification toolbox and benchmark.
+- [MMDetection](https://github.com/open-mmlab/mmdetection): OpenMMLab detection toolbox and benchmark.
+- [MMDetection3D](https://github.com/open-mmlab/mmdetection3d): OpenMMLab's next-generation platform for general 3D object detection.
+- [MMSegmentation](https://github.com/open-mmlab/mmsegmentation): OpenMMLab semantic segmentation toolbox and benchmark.
+- [MMAction2](https://github.com/open-mmlab/mmaction2): OpenMMLab's next-generation action understanding toolbox and benchmark.
+- [MMTracking](https://github.com/open-mmlab/mmtracking): OpenMMLab video perception toolbox and benchmark.
+- [MMPose](https://github.com/open-mmlab/mmpose): OpenMMLab pose estimation toolbox and benchmark.
+- [MMEditing](https://github.com/open-mmlab/mmediting): OpenMMLab image and video editing toolbox.
+- [MMOCR](https://github.com/open-mmlab/mmocr): A Comprehensive Toolbox for Text Detection, Recognition and Understanding.
+- [MMGeneration](https://github.com/open-mmlab/mmgeneration): OpenMMLab image and video generative models toolbox.
