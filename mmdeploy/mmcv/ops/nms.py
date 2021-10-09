@@ -72,33 +72,6 @@ def nms_dynamic(ctx, g, boxes, scores, max_output_boxes_per_class,
                 iou_threshold, score_threshold)
 
 
-@SYMBOLIC_REGISTER.register_symbolic(
-    'mmdeploy.mmcv.ops.ONNXNMSop', backend='tensorrt')
-def nms_static(ctx, g, boxes, scores, max_output_boxes_per_class,
-               iou_threshold, score_threshold):
-    """Rewrite symbolic function for TensorRT backend."""
-
-    if sym_help._is_value(max_output_boxes_per_class):
-        max_output_boxes_per_class = sym_help._maybe_get_const(
-            max_output_boxes_per_class, 'i')
-
-    if sym_help._is_value(iou_threshold):
-        iou_threshold = sym_help._maybe_get_const(iou_threshold, 'f')
-
-    if sym_help._is_value(score_threshold):
-        score_threshold = sym_help._maybe_get_const(score_threshold, 'f')
-
-    return g.op(
-        'mmcv::NonMaxSuppression',
-        boxes,
-        scores,
-        max_output_boxes_per_class_i=max_output_boxes_per_class,
-        iou_threshold_f=iou_threshold,
-        score_threshold_f=score_threshold,
-        center_point_box_i=0,
-        offset_i=0)
-
-
 class TRTBatchedNMSop(torch.autograd.Function):
     """Create mmcv::TRTBatchedNMS op for TensorRT backend."""
 
