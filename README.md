@@ -14,7 +14,7 @@ a part of the [OpenMMLab](https://openmmlab.com/) project.
   Models can be export and inference with different backend. Such as ONNX Runtime, TensorRT, etc.
 
 - **Model rewrite**
-  Modules and functions used in models can be rewrited to meet the demond of different backend. It is easy to add new model support.
+  Modules and functions used in models can be rewritten to meet the demond of different backend. It is easy to add new model support.
 
 ## License
 
