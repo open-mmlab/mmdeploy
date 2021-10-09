@@ -47,15 +47,15 @@ def create_input(task: Task,
     cfg.data.test.pipeline = [LoadImage()] + cfg.data.test.pipeline[1:]
 
     test_pipeline = Compose(cfg.data.test.pipeline)
-    datas = []
+    data_list = []
     for img in imgs:
         # prepare data
         data = dict(img=img)
         # build the data pipeline
         data = test_pipeline(data)
-        datas.append(data)
+        data_list.append(data)
 
-    data = collate(datas, samples_per_gpu=len(imgs))
+    data = collate(data_list, samples_per_gpu=len(imgs))
 
     data['img_metas'] = [img_metas.data[0] for img_metas in data['img_metas']]
     data['img'] = [img.data[0][None, :] for img in data['img']]

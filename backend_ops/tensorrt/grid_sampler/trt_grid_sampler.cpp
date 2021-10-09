@@ -51,14 +51,14 @@ nvinfer1::DimsExprs TRTGridSampler::getOutputDimensions(
 }
 
 bool TRTGridSampler::supportsFormatCombination(
-    int pos, const nvinfer1::PluginTensorDesc *inOut, int nbInputs,
+    int pos, const nvinfer1::PluginTensorDesc *ioDesc, int nbInputs,
     int nbOutputs) TRT_NOEXCEPT {
   if (pos == 0) {
-    return (inOut[pos].type == nvinfer1::DataType::kFLOAT &&
-            inOut[pos].format == nvinfer1::TensorFormat::kLINEAR);
+    return (ioDesc[pos].type == nvinfer1::DataType::kFLOAT &&
+            ioDesc[pos].format == nvinfer1::TensorFormat::kLINEAR);
   } else {
-    return inOut[pos].type == inOut[0].type &&
-           inOut[pos].format == inOut[0].format;
+    return ioDesc[pos].type == ioDesc[0].type &&
+           ioDesc[pos].format == ioDesc[0].format;
   }
 }
 

@@ -163,7 +163,7 @@ class RewriterContext(object):
     Examples:
         >>> from mmdeploy.core import RewriterContext
         >>> with RewriterContext(cfg, backend='onnxruntime'):
-        >>>     # the rewrite has been actived inside the context
+        >>>     # the rewrite has been activated inside the context
         >>>     torch.onnx.export(model, inputs, onnx_file)
     """
 

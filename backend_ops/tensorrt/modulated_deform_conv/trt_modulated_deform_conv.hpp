@@ -31,7 +31,7 @@ class ModulatedDeformableConvPluginDynamic : public TRTPluginBase {
       int outputIndex, const nvinfer1::DimsExprs *inputs, int nbInputs,
       nvinfer1::IExprBuilder &exprBuilder) TRT_NOEXCEPT override;
   bool supportsFormatCombination(int pos,
-                                 const nvinfer1::PluginTensorDesc *inOut,
+                                 const nvinfer1::PluginTensorDesc *ioDesc,
                                  int nbInputs,
                                  int nbOutputs) TRT_NOEXCEPT override;
   void configurePlugin(const nvinfer1::DynamicPluginTensorDesc *in,

@@ -124,14 +124,14 @@ void TRTBatchedNMS::configurePlugin(
 }
 
 bool TRTBatchedNMS::supportsFormatCombination(
-    int pos, const nvinfer1::PluginTensorDesc* inOut, int nbInputs,
+    int pos, const nvinfer1::PluginTensorDesc* ioDesc, int nbInputs,
     int nbOutputs) TRT_NOEXCEPT {
   if (pos == 3) {
-    return inOut[pos].type == nvinfer1::DataType::kINT32 &&
-           inOut[pos].format == nvinfer1::TensorFormat::kLINEAR;
+    return ioDesc[pos].type == nvinfer1::DataType::kINT32 &&
+           ioDesc[pos].format == nvinfer1::TensorFormat::kLINEAR;
   }
-  return inOut[pos].type == nvinfer1::DataType::kFLOAT &&
-         inOut[pos].format == nvinfer1::TensorFormat::kLINEAR;
+  return ioDesc[pos].type == nvinfer1::DataType::kFLOAT &&
+         ioDesc[pos].format == nvinfer1::TensorFormat::kLINEAR;
 }
 
 const char* TRTBatchedNMS::getPluginType() const TRT_NOEXCEPT {

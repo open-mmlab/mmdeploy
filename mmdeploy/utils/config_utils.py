@@ -34,7 +34,7 @@ def get_task_type(deploy_cfg: Union[str, mmcv.Config], default=None) -> Task:
 
     Args:
         deploy_cfg (str | mmcv.Config): The path or content of config.
-        default (str): If the "task" field of config is emtpy, then return
+        default (str): If the "task" field of config is empty, then return
         default task type.
 
     Returns:
@@ -56,7 +56,7 @@ def get_codebase(deploy_cfg: Union[str, mmcv.Config],
 
     Args:
         deploy_cfg (str | mmcv.Config): The path or content of config.
-        default (str): If the "codebase" field of config is emtpy, then return
+        default (str): If the "codebase" field of config is empty, then return
         default codebase type.
 
     Returns:
@@ -77,7 +77,7 @@ def get_backend(deploy_cfg: Union[str, mmcv.Config], default=None) -> Backend:
 
     Args:
         deploy_cfg (str | mmcv.Config): The path or content of config.
-        default (str): If the "backend" field of config is emtpy, then return
+        default (str): If the "backend" field of config is empty, then return
         default backend type.
 
     Returns:

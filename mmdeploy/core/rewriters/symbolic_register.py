@@ -60,7 +60,7 @@ SYMBOLIC_REGISTER = Registry('symbolics', build_func=set_symbolic, scope=None)
 class SymbolicWrapper:
     """The wrapper of the symbolic function.
 
-    The wrapper is used to pass context and enviroment to the symbolic.
+    The wrapper is used to pass context and environment to the symbolic.
 
     Args:
         cfg (Dict): Config dictionary of deployment.
@@ -86,7 +86,7 @@ def register_symbolic(func_name: str,
     """The decorator of the custom symbolic.
 
     Args:
-        func_name (str): The function name/path to overide the symbolic.
+        func_name (str): The function name/path to override the symbolic.
         backend (str): The inference engine name.
         is_pytorch (bool): Enable this flag if func_name is the name of \
             a pytorch builtin function.

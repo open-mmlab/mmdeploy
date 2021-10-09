@@ -29,7 +29,7 @@ class TRTGridSampler : public TRTPluginBase {
       nvinfer1::IExprBuilder &exprBuilder) TRT_NOEXCEPT override;
 
   bool supportsFormatCombination(int pos,
-                                 const nvinfer1::PluginTensorDesc *inOut,
+                                 const nvinfer1::PluginTensorDesc *ioDesc,
                                  int nbInputs,
                                  int nbOutputs) TRT_NOEXCEPT override;
 

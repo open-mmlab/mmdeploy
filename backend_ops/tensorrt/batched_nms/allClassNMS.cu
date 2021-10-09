@@ -69,7 +69,7 @@ template <typename T_BBOX>
 __device__ void emptyBboxInfo(BboxInfo<T_BBOX> *bbox_info) {
   bbox_info->conf_score = T_BBOX(0);
   bbox_info->label =
-      -2;  // -1 is used for all labels when shared_location is ture
+      -2;  // -1 is used for all labels when shared_location is true
   bbox_info->bbox_idx = -1;
   bbox_info->kept = false;
 }

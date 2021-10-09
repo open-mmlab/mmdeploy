@@ -48,7 +48,7 @@ class TRTInstanceNormalization final : public TRTPluginBase {
 
   // DynamicExt plugin supportsFormat update.
   bool supportsFormatCombination(int pos,
-                                 const nvinfer1::PluginTensorDesc* inOut,
+                                 const nvinfer1::PluginTensorDesc* ioDesc,
                                  int nbInputs,
                                  int nbOutputs) TRT_NOEXCEPT override;
 

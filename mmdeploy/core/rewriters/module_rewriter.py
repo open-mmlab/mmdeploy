@@ -97,7 +97,7 @@ def patch_model(model: nn.Module,
                 backend: str = 'default',
                 recursive: bool = True,
                 **kwargs) -> nn.Module:
-    """Patch the model, replace the modules that can be rewrited.
+    """Patch the model, replace the modules that can be rewritten.
 
     Args:
         model (torch.nn.Module): The model to patch.

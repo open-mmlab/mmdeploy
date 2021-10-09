@@ -107,12 +107,12 @@ void TRTInstanceNormalization::serialize(void* buffer) const TRT_NOEXCEPT {
 }
 
 bool TRTInstanceNormalization::supportsFormatCombination(
-    int pos, const nvinfer1::PluginTensorDesc* inOut, int nbInputs,
+    int pos, const nvinfer1::PluginTensorDesc* ioDesc, int nbInputs,
     int nbOutputs) TRT_NOEXCEPT {
-  return ((inOut[pos].type == nvinfer1::DataType::kFLOAT ||
-           inOut[pos].type == nvinfer1::DataType::kHALF) &&
-          inOut[pos].format == nvinfer1::PluginFormat::kLINEAR &&
-          inOut[pos].type == inOut[0].type);
+  return ((ioDesc[pos].type == nvinfer1::DataType::kFLOAT ||
+           ioDesc[pos].type == nvinfer1::DataType::kHALF) &&
+          ioDesc[pos].format == nvinfer1::PluginFormat::kLINEAR &&
+          ioDesc[pos].type == ioDesc[0].type);
 }
 
 const char* TRTInstanceNormalization::getPluginType() const TRT_NOEXCEPT {

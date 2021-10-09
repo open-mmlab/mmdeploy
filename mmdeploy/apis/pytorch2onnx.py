@@ -29,7 +29,7 @@ def torch2onnx_impl(model: torch.nn.Module, input: torch.Tensor,
     backend = get_backend(deploy_cfg).value
     opset_version = pytorch2onnx_cfg.get('opset_version', 11)
 
-    # load registed symbolic
+    # load registered symbolic
     register_extra_symbolics(deploy_cfg, backend=backend, opset=opset_version)
 
     # patch model

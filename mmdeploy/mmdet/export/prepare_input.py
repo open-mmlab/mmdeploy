@@ -54,7 +54,7 @@ def create_input(task: Task,
 
     cfg.data.test.pipeline = replace_ImageToTensor(cfg.data.test.pipeline)
     test_pipeline = Compose(cfg.data.test.pipeline)
-    datas = []
+    data_list = []
     for img in imgs:
         # prepare data
         if isinstance(img, np.ndarray):
@@ -65,9 +65,9 @@ def create_input(task: Task,
             data = dict(img_info=dict(filename=img), img_prefix=None)
         # build the data pipeline
         data = test_pipeline(data)
-        datas.append(data)
+        data_list.append(data)
 
-    data = collate(datas, samples_per_gpu=len(imgs))
+    data = collate(data_list, samples_per_gpu=len(imgs))
 
     data['img_metas'] = [img_metas.data[0] for img_metas in data['img_metas']]
     data['img'] = [img.data[0] for img in data['img']]

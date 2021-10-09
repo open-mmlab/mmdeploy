@@ -59,10 +59,10 @@ nvinfer1::DimsExprs TRTRoIAlign::getOutputDimensions(
 }
 
 bool TRTRoIAlign::supportsFormatCombination(
-    int pos, const nvinfer1::PluginTensorDesc *inOut, int nbInputs,
+    int pos, const nvinfer1::PluginTensorDesc *ioDesc, int nbInputs,
     int nbOutputs) TRT_NOEXCEPT {
-  return inOut[pos].type == nvinfer1::DataType::kFLOAT &&
-         inOut[pos].format == nvinfer1::TensorFormat::kLINEAR;
+  return ioDesc[pos].type == nvinfer1::DataType::kFLOAT &&
+         ioDesc[pos].format == nvinfer1::TensorFormat::kLINEAR;
 }
 
 void TRTRoIAlign::configurePlugin(

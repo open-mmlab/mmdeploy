@@ -88,7 +88,7 @@ class TimeCounter:
                 registried function will be activated.
             warmup (int): the warm up steps, default 1.
             log_interval (int): interval between each log, default 1.
-            with_sync (bool): wheather use cuda synchronize for time counting,
+            with_sync (bool): whether use cuda synchronize for time counting,
                 default False.
         """
         assert warmup >= 1

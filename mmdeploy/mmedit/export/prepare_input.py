@@ -18,7 +18,7 @@ def _preprocess_cfg(config: Union[str, mmcv.Config]):
         model_cfg (str | mmcv.Config): The input model config.
     """
 
-    # TODO: Differentiate the editting tasks (e.g. restorers and mattors
+    # TODO: Differentiate the editing tasks (e.g. restorers and mattors
     # preprocess the data in differenet ways)
 
     keys_to_remove = ['gt', 'gt_path']

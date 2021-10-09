@@ -97,7 +97,7 @@ def test_module_rewriter():
     rewrited_result = rewrited_bottle_nect(x)
     torch.testing.assert_allclose(rewrited_result, result * 2)
 
-    # wrong backend should not be rewrited
+    # wrong backend should not be rewritten
 
     rewrited_model = patch_model(model, cfg=cfg)
     rewrited_bottle_nect = rewrited_model.layer1[0]

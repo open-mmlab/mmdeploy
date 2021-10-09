@@ -71,7 +71,7 @@ def create_input(task: Task,
     from mmocr.datasets import build_dataset  # noqa: F401
     test_pipeline = Compose(model_cfg.data.test.pipeline)
 
-    datas = []
+    data_list = []
     for img in imgs:
         # prepare data
         if is_ndarray:
@@ -84,14 +84,14 @@ def create_input(task: Task,
         # build the data pipeline
         data = test_pipeline(data)
         # get tensor from list to stack for batch mode (text detection)
-        datas.append(data)
+        data_list.append(data)
 
-    if isinstance(datas[0]['img'], list) and len(datas) > 1:
+    if isinstance(data_list[0]['img'], list) and len(data_list) > 1:
         raise Exception('aug test does not support '
                         f'inference with batch size '
-                        f'{len(datas)}')
+                        f'{len(data_list)}')
 
-    data = collate(datas, samples_per_gpu=len(imgs))
+    data = collate(data_list, samples_per_gpu=len(imgs))
 
     # process img_metas
     if isinstance(data['img_metas'], list):

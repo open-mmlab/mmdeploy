@@ -34,24 +34,24 @@ nvinfer1::DimsExprs TRTScatterND::getOutputDimensions(
 }
 
 bool TRTScatterND::supportsFormatCombination(
-    int pos, const nvinfer1::PluginTensorDesc *inOut, int nbInputs,
+    int pos, const nvinfer1::PluginTensorDesc *ioDesc, int nbInputs,
     int nbOutputs) TRT_NOEXCEPT {
   if (pos < nbInputs) {
     switch (pos) {
       case 0:
         // data
-        return (inOut[pos].type == nvinfer1::DataType::kFLOAT &&
-                inOut[pos].format == nvinfer1::TensorFormat::kLINEAR) ||
-               (inOut[pos].type == nvinfer1::DataType::kINT32 &&
-                inOut[pos].format == nvinfer1::TensorFormat::kLINEAR);
+        return (ioDesc[pos].type == nvinfer1::DataType::kFLOAT &&
+                ioDesc[pos].format == nvinfer1::TensorFormat::kLINEAR) ||
+               (ioDesc[pos].type == nvinfer1::DataType::kINT32 &&
+                ioDesc[pos].format == nvinfer1::TensorFormat::kLINEAR);
       case 1:
         // indices
-        return inOut[pos].type == nvinfer1::DataType::kINT32 &&
-               inOut[pos].format == nvinfer1::TensorFormat::kLINEAR;
+        return ioDesc[pos].type == nvinfer1::DataType::kINT32 &&
+               ioDesc[pos].format == nvinfer1::TensorFormat::kLINEAR;
       case 2:
         // updates
-        return inOut[pos].type == inOut[0].type &&
-               inOut[pos].format == inOut[0].format;
+        return ioDesc[pos].type == ioDesc[0].type &&
+               ioDesc[pos].format == ioDesc[0].format;
       default:
         return true;
     }
@@ -59,8 +59,8 @@ bool TRTScatterND::supportsFormatCombination(
     switch (pos - nbInputs) {
       case 0:
         // output
-        return inOut[pos].type == inOut[0].type &&
-               inOut[pos].format == inOut[0].format;
+        return ioDesc[pos].type == ioDesc[0].type &&
+               ioDesc[pos].format == ioDesc[0].format;
       default:
         return true;
     }

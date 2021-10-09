@@ -35,8 +35,8 @@ class DeployBaseRestorer(BaseModel):
     def forward(self, lq: torch.Tensor, test_mode: bool = False, **kwargs):
         """Run test inference for restorer.
 
-        We want forward() to output an image or a evalution result.
-        When test_mode is set, the output is evalution result. Otherwise
+        We want forward() to output an image or a evaluation result.
+        When test_mode is set, the output is evaluation result. Otherwise
         it is an image.
 
         Args:
@@ -104,7 +104,7 @@ class DeployBaseRestorer(BaseModel):
                            outputs: torch.Tensor,
                            lq: torch.Tensor,
                            gt: Optional[torch.Tensor] = None):
-        """Get evalution results by post-processing model outputs.
+        """Get evaluation results by post-processing model outputs.
 
         Args:
             output (torch.Tensor) : The output high resolution image.
