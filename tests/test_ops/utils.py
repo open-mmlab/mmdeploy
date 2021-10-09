@@ -182,7 +182,7 @@ class TestNCNNExporter:
                          output_names=None,
                          input_names=None,
                          save_dir=None):
-        if not save_dir:
+        if save_dir is None:
             onnx_file_path = tempfile.NamedTemporaryFile().name
             ncnn_param_path = tempfile.NamedTemporaryFile().name
             ncnn_bin_path = tempfile.NamedTemporaryFile().name
@@ -233,3 +233,25 @@ class TestNCNNExporter:
         else:
             assert_allclose(model_outputs, ncnn_outputs,
                             tolerate_small_mismatch)
+
+    def onnx2ncnn(self, model, model_name, output_names, save_dir=None):
+        if save_dir is None:
+            onnx_file_path = tempfile.NamedTemporaryFile(suffix='.onnx').name
+            ncnn_param_path = tempfile.NamedTemporaryFile(suffix='.param').name
+            ncnn_bin_path = tempfile.NamedTemporaryFile(suffix='.bin').name
+        else:
+            onnx_file_path = os.path.join(save_dir, model_name + '.onnx')
+            ncnn_param_path = os.path.join(save_dir, model_name + '.param')
+            ncnn_bin_path = os.path.join(save_dir, model_name + '.bin')
+
+        onnx.save_model(model, onnx_file_path)
+
+        import mmdeploy.apis.ncnn as ncnn_apis
+        onnx2ncnn_path = ncnn_apis.get_onnx2ncnn_path()
+        subprocess.call(
+            [onnx2ncnn_path, onnx_file_path, ncnn_param_path, ncnn_bin_path])
+
+        ncnn_model = ncnn_apis.NCNNWrapper(ncnn_param_path, ncnn_bin_path,
+                                           output_names)
+
+        return ncnn_model

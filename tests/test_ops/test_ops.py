@@ -548,6 +548,70 @@ def test_constantofshape(backend,
 
 
 @pytest.mark.parametrize('backend', [TEST_NCNN])
+@pytest.mark.parametrize('axis, data_dims, indice_dims', [(0, 1, 1), (0, 2, 1),
+                                                          (1, 2, 1), (0, 3, 1),
+                                                          (1, 3, 1),
+                                                          (2, 3, 1)])
+def test_gather(backend,
+                axis,
+                data_dims,
+                indice_dims,
+                input_names=['input', 'indices'],
+                output_names=['output'],
+                tolerate_small_mismatch=False,
+                input_list=None,
+                save_dir=None):
+    backend.check_env()
+
+    if input_list is None:
+        # the real data dims is data_dims + 1
+        data = torch.rand((8, 12, 17)[-data_dims:]).unsqueeze(0)
+        indice = torch.randint(0, 8, (3, 4, 5)[-indice_dims:]).unsqueeze(0)
+    else:
+        data = input_list[0]
+        indice = input_list[1]
+    assert data.shape[0] == 1, (f'ncnn batch must be 1, \
+        but got {data.shape[0]}')
+    assert indice.shape[0] == 1, (f'ncnn batch must be 1, \
+        but got {indice.shape[0]}')
+    cfg = dict()
+    register_extra_symbolics(cfg=cfg, backend=backend.backend_name, opset=11)
+
+    gather_node = make_node('Gather', input_names, output_names, axis=axis + 1)
+    gather_graph = make_graph([gather_node], 'gather_graph', [
+        make_tensor_value_info(input_names[0], onnx.TensorProto.FLOAT, None),
+        make_tensor_value_info(input_names[1], onnx.TensorProto.INT64, None)
+    ], [make_tensor_value_info(output_names[0], onnx.TensorProto.FLOAT, None)])
+    gather_model = make_model(gather_graph)
+
+    ncnn_model = backend.onnx2ncnn(gather_model, 'gather', output_names,
+                                   save_dir)
+
+    # ncnn mat has implicit batch for mat, the ncnn_output is a mat,
+    # so the ncnn_outputs has 2 dimensions, not 1.
+    import onnxruntime
+    import importlib
+    assert importlib.util.find_spec('onnxruntime') is not None, 'onnxruntime \
+         not installed.'
+
+    import numpy as np
+    session = onnxruntime.InferenceSession(gather_model.SerializeToString())
+    model_outputs = session.run(
+        output_names,
+        dict(
+            zip(input_names, [
+                np.array(data, dtype=np.float32),
+                np.array(indice[0], dtype=np.int64)
+            ])))
+    model_outputs = [model_output for model_output in model_outputs]
+
+    ncnn_outputs = ncnn_model(
+        dict(zip(input_names, [data.float(), indice.float()])))
+    ncnn_outputs = [ncnn_outputs[name] for name in output_names]
+    assert_allclose(model_outputs, ncnn_outputs, tolerate_small_mismatch)
+
+
+@pytest.mark.parametrize('backend', [TEST_NCNN])
 @pytest.mark.parametrize('dim', [1, 2, 3])
 def test_tensorslice(backend, dim, input_list=None, save_dir=None):
     backend.check_env()
