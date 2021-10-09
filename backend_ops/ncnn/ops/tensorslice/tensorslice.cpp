@@ -53,11 +53,16 @@ int TensorSlice::forward(const Mat& bottom_blob, Mat& top_blob,
   size_t elemsize = bottom_blob.elemsize;
   const int* start_ptr = starts;
   const int* end_ptr = ends;
-  const float* axes_ptr = axes;
+  const int* axes_ptr = axes;
   const int* step_ptr = steps;
   if (starts.w > dims || ends.w > dims) {
     fprintf(stderr, "start/end attributes shape error!\n");
     return -100;
+  }
+  if (axes.w != 1) {
+    fprintf(stderr,
+            "axes.w must be 1 because any of multiaxes slice is regarded as "
+            "multi-staged onnx slice in pytorch2onnx.");
   }
   if (dims == 1) {
     for (int i = 0; i < axes.w; i++) {
@@ -106,6 +111,8 @@ int TensorSlice::forward(const Mat& bottom_blob, Mat& top_blob,
       int start = start_ptr[i];
       int end = end_ptr[i];
       int dim_shape = get_shape_by_axes(bottom_blob, positive_axis, dims);
+      int dim_shape_test =
+          get_shape_by_axes(bottom_blob, positive_axis, dims - 1);
       if (dim_shape < 0) {
         return -1;
       }
@@ -127,6 +134,7 @@ int TensorSlice::forward(const Mat& bottom_blob, Mat& top_blob,
         return -100;
       }
       active_indice[positive_axis - 1] = temp_indice;
+      active_indice[positive_axis - 1].resize(temp_indice.size());
     }
     top_blob.create((int)active_indice[1].size(), (int)active_indice[0].size(),
                     elemsize, opt.blob_allocator);
@@ -138,6 +146,7 @@ int TensorSlice::forward(const Mat& bottom_blob, Mat& top_blob,
     }
     return 0;
   }
+
   if (dims == 3) {
     std::vector<std::vector<int> > active_indice;
     std::vector<int> indices;
@@ -177,7 +186,8 @@ int TensorSlice::forward(const Mat& bottom_blob, Mat& top_blob,
         fprintf(stderr, "step should not be 0!\n");
         return -100;
       }
-      active_indice[positive_axis] = temp_indice;
+      active_indice[positive_axis - 1] = temp_indice;
+      active_indice[positive_axis - 1].resize(temp_indice.size());
     }
     top_blob.create((int)active_indice[2].size(), (int)active_indice[1].size(),
                     (int)active_indice[0].size(), elemsize, opt.blob_allocator);
@@ -192,6 +202,7 @@ int TensorSlice::forward(const Mat& bottom_blob, Mat& top_blob,
     }
     return 0;
   }
+
   return 0;
 }
 

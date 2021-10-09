@@ -545,3 +545,38 @@ def test_constantofshape(backend,
     ncnn_outputs = ncnn_model(dict(zip(input_names, [input.float()])))
     ncnn_outputs = [ncnn_outputs[name] for name in output_names]
     assert_allclose(model_outputs, ncnn_outputs, tolerate_small_mismatch)
+
+
+@pytest.mark.parametrize('backend', [TEST_NCNN])
+@pytest.mark.parametrize('dim', [1, 2, 3])
+def test_tensorslice(backend, dim, input_list=None, save_dir=None):
+    backend.check_env()
+
+    if input_list is None:
+        input = torch.rand((8, 12, 17)[-dim:]).unsqueeze(0)
+    else:
+        input = input_list[0]
+        assert input.dim() == dim + 1, f'input.dim() must equal to \
+            dim + 1, expected: {dim + 1}, got: {input.dim()}'
+
+    assert input.shape[0] == 1, (f'ncnn batch must be 1, \
+        but got {input.shape[0]}')
+    cfg = dict()
+    register_extra_symbolics(cfg=cfg, backend=backend.backend_name, opset=11)
+
+    def tensorslice_function(inputs):
+        if dim == 1:
+            return inputs[:, 2:17:7]
+        if dim == 2:
+            return inputs[:, 3:12:4, 2:15:3]
+        if dim == 3:
+            return inputs[:, 0:8:2, 2:12:4, 2:17:7]
+
+    wrapped_model = WrapFunction(tensorslice_function)
+
+    backend.run_and_validate(
+        wrapped_model, [input.float()],
+        'tensorslice',
+        input_names=['inputs'],
+        output_names=['outputs'],
+        save_dir=save_dir)
