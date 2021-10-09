@@ -57,8 +57,8 @@ class WrapModel(nn.Module):
         return func(*args, **kwargs)
 
 
-def assert_allclose(actual: List[Union[torch.Tensor, np.ndarray]],
-                    expected: List[Union[torch.Tensor, np.ndarray]],
+def assert_allclose(expected: List[Union[torch.Tensor, np.ndarray]],
+                    actual: List[Union[torch.Tensor, np.ndarray]],
                     tolerate_small_mismatch: bool = False):
     """Determine whether all actual values are closed with the expected values.
 

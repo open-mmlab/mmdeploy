@@ -32,6 +32,7 @@ class TestOnnxRTExporter:
                          dynamic_axes=None,
                          output_names=None,
                          input_names=None,
+                         expected_result=None,
                          save_dir=None):
 
         if save_dir is None:
@@ -51,10 +52,11 @@ class TestOnnxRTExporter:
                 do_constant_folding=do_constant_folding,
                 dynamic_axes=dynamic_axes,
                 opset_version=11)
-
-        with torch.no_grad():
-            model_outputs = model(*input_list)
-
+        if expected_result is None:
+            with torch.no_grad():
+                model_outputs = model(*input_list)
+        else:
+            model_outputs = expected_result
         if isinstance(model_outputs, torch.Tensor):
             model_outputs = [model_outputs]
         else:
@@ -90,6 +92,7 @@ class TestTensorRTExporter:
                          dynamic_axes=None,
                          output_names=None,
                          input_names=None,
+                         expected_result=None,
                          save_dir=None):
         if save_dir is None:
             onnx_file_path = tempfile.NamedTemporaryFile().name
@@ -97,18 +100,21 @@ class TestTensorRTExporter:
         else:
             onnx_file_path = os.path.join(save_dir, model_name + '.onnx')
             trt_file_path = os.path.join(save_dir, model_name + '.trt')
-        with torch.no_grad():
-            torch.onnx.export(
-                model,
-                tuple(input_list),
-                onnx_file_path,
-                export_params=True,
-                keep_initializers_as_inputs=True,
-                input_names=input_names,
-                output_names=output_names,
-                do_constant_folding=do_constant_folding,
-                dynamic_axes=dynamic_axes,
-                opset_version=11)
+        if isinstance(model, onnx.onnx_ml_pb2.ModelProto):
+            onnx.save(model, onnx_file_path)
+        else:
+            with torch.no_grad():
+                torch.onnx.export(
+                    model,
+                    tuple(input_list),
+                    onnx_file_path,
+                    export_params=True,
+                    keep_initializers_as_inputs=True,
+                    input_names=input_names,
+                    output_names=output_names,
+                    do_constant_folding=do_constant_folding,
+                    dynamic_axes=dynamic_axes,
+                    opset_version=11)
 
         deploy_cfg = mmcv.Config(
             dict(
@@ -135,18 +141,20 @@ class TestTensorRTExporter:
             0,
             deploy_cfg=deploy_cfg,
             onnx_model=onnx_model)
-
-        with torch.no_grad():
-            model_outputs = model(*input_list)
-
+        if expected_result is None and not isinstance(
+                model, onnx.onnx_ml_pb2.ModelProto):
+            with torch.no_grad():
+                model_outputs = model(*input_list)
+        else:
+            model_outputs = expected_result
         if isinstance(model_outputs, torch.Tensor):
             model_outputs = [model_outputs.cpu().float()]
         else:
             model_outputs = [data.cpu().float() for data in model_outputs]
 
         trt_model = trt_apis.TRTWrapper(trt_file_path)
-        inputs_list = [data.cuda() for data in input_list]
-        trt_outputs = trt_model(dict(zip(input_names, inputs_list)))
+        input_list = [data.cuda() for data in input_list]
+        trt_outputs = trt_model(dict(zip(input_names, input_list)))
         trt_outputs = [
             trt_outputs[name].cpu().float() for name in output_names
         ]
