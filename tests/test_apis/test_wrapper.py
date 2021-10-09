@@ -1,3 +1,4 @@
+import subprocess
 import tempfile
 
 import pytest
@@ -7,7 +8,7 @@ import torch.nn as nn
 from mmdeploy.utils.constants import Backend
 
 onnx_file = tempfile.NamedTemporaryFile(suffix='.onnx').name
-test_img = torch.rand([1, 3, 64, 64])
+test_img = torch.rand(1, 3, 8, 8)
 
 
 @pytest.mark.skip(reason='This a not test class but a utility class.')
@@ -17,25 +18,15 @@ class TestModel(nn.Module):
         super().__init__()
 
     def forward(self, x):
-        return x * 0.5
+        return x + test_img
 
 
-model = TestModel().eval().cuda()
+model = TestModel().eval()
 
 
 @pytest.fixture(autouse=True, scope='module')
 def generate_onnx_file():
     with torch.no_grad():
-        dynamic_axes = {
-            'input': {
-                0: 'batch',
-                2: 'width',
-                3: 'height'
-            },
-            'output': {
-                0: 'batch'
-            }
-        }
         torch.onnx.export(
             model,
             test_img,
@@ -46,7 +37,7 @@ def generate_onnx_file():
             do_constant_folding=True,
             verbose=False,
             opset_version=11,
-            dynamic_axes=dynamic_axes)
+            dynamic_axes=None)
 
 
 def check_backend_avaiable(backend):
@@ -57,6 +48,22 @@ def check_backend_avaiable(backend):
                 'TensorRT is not installed or custom ops are not compiled.')
         if not torch.cuda.is_available():
             pytest.skip('CUDA is not available.')
+    elif backend == Backend.ONNXRUNTIME:
+        from mmdeploy.apis.onnxruntime import is_available as ort_available
+        if not ort_available():
+            pytest.skip(
+                'ONNXRuntime is not installed or custom ops are not compiled.')
+    elif backend == Backend.PPL:
+        from mmdeploy.apis.ppl import is_available as ppl_avaiable
+        if not ppl_avaiable():
+            pytest.skip('PPL is not available.')
+    elif backend == Backend.NCNN:
+        from mmdeploy.apis.ncnn import is_available as ncnn_available
+        if not ncnn_available():
+            pytest.skip(
+                'NCNN is not installed or custom ops are not compiled.')
+    else:
+        raise NotImplementedError(f'Unknown backend type: {backend.value}')
 
 
 def onnx2backend(backend, onnx_file):
@@ -66,20 +73,46 @@ def onnx2backend(backend, onnx_file):
         engine = create_trt_engine(
             onnx_file, {
                 'input': {
-                    'min_shape': [1, 3, 64, 64],
-                    'opt_shape': [1, 3, 64, 64],
-                    'max_shape': [1, 3, 64, 64]
+                    'min_shape': [1, 3, 8, 8],
+                    'opt_shape': [1, 3, 8, 8],
+                    'max_shape': [1, 3, 8, 8]
                 }
             })
         save_trt_engine(engine, backend_file)
         return backend_file
+    elif backend == Backend.ONNXRUNTIME:
+        return onnx_file
+    elif backend == Backend.PPL:
+        return onnx_file
+    elif backend == Backend.NCNN:
+        from mmdeploy.apis.ncnn import get_onnx2ncnn_path
+        onnx2ncnn_path = get_onnx2ncnn_path()
+        param_file = tempfile.NamedTemporaryFile(suffix='.param').name
+        bin_file = tempfile.NamedTemporaryFile(suffix='.bin').name
+        subprocess.call([onnx2ncnn_path, onnx_file, param_file, bin_file])
+        return param_file, bin_file
 
 
-def create_wrapper(backend, engine_file):
+def create_wrapper(backend, model_files):
     if backend == Backend.TENSORRT:
         from mmdeploy.apis.tensorrt import TRTWrapper
-        trt_model = TRTWrapper(engine_file)
+        trt_model = TRTWrapper(model_files)
         return trt_model
+    elif backend == Backend.ONNXRUNTIME:
+        from mmdeploy.apis.onnxruntime import ORTWrapper
+        ort_model = ORTWrapper(model_files, 0)
+        return ort_model
+    elif backend == Backend.PPL:
+        from mmdeploy.apis.ppl import PPLWrapper
+        ppl_model = PPLWrapper(model_files, 0)
+        return ppl_model
+    elif backend == Backend.NCNN:
+        from mmdeploy.apis.ncnn import NCNNWrapper
+        param_file, bin_file = model_files
+        ncnn_model = NCNNWrapper(param_file, bin_file, output_names=['output'])
+        return ncnn_model
+    else:
+        raise NotImplementedError(f'Unknown backend type: {backend.value}')
 
 
 def run_wrapper(backend, wrapper, input):
@@ -88,9 +121,27 @@ def run_wrapper(backend, wrapper, input):
         results = wrapper({'input': input})['output']
         results = results.detach().cpu()
         return results
+    elif backend == Backend.ONNXRUNTIME:
+        input = input.cuda()
+        results = wrapper({'input': input})[0]
+        return list(results)
+    elif backend == Backend.PPL:
+        input = input.cuda()
+        results = wrapper({'input': input})[0]
+        return list(results)
+    elif backend == Backend.NCNN:
+        input = input.float()
+        results = wrapper({'input': input})['output']
+        results = results.detach().cpu().numpy()
+        results_list = list(results)
+        return results_list
+    else:
+        raise NotImplementedError(f'Unknown backend type: {backend.value}')
 
 
-ALL_BACKEND = [Backend.TENSORRT]
+ALL_BACKEND = [
+    Backend.TENSORRT, Backend.ONNXRUNTIME, Backend.PPL, Backend.NCNN
+]
 
 
 @pytest.mark.parametrize('backend', ALL_BACKEND)

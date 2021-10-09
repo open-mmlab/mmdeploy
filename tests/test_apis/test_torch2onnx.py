@@ -23,7 +23,7 @@ class TestModel(nn.Module):
 
 
 test_model = TestModel().eval().cuda()
-test_img = torch.rand([1, 3, 64, 64])
+test_img = torch.rand([1, 3, 8, 8])
 
 
 def get_deploy_cfg():
