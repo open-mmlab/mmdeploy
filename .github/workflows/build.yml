@@ -27,7 +27,10 @@ jobs:
         run: |
           pip install interrogate
           interrogate -v --ignore-init-method --ignore-module --ignore-nested-functions --ignore-regex "__repr__" --fail-under 80 mmdeploy
-
+      - name: Check pylint score
+        run: |
+          pip install pylint
+          pylint mmdeploy
   build_cpu:
     runs-on: ubuntu-18.04
     strategy:
