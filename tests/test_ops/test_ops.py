@@ -1,7 +1,3 @@
-import os
-import subprocess
-import tempfile
-
 import onnx
 import pytest
 import torch
@@ -378,14 +374,14 @@ def test_topk(backend,
     else:
         input = input_list[0]
     assert input.shape[0] == 1, (f'ncnn batch must be 1, \
-        but not {input.shape[0]}')
+        but got {input.shape[0]}')
     cfg = dict()
-    register_extra_symbolics(cfg=cfg, opset=11)
+    register_extra_symbolics(cfg=cfg, backend=backend.backend_name, opset=11)
 
-    def wrapped_function(inputs):
+    def topk_function(inputs):
         return torch.Tensor.topk(inputs, k, dim, largest, sorted)
 
-    wrapped_model = WrapFunction(wrapped_function)
+    wrapped_model = WrapFunction(topk_function)
 
     # when the 'sorted' attribute is False, pytorch will return
     # a hard to expect result, which only features that the topk
@@ -433,9 +429,9 @@ def test_shape(backend,
             same as orig_shape'
 
     assert input.shape[0] == 1, (f'ncnn batch must be 1, \
-        but not {input.shape[0]}')
+        but got {input.shape[0]}')
     cfg = dict()
-    register_extra_symbolics(cfg=cfg, opset=11)
+    register_extra_symbolics(cfg=cfg, backend=backend.backend_name, opset=11)
 
     shape_node = make_node('Shape', input_names, output_names)
     assert len(input_names) == 1, 'length of input_names must be 1'
@@ -449,26 +445,12 @@ def test_shape(backend,
     ])
     shape_model = make_model(shape_graph)
 
-    if save_dir is None:
-        onnx_file_path = tempfile.NamedTemporaryFile(suffix='.onnx').name
-        ncnn_param_path = tempfile.NamedTemporaryFile(suffix='.param').name
-        ncnn_bin_path = tempfile.NamedTemporaryFile(suffix='.bin').name
-    else:
-        onnx_file_path = os.path.join(save_dir, 'shape.onnx')
-        ncnn_param_path = os.path.join(save_dir, 'shape.param')
-        ncnn_bin_path = os.path.join(save_dir, 'shape.bin')
-
-    onnx.save_model(shape_model, onnx_file_path)
-    import mmdeploy.apis.ncnn as ncnn_apis
-    onnx2ncnn_path = ncnn_apis.get_onnx2ncnn_path()
-    subprocess.call(
-        [onnx2ncnn_path, onnx_file_path, ncnn_param_path, ncnn_bin_path])
+    ncnn_model = backend.onnx2ncnn(shape_model, 'shape', output_names,
+                                   save_dir)
 
     # ncnn mat has implicit batch for mat, the ncnn_output is a mat,
     # so the ncnn_outputs has 2 dimensions, not 1.
     model_outputs = [torch.tensor(orig_shape).unsqueeze(0).float()]
-    ncnn_model = ncnn_apis.NCNNWrapper(ncnn_param_path, ncnn_bin_path,
-                                       output_names)
     ncnn_outputs = ncnn_model(dict(zip(input_names, [input])))
     ncnn_outputs = [ncnn_outputs[name] for name in output_names]
     assert_allclose(model_outputs, ncnn_outputs, tolerate_small_mismatch)
@@ -505,7 +487,7 @@ def test_constantofshape(backend,
     assert input[0][0] == 1, (f'ncnn output mat batch must be 1, \
         got {input[0][0]}')
     cfg = dict()
-    register_extra_symbolics(cfg=cfg, opset=11)
+    register_extra_symbolics(cfg=cfg, backend=backend.backend_name, opset=11)
 
     constantofshape_node = make_node(
         'ConstantOfShape', input_names, output_names, value=float(val))
@@ -520,28 +502,12 @@ def test_constantofshape(backend,
                                    torch.Size(input[0]))
         ])
     constantofshape_model = make_model(constantofshape_graph)
-
-    if save_dir is None:
-        onnx_file_path = tempfile.NamedTemporaryFile(suffix='.onnx').name
-        ncnn_param_path = tempfile.NamedTemporaryFile(suffix='.param').name
-        ncnn_bin_path = tempfile.NamedTemporaryFile(suffix='.bin').name
-    else:
-        onnx_file_path = os.path.join(save_dir, 'constantofshape.onnx')
-        ncnn_param_path = os.path.join(save_dir, 'constantofshape.param')
-        ncnn_bin_path = os.path.join(save_dir, 'constantofshape.bin')
-
-    onnx.save_model(constantofshape_model, onnx_file_path)
-
-    import mmdeploy.apis.ncnn as ncnn_apis
-    onnx2ncnn_path = ncnn_apis.get_onnx2ncnn_path()
-    subprocess.call(
-        [onnx2ncnn_path, onnx_file_path, ncnn_param_path, ncnn_bin_path])
+    ncnn_model = backend.onnx2ncnn(constantofshape_model, 'constantofshape',
+                                   output_names, save_dir)
 
     # ncnn mat has implicit batch for mat, the ncnn_output is a mat,
     # so the ncnn_outputs has 2 dimensions, not 1.
     model_outputs = [torch.fill_(torch.rand(tuple(input[0])), val)]
-    ncnn_model = ncnn_apis.NCNNWrapper(ncnn_param_path, ncnn_bin_path,
-                                       output_names)
     ncnn_outputs = ncnn_model(dict(zip(input_names, [input.float()])))
     ncnn_outputs = [ncnn_outputs[name] for name in output_names]
     assert_allclose(model_outputs, ncnn_outputs, tolerate_small_mismatch)
