@@ -333,12 +333,12 @@ def build_dataloader(codebase: Codebase, dataset: Dataset,
         raise NotImplementedError(f'Unknown codebase type: {codebase.value}')
 
 
-def get_tensor_from_input(codebase: Codebase, input_data: tuple):
+def get_tensor_from_input(codebase: Codebase, input_data: Dict[str, Any]):
     """Get input tensor from input data.
 
     Args:
         codebase (Codebase): Specifying codebase type.
-        input_data (tuple): Input data containing meta info and image tensor.
+        input_data (dict): Input data containing meta info and image tensor.
 
     Returns:
         torch.Tensor: An image in `Tensor`.

@@ -1,10 +1,10 @@
+import importlib
 from typing import Dict, Iterable, Optional
 
 import ncnn
 import numpy as np
 import torch
 
-from mmdeploy.apis.ncnn import ncnn_ext
 from mmdeploy.utils.timer import TimeCounter
 
 
@@ -37,7 +37,9 @@ class NCNNWrapper(torch.nn.Module):
         super(NCNNWrapper, self).__init__()
 
         net = ncnn.Net()
-        ncnn_ext.register_mm_custom_layers(net)
+        if importlib.util.find_spec('mmdeploy.apis.ncnn.ncnn_ext'):
+            from mmdeploy.apis.ncnn import ncnn_ext
+            ncnn_ext.register_mm_custom_layers(net)
         net.load_param(param_file)
         net.load_model(bin_file)
 

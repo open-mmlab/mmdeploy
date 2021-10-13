@@ -11,6 +11,8 @@ def size_of_tensor_static(ctx, self, *args):
     ret = ctx.origin_func(self, *args)
     if isinstance(ret, torch.Tensor):
         ret = int(ret)
+    elif isinstance(ret, int):
+        return (ret)
     else:
         ret = [int(r) for r in ret]
         ret = tuple(ret)

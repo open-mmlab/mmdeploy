@@ -48,13 +48,13 @@ def tblr2bboxes(ctx,
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.core.bbox.coder.tblr_bbox_coder.tblr2bboxes',
     backend='ncnn')
-def delta2bbox_ncnn(ctx,
-                    priors,
-                    tblr,
-                    normalizer=4.0,
-                    normalize_by_wh=True,
-                    max_shape=None,
-                    clip_border=True):
+def tblr2bboxes_ncnn(ctx,
+                     priors,
+                     tblr,
+                     normalizer=4.0,
+                     normalize_by_wh=True,
+                     max_shape=None,
+                     clip_border=True):
     """Rewrite for ONNX exporting of NCNN backend."""
     assert priors.size(0) == tblr.size(0)
     if priors.ndim == 3:

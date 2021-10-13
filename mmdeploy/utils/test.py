@@ -57,6 +57,54 @@ class WrapModel(nn.Module):
         return func(*args, **kwargs)
 
 
+class SwitchBackendWrapper:
+    """A switcher for backend wrapper for unit tests.
+
+    Examples:
+        >>> from mmdeploy.utils.test import SwitchBackendWrapper
+        >>> from mmdeploy.apis.onnxruntime.onnxruntime_utils import ORTWrapper
+        >>> SwitchBackendWrapper.set(ORTWrapper, outputs=outputs)
+        >>> ...
+        >>> SwitchBackendWrapper.recover(ORTWrapper)
+    """
+    init = None
+    forward = None
+    call = None
+
+    class BackendWrapper(torch.nn.Module):
+        """A dummy wrapper for unit tests."""
+
+        def __init__(self, *args, **kwargs):
+            self.output_names = ['dets', 'labels']
+
+        def forward(self, *args, **kwargs):
+            return self.outputs
+
+        def __call__(self, *args, **kwds):
+            return self.forward(*args, **kwds)
+
+    @staticmethod
+    def set(obj, **kwargs):
+        """Replace attributes in backend wrappers with dummy items."""
+        SwitchBackendWrapper.init = obj.__init__
+        SwitchBackendWrapper.forward = obj.forward
+        SwitchBackendWrapper.call = obj.__call__
+        obj.__init__ = SwitchBackendWrapper.BackendWrapper.__init__
+        obj.forward = SwitchBackendWrapper.BackendWrapper.forward
+        obj.__call__ = SwitchBackendWrapper.BackendWrapper.__call__
+        for k, v in kwargs.items():
+            setattr(obj, k, v)
+
+    @staticmethod
+    def recover(obj):
+        assert SwitchBackendWrapper.init is not None and \
+            SwitchBackendWrapper.forward is not None,\
+            'recover method must be called after exchange'
+        obj.__init__ = SwitchBackendWrapper.init
+        obj.forward = SwitchBackendWrapper.forward
+        obj.__call__ = SwitchBackendWrapper.call
+
+
 def assert_allclose(expected: List[Union[torch.Tensor, np.ndarray]],
                     actual: List[Union[torch.Tensor, np.ndarray]],
                     tolerate_small_mismatch: bool = False):
@@ -180,6 +228,9 @@ def get_rewrite_outputs(wrapped_model: nn.Module, model_inputs: dict,
                 backend_feats[input_names[i]] = feature_list[i]
             else:
                 backend_feats[str(i)] = feature_list[i]
+    elif backend == Backend.NCNN:
+        return ctx_outputs
+
     with torch.no_grad():
         backend_outputs = backend_model.forward(backend_feats)
     return backend_outputs
