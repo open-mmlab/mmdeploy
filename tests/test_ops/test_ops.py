@@ -610,3 +610,37 @@ def test_tensorslice(backend, dim, input_list=None, save_dir=None):
         input_names=['inputs'],
         output_names=['outputs'],
         save_dir=save_dir)
+
+
+@pytest.mark.parametrize('backend', [TEST_NCNN])
+@pytest.mark.parametrize('input_dim, output_dim', [(1, 1), (1, 2), (1, 3),
+                                                   (2, 2), (2, 3), (3, 3)])
+def test_expand(backend,
+                input_dim,
+                output_dim,
+                input_list=None,
+                save_dir=None):
+    backend.check_env()
+    if input_list is None:
+        input = torch.rand((1, 12, 1)[-input_dim:]).unsqueeze(0)
+        target = torch.rand((8, 12, 17)[-output_dim:]).unsqueeze(0)
+    else:
+        input = input_list[0]
+        target = input_list[1]
+    assert input.shape[0] == 1, (f'ncnn batch must be 1, \
+        but not {input.shape[0]}')
+    assert target.shape[0] == 1, (f'ncnn batch must be 1, \
+        but not {target.shape[0]}')
+    cfg = dict()
+    register_extra_symbolics(cfg=cfg, backend=backend.backend_name, opset=11)
+
+    def expand_function(input, target):
+        return input.expand_as(target)
+
+    wrapped_model = WrapFunction(expand_function)
+    backend.run_and_validate(
+        wrapped_model, [input.float(), target.float()],
+        'expand',
+        input_names=['input', 'shape'],
+        output_names=['output'],
+        save_dir=save_dir)
