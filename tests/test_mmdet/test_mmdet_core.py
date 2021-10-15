@@ -57,7 +57,7 @@ def test_multiclass_nms_static():
         multiclass_nms,
         max_output_boxes_per_class=max_output_boxes_per_class,
         keep_top_k=keep_top_k)
-    rewrite_outputs = get_rewrite_outputs(
+    rewrite_outputs, _ = get_rewrite_outputs(
         wrapped_func,
         model_inputs={
             'boxes': boxes,
@@ -89,9 +89,9 @@ def test_delta2bbox(backend_type):
     deltas = torch.rand(1, 5, 4)
     original_outputs = delta2bbox(rois, deltas)
 
-    # wrap function to nn.Module, enable torch.onn.export
+    # wrap function to nn.Module, enable torch.onnx.export
     wrapped_func = WrapFunction(delta2bbox)
-    rewrite_outputs = get_rewrite_outputs(
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_func,
         model_inputs={
             'rois': rois,
@@ -99,9 +99,13 @@ def test_delta2bbox(backend_type):
         },
         deploy_cfg=deploy_cfg)
 
-    model_output = original_outputs.squeeze().cpu().numpy()
-    rewrite_output = rewrite_outputs[0].squeeze()
-    assert np.allclose(model_output, rewrite_output, rtol=1e-03, atol=1e-05)
+    if is_backend_output:
+        model_output = original_outputs.squeeze().cpu().numpy()
+        rewrite_output = rewrite_outputs[0].squeeze()
+        assert np.allclose(
+            model_output, rewrite_output, rtol=1e-03, atol=1e-05)
+    else:
+        assert rewrite_outputs is not None
 
 
 @pytest.mark.parametrize('backend_type', ['onnxruntime', 'ncnn'])
@@ -124,9 +128,9 @@ def test_tblr2bbox(backend_type):
     tblr = torch.rand(1, 5, 4)
     original_outputs = tblr2bboxes(priors, tblr)
 
-    # wrap function to nn.Module, enable torch.onn.export
+    # wrap function to nn.Module, enable torch.onnx.export
     wrapped_func = WrapFunction(tblr2bboxes)
-    rewrite_outputs = get_rewrite_outputs(
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_func,
         model_inputs={
             'priors': priors,
@@ -134,9 +138,13 @@ def test_tblr2bbox(backend_type):
         },
         deploy_cfg=deploy_cfg)
 
-    model_output = original_outputs.squeeze().cpu().numpy()
-    rewrite_output = rewrite_outputs[0].squeeze()
-    assert np.allclose(model_output, rewrite_output, rtol=1e-03, atol=1e-05)
+    if is_backend_output:
+        model_output = original_outputs.squeeze().cpu().numpy()
+        rewrite_output = rewrite_outputs[0].squeeze()
+        assert np.allclose(
+            model_output, rewrite_output, rtol=1e-03, atol=1e-05)
+    else:
+        assert rewrite_outputs is not None
 
 
 def test_distance2bbox():

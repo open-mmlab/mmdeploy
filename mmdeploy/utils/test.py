@@ -174,6 +174,9 @@ def get_rewrite_outputs(wrapped_model: nn.Module, model_inputs: dict,
 
     Returns:
         Any: The outputs of model, decided by the backend wrapper.
+        bool: A flag indicate the type of outputs. If the flag is True, then
+        the outputs are backend output, otherwise they are outputs of wrapped
+        pytorch model.
     """
     onnx_file_path = tempfile.NamedTemporaryFile(suffix='.onnx').name
     pytorch2onnx_cfg = get_onnx_config(deploy_cfg)
@@ -201,7 +204,7 @@ def get_rewrite_outputs(wrapped_model: nn.Module, model_inputs: dict,
         # convert to engine
         import mmdeploy.apis.tensorrt as trt_apis
         if not trt_apis.is_available():
-            return ctx_outputs
+            return ctx_outputs, False
         trt_file_path = tempfile.NamedTemporaryFile(suffix='.engine').name
         trt_apis.onnx2tensorrt(
             '',
@@ -214,7 +217,7 @@ def get_rewrite_outputs(wrapped_model: nn.Module, model_inputs: dict,
     elif backend == Backend.ONNXRUNTIME:
         import mmdeploy.apis.onnxruntime as ort_apis
         if not ort_apis.is_available():
-            return ctx_outputs
+            return ctx_outputs, False
         backend_model = ort_apis.ORTWrapper(onnx_file_path, 0, None)
         feature_list = []
         backend_feats = {}
@@ -239,8 +242,11 @@ def get_rewrite_outputs(wrapped_model: nn.Module, model_inputs: dict,
             else:
                 backend_feats[str(i)] = feature_list[i]
     elif backend == Backend.NCNN:
-        return ctx_outputs
+        return ctx_outputs, False
+    else:
+        raise NotImplementedError(
+            f'Unimplemented backend type: {backend.value}')
 
     with torch.no_grad():
         backend_outputs = backend_model.forward(backend_feats)
-    return backend_outputs
+    return backend_outputs, True

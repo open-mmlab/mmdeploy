@@ -134,21 +134,25 @@ def test_anchor_head_get_bboxes(backend_type):
         'cls_scores': cls_score,
         'bbox_preds': bboxes,
     }
-    rewrite_outputs = get_rewrite_outputs(
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg)
 
-    for model_output, rewrite_output in zip(model_outputs[0], rewrite_outputs):
-        model_output = model_output.squeeze().cpu().numpy()
-        rewrite_output = rewrite_output.squeeze()
-        # hard code to make two tensors with the same shape
-        # rewrite and original codes applied different nms strategy
-        assert np.allclose(
-            model_output[:rewrite_output.shape[0]],
-            rewrite_output,
-            rtol=1e-03,
-            atol=1e-05)
+    if is_backend_output:
+        for model_output, rewrite_output in zip(model_outputs[0],
+                                                rewrite_outputs):
+            model_output = model_output.squeeze().cpu().numpy()
+            rewrite_output = rewrite_output.squeeze()
+            # hard code to make two tensors with the same shape
+            # rewrite and original codes applied different nms strategy
+            assert np.allclose(
+                model_output[:rewrite_output.shape[0]],
+                rewrite_output,
+                rtol=1e-03,
+                atol=1e-05)
+    else:
+        assert rewrite_outputs is not None
 
 
 @pytest.mark.parametrize('backend_type', ['onnxruntime', 'ncnn'])
@@ -215,21 +219,24 @@ def test_get_bboxes_of_fcos_head(backend_type):
         'bbox_preds': bboxes,
         'centernesses': centernesses
     }
-    rewrite_outputs = get_rewrite_outputs(
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg)
-
-    for model_output, rewrite_output in zip(model_outputs[0], rewrite_outputs):
-        model_output = model_output.squeeze().cpu().numpy()
-        rewrite_output = rewrite_output.squeeze()
-        # hard code to make two tensors with the same shape
-        # rewrite and original codes applied different nms strategy
-        assert np.allclose(
-            model_output[:rewrite_output.shape[0]],
-            rewrite_output,
-            rtol=1e-03,
-            atol=1e-05)
+    if is_backend_output:
+        for model_output, rewrite_output in zip(model_outputs[0],
+                                                rewrite_outputs):
+            model_output = model_output.squeeze().cpu().numpy()
+            rewrite_output = rewrite_output.squeeze()
+            # hard code to make two tensors with the same shape
+            # rewrite and original codes applied different nms strategy
+            assert np.allclose(
+                model_output[:rewrite_output.shape[0]],
+                rewrite_output,
+                rtol=1e-03,
+                atol=1e-05)
+    else:
+        assert rewrite_outputs is not None
 
 
 def _replace_r50_with_r18(model):
@@ -273,7 +280,7 @@ def test_forward_of_base_detector_and_visualize(model_cfg_path):
 
     img = torch.randn(1, 3, 64, 64)
     rewrite_inputs = {'img': img}
-    rewrite_outputs = get_rewrite_outputs(
+    rewrite_outputs, _ = get_rewrite_outputs(
         wrapped_model=model,
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg)
