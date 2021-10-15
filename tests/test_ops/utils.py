@@ -121,7 +121,7 @@ class TestTensorRTExporter:
                 backend_config=dict(
                     type='tensorrt',
                     common_config=dict(
-                        fp16_mode=False, max_workspace_size=1 << 30),
+                        fp16_mode=False, max_workspace_size=1 << 28),
                     model_inputs=[
                         dict(
                             input_shapes=dict(

@@ -1,5 +1,6 @@
 import os.path as osp
 import tempfile
+from multiprocessing import Process
 
 import h5py
 import mmcv
@@ -7,7 +8,6 @@ import mmcv
 from mmdeploy.apis import create_calib_table
 
 calib_file = tempfile.NamedTemporaryFile(suffix='.h5').name
-data_prefix = 'tests/data/tiger'
 ann_file = 'tests/data/annotation.json'
 
 
@@ -71,7 +71,7 @@ def get_model_cfg():
         dict(type='LoadImageFromFile'),
         dict(
             type='MultiScaleFlipAug',
-            img_scale=(1333, 800),
+            img_scale=(1, 1),
             flip=False,
             transforms=[
                 dict(type='Resize', keep_ratio=True),
@@ -169,7 +169,7 @@ def get_model_cfg():
     return model_cfg
 
 
-def test_create_calib_end2end():
+def run_test_create_calib_end2end():
     model_cfg = get_model_cfg()
     deploy_cfg = get_end2end_deploy_cfg()
     create_calib_table(
@@ -189,7 +189,19 @@ def test_create_calib_end2end():
         assert calibrator['calib_data']['end2end']['input']['0'] is not None
 
 
-def test_create_calib_parittion():
+# Because Faster-RCNN needs too much memory on GPU, we need to run tests in a
+# new process.
+
+
+def test_create_calib_end2end():
+    p = Process(target=run_test_create_calib_end2end)
+    try:
+        p.start()
+    finally:
+        p.join()
+
+
+def run_test_create_calib_parittion():
     model_cfg = get_model_cfg()
     deploy_cfg = get_partition_deploy_cfg()
     create_calib_table(
@@ -211,3 +223,11 @@ def test_create_calib_parittion():
             assert calib_data[partition_name] is not None
             assert calib_data[partition_name][input_names[i]] is not None
             assert calib_data[partition_name][input_names[i]]['0'] is not None
+
+
+def test_create_calib_parittion():
+    p = Process(target=run_test_create_calib_parittion)
+    try:
+        p.start()
+    finally:
+        p.join()

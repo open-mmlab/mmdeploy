@@ -59,13 +59,14 @@ class WrapModel(nn.Module):
 
 class SwitchBackendWrapper:
     """A switcher for backend wrapper for unit tests.
-
     Examples:
         >>> from mmdeploy.utils.test import SwitchBackendWrapper
         >>> from mmdeploy.apis.onnxruntime.onnxruntime_utils import ORTWrapper
-        >>> SwitchBackendWrapper.set(ORTWrapper, outputs=outputs)
+        >>> with SwitchBackendWrapper(ORTWrapper) as wrapper:
+        >>>     wrapper.set(ORTWrapper, outputs=outputs)
+        >>>     ...
+        >>>     # ORTWrapper will recover when exiting context
         >>> ...
-        >>> SwitchBackendWrapper.recover(ORTWrapper)
     """
     init = None
     forward = None
@@ -83,26 +84,35 @@ class SwitchBackendWrapper:
         def __call__(self, *args, **kwds):
             return self.forward(*args, **kwds)
 
-    @staticmethod
-    def set(obj, **kwargs):
+    def __init__(self, recover_class):
+        self._recover_class = recover_class
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, trace):
+        self.recover()
+
+    def set(self, **kwargs):
         """Replace attributes in backend wrappers with dummy items."""
-        SwitchBackendWrapper.init = obj.__init__
-        SwitchBackendWrapper.forward = obj.forward
-        SwitchBackendWrapper.call = obj.__call__
+        obj = self._recover_class
+        self.init = obj.__init__
+        self.forward = obj.forward
+        self.call = obj.__call__
         obj.__init__ = SwitchBackendWrapper.BackendWrapper.__init__
         obj.forward = SwitchBackendWrapper.BackendWrapper.forward
         obj.__call__ = SwitchBackendWrapper.BackendWrapper.__call__
         for k, v in kwargs.items():
             setattr(obj, k, v)
 
-    @staticmethod
-    def recover(obj):
-        assert SwitchBackendWrapper.init is not None and \
-            SwitchBackendWrapper.forward is not None,\
+    def recover(self):
+        assert self.init is not None and \
+            self.forward is not None,\
             'recover method must be called after exchange'
-        obj.__init__ = SwitchBackendWrapper.init
-        obj.forward = SwitchBackendWrapper.forward
-        obj.__call__ = SwitchBackendWrapper.call
+        obj = self._recover_class
+        obj.__init__ = self.init
+        obj.forward = self.forward
+        obj.__call__ = self.call
 
 
 def assert_allclose(expected: List[Union[torch.Tensor, np.ndarray]],

@@ -26,20 +26,21 @@ def test_TensorRTDetector():
         'dets': torch.rand(1, 100, 5).cuda(),
         'labels': torch.rand(1, 100).cuda()
     }
-    SwitchBackendWrapper.set(TRTWrapper, outputs=outputs)
+    with SwitchBackendWrapper(TRTWrapper) as wrapper:
+        wrapper.set(outputs=outputs)
 
-    from mmdeploy.mmdet.apis.inference import TensorRTDetector
-    trt_detector = TensorRTDetector('', ['' for i in range(80)], 0)
-    imgs = [torch.rand(1, 3, 64, 64).cuda()]
-    img_metas = [[{
-        'ori_shape': [64, 64, 3],
-        'img_shape': [64, 64, 3],
-        'scale_factor': [2.09, 1.87, 2.09, 1.87],
-    }]]
+        from mmdeploy.mmdet.apis.inference import TensorRTDetector
+        trt_detector = TensorRTDetector('', ['' for i in range(80)], 0)
+        imgs = [torch.rand(1, 3, 64, 64).cuda()]
+        img_metas = [[{
+            'ori_shape': [64, 64, 3],
+            'img_shape': [64, 64, 3],
+            'scale_factor': [2.09, 1.87, 2.09, 1.87],
+        }]]
 
-    results = trt_detector.forward(imgs, img_metas)
-    assert results is not None, 'failed to get output using TensorRTDetector'
-    SwitchBackendWrapper.recover(TRTWrapper)
+        results = trt_detector.forward(imgs, img_metas)
+        assert results is not None, ('failed to get output using '
+                                     'TensorRTDetector')
 
 
 @pytest.mark.skipif(
@@ -52,21 +53,21 @@ def test_ONNXRuntimeDetector():
 
     # simplify backend inference
     outputs = (torch.rand(1, 100, 5), torch.rand(1, 100))
-    SwitchBackendWrapper.set(ORTWrapper, outputs=outputs)
+    with SwitchBackendWrapper(ORTWrapper) as wrapper:
+        wrapper.set(outputs=outputs)
 
-    from mmdeploy.mmdet.apis.inference import ONNXRuntimeDetector
-    ort_detector = ONNXRuntimeDetector('', ['' for i in range(80)], 0)
-    imgs = [torch.rand(1, 3, 64, 64)]
-    img_metas = [[{
-        'ori_shape': [64, 64, 3],
-        'img_shape': [64, 64, 3],
-        'scale_factor': [2.09, 1.87, 2.09, 1.87],
-    }]]
+        from mmdeploy.mmdet.apis.inference import ONNXRuntimeDetector
+        ort_detector = ONNXRuntimeDetector('', ['' for i in range(80)], 0)
+        imgs = [torch.rand(1, 3, 64, 64)]
+        img_metas = [[{
+            'ori_shape': [64, 64, 3],
+            'img_shape': [64, 64, 3],
+            'scale_factor': [2.09, 1.87, 2.09, 1.87],
+        }]]
 
-    results = ort_detector.forward(imgs, img_metas)
-    assert results is not None, 'failed to get output using '\
-        'ONNXRuntimeDetector'
-    SwitchBackendWrapper.recover(ORTWrapper)
+        results = ort_detector.forward(imgs, img_metas)
+        assert results is not None, 'failed to get output using '\
+            'ONNXRuntimeDetector'
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason='requires cuda')
@@ -80,20 +81,20 @@ def test_PPLDetector():
 
     # simplify backend inference
     outputs = (torch.rand(1, 100, 5), torch.rand(1, 100))
-    SwitchBackendWrapper.set(PPLWrapper, outputs=outputs)
+    with SwitchBackendWrapper(PPLWrapper) as wrapper:
+        wrapper.set(outputs=outputs)
 
-    from mmdeploy.mmdet.apis.inference import PPLDetector
-    ppl_detector = PPLDetector('', ['' for i in range(80)], 0)
-    imgs = [torch.rand(1, 3, 64, 64)]
-    img_metas = [[{
-        'ori_shape': [64, 64, 3],
-        'img_shape': [64, 64, 3],
-        'scale_factor': [2.09, 1.87, 2.09, 1.87],
-    }]]
+        from mmdeploy.mmdet.apis.inference import PPLDetector
+        ppl_detector = PPLDetector('', ['' for i in range(80)], 0)
+        imgs = [torch.rand(1, 3, 64, 64)]
+        img_metas = [[{
+            'ori_shape': [64, 64, 3],
+            'img_shape': [64, 64, 3],
+            'scale_factor': [2.09, 1.87, 2.09, 1.87],
+        }]]
 
-    results = ppl_detector.forward(imgs, img_metas)
-    assert results is not None, 'failed to get output using PPLDetector'
-    SwitchBackendWrapper.recover(PPLWrapper)
+        results = ppl_detector.forward(imgs, img_metas)
+        assert results is not None, 'failed to get output using PPLDetector'
 
 
 def get_test_cfg_and_post_processing():
@@ -155,28 +156,26 @@ def test_NCNNPSSDetector():
         'scores': torch.rand(1, 120, 80),
         'boxes': torch.rand(1, 120, 4)
     }
-    SwitchBackendWrapper.set(
-        NCNNWrapper,
-        outputs=outputs,
-        model_cfg=model_cfg,
-        deploy_cfg=deploy_cfg)
+    with SwitchBackendWrapper(NCNNWrapper) as wrapper:
+        wrapper.set(
+            outputs=outputs, model_cfg=model_cfg, deploy_cfg=deploy_cfg)
 
-    from mmdeploy.mmdet.apis.inference import NCNNPSSDetector
+        from mmdeploy.mmdet.apis.inference import NCNNPSSDetector
 
-    ncnn_pss_detector = NCNNPSSDetector(['', ''], ['' for i in range(80)],
-                                        model_cfg=model_cfg,
-                                        deploy_cfg=deploy_cfg,
-                                        device_id=0)
-    imgs = [torch.rand(1, 3, 32, 32)]
-    img_metas = [[{
-        'ori_shape': [32, 32, 3],
-        'img_shape': [32, 32, 3],
-        'scale_factor': [2.09, 1.87, 2.09, 1.87],
-    }]]
+        ncnn_pss_detector = NCNNPSSDetector(['', ''], ['' for i in range(80)],
+                                            model_cfg=model_cfg,
+                                            deploy_cfg=deploy_cfg,
+                                            device_id=0)
+        imgs = [torch.rand(1, 3, 32, 32)]
+        img_metas = [[{
+            'ori_shape': [32, 32, 3],
+            'img_shape': [32, 32, 3],
+            'scale_factor': [2.09, 1.87, 2.09, 1.87],
+        }]]
 
-    results = ncnn_pss_detector.forward(imgs, img_metas)
-    assert results is not None, 'failed to get output using NCNNPSSDetector'
-    SwitchBackendWrapper.recover(NCNNWrapper)
+        results = ncnn_pss_detector.forward(imgs, img_metas)
+        assert results is not None, ('failed to get output using '
+                                     'NCNNPSSDetector')
 
 
 @pytest.mark.skipif(
@@ -197,30 +196,27 @@ def test_ONNXRuntimePSSDetector():
         np.random.rand(1, 120, 80).astype(np.float32),
         np.random.rand(1, 120, 4).astype(np.float32)
     ]
-    SwitchBackendWrapper.set(
-        ORTWrapper,
-        outputs=outputs,
-        model_cfg=model_cfg,
-        deploy_cfg=deploy_cfg)
+    with SwitchBackendWrapper(ORTWrapper) as wrapper:
+        wrapper.set(
+            outputs=outputs, model_cfg=model_cfg, deploy_cfg=deploy_cfg)
 
-    from mmdeploy.mmdet.apis.inference import ONNXRuntimePSSDetector
+        from mmdeploy.mmdet.apis.inference import ONNXRuntimePSSDetector
 
-    ort_pss_detector = ONNXRuntimePSSDetector(
-        '', ['' for i in range(80)],
-        model_cfg=model_cfg,
-        deploy_cfg=deploy_cfg,
-        device_id=0)
-    imgs = [torch.rand(1, 3, 32, 32)]
-    img_metas = [[{
-        'ori_shape': [32, 32, 3],
-        'img_shape': [32, 32, 3],
-        'scale_factor': [2.09, 1.87, 2.09, 1.87],
-    }]]
+        ort_pss_detector = ONNXRuntimePSSDetector(
+            '', ['' for i in range(80)],
+            model_cfg=model_cfg,
+            deploy_cfg=deploy_cfg,
+            device_id=0)
+        imgs = [torch.rand(1, 3, 32, 32)]
+        img_metas = [[{
+            'ori_shape': [32, 32, 3],
+            'img_shape': [32, 32, 3],
+            'scale_factor': [2.09, 1.87, 2.09, 1.87],
+        }]]
 
-    results = ort_pss_detector.forward(imgs, img_metas)
-    assert results is not None, 'failed to get output using '
-    'ONNXRuntimePSSDetector'
-    SwitchBackendWrapper.recover(ORTWrapper)
+        results = ort_pss_detector.forward(imgs, img_metas)
+        assert results is not None, 'failed to get output using '
+        'ONNXRuntimePSSDetector'
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason='requires cuda')
@@ -242,30 +238,27 @@ def test_TensorRTPSSDetector():
         'scores': torch.rand(1, 120, 80).cuda(),
         'boxes': torch.rand(1, 120, 4).cuda()
     }
-    SwitchBackendWrapper.set(
-        TRTWrapper,
-        outputs=outputs,
-        model_cfg=model_cfg,
-        deploy_cfg=deploy_cfg)
+    with SwitchBackendWrapper(TRTWrapper) as wrapper:
+        wrapper.set(
+            outputs=outputs, model_cfg=model_cfg, deploy_cfg=deploy_cfg)
 
-    from mmdeploy.mmdet.apis.inference import TensorRTPSSDetector
+        from mmdeploy.mmdet.apis.inference import TensorRTPSSDetector
 
-    trt_pss_detector = TensorRTPSSDetector(
-        '', ['' for i in range(80)],
-        model_cfg=model_cfg,
-        deploy_cfg=deploy_cfg,
-        device_id=0)
-    imgs = [torch.rand(1, 3, 32, 32).cuda()]
-    img_metas = [[{
-        'ori_shape': [32, 32, 3],
-        'img_shape': [32, 32, 3],
-        'scale_factor': [2.09, 1.87, 2.09, 1.87],
-    }]]
+        trt_pss_detector = TensorRTPSSDetector(
+            '', ['' for i in range(80)],
+            model_cfg=model_cfg,
+            deploy_cfg=deploy_cfg,
+            device_id=0)
+        imgs = [torch.rand(1, 3, 32, 32).cuda()]
+        img_metas = [[{
+            'ori_shape': [32, 32, 3],
+            'img_shape': [32, 32, 3],
+            'scale_factor': [2.09, 1.87, 2.09, 1.87],
+        }]]
 
-    results = trt_pss_detector.forward(imgs, img_metas)
-    assert results is not None, 'failed to get output using '
-    'TensorRTPSSDetector'
-    SwitchBackendWrapper.recover(TRTWrapper)
+        results = trt_pss_detector.forward(imgs, img_metas)
+        assert results is not None, 'failed to get output using '
+        'TensorRTPSSDetector'
 
 
 def prepare_model_deploy_cfgs():
@@ -377,41 +370,41 @@ def test_TensorRTPTSDetector():
         'cls_score': torch.rand(1, 12, 80).cuda(),
         'bbox_pred': torch.rand(1, 12, 4).cuda()
     }
-    SwitchBackendWrapper.set(TRTWrapper, outputs=outputs)
-    TRTWrapper.model_cfg = model_cfg
-    TRTWrapper.deploy_cfg = deploy_cfg
+    with SwitchBackendWrapper(TRTWrapper) as wrapper:
+        wrapper.set(
+            outputs=outputs, model_cfg=model_cfg, deploy_cfg=deploy_cfg)
 
-    # replace original function in PartitionTwoStageDetector
-    from mmdeploy.mmdet.apis.inference import PartitionTwoStageDetector
-    PartitionTwoStageDetector.__init__ = DummyPTSDetector.__init__
-    PartitionTwoStageDetector.partition0_postprocess = \
-        DummyPTSDetector.partition0_postprocess
-    PartitionTwoStageDetector.partition1_postprocess = \
-        DummyPTSDetector.partition1_postprocess
-    PartitionTwoStageDetector.outputs0 = [torch.rand(2, 3).cuda()] * 2
-    PartitionTwoStageDetector.outputs1 = [
-        torch.rand(1, 9, 5).cuda(),
-        torch.rand(1, 9).cuda()
-    ]
-    PartitionTwoStageDetector.device_id = 0
-    PartitionTwoStageDetector.CLASSES = ['' for i in range(80)]
+        # replace original function in PartitionTwoStageDetector
+        from mmdeploy.mmdet.apis.inference import PartitionTwoStageDetector
+        PartitionTwoStageDetector.__init__ = DummyPTSDetector.__init__
+        PartitionTwoStageDetector.partition0_postprocess = \
+            DummyPTSDetector.partition0_postprocess
+        PartitionTwoStageDetector.partition1_postprocess = \
+            DummyPTSDetector.partition1_postprocess
+        PartitionTwoStageDetector.outputs0 = [torch.rand(2, 3).cuda()] * 2
+        PartitionTwoStageDetector.outputs1 = [
+            torch.rand(1, 9, 5).cuda(),
+            torch.rand(1, 9).cuda()
+        ]
+        PartitionTwoStageDetector.device_id = 0
+        PartitionTwoStageDetector.CLASSES = ['' for i in range(80)]
 
-    from mmdeploy.mmdet.apis.inference import TensorRTPTSDetector
-    trt_pts_detector = TensorRTPTSDetector(['', ''], ['' for i in range(80)],
-                                           model_cfg=model_cfg,
-                                           deploy_cfg=deploy_cfg,
-                                           device_id=0)
+        from mmdeploy.mmdet.apis.inference import TensorRTPTSDetector
+        trt_pts_detector = TensorRTPTSDetector(['', ''],
+                                               ['' for i in range(80)],
+                                               model_cfg=model_cfg,
+                                               deploy_cfg=deploy_cfg,
+                                               device_id=0)
 
-    imgs = [torch.rand(1, 3, 32, 32).cuda()]
-    img_metas = [[{
-        'ori_shape': [32, 32, 3],
-        'img_shape': [32, 32, 3],
-        'scale_factor': [2.09, 1.87, 2.09, 1.87],
-    }]]
-    results = trt_pts_detector.forward(imgs, img_metas)
-    assert results is not None, 'failed to get output using '
-    'TensorRTPTSDetector'
-    SwitchBackendWrapper.recover(TRTWrapper)
+        imgs = [torch.rand(1, 3, 32, 32).cuda()]
+        img_metas = [[{
+            'ori_shape': [32, 32, 3],
+            'img_shape': [32, 32, 3],
+            'scale_factor': [2.09, 1.87, 2.09, 1.87],
+        }]]
+        results = trt_pts_detector.forward(imgs, img_metas)
+        assert results is not None, 'failed to get output using '
+        'TensorRTPTSDetector'
 
 
 @pytest.mark.skipif(
@@ -429,43 +422,40 @@ def test_ONNXRuntimePTSDetector():
         np.random.rand(1, 12, 80).astype(np.float32),
         np.random.rand(1, 12, 4).astype(np.float32),
     ] * 2
-    SwitchBackendWrapper.set(
-        ORTWrapper,
-        outputs=outputs,
-        model_cfg=model_cfg,
-        deploy_cfg=deploy_cfg)
+    with SwitchBackendWrapper(ORTWrapper) as wrapper:
+        wrapper.set(
+            outputs=outputs, model_cfg=model_cfg, deploy_cfg=deploy_cfg)
 
-    # replace original function in PartitionTwoStageDetector
-    from mmdeploy.mmdet.apis.inference import PartitionTwoStageDetector
-    PartitionTwoStageDetector.__init__ = DummyPTSDetector.__init__
-    PartitionTwoStageDetector.partition0_postprocess = \
-        DummyPTSDetector.partition0_postprocess
-    PartitionTwoStageDetector.partition1_postprocess = \
-        DummyPTSDetector.partition1_postprocess
-    PartitionTwoStageDetector.outputs0 = [torch.rand(2, 3)] * 2
-    PartitionTwoStageDetector.outputs1 = [
-        torch.rand(1, 9, 5), torch.rand(1, 9)
-    ]
-    PartitionTwoStageDetector.device_id = -1
-    PartitionTwoStageDetector.CLASSES = ['' for i in range(80)]
+        # replace original function in PartitionTwoStageDetector
+        from mmdeploy.mmdet.apis.inference import PartitionTwoStageDetector
+        PartitionTwoStageDetector.__init__ = DummyPTSDetector.__init__
+        PartitionTwoStageDetector.partition0_postprocess = \
+            DummyPTSDetector.partition0_postprocess
+        PartitionTwoStageDetector.partition1_postprocess = \
+            DummyPTSDetector.partition1_postprocess
+        PartitionTwoStageDetector.outputs0 = [torch.rand(2, 3)] * 2
+        PartitionTwoStageDetector.outputs1 = [
+            torch.rand(1, 9, 5), torch.rand(1, 9)
+        ]
+        PartitionTwoStageDetector.device_id = -1
+        PartitionTwoStageDetector.CLASSES = ['' for i in range(80)]
 
-    from mmdeploy.mmdet.apis.inference import ONNXRuntimePTSDetector
-    ort_pts_detector = ONNXRuntimePTSDetector(['', ''],
-                                              ['' for i in range(80)],
-                                              model_cfg=model_cfg,
-                                              deploy_cfg=deploy_cfg,
-                                              device_id=0)
+        from mmdeploy.mmdet.apis.inference import ONNXRuntimePTSDetector
+        ort_pts_detector = ONNXRuntimePTSDetector(['', ''],
+                                                  ['' for i in range(80)],
+                                                  model_cfg=model_cfg,
+                                                  deploy_cfg=deploy_cfg,
+                                                  device_id=0)
 
-    imgs = [torch.rand(1, 3, 32, 32)]
-    img_metas = [[{
-        'ori_shape': [32, 32, 3],
-        'img_shape': [32, 32, 3],
-        'scale_factor': [2.09, 1.87, 2.09, 1.87],
-    }]]
-    results = ort_pts_detector.forward(imgs, img_metas)
-    assert results is not None, 'failed to get output using '
-    'ONNXRuntimePTSDetector'
-    SwitchBackendWrapper.recover(ORTWrapper)
+        imgs = [torch.rand(1, 3, 32, 32)]
+        img_metas = [[{
+            'ori_shape': [32, 32, 3],
+            'img_shape': [32, 32, 3],
+            'scale_factor': [2.09, 1.87, 2.09, 1.87],
+        }]]
+        results = ort_pts_detector.forward(imgs, img_metas)
+        assert results is not None, 'failed to get output using '
+        'ONNXRuntimePTSDetector'
 
 
 @pytest.mark.skipif(
@@ -487,43 +477,40 @@ def test_NCNNPTSDetector():
         'cls_score': torch.rand(1, 12, 80),
         'bbox_pred': torch.rand(1, 12, 4)
     }
-    SwitchBackendWrapper.set(
-        NCNNWrapper,
-        outputs=outputs,
-        model_cfg=model_cfg,
-        deploy_cfg=deploy_cfg)
+    with SwitchBackendWrapper(NCNNWrapper) as wrapper:
+        wrapper.set(
+            outputs=outputs, model_cfg=model_cfg, deploy_cfg=deploy_cfg)
 
-    # replace original function in PartitionTwoStageDetector
-    from mmdeploy.mmdet.apis.inference import PartitionTwoStageDetector
-    PartitionTwoStageDetector.__init__ = DummyPTSDetector.__init__
-    PartitionTwoStageDetector.partition0_postprocess = \
-        DummyPTSDetector.partition0_postprocess
-    PartitionTwoStageDetector.partition1_postprocess = \
-        DummyPTSDetector.partition1_postprocess
-    PartitionTwoStageDetector.outputs0 = [torch.rand(2, 3)] * 2
-    PartitionTwoStageDetector.outputs1 = [
-        torch.rand(1, 9, 5), torch.rand(1, 9)
-    ]
-    PartitionTwoStageDetector.device_id = -1
-    PartitionTwoStageDetector.CLASSES = ['' for i in range(80)]
+        # replace original function in PartitionTwoStageDetector
+        from mmdeploy.mmdet.apis.inference import PartitionTwoStageDetector
+        PartitionTwoStageDetector.__init__ = DummyPTSDetector.__init__
+        PartitionTwoStageDetector.partition0_postprocess = \
+            DummyPTSDetector.partition0_postprocess
+        PartitionTwoStageDetector.partition1_postprocess = \
+            DummyPTSDetector.partition1_postprocess
+        PartitionTwoStageDetector.outputs0 = [torch.rand(2, 3)] * 2
+        PartitionTwoStageDetector.outputs1 = [
+            torch.rand(1, 9, 5), torch.rand(1, 9)
+        ]
+        PartitionTwoStageDetector.device_id = -1
+        PartitionTwoStageDetector.CLASSES = ['' for i in range(80)]
 
-    from mmdeploy.mmdet.apis.inference import NCNNPTSDetector
-    ncnn_pts_detector = NCNNPTSDetector(
-        [''] * 4, [''] * 80,
-        model_cfg=model_cfg,
-        deploy_cfg=deploy_cfg,
-        device_id=0)
+        from mmdeploy.mmdet.apis.inference import NCNNPTSDetector
+        ncnn_pts_detector = NCNNPTSDetector(
+            [''] * 4, [''] * 80,
+            model_cfg=model_cfg,
+            deploy_cfg=deploy_cfg,
+            device_id=0)
 
-    imgs = [torch.rand(1, 3, 32, 32)]
-    img_metas = [[{
-        'ori_shape': [32, 32, 3],
-        'img_shape': [32, 32, 3],
-        'scale_factor': [2.09, 1.87, 2.09, 1.87],
-    }]]
-    results = ncnn_pts_detector.forward(imgs, img_metas)
-    assert results is not None, 'failed to get output using '
-    'NCNNPTSDetector'
-    SwitchBackendWrapper.recover(NCNNWrapper)
+        imgs = [torch.rand(1, 3, 32, 32)]
+        img_metas = [[{
+            'ori_shape': [32, 32, 3],
+            'img_shape': [32, 32, 3],
+            'scale_factor': [2.09, 1.87, 2.09, 1.87],
+        }]]
+        results = ncnn_pts_detector.forward(imgs, img_metas)
+        assert results is not None, 'failed to get output using '
+        'NCNNPTSDetector'
 
 
 @pytest.mark.skipif(
@@ -541,9 +528,8 @@ def test_build_detector():
     ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
 
     # simplify backend inference
-    SwitchBackendWrapper.set(
-        ORTWrapper, model_cfg=model_cfg, deploy_cfg=deploy_cfg)
-    from mmdeploy.apis.utils import init_backend_model
-    detector = init_backend_model([''], model_cfg, deploy_cfg, -1)
-    assert detector is not None
-    SwitchBackendWrapper.recover(ORTWrapper)
+    with SwitchBackendWrapper(ORTWrapper) as wrapper:
+        wrapper.set(model_cfg=model_cfg, deploy_cfg=deploy_cfg)
+        from mmdeploy.apis.utils import init_backend_model
+        detector = init_backend_model([''], model_cfg, deploy_cfg, -1)
+        assert detector is not None

@@ -57,7 +57,7 @@ def init_pytorch_model(codebase: Codebase,
 def create_input(codebase: Codebase,
                  task: Task,
                  model_cfg: Union[str, mmcv.Config],
-                 imgs: Any,
+                 imgs: Union[str, np.ndarray],
                  input_shape: Sequence[int] = None,
                  device: str = 'cuda:0',
                  **kwargs):
@@ -68,8 +68,8 @@ def create_input(codebase: Codebase,
         task (Task): Specifying task type.
         model_cfg (str | mmcv.Config): Model config file or loaded Config
             object.
-        imgs (Any): Input image(s), accpeted data type are `str`,
-            `np.ndarray`, `torch.Tensor`.
+        imgs (str | np.ndarray): Input image(s), accpeted data types are `str`,
+            `np.ndarray`.
         input_shape (list[int]): Input shape of image in (width, height)
             format, defaults to `None`.
         device (str): A string specifying device type, defaults to 'cuda:0'.
