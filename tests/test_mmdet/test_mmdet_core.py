@@ -17,8 +17,7 @@ def test_multiclass_nms_static():
     from mmdeploy.mmdet.core import multiclass_nms
     deploy_cfg = mmcv.Config(
         dict(
-            onnx_config=dict(
-                output_names=['dets', 'labels'], input_shape=None),
+            onnx_config=dict(output_names=None, input_shape=None),
             backend_config=dict(
                 type='tensorrt',
                 common_config=dict(
@@ -74,8 +73,7 @@ def test_delta2bbox(backend_type):
     pytest.importorskip(backend_type, reason=f'requires {backend_type}')
     deploy_cfg = mmcv.Config(
         dict(
-            onnx_config=dict(
-                output_names=['dets', 'labels'], input_shape=None),
+            onnx_config=dict(output_names=None, input_shape=None),
             backend_config=dict(type=backend_type, model_inputs=None),
             codebase_config=dict(type='mmdet', task='ObjectDetection')))
 
@@ -113,8 +111,7 @@ def test_tblr2bbox(backend_type):
     pytest.importorskip(backend_type, reason=f'requires {backend_type}')
     deploy_cfg = mmcv.Config(
         dict(
-            onnx_config=dict(
-                output_names=['dets', 'labels'], input_shape=None),
+            onnx_config=dict(output_names=None, input_shape=None),
             backend_config=dict(type=backend_type, model_inputs=None),
             codebase_config=dict(type='mmdet', task='ObjectDetection')))
 

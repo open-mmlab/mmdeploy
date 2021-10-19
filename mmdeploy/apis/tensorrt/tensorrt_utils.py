@@ -254,6 +254,9 @@ class TRTWrapper(torch.nn.Module):
         for input_name, input_tensor in inputs.items():
             idx = self.engine.get_binding_index(input_name)
 
+            # All input tensors must be gpu variables
+            assert 'cuda' in input_tensor.device.type
+
             if input_tensor.dtype == torch.long:
                 input_tensor = input_tensor.int()
             self.context.set_binding_shape(idx, tuple(input_tensor.shape))

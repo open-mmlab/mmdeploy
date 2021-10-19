@@ -7,7 +7,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 @FUNCTION_REWRITER.register_rewriter(
     func_name='torch.Tensor.topk', backend='default')
 def topk_dynamic(ctx, input, k, dim=None, largest=True, sorted=True):
-    """Rewrite `interpolate` for default backend."""
+    """Rewrite `topk` for default backend."""
 
     if dim is None:
         dim = int(input.ndim - 1)
@@ -26,7 +26,7 @@ def topk_dynamic(ctx, input, k, dim=None, largest=True, sorted=True):
 @FUNCTION_REWRITER.register_rewriter(
     func_name='torch.Tensor.topk', backend='tensorrt')
 def topk_static(ctx, input, k, dim=None, largest=True, sorted=True):
-    """Rewrite `interpolate` for TensorRT backend."""
+    """Rewrite `topk` for TensorRT backend."""
 
     if dim is None:
         dim = int(input.ndim - 1)

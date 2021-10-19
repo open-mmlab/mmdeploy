@@ -194,7 +194,7 @@ def get_rewrite_outputs(wrapped_model: nn.Module, model_inputs: dict,
             onnx_file_path,
             export_params=True,
             input_names=input_names,
-            output_names=None,
+            output_names=pytorch2onnx_cfg.get('output_names', None),
             opset_version=11,
             dynamic_axes=pytorch2onnx_cfg.get('dynamic_axes', None),
             keep_initializers_as_inputs=False)
@@ -213,6 +213,9 @@ def get_rewrite_outputs(wrapped_model: nn.Module, model_inputs: dict,
             deploy_cfg=deploy_cfg,
             onnx_model=onnx_file_path)
         backend_model = trt_apis.TRTWrapper(trt_file_path)
+        for k, v in model_inputs.items():
+            model_inputs[k] = model_inputs[k].cuda()
+
         backend_feats = model_inputs
     elif backend == Backend.ONNXRUNTIME:
         import mmdeploy.apis.onnxruntime as ort_apis
