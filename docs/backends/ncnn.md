@@ -24,6 +24,7 @@ You should ensure your gcc satisfies `gcc >= 6`.
         cmake -DNCNN_VULKAN=ON -DNCNN_SYSTEM_GLSLANG=ON -DNCNN_BUILD_EXAMPLES=ON -DNCNN_PYTHON=ON -DNCNN_BUILD_TOOLS=ON -DNCNN_BUILD_BENCHMARK=ON -DNCNN_BUILD_TESTS=ON ..
         make install
         ```
+
     - Install pyncnn module
         ```bash
         cd ncnn/python
@@ -42,7 +43,7 @@ cmake -DBUILD_NCNN_OPS=ON ..
 make -j$(nproc)
 ```
 
-If you haven't installed NCNN in default path, please add `-DNCNN_DIR` flag in cmake.
+If you haven't installed NCNN in the default path, please add `-DNCNN_DIR` flag in cmake.
 
 ```bash
  cmake -DBUILD_NCNN_OPS=ON -DNCNN_DIR=${NCNN_DIR} ..
@@ -50,16 +51,19 @@ If you haven't installed NCNN in default path, please add `-DNCNN_DIR` flag in c
 ```
 
 ### Convert model
-- This follows the tutorial on [How to convert model](tutorials/how_to_convert_model.md).
+
+- This follows the tutorial on [How to convert model](../tutorials/how_to_convert_model.md).
 - The converted model has two files: `.param` and `.bin`, as model structure file and weight file respectively.
 
 ### FAQs
+
 1. When running ncnn models for inference with custom ops, it fails and shows the error message like:
 
-    ```
+    ```bash
     TypeError: register mm custom layers(): incompatible function arguments. The following argument types are supported:
         1.(ar0: ncnn:Net) -> int
 
     Invoked with: <ncnn.ncnn.Net object at 0x7f7fc4038bb0>
     ```
+
     This is because of the failure to bind ncnn C++ library to pyncnn. You should build pyncnn from C++ ncnn source code, but not by `pip install`
