@@ -15,6 +15,7 @@
 
    tutorials/how_to_convert_model.md
    tutorials/how_to_create_config.md
+   tutorials/how_to_evaluate_a_model.md
    tutorials/how_to_test_model.md
    tutorials/how_to_support_new_models.md
 
