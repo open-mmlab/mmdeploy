@@ -7,6 +7,7 @@ import torch
 
 import mmdeploy.apis.ncnn as ncnn_apis
 import mmdeploy.apis.onnxruntime as ort_apis
+import mmdeploy.apis.openvino as openvino_apis
 import mmdeploy.apis.ppl as ppl_apis
 import mmdeploy.apis.tensorrt as trt_apis
 from mmdeploy.utils.test import SwitchBackendWrapper
@@ -95,6 +96,33 @@ def test_PPLDetector():
 
         results = ppl_detector.forward(imgs, img_metas)
         assert results is not None, 'failed to get output using PPLDetector'
+
+
+@pytest.mark.skipif(
+    not importlib.util.find_spec('openvino'), reason='requires openvino')
+def test_OpenVINODetector():
+    # force add backend wrapper regardless of plugins
+    # make sure OpenVINODetector can use OpenVINOWrapper inside itself
+    from mmdeploy.apis.openvino.openvino_utils import OpenVINOWrapper
+    openvino_apis.__dict__.update({'OpenVINOWrapper': OpenVINOWrapper})
+
+    # simplify backend inference
+    outputs = {'dets': torch.rand(1, 100, 5), 'labels': torch.rand(1, 100)}
+    with SwitchBackendWrapper(OpenVINOWrapper) as wrapper:
+        wrapper.set(outputs=outputs)
+
+        from mmdeploy.mmdet.apis.inference import OpenVINODetector
+        openvino_detector = OpenVINODetector('', ['' for i in range(80)], 0)
+        imgs = [torch.rand(1, 3, 64, 64)]
+        img_metas = [[{
+            'ori_shape': [64, 64, 3],
+            'img_shape': [64, 64, 3],
+            'scale_factor': [2.09, 1.87, 2.09, 1.87],
+        }]]
+
+        results = openvino_detector.forward(imgs, img_metas)
+        assert results is not None, 'failed to get output using '\
+            'OpenVINODetector'
 
 
 def get_test_cfg_and_post_processing():

@@ -221,6 +221,38 @@ class PPLDetector(DeployBaseDetector):
         return ppl_outputs
 
 
+class OpenVINODetector(DeployBaseDetector):
+    """Wrapper for detector's inference with OpenVINO.
+
+    Args:
+        model_file (str): The path of input model file (.xml).
+        class_names (Sequence[str]): A list of string specifying class names.
+        device_id (int): An integer represents device index.
+    """
+
+    def __init__(self, model_file: str, class_names: Sequence[str],
+                 device_id: int, **kwargs):
+        super(OpenVINODetector, self).__init__(class_names, device_id,
+                                               **kwargs)
+        from mmdeploy.apis.openvino import OpenVINOWrapper
+        self.model = OpenVINOWrapper(model_file)
+
+    def forward_test(self, imgs: torch.Tensor, *args, **kwargs):
+        """Implement forward test.
+
+        Args:
+            imgs (torch.Tensor): Input image(s) in [N x C x H x W] format.
+
+        Returns:
+            tuple[np.ndarray, np.ndarray]: dets of shape [N, num_det, 5]
+                and class labels of shape [N, num_det].
+        """
+        openvino_outputs = self.model({'input': imgs})
+        openvino_outputs = (openvino_outputs['dets'],
+                            openvino_outputs['labels'])
+        return openvino_outputs
+
+
 class PartitionSingleStageDetector(DeployBaseDetector):
     """Base wrapper for partitioned single stage detector.
 
@@ -746,12 +778,12 @@ def get_classes_from_config(model_cfg: Union[str, mmcv.Config], **kwargs):
     module_dict = DATASETS.module_dict
     data_cfg = model_cfg.data
 
-    if 'train' in data_cfg:
-        module = module_dict[data_cfg.train.type]
+    if 'test' in data_cfg:
+        module = module_dict[data_cfg.test.type]
     elif 'val' in data_cfg:
         module = module_dict[data_cfg.val.type]
-    elif 'test' in data_cfg:
-        module = module_dict[data_cfg.test.type]
+    elif 'train' in data_cfg:
+        module = module_dict[data_cfg.train.type]
     else:
         raise RuntimeError(f'No dataset config found in: {model_cfg}')
 
@@ -773,11 +805,14 @@ PPL_DETECTOR_MAP = dict(end2end=PPLDetector)
 NCNN_DETECTOR_MAP = dict(
     single_stage=NCNNPSSDetector, two_stage=NCNNPTSDetector)
 
+OPENVINO_MAP = dict(end2end=OpenVINODetector)
+
 BACKEND_DETECTOR_MAP = {
     Backend.ONNXRUNTIME: ONNXRUNTIME_DETECTOR_MAP,
     Backend.TENSORRT: TENSORRT_DETECTOR_MAP,
     Backend.PPL: PPL_DETECTOR_MAP,
-    Backend.NCNN: NCNN_DETECTOR_MAP
+    Backend.NCNN: NCNN_DETECTOR_MAP,
+    Backend.OPENVINO: OPENVINO_MAP
 }
 
 

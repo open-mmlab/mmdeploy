@@ -109,3 +109,67 @@ def forward_of_single_roi_extractor_dynamic(ctx,
         # slice and recover the tensor
         roi_feats[inds] = roi_feats_t[0:-1]
     return roi_feats
+
+
+class SingleRoIExtractorOpenVINO(Function):
+    """This class adds support for ExperimentalDetectronROIFeatureExtractor
+    when exporting to OpenVINO.
+
+    The `forward` method returns the original output, which is calculated in
+    advance and added to the SingleRoIExtractorOpenVINO class. In addition, the
+    list of arguments is changed here to be more suitable for
+    ExperimentalDetectronROIFeatureExtractor.
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+
+    @staticmethod
+    def forward(g, output_size, featmap_strides, sample_num, rois, *feats):
+        return SingleRoIExtractorOpenVINO.origin_output
+
+    @staticmethod
+    def symbolic(g, output_size, featmap_strides, sample_num, rois, *feats):
+        from torch.onnx.symbolic_helper import _slice_helper
+        rois = _slice_helper(g, rois, axes=[1], starts=[1], ends=[5])
+        domain = 'org.openvinotoolkit'
+        op_name = 'ExperimentalDetectronROIFeatureExtractor'
+        roi_feats = g.op(
+            f'{domain}::{op_name}',
+            rois,
+            *feats,
+            output_size_i=output_size,
+            pyramid_scales_i=featmap_strides,
+            sampling_ratio_i=sample_num,
+            image_id_i=0,
+            distribute_rois_between_levels_i=1,
+            preserve_rois_order_i=0,
+            aligned_i=1,
+            outputs=1)
+        return roi_feats
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    func_name='mmdet.models.roi_heads.SingleRoIExtractor.forward',
+    backend='openvino')
+def forward_of_single_roi_extractor_dynamic_openvino(ctx,
+                                                     self,
+                                                     feats,
+                                                     rois,
+                                                     roi_scale_factor=None):
+    """Replaces SingleRoIExtractor with SingleRoIExtractorOpenVINO when
+    exporting to OpenVINO."""
+
+    # Adding original output to SingleRoIExtractorOpenVINO.
+    state = torch._C._get_tracing_state()
+    origin_output = ctx.origin_func(self, feats, rois, roi_scale_factor)
+    setattr(SingleRoIExtractorOpenVINO, 'origin_output', origin_output)
+    torch._C._set_tracing_state(state)
+
+    output_size = self.roi_layers[0].output_size[0]
+    featmap_strides = self.featmap_strides
+    sample_num = self.roi_layers[0].sampling_ratio
+
+    args = (output_size, featmap_strides, sample_num, rois, *feats)
+    result = SingleRoIExtractorOpenVINO.apply(*args)
+    return result

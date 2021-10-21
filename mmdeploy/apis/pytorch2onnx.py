@@ -46,7 +46,8 @@ def torch2onnx_impl(model: torch.nn.Module, input: torch.Tensor,
             opset_version=opset_version,
             dynamic_axes=pytorch2onnx_cfg.get('dynamic_axes', None),
             keep_initializers_as_inputs=pytorch2onnx_cfg[
-                'keep_initializers_as_inputs'])
+                'keep_initializers_as_inputs'],
+            strip_doc_string=pytorch2onnx_cfg.get('strip_doc_string', True))
 
 
 def torch2onnx(img: Any,

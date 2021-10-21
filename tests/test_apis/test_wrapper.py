@@ -62,6 +62,10 @@ def check_backend_avaiable(backend):
         if not ncnn_available():
             pytest.skip(
                 'NCNN is not installed or custom ops are not compiled.')
+    elif backend == Backend.OPENVINO:
+        from mmdeploy.apis.openvino import is_available as openvino_available
+        if not openvino_available():
+            pytest.skip('OpenVINO is not installed.')
     else:
         raise NotImplementedError(f'Unknown backend type: {backend.value}')
 
@@ -91,6 +95,15 @@ def onnx2backend(backend, onnx_file):
         bin_file = tempfile.NamedTemporaryFile(suffix='.bin').name
         subprocess.call([onnx2ncnn_path, onnx_file, param_file, bin_file])
         return param_file, bin_file
+    elif backend == Backend.OPENVINO:
+        from mmdeploy.apis.openvino import onnx2openvino, get_output_model_file
+        backend_dir = tempfile.TemporaryDirectory().name
+        backend_file = get_output_model_file(onnx_file, backend_dir)
+        input_info = {'input': test_img.shape}
+        output_names = ['output']
+        work_dir = backend_dir
+        onnx2openvino(input_info, output_names, onnx_file, work_dir)
+        return backend_file
 
 
 def create_wrapper(backend, model_files):
@@ -111,6 +124,10 @@ def create_wrapper(backend, model_files):
         param_file, bin_file = model_files
         ncnn_model = NCNNWrapper(param_file, bin_file, output_names=['output'])
         return ncnn_model
+    elif backend == Backend.OPENVINO:
+        from mmdeploy.apis.openvino import OpenVINOWrapper
+        openvino_model = OpenVINOWrapper(model_files)
+        return openvino_model
     else:
         raise NotImplementedError(f'Unknown backend type: {backend.value}')
 
@@ -135,12 +152,16 @@ def run_wrapper(backend, wrapper, input):
         results = results.detach().cpu().numpy()
         results_list = list(results)
         return results_list
+    elif backend == Backend.OPENVINO:
+        results = wrapper({'input': input})['output']
+        return results
     else:
         raise NotImplementedError(f'Unknown backend type: {backend.value}')
 
 
 ALL_BACKEND = [
-    Backend.TENSORRT, Backend.ONNXRUNTIME, Backend.PPL, Backend.NCNN
+    Backend.TENSORRT, Backend.ONNXRUNTIME, Backend.PPL, Backend.NCNN,
+    Backend.OPENVINO
 ]
 
 

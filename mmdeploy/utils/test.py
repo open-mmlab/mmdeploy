@@ -1,5 +1,5 @@
 import tempfile
-from typing import List, Union
+from typing import Any, Dict, List, Tuple, Union
 
 import mmcv
 import numpy as np
@@ -163,8 +163,40 @@ def get_model_outputs(model: nn.Module, func_name: str, model_inputs: dict):
     return model_outputs
 
 
-def get_rewrite_outputs(wrapped_model: nn.Module, model_inputs: dict,
-                        deploy_cfg: mmcv.Config):
+def get_flatten_inputs(
+    model_inputs: Dict[str, Union[Tuple, List, torch.Tensor]]
+) -> Dict[str, torch.Tensor]:
+    """This function unwraps lists and tuples from 'model_inputs' and assigns a
+    unique name to their values.
+
+    Example:
+        model_inputs = {'A': list(tensor_0, tensor_1), 'B': tensor_3}
+        flatten_inputs = get_flatten_inputs(model_inputs)
+        flatten_inputs: {'A_0': tensor_0, 'A_1': tensor_1, 'B': tensor_3}
+
+    Args:
+        model_inputs (dict): Key-value pairs of model inputs with
+            lists and tuples.
+
+    Returns:
+        Dict[str, torch.Tensor]: Key-value pairs of model inputs with
+            unwrapped lists and tuples.
+    """
+    flatten_inputs = {}
+    for name, value in model_inputs.items():
+        if isinstance(value, torch.Tensor):
+            flatten_inputs[name] = value
+        elif isinstance(value, (list, tuple)):
+            for i, tensor in enumerate(value):
+                name_i = f'{name}_{i}'
+                flatten_inputs[name_i] = tensor
+    return flatten_inputs
+
+
+def get_rewrite_outputs(wrapped_model: nn.Module,
+                        model_inputs: Dict[str, Union[Tuple, List,
+                                                      torch.Tensor]],
+                        deploy_cfg: mmcv.Config) -> Tuple[Any, bool]:
     """To get outputs of generated onnx model after rewrite.
 
     Args:
@@ -184,7 +216,9 @@ def get_rewrite_outputs(wrapped_model: nn.Module, model_inputs: dict,
     register_extra_symbolics({}, backend=backend.value, opset=11)
     patched_model = patch_model(
         wrapped_model, cfg=deploy_cfg, backend=backend.value)
-    input_names = [k for k, v in model_inputs.items() if k != 'ctx']
+    flatten_model_inputs = get_flatten_inputs(model_inputs)
+    input_names = [k for k, v in flatten_model_inputs.items() if k != 'ctx']
+    output_names = pytorch2onnx_cfg.get('output_names', None)
     with RewriterContext(
             cfg=deploy_cfg, backend=backend.value), torch.no_grad():
         ctx_outputs = wrapped_model(**model_inputs)
@@ -194,11 +228,10 @@ def get_rewrite_outputs(wrapped_model: nn.Module, model_inputs: dict,
             onnx_file_path,
             export_params=True,
             input_names=input_names,
-            output_names=pytorch2onnx_cfg.get('output_names', None),
+            output_names=output_names,
             opset_version=11,
             dynamic_axes=pytorch2onnx_cfg.get('dynamic_axes', None),
             keep_initializers_as_inputs=False)
-
     # prepare backend model and input features
     if backend == Backend.TENSORRT:
         # convert to engine
@@ -246,6 +279,22 @@ def get_rewrite_outputs(wrapped_model: nn.Module, model_inputs: dict,
                 backend_feats[str(i)] = feature_list[i]
     elif backend == Backend.NCNN:
         return ctx_outputs, False
+    elif backend == Backend.OPENVINO:
+        import mmdeploy.apis.openvino as openvino_apis
+        if not openvino_apis.is_available():
+            return ctx_outputs, False
+        openvino_work_dir = tempfile.TemporaryDirectory().name
+        openvino_file_path = openvino_apis.get_output_model_file(
+            onnx_file_path, openvino_work_dir)
+        input_info = {
+            name: value.shape
+            for name, value in flatten_model_inputs.items()
+        }
+        openvino_apis.onnx2openvino(input_info, output_names, onnx_file_path,
+                                    openvino_work_dir)
+        backend_model = openvino_apis.OpenVINOWrapper(openvino_file_path)
+
+        backend_feats = flatten_model_inputs
     else:
         raise NotImplementedError(
             f'Unimplemented backend type: {backend.value}')

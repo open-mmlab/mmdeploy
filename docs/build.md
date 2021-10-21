@@ -14,6 +14,7 @@ Build the inference engine extension libraries you need.
 - [TensorRT](backends/tensorrt.md)
 - [ncnn](backends/ncnn.md)
 - [PPL](backends/ppl.md)
+- [OpenVINO](backends/openvino.md)
 
 ### Install mmdeploy
 

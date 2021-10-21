@@ -77,7 +77,18 @@ def get_rpn_head_model():
     return model
 
 
-@pytest.mark.parametrize('backend_type', ['onnxruntime', 'ncnn'])
+def get_single_roi_extractor():
+    """SingleRoIExtractor Config."""
+    from mmdet.models.roi_heads import SingleRoIExtractor
+    roi_layer = dict(type='RoIAlign', output_size=7, sampling_ratio=2)
+    out_channels = 1
+    featmap_strides = [4, 8, 16, 32]
+    model = SingleRoIExtractor(roi_layer, out_channels, featmap_strides).eval()
+
+    return model
+
+
+@pytest.mark.parametrize('backend_type', ['onnxruntime', 'ncnn', 'openvino'])
 def test_anchor_head_get_bboxes(backend_type):
     """Test get_bboxes rewrite of anchor head."""
     pytest.importorskip(backend_type, reason=f'requires {backend_type}')
@@ -90,11 +101,11 @@ def test_anchor_head_get_bboxes(backend_type):
         'img_shape': (s, s, 3)
     }]
 
+    output_names = ['dets', 'labels']
     deploy_cfg = mmcv.Config(
         dict(
             backend_config=dict(type=backend_type),
-            onnx_config=dict(
-                output_names=['dets', 'labels'], input_shape=None),
+            onnx_config=dict(output_names=output_names, input_shape=None),
             codebase_config=dict(
                 type='mmdet',
                 task='ObjectDetection',
@@ -140,6 +151,11 @@ def test_anchor_head_get_bboxes(backend_type):
         deploy_cfg=deploy_cfg)
 
     if is_backend_output:
+        if isinstance(rewrite_outputs, dict):
+            rewrite_outputs = [
+                value for name, value in rewrite_outputs.items()
+                if name in output_names
+            ]
         for model_output, rewrite_output in zip(model_outputs[0],
                                                 rewrite_outputs):
             model_output = model_output.squeeze().cpu().numpy()
@@ -155,7 +171,7 @@ def test_anchor_head_get_bboxes(backend_type):
         assert rewrite_outputs is not None
 
 
-@pytest.mark.parametrize('backend_type', ['onnxruntime', 'ncnn'])
+@pytest.mark.parametrize('backend_type', ['onnxruntime', 'ncnn', 'openvino'])
 def test_get_bboxes_of_fcos_head(backend_type):
     pytest.importorskip(backend_type, reason=f'requires {backend_type}')
     fcos_head = get_fcos_head_model()
@@ -167,11 +183,11 @@ def test_get_bboxes_of_fcos_head(backend_type):
         'img_shape': (s, s, 3)
     }]
 
+    output_names = ['dets', 'labels']
     deploy_cfg = mmcv.Config(
         dict(
             backend_config=dict(type=backend_type),
-            onnx_config=dict(
-                output_names=['dets', 'labels'], input_shape=None),
+            onnx_config=dict(output_names=output_names, input_shape=None),
             codebase_config=dict(
                 type='mmdet',
                 task='ObjectDetection',
@@ -224,6 +240,11 @@ def test_get_bboxes_of_fcos_head(backend_type):
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg)
     if is_backend_output:
+        if isinstance(rewrite_outputs, dict):
+            rewrite_outputs = [
+                value for name, value in rewrite_outputs.items()
+                if name in output_names
+            ]
         for model_output, rewrite_output in zip(model_outputs[0],
                                                 rewrite_outputs):
             model_output = model_output.squeeze().cpu().numpy()
@@ -298,3 +319,50 @@ def test_forward_of_base_detector_and_visualize(model_cfg_path):
         show_result=False)
 
     assert rewrite_outputs is not None
+
+
+@pytest.mark.parametrize('backend_type', ['openvino'])
+def test_single_roi_extractor(backend_type):
+    pytest.importorskip(backend_type, reason=f'requires {backend_type}')
+
+    single_roi_extractor = get_single_roi_extractor()
+    output_names = ['roi_feat']
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(type=backend_type),
+            onnx_config=dict(output_names=output_names, input_shape=None),
+            codebase_config=dict(
+                type='mmdet',
+                task='ObjectDetection',
+            )))
+
+    seed_everything(1234)
+    out_channels = single_roi_extractor.out_channels
+    feats = [
+        torch.rand((1, out_channels, 200, 336)),
+        torch.rand((1, out_channels, 100, 168)),
+        torch.rand((1, out_channels, 50, 84)),
+        torch.rand((1, out_channels, 25, 42)),
+    ]
+    seed_everything(5678)
+    rois = torch.tensor([[0.0000, 587.8285, 52.1405, 886.2484, 341.5644]])
+
+    model_inputs = {
+        'feats': feats,
+        'rois': rois,
+    }
+    model_outputs = get_model_outputs(single_roi_extractor, 'forward',
+                                      model_inputs)
+
+    backend_outputs, _ = get_rewrite_outputs(
+        wrapped_model=single_roi_extractor,
+        model_inputs=model_inputs,
+        deploy_cfg=deploy_cfg)
+
+    if isinstance(backend_outputs, dict):
+        backend_outputs = backend_outputs.values()
+    for model_output, backend_output in zip(model_outputs[0], backend_outputs):
+        model_output = model_output.squeeze().cpu().numpy()
+        backend_output = backend_output.squeeze()
+        assert np.allclose(
+            model_output, backend_output, rtol=1e-03, atol=1e-05)

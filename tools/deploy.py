@@ -216,6 +216,31 @@ def main():
 
             backend_files += [save_param, save_bin]
 
+    elif backend == Backend.OPENVINO:
+        from mmdeploy.apis.openvino import \
+            is_available as is_available_openvino
+        assert is_available_openvino(), \
+            'OpenVINO is not available, please install OpenVINO first.'
+
+        from mmdeploy.apis.openvino import (onnx2openvino,
+                                            get_output_model_file,
+                                            get_input_shape_from_cfg)
+        openvino_files = []
+        for onnx_path in onnx_files:
+            model_xml_path = get_output_model_file(onnx_path, args.work_dir)
+            input_name = deploy_cfg.onnx_config.input_names
+            input_shape = [get_input_shape_from_cfg(model_cfg)]
+            input_info = dict(zip(input_name, input_shape))
+            output_names = deploy_cfg.onnx_config.output_names
+            create_process(
+                f'onnx2openvino with {onnx_path}',
+                target=onnx2openvino,
+                args=(input_info, output_names, onnx_path, args.work_dir),
+                kwargs=dict(),
+                ret_value=ret_value)
+            openvino_files.append(model_xml_path)
+        backend_files = openvino_files
+
     if args.test_img is None:
         args.test_img = args.img
     # visualize model of the backend
@@ -226,7 +251,7 @@ def main():
               args.device),
         kwargs=dict(
             backend=backend,
-            output_file=f'output_{backend.value}.jpg',
+            output_file=osp.join(args.work_dir, f'output_{backend.value}.jpg'),
             show_result=args.show),
         ret_value=ret_value)
 
@@ -238,7 +263,7 @@ def main():
               args.test_img, args.device),
         kwargs=dict(
             backend=Backend.PYTORCH,
-            output_file='output_pytorch.jpg',
+            output_file=osp.join(args.work_dir, 'output_pytorch.jpg'),
             show_result=args.show),
         ret_value=ret_value)
 

@@ -38,4 +38,5 @@ class Backend(AdvancedEnum):
     ONNXRUNTIME = 'onnxruntime'
     PPL = 'ppl'
     NCNN = 'ncnn'
+    OPENVINO = 'openvino'
     DEFAULT = 'default'

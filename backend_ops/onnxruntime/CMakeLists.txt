@@ -1,9 +1,9 @@
 set(TARGET_NAME mmlab_onnxruntime_ops)
 set(SHARED_TARGET ${TARGET_NAME})
 
-# onnxruntime
-include_directories(${ONNXRUNTIME_DIR}/include)
-link_directories(${ONNXRUNTIME_DIR}/lib)
+# onnxruntime (prebuilt and release)
+include_directories(${ONNXRUNTIME_DIR}/include ${ONNXRUNTIME_DIR}/include/onnxruntime/core/session)
+link_directories(${ONNXRUNTIME_DIR}/lib ${ONNXRUNTIME_DIR}/build/Linux/RelWithDebInfo/)
 
 # add plugin source
 file(GLOB_RECURSE BACKEND_OPS_SRCS *.cpp)
