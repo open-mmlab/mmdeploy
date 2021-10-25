@@ -7,12 +7,15 @@ MMDeploy 是一个开源深度学习模型部署工具箱，它是 [OpenMMLab](h
 ### 主要特性
 
 - **支持OpenMMLab模型的部署**
+
   可以使用本项目进行OpenMMLab的模型部署，比如 MMClassification，MMDetection 等等。
 
 - **支持各类推理引擎**
+
   模型可以被导出并在各种推理引擎上进行推理，比如 ONNX Runtime， TensorRT 等等。
 
 - **模型改写**
+
   模型中的模块与函数可以被改写以满足各种推理引擎的需求，便于添加新的模型部署需求。
 
 ## 开源许可证
@@ -44,7 +47,7 @@ MMDeploy 是一个开源深度学习模型部署工具箱，它是 [OpenMMLab](h
 
 请阅读 [如何进行模型转换](docs/tutorials/how_to_convert_model.md) 来了解基本的 MMDeploy 使用。
 
-我们还提供了诸如 [如何构建配置文件](docs/tutorials/how_to_create_config.md)， [如何添加新模型支持](docs/tutorials/how_to_support_new_model.md) 和 [如何测试模型效果](docs/tutorials/how_to_test_model.md) 等教程。
+我们还提供了诸如 [如何构建配置文件](docs/tutorials/how_to_create_config.md)， [如何添加新模型支持](docs/tutorials/how_to_support_new_models.md) 和 [如何测试模型效果](docs/tutorials/how_to_test_model.md) 等教程。
 
 如果遇到问题，请参考 [常见问题解答](docs/faq.md)。
 

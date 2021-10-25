@@ -8,13 +8,16 @@ a part of the [OpenMMLab](https://openmmlab.com/) project.
 ### Major features
 
 - **OpenMMLab model support**
+
   Models in OpenMMLab can be deployed with this project. Such as MMClassification, MMDetection, etc.
 
 - **Multiple inference engine support**
-  Models can be export and inference with different backend. Such as ONNX Runtime, TensorRT, etc.
+
+  Models can be exported and inferenced with different backends. Such as ONNX Runtime, TensorRT, etc.
 
 - **Model rewrite**
-  Modules and functions used in models can be rewritten to meet the demond of different backend. It is easy to add new model support.
+
+  Modules and functions used in models can be rewritten to meet the demand of different backends. It is easy to add new model support.
 
 ## License
 
@@ -43,7 +46,7 @@ Please refer to [build.md](docs/build.md) for installation.
 
 ## Getting Started
 
-Please read [how_to_convert_model.md](docs/tutorials/how_to_convert_model.md) for the basic usage of MMDeploy. There are also tutorials for [how to create config](docs/tutorials/how_to_create_config.md), [how to support new model](docs/tutorials/how_to_support_new_model.md) and [how to test model](docs/tutorials/how_to_test_model.md).
+Please read [how_to_convert_model.md](docs/tutorials/how_to_convert_model.md) for the basic usage of MMDeploy. There are also tutorials for [how to create config](docs/tutorials/how_to_create_config.md), [how to support new models](docs/tutorials/how_to_support_new_models.md) and [how to test model](docs/tutorials/how_to_test_model.md).
 
 Please refer to [FAQ](docs/faq.md) for frequently asked questions.
 
