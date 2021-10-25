@@ -295,6 +295,8 @@ def get_rewrite_outputs(wrapped_model: nn.Module,
         backend_model = openvino_apis.OpenVINOWrapper(openvino_file_path)
 
         backend_feats = flatten_model_inputs
+    elif backend == Backend.DEFAULT:
+        return ctx_outputs, False
     else:
         raise NotImplementedError(
             f'Unimplemented backend type: {backend.value}')
