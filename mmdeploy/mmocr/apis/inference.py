@@ -1,7 +1,6 @@
 from typing import Iterable, Sequence, Union
 
 import mmcv
-import numpy as np
 import torch
 from mmdet.models.builder import DETECTORS
 from mmocr.datasets import DATASETS
@@ -61,8 +60,6 @@ class DeployBaseTextDetector(TextDetectorMixin, SingleStageTextDetector):
             list: A list of predictions.
         """
         pred = self.forward_of_backend(img, img_metas, *args, **kwargs)
-        if isinstance(pred, np.ndarray):
-            pred = torch.from_numpy(pred[0])
         if len(img_metas) > 1:
             boundaries = [
                 self.bbox_head.get_boundary(
@@ -190,6 +187,7 @@ class ONNXRuntimeDetector(DeployBaseTextDetector):
             np.ndarray: Prediction of input model.
         """
         onnx_pred = self.model({'input': img})
+        onnx_pred = torch.from_numpy(onnx_pred[0])
         return onnx_pred
 
 
@@ -225,6 +223,7 @@ class ONNXRuntimeRecognizer(DeployBaseRecognizer):
             np.ndarray: Prediction of input model.
         """
         onnx_pred = self.model({'input': img})
+        onnx_pred = torch.from_numpy(onnx_pred[0])
         return onnx_pred
 
 
@@ -404,8 +403,7 @@ class PPLDetector(DeployBaseTextDetector):
         """
         with torch.cuda.device(self.device_id), torch.no_grad():
             ppl_pred = self.model({'input': img})
-        if isinstance(ppl_pred[0], np.ndarray):
-            ppl_pred = torch.from_numpy(ppl_pred[0])
+        ppl_pred = torch.from_numpy(ppl_pred[0])
         return ppl_pred
 
 
@@ -443,8 +441,7 @@ class PPLRecognizer(DeployBaseRecognizer):
         """
         with torch.cuda.device(self.device_id), torch.no_grad():
             ppl_pred = self.model({'input': img})[0]
-        if isinstance(ppl_pred[0], np.ndarray):
-            ppl_pred = torch.from_numpy(ppl_pred[0])
+        ppl_pred = torch.from_numpy(ppl_pred[0])
         return ppl_pred
 
 

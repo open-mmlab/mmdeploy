@@ -54,7 +54,7 @@ def test_ONNXRuntimeDetector():
     from mmdeploy.apis.onnxruntime.onnxruntime_utils import ORTWrapper
     ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
 
-    outputs = (torch.rand(1, 3, 64, 64))
+    outputs = (np.random.rand(1, 3, 64, 64))
     with SwitchBackendWrapper(ORTWrapper) as wrapper:
         wrapper.set(outputs=outputs)
         from mmdeploy.mmocr.apis.inference import ONNXRuntimeDetector
@@ -83,7 +83,7 @@ def test_PPLDetector():
     from mmdeploy.apis.ppl.ppl_utils import PPLWrapper
     ppl_apis.__dict__.update({'PPLWrapper': PPLWrapper})
 
-    outputs = (torch.rand(1, 3, 64, 64))
+    outputs = (np.random.rand(1, 3, 64, 64))
     with SwitchBackendWrapper(PPLWrapper) as wrapper:
         wrapper.set(outputs=outputs)
         from mmdeploy.mmocr.apis.inference import PPLDetector
@@ -164,7 +164,7 @@ def test_ONNXRuntimeRecognizer():
     from mmdeploy.apis.onnxruntime.onnxruntime_utils import ORTWrapper
     ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
 
-    outputs = (torch.rand(1, 9, 37))
+    outputs = (np.random.rand(1, 9, 37))
     with SwitchBackendWrapper(ORTWrapper) as wrapper:
         wrapper.set(outputs=outputs)
         from mmdeploy.mmocr.apis.inference import ONNXRuntimeRecognizer
@@ -188,7 +188,7 @@ def test_PPLRecognizer():
     from mmdeploy.apis.ppl.ppl_utils import PPLWrapper
     ppl_apis.__dict__.update({'PPLWrapper': PPLWrapper})
 
-    outputs = (torch.rand(1, 9, 37))
+    outputs = (np.random.rand(1, 9, 37))
     with SwitchBackendWrapper(PPLWrapper) as wrapper:
         wrapper.set(outputs=outputs)
         from mmdeploy.mmocr.apis.inference import PPLRecognizer
