@@ -50,26 +50,34 @@ def create_input(task: Task,
         # set loading pipeline type
         model_cfg.data.test.pipeline[0].type = 'LoadImageFromNdarray'
 
-    model_cfg.data.test.pipeline = replace_ImageToTensor(
-        model_cfg.data.test.pipeline)
+    test_pipeline = model_cfg.data.test.pipeline
+    test_pipeline = replace_ImageToTensor(test_pipeline)
     # for static exporting
     if input_shape is not None:
         if task == Task.TEXT_DETECTION:
-            model_cfg.data.test.pipeline[1].img_scale = tuple(input_shape)
-            model_cfg.data.test.pipeline[1].transforms[0].keep_ratio = False
-            model_cfg.data.test.pipeline[1].transforms[0].img_scale = tuple(
-                input_shape)
+            test_pipeline[1].img_scale = tuple(input_shape)
+            test_pipeline[1].transforms[0].keep_ratio = False
+            test_pipeline[1].transforms[0].img_scale = tuple(input_shape)
         elif task == Task.TEXT_RECOGNITION:
             resize = {
-                'height': input_shape[0],
-                'min_width': input_shape[1],
-                'max_width': input_shape[1],
+                'height': input_shape[1],
+                'min_width': input_shape[0],
+                'max_width': input_shape[0],
                 'keep_aspect_ratio': False
             }
-            model_cfg.data.test.pipeline[1].update(resize)
+            if 'transforms' in test_pipeline[1]:
+                if test_pipeline[1].transforms[0].type == 'ResizeOCR':
+                    test_pipeline[1].transforms[0].height = input_shape[1]
+                    test_pipeline[1].transforms[0].max_width = input_shape[0]
+                else:
+                    raise ValueError(
+                        f'Transforms[0] should be ResizeOCR, but got\
+                         {test_pipeline[1].transforms[0].type}')
+            else:
+                test_pipeline[1].update(resize)
     from mmdet.datasets.pipelines import Compose
     from mmocr.datasets import build_dataset  # noqa: F401
-    test_pipeline = Compose(model_cfg.data.test.pipeline)
+    test_pipeline = Compose(test_pipeline)
 
     data_list = []
     for img in imgs:

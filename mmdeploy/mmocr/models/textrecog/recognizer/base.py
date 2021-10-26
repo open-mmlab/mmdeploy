@@ -1,3 +1,4 @@
+import mmocr.utils as utils
 import torch
 
 from mmdeploy.core import FUNCTION_REWRITER
@@ -14,8 +15,8 @@ def forward_of_base_recognizer(ctx,
                                **kwargs):
     """Rewrite `forward` for NCNN backend."""
     if img_metas is None:
-        img_metas = {}
-    assert isinstance(img_metas, dict)
+        img_metas = [{}]
+    assert utils.is_type_list(img_metas, dict)
     assert isinstance(img, torch.Tensor)
 
     deploy_cfg = ctx.cfg
@@ -24,5 +25,5 @@ def forward_of_base_recognizer(ctx,
     img_shape = torch._shape_as_tensor(img)[2:]
     if not is_dynamic_flag:
         img_shape = [int(val) for val in img_shape]
-    img_metas['img_shape'] = img_shape
+    img_metas[0]['img_shape'] = img_shape
     return self.simple_test(img, img_metas, **kwargs)

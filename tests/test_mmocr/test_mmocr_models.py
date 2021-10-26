@@ -1,9 +1,13 @@
+import importlib
+import tempfile
+
 import mmcv
 import numpy as np
 import pytest
 import torch
 from mmocr.models.textdet.necks import FPNC
 
+from mmdeploy.core import RewriterContext, patch_model
 from mmdeploy.utils.test import (WrapModel, get_model_outputs,
                                  get_rewrite_outputs)
 
@@ -254,10 +258,10 @@ def test_crnndecoder(backend_type, rnn_flag):
 
 
 @pytest.mark.parametrize(
-    'img_metas', [[None], [{
+    'img_metas', [[[{}]], [[{
         'resize_shape': [32, 32],
         'valid_ratio': 1.0
-    }]])
+    }]]])
 @pytest.mark.parametrize('is_dynamic', [True, False])
 def test_forward_of_base_recognizer(img_metas, is_dynamic):
     """Test forward base_recognizer."""
@@ -407,3 +411,109 @@ def test_forward_of_fpnc(backend_type):
             rewrite_output = rewrite_output.squeeze().cpu().numpy()
             assert np.allclose(
                 model_output, rewrite_output, rtol=1e-03, atol=1e-05)
+
+
+def get_sar_model_cfg(decoder_type: str):
+    label_convertor = dict(
+        type='AttnConvertor', dict_type='DICT90', with_unknown=True)
+
+    model = dict(
+        type='SARNet',
+        backbone=dict(type='ResNet31OCR'),
+        encoder=dict(
+            type='SAREncoder',
+            enc_bi_rnn=False,
+            enc_do_rnn=0.1,
+            enc_gru=False,
+        ),
+        decoder=dict(
+            type=decoder_type,
+            enc_bi_rnn=False,
+            dec_bi_rnn=False,
+            dec_do_rnn=0,
+            dec_gru=False,
+            pred_dropout=0.1,
+            d_k=512,
+            pred_concat=True),
+        loss=dict(type='SARLoss'),
+        label_convertor=label_convertor,
+        max_seq_len=30)
+    test_pipeline = [
+        dict(type='LoadImageFromFile'),
+        dict(
+            type='MultiRotateAugOCR',
+            rotate_degrees=[0, 90, 270],
+            transforms=[
+                dict(
+                    type='ResizeOCR',
+                    height=48,
+                    min_width=48,
+                    max_width=160,
+                    keep_aspect_ratio=True,
+                    width_downsample_ratio=0.25),
+                dict(type='ToTensorOCR'),
+                dict(
+                    type='Collect',
+                    keys=['img'],
+                    meta_keys=[
+                        'filename', 'ori_shape', 'resize_shape', 'valid_ratio'
+                    ]),
+            ])
+    ]
+    return mmcv.Config(
+        dict(model=model, data=dict(test=dict(pipeline=test_pipeline))))
+
+
+@pytest.mark.parametrize('backend_type', ['onnxruntime'])
+@pytest.mark.parametrize('decoder_type',
+                         ['SequentialSARDecoder', 'ParallelSARDecoder'])
+@pytest.mark.skipif(
+    not importlib.util.find_spec('onnxruntime'),
+    reason='onnxruntime not avaiable')
+@pytest.mark.skipif(not torch.cuda.is_available(), reason='requires cuda')
+def test_sar_model(backend_type, decoder_type):
+    import os.path as osp
+    import onnx
+    from mmocr.models.textrecog import SARNet
+    sar_cfg = get_sar_model_cfg(decoder_type)
+    sar_cfg.model.pop('type')
+    pytorch_model = SARNet(**(sar_cfg.model)).cuda()
+    model_inputs = {'x': torch.rand(1, 3, 48, 160).cuda()}
+
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(type=backend_type),
+            onnx_config=dict(input_shape=None),
+            codebase_config=dict(
+                type='mmocr',
+                task='TextRecognition',
+            )))
+    # patch model
+    pytorch_model.cfg = sar_cfg
+    patched_model = patch_model(
+        pytorch_model, cfg=deploy_cfg, backend=backend_type)
+    onnx_file_path = tempfile.NamedTemporaryFile(suffix='.onnx').name
+    input_names = [k for k, v in model_inputs.items() if k != 'ctx']
+    with RewriterContext(
+            cfg=deploy_cfg, backend=backend_type), torch.no_grad():
+        torch.onnx.export(
+            patched_model,
+            tuple([v for k, v in model_inputs.items()]),
+            onnx_file_path,
+            export_params=True,
+            input_names=input_names,
+            output_names=None,
+            opset_version=11,
+            dynamic_axes=None,
+            keep_initializers_as_inputs=False)
+
+    # The result should be different due to the rewrite.
+    # So we only check if the file exists
+    assert osp.exists(onnx_file_path)
+
+    model = onnx.load(onnx_file_path)
+    assert model is not None
+    try:
+        onnx.checker.check_model(model)
+    except onnx.checker.ValidationError:
+        assert False

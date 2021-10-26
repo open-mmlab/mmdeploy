@@ -59,13 +59,17 @@ def test_function_rewriter():
     # test origin_func
     @FUNCTION_REWRITER.register_rewriter(
         func_name='torch.add', backend='default')
-    def origin_add_func(rewriter, x, y):
-        return rewriter.origin_func(x, y) + 1
+    def origin_add_func(rewriter, x, y, **kwargs):
+        return rewriter.origin_func(x, y, **kwargs) + 1
 
     with RewriterContext(cfg):
         result = torch.add(x, y)
         # replace with origin + 1
         torch.testing.assert_allclose(result, x + y + 1)
+
+    # remove torch.add
+    del FUNCTION_REWRITER._origin_functions[-1]
+    torch.testing.assert_allclose(torch.add(x, y), x + y)
 
 
 def test_rewrite_empty_function():

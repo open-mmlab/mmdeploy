@@ -7,6 +7,7 @@ onnx_config = dict(
         },
         'output': {
             0: 'batch',
-            3: 'width'
+            1: 'seq_len',
+            2: 'num_classes'
         }
     }, )
