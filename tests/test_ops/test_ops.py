@@ -5,7 +5,7 @@ import torch.nn as nn
 from onnx.helper import (make_graph, make_model, make_node,
                          make_tensor_value_info)
 
-from mmdeploy.core import register_extra_symbolics
+from mmdeploy.core import RewriterContext
 from mmdeploy.utils.test import WrapFunction, assert_allclose
 from .utils import TestNCNNExporter, TestOnnxRTExporter, TestTensorRTExporter
 
@@ -33,9 +33,6 @@ def test_roi_align(backend,
         input = torch.tensor(input_list[0], dtype=torch.float32)
         single_roi = torch.tensor(input_list[1], dtype=torch.float32)
 
-    register_extra_symbolics(
-        cfg=dict(), backend=backend.backend_name, opset=11)
-
     from mmcv.ops import roi_align
 
     def wrapped_function(torch_input, torch_rois):
@@ -44,12 +41,13 @@ def test_roi_align(backend,
 
     wrapped_model = WrapFunction(wrapped_function).eval()
 
-    backend.run_and_validate(
-        wrapped_model, [input, single_roi],
-        'roi_align',
-        input_names=['input', 'rois'],
-        output_names=['roi_feat'],
-        save_dir=save_dir)
+    with RewriterContext(cfg={}, backend=backend.backend_name, opset=11):
+        backend.run_and_validate(
+            wrapped_model, [input, single_roi],
+            'roi_align',
+            input_names=['input', 'rois'],
+            output_names=['roi_feat'],
+            save_dir=save_dir)
 
 
 @pytest.mark.parametrize('backend', [TEST_TENSORRT, TEST_ONNXRT])
@@ -72,9 +70,6 @@ def test_grid_sample(backend,
     grid = nn.functional.affine_grid(
         grid, (1, 1, input.shape[2] * 2, input.shape[3] * 2)).type_as(input)
 
-    register_extra_symbolics(
-        cfg=dict(), backend=backend.backend_name, opset=11)
-
     def wrapped_function(inputs, grid):
         return nn.functional.grid_sample(
             inputs,
@@ -85,12 +80,13 @@ def test_grid_sample(backend,
 
     wrapped_model = WrapFunction(wrapped_function).eval()
 
-    backend.run_and_validate(
-        wrapped_model, [input, grid],
-        'grid_sampler',
-        input_names=['input', 'grid'],
-        output_names=['output'],
-        save_dir=save_dir)
+    with RewriterContext(cfg={}, backend=backend.backend_name, opset=11):
+        backend.run_and_validate(
+            wrapped_model, [input, grid],
+            'grid_sampler',
+            input_names=['input', 'grid'],
+            output_names=['output'],
+            save_dir=save_dir)
 
 
 @pytest.mark.parametrize('backend', [TEST_TENSORRT, TEST_ONNXRT])
@@ -136,12 +132,13 @@ def test_modulated_deform_conv(backend,
                                   stride, padding, dilation, groups,
                                   deform_groups, bias).eval()
 
-    backend.run_and_validate(
-        model, [input, offset, mask],
-        'modulated_deform_conv',
-        input_names=['input', 'offset', 'mask'],
-        output_names=['output'],
-        save_dir=save_dir)
+    with RewriterContext(cfg={}, backend=backend.backend_name, opset=11):
+        backend.run_and_validate(
+            model, [input, offset, mask],
+            'modulated_deform_conv',
+            input_names=['input', 'offset', 'mask'],
+            output_names=['output'],
+            save_dir=save_dir)
 
 
 @pytest.mark.parametrize('backend', [TEST_TENSORRT])
@@ -177,18 +174,17 @@ def test_instance_norm(backend,
     else:
         dynamic_axes = None
 
-    register_extra_symbolics(
-        cfg=dict(), backend=backend.backend_name, opset=11)
     norm = nn.InstanceNorm2d(c, affine=True)
     wrapped_model = WrapFunction(norm).eval()
 
-    backend.run_and_validate(
-        wrapped_model, [input],
-        'instance_norm',
-        input_names=['input'],
-        dynamic_axes=dynamic_axes,
-        output_names=['output'],
-        save_dir=save_dir)
+    with RewriterContext(cfg={}, backend=backend.backend_name, opset=11):
+        backend.run_and_validate(
+            wrapped_model, [input],
+            'instance_norm',
+            input_names=['input'],
+            dynamic_axes=dynamic_axes,
+            output_names=['output'],
+            save_dir=save_dir)
 
 
 @pytest.mark.parametrize('backend', [TEST_TENSORRT])
@@ -251,13 +247,14 @@ def test_batched_nms(backend,
 
     wrapped_model = WrapFunction(wrapped_function)
 
-    backend.run_and_validate(
-        wrapped_model, [boxes, scores],
-        'batched_nms',
-        input_names=['boxes', 'scores'],
-        output_names=['batched_nms_bboxes', 'inds'],
-        expected_result=expected_result,
-        save_dir=save_dir)
+    with RewriterContext(cfg={}, backend=backend.backend_name, opset=11):
+        backend.run_and_validate(
+            wrapped_model, [boxes, scores],
+            'batched_nms',
+            input_names=['boxes', 'scores'],
+            output_names=['batched_nms_bboxes', 'inds'],
+            expected_result=expected_result,
+            save_dir=save_dir)
 
 
 @pytest.mark.parametrize('backend', [TEST_TENSORRT])
@@ -375,8 +372,6 @@ def test_topk(backend,
         input = input_list[0]
     assert input.shape[0] == 1, (f'ncnn batch must be 1, \
         but got {input.shape[0]}')
-    cfg = dict()
-    register_extra_symbolics(cfg=cfg, backend=backend.backend_name, opset=11)
 
     def topk_function(inputs):
         return torch.Tensor.topk(inputs, k, dim, largest, sorted)
@@ -387,20 +382,21 @@ def test_topk(backend,
     # a hard to expect result, which only features that the topk
     # number is right. So the Topk unittest only check whether the
     # topk elements are right, all the possible order will be accepted.
-    if not sorted:
-        backend.run_and_validate(
-            wrapped_model, [input.float()],
-            'topk' + f'_no_sorted_dim_{dim}',
-            input_names=['inputs'],
-            output_names=['data', 'index'],
-            save_dir=save_dir)
-    else:
-        backend.run_and_validate(
-            wrapped_model, [input.float()],
-            'topk',
-            input_names=['inputs'],
-            output_names=['data', 'index'],
-            save_dir=save_dir)
+    with RewriterContext(cfg={}, backend=backend.backend_name, opset=11):
+        if not sorted:
+            backend.run_and_validate(
+                wrapped_model, [input.float()],
+                'topk' + f'_no_sorted_dim_{dim}',
+                input_names=['inputs'],
+                output_names=['data', 'index'],
+                save_dir=save_dir)
+        else:
+            backend.run_and_validate(
+                wrapped_model, [input.float()],
+                'topk',
+                input_names=['inputs'],
+                output_names=['data', 'index'],
+                save_dir=save_dir)
 
 
 @pytest.mark.parametrize('backend', [TEST_NCNN])
@@ -430,8 +426,6 @@ def test_shape(backend,
 
     assert input.shape[0] == 1, (f'ncnn batch must be 1, \
         but got {input.shape[0]}')
-    cfg = dict()
-    register_extra_symbolics(cfg=cfg, backend=backend.backend_name, opset=11)
 
     shape_node = make_node('Shape', input_names, output_names)
     assert len(input_names) == 1, 'length of input_names must be 1'
@@ -445,8 +439,9 @@ def test_shape(backend,
     ])
     shape_model = make_model(shape_graph)
 
-    ncnn_model = backend.onnx2ncnn(shape_model, 'shape', output_names,
-                                   save_dir)
+    with RewriterContext(cfg={}, backend=backend.backend_name, opset=11):
+        ncnn_model = backend.onnx2ncnn(shape_model, 'shape', output_names,
+                                       save_dir)
 
     # ncnn mat has implicit batch for mat, the ncnn_output is a mat,
     # so the ncnn_outputs has 2 dimensions, not 1.
@@ -486,8 +481,6 @@ def test_constantofshape(backend,
         got {input.shape[0]}')
     assert input[0][0] == 1, (f'ncnn output mat batch must be 1, \
         got {input[0][0]}')
-    cfg = dict()
-    register_extra_symbolics(cfg=cfg, backend=backend.backend_name, opset=11)
 
     constantofshape_node = make_node(
         'ConstantOfShape', input_names, output_names, value=float(val))
@@ -502,8 +495,10 @@ def test_constantofshape(backend,
                                    torch.Size(input[0]))
         ])
     constantofshape_model = make_model(constantofshape_graph)
-    ncnn_model = backend.onnx2ncnn(constantofshape_model, 'constantofshape',
-                                   output_names, save_dir)
+    with RewriterContext(cfg={}, backend=backend.backend_name, opset=11):
+        ncnn_model = backend.onnx2ncnn(constantofshape_model,
+                                       'constantofshape', output_names,
+                                       save_dir)
 
     # ncnn mat has implicit batch for mat, the ncnn_output is a mat,
     # so the ncnn_outputs has 2 dimensions, not 1.
@@ -540,8 +535,6 @@ def test_gather(backend,
         but got {data.shape[0]}')
     assert indice.shape[0] == 1, (f'ncnn batch must be 1, \
         but got {indice.shape[0]}')
-    cfg = dict()
-    register_extra_symbolics(cfg=cfg, backend=backend.backend_name, opset=11)
 
     gather_node = make_node('Gather', input_names, output_names, axis=axis + 1)
     gather_graph = make_graph([gather_node], 'gather_graph', [
@@ -550,8 +543,9 @@ def test_gather(backend,
     ], [make_tensor_value_info(output_names[0], onnx.TensorProto.FLOAT, None)])
     gather_model = make_model(gather_graph)
 
-    ncnn_model = backend.onnx2ncnn(gather_model, 'gather', output_names,
-                                   save_dir)
+    with RewriterContext(cfg={}, backend=backend.backend_name, opset=11):
+        ncnn_model = backend.onnx2ncnn(gather_model, 'gather', output_names,
+                                       save_dir)
 
     # ncnn mat has implicit batch for mat, the ncnn_output is a mat,
     # so the ncnn_outputs has 2 dimensions, not 1.
@@ -591,8 +585,6 @@ def test_tensorslice(backend, dim, input_list=None, save_dir=None):
 
     assert input.shape[0] == 1, (f'ncnn batch must be 1, \
         but got {input.shape[0]}')
-    cfg = dict()
-    register_extra_symbolics(cfg=cfg, backend=backend.backend_name, opset=11)
 
     def tensorslice_function(inputs):
         if dim == 1:
@@ -604,12 +596,13 @@ def test_tensorslice(backend, dim, input_list=None, save_dir=None):
 
     wrapped_model = WrapFunction(tensorslice_function)
 
-    backend.run_and_validate(
-        wrapped_model, [input.float()],
-        'tensorslice',
-        input_names=['inputs'],
-        output_names=['outputs'],
-        save_dir=save_dir)
+    with RewriterContext(cfg={}, backend=backend.backend_name, opset=11):
+        backend.run_and_validate(
+            wrapped_model, [input.float()],
+            'tensorslice',
+            input_names=['inputs'],
+            output_names=['outputs'],
+            save_dir=save_dir)
 
 
 @pytest.mark.parametrize('backend', [TEST_NCNN])
@@ -631,16 +624,15 @@ def test_expand(backend,
         but not {input.shape[0]}')
     assert target.shape[0] == 1, (f'ncnn batch must be 1, \
         but not {target.shape[0]}')
-    cfg = dict()
-    register_extra_symbolics(cfg=cfg, backend=backend.backend_name, opset=11)
 
     def expand_function(input, target):
         return input.expand_as(target)
 
     wrapped_model = WrapFunction(expand_function)
-    backend.run_and_validate(
-        wrapped_model, [input.float(), target.float()],
-        'expand',
-        input_names=['input', 'shape'],
-        output_names=['output'],
-        save_dir=save_dir)
+    with RewriterContext(cfg={}, backend=backend.backend_name, opset=11):
+        backend.run_and_validate(
+            wrapped_model, [input.float(), target.float()],
+            'expand',
+            input_names=['input', 'shape'],
+            output_names=['output'],
+            save_dir=save_dir)

@@ -4,15 +4,19 @@ import onnx
 import pytest
 import torch
 
-from mmdeploy.core import register_extra_symbolics
+from mmdeploy.core import RewriterContext
 
 onnx_file = tempfile.NamedTemporaryFile(suffix='onnx').name
 
 
 @pytest.fixture(autouse=True, scope='module')
 def prepare_symbolics():
-    register_extra_symbolics(cfg=dict(), opset=11)
-    register_extra_symbolics(cfg=dict(), backend='tensorrt', opset=11)
+    context = RewriterContext({}, 'tensorrt', opset=11)
+    context.enter()
+
+    yield
+
+    context.exit()
 
 
 class OpModel(torch.nn.Module):

@@ -3,7 +3,7 @@ from typing import Any, Dict, Optional, Sequence
 
 import torch
 
-from mmdeploy.core.rewriters.function_rewriter import FUNCTION_REWRITER
+from mmdeploy.core.rewriters import FUNCTION_REWRITER
 from mmdeploy.utils import cfg_apply_marks, get_codebase, get_partition_config
 
 MARK_FUNCTION_COUNT = dict()

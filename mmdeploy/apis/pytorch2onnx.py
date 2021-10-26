@@ -4,8 +4,7 @@ from typing import Any, Optional, Union
 import mmcv
 import torch
 
-from mmdeploy.core import (RewriterContext, patch_model,
-                           register_extra_symbolics)
+from mmdeploy.core import RewriterContext, patch_model
 from mmdeploy.utils import (get_backend, get_codebase, get_input_shape,
                             get_onnx_config, get_task_type, load_config)
 from .utils import create_input, init_pytorch_model
@@ -29,13 +28,12 @@ def torch2onnx_impl(model: torch.nn.Module, input: torch.Tensor,
     backend = get_backend(deploy_cfg).value
     opset_version = pytorch2onnx_cfg.get('opset_version', 11)
 
-    # load registered symbolic
-    register_extra_symbolics(deploy_cfg, backend=backend, opset=opset_version)
-
     # patch model
     patched_model = patch_model(model, cfg=deploy_cfg, backend=backend)
 
-    with RewriterContext(cfg=deploy_cfg, backend=backend), torch.no_grad():
+    with RewriterContext(
+            cfg=deploy_cfg, backend=backend,
+            opset=opset_version), torch.no_grad():
         torch.onnx.export(
             patched_model,
             input,

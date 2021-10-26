@@ -4,7 +4,7 @@ import onnx
 import pytest
 import torch
 
-from mmdeploy.core import register_extra_symbolics
+from mmdeploy.core import RewriterContext
 from mmdeploy.utils.test import WrapFunction
 
 
@@ -24,8 +24,6 @@ def test_ONNXNMSop(iou_threshold, score_threshold, max_output_boxes_per_class):
                            [291.4747, 318.6987, 347.1208, 349.5754]]])
     scores = torch.rand(1, 5, 10)
 
-    cfg = dict()
-    register_extra_symbolics(cfg=cfg, backend='default', opset=11)
     from mmdeploy.mmcv.ops import ONNXNMSop
 
     def wrapped_function(torch_bboxes, torch_scores):
@@ -37,7 +35,7 @@ def test_ONNXNMSop(iou_threshold, score_threshold, max_output_boxes_per_class):
     result = wrapped_model(boxes, scores)
     assert result is not None
     onnx_file_path = tempfile.NamedTemporaryFile().name
-    with torch.no_grad():
+    with RewriterContext({}, opset=11), torch.no_grad():
         torch.onnx.export(
             wrapped_model, (boxes, scores),
             onnx_file_path,

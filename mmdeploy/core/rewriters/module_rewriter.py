@@ -1,123 +1,112 @@
+import inspect
 from copy import deepcopy
-from typing import Dict, Optional
+from typing import Dict
 
-from mmcv.utils import Registry
 from torch import nn
 
+from mmdeploy.utils.constants import Backend
 from .register_utils import eval_with_import
+from .rewriter_registry import RewriterRegistry
 
 
-class RewriteModuleRegistry(Registry):
-    """The registry of module rewriter."""
+class ModuleRewriter:
+    """A module rewriter which maintains rewritten modules.
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._module_eval_dict = dict()
+    The rewritten modules can be recorded by calling register_rewrite_module().
+    By calling patch_model(), all the selected modules of model will be
+    replaced.
+
+    Examples:
+        >>> @MODULE_REWRITER.register_rewrite_module(
+        >>>     'mmedit.models.backbones.sr_backbones.SRCNN',
+        >>>     backend='tensorrt')
+        >>> class SRCNNWrapper(torch.nn.Module):
+        >>>     # rewrite the module here
+    """
+
+    def __init__(self):
+        self._registry = RewriterRegistry()
+
+    def add_backend(self, backend: str):
+        """Add a beckend by calling the _registry."""
+        self._registry.add_backend(backend)
 
     def register_rewrite_module(self,
                                 module_type: str,
-                                backend: str = 'default',
+                                backend: str = Backend.DEFAULT.value,
                                 **kwargs):
-        """Register the rewrite module.
+        """The interface of module rewriter decorator.
 
         Args:
             module_type (str): The module type name to rewrite.
             backend (str): The inference engine name.
 
-        Examples:
-            >>> @MODULE_REWRITER.register_rewrite_module(
-            >>>     'mmedit.models.backbones.sr_backbones.SRCNN',
-            >>>     backend='tensorrt')
-            >>> class SRCNNWrapper(torch.nn.Module):
-            >>>     # rewrite the module here
+        Returns:
+            nn.Module: THe rewritten model.
         """
-        register_name = module_type + '@' + backend
-        return self.register_module(register_name)
+        return self._registry.register_object(module_type, backend, **kwargs)
 
-    @property
-    def module_eval_dict(self) -> Dict:
-        return self._module_eval_dict
+    def patch_model(self,
+                    model: nn.Module,
+                    cfg: Dict,
+                    backend: str = Backend.DEFAULT.value,
+                    recursive: bool = True,
+                    **kwargs) -> nn.Module:
+        """Replace the models that was registered.
 
-    def _register_module(self,
-                         module_class: type,
-                         module_name: Optional[str] = None,
-                         force: bool = False):
-        super()._register_module(module_class, module_name, force)
+        Args:
+            model (torch.nn.Module): The model to patch.
+            cfg (Dict): Config dictionary of deployment.
+            backend (str): The inference engine name.
+            recursive (bool): The flag to enable recursive patching.
 
-        module_type, backend = module_name.split('@')
-        module_type_cls = eval_with_import(module_type)
-        if module_type_cls not in self._module_eval_dict:
-            self._module_eval_dict[module_type_cls] = dict()
+        Returns:
+            nn.Module: THe patched model.
 
-        assert (
-            backend not in self._module_eval_dict[module_type_cls]
-        ), f'{module_type} with backend:{backend} has already been registered.'
-        self._module_eval_dict[module_type_cls][backend] = self.module_dict[
-            module_name]
+        Examples:
+            >>> from mmdeploy.core import patch_model
+            >>> patched_model = patch_model(model, cfg=deploy_cfg,
+            >>>                             backend=backend)
+        """
+        self._collect_record(backend)
+        return self._replace_module(model, cfg, recursive, **kwargs)
 
+    def _replace_one_module(self, module, cfg, **kwargs):
+        """Build a rewritten model."""
+        object_dict = self._records.get(type(module), None)
+        if object_dict is None:
+            return module
 
-def build_rewrite_module(module: nn.Module, cfg: Dict, backend: str,
-                         registry: RewriteModuleRegistry,
-                         **kwargs) -> nn.Module:
-    """The build function of MODULE_REWRITER.
+        module_class = object_dict['_object']
 
-    Args:
-        module (torch.nn.Module): The module to patch.
-        cfg (Dict): Config dictionary of deployment.
-        backend (str): The inference engine name.
-        registry (Registry): The registry to apply this build function.
+        # Pop arguments that are not supported
+        input_args = kwargs.copy()
+        supported_args = inspect.getfullargspec(module_class.__init__).args
+        redundant_key_name = []
+        for k in input_args:
+            if k not in supported_args:
+                redundant_key_name.append(k)
+        for k in redundant_key_name:
+            input_args.pop(k)
 
-    Returns:
-        nn.Module: The patched module.
-    """
+        return module_class(module, cfg, **input_args)
 
-    backend_dict = registry.module_eval_dict.get(type(module), None)
-    if backend_dict is None:
-        return module
+    def _replace_module(self, model: nn.Module, cfg: Dict, recursive: bool,
+                        **kwargs):
+        """DFS and replace target models."""
 
-    RewriteModuleClass = None
-    for backend in [backend, 'default']:
-        RewriteModuleClass = backend_dict.get(backend, None)
-        if RewriteModuleClass is not None:
-            break
+        def _replace_module_impl(model, cfg, **kwargs):
+            if recursive and hasattr(model, 'named_children'):
+                for name, module in model.named_children():
+                    model._modules[name] = _replace_module_impl(
+                        module, cfg, **kwargs)
+            return self._replace_one_module(model, cfg, **kwargs)
 
-    if RewriteModuleClass is None:
-        return module
+        return _replace_module_impl(deepcopy(model), cfg, **kwargs)
 
-    return RewriteModuleClass(module, cfg, **kwargs)
-
-
-# create register
-MODULE_REWRITER = RewriteModuleRegistry(
-    'module_rewriter', build_func=build_rewrite_module, scope='.')
-
-
-def patch_model(model: nn.Module,
-                cfg: Dict,
-                backend: str = 'default',
-                recursive: bool = True,
-                **kwargs) -> nn.Module:
-    """Patch the model, replace the modules that can be rewritten.
-
-    Args:
-        model (torch.nn.Module): The model to patch.
-        cfg (Dict): Config dictionary of deployment.
-        backend (str): The inference engine name.
-        recursive (bool): The flag to enable recursive patching.
-
-    Returns:
-        nn.Module: THe patched model.
-
-    Examples:
-        >>> from mmdeploy.core import patch_model
-        >>> patched_model = patch_model(model, cfg=deploy_cfg, backend=backend)
-    """
-
-    def _patch_impl(model, cfg, **kwargs):
-        if recursive and hasattr(model, 'named_children'):
-            for name, module in model.named_children():
-                model._modules[name] = _patch_impl(module, cfg, **kwargs)
-        return MODULE_REWRITER.build(
-            module=model, cfg=cfg, backend=backend, **kwargs)
-
-    return _patch_impl(deepcopy(model), cfg, **kwargs)
+    def _collect_record(self, backend: str):
+        """Collect models in registry."""
+        self._records = {}
+        records = self._registry.get_records(backend)
+        for name, kwargs in records.items():
+            self._records[eval_with_import(name)] = kwargs

@@ -6,8 +6,7 @@ import numpy as np
 import torch
 from torch import nn
 
-from mmdeploy.core import (RewriterContext, patch_model,
-                           register_extra_symbolics)
+from mmdeploy.core import RewriterContext, patch_model
 from mmdeploy.utils import Backend, get_backend, get_onnx_config
 
 
@@ -213,14 +212,13 @@ def get_rewrite_outputs(wrapped_model: nn.Module,
     onnx_file_path = tempfile.NamedTemporaryFile(suffix='.onnx').name
     pytorch2onnx_cfg = get_onnx_config(deploy_cfg)
     backend = get_backend(deploy_cfg)
-    register_extra_symbolics({}, backend=backend.value, opset=11)
     patched_model = patch_model(
         wrapped_model, cfg=deploy_cfg, backend=backend.value)
     flatten_model_inputs = get_flatten_inputs(model_inputs)
     input_names = [k for k, v in flatten_model_inputs.items() if k != 'ctx']
     output_names = pytorch2onnx_cfg.get('output_names', None)
     with RewriterContext(
-            cfg=deploy_cfg, backend=backend.value), torch.no_grad():
+            cfg=deploy_cfg, backend=backend.value, opset=11), torch.no_grad():
         ctx_outputs = wrapped_model(**model_inputs)
         torch.onnx.export(
             patched_model,
