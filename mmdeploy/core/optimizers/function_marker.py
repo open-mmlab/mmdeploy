@@ -39,6 +39,7 @@ class Mark(torch.autograd.Function):
 
     @staticmethod
     def symbolic(g, x, dtype, shape, func, func_id, type, name, id, attrs):
+        """Symbolic function for mmcv::Mark op."""
         n = g.op(
             'mmcv::Mark',
             x,
@@ -54,6 +55,7 @@ class Mark(torch.autograd.Function):
 
     @staticmethod
     def forward(ctx, x, *args):
+        """Run forward."""
         return x
 
 

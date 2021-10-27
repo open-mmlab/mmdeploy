@@ -24,11 +24,9 @@ def _set_func(origin_func_name: str, rewrite_func: Callable):
 
 class FunctionRewriter:
     """A function rewriter which maintains rewritten functions.
-
     The rewritten functions can be recorded by calling register_rewriter(). In
     RewriteContext, the rewriter automatically replace target functions and
     recover them after leaving the context.
-
     Examples:
         >>> @FUNCTION_REWRITER.register_rewriter(
         >>>     func_name='torch.Tensor.size', backend='ncnn')
@@ -58,7 +56,6 @@ class FunctionRewriter:
         Args:
             func_name (str): The function name/path to rewrite.
             backend (str): The inference engine name.
-
         Returns:
             Callable: The process of registering function.
         """

@@ -1,4 +1,4 @@
-from typing import Dict, Sequence, Union
+from typing import Any, Dict, Sequence, Union
 
 import onnx
 import tensorrt as trt
@@ -222,21 +222,17 @@ class TRTWrapper(torch.nn.Module):
         self.input_names = input_names
         self.output_names = output_names
 
-    def _on_state_dict(self, state_dict, prefix):
+    def _on_state_dict(self, state_dict: Dict[str, Any], prefix: str):
+        """State dict hook
+        Args:
+            state_dict (Dict[str, Any]): A dict to save state information
+                such as the serialized engine, input/output names.
+            prefix (str): A string to be prefixed at the key of the
+                state dict.
+        """
         state_dict[prefix + 'engine'] = bytearray(self.engine.serialize())
         state_dict[prefix + 'input_names'] = self.input_names
         state_dict[prefix + 'output_names'] = self.output_names
-
-    def _load_from_state_dict(self, state_dict, prefix, local_metadata, strict,
-                              missing_keys, unexpected_keys, error_msgs):
-        engine_bytes = state_dict[prefix + 'engine']
-
-        with trt.Logger() as logger, trt.Runtime(logger) as runtime:
-            self.engine = runtime.deserialize_cuda_engine(engine_bytes)
-            self.context = self.engine.create_execution_context()
-
-        self.input_names = state_dict[prefix + 'input_names']
-        self.output_names = state_dict[prefix + 'output_names']
 
     def forward(self, inputs: Dict[str, torch.Tensor]):
         """Run forward inference.

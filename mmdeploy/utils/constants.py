@@ -6,6 +6,7 @@ class AdvancedEnum(Enum):
 
     @classmethod
     def get(cls, str, a):
+        """Get the key through a value."""
         for k in cls:
             if k.value == str:
                 return k

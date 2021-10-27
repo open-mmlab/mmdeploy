@@ -55,7 +55,7 @@ class HDF5Calibrator(trt.IInt8Calibrator):
         self.batch_size = first_input_group['0'].shape[0]
 
     def __del__(self):
-
+        """Close h5py file if necessary."""
         if hasattr(self, 'calib_file'):
             self.calib_file.close()
 

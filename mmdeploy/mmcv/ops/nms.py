@@ -38,6 +38,7 @@ class ONNXNMSop(torch.autograd.Function):
     @staticmethod
     def symbolic(g, boxes, scores, max_output_boxes_per_class, iou_threshold,
                  score_threshold):
+        """Symbolic function for onnx::NonMaxSuppression."""
         return g.op(
             'NonMaxSuppression',
             boxes,
@@ -97,6 +98,7 @@ class TRTBatchedNMSop(torch.autograd.Function):
     @staticmethod
     def symbolic(g, boxes, scores, num_classes, pre_topk, after_topk,
                  iou_threshold, score_threshold, background_label_id):
+        """Symbolic function for mmcv::TRTBatchedNMS."""
         return g.op(
             'mmcv::TRTBatchedNMS',
             boxes,

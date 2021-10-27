@@ -1,3 +1,4 @@
+import io
 import sys
 import time
 import warnings
@@ -13,7 +14,18 @@ class TimeCounter:
 
     # Avoid instantiating every time
     @classmethod
-    def count_time(cls, warmup=1, log_interval=1, with_sync=False):
+    def count_time(cls,
+                   warmup: int = 1,
+                   log_interval: int = 1,
+                   with_sync: bool = False):
+        """Proceed time counting.
+
+        Args:
+            warmup (int): The warm up steps, default 1.
+            log_interval (int): Interval between each log, default 1.
+            with_sync (bool): Whether use cuda synchronize for time counting,
+                default `False`.
+        """
 
         def _register(func):
             assert warmup >= 1
@@ -80,16 +92,18 @@ class TimeCounter:
                  warmup: int = 1,
                  log_interval: int = 1,
                  with_sync: bool = False,
-                 file=sys.stdout):
+                 file: io.TextIOWrapper = sys.stdout):
         """Activate the time counter.
 
         Args:
-            func_name (str): which function to activate, if not specified, all
-                registried function will be activated.
+            func_name (str): Specify which function to activate. If not
+                specified, all registered function will be activated.
             warmup (int): the warm up steps, default 1.
-            log_interval (int): interval between each log, default 1.
-            with_sync (bool): whether use cuda synchronize for time counting,
+            log_interval (int): Interval between each log, default 1.
+            with_sync (bool): Whether use cuda synchronize for time counting,
                 default False.
+            file (io.TextIOWrapper): A file or file-like object to save output
+                messages. The default is `sys.stdout`.
         """
         assert warmup >= 1
         if file != sys.stdout:

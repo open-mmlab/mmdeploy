@@ -40,6 +40,7 @@ def simple_test_bboxes_of_bbox_test_mixin(ctx, self, x, img_metas, proposals,
     MaskTestMixin.simple_test_mask')
 def simple_test_mask_of_mask_test_mixin(ctx, self, x, img_metas, det_bboxes,
                                         det_labels, **kwargs):
+    """Rewrite `simple_test_mask` for default backend."""
     if det_bboxes.shape[1] == 0:
         bboxes_shape, labels_shape = list(det_bboxes.shape), list(
             det_labels.shape)

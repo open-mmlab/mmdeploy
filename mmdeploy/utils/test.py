@@ -1,5 +1,5 @@
 import tempfile
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, Callable, Dict, List, Tuple, Union
 
 import mmcv
 import numpy as np
@@ -11,14 +11,30 @@ from mmdeploy.utils import Backend, get_backend, get_onnx_config
 
 
 class WrapFunction(nn.Module):
-    """Simple wrapper for a function."""
+    """Wrap a pytorch function to nn.Module.
 
-    def __init__(self, wrapped_function, **kwargs):
+    It serves as partial function and can be exportable to ONNX.
+
+    Args:
+        wrapped_function (Callable): Input function to be wrapped.
+
+    Examples:
+        >>> from mmdeploy.utils.test import WrapFunction
+        >>> import torch
+        >>>
+        >>> def clip(x, min, max):
+        >>>     return torch.clamp(x, min, max)
+        >>>
+        >>> wrapped_model = WrapFunction(clip)
+    """
+
+    def __init__(self, wrapped_function: Callable, **kwargs):
         super(WrapFunction, self).__init__()
         self.wrapped_function = wrapped_function
         self.kwargs = kwargs
 
     def forward(self, *args, **kwargs):
+        """Call the wrapped function."""
         kwargs.update(self.kwargs)
         return self.wrapped_function(*args, **kwargs)
 
@@ -51,6 +67,7 @@ class WrapModel(nn.Module):
         self.func_name = func_name
 
     def forward(self, *args, **kwargs):
+        """Run forward of the model."""
         kwargs.update(self.kwargs)
         func = getattr(self.model, self.func_name)
         return func(*args, **kwargs)
@@ -78,9 +95,11 @@ class SwitchBackendWrapper:
             self.output_names = ['dets', 'labels']
 
         def forward(self, *args, **kwargs):
+            """Run forward."""
             return self.outputs
 
         def __call__(self, *args, **kwds):
+            """Call the forward method."""
             return self.forward(*args, **kwds)
 
     def __init__(self, recover_class):
@@ -105,6 +124,7 @@ class SwitchBackendWrapper:
             setattr(obj, k, v)
 
     def recover(self):
+        """Recover to original class."""
         assert self.init is not None and \
             self.forward is not None,\
             'recover method must be called after exchange'

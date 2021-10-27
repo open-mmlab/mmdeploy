@@ -80,9 +80,20 @@ def is_identity(node: onnx.NodeProto):
     return node.op_type == 'Identity'
 
 
-def get_new_name(attrs: onnx.ModelProto,
+def get_new_name(attrs: Dict[str, str],
                  mark_name: str = '',
                  name_map: Optional[Dict[str, str]] = None):
+    """Get new name for a node.
+
+    Args:
+        attrs (Dict[str, str]): A dict contains attributes of an ONNX node.
+        mark_name (str): The input mark op name. Default is ''.
+        name_map (Dict[str, str]): A mapping of node names, defaults to
+            `None`.
+
+    Returns:
+        str: The new node name.
+    """
     if 'name' in attrs:
         new_name = attrs['name']
     else:
