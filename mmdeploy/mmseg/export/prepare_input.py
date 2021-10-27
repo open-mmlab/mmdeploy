@@ -138,4 +138,4 @@ def get_tensor_from_input(input_data: tuple):
     Returns:
         torch.Tensor: An image in `Tensor`.
     """
-    return input_data['img']
+    return input_data['img'][0]

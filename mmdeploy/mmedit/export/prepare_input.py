@@ -1,4 +1,4 @@
-from typing import Optional, Sequence, Union
+from typing import Any, Dict, Optional, Sequence, Union
 
 import mmcv
 import numpy as np
@@ -188,3 +188,14 @@ def build_dataloader(dataset: Dataset,
     return build_dataloader_mmedit(dataset, samples_per_gpu, workers_per_gpu,
                                    num_gpus, dist, shuffle, seed, drop_last,
                                    pin_memory, persistent_workers, **kwargs)
+
+
+def get_tensor_from_input(input_data: Dict[str, Any]):
+    """Get input tensor from input data.
+
+    Args:
+        input_data (dict): Input data containing meta info and image tensor.
+    Returns:
+        torch.Tensor: An image in `Tensor`.
+    """
+    return input_data['lq']

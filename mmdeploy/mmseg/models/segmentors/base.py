@@ -10,7 +10,11 @@ def forward_of_base_segmentor(ctx, self, img, img_metas=None, **kwargs):
     """Rewrite `forward` for default backend."""
     if img_metas is None:
         img_metas = {}
-    assert isinstance(img_metas, dict)
+    while isinstance(img_metas, list):
+        img_metas = img_metas[0]
+
+    if isinstance(img, list):
+        img = torch.cat(img, 0)
     assert isinstance(img, torch.Tensor)
 
     deploy_cfg = ctx.cfg

@@ -45,9 +45,11 @@ def simple_test_mask_of_mask_test_mixin(ctx, self, x, img_metas, det_bboxes,
         bboxes_shape, labels_shape = list(det_bboxes.shape), list(
             det_labels.shape)
         bboxes_shape[1], labels_shape[1] = 1, 1
-        det_bboxes = torch.tensor([[[0., 0., 1., 1.,
-                                     0.]]]).expand(*bboxes_shape)
-        det_labels = torch.tensor([[0]]).expand(*labels_shape)
+        det_bboxes = torch.tensor(
+            [[[0., 0., 1., 1., 0.]]],
+            device=det_bboxes.device).expand(*bboxes_shape)
+        det_labels = torch.tensor(
+            [[0]], device=det_bboxes.device).expand(*labels_shape)
 
     batch_size = det_bboxes.size(0)
     det_bboxes = det_bboxes[..., :4]

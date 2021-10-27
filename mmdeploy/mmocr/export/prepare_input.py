@@ -2,7 +2,7 @@ from typing import Any, Optional, Sequence, Union
 
 import mmcv
 import numpy as np
-from mmcv.parallel import collate, scatter
+from mmcv.parallel import DataContainer, collate, scatter
 from mmdet.datasets import replace_ImageToTensor
 from mmocr.datasets import build_dataloader as build_dataloader_mmocr
 from mmocr.datasets import build_dataset as build_dataset_mmocr
@@ -189,4 +189,6 @@ def get_tensor_from_input(input_data: tuple):
     Returns:
         torch.Tensor: An image in `Tensor`.
     """
-    return input_data['img']
+    if isinstance(input_data['img'], DataContainer):
+        return input_data['img'].data[0]
+    return input_data['img'][0]

@@ -359,5 +359,9 @@ def get_tensor_from_input(codebase: Codebase, input_data: Dict[str, Any]):
         from mmdeploy.mmocr.export import get_tensor_from_input \
             as get_tensor_from_input_mmocr
         return get_tensor_from_input_mmocr(input_data)
+    elif codebase == Codebase.MMEDIT:
+        from mmdeploy.mmedit.export import get_tensor_from_input \
+            as get_tensor_from_input_mmedit
+        return get_tensor_from_input_mmedit(input_data)
     else:
         raise NotImplementedError(f'Unknown codebase type: {codebase.value}')
