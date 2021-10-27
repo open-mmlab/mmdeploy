@@ -1,0 +1,8 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "OpenMMLab's Model deployment toolbox"
+authors:
+  - name: "MMDeploy Contributors"
+date-released: 2021-12-27
+url: "https://github.com/open-mmlab/mmdeploy"
+license: Apache-2.0

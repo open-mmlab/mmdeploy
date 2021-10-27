@@ -13,7 +13,7 @@ a part of the [OpenMMLab](https://openmmlab.com/) project.
 
 - **Multiple inference engine support**
 
-  Models can be exported and inferenced with different backends. Such as ONNX Runtime, TensorRT, etc.
+  Models can be exported and run in different backends. Such as ONNX Runtime, TensorRT, etc.
 
 - **Model rewrite**
 
@@ -49,6 +49,19 @@ Please refer to [build.md](docs/build.md) for installation.
 Please read [how_to_convert_model.md](docs/tutorials/how_to_convert_model.md) for the basic usage of MMDeploy. There are also tutorials for [how to create config](docs/tutorials/how_to_create_config.md), [how to support new models](docs/tutorials/how_to_support_new_models.md) and [how to test model](docs/tutorials/how_to_test_model.md).
 
 Please refer to [FAQ](docs/faq.md) for frequently asked questions.
+
+## Citation
+
+If you find this project useful in your research, please consider cite:
+
+```BibTeX
+@misc{=mmdeploy,
+    title={OpenMMLab's Model deployment toolbox.},
+    author={MMDeploy Contributors},
+    howpublished = {\url{https://github.com/open-mmlab/mmdeploy}},
+    year={2021}
+}
+```
 
 ## Contributing
 
