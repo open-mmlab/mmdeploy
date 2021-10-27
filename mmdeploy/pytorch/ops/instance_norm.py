@@ -6,7 +6,7 @@ from torch.onnx.symbolic_helper import (_get_tensor_dim_size, _get_tensor_rank,
                                         _unimplemented, _unsqueeze_helper,
                                         parse_args)
 
-from mmdeploy.core import SYMBOLIC_REGISTER
+from mmdeploy.core import SYMBOLIC_REWRITER
 
 
 @parse_args('v', 'i', 'v', 'v', 'f', 'i')
@@ -61,7 +61,7 @@ def instance_norm(g, input, num_groups, weight, bias, eps, cudnn_enabled):
                _unsqueeze_helper(g, bias, axes))
 
 
-@SYMBOLIC_REGISTER.register_symbolic(
+@SYMBOLIC_REWRITER.register_symbolic(
     'group_norm', backend='tensorrt', is_pytorch=True)
 def instance_norm_trt(ctx, *args):
     """Register symbolic function for TensorRT backend.

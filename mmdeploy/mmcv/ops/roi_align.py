@@ -1,10 +1,10 @@
-from mmdeploy.core import SYMBOLIC_REGISTER
+from mmdeploy.core import SYMBOLIC_REWRITER
 
 
 # Here using mmcv.ops.roi_align.__self__ to find
 # mmcv.ops.roi_align.RoIAlignFunction, because RoIAlignFunction is not
 # visible in mmcv.
-@SYMBOLIC_REGISTER.register_symbolic(
+@SYMBOLIC_REWRITER.register_symbolic(
     'mmcv.ops.roi_align.__self__', backend='default')
 def roi_align_default(ctx, g, input, rois, output_size, spatial_scale,
                       sampling_ratio, pool_mode, aligned):

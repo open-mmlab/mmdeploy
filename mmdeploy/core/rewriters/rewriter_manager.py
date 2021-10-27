@@ -5,7 +5,7 @@ import torch.nn as nn
 from mmdeploy.utils.constants import Backend
 from .function_rewriter import FunctionRewriter
 from .module_rewriter import ModuleRewriter
-from .symbolic_register import SymbolicRegister
+from .symbolic_rewriter import SymbolicRewriter
 
 
 class RewriterManager:
@@ -14,7 +14,7 @@ class RewriterManager:
     def __init__(self):
         self.module_rewriter = ModuleRewriter()
         self.function_rewrite = FunctionRewriter()
-        self.symbolic_register = SymbolicRegister()
+        self.symbolic_rewriter = SymbolicRewriter()
 
     def add_backend(self, backend: str):
         """Add backend to all rewriters.
@@ -24,7 +24,7 @@ class RewriterManager:
         """
         self.module_rewriter.add_backend(backend)
         self.function_rewrite.add_backend(backend)
-        self.symbolic_register.add_backend(backend)
+        self.symbolic_rewriter.add_backend(backend)
 
 
 REWRITER_MANAGER = RewriterManager()
@@ -37,7 +37,7 @@ REWRITER_MANAGER.add_backend(Backend.OPENVINO.value)
 
 MODULE_REWRITER = REWRITER_MANAGER.module_rewriter
 FUNCTION_REWRITER = REWRITER_MANAGER.function_rewrite
-SYMBOLIC_REGISTER = REWRITER_MANAGER.symbolic_register
+SYMBOLIC_REWRITER = REWRITER_MANAGER.symbolic_rewriter
 
 
 def patch_model(model: nn.Module,
@@ -96,13 +96,13 @@ class RewriterContext:
         """Call the enter() of rewriters."""
         self._rewrite_manager.function_rewrite.enter(self._cfg, self._backend,
                                                      **self._kwargs)
-        self._rewrite_manager.symbolic_register.enter(self._cfg, self._backend,
+        self._rewrite_manager.symbolic_rewriter.enter(self._cfg, self._backend,
                                                       **self._kwargs)
 
     def exit(self):
         """Call the exit() of rewriters."""
         self._rewrite_manager.function_rewrite.exit()
-        self._rewrite_manager.symbolic_register.exit()
+        self._rewrite_manager.symbolic_rewriter.exit()
 
     def __enter__(self):
         """Call enter()"""

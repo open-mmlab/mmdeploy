@@ -5,16 +5,15 @@ from typing import Dict
 from torch import nn
 
 from mmdeploy.utils.constants import Backend
-from .register_utils import eval_with_import
-from .rewriter_registry import RewriterRegistry
+from .rewriter_utils import RewriterRegistry, eval_with_import
 
 
 class ModuleRewriter:
     """A module rewriter which maintains rewritten modules.
 
-    The rewritten modules can be recorded by calling register_rewrite_module().
-    By calling patch_model(), all the selected modules of model will be
-    replaced.
+    The rewritten modules can be registered by calling
+    register_rewrite_module().  By calling patch_model(), all the registered
+    modules of model will be replaced.
 
     Examples:
         >>> @MODULE_REWRITER.register_rewrite_module(
@@ -28,7 +27,7 @@ class ModuleRewriter:
         self._registry = RewriterRegistry()
 
     def add_backend(self, backend: str):
-        """Add a beckend by calling the _registry."""
+        """Add a beckend by calling the _registry.add_backend."""
         self._registry.add_backend(backend)
 
     def register_rewrite_module(self,

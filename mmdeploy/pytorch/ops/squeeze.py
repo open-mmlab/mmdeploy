@@ -1,9 +1,9 @@
 import torch.onnx.symbolic_helper as sym_help
 
-from mmdeploy.core import SYMBOLIC_REGISTER
+from mmdeploy.core import SYMBOLIC_REWRITER
 
 
-@SYMBOLIC_REGISTER.register_symbolic('squeeze', is_pytorch=True)
+@SYMBOLIC_REWRITER.register_symbolic('squeeze', is_pytorch=True)
 def squeeze_default(ctx, g, self, dim=None):
     """Register default symbolic function for `squeeze`."""
     if dim is None:

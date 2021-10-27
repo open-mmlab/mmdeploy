@@ -7,16 +7,19 @@ from torch.onnx.symbolic_registry import _registry as pytorch_registry
 from torch.onnx.symbolic_registry import register_op
 
 from mmdeploy.utils.constants import Backend
-from .context_caller import ContextCaller
-from .register_utils import eval_with_import
-from .rewriter_registry import RewriterRegistry
+from .rewriter_utils import ContextCaller, RewriterRegistry, eval_with_import
 
 
-class SymbolicRegister:
-    """A regisrty that records symbolics.
+class SymbolicRewriter:
+    """A symbolic rewriter which maintains rewritten symbolic.
+
+    The rewritten symbolic can be registered by calling register_symbolic(). In
+    RewriteContext, the rewriter automatically registers extra symbolic of
+    pytorch and replaces symbolic of custom functions. The symbolic will
+    recover after exiting the RewriteContext.
 
     Examples:
-        >>> @SYMBOLIC_REGISTER.register_symbolic('squeeze', \
+        >>> @SYMBOLIC_REWRITER.register_symbolic('squeeze', \
         >>> is_pytorch=True)
         >>> def squeeze_default(ctx, g, self, dim=None):
         >>>     if dim is None:
@@ -33,7 +36,7 @@ class SymbolicRegister:
         self._registry = RewriterRegistry()
 
     def add_backend(self, backend: str):
-        """Add a new backend to registry."""
+        """Add a beckend by calling the _registry.add_backend."""
         self._registry.add_backend(backend)
 
     def register_symbolic(self,

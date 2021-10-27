@@ -1,6 +1,6 @@
 import pytest
 
-from mmdeploy.core.rewriters.rewriter_registry import RewriterRegistry
+from mmdeploy.core.rewriters.rewriter_utils import RewriterRegistry
 from mmdeploy.utils.constants import Backend
 
 

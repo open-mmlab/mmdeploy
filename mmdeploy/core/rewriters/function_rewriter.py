@@ -2,9 +2,7 @@ import logging
 from typing import Callable, Dict
 
 from mmdeploy.utils.constants import Backend
-from .context_caller import ContextCaller
-from .register_utils import eval_with_import
-from .rewriter_registry import RewriterRegistry
+from .rewriter_utils import ContextCaller, RewriterRegistry, eval_with_import
 
 
 def _set_func(origin_func_name: str, rewrite_func: Callable):
@@ -24,9 +22,11 @@ def _set_func(origin_func_name: str, rewrite_func: Callable):
 
 class FunctionRewriter:
     """A function rewriter which maintains rewritten functions.
-    The rewritten functions can be recorded by calling register_rewriter(). In
-    RewriteContext, the rewriter automatically replace target functions and
-    recover them after leaving the context.
+
+    The rewritten functions can be registered by calling register_rewriter().
+    In RewriteContext, the rewriter automatically replaces target functions and
+    recovers them after exiting the context.
+
     Examples:
         >>> @FUNCTION_REWRITER.register_rewriter(
         >>>     func_name='torch.Tensor.size', backend='ncnn')
@@ -44,7 +44,7 @@ class FunctionRewriter:
         self._registry = RewriterRegistry()
 
     def add_backend(self, backend: str):
-        """Add a beckend by calling the _registry."""
+        """Add a beckend by calling the _registry.add_backend."""
         self._registry.add_backend(backend)
 
     def register_rewriter(self,

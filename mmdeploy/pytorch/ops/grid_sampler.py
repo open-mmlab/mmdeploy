@@ -1,6 +1,6 @@
 from torch.onnx.symbolic_helper import parse_args
 
-from mmdeploy.core import SYMBOLIC_REGISTER
+from mmdeploy.core import SYMBOLIC_REWRITER
 
 
 @parse_args('v', 'v', 'i', 'i', 'i')
@@ -20,7 +20,7 @@ def grid_sampler(g,
         align_corners_i=align_corners)
 
 
-@SYMBOLIC_REGISTER.register_symbolic('grid_sampler', is_pytorch=True)
+@SYMBOLIC_REWRITER.register_symbolic('grid_sampler', is_pytorch=True)
 def grid_sampler_default(ctx, *args):
     """Register default symbolic function for `grid_sampler`."""
     return grid_sampler(*args)

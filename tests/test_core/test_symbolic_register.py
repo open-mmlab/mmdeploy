@@ -6,8 +6,8 @@ import torch
 from torch.autograd import Function
 
 import mmdeploy
-from mmdeploy.core import SYMBOLIC_REGISTER, RewriterContext
-from mmdeploy.core.rewriters.symbolic_register import SymbolicRegister
+from mmdeploy.core import SYMBOLIC_REWRITER, RewriterContext
+from mmdeploy.core.rewriters.symbolic_rewriter import SymbolicRewriter
 
 output_file = tempfile.NamedTemporaryFile(suffix='.onnx').name
 
@@ -34,21 +34,21 @@ def create_custom_module():
     del mmdeploy.TestFunc
 
 
-def test_symbolic_register():
+def test_symbolic_rewriter():
     test_func = mmdeploy.TestFunc.apply
 
-    @SYMBOLIC_REGISTER.register_symbolic('mmdeploy.TestFunc', backend='ncnn')
-    @SYMBOLIC_REGISTER.register_symbolic('mmdeploy.TestFunc')
+    @SYMBOLIC_REWRITER.register_symbolic('mmdeploy.TestFunc', backend='ncnn')
+    @SYMBOLIC_REWRITER.register_symbolic('mmdeploy.TestFunc')
     def symbolic_testfunc_default(symbolic_wrapper, g, x, val):
         assert hasattr(symbolic_wrapper, 'cfg')
         return g.op('mmcv::symbolic_testfunc_default', x, val_i=val)
 
-    @SYMBOLIC_REGISTER.register_symbolic(
+    @SYMBOLIC_REWRITER.register_symbolic(
         'mmdeploy.TestFunc', backend='tensorrt')
     def symbolic_testfunc_tensorrt(symbolic_wrapper, g, x, val):
         return g.op('mmcv::symbolic_testfunc_tensorrt', x, val_i=val)
 
-    @SYMBOLIC_REGISTER.register_symbolic(
+    @SYMBOLIC_REWRITER.register_symbolic(
         'cummax', is_pytorch=True, arg_descriptors=['v', 'i'])
     def symbolic_cummax(symbolic_wrapper, g, input, dim):
         return g.op('mmcv::cummax_default', input, dim_i=dim, outputs=2)
@@ -101,11 +101,11 @@ def test_symbolic_register():
 def test_unregister():
     test_func = mmdeploy.TestFunc.apply
 
-    @SYMBOLIC_REGISTER.register_symbolic('mmdeploy.TestFunc')
+    @SYMBOLIC_REWRITER.register_symbolic('mmdeploy.TestFunc')
     def symbolic_testfunc_default(symbolic_wrapper, g, x, val):
         return g.op('mmcv::symbolic_testfunc_default', x, val_i=val)
 
-    @SYMBOLIC_REGISTER.register_symbolic(
+    @SYMBOLIC_REWRITER.register_symbolic(
         'cummax', is_pytorch=True, arg_descriptors=['v', 'i'])
     def symbolic_cummax(symbolic_wrapper, g, input, dim):
         return g.op('mmcv::cummax_default', input, dim_i=dim, outputs=2)
@@ -155,12 +155,12 @@ def test_unregister():
 
 
 def test_register_empty_symbolic():
-    symbolic_register = SymbolicRegister()
+    symbolic_rewriter = SymbolicRewriter()
 
-    @symbolic_register.register_symbolic('mmdeploy.EmptyFunction')
+    @symbolic_rewriter.register_symbolic('mmdeploy.EmptyFunction')
     def symbolic_testfunc_default(symbolic_wrapper, g, x, val):
         return g.op('mmcv::symbolic_testfunc_default', x, val_i=val)
 
-    symbolic_register.enter()
-    assert len(symbolic_register._extra_symbolic) == 0
-    symbolic_register.exit()
+    symbolic_rewriter.enter()
+    assert len(symbolic_rewriter._extra_symbolic) == 0
+    symbolic_rewriter.exit()

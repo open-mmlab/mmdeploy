@@ -4,7 +4,7 @@
 from torch.nn.modules.utils import _pair, _single, _triple
 from torch.onnx.symbolic_helper import parse_args
 
-from mmdeploy.core import SYMBOLIC_REGISTER
+from mmdeploy.core import SYMBOLIC_REWRITER
 
 
 def _adaptive_pool(name, type, tuple_fn, fn=None):
@@ -52,19 +52,19 @@ adaptive_avg_pool3d = _adaptive_pool('adaptive_avg_pool3d', 'AveragePool',
                                      _triple)
 
 
-@SYMBOLIC_REGISTER.register_symbolic('adaptive_avg_pool1d', is_pytorch=True)
+@SYMBOLIC_REWRITER.register_symbolic('adaptive_avg_pool1d', is_pytorch=True)
 def adaptive_avg_pool1d_op(ctx, *args):
     """Register default symbolic function for `adaptive_avg_pool1d`."""
     return adaptive_avg_pool1d(*args)
 
 
-@SYMBOLIC_REGISTER.register_symbolic('adaptive_avg_pool2d', is_pytorch=True)
+@SYMBOLIC_REWRITER.register_symbolic('adaptive_avg_pool2d', is_pytorch=True)
 def adaptive_avg_pool2d_op(ctx, *args):
     """Register default symbolic function for `adaptive_avg_pool2d`."""
     return adaptive_avg_pool2d(*args)
 
 
-@SYMBOLIC_REGISTER.register_symbolic('adaptive_avg_pool3d', is_pytorch=True)
+@SYMBOLIC_REWRITER.register_symbolic('adaptive_avg_pool3d', is_pytorch=True)
 def adaptive_avg_pool3d_op(ctx, *args):
     """Register default symbolic function for `adaptive_avg_pool3d`."""
     return adaptive_avg_pool3d(*args)

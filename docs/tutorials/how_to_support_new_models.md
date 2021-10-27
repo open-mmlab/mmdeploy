@@ -71,7 +71,7 @@ All instances of the module in the network will be replaced with instances of th
 The mappings between PyTorch and ONNX are defined in PyTorch with symbolic functions. The custom symbolic function can help us to bypass some ONNX nodes which are unsupported by inference engine.
 
 ```python
-@SYMBOLIC_REGISTER.register_symbolic('squeeze', is_pytorch=True)
+@SYMBOLIC_REWRITER.register_symbolic('squeeze', is_pytorch=True)
 def squeeze_default(ctx, g, self, dim=None):
     if dim is None:
         dims = []

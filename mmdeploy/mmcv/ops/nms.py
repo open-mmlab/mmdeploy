@@ -2,7 +2,7 @@ import torch
 from mmcv.ops import nms
 from torch.onnx import symbolic_helper as sym_help
 
-from mmdeploy.core import SYMBOLIC_REGISTER
+from mmdeploy.core import SYMBOLIC_REWRITER
 
 
 class ONNXNMSop(torch.autograd.Function):
@@ -49,7 +49,7 @@ class ONNXNMSop(torch.autograd.Function):
             outputs=1)
 
 
-@SYMBOLIC_REGISTER.register_symbolic(
+@SYMBOLIC_REWRITER.register_symbolic(
     'mmdeploy.mmcv.ops.ONNXNMSop', backend='default')
 def nms_dynamic(ctx, g, boxes, scores, max_output_boxes_per_class,
                 iou_threshold, score_threshold):
