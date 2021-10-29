@@ -46,7 +46,7 @@ Please refer to [build.md](docs/build.md) for installation.
 
 ## Getting Started
 
-Please read [how_to_convert_model.md](docs/tutorials/how_to_convert_model.md) for the basic usage of MMDeploy. There are also tutorials for [how to create config](docs/tutorials/how_to_create_config.md), [how to support new models](docs/tutorials/how_to_support_new_models.md) and [how to test model](docs/tutorials/how_to_test_model.md).
+Please read [how_to_convert_model.md](docs/tutorials/how_to_convert_model.md) for the basic usage of MMDeploy. There are also tutorials for [how to write config](docs/tutorials/how_to_write_config.md), [how to support new models](docs/tutorials/how_to_support_new_models.md) and [how to test model](docs/tutorials/how_to_test_model.md).
 
 Please refer to [FAQ](docs/faq.md) for frequently asked questions.
 
