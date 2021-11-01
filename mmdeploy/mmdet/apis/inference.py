@@ -1,9 +1,10 @@
 from functools import partial
-from typing import Sequence, Tuple, Union
+from typing import List, Sequence, Tuple, Union
 
 import mmcv
 import numpy as np
 import torch
+import torch.nn.functional as F
 from mmdet.core import bbox2result
 from mmdet.datasets import DATASETS
 from mmdet.models import BaseDetector
@@ -21,10 +22,11 @@ class DeployBaseDetector(BaseDetector):
         device_id (int): An integer represents device index.
     """
 
-    def __init__(self, class_names, device_id, **kwargs):
+    def __init__(self, class_names, device_id, deploy_cfg=None, **kwargs):
         super(DeployBaseDetector, self).__init__()
         self.CLASSES = class_names
         self.device_id = device_id
+        self.deploy_cfg = deploy_cfg
 
     def simple_test(self, img, img_metas, **kwargs):
         raise NotImplementedError('This method is not implemented.')
@@ -50,6 +52,92 @@ class DeployBaseDetector(BaseDetector):
     def async_simple_test(self, img, img_metas, **kwargs):
         raise NotImplementedError('This method is not implemented.')
 
+    def __clear_outputs(
+        self, test_outputs: List[Union[torch.Tensor, np.ndarray]]
+    ) -> List[Union[List[torch.Tensor], List[np.ndarray]]]:
+        """Removes additional outputs and detections with zero score.
+
+        Args:
+            test_outputs (List[Union[torch.Tensor, np.ndarray]]):
+                outputs of forward_test.
+
+        Returns:
+            List[Union[List[torch.Tensor], List[np.ndarray]]]:
+                outputs with without zero score object.
+        """
+        batch_size = len(test_outputs[0])
+
+        num_outputs = len(test_outputs)
+        outputs = [[None for _ in range(batch_size)]
+                   for _ in range(num_outputs)]
+
+        for i in range(batch_size):
+            inds = test_outputs[0][i, :, 4] > 0.0
+            for output_id in range(num_outputs):
+                outputs[output_id][i] = test_outputs[output_id][i, inds, ...]
+        return outputs
+
+    def __postprocessing_masks(self,
+                               det_bboxes: np.ndarray,
+                               det_masks: np.ndarray,
+                               img_w: int,
+                               img_h: int,
+                               mask_thr_binary: float = 0.5) -> np.ndarray:
+        """Additional processing of masks. Resizes masks from [num_det, 28, 28]
+        to [num_det, img_w, img_h]. Analog of the 'mmdeploy.mmdet.models.roi_he
+        ads.mask_heads.fcn_mask_head._do_paste_mask' function.
+
+        Args:
+            det_bboxes (np.ndarray): Bbox of shape [num_det, 5]
+            det_masks (np.ndarray): Masks of shape [num_det, 28, 28].
+            img_w (int): Width of the original image.
+            img_h (int): Height of the original image.
+            mask_thr_binary (float): The threshold for the mask.
+
+        Returns:
+            np.ndarray: masks of shape [N, num_det, img_w, img_h].
+        """
+        masks = det_masks
+        bboxes = det_bboxes
+
+        if isinstance(masks, np.ndarray):
+            masks = torch.tensor(masks)
+            bboxes = torch.tensor(bboxes)
+
+        result_masks = []
+        for bbox, mask in zip(bboxes, masks):
+
+            x0_int, y0_int = 0, 0
+            x1_int, y1_int = img_w, img_h
+
+            img_y = torch.arange(y0_int, y1_int, dtype=torch.float32) + 0.5
+            img_x = torch.arange(x0_int, x1_int, dtype=torch.float32) + 0.5
+            x0, y0, x1, y1 = bbox
+
+            img_y = (img_y - y0) / (y1 - y0) * 2 - 1
+            img_x = (img_x - x0) / (x1 - x0) * 2 - 1
+            if torch.isinf(img_x).any():
+                inds = torch.where(torch.isinf(img_x))
+                img_x[inds] = 0
+            if torch.isinf(img_y).any():
+                inds = torch.where(torch.isinf(img_y))
+                img_y[inds] = 0
+
+            gx = img_x[None, :].expand(img_y.size(0), img_x.size(0))
+            gy = img_y[:, None].expand(img_y.size(0), img_x.size(0))
+            grid = torch.stack([gx, gy], dim=2)
+
+            img_masks = F.grid_sample(
+                mask.to(dtype=torch.float32)[None, None, :, :],
+                grid[None, :, :, :],
+                align_corners=False)
+
+            mask = img_masks
+            mask = (mask >= mask_thr_binary).to(dtype=torch.bool)
+            result_masks.append(mask.numpy())
+        result_masks = np.concatenate(result_masks, axis=1)
+        return result_masks.squeeze(0)
+
     def forward(self, img: Sequence[torch.Tensor], img_metas: Sequence[dict],
                 *args, **kwargs):
         """Run forward inference.
@@ -66,6 +154,7 @@ class DeployBaseDetector(BaseDetector):
         """
         input_img = img[0].contiguous()
         outputs = self.forward_test(input_img, img_metas, *args, **kwargs)
+        outputs = self.__clear_outputs(outputs)
         batch_dets, batch_labels = outputs[:2]
         batch_masks = outputs[2] if len(outputs) == 3 else None
         batch_size = input_img.shape[0]
@@ -98,7 +187,17 @@ class DeployBaseDetector(BaseDetector):
                 masks = batch_masks[i]
                 img_h, img_w = img_metas[i]['img_shape'][:2]
                 ori_h, ori_w = img_metas[i]['ori_shape'][:2]
-                masks = masks[:, :img_h, :img_w]
+                export_postprocess_mask = True
+                if self.deploy_cfg is not None:
+                    mmdet_deploy_cfg = get_mmdet_params(self.deploy_cfg)
+                    # this flag enable postprocess when export.
+                    export_postprocess_mask = mmdet_deploy_cfg.get(
+                        'export_postprocess_mask', True)
+                if not export_postprocess_mask:
+                    masks = self.__postprocessing_masks(
+                        dets[:, :4], masks, ori_w, ori_h)
+                else:
+                    masks = masks[:, :img_h, :img_w]
                 # avoid to resize masks with zero dim
                 if rescale and masks.shape[0] != 0:
                     masks = masks.astype(np.float32)
@@ -248,8 +347,10 @@ class OpenVINODetector(DeployBaseDetector):
                 and class labels of shape [N, num_det].
         """
         openvino_outputs = self.model({'input': imgs})
-        openvino_outputs = (openvino_outputs['dets'],
-                            openvino_outputs['labels'])
+        output_keys = ['dets', 'labels']
+        if 'masks' in openvino_outputs:
+            output_keys += ['masks']
+        openvino_outputs = [openvino_outputs[key] for key in output_keys]
         return openvino_outputs
 
 

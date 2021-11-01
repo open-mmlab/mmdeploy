@@ -2,7 +2,7 @@ import torch
 import torch.nn.functional as F
 
 from mmdeploy.core import FUNCTION_REWRITER
-from mmdeploy.utils import Backend, get_backend
+from mmdeploy.utils import Backend, get_backend, get_mmdet_params
 
 
 @FUNCTION_REWRITER.register_rewriter(
@@ -30,6 +30,14 @@ def get_seg_masks_of_fcn_mask_head(ctx, self, mask_pred, det_bboxes,
     if not self.class_agnostic:
         box_inds = torch.arange(mask_pred.shape[0], device=bboxes.device)
         mask_pred = mask_pred[box_inds, labels][:, None]
+
+    # grid sample is not supported by most engine
+    # so we add a flag to disable it.
+    mmdet_params = get_mmdet_params(ctx.cfg)
+    export_postprocess_mask = mmdet_params.get('export_postprocess_mask', True)
+    if not export_postprocess_mask:
+        return mask_pred
+
     masks, _ = _do_paste_mask(
         mask_pred, bboxes, ori_shape[0], ori_shape[1], skip_empty=False)
     if backend == Backend.TENSORRT:

@@ -68,6 +68,7 @@ def simple_test_mask_of_mask_test_mixin(ctx, self, x, img_metas, det_bboxes,
     segm_results = self.mask_head.get_seg_masks(mask_pred, det_bboxes,
                                                 det_labels, self.test_cfg,
                                                 max_shape)
-    segm_results = segm_results.reshape(batch_size, num_det, max_shape[0],
-                                        max_shape[1])
+    segm_results = segm_results.reshape(batch_size, num_det,
+                                        segm_results.shape[-2],
+                                        segm_results.shape[-1])
     return segm_results
