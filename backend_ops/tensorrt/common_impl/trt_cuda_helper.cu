@@ -1,7 +1,7 @@
 #include "common_cuda_helper.hpp"
 #include "trt_plugin_helper.hpp"
 
-using mmlab::TensorDesc;
+using mmdeploy::TensorDesc;
 
 template <class scalar_t>
 __global__ void copy_permute_kernel(scalar_t *dst, const scalar_t *src, int n,

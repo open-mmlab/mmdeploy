@@ -5,7 +5,7 @@
 #include <functional>
 
 #include "../ncnn_ops_definer.h"
-namespace mmlab {
+namespace mmdeploy {
 using namespace ncnn;
 DEFINE_LAYER_CREATOR(TopK)
 DEFINE_NCNN_OPS(TopK, TopK)
@@ -957,4 +957,4 @@ int TopK::forward(const std::vector<Mat>& bottom_blobs,
   return 0;
 }
 
-}  // namespace mmlab
+}  // namespace mmdeploy

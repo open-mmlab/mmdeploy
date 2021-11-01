@@ -17,7 +17,7 @@ void ModulatedDeformConvForwardCUDAKernelLauncher_float(
     int pad_h, int dilation_w, int dilation_h, int group, int deformable_group,
     int im2col_step, cublasHandle_t cublas_handle, cudaStream_t stream);
 
-namespace mmlab {
+namespace mmdeploy {
 namespace {
 static const char *PLUGIN_VERSION{"1"};
 static const char *PLUGIN_NAME{"MMCVModulatedDeformConv2d"};
@@ -98,7 +98,7 @@ size_t ModulatedDeformableConvPluginDynamic::getWorkspaceSize(
     const nvinfer1::PluginTensorDesc *inputs, int nbInputs,
     const nvinfer1::PluginTensorDesc *outputs,
     int nbOutputs) const TRT_NOEXCEPT {
-  int sizeof_dtype = mmlab::getElementSize(outputs[0].type);
+  int sizeof_dtype = mmdeploy::getElementSize(outputs[0].type);
 
   int batch_size = inputs[0].dims.d[0];
   int nInputPlane = inputs[0].dims.d[1];
@@ -113,8 +113,8 @@ size_t ModulatedDeformableConvPluginDynamic::getWorkspaceSize(
   int kH = inputs[3].dims.d[3];
   int im2col_step = std::min(32, batch_size);
 
-  size_t col_size = mmlab::getAlignedSize(nInputPlane * kW * kH * outputHeight *
-                                          outputWidth * sizeof_dtype);
+  size_t col_size = mmdeploy::getAlignedSize(
+      nInputPlane * kW * kH * outputHeight * outputWidth * sizeof_dtype);
 
   return col_size;
 }
@@ -285,4 +285,4 @@ ModulatedDeformableConvPluginDynamicCreator::deserializePlugin(
   return plugin;
 }
 REGISTER_TENSORRT_PLUGIN(ModulatedDeformableConvPluginDynamicCreator);
-}  // namespace mmlab
+}  // namespace mmdeploy

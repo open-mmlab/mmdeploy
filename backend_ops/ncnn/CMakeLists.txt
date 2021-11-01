@@ -1,4 +1,4 @@
-set(TARGET_NAME mmlab_ncnn_ops)
+set(TARGET_NAME mmdeploy_ncnn_ops)
 set(SHARED_TARGET ${TARGET_NAME})
 
 # ncnn

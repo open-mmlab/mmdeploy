@@ -3,7 +3,7 @@
 
 #include "layer.h"
 
-namespace mmlab {
+namespace mmdeploy {
 
 class Expand : public ncnn::Layer {
  public:
@@ -14,6 +14,6 @@ class Expand : public ncnn::Layer {
                       const ncnn::Option& opt) const;
 };
 
-}  // namespace mmlab
+}  // namespace mmdeploy
 
 #endif  // LAYER_EXPAND_H

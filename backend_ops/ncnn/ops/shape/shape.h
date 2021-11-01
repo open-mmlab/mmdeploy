@@ -3,7 +3,7 @@
 
 #include "layer.h"
 
-namespace mmlab {
+namespace mmdeploy {
 
 class Shape : public ncnn::Layer {
  public:
@@ -13,6 +13,6 @@ class Shape : public ncnn::Layer {
                       const ncnn::Option& opt) const;
 };
 
-}  // namespace mmlab
+}  // namespace mmdeploy
 
 #endif  // LAYER_SHAPE_H

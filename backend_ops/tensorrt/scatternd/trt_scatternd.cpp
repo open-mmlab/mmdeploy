@@ -8,7 +8,7 @@
 #include "trt_scatternd_kernel.hpp"
 #include "trt_serialize.hpp"
 
-namespace mmlab {
+namespace mmdeploy {
 namespace {
 static const char *PLUGIN_VERSION{"1"};
 static const char *PLUGIN_NAME{"ScatterND"};
@@ -166,4 +166,4 @@ nvinfer1::IPluginV2 *TRTScatterNDCreator::deserializePlugin(
 }
 
 REGISTER_TENSORRT_PLUGIN(TRTScatterNDCreator);
-}  // namespace mmlab
+}  // namespace mmdeploy

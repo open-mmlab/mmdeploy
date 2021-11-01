@@ -3,7 +3,7 @@
 
 #include "layer.h"
 
-namespace mmlab {
+namespace mmdeploy {
 
 class Gather : public ncnn::Layer {
  public:
@@ -19,6 +19,6 @@ class Gather : public ncnn::Layer {
   int axis;
 };
 
-}  // namespace mmlab
+}  // namespace mmdeploy
 
 #endif  // LAYER_GATHER_H

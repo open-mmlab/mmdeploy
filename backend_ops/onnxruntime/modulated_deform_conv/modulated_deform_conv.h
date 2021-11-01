@@ -4,7 +4,7 @@
 
 #include <onnxruntime_cxx_api.h>
 
-namespace mmlab {
+namespace mmdeploy {
 
 struct MMCVModulatedDeformConvKernel {
   MMCVModulatedDeformConvKernel(OrtApi api, const OrtKernelInfo *info);
@@ -60,5 +60,5 @@ struct MMCVModulatedDeformConvOp
     return "CPUExecutionProvider";
   };
 };
-}  // namespace mmlab
+}  // namespace mmdeploy
 #endif

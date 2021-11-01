@@ -3,7 +3,7 @@
 #include "expand.h"
 
 #include "../ncnn_ops_definer.h"
-namespace mmlab {
+namespace mmdeploy {
 using namespace ncnn;
 DEFINE_LAYER_CREATOR(Expand)
 DEFINE_NCNN_OPS(Expand, Expand)
@@ -361,4 +361,4 @@ int Expand::forward(const std::vector<Mat>& bottom_blobs,
           top_blob.w);
 }
 
-}  // namespace mmlab
+}  // namespace mmdeploy

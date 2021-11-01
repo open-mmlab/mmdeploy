@@ -8,7 +8,7 @@
 #include "trt_multi_level_roi_align_kernel.hpp"
 #include "trt_plugin_helper.hpp"
 #include "trt_serialize.hpp"
-namespace mmlab {
+namespace mmdeploy {
 namespace {
 static const char *PLUGIN_VERSION{"1"};
 static const char *PLUGIN_NAME{"MMCVMultiLevelRoiAlign"};
@@ -234,4 +234,4 @@ nvinfer1::IPluginV2 *TRTMultiLevelRoiAlignCreator::deserializePlugin(
 }
 
 REGISTER_TENSORRT_PLUGIN(TRTMultiLevelRoiAlignCreator);
-}  // namespace mmlab
+}  // namespace mmdeploy

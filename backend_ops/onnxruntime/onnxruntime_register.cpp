@@ -13,7 +13,7 @@ OrtStatus *ORT_API_CALL RegisterCustomOps(OrtSessionOptions *options,
     return status;
   }
 
-  for (auto _op : mmlab::get_mmlab_custom_ops()) {
+  for (auto _op : mmdeploy::get_mmdeploy_custom_ops()) {
     if (auto status = kOrtApi->CustomOpDomain_Add(domain, _op)) {
       return status;
     }

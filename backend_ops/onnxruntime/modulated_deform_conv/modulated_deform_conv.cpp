@@ -6,7 +6,7 @@
 
 #include "ort_utils.h"
 
-namespace mmlab {
+namespace mmdeploy {
 
 float bilinear_interpolate_2d(const float *src, const int64_t src_h,
                               const int64_t src_w, const float h,
@@ -293,4 +293,4 @@ void MMCVModulatedDeformConvKernel::Compute(OrtKernelContext *context) {
       dilation_height, dilation_width, columns, out_ptr);
 }
 REGISTER_ONNXRUNTIME_OPS(MMCVModulatedDeformConvOp);
-}  // namespace mmlab
+}  // namespace mmdeploy

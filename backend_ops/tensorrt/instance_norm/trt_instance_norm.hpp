@@ -13,7 +13,7 @@
 
 typedef unsigned short half_type;
 
-namespace mmlab {
+namespace mmdeploy {
 class TRTInstanceNormalization final : public TRTPluginBase {
  public:
   TRTInstanceNormalization(const std::string& name, float epsilon);
@@ -98,5 +98,5 @@ class TRTInstanceNormalizationCreator : public TRTPluginCreatorBase {
       const char* name, const void* serialData,
       size_t serialLength) TRT_NOEXCEPT override;
 };
-}  // namespace mmlab
+}  // namespace mmdeploy
 #endif  // TRT_INSTANCE_NORMALIZATION_HPP

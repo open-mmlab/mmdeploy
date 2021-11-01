@@ -142,9 +142,9 @@ size_t sortScoresPerClassWorkspaceSize(const int num, const int num_classes,
                                        const DataType DT_CONF) {
   size_t wss[4];
   const int arrayLen = num * num_classes * num_preds_per_class;
-  wss[0] = arrayLen * mmlab::getElementSize(DT_CONF);  // temp scores
-  wss[1] = arrayLen * sizeof(int);                     // temp indices
-  wss[2] = (num * num_classes + 1) * sizeof(int);      // offsets
+  wss[0] = arrayLen * mmdeploy::getElementSize(DT_CONF);  // temp scores
+  wss[1] = arrayLen * sizeof(int);                        // temp indices
+  wss[2] = (num * num_classes + 1) * sizeof(int);         // offsets
   if (DT_CONF == DataType::kFLOAT) {
     wss[3] = cubSortPairsWorkspaceSize<float, int>(
         arrayLen, num * num_classes);  // cub workspace

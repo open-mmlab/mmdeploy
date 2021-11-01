@@ -8,7 +8,7 @@
 #include "trt_roi_align_kernel.hpp"
 #include "trt_serialize.hpp"
 
-namespace mmlab {
+namespace mmdeploy {
 namespace {
 static const char *PLUGIN_VERSION{"1"};
 static const char *PLUGIN_NAME{"MMCVRoiAlign"};
@@ -80,7 +80,7 @@ size_t TRTRoIAlign::getWorkspaceSize(const nvinfer1::PluginTensorDesc *inputs,
     case 0:  // max
       output_size = outputs[0].dims.d[0] * outputs[0].dims.d[1] *
                     outputs[0].dims.d[2] * outputs[0].dims.d[3];
-      word_size = mmlab::getElementSize(outputs[0].type);
+      word_size = mmdeploy::getElementSize(outputs[0].type);
       return output_size * word_size * 2;
       break;
     case 1:
@@ -102,7 +102,7 @@ int TRTRoIAlign::enqueue(const nvinfer1::PluginTensorDesc *inputDesc,
 
   int output_size = outputDesc[0].dims.d[0] * outputDesc[0].dims.d[1] *
                     outputDesc[0].dims.d[2] * outputDesc[0].dims.d[3];
-  int word_size = mmlab::getElementSize(outputDesc[0].type);
+  int word_size = mmdeploy::getElementSize(outputDesc[0].type);
 
   const void *feat = inputs[0];
   const void *rois = inputs[1];
@@ -256,4 +256,4 @@ nvinfer1::IPluginV2 *TRTRoIAlignCreator::deserializePlugin(
   return plugin;
 }
 REGISTER_TENSORRT_PLUGIN(TRTRoIAlignCreator);
-}  // namespace mmlab
+}  // namespace mmdeploy

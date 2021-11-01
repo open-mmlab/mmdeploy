@@ -39,7 +39,7 @@ class NCNNWrapper(torch.nn.Module):
         net = ncnn.Net()
         if importlib.util.find_spec('mmdeploy.apis.ncnn.ncnn_ext'):
             from mmdeploy.apis.ncnn import ncnn_ext
-            ncnn_ext.register_mm_custom_layers(net)
+            ncnn_ext.register_mmdeploy_custom_layers(net)
         net.load_param(param_file)
         net.load_model(bin_file)
 

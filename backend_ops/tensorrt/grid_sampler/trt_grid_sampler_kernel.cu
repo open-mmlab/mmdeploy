@@ -14,7 +14,7 @@
 #include "trt_grid_sampler_kernel.hpp"
 #include "trt_plugin_helper.hpp"
 
-using mmlab::TensorDesc;
+using mmdeploy::TensorDesc;
 
 // Unnormalizes a coordinate from the -1 to +1 scale to its pixel index value,
 // where we view each pixel as an area between (idx - 0.5) and (idx + 0.5).

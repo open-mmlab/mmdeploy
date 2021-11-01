@@ -7,7 +7,7 @@
 
 #include "NvInferPluginUtils.h"
 #include "trt_plugin_base.hpp"
-namespace mmlab {
+namespace mmdeploy {
 class TRTBatchedNMS : public TRTPluginBase {
  public:
   TRTBatchedNMS(const std::string& name, nvinfer1::plugin::NMSParameters param);
@@ -84,5 +84,5 @@ class TRTBatchedNMSCreator : public TRTPluginCreatorBase {
       const char* name, const void* serialData,
       size_t serialLength) TRT_NOEXCEPT override;
 };
-}  // namespace mmlab
+}  // namespace mmdeploy
 #endif  // TRT_BATCHED_NMS_PLUGIN_CUSTOM_H

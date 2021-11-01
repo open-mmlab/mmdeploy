@@ -4,7 +4,7 @@
 
 #include <vector>
 
-namespace mmlab {
+namespace mmdeploy {
 
 struct OrtTensorDimensions : std::vector<int64_t> {
   OrtTensorDimensions(Ort::CustomOpApi ort, const OrtValue* value) {
@@ -14,12 +14,12 @@ struct OrtTensorDimensions : std::vector<int64_t> {
   }
 };
 
-std::vector<OrtCustomOp*>& get_mmlab_custom_ops();
+std::vector<OrtCustomOp*>& get_mmdeploy_custom_ops();
 
 template <typename T>
 class OrtOpsRegistrar {
  public:
-  OrtOpsRegistrar() { get_mmlab_custom_ops().push_back(&instance); }
+  OrtOpsRegistrar() { get_mmdeploy_custom_ops().push_back(&instance); }
 
  private:
   T instance{};
@@ -28,5 +28,5 @@ class OrtOpsRegistrar {
 #define REGISTER_ONNXRUNTIME_OPS(name) \
   static OrtOpsRegistrar<name> OrtOpsRegistrar##name {}
 
-}  // namespace mmlab
+}  // namespace mmdeploy
 #endif  // ORT_MMCV_UTILS_H

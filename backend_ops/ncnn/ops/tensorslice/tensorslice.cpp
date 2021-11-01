@@ -4,7 +4,7 @@
 
 #include "../ncnn_ops_definer.h"
 
-namespace mmlab {
+namespace mmdeploy {
 using namespace ncnn;
 DEFINE_LAYER_CREATOR(TensorSlice)
 DEFINE_NCNN_OPS(TensorSlice, TensorSlice)
@@ -206,4 +206,4 @@ int TensorSlice::forward(const Mat& bottom_blob, Mat& top_blob,
   return 0;
 }
 
-}  // namespace mmlab
+}  // namespace mmdeploy

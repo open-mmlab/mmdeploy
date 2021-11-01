@@ -3,7 +3,7 @@
 
 #include "layer.h"
 
-namespace mmlab {
+namespace mmdeploy {
 
 class ConstantOfShape : public ncnn::Layer {
  public:
@@ -18,6 +18,6 @@ class ConstantOfShape : public ncnn::Layer {
   float val;
 };
 
-}  // namespace mmlab
+}  // namespace mmdeploy
 
 #endif  // LAYER_CONSTANTOFSHAPE_H

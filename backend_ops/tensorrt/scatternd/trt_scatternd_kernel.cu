@@ -5,7 +5,7 @@
 #include "common_cuda_helper.hpp"
 #include "trt_plugin_helper.hpp"
 
-using mmlab::TensorDesc;
+using mmdeploy::TensorDesc;
 
 template <typename T>
 __global__ void onnx_scatternd_kernel(const int n, const int* indices,

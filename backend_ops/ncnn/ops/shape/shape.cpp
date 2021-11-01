@@ -2,7 +2,7 @@
 
 #include "../ncnn_ops_definer.h"
 
-namespace mmlab {
+namespace mmdeploy {
 using namespace ncnn;
 DEFINE_LAYER_CREATOR(Shape)
 DEFINE_NCNN_OPS(Shape, Shape)
@@ -44,4 +44,4 @@ int Shape::forward(const Mat &bottom_blob, Mat &top_blob,
   }
 }
 
-}  // namespace mmlab
+}  // namespace mmdeploy

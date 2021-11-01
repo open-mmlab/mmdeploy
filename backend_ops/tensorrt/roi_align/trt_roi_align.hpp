@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "trt_plugin_base.hpp"
-namespace mmlab {
+namespace mmdeploy {
 class TRTRoIAlign : public TRTPluginBase {
  public:
   TRTRoIAlign(const std::string &name, int outWidth, int outHeight,
@@ -75,5 +75,5 @@ class TRTRoIAlignCreator : public TRTPluginCreatorBase {
       const char *name, const void *serialData,
       size_t serialLength) TRT_NOEXCEPT override;
 };
-}  // namespace mmlab
+}  // namespace mmdeploy
 #endif  // TRT_ROI_ALIGN_HPP

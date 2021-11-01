@@ -3,7 +3,7 @@
 
 #include "layer.h"
 
-namespace mmlab {
+namespace mmdeploy {
 
 class TensorSlice : public ncnn::Layer {
  public:
@@ -21,6 +21,6 @@ class TensorSlice : public ncnn::Layer {
   ncnn::Mat steps;
 };
 
-}  // namespace mmlab
+}  // namespace mmdeploy
 
 #endif  // LAYER_TENSORSLICE_H

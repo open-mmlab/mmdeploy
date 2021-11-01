@@ -1,4 +1,4 @@
-set(TARGET_NAME mmlab_tensorrt_ops)
+set(TARGET_NAME mmdeploy_tensorrt_ops)
 set(SHARED_TARGET ${TARGET_NAME})
 set(STATIC_TARGET ${TARGET_NAME}_static)
 

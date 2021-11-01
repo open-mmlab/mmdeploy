@@ -1,4 +1,4 @@
-set(TARGET_NAME mmlab_onnxruntime_ops)
+set(TARGET_NAME mmdeploy_onnxruntime_ops)
 set(SHARED_TARGET ${TARGET_NAME})
 
 # onnxruntime (prebuilt and release)

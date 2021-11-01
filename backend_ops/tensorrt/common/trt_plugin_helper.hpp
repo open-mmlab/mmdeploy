@@ -122,7 +122,7 @@ typedef enum {
 
 #endif
 
-namespace mmlab {
+namespace mmdeploy {
 
 const int MAXTENSORDIMS = 10;
 
@@ -155,5 +155,5 @@ inline size_t getAlignedSize(size_t origin_size, size_t aligned_number = 16) {
          aligned_number;
 }
 
-}  // namespace mmlab
+}  // namespace mmdeploy
 #endif  // TRT_PLUGIN_HELPER_HPP

@@ -6,7 +6,7 @@
 #include "layer.h"
 #include "ncnn_ops_register.h"
 
-namespace mmlab {
+namespace mmdeploy {
 
 class NCNNOpsDefiner {
  public:
@@ -14,17 +14,17 @@ class NCNNOpsDefiner {
                  const ncnn::layer_creator_func& creator_func = 0,
                  const ncnn::layer_destroyer_func& destroyer_func = 0)
       : _ops_name(ops_name) {
-    get_mm_layer_creator()[_ops_name.c_str()] = creator_func;
+    get_mmdeploy_layer_creator()[_ops_name.c_str()] = creator_func;
   }
 
  private:
   const std::string _ops_name;
 };
 
-#define DEFINE_NCNN_OPS(ops_name, OpsLayer)              \
-  static mmlab::NCNNOpsDefiner NCNNOpsDefiner##ops_name{ \
+#define DEFINE_NCNN_OPS(ops_name, OpsLayer)                 \
+  static mmdeploy::NCNNOpsDefiner NCNNOpsDefiner##ops_name{ \
       #ops_name, OpsLayer##_layer_creator};
 
-}  // namespace mmlab
+}  // namespace mmdeploy
 
 #endif

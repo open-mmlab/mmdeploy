@@ -4,7 +4,7 @@
 #include "NvInferVersion.h"
 #include "trt_plugin_helper.hpp"
 
-namespace mmlab {
+namespace mmdeploy {
 
 #if NV_TENSORRT_MAJOR > 7
 #define TRT_NOEXCEPT noexcept
@@ -65,5 +65,5 @@ class TRTPluginCreatorBase : public nvinfer1::IPluginCreator {
   std::vector<nvinfer1::PluginField> mPluginAttributes;
   std::string mNamespace;
 };
-}  // namespace mmlab
+}  // namespace mmdeploy
 #endif

@@ -8,7 +8,7 @@
 
 #include "trt_plugin_base.hpp"
 
-namespace mmlab {
+namespace mmdeploy {
 class TRTScatterND : public TRTPluginBase {
  public:
   TRTScatterND(const std::string &name);
@@ -67,5 +67,5 @@ class TRTScatterNDCreator : public TRTPluginCreatorBase {
       const char *name, const void *serialData,
       size_t serialLength) TRT_NOEXCEPT override;
 };
-}  // namespace mmlab
+}  // namespace mmdeploy
 #endif  // TRT_SCATTERND_HPP

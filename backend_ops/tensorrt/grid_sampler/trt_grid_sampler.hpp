@@ -8,7 +8,7 @@
 
 #include "trt_plugin_base.hpp"
 
-namespace mmlab {
+namespace mmdeploy {
 
 class TRTGridSampler : public TRTPluginBase {
  public:
@@ -88,5 +88,5 @@ class TRTGridSamplerCreator : public TRTPluginCreatorBase {
       const char *name, const void *serialData,
       size_t serialLength) TRT_NOEXCEPT override;
 };
-}  // namespace mmlab
+}  // namespace mmdeploy
 #endif  // TRT_GRID_SAMPLER_HPP

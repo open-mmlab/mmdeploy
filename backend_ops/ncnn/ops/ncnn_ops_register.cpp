@@ -2,20 +2,21 @@
 
 #include <iostream>
 
-std::map<const char *, ncnn::layer_creator_func> &get_mm_layer_creator() {
+std::map<const char *, ncnn::layer_creator_func> &get_mmdeploy_layer_creator() {
   static std::map<const char *, ncnn::layer_creator_func> _layer_creator_map;
   return _layer_creator_map;
 }
 
-std::map<const char *, ncnn::layer_destroyer_func> &get_mm_layer_destroyer() {
+std::map<const char *, ncnn::layer_destroyer_func>
+    &get_mmdeploy_layer_destroyer() {
   static std::map<const char *, ncnn::layer_destroyer_func>
       _layer_destroyer_map;
   return _layer_destroyer_map;
 }
 
-int register_mm_custom_layers(ncnn::Net &net) {
-  auto &layer_creator_map = get_mm_layer_creator();
-  auto &layer_destroyer_map = get_mm_layer_destroyer();
+int register_mmdeploy_custom_layers(ncnn::Net &net) {
+  auto &layer_creator_map = get_mmdeploy_layer_creator();
+  auto &layer_destroyer_map = get_mmdeploy_layer_destroyer();
 
   for (auto const &creator_pair : layer_creator_map) {
     auto creator_name = creator_pair.first;

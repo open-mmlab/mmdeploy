@@ -9,7 +9,7 @@
 #include "trt_batched_nms_kernel.hpp"
 #include "trt_serialize.hpp"
 
-namespace mmlab {
+namespace mmdeploy {
 using namespace nvinfer1;
 using nvinfer1::plugin::NMSParameters;
 
@@ -244,4 +244,4 @@ IPluginV2Ext* TRTBatchedNMSCreator::deserializePlugin(
 }
 
 REGISTER_TENSORRT_PLUGIN(TRTBatchedNMSCreator);
-}  // namespace mmlab
+}  // namespace mmdeploy

@@ -5,7 +5,7 @@
 
 PYBIND11_MODULE(ncnn_ext, m) {
   m.def(
-      "register_mm_custom_layers",
-      [](ncnn::Net &net) { return register_mm_custom_layers(net); },
-      "register all mmlab custom ncnn layers.");
+      "register_mmdeploy_custom_layers",
+      [](ncnn::Net &net) { return register_mmdeploy_custom_layers(net); },
+      "register mmdeploy custom ncnn layers.");
 }

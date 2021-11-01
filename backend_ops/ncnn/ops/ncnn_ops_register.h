@@ -7,10 +7,11 @@
 #include "net.h"
 
 extern "C" {
-std::map<const char*, ncnn::layer_creator_func>& get_mm_layer_creator();
-std::map<const char*, ncnn::layer_destroyer_func>& get_mm_layer_destroyer();
+std::map<const char*, ncnn::layer_creator_func>& get_mmdeploy_layer_creator();
+std::map<const char*, ncnn::layer_destroyer_func>&
+get_mmdeploy_layer_destroyer();
 
-int register_mm_custom_layers(ncnn::Net& net);
+int register_mmdeploy_custom_layers(ncnn::Net& net);
 }
 
 #endif

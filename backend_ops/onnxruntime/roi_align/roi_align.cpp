@@ -2,7 +2,7 @@
 
 #include "ort_utils.h"
 
-namespace mmlab {
+namespace mmdeploy {
 // implementation taken from Caffe2
 struct PreCalc {
   int pos1;
@@ -265,4 +265,4 @@ void MMCVRoiAlignKernel::Compute(OrtKernelContext *context) {
 }
 
 REGISTER_ONNXRUNTIME_OPS(MMCVRoiAlignCustomOp);
-}  // namespace mmlab
+}  // namespace mmdeploy

@@ -8,7 +8,7 @@
 
 #include "trt_plugin_base.hpp"
 
-namespace mmlab {
+namespace mmdeploy {
 class ModulatedDeformableConvPluginDynamic : public TRTPluginBase {
  public:
   ModulatedDeformableConvPluginDynamic(const std::string &name,
@@ -91,5 +91,5 @@ class ModulatedDeformableConvPluginDynamicCreator
       const char *name, const void *serialData,
       size_t serialLength) TRT_NOEXCEPT override;
 };
-}  // namespace mmlab
+}  // namespace mmdeploy
 #endif  // TRT_MODULATED_DEFORM_CONV_HPP

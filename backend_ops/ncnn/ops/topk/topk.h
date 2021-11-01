@@ -3,7 +3,7 @@
 
 #include "layer.h"
 
-namespace mmlab {
+namespace mmdeploy {
 
 class TopK : public ncnn::Layer {
  public:
@@ -20,6 +20,6 @@ class TopK : public ncnn::Layer {
   int keep_dims;
 };
 
-}  // namespace mmlab
+}  // namespace mmdeploy
 
 #endif  // LAYER_TOPK_H

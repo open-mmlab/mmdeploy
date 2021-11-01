@@ -4,7 +4,7 @@
 
 #include "ort_utils.h"
 
-namespace mmlab {
+namespace mmdeploy {
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define MAX(a, b) (((a) < (b)) ? (b) : (a))
 #define CLIP_COORDINATES(in, out, clip_limit) \
@@ -315,4 +315,4 @@ void GridSampleKernel::Compute(OrtKernelContext *context) {
 }
 
 REGISTER_ONNXRUNTIME_OPS(GridSampleOp);
-}  // namespace mmlab
+}  // namespace mmdeploy

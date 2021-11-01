@@ -2,7 +2,7 @@
 
 #include "../ncnn_ops_definer.h"
 
-namespace mmlab {
+namespace mmdeploy {
 using namespace ncnn;
 DEFINE_LAYER_CREATOR(ConstantOfShape)
 DEFINE_NCNN_OPS(ConstantOfShape, ConstantOfShape)
@@ -51,4 +51,4 @@ int ConstantOfShape::forward(const Mat& bottom_blob, Mat& top_blob,
   }
 }
 
-}  // namespace mmlab
+}  // namespace mmdeploy

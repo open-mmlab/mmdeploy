@@ -11,7 +11,7 @@
 
 using namespace nvinfer1;
 
-namespace mmlab {
+namespace mmdeploy {
 namespace {
 constexpr const char* PLUGIN_VERSION{"1"};
 constexpr const char* PLUGIN_NAME{"TRTInstanceNormalization"};
@@ -202,4 +202,4 @@ IPluginV2DynamicExt* TRTInstanceNormalizationCreator::deserializePlugin(
   return obj;
 }
 REGISTER_TENSORRT_PLUGIN(TRTInstanceNormalizationCreator);
-}  // namespace mmlab
+}  // namespace mmdeploy

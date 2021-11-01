@@ -9,7 +9,7 @@
 
 #include "trt_plugin_base.hpp"
 
-namespace mmlab {
+namespace mmdeploy {
 class TRTMultiLevelRoiAlign : public TRTPluginBase {
  public:
   TRTMultiLevelRoiAlign(const std::string &name, int alignedHeight,
@@ -83,5 +83,5 @@ class TRTMultiLevelRoiAlignCreator : public TRTPluginCreatorBase {
       const char *name, const void *serialData,
       size_t serialLength) TRT_NOEXCEPT override;
 };
-}  // namespace mmlab
+}  // namespace mmdeploy
 #endif  // TRT_ROI_ALIGN_HPP
