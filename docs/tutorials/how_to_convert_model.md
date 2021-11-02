@@ -66,7 +66,8 @@ python ./tools/deploy.py \
     $PATH_TO_MMDET/checkpoints/yolo/yolov3_d53_mstrain-608_273e_coco.pth \
     $PATH_TO_MMDET/demo/demo.jpg \
     --work-dir work_dir \
-    --show
+    --show \
+    --device cuda:0
 ```
 
 ### How to evaluate the exported models
