@@ -18,6 +18,7 @@ You can switch between Chinese and English documents in the lower-left corner of
    tutorials/how_to_evaluate_a_model.md
    tutorials/how_to_test_model.md
    tutorials/how_to_support_new_models.md
+   tutorials/how_to_test_rewritten_models.md
 
 .. toctree::
    :maxdepth: 1
