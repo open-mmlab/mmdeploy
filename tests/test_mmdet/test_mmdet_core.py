@@ -5,7 +5,8 @@ import numpy as np
 import pytest
 import torch
 
-from mmdeploy.utils.test import WrapFunction, get_rewrite_outputs
+from mmdeploy.utils.test import (WrapFunction, get_onnx_model,
+                                 get_rewrite_outputs)
 
 
 @pytest.mark.skipif(not torch.cuda.is_available(), reason='requires cuda')
@@ -150,3 +151,71 @@ def test_distance2bbox():
     distance = torch.rand(3, 4)
     bbox = distance2bbox(points, distance)
     assert bbox.shape == torch.Size([3, 4])
+
+
+@pytest.mark.skipif(
+    not importlib.util.find_spec('onnxruntime'), reason='requires onnxruntime')
+def test_multiclass_nms_with_keep_top_k():
+    backend_type = 'onnxruntime'
+
+    from mmdeploy.mmdet.core import multiclass_nms
+    max_output_boxes_per_class = 20
+    keep_top_k = 15
+    deploy_cfg = mmcv.Config(
+        dict(
+            onnx_config=dict(
+                output_names=None,
+                input_shape=None,
+                dynamic_axes=dict(
+                    boxes={
+                        0: 'batch_size',
+                        1: 'num_boxes'
+                    },
+                    scores={
+                        0: 'batch_size',
+                        1: 'num_boxes',
+                        2: 'num_classes'
+                    },
+                ),
+            ),
+            backend_config=dict(type=backend_type),
+            codebase_config=dict(
+                type='mmdet',
+                task='ObjectDetection',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    iou_threshold=0.5,
+                    max_output_boxes_per_class=max_output_boxes_per_class,
+                    pre_top_k=-1,
+                    keep_top_k=keep_top_k,
+                    background_label_id=-1,
+                ))))
+
+    num_classes = 5
+    num_boxes = 2
+    batch_size = 1
+    export_boxes = torch.rand(batch_size, num_boxes, 4)
+    export_scores = torch.ones(batch_size, num_boxes, num_classes)
+    model_inputs = {'boxes': export_boxes, 'scores': export_scores}
+
+    wrapped_func = WrapFunction(
+        multiclass_nms,
+        max_output_boxes_per_class=max_output_boxes_per_class,
+        keep_top_k=keep_top_k)
+
+    onnx_model_path = get_onnx_model(
+        wrapped_func, model_inputs=model_inputs, deploy_cfg=deploy_cfg)
+
+    num_boxes = 100
+    test_boxes = torch.rand(batch_size, num_boxes, 4)
+    test_scores = torch.ones(batch_size, num_boxes, num_classes)
+    model_inputs = {'boxes': test_boxes, 'scores': test_scores}
+
+    import mmdeploy.apis.onnxruntime as ort_apis
+    backend_model = ort_apis.ORTWrapper(onnx_model_path, 0, None)
+    dets, _ = backend_model.forward(model_inputs)
+
+    assert dets.shape[1] < keep_top_k, \
+        'multiclass_nms returned more values than "keep_top_k"\n' \
+        f'dets.shape: {dets.shape}\n' \
+        f'keep_top_k: {keep_top_k}'

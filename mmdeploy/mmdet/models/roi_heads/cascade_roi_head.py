@@ -53,5 +53,23 @@ def simple_test_of_cascade_roi_head(ctx, self, x, proposals, img_metas,
     if not self.with_mask:
         return det_bboxes, det_labels
     else:
-        raise NotImplementedError(
-            'Masks are not yet supported in export CascadeRoIHead.simple_test')
+        batch_index = torch.arange(
+            det_bboxes.size(0), device=det_bboxes.device).float().view(
+                -1, 1, 1).expand(det_bboxes.size(0), det_bboxes.size(1), 1)
+        rois = det_bboxes[..., :4]
+        mask_rois = torch.cat([batch_index, rois], dim=-1)
+        mask_rois = mask_rois.view(-1, 5)
+        aug_masks = []
+        for i in range(self.num_stages):
+            mask_results = self._mask_forward(i, x, mask_rois)
+            mask_pred = mask_results['mask_pred']
+            aug_masks.append(mask_pred)
+        # Calculate the mean of masks from several stage
+        mask_pred = sum(aug_masks) / len(aug_masks)
+        segm_results = self.mask_head[-1].get_seg_masks(
+            mask_pred, rois.reshape(-1, 4), det_labels.reshape(-1),
+            self.test_cfg, max_shape)
+        segm_results = segm_results.reshape(batch_size, det_bboxes.shape[1],
+                                            segm_results.shape[-2],
+                                            segm_results.shape[-1])
+        return det_bboxes, det_labels, segm_results

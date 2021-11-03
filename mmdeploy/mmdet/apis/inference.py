@@ -336,15 +336,21 @@ class OpenVINODetector(DeployBaseDetector):
         from mmdeploy.apis.openvino import OpenVINOWrapper
         self.model = OpenVINOWrapper(model_file)
 
-    def forward_test(self, imgs: torch.Tensor, *args, **kwargs):
+    def forward_test(self, imgs: torch.Tensor, *args, **kwargs) -> Tuple:
         """Implement forward test.
 
         Args:
             imgs (torch.Tensor): Input image(s) in [N x C x H x W] format.
 
         Returns:
-            tuple[np.ndarray, np.ndarray]: dets of shape [N, num_det, 5]
-                and class labels of shape [N, num_det].
+            If there are no masks in the output:
+                tuple[np.ndarray, np.ndarray]: dets of shape [N, num_det, 5]
+                    and class labels of shape [N, num_det].
+            If the output contains masks:
+                tuple[np.ndarray, np.ndarray, np.ndarray]:
+                    dets of shape [N, num_det, 5],
+                    class labels of shape [N, num_det] and
+                    masks of shape [N, num_det, H, W].
         """
         openvino_outputs = self.model({'input': imgs})
         output_keys = ['dets', 'labels']

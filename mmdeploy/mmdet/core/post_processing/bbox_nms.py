@@ -55,7 +55,9 @@ def select_nms_index(scores: torch.Tensor,
         (N, 1))), 1)
 
     # sort
-    if keep_top_k > 0 and keep_top_k < batched_dets.shape[1]:
+    is_use_topk = keep_top_k > 0 and \
+        (torch.onnx.is_in_onnx_export() or keep_top_k < batched_dets.shape[1])
+    if is_use_topk:
         _, topk_inds = batched_dets[:, :, -1].topk(keep_top_k, dim=1)
     else:
         _, topk_inds = batched_dets[:, :, -1].sort(dim=1, descending=True)

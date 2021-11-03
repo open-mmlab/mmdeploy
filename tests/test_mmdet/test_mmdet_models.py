@@ -368,7 +368,7 @@ def test_single_roi_extractor(backend_type):
             model_output, backend_output, rtol=1e-03, atol=1e-05)
 
 
-def get_cascade_roi_head():
+def get_cascade_roi_head(is_with_masks=False):
     """CascadeRoIHead Config."""
     num_stages = 3
     stage_loss_weights = [1, 0.5, 0.25]
@@ -408,19 +408,43 @@ def get_cascade_roi_head():
         }
     } for target_stds in all_target_stds]
 
+    mask_roi_extractor = {
+        'type': 'SingleRoIExtractor',
+        'roi_layer': {
+            'type': 'RoIAlign',
+            'output_size': 14,
+            'sampling_ratio': 0
+        },
+        'out_channels': 64,
+        'featmap_strides': [4, 8, 16, 32]
+    }
+    mask_head = {
+        'type': 'FCNMaskHead',
+        'num_convs': 4,
+        'in_channels': 64,
+        'conv_out_channels': 64,
+        'num_classes': 80,
+        'loss_mask': {
+            'type': 'CrossEntropyLoss',
+            'use_mask': True,
+            'loss_weight': 1.0
+        }
+    }
+
     test_cfg = mmcv.Config(
         dict(
             score_thr=0.05,
             nms=mmcv.Config(dict(type='nms', iou_threshold=0.5)),
-            max_per_img=100))
+            max_per_img=100,
+            mask_thr_binary=0.5))
+
+    args = [num_stages, stage_loss_weights, bbox_roi_extractor, bbox_head]
+    kwargs = {'test_cfg': test_cfg}
+    if is_with_masks:
+        args += [mask_roi_extractor, mask_head]
 
     from mmdet.models import CascadeRoIHead
-    model = CascadeRoIHead(
-        num_stages,
-        stage_loss_weights,
-        bbox_roi_extractor,
-        bbox_head,
-        test_cfg=test_cfg).eval()
+    model = CascadeRoIHead(*args, **kwargs).eval()
     return model
 
 
@@ -497,3 +521,56 @@ def test_cascade_roi_head(backend_type):
         processed_backend_outputs,
         rtol=1e-03,
         atol=1e-05)
+
+
+@pytest.mark.parametrize('backend_type', ['openvino'])
+def test_cascade_roi_head_with_mask(backend_type):
+    pytest.importorskip(backend_type, reason=f'requires {backend_type}')
+
+    cascade_roi_head = get_cascade_roi_head(is_with_masks=True)
+    seed_everything(1234)
+    x = [
+        torch.rand((1, 64, 200, 304)),
+        torch.rand((1, 64, 100, 152)),
+        torch.rand((1, 64, 50, 76)),
+        torch.rand((1, 64, 25, 38)),
+    ]
+    proposals = torch.tensor([[587.8285, 52.1405, 886.2484, 341.5644, 0.5]])
+    img_metas = mmcv.Config({
+        'img_shape': torch.tensor([800, 1216]),
+        'ori_shape': torch.tensor([800, 1216]),
+        'scale_factor': torch.tensor([1, 1, 1, 1])
+    })
+
+    output_names = ['bbox_results', 'segm_results']
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(type=backend_type),
+            onnx_config=dict(output_names=output_names, input_shape=None),
+            codebase_config=dict(
+                type='mmdet',
+                task='ObjectDetection',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    iou_threshold=0.5,
+                    max_output_boxes_per_class=200,
+                    pre_top_k=-1,
+                    keep_top_k=100,
+                    background_label_id=-1))))
+    model_inputs = {'x': x, 'proposals': proposals.unsqueeze(0)}
+    wrapped_model = WrapModel(
+        cascade_roi_head, 'simple_test', img_metas=img_metas)
+    backend_outputs, _ = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=model_inputs,
+        deploy_cfg=deploy_cfg)
+    bbox_results = backend_outputs['bbox_results']
+    segm_results = backend_outputs['segm_results']
+    expected_bbox_results = np.zeros((1, 80, 5))
+    expected_segm_results = -np.ones((1, 80))
+    assert np.allclose(
+        expected_bbox_results, bbox_results, rtol=1e-03,
+        atol=1e-05), 'bbox_results do not match.'
+    assert np.allclose(
+        expected_segm_results, segm_results, rtol=1e-03,
+        atol=1e-05), 'segm_results do not match.'

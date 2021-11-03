@@ -107,12 +107,23 @@ def test_OpenVINODetector():
     openvino_apis.__dict__.update({'OpenVINOWrapper': OpenVINOWrapper})
 
     # simplify backend inference
-    outputs = {'dets': torch.rand(1, 100, 5), 'labels': torch.rand(1, 100)}
+    num_classes = 80
+    num_dets = 10
+    outputs = {
+        'dets': torch.rand(1, num_dets, 5),
+        'labels': torch.randint(num_classes, (1, num_dets)),
+        'masks': np.random.rand(1, num_dets, 28, 28)
+    }
+    deploy_cfg = mmcv.Config(
+        dict(
+            codebase_config=dict(
+                post_processing=dict(export_postprocess_mask=False))))
     with SwitchBackendWrapper(OpenVINOWrapper) as wrapper:
         wrapper.set(outputs=outputs)
 
         from mmdeploy.mmdet.apis.inference import OpenVINODetector
-        openvino_detector = OpenVINODetector('', ['' for i in range(80)], 0)
+        openvino_detector = OpenVINODetector(
+            '', ['' for i in range(80)], 0, deploy_cfg=deploy_cfg)
         imgs = [torch.rand(1, 3, 64, 64)]
         img_metas = [[{
             'ori_shape': [64, 64, 3],

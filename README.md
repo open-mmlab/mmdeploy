@@ -39,6 +39,7 @@ Supported backend:
 - [x] TensorRT
 - [x] PPL
 - [x] ncnn
+- [x] OpenVINO
 
 ## Installation
 

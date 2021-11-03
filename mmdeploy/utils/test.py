@@ -212,22 +212,18 @@ def get_flatten_inputs(
     return flatten_inputs
 
 
-def get_rewrite_outputs(wrapped_model: nn.Module,
-                        model_inputs: Dict[str, Union[Tuple, List,
-                                                      torch.Tensor]],
-                        deploy_cfg: mmcv.Config) -> Tuple[Any, bool]:
-    """To get outputs of generated onnx model after rewrite.
+def get_onnx_model(wrapped_model: nn.Module,
+                   model_inputs: Dict[str, Union[Tuple, List, torch.Tensor]],
+                   deploy_cfg: mmcv.Config) -> str:
+    """To get path to onnx model after export.
 
     Args:
         wrap_model (nn.Module): The input model.
-        func_name (str): The function of model.
         model_inputs (dict): Inputs for model.
+        deploy_cfg (mmcv.Config): Deployment config.
 
     Returns:
-        Any: The outputs of model, decided by the backend wrapper.
-        bool: A flag indicate the type of outputs. If the flag is True, then
-        the outputs are backend output, otherwise they are outputs of wrapped
-        pytorch model.
+        str: The path to the ONNX model file.
     """
     onnx_file_path = tempfile.NamedTemporaryFile(suffix='.onnx').name
     pytorch2onnx_cfg = get_onnx_config(deploy_cfg)
@@ -239,7 +235,6 @@ def get_rewrite_outputs(wrapped_model: nn.Module,
     output_names = pytorch2onnx_cfg.get('output_names', None)
     with RewriterContext(
             cfg=deploy_cfg, backend=backend.value, opset=11), torch.no_grad():
-        ctx_outputs = wrapped_model(**model_inputs)
         torch.onnx.export(
             patched_model,
             tuple([v for k, v in model_inputs.items()]),
@@ -250,12 +245,33 @@ def get_rewrite_outputs(wrapped_model: nn.Module,
             opset_version=11,
             dynamic_axes=pytorch2onnx_cfg.get('dynamic_axes', None),
             keep_initializers_as_inputs=False)
+    return onnx_file_path
+
+
+def get_backend_outputs(onnx_file_path: str,
+                        model_inputs: Dict[str, Union[Tuple, List,
+                                                      torch.Tensor]],
+                        deploy_cfg: mmcv.Config) -> Any:
+    """To get backend outputs of model.
+
+    Args:
+        onnx_file_path (str): The path to the ONNX file.
+        model_inputs (dict): Inputs for model.
+        deploy_cfg (mmcv.Config): Deployment config.
+
+    Returns:
+        Any: The outputs of model, decided by the backend wrapper.
+    """
+    backend = get_backend(deploy_cfg)
+    flatten_model_inputs = get_flatten_inputs(model_inputs)
+    input_names = [k for k, v in flatten_model_inputs.items() if k != 'ctx']
+    output_names = get_onnx_config(deploy_cfg).get('output_names', None)
     # prepare backend model and input features
     if backend == Backend.TENSORRT:
         # convert to engine
         import mmdeploy.apis.tensorrt as trt_apis
         if not trt_apis.is_available():
-            return ctx_outputs, False
+            return None
         trt_file_path = tempfile.NamedTemporaryFile(suffix='.engine').name
         trt_apis.onnx2tensorrt(
             '',
@@ -271,7 +287,7 @@ def get_rewrite_outputs(wrapped_model: nn.Module,
     elif backend == Backend.ONNXRUNTIME:
         import mmdeploy.apis.onnxruntime as ort_apis
         if not ort_apis.is_available():
-            return ctx_outputs, False
+            return None
         backend_model = ort_apis.ORTWrapper(onnx_file_path, 0, None)
         feature_list = []
         backend_feats = {}
@@ -296,11 +312,11 @@ def get_rewrite_outputs(wrapped_model: nn.Module,
             else:
                 backend_feats[str(i)] = feature_list[i]
     elif backend == Backend.NCNN:
-        return ctx_outputs, False
+        return None
     elif backend == Backend.OPENVINO:
         import mmdeploy.apis.openvino as openvino_apis
         if not openvino_apis.is_available():
-            return ctx_outputs, False
+            return None
         openvino_work_dir = tempfile.TemporaryDirectory().name
         openvino_file_path = openvino_apis.get_output_model_file(
             onnx_file_path, openvino_work_dir)
@@ -314,11 +330,44 @@ def get_rewrite_outputs(wrapped_model: nn.Module,
 
         backend_feats = flatten_model_inputs
     elif backend == Backend.DEFAULT:
-        return ctx_outputs, False
+        return None
     else:
         raise NotImplementedError(
             f'Unimplemented backend type: {backend.value}')
 
     with torch.no_grad():
         backend_outputs = backend_model.forward(backend_feats)
-    return backend_outputs, True
+    return backend_outputs
+
+
+def get_rewrite_outputs(wrapped_model: nn.Module,
+                        model_inputs: Dict[str, Union[Tuple, List,
+                                                      torch.Tensor]],
+                        deploy_cfg: mmcv.Config) -> Tuple[Any, bool]:
+    """To get outputs of generated onnx model after rewrite.
+
+    Args:
+        wrap_model (nn.Module): The input model.
+        model_inputs (dict): Inputs for model.
+        deploy_cfg (mmcv.Config): Deployment config.
+
+    Returns:
+        Any: The outputs of model, decided by the backend wrapper.
+        bool: A flag indicate the type of outputs. If the flag is True, then
+        the outputs are backend output, otherwise they are outputs of wrapped
+        pytorch model.
+    """
+    backend = get_backend(deploy_cfg)
+    with RewriterContext(
+            cfg=deploy_cfg, backend=backend.value, opset=11), torch.no_grad():
+        ctx_outputs = wrapped_model(**model_inputs)
+
+    onnx_file_path = get_onnx_model(wrapped_model, model_inputs, deploy_cfg)
+
+    backend_outputs = get_backend_outputs(onnx_file_path, model_inputs,
+                                          deploy_cfg)
+
+    if backend_outputs is None:
+        return ctx_outputs, False
+    else:
+        return backend_outputs, True
