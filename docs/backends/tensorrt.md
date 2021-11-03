@@ -4,7 +4,9 @@
 
 #### Install TensorRT
 
-Please install TensorRT 8 follow [install-guide](https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html).
+Please install TensorRT 8 follow [install-guide](https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing).
+
+**Note**: `pip Wheel File Installation` is not supported yet in this repo.
 
 #### Build custom ops
 
@@ -85,6 +87,17 @@ python tools/deploy.py \
 If the calibration dataset is not given, the data will be calibrated with the dataset in model config.
 
 ### FAQs
+
+- Error `Cannot found TensorRT headers` or `Cannot found TensorRT libs`
+
+  Try cmake with flag `-DTENSORRT_DIR`:
+
+  ```bash
+  cmake -DBUILD_TENSORRT_OPS=ON -DTENSORRT_DIR=${TENSORRT_DIR} ..
+  make -j$(nproc)
+  ```
+
+  Please make sure there are libs and headers in `${TENSORRT_DIR}`.
 
 - Error `error: parameter check failed at: engine.cpp::setBindingDimensions::1046, condition: profileMinDims.d[i] <= dimensions.d[i]`
 
