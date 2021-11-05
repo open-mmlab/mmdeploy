@@ -218,7 +218,7 @@ def get_onnx_model(wrapped_model: nn.Module,
     """To get path to onnx model after export.
 
     Args:
-        wrap_model (nn.Module): The input model.
+        wrapped_model (nn.Module): The input model.
         model_inputs (dict): Inputs for model.
         deploy_cfg (mmcv.Config): Deployment config.
 
@@ -251,7 +251,7 @@ def get_onnx_model(wrapped_model: nn.Module,
 def get_backend_outputs(onnx_file_path: str,
                         model_inputs: Dict[str, Union[Tuple, List,
                                                       torch.Tensor]],
-                        deploy_cfg: mmcv.Config) -> Any:
+                        deploy_cfg: mmcv.Config) -> Union[Any, None]:
     """To get backend outputs of model.
 
     Args:
@@ -260,7 +260,9 @@ def get_backend_outputs(onnx_file_path: str,
         deploy_cfg (mmcv.Config): Deployment config.
 
     Returns:
-        Any: The outputs of model, decided by the backend wrapper.
+        Union[Any, None]: The outputs of model, decided by the backend wrapper.
+            If the backend specified in 'deploy_cfg' is not available,
+            then None will be returned.
     """
     backend = get_backend(deploy_cfg)
     flatten_model_inputs = get_flatten_inputs(model_inputs)
@@ -347,7 +349,7 @@ def get_rewrite_outputs(wrapped_model: nn.Module,
     """To get outputs of generated onnx model after rewrite.
 
     Args:
-        wrap_model (nn.Module): The input model.
+        wrapped_model (nn.Module): The input model.
         model_inputs (dict): Inputs for model.
         deploy_cfg (mmcv.Config): Deployment config.
 

@@ -87,6 +87,8 @@ The table below lists the models that are guaranteed to be exportable to other b
 | FSAF               | MMDetection      | $PATH_TO_MMDET/configs/fsaf/fsaf_r50_fpn_1x_coco.py                                       |      Y      |       Y       |   Y  |   Y   |     Y     |
 | Mask R-CNN         | MMDetection      | $PATH_TO_MMDET/configs/mask_rcnn/mask_rcnn_r50_fpn_1x_coco.py                             |      Y      |       Y       |   N  |   Y   |     Y     |
 | SSD                | MMDetection      | $PATH_TO_MMDET/configs/ssd/ssd300_coco.py                                                 |      Y      |       ?       |   ?  |   ?   |     Y     |
+| FoveaBox           | MMDetection      | $PATH_TO_MMDET/configs/foveabox/fovea_r50_fpn_4x4_1x_coco.py                              |      Y      |       ?       |   ?  |   ?   |     Y     |
+| ATSS               | MMDetection      | $PATH_TO_MMDET/configs/atss/atss_r50_fpn_1x_coco.py                                       |      Y      |       ?       |   ?  |   ?   |     Y     |
 | Cascade R-CNN      | MMDetection      | $PATH_TO_MMDET/configs/cascade_rcnn/cascade_rcnn_r50_fpn_1x_coco.py                       |      Y      |       ?       |   ?  |   ?   |     Y     |
 | Cascade Mask R-CNN | MMDetection      | $PATH_TO_MMDET/configs/cascade_rcnn/cascade_mask_rcnn_r50_fpn_1x_coco.py                  |      Y      |       ?       |   ?  |   ?   |     Y     |
 | ResNet             | MMClassification | $PATH_TO_MMCLS/configs/resnet/resnet18_b32x8_imagenet.py                                  |      Y      |       Y       |   Y  |   Y   |     N     |

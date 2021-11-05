@@ -523,6 +523,218 @@ def test_cascade_roi_head(backend_type):
         atol=1e-05)
 
 
+def get_fovea_head_model():
+    """FoveaHead Config."""
+    test_cfg = mmcv.Config(
+        dict(
+            deploy_nms_pre=0,
+            min_bbox_size=0,
+            score_thr=0.05,
+            nms=dict(type='nms', iou_threshold=0.5),
+            max_per_img=100))
+
+    from mmdet.models import FoveaHead
+    model = FoveaHead(num_classes=4, in_channels=1, test_cfg=test_cfg)
+
+    model.requires_grad_(False)
+    return model
+
+
+@pytest.mark.parametrize('backend_type', ['onnxruntime', 'openvino'])
+def test_get_bboxes_of_fovea_head(backend_type):
+    pytest.importorskip(backend_type, reason=f'requires {backend_type}')
+    fovea_head = get_fovea_head_model()
+    fovea_head.cpu().eval()
+    s = 128
+    img_metas = [{
+        'scale_factor': np.ones(4),
+        'pad_shape': (s, s, 3),
+        'img_shape': (s, s, 3)
+    }]
+
+    output_names = ['dets', 'labels']
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(type=backend_type),
+            onnx_config=dict(output_names=output_names, input_shape=None),
+            codebase_config=dict(
+                type='mmdet',
+                task='ObjectDetection',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    iou_threshold=0.5,
+                    max_output_boxes_per_class=200,
+                    pre_top_k=-1,
+                    keep_top_k=100,
+                    background_label_id=-1,
+                ))))
+
+    # the cls_score's size: (1, 36, 32, 32), (1, 36, 16, 16),
+    # (1, 36, 8, 8), (1, 36, 4, 4), (1, 36, 2, 2).
+    # the bboxes's size: (1, 36, 32, 32), (1, 36, 16, 16),
+    # (1, 36, 8, 8), (1, 36, 4, 4), (1, 36, 2, 2)
+    seed_everything(1234)
+    cls_score = [
+        torch.rand(1, fovea_head.num_classes, pow(2, i), pow(2, i))
+        for i in range(5, 0, -1)
+    ]
+    seed_everything(5678)
+    bboxes = [torch.rand(1, 4, pow(2, i), pow(2, i)) for i in range(5, 0, -1)]
+
+    model_inputs = {
+        'cls_scores': cls_score,
+        'bbox_preds': bboxes,
+        'img_metas': img_metas
+    }
+    model_outputs = get_model_outputs(fovea_head, 'get_bboxes', model_inputs)
+
+    # to get outputs of onnx model after rewrite
+    img_metas[0]['img_shape'] = torch.Tensor([s, s])
+    wrapped_model = WrapModel(fovea_head, 'get_bboxes', img_metas=img_metas[0])
+    rewrite_inputs = {
+        'cls_scores': cls_score,
+        'bbox_preds': bboxes,
+    }
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg)
+    if is_backend_output:
+        if isinstance(rewrite_outputs, dict):
+            rewrite_outputs = [
+                value for name, value in rewrite_outputs.items()
+                if name in output_names
+            ]
+        for model_output, rewrite_output in zip(model_outputs[0],
+                                                rewrite_outputs):
+            model_output = model_output.squeeze().cpu().numpy()
+            rewrite_output = rewrite_output.squeeze()
+            # hard code to make two tensors with the same shape
+            # rewrite and original codes applied different nms strategy
+            assert np.allclose(
+                model_output[:rewrite_output.shape[0]],
+                rewrite_output,
+                rtol=1e-03,
+                atol=1e-05)
+    else:
+        assert rewrite_outputs is not None
+
+
+def get_atss_head_model():
+    """ATSSHead Config."""
+    test_cfg = mmcv.Config(
+        dict(
+            deploy_nms_pre=0,
+            min_bbox_size=0,
+            score_thr=0.05,
+            nms=dict(type='nms', iou_threshold=0.5),
+            max_per_img=100))
+    anchor_generator = dict(
+        type='AnchorGenerator',
+        ratios=[1.0],
+        octave_base_scale=8,
+        scales_per_octave=1,
+        strides=[8, 16, 32, 64, 128])
+    from mmdet.models import ATSSHead
+    model = ATSSHead(
+        num_classes=4,
+        in_channels=1,
+        test_cfg=test_cfg,
+        anchor_generator=anchor_generator)
+
+    model.requires_grad_(False)
+    return model
+
+
+@pytest.mark.parametrize('backend_type', ['onnxruntime', 'openvino'])
+def test_get_bboxes_of_atss_head(backend_type):
+    pytest.importorskip(backend_type, reason=f'requires {backend_type}')
+    atss_head = get_atss_head_model()
+    atss_head.cpu().eval()
+    s = 128
+    img_metas = [{
+        'scale_factor': np.ones(4),
+        'pad_shape': (s, s, 3),
+        'img_shape': (s, s, 3)
+    }]
+
+    output_names = ['dets', 'labels']
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(type=backend_type),
+            onnx_config=dict(output_names=output_names, input_shape=None),
+            codebase_config=dict(
+                type='mmdet',
+                task='ObjectDetection',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    iou_threshold=0.5,
+                    max_output_boxes_per_class=200,
+                    pre_top_k=-1,
+                    keep_top_k=100,
+                    background_label_id=-1,
+                ))))
+
+    # the cls_score's size: (1, 36, 32, 32), (1, 36, 16, 16),
+    # (1, 36, 8, 8), (1, 36, 4, 4), (1, 36, 2, 2).
+    # the bboxes's size: (1, 36, 32, 32), (1, 36, 16, 16),
+    # (1, 36, 8, 8), (1, 36, 4, 4), (1, 36, 2, 2)
+    seed_everything(1234)
+    cls_score = [
+        torch.rand(1, atss_head.num_classes, pow(2, i), pow(2, i))
+        for i in range(5, 0, -1)
+    ]
+    seed_everything(5678)
+    bboxes = [torch.rand(1, 4, pow(2, i), pow(2, i)) for i in range(5, 0, -1)]
+
+    seed_everything(9101)
+    centernesses = [
+        torch.rand(1, 1, pow(2, i), pow(2, i)) for i in range(5, 0, -1)
+    ]
+
+    # to get outputs of pytorch model
+    model_inputs = {
+        'cls_scores': cls_score,
+        'bbox_preds': bboxes,
+        'centernesses': centernesses,
+        'img_metas': img_metas
+    }
+    model_outputs = get_model_outputs(atss_head, 'get_bboxes', model_inputs)
+
+    # to get outputs of onnx model after rewrite
+    img_metas[0]['img_shape'] = torch.Tensor([s, s])
+    wrapped_model = WrapModel(
+        atss_head, 'get_bboxes', img_metas=img_metas[0], with_nms=True)
+    rewrite_inputs = {
+        'cls_scores': cls_score,
+        'bbox_preds': bboxes,
+        'centernesses': centernesses
+    }
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg)
+    if is_backend_output:
+        if isinstance(rewrite_outputs, dict):
+            rewrite_outputs = [
+                value for name, value in rewrite_outputs.items()
+                if name in output_names
+            ]
+        for model_output, rewrite_output in zip(model_outputs[0],
+                                                rewrite_outputs):
+            model_output = model_output.squeeze().cpu().numpy()
+            rewrite_output = rewrite_output.squeeze()
+            # hard code to make two tensors with the same shape
+            # rewrite and original codes applied different nms strategy
+            assert np.allclose(
+                model_output[:rewrite_output.shape[0]],
+                rewrite_output,
+                rtol=1e-03,
+                atol=1e-05)
+    else:
+        assert rewrite_outputs is not None
+
+
 @pytest.mark.parametrize('backend_type', ['openvino'])
 def test_cascade_roi_head_with_mask(backend_type):
     pytest.importorskip(backend_type, reason=f'requires {backend_type}')

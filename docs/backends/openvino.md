@@ -35,6 +35,8 @@ The table below lists the models that are guaranteed to be exportable to OpenVIN
 | Cascade R-CNN      |       `configs/cascade_rcnn/cascade_rcnn_r50_fpn_1x_coco.py`        |       Y       |
 | Mask R-CNN         |        `configs/mask_rcnn/mask_rcnn_r50_fpn_1x_coco.py`             |       Y       |
 | Cascade Mask R-CNN |     `configs/cascade_rcnn/cascade_mask_rcnn_r50_fpn_1x_coco.py`     |       Y       |
+| FoveaBox           |        `configs/foveabox/fovea_r50_fpn_4x4_1x_coco.py `             |       Y       |
+| ATSS               |               `configs/atss/atss_r50_fpn_1x_coco.py`                |       Y       |
 
 Notes:
 - For faster work in OpenVINO in the Faster-RCNN, Mask-RCNN, Cascade-RCNN, Cascade-Mask-RCNN models
