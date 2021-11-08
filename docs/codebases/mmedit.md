@@ -8,16 +8,10 @@ Please refer to [official installation guide](https://mmediting.readthedocs.io/e
 
 ## List of MMEditing models supported by MMDeploy
 
-| Model  |                 Model Config File (Example)                  | ONNX Runtime | TensorRT | NCNN  |  PPL  |
-| :----: | :----------------------------------------------------------: | :----------: | :------: | :---: | :---: |
-| SRCNN  |    configs/restorers/srcnn/srcnn_x4k915_g1_1000k_div2k.py    |      Y       |    Y     |   N   |   Y   |
-| ESRGAN | configs/restorers/esrgan/esrgan_x4c64b23g32_g1_400k_div2k.py |      Y       |    Y     |   N   |   Y   |
-
-## MMEditing deployment task type
-
-| codebase |       task       |
-| :------: | :--------------: |
-|  mmedit  | super-resolution |
+| Model  | Task             | ONNX Runtime | TensorRT | NCNN | PPL | OpenVINO | Model Config File (Example)                                              |
+|:-------|:-----------------|:------------:|:--------:|:----:|:---:|:--------:|:-------------------------------------------------------------------------|
+| SRCNN  | super-resolution |      Y       |    Y     |  N   |  Y  |    N     | $MMEDIT_DIR/configs/restorers/srcnn/srcnn_x4k915_g1_1000k_div2k.py       |
+| ESRGAN | super-resolution |      Y       |    Y     |  N   |  Y  |    N     | $MMEDIT_DIR/configs/restorers/esrgan/esrgan_x4c64b23g32_g1_400k_div2k.py |
 
 ## Reminder
 
