@@ -3403,8 +3403,8 @@ int main(int argc, char** argv) {
       fprintf(pp, "%-16s", "LayerNorm");
     } else if (op == "LeakyRelu") {
       fprintf(pp, "%-16s", "ReLU");
-    } else if (op == "Less") {
-      fprintf(pp, "%-16s", "Compare");
+    } else if (op == "Threshold") {
+      fprintf(pp, "%-16s", "Threshold");
     } else if (op == "Log") {
       fprintf(pp, "%-16s", "UnaryOp");
     } else if (op == "LRN") {
@@ -4315,11 +4315,10 @@ int main(int argc, char** argv) {
       }
     } else if (op == "LeakyRelu") {
       float alpha = get_node_attr_f(node, "alpha", 0.01f);
-
       fprintf(pp, " 0=%e", alpha);
-    } else if (op == "Less") {
-      int op_type = 1;
-      fprintf(pp, " 0=%d", op_type);
+    } else if (op == "Threshold") {
+      float threshold = get_node_attr_f(node, "threshold", 0.f);
+      fprintf(pp, " 0=%e", threshold);
     } else if (op == "Log") {
       int op_type = 8;
       fprintf(pp, " 0=%d", op_type);

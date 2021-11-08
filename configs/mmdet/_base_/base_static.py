@@ -6,6 +6,7 @@ codebase_config = dict(
     task='ObjectDetection',
     post_processing=dict(
         score_threshold=0.05,
+        confidence_threshold=0.005,  # for YOLOv3
         iou_threshold=0.5,
         max_output_boxes_per_class=200,
         pre_top_k=-1,

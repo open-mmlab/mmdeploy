@@ -102,10 +102,11 @@ def get_bboxes_of_fcos_head(ctx,
     max_output_boxes_per_class = post_params.max_output_boxes_per_class
     iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)
     score_threshold = cfg.get('score_thr', post_params.score_threshold)
-    nms_pre = cfg.get('deploy_nms_pre', -1)
+    pre_top_k = post_params.pre_top_k
+    keep_top_k = cfg.get('max_per_img', post_params.keep_top_k)
     return multiclass_nms(batch_mlvl_bboxes, batch_mlvl_scores,
                           max_output_boxes_per_class, iou_threshold,
-                          score_threshold, nms_pre, cfg.max_per_img)
+                          score_threshold, pre_top_k, keep_top_k)
 
 
 @FUNCTION_REWRITER.register_rewriter(
@@ -195,7 +196,8 @@ def get_bboxes_of_fcos_head_ncnn(ctx,
     max_output_boxes_per_class = post_params.max_output_boxes_per_class
     iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)
     score_threshold = cfg.get('score_thr', post_params.score_threshold)
-    nms_pre = cfg.get('deploy_nms_pre', -1)
+    pre_top_k = post_params.pre_top_k
+    keep_top_k = cfg.get('max_per_img', post_params.keep_top_k)
     return multiclass_nms(batch_mlvl_bboxes, batch_mlvl_scores,
                           max_output_boxes_per_class, iou_threshold,
-                          score_threshold, nms_pre, cfg.max_per_img)
+                          score_threshold, pre_top_k, keep_top_k)

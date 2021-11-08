@@ -2,15 +2,16 @@
 
 <!-- TOC -->
 
-- [Tutorial : How to convert model](#how-to-convert-model)
-    - [How to convert models from Pytorch to BACKEND](#how-to-convert-models-from-pytorch-to-other-backends)
-        - [Prerequisite](#prerequisite)
-        - [Usage](#usage)
-        - [Description of all arguments](#description-of-all-arguments)
-    - [How to evaluate the exported models](#how-to-evaluate-the-exported-models)
-    - [List of supported models exportable to BACKEND](#list-of-supported-models-exportable-to-other-backends)
-    - [Reminders](#reminders)
-    - [FAQs](#faqs)
+- [How to convert model](#how-to-convert-model)
+  - [How to convert models from Pytorch to other backends](#how-to-convert-models-from-pytorch-to-other-backends)
+    - [Prerequisite](#prerequisite)
+    - [Usage](#usage)
+    - [Description of all arguments](#description-of-all-arguments)
+    - [Example](#example)
+  - [How to evaluate the exported models](#how-to-evaluate-the-exported-models)
+  - [List of supported models exportable to other backends](#list-of-supported-models-exportable-to-other-backends)
+  - [Reminders](#reminders)
+  - [FAQs](#faqs)
 
 <!-- TOC -->
 
@@ -78,33 +79,33 @@ You can try to evaluate model, referring to [how_to_evaluate_a_model](./how_to_e
 
 The table below lists the models that are guaranteed to be exportable to other backend.
 
-|    Model           |     codebase     | model config file(example)                                                                | OnnxRuntime |    TensorRT   | NCNN |  PPL  | OpenVINO  |
-| :----------------: | :--------------: | :---------------------------------------------------------------------------------------: | :---------: | :-----------: | :---:| :---: | :-------: |
-| RetinaNet          | MMDetection      | $PATH_TO_MMDET/configs/retinanet/retinanet_r50_fpn_1x_coco.py                             |      Y      |       Y       |   Y  |   Y   |     Y     |
-| Faster R-CNN       | MMDetection      | $PATH_TO_MMDET/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py                         |      Y      |       Y       |   Y  |   Y   |     Y     |
-| YOLOv3             | MMDetection      | $PATH_TO_MMDET/configs/yolo/yolov3_d53_mstrain-608_273e_coco.py                           |      Y      |       Y       |   N  |   Y   |     N     |
-| FCOS               | MMDetection      | $PATH_TO_MMDET/configs/fcos/fcos_r50_caffe_fpn_gn-head_4x4_1x_coco.py                     |      Y      |       Y       |   Y  |   N   |     Y     |
-| FSAF               | MMDetection      | $PATH_TO_MMDET/configs/fsaf/fsaf_r50_fpn_1x_coco.py                                       |      Y      |       Y       |   Y  |   Y   |     Y     |
-| Mask R-CNN         | MMDetection      | $PATH_TO_MMDET/configs/mask_rcnn/mask_rcnn_r50_fpn_1x_coco.py                             |      Y      |       Y       |   N  |   Y   |     Y     |
-| SSD                | MMDetection      | $PATH_TO_MMDET/configs/ssd/ssd300_coco.py                                                 |      Y      |       ?       |   ?  |   ?   |     Y     |
-| FoveaBox           | MMDetection      | $PATH_TO_MMDET/configs/foveabox/fovea_r50_fpn_4x4_1x_coco.py                              |      Y      |       ?       |   ?  |   ?   |     Y     |
-| ATSS               | MMDetection      | $PATH_TO_MMDET/configs/atss/atss_r50_fpn_1x_coco.py                                       |      Y      |       ?       |   ?  |   ?   |     Y     |
-| Cascade R-CNN      | MMDetection      | $PATH_TO_MMDET/configs/cascade_rcnn/cascade_rcnn_r50_fpn_1x_coco.py                       |      Y      |       ?       |   ?  |   ?   |     Y     |
-| Cascade Mask R-CNN | MMDetection      | $PATH_TO_MMDET/configs/cascade_rcnn/cascade_mask_rcnn_r50_fpn_1x_coco.py                  |      Y      |       ?       |   ?  |   ?   |     Y     |
-| ResNet             | MMClassification | $PATH_TO_MMCLS/configs/resnet/resnet18_b32x8_imagenet.py                                  |      Y      |       Y       |   Y  |   Y   |     N     |
-| ResNeXt            | MMClassification | $PATH_TO_MMCLS/configs/resnext/resnext50_32x4d_b32x8_imagenet.py                          |      Y      |       Y       |   Y  |   Y   |     N     |
-| SE-ResNet          | MMClassification | $PATH_TO_MMCLS/configs/seresnet/seresnet50_b32x8_imagenet.py                              |      Y      |       Y       |   Y  |   Y   |     N     |
-| MobileNetV2        | MMClassification | $PATH_TO_MMCLS/configs/mobilenet_v2/mobilenet_v2_b32x8_imagenet.py                        |      Y      |       Y       |   Y  |   Y   |     N     |
-| ShuffleNetV1       | MMClassification | $PATH_TO_MMCLS/configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py |      Y      |       Y       |   N  |   Y   |     N     |
-| ShuffleNetV2       | MMClassification | $PATH_TO_MMCLS/configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py |      Y      |       Y       |   N  |   Y   |     N     |
-| FCN                | MMSegmentation   | $PATH_TO_MMSEG/configs/fcn/fcn_r50-d8_512x1024_40k_cityscapes.py                          |      Y      |       Y       |   Y  |   Y   |     N     |
-| PSPNet             | MMSegmentation   | $PATH_TO_MMSEG/configs/pspnet/pspnet_r50-d8_512x1024_40k_cityscapes.py                    |      Y      |       Y       |   N  |   Y   |     N     |
-| DeepLabV3          | MMSegmentation   | $PATH_TO_MMSEG/configs/deeplabv3/deeplabv3_r50-d8_512x1024_40k_cityscapes.py              |      Y      |       Y       |   Y  |   Y   |     N     |
-| DeepLabV3+         | MMSegmentation   | $PATH_TO_MMSEG/configs/deeplabv3plus/deeplabv3plus_r50-d8_512x1024_40k_cityscapes.py      |      Y      |       Y       |   Y  |   Y   |     N     |
-| SRCNN              | MMEditing        | $PATH_TO_MMSEG/configs/restorers/srcnn/srcnn_x4k915_g1_1000k_div2k.py                     |      Y      |       Y       |   N  |   Y   |     N     |
-| ESRGAN             | MMEditing        | $PATH_TO_MMSEG/configs/restorers/esrgan/esrgan_psnr_x4c64b23g32_g1_1000k_div2k.py         |      Y      |       Y       |   N  |   Y   |     N     |
-| DBNet              | MMOCR            | $PATH_TO_MMOCR/configs/textdet/dbnet/dbnet_r50dcnv2_fpnc_1200e_icdar2015.py               |      Y      |       Y       |   Y  |   Y   |     N     |
-| CRNN               | MMOCR            | $PATH_TO_MMOCR/configs/textrecog/tps/crnn_tps_academic_dataset.py                         |      Y      |       Y       |   Y  |   N   |     N     |
+| Model              | codebase         | OnnxRuntime | TensorRT | NCNN | PPL | OpenVINO | model config file(example)                                                            |
+|--------------------|------------------|:-----------:|:--------:|:----:|:---:|:--------:|:--------------------------------------------------------------------------------------|
+| RetinaNet          | MMDetection      |      Y      |    Y     |  Y   |  Y  |    Y     | $MMDET_DIR/configs/retinanet/retinanet_r50_fpn_1x_coco.py                             |
+| Faster R-CNN       | MMDetection      |      Y      |    Y     |  Y   |  Y  |    Y     | $MMDET_DIR/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py                         |
+| YOLOv3             | MMDetection      |      Y      |    Y     |  Y   |  Y  |    Y     | $MMDET_DIR/configs/yolo/yolov3_d53_mstrain-608_273e_coco.py                           |
+| FCOS               | MMDetection      |      Y      |    Y     |  Y   |  N  |    Y     | $MMDET_DIR/configs/fcos/fcos_r50_caffe_fpn_gn-head_4x4_1x_coco.py                     |
+| FSAF               | MMDetection      |      Y      |    Y     |  Y   |  Y  |    Y     | $MMDET_DIR/configs/fsaf/fsaf_r50_fpn_1x_coco.py                                       |
+| Mask R-CNN         | MMDetection      |      Y      |    Y     |  N   |  Y  |    Y     | $MMDET_DIR/configs/mask_rcnn/mask_rcnn_r50_fpn_1x_coco.py                             |
+| SSD                | MMDetection      |      Y      |    ?     |  ?   |  ?  |    Y     | $MMDET_DIR/configs/ssd/ssd300_coco.py                                                 |
+| FoveaBox           | MMDetection      |      Y      |    ?     |  ?   |  ?  |    Y     | $MMDET_DIR/configs/foveabox/fovea_r50_fpn_4x4_1x_coco.py                              |
+| ATSS               | MMDetection      |      Y      |    ?     |  ?   |  ?  |    Y     | $MMDET_DIR/configs/atss/atss_r50_fpn_1x_coco.py                                       |
+| Cascade R-CNN      | MMDetection      |      Y      |    ?     |  ?   |  ?  |    Y     | $MMDET_DIR/configs/cascade_rcnn/cascade_rcnn_r50_fpn_1x_coco.py                       |
+| Cascade Mask R-CNN | MMDetection      |      Y      |    ?     |  ?   |  ?  |    Y     | $MMDET_DIR/configs/cascade_rcnn/cascade_mask_rcnn_r50_fpn_1x_coco.py                  |
+| ResNet             | MMClassification |      Y      |    Y     |  Y   |  Y  |    N     | $MMCLS_DIR/configs/resnet/resnet18_b32x8_imagenet.py                                  |
+| ResNeXt            | MMClassification |      Y      |    Y     |  Y   |  Y  |    N     | $MMCLS_DIR/configs/resnext/resnext50_32x4d_b32x8_imagenet.py                          |
+| SE-ResNet          | MMClassification |      Y      |    Y     |  Y   |  Y  |    N     | $MMCLS_DIR/configs/seresnet/seresnet50_b32x8_imagenet.py                              |
+| MobileNetV2        | MMClassification |      Y      |    Y     |  Y   |  Y  |    N     | $MMCLS_DIR/configs/mobilenet_v2/mobilenet_v2_b32x8_imagenet.py                        |
+| ShuffleNetV1       | MMClassification |      Y      |    Y     |  N   |  Y  |    N     | $MMCLS_DIR/configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py |
+| ShuffleNetV2       | MMClassification |      Y      |    Y     |  N   |  Y  |    N     | $MMCLS_DIR/configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py |
+| FCN                | MMSegmentation   |      Y      |    Y     |  Y   |  Y  |    N     | $MMSEG_DIR/configs/fcn/fcn_r50-d8_512x1024_40k_cityscapes.py                          |
+| PSPNet             | MMSegmentation   |      Y      |    Y     |  N   |  Y  |    N     | $MMSEG_DIR/configs/pspnet/pspnet_r50-d8_512x1024_40k_cityscapes.py                    |
+| DeepLabV3          | MMSegmentation   |      Y      |    Y     |  Y   |  Y  |    N     | $MMSEG_DIR/configs/deeplabv3/deeplabv3_r50-d8_512x1024_40k_cityscapes.py              |
+| DeepLabV3+         | MMSegmentation   |      Y      |    Y     |  Y   |  Y  |    N     | $MMSEG_DIR/configs/deeplabv3plus/deeplabv3plus_r50-d8_512x1024_40k_cityscapes.py      |
+| SRCNN              | MMEditing        |      Y      |    Y     |  N   |  Y  |    N     | $MMSEG_DIR/configs/restorers/srcnn/srcnn_x4k915_g1_1000k_div2k.py                     |
+| ESRGAN             | MMEditing        |      Y      |    Y     |  N   |  Y  |    N     | $MMSEG_DIR/configs/restorers/esrgan/esrgan_psnr_x4c64b23g32_g1_1000k_div2k.py         |
+| DBNet              | MMOCR            |      Y      |    Y     |  Y   |  Y  |    N     | $MMOCR_DIR/configs/textdet/dbnet/dbnet_r50dcnv2_fpnc_1200e_icdar2015.py               |
+| CRNN               | MMOCR            |      Y      |    Y     |  Y   |  N  |    N     | $MMOCR_DIR/configs/textrecog/tps/crnn_tps_academic_dataset.py                         |
 
 ### Reminders
 

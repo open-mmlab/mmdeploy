@@ -20,7 +20,8 @@ class ONNXNMSop(torch.autograd.Function):
         for batch_id in range(batch_size):
             for cls_id in range(num_class):
                 _boxes = boxes[batch_id, ...]
-                _scores = scores[batch_id, cls_id, ...]
+                # score_threshold=0 requires scores to be contiguous
+                _scores = scores[batch_id, cls_id, ...].contiguous()
                 _, box_inds = nms(
                     _boxes,
                     _scores,

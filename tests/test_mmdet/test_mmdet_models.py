@@ -786,3 +786,97 @@ def test_cascade_roi_head_with_mask(backend_type):
     assert np.allclose(
         expected_segm_results, segm_results, rtol=1e-03,
         atol=1e-05), 'segm_results do not match.'
+
+
+def get_yolov3_head_model():
+    """yolov3 Head Config."""
+    test_cfg = mmcv.Config(
+        dict(
+            nms_pre=1000,
+            min_bbox_size=0,
+            score_thr=0.05,
+            conf_thr=0.005,
+            nms=dict(type='nms', iou_threshold=0.45),
+            max_per_img=100))
+    from mmdet.models import YOLOV3Head
+    model = YOLOV3Head(
+        num_classes=4,
+        in_channels=[16, 8, 4],
+        out_channels=[32, 16, 8],
+        test_cfg=test_cfg)
+
+    model.requires_grad_(False)
+    return model
+
+
+@pytest.mark.parametrize('backend_type', ['onnxruntime', 'ncnn', 'openvino'])
+def test_yolov3_head_get_bboxes(backend_type):
+    """Test get_bboxes rewrite of yolov3 head."""
+    pytest.importorskip(backend_type, reason=f'requires {backend_type}')
+    yolov3_head = get_yolov3_head_model()
+    yolov3_head.cpu().eval()
+    s = 128
+    img_metas = [{
+        'scale_factor': np.ones(4),
+        'pad_shape': (s, s, 3),
+        'img_shape': (s, s, 3)
+    }]
+
+    output_names = ['dets', 'labels']
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(type=backend_type),
+            onnx_config=dict(output_names=output_names, input_shape=None),
+            codebase_config=dict(
+                type='mmdet',
+                task='ObjectDetection',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    iou_threshold=0.45,
+                    confidence_threshold=0.005,
+                    max_output_boxes_per_class=200,
+                    pre_top_k=-1,
+                    keep_top_k=100,
+                    background_label_id=-1,
+                ))))
+
+    seed_everything(1234)
+    pred_maps = [
+        torch.rand(1, 27, 5, 5),
+        torch.rand(1, 27, 10, 10),
+        torch.rand(1, 27, 20, 20)
+    ]
+    # to get outputs of pytorch model
+    model_inputs = {'pred_maps': pred_maps, 'img_metas': img_metas}
+    model_outputs = get_model_outputs(yolov3_head, 'get_bboxes', model_inputs)
+
+    # to get outputs of onnx model after rewrite
+    wrapped_model = WrapModel(
+        yolov3_head, 'get_bboxes', img_metas=img_metas[0], with_nms=True)
+    rewrite_inputs = {
+        'pred_maps': pred_maps,
+    }
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg)
+
+    if is_backend_output:
+        if isinstance(rewrite_outputs, dict):
+            rewrite_outputs = [
+                value for name, value in rewrite_outputs.items()
+                if name in output_names
+            ]
+        for model_output, rewrite_output in zip(model_outputs[0],
+                                                rewrite_outputs):
+            model_output = model_output.squeeze().cpu().numpy()
+            rewrite_output = rewrite_output.squeeze()
+            # hard code to make two tensors with the same shape
+            # rewrite and original codes applied different nms strategy
+            assert np.allclose(
+                model_output[:rewrite_output.shape[0]],
+                rewrite_output,
+                rtol=1e-03,
+                atol=1e-05)
+    else:
+        assert rewrite_outputs is not None
