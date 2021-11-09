@@ -87,16 +87,16 @@ The table below lists the models that are guaranteed to be exportable to other b
 | FCOS               | MMDetection      |      Y      |    Y     |  Y   |  N  |    Y     | $MMDET_DIR/configs/fcos/fcos_r50_caffe_fpn_gn-head_4x4_1x_coco.py                     |
 | FSAF               | MMDetection      |      Y      |    Y     |  Y   |  Y  |    Y     | $MMDET_DIR/configs/fsaf/fsaf_r50_fpn_1x_coco.py                                       |
 | Mask R-CNN         | MMDetection      |      Y      |    Y     |  N   |  Y  |    Y     | $MMDET_DIR/configs/mask_rcnn/mask_rcnn_r50_fpn_1x_coco.py                             |
-| SSD                | MMDetection      |      Y      |    ?     |  ?   |  ?  |    Y     | $MMDET_DIR/configs/ssd/ssd300_coco.py                                                 |
+| SSD                | MMDetection      |      Y      |    Y     |  Y   |  Y  |    Y     | $MMDET_DIR/configs/ssd/ssd300_coco.py                                                 |
 | FoveaBox           | MMDetection      |      Y      |    ?     |  ?   |  ?  |    Y     | $MMDET_DIR/configs/foveabox/fovea_r50_fpn_4x4_1x_coco.py                              |
 | ATSS               | MMDetection      |      Y      |    ?     |  ?   |  ?  |    Y     | $MMDET_DIR/configs/atss/atss_r50_fpn_1x_coco.py                                       |
-| Cascade R-CNN      | MMDetection      |      Y      |    ?     |  ?   |  ?  |    Y     | $MMDET_DIR/configs/cascade_rcnn/cascade_rcnn_r50_fpn_1x_coco.py                       |
-| Cascade Mask R-CNN | MMDetection      |      Y      |    ?     |  ?   |  ?  |    Y     | $MMDET_DIR/configs/cascade_rcnn/cascade_mask_rcnn_r50_fpn_1x_coco.py                  |
+| Cascade R-CNN      | MMDetection      |      Y      |    ?     |  ?   |  Y  |    Y     | $MMDET_DIR/configs/cascade_rcnn/cascade_rcnn_r50_fpn_1x_coco.py                       |
+| Cascade Mask R-CNN | MMDetection      |      Y      |    ?     |  ?   |  Y  |    Y     | $MMDET_DIR/configs/cascade_rcnn/cascade_mask_rcnn_r50_fpn_1x_coco.py                  |
 | ResNet             | MMClassification |      Y      |    Y     |  Y   |  Y  |    N     | $MMCLS_DIR/configs/resnet/resnet18_b32x8_imagenet.py                                  |
 | ResNeXt            | MMClassification |      Y      |    Y     |  Y   |  Y  |    N     | $MMCLS_DIR/configs/resnext/resnext50_32x4d_b32x8_imagenet.py                          |
 | SE-ResNet          | MMClassification |      Y      |    Y     |  Y   |  Y  |    N     | $MMCLS_DIR/configs/seresnet/seresnet50_b32x8_imagenet.py                              |
 | MobileNetV2        | MMClassification |      Y      |    Y     |  Y   |  Y  |    N     | $MMCLS_DIR/configs/mobilenet_v2/mobilenet_v2_b32x8_imagenet.py                        |
-| ShuffleNetV1       | MMClassification |      Y      |    Y     |  N   |  Y  |    N     | $MMCLS_DIR/configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py |
+| ShuffleNetV1       | MMClassification |      Y      |    Y     |  Y   |  Y  |    N     | $MMCLS_DIR/configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py |
 | ShuffleNetV2       | MMClassification |      Y      |    Y     |  N   |  Y  |    N     | $MMCLS_DIR/configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py |
 | FCN                | MMSegmentation   |      Y      |    Y     |  Y   |  Y  |    N     | $MMSEG_DIR/configs/fcn/fcn_r50-d8_512x1024_40k_cityscapes.py                          |
 | PSPNet             | MMSegmentation   |      Y      |    Y     |  N   |  Y  |    N     | $MMSEG_DIR/configs/pspnet/pspnet_r50-d8_512x1024_40k_cityscapes.py                    |
