@@ -100,6 +100,10 @@ class DeployBaseDetector(BaseDetector):
         masks = det_masks
         bboxes = det_bboxes
 
+        num_det = bboxes.shape[0]
+        if num_det == 0:
+            return np.zeros((0, img_w, img_h))
+
         if isinstance(masks, np.ndarray):
             masks = torch.tensor(masks)
             bboxes = torch.tensor(bboxes)
