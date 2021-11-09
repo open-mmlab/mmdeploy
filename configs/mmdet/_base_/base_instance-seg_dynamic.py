@@ -1,4 +1,4 @@
-_base_ = ['./mask_base_static.py']
+_base_ = ['./base_instance-seg_static.py']
 onnx_config = dict(
     dynamic_axes={
         'input': {

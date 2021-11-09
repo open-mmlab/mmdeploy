@@ -1,5 +1,6 @@
 _base_ = [
-    '../_base_/mask_base_static.py', '../../_base_/backends/tensorrt_int8.py'
+    '../_base_/base_instance-seg_static.py',
+    '../../_base_/backends/tensorrt.py'
 ]
 
 onnx_config = dict(input_shape=(1344, 800))

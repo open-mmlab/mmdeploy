@@ -368,7 +368,7 @@ def test_single_roi_extractor(backend_type):
             model_output, backend_output, rtol=1e-03, atol=1e-05)
 
 
-def get_cascade_roi_head(is_with_masks=False):
+def get_cascade_roi_head(is_instance_seg=False):
     """CascadeRoIHead Config."""
     num_stages = 3
     stage_loss_weights = [1, 0.5, 0.25]
@@ -440,7 +440,7 @@ def get_cascade_roi_head(is_with_masks=False):
 
     args = [num_stages, stage_loss_weights, bbox_roi_extractor, bbox_head]
     kwargs = {'test_cfg': test_cfg}
-    if is_with_masks:
+    if is_instance_seg:
         args += [mask_roi_extractor, mask_head]
 
     from mmdet.models import CascadeRoIHead
@@ -739,7 +739,7 @@ def test_get_bboxes_of_atss_head(backend_type):
 def test_cascade_roi_head_with_mask(backend_type):
     pytest.importorskip(backend_type, reason=f'requires {backend_type}')
 
-    cascade_roi_head = get_cascade_roi_head(is_with_masks=True)
+    cascade_roi_head = get_cascade_roi_head(is_instance_seg=True)
     seed_everything(1234)
     x = [
         torch.rand((1, 64, 200, 304)),

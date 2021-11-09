@@ -1,5 +1,6 @@
 _base_ = [
-    '../_base_/mask_base_dynamic.py', '../../_base_/backends/tensorrt_fp16.py'
+    '../_base_/base_instance-seg_dynamic.py',
+    '../../_base_/backends/tensorrt_int8.py'
 ]
 
 backend_config = dict(
