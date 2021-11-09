@@ -1,3 +1,7 @@
+// Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
+// modified from
+// https://github.com/pytorch/pytorch/blob/master/aten/src/ATen/native/GridSampler.cpp
+
 #include "grid_sample.h"
 
 #include <cmath>
@@ -9,9 +13,6 @@ namespace mmdeploy {
 #define MAX(a, b) (((a) < (b)) ? (b) : (a))
 #define CLIP_COORDINATES(in, out, clip_limit) \
   out = MIN((clip_limit - 1), MAX(in, 0))
-
-// modified from
-// https://github.com/pytorch/pytorch/blob/master/aten/src/ATen/native/GridSampler.cpp
 
 GridSampleKernel::GridSampleKernel(OrtApi api, const OrtKernelInfo *info)
     : api_(api), ort_(api_), info_(info) {

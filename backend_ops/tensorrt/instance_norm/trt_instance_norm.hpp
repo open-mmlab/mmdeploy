@@ -1,3 +1,4 @@
+// Copyright (c) 2021, NVIDIA CORPORATION. All rights reserved.
 // Modified from:
 // https://github.com/NVIDIA/TensorRT/blob/master/plugin/instanceNormalizationPlugin/instanceNormalizationPlugin.h
 

@@ -1,3 +1,6 @@
+// Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved.
+// modified from
+// https://github.com/facebookresearch/maskrcnn-benchmark/blob/main/maskrcnn_benchmark/csrc/cpu/ROIAlign_cpu.cpp
 #include "roi_align.h"
 
 #include "ort_utils.h"
