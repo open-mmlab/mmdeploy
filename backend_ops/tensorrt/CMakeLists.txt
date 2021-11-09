@@ -24,6 +24,7 @@ else()
   set(CMAKE_CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
   set(CUDA_NVCC_FLAGS
       "${CUDA_NVCC_FLAGS} -Xcompiler=-fPIC,-Wall,-fvisibility=hidden")
+  set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -Xcompiler=-fno-gnu-unique")
 endif()
 
 # set virtual compute architecture and real ones
