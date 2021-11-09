@@ -48,7 +48,7 @@ format will be kwargs for dataset.evaluate() function.
 python tools/test.py \
     configs/mmcls/classification_onnxruntime_static.py \
     {MMCLS_DIR}/configs/resnet/resnet50_b32x8_imagenet.py \
-    --model model.onnx\
+    --model model.onnx \
     --out out.pkl \
     --device cuda:0 \
 ```

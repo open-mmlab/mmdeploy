@@ -64,7 +64,7 @@ def parse_args():
     parser.add_argument(
         '--warmup',
         type=int,
-        help='warmup before counting inference elaps, require setting '
+        help='warmup before counting inference elapse, require setting '
         'speed-test first',
         default=10)
     parser.add_argument(
@@ -76,7 +76,7 @@ def parse_args():
     parser.add_argument(
         '--log2file',
         type=str,
-        help='log speed in file format ,need speed-test first')
+        help='log speed in file format, require speed-test first')
 
     args = parser.parse_args()
     return args
