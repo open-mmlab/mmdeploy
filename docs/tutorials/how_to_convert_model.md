@@ -97,7 +97,7 @@ The table below lists the models that are guaranteed to be exportable to other b
 | SE-ResNet          | MMClassification |      Y      |    Y     |  Y   |  Y  |    N     | $MMCLS_DIR/configs/seresnet/seresnet50_b32x8_imagenet.py                              |
 | MobileNetV2        | MMClassification |      Y      |    Y     |  Y   |  Y  |    N     | $MMCLS_DIR/configs/mobilenet_v2/mobilenet_v2_b32x8_imagenet.py                        |
 | ShuffleNetV1       | MMClassification |      Y      |    Y     |  Y   |  Y  |    N     | $MMCLS_DIR/configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py |
-| ShuffleNetV2       | MMClassification |      Y      |    Y     |  N   |  Y  |    N     | $MMCLS_DIR/configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py |
+| ShuffleNetV2       | MMClassification |      Y      |    Y     |  Y   |  Y  |    N     | $MMCLS_DIR/configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py |
 | FCN                | MMSegmentation   |      Y      |    Y     |  Y   |  Y  |    N     | $MMSEG_DIR/configs/fcn/fcn_r50-d8_512x1024_40k_cityscapes.py                          |
 | PSPNet             | MMSegmentation   |      Y      |    Y     |  N   |  Y  |    N     | $MMSEG_DIR/configs/pspnet/pspnet_r50-d8_512x1024_40k_cityscapes.py                    |
 | DeepLabV3          | MMSegmentation   |      Y      |    Y     |  Y   |  Y  |    N     | $MMSEG_DIR/configs/deeplabv3/deeplabv3_r50-d8_512x1024_40k_cityscapes.py              |
