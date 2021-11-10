@@ -7,13 +7,30 @@ from mmdeploy.utils import is_dynamic_shape
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmocr.models.textrecog.BaseRecognizer.forward')
-def forward_of_base_recognizer(ctx,
-                               self,
-                               img,
-                               img_metas=None,
-                               return_loss=False,
-                               **kwargs):
-    """Rewrite `forward` for NCNN backend."""
+def base_recognizer__forward(ctx, self, img, img_metas=None, *args, **kwargs):
+    """Rewrite `forward` of BaseRecognizer for default backend.
+
+    Rewrite this function to:
+    1. Create img_metas for exporting model to onnx.
+    2. Call `simple_test` directly to skip `aug_test`.
+
+    Args:
+        ctx (ContextCaller): The context with additional information.
+        self: The instance of the class BaseRecognizer.
+        img (Tensor): Input images of shape (N, C, H, W).
+            Typically these should be mean centered and std scaled.
+        img_metas (Optional[list[dict]]): A list of image info dict where each
+            dict has: 'img_shape', 'scale_factor', 'flip', and may also contain
+            'filename', 'ori_shape', 'pad_shape', and 'img_norm_cfg'.
+            For details on the values of these keys, see
+            :class:`mmdet.datasets.pipelines.Collect`.
+        return_loss (bool): Whether compute and return loss. Used during
+            training.
+
+    Returns:
+        out_dec (Tensor): A feature map output from a decoder. The tensor shape
+            (N, H, W).
+    """
     if img_metas is None:
         img_metas = [{}]
     assert utils.is_type_list(img_metas, dict)

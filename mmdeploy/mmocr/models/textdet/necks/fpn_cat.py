@@ -6,8 +6,23 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmocr.models.textdet.FPNC.forward', backend='tensorrt')
-def forward_of_fpnc(ctx, self, inputs, **kwargs):
-    """Replace nearest upsampling with bilinear upsampling."""
+def fpnc__forward__tensorrt(ctx, self, inputs, **kwargs):
+    """Rewrite `forward` of FPNC for tensorrt backend.
+
+    Rewrite this function to replace nearest upsampling with bilinear
+    upsampling. Tensorrt backend applies different nearest sampling strategy
+    from pytorch, which heavily influenced the final performance.
+
+    Args:
+        ctx (ContextCaller): The context with additional information.
+        self: The instance of the class FPNC.
+        inputs (Sequence[Tensor]): The feature maps for each scale level with
+            shape (N, num_anchors * num_classes, H, W)
+
+    Returns:
+        outs (Tensor): A feature map output from FPNC. The tensor shape
+            (N, C, H, W).
+    """
 
     assert len(inputs) == len(self.in_channels)
     # build laterals

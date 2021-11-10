@@ -12,13 +12,18 @@ from mmdeploy.core import FUNCTION_REWRITER, MODULE_REWRITER
     func_name='mmocr.models.textrecog.decoders.ParallelSARDecoder'
     '._2d_attention',
     backend='default')
-def _2d_attention_of_parallel_sar_decoder(ctx,
-                                          self,
-                                          decoder_input,
-                                          feat,
-                                          holistic_feat,
-                                          valid_ratios=None):
-    """Rewrite `_2d_attention` of ParallelSARDecoder."""
+def parallel_sar_decoder__2d_attention(ctx,
+                                       self,
+                                       decoder_input,
+                                       feat,
+                                       holistic_feat,
+                                       valid_ratios=None):
+    """Rewrite `_2d_attention` of ParallelSARDecoder for default backend.
+
+    Rewrite this function to:
+    1. use torch.ceil to replace original math.ceil and if else in mmocr.
+    2. use narrow to replace original [valid_width:] in mmocr
+    """
     y = self.rnn_decoder(decoder_input)[0]
     # y: bsz * (seq_len + 1) * hidden_size
 
@@ -78,17 +83,22 @@ def _2d_attention_of_parallel_sar_decoder(ctx,
     func_name='mmocr.models.textrecog.decoders.SequentialSARDecoder'
     '._2d_attention',
     backend='default')
-def _2d_attention_of_sequential_sar_decoder(ctx,
-                                            self,
-                                            y_prev,
-                                            feat,
-                                            holistic_feat,
-                                            hx1,
-                                            cx1,
-                                            hx2,
-                                            cx2,
-                                            valid_ratios=None):
-    """Rewrite `_2d_attention` of SequentialSARDecoder."""
+def sequential_sar_decoder__2d_attention(ctx,
+                                         self,
+                                         y_prev,
+                                         feat,
+                                         holistic_feat,
+                                         hx1,
+                                         cx1,
+                                         hx2,
+                                         cx2,
+                                         valid_ratios=None):
+    """Rewrite `_2d_attention` of SequentialSARDecoder for default backend.
+
+    Rewrite this function to:
+    1. use torch.ceil to replace original math.ceil and if else in mmocr.
+    2. use narrow to replace original [valid_width:] in mmocr
+    """
     _, _, h_feat, w_feat = feat.size()
     if self.dec_gru:
         hx1 = cx1 = self.rnn_decoder_layer1(y_prev, hx1)
@@ -138,7 +148,18 @@ def _2d_attention_of_sequential_sar_decoder(ctx,
     func_name='mmocr.models.textrecog.decoders.SequentialSARDecoder'
     '.forward_train',
     backend='default')
-def forward_train(ctx, self, feat, out_enc, targets_dict, img_metas=None):
+def sequential_sar_decoder__forward_train(ctx,
+                                          self,
+                                          feat,
+                                          out_enc,
+                                          targets_dict,
+                                          img_metas=None):
+    """Rewrite `forward_train` of SequentialSARDecoder for default backend.
+
+    Rewrite this function because LSTMCell has been replaced with LSTM. The two
+    class have different forward functions. The `forward_train` need adapt to
+    this change.
+    """
     if img_metas is not None:
         assert utils.is_type_list(img_metas, dict)
         assert len(img_metas) == feat.size(0)

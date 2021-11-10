@@ -8,8 +8,27 @@ from mmdeploy.core import FUNCTION_REWRITER
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmocr.models.textrecog.encoders.SAREncoder.forward',
     backend='default')
-def forward_of_sar_encoder(ctx, self, feat, img_metas=None):
-    """Rewrite `forward` of SAREncoder."""
+def sar_encoder__forward(ctx, self, feat, img_metas=None):
+    """Rewrite `forward` of SAREncoder for default backend.
+
+    Rewrite this function to:
+    1. convert tuple value of feat.size to int, making model exportable.
+    2. use torch.ceil to replace original math.ceil and if else in mmocr.
+
+    Args:
+        ctx (ContextCaller): The context with additional information.
+        self: The instance of the class SAREncoder.
+        feat (Tensor): Encoded feature map of shape (N, C, H, W).
+        img_metas (Optional[list[dict]]): A list of image info dict where each
+            dict has: 'img_shape', 'scale_factor', 'flip', and may also contain
+            'filename', 'ori_shape', 'pad_shape', and 'img_norm_cfg'.
+            For details on the values of these keys, see
+            :class:`mmdet.datasets.pipelines.Collect`.
+
+    Returns:
+        holistic_feat (Tensor): A feature map output from SAREncoder. The shape
+            [N, M].
+    """
     if img_metas is not None:
         assert utils.is_type_list(img_metas, dict)
         assert len(img_metas) == feat.size(0)

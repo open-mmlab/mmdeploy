@@ -1,3 +1,3 @@
-from .lstm_layer import forward_of_bidirectionallstm
+from .lstm_layer import bidirectionallstm__forward__ncnn
 
-__all__ = ['forward_of_bidirectionallstm']
+__all__ = ['bidirectionallstm__forward__ncnn']

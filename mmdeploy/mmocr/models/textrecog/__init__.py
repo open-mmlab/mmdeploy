@@ -1,12 +1,12 @@
 from .decoders import *  # noqa: F401, F403
-from .encoders import forward_of_sar_encoder
+from .encoders import sar_encoder__forward
 from .layers import *  # noqa: F401, F403
-from .recognizer.base import forward_of_base_recognizer
+from .recognizer.base import base_recognizer__forward
 from .recognizer.encode_decode_recognizer import \
-    simple_test_of_encode_decode_recognizer
+    encode_decode_recognizer__simple_test
 from .recognizer.sar import SARNet
 
 __all__ = [
-    'simple_test_of_encode_decode_recognizer', 'forward_of_base_recognizer',
-    'forward_of_sar_encoder', 'SARNet'
+    'encode_decode_recognizer__simple_test', 'base_recognizer__forward',
+    'sar_encoder__forward', 'SARNet'
 ]

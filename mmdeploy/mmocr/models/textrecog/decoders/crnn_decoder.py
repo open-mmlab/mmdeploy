@@ -4,9 +4,12 @@ from mmdeploy.core import FUNCTION_REWRITER
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmocr.models.textrecog.decoders.CRNNDecoder.forward_train',
     backend='ncnn')
-def forward_train_of_crnndecoder(ctx, self, feat, out_enc, targets_dict,
-                                 img_metas):
-    """Rewrite `forward_train` for NCNN backend."""
+def crnndecoder__forward_train__ncnn(ctx, self, feat, *args, **kwargs):
+    """Rewrite `forward_train` of CRNNDecoder for NCNN backend.
+
+    Rewrite this function to skip permuting dims of outputs from `[W, N, C]` to
+    `[N, W, C]`
+    """
     assert feat.size(2) == 1, 'feature height must be 1'
     if self.rnn_flag:
         x = feat.squeeze(2)  # [N, C, W]
