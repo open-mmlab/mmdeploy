@@ -1,3 +1,3 @@
-from .base import forward_of_base_classifier
+from .base import base_classifier__forward
 
-__all__ = ['forward_of_base_classifier']
+__all__ = ['base_classifier__forward']
