@@ -6,8 +6,22 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmseg.models.segmentors.EncoderDecoder.simple_test')
-def simple_test_of_encoder_decoder(ctx, self, img, img_meta, **kwargs):
-    """Rewrite `simple_test` for default backend."""
+def encoder_decoder__simple_test(ctx, self, img, img_meta, **kwargs):
+    """Rewrite `simple_test` for default backend.
+
+    Support configured dynamic/static shape for model input and return
+    segmentation map as Tensor instead of numpy array.
+
+    Args:
+        ctx (ContextCaller): The context with additional information.
+        self: The instance of the original class.
+        img (Tensor | List[Tensor]): Input image tensor(s).
+        img_meta (dict): Dict containing image's meta information
+            such as `img_shape`.
+
+    Returns:
+        torch.Tensor: Output segmentation map pf shape [N, 1, H, W].
+    """
     x = self.extract_feat(img)
     seg_logit = self._decode_head_forward_test(x, img_meta)
     seg_logit = resize(

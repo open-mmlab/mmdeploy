@@ -63,7 +63,7 @@ def test_baseclassfier_forward():
 # Custom rewritten function
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmseg.models.segmentors.BaseSegmentor.forward')
-def forward_of_base_segmentor(ctx, self, img, img_metas=None, **kwargs):
+def base_segmentor__forward(ctx, self, img, img_metas=None, **kwargs):
     if img_metas is None:
         img_metas = {}
     assert isinstance(img_metas, dict)

@@ -1,4 +1,5 @@
 import torch
+from torch import Tensor
 
 import mmdeploy
 from mmdeploy.core import FUNCTION_REWRITER, mark
@@ -71,13 +72,13 @@ def select_nms_index(scores: torch.Tensor,
     return batched_dets[:, 0:-1, :], batched_labels[:, 0:-1]
 
 
-def _multiclass_nms(boxes,
-                    scores,
-                    max_output_boxes_per_class=1000,
-                    iou_threshold=0.5,
-                    score_threshold=0.05,
-                    pre_top_k=-1,
-                    keep_top_k=-1):
+def _multiclass_nms(boxes: Tensor,
+                    scores: Tensor,
+                    max_output_boxes_per_class: int = 1000,
+                    iou_threshold: float = 0.5,
+                    score_threshold: float = 0.05,
+                    pre_top_k: int = -1,
+                    keep_top_k: int = -1):
     """Create a dummy onnx::NonMaxSuppression op while exporting to ONNX.
 
     This function helps exporting to onnx with batch and multiclass NMS op.
@@ -91,10 +92,10 @@ def _multiclass_nms(boxes,
             [N, num_boxes, num_classes].
         max_output_boxes_per_class (int): Maximum number of output
             boxes per class of nms. Defaults to 1000.
-        iou_threshold (float): IOU threshold of nms. Defaults to 0.5
+        iou_threshold (float): IOU threshold of nms. Defaults to 0.5.
         score_threshold (float): score threshold of nms.
             Defaults to 0.05.
-        pre_top_k (bool): Number of top K boxes to keep before nms.
+        pre_top_k (int): Number of top K boxes to keep before nms.
             Defaults to -1.
         keep_top_k (int): Number of top K boxes to keep after nms.
             Defaults to -1.
@@ -131,14 +132,34 @@ def _multiclass_nms(boxes,
     func_name='mmdeploy.mmdet.core.post_processing._multiclass_nms',
     backend='tensorrt')
 def multiclass_nms_static(ctx,
-                          boxes,
-                          scores,
-                          max_output_boxes_per_class=1000,
-                          iou_threshold=0.5,
-                          score_threshold=0.05,
-                          pre_top_k=-1,
-                          keep_top_k=-1):
-    """Wrapper for `multiclass_nms` with TensorRT."""
+                          boxes: Tensor,
+                          scores: Tensor,
+                          max_output_boxes_per_class: int = 1000,
+                          iou_threshold: float = 0.5,
+                          score_threshold: float = 0.05,
+                          pre_top_k: int = -1,
+                          keep_top_k: int = -1):
+    """Wrapper for `multiclass_nms` with TensorRT.
+
+    Args:
+        ctx (ContextCaller): The context with additional information.
+        boxes (Tensor): The bounding boxes of shape [N, num_boxes, 4].
+        scores (Tensor): The detection scores of shape
+            [N, num_boxes, num_classes].
+        max_output_boxes_per_class (int): Maximum number of output
+            boxes per class of nms. Defaults to 1000.
+        iou_threshold (float): IOU threshold of nms. Defaults to 0.5.
+        score_threshold (float): score threshold of nms.
+            Defaults to 0.05.
+        pre_top_k (int): Number of top K boxes to keep before nms.
+            Defaults to -1.
+        keep_top_k (int): Number of top K boxes to keep after nms.
+            Defaults to -1.
+
+    Returns:
+        tuple[Tensor, Tensor]: (dets, labels), `dets` of shape [N, num_det, 5]
+            and `labels` of shape [N, num_det].
+    """
     boxes = boxes if boxes.dim() == 4 else boxes.unsqueeze(2)
     keep_top_k = max_output_boxes_per_class if keep_top_k < 0 else min(
         max_output_boxes_per_class, keep_top_k)

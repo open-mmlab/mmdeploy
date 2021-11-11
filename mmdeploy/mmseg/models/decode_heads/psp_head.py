@@ -6,8 +6,20 @@ from mmdeploy.utils import is_dynamic_shape
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmseg.models.decode_heads.psp_head.PPM.forward')
-def forward_of_ppm(ctx, self, x):
-    """Rewrite `forward` for default backend."""
+def ppm__forward(ctx, self, x):
+    """Rewrite `forward` for default backend.
+
+    Support configured dynamic/static shape in resize op.
+
+    Args:
+        ctx (ContextCaller): The context with additional information.
+        self: The instance of the original class.
+        x (Tensor): The transformed input feature.
+
+    Returns:
+        List[torch.Tensor]: Up-sampled segmentation maps of different
+            scales.
+    """
     deploy_cfg = ctx.cfg
     is_dynamic_flag = is_dynamic_shape(deploy_cfg)
     # get origin input shape as tensor to support onnx dynamic shape

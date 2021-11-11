@@ -1,4 +1,4 @@
-from .aspp_head import forward_of_aspp_head
-from .psp_head import forward_of_ppm
+from .aspp_head import aspp_head__forward
+from .psp_head import ppm__forward
 
-__all__ = ['forward_of_aspp_head', 'forward_of_ppm']
+__all__ = ['aspp_head__forward', 'ppm__forward']

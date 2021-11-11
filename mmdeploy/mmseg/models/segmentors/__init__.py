@@ -1,4 +1,4 @@
-from .base import forward_of_base_segmentor
-from .encoder_decoder import simple_test_of_encoder_decoder
+from .base import base_segmentor__forward
+from .encoder_decoder import encoder_decoder__simple_test
 
-__all__ = ['forward_of_base_segmentor', 'simple_test_of_encoder_decoder']
+__all__ = ['base_segmentor__forward', 'encoder_decoder__simple_test']

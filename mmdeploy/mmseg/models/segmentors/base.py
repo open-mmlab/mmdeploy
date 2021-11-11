@@ -6,8 +6,21 @@ from mmdeploy.utils import is_dynamic_shape
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmseg.models.segmentors.BaseSegmentor.forward')
-def forward_of_base_segmentor(ctx, self, img, img_metas=None, **kwargs):
-    """Rewrite `forward` for default backend."""
+def base_segmentor__forward(ctx, self, img, img_metas=None, **kwargs):
+    """Rewrite `forward` for default backend.
+
+    Support configured dynamic/static shape for model input.
+
+    Args:
+        ctx (ContextCaller): The context with additional information.
+        self: The instance of the original class.
+        img (Tensor | List[Tensor]): Input image tensor(s).
+        img_metas (List[dict]): List of dicts containing image's meta
+            information such as `img_shape`.
+
+    Returns:
+        torch.Tensor: Output segmentation map pf shape [N, 1, H, W].
+    """
     if img_metas is None:
         img_metas = {}
     while isinstance(img_metas, list):
