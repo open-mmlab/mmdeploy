@@ -69,7 +69,9 @@ size_t TRTBatchedNMS::getWorkspaceSize(
   size_t score_size = inputs[1].dims.d[1] * inputs[1].dims.d[2];
   size_t num_priors = inputs[0].dims.d[1];
   bool shareLocation = (inputs[0].dims.d[2] == 1);
-  int topk = param.topK > 0 ? topk : inputs[1].dims.d[1];
+  int topk = param.topK > 0 && param.topK <= inputs[1].dims.d[1]
+                 ? topk
+                 : inputs[1].dims.d[1];
   return detectionInferenceWorkspaceSize(
       shareLocation, batch_size, boxes_size, score_size, param.numClasses,
       num_priors, topk, DataType::kFLOAT, DataType::kFLOAT);
@@ -92,9 +94,12 @@ int TRTBatchedNMS::enqueue(const nvinfer1::PluginTensorDesc* inputDesc,
   size_t num_priors = inputDesc[0].dims.d[1];
   bool shareLocation = (inputDesc[0].dims.d[2] == 1);
 
+  int topk = param.topK > 0 && param.topK <= inputDesc[1].dims.d[1]
+                 ? topk
+                 : inputDesc[1].dims.d[1];
   pluginStatus_t status = nmsInference(
       stream, batch_size, boxes_size, score_size, shareLocation,
-      param.backgroundLabelId, num_priors, param.numClasses, param.topK,
+      param.backgroundLabelId, num_priors, param.numClasses, topk,
       param.keepTopK, param.scoreThreshold, param.iouThreshold,
       DataType::kFLOAT, locData, DataType::kFLOAT, confData, nmsedDets,
       nmsedLabels, workSpace, param.isNormalized, false, mClipBoxes);
