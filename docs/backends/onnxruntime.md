@@ -29,6 +29,17 @@ export ONNXRUNTIME_DIR=$(pwd)
 export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 ```
 
+Note:
+
+- If you want to save onnxruntime env variables to bashrc, you could run
+
+    ```bash
+    echo '# set env for onnxruntime' >> ~/.bashrc
+    echo "export ONNXRUNTIME_DIR=${ONNXRUNTIME_DIR}" >> ~/.bashrc
+    echo 'export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH' >> ~/.bashrc
+    source ~/.bashrc
+    ```
+
 #### Build on Linux
 
 ```bash
@@ -45,11 +56,11 @@ make -j10
 
 ### List of supported custom ops
 
-|                        Operator                        |  CPU  |  GPU  | MMDeploy Releases |
-| :----------------------------------------------------: | :---: | :---: | :-----------: |
-|     [RoIAlign](../ops/onnxruntime.md#roialign)     |   Y   |   N   |     master     |
-| [grid_sampler](../ops/onnxruntime.md#grid_sampler) |   Y   |   N   |     master     |
-|          [MMCVModulatedDeformConv2d](../ops/onnxruntime.md#mmcvmodulateddeformconv2d)          |   Y   |   N   |     master     |
+| Operator                                                                     | CPU | GPU | MMDeploy Releases |
+|:-----------------------------------------------------------------------------|:---:|:---:|:------------------|
+| [RoIAlign](../ops/onnxruntime.md#roialign)                                   |  Y  |  N  | master            |
+| [grid_sampler](../ops/onnxruntime.md#grid_sampler)                           |  Y  |  N  | master            |
+| [MMCVModulatedDeformConv2d](../ops/onnxruntime.md#mmcvmodulateddeformconv2d) |  Y  |  N  | master            |
 
 ### How to add a new custom op
 

@@ -6,7 +6,19 @@
 
 Please install TensorRT 8 follow [install-guide](https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing).
 
-**Note**: `pip Wheel File Installation` is not supported yet in this repo.
+**Note**:
+
+- `pip Wheel File Installation` is not supported yet in this repo.
+- We strongly suggest you install TensorRT through [tar file](https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing-tar)
+- After installation, you'd better add TensorRT environment variables to bashrc by:
+
+    ```bash
+    cd ${TENSORRT_DIR} # To TensorRT root directory
+    echo '# set env for TensorRT' >> ~/.bashrc
+    echo "export TENSORRT_DIR=${TENSORRT_DIR}" >> ~/.bashrc
+    echo 'export LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$TENSORRT_DIR' >> ~/.bashrc
+    source ~/.bashrc
+    ```
 
 #### Build custom ops
 
