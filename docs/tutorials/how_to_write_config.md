@@ -19,9 +19,10 @@ This tutorial describes how to write a config for model conversion and deploymen
   - [3. How to write backend config](#3-how-to-write-backend-config)
     - [Example](#example-4)
   - [4. A complete example of mmcls on TensorRT](#4-a-complete-example-of-mmcls-on-tensorrt)
-  - [5. How to write model config](#5-how-to-write-model-config)
-  - [6. Reminder](#6-reminder)
-  - [7. FAQs](#7-faqs)
+  - [5. The name rules of our deployment config](#5-the-name-rules-of-our-deployment-config)
+  - [6. How to write model config](#6-how-to-write-model-config)
+  - [7. Reminder](#6-reminder)
+  - [8. FAQs](#7-faqs)
 
 <!-- TOC -->
 
@@ -131,7 +132,7 @@ The backend config is mainly used to specify the backend on which model runs and
 backend_config = dict(
     type='tensorrt',
     common_config=dict(
-        fp16_mode=False, log_level=trt.Logger.INFO, max_workspace_size=1 << 30)
+        fp16_mode=False, log_level=trt.Logger.INFO, max_workspace_size=1 << 30),
     model_inputs=[
         dict(
             input_shapes=dict(
@@ -188,14 +189,33 @@ onnx_config = dict(
 partition_config = None
 ```
 
-### 5. How to write model config
+### 5. The name rules of our deployment config
+
+There is a specific naming convention for the filename of deployment config files.
+
+```bash
+(task name)_(partition)_(backend name)_(dynamic or static).py
+```
+
+- `task name`: Model's task type.
+- `partition`: Optional, whether partition model is supported.
+- `backend name`: Backend's name. Note if you use the quantization function, you need to indicate the quantization type. Just like `tensorrt_int8`.
+- `dynamic or static`: Dynamic or static export. Note if the backend needs explicit shape information, you need to add a description of input size with `height x width` format. Just like `dynamic-512x1024-2048x2048`, it means that the min input shape is `512x1024` and the max input shape is `2048x2048`.
+
+#### Example
+
+```
+single-stage_partition_tensorrt-int8_dynamic-320x320-1344x1344.py
+```
+
+### 6. How to write model config
 
 According to model's codebase, write the model config file. Model's config file is used to initialize the model, referring to [MMClassification](https://github.com/open-mmlab/mmclassification/blob/master/docs/tutorials/config.md), [MMDetection](https://github.com/open-mmlab/mmdetection/blob/master/docs_zh-CN/tutorials/config.md), [MMSegmentation](https://github.com/open-mmlab/mmsegmentation/blob/master/docs_zh-CN/tutorials/config.md), [MMOCR](https://github.com/open-mmlab/mmocr/tree/main/configs), [MMEditing](https://github.com/open-mmlab/mmediting/blob/master/docs_zh-CN/config.md).
 
-### 6. Reminder
+### 7. Reminder
 
 None
 
-### 7. FAQs
+### 8. FAQs
 
 None

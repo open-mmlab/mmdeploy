@@ -2,16 +2,17 @@
 
 <!-- TOC -->
 
-- [How to convert model](#how-to-convert-model)
-  - [How to convert models from Pytorch to other backends](#how-to-convert-models-from-pytorch-to-other-backends)
-    - [Prerequisite](#prerequisite)
-    - [Usage](#usage)
-    - [Description of all arguments](#description-of-all-arguments)
-    - [Example](#example)
-  - [How to evaluate the exported models](#how-to-evaluate-the-exported-models)
-  - [List of supported models exportable to other backends](#list-of-supported-models-exportable-to-other-backends)
-  - [Reminders](#reminders)
-  - [FAQs](#faqs)
+- [Tutorial : How to convert model](#how-to-convert-model)
+    - [How to convert models from Pytorch to BACKEND](#how-to-convert-models-from-pytorch-to-other-backends)
+        - [Prerequisite](#prerequisite)
+        - [Usage](#usage)
+        - [Description of all arguments](#description-of-all-arguments)
+        - [How to find the corresponding deployment config of a PyTorch model](#how-to-find-the-corresponding-deployment-config-of-a-pytorch-model)
+        - [Example](#example)
+    - [How to evaluate the exported models](#how-to-evaluate-the-exported-models)
+    - [List of supported models exportable to BACKEND](#list-of-supported-models-exportable-to-other-backends)
+    - [Reminders](#reminders)
+    - [FAQs](#faqs)
 
 <!-- TOC -->
 
@@ -57,6 +58,12 @@ python ./tools/deploy.py \
 - `--log-level` : To set log level which in `'CRITICAL', 'FATAL', 'ERROR', 'WARN', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'`. If not specified, it will be set to `INFO`.
 - `--show` : Whether to show detection outputs.
 - `--dump-info` : Whether to output information for SDK.
+
+#### How to find the corresponding deployment config of a PyTorch model
+
+1. Find model's codebase folder in `configs/ `. Example, convert a yolov3 model you need to find `configs/mmdet` folder.
+2. Find model's task folder in `configs/codebase_folder/ `. Just like yolov3 model, you need to find `configs/mmdet/single-stage` folder.
+3. Find deployment config file in `configs/codebase_folder/task_folder/ `. Just like deploy yolov3 model you can use `configs/mmdet/single-stage/single-stage_onnxruntime_dynamic.py`.
 
 #### Example
 
