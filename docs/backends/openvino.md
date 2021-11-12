@@ -5,7 +5,7 @@ This tutorial is based on Linux systems like Ubuntu-18.04.
 ### Installation
 
 1. Install [OpenVINO](https://docs.openvinotoolkit.org/latest/installation_guides.html).
-2. Install MMdeploy following the [instructions](../build.md).
+2. Install MMDeploy following the [instructions](../build.md).
 
 ### Usage
 
@@ -25,18 +25,20 @@ python tools/deploy.py \
 
 The table below lists the models that are guaranteed to be exportable to OpenVINO from MMDetection.
 
-|    Model name      |                               Config                                | Dynamic Shape |
-| :----------------: | :-----------------------------------------------------------------: | :-----------: |
-| FCOS               |      `configs/fcos/fcos_r50_caffe_fpn_gn-head_4x4_1x_coco.py`       |       Y       |
-| FSAF               |               `configs/fsaf/fsaf_r50_fpn_1x_coco.py`                |       Y       |
-| RetinaNet          |          `configs/retinanet/retinanet_r50_fpn_1x_coco.py`           |       Y       |
-| SSD                |                    `configs/ssd/ssd300_coco.py`                     |       Y       |
-| Faster R-CNN       |        `configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py`         |       Y       |
-| Cascade R-CNN      |       `configs/cascade_rcnn/cascade_rcnn_r50_fpn_1x_coco.py`        |       Y       |
-| Mask R-CNN         |        `configs/mask_rcnn/mask_rcnn_r50_fpn_1x_coco.py`             |       Y       |
-| Cascade Mask R-CNN |     `configs/cascade_rcnn/cascade_mask_rcnn_r50_fpn_1x_coco.py`     |       Y       |
-| FoveaBox           |        `configs/foveabox/fovea_r50_fpn_4x4_1x_coco.py `             |       Y       |
-| ATSS               |               `configs/atss/atss_r50_fpn_1x_coco.py`                |       Y       |
+|    Model name      |                                  Config                                   | Dynamic Shape |
+| :----------------: | :-----------------------------------------------------------------------: | :-----------: |
+| ATSS               |                  `configs/atss/atss_r50_fpn_1x_coco.py`                   |       Y       |
+| Cascade Mask R-CNN |        `configs/cascade_rcnn/cascade_mask_rcnn_r50_fpn_1x_coco.py`        |       Y       |
+| Cascade R-CNN      |          `configs/cascade_rcnn/cascade_rcnn_r50_fpn_1x_coco.py`           |       Y       |
+| Faster R-CNN       |           `configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py`            |       Y       |
+| FCOS               | `configs/fcos/fcos_x101_64x4d_fpn_gn-head_mstrain_640-800_4x2_2x_coco.py` |       Y       |
+| FoveaBox           |           `configs/foveabox/fovea_r50_fpn_4x4_1x_coco.py `                |       Y       |
+| FSAF               |                  `configs/fsaf/fsaf_r50_fpn_1x_coco.py`                   |       Y       |
+| Mask R-CNN         |           `configs/mask_rcnn/mask_rcnn_r50_fpn_1x_coco.py`                |       Y       |
+| RetinaNet          |             `configs/retinanet/retinanet_r50_fpn_1x_coco.py`              |       Y       |
+| SSD                |                       `configs/ssd/ssd300_coco.py`                        |       Y       |
+| YOLOv3             |            `configs/yolo/yolov3_d53_mstrain-608_273e_coco.py`             |       Y       |
+| YOLOX              |               `configs/yolox/yolox_tiny_8x8_300e_coco.py`                 |       Y       |
 
 Notes:
 - For faster work in OpenVINO in the Faster-RCNN, Mask-RCNN, Cascade-RCNN, Cascade-Mask-RCNN models
