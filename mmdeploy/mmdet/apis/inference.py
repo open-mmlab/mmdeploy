@@ -602,7 +602,8 @@ class PartitionTwoStageDetector(DeployBaseDetector):
         post_params = get_mmdet_params(deploy_cfg)
         iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)
         score_threshold = cfg.get('score_thr', post_params.score_threshold)
-        pre_top_k = post_params.pre_top_k
+        pre_top_k = -1 if post_params.pre_top_k >= bboxes.shape[1] \
+            else post_params.pre_top_k
         keep_top_k = cfg.get('max_per_img', post_params.keep_top_k)
         # only one class in rpn
         max_output_boxes_per_class = keep_top_k

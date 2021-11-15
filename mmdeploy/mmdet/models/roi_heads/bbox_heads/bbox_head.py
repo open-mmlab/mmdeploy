@@ -99,7 +99,12 @@ def bbox_head__get_bboxes(ctx, self, rois, cls_score, bbox_pred, img_shape,
     max_output_boxes_per_class = post_params.max_output_boxes_per_class
     iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)
     score_threshold = cfg.get('score_thr', post_params.score_threshold)
-    pre_top_k = post_params.pre_top_k
+    if torch.onnx.is_in_onnx_export():
+        pre_top_k = post_params.pre_top_k
+    else:
+        # For two stage partition post processing
+        pre_top_k = -1 if post_params.pre_top_k >= bboxes.shape[1] \
+            else post_params.pre_top_k
     keep_top_k = cfg.get('max_per_img', post_params.keep_top_k)
     dets, labels = multiclass_nms(
         bboxes,
