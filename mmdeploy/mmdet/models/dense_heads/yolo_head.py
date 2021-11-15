@@ -15,25 +15,27 @@ def yolov3_head__get_bboxes(ctx,
                             with_nms=True,
                             cfg=None,
                             **kwargs):
-    """Rewrite `get_bboxes` for default backend.
+    """Rewrite `get_bboxes` of YOLOV3Head for default backend.
 
-    Transform network output for a batch into bbox predictions.
+    Rewrite this function to deploy model, transform network output for a
+    batch into bbox predictions.
 
     Args:
         ctx: Context that contains original meta information.
         self: Represent the instance of the original class.
         pred_maps (list[Tensor]): Raw predictions for a batch of images.
-        cfg (mmcv.Config | None): Test / postprocessing configuration,
-            if None, test_cfg would be used. Default: None.
         with_nms (bool): If True, do nms before return boxes.
             Default: True.
+        cfg (mmcv.Config | None): Test / postprocessing configuration,
+            if None, test_cfg would be used. Default: None.
 
     Returns:
-        tuple[Tensor, Tensor]: The first item is an (N, num_box, 5) tensor,
-            where 5 represent (tl_x, tl_y, br_x, br_y, score), N is batch
-            size and the score between 0 and 1. The shape of the second
-            tensor in the tuple is (N, num_box), and each element
-            represents the class label of the corresponding box.
+        If with_nms == True:
+            tuple[Tensor, Tensor]: tuple[Tensor, Tensor]: (dets, labels),
+            `dets` of shape [N, num_det, 5] and `labels` of shape
+            [N, num_det].
+        Else:
+            tuple[Tensor, Tensor, Tensor]: batch_mlvl_bboxes, batch_mlvl_scores
     """
     is_dynamic_flag = is_dynamic_shape(ctx.cfg)
     num_levels = len(pred_maps)
@@ -161,25 +163,34 @@ def yolov3_head__get_bboxes__ncnn(ctx,
                                   with_nms=True,
                                   cfg=None,
                                   **kwargs):
-    """Rewrite `get_bboxes` for ncnn backend.
+    """Rewrite `get_bboxes` of YOLOV3Head for ncnn backend.
 
-    Transform network output for a batch into bbox predictions.
+    1. Shape node and batch inference is not supported by ncnn. This function
+    transform dynamic shape to constant shape and remove batch inference.
+    2. Batch dimension is not supported by ncnn, but supported by pytorch.
+    The negative value of axis in torch.cat is rewritten as corresponding
+    positive value to avoid axis shift.
+    3. 2-dimension tensor broadcast of `BinaryOps` operator is not supported by
+    ncnn. This function unsqueeze 2-dimension tensor to 3-dimension tensor for
+    correct `BinaryOps` calculation by ncnn.
+
 
     Args:
         ctx: Context that contains original meta information.
         self: Represent the instance of the original class.
         pred_maps (list[Tensor]): Raw predictions for a batch of images.
-        cfg (mmcv.Config | None): Test / postprocessing configuration,
-            if None, test_cfg would be used. Default: None.
         with_nms (bool): If True, do nms before return boxes.
             Default: True.
+        cfg (mmcv.Config | None): Test / postprocessing configuration,
+            if None, test_cfg would be used. Default: None.
 
     Returns:
-        tuple[Tensor, Tensor]: The first item is an (N, num_box, 5) tensor,
-            where 5 represent (tl_x, tl_y, br_x, br_y, score), N is batch
-            size and the score between 0 and 1. The shape of the second
-            tensor in the tuple is (N, num_box), and each element
-            represents the class label of the corresponding box.
+        If with_nms == True:
+            tuple[Tensor, Tensor]: tuple[Tensor, Tensor]: (dets, labels),
+            `dets` of shape [N, num_det, 5] and `labels` of shape
+            [N, num_det].
+        Else:
+            tuple[Tensor, Tensor, Tensor]: batch_mlvl_bboxes, batch_mlvl_scores
     """
     num_levels = len(pred_maps)
     pred_maps_list = [pred_maps[i].detach() for i in range(num_levels)]

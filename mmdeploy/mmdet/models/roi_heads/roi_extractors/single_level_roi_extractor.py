@@ -61,12 +61,15 @@ class MultiLevelRoiAlign(Function):
     func_name='mmdet.models.roi_heads.SingleRoIExtractor.forward',
     backend='tensorrt')
 @mark('roi_extractor', inputs=['feats', 'rois'], outputs=['bbox_feats'])
-def forward_of_single_roi_extractor_static(ctx,
-                                           self,
-                                           feats,
-                                           rois,
-                                           roi_scale_factor=None):
-    """Rewrite `forward` for TensorRT backend."""
+def single_roi_extractor__forward__tensorrt(ctx,
+                                            self,
+                                            feats,
+                                            rois,
+                                            roi_scale_factor=None):
+    """Rewrite `forward` for TensorRT backend.
+
+    This function uses MMCVMultiLevelRoiAlign op for TensorRT deployment.
+    """
     featmap_strides = self.featmap_strides
     finest_scale = self.finest_scale
 
@@ -86,12 +89,16 @@ def forward_of_single_roi_extractor_static(ctx,
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.roi_heads.SingleRoIExtractor.forward')
 @mark('roi_extractor', inputs=['feats', 'rois'], outputs=['bbox_feats'])
-def forward_of_single_roi_extractor_dynamic(ctx,
-                                            self,
-                                            feats,
-                                            rois,
-                                            roi_scale_factor=None):
-    """Rewrite `forward` for default backend."""
+def single_roi_extractor__forward(ctx,
+                                  self,
+                                  feats,
+                                  rois,
+                                  roi_scale_factor=None):
+    """Rewrite `forward` for default backend.
+
+    Add mark for roi_extractor forward. Remove unnecessary code of origin
+    forward function.
+    """
     out_size = self.roi_layers[0].output_size
     num_levels = len(feats)
     roi_feats = feats[0].new_zeros(rois.shape[0], self.out_channels, *out_size)
@@ -159,13 +166,16 @@ class SingleRoIExtractorOpenVINO(Function):
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.roi_heads.SingleRoIExtractor.forward',
     backend='openvino')
-def forward_of_single_roi_extractor_dynamic_openvino(ctx,
-                                                     self,
-                                                     feats,
-                                                     rois,
-                                                     roi_scale_factor=None):
+def single_roi_extractor__forward__openvino(ctx,
+                                            self,
+                                            feats,
+                                            rois,
+                                            roi_scale_factor=None):
     """Replaces SingleRoIExtractor with SingleRoIExtractorOpenVINO when
-    exporting to OpenVINO."""
+    exporting to OpenVINO.
+
+    This function uses ExperimentalDetectronROIFeatureExtractor for OpenVINO.
+    """
 
     # Adding original output to SingleRoIExtractorOpenVINO.
     state = torch._C._get_tracing_state()

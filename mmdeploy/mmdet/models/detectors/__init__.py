@@ -1,9 +1,9 @@
-from .base import forward_of_base_detector
-from .rpn import simple_test_of_rpn
-from .single_stage import simple_test_of_single_stage
-from .two_stage import extract_feat_of_two_stage
+from .base import base_detector__forward
+from .rpn import rpn__simple_test
+from .single_stage import single_stage__simple_test
+from .two_stage import two_stage__extract_feat
 
 __all__ = [
-    'simple_test_of_single_stage', 'extract_feat_of_two_stage',
-    'forward_of_base_detector', 'simple_test_of_rpn'
+    'single_stage__simple_test', 'two_stage__extract_feat',
+    'base_detector__forward', 'rpn__simple_test'
 ]

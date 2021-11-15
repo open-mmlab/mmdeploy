@@ -1,10 +1,8 @@
 from .single_level_roi_extractor import (
-    forward_of_single_roi_extractor_dynamic,
-    forward_of_single_roi_extractor_dynamic_openvino,
-    forward_of_single_roi_extractor_static)
+    single_roi_extractor__forward, single_roi_extractor__forward__openvino,
+    single_roi_extractor__forward__tensorrt)
 
 __all__ = [
-    'forward_of_single_roi_extractor_dynamic',
-    'forward_of_single_roi_extractor_static',
-    'forward_of_single_roi_extractor_dynamic_openvino'
+    'single_roi_extractor__forward', 'single_roi_extractor__forward__openvino',
+    'single_roi_extractor__forward__tensorrt'
 ]

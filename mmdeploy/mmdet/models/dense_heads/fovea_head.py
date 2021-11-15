@@ -6,16 +6,17 @@ from mmdeploy.utils import get_mmdet_params
 
 
 @FUNCTION_REWRITER.register_rewriter('mmdet.models.FoveaHead.get_bboxes')
-def get_bboxes_of_fovea_head(ctx,
-                             self,
-                             cls_scores,
-                             bbox_preds,
-                             img_metas,
-                             cfg=None,
-                             rescale=None):
+def fovea_head__get_bboxes(ctx,
+                           self,
+                           cls_scores,
+                           bbox_preds,
+                           img_metas,
+                           cfg=None,
+                           rescale=None):
     """Rewrite `get_bboxes` from FoveaHead for default backend.
 
-    Transform network output for a batch into bbox predictions.
+    Rewrite this function to deploy model, transform network output for a
+    batch into bbox predictions.
 
     Args:
         ctx (ContextCaller): The context with additional information.
@@ -32,12 +33,9 @@ def get_bboxes_of_fovea_head(ctx,
             Default: False.
 
     Returns:
-        tuple[Tensor, Tensor]: The first item is an (n, 5) tensor,
-            where 5 represent (tl_x, tl_y, br_x, br_y, score) and
-            the score between 0 and 1.
-            The shape of the second tensor in the tuple is (n,), and
-            each element represents the class label of the corresponding
-            box.
+        tuple[Tensor, Tensor]: tuple[Tensor, Tensor]: (dets, labels),
+            `dets` of shape [N, num_det, 5] and `labels` of shape
+            [N, num_det].
     """
     assert len(cls_scores) == len(bbox_preds)
     cfg = self.test_cfg if cfg is None else cfg

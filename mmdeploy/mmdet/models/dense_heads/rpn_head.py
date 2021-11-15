@@ -8,15 +8,41 @@ from mmdeploy.utils import (Backend, get_backend, get_mmdet_params,
 
 
 @FUNCTION_REWRITER.register_rewriter('mmdet.models.RPNHead.get_bboxes')
-def get_bboxes_of_rpn_head(ctx,
-                           self,
-                           cls_scores,
-                           bbox_preds,
-                           img_metas,
-                           with_nms=True,
-                           cfg=None,
-                           **kwargs):
-    """Rewrite `get_bboxes` for default backend."""
+def rpn_head__get_bboxes(ctx,
+                         self,
+                         cls_scores,
+                         bbox_preds,
+                         img_metas,
+                         with_nms=True,
+                         cfg=None,
+                         **kwargs):
+    """Rewrite `get_bboxes` of RPNHead for default backend.
+
+    Rewrite this function to deploy model, transform network output for a
+    batch into bbox predictions.
+
+    Args:
+        ctx (ContextCaller): The context with additional information.
+        self (FoveaHead): The instance of the class FoveaHead.
+        cls_scores (list[Tensor]): Box scores for each scale level
+            with shape (N, num_anchors * num_classes, H, W).
+        bbox_preds (list[Tensor]): Box energies / deltas for each scale
+            level with shape (N, num_anchors * 4, H, W).
+        img_metas (dict):  Meta information of the image, e.g.,
+            image size, scaling factor, etc.
+        with_nms (bool): If True, do nms before return boxes.
+            Default: True.
+        cfg (mmcv.Config | None): Test / postprocessing configuration,
+            if None, test_cfg would be used. Default: None.
+
+    Returns:
+        If with_nms == True:
+            tuple[Tensor, Tensor]: tuple[Tensor, Tensor]: (dets, labels),
+            `dets` of shape [N, num_det, 5] and `labels` of shape
+            [N, num_det].
+        Else:
+            tuple[Tensor, Tensor, Tensor]: batch_mlvl_bboxes, batch_mlvl_scores
+    """
     assert len(cls_scores) == len(bbox_preds)
     deploy_cfg = ctx.cfg
     is_dynamic_flag = is_dynamic_shape(deploy_cfg)
@@ -113,15 +139,44 @@ def get_bboxes_of_rpn_head(ctx,
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet.models.RPNHead.get_bboxes', backend='ncnn')
-def get_bboxes_of_rpn_head_ncnn(ctx,
-                                self,
-                                cls_scores,
-                                bbox_preds,
-                                img_metas,
-                                with_nms=True,
-                                cfg=None,
-                                **kwargs):
-    """Rewrite `get_bboxes` for NCNN backend."""
+def rpn_head__get_bboxes__ncnn(ctx,
+                               self,
+                               cls_scores,
+                               bbox_preds,
+                               img_metas,
+                               with_nms=True,
+                               cfg=None,
+                               **kwargs):
+    """Rewrite `get_bboxes` of RPNHead for ncnn backend.
+
+    Shape node and batch inference is not supported by ncnn. This function
+    transform dynamic shape to constant shape and remove batch inference.
+
+    Args:
+        ctx (ContextCaller): The context with additional information.
+        cls_scores (list[Tensor]): Box scores for each level in the
+            feature pyramid, has shape
+            (N, num_anchors * num_classes, H, W).
+        bbox_preds (list[Tensor]): Box energies / deltas for each
+            level in the feature pyramid, has shape
+            (N, num_anchors * 4, H, W).
+        img_metas (list[dict]): Meta information of each image, e.g.,
+            image size, scaling factor, etc.
+        with_nms (bool): If True, do nms before return boxes.
+            Default: True.
+        cfg (mmcv.Config | None): Test / postprocessing configuration,
+            if None, test_cfg would be used.
+            Default: None.
+
+
+    Returns:
+        If with_nms == True:
+            tuple[Tensor, Tensor]: tuple[Tensor, Tensor]: (dets, labels),
+            `dets` of shape [N, num_det, 5] and `labels` of shape
+            [N, num_det].
+        Else:
+            tuple[Tensor, Tensor]: batch_mlvl_bboxes, batch_mlvl_scores
+    """
     assert len(cls_scores) == len(bbox_preds)
     deploy_cfg = ctx.cfg
     assert not is_dynamic_shape(deploy_cfg)

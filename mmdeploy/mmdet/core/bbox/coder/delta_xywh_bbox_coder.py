@@ -17,7 +17,40 @@ def delta2bbox(ctx,
                clip_border=True,
                add_ctr_clamp=False,
                ctr_clamp=32):
-    """Rewrite for ONNX exporting of default backend."""
+    """Rewrite `delta2bbox` for default backend.
+
+    Since the need of clip op with dynamic min and max, this function uses
+    clip_bboxes function to support dynamic shape.
+
+    Args:
+        ctx (ContextCaller): The context with additional information.
+        rois (Tensor): Boxes to be transformed. Has shape (N, 4) or (B, N, 4)
+        deltas (Tensor): Encoded offsets with respect to each roi.
+            Has shape (B, N, num_classes * 4) or (B, N, 4) or
+            (N, num_classes * 4) or (N, 4). Note N = num_anchors * W * H
+            when rois is a grid of anchors.Offset encoding follows [1]_.
+        means (Sequence[float]): Denormalizing means for delta coordinates
+        stds (Sequence[float]): Denormalizing standard deviation for delta
+            coordinates
+        max_shape (Sequence[int] or torch.Tensor or Sequence[
+            Sequence[int]],optional): Maximum bounds for boxes, specifies
+            (H, W, C) or (H, W). If rois shape is (B, N, 4), then
+            the max_shape should be a Sequence[Sequence[int]]
+            and the length of max_shape should also be B.
+        wh_ratio_clip (float): Maximum aspect ratio for boxes.
+        clip_border (bool, optional): Whether clip the objects outside the
+            border of the image. Defaults to True.
+        add_ctr_clamp (bool): Whether to add center clamp, when added, the
+            predicted box is clamped is its center is too far away from
+            the original anchor's center. Only used by YOLOF. Default False.
+        ctr_clamp (int): the maximum pixel shift to clamp. Only used by YOLOF.
+            Default 32.
+
+    Return:
+        bboxes (Tensor): Boxes with shape (B, N, num_classes * 4) or (B, N, 4)
+            or (N, num_classes * 4) or (N, 4), where 4 represent tl_x, tl_y,
+            br_x, br_y.
+    """
     means = deltas.new_tensor(means).view(1,
                                           -1).repeat(1,
                                                      deltas.size(-1) // 4)
@@ -82,7 +115,43 @@ def delta2bbox_ncnn(ctx,
                     clip_border=True,
                     add_ctr_clamp=False,
                     ctr_clamp=32):
-    """Rewrite for ONNX exporting of NCNN backend."""
+    """Rewrite `delta2bbox` for ncnn backend.
+
+    Batch dimension is not supported by ncnn, but supported by pytorch.
+    NCNN regards the lowest two dimensions as continuous address with byte
+    alignment, so the lowest two dimensions are not absolutely independent.
+    Reshape operator with -1 arguments should operates ncnn::Mat with
+    dimension >= 3.
+
+    Args:
+        ctx (ContextCaller): The context with additional information.
+        rois (Tensor): Boxes to be transformed. Has shape (N, 4) or (B, N, 4)
+        deltas (Tensor): Encoded offsets with respect to each roi.
+            Has shape (B, N, num_classes * 4) or (B, N, 4) or
+            (N, num_classes * 4) or (N, 4). Note N = num_anchors * W * H
+            when rois is a grid of anchors.Offset encoding follows [1]_.
+        means (Sequence[float]): Denormalizing means for delta coordinates
+        stds (Sequence[float]): Denormalizing standard deviation for delta
+            coordinates
+        max_shape (Sequence[int] or torch.Tensor or Sequence[
+            Sequence[int]],optional): Maximum bounds for boxes, specifies
+            (H, W, C) or (H, W). If rois shape is (B, N, 4), then
+            the max_shape should be a Sequence[Sequence[int]]
+            and the length of max_shape should also be B.
+        wh_ratio_clip (float): Maximum aspect ratio for boxes.
+        clip_border (bool, optional): Whether clip the objects outside the
+            border of the image. Defaults to True.
+        add_ctr_clamp (bool): Whether to add center clamp, when added, the
+            predicted box is clamped is its center is too far away from
+            the original anchor's center. Only used by YOLOF. Default False.
+        ctr_clamp (int): the maximum pixel shift to clamp. Only used by YOLOF.
+            Default 32.
+
+    Return:
+        bboxes (Tensor): Boxes with shape (B, N, num_classes * 4) or (B, N, 4)
+            or (N, num_classes * 4) or (N, 4), where 4 represent tl_x, tl_y,
+            br_x, br_y.
+    """
     means = deltas.new_tensor(means).view(1, 1,
                                           -1).repeat(1, deltas.size(-2),
                                                      deltas.size(-1) // 4).data

@@ -6,9 +6,31 @@ from mmdeploy.core import FUNCTION_REWRITER
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.roi_heads.test_mixins.\
      BBoxTestMixin.simple_test_bboxes')
-def simple_test_bboxes_of_bbox_test_mixin(ctx, self, x, img_metas, proposals,
-                                          rcnn_test_cfg, **kwargs):
-    """Rewrite `simple_test_bboxes` for default backend."""
+def bbox_test_mixin__simple_test_bboxes(ctx, self, x, img_metas, proposals,
+                                        rcnn_test_cfg, **kwargs):
+    """Rewrite `simple_test_bboxes` for default backend.
+
+    1. This function eliminates the batch dimension to get forward bbox
+    results, and recover batch dimension to calculate final result
+    for deployment.
+    2. This function returns detection result as Tensor instead of numpy
+    array.
+
+    Args:
+        ctx (ContextCaller): The context with additional information.
+        self: The instance of the original class.
+        x (tuple[Tensor]): Features from upstream network. Each
+            has shape (batch_size, c, h, w).
+        img_metas (list[dict]): Meta information of images.
+        proposals (list(Tensor)): Proposals from rpn head.
+            Each has shape (num_proposals, 5), last dimension
+            5 represent (x1, y1, x2, y2, score).
+        rcnn_test_cfg (obj:`ConfigDict`): `test_cfg` of R-CNN.
+
+    Returns:
+        tuple[Tensor, Tensor]: (det_bboxes, det_labels), `det_bboxes` of
+        shape [N, num_det, 5] and `det_labels` of shape [N, num_det].
+    """
     rois = proposals
     batch_index = torch.arange(
         rois.shape[0], device=rois.device).float().view(-1, 1, 1).expand(
@@ -38,9 +60,28 @@ def simple_test_bboxes_of_bbox_test_mixin(ctx, self, x, img_metas, proposals,
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.roi_heads.test_mixins.\
     MaskTestMixin.simple_test_mask')
-def simple_test_mask_of_mask_test_mixin(ctx, self, x, img_metas, det_bboxes,
-                                        det_labels, **kwargs):
-    """Rewrite `simple_test_mask` for default backend."""
+def mask_test_mixin__simple_test_mask(ctx, self, x, img_metas, det_bboxes,
+                                      det_labels, **kwargs):
+    """Rewrite `simple_test_mask` for default backend.
+
+    This function returns detection result as Tensor instead of numpy
+    array.
+
+    Args:
+        ctx (ContextCaller): The context with additional information.
+        self: The instance of the original class.
+        x (tuple[Tensor]): Features from upstream network. Each
+            has shape (batch_size, c, h, w).
+        img_metas (list[dict]): Meta information of images.
+        det_bboxes (tuple[Tensor]): Detection bounding-boxes from features.
+        Each has shape of (batch_size, num_det, 5).
+        det_labels (tuple[Tensor]): Detection labels from features. Each
+        has shape of (batch_size, num_det).
+
+    Returns:
+        tuple[Tensor]: (segm_results), `segm_results` of shape
+        [N, num_det, roi_H, roi_W].
+    """
     if det_bboxes.shape[1] == 0:
         bboxes_shape, labels_shape = list(det_bboxes.shape), list(
             det_labels.shape)

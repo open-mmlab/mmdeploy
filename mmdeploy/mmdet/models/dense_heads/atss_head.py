@@ -6,18 +6,19 @@ from mmdeploy.utils import get_mmdet_params
 
 
 @FUNCTION_REWRITER.register_rewriter('mmdet.models.ATSSHead.get_bboxes')
-def get_bboxes_of_atss_head(ctx,
-                            self,
-                            cls_scores,
-                            bbox_preds,
-                            centernesses,
-                            img_metas,
-                            cfg=None,
-                            rescale=False,
-                            with_nms=True):
+def atss_head__get_bboxes(ctx,
+                          self,
+                          cls_scores,
+                          bbox_preds,
+                          centernesses,
+                          img_metas,
+                          cfg=None,
+                          rescale=False,
+                          with_nms=True):
     """Rewrite `get_bboxes` from ATSSHead for default backend.
 
-    Transform network output for a batch into bbox predictions.
+    Rewrite this function to deploy model, transform network output for a
+    batch into bbox predictions.
 
     Args:
         ctx (ContextCaller): The context with additional information.
@@ -39,12 +40,9 @@ def get_bboxes_of_atss_head(ctx,
 
     Returns:
         If with_nms == True:
-            tuple[Tensor, Tensor]: The first item is an (n, 5) tensor,
-                where 5 represent (tl_x, tl_y, br_x, br_y, score) and
-                the score between 0 and 1.
-                The shape of the second tensor in the tuple is (n,), and
-                each element represents the class label of the corresponding
-                box.
+            tuple[Tensor, Tensor]: tuple[Tensor, Tensor]: (dets, labels),
+            `dets` of shape [N, num_det, 5] and `labels` of shape
+            [N, num_det].
         Else:
             tuple[Tensor, Tensor, Tensor]: batch_mlvl_bboxes,
                 batch_mlvl_scores, batch_mlvl_centerness

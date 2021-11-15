@@ -14,16 +14,53 @@ from mmdeploy.utils import get_mmdet_params
     'bbox_head_forward',
     inputs=['bbox_feats'],
     outputs=['cls_score', 'bbox_pred'])
-def forward_of_bbox_head(ctx, self, x):
-    """Rewrite `forward` for default backend."""
+def bbox_head__forward(ctx, self, x):
+    """Rewrite `forward` for default backend.
+
+    This function uses the specific `forward` function for the BBoxHead
+    or ConvFCBBoxHead after adding marks.
+
+    Args:
+        ctx (ContextCaller): The context with additional information.
+        self: The instance of the original class.
+        x (Tensor): Input image tensor.
+
+    Returns:
+        tuple(Tensor, Tensor): The (cls_score, bbox_pred). The cls_score
+        has shape (N, num_det, num_cls) and the bbox_pred has shape
+        (N, num_det, 4).
+    """
     return ctx.origin_func(self, x)
 
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.roi_heads.BBoxHead.get_bboxes')
-def get_bboxes_of_bbox_head(ctx, self, rois, cls_score, bbox_pred, img_shape,
-                            cfg, **kwargs):
-    """Rewrite `get_bboxes` for default backend."""
+def bbox_head__get_bboxes(ctx, self, rois, cls_score, bbox_pred, img_shape,
+                          cfg, **kwargs):
+    """Rewrite `get_bboxes` for default backend.
+
+    Transform network output for a batch into bbox predictions. Support
+    `reg_class_agnostic == False` case.
+
+    Args:
+        ctx (ContextCaller): The context with additional information.
+        self (ATSSHead): The instance of the class ATSSHead.
+        rois (Tensor): Boxes to be transformed. Has shape (num_boxes, 5).
+            last dimension 5 arrange as (batch_index, x1, y1, x2, y2).
+        cls_score (Tensor): Box scores, has shape
+            (num_boxes, num_classes + 1).
+        bbox_pred (Tensor, optional): Box energies / deltas.
+            has shape (num_boxes, num_classes * 4).
+        img_shape (Sequence[int], optional): Maximum bounds for boxes,
+            specifies (H, W, C) or (H, W).
+        cfg (obj:`ConfigDict`): `test_cfg` of Bbox Head. Default: None
+
+
+    Returns:
+        tuple[Tensor, Tensor]: tuple[Tensor, Tensor]: (dets, labels),
+        `dets` of shape [N, num_det, 5] and `labels` of shape
+        [N, num_det].
+    """
     assert rois.ndim == 3, 'Only support export two stage ' \
                            'model to ONNX ' \
                            'with batch dimension. '

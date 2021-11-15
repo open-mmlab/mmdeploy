@@ -6,8 +6,13 @@ from mmdeploy.utils import is_dynamic_shape
 
 @mark(
     'detector_forward', inputs=['input'], outputs=['dets', 'labels', 'masks'])
-def _forward_of_base_detector_impl(ctx, self, img, img_metas=None, **kwargs):
-    """Rewrite and adding mark for `forward`."""
+def _base_detector__forward_impl(ctx, self, img, img_metas=None, **kwargs):
+    """Rewrite and adding mark for `forward`.
+
+    Encapsulate this function for rewriting `forward` of BaseDetector.
+    1. Add mark for BaseDetector.
+    2. Support both dynamic and static export to onnx.
+    """
     assert isinstance(img_metas, dict)
     assert isinstance(img, torch.Tensor)
 
@@ -23,8 +28,31 @@ def _forward_of_base_detector_impl(ctx, self, img, img_metas=None, **kwargs):
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.BaseDetector.forward')
-def forward_of_base_detector(ctx, self, img, img_metas=None, **kwargs):
-    """Rewrite `forward` for default backend."""
+def base_detector__forward(ctx, self, img, img_metas=None, **kwargs):
+    """Rewrite `forward` of BaseDetector for default backend.
+
+    Rewrite this function to:
+    1. Create img_metas for exporting model to onnx.
+    2. Call `simple_test` directly to skip `aug_test`.
+    3. Remove `return_loss` because deployment has no need for training
+    functions.
+
+    Args:
+        ctx (ContextCaller): The context with additional information.
+        self: The instance of the class BaseDetector.
+        img (Tensor): Input images of shape (N, C, H, W).
+            Typically these should be mean centered and std scaled.
+        img_metas (Optional[list[dict]]): A list of image info dict where each
+            dict has: 'img_shape', 'scale_factor', 'flip', and may also contain
+            'filename', 'ori_shape', 'pad_shape', and 'img_norm_cfg'.
+            For details on the values of these keys, see
+            :class:`mmdet.datasets.pipelines.Collect`.
+
+    Returns:
+        list[list[np.ndarray]]: BBox results of each image and classes.
+                The outer list corresponds to each image. The inner list
+                corresponds to each class.
+    """
     if img_metas is None:
         img_metas = {}
 
@@ -36,5 +64,5 @@ def forward_of_base_detector(ctx, self, img, img_metas=None, **kwargs):
 
     if 'return_loss' in kwargs:
         kwargs.pop('return_loss')
-    return _forward_of_base_detector_impl(
+    return _base_detector__forward_impl(
         ctx, self, img, img_metas=img_metas, **kwargs)

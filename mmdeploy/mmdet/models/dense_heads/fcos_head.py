@@ -9,16 +9,48 @@ from mmdeploy.utils import (Backend, get_backend, get_mmdet_params,
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.FCOSHead.get_bboxes')
-def get_bboxes_of_fcos_head(ctx,
-                            self,
-                            cls_scores,
-                            bbox_preds,
-                            centernesses,
-                            img_metas,
-                            with_nms=True,
-                            cfg=None,
-                            **kwargs):
-    """Rewrite `get_bboxes` for default backend."""
+def fcos_head__get_bboxes(ctx,
+                          self,
+                          cls_scores,
+                          bbox_preds,
+                          centernesses,
+                          img_metas,
+                          with_nms=True,
+                          cfg=None,
+                          **kwargs):
+    """Rewrite `get_bboxes` of FCOSHead for default backend.
+
+    Rewrite this function to support deployment of default backend
+    and dynamic shape export. Transform network output for a batch into
+    bbox predictions.
+
+    Args:
+        ctx (ContextCaller): The context with additional information.
+        self (ATSSHead): The instance of the class ATSSHead.
+        cls_scores (list[Tensor]): Box scores for each scale level
+            with shape (N, num_anchors * num_classes, H, W).
+        bbox_preds (list[Tensor]): Box energies / deltas for each scale
+            level with shape (N, num_anchors * 4, H, W).
+        centernesses (list[Tensor]): Centerness for each scale level with
+            shape (N, num_anchors * 1, H, W).
+        img_metas (dict): Meta information of the image, e.g.,
+            image size, scaling factor, etc.
+        with_nms (bool): If True, do nms before return boxes.
+            Default: True.
+        cfg (mmcv.Config | None): Test / postprocessing configuration,
+            if None, test_cfg would be used. Default: None.
+
+
+    Returns:
+        If with_nms == True:
+            tuple[Tensor, Tensor]: tuple[Tensor, Tensor]: (dets, labels),
+            `dets` of shape [N, num_det, 5] and `labels` of shape
+            [N, num_det].
+        Else:
+            tuple[Tensor, Tensor, Tensor]: batch_mlvl_bboxes,
+                batch_mlvl_scores, batch_mlvl_centerness
+    """
+
     assert len(cls_scores) == len(bbox_preds)
     deploy_cfg = ctx.cfg
     is_dynamic_flag = is_dynamic_shape(deploy_cfg)
@@ -111,16 +143,49 @@ def get_bboxes_of_fcos_head(ctx,
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.FCOSHead.get_bboxes', backend='ncnn')
-def get_bboxes_of_fcos_head_ncnn(ctx,
-                                 self,
-                                 cls_scores,
-                                 bbox_preds,
-                                 centernesses,
-                                 img_metas,
-                                 with_nms=True,
-                                 cfg=None,
-                                 **kwargs):
-    """Rewrite `get_bboxes` for NCNN backend."""
+def fcos_head__get_bboxes__ncnn(ctx,
+                                self,
+                                cls_scores,
+                                bbox_preds,
+                                centernesses,
+                                img_metas,
+                                with_nms=True,
+                                cfg=None,
+                                **kwargs):
+    """Rewrite `get_bboxes` of FCOSHead for ncnn backend.
+
+    1. Shape node and batch inference is not supported by ncnn. This function
+    transform dynamic shape to constant shape and remove batch inference.
+    2. 2-dimension tensor broadcast of `BinaryOps` operator is not supported by
+    ncnn. This function unsqueeze 2-dimension tensor to 3-dimension tensor for
+    correct `BinaryOps` calculation by ncnn.
+
+    Args:
+        ctx (ContextCaller): The context with additional information.
+        self (ATSSHead): The instance of the class ATSSHead.
+        cls_scores (list[Tensor]): Box scores for each scale level
+            with shape (N, num_anchors * num_classes, H, W).
+        bbox_preds (list[Tensor]): Box energies / deltas for each scale
+            level with shape (N, num_anchors * 4, H, W).
+        centernesses (list[Tensor]): Centerness for each scale level with
+            shape (N, num_anchors * 1, H, W).
+        img_metas (dict): Meta information of the image, e.g.,
+            image size, scaling factor, etc.
+        with_nms (bool): If True, do nms before return boxes.
+            Default: True.
+        cfg (mmcv.Config | None): Test / postprocessing configuration,
+            if None, test_cfg would be used. Default: None.
+
+
+    Returns:
+        If with_nms == True:
+            tuple[Tensor, Tensor]: tuple[Tensor, Tensor]: (dets, labels),
+            `dets` of shape [N, num_det, 5] and `labels` of shape
+            [N, num_det].
+        Else:
+            tuple[Tensor, Tensor, Tensor]: batch_mlvl_bboxes,
+                batch_mlvl_scores, batch_mlvl_centerness
+    """
     assert len(cls_scores) == len(bbox_preds)
     deploy_cfg = ctx.cfg
     assert not is_dynamic_shape(deploy_cfg)

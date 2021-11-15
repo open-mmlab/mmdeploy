@@ -1,3 +1,3 @@
-from .fcn_mask_head import get_seg_masks_of_fcn_mask_head
+from .fcn_mask_head import fcn_mask_head__get_seg_masks
 
-__all__ = ['get_seg_masks_of_fcn_mask_head']
+__all__ = ['fcn_mask_head__get_seg_masks']

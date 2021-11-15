@@ -7,18 +7,19 @@ from mmdeploy.utils import get_mmdet_params
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.YOLOXHead.get_bboxes')
-def get_bboxes_of_yolox_head(ctx,
-                             self,
-                             cls_scores,
-                             bbox_preds,
-                             objectnesses,
-                             img_metas=None,
-                             cfg=None,
-                             rescale=False,
-                             with_nms=True):
-    """Rewrite `get_bboxes` for default backend.
+def yolox_head__get_bboxes(ctx,
+                           self,
+                           cls_scores,
+                           bbox_preds,
+                           objectnesses,
+                           img_metas=None,
+                           cfg=None,
+                           rescale=False,
+                           with_nms=True):
+    """Rewrite `get_bboxes` of YOLOXHead for default backend.
 
-    Transform network outputs of a batch into bbox results.
+    Rewrite this function to deploy model, transform network output for a
+    batch into bbox predictions.
 
     Args:
         ctx: Context that contains original meta information.
@@ -39,6 +40,7 @@ def get_bboxes_of_yolox_head(ctx,
             Default False.
         with_nms (bool): If True, do nms before return boxes.
             Default True.
+
     Returns:
         tuple[Tensor, Tensor]: The first item is an (N, num_box, 5) tensor,
             where 5 represent (tl_x, tl_y, br_x, br_y, score), N is batch

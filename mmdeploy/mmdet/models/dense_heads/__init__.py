@@ -1,14 +1,14 @@
-from .anchor_head import get_bboxes_of_anchor_head
-from .atss_head import get_bboxes_of_atss_head
-from .fcos_head import get_bboxes_of_fcos_head
-from .fovea_head import get_bboxes_of_fovea_head
-from .rpn_head import get_bboxes_of_rpn_head
+from .anchor_head import anchor_head__get_bboxes
+from .atss_head import atss_head__get_bboxes
+from .fcos_head import fcos_head__get_bboxes
+from .fovea_head import fovea_head__get_bboxes
+from .rpn_head import rpn_head__get_bboxes
 from .yolo_head import yolov3_head__get_bboxes, yolov3_head__get_bboxes__ncnn
-from .yolox_head import get_bboxes_of_yolox_head
+from .yolox_head import yolox_head__get_bboxes
 
 __all__ = [
-    'get_bboxes_of_anchor_head', 'get_bboxes_of_fcos_head',
-    'get_bboxes_of_rpn_head', 'get_bboxes_of_fovea_head',
-    'get_bboxes_of_atss_head', 'yolov3_head__get_bboxes',
-    'yolov3_head__get_bboxes__ncnn', 'get_bboxes_of_yolox_head'
+    'anchor_head__get_bboxes', 'atss_head__get_bboxes',
+    'fcos_head__get_bboxes', 'fovea_head__get_bboxes', 'rpn_head__get_bboxes',
+    'yolov3_head__get_bboxes', 'yolov3_head__get_bboxes__ncnn',
+    'yolox_head__get_bboxes'
 ]

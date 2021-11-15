@@ -563,7 +563,7 @@ class PartitionTwoStageDetector(DeployBaseDetector):
         from mmdet.models.builder import build_head, build_roi_extractor
 
         from mmdeploy.mmdet.models.roi_heads.bbox_heads import \
-            get_bboxes_of_bbox_head
+            bbox_head__get_bboxes
 
         # load cfg if necessary
         deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
@@ -580,7 +580,7 @@ class PartitionTwoStageDetector(DeployBaseDetector):
 
         ctx = Context()
         ctx.cfg = self.deploy_cfg
-        self.get_bboxes_of_bbox_head = partial(get_bboxes_of_bbox_head, ctx)
+        self.bbox_head__get_bboxes = partial(bbox_head__get_bboxes, ctx)
 
     def partition0_postprocess(self, x: Sequence[torch.Tensor],
                                scores: torch.Tensor, bboxes: torch.Tensor):
@@ -656,10 +656,10 @@ class PartitionTwoStageDetector(DeployBaseDetector):
                                       bbox_pred.size(-1))
 
         rcnn_test_cfg = self.model_cfg.model.test_cfg.rcnn
-        return self.get_bboxes_of_bbox_head(self.bbox_head, rois, cls_score,
-                                            bbox_pred,
-                                            img_metas[0][0]['img_shape'],
-                                            rcnn_test_cfg)
+        return self.bbox_head__get_bboxes(self.bbox_head, rois, cls_score,
+                                          bbox_pred,
+                                          img_metas[0][0]['img_shape'],
+                                          rcnn_test_cfg)
 
 
 class ONNXRuntimePTSDetector(PartitionTwoStageDetector):

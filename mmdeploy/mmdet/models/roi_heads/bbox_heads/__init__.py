@@ -1,3 +1,3 @@
-from .bbox_head import get_bboxes_of_bbox_head
+from .bbox_head import bbox_head__get_bboxes
 
-__all__ = ['get_bboxes_of_bbox_head']
+__all__ = ['bbox_head__get_bboxes']

@@ -13,7 +13,34 @@ def tblr2bboxes(ctx,
                 normalize_by_wh=True,
                 max_shape=None,
                 clip_border=True):
-    """Rewrite for ONNX exporting of default backend."""
+    """Rewrite `tblr2bboxes` for default backend.
+
+    Since the need of clip op with dynamic min and max, this function uses
+    clip_bboxes function to support dynamic shape.
+
+    Args:
+        ctx (ContextCaller): The context with additional information.
+        priors (Tensor): Prior boxes in point form (x0, y0, x1, y1)
+          Shape: (N,4) or (B, N, 4).
+        tblr (Tensor): Coords of network output in tblr form
+          Shape: (N, 4) or (B, N, 4).
+        normalizer (Sequence[float] | float): Normalization parameter of
+          encoded boxes. By list, it represents the normalization factors at
+          tblr dims. By float, it is the unified normalization factor at all
+          dims. Default: 4.0
+        normalize_by_wh (bool): Whether the tblr coordinates have been
+          normalized by the side length (wh) of prior bboxes.
+        max_shape (Sequence[int] or torch.Tensor or Sequence[
+            Sequence[int]],optional): Maximum bounds for boxes, specifies
+            (H, W, C) or (H, W). If priors shape is (B, N, 4), then
+            the max_shape should be a Sequence[Sequence[int]]
+            and the length of max_shape should also be B.
+        clip_border (bool, optional): Whether clip the objects outside the
+            border of the image. Defaults to True.
+
+    Return:
+        bboxes (Tensor): Boxes with shape (N, 4) or (B, N, 4)
+    """
     if not isinstance(normalizer, float):
         normalizer = torch.tensor(normalizer, device=priors.device)
         assert len(normalizer) == 4, 'Normalizer must have length = 4'
@@ -55,7 +82,35 @@ def tblr2bboxes_ncnn(ctx,
                      normalize_by_wh=True,
                      max_shape=None,
                      clip_border=True):
-    """Rewrite for ONNX exporting of NCNN backend."""
+    """Rewrite `tblr2bboxes` for ncnn backend.
+
+    Batch dimension is not supported by ncnn, but supported by pytorch.
+    The negative value of axis in torch.cat is rewritten as corresponding
+    positive value to avoid axis shift.
+
+     Args:
+        ctx (ContextCaller): The context with additional information.
+        priors (Tensor): Prior boxes in point form (x0, y0, x1, y1)
+          Shape: (N,4) or (B, N, 4).
+        tblr (Tensor): Coords of network output in tblr form
+          Shape: (N, 4) or (B, N, 4).
+        normalizer (Sequence[float] | float): Normalization parameter of
+          encoded boxes. By list, it represents the normalization factors at
+          tblr dims. By float, it is the unified normalization factor at all
+          dims. Default: 4.0
+        normalize_by_wh (bool): Whether the tblr coordinates have been
+          normalized by the side length (wh) of prior bboxes.
+        max_shape (Sequence[int] or torch.Tensor or Sequence[
+            Sequence[int]],optional): Maximum bounds for boxes, specifies
+            (H, W, C) or (H, W). If priors shape is (B, N, 4), then
+            the max_shape should be a Sequence[Sequence[int]]
+            and the length of max_shape should also be B.
+        clip_border (bool, optional): Whether clip the objects outside the
+            border of the image. Defaults to True.
+
+    Return:
+        bboxes (Tensor): Boxes with shape (N, 4) or (B, N, 4)
+    """
     assert priors.size(0) == tblr.size(0)
     if priors.ndim == 3:
         assert priors.size(1) == tblr.size(1)

@@ -7,10 +7,11 @@ from mmdeploy.utils import Backend, get_backend, get_mmdet_params
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.roi_heads.FCNMaskHead.get_seg_masks')
-def get_seg_masks_of_fcn_mask_head(ctx, self, mask_pred, det_bboxes,
-                                   det_labels, rcnn_test_cfg, ori_shape,
-                                   **kwargs):
+def fcn_mask_head__get_seg_masks(ctx, self, mask_pred, det_bboxes, det_labels,
+                                 rcnn_test_cfg, ori_shape, **kwargs):
     """Get segmentation masks from mask_pred and bboxes.
+
+    Rewrite the get_seg_masks for only fcn_mask_head inference.
 
     Args:
         mask_pred (Tensor): shape (n, #class, h, w).
