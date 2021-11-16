@@ -100,6 +100,7 @@ The table below lists the models that are guaranteed to be exportable to other b
 | ATSS               | MMDetection      |      Y      |    ?     |  ?   |  ?  |    Y     | $MMDET_DIR/configs/atss/atss_r50_fpn_1x_coco.py                                       |
 | Cascade R-CNN      | MMDetection      |      Y      |    ?     |  ?   |  Y  |    Y     | $MMDET_DIR/configs/cascade_rcnn/cascade_rcnn_r50_fpn_1x_coco.py                       |
 | Cascade Mask R-CNN | MMDetection      |      Y      |    ?     |  ?   |  Y  |    Y     | $MMDET_DIR/configs/cascade_rcnn/cascade_mask_rcnn_r50_fpn_1x_coco.py                  |
+| VFNet              | MMDetection      |      Y      |    ?     |  ?   |  ?  |    Y     | $MMDET_DIR/configs/vfnet/vfnet_r50_fpn_1x_coco.py                                     |
 | ResNet             | MMClassification |      Y      |    Y     |  Y   |  Y  |    N     | $MMCLS_DIR/configs/resnet/resnet18_b32x8_imagenet.py                                  |
 | ResNeXt            | MMClassification |      Y      |    Y     |  Y   |  Y  |    N     | $MMCLS_DIR/configs/resnext/resnext50_32x4d_b32x8_imagenet.py                          |
 | SE-ResNet          | MMClassification |      Y      |    Y     |  Y   |  Y  |    N     | $MMCLS_DIR/configs/seresnet/seresnet50_b32x8_imagenet.py                              |

@@ -46,3 +46,48 @@ def test_ONNXNMSop(iou_threshold, score_threshold, max_output_boxes_per_class):
             opset_version=11)
     model = onnx.load(onnx_file_path)
     assert model.graph.node[3].op_type == 'NonMaxSuppression'
+
+
+def test_deform_conv_openvino():
+    pytest.importorskip('openvino', reason='requires openvino')
+    input = torch.Tensor([[[[1., 2., 3.], [0., 1., 2.], [3., 5., 2.]]]])
+    offset = torch.Tensor([[[[1.7000, 2.9000], [3.4000, 4.8000]],
+                            [[1.1000, 2.0000], [2.1000, 1.9000]],
+                            [[3.1000, 5.1000], [5.9000, 4.9000]],
+                            [[2.0000, 4.1000], [4.0000, 6.6000]],
+                            [[1.6000, 2.7000], [3.8000, 3.1000]],
+                            [[2.5000, 4.3000], [4.2000, 5.3000]],
+                            [[1.7000, 3.3000], [3.6000, 4.5000]],
+                            [[1.7000, 3.4000], [5.2000, 6.1000]]]])
+    expected_output = torch.Tensor([[[[1.6500, 0.0000], [0.0000, 0.0000]]]])
+    from mmcv.ops.deform_conv import DeformConv2dFunction
+
+    def wrapped_function(input, offset):
+        weight = torch.Tensor([[[[0.4000, 0.2000], [0.1000, 0.9000]]]])
+        stride = (1, 1)
+        padding = (0, 0)
+        dilation = (1, 1)
+        groups = 1
+        deform_groups = 1
+        return DeformConv2dFunction.apply(input, offset, weight, stride,
+                                          padding, dilation, groups,
+                                          deform_groups)
+
+    wrapped_model = WrapFunction(wrapped_function).eval()
+
+    model_output = wrapped_model(input, offset)
+
+    assert torch.allclose(expected_output, model_output)
+    onnx_file_path = tempfile.NamedTemporaryFile().name
+    with RewriterContext({}, backend='openvino'), torch.no_grad():
+        torch.onnx.export(
+            wrapped_model, (input, offset),
+            onnx_file_path,
+            export_params=True,
+            keep_initializers_as_inputs=True,
+            input_names=['input', 'offset'],
+            output_names=['result'],
+            opset_version=11)
+    model = onnx.load(onnx_file_path)
+    assert model.graph.node[1].op_type == 'DeformableConv2D'
+    assert model.graph.node[1].domain == 'org.openvinotoolkit'

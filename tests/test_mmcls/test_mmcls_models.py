@@ -94,7 +94,7 @@ def test_shufflenetv2_backbone__forward(backend_type):
         deploy_cfg = mmcv.Config(
             dict(
                 backend_config=dict(type=backend_type),
-                onnx_config=dict(input_shape=None),
+                onnx_config=dict(input_shape=None, output_names=['output']),
                 codebase_config=dict(type='mmcls', task='Classification')))
 
     imgs = torch.rand((1, 16, 28, 28))

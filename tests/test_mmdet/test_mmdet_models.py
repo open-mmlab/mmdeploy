@@ -3,6 +3,7 @@ import importlib
 import os
 import random
 import tempfile
+from typing import Dict, List
 
 import mmcv
 import numpy as np
@@ -25,6 +26,18 @@ def seed_everything(seed=1029):
         torch.backends.cudnn.benchmark = False
         torch.backends.cudnn.deterministic = True
         torch.backends.cudnn.enabled = False
+
+
+def convert_to_list(rewrite_output: Dict, output_names: List[str]) -> List:
+    """Converts output from a dictionary to a list.
+
+    The new list will contain only those output values, whose names are in list
+    'output_names'.
+    """
+    outputs = [
+        value for name, value in rewrite_output.items() if name in output_names
+    ]
+    return outputs
 
 
 def get_anchor_head_model():
@@ -152,10 +165,7 @@ def test_anchor_head_get_bboxes(backend_type):
 
     if is_backend_output:
         if isinstance(rewrite_outputs, dict):
-            rewrite_outputs = [
-                value for name, value in rewrite_outputs.items()
-                if name in output_names
-            ]
+            rewrite_outputs = convert_to_list(rewrite_outputs, output_names)
         for model_output, rewrite_output in zip(model_outputs[0],
                                                 rewrite_outputs):
             model_output = model_output.squeeze().cpu().numpy()
@@ -507,10 +517,8 @@ def test_cascade_roi_head(backend_type):
         deploy_cfg=deploy_cfg)
     processed_backend_outputs = []
     if isinstance(backend_outputs, dict):
-        processed_backend_outputs = [
-            backend_outputs[name] for name in output_names
-            if name in backend_outputs
-        ]
+        processed_backend_outputs = convert_to_list(backend_outputs,
+                                                    output_names)
     elif isinstance(backend_outputs, (list, tuple)) and \
             backend_outputs[0].shape == (1, 0, 5):
         processed_backend_outputs = np.zeros((1, 80, 5))
@@ -601,10 +609,7 @@ def test_get_bboxes_of_fovea_head(backend_type):
         deploy_cfg=deploy_cfg)
     if is_backend_output:
         if isinstance(rewrite_outputs, dict):
-            rewrite_outputs = [
-                value for name, value in rewrite_outputs.items()
-                if name in output_names
-            ]
+            rewrite_outputs = convert_to_list(rewrite_outputs, output_names)
         for model_output, rewrite_output in zip(model_outputs[0],
                                                 rewrite_outputs):
             model_output = model_output.squeeze().cpu().numpy()
@@ -716,10 +721,7 @@ def test_get_bboxes_of_atss_head(backend_type):
         deploy_cfg=deploy_cfg)
     if is_backend_output:
         if isinstance(rewrite_outputs, dict):
-            rewrite_outputs = [
-                value for name, value in rewrite_outputs.items()
-                if name in output_names
-            ]
+            rewrite_outputs = convert_to_list(rewrite_outputs, output_names)
         for model_output, rewrite_output in zip(model_outputs[0],
                                                 rewrite_outputs):
             model_output = model_output.squeeze().cpu().numpy()
@@ -863,10 +865,7 @@ def test_yolov3_head_get_bboxes(backend_type):
 
     if is_backend_output:
         if isinstance(rewrite_outputs, dict):
-            rewrite_outputs = [
-                value for name, value in rewrite_outputs.items()
-                if name in output_names
-            ]
+            rewrite_outputs = convert_to_list(rewrite_outputs, output_names)
         for model_output, rewrite_output in zip(model_outputs[0],
                                                 rewrite_outputs):
             model_output = model_output.squeeze().cpu().numpy()
@@ -965,10 +964,7 @@ def test_yolox_head_get_bboxes(backend_type):
 
     if is_backend_output:
         if isinstance(rewrite_outputs, dict):
-            rewrite_outputs = [
-                value for name, value in rewrite_outputs.items()
-                if name in output_names
-            ]
+            rewrite_outputs = convert_to_list(rewrite_outputs, output_names)
         for model_output, rewrite_output in zip(model_outputs[0],
                                                 rewrite_outputs):
             model_output = model_output.squeeze().cpu().numpy()
@@ -976,6 +972,134 @@ def test_yolox_head_get_bboxes(backend_type):
             # hard code to make two tensors with the same shape
             # rewrite and original codes applied different nms strategy
             min_shape = min(model_output.shape[0], rewrite_output.shape[0], 20)
+            assert np.allclose(
+                model_output[:min_shape],
+                rewrite_output[:min_shape],
+                rtol=1e-03,
+                atol=1e-05)
+    else:
+        assert rewrite_outputs is not None
+
+
+def get_vfnet_head_model():
+    """VFNet Head Config."""
+    test_cfg = mmcv.Config(
+        dict(
+            deploy_nms_pre=0,
+            min_bbox_size=0,
+            score_thr=0.05,
+            nms=dict(type='nms', iou_threshold=0.5),
+            max_per_img=100))
+    from mmdet.models import VFNetHead
+    model = VFNetHead(num_classes=4, in_channels=1, test_cfg=test_cfg)
+
+    model.requires_grad_(False)
+    model.cpu().eval()
+    return model
+
+
+@pytest.mark.parametrize('backend_type', ['openvino'])
+def test_get_bboxes_of_vfnet_head(backend_type):
+    """Test get_bboxes rewrite of VFNet head."""
+    pytest.importorskip(backend_type, reason=f'requires {backend_type}')
+
+    class TestModel(torch.nn.Module):
+        """Stub for VFNetHead with fake bbox_preds operations.
+
+        Then bbox_preds will be one of the inputs to the ONNX graph.
+        """
+
+        def __init__(self, vfnet_head):
+            super().__init__()
+            self.vfnet_head = vfnet_head
+
+        def get_bboxes(self,
+                       cls_scores,
+                       bbox_preds,
+                       bbox_preds_refine,
+                       img_metas,
+                       cfg=None,
+                       rescale=None,
+                       with_nms=True):
+            tmp_bbox_pred_refine = []
+            for bbox_pred, bbox_pred_refine in zip(bbox_preds,
+                                                   bbox_preds_refine):
+                tmp = bbox_pred_refine + bbox_pred
+                tmp = tmp - bbox_pred
+                tmp_bbox_pred_refine.append(tmp)
+            bbox_preds_refine = tmp_bbox_pred_refine
+            return self.vfnet_head.get_bboxes(cls_scores, bbox_preds,
+                                              bbox_preds_refine, img_metas,
+                                              cfg, rescale, with_nms)
+
+    test_model = TestModel(get_vfnet_head_model())
+    test_model.requires_grad_(False)
+    test_model.cpu().eval()
+
+    s = 16
+    img_metas = [{
+        'scale_factor': np.ones(4),
+        'pad_shape': (s, s, 3),
+        'img_shape': (s, s, 3)
+    }]
+    output_names = ['dets', 'labels']
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(type=backend_type),
+            onnx_config=dict(output_names=output_names, input_shape=None),
+            codebase_config=dict(
+                type='mmdet',
+                task='ObjectDetection',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    iou_threshold=0.5,
+                    max_output_boxes_per_class=200,
+                    pre_top_k=-1,
+                    keep_top_k=100,
+                    background_label_id=-1,
+                ))))
+
+    seed_everything(1234)
+    cls_score = [
+        torch.rand(1, test_model.vfnet_head.num_classes, pow(2, i), pow(2, i))
+        for i in range(5, 0, -1)
+    ]
+    seed_everything(5678)
+    bboxes = [torch.rand(1, 4, pow(2, i), pow(2, i)) for i in range(5, 0, -1)]
+    seed_everything(9101)
+    bbox_preds_refine = [
+        torch.rand(1, 4, pow(2, i), pow(2, i)) for i in range(5, 0, -1)
+    ]
+
+    model_inputs = {
+        'cls_scores': cls_score,
+        'bbox_preds': bboxes,
+        'bbox_preds_refine': bbox_preds_refine,
+        'img_metas': img_metas
+    }
+    model_outputs = get_model_outputs(test_model, 'get_bboxes', model_inputs)
+
+    img_metas[0]['img_shape'] = torch.Tensor([s, s])
+    wrapped_model = WrapModel(
+        test_model, 'get_bboxes', img_metas=img_metas[0], with_nms=True)
+    rewrite_inputs = {
+        'cls_scores': cls_score,
+        'bbox_preds': bboxes,
+        'bbox_preds_refine': bbox_preds_refine
+    }
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg)
+
+    if is_backend_output:
+        if isinstance(rewrite_outputs, dict):
+            rewrite_outputs = convert_to_list(rewrite_outputs, output_names)
+        for model_output, rewrite_output in zip(model_outputs[0],
+                                                rewrite_outputs):
+            model_output = model_output.squeeze().cpu().numpy()
+            rewrite_output = rewrite_output.squeeze()
+            min_shape = min(model_output.shape[0], rewrite_output.shape[0])
             assert np.allclose(
                 model_output[:min_shape],
                 rewrite_output[:min_shape],
