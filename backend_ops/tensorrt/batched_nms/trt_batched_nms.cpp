@@ -95,7 +95,7 @@ int TRTBatchedNMS::enqueue(const nvinfer1::PluginTensorDesc* inputDesc,
   bool shareLocation = (inputDesc[0].dims.d[2] == 1);
 
   int topk = param.topK > 0 && param.topK <= inputDesc[1].dims.d[1]
-                 ? topk
+                 ? param.topK
                  : inputDesc[1].dims.d[1];
   pluginStatus_t status = nmsInference(
       stream, batch_size, boxes_size, score_size, shareLocation,
