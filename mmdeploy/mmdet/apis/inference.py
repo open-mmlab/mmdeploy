@@ -300,7 +300,7 @@ class PPLDetector(DeployBaseDetector):
     """Wrapper for detection's inference with PPL.
 
     Args:
-        model_file (str): Path of input ONNX model file.
+        model_file (str): The path of input model file.
         class_names (Sequence[str]): A list of string specifying class names.
         device_id (int): An integer represents device index.
     """
@@ -308,7 +308,7 @@ class PPLDetector(DeployBaseDetector):
     def __init__(self, model_file, class_names, device_id, **kwargs):
         super(PPLDetector, self).__init__(class_names, device_id)
         from mmdeploy.apis.ppl import PPLWrapper
-        self.model = PPLWrapper(model_file, device_id)
+        self.model = PPLWrapper(*model_file, device_id=device_id)
 
     def forward_test(self, imgs: torch.Tensor, *args, **kwargs):
         """Implement forward test.

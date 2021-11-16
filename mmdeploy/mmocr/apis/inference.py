@@ -373,7 +373,7 @@ class PPLDetector(DeployBaseTextDetector):
     """Wrapper for TextDetector with PPL.
 
     Args:
-        model_file (str): The path of input model file.
+        model_file (Sequence[str]): Paths of input model files.
         cfg (str | mmcv.ConfigDict): Input model config.
         device_id (int): An integer represents device index.
         show_score (bool): Whether to show scores. Defaults to `False`.
@@ -388,7 +388,7 @@ class PPLDetector(DeployBaseTextDetector):
                  **kwargs):
         super(PPLDetector, self).__init__(cfg, device_id, show_score)
         from mmdeploy.apis.ppl import PPLWrapper
-        model = PPLWrapper(model_file, device_id)
+        model = PPLWrapper(model_file[0], model_file[1], device_id)
         self.model = model
 
     def forward_of_backend(self, img: torch.Tensor, img_metas: Sequence[dict],
@@ -411,7 +411,8 @@ class PPLRecognizer(DeployBaseRecognizer):
     """Wrapper for TextRecognizer with PPL.
 
     Args:
-        model_file (str): The path of input model file.
+        onnx_file (str): Path of input ONNX model file.
+        algo_file (str): Path of PPL algorithm file.
         cfg (str | mmcv.ConfigDict): Input model config.
         device_id (int): An integer represents device index.
         show_score (bool): Whether to show scores. Defaults to `False`.
@@ -419,6 +420,7 @@ class PPLRecognizer(DeployBaseRecognizer):
 
     def __init__(self,
                  model_file: str,
+                 algo_file: str,
                  cfg: Union[mmcv.Config, mmcv.ConfigDict],
                  device_id: int,
                  show_score: bool = False,
@@ -426,7 +428,7 @@ class PPLRecognizer(DeployBaseRecognizer):
                  **kwargs):
         super(PPLRecognizer, self).__init__(cfg, device_id, show_score)
         from mmdeploy.apis.ppl import PPLWrapper
-        model = PPLWrapper(model_file, device_id)
+        model = PPLWrapper(model_file, algo_file, device_id)
         self.model = model
 
     def forward_of_backend(self, img: torch.Tensor, img_metas: Sequence[dict],

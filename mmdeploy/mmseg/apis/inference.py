@@ -144,7 +144,7 @@ class PPLSegmentor(DeployBaseSegmentor):
     """Wrapper for segmentation's inference with PPL.
 
     Args:
-        model_file (str): The path of input model file.
+        model_file (Sequence[str]): Paths of input params and bin files.
         class_names (Sequence[str]): A list of string specifying class names.
         palette (np.ndarray): The palette of segmentation map.
         device_id (int): An integer represents device index.
@@ -154,7 +154,7 @@ class PPLSegmentor(DeployBaseSegmentor):
                  palette: np.ndarray, device_id: int):
         super(PPLSegmentor, self).__init__(class_names, palette, device_id)
         from mmdeploy.apis.ppl import PPLWrapper
-        self.model = PPLWrapper(model_file, device_id)
+        self.model = PPLWrapper(model_file[0], model_file[1], device_id)
 
     def forward_test(self, imgs: torch.Tensor, img_metas: Sequence[dict],
                      **kwargs):

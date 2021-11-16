@@ -89,7 +89,7 @@ def test_PPLDetector():
         from mmdeploy.mmocr.apis.inference import PPLDetector
         model_config = mmcv.Config.fromfile(
             'tests/test_mmocr/data/config/dbnet.py')
-        ppl_detector = PPLDetector('', model_config, 0, False)
+        ppl_detector = PPLDetector(['', ''], model_config, 0, False)
         imgs = [torch.rand(1, 3, 64, 64)]
         img_metas = [[{
             'ori_shape': [64, 64, 3],
@@ -194,7 +194,7 @@ def test_PPLRecognizer():
         from mmdeploy.mmocr.apis.inference import PPLRecognizer
         model_config = mmcv.Config.fromfile(
             'tests/test_mmocr/data/config/crnn.py')
-        ppl_recognizer = PPLRecognizer('', model_config, 0, False)
+        ppl_recognizer = PPLRecognizer('', '', model_config, 0, False)
         imgs = [torch.rand(1, 1, 32, 32)]
         img_metas = [[{'resize_shape': [32, 32], 'valid_ratio': 1.0}]]
 

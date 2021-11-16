@@ -96,11 +96,11 @@ def main():
     # load deploy_cfg
     deploy_cfg, model_cfg = load_config(deploy_cfg_path, model_cfg_path)
 
-    if args.dump_info:
-        dump_info(deploy_cfg, model_cfg, args.work_dir)
-
     # create work_dir if not
     mmcv.mkdir_or_exist(osp.abspath(args.work_dir))
+
+    if args.dump_info:
+        dump_info(deploy_cfg, model_cfg, args.work_dir)
 
     ret_value = mp.Value('d', 0, lock=False)
 
@@ -240,6 +240,31 @@ def main():
                 ret_value=ret_value)
             openvino_files.append(model_xml_path)
         backend_files = openvino_files
+
+    elif backend == Backend.PPL:
+        from mmdeploy.apis.ppl import \
+            is_available as is_available_ppl
+        assert is_available_ppl(), \
+            'PPL is not available, please install PPL first.'
+
+        from mmdeploy.apis.ppl import onnx2ppl
+        ppl_files = []
+        for onnx_path in onnx_files:
+            algo_file = onnx_path.replace('.onnx', '.json')
+            model_inputs = get_model_inputs(deploy_cfg)
+            assert 'opt_shape' in model_inputs, 'expect opt_shape '
+            'in deploy config for ppl'
+            # PPL accepts only 1 input shape for optimization,
+            # may get changed in the future
+            input_shapes = [model_inputs.opt_shape]
+            create_process(
+                f'onnx2ppl with {onnx_path}',
+                target=onnx2ppl,
+                args=(algo_file, onnx_path),
+                kwargs=dict(device=args.device, input_shapes=input_shapes),
+                ret_value=ret_value)
+            ppl_files += [onnx_path, algo_file]
+        backend_files = ppl_files
 
     if args.test_img is None:
         args.test_img = args.img

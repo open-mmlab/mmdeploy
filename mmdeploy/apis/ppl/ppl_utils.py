@@ -1,18 +1,21 @@
 import logging
 import sys
-from typing import Dict
+from typing import Dict, Sequence
 
 import numpy as np
-import pyppl.common as pplcommon
-import pyppl.nn as pplnn
 import torch
+from pyppl import common as pplcommon
+from pyppl import nn as pplnn
 
 from mmdeploy.utils.timer import TimeCounter
 
 
 def register_engines(device_id: int,
                      disable_avx512: bool = False,
-                     quick_select: bool = False):
+                     quick_select: bool = False,
+                     input_shapes: Sequence[Sequence[int]] = None,
+                     export_algo_file: str = None,
+                     import_algo_file: str = None):
     """Register engines for ppl runtime.
 
     Args:
@@ -21,6 +24,9 @@ def register_engines(device_id: int,
             Defaults to `False`.
         quick_select (bool): Whether to use default algorithms.
             Defaults to `False`.
+        input_shapes (Sequence[Sequence[int]]): shapes for PPL optimization.
+        export_algo_file (str): File path for exporting PPL optimization file.
+        import_algo_file (str): File path for loading PPL optimization file.
 
     Returns:
         list[pplnn.Engine]: A list of registered ppl engines.
@@ -59,6 +65,33 @@ def register_engines(device_id: int,
                               pplcommon.GetRetCodeStr(status))
                 sys.exit(-1)
 
+        if input_shapes is not None:
+            status = cuda_engine.Configure(pplnn.CUDA_CONF_SET_INPUT_DIMS,
+                                           input_shapes)
+            if status != pplcommon.RC_SUCCESS:
+                logging.error(
+                    'cuda engine Configure(CUDA_CONF_SET_INPUT_DIMS) failed: '
+                    + pplcommon.GetRetCodeStr(status))
+                sys.exit(-1)
+
+        if export_algo_file is not None:
+            status = cuda_engine.Configure(pplnn.CUDA_CONF_EXPORT_ALGORITHMS,
+                                           export_algo_file)
+            if status != pplcommon.RC_SUCCESS:
+                logging.error(
+                    'cuda engine Configure(CUDA_CONF_EXPORT_ALGORITHMS) '
+                    'failed: ' + pplcommon.GetRetCodeStr(status))
+                sys.exit(-1)
+
+        if import_algo_file is not None:
+            status = cuda_engine.Configure(pplnn.CUDA_CONF_IMPORT_ALGORITHMS,
+                                           import_algo_file)
+            if status != pplcommon.RC_SUCCESS:
+                logging.error(
+                    'cuda engine Configure(CUDA_CONF_IMPORT_ALGORITHMS) '
+                    'failed: ' + pplcommon.GetRetCodeStr(status))
+                sys.exit(-1)
+
         engines.append(pplnn.Engine(cuda_engine))
 
     return engines
@@ -68,7 +101,8 @@ class PPLWrapper(torch.nn.Module):
     """PPL wrapper for inference.
 
     Args:
-        model_file (str): Input onnx model file.
+        onnx_file (str): Path of input ONNX model file.
+        algo_file (str): Path of PPL algorithm file.
         device_id (int): Device id to put model.
 
     Examples:
@@ -76,21 +110,23 @@ class PPLWrapper(torch.nn.Module):
         >>> import torch
         >>>
         >>> onnx_file = 'model.onnx'
-        >>> model = PPLWrapper(onnx_file, 0)
+        >>> model = PPLWrapper(onnx_file, 'end2end.json', 0)
         >>> inputs = dict(input=torch.randn(1, 3, 224, 224))
         >>> outputs = model(inputs)
         >>> print(outputs)
     """
 
-    def __init__(self, model_file: str, device_id: int):
+    def __init__(self, onnx_file: str, algo_file: str, device_id: int):
         super(PPLWrapper, self).__init__()
         # enable quick select by default to speed up pipeline
-        # TODO: open it to users after ppl supports saving serialized models
         # TODO: disable_avx512 will be removed or open to users in config
         engines = register_engines(
-            device_id, disable_avx512=False, quick_select=True)
+            device_id,
+            disable_avx512=False,
+            quick_select=False,
+            import_algo_file=algo_file)
         runtime_builder = pplnn.OnnxRuntimeBuilderFactory.CreateFromFile(
-            model_file, engines)
+            onnx_file, engines)
         assert runtime_builder is not None, 'Failed to create '\
             'OnnxRuntimeBuilder.'
 
@@ -119,7 +155,12 @@ class PPLWrapper(torch.nn.Module):
         outputs = []
         for i in range(self.runtime.GetOutputCount()):
             out_tensor = self.runtime.GetOutputTensor(i).ConvertToHost()
-            outputs.append(np.array(out_tensor, copy=False))
+            if out_tensor:
+                outputs.append(np.array(out_tensor, copy=False))
+            else:
+                out_shape = self.runtime.GetOutputTensor(
+                    i).GetShape().GetDims()
+                outputs.append(np.random.rand(*out_shape))
         return outputs
 
     @TimeCounter.count_time()

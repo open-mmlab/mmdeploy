@@ -211,14 +211,16 @@ class PPLRestorer(DeployBaseRestorer):
     """Wrapper for restorer's inference with ppl.
 
     Args:
-        model_file (str): The path of input model file.
+        onnx_file (str): Path of input ONNX model file.
+        algo_file (str): Path of PPL algorithm file.
         device_id (int): An integer represents device index.
         test_cfg (mmcv.Config): The test config in model config, which is
             used in evaluation.
     """
 
     def __init__(self,
-                 model_file: str,
+                 onnx_file: str,
+                 algo_file: str,
                  device_id: int,
                  test_cfg: Optional[mmcv.Config] = None,
                  **kwargs):
@@ -226,7 +228,7 @@ class PPLRestorer(DeployBaseRestorer):
             device_id, test_cfg=test_cfg, **kwargs)
 
         from mmdeploy.apis.ppl import PPLWrapper
-        self.model = PPLWrapper(model_file, device_id)
+        self.model = PPLWrapper(onnx_file, algo_file, device_id)
 
     def forward_dummy(self, lq: torch.Tensor, *args, **kwargs):
         """Run test inference for restorer with PPL.
@@ -278,7 +280,7 @@ def build_restorer(model_files: Sequence[str], backend: Backend,
     backend_model_class = model_map[model_type]
 
     backend_model = backend_model_class(
-        model_files[0], device_id=device_id, test_cfg=model_cfg.test_cfg)
+        *model_files, device_id=device_id, test_cfg=model_cfg.test_cfg)
 
     return backend_model
 

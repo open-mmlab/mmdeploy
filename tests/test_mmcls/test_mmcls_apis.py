@@ -94,7 +94,7 @@ def test_PPLClassifier():
         wrapper.set(outputs=outputs)
 
         from mmdeploy.mmcls.apis.inference import PPLClassifier
-        ppl_classifier = PPLClassifier('', [''], 0)
+        ppl_classifier = PPLClassifier('', '', [''], 0)
         imgs = torch.rand(1, 3, 64, 64)
 
         results = ppl_classifier.forward(imgs, return_loss=False)

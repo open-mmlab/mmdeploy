@@ -87,7 +87,10 @@ def onnx2backend(backend, onnx_file):
     elif backend == Backend.ONNXRUNTIME:
         return onnx_file
     elif backend == Backend.PPL:
-        return onnx_file
+        from mmdeploy.apis.ppl import onnx2ppl
+        algo_file = tempfile.NamedTemporaryFile(suffix='.json').name
+        onnx2ppl(algo_file=algo_file, onnx_model=onnx_file)
+        return onnx_file, algo_file
     elif backend == Backend.NCNN:
         from mmdeploy.apis.ncnn import get_onnx2ncnn_path
         onnx2ncnn_path = get_onnx2ncnn_path()
@@ -117,7 +120,7 @@ def create_wrapper(backend, model_files):
         return ort_model
     elif backend == Backend.PPL:
         from mmdeploy.apis.ppl import PPLWrapper
-        ppl_model = PPLWrapper(model_files, 0)
+        ppl_model = PPLWrapper(model_files[0], None, device_id=0)
         return ppl_model
     elif backend == Backend.NCNN:
         from mmdeploy.apis.ncnn import NCNNWrapper

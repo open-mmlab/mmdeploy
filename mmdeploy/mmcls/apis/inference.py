@@ -132,15 +132,17 @@ class PPLClassifier(DeployBaseClassifier):
     """Wrapper for classifier's inference with PPL.
 
     Args:
-        model_file (str): Path of input ONNX model file.
+        onnx_file (str): Path of input ONNX model file.
+        algo_file (str): Path of PPL algorithm file.
         class_names (Sequence[str]): A list of string specifying class names.
         device_id (int): An integer represents device index.
     """
 
-    def __init__(self, model_file, class_names, device_id):
+    def __init__(self, onnx_file, algo_file, class_names, device_id):
         super(PPLClassifier, self).__init__(class_names, device_id)
         from mmdeploy.apis.ppl import PPLWrapper
-        model = PPLWrapper(model_file=model_file, device_id=device_id)
+        model = PPLWrapper(
+            onnx_file=onnx_file, algo_file=algo_file, device_id=device_id)
         self.model = model
         self.CLASSES = class_names
 

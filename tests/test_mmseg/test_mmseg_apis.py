@@ -89,7 +89,7 @@ def test_PPLSegmentor():
         wrapper.set(outputs=outputs)
 
         from mmdeploy.mmseg.apis.inference import PPLSegmentor
-        ppl_segmentor = PPLSegmentor('', ['' for i in range(19)],
+        ppl_segmentor = PPLSegmentor(['', ''], ['' for i in range(19)],
                                      np.empty([19], dtype=int), 0)
         imgs = torch.rand(1, 3, 64, 64)
         img_metas = [[{

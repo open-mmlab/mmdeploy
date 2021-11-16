@@ -86,7 +86,7 @@ def test_PPLRestorer():
         wrapper.set(outputs=outputs)
 
         from mmdeploy.mmedit.apis.inference import PPLRestorer
-        ppl_restorer = PPLRestorer('', 0)
+        ppl_restorer = PPLRestorer('', '', 0)
         imgs = torch.rand(1, 3, 64, 64)
 
         results = ppl_restorer.forward(imgs)
