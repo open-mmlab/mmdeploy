@@ -72,7 +72,7 @@ class TimeCounter:
                         times_per_count = 1000 * execute_time / (
                             count - warmup)
                         msg = f'[{func.__name__}]-{count} times per count: '\
-                              f'{times_per_count:.1f} ms, '\
+                              f'{times_per_count:.2f} ms, '\
                               f'{1000/times_per_count:.2f} FPS'
                         if cls.file != sys.stdout:
                             msg += '\n'
