@@ -1,3 +1,4 @@
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 # Modified from:
 # https://github.com/pytorch/pytorch/blob/9ade03959392e5a90b74261012de1d806cab2253/torch/onnx/symbolic_opset9.py
 
@@ -53,18 +54,27 @@ adaptive_avg_pool3d = _adaptive_pool('adaptive_avg_pool3d', 'AveragePool',
 
 
 @SYMBOLIC_REWRITER.register_symbolic('adaptive_avg_pool1d', is_pytorch=True)
-def adaptive_avg_pool1d_op(ctx, *args):
-    """Register default symbolic function for `adaptive_avg_pool1d`."""
+def adaptive_avg_pool1d__default(ctx, *args):
+    """Register default symbolic function for `adaptive_avg_pool1d`.
+
+    Align symbolic of adaptive_pool between different torch version.
+    """
     return adaptive_avg_pool1d(*args)
 
 
 @SYMBOLIC_REWRITER.register_symbolic('adaptive_avg_pool2d', is_pytorch=True)
-def adaptive_avg_pool2d_op(ctx, *args):
-    """Register default symbolic function for `adaptive_avg_pool2d`."""
+def adaptive_avg_pool2d__default(ctx, *args):
+    """Register default symbolic function for `adaptive_avg_pool2d`.
+
+    Align symbolic of adaptive_pool between different torch version.
+    """
     return adaptive_avg_pool2d(*args)
 
 
 @SYMBOLIC_REWRITER.register_symbolic('adaptive_avg_pool3d', is_pytorch=True)
-def adaptive_avg_pool3d_op(ctx, *args):
-    """Register default symbolic function for `adaptive_avg_pool3d`."""
+def adaptive_avg_pool3d__default(ctx, *args):
+    """Register default symbolic function for `adaptive_avg_pool3d`.
+
+    Align symbolic of adaptive_pool between different torch version.
+    """
     return adaptive_avg_pool3d(*args)

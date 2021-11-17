@@ -1,13 +1,13 @@
-from .getattribute import getattribute_static
-from .group_norm import group_norm_ncnn
-from .interpolate import interpolate_static
-from .linear import linear_ncnn
-from .repeat import repeat_static
-from .size import size_of_tensor_static
-from .topk import topk_dynamic, topk_static
+from .getattribute import tensor__getattribute__ncnn
+from .group_norm import group_norm__ncnn
+from .interpolate import interpolate__ncnn
+from .linear import linear__ncnn
+from .repeat import tensor__repeat__tensorrt
+from .size import tensor__size__ncnn
+from .topk import topk__dynamic, topk__tensorrt
 
 __all__ = [
-    'getattribute_static', 'group_norm_ncnn', 'interpolate_static',
-    'linear_ncnn', 'repeat_static', 'size_of_tensor_static', 'topk_static',
-    'topk_dynamic'
+    'tensor__getattribute__ncnn', 'group_norm__ncnn', 'interpolate__ncnn',
+    'linear__ncnn', 'tensor__repeat__tensorrt', 'tensor__size__ncnn',
+    'topk__dynamic', 'topk__tensorrt'
 ]

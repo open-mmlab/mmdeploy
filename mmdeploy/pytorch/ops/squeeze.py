@@ -4,8 +4,12 @@ from mmdeploy.core import SYMBOLIC_REWRITER
 
 
 @SYMBOLIC_REWRITER.register_symbolic('squeeze', is_pytorch=True)
-def squeeze_default(ctx, g, self, dim=None):
-    """Register default symbolic function for `squeeze`."""
+def squeeze__default(ctx, g, self, dim=None):
+    """Register default symbolic function for `squeeze`.
+
+    squeeze might be exported with IF node in ONNX, which is not supported in
+    lots of backend.
+    """
     if dim is None:
         dims = []
         for i, size in enumerate(self.type().sizes()):

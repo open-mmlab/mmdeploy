@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Optional, Union
 
 import torch
 
@@ -7,13 +7,18 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='torch.nn.functional.linear', backend='ncnn')
-def linear_ncnn(
+def linear__ncnn(
     ctx,
     input: torch.Tensor,
     weight: torch.Tensor,
-    bias: Union[torch.Tensor, torch.NoneType] = None,
+    bias: Optional[Union[torch.Tensor, torch.NoneType]] = None,
 ):
-    """Rewrite `linear` for NCNN backend."""
+    """Rewrite `linear` for NCNN backend.
+
+    The broadcast rules are different between ncnn and PyTorch. This function
+    add extra reshape and transpose to support linear operation of different
+    input shape.
+    """
 
     origin_func = ctx.origin_func
 

@@ -1,3 +1,5 @@
+from typing import Optional
+
 import torch
 
 from mmdeploy.core import FUNCTION_REWRITER
@@ -6,8 +8,16 @@ from mmdeploy.core import FUNCTION_REWRITER
 @FUNCTION_REWRITER.register_rewriter(func_name='torch.topk', backend='default')
 @FUNCTION_REWRITER.register_rewriter(
     func_name='torch.Tensor.topk', backend='default')
-def topk_dynamic(ctx, input, k, dim=None, largest=True, sorted=True):
-    """Rewrite `topk` for default backend."""
+def topk__dynamic(ctx,
+                  input: torch.Tensor,
+                  k: int,
+                  dim: Optional[int] = None,
+                  largest: bool = True,
+                  sorted: bool = True):
+    """Rewrite `topk` for default backend.
+
+    Cast k to tensor and makesure k is smaller than input.shape[dim].
+    """
 
     if dim is None:
         dim = int(input.ndim - 1)
@@ -25,8 +35,17 @@ def topk_dynamic(ctx, input, k, dim=None, largest=True, sorted=True):
     func_name='torch.topk', backend='tensorrt')
 @FUNCTION_REWRITER.register_rewriter(
     func_name='torch.Tensor.topk', backend='tensorrt')
-def topk_static(ctx, input, k, dim=None, largest=True, sorted=True):
-    """Rewrite `topk` for TensorRT backend."""
+def topk__tensorrt(ctx,
+                   input: torch.Tensor,
+                   k: int,
+                   dim: Optional[int] = None,
+                   largest: bool = True,
+                   sorted: bool = True):
+    """Rewrite `topk` for TensorRT backend.
+
+    TensorRT does not support topk with dynamic k. This function cast k to
+    constant integer.
+    """
 
     if dim is None:
         dim = int(input.ndim - 1)

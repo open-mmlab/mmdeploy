@@ -7,7 +7,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='torch.nn.functional.group_norm', backend='ncnn')
-def group_norm_ncnn(
+def group_norm__ncnn(
     ctx,
     input: torch.Tensor,
     num_groups: int,
@@ -15,7 +15,11 @@ def group_norm_ncnn(
     bias: Union[torch.Tensor, torch.NoneType] = None,
     eps: float = 1e-05,
 ) -> torch.Tensor:
-    """Rewrite `group_norm` for NCNN backend."""
+    """Rewrite `group_norm` for NCNN backend.
+
+    InstanceNorm in ncnn require input with shape [C, H, W]. So we have to
+    reshape the input tensor before it.
+    """
     input_shape = input.shape
     batch_size = input_shape[0]
     # We cannot use input.reshape(batch_size, num_groups, -1, 1)

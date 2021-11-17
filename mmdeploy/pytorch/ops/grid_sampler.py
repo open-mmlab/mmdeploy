@@ -10,7 +10,12 @@ def grid_sampler(g,
                  interpolation_mode,
                  padding_mode,
                  align_corners=False):
-    """Symbolic function for `grid_sampler`."""
+    """Symbolic function for `grid_sampler`.
+
+    PyTorch does not support export grid_sampler to ONNX by default. We add the
+    support here. `grid_sampler` will be exported as ONNX node
+    'mmcv::grid_sampler'
+    """
     return g.op(
         'mmcv::grid_sampler',
         input,
@@ -21,6 +26,9 @@ def grid_sampler(g,
 
 
 @SYMBOLIC_REWRITER.register_symbolic('grid_sampler', is_pytorch=True)
-def grid_sampler_default(ctx, *args):
-    """Register default symbolic function for `grid_sampler`."""
+def grid_sampler__default(ctx, *args):
+    """Register default symbolic function for `grid_sampler`.
+
+    Add support to grid_sample to ONNX.
+    """
     return grid_sampler(*args)

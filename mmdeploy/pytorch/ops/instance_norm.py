@@ -1,3 +1,4 @@
+# Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 # Modified from:
 # https://github.com/pytorch/pytorch/blob/9ade03959392e5a90b74261012de1d806cab2253/torch/onnx/symbolic_opset9.py
 
@@ -63,7 +64,7 @@ def instance_norm(g, input, num_groups, weight, bias, eps, cudnn_enabled):
 
 @SYMBOLIC_REWRITER.register_symbolic(
     'group_norm', backend='tensorrt', is_pytorch=True)
-def instance_norm_trt(ctx, *args):
+def instance_norm__tensorrt(ctx, *args):
     """Register symbolic function for TensorRT backend.
 
     Notes:
