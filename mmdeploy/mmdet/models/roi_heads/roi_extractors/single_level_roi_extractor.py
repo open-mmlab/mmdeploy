@@ -94,10 +94,15 @@ def single_roi_extractor__forward(ctx,
                                   feats,
                                   rois,
                                   roi_scale_factor=None):
-    """Rewrite `forward` for default backend.
+    """Rewrite `forward` of SingleRoIExtractor for default backend.
 
-    Add mark for roi_extractor forward. Remove unnecessary code of origin
-    forward function.
+    Rewrite this function to enable exporting to onnx even though the input
+    image contains no targets. Note that, `ScatterND` of onnx may conflict with
+    `Reshape` if a tensor have a dim size of 0. Thus, we have to cat zeros to
+    the dim 0 of `roi_feats` and recover back after all roi align finished.
+
+    Besides, this function adds mark for roi_extractor forward and remove
+    unnecessary code of origin forward function.
     """
     out_size = self.roi_layers[0].output_size
     num_levels = len(feats)
@@ -111,17 +116,29 @@ def single_roi_extractor__forward(ctx,
     if roi_scale_factor is not None:
         rois = self.roi_rescale(rois, roi_scale_factor)
 
+    # concat len num_levels * 2 of zero tensors to dim 0 of roi_feats
+    roi_feats = torch.cat(
+        (roi_feats.new_zeros(num_levels * 2,
+                             *roi_feats.shape[-3:]), roi_feats))
     for i in range(num_levels):
         mask = target_lvls == i
         inds = mask.nonzero(as_tuple=False).squeeze(1)
 
-        # expand tensor to eliminate [0, ...] tensor
-        rois_i = torch.cat((rois[inds], rois.new_zeros(1, 5)))
+        # concat len 2 zero tensors to dim 0 of roi_feats
+        rois_i = torch.cat((rois.new_zeros(2, 5), rois[inds]))
 
         roi_feats_t = self.roi_layers[i](feats[i], rois_i)
 
-        # slice and recover the tensor
-        roi_feats[inds] = roi_feats_t[0:-1]
+        # correspondingly change the inds
+        inds = torch.cat([
+            torch.tensor([2 * i, 2 * i + 1],
+                         device=inds.device,
+                         dtype=inds.dtype), inds + num_levels * 2
+        ])
+        roi_feats[inds] = roi_feats_t
+
+    # slice and recover tensors
+    roi_feats = roi_feats[num_levels * (2):]
     return roi_feats
 
 

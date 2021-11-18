@@ -82,16 +82,6 @@ def mask_test_mixin__simple_test_mask(ctx, self, x, img_metas, det_bboxes,
         tuple[Tensor]: (segm_results), `segm_results` of shape
         [N, num_det, roi_H, roi_W].
     """
-    if det_bboxes.shape[1] == 0:
-        bboxes_shape, labels_shape = list(det_bboxes.shape), list(
-            det_labels.shape)
-        bboxes_shape[1], labels_shape[1] = 1, 1
-        det_bboxes = torch.tensor(
-            [[[0., 0., 1., 1., 0.]]],
-            device=det_bboxes.device).expand(*bboxes_shape)
-        det_labels = torch.tensor(
-            [[0]], device=det_bboxes.device).expand(*labels_shape)
-
     batch_size = det_bboxes.size(0)
     det_bboxes = det_bboxes[..., :4]
     batch_index = torch.arange(

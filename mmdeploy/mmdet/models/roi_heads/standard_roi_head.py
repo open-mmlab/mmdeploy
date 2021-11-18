@@ -1,3 +1,5 @@
+import torch
+
 from mmdeploy.core import FUNCTION_REWRITER
 
 
@@ -36,6 +38,21 @@ def standard_roi_head__simple_test(ctx, self, x, proposals, img_metas,
         x, img_metas, proposals, self.test_cfg, rescale=False)
     if not self.with_mask:
         return det_bboxes, det_labels
+
+    # padding zeros to det_bboxes and det_labels
+    det_bboxes_tail = torch.zeros(
+        det_bboxes.size(0),
+        1,
+        det_bboxes.size(2),
+        device=det_bboxes.device,
+        dtype=det_bboxes.dtype)
+    det_labels_tail = torch.zeros(
+        det_labels.size(0),
+        1,
+        device=det_labels.device,
+        dtype=det_labels.dtype)
+    det_bboxes = torch.cat([det_bboxes, det_bboxes_tail], 1)
+    det_labels = torch.cat([det_labels, det_labels_tail], 1)
 
     segm_results = self.simple_test_mask(
         x, img_metas, det_bboxes, det_labels, rescale=False)
