@@ -50,6 +50,10 @@ def parse_args():
 
 def target_wrapper(target, log_level, ret_value, *args, **kwargs):
     logger = logging.getLogger()
+    logging.basicConfig(
+        format='%(asctime)s,%(msecs)d %(levelname)-8s'
+        ' [%(filename)s:%(lineno)d] %(message)s',
+        datefmt='%Y-%m-%d:%H:%M:%S')
     logger.level
     logger.setLevel(log_level)
     if ret_value is not None:
@@ -85,7 +89,10 @@ def create_process(name, target, args, kwargs, ret_value=None):
 def main():
     args = parse_args()
     set_start_method('spawn')
-
+    logging.basicConfig(
+        format='%(asctime)s,%(msecs)d %(levelname)-8s'
+        ' [%(filename)s:%(lineno)d] %(message)s',
+        datefmt='%Y-%m-%d:%H:%M:%S')
     logger = logging.getLogger()
     logger.setLevel(args.log_level)
 
