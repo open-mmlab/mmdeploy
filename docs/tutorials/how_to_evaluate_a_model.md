@@ -19,7 +19,7 @@ ${MODEL_CFG} \
 [--show] \
 [--show-dir ${OUTPUT_IMAGE_DIR}] \
 [--show-score-thr ${SHOW_SCORE_THR}] \
---divice ${DEVICE} \
+--device ${DEVICE} \
 [--cfg-options ${CFG_OPTIONS}] \
 [--metric-options ${METRIC_OPTIONS}]
 ```
