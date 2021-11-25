@@ -135,7 +135,7 @@ def test_repeat_static():
         wrapped_func, model_inputs={'input': input}, deploy_cfg=deploy_cfg)
 
     if is_backend_ouptut:
-        rewrite_output = rewrite_output['output'].detach().cpu()
+        rewrite_output = rewrite_output[0].detach().cpu()
 
         assert np.allclose(
             model_output, rewrite_output, rtol=1e-03, atol=1e-05)
@@ -212,7 +212,7 @@ class TestTopk:
             deploy_cfg=deploy_cfg_tensorrt)
 
         if is_backend_output:
-            output = output['values'].detach().cpu()
+            output = output[1].detach().cpu()
 
             assert np.allclose(model_output, output, rtol=1e-03, atol=1e-05)
         else:
