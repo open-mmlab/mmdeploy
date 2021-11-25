@@ -79,12 +79,14 @@ def generate_onnx_file(model):
 @pytest.mark.skipif(trt_skip, reason='TensorRT not avaiable')
 @pytest.mark.skipif(cuda_skip, reason='Cuda not avaiable')
 def test_onnx2tensorrt():
-    from mmdeploy.apis.tensorrt import load_trt_engine, onnx2tensorrt
+    from mmdeploy.apis.tensorrt import onnx2tensorrt
+    from mmdeploy.backend.tensorrt import load_trt_engine
     model = test_model
     generate_onnx_file(model)
     deploy_cfg = get_deploy_cfg()
 
     work_dir, save_file = osp.split(engine_file)
+
     onnx2tensorrt(work_dir, save_file, 0, deploy_cfg, onnx_file)
     assert osp.exists(work_dir)
     assert osp.exists(engine_file)

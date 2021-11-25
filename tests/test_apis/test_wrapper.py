@@ -9,6 +9,8 @@ from mmdeploy.utils.constants import Backend
 
 onnx_file = tempfile.NamedTemporaryFile(suffix='.onnx').name
 test_img = torch.rand(1, 3, 8, 8)
+output_names = ['output']
+input_names = ['input']
 
 
 @pytest.mark.skip(reason='This a not test class but a utility class.')
@@ -31,8 +33,8 @@ def generate_onnx_file():
             model,
             test_img,
             onnx_file,
-            output_names=['output'],
-            input_names=['input'],
+            output_names=output_names,
+            input_names=input_names,
             keep_initializers_as_inputs=True,
             do_constant_folding=True,
             verbose=False,
@@ -72,7 +74,8 @@ def check_backend_avaiable(backend):
 
 def onnx2backend(backend, onnx_file):
     if backend == Backend.TENSORRT:
-        from mmdeploy.apis.tensorrt import create_trt_engine, save_trt_engine
+        from mmdeploy.backend.tensorrt import create_trt_engine,\
+                                                save_trt_engine
         backend_file = tempfile.NamedTemporaryFile(suffix='.engine').name
         engine = create_trt_engine(
             onnx_file, {
@@ -87,19 +90,20 @@ def onnx2backend(backend, onnx_file):
     elif backend == Backend.ONNXRUNTIME:
         return onnx_file
     elif backend == Backend.PPL:
-        from mmdeploy.apis.ppl import onnx2ppl
+        from mmdeploy.backend.ppl import onnx2ppl
         algo_file = tempfile.NamedTemporaryFile(suffix='.json').name
         onnx2ppl(algo_file=algo_file, onnx_model=onnx_file)
         return onnx_file, algo_file
     elif backend == Backend.NCNN:
-        from mmdeploy.apis.ncnn import get_onnx2ncnn_path
+        from mmdeploy.backend.ncnn.init_plugins import get_onnx2ncnn_path
         onnx2ncnn_path = get_onnx2ncnn_path()
         param_file = tempfile.NamedTemporaryFile(suffix='.param').name
         bin_file = tempfile.NamedTemporaryFile(suffix='.bin').name
         subprocess.call([onnx2ncnn_path, onnx_file, param_file, bin_file])
         return param_file, bin_file
     elif backend == Backend.OPENVINO:
-        from mmdeploy.apis.openvino import onnx2openvino, get_output_model_file
+        from mmdeploy.backend.openvino import onnx2openvino,\
+                                                get_output_model_file
         backend_dir = tempfile.TemporaryDirectory().name
         backend_file = get_output_model_file(onnx_file, backend_dir)
         input_info = {'input': test_img.shape}
@@ -111,25 +115,26 @@ def onnx2backend(backend, onnx_file):
 
 def create_wrapper(backend, model_files):
     if backend == Backend.TENSORRT:
-        from mmdeploy.apis.tensorrt import TRTWrapper
-        trt_model = TRTWrapper(model_files)
+        from mmdeploy.backend.tensorrt import TRTWrapper
+        trt_model = TRTWrapper(model_files, output_names)
         return trt_model
     elif backend == Backend.ONNXRUNTIME:
-        from mmdeploy.apis.onnxruntime import ORTWrapper
-        ort_model = ORTWrapper(model_files, 0)
+        from mmdeploy.backend.onnxruntime import ORTWrapper
+        ort_model = ORTWrapper(model_files, 'cpu', output_names)
         return ort_model
     elif backend == Backend.PPL:
-        from mmdeploy.apis.ppl import PPLWrapper
-        ppl_model = PPLWrapper(model_files[0], None, device_id=0)
+        from mmdeploy.backend.ppl import PPLWrapper
+        onnx_file, algo_file = model_files
+        ppl_model = PPLWrapper(onnx_file, algo_file, 'cpu', output_names)
         return ppl_model
     elif backend == Backend.NCNN:
-        from mmdeploy.apis.ncnn import NCNNWrapper
+        from mmdeploy.backend.ncnn import NCNNWrapper
         param_file, bin_file = model_files
-        ncnn_model = NCNNWrapper(param_file, bin_file, output_names=['output'])
+        ncnn_model = NCNNWrapper(param_file, bin_file, output_names)
         return ncnn_model
     elif backend == Backend.OPENVINO:
-        from mmdeploy.apis.openvino import OpenVINOWrapper
-        openvino_model = OpenVINOWrapper(model_files)
+        from mmdeploy.backend.openvino import OpenVINOWrapper
+        openvino_model = OpenVINOWrapper(model_files, output_names)
         return openvino_model
     else:
         raise NotImplementedError(f'Unknown backend type: {backend.value}')
@@ -143,20 +148,22 @@ def run_wrapper(backend, wrapper, input):
         return results
     elif backend == Backend.ONNXRUNTIME:
         input = input.cuda()
-        results = wrapper({'input': input})[0]
-        return list(results)
+        results = wrapper({'input': input})['output']
+        results = results.detach().cpu()
+        return results
     elif backend == Backend.PPL:
         input = input.cuda()
-        results = wrapper({'input': input})[0]
-        return list(results)
+        results = wrapper({'input': input})['output']
+        results = results.detach().cpu()
+        return results
     elif backend == Backend.NCNN:
         input = input.float()
         results = wrapper({'input': input})['output']
-        results = results.detach().cpu().numpy()
-        results_list = list(results)
-        return results_list
+        results = results.detach().cpu()
+        return results
     elif backend == Backend.OPENVINO:
         results = wrapper({'input': input})['output']
+        results = results.detach().cpu()
         return results
     else:
         raise NotImplementedError(f'Unknown backend type: {backend.value}')
