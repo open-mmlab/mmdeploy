@@ -6,6 +6,8 @@ import numpy as np
 import torch
 from torch import nn
 
+# Register the rewrite functions
+import mmdeploy.codebase  # noqa: F401,F403
 from mmdeploy.core import RewriterContext, patch_model
 from mmdeploy.utils import Backend, get_backend, get_onnx_config
 

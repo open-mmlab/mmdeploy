@@ -13,7 +13,7 @@ class RewriterManager:
 
     def __init__(self):
         self.module_rewriter = ModuleRewriter()
-        self.function_rewrite = FunctionRewriter()
+        self.function_rewriter = FunctionRewriter()
         self.symbolic_rewriter = SymbolicRewriter()
 
     def add_backend(self, backend: str):
@@ -23,7 +23,7 @@ class RewriterManager:
             backend (str): The backend to support.
         """
         self.module_rewriter.add_backend(backend)
-        self.function_rewrite.add_backend(backend)
+        self.function_rewriter.add_backend(backend)
         self.symbolic_rewriter.add_backend(backend)
 
 
@@ -32,7 +32,7 @@ for backend in Backend:
     REWRITER_MANAGER.add_backend(backend.value)
 
 MODULE_REWRITER = REWRITER_MANAGER.module_rewriter
-FUNCTION_REWRITER = REWRITER_MANAGER.function_rewrite
+FUNCTION_REWRITER = REWRITER_MANAGER.function_rewriter
 SYMBOLIC_REWRITER = REWRITER_MANAGER.symbolic_rewriter
 
 
@@ -81,24 +81,26 @@ class RewriterContext:
     def __init__(self,
                  cfg: Dict = dict(),
                  backend: str = Backend.DEFAULT.value,
-                 rewrite_manager: RewriterManager = REWRITER_MANAGER,
+                 rewriter_manager: RewriterManager = REWRITER_MANAGER,
                  **kwargs):
         self._cfg = cfg
         self._backend = backend
         self._kwargs = kwargs
-        self._rewrite_manager = rewrite_manager
+        self._rewriter_manager = rewriter_manager
 
     def enter(self):
         """Call the enter() of rewriters."""
-        self._rewrite_manager.function_rewrite.enter(self._cfg, self._backend,
-                                                     **self._kwargs)
-        self._rewrite_manager.symbolic_rewriter.enter(self._cfg, self._backend,
-                                                      **self._kwargs)
+        self._rewriter_manager.function_rewriter.enter(self._cfg,
+                                                       self._backend,
+                                                       **self._kwargs)
+        self._rewriter_manager.symbolic_rewriter.enter(self._cfg,
+                                                       self._backend,
+                                                       **self._kwargs)
 
     def exit(self):
         """Call the exit() of rewriters."""
-        self._rewrite_manager.function_rewrite.exit()
-        self._rewrite_manager.symbolic_rewriter.exit()
+        self._rewriter_manager.function_rewriter.exit()
+        self._rewriter_manager.symbolic_rewriter.exit()
 
     def __enter__(self):
         """Call enter()"""
