@@ -85,7 +85,7 @@ class Classification(BaseTask):
         from mmcls.datasets.pipelines import Compose
         from mmcv.parallel import collate, scatter
 
-        cfg = self.model_cfg.copy()
+        cfg = self.model_cfg.deepcopy()
         if isinstance(imgs, str):
             if cfg.data.test.pipeline[0]['type'] != 'LoadImageFromFile':
                 cfg.data.test.pipeline.insert(0,

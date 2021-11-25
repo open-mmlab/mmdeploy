@@ -33,7 +33,7 @@ data = dict(
     workers_per_gpu=2,
     test=dict(
         type=dataset_type,
-        data_prefix='data/imagenet/val',
-        ann_file='data/imagenet/meta/val.txt',
+        data_prefix='tests/test_codebase/test_mmcls/data/imgs/dataset',
+        ann_file='tests/test_codebase/test_mmcls/data/imgs/ann.txt',
         pipeline=test_pipeline))
 evaluation = dict(interval=1, metric='accuracy')
