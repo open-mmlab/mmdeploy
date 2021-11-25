@@ -68,7 +68,7 @@ def create_trt_engine(onnx_model: Union[str, onnx.ModelProto],
         error_msgs = ''
         for error in range(parser.num_errors):
             error_msgs += f'{parser.get_error(error)}\n'
-        raise RuntimeError(f'Failed to parse onnx: {onnx_model}\n{error_msgs}')
+        raise RuntimeError(f'Failed to parse onnx, {error_msgs}')
 
     # config builder
     if version.parse(trt.__version__) < version.parse('8'):
