@@ -16,7 +16,7 @@ You can switch between Chinese and English documents in the lower-left corner of
    tutorials/how_to_convert_model.md
    tutorials/how_to_write_config.md
    tutorials/how_to_evaluate_a_model.md
-   tutorials/how_to_test_model.md
+   tutorials/how_to_measure_performance_of_models.md
    tutorials/how_to_support_new_models.md
    tutorials/how_to_add_test_units_for_backend_ops.md
    tutorials/how_to_test_rewritten_models.md

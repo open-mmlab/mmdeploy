@@ -1,4 +1,4 @@
-## How to test model
+# How to measure the performance of a model
 
 After we convert a PyTorch model to a backend model, we may need to test the speed of the model before using it. In MMDeploy, we provide a tool to test the speed of backend models in `tools/test.py`
 
