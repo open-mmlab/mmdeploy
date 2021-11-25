@@ -401,7 +401,7 @@ def test_forward_of_fpnc(backend_type):
         deploy_cfg=deploy_cfg)
     if is_need_name:
         model_output = model_outputs[0].squeeze().cpu().numpy()
-        rewrite_output = rewrite_outputs['output'].squeeze().cpu().numpy()
+        rewrite_output = rewrite_outputs[0].squeeze().cpu().numpy()
         assert np.allclose(
             model_output, rewrite_output, rtol=1e-03, atol=1e-05)
     else:

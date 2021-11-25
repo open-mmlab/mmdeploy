@@ -20,7 +20,7 @@ model = dict(
     test_cfg=None)
 
 dataset_type = 'IcdarDataset'
-data_root = 'data/icdar2015'
+data_root = 'tests/test_codebase/test_mmocr/data'
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 
@@ -43,7 +43,7 @@ data = dict(
     test_dataloader=dict(samples_per_gpu=1),
     test=dict(
         type=dataset_type,
-        ann_file=data_root + '/instances_test.json',
-        img_prefix=data_root + '/imgs',
+        ann_file=data_root + '/text_detection.json',
+        img_prefix=data_root,
         pipeline=test_pipeline))
 evaluation = dict(interval=100, metric='hmean-iou')

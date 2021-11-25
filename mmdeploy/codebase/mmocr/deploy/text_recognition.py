@@ -102,9 +102,22 @@ class TextRecognition(BaseTask):
         test_pipeline = replace_ImageToTensor(test_pipeline)
         # for static exporting
         if input_shape is not None:
-            test_pipeline[1].img_scale = tuple(input_shape)
-            test_pipeline[1].transforms[0].keep_ratio = False
-            test_pipeline[1].transforms[0].img_scale = tuple(input_shape)
+            resize = {
+                'height': input_shape[1],
+                'min_width': input_shape[0],
+                'max_width': input_shape[0],
+                'keep_aspect_ratio': False
+            }
+            if 'transforms' in test_pipeline[1]:
+                if test_pipeline[1].transforms[0].type == 'ResizeOCR':
+                    test_pipeline[1].transforms[0].height = input_shape[1]
+                    test_pipeline[1].transforms[0].max_width = input_shape[0]
+                else:
+                    raise ValueError(
+                        f'Transforms[0] should be ResizeOCR, but got\
+                         {test_pipeline[1].transforms[0].type}')
+            else:
+                test_pipeline[1].update(resize)
 
         from mmdet.datasets.pipelines import Compose
         from mmocr.datasets import build_dataset  # noqa: F401

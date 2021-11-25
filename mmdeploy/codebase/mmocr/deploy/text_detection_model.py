@@ -90,14 +90,14 @@ class End2EndModel(BaseBackendModel):
         return boundaries
 
     def forward_test(self, imgs: torch.Tensor, *args, **kwargs) -> \
-            List[np.ndarray]:
+            List[torch.Tensor]:
         """The interface for forward test.
 
         Args:
             imgs (torch.Tensor): Input image(s) in [N x C x H x W] format.
 
         Returns:
-            List[np.ndarray]: A list of predictions of input images.
+            List[torch.Tensor]: A list of predictions of input images.
         """
         outputs = self.wrapper({'input': imgs})
         outputs = self.wrapper.output_to_list(outputs)
@@ -105,7 +105,7 @@ class End2EndModel(BaseBackendModel):
 
     def show_result(self,
                     img: np.ndarray,
-                    result: list,
+                    result: dict,
                     win_name: str,
                     show: bool = True,
                     score_thr: float = 0.3,
@@ -113,7 +113,7 @@ class End2EndModel(BaseBackendModel):
         """Show predictions of segmentation.
         Args:
             img: (np.ndarray): Input image to draw predictions.
-            result (list): A list of predictions.
+            result (dict): A dict of predictions.
             win_name (str): The name of visualization window.
             show (bool): Whether to show plotted image in windows. Defaults to
                 `True`.
