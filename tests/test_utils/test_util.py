@@ -265,34 +265,6 @@ class TestGetModelInputs:
             ]
 
 
-class TestGetMmdetParams:
-
-    config_with_mmdet_params = mmcv.Config(
-        dict(
-            codebase_config=dict(
-                type='mmdet',
-                task='ObjectDetection',
-                post_processing=dict(
-                    score_threshold=0.05,
-                    iou_threshold=0.5,
-                    max_output_boxes_per_class=200,
-                    pre_top_k=-1,
-                    keep_top_k=100,
-                    background_label_id=-1,
-                ))))
-
-    def test_get_mmdet_params(self):
-        assert util.get_mmdet_params(
-            TestGetMmdetParams.config_with_mmdet_params) == dict(
-                score_threshold=0.05,
-                iou_threshold=0.5,
-                max_output_boxes_per_class=200,
-                pre_top_k=-1,
-                keep_top_k=100,
-                background_label_id=-1,
-            )
-
-
 def test_AdvancedEnum():
     keys = [
         Task.TEXT_DETECTION, Task.TEXT_RECOGNITION, Task.SEGMENTATION,
