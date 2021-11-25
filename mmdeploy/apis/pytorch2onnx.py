@@ -5,9 +5,8 @@ import mmcv
 import torch
 
 from mmdeploy.core import RewriterContext, patch_model
-from mmdeploy.utils import (get_backend, get_codebase, get_input_shape,
-                            get_onnx_config, get_task_type, load_config)
-from .utils import create_input, init_pytorch_model
+from mmdeploy.utils import (get_backend, get_input_shape, get_onnx_config,
+                            load_config)
 
 
 def torch2onnx_impl(model: torch.nn.Module, input: torch.Tensor,
@@ -74,14 +73,13 @@ def torch2onnx(img: Any,
     mmcv.mkdir_or_exist(osp.abspath(work_dir))
     output_file = osp.join(work_dir, save_file)
 
-    codebase = get_codebase(deploy_cfg)
-    task = get_task_type(deploy_cfg)
     input_shape = get_input_shape(deploy_cfg)
 
-    torch_model = init_pytorch_model(codebase, model_cfg, model_checkpoint,
-                                     device)
-    data, model_inputs = create_input(codebase, task, model_cfg, img,
-                                      input_shape, device)
+    from mmdeploy.apis import build_task_processor
+    task_processor = build_task_processor(model_cfg, deploy_cfg, device)
+
+    torch_model = task_processor.init_pytorch_model(model_checkpoint)
+    data, model_inputs = task_processor.create_input(img, input_shape)
     if not isinstance(model_inputs, torch.Tensor):
         model_inputs = model_inputs[0]
 

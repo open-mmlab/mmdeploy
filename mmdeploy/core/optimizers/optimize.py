@@ -5,7 +5,7 @@ import onnx
 from onnx.helper import get_attribute_value
 
 
-def attribute_to_dict(attr: onnx.AttributeProto):
+def attribute_to_dict(attr: onnx.AttributeProto) -> Dict:
     """Convert onnx op attribute to dict.
 
     Args:
@@ -23,7 +23,8 @@ def attribute_to_dict(attr: onnx.AttributeProto):
     return ret
 
 
-def remove_nodes(model: onnx.ModelProto, predicate: Callable):
+def remove_nodes(model: onnx.ModelProto,
+                 predicate: Callable) -> onnx.ModelProto:
     """Remove nodes from ONNX model.
 
     Args:
@@ -54,14 +55,14 @@ def remove_nodes(model: onnx.ModelProto, predicate: Callable):
     return model
 
 
-def is_unused_mark(marks: Iterable[onnx.NodeProto]):
+def is_unused_mark(marks: Iterable[onnx.NodeProto]) -> Callable:
     """Check whether a mark is unused.
 
     Args:
         marks (Iterable[onnx.NodeProto]): A list of onnx NodeProto.
 
     Returns:
-        bool: `True` if a mark node is in `marks`.
+        Callable: The function to check if a mark node is in `marks`.
     """
 
     def f(node):
@@ -75,14 +76,14 @@ def is_unused_mark(marks: Iterable[onnx.NodeProto]):
     return f
 
 
-def is_identity(node: onnx.NodeProto):
+def is_identity(node: onnx.NodeProto) -> bool:
     """Check if an op is identity."""
     return node.op_type == 'Identity'
 
 
 def get_new_name(attrs: Dict[str, str],
                  mark_name: str = '',
-                 name_map: Optional[Dict[str, str]] = None):
+                 name_map: Optional[Dict[str, str]] = None) -> str:
     """Get new name for a node.
 
     Args:

@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, Optional, Sequence
+from typing import Callable, Dict, Optional, Sequence
 
 from torch.autograd import Function
 from torch.onnx.symbolic_helper import parse_args
@@ -36,7 +36,7 @@ class SymbolicRewriter:
         self._registry = RewriterRegistry()
 
     def add_backend(self, backend: str):
-        """Add a beckend by calling the _registry.add_backend."""
+        """Add a backend by calling the _registry.add_backend."""
         self._registry.add_backend(backend)
 
     def register_symbolic(self,
@@ -44,7 +44,7 @@ class SymbolicRewriter:
                           backend: str = Backend.DEFAULT.value,
                           is_pytorch: bool = False,
                           arg_descriptors: Optional[Sequence[str]] = None,
-                          **kwargs):
+                          **kwargs) -> Callable:
         """The decorator of the custom symbolic.
 
         Args:

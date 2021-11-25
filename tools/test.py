@@ -4,9 +4,9 @@ import sys
 from mmcv import DictAction
 from mmcv.parallel import MMDataParallel
 
-from mmdeploy.apis import (build_dataloader, build_dataset, init_backend_model,
-                           post_process_outputs, single_gpu_test)
-from mmdeploy.utils.config_utils import get_codebase, load_config
+from mmdeploy.apis import build_task_processor
+from mmdeploy.utils.config_utils import load_config
+from mmdeploy.utils.device import parse_device_id
 from mmdeploy.utils.timer import TimeCounter
 
 
@@ -36,11 +36,6 @@ def parse_args():
     parser.add_argument('--show', action='store_true', help='show results')
     parser.add_argument(
         '--show-dir', help='directory where painted images will be saved')
-    parser.add_argument(
-        '--show-score-thr',
-        type=float,
-        default=0.3,
-        help='score threshold (default: 0.3)')
     parser.add_argument(
         '--device', help='device used for conversion', default='cpu')
     parser.add_argument(
@@ -95,23 +90,20 @@ def main():
     if args.cfg_options is not None:
         model_cfg.merge_from_dict(args.cfg_options)
 
+    task_processor = build_task_processor(model_cfg, deploy_cfg, args.device)
+
     # prepare the dataset loader
-    codebase = get_codebase(deploy_cfg)
     dataset_type = 'test'
-    dataset = build_dataset(codebase, model_cfg, dataset_type)
-    data_loader = build_dataloader(
-        codebase,
+    dataset = task_processor.build_dataset(model_cfg, dataset_type)
+    data_loader = task_processor.build_dataloader(
         dataset,
         samples_per_gpu=1,
         workers_per_gpu=model_cfg.data.workers_per_gpu)
 
     # load the model of the backend
-    device_id = -1 if args.device == 'cpu' else 0
-    model = init_backend_model(
-        args.model,
-        model_cfg=args.model_cfg,
-        deploy_cfg=args.deploy_cfg,
-        device_id=device_id)
+    model = task_processor.init_backend_model(args.model)
+
+    device_id = parse_device_id(args.device)
 
     model = MMDataParallel(model, device_ids=[0])
     if args.speed_test:
@@ -125,13 +117,14 @@ def main():
                 log_interval=args.log_interval,
                 with_sync=with_sync,
                 file=output_file):
-            outputs = single_gpu_test(codebase, model, data_loader, args.show,
-                                      args.show_dir, args.show_score_thr)
+            outputs = task_processor.single_gpu_test(model, data_loader,
+                                                     args.show, args.show_dir)
     else:
-        outputs = single_gpu_test(codebase, model, data_loader, args.show,
-                                  args.show_dir, args.show_score_thr)
-    post_process_outputs(outputs, dataset, model_cfg, codebase, args.metrics,
-                         args.out, args.metric_options, args.format_only)
+        outputs = task_processor.single_gpu_test(model, data_loader, args.show,
+                                                 args.show_dir)
+    task_processor.evaluate_outputs(model_cfg, outputs, dataset, args.metrics,
+                                    args.out, args.metric_options,
+                                    args.format_only)
 
 
 if __name__ == '__main__':

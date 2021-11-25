@@ -4,7 +4,7 @@ import onnx
 from packaging import version
 
 
-def parse_extractor_io_string(io_str):
+def parse_extractor_io_string(io_str) -> tuple:
     """Parse IO string for extractor."""
     name, io_type = io_str.split(':')
     assert io_type in ['input', 'output']
@@ -44,14 +44,14 @@ def _dfs_search_reachable_nodes_fast(self, node_output_name, graph_input_nodes,
     impl(node_output_name, graph_input_nodes, reachable_nodes)
 
 
-def create_extractor(model: onnx.ModelProto):
+def create_extractor(model: onnx.ModelProto) -> onnx.utils.Extractor:
     """Create Extractor for ONNX.
 
     Args:
         model (onnx.ModelProto): An input onnx model.
 
     Returns:
-        Extractor: Extractor for the onnx.
+        onnx.utils.Extractor: Extractor for the onnx.
     """
     assert version.parse(onnx.__version__) >= version.parse('1.8.0')
     # patch extractor

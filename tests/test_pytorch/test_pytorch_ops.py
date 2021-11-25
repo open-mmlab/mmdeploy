@@ -102,7 +102,6 @@ class TestSqueeze:
         x = torch.rand(1, 1, 2, 2)
         model = OpModel(torch.squeeze)
         nodes = get_model_onnx_nodes(model, x)
-        print(nodes)
         assert nodes[0].attribute[0].ints == [0, 1]
         assert nodes[0].op_type == 'Squeeze'
 
@@ -110,6 +109,5 @@ class TestSqueeze:
         x = torch.rand(1, 1, 2, 2)
         model = OpModel(torch.squeeze, 0)
         nodes = get_model_onnx_nodes(model, x)
-        print(nodes)
         assert nodes[0].attribute[0].ints == [0]
         assert nodes[0].op_type == 'Squeeze'

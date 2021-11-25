@@ -3,6 +3,7 @@ import sys
 import time
 import warnings
 from contextlib import contextmanager
+from typing import Union
 
 import torch
 
@@ -92,7 +93,7 @@ class TimeCounter:
                  warmup: int = 1,
                  log_interval: int = 1,
                  with_sync: bool = False,
-                 file: io.TextIOWrapper = sys.stdout):
+                 file: Union[str, io.TextIOWrapper] = sys.stdout):
         """Activate the time counter.
 
         Args:
@@ -102,8 +103,8 @@ class TimeCounter:
             log_interval (int): Interval between each log, default 1.
             with_sync (bool): Whether use cuda synchronize for time counting,
                 default False.
-            file (io.TextIOWrapper): A file or file-like object to save output
-                messages. The default is `sys.stdout`.
+            file (str | io.TextIOWrapper): A file or file-like object to save
+                output messages. The default is `sys.stdout`.
         """
         assert warmup >= 1
         if file != sys.stdout:
@@ -112,7 +113,7 @@ class TimeCounter:
         if func_name is not None:
             warnings.warn('func_name must be globally unique if you call '
                           'activate multiple times')
-            assert func_name in cls.names, '{} must be registried before '\
+            assert func_name in cls.names, '{} must be registered before '\
                 'setting params'.format(func_name)
             cls.names[func_name]['warmup'] = warmup
             cls.names[func_name]['log_interval'] = log_interval

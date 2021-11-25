@@ -80,7 +80,7 @@ class RewriterRegistry:
         return decorator
 
 
-class ContextCaller():
+class ContextCaller:
     """A callable object used in RewriteContext.
 
     This class saves context variables as member variables. When a rewritten

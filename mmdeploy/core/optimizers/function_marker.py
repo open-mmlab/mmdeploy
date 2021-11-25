@@ -1,10 +1,10 @@
 import inspect
-from typing import Any, Dict, Optional, Sequence
+from typing import Any, Callable, Dict, Optional, Sequence
 
 import torch
 
 from mmdeploy.core.rewriters import FUNCTION_REWRITER
-from mmdeploy.utils import cfg_apply_marks, get_codebase, get_partition_config
+from mmdeploy.utils import cfg_apply_marks, get_partition_config
 
 MARK_FUNCTION_COUNT = dict()
 
@@ -54,7 +54,7 @@ class Mark(torch.autograd.Function):
         return n
 
     @staticmethod
-    def forward(ctx, x, *args):
+    def forward(ctx, x, *args) -> torch.Tensor:
         """Run forward."""
         return x
 
@@ -71,19 +71,20 @@ def mark_symbolic(rewriter, g, x, *args):
 @FUNCTION_REWRITER.register_rewriter(
     'mmdeploy.core.optimizers.function_marker.Mark.forward')
 def forward_of_mark(rewriter, ctx, x, dtype, shape, func, func_id, type, name,
-                    id, attrs):
+                    id, attrs) -> torch.Tensor:
     """Rewrite forward of mark op."""
     deploy_cfg = rewriter.cfg
     # save calib data
     apply_marks = cfg_apply_marks(deploy_cfg)
     create_calib = getattr(rewriter, 'create_calib', False)
     if apply_marks and create_calib:
-        codebase = get_codebase(deploy_cfg)
         partition_params = get_partition_config(deploy_cfg)
         assert partition_params is not None, 'No partition config.'
         partition_type = partition_params['type']
-        from mmdeploy.apis.utils import get_partition_cfg
-        partition_cfgs = get_partition_cfg(codebase, partition_type)
+
+        from mmdeploy.apis import get_predefined_partition_cfg
+        partition_cfgs = get_predefined_partition_cfg(deploy_cfg,
+                                                      partition_type)
         assert hasattr(rewriter, 'calib_file')
 
         for partition_id, partition_cfg in enumerate(partition_cfgs):
@@ -123,7 +124,7 @@ def forward_of_mark(rewriter, ctx, x, dtype, shape, func, func_id, type, name,
 
 
 def mark_tensors(xs: Any, func: str, func_id: int, io_type: str, ctx: Any,
-                 attrs: Dict, is_inspecting: bool, level: int):
+                 attrs: Dict, is_inspecting: bool, level: int) -> tuple:
     """Add mark node recursively.
 
     Args:
@@ -181,7 +182,7 @@ def mark_tensors(xs: Any, func: str, func_id: int, io_type: str, ctx: Any,
 def mark(func_name: Optional[str] = None,
          inputs: Optional[Sequence[str]] = None,
          outputs: Optional[Sequence[str]] = None,
-         **attrs):
+         **attrs) -> Callable:
     """The decorator used to add mark node.
 
     Mark node can be used to support model partition.

@@ -7,9 +7,7 @@ from mmcv.parallel import MMDataParallel
 
 from mmdeploy.core import (RewriterContext, patch_model,
                            reset_mark_function_count)
-from mmdeploy.utils import cfg_apply_marks, get_codebase, load_config
-from .utils import (build_dataloader, build_dataset, get_tensor_from_input,
-                    init_pytorch_model, run_inference)
+from mmdeploy.utils import cfg_apply_marks, load_config
 
 
 def create_calib_table(calib_file: str,
@@ -46,32 +44,33 @@ def create_calib_table(calib_file: str,
     # load dataset_cfg if necessary
     dataset_cfg = load_config(dataset_cfg)[0]
 
-    codebase = get_codebase(deploy_cfg)
+    from mmdeploy.apis.utils import build_task_processor
+    task_processor = build_task_processor(model_cfg, deploy_cfg, device)
+
     apply_marks = cfg_apply_marks(deploy_cfg)
     backend = 'default'
-    model = init_pytorch_model(
-        codebase, model_cfg, model_checkpoint, device=device)
-    dataset = build_dataset(codebase, dataset_cfg, dataset_type)
+    model = task_processor.init_pytorch_model(model_checkpoint)
+    dataset = task_processor.build_dataset(dataset_cfg, dataset_type)
 
     # patch model
     patched_model = patch_model(model, cfg=deploy_cfg, backend=backend)
 
-    with h5py.File(calib_file, mode='w') as calib_file:
-        calib_data_group = calib_file.create_group('calib_data')
+    with h5py.File(calib_file, mode='w') as file:
+        calib_data_group = file.create_group('calib_data')
 
         if not apply_marks:
             # create end2end group
             input_data_group = calib_data_group.create_group('end2end')
             input_group = input_data_group.create_group('input')
-        dataloader = build_dataloader(
-            codebase, dataset, 1, 1, dist=False, shuffle=False)
+        dataloader = task_processor.build_dataloader(
+            dataset, 1, 1, dist=False, shuffle=False)
         patched_model = MMDataParallel(patched_model, device_ids=[device_id])
         prog_bar = mmcv.ProgressBar(len(dataset))
         for data_id, input_data in enumerate(dataloader):
 
             if not apply_marks:
                 # save end2end data
-                input_tensor = get_tensor_from_input(codebase, input_data)
+                input_tensor = task_processor.get_tensor_from_input(input_data)
                 input_ndarray = input_tensor.detach().cpu().numpy()
                 input_group.create_dataset(
                     str(data_id),
@@ -84,10 +83,10 @@ def create_calib_table(calib_file: str,
                     cfg=deploy_cfg,
                     backend=backend,
                     create_calib=True,
-                    calib_file=calib_file,
+                    calib_file=file,
                     data_id=data_id):
                 reset_mark_function_count()
-                _ = run_inference(codebase, input_data, patched_model)
-            calib_file.flush()
+                _ = task_processor.run_inference(patched_model, input_data)
+            file.flush()
 
             prog_bar.update()

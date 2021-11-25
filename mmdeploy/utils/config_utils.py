@@ -1,11 +1,11 @@
-from typing import Optional, Union
+from typing import Dict, List, Optional, Union
 
 import mmcv
 
 from .constants import Backend, Codebase, Task
 
 
-def load_config(*args):
+def load_config(*args) -> List[mmcv.Config]:
     """Load the configuration and check the validity.
 
     Args:
@@ -93,7 +93,7 @@ def get_backend(deploy_cfg: Union[str, mmcv.Config], default=None) -> Backend:
     return backend
 
 
-def get_onnx_config(deploy_cfg: Union[str, mmcv.Config]) -> str:
+def get_onnx_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
     """Get the onnx parameters in export() from config.
 
     Args:
@@ -167,14 +167,15 @@ def is_dynamic_shape(deploy_cfg: Union[str, mmcv.Config],
     return False
 
 
-def get_input_shape(deploy_cfg: Union[str, mmcv.Config]):
+def get_input_shape(deploy_cfg: Union[str, mmcv.Config]) -> List[int]:
     """Get the input shape for static exporting.
 
     Args:
         deploy_cfg (str | mmcv.Config): The path or content of config.
 
     Returns:
-        List: The input shape for backend model (axis 2 and 3), e.g [512, 512].
+        List[int]: The input shape for backend model (axis 2 and 3),
+            e.g [512, 512].
     """
     input_shape = get_onnx_config(deploy_cfg)['input_shape']
     if input_shape is not None:
@@ -182,7 +183,7 @@ def get_input_shape(deploy_cfg: Union[str, mmcv.Config]):
     return input_shape
 
 
-def cfg_apply_marks(deploy_cfg: Union[str, mmcv.Config]) -> bool:
+def cfg_apply_marks(deploy_cfg: Union[str, mmcv.Config]) -> Union[bool, None]:
     """Check if the model needs to be partitioned by checking if the config
     contains 'apply_marks'.
 
@@ -190,7 +191,7 @@ def cfg_apply_marks(deploy_cfg: Union[str, mmcv.Config]) -> bool:
         deploy_cfg (str | mmcv.Config): The path or content of config.
 
     Returns:
-        bool: Whether config contains 'apply_marks'.
+        bool or None: Whether config contains 'apply_marks'.
     """
     partition_config = deploy_cfg.get('partition_config', None)
     if partition_config is None:
@@ -200,7 +201,7 @@ def cfg_apply_marks(deploy_cfg: Union[str, mmcv.Config]) -> bool:
     return apply_marks
 
 
-def get_partition_config(deploy_cfg: Union[str, mmcv.Config]):
+def get_partition_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
     """Check if the model needs to be partitioned and get the config of
     partition.
 
@@ -208,7 +209,7 @@ def get_partition_config(deploy_cfg: Union[str, mmcv.Config]):
         deploy_cfg (str | mmcv.Config): The path or content of config.
 
     Returns:
-        dict: The config of partition
+        dict: The config of partition.
     """
     partition_config = deploy_cfg.get('partition_config', None)
     if partition_config is None:
@@ -221,29 +222,28 @@ def get_partition_config(deploy_cfg: Union[str, mmcv.Config]):
     return partition_config
 
 
-def get_calib_config(deploy_cfg: Union[str, mmcv.Config]):
+def get_calib_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
     """Check if the model has calibration configs.
 
     Args:
         deploy_cfg (str | mmcv.Config): The path or content of config.
 
     Returns:
-        dict: The config of calibration
+        dict: The config of calibration.
     """
 
     calib_config = deploy_cfg.get('calib_config', None)
     return calib_config
 
 
-def get_calib_filename(deploy_cfg: Union[str, mmcv.Config]):
-    """Check if the model needs to create calib and get output filename of
-    calib.
+def get_calib_filename(deploy_cfg: Union[str, mmcv.Config]) -> str:
+    """Check if the model needs to create calib and get filename of calib.
 
     Args:
         deploy_cfg (str | mmcv.Config): The path or content of config.
 
     Returns:
-        str: The filename of output calib file
+        str: The filename of output calib file.
     """
 
     calib_config = get_calib_config(deploy_cfg)
@@ -257,7 +257,7 @@ def get_calib_filename(deploy_cfg: Union[str, mmcv.Config]):
         return None
 
 
-def get_common_config(deploy_cfg: Union[str, mmcv.Config]):
+def get_common_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
     """Get common parameters from config.
 
     Args:
@@ -271,7 +271,7 @@ def get_common_config(deploy_cfg: Union[str, mmcv.Config]):
     return model_params
 
 
-def get_model_inputs(deploy_cfg: Union[str, mmcv.Config]):
+def get_model_inputs(deploy_cfg: Union[str, mmcv.Config]) -> List[Dict]:
     """Get model input parameters from config.
 
     Args:
@@ -283,21 +283,3 @@ def get_model_inputs(deploy_cfg: Union[str, mmcv.Config]):
     backend_config = deploy_cfg['backend_config']
     model_params = backend_config.get('model_inputs', [])
     return model_params
-
-
-def get_mmdet_params(deploy_cfg: Union[str, mmcv.Config]):
-    """Get mmdet post-processing parameters from config.
-
-    Args:
-        deploy_cfg (str | mmcv.Config): The path or content of config.
-
-    Returns:
-        dict: A dict of parameters for mmdet.
-    """
-    deploy_cfg = load_config(deploy_cfg)[0]
-    codebase_key = 'codebase_config'
-    assert codebase_key in deploy_cfg
-    codebase_config = deploy_cfg[codebase_key]
-    post_params = codebase_config.get('post_processing', None)
-    assert post_params is not None, 'Failed to get `post_processing`.'
-    return post_params

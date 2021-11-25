@@ -27,7 +27,7 @@ class ModuleRewriter:
         self._registry = RewriterRegistry()
 
     def add_backend(self, backend: str):
-        """Add a beckend by calling the _registry.add_backend."""
+        """Add a backend by calling the _registry.add_backend."""
         self._registry.add_backend(backend)
 
     def register_rewrite_module(self,

@@ -33,7 +33,7 @@ class WrapFunction(nn.Module):
         self.wrapped_function = wrapped_function
         self.kwargs = kwargs
 
-    def forward(self, *args, **kwargs):
+    def forward(self, *args, **kwargs) -> Any:
         """Call the wrapped function."""
         kwargs.update(self.kwargs)
         return self.wrapped_function(*args, **kwargs)
@@ -73,11 +73,31 @@ class WrapModel(nn.Module):
         return func(*args, **kwargs)
 
 
+class DummyModel(torch.nn.Module):
+    """A dummy model for unit tests.
+
+    Args:
+        outputs (Any): Predefined output variables.
+    """
+
+    def __init__(self, outputs=None, *args, **kwargs):
+        torch.nn.Module.__init__(self)
+        self.outputs = outputs
+
+    def forward(self, *args, **kwargs):
+        """Run forward."""
+        return self.outputs
+
+    def __call__(self, *args, **kwds):
+        """Call the forward method."""
+        return self.forward(*args, **kwds)
+
+
 class SwitchBackendWrapper:
     """A switcher for backend wrapper for unit tests.
     Examples:
         >>> from mmdeploy.utils.test import SwitchBackendWrapper
-        >>> from mmdeploy.apis.onnxruntime.onnxruntime_utils import ORTWrapper
+        >>> from mmdeploy.backend.onnxruntime import ORTWrapper
         >>> with SwitchBackendWrapper(ORTWrapper) as wrapper:
         >>>     wrapper.set(ORTWrapper, outputs=outputs)
         >>>     ...
@@ -89,10 +109,20 @@ class SwitchBackendWrapper:
     call = None
 
     class BackendWrapper(torch.nn.Module):
-        """A dummy wrapper for unit tests."""
+        """A dummy backend wrapper for unit tests.
 
-        def __init__(self, *args, **kwargs):
-            self.output_names = ['dets', 'labels']
+        To enable BaseWrapper.output_to_list(), the wrapper needs member
+        variable `_output_names` that is set in constructor. Therefore,
+        the dummy BackendWrapper needs a constructor that receives
+        output_names.
+
+        Args:
+            output_names (Any): `output_name` of BaseWrapper
+        """
+
+        def __init__(self, output_names=['dets', 'labels'], *args, **kwargs):
+            torch.nn.Module.__init__(self)
+            self._output_names = output_names
 
         def forward(self, *args, **kwargs):
             """Run forward."""
@@ -165,7 +195,8 @@ def assert_allclose(expected: List[Union[torch.Tensor, np.ndarray]],
                 raise
 
 
-def get_model_outputs(model: nn.Module, func_name: str, model_inputs: dict):
+def get_model_outputs(model: nn.Module, func_name: str,
+                      model_inputs: dict) -> Any:
     """To get outputs of pytorch model.
 
     Args:
@@ -268,6 +299,7 @@ def get_backend_outputs(onnx_file_path: str,
     flatten_model_inputs = get_flatten_inputs(model_inputs)
     input_names = [k for k, v in flatten_model_inputs.items() if k != 'ctx']
     output_names = get_onnx_config(deploy_cfg).get('output_names', None)
+    backend_files = [onnx_file_path]
     # prepare backend model and input features
     if backend == Backend.TENSORRT:
         # convert to engine
@@ -281,16 +313,16 @@ def get_backend_outputs(onnx_file_path: str,
             0,
             deploy_cfg=deploy_cfg,
             onnx_model=onnx_file_path)
-        backend_model = trt_apis.TRTWrapper(trt_file_path)
+        backend_files = [trt_file_path]
         for k, v in model_inputs.items():
             model_inputs[k] = model_inputs[k].cuda()
 
         backend_feats = model_inputs
+        device = 'cuda:0'
     elif backend == Backend.ONNXRUNTIME:
         import mmdeploy.apis.onnxruntime as ort_apis
         if not ort_apis.is_available():
             return None
-        backend_model = ort_apis.ORTWrapper(onnx_file_path, 0, None)
         feature_list = []
         backend_feats = {}
         for k, item in model_inputs.items():
@@ -313,6 +345,7 @@ def get_backend_outputs(onnx_file_path: str,
                 backend_feats[input_names[i]] = feature_list[i]
             else:
                 backend_feats[str(i)] = feature_list[i]
+        device = 'cpu'
     elif backend == Backend.NCNN:
         return None
     elif backend == Backend.OPENVINO:
@@ -328,17 +361,21 @@ def get_backend_outputs(onnx_file_path: str,
         }
         openvino_apis.onnx2openvino(input_info, output_names, onnx_file_path,
                                     openvino_work_dir)
-        backend_model = openvino_apis.OpenVINOWrapper(openvino_file_path)
-
+        backend_files = [openvino_file_path]
         backend_feats = flatten_model_inputs
+        device = 'cpu'
     elif backend == Backend.DEFAULT:
         return None
     else:
         raise NotImplementedError(
             f'Unimplemented backend type: {backend.value}')
 
+    from mmdeploy.codebase.base import BaseBackendModel
+    backend_model = BaseBackendModel._build_wrapper(backend, backend_files,
+                                                    device, output_names)
     with torch.no_grad():
-        backend_outputs = backend_model.forward(backend_feats)
+        backend_outputs = backend_model(backend_feats)
+    backend_outputs = backend_model.output_to_list(backend_outputs)
     return backend_outputs
 
 
@@ -354,7 +391,7 @@ def get_rewrite_outputs(wrapped_model: nn.Module,
         deploy_cfg (mmcv.Config): Deployment config.
 
     Returns:
-        Any: The outputs of model, decided by the backend wrapper.
+        List[torch.Tensor]: The outputs of model.
         bool: A flag indicate the type of outputs. If the flag is True, then
         the outputs are backend output, otherwise they are outputs of wrapped
         pytorch model.

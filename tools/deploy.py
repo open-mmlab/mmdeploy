@@ -1,7 +1,6 @@
 import argparse
 import logging
 import os.path as osp
-import subprocess
 import sys
 import traceback
 from functools import partial
@@ -10,11 +9,11 @@ import mmcv
 import torch.multiprocessing as mp
 from torch.multiprocessing import Process, set_start_method
 
-from mmdeploy.apis import (create_calib_table, extract_model, inference_model,
-                           torch2onnx)
-from mmdeploy.apis.utils import get_partition_cfg as parse_partition_cfg
+from mmdeploy.apis import (create_calib_table, extract_model,
+                           get_predefined_partition_cfg, torch2onnx,
+                           visualize_model)
 from mmdeploy.utils import (Backend, get_backend, get_calib_filename,
-                            get_codebase, get_model_inputs, get_onnx_config,
+                            get_model_inputs, get_onnx_config,
                             get_partition_config, load_config)
 from mmdeploy.utils.export_info import dump_info
 
@@ -51,7 +50,7 @@ def parse_args():
 def target_wrapper(target, log_level, ret_value, *args, **kwargs):
     logger = logging.getLogger()
     logging.basicConfig(
-        format='%(asctime)s,%(msecs)d %(levelname)-8s'
+        format='%(asctime)s,%(name)s %(levelname)-8s'
         ' [%(filename)s:%(lineno)d] %(message)s',
         datefmt='%Y-%m-%d:%H:%M:%S')
     logger.level
@@ -90,7 +89,7 @@ def main():
     args = parse_args()
     set_start_method('spawn')
     logging.basicConfig(
-        format='%(asctime)s,%(msecs)d %(levelname)-8s'
+        format='%(asctime)s,%(name)s %(levelname)-8s'
         ' [%(filename)s:%(lineno)d] %(message)s',
         datefmt='%Y-%m-%d:%H:%M:%S')
     logger = logging.getLogger()
@@ -133,8 +132,8 @@ def main():
             partition_cfgs = partition_cfgs.get('partition_cfg', None)
         else:
             assert 'type' in partition_cfgs
-            partition_cfgs = parse_partition_cfg(
-                get_codebase(deploy_cfg), partition_cfgs['type'])
+            partition_cfgs = get_predefined_partition_cfg(
+                deploy_cfg, partition_cfgs['type'])
 
         origin_onnx_file = onnx_files[0]
         onnx_files = []
@@ -201,27 +200,23 @@ def main():
             backend_files.append(osp.join(args.work_dir, save_file))
 
     elif backend == Backend.NCNN:
-        from mmdeploy.apis.ncnn import get_onnx2ncnn_path
         from mmdeploy.apis.ncnn import is_available as is_available_ncnn
 
         if not is_available_ncnn():
             logging.error('ncnn support is not available.')
             exit(-1)
 
-        onnx2ncnn_path = get_onnx2ncnn_path()
+        from mmdeploy.apis.ncnn import onnx2ncnn, get_output_model_file
 
         backend_files = []
         for onnx_path in onnx_files:
-            onnx_name = osp.splitext(osp.split(onnx_path)[1])[0]
-            save_param = onnx_name + '.param'
-            save_bin = onnx_name + '.bin'
-
-            save_param = osp.join(args.work_dir, save_param)
-            save_bin = osp.join(args.work_dir, save_bin)
-
-            subprocess.call([onnx2ncnn_path, onnx_path, save_param, save_bin])
-
-            backend_files += [save_param, save_bin]
+            create_process(
+                f'onnx2ncnn with {onnx_path}',
+                target=onnx2ncnn,
+                args=(onnx_path, args.work_dir),
+                kwargs=dict(),
+                ret_value=ret_value)
+            backend_files += get_output_model_file(onnx_path, args.work_dir)
 
     elif backend == Backend.OPENVINO:
         from mmdeploy.apis.openvino import \
@@ -278,7 +273,7 @@ def main():
     # visualize model of the backend
     create_process(
         f'visualize {backend.value} model',
-        target=inference_model,
+        target=visualize_model,
         args=(model_cfg_path, deploy_cfg_path, backend_files, args.test_img,
               args.device),
         kwargs=dict(
@@ -290,7 +285,7 @@ def main():
     # visualize pytorch model
     create_process(
         'visualize pytorch model',
-        target=inference_model,
+        target=visualize_model,
         args=(model_cfg_path, deploy_cfg_path, [checkpoint_path],
               args.test_img, args.device),
         kwargs=dict(

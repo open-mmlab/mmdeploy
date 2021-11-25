@@ -28,12 +28,8 @@ class RewriterManager:
 
 
 REWRITER_MANAGER = RewriterManager()
-REWRITER_MANAGER.add_backend(Backend.ONNXRUNTIME.value)
-REWRITER_MANAGER.add_backend(Backend.TENSORRT.value)
-REWRITER_MANAGER.add_backend(Backend.NCNN.value)
-REWRITER_MANAGER.add_backend(Backend.PPL.value)
-REWRITER_MANAGER.add_backend(Backend.PYTORCH.value)
-REWRITER_MANAGER.add_backend(Backend.OPENVINO.value)
+for backend in Backend:
+    REWRITER_MANAGER.add_backend(backend.value)
 
 MODULE_REWRITER = REWRITER_MANAGER.module_rewriter
 FUNCTION_REWRITER = REWRITER_MANAGER.function_rewrite
