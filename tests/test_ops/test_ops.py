@@ -14,7 +14,7 @@ TEST_TENSORRT = TestTensorRTExporter()
 TEST_NCNN = TestNCNNExporter()
 
 
-@pytest.mark.parametrize('backend', [TEST_TENSORRT, TEST_ONNXRT])
+@pytest.mark.parametrize('backend', [TEST_ONNXRT, TEST_TENSORRT])
 @pytest.mark.parametrize('pool_h,pool_w,spatial_scale,sampling_ratio',
                          [(2, 2, 1.0, 2), (4, 4, 2.0, 4)])
 def test_roi_align(backend,
@@ -227,7 +227,7 @@ def test_batched_nms(backend,
         nms_boxes = torch.tensor(input_list[0], dtype=torch.float32)
         scores = torch.tensor(input_list[1], dtype=torch.float32)
 
-    from mmdeploy.mmdet.core.post_processing.bbox_nms import _multiclass_nms
+    from mmdeploy.codebase.mmdet.core.post_processing import _multiclass_nms
     expected_result = _multiclass_nms(
         nms_boxes,
         scores,

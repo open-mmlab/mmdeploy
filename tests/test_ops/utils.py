@@ -62,11 +62,12 @@ class TestOnnxRTExporter:
         else:
             model_outputs = list(model_outputs)
 
-        onnx_model = ort_apis.ORTWrapper(onnx_file_path, 0, output_names)
+        from mmdeploy.backend.onnxruntime import ORTWrapper
+        onnx_model = ORTWrapper(onnx_file_path, 'cpu', output_names)
         with torch.no_grad():
             onnx_outputs = onnx_model.forward(
                 dict(zip(input_names, input_list)))
-
+        onnx_outputs = [onnx_outputs[i] for i in output_names]
         assert_allclose(model_outputs, onnx_outputs, tolerate_small_mismatch)
 
 
@@ -152,12 +153,11 @@ class TestTensorRTExporter:
         else:
             model_outputs = [data.cpu().float() for data in model_outputs]
 
-        trt_model = trt_apis.TRTWrapper(trt_file_path)
+        from mmdeploy.backend.tensorrt import TRTWrapper
+        trt_model = TRTWrapper(trt_file_path, output_names)
         input_list = [data.cuda() for data in input_list]
         trt_outputs = trt_model(dict(zip(input_names, input_list)))
-        trt_outputs = [
-            trt_outputs[name].cpu().float() for name in output_names
-        ]
+        trt_outputs = [trt_outputs[i].float().cpu() for i in output_names]
         assert_allclose(model_outputs, trt_outputs, tolerate_small_mismatch)
 
 
@@ -204,7 +204,8 @@ class TestNCNNExporter:
                 dynamic_axes=dynamic_axes,
                 opset_version=11)
 
-        onnx2ncnn_path = ncnn_apis.get_onnx2ncnn_path()
+        from mmdeploy.backend.ncnn.init_plugins import get_onnx2ncnn_path
+        onnx2ncnn_path = get_onnx2ncnn_path()
         subprocess.call(
             [onnx2ncnn_path, onnx_file_path, ncnn_param_path, ncnn_bin_path])
 
@@ -217,8 +218,9 @@ class TestNCNNExporter:
         model_outputs = [
             model_output.float() for model_output in model_outputs
         ]
-        ncnn_model = ncnn_apis.NCNNWrapper(ncnn_param_path, ncnn_bin_path,
-                                           output_names)
+
+        from mmdeploy.backend.ncnn import NCNNWrapper
+        ncnn_model = NCNNWrapper(ncnn_param_path, ncnn_bin_path, output_names)
         ncnn_outputs = ncnn_model(dict(zip(input_names, inputs_list)))
         ncnn_outputs = [ncnn_outputs[name] for name in output_names]
 
@@ -246,12 +248,12 @@ class TestNCNNExporter:
 
         onnx.save_model(model, onnx_file_path)
 
-        import mmdeploy.apis.ncnn as ncnn_apis
-        onnx2ncnn_path = ncnn_apis.get_onnx2ncnn_path()
+        from mmdeploy.backend.ncnn.init_plugins import get_onnx2ncnn_path
+        onnx2ncnn_path = get_onnx2ncnn_path()
         subprocess.call(
             [onnx2ncnn_path, onnx_file_path, ncnn_param_path, ncnn_bin_path])
 
-        ncnn_model = ncnn_apis.NCNNWrapper(ncnn_param_path, ncnn_bin_path,
-                                           output_names)
+        from mmdeploy.backend.ncnn import NCNNWrapper
+        ncnn_model = NCNNWrapper(ncnn_param_path, ncnn_bin_path, output_names)
 
         return ncnn_model
