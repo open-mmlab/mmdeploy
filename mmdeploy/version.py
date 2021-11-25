@@ -26,3 +26,5 @@ def parse_version_info(version_str: str) -> Tuple:
 
 
 version_info = parse_version_info(__version__)
+
+__all__ = ['__version__', 'version_info', 'parse_version_info']
