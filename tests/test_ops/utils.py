@@ -248,10 +248,8 @@ class TestNCNNExporter:
 
         onnx.save_model(model, onnx_file_path)
 
-        from mmdeploy.backend.ncnn.init_plugins import get_onnx2ncnn_path
-        onnx2ncnn_path = get_onnx2ncnn_path()
-        subprocess.call(
-            [onnx2ncnn_path, onnx_file_path, ncnn_param_path, ncnn_bin_path])
+        from mmdeploy.backend.ncnn.onnx2ncnn import onnx2ncnn
+        onnx2ncnn(onnx_file_path, ncnn_param_path, ncnn_bin_path)
 
         from mmdeploy.backend.ncnn import NCNNWrapper
         ncnn_model = NCNNWrapper(ncnn_param_path, ncnn_bin_path, output_names)

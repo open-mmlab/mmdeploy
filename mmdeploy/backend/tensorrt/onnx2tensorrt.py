@@ -22,7 +22,8 @@ def onnx2tensorrt(work_dir: str,
 
     Args:
         work_dir (str): A working directory.
-        save_file (str): File path to save TensorRT engine.
+        save_file (str): The base name of the file to save TensorRT engine.
+            E.g. `end2end.engine`.
         model_id (int): Index of input model.
         deploy_cfg (str | mmcv.Config): Deployment config.
         onnx_model (str | onnx.ModelProto): input onnx model.

@@ -117,7 +117,7 @@ def save_trt_engine(engine: trt.ICudaEngine, path: str) -> None:
 
     Args:
         engine (tensorrt.ICudaEngine): TensorRT engine to be serialized.
-        path (str): The disk path to write the engine.
+        path (str): The absolute disk path to write the engine.
     """
     with open(path, mode='wb') as f:
         f.write(bytearray(engine.serialize()))

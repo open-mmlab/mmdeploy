@@ -3,6 +3,7 @@ import subprocess
 from subprocess import CalledProcessError, run
 from typing import Dict, List, Union
 
+import mmcv
 import torch
 
 
@@ -34,6 +35,7 @@ def get_output_model_file(onnx_path: str, work_dir: str) -> str:
     Returns:
         str: The path to the file where the export result will be located.
     """
+    mmcv.mkdir_or_exist(osp.abspath(work_dir))
     file_name = osp.splitext(osp.split(onnx_path)[1])[0]
     model_xml = osp.join(work_dir, file_name + '.xml')
     return model_xml

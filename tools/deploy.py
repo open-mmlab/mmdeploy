@@ -210,13 +210,15 @@ def main():
 
         backend_files = []
         for onnx_path in onnx_files:
+            model_param_path, model_bin_path = get_output_model_file(
+                onnx_path, args.work_dir)
             create_process(
                 f'onnx2ncnn with {onnx_path}',
                 target=onnx2ncnn,
-                args=(onnx_path, args.work_dir),
+                args=(onnx_path, model_param_path, model_bin_path),
                 kwargs=dict(),
                 ret_value=ret_value)
-            backend_files += get_output_model_file(onnx_path, args.work_dir)
+            backend_files += [model_param_path, model_bin_path]
 
     elif backend == Backend.OPENVINO:
         from mmdeploy.apis.openvino import \
