@@ -23,7 +23,7 @@ Once you have installed MMDeploy, you can convert the PyTorch model in the OpenM
 # If you do not know where to find the path. Just type `pip show mmdeploy` and `pip show mmdet` in your console.
 
 python ${MMDEPLOY_DIR}/tools/deploy.py \
-    ${MMDEPLOY_DIR}/configs/mmdet/two-stage_tensorrt_dynamic-320x320-1344x1344.py \
+    ${MMDEPLOY_DIR}/configs/mmdet/detection/detection_tensorrt_dynamic-320x320-1344x1344.py \
     ${MMDET_DIR}/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py \
     ${CHECKPOINT_DIR}/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth \
     ${INPUT_IMG} \
@@ -59,7 +59,7 @@ You might wonder that does the backend model have the same precision as the orig
 
 ```bash
 python ${MMDEPLOY_DIR}/tools/test.py \
-    ${MMDEPLOY_DIR}/configs/mmdet/two-stage_tensorrt_dynamic-320x320-1344x1344.py \
+    ${MMDEPLOY_DIR}/configs/detection/detection_tensorrt_dynamic-320x320-1344x1344.py \
     ${MMDET_DIR}/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py \
     --model ${BACKEND_MODEL_FILES} \
     --metrics ${METRICS} \

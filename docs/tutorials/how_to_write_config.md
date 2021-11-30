@@ -20,9 +20,10 @@ This tutorial describes how to write a config for model conversion and deploymen
     - [Example](#example-4)
   - [4. A complete example of mmcls on TensorRT](#4-a-complete-example-of-mmcls-on-tensorrt)
   - [5. The name rules of our deployment config](#5-the-name-rules-of-our-deployment-config)
+    - [Example](#example-5)
   - [6. How to write model config](#6-how-to-write-model-config)
-  - [7. Reminder](#6-reminder)
-  - [8. FAQs](#7-faqs)
+  - [7. Reminder](#7-reminder)
+  - [8. FAQs](#8-faqs)
 
 <!-- TOC -->
 
@@ -110,15 +111,14 @@ partition_config = dict(type='single_stage', apply_marks=True)
 
 #### List of tasks in all codebases
 
-|     codebase     |       task       | partition |
-| :--------------: | :--------------: | :-------: |
-| mmcls            | classification   |     N     |
-| mmdet            | single-stage     |     Y     |
-| mmdet            | two-stage        |     Y     |
-| mmseg            | segmentation     |     N     |
-| mmocr            | text-detection   |     N     |
-| mmocr            | text-recognition |     N     |
-| mmedit           | supe-resolution  |     N     |
+| codebase |       task       | partition |
+| :------: | :--------------: | :-------: |
+|  mmcls   |  classification  |     N     |
+|  mmdet   |    detection     |     Y     |
+|  mmseg   |   segmentation   |     N     |
+|  mmocr   |  text-detection  |     N     |
+|  mmocr   | text-recognition |     N     |
+|  mmedit  | supe-resolution  |     N     |
 
 ### 3. How to write backend config
 

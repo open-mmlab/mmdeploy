@@ -1,4 +1,4 @@
-_base_ = ['./two-stage_tensorrt_fp16_dynamic-320x320-1344x1344.py']
+_base_ = ['./detection_tensorrt_int8_dynamic-320x320-1344x1344.py']
 
 partition_config = dict(type='two_stage', apply_marks=True)
 backend_config = dict(
