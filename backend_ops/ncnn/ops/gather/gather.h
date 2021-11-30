@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved.
 #ifndef LAYER_GATHER_H
 #define LAYER_GATHER_H
 

@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from .anchor_head import anchor_head__get_bboxes, anchor_head__get_bboxes__ncnn
 from .atss_head import atss_head__get_bboxes
 from .fcos_head import fcos_head__get_bboxes, fcos_head__get_bboxes__ncnn

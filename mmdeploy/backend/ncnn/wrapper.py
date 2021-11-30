@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import importlib
 from typing import Dict, Optional, Sequence
 

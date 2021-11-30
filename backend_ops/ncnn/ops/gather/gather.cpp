@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved.
 #include "gather.h"
 
 #include "../ncnn_ops_definer.h"

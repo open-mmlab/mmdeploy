@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved.
 #ifndef TRT_MULTI_LEVEL_ROI_ALIGN_HPP
 #define TRT_MULTI_LEVEL_ROI_ALIGN_HPP
 

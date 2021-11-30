@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved.
 #ifndef LAYER_CONSTANTOFSHAPE_H
 #define LAYER_CONSTANTOFSHAPE_H
 

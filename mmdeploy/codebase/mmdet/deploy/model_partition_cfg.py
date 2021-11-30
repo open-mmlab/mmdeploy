@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 MMDET_PARTITION_CFG = dict(
     single_stage=[
         dict(

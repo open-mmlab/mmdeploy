@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved.
 #ifndef TRT_SCATTERND_KERNEL_HPP
 #define TRT_SCATTERND_KERNEL_HPP
 #include <cuda_runtime.h>

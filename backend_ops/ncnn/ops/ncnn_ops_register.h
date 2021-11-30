@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved.
 #ifndef NCNN_OPS_REGISTER_H
 #define NCNN_OPS_REGISTER_H
 

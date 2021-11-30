@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from typing import Optional, Sequence
 
 from pyppl import nn as pplnn

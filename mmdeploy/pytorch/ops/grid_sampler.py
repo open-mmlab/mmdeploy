@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from torch.onnx.symbolic_helper import parse_args
 
 from mmdeploy.core import SYMBOLIC_REWRITER

@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved.
 #ifndef TRT_MULTI_LEVEL_ROI_ALIGN_KERNEL_HPP
 #define TRT_MULTI_LEVEL_ROI_ALIGN_KERNEL_HPP
 #include <cuda_runtime.h>

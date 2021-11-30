@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from .base import base_recognizer__forward
 from .crnn_decoder import crnndecoder__forward_train__ncnn
 from .encode_decode_recognizer import encode_decode_recognizer__simple_test

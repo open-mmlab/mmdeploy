@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved.
 #ifndef TRT_PLUGIN_BASE_HPP
 #define TRT_PLUGIN_BASE_HPP
 #include "NvInferRuntime.h"

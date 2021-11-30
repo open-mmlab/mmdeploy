@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import torch
 
 from mmdeploy.codebase.mmdet.deploy import clip_bboxes

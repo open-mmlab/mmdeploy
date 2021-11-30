@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from .adaptive_avg_pool import (adaptive_avg_pool1d__default,
                                 adaptive_avg_pool2d__default,
                                 adaptive_avg_pool3d__default)

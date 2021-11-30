@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from mmseg.ops import resize
 
 from mmdeploy.core import FUNCTION_REWRITER

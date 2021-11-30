@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from .deploy import MMEditing, SuperResolution
 from .models import *  # noqa: F401,F403
 

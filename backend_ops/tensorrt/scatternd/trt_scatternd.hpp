@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved.
 #ifndef TRT_SCATTERND_HPP
 #define TRT_SCATTERND_HPP
 #include <cublas_v2.h>

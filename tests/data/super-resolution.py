@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 onnx_config = dict(
     dynamic_axes={
         'input': {

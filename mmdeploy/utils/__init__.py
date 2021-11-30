@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from .config_utils import (cfg_apply_marks, get_backend, get_calib_config,
                            get_calib_filename, get_codebase, get_common_config,
                            get_input_shape, get_model_inputs, get_onnx_config,

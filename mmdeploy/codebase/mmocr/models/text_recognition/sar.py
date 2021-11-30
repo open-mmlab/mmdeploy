@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import mmocr.utils as utils
 import numpy as np
 import torch

@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import logging
 import warnings
 from typing import Any, Dict, Optional, Sequence, Tuple, Union

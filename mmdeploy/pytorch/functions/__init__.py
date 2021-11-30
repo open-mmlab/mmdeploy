@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from .getattribute import tensor__getattribute__ncnn
 from .group_norm import group_norm__ncnn
 from .interpolate import interpolate__ncnn

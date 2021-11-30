@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 exp_name = 'srcnn_x4k915_g1_1000k_div2k'
 
 scale = 4

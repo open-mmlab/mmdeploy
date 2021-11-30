@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import inspect
 from typing import Any, Callable, Dict, Optional, Sequence
 

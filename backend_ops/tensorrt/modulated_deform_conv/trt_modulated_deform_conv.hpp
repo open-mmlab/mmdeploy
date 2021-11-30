@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved.
 #ifndef TRT_MODULATED_DEFORM_CONV_HPP
 #define TRT_MODULATED_DEFORM_CONV_HPP
 #include <cublas_v2.h>

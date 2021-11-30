@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from mmdeploy.backend.ncnn import is_available as ncnn_available
 from mmdeploy.backend.onnxruntime import is_available as ort_available
 from mmdeploy.backend.openvino import is_available as openvino_available

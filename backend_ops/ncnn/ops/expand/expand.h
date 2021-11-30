@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved.
 #ifndef LAYER_EXPAND_H
 #define LAYER_EXPAND_H
 

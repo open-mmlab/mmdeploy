@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from .bbox_head import bbox_head__forward, bbox_head__get_bboxes
 from .cascade_roi_head import cascade_roi_head__simple_test
 from .fcn_mask_head import fcn_mask_head__get_seg_masks

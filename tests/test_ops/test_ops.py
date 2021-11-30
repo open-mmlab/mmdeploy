@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import onnx
 import pytest
 import torch

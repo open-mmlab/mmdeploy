@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import tempfile
 from typing import Any, Callable, Dict, List, Tuple, Union
 

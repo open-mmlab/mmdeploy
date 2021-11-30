@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from .calibration import create_calib_table
 from .extract_model import extract_model
 from .inference import inference_model

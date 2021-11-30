@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved.
 // right alignment broadcast (c, h, w).
 // the same as onnx
 #include "expand.h"

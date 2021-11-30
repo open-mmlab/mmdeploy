@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved.
 #ifndef LAYER_SHAPE_H
 #define LAYER_SHAPE_H
 

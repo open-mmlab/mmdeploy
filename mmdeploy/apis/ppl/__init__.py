@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from mmdeploy.backend.ppl import is_available
 
 __all__ = ['is_available']

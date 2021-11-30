@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from typing import Any, Callable, Dict
 
 from mmdeploy.utils.constants import Backend

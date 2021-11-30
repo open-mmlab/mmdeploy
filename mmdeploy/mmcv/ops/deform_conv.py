@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from mmdeploy.core import SYMBOLIC_REWRITER
 
 

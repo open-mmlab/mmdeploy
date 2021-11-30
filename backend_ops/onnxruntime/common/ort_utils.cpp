@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved.
 #include "ort_utils.h"
 
 namespace mmdeploy {

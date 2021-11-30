@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved.
 #include "common_cuda_helper.hpp"
 #include "float.h"
 #include "trt_roi_align_kernel.hpp"

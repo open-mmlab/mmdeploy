@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import torch
 
 from mmdeploy.codebase.mmdet import (distance2bbox, get_post_processing_params,
