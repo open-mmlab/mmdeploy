@@ -2,16 +2,16 @@ name: build
 
 on:
   push:
-    paths:
-      - '!demo/**'
-      - '!tools/**'
+    paths-ignore:
+      - 'demo/**'
+      - 'tools/**'
 
   pull_request:
-    paths:
-      - '!demo/**'
-      - '!tools/**'
-      - '!docs/**'
-      - '!docs_zh-CN/**'
+    paths-ignore:
+      - 'demo/**'
+      - 'tools/**'
+      - 'docs/**'
+      - 'docs_zh-CN/**'
 
 jobs:
   build_cpu:
