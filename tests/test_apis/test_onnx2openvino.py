@@ -8,9 +8,8 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mmdeploy.apis.openvino import is_available
-
-openvino_skip = not is_available()
+from mmdeploy.utils import Backend
+from mmdeploy.utils.test import backend_checker
 
 
 @pytest.mark.skip(reason='This a not test class but a utility class.')
@@ -52,14 +51,14 @@ def generate_onnx_file(model, export_img, onnx_file):
 def get_outputs(pytorch_model, openvino_model_path, input):
     output_pytorch = pytorch_model(input).numpy()
 
-    from mmdeploy.apis.openvino import OpenVINOWrapper
+    from mmdeploy.backend.openvino import OpenVINOWrapper
     openvino_model = OpenVINOWrapper(openvino_model_path)
     openvino_output = openvino_model({'input': input})['output']
 
     return output_pytorch, openvino_output
 
 
-@pytest.mark.skipif(openvino_skip, reason='OpenVINO not avaiable')
+@backend_checker(Backend.OPENVINO)
 def test_onnx2openvino():
     from mmdeploy.apis.openvino import get_output_model_file, onnx2openvino
     pytorch_model = TestModel().eval()
@@ -83,7 +82,7 @@ def test_onnx2openvino():
         'OpenVINO and PyTorch outputs are not the same.'
 
 
-@pytest.mark.skipif(openvino_skip, reason='OpenVINO not avaiable')
+@backend_checker(Backend.OPENVINO)
 def test_can_not_run_onnx2openvino_without_mo():
     current_environ = dict(os.environ)
     os.environ.clear()
@@ -100,7 +99,7 @@ def test_can_not_run_onnx2openvino_without_mo():
         'The onnx2openvino script was launched without checking for MO.'
 
 
-@pytest.mark.skipif(openvino_skip, reason='OpenVINO not avaiable')
+@backend_checker(Backend.OPENVINO)
 def test_get_input_shape_from_cfg():
     from mmdeploy.apis.openvino import get_input_shape_from_cfg
 

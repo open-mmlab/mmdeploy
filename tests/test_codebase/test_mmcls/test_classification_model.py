@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import importlib
 import os.path as osp
 from tempfile import NamedTemporaryFile
 
@@ -10,14 +9,13 @@ import torch
 
 import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.utils import Backend
-from mmdeploy.utils.test import SwitchBackendWrapper
+from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
 
 NUM_CLASS = 1000
 IMAGE_SIZE = 64
 
 
-@pytest.mark.skipif(
-    not importlib.util.find_spec('onnxruntime'), reason='requires onnxruntime')
+@backend_checker(Backend.ONNXRUNTIME)
 class TestEnd2EndModel:
 
     @classmethod
@@ -105,8 +103,7 @@ def test_get_classes_from_config(from_file, data_type):
         f'fail to get CLASSES of dataset: {dataset_type}'
 
 
-@pytest.mark.skipif(
-    not importlib.util.find_spec('onnxruntime'), reason='requires onnxruntime')
+@backend_checker(Backend.ONNXRUNTIME)
 def test_build_classificaation_model():
     model_cfg = mmcv.Config(dict(data=dict(test={'type': 'ImageNet'})))
     deploy_cfg = mmcv.Config(

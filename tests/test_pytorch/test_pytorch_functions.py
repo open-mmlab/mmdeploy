@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import importlib
 
 import mmcv
 import numpy as np
@@ -7,7 +6,9 @@ import pytest
 import torch
 import torch.nn.functional as func
 
-from mmdeploy.utils.test import WrapFunction, get_rewrite_outputs
+from mmdeploy.utils import Backend
+from mmdeploy.utils.test import (WrapFunction, backend_checker,
+                                 get_rewrite_outputs)
 
 deploy_cfg_ncnn = mmcv.Config(
     dict(
@@ -39,8 +40,7 @@ def get_trt_config(output_names, shape):
     return deploy_cfg_tensorrt
 
 
-@pytest.mark.skipif(
-    not importlib.util.find_spec('ncnn'), reason='requires ncnn')
+@backend_checker(Backend.NCNN)
 def test_get_attribute():
 
     def model_func(tensor):
@@ -59,8 +59,7 @@ def test_get_attribute():
     'outputs: {}'.format(rewrite_outputs)
 
 
-@pytest.mark.skipif(
-    not importlib.util.find_spec('ncnn'), reason='requires ncnn')
+@backend_checker(Backend.NCNN)
 def test_group_norm_ncnn():
     input = torch.rand([1, 2, 2, 2])
     weight = torch.rand([2])
@@ -79,8 +78,7 @@ def test_group_norm_ncnn():
     assert np.allclose(model_output, rewrite_output, rtol=1e-03, atol=1e-05)
 
 
-@pytest.mark.skipif(
-    not importlib.util.find_spec('ncnn'), reason='requires ncnn')
+@backend_checker(Backend.NCNN)
 def test_interpolate_static():
     input = torch.rand([1, 2, 2, 2])
     model_output = func.interpolate(input, scale_factor=[2, 2])
@@ -97,8 +95,7 @@ def test_interpolate_static():
     assert np.allclose(model_output, rewrite_output, rtol=1e-03, atol=1e-05)
 
 
-@pytest.mark.skipif(
-    not importlib.util.find_spec('ncnn'), reason='requires ncnn')
+@backend_checker(Backend.NCNN)
 def test_linear_ncnn():
     input = torch.rand([1, 2, 2])
     weight = torch.rand([2, 2])
@@ -117,9 +114,7 @@ def test_linear_ncnn():
     assert np.allclose(model_output, rewrite_output, rtol=1e-03, atol=1e-05)
 
 
-@pytest.mark.skipif(not torch.cuda.is_available(), reason='requires cuda')
-@pytest.mark.skipif(
-    not importlib.util.find_spec('tensorrt'), reason='requires tensorrt')
+@backend_checker(Backend.TENSORRT)
 def test_repeat_static():
     input = torch.rand([1])
 
@@ -144,8 +139,7 @@ def test_repeat_static():
         assert rewrite_output is not None
 
 
-@pytest.mark.skipif(
-    not importlib.util.find_spec('ncnn'), reason='requires ncnn')
+@backend_checker(Backend.NCNN)
 def test_size_of_tensor_static():
 
     def model_func(input):
@@ -168,8 +162,7 @@ class TestTopk:
 
     input = torch.rand(1, 5, 5, 5)
 
-    @pytest.mark.skipif(
-        not importlib.util.find_spec('ncnn'), reason='requires ncnn')
+    @backend_checker(Backend.NCNN)
     @pytest.mark.parametrize('k', [1, 3, 4])
     @pytest.mark.parametrize('dim', [1, 2, 3])
     def test_topk_ncnn(self, dim, k):
@@ -190,9 +183,7 @@ class TestTopk:
 
         assert np.allclose(model_output, output[1], rtol=1e-03, atol=1e-05)
 
-    @pytest.mark.skipif(not torch.cuda.is_available(), reason='requires cuda')
-    @pytest.mark.skipif(
-        not importlib.util.find_spec('tensorrt'), reason='requires tensorrt')
+    @backend_checker(Backend.TENSORRT)
     @pytest.mark.parametrize('k', [1, 3, 4])
     @pytest.mark.parametrize('dim', [1, 2, 3])
     def test_topk_tensorrt(self, dim, k):

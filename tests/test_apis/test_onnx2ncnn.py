@@ -5,13 +5,12 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mmdeploy.apis.ncnn import is_available
 from mmdeploy.backend.ncnn.onnx2ncnn import get_output_model_file
+from mmdeploy.utils import Backend
+from mmdeploy.utils.test import backend_checker
 
 onnx_file = tempfile.NamedTemporaryFile(suffix='.onnx').name
 test_img = torch.rand([1, 3, 8, 8])
-
-ncnn_skip = not is_available()
 
 
 @pytest.mark.skip(reason='This a not test class but a utility class.')
@@ -53,7 +52,7 @@ def generate_onnx_file(model):
         assert osp.exists(onnx_file)
 
 
-@pytest.mark.skipif(ncnn_skip, reason='ncnn not avaiable')
+@backend_checker(Backend.NCNN)
 def test_onnx2ncnn():
     from mmdeploy.apis.ncnn import onnx2ncnn
     model = test_model

@@ -7,14 +7,12 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mmdeploy.apis.tensorrt import is_available
+from mmdeploy.utils import Backend
+from mmdeploy.utils.test import backend_checker
 
 onnx_file = tempfile.NamedTemporaryFile(suffix='.onnx').name
 engine_file = tempfile.NamedTemporaryFile(suffix='.engine').name
 test_img = torch.rand([1, 3, 8, 8])
-
-trt_skip = not is_available()
-cuda_skip = not torch.cuda.is_available()
 
 
 @pytest.mark.skip(reason='This a not test class but a utility class.')
@@ -77,8 +75,7 @@ def generate_onnx_file(model):
         assert osp.exists(onnx_file)
 
 
-@pytest.mark.skipif(trt_skip, reason='TensorRT not avaiable')
-@pytest.mark.skipif(cuda_skip, reason='Cuda not avaiable')
+@backend_checker(Backend.TENSORRT)
 def test_onnx2tensorrt():
     from mmdeploy.apis.tensorrt import onnx2tensorrt
     from mmdeploy.backend.tensorrt import load_trt_engine

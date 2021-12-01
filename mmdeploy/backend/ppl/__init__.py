@@ -12,6 +12,5 @@ def is_available():
 
 
 if is_available():
-    from .onnx2ppl import onnx2ppl
     from .wrapper import PPLWrapper, register_engines
-    __all__ = ['onnx2ppl', 'register_engines', 'PPLWrapper']
+    __all__ = ['register_engines', 'PPLWrapper']

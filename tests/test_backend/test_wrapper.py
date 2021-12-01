@@ -7,6 +7,7 @@ import torch
 import torch.nn as nn
 
 from mmdeploy.utils.constants import Backend
+from mmdeploy.utils.test import check_backend
 
 onnx_file = tempfile.NamedTemporaryFile(suffix='.onnx').name
 test_img = torch.rand(1, 3, 8, 8)
@@ -43,40 +44,10 @@ def generate_onnx_file():
             dynamic_axes=None)
 
 
-def check_backend_avaiable(backend):
-    if backend == Backend.TENSORRT:
-        from mmdeploy.apis.tensorrt import is_available as trt_available
-        if not trt_available():
-            pytest.skip(
-                'TensorRT is not installed or custom ops are not compiled.')
-        if not torch.cuda.is_available():
-            pytest.skip('CUDA is not available.')
-    elif backend == Backend.ONNXRUNTIME:
-        from mmdeploy.apis.onnxruntime import is_available as ort_available
-        if not ort_available():
-            pytest.skip(
-                'ONNXRuntime is not installed or custom ops are not compiled.')
-    elif backend == Backend.PPL:
-        from mmdeploy.apis.ppl import is_available as ppl_avaiable
-        if not ppl_avaiable():
-            pytest.skip('PPL is not available.')
-    elif backend == Backend.NCNN:
-        from mmdeploy.apis.ncnn import is_available as ncnn_available
-        if not ncnn_available():
-            pytest.skip(
-                'NCNN is not installed or custom ops are not compiled.')
-    elif backend == Backend.OPENVINO:
-        from mmdeploy.apis.openvino import is_available as openvino_available
-        if not openvino_available():
-            pytest.skip('OpenVINO is not installed.')
-    else:
-        raise NotImplementedError(f'Unknown backend type: {backend.value}')
-
-
 def onnx2backend(backend, onnx_file):
     if backend == Backend.TENSORRT:
         from mmdeploy.backend.tensorrt import create_trt_engine,\
-                                                save_trt_engine
+            save_trt_engine
         backend_file = tempfile.NamedTemporaryFile(suffix='.engine').name
         engine = create_trt_engine(
             onnx_file, {
@@ -91,7 +62,7 @@ def onnx2backend(backend, onnx_file):
     elif backend == Backend.ONNXRUNTIME:
         return onnx_file
     elif backend == Backend.PPL:
-        from mmdeploy.backend.ppl import onnx2ppl
+        from mmdeploy.apis.ppl import onnx2ppl
         algo_file = tempfile.NamedTemporaryFile(suffix='.json').name
         onnx2ppl(algo_file=algo_file, onnx_model=onnx_file)
         return onnx_file, algo_file
@@ -103,8 +74,8 @@ def onnx2backend(backend, onnx_file):
         subprocess.call([onnx2ncnn_path, onnx_file, param_file, bin_file])
         return param_file, bin_file
     elif backend == Backend.OPENVINO:
-        from mmdeploy.backend.openvino import onnx2openvino,\
-                                                get_output_model_file
+        from mmdeploy.apis.openvino import onnx2openvino,\
+            get_output_model_file
         backend_dir = tempfile.TemporaryDirectory().name
         backend_file = get_output_model_file(onnx_file, backend_dir)
         input_info = {'input': test_img.shape}
@@ -148,12 +119,10 @@ def run_wrapper(backend, wrapper, input):
         results = results.detach().cpu()
         return results
     elif backend == Backend.ONNXRUNTIME:
-        input = input.cuda()
         results = wrapper({'input': input})['output']
         results = results.detach().cpu()
         return results
     elif backend == Backend.PPL:
-        input = input.cuda()
         results = wrapper({'input': input})['output']
         results = results.detach().cpu()
         return results
@@ -178,7 +147,7 @@ ALL_BACKEND = [
 
 @pytest.mark.parametrize('backend', ALL_BACKEND)
 def test_wrapper(backend):
-    check_backend_avaiable(backend)
+    check_backend(backend, True)
     model_files = onnx2backend(backend, onnx_file)
     assert model_files is not None
     wrapper = create_wrapper(backend, model_files)

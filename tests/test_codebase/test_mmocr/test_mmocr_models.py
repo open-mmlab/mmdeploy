@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import importlib
 import tempfile
 
 import mmcv
@@ -9,7 +8,8 @@ import torch
 from mmocr.models.textdet.necks import FPNC
 
 from mmdeploy.core import RewriterContext, patch_model
-from mmdeploy.utils.test import (WrapModel, get_model_outputs,
+from mmdeploy.utils import Backend
+from mmdeploy.utils.test import (WrapModel, check_backend, get_model_outputs,
                                  get_rewrite_outputs)
 
 
@@ -131,16 +131,16 @@ def get_base_recognizer_model():
     return model
 
 
-@pytest.mark.parametrize('backend_type', ['ncnn'])
-def test_bidirectionallstm(backend_type):
+@pytest.mark.parametrize('backend_type', [Backend.NCNN])
+def test_bidirectionallstm(backend_type: Backend):
     """Test forward rewrite of bidirectionallstm."""
-    pytest.importorskip(backend_type, reason=f'requires {backend_type}')
+    check_backend(backend_type)
     bilstm = get_bidirectionallstm_model()
     bilstm.cpu().eval()
 
     deploy_cfg = mmcv.Config(
         dict(
-            backend_config=dict(type=backend_type),
+            backend_config=dict(type=backend_type.value),
             onnx_config=dict(input_shape=None),
             codebase_config=dict(
                 type='mmocr',
@@ -207,17 +207,17 @@ def test_simple_test_of_single_stage_text_detector():
             model_output, rewrite_output, rtol=1e-03, atol=1e-05)
 
 
-@pytest.mark.parametrize('backend_type', ['ncnn'])
+@pytest.mark.parametrize('backend_type', [Backend.NCNN])
 @pytest.mark.parametrize('rnn_flag', [True, False])
-def test_crnndecoder(backend_type, rnn_flag):
+def test_crnndecoder(backend_type: Backend, rnn_flag: bool):
     """Test forward rewrite of crnndecoder."""
-    pytest.importorskip(backend_type, reason=f'requires {backend_type}')
+    check_backend(backend_type)
     crnn_decoder = get_crnn_decoder_model(rnn_flag)
     crnn_decoder.cpu().eval()
 
     deploy_cfg = mmcv.Config(
         dict(
-            backend_config=dict(type=backend_type),
+            backend_config=dict(type=backend_type.value),
             onnx_config=dict(input_shape=None),
             codebase_config=dict(
                 type='mmocr',
@@ -365,16 +365,16 @@ def test_simple_test_of_encode_decode_recognizer():
             model_output, rewrite_output, rtol=1e-03, atol=1e-05)
 
 
-@pytest.mark.skipif(not torch.cuda.is_available(), reason='requires cuda')
-@pytest.mark.parametrize('backend_type', ['tensorrt'])
-def test_forward_of_fpnc(backend_type):
+@pytest.mark.parametrize('backend_type', [Backend.TENSORRT])
+def test_forward_of_fpnc(backend_type: Backend):
     """Test forward rewrite of fpnc."""
+    check_backend(backend_type)
     fpnc = get_fpnc_neck_model()
     fpnc.eval()
     deploy_cfg = mmcv.Config(
         dict(
             backend_config=dict(
-                type=backend_type,
+                type=backend_type.value,
                 common_config=dict(max_workspace_size=1 << 30),
                 model_inputs=[
                     dict(
@@ -465,25 +465,22 @@ def get_sar_model_cfg(decoder_type: str):
         dict(model=model, data=dict(test=dict(pipeline=test_pipeline))))
 
 
-@pytest.mark.parametrize('backend_type', ['onnxruntime'])
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
 @pytest.mark.parametrize('decoder_type',
                          ['SequentialSARDecoder', 'ParallelSARDecoder'])
-@pytest.mark.skipif(
-    not importlib.util.find_spec('onnxruntime'),
-    reason='onnxruntime not avaiable')
-@pytest.mark.skipif(not torch.cuda.is_available(), reason='requires cuda')
-def test_sar_model(backend_type, decoder_type):
+def test_sar_model(backend_type: Backend, decoder_type):
+    check_backend(backend_type)
     import os.path as osp
     import onnx
     from mmocr.models.textrecog import SARNet
     sar_cfg = get_sar_model_cfg(decoder_type)
     sar_cfg.model.pop('type')
-    pytorch_model = SARNet(**(sar_cfg.model)).cuda()
-    model_inputs = {'x': torch.rand(1, 3, 48, 160).cuda()}
+    pytorch_model = SARNet(**(sar_cfg.model))
+    model_inputs = {'x': torch.rand(1, 3, 48, 160)}
 
     deploy_cfg = mmcv.Config(
         dict(
-            backend_config=dict(type=backend_type),
+            backend_config=dict(type=backend_type.value),
             onnx_config=dict(input_shape=None),
             codebase_config=dict(
                 type='mmocr',
@@ -492,11 +489,11 @@ def test_sar_model(backend_type, decoder_type):
     # patch model
     pytorch_model.cfg = sar_cfg
     patched_model = patch_model(
-        pytorch_model, cfg=deploy_cfg, backend=backend_type)
+        pytorch_model, cfg=deploy_cfg, backend=backend_type.value)
     onnx_file_path = tempfile.NamedTemporaryFile(suffix='.onnx').name
     input_names = [k for k, v in model_inputs.items() if k != 'ctx']
     with RewriterContext(
-            cfg=deploy_cfg, backend=backend_type), torch.no_grad():
+            cfg=deploy_cfg, backend=backend_type.value), torch.no_grad():
         torch.onnx.export(
             patched_model,
             tuple([v for k, v in model_inputs.items()]),

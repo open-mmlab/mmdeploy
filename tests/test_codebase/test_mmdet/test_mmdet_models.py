@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
-import importlib
 import os
 import random
 from typing import Dict, List
@@ -10,8 +9,9 @@ import numpy as np
 import pytest
 import torch
 
-from mmdeploy.utils.test import (WrapModel, get_model_outputs,
-                                 get_rewrite_outputs)
+from mmdeploy.utils import Backend
+from mmdeploy.utils.test import (WrapModel, backend_checker, check_backend,
+                                 get_model_outputs, get_rewrite_outputs)
 
 
 def seed_everything(seed=1029):
@@ -100,10 +100,11 @@ def get_single_roi_extractor():
     return model
 
 
-@pytest.mark.parametrize('backend_type', ['onnxruntime', 'ncnn', 'openvino'])
-def test_anchor_head_get_bboxes(backend_type):
+@pytest.mark.parametrize('backend_type',
+                         [Backend.ONNXRUNTIME, Backend.NCNN, Backend.OPENVINO])
+def test_anchor_head_get_bboxes(backend_type: Backend):
     """Test get_bboxes rewrite of anchor head."""
-    pytest.importorskip(backend_type, reason=f'requires {backend_type}')
+    check_backend(backend_type)
     anchor_head = get_anchor_head_model()
     anchor_head.cpu().eval()
     s = 128
@@ -116,7 +117,7 @@ def test_anchor_head_get_bboxes(backend_type):
     output_names = ['dets', 'labels']
     deploy_cfg = mmcv.Config(
         dict(
-            backend_config=dict(type=backend_type),
+            backend_config=dict(type=backend_type.value),
             onnx_config=dict(output_names=output_names, input_shape=None),
             codebase_config=dict(
                 type='mmdet',
@@ -180,9 +181,10 @@ def test_anchor_head_get_bboxes(backend_type):
         assert rewrite_outputs is not None
 
 
-@pytest.mark.parametrize('backend_type', ['onnxruntime', 'ncnn', 'openvino'])
-def test_get_bboxes_of_fcos_head(backend_type):
-    pytest.importorskip(backend_type, reason=f'requires {backend_type}')
+@pytest.mark.parametrize('backend_type',
+                         [Backend.ONNXRUNTIME, Backend.NCNN, Backend.OPENVINO])
+def test_get_bboxes_of_fcos_head(backend_type: Backend):
+    check_backend(backend_type)
     fcos_head = get_fcos_head_model()
     fcos_head.cpu().eval()
     s = 128
@@ -195,7 +197,7 @@ def test_get_bboxes_of_fcos_head(backend_type):
     output_names = ['dets', 'labels']
     deploy_cfg = mmcv.Config(
         dict(
-            backend_config=dict(type=backend_type),
+            backend_config=dict(type=backend_type.value),
             onnx_config=dict(output_names=output_names, input_shape=None),
             codebase_config=dict(
                 type='mmdet',
@@ -269,9 +271,9 @@ def test_get_bboxes_of_fcos_head(backend_type):
         assert rewrite_outputs is not None
 
 
-@pytest.mark.parametrize('backend_type', ['onnxruntime', 'ncnn'])
-def test_get_bboxes_of_rpn_head(backend_type):
-    pytest.importorskip(backend_type, reason=f'requires {backend_type}')
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME, Backend.NCNN])
+def test_get_bboxes_of_rpn_head(backend_type: Backend):
+    check_backend(backend_type)
     head = get_rpn_head_model()
     head.cpu().eval()
     s = 4
@@ -284,7 +286,7 @@ def test_get_bboxes_of_rpn_head(backend_type):
     output_names = ['dets']
     deploy_cfg = mmcv.Config(
         dict(
-            backend_config=dict(type=backend_type),
+            backend_config=dict(type=backend_type.value),
             onnx_config=dict(output_names=output_names, input_shape=None),
             codebase_config=dict(
                 type='mmdet',
@@ -338,8 +340,7 @@ def _replace_r50_with_r18(model):
     'tests/test_codebase/test_mmdet/data/single_stage_model.json',
     'tests/test_codebase/test_mmdet/data/mask_model.json'
 ])
-@pytest.mark.skipif(
-    not importlib.util.find_spec('onnxruntime'), reason='requires onnxruntime')
+@backend_checker(Backend.ONNXRUNTIME)
 def test_forward_of_base_detector(model_cfg_path):
     deploy_cfg = mmcv.Config(
         dict(
@@ -373,15 +374,16 @@ def test_forward_of_base_detector(model_cfg_path):
     assert rewrite_outputs is not None
 
 
-@pytest.mark.parametrize('backend_type', ['onnxruntime', 'openvino'])
-def test_single_roi_extractor(backend_type):
-    pytest.importorskip(backend_type, reason=f'requires {backend_type}')
+@pytest.mark.parametrize('backend_type',
+                         [Backend.ONNXRUNTIME, Backend.OPENVINO])
+def test_single_roi_extractor(backend_type: Backend):
+    check_backend(backend_type)
 
     single_roi_extractor = get_single_roi_extractor()
     output_names = ['roi_feat']
     deploy_cfg = mmcv.Config(
         dict(
-            backend_config=dict(type=backend_type),
+            backend_config=dict(type=backend_type.value),
             onnx_config=dict(output_names=output_names, input_shape=None),
             codebase_config=dict(
                 type='mmdet',
@@ -500,9 +502,10 @@ def get_cascade_roi_head(is_instance_seg=False):
     return model
 
 
-@pytest.mark.parametrize('backend_type', ['onnxruntime', 'openvino'])
-def test_cascade_roi_head(backend_type):
-    pytest.importorskip(backend_type, reason=f'requires {backend_type}')
+@pytest.mark.parametrize('backend_type',
+                         [Backend.ONNXRUNTIME, Backend.OPENVINO])
+def test_cascade_roi_head(backend_type: Backend):
+    check_backend(backend_type)
 
     cascade_roi_head = get_cascade_roi_head()
     seed_everything(1234)
@@ -539,7 +542,7 @@ def test_cascade_roi_head(backend_type):
     output_names = ['results']
     deploy_cfg = mmcv.Config(
         dict(
-            backend_config=dict(type=backend_type),
+            backend_config=dict(type=backend_type.value),
             onnx_config=dict(output_names=output_names, input_shape=None),
             codebase_config=dict(
                 type='mmdet',
@@ -564,14 +567,15 @@ def test_cascade_roi_head(backend_type):
                                                     output_names)
     elif isinstance(backend_outputs, (list, tuple)) and \
             backend_outputs[0].shape == (1, 0, 5):
-        processed_backend_outputs = np.zeros((1, 80, 5))
+        processed_backend_outputs = torch.zeros((1, 80, 5))
     else:
         processed_backend_outputs = backend_outputs
-    assert np.allclose(
-        processed_model_outputs,
-        processed_backend_outputs,
-        rtol=1e-03,
-        atol=1e-05)
+
+    model_output = processed_model_outputs
+    backend_output = [
+        out.detach().cpu().numpy() for out in processed_backend_outputs
+    ]
+    assert np.allclose(model_output, backend_output, rtol=1e-03, atol=1e-05)
 
 
 def get_fovea_head_model():
@@ -591,9 +595,10 @@ def get_fovea_head_model():
     return model
 
 
-@pytest.mark.parametrize('backend_type', ['onnxruntime', 'openvino'])
-def test_get_bboxes_of_fovea_head(backend_type):
-    pytest.importorskip(backend_type, reason=f'requires {backend_type}')
+@pytest.mark.parametrize('backend_type',
+                         [Backend.ONNXRUNTIME, Backend.OPENVINO])
+def test_get_bboxes_of_fovea_head(backend_type: Backend):
+    check_backend(backend_type)
     fovea_head = get_fovea_head_model()
     fovea_head.cpu().eval()
     s = 128
@@ -606,7 +611,7 @@ def test_get_bboxes_of_fovea_head(backend_type):
     output_names = ['dets', 'labels']
     deploy_cfg = mmcv.Config(
         dict(
-            backend_config=dict(type=backend_type),
+            backend_config=dict(type=backend_type.value),
             onnx_config=dict(output_names=output_names, input_shape=None),
             codebase_config=dict(
                 type='mmdet',
@@ -694,9 +699,10 @@ def get_atss_head_model():
     return model
 
 
-@pytest.mark.parametrize('backend_type', ['onnxruntime', 'openvino'])
+@pytest.mark.parametrize('backend_type',
+                         [Backend.ONNXRUNTIME, Backend.OPENVINO])
 def test_get_bboxes_of_atss_head(backend_type):
-    pytest.importorskip(backend_type, reason=f'requires {backend_type}')
+    check_backend(backend_type)
     atss_head = get_atss_head_model()
     atss_head.cpu().eval()
     s = 128
@@ -709,7 +715,7 @@ def test_get_bboxes_of_atss_head(backend_type):
     output_names = ['dets', 'labels']
     deploy_cfg = mmcv.Config(
         dict(
-            backend_config=dict(type=backend_type),
+            backend_config=dict(type=backend_type.value),
             onnx_config=dict(output_names=output_names, input_shape=None),
             codebase_config=dict(
                 type='mmdet',
@@ -780,9 +786,9 @@ def test_get_bboxes_of_atss_head(backend_type):
         assert rewrite_outputs is not None
 
 
-@pytest.mark.parametrize('backend_type', ['openvino'])
-def test_cascade_roi_head_with_mask(backend_type):
-    pytest.importorskip(backend_type, reason=f'requires {backend_type}')
+@pytest.mark.parametrize('backend_type', [Backend.OPENVINO])
+def test_cascade_roi_head_with_mask(backend_type: Backend):
+    check_backend(backend_type)
 
     cascade_roi_head = get_cascade_roi_head(is_instance_seg=True)
     seed_everything(1234)
@@ -802,7 +808,7 @@ def test_cascade_roi_head_with_mask(backend_type):
     output_names = ['bbox_results', 'segm_results']
     deploy_cfg = mmcv.Config(
         dict(
-            backend_config=dict(type=backend_type),
+            backend_config=dict(type=backend_type.value),
             onnx_config=dict(output_names=output_names, input_shape=None),
             codebase_config=dict(
                 type='mmdet',
@@ -821,8 +827,8 @@ def test_cascade_roi_head_with_mask(backend_type):
         wrapped_model=wrapped_model,
         model_inputs=model_inputs,
         deploy_cfg=deploy_cfg)
-    bbox_results = backend_outputs['bbox_results']
-    segm_results = backend_outputs['segm_results']
+    bbox_results = backend_outputs[0]
+    segm_results = backend_outputs[1]
     expected_bbox_results = np.zeros((1, 80, 5))
     expected_segm_results = -np.ones((1, 80))
     assert np.allclose(
@@ -854,10 +860,11 @@ def get_yolov3_head_model():
     return model
 
 
-@pytest.mark.parametrize('backend_type', ['onnxruntime', 'ncnn', 'openvino'])
+@pytest.mark.parametrize('backend_type',
+                         [Backend.ONNXRUNTIME, Backend.NCNN, Backend.OPENVINO])
 def test_yolov3_head_get_bboxes(backend_type):
     """Test get_bboxes rewrite of yolov3 head."""
-    pytest.importorskip(backend_type, reason=f'requires {backend_type}')
+    check_backend(backend_type)
     yolov3_head = get_yolov3_head_model()
     yolov3_head.cpu().eval()
     s = 128
@@ -870,7 +877,7 @@ def test_yolov3_head_get_bboxes(backend_type):
     output_names = ['dets', 'labels']
     deploy_cfg = mmcv.Config(
         dict(
-            backend_config=dict(type=backend_type),
+            backend_config=dict(type=backend_type.value),
             onnx_config=dict(output_names=output_names, input_shape=None),
             codebase_config=dict(
                 type='mmdet',
@@ -941,10 +948,11 @@ def get_yolox_head_model():
     return model
 
 
-@pytest.mark.parametrize('backend_type', ['onnxruntime', 'openvino'])
-def test_yolox_head_get_bboxes(backend_type):
+@pytest.mark.parametrize('backend_type',
+                         [Backend.ONNXRUNTIME, Backend.OPENVINO])
+def test_yolox_head_get_bboxes(backend_type: Backend):
     """Test get_bboxes rewrite of YOLOXHead."""
-    pytest.importorskip(backend_type, reason=f'requires {backend_type}')
+    check_backend(backend_type)
     yolox_head = get_yolox_head_model()
     yolox_head.cpu().eval()
     s = 128
@@ -956,7 +964,7 @@ def test_yolox_head_get_bboxes(backend_type):
     output_names = ['dets', 'labels']
     deploy_cfg = mmcv.Config(
         dict(
-            backend_config=dict(type=backend_type),
+            backend_config=dict(type=backend_type.value),
             onnx_config=dict(output_names=output_names, input_shape=None),
             codebase_config=dict(
                 type='mmdet',
@@ -1041,10 +1049,10 @@ def get_vfnet_head_model():
     return model
 
 
-@pytest.mark.parametrize('backend_type', ['openvino'])
-def test_get_bboxes_of_vfnet_head(backend_type):
+@pytest.mark.parametrize('backend_type', [Backend.OPENVINO])
+def test_get_bboxes_of_vfnet_head(backend_type: Backend):
     """Test get_bboxes rewrite of VFNet head."""
-    pytest.importorskip(backend_type, reason=f'requires {backend_type}')
+    check_backend(backend_type)
 
     class TestModel(torch.nn.Module):
         """Stub for VFNetHead with fake bbox_preds operations.
@@ -1088,7 +1096,7 @@ def test_get_bboxes_of_vfnet_head(backend_type):
     output_names = ['dets', 'labels']
     deploy_cfg = mmcv.Config(
         dict(
-            backend_config=dict(type=backend_type),
+            backend_config=dict(type=backend_type.value),
             onnx_config=dict(output_names=output_names, input_shape=None),
             codebase_config=dict(
                 type='mmdet',

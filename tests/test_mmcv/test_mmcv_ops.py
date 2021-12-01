@@ -6,7 +6,8 @@ import pytest
 import torch
 
 from mmdeploy.core import RewriterContext
-from mmdeploy.utils.test import WrapFunction
+from mmdeploy.utils import Backend
+from mmdeploy.utils.test import WrapFunction, check_backend
 
 
 @pytest.mark.parametrize(
@@ -50,7 +51,7 @@ def test_ONNXNMSop(iou_threshold, score_threshold, max_output_boxes_per_class):
 
 
 def test_deform_conv_openvino():
-    pytest.importorskip('openvino', reason='requires openvino')
+    check_backend(Backend.OPENVINO)
     input = torch.Tensor([[[[1., 2., 3.], [0., 1., 2.], [3., 5., 2.]]]])
     offset = torch.Tensor([[[[1.7000, 2.9000], [3.4000, 4.8000]],
                             [[1.1000, 2.0000], [2.1000, 1.9000]],

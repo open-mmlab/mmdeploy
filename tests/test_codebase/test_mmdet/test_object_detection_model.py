@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import importlib
 import os.path as osp
 from tempfile import NamedTemporaryFile
 
@@ -11,7 +10,7 @@ import torch
 import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.codebase.mmdet.deploy.object_detection_model import End2EndModel
 from mmdeploy.utils import Backend
-from mmdeploy.utils.test import SwitchBackendWrapper
+from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
 
 
 def assert_det_results(results, module_name: str = 'model'):
@@ -32,8 +31,7 @@ def assert_forward_results(results, module_name: str = 'model'):
         assert len(results[0]) == 80
 
 
-@pytest.mark.skipif(
-    not importlib.util.find_spec('onnxruntime'), reason='requires onnxruntime')
+@backend_checker(Backend.ONNXRUNTIME)
 class TestEnd2EndModel:
 
     @classmethod
@@ -85,8 +83,7 @@ class TestEnd2EndModel:
         assert osp.exists(img_path)
 
 
-@pytest.mark.skipif(
-    not importlib.util.find_spec('onnxruntime'), reason='requires onnxruntime')
+@backend_checker(Backend.ONNXRUNTIME)
 class TestMaskEnd2EndModel:
 
     @classmethod
@@ -159,8 +156,7 @@ def get_test_cfg_and_post_processing():
     return test_cfg, post_processing
 
 
-@pytest.mark.skipif(
-    not importlib.util.find_spec('onnxruntime'), reason='requires onnxruntime')
+@backend_checker(Backend.ONNXRUNTIME)
 class TestPartitionSingleStageModel:
 
     @classmethod
@@ -274,8 +270,7 @@ class DummyWrapper(torch.nn.Module):
         return self.outputs
 
 
-@pytest.mark.skipif(
-    not importlib.util.find_spec('onnxruntime'), reason='requires onnxruntime')
+@backend_checker(Backend.ONNXRUNTIME)
 class TestPartitionTwoStageModel:
 
     @classmethod
@@ -373,11 +368,8 @@ class TestPartitionTwoStageModel:
             DummyPTSDetector.partition0_postprocess, self.model)
         self.model.partition1_postprocess = types.MethodType(
             DummyPTSDetector.partition1_postprocess, self.model)
-        self.model.outputs0 = [torch.rand(2, 3).cuda()] * 2
-        self.model.outputs1 = [
-            torch.rand(1, 9, 5).cuda(),
-            torch.rand(1, 9).cuda()
-        ]
+        self.model.outputs0 = [torch.rand(2, 3)] * 2
+        self.model.outputs1 = [torch.rand(1, 9, 5), torch.rand(1, 9)]
 
         imgs = [torch.rand(1, 3, 32, 32)]
         img_metas = [[{
@@ -418,8 +410,7 @@ def test_get_classes_from_cfg(cfg):
             cfg) == DATASETS.module_dict['CocoDataset'].CLASSES
 
 
-@pytest.mark.skipif(
-    not importlib.util.find_spec('onnxruntime'), reason='requires onnxruntime')
+@backend_checker(Backend.ONNXRUNTIME)
 @pytest.mark.parametrize('partition_type', [None, 'end2end'])
 def test_build_object_detection_model(partition_type):
     _, post_processing = get_test_cfg_and_post_processing()

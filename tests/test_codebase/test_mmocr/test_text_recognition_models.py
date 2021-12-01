@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import importlib
 import os.path as osp
 from tempfile import NamedTemporaryFile
 
@@ -10,13 +9,12 @@ import torch
 
 import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.utils import Backend, load_config
-from mmdeploy.utils.test import SwitchBackendWrapper
+from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
 
 IMAGE_SIZE = 32
 
 
-@pytest.mark.skipif(
-    not importlib.util.find_spec('onnxruntime'), reason='requires onnxruntime')
+@backend_checker(Backend.ONNXRUNTIME)
 class TestEnd2EndModel:
 
     @classmethod
@@ -77,8 +75,7 @@ class TestEnd2EndModel:
         assert osp.exists(img_path), 'Fails to create drawn image.'
 
 
-@pytest.mark.skipif(
-    not importlib.util.find_spec('onnxruntime'), reason='requires onnxruntime')
+@backend_checker(Backend.ONNXRUNTIME)
 def test_build_text_recognition_model():
     model_cfg_path = 'tests/test_codebase/test_mmocr/data/crnn.py'
     model_cfg = load_config(model_cfg_path)[0]

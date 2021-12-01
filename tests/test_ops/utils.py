@@ -8,10 +8,9 @@ import onnx
 import pytest
 import torch
 
-import mmdeploy.apis.ncnn as ncnn_apis
-import mmdeploy.apis.onnxruntime as ort_apis
 import mmdeploy.apis.tensorrt as trt_apis
-from mmdeploy.utils.test import assert_allclose
+from mmdeploy.utils import Backend
+from mmdeploy.utils.test import assert_allclose, check_backend
 
 
 @pytest.mark.skip(reason='This a not test class but a utility class.')
@@ -21,8 +20,7 @@ class TestOnnxRTExporter:
         self.backend_name = 'onnxruntime'
 
     def check_env(self):
-        if not ort_apis.is_available():
-            pytest.skip('Custom ops of ONNXRuntime are not compiled.')
+        check_backend(Backend.ONNXRUNTIME, True)
 
     def run_and_validate(self,
                          model,
@@ -79,11 +77,7 @@ class TestTensorRTExporter:
         self.backend_name = 'tensorrt'
 
     def check_env(self):
-        if not trt_apis.is_available():
-            pytest.skip(
-                'TensorRT is not installed or custom ops are not compiled.')
-        if not torch.cuda.is_available():
-            pytest.skip('CUDA is not available.')
+        check_backend(Backend.TENSORRT, True)
 
     def run_and_validate(self,
                          model,
@@ -169,9 +163,7 @@ class TestNCNNExporter:
         self.backend_name = 'ncnn'
 
     def check_env(self):
-        if not ncnn_apis.is_available():
-            pytest.skip(
-                'NCNN is not installed or custom ops are not compiled.')
+        check_backend(Backend.NCNN, True)
 
     def run_and_validate(self,
                          model,

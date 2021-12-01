@@ -6,16 +6,23 @@ from .init_plugins import get_ops_path
 
 
 def is_available():
-    """Check whether onnxruntime and its custom ops are installed.
+    """Check whether ONNX Runtime package is installed.
 
     Returns:
-        bool: True if onnxruntime package is installed and its
-        custom ops are compiled.
+        bool: True if ONNX Runtime package is installed.
+    """
+
+    return importlib.util.find_spec('onnxruntime') is not None
+
+
+def is_plugin_available():
+    """Check whether ONNX Runtime custom ops are installed.
+
+    Returns:
+        bool: True if ONNX Runtime custom ops are compiled.
     """
     onnxruntime_op_path = get_ops_path()
-    if not osp.exists(onnxruntime_op_path):
-        return False
-    return importlib.util.find_spec('onnxruntime') is not None
+    return osp.exists(onnxruntime_op_path)
 
 
 if is_available():

@@ -5,7 +5,8 @@ import pytest
 import torch
 
 from mmdeploy.core import RewriterContext
-from mmdeploy.utils.test import WrapModel, get_rewrite_outputs
+from mmdeploy.utils import Backend
+from mmdeploy.utils.test import WrapModel, check_backend, get_rewrite_outputs
 
 input = torch.rand(1)
 
@@ -68,17 +69,19 @@ def test_multilabel_cls_head():
     assert list(backend_output.detach().cpu().numpy()) == model_output
 
 
-@pytest.mark.parametrize('backend_type',
-                         ['onnxruntime', 'tensorrt', 'ncnn', 'openvino'])
-def test_shufflenetv2_backbone__forward(backend_type):
-    pytest.importorskip(backend_type, reason=f'requires {backend_type}')
+@pytest.mark.parametrize(
+    'backend_type',
+    [Backend.ONNXRUNTIME, Backend.TENSORRT, Backend.NCNN, Backend.OPENVINO])
+def test_shufflenetv2_backbone__forward(backend_type: Backend):
+
+    check_backend(backend_type, True)
     model = get_invertedresudual_model()
     model.cpu().eval()
-    if backend_type == 'tensorrt':
+    if backend_type.value == 'tensorrt':
         deploy_cfg = mmcv.Config(
             dict(
                 backend_config=dict(
-                    type=backend_type,
+                    type=backend_type.value,
                     common_config=dict(max_workspace_size=1 << 30),
                     model_inputs=[
                         dict(
@@ -94,7 +97,7 @@ def test_shufflenetv2_backbone__forward(backend_type):
     else:
         deploy_cfg = mmcv.Config(
             dict(
-                backend_config=dict(type=backend_type),
+                backend_config=dict(type=backend_type.value),
                 onnx_config=dict(input_shape=None, output_names=['output']),
                 codebase_config=dict(type='mmcls', task='Classification')))
 

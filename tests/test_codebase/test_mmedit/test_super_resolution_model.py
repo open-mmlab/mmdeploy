@@ -1,18 +1,15 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import importlib
 
 import mmcv
 import numpy as np
-import pytest
 import torch
 
 import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.utils import Backend, load_config
-from mmdeploy.utils.test import SwitchBackendWrapper
+from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
 
 
-@pytest.mark.skipif(
-    not importlib.util.find_spec('onnxruntime'), reason='requires onnxruntime')
+@backend_checker(Backend.ONNXRUNTIME)
 class TestEnd2EndModel:
 
     @classmethod

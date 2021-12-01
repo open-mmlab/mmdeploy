@@ -1,9 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import tempfile
+import warnings
 from typing import Any, Callable, Dict, List, Tuple, Union
 
 import mmcv
 import numpy as np
+import pytest
 import torch
 from torch import nn
 
@@ -11,6 +13,92 @@ from torch import nn
 import mmdeploy.codebase  # noqa: F401,F403
 from mmdeploy.core import RewriterContext, patch_model
 from mmdeploy.utils import Backend, get_backend, get_onnx_config
+
+
+def backend_checker(backend: Backend, require_plugin: bool = False):
+    """A decorator which checks if a backend is available.
+
+    Args:
+        backend (Backend): The backend needs to be checked.
+        require_plugin (bool): The checker will check if the backend package
+            has been installed. If this variable is `True`, then the checker
+            will also check if the backend plugin has been compiled. Default
+            to `False`.
+    """
+    is_plugin_available = None
+    if backend == Backend.ONNXRUNTIME:
+        from mmdeploy.apis.onnxruntime import is_available
+        if require_plugin:
+            from mmdeploy.apis.onnxruntime import is_plugin_available
+    elif backend == Backend.TENSORRT:
+        from mmdeploy.apis.tensorrt import is_available
+        if require_plugin:
+            from mmdeploy.apis.tensorrt import is_plugin_available
+    elif backend == Backend.PPL:
+        from mmdeploy.apis.ppl import is_available
+    elif backend == Backend.NCNN:
+        from mmdeploy.apis.ncnn import is_available
+        if require_plugin:
+            from mmdeploy.apis.ncnn import is_plugin_available
+    elif backend == Backend.OPENVINO:
+        from mmdeploy.apis.openvino import is_available
+    else:
+        warnings.warn('The backend checker is not available')
+        return
+
+    checker = pytest.mark.skipif(
+        not is_available(), reason=f'{backend.value} package is not available')
+    if require_plugin and is_plugin_available is not None:
+        plugin_checker = pytest.mark.skipif(
+            not is_plugin_available(),
+            reason=f'{backend.value} plugin is not available')
+
+        def double_checker(func):
+            func = checker(func)
+            func = plugin_checker(func)
+            return func
+
+        return double_checker
+
+    return checker
+
+
+def check_backend(backend: Backend, require_plugin: bool = False):
+    """A utility to check if a backend is available.
+
+    Args:
+        backend (Backend): The backend needs to be checked.
+        require_plugin (bool): The checker will check if the backend package
+            has been installed. If this variable is `True`, then the checker
+            will also check if the backend plugin has been compiled. Default
+            to `False`.
+    """
+    is_plugin_available = None
+    if backend == Backend.ONNXRUNTIME:
+        from mmdeploy.apis.onnxruntime import is_available
+        if require_plugin:
+            from mmdeploy.apis.onnxruntime import is_plugin_available
+    elif backend == Backend.TENSORRT:
+        from mmdeploy.apis.tensorrt import is_available
+        if require_plugin:
+            from mmdeploy.apis.tensorrt import is_plugin_available
+    elif backend == Backend.PPL:
+        from mmdeploy.apis.ppl import is_available
+    elif backend == Backend.NCNN:
+        from mmdeploy.apis.ncnn import is_available
+        if require_plugin:
+            from mmdeploy.apis.ncnn import is_plugin_available
+    elif backend == Backend.OPENVINO:
+        from mmdeploy.apis.openvino import is_available
+    else:
+        warnings.warn('The backend checker is not available')
+        return
+
+    if not is_available():
+        pytest.skip(f'{backend.value} package is not available')
+    if require_plugin and is_plugin_available is not None:
+        if not is_plugin_available():
+            pytest.skip(f'{backend.value} plugin is not available')
 
 
 class WrapFunction(nn.Module):
@@ -307,7 +395,7 @@ def get_backend_outputs(onnx_file_path: str,
     if backend == Backend.TENSORRT:
         # convert to engine
         import mmdeploy.apis.tensorrt as trt_apis
-        if not trt_apis.is_available():
+        if not (trt_apis.is_available() and trt_apis.is_plugin_available()):
             return None
         trt_file_path = tempfile.NamedTemporaryFile(suffix='.engine').name
         trt_apis.onnx2tensorrt(
@@ -324,7 +412,7 @@ def get_backend_outputs(onnx_file_path: str,
         device = 'cuda:0'
     elif backend == Backend.ONNXRUNTIME:
         import mmdeploy.apis.onnxruntime as ort_apis
-        if not ort_apis.is_available():
+        if not (ort_apis.is_available() and ort_apis.is_plugin_available()):
             return None
         feature_list = []
         backend_feats = {}

@@ -1,18 +1,16 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import importlib
 
 import mmcv
 import numpy as np
 import pytest
 import torch
 
-from mmdeploy.utils.test import (WrapFunction, get_onnx_model,
-                                 get_rewrite_outputs)
+from mmdeploy.utils import Backend
+from mmdeploy.utils.test import (WrapFunction, backend_checker, check_backend,
+                                 get_onnx_model, get_rewrite_outputs)
 
 
-@pytest.mark.skipif(not torch.cuda.is_available(), reason='requires cuda')
-@pytest.mark.skipif(
-    not importlib.util.find_spec('tensorrt'), reason='requires tensorrt')
+@backend_checker(Backend.TENSORRT)
 def test_multiclass_nms_static():
 
     import tensorrt as trt
@@ -70,14 +68,14 @@ def test_multiclass_nms_static():
         'outputs: {}'.format(rewrite_outputs)
 
 
-@pytest.mark.parametrize('backend_type', ['onnxruntime', 'ncnn'])
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME, Backend.NCNN])
 @pytest.mark.parametrize('add_ctr_clamp', [True, False])
-def test_delta2bbox(backend_type, add_ctr_clamp):
-    pytest.importorskip(backend_type, reason=f'requires {backend_type}')
+def test_delta2bbox(backend_type: Backend, add_ctr_clamp: bool):
+    check_backend(backend_type)
     deploy_cfg = mmcv.Config(
         dict(
             onnx_config=dict(output_names=None, input_shape=None),
-            backend_config=dict(type=backend_type, model_inputs=None),
+            backend_config=dict(type=backend_type.value, model_inputs=None),
             codebase_config=dict(type='mmdet', task='ObjectDetection')))
 
     # wrap function to enable rewrite
@@ -109,13 +107,13 @@ def test_delta2bbox(backend_type, add_ctr_clamp):
         assert rewrite_outputs is not None
 
 
-@pytest.mark.parametrize('backend_type', ['onnxruntime', 'ncnn'])
-def test_tblr2bbox(backend_type):
-    pytest.importorskip(backend_type, reason=f'requires {backend_type}')
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME, Backend.NCNN])
+def test_tblr2bbox(backend_type: Backend):
+    check_backend(backend_type)
     deploy_cfg = mmcv.Config(
         dict(
             onnx_config=dict(output_names=None, input_shape=None),
-            backend_config=dict(type=backend_type, model_inputs=None),
+            backend_config=dict(type=backend_type.value, model_inputs=None),
             codebase_config=dict(type='mmdet', task='ObjectDetection')))
 
     # wrap function to enable rewrite
@@ -155,8 +153,7 @@ def test_distance2bbox():
     assert bbox.shape == torch.Size([3, 4])
 
 
-@pytest.mark.skipif(
-    not importlib.util.find_spec('onnxruntime'), reason='requires onnxruntime')
+@backend_checker(Backend.ONNXRUNTIME)
 @pytest.mark.parametrize('pre_top_k', [-1, 1000])
 def test_multiclass_nms_with_keep_top_k(pre_top_k):
     backend_type = 'onnxruntime'

@@ -74,6 +74,8 @@ def test_init_backend_model(backend_model):
 
 @pytest.mark.parametrize('device', ['cpu', 'cuda:0'])
 def test_create_input(device):
+    if device == 'cuda:0' and not torch.cuda.is_available():
+        pytest.skip('cuda is not available')
     original_device = task_processor.device
     task_processor.device = device
     inputs = task_processor.create_input(img, input_shape=img_shape)
