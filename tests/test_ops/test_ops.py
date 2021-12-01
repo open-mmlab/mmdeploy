@@ -90,6 +90,61 @@ def test_grid_sample(backend,
             save_dir=save_dir)
 
 
+@pytest.mark.parametrize('backend', [TEST_TENSORRT])
+@pytest.mark.parametrize('dynamic_export', [True, False])
+@pytest.mark.parametrize('mode', ['bicubic', 'nearest'])
+@pytest.mark.parametrize('align_corners', [True, False])
+@pytest.mark.parametrize('scale_factor', [2, 4])
+@pytest.mark.parametrize('n, c, h, w', [(2, 3, 5, 10)])
+def test_bicubic_interpolate(backend,
+                             dynamic_export,
+                             mode,
+                             align_corners,
+                             scale_factor,
+                             n,
+                             c,
+                             h,
+                             w,
+                             input_list=None,
+                             save_dir=None):
+    backend.check_env()
+
+    if input_list is None:
+        input = torch.randn(n, c, h, w)
+    if dynamic_export:
+        dynamic_axes = {
+            'input': {
+                0: 'n',
+                2: 'h',
+                3: 'w',
+            },
+            'output': {
+                0: 'n',
+                2: 'h',
+                3: 'w',
+            },
+        }
+    else:
+        dynamic_axes = None
+
+    if mode == 'nearest':
+        align_corners = None
+    resize = nn.Upsample(
+        scale_factor=scale_factor, mode=mode, align_corners=align_corners)
+    expected_result = resize(input).cuda()
+    wrapped_model = WrapFunction(resize).eval()
+
+    with RewriterContext(cfg={}, backend=backend.backend_name, opset=11):
+        backend.run_and_validate(
+            wrapped_model, [input],
+            'bicubic_interpolate',
+            input_names=['input'],
+            dynamic_axes=dynamic_axes,
+            output_names=['output'],
+            save_dir=save_dir,
+            expected_result=expected_result)
+
+
 @pytest.mark.parametrize('backend', [TEST_TENSORRT, TEST_ONNXRT])
 @pytest.mark.parametrize('in_channels,out_channels,stride,padding,'
                          'dilation,groups,deform_groups,kernel_size',
