@@ -1016,10 +1016,10 @@ def test_yolox_head_get_bboxes(backend_type: Backend):
         for model_output, rewrite_output in zip(model_outputs[0],
                                                 rewrite_outputs):
             model_output = model_output.squeeze().cpu().numpy()
-            rewrite_output = rewrite_output.squeeze()
+            rewrite_output = rewrite_output.squeeze().cpu().numpy()
             # hard code to make two tensors with the same shape
             # rewrite and original codes applied different nms strategy
-            min_shape = min(model_output.shape[0], rewrite_output.shape[0], 20)
+            min_shape = min(model_output.shape[0], rewrite_output.shape[0], 5)
             assert np.allclose(
                 model_output[:min_shape],
                 rewrite_output[:min_shape],

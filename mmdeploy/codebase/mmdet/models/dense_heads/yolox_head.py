@@ -74,26 +74,9 @@ def yolox_head__get_bboxes(ctx,
     flatten_bbox_preds = torch.cat(flatten_bbox_preds, dim=1)
     flatten_priors = torch.cat(mlvl_priors)
 
-    xys = (flatten_bbox_preds[..., :2] *
-           flatten_priors[:, 2:]) + flatten_priors[:, :2]
-    whs = flatten_bbox_preds[..., 2:].exp() * flatten_priors[:, 2:]
-
-    tl_x = (xys[..., 0] - whs[..., 0] / 2)
-    tl_y = (xys[..., 1] - whs[..., 1] / 2)
-    br_x = (xys[..., 0] + whs[..., 0] / 2)
-    br_y = (xys[..., 1] + whs[..., 1] / 2)
-
-    bboxes = torch.stack([tl_x, tl_y, br_x, br_y], -1)
-
-    if rescale:
-        scale_factor = img_metas['scale_factor']
-        bboxes[..., :4] /= bboxes.new_tensor(scale_factor).unsqueeze(1)
-
-    max_scores, labels = torch.max(cls_scores, -1)
-    scores = torch.zeros_like(cls_scores).scatter(2, labels.unsqueeze(2),
-                                                  max_scores.unsqueeze(2))
-    scores = scores * score_factor.unsqueeze(-1)
-
+    bboxes = self._bbox_decode(flatten_priors, flatten_bbox_preds)
+    # directly multiply score factor and feed to nms
+    scores = cls_scores * (score_factor.unsqueeze(-1))
     if not with_nms:
         return bboxes, scores
 
