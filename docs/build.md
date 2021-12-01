@@ -50,3 +50,6 @@ Build the inference engine extension libraries you need.
 cd ${MMDEPLOY_DIR} # To mmdeploy root directory
 pip install -e .
 ```
+Some dependencies are optional. Simply running `pip install -e .` will only install the minimum runtime requirements.
+To use optional dependencies install them manually with `pip install -r requirements/optional.txt` or specify desired extras when calling `pip` (e.g. `pip install -e .[optional]`).
+Valid keys for the extras field are: `all`, `tests`, `build`, `optional`.

@@ -234,7 +234,7 @@ def main():
         for onnx_path in onnx_files:
             model_xml_path = get_output_model_file(onnx_path, args.work_dir)
             input_name = deploy_cfg.onnx_config.input_names
-            input_shape = [get_input_shape_from_cfg(model_cfg)]
+            input_shape = [get_input_shape_from_cfg(deploy_cfg, model_cfg)]
             input_info = dict(zip(input_name, input_shape))
             output_names = deploy_cfg.onnx_config.output_names
             create_process(

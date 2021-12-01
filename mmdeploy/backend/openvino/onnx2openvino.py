@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import logging
 import os.path as osp
 import subprocess
 from subprocess import CalledProcessError, run
@@ -16,7 +17,7 @@ def is_mo_available() -> bool:
     """
     is_available = True
     try:
-        run('mo.py -h',
+        run('mo -h',
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
             shell=True,
@@ -68,11 +69,11 @@ def onnx2openvino(input_info: Dict[str, Union[List[int], torch.Size]],
               f'--input="{input_names}" ' \
               f'--input_shape="{input_shapes}" ' \
               f'--disable_fusing '
-    command = f'mo.py {mo_args}'
-    print(f'Args for mo.py: {command}')
+    command = f'mo {mo_args}'
+    logging.info(f'Args for mo: {command}')
     mo_output = run(command, capture_output=True, shell=True, check=True)
-    print(mo_output.stdout.decode())
-    print(mo_output.stderr.decode())
+    logging.info(mo_output.stdout.decode())
+    logging.debug(mo_output.stderr.decode())
 
     model_xml = get_output_model_file(onnx_path, work_dir)
-    print(f'Successfully exported OpenVINO model: {model_xml}')
+    logging.info(f'Successfully exported OpenVINO model: {model_xml}')

@@ -3,9 +3,30 @@
 This tutorial is based on Linux systems like Ubuntu-18.04.
 
 ### Installation
+It is recommended to create a virtual environment for the project.
+1. Install [OpenVINO](https://docs.openvino.ai/2021.4/get_started.html). For example, you can install OpenVINO with [pip](https://pypi.org/project/openvino-dev/).
+```bash
+pip install openvino-dev
+```
+2. Install [PyTorch](https://pytorch.org/get-started/locally/).
+```bash
+pip install torch torchvision
+```
+3. Install [MMCV](https://mmcv.readthedocs.io/en/latest/get_started/installation.html). It is advisable to install the latest version `mmcv-full`.
+```bash
+pip install mmcv-full
+```
+4. Install MMDeploy following the [instructions](../build.md).
 
-1. Install [OpenVINO](https://docs.openvinotoolkit.org/latest/installation_guides.html).
-2. Install MMDeploy following the [instructions](../build.md).
+To work with models from [MMDetection](https://github.com/open-mmlab/mmdetection/blob/master/docs/get_started.md), you may need to install it additionally.
+
+### Troubleshooting
+
+#### ImportError: libpython3.7m.so.1.0: cannot open shared object file: No such file or directory
+To resolve missing external dependency on Ubuntu*, execute the following command:
+```bash
+sudo apt-get install libpython3.7
+```
 
 ### Usage
 
@@ -41,7 +62,13 @@ The table below lists the models that are guaranteed to be exportable to OpenVIN
 | Faster R-CNN + DCN |         `configs/dcn/faster_rcnn_r50_fpn_dconv_c3-c5_1x_coco.py`          |       Y       |
 |       VFNet        |                 `configs/vfnet/vfnet_r50_fpn_1x_coco.py`                  |       Y       |
 
+
 Notes:
+- Custom operations from OpenVINO use the domain `org.openvinotoolkit`.
 - For faster work in OpenVINO in the Faster-RCNN, Mask-RCNN, Cascade-RCNN, Cascade-Mask-RCNN models
 the RoiAlign operation is replaced with the [ExperimentalDetectronROIFeatureExtractor](https://docs.openvinotoolkit.org/latest/openvino_docs_ops_detection_ExperimentalDetectronROIFeatureExtractor_6.html) operation in the ONNX graph.
 - Models "VFNet" and "Faster R-CNN + DCN" use the custom "DeformableConv2D" operation.
+
+### FAQs
+
+- None

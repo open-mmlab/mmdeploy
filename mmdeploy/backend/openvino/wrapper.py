@@ -91,6 +91,28 @@ class OpenVINOWrapper(BaseWrapper):
                 device_name=self.device.upper(),
                 num_requests=1)
 
+    def __process_outputs(
+            self, outputs: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+        """Converts tensors from 'torch' to 'numpy' and fixes the names of the
+        outputs.
+
+        Args:
+            outputs Dict[str, torch.Tensor]: The output name and tensor pairs.
+
+        Returns:
+            Dict[str, torch.Tensor]: The output name and tensor pairs
+                after processing.
+        """
+        outputs = {
+            name: torch.from_numpy(tensor)
+            for name, tensor in outputs.items()
+        }
+        for output_name in outputs.keys():
+            if '.' in output_name:
+                new_output_name = output_name.split('.')[0]
+                outputs[new_output_name] = outputs.pop(output_name)
+        return outputs
+
     def forward(self, inputs: Dict[str,
                                    torch.Tensor]) -> Dict[str, torch.Tensor]:
         """Run forward inference.
@@ -104,8 +126,7 @@ class OpenVINOWrapper(BaseWrapper):
         inputs = self.__update_device(inputs)
         self.__reshape(inputs)
         outputs = self.__openvino_execute(inputs)
-        for output_name, numpy_tensor in outputs.items():
-            outputs[output_name] = torch.from_numpy(numpy_tensor)
+        outputs = self.__process_outputs(outputs)
         return outputs
 
     @TimeCounter.count_time()

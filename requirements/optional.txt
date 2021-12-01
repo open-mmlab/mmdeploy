@@ -5,4 +5,5 @@ mmocr>=0.3.0
 mmsegmentation
 ncnn
 onnxruntime>=1.8.0
+openvino-dev[onnx,pytorch]
 tensorrt

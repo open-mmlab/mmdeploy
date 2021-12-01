@@ -72,6 +72,23 @@ def test_init_backend_model(backend_model):
     assert isinstance(backend_model, End2EndModel)
 
 
+def test_can_postprocess_masks():
+    from mmdeploy.codebase.mmdet.deploy.object_detection_model \
+        import End2EndModel
+    num_dets = [0, 1, 5]
+    for num_det in num_dets:
+        det_bboxes = np.random.randn(num_det, 4)
+        det_masks = np.random.randn(num_det, 28, 28)
+        img_w, img_h = (30, 40)
+        masks = End2EndModel.postprocessing_masks(det_bboxes, det_masks, img_w,
+                                                  img_h)
+        expected_shape = (num_det, img_h, img_w)
+        actual_shape = masks.shape
+        assert actual_shape == expected_shape, \
+            f'The expected shape of masks {expected_shape} ' \
+            f'did not match actual shape {actual_shape}.'
+
+
 @pytest.mark.parametrize('device', ['cpu', 'cuda:0'])
 def test_create_input(device):
     if device == 'cuda:0' and not torch.cuda.is_available():

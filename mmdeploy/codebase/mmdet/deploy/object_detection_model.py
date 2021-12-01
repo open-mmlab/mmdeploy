@@ -96,27 +96,32 @@ class End2EndModel(BaseBackendModel):
         return outputs
 
     @staticmethod
-    def __postprocessing_masks(det_bboxes: np.ndarray,
-                               det_masks: np.ndarray,
-                               img_w: int,
-                               img_h: int,
-                               mask_thr_binary: float = 0.5) -> np.ndarray:
+    def postprocessing_masks(det_bboxes: np.ndarray,
+                             det_masks: np.ndarray,
+                             img_w: int,
+                             img_h: int,
+                             mask_thr_binary: float = 0.5) -> np.ndarray:
         """Additional processing of masks. Resizes masks from [num_det, 28, 28]
         to [num_det, img_w, img_h]. Analog of the 'mmdeploy.codebase.mmdet.
         models.roi_heads.fcn_mask_head._do_paste_mask' function.
 
         Args:
-            det_bboxes (np.ndarray): Bbox of shape [num_det, 5]
+            det_bboxes (np.ndarray): Bbox of shape [num_det, 4]
             det_masks (np.ndarray): Masks of shape [num_det, 28, 28].
             img_w (int): Width of the original image.
             img_h (int): Height of the original image.
             mask_thr_binary (float): The threshold for the mask.
 
         Returns:
-            np.ndarray: masks of shape [N, num_det, img_w, img_h].
+            np.ndarray: masks of shape [N, num_det, img_h, img_w].
         """
         masks = det_masks
         bboxes = det_bboxes
+
+        num_det = bboxes.shape[0]
+        # Skip postprocessing if no detections are found.
+        if num_det == 0:
+            return np.zeros((0, img_h, img_w))
 
         if isinstance(masks, np.ndarray):
             masks = torch.tensor(masks)
@@ -214,7 +219,7 @@ class End2EndModel(BaseBackendModel):
                     export_postprocess_mask = mmdet_deploy_cfg.get(
                         'export_postprocess_mask', True)
                 if not export_postprocess_mask:
-                    masks = End2EndModel.__postprocessing_masks(
+                    masks = End2EndModel.postprocessing_masks(
                         dets[:, :4], masks, ori_w, ori_h)
                 else:
                     masks = masks[:, :img_h, :img_w]
@@ -225,7 +230,7 @@ class End2EndModel(BaseBackendModel):
                     masks = torch.nn.functional.interpolate(
                         masks.unsqueeze(0), size=(ori_h, ori_w))
                     masks = masks.squeeze(0).detach().numpy()
-                if masks.dtype != np.bool:
+                if masks.dtype != bool:
                     masks = masks >= 0.5
                 segms_results = [[] for _ in range(len(self.CLASSES))]
                 for j in range(len(dets)):

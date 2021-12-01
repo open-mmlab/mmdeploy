@@ -11,7 +11,7 @@ Please refer to [get_started.md](https://github.com/open-mmlab/mmsegmentation/bl
 | model                         | OnnxRuntime | TensorRT | NCNN | PPL | OpenVino | model config file(example)                                                         |
 |:------------------------------|:-----------:|:--------:|:----:|:---:|:--------:|:-----------------------------------------------------------------------------------|
 | FCN                           |      Y      |    Y     |  Y   |  Y  |    ?     | ${MMSEG_DIR}/configs/fcn/fcn_r50-d8_512x1024_40k_cityscapes.py                     |
-| PSPNet[*](#pspnet) |      Y      |    Y     |  N   |  Y  |    ?     | ${MMSEG_DIR}/configs/pspnet/pspnet_r50-d8_512x1024_40k_cityscapes.py               |
+| PSPNet[*](#pspnet)            |      Y      |    Y     |  N   |  Y  |    ?     | ${MMSEG_DIR}/configs/pspnet/pspnet_r50-d8_512x1024_40k_cityscapes.py               |
 | DeepLabV3                     |      Y      |    Y     |  Y   |  Y  |    ?     | ${MMSEG_DIR}/configs/deeplabv3/deeplabv3_r50-d8_512x1024_40k_cityscapes.py         |
 | DeepLabV3+                    |      Y      |    Y     |  Y   |  Y  |    ?     | ${MMSEG_DIR}/configs/deeplabv3plus/deeplabv3plus_r50-d8_512x1024_40k_cityscapes.py |
 

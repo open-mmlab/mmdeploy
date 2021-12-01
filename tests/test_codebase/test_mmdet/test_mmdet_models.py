@@ -561,11 +561,8 @@ def test_cascade_roi_head(backend_type: Backend):
         wrapped_model=wrapped_model,
         model_inputs=model_inputs,
         deploy_cfg=deploy_cfg)
-    processed_backend_outputs = []
-    if isinstance(backend_outputs, dict):
-        processed_backend_outputs = convert_to_list(backend_outputs,
-                                                    output_names)
-    elif isinstance(backend_outputs, (list, tuple)) and \
+
+    if isinstance(backend_outputs, (list, tuple)) and \
             backend_outputs[0].shape == (1, 0, 5):
         processed_backend_outputs = torch.zeros((1, 80, 5))
     else:
