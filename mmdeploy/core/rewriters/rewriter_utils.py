@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, List
 
 from mmdeploy.utils.constants import Backend
 
@@ -57,12 +57,30 @@ class RewriterRegistry:
         if backend not in self._rewrite_records:
             self._rewrite_records[backend] = dict()
 
-    def get_records(self, backend: str) -> dict:
+    def get_records(self, backend: str) -> List:
         """Get all registered records in record table."""
         self._check_backend(backend)
-        records = self._rewrite_records[Backend.DEFAULT.value].copy()
+
         if backend != Backend.DEFAULT.value:
-            records.update(self._rewrite_records[backend])
+            # Update dict A with dict B.
+            # Then convert the result dict to a list, while keeping the order
+            # of A and B: the elements only belong to B should alwarys come
+            # after the elements only belong to A.
+            # The complexity is O(n + m).
+            dict_a = self._rewrite_records[Backend.DEFAULT.value]
+            dict_b = self._rewrite_records[backend]
+            records = []
+            for k, v in dict_a.items():
+                if k in dict_b:
+                    records.append((k, dict_b[k]))
+                else:
+                    records.append((k, v))
+            for k, v in dict_b.items():
+                if k not in dict_a:
+                    records.append((k, v))
+        else:
+            records = list(
+                self._rewrite_records[Backend.DEFAULT.value].items())
         return records
 
     def _register(self, name: str, backend: str, **kwargs):

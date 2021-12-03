@@ -50,10 +50,10 @@ def test_get_records():
     def fake_add(a, b):
         return a * b
 
-    default_records = registry.get_records(Backend.DEFAULT.value)
+    default_records = dict(registry.get_records(Backend.DEFAULT.value))
     assert default_records['add']['_object'](1, 1) == 2
     assert default_records['minus']['_object'](1, 1) == 0
 
-    tensorrt_records = registry.get_records(Backend.TENSORRT.value)
+    tensorrt_records = dict(registry.get_records(Backend.TENSORRT.value))
     assert tensorrt_records['add']['_object'](1, 1) == 1
     assert tensorrt_records['minus']['_object'](1, 1) == 0

@@ -77,7 +77,8 @@ class SymbolicRewriter:
 
         self._pytorch_symbolic = list()
         self._extra_symbolic = list()
-        for function_name, record_dict in symbolic_records.items():
+        new_functions = list()
+        for function_name, record_dict in symbolic_records:
 
             symbolic_function = record_dict['_object']
             arg_descriptors = record_dict['arg_descriptors']
@@ -111,11 +112,17 @@ class SymbolicRewriter:
                 # Only register functions that exist
                 if origin_func is not None:
                     origin_symbolic = getattr(origin_func, 'symbolic', None)
-                    context_caller.origin_func = origin_symbolic
-                    origin_func.symbolic = context_caller
 
                     # Save origin function
                     self._extra_symbolic.append((origin_func, origin_symbolic))
+
+                    # Cache new the function to avoid homonymic bug
+                    new_functions.append((origin_func, context_caller))
+
+            for origin_func, new_func in new_functions:
+                origin_symbolic = getattr(origin_func, 'symbolic', None)
+                new_func.origin_func = origin_symbolic
+                origin_func.symbolic = new_func
 
     def exit(self):
         """The implementation of symbolic unregister."""

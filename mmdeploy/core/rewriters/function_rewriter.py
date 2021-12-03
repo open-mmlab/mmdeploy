@@ -9,7 +9,7 @@ from .rewriter_utils import ContextCaller, RewriterRegistry, eval_with_import
 def _set_func(origin_func_name: str, rewrite_func: Callable):
     """Rewrite a function by executing a python statement."""
 
-    # import necessary module
+    # Import necessary module
     split_path = origin_func_name.split('.')
     for i in range(len(split_path), 0, -1):
         try:
@@ -17,7 +17,7 @@ def _set_func(origin_func_name: str, rewrite_func: Callable):
             break
         except Exception:
             continue
-    # assign function
+    # Assign function
     exec(f'{origin_func_name} = rewrite_func')
 
 
@@ -72,7 +72,8 @@ class FunctionRewriter:
         functions_records = self._registry.get_records(backend)
 
         self._origin_functions = list()
-        for function_name, record_dict in functions_records.items():
+        new_functions = list()
+        for function_name, record_dict in functions_records:
 
             # Check if the origin function exists
             try:
@@ -97,8 +98,12 @@ class FunctionRewriter:
                     rewrite_function, origin_func, cfg,
                     **extra_kwargs).get_wrapped_caller()
 
-                # Rewrite functions
-                _set_func(function_name, context_caller)
+                # Cache new the function to avoid homonymic bug
+                new_functions.append((function_name, context_caller))
+
+        for function_name, new_function in new_functions:
+            # Rewrite functions
+            _set_func(function_name, new_function)
 
     def exit(self):
         """Recover the function rewrite."""

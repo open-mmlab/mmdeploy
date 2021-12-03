@@ -108,5 +108,5 @@ class ModuleRewriter:
         """Collect models in registry."""
         self._records = {}
         records = self._registry.get_records(backend)
-        for name, kwargs in records.items():
+        for name, kwargs in records:
             self._records[eval_with_import(name)] = kwargs

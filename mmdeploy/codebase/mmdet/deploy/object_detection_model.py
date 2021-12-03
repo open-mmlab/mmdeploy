@@ -36,11 +36,11 @@ def __build_backend_model(partition_name: str, backend: Backend,
 
 # Use registry to store models with different partition methods
 # If a model doesn't need to partition, we don't need this registry
-__BACKEND_MODEl = mmcv.utils.Registry(
+__BACKEND_MODEL = mmcv.utils.Registry(
     'backend_detectors', build_func=__build_backend_model)
 
 
-@__BACKEND_MODEl.register_module('end2end')
+@__BACKEND_MODEL.register_module('end2end')
 class End2EndModel(BaseBackendModel):
     """End to end model for inference of detection.
 
@@ -273,7 +273,7 @@ class End2EndModel(BaseBackendModel):
             out_file=out_file)
 
 
-@__BACKEND_MODEl.register_module('single_stage')
+@__BACKEND_MODEL.register_module('single_stage')
 class PartitionSingleStageModel(End2EndModel):
     """Partitioned single stage detection model.
 
@@ -352,7 +352,7 @@ class PartitionSingleStageModel(End2EndModel):
         return self.partition0_postprocess(scores, bboxes)
 
 
-@__BACKEND_MODEl.register_module('two_stage')
+@__BACKEND_MODEL.register_module('two_stage')
 class PartitionTwoStageModel(End2EndModel):
     """Partitioned two stage detection model.
 
@@ -572,7 +572,7 @@ def build_object_detection_model(model_files: Sequence[str],
     if partition_config is not None:
         partition_type = partition_config.get('type', None)
 
-    backend_detector = __BACKEND_MODEl.build(
+    backend_detector = __BACKEND_MODEL.build(
         partition_type,
         backend=backend,
         backend_files=model_files,

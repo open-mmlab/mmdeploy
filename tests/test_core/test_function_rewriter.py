@@ -3,6 +3,7 @@ import torch
 
 from mmdeploy.core import FUNCTION_REWRITER, RewriterContext
 from mmdeploy.core.rewriters.function_rewriter import FunctionRewriter
+from mmdeploy.utils.constants import Backend
 
 
 def test_function_rewriter():
@@ -83,3 +84,101 @@ def test_rewrite_empty_function():
     function_rewriter.enter()
     assert len(function_rewriter._origin_functions) == 0
     function_rewriter.exit()
+
+
+class TestHomonymicRewriter:
+
+    def test_rewrite_homonymic_functions(self):
+        import package
+        path1 = 'package.func'
+        path2 = 'package.module.func'
+
+        assert package.func() == 1
+        assert package.module.func() == 1
+
+        function_rewriter = FunctionRewriter()
+        function_rewriter.add_backend(Backend.NCNN.value)
+
+        @function_rewriter.register_rewriter(func_name=path1)
+        def func_2(ctx):
+            return 2
+
+        @function_rewriter.register_rewriter(
+            func_name=path2, backend=Backend.NCNN.value)
+        def func_3(ctx):
+            return 3
+
+        function_rewriter.enter(backend=Backend.NCNN.value)
+        # This is a feature
+        assert package.func() == 2
+        assert package.module.func() == 3
+        function_rewriter.exit()
+
+        assert package.func() == 1
+        assert package.module.func() == 1
+
+        function_rewriter2 = FunctionRewriter()
+        function_rewriter2.add_backend(Backend.NCNN.value)
+
+        @function_rewriter2.register_rewriter(
+            func_name=path1, backend=Backend.NCNN.value)
+        def func_4(ctx):
+            return 4
+
+        @function_rewriter2.register_rewriter(func_name=path2)
+        def func_5(ctx):
+            return 5
+
+        function_rewriter2.enter(backend=Backend.NCNN.value)
+        # This is a feature
+        assert package.func() == 4
+        assert package.module.func() == 5
+        function_rewriter2.exit()
+
+        assert package.func() == 1
+        assert package.module.func() == 1
+
+    def test_rewrite_homonymic_methods(self):
+        import package
+        path1 = 'package.C.method'
+        path2 = 'package.module.C.method'
+
+        c = package.C()
+
+        function_rewriter = FunctionRewriter()
+        function_rewriter.add_backend(Backend.NCNN.value)
+
+        assert c.method() == 1
+
+        @function_rewriter.register_rewriter(func_name=path1)
+        def func_2(ctx, self):
+            return 2
+
+        @function_rewriter.register_rewriter(
+            func_name=path2, backend=Backend.NCNN.value)
+        def func_3(ctx, self):
+            return 3
+
+        function_rewriter.enter(backend=Backend.NCNN.value)
+        assert c.method() == 3
+        function_rewriter.exit()
+
+        assert c.method() == 1
+
+        function_rewriter2 = FunctionRewriter()
+        function_rewriter2.add_backend(Backend.NCNN.value)
+
+        @function_rewriter2.register_rewriter(
+            func_name=path1, backend=Backend.NCNN.value)
+        def func_4(ctx, self):
+            return 4
+
+        @function_rewriter2.register_rewriter(func_name=path2)
+        def func_5(ctx, self):
+            return 5
+
+        function_rewriter2.enter(backend=Backend.NCNN.value)
+        assert c.method() == 4
+        function_rewriter2.exit()
+
+        assert c.method() == 1
