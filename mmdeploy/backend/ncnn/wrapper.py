@@ -96,8 +96,9 @@ class NCNNWrapper(BaseWrapper):
 
             # set inputs
             for name, input_tensor in inputs.items():
-                input_mat = ncnn.Mat(
-                    input_tensor[batch_id].detach().cpu().numpy())
+                data = input_tensor[batch_id].contiguous()
+                data = data.detach().cpu().numpy()
+                input_mat = ncnn.Mat(data)
                 ex.input(name, input_mat)
 
             # get outputs
@@ -108,8 +109,8 @@ class NCNNWrapper(BaseWrapper):
                     np.array(result[name]))
 
         # stack outputs together
-        for name, input_tensor in outputs.items():
-            outputs[name] = torch.stack(input_tensor)
+        for name, output_tensor in outputs.items():
+            outputs[name] = torch.stack(output_tensor)
 
         return outputs
 

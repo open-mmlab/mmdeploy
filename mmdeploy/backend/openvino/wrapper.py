@@ -66,7 +66,7 @@ class OpenVINOWrapper(BaseWrapper):
                 with updated device type.
         """
         updated_inputs = {
-            name: data.to(torch.device(self.device))
+            name: data.to(torch.device(self.device)).contiguous()
             for name, data in inputs.items()
         }
         return updated_inputs

@@ -91,7 +91,7 @@ class TRTWrapper(BaseWrapper):
 
             # All input tensors must be gpu variables
             assert 'cuda' in input_tensor.device.type
-
+            input_tensor = input_tensor.contiguous()
             if input_tensor.dtype == torch.long:
                 input_tensor = input_tensor.int()
             self.context.set_binding_shape(idx, tuple(input_tensor.shape))

@@ -84,6 +84,7 @@ class ORTWrapper(BaseWrapper):
         """
         for name, input_tensor in inputs.items():
             # set io binding for inputs/outputs
+            input_tensor = input_tensor.contiguous()
             if not self.is_cuda_available:
                 input_tensor = input_tensor.cpu()
             self.io_binding.bind_input(
