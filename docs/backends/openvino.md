@@ -4,7 +4,8 @@ This tutorial is based on Linux systems like Ubuntu-18.04.
 
 ### Installation
 It is recommended to create a virtual environment for the project.
-1. Install [OpenVINO](https://docs.openvino.ai/2021.4/get_started.html). For example, you can install OpenVINO with [pip](https://pypi.org/project/openvino-dev/).
+1. Install [OpenVINO](https://docs.openvino.ai/2021.4/get_started.html). It is recommended to use the installer or install using pip.
+Installation example using [pip](https://pypi.org/project/openvino-dev/):
 ```bash
 pip install openvino-dev
 ```
@@ -39,7 +40,7 @@ python tools/deploy.py \
     tests/data/tiger.jpeg \
     --work-dir ../deploy_result \
     --device cpu \
-    --log-level INFO \
+    --log-level INFO
 ```
 
 ### List of supported models exportable to OpenVINO from MMDetection

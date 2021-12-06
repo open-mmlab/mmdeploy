@@ -9,22 +9,32 @@ import mmcv
 import torch
 
 
-def is_mo_available() -> bool:
-    """Checking if OpenVINO Model Optimizer is available.
+def get_mo_command() -> str:
+    """Checks for possible commands to run Model Optimizer. The following
+    commands will be tested:
+
+        'mo.py' - if you installed OpenVINO using the installer.
+        'mo' - if you installed OpenVINO with pip.
 
     Returns:
-        bool: True, if Model Optimizer is available, else - False.
+        str: Command to run Model Optimizer. If it is not available,
+            the empty string "" will be returned.
     """
-    is_available = True
-    try:
-        run('mo -h',
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            shell=True,
-            check=True)
-    except CalledProcessError:
-        is_available = False
-    return is_available
+    mo_command = ''
+    mo_commands = ['mo.py', 'mo']
+    for command in mo_commands:
+        is_available = True
+        try:
+            run(f'{command} -h',
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                shell=True,
+                check=True)
+        except CalledProcessError:
+            is_available = False
+        if is_available:
+            mo_command = command
+    return mo_command
 
 
 def get_output_model_file(onnx_path: str, work_dir: str) -> str:
@@ -59,7 +69,9 @@ def onnx2openvino(input_info: Dict[str, Union[List[int], torch.Size]],
     input_shapes = ','.join(str(list(elem)) for elem in input_info.values())
     output = ','.join(output_names)
 
-    if not is_mo_available():
+    mo_command = get_mo_command()
+    is_mo_available = bool(mo_command)
+    if not is_mo_available:
         raise RuntimeError(
             'OpenVINO Model Optimizer is not found or configured improperly')
 
@@ -69,8 +81,8 @@ def onnx2openvino(input_info: Dict[str, Union[List[int], torch.Size]],
               f'--input="{input_names}" ' \
               f'--input_shape="{input_shapes}" ' \
               f'--disable_fusing '
-    command = f'mo {mo_args}'
-    logging.info(f'Args for mo: {command}')
+    command = f'{mo_command} {mo_args}'
+    logging.info(f'Args for Model Optimizer: {command}')
     mo_output = run(command, capture_output=True, shell=True, check=True)
     logging.info(mo_output.stdout.decode())
     logging.debug(mo_output.stderr.decode())
