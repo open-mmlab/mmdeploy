@@ -30,7 +30,8 @@ def load_config(*args) -> List[mmcv.Config]:
     return configs
 
 
-def get_task_type(deploy_cfg: Union[str, mmcv.Config], default=None) -> Task:
+def get_task_type(deploy_cfg: Union[str, mmcv.Config],
+                  default: str = None) -> Task:
     """Get the task type of the algorithm.
 
     Args:
@@ -42,13 +43,28 @@ def get_task_type(deploy_cfg: Union[str, mmcv.Config], default=None) -> Task:
         Task : An enumeration denotes the task type.
     """
 
-    deploy_cfg = load_config(deploy_cfg)[0]
+    codebase_config = get_codebase_config(deploy_cfg)
     try:
-        task = deploy_cfg['codebase_config']['task']
+        task = codebase_config['task']
     except KeyError:
         return default
+
     task = Task.get(task, default)
     return task
+
+
+def get_codebase_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
+    """Get the codebase_config from the config.
+
+    Args:
+        deploy_cfg (str | mmcv.Config): The path or content of config.
+
+    Returns:
+        Dict : codebase config dict.
+    """
+    deploy_cfg = load_config(deploy_cfg)[0]
+    codebase_config = deploy_cfg.get('codebase_config', {})
+    return codebase_config
 
 
 def get_codebase(deploy_cfg: Union[str, mmcv.Config],
@@ -64,11 +80,12 @@ def get_codebase(deploy_cfg: Union[str, mmcv.Config],
         Codebase : An enumeration denotes the codebase type.
     """
 
-    deploy_cfg = load_config(deploy_cfg)[0]
+    codebase_config = get_codebase_config(deploy_cfg)
     try:
-        codebase = deploy_cfg['codebase_config']['type']
+        codebase = codebase_config['type']
     except KeyError:
         return default
+
     codebase = Codebase.get(codebase, default)
     return codebase
 

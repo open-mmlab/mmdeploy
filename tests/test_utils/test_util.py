@@ -71,6 +71,16 @@ class TestGetTaskType:
         assert util.get_task_type(correct_deploy_path) == Task.SUPER_RESOLUTION
 
 
+class TestGetCodebaseConfig:
+
+    def test_get_codebase_config_empty(self):
+        assert util.get_codebase_config(mmcv.Config(dict())) == {}
+
+    def test_get_codebase_config(self):
+        codebase_config = util.get_codebase_config(correct_deploy_path)
+        assert isinstance(codebase_config, dict) and len(codebase_config) > 1
+
+
 class TestGetCodebase:
 
     def test_get_codebase_none(self):

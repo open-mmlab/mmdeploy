@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 import torch
 
+import mmdeploy.backend.ncnn as ncnn_apis
 import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.codebase.mmdet.deploy.object_detection_model import End2EndModel
 from mmdeploy.utils import Backend
@@ -53,8 +54,8 @@ class TestEnd2EndModel:
                 'output_names': ['dets', 'labels']
             }})
 
-        from mmdeploy.codebase.mmdet.deploy.object_detection_model \
-            import End2EndModel
+        from mmdeploy.codebase.mmdet.deploy.object_detection_model import \
+            End2EndModel
         cls.end2end_model = End2EndModel(Backend.ONNXRUNTIME, [''], 'cpu',
                                          ['' for i in range(80)], deploy_cfg)
 
@@ -114,8 +115,8 @@ class TestMaskEnd2EndModel:
             }
         })
 
-        from mmdeploy.codebase.mmdet.deploy.object_detection_model \
-            import End2EndModel
+        from mmdeploy.codebase.mmdet.deploy.object_detection_model import \
+            End2EndModel
         cls.end2end_model = End2EndModel(Backend.ONNXRUNTIME, [''], 'cpu',
                                          ['' for i in range(80)], deploy_cfg)
 
@@ -179,8 +180,8 @@ class TestPartitionSingleStageModel:
         deploy_cfg = mmcv.Config(
             dict(codebase_config=dict(post_processing=post_processing)))
 
-        from mmdeploy.codebase.mmdet.deploy.object_detection_model \
-            import PartitionSingleStageModel
+        from mmdeploy.codebase.mmdet.deploy.object_detection_model import \
+            PartitionSingleStageModel
         cls.model = PartitionSingleStageModel(
             Backend.ONNXRUNTIME, [''],
             'cpu', ['' for i in range(80)],
@@ -293,8 +294,8 @@ class TestPartitionTwoStageModel:
             outputs=outputs, model_cfg=model_cfg, deploy_cfg=deploy_cfg)
 
         # replace original function in PartitionTwoStageModel
-        from mmdeploy.codebase.mmdet.deploy.object_detection_model \
-            import PartitionTwoStageModel
+        from mmdeploy.codebase.mmdet.deploy.object_detection_model import \
+            PartitionTwoStageModel
 
         cls.model = PartitionTwoStageModel(
             Backend.ONNXRUNTIME, ['', ''],
@@ -399,6 +400,7 @@ data_cfg4 = mmcv.Config(dict(data=dict(error=dict(type='CocoDataset'))))
 @pytest.mark.parametrize('cfg', [data_cfg1, data_cfg2, data_cfg3, data_cfg4])
 def test_get_classes_from_cfg(cfg):
     from mmdet.datasets import DATASETS
+
     from mmdeploy.codebase.mmdet.deploy.object_detection_model import \
         get_classes_from_config
 
@@ -436,3 +438,42 @@ def test_build_object_detection_model(partition_type):
         detector = build_object_detection_model([''], model_cfg, deploy_cfg,
                                                 'cpu')
         assert isinstance(detector, End2EndModel)
+
+
+@backend_checker(Backend.NCNN)
+class TestNCNNEnd2EndModel:
+
+    @classmethod
+    def setup_class(cls):
+        # force add backend wrapper regardless of plugins
+        from mmdeploy.backend.ncnn import NCNNWrapper
+        ncnn_apis.__dict__.update({'NCNNWrapper': NCNNWrapper})
+
+        # simplify backend inference
+        cls.wrapper = SwitchBackendWrapper(NCNNWrapper)
+        cls.outputs = {
+            'output': torch.rand(1, 10, 6),
+        }
+        cls.wrapper.set(outputs=cls.outputs)
+        deploy_cfg = mmcv.Config({'onnx_config': {'output_names': ['output']}})
+        model_cfg = mmcv.Config({})
+
+        from mmdeploy.codebase.mmdet.deploy.object_detection_model import \
+            NCNNEnd2EndModel
+        cls.ncnn_end2end_model = NCNNEnd2EndModel(Backend.NCNN, ['', ''],
+                                                  'cpu',
+                                                  ['' for i in range(80)],
+                                                  model_cfg, deploy_cfg)
+
+    @classmethod
+    def teardown_class(cls):
+        cls.wrapper.recover()
+
+    @pytest.mark.parametrize('num_det', [10, 0])
+    def test_forward_test(self, num_det):
+        self.outputs = {
+            'output': torch.rand(1, num_det, 6),
+        }
+        imgs = torch.rand(1, 3, 64, 64)
+        results = self.ncnn_end2end_model.forward_test(imgs)
+        assert_det_results(results, 'NCNNEnd2EndModel')

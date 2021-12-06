@@ -77,6 +77,7 @@ class NCNNWrapper(BaseWrapper):
         """
         input_list = list(inputs.values())
         batch_size = input_list[0].size(0)
+        assert batch_size == 1, 'Only batch_size=1 is supported!'
         for input_tensor in input_list[1:]:
             assert input_tensor.size(
                 0) == batch_size, 'All tensors should have same batch size'
@@ -89,29 +90,23 @@ class NCNNWrapper(BaseWrapper):
         # create output dict
         outputs = dict([name, [None] * batch_size] for name in output_names)
 
-        # run inference
-        for batch_id in range(batch_size):
-            # create extractor
-            ex = self._net.create_extractor()
+        # create extractor
+        ex = self._net.create_extractor()
+        # set inputs
+        for name, input_tensor in inputs.items():
+            data = input_tensor[0].contiguous().cpu().numpy()
+            input_mat = ncnn.Mat(data)
+            ex.input(name, input_mat)
 
-            # set inputs
-            for name, input_tensor in inputs.items():
-                data = input_tensor[batch_id].contiguous()
-                data = data.detach().cpu().numpy()
-                input_mat = ncnn.Mat(data)
-                ex.input(name, input_mat)
-
-            # get outputs
-            result = self.__ncnn_execute(
-                extractor=ex, output_names=output_names)
-            for name in output_names:
-                outputs[name][batch_id] = torch.from_numpy(
-                    np.array(result[name]))
-
-        # stack outputs together
-        for name, output_tensor in outputs.items():
-            outputs[name] = torch.stack(output_tensor)
-
+        # get outputs
+        result = self.__ncnn_execute(extractor=ex, output_names=output_names)
+        for name in output_names:
+            mat = result[name]
+            # deal with special case
+            if mat.empty():
+                outputs[name] = None
+                continue
+            outputs[name] = torch.from_numpy(np.array(mat)).unsqueeze(0)
         return outputs
 
     @TimeCounter.count_time()

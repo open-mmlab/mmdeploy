@@ -14,8 +14,8 @@ from mmdet.models import BaseDetector
 from mmdeploy.backend.base import get_backend_file_count
 from mmdeploy.codebase.base import BaseBackendModel
 from mmdeploy.codebase.mmdet import get_post_processing_params, multiclass_nms
-from mmdeploy.utils import (Backend, get_backend, get_onnx_config,
-                            get_partition_config, load_config)
+from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
+                            get_onnx_config, get_partition_config, load_config)
 
 
 def __build_backend_model(partition_name: str, backend: Backend,
@@ -259,7 +259,7 @@ class End2EndModel(BaseBackendModel):
     def show_result(self,
                     img: np.ndarray,
                     result: list,
-                    win_name: str,
+                    win_name: str = '',
                     show: bool = True,
                     score_thr: float = 0.3,
                     out_file=None):
@@ -516,6 +516,61 @@ class PartitionTwoStageModel(End2EndModel):
         return outputs
 
 
+@__BACKEND_MODEL.register_module('ncnn_end2end')
+class NCNNEnd2EndModel(End2EndModel):
+    """NCNNEnd2EndModel.
+
+    End2end NCNN model inference class. Because it has DetectionOutput layer
+    and its output is different from original mmdet style of `dets`, `labels`.
+
+    Args:
+        model_file (str): The path of input model file.
+        class_names (Sequence[str]): A list of string specifying class names.
+        model_cfg: (str | mmcv.Config): Input model config.
+        deploy_cfg: (str | mmcv.Config): Input deployment config.
+        device_id (int): An integer represents device index.
+    """
+
+    def __init__(self, backend: Backend, backend_files: Sequence[str],
+                 device: str, class_names: Sequence[str],
+                 model_cfg: Union[str, mmcv.Config],
+                 deploy_cfg: Union[str, mmcv.Config], **kwargs):
+        assert backend == Backend.NCNN, f'only supported ncnn, but give \
+            {backend.value}'
+
+        super(NCNNEnd2EndModel,
+              self).__init__(backend, backend_files, device, class_names,
+                             deploy_cfg, **kwargs)
+        # load cfg if necessary
+        model_cfg = load_config(model_cfg)[0]
+        self.model_cfg = model_cfg
+
+    def forward_test(self, imgs: torch.Tensor, *args, **kwargs) -> List:
+        """Implement forward test.
+
+        Args:
+            imgs (torch.Tensor): Input image(s) in [N x C x H x W] format.
+
+        Returns:
+            list[np.ndarray]: dets of shape [N, num_det, 5] and
+                class labels of shape [N, num_det].
+        """
+        _, _, H, W = imgs.shape
+        outputs = self.wrapper({'input': imgs})
+        for key, item in outputs.items():
+            if item is None:
+                return [np.zeros((1, 0, 6))]
+        out = self.wrapper.output_to_list(outputs)[0]
+        labels = out[:, :, 0] - 1
+        scales = torch.tensor([W, H, W, H]).reshape(1, 1, 4)
+        scores = out[:, :, 1:2]
+        boxes = out[:, :, 2:6] * scales
+        dets = torch.cat([boxes, scores], dim=2)
+        dets = dets.detach().cpu().numpy()
+        labels = labels.detach().cpu().numpy()
+        return [dets, labels]
+
+
 def get_classes_from_config(model_cfg: Union[str, mmcv.Config], **kwargs):
     """Get class name from config.
 
@@ -566,11 +621,13 @@ def build_object_detection_model(model_files: Sequence[str],
     backend = get_backend(deploy_cfg)
     class_names = get_classes_from_config(model_cfg)
 
-    # Default Config is 'end2end'
-    partition_type = 'end2end'
     partition_config = get_partition_config(deploy_cfg)
     if partition_config is not None:
         partition_type = partition_config.get('type', None)
+    else:
+        codebase_config = get_codebase_config(deploy_cfg)
+        # Default Config is 'end2end'
+        partition_type = codebase_config.get('model_type', 'end2end')
 
     backend_detector = __BACKEND_MODEL.build(
         partition_type,

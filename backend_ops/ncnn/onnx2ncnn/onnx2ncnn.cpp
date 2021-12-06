@@ -3551,6 +3551,8 @@ int main(int argc, char** argv) {
       }
     } else if (op == "Where") {
       fprintf(pp, "%-16s", "Where");
+    } else if (op == "Yolov3DetectionOutput") {
+      fprintf(pp, "%-16s", "Yolov3DetectionOutput");
     } else {
       // TODO
       fprintf(stderr, "%s not supported yet!\n", op.c_str());
@@ -5380,6 +5382,38 @@ int main(int argc, char** argv) {
             fprintf(stderr, "Unsupported unsqueeze axes !: %d, %s\n", axes[i],
                     node.name().c_str());
           fprintf(pp, ",%d", axes[i]);
+        }
+      }
+    } else if (op == "Yolov3DetectionOutput") {
+      int num_class = get_node_attr_i(node, "num_class");
+      int num_box = get_node_attr_i(node, "num_box");
+      float confidence_threshold =
+          get_node_attr_f(node, "confidence_threshold");
+      float nms_threshold = get_node_attr_f(node, "nms_threshold");
+      fprintf(pp, " 0=%d", num_class);
+      fprintf(pp, " 1=%d", num_box);
+      fprintf(pp, " 2=%e", confidence_threshold);
+      fprintf(pp, " 3=%e", nms_threshold);
+      std::vector<float> biases = get_node_attr_af(node, "biases");
+      if (biases.size() > 0) {
+        fprintf(pp, " -23304=%zu", biases.size());
+        for (int i = 0; i < (int)biases.size(); i++) {
+          fprintf(pp, ",%e", biases[i]);
+        }
+      }
+      std::vector<float> mask = get_node_attr_af(node, "mask");
+      if (mask.size() > 0) {
+        fprintf(pp, " -23305=%zu", mask.size());
+        for (int i = 0; i < (int)mask.size(); i++) {
+          fprintf(pp, ",%e", mask[i]);
+        }
+      }
+      std::vector<float> anchors_scale =
+          get_node_attr_af(node, "anchors_scale");
+      if (anchors_scale.size() > 0) {
+        fprintf(pp, " -23306=%zu", anchors_scale.size());
+        for (int i = 0; i < (int)anchors_scale.size(); i++) {
+          fprintf(pp, ",%e", anchors_scale[i]);
         }
       }
     } else {
