@@ -11,16 +11,25 @@
     export VULKAN_SDK=$(pwd)/1.2.176.1/x86_64
 - Check your gcc version.
 You should ensure your gcc satisfies `gcc >= 6`.
+
+- Install Protocol Buffers through:
+    ```bash
+    apt-get install libprotobuf-dev protobuf-compiler
+    ```
+
 - Prepare ncnn Framework
 
     - Download ncnn source code
         ```bash
         git clone git@github.com:Tencent/ncnn.git
         ```
+
     - <font color=red>Make install</font> ncnn library
         ```bash
         cd ncnn
+        git submodule update --init
         mkdir build
+        cd build
         cmake -DNCNN_VULKAN=ON -DNCNN_SYSTEM_GLSLANG=ON -DNCNN_BUILD_EXAMPLES=ON -DNCNN_PYTHON=ON -DNCNN_BUILD_TOOLS=ON -DNCNN_BUILD_BENCHMARK=ON -DNCNN_BUILD_TESTS=ON ..
         make install
         ```
