@@ -10,6 +10,8 @@ else()
   message(FATAL_ERROR "Could not locate ncnn")
 endif()
 
+set_targets(mmdeploy_ncnn_ops NCNN_OPS_OBJ NCNN_OPS_STATIC NCNN_OPS_SHARED)
+
 if(NOT ANDROID AND NOT IOS)
   add_subdirectory(ops)
   add_subdirectory(onnx2ncnn)

@@ -8,7 +8,7 @@ if (NOT TARGET pybind11)
 endif ()
 include_directories(${pybind11_INCLUDE_DIR} ${PYTHON_INCLUDE_DIRS})
 pybind11_add_module(ncnn_ext ncnn_ext.cpp)
-target_link_libraries(ncnn_ext PUBLIC ncnn ${SHARED_TARGET})
+target_link_libraries(ncnn_ext PUBLIC ncnn ${NCNN_OPS_SHARED})
 set_target_properties(
         ncnn_ext PROPERTIES LIBRARY_OUTPUT_DIRECTORY
         ${CMAKE_SOURCE_DIR}/mmdeploy/backend/ncnn)
