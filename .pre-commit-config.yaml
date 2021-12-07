@@ -43,6 +43,8 @@ repos:
     rev: v2.1.0
     hooks:
       - id: codespell
+        args: ["--skip=third_party/*,*.proto"]
+
   - repo: https://github.com/myint/docformatter
     rev: v1.3.1
     hooks:

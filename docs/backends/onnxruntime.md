@@ -46,7 +46,7 @@ Note:
 cd ${MMDEPLOY_DIR} # To MMDeploy root directory
 mkdir build
 cd build
-cmake -DBUILD_ONNXRUNTIME_OPS=ON -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
+cmake -DMMDEPLOY_TARGET_BACKENDS=ort -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
 make -j10
 ```
 

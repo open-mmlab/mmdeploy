@@ -24,9 +24,9 @@ jobs:
       - name: Format c/cuda codes with clang-format
         uses: DoozyX/clang-format-lint-action@v0.11
         with:
-          source: backend_ops
+          source: csrc
           extensions: h,c,cpp,hpp,cu,cuh
-          style: google
+          style: file
       - name: Check docstring coverage
         run: |
           pip install interrogate

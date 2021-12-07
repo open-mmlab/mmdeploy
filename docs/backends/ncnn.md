@@ -48,14 +48,14 @@ Some custom ops are created to support models in OpenMMLab, the custom ops can b
 cd ${MMDEPLOY_DIR}
 mkdir build
 cd build
-cmake -DBUILD_NCNN_OPS=ON ..
+cmake -DMMDEPLOY_TARGET_BACKENDS=ncnn ..
 make -j$(nproc)
 ```
 
 If you haven't installed NCNN in the default path, please add `-DNCNN_DIR` flag in cmake.
 
 ```bash
- cmake -DBUILD_NCNN_OPS=ON -DNCNN_DIR=${NCNN_DIR} ..
+ cmake -DMMDEPLOY_TARGET_BACKENDS=ncnn -Dncnn_DIR=/path/to/ncnn/lib/cmake/ncnn ..
  make -j$(nproc)
 ```
 

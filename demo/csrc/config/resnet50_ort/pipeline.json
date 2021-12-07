@@ -1,0 +1,95 @@
+{
+  "pipeline": {
+    "input": [
+      "img"
+    ],
+    "output": [
+      "cls"
+    ],
+    "tasks": [
+      {
+        "name": "preprocess",
+        "type": "Task",
+        "module": "Transform",
+        "input": [
+          "img"
+        ],
+        "output": [
+          "data"
+        ],
+        "transforms": [
+          {
+            "type": "LoadImageFromFile"
+          },
+          {
+            "type": "Resize",
+            "size": [
+              256,
+              -1
+            ]
+          },
+          {
+            "type": "CenterCrop",
+            "crop_size": 224
+          },
+          {
+            "type": "Normalize",
+            "mean": [
+              123.675,
+              116.28,
+              103.53
+            ],
+            "std": [
+              58.395,
+              57.12,
+              57.375
+            ],
+            "to_rgb": true
+          },
+          {
+            "type": "ImageToTensor",
+            "keys": [
+              "img"
+            ]
+          },
+          {
+            "type": "Collect",
+            "keys": [
+              "img"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "resnet",
+        "type": "Task",
+        "module": "Net",
+        "input": [
+          "data"
+        ],
+        "output": [
+          "cls_res"
+        ],
+        "input_map": {
+          "img": "input"
+        },
+        "output_map": {
+          "cls": "output"
+        }
+      },
+      {
+        "name": "postprocess",
+        "type": "Task",
+        "module": "MMClsPostprocess",
+        "postprocess_type": "SoftmaxPost",
+        "input": [
+          "data",
+          "cls_res"
+        ],
+        "output": [
+          "cls"
+        ]
+      }
+    ]
+  }
+}

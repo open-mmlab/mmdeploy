@@ -121,3 +121,10 @@ work_dirs/
 *.pth
 *.py~
 *.sh~
+
+#clion's build directory
+/cmake-build-debug
+/cmake-build-release
+
+# install directory
+/install
