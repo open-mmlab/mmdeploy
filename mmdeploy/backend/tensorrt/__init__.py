@@ -33,9 +33,7 @@ if is_available():
     from .utils import create_trt_engine, load_trt_engine, save_trt_engine
     from .wrapper import TRTWrapper
 
-    # load tensorrt plugin lib
-    load_tensorrt_plugin()
-
     __all__ = [
-        'create_trt_engine', 'save_trt_engine', 'load_trt_engine', 'TRTWrapper'
+        'create_trt_engine', 'save_trt_engine', 'load_trt_engine',
+        'TRTWrapper', 'load_tensorrt_plugin'
     ]

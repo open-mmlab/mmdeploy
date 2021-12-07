@@ -7,6 +7,7 @@ import torch
 from mmdeploy.utils import Backend
 from mmdeploy.utils.timer import TimeCounter
 from ..base import BACKEND_WRAPPER, BaseWrapper
+from .init_plugins import load_tensorrt_plugin
 from .utils import load_trt_engine, torch_device_from_trt, torch_dtype_from_trt
 
 
@@ -37,6 +38,7 @@ class TRTWrapper(BaseWrapper):
                  engine: Union[str, trt.ICudaEngine],
                  output_names: Optional[Sequence[str]] = None):
         super().__init__(output_names)
+        load_tensorrt_plugin()
         self.engine = engine
         if isinstance(self.engine, str):
             self.engine = load_trt_engine(engine)

@@ -7,6 +7,7 @@ import torch
 from packaging import version
 
 from .calib_utils import HDF5Calibrator
+from .init_plugins import load_tensorrt_plugin
 
 
 def create_trt_engine(onnx_model: Union[str, onnx.ModelProto],
@@ -51,6 +52,7 @@ def create_trt_engine(onnx_model: Union[str, onnx.ModelProto],
         >>>             device_id=0)
         >>>             })
     """
+    load_tensorrt_plugin()
     device = torch.device('cuda:{}'.format(device_id))
     # create builder and network
     logger = trt.Logger(log_level)
