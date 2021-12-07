@@ -199,7 +199,7 @@ There is a specific naming convention for the filename of deployment config file
 
 - `task name`: Model's task type.
 - `partition`: Optional, whether partition model is supported.
-- `backend name`: Backend's name. Note if you use the quantization function, you need to indicate the quantization type. Just like `tensorrt_int8`.
+- `backend name`: Backend's name. Note if you use the quantization function, you need to indicate the quantization type. Just like `tensorrt-int8`.
 - `dynamic or static`: Dynamic or static export. Note if the backend needs explicit shape information, you need to add a description of input size with `height x width` format. Just like `dynamic-512x1024-2048x2048`, it means that the min input shape is `512x1024` and the max input shape is `2048x2048`.
 
 #### Example
