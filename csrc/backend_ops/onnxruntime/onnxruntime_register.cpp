@@ -3,13 +3,13 @@
 
 #include "ort_utils.h"
 
-const char *c_MMCVOpDomain = "mmcv";
+const char *c_MMDeployOpDomain = "mmdeploy";
 
 OrtStatus *ORT_API_CALL RegisterCustomOps(OrtSessionOptions *options, const OrtApiBase *api) {
   OrtCustomOpDomain *domain = nullptr;
   const OrtApi *kOrtApi = api->GetApi(ORT_API_VERSION);
 
-  if (auto status = kOrtApi->CreateCustomOpDomain(c_MMCVOpDomain, &domain)) {
+  if (auto status = kOrtApi->CreateCustomOpDomain(c_MMDeployOpDomain, &domain)) {
     return status;
   }
 

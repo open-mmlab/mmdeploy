@@ -35,7 +35,7 @@ def test_mark():
 
     nodes = onnx_model.graph.node
     assert nodes[0].op_type == 'Mark'
-    assert nodes[0].domain == 'mmcv'
+    assert nodes[0].domain == 'mmdeploy'
     assert attribute_to_dict(nodes[0].attribute) == dict(
         dtype=1,
         func='add',
@@ -46,7 +46,7 @@ def test_mark():
         shape=[2, 3, 4])
 
     assert nodes[1].op_type == 'Mark'
-    assert nodes[1].domain == 'mmcv'
+    assert nodes[1].domain == 'mmdeploy'
     assert attribute_to_dict(nodes[1].attribute) == dict(
         dtype=1,
         func='add',
@@ -59,7 +59,7 @@ def test_mark():
     assert nodes[2].op_type == 'Add'
 
     assert nodes[3].op_type == 'Mark'
-    assert nodes[3].domain == 'mmcv'
+    assert nodes[3].domain == 'mmdeploy'
     assert attribute_to_dict(nodes[3].attribute) == dict(
         dtype=1,
         func='add',

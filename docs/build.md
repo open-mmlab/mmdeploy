@@ -22,6 +22,7 @@
       # go back to third_party directory and git clone pybind11
       cd ..
       git clone git@github.com:pybind/pybind11.git pybind11
+      cd pybind11
       git checkout 70a58c5
       ```
 

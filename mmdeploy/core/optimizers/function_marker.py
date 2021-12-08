@@ -40,9 +40,9 @@ class Mark(torch.autograd.Function):
 
     @staticmethod
     def symbolic(g, x, dtype, shape, func, func_id, type, name, id, attrs):
-        """Symbolic function for mmcv::Mark op."""
+        """Symbolic function for mmdeploy::Mark op."""
         n = g.op(
-            'mmcv::Mark',
+            'mmdeploy::Mark',
             x,
             dtype_i=TORCH_DTYPE_TO_ONNX[dtype],
             shape_i=shape,

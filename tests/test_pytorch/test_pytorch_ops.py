@@ -85,7 +85,7 @@ def test_grid_sampler():
     model = OpModel(torch.grid_sampler, flow, 0, 0, False).eval()
     nodes = get_model_onnx_nodes(model, x)
     assert nodes[1].op_type == 'grid_sampler'
-    assert nodes[1].domain == 'mmcv'
+    assert nodes[1].domain == 'mmdeploy'
 
 
 def test_instance_norm():
@@ -94,7 +94,7 @@ def test_instance_norm():
                     1e-05).eval()
     nodes = get_model_onnx_nodes(model, x)
     assert nodes[4].op_type == 'TRTInstanceNormalization'
-    assert nodes[4].domain == 'mmcv'
+    assert nodes[4].domain == 'mmdeploy'
 
 
 class TestSqueeze:

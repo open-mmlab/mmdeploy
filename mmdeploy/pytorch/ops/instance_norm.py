@@ -39,7 +39,7 @@ def instance_norm(g, input, num_groups, weight, bias, eps, cudnn_enabled):
                                     'Tensor'))
 
     norm_reshaped = g.op(
-        'mmcv::TRTInstanceNormalization',
+        'mmdeploy::TRTInstanceNormalization',
         input_reshaped,
         weight_,
         bias_,

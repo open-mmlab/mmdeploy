@@ -384,7 +384,7 @@ def test_multi_level_roi_align(backend,
         input_name, ['bbox_feats'],
         'MMCVMultiLevelRoiAlign_0',
         None,
-        'mmlab',
+        'mmdeploy',
         aligned=aligned,
         featmap_strides=featmap_strides,
         finest_scale=finest_scale,
@@ -397,7 +397,7 @@ def test_multi_level_roi_align(backend,
         graph, producer_name='pytorch', producer_version='1.8')
     onnx_model.opset_import[0].version = 11
     onnx_model.opset_import.append(
-        onnx.onnx_ml_pb2.OperatorSetIdProto(domain='mmlab', version=1))
+        onnx.onnx_ml_pb2.OperatorSetIdProto(domain='mmdeploy', version=1))
 
     backend.run_and_validate(
         onnx_model, [rois, *input],

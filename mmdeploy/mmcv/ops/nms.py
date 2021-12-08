@@ -132,10 +132,10 @@ def nms_dynamic(ctx, g, boxes: Tensor, scores: Tensor,
 
 
 class TRTBatchedNMSop(torch.autograd.Function):
-    """Create mmcv::TRTBatchedNMS op for TensorRT backend.
+    """Create mmdeploy::TRTBatchedNMS op for TensorRT backend.
 
     NMS in ONNX supports dynamic outputs. This class helps replace
-    onnx::NonMaxSuppression with mmcv::TRTBatchedNMS.
+    onnx::NonMaxSuppression with mmdeploy::TRTBatchedNMS.
     """
 
     @staticmethod
@@ -190,9 +190,9 @@ class TRTBatchedNMSop(torch.autograd.Function):
                  iou_threshold: float,
                  score_threshold: float,
                  background_label_id: int = -1):
-        """Symbolic function for mmcv::TRTBatchedNMS."""
+        """Symbolic function for mmdeploy::TRTBatchedNMS."""
         return g.op(
-            'mmcv::TRTBatchedNMS',
+            'mmdeploy::TRTBatchedNMS',
             boxes,
             scores,
             num_classes_i=num_classes,

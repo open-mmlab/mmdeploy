@@ -20,7 +20,7 @@ def create_custom_module():
 
         @staticmethod
         def symbolic(g, x, val):
-            return g.op('mmcv::symbolic_old', x, val_i=val)
+            return g.op('mmdeploy::symbolic_old', x, val_i=val)
 
         @staticmethod
         def forward(ctx, x, val):
@@ -42,17 +42,17 @@ def test_symbolic_rewriter():
     @SYMBOLIC_REWRITER.register_symbolic('mmdeploy.TestFunc')
     def symbolic_testfunc_default(symbolic_wrapper, g, x, val):
         assert hasattr(symbolic_wrapper, 'cfg')
-        return g.op('mmcv::symbolic_testfunc_default', x, val_i=val)
+        return g.op('mmdeploy::symbolic_testfunc_default', x, val_i=val)
 
     @SYMBOLIC_REWRITER.register_symbolic(
         'mmdeploy.TestFunc', backend='tensorrt')
     def symbolic_testfunc_tensorrt(symbolic_wrapper, g, x, val):
-        return g.op('mmcv::symbolic_testfunc_tensorrt', x, val_i=val)
+        return g.op('mmdeploy::symbolic_testfunc_tensorrt', x, val_i=val)
 
     @SYMBOLIC_REWRITER.register_symbolic(
         'cummax', is_pytorch=True, arg_descriptors=['v', 'i'])
     def symbolic_cummax(symbolic_wrapper, g, input, dim):
-        return g.op('mmcv::cummax_default', input, dim_i=dim, outputs=2)
+        return g.op('mmdeploy::cummax_default', input, dim_i=dim, outputs=2)
 
     class TestModel(torch.nn.Module):
 
@@ -74,9 +74,9 @@ def test_symbolic_rewriter():
     onnx_model = onnx.load(output_file)
     nodes = onnx_model.graph.node
     assert nodes[0].op_type == 'symbolic_testfunc_default'
-    assert nodes[0].domain == 'mmcv'
+    assert nodes[0].domain == 'mmdeploy'
     assert nodes[1].op_type == 'cummax_default'
-    assert nodes[1].domain == 'mmcv'
+    assert nodes[1].domain == 'mmdeploy'
 
     # ncnn
     with RewriterContext(cfg=cfg, backend='ncnn', opset=11):
@@ -84,9 +84,9 @@ def test_symbolic_rewriter():
     onnx_model = onnx.load(output_file)
     nodes = onnx_model.graph.node
     assert nodes[0].op_type == 'symbolic_testfunc_default'
-    assert nodes[0].domain == 'mmcv'
+    assert nodes[0].domain == 'mmdeploy'
     assert nodes[1].op_type == 'cummax_default'
-    assert nodes[1].domain == 'mmcv'
+    assert nodes[1].domain == 'mmdeploy'
 
     # tensorrt
     with RewriterContext(cfg=cfg, backend='tensorrt', opset=11):
@@ -94,9 +94,9 @@ def test_symbolic_rewriter():
     onnx_model = onnx.load(output_file)
     nodes = onnx_model.graph.node
     assert nodes[0].op_type == 'symbolic_testfunc_tensorrt'
-    assert nodes[0].domain == 'mmcv'
+    assert nodes[0].domain == 'mmdeploy'
     assert nodes[1].op_type == 'cummax_default'
-    assert nodes[1].domain == 'mmcv'
+    assert nodes[1].domain == 'mmdeploy'
 
 
 def test_unregister():
@@ -104,12 +104,12 @@ def test_unregister():
 
     @SYMBOLIC_REWRITER.register_symbolic('mmdeploy.TestFunc')
     def symbolic_testfunc_default(symbolic_wrapper, g, x, val):
-        return g.op('mmcv::symbolic_testfunc_default', x, val_i=val)
+        return g.op('mmdeploy::symbolic_testfunc_default', x, val_i=val)
 
     @SYMBOLIC_REWRITER.register_symbolic(
         'cummax', is_pytorch=True, arg_descriptors=['v', 'i'])
     def symbolic_cummax(symbolic_wrapper, g, input, dim):
-        return g.op('mmcv::cummax_default', input, dim_i=dim, outputs=2)
+        return g.op('mmdeploy::cummax_default', input, dim_i=dim, outputs=2)
 
     class TestModel(torch.nn.Module):
 
@@ -135,7 +135,7 @@ def test_unregister():
     onnx_model = onnx.load(output_file)
     nodes = onnx_model.graph.node
     assert nodes[0].op_type == 'cummax_default'
-    assert nodes[0].domain == 'mmcv'
+    assert nodes[0].domain == 'mmdeploy'
 
     with pytest.raises(RuntimeError):
         torch.onnx.export(model, x, output_file, opset_version=11)
@@ -146,13 +146,13 @@ def test_unregister():
     onnx_model = onnx.load(output_file)
     nodes = onnx_model.graph.node
     assert nodes[0].op_type == 'symbolic_testfunc_default'
-    assert nodes[0].domain == 'mmcv'
+    assert nodes[0].domain == 'mmdeploy'
 
     torch.onnx.export(model, x, output_file, opset_version=11)
     onnx_model = onnx.load(output_file)
     nodes = onnx_model.graph.node
     assert nodes[0].op_type == 'symbolic_old'
-    assert nodes[0].domain == 'mmcv'
+    assert nodes[0].domain == 'mmdeploy'
 
 
 def test_register_empty_symbolic():
@@ -160,7 +160,7 @@ def test_register_empty_symbolic():
 
     @symbolic_rewriter.register_symbolic('mmdeploy.EmptyFunction')
     def symbolic_testfunc_default(symbolic_wrapper, g, x, val):
-        return g.op('mmcv::symbolic_testfunc_default', x, val_i=val)
+        return g.op('mmdeploy::symbolic_testfunc_default', x, val_i=val)
 
     symbolic_rewriter.enter()
     assert len(symbolic_rewriter._extra_symbolic) == 0

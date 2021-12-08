@@ -28,7 +28,7 @@ class MultiLevelRoiAlign(Function):
         inputs = args[:len(featmap_strides)]
         rois = args[len(featmap_strides)]
         return g.op(
-            'mmcv::MMCVMultiLevelRoiAlign',
+            'mmdeploy::MMCVMultiLevelRoiAlign',
             rois,
             *inputs,
             output_height_i=output_size[1],

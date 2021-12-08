@@ -16,7 +16,7 @@ def roi_align_default(ctx, g, input: Tensor, rois: Tensor,
                       sampling_ratio: int, pool_mode: str, aligned: bool):
     """Rewrite symbolic function for default backend.
 
-    Replace onnx::RoiAlign with mmcv::MMCVRoiAlign.
+    Replace onnx::RoiAlign with mmdeploy::MMCVRoiAlign.
 
     Args:
         ctx (ContextCaller): The context with additional information.
@@ -38,7 +38,7 @@ def roi_align_default(ctx, g, input: Tensor, rois: Tensor,
     """
 
     return g.op(
-        'mmcv::MMCVRoiAlign',
+        'mmdeploy::MMCVRoiAlign',
         input,
         rois,
         output_height_i=output_size[0],

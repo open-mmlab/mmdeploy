@@ -15,10 +15,10 @@ def grid_sampler(g,
 
     PyTorch does not support export grid_sampler to ONNX by default. We add the
     support here. `grid_sampler` will be exported as ONNX node
-    'mmcv::grid_sampler'
+    'mmdeploy::grid_sampler'
     """
     return g.op(
-        'mmcv::grid_sampler',
+        'mmdeploy::grid_sampler',
         input,
         grid,
         interpolation_mode_i=interpolation_mode,
