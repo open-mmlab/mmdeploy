@@ -52,10 +52,10 @@ cmake -DMMDEPLOY_TARGET_BACKENDS=ncnn ..
 make -j$(nproc)
 ```
 
-If you haven't installed NCNN in the default path, please add `-DNCNN_DIR` flag in cmake.
+If you haven't installed NCNN in the default path, please add `-Dncnn_DIR` flag in cmake.
 
 ```bash
- cmake -DMMDEPLOY_TARGET_BACKENDS=ncnn -Dncnn_DIR=/path/to/ncnn/lib/cmake/ncnn ..
+ cmake -DMMDEPLOY_TARGET_BACKENDS=ncnn -Dncnn_DIR={path/of/ncnn}/build/install/lib/cmake/ncnn ..
  make -j$(nproc)
 ```
 
