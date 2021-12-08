@@ -6,12 +6,13 @@ class AdvancedEnum(Enum):
     """Define an enumeration class."""
 
     @classmethod
-    def get(cls, str, a):
+    def get(cls, value):
         """Get the key through a value."""
         for k in cls:
-            if k.value == str:
+            if k.value == value:
                 return k
-        return a
+
+        raise KeyError(f'Cannot get key by value "{value}" of {cls}')
 
 
 class Task(AdvancedEnum):

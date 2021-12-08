@@ -172,7 +172,7 @@ def main():
 
     backend_files = onnx_files
     # convert backend
-    backend = get_backend(deploy_cfg, 'default')
+    backend = get_backend(deploy_cfg)
     if backend == Backend.TENSORRT:
         model_params = get_model_inputs(deploy_cfg)
         assert len(model_params) == len(onnx_files)

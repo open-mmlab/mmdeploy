@@ -26,7 +26,7 @@ def fcn_mask_head__get_seg_masks(ctx, self, mask_pred, det_bboxes, det_labels,
     Returns:
         Tensor: a mask of shape (N, img_h, img_w).
     """
-    backend = get_backend(ctx.cfg, 'default')
+    backend = get_backend(ctx.cfg)
     mask_pred = mask_pred.sigmoid()
     bboxes = det_bboxes[:, :4]
     labels = det_labels

@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Union
 
 import mmcv
 
@@ -30,29 +30,6 @@ def load_config(*args) -> List[mmcv.Config]:
     return configs
 
 
-def get_task_type(deploy_cfg: Union[str, mmcv.Config],
-                  default: str = None) -> Task:
-    """Get the task type of the algorithm.
-
-    Args:
-        deploy_cfg (str | mmcv.Config): The path or content of config.
-        default (str): If the "task" field of config is empty, then return
-        default task type.
-
-    Returns:
-        Task : An enumeration denotes the task type.
-    """
-
-    codebase_config = get_codebase_config(deploy_cfg)
-    try:
-        task = codebase_config['task']
-    except KeyError:
-        return default
-
-    task = Task.get(task, default)
-    return task
-
-
 def get_codebase_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
     """Get the codebase_config from the config.
 
@@ -67,48 +44,68 @@ def get_codebase_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
     return codebase_config
 
 
-def get_codebase(deploy_cfg: Union[str, mmcv.Config],
-                 default: Optional[str] = None) -> Codebase:
+def get_task_type(deploy_cfg: Union[str, mmcv.Config]) -> Task:
+    """Get the task type of the algorithm.
+
+    Args:
+        deploy_cfg (str | mmcv.Config): The path or content of config.
+
+    Returns:
+        Task : An enumeration denotes the task type.
+    """
+
+    codebase_config = get_codebase_config(deploy_cfg)
+    assert 'task' in codebase_config, 'The codebase config of deploy config'\
+        'requires a "task" field'
+    task = codebase_config['task']
+    return Task.get(task)
+
+
+def get_codebase(deploy_cfg: Union[str, mmcv.Config]) -> Codebase:
     """Get the codebase from the config.
 
     Args:
         deploy_cfg (str | mmcv.Config): The path or content of config.
-        default (str): If the "codebase" field of config is empty, then return
-        default codebase type.
 
     Returns:
         Codebase : An enumeration denotes the codebase type.
     """
 
     codebase_config = get_codebase_config(deploy_cfg)
-    try:
-        codebase = codebase_config['type']
-    except KeyError:
-        return default
-
-    codebase = Codebase.get(codebase, default)
-    return codebase
+    assert 'type' in codebase_config, 'The codebase config of deploy config'\
+        'requires a "type" field'
+    codebase = codebase_config['type']
+    return Codebase.get(codebase)
 
 
-def get_backend(deploy_cfg: Union[str, mmcv.Config], default=None) -> Backend:
+def get_backend_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
+    """Get the backend_config from the config.
+
+    Args:
+        deploy_cfg (str | mmcv.Config): The path or content of config.
+
+    Returns:
+        Dict : backend config dict.
+    """
+    deploy_cfg = load_config(deploy_cfg)[0]
+    backend_config = deploy_cfg.get('backend_config', {})
+    return backend_config
+
+
+def get_backend(deploy_cfg: Union[str, mmcv.Config]) -> Backend:
     """Get the backend from the config.
 
     Args:
         deploy_cfg (str | mmcv.Config): The path or content of config.
-        default (str): If the "backend" field of config is empty, then return
-        default backend type.
 
     Returns:
         Backend: An enumeration denotes the backend type.
     """
-
-    deploy_cfg = load_config(deploy_cfg)[0]
-    try:
-        backend = deploy_cfg['backend_config']['type']
-    except KeyError:
-        return default
-    backend = Backend.get(backend, default)
-    return backend
+    backend_config = get_backend_config(deploy_cfg)
+    assert 'type' in backend_config, 'The backend config of deploy config'\
+        'requires a "type" field'
+    backend = backend_config['type']
+    return Backend.get(backend)
 
 
 def get_onnx_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
@@ -118,11 +115,12 @@ def get_onnx_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
         deploy_cfg (str | mmcv.Config): The path or content of config.
 
     Returns:
-        dict: The config dictionary of onnx parameters
+        Dict: The config dictionary of onnx parameters
     """
 
     deploy_cfg = load_config(deploy_cfg)[0]
-    return deploy_cfg['onnx_config']
+    onnx_config = deploy_cfg.get('onnx_config', {})
+    return onnx_config
 
 
 def is_dynamic_batch(deploy_cfg: Union[str, mmcv.Config],

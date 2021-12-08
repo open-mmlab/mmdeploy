@@ -57,20 +57,6 @@ class TestLoadConfig:
             assert v[0]._cfg_dict == cfg._cfg_dict
 
 
-class TestGetTaskType:
-
-    def test_get_task_type_none(self):
-        assert util.get_task_type(mmcv.Config(dict())) is None
-
-    def test_get_task_type_default(self):
-        assert util.get_task_type(mmcv.Config(dict()),
-                                  Task.SUPER_RESOLUTION) == \
-            Task.SUPER_RESOLUTION
-
-    def test_get_task_type(self):
-        assert util.get_task_type(correct_deploy_path) == Task.SUPER_RESOLUTION
-
-
 class TestGetCodebaseConfig:
 
     def test_get_codebase_config_empty(self):
@@ -81,27 +67,41 @@ class TestGetCodebaseConfig:
         assert isinstance(codebase_config, dict) and len(codebase_config) > 1
 
 
+class TestGetTaskType:
+
+    def test_get_task_type_none(self):
+        with pytest.raises(AssertionError):
+            util.get_task_type(mmcv.Config(dict()))
+
+    def test_get_task_type(self):
+        assert util.get_task_type(correct_deploy_path) == Task.SUPER_RESOLUTION
+
+
 class TestGetCodebase:
 
     def test_get_codebase_none(self):
-        assert util.get_codebase(mmcv.Config(dict())) is None
-
-    def test_get_codebase_default(self):
-        assert util.get_codebase(mmcv.Config(dict()),
-                                 Codebase.MMEDIT) == Codebase.MMEDIT
+        with pytest.raises(AssertionError):
+            util.get_codebase(mmcv.Config(dict()))
 
     def test_get_codebase(self):
         assert util.get_codebase(correct_deploy_path) == Codebase.MMEDIT
 
 
+class TestGetBackendConfig:
+
+    def test_get_backend_config_empty(self):
+        assert util.get_backend_config(mmcv.Config(dict())) == {}
+
+    def test_get_backend_config(self):
+        backend_config = util.get_backend_config(correct_deploy_path)
+        assert isinstance(backend_config, dict) and len(backend_config) == 1
+
+
 class TestGetBackend:
 
     def test_get_backend_none(self):
-        assert util.get_backend(mmcv.Config(dict())) is None
-
-    def test_get_backend_default(self):
-        assert util.get_backend(empty_file_path,
-                                Backend.ONNXRUNTIME) == Backend.ONNXRUNTIME
+        with pytest.raises(AssertionError):
+            util.get_backend(mmcv.Config(dict()))
 
     def test_get_backend(self):
         assert util.get_backend(correct_deploy_path) == Backend.ONNXRUNTIME
@@ -109,9 +109,8 @@ class TestGetBackend:
 
 class TestGetOnnxConfig:
 
-    def test_get_onnx_config_error(self):
-        with pytest.raises(Exception):
-            util.get_onnx_config(empty_file_path)
+    def test_get_onnx_config_empty(self):
+        assert util.get_onnx_config(mmcv.Config(dict())) == {}
 
     def test_get_onnx_config(self):
         onnx_config = dict(
@@ -286,9 +285,8 @@ def test_AdvancedEnum():
         'Classification', 'ObjectDetection'
     ]
     for k, v in zip(keys, vals):
-        assert Task.get(v, None) == k
+        assert Task.get(v) == k
         assert k.value == v
-    assert Task.get('a', Task.TEXT_DETECTION) == Task.TEXT_DETECTION
 
 
 def test_export_info():
