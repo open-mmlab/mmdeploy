@@ -20,7 +20,7 @@ GPU: TensorRT, ppl.nn
 - Input resolution varies for different datasets of different codebases. All inputs are real images except for mmediting because the dataset is not large enough.
 
 ### Latency benchmark
-Users can directly test the performance through [how_to_measure_performance_of_models.md](docs/tutorials/how_to_measure_performance_of_models.md). And here is the benchmark in our environment.
+Users can directly test the speed through [how_to_measure_performance_of_models.md](docs/tutorials/how_to_measure_performance_of_models.md). And here is the benchmark in our environment.
 <details>
 <summary style="margin-left: 25px;">MMCls with 1x3x224x224 input</summary>
 <div style="margin-left: 25px;">
@@ -395,3 +395,104 @@ Users can directly test the performance through [how_to_measure_performance_of_m
 </table>
 </div>
 </details>
+
+### Performance benchmark
+
+Users can directly test the performance through [how_to_evaluate_a_model.md](docs/tutorials/how_to_evaluate_a_model.md). And here is the benchmark in our environment.
+<details>
+<summary style="margin-left: 25px;">MMOCR</summary>
+<div style="margin-left: 25px;">
+<table class="tg">
+<thead>
+  <tr>
+    <th class="tg-baqh" colspan="3">MMOCR</th>
+    <th class="tg-baqh">Pytorch</th>
+    <th class="tg-baqh">ONNXRuntime</th>
+    <th class="tg-baqh" colspan="3"><span style="font-weight:400;font-style:normal">TensorRT</span></th>
+    <th class="tg-baqh">OpenPPL</th>
+    <th class="tg-0lax">OpenVINO</th>
+    <th class="tg-0lax"></th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td class="tg-baqh">Model</td>
+    <td class="tg-baqh">Task</td>
+    <td class="tg-baqh">Metrics</td>
+    <td class="tg-baqh">fp32</td>
+    <td class="tg-baqh">fp32</td>
+    <td class="tg-baqh">fp32</td>
+    <td class="tg-baqh"><span style="font-weight:400;font-style:normal">fp16</span></td>
+    <td class="tg-baqh">int8</td>
+    <td class="tg-baqh">fp16</td>
+    <td class="tg-baqh">fp32</td>
+    <td class="tg-0lax">model config file</td>
+  </tr>
+  <tr>
+    <td class="tg-nrix" rowspan="3">DBNet</td>
+    <td class="tg-nrix" rowspan="3">TextDetection</td>
+    <td class="tg-baqh">recall</td>
+    <td class="tg-baqh">0.7310</td>
+    <td class="tg-baqh">0.7304</td>
+    <td class="tg-baqh">0.7198</td>
+    <td class="tg-baqh">0.7179</td>
+    <td class="tg-baqh">0.7111</td>
+    <td class="tg-baqh">0.7304</td>
+    <td class="tg-0lax">0.7309</td>
+    <td class="tg-cly1" rowspan="3">$MMOCR_DIR/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py</td>
+  </tr>
+  <tr>
+    <td class="tg-baqh">precision</td>
+    <td class="tg-baqh">0.8714</td>
+    <td class="tg-baqh">0.8718</td>
+    <td class="tg-baqh">0.8677</td>
+    <td class="tg-baqh">0.8674</td>
+    <td class="tg-baqh">0.8688</td>
+    <td class="tg-baqh">0.8718</td>
+    <td class="tg-0lax">0.8714</td>
+  </tr>
+  <tr>
+    <td class="tg-baqh">hmean</td>
+    <td class="tg-baqh">0.7950</td>
+    <td class="tg-baqh">0.7949</td>
+    <td class="tg-baqh">0.7868</td>
+    <td class="tg-baqh">0.7856</td>
+    <td class="tg-baqh">0.7821</td>
+    <td class="tg-baqh">0.7949</td>
+    <td class="tg-0lax">0.7950</td>
+  </tr>
+  <tr>
+    <td class="tg-baqh">CRNN</td>
+    <td class="tg-baqh">TextRecognition</td>
+    <td class="tg-baqh">acc</td>
+    <td class="tg-baqh">0.8067</td>
+    <td class="tg-baqh">0.8067</td>
+    <td class="tg-baqh">0.8067</td>
+    <td class="tg-baqh">0.8063</td>
+    <td class="tg-baqh">0.8067</td>
+    <td class="tg-baqh">-</td>
+    <td class="tg-0lax">-</td>
+    <td class="tg-0lax">$MMOCR_DIR/configs/textrecog/crnn/crnn_academic_dataset.py</td>
+  </tr>
+  <tr>
+    <td class="tg-baqh">SAR</td>
+    <td class="tg-baqh">TextRecognition</td>
+    <td class="tg-baqh">acc</td>
+    <td class="tg-baqh">0.9517</td>
+    <td class="tg-baqh">0.9287</td>
+    <td class="tg-baqh">-</td>
+    <td class="tg-baqh">-</td>
+    <td class="tg-baqh">-</td>
+    <td class="tg-baqh">-</td>
+    <td class="tg-0lax">-</td>
+    <td class="tg-0lax">$MMOCR_DIR/configs/textrecog/sar/sar_r31_parallel_decoder_academic.py</td>
+  </tr>
+</tbody>
+</table>
+</div>
+</details>
+
+### Notes
+As some datasets contains images with various resolutions in codebase like MMDet. The speed benchmark is gained through static configs in MMDeploy, while the performance benchmark is gained through dynamic ones.
+
+Some int8 performance benchmarks of tensorrt require nvidia cards with tensor core, or the performance would drop heavily.
