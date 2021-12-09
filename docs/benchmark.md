@@ -100,7 +100,7 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
 </details>
 
 <details>
-<summary style="margin-left: 25px;">MMediting with 1x3x32x32 input</summary>
+<summary style="margin-left: 25px;">MMEditing with 1x3x32x32 input</summary>
 <div style="margin-left: 25px;">
 <table class="tg">
 <thead>
@@ -399,6 +399,192 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
 ### Performance benchmark
 
 Users can directly test the performance through [how_to_evaluate_a_model.md](docs/tutorials/how_to_evaluate_a_model.md). And here is the benchmark in our environment.
+
+<details>
+<summary style="margin-left: 25px;">MMEditing</summary>
+<div style="margin-left: 25px;">
+<table class="tg">
+<thead>
+  <tr>
+    <th class="tg-c3ow" colspan="3">MMEditing</th>
+    <th class="tg-0lax">PyTorch</th>
+    <th class="tg-0pky">ONNX Runtime</th>
+    <th class="tg-c3ow" colspan="3"><span style="font-weight:400;font-style:normal">TensorRT</span></th>
+    <th class="tg-c3ow">PPLNN</th>
+    <th class="tg-0pky"></th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td class="tg-9wq8">Model</td>
+    <td class="tg-9wq8">Task</td>
+    <td class="tg-0pky">Metrics(Set5)</td>
+    <td class="tg-baqh">fp32</td>
+    <td class="tg-c3ow">fp32</td>
+    <td class="tg-c3ow">fp32</td>
+    <td class="tg-c3ow"><span style="font-weight:400;font-style:normal">fp16</span></td>
+    <td class="tg-c3ow">int8</td>
+    <td class="tg-c3ow">fp16</td>
+    <td class="tg-lboi">model config file</td>
+  </tr>
+  <tr>
+    <td class="tg-9wq8" rowspan="2">SRCNN</td>
+    <td class="tg-9wq8" rowspan="2">Super Resolution</td>
+    <td class="tg-0pky">PSNR</td>
+    <td class="tg-0lax">28.4316</td>
+    <td class="tg-c3ow">28.4323</td>
+    <td class="tg-c3ow">28.4323</td>
+    <td class="tg-c3ow">28.4286</td>
+    <td class="tg-c3ow">28.1995</td>
+    <td class="tg-c3ow">28.4311</td>
+    <td class="tg-lboi" rowspan="2">$MMEDIT_DIR/configs/restorers/srcnn/srcnn_x4k915_g1_1000k_div2k.py</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">SSIM</td>
+    <td class="tg-0lax">0.8099</td>
+    <td class="tg-c3ow">0.8097</td>
+    <td class="tg-c3ow">0.8097</td>
+    <td class="tg-c3ow">0.8096</td>
+    <td class="tg-c3ow">0.7934</td>
+    <td class="tg-c3ow">0.8096</td>
+  </tr>
+  <tr>
+    <td class="tg-9wq8" rowspan="2">ESRGAN</td>
+    <td class="tg-9wq8" rowspan="2">Super Resolution</td>
+    <td class="tg-0pky">PSNR</td>
+    <td class="tg-0lax">28.2700</td>
+    <td class="tg-c3ow">28.2592</td>
+    <td class="tg-c3ow">28.2592</td>
+    <td class="tg-c3ow"> - </td>
+    <td class="tg-c3ow"> - </td>
+    <td class="tg-c3ow">28.2624</td>
+    <td class="tg-lboi" rowspan="2">$MMEDIT_DIR/configs/restorers/esrgan/esrgan_x4c64b23g32_g1_400k_div2k.py</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">SSIM</td>
+    <td class="tg-0lax">0.7778</td>
+    <td class="tg-c3ow">0.7764</td>
+    <td class="tg-c3ow">0.7774</td>
+    <td class="tg-c3ow"> - </td>
+    <td class="tg-c3ow"> - </td>
+    <td class="tg-c3ow">0.7765</td>
+  </tr>
+  <tr>
+    <td class="tg-9wq8" rowspan="2">ESRGAN-PSNR</td>
+    <td class="tg-9wq8" rowspan="2">Super Resolution</td>
+    <td class="tg-0pky">PSNR</td>
+    <td class="tg-0lax">30.6428</td>
+    <td class="tg-c3ow">30.6444</td>
+    <td class="tg-c3ow">30.6430</td>
+    <td class="tg-c3ow"> - </td>
+    <td class="tg-c3ow"> - </td>
+    <td class="tg-c3ow">27.0426</td>
+    <td class="tg-lboi" rowspan="2">$MMEDIT_DIR/configs/restorers/esrgan/esrgan_psnr_x4c64b23g32_g1_1000k_div2k.py</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">SSIM</td>
+    <td class="tg-0lax">0.8559</td>
+    <td class="tg-c3ow">0.8558</td>
+    <td class="tg-c3ow">0.8558</td>
+    <td class="tg-c3ow"> - </td>
+    <td class="tg-c3ow"> - </td>
+    <td class="tg-c3ow">0.8557</td>
+  </tr>
+    <tr>
+    <td class="tg-9wq8" rowspan="2">SRGAN</td>
+    <td class="tg-9wq8" rowspan="2">Super Resolution</td>
+    <td class="tg-0pky">PSNR</td>
+    <td class="tg-0lax">27.9499</td>
+    <td class="tg-c3ow">27.9408</td>
+    <td class="tg-c3ow">27.9408</td>
+    <td class="tg-c3ow"> - </td>
+    <td class="tg-c3ow"> - </td>
+    <td class="tg-c3ow">27.9388</td>
+    <td class="tg-lboi" rowspan="2">$MMEDIT_DIR/configs/restorers/srresnet_srgan/srgan_x4c64b16_g1_1000k_div2k.pyy</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">SSIM</td>
+    <td class="tg-0lax">0.7846</td>
+    <td class="tg-c3ow">0.7839</td>
+    <td class="tg-c3ow">0.7839</td>
+    <td class="tg-c3ow"> - </td>
+    <td class="tg-c3ow"> - </td>
+    <td class="tg-c3ow">0.7839</td>
+  </tr>
+    </tr>
+    <tr>
+    <td class="tg-9wq8" rowspan="2">SRResNet</td>
+    <td class="tg-9wq8" rowspan="2">Super Resolution</td>
+    <td class="tg-0pky">PSNR</td>
+    <td class="tg-0lax">30.2252</td>
+    <td class="tg-c3ow">30.2300</td>
+    <td class="tg-c3ow">30.2300</td>
+    <td class="tg-c3ow"> - </td>
+    <td class="tg-c3ow"> - </td>
+    <td class="tg-c3ow">30.2294</td>
+    <td class="tg-lboi" rowspan="2">$MMEDIT_DIR/configs/restorers/srresnet_srgan/msrresnet_x4c64b16_g1_1000k_div2k.py</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">SSIM</td>
+    <td class="tg-0lax">0.8491</td>
+    <td class="tg-c3ow">0.8488</td>
+    <td class="tg-c3ow">0.8488</td>
+    <td class="tg-c3ow"> - </td>
+    <td class="tg-c3ow"> - </td>
+    <td class="tg-c3ow">0.8488</td>
+  </tr>
+    </tr>
+    </tr>
+    <tr>
+    <td class="tg-9wq8" rowspan="2">Real-ESRNet</td>
+    <td class="tg-9wq8" rowspan="2">Super Resolution</td>
+    <td class="tg-0pky">PSNR</td>
+    <td class="tg-0lax">28.0297</td>
+    <td class="tg-c3ow">27.7016</td>
+    <td class="tg-c3ow">27.7016</td>
+    <td class="tg-c3ow"> - </td>
+    <td class="tg-c3ow"> - </td>
+    <td class="tg-c3ow">27.7049</td>
+    <td class="tg-lboi" rowspan="2">$MMEDIT_DIR/configs/restorers/real_esrgan/realesrnet_c64b23g32_12x4_lr2e-4_1000k_df2k_ost.py</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">SSIM</td>
+    <td class="tg-0lax">0.8236</td>
+    <td class="tg-c3ow">0.8122</td>
+    <td class="tg-c3ow">0.8122</td>
+    <td class="tg-c3ow"> - </td>
+    <td class="tg-c3ow"> - </td>
+    <td class="tg-c3ow">0.8123</td>
+  </tr>
+  </tr>
+    </tr>
+    </tr>
+    <tr>
+    <td class="tg-9wq8" rowspan="2">EDSR</td>
+    <td class="tg-9wq8" rowspan="2">Super Resolution</td>
+    <td class="tg-0pky">PSNR</td>
+    <td class="tg-0lax">30.2223</td>
+    <td class="tg-c3ow">30.2214</td>
+    <td class="tg-c3ow">30.2214</td>
+    <td class="tg-c3ow">30.2211</td>
+    <td class="tg-c3ow">30.1383</td>
+    <td class="tg-c3ow">-</td>
+    <td class="tg-lboi" rowspan="2">$MMEDIT_DIR/configs/restorers/edsr/edsr_x4c64b16_g1_300k_div2k.py</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">SSIM</td>
+    <td class="tg-0lax">0.8500</td>
+    <td class="tg-c3ow">0.8497</td>
+    <td class="tg-c3ow">0.8497</td>
+    <td class="tg-c3ow">0.8497</td>
+    <td class="tg-c3ow">0.8469</td>
+    <td class="tg-c3ow"> - </td>
+  </tr>
+</tbody>
+</table>
+</div>
+</details>
+
 <details>
 <summary style="margin-left: 25px;">MMOCR</summary>
 <div style="margin-left: 25px;">
@@ -409,7 +595,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](doc
     <th class="tg-baqh">Pytorch</th>
     <th class="tg-baqh">ONNXRuntime</th>
     <th class="tg-baqh" colspan="3"><span style="font-weight:400;font-style:normal">TensorRT</span></th>
-    <th class="tg-baqh">OpenPPL</th>
+    <th class="tg-baqh">PPLNN</th>
     <th class="tg-0lax">OpenVINO</th>
     <th class="tg-0lax"></th>
   </tr>
