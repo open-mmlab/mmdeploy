@@ -922,7 +922,7 @@ def get_yolov3_head_model():
 
 
 @pytest.mark.parametrize('backend_type',
-                         [Backend.ONNXRUNTIME, Backend.NCNN, Backend.OPENVINO])
+                         [Backend.ONNXRUNTIME, Backend.OPENVINO])
 def test_yolov3_head_get_bboxes(backend_type):
     """Test get_bboxes rewrite of yolov3 head."""
     check_backend(backend_type)
@@ -990,6 +990,62 @@ def test_yolov3_head_get_bboxes(backend_type):
                 atol=1e-05)
     else:
         assert rewrite_outputs is not None
+
+
+def test_yolov3_head_get_bboxes_ncnn():
+    """Test get_bboxes rewrite of yolov3 head."""
+    backend_type = Backend.NCNN
+    check_backend(backend_type)
+    yolov3_head = get_yolov3_head_model()
+    yolov3_head.cpu().eval()
+    s = 128
+    img_metas = [{
+        'scale_factor': np.ones(4),
+        'pad_shape': (s, s, 3),
+        'img_shape': (s, s, 3)
+    }]
+
+    output_names = ['outout']
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(type=backend_type.value),
+            onnx_config=dict(output_names=output_names, input_shape=None),
+            codebase_config=dict(
+                type='mmdet',
+                model_type='ncnn_end2end',
+                task='ObjectDetection',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    iou_threshold=0.45,
+                    confidence_threshold=0.005,
+                    max_output_boxes_per_class=200,
+                    pre_top_k=-1,
+                    keep_top_k=10,
+                    background_label_id=-1,
+                ))))
+
+    seed_everything(1234)
+    pred_maps = [
+        torch.rand(1, 27, 5, 5),
+        torch.rand(1, 27, 10, 10),
+        torch.rand(1, 27, 20, 20)
+    ]
+
+    # to get outputs of onnx model after rewrite
+    wrapped_model = WrapModel(
+        yolov3_head, 'get_bboxes', img_metas=img_metas[0], with_nms=True)
+    rewrite_inputs = {
+        'pred_maps': pred_maps,
+    }
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg)
+    # output should be of shape [1, N, 6]
+    if is_backend_output:
+        assert rewrite_outputs[0].shape[-1] == 6
+    else:
+        assert rewrite_outputs.shape[-1] == 6
 
 
 def get_yolox_head_model():
