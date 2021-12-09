@@ -46,9 +46,7 @@ template <typename scalar_t>
 cublasStatus_t cublasGemmWrap(cublasHandle_t handle, cublasOperation_t transa,
                               cublasOperation_t transb, int m, int n, int k, const scalar_t* alpha,
                               const scalar_t* A, int lda, const scalar_t* B, int ldb,
-                              const scalar_t* beta, scalar_t* C, int ldc) {
-  return CUBLAS_STATUS_INTERNAL_ERROR;
-}
+                              const scalar_t* beta, scalar_t* C, int ldc);
 
 template <typename scalar_t>
 __device__ scalar_t bilinear_interpolate(const scalar_t* input, const int height, const int width,
