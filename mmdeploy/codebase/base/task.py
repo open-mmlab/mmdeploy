@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import logging
 from abc import ABCMeta, abstractmethod
 from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
@@ -8,6 +9,7 @@ import torch
 from torch.utils.data import DataLoader, Dataset
 
 from mmdeploy.utils import get_codebase
+from mmdeploy.utils.dataset import is_can_sort_dataset, sort_dataset
 
 
 class BaseTask(metaclass=ABCMeta):
@@ -66,6 +68,7 @@ class BaseTask(metaclass=ABCMeta):
     def build_dataset(self,
                       dataset_cfg: Union[str, mmcv.Config],
                       dataset_type: str = 'val',
+                      is_sort_dataset: bool = True,
                       **kwargs) -> Dataset:
         """Build dataset for different codebase.
 
@@ -74,12 +77,22 @@ class BaseTask(metaclass=ABCMeta):
                 object.
             dataset_type (str): Specifying dataset type, e.g.: 'train', 'test',
                 'val', defaults to 'val'.
+            is_sort_dataset (bool): When 'True', the dataset will be sorted
+                by image shape in ascending order if 'dataset_cfg'
+                contains information about height and width.
 
         Returns:
             Dataset: The built dataset.
         """
-        return self.codebase_class.build_dataset(dataset_cfg, dataset_type,
-                                                 **kwargs)
+        dataset = self.codebase_class.build_dataset(dataset_cfg, dataset_type,
+                                                    **kwargs)
+        if is_sort_dataset:
+            if is_can_sort_dataset(dataset):
+                sort_dataset(dataset)
+            else:
+                logging.info('Sorting the dataset by \'height\' and \'width\' '
+                             'is not possible.')
+        return dataset
 
     def build_dataloader(self, dataset: Dataset, samples_per_gpu: int,
                          workers_per_gpu: int, **kwargs) -> DataLoader:

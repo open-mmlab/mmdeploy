@@ -7,14 +7,10 @@ import pytest
 import torch
 from mmocr.models.textdet.necks import FPNC
 
-from mmdeploy.apis.onnxruntime import is_available as ort_available
 from mmdeploy.core import RewriterContext, patch_model
 from mmdeploy.utils import Backend
 from mmdeploy.utils.test import (WrapModel, check_backend, get_model_outputs,
                                  get_rewrite_outputs)
-
-onnxruntime_skip = not ort_available()
-cuda_skip = not torch.cuda.is_available()
 
 
 class FPNCNeckModel(FPNC):
