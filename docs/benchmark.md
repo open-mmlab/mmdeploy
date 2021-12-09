@@ -736,6 +736,92 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](doc
 </div>
 </details>
 
+<details>
+<summary style="margin-left: 25px;">MMSeg</summary>
+<div style="margin-left: 25px;">
+<table class="tg">
+<thead>
+  <tr>
+    <th class="tg-c3ow" colspan="2">MMSeg</th>
+    <th class="tg-0lax">Pytorch</th>
+    <th class="tg-0pky">ONNXRuntime</th>
+    <th class="tg-c3ow" colspan="3"><span style="font-weight:400;font-style:normal">TensorRT</span></th>
+    <th class="tg-c3ow">PPLNN</th>
+    <th class="tg-0pky"></th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td class="tg-9wq8">Model</td>
+    <td class="tg-0pky">Metrics</td>
+    <td class="tg-baqh">fp32</td>
+    <td class="tg-c3ow">fp32</td>
+    <td class="tg-c3ow">fp32</td>
+    <td class="tg-c3ow"><span style="font-weight:400;font-style:normal">fp16</span></td>
+    <td class="tg-c3ow">int8</td>
+    <td class="tg-c3ow">fp16</td>
+    <td class="tg-lboi">model config file</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">FCN</td>
+    <td class="tg-0pky">mIoU</td>
+    <td class="tg-0lax">72.25</td>
+    <td class="tg-c3ow">-</td>
+    <td class="tg-c3ow">72.36</td>
+    <td class="tg-c3ow">72.35</td>
+    <td class="tg-c3ow">74.19</td>
+    <td class="tg-c3ow">-</td>
+    <td class="tg-0pky">$MMSEG_DIR/configs/fcn/fcn_r50-d8_512x1024_40k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">PSPNet</td>
+    <td class="tg-0pky">mIoU</td>
+    <td class="tg-0lax">78.55</td>
+    <td class="tg-c3ow">-</td>
+    <td class="tg-c3ow">78.26</td>
+    <td class="tg-c3ow">78.24</td>
+    <td class="tg-c3ow">77.97</td>
+    <td class="tg-c3ow">-</td>
+    <td class="tg-0pky">$MMSEG_DIR/configs/pspnet/pspnet_r50-d8_512x1024_80k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">deeplabv3</td>
+    <td class="tg-0pky">mIoU</td>
+    <td class="tg-0lax">79.09</td>
+    <td class="tg-c3ow">-</td>
+    <td class="tg-c3ow">79.12</td>
+    <td class="tg-c3ow">79.12</td>
+    <td class="tg-c3ow">78.96</td>
+    <td class="tg-c3ow">-</td>
+    <td class="tg-0pky">$MMSEG_DIR/configs/deeplabv3/deeplabv3_r50-d8_512x1024_40k_cityscapes.py</td>
+  </tr>
+    <td class="tg-0pky">deeplabv3+</td>
+    <td class="tg-0pky">mIoU</td>
+    <td class="tg-0lax">79.61</td>
+    <td class="tg-c3ow">-</td>
+    <td class="tg-c3ow">79.6</td>
+    <td class="tg-c3ow">79.6</td>
+    <td class="tg-c3ow">79.43</td>
+    <td class="tg-c3ow">-</td>
+    <td class="tg-0pky">$MMSEG_DIR/configs/deeplabv3plus/deeplabv3plus_r50-d8_512x1024_40k_cityscapes.py</td>
+  </tr>
+  </tr>
+    <td class="tg-0pky">Fast-SCNN</td>
+    <td class="tg-0pky">mIoU</td>
+    <td class="tg-0lax">70.96</td>
+    <td class="tg-c3ow">-</td>
+    <td class="tg-c3ow">70.93</td>
+    <td class="tg-c3ow">70.92</td>
+    <td class="tg-c3ow">66.0</td>
+    <td class="tg-c3ow">-</td>
+    <td class="tg-0pky">$MMSEG_DIR/configs/fastscnn/fast_scnn_lr0.12_8x4_160k_cityscapes.py</td>
+  </tr>
+</tbody>
+</table>
+</div>
+</details>
+
+
 ### Notes
 As some datasets contains images with various resolutions in codebase like MMDet. The speed benchmark is gained through static configs in MMDeploy, while the performance benchmark is gained through dynamic ones.
 

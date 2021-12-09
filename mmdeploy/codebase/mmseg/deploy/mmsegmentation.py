@@ -87,6 +87,7 @@ class MMSegmentation(MMCodebase):
             num_gpus (int): Number of GPUs. Only used in non-distributed
                 training. dist (bool): Distributed training/test or not.
                 Defaults  to `False`.
+            dist (bool): Distributed training/test or not. Default: True.
             shuffle (bool): Whether to shuffle the data at every epoch.
                 Defaults to `False`.
             seed (int): An integer set to be seed. Default is `None`.

@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import List, Sequence, Union
+from typing import List, Optional, Sequence, Union
 
 import mmcv
 import numpy as np
@@ -100,7 +100,8 @@ class End2EndModel(BaseBackendModel):
     def show_result(self,
                     img: np.ndarray,
                     result: list,
-                    win_name: str,
+                    win_name: str = '',
+                    palette: Optional[np.ndarray] = None,
                     show: bool = True,
                     opacity: float = 0.5,
                     out_file: str = None):
@@ -108,7 +109,8 @@ class End2EndModel(BaseBackendModel):
         Args:
             img: (np.ndarray): Input image to draw predictions.
             result (list): A list of predictions.
-            win_name (str): The name of visualization window.
+            win_name (str): The name of visualization window. Default is ''.
+            palette (np.ndarray): The palette of segmentation map.
             show (bool): Whether to show plotted image in windows. Defaults to
                 `True`.
             opacity: (float): Opacity of painted segmentation map.
@@ -118,11 +120,12 @@ class End2EndModel(BaseBackendModel):
         Returns:
             np.ndarray: Drawn image, only if not `show` or `out_file`.
         """
+        palette = self.PALETTE if palette is None else palette
         return BaseSegmentor.show_result(
             self,
             img,
             result,
-            palette=self.PALETTE,
+            palette=palette,
             opacity=opacity,
             show=show,
             win_name=win_name,
