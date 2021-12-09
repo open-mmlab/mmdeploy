@@ -56,6 +56,42 @@ def get_anchor_head_model():
     return model
 
 
+def get_ssd_head_model():
+    """SSDHead Config."""
+    test_cfg = mmcv.Config(
+        dict(
+            nms_pre=1000,
+            nms=dict(type='nms', iou_threshold=0.45),
+            min_bbox_size=0,
+            score_thr=0.02,
+            max_per_img=200))
+
+    from mmdet.models import SSDHead
+    model = SSDHead(
+        in_channels=(96, 1280, 512, 256, 256, 128),
+        num_classes=4,
+        use_depthwise=True,
+        norm_cfg=dict(type='BN', eps=0.001, momentum=0.03),
+        act_cfg=dict(type='ReLU6'),
+        init_cfg=dict(type='Normal', layer='Conv2d', std=0.001),
+        anchor_generator=dict(
+            type='SSDAnchorGenerator',
+            scale_major=False,
+            strides=[16, 32, 64, 107, 160, 320],
+            ratios=[[2, 3], [2, 3], [2, 3], [2, 3], [2, 3], [2, 3]],
+            min_sizes=[48, 100, 150, 202, 253, 304],
+            max_sizes=[100, 150, 202, 253, 304, 320]),
+        bbox_coder=dict(
+            type='DeltaXYWHBBoxCoder',
+            target_means=[.0, .0, .0, .0],
+            target_stds=[0.1, 0.1, 0.2, 0.2]),
+        test_cfg=test_cfg)
+
+    model.requires_grad_(False)
+
+    return model
+
+
 def get_fcos_head_model():
     """FCOS Head Config."""
     test_cfg = mmcv.Config(
@@ -102,10 +138,14 @@ def get_single_roi_extractor():
 
 @pytest.mark.parametrize('backend_type',
                          [Backend.ONNXRUNTIME, Backend.NCNN, Backend.OPENVINO])
-def test_anchor_head_get_bboxes(backend_type: Backend):
+@pytest.mark.parametrize('is_ssd', [True, False])
+def test_anchor_head_get_bboxes(backend_type: Backend, is_ssd: bool):
     """Test get_bboxes rewrite of anchor head."""
     check_backend(backend_type)
-    anchor_head = get_anchor_head_model()
+    if is_ssd:
+        anchor_head = get_ssd_head_model()
+    else:
+        anchor_head = get_anchor_head_model()
     anchor_head.cpu().eval()
     s = 128
     img_metas = [{
@@ -113,8 +153,10 @@ def test_anchor_head_get_bboxes(backend_type: Backend):
         'pad_shape': (s, s, 3),
         'img_shape': (s, s, 3)
     }]
-
-    output_names = ['dets', 'labels']
+    if is_ssd:
+        output_names = ['output']
+    else:
+        output_names = ['dets', 'labels']
     deploy_cfg = mmcv.Config(
         dict(
             backend_config=dict(type=backend_type.value),
@@ -131,16 +173,38 @@ def test_anchor_head_get_bboxes(backend_type: Backend):
                     background_label_id=-1,
                 ))))
 
-    # the cls_score's size: (1, 36, 32, 32), (1, 36, 16, 16),
-    # (1, 36, 8, 8), (1, 36, 4, 4), (1, 36, 2, 2).
-    # the bboxes's size: (1, 36, 32, 32), (1, 36, 16, 16),
-    # (1, 36, 8, 8), (1, 36, 4, 4), (1, 36, 2, 2)
-    seed_everything(1234)
-    cls_score = [
-        torch.rand(1, 36, pow(2, i), pow(2, i)) for i in range(5, 0, -1)
-    ]
-    seed_everything(5678)
-    bboxes = [torch.rand(1, 36, pow(2, i), pow(2, i)) for i in range(5, 0, -1)]
+    if not is_ssd:
+        # For the general anchor_head:
+        # the cls_score's size: (1, 36, 32, 32), (1, 36, 16, 16),
+        # (1, 36, 8, 8), (1, 36, 4, 4), (1, 36, 2, 2).
+        # the bboxes's size: (1, 36, 32, 32), (1, 36, 16, 16),
+        # (1, 36, 8, 8), (1, 36, 4, 4), (1, 36, 2, 2)
+        seed_everything(1234)
+        cls_score = [
+            torch.rand(1, 36, pow(2, i), pow(2, i)) for i in range(5, 0, -1)
+        ]
+        seed_everything(5678)
+        bboxes = [
+            torch.rand(1, 36, pow(2, i), pow(2, i)) for i in range(5, 0, -1)
+        ]
+    else:
+        # For the ssd_head:
+        # the cls_score's size: (1, 30, 20, 20), (1, 30, 10, 10),
+        # (1, 30, 5, 5), (1, 30, 3, 3), (1, 30, 2, 2), (1, 30, 1, 1)
+        # the bboxes's size: (1, 24, 20, 20), (1, 24, 10, 10),
+        # (1, 24, 5, 5), (1, 24, 3, 3), (1, 24, 2, 2), (1, 24, 1, 1)
+        feat_shape = [20, 10, 5, 3, 2, 1]
+        num_prior = 6
+        seed_everything(1234)
+        cls_score = [
+            torch.rand(1, 30, feat_shape[i], feat_shape[i])
+            for i in range(num_prior)
+        ]
+        seed_everything(5678)
+        bboxes = [
+            torch.rand(1, 24, feat_shape[i], feat_shape[i])
+            for i in range(num_prior)
+        ]
 
     # to get outputs of pytorch model
     model_inputs = {
@@ -151,7 +215,7 @@ def test_anchor_head_get_bboxes(backend_type: Backend):
     model_outputs = get_model_outputs(anchor_head, 'get_bboxes', model_inputs)
 
     # to get outputs of onnx model after rewrite
-    img_metas[0]['img_shape'] = torch.Tensor([s, s])
+    img_metas[0]['img_shape'] = torch.tensor([s, s], dtype=torch.int32)
     wrapped_model = WrapModel(
         anchor_head, 'get_bboxes', img_metas=img_metas[0], with_nms=True)
     rewrite_inputs = {
@@ -169,7 +233,7 @@ def test_anchor_head_get_bboxes(backend_type: Backend):
         for model_output, rewrite_output in zip(model_outputs[0],
                                                 rewrite_outputs):
             model_output = model_output.squeeze().cpu().numpy()
-            rewrite_output = rewrite_output.squeeze()
+            rewrite_output = rewrite_output.squeeze().cpu().numpy()
             # hard code to make two tensors with the same shape
             # rewrite and original codes applied different nms strategy
             assert np.allclose(

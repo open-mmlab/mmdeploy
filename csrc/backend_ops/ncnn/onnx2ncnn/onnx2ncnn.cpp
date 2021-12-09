@@ -3177,6 +3177,8 @@ int main(int argc, char** argv) {
       fprintf(pp, "%-16s", "UnaryOp");
     } else if (op == "DepthToSpace") {
       fprintf(pp, "%-16s", "PixelShuffle");
+    } else if (op == "DetectionOutput") {
+      fprintf(pp, "%-16s", "DetectionOutput");
     } else if (op == "Div") {
       fprintf(pp, "%-16s", "BinaryOp");
     } else if (op == "Dropout") {
@@ -3266,6 +3268,8 @@ int main(int argc, char** argv) {
       fprintf(pp, "%-16s", "PixelShuffle");
     } else if (op == "Pow") {
       fprintf(pp, "%-16s", "BinaryOp");
+    } else if (op == "PriorBox") {
+      fprintf(pp, "%-16s", "PriorBox");
     } else if (op == "PRelu") {
       fprintf(pp, "%-16s", "PReLU");
     } else if (op == "Range") {
@@ -3755,6 +3759,17 @@ int main(int argc, char** argv) {
       } else if (mode == "DCR") {
         fprintf(pp, " 1=1");
       }
+    } else if (op == "DetectionOutput") {
+      float score_threshold = get_node_attr_f(node, "score_threshold");
+      float nms_threshold = get_node_attr_f(node, "nms_threshold");
+      int nms_top_k = get_node_attr_i(node, "nms_top_k");
+      int keep_top_k = get_node_attr_i(node, "keep_top_k");
+      int num_class = get_node_attr_i(node, "num_class");
+      fprintf(pp, " 0=%d", num_class);
+      fprintf(pp, " 1=%f", nms_threshold);
+      fprintf(pp, " 2=%d", nms_top_k);
+      fprintf(pp, " 3=%d", keep_top_k);
+      fprintf(pp, " 4=%f", score_threshold);
     } else if (op == "Div") {
       int op_type = 3;
       fprintf(pp, " 0=%d", op_type);
@@ -4627,6 +4642,30 @@ int main(int argc, char** argv) {
         fprintf(pp, " 1=%d", with_scalar);
         fprintf(pp, " 2=%e", b);
       }
+    } else if (op == "PriorBox") {
+      std::vector<float> min_sizes = get_node_attr_af(node, "min_sizes");
+      std::vector<float> max_sizes = get_node_attr_af(node, "max_sizes");
+      std::vector<float> aspect_ratios = get_node_attr_af(node, "aspect_ratios");
+      fprintf(pp, " -23300=%zu", min_sizes.size());
+      for (size_t j = 0; j < min_sizes.size(); ++j) {
+        fprintf(pp, ",%f", min_sizes[j]);
+      }
+      fprintf(pp, " -23301=%zu", max_sizes.size());
+      for (size_t j = 0; j < max_sizes.size(); ++j) {
+        fprintf(pp, ",%f", max_sizes[j]);
+      }
+      fprintf(pp, " -23302=%zu", aspect_ratios.size());
+      for (size_t j = 0; j < aspect_ratios.size(); ++j) {
+        fprintf(pp, ",%f", aspect_ratios[j]);
+      }
+      int image_width = get_node_attr_i(node, "image_width");
+      int image_height = get_node_attr_i(node, "image_height");
+      float offset = get_node_attr_f(node, "offset");
+      int step_mmdetection = get_node_attr_i(node, "step_mmdetection");
+      fprintf(pp, " 9=%d", image_width);
+      fprintf(pp, " 10=%d", image_height);
+      fprintf(pp, " 13=%f", offset);
+      fprintf(pp, " 14=%d", step_mmdetection);
     } else if (op == "PixelShuffle") {
       int scale_factor = get_node_attr_i(node, "scale_factor", 1);
       fprintf(pp, " 0=%d", scale_factor);
