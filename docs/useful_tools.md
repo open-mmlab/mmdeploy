@@ -1,0 +1,62 @@
+Apart from `deploy.py`, there are other useful tools under the `tools/` directory.
+
+## torch2onnx
+
+This tool can be used to convert PyTorch model from OpenMMLab to ONNX.
+
+### Usage
+
+```bash
+python tools/torch2onnx.py \
+    ${DEPLOY_CFG} \
+    ${MODEL_CFG} \
+    ${CHECKPOINT} \
+    ${INPUT_IMG} \
+    ${OUTPUT} \
+    --device cpu \
+    --log-level INFO
+```
+
+### Description of all arguments
+
+- `deploy_cfg` : The path of the deploy config file in MMDeploy codebase.
+- `model_cfg` : The path of model config file in OpenMMLab codebase.
+- `checkpoint` : The path of the model checkpoint file.
+- `img` : The path of the image file used to convert the model.
+- `output` : The path of the output ONNX model.
+- `--device` : The device used for conversion. If not specified, it will be set to `cpu`.
+- `--log-level` : To set log level which in `'CRITICAL', 'FATAL', 'ERROR', 'WARN', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'`. If not specified, it will be set to `INFO`.
+
+## extract
+
+ONNX model with `Mark` nodes in it can be partitioned into multiple subgraphs. This tool can be used to extract the subgraph from the ONNX model.
+
+### Usage
+
+```bash
+python tools/extract.py \
+    ${INPUT_MODEL} \
+    ${OUTPUT_MODEL} \
+    --start ${PARITION_START} \
+    --end ${PARITION_END} \
+    --log-level INFO
+```
+
+### Description of all arguments
+
+- `input_model` : The path of input ONNX model. The output ONNX model will be extracted from this model.
+- `output_model` : The path of output ONNX model.
+- `--start` : The start point of extracted model with format `<function_name>:<input/output>`. The `function_name` comes from the decorator `@mark`.
+- `--end` : The end point of extracted model with format `<function_name>:<input/output>`. The `function_name` comes from the decorator `@mark`.
+- `--log-level` : To set log level which in `'CRITICAL', 'FATAL', 'ERROR', 'WARN', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'`. If not specified, it will be set to `INFO`.
+
+### Note
+
+To support the model partition, you need to add Mark nodes in the ONNX model. The Mark node comes from the `@mark` decorator.
+For example, if we have marked the `multiclass_nms` as below, we can set `end=multiclass_nms:input` to extract the subgraph before NMS.
+
+```python
+@mark('multiclass_nms', inputs=['boxes', 'scores'], outputs=['dets', 'labels'])
+def multiclass_nms(*args, **kwargs):
+    """Wrapper function for `_multiclass_nms`."""
+```
