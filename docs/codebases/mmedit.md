@@ -8,7 +8,7 @@ Please refer to [official installation guide](https://mmediting.readthedocs.io/e
 
 ## MMEditing models support
 
-| Model       | Task             | ONNX Runtime | TensorRT | NCNN  | OpenPPL | OpenVINO | Model Config File                                                                            |
+| Model       | Task             | ONNX Runtime | TensorRT | NCNN  | PPLNN | OpenVINO | Model Config File                                                                            |
 | :---------- | :--------------- | :----------: | :------: | :---: | :-----: | :------: | :------------------------------------------------------------------------------------------- |
 | SRCNN       | super-resolution |      Y       |    Y     |   Y   |    Y    |    N     | $MMEDIT_DIR/configs/restorers/srcnn/srcnn_x4k915_g1_1000k_div2k.py                           |
 | ESRGAN      | super-resolution |      Y       |    Y     |   Y   |    Y    |    N     | $MMEDIT_DIR/configs/restorers/esrgan/esrgan_x4c64b23g32_g1_400k_div2k.py                     |

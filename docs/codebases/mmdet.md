@@ -8,7 +8,7 @@ Please refer to [get_started.md](https://github.com/open-mmlab/mmdetection/blob/
 
 ### List of MMDetection models supported by MMDeploy
 
-| model              | task         | OnnxRuntime | TensorRT | NCNN | PPL | OpenVINO | model config file(example)                                           |
+| model              | task         | OnnxRuntime | TensorRT | NCNN | PPLNN | OpenVINO | model config file(example)                                           |
 |:-------------------|:-------------|:-----------:|:--------:|:----:|:---:|:--------:|:---------------------------------------------------------------------|
 | ATSS               | single-stage |      Y      |    ?     |  ?   |  ?  |    Y     | $MMDET_DIR/configs/atss/atss_r50_fpn_1x_coco.py                      |
 | FCOS               | single-stage |      Y      |    Y     |  Y   |  N  |    Y     | $MMDET_DIR/configs/fcos/fcos_r50_caffe_fpn_gn-head_4x4_1x_coco.py    |

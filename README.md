@@ -37,7 +37,7 @@ Supported backend:
 
 - [x] ONNX Runtime
 - [x] TensorRT
-- [x] PPL
+- [x] PPLNN
 - [x] ncnn
 - [x] OpenVINO
 

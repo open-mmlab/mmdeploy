@@ -8,7 +8,7 @@ Please refer to [get_started.md](https://github.com/open-mmlab/mmsegmentation/bl
 
 ### List of MMSegmentation models supported by MMDeploy
 
-| model                         | OnnxRuntime | TensorRT | NCNN | PPL | OpenVino | model config file(example)                                                         |
+| model                         | OnnxRuntime | TensorRT | NCNN | PPLNN | OpenVino | model config file(example)                                                         |
 |:------------------------------|:-----------:|:--------:|:----:|:---:|:--------:|:-----------------------------------------------------------------------------------|
 | FCN                           |      Y      |    Y     |  Y   |  Y  |    ?     | ${MMSEG_DIR}/configs/fcn/fcn_r50-d8_512x1024_40k_cityscapes.py                     |
 | PSPNet[*](#pspnet)            |      Y      |    Y     |  N   |  Y  |    ?     | ${MMSEG_DIR}/configs/pspnet/pspnet_r50-d8_512x1024_40k_cityscapes.py               |

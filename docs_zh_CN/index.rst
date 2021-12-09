@@ -38,7 +38,7 @@
    backends/onnxruntime.md
    backends/tensorrt.md
    backends/ncnn.md
-   backends/ppl.md
+   backends/pplnn.md
 
 .. toctree::
    :maxdepth: 1

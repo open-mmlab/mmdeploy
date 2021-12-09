@@ -123,9 +123,9 @@ partition_config = dict(type='single_stage', apply_marks=True)
 
 ### 3. 如何编写后端的配置
 
-后端的配置主要是指定模型运行的后端和提供模型在后端上运行时需要的信息，参考 [ONNX Runtime](../backends/onnxruntime.md)，  [TensorRT](../backends/tensorrt.md)，  [NCNN](../backends/ncnn.md)，  [PPL](../backends/ppl.md)。
+后端的配置主要是指定模型运行的后端和提供模型在后端上运行时需要的信息，参考 [ONNX Runtime](../backends/onnxruntime.md)，  [TensorRT](../backends/tensorrt.md)，  [NCNN](../backends/ncnn.md)，  [PPLNN](../backends/pplnn.md)。
 
-- `type`: 运行模型的后端，包括 `onnxruntime`， `ncnn`， `ppl`， `tensorrt`。
+- `type`: 运行模型的后端，包括 `onnxruntime`， `ncnn`， `pplnn`， `tensorrt`。
 
 #### 示例
 

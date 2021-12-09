@@ -2,7 +2,7 @@
 
 ### Backends
 CPU: ncnn, ONNXRuntime
-GPU: TensorRT, ppl.nn
+GPU: TensorRT, PPLNN
 
 ### Platform
 - Ubuntu 18.04
@@ -30,6 +30,7 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
   <tr>
     <th class="tg-c3ow" colspan="2"></th>
     <th class="tg-c3ow" colspan="6"><span style="font-weight:400;font-style:normal">TensorRT</span></th>
+    <th class="tg-c3ow" colspan="2">PPLNN</th>
     <th class="tg-0pky"></th>
   </tr>
 </thead>
@@ -40,9 +41,12 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td class="tg-c3ow" colspan="2">fp32</td>
     <td class="tg-c3ow" colspan="2"><span style="font-weight:400;font-style:normal">fp16</span></td>
     <td class="tg-c3ow" colspan="2">in8</td>
+    <td class="tg-c3ow" colspan="2">fp16</td>
     <td class="tg-lboi" rowspan="2">model config file</td>
   </tr>
   <tr>
+    <td class="tg-c3ow">latency (ms)</td>
+    <td class="tg-c3ow">FPS</td>
     <td class="tg-c3ow">latency (ms)</td>
     <td class="tg-c3ow">FPS</td>
     <td class="tg-c3ow">latency (ms)</td>
@@ -59,6 +63,8 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td class="tg-c3ow">791.89</td>
     <td class="tg-c3ow">1.21</td>
     <td class="tg-c3ow">829.66</td>
+    <td class="tg-c3ow">1.30</td>
+    <td class="tg-c3ow">768.28</td>
     <td class="tg-0pky">$MMCLS_DIR/configs/resnet/resnet50_b32x8_imagenet.py</td>
   </tr>
   <tr>
@@ -70,6 +76,8 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td class="tg-c3ow">703.42</td>
     <td class="tg-c3ow">1.37</td>
     <td class="tg-c3ow">727.42</td>
+    <td class="tg-c3ow">1.36</td>
+    <td class="tg-c3ow">737.67</td>
     <td class="tg-0pky">$MMCLS_DIR/configs/resnext/resnext50_32x4d_b32x8_imagenet.py</td>
   </tr>
   <tr>
@@ -81,6 +89,8 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td class="tg-c3ow">600.73</td>
     <td class="tg-c3ow">1.51</td>
     <td class="tg-c3ow">662.90</td>
+    <td class="tg-c3ow">1.91</td>
+    <td class="tg-c3ow">524.07</td>
     <td class="tg-0pky">$MMCLS_DIR/configs/seresnet/seresnet50_b32x8_imagenet.py</td>
   </tr>
   <tr>
@@ -92,6 +102,8 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td class="tg-c3ow">841.36</td>
     <td class="tg-c3ow">1.13</td>
     <td class="tg-c3ow">883.47</td>
+    <td class="tg-c3ow">4.69</td>
+    <td class="tg-c3ow">213.33</td>
     <td class="tg-0pky">$MMCLS_DIR/configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py</td>
   </tr>
 </tbody>
@@ -105,49 +117,57 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
 <table class="tg">
 <thead>
   <tr>
-    <th class="tg-c3ow" colspan="2"></th>
-    <th class="tg-c3ow" colspan="6"><span style="font-weight:400;font-style:normal">TensorRT</span></th>
-    <th class="tg-lboi"></th>
+    <th class="tg-baqh" colspan="2"></th>
+    <th class="tg-baqh" colspan="6"><span style="font-weight:400;font-style:normal">TensorRT</span></th>
+    <th class="tg-baqh" colspan="2">PPLNN</th>
+    <th class="tg-0lax"></th>
   </tr>
 </thead>
 <tbody>
   <tr>
-    <td class="tg-9wq8" rowspan="2">Model</td>
+    <td class="tg-nrix" rowspan="2">Model</td>
     <td class="tg-nrix" rowspan="2">Input</td>
-    <td class="tg-c3ow" colspan="2">fp32</td>
-    <td class="tg-c3ow" colspan="2"><span style="font-weight:400;font-style:normal">fp16</span></td>
-    <td class="tg-c3ow" colspan="2">in8</td>
-    <td class="tg-lboi" rowspan="2"><span style="font-weight:400;font-style:normal">model config file</span></td>
+    <td class="tg-baqh" colspan="2">fp32</td>
+    <td class="tg-baqh" colspan="2"><span style="font-weight:400;font-style:normal">fp16</span></td>
+    <td class="tg-baqh" colspan="2">in8</td>
+    <td class="tg-baqh" colspan="2">fp16</td>
+    <td class="tg-cly1" rowspan="2"><span style="font-weight:400;font-style:normal">model config file</span></td>
   </tr>
   <tr>
-    <td class="tg-c3ow">latency (ms)</td>
-    <td class="tg-c3ow">FPS</td>
-    <td class="tg-c3ow">latency (ms)</td>
-    <td class="tg-c3ow">FPS</td>
-    <td class="tg-c3ow">latency (ms)</td>
-    <td class="tg-c3ow">FPS</td>
+    <td class="tg-baqh">latency (ms)</td>
+    <td class="tg-baqh">FPS</td>
+    <td class="tg-baqh">latency (ms)</td>
+    <td class="tg-baqh">FPS</td>
+    <td class="tg-baqh">latency (ms)</td>
+    <td class="tg-baqh">FPS</td>
+    <td class="tg-baqh">latency (ms)</td>
+    <td class="tg-baqh">FPS</td>
   </tr>
   <tr>
-    <td class="tg-c3ow">ESRGAN</td>
+    <td class="tg-baqh">ESRGAN</td>
     <td class="tg-baqh">1x3x32x32</td>
-    <td class="tg-c3ow">12.64</td>
-    <td class="tg-c3ow">79.14</td>
-    <td class="tg-c3ow">12.42</td>
-    <td class="tg-c3ow">80.50</td>
-    <td class="tg-c3ow">12.45</td>
-    <td class="tg-c3ow">80.35</td>
-    <td class="tg-0pky">$MMEDIT_DIR/configs/restorers/esrgan/esrgan_psnr_x4c64b23g32_g1_1000k_div2k.py</td>
+    <td class="tg-baqh">12.64</td>
+    <td class="tg-baqh">79.14</td>
+    <td class="tg-baqh">12.42</td>
+    <td class="tg-baqh">80.50</td>
+    <td class="tg-baqh">12.45</td>
+    <td class="tg-baqh">80.35</td>
+    <td class="tg-baqh">7.67</td>
+    <td class="tg-baqh">130.39</td>
+    <td class="tg-0lax">$MMEDIT_DIR/configs/restorers/esrgan/esrgan_psnr_x4c64b23g32_g1_1000k_div2k.py</td>
   </tr>
   <tr>
-    <td class="tg-c3ow">SRCNN</td>
+    <td class="tg-baqh">SRCNN</td>
     <td class="tg-baqh">1x3x32x32</td>
-    <td class="tg-c3ow">0.70</td>
-    <td class="tg-c3ow">1436.47</td>
-    <td class="tg-c3ow">0.35</td>
-    <td class="tg-c3ow">2836.62</td>
-    <td class="tg-c3ow">0.26</td>
-    <td class="tg-c3ow">3850.45</td>
-    <td class="tg-0pky">$MMEDIT_DIR/configs/restorers/srcnn/srcnn_x4k915_g1_1000k_div2k.py</td>
+    <td class="tg-baqh">0.70</td>
+    <td class="tg-baqh">1436.47</td>
+    <td class="tg-baqh">0.35</td>
+    <td class="tg-baqh">2836.62</td>
+    <td class="tg-baqh">0.26</td>
+    <td class="tg-baqh">3850.45</td>
+    <td class="tg-baqh">0.56</td>
+    <td class="tg-baqh">1775.11</td>
+    <td class="tg-0lax">$MMEDIT_DIR/configs/restorers/srcnn/srcnn_x4k915_g1_1000k_div2k.py</td>
   </tr>
 </tbody>
 </table>
@@ -162,6 +182,7 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
   <tr>
     <th class="tg-c3ow" colspan="2"></th>
     <th class="tg-c3ow" colspan="6"><span style="font-weight:400;font-style:normal">TensorRT</span></th>
+    <th class="tg-c3ow" colspan="2">PPLNN</th>
     <th class="tg-0pky"></th>
   </tr>
 </thead>
@@ -172,9 +193,12 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td class="tg-c3ow" colspan="2">fp32</td>
     <td class="tg-c3ow" colspan="2"><span style="font-weight:400;font-style:normal">fp16</span></td>
     <td class="tg-c3ow" colspan="2">in8</td>
+    <td class="tg-c3ow" colspan="2">fp16</td>
     <td class="tg-lboi" rowspan="2">model config file</td>
   </tr>
   <tr>
+    <td class="tg-c3ow">latency (ms)</td>
+    <td class="tg-c3ow">FPS</td>
     <td class="tg-c3ow">latency (ms)</td>
     <td class="tg-c3ow">FPS</td>
     <td class="tg-c3ow">latency (ms)</td>
@@ -191,6 +215,8 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td class="tg-c3ow">41.72</td>
     <td class="tg-c3ow">18.13</td>
     <td class="tg-c3ow">55.15</td>
+    <td class="tg-c3ow">27.00</td>
+    <td class="tg-c3ow">37.04</td>
     <td class="tg-0pky">$MMSEG_DIR/configs/fcn/fcn_r50-d8_512x1024_40k_cityscapes.py</td>
   </tr>
   <tr>
@@ -202,6 +228,8 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td class="tg-c3ow">41.49</td>
     <td class="tg-c3ow">16.33</td>
     <td class="tg-c3ow">61.23</td>
+    <td class="tg-c3ow">27.26</td>
+    <td class="tg-c3ow">36.69</td>
     <td class="tg-0pky">$MMSEG_DIR/configs/pspnet/pspnet_r50-d8_512x1024_80k_cityscapes.py</td>
   </tr>
   <tr>
@@ -213,6 +241,8 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td class="tg-c3ow">31.45</td>
     <td class="tg-c3ow">19.85</td>
     <td class="tg-c3ow">50.38</td>
+    <td class="tg-c3ow">36.01</td>
+    <td class="tg-c3ow">27.77</td>
     <td class="tg-0pky">$MMSEG_DIR/configs/deeplabv3/deeplabv3_r50-d8_512x1024_80k_cityscapes.py</td>
   </tr>
   <tr>
@@ -224,6 +254,8 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td class="tg-c3ow">21.26</td>
     <td class="tg-c3ow">50.38</td>
     <td class="tg-c3ow">26.67</td>
+    <td class="tg-c3ow">34.80</td>
+    <td class="tg-c3ow">28.74</td>
     <td class="tg-0pky">$MMSEG_DIR/configs/deeplabv3plus/deeplabv3plus_r50-d8_512x1024_80k_cityscapes.py</td>
   </tr>
 </tbody>
@@ -237,27 +269,31 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
 <table class="tg">
 <thead>
   <tr>
-    <th class="tg-c3ow" colspan="2"></th>
-    <th class="tg-c3ow" colspan="6"><span style="font-weight:400;font-style:normal">TensorRT</span></th>
-    <th class="tg-0pky"></th>
+    <th class="tg-baqh" colspan="2"></th>
+    <th class="tg-baqh" colspan="6"><span style="font-weight:400;font-style:normal">TensorRT</span></th>
+    <th class="tg-baqh" colspan="2">PPLNN</th>
+    <th class="tg-0lax"></th>
   </tr>
 </thead>
 <tbody>
   <tr>
-    <td class="tg-9wq8" rowspan="2">Model</td>
-    <td class="tg-9wq8" rowspan="2">Input</td>
-    <td class="tg-c3ow" colspan="2">fp32</td>
-    <td class="tg-c3ow" colspan="2"><span style="font-weight:400;font-style:normal">fp16</span></td>
-    <td class="tg-c3ow" colspan="2">in8</td>
-    <td class="tg-lboi" rowspan="2">model config file</td>
+    <td class="tg-nrix" rowspan="2">Model</td>
+    <td class="tg-nrix" rowspan="2">Input</td>
+    <td class="tg-baqh" colspan="2">fp32</td>
+    <td class="tg-baqh" colspan="2"><span style="font-weight:400;font-style:normal">fp16</span></td>
+    <td class="tg-baqh" colspan="2">in8</td>
+    <td class="tg-baqh" colspan="2">fp16</td>
+    <td class="tg-cly1" rowspan="2">model config file</td>
   </tr>
   <tr>
-    <td class="tg-c3ow">latency (ms)</td>
-    <td class="tg-c3ow">FPS</td>
-    <td class="tg-c3ow">latency (ms)</td>
-    <td class="tg-c3ow">FPS</td>
-    <td class="tg-c3ow">latency (ms)</td>
-    <td class="tg-c3ow">FPS</td>
+    <td class="tg-baqh">latency (ms)</td>
+    <td class="tg-baqh">FPS</td>
+    <td class="tg-baqh">latency (ms)</td>
+    <td class="tg-baqh">FPS</td>
+    <td class="tg-baqh">latency (ms)</td>
+    <td class="tg-baqh">FPS</td>
+    <td class="tg-baqh">latency (ms)</td>
+    <td class="tg-baqh">FPS</td>
   </tr>
   <tr>
     <td class="tg-baqh">YOLOv3</td>
@@ -268,6 +304,8 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td class="tg-baqh">40.17</td>
     <td class="tg-baqh">24.87</td>
     <td class="tg-baqh">40.21</td>
+    <td class="tg-baqh">47.64</td>
+    <td class="tg-baqh">20.99</td>
     <td class="tg-0lax">$MMDET_DIR/configs/yolo/yolov3_d53_320_273e_coco.py</td>
   </tr>
   <tr>
@@ -279,51 +317,61 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td class="tg-baqh">112.13</td>
     <td class="tg-baqh">8.65</td>
     <td class="tg-baqh">115.63</td>
+    <td class="tg-baqh">30.13</td>
+    <td class="tg-baqh">33.19</td>
     <td class="tg-0lax">$MMDET_DIR/configs/ssd/ssdlite_mobilenetv2_scratch_600e_coco.py</td>
   </tr>
   <tr>
-    <td class="tg-c3ow">RetinaNet</td>
-    <td class="tg-c3ow">1x3x800x1344</td>
-    <td class="tg-c3ow">97.09</td>
-    <td class="tg-c3ow">10.30</td>
-    <td class="tg-c3ow">25.79</td>
-    <td class="tg-c3ow">38.78</td>
-    <td class="tg-c3ow">16.88</td>
-    <td class="tg-c3ow">59.23</td>
-    <td class="tg-0pky">$MMDET_DIR/configs/retinanet/retinanet_r50_fpn_1x_coco.py</td>
+    <td class="tg-baqh">RetinaNet</td>
+    <td class="tg-baqh">1x3x800x1344</td>
+    <td class="tg-baqh">97.09</td>
+    <td class="tg-baqh">10.30</td>
+    <td class="tg-baqh">25.79</td>
+    <td class="tg-baqh">38.78</td>
+    <td class="tg-baqh">16.88</td>
+    <td class="tg-baqh">59.23</td>
+    <td class="tg-baqh">38.34</td>
+    <td class="tg-baqh">26.08</td>
+    <td class="tg-0lax">$MMDET_DIR/configs/retinanet/retinanet_r50_fpn_1x_coco.py</td>
   </tr>
   <tr>
-    <td class="tg-c3ow">FCOS</td>
-    <td class="tg-c3ow">1x3x800x1344</td>
-    <td class="tg-c3ow">84.06</td>
-    <td class="tg-c3ow">11.90</td>
-    <td class="tg-c3ow">23.15</td>
-    <td class="tg-c3ow">43.20</td>
-    <td class="tg-c3ow">17.68</td>
-    <td class="tg-c3ow">56.57</td>
-    <td class="tg-0pky">$MMDET_DIR/configs/fcos/fcos_r50_caffe_fpn_gn-head_1x_coco.py</td>
+    <td class="tg-baqh">FCOS</td>
+    <td class="tg-baqh">1x3x800x1344</td>
+    <td class="tg-baqh">84.06</td>
+    <td class="tg-baqh">11.90</td>
+    <td class="tg-baqh">23.15</td>
+    <td class="tg-baqh">43.20</td>
+    <td class="tg-baqh">17.68</td>
+    <td class="tg-baqh">56.57</td>
+    <td class="tg-baqh">-</td>
+    <td class="tg-baqh">-</td>
+    <td class="tg-0lax">$MMDET_DIR/configs/fcos/fcos_r50_caffe_fpn_gn-head_1x_coco.py</td>
   </tr>
   <tr>
-    <td class="tg-c3ow">FSAF</td>
-    <td class="tg-c3ow">1x3x800x1344</td>
-    <td class="tg-c3ow">82.96</td>
-    <td class="tg-c3ow">12.05</td>
-    <td class="tg-c3ow">21.02</td>
-    <td class="tg-c3ow">47.58</td>
-    <td class="tg-c3ow">13.50</td>
-    <td class="tg-c3ow">74.08</td>
-    <td class="tg-0pky">$MMDET_DIR/configs/fsaf/fsaf_r50_fpn_1x_coco.py</td>
+    <td class="tg-baqh">FSAF</td>
+    <td class="tg-baqh">1x3x800x1344</td>
+    <td class="tg-baqh">82.96</td>
+    <td class="tg-baqh">12.05</td>
+    <td class="tg-baqh">21.02</td>
+    <td class="tg-baqh">47.58</td>
+    <td class="tg-baqh">13.50</td>
+    <td class="tg-baqh">74.08</td>
+    <td class="tg-baqh">30.41</td>
+    <td class="tg-baqh">32.89</td>
+    <td class="tg-0lax">$MMDET_DIR/configs/fsaf/fsaf_r50_fpn_1x_coco.py</td>
   </tr>
   <tr>
-    <td class="tg-c3ow">Faster-RCNN</td>
-    <td class="tg-c3ow">1x3x800x1344</td>
-    <td class="tg-c3ow">88.08</td>
-    <td class="tg-c3ow">11.35</td>
-    <td class="tg-c3ow">26.52</td>
-    <td class="tg-c3ow">37.70</td>
-    <td class="tg-c3ow">19.14</td>
-    <td class="tg-c3ow">52.23</td>
-    <td class="tg-0pky">$MMDET_DIR/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py</td>
+    <td class="tg-baqh">Faster-RCNN</td>
+    <td class="tg-baqh">1x3x800x1344</td>
+    <td class="tg-baqh">88.08</td>
+    <td class="tg-baqh">11.35</td>
+    <td class="tg-baqh">26.52</td>
+    <td class="tg-baqh">37.70</td>
+    <td class="tg-baqh">19.14</td>
+    <td class="tg-baqh">52.23</td>
+    <td class="tg-baqh">65.40</td>
+    <td class="tg-baqh">15.29</td>
+    <td class="tg-0lax">$MMDET_DIR/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py</td>
   </tr>
   <tr>
     <td class="tg-baqh">Mask-RCNN</td>
@@ -334,6 +382,8 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td class="tg-baqh">4.14</td>
     <td class="tg-baqh">-</td>
     <td class="tg-baqh">-</td>
+    <td class="tg-baqh">86.80</td>
+    <td class="tg-baqh">11.52</td>
     <td class="tg-0lax">$MMDET_DIR/configs/mask_rcnn/mask_rcnn_r50_fpn_1x_coco.py</td>
   </tr>
 </tbody>
@@ -347,27 +397,31 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
 <table class="tg">
 <thead>
   <tr>
-    <th class="tg-c3ow" colspan="2"></th>
-    <th class="tg-c3ow" colspan="6"><span style="font-weight:400;font-style:normal">TensorRT</span></th>
-    <th class="tg-0pky"></th>
+    <th class="tg-baqh" colspan="2"></th>
+    <th class="tg-baqh" colspan="6"><span style="font-weight:400;font-style:normal">TensorRT</span></th>
+    <th class="tg-baqh" colspan="2">PPLNN</th>
+    <th class="tg-0lax"></th>
   </tr>
 </thead>
 <tbody>
   <tr>
-    <td class="tg-9wq8" rowspan="2">Model</td>
-    <td class="tg-9wq8" rowspan="2">Input</td>
-    <td class="tg-c3ow" colspan="2">fp32</td>
-    <td class="tg-c3ow" colspan="2"><span style="font-weight:400;font-style:normal">fp16</span></td>
-    <td class="tg-c3ow" colspan="2">in8</td>
-    <td class="tg-lboi" rowspan="2">model config file</td>
+    <td class="tg-nrix" rowspan="2">Model</td>
+    <td class="tg-nrix" rowspan="2">Input</td>
+    <td class="tg-baqh" colspan="2">fp32</td>
+    <td class="tg-baqh" colspan="2"><span style="font-weight:400;font-style:normal">fp16</span></td>
+    <td class="tg-baqh" colspan="2">in8</td>
+    <td class="tg-baqh" colspan="2">fp16</td>
+    <td class="tg-cly1" rowspan="2">model config file</td>
   </tr>
   <tr>
-    <td class="tg-c3ow">latency (ms)</td>
-    <td class="tg-c3ow">FPS</td>
-    <td class="tg-c3ow">latency (ms)</td>
-    <td class="tg-c3ow">FPS</td>
-    <td class="tg-c3ow">latency (ms)</td>
-    <td class="tg-c3ow">FPS</td>
+    <td class="tg-baqh">latency (ms)</td>
+    <td class="tg-baqh">FPS</td>
+    <td class="tg-baqh">latency (ms)</td>
+    <td class="tg-baqh">FPS</td>
+    <td class="tg-baqh">latency (ms)</td>
+    <td class="tg-baqh">FPS</td>
+    <td class="tg-baqh">latency (ms)</td>
+    <td class="tg-baqh">FPS</td>
   </tr>
   <tr>
     <td class="tg-baqh">DBNet</td>
@@ -378,6 +432,8 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td class="tg-baqh">177.78</td>
     <td class="tg-baqh">5.00</td>
     <td class="tg-baqh">199.85</td>
+    <td class="tg-baqh">34.84</td>
+    <td class="tg-baqh">28.70</td>
     <td class="tg-0lax">$MMOCR_DIR/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py</td>
   </tr>
   <tr>
@@ -389,6 +445,8 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td class="tg-baqh">713.88</td>
     <td class="tg-baqh">1.36</td>
     <td class="tg-baqh">736.79</td>
+    <td class="tg-baqh">-</td>
+    <td class="tg-baqh">-</td>
     <td class="tg-0lax">$MMOCR_DIR/configs/textrecog/crnn/crnn_academic_dataset.py</td>
   </tr>
 </tbody>

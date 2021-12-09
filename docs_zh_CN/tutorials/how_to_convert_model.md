@@ -2,29 +2,30 @@
 
 <!-- TOC -->
 
-- [教程 : 如何转换模型](#如何转换模型)
-    - [如何将模型从pytorch形式转换成其他后端形式](#如何将模型从pytorch形式转换成其他后端形式)
-        - [准备工作](#准备工作)
-        - [使用方法](#使用方法)
-        - [参数描述](#参数描述)
-    - [如何评测模型](#如何评测模型)
-    - [各后端已支持导出的模型列表](#各后端已支持导出的模型列表)
-    - [注意事项](#注意事项)
-    - [问答](#问答)
+- [如何转换模型](#如何转换模型)
+  - [如何将模型从pytorch形式转换成其他后端形式](#如何将模型从pytorch形式转换成其他后端形式)
+    - [准备工作](#准备工作)
+    - [使用方法](#使用方法)
+    - [参数描述](#参数描述)
+    - [示例](#示例)
+  - [如何评测模型](#如何评测模型)
+  - [各后端已支持导出的模型列表](#各后端已支持导出的模型列表)
+  - [注意事项](#注意事项)
+  - [问答](#问答)
 
 <!-- TOC -->
 
 这篇教程介绍了如何使用 MMDeploy 的工具将一个 OpenMMlab 模型转换成某个后端的模型文件。
 
 注意:
-- 现在已支持的后端包括 [ONNX Runtime](../backends/onnxruntime.md) ，[TensorRT](../backends/tensorrt.md) ，[NCNN](../backends/ncnn.md) ，[PPL](../backends/ppl.md)。
+- 现在已支持的后端包括 [ONNX Runtime](../backends/onnxruntime.md) ，[TensorRT](../backends/tensorrt.md) ，[NCNN](../backends/ncnn.md) ，[PPLNN](../backends/pplnn.md)。
 - 现在已支持的代码库包括 [MMClassification](../codebases/mmcls.md) ，[MMDetection](../codebases/mmdet.md) ，[MMSegmentation](../codebases/mmseg.md) ，[MMOCR](../codebases/mmocr.md) ，[MMEditing](../codebases/mmedit.md)。
 
 ### 如何将模型从pytorch形式转换成其他后端形式
 
 #### 准备工作
 
-1. 安装你的目标后端。 你可以参考 [ONNXRuntime-install](../backends/onnxruntime.md) ，[TensorRT-install](../backends/tensorrt.md) ，[NCNN-install](../backends/ncnn.md) ，[PPL-install](../backends/ppl.md)。
+1. 安装你的目标后端。 你可以参考 [ONNXRuntime-install](../backends/onnxruntime.md) ，[TensorRT-install](../backends/tensorrt.md) ，[NCNN-install](../backends/ncnn.md) ，[PPLNN-install](../backends/pplnn.md)。
 2. 安装你的目标代码库。 你可以参考 [MMClassification-install](https://github.com/open-mmlab/mmclassification/blob/master/docs/install.md) ，[MMDetection-install](https://github.com/open-mmlab/mmdetection/blob/master/docs/get_started.md) ，[MMSegmentation-install](https://github.com/open-mmlab/mmsegmentation/blob/master/docs/get_started.md#installation) ，[MMOCR-install](https://github.com/open-mmlab/mmocr/blob/main/docs/install.md) ，[MMEditing-install](https://github.com/open-mmlab/mmediting/blob/master/docs/install.md) 。
 
 #### 使用方法
@@ -79,7 +80,7 @@ python ./tools/deploy.py \
 
 下列列表显示了目前哪些模型是可以导出的以及其支持的后端。
 
-|    模型       |     代码库        | 模型配置文件(示例)                                                                           | OnnxRuntime |    TensorRT   | NCNN |  PPL  |
+|    模型       |     代码库        | 模型配置文件(示例)                                                                           | OnnxRuntime |    TensorRT   | NCNN |  PPLNN  |
 | :----------: | :--------------: | :---------------------------------------------------------------------------------------: | :---------: | :-----------: | :---:| :---: |
 | RetinaNet    | MMDetection      | $PATH_TO_MMDET/configs/retinanet/retinanet_r50_fpn_1x_coco.py                             |      Y      |       Y       |   Y  |   Y   |
 | Faster R-CNN | MMDetection      | $PATH_TO_MMDET/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py                         |      Y      |       Y       |   Y  |   Y   |

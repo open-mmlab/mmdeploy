@@ -39,7 +39,7 @@ You can switch between Chinese and English documents in the lower-left corner of
    backends/onnxruntime.md
    backends/tensorrt.md
    backends/ncnn.md
-   backends/ppl.md
+   backends/pplnn.md
 
 .. toctree::
    :maxdepth: 1

@@ -47,7 +47,7 @@ Build the inference engine extension libraries you need.
 - [ONNX Runtime](backends/onnxruntime.md)
 - [TensorRT](backends/tensorrt.md)
 - [ncnn](backends/ncnn.md)
-- [PPL](backends/ppl.md)
+- [PPLNN](backends/pplnn.md)
 - [OpenVINO](backends/openvino.md)
 
 ### Install mmdeploy

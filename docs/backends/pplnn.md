@@ -1,4 +1,4 @@
-## PPL Support
+## PPLNN Support
 
 This tutorial is based on Linux systems like Ubuntu-18.04.
 

@@ -8,7 +8,7 @@ MMDetection 是一个基于 PyTorch 的目标检测开源工具箱。它是 [Ope
 
 ### MMDeploy支持的MMDetection模型列表
 
-|    模型       |     任务类型      | 模型配置文件(示例)                                                                           | OnnxRuntime |    TensorRT   | NCNN |  PPL  |
+|    模型       |     任务类型      | 模型配置文件(示例)                                                                           | OnnxRuntime |    TensorRT   | NCNN |  PPLNN  |
 | :----------: | :--------------: | :---------------------------------------------------------------------------------------: | :---------: | :-----------: | :---:| :---: |
 | RetinaNet    | single-stage     | $PATH_TO_MMDET/configs/retinanet/retinanet_r50_fpn_1x_coco.py                             |      Y      |       Y       |   Y  |   Y   |
 | Faster R-CNN | two-stage        | $PATH_TO_MMDET/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py                         |      Y      |       Y       |   Y  |   Y   |

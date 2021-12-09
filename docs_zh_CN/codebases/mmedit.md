@@ -8,7 +8,7 @@
 
 ## MMDeploy 支持的 MMEditing 模型列表
 
-|  模型  |                     模型配置文件（示例）                     | ONNX Runtime | TensorRT | NCNN  |  PPL  |
+|  模型  |                     模型配置文件（示例）                     | ONNX Runtime | TensorRT | NCNN  |  PPLNN  |
 | :----: | :----------------------------------------------------------: | :----------: | :------: | :---: | :---: |
 | SRCNN  |    configs/restorers/srcnn/srcnn_x4k915_g1_1000k_div2k.py    |      Y       |    Y     |   N   |   Y   |
 | ESRGAN | configs/restorers/esrgan/esrgan_x4c64b23g32_g1_400k_div2k.py |      Y       |    Y     |   N   |   Y   |

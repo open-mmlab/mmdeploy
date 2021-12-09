@@ -2,30 +2,30 @@
 
 <!-- TOC -->
 
-- [Tutorial : How to convert model](#how-to-convert-model)
-    - [How to convert models from Pytorch to BACKEND](#how-to-convert-models-from-pytorch-to-other-backends)
-        - [Prerequisite](#prerequisite)
-        - [Usage](#usage)
-        - [Description of all arguments](#description-of-all-arguments)
-        - [How to find the corresponding deployment config of a PyTorch model](#how-to-find-the-corresponding-deployment-config-of-a-pytorch-model)
-        - [Example](#example)
-    - [How to evaluate the exported models](#how-to-evaluate-the-exported-models)
-    - [List of supported models exportable to BACKEND](#list-of-supported-models-exportable-to-other-backends)
-    - [Reminders](#reminders)
-    - [FAQs](#faqs)
+- [How to convert model](#how-to-convert-model)
+  - [How to convert models from Pytorch to other backends](#how-to-convert-models-from-pytorch-to-other-backends)
+    - [Prerequisite](#prerequisite)
+    - [Usage](#usage)
+    - [Description of all arguments](#description-of-all-arguments)
+    - [How to find the corresponding deployment config of a PyTorch model](#how-to-find-the-corresponding-deployment-config-of-a-pytorch-model)
+    - [Example](#example)
+  - [How to evaluate the exported models](#how-to-evaluate-the-exported-models)
+  - [List of supported models exportable to other backends](#list-of-supported-models-exportable-to-other-backends)
+  - [Reminders](#reminders)
+  - [FAQs](#faqs)
 
 <!-- TOC -->
 
 This tutorial briefly introduces how to export an OpenMMlab model to a specific backend using MMDeploy tools.
 Notes:
-- Supported backends are [ONNXRuntime](../backends/onnxruntime.md), [TensorRT](../backends/tensorrt.md), [NCNN](../backends/ncnn.md), [PPL](../backends/ppl.md), [OpenVINO](../backends/openvino.md).
+- Supported backends are [ONNXRuntime](../backends/onnxruntime.md), [TensorRT](../backends/tensorrt.md), [NCNN](../backends/ncnn.md), [PPLNN](../backends/pplnn.md), [OpenVINO](../backends/openvino.md).
 - Supported codebases are [MMClassification](../codebases/mmcls.md), [MMDetection](../codebases/mmdet.md), [MMSegmentation](../codebases/mmseg.md), [MMOCR](../codebases/mmocr.md), [MMEditing](../codebases/mmedit.md).
 
 ### How to convert models from Pytorch to other backends
 
 #### Prerequisite
 
-1. Install and build your target backend. You could refer to [ONNXRuntime-install](../backends/onnxruntime.md), [TensorRT-install](../backends/tensorrt.md), [NCNN-install](../backends/ncnn.md), [PPL-install](../backends/ppl.md), [OpenVINO-install](../backends/openvino.md) for more information.
+1. Install and build your target backend. You could refer to [ONNXRuntime-install](../backends/onnxruntime.md), [TensorRT-install](../backends/tensorrt.md), [NCNN-install](../backends/ncnn.md), [PPLNN-install](../backends/pplnn.md), [OpenVINO-install](../backends/openvino.md) for more information.
 2. Install and build your target codebase. You could refer to [MMClassification-install](https://github.com/open-mmlab/mmclassification/blob/master/docs/install.md), [MMDetection-install](https://github.com/open-mmlab/mmdetection/blob/master/docs/get_started.md), [MMSegmentation-install](https://github.com/open-mmlab/mmsegmentation/blob/master/docs/get_started.md#installation), [MMOCR-install](https://github.com/open-mmlab/mmocr/blob/main/docs/install.md), [MMEditing-install](https://github.com/open-mmlab/mmediting/blob/master/docs/install.md).
 
 #### Usage
@@ -86,7 +86,7 @@ You can try to evaluate model, referring to [how_to_evaluate_a_model](./how_to_e
 
 The table below lists the models that are guaranteed to be exportable to other backend.
 
-| Model              | codebase         | OnnxRuntime | TensorRT | NCNN | PPL | OpenVINO | model config file(example)                                                            |
+| Model              | codebase         | OnnxRuntime | TensorRT | NCNN | PPLNN | OpenVINO | model config file(example)                                                            |
 |--------------------|------------------|:-----------:|:--------:|:----:|:---:|:--------:|:--------------------------------------------------------------------------------------|
 | RetinaNet          | MMDetection      |      Y      |    Y     |  Y   |  Y  |    Y     | $MMDET_DIR/configs/retinanet/retinanet_r50_fpn_1x_coco.py                             |
 | Faster R-CNN       | MMDetection      |      Y      |    Y     |  Y   |  Y  |    Y     | $MMDET_DIR/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py                         |
