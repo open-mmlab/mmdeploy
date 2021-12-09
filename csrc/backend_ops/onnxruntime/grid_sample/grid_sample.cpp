@@ -290,5 +290,5 @@ void GridSampleKernel::Compute(OrtKernelContext *context) {
   }
 }
 
-REGISTER_ONNXRUNTIME_OPS(GridSampleOp);
+REGISTER_ONNXRUNTIME_OPS(mmdeploy, GridSampleOp);
 }  // namespace mmdeploy

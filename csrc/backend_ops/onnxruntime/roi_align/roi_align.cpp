@@ -251,5 +251,5 @@ void MMCVRoiAlignKernel::Compute(OrtKernelContext *context) {
   if (argmax_y) delete argmax_y;
 }
 
-REGISTER_ONNXRUNTIME_OPS(MMCVRoiAlignCustomOp);
+REGISTER_ONNXRUNTIME_OPS(mmdeploy, MMCVRoiAlignCustomOp);
 }  // namespace mmdeploy

@@ -266,5 +266,6 @@ void MMCVModulatedDeformConvKernel::Compute(OrtKernelContext *context) {
                              kernel_width, stride_height, stride_width, padding_height,
                              padding_width, dilation_height, dilation_width, columns, out_ptr);
 }
-REGISTER_ONNXRUNTIME_OPS(MMCVModulatedDeformConvOp);
+REGISTER_ONNXRUNTIME_OPS(mmdeploy, MMCVModulatedDeformConvOp);
+REGISTER_ONNXRUNTIME_OPS(mmcv, MMCVModulatedDeformConvOp);
 }  // namespace mmdeploy
