@@ -4,9 +4,12 @@ import numpy as np
 import pytest
 import torch
 
+from mmdeploy.codebase import import_codebase
 from mmdeploy.core import RewriterContext
-from mmdeploy.utils import Backend
+from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import WrapModel, check_backend, get_rewrite_outputs
+
+import_codebase(Codebase.MMCLS)
 
 input = torch.rand(1)
 

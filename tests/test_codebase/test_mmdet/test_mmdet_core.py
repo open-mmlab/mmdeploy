@@ -4,9 +4,12 @@ import numpy as np
 import pytest
 import torch
 
-from mmdeploy.utils import Backend
+from mmdeploy.codebase import import_codebase
+from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import (WrapFunction, backend_checker, check_backend,
                                  get_onnx_model, get_rewrite_outputs)
+
+import_codebase(Codebase.MMDET)
 
 
 @backend_checker(Backend.TENSORRT)

@@ -8,8 +8,11 @@ import pytest
 import torch
 
 import mmdeploy.backend.onnxruntime as ort_apis
-from mmdeploy.utils import Backend
+from mmdeploy.codebase import import_codebase
+from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
+
+import_codebase(Codebase.MMSEG)
 
 NUM_CLASS = 19
 IMAGE_SIZE = 32

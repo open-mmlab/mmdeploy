@@ -11,8 +11,11 @@ from torch.utils.data.dataset import Dataset
 
 import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.apis import build_task_processor
-from mmdeploy.utils import load_config
+from mmdeploy.codebase import import_codebase
+from mmdeploy.utils import Codebase, load_config
 from mmdeploy.utils.test import DummyModel, SwitchBackendWrapper
+
+import_codebase(Codebase.MMDET)
 
 model_cfg_path = 'tests/test_codebase/test_mmdet/data/model.py'
 model_cfg = load_config(model_cfg_path)[0]

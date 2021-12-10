@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import mmcv
 
-from mmdeploy.codebase import BaseTask, get_codebase_class
+from mmdeploy.codebase import BaseTask, get_codebase_class, import_codebase
 from mmdeploy.utils import get_codebase, get_task_type
 
 
@@ -18,6 +18,7 @@ def build_task_processor(model_cfg: mmcv.Config, deploy_cfg: mmcv.Config,
         BaseTask: A task processor.
     """
     codebase_type = get_codebase(deploy_cfg)
+    import_codebase(codebase_type)
     codebase = get_codebase_class(codebase_type)
     return codebase.build_task_processor(model_cfg, deploy_cfg, device)
 
@@ -37,6 +38,7 @@ def get_predefined_partition_cfg(deploy_cfg: mmcv.Config, partition_type: str):
         dict: A dictionary of partition config.
     """
     codebase_type = get_codebase(deploy_cfg)
+    import_codebase(codebase_type)
     task = get_task_type(deploy_cfg)
     codebase = get_codebase_class(codebase_type)
     task_processor_class = codebase.get_task_class(task)

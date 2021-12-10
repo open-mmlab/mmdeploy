@@ -1,32 +1,34 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import importlib
-import logging
 
+from mmdeploy.utils import Codebase
 from .base import BaseTask, MMCodebase, get_codebase_class
 
-if importlib.util.find_spec('mmcls'):
-    importlib.import_module('mmdeploy.codebase.mmcls')
-else:
-    logging.debug('mmcls is not installed.')
+extra_dependent_library = {Codebase.MMOCR: ['mmdet']}
 
-if importlib.util.find_spec('mmdet'):
-    importlib.import_module('mmdeploy.codebase.mmdet')
-else:
-    logging.debug('mmdet is not installed.')
 
-if importlib.util.find_spec('mmseg'):
-    importlib.import_module('mmdeploy.codebase.mmseg')
-else:
-    logging.debug('mmseg is not installed.')
+def import_codebase(codebase: Codebase):
+    """Import a codebase package in `mmdeploy.codebase`
 
-if importlib.util.find_spec('mmocr'):
-    importlib.import_module('mmdeploy.codebase.mmocr')
-else:
-    logging.debug('mmocr is not installed.')
+    The function will check if all dependent libraries are installed.
+    For example, to import `mmdeploy.codebase.mmdet`, `mmdet` must be
+    installed. To import `mmdeploy.codebase.mmocr`, `mmdet` and `mmocr`
+    must be installed.
 
-if importlib.util.find_spec('mmedit'):
-    importlib.import_module('mmdeploy.codebase.mmedit')
-else:
-    logging.debug('mmedit is not installed.')
+    Args:
+        codebase (Codebase): The codebase to import.
+    """
+    codebase_name = codebase.value
+    dependent_library = [codebase_name] + \
+        extra_dependent_library.get(codebase, [])
+
+    for lib in dependent_library:
+        if not importlib.util.find_spec(lib):
+            raise ImportError(
+                f'{lib} has not been installed. '
+                f'Import mmdeploy.codebase.{codebase_name} failed.')
+
+    importlib.import_module(f'mmdeploy.codebase.{codebase_name}')
+
 
 __all__ = ['MMCodebase', 'BaseTask', 'get_codebase_class']

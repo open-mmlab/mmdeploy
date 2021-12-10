@@ -2,7 +2,11 @@
 import torch
 import torch.nn as nn
 
+from mmdeploy.codebase import import_codebase
 from mmdeploy.codebase.mmseg.deploy import convert_syncbatchnorm
+from mmdeploy.utils import Codebase
+
+import_codebase(Codebase.MMSEG)
 
 
 def test_convert_syncbatchnorm():

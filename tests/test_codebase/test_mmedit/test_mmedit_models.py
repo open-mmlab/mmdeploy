@@ -7,8 +7,11 @@ import onnx
 import torch
 from mmedit.models.backbones.sr_backbones import SRCNN
 
+from mmdeploy.codebase import import_codebase
 from mmdeploy.core import RewriterContext
-from mmdeploy.utils import Backend, get_onnx_config
+from mmdeploy.utils import Backend, Codebase, get_onnx_config
+
+import_codebase(Codebase.MMEDIT)
 
 img = torch.rand(1, 3, 4, 4)
 model_file = tempfile.NamedTemporaryFile(suffix='.onnx').name

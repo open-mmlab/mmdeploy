@@ -9,9 +9,12 @@ import numpy as np
 import pytest
 import torch
 
-from mmdeploy.utils import Backend
+from mmdeploy.codebase import import_codebase
+from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import (WrapModel, backend_checker, check_backend,
                                  get_model_outputs, get_rewrite_outputs)
+
+import_codebase(Codebase.MMDET)
 
 
 def seed_everything(seed=1029):

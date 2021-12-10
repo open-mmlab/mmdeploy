@@ -3,8 +3,12 @@ import mmcv
 import numpy as np
 import torch
 
+from mmdeploy.codebase import import_codebase
 from mmdeploy.codebase.mmdet import (clip_bboxes, get_post_processing_params,
                                      pad_with_value)
+from mmdeploy.utils import Codebase
+
+import_codebase(Codebase.MMDET)
 
 
 def test_clip_bboxes():
