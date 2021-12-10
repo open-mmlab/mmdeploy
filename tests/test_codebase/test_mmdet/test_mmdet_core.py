@@ -86,8 +86,8 @@ def test_delta2bbox(backend_type: Backend, add_ctr_clamp: bool):
         return mmdet.core.bbox.coder.delta_xywh_bbox_coder.delta2bbox(
             *args, **kwargs)
 
-    rois = torch.rand(1, 5, 4)
-    deltas = torch.rand(1, 5, 4)
+    rois = torch.rand(5, 4)
+    deltas = torch.rand(5, 4)
     original_outputs = delta2bbox(rois, deltas, add_ctr_clamp=add_ctr_clamp)
 
     # wrap function to nn.Module, enable torch.onnx.export

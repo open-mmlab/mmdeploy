@@ -24,6 +24,7 @@ def __forward_impl(ctx, self, img, img_metas=None, **kwargs):
     if not is_dynamic_flag:
         img_shape = [int(val) for val in img_shape]
     img_metas['img_shape'] = img_shape
+    img_metas = [img_metas]
     return self.simple_test(img, img_metas, **kwargs)
 
 

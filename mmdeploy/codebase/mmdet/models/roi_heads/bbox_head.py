@@ -36,8 +36,15 @@ def bbox_head__forward(ctx, self, x):
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet.models.roi_heads.bbox_heads.bbox_head.BBoxHead.get_bboxes')
-def bbox_head__get_bboxes(ctx, self, rois, cls_score, bbox_pred, img_shape,
-                          cfg, **kwargs):
+def bbox_head__get_bboxes(ctx,
+                          self,
+                          rois,
+                          cls_score,
+                          bbox_pred,
+                          img_shape,
+                          scale_factor,
+                          rescale=False,
+                          cfg=None):
     """Rewrite `get_bboxes` of `bbox_head` for default backend.
 
     Transform network output for a batch into bbox predictions. Support

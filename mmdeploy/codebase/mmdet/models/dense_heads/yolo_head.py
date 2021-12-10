@@ -13,9 +13,10 @@ from mmdeploy.utils import Backend, get_backend, is_dynamic_shape
 def yolov3_head__get_bboxes(ctx,
                             self,
                             pred_maps,
-                            with_nms=True,
+                            img_metas,
                             cfg=None,
-                            **kwargs):
+                            rescale=False,
+                            with_nms=True):
     """Rewrite `get_bboxes` of `YOLOV3Head` for default backend.
 
     Rewrite this function to deploy model, transform network output for a
@@ -25,10 +26,15 @@ def yolov3_head__get_bboxes(ctx,
         ctx: Context that contains original meta information.
         self: Represent the instance of the original class.
         pred_maps (list[Tensor]): Raw predictions for a batch of images.
-        with_nms (bool): If True, do nms before return boxes.
-            Default: True.
+        img_metas (list[dict]):  Meta information of the image, e.g.,
+            image size, scaling factor, etc.
         cfg (mmcv.Config | None): Test / postprocessing configuration,
             if None, test_cfg would be used. Default: None.
+        rescale (bool): If True, return boxes in original image space.
+            Default: False.
+        with_nms (bool): If True, do nms before return boxes.
+            Default: True.
+
 
     Returns:
         If with_nms == True:

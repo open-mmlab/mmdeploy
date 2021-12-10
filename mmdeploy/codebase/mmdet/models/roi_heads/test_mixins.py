@@ -6,8 +6,13 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet.models.roi_heads.test_mixins.BBoxTestMixin.simple_test_bboxes')
-def bbox_test_mixin__simple_test_bboxes(ctx, self, x, img_metas, proposals,
-                                        rcnn_test_cfg, **kwargs):
+def bbox_test_mixin__simple_test_bboxes(ctx,
+                                        self,
+                                        x,
+                                        img_metas,
+                                        proposals,
+                                        rcnn_test_cfg,
+                                        rescale=False):
     """Rewrite `simple_test_bboxes` of `BBoxTestMixin` for default backend.
 
     1. This function eliminates the batch dimension to get forward bbox
@@ -26,6 +31,8 @@ def bbox_test_mixin__simple_test_bboxes(ctx, self, x, img_metas, proposals,
             Each has shape (num_proposals, 5), last dimension
             5 represent (x1, y1, x2, y2, score).
         rcnn_test_cfg (obj:`ConfigDict`): `test_cfg` of R-CNN.
+        rescale (bool): If True, return boxes in original image space.
+            Default: False.
 
     Returns:
         tuple[Tensor, Tensor]: (det_bboxes, det_labels), `det_bboxes` of
@@ -53,7 +60,13 @@ def bbox_test_mixin__simple_test_bboxes(ctx, self, x, img_metas, proposals,
     bbox_pred = bbox_pred.reshape(batch_size, num_proposals_per_img,
                                   bbox_pred.size(-1))
     det_bboxes, det_labels = self.bbox_head.get_bboxes(
-        rois, cls_score, bbox_pred, img_metas['img_shape'], cfg=rcnn_test_cfg)
+        rois,
+        cls_score,
+        bbox_pred,
+        img_metas[0]['img_shape'],
+        None,
+        rescale=rescale,
+        cfg=rcnn_test_cfg)
     return det_bboxes, det_labels
 
 
@@ -91,7 +104,7 @@ def mask_test_mixin__simple_test_mask(ctx, self, x, img_metas, det_bboxes,
     mask_rois = mask_rois.view(-1, 5)
     mask_results = self._mask_forward(x, mask_rois)
     mask_pred = mask_results['mask_pred']
-    max_shape = img_metas['img_shape']
+    max_shape = img_metas[0]['img_shape']
     num_det = det_bboxes.shape[1]
     det_bboxes = det_bboxes.reshape(-1, 4)
     det_labels = det_labels.reshape(-1)

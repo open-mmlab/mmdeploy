@@ -6,6 +6,47 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 
 @FUNCTION_REWRITER.register_rewriter(
+    func_name='mmdet.core.bbox.coder.delta_xywh_bbox_coder.'
+    'DeltaXYWHBBoxCoder.decode',
+    backend='default')
+def deltaxywhbboxcoder__decode(ctx,
+                               self,
+                               bboxes,
+                               pred_bboxes,
+                               max_shape=None,
+                               wh_ratio_clip=16 / 1000):
+    """Rewrite `decode` of `DeltaXYWHBBoxCoder` for default backend.
+
+    Rewrite this func to call `delta2bbox` directly.
+
+    Args:
+        bboxes (torch.Tensor): Basic boxes. Shape (B, N, 4) or (N, 4)
+        pred_bboxes (Tensor): Encoded offsets with respect to each roi.
+           Has shape (B, N, num_classes * 4) or (B, N, 4) or
+           (N, num_classes * 4) or (N, 4). Note N = num_anchors * W * H
+           when rois is a grid of anchors.Offset encoding follows [1]_.
+        max_shape (Sequence[int] or torch.Tensor or Sequence[
+           Sequence[int]],optional): Maximum bounds for boxes, specifies
+           (H, W, C) or (H, W). If bboxes shape is (B, N, 4), then
+           the max_shape should be a Sequence[Sequence[int]]
+           and the length of max_shape should also be B.
+        wh_ratio_clip (float, optional): The allowed ratio between
+            width and height.
+
+    Returns:
+        torch.Tensor: Decoded boxes.
+    """
+    assert pred_bboxes.size(0) == bboxes.size(0)
+    if pred_bboxes.ndim == 3:
+        assert pred_bboxes.size(1) == bboxes.size(1)
+    from mmdet.core.bbox.coder.delta_xywh_bbox_coder import delta2bbox
+    decoded_bboxes = delta2bbox(bboxes, pred_bboxes, self.means, self.stds,
+                                max_shape, wh_ratio_clip, self.clip_border,
+                                self.add_ctr_clamp, self.ctr_clamp)
+    return decoded_bboxes
+
+
+@FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.core.bbox.coder.delta_xywh_bbox_coder.delta2bbox',  # noqa
     backend='default')
 def delta2bbox(ctx,
@@ -25,32 +66,31 @@ def delta2bbox(ctx,
 
     Args:
         ctx (ContextCaller): The context with additional information.
-        rois (Tensor): Boxes to be transformed. Has shape (N, 4) or (B, N, 4)
-        deltas (Tensor): Encoded offsets with respect to each roi.
-            Has shape (B, N, num_classes * 4) or (B, N, 4) or
-            (N, num_classes * 4) or (N, 4). Note N = num_anchors * W * H
-            when rois is a grid of anchors.Offset encoding follows [1]_.
-        means (Sequence[float]): Denormalizing means for delta coordinates
+        rois (Tensor): Boxes to be transformed. Has shape (N, 4).
+        deltas (Tensor): Encoded offsets relative to each roi.
+            Has shape (N, num_classes * 4) or (N, 4). Note
+            N = num_base_anchors * W * H, when rois is a grid of
+            anchors. Offset encoding follows [1]_.
+        means (Sequence[float]): Denormalizing means for delta coordinates.
+            Default (0., 0., 0., 0.).
         stds (Sequence[float]): Denormalizing standard deviation for delta
-            coordinates
-        max_shape (Sequence[int] or torch.Tensor or Sequence[
-            Sequence[int]],optional): Maximum bounds for boxes, specifies
-            (H, W, C) or (H, W). If rois shape is (B, N, 4), then
-            the max_shape should be a Sequence[Sequence[int]]
-            and the length of max_shape should also be B.
-        wh_ratio_clip (float): Maximum aspect ratio for boxes.
+            coordinates. Default (1., 1., 1., 1.).
+        max_shape (tuple[int, int]): Maximum bounds for boxes, specifies
+           (H, W). Default None.
+        wh_ratio_clip (float): Maximum aspect ratio for boxes. Default
+            16 / 1000.
         clip_border (bool, optional): Whether clip the objects outside the
-            border of the image. Defaults to True.
-        add_ctr_clamp (bool): Whether to add center clamp, when added, the
-            predicted box is clamped is its center is too far away from
-            the original anchor's center. Only used by YOLOF. Default False.
+            border of the image. Default True.
+        add_ctr_clamp (bool): Whether to add center clamp. When set to True,
+            the center of the prediction bounding box will be clamped to
+            avoid being too far away from the center of the anchor.
+            Only used by YOLOF. Default False.
         ctr_clamp (int): the maximum pixel shift to clamp. Only used by YOLOF.
             Default 32.
 
     Return:
-        bboxes (Tensor): Boxes with shape (B, N, num_classes * 4) or (B, N, 4)
-            or (N, num_classes * 4) or (N, 4), where 4 represent tl_x, tl_y,
-            br_x, br_y.
+        bboxes (Tensor): Boxes with shape (N, num_classes * 4) or (N, 4),
+            where 4 represent tl_x, tl_y, br_x, br_y.
     """
     means = deltas.new_tensor(means).view(1,
                                           -1).repeat(1,

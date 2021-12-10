@@ -33,7 +33,7 @@ def yolox_head__get_bboxes(ctx,
         objectnesses (list[Tensor], Optional): Score factor for
             all scale level, each is a 4D-tensor, has shape
             (batch_size, 1, H, W).
-        img_metas (dict): Image meta info. Default None.
+        img_metas (list[dict]): Image meta info. Default None.
         cfg (mmcv.Config, Optional): Test / postprocessing configuration,
             if None, test_cfg would be used.  Default None.
         rescale (bool): If True, return boxes in original image space.
@@ -49,11 +49,12 @@ def yolox_head__get_bboxes(ctx,
             represents the class label of the corresponding box.
     """
     assert len(cls_scores) == len(bbox_preds) == len(objectnesses)
+    device = cls_scores[0].device
     cfg = self.test_cfg if cfg is None else cfg
     batch_size = bbox_preds[0].shape[0]
     featmap_sizes = [cls_score.shape[2:] for cls_score in cls_scores]
     mlvl_priors = self.prior_generator.grid_priors(
-        featmap_sizes, cls_scores[0].device, with_stride=True)
+        featmap_sizes, device=device, with_stride=True)
 
     flatten_cls_scores = [
         cls_score.permute(0, 2, 3, 1).reshape(batch_size, -1,

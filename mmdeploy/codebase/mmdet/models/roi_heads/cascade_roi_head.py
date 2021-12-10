@@ -50,7 +50,7 @@ def cascade_roi_head__simple_test(ctx, self, x, proposals, img_metas,
     # Add dummy batch index
     rois = torch.cat([rois.new_zeros(rois.shape[0], 1), rois], dim=-1)
 
-    max_shape = img_metas['img_shape']
+    max_shape = img_metas[0]['img_shape']
     ms_scores = []
     rcnn_test_cfg = self.test_cfg
 
@@ -77,7 +77,12 @@ def cascade_roi_head__simple_test(ctx, self, x, proposals, img_metas,
     bbox_pred = bbox_pred.reshape(batch_size, num_proposals_per_img, 4)
     rois = rois.reshape(batch_size, num_proposals_per_img, -1)
     det_bboxes, det_labels = self.bbox_head[-1].get_bboxes(
-        rois, cls_score, bbox_pred, max_shape, cfg=rcnn_test_cfg)
+        rois,
+        cls_score,
+        bbox_pred,
+        max_shape,
+        img_metas[0]['scale_factor'],
+        cfg=rcnn_test_cfg)
 
     if not self.with_mask:
         return det_bboxes, det_labels

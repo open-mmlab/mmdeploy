@@ -478,10 +478,14 @@ class PartitionTwoStageModel(End2EndModel):
                                       bbox_pred.size(-1))
 
         rcnn_test_cfg = self.model_cfg.model.test_cfg.rcnn
-        return self.bbox_head__get_bboxes(self.bbox_head, rois, cls_score,
-                                          bbox_pred,
-                                          img_metas[0][0]['img_shape'],
-                                          rcnn_test_cfg)
+        return self.bbox_head__get_bboxes(
+            self.bbox_head,
+            rois,
+            cls_score,
+            bbox_pred,
+            img_metas[0]['img_shape'],
+            img_metas[0]['scale_factor'],
+            cfg=rcnn_test_cfg)
 
     def forward_test(self, imgs: torch.Tensor, img_metas: Sequence[dict],
                      *args, **kwargs):

@@ -13,9 +13,11 @@ def rpn_head__get_bboxes(ctx,
                          self,
                          cls_scores,
                          bbox_preds,
-                         img_metas,
-                         with_nms=True,
+                         score_factors=None,
+                         img_metas=None,
                          cfg=None,
+                         rescale=False,
+                         with_nms=True,
                          **kwargs):
     """Rewrite `get_bboxes` of `RPNHead` for default backend.
 
@@ -29,13 +31,17 @@ def rpn_head__get_bboxes(ctx,
             with shape (N, num_anchors * num_classes, H, W).
         bbox_preds (list[Tensor]): Box energies / deltas for each scale
             level with shape (N, num_anchors * 4, H, W).
-        img_metas (dict):  Meta information of the image, e.g.,
+        score_factors (list[Tensor], Optional): Score factor for
+            all scale level, each is a 4D-tensor, has shape
+            (batch_size, num_priors * 1, H, W). Default None.
+        img_metas (list[dict]):  Meta information of the image, e.g.,
             image size, scaling factor, etc.
-        with_nms (bool): If True, do nms before return boxes.
-            Default: True.
         cfg (mmcv.Config | None): Test / postprocessing configuration,
             if None, test_cfg would be used. Default: None.
-
+        rescale (bool): If True, return boxes in original image space.
+            Default False.
+        with_nms (bool): If True, do nms before return boxes.
+            Default: True.
     Returns:
         If with_nms == True:
             tuple[Tensor, Tensor]: tuple[Tensor, Tensor]: (dets, labels),
@@ -114,7 +120,7 @@ def rpn_head__get_bboxes(ctx,
     batch_mlvl_bboxes = self.bbox_coder.decode(
         batch_mlvl_anchors,
         batch_mlvl_bboxes,
-        max_shape=img_metas['img_shape'])
+        max_shape=img_metas[0]['img_shape'])
     # ignore background class
     if not self.use_sigmoid_cls:
         batch_mlvl_scores = batch_mlvl_scores[..., :self.num_classes]
@@ -232,11 +238,10 @@ def rpn_head__get_bboxes__ncnn(ctx,
     batch_mlvl_bboxes = torch.cat(mlvl_valid_bboxes, dim=1)
     batch_mlvl_scores = torch.cat(mlvl_scores, dim=1)
     batch_mlvl_anchors = torch.cat(mlvl_valid_anchors, dim=1)
-
     batch_mlvl_bboxes = self.bbox_coder.decode(
         batch_mlvl_anchors,
         batch_mlvl_bboxes,
-        max_shape=img_metas['img_shape'])
+        max_shape=img_metas[0]['img_shape'])
     # ignore background class
     if not self.use_sigmoid_cls:
         batch_mlvl_scores = batch_mlvl_scores[..., :self.num_classes]

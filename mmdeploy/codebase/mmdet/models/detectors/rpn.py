@@ -14,7 +14,7 @@ def rpn__simple_test(ctx, self, img, img_metas, **kwargs):
         ctx (ContextCaller): The context with additional information.
         self: The instance of the original class.
         img (Tensor | List[Tensor]): Input image tensor(s).
-        img_meta (dict): Dict containing image's meta information
+        img_meta (list[dict]): Dict containing image's meta information
             such as `img_shape`.
 
     Returns:

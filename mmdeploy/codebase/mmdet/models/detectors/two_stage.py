@@ -40,7 +40,7 @@ def two_stage_detector__simple_test(ctx,
         ctx (ContextCaller): The context with additional information.
         self: The instance of the original class.
         img (Tensor | List[Tensor]): Input image tensor(s).
-        img_meta (dict): Dict containing image's meta information
+        img_meta (list[dict]): Dict containing image's meta information
             such as `img_shape`.
         proposals (List[Tensor]): Region proposals.
             Default is None.

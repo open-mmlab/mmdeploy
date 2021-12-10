@@ -91,16 +91,16 @@ The table below lists the models that are guaranteed to be exportable to other b
 | RetinaNet          | MMDetection      |      Y      |    Y     |  Y   |   Y   |    Y     | $MMDET_DIR/configs/retinanet/retinanet_r50_fpn_1x_coco.py                             |
 | Faster R-CNN       | MMDetection      |      Y      |    Y     |  Y   |   Y   |    Y     | $MMDET_DIR/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py                         |
 | YOLOv3             | MMDetection      |      Y      |    Y     |  Y   |   Y   |    Y     | $MMDET_DIR/configs/yolo/yolov3_d53_mstrain-608_273e_coco.py                           |
-| YOLOX              | MMDetection      |      Y      |    ?     |  ?   |   ?   |    Y     | $MMDET_DIR/configs/yolox/yolox_tiny_8x8_300e_coco.py                                  |
+| YOLOX              | MMDetection      |      Y      |    Y     |  ?   |   ?   |    Y     | $MMDET_DIR/configs/yolox/yolox_tiny_8x8_300e_coco.py                                  |
 | FCOS               | MMDetection      |      Y      |    Y     |  Y   |   N   |    Y     | $MMDET_DIR/configs/fcos/fcos_r50_caffe_fpn_gn-head_4x4_1x_coco.                       |
 | FSAF               | MMDetection      |      Y      |    Y     |  Y   |   Y   |    Y     | $MMDET_DIR/configs/fsaf/fsaf_r50_fpn_1x_coco.py                                       |
 | Mask R-CNN         | MMDetection      |      Y      |    Y     |  N   |   Y   |    Y     | $MMDET_DIR/configs/mask_rcnn/mask_rcnn_r50_fpn_1x_coco.py                             |
 | SSD                | MMDetection      |      Y      |    Y     |  Y   |   Y   |    Y     | $MMDET_DIR/configs/ssd/ssd300_coco.py                                                 |
 | FoveaBox           | MMDetection      |      Y      |    ?     |  ?   |   ?   |    Y     | $MMDET_DIR/configs/foveabox/fovea_r50_fpn_4x4_1x_coco.py                              |
-| ATSS               | MMDetection      |      Y      |    ?     |  ?   |   ?   |    Y     | $MMDET_DIR/configs/atss/atss_r50_fpn_1x_coco.py                                       |
+| ATSS               | MMDetection      |      Y      |    Y     |  ?   |   ?   |    Y     | $MMDET_DIR/configs/atss/atss_r50_fpn_1x_coco.py                                       |
 | Cascade R-CNN      | MMDetection      |      Y      |    ?     |  ?   |   Y   |    Y     | $MMDET_DIR/configs/cascade_rcnn/cascade_rcnn_r50_fpn_1x_coco.py                       |
 | Cascade Mask R-CNN | MMDetection      |      Y      |    ?     |  ?   |   Y   |    Y     | $MMDET_DIR/configs/cascade_rcnn/cascade_mask_rcnn_r50_fpn_1x_coco.py                  |
-| VFNet              | MMDetection      |      Y      |    ?     |  ?   |   ?   |    Y     | $MMDET_DIR/configs/vfnet/vfnet_r50_fpn_1x_coco.py                                     |
+| VFNet              | MMDetection      |      N      |    ?     |  ?   |   ?   |    Y     | $MMDET_DIR/configs/vfnet/vfnet_r50_fpn_1x_coco.py                                     |
 | ResNet             | MMClassification |      Y      |    Y     |  Y   |   Y   |    N     | $MMCLS_DIR/configs/resnet/resnet18_b32x8_imagenet.py                                  |
 | ResNeXt            | MMClassification |      Y      |    Y     |  Y   |   Y   |    N     | $MMCLS_DIR/configs/resnext/resnext50_32x4d_b32x8_imagenet.py                          |
 | SE-ResNet          | MMClassification |      Y      |    Y     |  Y   |   Y   |    N     | $MMCLS_DIR/configs/seresnet/seresnet50_b32x8_imagenet.py                              |
@@ -116,6 +116,7 @@ The table below lists the models that are guaranteed to be exportable to other b
 | ESRGAN             | MMEditing        |      Y      |    Y     |  N   |   Y   |    N     | $MMSEG_DIR/configs/restorers/esrgan/esrgan_psnr_x4c64b23g32_g1_1000k_div2k.py         |
 | DBNet              | MMOCR            |      Y      |    Y     |  Y   |   Y   |    Y     | $MMOCR_DIR/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py                    |
 | CRNN               | MMOCR            |      Y      |    Y     |  Y   |   N   |    N     | $MMOCR_DIR/configs/textrecog/tps/crnn_academic_dataset.py                             |
+
 
 ### Reminders
 

@@ -1,5 +1,5 @@
 mmcls>=0.15.0
-mmdet<=2.17.0
+mmdet>=2.19.0
 mmedit
 mmocr>=0.3.0
 mmsegmentation

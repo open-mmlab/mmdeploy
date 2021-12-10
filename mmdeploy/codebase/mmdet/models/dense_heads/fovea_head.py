@@ -11,9 +11,11 @@ def fovea_head__get_bboxes(ctx,
                            self,
                            cls_scores,
                            bbox_preds,
-                           img_metas,
+                           score_factors=None,
+                           img_metas=None,
                            cfg=None,
-                           rescale=None):
+                           rescale=None,
+                           **kwargs):
     """Rewrite `get_bboxes` of `FoveaHead` for default backend.
 
     Rewrite this function to deploy model, transform network output for a
@@ -26,7 +28,10 @@ def fovea_head__get_bboxes(ctx,
             with shape (N, num_anchors * num_classes, H, W).
         bbox_preds (list[Tensor]): Box energies / deltas for each scale
             level with shape (N, num_anchors * 4, H, W).
-        img_metas (dict):  Meta information of the image, e.g.,
+        score_factors (list[Tensor], Optional): Score factor for
+            all scale level, each is a 4D-tensor, has shape
+            (batch_size, num_priors * 1, H, W). Default None.
+        img_metas (list[dict]):  Meta information of the image, e.g.,
             image size, scaling factor, etc.
         cfg (mmcv.Config | None): Test / postprocessing configuration,
             if None, test_cfg would be used. Default: None.
@@ -46,7 +51,7 @@ def fovea_head__get_bboxes(ctx,
         featmap_sizes, bbox_preds[0].dtype, bbox_preds[0].device, flatten=True)
     cls_score_list = [cls_scores[i].detach() for i in range(num_levels)]
     bbox_pred_list = [bbox_preds[i].detach() for i in range(num_levels)]
-    img_shape = img_metas['img_shape']
+    img_shape = img_metas[0]['img_shape']
     batch_size = cls_scores[0].shape[0]
 
     det_bboxes = []
