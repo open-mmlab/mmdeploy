@@ -106,7 +106,7 @@ def main():
 
     device_id = parse_device_id(args.device)
 
-    model = MMDataParallel(model, device_ids=[device_id])
+    model = MMDataParallel(model, device_ids=[0])
     # The whole dataset test wrapped a MMDataParallel class outside the module.
     # As mmcls.apis.test.py single_gpu_test defined, the MMDataParallel needs
     # a 'CLASSES' attribute. So we ensure the MMDataParallel class has the same
