@@ -61,7 +61,10 @@ class End2EndModel(BaseBackendModel):
             list: A list contains predictions.
         """
 
-        input_img = img[0].contiguous()
+        if isinstance(img, list):
+            input_img = img[0].contiguous()
+        else:
+            input_img = img.contiguous()
         outputs = self.forward_test(input_img, *args, **kwargs)
 
         return list(outputs)

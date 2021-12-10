@@ -123,6 +123,7 @@ class MMClassification(MMCodebase):
                         data_loader: DataLoader,
                         show: bool = False,
                         out_dir: Optional[str] = None,
+                        win_name: str = '',
                         **kwargs) -> List:
         """Run test with single gpu.
 
@@ -132,10 +133,12 @@ class MMClassification(MMCodebase):
             show (bool): Specifying whether to show plotted results.
                 Default: False.
             out_dir (str): A directory to save results, Default: None.
+            win_name (str): The name of windows, Default: ''.
 
         Returns:
             list: The prediction results.
         """
         from mmcls.apis import single_gpu_test
-        outputs = single_gpu_test(model, data_loader, show, out_dir, **kwargs)
+        outputs = single_gpu_test(
+            model, data_loader, show, out_dir, win_name=win_name, **kwargs)
         return outputs
