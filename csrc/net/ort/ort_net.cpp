@@ -174,7 +174,7 @@ Result<void> OrtNet::Forward() {
 
 class OrtNetCreator : public Creator<Net> {
  public:
-  const char* GetName() const override { return "ort"; }
+  const char* GetName() const override { return "onnxruntime"; }
   int GetVersion() const override { return 0; }
   std::unique_ptr<Net> Create(const Value& args) override {
     try {

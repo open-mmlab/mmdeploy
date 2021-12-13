@@ -1,16 +1,11 @@
 {
   "version": "0.1.0",
-  "task": {
-    "name": "classification",
-    "codebase": "mmclassification",
-    "version": "0.18.0"
-  },
   "models": [
     {
       "name": "resnet",
       "net": "end2end.onnx",
-      "weights": "end2end.onnx",
-      "backend": "ort",
+      "weights": "",
+      "backend": "onnxruntime",
       "precision": "FP32",
       "batch_size": 1,
       "dynamic_shape": true
