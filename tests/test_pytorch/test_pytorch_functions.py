@@ -17,16 +17,13 @@ deploy_cfg_ncnn = mmcv.Config(
 
 
 def get_trt_config(output_names, shape):
-    import tensorrt
     deploy_cfg_tensorrt = mmcv.Config(
         dict(
             onnx_config=dict(input_shape=None, output_names=output_names),
             backend_config=dict(
                 type='tensorrt',
                 common_config=dict(
-                    fp16_mode=False,
-                    log_level=tensorrt.Logger.INFO,
-                    max_workspace_size=1 << 20),
+                    fp16_mode=False, max_workspace_size=1 << 20),
                 model_inputs=[
                     dict(
                         input_shapes=dict(

@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import logging
 from typing import Dict, Sequence, Union
 
 import onnx
@@ -180,3 +181,21 @@ def torch_device_from_trt(device: trt.TensorLocation):
         return torch.device('cpu')
     else:
         return TypeError(f'{device} is not supported by torch')
+
+
+def get_trt_log_level() -> trt.Logger.Severity:
+    """Get tensorrt log level from root logger.
+
+    Returns:
+        level (tensorrt.Logger.Severity):
+        Logging level of tensorrt.Logger.
+    """
+    level = logging.getLogger().level
+    trt_log_level = trt.Logger.INFO
+    if level == logging.ERROR:
+        trt_log_level = trt.Logger.ERROR
+    elif level == logging.WARNING:
+        trt_log_level = trt.Logger.WARNING
+    elif level == logging.DEBUG:
+        trt_log_level = trt.Logger.VERBOSE
+    return trt_log_level

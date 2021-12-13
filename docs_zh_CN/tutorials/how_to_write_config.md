@@ -133,7 +133,7 @@ partition_config = dict(type='single_stage', apply_marks=True)
 backend_config = dict(
     type='tensorrt',
     common_config=dict(
-        fp16_mode=False, log_level=trt.Logger.INFO, max_workspace_size=1 << 30)
+        fp16_mode=False, max_workspace_size=1 << 30)
     model_inputs=[
         dict(
             input_shapes=dict(
@@ -149,7 +149,6 @@ backend_config = dict(
 这里我们展示一个完整的 mmcls 模型部署在 TensorRT 的部署配置示例。
 
 ```python
-import tensorrt as trt
 
 codebase_config = dict(type='mmcls', task='Classification')
 
@@ -157,7 +156,6 @@ backend_config = dict(
     type='tensorrt',
     common_config=dict(
         fp16_mode=False,
-        log_level=trt.Logger.INFO,
         max_workspace_size=1 << 30),
     model_inputs=[
         dict(

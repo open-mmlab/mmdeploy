@@ -29,15 +29,12 @@ test_model = TestModel().eval().cuda()
 
 
 def get_deploy_cfg():
-    import tensorrt as trt
     deploy_cfg = mmcv.Config(
         dict(
             backend_config=dict(
                 type='tensorrt',
                 common_config=dict(
-                    fp16_mode=False,
-                    log_level=trt.Logger.INFO,
-                    max_workspace_size=1 << 30),
+                    fp16_mode=False, max_workspace_size=1 << 30),
                 model_inputs=[
                     dict(
                         input_shapes=dict(

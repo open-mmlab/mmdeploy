@@ -4,11 +4,10 @@ from typing import Union
 
 import mmcv
 import onnx
-import tensorrt as trt
 
 from mmdeploy.utils import (get_calib_filename, get_common_config,
                             get_model_inputs, load_config, parse_device_id)
-from .utils import create_trt_engine, save_trt_engine
+from .utils import create_trt_engine, get_trt_log_level, save_trt_engine
 
 
 def onnx2tensorrt(work_dir: str,
@@ -57,7 +56,7 @@ def onnx2tensorrt(work_dir: str,
     engine = create_trt_engine(
         onnx_model,
         input_shapes=final_params['input_shapes'],
-        log_level=final_params.get('log_level', trt.Logger.WARNING),
+        log_level=get_trt_log_level(),
         fp16_mode=final_params.get('fp16_mode', False),
         int8_mode=final_params.get('int8_mode', False),
         int8_param=int8_param,

@@ -59,12 +59,11 @@ The backends in MMDeploy must support the ONNX. The backend loads the ".onnx" fi
     **Example:**
 
     ```Python
-    import tensorrt as trt
 
     backend_config = dict(
         type='tensorrt',
         common_config=dict(
-            fp16_mode=False, log_level=trt.Logger.INFO, max_workspace_size=0))
+            fp16_mode=False, max_workspace_size=0))
     ```
 
     After possessing a base backend config file, you can easily construct a complete deploy config through inheritance. Please refer to our [config tutorial](how_to_write_config.md) for more details. Here is an example:
