@@ -673,7 +673,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](doc
     <td class="tg-0lax">model config file</td>
   </tr>
   <tr>
-    <td class="tg-nrix" rowspan="3">DBNet</td>
+    <td class="tg-nrix" rowspan="3">DBNet*</td>
     <td class="tg-nrix" rowspan="3">TextDetection</td>
     <td class="tg-baqh">recall</td>
     <td class="tg-baqh">0.7310</td>
@@ -823,6 +823,8 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](doc
 
 
 ### Notes
-As some datasets contains images with various resolutions in codebase like MMDet. The speed benchmark is gained through static configs in MMDeploy, while the performance benchmark is gained through dynamic ones.
+- As some datasets contains images with various resolutions in codebase like MMDet. The speed benchmark is gained through static configs in MMDeploy, while the performance benchmark is gained through dynamic ones.
 
-Some int8 performance benchmarks of tensorrt require nvidia cards with tensor core, or the performance would drop heavily.
+- Some int8 performance benchmarks of TensorRT require nvidia cards with tensor core, or the performance would drop heavily.
+
+- DBNet uses the interpolate mode `nearest` in the neck of the model, which TensorRT-7 applies quite different strategy from pytorch. To make the repository compatible with TensorRT-7, we rewrite the neck to use the interpolate mode `bilinear` which improves final detection performance. To get the matched performance with Pytorch, TensorRT-8+ is recommended, which the interpolate methods are all the same as Pytorch.
