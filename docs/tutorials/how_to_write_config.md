@@ -132,7 +132,7 @@ The backend config is mainly used to specify the backend on which model runs and
 backend_config = dict(
     type='tensorrt',
     common_config=dict(
-        fp16_mode=False, log_level=trt.Logger.INFO, max_workspace_size=1 << 30),
+        fp16_mode=False, max_workspace_size=1 << 30),
     model_inputs=[
         dict(
             input_shapes=dict(
@@ -148,7 +148,6 @@ backend_config = dict(
 Here we provide a complete deployment config from mmcls on TensorRT.
 
 ```python
-import tensorrt as trt
 
 codebase_config = dict(type='mmcls', task='Classification')
 
@@ -156,7 +155,6 @@ backend_config = dict(
     type='tensorrt',
     common_config=dict(
         fp16_mode=False,
-        log_level=trt.Logger.INFO,
         max_workspace_size=1 << 30),
     model_inputs=[
         dict(

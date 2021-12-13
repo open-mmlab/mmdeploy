@@ -27,8 +27,7 @@ def import_codebase(codebase: Codebase):
             raise ImportError(
                 f'{lib} has not been installed. '
                 f'Import mmdeploy.codebase.{codebase_name} failed.')
-
-    importlib.import_module(f'mmdeploy.codebase.{codebase_name}')
+        importlib.import_module(f'mmdeploy.codebase.{lib}')
 
 
 __all__ = ['MMCodebase', 'BaseTask', 'get_codebase_class']

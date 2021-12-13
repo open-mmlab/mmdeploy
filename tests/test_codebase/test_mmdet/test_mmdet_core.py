@@ -14,8 +14,6 @@ import_codebase(Codebase.MMDET)
 
 @backend_checker(Backend.TENSORRT)
 def test_multiclass_nms_static():
-
-    import tensorrt as trt
     from mmdeploy.codebase.mmdet.core import multiclass_nms
     deploy_cfg = mmcv.Config(
         dict(
@@ -23,9 +21,7 @@ def test_multiclass_nms_static():
             backend_config=dict(
                 type='tensorrt',
                 common_config=dict(
-                    fp16_mode=False,
-                    log_level=trt.Logger.INFO,
-                    max_workspace_size=1 << 20),
+                    fp16_mode=False, max_workspace_size=1 << 20),
                 model_inputs=[
                     dict(
                         input_shapes=dict(
