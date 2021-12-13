@@ -1,11 +1,13 @@
 // Copyright (c) OpenMMLab. All rights reserved.
-#include "trt_scatternd.hpp"
-
+#include "NvInferVersion.h"
+// ScatterND is supported since TensorRT8
+#if NV_TENSORRT_MAJOR <= 7
 #include <assert.h>
 #include <stdio.h>
 
 #include <chrono>
 
+#include "trt_scatternd.hpp"
 #include "trt_scatternd_kernel.hpp"
 #include "trt_serialize.hpp"
 
@@ -151,3 +153,4 @@ nvinfer1::IPluginV2 *TRTScatterNDCreator::deserializePlugin(const char *name,
 
 REGISTER_TENSORRT_PLUGIN(TRTScatterNDCreator);
 }  // namespace mmdeploy
+#endif
