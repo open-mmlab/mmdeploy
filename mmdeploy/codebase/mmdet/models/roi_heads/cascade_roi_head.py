@@ -76,13 +76,9 @@ def cascade_roi_head__simple_test(ctx, self, x, proposals, img_metas,
     cls_score = sum(ms_scores) / float(len(ms_scores))
     bbox_pred = bbox_pred.reshape(batch_size, num_proposals_per_img, 4)
     rois = rois.reshape(batch_size, num_proposals_per_img, -1)
+    scale_factor = img_metas[0].get('scale_factor', None)
     det_bboxes, det_labels = self.bbox_head[-1].get_bboxes(
-        rois,
-        cls_score,
-        bbox_pred,
-        max_shape,
-        img_metas[0]['scale_factor'],
-        cfg=rcnn_test_cfg)
+        rois, cls_score, bbox_pred, max_shape, scale_factor, cfg=rcnn_test_cfg)
 
     if not self.with_mask:
         return det_bboxes, det_labels
