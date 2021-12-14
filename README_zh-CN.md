@@ -36,7 +36,7 @@ MMDeploy 是一个开源深度学习模型部署工具箱，它是 [OpenMMLab](h
 
 - [x] ONNX Runtime
 - [x] TensorRT
-- [x] PPL
+- [x] PPLNN
 - [x] ncnn
 
 ## 安装

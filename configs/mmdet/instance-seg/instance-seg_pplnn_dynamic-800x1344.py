@@ -1,4 +1,6 @@
-_base_ = ['../_base_/base_dynamic.py', '../../_base_/backends/ppl.py']
+_base_ = [
+    '../_base_/base_instance-seg_dynamic.py', '../../_base_/backends/pplnn.py'
+]
 
 onnx_config = dict(input_shape=None)
 

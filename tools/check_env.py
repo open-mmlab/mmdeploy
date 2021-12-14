@@ -47,8 +47,8 @@ def check_backend():
     logging.info(
         f'ncnn: {ncnn_version} ops_is_avaliable : {ncnn_apis.is_available()}')
 
-    import mmdeploy.apis.ppl as ppl_apis
-    logging.info(f'ppl_is_avaliable: {ppl_apis.is_available()}')
+    import mmdeploy.apis.pplnn as pplnn_apis
+    logging.info(f'pplnn_is_avaliable: {pplnn_apis.is_available()}')
 
     import mmdeploy.apis.openvino as openvino_apis
     logging.info(f'openvino_is_avaliable: {openvino_apis.is_available()}')

@@ -7,30 +7,30 @@ from mmdeploy.utils.device import parse_cuda_device_id
 from .wrapper import register_engines
 
 
-def onnx2ppl(algo_file: str,
-             onnx_model: str,
-             device: str = 'cuda:0',
-             input_shapes: Optional[Sequence[Sequence[int]]] = None,
-             **kwargs):
-    """Convert ONNX to PPL.
+def onnx2pplnn(algo_file: str,
+               onnx_model: str,
+               device: str = 'cuda:0',
+               input_shapes: Optional[Sequence[Sequence[int]]] = None,
+               **kwargs):
+    """Convert ONNX to PPLNN.
 
-    PPL is capable of optimizing onnx model. The optimized algorithm is saved
+    PPLNN is capable of optimizing onnx model. The optimized algorithm is saved
     into `algo_file` in json format. Note that `input_shapes` actually require
     multiple shapes of inputs in its original design. But in the pipeline of
     our codebase, we only pass one input shape which can be modified by users'
     own preferences.
 
     Args:
-        algo_file (str): File path to save PPL optimization algorithm.
+        algo_file (str): File path to save PPLNN optimization algorithm.
         onnx_model (str): Input onnx model.
         device (str): A string specifying cuda device, defaults to 'cuda:0'.
-        input_shapes (Sequence[Sequence[int]] | None): shapes for PPL
+        input_shapes (Sequence[Sequence[int]] | None): shapes for PPLNN
             optimization, default to None.
 
     Examples:
-        >>> from mmdeploy.apis.ppl import onnx2ppl
+        >>> from mmdeploy.apis.pplnn import onnx2pplnn
         >>>
-        >>> onnx2ppl(algo_file = 'example.json', onnx_model = 'example.onnx')
+        >>> onnx2pplnn(algo_file = 'example.json', onnx_model = 'example.onnx')
     """
     if device == 'cpu':
         device_id = -1
@@ -39,7 +39,8 @@ def onnx2ppl(algo_file: str,
         '`cpu` or `cuda`'
         device_id = parse_cuda_device_id(device)
     if input_shapes is None:
-        input_shapes = [[1, 3, 224, 224]]  # PPL default shape for optimization
+        input_shapes = [[1, 3, 224,
+                         224]]  # PPLNN default shape for optimization
 
     engines = register_engines(
         device_id,

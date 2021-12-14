@@ -18,7 +18,7 @@ apis/ncnn
 .. automodule:: mmdeploy.apis.ncnn
     :members:
 
-apis/ppl
+apis/pplnn
 --------
-.. automodule:: mmdeploy.apis.ppl
+.. automodule:: mmdeploy.apis.pplnn
     :members:
