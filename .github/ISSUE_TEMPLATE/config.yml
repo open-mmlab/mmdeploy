@@ -1,0 +1,6 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: Common Issues
+    url: https://github.com/grimoire/deploy_prototype/blob/master/docs/faq.md
+    about: Check if your issue already has solutions
