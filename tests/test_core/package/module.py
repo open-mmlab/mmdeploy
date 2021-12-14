@@ -7,3 +7,7 @@ class C:
 
     def method(self):
         return 1
+
+
+class C2(C):
+    pass
