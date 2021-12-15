@@ -84,3 +84,24 @@ python tools/onnx2tensorrt.py \
 - `--device-id` : The device index, default to `0`.
 - `--calib-file` : The calibration data used to calibrate engine to int8.
 - `--log-level` : To set log level which in `'CRITICAL', 'FATAL', 'ERROR', 'WARN', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'`. If not specified, it will be set to `INFO`.
+
+## onnx2ncnn
+
+This tool helps to convert an `ONNX` model to an `ncnn` model.
+
+### Usage
+
+```bash
+python tools/onnx2ncnn.py \
+    ${ONNX_PATH} \
+    ${NCNN_PARAM} \
+    ${NCNN_BIN} \
+    --log-level INFO
+```
+
+### Description of all arguments
+
+- `onnx_path` : The path of the `ONNX` model to convert from.
+- `output_param` : The converted `ncnn` param path.
+- `output_bin` : The converted `ncnn` bin path.
+- `--log-level` : To set log level which in `'CRITICAL', 'FATAL', 'ERROR', 'WARN', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'`. If not specified, it will be set to `INFO`.
