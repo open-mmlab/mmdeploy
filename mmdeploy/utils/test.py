@@ -34,8 +34,8 @@ def backend_checker(backend: Backend, require_plugin: bool = False):
         from mmdeploy.apis.tensorrt import is_available
         if require_plugin:
             from mmdeploy.apis.tensorrt import is_plugin_available
-    elif backend == Backend.PPL:
-        from mmdeploy.apis.ppl import is_available
+    elif backend == Backend.PPLNN:
+        from mmdeploy.apis.pplnn import is_available
     elif backend == Backend.NCNN:
         from mmdeploy.apis.ncnn import is_available
         if require_plugin:
@@ -82,8 +82,8 @@ def check_backend(backend: Backend, require_plugin: bool = False):
         from mmdeploy.apis.tensorrt import is_available
         if require_plugin:
             from mmdeploy.apis.tensorrt import is_plugin_available
-    elif backend == Backend.PPL:
-        from mmdeploy.apis.ppl import is_available
+    elif backend == Backend.PPLNN:
+        from mmdeploy.apis.pplnn import is_available
     elif backend == Backend.NCNN:
         from mmdeploy.apis.ncnn import is_available
         if require_plugin:

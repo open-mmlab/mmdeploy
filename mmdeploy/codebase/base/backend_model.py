@@ -40,9 +40,9 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
             from mmdeploy.backend.tensorrt import TRTWrapper
             return TRTWrapper(
                 engine=backend_files[0], output_names=output_names)
-        elif backend == Backend.PPL:
-            from mmdeploy.backend.ppl import PPLWrapper
-            return PPLWrapper(
+        elif backend == Backend.PPLNN:
+            from mmdeploy.backend.pplnn import PPLNNWrapper
+            return PPLNNWrapper(
                 onnx_file=backend_files[0],
                 algo_file=backend_files[1],
                 device=device,

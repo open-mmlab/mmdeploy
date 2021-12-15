@@ -20,7 +20,7 @@ def register_engines(device_id: int,
                      input_shapes: Sequence[Sequence[int]] = None,
                      export_algo_file: str = None,
                      import_algo_file: str = None) -> List[pplnn.Engine]:
-    """Register engines for ppl runtime.
+    """Register engines for pplnn runtime.
 
     Args:
         device_id (int): Specifying device index. `-1` for cpu.
@@ -28,12 +28,13 @@ def register_engines(device_id: int,
             Defaults to `False`.
         quick_select (bool): Whether to use default algorithms.
             Defaults to `False`.
-        input_shapes (Sequence[Sequence[int]]): shapes for PPL optimization.
-        export_algo_file (str): File path for exporting PPL optimization file.
-        import_algo_file (str): File path for loading PPL optimization file.
+        input_shapes (Sequence[Sequence[int]]): shapes for PPLNN optimization.
+        export_algo_file (str): File path for exporting PPLNN optimization
+            file.
+        import_algo_file (str): File path for loading PPLNN optimization file.
 
     Returns:
-        list[pplnn.Engine]: A list of registered ppl engines.
+        list[pplnn.Engine]: A list of registered pplnn engines.
     """
     engines = []
     if device_id == -1:
@@ -101,21 +102,21 @@ def register_engines(device_id: int,
     return engines
 
 
-@BACKEND_WRAPPER.register_module(Backend.PPL.value)
-class PPLWrapper(BaseWrapper):
-    """PPL wrapper for inference.
+@BACKEND_WRAPPER.register_module(Backend.PPLNN.value)
+class PPLNNWrapper(BaseWrapper):
+    """PPLNN wrapper for inference.
 
     Args:
         onnx_file (str): Path of input ONNX model file.
-        algo_file (str): Path of PPL algorithm file.
+        algo_file (str): Path of PPLNN algorithm file.
         device_id (int): Device id to put model.
 
     Examples:
-        >>> from mmdeploy.backend.ppl import PPLWrapper
+        >>> from mmdeploy.backend.pplnn import PPLNNWrapper
         >>> import torch
         >>>
         >>> onnx_file = 'model.onnx'
-        >>> model = PPLWrapper(onnx_file, 'end2end.json', 0)
+        >>> model = PPLNNWrapper(onnx_file, 'end2end.json', 0)
         >>> inputs = dict(input=torch.randn(1, 3, 224, 224))
         >>> outputs = model(inputs)
         >>> print(outputs)
@@ -129,7 +130,7 @@ class PPLWrapper(BaseWrapper):
                  **kwargs):
 
         # enable quick select by default to speed up pipeline
-        # TODO: open it to users after ppl supports saving serialized models
+        # TODO: open it to users after pplnn supports saving serialized models
 
         # TODO: assert device is gpu
         device_id = parse_device_id(device)
@@ -174,7 +175,7 @@ class PPLWrapper(BaseWrapper):
         for name, input_tensor in inputs.items():
             input_tensor = input_tensor.contiguous()
             self.inputs[name].ConvertFromHost(input_tensor.cpu().numpy())
-        self.__ppl_execute()
+        self.__pplnn_execute()
         outputs = {}
         for i in range(self.runtime.GetOutputCount()):
             out_tensor = self.runtime.GetOutputTensor(i).ConvertToHost()
@@ -183,8 +184,8 @@ class PPLWrapper(BaseWrapper):
         return outputs
 
     @TimeCounter.count_time()
-    def __ppl_execute(self):
-        """Run inference with PPL."""
+    def __pplnn_execute(self):
+        """Run inference with PPLNN."""
         status = self.runtime.Run()
         assert status == pplcommon.RC_SUCCESS, 'Run() failed: ' + \
             pplcommon.GetRetCodeStr(status)

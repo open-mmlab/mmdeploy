@@ -3,14 +3,19 @@ import logging
 from typing import Callable, Dict
 
 from mmdeploy.utils.constants import Backend
-from .rewriter_utils import ContextCaller, RewriterRegistry, eval_with_import
+from .rewriter_utils import ContextCaller, RewriterRegistry, import_function
 
 
-def _set_func(origin_func_name: str, rewrite_func: Callable):
-    """Rewrite a function by executing a python statement."""
+def _set_func(origin_func_path: str, rewrite_func: Callable):
+    """Rewrite a function by executing a python statement.
+
+    Args:
+        origin_func_path (str): The path to origin function.
+        rewrite_func (Callable): The new function instance.
+    """
 
     # Import necessary module
-    split_path = origin_func_name.split('.')
+    split_path = origin_func_path.split('.')
     for i in range(len(split_path), 0, -1):
         try:
             exec('import {}'.format('.'.join(split_path[:i])))
@@ -18,7 +23,25 @@ def _set_func(origin_func_name: str, rewrite_func: Callable):
         except Exception:
             continue
     # Assign function
-    exec(f'{origin_func_name} = rewrite_func')
+    exec(f'{origin_func_path} = rewrite_func')
+
+
+def _del_func(path: str):
+    """Delete a function that is denoted by a path.
+
+    Args:
+        path (str): The path to evaluate.
+    """
+
+    split_path = path.split('.')
+    for i in range(len(split_path), 0, -1):
+        try:
+            exec('import {}'.format('.'.join(split_path[:i])))
+            break
+        except Exception:
+            continue
+
+    exec(f'del {path}')
 
 
 class FunctionRewriter:
@@ -72,23 +95,38 @@ class FunctionRewriter:
         functions_records = self._registry.get_records(backend)
 
         self._origin_functions = list()
+        self._additional_functions = list()
         new_functions = list()
-        for function_name, record_dict in functions_records:
+        for function_path, record_dict in functions_records:
 
             # Check if the origin function exists
             try:
-                origin_func = eval_with_import(function_name)
+                origin_func, origin_class = import_function(function_path)
             except Exception:
                 origin_func = None
                 logging.warning(
-                    f'Can not find {function_name}, function rewrite will '
+                    f'Can not find {function_path}, function rewrite will '
                     'not be applied')
 
             # Only rewrite functions that exist
             if origin_func is not None:
 
-                # Save origin function
-                self._origin_functions.append((function_name, origin_func))
+                is_addition_function = False
+                if origin_class is not None:
+                    function_name = function_path.split('.')[-1]
+                    try:
+                        origin_class.__getattribute__(origin_class,
+                                                      function_name)
+                    except Exception:
+                        # The function is a method and it is derived from base
+                        # class.
+                        is_addition_function = True
+
+                if is_addition_function:
+                    self._additional_functions.append(function_path)
+                else:
+                    # Save origin function
+                    self._origin_functions.append((function_path, origin_func))
 
                 # Create context_caller
                 rewrite_function = record_dict['_object']
@@ -99,13 +137,15 @@ class FunctionRewriter:
                     **extra_kwargs).get_wrapped_caller()
 
                 # Cache new the function to avoid homonymic bug
-                new_functions.append((function_name, context_caller))
+                new_functions.append((function_path, context_caller))
 
-        for function_name, new_function in new_functions:
+        for function_path, new_function in new_functions:
             # Rewrite functions
-            _set_func(function_name, new_function)
+            _set_func(function_path, new_function)
 
     def exit(self):
         """Recover the function rewrite."""
-        for func_name, func in self._origin_functions:
-            _set_func(func_name, func)
+        for func_path, func in self._origin_functions:
+            _set_func(func_path, func)
+        for func_path in self._additional_functions:
+            _del_func(func_path)

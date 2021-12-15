@@ -61,10 +61,10 @@ def onnx2backend(backend, onnx_file):
         return backend_file
     elif backend == Backend.ONNXRUNTIME:
         return onnx_file
-    elif backend == Backend.PPL:
-        from mmdeploy.apis.ppl import onnx2ppl
+    elif backend == Backend.PPLNN:
+        from mmdeploy.apis.pplnn import onnx2pplnn
         algo_file = tempfile.NamedTemporaryFile(suffix='.json').name
-        onnx2ppl(algo_file=algo_file, onnx_model=onnx_file)
+        onnx2pplnn(algo_file=algo_file, onnx_model=onnx_file)
         return onnx_file, algo_file
     elif backend == Backend.NCNN:
         from mmdeploy.backend.ncnn.init_plugins import get_onnx2ncnn_path
@@ -94,11 +94,11 @@ def create_wrapper(backend, model_files):
         from mmdeploy.backend.onnxruntime import ORTWrapper
         ort_model = ORTWrapper(model_files, 'cpu', output_names)
         return ort_model
-    elif backend == Backend.PPL:
-        from mmdeploy.backend.ppl import PPLWrapper
+    elif backend == Backend.PPLNN:
+        from mmdeploy.backend.pplnn import PPLNNWrapper
         onnx_file, algo_file = model_files
-        ppl_model = PPLWrapper(onnx_file, algo_file, 'cpu', output_names)
-        return ppl_model
+        pplnn_model = PPLNNWrapper(onnx_file, algo_file, 'cpu', output_names)
+        return pplnn_model
     elif backend == Backend.NCNN:
         from mmdeploy.backend.ncnn import NCNNWrapper
         param_file, bin_file = model_files
@@ -122,7 +122,7 @@ def run_wrapper(backend, wrapper, input):
         results = wrapper({'input': input})['output']
         results = results.detach().cpu()
         return results
-    elif backend == Backend.PPL:
+    elif backend == Backend.PPLNN:
         results = wrapper({'input': input})['output']
         results = results.detach().cpu()
         return results
@@ -140,7 +140,7 @@ def run_wrapper(backend, wrapper, input):
 
 
 ALL_BACKEND = [
-    Backend.TENSORRT, Backend.ONNXRUNTIME, Backend.PPL, Backend.NCNN,
+    Backend.TENSORRT, Backend.ONNXRUNTIME, Backend.PPLNN, Backend.NCNN,
     Backend.OPENVINO
 ]
 

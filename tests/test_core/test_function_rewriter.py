@@ -182,3 +182,49 @@ class TestHomonymicRewriter:
         function_rewriter2.exit()
 
         assert c.method() == 1
+
+
+def test_rewrite_derived_methods():
+    import package
+    path1 = 'package.C.method'
+    path2 = 'package.C2.method'
+
+    base_obj = package.C()
+    derived_obj = package.C2()
+
+    assert base_obj.method() == 1
+    assert derived_obj.method() == 1
+
+    function_rewriter = FunctionRewriter()
+    function_rewriter.add_backend(Backend.NCNN.value)
+
+    @function_rewriter.register_rewriter(func_name=path1)
+    def func_2(ctx, self):
+        return 2
+
+    @function_rewriter.register_rewriter(
+        func_name=path2, backend=Backend.NCNN.value)
+    def func_3(ctx, self):
+        return 3
+
+    function_rewriter.enter()
+    assert base_obj.method() == 2
+    assert derived_obj.method() == 2
+    function_rewriter.exit()
+
+    function_rewriter.enter(backend=Backend.NCNN.value)
+    assert base_obj.method() == 2
+    assert derived_obj.method() == 3
+    function_rewriter.exit()
+
+    assert base_obj.method() == 1
+    assert derived_obj.method() == 1
+
+    # Check if the recovery is correct
+    function_rewriter.enter()
+    assert base_obj.method() == 2
+    assert derived_obj.method() == 2
+    function_rewriter.exit()
+
+    assert base_obj.method() == 1
+    assert derived_obj.method() == 1

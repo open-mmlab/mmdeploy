@@ -60,3 +60,27 @@ For example, if we have marked the `multiclass_nms` as below, we can set `end=mu
 def multiclass_nms(*args, **kwargs):
     """Wrapper function for `_multiclass_nms`."""
 ```
+
+## onnx2tensorrt
+
+This tool can be used to convert ONNX to TensorRT engine.
+
+### Usage
+
+```bash
+python tools/onnx2tensorrt.py \
+    ${DEPLOY_CFG} \
+    ${ONNX_PATH} \
+    ${OUTPUT} \
+    --device-id 0 \
+    --log-level INFO
+```
+
+### Description of all arguments
+
+- `deploy_cfg` : The path of the deploy config file in MMDeploy codebase.
+- `onnx_path` : The ONNX model path to convert.
+- `output` : The path of output TensorRT engine.
+- `--device-id` : The device index, default to `0`.
+- `--calib-file` : The calibration data used to calibrate engine to int8.
+- `--log-level` : To set log level which in `'CRITICAL', 'FATAL', 'ERROR', 'WARN', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'`. If not specified, it will be set to `INFO`.

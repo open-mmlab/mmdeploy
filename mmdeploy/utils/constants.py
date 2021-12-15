@@ -39,7 +39,7 @@ class Backend(AdvancedEnum):
     PYTORCH = 'pytorch'
     TENSORRT = 'tensorrt'
     ONNXRUNTIME = 'onnxruntime'
-    PPL = 'ppl'
+    PPLNN = 'pplnn'
     NCNN = 'ncnn'
     OPENVINO = 'openvino'
     DEFAULT = 'default'

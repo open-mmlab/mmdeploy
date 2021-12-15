@@ -246,30 +246,30 @@ def main():
             openvino_files.append(model_xml_path)
         backend_files = openvino_files
 
-    elif backend == Backend.PPL:
-        from mmdeploy.apis.ppl import \
-            is_available as is_available_ppl
-        assert is_available_ppl(), \
-            'PPL is not available, please install PPL first.'
+    elif backend == Backend.PPLNN:
+        from mmdeploy.apis.pplnn import \
+            is_available as is_available_pplnn
+        assert is_available_pplnn(), \
+            'PPLNN is not available, please install PPLNN first.'
 
-        from mmdeploy.apis.ppl import onnx2ppl
-        ppl_files = []
+        from mmdeploy.apis.pplnn import onnx2pplnn
+        pplnn_files = []
         for onnx_path in onnx_files:
             algo_file = onnx_path.replace('.onnx', '.json')
             model_inputs = get_model_inputs(deploy_cfg)
             assert 'opt_shape' in model_inputs, 'expect opt_shape '
-            'in deploy config for ppl'
-            # PPL accepts only 1 input shape for optimization,
+            'in deploy config for pplnn'
+            # PPLNN accepts only 1 input shape for optimization,
             # may get changed in the future
             input_shapes = [model_inputs.opt_shape]
             create_process(
-                f'onnx2ppl with {onnx_path}',
-                target=onnx2ppl,
+                f'onnx2pplnn with {onnx_path}',
+                target=onnx2pplnn,
                 args=(algo_file, onnx_path),
                 kwargs=dict(device=args.device, input_shapes=input_shapes),
                 ret_value=ret_value)
-            ppl_files += [onnx_path, algo_file]
-        backend_files = ppl_files
+            pplnn_files += [onnx_path, algo_file]
+        backend_files = pplnn_files
 
     if args.test_img is None:
         args.test_img = args.img

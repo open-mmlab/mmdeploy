@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Any, Callable, Dict, List
+import inspect
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from mmdeploy.utils.constants import Backend
 
@@ -11,7 +12,7 @@ def eval_with_import(path: str) -> Any:
         path (str): The path to evaluate.
 
     Returns:
-        Any: The result of evaluate.
+        Any: The result of evaluation.
     """
     split_path = path.split('.')
     for i in range(len(split_path), 0, -1):
@@ -21,6 +22,38 @@ def eval_with_import(path: str) -> Any:
         except Exception:
             continue
     return eval(path)
+
+
+def import_function(path: str) -> Tuple[Callable, Optional[type]]:
+    """Import and evaluate a function. If the function is defined in a class,
+    evaluate the class additionally.
+
+    Args:
+        path (str): The path to evaluate.
+
+    Returns:
+        Callable: The function of evaluation.
+        type: The class of evaluation if the function is defined in a class, or
+            None.
+    """
+    split_path = path.split('.')
+    for i in range(len(split_path), 0, -1):
+        try:
+            exec('import {}'.format('.'.join(split_path[:i])))
+            break
+        except Exception:
+            continue
+
+    obj = eval(path)
+
+    # The path that might be a class
+    previous_obj = eval('.'.join(split_path[:-1]))
+
+    # Check if the path leads to a class
+    if inspect.isclass(previous_obj):
+        return obj, previous_obj
+    else:
+        return obj, None
 
 
 class RewriterRegistry:
