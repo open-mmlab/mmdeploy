@@ -189,6 +189,3 @@ class PPLNNWrapper(BaseWrapper):
         status = self.runtime.Run()
         assert status == pplcommon.RC_SUCCESS, 'Run() failed: ' + \
             pplcommon.GetRetCodeStr(status)
-        status = self.runtime.Sync()
-        assert status == pplcommon.RC_SUCCESS, 'Sync() failed: ' + \
-            pplcommon.GetRetCodeStr(status)
