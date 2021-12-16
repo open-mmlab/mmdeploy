@@ -18,7 +18,7 @@ struct SegmentorOutput {
   MMDEPLOY_ARCHIVE_MEMBERS(mask, height, width, classes);
 };
 
-DECLARE_CODEBASE(MMSegPostprocess);
+DECLARE_CODEBASE(MMSegmentation, mmseg);
 
 }  // namespace mmdeploy::mmseg
 

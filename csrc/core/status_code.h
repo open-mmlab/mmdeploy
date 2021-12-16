@@ -6,9 +6,9 @@
 #include <system_error>
 
 #include "outcome-experimental.hpp"
-#if MM_STATUS_USE_SOURCE_LOCATION
+#if MMDEPLOY_STATUS_USE_SOURCE_LOCATION
 #include "utils/source_location.h"
-#elif MM_STATUS_USE_STACKTRACE
+#elif MMDEPLOY_STATUS_USE_STACKTRACE
 #include "utils/stacktrace.h"
 #endif
 
@@ -77,12 +77,12 @@ struct Status {
   SYSTEM_ERROR2_NAMESPACE::status_code_domain::string_ref message() const;
   bool operator==(const ErrorCode &b) const noexcept { return ec == b; }
 
-#if MM_STATUS_USE_SOURCE_LOCATION
+#if MMDEPLOY_STATUS_USE_SOURCE_LOCATION
   const char *file{""};
   int line{};
   explicit Status(ErrorCode _ec, SourceLocation location = SourceLocation::current())
       : ec(_ec), file(location.file_name()), line(static_cast<int>(location.line())) {}
-#elif MM_STATUS_USE_STACKTRACE
+#elif MMDEPLOY_STATUS_USE_STACKTRACE
   Stacktrace st;
   explicit Status(ErrorCode _ec, Stacktrace _st = Stacktrace(0)) : ec(_ec), st(std::move(_st)) {}
 #else
@@ -115,6 +115,7 @@ class StatusDomain : public SYSTEM_ERROR2_NAMESPACE::status_code_domain {
     static string_ref v("mmdeploy");
     return v;
   }
+
   // clang-format off
   bool _do_failure(const SYSTEM_ERROR2_NAMESPACE::status_code<void> &code) const noexcept override {
     assert(code.domain() == *this);
@@ -168,12 +169,12 @@ using Exception = SYSTEM_ERROR2_NAMESPACE::status_error<StatusDomain>;
 template <typename T>
 using Result = OUTCOME_V2_NAMESPACE::experimental::status_result<T, Error>;
 
-#if MM_STATUS_USE_SOURCE_LOCATION
+#if MMDEPLOY_STATUS_USE_SOURCE_LOCATION
 [[noreturn]] inline void throw_exception(ErrorCode ec,
                                          SourceLocation location = SourceLocation::current()) {
   Error(Status(ec, location)).throw_exception();
 }
-#elif MM_STATUS_USE_STACKTRACE
+#elif MMDEPLOY_STATUS_USE_STACKTRACE
 [[noreturn]] inline void throw_exception(ErrorCode ec, Stacktrace stacktrace = Stacktrace(0)) {
   Error(Status(ec, std::move(stacktrace))).throw_exception();
 }

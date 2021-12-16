@@ -4,6 +4,6 @@
 
 namespace mmdeploy::mmcls {
 
-REGISTER_CODEBASE(MMClsPostprocess);
+REGISTER_CODEBASE(MMClassification);
 
 }  // namespace mmdeploy::mmcls

@@ -20,7 +20,7 @@ struct ClassifyOutput {
   MMDEPLOY_ARCHIVE_MEMBERS(labels);
 };
 
-DECLARE_CODEBASE(MMClsPostprocess);
+DECLARE_CODEBASE(MMClassification, mmcls);
 
 }  // namespace mmdeploy::mmcls
 

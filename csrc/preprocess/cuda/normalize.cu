@@ -21,11 +21,11 @@ __global__ void normalize(const T* src, int height, int width, int stride, float
   auto std_ptr = &std.x;
   if (to_rgb) {
     for (int c = 0; c < channels; ++c) {
-      output[loc + c] = ((float)src[loc + channels - 1 - c] - mean_ptr[c]) / std_ptr[c];
+      output[loc + c] = ((float)src[loc + channels - 1 - c] - mean_ptr[c]) * std_ptr[c];
     }
   } else {
     for (int c = 0; c < channels; ++c) {
-      output[loc + c] = ((float)src[loc + c] - mean_ptr[c]) / std_ptr[c];
+      output[loc + c] = ((float)src[loc + c] - mean_ptr[c]) * std_ptr[c];
     }
   }
 }
@@ -37,7 +37,7 @@ void Normalize(const T* src, int height, int width, int stride, float* output, c
   const dim3 num_blocks((width + thread_block.x - 1) / thread_block.x,
                         (height + thread_block.y - 1) / thread_block.y);
   const float3 _mean{mean[0], mean[1], mean[2]};
-  const float3 _std{std[0], std[1], std[2]};
+  const float3 _std{float(1. / std[0]), float(1. / std[1]), float(1. / std[2])};
   normalize<T, channels><<<num_blocks, thread_block, 0, stream>>>(src, height, width, stride,
                                                                   output, _mean, _std, to_rgb);
 }

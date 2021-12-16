@@ -61,6 +61,29 @@ def multiclass_nms(*args, **kwargs):
     """Wrapper function for `_multiclass_nms`."""
 ```
 
+## onnx2pplnn
+
+This tool helps to convert an `ONNX` model to an `PPLNN` model.
+
+### Usage
+
+```bash
+python tools/onnx2pplnn.py \
+    ${ONNX_PATH} \
+    ${OUTPUT_PATH} \
+    --device cuda:0 \
+    --opt-shapes [224,224] \
+    --log-level INFO
+```
+
+### Description of all arguments
+
+- `onnx_path`: The path of the `ONNX` model to convert.
+- `output_path`: The converted `PPLNN` algorithm path in json format.
+- `device`: The device of the model during conversion.
+- `opt-shapes`: Optimal shapes for PPLNN optimization. The shape of each tensor should be wrap with "[]" or "()" and the shapes of tensors should be separated by ",".
+- `--log-level`: To set log level which in `'CRITICAL', 'FATAL', 'ERROR', 'WARN', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'`. If not specified, it will be set to `INFO`.
+
 ## onnx2tensorrt
 
 This tool can be used to convert ONNX to TensorRT engine.
@@ -83,4 +106,25 @@ python tools/onnx2tensorrt.py \
 - `output` : The path of output TensorRT engine.
 - `--device-id` : The device index, default to `0`.
 - `--calib-file` : The calibration data used to calibrate engine to int8.
+- `--log-level` : To set log level which in `'CRITICAL', 'FATAL', 'ERROR', 'WARN', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'`. If not specified, it will be set to `INFO`.
+
+## onnx2ncnn
+
+This tool helps to convert an `ONNX` model to an `ncnn` model.
+
+### Usage
+
+```bash
+python tools/onnx2ncnn.py \
+    ${ONNX_PATH} \
+    ${NCNN_PARAM} \
+    ${NCNN_BIN} \
+    --log-level INFO
+```
+
+### Description of all arguments
+
+- `onnx_path` : The path of the `ONNX` model to convert from.
+- `output_param` : The converted `ncnn` param path.
+- `output_bin` : The converted `ncnn` bin path.
 - `--log-level` : To set log level which in `'CRITICAL', 'FATAL', 'ERROR', 'WARN', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'`. If not specified, it will be set to `INFO`.

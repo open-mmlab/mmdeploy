@@ -28,7 +28,7 @@ PadImpl::PadImpl(const Value& args) : TransformImpl(args) {
 }
 
 Result<Value> PadImpl::Process(const Value& input) {
-  INFO("input: {}", to_json(input).dump(2));
+  DEBUG("input: {}", to_json(input).dump(2));
   Value output = input;
   auto img_fields = GetImageFields(input);
 
@@ -75,7 +75,7 @@ Result<Value> PadImpl::Process(const Value& input) {
     }
   }
 
-  INFO("output: {}", to_json(output).dump(2));
+  DEBUG("output: {}", to_json(output).dump(2));
   return output;
 }
 
@@ -90,8 +90,8 @@ Pad::Pad(const Value& args, int version) : Transform(args) {
 
 class PadCreator : public Creator<Transform> {
  public:
-  const char* GetName(void) const override { return "Pad"; }
-  int GetVersion(void) const override { return version_; }
+  const char* GetName() const override { return "Pad"; }
+  int GetVersion() const override { return version_; }
   ReturnType Create(const Value& args) override { return make_unique<Pad>(args, version_); }
 
  private:

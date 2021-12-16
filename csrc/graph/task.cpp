@@ -33,35 +33,26 @@ static size_t GetBatchSize(const Value& args) {
   return batch_size;
 }
 
-unique_ptr<Task> Task::Create(const Value& config) {
-  try {
-    auto inst = std::make_unique<Task>();
-    auto module = CreateFromRegistry<Module>(config, "module");
-    if (!module) {
-      ERROR("failed to create task: {}", config);
-      return nullptr;
-    }
-    inst->module_ = std::move(module).value();
-    inst->name_ = config.value("name", string{});
-    inst->is_batched_ = config.value("is_batched", false);
-    inst->is_thread_safe_ = config.value("is_thread_safe", false);
-    from_value(config["input"], inst->inputs_);
-    from_value(config["output"], inst->outputs_);
-    return inst;
-  } catch (...) {
-    return nullptr;
+Task::Task(const Value& cfg) : BaseNode(cfg) {
+  auto module = CreateFromRegistry<Module>(cfg, "module");
+  if (!module) {
+    ERROR("failed to create task: {}", cfg);
+    throw_exception(eFail);
   }
+  module_ = std::move(module).value();
+  name_ = cfg.value("name", string{});
+  is_batched_ = cfg.value("is_batched", false);
+  is_thread_safe_ = cfg.value("is_thread_safe", false);
 }
+
 void Task::Build(TaskGraph& graph) {
   auto handle = graph.Add([this](Context& ctx) -> Result<void> {
-    OUTCOME_TRY(auto args, Keys2Idxs(ctx.current(), inputs_));
-    Value rets = Value::kArray;
+    auto args = ctx.pop().array();
+    auto rets = Value::Array{};
     auto batch_size = GetBatchSize(args);
     //    ERROR("name: {}, is_batched: {}, INPUT batch_size: {}", name_, is_batched_, batch_size);
     if (!is_batched_ && batch_size) {
-      for (int i = 0; i < outputs_.size(); ++i) {
-        rets.push_back(Value::kArray);
-      }
+      rets.resize(outputs_.size(), Value::kArray);
       if (!is_thread_safe_) {
         for (int i = 0; i < batch_size; ++i) {
           Value sample = Value::kArray;
@@ -91,13 +82,12 @@ void Task::Build(TaskGraph& graph) {
         }
       }
     } else {
-      OUTCOME_TRY(rets, module_->Process(args));
+      OUTCOME_TRY(auto&& tmp, module_->Process(args));
+      rets = std::move(tmp).array();
     }
-
+    ctx.push(std::move(rets));
     //    ERROR("name: {}, is_batched: {}, OUTPUT batch_size: {}", name_, is_batched_,
     //          GetBatchSize(rets));
-
-    OUTCOME_TRY(Idxs2Keys(std::move(rets), outputs_, ctx.current()));
     return success();
   });
   handle->set_name(name_);
@@ -107,7 +97,9 @@ class TaskNodeCreator : public Creator<Node> {
  public:
   const char* GetName() const override { return "Task"; }
   int GetVersion() const override { return 0; }
-  std::unique_ptr<Node> Create(const Value& value) override { return Task::Create(value); }
+  std::unique_ptr<Node> Create(const Value& value) override {
+    return std::make_unique<Task>(value);
+  }
 };
 
 REGISTER_MODULE(Node, TaskNodeCreator);

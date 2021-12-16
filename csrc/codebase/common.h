@@ -33,7 +33,7 @@ class CodebaseCreator : public Creator<Module> {
   const char* GetName() const override { return Tag::name; }
   int GetVersion() const override { return 1; }
   std::unique_ptr<Module> Create(const Value& cfg) override {
-    constexpr auto key{"postprocess_type"};
+    constexpr auto key{"component"};
     if (!cfg.contains(key)) {
       ERROR("no key '{}' in config {}", key, cfg);
       throw_exception(eInvalidArgument);
@@ -52,26 +52,26 @@ class CodebaseCreator : public Creator<Module> {
   }
 };
 
-#define DECLARE_CODEBASE(codebase)                              \
-  class codebase : public Context {                             \
-   public:                                                      \
-    static constexpr const auto name = #codebase;               \
-    using type = std::unique_ptr<Module>;                       \
-    explicit codebase(const Value& config) : Context(config) {} \
+#define DECLARE_CODEBASE(codebase_type, codebase_name)               \
+  class codebase_type : public Context {                             \
+   public:                                                           \
+    static constexpr const auto name = #codebase_name;               \
+    using type = std::unique_ptr<Module>;                            \
+    explicit codebase_type(const Value& config) : Context(config) {} \
   };
 
 #define REGISTER_CODEBASE(codebase)                       \
   using codebase##_##Creator = CodebaseCreator<codebase>; \
   REGISTER_MODULE(Module, codebase##_##Creator)
 
-#define REGISTER_CODEBASE_MODULE(codebase, type)                                         \
-  class codebase##_##type##_##Creator : public Creator<codebase> {                       \
-   public:                                                                               \
-    const char* GetName() const override { return #type; }                               \
-    int GetVersion() const override { return 1; }                                        \
-    ReturnType Create(const Value& config) override { return CreateTask(type(config)); } \
-  };                                                                                     \
-  REGISTER_MODULE(codebase, codebase##_##type##_##Creator)
+#define REGISTER_CODEBASE_COMPONENT(codebase, component_type)                                      \
+  class component_type##_##Creator : public Creator<codebase> {                                    \
+   public:                                                                                         \
+    const char* GetName() const override { return #component_type; }                               \
+    int GetVersion() const override { return 1; }                                                  \
+    ReturnType Create(const Value& config) override { return CreateTask(component_type(config)); } \
+  };                                                                                               \
+  REGISTER_MODULE(codebase, component_type##_##Creator)
 
 }  // namespace mmdeploy
 

@@ -26,7 +26,7 @@ const auto json_str = R"({
         "name": "textdet",
         "type": "Inference",
         "params": {
-          "model": "../../dbnet18"
+          "model": "../../config/text-detector/dbnet18_t4-cuda11.1-trt7.2-fp16"
         },
         "input": ["img"],
         "output": ["det"]
@@ -50,7 +50,7 @@ TEST_CASE("test dbnet18", "[dbnet18]") {
   auto json = nlohmann::json::parse(json_str);
   auto value = mmdeploy::from_json<mmdeploy::Value>(json);
 
-  Device device{"cpu"};
+  Device device{"cuda"};
   auto stream = Stream::GetDefault(device);
   value["context"]["device"] = device;
   value["context"]["stream"] = stream;

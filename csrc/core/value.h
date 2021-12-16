@@ -594,6 +594,16 @@ class Value {
     return _unwrap()._get_to(v);
   }
 
+  Array& array() & { return get_ref<Array&>(); }
+  Array&& array() && { return static_cast<Array&&>(get_ref<Array&>()); }
+  const Array& array() const& { return get_ref<const Array&>(); }
+  const Array&& array() const&& { return static_cast<const Array&&>(get_ref<const Array&>()); }
+
+  Object& object() & { return get_ref<Object&>(); }
+  Object&& object() && { return static_cast<Object&&>(get_ref<Object&>()); }
+  const Object& object() const& { return get_ref<const Object&>(); }
+  const Object&& object() const&& { return static_cast<const Object&&>(get_ref<const Object&>()); }
+
   value_type& operator[](size_t idx) & {
     return static_cast<value_type&>(_unwrap()._subscript(idx));
   }

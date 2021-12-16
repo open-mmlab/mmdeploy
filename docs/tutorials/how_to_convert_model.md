@@ -115,7 +115,7 @@ The table below lists the models that are guaranteed to be exportable to other b
 | SRCNN              | MMEditing        |      Y      |    Y     |  N   |   Y   |    N     | $MMSEG_DIR/configs/restorers/srcnn/srcnn_x4k915_g1_1000k_div2k.py                     |
 | ESRGAN             | MMEditing        |      Y      |    Y     |  N   |   Y   |    N     | $MMSEG_DIR/configs/restorers/esrgan/esrgan_psnr_x4c64b23g32_g1_1000k_div2k.py         |
 | DBNet              | MMOCR            |      Y      |    Y     |  Y   |   Y   |    Y     | $MMOCR_DIR/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py                    |
-| CRNN               | MMOCR            |      Y      |    Y     |  Y   |   N   |    N     | $MMOCR_DIR/configs/textrecog/crnn/crnn_academic_dataset.py                             |
+| CRNN               | MMOCR            |      Y      |    Y     |  Y   |   Y   |    N     | $MMOCR_DIR/configs/textrecog/crnn/crnn_academic_dataset.py                             |
 
 
 ### Reminders

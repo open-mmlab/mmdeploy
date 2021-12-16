@@ -36,7 +36,7 @@ set(SRCS
         utils/formatter.cpp
         utils/stacktrace.cpp)
 build_object_target(${CORE_OBJ} "${SRCS}")
-target_compile_definitions(${CORE_OBJ} PUBLIC -DMM_STATUS_USE_SOURCE_LOCATION=1)
+target_compile_definitions(${CORE_OBJ} PUBLIC -DMMDEPLOY_STATUS_USE_SOURCE_LOCATION=1)
 target_include_directories(${CORE_OBJ}
         PUBLIC
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/csrc>

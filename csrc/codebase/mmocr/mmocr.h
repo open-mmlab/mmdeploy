@@ -21,7 +21,7 @@ struct TextRecognizerOutput {
   MMDEPLOY_ARCHIVE_MEMBERS(text, score);
 };
 
-DECLARE_CODEBASE(MMOCRPostprocess);
+DECLARE_CODEBASE(MMOCR, mmocr);
 
 }  // namespace mmdeploy::mmocr
 

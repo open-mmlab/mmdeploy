@@ -47,7 +47,7 @@ TEST_CASE("test ocr det & recog", "[ocr_det_recog]") {
   auto json = nlohmann::json::parse(json_str);
   auto value = mmdeploy::from_json<mmdeploy::Value>(json);
 
-  Device device{"cpu", 0};
+  Device device{"cuda", 0};
   auto stream = Stream::GetDefault(device);
 
   value["context"].update({{"device", device}, {"stream", stream}});

@@ -13,7 +13,7 @@ namespace mmdeploy::mmedit {
 
 using RestorerOutput = Mat;
 
-DECLARE_CODEBASE(MMEditPostprocess);
+DECLARE_CODEBASE(MMEdit, mmedit);
 
 }  // namespace mmdeploy::mmedit
 

@@ -13,10 +13,11 @@ Compose::Compose(const Value& args, int version) : Transform(args) {
 
   Value context;
   context = args["context"];
+  context["stream"].get_to(stream_);
   for (auto cfg : args["transforms"]) {
     cfg["context"] = context;
     auto type = cfg.value("type", std::string{});
-    INFO("creating transform: {} with cfg: {}", type, mmdeploy::to_json(cfg).dump(2));
+    DEBUG("creating transform: {} with cfg: {}", type, mmdeploy::to_json(cfg).dump(2));
     auto creator = Registry<Transform>::Get().GetCreator(type, version);
     if (!creator) {
       ERROR("unable to find creator: {}", type);
@@ -35,6 +36,7 @@ Result<Value> Compose::Process(const Value& input) {
   Value output = input;
   for (auto& transform : transforms_) {
     auto t = transform->Process(output);
+    OUTCOME_TRY(stream_.Wait());
     if (!t) {
       return t;
     }

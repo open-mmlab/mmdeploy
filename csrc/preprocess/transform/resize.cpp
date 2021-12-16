@@ -41,7 +41,7 @@ ResizeImpl::ResizeImpl(const Value& args) : TransformImpl(args) {
 }
 
 Result<Value> ResizeImpl::Process(const Value& input) {
-  INFO("input: {}", to_json(input).dump(2));
+  DEBUG("input: {}", to_json(input).dump(2));
   Value output = input;
   auto img_fields = GetImageFields(input);
 
@@ -66,7 +66,7 @@ Result<Value> ResizeImpl::Process(const Value& input) {
       dst_h = int(h * scale_factor + 0.5);
       dst_w = int(w * scale_factor + 0.5);
     } else if (!arg_.img_scale.empty()) {
-      INFO(
+      DEBUG(
           "neither 'scale' or 'scale_factor' is provided in input value. "
           "'img_scale' will be used");
       if (-1 == arg_.img_scale[1]) {
@@ -111,7 +111,7 @@ Result<Value> ResizeImpl::Process(const Value& input) {
     output[key] = dst_img;
   }
 
-  INFO("output: {}", to_json(output).dump(2));
+  DEBUG("output: {}", to_json(output).dump(2));
   return output;
 }
 

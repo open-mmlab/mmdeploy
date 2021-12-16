@@ -3,17 +3,16 @@
 #include "transform.h"
 
 #include "core/registry.h"
+#include "core/utils/formatter.h"
 
 namespace mmdeploy {
 
 TransformImpl::TransformImpl(const Value &args) {
-  Device device{"cpu"};
   if (args.contains("context")) {
-    device_ = args["context"].value("device", device);
-    stream_ = args["context"].value("stream", Stream::GetDefault(device_));
+    args["context"]["device"].get_to(device_);
+    args["context"]["stream"].get_to(stream_);
   } else {
-    device_ = device;
-    stream_ = Stream::GetDefault(device_);
+    throw_exception(eNotSupported);
   }
 }
 std::vector<std::string> TransformImpl::GetImageFields(const Value &input) {

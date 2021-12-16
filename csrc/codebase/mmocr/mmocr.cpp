@@ -7,6 +7,6 @@
 
 namespace mmdeploy::mmocr {
 
-REGISTER_CODEBASE(MMOCRPostprocess);
+REGISTER_CODEBASE(MMOCR);
 
 }  // namespace mmdeploy::mmocr

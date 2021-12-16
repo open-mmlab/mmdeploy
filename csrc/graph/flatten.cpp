@@ -9,7 +9,7 @@ namespace mmdeploy::graph {
 
 void FlattenNode::Build(TaskGraph& graph) {
   auto p = graph.Add([this](Context& ctx) -> Result<void> {
-    OUTCOME_TRY(auto args, Keys2Idxs(ctx.current(), inputs()));
+    auto args = ctx.pop().array();
     Value rets = Value::kArray;
     std::vector<int> idxs;
     idxs.reserve(inputs().size());
@@ -26,7 +26,7 @@ void FlattenNode::Build(TaskGraph& graph) {
       rets.push_back(std::move(ret));
     }
     rets.push_back(to_value(idxs));
-    OUTCOME_TRY(Idxs2Keys(std::move(rets), outputs(), ctx.current()));
+    ctx.push(std::move(rets));
     return success();
   });
   p->set_name(name());

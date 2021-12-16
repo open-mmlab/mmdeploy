@@ -18,7 +18,14 @@ TransformModule::TransformModule(const Value& args) {
     ERROR("unable to find creator: {}", type);
     throw_exception(eEntryNotFound);
   }
-  transform_ = creator->Create(args);
+  auto cfg = args;
+  if (cfg.contains("device")) {
+    WARN("force using device: {}", cfg["device"].get<const char*>());
+    auto device = Device(cfg["device"].get<const char*>());
+    cfg["context"]["device"] = device;
+    cfg["context"]["stream"] = Stream::GetDefault(device);
+  }
+  transform_ = creator->Create(cfg);
 }
 
 Result<Value> TransformModule::operator()(const Value& input) {

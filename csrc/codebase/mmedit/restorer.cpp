@@ -9,12 +9,12 @@
 
 namespace mmdeploy::mmedit {
 
-class Restorer : public MMEditPostprocess {
+class TensorToImg : public MMEdit {
  public:
-  explicit Restorer(const Value& cfg) : MMEditPostprocess(cfg) {}
+  explicit TensorToImg(const Value& cfg) : MMEdit(cfg) {}
 
   Result<Value> operator()(const Value& input) {
-    auto upscale = input["upscale"].get<Tensor>();
+    auto upscale = input["output"].get<Tensor>();
     OUTCOME_TRY(auto upscale_cpu, MakeAvailableOnDevice(upscale, kHOST, stream()));
     OUTCOME_TRY(stream().Wait());
     if (upscale.data_type() == DataType::kFLOAT) {
@@ -40,6 +40,8 @@ class Restorer : public MMEditPostprocess {
  protected:
   static Result<PixelFormat> ChannelsToFormat(int channels) {
     switch (channels) {
+      case 1:
+        return PixelFormat::kGRAYSCALE;
       case 3:
         return PixelFormat::kRGB;
       default:
@@ -50,6 +52,6 @@ class Restorer : public MMEditPostprocess {
   static constexpr const Device kHOST{0, 0};
 };
 
-REGISTER_CODEBASE_MODULE(MMEditPostprocess, Restorer);
+REGISTER_CODEBASE_COMPONENT(MMEdit, TensorToImg);
 
 }  // namespace mmdeploy::mmedit

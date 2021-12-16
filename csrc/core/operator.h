@@ -11,51 +11,48 @@ using std::string;
 using std::tuple;
 using std::vector;
 
-template <class V, std::enable_if_t<is_value_v<std::decay_t<V> >, bool> = true>
-Result<void> Idxs2Keys(V&& array, const vector<string>& keys, Value& object) {
-  if (!std::forward<V>(array).is_array() || std::forward<V>(array).size() < keys.size()) {
-    return Status(eInvalidArgument);
-  }
-  if (!(object.is_null() || object.is_object())) {
-    return Status(eInvalidArgument);
-  }
-  for (int i = 0; i < keys.size(); ++i) {
-    object[keys[i]] = std::forward<V>(array)[i];
-  }
-  return success();
+Result<void> Gather(const Value::Array& array, const vector<int>& idxs, Value::Array& output);
+Result<void> Gather(Value::Array&& array, const vector<int>& idxs, Value::Array& output);
+Result<void> Gather(const Value::Object& object, const vector<std::string>& keys,
+                    Value::Array& output);
+Result<void> Gather(Value::Object&& object, const vector<std::string>& keys, Value::Array& output);
+Result<void> Scatter(Value::Array array, const vector<int>& idxs, Value::Array& output);
+Result<void> Scatter(Value::Array array, const vector<std::string>& keys, Value::Object& output);
+
+inline Result<Value::Array> Gather(const Value::Array& array, const vector<int>& idxs) {
+  Value::Array output;
+  OUTCOME_TRY(Gather(array, idxs, output));
+  return output;
 }
 
-template <class V, std::enable_if_t<is_value_v<std::decay_t<V> >, bool> = true>
-Result<Value> Idxs2Keys(V&& array, const vector<string>& keys) {
-  Value object = ValueType::kObject;
-  OUTCOME_TRY(Idxs2Keys(std::forward<V>(array), keys, object));
-  return object;
+inline Result<Value::Array> Gather(Value::Array&& array, const vector<int>& idxs) {
+  Value::Array output;
+  OUTCOME_TRY(Gather(std::move(array), idxs, output));
+  return output;
 }
 
-template <class V, std::enable_if_t<is_value_v<std::decay_t<V> >, bool> = true>
-Result<void> Keys2Idxs(V&& object, const vector<string>& keys, Value& array) {
-  if (!std::forward<V>(object).is_object()) {
-    return Status(eInvalidArgument);
-  }
-  if (!(array.is_null() || array.is_array())) {
-    return Status(eInvalidArgument);
-  }
-  try {
-    for (const auto& key : keys) {
-      array.push_back(std::forward<V>(object)[key]);
-    }
-  } catch (...) {
-    // TODO: forward exception
-    return Status(eInvalidArgument);
-  }
-  return success();
+inline Result<Value::Array> Gather(const Value::Object& object, const vector<std::string>& keys) {
+  Value::Array output;
+  OUTCOME_TRY(Gather(object, keys, output));
+  return output;
 }
 
-template <class V, std::enable_if_t<is_value_v<std::decay_t<V> >, bool> = true>
-Result<Value> Keys2Idxs(V&& object, const vector<string>& keys) {
-  Value array = ValueType::kArray;
-  OUTCOME_TRY(Keys2Idxs(std::forward<V>(object), keys, array));
-  return array;
+inline Result<Value::Array> Gather(Value::Object&& object, const vector<std::string>& keys) {
+  Value::Array output;
+  OUTCOME_TRY(Gather(std::move(object), keys, output));
+  return output;
+}
+
+inline Result<Value::Array> Scatter(Value::Array array, const vector<int>& idxs) {
+  Value::Array output(idxs.size(), Value::kNull);
+  OUTCOME_TRY(Scatter(std::move(array), idxs, output));
+  return output;
+}
+
+inline Result<Value::Object> Scatter(Value::Array array, const vector<std::string>& keys) {
+  Value::Object output;
+  OUTCOME_TRY(Scatter(std::move(array), keys, output));
+  return output;
 }
 
 template <class V, std::enable_if_t<is_value_v<std::decay_t<V> >, bool> = true>

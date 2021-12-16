@@ -23,8 +23,8 @@ def onnx2pplnn(algo_file: str,
     Args:
         algo_file (str): File path to save PPLNN optimization algorithm.
         onnx_model (str): Input onnx model.
-        device (str): A string specifying cuda device, defaults to 'cuda:0'.
-        input_shapes (Sequence[Sequence[int]] | None): shapes for PPLNN
+        device (str): A string specifying device, defaults to 'cuda:0'.
+        input_shapes (Sequence[Sequence[int]] | None): Shapes for PPLNN
             optimization, default to None.
 
     Examples:

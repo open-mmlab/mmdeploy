@@ -9,14 +9,14 @@ namespace mmdeploy::graph {
 
 void UnflattenNode::Build(TaskGraph& graph) {
   auto p = graph.Add([this](Context& ctx) -> Result<void> {
-    OUTCOME_TRY(auto args, Keys2Idxs(ctx.current(), inputs()));
+    auto args = std::move(ctx.current());
     Value rets = Value::kArray;
     auto idxs = from_value<std::vector<int>>(args.back());
     for (int i = 0; i < rets.size() - 1; ++i) {
       OUTCOME_TRY(auto ret, Unflatten(std::move(args[i]), idxs));
       rets.push_back(std::move(ret));
     }
-    OUTCOME_TRY(Idxs2Keys(std::move(rets), outputs(), ctx.current()));
+    ctx.current() = std::move(rets);
     return success();
   });
   p->set_name(name());

@@ -9,6 +9,7 @@
 #include "opencv2/imgproc.hpp"
 #include "preprocess/cpu/opencv_utils.h"
 #include "preprocess/transform/resize.h"
+#include "preprocess/transform/transform_utils.h"
 
 using namespace std;
 
@@ -24,12 +25,13 @@ class ResizeOCRImpl : public Module {
     img_pad_value_ = args.value("img_pad_value", img_pad_value_);
     width_downsample_ratio_ = args.value("width_downsample_ratio", width_downsample_ratio_);
     backend_ = args.value("backend", backend_);
+    stream_ = args["context"]["stream"].get<Stream>();
   }
 
   ~ResizeOCRImpl() override = default;
 
-  Result<Value> Process(const Value& input) {
-    INFO("input: {}", input);
+  Result<Value> Process(const Value& input) override {
+    DEBUG("input: {}", input);
     auto dst_height = height_;
     auto dst_min_width = min_width_;
     auto dst_max_width = max_width_;
@@ -44,7 +46,10 @@ class ResizeOCRImpl : public Module {
     auto ori_width = ori_shape[2];
     auto valid_ratio = 1.f;
 
-    auto img = input["img"].get<Tensor>();
+    Device host{"cpu"};
+    auto _img = input["img"].get<Tensor>();
+    OUTCOME_TRY(auto img, MakeAvailableOnDevice(_img, host, stream_));
+    stream_.Wait().value();
     Tensor img_resize;
     if (keep_aspect_ratio_) {
       auto new_width = static_cast<int>(std::ceil(1.f * dst_height / ori_height * ori_width));
@@ -73,7 +78,7 @@ class ResizeOCRImpl : public Module {
     output["resize_shape"] = to_value(img_resize.desc().shape);
     output["pad_shape"] = output["resize_shape"];
     output["valid_ratio"] = valid_ratio;
-    INFO("output: {}", to_json(output).dump(2));
+    DEBUG("output: {}", to_json(output).dump(2));
     return output;
   }
 
@@ -114,6 +119,7 @@ class ResizeOCRImpl : public Module {
   float img_pad_value_{0};
   float width_downsample_ratio_{1. / 16};
   std::string backend_;
+  Stream stream_;
 };
 
 class ResizeOCRImplCreator : public Creator<ResizeOCRImpl> {

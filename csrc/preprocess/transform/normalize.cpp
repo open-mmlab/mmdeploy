@@ -50,7 +50,7 @@ NormalizeImpl::NormalizeImpl(const Value& args) : TransformImpl(args) {
  */
 
 Result<Value> NormalizeImpl::Process(const Value& input) {
-  INFO("input: {}", to_json(input).dump(2));
+  DEBUG("input: {}", to_json(input).dump(2));
 
   // copy input data, and update its properties later
   Value output = input;
@@ -73,7 +73,7 @@ Result<Value> NormalizeImpl::Process(const Value& input) {
     }
     output["img_norm_cfg"]["to_rgb"] = arg_.to_rgb;
   }
-  INFO("output: {}", to_json(output).dump(2));
+  DEBUG("output: {}", to_json(output).dump(2));
   return output;
 }
 

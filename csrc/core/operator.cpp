@@ -4,6 +4,81 @@
 
 namespace mmdeploy::graph {
 
+Result<void> Gather(const Value::Array& array, const vector<int>& idxs, Value::Array& output) {
+  if (idxs.empty()) {
+    return success();
+  }
+  auto max_idx = *max_element(begin(idxs), end(idxs));
+  if (array.size() <= max_idx) {
+    return Status(eOutOfRange);
+  }
+  output.reserve(output.size() + idxs.size());
+  for (const auto& idx : idxs) {
+    output.push_back(array[idx]);
+  }
+  return success();
+}
+
+Result<void> Gather(Value::Array&& array, const vector<int>& idxs, Value::Array& output) {
+  if (idxs.empty()) {
+    return success();
+  }
+  auto max_idx = *max_element(begin(idxs), end(idxs));
+  if (array.size() <= max_idx) {
+    return Status(eOutOfRange);
+  }
+  output.reserve(output.size() + idxs.size());
+  for (const auto& idx : idxs) {
+    output.push_back(std::move(array[idx]));
+  }
+  return success();
+}
+
+Result<void> Gather(const Value::Object& object, const vector<std::string>& keys,
+                    Value::Array& output) {
+  output.reserve(output.size() + keys.size());
+  try {
+    for (const auto& key : keys) {
+      output.push_back(object.at(key));
+    }
+  } catch (const std::out_of_range& e) {
+    return Status(eOutOfRange);
+  }
+  return success();
+}
+
+Result<void> Gather(Value::Object&& object, const vector<std::string>& keys, Value::Array& output) {
+  output.reserve(output.size() + keys.size());
+  try {
+    for (const auto& key : keys) {
+      output.push_back(std::move(object.at(key)));
+    }
+  } catch (const std::out_of_range& e) {
+    return Status(eOutOfRange);
+  }
+  return success();
+}
+
+Result<void> Scatter(Value::Array array, const vector<int>& idxs, Value::Array& output) {
+  if (array.size() < idxs.size()) {
+    return Status(eOutOfRange);
+  }
+  for (int i = 0; i < idxs.size(); ++i) {
+    output[idxs[i]] = std::move(array[i]);
+  }
+  return success();
+}
+
+Result<void> Scatter(Value::Array array, const vector<std::string>& keys, Value::Object& output) {
+  if (array.size() < keys.size()) {
+    return Status(eOutOfRange);
+  }
+  for (int i = 0; i < keys.size(); ++i) {
+    output.emplace(keys[i], std::move(array[i]));
+  }
+  return success();
+}
+
 Result<Value> DistribOA(const Value& oa) {
   if (!oa.is_object()) {
     return Status(eInvalidArgument);

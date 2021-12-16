@@ -9,67 +9,42 @@
 
 namespace mmdeploy::graph {
 
-unique_ptr<Inference> Inference::Create(const Value& param) {
-  try {
-    auto inst = std::make_unique<Inference>();
-    auto& model_value = param["params"]["model"];
-    if (model_value.is_any<Model>()) {
-      inst->model_ = model_value.get<Model>();
-    } else if (model_value.is_string()) {
-      auto model_path = model_value.get<std::string>();
-      inst->model_ = Model(model_path);
-    } else {
-      ERROR("unsupported model specification");
-      return nullptr;
-    }
-
-    auto pipeline_json = inst->model_.ReadFile("pipeline.json").value();
-    auto json = nlohmann::json::parse(pipeline_json);
-
-    auto context = param.value("context", Value(ValueType::kObject));
-    context["model"] = inst->model_;
-
-    auto value = from_json<Value>(json);
-    value["context"] = context;
-    inst->pipeline_ = Pipeline::Create(value);
-
-    if (!inst->pipeline_) {
-      return nullptr;
-    }
-
-    from_value(param["input"], inst->inputs_);
-    from_value(param["output"], inst->outputs_);
-
-    return inst;
-  } catch (const std::exception& e) {
-    ERROR("unhandled exception: {}", e.what());
+Inference::Inference(const Value& cfg) : BaseNode(cfg) {
+  auto& model_value = cfg["params"]["model"];
+  if (model_value.is_any<Model>()) {
+    model_ = model_value.get<Model>();
+  } else if (model_value.is_string()) {
+    auto model_path = model_value.get<std::string>();
+    model_ = Model(model_path);
+  } else {
+    ERROR("unsupported model specification");
+    throw_exception(eInvalidArgument);
   }
-  return nullptr;
+
+  auto pipeline_json = model_.ReadFile("pipeline.json").value();
+  auto json = nlohmann::json::parse(pipeline_json);
+
+  auto context = cfg.value("context", Value(ValueType::kObject));
+  context["model"] = model_;
+
+  auto value = from_json<Value>(json);
+  value["context"] = context;
+  pipeline_ = std::make_unique<Pipeline>(value);
+  if (!pipeline_) {
+    ERROR("failed to create pipeline");
+    throw_exception(eFail);
+  }
 }
 
-void Inference::Build(TaskGraph& graph) {
-  auto enter = graph.Add([this](Context& ctx) -> Result<void> {
-    OUTCOME_TRY(auto args, Keys2Idxs(ctx.current(), inputs_));
-    ctx.push(std::move(args));
-    return success();
-  });
-  enter->set_name("inference/enter");
-
-  pipeline_->Build(graph);
-
-  auto exit = graph.Add([this](Context& ctx) -> Result<void> {
-    auto rets = ctx.pop();
-    OUTCOME_TRY(Idxs2Keys(std::move(rets), outputs_, ctx.current()));
-    return success();
-  });
-  exit->set_name("inference/exit");
-}
+void Inference::Build(TaskGraph& graph) { pipeline_->Build(graph); }
 
 class InferenceNodeCreator : public Creator<Node> {
  public:
   const char* GetName() const override { return "Inference"; }
   int GetVersion() const override { return 0; }
-  std::unique_ptr<Node> Create(const Value& value) override { return Inference::Create(value); }
+  std::unique_ptr<Node> Create(const Value& value) override {
+    return std::make_unique<Inference>(value);
+  }
 };
 
 REGISTER_MODULE(Node, InferenceNodeCreator);

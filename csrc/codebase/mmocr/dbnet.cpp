@@ -20,9 +20,9 @@ namespace mmdeploy::mmocr {
 using std::string;
 using std::vector;
 
-class DBHead : public MMOCRPostprocess {
+class DBHead : public MMOCR {
  public:
-  explicit DBHead(const Value& config) : MMOCRPostprocess(config) {
+  explicit DBHead(const Value& config) : MMOCR(config) {
     if (config.contains("params")) {
       auto& params = config["params"];
       text_repr_type_ = params.value("text_repr_type", string{"quad"});
@@ -99,10 +99,13 @@ class DBHead : public MMOCRPostprocess {
       }
       DEBUG("score: {}", score);
       //      cv::drawContours(score_map, vector<vector<cv::Point>>{approx}, -1, 1);
+
+      vector<cv::Point2f> scaled(begin(approx), end(approx));
+
       if (rescale_) {
         auto scale_w = _data["img_metas"]["scale_factor"][0].get<float>();
         auto scale_h = _data["img_metas"]["scale_factor"][1].get<float>();
-        for (auto& p : approx) {
+        for (auto& p : scaled) {
           p.x /= scale_w * downsample_ratio_;
           p.y /= scale_h * downsample_ratio_;
         }
@@ -110,8 +113,8 @@ class DBHead : public MMOCRPostprocess {
 
       auto& bbox = output.boxes.emplace_back();
       for (int i = 0; i < 4; ++i) {
-        bbox[i * 2] = static_cast<float>(approx[i].x);
-        bbox[i * 2 + 1] = static_cast<float>(approx[i].y);
+        bbox[i * 2] = scaled[i].x;
+        bbox[i * 2 + 1] = scaled[i].y;
       }
       output.scores.push_back(score);
     }
@@ -168,6 +171,6 @@ class DBHead : public MMOCRPostprocess {
   float downsample_ratio_{1.};
 };
 
-REGISTER_CODEBASE_MODULE(MMOCRPostprocess, DBHead);
+REGISTER_CODEBASE_COMPONENT(MMOCR, DBHead);
 
 }  // namespace mmdeploy::mmocr

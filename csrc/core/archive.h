@@ -61,7 +61,7 @@ class OutputArchive : public detail::ArchiveBase {
 
  private:
   template <typename T>
-  void dispatch(T&& v) noexcept {
+  void dispatch(T&& v) {
     auto& archive = static_cast<Archive&>(*this);
     if constexpr (has_member_save<T, Archive>::value) {
       std::forward<T>(v).save(archive);
@@ -87,7 +87,7 @@ class InputArchive : public detail::ArchiveBase {
 
  private:
   template <typename T>
-  void dispatch(T&& v) noexcept {
+  void dispatch(T&& v) {
     auto& archive = static_cast<Archive&>(*this);
     if constexpr (has_member_load<T, Archive>::value) {
       std::forward<T>(v).load(archive);

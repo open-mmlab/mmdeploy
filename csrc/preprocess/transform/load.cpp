@@ -31,7 +31,7 @@ PrepareImageImpl::PrepareImageImpl(const Value& args) : TransformImpl(args) {
    */
 
 Result<Value> PrepareImageImpl::Process(const Value& input) {
-  INFO("input: {}", to_json(input).dump(2));
+  DEBUG("input: {}", to_json(input).dump(2));
   assert(input.contains("ori_img"));
 
   // copy input data, and update its properties later
@@ -48,7 +48,7 @@ Result<Value> PrepareImageImpl::Process(const Value& input) {
   }
   output["ori_shape"] = {1, src_mat.height(), src_mat.width(), src_mat.channel()};
   output["img_fields"].push_back("img");
-  INFO("output: {}", to_json(output).dump(2));
+  DEBUG("output: {}", to_json(output).dump(2));
 
   return output;
 }

@@ -24,7 +24,7 @@ CenterCropImpl::CenterCropImpl(const Value& args) : TransformImpl(args) {
 }
 
 Result<Value> CenterCropImpl::Process(const Value& input) {
-  INFO("input: {}", to_json(input).dump(2));
+  DEBUG("input: {}", to_json(input).dump(2));
   auto img_fields = GetImageFields(input);
 
   // copy input data, and update its properties
@@ -63,7 +63,7 @@ Result<Value> CenterCropImpl::Process(const Value& input) {
     }
   }
 
-  INFO("output: {}", to_json(output).dump(2));
+  DEBUG("output: {}", to_json(output).dump(2));
   return output;
 }
 

@@ -16,7 +16,7 @@ ImageToTensorImpl::ImageToTensorImpl(const Value& args) : TransformImpl(args) {
 }
 
 Result<Value> ImageToTensorImpl::Process(const Value& input) {
-  INFO("input: {}", to_json(input).dump(2));
+  DEBUG("input: {}", to_json(input).dump(2));
   Value output = input;
   for (auto& key : arg_.keys) {
     assert(input.contains(key));
@@ -28,7 +28,7 @@ Result<Value> ImageToTensorImpl::Process(const Value& input) {
 
     OUTCOME_TRY(output[key], HWC2CHW(src_tensor));
   }  // for key
-  INFO("output: {}", to_json(output).dump(2));
+  DEBUG("output: {}", to_json(output).dump(2));
   return output;
 }
 

@@ -132,18 +132,16 @@ Result<void> TRTNet::Init(const Value& args) {
       ERROR("shape binding is not supported.");
       return Status(eNotSupported);
     }
-    auto dtype = MapDataType(engine_->getBindingDataType(i));
-    TensorDesc desc{.device = device_,
-                    .data_type = dtype.value(),
-                    .shape = to_shape(dims),
-                    .name = binding_name};
+    OUTCOME_TRY(auto dtype, MapDataType(engine_->getBindingDataType(i)));
+    TensorDesc desc{
+        .device = device_, .data_type = dtype, .shape = to_shape(dims), .name = binding_name};
     if (engine_->bindingIsInput(i)) {
-      INFO("input binding {} {} {}", i, binding_name, to_string(dims));
+      DEBUG("input binding {} {} {}", i, binding_name, to_string(dims));
       input_ids_.push_back(i);
       input_names_.emplace_back(binding_name);
       input_tensors_.emplace_back(desc, Buffer());
     } else {
-      INFO("output binding {} {} {}", i, binding_name, to_string(dims));
+      DEBUG("output binding {} {} {}", i, binding_name, to_string(dims));
       output_ids_.push_back(i);
       output_names_.emplace_back(binding_name);
       output_tensors_.emplace_back(desc, Buffer());
@@ -214,7 +212,7 @@ Result<void> TRTNet::ForwardAsync(Event* event) { return Status(eNotSupported); 
 
 class TRTNetCreator : public Creator<Net> {
  public:
-  const char* GetName() const override { return "tensorrt"; }
+  const char* GetName() const override { return "trt"; }
   int GetVersion() const override { return 0; }
   std::unique_ptr<Net> Create(const Value& args) override {
     auto p = std::make_unique<TRTNet>();

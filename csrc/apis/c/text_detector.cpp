@@ -113,8 +113,8 @@ MM_SDK_API int mmdeploy_text_detector_apply(mm_handle_t handle, const mm_mat_t* 
         result_ptr->score = det_output.scores[i];
         auto& bbox = det_output.boxes[i];
         for (auto j = 0; j < bbox.size(); j += 2) {
-          result_ptr->bbox[j / 2].x = static_cast<int>(bbox[j]);
-          result_ptr->bbox[j / 2].y = static_cast<int>(bbox[j + 1]);
+          result_ptr->bbox[j / 2].x = bbox[j];
+          result_ptr->bbox[j / 2].y = bbox[j + 1];
         }
       }
     }

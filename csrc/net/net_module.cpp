@@ -24,7 +24,7 @@ struct NetModule::Impl {
   using Output = std::map<std::string, Tensor>;
 
   explicit Impl(const Value& args) {
-    INFO("Net Module cfg: {}", args);
+    DEBUG("Net Module cfg: {}", args);
     auto init = [&]() -> Result<void> {
       auto name = args["name"].get<std::string>();
       auto& context = args["context"];

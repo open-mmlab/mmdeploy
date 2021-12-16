@@ -267,7 +267,7 @@ bool Compare(const cv::Mat& src1, const cv::Mat& src2) {
   cv::subtract(_src1, _src2, diff);
   diff = cv::abs(diff);
   auto sum = cv::sum(cv::sum(diff));
-  INFO("sum: {}, average: {}", sum[0], sum[0] * 1.0 / (src1.rows * src1.cols));
+  DEBUG("sum: {}, average: {}", sum[0], sum[0] * 1.0 / (src1.rows * src1.cols));
   return sum[0] / (src1.rows * src1.cols) < 0.5f;
 }
 

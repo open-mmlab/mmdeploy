@@ -40,12 +40,7 @@ inline static std::string shape_string(const TensorShape& shape) {
 
 Tensor::Tensor(const TensorDesc& desc, Allocator allocator)
     : desc_(desc), allocator_(std::move(allocator)) {
-  if (desc_.shape.empty()) {
-    return;
-  }
-  if (auto _byte_size = byte_size(); _byte_size > 0) {
-    buffer_ = Buffer(desc.device, _byte_size, allocator_);
-  }
+  buffer_ = Buffer(desc.device, byte_size(), allocator_);
 }
 
 Tensor::Tensor(const TensorDesc& desc, Buffer buffer)  // NOLINT

@@ -6,7 +6,7 @@
 #include "common.h"
 
 typedef struct mm_text_detect_t {
-  mm_pointi_t bbox[4];  ///< a text bounding box of which the vertex are in clock-wise
+  mm_pointf_t bbox[4];  ///< a text bounding box of which the vertex are in clock-wise
   float score;
 } mm_text_detect_t;
 

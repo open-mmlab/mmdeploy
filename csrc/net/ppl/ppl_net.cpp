@@ -86,9 +86,9 @@ Result<void> PPLNet::Init(const Value& args) {
     /// debug only
     auto& desc = inputs_internal_[i]->GetShape();
     std::vector<long> shape_(desc.GetDims(), desc.GetDims() + desc.GetDimCount());
-    INFO("input {}: datatype = {}, dataformat = {}, shape = {}", i,
-         ppl::common::GetDataTypeStr(desc.GetDataType()),
-         ppl::common::GetDataFormatStr(desc.GetDataFormat()), shape_);
+    DEBUG("input {}: datatype = {}, dataformat = {}, shape = {}", i,
+          ppl::common::GetDataTypeStr(desc.GetDataType()),
+          ppl::common::GetDataFormatStr(desc.GetDataFormat()), shape_);
   }
 
   for (int i = 0; i < runtime->GetOutputCount(); ++i) {
@@ -98,9 +98,9 @@ Result<void> PPLNet::Init(const Value& args) {
 
     auto desc = outputs_internal_[i]->GetShape();
     std::vector<long> shape_(desc.GetDims(), desc.GetDims() + desc.GetDimCount());
-    INFO("output {}: datatype = {}, dataformat = {}, shape = {}", i,
-         ppl::common::GetDataTypeStr(desc.GetDataType()),
-         ppl::common::GetDataFormatStr(desc.GetDataFormat()), shape_);
+    DEBUG("output {}: datatype = {}, dataformat = {}, shape = {}", i,
+          ppl::common::GetDataTypeStr(desc.GetDataType()),
+          ppl::common::GetDataFormatStr(desc.GetDataFormat()), shape_);
     TensorShape shape(desc.GetDims(), desc.GetDims() + desc.GetDimCount());
   }
 
@@ -132,6 +132,40 @@ static TensorShape GetShape(const PPLTensor& tensor) {
   return {desc.GetDims(), desc.GetDims() + desc.GetDimCount()};
 }
 
+Result<ppl::common::datatype_t> GetPPLDataType(DataType data_type) {
+  switch (data_type) {
+    case DataType::kFLOAT:
+      return ppl::common::DATATYPE_FLOAT32;
+    case DataType::kHALF:
+      return ppl::common::DATATYPE_FLOAT16;
+    case DataType::kINT8:
+      return ppl::common::DATATYPE_INT8;
+    case DataType::kINT32:
+      return ppl::common::DATATYPE_INT32;
+    case DataType::kINT64:
+      return ppl::common::DATATYPE_INT64;
+    default:
+      return Status(eNotSupported);
+  }
+}
+
+Result<DataType> GetMMDeployDataType(ppl::common::datatype_t data_type) {
+  switch (data_type) {
+    case ppl::common::DATATYPE_FLOAT32:
+      return DataType::kFLOAT;
+    case ppl::common::DATATYPE_FLOAT16:
+      return DataType::kHALF;
+    case ppl::common::DATATYPE_INT8:
+      return DataType::kINT8;
+    case ppl::common::DATATYPE_INT32:
+      return DataType::kINT32;
+    case ppl::common::DATATYPE_INT64:
+      return DataType::kINT64;
+    default:
+      return Status(eNotSupported);
+  }
+}
+
 Result<void> PPLNet::Forward() {
   OUTCOME_TRY(stream_.Wait());
 
@@ -147,12 +181,21 @@ Result<void> PPLNet::Forward() {
       return Status(eNotSupported);
     }
     auto& external = outputs_external_[i];
+    auto dtype_int = internal.GetShape().GetDataType();
+    OUTCOME_TRY(auto dtype_ext, GetPPLDataType(external.data_type()));
     auto shape_int = GetShape(internal);
     auto shape_ext = external.shape();
     auto data_int = internal.GetBufferPtr();
     auto data_ext = external.data();
-    if (shape_int != shape_ext || data_int != data_ext) {
-      external.Reshape(shape_int);
+    if (shape_int != shape_ext || dtype_int != dtype_ext || data_int != data_ext) {
+      if (dtype_int != dtype_ext) {
+        auto desc = external.desc();
+        desc.shape = shape_int;
+        OUTCOME_TRY(desc.data_type, GetMMDeployDataType(dtype_int));
+        external = Tensor(desc, external.allocator());
+      } else {
+        external.Reshape(shape_int);
+      }
       std::shared_ptr<void> data(data_int, [](void*) {});
       if (external.size() > 0) {
         OUTCOME_TRY(Tensor(external.desc(), data).CopyTo(external, stream_));
@@ -167,21 +210,6 @@ Result<void> PPLNet::Forward() {
 }
 
 Result<void> PPLNet::ForwardAsync(Event* event) { return Status(eNotSupported); }
-
-Result<ppl::common::datatype_t> GetPPLDataType(DataType data_type) {
-  switch (data_type) {
-    case DataType::kFLOAT:
-      return ppl::common::DATATYPE_FLOAT32;
-    case DataType::kHALF:
-      return ppl::common::DATATYPE_FLOAT16;
-    case DataType::kINT8:
-      return ppl::common::DATATYPE_INT8;
-    case DataType::kINT32:
-      return ppl::common::DATATYPE_INT32;
-    default:
-      return Status(eNotSupported);
-  }
-}
 
 Result<void> ReshapeLike(PPLTensor& dst, Tensor& src) {
   auto& dst_desc = dst.GetShape();

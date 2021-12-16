@@ -52,7 +52,7 @@ namespace mmdeploy {
 
 #define MMDEPLOY_ARCHIVE_MEMBERS(...)           \
   template <typename Archive>                   \
-  void serialize(Archive& archive) {            \
+  void serialize(Archive &archive) {            \
     MMDEPLOY_ARCHIVE_NVP(archive, __VA_ARGS__); \
   }
 
@@ -62,13 +62,13 @@ namespace mmdeploy {
 template <typename NameT, typename ValueT>
 class NamedValue {
  public:
-  explicit NamedValue(std::tuple<NameT, ValueT>&& data) : data_(std::move(data)) {}
+  explicit NamedValue(std::tuple<NameT, ValueT> &&data) : data_(std::move(data)) {}
   template <typename Archive>
-  void serialize(Archive& archive) {
+  void serialize(Archive &archive) {
     archive.named_value(std::forward<NameT>(std::get<0>(data_)),
                         std::forward<ValueT>(std::get<1>(data_)));
   }
-  std::tuple<NameT, ValueT>& data() { return data_; }
+  std::tuple<NameT, ValueT> &data() { return data_; }
 
  private:
   std::tuple<NameT, ValueT> data_;
@@ -107,12 +107,12 @@ namespace detail {
 template <typename Archive, typename T, typename U = uncvref_t<T>,
           typename ValueType = typename U::value_type,
           std::enable_if_t<!std::is_same_v<U, std::string>, int> = 0>
-auto save(Archive& archive, T&& iterable)
+auto save(Archive &archive, T &&iterable)
     -> std::void_t<decltype(iterable.begin(), iterable.end())> {
   if constexpr (has_size<T>::value) {
     archive.init(array_tag<ValueType>(iterable.size()));
   }
-  for (auto&& x : iterable) {
+  for (auto &&x : iterable) {
     archive.item(std::forward<decltype(x)>(x));
   }
 }
@@ -120,13 +120,13 @@ auto save(Archive& archive, T&& iterable)
 template <typename T0, typename T1>
 class KeyValue {
  public:
-  explicit KeyValue(std::tuple<T0, T1>&& data) : data_(std::move(data)) {}
+  explicit KeyValue(std::tuple<T0, T1> &&data) : data_(std::move(data)) {}
   template <typename Archive>
-  void serialize(Archive& archive) {
+  void serialize(Archive &archive) {
     archive.named_value("key", std::forward<T0>(std::get<0>(data_)));
     archive.named_value("value", std::forward<T1>(std::get<1>(data_)));
   }
-  std::tuple<T0, T1>& data() { return data_; }
+  std::tuple<T0, T1> &data() { return data_; }
 
  private:
   std::tuple<T0, T1> data_;
@@ -135,12 +135,12 @@ class KeyValue {
 template <typename Archive, typename T, typename U = uncvref_t<T>,
           typename KeyType = typename U::key_type, typename MappedType = typename U::mapped_type,
           std::enable_if_t<!std::is_constructible_v<std::string, KeyType>, int> = 0>
-auto save(Archive& archive, T& object) -> std::void_t<decltype(object.begin(), object.end())> {
+auto save(Archive &archive, T &object) -> std::void_t<decltype(object.begin(), object.end())> {
   if constexpr (has_size<T>::value) {
     // TODO: provide meaningful type info
     archive.init(array_tag<void>(object.size()));
   }
-  for (auto&& [k, v] : object) {
+  for (auto &&[k, v] : object) {
     archive.item(KeyValue{
         std::forward_as_tuple(std::forward<decltype(k)>(k), std::forward<decltype(v)>(v))});
   }
@@ -149,32 +149,32 @@ auto save(Archive& archive, T& object) -> std::void_t<decltype(object.begin(), o
 template <typename Archive, typename T, typename U = uncvref_t<T>,
           typename KeyType = typename U::key_type, typename MappedType = typename U::mapped_type,
           std::enable_if_t<std::is_constructible_v<std::string, KeyType>, int> = 0>
-auto save(Archive& archive, T& object) -> std::void_t<decltype(object.begin(), object.end())> {
+auto save(Archive &archive, T &object) -> std::void_t<decltype(object.begin(), object.end())> {
   if constexpr (has_size<T>::value) {
     archive.init(object_tag<MappedType>());
   }
-  for (auto&& [k, v] : object) {
+  for (auto &&[k, v] : object) {
     archive.named_value(std::forward<decltype(k)>(k), std::forward<decltype(v)>(v));
   }
 }
 
 template <typename Archive, typename T, std::size_t... Is>
-void save_tuple_impl(Archive& archive, T&& tuple, std::index_sequence<Is...>) {
+void save_tuple_impl(Archive &archive, T &&tuple, std::index_sequence<Is...>) {
   (archive.item(std::get<Is>(std::forward<T>(tuple))), ...);
 }
 
 template <typename Archive, typename... Ts>
-void save(Archive& archive, const std::tuple<Ts...>& tuple) {
+void save(Archive &archive, const std::tuple<Ts...> &tuple) {
   save_tuple_impl(archive, tuple, std::index_sequence_for<Ts...>{});
 }
 
 template <typename Archive, typename T, size_t... Is>
-void load_tuple_impl(Archive& archive, T& tuple, std::index_sequence<Is...>) {
+void load_tuple_impl(Archive &archive, T &tuple, std::index_sequence<Is...>) {
   (archive.item(std::get<Is>(tuple)), ...);
 }
 
 template <typename Archive, typename T, std::size_t N>
-void save(Archive& archive, T (&v)[N]) {
+void save(Archive &archive, T (&v)[N]) {
   archive.init(array_tag<T>(N));
   for (std::size_t i = 0; i < N; ++i) {
     archive.item(v[i]);
@@ -182,7 +182,7 @@ void save(Archive& archive, T (&v)[N]) {
 }
 
 template <typename Archive, typename... Ts>
-void load(Archive& archive, std::tuple<Ts...>& tuple) {
+void load(Archive &archive, std::tuple<Ts...> &tuple) {
   std::size_t size{};
   archive.init(size);
   if (size != sizeof...(Ts)) {
@@ -194,7 +194,7 @@ void load(Archive& archive, std::tuple<Ts...>& tuple) {
 template <typename Archive, typename T, typename U = uncvref_t<T>,
           typename ValueType = typename U::value_type,
           std::enable_if_t<!std::is_same_v<U, std::string>, int> = 0>
-auto load(Archive&& archive, T&& vec) -> std::void_t<decltype(vec.push_back(ValueType{}))> {
+auto load(Archive &&archive, T &&vec) -> std::void_t<decltype(vec.push_back(ValueType{}))> {
   std::size_t size{};
   archive.init(size);
   vec.clear();
@@ -206,7 +206,7 @@ auto load(Archive&& archive, T&& vec) -> std::void_t<decltype(vec.push_back(Valu
 }
 
 template <typename Archive, typename T, std::size_t N>
-void load(Archive& archive, std::array<T, N>& v) {
+void load(Archive &archive, std::array<T, N> &v) {
   std::size_t size{};
   archive.init(size);
   for (std::size_t i = 0; i < size; ++i) {
@@ -215,7 +215,7 @@ void load(Archive& archive, std::array<T, N>& v) {
 }
 
 template <typename Archive, typename T, std::size_t N>
-void load(Archive& archive, T (&v)[N]) {
+void load(Archive &archive, T (&v)[N]) {
   std::size_t size{};
   archive.init(size);
   for (std::size_t i = 0; i < size; ++i) {
@@ -228,7 +228,7 @@ template <typename Archive, typename T, typename U = uncvref_t<T>,
           std::enable_if_t<std::conjunction_v<std::is_default_constructible<ValueType>,
                                               std::negation<has_mapped_type<U>>>,
                            int> = 0>
-auto load(Archive&& archive, T&& set)
+auto load(Archive &&archive, T &&set)
     -> std::void_t<decltype(set.insert(std::declval<ValueType>()))> {
   std::size_t size{};
   archive.init(size);
@@ -246,7 +246,7 @@ template <
                                         std::is_default_constructible<KeyType>,
                                         std::is_default_constructible<MappedType>>,
                      int> = 0>
-void load(Archive&& archive, T&& object) {
+void load(Archive &&archive, T &&object) {
   std::size_t size{};
   archive.init(size);
   for (std::size_t i = 0; i < size; ++i) {
@@ -262,7 +262,7 @@ template <typename Archive, typename T, typename U = uncvref_t<T>,
           std::enable_if_t<std::conjunction_v<std::is_constructible<KeyType, std::string>,
                                               std::is_default_constructible<MappedType>>,
                            int> = 0>
-void load(Archive&& archive, T&& object) {
+void load(Archive &&archive, T &&object) {
   std::size_t size{};
   archive.init(size);
   for (std::size_t i = 0; i < size; ++i) {
@@ -278,7 +278,7 @@ using save_t = decltype(save(std::declval<Archive>(), std::declval<T>()));
 
 struct save_fn {
   template <typename Archive, typename T>
-  auto operator()(Archive&& a, T&& v) const -> save_t<Archive, T> {
+  auto operator()(Archive &&a, T &&v) const -> save_t<Archive, T> {
     return save(std::forward<Archive>(a), std::forward<T>(v));
   }
 };
@@ -288,7 +288,7 @@ using load_t = decltype(load(std::declval<Archive>(), std::declval<T>()));
 
 struct load_fn {
   template <typename Archive, typename T>
-  auto operator()(Archive&& a, T&& v) const -> load_t<Archive, T> {
+  auto operator()(Archive &&a, T &&v) const -> load_t<Archive, T> {
     return load(std::forward<Archive>(a), std::forward<T>(v));
   }
 };
@@ -298,7 +298,7 @@ using serialize_t = decltype(serialize(std::declval<Archive>(), std::declval<T>(
 
 struct serialize_fn {
   template <typename Archive, typename T>
-  auto operator()(Archive&& a, T&& v) const -> serialize_t<Archive, T> {
+  auto operator()(Archive &&a, T &&v) const -> serialize_t<Archive, T> {
     return serialize(std::forward<Archive>(a), std::forward<T>(v));
   }
 };
@@ -319,15 +319,15 @@ struct adl_serializer;
 template <typename, typename>
 struct adl_serializer {
   template <typename Archive, typename T>
-  static auto save(Archive&& a, T&& v) -> detail::save_t<Archive, T> {
+  static auto save(Archive &&a, T &&v) -> detail::save_t<Archive, T> {
     ::mmdeploy::save(std::forward<Archive>(a), std::forward<T>(v));
   }
   template <typename Archive, typename T>
-  static auto load(Archive&& a, T&& v) -> detail::load_t<Archive, T> {
+  static auto load(Archive &&a, T &&v) -> detail::load_t<Archive, T> {
     ::mmdeploy::load(std::forward<Archive>(a), std::forward<T>(v));
   }
   template <typename Archive, typename T>
-  static auto serialize(Archive&& a, T&& v) -> detail::serialize_t<Archive, T> {
+  static auto serialize(Archive &&a, T &&v) -> detail::serialize_t<Archive, T> {
     ::mmdeploy::serialize(std::forward<Archive>(a), std::forward<T>(v));
   }
 };
