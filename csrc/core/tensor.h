@@ -49,6 +49,8 @@ class Tensor final {
   Result<void> CopyFrom(void* host_ptr, Stream stream = {});
   Result<void> CopyTo(void* host_ptr, Stream stream = {}) const;
 
+  Allocator allocator() { return allocator_; }
+
   template <typename T = void>
   T* data() {
     return GetNative<T*>(buffer());

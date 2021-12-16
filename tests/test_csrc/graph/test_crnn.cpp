@@ -46,7 +46,7 @@ TEST_CASE("test crnn", "[crnn]") {
   auto json = nlohmann::json::parse(json_str);
   auto value = mmdeploy::from_json<mmdeploy::Value>(json);
 
-  value["context"]["device"] = Device(0);
+  value["context"]["device"] = Device("cuda");
   value["context"]["stream"] = Stream::GetDefault(Device(0));
   auto pipeline = Registry<graph::Node>::Get().GetCreator("Pipeline")->Create(value);
   REQUIRE(pipeline);

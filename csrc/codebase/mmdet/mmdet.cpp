@@ -4,6 +4,6 @@
 
 namespace mmdeploy::mmdet {
 
-REGISTER_CODEBASE(MMDetPostprocess);
+REGISTER_CODEBASE(MMDetection);
 
 }  // namespace mmdeploy::mmdet

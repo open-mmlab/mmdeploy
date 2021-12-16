@@ -21,15 +21,15 @@ Value& config_template() {
     {
       "pipeline", {
         {"input", {"img"}},
-        {"output", {"mmsegmentation-fcn_output"}},
+        {"output", {"mask"}},
         {
           "tasks", {
             {
-              {"name", "mmsegmentation-fcn"},
+              {"name", "segmentation"},
               {"type", "Inference"},
               {"params", {{"model", "TBD"}}},
               {"input", {"img"}},
-              {"output", {"mmsegmentation-fcn_output"}}
+              {"output", {"mask"}}
             }
           }
         }

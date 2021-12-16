@@ -1,11 +1,10 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include <fstream>
-#include <iostream>
-
-// clang-format on
-#include "catch.hpp"
 // clang-format off
+#include "catch.hpp"
+// clang-format on
+
+#include <iostream>
 
 #include "apis/c/detector.h"
 #include "opencv2/opencv.hpp"

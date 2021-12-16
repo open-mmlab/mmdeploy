@@ -7,15 +7,13 @@
 
 namespace mmdeploy::graph {
 
-class Inference : public Node {
+class Inference : public BaseNode {
  public:
-  static unique_ptr<Inference> Create(const Value& param);
+  explicit Inference(const Value& cfg);
 
   void Build(TaskGraph& graph) override;
 
  private:
-  vector<string> inputs_;
-  vector<string> outputs_;
   Model model_;
   unique_ptr<Pipeline> pipeline_;
 };

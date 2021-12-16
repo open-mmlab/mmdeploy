@@ -6,6 +6,6 @@ using namespace std;
 
 namespace mmdeploy::mmseg {
 
-REGISTER_CODEBASE(MMSegPostprocess);
+REGISTER_CODEBASE(MMSegmentation);
 
 }  // namespace mmdeploy::mmseg

@@ -91,7 +91,7 @@ MM_SDK_API int mmdeploy_detector_apply(mm_handle_t handle, const mm_mat_t* mats,
     }
 
     auto output = detector->Run(std::move(input)).value().front();
-    ERROR("output: {}", output);
+    DEBUG("output: {}", output);
 
     auto detector_outputs = from_value<vector<mmdet::DetectorOutput>>(output);
 
@@ -104,9 +104,16 @@ MM_SDK_API int mmdeploy_detector_apply(mm_handle_t handle, const mm_mat_t* mats,
     auto total = std::accumulate(_result_count.begin(), _result_count.end(), 0);
 
     std::unique_ptr<int[]> result_count_data(new int[_result_count.size()]{});
+    auto result_count_ptr = result_count_data.get();
     std::copy(_result_count.begin(), _result_count.end(), result_count_data.get());
 
-    std::unique_ptr<mm_detect_t[]> result_data(new mm_detect_t[total]{});
+    auto deleter = [&](mm_detect_t* p) {
+      mmdeploy_detector_release_result(p, result_count_ptr, mat_count);
+    };
+    std::unique_ptr<mm_detect_t[], decltype(deleter)> result_data(new mm_detect_t[total]{},
+                                                                  deleter);
+    // ownership transferred to result_data
+    result_count_data.release();
 
     auto result_ptr = result_data.get();
 
@@ -115,12 +122,21 @@ MM_SDK_API int mmdeploy_detector_apply(mm_handle_t handle, const mm_mat_t* mats,
         result_ptr->label_id = detection.label_id;
         result_ptr->score = detection.score;
         const auto& bbox = detection.bbox;
-        result_ptr->bbox = {(int)bbox[0], (int)bbox[1], (int)bbox[2], (int)bbox[3]};
+        result_ptr->bbox = {bbox[0], bbox[1], bbox[2], bbox[3]};
+        auto mask_byte_size = detection.mask.byte_size();
+        if (mask_byte_size) {
+          auto& mask = detection.mask;
+          result_ptr->mask = new mm_instance_mask_t{};
+          result_ptr->mask->data = new char[mask_byte_size];
+          result_ptr->mask->width = mask.width();
+          result_ptr->mask->height = mask.height();
+          std::copy(mask.data<char>(), mask.data<char>() + mask_byte_size, result_ptr->mask->data);
+        }
         ++result_ptr;
       }
     }
 
-    *result_count = result_count_data.release();
+    *result_count = result_count_ptr;
     *results = result_data.release();
 
     return MM_SUCCESS;
@@ -135,6 +151,15 @@ MM_SDK_API int mmdeploy_detector_apply(mm_handle_t handle, const mm_mat_t* mats,
 
 MM_SDK_API void mmdeploy_detector_release_result(mm_detect_t* results, const int* result_count,
                                                  int count) {
+  auto result_ptr = results;
+  for (int i = 0; i < count; ++i) {
+    for (int j = 0; j < result_count[i]; ++j, ++result_ptr) {
+      if (result_ptr->mask) {
+        delete result_ptr->mask->data;
+        delete result_ptr->mask;
+      }
+    }
+  }
   delete[] results;
   delete[] result_count;
 }

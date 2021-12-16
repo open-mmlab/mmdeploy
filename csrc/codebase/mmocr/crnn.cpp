@@ -16,19 +16,24 @@ namespace mmdeploy::mmocr {
 using std::string;
 using std::vector;
 
-class CTCConvertor : public MMOCRPostprocess {
+class CTCConvertor : public MMOCR {
  public:
-  explicit CTCConvertor(const Value& cfg) : MMOCRPostprocess(cfg) {
+  explicit CTCConvertor(const Value& cfg) : MMOCR(cfg) {
     auto model = cfg["context"]["model"].get<Model>();
+    if (!cfg.contains("params")) {
+      ERROR("'params' is required, but it's not in the config");
+      throw_exception(eInvalidArgument);
+    }
     // BaseConverter
-    if (cfg.contains("dict_file")) {
-      auto filename = cfg["dict_file"].get<std::string>();
+    auto& _cfg = cfg["params"];
+    if (_cfg.contains("dict_file")) {
+      auto filename = _cfg["dict_file"].get<std::string>();
       auto content = model.ReadFile(filename).value();
       idx2char_ = SplitLines(content);
-    } else if (cfg.contains("dict_list")) {
-      from_value(cfg["dict_list"], idx2char_);
-    } else if (cfg.contains("dict_type")) {
-      auto dict_type = cfg["dict_type"].get<std::string>();
+    } else if (_cfg.contains("dict_list")) {
+      from_value(_cfg["dict_list"], idx2char_);
+    } else if (_cfg.contains("dict_type")) {
+      auto dict_type = _cfg["dict_type"].get<std::string>();
       if (dict_type == "DICT36") {
         idx2char_ = SplitChars(DICT36);
       } else if (dict_type == "DICT90") {
@@ -44,7 +49,7 @@ class CTCConvertor : public MMOCRPostprocess {
     // CTCConverter
     idx2char_.insert(begin(idx2char_), "<BLK>");
 
-    if (cfg.value("with_unknown", false)) {
+    if (_cfg.value("with_unknown", false)) {
       unknown_idx_ = static_cast<int>(idx2char_.size());
       idx2char_.emplace_back("<UKN>");
     }
@@ -87,7 +92,7 @@ class CTCConvertor : public MMOCRPostprocess {
 
   static std::pair<vector<int>, vector<float> > Tensor2Idx(const float* data, int w, int c,
                                                            float valid_ratio) {
-    auto decode_len = static_cast<int>(std::ceil(w * valid_ratio));
+    auto decode_len = std::min(w, static_cast<int>(std::ceil(w * valid_ratio)));
     vector<int> indexes;
     indexes.reserve(decode_len);
     vector<float> scores;
@@ -98,7 +103,7 @@ class CTCConvertor : public MMOCRPostprocess {
       softmax(data, prob.data(), c);
       auto iter = max_element(begin(prob), end(prob));
       auto index = static_cast<int>(iter - begin(prob));
-      if (index != 0 && index != prev) {
+      if (index != blank_idx_ && index != prev) {
         indexes.push_back(index);
         scores.push_back(*iter);
       }
@@ -168,6 +173,6 @@ class CTCConvertor : public MMOCRPostprocess {
   vector<string> idx2char_;
 };
 
-REGISTER_CODEBASE_MODULE(MMOCRPostprocess, CTCConvertor);
+REGISTER_CODEBASE_COMPONENT(MMOCR, CTCConvertor);
 
 }  // namespace mmdeploy::mmocr

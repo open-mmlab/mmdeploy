@@ -98,7 +98,7 @@ class CudaDeviceMemory : public NonCopyable {
     allocator_ = std::move(allocator);
     CudaDeviceGuard guard(device_id_);
     block_ = Access::get<AllocatorImpl>(allocator_).Allocate(size);
-    if (!block_.handle) {
+    if (size && !block_.handle) {
       return Status(eOutOfMemory);
     }
     size_ = size;
@@ -159,6 +159,9 @@ Result<void> CudaPlatformImpl::Copy(const void* host_ptr, Buffer dst, size_t siz
   if (!CheckCopyDevice(Device{0, 0}, dst.GetDevice(), stream.GetDevice())) {
     return Status(eInvalidArgument);
   }
+  if (size == 0) {
+    return success();
+  }
   auto dst_ptr = dst.GetNative();
   if (!dst_ptr) {
     return Status(eInvalidArgument);
@@ -173,6 +176,9 @@ Result<void> CudaPlatformImpl::Copy(Buffer src, void* host_ptr, size_t size, siz
   if (!CheckCopyDevice(src.GetDevice(), Device{0, 0}, stream.GetDevice())) {
     return Status(eInvalidArgument);
   }
+  if (size == 0) {
+    return success();
+  }
   auto src_ptr = src.GetNative();
   if (!src_ptr) {
     return Status(eInvalidArgument);
@@ -186,6 +192,9 @@ Result<void> CudaPlatformImpl::Copy(Buffer src, Buffer dst, size_t size, size_t 
                                     size_t dst_offset, Stream stream) {
   if (!CheckCopyDevice(src.GetDevice(), dst.GetDevice(), stream.GetDevice())) {
     return Status(eInvalidArgument);
+  }
+  if (size == 0) {
+    return success();
   }
   auto src_ptr = src.GetNative();
   auto dst_ptr = dst.GetNative();

@@ -54,10 +54,10 @@ typedef struct mm_mat_t {
 } mm_mat_t;
 
 typedef struct mm_rect_t {
-  int left;
-  int top;
-  int right;
-  int bottom;
+  float left;
+  float top;
+  float right;
+  float bottom;
 } mm_rect_t;
 
 typedef struct mm_pointi_t {

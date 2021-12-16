@@ -6,6 +6,6 @@
 
 namespace mmdeploy::mmedit {
 
-REGISTER_CODEBASE(MMEditPostprocess);
+REGISTER_CODEBASE(MMEdit);
 
 }  // namespace mmdeploy::mmedit

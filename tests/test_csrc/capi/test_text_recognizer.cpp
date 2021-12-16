@@ -1,11 +1,11 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include <fstream>
-#include <iostream>
-
 // clang-format off
 #include "catch.hpp"
 // clang-format on
+
+#include <fstream>
+#include <iostream>
 
 #include "apis/c/text_recognizer.h"
 #include "core/logger.h"
@@ -28,7 +28,7 @@ TEST_CASE("test text recognizer's c api", "[text-recognizer]") {
   const auto model_path = "../../config/text-recognizer/crnn";
 
   mm_handle_t handle{nullptr};
-  auto ret = mmdeploy_text_recognizer_create_by_path(model_path, "cpu", 0, &handle);
+  auto ret = mmdeploy_text_recognizer_create_by_path(model_path, "cuda", 0, &handle);
   REQUIRE(ret == MM_SUCCESS);
 
   cv::Mat mat = cv::imread("/data/verify/mmsdk/18.png");
@@ -54,11 +54,12 @@ TEST_CASE("test text recognizer's c api", "[text-recognizer]") {
 TEST_CASE("test text detector-recognizer combo", "[text-detector-recognizer]") {
   const auto det_model_path = "../../config/text-detector/dbnet18_t4-cuda11.1-trt7.2-fp16";
   mm_handle_t detector{};
-  REQUIRE(mmdeploy_text_detector_create_by_path(det_model_path, "cpu", 0, &detector) == MM_SUCCESS);
+  REQUIRE(mmdeploy_text_detector_create_by_path(det_model_path, "cuda", 0, &detector) ==
+          MM_SUCCESS);
 
   mm_handle_t recognizer{};
   const auto reg_model_path = "../../config/text-recognizer/crnn";
-  REQUIRE(mmdeploy_text_recognizer_create_by_path(reg_model_path, "cpu", 0, &recognizer) ==
+  REQUIRE(mmdeploy_text_recognizer_create_by_path(reg_model_path, "cuda", 0, &recognizer) ==
           MM_SUCCESS);
 
   const char* file_list[] = {

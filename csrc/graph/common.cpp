@@ -5,7 +5,12 @@
 #include "archive/value_archive.h"
 
 mmdeploy::graph::BaseNode::BaseNode(const mmdeploy::Value& cfg) {
-  from_value(cfg["input"], inputs_);
-  from_value(cfg["output"], outputs_);
-  name_ = cfg.value<std::string>("name", "");
+  try {
+    from_value(cfg["input"], inputs_);
+    from_value(cfg["output"], outputs_);
+    name_ = cfg.value<std::string>("name", "");
+  } catch (...) {
+    ERROR("error parsing config: {}", cfg);
+    throw;
+  }
 }

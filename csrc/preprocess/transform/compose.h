@@ -16,6 +16,7 @@ class Compose : public Transform {
 
  private:
   std::vector<std::unique_ptr<Transform>> transforms_;
+  Stream stream_;
 };
 
 }  // namespace mmdeploy

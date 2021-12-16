@@ -5,6 +5,7 @@
 
 #include "codebase/common.h"
 #include "core/device.h"
+#include "core/mat.h"
 #include "core/module.h"
 #include "core/serialization.h"
 
@@ -12,16 +13,18 @@ namespace mmdeploy::mmdet {
 
 struct DetectorOutput {
   struct Detection {
+    int index;
     int label_id;
     float score;
     std::array<float, 4> bbox;  // left, top, right, bottom
-    MMDEPLOY_ARCHIVE_MEMBERS(label_id, score, bbox);
+    Mat mask;
+    MMDEPLOY_ARCHIVE_MEMBERS(index, label_id, score, bbox, mask);
   };
   std::vector<Detection> detections;
   MMDEPLOY_ARCHIVE_MEMBERS(detections);
 };
 
-DECLARE_CODEBASE(MMDetPostprocess);
+DECLARE_CODEBASE(MMDetection, mmdet);
 
 }  // namespace mmdeploy::mmdet
 

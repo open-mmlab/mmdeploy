@@ -86,6 +86,14 @@ class Node {
  public:
   virtual ~Node() = default;
   virtual void Build(TaskGraph& graph) = 0;
+  const std::vector<std::string>& inputs() const noexcept { return inputs_; }
+  const std::vector<std::string>& outputs() const noexcept { return outputs_; }
+  const std::string& name() const noexcept { return name_; }
+
+ protected:
+  std::string name_;
+  std::vector<std::string> inputs_;
+  std::vector<std::string> outputs_;
 };
 
 }  // namespace mmdeploy::graph

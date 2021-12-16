@@ -5,10 +5,17 @@
 
 #include "common.h"
 
+typedef struct mm_instance_mask_t {
+  char* data;
+  int height;
+  int width;
+} mm_instance_mask_t;
+
 typedef struct mm_detect_t {
   int label_id;
   float score;
   mm_rect_t bbox;
+  mm_instance_mask_t* mask;
 } mm_detect_t;
 
 MM_SDK_API int mmdeploy_detector_create(mm_model_t model, const char* device_name, int device_id,

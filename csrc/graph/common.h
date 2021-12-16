@@ -27,16 +27,8 @@ inline Result<RetType> CreateFromRegistry(const Value& config, const char* key =
 }
 
 class BaseNode : public Node {
- public:
+ protected:
   explicit BaseNode(const Value& cfg);
-  const std::vector<std::string>& inputs() const noexcept { return inputs_; }
-  const std::vector<std::string>& outputs() const noexcept { return outputs_; }
-  const std::string& name() const noexcept { return name_; }
-
- private:
-  std::string name_;
-  std::vector<std::string> inputs_;
-  std::vector<std::string> outputs_;
 };
 
 }  // namespace mmdeploy::graph
