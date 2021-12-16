@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="resources/mmdeploy-logo.png" width="600"/>
+</div>
+
 ## Introduction
 
 English | [简体中文](README_zh-CN.md)
@@ -5,51 +9,63 @@ English | [简体中文](README_zh-CN.md)
 MMDeploy is an open-source deep learning model deployment toolset. It is
 a part of the [OpenMMLab](https://openmmlab.com/) project.
 
+<div align="center">
+  <img src="https://socialistmodernism.com/wp-content/uploads/2017/07/placeholder-image.png"/>
+</div>
+
 ### Major features
 
-- **OpenMMLab model support**
+- **Fully support OpenMMLab models**
 
-  Models in OpenMMLab can be deployed with this project. Such as MMClassification, MMDetection, etc.
+  We provide a unified model deployment toolbox for the codebases in OpenMMLab. The supported codebases are listed as below, and more will be added in the future
+  - [x] MMClassification
+  - [x] MMDetection
+  - [x] MMSegmentation
+  - [x] MMEditing
+  - [x] MMOCR
 
-- **Multiple inference engine support**
+- **Multiple inference backends are available**
 
-  Models can be exported and run in different backends. Such as ONNX Runtime, TensorRT, etc.
+  Models can be exported and run in different backends. The following ones are supported, and more will be taken into consideration
+  - [x] ONNX Runtime
+  - [x] TensorRT
+  - [x] PPLNN
+  - [x] ncnn
+  - [x] OpenVINO
 
-- **Model rewrite**
+- **Efficient and highly scalable SDK Framework by C/C++**
 
-  Modules and functions used in models can be rewritten to meet the demand of different backends. It is easy to add new model support.
+    All kinds of modules in SDK can be extensible, such as `Transform` for image processing, `Net` for Neural Network inference, `Module` for postprocessing and so on
 
 ## License
 
 This project is released under the [Apache 2.0 license](LICENSE).
 
-## Codebase and Backend support
-
-Supported codebase:
-
-- [x] MMClassification
-- [x] MMDetection
-- [x] MMSegmentation
-- [x] MMEditing
-- [x] MMOCR
-
-Supported backend:
-
-- [x] ONNX Runtime
-- [x] TensorRT
-- [x] PPLNN
-- [x] ncnn
-- [x] OpenVINO
 
 ## Installation
 
-Please refer to [get_started.md](docs/get_started.md) for installation.
+Please refer to [build.md](docs/build.md) for installation.
 
 ## Getting Started
-
-Please read [how_to_convert_model.md](docs/tutorials/how_to_convert_model.md) for the basic usage of MMDeploy. There are also tutorials on [how to write config](docs/tutorials/how_to_write_config.md), [how to support new models](docs/tutorials/how_to_support_new_models.md) and [how to measure performance of models](docs/tutorials/how_to_measure_performance_of_models.md).
+Please see [getting_started.md](docs/get_started.md) for the basic usage of MMDeploy. We also provide other tutorials for:
+- [how to convert model](docs/tutorials/how_to_convert_model.md)
+- [how to write config](docs/tutorials/how_to_write_config.md)
+- [how to support new models](docs/tutorials/how_to_support_new_models.md)
+- [how to measure performance of models](docs/tutorials/how_to_measure_performance_of_models.md)
+- [MMDeploy's SDK Model spec](docs/tutorials/sdk_model_spec.md)
+- [how to integrate SDK to your application](docs/tutorials/sdk_integration.md)
+- [how to develop postprocessing components in SDK](docs/tutorials/postprocess_component_development.md)
 
 Please refer to [FAQ](docs/faq.md) for frequently asked questions.
+
+
+## Contributing
+
+We appreciate all contributions to improve MMDeploy. Please refer to [CONTRIBUTING.md](.github/CONTRIBUTING.md) for the contributing guideline.
+
+## Acknowledgement
+
+We would like to thank OpenVINO team, for their remarkable efforts to export MMDetection models to OpenVINO and integrate OpenVINO into MMDeploy backends
 
 ## Citation
 
@@ -57,16 +73,12 @@ If you find this project useful in your research, please consider cite:
 
 ```BibTeX
 @misc{=mmdeploy,
-    title={OpenMMLab's Model deployment toolbox.},
+    title={OpenMMLab's Model Deployment Toolbox.},
     author={MMDeploy Contributors},
     howpublished = {\url{https://github.com/open-mmlab/mmdeploy}},
     year={2021}
 }
 ```
-
-## Contributing
-
-We appreciate all contributions to improve MMDeploy. Please refer to [CONTRIBUTING.md](.github/CONTRIBUTING.md) for the contributing guideline.
 
 ## Projects in OpenMMLab
 
@@ -82,3 +94,6 @@ We appreciate all contributions to improve MMDeploy. Please refer to [CONTRIBUTI
 - [MMEditing](https://github.com/open-mmlab/mmediting): OpenMMLab image and video editing toolbox.
 - [MMOCR](https://github.com/open-mmlab/mmocr): A Comprehensive Toolbox for Text Detection, Recognition and Understanding.
 - [MMGeneration](https://github.com/open-mmlab/mmgeneration): OpenMMLab image and video generative models toolbox.
+- [MMFlow](https://github.com/open-mmlab/mmflow): OpenMMLab optical flow toolbox and benchmark.
+- [MMFewShot](https://github.com/open-mmlab/mmfewshot): OpenMMLab FewShot Learning Toolbox and Benchmark.
+- [MMHuman3D](https://github.com/open-mmlab/mmhuman3d): OpenMMLab Human Pose and Shape Estimation Toolbox and Benchmark.
