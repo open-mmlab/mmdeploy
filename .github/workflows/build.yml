@@ -39,6 +39,9 @@ jobs:
       - name: Install unittest dependencies
         run: |
           pip install -r requirements.txt
+          DIR=$(pip show mmocr | grep Location)
+          DIR=${DIR:10}
+          sed -i "s/1.4.0/1.5.0/" $(find $DIR/ -path "*mmocr/__init__.py")
       - name: Build and install
         run: rm -rf .eggs && pip install -e .
       - name: Run unittests and generate coverage report
