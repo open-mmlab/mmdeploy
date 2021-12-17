@@ -15,8 +15,13 @@ endif ()
 if ("ort" IN_LIST MMDEPLOY_TARGET_BACKENDS)
     add_subdirectory(ort)
 endif ()
+
 if ("ncnn" IN_LIST MMDEPLOY_TARGET_BACKENDS)
     add_subdirectory(ncnn)
+endif ()
+
+if ("openvino" IN_LIST MMDEPLOY_TARGET_BACKENDS)
+    add_subdirectory(openvino)
 endif ()
 
 set_targets(${PROJECT_NAME} NET_MODULE_OBJ NET_MODULE_STATIC NET_MODULE_SHARED)
