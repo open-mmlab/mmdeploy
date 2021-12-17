@@ -27,8 +27,7 @@ struct model_meta_info_t {
 struct deploy_meta_info_t {
   std::string version;
   std::vector<model_meta_info_t> models;
-  std::vector<std::string> customs;
-  MMDEPLOY_ARCHIVE_MEMBERS(version, models, customs);
+  MMDEPLOY_ARCHIVE_MEMBERS(version, models);
 };
 
 class ModelImpl;

@@ -80,8 +80,8 @@
       {
         "name": "postprocess",
         "type": "Task",
-        "module": "MMClsPostprocess",
-        "postprocess_type": "SoftmaxPost",
+        "module": "mmcls",
+        "component": "LinearClsHead",
         "input": [
           "data",
           "cls_res"

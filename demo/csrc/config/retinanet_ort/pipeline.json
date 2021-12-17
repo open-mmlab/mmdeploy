@@ -81,10 +81,10 @@
         }
       },
       {
-        "name": "retinanet_post",
+        "name": "postprocess",
         "type": "Task",
-        "module": "MMDetPostprocess",
-        "postprocess_type": "SingleStagePost",
+        "module": "mmdet",
+        "component": "ResizeBBox",
         "input": [
           "prep_res",
           "infer_res"
@@ -92,7 +92,10 @@
         "output": [
           "bboxes"
         ],
-        "score_thr": 0.3
+        "params": {
+          "score_thr": 0.3,
+          "min_bbox_size": 10
+        }
       }
     ]
   }

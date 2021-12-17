@@ -10,19 +10,19 @@
 
 using namespace mmdeploy;
 
-TEST_CASE("test trt net", "[trt_net]") {
+TEST_CASE("test ncnn net", "[ncnn_net]") {
   auto& gResource = MMDeployTestResources::Get();
-  auto model_list = gResource.LocateModelResources("mmcls/trt");
+  auto model_list = gResource.LocateModelResources("mmcls/ncnn");
   REQUIRE(!model_list.empty());
 
   Model model(model_list.front());
   REQUIRE(model);
 
-  auto backend("tensorrt");
+  auto backend("ncnn");
   auto creator = Registry<Net>::Get().GetCreator(backend);
   REQUIRE(creator);
 
-  Device device{"cuda"};
+  Device device{"cpu"};
   auto stream = Stream::GetDefault(device);
   Value net_config{{"context", {{"device", device}, {"model", model}, {"stream", stream}}},
                    {"name", model.meta().models[0].name}};

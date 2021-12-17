@@ -1,0 +1,10 @@
+// Copyright (c) OpenMMLab. All rights reserved.
+
+#ifndef MMDEPLOY_TEST_DEFINE_H
+#define MMDEPLOY_TEST_DEFINE_H
+
+static constexpr const char *kBackends = "@MMDEPLOY_TARGET_BACKENDS@";
+static constexpr const char *kDevices = "@MMDEPLOY_TARGET_DEVICES@";
+static constexpr const char *kCodebases = "@CODEBASES@";
+
+#endif  // MMDEPLOY_TEST_DEFINE_H

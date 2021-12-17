@@ -1,7 +1,5 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include <string.h>
-
 #include <fstream>
 #include <map>
 
@@ -10,6 +8,13 @@
 #include "core/model.h"
 #include "core/model_impl.h"
 #include "zip.h"
+#if __GNUC__ >= 8
+#include <filesystem>
+namespace fs = std::filesystem;
+#else
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#endif
 
 using nlohmann::json;
 
@@ -62,6 +67,7 @@ class ZipModelImpl : public ModelImpl {
   Result<std::string> ReadFile(const std::string& file_path) const override {
     int ret = 0;
     int index = -1;
+
     auto iter = file_index_.find(file_path);
     if (iter == file_index_.end()) {
       ERROR("cannot find file {} under dir {}", file_path.c_str(), root_dir_.c_str());
@@ -103,16 +109,20 @@ class ZipModelImpl : public ModelImpl {
   Result<void> InitZip() {
     int files = zip_get_num_files(zip_);
     INFO("there are {} files in sdk model file", files);
-
+    if (files == 0) {
+      return Status(eFail);
+    }
     for (int i = 0; i < files; ++i) {
       struct zip_stat stat;
       zip_stat_init(&stat);
       zip_stat_index(zip_, i, 0, &stat);
-      if (stat.name[strlen(stat.name) - 1] == '/') {
+      fs::path path(stat.name);
+      auto file_name = path.filename().string();
+      if (file_name == ".") {
         DEBUG("{}-th file name is: {}， which is a directory", i, stat.name);
       } else {
         DEBUG("{}-th file name is: {}， which is a file", i, stat.name);
-        file_index_[stat.name] = i;
+        file_index_[file_name] = i;
       }
     }
     return success();

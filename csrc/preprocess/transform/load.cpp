@@ -38,7 +38,9 @@ Result<Value> PrepareImageImpl::Process(const Value& input) {
   Value output = input;
 
   Mat src_mat = input["ori_img"].get<Mat>();
-  auto res = (arg_.color_type == "color" ? ConvertToBGR(src_mat) : ConvertToGray(src_mat));
+  auto res = (arg_.color_type == "color" || arg_.color_type == "color_ignore_orientation"
+                  ? ConvertToBGR(src_mat)
+                  : ConvertToGray(src_mat));
 
   OUTCOME_TRY(auto tensor, std::move(res));
 
