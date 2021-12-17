@@ -799,7 +799,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](doc
     <td class="tg-baqh">72.36</td>
     <td class="tg-baqh">72.35</td>
     <td class="tg-baqh">74.19</td>
-    <td class="tg-baqh">-</td>
+    <td class="tg-baqh">72.35</td>
     <td class="tg-0lax">$MMSEG_DIR/configs/fcn/fcn_r50-d8_512x1024_40k_cityscapes.py</td>
   </tr>
   <tr>
@@ -811,7 +811,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](doc
     <td class="tg-baqh">78.26</td>
     <td class="tg-baqh">78.24</td>
     <td class="tg-baqh">77.97</td>
-    <td class="tg-baqh">-</td>
+    <td class="tg-baqh">78.09</td>
     <td class="tg-0lax">$MMSEG_DIR/configs/pspnet/pspnet_r50-d8_512x1024_80k_cityscapes.py</td>
   </tr>
   <tr>
@@ -823,10 +823,9 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](doc
     <td class="tg-baqh">79.12</td>
     <td class="tg-baqh">79.12</td>
     <td class="tg-baqh">78.96</td>
-    <td class="tg-baqh">-</td>
+    <td class="tg-baqh">79.12</td>
     <td class="tg-0lax">$MMSEG_DIR/configs/deeplabv3/deeplabv3_r50-d8_512x1024_40k_cityscapes.py</td>
   </tr>
-  <tr>
     <td class="tg-baqh">deeplabv3+</td>
     <td class="tg-baqh">Cityscapes</td>
     <td class="tg-baqh">mIoU</td>
@@ -835,10 +834,10 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](doc
     <td class="tg-baqh">79.6</td>
     <td class="tg-baqh">79.6</td>
     <td class="tg-baqh">79.43</td>
-    <td class="tg-baqh">-</td>
+    <td class="tg-baqh">79.6</td>
     <td class="tg-0lax">$MMSEG_DIR/configs/deeplabv3plus/deeplabv3plus_r50-d8_512x1024_40k_cityscapes.py</td>
   </tr>
-  <tr>
+  </tr>
     <td class="tg-baqh">Fast-SCNN</td>
     <td class="tg-baqh">Cityscapes</td>
     <td class="tg-baqh">mIoU</td>
@@ -847,7 +846,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](doc
     <td class="tg-baqh">70.93</td>
     <td class="tg-baqh">70.92</td>
     <td class="tg-baqh">66.0</td>
-    <td class="tg-baqh">-</td>
+    <td class="tg-baqh">70.92</td>
     <td class="tg-0lax">$MMSEG_DIR/configs/fastscnn/fast_scnn_lr0.12_8x4_160k_cityscapes.py</td>
   </tr>
 </tbody>
