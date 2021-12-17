@@ -23,6 +23,7 @@ class Task(AdvancedEnum):
     SUPER_RESOLUTION = 'SuperResolution'
     CLASSIFICATION = 'Classification'
     OBJECT_DETECTION = 'ObjectDetection'
+    INSTANCE_SEGMENTATION = 'InstanceSegmentation'
 
 
 class Codebase(AdvancedEnum):

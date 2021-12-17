@@ -8,8 +8,47 @@ import torch
 from torch.utils.data import Dataset
 
 from mmdeploy.utils import Task
+from mmdeploy.utils.config_utils import get_input_shape
 from ...base import BaseTask
 from .mmdetection import MMDET_TASK
+
+
+def process_model_config(model_cfg: mmcv.Config,
+                         imgs: Union[Sequence[str], Sequence[np.ndarray]],
+                         input_shape: Optional[Sequence[int]] = None):
+    """Process the model config.
+
+    Args:
+        model_cfg (mmcv.Config): The model config.
+        imgs (Sequence[str] | Sequence[np.ndarray]): Input image(s), accepted
+            data type are List[str], List[np.ndarray].
+        input_shape (list[int]): A list of two integer in (width, height)
+            format specifying input shape. Default: None.
+
+    Returns:
+        mmcv.Config: the model config after processing.
+    """
+    from mmdet.datasets import replace_ImageToTensor
+
+    cfg = model_cfg.copy()
+
+    if isinstance(imgs[0], np.ndarray):
+        cfg = cfg.copy()
+        # set loading pipeline type
+        cfg.data.test.pipeline[0].type = 'LoadImageFromWebcam'
+    # for static exporting
+    if input_shape is not None:
+        cfg.data.test.pipeline[1]['img_scale'] = tuple(input_shape)
+        transforms = cfg.data.test.pipeline[1]['transforms']
+        for trans in transforms:
+            trans_type = trans['type']
+            if trans_type == 'Resize':
+                trans['keep_ratio'] = False
+            elif trans_type == 'Pad':
+                trans['size_divisor'] = 1
+
+    cfg.data.test.pipeline = replace_ImageToTensor(cfg.data.test.pipeline)
+    return cfg
 
 
 @MMDET_TASK.register_module(Task.OBJECT_DETECTION.value)
@@ -71,31 +110,11 @@ class ObjectDetection(BaseTask):
         Returns:
             tuple: (data, img), meta information for the input image and input.
         """
-        from mmdet.datasets import replace_ImageToTensor
         from mmdet.datasets.pipelines import Compose
         from mmcv.parallel import collate, scatter
-
-        cfg = self.model_cfg.copy()
-
         if not isinstance(imgs, (list, tuple)):
             imgs = [imgs]
-
-        if isinstance(imgs[0], np.ndarray):
-            cfg = cfg.copy()
-            # set loading pipeline type
-            cfg.data.test.pipeline[0].type = 'LoadImageFromWebcam'
-        # for static exporting
-        if input_shape is not None:
-            cfg.data.test.pipeline[1]['img_scale'] = tuple(input_shape)
-            transforms = cfg.data.test.pipeline[1]['transforms']
-            for trans in transforms:
-                trans_type = trans['type']
-                if trans_type == 'Resize':
-                    trans['keep_ratio'] = False
-                elif trans_type == 'Pad':
-                    trans['size_divisor'] = 1
-
-        cfg.data.test.pipeline = replace_ImageToTensor(cfg.data.test.pipeline)
+        cfg = process_model_config(self.model_cfg, imgs, input_shape)
         test_pipeline = Compose(cfg.data.test.pipeline)
         data_list = []
         for img in imgs:
@@ -234,3 +253,40 @@ class ObjectDetection(BaseTask):
                 eval_kwargs.pop(key, None)
             eval_kwargs.update(dict(metric=metrics, **kwargs))
             print(dataset.evaluate(outputs, **eval_kwargs))
+
+    def get_preprocess(self) -> Dict:
+        """Get the preprocess information for SDK.
+
+        Return:
+            dict: Composed of the preprocess information.
+        """
+        input_shape = get_input_shape(self.deploy_cfg)
+        model_cfg = process_model_config(self.model_cfg, [''], input_shape)
+        preprocess = model_cfg.data.test.pipeline
+        return preprocess
+
+    def get_postprocess(self) -> Dict:
+        """Get the postprocess information for SDK.
+
+        Return:
+            dict(): Composed of the postprocess information.
+        """
+        postprocess = self.model_cfg.model.test_cfg
+        if 'rpn' in postprocess:
+            postprocess['min_bbox_size'] = postprocess['rpn']['min_bbox_size']
+        if 'rcnn' in postprocess:
+            postprocess['score_thr'] = postprocess['rcnn']['score_thr']
+            if 'mask_thr_binary' in postprocess['rcnn']:
+                postprocess['mask_thr_binary'] = postprocess['rcnn'][
+                    'mask_thr_binary']
+        return postprocess
+
+    def get_model_name(self) -> str:
+        """Get the model name.
+
+        Return:
+            str: the name of the model.
+        """
+        assert 'type' in self.model_cfg.model, 'model config contains no type'
+        name = self.model_cfg.model.type.lower()
+        return name

@@ -11,8 +11,43 @@ from torch import nn
 from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
-from mmdeploy.utils import Task
+from mmdeploy.utils import Task, get_input_shape
 from .mmocr import MMOCR_TASK
+
+
+def process_model_config(model_cfg: mmcv.Config,
+                         imgs: Union[Sequence[str], Sequence[np.ndarray]],
+                         input_shape: Optional[Sequence[int]] = None):
+    """Process the model config.
+
+    Args:
+        model_cfg (mmcv.Config): The model config.
+        imgs (Sequence[str] | Sequence[np.ndarray]): Input image(s), accepted
+            data type are List[str], List[np.ndarray].
+        input_shape (list[int]): A list of two integer in (width, height)
+            format specifying input shape. Default: None.
+
+    Returns:
+        mmcv.Config: the model config after processing.
+    """
+    if model_cfg.data.test['type'] == 'ConcatDataset':
+        model_cfg.data.test.pipeline = \
+            model_cfg.data.test['datasets'][0].pipeline
+
+    is_ndarray = isinstance(imgs[0], np.ndarray)
+
+    if is_ndarray:
+        model_cfg.data.test.pipeline[0].type = 'LoadImageFromNdarray'
+
+    test_pipeline = model_cfg.data.test.pipeline
+    test_pipeline = replace_ImageToTensor(test_pipeline)
+    # for static exporting
+    if input_shape is not None:
+        test_pipeline[1].img_scale = tuple(input_shape)
+        test_pipeline[1].transforms[0].keep_ratio = False
+        test_pipeline[1].transforms[0].img_scale = tuple(input_shape)
+    model_cfg.data.test.pipeline = test_pipeline
+    return model_cfg
 
 
 @MMOCR_TASK.register_module(Task.TEXT_DETECTION.value)
@@ -89,32 +124,15 @@ class TextDetection(BaseTask):
             imgs = [imgs]
         else:
             raise AssertionError('imgs must be strings or numpy arrays')
-
-        if self.model_cfg.data.test['type'] == 'ConcatDataset':
-            self.model_cfg.data.test.pipeline = \
-                self.model_cfg.data.test['datasets'][0].pipeline
-
-        is_ndarray = isinstance(imgs[0], np.ndarray)
-
-        if is_ndarray:
-            self.model_cfg.data.test.pipeline[0].type = 'LoadImageFromNdarray'
-
-        test_pipeline = self.model_cfg.data.test.pipeline
-        test_pipeline = replace_ImageToTensor(test_pipeline)
-        # for static exporting
-        if input_shape is not None:
-            test_pipeline[1].img_scale = tuple(input_shape)
-            test_pipeline[1].transforms[0].keep_ratio = False
-            test_pipeline[1].transforms[0].img_scale = tuple(input_shape)
-
+        cfg = process_model_config(self.model_cfg, imgs, input_shape)
         from mmdet.datasets.pipelines import Compose
         from mmocr.datasets import build_dataset  # noqa: F401
-        test_pipeline = Compose(test_pipeline)
+        test_pipeline = Compose(cfg.data.test.pipeline)
 
         data_list = []
         for img in imgs:
             # prepare data
-            if is_ndarray:
+            if isinstance(imgs[0], np.ndarray):
                 # directly add img
                 data = dict(img=img)
             else:
@@ -263,3 +281,33 @@ class TextDetection(BaseTask):
                 eval_kwargs.pop(key, None)
             eval_kwargs.update(dict(metric=metrics, **kwargs))
             print(dataset.evaluate(outputs, **eval_kwargs))
+
+    def get_preprocess(self) -> Dict:
+        """Get the preprocess information for SDK.
+
+        Return:
+            dict: Composed of the preprocess information.
+        """
+        input_shape = get_input_shape(self.deploy_cfg)
+        model_cfg = process_model_config(self.model_cfg, [''], input_shape)
+        preprocess = model_cfg.data.test.pipeline
+        return preprocess
+
+    def get_postprocess(self) -> Dict:
+        """Get the postprocess information for SDK.
+
+        Return:
+            dict(): Composed of the postprocess information.
+        """
+        postprocess = self.model_cfg.model.bbox_head
+        return postprocess
+
+    def get_model_name(self) -> str:
+        """Get the model name.
+
+        Return:
+            str: the name of the model.
+        """
+        assert 'type' in self.model_cfg.model, 'model config contains no type'
+        name = self.model_cfg.model.type.lower()
+        return name

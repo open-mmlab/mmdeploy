@@ -11,7 +11,56 @@ from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
 from mmdeploy.codebase.mmedit.deploy.mmediting import MMEDIT_TASK
-from mmdeploy.utils import Task, load_config
+from mmdeploy.utils import Task, get_input_shape, load_config
+
+
+def process_model_config(model_cfg: mmcv.Config,
+                         imgs: Union[Sequence[str], Sequence[np.ndarray]],
+                         input_shape: Optional[Sequence[int]] = None):
+    """Process the model config.
+
+    Args:
+        model_cfg (mmcv.Config): The model config.
+        imgs (Sequence[str] | Sequence[np.ndarray]): Input image(s), accepted
+            data type are List[str], List[np.ndarray].
+        input_shape (list[int]): A list of two integer in (width, height)
+            format specifying input shape. Default: None.
+
+    Returns:
+        mmcv.Config: the model config after processing.
+    """
+    config = load_config(model_cfg)[0].copy()
+    keys_to_remove = ['gt', 'gt_path']
+    # MMEdit doesn't support LoadImageFromWebcam.
+    # Remove "LoadImageFromFile" and related metakeys.
+    load_from_file = isinstance(imgs[0], str)
+    is_static_cfg = input_shape is not None
+    if not load_from_file:
+        config.test_pipeline.pop(0)
+        keys_to_remove.append('lq_path')
+
+    # Fix the input shape by 'Resize'
+    if is_static_cfg:
+        resize = {
+            'type': 'Resize',
+            'scale': (input_shape[0], input_shape[1]),
+            'keys': ['lq']
+        }
+        config.test_pipeline.insert(1, resize)
+
+    for key in keys_to_remove:
+        for pipeline in list(config.test_pipeline):
+            if 'key' in pipeline and key == pipeline['key']:
+                config.test_pipeline.remove(pipeline)
+            if 'keys' in pipeline:
+                while key in pipeline['keys']:
+                    pipeline['keys'].remove(key)
+                if len(pipeline['keys']) == 0:
+                    config.test_pipeline.remove(pipeline)
+            if 'meta_keys' in pipeline:
+                while key in pipeline['meta_keys']:
+                    pipeline['meta_keys'].remove(key)
+    return config
 
 
 @MMEDIT_TASK.register_module(Task.SUPER_RESOLUTION.value)
@@ -19,9 +68,9 @@ class SuperResolution(BaseTask):
     """BaseTask class of super resolution task.
 
     Args:
-        model_cfg　(mmcv.Config):　Model config file.
-        deploy_cfg　(mmcv.Config):　Deployment config file.
-        device　(str):　A string specifying device type.
+        model_cfg (mmcv.Config): Model config file.
+        deploy_cfg (mmcv.Config): Deployment config file.
+        device (str): A string specifying device type.
     """
 
     def __init__(self, model_cfg: mmcv.Config, deploy_cfg: mmcv.Config,
@@ -86,13 +135,7 @@ class SuperResolution(BaseTask):
         else:
             raise AssertionError('imgs must be strings or numpy arrays')
 
-        cfg = load_config(self.model_cfg)[0].copy()
-
-        self._preprocess_cfg(
-            cfg,
-            load_from_file=isinstance(imgs[0], str),
-            is_static_cfg=input_shape is not None,
-            input_shape=input_shape)
+        cfg = process_model_config(self.model_cfg, imgs, input_shape)
 
         test_pipeline = Compose(cfg.test_pipeline)
 
@@ -234,48 +277,37 @@ class SuperResolution(BaseTask):
         for stat in stats:
             print('Eval-{}: {}'.format(stat, stats[stat]))
 
-    def _preprocess_cfg(self, config: mmcv.Config, load_from_file: bool,
-                        is_static_cfg: bool,
-                        input_shape: Sequence[int]) -> None:
-        """Remove unnecessary information in config.
+    def get_preprocess(self) -> Dict:
+        """Get the preprocess information for SDK.
 
-        Args:
-            config (mmcv.Config): The input model config.
-            load_from_file (bool): Whether the input is a filename of a numpy
-                matrix. If this variable is True, extra preprocessing is
-                required.
-            is_static_cfg (bool): Whether the config specifys a static export.
-                If this variable if True, the input image will be resize to a
-                fix resolution.
-            input_shape (Sequence[int]): A list of two integer in
-                (width, height) format specifying input shape.
-                Defaults to `None`.
+        Return:
+            dict: Composed of the preprocess information.
         """
-        keys_to_remove = ['gt', 'gt_path']
-        # MMEdit doesn't support LoadImageFromWebcam.
-        # Remove "LoadImageFromFile" and related metakeys.
-        if not load_from_file:
-            config.test_pipeline.pop(0)
-            keys_to_remove.append('lq_path')
+        input_shape = get_input_shape(self.deploy_cfg)
+        model_cfg = process_model_config(self.model_cfg, [''], input_shape)
+        preprocess = model_cfg.test_pipeline
+        for item in preprocess:
+            if 'Normalize' == item['type'] and 'std' in item:
+                item['std'] = [255, 255, 255]
+        return preprocess
 
-        # Fix the input shape by 'Resize'
-        if is_static_cfg:
-            resize = {
-                'type': 'Resize',
-                'scale': (input_shape[0], input_shape[1]),
-                'keys': ['lq']
-            }
-            config.test_pipeline.insert(1, resize)
+    def get_postprocess(self) -> Dict:
+        """Get the postprocess information for SDK.
 
-        for key in keys_to_remove:
-            for pipeline in list(config.test_pipeline):
-                if 'key' in pipeline and key == pipeline['key']:
-                    config.test_pipeline.remove(pipeline)
-                if 'keys' in pipeline:
-                    while key in pipeline['keys']:
-                        pipeline['keys'].remove(key)
-                    if len(pipeline['keys']) == 0:
-                        config.test_pipeline.remove(pipeline)
-                if 'meta_keys' in pipeline:
-                    while key in pipeline['meta_keys']:
-                        pipeline['meta_keys'].remove(key)
+        Return:
+            dict(): Nonthing for super resolution.
+        """
+        return dict()
+
+    def get_model_name(self) -> str:
+        """Get the model name.
+
+        Return:
+            str: the name of the model.
+        """
+        assert 'generator' in self.model_cfg.model, 'generator not in model '
+        'config'
+        assert 'type' in self.model_cfg.model.generator, 'generator contains '
+        'no type'
+        name = self.model_cfg.model.generator.type.lower()
+        return name

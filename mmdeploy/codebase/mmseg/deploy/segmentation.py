@@ -8,8 +8,39 @@ import torch
 from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
-from mmdeploy.utils import Task
+from mmdeploy.utils import Task, get_input_shape
 from .mmsegmentation import MMSEG_TASK
+
+
+def process_model_config(model_cfg: mmcv.Config,
+                         imgs: Union[Sequence[str], Sequence[np.ndarray]],
+                         input_shape: Optional[Sequence[int]] = None):
+    """Process the model config.
+
+    Args:
+        model_cfg (mmcv.Config): The model config.
+        imgs (Sequence[str] | Sequence[np.ndarray]): Input image(s), accepted
+            data type are List[str], List[np.ndarray].
+        input_shape (list[int]): A list of two integer in (width, height)
+            format specifying input shape. Default: None.
+
+    Returns:
+        mmcv.Config: the model config after processing.
+    """
+    from mmseg.apis.inference import LoadImage
+    cfg = model_cfg.copy()
+
+    if isinstance(imgs[0], np.ndarray):
+        cfg = cfg.copy()
+        # set loading pipeline type
+        cfg.data.test.pipeline[0].type = 'LoadImageFromWebcam'
+    # for static exporting
+    if input_shape is not None:
+        cfg.data.test.pipeline[1]['img_scale'] = tuple(input_shape)
+    cfg.data.test.pipeline[1]['transforms'][0]['keep_ratio'] = False
+    cfg.data.test.pipeline = [LoadImage()] + cfg.data.test.pipeline[1:]
+
+    return cfg
 
 
 @MMSEG_TASK.register_module(Task.SEGMENTATION.value)
@@ -80,24 +111,11 @@ class Segmentation(BaseTask):
         Returns:
             tuple: (data, img), meta information for the input image and input.
         """
-        from mmseg.apis.inference import LoadImage
         from mmseg.datasets.pipelines import Compose
         from mmcv.parallel import collate, scatter
-
-        cfg = self.model_cfg.copy()
         if not isinstance(imgs, (list, tuple)):
             imgs = [imgs]
-
-        if isinstance(imgs[0], np.ndarray):
-            cfg = cfg.copy()
-            # set loading pipeline type
-            cfg.data.test.pipeline[0].type = 'LoadImageFromWebcam'
-        # for static exporting
-        if input_shape is not None:
-            cfg.data.test.pipeline[1]['img_scale'] = tuple(input_shape)
-        cfg.data.test.pipeline[1]['transforms'][0]['keep_ratio'] = False
-        cfg.data.test.pipeline = [LoadImage()] + cfg.data.test.pipeline[1:]
-
+        cfg = process_model_config(self.model_cfg, imgs, input_shape)
         test_pipeline = Compose(cfg.data.test.pipeline)
         data_list = []
         for img in imgs:
@@ -215,3 +233,36 @@ class Segmentation(BaseTask):
             dataset.format_results(outputs, **kwargs)
         if metrics:
             dataset.evaluate(outputs, metrics, **kwargs)
+
+    def get_preprocess(self) -> Dict:
+        """Get the preprocess information for SDK.
+
+        Return:
+            dict: Composed of the preprocess information.
+        """
+        input_shape = get_input_shape(self.deploy_cfg)
+        load_from_file = self.model_cfg.data.test.pipeline[0]
+        model_cfg = process_model_config(self.model_cfg, [''], input_shape)
+        preprocess = model_cfg.data.test.pipeline
+        preprocess[0] = load_from_file
+        return preprocess
+
+    def get_postprocess(self) -> Dict:
+        """Get the postprocess information for SDK.
+
+        Return:
+            dict(): Nonthing for super resolution.
+        """
+        postprocess = self.model_cfg.model.decode_head
+        return postprocess
+
+    def get_model_name(self) -> str:
+        """Get the model name.
+
+        Return:
+            str: the name of the model.
+        """
+        assert 'decode_head' in self.model_cfg.model, 'model config contains'
+        ' no decode_head'
+        name = self.model_cfg.model.decode_head.type[:-4].lower()
+        return name

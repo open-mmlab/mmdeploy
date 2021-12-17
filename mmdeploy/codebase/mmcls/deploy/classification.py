@@ -9,7 +9,41 @@ from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
 from mmdeploy.utils import Task
+from mmdeploy.utils.config_utils import get_input_shape
 from .mmclassification import MMCLS_TASK
+
+
+def process_model_config(model_cfg: mmcv.Config,
+                         imgs: Union[str, np.ndarray],
+                         input_shape: Optional[Sequence[int]] = None):
+    """Process the model config.
+
+    Args:
+        model_cfg (mmcv.Config): The model config.
+        imgs (str | np.ndarray): Input image(s), accepted data type are `str`,
+            `np.ndarray`.
+        input_shape (list[int]): A list of two integer in (width, height)
+            format specifying input shape. Default: None.
+
+    Returns:
+        mmcv.Config: the model config after processing.
+    """
+    cfg = model_cfg.deepcopy()
+    if isinstance(imgs, str):
+        if cfg.data.test.pipeline[0]['type'] != 'LoadImageFromFile':
+            cfg.data.test.pipeline.insert(0, dict(type='LoadImageFromFile'))
+    else:
+        if cfg.data.test.pipeline[0]['type'] == 'LoadImageFromFile':
+            cfg.data.test.pipeline.pop(0)
+    # check whether input_shape is valid
+    if input_shape is not None:
+        if 'crop_size' in cfg.data.test.pipeline[2]:
+            crop_size = cfg.data.test.pipeline[2]['crop_size']
+            if tuple(input_shape) != (crop_size, crop_size):
+                logging.warning(
+                    f'`input shape` should be equal to `crop_size`: {crop_size},\
+                        but given: {input_shape}')
+    return cfg
 
 
 @MMCLS_TASK.register_module(Task.CLASSIFICATION.value)
@@ -81,29 +115,13 @@ class Classification(BaseTask):
         Returns:
             tuple: (data, img), meta information for the input image and input.
         """
-        import logging
-
         from mmcls.datasets.pipelines import Compose
         from mmcv.parallel import collate, scatter
-
-        cfg = self.model_cfg.deepcopy()
+        cfg = process_model_config(self.model_cfg, imgs, input_shape)
         if isinstance(imgs, str):
-            if cfg.data.test.pipeline[0]['type'] != 'LoadImageFromFile':
-                cfg.data.test.pipeline.insert(0,
-                                              dict(type='LoadImageFromFile'))
             data = dict(img_info=dict(filename=imgs), img_prefix=None)
         else:
-            if cfg.data.test.pipeline[0]['type'] == 'LoadImageFromFile':
-                cfg.data.test.pipeline.pop(0)
             data = dict(img=imgs)
-        # check whether input_shape is valid
-        if input_shape is not None:
-            if 'crop_size' in cfg.data.test.pipeline[2]:
-                crop_size = cfg.data.test.pipeline[2]['crop_size']
-                if tuple(input_shape) != (crop_size, crop_size):
-                    logging.warning(
-                        f'`input shape` should be equal to `crop_size`: {crop_size},\
-                        but given: {input_shape}')
         test_pipeline = Compose(cfg.data.test.pipeline)
         data = test_pipeline(data)
         data = collate([data], samples_per_gpu=1)
@@ -233,3 +251,38 @@ class Classification(BaseTask):
         if out:
             logging.info(f'\nwriting results to {out}')
             mmcv.dump(results, out)
+
+    def get_preprocess(self) -> Dict:
+        """Get the preprocess information for SDK.
+
+        Return:
+            dict: Composed of the preprocess information.
+        """
+        input_shape = get_input_shape(self.deploy_cfg)
+        cfg = process_model_config(self.model_cfg, '', input_shape)
+        preprocess = cfg.data.test.pipeline
+        return preprocess
+
+    def get_postprocess(self) -> Dict:
+        """Get the postprocess information for SDK.
+
+        Return:
+            dict(): Composed of the postprocess information.
+        """
+        postprocess = self.model_cfg.model.head
+        assert 'topk' in postprocess, 'model config lack topk'
+        postprocess.topk = max(postprocess.topk)
+        return postprocess
+
+    def get_model_name(self) -> str:
+        """Get the model name.
+
+        Return:
+            str: the name of the model.
+        """
+        assert 'backbone' in self.model_cfg.model, 'backbone not in model '
+        'config'
+        assert 'type' in self.model_cfg.model.backbone, 'backbone contains '
+        'no type'
+        name = self.model_cfg.model.backbone.type.lower()
+        return name

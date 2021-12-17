@@ -250,3 +250,30 @@ class BaseTask(metaclass=ABCMeta):
                 to `False`.
         """
         pass
+
+    @abstractmethod
+    def get_preprocess(self) -> Dict:
+        """Get the preprocess information for SDK.
+
+        Return:
+            dict: Composed of the preprocess information.
+        """
+        pass
+
+    @abstractmethod
+    def get_postprocess(self) -> Dict:
+        """Get the postprocess information for SDK.
+
+        Return:
+            dict(): Composed of the postprocess information.
+        """
+        pass
+
+    @abstractmethod
+    def get_model_name(self) -> str:
+        """Get the model name.
+
+        Return:
+            str: the name of the model.
+        """
+        pass
