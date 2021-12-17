@@ -107,7 +107,7 @@ def main():
     mmcv.mkdir_or_exist(osp.abspath(args.work_dir))
 
     if args.dump_info:
-        dump_info(deploy_cfg, model_cfg, args.work_dir)
+        dump_info(deploy_cfg, model_cfg, args.work_dir, pth=checkpoint_path)
 
     ret_value = mp.Value('d', 0, lock=False)
 

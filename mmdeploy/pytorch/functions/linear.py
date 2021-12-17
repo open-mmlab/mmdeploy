@@ -44,7 +44,8 @@ def linear__ncnn(
         out = out + bias
 
         # permute back
-        out = out.reshape(out_shape)
+        # the last dim should be -1 to support dynamic shape
+        out = out.reshape(out_shape[:-1] + (-1, ))
         out = out.transpose(1, dim - 1)
 
         return out

@@ -291,8 +291,10 @@ def test_AdvancedEnum():
 
 def test_export_info():
     with tempfile.TemporaryDirectory() as dir:
-        dump_info(correct_deploy_cfg, correct_model_cfg, dir)
-        preprocess_json = os.path.join(dir, 'preprocess.json')
-        deploy_json = os.path.join(dir, 'deploy_cfg.json')
-        assert os.path.exists(preprocess_json)
+        dump_info(correct_deploy_cfg, correct_model_cfg, dir, '')
+        deploy_json = os.path.join(dir, 'deploy.json')
+        pipeline_json = os.path.join(dir, 'pipeline.json')
+        detail_json = os.path.join(dir, 'detail.json')
+        assert os.path.exists(pipeline_json)
+        assert os.path.exists(detail_json)
         assert os.path.exists(deploy_json)

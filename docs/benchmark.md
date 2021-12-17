@@ -480,6 +480,167 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
 Users can directly test the performance through [how_to_evaluate_a_model.md](docs/tutorials/how_to_evaluate_a_model.md). And here is the benchmark in our environment.
 
 <details>
+<summary style="margin-left: 25px;">MMClassification</summary>
+<div style="margin-left: 25px;">
+<table class="tg">
+<thead>
+  <tr>
+    <th class="tg-c3ow" colspan="3">MMClassification</th>
+    <th class="tg-0lax">PyTorch</th>
+    <th class="tg-0pky">ONNX Runtime</th>
+    <th class="tg-c3ow" colspan="3"><span style="font-weight:400;font-style:normal">TensorRT</span></th>
+    <th class="tg-c3ow">PPLNN</th>
+    <th class="tg-0pky"></th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td class="tg-9wq8">Model</td>
+    <td class="tg-9wq8">Task</td>
+    <td class="tg-0pky">Metrics</td>
+    <td class="tg-baqh">fp32</td>
+    <td class="tg-c3ow">fp32</td>
+    <td class="tg-c3ow">fp32</td>
+    <td class="tg-c3ow"><span style="font-weight:400;font-style:normal">fp16</span></td>
+    <td class="tg-c3ow">int8</td>
+    <td class="tg-c3ow">fp16</td>
+    <td class="tg-lboi">model config file</td>
+  </tr>
+  <tr>
+    <td class="tg-9wq8" rowspan="2">ResNet-18</td>
+    <td class="tg-9wq8" rowspan="2">Classification</td>
+    <td class="tg-0pky">top-1</td>
+    <td class="tg-0lax">69.90</td>
+    <td class="tg-c3ow">69.88</td>
+    <td class="tg-c3ow">69.88</td>
+    <td class="tg-c3ow">69.86</td>
+    <td class="tg-c3ow">69.86</td>
+    <td class="tg-c3ow">69.86</td>
+    <td class="tg-lboi" rowspan="2">$MMCLS_DIR/configs/resnet/resnet18_b32x8_imagenet.py</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">top-5</td>
+    <td class="tg-0lax">89.43</td>
+    <td class="tg-c3ow">89.34</td>
+    <td class="tg-c3ow">89.34</td>
+    <td class="tg-c3ow">89.33</td>
+    <td class="tg-c3ow">89.38</td>
+    <td class="tg-c3ow">89.34</td>
+  </tr>
+  <tr>
+    <td class="tg-9wq8" rowspan="2">ResNeXt-50</td>
+    <td class="tg-9wq8" rowspan="2">Classification</td>
+    <td class="tg-0pky">top-1</td>
+    <td class="tg-0lax">77.90</td>
+    <td class="tg-c3ow">77.90</td>
+    <td class="tg-c3ow">77.90</td>
+    <td class="tg-c3ow">-</td>
+    <td class="tg-c3ow">77.78</td>
+    <td class="tg-c3ow">77.89</td>
+    <td class="tg-lboi" rowspan="2">$MMCLS_DIR/configs/resnext/resnext50_32x4d_b32x8_imagenet.py</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">top-5</td>
+    <td class="tg-0lax">93.66</td>
+    <td class="tg-c3ow">93.66</td>
+    <td class="tg-c3ow">93.66</td>
+    <td class="tg-c3ow">-</td>
+    <td class="tg-c3ow">93.64</td>
+    <td class="tg-c3ow">93.65</td>
+  </tr>
+  <tr>
+    <td class="tg-9wq8" rowspan="2">SE-ResNet-50</td>
+    <td class="tg-9wq8" rowspan="2">Classification</td>
+    <td class="tg-0pky">top-1</td>
+    <td class="tg-0lax">77.74</td>
+    <td class="tg-c3ow">77.74</td>
+    <td class="tg-c3ow">77.74</td>
+    <td class="tg-c3ow">77.75</td>
+    <td class="tg-c3ow">77.63</td>
+    <td class="tg-c3ow">?</td>
+    <td class="tg-lboi" rowspan="2">$MMCLS_DIR/configs/resnext/resnext50_32x4d_b32x8_imagenet.py</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">top-5</td>
+    <td class="tg-0lax">93.84</td>
+    <td class="tg-c3ow">93.84</td>
+    <td class="tg-c3ow">93.84</td>
+    <td class="tg-c3ow">93.83</td>
+    <td class="tg-c3ow">93.72</td>
+    <td class="tg-c3ow">?</td>
+  </tr>
+    <tr>
+    <td class="tg-9wq8" rowspan="2">ShuffleNetV1 1.0x</td>
+    <td class="tg-9wq8" rowspan="2">Classification</td>
+    <td class="tg-0pky">top-1</td>
+    <td class="tg-0lax">68.13</td>
+    <td class="tg-c3ow">68.13</td>
+    <td class="tg-c3ow">68.13</td>
+    <td class="tg-c3ow">68.13</td>
+    <td class="tg-c3ow">67.71</td>
+    <td class="tg-c3ow">?</td>
+    <td class="tg-lboi" rowspan="2">$MMCLS_DIR/configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">top-5</td>
+    <td class="tg-0lax">87.81</td>
+    <td class="tg-c3ow">87.81</td>
+    <td class="tg-c3ow">87.81</td>
+    <td class="tg-c3ow">87.81</td>
+    <td class="tg-c3ow">87.58</td>
+    <td class="tg-c3ow">?</td>
+  </tr>
+    </tr>
+    <tr>
+    <td class="tg-9wq8" rowspan="2">ShuffleNetV2 1.0x</td>
+    <td class="tg-9wq8" rowspan="2">Classification</td>
+    <td class="tg-0pky">top-1</td>
+    <td class="tg-0lax">69.55</td>
+    <td class="tg-c3ow">69.55</td>
+    <td class="tg-c3ow">69.55</td>
+    <td class="tg-c3ow">69.54</td>
+    <td class="tg-c3ow">69.10</td>
+    <td class="tg-c3ow">?</td>
+    <td class="tg-lboi" rowspan="2">$MMCLS_DIR/configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">top-5</td>
+    <td class="tg-0lax">88.92</td>
+    <td class="tg-c3ow">88.92</td>
+    <td class="tg-c3ow">88.92</td>
+    <td class="tg-c3ow">88.91</td>
+    <td class="tg-c3ow">88.58</td>
+    <td class="tg-c3ow">?</td>
+  </tr>
+    </tr>
+    </tr>
+    <tr>
+    <td class="tg-9wq8" rowspan="2">MobileNet V2</td>
+    <td class="tg-9wq8" rowspan="2">Classification</td>
+    <td class="tg-0pky">top-1</td>
+    <td class="tg-0lax">71.86</td>
+    <td class="tg-c3ow">71.86</td>
+    <td class="tg-c3ow">71.86</td>
+    <td class="tg-c3ow">71.87</td>
+    <td class="tg-c3ow">70.91</td>
+    <td class="tg-c3ow">?</td>
+    <td class="tg-lboi" rowspan="2">$MMEDIT_DIR/configs/restorers/real_esrgan/realesrnet_c64b23g32_12x4_lr2e-4_1000k_df2k_ost.py</td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">top-5</td>
+    <td class="tg-0lax">90.42</td>
+    <td class="tg-c3ow">90.42</td>
+    <td class="tg-c3ow">90.42</td>
+    <td class="tg-c3ow">90.40</td>
+    <td class="tg-c3ow">89.85</td>
+    <td class="tg-c3ow">?</td>
+  </tr>
+</tbody>
+</table>
+</div>
+</details>
+
+<details>
 <summary style="margin-left: 25px;">MMEditing</summary>
 <div style="margin-left: 25px;">
 <table class="tg">
@@ -565,7 +726,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](doc
     <td class="tg-cly1" rowspan="2">$MMEDIT_DIR/configs/restorers/esrgan/esrgan_psnr_x4c64b23g32_g1_1000k_div2k.py</td>
   </tr>
   <tr>
-    <td class="tg-baqh"></td>
+    <td class="tg-baqh">SSIM</td>
     <td class="tg-nrix">0.8559</td>
     <td class="tg-nrix">0.8558</td>
     <td class="tg-nrix">0.8558</td>
@@ -609,7 +770,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](doc
     <td class="tg-cly1" rowspan="2">$MMEDIT_DIR/configs/restorers/srresnet_srgan/msrresnet_x4c64b16_g1_1000k_div2k.py</td>
   </tr>
   <tr>
-    <td class="tg-baqh"></td>
+    <td class="tg-baqh">SSIM</td>
     <td class="tg-nrix">0.8491</td>
     <td class="tg-nrix">0.8488</td>
     <td class="tg-nrix">0.8488</td>
@@ -799,7 +960,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](doc
     <td class="tg-baqh">72.36</td>
     <td class="tg-baqh">72.35</td>
     <td class="tg-baqh">74.19</td>
-    <td class="tg-baqh">-</td>
+    <td class="tg-baqh">72.35</td>
     <td class="tg-0lax">$MMSEG_DIR/configs/fcn/fcn_r50-d8_512x1024_40k_cityscapes.py</td>
   </tr>
   <tr>
@@ -811,7 +972,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](doc
     <td class="tg-baqh">78.26</td>
     <td class="tg-baqh">78.24</td>
     <td class="tg-baqh">77.97</td>
-    <td class="tg-baqh">-</td>
+    <td class="tg-baqh">78.09</td>
     <td class="tg-0lax">$MMSEG_DIR/configs/pspnet/pspnet_r50-d8_512x1024_80k_cityscapes.py</td>
   </tr>
   <tr>
@@ -823,10 +984,9 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](doc
     <td class="tg-baqh">79.12</td>
     <td class="tg-baqh">79.12</td>
     <td class="tg-baqh">78.96</td>
-    <td class="tg-baqh">-</td>
+    <td class="tg-baqh">79.12</td>
     <td class="tg-0lax">$MMSEG_DIR/configs/deeplabv3/deeplabv3_r50-d8_512x1024_40k_cityscapes.py</td>
   </tr>
-  <tr>
     <td class="tg-baqh">deeplabv3+</td>
     <td class="tg-baqh">Cityscapes</td>
     <td class="tg-baqh">mIoU</td>
@@ -835,10 +995,10 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](doc
     <td class="tg-baqh">79.6</td>
     <td class="tg-baqh">79.6</td>
     <td class="tg-baqh">79.43</td>
-    <td class="tg-baqh">-</td>
+    <td class="tg-baqh">79.6</td>
     <td class="tg-0lax">$MMSEG_DIR/configs/deeplabv3plus/deeplabv3plus_r50-d8_512x1024_40k_cityscapes.py</td>
   </tr>
-  <tr>
+  </tr>
     <td class="tg-baqh">Fast-SCNN</td>
     <td class="tg-baqh">Cityscapes</td>
     <td class="tg-baqh">mIoU</td>
@@ -847,7 +1007,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](doc
     <td class="tg-baqh">70.93</td>
     <td class="tg-baqh">70.92</td>
     <td class="tg-baqh">66.0</td>
-    <td class="tg-baqh">-</td>
+    <td class="tg-baqh">70.92</td>
     <td class="tg-0lax">$MMSEG_DIR/configs/fastscnn/fast_scnn_lr0.12_8x4_160k_cityscapes.py</td>
   </tr>
 </tbody>

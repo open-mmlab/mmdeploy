@@ -125,6 +125,7 @@ class MMSegmentation(MMCodebase):
                         data_loader: DataLoader,
                         show: bool = False,
                         out_dir: Optional[str] = None,
+                        pre_eval: bool = True,
                         **kwargs):
         """Run test with single gpu.
 
@@ -134,10 +135,14 @@ class MMSegmentation(MMCodebase):
             show (bool): Specifying whether to show plotted results. Defaults
                 to `False`.
             out_dir (str): A directory to save results, defaults to `None`.
+            pre_eval (bool): Use dataset.pre_eval() function to generate
+                pre_results for metric evaluation. Mutually exclusive with
+                efficient_test and format_results. Default: False.
 
         Returns:
             list: The prediction results.
         """
         from mmseg.apis import single_gpu_test
-        outputs = single_gpu_test(model, data_loader, show, out_dir, **kwargs)
+        outputs = single_gpu_test(
+            model, data_loader, show, out_dir, pre_eval=pre_eval, **kwargs)
         return outputs

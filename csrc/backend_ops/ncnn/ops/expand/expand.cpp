@@ -330,7 +330,8 @@ int Expand::forward(const std::vector<Mat>& bottom_blobs, std::vector<Mat>& top_
     }
     return 0;
   }
-  fprintf(stderr, "top_blob.shape: (%d %d %d)\n", top_blob.c, top_blob.h, top_blob.w);
+  fprintf(stderr, "Layer: Expand, bottom_blob.dims: %d, shape_blob.w: %d\n", bottom_blob.dims,
+          shape_blob.w);
 }
 
 }  // namespace mmdeploy
