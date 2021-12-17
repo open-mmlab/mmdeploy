@@ -5073,7 +5073,7 @@ int main(int argc, char** argv) {
           for (int i = 0; i < (int)axes.size(); i++) {
             if (axes[i] == 0 || axes[i] > 3 || axes[i] < -3)
               fprintf(stderr, "Unsupported squeeze axes !: %d, %s\n", axes[i], node.name().c_str());
-            fprintf(pp, ",%d", axes[i]);
+            fprintf(pp, ",%d", axes[i] - 1);
           }
         }
       }
