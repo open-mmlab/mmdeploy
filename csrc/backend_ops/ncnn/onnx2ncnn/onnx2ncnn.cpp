@@ -3765,11 +3765,16 @@ int main(int argc, char** argv) {
       int nms_top_k = get_node_attr_i(node, "nms_top_k");
       int keep_top_k = get_node_attr_i(node, "keep_top_k");
       int num_class = get_node_attr_i(node, "num_class");
+      std::vector<float> vars = get_node_attr_af(node, "vars");
       fprintf(pp, " 0=%d", num_class);
       fprintf(pp, " 1=%f", nms_threshold);
       fprintf(pp, " 2=%d", nms_top_k);
       fprintf(pp, " 3=%d", keep_top_k);
       fprintf(pp, " 4=%f", score_threshold);
+      fprintf(pp, " 5=%f", vars[0]);
+      fprintf(pp, " 6=%f", vars[1]);
+      fprintf(pp, " 7=%f", vars[2]);
+      fprintf(pp, " 8=%f", vars[3]);
     } else if (op == "Div") {
       int op_type = 3;
       fprintf(pp, " 0=%d", op_type);
@@ -4660,10 +4665,14 @@ int main(int argc, char** argv) {
       }
       int image_width = get_node_attr_i(node, "image_width");
       int image_height = get_node_attr_i(node, "image_height");
+      float step_width = get_node_attr_f(node, "step_width");
+      float step_height = get_node_attr_f(node, "step_height");
       float offset = get_node_attr_f(node, "offset");
       int step_mmdetection = get_node_attr_i(node, "step_mmdetection");
       fprintf(pp, " 9=%d", image_width);
       fprintf(pp, " 10=%d", image_height);
+      fprintf(pp, " 11=%f", step_width);
+      fprintf(pp, " 12=%f", step_height);
       fprintf(pp, " 13=%f", offset);
       fprintf(pp, " 14=%d", step_mmdetection);
     } else if (op == "PixelShuffle") {

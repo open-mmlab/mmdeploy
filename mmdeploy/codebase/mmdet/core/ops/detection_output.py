@@ -37,7 +37,8 @@ class NcnnDetectionOutputOp(torch.autograd.Function):
                  nms_threshold=0.45,
                  nms_top_k=100,
                  keep_top_k=100,
-                 num_class=81):
+                 num_class=81,
+                 target_stds=[0.1, 0.1, 0.2, 0.2]):
         """Symbolic function of dummy onnx DetectionOutput op for ncnn."""
         return g.op(
             'mmdeploy::DetectionOutput',
@@ -49,6 +50,7 @@ class NcnnDetectionOutputOp(torch.autograd.Function):
             nms_top_k_i=nms_top_k,
             keep_top_k_i=keep_top_k,
             num_class_i=num_class,
+            vars_f=target_stds,
             outputs=1)
 
     @staticmethod
@@ -60,7 +62,8 @@ class NcnnDetectionOutputOp(torch.autograd.Function):
                 nms_threshold=0.45,
                 nms_top_k=100,
                 keep_top_k=100,
-                num_class=81):
+                num_class=81,
+                target_stds=[0.1, 0.1, 0.2, 0.2]):
         """Forward function of dummy onnx DetectionOutput op for ncnn."""
         return torch.rand(1, 100, 6)
 
