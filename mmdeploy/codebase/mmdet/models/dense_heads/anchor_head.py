@@ -158,9 +158,9 @@ def anchor_head__get_bboxes__ncnn(ctx,
         ]
         min_sizes = self.anchor_generator.base_sizes
         max_sizes = min_sizes[1:] + \
-            img_metas['img_shape'][0:1].tolist()
-        img_height = img_metas['img_shape'][0].item()
-        img_width = img_metas['img_shape'][1].item()
+            img_metas[0]['img_shape'][0:1].tolist()
+        img_height = img_metas[0]['img_shape'][0].item()
+        img_width = img_metas[0]['img_shape'][1].item()
 
         # if no reshape, concat will be error in ncnn.
         mlvl_anchors = [
