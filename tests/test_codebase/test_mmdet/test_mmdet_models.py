@@ -11,8 +11,8 @@ import torch
 
 from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Backend, Codebase
-from mmdeploy.utils.test import (WrapModel, backend_checker, check_backend,
-                                 get_model_outputs, get_rewrite_outputs)
+from mmdeploy.utils.test import (WrapModel, check_backend, get_model_outputs,
+                                 get_rewrite_outputs)
 
 import_codebase(Codebase.MMDET)
 
@@ -292,15 +292,16 @@ def _replace_r50_with_r18(model):
     return model
 
 
+@pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME])
 @pytest.mark.parametrize('model_cfg_path', [
     'tests/test_codebase/test_mmdet/data/single_stage_model.json',
     'tests/test_codebase/test_mmdet/data/mask_model.json'
 ])
-@backend_checker(Backend.ONNXRUNTIME)
-def test_forward_of_base_detector(model_cfg_path):
+def test_forward_of_base_detector(model_cfg_path, backend):
+    check_backend(backend)
     deploy_cfg = mmcv.Config(
         dict(
-            backend_config=dict(type='onnxruntime'),
+            backend_config=dict(type=backend.value),
             onnx_config=dict(
                 output_names=['dets', 'labels'], input_shape=None),
             codebase_config=dict(

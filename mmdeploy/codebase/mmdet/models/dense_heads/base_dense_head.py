@@ -104,23 +104,23 @@ def base_dense_head__get_bbox(ctx,
             score_factors = score_factors.permute(0, 2, 3,
                                                   1).reshape(batch_size,
                                                              -1).sigmoid()
+            score_factors = score_factors.unsqueeze(2)
         bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, 4)
         if not is_dynamic_flag:
             priors = priors.data
         priors = priors.expand(batch_size, -1, priors.size(-1))
         if pre_topk > 0:
             if with_score_factors:
-                nms_pre_score = (nms_pre_score * score_factors[..., None])
+                nms_pre_score = nms_pre_score * score_factors
             if backend == Backend.TENSORRT:
                 priors = pad_with_value(priors, 1, pre_topk)
                 bbox_pred = pad_with_value(bbox_pred, 1, pre_topk)
                 scores = pad_with_value(scores, 1, pre_topk, 0.)
                 nms_pre_score = pad_with_value(nms_pre_score, 1, pre_topk, 0.)
                 if with_score_factors:
-                    score_factors = pad_with_value(
-                        score_factors.unsqueeze(2), 1, pre_topk, 0.)
-            else:
-                score_factors = score_factors.unsqueeze(2)
+                    score_factors = pad_with_value(score_factors, 1, pre_topk,
+                                                   0.)
+
             # Get maximum scores for foreground classes.
             if self.use_sigmoid_cls:
                 max_scores, _ = nms_pre_score.max(-1)
