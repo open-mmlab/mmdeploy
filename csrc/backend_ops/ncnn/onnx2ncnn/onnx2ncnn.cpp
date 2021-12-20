@@ -3285,11 +3285,7 @@ int main(int argc, char** argv) {
     } else if (op == "Reorg") {
       fprintf(pp, "%-16s", "Reorg");
     } else if (op == "Reshape") {
-      if (weights[node.input(1)].data_type() != 0) {
-        fprintf(pp, "%-16s", "Reshape");
-      } else {
-        fprintf(pp, "%-16s", "CustomReshape");
-      }
+      fprintf(pp, "%-16s", "Reshape");
     } else if (op == "RNN") {
       fprintf(pp, "%-16s", "RNN");
     } else if (op == "RDiv") {
@@ -5207,7 +5203,7 @@ int main(int argc, char** argv) {
         for (int i = 0; i < (int)axes.size(); i++) {
           if (axes[i] == 0 || axes[i] > 4 || axes[i] < -4)
             fprintf(stderr, "Unsupported unsqueeze axes !: %d, %s\n", axes[i], node.name().c_str());
-          fprintf(pp, ",%d", axes[i]);
+          fprintf(pp, ",%d", axes[i] - 1);
         }
       }
     } else if (op == "Yolov3DetectionOutput") {

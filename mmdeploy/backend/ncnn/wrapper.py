@@ -77,7 +77,7 @@ class NCNNWrapper(BaseWrapper):
         """
         input_list = list(inputs.values())
         batch_size = input_list[0].size(0)
-        assert batch_size == 1, 'Only batch_size=1 is supported!'
+        # assert batch_size == 1, 'Only batch_size=1 is supported!'
         for input_tensor in input_list[1:]:
             assert input_tensor.size(
                 0) == batch_size, 'All tensors should have same batch size'

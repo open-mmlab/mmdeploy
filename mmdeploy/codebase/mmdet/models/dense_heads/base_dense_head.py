@@ -1,6 +1,7 @@
 import torch
-from mmdet.core.bbox.coder.delta_xywh_bbox_coder import DeltaXYWHBBoxCoder
-from mmdet.core.bbox.coder.tblr_bbox_coder import TBLRBBoxCoder
+from mmdet.core.bbox.coder import (DeltaXYWHBBoxCoder, DistancePointBBoxCoder,
+                                   TBLRBBoxCoder)
+from mmdet.core.bbox.transforms import distance2bbox
 
 from mmdeploy.codebase.mmdet import (get_post_processing_params,
                                      multiclass_nms, pad_with_value)
@@ -257,8 +258,10 @@ def base_dense_head__get_bboxes__ncnn(ctx,
 
             vars = torch.tensor([normalizer[0], normalizer[2], 1, 1],
                                 dtype=torch.float32)
+    elif isinstance(self.bbox_coder, DistancePointBBoxCoder):
+        vars = torch.tensor([0, 0, 0, 0], dtype=torch.float32)
     else:
-        vars = None
+        vars = torch.tensor([1, 1, 1, 1], dtype=torch.float32)
     if isinstance(img_metas[0]['img_shape'][0], int):
         assert isinstance(img_metas[0]['img_shape'][1], int)
         img_height = img_metas[0]['img_shape'][0]
@@ -322,14 +325,31 @@ def base_dense_head__get_bboxes__ncnn(ctx,
     if isinstance(self.bbox_coder, TBLRBBoxCoder):
         batch_mlvl_bboxes = _tblr_pred_to_delta_xywh_pred(
             batch_mlvl_bboxes, vars[0:2])
+    elif isinstance(self.bbox_coder, DistancePointBBoxCoder):
+        bboxes_x0 = batch_mlvl_bboxes[:, :, 0:1] / img_width
+        bboxes_y0 = batch_mlvl_bboxes[:, :, 1:2] / img_height
+        bboxes_x1 = batch_mlvl_bboxes[:, :, 2:3] / img_width
+        bboxes_y1 = batch_mlvl_bboxes[:, :, 3:4] / img_height
+        batch_mlvl_bboxes = torch.cat(
+            [bboxes_x0, bboxes_y0, bboxes_x1, bboxes_y1], dim=2)
+        batch_mlvl_priors = distance2bbox(batch_mlvl_priors, batch_mlvl_bboxes)
+
+    if with_score_factors:
+        batch_mlvl_score_factors = torch.cat(batch_mlvl_score_factors, dim=1)
+        batch_mlvl_scores = batch_mlvl_scores.permute(
+            0, 2, 1).unsqueeze(3) * batch_mlvl_score_factors.permute(
+                0, 2, 1).unsqueeze(3)
+        batch_mlvl_scores = batch_mlvl_scores.squeeze(3).permute(0, 2, 1)
+
     # flatten for ncnn DetectionOutput op inputs.
     batch_mlvl_vars = vars.expand_as(batch_mlvl_priors)
     batch_mlvl_bboxes = batch_mlvl_bboxes.reshape(batch_size, 1, -1)
     batch_mlvl_scores = batch_mlvl_scores.reshape(batch_size, 1, -1)
     batch_mlvl_priors = batch_mlvl_priors.reshape(batch_size, 1, -1)
     batch_mlvl_vars = batch_mlvl_vars.reshape(batch_size, 1, -1)
-    batch_mlvl_priors = torch.cat([batch_mlvl_priors, batch_mlvl_vars], dim=1)\
-        .data
+    batch_mlvl_priors = torch.cat([batch_mlvl_priors, batch_mlvl_vars], dim=1)
+    if not isinstance(self.bbox_coder, DistancePointBBoxCoder):
+        batch_mlvl_priors = batch_mlvl_priors.data
 
     post_params = get_post_processing_params(ctx.cfg)
     iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)
