@@ -6,7 +6,7 @@ __all__ = ['is_available']
 if is_available():
     from mmdeploy.backend.openvino.onnx2openvino \
         import onnx2openvino, get_output_model_file
-    from .utils import get_input_shape_from_cfg
+    from .utils import get_input_info_from_cfg
     __all__ += [
-        'onnx2openvino', 'get_output_model_file', 'get_input_shape_from_cfg'
+        'onnx2openvino', 'get_output_model_file', 'get_input_info_from_cfg'
     ]

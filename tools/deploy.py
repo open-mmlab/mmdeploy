@@ -229,13 +229,11 @@ def main():
 
         from mmdeploy.apis.openvino import (onnx2openvino,
                                             get_output_model_file,
-                                            get_input_shape_from_cfg)
+                                            get_input_info_from_cfg)
         openvino_files = []
         for onnx_path in onnx_files:
             model_xml_path = get_output_model_file(onnx_path, args.work_dir)
-            input_name = deploy_cfg.onnx_config.input_names
-            input_shape = [get_input_shape_from_cfg(deploy_cfg, model_cfg)]
-            input_info = dict(zip(input_name, input_shape))
+            input_info = get_input_info_from_cfg(deploy_cfg)
             output_names = deploy_cfg.onnx_config.output_names
             create_process(
                 f'onnx2openvino with {onnx_path}',
@@ -257,8 +255,8 @@ def main():
         for onnx_path in onnx_files:
             algo_file = onnx_path.replace('.onnx', '.json')
             model_inputs = get_model_inputs(deploy_cfg)
-            assert 'opt_shape' in model_inputs, 'expect opt_shape '
-            'in deploy config for pplnn'
+            assert 'opt_shape' in model_inputs, 'Expect opt_shape ' \
+                'in deploy config for PPLNN'
             # PPLNN accepts only 1 input shape for optimization,
             # may get changed in the future
             input_shapes = [model_inputs.opt_shape]
