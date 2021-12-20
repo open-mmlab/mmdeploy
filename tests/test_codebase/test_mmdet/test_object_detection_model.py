@@ -338,11 +338,11 @@ class TestPartitionTwoStageModel:
         rois = torch.rand(1, 10, 5)
         cls_score = torch.rand(10, 81)
         bbox_pred = torch.rand(10, 320)
-        img_metas = [{
+        img_metas = [[{
             'ori_shape': [32, 32, 3],
             'img_shape': [32, 32, 3],
             'scale_factor': [1, 1, 1, 1],
-        }]
+        }]]
         results = self.model.partition1_postprocess(
             rois=rois,
             cls_score=cls_score,
