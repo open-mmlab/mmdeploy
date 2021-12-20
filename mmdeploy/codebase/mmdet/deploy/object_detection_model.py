@@ -483,8 +483,8 @@ class PartitionTwoStageModel(End2EndModel):
             rois,
             cls_score,
             bbox_pred,
-            img_metas[0]['img_shape'],
-            img_metas[0]['scale_factor'],
+            img_metas[0][0]['img_shape'],
+            img_metas[0][0]['scale_factor'],
             cfg=rcnn_test_cfg)
 
     def forward_test(self, imgs: torch.Tensor, img_metas: Sequence[dict],
