@@ -5,6 +5,7 @@ from typing import Any, Dict, Optional, Sequence, Tuple, Union
 import mmcv
 import numpy as np
 import torch
+from mmcv.parallel import DataContainer
 from torch.utils.data import Dataset
 
 from mmdeploy.utils import Task
@@ -141,7 +142,7 @@ class ObjectDetection(BaseTask):
         return data, data['img']
 
     def visualize(self,
-                  model,
+                  model: torch.nn.Module,
                   image: Union[str, np.ndarray],
                   result: list,
                   output_file: str,
@@ -173,7 +174,8 @@ class ObjectDetection(BaseTask):
             score_thr=score_thr)
 
     @staticmethod
-    def run_inference(model, model_inputs: Dict[str, torch.Tensor]):
+    def run_inference(model: torch.nn.Module,
+                      model_inputs: Dict[str, torch.Tensor]) -> list:
         """Run inference once for a object detection model of mmdet.
 
         Args:
@@ -211,10 +213,13 @@ class ObjectDetection(BaseTask):
         Returns:
             torch.Tensor: An image in `Tensor`.
         """
-        return input_data['img'][0]
+        img_tensor = input_data['img'][0]
+        if isinstance(img_tensor, DataContainer):
+            img_tensor = img_tensor.data[0]
+        return img_tensor
 
     @staticmethod
-    def evaluate_outputs(model_cfg,
+    def evaluate_outputs(model_cfg: mmcv.Config,
                          outputs: Sequence,
                          dataset: Dataset,
                          metrics: Optional[str] = None,
@@ -224,6 +229,7 @@ class ObjectDetection(BaseTask):
         """Perform post-processing to predictions of model.
 
         Args:
+            model_cfg (mmcv.Config): Model config.
             outputs (list): A list of predictions of model inference.
             dataset (Dataset): Input dataset to run test.
             metrics (str): Evaluation metrics, which depends on
@@ -269,7 +275,7 @@ class ObjectDetection(BaseTask):
         """Get the postprocess information for SDK.
 
         Return:
-            dict(): Composed of the postprocess information.
+            dict: Composed of the postprocess information.
         """
         postprocess = self.model_cfg.model.test_cfg
         if 'rpn' in postprocess:

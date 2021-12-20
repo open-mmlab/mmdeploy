@@ -267,7 +267,7 @@ class Classification(BaseTask):
         """Get the postprocess information for SDK.
 
         Return:
-            dict(): Composed of the postprocess information.
+            dict: Composed of the postprocess information.
         """
         postprocess = self.model_cfg.model.head
         assert 'topk' in postprocess, 'model config lack topk'

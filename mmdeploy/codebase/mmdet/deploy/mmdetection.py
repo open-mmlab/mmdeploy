@@ -98,9 +98,10 @@ class MMDetection(MMCodebase):
             workers_per_gpu (int): How many subprocesses to use for data
                 loading for each GPU.
             num_gpus (int): Number of GPUs. Only used in non-distributed
-                training. dist (bool): Distributed training/test or not.
-                Defaults  to `False`.shuffle (bool): Whether to shuffle the
-                data at every epoch.
+                training.
+            dist (bool): Distributed training/test or not.
+                Defaults  to `False`.
+            shuffle (bool): Whether to shuffle the data at every epoch.
                 Defaults to `False`.
             seed (int): An integer set to be seed. Default is `None`.
             kwargs: Any other keyword argument to be used to initialize

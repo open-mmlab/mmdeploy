@@ -200,8 +200,7 @@ def test_simple_test_of_single_stage_text_detector(backend: Backend):
     rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
-        deploy_cfg=deploy_cfg,
-        run_with_backend=False)
+        deploy_cfg=deploy_cfg)
 
     if is_backend_output:
         rewrite_outputs = rewrite_outputs[0]
