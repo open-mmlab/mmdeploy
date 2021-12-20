@@ -336,6 +336,6 @@ TEST_CASE("test speed of value", "[value]") {
 }
 
 TEST_CASE("test ctor of value", "[value]") {
-  static_assert(!std::is_constructible<Value, void(*)(int)>::value, "");
+  static_assert(!std::is_constructible<Value, void (*)(int)>::value, "");
   static_assert(!std::is_constructible<Value, int*>::value, "");
 }

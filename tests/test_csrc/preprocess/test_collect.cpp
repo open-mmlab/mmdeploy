@@ -12,22 +12,10 @@ TEST_CASE("test collect constructor", "[collect]") {
   auto creator = Registry<Transform>::Get().GetCreator(transform_type, 1);
   REQUIRE(creator != nullptr);
 
-  SECTION("empty args") {
-    try {
-      auto module = creator->Create({});
-    } catch (std::exception& e) {
-      REQUIRE(true);
-      INFO("expected exception: {}", e.what());
-    }
-  }
+  REQUIRE_THROWS(creator->Create({}));
 
   SECTION("args with 'keys' which is not an array") {
-    try {
-      auto module = creator->Create({{"keys", "img"}});
-    } catch (std::exception& e) {
-      REQUIRE(true);
-      INFO("expected exception: {}", e.what());
-    }
+    REQUIRE_THROWS(creator->Create({{"keys", "img"}}));
   }
 
   SECTION("args with keys in array") {
@@ -36,12 +24,7 @@ TEST_CASE("test collect constructor", "[collect]") {
   }
 
   SECTION("args with meta_keys that is not an array") {
-    try {
-      auto module = creator->Create({{"keys", {"img"}}, {"meta_keys", "ori_img"}});
-    } catch (std::exception& e) {
-      REQUIRE(true);
-      INFO("expected exception: {}", e.what());
-    }
+    REQUIRE_THROWS(creator->Create({{"keys", {"img"}}, {"meta_keys", "ori_img"}}));
   }
   SECTION("args with meta_keys in array") {
     auto module = creator->Create({{"keys", {"img"}}, {"meta_keys", {"ori_img"}}});
@@ -87,7 +70,7 @@ TEST_CASE("test collect", "[collect]") {
     Tensor tensor;
     Value input{{"img", tensor},
                 {"filename", "test.jpg"},
-                {"ori_filename", "../tests/preprocess/data/test.jpg"},
+                {"ori_filename", "/the/path/of/test.jpg"},
                 {"ori_shape", {1000, 1000, 3}},
                 {"img_shape", {1, 3, 224, 224}},
                 {"flip", "false"},

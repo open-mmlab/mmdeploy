@@ -9,36 +9,24 @@
 
 namespace mmdeploy::mmseg {
 
-static Result<void> VisualizeMask(const std::string &image_name, const Tensor &mask, int height,
-                                  int width, Stream &stream) {
-  Device cpu_device{"cpu"};
-  OUTCOME_TRY(auto host_mask, MakeAvailableOnDevice(mask, cpu_device, stream));
-  OUTCOME_TRY(stream.Wait());
-  //  cv::Mat mask_image(height, width, CV_32SC1, host_mask.data<int>());
-  //  cv::imwrite(image_name + ".png", mask_image * 10);
-  //  ofstream ofs(image_name + ".data");
-  //  auto _data_ptr = host_mask.data<int>();
-  //  for (auto i = 0; i < height; ++i) {
-  //    for (auto j = 0; j < width; ++j) {
-  //      ofs << *_data_ptr++ << ", ";
-  //    }
-  //    ofs << "\n";
-  //  }
-  return success();
-}
-
 class ResizeMask : public MMSegmentation {
  public:
   explicit ResizeMask(const Value &cfg) : MMSegmentation(cfg) {
-    classes_ = cfg["params"]["num_classes"].get<int>();
+    try {
+      classes_ = cfg["params"]["num_classes"].get<int>();
+    } catch (const std::exception &e) {
+      ERROR("no ['params']['num_classes'] is specified in cfg: {}", cfg);
+      throw_exception(eInvalidArgument);
+    }
   }
 
   Result<Value> operator()(const Value &preprocess_result, const Value &inference_result) {
     DEBUG("preprocess: {}\ninference: {}", preprocess_result, inference_result);
 
     auto mask = inference_result["output"].get<Tensor>();
-    INFO("tensor.name: {}, tensor.shape: {}", mask.name(), mask.shape());
-    assert(mask.data_type() == DataType::kINT32);
+    INFO("tensor.name: {}, tensor.shape: {}, tensor.data_type: {}", mask.name(), mask.shape(),
+         mask.data_type());
+    assert(mask.data_type() == DataType::kINT32 || mask.data_type() == DataType::kINT64);
     assert(mask.shape(0) == 1);
     assert(mask.shape(1) == 1);
 
@@ -46,23 +34,41 @@ class ResizeMask : public MMSegmentation {
     auto width = (int)mask.shape(3);
     auto input_height = preprocess_result["img_metas"]["ori_shape"][1].get<int>();
     auto input_width = preprocess_result["img_metas"]["ori_shape"][2].get<int>();
-    if (height == input_height && width == input_width) {
-      SegmentorOutput output{mask, input_height, input_width, classes_};
+    Device host{"cpu"};
+    OUTCOME_TRY(auto host_tensor, MakeAvailableOnDevice(mask, host, stream_));
+    stream_.Wait().value();
+    if (mask.data_type() == DataType::kINT64) {
+      // change kINT64 to 2 INT32
+      TensorDesc desc{.device = host_tensor.device(),
+                      .data_type = DataType::kINT32,
+                      .shape = {1, 2, height, width},
+                      .name = host_tensor.name()};
+      Tensor _host_tensor(desc, mask.buffer());
+      return MaskResize(_host_tensor, input_height, input_width);
+    } else {
+      return MaskResize(host_tensor, input_height, input_width);
+    }
+  }
+
+ private:
+  Result<Value> MaskResize(Tensor &tensor, int dst_height, int dst_width) {
+    auto channel = tensor.shape(1);
+    auto height = tensor.shape(2);
+    auto width = tensor.shape(3);
+
+    // reshape tensor to convert it to cv::Mat
+    tensor.Reshape({1, height, width, channel});
+    auto mat = cpu::Tensor2CVMat(tensor);
+    auto dst = cpu::Resize(mat, dst_height, dst_width, "nearest");
+    if (channel == 1) {
+      auto output_tensor = cpu::CVMat2Tensor(dst);
+      SegmentorOutput output{output_tensor, dst_height, dst_width, classes_};
       return to_value(output);
     } else {
-      Device host{"cpu"};
-
-      OUTCOME_TRY(auto host_tensor, MakeAvailableOnDevice(mask, host, stream_));
-      host_tensor.Reshape({1, height, width, 1});
-      auto mat = cpu::Tensor2CVMat(host_tensor);
-      auto dst = cpu::Resize(mat, input_height, input_width, "nearest");
-      auto output_tensor = cpu::CVMat2Tensor(dst);
-
-      SegmentorOutput output{output_tensor, input_height, input_width, classes_};
-
-      //  OUTCOME_TRY(
-      //      VisualizeMask("resize_mask", output_tensor, input_height, input_width,
-      //      stream_));
+      cv::Mat _dst;
+      cv::extractChannel(dst, _dst, 0);
+      auto output_tensor = cpu::CVMat2Tensor(_dst);
+      SegmentorOutput output{output_tensor, dst_height, dst_width, classes_};
       return to_value(output);
     }
   }

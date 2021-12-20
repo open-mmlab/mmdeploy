@@ -9,8 +9,8 @@ from mmseg.models import BACKBONES, HEADS
 from mmseg.models.decode_heads.decode_head import BaseDecodeHead
 
 from mmdeploy.codebase import import_codebase
-from mmdeploy.utils import Codebase
-from mmdeploy.utils.test import (WrapModel, get_model_outputs,
+from mmdeploy.utils import Backend, Codebase
+from mmdeploy.utils.test import (WrapModel, check_backend, get_model_outputs,
                                  get_rewrite_outputs)
 
 import_codebase(Codebase.MMSEG)
@@ -93,14 +93,15 @@ def _demo_mm_inputs(input_shape=(1, 3, 8, 16), num_classes=10):
     return mm_inputs
 
 
-@pytest.mark.parametrize('backend_type', ['onnxruntime', 'ncnn'])
-def test_encoderdecoder_simple_test(backend_type):
+@pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME, Backend.OPENVINO])
+def test_encoderdecoder_simple_test(backend):
+    check_backend(backend)
     segmentor = get_model()
     segmentor.cpu().eval()
 
     deploy_cfg = mmcv.Config(
         dict(
-            backend_config=dict(type=backend_type),
+            backend_config=dict(type=backend.value),
             onnx_config=dict(output_names=['result'], input_shape=None),
             codebase_config=dict(type='mmseg', task='Segmentation')))
 
@@ -127,23 +128,21 @@ def test_encoderdecoder_simple_test(backend_type):
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg)
 
-    if is_backend_output:
-        rewrite_outputs = rewrite_outputs[0]
-        model_outputs = torch.tensor(model_outputs[0])
-        model_outputs = model_outputs.unsqueeze(0).unsqueeze(0)
-        assert torch.allclose(rewrite_outputs, model_outputs)
-    else:
-        assert rewrite_outputs is not None
+    model_outputs = torch.tensor(model_outputs[0])
+    rewrite_outputs = rewrite_outputs[0].to(model_outputs).reshape(
+        model_outputs.shape)
+    assert torch.allclose(rewrite_outputs, model_outputs)
 
 
-@pytest.mark.parametrize('backend_type', ['onnxruntime', 'ncnn'])
-def test_basesegmentor_forward(backend_type):
+@pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME, Backend.OPENVINO])
+def test_basesegmentor_forward(backend):
+    check_backend(backend)
     segmentor = get_model()
     segmentor.cpu().eval()
 
     deploy_cfg = mmcv.Config(
         dict(
-            backend_config=dict(type=backend_type),
+            backend_config=dict(type=backend.value),
             onnx_config=dict(output_names=['result'], input_shape=None),
             codebase_config=dict(type='mmseg', task='Segmentation')))
 
@@ -167,17 +166,16 @@ def test_basesegmentor_forward(backend_type):
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg)
-    if is_backend_output:
-        rewrite_outputs = torch.tensor(rewrite_outputs[0])
-        model_outputs = torch.tensor(model_outputs[0])
-        model_outputs = model_outputs.unsqueeze(0).unsqueeze(0)
-        assert torch.allclose(rewrite_outputs, model_outputs)
-    else:
-        assert rewrite_outputs is not None
+
+    model_outputs = torch.tensor(model_outputs[0])
+    rewrite_outputs = rewrite_outputs[0].to(model_outputs).reshape(
+        model_outputs.shape)
+    assert torch.allclose(rewrite_outputs, model_outputs)
 
 
-@pytest.mark.parametrize('backend_type', ['onnxruntime', 'ncnn'])
-def test_aspphead_forward(backend_type):
+@pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME, Backend.OPENVINO])
+def test_aspphead_forward(backend):
+    check_backend(backend)
     from mmseg.models.decode_heads import ASPPHead
     head = ASPPHead(
         in_channels=32, channels=16, num_classes=19,
@@ -185,7 +183,7 @@ def test_aspphead_forward(backend_type):
 
     deploy_cfg = mmcv.Config(
         dict(
-            backend_config=dict(type=backend_type),
+            backend_config=dict(type=backend.value),
             onnx_config=dict(
                 output_names=['result'], input_shape=(1, 32, 45, 45)),
             codebase_config=dict(type='mmseg', task='Segmentation')))
@@ -200,21 +198,23 @@ def test_aspphead_forward(backend_type):
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg)
     if is_backend_output:
-        rewrite_outputs = torch.tensor(rewrite_outputs[0])
-        assert torch.allclose(
-            rewrite_outputs, model_outputs, rtol=1e-03, atol=1e-05)
-    else:
-        assert rewrite_outputs is not None
+        rewrite_outputs = rewrite_outputs[0]
+    rewrite_outputs = rewrite_outputs.to(model_outputs).reshape(
+        model_outputs.shape)
+    assert torch.allclose(
+        rewrite_outputs, model_outputs, rtol=1e-03, atol=1e-05)
 
 
-@pytest.mark.parametrize('backend_type', ['onnxruntime', 'ncnn'])
-def test_psphead_forward(backend_type):
+@pytest.mark.parametrize('backend',
+                         [Backend.ONNXRUNTIME, Backend.OPENVINO, Backend.NCNN])
+def test_psphead_forward(backend):
+    check_backend(backend)
     from mmseg.models.decode_heads import PSPHead
     head = PSPHead(in_channels=32, channels=16, num_classes=19).eval()
 
     deploy_cfg = mmcv.Config(
         dict(
-            backend_config=dict(type=backend_type),
+            backend_config=dict(type=backend.value),
             onnx_config=dict(output_names=['result'], input_shape=None),
             codebase_config=dict(type='mmseg', task='Segmentation')))
     inputs = [torch.randn(1, 32, 45, 45)]
@@ -228,7 +228,7 @@ def test_psphead_forward(backend_type):
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg)
     if is_backend_output:
-        rewrite_outputs = torch.tensor(rewrite_outputs[0])
-        assert torch.allclose(rewrite_outputs, model_outputs, rtol=1, atol=1)
-    else:
-        assert rewrite_outputs is not None
+        rewrite_outputs = rewrite_outputs[0]
+    rewrite_outputs = rewrite_outputs.to(model_outputs).reshape(
+        model_outputs.shape)
+    assert torch.allclose(rewrite_outputs, model_outputs, rtol=1, atol=1)

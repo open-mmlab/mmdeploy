@@ -108,7 +108,7 @@ def test_shufflenetv2_backbone__forward(backend_type: Backend):
     model_outputs = model.forward(imgs)
     wrapped_model = WrapModel(model, 'forward')
     rewrite_inputs = {'x': imgs}
-    rewrite_outputs, _ = get_rewrite_outputs(
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg)

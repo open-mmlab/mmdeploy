@@ -19,12 +19,18 @@ class ResizeOCRImpl : public Module {
  public:
   explicit ResizeOCRImpl(const Value& args) noexcept {
     height_ = args.value("height", height_);
-    min_width_ = args.value("min_width", min_width_);
-    max_width_ = args.value("max_width", max_width_);
+    min_width_ = args.contains("min_width") && args["min_width"].is_number_integer()
+                     ? args["min_width"].get<int>()
+                     : min_width_;
+    max_width_ = args.contains("max_width") && args["max_width"].is_number_integer()
+                     ? args["max_width"].get<int>()
+                     : max_width_;
     keep_aspect_ratio_ = args.value("keep_aspect_ratio", keep_aspect_ratio_);
+    backend_ = args.contains("backend") && args["backend"].is_string()
+                   ? args["backend"].get<string>()
+                   : backend_;
     img_pad_value_ = args.value("img_pad_value", img_pad_value_);
     width_downsample_ratio_ = args.value("width_downsample_ratio", width_downsample_ratio_);
-    backend_ = args.value("backend", backend_);
     stream_ = args["context"]["stream"].get<Stream>();
   }
 

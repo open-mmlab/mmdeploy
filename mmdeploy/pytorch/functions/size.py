@@ -9,7 +9,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 def tensor__size__ncnn(ctx, self, *args):
     """Rewrite `size` for NCNN backend.
 
-    ONNX Shape node is not supported in ncnn. This function return integal
+    ONNX Shape node is not supported in ncnn. This function return integer
     instead of Torch.Size to avoid ONNX Shape node.
     """
 

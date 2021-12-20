@@ -128,3 +128,6 @@ work_dirs/
 
 # install directory
 /install
+
+# the generated header files
+/tests/test_csrc/test_define.h
