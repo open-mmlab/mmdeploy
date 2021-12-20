@@ -101,29 +101,23 @@ def test_can_not_run_onnx2openvino_without_mo():
 
 
 @backend_checker(Backend.OPENVINO)
-def test_get_input_shape_from_cfg():
-    from mmdeploy.apis.openvino import get_input_shape_from_cfg
+def test_get_input_info_from_cfg():
+    from mmdeploy.apis.openvino import get_input_info_from_cfg
 
-    # Test with default value
     deploy_cfg = mmcv.Config()
-    model_cfg = mmcv.Config()
-    input_shape = get_input_shape_from_cfg(deploy_cfg, model_cfg)
-    assert input_shape == [1, 3, 800, 1344], \
-        'The function returned a different default shape.'
+    with pytest.raises(KeyError):
+        get_input_info_from_cfg(deploy_cfg)
 
-    # Test with model_cfg that contains the required data.
-    height, width = 800, 1200
-    model_cfg = mmcv.Config(
-        {'test_pipeline': [{}, {
-            'img_scale': (width, height)
-        }]})
-    input_shape = get_input_shape_from_cfg(deploy_cfg, model_cfg)
-    assert input_shape == [1, 3, height, width], \
-        'The shape in the model_cfg does not match the output shape.'
-
-    # Test with deploy_cfg that contains the required data.
+    input_name = 'input'
     height, width = 600, 1000
-    deploy_cfg = mmcv.Config({'onnx_config': {'input_shape': (width, height)}})
-    input_shape = get_input_shape_from_cfg(deploy_cfg, model_cfg)
-    assert input_shape == [1, 3, height, width], \
-        'The shape in the deploy_cfg does not match the output shape.'
+    expected_input_info = {input_name: [1, 3, height, width]}
+    deploy_cfg = mmcv.Config({
+        'backend_config': {
+            'model_inputs': [{
+                'opt_shapes': expected_input_info
+            }]
+        }
+    })
+    input_info = get_input_info_from_cfg(deploy_cfg)
+    assert input_info == expected_input_info, \
+        'The expected value of \'input_info\' does not match the received one.'
