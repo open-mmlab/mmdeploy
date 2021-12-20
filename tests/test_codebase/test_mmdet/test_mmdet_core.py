@@ -66,9 +66,12 @@ def test_multiclass_nms_static():
         'outputs: {}'.format(rewrite_outputs)
 
 
-@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME, Backend.NCNN])
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
 @pytest.mark.parametrize('add_ctr_clamp', [True, False])
-def test_delta2bbox(backend_type: Backend, add_ctr_clamp: bool):
+@pytest.mark.parametrize('clip_border,max_shape',
+                         [(False, None), (True, torch.tensor([100, 200]))])
+def test_delta2bbox(backend_type: Backend, add_ctr_clamp: bool,
+                    clip_border: bool, max_shape: tuple):
     check_backend(backend_type)
     deploy_cfg = mmcv.Config(
         dict(
@@ -91,21 +94,21 @@ def test_delta2bbox(backend_type: Backend, add_ctr_clamp: bool):
     rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_func,
         model_inputs={
-            'rois': rois,
-            'deltas': deltas
+            'rois': rois.unsqueeze(0),
+            'deltas': deltas.unsqueeze(0)
         },
         deploy_cfg=deploy_cfg)
 
     if is_backend_output:
         model_output = original_outputs.squeeze().cpu().numpy()
-        rewrite_output = rewrite_outputs[0].squeeze()
+        rewrite_output = rewrite_outputs[0].squeeze().cpu().numpy()
         assert np.allclose(
             model_output, rewrite_output, rtol=1e-03, atol=1e-05)
     else:
         assert rewrite_outputs is not None
 
 
-@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME, Backend.NCNN])
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
 def test_tblr2bbox(backend_type: Backend):
     check_backend(backend_type)
     deploy_cfg = mmcv.Config(

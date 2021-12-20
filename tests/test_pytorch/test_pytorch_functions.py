@@ -49,7 +49,8 @@ def test_get_attribute():
     rewrite_outputs, _ = get_rewrite_outputs(
         wrapped_func,
         model_inputs={'tensor': input},
-        deploy_cfg=deploy_cfg_ncnn)
+        deploy_cfg=deploy_cfg_ncnn,
+        run_with_backend=False)
 
     assert rewrite_outputs is not None, 'Got unexpected rewrite '
     'outputs: {}'.format(rewrite_outputs)
@@ -69,7 +70,8 @@ def test_group_norm_ncnn():
     rewrite_output, _ = get_rewrite_outputs(
         wrapped_func,
         model_inputs={'input': input},
-        deploy_cfg=deploy_cfg_ncnn)
+        deploy_cfg=deploy_cfg_ncnn,
+        run_with_backend=False)
 
     assert np.allclose(model_output, rewrite_output, rtol=1e-03, atol=1e-05)
 
@@ -86,7 +88,8 @@ def test_interpolate_static():
     rewrite_output, _ = get_rewrite_outputs(
         wrapped_func,
         model_inputs={'input': input},
-        deploy_cfg=deploy_cfg_ncnn)
+        deploy_cfg=deploy_cfg_ncnn,
+        run_with_backend=False)
 
     assert np.allclose(model_output, rewrite_output, rtol=1e-03, atol=1e-05)
 
@@ -105,7 +108,8 @@ def test_linear_ncnn():
     rewrite_output, _ = get_rewrite_outputs(
         wrapped_func,
         model_inputs={'input': input},
-        deploy_cfg=deploy_cfg_ncnn)
+        deploy_cfg=deploy_cfg_ncnn,
+        run_with_backend=False)
 
     assert np.allclose(model_output, rewrite_output, rtol=1e-03, atol=1e-05)
 
@@ -148,7 +152,8 @@ def test_size_of_tensor_static():
     rewrite_outputs, _ = get_rewrite_outputs(
         wrapped_func,
         model_inputs={'input': input},
-        deploy_cfg=deploy_cfg_ncnn)
+        deploy_cfg=deploy_cfg_ncnn,
+        run_with_backend=False)
 
     assert rewrite_outputs is not None, 'Got unexpected rewrite '
     'outputs: {}'.format(rewrite_outputs)
@@ -175,7 +180,8 @@ class TestTopk:
         output, _ = get_rewrite_outputs(
             wrapped_func,
             model_inputs={'input': TestTopk.input},
-            deploy_cfg=deploy_cfg_ncnn)
+            deploy_cfg=deploy_cfg_ncnn,
+            run_with_backend=False)
 
         assert np.allclose(model_output, output[1], rtol=1e-03, atol=1e-05)
 

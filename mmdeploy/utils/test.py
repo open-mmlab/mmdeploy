@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+
 import tempfile
 import warnings
 from typing import Any, Callable, Dict, List, Tuple, Union
@@ -9,7 +10,6 @@ import pytest
 import torch
 from torch import nn
 
-# Register the rewrite functions
 import mmdeploy.codebase  # noqa: F401,F403
 from mmdeploy.core import RewriterContext, patch_model
 from mmdeploy.utils import Backend, get_backend, get_onnx_config
@@ -390,7 +390,7 @@ def get_backend_outputs(onnx_file_path: str,
     flatten_model_inputs = get_flatten_inputs(model_inputs)
     input_names = [k for k, v in flatten_model_inputs.items() if k != 'ctx']
     output_names = get_onnx_config(deploy_cfg).get('output_names', None)
-    backend_files = [onnx_file_path]
+
     # prepare backend model and input features
     if backend == Backend.TENSORRT:
         # convert to engine
@@ -436,9 +436,20 @@ def get_backend_outputs(onnx_file_path: str,
                 backend_feats[input_names[i]] = feature_list[i]
             else:
                 backend_feats[str(i)] = feature_list[i]
+        backend_files = [onnx_file_path]
         device = 'cpu'
     elif backend == Backend.NCNN:
-        return None
+        import mmdeploy.apis.ncnn as ncnn_apis
+        if not (ncnn_apis.is_available() and ncnn_apis.is_plugin_available()):
+            return None
+        work_dir = tempfile.TemporaryDirectory().name
+        param_path, bin_path = ncnn_apis.get_output_model_file(
+            onnx_file_path, work_dir)
+        ncnn_apis.onnx2ncnn(onnx_file_path, param_path, bin_path)
+        backend_files = [param_path, bin_path]
+        backend_feats = flatten_model_inputs
+        device = 'cpu'
+
     elif backend == Backend.OPENVINO:
         import mmdeploy.apis.openvino as openvino_apis
         if not openvino_apis.is_available():
@@ -473,13 +484,16 @@ def get_backend_outputs(onnx_file_path: str,
 def get_rewrite_outputs(wrapped_model: nn.Module,
                         model_inputs: Dict[str, Union[Tuple, List,
                                                       torch.Tensor]],
-                        deploy_cfg: mmcv.Config) -> Tuple[Any, bool]:
+                        deploy_cfg: mmcv.Config,
+                        run_with_backend: bool = True) -> Tuple[Any, bool]:
     """To get outputs of generated onnx model after rewrite.
 
     Args:
         wrapped_model (nn.Module): The input model.
         model_inputs (dict): Inputs for model.
         deploy_cfg (mmcv.Config): Deployment config.
+        run_with_backend (bool): Whether to run inference with backend.
+            Default is True.
 
     Returns:
         List[torch.Tensor]: The outputs of model.
@@ -494,8 +508,10 @@ def get_rewrite_outputs(wrapped_model: nn.Module,
 
     onnx_file_path = get_onnx_model(wrapped_model, model_inputs, deploy_cfg)
 
-    backend_outputs = get_backend_outputs(onnx_file_path, model_inputs,
-                                          deploy_cfg)
+    backend_outputs = None
+    if run_with_backend:
+        backend_outputs = get_backend_outputs(onnx_file_path, model_inputs,
+                                              deploy_cfg)
 
     if backend_outputs is None:
         return ctx_outputs, False

@@ -185,14 +185,6 @@ def test_get_bboxes_of_fcos_head(backend_type: Backend):
         torch.rand(1, 1, pow(2, i), pow(2, i)) for i in range(5, 0, -1)
     ]
 
-    # to get outputs of pytorch model
-    model_inputs = {
-        'cls_scores': cls_score,
-        'bbox_preds': bboxes,
-        'centernesses': centernesses,
-        'img_metas': img_metas
-    }
-    model_outputs = get_model_outputs(fcos_head, 'get_bboxes', model_inputs)
     # to get outputs of onnx model after rewrite
     img_metas[0]['img_shape'] = torch.Tensor([s, s])
     wrapped_model = WrapModel(
@@ -205,26 +197,9 @@ def test_get_bboxes_of_fcos_head(backend_type: Backend):
     rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
-        deploy_cfg=deploy_cfg)
-    if is_backend_output:
-        if isinstance(rewrite_outputs, dict):
-            rewrite_outputs = [
-                value for name, value in rewrite_outputs.items()
-                if name in output_names
-            ]
-        for model_output, rewrite_output in zip(model_outputs[0],
-                                                rewrite_outputs):
-            model_output = model_output.squeeze().cpu().numpy()
-            rewrite_output = rewrite_output.squeeze()
-            # hard code to make two tensors with the same shape
-            # rewrite and original codes applied different nms strategy
-            assert np.allclose(
-                model_output[:rewrite_output.shape[0]],
-                rewrite_output,
-                rtol=1e-03,
-                atol=1e-05)
-    else:
-        assert rewrite_outputs is not None
+        deploy_cfg=deploy_cfg,
+        run_with_backend=False)
+    assert rewrite_outputs is not None
 
 
 @pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME, Backend.NCNN])
@@ -275,10 +250,13 @@ def test_get_bboxes_of_rpn_head(backend_type: Backend):
         'cls_scores': cls_score,
         'bbox_preds': bboxes,
     }
+    # do not run with ncnn backend
+    run_with_backend = False if backend_type in [Backend.NCNN] else True
     rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
-        deploy_cfg=deploy_cfg)
+        deploy_cfg=deploy_cfg,
+        run_with_backend=run_with_backend)
     assert rewrite_outputs is not None
 
 
@@ -785,7 +763,7 @@ def test_yolov3_head_get_bboxes_ncnn():
         'img_shape': (s, s, 3)
     }]
 
-    output_names = ['outout']
+    output_names = ['detection_output']
     deploy_cfg = mmcv.Config(
         dict(
             backend_config=dict(type=backend_type.value),
@@ -1019,7 +997,7 @@ def test_get_bboxes_of_vfnet_head(backend_type: Backend):
 
 
 @pytest.mark.parametrize('backend_type',
-                         [Backend.ONNXRUNTIME, Backend.NCNN, Backend.OPENVINO])
+                         [Backend.ONNXRUNTIME, Backend.OPENVINO])
 def test_base_dense_head_get_bboxes(backend_type: Backend):
     """Test get_bboxes rewrite of base dense head."""
     check_backend(backend_type)
@@ -1102,10 +1080,72 @@ def test_base_dense_head_get_bboxes(backend_type: Backend):
         assert rewrite_outputs is not None
 
 
-@pytest.mark.parametrize('backend_type', [Backend.NCNN])
-def test_ssd_head_get_bboxes(backend_type: Backend):
-    """Test get_bboxes rewrite of anchor head."""
+def test_base_dense_head_get_bboxes__ncnn():
+    """Test get_bboxes rewrite of base dense head."""
+    backend_type = Backend.NCNN
     check_backend(backend_type)
+    anchor_head = get_anchor_head_model()
+    anchor_head.cpu().eval()
+    s = 128
+    img_metas = [{
+        'scale_factor': np.ones(4),
+        'pad_shape': (s, s, 3),
+        'img_shape': (s, s, 3)
+    }]
+
+    output_names = ['output']
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(type=backend_type.value),
+            onnx_config=dict(output_names=output_names, input_shape=None),
+            codebase_config=dict(
+                type='mmdet',
+                task='ObjectDetection',
+                model_type='ncnn_end2end',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    iou_threshold=0.5,
+                    max_output_boxes_per_class=200,
+                    pre_top_k=5000,
+                    keep_top_k=100,
+                    background_label_id=-1,
+                ))))
+
+    # the cls_score's size: (1, 36, 32, 32), (1, 36, 16, 16),
+    # (1, 36, 8, 8), (1, 36, 4, 4), (1, 36, 2, 2).
+    # the bboxes's size: (1, 36, 32, 32), (1, 36, 16, 16),
+    # (1, 36, 8, 8), (1, 36, 4, 4), (1, 36, 2, 2)
+    seed_everything(1234)
+    cls_score = [
+        torch.rand(1, 36, pow(2, i), pow(2, i)) for i in range(5, 0, -1)
+    ]
+    seed_everything(5678)
+    bboxes = [torch.rand(1, 36, pow(2, i), pow(2, i)) for i in range(5, 0, -1)]
+
+    # to get outputs of onnx model after rewrite
+    img_metas[0]['img_shape'] = torch.Tensor([s, s])
+    wrapped_model = WrapModel(
+        anchor_head, 'get_bboxes', img_metas=img_metas, with_nms=True)
+    rewrite_inputs = {
+        'cls_scores': cls_score,
+        'bbox_preds': bboxes,
+    }
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg)
+
+    # output should be of shape [1, N, 6]
+    if is_backend_output:
+        rewrite_outputs = rewrite_outputs[0]
+
+    assert rewrite_outputs.shape[-1] == 6
+
+
+@pytest.mark.parametrize('is_dynamic', [True, False])
+def test_ssd_head_get_bboxes__ncnn(is_dynamic: bool):
+    """Test get_bboxes rewrite of ssd head for ncnn."""
+    check_backend(Backend.NCNN)
     ssd_head = get_ssd_head_model()
     ssd_head.cpu().eval()
     s = 128
@@ -1115,13 +1155,30 @@ def test_ssd_head_get_bboxes(backend_type: Backend):
         'img_shape': (s, s, 3)
     }]
     output_names = ['output']
+    input_names = ['input']
+    dynamic_axes = None
+    if is_dynamic:
+        dynamic_axes = {
+            input_names[0]: {
+                2: 'height',
+                3: 'width'
+            },
+            output_names[0]: {
+                1: 'num_dets',
+            }
+        }
     deploy_cfg = mmcv.Config(
         dict(
-            backend_config=dict(type=backend_type.value),
-            onnx_config=dict(output_names=output_names, input_shape=None),
+            backend_config=dict(type=Backend.NCNN.value),
+            onnx_config=dict(
+                input_names=input_names,
+                output_names=output_names,
+                input_shape=None,
+                dynamic_axes=dynamic_axes),
             codebase_config=dict(
                 type='mmdet',
                 task='ObjectDetection',
+                model_type='ncnn_end2end',
                 post_processing=dict(
                     score_threshold=0.05,
                     iou_threshold=0.5,
@@ -1149,16 +1206,8 @@ def test_ssd_head_get_bboxes(backend_type: Backend):
         for i in range(num_prior)
     ]
 
-    # to get outputs of pytorch model
-    model_inputs = {
-        'cls_scores': cls_score,
-        'bbox_preds': bboxes,
-        'img_metas': img_metas
-    }
-    model_outputs = get_model_outputs(ssd_head, 'get_bboxes', model_inputs)
-
     # to get outputs of onnx model after rewrite
-    img_metas[0]['img_shape'] = torch.tensor([s, s], dtype=torch.int32)
+    img_metas[0]['img_shape'] = torch.tensor([s, s]) if is_dynamic else [s, s]
     wrapped_model = WrapModel(
         ssd_head, 'get_bboxes', img_metas=img_metas, with_nms=True)
     rewrite_inputs = {
@@ -1170,19 +1219,8 @@ def test_ssd_head_get_bboxes(backend_type: Backend):
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg)
 
+    # output should be of shape [1, N, 6]
     if is_backend_output:
-        if isinstance(rewrite_outputs, dict):
-            rewrite_outputs = convert_to_list(rewrite_outputs, output_names)
-        for model_output, rewrite_output in zip(model_outputs[0],
-                                                rewrite_outputs):
-            model_output = model_output.squeeze().cpu().numpy()
-            rewrite_output = rewrite_output.squeeze().cpu().numpy()
-            # hard code to make two tensors with the same shape
-            # rewrite and original codes applied different nms strategy
-            assert np.allclose(
-                model_output[:rewrite_output.shape[0]],
-                rewrite_output,
-                rtol=1e-03,
-                atol=1e-05)
-    else:
-        assert rewrite_outputs is not None
+        rewrite_outputs = rewrite_outputs[0]
+
+    assert rewrite_outputs.shape[-1] == 6

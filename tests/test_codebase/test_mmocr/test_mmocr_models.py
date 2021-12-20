@@ -134,17 +134,17 @@ def get_base_recognizer_model():
     return model
 
 
-@pytest.mark.parametrize('backend_type', [Backend.NCNN])
-def test_bidirectionallstm(backend_type: Backend):
+@pytest.mark.parametrize('backend', [Backend.NCNN])
+def test_bidirectionallstm(backend: Backend):
     """Test forward rewrite of bidirectionallstm."""
-    check_backend(backend_type)
+    check_backend(backend)
     bilstm = get_bidirectionallstm_model()
     bilstm.cpu().eval()
 
     deploy_cfg = mmcv.Config(
         dict(
-            backend_config=dict(type=backend_type.value),
-            onnx_config=dict(input_shape=None),
+            backend_config=dict(type=backend.value),
+            onnx_config=dict(output_names=['output'], input_shape=None),
             codebase_config=dict(
                 type='mmocr',
                 task='TextRecognition',
@@ -161,25 +161,30 @@ def test_bidirectionallstm(backend_type: Backend):
     # to get outputs of onnx model after rewrite
     wrapped_model = WrapModel(bilstm, 'forward')
     rewrite_inputs = {'input': input}
-    rewrite_outputs = get_rewrite_outputs(
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
-        deploy_cfg=deploy_cfg)
-    for model_output, rewrite_output in zip(model_outputs, rewrite_outputs):
-        model_output = model_output.squeeze().cpu().numpy()
-        rewrite_output = rewrite_output.squeeze()
+        deploy_cfg=deploy_cfg,
+        run_with_backend=False)
+    if is_backend_output:
+        model_output = model_outputs.cpu().numpy()
+        rewrite_output = rewrite_outputs[0].cpu().numpy()
         assert np.allclose(
             model_output, rewrite_output, rtol=1e-03, atol=1e-05)
+    else:
+        assert rewrite_outputs is not None
 
 
-def test_simple_test_of_single_stage_text_detector():
+@pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME])
+def test_simple_test_of_single_stage_text_detector(backend: Backend):
     """Test simple_test single_stage_text_detector."""
+    check_backend(backend)
     single_stage_text_detector = get_single_stage_text_detector_model()
     single_stage_text_detector.eval()
 
     deploy_cfg = mmcv.Config(
         dict(
-            backend_config=dict(type='default'),
+            backend_config=dict(type=backend.value),
             onnx_config=dict(input_shape=None),
             codebase_config=dict(
                 type='mmocr',
@@ -187,40 +192,36 @@ def test_simple_test_of_single_stage_text_detector():
             )))
 
     input = torch.rand(1, 3, 64, 64)
-    img_metas = [{
-        'ori_shape': [64, 64, 3],
-        'img_shape': [64, 64, 3],
-        'pad_shape': [64, 64, 3],
-        'scale_factor': [1., 1., 1., 1],
-    }]
-
     x = single_stage_text_detector.extract_feat(input)
     model_outputs = single_stage_text_detector.bbox_head(x)
 
     wrapped_model = WrapModel(single_stage_text_detector, 'simple_test')
-    rewrite_inputs = {'img': input, 'img_metas': img_metas[0]}
-    rewrite_outputs = get_rewrite_outputs(
+    rewrite_inputs = {'img': input}
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
-        deploy_cfg=deploy_cfg)
-    for model_output, rewrite_output in zip(model_outputs, rewrite_outputs):
-        model_output = model_output.squeeze().cpu().numpy()
-        rewrite_output = rewrite_output.squeeze()
-        assert np.allclose(
-            model_output, rewrite_output, rtol=1e-03, atol=1e-05)
+        deploy_cfg=deploy_cfg,
+        run_with_backend=False)
+
+    if is_backend_output:
+        rewrite_outputs = rewrite_outputs[0]
+
+    model_outputs = model_outputs.cpu().numpy()
+    rewrite_outputs = rewrite_outputs.cpu().numpy()
+    assert np.allclose(model_outputs, rewrite_outputs, rtol=1e-03, atol=1e-05)
 
 
-@pytest.mark.parametrize('backend_type', [Backend.NCNN])
+@pytest.mark.parametrize('backend', [Backend.NCNN])
 @pytest.mark.parametrize('rnn_flag', [True, False])
-def test_crnndecoder(backend_type: Backend, rnn_flag: bool):
+def test_crnndecoder(backend: Backend, rnn_flag: bool):
     """Test forward rewrite of crnndecoder."""
-    check_backend(backend_type)
+    check_backend(backend)
     crnn_decoder = get_crnn_decoder_model(rnn_flag)
     crnn_decoder.cpu().eval()
 
     deploy_cfg = mmcv.Config(
         dict(
-            backend_config=dict(type=backend_type.value),
+            backend_config=dict(type=backend.value),
             onnx_config=dict(input_shape=None),
             codebase_config=dict(
                 type='mmocr',
@@ -250,32 +251,39 @@ def test_crnndecoder(backend_type: Backend, rnn_flag: bool):
         targets_dict=targets_dict,
         img_metas=img_metas)
     rewrite_inputs = {'feat': input}
-    rewrite_outputs = get_rewrite_outputs(
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
-        deploy_cfg=deploy_cfg)
-    for model_output, rewrite_output in zip(model_outputs, rewrite_outputs):
-        model_output = model_output.squeeze().cpu().numpy()
-        rewrite_output = rewrite_output.squeeze()
-        assert np.allclose(
-            model_output, rewrite_output, rtol=1e-03, atol=1e-05)
+        deploy_cfg=deploy_cfg,
+        run_with_backend=False)
+    if is_backend_output:
+        for model_output, rewrite_output in zip(model_outputs,
+                                                rewrite_outputs):
+            model_output = model_output.squeeze().cpu().numpy()
+            rewrite_output = rewrite_output.squeeze()
+            assert np.allclose(
+                model_output, rewrite_output, rtol=1e-03, atol=1e-05)
+    else:
+        assert rewrite_outputs is not None
 
 
+@pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME])
 @pytest.mark.parametrize(
     'img_metas', [[[{}]], [[{
         'resize_shape': [32, 32],
         'valid_ratio': 1.0
     }]]])
 @pytest.mark.parametrize('is_dynamic', [True, False])
-def test_forward_of_base_recognizer(img_metas, is_dynamic):
+def test_forward_of_base_recognizer(img_metas, is_dynamic, backend):
     """Test forward base_recognizer."""
+    check_backend(backend)
     base_recognizer = get_base_recognizer_model()
     base_recognizer.eval()
 
     if not is_dynamic:
         deploy_cfg = mmcv.Config(
             dict(
-                backend_config=dict(type='ncnn'),
+                backend_config=dict(type=backend.value),
                 onnx_config=dict(input_shape=None),
                 codebase_config=dict(
                     type='mmocr',
@@ -284,7 +292,7 @@ def test_forward_of_base_recognizer(img_metas, is_dynamic):
     else:
         deploy_cfg = mmcv.Config(
             dict(
-                backend_config=dict(type='ncnn'),
+                backend_config=dict(type=backend.value),
                 onnx_config=dict(
                     input_shape=None,
                     dynamic_axes={
@@ -317,26 +325,29 @@ def test_forward_of_base_recognizer(img_metas, is_dynamic):
     rewrite_inputs = {
         'img': input,
     }
-    rewrite_outputs = get_rewrite_outputs(
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg)
 
-    for model_output, rewrite_output in zip(model_outputs, rewrite_outputs):
-        model_output = model_output.squeeze().cpu().numpy()
-        rewrite_output = rewrite_output.squeeze()
-        assert np.allclose(
-            model_output, rewrite_output, rtol=1e-03, atol=1e-05)
+    if is_backend_output:
+        rewrite_outputs = rewrite_outputs[0]
+
+    model_outputs = model_outputs.cpu().numpy()
+    rewrite_outputs = rewrite_outputs.cpu().numpy()
+    assert np.allclose(model_outputs, rewrite_outputs, rtol=1e-03, atol=1e-05)
 
 
-def test_simple_test_of_encode_decode_recognizer():
+@pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME])
+def test_simple_test_of_encode_decode_recognizer(backend):
     """Test simple_test encode_decode_recognizer."""
+    check_backend(backend)
     encode_decode_recognizer = get_encode_decode_recognizer_model()
     encode_decode_recognizer.eval()
 
     deploy_cfg = mmcv.Config(
         dict(
-            backend_config=dict(type='default'),
+            backend_config=dict(type=backend.value),
             onnx_config=dict(input_shape=None),
             codebase_config=dict(
                 type='mmocr',
@@ -356,28 +367,28 @@ def test_simple_test_of_encode_decode_recognizer():
     wrapped_model = WrapModel(
         encode_decode_recognizer, 'simple_test', img_metas=img_metas)
     rewrite_inputs = {'img': input}
-    rewrite_outputs = get_rewrite_outputs(
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg)
+    if is_backend_output:
+        rewrite_outputs = rewrite_outputs[0]
 
-    for model_output, rewrite_output in zip(model_outputs, rewrite_outputs):
-        model_output = model_output.squeeze().cpu().numpy()
-        rewrite_output = rewrite_output.squeeze()
-        assert np.allclose(
-            model_output, rewrite_output, rtol=1e-03, atol=1e-05)
+    model_outputs = model_outputs.cpu().numpy()
+    rewrite_outputs = rewrite_outputs.cpu().numpy()
+    assert np.allclose(model_outputs, rewrite_outputs, rtol=1e-03, atol=1e-05)
 
 
-@pytest.mark.parametrize('backend_type', [Backend.TENSORRT])
-def test_forward_of_fpnc(backend_type: Backend):
+@pytest.mark.parametrize('backend', [Backend.TENSORRT])
+def test_forward_of_fpnc(backend: Backend):
     """Test forward rewrite of fpnc."""
-    check_backend(backend_type)
+    check_backend(backend)
     fpnc = get_fpnc_neck_model()
     fpnc.eval()
     deploy_cfg = mmcv.Config(
         dict(
             backend_config=dict(
-                type=backend_type.value,
+                type=backend.value,
                 common_config=dict(max_workspace_size=1 << 30),
                 model_inputs=[
                     dict(
@@ -399,22 +410,17 @@ def test_forward_of_fpnc(backend_type: Backend):
     rewrite_inputs = {
         'inputs': input,
     }
-    rewrite_outputs, is_need_name = get_rewrite_outputs(
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg)
-    if is_need_name:
-        model_output = model_outputs[0].squeeze().cpu().numpy()
-        rewrite_output = rewrite_outputs[0].squeeze().cpu().numpy()
-        assert np.allclose(
-            model_output, rewrite_output, rtol=1e-03, atol=1e-05)
-    else:
-        for model_output, rewrite_output in zip(model_outputs,
-                                                rewrite_outputs):
-            model_output = model_output.squeeze().cpu().numpy()
-            rewrite_output = rewrite_output.squeeze().cpu().numpy()
-            assert np.allclose(
-                model_output, rewrite_output, rtol=1e-03, atol=1e-05)
+
+    if is_backend_output:
+        rewrite_outputs = rewrite_outputs[0]
+
+    model_outputs = model_outputs.cpu().numpy()
+    rewrite_outputs = rewrite_outputs.cpu().numpy()
+    assert np.allclose(model_outputs, rewrite_outputs, rtol=1e-03, atol=1e-05)
 
 
 def get_sar_model_cfg(decoder_type: str):
@@ -468,11 +474,11 @@ def get_sar_model_cfg(decoder_type: str):
         dict(model=model, data=dict(test=dict(pipeline=test_pipeline))))
 
 
-@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
+@pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME])
 @pytest.mark.parametrize('decoder_type',
                          ['SequentialSARDecoder', 'ParallelSARDecoder'])
-def test_sar_model(backend_type: Backend, decoder_type):
-    check_backend(backend_type)
+def test_sar_model(backend: Backend, decoder_type):
+    check_backend(backend)
     import os.path as osp
     import onnx
     from mmocr.models.textrecog import SARNet
@@ -483,7 +489,7 @@ def test_sar_model(backend_type: Backend, decoder_type):
 
     deploy_cfg = mmcv.Config(
         dict(
-            backend_config=dict(type=backend_type.value),
+            backend_config=dict(type=backend.value),
             onnx_config=dict(input_shape=None),
             codebase_config=dict(
                 type='mmocr',
@@ -492,11 +498,11 @@ def test_sar_model(backend_type: Backend, decoder_type):
     # patch model
     pytorch_model.cfg = sar_cfg
     patched_model = patch_model(
-        pytorch_model, cfg=deploy_cfg, backend=backend_type.value)
+        pytorch_model, cfg=deploy_cfg, backend=backend.value)
     onnx_file_path = tempfile.NamedTemporaryFile(suffix='.onnx').name
     input_names = [k for k, v in model_inputs.items() if k != 'ctx']
     with RewriterContext(
-            cfg=deploy_cfg, backend=backend_type.value), torch.no_grad():
+            cfg=deploy_cfg, backend=backend.value), torch.no_grad():
         torch.onnx.export(
             patched_model,
             tuple([v for k, v in model_inputs.items()]),

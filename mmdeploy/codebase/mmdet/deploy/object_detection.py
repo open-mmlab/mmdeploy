@@ -147,7 +147,7 @@ class ObjectDetection(BaseTask):
                   output_file: str,
                   window_name: str,
                   show_result: bool = False,
-                  score_thr=0.3):
+                  score_thr: float = 0.3):
         """Visualize predictions of a model.
 
         Args:
