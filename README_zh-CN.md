@@ -41,15 +41,15 @@ MMDeploy 是一个开源深度学习模型部署工具箱，它是 [OpenMMLab](h
 
 ## 安装
 
-请参考[构建项目](docs/build.md)进行安装。
+请参考[构建项目](docs/zh_cn/build.md)进行安装。
 
 ## 快速入门
 
-请阅读 [如何进行模型转换](docs/tutorials/how_to_convert_model.md) 来了解基本的 MMDeploy 使用。
+请阅读 [如何进行模型转换](docs/zh_cn/tutorials/how_to_convert_model.md) 来了解基本的 MMDeploy 使用。
 
-我们还提供了诸如 [如何编写配置文件](docs/tutorials/how_to_write_config.md)， [如何添加新模型支持](docs/tutorials/how_to_support_new_models.md) 和 [如何测试模型效果](docs/tutorials/how_to_measure_performance_of_models.md) 等教程。
+我们还提供了诸如 [如何编写配置文件](docs/zh_cn/tutorials/how_to_write_config.md)， [如何添加新模型支持](docs/zh_cn/tutorials/how_to_support_new_models.md) 和 [如何测试模型效果](docs/zh_cn/tutorials/how_to_measure_performance_of_models.md) 等教程。
 
-如果遇到问题，请参考 [常见问题解答](docs/faq.md)。
+如果遇到问题，请参考 [常见问题解答](docs/zh_cn/faq.md)。
 
 ## 贡献指南
 

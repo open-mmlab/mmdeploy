@@ -56,11 +56,11 @@ make -j10
 
 ### List of supported custom ops
 
-| Operator                                                                     | CPU | GPU | MMDeploy Releases |
-|:-----------------------------------------------------------------------------|:---:|:---:|:------------------|
-| [RoIAlign](../ops/onnxruntime.md#roialign)                                   |  Y  |  N  | master            |
-| [grid_sampler](../ops/onnxruntime.md#grid_sampler)                           |  Y  |  N  | master            |
-| [MMCVModulatedDeformConv2d](../ops/onnxruntime.md#mmcvmodulateddeformconv2d) |  Y  |  N  | master            |
+| Operator                                                                     |  CPU  |  GPU  | MMDeploy Releases |
+| :--------------------------------------------------------------------------- | :---: | :---: | :---------------- |
+| [RoIAlign](../ops/onnxruntime.md#roialign)                                   |   Y   |   N   | master            |
+| [grid_sampler](../ops/onnxruntime.md#grid_sampler)                           |   Y   |   N   | master            |
+| [MMCVModulatedDeformConv2d](../ops/onnxruntime.md#mmcvmodulateddeformconv2d) |   Y   |   N   | master            |
 
 ### How to add a new custom op
 
@@ -76,7 +76,7 @@ Take custom operator `roi_align` for example.
 1. Create a `roi_align` directory in ONNX Runtime source directory `backend_ops/onnxruntime/`
 2. Add header and source file into `roi_align` directory `backend_ops/onnxruntime/roi_align/`
 3. Add unit test into `tests/test_ops/test_ops.py`
-   Check [here](../../tests/test_ops/test_ops.py) for examples.
+   Check [here](../../../tests/test_ops/test_ops.py) for examples.
 
 **Finally, welcome to send us PR of adding custom operators for ONNX Runtime in MMDeploy.** :nerd_face:
 

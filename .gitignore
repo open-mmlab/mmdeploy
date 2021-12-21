@@ -64,8 +64,8 @@ instance/
 .scrapy
 
 # Sphinx documentation
-docs/_build/
-docs_zh_CN/_build/
+docs/en/_build/
+docs/zh_cn/_build/
 **/src/pytorch-sphinx-theme/
 
 # PyBuilder

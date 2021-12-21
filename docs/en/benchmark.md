@@ -20,7 +20,7 @@ GPU: TensorRT, PPLNN
 - Input resolution varies for different datasets of different codebases. All inputs are real images except for mmediting because the dataset is not large enough.
 
 ### Latency benchmark
-Users can directly test the speed through [how_to_measure_performance_of_models.md](docs/tutorials/how_to_measure_performance_of_models.md). And here is the benchmark in our environment.
+Users can directly test the speed through [how_to_measure_performance_of_models.md](docs/en/tutorials/how_to_measure_performance_of_models.md). And here is the benchmark in our environment.
 <details>
 <summary style="margin-left: 25px;">MMCls with 1x3x224x224 input</summary>
 <div style="margin-left: 25px;">
@@ -477,7 +477,7 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
 
 ### Performance benchmark
 
-Users can directly test the performance through [how_to_evaluate_a_model.md](docs/tutorials/how_to_evaluate_a_model.md). And here is the benchmark in our environment.
+Users can directly test the performance through [how_to_evaluate_a_model.md](docs/en/tutorials/how_to_evaluate_a_model.md). And here is the benchmark in our environment.
 
 <details>
 <summary style="margin-left: 25px;">MMClassification</summary>

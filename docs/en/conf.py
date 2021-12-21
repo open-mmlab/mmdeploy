@@ -21,7 +21,7 @@ from sphinx.builders.html import StandaloneHTMLBuilder
 
 sys.path.insert(0, os.path.abspath('..'))
 
-version_file = '../mmdeploy/version.py'
+version_file = '../../mmdeploy/version.py'
 with open(version_file, 'r') as f:
     exec(compile(f.read(), version_file, 'exec'))
 __version__ = locals()['__version__']
@@ -78,7 +78,7 @@ master_doc = 'index'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = 'zh_CN'
+language = None
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -111,7 +111,7 @@ html_theme_options = {
         },
         {
             'name':
-            '算法库',
+            'Projects',
             'children': [
                 {
                     'name': 'MMAction2',
@@ -160,7 +160,7 @@ html_theme_options = {
             'OpenMMLab',
             'children': [
                 {
-                    'name': '官网',
+                    'name': 'Homepage',
                     'url': 'https://openmmlab.com/'
                 },
                 {
@@ -168,11 +168,11 @@ html_theme_options = {
                     'url': 'https://github.com/open-mmlab/'
                 },
                 {
-                    'name': '推特',
+                    'name': 'Twitter',
                     'url': 'https://twitter.com/OpenMMLab'
                 },
                 {
-                    'name': '知乎',
+                    'name': 'Zhihu',
                     'url': 'https://zhihu.com/people/openmmlab'
                 },
             ]

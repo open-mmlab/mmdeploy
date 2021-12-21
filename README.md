@@ -44,19 +44,19 @@ This project is released under the [Apache 2.0 license](LICENSE).
 
 ## Installation
 
-Please refer to [build.md](docs/build.md) for installation.
+Please refer to [build.md](docs/en/build.md) for installation.
 
 ## Getting Started
-Please see [getting_started.md](docs/get_started.md) for the basic usage of MMDeploy. We also provide other tutorials for:
-- [how to convert model](docs/tutorials/how_to_convert_model.md)
-- [how to write config](docs/tutorials/how_to_write_config.md)
-- [how to support new models](docs/tutorials/how_to_support_new_models.md)
-- [how to measure performance of models](docs/tutorials/how_to_measure_performance_of_models.md)
-- [MMDeploy's SDK Model spec](docs/tutorials/sdk_model_spec.md)
-- [how to integrate SDK to your application](docs/tutorials/sdk_integration.md)
-- [how to develop postprocessing components in SDK](docs/tutorials/postprocess_component_development.md)
+Please see [getting_started.md](docs/en/get_started.md) for the basic usage of MMDeploy. We also provide other tutorials for:
+- [how to convert model](docs/en/tutorials/how_to_convert_model.md)
+- [how to write config](docs/en/tutorials/how_to_write_config.md)
+- [how to support new models](docs/en/tutorials/how_to_support_new_models.md)
+- [how to measure performance of models](docs/en/tutorials/how_to_measure_performance_of_models.md)
+- [MMDeploy's SDK Model spec](docs/en/tutorials/sdk_model_spec.md)
+- [how to integrate SDK to your application](docs/en/tutorials/sdk_integration.md)
+- [how to develop postprocessing components in SDK](docs/en/tutorials/postprocess_component_development.md)
 
-Please refer to [FAQ](docs/faq.md) for frequently asked questions.
+Please refer to [FAQ](docs/en/faq.md) for frequently asked questions.
 
 
 ## Contributing
