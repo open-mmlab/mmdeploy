@@ -2,8 +2,8 @@
 
 #include <cuda_runtime.h>
 
+#include "core/utils/device_utils.h"
 #include "preprocess/transform/image2tensor.h"
-#include "preprocess/transform/transform_utils.h"
 
 namespace mmdeploy {
 namespace cuda {

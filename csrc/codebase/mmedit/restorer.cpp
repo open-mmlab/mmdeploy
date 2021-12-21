@@ -1,11 +1,10 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include <preprocess/transform/transform_utils.h>
-
 #include <opencv2/core.hpp>
 
 #include "codebase/mmedit/mmedit.h"
 #include "core/tensor.h"
+#include "core/utils/device_utils.h"
 
 namespace mmdeploy::mmedit {
 

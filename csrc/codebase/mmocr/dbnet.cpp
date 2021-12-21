@@ -8,12 +8,12 @@
 #include "core/registry.h"
 #include "core/serialization.h"
 #include "core/tensor.h"
+#include "core/utils/device_utils.h"
 #include "core/utils/formatter.h"
 #include "core/value.h"
 #include "experimental/module_adapter.h"
 #include "mmocr.h"
 #include "preprocess/cpu/opencv_utils.h"
-#include "preprocess/transform/transform_utils.h"
 
 namespace mmdeploy::mmocr {
 

@@ -33,6 +33,7 @@ set(SRCS
         operator.cpp
         status_code.cpp
         tensor.cpp
+        utils/device_utils.cpp
         utils/formatter.cpp
         utils/stacktrace.cpp)
 build_object_target(${CORE_OBJ} "${SRCS}")

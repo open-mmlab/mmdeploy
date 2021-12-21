@@ -2,8 +2,8 @@
 
 #include <cuda_runtime.h>
 
+#include "core/utils/device_utils.h"
 #include "preprocess/transform/crop.h"
-#include "preprocess/transform/transform_utils.h"
 
 using namespace std;
 

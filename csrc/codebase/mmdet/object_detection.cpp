@@ -3,6 +3,7 @@
 #include "object_detection.h"
 
 #include "core/registry.h"
+#include "core/utils/device_utils.h"
 #include "experimental/module_adapter.h"
 
 using namespace std;
@@ -36,20 +37,13 @@ Result<Value> ResizeBBox::operator()(const Value& prep_res, const Value& infer_r
     // 'bboxes_number'
     assert(labels.shape().size() == 2);
 
-    if (dets.device().is_host()) {
-      OUTCOME_TRY(auto result, DispatchGetBBoxes(prep_res["img_metas"], dets, labels));
-      return to_value(result);
-    } else {
-      TensorDesc _dets_desc{Device{"cpu"}, dets.data_type(), dets.shape(), dets.name()};
-      TensorDesc _labels_desc{Device{"cpu"}, labels.data_type(), labels.shape(), labels.name()};
-      Tensor _dets(_dets_desc);
-      Tensor _labels(_labels_desc);
-      OUTCOME_TRY(dets.CopyTo(_dets, stream()));
-      OUTCOME_TRY(labels.CopyTo(_labels, stream()));
-      OUTCOME_TRY(stream().Wait());
-      OUTCOME_TRY(auto result, DispatchGetBBoxes(prep_res["img_metas"], _dets, _labels));
-      return to_value(result);
-    }
+    OUTCOME_TRY(auto _dets, MakeAvailableOnDevice(dets, kHost, stream()));
+    OUTCOME_TRY(auto _labels, MakeAvailableOnDevice(labels, kHost, stream()));
+    OUTCOME_TRY(stream().Wait());
+
+    OUTCOME_TRY(auto result, DispatchGetBBoxes(prep_res["img_metas"], _dets, _labels));
+    return to_value(result);
+
   } catch (...) {
     return Status(eFail);
   }

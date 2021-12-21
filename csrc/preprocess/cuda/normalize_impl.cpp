@@ -2,9 +2,9 @@
 
 #include <cuda_runtime.h>
 
+#include "core/utils/device_utils.h"
 #include "core/utils/formatter.h"
 #include "preprocess/transform/normalize.h"
-#include "preprocess/transform/transform_utils.h"
 
 using namespace std;
 

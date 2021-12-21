@@ -9,6 +9,7 @@ project(MMDeploy VERSION 0.1.0)
 
 set(CMAKE_CXX_STANDARD 17)
 
+
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -26,6 +27,20 @@ set(MMDEPLOY_CODEBASES "" CACHE STRING "select OpenMMLab's codebases")
 
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "choose 'Release' as default build type" FORCE)
+endif ()
+
+# when CUDA devices are enabled, the environment variable ASAN_OPTIONS=protect_shadow_gap=0
+# must be set at runtime
+if (MMDEPLOY_ASAN_ENABLE)
+    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-fsanitize=address>)
+    add_link_options(-fsanitize=address)
+endif ()
+
+# notice that ubsan has linker issues for ubuntu < 18.04, see
+# https://stackoverflow.com/questions/50024731/ld-unrecognized-option-push-state-no-as-needed
+if (MMDEPLOY_UBSAN_ENABLE)
+ add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-fsanitize=undefined>)
+ add_link_options(-fsanitize=undefined)
 endif ()
 
 include(${CMAKE_SOURCE_DIR}/cmake/common.cmake)

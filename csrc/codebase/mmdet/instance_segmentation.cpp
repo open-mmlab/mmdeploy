@@ -1,11 +1,11 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
 #include "core/registry.h"
+#include "core/utils/device_utils.h"
 #include "experimental/module_adapter.h"
 #include "object_detection.h"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "preprocess/cpu/opencv_utils.h"
-#include "preprocess/transform/transform_utils.h"
 
 namespace mmdeploy::mmdet {
 

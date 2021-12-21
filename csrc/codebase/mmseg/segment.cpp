@@ -2,10 +2,10 @@
 
 #include "codebase/mmseg/mmseg.h"
 #include "core/tensor.h"
+#include "core/utils/device_utils.h"
 #include "core/utils/formatter.h"
 #include "preprocess/cpu/opencv_utils.h"
 #include "preprocess/transform/transform.h"
-#include "preprocess/transform/transform_utils.h"
 
 namespace mmdeploy::mmseg {
 

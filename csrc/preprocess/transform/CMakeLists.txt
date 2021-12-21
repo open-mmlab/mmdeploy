@@ -14,8 +14,8 @@ set(SRCS
         normalize.cpp
         pad.cpp
         resize.cpp
-        transform.cpp
-        transform_utils.cpp)
+        transform.cpp)
+
 build_object_target(${TRANSFORM_OBJ} "${SRCS}")
 target_include_directories(${TRANSFORM_OBJ} PUBLIC
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/preprocess>)

@@ -6,6 +6,7 @@
 #include "core/model.h"
 #include "core/registry.h"
 #include "core/tensor.h"
+#include "core/utils/device_utils.h"
 #include "core/utils/formatter.h"
 #include "core/value.h"
 #include "experimental/module_adapter.h"
@@ -58,22 +59,16 @@ class CTCConvertor : public MMOCR {
   }
 
   Result<Value> operator()(const Value& _data, const Value& _prob) {
-    //    auto img = _data["img"].get<Tensor>();
-    //    WARN("img shape: {}", img.shape());
-
     auto d_conf = _prob["output"].get<Tensor>();
-    std::vector<float> h_conf;
 
-    float* data{};
-    if (d_conf.device() != kHost) {
-      h_conf.resize(d_conf.byte_size() / sizeof(float));
-      OUTCOME_TRY(d_conf.CopyTo(h_conf.data(), stream_));
-      OUTCOME_TRY(stream_.Wait());
-      data = h_conf.data();
-    } else {
-      OUTCOME_TRY(stream_.Wait());
-      data = d_conf.data<float>();
+    if (d_conf.data_type() != DataType::kFLOAT) {
+      return Status(eNotSupported);
     }
+
+    OUTCOME_TRY(auto h_conf, MakeAvailableOnDevice(d_conf, Device{0}, stream()));
+    OUTCOME_TRY(stream().Wait());
+
+    auto data = h_conf.data<float>();
 
     auto shape = d_conf.shape();
     auto w = static_cast<int>(shape[1]);
