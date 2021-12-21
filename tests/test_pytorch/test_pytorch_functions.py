@@ -42,7 +42,7 @@ def test_get_attribute():
     def model_func(tensor):
         x = tensor.size()
         assert isinstance(x[0], int) and not isinstance(x[0], torch.Tensor)
-        return x[0] * tensor
+        return torch.tensor(x)
 
     input = torch.zeros([1, 2, 3, 4])
     wrapped_func = WrapFunction(model_func)
@@ -50,7 +50,7 @@ def test_get_attribute():
         wrapped_func,
         model_inputs={'tensor': input},
         deploy_cfg=deploy_cfg_ncnn,
-        run_with_backend=False)
+        run_with_backend=True)
 
     assert rewrite_outputs is not None, 'Got unexpected rewrite '
     'outputs: {}'.format(rewrite_outputs)
@@ -71,9 +71,9 @@ def test_group_norm_ncnn():
         wrapped_func,
         model_inputs={'input': input},
         deploy_cfg=deploy_cfg_ncnn,
-        run_with_backend=False)
+        run_with_backend=True)
 
-    assert np.allclose(model_output, rewrite_output, rtol=1e-03, atol=1e-05)
+    assert np.allclose(model_output, rewrite_output[0], rtol=1e-03, atol=1e-05)
 
 
 @backend_checker(Backend.NCNN)
@@ -89,9 +89,9 @@ def test_interpolate_static():
         wrapped_func,
         model_inputs={'input': input},
         deploy_cfg=deploy_cfg_ncnn,
-        run_with_backend=False)
+        run_with_backend=True)
 
-    assert np.allclose(model_output, rewrite_output, rtol=1e-03, atol=1e-05)
+    assert np.allclose(model_output, rewrite_output[0], rtol=1e-03, atol=1e-05)
 
 
 @backend_checker(Backend.NCNN)
@@ -109,9 +109,9 @@ def test_linear_ncnn():
         wrapped_func,
         model_inputs={'input': input},
         deploy_cfg=deploy_cfg_ncnn,
-        run_with_backend=False)
+        run_with_backend=True)
 
-    assert np.allclose(model_output, rewrite_output, rtol=1e-03, atol=1e-05)
+    assert np.allclose(model_output, rewrite_output[0], rtol=1e-03, atol=1e-05)
 
 
 @backend_checker(Backend.TENSORRT)
@@ -127,10 +127,10 @@ def test_repeat_static():
 
     deploy_cfg = get_trt_config(['output'], [1])
 
-    rewrite_output, is_backend_ouptut = get_rewrite_outputs(
+    rewrite_output, is_backend_output = get_rewrite_outputs(
         wrapped_func, model_inputs={'input': input}, deploy_cfg=deploy_cfg)
 
-    if is_backend_ouptut:
+    if is_backend_output:
         rewrite_output = rewrite_output[0].detach().cpu()
 
         assert np.allclose(
@@ -145,7 +145,7 @@ def test_size_of_tensor_static():
     def model_func(input):
         x = torch.Tensor.size(input)
         assert isinstance(x[0], int) and not isinstance(x[0], torch.Tensor)
-        return x[0] * input
+        return torch.tensor(x)
 
     input = torch.zeros([1, 2, 3, 4])
     wrapped_func = WrapFunction(model_func)
@@ -153,7 +153,7 @@ def test_size_of_tensor_static():
         wrapped_func,
         model_inputs={'input': input},
         deploy_cfg=deploy_cfg_ncnn,
-        run_with_backend=False)
+        run_with_backend=True)
 
     assert rewrite_outputs is not None, 'Got unexpected rewrite '
     'outputs: {}'.format(rewrite_outputs)
@@ -181,9 +181,8 @@ class TestTopk:
             wrapped_func,
             model_inputs={'input': TestTopk.input},
             deploy_cfg=deploy_cfg_ncnn,
-            run_with_backend=False)
-
-        assert np.allclose(model_output, output[1], rtol=1e-03, atol=1e-05)
+            run_with_backend=True)
+        assert np.allclose(model_output, output[0], rtol=1e-03, atol=1e-05)
 
     @backend_checker(Backend.TENSORRT)
     @pytest.mark.parametrize('k', [1, 3, 4])

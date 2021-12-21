@@ -165,7 +165,7 @@ def test_bidirectionallstm(backend: Backend):
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg,
-        run_with_backend=False)
+        run_with_backend=True)
     if is_backend_output:
         model_output = model_outputs.cpu().numpy()
         rewrite_output = rewrite_outputs[0].cpu().numpy()
@@ -200,7 +200,8 @@ def test_simple_test_of_single_stage_text_detector(backend: Backend):
     rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
-        deploy_cfg=deploy_cfg)
+        deploy_cfg=deploy_cfg,
+        run_with_backend=True)
 
     if is_backend_output:
         rewrite_outputs = rewrite_outputs[0]
@@ -254,7 +255,8 @@ def test_crnndecoder(backend: Backend, rnn_flag: bool):
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg,
-        run_with_backend=False)
+        run_with_backend=True)
+    rewrite_outputs = [rewrite_outputs[-1]]
     if is_backend_output:
         for model_output, rewrite_output in zip(model_outputs,
                                                 rewrite_outputs):
