@@ -10,8 +10,6 @@ endif()
 find_package(pplcv REQUIRED)
 
 include(${CMAKE_SOURCE_DIR}/cmake/common.cmake)
-# include(${CMAKE_SOURCE_DIR}/cmake/cuda.cmake NO_POLICY_SCOPE)
-set_targets(${PROJECT_NAME} TRANSFORM_OBJ TRANSFORM_STATIC TRANSFORM_SHARED)
 
 set(SRCS
     crop_impl.cpp
@@ -24,18 +22,9 @@ set(SRCS
     crop.cu
     normalize.cu
     transpose.cu)
-build_object_target(${TRANSFORM_OBJ} "${SRCS}")
-
-target_include_directories(${TRANSFORM_OBJ}
+build_target(${PROJECT_NAME} "${SRCS}")
+target_include_directories(${PROJECT_NAME}
                            PUBLIC ${CUDA_TOOLKIT_ROOT_DIR}/include)
-target_link_libraries(
-  ${TRANSFORM_OBJ} PRIVATE ${PPLCV_LIBRARIES} mmdeploy::transform::static
-                           mmdeploy::core::static)
-
-build_static_target(${TRANSFORM_STATIC} ${TRANSFORM_OBJ} "PUBLIC")
-add_library(mmdeploy::transform_impl::cuda::static ALIAS ${TRANSFORM_STATIC})
-
-build_shared_target(${TRANSFORM_SHARED} ${TRANSFORM_OBJ} "PUBLIC")
-add_library(mmdeploy::transform_impl::cuda ALIAS ${TRANSFORM_SHARED})
-
-export_module(${TRANSFORM_STATIC} ${TRANSFORM_SHARED} ${TRANSFORM_OBJ})
+target_link_libraries(${PROJECT_NAME} PRIVATE ${PPLCV_LIBRARIES} mmdeploy::core)
+add_library(mmdeploy::transform_impl::cuda ALIAS ${PROJECT_NAME})
+export_module(${PROJECT_NAME})

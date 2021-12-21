@@ -15,6 +15,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # options
+option(BUILD_SHARED_LIBS "build shared lib" ON)
 option(MMDEPLOY_BUILD_MODEL_OPTIMIZER "build MMDeploy's model optimizer" ON)
 option(MMDEPLOY_BUILD_SDK "build MMDeploy's SDK" OFF)
 option(MMDEPLOY_ZIP_MODEL "support sdk model in zip format" OFF)
@@ -23,7 +24,6 @@ set(MMDEPLOY_TARGET_DEVICES
         "cpu" CACHE STRING "MMDeploy's target devices")
 set(MMDEPLOY_TARGET_BACKENDS "" CACHE STRING "MMDeploy's target inference engines")
 set(MMDEPLOY_CODEBASES "" CACHE STRING "select OpenMMLab's codebases")
-#set(MMDEPLOY_TRANSFORM_PLATFORMS "cpu" CACHE STRING "select transform operations' platform")
 
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "choose 'Release' as default build type" FORCE)
@@ -47,14 +47,12 @@ include(${CMAKE_SOURCE_DIR}/cmake/common.cmake)
 # set INTERFACE target to gather linked modules
 add_library(MMDeployStaticModules INTERFACE)
 add_library(MMDeployDynamicModules INTERFACE)
+add_library(MMDeployLibs INTERFACE)
 
 add_subdirectory(csrc)
-if (MMDEPLOY_BUILD_TEST)
-    add_subdirectory(tests/test_csrc)
-endif ()
 
 if (MMDEPLOY_BUILD_SDK)
-    # get static modules and dynamic modules from MMDeployStaticModules and MMDeployDynamicModules, respectively
+    # get static modules and dynamic modules from ${MMDeployStaticModules} and ${MMDeployDynamicModules}, respectively
     set(STATIC_MODULES)
     get_target_property(STATIC_MODULES MMDeployStaticModules INTERFACE_LINK_LIBRARIES)
     get_target_list("${STATIC_MODULES}" FILTERED_MODULES)
@@ -66,6 +64,17 @@ if (MMDEPLOY_BUILD_SDK)
     get_target_list("${DYNAMIC_MODULES}" FILTERED_MODULES)
     set(MMDEPLOY_DYNAMIC_MODULES "${FILTERED_MODULES}" CACHE STRING "MMDeploy's dynamic modules")
     message(STATUS "MMDEPLOY_DYNAMIC_MODULES: ${MMDEPLOY_DYNAMIC_MODULES}")
+
+    # get libs from ${MMDeployLibs}
+    set(LIBS)
+    get_target_property(LIBS MMDeployLibs INTERFACE_LINK_LIBRARIES)
+    get_target_list("${LIBS}" FILTERED_LIBS)
+    set(MMDEPLOY_LIBS "${FILTERED_LIBS}" CACHE STRING "MMDeploy's libs that can be linked directly by application")
+    message(STATUS "MMDEPLOY_LIBS: ${MMDEPLOY_LIBS}")
+
+    if (MMDEPLOY_BUILD_TEST)
+        add_subdirectory(tests/test_csrc)
+    endif ()
 
     # export MMDeploy package
     install(EXPORT MMDeployTargets

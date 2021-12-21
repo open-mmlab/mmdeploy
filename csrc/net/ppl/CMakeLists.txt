@@ -5,35 +5,19 @@ project(mmdeploy_pplnn_net)
 include(${CMAKE_SOURCE_DIR}/cmake/common.cmake)
 find_package(pplnn REQUIRED)
 
-set_targets(${PROJECT_NAME} PPL_NET_OBJ PPL_NET_STATIC PPL_NET_SHARED)
-
-
-build_object_target(${PPL_NET_OBJ} ppl_net.cpp)
-target_include_directories(${PPL_NET_OBJ} PUBLIC
+add_library(${PROJECT_NAME} SHARED ppl_net.cpp)
+target_include_directories(${PROJECT_NAME} PUBLIC
         $<BUILD_INTERFACE:${PPLNN_INCLUDE_DIRS}>)
-
-target_link_libraries(${PPL_NET_OBJ} PRIVATE
-        mmdeploy::core::static
-        ${PPLNN_LIBRARIES}
-        )
-
 if ("cpu" IN_LIST MMDEPLOY_TARGET_DEVICES)
-    target_compile_definitions(${PPL_NET_OBJ} PRIVATE -DPPL_NN_HAS_X86=1)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE -DPPL_NN_HAS_X86=1)
 endif ()
-
 if ("cuda" IN_LIST MMDEPLOY_TARGET_DEVICES)
-    target_compile_definitions(${PPL_NET_OBJ} PRIVATE -DPPL_NN_HAS_CUDA=1)
-    target_include_directories(${PPL_NET_OBJ} PUBLIC ${CUDA_TOOLKIT_ROOT_DIR}/include)
-    target_link_directories(${PPL_NET_OBJ} PUBLIC ${CUDA_TOOLKIT_ROOT_DIR}/lib64)
-    target_link_libraries(${PPL_NET_OBJ}
-            PUBLIC nvrtc)
+    target_compile_definitions(${PROJECT_NAME} PRIVATE -DPPL_NN_HAS_CUDA=1)
+    target_include_directories(${PROJECT_NAME} PUBLIC ${CUDA_TOOLKIT_ROOT_DIR}/include)
+    target_link_directories(${PROJECT_NAME} PUBLIC ${CUDA_TOOLKIT_ROOT_DIR}/lib64)
 endif ()
-
-build_static_target(${PPL_NET_STATIC} ${PPL_NET_OBJ} "PUBLIC")
-
-add_library(mmdeploy::pplnn_net::static ALIAS ${PPL_NET_STATIC})
-
-build_shared_target(${PPL_NET_SHARED} ${PPL_NET_OBJ} "PRIVATE")
-add_library(mmdeploy::pplnn_net ALIAS ${PPL_NET_SHARED})
-
-export_module(${PPL_NET_STATIC} ${PPL_NET_SHARED} ${PPL_NET_OBJ})
+target_link_libraries(${PROJECT_NAME}
+        PRIVATE mmdeploy::core ${PPLNN_LIBRARIES}
+        PUBLIC nvrtc)
+add_library(mmdeploy::pplnn_net ALIAS ${PROJECT_NAME})
+export_module(${PROJECT_NAME})

@@ -27,19 +27,13 @@ else ()
 endif ()
 
 foreach (TASK ${TASK_LIST})
-    set_targets(mmdeploy_${TASK} TASK_OBJ TASK_STATIC TASK_SHARED)
-
-    build_object_target(${TASK_OBJ} ${TASK}.cpp)
-    target_link_libraries(${TASK_OBJ} PRIVATE
-            mmdeploy::core::static)
-    target_include_directories(${TASK_OBJ} PUBLIC
+    set(TARGET_NAME mmdeploy_${TASK})
+    build_target(${TARGET_NAME} ${TASK}.cpp)
+    target_link_libraries(${TARGET_NAME} PRIVATE mmdeploy::core)
+    target_include_directories(${TARGET_NAME} PUBLIC
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
             $<INSTALL_INTERFACE:include/c>)
-
-    build_static_target(${TASK_STATIC} ${TASK_OBJ} "PUBLIC")
-    build_shared_target(${TASK_SHARED} ${TASK_OBJ} "PUBLIC")
-
-    export_target(${TASK_STATIC} ${TASK_SHARED} ${TASK_OBJ})
+    export_target(${TARGET_NAME})
 
     install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/${TASK}.h
             DESTINATION include/c)

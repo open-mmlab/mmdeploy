@@ -16,11 +16,10 @@ set(SPDLOG_LIB)
 find_package(spdlog QUIET)
 if (spdlog_FOUND)
     message(STATUS "spdlog is found")
-    set(SPDLOG_LIB spdlog::spdlog)
+    set(SPDLOG_LIB $<BUILD_INTERFACE:spdlog::spdlog>)
 endif ()
 
 include(${CMAKE_SOURCE_DIR}/cmake/common.cmake)
-set_targets(${PROJECT_NAME} CORE_OBJ CORE_STATIC CORE_SHARED)
 
 set(SRCS
         device_impl.cpp
@@ -36,25 +35,18 @@ set(SRCS
         utils/device_utils.cpp
         utils/formatter.cpp
         utils/stacktrace.cpp)
-build_object_target(${CORE_OBJ} "${SRCS}")
-target_compile_definitions(${CORE_OBJ} PUBLIC -DMMDEPLOY_STATUS_USE_SOURCE_LOCATION=1)
-target_include_directories(${CORE_OBJ}
+build_target(${PROJECT_NAME} "${SRCS}")
+target_compile_definitions(${PROJECT_NAME} PUBLIC -DMMDEPLOY_STATUS_USE_SOURCE_LOCATION=1)
+target_include_directories(${PROJECT_NAME}
         PUBLIC
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/csrc>
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/third_party/outcome>
-        # TODO(lzhang): remove dependency of `json`
+        # TODO: remove dependency of `json`
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/third_party/json>
         $<INSTALL_INTERFACE:include/cpp>
         )
-target_link_libraries(${CORE_OBJ} ${SPDLOG_LIB} stdc++fs)
-
-build_static_target(${CORE_STATIC} ${CORE_OBJ} "PUBLIC")
-add_library(mmdeploy::core::static ALIAS ${CORE_STATIC})
-
-build_shared_target(${CORE_SHARED} ${CORE_OBJ} "PUBLIC")
-add_library(mmdeploy::core ALIAS ${CORE_SHARED})
-
-#install_targets("${CORE_STATIC};${CORE_SHARED}")
+target_link_libraries(${PROJECT_NAME} PUBLIC ${SPDLOG_LIB} stdc++fs)
+add_library(mmdeploy::core ALIAS ${PROJECT_NAME})
 
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/src/core
         DESTINATION include/cpp
@@ -66,8 +58,4 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR}/src/experimental
         DESTINATION include/cpp
         FILES_MATCHING PATTERN "*.h")
 
-install(TARGETS ${CORE_STATIC} ${CORE_SHARED} ${CORE_OBJ}
-        EXPORT MMDeployTargets
-        ARCHIVE DESTINATION lib
-        LIBRARY DESTINATION lib
-        )
+export_target(${PROJECT_NAME})

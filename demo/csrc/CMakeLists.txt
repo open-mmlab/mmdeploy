@@ -5,17 +5,14 @@ project(mmdeploy-example)
 find_package(OpenCV REQUIRED)
 find_package(MMDeploy REQUIRED)
 
-function(add_example name libs)
-
-    add_executable(${name} ${name}.cpp)
-
-    target_link_libraries(${name}
-            ${libs}
-        -Wl,--no-as-needed
-            ${MMDeploy_DYNAMIC_MODULES}
-        -Wl,--as-needed
-        opencv_imgcodecs opencv_imgproc opencv_core)
+function(add_example name)
+  add_executable(${name} ${name}.cpp)
+  target_link_libraries(${name} ${MMDeploy_LIBS} opencv_imgcodecs
+          opencv_imgproc opencv_core)
 endfunction()
 
-add_example(image_classification "mmdeploy_classifier")
-add_example(object_detection "mmdeploy_detector")
+add_example(image_classification)
+add_example(object_detection)
+add_example(image_restorer)
+add_example(image_segmentation)
+add_example(ocr)

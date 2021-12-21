@@ -123,8 +123,8 @@ work_dirs/
 *.sh~
 
 #clion's build directory
-/cmake-build-debug
-/cmake-build-release
+/cmake-build-debug*
+/cmake-build-release*
 
 # install directory
 /install
