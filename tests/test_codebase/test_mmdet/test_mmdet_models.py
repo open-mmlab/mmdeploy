@@ -139,8 +139,8 @@ def get_single_roi_extractor():
     return model
 
 
-@pytest.mark.parametrize('backend_type', [Backend.NCNN])
-def test_get_bboxes_of_fcos_head(backend_type: Backend):
+def test_get_bboxes_of_fcos_head_ncnn():
+    backend_type = Backend.NCNN
     check_backend(backend_type)
     fcos_head = get_fcos_head_model()
     fcos_head.cpu().eval()
@@ -151,7 +151,7 @@ def test_get_bboxes_of_fcos_head(backend_type: Backend):
         'img_shape': (s, s, 3)
     }]
 
-    output_names = ['dets', 'labels']
+    output_names = ['detection_output']
     deploy_cfg = mmcv.Config(
         dict(
             backend_config=dict(type=backend_type.value),
@@ -159,6 +159,7 @@ def test_get_bboxes_of_fcos_head(backend_type: Backend):
             codebase_config=dict(
                 type='mmdet',
                 task='ObjectDetection',
+                model_type='ncnn_end2end',
                 post_processing=dict(
                     score_threshold=0.05,
                     iou_threshold=0.5,
@@ -197,9 +198,13 @@ def test_get_bboxes_of_fcos_head(backend_type: Backend):
     rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
-        deploy_cfg=deploy_cfg,
-        run_with_backend=False)
-    assert rewrite_outputs is not None
+        deploy_cfg=deploy_cfg)
+
+    # output should be of shape [1, N, 6]
+    if is_backend_output:
+        assert rewrite_outputs[0].shape[-1] == 6
+    else:
+        assert rewrite_outputs.shape[-1] == 6
 
 
 @pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME, Backend.NCNN])
@@ -1010,10 +1015,8 @@ def test_base_dense_head_get_bboxes(backend_type: Backend):
         'img_shape': (s, s, 3)
     }]
 
-    if backend_type != Backend.NCNN:
-        output_names = ['dets', 'labels']
-    else:
-        output_names = ['output']
+    output_names = ['dets', 'labels']
+
     deploy_cfg = mmcv.Config(
         dict(
             backend_config=dict(type=backend_type.value),
