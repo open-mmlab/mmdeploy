@@ -61,7 +61,9 @@ class CTCConvertor : public MMOCR {
   Result<Value> operator()(const Value& _data, const Value& _prob) {
     auto d_conf = _prob["output"].get<Tensor>();
 
-    if (d_conf.data_type() != DataType::kFLOAT) {
+    if (!(d_conf.shape().size() == 3 && d_conf.data_type() == DataType::kFLOAT)) {
+      ERROR("unsupported `output` tensor, shape: {}, dtype: {}", d_conf.shape(),
+            (int)d_conf.data_type());
       return Status(eNotSupported);
     }
 

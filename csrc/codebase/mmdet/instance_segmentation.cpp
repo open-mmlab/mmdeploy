@@ -17,12 +17,10 @@ class ResizeInstanceMask : public ResizeBBox {
     }
   }
 
+  // TODO: remove duplication
   Result<Value> operator()(const Value& prep_res, const Value& infer_res) {
     DEBUG("prep_res: {}\ninfer_res: {}", prep_res, infer_res);
     try {
-      assert(prep_res.contains("img_metas"));
-      //      Value res = prep_res;
-
       auto dets = infer_res["dets"].get<Tensor>();
       auto labels = infer_res["labels"].get<Tensor>();
       auto masks = infer_res["masks"].get<Tensor>();
@@ -33,14 +31,25 @@ class ResizeInstanceMask : public ResizeBBox {
 
       // `dets` is supposed to have 3 dims. They are 'batch', 'bboxes_number'
       // and 'channels' respectively
-      assert(dets.shape().size() == 3);
-      assert(dets.data_type() == DataType::kFLOAT);
-
-      assert(masks.data_type() == DataType::kFLOAT);
+      if (!(dets.shape().size() == 3 && dets.data_type() == DataType::kFLOAT)) {
+        ERROR("unsupported `dets` tensor, shape: {}, dtype: {}", dets.shape(),
+              (int)dets.data_type());
+        return Status(eNotSupported);
+      }
 
       // `labels` is supposed to have 2 dims, which are 'batch' and
       // 'bboxes_number'
-      assert(labels.shape().size() == 2);
+      if (labels.shape().size() != 2) {
+        ERROR("unsupported `labels`, tensor, shape: {}, dtype: {}", labels.shape(),
+              (int)labels.data_type());
+        return Status(eNotSupported);
+      }
+
+      if (!(masks.shape().size() == 4 && masks.data_type() == DataType::kFLOAT)) {
+        ERROR("unsupported `mask` tensor, shape: {}, dtype: {}", masks.shape(),
+              (int)masks.data_type());
+        return Status(eNotSupported);
+      }
 
       OUTCOME_TRY(auto _dets, MakeAvailableOnDevice(dets, kHost, stream()));
       OUTCOME_TRY(auto _labels, MakeAvailableOnDevice(labels, kHost, stream()));

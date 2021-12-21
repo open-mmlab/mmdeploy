@@ -26,15 +26,17 @@ class LinearClsHead : public MMClassification {
 
   Result<Value> operator()(const Value& infer_res) {
     DEBUG("infer_res: {}", infer_res);
-    auto output_tensor = infer_res["output"].get<Tensor>();
-    assert(output_tensor.shape().size() >= 2);
-    auto class_num = (int)output_tensor.shape()[1];
+    auto output = infer_res["output"].get<Tensor>();
 
-    if (output_tensor.data_type() != DataType::kFLOAT) {
+    if (!(output.shape().size() >= 2 && output.data_type() == DataType::kFLOAT)) {
+      ERROR("unsupported `output` tensor, shape: {}, dtype: {}", output.shape(),
+            (int)output.data_type());
       return Status(eNotSupported);
     }
 
-    OUTCOME_TRY(auto _scores, MakeAvailableOnDevice(output_tensor, kHost, stream()));
+    auto class_num = (int)output.shape(1);
+
+    OUTCOME_TRY(auto _scores, MakeAvailableOnDevice(output, kHost, stream()));
     OUTCOME_TRY(stream().Wait());
 
     return GetLabels(_scores, class_num);

@@ -49,6 +49,12 @@ class DBHead : public MMOCR {
     OUTCOME_TRY(stream_.Wait());
     DEBUG("shape: {}", conf.shape());
 
+    if (!(conf.shape().size() == 4 && conf.data_type() == DataType::kFLOAT)) {
+      ERROR("unsupported `output` tensor, shape: {}, dtype: {}", conf.shape(),
+            (int)conf.data_type());
+      return Status(eNotSupported);
+    }
+
     auto h = conf.shape(2);
     auto w = conf.shape(3);
     auto data = conf.buffer().GetNative();
