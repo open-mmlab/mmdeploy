@@ -57,6 +57,8 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
             from mmdeploy.backend.openvino import OpenVINOWrapper
             return OpenVINOWrapper(
                 ir_model_file=backend_files[0], output_names=output_names)
+        elif backend == Backend.SDK:
+            return None
         else:
             raise NotImplementedError(f'Unknown backend type: {backend.value}')
 

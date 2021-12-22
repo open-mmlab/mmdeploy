@@ -17,6 +17,7 @@ from mmdeploy.codebase.mmdet import get_post_processing_params, multiclass_nms
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
                             get_onnx_config, get_partition_config, load_config)
 
+import mmdeploy_python
 
 def __build_backend_model(partition_name: str, backend: Backend,
                           backend_files: Sequence[str], device: str,
@@ -581,6 +582,37 @@ class NCNNEnd2EndModel(End2EndModel):
         dets = dets.detach().cpu().numpy()
         labels = labels.detach().cpu().numpy()
         return [dets, labels]
+
+
+@__BACKEND_MODEL.register_module('sdk')
+class SDKEnd2EndModel(End2EndModel):
+    def __init__(self, backend: Backend, backend_files: Sequence[str],
+                 device: str, class_names: Sequence[str],
+                 model_cfg: Union[str, mmcv.Config],
+                 deploy_cfg: Union[str, mmcv.Config], **kwargs):
+        assert backend == Backend.SDK, f'only supported sdk, but give \
+            {backend.value}'
+        super(SDKEnd2EndModel,
+              self).__init__(backend, backend_files, device, class_names,
+                             deploy_cfg, **kwargs)
+        self.detector = mmdeploy_python.Detector(backend_files[0], 'cuda', 0)                             
+        # load cfg if necessary
+        model_cfg = load_config(model_cfg)[0]
+        self.model_cfg = model_cfg
+
+    def forward_test(self, imgs: torch.Tensor, *args, **kwargs) -> \
+            Tuple[np.ndarray, np.ndarray]:
+        bboxes, labels = self.detector([imgs.detach().cpu().numpy()])[0]
+        bboxes = bboxes[np.newaxis, ...]
+        labels = labels[np.newaxis, ...]
+        return bboxes, labels
+
+    def forward(self, img: Sequence[torch.Tensor], img_metas: Sequence[dict],
+                *args, **kwargs):
+        # print(img.device)
+        dets, labels = self.forward_test(img[0].contiguous())
+        results = bbox2result(dets, labels, len(self.CLASSES))
+        return [results]
 
 
 def get_classes_from_config(model_cfg: Union[str, mmcv.Config], **kwargs):

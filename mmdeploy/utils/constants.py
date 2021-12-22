@@ -43,4 +43,5 @@ class Backend(AdvancedEnum):
     PPLNN = 'pplnn'
     NCNN = 'ncnn'
     OPENVINO = 'openvino'
+    SDK = 'sdk'
     DEFAULT = 'default'

@@ -77,6 +77,11 @@ def parse_args():
     args = parser.parse_args()
     return args
 
+def patch_sdk_pipeline(model_cfg):
+    model_cfg['data']['test']['pipeline'] = [
+        dict(type='LoadImageFromFile'),
+        dict(type='Collect', keys=['img'], meta_keys=[])
+    ]
 
 def main():
     args = parse_args()
@@ -87,6 +92,10 @@ def main():
 
     # load deploy_cfg
     deploy_cfg, model_cfg = load_config(deploy_cfg_path, model_cfg_path)
+
+    if deploy_cfg.backend_config.type == 'sdk':
+        patch_sdk_pipeline(model_cfg)
+
     # merge options for model cfg
     if args.cfg_options is not None:
         model_cfg.merge_from_dict(args.cfg_options)
