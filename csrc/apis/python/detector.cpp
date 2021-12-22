@@ -1,40 +1,10 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include <stdexcept>
-
 #include "detector.h"
-#include "pybind11/numpy.h"
-#include "pybind11/pybind11.h"
-#include "pybind11/stl.h"
 
-namespace py = pybind11;
-
-using PyImage = py::array_t<uint8_t, py::array::c_style | py::array::forcecast>;
+#include "common.h"
 
 namespace mmdeploy {
-
-mm_mat_t GetMat(const PyImage &img) {
-  auto info = img.request();
-  if (info.ndim != 3) {
-    fprintf(stderr, "info.ndim = %d\n", (int)info.ndim);
-    throw std::runtime_error("continuous uint8 HWC array expected");
-  }
-  auto channels = (int)info.shape[2];
-  mm_mat_t mat{};
-  if (channels == 1) {
-    mat.format = MM_GRAYSCALE;
-  } else if (channels == 3) {
-    mat.format = MM_BGR;
-  } else {
-    throw std::runtime_error("images of 1 or 3 channels are supported");
-  }
-  mat.height = (int)info.shape[0];
-  mat.width = (int)info.shape[1];
-  mat.channel = channels;
-  mat.type = MM_INT8;
-  mat.data = (uint8_t *)info.ptr;
-  return mat;
-}
 
 class PyDetector {
  public:
@@ -86,14 +56,19 @@ class PyDetector {
   mm_handle_t handle_{};
 };
 
-}  // namespace mmdeploy
-
-using mmdeploy::PyDetector;
-
-PYBIND11_MODULE(mmdeploy_python, m) {
+static void register_python_detector(py::module &m) {
   py::class_<PyDetector>(m, "Detector")
       .def(py::init([](const char *model_path, const char *device_name, int device_id) {
         return std::make_unique<PyDetector>(model_path, device_name, device_id);
       }))
       .def("__call__", &PyDetector::Apply);
 }
+
+class PythonDetectorRegisterer {
+ public:
+  PythonDetectorRegisterer() { gPythonBindings().emplace("detector", register_python_detector); }
+};
+
+static PythonDetectorRegisterer python_detector_registerer;
+
+}  // namespace mmdeploy

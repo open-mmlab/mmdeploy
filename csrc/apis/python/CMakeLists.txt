@@ -6,9 +6,14 @@ if (NOT TARGET pybind11)
     add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/pybind11 pybind11)
 endif ()
 
-pybind11_add_module(mmdeploy_python ${CMAKE_CURRENT_SOURCE_DIR}/pydetector.cpp)
+pybind11_add_module(mmdeploy_python
+        ${CMAKE_CURRENT_SOURCE_DIR}/common.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/detector.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/segmentor.cpp)
+
 target_link_libraries(mmdeploy_python PRIVATE
         mmdeploy_detector
+        mmdeploy_segmentor
         -Wl,--whole-archive ${MMDEPLOY_STATIC_MODULES} -Wl,--no-whole-archive
         -Wl,--no-as-needed ${MMDEPLOY_DYNAMIC_MODULES} -Wl,--as-need
         ${MMDEPLOY_LIBS})
