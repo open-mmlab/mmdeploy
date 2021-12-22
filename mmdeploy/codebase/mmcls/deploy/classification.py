@@ -230,7 +230,7 @@ class Classification(BaseTask):
         if metrics:
             results = dataset.evaluate(outputs, metrics, metric_options)
             for k, v in results.items():
-                logging.info(f'\n{k} : {v:.2f}')
+                print(f'\n{k} : {v:.2f}')
         else:
             warnings.warn('Evaluation metrics are not specified.')
             scores = np.vstack(outputs)
@@ -243,13 +243,13 @@ class Classification(BaseTask):
                 'pred_class': pred_class
             }
             if not out:
-                logging.info('\nthe predicted result for the first element is '
-                             f'pred_score = {pred_score[0]:.2f}, '
-                             f'pred_label = {pred_label[0]} '
-                             f'and pred_class = {pred_class[0]}. '
-                             'Specify --out to save all results to files.')
+                print('\nthe predicted result for the first element is '
+                      f'pred_score = {pred_score[0]:.2f}, '
+                      f'pred_label = {pred_label[0]} '
+                      f'and pred_class = {pred_class[0]}. '
+                      'Specify --out to save all results to files.')
         if out:
-            logging.info(f'\nwriting results to {out}')
+            print(f'\nwriting results to {out}')
             mmcv.dump(results, out)
 
     def get_preprocess(self) -> Dict:

@@ -557,7 +557,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](doc
     <td class="tg-c3ow">77.74</td>
     <td class="tg-c3ow">77.75</td>
     <td class="tg-c3ow">77.63</td>
-    <td class="tg-c3ow">?</td>
+    <td class="tg-c3ow">77.73</td>
     <td class="tg-lboi" rowspan="2">$MMCLS_DIR/configs/resnext/resnext50_32x4d_b32x8_imagenet.py</td>
   </tr>
   <tr>
@@ -567,7 +567,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](doc
     <td class="tg-c3ow">93.84</td>
     <td class="tg-c3ow">93.83</td>
     <td class="tg-c3ow">93.72</td>
-    <td class="tg-c3ow">?</td>
+    <td class="tg-c3ow">93.84</td>
   </tr>
     <tr>
     <td class="tg-9wq8" rowspan="2">ShuffleNetV1 1.0x</td>
@@ -578,7 +578,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](doc
     <td class="tg-c3ow">68.13</td>
     <td class="tg-c3ow">68.13</td>
     <td class="tg-c3ow">67.71</td>
-    <td class="tg-c3ow">?</td>
+    <td class="tg-c3ow">68.11</td>
     <td class="tg-lboi" rowspan="2">$MMCLS_DIR/configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py</td>
   </tr>
   <tr>
@@ -588,7 +588,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](doc
     <td class="tg-c3ow">87.81</td>
     <td class="tg-c3ow">87.81</td>
     <td class="tg-c3ow">87.58</td>
-    <td class="tg-c3ow">?</td>
+    <td class="tg-c3ow">87.80</td>
   </tr>
     </tr>
     <tr>
@@ -600,7 +600,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](doc
     <td class="tg-c3ow">69.55</td>
     <td class="tg-c3ow">69.54</td>
     <td class="tg-c3ow">69.10</td>
-    <td class="tg-c3ow">?</td>
+    <td class="tg-c3ow">69.54</td>
     <td class="tg-lboi" rowspan="2">$MMCLS_DIR/configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py</td>
   </tr>
   <tr>
@@ -610,7 +610,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](doc
     <td class="tg-c3ow">88.92</td>
     <td class="tg-c3ow">88.91</td>
     <td class="tg-c3ow">88.58</td>
-    <td class="tg-c3ow">?</td>
+    <td class="tg-c3ow">88.92</td>
   </tr>
     </tr>
     </tr>
@@ -623,8 +623,8 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](doc
     <td class="tg-c3ow">71.86</td>
     <td class="tg-c3ow">71.87</td>
     <td class="tg-c3ow">70.91</td>
-    <td class="tg-c3ow">?</td>
-    <td class="tg-lboi" rowspan="2">$MMEDIT_DIR/configs/restorers/real_esrgan/realesrnet_c64b23g32_12x4_lr2e-4_1000k_df2k_ost.py</td>
+    <td class="tg-c3ow">71.84</td>
+    <td class="tg-lboi" rowspan="2">$MMCLS_DIR/configs/mobilenet_v2/mobilenet_v2_b32x8_imagenet.py</td>
   </tr>
   <tr>
     <td class="tg-0pky">top-5</td>
@@ -633,7 +633,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](doc
     <td class="tg-c3ow">90.42</td>
     <td class="tg-c3ow">90.40</td>
     <td class="tg-c3ow">89.85</td>
-    <td class="tg-c3ow">?</td>
+    <td class="tg-c3ow">90.41</td>
   </tr>
 </tbody>
 </table>
