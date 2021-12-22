@@ -12,7 +12,7 @@ set_targets(${PROJECT_NAME} BACKEND_OPS_OBJ BACKEND_OPS_STATIC BACKEND_OPS_MODUL
 # cub
 if (NOT DEFINED CUB_ROOT_DIR)
     if (CUDA_VERSION VERSION_LESS 11.0)
-        set(CUB_ROOT_DIR "${PROJECT_SOURCE_DIR}/third_party/cub")
+        set(CUB_ROOT_DIR "${CMAKE_SOURCE_DIR}/third_party/cub")
     endif()
 endif ()
 

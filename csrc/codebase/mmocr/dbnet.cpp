@@ -8,12 +8,12 @@
 #include "core/registry.h"
 #include "core/serialization.h"
 #include "core/tensor.h"
+#include "core/utils/device_utils.h"
 #include "core/utils/formatter.h"
 #include "core/value.h"
 #include "experimental/module_adapter.h"
 #include "mmocr.h"
 #include "preprocess/cpu/opencv_utils.h"
-#include "preprocess/transform/transform_utils.h"
 
 namespace mmdeploy::mmocr {
 
@@ -48,6 +48,12 @@ class DBHead : public MMOCR {
                 MakeAvailableOnDevice(_prob["output"].get<Tensor>(), cpu_device, stream_));
     OUTCOME_TRY(stream_.Wait());
     DEBUG("shape: {}", conf.shape());
+
+    if (!(conf.shape().size() == 4 && conf.data_type() == DataType::kFLOAT)) {
+      ERROR("unsupported `output` tensor, shape: {}, dtype: {}", conf.shape(),
+            (int)conf.data_type());
+      return Status(eNotSupported);
+    }
 
     auto h = conf.shape(2);
     auto w = conf.shape(3);

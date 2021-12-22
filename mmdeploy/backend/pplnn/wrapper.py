@@ -180,7 +180,13 @@ class PPLNNWrapper(BaseWrapper):
         for i in range(self.runtime.GetOutputCount()):
             out_tensor = self.runtime.GetOutputTensor(i).ConvertToHost()
             name = self.output_names[i]
-            outputs[name] = torch.from_numpy(np.array(out_tensor, copy=False))
+            if out_tensor:
+                outputs[name] = np.array(out_tensor, copy=False)
+            else:
+                out_shape = self.runtime.GetOutputTensor(
+                    i).GetShape().GetDims()
+                outputs[name] = np.random.rand(*out_shape)
+            outputs[name] = torch.from_numpy(outputs[name])
         return outputs
 
     @TimeCounter.count_time()

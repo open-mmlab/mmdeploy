@@ -44,7 +44,6 @@ __BACKEND_MODEL = mmcv.utils.Registry(
 class End2EndModel(BaseBackendModel):
     """End to end model for inference of detection.
 
-    TODO: UPDATE this docstring
     Args:
         class_names (Sequence[str]): A list of string specifying class names.
         device_id (int): An integer represents device index.
@@ -59,7 +58,16 @@ class End2EndModel(BaseBackendModel):
         self._init_wrapper(
             backend=backend, backend_files=backend_files, device=device)
 
-    def _init_wrapper(self, backend, backend_files, device):
+    def _init_wrapper(self, backend: Backend, backend_files: Sequence[str],
+                      device: str):
+        """Initialize backend wrapper.
+
+        Args:
+            backend (Backend): The backend enum, specifying backend type.
+            backend_files (Sequence[str]): Paths to all required backend files
+                (e.g. '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
+            device (str): A string specifying device type.
+        """
         onnx_config = get_onnx_config(self.deploy_cfg)
         output_names = onnx_config['output_names']
         self.wrapper = BaseBackendModel._build_wrapper(

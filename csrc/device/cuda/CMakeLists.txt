@@ -15,17 +15,11 @@ set_targets(${PROJECT_NAME} CUDA_DEVICE_OBJ CUDA_DEVICE_STATIC CUDA_DEVICE_SHARE
 set(SRCS
         cuda_device.cpp
         cuda_builtin_kernels.cu)
-build_object_target(${CUDA_DEVICE_OBJ} "${SRCS}")
-target_include_directories(${CUDA_DEVICE_OBJ} PUBLIC ${CUDA_INCLUDE_DIRS})
-target_link_directories(${CUDA_DEVICE_OBJ} PUBLIC ${CUDA_TOOLKIT_ROOT_DIR}/lib64)
-target_link_libraries(${CUDA_DEVICE_OBJ}
-        PRIVATE mmdeploy::core::static
+build_target(${PROJECT_NAME} "${SRCS}")
+target_include_directories(${PROJECT_NAME} PUBLIC ${CUDA_INCLUDE_DIRS})
+target_link_directories(${PROJECT_NAME} PUBLIC ${CUDA_TOOLKIT_ROOT_DIR}/lib64)
+target_link_libraries(${PROJECT_NAME}
+        PRIVATE mmdeploy::core
         PUBLIC cudart cuda)
-
-build_static_target(${CUDA_DEVICE_STATIC} ${CUDA_DEVICE_OBJ} "PUBLIC")
-add_library(mmdeploy::device::cuda::static ALIAS ${CUDA_DEVICE_STATIC})
-
-build_shared_target(${CUDA_DEVICE_SHARED} ${CUDA_DEVICE_OBJ} "PUBLIC")
-add_library(mmdeploy::device::cuda ALIAS ${CUDA_DEVICE_SHARED})
-
-export_module(${CUDA_DEVICE_STATIC} ${CUDA_DEVICE_SHARED} ${CUDA_DEVICE_OBJ})
+add_library(mmdeploy::device::cuda ALIAS ${PROJECT_NAME})
+export_module(${PROJECT_NAME})

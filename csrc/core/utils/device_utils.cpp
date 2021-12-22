@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "transform_utils.h"
+#include "device_utils.h"
 namespace mmdeploy {
 
 Result<Mat> MakeAvailableOnDevice(const Mat& src, const Device& device, Stream& stream) {

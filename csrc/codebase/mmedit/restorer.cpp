@@ -1,11 +1,10 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include <preprocess/transform/transform_utils.h>
-
 #include <opencv2/core.hpp>
 
 #include "codebase/mmedit/mmedit.h"
 #include "core/tensor.h"
+#include "core/utils/device_utils.h"
 
 namespace mmdeploy::mmedit {
 
@@ -17,7 +16,7 @@ class TensorToImg : public MMEdit {
     auto upscale = input["output"].get<Tensor>();
     OUTCOME_TRY(auto upscale_cpu, MakeAvailableOnDevice(upscale, kHOST, stream()));
     OUTCOME_TRY(stream().Wait());
-    if (upscale.data_type() == DataType::kFLOAT) {
+    if (upscale.shape().size() == 4 && upscale.data_type() == DataType::kFLOAT) {
       auto channels = static_cast<int>(upscale.shape(1));
       auto height = static_cast<int>(upscale.shape(2));
       auto width = static_cast<int>(upscale.shape(3));
@@ -33,6 +32,8 @@ class TensorToImg : public MMEdit {
       mat_hwc.convertTo(rescale_uint8, CV_8UC(channels), 255.f);
       return mat;
     } else {
+      ERROR("unsupported `output` tensor, shape: {}, dtype: {}", upscale.shape(),
+            (int)upscale.data_type());
       return Status(eNotSupported);
     }
   }

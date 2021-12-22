@@ -15,6 +15,11 @@ function(install_targets TARGET_NAMES)
     endforeach ()
 endfunction()
 
+function(build_target TARGET_NAME TARGET_SRCS)
+    add_library(${TARGET_NAME} ${TARGET_SRCS})
+    set_target_properties(${TARGET_NAME} PROPERTIES POSITION_INDEPENDENT_CODE 1)
+endfunction()
+
 # When the object target ${TARGET_NAME} has more than one source file,
 # "${SRCS_VARIABLE}" MUST be passed to ${TARGET_SRCS}. The quotation marks CANNOT be dismissed.
 function(build_object_target TARGET_NAME TARGET_SRCS)
@@ -69,19 +74,23 @@ function(build_module_target TARGET_NAME OBJECT_TARGET LINK_TYPE)
 endfunction()
 
 
-function(export_target STATIC_TARGET SHARED_TARGET OBJECT_TARGET)
-    install(TARGETS ${STATIC_TARGET} ${SHARED_TARGET} ${OBJECT_TARGET}
+function(export_target TARGET_NAME)
+    target_link_libraries(MMDeployLibs INTERFACE ${TARGET_NAME})
+    install(TARGETS ${TARGET_NAME}
             EXPORT MMDeployTargets
             ARCHIVE DESTINATION lib
             LIBRARY DESTINATION lib
             )
 endfunction()
 
-function(export_module STATIC_TARGET SHARED_TARGET OBJECT_TARGET)
-    target_link_libraries(MMDeployStaticModules INTERFACE ${STATIC_TARGET})
-    target_link_libraries(MMDeployDynamicModules INTERFACE ${SHARED_TARGET})
-
-    install(TARGETS ${STATIC_TARGET} ${SHARED_TARGET} ${OBJECT_TARGET}
+function(export_module TARGET_NAME)
+    get_target_property(TARGET_TYPE ${TARGET_NAME} TYPE)
+    if (${TARGET_TYPE} STREQUAL "STATIC_LIBRARY")
+        target_link_libraries(MMDeployStaticModules INTERFACE ${TARGET_NAME})
+    elseif (${TARGET_TYPE} STREQUAL "SHARED_LIBRARY")
+        target_link_libraries(MMDeployDynamicModules INTERFACE ${TARGET_NAME})
+    endif ()
+    install(TARGETS ${TARGET_NAME}
             EXPORT MMDeployTargets
             ARCHIVE DESTINATION lib
             LIBRARY DESTINATION lib

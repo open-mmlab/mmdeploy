@@ -5,11 +5,11 @@
 #include "archive/json_archive.h"
 #include "archive/value_archive.h"
 #include "core/tensor.h"
+#include "core/utils/device_utils.h"
 #include "core/utils/formatter.h"
 #include "opencv2/imgproc.hpp"
 #include "preprocess/cpu/opencv_utils.h"
 #include "preprocess/transform/resize.h"
-#include "preprocess/transform/transform_utils.h"
 
 using namespace std;
 

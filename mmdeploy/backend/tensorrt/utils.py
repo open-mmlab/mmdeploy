@@ -136,6 +136,7 @@ def load_trt_engine(path: str) -> trt.ICudaEngine:
     Returns:
         tensorrt.ICudaEngine: The TensorRT engine loaded from disk.
     """
+    load_tensorrt_plugin()
     with trt.Logger() as logger, trt.Runtime(logger) as runtime:
         with open(path, mode='rb') as f:
             engine_bytes = f.read()

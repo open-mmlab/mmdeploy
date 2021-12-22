@@ -64,6 +64,13 @@ If you haven't installed NCNN in the default path, please add `-Dncnn_DIR` flag 
 - This follows the tutorial on [How to convert model](../tutorials/how_to_convert_model.md).
 - The converted model has two files: `.param` and `.bin`, as model structure file and weight file respectively.
 
+
+### List of supported custom ops
+
+| Operator                                                                     |  CPU  |  GPU  | MMDeploy Releases |
+| :--------------------------------------------------------------------------- | :---: | :---: | :---------------- |
+| [Shape](../ops/ncnn.md#shape)                                   |   Y   |   N   | master            |
+
 ### FAQs
 
 1. When running ncnn models for inference with custom ops, it fails and shows the error message like:

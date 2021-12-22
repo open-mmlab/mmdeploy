@@ -26,7 +26,7 @@ def get_task(deploy_cfg: mmcv.Config) -> Dict:
         deploy_cfg (mmcv.Config): Deploy config dict.
 
     Return:
-        dict(): The task info.
+        dict: The task info.
     """
     task_name = get_task_type(deploy_cfg).value
     codebase_name = get_codebase(deploy_cfg).value
@@ -82,7 +82,7 @@ def get_models(deploy_cfg: Union[str, mmcv.Config],
         work_dir (str): Work dir to save json files.
 
     Return:
-        list[dict()]: The list contains dicts composed of the model name, net,
+        list[dict]: The list contains dicts composed of the model name, net,
             weghts, backend, precision batchsize and dynamic_shape.
     """
     name, _ = get_model_name_customs(deploy_cfg, model_cfg, work_dir)
@@ -139,7 +139,7 @@ def get_inference_info(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
         work_dir (str): Work dir to save json files.
 
     Return:
-        dict(): Composed of the model name, type, module, input, output and
+        dict: Composed of the model name, type, module, input, output and
             input_map.
     """
     name, _ = get_model_name_customs(deploy_cfg, model_cfg, work_dir)
@@ -227,7 +227,7 @@ def get_postprocess(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config) -> Dict:
         model_cfg (mmcv.Config): The model config dict.
 
     Return:
-        dict(): Composed of the model name, type, module, input, params and
+        dict: Composed of the model name, type, module, input, params and
             output.
     """
     module = get_codebase(deploy_cfg).value
@@ -266,7 +266,7 @@ def get_deploy(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
         work_dir (str): Work dir to save json files.
 
     Return:
-        dict(): Composed of version, models and customs.
+        dict: Composed of version, models and customs.
     """
 
     _, customs = get_model_name_customs(
@@ -286,7 +286,7 @@ def get_pipeline(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
         work_dir (str): Work dir to save json files.
 
     Return:
-        dict(): Composed of input node name, output node name and the tasks.
+        dict: Composed of input node name, output node name and the tasks.
     """
     preprocess = get_preprocess(deploy_cfg, model_cfg)
     infer_info = get_inference_info(deploy_cfg, model_cfg, work_dir=work_dir)
@@ -316,7 +316,7 @@ def get_detail(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
         pth (str): The checkpoint weight of pytorch model.
 
     Return:
-        dict(): Composed of version, codebase, codebase_config, onnx_config,
+        dict: Composed of version, codebase, codebase_config, onnx_config,
             backend_config and calib_config.
     """
     version = get_mmdpeloy_version()

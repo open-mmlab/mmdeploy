@@ -24,14 +24,7 @@ if ("openvino" IN_LIST MMDEPLOY_TARGET_BACKENDS)
     add_subdirectory(openvino)
 endif ()
 
-set_targets(${PROJECT_NAME} NET_MODULE_OBJ NET_MODULE_STATIC NET_MODULE_SHARED)
-build_object_target(${NET_MODULE_OBJ} net_module.cpp)
-target_link_libraries(${NET_MODULE_OBJ} PRIVATE mmdeploy::core::static)
-
-build_static_target(${NET_MODULE_STATIC} ${NET_MODULE_OBJ} "PRIVATE")
-add_library(mmdeploy::net_module::static ALIAS ${NET_MODULE_STATIC})
-
-build_shared_target(${NET_MODULE_SHARED} ${NET_MODULE_OBJ} "PRIVATE")
-add_library(mmdeploy::net_module ALIAS ${NET_MODULE_SHARED})
-
-export_module(${NET_MODULE_STATIC} ${NET_MODULE_SHARED} ${NET_MODULE_OBJ})
+build_target(${PROJECT_NAME} net_module.cpp)
+target_link_libraries(${PROJECT_NAME} PRIVATE mmdeploy::core)
+add_library(mmdeploy::net_module ALIAS ${PROJECT_NAME})
+export_module(${PROJECT_NAME})

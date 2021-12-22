@@ -45,7 +45,7 @@ size_t TRTInstanceNormalization::getWorkspaceSize(const nvinfer1::PluginTensorDe
                                                   int nbOutputs) const TRT_NOEXCEPT {
   int n = inputs[0].dims.d[0];
   int c = inputs[0].dims.d[1];
-  int elem_size = getElementSize(inputs[1].type);
+  int elem_size = sizeof(float);
   return getAlignedSize(n * c * elem_size) * 2;
 }
 
@@ -58,7 +58,7 @@ int TRTInstanceNormalization::enqueue(const nvinfer1::PluginTensorDesc* inputDes
   int c = input_dims.d[1];
   int h = input_dims.d[2];
   int w = input_dims.nbDims > 3 ? input_dims.d[3] : 1;
-  int elem_size = getElementSize(inputDesc[1].type);
+  int elem_size = sizeof(float);
 
   void* n_scales = (void*)workspace;
   void* n_bias = (void*)((char*)workspace + getAlignedSize(n * c * elem_size));
@@ -104,10 +104,21 @@ void TRTInstanceNormalization::serialize(void* buffer) const TRT_NOEXCEPT {
 bool TRTInstanceNormalization::supportsFormatCombination(int pos,
                                                          const nvinfer1::PluginTensorDesc* ioDesc,
                                                          int nbInputs, int nbOutputs) TRT_NOEXCEPT {
-  return ((ioDesc[pos].type == nvinfer1::DataType::kFLOAT ||
-           ioDesc[pos].type == nvinfer1::DataType::kHALF) &&
-          ioDesc[pos].format == nvinfer1::PluginFormat::kLINEAR &&
-          ioDesc[pos].type == ioDesc[0].type);
+  switch (pos) {
+    case 0:
+    case 3:
+      return ((ioDesc[pos].type == nvinfer1::DataType::kFLOAT ||
+               ioDesc[pos].type == nvinfer1::DataType::kHALF) &&
+              ioDesc[pos].format == nvinfer1::PluginFormat::kLINEAR &&
+              ioDesc[pos].type == ioDesc[0].type);
+    case 1:
+    case 2:
+      return ioDesc[pos].type == nvinfer1::DataType::kFLOAT &&
+             ioDesc[pos].format == nvinfer1::PluginFormat::kLINEAR;
+    default:
+      return false;
+  }
+  return false;
 }
 
 const char* TRTInstanceNormalization::getPluginType() const TRT_NOEXCEPT { return PLUGIN_NAME; }

@@ -12,7 +12,7 @@ Thanks for your bug report. We appreciate it a lot.
 **Checklist**
 
 1. I have searched related issues but cannot get the expected help.
-2. I have read the [FAQ documentation](https://github.com/grimoire/deploy_prototype/blob/master/docs/faq.md) but cannot get the expected help.
+2. I have read the [FAQ documentation](https://github.com/grimoire/deploy_prototype/blob/master/docs/en/faq.md) but cannot get the expected help.
 3. The bug has not been fixed in the latest version.
 
 **Describe the bug**

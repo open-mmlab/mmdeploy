@@ -1,8 +1,8 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
+#include "core/utils/device_utils.h"
 #include "opencv_utils.h"
 #include "preprocess/transform/crop.h"
-#include "preprocess/transform/transform_utils.h"
 
 using namespace std;
 

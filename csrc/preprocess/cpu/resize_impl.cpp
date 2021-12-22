@@ -2,9 +2,9 @@
 
 #include "core/registry.h"
 #include "core/tensor.h"
+#include "core/utils/device_utils.h"
 #include "opencv_utils.h"
 #include "preprocess/transform/resize.h"
-#include "preprocess/transform/transform_utils.h"
 
 using namespace std;
 

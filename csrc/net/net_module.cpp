@@ -169,10 +169,10 @@ struct NetModule::Impl {
       }
       if (output.size() > 1) {
         for (int i = 0; i < output.size(); ++i) {
-          output[i].insert({name, tmp.Slice(i)});
+          output[i].emplace(name, tmp.Slice(i));
         }
       } else {
-        output[0].insert({name, std::move(tmp)});
+        output[0].emplace(name, std::move(tmp));
       }
     }
 

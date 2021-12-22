@@ -1,9 +1,9 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
 #include "core/registry.h"
+#include "core/utils/device_utils.h"
 #include "opencv_utils.h"
 #include "preprocess/transform/normalize.h"
-#include "preprocess/transform/transform_utils.h"
 
 using namespace std;
 

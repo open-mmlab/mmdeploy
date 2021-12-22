@@ -265,7 +265,7 @@ class BaseTask(metaclass=ABCMeta):
         """Get the postprocess information for SDK.
 
         Return:
-            dict(): Composed of the postprocess information.
+            dict: Composed of the postprocess information.
         """
         pass
 

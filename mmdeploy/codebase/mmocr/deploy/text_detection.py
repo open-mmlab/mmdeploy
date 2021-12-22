@@ -297,7 +297,7 @@ class TextDetection(BaseTask):
         """Get the postprocess information for SDK.
 
         Return:
-            dict(): Composed of the postprocess information.
+            dict: Composed of the postprocess information.
         """
         postprocess = self.model_cfg.model.bbox_head
         return postprocess

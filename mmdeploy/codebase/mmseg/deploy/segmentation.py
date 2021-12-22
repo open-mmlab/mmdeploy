@@ -251,7 +251,7 @@ class Segmentation(BaseTask):
         """Get the postprocess information for SDK.
 
         Return:
-            dict(): Nonthing for super resolution.
+            dict: Nonthing for super resolution.
         """
         postprocess = self.model_cfg.model.decode_head
         return postprocess

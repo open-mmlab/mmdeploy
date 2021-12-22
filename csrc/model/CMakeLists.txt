@@ -4,31 +4,25 @@ project(model)
 
 include(${CMAKE_SOURCE_DIR}/cmake/common.cmake)
 
-set(TARGET_NAMES "directory_model")
+set(MODEL_NAMES "directory_model")
 if (${MMDEPLOY_ZIP_MODEL})
-    set(TARGET_NAMES ${TARGET_NAMES} "zip_model")
+    set(MODEL_NAMES ${MODEL_NAMES} "zip_model")
 endif ()
 
-foreach (TARGET_NAME ${TARGET_NAMES})
-    set_targets("mmdeploy_${TARGET_NAME}" MODEL_OBJ MODEL_STATIC MODEL_SHARED)
-    build_object_target(${MODEL_OBJ} "${TARGET_NAME}_impl.cpp")
-    target_link_libraries(${MODEL_OBJ}
-            PRIVATE mmdeploy::core::static
+foreach (MODEL_NAME ${MODEL_NAMES})
+    set(TARGET_MODEL_NAME mmdeploy_${MODEL_NAME})
+    build_target(${TARGET_MODEL_NAME} ${MODEL_NAME}_impl.cpp)
+     target_link_libraries(${TARGET_MODEL_NAME}
+            PRIVATE mmdeploy::core
             PUBLIC stdc++fs)
-    if (${TARGET_NAME} STREQUAL "zip_model")
+    if (${MODEL_NAME} STREQUAL "zip_model")
         find_package(libzip QUIET)
         if (libzip_FOUND)
-            target_link_libraries(${MODEL_OBJ} PUBLIC libzip::zip)
+            target_link_libraries(${TARGET_MODEL_NAME} PUBLIC libzip::zip)
         else()
-            target_link_libraries(${MODEL_OBJ} PUBLIC zip)
+            target_link_libraries(${TARGET_MODEL_NAME} PUBLIC zip)
         endif()
     endif ()
-
-    build_static_target(${MODEL_STATIC} ${MODEL_OBJ} "PUBLIC")
-    add_library(mmdeploy::${TARGET_NAME}::static ALIAS ${MODEL_STATIC})
-
-    build_shared_target(${MODEL_SHARED} ${MODEL_OBJ} "PUBLIC")
-    add_library(mmdeploy::${TARGET_NAME} ALIAS ${MODEL_SHARED})
-
-    export_module(${MODEL_STATIC} ${MODEL_SHARED} ${MODEL_OBJ})
+    add_library(mmdeploy::${MODEL_NAME} ALIAS ${TARGET_MODEL_NAME})
+    export_module(${TARGET_MODEL_NAME})
 endforeach ()

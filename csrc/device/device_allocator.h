@@ -126,8 +126,8 @@ class Tree : public AllocatorImpl {
     if (auto it = tree_.lower_bound(size); it != tree_.end()) {
       if (size * thresh_denominator_ >= it->first * thresh_numerator_) {
         Block block(it->second, it->first);
-        tree_.erase(it);
         tree_bytes_ -= it->first;
+        tree_.erase(it);
         return block;
       }
     }

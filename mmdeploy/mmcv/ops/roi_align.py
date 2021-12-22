@@ -4,6 +4,7 @@ from typing import List
 from torch import Tensor
 
 from mmdeploy.core import SYMBOLIC_REWRITER
+from mmdeploy.utils import Backend, get_backend
 
 
 # Here using mmcv.ops.roi_align.__self__ to find
@@ -36,9 +37,13 @@ def roi_align_default(ctx, g, input: Tensor, rois: Tensor,
     Returns:
         MMCVRoiAlign op for onnx.
     """
-
+    backend = get_backend(ctx.cfg)
+    if backend == Backend.PPLNN:
+        domain = 'mmcv'
+    else:
+        domain = 'mmdeploy'
     return g.op(
-        'mmdeploy::MMCVRoiAlign',
+        f'{domain}::MMCVRoiAlign',
         input,
         rois,
         output_height_i=output_size[0],

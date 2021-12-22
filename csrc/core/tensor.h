@@ -19,9 +19,14 @@ struct TensorDesc {
   std::string name;
 };
 
-class Tensor final {
+class Tensor {
  public:
   Tensor() = default;
+  Tensor(const Tensor&) = default;
+  Tensor(Tensor&&) noexcept = default;
+  Tensor& operator=(const Tensor&) = default;
+  Tensor& operator=(Tensor&&) noexcept = default;
+
   Tensor(const TensorDesc& desc, Allocator allocator = {});  // NOLINT
   Tensor(const TensorDesc& desc, Buffer buffer);
   Tensor(const TensorDesc& desc, std::shared_ptr<void> data);

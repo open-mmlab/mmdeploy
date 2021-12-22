@@ -1,0 +1,72 @@
+// Copyright (c) OpenMMLab. All rights reserved.
+
+#include <fstream>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <random>
+#include <string>
+#include <vector>
+
+#include "segmentor.h"
+
+using namespace std;
+
+vector<cv::Vec3b> gen_palette(int num_classes) {
+  std::mt19937 gen;
+  std::uniform_int_distribution<uchar> uniform_dist(0, 255);
+
+  vector<cv::Vec3b> palette;
+  palette.reserve(num_classes);
+  for (auto i = 0; i < num_classes; ++i) {
+    palette.emplace_back(uniform_dist(gen), uniform_dist(gen), uniform_dist(gen));
+  }
+  return palette;
+}
+
+int main(int argc, char *argv[]) {
+  if (argc != 4) {
+    fprintf(stderr, "usage:\n  image_segmentation device_name model_path image_path\n");
+    return 1;
+  }
+  auto device_name = argv[1];
+  auto model_path = argv[2];
+  auto image_path = argv[3];
+  cv::Mat img = cv::imread(image_path);
+  if (!img.data) {
+    fprintf(stderr, "failed to load image: %s\n", image_path);
+    return 1;
+  }
+
+  mm_handle_t segmentor{};
+  int status{};
+  status = mmdeploy_segmentor_create_by_path(model_path, device_name, 0, &segmentor);
+  if (status != MM_SUCCESS) {
+    fprintf(stderr, "failed to create segmentor, code: %d\n", (int)status);
+    return 1;
+  }
+
+  mm_mat_t mat{img.data, img.rows, img.cols, 3, MM_BGR, MM_INT8};
+
+  mm_segment_t *result{};
+  status = mmdeploy_segmentor_apply(segmentor, &mat, 1, &result);
+  if (status != MM_SUCCESS) {
+    fprintf(stderr, "failed to apply segmentor, code: %d\n", (int)status);
+    return 1;
+  }
+
+  auto palette = gen_palette(result->classes + 1);
+
+  cv::Mat color_mask = cv::Mat::zeros(result->height, result->width, CV_8UC3);
+  int pos = 0;
+  for (auto iter = color_mask.begin<cv::Vec3b>(); iter != color_mask.end<cv::Vec3b>(); ++iter) {
+    *iter = palette[result->mask[pos++]];
+  }
+
+  img = img * 0.5 + color_mask * 0.5;
+  cv::imwrite("output_segmentation.png", img);
+
+  mmdeploy_segmentor_release_result(result, 1);
+  mmdeploy_segmentor_destroy(segmentor);
+
+  return 0;
+}
