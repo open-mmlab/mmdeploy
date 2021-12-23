@@ -8,12 +8,20 @@ endif ()
 
 pybind11_add_module(mmdeploy_python
         ${CMAKE_CURRENT_SOURCE_DIR}/common.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/classifier.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/detector.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/segmentor.cpp)
+        ${CMAKE_CURRENT_SOURCE_DIR}/segmentor.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/text_detector.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/text_recognizer.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/restorer.cpp)
 
 target_link_libraries(mmdeploy_python PRIVATE
+        mmdeploy_classifier
         mmdeploy_detector
         mmdeploy_segmentor
+        mmdeploy_text_detector
+        mmdeploy_text_recognizer
+        mmdeploy_restorer
         -Wl,--whole-archive ${MMDEPLOY_STATIC_MODULES} -Wl,--no-whole-archive
         -Wl,--no-as-needed ${MMDEPLOY_DYNAMIC_MODULES} -Wl,--as-need
         ${MMDEPLOY_LIBS})
