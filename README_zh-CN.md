@@ -9,7 +9,7 @@
 MMDeploy 是一个开源深度学习模型部署工具箱，它是 [OpenMMLab](https://openmmlab.com/) 项目的一部分。
 
 <div align="center">
-  <img src="https://socialistmodernism.com/wp-content/uploads/2017/07/placeholder-image.png"/>
+  <img src="resources/introduction.png" height="600"/>
 </div>
 
 ### 主要特性

@@ -10,8 +10,9 @@ MMDeploy is an open-source deep learning model deployment toolset. It is
 a part of the [OpenMMLab](https://openmmlab.com/) project.
 
 <div align="center">
-  <img src="https://socialistmodernism.com/wp-content/uploads/2017/07/placeholder-image.png"/>
+  <img src="resources/introduction.png" height="600"/>
 </div>
+
 
 ### Major features
 
