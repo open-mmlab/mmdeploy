@@ -51,6 +51,30 @@
     sudo apt-get install g++-7
     ```
 
+### Create Environment
+
+- Create a conda virtual environment and activate it
+
+    ```bash
+    conda create -n mmdeploy python=3.7 -y
+    conda activate mmdeploy
+    ```
+
+- Install PyTorch>=1.8.0, following the [official instructions](https://pytorch.org/)
+
+    ```bash
+    # CUDA 11.1
+    conda install pytorch==1.8.0 torchvision==0.9.0 cudatoolkit=11.1 -c pytorch -c conda-forge
+    ```
+
+- Install mmcv-full. Refer to the [guide](https://github.com/open-mmlab/mmcv#installation) for details.
+
+    ```bash
+    export cu_version=cu111 # cuda 11.1
+    export torch_version=torch1.8.0
+    pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/${cu_version}/${torch_version}/index.html
+    ```
+
 ### Build backend support
 
 Build the inference engine extension libraries you need.
@@ -67,8 +91,11 @@ Build the inference engine extension libraries you need.
 cd ${MMDEPLOY_DIR} # To mmdeploy root directory
 pip install -e .
 ```
-Some dependencies are optional. Simply running `pip install -e .` will only install the minimum runtime requirements.
-To use optional dependencies install them manually with `pip install -r requirements/optional.txt` or specify desired extras when calling `pip` (e.g. `pip install -e .[optional]`).
+
+**Note**
+
+- Some dependencies are optional. Simply running `pip install -e .` will only install the minimum runtime requirements.
+To use optional dependencies, install them manually with `pip install -r requirements/optional.txt` or specify desired extras when calling `pip` (e.g. `pip install -e . [optional]`).
 Valid keys for the extras field are: `all`, `tests`, `build`, `optional`.
 
 ### Build SDK
