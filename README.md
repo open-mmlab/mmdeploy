@@ -56,8 +56,13 @@ Please see [getting_started.md](docs/en/get_started.md) for the basic usage of M
 - [how to integrate SDK to your application](docs/en/tutorials/sdk_integration.md)
 - [how to develop postprocessing components in SDK](docs/en/tutorials/postprocess_component_development.md)
 
+
 Please refer to [FAQ](docs/en/faq.md) for frequently asked questions.
 
+
+## Benchmark and model zoo
+
+Results and supported model list are available in the [benchmark](docs/en/benchmark.md) and [model list](docs/en/tutorials/how_to_convert_model.md).
 
 ## Contributing
 

@@ -1,28 +1,29 @@
-## Benchmark
+## 基准
 
-### Backends
+### 后端
 CPU: ncnn, ONNXRuntime, OpenVINO
 
 GPU: TensorRT, PPLNN
 
-### Latency benchmark
-#### Platform
-- Ubuntu 18.04
+### 延迟基准
+
+#### 平台
+- Ubuntu 18.04 操作系统
 - Cuda 11.3
 - TensorRT 7.2.3.4
 - Docker 20.10.8
-- NVIDIA tesla T4 tensor core GPU for TensorRT.
+- NVIDIA tesla T4 显卡.
 
-#### Other settings
-- Static graph
-- Batch size 1
-- Synchronize devices after each inference.
-- We count the average inference performance of 100 images of the dataset.
-- Warm up. For classification, we warm up 1010 iters. For other codebases, we warm up 10 iters.
-- Input resolution varies for different datasets of different codebases. All inputs are real images except for `mmediting` because the dataset is not large enough.
+#### 其他设置
+- 静态图导出
+- 批次大小为 1
+- 每次推理后均同步
+- 延迟基准测试时，我们计算各个数据集中100张图片的平均延时。
+- 热身。 针对分类任务，我们热身1010轮。 对其他任务，我们热身10轮。
+- 输入分辨率根据代码库的数据集不同而不同，除了`mmediting`，其他代码库均使用真实图片作为输入。
 
 
-Users can directly test the speed through [how_to_measure_performance_of_models.md](tutorials/how_to_measure_performance_of_models.md). And here is the benchmark in our environment.
+用户可以直接通过[如何测试延迟](tutorials/how_to_measure_performance_of_models.md)获得想要的速度测试结果。下面是我们环境中的测试结果：
 <details>
 <summary style="margin-left: 25px;">MMCls</summary>
 <div style="margin-left: 25px;">
@@ -548,9 +549,9 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
 </div>
 </details>
 
-### Performance benchmark
+### 性能基准
 
-Users can directly test the performance through [how_to_evaluate_a_model.md](tutorials/how_to_evaluate_a_model.md). And here is the benchmark in our environment.
+用户可以直接通过[如何测试性能](tutorials/how_to_evaluate_a_model.md)获得想要的性能测试结果。下面是我们环境中的测试结果：
 
 <details>
 <summary style="margin-left: 25px;">MMCls</summary>
@@ -1090,9 +1091,9 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
 </details>
 
 
-### Notes
-- As some datasets contain images with various resolutions in codebase like MMDet. The speed benchmark is gained through static configs in MMDeploy, while the performance benchmark is gained through dynamic ones.
+### 注意
+- 由于某些数据集在代码库中包含各种分辨率的图像，例如 MMDet，速度基准是通过 MMDeploy 中的静态配置获得的，而性能基准是通过动态配置获得的。
 
-- Some int8 performance benchmarks of TensorRT require Nvidia cards with tensor core, or the performance would drop heavily.
+- TensorRT 的一些 int8 性能基准测试需要具有 tensor core 的 Nvidia 卡，否则性能会大幅下降。
 
-- DBNet uses the interpolate mode `nearest` in the neck of the model, which TensorRT-7 applies a quite different strategy from Pytorch. To make the repository compatible with TensorRT-7, we rewrite the neck to use the interpolate mode `bilinear` which improves final detection performance. To get the matched performance with Pytorch, TensorRT-8+ is recommended, which the interpolate methods are all the same as Pytorch.
+- DBNet 在模型的颈部使用了`nearest`插值模式，TensorRT-7 应用了与 Pytorch 完全不同的策略。为了使与 TensorRT-7 兼容，我们重写了`neck`以使用`bilinear`插值模式，这提高了最终检测性能。为了获得与 Pytorch 匹配的性能，推荐使用 TensorRT-8+，其插值方法与 Pytorch 相同。

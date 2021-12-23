@@ -51,6 +51,12 @@ You can switch between Chinese and English documents in the lower-left corner of
 
 .. toctree::
    :maxdepth: 1
+   :caption: Benchmark
+
+   benchmark.md
+
+.. toctree::
+   :maxdepth: 1
    :caption: FAQ
 
    faq.md

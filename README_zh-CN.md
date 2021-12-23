@@ -55,6 +55,11 @@ MMDeploy 是一个开源深度学习模型部署工具箱，它是 [OpenMMLab](h
 - [如何测试模型效果](docs/en/tutorials/how_to_measure_performance_of_models.md)
 
 如果遇到问题，请参考 [常见问题解答](docs/zh_cn/faq.md)。
+
+## 基准与模型库
+
+基准和支持的模型列表可以在[基准](docs/zh_cn/benchmark.md)和[模型列表](docs/zh_cn/tutorials/how_to_convert_model.md)中获得。
+
 ## 贡献指南
 
 我们感谢所有的贡献者为改进和提升 MMDeploy 所作出的努力。请参考[贡献指南](.github/CONTRIBUTING.md)来了解参与项目贡献的相关指引。
