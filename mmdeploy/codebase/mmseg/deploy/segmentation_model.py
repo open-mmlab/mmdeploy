@@ -132,6 +132,15 @@ class End2EndModel(BaseBackendModel):
             out_file=out_file)
 
 
+class SDKEnd2EndModel(End2EndModel):
+
+    def forward(self, img: Sequence[torch.Tensor],
+                img_metas: Sequence[Sequence[dict]], *args, **kwargs):
+        masks = self.wrapper.invoke(
+            [img[0].contiguous().detach().cpu().numpy()])[0]
+        return masks
+
+
 def get_classes_palette_from_config(model_cfg: Union[str, mmcv.Config]):
     """Get class name and palette from config.
 
@@ -182,7 +191,14 @@ def build_segmentation_model(model_files: Sequence[str],
 
     backend = get_backend(deploy_cfg)
     class_names, palette = get_classes_palette_from_config(model_cfg)
-    backend_segmentor = End2EndModel(
+
+    if backend == Backend.SDK:
+        model_files.append('segmentation')
+        creator = SDKEnd2EndModel
+    else:
+        creator = End2EndModel
+
+    backend_segmentor = creator(
         backend,
         model_files,
         device,

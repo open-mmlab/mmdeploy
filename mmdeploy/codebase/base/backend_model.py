@@ -58,7 +58,11 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
             return OpenVINOWrapper(
                 ir_model_file=backend_files[0], output_names=output_names)
         elif backend == Backend.SDK:
-            return None
+            from mmdeploy.backend.sdk import SDKWrapper
+            return SDKWrapper(
+                model_file=backend_files[0],
+                task_name=backend_files[1],
+                device=device)
         else:
             raise NotImplementedError(f'Unknown backend type: {backend.value}')
 
