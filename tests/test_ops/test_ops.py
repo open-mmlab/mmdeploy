@@ -3,6 +3,7 @@ import onnx
 import pytest
 import torch
 import torch.nn as nn
+from mmcv import Config
 from onnx.helper import (make_graph, make_model, make_node,
                          make_tensor_value_info)
 
@@ -42,7 +43,12 @@ def test_roi_align(backend,
 
     wrapped_model = WrapFunction(wrapped_function).eval()
 
-    with RewriterContext(cfg={}, backend=backend.backend_name, opset=11):
+    with RewriterContext(
+            Config({'backend_config': {
+                'type': backend.backend_name
+            }}),
+            backend=backend.backend_name,
+            opset=11):
         backend.run_and_validate(
             wrapped_model, [input, single_roi],
             'roi_align',
@@ -81,7 +87,12 @@ def test_grid_sample(backend,
 
     wrapped_model = WrapFunction(wrapped_function).eval()
 
-    with RewriterContext(cfg={}, backend=backend.backend_name, opset=11):
+    with RewriterContext(
+            Config({'backend_config': {
+                'type': backend.backend_name
+            }}),
+            backend=backend.backend_name,
+            opset=11):
         backend.run_and_validate(
             wrapped_model, [input, grid],
             'grid_sampler',
