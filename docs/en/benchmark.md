@@ -711,6 +711,176 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
 </div>
 </details>
 
+<details>
+<summary style="margin-left: 25px;">MMDet</summary>
+<div style="margin-left: 25px;">
+<table class="docutils">
+<thead>
+  <tr>
+    <th align="center" colspan="4">MMDet</th>
+    <th align="center">Pytorch</th>
+    <th align="center">ONNXRuntime</th>
+    <th align="center" colspan="3">TensorRT</th>
+    <th align="center">PPLNN</th>
+    <th align="center">OpenVINO</th>
+    <th align="center"></th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td align="center">Model</td>
+    <td align="center">Task</td>
+    <td align="center">Dataset</td>
+    <td align="center">Metrics</td>
+    <td align="center">fp32</td>
+    <td align="center">fp32</td>
+    <td align="center">fp32</td>
+    <td align="center">fp16</td>
+    <td align="center">int8</td>
+    <td align="center">fp16</td>
+    <td align="center">fp32</td>
+    <td>model config file</td>
+  </tr>
+  <tr>
+    <td align="center">YOLOV3</td>
+    <td align="center">Object Detection</td>
+    <td align="center">COCO2017</td>
+    <td align="center">box AP</td>
+    <td align="center">33.7</td>
+    <td align="center">-</td>
+    <td align="center">33.5</td>
+    <td align="center">33.5</td>
+    <td align="center">33.5</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMDET_DIR/configs/yolo/yolov3_d53_320_273e_coco.py</td>
+  </tr>
+  <tr>
+    <td align="center">SSD</td>
+    <td align="center">Object Detection</td>
+    <td align="center">COCO2017</td>
+    <td align="center">box AP</td>
+    <td align="center">25.5</td>
+    <td align="center">-</td>
+    <td align="center">25.5</td>
+    <td align="center">25.5</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMDET_DIR/configs/ssd/ssd300_coco.py</td>
+  </tr>
+  <tr>
+    <td align="center">RetinaNet</td>
+    <td align="center">Object Detection</td>
+    <td align="center">COCO2017</td>
+    <td align="center">box AP</td>
+    <td align="center">36.5</td>
+    <td align="center">-</td>
+    <td align="center">36.4</td>
+    <td align="center">36.4</td>
+    <td align="center">36.3</td>
+    <td align="center">36.5</td>
+    <td align="center">-</td>
+    <td>$MMDET_DIR/configs/retinanet/retinanet_r50_fpn_1x_coco.py</td>
+  </tr>
+  <tr>
+    <td align="center">FCOS</td>
+    <td align="center">Object Detection</td>
+    <td align="center">COCO2017</td>
+    <td align="center">box AP</td>
+    <td align="center">36.6</td>
+    <td align="center">-</td>
+    <td align="center">36.6</td>
+    <td align="center">36.5</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMDET_DIR/configs/fcos/fcos_r50_caffe_fpn_gn-head_1x_coco.py</td>
+  </tr>
+  <tr>
+    <td align="center">FSAF</td>
+    <td align="center">Object Detection</td>
+    <td align="center">COCO2017</td>
+    <td align="center">box AP</td>
+    <td align="center">37.4</td>
+    <td align="center">-</td>
+    <td align="center">37.4</td>
+    <td align="center">37.4</td>
+    <td align="center">37.2</td>
+    <td align="center">37.4</td>
+    <td align="center">-</td>
+    <td>$MMDET_DIR/configs/fsaf/fsaf_r50_fpn_1x_coco.py</td>
+  </tr>
+  <tr>
+    <td align="center">YOLOX</td>
+    <td align="center">Object Detection</td>
+    <td align="center">COCO2017</td>
+    <td align="center">box AP</td>
+    <td align="center">40.5</td>
+    <td align="center">-</td>
+    <td align="center">40.3</td>
+    <td align="center">40.3</td>
+    <td align="center">29.3</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMDET_DIR/configs/yolox/yolox_s_8x8_300e_coco.py</td>
+  </tr>
+  <tr>
+    <td align="center">Faster R-CNN</td>
+    <td align="center">Object Detection</td>
+    <td align="center">COCO2017</td>
+    <td align="center">box AP</td>
+    <td align="center">37.4</td>
+    <td align="center">-</td>
+    <td align="center">37.3</td>
+    <td align="center">37.3</td>
+    <td align="center">37.1</td>
+    <td align="center">37.3</td>
+    <td align="center">-</td>
+    <td>$MMDET_DIR/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py</td>
+  </tr>
+  <tr>
+    <td align="center">ATSS</td>
+    <td align="center">Object Detection</td>
+    <td align="center">COCO2017</td>
+    <td align="center">box AP</td>
+    <td align="center">39.4</td>
+    <td align="center">-</td>
+    <td align="center">39.4</td>
+    <td align="center">39.4</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMDET_DIR/configs/atss/atss_r50_fpn_1x_coco.py</td>
+  </tr>
+  <tr>
+    <td align="center" rowspan="2">Mask R-CNN</td>
+    <td align="center" rowspan="2">Instance Segmentation</td>
+    <td align="center" rowspan="2">COCO2017</td>
+    <td align="center">box AP</td>
+    <td align="center">38.2</td>
+    <td align="center">-</td>
+    <td align="center">38.1</td>
+    <td align="center">38.1</td>
+    <td align="center">-</td>
+    <td align="center">38.0</td>
+    <td align="center">-</td>
+    <td align="center" rowspan="2">$MMDET_DIR/configs/mask_rcnn/mask_rcnn_r50_fpn_1x_coco.py</td>
+  </tr>
+  <tr>
+    <td align="center">mask AP</td>
+    <td align="center">34.7</td>
+    <td align="center">-</td>
+    <td align="center">33.7</td>
+    <td align="center">33.7</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+</tbody>
+</table>
+</div>
+</details>
 
 <details>
 <summary style="margin-left: 25px;">MMEdit</summary>
@@ -1096,3 +1266,5 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
 - Some int8 performance benchmarks of TensorRT require Nvidia cards with tensor core, or the performance would drop heavily.
 
 - DBNet uses the interpolate mode `nearest` in the neck of the model, which TensorRT-7 applies a quite different strategy from Pytorch. To make the repository compatible with TensorRT-7, we rewrite the neck to use the interpolate mode `bilinear` which improves final detection performance. To get the matched performance with Pytorch, TensorRT-8+ is recommended, which the interpolate methods are all the same as Pytorch.
+
+- Mask AP of Mask R-CNN drops by 1% for the backend. The main reason is that the predicted masks are directly interpolated to original image in PyTorch, while they are at first interpolated to the preprocessed input image of the model and then to original image in other backends.
