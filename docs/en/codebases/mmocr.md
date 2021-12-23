@@ -4,7 +4,7 @@ MMOCR is an open-source toolbox based on PyTorch and mmdetection for text detect
 
 ### MMOCR installation tutorial
 
-Please refer to [install.md](https://github.com/open-mmlab/mmocr/blob/main/docs/install.md) for installation.
+Please refer to [install.md](https://mmocr.readthedocs.io/en/latest/install.html) for installation.
 
 ### List of MMOCR models supported by MMDeploy
 

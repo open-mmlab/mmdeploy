@@ -4,7 +4,7 @@ MMDetection is an open source object detection toolbox based on PyTorch. It is a
 
 ### MMDetection installation tutorial
 
-Please refer to [get_started.md](https://github.com/open-mmlab/mmdetection/blob/master/docs/get_started.md) for installation.
+Please refer to [get_started.md](https://github.com/open-mmlab/mmdetection/blob/master/docs/en/get_started.md) for installation.
 
 ### List of MMDetection models supported by MMDeploy
 
