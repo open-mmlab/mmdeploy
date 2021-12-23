@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="resources/mmdeploy-logo.png" width="600"/>
+  <img src="resources/mmdeploy-logo.png" width="450"/>
 </div>
 
 ## Introduction
@@ -10,7 +10,7 @@ MMDeploy is an open-source deep learning model deployment toolset. It is
 a part of the [OpenMMLab](https://openmmlab.com/) project.
 
 <div align="center">
-  <img src="resources/introduction.png" height="600"/>
+  <img src="resources/introduction.png" width="800"/>
 </div>
 
 
@@ -53,9 +53,6 @@ Please see [getting_started.md](docs/en/get_started.md) for the basic usage of M
 - [how to write config](docs/en/tutorials/how_to_write_config.md)
 - [how to support new models](docs/en/tutorials/how_to_support_new_models.md)
 - [how to measure performance of models](docs/en/tutorials/how_to_measure_performance_of_models.md)
-- [MMDeploy's SDK Model spec](docs/en/tutorials/sdk_model_spec.md)
-- [how to integrate SDK to your application](docs/en/tutorials/sdk_integration.md)
-- [how to develop postprocessing components in SDK](docs/en/tutorials/postprocess_component_development.md)
 
 
 Please refer to [FAQ](docs/en/faq.md) for frequently asked questions.
