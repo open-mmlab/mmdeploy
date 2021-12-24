@@ -8,13 +8,13 @@ Please refer to [get_started.md](https://github.com/open-mmlab/mmsegmentation/bl
 
 ### List of MMSegmentation models supported by MMDeploy
 
-| model                       | OnnxRuntime | TensorRT | NCNN | PPLNN | OpenVino | model config file(example)                                                         |
-|:----------------------------|:-----------:|:--------:|:----:|:-----:|:--------:|:-----------------------------------------------------------------------------------|
-| FCN                         |      Y      |    Y     |  Y   |   Y   |    Y     | ${MMSEG_DIR}/configs/fcn/fcn_r50-d8_512x1024_40k_cityscapes.py                     |
-| PSPNet[*](#static_shape)    |      Y      |    Y     |  Y   |   Y   |    Y     | ${MMSEG_DIR}/configs/pspnet/pspnet_r50-d8_512x1024_40k_cityscapes.py               |
-| DeepLabV3                   |      Y      |    Y     |  Y   |   Y   |    Y     | ${MMSEG_DIR}/configs/deeplabv3/deeplabv3_r50-d8_512x1024_40k_cityscapes.py         |
-| DeepLabV3+                  |      Y      |    Y     |  Y   |   Y   |    Y     | ${MMSEG_DIR}/configs/deeplabv3plus/deeplabv3plus_r50-d8_512x1024_40k_cityscapes.py |
-| Fast-SCNN[*](#static_shape) |      Y      |    Y     |  N   |   Y   |    Y     | ${MMSEG_DIR}/configs/fastscnn/fast_scnn_lr0.12_8x4_160k_cityscapes.py              |
+| model                       | OnnxRuntime | TensorRT | NCNN  | PPLNN | OpenVino | model config file(example)                                                         |
+| :-------------------------- | :---------: | :------: | :---: | :---: | :------: | :--------------------------------------------------------------------------------- |
+| FCN                         |      Y      |    Y     |   Y   |   Y   |    Y     | ${MMSEG_DIR}/configs/fcn/fcn_r50-d8_512x1024_40k_cityscapes.py                     |
+| PSPNet[*](#static_shape)    |      Y      |    Y     |   Y   |   Y   |    Y     | ${MMSEG_DIR}/configs/pspnet/pspnet_r50-d8_512x1024_40k_cityscapes.py               |
+| DeepLabV3                   |      Y      |    Y     |   Y   |   Y   |    Y     | ${MMSEG_DIR}/configs/deeplabv3/deeplabv3_r50-d8_512x1024_40k_cityscapes.py         |
+| DeepLabV3+                  |      Y      |    Y     |   Y   |   Y   |    Y     | ${MMSEG_DIR}/configs/deeplabv3plus/deeplabv3plus_r50-d8_512x1024_40k_cityscapes.py |
+| Fast-SCNN[*](#static_shape) |      Y      |    Y     |   N   |   Y   |    Y     | ${MMSEG_DIR}/configs/fastscnn/fast_scnn_lr0.12_8x4_160k_cityscapes.py              |
 
 ### Reminder
 

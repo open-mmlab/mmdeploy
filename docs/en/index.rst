@@ -8,6 +8,7 @@ You can switch between Chinese and English documents in the lower-left corner of
    :caption: Get Started
 
    build.md
+   supported_models.md
    get_started.md
 
 .. toctree::
