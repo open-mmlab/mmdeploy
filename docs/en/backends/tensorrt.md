@@ -25,9 +25,8 @@ Please install TensorRT 8 follow [install-guide](https://docs.nvidia.com/deeplea
 Some custom ops are created to support models in OpenMMLab, and the custom ops can be built as follow:
 
 ```bash
-cd ${MMDEPLOY_DIR}
-mkdir build
-cd build
+cd ${MMDEPLOY_DIR} # To MMDeploy root directory
+mkdir -p build && cd build
 cmake -DMMDEPLOY_TARGET_BACKENDS=trt ..
 make -j$(nproc)
 ```
@@ -73,10 +72,6 @@ test_pipeline = [
 data = dict(
     samples_per_gpu=2,
     workers_per_gpu=2,
-    train=dict(
-        type=dataset_type,
-        ann_file=data_root + 'train_annotations.json',
-        pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
         ann_file=data_root + 'val_annotations.json',

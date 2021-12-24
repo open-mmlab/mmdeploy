@@ -4,7 +4,7 @@
 
 ### MMClassification installation tutorial
 
-Please refer to [install.md](https://github.com/open-mmlab/mmclassification/blob/master/docs/install.md) for installation.
+Please refer to [install.md](https://github.com/open-mmlab/mmclassification/blob/master/docs/en/install.md) for installation.
 
 ### List of MMClassification models supported by MMDeploy
 

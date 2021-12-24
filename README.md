@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="resources/mmdeploy-logo.png" width="600"/>
+  <img src="resources/mmdeploy-logo.png" width="450"/>
 </div>
 
 ## Introduction
@@ -10,8 +10,9 @@ MMDeploy is an open-source deep learning model deployment toolset. It is
 a part of the [OpenMMLab](https://openmmlab.com/) project.
 
 <div align="center">
-  <img src="https://socialistmodernism.com/wp-content/uploads/2017/07/placeholder-image.png"/>
+  <img src="resources/introduction.png" width="800"/>
 </div>
+
 
 ### Major features
 
@@ -52,12 +53,14 @@ Please see [getting_started.md](docs/en/get_started.md) for the basic usage of M
 - [how to write config](docs/en/tutorials/how_to_write_config.md)
 - [how to support new models](docs/en/tutorials/how_to_support_new_models.md)
 - [how to measure performance of models](docs/en/tutorials/how_to_measure_performance_of_models.md)
-- [MMDeploy's SDK Model spec](docs/en/tutorials/sdk_model_spec.md)
-- [how to integrate SDK to your application](docs/en/tutorials/sdk_integration.md)
-- [how to develop postprocessing components in SDK](docs/en/tutorials/postprocess_component_development.md)
+
 
 Please refer to [FAQ](docs/en/faq.md) for frequently asked questions.
 
+
+## Benchmark and model zoo
+
+Results and supported model list are available in the [benchmark](docs/en/benchmark.md) and [model list](docs/en/tutorials/how_to_convert_model.md).
 
 ## Contributing
 
@@ -97,3 +100,5 @@ If you find this project useful in your research, please consider cite:
 - [MMFlow](https://github.com/open-mmlab/mmflow): OpenMMLab optical flow toolbox and benchmark.
 - [MMFewShot](https://github.com/open-mmlab/mmfewshot): OpenMMLab FewShot Learning Toolbox and Benchmark.
 - [MMHuman3D](https://github.com/open-mmlab/mmhuman3d): OpenMMLab Human Pose and Shape Estimation Toolbox and Benchmark.
+- [MMSelfSup](https://github.com/open-mmlab/mmselfsup): OpenMMLab self-supervised learning Toolbox and Benchmark.
+- [MMRazor](https://github.com/open-mmlab/mmrazor): OpenMMLab Model Compression Toolbox and Benchmark.

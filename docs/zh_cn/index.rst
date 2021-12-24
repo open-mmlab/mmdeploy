@@ -5,9 +5,10 @@
 
 .. toctree::
    :maxdepth: 1
-   :caption: 安装指南
+   :caption: 快速上手
 
    build.md
+   get_started.md
 
 .. toctree::
    :maxdepth: 1
@@ -47,6 +48,13 @@
    ops/onnxruntime.md
    ops/tensorrt.md
    ops/ncnn.md
+
+.. toctree::
+   :maxdepth: 1
+   :caption: 基准
+
+   benchmark.md
+
 
 .. toctree::
    :maxdepth: 1

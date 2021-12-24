@@ -48,13 +48,13 @@ target_include_directories(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME} PUBLIC ${SPDLOG_LIB} stdc++fs)
 add_library(mmdeploy::core ALIAS ${PROJECT_NAME})
 
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/src/core
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/csrc/core
         DESTINATION include/cpp
         FILES_MATCHING PATTERN "*.h")
 install(FILES ${CMAKE_SOURCE_DIR}/third_party/outcome/outcome-experimental.hpp
         DESTINATION include/cpp/core)
 
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/src/experimental
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/csrc/experimental
         DESTINATION include/cpp
         FILES_MATCHING PATTERN "*.h")
 

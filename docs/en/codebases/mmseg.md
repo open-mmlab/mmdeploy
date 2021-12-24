@@ -4,7 +4,7 @@ MMSegmentation is an open source object segmentation toolbox based on PyTorch. I
 
 ### MMSegmentation installation tutorial
 
-Please refer to [get_started.md](https://github.com/open-mmlab/mmsegmentation/blob/master/docs/get_started.md) for installation.
+Please refer to [get_started.md](https://github.com/open-mmlab/mmsegmentation/blob/master/docs/en/get_started.md#installation) for installation.
 
 ### List of MMSegmentation models supported by MMDeploy
 

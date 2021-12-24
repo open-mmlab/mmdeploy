@@ -1,29 +1,29 @@
-## Benchmark
+## 基准
 
-### Backends
+### 后端
 CPU: ncnn, ONNXRuntime, OpenVINO
 
-GPU: ncnn, TensorRT, PPLNN
+GPU: TensorRT, PPLNN
 
-### Latency benchmark
-#### Platform
-- Ubuntu 18.04
-- ncnn 20211208
+### 延迟基准
+
+#### 平台
+- Ubuntu 18.04 操作系统
 - Cuda 11.3
 - TensorRT 7.2.3.4
 - Docker 20.10.8
-- NVIDIA tesla T4 tensor core GPU for TensorRT.
+- NVIDIA tesla T4 显卡.
 
-#### Other settings
-- Static graph
-- Batch size 1
-- Synchronize devices after each inference.
-- We count the average inference performance of 100 images of the dataset.
-- Warm up. For ncnn, we warm up 30 iters for all codebases. As for other backends: for classification, we warm up 1010 iters; for other codebases, we warm up 10 iters.
-- Input resolution varies for different datasets of different codebases. All inputs are real images except for `mmediting` because the dataset is not large enough.
+#### 其他设置
+- 静态图导出
+- 批次大小为 1
+- 每次推理后均同步
+- 延迟基准测试时，我们计算各个数据集中100张图片的平均延时。
+- 热身。 针对分类任务，我们热身1010轮。 对其他任务，我们热身10轮。
+- 输入分辨率根据代码库的数据集不同而不同，除了`mmediting`，其他代码库均使用真实图片作为输入。
 
 
-Users can directly test the speed through [how_to_measure_performance_of_models.md](tutorials/how_to_measure_performance_of_models.md). And here is the benchmark in our environment.
+用户可以直接通过[如何测试延迟](tutorials/how_to_measure_performance_of_models.md)获得想要的速度测试结果。下面是我们环境中的测试结果：
 <details>
 <summary style="margin-left: 25px;">MMCls</summary>
 <div style="margin-left: 25px;">
@@ -34,7 +34,6 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <th align="center" colspan="3">MMCls</th>
     <th align="center" colspan="6">TensorRT</th>
     <th align="center" colspan="2">PPLNN</th>
-    <th align="center" colspan="4">NCNN</th>
     <th align="center"></th>
   </tr>
 </thead>
@@ -45,17 +44,11 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center" rowspan="2">Input</td>
     <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
-    <td align="center" colspan="2">int8</td>
+    <td align="center" colspan="2">in8</td>
     <td align="center" colspan="2">fp16</td>
-    <td align="center" colspan="2">SnapDragon888-fp32</td>
-    <td align="center" colspan="2">Adreno660-fp32</td>
     <td rowspan="2">model config file</td>
   </tr>
   <tr>
-    <td align="center">latency (ms)</td>
-    <td align="center">FPS</td>
-    <td align="center">latency (ms)</td>
-    <td align="center">FPS</td>
     <td align="center">latency (ms)</td>
     <td align="center">FPS</td>
     <td align="center">latency (ms)</td>
@@ -77,10 +70,6 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center">829.66</td>
     <td align="center">1.30</td>
     <td align="center">768.28</td>
-    <td align="center">33.91</td>
-    <td align="center">29.49</td>
-    <td align="center">25.93</td>
-    <td align="center">38.57</td>
     <td>$MMCLS_DIR/configs/resnet/resnet50_b32x8_imagenet.py</td>
   </tr>
   <tr>
@@ -95,10 +84,6 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center">727.42</td>
     <td align="center">1.36</td>
     <td align="center">737.67</td>
-    <td align="center">133.44</td>
-    <td align="center">7.49</td>
-    <td align="center">69.38</td>
-    <td align="center">14.41</td>
     <td>$MMCLS_DIR/configs/resnext/resnext50_32x4d_b32x8_imagenet.py</td>
   </tr>
   <tr>
@@ -113,10 +98,6 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center">662.90</td>
     <td align="center">1.91</td>
     <td align="center">524.07</td>
-    <td align="center">107.84</td>
-    <td align="center">9.27</td>
-    <td align="center">80.85</td>
-    <td align="center">12.37</td>
     <td>$MMCLS_DIR/configs/seresnet/seresnet50_b32x8_imagenet.py</td>
   </tr>
   <tr>
@@ -131,10 +112,6 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center">883.47</td>
     <td align="center">4.69</td>
     <td align="center">213.33</td>
-    <td align="center">9.55</td>
-    <td align="center">104.71</td>
-    <td align="center">10.66</td>
-    <td align="center">93.81</td>
     <td>$MMCLS_DIR/configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py</td>
   </tr>
 </tbody>
@@ -162,7 +139,7 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center" rowspan="2">Input</td>
     <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
-    <td align="center" colspan="2">int8</td>
+    <td align="center" colspan="2">in8</td>
     <td align="center" colspan="2">fp16</td>
     <td rowspan="2">model config file</td>
   </tr>
@@ -276,51 +253,6 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
   </tr>
 </tbody>
 </table>
-<table class="docutils">
-<thead>
-  <tr>
-    <th align="center" colspan="3">MMDet</th>
-    <th align="center" colspan="4">NCNN</th>
-    <th align="center"></th>
-  </tr>
-</thead>
-<tbody>
-  <tr>
-    <td align="center" rowspan="2">Model</td>
-    <td align="center" rowspan="2">Dataset</td>
-    <td align="center" rowspan="2">Input</td>
-    <td align="center" colspan="2">SnapDragon888-fp32</td>
-    <td align="center" colspan="2">Adreno660-fp32</td>
-    <td rowspan="2">model config file</td>
-  </tr>
-  <tr>
-    <td align="center">latency (ms)</td>
-    <td align="center">FPS</td>
-    <td align="center">latency (ms)</td>
-    <td align="center">FPS</td>
-  </tr>
-  <tr>
-    <td align="center">MobileNetv2-YOLOv3</td>
-    <td align="center">COCO</td>
-    <td align="center">1x3x320x320</td>
-    <td align="center">48.57</td>
-    <td align="center">20.59</td>
-    <td align="center">66.55</td>
-    <td align="center">15.03</td>
-    <td>$MMDET_DIR/configs/yolo/yolov3_mobilenetv2_mstrain-416_300e_coco.py</td>
-  </tr>
-  <tr>
-    <td align="center">SSD-Lite</td>
-    <td align="center">COCO</td>
-    <td align="center">1x3x320x320</td>
-    <td align="center">44.91</td>
-    <td align="center">22.27</td>
-    <td align="center">66.19</td>
-    <td align="center">15.11</td>
-    <td>$MMDET_DIR/configs/ssd/ssdlite_mobilenetv2_scratch_600e_coco.py</td>
-  </tr>
-</tbody>
-</table>
 </div>
 </details>
 
@@ -342,7 +274,7 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center" rowspan="2">Input</td>
     <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
-    <td align="center" colspan="2">int8</td>
+    <td align="center" colspan="2">in8</td>
     <td align="center" colspan="2">fp16</td>
     <td rowspan="2">model config file</td>
   </tr>
@@ -396,7 +328,6 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <th align="center" colspan="3">MMOCR</th>
     <th align="center" colspan="6">TensorRT</th>
     <th align="center" colspan="2">PPLNN</th>
-    <th align="center" colspan="4">NCNN</th>
     <th align="center"></th>
   </tr>
 </thead>
@@ -407,10 +338,8 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center" rowspan="2">Input</td>
     <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
-    <td align="center" colspan="2">int8</td>
+    <td align="center" colspan="2">in8</td>
     <td align="center" colspan="2">fp16</td>
-    <td align="center" colspan="2">SnapDragon888-fp32</td>
-    <td align="center" colspan="2">Adreno660-fp32</td>
     <td rowspan="2">model config file</td>
   </tr>
   <tr>
@@ -422,46 +351,105 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center">FPS</td>
     <td align="center">latency (ms)</td>
     <td align="center">FPS</td>
-    <td align="center">latency (ms)</td>
-    <td align="center">FPS</td>
-    <td align="center">latency (ms)</td>
-    <td align="center">FPS</td>
-  </tr>
-    <tr>
-    <td align="center">DBNet</td>
-    <td align="center">ICDAR2015</td>
-    <td align="center">1x3x640x640</td>
-    <td align="center">10.70</td>
-    <td align="center">93.43</td>
-    <td align="center">5.62</td>
-    <td align="center">177.78</td>
-    <td align="center">5.00</td>
-    <td align="center">199.85</td>
-    <td align="center">34.84</td>
-    <td align="center">28.70</td>
-    <td align="center">-</td>
-    <td align="center">-</td>
-    <td align="center">-</td>
-    <td align="center">-</td>
-    <td>$MMOCR_DIR/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py</td>
   </tr>
   <tr>
-    <td align="center">CRNN</td>
-    <td align="center">IIIT5K</td>
-    <td align="center">1x1x32x32</td>
-    <td align="center">1.93 </td>
-    <td align="center">518.28</td>
-    <td align="center">1.40</td>
-    <td align="center">713.88</td>
-    <td align="center">1.36</td>
-    <td align="center">736.79</td>
+    <td align="center">YOLOv3</td>
+    <td align="center">COCO</td>
+    <td align="center">1x3x800x1344</td>
+    <td align="center">94.08</td>
+    <td align="center">10.63</td>
+    <td align="center">24.90</td>
+    <td align="center">40.17</td>
+    <td align="center">24.87</td>
+    <td align="center">40.21</td>
+    <td align="center">47.64</td>
+    <td align="center">20.99</td>
+    <td>$MMDET_DIR/configs/yolo/yolov3_d53_320_273e_coco.py</td>
+  </tr>
+  <tr>
+    <td align="center">SSD-Lite</td>
+    <td align="center">COCO</td>
+    <td align="center">1x3x800x1344</td>
+    <td align="center">14.91</td>
+    <td align="center">67.06</td>
+    <td align="center">8.92</td>
+    <td align="center">112.13</td>
+    <td align="center">8.65</td>
+    <td align="center">115.63</td>
+    <td align="center">30.13</td>
+    <td align="center">33.19</td>
+    <td>$MMDET_DIR/configs/ssd/ssdlite_mobilenetv2_scratch_600e_coco.py</td>
+  </tr>
+  <tr>
+    <td align="center">RetinaNet</td>
+    <td align="center">COCO</td>
+    <td align="center">1x3x800x1344</td>
+    <td align="center">97.09</td>
+    <td align="center">10.30</td>
+    <td align="center">25.79</td>
+    <td align="center">38.78</td>
+    <td align="center">16.88</td>
+    <td align="center">59.23</td>
+    <td align="center">38.34</td>
+    <td align="center">26.08</td>
+    <td>$MMDET_DIR/configs/retinanet/retinanet_r50_fpn_1x_coco.py</td>
+  </tr>
+  <tr>
+    <td align="center">FCOS</td>
+    <td align="center">COCO</td>
+    <td align="center">1x3x800x1344</td>
+    <td align="center">84.06</td>
+    <td align="center">11.90</td>
+    <td align="center">23.15</td>
+    <td align="center">43.20</td>
+    <td align="center">17.68</td>
+    <td align="center">56.57</td>
     <td align="center">-</td>
     <td align="center">-</td>
-    <td align="center">10.57</td>
-    <td align="center">94.64</td>
-    <td align="center">20.00</td>
-    <td align="center">50.00</td>
-    <td>$MMOCR_DIR/configs/textrecog/crnn/crnn_academic_dataset.py</td>
+    <td>$MMDET_DIR/configs/fcos/fcos_r50_caffe_fpn_gn-head_1x_coco.py</td>
+  </tr>
+  <tr>
+    <td align="center">FSAF</td>
+    <td align="center">COCO</td>
+    <td align="center">1x3x800x1344</td>
+    <td align="center">82.96</td>
+    <td align="center">12.05</td>
+    <td align="center">21.02</td>
+    <td align="center">47.58</td>
+    <td align="center">13.50</td>
+    <td align="center">74.08</td>
+    <td align="center">30.41</td>
+    <td align="center">32.89</td>
+    <td>$MMDET_DIR/configs/fsaf/fsaf_r50_fpn_1x_coco.py</td>
+  </tr>
+  <tr>
+    <td align="center">Faster-RCNN</td>
+    <td align="center">COCO</td>
+    <td align="center">1x3x800x1344</td>
+    <td align="center">88.08</td>
+    <td align="center">11.35</td>
+    <td align="center">26.52</td>
+    <td align="center">37.70</td>
+    <td align="center">19.14</td>
+    <td align="center">52.23</td>
+    <td align="center">65.40</td>
+    <td align="center">15.29</td>
+    <td>$MMDET_DIR/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py</td>
+  </tr>
+  <tr>
+    <td align="center">Mask-RCNN</td>
+    <td align="center">COCO</td>
+    <td align="center">1x3x800x1344</td>
+    <td align="center">320.86 </td>
+    <td align="center">3.12</td>
+    <td align="center">241.32</td>
+    <td align="center">4.14</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">86.80</td>
+    <td align="center">11.52</td>
+    <td>$MMDET_DIR/configs/mask_rcnn/mask_rcnn_r50_fpn_1x_coco.py</td>
+  </tr>
 </tbody>
 </table>
 </div>
@@ -486,7 +474,7 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center" rowspan="2">Input</td>
     <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
-    <td align="center" colspan="2">int8</td>
+    <td align="center" colspan="2">in8</td>
     <td align="center" colspan="2">fp16</td>
     <td rowspan="2">model config file</td>
   </tr>
@@ -561,9 +549,9 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
 </div>
 </details>
 
-### Performance benchmark
+### 性能基准
 
-Users can directly test the performance through [how_to_evaluate_a_model.md](tutorials/how_to_evaluate_a_model.md). And here is the benchmark in our environment.
+用户可以直接通过[如何测试性能](tutorials/how_to_evaluate_a_model.md)获得想要的性能测试结果。下面是我们环境中的测试结果：
 
 <details>
 <summary style="margin-left: 25px;">MMCls</summary>
@@ -1273,11 +1261,10 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
 </details>
 
 
-### Notes
-- As some datasets contain images with various resolutions in codebase like MMDet. The speed benchmark is gained through static configs in MMDeploy, while the performance benchmark is gained through dynamic ones.
 
-- Some int8 performance benchmarks of TensorRT require Nvidia cards with tensor core, or the performance would drop heavily.
+### 注意
+- 由于某些数据集在代码库中包含各种分辨率的图像，例如 MMDet，速度基准是通过 MMDeploy 中的静态配置获得的，而性能基准是通过动态配置获得的。
 
-- DBNet uses the interpolate mode `nearest` in the neck of the model, which TensorRT-7 applies a quite different strategy from Pytorch. To make the repository compatible with TensorRT-7, we rewrite the neck to use the interpolate mode `bilinear` which improves final detection performance. To get the matched performance with Pytorch, TensorRT-8+ is recommended, which the interpolate methods are all the same as Pytorch.
+- TensorRT 的一些 int8 性能基准测试需要具有 tensor core 的 Nvidia 卡，否则性能会大幅下降。
 
-- Mask AP of Mask R-CNN drops by 1% for the backend. The main reason is that the predicted masks are directly interpolated to original image in PyTorch, while they are at first interpolated to the preprocessed input image of the model and then to original image in other backends.
+- DBNet 在模型的颈部使用了`nearest`插值模式，TensorRT-7 应用了与 Pytorch 完全不同的策略。为了使与 TensorRT-7 兼容，我们重写了`neck`以使用`bilinear`插值模式，这提高了最终检测性能。为了获得与 Pytorch 匹配的性能，推荐使用 TensorRT-8+，其插值方法与 Pytorch 相同。

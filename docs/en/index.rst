@@ -8,6 +8,7 @@ You can switch between Chinese and English documents in the lower-left corner of
    :caption: Get Started
 
    build.md
+   get_started.md
 
 .. toctree::
    :maxdepth: 1
@@ -48,6 +49,12 @@ You can switch between Chinese and English documents in the lower-left corner of
    ops/onnxruntime.md
    ops/tensorrt.md
    ops/ncnn.md
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Benchmark
+
+   benchmark.md
 
 .. toctree::
    :maxdepth: 1

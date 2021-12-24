@@ -44,10 +44,9 @@ Note:
 
 ```bash
 cd ${MMDEPLOY_DIR} # To MMDeploy root directory
-mkdir build
-cd build
+mkdir -p build && cd build
 cmake -DMMDEPLOY_TARGET_BACKENDS=ort -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
-make -j10
+make -j$(nproc)
 ```
 
 ### How to convert a model
@@ -73,8 +72,8 @@ make -j10
 
 Take custom operator `roi_align` for example.
 
-1. Create a `roi_align` directory in ONNX Runtime source directory `backend_ops/onnxruntime/`
-2. Add header and source file into `roi_align` directory `backend_ops/onnxruntime/roi_align/`
+1. Create a `roi_align` directory in ONNX Runtime source directory `${MMDEPLOY_DIR}/csrc/backend_ops/onnxruntime/`
+2. Add header and source file into `roi_align` directory `${MMDEPLOY_DIR}/csrc/backend_ops/onnxruntime/roi_align/`
 3. Add unit test into `tests/test_ops/test_ops.py`
    Check [here](../../../tests/test_ops/test_ops.py) for examples.
 
