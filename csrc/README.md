@@ -104,7 +104,7 @@ with ONNXRuntime on CPU. More examples on more devices/backends will come once o
 
 To start with, put the corresponding ONNX model file exported for ONNXRuntime in `demo/config/resnet50_ort`
 and `demo/config/retinanet_ort`. The models should be renamed as `end2end.onnx` to match the configs. The models can
-be exported using [MMDeploy](https://github.com/grimoire/deploy_prototype) or corresponding OpenMMLab codebases.
+be exported using [MMDeploy](https://github.com/open-mmlab/mmdeploy) or corresponding OpenMMLab codebases.
 This can be done automatically when the model conversion to SDK model packaging script is ready in the future.
 
 
