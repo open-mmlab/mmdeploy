@@ -68,7 +68,7 @@ MMDeploy 是一个开源深度学习模型部署工具箱，它是 [OpenMMLab](h
 
 OpenVINO团队在MMDeploy中添加了OpenVINO部署后端，并开发了MMDetection在OpenVINO下的部署功能，为MMDeploy做出了重大贡献。对此我们表示衷心的感谢。
 
-## Citation
+## 引用
 
 如果你在研究中使用了本项目的代码或者性能基准，请参考如下 bibtex 引用 MMDeploy:
 
@@ -80,7 +80,6 @@ OpenVINO团队在MMDeploy中添加了OpenVINO部署后端，并开发了MMDetect
     year={2021}
 }
 ```
-
 
 ## OpenMMLab 的其他项目
 
@@ -99,11 +98,12 @@ OpenVINO团队在MMDeploy中添加了OpenVINO部署后端，并开发了MMDetect
 - [MMFlow](https://github.com/open-mmlab/mmflow): OpenMMLab 光流估计工具箱与测试基准
 - [MMFewShot](https://github.com/open-mmlab/mmfewshot): OpenMMLab 少样本学习工具箱与测试基准
 - [MMHuman3D](https://github.com/open-mmlab/mmhuman3d): OpenMMLab 人体参数化模型工具箱与测试基准
+- [MMSelfSup](https://github.com/open-mmlab/mmselfsup): OpenMMLab 自监督学习工具箱与测试基准
+- [MMRazor](https://github.com/open-mmlab/mmrazor): OpenMMLab 模型压缩工具箱与测试基准
 
 ## 欢迎加入 OpenMMLab 社区
 
 扫描下方的二维码可关注 OpenMMLab 团队的 [知乎官方账号](https://www.zhihu.com/people/openmmlab)，加入 OpenMMLab 团队的 [官方交流 QQ 群](https://jq.qq.com/?_wv=1027&k=aCvMxdr3)
-
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/open-mmlab/mmcv/master/docs/en/_static/zhihu_qrcode.jpg" height="400" />
