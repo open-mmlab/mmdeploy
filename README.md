@@ -60,7 +60,7 @@ Please refer to [FAQ](docs/en/faq.md) for frequently asked questions.
 
 ## Benchmark and model zoo
 
-Results and supported model list are available in the [benchmark](docs/en/benchmark.md) and [model list](docs/en/tutorials/how_to_convert_model.md).
+Results and supported model list are available in the [benchmark](docs/en/benchmark.md) and [model list](docs/en/supported_models.md).
 
 ## Contributing
 

@@ -7,6 +7,7 @@
     - [准备工作](#准备工作)
     - [使用方法](#使用方法)
     - [参数描述](#参数描述)
+    - [如何查找pytorch模型对应的部署配置文件](#如何查找pytorch模型对应的部署配置文件)
     - [示例](#示例)
   - [如何评测模型](#如何评测模型)
   - [各后端已支持导出的模型列表](#各后端已支持导出的模型列表)
@@ -18,15 +19,16 @@
 这篇教程介绍了如何使用 MMDeploy 的工具将一个 OpenMMlab 模型转换成某个后端的模型文件。
 
 注意:
-- 现在已支持的后端包括 [ONNX Runtime](../backends/onnxruntime.md) ，[TensorRT](../backends/tensorrt.md) ，[NCNN](../backends/ncnn.md) ，[PPLNN](../backends/pplnn.md)。
-- 现在已支持的代码库包括 [MMClassification](../codebases/mmcls.md) ，[MMDetection](../codebases/mmdet.md) ，[MMSegmentation](../codebases/mmseg.md) ，[MMOCR](../codebases/mmocr.md) ，[MMEditing](../codebases/mmedit.md)。
+
+- 现在已支持的后端包括 [ONNX Runtime](../../en/backends/onnxruntime.md) ，[TensorRT](../../en/backends/tensorrt.md) ，[NCNN](../../en/backends/ncnn.md) ，[PPLNN](../../en/backends/pplnn.md)。
+- 现在已支持的代码库包括 [MMClassification](../../en/codebases/mmcls.md) ，[MMDetection](../../en/codebases/mmdet.md) ，[MMSegmentation](../../en/codebases/mmseg.md) ，[MMOCR](../../en/codebases/mmocr.md) ，[MMEditing](../../codebases/mmedit.md)。
 
 ### 如何将模型从pytorch形式转换成其他后端形式
 
 #### 准备工作
 
-1. 安装你的目标后端。 你可以参考 [ONNXRuntime-install](../backends/onnxruntime.md) ，[TensorRT-install](../backends/tensorrt.md) ，[NCNN-install](../backends/ncnn.md) ，[PPLNN-install](../backends/pplnn.md)。
-2. 安装你的目标代码库。 你可以参考 [MMClassification-install](https://github.com/open-mmlab/mmclassification/blob/master/docs/install.md) ，[MMDetection-install](https://github.com/open-mmlab/mmdetection/blob/master/docs/get_started.md) ，[MMSegmentation-install](https://github.com/open-mmlab/mmsegmentation/blob/master/docs/get_started.md#installation) ，[MMOCR-install](https://github.com/open-mmlab/mmocr/blob/main/docs/install.md) ，[MMEditing-install](https://github.com/open-mmlab/mmediting/blob/master/docs/install.md) 。
+1. 安装你的目标后端。 你可以参考 [ONNXRuntime-install](../../en/backends/onnxruntime.md) ，[TensorRT-install](../../en/backends/tensorrt.md) ，[NCNN-install](../../en/backends/ncnn.md) ，[PPLNN-install](../../en/backends/pplnn.md)。
+2. 安装你的目标代码库。 你可以参考 [MMClassification-install](https://github.com/open-mmlab/mmclassification/blob/master/docs/zh_CN/install.md)， [MMDetection-install](https://github.com/open-mmlab/mmdetection/blob/master/docs/zh_cn/get_started.md)， [MMSegmentation-install](https://github.com/open-mmlab/mmsegmentation/blob/master/docs/zh_cn/get_started.md#installation)， [MMOCR-install](https://mmocr.readthedocs.io/en/latest/install.html)， [MMEditing-install](https://github.com/open-mmlab/mmediting/blob/master/docs/zh_cn/install.md)。
 
 #### 使用方法
 
@@ -59,11 +61,17 @@ python ./tools/deploy.py \
 - `--show` : 是否显示检测的结果。
 - `--dump-info` : 是否输出 SDK 信息。
 
+#### 如何查找pytorch模型对应的部署配置文件
+
+1. 在 `configs/` 文件夹中找到模型对应的代码库文件夹。 例如，转换一个yolov3模型你可以查找到 `configs/mmdet` 文件夹。
+2. 根据模型的任务类型在 `configs/codebase_folder/` 下查找对应的文件夹。 例如yolov3模型，你可以查找到 `configs/mmdet/detection` 文件夹。
+3. 在 `configs/codebase_folder/task_folder/` 下找到模型的部署配置文件。 例如部署yolov3你可以使用 `configs/mmdet/detection/detection_onnxruntime_dynamic.py`。
+
 #### 示例
 
 ```bash
 python ./tools/deploy.py \
-    configs/mmdet/single-stage/single-stage_tensorrt_dynamic-320x320-1344x1344.py \
+    configs/mmdet/detection/detection_tensorrt_dynamic-320x320-1344x1344.py \
     $PATH_TO_MMDET/configs/yolo/yolov3_d53_mstrain-608_273e_coco.py \
     $PATH_TO_MMDET/checkpoints/yolo/yolov3_d53_mstrain-608_273e_coco.pth \
     $PATH_TO_MMDET/demo/demo.jpg \
@@ -78,34 +86,7 @@ python ./tools/deploy.py \
 
 ### 各后端已支持导出的模型列表
 
-下列列表显示了目前哪些模型是可以导出的以及其支持的后端。
-
-|    模型       |     代码库        | 模型配置文件(示例)                                                                           | OnnxRuntime |    TensorRT   | NCNN |  PPLNN  |
-| :----------: | :--------------: | :---------------------------------------------------------------------------------------: | :---------: | :-----------: | :---:| :---: |
-| RetinaNet    | MMDetection      | $PATH_TO_MMDET/configs/retinanet/retinanet_r50_fpn_1x_coco.py                             |      Y      |       Y       |   Y  |   Y   |
-| Faster R-CNN | MMDetection      | $PATH_TO_MMDET/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py                         |      Y      |       Y       |   Y  |   Y   |
-| YOLOv3       | MMDetection      | $PATH_TO_MMDET/configs/yolo/yolov3_d53_mstrain-608_273e_coco.py                           |      Y      |       Y       |   N  |   Y   |
-| FCOS         | MMDetection      | $PATH_TO_MMDET/configs/fcos/fcos_r50_caffe_fpn_gn-head_4x4_1x_coco.py                     |      Y      |       Y       |   Y  |   N   |
-| FSAF         | MMDetection      | $PATH_TO_MMDET/configs/fsaf/fsaf_r50_fpn_1x_coco.py                                       |      Y      |       Y       |   Y  |   Y   |
-| Mask R-CNN   | MMDetection      | $PATH_TO_MMDET/configs/mask_rcnn/mask_rcnn_r50_fpn_1x_coco.py                             |      Y      |       Y       |   N  |   Y   |
-| ResNet       | MMClassification | $PATH_TO_MMCLS/configs/resnet/resnet18_b32x8_imagenet.py                                  |      Y      |       Y       |   Y  |   Y   |
-| ResNeXt      | MMClassification | $PATH_TO_MMCLS/configs/resnext/resnext50_32x4d_b32x8_imagenet.py                          |      Y      |       Y       |   Y  |   Y   |
-| SE-ResNet    | MMClassification | $PATH_TO_MMCLS/configs/seresnet/seresnet50_b32x8_imagenet.py                              |      Y      |       Y       |   Y  |   Y   |
-| MobileNetV2  | MMClassification | $PATH_TO_MMCLS/configs/mobilenet_v2/mobilenet_v2_b32x8_imagenet.py                        |      Y      |       Y       |   Y  |   Y   |
-| ShuffleNetV1 | MMClassification | $PATH_TO_MMCLS/configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py |      Y      |       Y       |   N  |   Y   |
-| ShuffleNetV2 | MMClassification | $PATH_TO_MMCLS/configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py |      Y      |       Y       |   N  |   Y   |
-| FCN          | MMSegmentatio
-- Some dependencies are optional. Simply running `pip install -e .` will only install the minimum runtime requirements.
-To use optional dependencies, install them manually with `pip install -r requirements/optional.txt` or specify desired extras when calling `pip` (e.g. `pip install -e . [optional]`).
-Valid keys for the extras field are: `all`, `tests`, `build`, `optional`.
-Valid keys for the extras field are: `all`, `tests`, `build`, `optional`.n   | $PATH_TO_MMSEG/configs/fcn/fcn_r50-d8_512x1024_40k_cityscapes.py                          |      Y      |       Y       |   Y  |   Y   |
-| PSPNet       | MMSegmentation   | $PATH_TO_MMSEG/configs/pspnet/pspnet_r50-d8_512x1024_40k_cityscapes.py                    |      Y      |       Y       |   N  |   Y   |
-| DeepLabV3    | MMSegmentation   | $PATH_TO_MMSEG/configs/deeplabv3/deeplabv3_r50-d8_512x1024_40k_cityscapes.py              |      Y      |       Y       |   Y  |   Y   |
-| DeepLabV3+   | MMSegmentation   | $PATH_TO_MMSEG/configs/deeplabv3plus/deeplabv3plus_r50-d8_512x1024_40k_cityscapes.py      |      Y      |       Y       |   Y  |   Y   |
-| SRCNN        | MMEditing        | $PATH_TO_MMSEG/configs/restorers/srcnn/srcnn_x4k915_g1_1000k_div2k.py                     |      Y      |       Y       |   N  |   Y   |
-| ESRGAN       | MMEditing        | $PATH_TO_MMSEG/configs/restorers/esrgan/esrgan_psnr_x4c64b23g32_g1_1000k_div2k.py         |      Y      |       Y       |   N  |   Y   |
-| DBNet        | MMOCR            | $PATH_TO_MMOCR/configs/textdet/dbnet/dbnet_r50dcnv2_fpnc_1200e_icdar2015.py               |      Y      |       Y       |   Y  |   Y   |
-| CRNN         | MMOCR            | $PATH_TO_MMOCR/configs/textrecog/tps/crnn_tps_academic_dataset.py                         |      Y      |       Y       |   Y  |   N   |
+参考[已支持的模型列表](../../en/supported_models.md)。
 
 ### 注意事项
 

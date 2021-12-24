@@ -867,6 +867,20 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td>$MMDET_DIR/configs/atss/atss_r50_fpn_1x_coco.py</td>
   </tr>
   <tr>
+    <td align="center">Cascade R-CNN</td>
+    <td align="center">Object Detection</td>
+    <td align="center">COCO2017</td>
+    <td align="center">box AP</td>
+    <td align="center">40.4</td>
+    <td align="center">-</td>
+    <td align="center">40.4</td>
+    <td align="center">40.4</td>
+    <td align="center">-</td>
+    <td align="center">40.4</td>
+    <td align="center">-</td>
+    <td>$MMDET_DIR/configs/cascade_rcnn/cascade_rcnn_r50_caffe_fpn_1x_coco.py</td>
+  </tr>
+  <tr>
     <td align="center" rowspan="2">Mask R-CNN</td>
     <td align="center" rowspan="2">Instance Segmentation</td>
     <td align="center" rowspan="2">COCO2017</td>
@@ -878,7 +892,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center">-</td>
     <td align="center">38.0</td>
     <td align="center">-</td>
-    <td align="center" rowspan="2">$MMDET_DIR/configs/mask_rcnn/mask_rcnn_r50_fpn_1x_coco.py</td>
+    <td rowspan="2">$MMDET_DIR/configs/mask_rcnn/mask_rcnn_r50_fpn_1x_coco.py</td>
   </tr>
   <tr>
     <td align="center">mask AP</td>
