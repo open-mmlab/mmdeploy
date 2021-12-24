@@ -71,9 +71,16 @@ If you haven't installed NCNN in the default path, please add `-Dncnn_DIR` flag 
 
 ### List of supported custom ops
 
-| Operator                                                                     |  CPU  |  GPU  | MMDeploy Releases |
-| :--------------------------------------------------------------------------- | :---: | :---: | :---------------- |
-| [Shape](../ops/ncnn.md#shape)                                   |   Y   |   N   | master            |
+| Operator                        | CPU | MMDeploy Releases |
+|:--------------------------------|:---:|:------------------|
+| [Expand](../ops/ncnn.md#expand) |  Y  | master            |
+| [Gather](../ops/ncnn.md#gather) |  Y  | master            |
+| [Shape](../ops/ncnn.md#shape)   |  Y  | master            |
+| [TopK](../ops/ncnn.md#topk)     |  Y  | master            |
+
+#### Reminder
+
+- If ncnn version >= 1.0.20201208, the dimension of ncnn.Mat should be no more than 4, or the dimension of the ncnn.Mat should be no more than 3.
 
 ### FAQs
 
