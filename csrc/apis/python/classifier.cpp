@@ -11,7 +11,7 @@ class PyClassifier {
   PyClassifier(const char *model_path, const char *device_name, int device_id) {
     auto status = mmdeploy_classifier_create_by_path(model_path, device_name, device_id, &handle_);
     if (status != MM_SUCCESS) {
-      throw std::runtime_error("failed to create detector");
+      throw std::runtime_error("failed to create classifier");
     }
   }
   ~PyClassifier() {
@@ -43,6 +43,7 @@ class PyClassifier {
       for (int j = 0; j < result_count[i]; ++j) {
         scores.mutable_at(j) = result_ptr[j].score;
       }
+      output.push_back(scores);
       result_ptr += result_count[i];
     }
     mmdeploy_classifier_release_result(results, result_count, (int)mats.size());

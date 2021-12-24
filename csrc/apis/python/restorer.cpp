@@ -11,7 +11,7 @@ class PyRestorer {
   PyRestorer(const char *model_path, const char *device_name, int device_id) {
     auto status = mmdeploy_restorer_create_by_path(model_path, device_name, device_id, &handle_);
     if (status != MM_SUCCESS) {
-      throw std::runtime_error("failed to create detector");
+      throw std::runtime_error("failed to create restorer");
     }
   }
   ~PyRestorer() {

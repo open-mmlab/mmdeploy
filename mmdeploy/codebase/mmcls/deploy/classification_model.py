@@ -105,6 +105,11 @@ class End2EndModel(BaseBackendModel):
         return BaseClassifier.show_result(
             self, img, result, show=show, win_name=win_name, out_file=out_file)
 
+class SDKEnd2EndModel(End2EndModel):
+    def forward(self, img: List[torch.Tensor], *args, **kwargs) -> list:
+        pred = self.wrapper.invoke(
+            [img[0].contiguous().detach().cpu().numpy()])[0]
+        return pred[np.newaxis, ...]
 
 def get_classes_from_config(model_cfg: Union[str, mmcv.Config]):
     """Get class name from config.
@@ -153,8 +158,16 @@ def build_classification_model(model_files: Sequence[str],
     deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
 
     backend = get_backend(deploy_cfg)
+
+    if backend == Backend.SDK:
+        model_files.append('classification')
+        creator = SDKEnd2EndModel
+    else:
+        creator = End2EndModel
+
+    backend = get_backend(deploy_cfg)
     class_names = get_classes_from_config(model_cfg)
-    backend_classifier = End2EndModel(
+    backend_classifier = creator(
         backend,
         model_files,
         device,
