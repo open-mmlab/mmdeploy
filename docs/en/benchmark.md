@@ -179,29 +179,29 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
   <tr>
     <td align="center">YOLOv3</td>
     <td align="center">COCO</td>
-    <td align="center">1x3x800x1344</td>
-    <td align="center">94.08</td>
-    <td align="center">10.63</td>
-    <td align="center">24.90</td>
-    <td align="center">40.17</td>
-    <td align="center">24.87</td>
-    <td align="center">40.21</td>
-    <td align="center">47.64</td>
-    <td align="center">20.99</td>
+    <td align="center">1x3x320x320</td>
+    <td align="center">14.76</td>
+    <td align="center">67.76</td>
+    <td align="center">24.92</td>
+    <td align="center">40.13</td>
+    <td align="center">24.92</td>
+    <td align="center">40.13</td>
+    <td align="center">18.07</td>
+    <td align="center">55.35</td>
     <td>$MMDET_DIR/configs/yolo/yolov3_d53_320_273e_coco.py</td>
   </tr>
   <tr>
     <td align="center">SSD-Lite</td>
     <td align="center">COCO</td>
-    <td align="center">1x3x800x1344</td>
-    <td align="center">14.91</td>
-    <td align="center">67.06</td>
-    <td align="center">8.92</td>
-    <td align="center">112.13</td>
-    <td align="center">8.65</td>
-    <td align="center">115.63</td>
-    <td align="center">30.13</td>
-    <td align="center">33.19</td>
+    <td align="center">1x3x320x320</td>
+    <td align="center">8.84</td>
+    <td align="center">113.12</td>
+    <td align="center">9.21</td>
+    <td align="center">108.56</td>
+    <td align="center">8.04</td>
+    <td align="center">124.38</td>
+    <td align="center">19.72</td>
+    <td align="center">50.71</td>
     <td>$MMDET_DIR/configs/ssd/ssdlite_mobilenetv2_scratch_600e_coco.py</td>
   </tr>
   <tr>

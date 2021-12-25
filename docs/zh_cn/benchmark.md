@@ -34,6 +34,7 @@ GPU: TensorRT, PPLNN
     <th align="center" colspan="3">MMCls</th>
     <th align="center" colspan="6">TensorRT</th>
     <th align="center" colspan="2">PPLNN</th>
+    <th align="center" colspan="4">NCNN</th>
     <th align="center"></th>
   </tr>
 </thead>
@@ -44,11 +45,17 @@ GPU: TensorRT, PPLNN
     <td align="center" rowspan="2">Input</td>
     <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
-    <td align="center" colspan="2">in8</td>
+    <td align="center" colspan="2">int8</td>
     <td align="center" colspan="2">fp16</td>
+    <td align="center" colspan="2">SnapDragon888-fp32</td>
+    <td align="center" colspan="2">Adreno660-fp32</td>
     <td rowspan="2">model config file</td>
   </tr>
   <tr>
+    <td align="center">latency (ms)</td>
+    <td align="center">FPS</td>
+    <td align="center">latency (ms)</td>
+    <td align="center">FPS</td>
     <td align="center">latency (ms)</td>
     <td align="center">FPS</td>
     <td align="center">latency (ms)</td>
@@ -70,6 +77,10 @@ GPU: TensorRT, PPLNN
     <td align="center">829.66</td>
     <td align="center">1.30</td>
     <td align="center">768.28</td>
+    <td align="center">33.91</td>
+    <td align="center">29.49</td>
+    <td align="center">25.93</td>
+    <td align="center">38.57</td>
     <td>$MMCLS_DIR/configs/resnet/resnet50_b32x8_imagenet.py</td>
   </tr>
   <tr>
@@ -84,6 +95,10 @@ GPU: TensorRT, PPLNN
     <td align="center">727.42</td>
     <td align="center">1.36</td>
     <td align="center">737.67</td>
+    <td align="center">133.44</td>
+    <td align="center">7.49</td>
+    <td align="center">69.38</td>
+    <td align="center">14.41</td>
     <td>$MMCLS_DIR/configs/resnext/resnext50_32x4d_b32x8_imagenet.py</td>
   </tr>
   <tr>
@@ -98,6 +113,10 @@ GPU: TensorRT, PPLNN
     <td align="center">662.90</td>
     <td align="center">1.91</td>
     <td align="center">524.07</td>
+    <td align="center">107.84</td>
+    <td align="center">9.27</td>
+    <td align="center">80.85</td>
+    <td align="center">12.37</td>
     <td>$MMCLS_DIR/configs/seresnet/seresnet50_b32x8_imagenet.py</td>
   </tr>
   <tr>
@@ -112,6 +131,10 @@ GPU: TensorRT, PPLNN
     <td align="center">883.47</td>
     <td align="center">4.69</td>
     <td align="center">213.33</td>
+    <td align="center">9.55</td>
+    <td align="center">104.71</td>
+    <td align="center">10.66</td>
+    <td align="center">93.81</td>
     <td>$MMCLS_DIR/configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py</td>
   </tr>
 </tbody>
@@ -139,7 +162,7 @@ GPU: TensorRT, PPLNN
     <td align="center" rowspan="2">Input</td>
     <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
-    <td align="center" colspan="2">in8</td>
+    <td align="center" colspan="2">int8</td>
     <td align="center" colspan="2">fp16</td>
     <td rowspan="2">model config file</td>
   </tr>
@@ -156,29 +179,29 @@ GPU: TensorRT, PPLNN
   <tr>
     <td align="center">YOLOv3</td>
     <td align="center">COCO</td>
-    <td align="center">1x3x800x1344</td>
-    <td align="center">94.08</td>
-    <td align="center">10.63</td>
-    <td align="center">24.90</td>
-    <td align="center">40.17</td>
-    <td align="center">24.87</td>
-    <td align="center">40.21</td>
-    <td align="center">47.64</td>
-    <td align="center">20.99</td>
+    <td align="center">1x3x320x320</td>
+    <td align="center">14.76</td>
+    <td align="center">67.76</td>
+    <td align="center">24.92</td>
+    <td align="center">40.13</td>
+    <td align="center">24.92</td>
+    <td align="center">40.13</td>
+    <td align="center">18.07</td>
+    <td align="center">55.35</td>
     <td>$MMDET_DIR/configs/yolo/yolov3_d53_320_273e_coco.py</td>
   </tr>
   <tr>
     <td align="center">SSD-Lite</td>
     <td align="center">COCO</td>
-    <td align="center">1x3x800x1344</td>
-    <td align="center">14.91</td>
-    <td align="center">67.06</td>
-    <td align="center">8.92</td>
-    <td align="center">112.13</td>
-    <td align="center">8.65</td>
-    <td align="center">115.63</td>
-    <td align="center">30.13</td>
-    <td align="center">33.19</td>
+    <td align="center">1x3x320x320</td>
+    <td align="center">8.84</td>
+    <td align="center">113.12</td>
+    <td align="center">9.21</td>
+    <td align="center">108.56</td>
+    <td align="center">8.04</td>
+    <td align="center">124.38</td>
+    <td align="center">19.72</td>
+    <td align="center">50.71</td>
     <td>$MMDET_DIR/configs/ssd/ssdlite_mobilenetv2_scratch_600e_coco.py</td>
   </tr>
   <tr>
@@ -253,6 +276,51 @@ GPU: TensorRT, PPLNN
   </tr>
 </tbody>
 </table>
+<table class="docutils">
+<thead>
+  <tr>
+    <th align="center" colspan="3">MMDet</th>
+    <th align="center" colspan="4">NCNN</th>
+    <th align="center"></th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td align="center" rowspan="2">Model</td>
+    <td align="center" rowspan="2">Dataset</td>
+    <td align="center" rowspan="2">Input</td>
+    <td align="center" colspan="2">SnapDragon888-fp32</td>
+    <td align="center" colspan="2">Adreno660-fp32</td>
+    <td rowspan="2">model config file</td>
+  </tr>
+  <tr>
+    <td align="center">latency (ms)</td>
+    <td align="center">FPS</td>
+    <td align="center">latency (ms)</td>
+    <td align="center">FPS</td>
+  </tr>
+  <tr>
+    <td align="center">MobileNetv2-YOLOv3</td>
+    <td align="center">COCO</td>
+    <td align="center">1x3x320x320</td>
+    <td align="center">48.57</td>
+    <td align="center">20.59</td>
+    <td align="center">66.55</td>
+    <td align="center">15.03</td>
+    <td>$MMDET_DIR/configs/yolo/yolov3_mobilenetv2_mstrain-416_300e_coco.py</td>
+  </tr>
+  <tr>
+    <td align="center">SSD-Lite</td>
+    <td align="center">COCO</td>
+    <td align="center">1x3x320x320</td>
+    <td align="center">44.91</td>
+    <td align="center">22.27</td>
+    <td align="center">66.19</td>
+    <td align="center">15.11</td>
+    <td>$MMDET_DIR/configs/ssd/ssdlite_mobilenetv2_scratch_600e_coco.py</td>
+  </tr>
+</tbody>
+</table>
 </div>
 </details>
 
@@ -274,7 +342,7 @@ GPU: TensorRT, PPLNN
     <td align="center" rowspan="2">Input</td>
     <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
-    <td align="center" colspan="2">in8</td>
+    <td align="center" colspan="2">int8</td>
     <td align="center" colspan="2">fp16</td>
     <td rowspan="2">model config file</td>
   </tr>
@@ -328,6 +396,7 @@ GPU: TensorRT, PPLNN
     <th align="center" colspan="3">MMOCR</th>
     <th align="center" colspan="6">TensorRT</th>
     <th align="center" colspan="2">PPLNN</th>
+    <th align="center" colspan="4">NCNN</th>
     <th align="center"></th>
   </tr>
 </thead>
@@ -338,8 +407,10 @@ GPU: TensorRT, PPLNN
     <td align="center" rowspan="2">Input</td>
     <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
-    <td align="center" colspan="2">in8</td>
+    <td align="center" colspan="2">int8</td>
     <td align="center" colspan="2">fp16</td>
+    <td align="center" colspan="2">SnapDragon888-fp32</td>
+    <td align="center" colspan="2">Adreno660-fp32</td>
     <td rowspan="2">model config file</td>
   </tr>
   <tr>
@@ -351,105 +422,46 @@ GPU: TensorRT, PPLNN
     <td align="center">FPS</td>
     <td align="center">latency (ms)</td>
     <td align="center">FPS</td>
+    <td align="center">latency (ms)</td>
+    <td align="center">FPS</td>
+    <td align="center">latency (ms)</td>
+    <td align="center">FPS</td>
   </tr>
-  <tr>
-    <td align="center">YOLOv3</td>
-    <td align="center">COCO</td>
-    <td align="center">1x3x800x1344</td>
-    <td align="center">94.08</td>
-    <td align="center">10.63</td>
-    <td align="center">24.90</td>
-    <td align="center">40.17</td>
-    <td align="center">24.87</td>
-    <td align="center">40.21</td>
-    <td align="center">47.64</td>
-    <td align="center">20.99</td>
-    <td>$MMDET_DIR/configs/yolo/yolov3_d53_320_273e_coco.py</td>
-  </tr>
-  <tr>
-    <td align="center">SSD-Lite</td>
-    <td align="center">COCO</td>
-    <td align="center">1x3x800x1344</td>
-    <td align="center">14.91</td>
-    <td align="center">67.06</td>
-    <td align="center">8.92</td>
-    <td align="center">112.13</td>
-    <td align="center">8.65</td>
-    <td align="center">115.63</td>
-    <td align="center">30.13</td>
-    <td align="center">33.19</td>
-    <td>$MMDET_DIR/configs/ssd/ssdlite_mobilenetv2_scratch_600e_coco.py</td>
-  </tr>
-  <tr>
-    <td align="center">RetinaNet</td>
-    <td align="center">COCO</td>
-    <td align="center">1x3x800x1344</td>
-    <td align="center">97.09</td>
-    <td align="center">10.30</td>
-    <td align="center">25.79</td>
-    <td align="center">38.78</td>
-    <td align="center">16.88</td>
-    <td align="center">59.23</td>
-    <td align="center">38.34</td>
-    <td align="center">26.08</td>
-    <td>$MMDET_DIR/configs/retinanet/retinanet_r50_fpn_1x_coco.py</td>
-  </tr>
-  <tr>
-    <td align="center">FCOS</td>
-    <td align="center">COCO</td>
-    <td align="center">1x3x800x1344</td>
-    <td align="center">84.06</td>
-    <td align="center">11.90</td>
-    <td align="center">23.15</td>
-    <td align="center">43.20</td>
-    <td align="center">17.68</td>
-    <td align="center">56.57</td>
+    <tr>
+    <td align="center">DBNet</td>
+    <td align="center">ICDAR2015</td>
+    <td align="center">1x3x640x640</td>
+    <td align="center">10.70</td>
+    <td align="center">93.43</td>
+    <td align="center">5.62</td>
+    <td align="center">177.78</td>
+    <td align="center">5.00</td>
+    <td align="center">199.85</td>
+    <td align="center">34.84</td>
+    <td align="center">28.70</td>
     <td align="center">-</td>
     <td align="center">-</td>
-    <td>$MMDET_DIR/configs/fcos/fcos_r50_caffe_fpn_gn-head_1x_coco.py</td>
-  </tr>
-  <tr>
-    <td align="center">FSAF</td>
-    <td align="center">COCO</td>
-    <td align="center">1x3x800x1344</td>
-    <td align="center">82.96</td>
-    <td align="center">12.05</td>
-    <td align="center">21.02</td>
-    <td align="center">47.58</td>
-    <td align="center">13.50</td>
-    <td align="center">74.08</td>
-    <td align="center">30.41</td>
-    <td align="center">32.89</td>
-    <td>$MMDET_DIR/configs/fsaf/fsaf_r50_fpn_1x_coco.py</td>
-  </tr>
-  <tr>
-    <td align="center">Faster-RCNN</td>
-    <td align="center">COCO</td>
-    <td align="center">1x3x800x1344</td>
-    <td align="center">88.08</td>
-    <td align="center">11.35</td>
-    <td align="center">26.52</td>
-    <td align="center">37.70</td>
-    <td align="center">19.14</td>
-    <td align="center">52.23</td>
-    <td align="center">65.40</td>
-    <td align="center">15.29</td>
-    <td>$MMDET_DIR/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py</td>
-  </tr>
-  <tr>
-    <td align="center">Mask-RCNN</td>
-    <td align="center">COCO</td>
-    <td align="center">1x3x800x1344</td>
-    <td align="center">320.86 </td>
-    <td align="center">3.12</td>
-    <td align="center">241.32</td>
-    <td align="center">4.14</td>
     <td align="center">-</td>
     <td align="center">-</td>
-    <td align="center">86.80</td>
-    <td align="center">11.52</td>
-    <td>$MMDET_DIR/configs/mask_rcnn/mask_rcnn_r50_fpn_1x_coco.py</td>
+    <td>$MMOCR_DIR/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py</td>
   </tr>
+  <tr>
+    <td align="center">CRNN</td>
+    <td align="center">IIIT5K</td>
+    <td align="center">1x1x32x32</td>
+    <td align="center">1.93 </td>
+    <td align="center">518.28</td>
+    <td align="center">1.40</td>
+    <td align="center">713.88</td>
+    <td align="center">1.36</td>
+    <td align="center">736.79</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">10.57</td>
+    <td align="center">94.64</td>
+    <td align="center">20.00</td>
+    <td align="center">50.00</td>
+    <td>$MMOCR_DIR/configs/textrecog/crnn/crnn_academic_dataset.py</td>
 </tbody>
 </table>
 </div>
@@ -474,7 +486,7 @@ GPU: TensorRT, PPLNN
     <td align="center" rowspan="2">Input</td>
     <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
-    <td align="center" colspan="2">in8</td>
+    <td align="center" colspan="2">int8</td>
     <td align="center" colspan="2">fp16</td>
     <td rowspan="2">model config file</td>
   </tr>
