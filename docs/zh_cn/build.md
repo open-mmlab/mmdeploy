@@ -5,7 +5,7 @@
 - 下载代码仓库 MMDeploy
 
     ```bash
-    git clone -b master git@github.com:grimoire/deploy_prototype.git MMDeploy
+    git clone -b master git@github.com:open-mmlab/mmdeploy.git MMDeploy
     cd MMDeploy
     export MMDEPLOY_DIR=$(pwd)
     git submodule update --init --recursive
@@ -154,7 +154,7 @@ pip install -e .
   当前，SDK支持以下设备，
 
   | 设备 | 名称 | 查找路径                           |
-  |:-----|:-----|:-----------------------------------|
+  | :--- | :--- | :--------------------------------- |
   | Host | cpu  | N/A                                |
   | CUDA | cuda | CUDA_TOOLKIT_ROOT_DIR 和 pplcv_DIR |
 
@@ -169,7 +169,7 @@ pip install -e .
   下表展示了目前SDK支持的后端，以及构建时，每个后端需要设置的变量。
 
   | 推理引擎    | 名称     | 查找路径                 |
-  |:------------|:---------|:-------------------------|
+  | :---------- | :------- | :----------------------- |
   | PPL.nn      | pplnn    | pplnn_DIR                |
   | ncnn        | ncnn     | ncnn_DIR                 |
   | ONNXRuntime | ort      | ONNXRUNTIME_DIR          |
