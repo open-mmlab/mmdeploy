@@ -40,6 +40,7 @@ You can switch between Chinese and English documents in the lower-left corner of
 
    backends/onnxruntime.md
    backends/tensorrt.md
+   backends/openvino.md
    backends/ncnn.md
    backends/pplnn.md
 
