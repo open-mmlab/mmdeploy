@@ -2,5 +2,5 @@ blank_issues_enabled: false
 
 contact_links:
   - name: Common Issues
-    url: https://github.com/grimoire/deploy_prototype/blob/master/docs/en/faq.md
+    url: https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/faq.md
     about: Check if your issue already has solutions
