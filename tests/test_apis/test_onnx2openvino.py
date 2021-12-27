@@ -121,3 +121,15 @@ def test_get_input_info_from_cfg():
     input_info = get_input_info_from_cfg(deploy_cfg)
     assert input_info == expected_input_info, \
         'The expected value of \'input_info\' does not match the received one.'
+
+    # The case where the input name in 'onnx_config'
+    # is different from 'backend_config'.
+    onnx_config_input_name = 'image'
+    deploy_cfg.merge_from_dict(
+        {'onnx_config': {
+            'input_names': [onnx_config_input_name]
+        }})
+    expected_input_info = {onnx_config_input_name: [1, 3, height, width]}
+    input_info = get_input_info_from_cfg(deploy_cfg)
+    assert input_info == expected_input_info, \
+        'The expected value of \'input_info\' does not match the received one.'

@@ -259,7 +259,9 @@ class End2EndModel(BaseBackendModel):
             tuple[np.ndarray, np.ndarray]: dets of shape [N, num_det, 5]
                 and class labels of shape [N, num_det].
         """
-        outputs = self.wrapper({'input': imgs})
+        input_names = self.deploy_cfg.onnx_config.get('input_names', None)
+        input_name = input_names[0] if input_names else 'input'
+        outputs = self.wrapper({input_name: imgs})
         outputs = self.wrapper.output_to_list(outputs)
         outputs = [out.detach().cpu().numpy() for out in outputs]
         return outputs

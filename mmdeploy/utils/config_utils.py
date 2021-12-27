@@ -154,7 +154,7 @@ def is_dynamic_batch(deploy_cfg: Union[str, mmcv.Config],
 
 
 def is_dynamic_shape(deploy_cfg: Union[str, mmcv.Config],
-                     input_name: str = 'input') -> bool:
+                     input_name: str = None) -> bool:
     """Check if input shape is dynamic.
 
     Args:
@@ -166,6 +166,12 @@ def is_dynamic_shape(deploy_cfg: Union[str, mmcv.Config],
     """
 
     deploy_cfg = load_config(deploy_cfg)[0]
+
+    # check if input name is in the config
+    if input_name is None:
+        input_names = deploy_cfg.onnx_config.get('input_names', None)
+        input_name = input_names[0] if input_names else 'input'
+
     # check if dynamic axes exist
     dynamic_axes = get_onnx_config(deploy_cfg).get('dynamic_axes', None)
     if dynamic_axes is None:
