@@ -107,7 +107,7 @@ html_theme_options = {
     'menu': [
         {
             'name': 'GitHub',
-            'url': 'https://github.com/grimoire/deploy_prototype'
+            'url': 'https://github.com/open-mmlab/mmdeploy'
         },
         {
             'name':

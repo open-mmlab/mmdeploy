@@ -5,7 +5,7 @@
 - Download MMDeploy
 
     ```bash
-    git clone -b master git@github.com:grimoire/deploy_prototype.git MMDeploy
+    git clone -b master git@github.com:open-mmlab/mmdeploy.git MMDeploy
     cd MMDeploy
     git submodule update --init --recursive
     ```
