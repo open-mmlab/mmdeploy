@@ -141,6 +141,18 @@ class End2EndModel(BaseBackendModel):
             out_file=out_file)
 
 
+class SDKEnd2EndModel(End2EndModel):
+
+    def forward(self, img: Sequence[torch.Tensor],
+                img_metas: Sequence[Sequence[dict]], *args, **kwargs):
+        # import pdb; pdb.set_trace()
+        results = self.wrapper.invoke(
+            [img[0].contiguous().detach().cpu().numpy()])
+        # import pdb; pdb.set_trace()
+        results = [dict(text=text, score=score) for text, score in results]
+        return results
+
+
 def build_text_recognition_model(model_files: Sequence[str],
                                  model_cfg: Union[str, mmcv.Config],
                                  deploy_cfg: Union[str, mmcv.Config],
@@ -162,7 +174,14 @@ def build_text_recognition_model(model_files: Sequence[str],
     deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
 
     backend = get_backend(deploy_cfg)
-    backend_text_recognizer = End2EndModel(
+
+    if backend == Backend.SDK:
+        model_files.append('text_recognition')
+        creator = SDKEnd2EndModel
+    else:
+        creator = End2EndModel
+
+    backend_text_recognizer = creator(
         backend,
         model_files,
         device,

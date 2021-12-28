@@ -134,6 +134,20 @@ class End2EndModel(BaseBackendModel):
             out_file=out_file)
 
 
+class SDKEnd2EndModel(End2EndModel):
+
+    def forward(self, img: Sequence[torch.Tensor],
+                img_metas: Sequence[Sequence[dict]], *args, **kwargs) -> list:
+        # import pdb; pdb.set_trace()
+        boundaries = self.wrapper.invoke(
+            [img[0].contiguous().detach().cpu().numpy()])[0]
+        boundaries = [list(x) for x in boundaries]
+        return [
+            dict(
+                boundary_result=boundaries, filename=img_metas[0]['filename'])
+        ]
+
+
 def build_text_detection_model(model_files: Sequence[str],
                                model_cfg: Union[str, mmcv.Config],
                                deploy_cfg: Union[str, mmcv.Config],
@@ -155,7 +169,14 @@ def build_text_detection_model(model_files: Sequence[str],
     deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
 
     backend = get_backend(deploy_cfg)
-    backend_text_detector = End2EndModel(
+
+    if backend == Backend.SDK:
+        model_files.append('text_detection')
+        creator = SDKEnd2EndModel
+    else:
+        creator = End2EndModel
+
+    backend_text_detector = creator(
         backend,
         model_files,
         device,

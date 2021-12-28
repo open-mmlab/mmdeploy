@@ -163,6 +163,31 @@ class End2EndModel(BaseBackendModel):
         raise NotImplementedError
 
 
+class SDKEnd2EndModel(End2EndModel):
+
+    def forward(self,
+                lq: torch.Tensor,
+                gt: Optional[torch.Tensor] = None,
+                test_mode: bool = False,
+                *args,
+                **kwargs) -> Union[list, dict]:
+
+        img = tensor2img(lq)
+        output = self.wrapper.invoke([img])[0]
+        if test_mode:
+            output = torch.from_numpy(output)
+            output = torch.permute(output, (
+                2,
+                0,
+                1,
+            ))
+            output = output / 255.
+            results = self.test_post_process([output], lq, gt)
+            return results
+        else:
+            return [output]
+
+
 def build_super_resolution_model(model_files: Sequence[str],
                                  model_cfg: Union[str, mmcv.Config],
                                  deploy_cfg: Union[str,
@@ -172,7 +197,13 @@ def build_super_resolution_model(model_files: Sequence[str],
 
     backend = get_backend(deploy_cfg)
 
-    backend_model = End2EndModel(
+    if backend == Backend.SDK:
+        model_files.append('restoration')
+        creator = SDKEnd2EndModel
+    else:
+        creator = End2EndModel
+
+    backend_model = creator(
         backend=backend,
         backend_files=model_files,
         device=device,

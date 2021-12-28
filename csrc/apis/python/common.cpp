@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "common.h"
+#include "apis/python/common.h"
 
 namespace mmdeploy {
 

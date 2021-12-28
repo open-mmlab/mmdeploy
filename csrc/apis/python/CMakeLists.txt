@@ -22,6 +22,11 @@ target_link_libraries(mmdeploy_python PRIVATE
         mmdeploy_text_detector
         mmdeploy_text_recognizer
         mmdeploy_restorer
+        ${MMDEPLOY_LIBS}
         -Wl,--whole-archive ${MMDEPLOY_STATIC_MODULES} -Wl,--no-whole-archive
         -Wl,--no-as-needed ${MMDEPLOY_DYNAMIC_MODULES} -Wl,--as-need
-        ${MMDEPLOY_LIBS})
+        )
+
+target_include_directories(mmdeploy_python PRIVATE 
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/../..)
