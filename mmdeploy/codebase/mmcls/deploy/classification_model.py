@@ -32,7 +32,7 @@ class End2EndModel(BaseBackendModel):
         class_names: Sequence[str],
         deploy_cfg: Union[str, mmcv.Config] = None,
     ):
-        super(End2EndModel, self).__init__()
+        super(End2EndModel, self).__init__(deploy_cfg=deploy_cfg)
         self.CLASSES = class_names
         self.deploy_cfg = deploy_cfg
         self._init_wrapper(
@@ -79,7 +79,7 @@ class End2EndModel(BaseBackendModel):
         Returns:
             List[np.ndarray]: A list of classification prediction.
         """
-        outputs = self.wrapper({'input': imgs})
+        outputs = self.wrapper({self.input_name: imgs})
         outputs = self.wrapper.output_to_list(outputs)
         outputs = [out.detach().cpu().numpy() for out in outputs]
         return outputs

@@ -29,7 +29,7 @@ class End2EndModel(BaseBackendModel):
                  device: str,
                  model_cfg: mmcv.Config,
                  deploy_cfg: Union[str, mmcv.Config] = None):
-        super().__init__()
+        super().__init__(deploy_cfg=deploy_cfg)
         self.deploy_cfg = deploy_cfg
         self.test_cfg = model_cfg.test_cfg
         self.allowed_metrics = {'PSNR': psnr, 'SSIM': ssim}
@@ -103,7 +103,7 @@ class End2EndModel(BaseBackendModel):
         Returns:
             list[np.ndarray] : High resolution image.
         """
-        outputs = self.wrapper({'input': lq})
+        outputs = self.wrapper({self.input_name: lq})
         outputs = self.wrapper.output_to_list(outputs)
         outputs = [out.detach().cpu().numpy() for out in outputs]
         return outputs

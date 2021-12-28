@@ -147,7 +147,10 @@ def get_inference_info(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
     module = 'Net'
     input = ['prep_output']
     output = ['infer_output']
-    input_map = dict(img='input')
+    onnx_config = get_onnx_config(deploy_cfg)
+    input_names = onnx_config.get('input_names', None)
+    input_name = input_names[0] if input_names else 'input'
+    input_map = dict(img=input_name)
     return dict(
         name=name,
         type=type,

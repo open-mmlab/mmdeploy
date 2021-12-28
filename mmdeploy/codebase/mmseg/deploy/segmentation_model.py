@@ -35,7 +35,7 @@ class End2EndModel(BaseBackendModel):
         palette: np.ndarray,
         deploy_cfg: Union[str, mmcv.Config] = None,
     ):
-        super(End2EndModel, self).__init__()
+        super(End2EndModel, self).__init__(deploy_cfg=deploy_cfg)
         self.CLASSES = class_names
         self.PALETTE = palette
         self.deploy_cfg = deploy_cfg
@@ -92,7 +92,7 @@ class End2EndModel(BaseBackendModel):
         Returns:
             List[np.ndarray]: A list of segmentation map.
         """
-        outputs = self.wrapper({'input': imgs})
+        outputs = self.wrapper({self.input_name: imgs})
         outputs = self.wrapper.output_to_list(outputs)
         outputs = [out.detach().cpu().numpy() for out in outputs]
         return outputs

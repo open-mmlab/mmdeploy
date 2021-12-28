@@ -33,7 +33,7 @@ class End2EndModel(BaseBackendModel):
         deploy_cfg: Union[str, mmcv.Config] = None,
         model_cfg: Union[str, mmcv.Config] = None,
     ):
-        super(End2EndModel, self).__init__()
+        super(End2EndModel, self).__init__(deploy_cfg=deploy_cfg)
         model_cfg, deploy_cfg = load_config(model_cfg, deploy_cfg)
         self.deploy_cfg = deploy_cfg
         self.show_score = False
@@ -100,7 +100,7 @@ class End2EndModel(BaseBackendModel):
         Returns:
             List[torch.Tensor]: A list of predictions of input images.
         """
-        outputs = self.wrapper({'input': imgs})
+        outputs = self.wrapper({self.input_name: imgs})
         outputs = self.wrapper.output_to_list(outputs)
         return outputs
 

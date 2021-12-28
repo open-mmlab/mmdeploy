@@ -52,7 +52,7 @@ class End2EndModel(BaseBackendModel):
     def __init__(self, backend: Backend, backend_files: Sequence[str],
                  device: str, class_names: Sequence[str],
                  deploy_cfg: Union[str, mmcv.Config], **kwargs):
-        super().__init__()
+        super().__init__(deploy_cfg=deploy_cfg)
         self.CLASSES = class_names
         self.deploy_cfg = deploy_cfg
         self._init_wrapper(
@@ -259,9 +259,7 @@ class End2EndModel(BaseBackendModel):
             tuple[np.ndarray, np.ndarray]: dets of shape [N, num_det, 5]
                 and class labels of shape [N, num_det].
         """
-        input_names = self.deploy_cfg.onnx_config.get('input_names', None)
-        input_name = input_names[0] if input_names else 'input'
-        outputs = self.wrapper({input_name: imgs})
+        outputs = self.wrapper({self.input_name: imgs})
         outputs = self.wrapper.output_to_list(outputs)
         outputs = [out.detach().cpu().numpy() for out in outputs]
         return outputs
@@ -356,7 +354,7 @@ class PartitionSingleStageModel(End2EndModel):
             list[np.ndarray, np.ndarray]: dets of shape [N, num_det, 5] and
                 class labels of shape [N, num_det].
         """
-        outputs = self.wrapper({'input': imgs})
+        outputs = self.wrapper({self.input_name: imgs})
         outputs = self.wrapper.output_to_list(outputs)
         scores, bboxes = outputs[:2]
         return self.partition0_postprocess(scores, bboxes)
@@ -570,7 +568,7 @@ class NCNNEnd2EndModel(End2EndModel):
                 class labels of shape [N, num_det].
         """
         _, _, H, W = imgs.shape
-        outputs = self.wrapper({'input': imgs})
+        outputs = self.wrapper({self.input_name: imgs})
         for key, item in outputs.items():
             if item is None:
                 return [np.zeros((1, 0, 6))]

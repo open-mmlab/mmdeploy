@@ -33,7 +33,7 @@ class End2EndModel(BaseBackendModel):
         deploy_cfg: Union[str, mmcv.Config] = None,
         model_cfg: Union[str, mmcv.Config] = None,
     ):
-        super(End2EndModel, self).__init__()
+        super(End2EndModel, self).__init__(deploy_cfg=deploy_cfg)
         model_cfg, deploy_cfg = load_config(model_cfg, deploy_cfg)
         self.deploy_cfg = deploy_cfg
         self.show_score = False
@@ -99,7 +99,7 @@ class End2EndModel(BaseBackendModel):
         Returns:
             list[str]: Text label result of each image.
         """
-        pred = self.wrapper({'input': imgs})['output']
+        pred = self.wrapper({self.input_name: imgs})['output']
         label_indexes, label_scores = self.label_convertor.tensor2idx(
             pred, img_metas)
         label_strings = self.label_convertor.idx2str(label_indexes)
