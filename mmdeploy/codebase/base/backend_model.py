@@ -16,10 +16,10 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
                  deploy_cfg: Optional[Union[str, mmcv.Config]] = None,
                  *args,
                  **kwargs):
-        """The default methods to build backend wrappers.
+        """The default for building the base class.
 
         Args:
-            deploy_cfg (str | mmcv.Config | None): The backend enum type.
+            deploy_cfg (str | mmcv.Config | None): The deploy config.
         """
         input_names = output_names = None
         if deploy_cfg is not None:
