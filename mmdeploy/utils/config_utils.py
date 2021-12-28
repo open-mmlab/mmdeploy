@@ -217,7 +217,8 @@ def cfg_apply_marks(deploy_cfg: Union[str, mmcv.Config]) -> Union[bool, None]:
     return apply_marks
 
 
-def get_partition_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
+def get_partition_config(
+        deploy_cfg: Union[str, mmcv.Config]) -> Union[Dict, None]:
     """Check if the model needs to be partitioned and get the config of
     partition.
 
@@ -225,7 +226,7 @@ def get_partition_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
         deploy_cfg (str | mmcv.Config): The path or content of config.
 
     Returns:
-        dict: The config of partition.
+        dict or None: The config of partition.
     """
     partition_config = deploy_cfg.get('partition_config', None)
     if partition_config is None:
@@ -252,7 +253,8 @@ def get_calib_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
     return calib_config
 
 
-def get_calib_filename(deploy_cfg: Union[str, mmcv.Config]) -> str:
+def get_calib_filename(
+        deploy_cfg: Union[str, mmcv.Config]) -> Union[str, None]:
     """Check if the model needs to create calib and get filename of calib.
 
     Args:
