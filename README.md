@@ -75,8 +75,9 @@ We appreciate all contributions to improve MMDeploy. Please refer to [CONTRIBUTI
 
 ## Acknowledgement
 
-We would like to thank OpenVINO team, for their remarkable efforts to export MMDetection models to OpenVINO and integrate OpenVINO into MMDeploy backends
+We would like to thank OpenVINO team, for their remarkable efforts to export MMDetection models to OpenVINO and integrate OpenVINO into MMDeploy backends.
 
+We would also like to thank OpenPPL team who helps a lot in supporting OpenMMLab's ONNX models and finalizing MMDeploy's performance benchmark.
 ## Citation
 
 If you find this project useful in your research, please consider cite:
