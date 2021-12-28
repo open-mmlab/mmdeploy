@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
 import mmcv
 
@@ -154,7 +154,7 @@ def is_dynamic_batch(deploy_cfg: Union[str, mmcv.Config],
 
 
 def is_dynamic_shape(deploy_cfg: Union[str, mmcv.Config],
-                     input_name: str = None) -> bool:
+                     input_name: Optional[str] = None) -> bool:
     """Check if input shape is dynamic.
 
     Args:

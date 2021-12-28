@@ -1,6 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
 import os.path as osp
+import random
+import string
 import tempfile
 
 import mmcv
@@ -23,15 +25,15 @@ class TestModel(nn.Module):
         return x * 0.5
 
 
-def generate_onnx_file(model, export_img, onnx_file):
+def generate_onnx_file(model, export_img, onnx_file, input_name, output_name):
     with torch.no_grad():
         dynamic_axes = {
-            'input': {
+            input_name: {
                 0: 'batch',
                 2: 'width',
                 3: 'height'
             },
-            'output': {
+            output_name: {
                 0: 'batch'
             }
         }
@@ -39,8 +41,8 @@ def generate_onnx_file(model, export_img, onnx_file):
             model,
             export_img,
             onnx_file,
-            output_names=['output'],
-            input_names=['input'],
+            output_names=[output_name],
+            input_names=[input_name],
             keep_initializers_as_inputs=True,
             do_constant_folding=True,
             verbose=False,
@@ -49,14 +51,26 @@ def generate_onnx_file(model, export_img, onnx_file):
         assert osp.exists(onnx_file)
 
 
-def get_outputs(pytorch_model, openvino_model_path, input):
+def get_outputs(pytorch_model, openvino_model_path, input, input_name,
+                output_name):
     output_pytorch = pytorch_model(input).numpy()
 
     from mmdeploy.backend.openvino import OpenVINOWrapper
     openvino_model = OpenVINOWrapper(openvino_model_path)
-    openvino_output = openvino_model({'input': input})['output']
+    openvino_output = openvino_model({input_name: input})[output_name]
 
     return output_pytorch, openvino_output
+
+
+def get_random_name(length=10, seed=None):
+    if seed:
+        random_state = random.getstate()
+        random.seed(seed)
+    random_name = ''.join(
+        random.choices(string.ascii_letters + string.digits, k=length))
+    if seed:
+        random.setstate(random_state)
+    return random_name
 
 
 @backend_checker(Backend.OPENVINO)
@@ -65,10 +79,13 @@ def test_onnx2openvino():
     pytorch_model = TestModel().eval()
     export_img = torch.rand([1, 3, 8, 8])
     onnx_file = tempfile.NamedTemporaryFile(suffix='.onnx').name
-    generate_onnx_file(pytorch_model, export_img, onnx_file)
+    input_name = get_random_name()
+    output_name = get_random_name()
+    generate_onnx_file(pytorch_model, export_img, onnx_file, input_name,
+                       output_name)
 
-    input_info = {'input': export_img.shape}
-    output_names = ['output']
+    input_info = {input_name: export_img.shape}
+    output_names = [output_name]
     openvino_dir = tempfile.TemporaryDirectory().name
     onnx2openvino(input_info, output_names, onnx_file, openvino_dir)
     openvino_model_path = get_output_model_file(onnx_file, openvino_dir)
@@ -78,7 +95,8 @@ def test_onnx2openvino():
     test_img = torch.rand([1, 3, 16, 16])
     output_pytorch, openvino_output = get_outputs(pytorch_model,
                                                   openvino_model_path,
-                                                  test_img)
+                                                  test_img, input_name,
+                                                  output_name)
     assert np.allclose(output_pytorch, openvino_output), \
         'OpenVINO and PyTorch outputs are not the same.'
 
@@ -124,7 +142,7 @@ def test_get_input_info_from_cfg():
 
     # The case where the input name in 'onnx_config'
     # is different from 'backend_config'.
-    onnx_config_input_name = 'image'
+    onnx_config_input_name = get_random_name()
     deploy_cfg.merge_from_dict(
         {'onnx_config': {
             'input_names': [onnx_config_input_name]
