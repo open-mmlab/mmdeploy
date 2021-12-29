@@ -42,7 +42,13 @@ class PyDetector {
         bbox[4] = result->score;
         labels.mutable_at(j) = result->label_id;
       }
-      output.append(py::make_tuple(std::move(bboxes), std::move(labels)));
+      if (!result->mask) {
+        output.append(py::make_tuple(std::move(bboxes), std::move(labels)));
+      } else {
+        py::array_t<uint8_t> mask({result->mask->height, result->mask->width});
+        memcpy(mask.mutable_data(), result->mask->data, mask.nbytes());
+        output.append(py::make_tuple(std::move(bboxes), std::move(labels), std::move(mask)));
+      }
     }
     mmdeploy_detector_release_result(detection, result_count, (int)mats.size());
     return output;
