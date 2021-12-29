@@ -2,8 +2,6 @@
 import argparse
 import logging
 import os.path as osp
-import sys
-import traceback
 from functools import partial
 
 import mmcv
@@ -15,7 +13,7 @@ from mmdeploy.apis import (create_calib_table, extract_model,
                            visualize_model)
 from mmdeploy.utils import (Backend, get_backend, get_calib_filename,
                             get_model_inputs, get_onnx_config,
-                            get_partition_config, load_config)
+                            get_partition_config, load_config, target_wrapper)
 from mmdeploy.utils.export_info import dump_info
 
 
@@ -46,26 +44,6 @@ def parse_args():
     args = parser.parse_args()
 
     return args
-
-
-def target_wrapper(target, log_level, ret_value, *args, **kwargs):
-    logger = logging.getLogger()
-    logging.basicConfig(
-        format='%(asctime)s,%(name)s %(levelname)-8s'
-        ' [%(filename)s:%(lineno)d] %(message)s',
-        datefmt='%Y-%m-%d:%H:%M:%S')
-    logger.level
-    logger.setLevel(log_level)
-    if ret_value is not None:
-        ret_value.value = -1
-    try:
-        result = target(*args, **kwargs)
-        if ret_value is not None:
-            ret_value.value = 0
-        return result
-    except Exception as e:
-        logging.error(e)
-        traceback.print_exc(file=sys.stdout)
 
 
 def create_process(name, target, args, kwargs, ret_value=None):
@@ -207,7 +185,7 @@ def main():
             logging.error('ncnn support is not available.')
             exit(-1)
 
-        from mmdeploy.apis.ncnn import onnx2ncnn, get_output_model_file
+        from mmdeploy.apis.ncnn import get_output_model_file, onnx2ncnn
 
         backend_files = []
         for onnx_path in onnx_files:
@@ -227,9 +205,9 @@ def main():
         assert is_available_openvino(), \
             'OpenVINO is not available, please install OpenVINO first.'
 
-        from mmdeploy.apis.openvino import (onnx2openvino,
+        from mmdeploy.apis.openvino import (get_input_info_from_cfg,
                                             get_output_model_file,
-                                            get_input_info_from_cfg)
+                                            onnx2openvino)
         openvino_files = []
         for onnx_path in onnx_files:
             model_xml_path = get_output_model_file(onnx_path, args.work_dir)
@@ -245,8 +223,7 @@ def main():
         backend_files = openvino_files
 
     elif backend == Backend.PPLNN:
-        from mmdeploy.apis.pplnn import \
-            is_available as is_available_pplnn
+        from mmdeploy.apis.pplnn import is_available as is_available_pplnn
         assert is_available_pplnn(), \
             'PPLNN is not available, please install PPLNN first.'
 
