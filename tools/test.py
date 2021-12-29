@@ -77,12 +77,17 @@ def parse_args():
     args = parser.parse_args()
     return args
 
+
 def patch_sdk_pipeline(model_cfg, task):
     if task != 'SuperResolution':
         model_cfg['data']['test']['pipeline'] = [
             dict(type='LoadImageFromFile'),
-            dict(type='Collect', keys=['img'], meta_keys=['filename'])
+            dict(
+                type='Collect',
+                keys=['img'],
+                meta_keys=['filename', 'ori_shape'])
         ]
+
 
 def main():
     args = parse_args()

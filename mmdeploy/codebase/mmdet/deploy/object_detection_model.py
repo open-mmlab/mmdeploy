@@ -586,14 +586,32 @@ class NCNNEnd2EndModel(End2EndModel):
 @__BACKEND_MODEL.register_module('sdk')
 class SDKEnd2EndModel(End2EndModel):
 
+    def __init__(self, backend: Backend, backend_files: Sequence[str],
+                 device: str, class_names: Sequence[str],
+                 deploy_cfg: Union[str, mmcv.Config], **kwargs):
+        super().__init__(backend, backend_files, device, class_names,
+                         deploy_cfg, **kwargs)
+        self.has_mask = deploy_cfg.codebase_config.get('has_mask', False)
+
     def forward(self, img: Sequence[torch.Tensor], img_metas: Sequence[dict],
                 *args, **kwargs):
-        dets, labels = self.wrapper.invoke(
+        dets, labels, masks = self.wrapper.invoke(
             [img[0].contiguous().detach().cpu().numpy()])[0]
-        dets = dets[np.newaxis, ...]
-        labels = labels[np.newaxis, ...]
-        results = bbox2result(dets, labels, len(self.CLASSES))
-        return [results]
+        det_results = bbox2result(dets[np.newaxis, ...], labels[np.newaxis,
+                                                                ...],
+                                  len(self.CLASSES))
+        if self.has_mask:
+            segm_results = [[] for _ in range(len(self.CLASSES))]
+            ori_h, ori_w = img_metas[0]['ori_shape'][:2]
+            for bbox, label, mask in zip(dets, labels, masks):
+                img_mask = np.zeros((ori_h, ori_w), dtype=np.uint8)
+                left = int(max(np.floor(bbox[0]) - 1, 0))
+                top = int(max(np.floor(bbox[1]) - 1, 0))
+                img_mask[top:top + mask.shape[0],
+                         left:left + mask.shape[1]] = mask
+                segm_results[label].append(img_mask)
+            return [(det_results, segm_results)]
+        return [det_results]
 
 
 def get_classes_from_config(model_cfg: Union[str, mmcv.Config], **kwargs):
