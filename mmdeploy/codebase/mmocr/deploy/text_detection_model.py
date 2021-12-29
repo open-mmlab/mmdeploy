@@ -171,7 +171,7 @@ def build_text_detection_model(model_files: Sequence[str],
     backend = get_backend(deploy_cfg)
 
     if backend == Backend.SDK:
-        model_files.append('text_detection')
+        model_files.append('TextDetector')
         creator = SDKEnd2EndModel
     else:
         creator = End2EndModel

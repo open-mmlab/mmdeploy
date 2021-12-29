@@ -193,7 +193,7 @@ def build_segmentation_model(model_files: Sequence[str],
     class_names, palette = get_classes_palette_from_config(model_cfg)
 
     if backend == Backend.SDK:
-        model_files.append('segmentation')
+        model_files.append('Segmentor')
         creator = SDKEnd2EndModel
     else:
         creator = End2EndModel

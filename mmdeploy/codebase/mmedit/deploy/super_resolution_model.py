@@ -198,7 +198,7 @@ def build_super_resolution_model(model_files: Sequence[str],
     backend = get_backend(deploy_cfg)
 
     if backend == Backend.SDK:
-        model_files.append('restoration')
+        model_files.append('Restorer')
         creator = SDKEnd2EndModel
     else:
         creator = End2EndModel

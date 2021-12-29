@@ -19,7 +19,8 @@ class PyClassifier {
     handle_ = {};
   }
 
-  std::vector<py::array_t<float>> Apply(const std::vector<PyImage> &imgs) {
+  // std::vector<py::array_t<float>> 
+  std::vector<std::vector<std::tuple<int, float>>> Apply(const std::vector<PyImage> &imgs) {
     std::vector<mm_mat_t> mats;
     mats.reserve(imgs.size());
     for (const auto &img : imgs) {
@@ -33,17 +34,15 @@ class PyClassifier {
     if (status != MM_SUCCESS) {
       throw std::runtime_error("failed to apply classifier, code: " + std::to_string(status));
     }
-    auto output = std::vector<py::array_t<float>>{};
+    auto output = std::vector<std::vector<std::tuple<int, float>>>{};
     output.reserve(mats.size());
     auto result_ptr = results;
     for (int i = 0; i < mats.size(); ++i) {
-      std::sort(result_ptr, result_ptr + result_count[i],
-                [](const mm_class_t &a, const mm_class_t &b) { return a.label_id < b.label_id; });
-      py::array_t<float> scores(result_count[i]);
+      std::vector<std::tuple<int, float>> label_score;
       for (int j = 0; j < result_count[i]; ++j) {
-        scores.mutable_at(j) = result_ptr[j].score;
+        label_score.emplace_back(result_ptr[j].label_id, result_ptr[j].score);
       }
-      output.push_back(scores);
+      output.push_back(std::move(label_score));
       result_ptr += result_count[i];
     }
     mmdeploy_classifier_release_result(results, result_count, (int)mats.size());

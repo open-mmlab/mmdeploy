@@ -655,7 +655,7 @@ def build_object_detection_model(model_files: Sequence[str],
         partition_type = codebase_config.get('model_type', 'end2end')
 
     if backend == Backend.SDK:
-        model_files.append('detection')
+        model_files.append('Detector')
 
     backend_detector = __BACKEND_MODEL.build(
         partition_type,
