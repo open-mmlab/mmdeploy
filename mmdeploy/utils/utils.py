@@ -1,6 +1,6 @@
+import logging
 import sys
 import traceback
-import logging
 
 
 def target_wrapper(target, log_level, ret_value, *args, **kwargs):
