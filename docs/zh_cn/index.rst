@@ -30,6 +30,11 @@
    faq.md
 
 .. toctree::
+   :caption: 语言切换
+
+   switch_language.md
+
+.. toctree::
    :maxdepth: 1
    :caption: API 文档
 

@@ -65,6 +65,11 @@ You can switch between Chinese and English documents in the lower-left corner of
    faq.md
 
 .. toctree::
+   :caption: Switch Language
+
+   switch_language.md
+
+.. toctree::
    :maxdepth: 1
    :caption: API Reference
 
