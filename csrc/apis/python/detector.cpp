@@ -33,6 +33,8 @@ class PyDetector {
     for (int i = 0; i < mats.size(); ++i) {
       auto bboxes = py::array_t<float>({result_count[i], 5});
       auto labels = py::array_t<int>(result_count[i]);
+      auto masks = std::vector<py::array_t<uint8_t>>{};
+      masks.reserve(result_count[i]);
       for (int j = 0; j < result_count[i]; ++j, ++result) {
         auto bbox = bboxes.mutable_data(j);
         bbox[0] = result->bbox.left;
@@ -41,14 +43,15 @@ class PyDetector {
         bbox[3] = result->bbox.bottom;
         bbox[4] = result->score;
         labels.mutable_at(j) = result->label_id;
+        if (result->mask) {
+          py::array_t<uint8_t> mask({result->mask->height, result->mask->width});
+          memcpy(mask.mutable_data(), result->mask->data, mask.nbytes());
+          masks.push_back(std::move(mask));
+        } else {
+          masks.emplace_back();
+        }
       }
-      if (!result->mask) {
-        output.append(py::make_tuple(std::move(bboxes), std::move(labels)));
-      } else {
-        py::array_t<uint8_t> mask({result->mask->height, result->mask->width});
-        memcpy(mask.mutable_data(), result->mask->data, mask.nbytes());
-        output.append(py::make_tuple(std::move(bboxes), std::move(labels), std::move(mask)));
-      }
+      output.append(py::make_tuple(std::move(bboxes), std::move(labels), std::move(masks)));
     }
     mmdeploy_detector_release_result(detection, result_count, (int)mats.size());
     return output;
