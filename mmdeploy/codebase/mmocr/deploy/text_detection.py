@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import logging
 from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
 import mmcv
@@ -12,6 +11,7 @@ from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
 from mmdeploy.utils import Task, get_input_shape
+from mmdeploy.utils.utils import get_root_logger
 from .mmocr import MMOCR_TASK
 
 
@@ -266,7 +266,8 @@ class TextDetection(BaseTask):
                 to `False`.
         """
         if out:
-            logging.info(f'\nwriting results to {out}')
+            logger = get_root_logger()
+            logger.info(f'\nwriting results to {out}')
             mmcv.dump(outputs, out)
         kwargs = {} if metric_options is None else metric_options
         if format_only:

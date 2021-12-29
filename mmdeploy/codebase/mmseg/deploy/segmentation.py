@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import logging
 from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
 import mmcv
@@ -8,7 +7,7 @@ import torch
 from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
-from mmdeploy.utils import Task, get_input_shape
+from mmdeploy.utils import Task, get_input_shape, get_root_logger
 from .mmsegmentation import MMSEG_TASK
 
 
@@ -226,7 +225,8 @@ class Segmentation(BaseTask):
                 to `False`.
         """
         if out:
-            logging.info(f'\nwriting results to {out}')
+            logger = get_root_logger()
+            logger.info(f'\nwriting results to {out}')
             mmcv.dump(outputs, out)
         kwargs = {} if metric_options is None else metric_options
         if format_only:
