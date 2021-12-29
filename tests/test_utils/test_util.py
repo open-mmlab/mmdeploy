@@ -1,13 +1,17 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import logging
 import os
 import tempfile
+from functools import partial
 
 import mmcv
 import pytest
+import torch.multiprocessing as mp
 
 import mmdeploy.utils as util
 from mmdeploy.utils.constants import Backend, Codebase, Task
 from mmdeploy.utils.export_info import dump_info
+from mmdeploy.utils.utils import target_wrapper
 
 correct_model_path = 'tests/data/srgan.py'
 correct_model_cfg = mmcv.Config.fromfile(correct_model_path)
@@ -298,3 +302,21 @@ def test_export_info():
         assert os.path.exists(pipeline_json)
         assert os.path.exists(detail_json)
         assert os.path.exists(deploy_json)
+
+
+def test_target_wrapper():
+
+    def target():
+        return 0
+
+    log_level = logging.INFO
+
+    ret_value = mp.Value('d', 0, lock=False)
+    ret_value.value = -1
+    wrap_func = partial(target_wrapper, target, log_level, ret_value)
+
+    process = mp.Process(target=wrap_func)
+    process.start()
+    process.join()
+
+    assert ret_value.value == 0
