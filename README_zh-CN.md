@@ -72,10 +72,10 @@ MMDeploy 是一个开源深度学习模型部署工具箱，它是 [OpenMMLab](h
 我们感谢所有的贡献者为改进和提升 MMDeploy 所作出的努力。请参考[贡献指南](.github/CONTRIBUTING.md)来了解参与项目贡献的相关指引。
 
 ## 致谢
+由衷感谢以下团队为 [MMDeploy](https://github.com/open-mmlab/mmdeploy) 做出的贡献：
+- [OpenPPL](https://github.com/openppl-public)
+- [OpenVINO](https://github.com/openvinotoolkit/openvino)
 
-OpenVINO 团队在 MMDeploy 中添加了 OpenVINO 部署后端，并开发了 MMDetection 在 OpenVINO 下的部署功能，为 MMDeploy 做出了重大贡献。对此我们表示衷心的感谢。
-
-另外，我们也特别感谢 OpenPPL 团队。感谢他们对 OpenMMLab ONNX 模型推理的大力支持，以及在 MMDeploy 的评测基准中给予的慷慨帮助。
 ## 引用
 
 如果你在研究中使用了本项目的代码或者性能基准，请参考如下 bibtex 引用 MMDeploy:
