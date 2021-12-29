@@ -114,7 +114,7 @@ def main():
     if hasattr(model.module, 'CLASSES'):
         model.CLASSES = model.module.CLASSES
     if args.speed_test:
-        with_sync = device_id == 0
+        with_sync = device_id >= 0
         output_file = sys.stdout
         if args.log2file:
             output_file = args.log2file
