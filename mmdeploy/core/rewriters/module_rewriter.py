@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
 from copy import deepcopy
-from typing import Dict
 
 import mmcv
 from torch import nn
