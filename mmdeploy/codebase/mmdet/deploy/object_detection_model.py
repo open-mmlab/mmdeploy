@@ -15,7 +15,7 @@ from mmdeploy.backend.base import get_backend_file_count
 from mmdeploy.codebase.base import BaseBackendModel
 from mmdeploy.codebase.mmdet import get_post_processing_params, multiclass_nms
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
-                            get_ir_config, get_partition_config, load_config)
+                            get_partition_config, load_config)
 
 
 def __build_backend_model(partition_name: str, backend: Backend,
@@ -68,8 +68,7 @@ class End2EndModel(BaseBackendModel):
                 (e.g. '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
             device (str): A string specifying device type.
         """
-        ir_config = get_ir_config(self.deploy_cfg)
-        output_names = ir_config['output_names']
+        output_names = self.output_names
         self.wrapper = BaseBackendModel._build_wrapper(
             backend=backend,
             backend_files=backend_files,

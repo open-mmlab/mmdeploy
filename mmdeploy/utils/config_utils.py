@@ -187,7 +187,7 @@ def is_dynamic_shape(deploy_cfg: Union[str, mmcv.Config],
 
     Args:
         deploy_cfg (str | mmcv.Config): The path or content of config.
-        input_name (str): The name of input in onnx export parameter.
+        input_name (Optional[str]): The name of input in onnx export parameter.
 
     Returns:
         bool: Is config set dynamic shape (axis 2 and 3).

@@ -53,15 +53,40 @@ def get_deploy_cfg():
         ))
 
 
+def get_deploy_cfg2():
+    return mmcv.Config(
+        dict(
+            onnx_config=dict(
+                dynamic_axes=[{
+                    0: 'batch',
+                    2: 'height',
+                    3: 'width'
+                }, {
+                    0: 'batch'
+                }],
+                type='onnx',
+                export_params=True,
+                keep_initializers_as_inputs=False,
+                opset_version=11,
+                input_names=['input'],
+                output_names=['output'],
+                input_shape=None),
+            codebase_config=dict(type='mmedit', task=''),  # useless
+            backend_config=dict(type='onnxruntime')  # useless
+        ))
+
+
 def test_torch2onnx():
-    deploy_cfg = get_deploy_cfg()
-    torch2onnx_impl(test_model, test_img, deploy_cfg, onnx_file)
+    deploy_cfg_list = [get_deploy_cfg(), get_deploy_cfg2()]
 
-    assert osp.exists(onnx_file)
+    for deploy_cfg in deploy_cfg_list:
+        torch2onnx_impl(test_model, test_img, deploy_cfg, onnx_file)
 
-    model = onnx.load(onnx_file)
-    assert model is not None
-    try:
-        onnx.checker.check_model(model)
-    except onnx.checker.ValidationError:
-        assert False
+        assert osp.exists(onnx_file)
+
+        model = onnx.load(onnx_file)
+        assert model is not None
+        try:
+            onnx.checker.check_model(model)
+        except onnx.checker.ValidationError:
+            assert False
