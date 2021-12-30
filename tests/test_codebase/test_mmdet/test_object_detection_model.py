@@ -385,34 +385,43 @@ class TestPartitionTwoStageModel:
         assert_forward_results(results, 'PartitionTwoStageModel')
 
 
-data_cfg1 = mmcv.Config(
-    dict(
-        data=dict(
-            test=dict(type='CocoDataset'),
-            val=dict(type='CityscapesDataset'),
-            train=dict(type='CityscapesDataset'))))
-data_cfg2 = mmcv.Config(
-    dict(
-        data=dict(
-            val=dict(type='CocoDataset'), train=dict(
-                type='CityscapesDataset'))))
-data_cfg3 = mmcv.Config(dict(data=dict(train=dict(type='CocoDataset'))))
-data_cfg4 = mmcv.Config(dict(data=dict(error=dict(type='CocoDataset'))))
+class TestGetClassesFromCfg:
+    data_cfg1 = mmcv.Config(
+        dict(
+            data=dict(
+                test=dict(type='CocoDataset'),
+                val=dict(type='CityscapesDataset'),
+                train=dict(type='CityscapesDataset'))))
 
+    data_cfg2 = mmcv.Config(
+        dict(
+            data=dict(
+                val=dict(type='CocoDataset'),
+                train=dict(type='CityscapesDataset'))))
+    data_cfg3 = mmcv.Config(dict(data=dict(train=dict(type='CocoDataset'))))
+    data_cfg4 = mmcv.Config(dict(data=dict(error=dict(type='CocoDataset'))))
 
-@pytest.mark.parametrize('cfg', [data_cfg1, data_cfg2, data_cfg3, data_cfg4])
-def test_get_classes_from_cfg(cfg):
-    from mmdet.datasets import DATASETS
+    @pytest.mark.parametrize('cfg',
+                             [data_cfg1, data_cfg2, data_cfg3, data_cfg4])
+    def test_get_classes_from_cfg(self, cfg):
+        from mmdet.datasets import DATASETS
+        from mmdeploy.codebase.mmdet.deploy.object_detection_model import \
+            get_classes_from_config
 
-    from mmdeploy.codebase.mmdet.deploy.object_detection_model import \
-        get_classes_from_config
+        if 'error' in cfg.data:
+            with pytest.raises(RuntimeError):
+                get_classes_from_config(cfg)
+        else:
+            assert get_classes_from_config(
+                cfg) == DATASETS.module_dict['CocoDataset'].CLASSES
 
-    if 'error' in cfg.data:
-        with pytest.raises(RuntimeError):
-            get_classes_from_config(cfg)
-    else:
-        assert get_classes_from_config(
-            cfg) == DATASETS.module_dict['CocoDataset'].CLASSES
+    def test_get_classes_from_custom_cfg(self):
+        data_cfg = mmcv.Config(dict(classes=('a', 'b', 'c')))
+
+        from mmdeploy.codebase.mmdet.deploy.object_detection_model import \
+            get_classes_from_config
+
+        assert get_classes_from_config(data_cfg) == ['a', 'b', 'c']
 
 
 @backend_checker(Backend.ONNXRUNTIME)
