@@ -54,7 +54,8 @@ class ORTWrapper(BaseWrapper):
         is_cuda_available = ort.get_device() == 'GPU'
         providers = [('CUDAExecutionProvider', {'device_id': device_id})] \
             if is_cuda_available else ['CPUExecutionProvider']
-        sess = ort.InferenceSession(onnx_file, session_options, providers=providers)
+        sess = ort.InferenceSession(onnx_file, session_options, \
+                                    providers=providers)
 
         # sess.set_providers(providers, options)
         if output_names is None:
@@ -64,9 +65,7 @@ class ORTWrapper(BaseWrapper):
         self.device_id = device_id
         self.is_cuda_available = is_cuda_available
         self.device_type = 'cuda' if is_cuda_available else 'cpu'
-
         super().__init__(output_names)
-
 
     def forward(self, inputs: Dict[str,
                                    torch.Tensor]) -> Dict[str, torch.Tensor]:
