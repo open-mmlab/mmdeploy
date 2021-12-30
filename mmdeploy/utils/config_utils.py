@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
 import mmcv
 
@@ -108,6 +108,24 @@ def get_backend(deploy_cfg: Union[str, mmcv.Config]) -> Backend:
     return Backend.get(backend)
 
 
+def get_ir_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
+    """Get the IR parameters in export() from config.
+
+    Args:
+        deploy_cfg (str | mmcv.Config): The path or content of config.
+
+    Returns:
+        Dict: The config dictionary of IR parameters
+    """
+
+    deploy_cfg = load_config(deploy_cfg)[0]
+    ir_config = deploy_cfg.get('ir_config', None)
+    if ir_config is None:
+        # TODO: deprecate in future
+        ir_config = deploy_cfg.get('onnx_config', {})
+    return ir_config
+
+
 def get_onnx_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
     """Get the onnx parameters in export() from config.
 
@@ -118,8 +136,10 @@ def get_onnx_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
         Dict: The config dictionary of onnx parameters
     """
 
-    deploy_cfg = load_config(deploy_cfg)[0]
-    onnx_config = deploy_cfg.get('onnx_config', {})
+    onnx_config = get_ir_config(deploy_cfg=deploy_cfg)
+    ir_type = onnx_config.get('type', None)
+    assert ir_type is None or ir_type == 'onnx', 'Expect IR type is ONNX,'\
+        f'but get {ir_type}'
     return onnx_config
 
 
@@ -137,9 +157,17 @@ def is_dynamic_batch(deploy_cfg: Union[str, mmcv.Config],
 
     deploy_cfg = load_config(deploy_cfg)[0]
     # check if dynamic axes exist
-    dynamic_axes = get_onnx_config(deploy_cfg).get('dynamic_axes', None)
+    ir_config = get_ir_config(deploy_cfg)
+
+    # TODO: update this when we have more IR
+
+    input_names = ir_config.get('input_names', None)
+    dynamic_axes = ir_config.get('dynamic_axes', None)
     if dynamic_axes is None:
         return False
+
+    if not isinstance(dynamic_axes, Dict):
+        dynamic_axes = dict(zip(input_names, dynamic_axes))
 
     # check if given input name exist
     input_axes = dynamic_axes.get(input_name, None)
@@ -154,22 +182,36 @@ def is_dynamic_batch(deploy_cfg: Union[str, mmcv.Config],
 
 
 def is_dynamic_shape(deploy_cfg: Union[str, mmcv.Config],
-                     input_name: str = 'input') -> bool:
+                     input_name: Optional[str] = None) -> bool:
     """Check if input shape is dynamic.
 
     Args:
         deploy_cfg (str | mmcv.Config): The path or content of config.
-        input_name (str): The name of input in onnx export parameter.
+        input_name (Optional[str]): The name of input in onnx export parameter.
 
     Returns:
         bool: Is config set dynamic shape (axis 2 and 3).
     """
 
     deploy_cfg = load_config(deploy_cfg)[0]
+
+    ir_config = get_ir_config(deploy_cfg)
+
+    # check if input name is in the config
+    input_names = ir_config.get('input_names', None)
+    if input_name is None:
+        input_name = input_names[0] if input_names else 'input'
+
     # check if dynamic axes exist
-    dynamic_axes = get_onnx_config(deploy_cfg).get('dynamic_axes', None)
+
+    # TODO: update this when we have more IR
+
+    dynamic_axes = ir_config.get('dynamic_axes', None)
     if dynamic_axes is None:
         return False
+
+    if not isinstance(dynamic_axes, Dict):
+        dynamic_axes = dict(zip(input_names, dynamic_axes))
 
     # check if given input name exist
     input_axes = dynamic_axes.get(input_name, None)
@@ -193,7 +235,7 @@ def get_input_shape(deploy_cfg: Union[str, mmcv.Config]) -> List[int]:
         List[int]: The input shape for backend model (axis 2 and 3),
             e.g [512, 512].
     """
-    input_shape = get_onnx_config(deploy_cfg)['input_shape']
+    input_shape = get_ir_config(deploy_cfg).get('input_shape', None)
     if input_shape is not None:
         assert len(input_shape) == 2, 'length of input_shape should equal to 2'
     return input_shape
