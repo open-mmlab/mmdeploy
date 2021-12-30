@@ -348,15 +348,15 @@ def get_onnx_model(wrapped_model: nn.Module,
         str: The path to the ONNX model file.
     """
     onnx_file_path = tempfile.NamedTemporaryFile(suffix='.onnx').name
-    pytorch2onnx_cfg = get_onnx_config(deploy_cfg)
+    onnx_cfg = get_onnx_config(deploy_cfg)
     backend = get_backend(deploy_cfg)
     patched_model = patch_model(
         wrapped_model, cfg=deploy_cfg, backend=backend.value)
     flatten_model_inputs = get_flatten_inputs(model_inputs)
     input_names = [k for k, v in flatten_model_inputs.items() if k != 'ctx']
-    output_names = pytorch2onnx_cfg.get('output_names', None)
+    output_names = onnx_cfg.get('output_names', None)
 
-    dynamic_axes = pytorch2onnx_cfg.get('dynamic_axes', None)
+    dynamic_axes = onnx_cfg.get('dynamic_axes', None)
 
     if dynamic_axes is not None and not isinstance(dynamic_axes, Dict):
         dynamic_axes = dict(zip(input_names, dynamic_axes))

@@ -8,7 +8,7 @@ from mmocr.models.builder import build_convertor
 from mmocr.models.textrecog import BaseRecognizer
 
 from mmdeploy.codebase.base import BaseBackendModel
-from mmdeploy.utils import Backend, get_backend, get_ir_config, load_config
+from mmdeploy.utils import Backend, get_backend, load_config
 
 
 class End2EndModel(BaseBackendModel):
@@ -56,8 +56,7 @@ class End2EndModel(BaseBackendModel):
                 (e.g. .onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
             device (str): A string represents device type.
         """
-        ir_config = get_ir_config(self.deploy_cfg)
-        output_names = ir_config['output_names']
+        output_names = self.output_names
         self.wrapper = BaseBackendModel._build_wrapper(
             backend=backend,
             backend_files=backend_files,
