@@ -144,6 +144,7 @@ class TestIsDynamic:
     config_with_dynamic_axes = mmcv.Config(
         dict(
             onnx_config=dict(
+                type='onnx',
                 dynamic_axes={'input': {
                     0: 'batch',
                     2: 'height',
@@ -153,6 +154,7 @@ class TestIsDynamic:
     config_with_dynamic_axes_and_input_names = mmcv.Config(
         dict(
             onnx_config=dict(
+                type='onnx',
                 input_names=['image'],
                 dynamic_axes={'image': {
                     0: 'batch',
