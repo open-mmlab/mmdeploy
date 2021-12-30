@@ -26,7 +26,7 @@ jobs:
         include:
           - torch: 1.8.0
             torchvision: 0.9.0
-            mmcv: "latest+torch1.8.0+cpu"
+            mmcv: 1.4.0
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -37,14 +37,11 @@ jobs:
         run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install MMCV
         run: |
-          pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cpu/torch${{matrix.torch}}/index.html
+          pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cpu/torch${{matrix.mmcv}}/index.html
           python -c 'import mmcv; print(mmcv.__version__)'
       - name: Install unittest dependencies
         run: |
           pip install -r requirements.txt
-          DIR=$(pip show mmocr | grep Location)
-          DIR=${DIR:10}
-          sed -i "s/1.4.0/1.5.0/" $(find $DIR/ -path "*mmocr/__init__.py")
       - name: Build and install
         run: rm -rf .eggs && pip install -e .
       - name: Run unittests and generate coverage report
@@ -69,7 +66,7 @@ jobs:
           - torch: 1.8.0+cu111
             torch_version: torch1.8.0
             torchvision: 0.9.0+cu111
-            mmcv_link: "torch1.8.0"
+            mmcv: 1.4.0
 
     steps:
       - uses: actions/checkout@v2
@@ -87,11 +84,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -V
-          python -m pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cu111/${{matrix.mmcv_link}}/index.html
+          python -m pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cu111/torch${{matrix.mmcv}}/index.html
           python -m pip install -r requirements.txt
-          DIR=$(python -m pip show mmocr | grep Location)
-          DIR=${DIR:10}
-          sed -i "s/1.4.0/1.5.0/" $(find $DIR/ -path "*mmocr/__init__.py")
       - name: Build and install
         run: rm -rf .eggs && python -m pip install -e .
       - name: Run unittests and generate coverage report
