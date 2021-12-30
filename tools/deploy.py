@@ -14,7 +14,7 @@ from mmdeploy.apis import (create_calib_table, extract_model,
                            get_predefined_partition_cfg, torch2onnx,
                            visualize_model)
 from mmdeploy.utils import (Backend, get_backend, get_calib_filename,
-                            get_model_inputs, get_onnx_config,
+                            get_ir_config, get_model_inputs, get_onnx_config,
                             get_partition_config, load_config)
 from mmdeploy.utils.export_info import dump_info
 
@@ -234,7 +234,7 @@ def main():
         for onnx_path in onnx_files:
             model_xml_path = get_output_model_file(onnx_path, args.work_dir)
             input_info = get_input_info_from_cfg(deploy_cfg)
-            output_names = deploy_cfg.onnx_config.output_names
+            output_names = get_ir_config(deploy_cfg).output_names
             create_process(
                 f'onnx2openvino with {onnx_path}',
                 target=onnx2openvino,

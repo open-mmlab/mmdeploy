@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
-from typing import Any, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 import mmcv
 import torch
@@ -28,6 +28,13 @@ def torch2onnx_impl(model: torch.nn.Module, input: torch.Tensor,
     backend = get_backend(deploy_cfg).value
     opset_version = pytorch2onnx_cfg.get('opset_version', 11)
 
+    input_names = pytorch2onnx_cfg['input_names']
+    output_names = pytorch2onnx_cfg['output_names']
+    dynamic_axes = pytorch2onnx_cfg.get('dynamic_axes', None)
+
+    if dynamic_axes is not None and not isinstance(dynamic_axes, Dict):
+        dynamic_axes = dict(zip(input_names + output_names, dynamic_axes))
+
     # patch model
     patched_model = patch_model(model, cfg=deploy_cfg, backend=backend)
 
@@ -39,10 +46,10 @@ def torch2onnx_impl(model: torch.nn.Module, input: torch.Tensor,
             input,
             output_file,
             export_params=pytorch2onnx_cfg['export_params'],
-            input_names=pytorch2onnx_cfg['input_names'],
-            output_names=pytorch2onnx_cfg['output_names'],
+            input_names=input_names,
+            output_names=output_names,
             opset_version=opset_version,
-            dynamic_axes=pytorch2onnx_cfg.get('dynamic_axes', None),
+            dynamic_axes=dynamic_axes,
             keep_initializers_as_inputs=pytorch2onnx_cfg[
                 'keep_initializers_as_inputs'],
             strip_doc_string=pytorch2onnx_cfg.get('strip_doc_string', True))

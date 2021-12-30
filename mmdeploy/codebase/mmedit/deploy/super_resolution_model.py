@@ -7,7 +7,7 @@ import torch
 from mmedit.core import psnr, ssim, tensor2img
 
 from mmdeploy.codebase.base import BaseBackendModel
-from mmdeploy.utils import Backend, get_backend, get_onnx_config, load_config
+from mmdeploy.utils import Backend, get_backend, get_ir_config, load_config
 
 
 class End2EndModel(BaseBackendModel):
@@ -38,8 +38,8 @@ class End2EndModel(BaseBackendModel):
 
     def _init_wrapper(self, backend: Backend, backend_files: Sequence[str],
                       device: str):
-        onnx_config = get_onnx_config(self.deploy_cfg)
-        output_names = onnx_config['output_names']
+        ir_config = get_ir_config(self.deploy_cfg)
+        output_names = ir_config['output_names']
         self.wrapper = BaseBackendModel._build_wrapper(
             backend=backend,
             backend_files=backend_files,

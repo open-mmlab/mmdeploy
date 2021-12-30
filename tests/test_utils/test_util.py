@@ -191,7 +191,8 @@ class TestIsDynamic:
     def test_is_dynamic_shape_different_names(self):
         config_with_different_names = \
             TestIsDynamic.config_with_dynamic_axes_and_input_names
-        config_with_different_names.onnx_config.input_names = 'another_name'
+        util.get_ir_config(
+            config_with_different_names).input_names = 'another_name'
         assert util.is_dynamic_shape(config_with_different_names) is False
 
 

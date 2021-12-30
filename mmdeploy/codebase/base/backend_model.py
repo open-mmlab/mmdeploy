@@ -5,7 +5,7 @@ from typing import Optional, Sequence, Union
 import mmcv
 import torch
 
-from mmdeploy.utils import Backend, get_onnx_config
+from mmdeploy.utils import Backend, get_ir_config
 
 
 class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
@@ -23,9 +23,9 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
         """
         input_names = output_names = None
         if deploy_cfg is not None:
-            onnx_config = get_onnx_config(deploy_cfg)
-            output_names = onnx_config.get('output_names', None)
-            input_names = onnx_config.get('input_names', None)
+            ir_config = get_ir_config(deploy_cfg)
+            output_names = ir_config.get('output_names', None)
+            input_names = ir_config.get('input_names', None)
         self.input_name = input_names[0] if input_names else 'input'
         self.output_names = output_names if output_names else ['output']
         super().__init__()

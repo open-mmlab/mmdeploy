@@ -4,6 +4,7 @@ from typing import Dict, List
 import mmcv
 
 from mmdeploy.utils import get_model_inputs
+from mmdeploy.utils.config_utils import get_ir_config
 
 
 def update_input_names(input_info: Dict[str, List],
@@ -41,9 +42,11 @@ def get_input_info_from_cfg(deploy_cfg: mmcv.Config) -> Dict[str, List]:
     # The partition is not supported now. Set the id of model to 0.
     model_inputs = get_model_inputs(deploy_cfg)[0]
     input_info = model_inputs['opt_shapes']
-    onnx_config = deploy_cfg.get('onnx_config', None)
-    if onnx_config:
-        input_names = onnx_config.get('input_names', None)
+    ir_config = get_ir_config(deploy_cfg)
+    if ir_config is not None:
+        input_names = ir_config.get('input_names', None)
         if input_names:
+            if not isinstance(input_info, Dict):
+                input_info = dict(zip(input_names, input_info))
             input_info = update_input_names(input_info, input_names)
     return input_info

@@ -1,12 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
-from typing import Union
+from typing import Dict, Union
 
 import mmcv
 import onnx
 
 from mmdeploy.utils import (get_calib_filename, get_common_config,
                             get_model_inputs, load_config, parse_device_id)
+from mmdeploy.utils.config_utils import get_ir_config
 from .utils import create_trt_engine, get_trt_log_level, save_trt_engine
 
 
@@ -49,13 +50,20 @@ def onnx2tensorrt(work_dir: str,
         int8_param['calib_file'] = osp.join(work_dir, calib_file)
         int8_param['model_type'] = partition_type
 
+    ir_config = get_ir_config(deploy_cfg)
+    input_names = ir_config.get('input_names', [])
+    input_shapes = final_params['input_shapes']
+
+    if not isinstance(input_shapes, Dict):
+        input_shapes = dict(zip(input_names, input_shapes))
+
     assert device.startswith('cuda'), f'TensorRT requires cuda device, \
         but given: {device}'
 
     device_id = parse_device_id(device)
     engine = create_trt_engine(
         onnx_model,
-        input_shapes=final_params['input_shapes'],
+        input_shapes=input_shapes,
         log_level=get_trt_log_level(),
         fp16_mode=final_params.get('fp16_mode', False),
         int8_mode=final_params.get('int8_mode', False),

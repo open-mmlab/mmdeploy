@@ -12,7 +12,7 @@ from torch import nn
 
 import mmdeploy.codebase  # noqa: F401,F403
 from mmdeploy.core import RewriterContext, patch_model
-from mmdeploy.utils import Backend, get_backend, get_onnx_config
+from mmdeploy.utils import Backend, get_backend, get_ir_config, get_onnx_config
 
 
 def backend_checker(backend: Backend, require_plugin: bool = False):
@@ -355,6 +355,12 @@ def get_onnx_model(wrapped_model: nn.Module,
     flatten_model_inputs = get_flatten_inputs(model_inputs)
     input_names = [k for k, v in flatten_model_inputs.items() if k != 'ctx']
     output_names = pytorch2onnx_cfg.get('output_names', None)
+
+    dynamic_axes = pytorch2onnx_cfg.get('dynamic_axes', None)
+
+    if dynamic_axes is not None and not isinstance(dynamic_axes, Dict):
+        dynamic_axes = dict(zip(input_names, dynamic_axes))
+
     with RewriterContext(
             cfg=deploy_cfg, backend=backend.value, opset=11), torch.no_grad():
         torch.onnx.export(
@@ -365,7 +371,7 @@ def get_onnx_model(wrapped_model: nn.Module,
             input_names=input_names,
             output_names=output_names,
             opset_version=11,
-            dynamic_axes=pytorch2onnx_cfg.get('dynamic_axes', None),
+            dynamic_axes=dynamic_axes,
             keep_initializers_as_inputs=False)
     return onnx_file_path
 
@@ -389,7 +395,7 @@ def get_backend_outputs(onnx_file_path: str,
     backend = get_backend(deploy_cfg)
     flatten_model_inputs = get_flatten_inputs(model_inputs)
     input_names = [k for k, v in flatten_model_inputs.items() if k != 'ctx']
-    output_names = get_onnx_config(deploy_cfg).get('output_names', None)
+    output_names = get_ir_config(deploy_cfg).get('output_names', None)
 
     # prepare backend model and input features
     if backend == Backend.TENSORRT:
