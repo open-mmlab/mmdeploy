@@ -75,7 +75,9 @@ We appreciate all contributions to improve MMDeploy. Please refer to [CONTRIBUTI
 
 ## Acknowledgement
 
-We would like to thank OpenVINO team, for their remarkable efforts to export MMDetection models to OpenVINO and integrate OpenVINO into MMDeploy backends
+We would like to sincerely thank the following teams for their contributions to [MMDeploy](https://github.com/open-mmlab/mmdeploy):
+- [OpenPPL](https://github.com/openppl-public)
+- [OpenVINO](https://github.com/openvinotoolkit/openvino)
 
 ## Citation
 
@@ -109,3 +111,4 @@ If you find this project useful in your research, please consider cite:
 - [MMHuman3D](https://github.com/open-mmlab/mmhuman3d): OpenMMLab Human Pose and Shape Estimation Toolbox and Benchmark.
 - [MMSelfSup](https://github.com/open-mmlab/mmselfsup): OpenMMLab self-supervised learning Toolbox and Benchmark.
 - [MMRazor](https://github.com/open-mmlab/mmrazor): OpenMMLab Model Compression Toolbox and Benchmark.
+- [MMDeploy](https://github.com/open-mmlab/mmdeploy): OpenMMLab Model Deployment Framework.

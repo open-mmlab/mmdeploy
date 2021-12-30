@@ -50,10 +50,10 @@ def test_srcnn():
     model_inputs = {'x': img}
 
     onnx_file_path = tempfile.NamedTemporaryFile(suffix='.onnx').name
-    pytorch2onnx_cfg = get_onnx_config(deploy_cfg)
+    onnx_cfg = get_onnx_config(deploy_cfg)
     input_names = [k for k, v in model_inputs.items() if k != 'ctx']
 
-    dynamic_axes = pytorch2onnx_cfg.get('dynamic_axes', None)
+    dynamic_axes = onnx_cfg.get('dynamic_axes', None)
 
     if dynamic_axes is not None and not isinstance(dynamic_axes, Dict):
         dynamic_axes = zip(input_names, dynamic_axes)

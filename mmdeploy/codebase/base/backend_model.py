@@ -26,6 +26,7 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
             ir_config = get_ir_config(deploy_cfg)
             output_names = ir_config.get('output_names', None)
             input_names = ir_config.get('input_names', None)
+        # TODO use input_names instead in the future for multiple inputs
         self.input_name = input_names[0] if input_names else 'input'
         self.output_names = output_names if output_names else ['output']
         super().__init__()
