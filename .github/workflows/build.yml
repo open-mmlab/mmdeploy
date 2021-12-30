@@ -23,10 +23,10 @@ jobs:
       matrix:
         python-version: [3.7]
         torch: [1.8.0]
+        mmcv: [1.4.0]
         include:
           - torch: 1.8.0
             torchvision: 0.9.0
-            mmcv: 1.4.0
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -37,7 +37,7 @@ jobs:
         run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install MMCV
         run: |
-          pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cpu/torch${{matrix.mmcv}}/index.html
+          pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cpu/torch${{matrix.torch}}/index.html
           python -c 'import mmcv; print(mmcv.__version__)'
       - name: Install unittest dependencies
         run: |
@@ -62,11 +62,11 @@ jobs:
           [
             1.8.0+cu111,
           ]
+        mmcv: [1.4.0]
         include:
           - torch: 1.8.0+cu111
             torch_version: torch1.8.0
             torchvision: 0.9.0+cu111
-            mmcv: 1.4.0
 
     steps:
       - uses: actions/checkout@v2
@@ -84,7 +84,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -V
-          python -m pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cu111/torch${{matrix.mmcv}}/index.html
+          python -m pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cu111/${{matrix.torch_version}}/index.html
           python -m pip install -r requirements.txt
       - name: Build and install
         run: rm -rf .eggs && python -m pip install -e .
