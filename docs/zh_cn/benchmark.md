@@ -1230,7 +1230,7 @@ GPU: TensorRT, PPLNN
     <td align="center">72.36</td>
     <td align="center">72.35</td>
     <td align="center">74.19</td>
-    <td align="center">-</td>
+    <td align="center">72.35</td>
     <td>$MMSEG_DIR/configs/fcn/fcn_r50-d8_512x1024_40k_cityscapes.py</td>
   </tr>
   <tr>
@@ -1242,7 +1242,7 @@ GPU: TensorRT, PPLNN
     <td align="center">78.26</td>
     <td align="center">78.24</td>
     <td align="center">77.97</td>
-    <td align="center">-</td>
+    <td align="center">78.09</td>
     <td>$MMSEG_DIR/configs/pspnet/pspnet_r50-d8_512x1024_80k_cityscapes.py</td>
   </tr>
   <tr>
@@ -1254,7 +1254,7 @@ GPU: TensorRT, PPLNN
     <td align="center">79.12</td>
     <td align="center">79.12</td>
     <td align="center">78.96</td>
-    <td align="center">-</td>
+    <td align="center">79.12</td>
     <td>$MMSEG_DIR/configs/deeplabv3/deeplabv3_r50-d8_512x1024_40k_cityscapes.py</td>
   </tr>
   <tr>
@@ -1263,10 +1263,10 @@ GPU: TensorRT, PPLNN
     <td align="center">mIoU</td>
     <td align="center">79.61</td>
     <td align="center">-</td>
-    <td align="center">79.6</td>
-    <td align="center">79.6</td>
+    <td align="center">79.60</td>
+    <td align="center">79.60</td>
     <td align="center">79.43</td>
-    <td align="center">-</td>
+    <td align="center">79.60</td>
     <td>$MMSEG_DIR/configs/deeplabv3plus/deeplabv3plus_r50-d8_512x1024_40k_cityscapes.py</td>
   </tr>
   <tr>
@@ -1277,8 +1277,8 @@ GPU: TensorRT, PPLNN
     <td align="center">-</td>
     <td align="center">70.93</td>
     <td align="center">70.92</td>
-    <td align="center">66.0</td>
-    <td align="center">-</td>
+    <td align="center">66.00</td>
+    <td align="center">70.92</td>
     <td>$MMSEG_DIR/configs/fastscnn/fast_scnn_lr0.12_8x4_160k_cityscapes.py</td>
   </tr>
 </tbody>
