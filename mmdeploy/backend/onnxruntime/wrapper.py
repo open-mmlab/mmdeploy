@@ -56,8 +56,6 @@ class ORTWrapper(BaseWrapper):
             if is_cuda_available else ['CPUExecutionProvider']
         sess = ort.InferenceSession(onnx_file, session_options, \
                                     providers=providers)
-
-        # sess.set_providers(providers, options)
         if output_names is None:
             output_names = [_.name for _ in sess.get_outputs()]
         self.sess = sess
