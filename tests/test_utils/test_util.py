@@ -353,7 +353,7 @@ class TestGetDynamicAxes:
         axes = [[0, 2, 3], [0]]
         expected_dynamic_axes = {
             self.input_name: axes[0],
-            self.output_name: axes[1]
+            output_name: axes[1]
         }
         deploy_cfg = mmcv.Config(
             dict(
