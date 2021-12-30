@@ -7,8 +7,8 @@ import torch
 from mmcv.utils.registry import Registry
 from torch.utils.data import DataLoader, Dataset
 
-from mmdeploy.codebase import BaseTask
 from mmdeploy.utils import Codebase, Task
+from .task import BaseTask
 
 
 class MMCodebase(metaclass=ABCMeta):
