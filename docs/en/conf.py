@@ -104,80 +104,11 @@ html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
 html_theme_options = {
     # TODO: Add log_url
     # 'logo_url': 'https://mmocr.readthedocs.io/en/latest/',
-    'menu': [
-        {
-            'name': 'GitHub',
-            'url': 'https://github.com/open-mmlab/mmdeploy'
-        },
-        {
-            'name':
-            'Projects',
-            'children': [
-                {
-                    'name': 'MMAction2',
-                    'url': 'https://github.com/open-mmlab/mmaction2',
-                },
-                {
-                    'name': 'MMClassification',
-                    'url': 'https://github.com/open-mmlab/mmclassification',
-                },
-                {
-                    'name': 'MMDetection',
-                    'url': 'https://github.com/open-mmlab/mmdetection',
-                },
-                {
-                    'name': 'MMDetection3D',
-                    'url': 'https://github.com/open-mmlab/mmdetection3d',
-                },
-                {
-                    'name': 'MMEditing',
-                    'url': 'https://github.com/open-mmlab/mmediting',
-                },
-                {
-                    'name': 'MMGeneration',
-                    'url': 'https://github.com/open-mmlab/mmgeneration',
-                },
-                {
-                    'name': 'MMOCR',
-                    'url': 'https://github.com/open-mmlab/mmocr',
-                },
-                {
-                    'name': 'MMPose',
-                    'url': 'https://github.com/open-mmlab/mmpose',
-                },
-                {
-                    'name': 'MMSegmentation',
-                    'url': 'https://github.com/open-mmlab/mmsegmentation',
-                },
-                {
-                    'name': 'MMTracking',
-                    'url': 'https://github.com/open-mmlab/mmtracking',
-                },
-            ]
-        },
-        {
-            'name':
-            'OpenMMLab',
-            'children': [
-                {
-                    'name': 'Homepage',
-                    'url': 'https://openmmlab.com/'
-                },
-                {
-                    'name': 'GitHub',
-                    'url': 'https://github.com/open-mmlab/'
-                },
-                {
-                    'name': 'Twitter',
-                    'url': 'https://twitter.com/OpenMMLab'
-                },
-                {
-                    'name': 'Zhihu',
-                    'url': 'https://zhihu.com/people/openmmlab'
-                },
-            ]
-        },
-    ]
+    'menu': [{
+        'name': 'GitHub',
+        'url': 'https://github.com/open-mmlab/mmdeploy'
+    }],
+    'menu_lang': 'en'
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
