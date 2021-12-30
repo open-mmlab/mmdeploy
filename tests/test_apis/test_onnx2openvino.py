@@ -1,8 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
 import os.path as osp
-import random
-import string
 import tempfile
 
 import mmcv
@@ -12,7 +10,7 @@ import torch
 import torch.nn as nn
 
 from mmdeploy.utils import Backend
-from mmdeploy.utils.test import backend_checker
+from mmdeploy.utils.test import backend_checker, get_random_name
 
 
 @pytest.mark.skip(reason='This a not test class but a utility class.')
@@ -60,17 +58,6 @@ def get_outputs(pytorch_model, openvino_model_path, input, input_name,
     openvino_output = openvino_model({input_name: input})[output_name]
 
     return output_pytorch, openvino_output
-
-
-def get_random_name(length=10, seed=None):
-    if seed:
-        random_state = random.getstate()
-        random.seed(seed)
-    random_name = ''.join(
-        random.choices(string.ascii_letters + string.digits, k=length))
-    if seed:
-        random.setstate(random_state)
-    return random_name
 
 
 @backend_checker(Backend.OPENVINO)

@@ -1,8 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
+import random
+import string
 import tempfile
 import warnings
-from typing import Any, Callable, Dict, List, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import mmcv
 import numpy as np
@@ -523,3 +525,28 @@ def get_rewrite_outputs(wrapped_model: nn.Module,
         return ctx_outputs, False
     else:
         return backend_outputs, True
+
+
+def get_random_name(
+        length: int = 10,
+        seed: Optional[Union[int, float, str, bytes,
+                             bytearray]] = None) -> str:
+    """Generates a random string of the specified length. Can be used to
+    generate random names for model inputs and outputs.
+
+    Args:
+        length (int): The number of characters in the string..
+        seed (Optional[Union[int, float, str, bytes, bytearray]]):
+            Seed for a random number generator.
+
+    Returns:
+        str: A randomly generated string that can be used as a name.
+    """
+    if seed:
+        random_state = random.getstate()
+        random.seed(seed)
+    random_name = ''.join(
+        random.choices(string.ascii_letters + string.digits, k=length))
+    if seed:
+        random.setstate(random_state)
+    return random_name
