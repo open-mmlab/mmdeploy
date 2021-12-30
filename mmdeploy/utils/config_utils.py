@@ -160,8 +160,6 @@ def is_dynamic_batch(deploy_cfg: Union[str, mmcv.Config],
     ir_config = get_ir_config(deploy_cfg)
 
     # TODO: update this when we have more IR
-    if ir_config.get('type', None) != 'onnx':
-        return False
 
     input_names = ir_config.get('input_names', None)
     dynamic_axes = ir_config.get('dynamic_axes', None)
@@ -207,8 +205,6 @@ def is_dynamic_shape(deploy_cfg: Union[str, mmcv.Config],
     # check if dynamic axes exist
 
     # TODO: update this when we have more IR
-    if ir_config.get('type', None) != 'onnx':
-        return False
 
     dynamic_axes = ir_config.get('dynamic_axes', None)
     if dynamic_axes is None:
