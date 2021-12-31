@@ -1,8 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
+import random
+import string
 import tempfile
 import warnings
-from typing import Any, Callable, Dict, List, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import mmcv
 import numpy as np
@@ -12,7 +14,7 @@ from torch import nn
 
 import mmdeploy.codebase  # noqa: F401,F403
 from mmdeploy.core import RewriterContext, patch_model
-from mmdeploy.utils import Backend, get_backend, get_onnx_config
+from mmdeploy.utils import Backend, get_backend, get_ir_config, get_onnx_config
 
 
 def backend_checker(backend: Backend, require_plugin: bool = False):
@@ -348,13 +350,19 @@ def get_onnx_model(wrapped_model: nn.Module,
         str: The path to the ONNX model file.
     """
     onnx_file_path = tempfile.NamedTemporaryFile(suffix='.onnx').name
-    pytorch2onnx_cfg = get_onnx_config(deploy_cfg)
+    onnx_cfg = get_onnx_config(deploy_cfg)
     backend = get_backend(deploy_cfg)
     patched_model = patch_model(
         wrapped_model, cfg=deploy_cfg, backend=backend.value)
     flatten_model_inputs = get_flatten_inputs(model_inputs)
     input_names = [k for k, v in flatten_model_inputs.items() if k != 'ctx']
-    output_names = pytorch2onnx_cfg.get('output_names', None)
+    output_names = onnx_cfg.get('output_names', None)
+
+    dynamic_axes = onnx_cfg.get('dynamic_axes', None)
+
+    if dynamic_axes is not None and not isinstance(dynamic_axes, Dict):
+        dynamic_axes = dict(zip(input_names, dynamic_axes))
+
     with RewriterContext(
             cfg=deploy_cfg, backend=backend.value, opset=11), torch.no_grad():
         torch.onnx.export(
@@ -365,7 +373,7 @@ def get_onnx_model(wrapped_model: nn.Module,
             input_names=input_names,
             output_names=output_names,
             opset_version=11,
-            dynamic_axes=pytorch2onnx_cfg.get('dynamic_axes', None),
+            dynamic_axes=dynamic_axes,
             keep_initializers_as_inputs=False)
     return onnx_file_path
 
@@ -389,7 +397,7 @@ def get_backend_outputs(onnx_file_path: str,
     backend = get_backend(deploy_cfg)
     flatten_model_inputs = get_flatten_inputs(model_inputs)
     input_names = [k for k, v in flatten_model_inputs.items() if k != 'ctx']
-    output_names = get_onnx_config(deploy_cfg).get('output_names', None)
+    output_names = get_ir_config(deploy_cfg).get('output_names', None)
 
     # prepare backend model and input features
     if backend == Backend.TENSORRT:
@@ -517,3 +525,28 @@ def get_rewrite_outputs(wrapped_model: nn.Module,
         return ctx_outputs, False
     else:
         return backend_outputs, True
+
+
+def get_random_name(
+        length: int = 10,
+        seed: Optional[Union[int, float, str, bytes,
+                             bytearray]] = None) -> str:
+    """Generates a random string of the specified length. Can be used to
+    generate random names for model inputs and outputs.
+
+    Args:
+        length (int): The number of characters in the string..
+        seed (Optional[Union[int, float, str, bytes, bytearray]]):
+            Seed for a random number generator.
+
+    Returns:
+        str: A randomly generated string that can be used as a name.
+    """
+    if seed:
+        random_state = random.getstate()
+        random.seed(seed)
+    random_name = ''.join(
+        random.choices(string.ascii_letters + string.digits, k=length))
+    if seed:
+        random.setstate(random_state)
+    return random_name
