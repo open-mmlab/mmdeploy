@@ -321,3 +321,15 @@ def test_export_info():
         assert os.path.exists(pipeline_json)
         assert os.path.exists(detail_json)
         assert os.path.exists(deploy_json)
+
+
+def test_get_root_logger():
+    from mmdeploy.utils import get_root_logger
+    with tempfile.TemporaryDirectory() as dir:
+        file_path = os.path.join(dir, 'test.txt')
+        logger = get_root_logger(log_file=file_path)
+        message = 'This is a test message'
+        logger.info(message)
+        with open(file=file_path) as f:
+            content = f.readlines()
+        assert message in content[0]
