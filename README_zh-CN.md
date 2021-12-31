@@ -47,32 +47,33 @@ MMDeploy 是一个开源深度学习模型部署工具箱，它是 [OpenMMLab](h
 
 该项目采用 [Apache 2.0 开源许可证](LICENSE)。
 
-
 ## 安装
 
-请参考[构建项目](docs/zh_cn/build.md)进行安装。
+请参考[构建项目](https://mmdeploy.readthedocs.io/zh_CN/latest/build.html)进行安装。
 
 ## 快速入门
 
-请参考[快速入门文档](docs/zh_cn/get_started.md)学习 MMDeploy 的基本用法。我们还提供了一些进阶教程，
+请参考[快速入门文档](https://mmdeploy.readthedocs.io/zh_CN/latest/get_started.html)学习 MMDeploy 的基本用法。我们还提供了一些进阶教程，
 
-- [如何进行模型转换](docs/en/tutorials/how_to_convert_model.md)
-- [如何编写配置文件](docs/en/tutorials/how_to_write_config.md)
-- [如何支持新模型](docs/en/tutorials/how_to_support_new_models.md)
-- [如何测试模型效果](docs/en/tutorials/how_to_measure_performance_of_models.md)
+- [如何进行模型转换](https://mmdeploy.readthedocs.io/zh_CN/latest/tutorials/how_to_convert_model.html)
+- [如何编写配置文件](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_write_config.html)
+- [如何支持新模型](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_support_new_models.html)
+- [如何测试模型效果](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_measure_performance_of_models.html)
 
-如果遇到问题，请参考 [常见问题解答](docs/zh_cn/faq.md)。
+如果遇到问题，请参考 [常见问题解答](https://mmdeploy.readthedocs.io/zh_CN/latest/faq.html)。
 
 ## 基准与模型库
 
-基准和支持的模型列表可以在[基准](docs/zh_cn/benchmark.md)和[模型列表](docs/en/supported_models.md)中获得。
+基准和支持的模型列表可以在[基准](https://mmdeploy.readthedocs.io/zh_CN/latest/benchmark.html)和[模型列表](https://mmdeploy.readthedocs.io/en/latest/supported_models.html)中获得。
 
 ## 贡献指南
 
 我们感谢所有的贡献者为改进和提升 MMDeploy 所作出的努力。请参考[贡献指南](.github/CONTRIBUTING.md)来了解参与项目贡献的相关指引。
 
 ## 致谢
+
 由衷感谢以下团队为 [MMDeploy](https://github.com/open-mmlab/mmdeploy) 做出的贡献：
+
 - [OpenPPL](https://github.com/openppl-public)
 - [OpenVINO](https://github.com/openvinotoolkit/openvino)
 
