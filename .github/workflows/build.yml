@@ -50,23 +50,24 @@ jobs:
           coverage xml
           coverage report -m
 
-  build_cuda111:
+  build_cuda102:
     runs-on: ubuntu-18.04
     container:
-      image: pytorch/pytorch:1.8.0-cuda11.1-cudnn8-devel
-
+      image: pytorch/pytorch:1.8.0-cuda10.2-cudnn7-devel
+    env:
+      FORCE_CUDA: 1
     strategy:
       matrix:
         python-version: [3.7]
         torch:
           [
-            1.8.0+cu111,
+            1.8.0+cu102,
           ]
         mmcv: [1.4.0]
         include:
-          - torch: 1.8.0+cu111
+          - torch: 1.8.0+cu102
             torch_version: torch1.8.0
-            torchvision: 0.9.0+cu111
+            torchvision: 0.9.0+cu102
 
     steps:
       - uses: actions/checkout@v2
@@ -84,7 +85,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -V
-          python -m pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cu111/${{matrix.torch_version}}/index.html
+          python -m pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cu102/${{matrix.torch_version}}/index.html
           python -m pip install -r requirements.txt
       - name: Build and install
         run: |
