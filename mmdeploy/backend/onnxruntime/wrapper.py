@@ -54,8 +54,8 @@ class ORTWrapper(BaseWrapper):
         is_cuda_available = ort.get_device() == 'GPU'
         providers = [('CUDAExecutionProvider', {'device_id': device_id})] \
             if is_cuda_available else ['CPUExecutionProvider']
-        sess = ort.InferenceSession(onnx_file, session_options,
-                                    providers=providers)
+        sess = ort.InferenceSession(
+            onnx_file, session_options, providers=providers)
         if output_names is None:
             output_names = [_.name for _ in sess.get_outputs()]
         self.sess = sess
