@@ -106,7 +106,7 @@ def main():
 
     device_id = parse_device_id(args.device)
 
-    model = MMDataParallel(model, device_ids=[0])
+    model = MMDataParallel(model, device_ids=[device_id])
     # The whole dataset test wrapped a MMDataParallel class outside the module.
     # As mmcls.apis.test.py single_gpu_test defined, the MMDataParallel needs
     # a 'CLASSES' attribute. So we ensure the MMDataParallel class has the same
@@ -114,7 +114,7 @@ def main():
     if hasattr(model.module, 'CLASSES'):
         model.CLASSES = model.module.CLASSES
     if args.speed_test:
-        with_sync = device_id == 0
+        with_sync = device_id >= 0
         output_file = sys.stdout
         if args.log2file:
             output_file = args.log2file
