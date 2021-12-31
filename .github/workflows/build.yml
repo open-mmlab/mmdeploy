@@ -87,7 +87,10 @@ jobs:
           python -m pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cu111/${{matrix.torch_version}}/index.html
           python -m pip install -r requirements.txt
       - name: Build and install
-        run: rm -rf .eggs && python -m pip install -e .
+        run: |
+          rm -rf .eggs
+          python setup.py check -m -s
+          TORCH_CUDA_ARCH_LIST=7.0 pip install .
       - name: Run unittests and generate coverage report
         run: |
           coverage run --branch --source mmdeploy -m pytest -rsE tests/
