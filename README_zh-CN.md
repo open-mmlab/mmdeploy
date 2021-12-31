@@ -72,8 +72,9 @@ MMDeploy 是一个开源深度学习模型部署工具箱，它是 [OpenMMLab](h
 我们感谢所有的贡献者为改进和提升 MMDeploy 所作出的努力。请参考[贡献指南](.github/CONTRIBUTING.md)来了解参与项目贡献的相关指引。
 
 ## 致谢
-
-OpenVINO团队在MMDeploy中添加了OpenVINO部署后端，并开发了MMDetection在OpenVINO下的部署功能，为MMDeploy做出了重大贡献。对此我们表示衷心的感谢。
+由衷感谢以下团队为 [MMDeploy](https://github.com/open-mmlab/mmdeploy) 做出的贡献：
+- [OpenPPL](https://github.com/openppl-public)
+- [OpenVINO](https://github.com/openvinotoolkit/openvino)
 
 ## 引用
 
@@ -107,6 +108,7 @@ OpenVINO团队在MMDeploy中添加了OpenVINO部署后端，并开发了MMDetect
 - [MMHuman3D](https://github.com/open-mmlab/mmhuman3d): OpenMMLab 人体参数化模型工具箱与测试基准
 - [MMSelfSup](https://github.com/open-mmlab/mmselfsup): OpenMMLab 自监督学习工具箱与测试基准
 - [MMRazor](https://github.com/open-mmlab/mmrazor): OpenMMLab 模型压缩工具箱与测试基准
+- [MMDeploy](https://github.com/open-mmlab/mmdeploy): OpenMMLab 模型部署框架
 
 ## 欢迎加入 OpenMMLab 社区
 

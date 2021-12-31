@@ -4,7 +4,7 @@ import logging
 from mmcv.utils import get_logger
 
 
-def get_root_logger(log_file=None, log_level=logging.INFO):
+def get_root_logger(log_file=None, log_level=logging.INFO) -> logging.Logger:
     """Get root logger.
 
     Args:

@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
 import tempfile
+from typing import Dict
 
 import mmcv
 import onnx
@@ -33,7 +34,7 @@ deploy_cfg = mmcv.Config(
                             opt_shape=[1, 3, 4, 4],
                             max_shape=[1, 3, 4, 4])))
             ]),
-        onnx_config=dict(
+        ir_config=dict(
             type='onnx',
             export_params=True,
             keep_initializers_as_inputs=False,
@@ -49,8 +50,14 @@ def test_srcnn():
     model_inputs = {'x': img}
 
     onnx_file_path = tempfile.NamedTemporaryFile(suffix='.onnx').name
-    pytorch2onnx_cfg = get_onnx_config(deploy_cfg)
+    onnx_cfg = get_onnx_config(deploy_cfg)
     input_names = [k for k, v in model_inputs.items() if k != 'ctx']
+
+    dynamic_axes = onnx_cfg.get('dynamic_axes', None)
+
+    if dynamic_axes is not None and not isinstance(dynamic_axes, Dict):
+        dynamic_axes = zip(input_names, dynamic_axes)
+
     with RewriterContext(
             cfg=deploy_cfg, backend=Backend.TENSORRT.value), torch.no_grad():
         torch.onnx.export(
@@ -61,7 +68,7 @@ def test_srcnn():
             input_names=input_names,
             output_names=None,
             opset_version=11,
-            dynamic_axes=pytorch2onnx_cfg.get('dynamic_axes', None),
+            dynamic_axes=dynamic_axes,
             keep_initializers_as_inputs=False)
 
     # The result should be different due to the rewrite.

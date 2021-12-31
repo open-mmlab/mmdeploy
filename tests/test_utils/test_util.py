@@ -144,7 +144,19 @@ class TestIsDynamic:
     config_with_dynamic_axes = mmcv.Config(
         dict(
             onnx_config=dict(
+                type='onnx',
                 dynamic_axes={'input': {
+                    0: 'batch',
+                    2: 'height',
+                    3: 'width'
+                }})))
+
+    config_with_dynamic_axes_and_input_names = mmcv.Config(
+        dict(
+            onnx_config=dict(
+                type='onnx',
+                input_names=['image'],
+                dynamic_axes={'image': {
                     0: 'batch',
                     2: 'height',
                     3: 'width'
@@ -173,6 +185,17 @@ class TestIsDynamic:
     def test_is_dynamic_shape(self):
         assert util.is_dynamic_shape(
             TestIsDynamic.config_with_dynamic_axes) is True
+
+    def test_is_dynamic_shape_input_names(self):
+        assert util.is_dynamic_shape(
+            TestIsDynamic.config_with_dynamic_axes_and_input_names) is True
+
+    def test_is_dynamic_shape_different_names(self):
+        config_with_different_names = \
+            TestIsDynamic.config_with_dynamic_axes_and_input_names
+        util.get_ir_config(
+            config_with_different_names).input_names = 'another_name'
+        assert util.is_dynamic_shape(config_with_different_names) is False
 
 
 class TestGetInputShape:
