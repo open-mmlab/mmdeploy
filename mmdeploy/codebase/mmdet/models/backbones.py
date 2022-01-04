@@ -6,9 +6,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.backbones.csp_darknet.Focus.forward',
     backend='ncnn')
-def focus__forward__ncnn(ctx,
-                         self,
-                         x):
+def focus__forward__ncnn(ctx, self, x):
     """Rewrite forward function of Focus class for ncnn.
 
     Focus width and height information into channel space. NCNN does not
@@ -21,10 +19,10 @@ def focus__forward__ncnn(ctx,
     Returns:
         x (Tensor): The calculated tensor with shape (N, 4*C, H//2, W//2).
     """
-
     batch_size, c, h, w = x.shape
     assert h % 2 == 0 and w % 2 == 0, f'focus for yolox needs even feature\
         height and width, got {(h, w)}.'
+
     x_col = x.reshape(batch_size, c, -1, 2)
     left = x_col[:, :, :, 0:1]
     right = x_col[:, :, :, 1:2]
@@ -47,7 +45,7 @@ def focus__forward__ncnn(ctx,
             bot_left,
             top_right,
             bot_right,
-            ),
+        ),
         dim=1,
-        )
+    )
     return self.conv(x)

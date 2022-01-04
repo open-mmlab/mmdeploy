@@ -173,10 +173,7 @@ def yolox_head__get_bboxes__ncnn(ctx,
     cls_scores = torch.cat(flatten_cls_scores, dim=1).sigmoid()
     dummy_cls_scores = torch.zeros(batch_size, cls_scores.shape[-2], 1)
 
-    batch_mlvl_scores = torch.cat([
-        dummy_cls_scores,
-        cls_scores
-    ], dim=2)
+    batch_mlvl_scores = torch.cat([dummy_cls_scores, cls_scores], dim=2)
     score_factor = torch.cat(flatten_objectness, dim=1).sigmoid()
     flatten_bbox_preds = torch.cat(flatten_bbox_preds, dim=1)
     assert flatten_priors.shape[-1] == 4, f'yolox needs (B, N, 4) priors, got\
@@ -189,8 +186,8 @@ def yolox_head__get_bboxes__ncnn(ctx,
         / img_width
     prior_box_y2 = (flatten_priors[:, :, 1:2] + flatten_priors[:, :, 3:4] / 2)\
         / img_height
-    prior_box_ncnn = torch.cat([prior_box_x1, prior_box_y1,
-                                prior_box_x2, prior_box_y2], dim=2)
+    prior_box_ncnn = torch.cat(
+        [prior_box_x1, prior_box_y1, prior_box_x2, prior_box_y2], dim=2)
 
     scores = batch_mlvl_scores.permute(0, 2, 1).unsqueeze(3) * \
         score_factor.permute(0, 2, 1).unsqueeze(3)
