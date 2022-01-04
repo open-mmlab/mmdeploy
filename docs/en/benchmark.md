@@ -319,6 +319,16 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center">15.11</td>
     <td>$MMDET_DIR/configs/ssd/ssdlite_mobilenetv2_scratch_600e_coco.py</td>
   </tr>
+  <tr>
+    <td align="center">YOLOX</td>
+    <td align="center">COCO</td>
+    <td align="center">1x3x416x416</td>
+    <td align="center">132.69</td>
+    <td align="center">7.54</td>
+    <td align="center">124.93</td>
+    <td align="center">8.00</td>
+    <td>$MMDET_DIR/configs/yolox/yolox_tiny_8x8_300e_coco.py</td>
+  </tr>
 </tbody>
 </table>
 </div>

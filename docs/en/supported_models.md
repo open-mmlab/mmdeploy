@@ -7,7 +7,7 @@ The table below lists the models that are guaranteed to be exportable to other b
 | RetinaNet                 | MMDetection      |      Y      |    Y     |   Y   |   Y   |    Y     |       [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/retinanet)        |
 | Faster R-CNN              | MMDetection      |      Y      |    Y     |   Y   |   Y   |    Y     |      [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/faster_rcnn)       |
 | YOLOv3                    | MMDetection      |      Y      |    Y     |   Y   |   N   |    Y     |          [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/yolo)          |
-| YOLOX                     | MMDetection      |      Y      |    Y     |   N   |   N   |    Y     |         [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/yolox)          |
+| YOLOX                     | MMDetection      |      Y      |    Y     |   Y   |   N   |    Y     |         [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/yolox)          |
 | FCOS                      | MMDetection      |      Y      |    Y     |   Y   |   N   |    Y     |          [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/fcos)          |
 | FSAF                      | MMDetection      |      Y      |    Y     |   Y   |   Y   |    Y     |          [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/fsaf)          |
 | Mask R-CNN                | MMDetection      |      Y      |    Y     |   N   |   N   |    Y     |       [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/mask_rcnn)        |
