@@ -166,13 +166,14 @@ def test_focus_forward_ncnn():
     rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
-        deploy_cfg=deploy_cfg)
+        deploy_cfg=deploy_cfg,
+        run_with_backend=False)
     for model_output, rewrite_output in zip(model_outputs[0],
                                             rewrite_outputs[0]):
         model_output = model_output.squeeze().cpu().numpy()
         rewrite_output = rewrite_output.squeeze()
         assert np.allclose(
-            model_output, rewrite_output, rtol=1e-03, atol=1e-05)
+            model_output[0], rewrite_output, rtol=1e-03, atol=1e-05)
 
 
 def test_get_bboxes_of_fcos_head_ncnn():
