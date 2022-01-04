@@ -112,11 +112,15 @@ class NCNNWrapper(BaseWrapper):
                     mat = None
                     logging.warning(
                         f'The "{name}" output of ncnn model is empty.')
+                    continue
                 outputs[name][batch_id] = torch.from_numpy(np.array(mat))
 
         # stack outputs together
         for name, output_tensor in outputs.items():
-            outputs[name] = torch.stack(output_tensor)
+            if None in output_tensor:
+                outputs[name] = None
+            else:
+                outputs[name] = torch.stack(output_tensor)
 
         return outputs
 
