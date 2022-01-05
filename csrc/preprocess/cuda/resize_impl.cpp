@@ -48,14 +48,14 @@ class ResizeImpl final : public ::mmdeploy::ResizeImpl {
       auto input = src.data<uint8_t>();
       auto output = dst.data<uint8_t>();
       if (1 == c) {
-        ret = ppl::cv::cuda::ResizeLinear<uint8_t, 1>(stream, h, w, w * c, input, dst_h, dst_w,
-                                                      dst_w * c, output);
+        ret = ppl::cv::cuda::Resize<uint8_t, 1>(stream, h, w, w * c, input, dst_h, dst_w, dst_w * c,
+                                                output, ppl::cv::INTERPOLATION_TYPE_LINEAR);
       } else if (3 == c) {
-        ret = ppl::cv::cuda::ResizeLinear<uint8_t, 3>(stream, h, w, w * c, input, dst_h, dst_w,
-                                                      dst_w * c, output);
+        ret = ppl::cv::cuda::Resize<uint8_t, 3>(stream, h, w, w * c, input, dst_h, dst_w, dst_w * c,
+                                                output, ppl::cv::INTERPOLATION_TYPE_LINEAR);
       } else if (4 == c) {
-        ret = ppl::cv::cuda::ResizeLinear<uint8_t, 4>(stream, h, w, w * c, input, dst_h, dst_w,
-                                                      dst_w * c, output);
+        ret = ppl::cv::cuda::Resize<uint8_t, 4>(stream, h, w, w * c, input, dst_h, dst_w, dst_w * c,
+                                                output, ppl::cv::INTERPOLATION_TYPE_LINEAR);
       } else {
         ERROR("unsupported channels {}", c);
         return Status(eNotSupported);
@@ -64,14 +64,14 @@ class ResizeImpl final : public ::mmdeploy::ResizeImpl {
       auto input = src.data<float>();
       auto output = dst.data<float>();
       if (1 == c) {
-        ret = ppl::cv::cuda::ResizeLinear<float, 1>(stream, h, w, w * c, input, dst_h, dst_w,
-                                                    dst_w * c, output);
+        ret = ppl::cv::cuda::Resize<float, 1>(stream, h, w, w * c, input, dst_h, dst_w, dst_w * c,
+                                              output, ppl::cv::INTERPOLATION_TYPE_LINEAR);
       } else if (3 == c) {
-        ret = ppl::cv::cuda::ResizeLinear<float, 3>(stream, h, w, w * c, input, dst_h, dst_w,
-                                                    dst_w * c, output);
+        ret = ppl::cv::cuda::Resize<float, 3>(stream, h, w, w * c, input, dst_h, dst_w, dst_w * c,
+                                              output, ppl::cv::INTERPOLATION_TYPE_LINEAR);
       } else if (4 == c) {
-        ret = ppl::cv::cuda::ResizeLinear<float, 4>(stream, h, w, w * c, input, dst_h, dst_w,
-                                                    dst_w * c, output);
+        ret = ppl::cv::cuda::Resize<float, 4>(stream, h, w, w * c, input, dst_h, dst_w, dst_w * c,
+                                              output, ppl::cv::INTERPOLATION_TYPE_LINEAR);
       } else {
         ERROR("unsupported channels {}", c);
         return Status(eNotSupported);
@@ -96,14 +96,14 @@ class ResizeImpl final : public ::mmdeploy::ResizeImpl {
       auto input = src.data<uint8_t>();
       auto output = dst.data<uint8_t>();
       if (1 == c) {
-        ret = ppl::cv::cuda::ResizeNearestPoint<uint8_t, 1>(stream, h, w, w * c, input, dst_h,
-                                                            dst_w, dst_w * c, output);
+        ret = ppl::cv::cuda::Resize<uint8_t, 1>(stream, h, w, w * c, input, dst_h, dst_w, dst_w * c,
+                                                output, ppl::cv::INTERPOLATION_TYPE_NEAREST_POINT);
       } else if (3 == c) {
-        ret = ppl::cv::cuda::ResizeNearestPoint<uint8_t, 3>(stream, h, w, w * c, input, dst_h,
-                                                            dst_w, dst_w * c, output);
+        ret = ppl::cv::cuda::Resize<uint8_t, 3>(stream, h, w, w * c, input, dst_h, dst_w, dst_w * c,
+                                                output, ppl::cv::INTERPOLATION_TYPE_NEAREST_POINT);
       } else if (4 == c) {
-        ret = ppl::cv::cuda::ResizeNearestPoint<uint8_t, 4>(stream, h, w, w * c, input, dst_h,
-                                                            dst_w, dst_w * c, output);
+        ret = ppl::cv::cuda::Resize<uint8_t, 4>(stream, h, w, w * c, input, dst_h, dst_w, dst_w * c,
+                                                output, ppl::cv::INTERPOLATION_TYPE_NEAREST_POINT);
       } else {
         ERROR("unsupported channel {}", c);
         return Status(eNotSupported);
@@ -112,14 +112,14 @@ class ResizeImpl final : public ::mmdeploy::ResizeImpl {
       auto input = src.data<float>();
       auto output = dst.data<float>();
       if (1 == c) {
-        ret = ppl::cv::cuda::ResizeNearestPoint<float, 1>(stream, h, w, w * c, input, dst_h, dst_w,
-                                                          dst_w * c, output);
+        ret = ppl::cv::cuda::Resize<float, 1>(stream, h, w, w * c, input, dst_h, dst_w, dst_w * c,
+                                              output, ppl::cv::INTERPOLATION_TYPE_NEAREST_POINT);
       } else if (3 == c) {
-        ret = ppl::cv::cuda::ResizeNearestPoint<float, 3>(stream, h, w, w * c, input, dst_h, dst_w,
-                                                          dst_w * c, output);
+        ret = ppl::cv::cuda::Resize<float, 3>(stream, h, w, w * c, input, dst_h, dst_w, dst_w * c,
+                                              output, ppl::cv::INTERPOLATION_TYPE_NEAREST_POINT);
       } else if (4 == c) {
-        ret = ppl::cv::cuda::ResizeNearestPoint<float, 4>(stream, h, w, w * c, input, dst_h, dst_w,
-                                                          dst_w * c, output);
+        ret = ppl::cv::cuda::Resize<float, 4>(stream, h, w, w * c, input, dst_h, dst_w, dst_w * c,
+                                              output, ppl::cv::INTERPOLATION_TYPE_NEAREST_POINT);
       } else {
         ERROR("unsupported channel {}", c);
         return Status(eNotSupported);
