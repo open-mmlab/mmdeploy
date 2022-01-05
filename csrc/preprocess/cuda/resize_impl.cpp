@@ -51,7 +51,9 @@ class ResizeImpl final : public ::mmdeploy::ResizeImpl {
       return ppl::cv::cuda::Resize<T, C>(std::forward<Args>(args)...,
                                          ppl::cv::INTERPOLATION_TYPE_NEAREST_POINT);
     }
+
 #else
+#warning "support for ppl.cv < 0.6 is deprecated and will be dropped in the future"
     if (arg_.interpolation == "bilinear") {
       return ppl::cv::cuda::ResizeLinear<T, C>(std::forward<Args>(args)...);
     }
