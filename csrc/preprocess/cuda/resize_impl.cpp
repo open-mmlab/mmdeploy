@@ -69,8 +69,8 @@ class ResizeImpl final : public ::mmdeploy::ResizeImpl {
     int h = (int)src.shape(1);
     int w = (int)src.shape(2);
     int c = (int)src.shape(3);
-    int dst_h = (int)dst.shape()[1];
-    int dst_w = (int)dst.shape()[2];
+    int dst_h = (int)dst.shape(1);
+    int dst_w = (int)dst.shape(2);
     ppl::common::RetCode ret = 0;
 
     auto input = src.data<T>();
