@@ -148,17 +148,14 @@ def get_single_roi_extractor():
     return model
 
 
-@pytest.mark.parametrize('backend_type',
-                         [Backend.ONNXRUNTIME])
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
 def test_l2norm_forward(backend_type):
     check_backend(backend_type)
     l2norm_neck = get_l2norm_forward_model()
     l2norm_neck.cpu().eval()
     s = 128
     deploy_cfg = mmcv.Config(
-        dict(
-            backend_config=dict(type=backend_type.value),
-            ))
+        dict(backend_config=dict(type=backend_type.value), ))
     feat = torch.rand(1, 16, s, s)
     model_outputs = l2norm_neck.forward(feat)
     wrapped_model = WrapModel(l2norm_neck, 'forward')
