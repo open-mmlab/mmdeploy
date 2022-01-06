@@ -50,18 +50,12 @@ class ORTWrapper(BaseWrapper):
         else:
             logging.warning(f'The library of onnxruntime custom ops does \
             not exist: {ort_custom_op_path}')
-
-        sess = ort.InferenceSession(onnx_file, session_options)
-
         device_id = parse_device_id(device)
-
-        providers = ['CPUExecutionProvider']
-        options = [{}]
         is_cuda_available = ort.get_device() == 'GPU'
-        if is_cuda_available:
-            providers.insert(0, 'CUDAExecutionProvider')
-            options.insert(0, {'device_id': device_id})
-        sess.set_providers(providers, options)
+        providers = [('CUDAExecutionProvider', {'device_id': device_id})] \
+            if is_cuda_available else ['CPUExecutionProvider']
+        sess = ort.InferenceSession(
+            onnx_file, session_options, providers=providers)
         if output_names is None:
             output_names = [_.name for _ in sess.get_outputs()]
         self.sess = sess
@@ -69,7 +63,6 @@ class ORTWrapper(BaseWrapper):
         self.device_id = device_id
         self.is_cuda_available = is_cuda_available
         self.device_type = 'cuda' if is_cuda_available else 'cpu'
-
         super().__init__(output_names)
 
     def forward(self, inputs: Dict[str,
