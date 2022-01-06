@@ -1,13 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
-from typing import Any, Dict, Optional, Union
+from typing import Any, Optional, Union
 
 import mmcv
 import torch
 
 from mmdeploy.core import RewriterContext, patch_model
-from mmdeploy.utils import (get_backend, get_input_shape, get_onnx_config,
-                            load_config)
+from mmdeploy.utils import (get_backend, get_dynamic_axes, get_input_shape,
+                            get_onnx_config, load_config)
 
 
 def torch2onnx_impl(model: torch.nn.Module, input: torch.Tensor,
@@ -30,10 +30,8 @@ def torch2onnx_impl(model: torch.nn.Module, input: torch.Tensor,
 
     input_names = onnx_cfg['input_names']
     output_names = onnx_cfg['output_names']
-    dynamic_axes = onnx_cfg.get('dynamic_axes', None)
-
-    if dynamic_axes is not None and not isinstance(dynamic_axes, Dict):
-        dynamic_axes = dict(zip(input_names + output_names, dynamic_axes))
+    axis_names = input_names + output_names
+    dynamic_axes = get_dynamic_axes(deploy_cfg, axis_names)
 
     # patch model
     patched_model = patch_model(model, cfg=deploy_cfg, backend=backend)

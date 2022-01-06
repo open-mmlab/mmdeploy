@@ -8,6 +8,7 @@ import pytest
 import mmdeploy.utils as util
 from mmdeploy.utils.constants import Backend, Codebase, Task
 from mmdeploy.utils.export_info import dump_info
+from mmdeploy.utils.test import get_random_name
 
 correct_model_path = 'tests/data/srgan.py'
 correct_model_cfg = mmcv.Config.fromfile(correct_model_path)
@@ -162,6 +163,11 @@ class TestIsDynamic:
                     3: 'width'
                 }})))
 
+    config_with_dynamic_axes_list = mmcv.Config(
+        dict(
+            onnx_config=dict(
+                type='onnx', input_names=['image'], dynamic_axes=[[0, 2, 3]])))
+
     def test_is_dynamic_batch_none(self):
         assert util.is_dynamic_batch(
             TestIsDynamic.config_with_onnx_config) is False
@@ -173,6 +179,10 @@ class TestIsDynamic:
     def test_is_dynamic_batch(self):
         assert util.is_dynamic_batch(
             TestIsDynamic.config_with_dynamic_axes) is True
+
+    def test_is_dynamic_batch_axes_list(self):
+        assert util.is_dynamic_batch(
+            TestIsDynamic.config_with_dynamic_axes_list) is True
 
     def test_is_dynamic_shape_none(self):
         assert util.is_dynamic_shape(
@@ -196,6 +206,10 @@ class TestIsDynamic:
         util.get_ir_config(
             config_with_different_names).input_names = 'another_name'
         assert util.is_dynamic_shape(config_with_different_names) is False
+
+    def test_is_dynamic_shape_axes_list(self):
+        assert util.is_dynamic_shape(
+            TestIsDynamic.config_with_dynamic_axes_list) is True
 
 
 class TestGetInputShape:
@@ -296,6 +310,59 @@ class TestGetModelInputs:
             TestGetModelInputs.config_with_model_inputs) == [
                 dict(input_shapes=None)
             ]
+
+
+class TestGetDynamicAxes:
+
+    input_name = get_random_name()
+
+    def test_with_empty_cfg(self):
+        deploy_cfg = mmcv.Config()
+        with pytest.raises(KeyError):
+            util.get_dynamic_axes(deploy_cfg)
+
+    def test_can_get_axes_from_dict(self):
+        expected_dynamic_axes = {
+            self.input_name: {
+                0: 'batch',
+                2: 'height',
+                3: 'width'
+            }
+        }
+        deploy_cfg = mmcv.Config(
+            dict(onnx_config=dict(dynamic_axes=expected_dynamic_axes)))
+        dynamic_axes = util.get_dynamic_axes(deploy_cfg)
+        assert expected_dynamic_axes == dynamic_axes
+
+    def test_can_not_get_axes_from_list_without_names(self):
+        axes = [[0, 2, 3]]
+        deploy_cfg = mmcv.Config(dict(onnx_config=dict(dynamic_axes=axes)))
+        with pytest.raises(KeyError):
+            util.get_dynamic_axes(deploy_cfg)
+
+    def test_can_get_axes_from_list_with_args(self):
+        axes = [[0, 2, 3]]
+        expected_dynamic_axes = {self.input_name: axes[0]}
+        axes_names = [self.input_name]
+        deploy_cfg = mmcv.Config(dict(onnx_config=dict(dynamic_axes=axes)))
+        dynamic_axes = util.get_dynamic_axes(deploy_cfg, axes_names)
+        assert expected_dynamic_axes == dynamic_axes
+
+    def test_can_get_axes_from_list_with_cfg(self):
+        output_name = get_random_name()
+        axes = [[0, 2, 3], [0]]
+        expected_dynamic_axes = {
+            self.input_name: axes[0],
+            output_name: axes[1]
+        }
+        deploy_cfg = mmcv.Config(
+            dict(
+                onnx_config=dict(
+                    input_names=[self.input_name],
+                    output_names=[output_name],
+                    dynamic_axes=axes)))
+        dynamic_axes = util.get_dynamic_axes(deploy_cfg)
+        assert expected_dynamic_axes == dynamic_axes
 
 
 def test_AdvancedEnum():
