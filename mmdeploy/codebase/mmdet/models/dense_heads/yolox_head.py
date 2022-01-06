@@ -171,8 +171,8 @@ def yolox_head__get_bboxes__ncnn(ctx,
     ]
 
     cls_scores = torch.cat(flatten_cls_scores, dim=1).sigmoid()
-    dummy_cls_scores = torch.zeros(batch_size, cls_scores.shape[-2], 1,
-                                   device=cls_scores.device)
+    dummy_cls_scores = torch.zeros(
+        batch_size, cls_scores.shape[-2], 1, device=cls_scores.device)
 
     batch_mlvl_scores = torch.cat([dummy_cls_scores, cls_scores], dim=2)
     score_factor = torch.cat(flatten_objectness, dim=1).sigmoid()
