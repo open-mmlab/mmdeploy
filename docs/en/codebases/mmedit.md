@@ -8,16 +8,16 @@ Please refer to [official installation guide](https://mmediting.readthedocs.io/e
 
 ## MMEditing models support
 
-| Model       | Task             | ONNX Runtime | TensorRT | NCNN  | PPLNN | OpenVINO | Model Config File                                                                            |
-| :---------- | :--------------- | :----------: | :------: | :---: | :---: | :------: | :------------------------------------------------------------------------------------------- |
-| SRCNN       | super-resolution |      Y       |    Y     |   Y   |   Y   |    Y     | $MMEDIT_DIR/configs/restorers/srcnn/srcnn_x4k915_g1_1000k_div2k.py                           |
-| ESRGAN      | super-resolution |      Y       |    Y     |   Y   |   Y   |    Y     | $MMEDIT_DIR/configs/restorers/esrgan/esrgan_x4c64b23g32_g1_400k_div2k.py                     |
-| ESRGAN-PSNR | super-resolution |      Y       |    Y     |   Y   |   Y   |    Y     | $MMEDIT_DIR/configs/restorers/esrgan/esrgan_psnr_x4c64b23g32_g1_1000k_div2k.py               |
-| SRGAN       | super-resolution |      Y       |    Y     |   Y   |   Y   |    Y     | $MMEDIT_DIR/configs/restorers/srresnet_srgan/srgan_x4c64b16_g1_1000k_div2k.py                |
-| SRResNet    | super-resolution |      Y       |    Y     |   Y   |   Y   |    Y     | $MMEDIT_DIR/configs/restorers/srresnet_srgan/srgan_x4c64b16_g1_1000k_div2k.py                |
-| Real-ESRGAN | super-resolution |      Y       |    Y     |   Y   |   Y   |    Y     | $MMEDIT_DIR/configs/restorers/real_esrgan/realesrnet_c64b23g32_12x4_lr2e-4_1000k_df2k_ost.py |  |
-| EDSR        | super-resolution |      Y       |    Y     |   Y   |   N   |    Y     | $MMEDIT_DIR/configs/restorers/edsr/edsr_x4c64b16_g1_300k_div2k.py                            |  |
-| RDN         | super-resolution |      Y       |    Y     |   Y   |   Y   |    Y     | $MMEDIT_DIR/configs/restorers/rdn/rdn_x2c64b16_g1_1000k_div2k.py                             |
+| Model       | Task             | ONNX Runtime | TensorRT | NCNN  | PPLNN | OpenVINO |                                          Model config                                          |
+| :---------- | :--------------- | :----------: | :------: | :---: | :---: | :------: | :--------------------------------------------------------------------------------------------: |
+| SRCNN       | super-resolution |      Y       |    Y     |   Y   |   Y   |    Y     |     [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/srcnn)      |
+| ESRGAN      | super-resolution |      Y       |    Y     |   Y   |   Y   |    Y     |     [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/esrgan)     |
+| ESRGAN-PSNR | super-resolution |      Y       |    Y     |   Y   |   Y   |    Y     |     [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/esrgan)     |
+| SRGAN       | super-resolution |      Y       |    Y     |   Y   |   Y   |    Y     | [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/srresnet_srgan) |
+| SRResNet    | super-resolution |      Y       |    Y     |   Y   |   Y   |    Y     | [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/srresnet_srgan) |
+| Real-ESRGAN | super-resolution |      Y       |    Y     |   Y   |   Y   |    Y     |  [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/real_esrgan)   |
+| EDSR        | super-resolution |      Y       |    Y     |   Y   |   N   |    Y     |      [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/edsr)      |
+| RDN         | super-resolution |      Y       |    Y     |   Y   |   Y   |    Y     |      [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/rdn)       |
 
 ## Reminder
 

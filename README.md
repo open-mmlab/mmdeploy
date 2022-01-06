@@ -49,25 +49,24 @@ a part of the [OpenMMLab](https://openmmlab.com/) project.
 
 This project is released under the [Apache 2.0 license](LICENSE).
 
-
 ## Installation
 
-Please refer to [build.md](docs/en/build.md) for installation.
+Please refer to [build.md](https://mmdeploy.readthedocs.io/en/latest/build.html) for installation.
 
 ## Getting Started
-Please see [getting_started.md](docs/en/get_started.md) for the basic usage of MMDeploy. We also provide other tutorials for:
-- [how to convert model](docs/en/tutorials/how_to_convert_model.md)
-- [how to write config](docs/en/tutorials/how_to_write_config.md)
-- [how to support new models](docs/en/tutorials/how_to_support_new_models.md)
-- [how to measure performance of models](docs/en/tutorials/how_to_measure_performance_of_models.md)
 
+Please see [getting_started.md](https://mmdeploy.readthedocs.io/en/latest/get_started.html) for the basic usage of MMDeploy. We also provide other tutorials for:
 
-Please refer to [FAQ](docs/en/faq.md) for frequently asked questions.
+- [how to convert model](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_convert_model.html)
+- [how to write config](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_write_config.html)
+- [how to support new models](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_support_new_models.html)
+- [how to measure performance of models](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_measure_performance_of_models.html)
 
+Please refer to [FAQ](https://mmdeploy.readthedocs.io/en/latest/faq.html) for frequently asked questions.
 
 ## Benchmark and model zoo
 
-Results and supported model list are available in the [benchmark](docs/en/benchmark.md) and [model list](docs/en/supported_models.md).
+Results and supported model list are available in the [benchmark](https://mmdeploy.readthedocs.io/en/latest/benchmark.html) and [model list](https://mmdeploy.readthedocs.io/en/latest/supported_models.html).
 
 ## Contributing
 
