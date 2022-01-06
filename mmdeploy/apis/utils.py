@@ -7,7 +7,7 @@ from mmdeploy.utils import get_codebase, get_task_type
 
 def build_task_processor(model_cfg: mmcv.Config, deploy_cfg: mmcv.Config,
                          device: str) -> BaseTask:
-    """Build a task processor to manage the deploy pipeline.
+    """Build a task processor to manage the deployment pipeline.
 
     Args:
         model_cfg (str | mmcv.Config): Model config file.

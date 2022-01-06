@@ -8,6 +8,7 @@ from mmcv.utils.registry import Registry
 from torch.utils.data import DataLoader, Dataset
 
 from mmdeploy.utils import Codebase, Task
+from .task import BaseTask
 
 
 class MMCodebase(metaclass=ABCMeta):
@@ -15,11 +16,11 @@ class MMCodebase(metaclass=ABCMeta):
 
     task_registry: Registry = None
 
-    def __init__() -> None:
+    def __init__(self) -> None:
         pass
 
     @classmethod
-    def get_task_class(cls, task: Task) -> type:
+    def get_task_class(cls, task: Task) -> BaseTask:
         """Get the task processors class according to the task type.
 
         Args:
@@ -111,7 +112,7 @@ def __build_codebase_class(codebase: Codebase, registry: Registry):
 CODEBASE = Registry('Codebases', build_func=__build_codebase_class)
 
 
-def get_codebase_class(codebase: Codebase) -> type:
+def get_codebase_class(codebase: Codebase) -> MMCodebase:
     """Get the codebase class from the registry.
 
     Args:
