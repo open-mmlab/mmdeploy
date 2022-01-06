@@ -168,12 +168,21 @@ def test_l2norm_forward(backend_type):
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg)
-    for model_output, rewrite_output in zip(model_outputs[0],
-                                            rewrite_outputs[0]):
-        model_output = model_output.squeeze().cpu().numpy()
-        rewrite_output = rewrite_output.squeeze()
-        assert np.allclose(
-            model_output, rewrite_output, rtol=1e-03, atol=1e-05)
+
+    if is_backend_output:
+        for model_output, rewrite_output in zip(model_outputs[0],
+                                                rewrite_outputs[0]):
+            model_output = model_output.squeeze().cpu().numpy()
+            rewrite_output = rewrite_output.squeeze()
+            assert np.allclose(
+                model_output, rewrite_output, rtol=1e-03, atol=1e-05)
+    else:
+        for model_output, rewrite_output in zip(model_outputs[0],
+                                                rewrite_outputs[0]):
+            model_output = model_output.squeeze().cpu().numpy()
+            rewrite_output = rewrite_output.squeeze()
+            assert np.allclose(
+                model_output[0], rewrite_output, rtol=1e-03, atol=1e-05)
 
 
 def test_get_bboxes_of_fcos_head_ncnn():
