@@ -109,13 +109,16 @@ def test_can_not_run_onnx2openvino_without_mo():
 def test_get_input_info_from_cfg():
     from mmdeploy.apis.openvino import get_input_info_from_cfg
 
+    # Test 1
     deploy_cfg = mmcv.Config()
     with pytest.raises(KeyError):
         get_input_info_from_cfg(deploy_cfg)
 
+    # Test 2
     input_name = 'input'
     height, width = 600, 1000
-    expected_input_info = {input_name: [1, 3, height, width]}
+    shape = [1, 3, height, width]
+    expected_input_info = {input_name: shape}
     deploy_cfg = mmcv.Config({
         'backend_config': {
             'model_inputs': [{
@@ -124,17 +127,31 @@ def test_get_input_info_from_cfg():
         }
     })
     input_info = get_input_info_from_cfg(deploy_cfg)
-    assert input_info == expected_input_info, \
+    assert input_info == expected_input_info, 'Test 2: ' \
         'The expected value of \'input_info\' does not match the received one.'
 
+    # Test 3
     # The case where the input name in 'onnx_config'
     # is different from 'backend_config'.
-    onnx_config_input_name = get_random_name()
+    onnx_config_input_name = get_random_name(1234)
     deploy_cfg.merge_from_dict(
         {'onnx_config': {
             'input_names': [onnx_config_input_name]
         }})
-    expected_input_info = {onnx_config_input_name: [1, 3, height, width]}
+    expected_input_info = {onnx_config_input_name: shape}
     input_info = get_input_info_from_cfg(deploy_cfg)
-    assert input_info == expected_input_info, \
+    assert input_info == expected_input_info, 'Test 3: ' \
+        'The expected value of \'input_info\' does not match the received one.'
+
+    # Test 4
+    # The case where 'backend_config.model_inputs.opt_shapes'
+    # is given by a list, not a dictionary.
+    deploy_cfg.merge_from_dict(
+        {'backend_config': {
+            'model_inputs': [{
+                'opt_shapes': [shape]
+            }]
+        }})
+    input_info = get_input_info_from_cfg(deploy_cfg)
+    assert input_info == expected_input_info, 'Test 4: ' \
         'The expected value of \'input_info\' does not match the received one.'

@@ -14,7 +14,8 @@ from torch import nn
 
 import mmdeploy.codebase  # noqa: F401,F403
 from mmdeploy.core import RewriterContext, patch_model
-from mmdeploy.utils import Backend, get_backend, get_ir_config, get_onnx_config
+from mmdeploy.utils import (Backend, get_backend, get_dynamic_axes,
+                            get_ir_config, get_onnx_config)
 
 
 def backend_checker(backend: Backend, require_plugin: bool = False):
@@ -357,11 +358,7 @@ def get_onnx_model(wrapped_model: nn.Module,
     flatten_model_inputs = get_flatten_inputs(model_inputs)
     input_names = [k for k, v in flatten_model_inputs.items() if k != 'ctx']
     output_names = onnx_cfg.get('output_names', None)
-
-    dynamic_axes = onnx_cfg.get('dynamic_axes', None)
-
-    if dynamic_axes is not None and not isinstance(dynamic_axes, Dict):
-        dynamic_axes = dict(zip(input_names, dynamic_axes))
+    dynamic_axes = get_dynamic_axes(deploy_cfg, input_names)
 
     with RewriterContext(
             cfg=deploy_cfg, backend=backend.value, opset=11), torch.no_grad():

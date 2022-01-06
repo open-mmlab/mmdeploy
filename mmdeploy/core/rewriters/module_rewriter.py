@@ -1,8 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
 from copy import deepcopy
-from typing import Dict
 
+import mmcv
 from torch import nn
 
 from mmdeploy.utils.constants import Backend
@@ -48,7 +48,7 @@ class ModuleRewriter:
 
     def patch_model(self,
                     model: nn.Module,
-                    cfg: Dict,
+                    cfg: mmcv.Config,
                     backend: str = Backend.DEFAULT.value,
                     recursive: bool = True,
                     **kwargs) -> nn.Module:
@@ -91,8 +91,8 @@ class ModuleRewriter:
 
         return module_class(module, cfg, **input_args)
 
-    def _replace_module(self, model: nn.Module, cfg: Dict, recursive: bool,
-                        **kwargs):
+    def _replace_module(self, model: nn.Module, cfg: mmcv.Config,
+                        recursive: bool, **kwargs):
         """DFS and replace target models."""
 
         def _replace_module_impl(model, cfg, **kwargs):
