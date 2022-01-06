@@ -260,7 +260,7 @@ def get_calib_filename(deploy_cfg: Union[str, mmcv.Config]) -> Optional[str]:
         deploy_cfg (str | mmcv.Config): The path or content of config.
 
     Returns:
-        str: The filename of output calib file.
+        str | None: Could be the filename of output calib file or None.
     """
 
     calib_config = get_calib_config(deploy_cfg)
