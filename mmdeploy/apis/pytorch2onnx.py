@@ -60,7 +60,7 @@ def torch2onnx(img: Any,
                model_cfg: Union[str, mmcv.Config],
                model_checkpoint: Optional[str] = None,
                device: str = 'cuda:0'):
-    """Convert PyToch model to ONNX model.
+    """Convert PyTorch model to ONNX model.
 
     Args:
         img (str | np.ndarray | torch.Tensor): Input image used to assist
