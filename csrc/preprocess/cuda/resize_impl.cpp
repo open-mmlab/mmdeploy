@@ -12,7 +12,12 @@ namespace cuda {
 
 class ResizeImpl final : public ::mmdeploy::ResizeImpl {
  public:
-  explicit ResizeImpl(const Value& args) : ::mmdeploy::ResizeImpl(args) {}
+  explicit ResizeImpl(const Value& args) : ::mmdeploy::ResizeImpl(args) {
+    if (arg_.interpolation != "bilinear" && arg_.interpolation != "nearest") {
+      ERROR("{} interpolation is not supported", arg_.interpolation);
+      throw_exception(eNotSupported);
+    }
+  }
   ~ResizeImpl() override = default;
 
  protected:
@@ -23,67 +28,44 @@ class ResizeImpl final : public ::mmdeploy::ResizeImpl {
     Tensor dst_tensor(dst_desc);
 
     auto stream = GetNative<cudaStream_t>(stream_);
-    if (arg_.interpolation == "bilinear") {
-      OUTCOME_TRY(ResizeLinear(src_tensor, dst_tensor, stream));
-    } else if (arg_.interpolation == "nearest") {
-      OUTCOME_TRY(ResizeNearest(src_tensor, dst_tensor, stream));
+    if (tensor.data_type() == DataType::kINT8) {
+      OUTCOME_TRY(ResizeDispatch<uint8_t>(src_tensor, dst_tensor, stream));
+    } else if (tensor.data_type() == DataType::kFLOAT) {
+      OUTCOME_TRY(ResizeDispatch<float>(src_tensor, dst_tensor, stream));
     } else {
-      ERROR("{} interpolation is not supported", arg_.interpolation);
+      ERROR("unsupported data type {}", tensor.data_type());
       return Status(eNotSupported);
     }
     return dst_tensor;
   }
 
  private:
-  Result<void> ResizeLinear(const Tensor& src, Tensor& dst, cudaStream_t stream) {
-    int h = (int)src.shape(1);
-    int w = (int)src.shape(2);
-    int c = (int)src.shape(3);
-    int dst_h = (int)dst.shape()[1];
-    int dst_w = (int)dst.shape()[2];
-    ppl::common::RetCode ret = 0;
-
-    auto data_type = src.data_type();
-    if (data_type == DataType::kINT8) {
-      auto input = src.data<uint8_t>();
-      auto output = dst.data<uint8_t>();
-      if (1 == c) {
-        ret = ppl::cv::cuda::Resize<uint8_t, 1>(stream, h, w, w * c, input, dst_h, dst_w, dst_w * c,
-                                                output, ppl::cv::INTERPOLATION_TYPE_LINEAR);
-      } else if (3 == c) {
-        ret = ppl::cv::cuda::Resize<uint8_t, 3>(stream, h, w, w * c, input, dst_h, dst_w, dst_w * c,
-                                                output, ppl::cv::INTERPOLATION_TYPE_LINEAR);
-      } else if (4 == c) {
-        ret = ppl::cv::cuda::Resize<uint8_t, 4>(stream, h, w, w * c, input, dst_h, dst_w, dst_w * c,
-                                                output, ppl::cv::INTERPOLATION_TYPE_LINEAR);
-      } else {
-        ERROR("unsupported channels {}", c);
-        return Status(eNotSupported);
-      }
-    } else if (data_type == DataType::kFLOAT) {
-      auto input = src.data<float>();
-      auto output = dst.data<float>();
-      if (1 == c) {
-        ret = ppl::cv::cuda::Resize<float, 1>(stream, h, w, w * c, input, dst_h, dst_w, dst_w * c,
-                                              output, ppl::cv::INTERPOLATION_TYPE_LINEAR);
-      } else if (3 == c) {
-        ret = ppl::cv::cuda::Resize<float, 3>(stream, h, w, w * c, input, dst_h, dst_w, dst_w * c,
-                                              output, ppl::cv::INTERPOLATION_TYPE_LINEAR);
-      } else if (4 == c) {
-        ret = ppl::cv::cuda::Resize<float, 4>(stream, h, w, w * c, input, dst_h, dst_w, dst_w * c,
-                                              output, ppl::cv::INTERPOLATION_TYPE_LINEAR);
-      } else {
-        ERROR("unsupported channels {}", c);
-        return Status(eNotSupported);
-      }
-    } else {
-      ERROR("unsupported data type {}", src.data_type());
-      return Status(eNotSupported);
+  template <class T, int C, class... Args>
+  ppl::common::RetCode DispatchImpl(Args&&... args) {
+#ifdef PPLCV_VERSION_MAJOR
+    if (arg_.interpolation == "bilinear") {
+      return ppl::cv::cuda::Resize<T, C>(std::forward<Args>(args)...,
+                                         ppl::cv::INTERPOLATION_TYPE_LINEAR);
     }
-    return ret == 0 ? success() : Result<void>(Status(eFail));
+    if (arg_.interpolation == "nearest") {
+      return ppl::cv::cuda::Resize<T, C>(std::forward<Args>(args)...,
+                                         ppl::cv::INTERPOLATION_TYPE_NEAREST_POINT);
+    }
+
+#else
+#warning "support for ppl.cv < 0.6 is deprecated and will be dropped in the future"
+    if (arg_.interpolation == "bilinear") {
+      return ppl::cv::cuda::ResizeLinear<T, C>(std::forward<Args>(args)...);
+    }
+    if (arg_.interpolation == "nearest") {
+      return ppl::cv::cuda::ResizeNearestPoint<T, C>(std::forward<Args>(args)...);
+    }
+#endif
+    return ppl::common::RC_UNSUPPORTED;
   }
 
-  Result<void> ResizeNearest(const Tensor& src, Tensor& dst, cudaStream_t stream) {
+  template <class T>
+  Result<void> ResizeDispatch(const Tensor& src, Tensor& dst, cudaStream_t stream) {
     int h = (int)src.shape(1);
     int w = (int)src.shape(2);
     int c = (int)src.shape(3);
@@ -91,41 +73,16 @@ class ResizeImpl final : public ::mmdeploy::ResizeImpl {
     int dst_w = (int)dst.shape(2);
     ppl::common::RetCode ret = 0;
 
-    auto data_type = src.data_type();
-    if (DataType::kINT8 == data_type) {
-      auto input = src.data<uint8_t>();
-      auto output = dst.data<uint8_t>();
-      if (1 == c) {
-        ret = ppl::cv::cuda::Resize<uint8_t, 1>(stream, h, w, w * c, input, dst_h, dst_w, dst_w * c,
-                                                output, ppl::cv::INTERPOLATION_TYPE_NEAREST_POINT);
-      } else if (3 == c) {
-        ret = ppl::cv::cuda::Resize<uint8_t, 3>(stream, h, w, w * c, input, dst_h, dst_w, dst_w * c,
-                                                output, ppl::cv::INTERPOLATION_TYPE_NEAREST_POINT);
-      } else if (4 == c) {
-        ret = ppl::cv::cuda::Resize<uint8_t, 4>(stream, h, w, w * c, input, dst_h, dst_w, dst_w * c,
-                                                output, ppl::cv::INTERPOLATION_TYPE_NEAREST_POINT);
-      } else {
-        ERROR("unsupported channel {}", c);
-        return Status(eNotSupported);
-      }
-    } else if (data_type == DataType::kFLOAT) {
-      auto input = src.data<float>();
-      auto output = dst.data<float>();
-      if (1 == c) {
-        ret = ppl::cv::cuda::Resize<float, 1>(stream, h, w, w * c, input, dst_h, dst_w, dst_w * c,
-                                              output, ppl::cv::INTERPOLATION_TYPE_NEAREST_POINT);
-      } else if (3 == c) {
-        ret = ppl::cv::cuda::Resize<float, 3>(stream, h, w, w * c, input, dst_h, dst_w, dst_w * c,
-                                              output, ppl::cv::INTERPOLATION_TYPE_NEAREST_POINT);
-      } else if (4 == c) {
-        ret = ppl::cv::cuda::Resize<float, 4>(stream, h, w, w * c, input, dst_h, dst_w, dst_w * c,
-                                              output, ppl::cv::INTERPOLATION_TYPE_NEAREST_POINT);
-      } else {
-        ERROR("unsupported channel {}", c);
-        return Status(eNotSupported);
-      }
+    auto input = src.data<T>();
+    auto output = dst.data<T>();
+    if (1 == c) {
+      ret = DispatchImpl<T, 1>(stream, h, w, w * c, input, dst_h, dst_w, dst_w * c, output);
+    } else if (3 == c) {
+      ret = DispatchImpl<T, 3>(stream, h, w, w * c, input, dst_h, dst_w, dst_w * c, output);
+    } else if (4 == c) {
+      ret = DispatchImpl<T, 4>(stream, h, w, w * c, input, dst_h, dst_w, dst_w * c, output);
     } else {
-      ERROR("unsupported data type {}", src.data_type());
+      ERROR("unsupported channels {}", c);
       return Status(eNotSupported);
     }
     return ret == 0 ? success() : Result<void>(Status(eFail));
