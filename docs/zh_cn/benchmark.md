@@ -324,10 +324,10 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">YOLOX</td>
     <td align="center">COCO</td>
     <td align="center">1x3x416x416</td>
-    <td align="center">132.69</td>
-    <td align="center">7.54</td>
-    <td align="center">124.93</td>
-    <td align="center">8.00</td>
+    <td align="center">111.60</td>
+    <td align="center">8.96</td>
+    <td align="center">134.50</td>
+    <td align="center">7.43</td>
     <td>$MMDET_DIR/configs/yolox/yolox_tiny_8x8_300e_coco.py</td>
   </tr>
 </tbody>
