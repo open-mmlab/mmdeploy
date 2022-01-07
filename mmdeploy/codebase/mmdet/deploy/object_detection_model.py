@@ -73,7 +73,8 @@ class End2EndModel(BaseBackendModel):
             backend=backend,
             backend_files=backend_files,
             device=device,
-            output_names=output_names)
+            output_names=output_names,
+            deploy_cfg=self.deploy_cfg)
 
     @staticmethod
     def __clear_outputs(
@@ -307,7 +308,8 @@ class PartitionSingleStageModel(End2EndModel):
             backend=backend,
             backend_files=backend_files,
             device=device,
-            output_names=['scores', 'boxes'])
+            output_names=['scores', 'boxes'],
+            deploy_cfg=self.deploy_cfg)
 
     def partition0_postprocess(self, scores: torch.Tensor,
                                bboxes: torch.Tensor):
@@ -404,11 +406,17 @@ class PartitionTwoStageModel(End2EndModel):
         ] + ['scores', 'boxes']
 
         self.first_wrapper = BaseBackendModel._build_wrapper(
-            backend, backend_files[0:n], device, partition0_output_names)
+            backend,
+            backend_files[0:n],
+            device,
+            partition0_output_names,
+            deploy_cfg=self.deploy_cfg)
 
         self.second_wrapper = BaseBackendModel._build_wrapper(
-            backend, backend_files[n:2 * n], device,
-            ['cls_score', 'bbox_pred'])
+            backend,
+            backend_files[n:2 * n],
+            device, ['cls_score', 'bbox_pred'],
+            deploy_cfg=self.deploy_cfg)
 
     def partition0_postprocess(self, x: Sequence[torch.Tensor],
                                scores: torch.Tensor, bboxes: torch.Tensor):
@@ -670,9 +678,6 @@ def build_object_detection_model(model_files: Sequence[str],
         codebase_config = get_codebase_config(deploy_cfg)
         # Default Config is 'end2end'
         partition_type = codebase_config.get('model_type', 'end2end')
-
-    if backend == Backend.SDK:
-        model_files.append('Detector')
 
     backend_detector = __BACKEND_MODEL.build(
         partition_type,

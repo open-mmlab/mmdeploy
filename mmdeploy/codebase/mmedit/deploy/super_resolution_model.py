@@ -43,7 +43,8 @@ class End2EndModel(BaseBackendModel):
             backend=backend,
             backend_files=backend_files,
             device=device,
-            output_names=output_names)
+            output_names=output_names,
+            deploy_cfg=self.deploy_cfg)
 
     def forward(self,
                 lq: torch.Tensor,
@@ -197,7 +198,6 @@ def build_super_resolution_model(model_files: Sequence[str],
     backend = get_backend(deploy_cfg)
 
     if backend == Backend.SDK:
-        model_files.append('Restorer')
         creator = SDKEnd2EndModel
     else:
         creator = End2EndModel

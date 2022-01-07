@@ -3,8 +3,8 @@ from mmdeploy.backend.ncnn import is_available as ncnn_available
 from mmdeploy.backend.onnxruntime import is_available as ort_available
 from mmdeploy.backend.openvino import is_available as openvino_available
 from mmdeploy.backend.pplnn import is_available as pplnn_available
-from mmdeploy.backend.tensorrt import is_available as trt_available
 from mmdeploy.backend.sdk import is_available as sdk_available
+from mmdeploy.backend.tensorrt import is_available as trt_available
 
 __all__ = []
 if ncnn_available():

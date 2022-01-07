@@ -61,7 +61,8 @@ class End2EndModel(BaseBackendModel):
             backend=backend,
             backend_files=backend_files,
             device=device,
-            output_names=output_names)
+            output_names=output_names,
+            deploy_cfg=self.deploy_cfg)
 
     def forward(self, img: Sequence[torch.Tensor],
                 img_metas: Sequence[Sequence[dict]], *args, **kwargs):
@@ -175,7 +176,6 @@ def build_text_recognition_model(model_files: Sequence[str],
     backend = get_backend(deploy_cfg)
 
     if backend == Backend.SDK:
-        model_files.append('TextRecognizer')
         creator = SDKEnd2EndModel
     else:
         creator = End2EndModel

@@ -19,7 +19,7 @@ class PyClassifier {
     handle_ = {};
   }
 
-  // std::vector<py::array_t<float>> 
+  // std::vector<py::array_t<float>>
   std::vector<std::vector<std::tuple<int, float>>> Apply(const std::vector<PyImage> &imgs) {
     std::vector<mm_mat_t> mats;
     mats.reserve(imgs.size());

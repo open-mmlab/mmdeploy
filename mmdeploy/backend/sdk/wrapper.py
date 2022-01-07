@@ -1,10 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Any, Dict, Optional, Sequence, Union
+import mmdeploy_python as c_api
 
 from mmdeploy.utils import Backend
-from mmdeploy.utils.timer import TimeCounter
 from ..base import BACKEND_WRAPPER, BaseWrapper
-import mmdeploy_python as c_api
 
 
 @BACKEND_WRAPPER.register_module(Backend.SDK.value)
@@ -16,12 +14,8 @@ class SDKWrapper(BaseWrapper):
         # TODO: get device id somewhere
         self.handle = creator(model_file, device, 0)
 
-    @staticmethod
-    def get_backend_file_count() -> int:
-        return 2
-
     def invoke(self, imgs):
         return self.handle(imgs)
 
     def forward(self, *args, **kwargs):
-        raise NotImplementedError("")
+        raise NotImplementedError('')

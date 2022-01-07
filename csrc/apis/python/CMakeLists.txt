@@ -27,6 +27,6 @@ target_link_libraries(mmdeploy_python PRIVATE
         -Wl,--no-as-needed ${MMDEPLOY_DYNAMIC_MODULES} -Wl,--as-need
         )
 
-target_include_directories(mmdeploy_python PRIVATE 
+target_include_directories(mmdeploy_python PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/../..)
