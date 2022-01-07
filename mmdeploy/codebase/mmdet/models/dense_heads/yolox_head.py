@@ -139,13 +139,9 @@ def yolox_head__get_bboxes__ncnn(ctx,
         output__ncnn (Tensor): outputs, shape is [N, num_det, 6].
     """
     from mmdeploy.codebase.mmdet.core.ops import ncnn_detection_output_forward
-    if isinstance(img_metas[0]['img_shape'][0], int):
-        assert isinstance(img_metas[0]['img_shape'][1], int)
-        img_height = img_metas[0]['img_shape'][0]
-        img_width = img_metas[0]['img_shape'][1]
-    else:
-        img_height = img_metas[0]['img_shape'][0].item()
-        img_width = img_metas[0]['img_shape'][1].item()
+    img_height = int(img_metas[0]['img_shape'][0])
+    img_width = int(img_metas[0]['img_shape'][1])
+
     assert len(cls_scores) == len(bbox_preds) == len(objectnesses)
     device = cls_scores[0].device
     cfg = self.test_cfg if cfg is None else cfg
