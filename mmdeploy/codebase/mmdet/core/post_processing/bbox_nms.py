@@ -70,7 +70,7 @@ def select_nms_index(scores: torch.Tensor,
     batched_labels = batched_labels[topk_batch_inds, topk_inds, ...]
 
     # slice and recover the tensor
-    return batched_dets[:, 0:-1, :], batched_labels[:, 0:-1]
+    return batched_dets, batched_labels
 
 
 def _multiclass_nms(boxes: Tensor,
