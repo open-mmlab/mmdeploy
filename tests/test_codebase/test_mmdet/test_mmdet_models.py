@@ -162,8 +162,9 @@ def test_focus_forward_ncnn():
         'x': x,
     }
     deploy_cfg = mmcv.Config(
-        dict(backend_config=dict(type=backend_type.value),
-             onnx_config=dict(input_shape=None)))
+        dict(
+            backend_config=dict(type=backend_type.value),
+            onnx_config=dict(input_shape=None)))
     rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
