@@ -302,6 +302,9 @@ def test_batched_nms(backend,
         score_threshold=score_threshold,
         pre_top_k=pre_topk + 1,
         keep_top_k=after_topk + 1)
+    expected_result = (expected_result[0][:,
+                                          0:-1, :], expected_result[1][:,
+                                                                       0:-1])
 
     boxes = nms_boxes.unsqueeze(2).tile(num_classes, 1)
 
