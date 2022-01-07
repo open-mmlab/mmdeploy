@@ -84,6 +84,10 @@ class BaseTask(metaclass=ABCMeta):
         Returns:
             Dataset: The built dataset.
         """
+
+        if 'pipeline' in self.deploy_cfg:
+            dataset_cfg.data[dataset_type].pipeline = self.deploy_cfg.pipeline
+
         dataset = self.codebase_class.build_dataset(dataset_cfg, dataset_type,
                                                     **kwargs)
         if is_sort_dataset:

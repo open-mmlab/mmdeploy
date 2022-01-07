@@ -78,17 +78,6 @@ def parse_args():
     return args
 
 
-def patch_sdk_pipeline(model_cfg, task):
-    if task != 'SuperResolution':
-        model_cfg['data']['test']['pipeline'] = [
-            dict(type='LoadImageFromFile'),
-            dict(
-                type='Collect',
-                keys=['img'],
-                meta_keys=['filename', 'ori_shape'])
-        ]
-
-
 def main():
     args = parse_args()
     if args.out is not None and not args.out.endswith(('.pkl', '.pickle')):
@@ -98,9 +87,6 @@ def main():
 
     # load deploy_cfg
     deploy_cfg, model_cfg = load_config(deploy_cfg_path, model_cfg_path)
-
-    if deploy_cfg.backend_config.type == 'sdk':
-        patch_sdk_pipeline(model_cfg, deploy_cfg.codebase_config.task)
 
     # merge options for model cfg
     if args.cfg_options is not None:
