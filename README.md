@@ -1,6 +1,13 @@
 <div align="center">
-  <img src="resources/mmdeploy-logo.png" width="600"/>
+  <img src="resources/mmdeploy-logo.png" width="450"/>
 </div>
+
+[![docs](https://img.shields.io/badge/docs-latest-blue)](https://mmdeploy.readthedocs.io/en/latest/)
+[![badge](https://github.com/open-mmlab/mmdeploy/workflows/build/badge.svg)](https://github.com/open-mmlab/mmdeploy/actions)
+[![codecov](https://codecov.io/gh/open-mmlab/mmdeploy/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmdeploy)
+[![license](https://img.shields.io/github/license/open-mmlab/mmdeploy.svg)](https://github.com/open-mmlab/mmdeploy/blob/master/LICENSE)
+[![issue resolution](https://isitmaintained.com/badge/resolution/open-mmlab/mmdeploy.svg)](https://github.com/open-mmlab/mmdeploy/issues)
+[![open issues](https://isitmaintained.com/badge/open/open-mmlab/mmdeploy.svg)](https://github.com/open-mmlab/mmdeploy/issues)
 
 ## Introduction
 
@@ -10,8 +17,9 @@ MMDeploy is an open-source deep learning model deployment toolset. It is
 a part of the [OpenMMLab](https://openmmlab.com/) project.
 
 <div align="center">
-  <img src="https://socialistmodernism.com/wp-content/uploads/2017/07/placeholder-image.png"/>
+  <img src="resources/introduction.png" width="800"/>
 </div>
+
 
 ### Major features
 
@@ -41,23 +49,24 @@ a part of the [OpenMMLab](https://openmmlab.com/) project.
 
 This project is released under the [Apache 2.0 license](LICENSE).
 
-
 ## Installation
 
-Please refer to [build.md](docs/en/build.md) for installation.
+Please refer to [build.md](https://mmdeploy.readthedocs.io/en/latest/build.html) for installation.
 
 ## Getting Started
-Please see [getting_started.md](docs/en/get_started.md) for the basic usage of MMDeploy. We also provide other tutorials for:
-- [how to convert model](docs/en/tutorials/how_to_convert_model.md)
-- [how to write config](docs/en/tutorials/how_to_write_config.md)
-- [how to support new models](docs/en/tutorials/how_to_support_new_models.md)
-- [how to measure performance of models](docs/en/tutorials/how_to_measure_performance_of_models.md)
-- [MMDeploy's SDK Model spec](docs/en/tutorials/sdk_model_spec.md)
-- [how to integrate SDK to your application](docs/en/tutorials/sdk_integration.md)
-- [how to develop postprocessing components in SDK](docs/en/tutorials/postprocess_component_development.md)
 
-Please refer to [FAQ](docs/en/faq.md) for frequently asked questions.
+Please see [getting_started.md](https://mmdeploy.readthedocs.io/en/latest/get_started.html) for the basic usage of MMDeploy. We also provide other tutorials for:
 
+- [how to convert model](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_convert_model.html)
+- [how to write config](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_write_config.html)
+- [how to support new models](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_support_new_models.html)
+- [how to measure performance of models](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_measure_performance_of_models.html)
+
+Please refer to [FAQ](https://mmdeploy.readthedocs.io/en/latest/faq.html) for frequently asked questions.
+
+## Benchmark and model zoo
+
+Results and supported model list are available in the [benchmark](https://mmdeploy.readthedocs.io/en/latest/benchmark.html) and [model list](https://mmdeploy.readthedocs.io/en/latest/supported_models.html).
 
 ## Contributing
 
@@ -65,7 +74,9 @@ We appreciate all contributions to improve MMDeploy. Please refer to [CONTRIBUTI
 
 ## Acknowledgement
 
-We would like to thank OpenVINO team, for their remarkable efforts to export MMDetection models to OpenVINO and integrate OpenVINO into MMDeploy backends
+We would like to sincerely thank the following teams for their contributions to [MMDeploy](https://github.com/open-mmlab/mmdeploy):
+- [OpenPPL](https://github.com/openppl-public)
+- [OpenVINO](https://github.com/openvinotoolkit/openvino)
 
 ## Citation
 
@@ -97,3 +108,6 @@ If you find this project useful in your research, please consider cite:
 - [MMFlow](https://github.com/open-mmlab/mmflow): OpenMMLab optical flow toolbox and benchmark.
 - [MMFewShot](https://github.com/open-mmlab/mmfewshot): OpenMMLab FewShot Learning Toolbox and Benchmark.
 - [MMHuman3D](https://github.com/open-mmlab/mmhuman3d): OpenMMLab Human Pose and Shape Estimation Toolbox and Benchmark.
+- [MMSelfSup](https://github.com/open-mmlab/mmselfsup): OpenMMLab self-supervised learning Toolbox and Benchmark.
+- [MMRazor](https://github.com/open-mmlab/mmrazor): OpenMMLab Model Compression Toolbox and Benchmark.
+- [MMDeploy](https://github.com/open-mmlab/mmdeploy): OpenMMLab Model Deployment Framework.

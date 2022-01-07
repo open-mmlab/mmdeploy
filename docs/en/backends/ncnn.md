@@ -1,14 +1,20 @@
 ## ncnn Support
 
+MMDeploy now supports ncnn version == 1.0.20211208
+
 ### Installation
 
 #### Install ncnn
 
 - Download VulkanTools for the compilation of ncnn.
+
     ```bash
     wget https://sdk.lunarg.com/sdk/download/1.2.176.1/linux/vulkansdk-linux-x86_64-1.2.176.1.tar.gz?Human=true -O vulkansdk-linux-x86_64-1.2.176.1.tar.gz
     tar -xf vulkansdk-linux-x86_64-1.2.176.1.tar.gz
     export VULKAN_SDK=$(pwd)/1.2.176.1/x86_64
+    export LD_LIBRARY_PATH=$VULKAN_SDK/lib:$LD_LIBRARY_PATH
+    ```
+
 - Check your gcc version.
 You should ensure your gcc satisfies `gcc >= 6`.
 
@@ -21,23 +27,24 @@ You should ensure your gcc satisfies `gcc >= 6`.
 
     - Download ncnn source code
         ```bash
-        git clone git@github.com:Tencent/ncnn.git
+        git clone -b 20211208 git@github.com:Tencent/ncnn.git
         ```
 
     - <font color=red>Make install</font> ncnn library
         ```bash
         cd ncnn
+        export NCNN_DIR=$(pwd)
         git submodule update --init
-        mkdir build
-        cd build
+        mkdir -p build && cd build
         cmake -DNCNN_VULKAN=ON -DNCNN_SYSTEM_GLSLANG=ON -DNCNN_BUILD_EXAMPLES=ON -DNCNN_PYTHON=ON -DNCNN_BUILD_TOOLS=ON -DNCNN_BUILD_BENCHMARK=ON -DNCNN_BUILD_TESTS=ON ..
         make install
         ```
 
     - Install pyncnn module
         ```bash
-        cd ncnn/python
-        pip install .
+        cd ${NCNN_DIR} # To NCNN root directory
+        cd python
+        pip install -e .
         ```
 
 #### Build custom ops
@@ -46,8 +53,7 @@ Some custom ops are created to support models in OpenMMLab, the custom ops can b
 
 ```bash
 cd ${MMDEPLOY_DIR}
-mkdir build
-cd build
+mkdir -p build && cd build
 cmake -DMMDEPLOY_TARGET_BACKENDS=ncnn ..
 make -j$(nproc)
 ```
@@ -55,7 +61,7 @@ make -j$(nproc)
 If you haven't installed NCNN in the default path, please add `-Dncnn_DIR` flag in cmake.
 
 ```bash
- cmake -DMMDEPLOY_TARGET_BACKENDS=ncnn -Dncnn_DIR={path/of/ncnn}/build/install/lib/cmake/ncnn ..
+ cmake -DMMDEPLOY_TARGET_BACKENDS=ncnn -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn ..
  make -j$(nproc)
 ```
 
@@ -63,6 +69,20 @@ If you haven't installed NCNN in the default path, please add `-Dncnn_DIR` flag 
 
 - This follows the tutorial on [How to convert model](../tutorials/how_to_convert_model.md).
 - The converted model has two files: `.param` and `.bin`, as model structure file and weight file respectively.
+
+
+### List of supported custom ops
+
+| Operator                        | CPU | MMDeploy Releases |
+|:--------------------------------|:---:|:------------------|
+| [Expand](../ops/ncnn.md#expand) |  Y  | master            |
+| [Gather](../ops/ncnn.md#gather) |  Y  | master            |
+| [Shape](../ops/ncnn.md#shape)   |  Y  | master            |
+| [TopK](../ops/ncnn.md#topk)     |  Y  | master            |
+
+#### Reminder
+
+- In ncnn version >= 1.0.20201208, the dimension of ncnn.Mat should be no more than 4.
 
 ### FAQs
 

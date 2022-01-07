@@ -7,7 +7,7 @@ import torch
 from mmedit.core import psnr, ssim, tensor2img
 
 from mmdeploy.codebase.base import BaseBackendModel
-from mmdeploy.utils import Backend, get_backend, get_onnx_config, load_config
+from mmdeploy.utils import Backend, get_backend, load_config
 
 
 class End2EndModel(BaseBackendModel):
@@ -29,7 +29,7 @@ class End2EndModel(BaseBackendModel):
                  device: str,
                  model_cfg: mmcv.Config,
                  deploy_cfg: Union[str, mmcv.Config] = None):
-        super().__init__()
+        super().__init__(deploy_cfg=deploy_cfg)
         self.deploy_cfg = deploy_cfg
         self.test_cfg = model_cfg.test_cfg
         self.allowed_metrics = {'PSNR': psnr, 'SSIM': ssim}
@@ -38,8 +38,7 @@ class End2EndModel(BaseBackendModel):
 
     def _init_wrapper(self, backend: Backend, backend_files: Sequence[str],
                       device: str):
-        onnx_config = get_onnx_config(self.deploy_cfg)
-        output_names = onnx_config['output_names']
+        output_names = self.output_names
         self.wrapper = BaseBackendModel._build_wrapper(
             backend=backend,
             backend_files=backend_files,
@@ -103,7 +102,7 @@ class End2EndModel(BaseBackendModel):
         Returns:
             list[np.ndarray] : High resolution image.
         """
-        outputs = self.wrapper({'input': lq})
+        outputs = self.wrapper({self.input_name: lq})
         outputs = self.wrapper.output_to_list(outputs)
         outputs = [out.detach().cpu().numpy() for out in outputs]
         return outputs

@@ -5,54 +5,34 @@
 
 .. toctree::
    :maxdepth: 1
-   :caption: 安装指南
+   :caption: 快速上手
 
    build.md
+   get_started.md
 
 .. toctree::
    :maxdepth: 1
    :caption: 教程
 
    tutorials/how_to_convert_model.md
-   tutorials/how_to_write_config.md
-   tutorials/how_to_evaluate_a_model.md
-   tutorials/how_to_test_model.md
-   tutorials/how_to_support_new_models.md
-   tutorials/how_to_add_test_units_for_backend_ops.md
-   tutorials/how_to_test_rewritten_models.md
 
 .. toctree::
    :maxdepth: 1
-   :caption: OpenMMLab 算法库支持
+   :caption: 基准
 
-   codebases/mmcls.md
-   codebases/mmdet.md
-   codebases/mmseg.md
-   codebases/mmedit.md
-   codebases/mmocr.md
+   benchmark.md
 
-.. toctree::
-   :maxdepth: 1
-   :caption: 推理引擎支持
-
-   backends/onnxruntime.md
-   backends/tensorrt.md
-   backends/ncnn.md
-   backends/pplnn.md
-
-.. toctree::
-   :maxdepth: 1
-   :caption: 自定义算子支持
-
-   ops/onnxruntime.md
-   ops/tensorrt.md
-   ops/ncnn.md
 
 .. toctree::
    :maxdepth: 1
    :caption: 常见问题
 
    faq.md
+
+.. toctree::
+   :caption: 语言切换
+
+   switch_language.md
 
 .. toctree::
    :maxdepth: 1

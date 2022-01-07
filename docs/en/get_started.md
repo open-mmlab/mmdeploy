@@ -1,6 +1,6 @@
 ## Get Started
 
-MMDeploy provides some useful tools. It is easy to deploy models in OpenMMLab to various platforms. You can convert models in our pre-defined pipeline or build a custom conversion pipeline by yourself. This guide will show you how to convert a model with MMDeploy!
+MMDeploy provides some useful tools. It is easy to deploy models in OpenMMLab to various platforms. You can convert models in our pre-defined pipeline or build a custom conversion pipeline by yourself. This guide will show you how to convert a model with MMDeploy and integrate MMDeploy's SDK to your application!
 
 ### Prerequisites
 
@@ -28,15 +28,16 @@ python ${MMDEPLOY_DIR}/tools/deploy.py \
     ${CHECKPOINT_DIR}/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth \
     ${INPUT_IMG} \
     --work-dir ${WORK_DIR} \
-    --device cuda:0
+    --device cuda:0 \
+    --dump-info
 ```
 
-`${MMDEPLOY_DIR}/tools/deploy.py` is a tool that does everything you need to convert a model. Read [how_to_convert_model](./tutorials/how_to_convert_model.md) for more details. The converted model and other meta-info will be found in `${WORK_DIR}`.
+`${MMDEPLOY_DIR}/tools/deploy.py` is a tool that does everything you need to convert a model. Read [how_to_convert_model](./tutorials/how_to_convert_model.md) for more details. The converted model and other meta-info will be found in `${WORK_DIR}`. And they make up of MMDeploy SDK Model that can be fed to MMDeploy SDK to do model inference.
 
-`two-stage_tensorrt_dynamic-320x320-1344x1344.py` is a config file that contains all arguments you need to customize the conversion pipeline. The name is formed as
+`detection_tensorrt_dynamic-320x320-1344x1344.py` is a config file that contains all arguments you need to customize the conversion pipeline. The name is formed as
 
 ```bash
-<task name>_<backend>_[backend options]_<dynamic support>.py
+<task name>_<backend>-[backend options]_<dynamic support>.py
 ```
 
 It is easy to find the deployment config you need by name. If you want to customize the conversion, you can edit the config file by yourself. Here is a tutorial about [how to write config](./tutorials/how_to_write_config.md).
@@ -68,19 +69,149 @@ python ${MMDEPLOY_DIR}/tools/test.py \
 
 Read [how to evaluate a model](./tutorials/how_to_evaluate_a_model.md) for more details about how to use `tools/test.py`
 
-### Add New Model Support?
+### Integrate MMDeploy SDK
 
-If the model you want to deploy has not been supported yet in MMDeploy, you can try to support it with the `rewriter` by yourself. Rewriting the functions with control flow or unsupported ops is a good way to solve the problem.
+Make sure to turn on `MMDEPLOY_BUILD_SDK` to build and install SDK by following [build.md](./build.md).
+After that, the structure in the installation folder will show as follows,
 
-```python
-@FUNCTION_REWRITER.register_rewriter(
-    func_name='torch.Tensor.repeat', backend='tensorrt')
-def repeat_static(ctx, input, *size):
-    origin_func = ctx.origin_func
-    if input.dim() == 1 and len(size) == 1:
-        return origin_func(input.unsqueeze(0), *([1] + list(size))).squeeze(0)
-    else:
-        return origin_func(input, *size)
+```
+install
+├── example
+├── include
+│   ├── c
+│   └── cpp
+└── lib
+```
+where `include/c` and `include/cpp` correspond to C and C++ API respectively.
+
+**Caution: The C++ API is highly volatile and not recommended at the moment.**
+
+In the example directory, there are several examples involving classification, object detection, image segmentation and so on.
+You can refer to these examples to learn how to use MMDeploy SDK's C API and how to link ${MMDeploy_LIBS} to your application.
+
+### A From-scratch Example
+
+Here is an example of how to deploy and inference Faster R-CNN model of MMDetection from scratch.
+
+#### Create Virtual Environment and Install MMDetection.
+
+Please run the following command in Anaconda environment to [install MMDetection](https://mmdetection.readthedocs.io/en/latest/get_started.html#a-from-scratch-setup-script).
+
+```bash
+conda create -n openmmlab python=3.7 -y
+conda activate openmmlab
+
+conda install pytorch==1.8.0 torchvision==0.9.0 cudatoolkit=10.2 -c pytorch -y
+
+# install the latest mmcv
+pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html
+
+# install mmdetection
+git clone https://github.com/open-mmlab/mmdetection.git
+cd mmdetection
+pip install -r requirements/build.txt
+pip install -v -e .
 ```
 
-Read [how_to_support_new_models](./tutorials/how_to_support_new_models.md) to learn more about the rewriter. And, PR is welcome!
+#### Download the Checkpoint of Faster R-CNN
+
+Download the checkpoint from this [link](https://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/faster_rcnn_r50_fpn_1x_coco/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth) and put it in the `{MMDET_ROOT}/checkpoints` where `{MMDET_ROOT}` is the root directory of your MMDetection codebase.
+
+#### Install MMDeploy and ONNX Runtime
+
+Please run the following command in Anaconda environment to [install MMDeploy](./build.md).
+```bash
+conda activate openmmlab
+
+git clone https://github.com/open-mmlab/mmdeploy.git
+cd mmdeploy
+git submodule update --init --recursive
+pip install -e .
+```
+
+Once we have installed the MMDeploy, we should select an inference engine for model inference. Here we take ONNX Runtime as an example. Run the following command to [install ONNX Runtime](./backends/onnxruntime.md):
+```bash
+pip install onnxruntime==1.8.1
+```
+
+Then download the ONNX Runtime library to build the mmdeploy plugin for ONNX Runtime:
+```bash
+wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
+
+tar -zxvf onnxruntime-linux-x64-1.8.1.tgz
+cd onnxruntime-linux-x64-1.8.1
+export ONNXRUNTIME_DIR=$(pwd)
+export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
+
+cd ${MMDEPLOY_DIR} # To MMDeploy root directory
+mkdir -p build && cd build
+
+# build ONNXRuntime custom ops
+cmake -DMMDEPLOY_TARGET_BACKENDS=ort -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
+make -j$(nproc)
+
+# build MMDeploy SDK
+cmake -DMMDEPLOY_BUILD_SDK=ON \
+      -DCMAKE_CXX_COMPILER=g++-7 \
+      -DOpenCV_DIR=/path/to/OpenCV/lib/cmake/OpenCV \
+      -Dspdlog_DIR=/path/to/spdlog/lib/cmake/spdlog \
+      -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} \
+      -DMMDEPLOY_TARGET_BACKENDS=ort \
+      -DMMDEPLOY_CODEBASES=mmdet ..
+make -j$(nproc) && make install
+```
+
+#### Model Conversion
+
+Once we have installed MMDetection, MMDeploy, ONNX Runtime and built plugin for ONNX Runtime, we can convert the Faster R-CNN to a `.onnx` model file which can be received by ONNX Runtime. Run following commands to use our deploy tools:
+
+```bash
+# Assume you have installed MMDeploy in ${MMDEPLOY_DIR} and MMDetection in ${MMDET_DIR}
+# If you do not know where to find the path. Just type `pip show mmdeploy` and `pip show mmdet` in your console.
+
+python ${MMDEPLOY_DIR}/tools/deploy.py \
+    ${MMDEPLOY_DIR}/configs/mmdet/detection/detection_onnxruntime_dynamic.py \
+    ${MMDET_DIR}/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py \
+    ${MMDET_DIR}/checkpoints/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth \
+    ${MMDET_DIR}/demo/demo.jpg \
+    --work-dir work_dirs \
+    --device cpu \
+    --show \
+    --dump-info
+```
+
+If the script runs successfully, two images will display on the screen one by one. The first image is the infernce result of ONNX Runtime and the second image is the result of PyTorch. At the same time, an onnx model file `end2end.onnx` and three json files (SDK config files) will generate on the work directory `work_dirs`.
+
+#### Run MMDeploy SDK demo
+
+After model conversion, SDK Model is saved in directory ${work_dir}.
+Here is a recipe for building & running object detection demo.
+```Bash
+cd build/install/example
+
+# path to onnxruntime ** libraries **
+export LD_LIBRARY_PATH=/path/to/onnxruntime/lib
+
+mkdir -p build && cd build
+cmake -DOpenCV_DIR=path/to/OpenCV/lib/cmake/OpenCV \
+      -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy ..
+make object_detection
+
+# suppress verbose logs
+export SPDLOG_LEVEL=warn
+
+# running the object detection example
+./object_detection cpu ${work_dirs} ${path/to/an/image}
+
+```
+If the demo runs successfully, an image named "output_detection.png" is supposed to be found showing detection objects.
+
+### Add New Model Support?
+
+If the models you want to deploy have not been supported yet in MMDeploy, you can try to support them by yourself. Here are some documents that may help you:
+- Read [how_to_support_new_models](./tutorials/how_to_support_new_models.md) to learn more about the rewriter.
+
+
+
+
+Finally, we welcome your PR!

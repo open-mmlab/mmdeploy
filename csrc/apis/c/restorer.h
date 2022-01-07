@@ -10,13 +10,23 @@
 
 #include "common.h"
 
+/**
+ * @brief Create a restorer instance
+ * @param[in] model an instance of image restoration model created by
+ * \ref mmdeploy_model_create_by_path or \ref mmdeploy_model_create in \ref model.h
+ * @param[in] device_name name of device, such as "cpu", "cuda", etc.
+ * @param[in] device_id id of device.
+ * @param[out] handle handle of the created restorer, which must be destroyed
+ * by \ref mmdeploy_restorer_destroy
+ * @return status code of the operation
+ */
 MM_SDK_API int mmdeploy_restorer_create(mm_model_t model, const char* device_name, int device_id,
                                         mm_handle_t* handle);
 
 /**
  * @brief Create a restorer instance
  * @param[in] model_path path to image restoration model
- * @param[in] device_name name of device, such as "cpu", "cuda" and etc.
+ * @param[in] device_name name of device, such as "cpu", "cuda", etc.
  * @param[in] device_id id of device.
  * @param[out] handle handle of the created restorer, which must be destroyed
  * by \ref mmdeploy_restorer_destroy

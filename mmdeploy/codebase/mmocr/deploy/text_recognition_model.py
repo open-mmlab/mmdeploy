@@ -8,7 +8,7 @@ from mmocr.models.builder import build_convertor
 from mmocr.models.textrecog import BaseRecognizer
 
 from mmdeploy.codebase.base import BaseBackendModel
-from mmdeploy.utils import Backend, get_backend, get_onnx_config, load_config
+from mmdeploy.utils import Backend, get_backend, load_config
 
 
 class End2EndModel(BaseBackendModel):
@@ -33,7 +33,7 @@ class End2EndModel(BaseBackendModel):
         deploy_cfg: Union[str, mmcv.Config] = None,
         model_cfg: Union[str, mmcv.Config] = None,
     ):
-        super(End2EndModel, self).__init__()
+        super(End2EndModel, self).__init__(deploy_cfg=deploy_cfg)
         model_cfg, deploy_cfg = load_config(model_cfg, deploy_cfg)
         self.deploy_cfg = deploy_cfg
         self.show_score = False
@@ -56,8 +56,7 @@ class End2EndModel(BaseBackendModel):
                 (e.g. .onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
             device (str): A string represents device type.
         """
-        onnx_config = get_onnx_config(self.deploy_cfg)
-        output_names = onnx_config['output_names']
+        output_names = self.output_names
         self.wrapper = BaseBackendModel._build_wrapper(
             backend=backend,
             backend_files=backend_files,
@@ -99,7 +98,7 @@ class End2EndModel(BaseBackendModel):
         Returns:
             list[str]: Text label result of each image.
         """
-        pred = self.wrapper({'input': imgs})['output']
+        pred = self.wrapper({self.input_name: imgs})['output']
         label_indexes, label_scores = self.label_convertor.tensor2idx(
             pred, img_metas)
         label_strings = self.label_convertor.idx2str(label_indexes)

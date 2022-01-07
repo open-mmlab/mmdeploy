@@ -63,8 +63,8 @@ The table below lists the models that are guaranteed to be exportable to OpenVIN
 | Faster R-CNN + DCN |         `configs/dcn/faster_rcnn_r50_fpn_dconv_c3-c5_1x_coco.py`          |       Y       |
 |       VFNet        |                 `configs/vfnet/vfnet_r50_fpn_1x_coco.py`                  |       Y       |
 
-
 Notes:
+
 - Custom operations from OpenVINO use the domain `org.openvinotoolkit`.
 - For faster work in OpenVINO in the Faster-RCNN, Mask-RCNN, Cascade-RCNN, Cascade-Mask-RCNN models
 the RoiAlign operation is replaced with the [ExperimentalDetectronROIFeatureExtractor](https://docs.openvinotoolkit.org/latest/openvino_docs_ops_detection_ExperimentalDetectronROIFeatureExtractor_6.html) operation in the ONNX graph.

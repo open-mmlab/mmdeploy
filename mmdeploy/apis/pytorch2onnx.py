@@ -6,8 +6,8 @@ import mmcv
 import torch
 
 from mmdeploy.core import RewriterContext, patch_model
-from mmdeploy.utils import (get_backend, get_input_shape, get_onnx_config,
-                            load_config)
+from mmdeploy.utils import (get_backend, get_dynamic_axes, get_input_shape,
+                            get_onnx_config, load_config)
 
 
 def torch2onnx_impl(model: torch.nn.Module, input: torch.Tensor,
@@ -24,9 +24,14 @@ def torch2onnx_impl(model: torch.nn.Module, input: torch.Tensor,
     # load deploy_cfg if needed
     deploy_cfg = load_config(deploy_cfg)[0]
 
-    pytorch2onnx_cfg = get_onnx_config(deploy_cfg)
+    onnx_cfg = get_onnx_config(deploy_cfg)
     backend = get_backend(deploy_cfg).value
-    opset_version = pytorch2onnx_cfg.get('opset_version', 11)
+    opset_version = onnx_cfg.get('opset_version', 11)
+
+    input_names = onnx_cfg['input_names']
+    output_names = onnx_cfg['output_names']
+    axis_names = input_names + output_names
+    dynamic_axes = get_dynamic_axes(deploy_cfg, axis_names)
 
     # patch model
     patched_model = patch_model(model, cfg=deploy_cfg, backend=backend)
@@ -38,14 +43,14 @@ def torch2onnx_impl(model: torch.nn.Module, input: torch.Tensor,
             patched_model,
             input,
             output_file,
-            export_params=pytorch2onnx_cfg['export_params'],
-            input_names=pytorch2onnx_cfg['input_names'],
-            output_names=pytorch2onnx_cfg['output_names'],
+            export_params=onnx_cfg['export_params'],
+            input_names=input_names,
+            output_names=output_names,
             opset_version=opset_version,
-            dynamic_axes=pytorch2onnx_cfg.get('dynamic_axes', None),
-            keep_initializers_as_inputs=pytorch2onnx_cfg[
+            dynamic_axes=dynamic_axes,
+            keep_initializers_as_inputs=onnx_cfg[
                 'keep_initializers_as_inputs'],
-            strip_doc_string=pytorch2onnx_cfg.get('strip_doc_string', True))
+            strip_doc_string=onnx_cfg.get('strip_doc_string', True))
 
 
 def torch2onnx(img: Any,
@@ -55,7 +60,7 @@ def torch2onnx(img: Any,
                model_cfg: Union[str, mmcv.Config],
                model_checkpoint: Optional[str] = None,
                device: str = 'cuda:0'):
-    """Convert PyToch model to ONNX model.
+    """Convert PyTorch model to ONNX model.
 
     Args:
         img (str | np.ndarray | torch.Tensor): Input image used to assist

@@ -1,17 +1,34 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from abc import ABCMeta, abstractmethod
-from typing import Optional, Sequence
+from typing import Optional, Sequence, Union
 
+import mmcv
 import torch
 
-from mmdeploy.utils.constants import Backend
+from mmdeploy.utils import Backend, get_ir_config
 
 
 class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
     """A backend model wraps the details to initialize and run a backend
     engine."""
 
-    def __init__(self):
+    def __init__(self,
+                 deploy_cfg: Optional[Union[str, mmcv.Config]] = None,
+                 *args,
+                 **kwargs):
+        """The default for building the base class.
+
+        Args:
+            deploy_cfg (str | mmcv.Config | None): The deploy config.
+        """
+        input_names = output_names = None
+        if deploy_cfg is not None:
+            ir_config = get_ir_config(deploy_cfg)
+            output_names = ir_config.get('output_names', None)
+            input_names = ir_config.get('input_names', None)
+        # TODO use input_names instead in the future for multiple inputs
+        self.input_name = input_names[0] if input_names else 'input'
+        self.output_names = output_names if output_names else ['output']
         super().__init__()
 
     @staticmethod

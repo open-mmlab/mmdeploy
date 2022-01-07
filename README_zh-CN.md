@@ -1,59 +1,94 @@
+<div align="center">
+  <img src="resources/mmdeploy-logo.png" width="450"/>
+</div>
+
+[![docs](https://img.shields.io/badge/docs-latest-blue)](https://mmdeploy.readthedocs.io/en/latest/)
+[![badge](https://github.com/open-mmlab/mmdeploy/workflows/build/badge.svg)](https://github.com/open-mmlab/mmdeploy/actions)
+[![codecov](https://codecov.io/gh/open-mmlab/mmdeploy/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmdeploy)
+[![license](https://img.shields.io/github/license/open-mmlab/mmdeploy.svg)](https://github.com/open-mmlab/mmdeploy/blob/master/LICENSE)
+[![issue resolution](https://isitmaintained.com/badge/resolution/open-mmlab/mmdeploy.svg)](https://github.com/open-mmlab/mmdeploy/issues)
+[![open issues](https://isitmaintained.com/badge/open/open-mmlab/mmdeploy.svg)](https://github.com/open-mmlab/mmdeploy/issues)
+
 ## 介绍
 
 [English](README.md) | 简体中文
 
 MMDeploy 是一个开源深度学习模型部署工具箱，它是 [OpenMMLab](https://openmmlab.com/) 项目的一部分。
 
+<div align="center">
+  <img src="resources/introduction.png" width="800"/>
+</div>
+
 ### 主要特性
 
-- **支持OpenMMLab模型的部署**
+- **全面支持 OpenMMLab 模型的部署**
 
-  可以使用本项目进行OpenMMLab的模型部署，比如 MMClassification，MMDetection 等等。
+  我们为 OpenMMLab 各算法库提供了统一的模型部署工具箱。已支持的算法库如下所示，未来将支持更多的算法库
+  - [x] MMClassification
+  - [x] MMDetection
+  - [x] MMSegmentation
+  - [x] MMEditing
+  - [x] MMOCR
 
-- **支持各类推理引擎**
+- **支持多种推理后端**
 
-  模型可以被导出并在各种推理引擎上进行推理，比如 ONNX Runtime， TensorRT 等等。
+  模型可以导出为多种推理引擎文件，并在对应的后端上进行推理。 如下后端已经支持，后续将支持更多的后端。
+  - [x] ONNX Runtime
+  - [x] TensorRT
+  - [x] PPLNN
+  - [x] ncnn
+  - [x] OpenVINO
 
-- **模型改写**
+- **高度可扩展的 SDK 开发框架 (C/C++)**
 
-  模型中的模块与函数可以被改写以满足各种推理引擎的需求，便于添加新的模型部署需求。
+  SDK 中所有的组件均可扩展。比如用于图像处理的`Transform`，用于深度学习网络推理的`Net`，后处理中的`Module`等等。
 
 ## 开源许可证
 
 该项目采用 [Apache 2.0 开源许可证](LICENSE)。
 
-## 已支持的算法库与推理引擎
-
-支持的算法库：
-
-- [x] MMClassification
-- [x] MMDetection
-- [x] MMSegmentation
-- [x] MMEditing
-- [x] MMOCR
-
-支持的推理引擎:
-
-- [x] ONNX Runtime
-- [x] TensorRT
-- [x] PPLNN
-- [x] ncnn
-
 ## 安装
 
-请参考[构建项目](docs/zh_cn/build.md)进行安装。
+请参考[构建项目](https://mmdeploy.readthedocs.io/zh_CN/latest/build.html)进行安装。
 
 ## 快速入门
 
-请阅读 [如何进行模型转换](docs/zh_cn/tutorials/how_to_convert_model.md) 来了解基本的 MMDeploy 使用。
+请参考[快速入门文档](https://mmdeploy.readthedocs.io/zh_CN/latest/get_started.html)学习 MMDeploy 的基本用法。我们还提供了一些进阶教程，
 
-我们还提供了诸如 [如何编写配置文件](docs/zh_cn/tutorials/how_to_write_config.md)， [如何添加新模型支持](docs/zh_cn/tutorials/how_to_support_new_models.md) 和 [如何测试模型效果](docs/zh_cn/tutorials/how_to_measure_performance_of_models.md) 等教程。
+- [如何进行模型转换](https://mmdeploy.readthedocs.io/zh_CN/latest/tutorials/how_to_convert_model.html)
+- [如何编写配置文件](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_write_config.html)
+- [如何支持新模型](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_support_new_models.html)
+- [如何测试模型效果](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_measure_performance_of_models.html)
 
-如果遇到问题，请参考 [常见问题解答](docs/zh_cn/faq.md)。
+如果遇到问题，请参考 [常见问题解答](https://mmdeploy.readthedocs.io/zh_CN/latest/faq.html)。
+
+## 基准与模型库
+
+基准和支持的模型列表可以在[基准](https://mmdeploy.readthedocs.io/zh_CN/latest/benchmark.html)和[模型列表](https://mmdeploy.readthedocs.io/en/latest/supported_models.html)中获得。
 
 ## 贡献指南
 
 我们感谢所有的贡献者为改进和提升 MMDeploy 所作出的努力。请参考[贡献指南](.github/CONTRIBUTING.md)来了解参与项目贡献的相关指引。
+
+## 致谢
+
+由衷感谢以下团队为 [MMDeploy](https://github.com/open-mmlab/mmdeploy) 做出的贡献：
+
+- [OpenPPL](https://github.com/openppl-public)
+- [OpenVINO](https://github.com/openvinotoolkit/openvino)
+
+## 引用
+
+如果你在研究中使用了本项目的代码或者性能基准，请参考如下 bibtex 引用 MMDeploy:
+
+```BibTeX
+@misc{=mmdeploy,
+    title={OpenMMLab's Model Deployment Toolbox.},
+    author={MMDeploy Contributors},
+    howpublished = {\url{https://github.com/open-mmlab/mmdeploy}},
+    year={2021}
+}
+```
 
 ## OpenMMLab 的其他项目
 
@@ -69,3 +104,29 @@ MMDeploy 是一个开源深度学习模型部署工具箱，它是 [OpenMMLab](h
 - [MMEditing](https://github.com/open-mmlab/mmediting): OpenMMLab 图像视频编辑工具箱
 - [MMOCR](https://github.com/open-mmlab/mmocr): OpenMMLab 全流程文字检测识别理解工具包
 - [MMGeneration](https://github.com/open-mmlab/mmgeneration): OpenMMLab 图片视频生成模型工具箱
+- [MMFlow](https://github.com/open-mmlab/mmflow): OpenMMLab 光流估计工具箱与测试基准
+- [MMFewShot](https://github.com/open-mmlab/mmfewshot): OpenMMLab 少样本学习工具箱与测试基准
+- [MMHuman3D](https://github.com/open-mmlab/mmhuman3d): OpenMMLab 人体参数化模型工具箱与测试基准
+- [MMSelfSup](https://github.com/open-mmlab/mmselfsup): OpenMMLab 自监督学习工具箱与测试基准
+- [MMRazor](https://github.com/open-mmlab/mmrazor): OpenMMLab 模型压缩工具箱与测试基准
+- [MMDeploy](https://github.com/open-mmlab/mmdeploy): OpenMMLab 模型部署框架
+
+## 欢迎加入 OpenMMLab 社区
+
+扫描下方的二维码可关注 OpenMMLab 团队的 [知乎官方账号](https://www.zhihu.com/people/openmmlab)，加入 OpenMMLab 团队的 [官方交流 QQ 群](https://jq.qq.com/?_wv=1027&k=aCvMxdr3)
+
+<div align="center">
+  <img src="https://raw.githubusercontent.com/open-mmlab/mmcv/master/docs/en/_static/zhihu_qrcode.jpg" height="400" />
+  <img src="https://raw.githubusercontent.com/open-mmlab/mmcv/master/docs/en/_static/qq_group_qrcode.jpg" height="400" />
+</div>
+
+我们会在 OpenMMLab 社区为大家
+
+- 📢 分享 AI 框架的前沿核心技术
+- 💻 解读 PyTorch 常用模块源码
+- 📰 发布 OpenMMLab 的相关新闻
+- 🚀 介绍 OpenMMLab 开发的前沿算法
+- 🏃 获取更高效的问题答疑和意见反馈
+- 🔥 提供与各行各业开发者充分交流的平台
+
+干货满满 📘，等你来撩 💗，OpenMMLab 社区期待您的加入 👬

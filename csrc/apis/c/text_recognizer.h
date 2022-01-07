@@ -17,13 +17,23 @@ typedef struct mm_text_recognize_t {
   int length;
 } mm_text_recognize_t;
 
+/**
+ * @brief Create a text recognizer instance
+ * @param[in] model an instance of mmocr text recognition model created by
+ * \ref mmdeploy_model_create_by_path or \ref mmdeploy_model_create in \ref model.h
+ * @param[in] device_name name of device, such as "cpu", "cuda", etc.
+ * @param[in] device_id id of device.
+ * @param[out] handle handle of the created text recognizer, which must be destroyed
+ * by \ref mmdeploy_text_recognizer_destroy
+ * @return status code of the operation
+ */
 MM_SDK_API int mmdeploy_text_recognizer_create(mm_model_t model, const char* device_name,
                                                int device_id, mm_handle_t* handle);
 
 /**
  * @brief Create a text recognizer instance
  * @param[in] model_path path to text recognition model
- * @param[in] device_name name of device, such as "cpu", "cuda" and etc.
+ * @param[in] device_name name of device, such as "cpu", "cuda", etc.
  * @param[in] device_id id of device.
  * @param[out] handle handle of the created text recognizer, which must be destroyed
  * by \ref mmdeploy_text_recognizer_destroy
@@ -73,7 +83,7 @@ MM_SDK_API void mmdeploy_text_recognizer_release_result(mm_text_recognize_t* res
 /**
  * @brief destroy text recognizer
  * @param[in] handle handle of text recognizer created by \ref
- * mmdeploy_text_recognizer_create_by_path
+ * mmdeploy_text_recognizer_create_by_path or \ref mmdeploy_text_recognizer_create
  */
 MM_SDK_API void mmdeploy_text_recognizer_destroy(mm_handle_t handle);
 

@@ -218,7 +218,8 @@ def test_multiclass_nms_with_keep_top_k(pre_top_k):
     output = backend_model.output_to_list(output)
     dets = output[0]
 
-    assert dets.shape[1] < keep_top_k, \
+    # Subtract 1 dim since we pad the tensors
+    assert dets.shape[1] - 1 < keep_top_k, \
         'multiclass_nms returned more values than "keep_top_k"\n' \
         f'dets.shape: {dets.shape}\n' \
         f'keep_top_k: {keep_top_k}'

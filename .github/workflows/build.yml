@@ -48,3 +48,13 @@ jobs:
           coverage run --branch --source mmdeploy -m pytest -rsE tests/
           coverage xml
           coverage report -m
+      # Upload the coverage report for python3.7 && pytorch1.8.0
+      - name: Upload coverage to Codecov
+        if: ${{matrix.torch == '1.8.0' && matrix.python-version == '3.7'}}
+        uses: codecov/codecov-action@v2
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          env_vars: OS,PYTHON
+          name: codecov-umbrella
+          fail_ci_if_error: false

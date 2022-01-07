@@ -4,6 +4,7 @@ import tempfile
 import onnx
 import pytest
 import torch
+from mmcv import Config
 
 from mmdeploy.core import RewriterContext
 
@@ -12,7 +13,10 @@ onnx_file = tempfile.NamedTemporaryFile(suffix='onnx').name
 
 @pytest.fixture(autouse=True, scope='module')
 def prepare_symbolics():
-    context = RewriterContext({}, 'tensorrt', opset=11)
+    context = RewriterContext(
+        Config({'backend_config': {
+            'type': 'tensorrt'
+        }}), 'tensorrt', opset=11)
     context.enter()
 
     yield
