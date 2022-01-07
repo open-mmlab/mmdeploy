@@ -605,17 +605,27 @@ def get_classes_from_config(model_cfg: Union[str, mmcv.Config], **kwargs) -> \
 
     module_dict = DATASETS.module_dict
     data_cfg = model_cfg.data
+    classes = None
+    module = None
 
-    if 'test' in data_cfg:
-        module = module_dict[data_cfg.test.type]
-    elif 'val' in data_cfg:
-        module = module_dict[data_cfg.val.type]
-    elif 'train' in data_cfg:
-        module = module_dict[data_cfg.train.type]
-    else:
+    keys = ['test', 'val', 'train']
+
+    for key in keys:
+        if key in data_cfg:
+            if 'classes' in data_cfg[key]:
+                classes = list(data_cfg[key]['classes'])
+                break
+            elif 'type' in data_cfg[key]:
+                module = module_dict[data_cfg[key]['type']]
+                break
+
+    if classes is None and module is None:
         raise RuntimeError(f'No dataset config found in: {model_cfg}')
 
-    return module.CLASSES
+    if classes is not None:
+        return classes
+    else:
+        return module.CLASSES
 
 
 def build_object_detection_model(model_files: Sequence[str],
