@@ -410,3 +410,9 @@ def test_target_wrapper():
     process.join()
 
     assert ret_value.value == 0
+
+
+def test_get_root_logger():
+    from mmdeploy.utils import get_root_logger
+    logger = get_root_logger()
+    logger.info('This is a test message')

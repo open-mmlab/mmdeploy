@@ -4,6 +4,7 @@ import logging
 import os.path as osp
 
 from mmdeploy.apis import torch2onnx
+from mmdeploy.utils import get_root_logger
 
 
 def parse_args():
@@ -27,12 +28,7 @@ def parse_args():
 
 def main():
     args = parse_args()
-    logging.basicConfig(
-        format='%(asctime)s,%(name)s %(levelname)-8s'
-        ' [%(filename)s:%(lineno)d] %(message)s',
-        datefmt='%Y-%m-%d:%H:%M:%S')
-    logger = logging.getLogger()
-    logger.setLevel(args.log_level)
+    logger = get_root_logger(log_level=args.log_level)
 
     deploy_cfg_path = args.deploy_cfg
     model_cfg_path = args.model_cfg
@@ -42,8 +38,8 @@ def main():
     work_dir, save_file = osp.split(output_path)
     device = args.device
 
-    logging.info(f'torch2onnx: \n\tmodel_cfg: {model_cfg_path} '
-                 f'\n\tdeploy_cfg: {deploy_cfg_path}')
+    logger.info(f'torch2onnx: \n\tmodel_cfg: {model_cfg_path} '
+                f'\n\tdeploy_cfg: {deploy_cfg_path}')
     try:
         torch2onnx(
             img,
@@ -53,10 +49,10 @@ def main():
             model_cfg=model_cfg_path,
             model_checkpoint=checkpoint_path,
             device=device)
-        logging.info('torch2onnx success.')
+        logger.info('torch2onnx success.')
     except Exception as e:
-        logging.error(e)
-        logging.error('torch2onnx failed.')
+        logger.error(e)
+        logger.error('torch2onnx failed.')
 
 
 if __name__ == '__main__':

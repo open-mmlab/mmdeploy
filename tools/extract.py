@@ -7,6 +7,7 @@ import onnx
 import onnx.helper
 
 from mmdeploy.apis import extract_model
+from mmdeploy.utils import get_root_logger
 
 
 def parse_args():
@@ -46,12 +47,11 @@ def collect_avaiable_marks(model):
 def main():
     args = parse_args()
 
-    logger = logging.getLogger()
-    logger.setLevel(args.log_level)
+    logger = get_root_logger(log_level=args.log_level)
 
     model = onnx.load(args.input_model)
     marks = collect_avaiable_marks(model)
-    logging.info('Available marks:\n    {}'.format('\n    '.join(marks)))
+    logger.info('Available marks:\n    {}'.format('\n    '.join(marks)))
 
     extracted_model = extract_model(model, args.start, args.end)
 

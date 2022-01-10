@@ -7,6 +7,7 @@ import tensorrt as trt
 import torch
 from packaging import version
 
+from mmdeploy.utils import get_root_logger
 from .calib_utils import HDF5Calibrator
 from .init_plugins import load_tensorrt_plugin
 
@@ -191,7 +192,8 @@ def get_trt_log_level() -> trt.Logger.Severity:
         level (tensorrt.Logger.Severity):
         Logging level of tensorrt.Logger.
     """
-    level = logging.getLogger().level
+    logger = get_root_logger()
+    level = logger.level
     trt_log_level = trt.Logger.INFO
     if level == logging.ERROR:
         trt_log_level = trt.Logger.ERROR

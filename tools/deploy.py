@@ -13,7 +13,8 @@ from mmdeploy.apis import (create_calib_table, extract_model,
                            visualize_model)
 from mmdeploy.utils import (Backend, get_backend, get_calib_filename,
                             get_ir_config, get_model_inputs, get_onnx_config,
-                            get_partition_config, load_config, target_wrapper)
+                            get_partition_config, get_root_logger, load_config,
+                            target_wrapper)
 from mmdeploy.utils.export_info import dump_info
 
 
@@ -47,8 +48,9 @@ def parse_args():
 
 
 def create_process(name, target, args, kwargs, ret_value=None):
-    logging.info(f'{name} start.')
-    log_level = logging.getLogger().level
+    logger = get_root_logger()
+    logger.info(f'{name} start.')
+    log_level = logger.level
 
     wrap_func = partial(target_wrapper, target, log_level, ret_value)
 
@@ -58,20 +60,16 @@ def create_process(name, target, args, kwargs, ret_value=None):
 
     if ret_value is not None:
         if ret_value.value != 0:
-            logging.error(f'{name} failed.')
+            logger.error(f'{name} failed.')
             exit()
         else:
-            logging.info(f'{name} success.')
+            logger.info(f'{name} success.')
 
 
 def main():
     args = parse_args()
     set_start_method('spawn')
-    logging.basicConfig(
-        format='%(asctime)s,%(name)s %(levelname)-8s'
-        ' [%(filename)s:%(lineno)d] %(message)s',
-        datefmt='%Y-%m-%d:%H:%M:%S')
-    logger = logging.getLogger()
+    logger = get_root_logger()
     logger.setLevel(args.log_level)
 
     deploy_cfg_path = args.deploy_cfg
@@ -182,7 +180,7 @@ def main():
         from mmdeploy.apis.ncnn import is_available as is_available_ncnn
 
         if not is_available_ncnn():
-            logging.error('ncnn support is not available.')
+            logger.error('ncnn support is not available.')
             exit(-1)
 
         from mmdeploy.apis.ncnn import get_output_model_file, onnx2ncnn
@@ -272,7 +270,7 @@ def main():
             show_result=args.show),
         ret_value=ret_value)
 
-    logging.info('All process success.')
+    logger.info('All process success.')
 
 
 if __name__ == '__main__':

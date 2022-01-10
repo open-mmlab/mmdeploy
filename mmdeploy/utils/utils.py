@@ -1,9 +1,11 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import logging
 import sys
 import traceback
 from typing import Callable, Optional
 
 import torch.multiprocessing as mp
+from mmcv.utils import get_logger
 
 
 def target_wrapper(target: Callable,
@@ -38,3 +40,19 @@ def target_wrapper(target: Callable,
     except Exception as e:
         logging.error(e)
         traceback.print_exc(file=sys.stdout)
+
+
+def get_root_logger(log_file=None, log_level=logging.INFO) -> logging.Logger:
+    """Get root logger.
+
+    Args:
+        log_file (str, optional): File path of log. Defaults to None.
+        log_level (int, optional): The level of logger.
+            Defaults to logging.INFO.
+    Returns:
+        logging.Logger: The obtained logger
+    """
+    logger = get_logger(
+        name='mmdeploy', log_file=log_file, log_level=log_level)
+
+    return logger
