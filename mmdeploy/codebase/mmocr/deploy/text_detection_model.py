@@ -151,6 +151,17 @@ class SDKEnd2EndModel(End2EndModel):
 
     def forward(self, img: Sequence[torch.Tensor],
                 img_metas: Sequence[Sequence[dict]], *args, **kwargs) -> list:
+        """Run forward inference.
+
+        Args:
+            img (Sequence[torch.Tensor]): A list contains input image(s)
+                in [N x C x H x W] format.
+            img_metas (Sequence[Sequence[dict]]): A list of meta info for
+                image(s).
+
+        Returns:
+            list: A list contains predictions.
+        """
         boundaries = self.wrapper.invoke(
             [img[0].contiguous().detach().cpu().numpy()])[0]
         boundaries = [list(x) for x in boundaries]

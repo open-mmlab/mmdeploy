@@ -149,6 +149,19 @@ class SDKEnd2EndModel(End2EndModel):
 
     def forward(self, img: Sequence[torch.Tensor],
                 img_metas: Sequence[Sequence[dict]], *args, **kwargs):
+        """Run forward inference.
+
+        Args:
+            img (Sequence[torch.Tensor]): A list contains input image(s)
+                in [N x C x H x W] format.
+            img_metas (Sequence[Sequence[dict]]): A list of meta info for
+                image(s).
+            *args: Other arguments.
+            **kwargs: Other key-pair arguments.
+
+        Returns:
+            list: A list contains predictions.
+        """
         masks = self.wrapper.invoke(
             [img[0].contiguous().detach().cpu().numpy()])[0]
         return masks

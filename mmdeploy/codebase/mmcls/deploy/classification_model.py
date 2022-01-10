@@ -122,6 +122,18 @@ class SDKEnd2EndModel(End2EndModel):
     """SDK inference class, converts SDK output to mmcls format."""
 
     def forward(self, img: List[torch.Tensor], *args, **kwargs) -> list:
+        """Run forward inference.
+
+        Args:
+            img (List[torch.Tensor]): A list contains input image(s)
+                in [N x C x H x W] format.
+            *args: Other arguments.
+            **kwargs: Other key-pair arguments.
+
+        Returns:
+            list: A list contains predictions.
+        """
+
         pred = self.wrapper.invoke(
             [img[0].contiguous().detach().cpu().numpy()])[0]
         pred = np.array(pred, dtype=np.float32)

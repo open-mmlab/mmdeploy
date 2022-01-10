@@ -184,7 +184,22 @@ class SDKEnd2EndModel(End2EndModel):
                 test_mode: bool = False,
                 *args,
                 **kwargs) -> Union[list, dict]:
+        """Run test inference for restorer.
 
+        We want forward() to output an image or a evaluation result.
+        When test_mode is set, the output is evaluation result. Otherwise
+        it is an image.
+
+        Args:
+            lq (torch.Tensor): The input low-quality image of the model.
+            test_mode (bool): When test_mode is set, the output is evaluation
+                result. Otherwise it is an image. Default to `False`.
+            *args: Other arguments.
+            **kwargs: Other key-pair arguments.
+
+        Returns:
+            list | dict: High resolution image or a evaluation results.
+        """
         img = tensor2img(lq)
         output = self.wrapper.invoke([img])[0]
         if test_mode:
