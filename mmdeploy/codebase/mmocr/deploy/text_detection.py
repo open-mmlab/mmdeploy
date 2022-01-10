@@ -11,7 +11,7 @@ from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
 from mmdeploy.utils import Task, get_input_shape
-from mmdeploy.utils.utils import get_root_logger
+from mmdeploy.utils import get_root_logger
 from .mmocr import MMOCR_TASK
 
 
