@@ -4,7 +4,6 @@ from typing import Optional, Union
 import mmcv
 import torch
 from mmcv.utils import Registry
-from mmdet.datasets import replace_ImageToTensor
 from torch.utils.data import DataLoader, Dataset
 
 from mmdeploy.utils import Codebase, get_task_type
@@ -58,7 +57,7 @@ class MMDetection(MMCodebase):
             Dataset: A PyTorch dataset.
         """
         from mmdet.datasets import build_dataset as build_dataset_mmdet
-
+        from mmdet.datasets import replace_ImageToTensor
         assert dataset_type in dataset_cfg.data
         data_cfg = dataset_cfg.data[dataset_type]
         # in case the dataset is concatenated

@@ -388,3 +388,9 @@ def test_export_info():
         assert os.path.exists(pipeline_json)
         assert os.path.exists(detail_json)
         assert os.path.exists(deploy_json)
+
+
+def test_get_root_logger():
+    from mmdeploy.utils import get_root_logger
+    logger = get_root_logger()
+    logger.info('This is a test message')
