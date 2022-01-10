@@ -11,6 +11,7 @@ def parse_device_id(device: str) -> int:
 
     Returns:
         int: The parsed device id, defaults to `0`.
+            If device is 'cpu' it will return `-1`.
     """
     if device == 'cpu':
         return -1

@@ -104,9 +104,12 @@ def main():
     # load the model of the backend
     model = task_processor.init_backend_model(args.model)
 
-    device_id = parse_device_id(args.device)
+    if args.device == 'cpu':
+        device_id = 0
+    else:
+        device_id = parse_device_id(args.device)
 
-    model = MMDataParallel(model, device_ids=[0])
+    model = MMDataParallel(model, device_ids=[device_id])
     # The whole dataset test wrapped a MMDataParallel class outside the module.
     # As mmcls.apis.test.py single_gpu_test defined, the MMDataParallel needs
     # a 'CLASSES' attribute. So we ensure the MMDataParallel class has the same
