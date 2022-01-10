@@ -149,7 +149,6 @@ class SDKEnd2EndModel(End2EndModel):
 
     def forward(self, img: Sequence[torch.Tensor],
                 img_metas: Sequence[Sequence[dict]], *args, **kwargs) -> list:
-        # import pdb; pdb.set_trace()
         boundaries = self.wrapper.invoke(
             [img[0].contiguous().detach().cpu().numpy()])[0]
         boundaries = [list(x) for x in boundaries]

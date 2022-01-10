@@ -156,10 +156,8 @@ class SDKEnd2EndModel(End2EndModel):
 
     def forward(self, img: Sequence[torch.Tensor],
                 img_metas: Sequence[Sequence[dict]], *args, **kwargs):
-        # import pdb; pdb.set_trace()
         results = self.wrapper.invoke(
             [img[0].contiguous().detach().cpu().numpy()])
-        # import pdb; pdb.set_trace()
         results = [dict(text=text, score=score) for text, score in results]
         return results
 
