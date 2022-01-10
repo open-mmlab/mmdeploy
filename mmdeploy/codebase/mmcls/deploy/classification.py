@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import logging
 from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
 import mmcv
@@ -8,7 +7,7 @@ import torch
 from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
-from mmdeploy.utils import Task
+from mmdeploy.utils import Task, get_root_logger
 from mmdeploy.utils.config_utils import get_input_shape
 from .mmclassification import MMCLS_TASK
 
@@ -40,7 +39,8 @@ def process_model_config(model_cfg: mmcv.Config,
         if 'crop_size' in cfg.data.test.pipeline[2]:
             crop_size = cfg.data.test.pipeline[2]['crop_size']
             if tuple(input_shape) != (crop_size, crop_size):
-                logging.warning(
+                logger = get_root_logger()
+                logger.warning(
                     f'`input shape` should be equal to `crop_size`: {crop_size},\
                         but given: {input_shape}')
     return cfg

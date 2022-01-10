@@ -1,13 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import importlib
-import logging
 from typing import Dict, Optional, Sequence
 
 import ncnn
 import numpy as np
 import torch
 
-from mmdeploy.utils import Backend
+from mmdeploy.utils import Backend, get_root_logger
 from mmdeploy.utils.timer import TimeCounter
 from ..base import BACKEND_WRAPPER, BaseWrapper
 
@@ -78,8 +77,9 @@ class NCNNWrapper(BaseWrapper):
         """
         input_list = list(inputs.values())
         batch_size = input_list[0].size(0)
+        logger = get_root_logger()
         if batch_size > 1:
-            logging.warning(
+            logger.warning(
                 f'ncnn only support batch_size = 1, but given {batch_size}')
         for input_tensor in input_list[1:]:
             assert input_tensor.size(
@@ -110,7 +110,7 @@ class NCNNWrapper(BaseWrapper):
                 # deal with special case
                 if mat.empty():
                     mat = None
-                    logging.warning(
+                    logger.warning(
                         f'The "{name}" output of ncnn model is empty.')
                 outputs[name][batch_id] = torch.from_numpy(np.array(mat))
 

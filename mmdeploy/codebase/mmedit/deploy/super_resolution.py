@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import logging
 import warnings
 from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
@@ -11,7 +10,7 @@ from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
 from mmdeploy.codebase.mmedit.deploy.mmediting import MMEDIT_TASK
-from mmdeploy.utils import Task, get_input_shape, load_config
+from mmdeploy.utils import Task, get_input_shape, get_root_logger, load_config
 
 
 def process_model_config(model_cfg: mmcv.Config,
@@ -268,7 +267,8 @@ class SuperResolution(BaseTask):
                 to `False`.
         """
         if out:
-            logging.info(f'\nwriting results to {out}')
+            logger = get_root_logger()
+            logger.info(f'\nwriting results to {out}')
             mmcv.dump(outputs, out)
         # The Dataset doesn't need metrics
         print('\n')

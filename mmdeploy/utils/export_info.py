@@ -1,14 +1,14 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import importlib
-import logging
 from typing import Dict, List, Tuple, Union
 
 import mmcv
 
 from mmdeploy.apis import build_task_processor
 from mmdeploy.utils import (Backend, Task, get_backend, get_codebase,
-                            get_common_config, get_onnx_config, get_task_type,
-                            is_dynamic_batch, load_config)
+                            get_common_config, get_onnx_config,
+                            get_root_logger, get_task_type, is_dynamic_batch,
+                            load_config)
 
 
 def get_mmdpeloy_version() -> str:
@@ -33,7 +33,8 @@ def get_task(deploy_cfg: mmcv.Config) -> Dict:
     try:
         codebase = importlib.import_module(codebase_name)
     except ModuleNotFoundError:
-        logging.warning(f'can not import the module: {codebase_name}')
+        logger = get_root_logger()
+        logger.warning(f'can not import the module: {codebase_name}')
     codebase_version = codebase.__version__
     return dict(
         task=task_name, codebase=codebase_name, version=codebase_version)
