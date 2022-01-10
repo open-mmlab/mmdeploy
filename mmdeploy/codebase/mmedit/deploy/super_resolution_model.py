@@ -175,6 +175,7 @@ class End2EndModel(BaseBackendModel):
 
 @__BACKEND_MODEL.register_module('sdk')
 class SDKEnd2EndModel(End2EndModel):
+    """SDK inference class, converts SDK output to mmedit format"""
 
     def forward(self,
                 lq: torch.Tensor,

@@ -592,13 +592,11 @@ class NCNNEnd2EndModel(End2EndModel):
 
 @__BACKEND_MODEL.register_module('sdk')
 class SDKEnd2EndModel(End2EndModel):
+    """SDK inference class, converts SDK output to mmdet format"""
 
-    def __init__(self, backend: Backend, backend_files: Sequence[str],
-                 device: str, class_names: Sequence[str],
-                 deploy_cfg: Union[str, mmcv.Config], **kwargs):
-        super().__init__(backend, backend_files, device, class_names,
-                         deploy_cfg, **kwargs)
-        self.has_mask = deploy_cfg.codebase_config.get('has_mask', False)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.has_mask = self.deploy_cfg.codebase_config.get('has_mask', False)
 
     def forward(self, img: Sequence[torch.Tensor], img_metas: Sequence[dict],
                 *args, **kwargs):
