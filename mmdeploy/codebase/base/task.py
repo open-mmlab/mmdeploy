@@ -8,7 +8,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader, Dataset
 
-from mmdeploy.utils import get_codebase
+from mmdeploy.utils import get_codebase, get_backend_config
 from mmdeploy.utils.dataset import is_can_sort_dataset, sort_dataset
 
 
@@ -85,8 +85,10 @@ class BaseTask(metaclass=ABCMeta):
             Dataset: The built dataset.
         """
 
-        if 'pipeline' in self.deploy_cfg:
-            dataset_cfg.data[dataset_type].pipeline = self.deploy_cfg.pipeline
+        backend_cfg = get_backend_config(self.deploy_cfg)
+        if 'pipeline' in backend_cfg:
+            dataset_cfg.data[
+                dataset_type].pipeline = backend_cfg.pipeline
 
         dataset = self.codebase_class.build_dataset(dataset_cfg, dataset_type,
                                                     **kwargs)
