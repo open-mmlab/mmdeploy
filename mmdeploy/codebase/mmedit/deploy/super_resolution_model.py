@@ -8,7 +8,8 @@ from mmcv.utils import Registry
 from mmedit.core import psnr, ssim, tensor2img
 
 from mmdeploy.codebase.base import BaseBackendModel
-from mmdeploy.utils import Backend, get_backend, load_config, get_codebase_config
+from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
+                            load_config)
 
 
 def __build_backend_model(cls_name: str, registry: Registry, *args, **kwargs):
@@ -175,7 +176,7 @@ class End2EndModel(BaseBackendModel):
 
 @__BACKEND_MODEL.register_module('sdk')
 class SDKEnd2EndModel(End2EndModel):
-    """SDK inference class, converts SDK output to mmedit format"""
+    """SDK inference class, converts SDK output to mmedit format."""
 
     def forward(self,
                 lq: torch.Tensor,

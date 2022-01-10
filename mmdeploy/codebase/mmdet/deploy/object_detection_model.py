@@ -592,7 +592,7 @@ class NCNNEnd2EndModel(End2EndModel):
 
 @__BACKEND_MODEL.register_module('sdk')
 class SDKEnd2EndModel(End2EndModel):
-    """SDK inference class, converts SDK output to mmdet format"""
+    """SDK inference class, converts SDK output to mmdet format."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

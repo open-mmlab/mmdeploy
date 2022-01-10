@@ -7,7 +7,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader, Dataset
 
-from mmdeploy.utils import get_codebase, get_root_logger, get_backend_config
+from mmdeploy.utils import get_backend_config, get_codebase, get_root_logger
 from mmdeploy.utils.dataset import is_can_sort_dataset, sort_dataset
 
 

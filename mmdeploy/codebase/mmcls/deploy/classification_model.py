@@ -4,12 +4,13 @@ from typing import List, Sequence, Union
 import mmcv
 import numpy as np
 import torch
-from mmcv.utils import Registry
 from mmcls.datasets import DATASETS
 from mmcls.models.classifiers.base import BaseClassifier
+from mmcv.utils import Registry
 
 from mmdeploy.codebase.base import BaseBackendModel
-from mmdeploy.utils import Backend, get_backend, load_config, get_codebase_config
+from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
+                            load_config)
 
 
 def __build_backend_model(cls_name: str, registry: Registry, *args, **kwargs):
@@ -118,7 +119,7 @@ class End2EndModel(BaseBackendModel):
 
 @__BACKEND_MODEL.register_module('sdk')
 class SDKEnd2EndModel(End2EndModel):
-    """SDK inference class, converts SDK output to mmcls format"""
+    """SDK inference class, converts SDK output to mmcls format."""
 
     def forward(self, img: List[torch.Tensor], *args, **kwargs) -> list:
         pred = self.wrapper.invoke(
