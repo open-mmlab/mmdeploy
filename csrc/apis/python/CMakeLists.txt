@@ -7,12 +7,10 @@ if (NOT TARGET pybind11)
 endif ()
 
 set(MMDEPLOY_PYTHON_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/common.cpp)
-set(MMDEPLOY_PYTHON_LIBS)
 
 macro(mmdeploy_python_add_module name)
     if (TARGET mmdeploy_${name})
         list(APPEND MMDEPLOY_PYTHON_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/${name}.cpp)
-        list(APPEND MMDEPLOY_PYTHON_LIBS mmdeploy_${name})
     endif ()
 endmacro()
 
@@ -26,7 +24,6 @@ mmdeploy_python_add_module(restorer)
 pybind11_add_module(${PROJECT_NAME} ${MMDEPLOY_PYTHON_SRCS})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
-    ${MMDEPLOY_PYTHON_LIBS}
     ${MMDEPLOY_LIBS}
     -Wl,--whole-archive ${MMDEPLOY_STATIC_MODULES} -Wl,--no-whole-archive
     -Wl,--no-as-needed ${MMDEPLOY_DYNAMIC_MODULES} -Wl,--as-need)
