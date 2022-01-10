@@ -36,7 +36,7 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
                        backend_files: Sequence[str],
                        device: str,
                        output_names: Optional[Sequence[str]] = None,
-                       deploy_cfg: mmcv.Config = None):
+                       deploy_cfg: Optional[mmcv.Config] = None):
         """The default methods to build backend wrappers.
 
         Args:
