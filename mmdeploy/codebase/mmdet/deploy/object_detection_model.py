@@ -582,31 +582,49 @@ class NCNNEnd2EndModel(End2EndModel):
         return [dets, labels]
 
 
-def get_classes_from_config(model_cfg: Union[str, mmcv.Config], **kwargs):
-    """Get class name from config.
+def get_classes_from_config(model_cfg: Union[str, mmcv.Config], **kwargs) -> \
+        List[str]:
+    """Get class name from config. The class name is the `classes` field if it
+    is set in the config, or the classes in `module_dict` of MMDet whose type
+    is set in the config.
 
     Args:
         model_cfg (str | mmcv.Config): Input model config file or
             Config object.
 
     Returns:
-        list[str]: A list of string specifying names of different class.
+        List[str]: A list of string specifying names of different class.
     """
     # load cfg if necessary
     model_cfg = load_config(model_cfg)[0]
+
+    # For custom dataset
+    if 'classes' in model_cfg:
+        return list(model_cfg['classes'])
+
     module_dict = DATASETS.module_dict
     data_cfg = model_cfg.data
+    classes = None
+    module = None
 
-    if 'test' in data_cfg:
-        module = module_dict[data_cfg.test.type]
-    elif 'val' in data_cfg:
-        module = module_dict[data_cfg.val.type]
-    elif 'train' in data_cfg:
-        module = module_dict[data_cfg.train.type]
-    else:
+    keys = ['test', 'val', 'train']
+
+    for key in keys:
+        if key in data_cfg:
+            if 'classes' in data_cfg[key]:
+                classes = list(data_cfg[key]['classes'])
+                break
+            elif 'type' in data_cfg[key]:
+                module = module_dict[data_cfg[key]['type']]
+                break
+
+    if classes is None and module is None:
         raise RuntimeError(f'No dataset config found in: {model_cfg}')
 
-    return module.CLASSES
+    if classes is not None:
+        return classes
+    else:
+        return module.CLASSES
 
 
 def build_object_detection_model(model_files: Sequence[str],
