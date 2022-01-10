@@ -9,10 +9,10 @@ import pytest
 import torch.multiprocessing as mp
 
 import mmdeploy.utils as util
+from mmdeploy.utils import target_wrapper
 from mmdeploy.utils.constants import Backend, Codebase, Task
 from mmdeploy.utils.export_info import dump_info
 from mmdeploy.utils.test import get_random_name
-from mmdeploy.utils.utils import target_wrapper
 
 correct_model_path = 'tests/data/srgan.py'
 correct_model_cfg = mmcv.Config.fromfile(correct_model_path)
