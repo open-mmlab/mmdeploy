@@ -4,12 +4,22 @@ from typing import List, Optional, Sequence, Union
 import mmcv
 import numpy as np
 import torch
+from mmcv.utils import Registry
 from mmedit.core import psnr, ssim, tensor2img
 
 from mmdeploy.codebase.base import BaseBackendModel
-from mmdeploy.utils import Backend, get_backend, load_config
+from mmdeploy.utils import Backend, get_backend, load_config, get_codebase_config
 
 
+def __build_backend_model(cls_name: str, registry: Registry, *args, **kwargs):
+    return registry.module_dict[cls_name](*args, **kwargs)
+
+
+__BACKEND_MODEL = mmcv.utils.Registry(
+    'backend_models', build_func=__build_backend_model)
+
+
+@__BACKEND_MODEL.register_module('end2end')
 class End2EndModel(BaseBackendModel):
     """End to end model for inference of super resolution.
 
@@ -163,6 +173,7 @@ class End2EndModel(BaseBackendModel):
         raise NotImplementedError
 
 
+@__BACKEND_MODEL.register_module('sdk')
 class SDKEnd2EndModel(End2EndModel):
 
     def forward(self,
@@ -196,13 +207,10 @@ def build_super_resolution_model(model_files: Sequence[str],
     deploy_cfg = load_config(deploy_cfg)[0]
 
     backend = get_backend(deploy_cfg)
+    model_type = get_codebase_config(deploy_cfg).get('model_type', 'end2end')
 
-    if backend == Backend.SDK:
-        creator = SDKEnd2EndModel
-    else:
-        creator = End2EndModel
-
-    backend_model = creator(
+    backend_model = __BACKEND_MODEL.build(
+        model_type,
         backend=backend,
         backend_files=model_files,
         device=device,

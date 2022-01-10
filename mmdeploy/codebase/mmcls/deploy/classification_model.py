@@ -4,13 +4,23 @@ from typing import List, Sequence, Union
 import mmcv
 import numpy as np
 import torch
+from mmcv.utils import Registry
 from mmcls.datasets import DATASETS
 from mmcls.models.classifiers.base import BaseClassifier
 
 from mmdeploy.codebase.base import BaseBackendModel
-from mmdeploy.utils import Backend, get_backend, load_config
+from mmdeploy.utils import Backend, get_backend, load_config, get_codebase_config
 
 
+def __build_backend_model(cls_name: str, registry: Registry, *args, **kwargs):
+    return registry.module_dict[cls_name](*args, **kwargs)
+
+
+__BACKEND_MODEL = mmcv.utils.Registry(
+    'backend_classifiers', build_func=__build_backend_model)
+
+
+@__BACKEND_MODEL.register_module('end2end')
 class End2EndModel(BaseBackendModel):
     """End to end model for inference of classification.
 
@@ -106,13 +116,13 @@ class End2EndModel(BaseBackendModel):
             self, img, result, show=show, win_name=win_name, out_file=out_file)
 
 
+@__BACKEND_MODEL.register_module('sdk')
 class SDKEnd2EndModel(End2EndModel):
 
     def forward(self, img: List[torch.Tensor], *args, **kwargs) -> list:
         pred = self.wrapper.invoke(
             [img[0].contiguous().detach().cpu().numpy()])[0]
         pred = np.array(pred, dtype=np.float32)
-        # import pdb; pdb.set_trace()
         return pred[np.argsort(pred[:, 0])][np.newaxis, :, 1]
 
 
@@ -163,19 +173,16 @@ def build_classification_model(model_files: Sequence[str],
     deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
 
     backend = get_backend(deploy_cfg)
-
-    if backend == Backend.SDK:
-        creator = SDKEnd2EndModel
-    else:
-        creator = End2EndModel
-
-    backend = get_backend(deploy_cfg)
+    model_type = get_codebase_config(deploy_cfg).get('model_type', 'end2end')
     class_names = get_classes_from_config(model_cfg)
-    backend_classifier = creator(
-        backend,
-        model_files,
-        device,
-        class_names,
+
+    backend_classifier = __BACKEND_MODEL.build(
+        model_type,
+        backend=backend,
+        backend_files=model_files,
+        device=device,
+        class_names=class_names,
         deploy_cfg=deploy_cfg,
         **kwargs)
+
     return backend_classifier

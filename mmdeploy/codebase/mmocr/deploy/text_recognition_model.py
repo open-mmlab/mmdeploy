@@ -4,13 +4,23 @@ from typing import List, Sequence, Union
 import mmcv
 import numpy as np
 import torch
+from mmcv.utils import Registry
 from mmocr.models.builder import build_convertor
 from mmocr.models.textrecog import BaseRecognizer
 
 from mmdeploy.codebase.base import BaseBackendModel
-from mmdeploy.utils import Backend, get_backend, load_config
+from mmdeploy.utils import Backend, get_backend, load_config, get_codebase_config
 
 
+def __build_backend_model(cls_name: str, registry: Registry, *args, **kwargs):
+    return registry.module_dict[cls_name](*args, **kwargs)
+
+
+__BACKEND_MODEL = mmcv.utils.Registry(
+    'backend_text_recognizer', build_func=__build_backend_model)
+
+
+@__BACKEND_MODEL.register_module('end2end')
 class End2EndModel(BaseBackendModel):
     """End to end model for inference of text detection.
 
@@ -141,6 +151,7 @@ class End2EndModel(BaseBackendModel):
             out_file=out_file)
 
 
+@__BACKEND_MODEL.register_module('sdk')
 class SDKEnd2EndModel(End2EndModel):
 
     def forward(self, img: Sequence[torch.Tensor],
@@ -174,16 +185,13 @@ def build_text_recognition_model(model_files: Sequence[str],
     deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
 
     backend = get_backend(deploy_cfg)
+    model_type = get_codebase_config(deploy_cfg).get('model_type', 'end2end')
 
-    if backend == Backend.SDK:
-        creator = SDKEnd2EndModel
-    else:
-        creator = End2EndModel
-
-    backend_text_recognizer = creator(
-        backend,
-        model_files,
-        device,
+    backend_text_recognizer = __BACKEND_MODEL.build(
+        model_type,
+        backend=backend,
+        backend_files=model_files,
+        device=device,
         deploy_cfg=deploy_cfg,
         model_cfg=model_cfg,
         **kwargs)
