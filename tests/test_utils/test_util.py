@@ -379,10 +379,14 @@ class TestParseDeviceID:
         device = 'cuda:10'
         assert util.parse_device_id(device) == 10
 
-    def test_incorrect_device(self):
-        device = 'cuda_10'
+    def test_incorrect_cuda_device(self):
+        device = 'cuda_5'
         with pytest.raises(RuntimeError):
             util.parse_device_id(device)
+
+    def test_incorrect_device(self):
+        device = 'abcd:1'
+        assert util.parse_device_id(device) is None
 
 
 def test_AdvancedEnum():
