@@ -104,10 +104,8 @@ def main():
     # load the model of the backend
     model = task_processor.init_backend_model(args.model)
 
-    if args.device == 'cpu':
-        device_id = 0
-    else:
-        device_id = parse_device_id(args.device)
+    is_device_cpu = (args.device == 'cpu')
+    device_id = None if is_device_cpu else parse_device_id(args.device)
 
     model = MMDataParallel(model, device_ids=[device_id])
     # The whole dataset test wrapped a MMDataParallel class outside the module.
@@ -117,7 +115,7 @@ def main():
     if hasattr(model.module, 'CLASSES'):
         model.CLASSES = model.module.CLASSES
     if args.speed_test:
-        with_sync = device_id >= 0
+        with_sync = not is_device_cpu
         output_file = sys.stdout
         if args.log2file:
             output_file = args.log2file
