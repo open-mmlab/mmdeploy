@@ -1,5 +1,4 @@
 import asyncio
-import logging
 import os
 import shutil
 
@@ -8,6 +7,7 @@ from pyppeteer import launch
 from torchvision.models import resnet18
 
 from mmdeploy.core import FUNCTION_REWRITER, RewriterContext, patch_model
+from mmdeploy.utils import get_root_logger
 
 
 @FUNCTION_REWRITER.register_rewriter(
@@ -99,10 +99,11 @@ if __name__ == '__main__':
         os.mkdir(tmp_dir)
     original_file_path = os.path.join(tmp_dir, 'original.onnx')
     rewritten_file_path = os.path.join(tmp_dir, 'rewritten.onnx')
-    logging.info('Generating resnet18 and its rewritten model...')
+    logger = get_root_logger()
+    logger.info('Generating resnet18 and its rewritten model...')
     rewrite_resnet18(original_file_path, rewritten_file_path)
 
-    logging.info('Visualizing models through netron...')
+    logger.info('Visualizing models through netron...')
     asyncio.get_event_loop().run_until_complete(
         visualize(original_file_path, rewritten_file_path))
     import mmcv

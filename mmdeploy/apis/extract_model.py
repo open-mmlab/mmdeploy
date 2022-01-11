@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import logging
 from typing import Dict, Iterable, Optional, Union
 
 import onnx
@@ -9,6 +8,7 @@ import onnx.utils
 from mmdeploy.core.optimizers import (attribute_to_dict, create_extractor,
                                       get_new_name, parse_extractor_io_string,
                                       remove_identity, rename_value)
+from mmdeploy.utils import get_root_logger
 
 
 def extract_model(model: Union[str, onnx.ModelProto],
@@ -45,6 +45,7 @@ def extract_model(model: Union[str, onnx.ModelProto],
     num_value_info = len(model.graph.value_info)
     inputs = []
     outputs = []
+    logger = get_root_logger()
     if not isinstance(start, (list, tuple)):
         start = [start]
     for s in start:
@@ -68,7 +69,7 @@ def extract_model(model: Union[str, onnx.ModelProto],
                             model.graph.value_info.append(new_val_info)
                         inputs.append(new_name)
 
-    logging.info(f'inputs: {", ".join(inputs)}')
+    logger.info(f'inputs: {", ".join(inputs)}')
 
     # collect outputs
     if not isinstance(end, (list, tuple)):
@@ -94,7 +95,7 @@ def extract_model(model: Union[str, onnx.ModelProto],
                             model.graph.value_info.append(new_val_info)
                         outputs.append(new_name)
 
-    logging.info(f'outputs: {", ".join(outputs)}')
+    logger.info(f'outputs: {", ".join(outputs)}')
 
     # replace Mark with Identity
     for node in model.graph.node:
@@ -132,7 +133,7 @@ def extract_model(model: Union[str, onnx.ModelProto],
     for xs in [extracted_model.graph.output]:
         for x in xs:
             if not x.type.tensor_type.shape.dim:
-                logging.info(f'fixing output shape: {x.name}')
+                logger.info(f'fixing output shape: {x.name}')
                 x.CopyFrom(
                     onnx.helper.make_tensor_value_info(
                         x.name, x.type.tensor_type.elem_type, []))

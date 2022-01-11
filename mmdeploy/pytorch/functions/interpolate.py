@@ -1,12 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import logging
 from typing import Optional, Tuple, Union
 
 import torch
 from torch.autograd import Function
 
 from mmdeploy.core import FUNCTION_REWRITER
-from mmdeploy.utils.constants import Backend
+from mmdeploy.utils import Backend, get_root_logger
 
 
 @FUNCTION_REWRITER.register_rewriter(
@@ -85,7 +84,8 @@ def interpolate__tensorrt(
         if isinstance(scale_factor, float):
             scale_factor = [scale_factor, scale_factor]
         if scale_factor is None:
-            logging.warning(
+            logger = get_root_logger()
+            logger.warning(
                 'ResizeLayer in TensorRT allow dynamic input shape with shape '
                 'tensor. Which is not available for custom ops. Computed scale'
                 '_factor might be the right way to get final shape.')

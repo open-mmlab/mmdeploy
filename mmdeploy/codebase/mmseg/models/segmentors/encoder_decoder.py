@@ -35,7 +35,7 @@ def encoder_decoder__simple_test(ctx, self, img, img_meta, **kwargs):
     seg_pred = seg_logit.argmax(dim=1)
     # our inference backend only support 4D output
     shape = seg_pred.shape
-    if is_dynamic_shape(ctx.cfg):
+    if not is_dynamic_shape(ctx.cfg):
         shape = [int(_) for _ in shape]
     seg_pred = seg_pred.view(shape[0], 1, shape[1], shape[2])
     return seg_pred

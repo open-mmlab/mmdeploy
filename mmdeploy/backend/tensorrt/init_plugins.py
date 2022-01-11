@@ -1,8 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import ctypes
 import glob
-import logging
 import os
+
+from mmdeploy.utils import get_root_logger
 
 
 def get_ops_path() -> str:
@@ -29,11 +30,12 @@ def load_tensorrt_plugin() -> bool:
     """
     lib_path = get_ops_path()
     success = False
+    logger = get_root_logger()
     if os.path.exists(lib_path):
         ctypes.CDLL(lib_path)
-        logging.info(f'Successfully loaded tensorrt plugins from {lib_path}')
+        logger.info(f'Successfully loaded tensorrt plugins from {lib_path}')
         success = True
     else:
-        logging.warning(f'Could not load the library of tensorrt plugins. \
+        logger.warning(f'Could not load the library of tensorrt plugins. \
             Because the file does not exist: {lib_path}')
     return success
