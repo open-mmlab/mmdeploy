@@ -8,7 +8,7 @@
 
 using nlohmann::json;
 
-#if __GNUC__ >= 8
+#if __GNUC__ >= 8 || _MSC_VER
 #include <filesystem>
 namespace fs = std::filesystem;
 #else

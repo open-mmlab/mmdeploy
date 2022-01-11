@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <cstdio>
+#include <cuda_runtime.h>
 
 namespace mmdeploy {
 namespace cuda {
@@ -12,7 +13,7 @@ __global__ void normalize(const T* src, int height, int width, int stride, float
   int x = (int)(blockIdx.x * blockDim.x + threadIdx.x);
   int y = (int)(blockIdx.y * blockDim.y + threadIdx.y);
 
-  if (x >= width or y >= height) {
+  if (x >= width || y >= height) {
     return;
   }
 

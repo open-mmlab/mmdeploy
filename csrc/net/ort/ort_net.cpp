@@ -1,4 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved.
+
+#include <algorithm>
+
 #include "ort_net.h"
 
 #include "core/logger.h"
@@ -74,7 +77,7 @@ Result<void> OrtNet::Init(const Value& args) {
     OUTCOME_TRY(auto data_type,
                 ConvertElementType(type_info.GetTensorTypeAndShapeInfo().GetElementType()));
     input_tensors_.emplace_back(
-        TensorDesc{.device = device_, .data_type = data_type, .shape = shape, .name = input_name});
+        TensorDesc{device_, data_type, shape, input_name});
     allocator.Free(input_name);
   }
 
@@ -89,7 +92,7 @@ Result<void> OrtNet::Init(const Value& args) {
     OUTCOME_TRY(auto data_type,
                 ConvertElementType(type_info.GetTensorTypeAndShapeInfo().GetElementType()));
     output_tensors_.emplace_back(
-        TensorDesc{.device = device_, .data_type = data_type, .shape = shape, .name = output_name});
+        TensorDesc{device_, data_type, shape, output_name});
     allocator.Free(output_name);
   }
 

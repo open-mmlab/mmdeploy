@@ -1,6 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
 #include <sstream>
+#include <algorithm>
 
 #include "core/device.h"
 #include "core/model.h"

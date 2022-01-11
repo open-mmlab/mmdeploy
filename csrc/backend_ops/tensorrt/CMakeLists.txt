@@ -27,7 +27,7 @@ target_include_directories(${BACKEND_OPS_OBJ}
 target_include_directories(${BACKEND_OPS_OBJ} PRIVATE ${TENSORRT_INCLUDE_DIR})
 target_include_directories(${BACKEND_OPS_OBJ} PRIVATE ${CUDNN_DIR}/include)
 target_include_directories(${BACKEND_OPS_OBJ} PRIVATE ${CUB_ROOT_DIR})
-target_link_directories(${BACKEND_OPS_OBJ} PUBLIC ${CUDNN_DIR}/lib64)
+target_link_directories(${BACKEND_OPS_OBJ} PUBLIC ${CUDNN_DIR}/lib64 ${CUDNN_DIR}/lib/x64)
 target_link_libraries(${BACKEND_OPS_OBJ}
         PRIVATE ${TENSORRT_LIBRARY} ${CUDA_CUBLAS_LIBRARIES} cudnn)
 

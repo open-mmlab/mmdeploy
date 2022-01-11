@@ -1,6 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
 #include <numeric>
+#include <algorithm>
 
 #include "codebase/mmcls/mmcls.h"
 #include "core/tensor.h"

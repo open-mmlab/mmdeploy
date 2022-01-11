@@ -42,7 +42,7 @@ cv::Mat Mat2CVMat(const Mat& mat) {
                                       {DataType::kINT32, CV_32S}};
   auto type = CV_MAKETYPE(type_mapper[mat.type()], mat.channel());
   auto format = mat.pixel_format();
-  if (PixelFormat::kBGR == format or PixelFormat::kRGB == format) {
+  if (PixelFormat::kBGR == format || PixelFormat::kRGB == format) {
     return cv::Mat(mat.height(), mat.width(), type, mat.data<void>());
   } else if (PixelFormat::kGRAYSCALE == format) {
     return cv::Mat(mat.height(), mat.width(), type, mat.data<void>());

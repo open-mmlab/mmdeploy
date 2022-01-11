@@ -3,6 +3,7 @@
 #ifndef MMDEPLOY_CROP_H
 #define MMDEPLOY_CROP_H
 
+#include <array>
 #include "core/tensor.h"
 #include "transform.h"
 

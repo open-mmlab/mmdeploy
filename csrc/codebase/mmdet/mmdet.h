@@ -3,6 +3,7 @@
 #ifndef MMDEPLOY_SRC_CODEBASE_MMDET_MMDET_H_
 #define MMDEPLOY_SRC_CODEBASE_MMDET_MMDET_H_
 
+#include <array>
 #include "codebase/common.h"
 #include "core/device.h"
 #include "core/mat.h"

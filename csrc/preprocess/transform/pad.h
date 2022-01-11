@@ -3,6 +3,8 @@
 #ifndef MMDEPLOY_PAD_H
 #define MMDEPLOY_PAD_H
 
+#include <array>
+
 #include "core/tensor.h"
 #include "transform.h"
 

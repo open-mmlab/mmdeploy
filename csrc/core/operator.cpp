@@ -1,5 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
+#include <algorithm>
 #include "operator.h"
 
 namespace mmdeploy::graph {

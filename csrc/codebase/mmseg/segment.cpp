@@ -40,10 +40,10 @@ class ResizeMask : public MMSegmentation {
     OUTCOME_TRY(stream_.Wait());
     if (mask.data_type() == DataType::kINT64) {
       // change kINT64 to 2 INT32
-      TensorDesc desc{.device = host_tensor.device(),
-                      .data_type = DataType::kINT32,
-                      .shape = {1, 2, height, width},
-                      .name = host_tensor.name()};
+      TensorDesc desc{host_tensor.device(),
+                      DataType::kINT32,
+                      {1, 2, height, width},
+                      host_tensor.name()};
       Tensor _host_tensor(desc, mask.buffer());
       return MaskResize(_host_tensor, input_height, input_width);
     } else if (mask.data_type() == DataType::kINT32) {

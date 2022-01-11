@@ -3,6 +3,8 @@
 #ifndef MMDEPLOY_RESIZE_H
 #define MMDEPLOY_RESIZE_H
 
+#include <array>
+
 #include "core/tensor.h"
 #include "transform.h"
 

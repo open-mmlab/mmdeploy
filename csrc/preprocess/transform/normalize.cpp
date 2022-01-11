@@ -11,7 +11,7 @@ using namespace std;
 namespace mmdeploy {
 
 NormalizeImpl::NormalizeImpl(const Value& args) : TransformImpl(args) {
-  if (!args.contains("mean") or !args.contains("std")) {
+  if (!args.contains("mean") || !args.contains("std")) {
     ERROR("no 'mean' or 'std' is configured");
     throw std::invalid_argument("no 'mean' or 'std' is configured");
   }
