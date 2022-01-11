@@ -105,6 +105,9 @@ class MMCodebase(metaclass=ABCMeta):
         pass
 
 
+# Note that the build function returns the class instead of its instance.
+
+
 def __build_codebase_class(codebase: Codebase, registry: Registry):
     return registry.module_dict[codebase.value]
 
