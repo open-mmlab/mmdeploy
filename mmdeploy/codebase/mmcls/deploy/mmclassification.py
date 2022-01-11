@@ -71,6 +71,7 @@ class MMClassification(MMCodebase):
 
         return dataset
 
+    @staticmethod
     def build_dataloader(dataset: Dataset,
                          samples_per_gpu: int,
                          workers_per_gpu: int,
