@@ -13,14 +13,11 @@ This tutorial describes how to write a config for model conversion and deploymen
   - [2. How to write codebase config](#2-how-to-write-codebase-config)
     - [Description of codebase config arguments](#description-of-codebase-config-arguments)
       - [Example](#example-2)
-    - [If you need to use the partition model](#if-you-need-to-use-the-partition-model)
-      - [Example](#example-3)
-    - [List of tasks in all codebases](#list-of-tasks-in-all-codebases)
   - [3. How to write backend config](#3-how-to-write-backend-config)
-    - [Example](#example-4)
+    - [Example](#example-3)
   - [4. A complete example of mmcls on TensorRT](#4-a-complete-example-of-mmcls-on-tensorrt)
   - [5. The name rules of our deployment config](#5-the-name-rules-of-our-deployment-config)
-    - [Example](#example-5)
+    - [Example](#example-4)
   - [6. How to write model config](#6-how-to-write-model-config)
   - [7. Reminder](#7-reminder)
   - [8. FAQs](#8-faqs)
@@ -97,29 +94,6 @@ Codebase config part contains information like codebase type and task type.
 codebase_config = dict(type='mmcls', task='Classification')
 ```
 
-#### If you need to use the partition model
-
-If you want to partition model , you need to add partition configuration dict. Note that currently only the MMDetection model supports partitioning.
-
-- `type`: Model's task type, referring to -[List of tasks in all codebases](#list-of-tasks-in-all-codebases).
-
-##### Example
-
-```python
-partition_config = dict(type='single_stage', apply_marks=True)
-```
-
-#### List of tasks in all codebases
-
-| codebase |       task       | partition |
-| :------: | :--------------: | :-------: |
-|  mmcls   |  classification  |     N     |
-|  mmdet   |    detection     |     Y     |
-|  mmseg   |   segmentation   |     N     |
-|  mmocr   |  text-detection  |     N     |
-|  mmocr   | text-recognition |     N     |
-|  mmedit  | supe-resolution  |     N     |
-
 ### 3. How to write backend config
 
 The backend config is mainly used to specify the backend on which model runs and provide the information needed when the model runs on the backend , referring to [ONNX Runtime](../backends/onnxruntime.md), [TensorRT](../backends/tensorrt.md), [NCNN](../backends/ncnn.md), [PPLNN](../backends/pplnn.md).
@@ -183,8 +157,6 @@ onnx_config = dict(
     input_names=['input'],
     output_names=['output'],
     input_shape=[224, 224])
-
-partition_config = None
 ```
 
 ### 5. The name rules of our deployment config
@@ -192,18 +164,17 @@ partition_config = None
 There is a specific naming convention for the filename of deployment config files.
 
 ```bash
-(task name)_(partition)_(backend name)_(dynamic or static).py
+(task name)_(backend name)_(dynamic or static).py
 ```
 
 - `task name`: Model's task type.
-- `partition`: Optional, whether partition model is supported.
 - `backend name`: Backend's name. Note if you use the quantization function, you need to indicate the quantization type. Just like `tensorrt-int8`.
 - `dynamic or static`: Dynamic or static export. Note if the backend needs explicit shape information, you need to add a description of input size with `height x width` format. Just like `dynamic-512x1024-2048x2048`, it means that the min input shape is `512x1024` and the max input shape is `2048x2048`.
 
 #### Example
 
-```
-single-stage_partition_tensorrt-int8_dynamic-320x320-1344x1344.py
+```bash
+detection_tensorrt-int8_dynamic-320x320-1344x1344.py
 ```
 
 ### 6. How to write model config
