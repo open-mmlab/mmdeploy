@@ -26,11 +26,11 @@ def focus__forward__ncnn(ctx, self, x):
     x = x.reshape(batch_size, c * h, 1, w)
     _b, _c, _h, _w = x.shape
     g = _c // 2
+    # fuse to ncnn's shufflechannel
     x = x.view(_b, g, 2, _h, _w)
     x = torch.transpose(x, 1, 2).contiguous()
-    # fuse to ncnn's shufflechannel
     x = x.view(_b, -1, _h, _w)
-    x = x.reshape(_b, c * 2, h // 2, w)
+
     x = x.reshape(_b, c * h * w, 1, 1)
 
     _b, _c, _h, _w = x.shape
