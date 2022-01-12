@@ -3,7 +3,7 @@
 ### 后端
 CPU: ncnn, ONNXRuntime, OpenVINO
 
-GPU: TensorRT, PPLNN
+GPU: ncnn, TensorRT, PPLNN
 
 ### 延迟基准
 
