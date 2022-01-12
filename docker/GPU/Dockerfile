@@ -1,23 +1,23 @@
-FROM nvcr.io/nvidia/tensorrt:21.04-py3                                                                                                                                        
-                                                                                                                                                                              
-ARG CUDA=10.2                                                                                                                                                                 
-ARG PYTHON_VERSION=3.8                                                                                                                                                        
-ARG TORCH_VERSION=1.8.0                                                                                                                                                       
-ARG TORCHVISION_VERSION=0.9.0                                                                                                                                                 
-ARG ONNXRUNTIME_VERSION=1.8.1                                                                                                                                                 
-ENV FORCE_CUDA="1"                                                                                                                                                            
-                                                                                                                                                                              
-ENV DEBIAN_FRONTEND=noninteractive                                                                                                                                            
-                                                                                                                                                                              
-### update apt and install libs                                                                                                                                               
-RUN apt-get update &&\                                                                                                                                                        
-    apt-get install -y vim cmake libsm6 libxext6 libxrender-dev libgl1-mesa-glx git wget                                                                                      
-                                                                                                                                                                              
-RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh  && \                                                           
-    chmod +x ~/miniconda.sh && \                                                                                                                                              
-    ~/miniconda.sh -b -p /opt/conda && \                                                                                                                                      
-    rm ~/miniconda.sh && \                                                                                                                                                    
-    /opt/conda/bin/conda install -y python=${PYTHON_VERSION} conda-build pyyaml numpy ipython cython typing typing_extensions mkl mkl-include ninja && \                      
+FROM nvcr.io/nvidia/tensorrt:21.04-py3
+
+ARG CUDA=10.2
+ARG PYTHON_VERSION=3.8
+ARG TORCH_VERSION=1.8.0
+ARG TORCHVISION_VERSION=0.9.0
+ARG ONNXRUNTIME_VERSION=1.8.1
+ENV FORCE_CUDA="1"
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+### update apt and install libs
+RUN apt-get update &&\
+    apt-get install -y vim cmake libsm6 libxext6 libxrender-dev libgl1-mesa-glx git wget
+
+RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh  && \
+    chmod +x ~/miniconda.sh && \
+    ~/miniconda.sh -b -p /opt/conda && \
+    rm ~/miniconda.sh && \
+    /opt/conda/bin/conda install -y python=${PYTHON_VERSION} conda-build pyyaml numpy ipython cython typing typing_extensions mkl mkl-include ninja && \
     /opt/conda/bin/conda clean -ya
 
 ### pytorch

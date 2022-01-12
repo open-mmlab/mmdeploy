@@ -1,4 +1,4 @@
-ARG OS_VERSION=18.04                                                                                                                                                                        
+ARG OS_VERSION=18.04
 FROM ubuntu:${OS_VERSION} as official
 ARG PYTHON_VERSION=3.8
 ARG TORCH_VERSION=1.8.0
@@ -19,15 +19,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         wget \
         curl \
     && rm -rf /var/lib/apt/lists/*
-### update apt and install libs                                                                                                                                               
-#RUN apt-get update &&\                                                                                                                                                        
-#    apt-get install -y vim cmake libsm6 libxext6 libxrender-dev libgl1-mesa-glx git wget                                                                                      
-                                                                                                                                                                              
-RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh  && \                                                           
-    chmod +x ~/miniconda.sh && \                                                                                                                                              
-    ~/miniconda.sh -b -p /opt/conda && \                                                                                                                                      
-    rm ~/miniconda.sh && \                                                                                                                                                    
-    /opt/conda/bin/conda install -y python=${PYTHON_VERSION} conda-build pyyaml numpy ipython cython typing typing_extensions mkl mkl-include ninja && \                      
+
+RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh  && \
+    chmod +x ~/miniconda.sh && \
+    ~/miniconda.sh -b -p /opt/conda && \
+    rm ~/miniconda.sh && \
+    /opt/conda/bin/conda install -y python=${PYTHON_VERSION} conda-build pyyaml numpy ipython cython typing typing_extensions mkl mkl-include ninja && \
     /opt/conda/bin/conda clean -ya
 
 ### pytorch
@@ -37,14 +34,6 @@ ENV PATH /opt/conda/bin:$PATH
 
 ### install open-mim
 RUN /opt/conda/bin/pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cpu/torch${TORCH_VERSION}/index.html
-
-#### git mmdetection
-#RUN git clone --depth=1 https://github.com/open-mmlab/mmdetection.git /root/space/mmdetection
-
-### install mmdetection
-#RUN cd /root/space/mmdetection &&\
-#    pip3 install -r requirements.txt &&\
-#    python3 setup.py develop
 
 WORKDIR /root/workspace
 RUN git clone https://github.com/open-mmlab/mmclassification
@@ -107,4 +96,3 @@ RUN git clone https://github.com/open-mmlab/mmdeploy &&\
     make -j$(nproc) &&\
     cd .. &&\
     pip install -e .
-
