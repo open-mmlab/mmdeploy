@@ -96,7 +96,7 @@ pip install -e .
 **Note**
 
 - 有些依赖项是可选的。运行 `pip install -e .` 将进行最小化依赖安装。 如果需安装其他可选依赖项，请执行`pip install -r requirements/optional.txt`，
-或者 `pip install -e . [optional]`。其中，`[optional]`可以填写`all`, `tests`, `build`, `optional`
+或者 `pip install -e .[optional]`。其中，`[optional]`可以填写`all`, `tests`, `build`, `optional`
 
 ### 构建 SDK
 
