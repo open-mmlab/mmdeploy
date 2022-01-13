@@ -107,11 +107,14 @@ class OpenVINOWrapper(BaseWrapper):
             name: torch.from_numpy(tensor)
             for name, tensor in outputs.items()
         }
-        for output_name in outputs.keys():
-            if '.' in output_name:
-                new_output_name = output_name.split('.')[0]
-                outputs[new_output_name] = outputs.pop(output_name)
-        return outputs
+        cleaned_outputs = {}
+        for name, value in outputs.items():
+            if '.' in name:
+                new_output_name = name.split('.')[0]
+                cleaned_outputs[new_output_name] = value
+            else:
+                cleaned_outputs[name] = value
+        return cleaned_outputs
 
     def forward(self, inputs: Dict[str,
                                    torch.Tensor]) -> Dict[str, torch.Tensor]:
