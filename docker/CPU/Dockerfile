@@ -28,7 +28,6 @@ RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Mini
     /opt/conda/bin/conda clean -ya
 
 ### pytorch
-#RUN /opt/conda/bin/conda install pytorch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION} -c pytorch
 RUN /opt/conda/bin/pip install torch==${TORCH_VERSION}+cpu torchvision==${TORCHVISION_VERSION}+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html
 ENV PATH /opt/conda/bin:$PATH
 
@@ -85,12 +84,12 @@ RUN git clone https://github.com/openppl-public/ppl.nn &&\
 ### install mmdeploy
 WORKDIR /root/workspace
 RUN git clone https://github.com/open-mmlab/mmdeploy &&\
-    git submodule update --init --recursive &&\
     cd mmdeploy &&\
+    git submodule update --init --recursive &&\
     rm -rf build &&\
     mkdir build &&\
     cd build &&\
-    cmake -DMMDEPLOY_TARGET_BACKENDS=ncnn -Dncnn_DIR=/root/workspace/build/install/lib/cmake/ncnn .. &&\
+    cmake -DMMDEPLOY_TARGET_BACKENDS=ncnn -Dncnn_DIR=/root/workspace/ncnn/build/install/lib/cmake/ncnn .. &&\
     make -j$(nproc) &&\
     cmake -DMMDEPLOY_TARGET_BACKENDS=ort .. &&\
     make -j$(nproc) &&\
