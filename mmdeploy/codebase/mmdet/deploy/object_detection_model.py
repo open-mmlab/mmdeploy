@@ -73,7 +73,8 @@ class End2EndModel(BaseBackendModel):
             backend=backend,
             backend_files=backend_files,
             device=device,
-            output_names=output_names)
+            output_names=output_names,
+            deploy_cfg=self.deploy_cfg)
 
     @staticmethod
     def __clear_outputs(
@@ -307,7 +308,8 @@ class PartitionSingleStageModel(End2EndModel):
             backend=backend,
             backend_files=backend_files,
             device=device,
-            output_names=['scores', 'boxes'])
+            output_names=['scores', 'boxes'],
+            deploy_cfg=self.deploy_cfg)
 
     def partition0_postprocess(self, scores: torch.Tensor,
                                bboxes: torch.Tensor):
@@ -404,11 +406,17 @@ class PartitionTwoStageModel(End2EndModel):
         ] + ['scores', 'boxes']
 
         self.first_wrapper = BaseBackendModel._build_wrapper(
-            backend, backend_files[0:n], device, partition0_output_names)
+            backend,
+            backend_files[0:n],
+            device,
+            partition0_output_names,
+            deploy_cfg=self.deploy_cfg)
 
         self.second_wrapper = BaseBackendModel._build_wrapper(
-            backend, backend_files[n:2 * n], device,
-            ['cls_score', 'bbox_pred'])
+            backend,
+            backend_files[n:2 * n],
+            device, ['cls_score', 'bbox_pred'],
+            deploy_cfg=self.deploy_cfg)
 
     def partition0_postprocess(self, x: Sequence[torch.Tensor],
                                scores: torch.Tensor, bboxes: torch.Tensor):
@@ -580,6 +588,47 @@ class NCNNEnd2EndModel(End2EndModel):
         dets = dets.detach().cpu().numpy()
         labels = labels.detach().cpu().numpy()
         return [dets, labels]
+
+
+@__BACKEND_MODEL.register_module('sdk')
+class SDKEnd2EndModel(End2EndModel):
+    """SDK inference class, converts SDK output to mmdet format."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.has_mask = self.deploy_cfg.codebase_config.get('has_mask', False)
+
+    def forward(self, img: Sequence[torch.Tensor], img_metas: Sequence[dict],
+                *args, **kwargs):
+        """Run forward inference.
+
+        Args:
+            img (Sequence[torch.Tensor]): A list contains input image(s)
+                in [N x C x H x W] format.
+            img_metas (Sequence[dict]): A list of meta info for image(s).
+            *args: Other arguments.
+            **kwargs: Other key-pair arguments.
+
+        Returns:
+            list: A list contains predictions.
+        """
+        dets, labels, masks = self.wrapper.invoke(
+            [img[0].contiguous().detach().cpu().numpy()])[0]
+        det_results = bbox2result(dets[np.newaxis, ...], labels[np.newaxis,
+                                                                ...],
+                                  len(self.CLASSES))
+        if self.has_mask:
+            segm_results = [[] for _ in range(len(self.CLASSES))]
+            ori_h, ori_w = img_metas[0]['ori_shape'][:2]
+            for bbox, label, mask in zip(dets, labels, masks):
+                img_mask = np.zeros((ori_h, ori_w), dtype=np.uint8)
+                left = int(max(np.floor(bbox[0]) - 1, 0))
+                top = int(max(np.floor(bbox[1]) - 1, 0))
+                img_mask[top:top + mask.shape[0],
+                         left:left + mask.shape[1]] = mask
+                segm_results[label].append(img_mask)
+            return [(det_results, segm_results)]
+        return [det_results]
 
 
 def get_classes_from_config(model_cfg: Union[str, mmcv.Config], **kwargs) -> \

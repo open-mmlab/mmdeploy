@@ -87,6 +87,7 @@ def main():
 
     # load deploy_cfg
     deploy_cfg, model_cfg = load_config(deploy_cfg_path, model_cfg_path)
+
     # merge options for model cfg
     if args.cfg_options is not None:
         model_cfg.merge_from_dict(args.cfg_options)
