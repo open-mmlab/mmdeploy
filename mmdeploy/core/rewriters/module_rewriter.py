@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
-from copy import deepcopy
 
 import mmcv
 from torch import nn
@@ -102,7 +101,7 @@ class ModuleRewriter:
                         module, cfg, **kwargs)
             return self._replace_one_module(model, cfg, **kwargs)
 
-        return _replace_module_impl(deepcopy(model), cfg, **kwargs)
+        return _replace_module_impl(model, cfg, **kwargs)
 
     def _collect_record(self, backend: str):
         """Collect models in registry."""

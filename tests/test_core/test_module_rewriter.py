@@ -32,7 +32,9 @@ def test_module_rewriter():
     torch.testing.assert_allclose(rewritten_result, result * 2)
 
     # wrong backend should not be rewritten
-
+    model = resnet50().eval()
+    bottle_neck = model.layer1[0]
+    result = bottle_neck(x)
     rewritten_model = patch_model(model, cfg=cfg)
     rewritten_bottle_nect = rewritten_model.layer1[0]
     rewritten_result = rewritten_bottle_nect(x)
