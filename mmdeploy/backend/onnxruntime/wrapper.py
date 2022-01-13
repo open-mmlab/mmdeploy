@@ -2,7 +2,6 @@
 import os.path as osp
 from typing import Dict, Optional, Sequence
 
-import numpy as np
 import onnxruntime as ort
 import torch
 
@@ -80,11 +79,12 @@ class ORTWrapper(BaseWrapper):
             input_tensor = input_tensor.contiguous()
             if not self.is_cuda_available:
                 input_tensor = input_tensor.cpu()
+            element_type = input_tensor.numpy().dtype
             self.io_binding.bind_input(
                 name=name,
                 device_type=self.device_type,
                 device_id=self.device_id,
-                element_type=np.float32,
+                element_type=element_type,
                 shape=input_tensor.shape,
                 buffer_ptr=input_tensor.data_ptr())
 
