@@ -209,7 +209,7 @@ Each package's installation command is given based on Ubuntu 18.04.
    cmake .. \
      -DMMDEPLOY_BUILD_SDK=ON \
      -DCMAKE_CXX_COMPILER=g++-7 \
-     -Dpplcv_DIR=/path/to/ppl.cv/install/lib/cmake/ppl \
+     -Dpplcv_DIR=/path/to/ppl.cv/cuda-build/install/lib/cmake/ppl \
      -DTENSORRT_DIR=/path/to/tensorrt \
      -DCUDNN_DIR=/path/to/cudnn \
      -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
