@@ -79,7 +79,7 @@ RUN git clone https://github.com/openppl-public/ppl.nn &&\
     cp -r python/package /tmp/pyppl-package &&\
     cp -r pplnn-build/install/lib/pyppl/* /tmp/pyppl-package/pyppl &&\
     cd /tmp/pyppl-package &&\
-    pip3 install .
+    pip install .
 
 ### install mmdeploy
 WORKDIR /root/workspace
