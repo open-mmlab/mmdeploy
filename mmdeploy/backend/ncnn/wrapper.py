@@ -109,7 +109,6 @@ class NCNNWrapper(BaseWrapper):
                 mat = result[name]
                 # deal with special case
                 if mat.empty():
-                    mat = None
                     logger.warning(
                         f'The "{name}" output of ncnn model is empty.')
                     continue
