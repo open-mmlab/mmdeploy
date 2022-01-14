@@ -122,15 +122,11 @@ class ObjectDetection(BaseTask):
             transform = cfg.data.test.pipeline[1]
             if 'transforms' in transform:
                 transform_list = transform['transforms']
-                ind = []
-                pos = 0
-                for step in transform_list:
+                for i, step in enumerate(transform_list):
                     if step['type'] == 'Pad' and 'pad_to_square' in step \
                        and step['pad_to_square']:
-                        ind.append(pos)
-                    pos += 1
-                for i in ind:
-                    transform_list.pop(i)
+                        transform_list.pop(i)
+                        break
         test_pipeline = Compose(cfg.data.test.pipeline)
         data_list = []
         for img in imgs:
