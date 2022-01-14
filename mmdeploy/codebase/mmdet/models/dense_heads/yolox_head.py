@@ -139,6 +139,13 @@ def yolox_head__get_bboxes__ncnn(ctx,
         output__ncnn (Tensor): outputs, shape is [N, num_det, 6].
     """
     from mmdeploy.codebase.mmdet.core.ops import ncnn_detection_output_forward
+    from mmdeploy.utils.config_utils import is_dynamic_shape
+    from mmdeploy.utils import get_root_logger
+    dynamic_flag = is_dynamic_shape(ctx.cfg)
+    if dynamic_flag:
+        logger = get_root_logger()
+        logger.warning('YOLOX model fix the size of (416, 416), \
+            it is still static shape.')
     img_height = int(img_metas[0]['img_shape'][0])
     img_width = int(img_metas[0]['img_shape'][1])
 
