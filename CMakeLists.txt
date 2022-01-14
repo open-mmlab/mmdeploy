@@ -76,6 +76,10 @@ if (MMDEPLOY_BUILD_SDK)
         add_subdirectory(tests/test_csrc)
     endif ()
 
+    if (MMDEPLOY_BUILD_SDK_PYTHON_API)
+        add_subdirectory(csrc/apis/python)
+    endif()
+
     # export MMDeploy package
     install(EXPORT MMDeployTargets
             # NAMESPACE mmdeploy::

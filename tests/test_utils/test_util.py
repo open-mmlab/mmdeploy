@@ -369,6 +369,30 @@ class TestGetDynamicAxes:
         assert expected_dynamic_axes == dynamic_axes
 
 
+class TestParseDeviceID:
+
+    def test_cpu(self):
+        device = 'cpu'
+        assert util.parse_device_id(device) == -1
+
+    def test_cuda(self):
+        device = 'cuda'
+        assert util.parse_device_id(device) == 0
+
+    def test_cuda10(self):
+        device = 'cuda:10'
+        assert util.parse_device_id(device) == 10
+
+    def test_incorrect_cuda_device(self):
+        device = 'cuda_5'
+        with pytest.raises(RuntimeError):
+            util.parse_device_id(device)
+
+    def test_incorrect_device(self):
+        device = 'abcd:1'
+        assert util.parse_device_id(device) is None
+
+
 def test_AdvancedEnum():
     keys = [
         Task.TEXT_DETECTION, Task.TEXT_RECOGNITION, Task.SEGMENTATION,

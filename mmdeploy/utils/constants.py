@@ -43,4 +43,23 @@ class Backend(AdvancedEnum):
     PPLNN = 'pplnn'
     NCNN = 'ncnn'
     OPENVINO = 'openvino'
+    SDK = 'sdk'
     DEFAULT = 'default'
+
+
+SDK_TASK_MAP = {
+    Task.CLASSIFICATION:
+    dict(component='LinearClsHead', cls_name='Classifier'),
+    Task.OBJECT_DETECTION:
+    dict(component='ResizeBBox', cls_name='Detector'),
+    Task.INSTANCE_SEGMENTATION:
+    dict(component='ResizeInstanceMask', cls_name='Detector'),
+    Task.SEGMENTATION:
+    dict(component='ResizeMask', cls_name='Segmentor'),
+    Task.SUPER_RESOLUTION:
+    dict(component='TensorToImg', cls_name='Restorer'),
+    Task.TEXT_DETECTION:
+    dict(component='TextDetHead', cls_name='TextDetector'),
+    Task.TEXT_RECOGNITION:
+    dict(component='CTCConvertor', cls_name='TextRecognizer')
+}
