@@ -44,3 +44,4 @@ The table below lists the models that are guaranteed to be exportable to other b
 - Tag:
   - static: This model only support static export. Please use `static` deploy config, just like $MMDEPLOY_DIR/configs/mmseg/segmentation_tensorrt_static-1024x2048.py.
 - SSD: When you convert SSD model, you need to use min shape deploy config just like 300x300-512x512 rather than 320x320-1344x1344, for example $MMDEPLOY_DIR/configs/mmdet/detection/detection_tensorrt_dynamic-300x300-512x512.py.
+- YOLOX: YOLOX with ncnn only supports static shape.

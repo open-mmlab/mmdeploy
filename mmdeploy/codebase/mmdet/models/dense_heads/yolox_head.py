@@ -144,8 +144,7 @@ def yolox_head__get_bboxes__ncnn(ctx,
     dynamic_flag = is_dynamic_shape(ctx.cfg)
     if dynamic_flag:
         logger = get_root_logger()
-        logger.warning('YOLOX model fix the size of (416, 416), \
-            it is still static shape.')
+        logger.warning('YOLOX does not support dynamic shape with ncnn.')
     img_height = int(img_metas[0]['img_shape'][0])
     img_width = int(img_metas[0]['img_shape'][1])
 
