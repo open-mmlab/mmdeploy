@@ -73,7 +73,8 @@ class End2EndModel(BaseBackendModel):
             backend=backend,
             backend_files=backend_files,
             device=device,
-            output_names=output_names)
+            output_names=output_names,
+            deploy_cfg=self.deploy_cfg)
 
     @staticmethod
     def __clear_outputs(
@@ -307,7 +308,8 @@ class PartitionSingleStageModel(End2EndModel):
             backend=backend,
             backend_files=backend_files,
             device=device,
-            output_names=['scores', 'boxes'])
+            output_names=['scores', 'boxes'],
+            deploy_cfg=self.deploy_cfg)
 
     def partition0_postprocess(self, scores: torch.Tensor,
                                bboxes: torch.Tensor):
@@ -404,11 +406,17 @@ class PartitionTwoStageModel(End2EndModel):
         ] + ['scores', 'boxes']
 
         self.first_wrapper = BaseBackendModel._build_wrapper(
-            backend, backend_files[0:n], device, partition0_output_names)
+            backend,
+            backend_files[0:n],
+            device,
+            partition0_output_names,
+            deploy_cfg=self.deploy_cfg)
 
         self.second_wrapper = BaseBackendModel._build_wrapper(
-            backend, backend_files[n:2 * n], device,
-            ['cls_score', 'bbox_pred'])
+            backend,
+            backend_files[n:2 * n],
+            device, ['cls_score', 'bbox_pred'],
+            deploy_cfg=self.deploy_cfg)
 
     def partition0_postprocess(self, x: Sequence[torch.Tensor],
                                scores: torch.Tensor, bboxes: torch.Tensor):
@@ -582,31 +590,90 @@ class NCNNEnd2EndModel(End2EndModel):
         return [dets, labels]
 
 
-def get_classes_from_config(model_cfg: Union[str, mmcv.Config], **kwargs):
-    """Get class name from config.
+@__BACKEND_MODEL.register_module('sdk')
+class SDKEnd2EndModel(End2EndModel):
+    """SDK inference class, converts SDK output to mmdet format."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.has_mask = self.deploy_cfg.codebase_config.get('has_mask', False)
+
+    def forward(self, img: Sequence[torch.Tensor], img_metas: Sequence[dict],
+                *args, **kwargs):
+        """Run forward inference.
+
+        Args:
+            img (Sequence[torch.Tensor]): A list contains input image(s)
+                in [N x C x H x W] format.
+            img_metas (Sequence[dict]): A list of meta info for image(s).
+            *args: Other arguments.
+            **kwargs: Other key-pair arguments.
+
+        Returns:
+            list: A list contains predictions.
+        """
+        dets, labels, masks = self.wrapper.invoke(
+            [img[0].contiguous().detach().cpu().numpy()])[0]
+        det_results = bbox2result(dets[np.newaxis, ...], labels[np.newaxis,
+                                                                ...],
+                                  len(self.CLASSES))
+        if self.has_mask:
+            segm_results = [[] for _ in range(len(self.CLASSES))]
+            ori_h, ori_w = img_metas[0]['ori_shape'][:2]
+            for bbox, label, mask in zip(dets, labels, masks):
+                img_mask = np.zeros((ori_h, ori_w), dtype=np.uint8)
+                left = int(max(np.floor(bbox[0]) - 1, 0))
+                top = int(max(np.floor(bbox[1]) - 1, 0))
+                img_mask[top:top + mask.shape[0],
+                         left:left + mask.shape[1]] = mask
+                segm_results[label].append(img_mask)
+            return [(det_results, segm_results)]
+        return [det_results]
+
+
+def get_classes_from_config(model_cfg: Union[str, mmcv.Config], **kwargs) -> \
+        List[str]:
+    """Get class name from config. The class name is the `classes` field if it
+    is set in the config, or the classes in `module_dict` of MMDet whose type
+    is set in the config.
 
     Args:
         model_cfg (str | mmcv.Config): Input model config file or
             Config object.
 
     Returns:
-        list[str]: A list of string specifying names of different class.
+        List[str]: A list of string specifying names of different class.
     """
     # load cfg if necessary
     model_cfg = load_config(model_cfg)[0]
+
+    # For custom dataset
+    if 'classes' in model_cfg:
+        return list(model_cfg['classes'])
+
     module_dict = DATASETS.module_dict
     data_cfg = model_cfg.data
+    classes = None
+    module = None
 
-    if 'test' in data_cfg:
-        module = module_dict[data_cfg.test.type]
-    elif 'val' in data_cfg:
-        module = module_dict[data_cfg.val.type]
-    elif 'train' in data_cfg:
-        module = module_dict[data_cfg.train.type]
-    else:
+    keys = ['test', 'val', 'train']
+
+    for key in keys:
+        if key in data_cfg:
+            if 'classes' in data_cfg[key]:
+                classes = list(data_cfg[key]['classes'])
+                break
+            elif 'type' in data_cfg[key]:
+                module = module_dict[data_cfg[key]['type']]
+                break
+
+    if classes is None and module is None:
         raise RuntimeError(f'No dataset config found in: {model_cfg}')
 
-    return module.CLASSES
+    if classes is not None:
+        return classes
+    else:
+        return module.CLASSES
 
 
 def build_object_detection_model(model_files: Sequence[str],

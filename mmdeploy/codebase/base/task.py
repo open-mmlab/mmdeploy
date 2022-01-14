@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import logging
 from abc import ABCMeta, abstractmethod
 from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
@@ -8,7 +7,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader, Dataset
 
-from mmdeploy.utils import get_codebase
+from mmdeploy.utils import get_backend_config, get_codebase, get_root_logger
 from mmdeploy.utils.dataset import is_can_sort_dataset, sort_dataset
 
 
@@ -84,14 +83,20 @@ class BaseTask(metaclass=ABCMeta):
         Returns:
             Dataset: The built dataset.
         """
+
+        backend_cfg = get_backend_config(self.deploy_cfg)
+        if 'pipeline' in backend_cfg:
+            dataset_cfg.data[dataset_type].pipeline = backend_cfg.pipeline
+
         dataset = self.codebase_class.build_dataset(dataset_cfg, dataset_type,
                                                     **kwargs)
+        logger = get_root_logger()
         if is_sort_dataset:
             if is_can_sort_dataset(dataset):
                 sort_dataset(dataset)
             else:
-                logging.info('Sorting the dataset by \'height\' and \'width\' '
-                             'is not possible.')
+                logger.info('Sorting the dataset by \'height\' and \'width\' '
+                            'is not possible.')
         return dataset
 
     def build_dataloader(self, dataset: Dataset, samples_per_gpu: int,

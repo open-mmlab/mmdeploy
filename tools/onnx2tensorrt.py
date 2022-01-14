@@ -4,7 +4,8 @@ import logging
 
 from mmdeploy.backend.tensorrt import create_trt_engine, save_trt_engine
 from mmdeploy.backend.tensorrt.utils import get_trt_log_level
-from mmdeploy.utils import get_common_config, get_model_inputs, load_config
+from mmdeploy.utils import (get_common_config, get_model_inputs,
+                            get_root_logger, load_config)
 
 
 def parse_args():
@@ -29,12 +30,7 @@ def parse_args():
 
 def main():
     args = parse_args()
-    logging.basicConfig(
-        format='%(asctime)s,%(name)s %(levelname)-8s'
-        ' [%(filename)s:%(lineno)d] %(message)s',
-        datefmt='%Y-%m-%d:%H:%M:%S')
-    logger = logging.getLogger()
-    logger.setLevel(args.log_level)
+    logger = get_root_logger(log_level=args.log_level)
 
     deploy_cfg_path = args.deploy_cfg
     deploy_cfg = load_config(deploy_cfg_path)[0]
@@ -57,8 +53,8 @@ def main():
         # do not support partition model calibration for now
         int8_param['model_type'] = 'end2end'
 
-    logging.info(f'onnx2tensorrt: \n\tonnx_path: {onnx_path} '
-                 f'\n\tdeploy_cfg: {deploy_cfg_path}')
+    logger.info(f'onnx2tensorrt: \n\tonnx_path: {onnx_path} '
+                f'\n\tdeploy_cfg: {deploy_cfg_path}')
     try:
         engine = create_trt_engine(
             onnx_path,
@@ -71,10 +67,10 @@ def main():
             device_id=device_id)
 
         save_trt_engine(engine, output_path)
-        logging.info('onnx2tensorrt success.')
+        logger.info('onnx2tensorrt success.')
     except Exception as e:
-        logging.error(e)
-        logging.error('onnx2tensorrt failed.')
+        logger.error(e)
+        logger.error('onnx2tensorrt failed.')
 
 
 if __name__ == '__main__':

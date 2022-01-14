@@ -1,8 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import logging
 from typing import Callable, Dict
 
-from mmdeploy.utils.constants import Backend
+from mmdeploy.utils import Backend, get_root_logger
 from .rewriter_utils import ContextCaller, RewriterRegistry, import_function
 
 
@@ -104,7 +103,8 @@ class FunctionRewriter:
                 origin_func, origin_class = import_function(function_path)
             except Exception:
                 origin_func = None
-                logging.warning(
+                logger = get_root_logger()
+                logger.warning(
                     f'Can not find {function_path}, function rewrite will '
                     'not be applied')
 

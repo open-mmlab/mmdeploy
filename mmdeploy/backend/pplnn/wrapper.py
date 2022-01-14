@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import logging
 import sys
 from typing import Dict, List, Optional, Sequence
 
@@ -9,7 +8,7 @@ import pyppl.common as pplcommon
 import pyppl.nn as pplnn
 import torch
 
-from mmdeploy.utils import Backend, parse_device_id
+from mmdeploy.utils import Backend, get_root_logger, parse_device_id
 from mmdeploy.utils.timer import TimeCounter
 from ..base import BACKEND_WRAPPER, BaseWrapper
 
@@ -37,18 +36,19 @@ def register_engines(device_id: int,
         list[pplnn.Engine]: A list of registered pplnn engines.
     """
     engines = []
+    logger = get_root_logger()
     if device_id == -1:
         x86_options = pplnn.X86EngineOptions()
         x86_engine = pplnn.X86EngineFactory.Create(x86_options)
         if not x86_engine:
-            logging.error('Failed to create x86 engine')
+            logger.error('Failed to create x86 engine')
             sys.exit(-1)
 
         if disable_avx512:
             status = x86_engine.Configure(pplnn.X86_CONF_DISABLE_AVX512)
             if status != pplcommon.RC_SUCCESS:
-                logging.error('x86 engine Configure() failed: ' +
-                              pplcommon.GetRetCodeStr(status))
+                logger.error('x86 engine Configure() failed: ' +
+                             pplcommon.GetRetCodeStr(status))
                 sys.exit(-1)
 
         engines.append(pplnn.Engine(x86_engine))
@@ -59,22 +59,22 @@ def register_engines(device_id: int,
 
         cuda_engine = pplnn.CudaEngineFactory.Create(cuda_options)
         if not cuda_engine:
-            logging.error('Failed to create cuda engine.')
+            logger.error('Failed to create cuda engine.')
             sys.exit(-1)
 
         if quick_select:
             status = cuda_engine.Configure(
                 pplnn.CUDA_CONF_USE_DEFAULT_ALGORITHMS)
             if status != pplcommon.RC_SUCCESS:
-                logging.error('cuda engine Configure() failed: ' +
-                              pplcommon.GetRetCodeStr(status))
+                logger.error('cuda engine Configure() failed: ' +
+                             pplcommon.GetRetCodeStr(status))
                 sys.exit(-1)
 
         if input_shapes is not None:
             status = cuda_engine.Configure(pplnn.CUDA_CONF_SET_INPUT_DIMS,
                                            input_shapes)
             if status != pplcommon.RC_SUCCESS:
-                logging.error(
+                logger.error(
                     'cuda engine Configure(CUDA_CONF_SET_INPUT_DIMS) failed: '
                     + pplcommon.GetRetCodeStr(status))
                 sys.exit(-1)
@@ -83,7 +83,7 @@ def register_engines(device_id: int,
             status = cuda_engine.Configure(pplnn.CUDA_CONF_EXPORT_ALGORITHMS,
                                            export_algo_file)
             if status != pplcommon.RC_SUCCESS:
-                logging.error(
+                logger.error(
                     'cuda engine Configure(CUDA_CONF_EXPORT_ALGORITHMS) '
                     'failed: ' + pplcommon.GetRetCodeStr(status))
                 sys.exit(-1)
@@ -92,7 +92,7 @@ def register_engines(device_id: int,
             status = cuda_engine.Configure(pplnn.CUDA_CONF_IMPORT_ALGORITHMS,
                                            import_algo_file)
             if status != pplcommon.RC_SUCCESS:
-                logging.error(
+                logger.error(
                     'cuda engine Configure(CUDA_CONF_IMPORT_ALGORITHMS) '
                     'failed: ' + pplcommon.GetRetCodeStr(status))
                 sys.exit(-1)

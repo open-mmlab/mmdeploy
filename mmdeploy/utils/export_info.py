@@ -1,14 +1,15 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import importlib
-import logging
 from typing import Dict, List, Tuple, Union
 
 import mmcv
 
 from mmdeploy.apis import build_task_processor
 from mmdeploy.utils import (Backend, Task, get_backend, get_codebase,
-                            get_common_config, get_onnx_config, get_task_type,
-                            is_dynamic_batch, load_config)
+                            get_common_config, get_onnx_config,
+                            get_root_logger, get_task_type, is_dynamic_batch,
+                            load_config)
+from mmdeploy.utils.constants import SDK_TASK_MAP as task_map
 
 
 def get_mmdpeloy_version() -> str:
@@ -33,7 +34,8 @@ def get_task(deploy_cfg: mmcv.Config) -> Dict:
     try:
         codebase = importlib.import_module(codebase_name)
     except ModuleNotFoundError:
-        logging.warning(f'can not import the module: {codebase_name}')
+        logger = get_root_logger()
+        logger.warning(f'can not import the module: {codebase_name}')
     codebase_version = codebase.__version__
     return dict(
         task=task_name, codebase=codebase_name, version=codebase_version)
@@ -158,24 +160,6 @@ def get_inference_info(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
         input=input,
         output=output,
         input_map=input_map)
-
-
-task_map = {
-    Task.CLASSIFICATION:
-    dict(component='LinearClsHead', cls_name='Classifier'),
-    Task.OBJECT_DETECTION:
-    dict(component='ResizeBBox', cls_name='Detector'),
-    Task.INSTANCE_SEGMENTATION:
-    dict(component='ResizeInstanceMask', cls_name='Detector'),
-    Task.SEGMENTATION:
-    dict(component='ResizeMask', cls_name='Segmentor'),
-    Task.SUPER_RESOLUTION:
-    dict(component='TensorToImg', cls_name='Restorer'),
-    Task.TEXT_DETECTION:
-    dict(component='TextDetHead', cls_name='TextDetector'),
-    Task.TEXT_RECOGNITION:
-    dict(component='CTCConvertor', cls_name='TextRecognizer')
-}
 
 
 def get_preprocess(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config):

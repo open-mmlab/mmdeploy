@@ -99,6 +99,7 @@ int mmdeploy_restorer_apply(mm_handle_t handle, const mm_mat_t *images, int coun
       res.format = (mm_pixel_format_t)upscale.pixel_format();
       res.height = upscale.height();
       res.width = upscale.width();
+      res.channel = upscale.channel();
       res.type = (mm_data_type_t)upscale.type();
     }
     *results = _results.release();

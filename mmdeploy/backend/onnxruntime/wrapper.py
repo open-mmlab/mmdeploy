@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import logging
 import os.path as osp
 from typing import Dict, Optional, Sequence
 
@@ -7,7 +6,7 @@ import numpy as np
 import onnxruntime as ort
 import torch
 
-from mmdeploy.utils import Backend, parse_device_id
+from mmdeploy.utils import Backend, get_root_logger, parse_device_id
 from mmdeploy.utils.timer import TimeCounter
 from ..base import BACKEND_WRAPPER, BaseWrapper
 from .init_plugins import get_ops_path
@@ -43,12 +42,13 @@ class ORTWrapper(BaseWrapper):
         ort_custom_op_path = get_ops_path()
         session_options = ort.SessionOptions()
         # register custom op for onnxruntime
+        logger = get_root_logger()
         if osp.exists(ort_custom_op_path):
             session_options.register_custom_ops_library(ort_custom_op_path)
-            logging.info(f'Successfully loaded onnxruntime custom ops from \
+            logger.info(f'Successfully loaded onnxruntime custom ops from \
             {ort_custom_op_path}')
         else:
-            logging.warning(f'The library of onnxruntime custom ops does \
+            logger.warning(f'The library of onnxruntime custom ops does \
             not exist: {ort_custom_op_path}')
         device_id = parse_device_id(device)
         is_cuda_available = ort.get_device() == 'GPU'
