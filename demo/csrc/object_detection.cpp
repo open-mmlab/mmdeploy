@@ -46,8 +46,13 @@ int main(int argc, char *argv[]) {
     fprintf(stdout, "box %d, left=%.2f, top=%.2f, right=%.2f, bottom=%.2f, label=%d, score=%.4f\n",
             i, box.left, box.top, box.right, box.bottom, bboxes[i].label_id, bboxes[i].score);
 
-    // skip detections with invalid bbox coordinates
-    if (box.left < 1 && box.top < 1) {
+    // skip detections with invalid bbox size (bbox height or width < 1)
+    if ((box.right-box.left) < 1 || (box.bottom-box.top) < 1) {
+      continue;
+    }
+
+    // skip detections less than specified score threshold
+    if (bboxes[i].score < 0.1) {
       continue;
     }
 
@@ -56,7 +61,9 @@ int main(int argc, char *argv[]) {
       fprintf(stdout, "mask %d, height=%d, width=%d\n", i, mask->height, mask->width);
 
       cv::Mat imgMask(mask->height, mask->width, CV_8UC1, &mask->data[0]);
-      cv::Rect roi((int)box.left - 1, (int)box.top - 1, mask->width, mask->height);
+      auto x0 = std::max(std::floor(box.left) - 1, 0.f);
+      auto y0 = std::max(std::floor(box.top) - 1, 0.f);
+      cv::Rect roi((int) x0, (int) y0, mask->width, mask->height);
 
       // split the RGB channels, overlay mask to a specific color channel
       cv::Mat ch[3];
