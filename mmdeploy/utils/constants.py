@@ -44,6 +44,7 @@ class Backend(AdvancedEnum):
     NCNN = 'ncnn'
     OPENVINO = 'openvino'
     SDK = 'sdk'
+    TORCHSCRIPT = 'torchscript'
     DEFAULT = 'default'
 
 
