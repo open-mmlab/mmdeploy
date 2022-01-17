@@ -7,11 +7,10 @@ import numpy as np
 import torch
 from mmcv.parallel import collate, scatter
 from torch.utils.data import Dataset
-from mmdeploy.codebase.mmpose.deploy.MMpose import MMPOSE_TASK
+
 from mmdeploy.codebase.base import BaseTask
-
+from mmdeploy.codebase.mmpose.deploy.MMpose import MMPOSE_TASK
 from mmdeploy.utils import Task, get_input_shape, load_config
-
 
 
 def process_model_config(model_cfg: mmcv.Config,
@@ -42,6 +41,7 @@ def _convert_batchnorm(module):
     del module
     return module_output
 
+
 # @MMPOSE_TASK.register_module(Task.SUPER_RESOLUTION.value)
 class PoseDetection(BaseTask):
 
@@ -61,7 +61,6 @@ class PoseDetection(BaseTask):
             nn.Module: An initialized backend model.
         """
         # from pose_detection_model import build_pose_detection_model
-
 
     def init_pytorch_model(self,
                            model_checkpoint: Optional[str] = None,
@@ -84,7 +83,7 @@ class PoseDetection(BaseTask):
 
         if not isinstance(imgs, (list, tuple)):
             imgs = [imgs]
-        cfg = process_model_config(self.model_cfg,imgs,input_shape)
+        cfg = process_model_config(self.model_cfg, imgs, input_shape)
         test_pipeline = Compose(cfg.test_pipeline)
         data_list = []
         for img in imgs:
@@ -97,8 +96,6 @@ class PoseDetection(BaseTask):
 
             data = test_pipeline(data)
             data_list.append(data)
-
-
 
     def visualize(self,
                   model: torch.nn.Module,
@@ -128,15 +125,16 @@ class PoseDetection(BaseTask):
 
     def get_preprocess(self) -> Dict:
         pass
+
     def get_postprocess(self) -> Dict:
         pass
+
     def get_tensor_from_input(self, input_data: Dict[str, Any],
                               **kwargs) -> torch.Tensor:
         pass
+
     def run_inference(model, model_inputs: Dict[str, torch.Tensor]):
         pass
-
-
 
 
 if __name__ == '__main__':
@@ -145,7 +143,7 @@ if __name__ == '__main__':
     checkpoint = '/home/PJLAB/shenkun/workspace/mmpose/checkpoints/hrnet_w32_animalpose_256x256-1aa7f075_20210426.pth'
     device = 'cuda:0'
     task = PoseDetection(model_cfg, deploy_cfg, device)
-    img = torch.rand(1,3,256,256)
+    img = torch.rand(1, 3, 256, 256)
     from mmpose.datasets.pipelines import Compose
     cfg = mmcv.Config.fromfile(model_cfg)
     img = task.create_input(img)
