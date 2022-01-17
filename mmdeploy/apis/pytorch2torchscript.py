@@ -5,8 +5,7 @@ import mmcv
 import torch
 
 from mmdeploy.core import RewriterContext, patch_model
-from mmdeploy.utils import (get_backend, get_input_shape, get_ir_config,
-                            load_config)
+from mmdeploy.utils import get_backend, get_input_shape, load_config
 
 
 def torch2torchscript_impl(model: torch.nn.Module, input: torch.Tensor,

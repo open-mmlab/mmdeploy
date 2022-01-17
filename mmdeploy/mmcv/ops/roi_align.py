@@ -3,7 +3,7 @@ from typing import List
 
 from torch import Tensor
 
-from mmdeploy.core import SYMBOLIC_REWRITER
+from mmdeploy.core import FUNCTION_REWRITER, SYMBOLIC_REWRITER
 from mmdeploy.utils import Backend, get_backend
 
 
@@ -52,3 +52,10 @@ def roi_align_default(ctx, g, input: Tensor, rois: Tensor,
         sampling_ratio_i=sampling_ratio,
         mode_s=pool_mode,
         aligned_i=aligned)
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    func_name='mmcv.ops.roi_align', backend=Backend.TORCHSCRIPT.value)
+def roi_align__torchscript(ctx):
+    # WIP
+    pass
