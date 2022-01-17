@@ -1,6 +1,6 @@
 ## Docker usage
 
-We provide two dockerfile for CPU and GPU respectively. For CPU users, we install MMDeploy with ONNXRuntime, ncnn and OpenVINO backends. For GPU users, we install MMDeploy with TensorRT backend. Besides, users can install mmdeploy with different versions when building the docker image.
+We provide two dockerfiles for CPU and GPU respectively. For CPU users, we install MMDeploy with ONNXRuntime, ncnn and OpenVINO backends. For GPU users, we install MMDeploy with TensorRT backend. Besides, users can install mmdeploy with different versions when building the docker image.
 
 ### Build docker image
 
@@ -23,7 +23,7 @@ docker build docker/GPU/ -t mmdeploy:0.1.0 --build-arg  VERSION=0.1.0
 
 ### Run docker container
 
-After building docker image succeed, we can use `docker run` to launch the docker service. GPU docker image for example:
+After building the docker image succeed, we can use `docker run` to launch the docker service. GPU docker image for example:
 ```
 docker run --gpus all -it -p 8080:8081 mmdeploy:master
 ```
