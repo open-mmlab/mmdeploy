@@ -1,23 +1,27 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Optional
+
 import torch
 
 
-def parse_device_id(device: str) -> int:
-    """Parse cuda device index from a string.
+def parse_device_id(device: str) -> Optional[int]:
+    """Parse device index from a string.
 
     Args:
-        device (str): The typical style of string specifying cuda device,
-            e.g.: 'cuda:0'.
+        device (str): The typical style of string specifying device,
+            e.g.: 'cuda:0', 'cpu'.
 
     Returns:
-        int: The parsed device id, defaults to `0`.
+        Optional[int]: The return value depends on the type of device.
+            If device is 'cuda': cuda device index, defaults to `0`.
+            If device is 'cpu': `-1`.
+            Otherwise, `None` will be returned.
     """
     if device == 'cpu':
         return -1
-    device_id = 0
-    if len(device) >= 6:
-        device_id = torch.device(device).index
-    return device_id
+    if 'cuda' in device:
+        return parse_cuda_device_id(device)
+    return None
 
 
 def parse_cuda_device_id(device: str) -> int:
