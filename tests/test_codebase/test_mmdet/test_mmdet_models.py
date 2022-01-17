@@ -113,7 +113,7 @@ def get_fcos_head_model():
 
 
 def get_focus_backbone_model():
-    """FCOS Head Config."""
+    """Backbone Focus Config."""
     from mmdet.models.backbones.csp_darknet import Focus
     model = Focus(3, 32)
 
