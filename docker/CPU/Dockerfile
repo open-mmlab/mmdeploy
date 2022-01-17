@@ -1,12 +1,15 @@
-ARG OS_VERSION=18.04
-FROM ubuntu:${OS_VERSION} as official
-ARG PYTHON_VERSION=3.8
+FROM openvino/ubuntu18_dev:2021.4.2
+ARG PYTHON_VERSION=3.7
 ARG TORCH_VERSION=1.8.0
 ARG TORCHVISION_VERSION=0.9.0
 ARG ONNXRUNTIME_VERSION=1.8.1
-ENV DEBIAN_FRONTEND=noninteractive
+USER root
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
+        libopencv-dev libspdlog-dev \
+        gnupg \
+        libssl-dev \
+        libprotobuf-dev protobuf-compiler \
         build-essential \
         libjpeg-dev \
         libpng-dev \
@@ -32,7 +35,7 @@ RUN /opt/conda/bin/pip install torch==${TORCH_VERSION}+cpu torchvision==${TORCHV
 ENV PATH /opt/conda/bin:$PATH
 
 ### install open-mim
-RUN /opt/conda/bin/pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cpu/torch${TORCH_VERSION}/index.html
+RUN /opt/conda/bin/pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/cpu/torch${TORCH_VERSION}/index.html
 
 WORKDIR /root/workspace
 RUN git clone https://github.com/open-mmlab/mmclassification
@@ -45,46 +48,33 @@ RUN wget https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTI
 ENV ONNXRUNTIME_DIR=/root/workspace/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}
 
 ### update cmake to 20
-RUN apt-get update && apt-get install libssl-dev &&\
-    wget https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0.tar.gz &&\
+RUN wget https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0.tar.gz &&\
     tar -zxvf cmake-3.20.0.tar.gz &&\
     cd cmake-3.20.0 &&\
     ./bootstrap &&\
     make &&\
-    make install &&\
-    rm -rf /var/lib/apt/lists/*
+    make install
 
-## install onnxruntme and openvino
+### install onnxruntme and openvino
 RUN /opt/conda/bin/pip install onnxruntime==${ONNXRUNTIME_VERSION} openvino-dev
 
-## build ncnn
-RUN apt-get update && apt-get install libprotobuf-dev protobuf-compiler -y --no-install-recommends &&\
-    git clone https://github.com/Tencent/ncnn.git &&\
+### build ncnn
+RUN git clone https://github.com/Tencent/ncnn.git &&\
     cd ncnn &&\
     export NCNN_DIR=$(pwd) &&\
     git submodule update --init &&\
     mkdir -p build && cd build &&\
     cmake -DNCNN_VULKAN=OFF -DNCNN_SYSTEM_GLSLANG=ON -DNCNN_BUILD_EXAMPLES=ON -DNCNN_PYTHON=ON -DNCNN_BUILD_TOOLS=ON -DNCNN_BUILD_BENCHMARK=ON -DNCNN_BUILD_TESTS=ON .. &&\
     make install &&\
-    cd ${NCNN_DIR} # To NCNN root directory &&\
-    cd python &&\
+    cd /root/workspace/ncnn/python &&\
     pip install -e .
-
-## build ppl.nn
-WORKDIR /root/workspace
-RUN git clone https://github.com/openppl-public/ppl.nn &&\
-    cd ppl.nn &&\
-    ./build.sh -DPPLNN_ENABLE_PYTHON_API=ON -DHPCC_USE_X86_64=ON &&\
-    rm -rf /tmp/pyppl-package &&\
-    cp -r python/package /tmp/pyppl-package &&\
-    cp -r pplnn-build/install/lib/pyppl/* /tmp/pyppl-package/pyppl &&\
-    cd /tmp/pyppl-package &&\
-    pip install .
 
 ### install mmdeploy
 WORKDIR /root/workspace
-RUN git clone https://github.com/open-mmlab/mmdeploy &&\
+ARG VERSION
+RUN git clone https://github.com/open-mmlab/mmdeploy.git &&\
     cd mmdeploy &&\
+    if [ -z ${VERSION} ] ; then echo "No MMDeploy version passed in, building on master" ; else git checkout tags/v${VERSION} -b tag_v${VERSION} ; fi &&\
     git submodule update --init --recursive &&\
     rm -rf build &&\
     mkdir build &&\
@@ -95,3 +85,17 @@ RUN git clone https://github.com/open-mmlab/mmdeploy &&\
     make -j$(nproc) &&\
     cd .. &&\
     pip install -e .
+
+### build SDK
+RUN cd mmdeploy && rm -rf build/CM* && mkdir -p build && cd build && cmake .. \
+    -DMMDEPLOY_BUILD_SDK=ON \
+    -DCMAKE_CXX_COMPILER=g++-7 \
+    -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} \
+    -Dncnn_DIR=/root/workspace/ncnn/build/install/lib/cmake/ncnn \
+    -DInferenceEngine_DIR=/opt/intel/openvino/deployment_tools/inference_engine/share \
+    -DMMDEPLOY_TARGET_DEVICES=cpu \
+    -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
+    -DMMDEPLOY_TARGET_BACKENDS="ort;ncnn;openvino" \
+    -DMMDEPLOY_CODEBASES=all &&\
+    cmake --build . -- -j$(nproc) && cmake --install . &&\
+    if [ -z ${VERSION} ] ; then echo "Build MMDeploy master for CPU devices succeed!" ; else echo "Build MMDeploy version v${VERSION} for CPU devices succeed!" ; fi
