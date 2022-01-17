@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import logging
 import warnings
 from typing import Any, Dict, Optional, Sequence, Tuple, Union
@@ -9,7 +10,7 @@ from mmcv.parallel import collate, scatter
 from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
-from mmdeploy.codebase.mmpose.deploy.MMpose import MMPOSE_TASK
+from mmdeploy.codebase.mmpose.deploy.mmpose import MMPOSE_TASK
 from mmdeploy.utils import Task, get_input_shape, load_config
 
 
