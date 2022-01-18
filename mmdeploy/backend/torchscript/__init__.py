@@ -3,7 +3,7 @@
 
 
 def is_available():
-    """Torchscript available
+    """Torchscript available.
 
     Returns:
         bool: Always True.
