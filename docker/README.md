@@ -7,12 +7,12 @@ We provide two dockerfiles for CPU and GPU respectively. For CPU users, we insta
 For CPU users, we can build the docker image with the latest MMDeploy through:
 ```
 cd mmdeploy
-docker build docker/CPU/ -t mmdeploy:master
+docker build docker/CPU/ -t mmdeploy:master-cpu
 ```
 For GPU users, we can build the docker image with the latest MMDeploy through:
 ```
 cd mmdeploy
-docker build docker/GPU/ -t mmdeploy:master
+docker build docker/GPU/ -t mmdeploy:master-gpu
 ```
 
 For installing MMDeploy with a specific version, we can append `--build-arg VERSION=${VERSION}` to build command. GPU for example:
@@ -25,5 +25,5 @@ docker build docker/GPU/ -t mmdeploy:0.1.0 --build-arg  VERSION=0.1.0
 
 After building the docker image succeed, we can use `docker run` to launch the docker service. GPU docker image for example:
 ```
-docker run --gpus all -it -p 8080:8081 mmdeploy:master
+docker run --gpus all -it -p 8080:8081 mmdeploy:master-gpu
 ```
