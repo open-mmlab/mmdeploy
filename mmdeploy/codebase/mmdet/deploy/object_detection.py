@@ -8,7 +8,7 @@ from mmcv.parallel import DataContainer
 from torch.utils.data import Dataset
 
 from mmdeploy.utils import Task, get_root_logger
-from mmdeploy.utils.config_utils import get_input_shape
+from mmdeploy.utils.config_utils import get_input_shape, is_dynamic_shape
 from ...base import BaseTask
 from .mmdetection import MMDET_TASK
 
@@ -114,7 +114,19 @@ class ObjectDetection(BaseTask):
         from mmcv.parallel import collate, scatter
         if not isinstance(imgs, (list, tuple)):
             imgs = [imgs]
+        dynamic_flag = is_dynamic_shape(self.deploy_cfg)
         cfg = process_model_config(self.model_cfg, imgs, input_shape)
+        # Drop pad_to_square when static shape. Because static shape should
+        # ensure the shape before input image.
+        if not dynamic_flag:
+            transform = cfg.data.test.pipeline[1]
+            if 'transforms' in transform:
+                transform_list = transform['transforms']
+                for i, step in enumerate(transform_list):
+                    if step['type'] == 'Pad' and 'pad_to_square' in step \
+                       and step['pad_to_square']:
+                        transform_list.pop(i)
+                        break
         test_pipeline = Compose(cfg.data.test.pipeline)
         data_list = []
         for img in imgs:

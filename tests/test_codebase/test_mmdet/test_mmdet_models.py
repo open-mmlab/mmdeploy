@@ -112,6 +112,15 @@ def get_fcos_head_model():
     return model
 
 
+def get_focus_backbone_model():
+    """Backbone Focus Config."""
+    from mmdet.models.backbones.csp_darknet import Focus
+    model = Focus(3, 32)
+
+    model.requires_grad_(False)
+    return model
+
+
 def get_l2norm_forward_model():
     """L2Norm Neck Config."""
     from mmdet.models.necks.ssd_neck import L2Norm
@@ -146,6 +155,35 @@ def get_single_roi_extractor():
     model = SingleRoIExtractor(roi_layer, out_channels, featmap_strides).eval()
 
     return model
+
+
+def test_focus_forward_ncnn():
+    backend_type = Backend.NCNN
+    check_backend(backend_type)
+    focus_model = get_focus_backbone_model()
+    focus_model.cpu().eval()
+    s = 128
+    seed_everything(1234)
+    x = torch.rand(1, 3, s, s)
+    model_outputs = [focus_model.forward(x)]
+    wrapped_model = WrapModel(focus_model, 'forward')
+    rewrite_inputs = {
+        'x': x,
+    }
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(type=backend_type.value),
+            onnx_config=dict(input_shape=None)))
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg)
+    for model_output, rewrite_output in zip(model_outputs[0],
+                                            rewrite_outputs[0]):
+        model_output = model_output.squeeze().cpu().numpy()
+        rewrite_output = rewrite_output.squeeze()
+        assert np.allclose(
+            model_output, rewrite_output, rtol=1e-03, atol=1e-05)
 
 
 @pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
@@ -928,6 +966,68 @@ def test_yolox_head_get_bboxes(backend_type: Backend):
                 atol=1e-05)
     else:
         assert rewrite_outputs is not None
+
+
+def test_yolox_head_get_bboxes_ncnn():
+    """Test get_bboxes rewrite of yolox head for ncnn."""
+    backend_type = Backend.NCNN
+    check_backend(backend_type)
+    yolox_head = get_yolox_head_model()
+    yolox_head.cpu().eval()
+    s = 128
+    img_metas = [{
+        'scale_factor': np.ones(4),
+        'pad_shape': (s, s, 3),
+        'img_shape': (s, s, 3)
+    }]
+
+    output_names = ['detection_output']
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(type=backend_type.value),
+            onnx_config=dict(output_names=output_names, input_shape=None),
+            codebase_config=dict(
+                type='mmdet',
+                task='ObjectDetection',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    iou_threshold=0.5,
+                    max_output_boxes_per_class=20,
+                    pre_top_k=5000,
+                    keep_top_k=10,
+                    background_label_id=0,
+                ))))
+
+    seed_everything(1234)
+    cls_scores = [
+        torch.rand(1, yolox_head.num_classes, pow(2, i), pow(2, i))
+        for i in range(3, 0, -1)
+    ]
+    seed_everything(5678)
+    bbox_preds = [
+        torch.rand(1, 4, pow(2, i), pow(2, i)) for i in range(3, 0, -1)
+    ]
+    seed_everything(9101)
+    objectnesses = [
+        torch.rand(1, 1, pow(2, i), pow(2, i)) for i in range(3, 0, -1)
+    ]
+
+    # to get outputs of onnx model after rewrite
+    wrapped_model = WrapModel(yolox_head, 'get_bboxes', img_metas=img_metas)
+    rewrite_inputs = {
+        'cls_scores': cls_scores,
+        'bbox_preds': bbox_preds,
+        'objectnesses': objectnesses,
+    }
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg)
+    # output should be of shape [1, N, 6]
+    if is_backend_output:
+        assert rewrite_outputs[0].shape[-1] == 6
+    else:
+        assert rewrite_outputs.shape[-1] == 6
 
 
 def get_vfnet_head_model():

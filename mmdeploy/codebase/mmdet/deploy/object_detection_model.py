@@ -578,7 +578,7 @@ class NCNNEnd2EndModel(End2EndModel):
         outputs = self.wrapper({self.input_name: imgs})
         for key, item in outputs.items():
             if item is None:
-                return [np.zeros((1, 0, 6))]
+                return [np.zeros((1, 0, 5)), np.zeros((1, 0))]
         out = self.wrapper.output_to_list(outputs)[0]
         labels = out[:, :, 0] - 1
         scales = torch.tensor([W, H, W, H]).reshape(1, 1, 4)

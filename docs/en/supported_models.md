@@ -7,7 +7,7 @@ The table below lists the models that are guaranteed to be exportable to other b
 | RetinaNet                 | MMDetection      |      Y      |    Y     |   Y   |   Y   |    Y     |       [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/retinanet)        |
 | Faster R-CNN              | MMDetection      |      Y      |    Y     |   Y   |   Y   |    Y     |      [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/faster_rcnn)       |
 | YOLOv3                    | MMDetection      |      Y      |    Y     |   Y   |   N   |    Y     |          [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/yolo)          |
-| YOLOX                     | MMDetection      |      Y      |    Y     |   N   |   N   |    Y     |         [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/yolox)          |
+| YOLOX                     | MMDetection      |      Y      |    Y     |   Y   |   N   |    Y     |         [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/yolox)          |
 | FCOS                      | MMDetection      |      Y      |    Y     |   Y   |   N   |    Y     |          [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/fcos)          |
 | FSAF                      | MMDetection      |      Y      |    Y     |   Y   |   Y   |    Y     |          [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/fsaf)          |
 | Mask R-CNN                | MMDetection      |      Y      |    Y     |   N   |   N   |    Y     |       [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/mask_rcnn)        |
@@ -44,3 +44,4 @@ The table below lists the models that are guaranteed to be exportable to other b
 - Tag:
   - static: This model only support static export. Please use `static` deploy config, just like $MMDEPLOY_DIR/configs/mmseg/segmentation_tensorrt_static-1024x2048.py.
 - SSD: When you convert SSD model, you need to use min shape deploy config just like 300x300-512x512 rather than 320x320-1344x1344, for example $MMDEPLOY_DIR/configs/mmdet/detection/detection_tensorrt_dynamic-300x300-512x512.py.
+- YOLOX: YOLOX with ncnn only supports static shape.

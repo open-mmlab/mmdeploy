@@ -3,12 +3,13 @@
 ### 后端
 CPU: ncnn, ONNXRuntime, OpenVINO
 
-GPU: TensorRT, PPLNN
+GPU: ncnn, TensorRT, PPLNN
 
 ### 延迟基准
 
 #### 平台
 - Ubuntu 18.04 操作系统
+- ncnn 20211208
 - Cuda 11.3
 - TensorRT 7.2.3.4
 - Docker 20.10.8
@@ -19,7 +20,7 @@ GPU: TensorRT, PPLNN
 - 批次大小为 1
 - 每次推理后均同步
 - 延迟基准测试时，我们计算各个数据集中100张图片的平均延时。
-- 热身。 针对分类任务，我们热身1010轮。 对其他任务，我们热身10轮。
+- 热身。 针对ncnn后端，我们热身30轮; 对于其他后端:针对分类任务，我们热身1010轮，对其他任务，我们热身10轮。
 - 输入分辨率根据代码库的数据集不同而不同，除了`mmediting`，其他代码库均使用真实图片作为输入。
 
 
@@ -318,6 +319,16 @@ GPU: TensorRT, PPLNN
     <td align="center">66.19</td>
     <td align="center">15.11</td>
     <td>$MMDET_DIR/configs/ssd/ssdlite_mobilenetv2_scratch_600e_coco.py</td>
+  </tr>
+  <tr>
+    <td align="center">YOLOX</td>
+    <td align="center">COCO</td>
+    <td align="center">1x3x416x416</td>
+    <td align="center">111.60</td>
+    <td align="center">8.96</td>
+    <td align="center">134.50</td>
+    <td align="center">7.43</td>
+    <td>$MMDET_DIR/configs/yolox/yolox_tiny_8x8_300e_coco.py</td>
   </tr>
 </tbody>
 </table>
