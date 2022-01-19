@@ -86,7 +86,7 @@ python ./tools/deploy.py \
 
 ### 各后端已支持导出的模型列表
 
-参考[已支持的模型列表](../supported_models.md)。
+参考[已支持的模型列表](https://mmdeploy.readthedocs.io/en/latest/supported_models.html)。
 
 ### 注意事项
 
