@@ -87,6 +87,7 @@ def main():
 
     # load deploy_cfg
     deploy_cfg, model_cfg = load_config(deploy_cfg_path, model_cfg_path)
+
     # merge options for model cfg
     if args.cfg_options is not None:
         model_cfg.merge_from_dict(args.cfg_options)
@@ -104,7 +105,8 @@ def main():
     # load the model of the backend
     model = task_processor.init_backend_model(args.model)
 
-    device_id = parse_device_id(args.device)
+    is_device_cpu = (args.device == 'cpu')
+    device_id = None if is_device_cpu else parse_device_id(args.device)
 
     model = MMDataParallel(model, device_ids=[device_id])
     # The whole dataset test wrapped a MMDataParallel class outside the module.
@@ -114,7 +116,7 @@ def main():
     if hasattr(model.module, 'CLASSES'):
         model.CLASSES = model.module.CLASSES
     if args.speed_test:
-        with_sync = device_id >= 0
+        with_sync = not is_device_cpu
         output_file = sys.stdout
         if args.log2file:
             output_file = args.log2file

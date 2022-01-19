@@ -5,7 +5,7 @@ from typing import Optional, Sequence, Union
 import mmcv
 import torch
 
-from mmdeploy.utils import Backend, get_ir_config
+from mmdeploy.utils import SDK_TASK_MAP, Backend, get_ir_config, get_task_type
 
 
 class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
@@ -35,7 +35,8 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
     def _build_wrapper(backend: Backend,
                        backend_files: Sequence[str],
                        device: str,
-                       output_names: Optional[Sequence[str]] = None):
+                       output_names: Optional[Sequence[str]] = None,
+                       deploy_cfg: Optional[mmcv.Config] = None):
         """The default methods to build backend wrappers.
 
         Args:
@@ -46,6 +47,7 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
             output_names (Sequence[str] | None): Names of model outputs in
                 order. Defaults to `None` and the wrapper will load the output
                 names from the model.
+            deploy_cfg: Deployment config file.
         """
         if backend == Backend.ONNXRUNTIME:
             from mmdeploy.backend.onnxruntime import ORTWrapper
@@ -74,6 +76,15 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
             from mmdeploy.backend.openvino import OpenVINOWrapper
             return OpenVINOWrapper(
                 ir_model_file=backend_files[0], output_names=output_names)
+        elif backend == Backend.SDK:
+            assert deploy_cfg is not None, \
+                'Building SDKWrapper requires deploy_cfg'
+            from mmdeploy.backend.sdk import SDKWrapper
+            task_name = SDK_TASK_MAP[get_task_type(deploy_cfg)]['cls_name']
+            return SDKWrapper(
+                model_file=backend_files[0],
+                task_name=task_name,
+                device=device)
         else:
             raise NotImplementedError(f'Unknown backend type: {backend.value}')
 
