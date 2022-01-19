@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import os.path as osp
 from typing import Dict, Optional, Sequence, Union
 
 import torch
@@ -6,6 +7,7 @@ import torch
 from mmdeploy.utils import Backend
 from mmdeploy.utils.timer import TimeCounter
 from ..base import BACKEND_WRAPPER, BaseWrapper
+from .init_plugins import get_ops_path
 
 
 @BACKEND_WRAPPER.register_module(Backend.TORCHSCRIPT.value)
@@ -37,6 +39,10 @@ class TorchscriptWrapper(BaseWrapper):
                  model: Union[str, torch.jit.RecursiveScriptModule],
                  input_names: Optional[Sequence[str]] = None,
                  output_names: Optional[Sequence[str]] = None):
+        # load custom ops if exist
+        custom_ops_path = get_ops_path()
+        if osp.exists(custom_ops_path):
+            torch.ops.load_library(custom_ops_path)
         super().__init__(output_names)
         self.ts_model = model
         if isinstance(self.ts_model, str):

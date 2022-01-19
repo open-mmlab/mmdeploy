@@ -10,7 +10,8 @@ file(GLOB_RECURSE ORT_OPS_SRCS *.cpp)
 build_object_target(${ORT_OPS_OBJ} "${ORT_OPS_SRCS}")
 target_include_directories(${ORT_OPS_OBJ} PUBLIC
         $<BUILD_INTERFACE:${ONNXRUNTIME_DIR}/include>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/common>)
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/common>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../common>)
 target_link_directories(${ORT_OPS_OBJ} PUBLIC
         ${ONNXRUNTIME_DIR}/lib)
 target_link_libraries(${ORT_OPS_OBJ} PUBLIC onnxruntime)

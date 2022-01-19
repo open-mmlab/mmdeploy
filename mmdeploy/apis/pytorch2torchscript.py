@@ -4,6 +4,7 @@ from typing import Any, Optional, Union
 import mmcv
 import torch
 
+from mmdeploy.backend.torchscript import get_ops_path
 from mmdeploy.core import RewriterContext, patch_model
 from mmdeploy.utils import get_backend, get_input_shape, load_config
 
@@ -20,6 +21,11 @@ def torch2torchscript_impl(model: torch.nn.Module, input: torch.Tensor,
             Config object.
         output_file (str): Output file to save torchscript model.
     """
+    # load custom ops if exist
+    custom_ops_path = get_ops_path()
+    if osp.exists(custom_ops_path):
+        torch.ops.load_library(custom_ops_path)
+
     deploy_cfg = load_config(deploy_cfg)[0]
 
     # ir_cfg = get_ir_config(deploy_cfg)
