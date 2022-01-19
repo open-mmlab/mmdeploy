@@ -1,13 +1,16 @@
 from typing import Any, Dict, Optional, Sequence, Tuple, Union
+
 import mmcv
 import numpy as np
 import torch
-from torch.utils.data import Dataset
+import torch.nn as nn
 from torch.nn import functional as F
+from torch.utils.data import Dataset
+
 from mmdeploy.codebase.base import BaseTask
 from mmdeploy.codebase.mmdet3d.deploy.mmdetection3d import MMDET3D_TASK
 from mmdeploy.utils import Task
-import torch.nn as nn
+
 
 def voxelize(points, model_cfg):
     from mmdet3d.ops import Voxelization
@@ -30,28 +33,36 @@ def voxelize(points, model_cfg):
 
 
 class VoxelDetectionWrap(nn.Module):
+
     def __init__(self, model):
         super(VoxelDetectionWrap, self).__init__()
         self.model = model
 
     def forward(self, voxels, num_points, coors):
-        result = self.model(return_loss=False, rescale=True, points=None, img_metas=[0],
-                            voxels=voxels, num_points=num_points, coors=coors)
+        result = self.model(
+            return_loss=False,
+            rescale=True,
+            points=None,
+            img_metas=[0],
+            voxels=voxels,
+            num_points=num_points,
+            coors=coors)
         return result[0], result[1], result[2]
 
 
 @MMDET3D_TASK.register_module(Task.VOXEL_DETECTION.value)
 class VoxelDetection(BaseTask):
+
     def __init__(self, model_cfg: mmcv.Config, deploy_cfg: mmcv.Config,
                  device: str):
         super().__init__(model_cfg, deploy_cfg, device)
-
 
     def init_backend_model(self,
                            model_files: Sequence[str] = None,
                            **kwargs) -> torch.nn.Module:
         from .voxel_detection_model import build_voxel_detection_model
-        model = build_voxel_detection_model(model_files, self.model_cfg, self.deploy_cfg, device=self.device)
+        model = build_voxel_detection_model(
+            model_files, self.model_cfg, self.deploy_cfg, device=self.device)
         return model
 
     def init_pytorch_model(self,
@@ -63,10 +74,9 @@ class VoxelDetection(BaseTask):
         model = VoxelDetectionWrap(model)
         return model.eval()
 
-
     def create_input(self,
                      pcds: Union[str, np.ndarray],
-                     img_shape = None,
+                     img_shape=None,
                      **kwargs) -> Tuple[Dict, torch.Tensor]:
 
         from mmdet3d.datasets.pipelines import Compose
@@ -137,7 +147,8 @@ class VoxelDetection(BaseTask):
 
     @staticmethod
     def run_inference(model, model_inputs: Dict[str, torch.Tensor]):
-        return model(**model_inputs, return_loss=False, rescale=True, points=None)
+        return model(
+            **model_inputs, return_loss=False, rescale=True, points=None)
 
     def get_tensor_from_input(self, input_data: Dict[str, Any],
                               **kwargs) -> torch.Tensor:
@@ -181,6 +192,3 @@ class VoxelDetection(BaseTask):
 #     pcds = [pcd]
 #     data, value = task.create_input(pcds)
 #     print(model(**value))
-
-
-

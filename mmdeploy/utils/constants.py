@@ -26,6 +26,7 @@ class Task(AdvancedEnum):
     INSTANCE_SEGMENTATION = 'InstanceSegmentation'
     VOXEL_DETECTION = 'VoxelDetection'
 
+
 class Codebase(AdvancedEnum):
     """Define codebase enumerations."""
     MMDET = 'mmdet'
@@ -34,6 +35,7 @@ class Codebase(AdvancedEnum):
     MMOCR = 'mmocr'
     MMEDIT = 'mmedit'
     MMDET3D = 'mmdet3d'
+
 
 class Backend(AdvancedEnum):
     """Define backend enumerations."""

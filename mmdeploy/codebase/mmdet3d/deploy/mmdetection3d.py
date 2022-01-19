@@ -11,7 +11,7 @@ from mmdeploy.utils import Codebase, get_task_type
 
 
 def __build_mmdet3d_task(model_cfg: mmcv.Config, deploy_cfg: mmcv.Config,
-                        device: str, registry: Registry) -> BaseTask:
+                         device: str, registry: Registry) -> BaseTask:
     task = get_task_type(deploy_cfg)
     return registry.module_dict[task.value](model_cfg, deploy_cfg, device)
 
@@ -75,6 +75,7 @@ class MMDetection3d(MMCodebase):
         from mmdet3d.apis import single_gpu_test
         outputs = single_gpu_test(model, data_loader, show, out_dir, kwargs)
         return outputs
+
 
 # if __name__ == '__main__':
 #     model_cfg = '../workspace/mmdetection3d/configs/pointpillars/hv_pointpillars_secfpn_6x8_160e_kitti-3d-3class.py'
