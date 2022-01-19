@@ -45,8 +45,13 @@ class End2EndModel(BaseBackendModel):
     """End to end model for inference of detection.
 
     Args:
+        backend (Backend): The backend enum, specifying backend type.
+        backend_files (Sequence[str]): Paths to all required backend files
+                (e.g. '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
+        device (str): A string specifying device type.
         class_names (Sequence[str]): A list of string specifying class names.
-        device_id (int): An integer represents device index.
+        deploy_cfg (str|mmcv.Config): Deployment config file or loaded Config
+            object.
     """
 
     def __init__(self, backend: Backend, backend_files: Sequence[str],
@@ -286,11 +291,15 @@ class PartitionSingleStageModel(End2EndModel):
     """Partitioned single stage detection model.
 
     Args:
-        model_file (str): The path of input model file.
+        backend (Backend): The backend enum, specifying backend type.
+        backend_files (Sequence[str]): Paths to all required backend files
+                (e.g. '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
+        device (str): A string specifying device type.
         class_names (Sequence[str]): A list of string specifying class names.
-        model_cfg: (str | mmcv.Config): Input model config.
-        deploy_cfg: (str | mmcv.Config): Input deployment config.
-        device_id (int): An integer represents device index.
+        model_cfg (str|mmcv.Config): Input model config file or Config
+            object.
+        deploy_cfg (str|mmcv.Config): Deployment config file or loaded Config
+            object.
     """
 
     def __init__(self, backend: Backend, backend_files: Sequence[str],
@@ -366,10 +375,15 @@ class PartitionTwoStageModel(End2EndModel):
     """Partitioned two stage detection model.
 
     Args:
+        backend (Backend): The backend enum, specifying backend type.
+        backend_files (Sequence[str]): Paths to all required backend files
+                (e.g. '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
+        device (str): A string specifying device type.
         class_names (Sequence[str]): A list of string specifying class names.
-        model_cfg: (str | mmcv.Config): Input model config.
-        deploy_cfg: (str | mmcv.Config): Input deployment config.
-        device_id (int): An integer represents device index.
+        model_cfg (str|mmcv.Config): Input model config file or Config
+            object.
+        deploy_cfg (str|mmcv.Config): Deployment config file or loaded Config
+            object.
     """
 
     def __init__(self, backend: Backend, backend_files: Sequence[str],
@@ -543,11 +557,15 @@ class NCNNEnd2EndModel(End2EndModel):
     and its output is different from original mmdet style of `dets`, `labels`.
 
     Args:
-        model_file (str): The path of input model file.
+        backend (Backend): The backend enum, specifying backend type.
+        backend_files (Sequence[str]): Paths to all required backend files
+                (e.g. '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
+        device (str): A string specifying device type.
         class_names (Sequence[str]): A list of string specifying class names.
-        model_cfg: (str | mmcv.Config): Input model config.
-        deploy_cfg: (str | mmcv.Config): Input deployment config.
-        device_id (int): An integer represents device index.
+        model_cfg (str|mmcv.Config): Input model config file or Config
+            object.
+        deploy_cfg (str|mmcv.Config): Deployment config file or loaded Config
+            object.
     """
 
     def __init__(self, backend: Backend, backend_files: Sequence[str],
@@ -691,7 +709,7 @@ def build_object_detection_model(model_files: Sequence[str],
         device (str):  Device to input model
 
     Returns:
-        DeployBaseDetector: Detector for a configured backend.
+        End2EndModel: Detector for a configured backend.
     """
     # load cfg if necessary
     deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)

@@ -101,9 +101,8 @@ class ObjectDetection(BaseTask):
         """Create input for detector.
 
         Args:
-            task (Task): Specifying task type.
-            imgs (Any): Input image(s), accpeted data type are `str`,
-                `np.ndarray`, `torch.Tensor`.
+            imgs (str|np.ndarray): Input image(s), accpeted data type are
+                `str`, `np.ndarray`.
             input_shape (list[int]): A list of two integer in (width, height)
                 format specifying input shape. Defaults to `None`.
 

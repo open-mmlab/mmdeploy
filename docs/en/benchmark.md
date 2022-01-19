@@ -1291,6 +1291,18 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center">70.92</td>
     <td>$MMSEG_DIR/configs/fastscnn/fast_scnn_lr0.12_8x4_160k_cityscapes.py</td>
   </tr>
+  <tr>
+    <td align="center">UNet</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">69.10</td>
+    <td align="center">-</td>
+    <td align="center">69.10</td>
+    <td align="center">69.10</td>
+    <td align="center">68.95</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/unet/fcn_unet_s5-d16_4x4_512x1024_160k_cityscapes.py</td>
+  </tr>
 </tbody>
 </table>
 </div>
