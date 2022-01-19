@@ -14,7 +14,7 @@ namespace mmdeploy {
 class Context {
  public:
   explicit Context(const Value& config) {
-    DEBUG("config: {}", cfg);
+    DEBUG("config: {}", config);
     device_ = config["context"]["device"].get<Device>();
     stream_ = config["context"]["stream"].get<Stream>();
   }
