@@ -1,1 +1,0 @@
-../../en/backends/openvino.md

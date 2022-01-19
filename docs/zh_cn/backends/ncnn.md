@@ -1,1 +1,0 @@
-../../en/backends/ncnn.md
