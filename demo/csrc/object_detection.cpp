@@ -37,12 +37,42 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  fprintf(stderr, "bbox_count=%d\n", *res_count);
+  fprintf(stdout, "bbox_count=%d\n", *res_count);
 
   for (int i = 0; i < *res_count; ++i) {
     const auto &box = bboxes[i].bbox;
-    fprintf(stderr, "box %d, left=%.2f, top=%.2f, right=%.2f, bottom=%.2f, label=%d, score=%.4f\n",
+    const auto &mask = bboxes[i].mask;
+
+    fprintf(stdout, "box %d, left=%.2f, top=%.2f, right=%.2f, bottom=%.2f, label=%d, score=%.4f\n",
             i, box.left, box.top, box.right, box.bottom, bboxes[i].label_id, bboxes[i].score);
+
+    // skip detections with invalid bbox size (bbox height or width < 1)
+    if ((box.right - box.left) < 1 || (box.bottom - box.top) < 1) {
+      continue;
+    }
+
+    // skip detections less than specified score threshold
+    if (bboxes[i].score < 0.1) {
+      continue;
+    }
+
+    // generate mask overlay if model exports masks
+    if (mask != nullptr) {
+      fprintf(stdout, "mask %d, height=%d, width=%d\n", i, mask->height, mask->width);
+
+      cv::Mat imgMask(mask->height, mask->width, CV_8UC1, &mask->data[0]);
+      auto x0 = std::max(std::floor(box.left) - 1, 0.f);
+      auto y0 = std::max(std::floor(box.top) - 1, 0.f);
+      cv::Rect roi((int)x0, (int)y0, mask->width, mask->height);
+
+      // split the RGB channels, overlay mask to a specific color channel
+      cv::Mat ch[3];
+      split(img, ch);
+      int col = 0;  // int col = i % 3;
+      cv::bitwise_or(imgMask, ch[col](roi), ch[col](roi));
+      merge(ch, 3, img);
+    }
+
     cv::rectangle(img, cv::Point{(int)box.left, (int)box.top},
                   cv::Point{(int)box.right, (int)box.bottom}, cv::Scalar{0, 255, 0});
   }
