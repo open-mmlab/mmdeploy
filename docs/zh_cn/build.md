@@ -80,11 +80,11 @@
 
 您可以根据自身需求，构建和安装如下推理引擎：
 
-- [ONNX Runtime](./backends/onnxruntime.md)
-- [TensorRT](./backends/tensorrt.md)
-- [ncnn](./backends/ncnn.md)
-- [PPLNN](./backends/pplnn.md)
-- [OpenVINO](./backends/openvino.md)
+- [ONNX Runtime](https://mmdeploy.readthedocs.io/en/latest/backends/onnxruntime.html)
+- [TensorRT](https://mmdeploy.readthedocs.io/en/latest/backends/tensorrt.html)
+- [ncnn](https://mmdeploy.readthedocs.io/en/latest/backends/ncnn.html)
+- [PPLNN](https://mmdeploy.readthedocs.io/en/latest/backends/pplnn.html)
+- [OpenVINO](https://mmdeploy.readthedocs.io/en/latest/backends/openvino.html)
 
 ### 安装 MMDeploy
 

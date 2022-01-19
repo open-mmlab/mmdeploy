@@ -1,1 +1,0 @@
-../../en/codebases/mmocr.md

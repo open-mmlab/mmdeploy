@@ -1,1 +1,0 @@
-../../en/tutorials/how_to_write_config.md
