@@ -41,7 +41,7 @@ def torch2onnx_impl(model: torch.nn.Module, input: torch.Tensor,
             opset=opset_version), torch.no_grad():
         torch.onnx.export(
             patched_model,
-            input,
+            tuple(input),
             output_file,
             export_params=onnx_cfg['export_params'],
             input_names=input_names,
@@ -86,8 +86,8 @@ def torch2onnx(img: Any,
 
     torch_model = task_processor.init_pytorch_model(model_checkpoint)
     data, model_inputs = task_processor.create_input(img, input_shape)
-    if not isinstance(model_inputs, torch.Tensor):
-        model_inputs = model_inputs[0]
+    # if not isinstance(model_inputs, torch.Tensor):
+    #     model_inputs = model_inputs[0]
 
     torch2onnx_impl(
         torch_model,
