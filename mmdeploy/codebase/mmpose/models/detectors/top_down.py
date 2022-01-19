@@ -4,8 +4,8 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    'mmpose.models.detectors.top_down.TopDown.forward_test')
-def top_down__forward_test(ctx, self, img, img_metas=None, **kwargs):
+    'mmpose.models.detectors.top_down.TopDown.forward')
+def top_down__forward(ctx, self, img, *args, **kwargs):
     """Rewrite `forward_test` of TopDown for default backend."""
     features = self.backbone(img)
     if self.with_neck:

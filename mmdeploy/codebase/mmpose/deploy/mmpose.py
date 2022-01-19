@@ -79,6 +79,7 @@ class MMPose(MMCodebase):
             dist (bool): Distributed training/test or not. Default: True.
             shuffle (bool): Whether to shuffle the data at every epoch.
                 Default: False.
+            seed (int): An integer set to be seed. Default is ``None``.
             drop_last (bool): Whether to drop the last incomplete batch
                 in epoch. Default: False.
             pin_memory (bool): Whether to use pin_memory in DataLoader.
@@ -104,13 +105,15 @@ class MMPose(MMCodebase):
 
     @staticmethod
     def single_gpu_test(model: torch.nn.Module, data_loader: DataLoader,
-                        **kwargs) -> list:
+                        show: bool, out_dir: str, **kwargs) -> list:
         """Run test with single gpu.
 
         Args:
             model (torch.nn.Module): Input model from nn.Module.
             data_loader (DataLoader): PyTorch data loader.
-
+            show (bool): Specifying whether to show plotted results. Defaults
+                to ``False``.
+            out_dir (str): A directory to save results, defaults to ``None``.
         Returns:
             list: The prediction results.
         """
