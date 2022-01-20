@@ -183,12 +183,12 @@ def get_classes_palette_from_config(model_cfg: Union[str, mmcv.Config]):
     module_dict = DATASETS.module_dict
     data_cfg = model_cfg.data
 
-    if 'train' in data_cfg:
-        module = module_dict[data_cfg.train.type]
-    elif 'val' in data_cfg:
+    if 'val' in data_cfg:
         module = module_dict[data_cfg.val.type]
     elif 'test' in data_cfg:
         module = module_dict[data_cfg.test.type]
+    elif 'train' in data_cfg:
+        module = module_dict[data_cfg.train.type]
     else:
         raise RuntimeError(f'No dataset config found in: {model_cfg}')
 
