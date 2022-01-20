@@ -40,8 +40,6 @@ ENV PATH /opt/conda/bin:$PATH
 RUN /opt/conda/bin/pip install mmcv-full==${MMCV_VERSION} -f https://download.openmmlab.com/mmcv/dist/cpu/torch${TORCH_VERSION}/index.html
 
 WORKDIR /root/workspace
-RUN git clone https://github.com/open-mmlab/mmclassification
-
 
 ### get onnxruntime
 RUN wget https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTIME_VERSION}/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz \
