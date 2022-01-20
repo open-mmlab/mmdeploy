@@ -108,24 +108,26 @@ class VoxelDetection(BaseTask):
             data = test_pipeline(data)
             data_list.append(data)
 
-        data = collate(data_list, samples_per_gpu=len(pcds))
-        data['img_metas'] = [
-            img_metas.data[0] for img_metas in data['img_metas']
+        result = collate(data_list, samples_per_gpu=len(pcds))
+        result['img_metas'] = [
+            img_metas.data[0] for img_metas in result['img_metas']
         ]
-        data['points'] = [point.data[0] for point in data['points']]
+        result['points'] = [point.data[0] for point in result['points']]
         if self.device != 'cpu':
-            data = scatter(data, [self.device])[0]
+            result = scatter(result, [self.device])[0]
         else:
-            data['img_metas'] = data['img_metas'][0].data
-            data['points'] = data['points'][0].data
+            result['img_metas'] = result['img_metas'][0]
+            result['points'] = result['points'][0]
         voxels_batch, num_points_batch, coors_batch = [], [], []
-        for point in data['points'][0]:
+        for point in result['points'][0]:
             voxels, num_points, coors = voxelize([point], self.model_cfg)
             voxels_batch.append(voxels)
             num_points_batch.append(num_points)
             coors_batch.append(coors)
-
-        return data, [voxels_batch[0], num_points_batch[0], coors_batch[0]]
+        result['voxels'] = voxels_batch
+        result['num_points'] = num_points_batch
+        result['coors'] = coors_batch
+        return result, [voxels_batch[0], num_points_batch[0], coors_batch[0]]
 
     def visualize(self,
                   model: torch.nn.Module,
@@ -147,8 +149,12 @@ class VoxelDetection(BaseTask):
 
     @staticmethod
     def run_inference(model, model_inputs: Dict[str, torch.Tensor]):
-        return model(
-            **model_inputs, return_loss=False, rescale=True, points=None)
+        batch_size = len(model_inputs['voxels'])
+        for i in range(batch_size):
+            voxels = model_inputs['voxels'][i]
+            num_points = model_inputs['num_points'][i]
+            coors = model_inputs['coors'][i]
+            return model(voxels,num_points,coors)
 
     def get_tensor_from_input(self, input_data: Dict[str, Any],
                               **kwargs) -> torch.Tensor:
@@ -189,6 +195,6 @@ class VoxelDetection(BaseTask):
 #     task = VoxelDetection(model_cfg, deploy_cfg, 'cuda:0')
 #     model = task.init_pytorch_model(checkpoint)
 #
-#     pcds = [pcd]
+#     pcds = [pcd,pcd,pcd]
 #     data, value = task.create_input(pcds)
-#     print(model(**value))
+#     task.run_inference(model,data)

@@ -34,12 +34,10 @@ class End2EndModel(BaseBackendModel):
                  backend_files: Sequence[str],
                  device: str,
                  model_cfg: mmcv.Config,
-                 class_names,
                  deploy_cfg: Union[str, mmcv.Config] = None):
         super().__init__(deploy_cfg=deploy_cfg)
         self.deploy_cfg = deploy_cfg
-        self.test_cfg = model_cfg.test_cfg
-        self.CLASS_NAME = class_names
+        self.model_cfg = model_cfg
         self._init_wrapper(
             backend=backend, backend_files=backend_files, device=device)
 
@@ -53,19 +51,14 @@ class End2EndModel(BaseBackendModel):
             output_names=output_names,
             deploy_cfg=self.deploy_cfg)
 
-    def forward(self, *args, **kwargs):
-
+    def forward(self, voxels, num_points, coors):
+        input_dict = {'voxels':voxels,'point_nums':num_points,'coors':coors}
+        outputs = self.wrapper(input_dict)
+        return outputs
 
     def show_result(self, *args, **kwargs):
         pass
 
-
-def get_classes_from_config(model_cfg):
-    model_cfg = load_config(model_cfg)[0]
-    if 'class_names' in model_cfg:
-        return model_cfg['class_names']
-    else:
-        raise 'error'
 
 
 def build_voxel_detection_model(model_files: Sequence[str],
@@ -76,13 +69,12 @@ def build_voxel_detection_model(model_files: Sequence[str],
 
     backend = get_backend(deploy_cfg)
     model_type = get_codebase_config(deploy_cfg).get('model_type', 'end2end')
-    class_names = get_classes_from_config(model_cfg)
+
 
     backend_detector = __BACKEND_MODEL.build(
         model_type,
         backend=backend,
         backend_files=model_files,
-        class_names=class_names,
         device=device,
         model_cfg=model_cfg,
         deploy_cfg=deploy_cfg)
