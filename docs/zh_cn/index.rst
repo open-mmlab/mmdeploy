@@ -15,6 +15,7 @@
    :caption: 教程
 
    tutorials/how_to_convert_model.md
+   tutorials/how_to_use_docker.md
 
 .. toctree::
    :maxdepth: 1
