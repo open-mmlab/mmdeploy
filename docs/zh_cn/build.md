@@ -1,5 +1,7 @@
 ## 安装 MMdeploy
 
+我们提供物理机和虚拟机构建方法。虚拟机搭建方法请参考[如何使用docker](tutorials/how_to_use_docker.md)。对于物理机，请按照以下步骤操作
+
 ### 准备工作
 
 - 下载代码仓库 MMDeploy
