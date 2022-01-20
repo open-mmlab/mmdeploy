@@ -3,6 +3,8 @@ ARG PYTHON_VERSION=3.7
 ARG TORCH_VERSION=1.8.0
 ARG TORCHVISION_VERSION=0.9.0
 ARG ONNXRUNTIME_VERSION=1.8.1
+ARG MMCV_VERSION=1.4.0
+ARG CMAKE_VERSION=3.20.0
 USER root
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
@@ -35,7 +37,7 @@ RUN /opt/conda/bin/pip install torch==${TORCH_VERSION}+cpu torchvision==${TORCHV
 ENV PATH /opt/conda/bin:$PATH
 
 ### install open-mim
-RUN /opt/conda/bin/pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/cpu/torch${TORCH_VERSION}/index.html
+RUN /opt/conda/bin/pip install mmcv-full==${MMCV_VERSION} -f https://download.openmmlab.com/mmcv/dist/cpu/torch${TORCH_VERSION}/index.html
 
 WORKDIR /root/workspace
 RUN git clone https://github.com/open-mmlab/mmclassification
@@ -48,9 +50,9 @@ RUN wget https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTI
 ENV ONNXRUNTIME_DIR=/root/workspace/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}
 
 ### update cmake to 20
-RUN wget https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0.tar.gz &&\
-    tar -zxvf cmake-3.20.0.tar.gz &&\
-    cd cmake-3.20.0 &&\
+RUN wget https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}.tar.gz &&\
+    tar -zxvf cmake-${CMAKE_VERSION}.tar.gz &&\
+    cd cmake-${CMAKE_VERSION} &&\
     ./bootstrap &&\
     make &&\
     make install
@@ -98,4 +100,4 @@ RUN cd mmdeploy && rm -rf build/CM* && mkdir -p build && cd build && cmake .. \
     -DMMDEPLOY_TARGET_BACKENDS="ort;ncnn;openvino" \
     -DMMDEPLOY_CODEBASES=all &&\
     cmake --build . -- -j$(nproc) && cmake --install . &&\
-    if [ -z ${VERSION} ] ; then echo "Build MMDeploy master for CPU devices succeed!" ; else echo "Build MMDeploy version v${VERSION} for CPU devices succeed!" ; fi
+    if [ -z ${VERSION} ] ; then echo "Built MMDeploy master for CPU devices successfully!" ; else echo "Built MMDeploy version v${VERSION} for CPU devices successfully!" ; fi

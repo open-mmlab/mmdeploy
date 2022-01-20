@@ -5,6 +5,8 @@ ARG PYTHON_VERSION=3.8
 ARG TORCH_VERSION=1.8.0
 ARG TORCHVISION_VERSION=0.9.0
 ARG ONNXRUNTIME_VERSION=1.8.1
+ARG MMCV_VERSION=1.4.0
+ARG CMAKE_VERSION=3.20.0
 ENV FORCE_CUDA="1"
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -26,8 +28,7 @@ RUN /opt/conda/bin/conda install pytorch==${TORCH_VERSION} torchvision==${TORCHV
 ENV PATH /opt/conda/bin:$PATH
 
 ### install mmcv-full
-RUN /opt/conda/bin/pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/cu${CUDA//./}/torch${TORCH_VERSION}/index.html &&\
-    /opt/conda/bin/pip install mmdet==2.19.0
+RUN /opt/conda/bin/pip install mmcv-full==${MMCV_VERSION} -f https://download.openmmlab.com/mmcv/dist/cu${CUDA//./}/torch${TORCH_VERSION}/index.html
 
 WORKDIR /root/workspace
 ### get onnxruntime
@@ -36,12 +37,12 @@ RUN wget https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTI
     pip install onnxruntime-gpu==${ONNXRUNTIME_VERSION}
 
 ### cp trt from pip to conda
-RUN cp -r /usr/local/lib/python3.8/dist-packages/tensorrt* /opt/conda/lib/python3.8/site-packages/
+RUN cp -r /usr/local/lib/python${PYTHON_VERSION}/dist-packages/tensorrt* /opt/conda/lib/python${PYTHON_VERSION}/site-packages/
 
-### update cmake to 20
-RUN  wget https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0.tar.gz &&\
-    tar -zxvf cmake-3.20.0.tar.gz &&\
-    cd cmake-3.20.0 &&\
+### update cmake
+RUN  wget https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}.tar.gz &&\
+    tar -zxvf cmake-${CMAKE_VERSION}.tar.gz &&\
+    cd cmake-${CMAKE_VERSION} &&\
     ./bootstrap &&\
     make &&\
     make install
@@ -81,4 +82,4 @@ RUN cd /root/workspace/mmdeploy &&\
         -DMMDEPLOY_TARGET_BACKENDS="trt" \
         -DMMDEPLOY_CODEBASES=all &&\
     cmake --build . -- -j$(nproc) && cmake --install . &&\
-    if [ -z ${VERSION} ] ; then echo "Build MMDeploy master for GPU devices succeed!" ; else echo "Build MMDeploy version v${VERSION} for GPU devices succeed!" ; fi
+    if [ -z ${VERSION} ] ; then echo "Built MMDeploy master for GPU devices successfully!" ; else echo "Built MMDeploy version v${VERSION} for GPU devices successfully!" ; fi
