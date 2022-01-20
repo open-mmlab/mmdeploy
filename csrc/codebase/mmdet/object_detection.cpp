@@ -107,8 +107,7 @@ Result<DetectorOutput> ResizeBBox::GetBBoxes(const Value& prep_res, const Tensor
             rect[3] - rect[1]);
       continue;
     }
-    DEBUG("remap left {}, top {}, right {}, bottom {}", rect.left, rect.top, rect.right,
-          rect.bottom);
+    DEBUG("remap left {}, top {}, right {}, bottom {}", rect[0], rect[1], rect[2], rect[3]);
     DetectorOutput::Detection det{};
     det.index = i;
     det.label_id = static_cast<int>(*labels_ptr);
