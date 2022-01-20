@@ -55,7 +55,8 @@ class MMDetection3d(MMCodebase):
                          pin_memory: bool = True,
                          persistent_workers: bool = True,
                          **kwargs) -> DataLoader:
-        from mmdet3d.datasets import build_dataloader as build_dataloader_mmdet3d
+        from mmdet3d.datasets import build_dataloader \
+            as build_dataloader_mmdet3d
         return build_dataloader_mmdet3d(
             dataset,
             samples_per_gpu,
@@ -75,14 +76,3 @@ class MMDetection3d(MMCodebase):
         from mmdet3d.apis import single_gpu_test
         outputs = single_gpu_test(model, data_loader, show, out_dir, kwargs)
         return outputs
-
-
-# if __name__ == '__main__':
-#     model_cfg = '../workspace/mmdetection3d/configs/pointpillars/hv_pointpillars_secfpn_6x8_160e_kitti-3d-3class.py'
-#     checkpoint = '../workspace/mmdetection3d/checkpoints/hv_pointpillars_secfpn_6x8_160e_kitti-3d-3class_20200620_230421-aa0f3adb.pth'
-#     codebase = MMDetection3d()
-#     dataset = codebase.build_dataset(model_cfg)
-#     dataloader = codebase.build_dataloader(dataset,1,1)
-#     from mmdet3d.apis import init_model
-#     model = init_model(model_cfg,checkpoint)
-#     print(codebase.single_gpu_test(model,dataloader))

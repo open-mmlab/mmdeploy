@@ -40,13 +40,7 @@ class VoxelDetectionWrap(nn.Module):
 
     def forward(self, voxels, num_points, coors):
         result = self.model(
-            return_loss=False,
-            rescale=True,
-            points=None,
-            img_metas=[0],
-            voxels=voxels,
-            num_points=num_points,
-            coors=coors)
+            voxel_input=[voxels, num_points, coors], img_metas=[0])
         return result[0], result[1], result[2]
 
 
@@ -131,30 +125,24 @@ class VoxelDetection(BaseTask):
 
     def visualize(self,
                   model: torch.nn.Module,
-                  pcd: Union[str, np.ndarray],
+                  image: Union[str, np.ndarray],
                   result: list,
-                  output_dir: str,
+                  output_file: str,
                   window_name: str = '',
                   show_result: bool = False,
-                  score_thr: float = 0.3):
-        from mmdet3d.apis import show_result_meshlab
-        output_dir = None if show_result else output_dir
-        show_result_meshlab(
-            pcd,
-            result,
-            out_dir=output_dir,
-            score_thr=score_thr,
-            show=show_result,
-            task='det')
+                  **kwargs):
+        print(result)
 
     @staticmethod
     def run_inference(model, model_inputs: Dict[str, torch.Tensor]):
         batch_size = len(model_inputs['voxels'])
+        result = []
         for i in range(batch_size):
             voxels = model_inputs['voxels'][i]
             num_points = model_inputs['num_points'][i]
             coors = model_inputs['coors'][i]
-            return model(voxels,num_points,coors)
+            result.append(model(voxels, num_points, coors))
+        return result
 
     def get_tensor_from_input(self, input_data: Dict[str, Any],
                               **kwargs) -> torch.Tensor:
@@ -183,18 +171,3 @@ class VoxelDetection(BaseTask):
 
     def get_preprocess(self) -> Dict:
         pass
-
-
-# if __name__ == '__main__':
-#     model_cfg = '../workspace/mmdetection3d/configs/pointpillars/hv_pointpillars_secfpn_6x8_160e_kitti-3d-3class.py'
-#     checkpoint = '../workspace/mmdetection3d/checkpoints/hv_pointpillars_secfpn_6x8_160e_kitti-3d-3class_20200620_230421-aa0f3adb.pth'
-#     deploy_cfg = './configs/mmdet3d/voxel-detection/voxel-detection_onnxruntime_static.py'
-#     pcd = '../workspace/mmdetection3d/demo/data/kitti/kitti_000008.bin'
-#     model_cfg = mmcv.Config.fromfile(model_cfg)
-#     deploy_cfg = mmcv.Config.fromfile(deploy_cfg)
-#     task = VoxelDetection(model_cfg, deploy_cfg, 'cuda:0')
-#     model = task.init_pytorch_model(checkpoint)
-#
-#     pcds = [pcd,pcd,pcd]
-#     data, value = task.create_input(pcds)
-#     task.run_inference(model,data)
