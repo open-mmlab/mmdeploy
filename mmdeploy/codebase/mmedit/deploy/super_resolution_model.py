@@ -4,12 +4,23 @@ from typing import List, Optional, Sequence, Union
 import mmcv
 import numpy as np
 import torch
+from mmcv.utils import Registry
 from mmedit.core import psnr, ssim, tensor2img
 
 from mmdeploy.codebase.base import BaseBackendModel
-from mmdeploy.utils import Backend, get_backend, load_config
+from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
+                            load_config)
 
 
+def __build_backend_model(cls_name: str, registry: Registry, *args, **kwargs):
+    return registry.module_dict[cls_name](*args, **kwargs)
+
+
+__BACKEND_MODEL = mmcv.utils.Registry(
+    'backend_models', build_func=__build_backend_model)
+
+
+@__BACKEND_MODEL.register_module('end2end')
 class End2EndModel(BaseBackendModel):
     """End to end model for inference of super resolution.
 
@@ -43,7 +54,8 @@ class End2EndModel(BaseBackendModel):
             backend=backend,
             backend_files=backend_files,
             device=device,
-            output_names=output_names)
+            output_names=output_names,
+            deploy_cfg=self.deploy_cfg)
 
     def forward(self,
                 lq: torch.Tensor,
@@ -162,6 +174,48 @@ class End2EndModel(BaseBackendModel):
         raise NotImplementedError
 
 
+@__BACKEND_MODEL.register_module('sdk')
+class SDKEnd2EndModel(End2EndModel):
+    """SDK inference class, converts SDK output to mmedit format."""
+
+    def forward(self,
+                lq: torch.Tensor,
+                gt: Optional[torch.Tensor] = None,
+                test_mode: bool = False,
+                *args,
+                **kwargs) -> Union[list, dict]:
+        """Run test inference for restorer.
+
+        We want forward() to output an image or a evaluation result.
+        When test_mode is set, the output is evaluation result. Otherwise
+        it is an image.
+
+        Args:
+            lq (torch.Tensor): The input low-quality image of the model.
+            test_mode (bool): When test_mode is set, the output is evaluation
+                result. Otherwise it is an image. Default to `False`.
+            *args: Other arguments.
+            **kwargs: Other key-pair arguments.
+
+        Returns:
+            list | dict: High resolution image or a evaluation results.
+        """
+        img = tensor2img(lq)
+        output = self.wrapper.invoke([img])[0]
+        if test_mode:
+            output = torch.from_numpy(output)
+            output = torch.permute(output, (
+                2,
+                0,
+                1,
+            ))
+            output = output / 255.
+            results = self.test_post_process([output], lq, gt)
+            return results
+        else:
+            return [output]
+
+
 def build_super_resolution_model(model_files: Sequence[str],
                                  model_cfg: Union[str, mmcv.Config],
                                  deploy_cfg: Union[str,
@@ -170,8 +224,10 @@ def build_super_resolution_model(model_files: Sequence[str],
     deploy_cfg = load_config(deploy_cfg)[0]
 
     backend = get_backend(deploy_cfg)
+    model_type = get_codebase_config(deploy_cfg).get('model_type', 'end2end')
 
-    backend_model = End2EndModel(
+    backend_model = __BACKEND_MODEL.build(
+        model_type,
         backend=backend,
         backend_files=model_files,
         device=device,

@@ -5,4 +5,4 @@ mmocr==0.3.0
 mmpose
 mmsegmentation
 onnxruntime>=1.8.0
-openvino-dev[onnx,pytorch]
+openvino-dev

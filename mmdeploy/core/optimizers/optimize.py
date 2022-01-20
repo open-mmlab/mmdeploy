@@ -1,9 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import logging
 from typing import Callable, Dict, Iterable, Optional
 
 import onnx
 from onnx.helper import get_attribute_value
+
+from mmdeploy.utils import get_root_logger
 
 
 def attribute_to_dict(attr: onnx.AttributeProto) -> Dict:
@@ -36,6 +37,7 @@ def remove_nodes(model: onnx.ModelProto,
         onnx.ModelProto: Modified onnx model.
     """
     # ! this doesn't handle inputs/outputs
+    logger = get_root_logger()
     while True:
         connect = None
         for i, node in enumerate(model.graph.node):
@@ -43,7 +45,7 @@ def remove_nodes(model: onnx.ModelProto,
                 assert len(node.input) == 1
                 assert len(node.output) == 1
                 connect = (node.input[0], node.output[0])
-                logging.info(f'remove node {node.name}')
+                logger.info(f'remove node {node.name}')
                 del model.graph.node[i]
                 break
         if not connect:
@@ -121,7 +123,8 @@ def rename_value(model: onnx.ModelProto, old_name: str, new_name: str):
     """
     if old_name == new_name:
         return
-    logging.info(f'rename {old_name} -> {new_name}')
+    logger = get_root_logger()
+    logger.info(f'rename {old_name} -> {new_name}')
     for n in model.graph.node:
         for i, output in enumerate(n.output):
             if output == old_name:
@@ -150,11 +153,12 @@ def remove_identity(model: onnx.ModelProto):
 
     def simplify_inputs():
         connect = None
+        logger = get_root_logger()
         for input in graph.input:
             for i, node in enumerate(graph.node):
                 if node.op_type == 'Identity' and node.input[0] == input.name:
                     connect = (node.input[0], node.output[0])
-                    logging.info(f'remove node {node.name}')
+                    logger.info(f'remove node {node.name}')
                     del graph.node[i]
                     break
             if connect:
@@ -171,12 +175,13 @@ def remove_identity(model: onnx.ModelProto):
 
     def simplify_outputs():
         connect = None
+        logger = get_root_logger()
         for output in graph.output:
             for i, node in enumerate(graph.node):
                 if node.op_type == 'Identity' and \
                         node.output[0] == output.name:
                     connect = (node.input[0], node.output[0])
-                    logging.info(f'remove node {node.name}')
+                    logger.info(f'remove node {node.name}')
                     del graph.node[i]
                     break
             if connect:

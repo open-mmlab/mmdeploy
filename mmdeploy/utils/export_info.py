@@ -1,14 +1,15 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import importlib
-import logging
 from typing import Dict, List, Tuple, Union
 
 import mmcv
 
 from mmdeploy.apis import build_task_processor
 from mmdeploy.utils import (Backend, Task, get_backend, get_codebase,
-                            get_common_config, get_onnx_config, get_task_type,
-                            is_dynamic_batch, load_config)
+                            get_common_config, get_onnx_config,
+                            get_root_logger, get_task_type, is_dynamic_batch,
+                            load_config)
+from mmdeploy.utils.constants import SDK_TASK_MAP as task_map
 
 
 def get_mmdpeloy_version() -> str:
@@ -33,7 +34,8 @@ def get_task(deploy_cfg: mmcv.Config) -> Dict:
     try:
         codebase = importlib.import_module(codebase_name)
     except ModuleNotFoundError:
-        logging.warning(f'can not import the module: {codebase_name}')
+        logger = get_root_logger()
+        logger.warning(f'can not import the module: {codebase_name}')
     codebase_version = codebase.__version__
     return dict(
         task=task_name, codebase=codebase_name, version=codebase_version)
@@ -160,17 +162,6 @@ def get_inference_info(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
         input_map=input_map)
 
 
-task_component = {
-    Task.CLASSIFICATION.value: 'LinearClsHead',
-    Task.OBJECT_DETECTION.value: 'ResizeBBox',
-    Task.INSTANCE_SEGMENTATION.value: 'ResizeInstanceMask',
-    Task.SEGMENTATION.value: 'ResizeMask',
-    Task.SUPER_RESOLUTION.value: 'TensorToImg',
-    Task.TEXT_DETECTION.value: 'TextDetHead',
-    Task.TEXT_RECOGNITION.value: 'CTCConvertor'
-}
-
-
 def get_preprocess(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config):
     task_processor = build_task_processor(
         model_cfg=model_cfg, deploy_cfg=deploy_cfg, device='cpu')
@@ -245,7 +236,7 @@ def get_postprocess(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config) -> Dict:
     if task == Task.OBJECT_DETECTION and 'mask_thr_binary' in params:
         task = Task.INSTANCE_SEGMENTATION
 
-    component = task_component[task.value]
+    component = task_map[task]['component']
     if task != Task.SUPER_RESOLUTION and task != Task.SEGMENTATION:
         if 'type' in params:
             component = params.pop('type')
@@ -269,14 +260,16 @@ def get_deploy(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
         work_dir (str): Work dir to save json files.
 
     Return:
-        dict: Composed of version, models and customs.
+        dict: Composed of version, task, models and customs.
     """
 
+    task = get_task_type(deploy_cfg)
+    cls_name = task_map[task]['cls_name']
     _, customs = get_model_name_customs(
         deploy_cfg, model_cfg, work_dir=work_dir)
     version = get_mmdpeloy_version()
     models = get_models(deploy_cfg, model_cfg, work_dir=work_dir)
-    return dict(version=version, models=models, customs=customs)
+    return dict(version=version, task=cls_name, models=models, customs=customs)
 
 
 def get_pipeline(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,

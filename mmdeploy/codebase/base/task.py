@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import logging
 from abc import ABCMeta, abstractmethod
 from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
@@ -8,7 +7,7 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader, Dataset
 
-from mmdeploy.utils import get_codebase
+from mmdeploy.utils import get_backend_config, get_codebase, get_root_logger
 from mmdeploy.utils.dataset import is_can_sort_dataset, sort_dataset
 
 
@@ -84,14 +83,20 @@ class BaseTask(metaclass=ABCMeta):
         Returns:
             Dataset: The built dataset.
         """
+
+        backend_cfg = get_backend_config(self.deploy_cfg)
+        if 'pipeline' in backend_cfg:
+            dataset_cfg.data[dataset_type].pipeline = backend_cfg.pipeline
+
         dataset = self.codebase_class.build_dataset(dataset_cfg, dataset_type,
                                                     **kwargs)
+        logger = get_root_logger()
         if is_sort_dataset:
             if is_can_sort_dataset(dataset):
                 sort_dataset(dataset)
             else:
-                logging.info('Sorting the dataset by \'height\' and \'width\' '
-                             'is not possible.')
+                logger.info('Sorting the dataset by \'height\' and \'width\' '
+                            'is not possible.')
         return dataset
 
     def build_dataloader(self, dataset: Dataset, samples_per_gpu: int,
@@ -140,7 +145,7 @@ class BaseTask(metaclass=ABCMeta):
         """Create input for model.
 
         Args:
-            imgs (str | np.ndarray): Input image(s), accpeted data types are
+            imgs (str | np.ndarray): Input image(s), accepted data types are
                 `str`, `np.ndarray`.
             input_shape (list[int]): Input shape of image in (width, height)
                 format, defaults to `None`.
@@ -167,7 +172,6 @@ class BaseTask(metaclass=ABCMeta):
             image (str | np.ndarray): Input image to draw predictions on.
             result (list): A list of predictions.
             output_file (str): Output file to save drawn image.
-            backend (Backend): Specifying backend type.
             window_name (str): The name of visualization window. Defaults to
                 an empty string.
             show_result (bool): Whether to show result in windows, defaults
@@ -233,7 +237,6 @@ class BaseTask(metaclass=ABCMeta):
             outputs (list): A list of predictions of model inference.
             dataset (Dataset): Input dataset to run test.
             model_cfg (mmcv.Config): The model config.
-            codebase (Codebase): Specifying codebase type.
             metrics (str): Evaluation metrics, which depends on
                 the codebase and the dataset, e.g., "bbox", "segm", "proposal"
                 for COCO, and "mAP", "recall" for PASCAL VOC in mmdet;

@@ -1,10 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import logging
-
 from mmcv.utils import collect_env as collect_base_env
 from mmcv.utils import get_git_hash
 
 import mmdeploy
+from mmdeploy.utils import get_root_logger
 
 
 def collect_env():
@@ -23,8 +22,9 @@ def check_backend():
     else:
         ort_version = ort.__version__
     import mmdeploy.apis.onnxruntime as ort_apis
-    logging.info(f'onnxruntime: {ort_version} ops_is_avaliable : '
-                 f'{ort_apis.is_available()}')
+    logger = get_root_logger()
+    logger.info(f'onnxruntime: {ort_version} ops_is_avaliable : '
+                f'{ort_apis.is_available()}')
 
     try:
         import tensorrt as trt
@@ -33,7 +33,7 @@ def check_backend():
     else:
         trt_version = trt.__version__
     import mmdeploy.apis.tensorrt as trt_apis
-    logging.info(
+    logger.info(
         f'tensorrt: {trt_version} ops_is_avaliable : {trt_apis.is_available()}'
     )
 
@@ -44,18 +44,18 @@ def check_backend():
     else:
         ncnn_version = ncnn.__version__
     import mmdeploy.apis.ncnn as ncnn_apis
-    logging.info(
+    logger.info(
         f'ncnn: {ncnn_version} ops_is_avaliable : {ncnn_apis.is_available()}')
 
     import mmdeploy.apis.pplnn as pplnn_apis
-    logging.info(f'pplnn_is_avaliable: {pplnn_apis.is_available()}')
+    logger.info(f'pplnn_is_avaliable: {pplnn_apis.is_available()}')
 
     import mmdeploy.apis.openvino as openvino_apis
-    logging.info(f'openvino_is_avaliable: {openvino_apis.is_available()}')
+    logger.info(f'openvino_is_avaliable: {openvino_apis.is_available()}')
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
+    logger = get_root_logger()
     for name, val in collect_env().items():
-        logging.info('{}: {}'.format(name, val))
+        logger.info('{}: {}'.format(name, val))
     check_backend()
