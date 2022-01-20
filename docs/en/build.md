@@ -1,6 +1,6 @@
 ## Build MMDeploy
 
-We provide both physical and virtual machine building methods. For virtual machine building methods, please refer to
+We provide building methods for both physical and virtual machines. For virtual machine building methods, please refer to
 [how to use docker](tutorials/how_to_use_docker.md). For physical machine, please follow the steps below.
 
 ### Preparation
