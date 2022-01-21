@@ -8,7 +8,13 @@ from mmdeploy.core import FUNCTION_REWRITER
 @FUNCTION_REWRITER.register_rewriter(
     'mmpose.models.backbones.litehrnet.CrossResolutionWeighting.forward')
 def cross_resolution_weighting__forward(ctx, self, x):
-    """Rewrite `forward` for default backend."""
+    """Rewrite `forward` for default backend.
+
+    Rewrite this function to deploy model
+
+    Args:
+        x (list): block input.
+    """
 
     mini_size = [int(_) for _ in x[-1].shape[-2:]]
     out = [F.adaptive_avg_pool2d(s, mini_size) for s in x[:-1]] + [x[-1]]

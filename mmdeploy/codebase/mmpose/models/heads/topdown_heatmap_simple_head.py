@@ -9,7 +9,18 @@ def top_down_heatmap_simple_head__inference_model(ctx,
                                                   self,
                                                   x,
                                                   flip_pairs=None):
-    """Rewrite `forward_test` of TopDown for default backend."""
+    """Rewrite `forward_test` of TopDown for default backend.
+
+    Rewrite this function to run forward directly.
+
+    Args:
+        x (torch.Tensor[N,K,H,W]): Input features.
+        flip_pairs (None | list[tuple]):
+            Pairs of keypoints which are mirrored.
+
+    Returns:
+        output_heatmap (np.ndarray): Output heatmaps.
+    """
     assert flip_pairs is None
     output = self.forward(x)
     return output
