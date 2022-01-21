@@ -240,15 +240,27 @@ class PoseDetection(BaseTask):
         name = self.model_cfg.model.type.lower()
         return name
 
+    @staticmethod
     def get_partition_cfg(self, partition_type: str, **kwargs) -> Dict:
+        """Get a certain partition config for mmpose.
+
+        Args:
+            partition_type (str): A string specifying partition type.
+
+        Returns:
+            dict: A dictionary of partition config.
+        """
         raise NotImplementedError('Not supported yet.')
 
     def get_preprocess(self) -> Dict:
+        """Get the preprocess information for SDK."""
         raise NotImplementedError('Not supported yet.')
 
     def get_postprocess(self) -> Dict:
+        """Get the postprocess information for SDK."""
         raise NotImplementedError('Not supported yet.')
 
+    @staticmethod
     def get_tensor_from_input(self, input_data: Dict[str, Any],
                               **kwargs) -> torch.Tensor:
         """Get input tensor from input data.
@@ -264,7 +276,8 @@ class PoseDetection(BaseTask):
             img = img[0]
         return img
 
-    def run_inference(self, model, model_inputs: Dict[str, torch.Tensor]):
+    @staticmethod
+    def run_inference(model, model_inputs: Dict[str, torch.Tensor]):
         """Run inference once for a pose model of mmpose.
 
         Args:

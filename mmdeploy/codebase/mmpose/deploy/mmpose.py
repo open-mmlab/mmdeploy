@@ -21,6 +21,7 @@ MMPOSE_TASK = Registry('mmpose_tasks', build_func=__build_mmpose_task)
 
 @CODEBASE.register_module(Codebase.MMPOSE.value, force=True)
 class MMPose(MMCodebase):
+    """mmpose codebase class."""
 
     task_registry = MMPOSE_TASK
 
@@ -30,6 +31,16 @@ class MMPose(MMCodebase):
     @staticmethod
     def build_task_processor(model_cfg: mmcv.Config, deploy_cfg: mmcv.Config,
                              device: str) -> BaseTask:
+        """The interface to build the task processors of mmpose.
+
+        Args:
+            model_cfg (mmcv.Config): Model config file.
+            deploy_cfg (mmcv.Config): Deployment config file.
+            device (str): A string specifying device type.
+
+        Returns:
+            BaseTask: A task processor.
+        """
         return MMPOSE_TASK.build(model_cfg, deploy_cfg, device)
 
     @staticmethod
