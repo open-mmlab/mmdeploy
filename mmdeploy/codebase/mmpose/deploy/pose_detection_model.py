@@ -36,6 +36,14 @@ class End2EndModel(BaseBackendModel):
             backend=backend, backend_files=backend_files, device=device)
 
     def _init_wrapper(self, backend, backend_files, device):
+        """Initialize backend wrapper.
+
+        Args:
+            backend (Backend): The backend enum, specifying backend type.
+            backend_files (Sequence[str]): Paths to all required backend files
+                (e.g. '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
+            device (str): A string specifying device type.
+        """
         output_names = self.output_names
         self.wrapper = BaseBackendModel._build_wrapper(
             backend=backend,
