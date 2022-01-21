@@ -189,8 +189,8 @@ class PoseDetection(BaseTask):
             show=show_result,
             win_name=window_name)
 
-    def evaluate_outputs(self,
-                         model_cfg: mmcv.Config,
+    @staticmethod
+    def evaluate_outputs(model_cfg: mmcv.Config,
                          outputs: Sequence,
                          dataset: Dataset,
                          metrics: Optional[str] = None,
@@ -241,14 +241,11 @@ class PoseDetection(BaseTask):
         return name
 
     @staticmethod
-    def get_partition_cfg(self, partition_type: str, **kwargs) -> Dict:
+    def get_partition_cfg(partition_type: str, **kwargs) -> Dict:
         """Get a certain partition config for mmpose.
 
         Args:
             partition_type (str): A string specifying partition type.
-
-        Returns:
-            dict: A dictionary of partition config.
         """
         raise NotImplementedError('Not supported yet.')
 
@@ -261,7 +258,7 @@ class PoseDetection(BaseTask):
         raise NotImplementedError('Not supported yet.')
 
     @staticmethod
-    def get_tensor_from_input(self, input_data: Dict[str, Any],
+    def get_tensor_from_input(input_data: Dict[str, Any],
                               **kwargs) -> torch.Tensor:
         """Get input tensor from input data.
 
