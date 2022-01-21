@@ -28,7 +28,7 @@ After building the docker image succeed, we can use `docker run` to launch the d
 docker run --gpus all -it -p 8080:8081 mmdeploy:master-gpu
 ```
 
-### AFQs
+### FAQs
 
 1. CUDA error: the provided PTX was compiled with an unsupported toolchain:
 
