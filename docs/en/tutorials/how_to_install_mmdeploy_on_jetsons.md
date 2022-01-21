@@ -2,7 +2,7 @@
 
 This tutorial introduces how to install mmdeploy on Nvidia Jetson systems. It mainly introduces the installation of mmdeploy on three Jetson series boards:
 - Jetson Nano
-- Jetson AGX Xavie
+- Jetson AGX Xavier
 - Jetson TX2
 
 For Jetson Nano, we use Jetson Nano 2GB and install [JetPack SDK](https://developer.nvidia.com/embedded/jetpack) through SD card image method.
