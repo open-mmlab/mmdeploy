@@ -88,7 +88,18 @@ class TRTWrapper(BaseWrapper):
         assert self._output_names is not None
         bindings = [None] * (len(self._input_names) + len(self._output_names))
 
+        profile_id = 0
         for input_name, input_tensor in inputs.items():
+            # check if input shape is valid
+            profile = self.engine.get_profile_shape(profile_id, input_name)
+            assert input_tensor.dim() == len(
+                profile[0]), 'Input dim is different from engine profile.'
+            for s_min, s_input, s_max in zip(profile[0], input_tensor.shape,
+                                             profile[2]):
+                assert s_min <= s_input <= s_max, \
+                    'Input shape should be between ' \
+                    + f'{profile[0]} and {profile[2]}' \
+                    + f' but get {tuple(input_tensor.shape)}.'
             idx = self.engine.get_binding_index(input_name)
 
             # All input tensors must be gpu variables
