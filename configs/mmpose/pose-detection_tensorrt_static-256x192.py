@@ -1,4 +1,4 @@
-_base_ = ['./posedetection_static.py', '../_base_/backends/tensorrt.py']
+_base_ = ['./pose-detection_static.py', '../_base_/backends/tensorrt.py']
 
 onnx_config = dict(input_shape=[192, 256])
 backend_config = dict(

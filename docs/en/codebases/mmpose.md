@@ -4,7 +4,7 @@
 
 ## MMPose installation tutorial
 
-Please refer to [official installation guide](https://github.com/open-mmlab/mmpose/blob/master/docs/en/install.md) to install the codebase.
+Please refer to [official installation guide](https://mmpose.readthedocs.io/en/latest/install.html) to install the codebase.
 
 ## MMEditing models support
 
