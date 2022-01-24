@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.14)
 project(mmdeploy_ncnn_ops)
 
-include(${CMAKE_SOURCE_DIR}/cmake/common.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
 
 # add plugin source
 file(GLOB_RECURSE NCNN_OPS_SRCS *.cpp)

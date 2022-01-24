@@ -34,12 +34,12 @@ TEST_CASE("test text detector's c api", "[text-detector]") {
 
     auto result_ptr = results;
     for (auto i = 0; i < mats.size(); ++i) {
-      INFO("the {}-th image has '{}' objects", i, result_count[i]);
+      MMDEPLOY_INFO("the {}-th image has '{}' objects", i, result_count[i]);
       for (auto j = 0; j < result_count[i]; ++j, ++result_ptr) {
         auto& bbox = result_ptr->bbox;
-        INFO(">> bbox[{}].score: {}, coordinate: ", i, result_ptr->score);
+        MMDEPLOY_INFO(">> bbox[{}].score: {}, coordinate: ", i, result_ptr->score);
         for (auto& _bbox : result_ptr->bbox) {
-          INFO(">> >> ({}, {})", _bbox.x, _bbox.y);
+          MMDEPLOY_INFO(">> >> ({}, {})", _bbox.x, _bbox.y);
         }
       }
     }

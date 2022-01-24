@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.14)
 project(mmdeploy_openvino_net)
 
 if ("cpu" IN_LIST MMDEPLOY_TARGET_DEVICES)
-    include(${CMAKE_SOURCE_DIR}/cmake/common.cmake)
+    include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
     find_package(InferenceEngine REQUIRED)
 
     add_library(${PROJECT_NAME} SHARED openvino_net.cpp)

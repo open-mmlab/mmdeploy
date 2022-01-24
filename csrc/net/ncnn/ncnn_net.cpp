@@ -107,7 +107,7 @@ class NCNNNetCreator : public Creator<Net> {
     if (auto r = p->Init(args)) {
       return p;
     } else {
-      ERROR("error creating NCNNNet: {}", r.error().message().c_str());
+      MMDEPLOY_ERROR("error creating NCNNNet: {}", r.error().message().c_str());
       return nullptr;
     }
   }

@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.14)
 project(mmdeploy_trt_net)
 
-include(${CMAKE_SOURCE_DIR}/cmake/common.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/tensorrt.cmake)
 
 add_library(${PROJECT_NAME} SHARED trt_net.cpp)

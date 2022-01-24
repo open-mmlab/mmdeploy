@@ -14,7 +14,7 @@ class ResizeImpl final : public ::mmdeploy::ResizeImpl {
  public:
   explicit ResizeImpl(const Value& args) : ::mmdeploy::ResizeImpl(args) {
     if (arg_.interpolation != "bilinear" && arg_.interpolation != "nearest") {
-      ERROR("{} interpolation is not supported", arg_.interpolation);
+      MMDEPLOY_ERROR("{} interpolation is not supported", arg_.interpolation);
       throw_exception(eNotSupported);
     }
   }
@@ -33,7 +33,7 @@ class ResizeImpl final : public ::mmdeploy::ResizeImpl {
     } else if (tensor.data_type() == DataType::kFLOAT) {
       OUTCOME_TRY(ResizeDispatch<float>(src_tensor, dst_tensor, stream));
     } else {
-      ERROR("unsupported data type {}", tensor.data_type());
+      MMDEPLOY_ERROR("unsupported data type {}", tensor.data_type());
       return Status(eNotSupported);
     }
     return dst_tensor;
@@ -82,7 +82,7 @@ class ResizeImpl final : public ::mmdeploy::ResizeImpl {
     } else if (4 == c) {
       ret = DispatchImpl<T, 4>(stream, h, w, w * c, input, dst_h, dst_w, dst_w * c, output);
     } else {
-      ERROR("unsupported channels {}", c);
+      MMDEPLOY_ERROR("unsupported channels {}", c);
       return Status(eNotSupported);
     }
     return ret == 0 ? success() : Result<void>(Status(eFail));

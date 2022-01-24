@@ -19,7 +19,7 @@ class PadImpl : public ::mmdeploy::PadImpl {
                                                 {"reflect", ppl::cv::BORDER_TYPE_REFLECT_101},
                                                 {"symmetric", ppl::cv::BORDER_TYPE_REFLECT}};
     if (border_map.find(arg_.padding_mode) == border_map.end()) {
-      ERROR("unsupported padding_mode '{}'", arg_.padding_mode);
+      MMDEPLOY_ERROR("unsupported padding_mode '{}'", arg_.padding_mode);
       throw_exception(eNotSupported);
     }
     padding_mode_ = border_map[arg_.padding_mode];
@@ -55,7 +55,7 @@ class PadImpl : public ::mmdeploy::PadImpl {
                                        dst_buffer, padding[1], padding[3], padding[0], padding[2],
                                        padding_mode_, arg_.pad_val);
       } else {
-        ERROR("unsupported channels {}", c);
+        MMDEPLOY_ERROR("unsupported channels {}", c);
         assert(0);
         return Status(eNotSupported);
       }
@@ -71,17 +71,17 @@ class PadImpl : public ::mmdeploy::PadImpl {
             stream, height, width, width * c, src_buffer, dst_width * c, dst_buffer, padding[1],
             padding[3], padding[0], padding[2], padding_mode_, (ppl::cv::uchar)arg_.pad_val);
       } else {
-        ERROR("unsupported channels {}", c);
+        MMDEPLOY_ERROR("unsupported channels {}", c);
         assert(0);
         return Status(eNotSupported);
       }
     } else {
-      ERROR("unsupported data type {}", desc.data_type);
+      MMDEPLOY_ERROR("unsupported data type {}", desc.data_type);
       assert(0);
       return Status(eNotSupported);
     }
     if (ret != 0) {
-      ERROR("unexpected exception happened");
+      MMDEPLOY_ERROR("unexpected exception happened");
       assert(0);
       return Status(eNotSupported);
     }

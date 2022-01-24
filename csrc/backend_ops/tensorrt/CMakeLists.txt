@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.14)
 include(${CMAKE_SOURCE_DIR}/cmake/cuda.cmake NO_POLICY_SCOPE)
 project(mmdeploy_tensorrt_ops CUDA CXX)
 
-include(${CMAKE_SOURCE_DIR}/cmake/common.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/cuda.cmake NO_POLICY_SCOPE)
 include(${CMAKE_SOURCE_DIR}/cmake/tensorrt.cmake NO_POLICY_SCOPE)
 

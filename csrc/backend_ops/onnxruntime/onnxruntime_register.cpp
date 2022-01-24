@@ -7,9 +7,9 @@ const char *c_MMDeployOpDomain = "mmdeploy";
 
 OrtStatus *ORT_API_CALL RegisterCustomOps(OrtSessionOptions *options, const OrtApiBase *api) {
   const OrtApi *kOrtApi = api->GetApi(ORT_API_VERSION);
-
   OrtStatus *status = nullptr;
   for (auto &_op_list_pair : mmdeploy::get_mmdeploy_custom_ops()) {
+    fprintf(stderr, "Registering %s\n",_op_list_pair.first.c_str());
     OrtCustomOpDomain *domain = nullptr;
     if (auto status = kOrtApi->CreateCustomOpDomain(_op_list_pair.first.c_str(), &domain)) {
       return status;
@@ -26,3 +26,5 @@ OrtStatus *ORT_API_CALL RegisterCustomOps(OrtSessionOptions *options, const OrtA
 
   return status;
 }
+
+#pragma clang diagnostic pop

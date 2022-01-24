@@ -2,19 +2,12 @@
 #include "openvino_net.h"
 
 #include <stdio.h>
-
-#if __GNUC__ >= 8
-#include <filesystem>
-namespace fs = std::filesystem;
-#else
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
-#endif
 #include <fstream>
 
 #include "core/logger.h"
 #include "core/model.h"
 #include "core/utils/formatter.h"
+#include "core/utils/filesystem.h"
 
 namespace mmdeploy {
 
@@ -40,7 +33,7 @@ static Result<DataType> ConvertElementType(InferenceEngine::Precision prec) {
     case InferenceEngine::Precision::ePrecision::I64:
       return DataType::kINT64;
     default:
-      ERROR("unsupported InferenceEngine Precision: {}", static_cast<int>(type));
+      MMDEPLOY_ERROR("unsupported InferenceEngine Precision: {}", static_cast<int>(type));
       return Status(eNotSupported);
   }
 }
@@ -58,7 +51,7 @@ static Result<InferenceEngine::Precision::ePrecision> ConvertPrecision(DataType 
     case DataType::kINT64:
       return InferenceEngine::Precision::ePrecision::I64;
     default:
-      ERROR("unsupported DataType: {}", static_cast<int>(type));
+      MMDEPLOY_ERROR("unsupported DataType: {}", static_cast<int>(type));
       return Status(eNotSupported);
   }
 }
@@ -99,7 +92,7 @@ Result<void> OpenVINONet::Init(const Value& args) {
     bin_out << raw_bin;
     bin_out.close();
   } catch (const std::exception& e) {
-    ERROR("unhandled exception when creating tmp xml/bin: {}", e.what());
+    MMDEPLOY_ERROR("unhandled exception when creating tmp xml/bin: {}", e.what());
     return Status(eFail);
   }
 
@@ -141,7 +134,7 @@ Result<void> OpenVINONet::Init(const Value& args) {
     request_ = executable_network.CreateInferRequest();
 
   } catch (const std::exception& e) {
-    ERROR("unhandled exception when creating OpenVINO: {}", e.what());
+    MMDEPLOY_ERROR("unhandled exception when creating OpenVINO: {}", e.what());
     return Status(eFail);
   }
   return success();
@@ -190,7 +183,7 @@ static Result<void> SetBlob(InferenceEngine::InferRequest& request, Tensor& tens
                       InferenceEngine::make_shared_blob<int64_t>(ie_desc, tensor.data<int64_t>()));
       break;
     default:
-      ERROR("unsupported DataType: {}", static_cast<int>(desc.data_type));
+      MMDEPLOY_ERROR("unsupported DataType: {}", static_cast<int>(desc.data_type));
       return Status(eNotSupported);
   }
   return success();
@@ -272,11 +265,11 @@ class OpenVINONetCreator : public Creator<Net> {
       if (auto r = p->Init(args)) {
         return p;
       } else {
-        ERROR("error creating OpenVINONet: {}", r.error().message().c_str());
+        MMDEPLOY_ERROR("error creating OpenVINONet: {}", r.error().message().c_str());
         return nullptr;
       }
     } catch (const std::exception& e) {
-      ERROR("unhandled exception when creating OpenVINONet: {}", e.what());
+      MMDEPLOY_ERROR("unhandled exception when creating OpenVINONet: {}", e.what());
       return nullptr;
     }
   }

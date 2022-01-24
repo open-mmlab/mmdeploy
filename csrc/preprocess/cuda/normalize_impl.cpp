@@ -41,7 +41,7 @@ class NormalizeImpl : public ::mmdeploy::NormalizeImpl {
         Normalize<uint8_t, 1>(input, h, w, stride, output, arg_.mean.data(), arg_.std.data(),
                               arg_.to_rgb, stream);
       } else {
-        ERROR("unsupported channels {}", c);
+        MMDEPLOY_ERROR("unsupported channels {}", c);
         return Status(eNotSupported);
       }
     } else if (DataType::kFLOAT == src_desc.data_type) {
@@ -53,11 +53,11 @@ class NormalizeImpl : public ::mmdeploy::NormalizeImpl {
         Normalize<float, 1>(input, h, w, stride, output, arg_.mean.data(), arg_.std.data(),
                             arg_.to_rgb, stream);
       } else {
-        ERROR("unsupported channels {}", c);
+        MMDEPLOY_ERROR("unsupported channels {}", c);
         return Status(eNotSupported);
       }
     } else {
-      ERROR("unsupported data type {}", src_desc.data_type);
+      MMDEPLOY_ERROR("unsupported data type {}", src_desc.data_type);
       assert(0);
       return Status(eNotSupported);
     }

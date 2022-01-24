@@ -19,7 +19,7 @@ if (spdlog_FOUND)
     set(SPDLOG_LIB $<BUILD_INTERFACE:spdlog::spdlog>)
 endif ()
 
-include(${CMAKE_SOURCE_DIR}/cmake/common.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
 
 set(SRCS
         device_impl.cpp
@@ -32,11 +32,16 @@ set(SRCS
         operator.cpp
         status_code.cpp
         tensor.cpp
+        registry.cpp
         utils/device_utils.cpp
         utils/formatter.cpp
         utils/stacktrace.cpp)
-build_target(${PROJECT_NAME} "${SRCS}")
+#build_target(${PROJECT_NAME} "${SRCS}")
+
+mmdeploy_add_library(${PROJECT_NAME} ${SRCS})
 target_compile_definitions(${PROJECT_NAME} PUBLIC -DMMDEPLOY_STATUS_USE_SOURCE_LOCATION=1)
+
+#target_compile_definitions(${PROJECT_NAME} PRIVATE -DMMDEPLOY_API_EXPORTS)
 target_include_directories(${PROJECT_NAME}
         PUBLIC
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/csrc>
@@ -61,4 +66,4 @@ install(DIRECTORY ${CMAKE_SOURCE_DIR}/csrc/experimental
         DESTINATION include/cpp
         FILES_MATCHING PATTERN "*.h")
 
-export_target(${PROJECT_NAME})
+#export_target(${PROJECT_NAME})

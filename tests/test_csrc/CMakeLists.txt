@@ -67,7 +67,13 @@ add_executable(mmdeploy_tests ${TC_SRCS})
 target_include_directories(mmdeploy_tests
                            PRIVATE ${CMAKE_SOURCE_DIR}/third_party/catch2)
 target_include_directories(mmdeploy_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(
-  mmdeploy_tests PRIVATE ${MMDEPLOY_LIBS} ${OpenCV_LIBS}
-        -Wl,--no-as-needed ${MMDEPLOY_DYNAMIC_MODULES} -Wl,--as-need
-        -Wl,--whole-archive ${MMDEPLOY_STATIC_MODULES} -Wl,--no-whole-archive)
+
+target_link_libraries(mmdeploy_tests PRIVATE
+        MMDeployLibs
+        mmdeploy_core
+        mmdeploy_transform
+        mmdeploy_opencv_utils)
+
+mmdeploy_load_static(mmdeploy_tests MMDeployStaticModules)
+
+mmdeploy_load_dynamic(mmdeploy_tests MMDeployDynamicModules)

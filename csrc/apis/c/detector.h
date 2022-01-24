@@ -32,7 +32,7 @@ typedef struct mm_detect_t {
  * @param[out] handle instance of a detector
  * @return status of creating detector's handle
  */
-MM_SDK_API int mmdeploy_detector_create(mm_model_t model, const char* device_name, int device_id,
+MMDEPLOY_API int mmdeploy_detector_create(mm_model_t model, const char* device_name, int device_id,
                                         mm_handle_t* handle);
 
 /**
@@ -43,7 +43,7 @@ MM_SDK_API int mmdeploy_detector_create(mm_model_t model, const char* device_nam
  * @param[out] handle instance of a detector
  * @return status of creating detector's handle
  */
-MM_SDK_API int mmdeploy_detector_create_by_path(const char* model_path, const char* device_name,
+MMDEPLOY_API int mmdeploy_detector_create_by_path(const char* model_path, const char* device_name,
                                                 int device_id, mm_handle_t* handle);
 
 /**
@@ -58,7 +58,7 @@ MM_SDK_API int mmdeploy_detector_create_by_path(const char* model_path, const ch
  * mmdeploy_detector_release_result
  * @return status of inference
  */
-MM_SDK_API int mmdeploy_detector_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
+MMDEPLOY_API int mmdeploy_detector_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
                                        mm_detect_t** results, int** result_count);
 
 /** @brief Release the inference result buffer created by \ref mmdeploy_detector_apply
@@ -66,13 +66,13 @@ MM_SDK_API int mmdeploy_detector_apply(mm_handle_t handle, const mm_mat_t* mats,
  * @param[in] result_count  \p results size buffer
  * @param[in] count length of \p result_count
  */
-MM_SDK_API void mmdeploy_detector_release_result(mm_detect_t* results, const int* result_count,
+MMDEPLOY_API void mmdeploy_detector_release_result(mm_detect_t* results, const int* result_count,
                                                  int count);
 
 /**
  * @brief Destroy detector's handle
  * @param[in] handle detector's handle created by \ref mmdeploy_detector_create_by_path
  */
-MM_SDK_API void mmdeploy_detector_destroy(mm_handle_t handle);
+MMDEPLOY_API void mmdeploy_detector_destroy(mm_handle_t handle);
 
 #endif  // MMDEPLOY_DETECTOR_H

@@ -9,7 +9,7 @@ endif()
 
 find_package(pplcv REQUIRED)
 
-include(${CMAKE_SOURCE_DIR}/cmake/common.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
 
 set(SRCS
     crop_impl.cpp

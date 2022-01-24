@@ -5,7 +5,19 @@
 
 #include <cstdint>
 
-#define MM_SDK_API
+#ifdef _MSC_VER
+#ifdef MMDEPLOY_API_EXPORTS
+#define MMDEPLOY_API __declspec(dllexport)
+#endif
+#else /* _MSC_VER */
+#ifdef MMDEPLOY_API_EXPORTS
+#define MMDEPLOY_API __attribute__((visibility("default")))
+#endif
+#endif
+
+#ifndef MMDEPLOY_API
+#define MMDEPLOY_API
+#endif
 
 // clang-format off
 

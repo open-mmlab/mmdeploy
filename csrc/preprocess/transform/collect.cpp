@@ -26,7 +26,7 @@ CollectImpl::CollectImpl(const Value &args) {
 }
 
 Result<Value> CollectImpl::Process(const Value &input) {
-  DEBUG("input: {}", to_json(input).dump(2));
+  MMDEPLOY_DEBUG("input: {}", to_json(input).dump(2));
   Value output;
 
   // collect 'ori_img' and 'attribute' from `input`, because those two fields
@@ -45,7 +45,7 @@ Result<Value> CollectImpl::Process(const Value &input) {
   }
   for (auto &key : arg_.keys) {
     if (!input.contains(key)) {
-      ERROR("missed key '{}' in input", key);
+      MMDEPLOY_ERROR("missed key '{}' in input", key);
       //      return Status(eInvalidArgument);
       return Status(eInvalidArgument);
     } else {
@@ -53,7 +53,7 @@ Result<Value> CollectImpl::Process(const Value &input) {
     }
   }
 
-  DEBUG("output: {}", to_json(output).dump(2));
+  MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));
   return output;
 }
 
@@ -76,5 +76,7 @@ class CollectCreator : public Creator<Transform> {
 };
 
 REGISTER_MODULE(Transform, CollectCreator);
+
+MMDEPLOY_DEFINE_REGISTRY(CollectImpl);
 
 }  // namespace mmdeploy

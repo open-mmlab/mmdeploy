@@ -27,7 +27,7 @@ typedef struct mm_text_recognize_t {
  * by \ref mmdeploy_text_recognizer_destroy
  * @return status code of the operation
  */
-MM_SDK_API int mmdeploy_text_recognizer_create(mm_model_t model, const char* device_name,
+MMDEPLOY_API int mmdeploy_text_recognizer_create(mm_model_t model, const char* device_name,
                                                int device_id, mm_handle_t* handle);
 
 /**
@@ -39,7 +39,7 @@ MM_SDK_API int mmdeploy_text_recognizer_create(mm_model_t model, const char* dev
  * by \ref mmdeploy_text_recognizer_destroy
  * @return status code of the operation
  */
-MM_SDK_API int mmdeploy_text_recognizer_create_by_path(const char* model_path,
+MMDEPLOY_API int mmdeploy_text_recognizer_create_by_path(const char* model_path,
                                                        const char* device_name, int device_id,
                                                        mm_handle_t* handle);
 
@@ -53,7 +53,7 @@ MM_SDK_API int mmdeploy_text_recognizer_create_by_path(const char* model_path,
  * by \ref mmdeploy_text_recognizer_release_result
  * @return status code of the operation
  */
-MM_SDK_API int mmdeploy_text_recognizer_apply(mm_handle_t handle, const mm_mat_t* images, int count,
+MMDEPLOY_API int mmdeploy_text_recognizer_apply(mm_handle_t handle, const mm_mat_t* images, int count,
                                               mm_text_recognize_t** results);
 
 /**
@@ -68,7 +68,7 @@ MM_SDK_API int mmdeploy_text_recognizer_apply(mm_handle_t handle, const mm_mat_t
  * bboxes, must be release by \ref mmdeploy_text_recognizer_release_result
  * @return status code of the operation
  */
-MM_SDK_API int mmdeploy_text_recognizer_apply_bbox(mm_handle_t handle, const mm_mat_t* images,
+MMDEPLOY_API int mmdeploy_text_recognizer_apply_bbox(mm_handle_t handle, const mm_mat_t* images,
                                                    int image_count, const mm_text_detect_t* bboxes,
                                                    const int* bbox_count,
                                                    mm_text_recognize_t** results);
@@ -78,13 +78,13 @@ MM_SDK_API int mmdeploy_text_recognizer_apply_bbox(mm_handle_t handle, const mm_
  * @param[in] results result buffer by text recognizer
  * @param[in] count length of \p result
  */
-MM_SDK_API void mmdeploy_text_recognizer_release_result(mm_text_recognize_t* results, int count);
+MMDEPLOY_API void mmdeploy_text_recognizer_release_result(mm_text_recognize_t* results, int count);
 
 /**
  * @brief destroy text recognizer
  * @param[in] handle handle of text recognizer created by \ref
  * mmdeploy_text_recognizer_create_by_path or \ref mmdeploy_text_recognizer_create
  */
-MM_SDK_API void mmdeploy_text_recognizer_destroy(mm_handle_t handle);
+MMDEPLOY_API void mmdeploy_text_recognizer_destroy(mm_handle_t handle);
 
 #endif  // MMDEPLOY_SRC_APIS_C_TEXT_RECOGNIZER_H_

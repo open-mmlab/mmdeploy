@@ -33,11 +33,11 @@ TEST_CASE("test classifier's c api", "[classifier]") {
     ret = mmdeploy_classifier_apply(handle, mats.data(), (int)mats.size(), &results, &result_count);
     REQUIRE(ret == MM_SUCCESS);
     auto result_ptr = results;
-    INFO("model_path: {}", model_path);
+    MMDEPLOY_INFO("model_path: {}", model_path);
     for (auto i = 0; i < (int)mats.size(); ++i) {
-      INFO("the {}-th classification result: ", i);
+      MMDEPLOY_INFO("the {}-th classification result: ", i);
       for (int j = 0; j < *result_count; ++j, ++result_ptr) {
-        INFO("\t label: {}, score: {}", result_ptr->label_id, result_ptr->score);
+        MMDEPLOY_INFO("\t label: {}, score: {}", result_ptr->label_id, result_ptr->score);
       }
     }
 

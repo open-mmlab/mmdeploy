@@ -39,12 +39,18 @@ endif ()
 # notice that ubsan has linker issues for ubuntu < 18.04, see
 # https://stackoverflow.com/questions/50024731/ld-unrecognized-option-push-state-no-as-needed
 if (MMDEPLOY_UBSAN_ENABLE)
- add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-fsanitize=undefined>)
- add_link_options(-fsanitize=undefined)
+    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-fsanitize=undefined>)
+    add_link_options(-fsanitize=undefined)
 endif ()
 
-include(${CMAKE_SOURCE_DIR}/cmake/common.cmake)
-# set INTERFACE target to gather linked modules
+if (MSVC)
+    add_compile_options(/diagnostics:classic)
+    add_compile_options(/Zc:preprocessor) # /experimental:preprocessor on VS2017
+    add_compile_options(/wd4251)
+endif ()
+
+include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
+
 add_library(MMDeployStaticModules INTERFACE)
 add_library(MMDeployDynamicModules INTERFACE)
 add_library(MMDeployLibs INTERFACE)
@@ -52,25 +58,10 @@ add_library(MMDeployLibs INTERFACE)
 add_subdirectory(csrc)
 
 if (MMDEPLOY_BUILD_SDK)
-    # get static modules and dynamic modules from ${MMDeployStaticModules} and ${MMDeployDynamicModules}, respectively
-    set(STATIC_MODULES)
-    get_target_property(STATIC_MODULES MMDeployStaticModules INTERFACE_LINK_LIBRARIES)
-    get_target_list("${STATIC_MODULES}" FILTERED_MODULES)
-    set(MMDEPLOY_STATIC_MODULES "${FILTERED_MODULES}" CACHE STRING "MMDeploy's static modules")
-    message(STATUS "MMDEPLOY_STATIC_MODULES: ${MMDEPLOY_STATIC_MODULES}")
-
-    set(DYNAMIC_MODULES)
-    get_target_property(DYNAMIC_MODULES MMDeployDynamicModules INTERFACE_LINK_LIBRARIES)
-    get_target_list("${DYNAMIC_MODULES}" FILTERED_MODULES)
-    set(MMDEPLOY_DYNAMIC_MODULES "${FILTERED_MODULES}" CACHE STRING "MMDeploy's dynamic modules")
-    message(STATUS "MMDEPLOY_DYNAMIC_MODULES: ${MMDEPLOY_DYNAMIC_MODULES}")
-
-    # get libs from ${MMDeployLibs}
-    set(LIBS)
-    get_target_property(LIBS MMDeployLibs INTERFACE_LINK_LIBRARIES)
-    get_target_list("${LIBS}" FILTERED_LIBS)
-    set(MMDEPLOY_LIBS "${FILTERED_LIBS}" CACHE STRING "MMDeploy's libs that can be linked directly by application")
-    message(STATUS "MMDEPLOY_LIBS: ${MMDEPLOY_LIBS}")
+    install(TARGETS MMDeployStaticModules
+                    MMDeployDynamicModules
+                    MMDeployLibs
+            EXPORT MMDeployTargets)
 
     if (MMDEPLOY_BUILD_TEST)
         add_subdirectory(tests/test_csrc)
@@ -82,9 +73,7 @@ if (MMDEPLOY_BUILD_SDK)
 
     # export MMDeploy package
     install(EXPORT MMDeployTargets
-            # NAMESPACE mmdeploy::
             FILE MMDeployTargets.cmake
-            #EXPORT_LINK_INTERFACE_LIBRARIES
             DESTINATION lib/cmake/MMDeploy)
 
     include(CMakePackageConfigHelpers)
@@ -105,8 +94,12 @@ if (MMDEPLOY_BUILD_SDK)
     install(FILES
             ${CMAKE_CURRENT_BINARY_DIR}/MMDeployConfig.cmake
             ${CMAKE_CURRENT_BINARY_DIR}/MMDeployConfigVersion.cmake
+            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/MMDeploy.cmake
             DESTINATION lib/cmake/MMDeploy
             )
+
+#    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/csrc/loader/loader.cpp.in
+#            DESTINATION )
 
     install(DIRECTORY ${CMAKE_SOURCE_DIR}/demo/csrc/ DESTINATION example)
 endif ()

@@ -7,18 +7,11 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <sstream>
 
 #include "test_define.h"
 
-#if __GNUC__ >= 8
-#include <filesystem>
-namespace fs = std::filesystem;
-#else
-
-#include <experimental/filesystem>
-
-namespace fs = std::experimental::filesystem;
-#endif
+#include "core/utils/filesystem.h"
 
 using namespace std;
 
@@ -43,12 +36,12 @@ class MMDeployTestResources {
   }
 
   bool IsDir(const std::string &dir_name) const {
-    fs::path path{resource_root_path_ + "/" + dir_name};
+    auto path = fs::path{resource_root_path_} / dir_name;
     return fs::is_directory(path);
   }
 
   bool IsFile(const std::string &file_name) const {
-    fs::path path{resource_root_path_ + "/" + file_name};
+    auto path = fs::path{resource_root_path_} / file_name;
     return fs::is_regular_file(path);
   }
 
@@ -59,14 +52,14 @@ class MMDeployTestResources {
       return sdk_model_list;
     }
 
-    fs::path path{resource_root_path_ + "/" + sdk_model_zoo_dir};
+    auto path = fs::path{resource_root_path_} / sdk_model_zoo_dir;
     if (!fs::is_directory(path)) {
       return sdk_model_list;
     }
     for (auto const &dir_entry : fs::directory_iterator{path}) {
       fs::directory_entry entry{dir_entry.path()};
       if (auto const &_path = dir_entry.path(); fs::is_directory(_path)) {
-        sdk_model_list.push_back(dir_entry.path());
+        sdk_model_list.push_back(dir_entry.path().string());
       }
     }
     return sdk_model_list;
@@ -79,7 +72,7 @@ class MMDeployTestResources {
       return img_list;
     }
 
-    fs::path path{resource_root_path_ + "/" + img_dir};
+    auto path = fs::path{resource_root_path_} / img_dir;
     if (!fs::is_directory(path)) {
       return img_list;
     }
@@ -129,7 +122,9 @@ class MMDeployTestResources {
     for (auto const &dir_entry : fs::directory_iterator{cur_path}) {
       fs::directory_entry entry{dir_entry.path()};
       auto const &_path = dir_entry.path();
-      if (fs::is_directory(_path) && _path.filename() == "mmdeploy_test_resources") {
+      // filename must be checked before fs::is_directory, the latter will throw
+      // when _path points to a system file on Windows
+      if (_path.filename() == "mmdeploy_test_resources" && fs::is_directory(_path)) {
         return _path.string();
       }
     }

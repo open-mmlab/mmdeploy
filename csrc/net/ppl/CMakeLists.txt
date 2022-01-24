@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.14)
 project(mmdeploy_pplnn_net)
 
-include(${CMAKE_SOURCE_DIR}/cmake/common.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
 find_package(pplnn REQUIRED)
 
 add_library(${PROJECT_NAME} SHARED ppl_net.cpp)

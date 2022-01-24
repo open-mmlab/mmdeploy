@@ -20,7 +20,7 @@
  * by \ref mmdeploy_restorer_destroy
  * @return status code of the operation
  */
-MM_SDK_API int mmdeploy_restorer_create(mm_model_t model, const char* device_name, int device_id,
+MMDEPLOY_API int mmdeploy_restorer_create(mm_model_t model, const char* device_name, int device_id,
                                         mm_handle_t* handle);
 
 /**
@@ -32,7 +32,7 @@ MM_SDK_API int mmdeploy_restorer_create(mm_model_t model, const char* device_nam
  * by \ref mmdeploy_restorer_destroy
  * @return status code of the operation
  */
-MM_SDK_API int mmdeploy_restorer_create_by_path(const char* model_path, const char* device_name,
+MMDEPLOY_API int mmdeploy_restorer_create_by_path(const char* model_path, const char* device_name,
                                                 int device_id, mm_handle_t* handle);
 
 /**
@@ -44,19 +44,19 @@ MM_SDK_API int mmdeploy_restorer_create_by_path(const char* model_path, const ch
  * by \ref mmdeploy_restorer_release_result
  * @return status code of the operation
  */
-MM_SDK_API int mmdeploy_restorer_apply(mm_handle_t handle, const mm_mat_t* images, int count,
+MMDEPLOY_API int mmdeploy_restorer_apply(mm_handle_t handle, const mm_mat_t* images, int count,
                                        mm_mat_t** results);
 
 /** @brief Release result buffer returned by \ref mmdeploy_restorer_apply
  * @param[in] results result buffer by restorer
  * @param[in] count length of \p result
  */
-MM_SDK_API void mmdeploy_restorer_release_result(mm_mat_t* results, int count);
+MMDEPLOY_API void mmdeploy_restorer_release_result(mm_mat_t* results, int count);
 
 /**
  * @brief destroy restorer
  * @param[in] handle handle of restorer created by \ref mmdeploy_restorer_create_by_path
  */
-MM_SDK_API void mmdeploy_restorer_destroy(mm_handle_t handle);
+MMDEPLOY_API void mmdeploy_restorer_destroy(mm_handle_t handle);
 
 #endif  // MMDEPLOY_SRC_APIS_C_RESTORER_H_

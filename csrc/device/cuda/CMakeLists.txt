@@ -9,7 +9,7 @@ if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.18.0")
     cmake_policy(SET CMP0104 OLD)
 endif ()
 
-include(${CMAKE_SOURCE_DIR}/cmake/common.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
 set_targets(${PROJECT_NAME} CUDA_DEVICE_OBJ CUDA_DEVICE_STATIC CUDA_DEVICE_SHARED)
 
 set(SRCS

@@ -15,9 +15,9 @@ int mmdeploy_model_create_by_path(const char *path, mm_model_t *model) {
     *model = ptr.release();
     return MM_SUCCESS;
   } catch (const std::exception &e) {
-    ERROR("failed to create model: {}", e.what());
+    MMDEPLOY_ERROR("failed to create model: {}", e.what());
   } catch (...) {
-    ERROR("unknown exception caught");
+    MMDEPLOY_ERROR("unknown exception caught");
   }
   return MM_E_FAIL;
 }
@@ -28,9 +28,9 @@ int mmdeploy_model_create(const void *buffer, int size, mm_model_t *model) {
     *model = ptr.release();
     return MM_SUCCESS;
   } catch (const std::exception &e) {
-    ERROR("failed to create model: {}", e.what());
+    MMDEPLOY_ERROR("failed to create model: {}", e.what());
   } catch (...) {
-    ERROR("unknown exception caught");
+    MMDEPLOY_ERROR("unknown exception caught");
   }
   return MM_E_FAIL;
 }

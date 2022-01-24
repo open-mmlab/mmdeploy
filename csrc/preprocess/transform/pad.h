@@ -10,7 +10,7 @@
 
 namespace mmdeploy {
 
-class PadImpl : public TransformImpl {
+class MMDEPLOY_API PadImpl : public TransformImpl {
  public:
   explicit PadImpl(const Value& args);
   ~PadImpl() override = default;
@@ -35,7 +35,7 @@ class PadImpl : public TransformImpl {
   ArgType arg_;
 };
 
-class Pad : public Transform {
+class MMDEPLOY_API Pad : public Transform {
  public:
   explicit Pad(const Value& args, int version = 0);
   ~Pad() override = default;
@@ -45,6 +45,9 @@ class Pad : public Transform {
  protected:
   std::unique_ptr<PadImpl> impl_;
 };
+
+MMDEPLOY_DECLARE_REGISTRY(PadImpl);
+
 }  // namespace mmdeploy
 
 #endif  // MMDEPLOY_PAD_H

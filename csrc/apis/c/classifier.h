@@ -25,7 +25,7 @@ typedef struct mm_class_t {
  * by \ref mmdeploy_classifier_destroy
  * @return status of creating classifier's handle
  */
-MM_SDK_API int mmdeploy_classifier_create(mm_model_t model, const char* device_name, int device_id,
+MMDEPLOY_API int mmdeploy_classifier_create(mm_model_t model, const char* device_name, int device_id,
                                           mm_handle_t* handle);
 
 /**
@@ -37,7 +37,7 @@ MM_SDK_API int mmdeploy_classifier_create(mm_model_t model, const char* device_n
  * by \ref mmdeploy_classifier_destroy
  * @return status of creating classifier's handle
  */
-MM_SDK_API int mmdeploy_classifier_create_by_path(const char* model_path, const char* device_name,
+MMDEPLOY_API int mmdeploy_classifier_create_by_path(const char* model_path, const char* device_name,
                                                   int device_id, mm_handle_t* handle);
 
 /**
@@ -53,7 +53,7 @@ MM_SDK_API int mmdeploy_classifier_create_by_path(const char* model_path, const 
  * mmdeploy_classifier_release_result
  * @return status of inference
  */
-MM_SDK_API int mmdeploy_classifier_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
+MMDEPLOY_API int mmdeploy_classifier_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
                                          mm_class_t** results, int** result_count);
 
 /**
@@ -62,13 +62,13 @@ MM_SDK_API int mmdeploy_classifier_apply(mm_handle_t handle, const mm_mat_t* mat
  * @param[in] result_count \p results size buffer
  * @param[in] count length of \p result_count
  */
-MM_SDK_API void mmdeploy_classifier_release_result(mm_class_t* results, const int* result_count,
+MMDEPLOY_API void mmdeploy_classifier_release_result(mm_class_t* results, const int* result_count,
                                                    int count);
 
 /**
  * @brief Destroy classifier's handle
  * @param[in] handle classifier's handle created by \ref mmdeploy_classifier_create_by_path
  */
-MM_SDK_API void mmdeploy_classifier_destroy(mm_handle_t handle);
+MMDEPLOY_API void mmdeploy_classifier_destroy(mm_handle_t handle);
 
 #endif  // MMDEPLOY_CLASSIFIER_H

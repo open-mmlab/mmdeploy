@@ -133,7 +133,7 @@ inline Value json_to_value(const nlohmann::json& json) {
       return value;
     }
     default:
-      ERROR("unsupported json type: {}", json.type_name());
+      MMDEPLOY_ERROR("unsupported json type: {}", json.type_name());
       return {};
   }
 }

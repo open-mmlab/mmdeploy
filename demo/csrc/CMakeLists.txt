@@ -2,13 +2,17 @@
 cmake_minimum_required(VERSION 3.14)
 project(mmdeploy-example)
 
-find_package(OpenCV REQUIRED)
 find_package(MMDeploy REQUIRED)
+find_package(spdlog REQUIRED)
 
 function(add_example name)
   add_executable(${name} ${name}.cpp)
-  target_link_libraries(${name} ${MMDeploy_LIBS} -Wl,--disable-new-dtags
-  opencv_imgcodecs opencv_imgproc opencv_core)
+  target_link_libraries(${name} PRIVATE
+          -Wl,--disable-new-dtags
+          MMDeployLibs
+          spdlog::spdlog)
+  mmdeploy_load_static(${name} MMDeployStaticModules)
+  mmdeploy_load_dynamic(${name} MMDeployDynamicModules)
 endfunction()
 
 add_example(image_classification)

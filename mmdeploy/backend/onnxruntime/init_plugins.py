@@ -9,10 +9,14 @@ def get_ops_path() -> str:
     Returns:
         str: The library path to onnxruntime custom ops.
     """
+    # wildcard = os.path.abspath(
+    #     os.path.join(
+    #         os.path.dirname(__file__),
+    #         '../../../build/lib/libmmdeploy_onnxruntime_ops.so'))
     wildcard = os.path.abspath(
         os.path.join(
             os.path.dirname(__file__),
-            '../../../build/lib/libmmdeploy_onnxruntime_ops.so'))
+            '../../../build/install/bin/mmdeploy_onnxruntime_ops.dll'))
 
     paths = glob.glob(wildcard)
     lib_path = paths[0] if len(paths) > 0 else ''
