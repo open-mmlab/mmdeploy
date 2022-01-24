@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+
 from mmcv.utils import collect_env as collect_base_env
 from mmcv.utils import get_git_hash
 
@@ -54,8 +55,81 @@ def check_backend():
     logger.info(f'openvino_is_avaliable: {openvino_apis.is_available()}')
 
 
+def get_version(s):
+    return ''.join([c for c in s if c.isdigit() or c == '.'])
+
+
+def get_op(s):
+    return ''.join([c for c in s if c in '><='])
+
+
+def check_codebase():
+    ops = {
+        '>=': (lambda x, y: x >= y),
+        '==': (lambda x, y: x == y),
+        '<=': (lambda x, y: x <= y),
+        '': (lambda x, y: True)
+    }
+    with open('../requirements/optional.txt', 'r') as file:
+        try:
+            import mmcls
+        except ImportError:
+            mmcls_version = None
+        else:
+            mmcls_version = mmcls.__version__
+        requirement = file.readline()
+        is_available = ops[get_op(requirement)](mmcls_version,
+                                                get_version(requirement))
+        logger.info(f'mmcls: {mmcls_version} is_avaliable : {is_available}')
+
+        try:
+            import mmdet
+        except ImportError:
+            mmdet_version = None
+        else:
+            mmdet_version = mmdet.__version__
+        requirement = file.readline()
+        is_available = ops[get_op(requirement)](mmdet_version,
+                                                get_version(requirement))
+        logger.info(f'mmdet: {mmdet_version} is_avaliable : {is_available}')
+
+        try:
+            import mmedit
+        except ImportError:
+            mmedit_version = None
+        else:
+            mmedit_version = mmedit.__version__
+        requirement = file.readline()
+        is_available = ops[get_op(requirement)](mmedit_version,
+                                                get_version(requirement))
+        logger.info(f'mmedit: {mmedit_version} is_avaliable : {is_available}')
+
+        try:
+            import mmocr
+        except ImportError:
+            mmocr_version = None
+        else:
+            mmocr_version = mmocr.__version__
+        requirement = file.readline()
+        is_available = ops[get_op(requirement)](mmocr_version,
+                                                get_version(requirement))
+        logger.info(f'mmocr: {mmocr_version} is_avaliable : {is_available}')
+
+        try:
+            import mmseg
+        except ImportError:
+            mmseg_version = None
+        else:
+            mmseg_version = mmseg.__version__
+        requirement = file.readline()
+        is_available = ops[get_op(requirement)](mmseg_version,
+                                                get_version(requirement))
+        logger.info(f'mmseg: {mmseg_version} is_avaliable : {is_available}')
+
+
 if __name__ == '__main__':
     logger = get_root_logger()
     for name, val in collect_env().items():
         logger.info('{}: {}'.format(name, val))
     check_backend()
+    check_codebase()
