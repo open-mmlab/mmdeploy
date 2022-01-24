@@ -33,3 +33,13 @@ docker run --gpus all -it -p 8080:8081 mmdeploy:master-gpu
 1. CUDA error: the provided PTX was compiled with an unsupported toolchain:
 
     As described [here](https://forums.developer.nvidia.com/t/cuda-error-the-provided-ptx-was-compiled-with-an-unsupported-toolchain/185754), update the GPU driver to the latest one for your GPU.
+2. docker: Error response from daemon: could not select device driver "" with capabilities: [[gpu]].
+    ```
+    # Add the package repositories
+    distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+    curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
+    curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+
+    sudo apt-get update && sudo apt-get install -y nvidia-container-toolkit
+    sudo systemctl restart docker
+    ```
