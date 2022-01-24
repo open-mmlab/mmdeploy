@@ -15,7 +15,7 @@ pip install torch torchvision
 ```
 3. Install [MMCV](https://mmcv.readthedocs.io/en/latest/get_started/installation.html). It is advisable to install the latest version `mmcv-full`.
 ```bash
-pip install mmcv-full
+pip install mmcv-full==1.4.0
 ```
 4. Install MMDeploy following the [instructions](../build.md).
 
@@ -69,6 +69,7 @@ Notes:
 - For faster work in OpenVINO in the Faster-RCNN, Mask-RCNN, Cascade-RCNN, Cascade-Mask-RCNN models
 the RoiAlign operation is replaced with the [ExperimentalDetectronROIFeatureExtractor](https://docs.openvinotoolkit.org/latest/openvino_docs_ops_detection_ExperimentalDetectronROIFeatureExtractor_6.html) operation in the ONNX graph.
 - Models "VFNet" and "Faster R-CNN + DCN" use the custom "DeformableConv2D" operation.
+- If they want to use OpenVINO in SDK, you need install OpenVINO with [install_guides](https://docs.openvino.ai/2021.4/openvino_docs_install_guides_installing_openvino_linux.html#install-openvino).
 
 ### FAQs
 
