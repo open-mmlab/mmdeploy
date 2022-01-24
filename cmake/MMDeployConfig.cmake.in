@@ -21,5 +21,4 @@ endif ()
 
 set(MMDeploy_LIBS ${MMDEPLOY_LIBS}
     -Wl,--no-as-needed ${MMDEPLOY_DYNAMIC_MODULES} -Wl,--as-needed
-    -Wl,--whole-archive ${MMDEPLOY_STATIC_MODULES} -Wl,--no-whole-archive
-    -Wl,--disable-new-dtags)
+    -Wl,--whole-archive ${MMDEPLOY_STATIC_MODULES} -Wl,--no-whole-archive)
