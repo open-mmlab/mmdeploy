@@ -10,7 +10,7 @@ import torch
 import torch.nn as nn
 
 from mmdeploy.utils import Backend
-from mmdeploy.utils.test import backend_checker
+from mmdeploy.utils.test import backend_checker, get_random_name
 
 
 @pytest.mark.skip(reason='This a not test class but a utility class.')
@@ -23,15 +23,15 @@ class TestModel(nn.Module):
         return x * 0.5
 
 
-def generate_onnx_file(model, export_img, onnx_file):
+def generate_onnx_file(model, export_img, onnx_file, input_name, output_name):
     with torch.no_grad():
         dynamic_axes = {
-            'input': {
+            input_name: {
                 0: 'batch',
                 2: 'width',
                 3: 'height'
             },
-            'output': {
+            output_name: {
                 0: 'batch'
             }
         }
@@ -39,8 +39,8 @@ def generate_onnx_file(model, export_img, onnx_file):
             model,
             export_img,
             onnx_file,
-            output_names=['output'],
-            input_names=['input'],
+            output_names=[output_name],
+            input_names=[input_name],
             keep_initializers_as_inputs=True,
             do_constant_folding=True,
             verbose=False,
@@ -49,12 +49,13 @@ def generate_onnx_file(model, export_img, onnx_file):
         assert osp.exists(onnx_file)
 
 
-def get_outputs(pytorch_model, openvino_model_path, input):
+def get_outputs(pytorch_model, openvino_model_path, input, input_name,
+                output_name):
     output_pytorch = pytorch_model(input).numpy()
 
     from mmdeploy.backend.openvino import OpenVINOWrapper
     openvino_model = OpenVINOWrapper(openvino_model_path)
-    openvino_output = openvino_model({'input': input})['output']
+    openvino_output = openvino_model({input_name: input})[output_name]
 
     return output_pytorch, openvino_output
 
@@ -65,10 +66,13 @@ def test_onnx2openvino():
     pytorch_model = TestModel().eval()
     export_img = torch.rand([1, 3, 8, 8])
     onnx_file = tempfile.NamedTemporaryFile(suffix='.onnx').name
-    generate_onnx_file(pytorch_model, export_img, onnx_file)
+    input_name = get_random_name()
+    output_name = get_random_name()
+    generate_onnx_file(pytorch_model, export_img, onnx_file, input_name,
+                       output_name)
 
-    input_info = {'input': export_img.shape}
-    output_names = ['output']
+    input_info = {input_name: export_img.shape}
+    output_names = [output_name]
     openvino_dir = tempfile.TemporaryDirectory().name
     onnx2openvino(input_info, output_names, onnx_file, openvino_dir)
     openvino_model_path = get_output_model_file(onnx_file, openvino_dir)
@@ -78,7 +82,8 @@ def test_onnx2openvino():
     test_img = torch.rand([1, 3, 16, 16])
     output_pytorch, openvino_output = get_outputs(pytorch_model,
                                                   openvino_model_path,
-                                                  test_img)
+                                                  test_img, input_name,
+                                                  output_name)
     assert np.allclose(output_pytorch, openvino_output), \
         'OpenVINO and PyTorch outputs are not the same.'
 
@@ -104,13 +109,16 @@ def test_can_not_run_onnx2openvino_without_mo():
 def test_get_input_info_from_cfg():
     from mmdeploy.apis.openvino import get_input_info_from_cfg
 
+    # Test 1
     deploy_cfg = mmcv.Config()
     with pytest.raises(KeyError):
         get_input_info_from_cfg(deploy_cfg)
 
+    # Test 2
     input_name = 'input'
     height, width = 600, 1000
-    expected_input_info = {input_name: [1, 3, height, width]}
+    shape = [1, 3, height, width]
+    expected_input_info = {input_name: shape}
     deploy_cfg = mmcv.Config({
         'backend_config': {
             'model_inputs': [{
@@ -119,5 +127,31 @@ def test_get_input_info_from_cfg():
         }
     })
     input_info = get_input_info_from_cfg(deploy_cfg)
-    assert input_info == expected_input_info, \
+    assert input_info == expected_input_info, 'Test 2: ' \
+        'The expected value of \'input_info\' does not match the received one.'
+
+    # Test 3
+    # The case where the input name in 'onnx_config'
+    # is different from 'backend_config'.
+    onnx_config_input_name = get_random_name(1234)
+    deploy_cfg.merge_from_dict(
+        {'onnx_config': {
+            'input_names': [onnx_config_input_name]
+        }})
+    expected_input_info = {onnx_config_input_name: shape}
+    input_info = get_input_info_from_cfg(deploy_cfg)
+    assert input_info == expected_input_info, 'Test 3: ' \
+        'The expected value of \'input_info\' does not match the received one.'
+
+    # Test 4
+    # The case where 'backend_config.model_inputs.opt_shapes'
+    # is given by a list, not a dictionary.
+    deploy_cfg.merge_from_dict(
+        {'backend_config': {
+            'model_inputs': [{
+                'opt_shapes': [shape]
+            }]
+        }})
+    input_info = get_input_info_from_cfg(deploy_cfg)
+    assert input_info == expected_input_info, 'Test 4: ' \
         'The expected value of \'input_info\' does not match the received one.'

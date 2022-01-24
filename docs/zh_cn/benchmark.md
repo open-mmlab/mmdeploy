@@ -3,12 +3,13 @@
 ### 后端
 CPU: ncnn, ONNXRuntime, OpenVINO
 
-GPU: TensorRT, PPLNN
+GPU: ncnn, TensorRT, PPLNN
 
 ### 延迟基准
 
 #### 平台
 - Ubuntu 18.04 操作系统
+- ncnn 20211208
 - Cuda 11.3
 - TensorRT 7.2.3.4
 - Docker 20.10.8
@@ -19,7 +20,7 @@ GPU: TensorRT, PPLNN
 - 批次大小为 1
 - 每次推理后均同步
 - 延迟基准测试时，我们计算各个数据集中100张图片的平均延时。
-- 热身。 针对分类任务，我们热身1010轮。 对其他任务，我们热身10轮。
+- 热身。 针对ncnn后端，我们热身30轮; 对于其他后端:针对分类任务，我们热身1010轮，对其他任务，我们热身10轮。
 - 输入分辨率根据代码库的数据集不同而不同，除了`mmediting`，其他代码库均使用真实图片作为输入。
 
 
@@ -32,26 +33,39 @@ GPU: TensorRT, PPLNN
 <thead>
   <tr>
     <th align="center" colspan="3">MMCls</th>
-    <th align="center" colspan="6">TensorRT</th>
+    <th align="center" colspan="10">TensorRT</th>
     <th align="center" colspan="2">PPLNN</th>
     <th align="center" colspan="4">NCNN</th>
-    <th align="center"></th>
+    <th></th>
   </tr>
 </thead>
 <tbody>
   <tr>
-    <td align="center" rowspan="2">Model</td>
-    <td align="center" rowspan="2">Dataset</td>
-    <td align="center" rowspan="2">Input</td>
+    <td align="center" rowspan="3">Model</td>
+    <td align="center" rowspan="3">Dataset</td>
+    <td align="center" rowspan="3">Input</td>
+    <td align="center" colspan="6">T4</td>
+    <td align="center" colspan="4">JetsonNano2GB</td>
+    <td align="center" colspan="2">T4</td>
+    <td align="center" colspan="2">SnapDragon888</td>
+    <td align="center" colspan="2">Adreno660</td>
+    <td rowspan="3">model config file</td>
+  </tr>
+  <tr>
     <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
     <td align="center" colspan="2">int8</td>
+    <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
-    <td align="center" colspan="2">SnapDragon888-fp32</td>
-    <td align="center" colspan="2">Adreno660-fp32</td>
-    <td rowspan="2">model config file</td>
+    <td align="center" colspan="2">fp16</td>
+    <td align="center" colspan="2">fp32</td>
+    <td align="center" colspan="2">fp32</td>
   </tr>
   <tr>
+    <td align="center">latency (ms)</td>
+    <td align="center">FPS</td>
+    <td align="center">latency (ms)</td>
+    <td align="center">FPS</td>
     <td align="center">latency (ms)</td>
     <td align="center">FPS</td>
     <td align="center">latency (ms)</td>
@@ -75,6 +89,10 @@ GPU: TensorRT, PPLNN
     <td align="center">791.89</td>
     <td align="center">1.21</td>
     <td align="center">829.66</td>
+    <td align="center">59.32</td>
+    <td align="center">16.86</td>
+    <td align="center">30.54</td>
+    <td align="center">32.75</td>
     <td align="center">1.30</td>
     <td align="center">768.28</td>
     <td align="center">33.91</td>
@@ -93,6 +111,10 @@ GPU: TensorRT, PPLNN
     <td align="center">703.42</td>
     <td align="center">1.37</td>
     <td align="center">727.42</td>
+    <td align="center">88.10</td>
+    <td align="center">11.35</td>
+    <td align="center">49.18</td>
+    <td align="center">20.13</td>
     <td align="center">1.36</td>
     <td align="center">737.67</td>
     <td align="center">133.44</td>
@@ -111,6 +133,10 @@ GPU: TensorRT, PPLNN
     <td align="center">600.73</td>
     <td align="center">1.51</td>
     <td align="center">662.90</td>
+    <td align="center">74.59</td>
+    <td align="center">13.41</td>
+    <td align="center">48.78</td>
+    <td align="center">20.50</td>
     <td align="center">1.91</td>
     <td align="center">524.07</td>
     <td align="center">107.84</td>
@@ -129,6 +155,10 @@ GPU: TensorRT, PPLNN
     <td align="center">841.36</td>
     <td align="center">1.13</td>
     <td align="center">883.47</td>
+    <td align="center">15.26</td>
+    <td align="center">65.54</td>
+    <td align="center">10.23</td>
+    <td align="center">97.77</td>
     <td align="center">4.69</td>
     <td align="center">213.33</td>
     <td align="center">9.55</td>
@@ -157,14 +187,18 @@ GPU: TensorRT, PPLNN
 </thead>
 <tbody>
   <tr>
-    <td align="center" rowspan="2">Model</td>
-    <td align="center" rowspan="2">Dataset</td>
-    <td align="center" rowspan="2">Input</td>
+    <td align="center" rowspan="3">Model</td>
+    <td align="center" rowspan="3">Dataset</td>
+    <td align="center" rowspan="3">Input</td>
+    <td align="center" colspan="6">T4</td>
+    <td align="center" colspan="2">T4</td>
+    <td rowspan="3">model config file</td>
+  </tr>
+  <tr>
     <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
     <td align="center" colspan="2">int8</td>
     <td align="center" colspan="2">fp16</td>
-    <td rowspan="2">model config file</td>
   </tr>
   <tr>
     <td align="center">latency (ms)</td>
@@ -286,12 +320,16 @@ GPU: TensorRT, PPLNN
 </thead>
 <tbody>
   <tr>
-    <td align="center" rowspan="2">Model</td>
-    <td align="center" rowspan="2">Dataset</td>
-    <td align="center" rowspan="2">Input</td>
-    <td align="center" colspan="2">SnapDragon888-fp32</td>
-    <td align="center" colspan="2">Adreno660-fp32</td>
-    <td rowspan="2">model config file</td>
+    <td align="center" rowspan="3">Model</td>
+    <td align="center" rowspan="3">Dataset</td>
+    <td align="center" rowspan="3">Input</td>
+    <td align="center" colspan="2">SnapDragon888</td>
+    <td align="center" colspan="2">Adreno660</td>
+    <td rowspan="3">model config file</td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2">fp32</td>
+    <td align="center" colspan="2">fp32</td>
   </tr>
   <tr>
     <td align="center">latency (ms)</td>
@@ -319,6 +357,16 @@ GPU: TensorRT, PPLNN
     <td align="center">15.11</td>
     <td>$MMDET_DIR/configs/ssd/ssdlite_mobilenetv2_scratch_600e_coco.py</td>
   </tr>
+  <tr>
+    <td align="center">YOLOX</td>
+    <td align="center">COCO</td>
+    <td align="center">1x3x416x416</td>
+    <td align="center">111.60</td>
+    <td align="center">8.96</td>
+    <td align="center">134.50</td>
+    <td align="center">7.43</td>
+    <td>$MMDET_DIR/configs/yolox/yolox_tiny_8x8_300e_coco.py</td>
+  </tr>
 </tbody>
 </table>
 </div>
@@ -338,13 +386,17 @@ GPU: TensorRT, PPLNN
 </thead>
 <tbody>
   <tr>
-    <td align="center" rowspan="2">Model</td>
-    <td align="center" rowspan="2">Input</td>
+    <td align="center" rowspan="3">Model</td>
+    <td align="center" rowspan="3">Input</td>
+    <td align="center" colspan="6">T4</td>
+    <td align="center" colspan="2">T4</td>
+    <td rowspan="3">model config file</td>
+  </tr>
+  <tr>
     <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
     <td align="center" colspan="2">int8</td>
     <td align="center" colspan="2">fp16</td>
-    <td rowspan="2">model config file</td>
   </tr>
   <tr>
     <td align="center">latency (ms)</td>
@@ -402,16 +454,22 @@ GPU: TensorRT, PPLNN
 </thead>
 <tbody>
   <tr>
-    <td align="center" rowspan="2">Model</td>
-    <td align="center" rowspan="2">Dataset</td>
-    <td align="center" rowspan="2">Input</td>
+    <td align="center" rowspan="3">Model</td>
+    <td align="center" rowspan="3">Dataset</td>
+    <td align="center" rowspan="3">Input</td>
+    <td align="center" colspan="6">T4</td>
+    <td align="center" colspan="2">T4</td>
+    <td align="center" colspan="2">SnapDragon888</td>
+    <td align="center" colspan="2">Adreno660</td>
+    <td rowspan="3">model config file</td>
+  </tr>
+  <tr>
     <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
     <td align="center" colspan="2">int8</td>
     <td align="center" colspan="2">fp16</td>
-    <td align="center" colspan="2">SnapDragon888-fp32</td>
-    <td align="center" colspan="2">Adreno660-fp32</td>
-    <td rowspan="2">model config file</td>
+    <td align="center" colspan="2">fp32</td>
+    <td align="center" colspan="2">fp32</td>
   </tr>
   <tr>
     <td align="center">latency (ms)</td>
@@ -481,14 +539,18 @@ GPU: TensorRT, PPLNN
 </thead>
 <tbody>
   <tr>
-    <td align="center" rowspan="2">Model</td>
-    <td align="center" rowspan="2">Dataset</td>
-    <td align="center" rowspan="2">Input</td>
+    <td align="center" rowspan="3">Model</td>
+    <td align="center" rowspan="3">Dataset</td>
+    <td align="center" rowspan="3">Input</td>
+    <td align="center" colspan="6">T4</td>
+    <td align="center" colspan="2">T4</td>
+    <td rowspan="3">model config file</td>
+  </tr>
+  <tr>
     <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
     <td align="center" colspan="2">int8</td>
     <td align="center" colspan="2">fp16</td>
-    <td rowspan="2">model config file</td>
   </tr>
   <tr>
     <td align="center">latency (ms)</td>
@@ -1230,7 +1292,7 @@ GPU: TensorRT, PPLNN
     <td align="center">72.36</td>
     <td align="center">72.35</td>
     <td align="center">74.19</td>
-    <td align="center">-</td>
+    <td align="center">72.35</td>
     <td>$MMSEG_DIR/configs/fcn/fcn_r50-d8_512x1024_40k_cityscapes.py</td>
   </tr>
   <tr>
@@ -1242,7 +1304,7 @@ GPU: TensorRT, PPLNN
     <td align="center">78.26</td>
     <td align="center">78.24</td>
     <td align="center">77.97</td>
-    <td align="center">-</td>
+    <td align="center">78.09</td>
     <td>$MMSEG_DIR/configs/pspnet/pspnet_r50-d8_512x1024_80k_cityscapes.py</td>
   </tr>
   <tr>
@@ -1254,7 +1316,7 @@ GPU: TensorRT, PPLNN
     <td align="center">79.12</td>
     <td align="center">79.12</td>
     <td align="center">78.96</td>
-    <td align="center">-</td>
+    <td align="center">79.12</td>
     <td>$MMSEG_DIR/configs/deeplabv3/deeplabv3_r50-d8_512x1024_40k_cityscapes.py</td>
   </tr>
   <tr>
@@ -1263,10 +1325,10 @@ GPU: TensorRT, PPLNN
     <td align="center">mIoU</td>
     <td align="center">79.61</td>
     <td align="center">-</td>
-    <td align="center">79.6</td>
-    <td align="center">79.6</td>
+    <td align="center">79.60</td>
+    <td align="center">79.60</td>
     <td align="center">79.43</td>
-    <td align="center">-</td>
+    <td align="center">79.60</td>
     <td>$MMSEG_DIR/configs/deeplabv3plus/deeplabv3plus_r50-d8_512x1024_40k_cityscapes.py</td>
   </tr>
   <tr>
@@ -1277,9 +1339,21 @@ GPU: TensorRT, PPLNN
     <td align="center">-</td>
     <td align="center">70.93</td>
     <td align="center">70.92</td>
-    <td align="center">66.0</td>
-    <td align="center">-</td>
+    <td align="center">66.00</td>
+    <td align="center">70.92</td>
     <td>$MMSEG_DIR/configs/fastscnn/fast_scnn_lr0.12_8x4_160k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">UNet</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">69.10</td>
+    <td align="center">-</td>
+    <td align="center">69.10</td>
+    <td align="center">69.10</td>
+    <td align="center">68.95</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/unet/fcn_unet_s5-d16_4x4_512x1024_160k_cityscapes.py</td>
   </tr>
 </tbody>
 </table>

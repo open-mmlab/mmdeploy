@@ -4,14 +4,25 @@ from typing import List, Optional, Sequence, Union
 import mmcv
 import numpy as np
 import torch
+from mmcv.utils import Registry
 from mmseg.datasets import DATASETS
 from mmseg.models.segmentors.base import BaseSegmentor
 from mmseg.ops import resize
 
 from mmdeploy.codebase.base import BaseBackendModel
-from mmdeploy.utils import Backend, get_backend, get_onnx_config, load_config
+from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
+                            load_config)
 
 
+def __build_backend_model(cls_name: str, registry: Registry, *args, **kwargs):
+    return registry.module_dict[cls_name](*args, **kwargs)
+
+
+__BACKEND_MODEL = mmcv.utils.Registry(
+    'backend_segmentors', build_func=__build_backend_model)
+
+
+@__BACKEND_MODEL.register_module('end2end')
 class End2EndModel(BaseBackendModel):
     """End to end model for inference of segmentation.
 
@@ -35,7 +46,7 @@ class End2EndModel(BaseBackendModel):
         palette: np.ndarray,
         deploy_cfg: Union[str, mmcv.Config] = None,
     ):
-        super(End2EndModel, self).__init__()
+        super(End2EndModel, self).__init__(deploy_cfg=deploy_cfg)
         self.CLASSES = class_names
         self.PALETTE = palette
         self.deploy_cfg = deploy_cfg
@@ -43,13 +54,13 @@ class End2EndModel(BaseBackendModel):
             backend=backend, backend_files=backend_files, device=device)
 
     def _init_wrapper(self, backend, backend_files, device):
-        onnx_config = get_onnx_config(self.deploy_cfg)
-        output_names = onnx_config['output_names']
+        output_names = self.output_names
         self.wrapper = BaseBackendModel._build_wrapper(
             backend=backend,
             backend_files=backend_files,
             device=device,
-            output_names=output_names)
+            output_names=output_names,
+            deploy_cfg=self.deploy_cfg)
 
     def forward(self, img: Sequence[torch.Tensor],
                 img_metas: Sequence[Sequence[dict]], *args, **kwargs):
@@ -92,7 +103,7 @@ class End2EndModel(BaseBackendModel):
         Returns:
             List[np.ndarray]: A list of segmentation map.
         """
-        outputs = self.wrapper({'input': imgs})
+        outputs = self.wrapper({self.input_name: imgs})
         outputs = self.wrapper.output_to_list(outputs)
         outputs = [out.detach().cpu().numpy() for out in outputs]
         return outputs
@@ -132,6 +143,30 @@ class End2EndModel(BaseBackendModel):
             out_file=out_file)
 
 
+@__BACKEND_MODEL.register_module('sdk')
+class SDKEnd2EndModel(End2EndModel):
+    """SDK inference class, converts SDK output to mmseg format."""
+
+    def forward(self, img: Sequence[torch.Tensor],
+                img_metas: Sequence[Sequence[dict]], *args, **kwargs):
+        """Run forward inference.
+
+        Args:
+            img (Sequence[torch.Tensor]): A list contains input image(s)
+                in [N x C x H x W] format.
+            img_metas (Sequence[Sequence[dict]]): A list of meta info for
+                image(s).
+            *args: Other arguments.
+            **kwargs: Other key-pair arguments.
+
+        Returns:
+            list: A list contains predictions.
+        """
+        masks = self.wrapper.invoke(
+            [img[0].contiguous().detach().cpu().numpy()])[0]
+        return masks
+
+
 def get_classes_palette_from_config(model_cfg: Union[str, mmcv.Config]):
     """Get class name and palette from config.
 
@@ -148,12 +183,12 @@ def get_classes_palette_from_config(model_cfg: Union[str, mmcv.Config]):
     module_dict = DATASETS.module_dict
     data_cfg = model_cfg.data
 
-    if 'train' in data_cfg:
-        module = module_dict[data_cfg.train.type]
-    elif 'val' in data_cfg:
+    if 'val' in data_cfg:
         module = module_dict[data_cfg.val.type]
     elif 'test' in data_cfg:
         module = module_dict[data_cfg.test.type]
+    elif 'train' in data_cfg:
+        module = module_dict[data_cfg.train.type]
     else:
         raise RuntimeError(f'No dataset config found in: {model_cfg}')
 
@@ -181,13 +216,16 @@ def build_segmentation_model(model_files: Sequence[str],
     deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
 
     backend = get_backend(deploy_cfg)
+    model_type = get_codebase_config(deploy_cfg).get('model_type', 'end2end')
     class_names, palette = get_classes_palette_from_config(model_cfg)
-    backend_segmentor = End2EndModel(
-        backend,
-        model_files,
-        device,
-        class_names,
-        palette,
+
+    backend_segmentor = __BACKEND_MODEL.build(
+        model_type,
+        backend=backend,
+        backend_files=model_files,
+        device=device,
+        class_names=class_names,
+        palette=palette,
         deploy_cfg=deploy_cfg,
         **kwargs)
 

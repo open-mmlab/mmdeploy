@@ -1,13 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import logging
 import os.path as osp
 from typing import Dict, Optional, Sequence
 
-import numpy as np
 import onnxruntime as ort
 import torch
 
-from mmdeploy.utils import Backend, parse_device_id
+from mmdeploy.utils import Backend, get_root_logger, parse_device_id
 from mmdeploy.utils.timer import TimeCounter
 from ..base import BACKEND_WRAPPER, BaseWrapper
 from .init_plugins import get_ops_path
@@ -43,25 +41,20 @@ class ORTWrapper(BaseWrapper):
         ort_custom_op_path = get_ops_path()
         session_options = ort.SessionOptions()
         # register custom op for onnxruntime
+        logger = get_root_logger()
         if osp.exists(ort_custom_op_path):
             session_options.register_custom_ops_library(ort_custom_op_path)
-            logging.info(f'Successfully loaded onnxruntime custom ops from \
+            logger.info(f'Successfully loaded onnxruntime custom ops from \
             {ort_custom_op_path}')
         else:
-            logging.warning(f'The library of onnxruntime custom ops does \
+            logger.warning(f'The library of onnxruntime custom ops does \
             not exist: {ort_custom_op_path}')
-
-        sess = ort.InferenceSession(onnx_file, session_options)
-
         device_id = parse_device_id(device)
-
-        providers = ['CPUExecutionProvider']
-        options = [{}]
         is_cuda_available = ort.get_device() == 'GPU'
-        if is_cuda_available:
-            providers.insert(0, 'CUDAExecutionProvider')
-            options.insert(0, {'device_id': device_id})
-        sess.set_providers(providers, options)
+        providers = [('CUDAExecutionProvider', {'device_id': device_id})] \
+            if is_cuda_available else ['CPUExecutionProvider']
+        sess = ort.InferenceSession(
+            onnx_file, session_options, providers=providers)
         if output_names is None:
             output_names = [_.name for _ in sess.get_outputs()]
         self.sess = sess
@@ -69,7 +62,6 @@ class ORTWrapper(BaseWrapper):
         self.device_id = device_id
         self.is_cuda_available = is_cuda_available
         self.device_type = 'cuda' if is_cuda_available else 'cpu'
-
         super().__init__(output_names)
 
     def forward(self, inputs: Dict[str,
@@ -87,11 +79,12 @@ class ORTWrapper(BaseWrapper):
             input_tensor = input_tensor.contiguous()
             if not self.is_cuda_available:
                 input_tensor = input_tensor.cpu()
+            element_type = input_tensor.numpy().dtype
             self.io_binding.bind_input(
                 name=name,
                 device_type=self.device_type,
                 device_id=self.device_id,
-                element_type=np.float32,
+                element_type=element_type,
                 shape=input_tensor.shape,
                 buffer_ptr=input_tensor.data_ptr())
 

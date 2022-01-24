@@ -25,6 +25,7 @@ You can switch between Chinese and English documents in the lower-left corner of
    tutorials/how_to_test_rewritten_models.md
    tutorials/how_to_use_docker.md
    tutorials/how_to_write_config.md
+   tutorials/how_to_install_mmdeploy_on_jetsons.md
 
 .. toctree::
    :maxdepth: 1
@@ -42,6 +43,7 @@ You can switch between Chinese and English documents in the lower-left corner of
 
    backends/onnxruntime.md
    backends/tensorrt.md
+   backends/openvino.md
    backends/ncnn.md
    backends/pplnn.md
 
@@ -64,6 +66,11 @@ You can switch between Chinese and English documents in the lower-left corner of
    :caption: FAQ
 
    faq.md
+
+.. toctree::
+   :caption: Switch Language
+
+   switch_language.md
 
 .. toctree::
    :maxdepth: 1

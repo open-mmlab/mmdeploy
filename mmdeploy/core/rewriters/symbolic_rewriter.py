@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import logging
 from typing import Callable, Dict, Optional, Sequence
 
 from torch.autograd import Function
@@ -7,7 +6,7 @@ from torch.onnx.symbolic_helper import parse_args
 from torch.onnx.symbolic_registry import _registry as pytorch_registry
 from torch.onnx.symbolic_registry import register_op
 
-from mmdeploy.utils.constants import Backend
+from mmdeploy.utils import Backend, get_root_logger
 from .rewriter_utils import ContextCaller, RewriterRegistry, eval_with_import
 
 
@@ -106,7 +105,8 @@ class SymbolicRewriter:
                         f'{function_name} is not an torch.autograd.Function'
                 except Exception:
                     origin_func = None
-                    logging.warning(
+                    logger = get_root_logger()
+                    logger.warning(
                         f'Can not add symbolic for `{function_name}`')
 
                 # Only register functions that exist

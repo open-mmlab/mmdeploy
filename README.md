@@ -1,5 +1,22 @@
 <div align="center">
   <img src="resources/mmdeploy-logo.png" width="450"/>
+  <div>&nbsp;</div>
+  <div align="center">
+    <b><font size="5">OpenMMLab website</font></b>
+    <sup>
+      <a href="https://openmmlab.com">
+        <i><font size="4">HOT</font></i>
+      </a>
+    </sup>
+    &nbsp;&nbsp;&nbsp;&nbsp;
+    <b><font size="5">OpenMMLab platform</font></b>
+    <sup>
+      <a href="https://platform.openmmlab.com">
+        <i><font size="4">TRY IT OUT</font></i>
+      </a>
+    </sup>
+  </div>
+  <div>&nbsp;</div>
 </div>
 
 [![docs](https://img.shields.io/badge/docs-latest-blue)](https://mmdeploy.readthedocs.io/en/latest/)
@@ -49,25 +66,24 @@ a part of the [OpenMMLab](https://openmmlab.com/) project.
 
 This project is released under the [Apache 2.0 license](LICENSE).
 
-
 ## Installation
 
-Please refer to [build.md](docs/en/build.md) for installation.
+Please refer to [build.md](https://mmdeploy.readthedocs.io/en/latest/build.html) for installation.
 
 ## Getting Started
-Please see [getting_started.md](docs/en/get_started.md) for the basic usage of MMDeploy. We also provide other tutorials for:
-- [how to convert model](docs/en/tutorials/how_to_convert_model.md)
-- [how to write config](docs/en/tutorials/how_to_write_config.md)
-- [how to support new models](docs/en/tutorials/how_to_support_new_models.md)
-- [how to measure performance of models](docs/en/tutorials/how_to_measure_performance_of_models.md)
 
+Please see [getting_started.md](https://mmdeploy.readthedocs.io/en/latest/get_started.html) for the basic usage of MMDeploy. We also provide other tutorials for:
 
-Please refer to [FAQ](docs/en/faq.md) for frequently asked questions.
+- [how to convert model](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_convert_model.html)
+- [how to write config](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_write_config.html)
+- [how to support new models](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_support_new_models.html)
+- [how to measure performance of models](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_measure_performance_of_models.html)
 
+Please refer to [FAQ](https://mmdeploy.readthedocs.io/en/latest/faq.html) for frequently asked questions.
 
 ## Benchmark and model zoo
 
-Results and supported model list are available in the [benchmark](docs/en/benchmark.md) and [model list](docs/en/supported_models.md).
+Results and supported model list are available in the [benchmark](https://mmdeploy.readthedocs.io/en/latest/benchmark.html) and [model list](https://mmdeploy.readthedocs.io/en/latest/supported_models.html).
 
 ## Contributing
 
@@ -75,7 +91,9 @@ We appreciate all contributions to improve MMDeploy. Please refer to [CONTRIBUTI
 
 ## Acknowledgement
 
-We would like to thank OpenVINO team, for their remarkable efforts to export MMDetection models to OpenVINO and integrate OpenVINO into MMDeploy backends
+We would like to sincerely thank the following teams for their contributions to [MMDeploy](https://github.com/open-mmlab/mmdeploy):
+- [OpenPPL](https://github.com/openppl-public)
+- [OpenVINO](https://github.com/openvinotoolkit/openvino)
 
 ## Citation
 
@@ -109,3 +127,4 @@ If you find this project useful in your research, please consider cite:
 - [MMHuman3D](https://github.com/open-mmlab/mmhuman3d): OpenMMLab Human Pose and Shape Estimation Toolbox and Benchmark.
 - [MMSelfSup](https://github.com/open-mmlab/mmselfsup): OpenMMLab self-supervised learning Toolbox and Benchmark.
 - [MMRazor](https://github.com/open-mmlab/mmrazor): OpenMMLab Model Compression Toolbox and Benchmark.
+- [MMDeploy](https://github.com/open-mmlab/mmdeploy): OpenMMLab Model Deployment Framework.

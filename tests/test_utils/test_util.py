@@ -1,13 +1,18 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import logging
 import os
 import tempfile
+from functools import partial
 
 import mmcv
 import pytest
+import torch.multiprocessing as mp
 
 import mmdeploy.utils as util
+from mmdeploy.utils import target_wrapper
 from mmdeploy.utils.constants import Backend, Codebase, Task
 from mmdeploy.utils.export_info import dump_info
+from mmdeploy.utils.test import get_random_name
 
 correct_model_path = 'tests/data/srgan.py'
 correct_model_cfg = mmcv.Config.fromfile(correct_model_path)
@@ -144,11 +149,28 @@ class TestIsDynamic:
     config_with_dynamic_axes = mmcv.Config(
         dict(
             onnx_config=dict(
+                type='onnx',
                 dynamic_axes={'input': {
                     0: 'batch',
                     2: 'height',
                     3: 'width'
                 }})))
+
+    config_with_dynamic_axes_and_input_names = mmcv.Config(
+        dict(
+            onnx_config=dict(
+                type='onnx',
+                input_names=['image'],
+                dynamic_axes={'image': {
+                    0: 'batch',
+                    2: 'height',
+                    3: 'width'
+                }})))
+
+    config_with_dynamic_axes_list = mmcv.Config(
+        dict(
+            onnx_config=dict(
+                type='onnx', input_names=['image'], dynamic_axes=[[0, 2, 3]])))
 
     def test_is_dynamic_batch_none(self):
         assert util.is_dynamic_batch(
@@ -162,6 +184,10 @@ class TestIsDynamic:
         assert util.is_dynamic_batch(
             TestIsDynamic.config_with_dynamic_axes) is True
 
+    def test_is_dynamic_batch_axes_list(self):
+        assert util.is_dynamic_batch(
+            TestIsDynamic.config_with_dynamic_axes_list) is True
+
     def test_is_dynamic_shape_none(self):
         assert util.is_dynamic_shape(
             TestIsDynamic.config_with_onnx_config) is False
@@ -173,6 +199,21 @@ class TestIsDynamic:
     def test_is_dynamic_shape(self):
         assert util.is_dynamic_shape(
             TestIsDynamic.config_with_dynamic_axes) is True
+
+    def test_is_dynamic_shape_input_names(self):
+        assert util.is_dynamic_shape(
+            TestIsDynamic.config_with_dynamic_axes_and_input_names) is True
+
+    def test_is_dynamic_shape_different_names(self):
+        config_with_different_names = \
+            TestIsDynamic.config_with_dynamic_axes_and_input_names
+        util.get_ir_config(
+            config_with_different_names).input_names = 'another_name'
+        assert util.is_dynamic_shape(config_with_different_names) is False
+
+    def test_is_dynamic_shape_axes_list(self):
+        assert util.is_dynamic_shape(
+            TestIsDynamic.config_with_dynamic_axes_list) is True
 
 
 class TestGetInputShape:
@@ -275,6 +316,83 @@ class TestGetModelInputs:
             ]
 
 
+class TestGetDynamicAxes:
+
+    input_name = get_random_name()
+
+    def test_with_empty_cfg(self):
+        deploy_cfg = mmcv.Config()
+        with pytest.raises(KeyError):
+            util.get_dynamic_axes(deploy_cfg)
+
+    def test_can_get_axes_from_dict(self):
+        expected_dynamic_axes = {
+            self.input_name: {
+                0: 'batch',
+                2: 'height',
+                3: 'width'
+            }
+        }
+        deploy_cfg = mmcv.Config(
+            dict(onnx_config=dict(dynamic_axes=expected_dynamic_axes)))
+        dynamic_axes = util.get_dynamic_axes(deploy_cfg)
+        assert expected_dynamic_axes == dynamic_axes
+
+    def test_can_not_get_axes_from_list_without_names(self):
+        axes = [[0, 2, 3]]
+        deploy_cfg = mmcv.Config(dict(onnx_config=dict(dynamic_axes=axes)))
+        with pytest.raises(KeyError):
+            util.get_dynamic_axes(deploy_cfg)
+
+    def test_can_get_axes_from_list_with_args(self):
+        axes = [[0, 2, 3]]
+        expected_dynamic_axes = {self.input_name: axes[0]}
+        axes_names = [self.input_name]
+        deploy_cfg = mmcv.Config(dict(onnx_config=dict(dynamic_axes=axes)))
+        dynamic_axes = util.get_dynamic_axes(deploy_cfg, axes_names)
+        assert expected_dynamic_axes == dynamic_axes
+
+    def test_can_get_axes_from_list_with_cfg(self):
+        output_name = get_random_name()
+        axes = [[0, 2, 3], [0]]
+        expected_dynamic_axes = {
+            self.input_name: axes[0],
+            output_name: axes[1]
+        }
+        deploy_cfg = mmcv.Config(
+            dict(
+                onnx_config=dict(
+                    input_names=[self.input_name],
+                    output_names=[output_name],
+                    dynamic_axes=axes)))
+        dynamic_axes = util.get_dynamic_axes(deploy_cfg)
+        assert expected_dynamic_axes == dynamic_axes
+
+
+class TestParseDeviceID:
+
+    def test_cpu(self):
+        device = 'cpu'
+        assert util.parse_device_id(device) == -1
+
+    def test_cuda(self):
+        device = 'cuda'
+        assert util.parse_device_id(device) == 0
+
+    def test_cuda10(self):
+        device = 'cuda:10'
+        assert util.parse_device_id(device) == 10
+
+    def test_incorrect_cuda_device(self):
+        device = 'cuda_5'
+        with pytest.raises(RuntimeError):
+            util.parse_device_id(device)
+
+    def test_incorrect_device(self):
+        device = 'abcd:1'
+        assert util.parse_device_id(device) is None
+
+
 def test_AdvancedEnum():
     keys = [
         Task.TEXT_DETECTION, Task.TEXT_RECOGNITION, Task.SEGMENTATION,
@@ -298,3 +416,27 @@ def test_export_info():
         assert os.path.exists(pipeline_json)
         assert os.path.exists(detail_json)
         assert os.path.exists(deploy_json)
+
+
+def test_target_wrapper():
+
+    def target():
+        return 0
+
+    log_level = logging.INFO
+
+    ret_value = mp.Value('d', 0, lock=False)
+    ret_value.value = -1
+    wrap_func = partial(target_wrapper, target, log_level, ret_value)
+
+    process = mp.Process(target=wrap_func)
+    process.start()
+    process.join()
+
+    assert ret_value.value == 0
+
+
+def test_get_root_logger():
+    from mmdeploy.utils import get_root_logger
+    logger = get_root_logger()
+    logger.info('This is a test message')
