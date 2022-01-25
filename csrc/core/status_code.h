@@ -72,7 +72,7 @@ inline const char *to_string(ErrorCode code) {
   }
 }
 
-struct Status {
+struct MMDEPLOY_API Status {
   ErrorCode ec{};
   Status() = default;
   SYSTEM_ERROR2_NAMESPACE::status_code_domain::string_ref message() const;

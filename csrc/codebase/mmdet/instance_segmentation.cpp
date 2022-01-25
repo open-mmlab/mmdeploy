@@ -74,7 +74,7 @@ class ResizeInstanceMask : public ResizeBBox {
   void ProcessMasks(DetectorOutput& result, Tensor cpu_masks, int img_w, int img_h) const {
     auto shape = TensorShape{cpu_masks.shape(1), cpu_masks.shape(2), cpu_masks.shape(3)};
     cpu_masks.Reshape(shape);
-    MMDEPLOY_ERROR("{}, {}", cpu_masks.shape(), cpu_masks.data_type());
+    MMDEPLOY_DEBUG("{}, {}", cpu_masks.shape(), cpu_masks.data_type());
     for (auto& det : result.detections) {
       auto mask = cpu_masks.Slice(det.index);
       cv::Mat mask_mat((int)mask.shape(1), (int)mask.shape(2), CV_32F, mask.data<float>());

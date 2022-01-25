@@ -17,15 +17,21 @@ void* mmdeploy_load_library(const char* name) {
   return handle;
 }
 
+// clang-format off
+
 class Loader {
  public:
   Loader() {
-    const char* modules[] = { @_MMDEPLOY_DYNAMIC_MODULES @ };
+    const char* modules[] = {
+        @_MMDEPLOY_DYNAMIC_MODULES@
+    };
     for (const auto name : modules) {
       mmdeploy_load_library(name);
     }
   }
 };
+
+// clang-format on
 
 static Loader loader;
 

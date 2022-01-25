@@ -6,7 +6,7 @@
 
 namespace mmdeploy {
 
-MMDEPLOY_EXPORT void StatusDomain::_do_throw_exception(
+void StatusDomain::_do_throw_exception(
     const SYSTEM_ERROR2_NAMESPACE::status_code<void> &code) const {
   assert(code.domain() == *this);
   const auto &c = static_cast<const StatusCode &>(code);  // NOLINT
@@ -17,7 +17,7 @@ using string_ref = SYSTEM_ERROR2_NAMESPACE::status_code_domain::string_ref;
 using atomic_refcounted_string_ref =
     SYSTEM_ERROR2_NAMESPACE::status_code_domain::atomic_refcounted_string_ref;
 
-MMDEPLOY_EXPORT string_ref Status::message() const {
+string_ref Status::message() const {
   std::string ret;
   try {
 #if MMDEPLOY_STATUS_USE_SOURCE_LOCATION
