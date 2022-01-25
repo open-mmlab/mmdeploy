@@ -1,7 +1,6 @@
 ## OpenVINO Support
 
-This tutorial is based on Linux systems like Ubuntu-18.04.If you want to use OpenVINO in SDK, you need install OpenVINO with [install_guides](https://docs.openvino.ai/2021.4/openvino_docs_install_guides_installing_openvino_linux.html#install-openvino).
-
+This tutorial is based on Linux systems like Ubuntu-18.04.
 ### Installation
 It is recommended to create a virtual environment for the project.
 1. Install [OpenVINO](https://docs.openvino.ai/2021.4/get_started.html). It is recommended to use the installer or install using pip.
@@ -18,6 +17,8 @@ pip install torch torchvision
 pip install mmcv-full==1.4.0
 ```
 4. Install MMDeploy following the [instructions](../build.md).
+
+5. *`Optional` If you want to use OpenVINO in SDK, you need install OpenVINO with [install_guides](https://docs.openvino.ai/2021.4/openvino_docs_install_guides_installing_openvino_linux.html#install-openvino).
 
 To work with models from [MMDetection](https://github.com/open-mmlab/mmdetection/blob/master/docs/get_started.md), you may need to install it additionally.
 
