@@ -10,7 +10,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 def cross_resolution_weighting__forward(ctx, self, x):
     """Rewrite `forward` for default backend.
 
-    Rewrite this function to deploy model
+    Rewrite this function to support model dynamic shape export.
 
     Args:
         x (list): block input.

@@ -14,6 +14,22 @@ Please refer to [official installation guide](https://mmpose.readthedocs.io/en/l
 | MSPN      | PoseDetection |      Y       |    Y     |   N   |   N   |    N     |   [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#mspn-arxiv-2019)   |
 | LiteHRNet | PoseDetection |      Y       |    Y     |   N   |   N   |    N     | [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#litehrnet-cvpr-2021) |
 
+## Note
+
+Usually, the mmpose model needs some extra information for input image, but we can't get it directly. So, when exporting the model, you can use `$MMDEPLOY_DIR/demo/resources/human-pose.jpg` as input.
+
+### Example
+
+```bash
+python tools/deploy.py \
+configs/mmpose/posedetection_tensorrt_static-256x192.py \
+../mmpose/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/hrnet_w48_coco_256x192.py \
+../mmpose/checkpoints/hrnet_w48_coco_256x192-b9e0b3ab_20200708.pth \
+$MMDEPLOY_DIR/demo/resources/human-pose.jpg \
+--work-dir work-dirs/mmpose/topdown/hrnet/trt \
+--device cuda
+```
+
 ## Reminder
 
 None
