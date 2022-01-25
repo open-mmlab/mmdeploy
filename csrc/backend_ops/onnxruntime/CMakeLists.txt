@@ -13,7 +13,8 @@ mmdeploy_export(${PROJECT_NAME}_obj)
 
 target_include_directories(${PROJECT_NAME}_obj PUBLIC
         $<BUILD_INTERFACE:${ONNXRUNTIME_DIR}/include>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/common>)
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/common>
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/csrc>)
 target_link_directories(${PROJECT_NAME}_obj PUBLIC
         ${ONNXRUNTIME_DIR}/lib)
 target_link_libraries(${PROJECT_NAME}_obj PUBLIC onnxruntime)
