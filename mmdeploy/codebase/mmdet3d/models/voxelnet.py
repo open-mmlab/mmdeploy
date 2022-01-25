@@ -17,6 +17,7 @@ def simple_test(ctx, self, input, img_metas, imgs=None, rescale=False):
 def extract_feat(ctx, self, input, img_metas=None):
     voxels, num_points, coors = input
     voxel_features = self.voxel_encoder(voxels, num_points, coors)
+    # voxel_features = coors.repeat(1,16).float()
     batch_size = coors[-1, 0] + 1  # refactor
     x = self.middle_encoder(voxel_features, coors, batch_size)
     x = self.backbone(x)
