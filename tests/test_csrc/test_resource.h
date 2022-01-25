@@ -5,13 +5,12 @@
 #include <iostream>
 #include <map>
 #include <set>
+#include <sstream>
 #include <string>
 #include <vector>
-#include <sstream>
-
-#include "test_define.h"
 
 #include "core/utils/filesystem.h"
+#include "test_define.h"
 
 using namespace std;
 
@@ -139,7 +138,7 @@ class MMDeployTestResources {
   std::vector<std::string> codebases_;
   std::map<std::string, std::vector<std::string>> backend_devices_;
   fs::path resource_root_path_;
-//  std::string resource_root_path_;
+  //  std::string resource_root_path_;
 };
 
 #endif  // MMDEPLOY_TEST_RESOURCE_H

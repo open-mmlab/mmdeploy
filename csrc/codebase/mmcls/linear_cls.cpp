@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include <numeric>
 #include <algorithm>
+#include <numeric>
 
 #include "codebase/mmcls/mmcls.h"
 #include "core/tensor.h"
@@ -31,7 +31,7 @@ class LinearClsHead : public MMClassification {
 
     if (!(output.shape().size() >= 2 && output.data_type() == DataType::kFLOAT)) {
       MMDEPLOY_ERROR("unsupported `output` tensor, shape: {}, dtype: {}", output.shape(),
-            (int)output.data_type());
+                     (int)output.data_type());
       return Status(eNotSupported);
     }
 

@@ -33,8 +33,8 @@ foreach (TASK ${TASK_LIST})
     target_include_directories(${TARGET_NAME} PUBLIC
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
             $<INSTALL_INTERFACE:include/c>)
-#    target_compile_definitions(${TARGET_NAME} PRIVATE -DMMDEPLOY_API_EXPORTS)
-#    mmdeploy_export(${TARGET_NAME})
+    #    target_compile_definitions(${TARGET_NAME} PRIVATE -DMMDEPLOY_API_EXPORTS)
+    #    mmdeploy_export(${TARGET_NAME})
 
     install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/${TASK}.h
             DESTINATION include/c)

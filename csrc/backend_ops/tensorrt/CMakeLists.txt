@@ -11,7 +11,7 @@ include(${CMAKE_SOURCE_DIR}/cmake/tensorrt.cmake NO_POLICY_SCOPE)
 if (NOT DEFINED CUB_ROOT_DIR)
     if (CUDA_VERSION VERSION_LESS 11.0)
         set(CUB_ROOT_DIR "${CMAKE_SOURCE_DIR}/third_party/cub")
-    endif()
+    endif ()
 endif ()
 
 file(GLOB_RECURSE BACKEND_OPS_SRCS *.cpp *.cu)

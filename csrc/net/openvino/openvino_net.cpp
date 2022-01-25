@@ -2,12 +2,13 @@
 #include "openvino_net.h"
 
 #include <stdio.h>
+
 #include <fstream>
 
 #include "core/logger.h"
 #include "core/model.h"
-#include "core/utils/formatter.h"
 #include "core/utils/filesystem.h"
+#include "core/utils/formatter.h"
 
 namespace mmdeploy {
 

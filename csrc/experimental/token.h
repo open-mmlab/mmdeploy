@@ -12,26 +12,26 @@
 //
 //#include "core/status_code.h"
 //
-//namespace mmdeploy {
+// namespace mmdeploy {
 //
-//namespace token {
+// namespace token {
 //
-//template <char... cs>
-//using String = std::integer_sequence<char, cs...>;
+// template <char... cs>
+// using String = std::integer_sequence<char, cs...>;
 //
 //// this is a GCC only extension
-//template <typename T, T... cs>
-//constexpr String<cs...> operator""_ts() {
-//  return {};
-//}
+// template <typename T, T... cs>
+// constexpr String<cs...> operator""_ts() {
+//   return {};
+// }
 //
-//template <char... cs>
-//const char* c_str(String<cs...>) {
-//  static constexpr const char str[sizeof...(cs) + 1] = {cs..., '\0'};
-//  return str;
-//}
+// template <char... cs>
+// const char* c_str(String<cs...>) {
+//   static constexpr const char str[sizeof...(cs) + 1] = {cs..., '\0'};
+//   return str;
+// }
 //
-//}  // namespace token
+// }  // namespace token
 //
 //// template <typename T>
 //// static void* signature() {
@@ -41,8 +41,8 @@
 ////
 //// using signature_t = decltype(signature<void>());
 //
-//template <typename T, typename Key>
-//struct Token {
+// template <typename T, typename Key>
+// struct Token {
 //  using signature_t = void*;
 //  using value_type = T;
 //
@@ -58,14 +58,14 @@
 //  T value_;
 //};
 //
-//template <typename T>
-//class Identifier {
+// template <typename T>
+// class Identifier {
 // public:
 //  constexpr explicit Identifier(const char* key) : key_(key) {}
 //  const char* key_;
 //};
 //
-//constexpr inline Identifier<int> batch_size{"batch_size"};
+// constexpr inline Identifier<int> batch_size{"batch_size"};
 //
 //}  // namespace mmdeploy
 //

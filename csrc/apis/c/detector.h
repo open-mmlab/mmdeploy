@@ -33,7 +33,7 @@ typedef struct mm_detect_t {
  * @return status of creating detector's handle
  */
 MMDEPLOY_API int mmdeploy_detector_create(mm_model_t model, const char* device_name, int device_id,
-                                        mm_handle_t* handle);
+                                          mm_handle_t* handle);
 
 /**
  * @brief Create detector's handle
@@ -44,7 +44,7 @@ MMDEPLOY_API int mmdeploy_detector_create(mm_model_t model, const char* device_n
  * @return status of creating detector's handle
  */
 MMDEPLOY_API int mmdeploy_detector_create_by_path(const char* model_path, const char* device_name,
-                                                int device_id, mm_handle_t* handle);
+                                                  int device_id, mm_handle_t* handle);
 
 /**
  * @brief Apply detector to batch images and get their inference results
@@ -59,7 +59,7 @@ MMDEPLOY_API int mmdeploy_detector_create_by_path(const char* model_path, const 
  * @return status of inference
  */
 MMDEPLOY_API int mmdeploy_detector_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
-                                       mm_detect_t** results, int** result_count);
+                                         mm_detect_t** results, int** result_count);
 
 /** @brief Release the inference result buffer created by \ref mmdeploy_detector_apply
  * @param[in] results detection results buffer
@@ -67,7 +67,7 @@ MMDEPLOY_API int mmdeploy_detector_apply(mm_handle_t handle, const mm_mat_t* mat
  * @param[in] count length of \p result_count
  */
 MMDEPLOY_API void mmdeploy_detector_release_result(mm_detect_t* results, const int* result_count,
-                                                 int count);
+                                                   int count);
 
 /**
  * @brief Destroy detector's handle

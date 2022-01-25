@@ -33,7 +33,7 @@ class TensorToImg : public MMEdit {
       return mat;
     } else {
       MMDEPLOY_ERROR("unsupported `output` tensor, shape: {}, dtype: {}", upscale.shape(),
-            (int)upscale.data_type());
+                     (int)upscale.data_type());
       return Status(eNotSupported);
     }
   }

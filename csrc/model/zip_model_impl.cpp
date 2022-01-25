@@ -70,7 +70,8 @@ class ZipModelImpl : public ModelImpl {
     index = iter->second;
     struct zip_file* pzip = zip_fopen_index(zip_, index, 0);
     if (nullptr == pzip) {
-      MMDEPLOY_ERROR("read file {} in zip file failed, whose index is {}", file_path.c_str(), index);
+      MMDEPLOY_ERROR("read file {} in zip file failed, whose index is {}", file_path.c_str(),
+                     index);
       return Status(eFail);
     }
     struct zip_stat stat {};

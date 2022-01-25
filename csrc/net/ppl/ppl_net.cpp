@@ -87,8 +87,8 @@ Result<void> PPLNet::Init(const Value& args) {
     auto& desc = inputs_internal_[i]->GetShape();
     std::vector<long> shape_(desc.GetDims(), desc.GetDims() + desc.GetDimCount());
     MMDEPLOY_DEBUG("input {}: datatype = {}, dataformat = {}, shape = {}", i,
-          ppl::common::GetDataTypeStr(desc.GetDataType()),
-          ppl::common::GetDataFormatStr(desc.GetDataFormat()), shape_);
+                   ppl::common::GetDataTypeStr(desc.GetDataType()),
+                   ppl::common::GetDataFormatStr(desc.GetDataFormat()), shape_);
   }
 
   for (int i = 0; i < runtime->GetOutputCount(); ++i) {
@@ -99,8 +99,8 @@ Result<void> PPLNet::Init(const Value& args) {
     auto desc = outputs_internal_[i]->GetShape();
     std::vector<long> shape_(desc.GetDims(), desc.GetDims() + desc.GetDimCount());
     MMDEPLOY_DEBUG("output {}: datatype = {}, dataformat = {}, shape = {}", i,
-          ppl::common::GetDataTypeStr(desc.GetDataType()),
-          ppl::common::GetDataFormatStr(desc.GetDataFormat()), shape_);
+                   ppl::common::GetDataTypeStr(desc.GetDataType()),
+                   ppl::common::GetDataFormatStr(desc.GetDataFormat()), shape_);
     TensorShape shape(desc.GetDims(), desc.GetDims() + desc.GetDimCount());
   }
 
@@ -177,7 +177,7 @@ Result<void> PPLNet::Forward() {
     auto format = internal.GetShape().GetDataFormat();
     if (format != ppl::common::DATAFORMAT_NDARRAY) {
       MMDEPLOY_ERROR("output {}'s format is {}, only NDARRAY is currently supported", i,
-            ppl::common::GetDataFormatStr(format));
+                     ppl::common::GetDataFormatStr(format));
       return Status(eNotSupported);
     }
     auto& external = outputs_external_[i];
@@ -200,7 +200,8 @@ Result<void> PPLNet::Forward() {
       if (external.size() > 0) {
         OUTCOME_TRY(Tensor(external.desc(), data).CopyTo(external, stream_));
       } else {
-        MMDEPLOY_WARN("copy skipped due to zero sized tensor: {} {}", external.name(), external.shape());
+        MMDEPLOY_WARN("copy skipped due to zero sized tensor: {} {}", external.name(),
+                      external.shape());
       }
     }
   }

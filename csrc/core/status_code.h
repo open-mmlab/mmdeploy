@@ -4,8 +4,8 @@
 #define MMDEPLOY_SRC_CORE_STATUS_CODE_H_
 
 #include <system_error>
-#include "core/macro.h"
 
+#include "core/macro.h"
 #include "outcome-experimental.hpp"
 #if MMDEPLOY_STATUS_USE_SOURCE_LOCATION
 #include "utils/source_location.h"

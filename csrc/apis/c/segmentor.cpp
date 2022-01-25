@@ -62,19 +62,19 @@ int mmdeploy_segmentor_create_impl(ModelType&& m, const char* device_name, int d
 
 }  // namespace
 
-MMDEPLOY_API int mmdeploy_segmentor_create(mm_model_t model, const char* device_name, int device_id,
-                                         mm_handle_t* handle) {
+int mmdeploy_segmentor_create(mm_model_t model, const char* device_name, int device_id,
+                              mm_handle_t* handle) {
   return mmdeploy_segmentor_create_impl(*static_cast<Model*>(model), device_name, device_id,
                                         handle);
 }
 
-MMDEPLOY_API int mmdeploy_segmentor_create_by_path(const char* model_path, const char* device_name,
-                                                 int device_id, mm_handle_t* handle) {
+int mmdeploy_segmentor_create_by_path(const char* model_path, const char* device_name,
+                                      int device_id, mm_handle_t* handle) {
   return mmdeploy_segmentor_create_impl(model_path, device_name, device_id, handle);
 }
 
-MMDEPLOY_API int mmdeploy_segmentor_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
-                                        mm_segment_t** results) {
+int mmdeploy_segmentor_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
+                             mm_segment_t** results) {
   if (handle == nullptr || mats == nullptr || mat_count == 0 || results == nullptr) {
     return MM_E_INVALID_ARG;
   }
@@ -117,7 +117,7 @@ MMDEPLOY_API int mmdeploy_segmentor_apply(mm_handle_t handle, const mm_mat_t* ma
   return MM_E_FAIL;
 }
 
-MMDEPLOY_API void mmdeploy_segmentor_release_result(mm_segment_t* results, int count) {
+void mmdeploy_segmentor_release_result(mm_segment_t* results, int count) {
   if (results == nullptr) {
     return;
   }
@@ -128,7 +128,7 @@ MMDEPLOY_API void mmdeploy_segmentor_release_result(mm_segment_t* results, int c
   delete[] results;
 }
 
-MMDEPLOY_API void mmdeploy_segmentor_destroy(mm_handle_t handle) {
+void mmdeploy_segmentor_destroy(mm_handle_t handle) {
   if (handle != nullptr) {
     auto segmentor = static_cast<Handle*>(handle);
     delete segmentor;

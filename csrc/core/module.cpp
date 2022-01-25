@@ -6,8 +6,8 @@
 
 namespace mmdeploy {
 
-//template class Registry<Module>;
-//template class Creator<Module>;
+// template class Registry<Module>;
+// template class Creator<Module>;
 
 MMDEPLOY_DEFINE_REGISTRY(Module);
 

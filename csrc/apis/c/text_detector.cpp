@@ -62,20 +62,19 @@ int mmdeploy_text_detector_create_impl(ModelType&& m, const char* device_name, i
 
 }  // namespace
 
-MMDEPLOY_API int mmdeploy_text_detector_create(mm_model_t model, const char* device_name,
-                                             int device_id, mm_handle_t* handle) {
+int mmdeploy_text_detector_create(mm_model_t model, const char* device_name, int device_id,
+                                  mm_handle_t* handle) {
   return mmdeploy_text_detector_create_impl(*static_cast<Model*>(model), device_name, device_id,
                                             handle);
 }
 
-MMDEPLOY_API int mmdeploy_text_detector_create_by_path(const char* model_path,
-                                                     const char* device_name, int device_id,
-                                                     mm_handle_t* handle) {
+int mmdeploy_text_detector_create_by_path(const char* model_path, const char* device_name,
+                                          int device_id, mm_handle_t* handle) {
   return mmdeploy_text_detector_create_impl(model_path, device_name, device_id, handle);
 }
 
-MMDEPLOY_API int mmdeploy_text_detector_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
-                                            mm_text_detect_t** results, int** result_count) {
+int mmdeploy_text_detector_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
+                                 mm_text_detect_t** results, int** result_count) {
   if (handle == nullptr || mats == nullptr || mat_count == 0) {
     return MM_E_INVALID_ARG;
   }
@@ -132,13 +131,13 @@ MMDEPLOY_API int mmdeploy_text_detector_apply(mm_handle_t handle, const mm_mat_t
   return MM_E_FAIL;
 }
 
-MMDEPLOY_API void mmdeploy_text_detector_release_result(mm_text_detect_t* results,
-                                                      const int* result_count, int count) {
+void mmdeploy_text_detector_release_result(mm_text_detect_t* results, const int* result_count,
+                                           int count) {
   delete[] results;
   delete[] result_count;
 }
 
-MMDEPLOY_API void mmdeploy_text_detector_destroy(mm_handle_t handle) {
+void mmdeploy_text_detector_destroy(mm_handle_t handle) {
   if (handle != nullptr) {
     auto text_detector = static_cast<Handle*>(handle);
     delete text_detector;

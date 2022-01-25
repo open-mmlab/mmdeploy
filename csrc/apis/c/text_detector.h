@@ -26,7 +26,7 @@ typedef struct mm_text_detect_t {
  * @return status of creating text-detector's handle
  */
 MMDEPLOY_API int mmdeploy_text_detector_create(mm_model_t model, const char* device_name,
-                                             int device_id, mm_handle_t* handle);
+                                               int device_id, mm_handle_t* handle);
 
 /**
  * @brief Create text-detector's handle
@@ -38,8 +38,8 @@ MMDEPLOY_API int mmdeploy_text_detector_create(mm_model_t model, const char* dev
  * @return status of creating text-detector's handle
  */
 MMDEPLOY_API int mmdeploy_text_detector_create_by_path(const char* model_path,
-                                                     const char* device_name, int device_id,
-                                                     mm_handle_t* handle);
+                                                       const char* device_name, int device_id,
+                                                       mm_handle_t* handle);
 
 /**
  * @brief Apply text-detector to batch images and get their inference results
@@ -52,8 +52,9 @@ MMDEPLOY_API int mmdeploy_text_detector_create_by_path(const char* model_path,
  * results of each image. It must be released by \ref mmdeploy_detector_release_result
  * @return status of inference
  */
-MMDEPLOY_API int mmdeploy_text_detector_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
-                                            mm_text_detect_t** results, int** result_count);
+MMDEPLOY_API int mmdeploy_text_detector_apply(mm_handle_t handle, const mm_mat_t* mats,
+                                              int mat_count, mm_text_detect_t** results,
+                                              int** result_count);
 
 /** @brief Release the inference result buffer returned by \ref mmdeploy_text_detector_apply
  * @param[in] results text detection result buffer
@@ -61,7 +62,7 @@ MMDEPLOY_API int mmdeploy_text_detector_apply(mm_handle_t handle, const mm_mat_t
  * @param[in] count the length of buffer \p result_count
  */
 MMDEPLOY_API void mmdeploy_text_detector_release_result(mm_text_detect_t* results,
-                                                      const int* result_count, int count);
+                                                        const int* result_count, int count);
 
 /**
  * @brief Destroy text-detector's handle

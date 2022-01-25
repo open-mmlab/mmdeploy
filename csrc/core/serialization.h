@@ -8,10 +8,10 @@
 #include <type_traits>
 #include <utility>
 
+#include "core/macro.h"
 #include "core/status_code.h"
 #include "mpl/detected.h"
 #include "mpl/type_traits.h"
-#include "core/macro.h"
 
 namespace mmdeploy {
 

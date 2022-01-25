@@ -7,10 +7,6 @@
 extern "C" {
 #endif
 
-#if defined(_MSC_VER) && defined(MMDEPLOY_API_EXPORTS)
-__declspec(dllexport)
-#endif
-
 OrtStatus *ORT_API_CALL RegisterCustomOps(OrtSessionOptions *options, const OrtApiBase *api);
 
 #ifdef __cplusplus

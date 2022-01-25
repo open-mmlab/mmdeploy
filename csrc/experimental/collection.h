@@ -5,9 +5,9 @@
 //
 //#include "token.h"
 //
-//namespace mmdeploy {
+// namespace mmdeploy {
 //
-//class Collection {
+// class Collection {
 // public:
 //  template <typename... Args>
 //  friend Collection& operator<<(Collection& c, const Token<Args...>& value) {
@@ -52,10 +52,10 @@
 //  }
 //};
 //
-//namespace detail {
+// namespace detail {
 //
-//template <typename T>
-//struct function_traits {
+// template <typename T>
+// struct function_traits {
 //  template <typename R, typename... As>
 //  static std::tuple<As...> get_args(std::function<R(As...)>);
 //
@@ -68,26 +68,26 @@
 //
 //// TODO: obtain first error
 //// TODO: combine all errors
-//template <typename F, typename... Args, typename Ret = std::invoke_result_t<F, Args...>>
-//Result<Ret> Apply(F&& f, const Result<Args>&... args) {
-//  if ((... && args)) {
-//    return std::invoke(std::forward<F>(f), args.value()...);
-//  }
-//  return Status(eFail);
-//}
+// template <typename F, typename... Args, typename Ret = std::invoke_result_t<F, Args...>>
+// Result<Ret> Apply(F&& f, const Result<Args>&... args) {
+//   if ((... && args)) {
+//     return std::invoke(std::forward<F>(f), args.value()...);
+//   }
+//   return Status(eFail);
+// }
 //
-//template <typename F, typename... Args, typename Ret = std::invoke_result_t<F, Args...>>
-//Result<Ret> ApplyImpl(F&& f, const Collection& c, std::tuple<Args...>*) {
-//  return Apply(std::forward<F>(f), c.maybe<Args>()...);
-//}
+// template <typename F, typename... Args, typename Ret = std::invoke_result_t<F, Args...>>
+// Result<Ret> ApplyImpl(F&& f, const Collection& c, std::tuple<Args...>*) {
+//   return Apply(std::forward<F>(f), c.maybe<Args>()...);
+// }
 //
-//}  // namespace detail
+// }  // namespace detail
 //
-//template <typename F, typename Args = typename detail::function_traits<F>::args_t>
-//decltype(auto) Apply(F&& f, const Collection& c) {
-//  return detail::ApplyImpl(std::forward<F>(f), c, std::add_pointer_t<Args>{});
-//}
+// template <typename F, typename Args = typename detail::function_traits<F>::args_t>
+// decltype(auto) Apply(F&& f, const Collection& c) {
+//   return detail::ApplyImpl(std::forward<F>(f), c, std::add_pointer_t<Args>{});
+// }
 //
-//}  // namespace mmdeploy
+// }  // namespace mmdeploy
 //
 //#endif  // MMDEPLOY_SRC_EXPERIMENTAL_COLLECTION_H_

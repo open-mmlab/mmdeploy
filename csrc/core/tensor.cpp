@@ -92,7 +92,7 @@ Result<void> Tensor::CopyFrom(const Tensor& tensor, Stream stream) {
   }
   if (!(desc_.shape == tensor.desc().shape)) {
     MMDEPLOY_ERROR("mismatched shape {} vs {}", shape_string(desc_.shape),
-          shape_string(tensor.desc().shape));
+                   shape_string(tensor.desc().shape));
     return Status(eShapeMismatch);
   }
   if (desc_.data_type != tensor.desc().data_type) {
@@ -118,7 +118,7 @@ Result<void> Tensor::CopyTo(Tensor& tensor, Stream stream) const {
 
   if (!(desc_.shape == tensor.desc().shape)) {
     MMDEPLOY_ERROR("mismatched shape {} vs {}", shape_string(desc_.shape),
-          shape_string(tensor.desc().shape));
+                   shape_string(tensor.desc().shape));
     return Status(eShapeMismatch);
   }
   if (desc_.data_type != tensor.desc().data_type) {

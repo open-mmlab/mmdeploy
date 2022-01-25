@@ -92,5 +92,4 @@ class PipelineCreator : public Creator<Node> {
 
 REGISTER_MODULE(Node, PipelineCreator);
 
-
 }  // namespace mmdeploy::graph

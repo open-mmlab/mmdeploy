@@ -4,10 +4,10 @@
 
 #include "archive/json_archive.h"
 #include "archive/value_archive.h"
+#include "core/registry.h"
 #include "core/tensor.h"
 #include "core/utils/device_utils.h"
 #include "core/utils/formatter.h"
-#include "core/registry.h"
 #include "opencv2/imgproc.hpp"
 #include "opencv_utils.h"
 #include "preprocess/transform/resize.h"

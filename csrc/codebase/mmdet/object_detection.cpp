@@ -28,7 +28,8 @@ Result<Value> ResizeBBox::operator()(const Value& prep_res, const Value& infer_r
     // `dets` is supposed to have 3 dims. They are 'batch', 'bboxes_number'
     // and 'channels' respectively
     if (!(dets.shape().size() == 3 && dets.data_type() == DataType::kFLOAT)) {
-      MMDEPLOY_ERROR("unsupported `dets` tensor, shape: {}, dtype: {}", dets.shape(), (int)dets.data_type());
+      MMDEPLOY_ERROR("unsupported `dets` tensor, shape: {}, dtype: {}", dets.shape(),
+                     (int)dets.data_type());
       return Status(eNotSupported);
     }
 
@@ -36,7 +37,7 @@ Result<Value> ResizeBBox::operator()(const Value& prep_res, const Value& infer_r
     // 'bboxes_number'
     if (labels.shape().size() != 2) {
       MMDEPLOY_ERROR("unsupported `labels`, tensor, shape: {}, dtype: {}", labels.shape(),
-            (int)labels.data_type());
+                     (int)labels.data_type());
       return Status(eNotSupported);
     }
 
@@ -99,15 +100,16 @@ Result<DetectorOutput> ResizeBBox::GetBBoxes(const Value& prep_res, const Tensor
     auto bottom = dets_ptr[3];
 
     MMDEPLOY_DEBUG("ori left {}, top {}, right {}, bottom {}, label {}", left, top, right, bottom,
-          *labels_ptr);
+                   *labels_ptr);
     auto rect = MapToOriginImage(left, top, right, bottom, scale_factor.data(), w_offset, h_offset,
                                  ori_width, ori_height);
     if (rect[2] - rect[0] < min_bbox_size_ || rect[3] - rect[1] < min_bbox_size_) {
       MMDEPLOY_DEBUG("ignore small bbox with width '{}' and height '{}", rect[2] - rect[0],
-            rect[3] - rect[1]);
+                     rect[3] - rect[1]);
       continue;
     }
-    MMDEPLOY_DEBUG("remap left {}, top {}, right {}, bottom {}", rect[0], rect[1], rect[2], rect[3]);
+    MMDEPLOY_DEBUG("remap left {}, top {}, right {}, bottom {}", rect[0], rect[1], rect[2],
+                   rect[3]);
     DetectorOutput::Detection det{};
     det.index = i;
     det.label_id = static_cast<int>(*labels_ptr);

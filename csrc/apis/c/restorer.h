@@ -21,7 +21,7 @@
  * @return status code of the operation
  */
 MMDEPLOY_API int mmdeploy_restorer_create(mm_model_t model, const char* device_name, int device_id,
-                                        mm_handle_t* handle);
+                                          mm_handle_t* handle);
 
 /**
  * @brief Create a restorer instance
@@ -33,7 +33,7 @@ MMDEPLOY_API int mmdeploy_restorer_create(mm_model_t model, const char* device_n
  * @return status code of the operation
  */
 MMDEPLOY_API int mmdeploy_restorer_create_by_path(const char* model_path, const char* device_name,
-                                                int device_id, mm_handle_t* handle);
+                                                  int device_id, mm_handle_t* handle);
 
 /**
  * @brief Apply restorer to a batch of images
@@ -45,7 +45,7 @@ MMDEPLOY_API int mmdeploy_restorer_create_by_path(const char* model_path, const 
  * @return status code of the operation
  */
 MMDEPLOY_API int mmdeploy_restorer_apply(mm_handle_t handle, const mm_mat_t* images, int count,
-                                       mm_mat_t** results);
+                                         mm_mat_t** results);
 
 /** @brief Release result buffer returned by \ref mmdeploy_restorer_apply
  * @param[in] results result buffer by restorer

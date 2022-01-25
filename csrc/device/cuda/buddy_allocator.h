@@ -34,7 +34,8 @@ class BuddyAllocator {
     free_.resize(base_ + 1);
     Build(1, 0);
     Add(1, 0);
-    MMDEPLOY_ERROR("size = {}, block_size = {}, block_count = {}", size_, block_size_, block_count_);
+    MMDEPLOY_ERROR("size = {}, block_size = {}, block_count = {}", size_, block_size_,
+                   block_count_);
     size = size_;
     for (int i = 0; i <= base_; ++i) {
       MMDEPLOY_ERROR("level {}, size = {}", i, size);

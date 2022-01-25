@@ -18,9 +18,9 @@ class DefaultAllocator {
   ~DefaultAllocator() {
     MMDEPLOY_ERROR("=== CUDA Default Allocator ===");
     MMDEPLOY_ERROR("  Allocation: count={}, size={}MB, time={}ms", alloc_count_,
-          alloc_size_ / (1024 * 1024.f), alloc_time_ / 1000000.f);
+                   alloc_size_ / (1024 * 1024.f), alloc_time_ / 1000000.f);
     MMDEPLOY_ERROR("Deallocation: count={}, size={}MB, time={}ms", dealloc_count_,
-          dealloc_size_ / (1024 * 1024.f), dealloc_time_ / 1000000.f);
+                   dealloc_size_ / (1024 * 1024.f), dealloc_time_ / 1000000.f);
   }
   [[nodiscard]] void* Allocate(std::size_t n) {
     void* p{};

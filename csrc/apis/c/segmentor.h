@@ -29,7 +29,7 @@ typedef struct mm_segment_t {
  * @return status of creating segmentor's handle
  */
 MMDEPLOY_API int mmdeploy_segmentor_create(mm_model_t model, const char* device_name, int device_id,
-                                         mm_handle_t* handle);
+                                           mm_handle_t* handle);
 
 /**
  * @brief Create segmentor's handle
@@ -41,7 +41,7 @@ MMDEPLOY_API int mmdeploy_segmentor_create(mm_model_t model, const char* device_
  * @return status of creating segmentor's handle
  */
 MMDEPLOY_API int mmdeploy_segmentor_create_by_path(const char* model_path, const char* device_name,
-                                                 int device_id, mm_handle_t* handle);
+                                                   int device_id, mm_handle_t* handle);
 
 /**
  * @brief Apply segmentor to batch images and get their inference results
@@ -54,7 +54,7 @@ MMDEPLOY_API int mmdeploy_segmentor_create_by_path(const char* model_path, const
  * @return status of inference
  */
 MMDEPLOY_API int mmdeploy_segmentor_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
-                                        mm_segment_t** results);
+                                          mm_segment_t** results);
 
 /** @brief Release result buffer returned by \ref mmdeploy_segmentor_apply
  * @param[in] results result buffer

@@ -51,7 +51,7 @@ class DBHead : public MMOCR {
 
     if (!(conf.shape().size() == 4 && conf.data_type() == DataType::kFLOAT)) {
       MMDEPLOY_ERROR("unsupported `output` tensor, shape: {}, dtype: {}", conf.shape(),
-            (int)conf.data_type());
+                     (int)conf.data_type());
       return Status(eNotSupported);
     }
 

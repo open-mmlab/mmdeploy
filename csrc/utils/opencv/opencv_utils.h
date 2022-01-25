@@ -3,7 +3,6 @@
 #ifndef MMDEPLOY_CSRC_UTILS_OPENCV_OPENCV_UTILS_H_
 #define MMDEPLOY_CSRC_UTILS_OPENCV_OPENCV_UTILS_H_
 
-
 #include "core/mat.h"
 #include "core/mpl/type_traits.h"
 #include "core/serialization.h"

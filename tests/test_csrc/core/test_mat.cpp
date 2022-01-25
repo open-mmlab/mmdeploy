@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include <iostream>
 #include <array>
+#include <iostream>
 #include <numeric>
 
 #include "catch.hpp"

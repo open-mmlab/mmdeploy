@@ -1,15 +1,17 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 #include "onnxruntime_register.h"
 
+#include "../../core/macro.h"
 #include "ort_utils.h"
 
 const char *c_MMDeployOpDomain = "mmdeploy";
 
-OrtStatus *ORT_API_CALL RegisterCustomOps(OrtSessionOptions *options, const OrtApiBase *api) {
+MMDEPLOY_EXPORT OrtStatus *ORT_API_CALL RegisterCustomOps(OrtSessionOptions *options,
+                                                          const OrtApiBase *api) {
   const OrtApi *kOrtApi = api->GetApi(ORT_API_VERSION);
   OrtStatus *status = nullptr;
   for (auto &_op_list_pair : mmdeploy::get_mmdeploy_custom_ops()) {
-    fprintf(stderr, "Registering %s\n",_op_list_pair.first.c_str());
+    fprintf(stderr, "Registering %s\n", _op_list_pair.first.c_str());
     OrtCustomOpDomain *domain = nullptr;
     if (auto status = kOrtApi->CreateCustomOpDomain(_op_list_pair.first.c_str(), &domain)) {
       return status;

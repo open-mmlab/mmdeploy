@@ -24,8 +24,8 @@ class ResizeMask : public MMSegmentation {
     MMDEPLOY_DEBUG("preprocess: {}\ninference: {}", preprocess_result, inference_result);
 
     auto mask = inference_result["output"].get<Tensor>();
-    MMDEPLOY_DEBUG("tensor.name: {}, tensor.shape: {}, tensor.data_type: {}", mask.name(), mask.shape(),
-          mask.data_type());
+    MMDEPLOY_DEBUG("tensor.name: {}, tensor.shape: {}, tensor.data_type: {}", mask.name(),
+                   mask.shape(), mask.data_type());
     if (!(mask.shape().size() == 4 && mask.shape(0) == 1 && mask.shape(1) == 1)) {
       MMDEPLOY_ERROR("unsupported `output` tensor, shape: {}", mask.shape());
       return Status(eNotSupported);
@@ -40,10 +40,8 @@ class ResizeMask : public MMSegmentation {
     OUTCOME_TRY(stream_.Wait());
     if (mask.data_type() == DataType::kINT64) {
       // change kINT64 to 2 INT32
-      TensorDesc desc{host_tensor.device(),
-                      DataType::kINT32,
-                      {1, 2, height, width},
-                      host_tensor.name()};
+      TensorDesc desc{
+          host_tensor.device(), DataType::kINT32, {1, 2, height, width}, host_tensor.name()};
       Tensor _host_tensor(desc, mask.buffer());
       return MaskResize(_host_tensor, input_height, input_width);
     } else if (mask.data_type() == DataType::kINT32) {

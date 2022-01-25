@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include <sstream>
 #include <algorithm>
+#include <sstream>
 
 #include "core/device.h"
 #include "core/model.h"
@@ -64,7 +64,7 @@ class CTCConvertor : public MMOCR {
 
     if (!(d_conf.shape().size() == 3 && d_conf.data_type() == DataType::kFLOAT)) {
       MMDEPLOY_ERROR("unsupported `output` tensor, shape: {}, dtype: {}", d_conf.shape(),
-            (int)d_conf.data_type());
+                     (int)d_conf.data_type());
       return Status(eNotSupported);
     }
 

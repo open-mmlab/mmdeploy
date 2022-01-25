@@ -164,9 +164,11 @@ class Stats : public AllocatorImpl {
   ~Stats() override {
     MMDEPLOY_INFO("=== {} ===", name_);
     MMDEPLOY_INFO("  Allocation: count={}, size={}MB, time={}ms", data_.allocation_count,
-         data_.allocated_bytes / (1024 * 1024.f), static_cast<float>(data_.allocation_time));
+                  data_.allocated_bytes / (1024 * 1024.f),
+                  static_cast<float>(data_.allocation_time));
     MMDEPLOY_INFO("Deallocation: count={}, size={}MB, time={}ms", data_.deallocation_count,
-         data_.deallocated_bytes / (1024 * 1024.f), static_cast<float>(data_.deallocation_time));
+                  data_.deallocated_bytes / (1024 * 1024.f),
+                  static_cast<float>(data_.deallocation_time));
     MMDEPLOY_INFO("Peak memory usage: size={}MB", data_.peak / (1024 * 1024.f));
   }
 

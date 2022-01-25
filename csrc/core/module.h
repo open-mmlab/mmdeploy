@@ -4,9 +4,9 @@
 #define MMDEPLOY_SRC_CORE_MODULE_H_
 
 #include "core/macro.h"
+#include "core/registry.h"
 #include "core/status_code.h"
 #include "core/value.h"
-#include "core/registry.h"
 
 namespace mmdeploy {
 

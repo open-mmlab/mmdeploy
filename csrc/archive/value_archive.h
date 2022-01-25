@@ -123,7 +123,7 @@ inline void save(ValueOutputArchive& archive, T&& v) {
   archive.native(std::forward<T>(v));
 }
 
-}
+}  // namespace detail
 
 }  // namespace mmdeploy
 
