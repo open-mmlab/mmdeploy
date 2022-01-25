@@ -112,7 +112,6 @@ class TRTWrapper(BaseWrapper):
             bindings[idx] = output.data_ptr()
 
         self.__trt_execute(bindings=bindings)
-
         return outputs
 
     @TimeCounter.count_time()
