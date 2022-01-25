@@ -2,22 +2,23 @@
 import glob
 import os
 
+_candidates = [
+    '../../../build/lib/libmmdeploy_onnxruntime_ops.so',
+    '../../../build/bin/*/mmdeploy_onnxruntime_ops.dll',
+]
+
 
 def get_ops_path() -> str:
     """Get the library path of onnxruntime custom ops.
-
     Returns:
         str: The library path to onnxruntime custom ops.
     """
-    # wildcard = os.path.abspath(
-    #     os.path.join(
-    #         os.path.dirname(__file__),
-    #         '../../../build/lib/libmmdeploy_onnxruntime_ops.so'))
-    wildcard = os.path.abspath(
-        os.path.join(
-            os.path.dirname(__file__),
-            '../../../build/install/bin/mmdeploy_onnxruntime_ops.dll'))
+    for candidate in _candidates:
+        wildcard = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), candidate))
+        paths = glob.glob(wildcard)
+        if paths:
+            lib_path = paths[0]
+            return lib_path
 
-    paths = glob.glob(wildcard)
-    lib_path = paths[0] if len(paths) > 0 else ''
-    return lib_path
+    return ''
