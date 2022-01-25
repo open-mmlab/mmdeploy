@@ -51,8 +51,6 @@ class Creator : public Creator<void> {
   virtual ReturnType Create(const Value &args) = 0;
 };
 
-// namespace v2 {
-
 template <class EntryType>
 class Registry;
 
@@ -90,10 +88,7 @@ class Registry : public Registry<void> {
 template <typename EntryType, typename CreatorType>
 class Registerer {
  public:
-  Registerer() {
-    fprintf(stderr, "%s\n", __FUNCSIG__);
-    Registry<EntryType>::Get().AddCreator(inst_);
-  }
+  Registerer() { Registry<EntryType>::Get().AddCreator(inst_); }
 
  private:
   CreatorType inst_;

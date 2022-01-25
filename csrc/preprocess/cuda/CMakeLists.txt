@@ -22,9 +22,8 @@ set(SRCS
     crop.cu
     normalize.cu
     transpose.cu)
-build_target(${PROJECT_NAME} "${SRCS}")
+mmdeploy_add_module(${PROJECT_NAME} "${SRCS}")
 target_include_directories(${PROJECT_NAME}
                            PUBLIC ${CUDA_TOOLKIT_ROOT_DIR}/include ${PPLCV_INCLUDE_DIRS})
-target_link_libraries(${PROJECT_NAME} PRIVATE ${PPLCV_LIBRARIES} mmdeploy::core)
+target_link_libraries(${PROJECT_NAME} PRIVATE ${PPLCV_LIBRARIES})
 add_library(mmdeploy::transform_impl::cuda ALIAS ${PROJECT_NAME})
-export_module(${PROJECT_NAME})

@@ -75,7 +75,7 @@ inline const char *to_string(ErrorCode code) {
 struct Status {
   ErrorCode ec{};
   Status() = default;
-  MMDEPLOY_API SYSTEM_ERROR2_NAMESPACE::status_code_domain::string_ref message() const;
+  SYSTEM_ERROR2_NAMESPACE::status_code_domain::string_ref message() const;
   bool operator==(const ErrorCode &b) const noexcept { return ec == b; }
 
 #if MMDEPLOY_STATUS_USE_SOURCE_LOCATION
@@ -95,7 +95,7 @@ class StatusDomain;
 
 using StatusCode = SYSTEM_ERROR2_NAMESPACE::status_code<StatusDomain>;
 
-class StatusDomain : public SYSTEM_ERROR2_NAMESPACE::status_code_domain {
+class MMDEPLOY_API StatusDomain : public SYSTEM_ERROR2_NAMESPACE::status_code_domain {
   using _base = status_code_domain;
 
  public:
@@ -146,7 +146,7 @@ class StatusDomain : public SYSTEM_ERROR2_NAMESPACE::status_code_domain {
     return c.value().message();
   }
   // clang-format on
-  MMDEPLOY_API void _do_throw_exception(const SYSTEM_ERROR2_NAMESPACE::status_code<void> &code) const override;
+  void _do_throw_exception(const SYSTEM_ERROR2_NAMESPACE::status_code<void> &code) const override;
 };
 
 constexpr inline StatusDomain status_domain;

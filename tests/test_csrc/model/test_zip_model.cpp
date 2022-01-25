@@ -25,9 +25,9 @@ TEST_CASE("test zip model", "[zip_model]") {
 
   auto& gResource = MMDeployTestResources::Get();
   SECTION("bad sdk model") {
-    auto zip_model_path = "sdk_models/not_zip_file";
+    auto zip_model_path = fs::path{"sdk_models"} / "not_zip_file";
     REQUIRE(gResource.IsFile(zip_model_path));
-    auto model_path = gResource.resource_root_path() + "/" + zip_model_path;
+    auto model_path = gResource.resource_root_path() / zip_model_path;
     REQUIRE(model_impl->Init(model_path).has_error());
   }
   SECTION("bad zip buffer") {
@@ -36,9 +36,9 @@ TEST_CASE("test zip model", "[zip_model]") {
   }
 
   SECTION("good sdk model") {
-    auto zip_model_path = "sdk_models/good_model.zip";
+    auto zip_model_path = fs::path{"sdk_models"} / "good_model.zip";
     REQUIRE(gResource.IsFile(zip_model_path));
-    auto model_path = gResource.resource_root_path() + "/" + zip_model_path;
+    auto model_path = gResource.resource_root_path() / zip_model_path;
     REQUIRE(!model_impl->Init(model_path).has_error());
     REQUIRE(!model_impl->ReadFile("deploy.json").has_error());
     REQUIRE(model_impl->ReadFile("not-exist-file").has_error());

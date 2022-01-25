@@ -5,7 +5,7 @@ project(mmdeploy_trt_net)
 include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/tensorrt.cmake)
 
-add_library(${PROJECT_NAME} SHARED trt_net.cpp)
+mmdeploy_add_module(${PROJECT_NAME} trt_net.cpp)
 target_include_directories(${PROJECT_NAME} PRIVATE
         ${TENSORRT_INCLUDE_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE ${CUDNN_DIR}/include)
@@ -13,13 +13,10 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${CUDA_TOOLKIT_ROOT_DIR}/incl
 target_link_directories(${PROJECT_NAME} PUBLIC ${CUDNN_DIR}/lib64 ${CUDNN_DIR}/lib/x64)
 target_link_libraries(${PROJECT_NAME} PUBLIC ${TENSORRT_LIBRARY} cudnn)
 
-target_link_libraries(${PROJECT_NAME}
-        PRIVATE mmdeploy::core
-        )
-target_link_libraries(${PROJECT_NAME}
-        PRIVATE -Wl,--whole-archive
-            mmdeploy::tensorrt_ops::static
-        -Wl,--no-whole-archive
-        )
+if (BUILD_SHARED_LIBS)
+    target_link_libraries(${PROJECT_NAME} PRIVATE mmdeploy::tensorrt_ops)
+else ()
+    mmdeploy_load_static(${PROJECT_NAME} mmdeploy::tensorrt_ops::static)
+endif ()
+
 add_library(mmdeploy::trt_net ALIAS ${PROJECT_NAME})
-export_module(${PROJECT_NAME})

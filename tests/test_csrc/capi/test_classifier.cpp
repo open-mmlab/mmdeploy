@@ -46,12 +46,12 @@ TEST_CASE("test classifier's c api", "[classifier]") {
   };
 
   auto gResources = MMDeployTestResources::Get();
-  auto img_lists = gResources.LocateImageResources("mmcls/images");
+  auto img_lists = gResources.LocateImageResources(fs::path{"mmcls"} / "images");
   REQUIRE(!img_lists.empty());
 
   for (auto& backend : gResources.backends()) {
     DYNAMIC_SECTION("loop backend: " << backend) {
-      auto model_list = gResources.LocateModelResources("mmcls/" + backend);
+      auto model_list = gResources.LocateModelResources(fs::path{"mmcls/"} / backend);
       REQUIRE(!model_list.empty());
       for (auto& model_path : model_list) {
         for (auto& device_name : gResources.device_names(backend)) {

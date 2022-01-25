@@ -9,7 +9,7 @@ Registry<void>::Registry() = default;
 Registry<void>::~Registry() = default;
 
 bool Registry<void>::AddCreator(Creator<void> &creator) {
-  MMDEPLOY_INFO("{} - adding creator: {}", typeid(void).name(), creator.GetName());
+  MMDEPLOY_DEBUG("Adding creator: {}", creator.GetName());
   auto key = creator.GetName();
   if (entries_.find(key) == entries_.end()) {
     entries_.insert(std::make_pair(key, &creator));

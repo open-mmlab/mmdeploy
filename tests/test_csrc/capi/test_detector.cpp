@@ -46,14 +46,14 @@ TEST_CASE("test detector's c api", "[detector]") {
   MMDEPLOY_INFO("get test resources");
   auto &gResources = MMDeployTestResources::Get();
   MMDEPLOY_INFO("locate image resources");
-  auto img_lists = gResources.LocateImageResources("mmdet\\images");
+  auto img_lists = gResources.LocateImageResources(fs::path{"mmdet"} / "images");
   MMDEPLOY_INFO("{}", img_lists.size());
   REQUIRE(!img_lists.empty());
 
   for (auto &backend : gResources.backends()) {
     MMDEPLOY_INFO("backend: {}", backend);
     DYNAMIC_SECTION("loop backend: " << backend) {
-      auto model_list = gResources.LocateModelResources("mmdet\\" + backend);
+      auto model_list = gResources.LocateModelResources(fs::path{"mmdet"} / backend);
       REQUIRE(!model_list.empty());
       for (auto &model_path : model_list) {
         for (auto &device_name : gResources.device_names(backend)) {

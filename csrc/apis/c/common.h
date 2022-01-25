@@ -5,18 +5,20 @@
 
 #include <cstdint>
 
+#ifndef MMDEPLOY_EXPORT
 #ifdef _MSC_VER
-#ifdef MMDEPLOY_API_EXPORTS
-#define MMDEPLOY_API __declspec(dllexport)
-#endif
-#else /* _MSC_VER */
-#ifdef MMDEPLOY_API_EXPORTS
-#define MMDEPLOY_API __attribute__((visibility("default")))
+#define MMDEPLOY_EXPORT __declspec(dllexport)
+#else
+#define MMDEPLOY_EXPORT __attribute__((visibility("default")))
 #endif
 #endif
 
 #ifndef MMDEPLOY_API
+#ifdef MMDEPLOY_API_EXPORTS
+#define MMDEPLOY_API MMDEPLOY_EXPORT
+#else
 #define MMDEPLOY_API
+#endif
 #endif
 
 // clang-format off

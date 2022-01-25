@@ -28,31 +28,31 @@ class MMDeployTestResources {
   }
   const std::vector<std::string> &backends() const { return backends_; }
   const std::vector<std::string> &codebases() const { return codebases_; }
-  const std::string &resource_root_path() const { return resource_root_path_; }
+  const fs::path &resource_root_path() const { return resource_root_path_; }
 
   bool HasDevice(const std::string &name) const {
     return std::any_of(devices_.begin(), devices_.end(),
                        [&](const std::string &device_name) { return device_name == name; });
   }
 
-  bool IsDir(const std::string &dir_name) const {
-    auto path = fs::path{resource_root_path_} / dir_name;
+  bool IsDir(const fs::path &dir_name) const {
+    auto path = resource_root_path_ / dir_name;
     return fs::is_directory(path);
   }
 
-  bool IsFile(const std::string &file_name) const {
-    auto path = fs::path{resource_root_path_} / file_name;
+  bool IsFile(const fs::path &file_name) const {
+    auto path = resource_root_path_ / file_name;
     return fs::is_regular_file(path);
   }
 
  public:
-  std::vector<std::string> LocateModelResources(const std::string &sdk_model_zoo_dir) {
+  std::vector<std::string> LocateModelResources(const fs::path &sdk_model_zoo_dir) {
     std::vector<std::string> sdk_model_list;
     if (resource_root_path_.empty()) {
       return sdk_model_list;
     }
 
-    auto path = fs::path{resource_root_path_} / sdk_model_zoo_dir;
+    auto path = resource_root_path_ / sdk_model_zoo_dir;
     if (!fs::is_directory(path)) {
       return sdk_model_list;
     }
@@ -65,14 +65,14 @@ class MMDeployTestResources {
     return sdk_model_list;
   }
 
-  std::vector<std::string> LocateImageResources(const std::string &img_dir) {
+  std::vector<std::string> LocateImageResources(const fs::path &img_dir) {
     std::vector<std::string> img_list;
 
     if (resource_root_path_.empty()) {
       return img_list;
     }
 
-    auto path = fs::path{resource_root_path_} / img_dir;
+    auto path = resource_root_path_ / img_dir;
     if (!fs::is_directory(path)) {
       return img_list;
     }
@@ -115,7 +115,7 @@ class MMDeployTestResources {
     return result;
   }
 
-  std::string LocateResourceRootPath(const fs::path &cur_path, int max_depth) {
+  fs::path LocateResourceRootPath(const fs::path &cur_path, int max_depth) {
     if (max_depth < 0) {
       return "";
     }
@@ -125,7 +125,7 @@ class MMDeployTestResources {
       // filename must be checked before fs::is_directory, the latter will throw
       // when _path points to a system file on Windows
       if (_path.filename() == "mmdeploy_test_resources" && fs::is_directory(_path)) {
-        return _path.string();
+        return _path;
       }
     }
     // Didn't find 'mmdeploy_test_resources' in current directory.
@@ -138,7 +138,8 @@ class MMDeployTestResources {
   std::vector<std::string> backends_;
   std::vector<std::string> codebases_;
   std::map<std::string, std::vector<std::string>> backend_devices_;
-  std::string resource_root_path_;
+  fs::path resource_root_path_;
+//  std::string resource_root_path_;
 };
 
 #endif  // MMDEPLOY_TEST_RESOURCE_H

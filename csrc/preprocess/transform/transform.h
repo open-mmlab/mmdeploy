@@ -36,31 +36,23 @@ class MMDEPLOY_API Transform : public Module {
 
  protected:
   template <typename T>
-  [[deprecated]]
-  /*
-   * We cannot LOG the error message, because WARN/INFO/ERROR causes
-   * redefinition when building UTs "catch2.hpp" used in UTs has the same LOG
-   * declaration
-   */
-  std::unique_ptr<T>
-  Instantiate(const char* transform_type, const Value& args, int version = 0) {
+  [[deprecated]] std::unique_ptr<T> Instantiate(const char* transform_type, const Value& args,
+                                                int version = 0) {
     std::unique_ptr<T> impl(nullptr);
     auto impl_creator = Registry<T>::Get().GetCreator(specified_platform_, version);
     if (nullptr == impl_creator) {
-      //      MMDEPLOY_WARN("cannot find {} implementation on specific platform {} ",
-      //           transform_type, specified_platform_);
+      MMDEPLOY_WARN("cannot find {} implementation on specific platform {} ", transform_type,
+                    specified_platform_);
       for (auto& name : candidate_platforms_) {
         impl_creator = Registry<T>::Get().GetCreator(name);
         if (impl_creator) {
-          //          MMDEPLOY_INFO("fallback {} implementation to platform {}", transform_type,
-          //               name);
+          MMDEPLOY_INFO("fallback {} implementation to platform {}", transform_type, name);
           break;
         }
       }
     }
     if (nullptr == impl_creator) {
-      //      MMDEPLOY_ERROR("cannot find {} implementation on any registered platform ",
-      //            transform_type);
+      MMDEPLOY_ERROR("cannot find {} implementation on any registered platform ", transform_type);
       return nullptr;
     } else {
       return impl_creator->Create(args);

@@ -4,7 +4,6 @@ project(mmdeploy_ort_net)
 
 if ("cpu" IN_LIST MMDEPLOY_TARGET_DEVICES)
     include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
-#    add_library(${PROJECT_NAME} ort_net.cpp)
     mmdeploy_add_module(${PROJECT_NAME} ort_net.cpp)
     target_include_directories(${PROJECT_NAME} PRIVATE ${ONNXRUNTIME_DIR}/include)
     target_link_directories(${PROJECT_NAME} PRIVATE ${ONNXRUNTIME_DIR}/lib)

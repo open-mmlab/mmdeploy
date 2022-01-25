@@ -49,12 +49,12 @@ TEST_CASE("test text detector's c api", "[text-detector]") {
   };
 
   auto& gResources = MMDeployTestResources::Get();
-  auto img_list = gResources.LocateImageResources("mmocr/images");
+  auto img_list = gResources.LocateImageResources(fs::path{"mmocr"} / "images");
   REQUIRE(!img_list.empty());
 
   for (auto& backend : gResources.backends()) {
     DYNAMIC_SECTION("loop backend: " << backend) {
-      auto model_list = gResources.LocateModelResources("mmocr/textdet/" + backend);
+      auto model_list = gResources.LocateModelResources(fs::path{"mmocr"} / "textdet" / "backend");
       REQUIRE(!model_list.empty());
       for (auto& model_path : model_list) {
         for (auto& device_name : gResources.device_names(backend)) {

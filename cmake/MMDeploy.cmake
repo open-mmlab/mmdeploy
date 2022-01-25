@@ -50,41 +50,53 @@ function (mmdeploy_add_module NAME)
 endfunction ()
 
 
+function (_mmdeploy_flatten_modules RETVAL)
+    set(_RETVAL)
+    foreach (ARG IN LISTS ARGN)
+        get_target_property(TYPE ${ARG} TYPE)
+        message(STATUS "${ARG} ${TYPE}")
+        if (TYPE STREQUAL "INTERFACE_LIBRARY")
+            get_target_property(LIBS ${ARG} INTERFACE_LINK_LIBRARIES)
+            if (LIBS)
+                list(FILTER LIBS EXCLUDE REGEX ::@)
+                list(APPEND _RETVAL ${LIBS})
+            endif ()
+        else ()
+            list(APPEND _RETVAL ${ARG})
+        endif ()
+    endforeach ()
+    set(${RETVAL} ${_RETVAL} PARENT_SCOPE)
+endfunction ()
+
+
 function (mmdeploy_load_static NAME)
-    set(_TARGETS ${ARGN})
-    if (NOT MSVC)
-        set(_TARGETS "-Wl,--whole-archive ${_TARGETS} -Wl,--no-whole-archive")
+    if (MSVC)
+        target_link_libraries(${NAME} PRIVATE ${ARGN})
+    else ()
+        _mmdeploy_flatten_modules(_MODULE_LIST ${ARGN})
+        target_link_libraries(${NAME} PRIVATE
+                -Wl,--no-whole-archive
+                ${_MODULE_LIST}
+                -Wl,--no-whole-archive)
     endif ()
-    target_link_libraries(${NAME} PRIVATE ${_TARGETS})
 endfunction ()
 
 function (mmdeploy_load_dynamic NAME)
+    _mmdeploy_flatten_modules(_MODULE_LIST ${ARGN})
     if (MSVC)
-        # MSVC has nothing like "-Wl,--no-as-needed ... -Wl,--as-needed", as a
-        # workaround we build a static module which loads the dynamic modules
-        set(_module_list)
-        foreach (module IN LISTS ARGN)
-            get_target_property(_TYPE ${module} TYPE)
-            if (_TYPE STREQUAL "INTERFACE_LIBRARY")
-                get_target_property(_items ${module} INTERFACE_LINK_LIBRARIES)
-                list(FILTER _items EXCLUDE REGEX ::@)
-                list(APPEND _module_list ${_items})
-            else ()
-                list(APPEND _module_list ${module})
-            endif ()
-        endforeach ()
-
-        set(_module_str ${_module_list})
-        list(TRANSFORM _module_str REPLACE "(.+)" "\"\\1\"")
-        string(JOIN ",\n        " _module_str ${_module_str})
-        set(_MMDEPLOY_DYNAMIC_MODULES ${_module_str})
-        set(_LOADER ${NAME}_loader)
-
-        if (NOT _module_list)
+        if (NOT _MODULE_LIST)
             return ()
         endif ()
+        # MSVC has nothing like "-Wl,--no-as-needed ... -Wl,--as-needed", as a
+        # workaround we build a static module which loads the dynamic modules
+        set(_MODULE_STR ${_MODULE_LIST})
+        list(TRANSFORM _MODULE_STR REPLACE "(.+)" "\"\\1\"")
+        string(JOIN ",\n        " _MODULE_STR ${_MODULE_STR})
+        set(_MMDEPLOY_DYNAMIC_MODULES ${_MODULE_STR})
 
-        add_dependencies(${NAME} ${_module_list})
+        set(_LOADER ${NAME}_loader)
+
+        add_dependencies(${NAME} ${_MODULE_LIST})
 
         configure_file(
                 ${CMAKE_SOURCE_DIR}/csrc/loader/loader.cpp.in
@@ -94,6 +106,8 @@ function (mmdeploy_load_dynamic NAME)
         mmdeploy_load_static(${NAME} ${_LOADER})
     else ()
         target_link_libraries(${NAME} PRIVATE
-                -Wl,--no-as-needed ${ARGN} -Wl,--as-needed)
+                -Wl,--no-as-needed
+                ${_MODULE_LIST}
+                -Wl,--as-needed)
     endif ()
 endfunction ()

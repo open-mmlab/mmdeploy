@@ -47,6 +47,8 @@ if (MSVC)
     add_compile_options(/diagnostics:classic)
     add_compile_options(/Zc:preprocessor) # /experimental:preprocessor on VS2017
     add_compile_options(/wd4251)
+else ()
+    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-fvisibility=hidden>)
 endif ()
 
 include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
@@ -97,9 +99,6 @@ if (MMDEPLOY_BUILD_SDK)
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/MMDeploy.cmake
             DESTINATION lib/cmake/MMDeploy
             )
-
-#    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/csrc/loader/loader.cpp.in
-#            DESTINATION )
 
     install(DIRECTORY ${CMAKE_SOURCE_DIR}/demo/csrc/ DESTINATION example)
 endif ()

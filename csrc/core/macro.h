@@ -3,18 +3,20 @@
 #ifndef MMDEPLOY_SRC_CORE_MARCO_H_
 #define MMDEPLOY_SRC_CORE_MARCO_H_
 
+#ifndef MMDEPLOY_EXPORT
 #ifdef _MSC_VER
 #define MMDEPLOY_EXPORT __declspec(dllexport)
 #else
 #define MMDEPLOY_EXPORT __attribute__((visibility("default")))
 #endif
-
-#ifdef MMDEPLOY_API_EXPORTS
-#define MMDEPLOY_API MMDEPLOY_EXPORT
 #endif
 
 #ifndef MMDEPLOY_API
+#ifdef MMDEPLOY_API_EXPORTS
+#define MMDEPLOY_API MMDEPLOY_EXPORT
+#else
 #define MMDEPLOY_API
+#endif
 #endif
 
 #define _MMDEPLOY_PP_CONCAT_IMPL(s1, s2) s1##s2
