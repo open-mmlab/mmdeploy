@@ -70,8 +70,8 @@ data_cfg = dict(
     use_gt_bbox=True,
     det_bbox_thr=0.0,
     bbox_file='tests/test_codebase/test_mmpose/data/coco/' +
-              'person_detection_results' +
-              '/COCO_val2017_detections_AP_H_56_person.json',
+    'person_detection_results' +
+    '/COCO_val2017_detections_AP_H_56_person.json',
 )
 
 test_pipeline = [
@@ -273,7 +273,6 @@ dataset_info = dict(
         0.062, 0.107, 0.107, 0.087, 0.087, 0.089, 0.089
     ])
 
-
 data = dict(
     samples_per_gpu=64,
     workers_per_gpu=2,
@@ -281,7 +280,7 @@ data = dict(
     test=dict(
         type='TopDownCocoDataset',
         ann_file='tests/test_codebase/test_mmpose/data/annotations/' +
-                 'person_keypoints_val2017.json',
+        'person_keypoints_val2017.json',
         img_prefix='tests/test_codebase/test_mmpose/data/val2017/',
         data_cfg=data_cfg,
         pipeline=test_pipeline,

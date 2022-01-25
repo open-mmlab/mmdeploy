@@ -54,12 +54,14 @@ class TestEnd2EndModel:
 
     def test_forward(self):
         img = torch.rand(1, 3, IMAGE_H, IMAGE_W)
-        img_metas = [{'image_file': 'tests/test_codebase/test_mmpose' +
-                      '/data/imgs/dataset/blank.jpg',
-                      'center': torch.tensor([0.5, 0.5]),
-                      'scale': 1.,
-                      'location': torch.tensor([0.5, 0.5]),
-                      'bbox_score': 0.5}]
+        img_metas = [{
+            'image_file':
+            'tests/test_codebase/test_mmpose' + '/data/imgs/dataset/blank.jpg',
+            'center': torch.tensor([0.5, 0.5]),
+            'scale': 1.,
+            'location': torch.tensor([0.5, 0.5]),
+            'bbox_score': 0.5
+        }]
         results = self.end2end_model.forward(img, img_metas)
         assert results is not None, 'failed to get output using '\
             'End2EndModel'
@@ -75,8 +77,7 @@ class TestEnd2EndModel:
 
         pred_bbox = torch.rand(1, 5)
         pred_keypoint = torch.rand((1, 10, 2))
-        result = [{'bbox': pred_bbox,
-                   'keypoints': pred_keypoint}]
+        result = [{'bbox': pred_bbox, 'keypoints': pred_keypoint}]
         self.end2end_model.show_result(
             input_img, result, '', show=False, out_file=img_path)
         assert osp.exists(img_path), 'Fails to create drawn image.'

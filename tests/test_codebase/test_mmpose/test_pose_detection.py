@@ -15,7 +15,6 @@ from mmdeploy.utils.test import DummyModel, SwitchBackendWrapper
 
 import_codebase(Codebase.MMPOSE)
 
-
 model_cfg_path = 'tests/test_codebase/test_mmpose/data/model.py'
 model_cfg = load_config(model_cfg_path)[0]
 deploy_cfg = mmcv.Config(
