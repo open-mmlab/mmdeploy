@@ -274,7 +274,6 @@ dataset_info = dict(
     ])
 
 
-
 data = dict(
     samples_per_gpu=64,
     workers_per_gpu=2,
@@ -288,20 +287,3 @@ data = dict(
         pipeline=test_pipeline,
         dataset_info=dataset_info),
 )
-'''
-data = dict(
-    samples_per_gpu=64,
-    workers_per_gpu=2,
-    test_dataloader=dict(samples_per_gpu=32),
-    test=dict(
-        type='Kpt2dSviewRgbImgTopDownDataset',
-        ann_file='tests/test_codebase/test_mmpose/data/annotations/' +
-                 'person_keypoints_val2017.json',
-        img_prefix='tests/test_codebase/test_mmpose/data/val2017/',
-        data_cfg=data_cfg,
-        pipeline=test_pipeline,
-        dataset_info=dataset_info,
-        coco_style=False,
-        test_mode=False),
-)
-'''
