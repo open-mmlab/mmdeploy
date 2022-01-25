@@ -10,6 +10,7 @@ _candidates = [
 
 def get_ops_path() -> str:
     """Get the library path of onnxruntime custom ops.
+
     Returns:
         str: The library path to onnxruntime custom ops.
     """
