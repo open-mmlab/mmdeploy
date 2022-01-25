@@ -1,5 +1,7 @@
 ## 安装 MMdeploy
 
+我们提供物理机和虚拟机构建方法。虚拟机搭建方法请参考[如何使用docker](tutorials/how_to_use_docker.md)。对于物理机，请按照以下步骤操作
+
 ### 准备工作
 
 - 下载代码仓库 MMDeploy
@@ -205,7 +207,7 @@ pip install -e .
    cmake .. \
      -DMMDEPLOY_BUILD_SDK=ON \
      -DCMAKE_CXX_COMPILER=g++-7 \
-     -Dpplcv_DIR=/path/to/ppl.cv/install/lib/cmake/ppl \
+     -Dpplcv_DIR=/path/to/ppl.cv/cuda-build/install/lib/cmake/ppl \
      -DTENSORRT_DIR=/path/to/tensorrt \
      -DCUDNN_DIR=/path/to/cudnn \
      -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \

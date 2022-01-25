@@ -1,5 +1,8 @@
 ## Build MMDeploy
 
+We provide building methods for both physical and virtual machines. For virtual machine building methods, please refer to
+[how to use docker](tutorials/how_to_use_docker.md). For physical machine, please follow the steps below.
+
 ### Preparation
 
 - Download MMDeploy
@@ -209,7 +212,7 @@ Each package's installation command is given based on Ubuntu 18.04.
    cmake .. \
      -DMMDEPLOY_BUILD_SDK=ON \
      -DCMAKE_CXX_COMPILER=g++-7 \
-     -Dpplcv_DIR=/path/to/ppl.cv/install/lib/cmake/ppl \
+     -Dpplcv_DIR=/path/to/ppl.cv/cuda-build/install/lib/cmake/ppl \
      -DTENSORRT_DIR=/path/to/tensorrt \
      -DCUDNN_DIR=/path/to/cudnn \
      -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
