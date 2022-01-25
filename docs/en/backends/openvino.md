@@ -1,6 +1,6 @@
 ## OpenVINO Support
 
-This tutorial is based on Linux systems like Ubuntu-18.04.
+This tutorial is based on Linux systems like Ubuntu-18.04.If you want to use OpenVINO in SDK, you need install OpenVINO with [install_guides](https://docs.openvino.ai/2021.4/openvino_docs_install_guides_installing_openvino_linux.html#install-openvino).
 
 ### Installation
 It is recommended to create a virtual environment for the project.
@@ -69,7 +69,6 @@ Notes:
 - For faster work in OpenVINO in the Faster-RCNN, Mask-RCNN, Cascade-RCNN, Cascade-Mask-RCNN models
 the RoiAlign operation is replaced with the [ExperimentalDetectronROIFeatureExtractor](https://docs.openvinotoolkit.org/latest/openvino_docs_ops_detection_ExperimentalDetectronROIFeatureExtractor_6.html) operation in the ONNX graph.
 - Models "VFNet" and "Faster R-CNN + DCN" use the custom "DeformableConv2D" operation.
-- If they want to use OpenVINO in SDK, you need install OpenVINO with [install_guides](https://docs.openvino.ai/2021.4/openvino_docs_install_guides_installing_openvino_linux.html#install-openvino).
 
 ### FAQs
 
