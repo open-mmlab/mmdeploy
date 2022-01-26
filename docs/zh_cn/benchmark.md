@@ -29,7 +29,7 @@ GPU: ncnn, TensorRT, PPLNN
 <summary style="margin-left: 25px;">MMCls</summary>
 <div style="margin-left: 25px;">
 
-<table class='docutils'>
+<table class="docutils">
 <thead>
   <tr>
     <th align="center" colspan="3">MMCls</th>
@@ -189,7 +189,7 @@ GPU: ncnn, TensorRT, PPLNN
 <summary style="margin-left: 25px;">MMDet</summary>
 <div style="margin-left: 25px;">
 
-<table class='docutils'>
+<table class="docutils">
 <thead>
   <tr>
     <th align="center" colspan="3">MMDet</th>
@@ -341,7 +341,65 @@ GPU: ncnn, TensorRT, PPLNN
   </tr>
 </tbody>
 </table>
-
+<table class="docutils">
+<thead>
+  <tr>
+    <th align="center" colspan="3">MMDet</th>
+    <th align="center" colspan="4">NCNN</th>
+    <th align="center"></th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td align="center" rowspan="3">Model</td>
+    <td align="center" rowspan="3">Dataset</td>
+    <td align="center" rowspan="3">Input</td>
+    <td align="center" colspan="2">SnapDragon888</td>
+    <td align="center" colspan="2">Adreno660</td>
+    <td align="center" rowspan="3">model config file</td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2">fp32</td>
+    <td align="center" colspan="2">fp32</td>
+  </tr>
+  <tr>
+    <td align="center">latency (ms)</td>
+    <td align="center">FPS</td>
+    <td align="center">latency (ms)</td>
+    <td align="center">FPS</td>
+  </tr>
+  <tr>
+    <td align="center">MobileNetv2-YOLOv3</td>
+    <td align="center">COCO</td>
+    <td align="center">1x3x320x320</td>
+    <td align="center">48.57</td>
+    <td align="center">20.59</td>
+    <td align="center">66.55</td>
+    <td align="center">15.03</td>
+    <td>$MMDET_DIR/configs/yolo/yolov3_mobilenetv2_mstrain-416_300e_coco.py</td>
+  </tr>
+  <tr>
+    <td align="center">SSD-Lite</td>
+    <td align="center">COCO</td>
+    <td align="center">1x3x320x320</td>
+    <td align="center">44.91</td>
+    <td align="center">22.27</td>
+    <td align="center">66.19</td>
+    <td align="center">15.11</td>
+    <td>$MMDET_DIR/configs/ssd/ssdlite_mobilenetv2_scratch_600e_coco.py</td>
+  </tr>
+  <tr>
+    <td align="center">YOLOX</td>
+    <td align="center">COCO</td>
+    <td align="center">1x3x416x416</td>
+    <td align="center">111.60</td>
+    <td align="center">8.96</td>
+    <td align="center">134.50</td>
+    <td align="center">7.43</td>
+    <td>$MMDET_DIR/configs/yolox/yolox_tiny_8x8_300e_coco.py</td>
+  </tr>
+</tbody>
+</table>
 </div>
 </details>
 
@@ -349,7 +407,7 @@ GPU: ncnn, TensorRT, PPLNN
 <summary style="margin-left: 25px;">MMEdit</summary>
 <div style="margin-left: 25px;">
 
-<table class='docutils'>
+<table class="docutils">
 <thead>
   <tr>
     <th align="center" colspan="2">MMEdit</th>
@@ -444,7 +502,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center" colspan="2">T4</td>
     <td align="center" colspan="2">SnapDragon888</td>
     <td align="center" colspan="2">Adreno660</td>
-    <td rowspan="3">model config file</td>
+    <td align="center" rowspan="3">model config file</td>
   </tr>
   <tr>
     <td align="center" colspan="2">fp32</td>
@@ -512,7 +570,7 @@ GPU: ncnn, TensorRT, PPLNN
 <summary style="margin-left: 25px;">MMSeg</summary>
 <div style="margin-left: 25px;">
 
-<table class='docutils'>
+<table class="docutils">
 <thead>
   <tr>
     <th align="center" colspan="3">MMSeg</th>
@@ -650,7 +708,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">fp16</td>
     <td align="center">int8</td>
     <td align="center">fp16</td>
-    <td>model config file</td>
+    <td align="center">model config file</td>
   </tr>
   <tr>
     <td align="center" rowspan="2">ResNet-18</td>
@@ -811,7 +869,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">int8</td>
     <td align="center">fp16</td>
     <td align="center">fp32</td>
-    <td>model config file</td>
+    <td align="center">model config file</td>
   </tr>
   <tr>
     <td align="center">YOLOV3</td>
@@ -995,7 +1053,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">fp16</td>
     <td align="center">int8</td>
     <td align="center">fp16</td>
-    <td>model config file</td>
+    <td align="center">model config file</td>
   </tr>
   <tr>
     <td align="center" rowspan="2">SRCNN</td>
@@ -1184,7 +1242,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">int8</td>
     <td align="center">fp16</td>
     <td align="center">fp32</td>
-    <td>model config file</td>
+    <td align="center">model config file</td>
   </tr>
   <tr>
     <td align="center" rowspan="3">DBNet*</td>
@@ -1278,7 +1336,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">fp16</td>
     <td align="center">int8</td>
     <td align="center">fp16</td>
-    <td>model config file</td>
+    <td align="center">model config file</td>
   </tr>
   <tr>
     <td align="center">FCN</td>
