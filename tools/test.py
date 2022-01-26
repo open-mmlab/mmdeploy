@@ -55,6 +55,11 @@ def parse_args():
         help='custom options for evaluation, the key-value pair in xxx=yyy '
         'format will be kwargs for dataset.evaluate() function')
     parser.add_argument(
+        '--log2file',
+        type=str,
+        help='log evaluation results and speed to file',
+        default=None)
+    parser.add_argument(
         '--speed-test', action='store_true', help='activate speed test')
     parser.add_argument(
         '--warmup',
@@ -68,11 +73,6 @@ def parse_args():
         help='the interval between each log, require setting '
         'speed-test first',
         default=100)
-    parser.add_argument(
-        '--log2file',
-        type=str,
-        help='log evaluation results and speed to file',
-        default=None)
 
     args = parser.parse_args()
     return args
