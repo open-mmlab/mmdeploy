@@ -23,7 +23,9 @@ else ()
     set(CMAKE_CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
     set(CUDA_NVCC_FLAGS
             "${CUDA_NVCC_FLAGS} -Xcompiler=-fPIC,-Wall,-fvisibility=hidden")
-    set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -Xcompiler=-fno-gnu-unique")
+    if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+        set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -Xcompiler=-fno-gnu-unique")
+    endif ()
 endif ()
 
 enable_language(CUDA)
