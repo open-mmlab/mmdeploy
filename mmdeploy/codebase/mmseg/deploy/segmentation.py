@@ -89,10 +89,9 @@ class Segmentation(BaseTask):
                 codebases.
         """
         from mmseg.apis import init_segmentor
-        from mmdeploy.codebase.mmseg.deploy import convert_syncbatchnorm
+        from mmcv.cnn.utils import revert_sync_batchnorm
         model = init_segmentor(self.model_cfg, model_checkpoint, self.device)
-        model = convert_syncbatchnorm(model)
-
+        model = revert_sync_batchnorm(model)
         return model.eval()
 
     def create_input(self,
