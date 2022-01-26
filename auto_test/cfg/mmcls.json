@@ -1,0 +1,67 @@
+{
+    "models": {
+        "cls": [
+            {
+                "prefix": "resnet",
+                "cfg": "resnet18_b32x8_imagenet.py",
+                "ckpt": "resnet18.pth"
+            },
+            {
+                "prefix": "resnext",
+                "cfg": "resnext50_32x4d_b32x8_imagenet.py",
+                "ckpt": "resnext50_32x4d_b32x8_imagenet_20210429-56066e27.pth"
+            },
+            {
+                "prefix": "seresnet",
+                "cfg": "seresnet50_b32x8_imagenet.py",
+                "ckpt": "se-resnet50_batch256_imagenet_20200804-ae206104.pth"
+            },
+            {
+                "prefix": "shufflenet_v1",
+                "cfg": "shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py",
+                "ckpt": "shufflenet_v1_batch1024_imagenet_20200804-5d6cec73.pth"
+            },
+            {
+                "prefix": "shufflenet_v2",
+                "cfg": "shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py",
+                "ckpt": "shufflenet_v2_batch1024_imagenet_20200812-5bf4721e.pth"
+            },
+            {
+                "prefix": "mobilenet_v2",
+                "cfg": "mobilenet_v2_b32x8_imagenet.py",
+                "ckpt": "mobilenet_v2_batch256_imagenet_20200708-3b2dc3af.pth"
+            }
+        ]
+    },
+    "deploy_cfgs": {
+        "cls": {
+            "full_name": "classification",
+            "folder": ".",
+            "export_img": "demo/demo.JPEG",
+            "test_img": "demo/demo.JPEG",
+            "default": "224x224",
+            "metric": "accuracy",
+            "cfgs": {
+                "224x224": {
+                    "ort": [
+                        "classification_onnxruntime_dynamic.py"
+                    ],
+                    "trt": [
+                        "classification_tensorrt_static-224x224.py",
+                        "classification_tensorrt-fp16_static-224x224.py",
+                        "classification_tensorrt-int8_static-224x224.py"
+                    ],
+                    "ncnn": [
+                        "classification_ncnn_dynamic.py"
+                    ],
+                    "ppl": [
+                        "classification_pplnn_dynamic-224x224.py"
+                    ],
+                    "op": [
+                        "classification_openvino_dynamic-224x224.py"
+                    ]
+                }
+            }
+        }
+    }
+}

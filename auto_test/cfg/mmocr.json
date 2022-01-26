@@ -1,0 +1,73 @@
+{
+    "models": {
+        "td": [
+            {
+                "prefix": "textdet/dbnet",
+                "cfg": "dbnet_r18_fpnc_1200e_icdar2015.py",
+                "ckpt": "dbnet_r18_fpnc_sbn_1200e_icdar2015_20210329-ba3ab597.pth"
+            }
+        ],
+        "tr": [
+            {
+                "prefix": "textrecog/crnn",
+                "cfg": "crnn_academic_dataset.py",
+                "ckpt": "crnn_academic-a723a1c5.pth"
+            }
+        ]
+    },
+    "deploy_cfgs": {
+        "td": {
+            "full_name": "text-detection",
+            "folder": "text-detection",
+            "export_img": "demo/demo_text_det.jpg",
+            "test_img": "demo/demo_text_det.jpg",
+            "default": "640x640",
+            "metric": "hmean-iou",
+            "cfgs": {
+                "640x640": {
+                    "ort": [
+                        "text-detection_onnxruntime_dynamic.py"
+                    ],
+                    "trt": [
+                        "text-detection_tensorrt_dynamic-320x320-1024x1824.py",
+                        "text-detection_tensorrt-fp16_dynamic-320x320-1024x1824.py"
+                    ],
+                    "ncnn": [
+                        "text-detection_ncnn_static.py"
+                    ],
+                    "ppl": [
+                        "text-detection_pplnn_dynamic-640x640.py"
+                    ],
+                    "op": [
+                        "text-detection_openvino_dynamic-640x640.py"
+                    ]
+                }
+            }
+        },
+        "tr": {
+            "full_name": "text-recognition",
+            "folder": "text-recognition",
+            "export_img": "demo/demo_text_recog.jpg",
+            "test_img": "demo/demo_text_recog.jpg",
+            "default": "32x32",
+            "metric": "acc",
+            "cfgs": {
+                "32x32": {
+                    "ort": [
+                        "text-recognition_onnxruntime_dynamic.py"
+                    ],
+                    "trt": [
+                        "text-recognition_tensorrt_dynamic-1x32x32-1x32x640.py"
+                    ],
+                    "ppl": [
+                        "text-recognition_pplnn_dynamic-1x32x32.py"
+                    ],
+                    "ncnn": [
+                        "text-recognition_ncnn_static.py"
+                    ],
+                    "op": []
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,57 @@
+{
+    "models": {
+        "sg": [
+            {
+                "prefix": "fcn",
+                "cfg": "fcn_r50-d8_512x1024_40k_cityscapes.py",
+                "ckpt": "fcn_r50-d8_512x1024_40k_cityscapes_20200604_192608-efe53f0d.pth",
+            },
+            {
+                "prefix": "pspnet",
+                "cfg": "pspnet_r50-d8_512x1024_80k_cityscapes.py",
+                "ckpt": "pspnet_r50-d8_512x1024_80k_cityscapes_20200606_112131-2376f12b.pth"
+            },
+            {
+                "prefix": "deeplabv3",
+                "cfg": "deeplabv3_r50-d8_512x1024_80k_cityscapes.py",
+                "ckpt": "deeplabv3_r50-d8_512x1024_80k_cityscapes_20200606_113404-b92cfdd4.pth"
+            },
+            {
+                "prefix": "deeplabv3plus",
+                "cfg": "deeplabv3plus_r50-d8_512x1024_80k_cityscapes.py",
+                "ckpt": "deeplabv3plus_r50-d8_512x1024_80k_cityscapes_20200606_114049-f9fb496d.pth"
+            }
+        ]
+    },
+    "deploy_cfgs": {
+        "sg": {
+            "full_name": "segmentation",
+            "folder": ".",
+            "export_img": "demo/demo.png",
+            "test_img": "demo/demo.png",
+            "default": "1024x2048",
+            "metric": "cityscapes",
+            "cfgs": {
+                "1024x2048": {
+                    "ort": [
+                        "segmentation_onnxruntime_dynamic.py"
+                    ],
+                    "trt": [
+                        "segmentation_tensorrt_static-1024x2048.py",
+                        "segmentation_tensorrt-fp16_static-1024x2048.py",
+                        "segmentation_tensorrt-int8_static-1024x2048.py"
+                    ],
+                    "ncnn": [
+                        "segmentation_ncnn_static-1024x2048.py"
+                    ],
+                    "ppl": [
+                        "segmentation_pplnn_dynamic-1024x2048.py"
+                    ],
+                    "op": [
+                        "segmentation_openvino_dynamic-1024x2048.py"
+                    ]
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,68 @@
+{
+    "root": "/home/PJLAB/zhouyifan/anaconda3/envs/pt",
+    "codebases": {
+        "mmseg": {
+            "full_name": "mmsegmentation"
+        },
+        "mmcls": {
+            "full_name": "mmclassification"
+        },
+        "mmdet": {
+            "full_name": "mmdetection"
+        },
+        "mmedit": {
+            "full_name": "mmediting"
+        },
+        "mmocr": {
+            "full_name": "mmocr"
+        }
+    },
+    "backends": {
+        "ort": {
+            "full_name": "onnxruntime",
+            "precision": [
+                "fp32"
+            ],
+            "do_test": false,
+            "device": "cpu",
+            "backend_files": [
+                ".onnx"
+            ]
+        },
+        "trt": {
+            "full_name": "tensorrt",
+            "precision": [
+                "fp32",
+                "fp16"
+            ],
+            "do_test": true,
+            "device": "cuda:0",
+            "backend_files": [
+                ".engine"
+            ]
+        },
+        "ncnn": {
+            "full_name": "ncnn",
+            "precision": [
+                "fp32"
+            ],
+            "do_test": false,
+            "device": "cpu",
+            "backend_files": [
+                ".param",
+                ".bin"
+            ]
+        },
+        "op": {
+            "full_name": "openvino",
+            "precision": [
+                "fp32"
+            ],
+            "do_test": false,
+            "device": "cpu",
+            "backend_files": [
+                ".xml"
+            ]
+        }
+    }
+}
