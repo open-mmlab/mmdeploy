@@ -232,8 +232,6 @@ class Classification(BaseTask):
         import warnings
         from mmcv.utils import get_logger
         logger = get_logger('test', log_file=log_file, log_level=logging.INFO)
-        print(log_file)
-        print(logger)
 
         if metrics:
             results = dataset.evaluate(outputs, metrics, metric_options)
