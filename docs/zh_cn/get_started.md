@@ -104,7 +104,7 @@ conda activate openmmlab
 conda install pytorch==1.8.0 torchvision==0.9.0 cudatoolkit=10.2 -c pytorch -y
 
 # 安装最新的mmcv
-pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html
+pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html
 
 # 安装mmdetection
 git clone https://github.com/open-mmlab/mmdetection.git
