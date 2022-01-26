@@ -7,7 +7,7 @@ import torch
 from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
-from mmdeploy.utils import Task, get_input_shape, get_root_logger
+from mmdeploy.utils import Task, get_input_shape
 from .mmsegmentation import MMSEG_TASK
 
 
@@ -205,7 +205,8 @@ class Segmentation(BaseTask):
                          metrics: Optional[str] = None,
                          out: Optional[str] = None,
                          metric_options: Optional[dict] = None,
-                         format_only: bool = False):
+                         format_only: bool = False,
+                         log_file: Optional[str] = None):
         """Perform post-processing to predictions of model.
 
         Args:
@@ -222,16 +223,20 @@ class Segmentation(BaseTask):
                 evaluation. It is useful when you want to format the result
                 to a specific format and submit it to the test server. Defaults
                 to `False`.
+            log_file (str | None): The file to write the evaluation results.
+                Defaults to `None` and the results will only print on stdout.
         """
+        from mmcv.utils import get_logger
+        logger = get_logger('test', log_file=log_file)
+
         if out:
-            logger = get_root_logger()
-            logger.info(f'\nwriting results to {out}')
+            logger.debug(f'writing results to {out}')
             mmcv.dump(outputs, out)
         kwargs = {} if metric_options is None else metric_options
         if format_only:
             dataset.format_results(outputs, **kwargs)
         if metrics:
-            dataset.evaluate(outputs, metrics, **kwargs)
+            dataset.evaluate(outputs, metrics, logger=logger, **kwargs)
 
     def get_preprocess(self) -> Dict:
         """Get the preprocess information for SDK.

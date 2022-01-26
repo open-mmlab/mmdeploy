@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import logging
 from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
 import mmcv
@@ -208,7 +209,8 @@ class Classification(BaseTask):
                          metrics: Optional[str] = None,
                          out: Optional[str] = None,
                          metric_options: Optional[dict] = None,
-                         format_only: bool = False) -> None:
+                         format_only: bool = False,
+                         log_file: Optional[str] = None) -> None:
         """Perform post-processing to predictions of model.
 
         Args:
@@ -224,13 +226,17 @@ class Classification(BaseTask):
                 evaluation. It is useful when you want to format the result
                 to a specific format and submit it to the test server.
                 Default: False.
+            log_file (str | None): The file to write the evaluation results.
+                Defaults to `None` and the results will only print on stdout.
         """
         import warnings
+        from mmcv.utils import get_logger
+        logger = get_logger('test', log_file=log_file, log_level=logging.INFO)
 
         if metrics:
             results = dataset.evaluate(outputs, metrics, metric_options)
             for k, v in results.items():
-                print(f'\n{k} : {v:.2f}')
+                logger.info(f'{k} : {v:.2f}')
         else:
             warnings.warn('Evaluation metrics are not specified.')
             scores = np.vstack(outputs)
@@ -243,13 +249,13 @@ class Classification(BaseTask):
                 'pred_class': pred_class
             }
             if not out:
-                print('\nthe predicted result for the first element is '
-                      f'pred_score = {pred_score[0]:.2f}, '
-                      f'pred_label = {pred_label[0]} '
-                      f'and pred_class = {pred_class[0]}. '
-                      'Specify --out to save all results to files.')
+                logger.info('the predicted result for the first element is '
+                            f'pred_score = {pred_score[0]:.2f}, '
+                            f'pred_label = {pred_label[0]} '
+                            f'and pred_class = {pred_class[0]}. '
+                            'Specify --out to save all results to files.')
         if out:
-            print(f'\nwriting results to {out}')
+            logger.debug(f'writing results to {out}')
             mmcv.dump(results, out)
 
     def get_preprocess(self) -> Dict:
