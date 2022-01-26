@@ -88,18 +88,4 @@ MMDEPLOY_API void SetLogger(spdlog::logger *logger);
 #define MMDEPLOY_CRITICAL(...) (void)0;
 #endif
 
-//#undef CRITICAL
-//#undef ERROR
-//#undef WARN
-//#undef INFO
-//#undef DEBUG
-//#undef TRACE
-//
-//#define CRITICAL MMDEPLOY_CRITICAL
-//#define ERROR MMDEPLOY_ERROR
-//#define WARN MMDEPLOY_WARN
-//#define INFO MMDEPLOY_INFO
-//#define DEBUG MMDEPLOY_DEBUG
-//#define TRACE MMDEPLOY_TRACE
-
 #endif  // !CORE_LOG_H
