@@ -7,8 +7,8 @@ find_package(MMDeploy REQUIRED)
 
 function(add_example name)
   add_executable(${name} ${name}.cpp)
-  target_link_libraries(${name} ${MMDeploy_LIBS} opencv_imgcodecs
-          opencv_imgproc opencv_core)
+  target_link_libraries(${name} ${MMDeploy_LIBS} -Wl,--disable-new-dtags
+  opencv_imgcodecs opencv_imgproc opencv_core)
 endfunction()
 
 add_example(image_classification)

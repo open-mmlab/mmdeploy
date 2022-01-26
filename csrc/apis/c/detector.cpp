@@ -155,7 +155,7 @@ MM_SDK_API void mmdeploy_detector_release_result(mm_detect_t* results, const int
   for (int i = 0; i < count; ++i) {
     for (int j = 0; j < result_count[i]; ++j, ++result_ptr) {
       if (result_ptr->mask) {
-        delete result_ptr->mask->data;
+        delete[] result_ptr->mask->data;
         delete result_ptr->mask;
       }
     }

@@ -33,26 +33,39 @@ GPU: ncnn, TensorRT, PPLNN
 <thead>
   <tr>
     <th align="center" colspan="3">MMCls</th>
-    <th align="center" colspan="6">TensorRT</th>
+    <th align="center" colspan="10">TensorRT</th>
     <th align="center" colspan="2">PPLNN</th>
     <th align="center" colspan="4">NCNN</th>
-    <th align="center"></th>
+    <th></th>
   </tr>
 </thead>
 <tbody>
   <tr>
-    <td align="center" rowspan="2">Model</td>
-    <td align="center" rowspan="2">Dataset</td>
-    <td align="center" rowspan="2">Input</td>
+    <td align="center" rowspan="3">Model</td>
+    <td align="center" rowspan="3">Dataset</td>
+    <td align="center" rowspan="3">Input</td>
+    <td align="center" colspan="6">T4</td>
+    <td align="center" colspan="4">JetsonNano2GB</td>
+    <td align="center" colspan="2">T4</td>
+    <td align="center" colspan="2">SnapDragon888</td>
+    <td align="center" colspan="2">Adreno660</td>
+    <td rowspan="3">model config file</td>
+  </tr>
+  <tr>
     <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
     <td align="center" colspan="2">int8</td>
+    <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
-    <td align="center" colspan="2">SnapDragon888-fp32</td>
-    <td align="center" colspan="2">Adreno660-fp32</td>
-    <td rowspan="2">model config file</td>
+    <td align="center" colspan="2">fp16</td>
+    <td align="center" colspan="2">fp32</td>
+    <td align="center" colspan="2">fp32</td>
   </tr>
   <tr>
+    <td align="center">latency (ms)</td>
+    <td align="center">FPS</td>
+    <td align="center">latency (ms)</td>
+    <td align="center">FPS</td>
     <td align="center">latency (ms)</td>
     <td align="center">FPS</td>
     <td align="center">latency (ms)</td>
@@ -76,6 +89,10 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">791.89</td>
     <td align="center">1.21</td>
     <td align="center">829.66</td>
+    <td align="center">59.32</td>
+    <td align="center">16.86</td>
+    <td align="center">30.54</td>
+    <td align="center">32.75</td>
     <td align="center">1.30</td>
     <td align="center">768.28</td>
     <td align="center">33.91</td>
@@ -94,6 +111,10 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">703.42</td>
     <td align="center">1.37</td>
     <td align="center">727.42</td>
+    <td align="center">88.10</td>
+    <td align="center">11.35</td>
+    <td align="center">49.18</td>
+    <td align="center">20.13</td>
     <td align="center">1.36</td>
     <td align="center">737.67</td>
     <td align="center">133.44</td>
@@ -112,6 +133,10 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">600.73</td>
     <td align="center">1.51</td>
     <td align="center">662.90</td>
+    <td align="center">74.59</td>
+    <td align="center">13.41</td>
+    <td align="center">48.78</td>
+    <td align="center">20.50</td>
     <td align="center">1.91</td>
     <td align="center">524.07</td>
     <td align="center">107.84</td>
@@ -130,6 +155,10 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">841.36</td>
     <td align="center">1.13</td>
     <td align="center">883.47</td>
+    <td align="center">15.26</td>
+    <td align="center">65.54</td>
+    <td align="center">10.23</td>
+    <td align="center">97.77</td>
     <td align="center">4.69</td>
     <td align="center">213.33</td>
     <td align="center">9.55</td>
@@ -158,14 +187,18 @@ GPU: ncnn, TensorRT, PPLNN
 </thead>
 <tbody>
   <tr>
-    <td align="center" rowspan="2">Model</td>
-    <td align="center" rowspan="2">Dataset</td>
-    <td align="center" rowspan="2">Input</td>
+    <td align="center" rowspan="3">Model</td>
+    <td align="center" rowspan="3">Dataset</td>
+    <td align="center" rowspan="3">Input</td>
+    <td align="center" colspan="6">T4</td>
+    <td align="center" colspan="2">T4</td>
+    <td rowspan="3">model config file</td>
+  </tr>
+  <tr>
     <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
     <td align="center" colspan="2">int8</td>
     <td align="center" colspan="2">fp16</td>
-    <td rowspan="2">model config file</td>
   </tr>
   <tr>
     <td align="center">latency (ms)</td>
@@ -287,12 +320,16 @@ GPU: ncnn, TensorRT, PPLNN
 </thead>
 <tbody>
   <tr>
-    <td align="center" rowspan="2">Model</td>
-    <td align="center" rowspan="2">Dataset</td>
-    <td align="center" rowspan="2">Input</td>
-    <td align="center" colspan="2">SnapDragon888-fp32</td>
-    <td align="center" colspan="2">Adreno660-fp32</td>
-    <td rowspan="2">model config file</td>
+    <td align="center" rowspan="3">Model</td>
+    <td align="center" rowspan="3">Dataset</td>
+    <td align="center" rowspan="3">Input</td>
+    <td align="center" colspan="2">SnapDragon888</td>
+    <td align="center" colspan="2">Adreno660</td>
+    <td rowspan="3">model config file</td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2">fp32</td>
+    <td align="center" colspan="2">fp32</td>
   </tr>
   <tr>
     <td align="center">latency (ms)</td>
@@ -349,13 +386,17 @@ GPU: ncnn, TensorRT, PPLNN
 </thead>
 <tbody>
   <tr>
-    <td align="center" rowspan="2">Model</td>
-    <td align="center" rowspan="2">Input</td>
+    <td align="center" rowspan="3">Model</td>
+    <td align="center" rowspan="3">Input</td>
+    <td align="center" colspan="6">T4</td>
+    <td align="center" colspan="2">T4</td>
+    <td rowspan="3">model config file</td>
+  </tr>
+  <tr>
     <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
     <td align="center" colspan="2">int8</td>
     <td align="center" colspan="2">fp16</td>
-    <td rowspan="2">model config file</td>
   </tr>
   <tr>
     <td align="center">latency (ms)</td>
@@ -413,16 +454,22 @@ GPU: ncnn, TensorRT, PPLNN
 </thead>
 <tbody>
   <tr>
-    <td align="center" rowspan="2">Model</td>
-    <td align="center" rowspan="2">Dataset</td>
-    <td align="center" rowspan="2">Input</td>
+    <td align="center" rowspan="3">Model</td>
+    <td align="center" rowspan="3">Dataset</td>
+    <td align="center" rowspan="3">Input</td>
+    <td align="center" colspan="6">T4</td>
+    <td align="center" colspan="2">T4</td>
+    <td align="center" colspan="2">SnapDragon888</td>
+    <td align="center" colspan="2">Adreno660</td>
+    <td rowspan="3">model config file</td>
+  </tr>
+  <tr>
     <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
     <td align="center" colspan="2">int8</td>
     <td align="center" colspan="2">fp16</td>
-    <td align="center" colspan="2">SnapDragon888-fp32</td>
-    <td align="center" colspan="2">Adreno660-fp32</td>
-    <td rowspan="2">model config file</td>
+    <td align="center" colspan="2">fp32</td>
+    <td align="center" colspan="2">fp32</td>
   </tr>
   <tr>
     <td align="center">latency (ms)</td>
@@ -492,14 +539,18 @@ GPU: ncnn, TensorRT, PPLNN
 </thead>
 <tbody>
   <tr>
-    <td align="center" rowspan="2">Model</td>
-    <td align="center" rowspan="2">Dataset</td>
-    <td align="center" rowspan="2">Input</td>
+    <td align="center" rowspan="3">Model</td>
+    <td align="center" rowspan="3">Dataset</td>
+    <td align="center" rowspan="3">Input</td>
+    <td align="center" colspan="6">T4</td>
+    <td align="center" colspan="2">T4</td>
+    <td rowspan="3">model config file</td>
+  </tr>
+  <tr>
     <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
     <td align="center" colspan="2">int8</td>
     <td align="center" colspan="2">fp16</td>
-    <td rowspan="2">model config file</td>
   </tr>
   <tr>
     <td align="center">latency (ms)</td>

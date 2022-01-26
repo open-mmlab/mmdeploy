@@ -6,11 +6,11 @@ MMDeploy提供了一系列工具，帮助你更轻松的将OpenMMLab下的算法
 
 首先我们需要根据[安装指南](./build.md)正确安装MMDeploy。**注意！** 不同推理后端的安装方式略有不同。可以根据下面的介绍选择最适合你的推理后端：
 
-- [ONNXRuntime](../en/backends/onnxruntime.md): ONNX Runtime 是一个跨平台的机器学习训练推理加速器，通过图形优化和变换以及硬件加速器提供优秀的推理性能。<span style="color:red">拥有完善的对ONNX的支持</span>。
-- [TensorRT](../en/backends/tensorrt.md): NVIDIA® TensorRT™ 是一个用于高性能深度学习推理的开发工具包（SDK）。借助Nvidia的设备特性，TensorRT可以优化模型的推理，提供更低的推理延迟以及更高的吞吐量。如果你希望将模型部署在<span style="color:red">NVIDIA硬件设备</span>上，那么TensorRT就是一个合适的选择。
-- [ncnn](../en/backends/ncnn.md): ncnn 是一个<span style="color:red">为手机端极致优化</span>的高性能神经网络前向计算框架。ncnn 从设计之初深刻考虑手机端的部署和使用。无第三方依赖，跨平台。基于 ncnn，开发者能够将深度学习算法轻松移植到手机端高效执行，开发出人工智能 APP，将 AI 带到你的指尖。
-- [PPLNN](../en/backends/pplnn.md): PPLNN是一个为高效AI推理所开发的高性能深度学习推理引擎。可以用于各种ONNX模型的推理。并且<span style="color:red">对OpenMMLab有非常强的支持</span>。
-- [OpenVINO](../en/backends/openvino.md): OpenVINO™ 是一个为优化与部署AI推理开发的开源工具集。该工具集<span style="color:red">可无缝集成到 Intel 硬件平台</span>，包括最新的神经网络加速芯片，Intel计算棒，边缘设备等。
+- [ONNXRuntime](https://mmdeploy.readthedocs.io/en/latest/backends/onnxruntime.html): ONNX Runtime 是一个跨平台的机器学习训练推理加速器，通过图形优化和变换以及硬件加速器提供优秀的推理性能。<span style="color:red">拥有完善的对ONNX的支持</span>。
+- [TensorRT](https://mmdeploy.readthedocs.io/en/latest/backends/tensorrt.html): NVIDIA® TensorRT™ 是一个用于高性能深度学习推理的开发工具包（SDK）。借助Nvidia的设备特性，TensorRT可以优化模型的推理，提供更低的推理延迟以及更高的吞吐量。如果你希望将模型部署在<span style="color:red">NVIDIA硬件设备</span>上，那么TensorRT就是一个合适的选择。
+- [ncnn](https://mmdeploy.readthedocs.io/en/latest/backends/ncnn.html): ncnn 是一个<span style="color:red">为手机端极致优化</span>的高性能神经网络前向计算框架。ncnn 从设计之初深刻考虑手机端的部署和使用。无第三方依赖，跨平台。基于 ncnn，开发者能够将深度学习算法轻松移植到手机端高效执行，开发出人工智能 APP，将 AI 带到你的指尖。
+- [PPLNN](https://mmdeploy.readthedocs.io/en/latest/backends/pplnn.html): PPLNN是一个为高效AI推理所开发的高性能深度学习推理引擎。可以用于各种ONNX模型的推理。并且<span style="color:red">对OpenMMLab有非常强的支持</span>。
+- [OpenVINO](https://mmdeploy.readthedocs.io/en/latest/backends/openvino.html): OpenVINO™ 是一个为优化与部署AI推理开发的开源工具集。该工具集<span style="color:red">可无缝集成到 Intel 硬件平台</span>，包括最新的神经网络加速芯片，Intel计算棒，边缘设备等。
 
 选择最适合你的推理后端，点击对应的连接查看具体安装细节
 
@@ -32,7 +32,7 @@ python ${MMDEPLOY_DIR}/tools/deploy.py \
     --dump-info
 ```
 
-`${MMDEPLOY_DIR}/tools/deploy.py` 是一个方便模型转换的工具。可以阅读 [如何转换模型](../en/tutorials/how_to_convert_model.md) 了解更多细节。转换后的模型以及一些其他的信息将会被保存在 `${WORK_DIR}` 中。MMDeploy SDK 可以使用这些信息进行模型推理。
+`${MMDEPLOY_DIR}/tools/deploy.py` 是一个方便模型转换的工具。可以阅读 [如何转换模型](./tutorials/how_to_convert_model.md) 了解更多细节。转换后的模型以及一些其他的信息将会被保存在 `${WORK_DIR}` 中。MMDeploy SDK 可以使用这些信息进行模型推理。
 
 `detection_tensorrt_dynamic-320x320-1344x1344.py` 是一个包含所有转换需要的可配置参数的配置文件。该文件的命名遵循如下规则：
 
@@ -40,7 +40,7 @@ python ${MMDEPLOY_DIR}/tools/deploy.py \
 <任务名>_<推理后端>-[后端特性]_<动态模型支持>.py
 ```
 
-可以很容易的通过文件名来确定最适合的那个配置文件。如果你希望定制自己的转换配置，可以修改配置文件中的具体条目。我们提供了 [如何编写配置文件](../en/tutorials/how_to_write_config.md) 来指导你如何进行编辑。
+可以很容易的通过文件名来确定最适合的那个配置文件。如果你希望定制自己的转换配置，可以修改配置文件中的具体条目。我们提供了 [如何编写配置文件](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_write_config.html) 来指导你如何进行编辑。
 
 ### 模型推理
 
@@ -67,7 +67,7 @@ python ${MMDEPLOY_DIR}/tools/test.py \
     --device cuda:0
 ```
 
-请阅读 [如何进行模型评估](../en/tutorials/how_to_evaluate_a_model.md) 了解关于 `tools/test.py` 的使用细节。
+请阅读 [如何进行模型评估](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_evaluate_a_model.html) 了解关于 `tools/test.py` 的使用细节。
 
 ### 整合 MMDeploy SDK
 
@@ -130,7 +130,7 @@ git submodule update --init --recursive
 pip install -e .
 ```
 
-一旦我们完成MMDeploy的安装，我们需要选择一个模型的推理引擎。这里我们以ONNX Runtime为例。运行下面命令来[安装ONNX Runtime](../en/backends/onnxruntime.md)：
+一旦我们完成MMDeploy的安装，我们需要选择一个模型的推理引擎。这里我们以ONNX Runtime为例。运行下面命令来[安装ONNX Runtime](https://mmdeploy.readthedocs.io/en/latest/backends/onnxruntime.html)：
 
 ```bash
 pip install onnxruntime==1.8.1
@@ -210,6 +210,6 @@ export SPDLOG_LEVEL=warn
 ### 新模型的支持？
 
 如果你希望使用的模型尚未被 MMDeploy 所支持，你可以尝试自己添加对应的支持。我们准备了如下的文档：
-- 请阅读[如何支持新模型](../en/tutorials/how_to_support_new_models.md)了解我们的模型重写机制。
+- 请阅读[如何支持新模型](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_support_new_models.html)了解我们的模型重写机制。
 
 最后，欢迎大家踊跃提PR。
