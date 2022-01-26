@@ -41,6 +41,7 @@ class TRTWrapper(BaseWrapper):
         load_tensorrt_plugin()
         self.engine = engine
         if isinstance(self.engine, str):
+
             self.engine = load_trt_engine(engine)
 
         if not isinstance(self.engine, trt.ICudaEngine):
