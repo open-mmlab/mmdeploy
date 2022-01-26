@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
-import sys
 
 from mmcv import DictAction
 from mmcv.parallel import MMDataParallel
@@ -72,7 +71,8 @@ def parse_args():
     parser.add_argument(
         '--log2file',
         type=str,
-        help='log speed in file format, require speed-test first')
+        help='log evaluation results and speed to file',
+        default=None)
 
     args = parser.parse_args()
     return args
@@ -117,15 +117,12 @@ def main():
         model.CLASSES = model.module.CLASSES
     if args.speed_test:
         with_sync = not is_device_cpu
-        output_file = sys.stdout
-        if args.log2file:
-            output_file = args.log2file
 
         with TimeCounter.activate(
                 warmup=args.warmup,
                 log_interval=args.log_interval,
                 with_sync=with_sync,
-                file=output_file):
+                file=args.log2file):
             outputs = task_processor.single_gpu_test(model, data_loader,
                                                      args.show, args.show_dir)
     else:
@@ -133,7 +130,7 @@ def main():
                                                  args.show_dir)
     task_processor.evaluate_outputs(model_cfg, outputs, dataset, args.metrics,
                                     args.out, args.metric_options,
-                                    args.format_only)
+                                    args.format_only, args.log2file)
 
 
 if __name__ == '__main__':
