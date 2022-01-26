@@ -8,17 +8,9 @@ Installation example using [pip](https://pypi.org/project/openvino-dev/):
 ```bash
 pip install openvino-dev
 ```
-2. Install [PyTorch](https://pytorch.org/get-started/locally/).
-```bash
-pip install torch torchvision
-```
-3. Install [MMCV](https://mmcv.readthedocs.io/en/latest/get_started/installation.html). It is advisable to install the latest version `mmcv-full`.
-```bash
-pip install mmcv-full==1.4.0
-```
-4. Install MMDeploy following the [instructions](../build.md).
+2. Install MMDeploy following the [instructions](../build.md).
 
-5. *`Optional` If you want to use OpenVINO in SDK, you need install OpenVINO with [install_guides](https://docs.openvino.ai/2021.4/openvino_docs_install_guides_installing_openvino_linux.html#install-openvino).
+3. *`Optional` If you want to use OpenVINO in SDK, you need install OpenVINO with [install_guides](https://docs.openvino.ai/2021.4/openvino_docs_install_guides_installing_openvino_linux.html#install-openvino).
 
 To work with models from [MMDetection](https://github.com/open-mmlab/mmdetection/blob/master/docs/get_started.md), you may need to install it additionally.
 
