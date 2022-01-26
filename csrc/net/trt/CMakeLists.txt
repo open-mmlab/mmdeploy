@@ -14,7 +14,7 @@ target_link_directories(${PROJECT_NAME} PUBLIC ${CUDNN_DIR}/lib64 ${CUDNN_DIR}/l
 target_link_libraries(${PROJECT_NAME} PUBLIC ${TENSORRT_LIBRARY} cudnn)
 
 if (BUILD_SHARED_LIBS)
-    target_link_libraries(${PROJECT_NAME} PRIVATE mmdeploy::tensorrt_ops)
+    mmdeploy_load_dynamic(${PROJECT_NAME} mmdeploy::tensorrt_ops)
 else ()
     mmdeploy_load_static(${PROJECT_NAME} mmdeploy::tensorrt_ops::static)
 endif ()

@@ -28,11 +28,12 @@ target_include_directories(${PROJECT_NAME}_obj PRIVATE ${CUDNN_DIR}/include)
 target_include_directories(${PROJECT_NAME}_obj PRIVATE ${CUB_ROOT_DIR})
 target_link_directories(${PROJECT_NAME}_obj PUBLIC ${CUDNN_DIR}/lib64 ${CUDNN_DIR}/lib/x64)
 target_link_libraries(${PROJECT_NAME}_obj
-        PRIVATE ${TENSORRT_LIBRARY} ${CUDA_CUBLAS_LIBRARIES} cudnn)
+        PUBLIC ${TENSORRT_LIBRARY} ${CUDA_CUBLAS_LIBRARIES} cudnn)
 mmdeploy_export(${PROJECT_NAME}_obj)
 
 # Build module library. It is used to convert onnx model to tensorrt engine
-mmdeploy_add_module(${PROJECT_NAME} SHARED $<TARGET_OBJECTS:${PROJECT_NAME}_obj>)
+mmdeploy_add_module(${PROJECT_NAME} SHARED "")
+target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}_obj)
 add_library(mmdeploy::tensorrt_ops ALIAS ${PROJECT_NAME})
 
 
