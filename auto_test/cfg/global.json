@@ -41,6 +41,18 @@
                 ".engine"
             ]
         },
+        "ppl": {
+            "full_name": "pplnn",
+            "precision": [
+                "fp32"
+            ],
+            "do_test": false,
+            "device": "cuda:0",
+            "backend_files": [
+                ".onnx",
+                ".json"
+            ]
+        },
         "ncnn": {
             "full_name": "ncnn",
             "precision": [
