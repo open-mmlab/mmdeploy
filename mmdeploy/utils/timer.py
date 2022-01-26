@@ -103,7 +103,7 @@ class TimeCounter:
                 is `None`.
         """
         assert warmup >= 1
-        logger = get_logger('mmdeploy', log_file=file)
+        logger = get_logger('test', log_file=file)
         cls.logger = logger
         if func_name is not None:
             warnings.warn('func_name must be globally unique if you call '
