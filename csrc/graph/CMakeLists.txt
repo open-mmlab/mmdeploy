@@ -12,4 +12,3 @@ set(SRCS
         unflatten.cpp)
 mmdeploy_add_module(${PROJECT_NAME} "${SRCS}")
 add_library(mmdeploy::graph ALIAS ${PROJECT_NAME})
-#mmdeploy_export(${PROJECT_NAME})

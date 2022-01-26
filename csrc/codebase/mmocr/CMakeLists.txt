@@ -13,4 +13,3 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/third_par
 target_link_libraries(${PROJECT_NAME}
         PRIVATE mmdeploy::transform mmdeploy_opencv_utils)
 add_library(mmdeploy::mmocr ALIAS ${PROJECT_NAME})
-#mmdeploy_export(${PROJECT_NAME})

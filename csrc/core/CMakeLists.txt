@@ -11,7 +11,6 @@ reliably on all generators, or if a new generator is added in the future that ca
 projects using it will be stuck. Even if CONFIGURE_DEPENDS works reliably, there is still a cost
 to perform the check on every rebuild.
 #]==]
-# file(GLOB_RECURSE CORE_SRCS *.cpp)
 set(SPDLOG_LIB)
 find_package(spdlog QUIET)
 if (spdlog_FOUND)
@@ -36,12 +35,10 @@ set(SRCS
         utils/device_utils.cpp
         utils/formatter.cpp
         utils/stacktrace.cpp)
-#build_target(${PROJECT_NAME} "${SRCS}")
 
 mmdeploy_add_library(${PROJECT_NAME} ${SRCS})
 target_compile_definitions(${PROJECT_NAME} PUBLIC -DMMDEPLOY_STATUS_USE_SOURCE_LOCATION=1)
 
-#target_compile_definitions(${PROJECT_NAME} PRIVATE -DMMDEPLOY_API_EXPORTS)
 target_include_directories(${PROJECT_NAME}
         PUBLIC
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/csrc>
@@ -65,5 +62,3 @@ install(FILES ${CMAKE_SOURCE_DIR}/third_party/outcome/outcome-experimental.hpp
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/csrc/experimental
         DESTINATION include/cpp
         FILES_MATCHING PATTERN "*.h")
-
-#export_target(${PROJECT_NAME})

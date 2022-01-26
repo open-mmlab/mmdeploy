@@ -19,4 +19,3 @@ target_include_directories(
         ${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/preprocess>)
 target_compile_definitions(${PROJECT_NAME} PRIVATE -DMMDEPLOY_API_EXPORTS)
 add_library(mmdeploy::transform ALIAS ${PROJECT_NAME})
-#mmdeploy_export(${PROJECT_NAME})

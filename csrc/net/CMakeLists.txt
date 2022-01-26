@@ -26,4 +26,3 @@ endif ()
 
 mmdeploy_add_module(${PROJECT_NAME} net_module.cpp)
 add_library(mmdeploy::net_module ALIAS ${PROJECT_NAME})
-# mmdeploy_export(${PROJECT_NAME})
