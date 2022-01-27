@@ -35,10 +35,9 @@ class TorchscriptWrapper(BaseWrapper):
         >>> print(outputs)
     """
 
-    def __init__(self,
-                 model: Union[str, torch.jit.RecursiveScriptModule],
-                 input_names: Optional[Sequence[str]] = None,
-                 output_names: Optional[Sequence[str]] = None):
+    def __init__(self, model: Union[str, torch.jit.RecursiveScriptModule],
+                 input_names: Optional[Sequence[str]],
+                 output_names: Optional[Sequence[str]]):
         # load custom ops if exist
         custom_ops_path = get_ops_path()
         if osp.exists(custom_ops_path):

@@ -1,4 +1,4 @@
-ir_config = dict(
+onnx_config = dict(
     type='onnx',
     export_params=True,
     keep_initializers_as_inputs=False,
