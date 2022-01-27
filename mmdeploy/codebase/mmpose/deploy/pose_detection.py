@@ -106,8 +106,8 @@ class PoseDetection(BaseTask):
         dataset_name = dataset_info.dataset_name
         flip_pairs = dataset_info.flip_pairs
         batch_data = []
-        if self.deploy_cfg.onnx_config['input_shape'] is not None:
-            image_size = self.deploy_cfg.onnx_config['input_shape']
+        if input_shape is not None:
+            image_size = input_shape
         else:
             image_size = np.array(cfg.data_cfg['image_size'])
         for bbox in bboxes:
