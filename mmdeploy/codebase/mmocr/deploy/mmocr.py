@@ -140,7 +140,7 @@ class MMOCR(MMCodebase):
         """
         import mmocr
         # fixed the bug when using `--show-dir` after mocr v0.4.1
-        if version.parse(mmocr.__version__) < version.parse('0.4.0'):
+        if version.parse(mmocr.__version__) < version.parse('0.4.1'):
             from mmdet.apis import single_gpu_test
         else:
             from mmocr.apis import single_gpu_test
