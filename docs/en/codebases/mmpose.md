@@ -23,8 +23,8 @@ Usually, the mmpose model needs some extra information for input image, but we c
 ```bash
 python tools/deploy.py \
 configs/mmpose/posedetection_tensorrt_static-256x192.py \
-../mmpose/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/hrnet_w48_coco_256x192.py \
-../mmpose/checkpoints/hrnet_w48_coco_256x192-b9e0b3ab_20200708.pth \
+$MMPOSE_DIR/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/hrnet_w48_coco_256x192.py \
+$MMPOSE_DIR/checkpoints/hrnet_w48_coco_256x192-b9e0b3ab_20200708.pth \
 $MMDEPLOY_DIR/demo/resources/human-pose.jpg \
 --work-dir work-dirs/mmpose/topdown/hrnet/trt \
 --device cuda
