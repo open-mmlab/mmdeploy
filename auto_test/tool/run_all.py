@@ -1,6 +1,8 @@
 import imp
 import os
 import json
+import sys
+import traceback
 
 from impl import gen_cmd
 
@@ -18,7 +20,7 @@ test_codebases = [
 def main():
     with open(os.path.join(root, 'cfg', 'global.json'), "r") as fp:
         global_cfg = json.load(fp)
-
+    assert os.path.exists(global_cfg['root']), f'File not exists: {global_cfg["root"]}'
     for codebase in test_codebases:
         with open(os.path.join(root, 'cfg', f'{codebase}.json'), "r") as fp:
             codebase_cfg = json.load(fp)
@@ -34,7 +36,8 @@ def main():
                                 gen_cmd(global_cfg, codebase_cfg, 'test', codebase,
                                         task, backend, model_id,
                                         deploy_cfg_id, run=True)
-                        except Exception:
+                        except Exception as e:
+                            traceback.print_exc(file=sys.stdout)
                             os.makedirs('work_dirs', exist_ok=True)
                             with open('work_dirs/test_log.txt', 'a') as fp:
                                 fp.write(

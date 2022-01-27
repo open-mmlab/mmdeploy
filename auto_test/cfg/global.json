@@ -1,5 +1,5 @@
 {
-    "root": "/home/PJLAB/zhouyifan/anaconda3/envs/pt",
+    "root": "",
     "codebases": {
         "mmseg": {
             "full_name": "mmsegmentation"

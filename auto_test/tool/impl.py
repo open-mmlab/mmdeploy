@@ -91,6 +91,8 @@ def gen_cmd(global_json: dict,
         "
 
     if run:
+        print()
+        print(50 * '----')
         print(command_str)
         if os.system(command_str) != 0:
             os.makedirs('work_dirs', exist_ok=True)
