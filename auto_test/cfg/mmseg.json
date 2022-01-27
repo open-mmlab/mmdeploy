@@ -8,18 +8,23 @@
             },
             {
                 "prefix": "pspnet",
-                "cfg": "pspnet_r50-d8_512x1024_80k_cityscapes.py",
-                "ckpt": "pspnet_r50-d8_512x1024_80k_cityscapes_20200606_112131-2376f12b.pth"
+                "cfg": "pspnet_r50-d8_512x1024_40k_cityscapes.py",
+                "ckpt": "pspnet_r50-d8_512x1024_40k_cityscapes_20200605_003338-2966598c.pth"
             },
             {
                 "prefix": "deeplabv3",
-                "cfg": "deeplabv3_r50-d8_512x1024_80k_cityscapes.py",
-                "ckpt": "deeplabv3_r50-d8_512x1024_80k_cityscapes_20200606_113404-b92cfdd4.pth"
+                "cfg": "deeplabv3_r50-d8_512x1024_40k_cityscapes.py",
+                "ckpt": "deeplabv3_r50-d8_512x1024_40k_cityscapes_20200605_022449-acadc2f8.pth"
             },
             {
                 "prefix": "deeplabv3plus",
-                "cfg": "deeplabv3plus_r50-d8_512x1024_80k_cityscapes.py",
-                "ckpt": "deeplabv3plus_r50-d8_512x1024_80k_cityscapes_20200606_114049-f9fb496d.pth"
+                "cfg": "deeplabv3plus_r50-d8_512x1024_40k_cityscapes.py",
+                "ckpt": "deeplabv3plus_r50-d8_512x1024_40k_cityscapes_20200605_094610-d222ffcd.pth"
+            },
+            {
+                "prefix": "fastscnn",
+                "cfg": "fast_scnn_lr0.12_8x4_160k_cityscapes.py",
+                "ckpt": "fast_scnn_lr0.12_8x4_160k_cityscapes_20210630_164853-0cec9937.pth"
             }
         ]
     },
@@ -30,25 +35,27 @@
             "export_img": "demo/demo.png",
             "test_img": "demo/demo.png",
             "default": "1024x2048",
-            "metric": "cityscapes",
+            "metric": "mIoU",
             "cfgs": {
                 "1024x2048": {
                     "ort": [
-                        "segmentation_onnxruntime_dynamic.py"
+                        "segmentation_onnxruntime_static.py"
                     ],
                     "trt": [
                         "segmentation_tensorrt_static-1024x2048.py",
                         "segmentation_tensorrt-fp16_static-1024x2048.py",
                         "segmentation_tensorrt-int8_static-1024x2048.py"
                     ],
-                    "ncnn": [
-                        "segmentation_ncnn_static-1024x2048.py"
-                    ],
                     "ppl": [
-                        "segmentation_pplnn_dynamic-1024x2048.py"
+                        "segmentation_pplnn_static-1024x2048.py"
                     ],
                     "op": [
-                        "segmentation_openvino_dynamic-1024x2048.py"
+                        "segmentation_openvino_static-1024x2048.py"
+                    ]
+                },
+                "512x512": {
+                    "ncnn": [
+                        "segmentation_ncnn_static-512x512.py"
                     ]
                 }
             }
