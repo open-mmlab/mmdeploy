@@ -7,12 +7,10 @@ find_package(spdlog REQUIRED)
 
 function(add_example name)
   add_executable(${name} ${name}.cpp)
-  target_link_libraries(${name} PRIVATE
-          -Wl,--disable-new-dtags
-          MMDeployLibs
-          spdlog::spdlog)
+  target_link_libraries(${name} PRIVATE -Wl,--disable-new-dtags)
   mmdeploy_load_static(${name} MMDeployStaticModules)
   mmdeploy_load_dynamic(${name} MMDeployDynamicModules)
+  target_link_libraries(${name} PRIVATE MMDeployLibs spdlog::spdlog)
 endfunction()
 
 add_example(image_classification)

@@ -8,17 +8,18 @@ include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
 file(GLOB_RECURSE NCNN_OPS_SRCS *.cpp)
 add_library(${PROJECT_NAME}_obj OBJECT "${NCNN_OPS_SRCS}")
 set_target_properties(${PROJECT_NAME}_obj PROPERTIES POSITION_INDEPENDENT_CODE 1)
-target_link_libraries(${PROJECT_NAME}_obj PUBLIC ncnn)
+target_include_directories(${PROJECT_NAME}_obj PUBLIC
+        $<TARGET_PROPERTY:ncnn,INTERFACE_INCLUDE_DIRECTORIES>)
+set(_COMMON_INCLUDE_DIRS
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/csrc>)
+target_include_directories(${PROJECT_NAME}_obj
+        PUBLIC ${_COMMON_INCLUDE_DIRS})
 mmdeploy_export(${PROJECT_NAME}_obj)
 
-mmdeploy_add_module(${PROJECT_NAME} SHARED "")
+mmdeploy_add_library(${PROJECT_NAME} SHARED "")
 target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}_obj)
+target_include_directories(${PROJECT_NAME}
+        PUBLIC ${_COMMON_INCLUDE_DIRS})
+
 add_library(mmdeploy::ncnn_ops ALIAS ${PROJECT_NAME})
-
-
-if (MMDEPLOY_BUILD_SDK)
-    ## Build static library. SDK's uses it to build `ncnn_net` module
-    mmdeploy_add_module(${PROJECT_NAME}_static STATIC "")
-    target_link_libraries(${PROJECT_NAME}_static PRIVATE ${PROJECT_NAME}_obj)
-    add_library(mmdeploy::ncnn_ops::static ALIAS ${PROJECT_NAME}_static)
-endif ()

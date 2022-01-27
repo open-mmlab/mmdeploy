@@ -56,6 +56,7 @@ TEST_CASE("test detector's c api", "[detector]") {
       auto model_list = gResources.LocateModelResources(fs::path{"mmdet"} / backend);
       REQUIRE(!model_list.empty());
       for (auto &model_path : model_list) {
+        MMDEPLOY_INFO("model: {}", model_path);
         for (auto &device_name : gResources.device_names(backend)) {
           test(device_name, model_path, img_lists);
         }

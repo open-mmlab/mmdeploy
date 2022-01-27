@@ -75,7 +75,7 @@ function (mmdeploy_load_static NAME)
     else ()
         _mmdeploy_flatten_modules(_MODULE_LIST ${ARGN})
         target_link_libraries(${NAME} PRIVATE
-                -Wl,--no-whole-archive
+                -Wl,--whole-archive
                 ${_MODULE_LIST}
                 -Wl,--no-whole-archive)
     endif ()

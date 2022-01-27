@@ -23,9 +23,9 @@ mmdeploy_python_add_module(restorer)
 
 pybind11_add_module(${PROJECT_NAME} ${MMDEPLOY_PYTHON_SRCS})
 
-target_link_libraries(${PROJECT_NAME} PRIVATE MMDeployLibs)
 mmdeploy_load_static(${PROJECT_NAME} MMDeployStaticModules)
 mmdeploy_load_dynamic(${PROJECT_NAME} MMDeployDynamicModules)
+target_link_libraries(${PROJECT_NAME} PRIVATE MMDeployLibs)
 
 target_include_directories(${PROJECT_NAME} PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
