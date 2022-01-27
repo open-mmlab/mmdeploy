@@ -13,18 +13,59 @@ import_codebase(Codebase.MMPOSE)
 input = torch.rand(1)
 
 
+class ListDummyMSMUHead(torch.nn.Module):
+
+    def __init__(self,
+                 out_shape,
+                 unit_channels=256,
+                 out_channels=17,
+                 num_stages=4,
+                 num_units=4,
+                 use_prm=False,
+                 norm_cfg=dict(type='BN'),
+                 loss_keypoint=None,
+                 train_cfg=None,
+                 test_cfg=None):
+        from mmpose.models.heads import TopdownHeatmapMSMUHead
+        super().__init__()
+        self.model = TopdownHeatmapMSMUHead(
+            out_shape,
+            unit_channels=unit_channels,
+            out_channels=out_channels,
+            num_stages=num_stages,
+            num_units=num_units,
+            use_prm=use_prm,
+            norm_cfg=norm_cfg,
+            loss_keypoint=loss_keypoint,
+            train_cfg=train_cfg,
+            test_cfg=test_cfg)
+
+    def inference_model(self, x, flip_pairs=None):
+        assert len(x) == self.model.num_stages * self.model.num_units, \
+            'the length of x should be' + \
+            f'{self.model.num_stages * self.model.num_units}, got: {len(x)}'
+        model_inputs = []
+        for i in range(self.model.num_stages):
+            stage_inputs = []
+            for j in range(self.model.num_units):
+                stage_inputs.append(x[i * self.model.num_units + j])
+            model_inputs.append(stage_inputs)
+        return self.model.inference_model(model_inputs, flip_pairs=flip_pairs)
+
+
 def get_top_down_heatmap_msmu_head_model():
-    from mmpose.models.heads import TopdownHeatmapMSMUHead
-    model = TopdownHeatmapMSMUHead(
+    model = ListDummyMSMUHead(
         (32, 48),
         unit_channels=2,
+        num_stages=1,
+        num_units=1,
         loss_keypoint=dict(type='JointsMSELoss', use_target_weight=False))
 
     model.requires_grad_(False)
     return model
 
 
-@pytest.mark.parametrize('backend_type', [Backend.DEFAULT])
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
 def test_top_down_heatmap_msmu_head_inference_model(backend_type: Backend):
     check_backend(backend_type, True)
     model = get_top_down_heatmap_msmu_head_model()
@@ -34,37 +75,14 @@ def test_top_down_heatmap_msmu_head_inference_model(backend_type: Backend):
             backend_config=dict(type=backend_type.value),
             onnx_config=dict(input_shape=None, output_names=['output']),
             codebase_config=dict(type='mmpose', task='PoseDetection')))
-    img = [[
-        torch.rand((1, 2, 32, 48)),
-        torch.rand((1, 2, 32, 48)),
-        torch.rand((1, 2, 32, 48)),
-        torch.rand((1, 2, 32, 48))
-    ],
-           [
-               torch.rand((1, 2, 16, 24)),
-               torch.rand((1, 2, 16, 24)),
-               torch.rand((1, 2, 16, 24)),
-               torch.rand((1, 2, 16, 24))
-           ],
-           [
-               torch.rand((1, 2, 8, 12)),
-               torch.rand((1, 2, 8, 12)),
-               torch.rand((1, 2, 8, 12)),
-               torch.rand((1, 2, 8, 12))
-           ],
-           [
-               torch.rand((1, 2, 4, 6)),
-               torch.rand((1, 2, 4, 6)),
-               torch.rand((1, 2, 4, 6)),
-               torch.rand((1, 2, 4, 6))
-           ]]
+    img = [[torch.rand((1, 2, 32, 48))]]
     flatten_img = []
     for stage in img:
         for unit in stage:
             flatten_img.append(unit)
-    model_outputs = model.inference_model(img)
+    model_outputs = model.inference_model(flatten_img)
     wrapped_model = WrapModel(model, 'inference_model')
-    rewrite_inputs = {'x': img}
+    rewrite_inputs = {'x': flatten_img}
     rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
@@ -89,7 +107,7 @@ def get_top_down_heatmap_simple_head_model():
     return model
 
 
-@pytest.mark.parametrize('backend_type', [Backend.DEFAULT])
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
 def test_top_down_heatmap_simple_head_inference_model(backend_type: Backend):
     check_backend(backend_type, True)
     model = get_top_down_heatmap_simple_head_model()
@@ -183,7 +201,7 @@ def get_top_down_model():
     return model
 
 
-@pytest.mark.parametrize('backend_type', [Backend.DEFAULT])
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
 def test_cross_resolution_weighting_forward(backend_type: Backend):
     check_backend(backend_type, True)
     model = get_cross_resolution_weighting_model()
@@ -216,7 +234,7 @@ def test_cross_resolution_weighting_forward(backend_type: Backend):
             model_output, rewrite_output, rtol=1e-03, atol=1e-05)
 
 
-@pytest.mark.parametrize('backend_type', [Backend.DEFAULT])
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
 def test_top_down_forward(backend_type: Backend):
     check_backend(backend_type, True)
     model = get_top_down_model()
