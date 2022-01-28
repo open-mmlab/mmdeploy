@@ -65,8 +65,8 @@ def get_top_down_heatmap_msmu_head_model():
     return model
 
 
-@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME,
-                                          Backend.TENSORRT])
+@pytest.mark.parametrize('backend_type',
+                         [Backend.ONNXRUNTIME, Backend.TENSORRT])
 def test_top_down_heatmap_msmu_head_inference_model(backend_type: Backend):
     check_backend(backend_type, True)
     model = get_top_down_heatmap_msmu_head_model()
@@ -108,8 +108,8 @@ def get_top_down_heatmap_simple_head_model():
     return model
 
 
-@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME,
-                                          Backend.TENSORRT])
+@pytest.mark.parametrize('backend_type',
+                         [Backend.ONNXRUNTIME, Backend.TENSORRT])
 def test_top_down_heatmap_simple_head_inference_model(backend_type: Backend):
     check_backend(backend_type, True)
     model = get_top_down_heatmap_simple_head_model()
@@ -203,8 +203,8 @@ def get_top_down_model():
     return model
 
 
-@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME,
-                                          Backend.TENSORRT])
+@pytest.mark.parametrize('backend_type',
+                         [Backend.ONNXRUNTIME, Backend.TENSORRT])
 def test_cross_resolution_weighting_forward(backend_type: Backend):
     check_backend(backend_type, True)
     model = get_cross_resolution_weighting_model()
@@ -238,8 +238,8 @@ def test_cross_resolution_weighting_forward(backend_type: Backend):
             model_output, rewrite_output, rtol=1e-03, atol=1e-05)
 
 
-@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME,
-                                          Backend.TENSORRT])
+@pytest.mark.parametrize('backend_type',
+                         [Backend.ONNXRUNTIME, Backend.TENSORRT])
 def test_top_down_forward(backend_type: Backend):
     check_backend(backend_type, True)
     model = get_top_down_model()
