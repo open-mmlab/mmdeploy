@@ -106,6 +106,10 @@ class PoseDetection(BaseTask):
         dataset_name = dataset_info.dataset_name
         flip_pairs = dataset_info.flip_pairs
         batch_data = []
+        if input_shape is not None:
+            image_size = input_shape
+        else:
+            image_size = np.array(cfg.data_cfg['image_size'])
         for bbox in bboxes:
             center, scale = _box2cs(cfg, bbox)
 
@@ -130,7 +134,7 @@ class PoseDetection(BaseTask):
                 'rotation':
                 0,
                 'ann_info': {
-                    'image_size': np.array(cfg.data_cfg['image_size']),
+                    'image_size': image_size,
                     'num_joints': cfg.data_cfg['num_joints'],
                     'flip_pairs': flip_pairs
                 }
