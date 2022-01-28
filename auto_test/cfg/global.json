@@ -15,6 +15,9 @@
         },
         "mmocr": {
             "full_name": "mmocr"
+        },
+        "mmpose": {
+            "full_name": "mmpose"
         }
     },
     "backends": {

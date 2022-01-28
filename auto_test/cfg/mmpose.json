@@ -1,0 +1,50 @@
+{
+    "models": {
+        "pose": [
+            {
+                "prefix": "body/2d_kpt_sview_rgb_img/topdown_heatmap/coco",
+                "cfg": "hrnet_w48_coco_256x192.py",
+                "ckpt": "hrnet_w48_coco_256x192-b9e0b3ab_20200708.pth"
+            },
+            {
+                "prefix": "body/2d_kpt_sview_rgb_img/topdown_heatmap/coco",
+                "cfg": "4xmspn50_coco_256x192.py",
+                "ckpt": "4xmspn50_coco_256x192-7b837afb_20201123.pth"
+            },
+            {
+                "prefix": "body/2d_kpt_sview_rgb_img/topdown_heatmap/coco",
+                "cfg": "litehrnet_30_coco_256x192.py",
+                "ckpt": "litehrnet30_coco_256x192-4176555b_20210626.pth"
+            }
+        ]
+    },
+    "deploy_cfgs": {
+        "pose": {
+            "full_name": "pose",
+            "folder": ".",
+            "export_img": "demo/pose.jpg",
+            "test_img": "demo/pose.jpg",
+            "default": "256x192",
+            "metric": "mAP",
+            "cfgs": {
+                "256x192": {
+                    "ppl": [
+                        "pose-detection_pplnn_static-256x192.py"
+                    ],
+                    "ort": [
+                        "pose-detection_onnxruntime_static.py"
+                    ],
+                    "trt": [
+                        "pose-detection_tensorrt-fp16_static-256x192.py"
+                    ],
+                    "op": [
+                        "pose-detection_openvino_static-256x192.py"
+                    ],
+                    "ncnn": [
+                        "pose-detection_ncnn_static-256x192.py"
+                    ]
+                }
+            }
+        }
+    }
+}

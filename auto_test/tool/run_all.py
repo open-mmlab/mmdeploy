@@ -1,8 +1,5 @@
-import imp
 import os
 import json
-import sys
-import traceback
 
 from impl import gen_cmd
 
@@ -13,7 +10,8 @@ test_codebases = [
     "mmedit",
     "mmseg",
     "mmocr",
-    "mmdet"
+    "mmdet",
+    "mmpose"
 ]
 
 
@@ -36,8 +34,7 @@ def main():
                                 gen_cmd(global_cfg, codebase_cfg, 'test', codebase,
                                         task, backend, model_id,
                                         deploy_cfg_id, run=True)
-                        except Exception as e:
-                            traceback.print_exc(file=sys.stdout)
+                        except Exception:
                             os.makedirs('work_dirs', exist_ok=True)
                             with open('work_dirs/test_log.txt', 'a') as fp:
                                 fp.write(
