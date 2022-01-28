@@ -65,7 +65,7 @@ def get_top_down_heatmap_msmu_head_model():
     return model
 
 
-@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME, Backend.TENSORRT])
 def test_top_down_heatmap_msmu_head_inference_model(backend_type: Backend):
     check_backend(backend_type, True)
     model = get_top_down_heatmap_msmu_head_model()
@@ -107,7 +107,7 @@ def get_top_down_heatmap_simple_head_model():
     return model
 
 
-@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME, Backend.TENSORRT])
 def test_top_down_heatmap_simple_head_inference_model(backend_type: Backend):
     check_backend(backend_type, True)
     model = get_top_down_heatmap_simple_head_model()
@@ -201,7 +201,7 @@ def get_top_down_model():
     return model
 
 
-@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME, Backend.TENSORRT])
 def test_cross_resolution_weighting_forward(backend_type: Backend):
     check_backend(backend_type, True)
     model = get_cross_resolution_weighting_model()
@@ -212,6 +212,7 @@ def test_cross_resolution_weighting_forward(backend_type: Backend):
         torch.rand(1, 8, 4, 4),
         torch.rand(1, 16, 2, 2)
     ]
+
     deploy_cfg = mmcv.Config(
         dict(
             backend_config=dict(type=backend_type.value),
@@ -234,16 +235,34 @@ def test_cross_resolution_weighting_forward(backend_type: Backend):
             model_output, rewrite_output, rtol=1e-03, atol=1e-05)
 
 
-@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME, Backend.TENSORRT])
 def test_top_down_forward(backend_type: Backend):
     check_backend(backend_type, True)
     model = get_top_down_model()
     model.cpu().eval()
-    deploy_cfg = mmcv.Config(
-        dict(
-            backend_config=dict(type=backend_type.value),
-            onnx_config=dict(input_shape=None, output_names=['output']),
-            codebase_config=dict(type='mmpose', task='PoseDetection')))
+    if backend_type.value == 'tensorrt':
+        deploy_cfg = mmcv.Config(
+            dict(
+                backend_config=dict(
+                    type=backend_type.value,
+                    common_config=dict(max_workspace_size=1 << 30),
+                    model_inputs=[
+                        dict(
+                            input_shapes=dict(
+                                input=dict(
+                                    min_shape=[1, 3, 32, 32],
+                                    opt_shape=[1, 3, 32, 32],
+                                    max_shape=[1, 3, 32, 32])))
+                    ]),
+                onnx_config=dict(
+                    input_shape=[32, 32], output_names=['output']),
+                codebase_config=dict(type='mmcls', task='Classification')))
+    else:
+        deploy_cfg = mmcv.Config(
+            dict(
+                backend_config=dict(type=backend_type.value),
+                onnx_config=dict(input_shape=None, output_names=['output']),
+                codebase_config=dict(type='mmpose', task='PoseDetection')))
     img = torch.rand((1, 3, 32, 32))
     img_metas = {
         'image_file':
