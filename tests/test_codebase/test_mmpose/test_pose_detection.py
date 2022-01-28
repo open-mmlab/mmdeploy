@@ -42,6 +42,20 @@ num_output_channels = model_cfg['data_cfg']['num_output_channels']
 
 
 def test_create_input():
+    model_cfg = load_config(model_cfg_path)[0]
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(type='onnxruntime'),
+            codebase_config=dict(type='mmpose', task='PoseDetection'),
+            onnx_config=dict(
+                type='onnx',
+                export_params=True,
+                keep_initializers_as_inputs=False,
+                opset_version=11,
+                save_file='end2end.onnx',
+                input_names=['input'],
+                output_names=['output'],
+                input_shape=None)))
     task_processor = build_task_processor(model_cfg, deploy_cfg, 'cpu')
     inputs = task_processor.create_input(img, input_shape=img_shape)
     assert isinstance(inputs, tuple) and len(inputs) == 2
