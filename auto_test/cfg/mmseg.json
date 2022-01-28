@@ -30,7 +30,7 @@
             "export_img": "demo/demo.png",
             "test_img": "demo/demo.png",
             "default": "1024x2048",
-            "metric": "cityscapes",
+            "metric": "mIoU",
             "cfgs": {
                 "1024x2048": {
                     "ort": [
