@@ -41,6 +41,12 @@ img = np.random.rand(*img_shape, 3).astype(np.float32)
 num_output_channels = model_cfg['data_cfg']['num_output_channels']
 
 
+def test_create_input():
+    task_processor = build_task_processor(model_cfg, deploy_cfg, 'cpu')
+    inputs = task_processor.create_input(img, input_shape=img_shape)
+    assert isinstance(inputs, tuple) and len(inputs) == 2
+
+
 def test_init_pytorch_model():
     from mmpose.models.detectors.base import BasePose
     model = task_processor.init_pytorch_model(None)
@@ -63,11 +69,6 @@ def backend_model():
 
 def test_init_backend_model(backend_model):
     assert isinstance(backend_model, torch.nn.Module)
-
-
-def test_create_input():
-    inputs = task_processor.create_input(img, input_shape=img_shape)
-    assert isinstance(inputs, tuple) and len(inputs) == 2
 
 
 def test_run_inference(backend_model):
