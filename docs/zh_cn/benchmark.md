@@ -1348,7 +1348,6 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">0.748</td>
     <td align="center">-</td>
     <td align="center">-</td>
-    <td align="center">-</td>
     <td rowspan="2">$MMPOSE_DIR/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/hrnet_w48_coco_256x192.py</td>
   </tr>
   <tr>
@@ -1357,7 +1356,6 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
     <td align="center">0.802</td>
     <td align="center">0.802</td>
-    <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
   </tr>
