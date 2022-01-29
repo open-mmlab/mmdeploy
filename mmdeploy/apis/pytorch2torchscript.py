@@ -1,11 +1,10 @@
 import os.path as osp
-from subprocess import call
 from typing import Any, Optional, Union
 
 import mmcv
 import torch
 
-from mmdeploy.backend.torchscript import get_ops_path, get_optimizer_path
+from mmdeploy.backend.torchscript import get_ops_path
 from mmdeploy.core import RewriterContext, patch_model
 from mmdeploy.utils import (get_backend, get_input_shape, get_root_logger,
                             load_config)
@@ -41,16 +40,20 @@ def torch2torchscript_impl(model: torch.nn.Module, input: torch.Tensor,
                 True):
         ts_model = torch.jit.trace(patched_model, input)
 
-    # save model
-    torch.jit.save(ts_model, output_file)
-
     # perform optimize
-    optimizers_path = get_optimizer_path()
-    if len(optimizers_path) > 0:
-        # optimize model
+    logger = get_root_logger()
+    try:
+        from mmdeploy.backend.torchscript import ts_optimizer
         logger = get_root_logger()
         logger.info('perform torchscript optimizer.')
-        call([optimizers_path, '-backend=' + backend, output_file])
+        ts_optimizer.optimize_for_backend(
+            ts_model._c, ir='torchscript', backend=backend)
+    except Exception:
+        logger.warn(
+            'ts_optimizer not found, optimize will not be performed.\n')
+
+    # save model
+    torch.jit.save(ts_model, output_file)
 
 
 def torch2torchscript(img: Any,
