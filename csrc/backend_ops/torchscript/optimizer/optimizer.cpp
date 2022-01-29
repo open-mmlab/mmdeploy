@@ -26,6 +26,22 @@ Module optimize_for_torchscript(const Module& model) {
   return frozen_model;
 }
 
+Module optimize_for_onnx(const Module& model) {
+  auto frozen_model = freeze_module(model, {"training"});
+  auto graph = frozen_model.get_method("forward").graph();
+  OptimizeFrozenGraph(graph, true);
+
+#if TORCH_VERSION_MINOR >= 9
+  FuseFrozenConvAddRelu(graph);
+  ConvertFrozenOpsToMKLDNN(graph);
+  FrozenLinearTranspose(graph);
+#endif
+
+  // TODO: add more custom passes
+
+  return frozen_model;
+}
+
 // TODO: add optimizer for other backend/onnx
 
 }  // namespace mmdeploy
