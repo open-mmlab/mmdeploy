@@ -1318,9 +1318,10 @@ GPU: ncnn, TensorRT, PPLNN
     <th align="center" colspan="4">MMpose</th>
     <th align="center">Pytorch</th>
     <th align="center">ONNXRuntime</th>
-    <th align="center" colspan="3">TensorRT</th>
+    <th align="center" colspan="2">TensorRT</th>
     <th align="center">PPLNN</th>
-    <th align="center"></th>
+    <th align="center">OpenVINO</th>
+    <th align="center">Model Config</th>
   </tr>
 </thead>
 <tbody>
@@ -1333,8 +1334,8 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">fp32</td>
     <td align="center">fp32</td>
     <td align="center">fp16</td>
-    <td align="center">int8</td>
     <td align="center">fp16</td>
+    <td align="center">fp32</td>
     <td>model config file</td>
   </tr>
   <tr>
@@ -1343,21 +1344,21 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center" rowspan="2">COCO</td>
     <td align="center">AP</td>
     <td align="center">0.756</td>
-    <td align="center">-</td>
     <td align="center">0.748</td>
     <td align="center">0.748</td>
+    <td align="center">0.748</td>
     <td align="center">-</td>
-    <td align="center">-</td>
+    <td align="center">0.748</td>
     <td rowspan="2">$MMPOSE_DIR/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/hrnet_w48_coco_256x192.py</td>
   </tr>
   <tr>
     <td align="center">AR</td>
     <td align="center">0.806</td>
-    <td align="center">-</td>
     <td align="center">0.802</td>
     <td align="center">0.802</td>
+    <td align="center">0.802</td>
     <td align="center">-</td>
-    <td align="center">-</td>
+    <td align="center">0.802</td>
   </tr>
   <tr>
     <td align="center" rowspan="2">LiteHRNet</td>
@@ -1365,21 +1366,21 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center" rowspan="2">COCO</td>
     <td align="center">AP</td>
     <td align="center">0.675</td>
-    <td align="center">-</td>
+    <td align="center">0.663</td>
     <td align="center">0.663</td>
     <td align="center">-</td>
     <td align="center">-</td>
-    <td align="center">-</td>
+    <td align="center">0.663</td>
     <td rowspan="2">$MMPOSE_DIR/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/litehrnet_30_coco_256x192.py</td>
   </tr>
   <tr>
     <td align="center">AR</td>
     <td align="center">0.736</td>
-    <td align="center">-</td>
+    <td align="center">0.728</td>
     <td align="center">0.728</td>
     <td align="center">-</td>
     <td align="center">-</td>
-    <td align="center">-</td>
+    <td align="center">0.728</td>
   </tr>
   <tr>
     <td align="center" rowspan="2">MSPN </td>
@@ -1387,21 +1388,21 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center" rowspan="2">COCO</td>
     <td align="center">AP</td>
     <td align="center">0.764</td>
-    <td align="center">-</td>
     <td align="center">0.762</td>
     <td align="center">0.762</td>
+    <td align="center">0.762</td>
     <td align="center">-</td>
-    <td align="center">-</td>
+    <td align="center">0.762</td>
     <td rowspan="2">$MMPOSE_DIR/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/4xmspn50_coco_256x192.py</td>
   </tr>
   <tr>
     <td align="center">AR</td>
     <td align="center">0.826</td>
-    <td align="center">-</td>
     <td align="center">0.825</td>
     <td align="center">0.825</td>
+    <td align="center">0.825</td>
     <td align="center">-</td>
-    <td align="center">-</td>
+    <td align="center">0.825</td>
   </tr>
 </tbody>
 </table>
