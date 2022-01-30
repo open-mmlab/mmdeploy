@@ -79,7 +79,7 @@ class ORTWrapper(BaseWrapper):
             input_tensor = input_tensor.contiguous()
             if not self.is_cuda_available:
                 input_tensor = input_tensor.cpu()
-            element_type = input_tensor.numpy().dtype
+            element_type = input_tensor.cpu().numpy().dtype
             self.io_binding.bind_input(
                 name=name,
                 device_type=self.device_type,
