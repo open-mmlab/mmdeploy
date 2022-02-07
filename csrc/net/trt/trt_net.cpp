@@ -150,7 +150,11 @@ Result<void> TRTNet::Init(const Value& args) {
   context_ = engine_->createExecutionContext();
   TRT_TRY(!!context_, "failed to create TRT execution context");
 
+#if NV_TENSORRT_MAJOR > 7 && NV_TENSORRT_MINOR > 1
   context_->setOptimizationProfileAsync(0, static_cast<cudaStream_t>(stream_.GetNative()));
+#else
+  context_->setOptimizationProfile(0);
+#endif
   OUTCOME_TRY(stream_.Wait());
 
   return success();
