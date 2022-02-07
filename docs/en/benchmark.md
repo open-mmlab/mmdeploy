@@ -1342,7 +1342,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center" rowspan="2">Pose Detection</td>
     <td align="center" rowspan="2">COCO</td>
     <td align="center">AP</td>
-    <td align="center">0.756</td>
+    <td align="center">0.748</td>
     <td align="center">0.748</td>
     <td align="center">0.748</td>
     <td align="center">0.748</td>
@@ -1352,7 +1352,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
   </tr>
   <tr>
     <td align="center">AR</td>
-    <td align="center">0.806</td>
+    <td align="center">0.802</td>
     <td align="center">0.802</td>
     <td align="center">0.802</td>
     <td align="center">0.802</td>
@@ -1364,7 +1364,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center" rowspan="2">Pose Detection</td>
     <td align="center" rowspan="2">COCO</td>
     <td align="center">AP</td>
-    <td align="center">0.675</td>
+    <td align="center">0.663</td>
     <td align="center">0.663</td>
     <td align="center">0.663</td>
     <td align="center">-</td>
@@ -1374,7 +1374,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
   </tr>
   <tr>
     <td align="center">AR</td>
-    <td align="center">0.736</td>
+    <td align="center">0.728</td>
     <td align="center">0.728</td>
     <td align="center">0.728</td>
     <td align="center">-</td>
@@ -1386,7 +1386,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center" rowspan="2">Pose Detection</td>
     <td align="center" rowspan="2">COCO</td>
     <td align="center">AP</td>
-    <td align="center">0.764</td>
+    <td align="center">0.762</td>
     <td align="center">0.762</td>
     <td align="center">0.762</td>
     <td align="center">0.762</td>
@@ -1396,7 +1396,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
   </tr>
   <tr>
     <td align="center">AR</td>
-    <td align="center">0.826</td>
+    <td align="center">0.825</td>
     <td align="center">0.825</td>
     <td align="center">0.825</td>
     <td align="center">0.825</td>
@@ -1417,3 +1417,5 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
 - DBNet uses the interpolate mode `nearest` in the neck of the model, which TensorRT-7 applies a quite different strategy from Pytorch. To make the repository compatible with TensorRT-7, we rewrite the neck to use the interpolate mode `bilinear` which improves final detection performance. To get the matched performance with Pytorch, TensorRT-8+ is recommended, which the interpolate methods are all the same as Pytorch.
 
 - Mask AP of Mask R-CNN drops by 1% for the backend. The main reason is that the predicted masks are directly interpolated to original image in PyTorch, while they are at first interpolated to the preprocessed input image of the model and then to original image in other backends.
+
+- MMPose models are tested with `flip_test` explicitly set to `False` in model configs.
