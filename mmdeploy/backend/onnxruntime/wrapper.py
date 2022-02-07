@@ -79,8 +79,9 @@ class ORTWrapper(BaseWrapper):
             input_tensor = input_tensor.contiguous()
             if not self.is_cuda_available:
                 input_tensor = input_tensor.cpu()
-            # Avoid unnecessary data move between host and device
-            element_type = input_tensor.new_zeros(1, device='cpu').numpy().dtype
+            # Avoid unnecessary data transfer between host and device
+            element_type = input_tensor.new_zeros(
+                1, device='cpu').numpy().dtype
             self.io_binding.bind_input(
                 name=name,
                 device_type=self.device_type,
