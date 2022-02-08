@@ -4,6 +4,7 @@ from typing import Optional, Union
 import mmcv
 import torch
 from mmcv.utils import Registry
+from packaging import version
 from torch.utils.data import DataLoader, Dataset
 
 from mmdeploy.codebase.base import CODEBASE, BaseTask, MMCodebase
@@ -137,6 +138,11 @@ class MMOCR(MMCodebase):
         Returns:
             list: The prediction results.
         """
-        from mmdet.apis import single_gpu_test
+        import mmocr
+        # fixed the bug when using `--show-dir` after mocr v0.4.1
+        if version.parse(mmocr.__version__) < version.parse('0.4.1'):
+            from mmdet.apis import single_gpu_test
+        else:
+            from mmocr.apis import single_gpu_test
         outputs = single_gpu_test(model, data_loader, show, out_dir, **kwargs)
         return outputs

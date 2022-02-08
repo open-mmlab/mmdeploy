@@ -125,7 +125,7 @@ class End2EndModel(BaseBackendModel):
     def show_result(self,
                     img: np.ndarray,
                     result: list,
-                    win_name: str,
+                    win_name: str = '',
                     show: bool = True,
                     score_thr: float = 0.3,
                     out_file: str = None):
