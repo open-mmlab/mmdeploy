@@ -36,7 +36,7 @@ ONNX 配置文件描述了如何将pytorch模型转换为ONNX模型。
 - `keep_initializers_as_inputs`: 
 如果为 True，则所有初始化器（通常对应为参数）也将作为输入导出添加到计算图中。 如果为 False，则初始化器不会作为输入导出添加到计算图中，仅将非参数输入添加到计算图中。
 
-- `opset_version`: ONNX的OP版本。默认为11。
+- `opset_version`: ONNX的OP版本，默认为11。
 - `save_file`: 输出ONNX模型文件。
 - `input_names`: 模型计算图中输入节点的名称。
 - `output_names`: 模型计算图中输出节点的名称。
@@ -88,8 +88,8 @@ OpenMMLab 系列代码库配置部分包含代码库类型和任务类型等信�
 
 #### OpenMMLab系列代码库配置文件参数说明
 
-- `type`: OpenMMLab 系列模型代码库, 包括 `mmcls`, `mmdet`, `mmseg`, `mmocr`, `mmedit`.
-- `task`: OpenMMLab 系列模型任务类型, 具体请参考 [OpenMMLab 系列模型任务列表](#list-of-tasks-in-all-codebases).
+- `type`: OpenMMLab 系列模型代码库， 包括 `mmcls`， `mmdet`， `mmseg`， `mmocr`， `mmedit`。
+- `task`: OpenMMLab 系列模型任务类型， 具体请参考 [OpenMMLab 系列模型任务列表](#list-of-tasks-in-all-codebases)。
 
 ##### 示例
 
@@ -99,9 +99,9 @@ codebase_config = dict(type='mmcls', task='Classification')
 
 ### 3. 如何编写推理框架配置文件
 
-推理框架配置文件主要用于指定模型运行在哪个推理框架，并提供模型在推理框架运行时所需的信息，具体参考 [ONNX Runtime](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/backends/onnxruntime.md), [TensorRT](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/backends/tensorrt.md), [NCNN](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/backends/ncnn.md), [PPLNN](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/backends/pplnn.md)。
+推理框架配置文件主要用于指定模型运行在哪个推理框架，并提供模型在推理框架运行时所需的信息，具体参考 [ONNX Runtime](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/backends/onnxruntime.md)， [TensorRT](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/backends/tensorrt.md)， [NCNN](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/backends/ncnn.md)， [PPLNN](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/backends/pplnn.md)。
 
-- `type`: 模型推理框架, 包括 `onnxruntime`, `ncnn`, `pplnn`, `tensorrt`, `openvino`。
+- `type`: 模型推理框架, 包括 `onnxruntime`， `ncnn`， `pplnn`， `tensorrt`， `openvino`。
 
 #### 示例
 
