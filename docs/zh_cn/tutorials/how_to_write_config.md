@@ -1,4 +1,4 @@
-## 学习如何配置文件
+## 如何配置文件
 
 <!-- This tutorial describes how to write a config for model conversion and deployment. A deployment config includes `onnx config`, `codebase config`, `backend config`. -->
 这篇教程介绍了如何编写模型转换和部署的配置文件。部署配置文件包括`onnx config`， `codebase config`， `backend config`。
