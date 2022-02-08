@@ -99,7 +99,7 @@ codebase_config = dict(type='mmcls', task='Classification')
 
 ### 3. 如何编写推理框架配置文件
 
-推理框架配置文件主要用于指定模型运行在哪个推理框架，并提供模型在推理框架运行时所需的信息, 具体参考 [ONNX Runtime](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/backends/onnxruntime.md), [TensorRT](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/backends/tensorrt.md), [NCNN](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/backends/ncnn.md), [PPLNN](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/backends/pplnn.md)。
+推理框架配置文件主要用于指定模型运行在哪个推理框架，并提供模型在推理框架运行时所需的信息，具体参考 [ONNX Runtime](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/backends/onnxruntime.md), [TensorRT](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/backends/tensorrt.md), [NCNN](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/backends/ncnn.md), [PPLNN](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/backends/pplnn.md)。
 
 - `type`: 模型推理框架, 包括 `onnxruntime`, `ncnn`, `pplnn`, `tensorrt`, `openvino`。
 
@@ -164,7 +164,7 @@ onnx_config = dict(
 
 ### 5. 部署文件命名规则
 
-这里我们事先约定一个特定的部署配置文件命名规则。
+我们遵循以下样式来命名配置文件。建议贡献者遵循相同的风格。
 
 
 ```bash
@@ -172,7 +172,7 @@ onnx_config = dict(
 ```
 
 - `task name`: 模型任务类型。
-- `backend name`: 推理框架名称.。注意：如果你使用了量化，你需要指出量化类型。例如  `tensorrt-int8`。
+- `backend name`: 推理框架名称。注意：如果你使用了量化，你需要指出量化类型。例如  `tensorrt-int8`。
 - `dynamic or static`: 动态或者静态导出。 注意：如果推理框架需要明确的形状信息，您需要添加输入大小的描述，格式为`高度 x 宽度`。 例如 `dynamic-512x1024-2048x2048`, 这意味着最小输入形状是`512x1024`，最大输入形状是`2048x2048`。
 
 #### 命名规则示例
@@ -183,7 +183,7 @@ detection_tensorrt-int8_dynamic-320x320-1344x1344.py
 
 ### 6. 如何编写模型配置文件
 
-请根据模型具体任务的代码库，编写模型配置文件。 模型配置文件用于初始化模型，详情请参考[MMClassification](https://github.com/open-mmlab/mmclassification/blob/master/docs/zh_CN/tutorials/config.md), [MMDetection](https://github.com/open-mmlab/mmdetection/blob/master/docs/zh_cn/tutorials/config.md), [MMSegmentation](https://github.com/open-mmlab/mmsegmentation/blob/master/docs/zh_cn/tutorials/config.md), [MMOCR](https://github.com/open-mmlab/mmocr/blob/main/docs/en/tutorials/config.md), [MMEditing](https://github.com/open-mmlab/mmediting/blob/master/docs/zh_cn/config.md)。
+请根据模型具体任务的代码库，编写模型配置文件。 模型配置文件用于初始化模型，详情请参考[MMClassification](https://github.com/open-mmlab/mmclassification/blob/master/docs/zh_CN/tutorials/config.md)，[MMDetection](https://github.com/open-mmlab/mmdetection/blob/master/docs/zh_cn/tutorials/config.md)， [MMSegmentation](https://github.com/open-mmlab/mmsegmentation/blob/master/docs/zh_cn/tutorials/config.md)， [MMOCR](https://github.com/open-mmlab/mmocr/blob/main/docs/en/tutorials/config.md)，[MMEditing](https://github.com/open-mmlab/mmediting/blob/master/docs/zh_cn/config.md)。
 
 ### 7. 注意事项
 
