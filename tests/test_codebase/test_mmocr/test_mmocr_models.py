@@ -427,9 +427,6 @@ def test_forward_of_fpnc(backend: Backend):
     assert np.allclose(model_outputs, rewrite_outputs, rtol=1e-03, atol=1e-05)
 
 
-test_forward_of_fpnc(backend=Backend.TENSORRT)
-
-
 def get_sar_model_cfg(decoder_type: str):
     label_convertor = dict(
         type='AttnConvertor', dict_type='DICT90', with_unknown=True)
