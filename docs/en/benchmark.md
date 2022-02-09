@@ -49,7 +49,7 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center" colspan="2">T4</td>
     <td align="center" colspan="2">SnapDragon888</td>
     <td align="center" colspan="2">Adreno660</td>
-    <td align="center" rowspan="3">model config file</td>
+    <td rowspan="3">model config file</td>
   </tr>
   <tr>
     <td align="center" colspan="2">fp32</td>
@@ -205,7 +205,7 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center" colspan="6">T4</td>
     <td align="center" colspan="2">Jetson TX2</td>
     <td align="center" colspan="2">T4</td>
-    <td align="center" rowspan="3">model config file</td>
+    <td rowspan="3">model config file</td>
   </tr>
   <tr>
     <td align="center" colspan="2">fp32</td>
@@ -355,7 +355,7 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center" rowspan="3">Input</td>
     <td align="center" colspan="2">SnapDragon888</td>
     <td align="center" colspan="2">Adreno660</td>
-    <td align="center" rowspan="3">model config file</td>
+    <td rowspan="3">model config file</td>
   </tr>
   <tr>
     <td align="center" colspan="2">fp32</td>
@@ -422,7 +422,7 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center" colspan="6">T4</td>
     <td align="center" colspan="2">Jetson TX2</td>
     <td align="center" colspan="2">T4</td>
-    <td align="center" rowspan="3">model config file</td>
+    <td rowspan="3">model config file</td>
   </tr>
   <tr>
     <td align="center" colspan="2">fp32</td>
@@ -501,7 +501,7 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center" colspan="2">T4</td>
     <td align="center" colspan="2">SnapDragon888</td>
     <td align="center" colspan="2">Adreno660</td>
-    <td align="center" rowspan="3">model config file</td>
+    <td rowspan="3">model config file</td>
   </tr>
   <tr>
     <td align="center" colspan="2">fp32</td>
@@ -586,7 +586,7 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center" colspan="6">T4</td>
     <td align="center" colspan="2">Jetson TX2</td>
     <td align="center" colspan="2">T4</td>
-    <td align="center" rowspan="3">model config file</td>
+    <td rowspan="3">model config file</td>
   </tr>
   <tr>
     <td align="center" colspan="2">fp32</td>
@@ -707,7 +707,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center">fp16</td>
     <td align="center">int8</td>
     <td align="center">fp16</td>
-    <td align="center">model config file</td>
+    <td>model config file</td>
   </tr>
   <tr>
     <td align="center" rowspan="2">ResNet-18</td>
@@ -868,7 +868,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center">int8</td>
     <td align="center">fp16</td>
     <td align="center">fp32</td>
-    <td align="center">model config file</td>
+    <td>model config file</td>
   </tr>
   <tr>
     <td align="center">YOLOV3</td>
@@ -1052,7 +1052,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center">fp16</td>
     <td align="center">int8</td>
     <td align="center">fp16</td>
-    <td align="center">model config file</td>
+    <td>model config file</td>
   </tr>
   <tr>
     <td align="center" rowspan="2">SRCNN</td>
@@ -1241,7 +1241,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center">int8</td>
     <td align="center">fp16</td>
     <td align="center">fp32</td>
-    <td align="center">model config file</td>
+    <td>model config file</td>
   </tr>
   <tr>
     <td align="center" rowspan="3">DBNet*</td>
@@ -1335,7 +1335,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center">fp16</td>
     <td align="center">int8</td>
     <td align="center">fp16</td>
-    <td align="center">model config file</td>
+    <td>model config file</td>
   </tr>
   <tr>
     <td align="center">FCN</td>
