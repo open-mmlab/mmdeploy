@@ -74,7 +74,7 @@ def get_encode_decode_recognizer_model():
     cfg = dict(
         preprocessor=None,
         backbone=dict(type='VeryDeepVgg', leaky_relu=False, input_channels=1),
-        encoder=dict(type='TFEncoder'),
+        encoder=None,
         decoder=dict(type='CRNNDecoder', in_channels=512, rnn_flag=True),
         loss=dict(type='CTCLoss'),
         label_convertor=dict(
@@ -394,12 +394,15 @@ def test_forward_of_fpnc(backend: Backend):
                 model_inputs=[
                     dict(
                         input_shapes=dict(
-                            input=dict(
+                            inputs=dict(
                                 min_shape=[1, 3, 64, 64],
                                 opt_shape=[1, 3, 64, 64],
                                 max_shape=[1, 3, 64, 64])))
                 ]),
-            onnx_config=dict(input_shape=[64, 64], output_names=['output']),
+            onnx_config=dict(
+                input_shape=None,
+                input_names=['inputs'],
+                output_names=['output']),
             codebase_config=dict(type='mmocr', task='TextDetection')))
 
     input = torch.rand(1, 3, 64, 64).cuda()
@@ -422,6 +425,9 @@ def test_forward_of_fpnc(backend: Backend):
     model_outputs = model_outputs.cpu().numpy()
     rewrite_outputs = rewrite_outputs.cpu().numpy()
     assert np.allclose(model_outputs, rewrite_outputs, rtol=1e-03, atol=1e-05)
+
+
+test_forward_of_fpnc(backend=Backend.TENSORRT)
 
 
 def get_sar_model_cfg(decoder_type: str):
