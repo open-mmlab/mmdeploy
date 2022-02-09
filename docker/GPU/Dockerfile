@@ -66,9 +66,11 @@ RUN git clone https://github.com/open-mmlab/mmdeploy &&\
     pip install -e .
 
 ### build sdk
-RUN git clone https://github.com/openppl-public/ppl.cv.git &&\
+RUN wget https://github.com/openppl-public/ppl.cv/archive/refs/tags/v0.6.1.zip &&\
+    unzip v0.6.1.zip && mv ppl.cv-0.6.1 ppl.cv &&\
     cd ppl.cv &&\
     ./build.sh cuda
+
 RUN cd /root/workspace/mmdeploy &&\
     rm -rf build/CM* &&\
     mkdir -p build && cd build &&\
