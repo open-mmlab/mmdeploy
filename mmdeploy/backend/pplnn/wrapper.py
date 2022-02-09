@@ -10,6 +10,7 @@ import torch
 
 from mmdeploy.utils import Backend, get_root_logger, parse_device_id
 from mmdeploy.utils.timer import TimeCounter
+
 from ..base import BACKEND_WRAPPER, BaseWrapper
 
 

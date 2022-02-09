@@ -5,6 +5,7 @@ import mmcv
 from torch import nn
 
 from mmdeploy.utils.constants import Backend
+
 from .rewriter_utils import RewriterRegistry, eval_with_import
 
 

@@ -9,6 +9,7 @@ from onnx.helper import (make_graph, make_model, make_node,
 
 from mmdeploy.core import RewriterContext
 from mmdeploy.utils.test import WrapFunction, assert_allclose
+
 from .utils import TestNCNNExporter, TestOnnxRTExporter, TestTensorRTExporter
 
 TEST_ONNXRT = TestOnnxRTExporter()
@@ -619,8 +620,9 @@ def test_gather(backend,
 
     # ncnn mat has implicit batch for mat, the ncnn_output is a mat,
     # so the ncnn_outputs has 2 dimensions, not 1.
-    import onnxruntime
     import importlib
+
+    import onnxruntime
     assert importlib.util.find_spec('onnxruntime') is not None, 'onnxruntime \
          not installed.'
 

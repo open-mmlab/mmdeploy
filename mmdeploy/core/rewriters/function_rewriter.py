@@ -2,6 +2,7 @@
 from typing import Callable, Dict
 
 from mmdeploy.utils import Backend, get_root_logger
+
 from .rewriter_utils import ContextCaller, RewriterRegistry, import_function
 
 

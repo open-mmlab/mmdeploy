@@ -2,6 +2,7 @@
 import importlib
 
 from mmdeploy.utils import Codebase
+
 from .base import BaseTask, MMCodebase, get_codebase_class
 
 extra_dependent_library = {Codebase.MMOCR: ['mmdet']}

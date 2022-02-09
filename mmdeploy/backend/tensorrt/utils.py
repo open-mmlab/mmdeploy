@@ -8,6 +8,7 @@ import torch
 from packaging import version
 
 from mmdeploy.utils import get_root_logger
+
 from .calib_utils import HDF5Calibrator
 from .init_plugins import load_tensorrt_plugin
 

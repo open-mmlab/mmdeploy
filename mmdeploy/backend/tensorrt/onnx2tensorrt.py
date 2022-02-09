@@ -8,6 +8,7 @@ import onnx
 from mmdeploy.utils import (get_calib_filename, get_common_config,
                             get_model_inputs, load_config, parse_device_id)
 from mmdeploy.utils.config_utils import get_ir_config
+
 from .utils import create_trt_engine, get_trt_log_level, save_trt_engine
 
 

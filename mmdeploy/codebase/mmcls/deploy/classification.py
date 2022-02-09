@@ -10,6 +10,7 @@ from torch.utils.data import Dataset
 from mmdeploy.codebase.base import BaseTask
 from mmdeploy.utils import Task, get_root_logger
 from mmdeploy.utils.config_utils import get_input_shape
+
 from .mmclassification import MMCLS_TASK
 
 
@@ -230,6 +231,7 @@ class Classification(BaseTask):
                 Defaults to `None` and the results will only print on stdout.
         """
         import warnings
+
         from mmcv.utils import get_logger
         logger = get_logger('test', log_file=log_file, log_level=logging.INFO)
 

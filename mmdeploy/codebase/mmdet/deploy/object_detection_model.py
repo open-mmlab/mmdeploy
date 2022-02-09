@@ -399,6 +399,7 @@ class PartitionTwoStageModel(End2EndModel):
         super().__init__(backend, backend_files, device, class_names,
                          deploy_cfg, **kwargs)
         from mmdet.models.builder import build_head, build_roi_extractor
+
         from ..models.roi_heads.bbox_head import bbox_head__get_bboxes
 
         self.bbox_roi_extractor = build_roi_extractor(

@@ -9,6 +9,7 @@ from torch.utils.data import Dataset
 
 from mmdeploy.utils import Task
 from mmdeploy.utils.config_utils import get_input_shape, is_dynamic_shape
+
 from ...base import BaseTask
 from .mmdetection import MMDET_TASK
 
@@ -109,8 +110,8 @@ class ObjectDetection(BaseTask):
         Returns:
             tuple: (data, img), meta information for the input image and input.
         """
-        from mmdet.datasets.pipelines import Compose
         from mmcv.parallel import collate, scatter
+        from mmdet.datasets.pipelines import Compose
         if not isinstance(imgs, (list, tuple)):
             imgs = [imgs]
         dynamic_flag = is_dynamic_shape(self.deploy_cfg)

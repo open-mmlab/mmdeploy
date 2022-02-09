@@ -2,6 +2,7 @@
 import importlib
 
 from mmdeploy.utils import get_root_logger
+
 from .version import __version__  # noqa F401
 
 importlib.import_module('mmdeploy.pytorch')

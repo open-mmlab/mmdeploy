@@ -4,6 +4,7 @@ from typing import Optional, Sequence
 from pyppl import nn as pplnn
 
 from mmdeploy.utils.device import parse_cuda_device_id
+
 from .wrapper import register_engines
 
 

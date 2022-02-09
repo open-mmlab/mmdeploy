@@ -7,6 +7,7 @@ from torch.onnx.symbolic_registry import _registry as pytorch_registry
 from torch.onnx.symbolic_registry import register_op
 
 from mmdeploy.utils import Backend, get_root_logger
+
 from .rewriter_utils import ContextCaller, RewriterRegistry, eval_with_import
 
 

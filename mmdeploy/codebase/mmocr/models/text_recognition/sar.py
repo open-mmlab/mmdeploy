@@ -6,6 +6,7 @@ import torch.nn as nn
 
 from mmdeploy.core import MODULE_REWRITER
 from mmdeploy.utils import is_dynamic_shape
+
 from ..utils import get_resize_ocr
 
 
