@@ -5,7 +5,6 @@ import mmcv
 import torch.nn as nn
 
 from mmdeploy.utils.constants import Backend
-
 from .function_rewriter import FunctionRewriter
 from .module_rewriter import ModuleRewriter
 from .symbolic_rewriter import SymbolicRewriter

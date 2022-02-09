@@ -7,7 +7,6 @@ from mmcv.utils import Registry
 from torch.utils.data import DataLoader, Dataset
 
 from mmdeploy.utils import Codebase, get_task_type
-
 from ...base import CODEBASE, BaseTask, MMCodebase
 
 

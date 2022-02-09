@@ -11,7 +11,6 @@ from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
 from mmdeploy.utils import Task, get_input_shape
-
 from .mmocr import MMOCR_TASK
 
 

@@ -10,7 +10,6 @@ from torch.utils.data import Dataset
 from mmdeploy.codebase.base import BaseTask
 from mmdeploy.utils import Task, get_root_logger
 from mmdeploy.utils.config_utils import get_input_shape
-
 from .mmclassification import MMCLS_TASK
 
 

@@ -9,7 +9,6 @@ from onnx.helper import (make_graph, make_model, make_node,
 
 from mmdeploy.core import RewriterContext
 from mmdeploy.utils.test import WrapFunction, assert_allclose
-
 from .utils import TestNCNNExporter, TestOnnxRTExporter, TestTensorRTExporter
 
 TEST_ONNXRT = TestOnnxRTExporter()

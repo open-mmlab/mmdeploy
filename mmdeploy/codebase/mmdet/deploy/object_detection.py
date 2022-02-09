@@ -9,7 +9,6 @@ from torch.utils.data import Dataset
 
 from mmdeploy.utils import Task
 from mmdeploy.utils.config_utils import get_input_shape, is_dynamic_shape
-
 from ...base import BaseTask
 from .mmdetection import MMDET_TASK
 

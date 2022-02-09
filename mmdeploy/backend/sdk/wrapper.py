@@ -2,7 +2,6 @@
 import mmdeploy_python as c_api
 
 from mmdeploy.utils import Backend
-
 from ..base import BACKEND_WRAPPER, BaseWrapper
 
 
