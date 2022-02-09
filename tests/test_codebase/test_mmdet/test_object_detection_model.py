@@ -418,6 +418,7 @@ class TestGetClassesFromCfg:
                              [data_cfg1, data_cfg2, data_cfg3, data_cfg4])
     def test_get_classes_from_cfg(self, cfg):
         from mmdet.datasets import DATASETS
+
         from mmdeploy.codebase.mmdet.deploy.object_detection_model import \
             get_classes_from_config
 
