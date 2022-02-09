@@ -2,12 +2,11 @@
 from .base_dense_head import (base_dense_head__get_bbox,
                               base_dense_head__get_bboxes__ncnn)
 from .fovea_head import fovea_head__get_bboxes
+from .gfl_head import gfl_head__forward_single, gfl_head__get_bbox
 from .rpn_head import rpn_head__get_bboxes, rpn_head__get_bboxes__ncnn
 from .ssd_head import ssd_head__get_bboxes__ncnn
 from .yolo_head import yolov3_head__get_bboxes, yolov3_head__get_bboxes__ncnn
 from .yolox_head import yolox_head__get_bboxes, yolox_head__get_bboxes__ncnn
-from .gfl_head import gfl_head__get_bbox, gfl_head__forward_single
-
 
 __all__ = [
     'rpn_head__get_bboxes', 'rpn_head__get_bboxes__ncnn',

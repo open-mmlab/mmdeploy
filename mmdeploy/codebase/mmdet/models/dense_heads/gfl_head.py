@@ -1,15 +1,15 @@
 import torch
+import torch.nn.functional as F
 
 from mmdeploy.codebase.mmdet import (get_post_processing_params,
                                      multiclass_nms, pad_with_value)
 from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.utils import Backend, get_backend, is_dynamic_shape
-import torch.nn.functional as F
 
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.dense_heads.gfl_head.'
-              'GFLHead.get_bboxes')
+    'GFLHead.get_bboxes')
 def gfl_head__get_bbox(ctx,
                        self,
                        cls_scores,
@@ -87,9 +87,10 @@ def gfl_head__get_bbox(ctx,
     mlvl_valid_priors = []
 
     for cls_score, bbox_pred, score_factors, priors, stride in zip(
-            mlvl_cls_scores, mlvl_bbox_preds, mlvl_score_factor, mlvl_priors, self.prior_generator.strides):
+            mlvl_cls_scores, mlvl_bbox_preds, mlvl_score_factor, mlvl_priors,
+            self.prior_generator.strides):
         assert cls_score.size()[-2:] == bbox_pred.size()[1:-1]
-        assert stride[0] == stride[1]  # by richard.
+        assert stride[0] == stride[1]
 
         scores = cls_score.permute(0, 2, 3, 1).reshape(batch_size, -1,
                                                        self.cls_out_channels)
@@ -105,7 +106,6 @@ def gfl_head__get_bbox(ctx,
                                                              -1).sigmoid()
             score_factors = score_factors.unsqueeze(2)
         bbox_pred = batched_integral(self.integral, bbox_pred) * stride[0]
-        # bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, 4) * stride[0]  # by richard.
         if not is_dynamic_flag:
             priors = priors.data
         priors = priors.expand(batch_size, -1, priors.size(-1))
@@ -138,7 +138,7 @@ def gfl_head__get_bbox(ctx,
 
         mlvl_valid_bboxes.append(bbox_pred)
         mlvl_valid_scores.append(scores)
-        priors = self.anchor_center(priors)  # xyxy2xy by richard.
+        priors = self.anchor_center(priors)
         mlvl_valid_priors.append(priors)
         if with_score_factors:
             mlvl_score_factors.append(score_factors)
@@ -179,19 +179,16 @@ def batched_integral(intergral, x):
     x = F.softmax(x.reshape(batch_size, -1, intergral.reg_max + 1), dim=2)
     x = F.linear(x,
                  intergral.project.type_as(x).unsqueeze(0)).reshape(
-        batch_size, -1, 4)
+                     batch_size, -1, 4)
     return x
 
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.dense_heads.gfl_head.'
-              'GFLHead.forward_single')
-def gfl_head__forward_single(ctx,
-                             self,
-                             x,
-                             scale,
-                             **kwargs):
+    'GFLHead.forward_single')
+def gfl_head__forward_single(ctx, self, x, scale, **kwargs):
     """Rewrite `forward_single` of `GFLHead` for default backend.
+
     Rewrite this function to deploy model, (by richard.)
     """
     cls_feat = x
@@ -201,5 +198,6 @@ def gfl_head__forward_single(ctx,
     for reg_conv in self.reg_convs:
         reg_feat = reg_conv(reg_feat)
     cls_score = self.gfl_cls(cls_feat)
-    bbox_pred = scale(self.gfl_reg(reg_feat)).float().permute(0, 2, 3, 1)  # B, H, W, C(4*17)
+    bbox_pred = scale(self.gfl_reg(reg_feat)).float().permute(
+        0, 2, 3, 1)  # B, H, W, C(4*17)
     return cls_score, bbox_pred
