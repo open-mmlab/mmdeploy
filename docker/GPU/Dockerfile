@@ -7,6 +7,7 @@ ARG TORCHVISION_VERSION=0.9.0
 ARG ONNXRUNTIME_VERSION=1.8.1
 ARG MMCV_VERSION=1.4.0
 ARG CMAKE_VERSION=3.20.0
+ARG PPLCV_VERSION=0.6.1
 ENV FORCE_CUDA="1"
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -66,8 +67,8 @@ RUN git clone https://github.com/open-mmlab/mmdeploy &&\
     pip install -e .
 
 ### build sdk
-RUN wget https://github.com/openppl-public/ppl.cv/archive/refs/tags/v0.6.1.zip &&\
-    unzip v0.6.1.zip && mv ppl.cv-0.6.1 ppl.cv &&\
+RUN wget https://github.com/openppl-public/ppl.cv/archive/refs/tags/v${PPLCV_VERSION}.zip &&\
+    unzip v${PPLCV_VERSION}.zip && mv ppl.cv-${PPLCV_VERSION} ppl.cv &&\
     cd ppl.cv &&\
     ./build.sh cuda
 
