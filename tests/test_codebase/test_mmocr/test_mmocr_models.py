@@ -481,6 +481,7 @@ def get_sar_model_cfg(decoder_type: str):
 def test_sar_model(backend: Backend, decoder_type):
     check_backend(backend)
     import os.path as osp
+
     import onnx
     from mmocr.models.textrecog import SARNet
     sar_cfg = get_sar_model_cfg(decoder_type)

@@ -28,7 +28,7 @@ The table below lists the models that are guaranteed to be exportable to other b
 | DeepLabV3                 | MMSegmentation   |      Y      |    Y     |  Y   |   Y   |    Y     |      [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/deeplabv3)      |
 | DeepLabV3+                | MMSegmentation   |      Y      |    Y     |  Y   |   Y   |    Y     |    [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/deeplabv3plus)    |
 | Fast-SCNN[*static](#note) | MMSegmentation   |      Y      |    Y     |  N   |   Y   |    Y     |      [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/fastscnn)       |
-| UNet                      | MMSegmentation   |      Y      |    Y     |  Y   |   N   |    Y     |        [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/unet)         |
+| UNet[*static](#note)      | MMSegmentation   |      Y      |    Y     |  Y   |   Y   |    Y     |        [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/unet)         |
 | SRCNN                     | MMEditing        |      Y      |    Y     |  Y   |   Y   |    Y     |     [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/srcnn)      |
 | ESRGAN                    | MMEditing        |      Y      |    Y     |  Y   |   Y   |    Y     |     [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/esrgan)     |
 | SRGAN                     | MMEditing        |      Y      |    Y     |  Y   |   Y   |    Y     | [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/srresnet_srgan) |
