@@ -133,8 +133,7 @@ Result<void> TRTNet::Init(const Value& args) {
       return Status(eNotSupported);
     }
     OUTCOME_TRY(auto dtype, MapDataType(engine_->getBindingDataType(i)));
-    TensorDesc desc{
-        .device = device_, .data_type = dtype, .shape = to_shape(dims), .name = binding_name};
+    TensorDesc desc{device_, dtype, to_shape(dims), binding_name};
     if (engine_->bindingIsInput(i)) {
       MMDEPLOY_DEBUG("input binding {} {} {}", i, binding_name, to_string(dims));
       input_ids_.push_back(i);

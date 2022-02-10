@@ -1,4 +1,6 @@
-set(CMAKE_CXX_STANDARD 14)
+if (NOT MSVC)
+    set(CMAKE_CXX_STANDARD 14)
+endif ()
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 # build ONNXRUNTIME ops
