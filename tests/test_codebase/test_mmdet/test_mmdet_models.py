@@ -448,20 +448,12 @@ def test_forward_of_gfl_head(backend_type):
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg)
     model_outputs[0] = [*model_outputs[0][0], *model_outputs[0][1]]
-    if is_backend_output:
-        for model_output, rewrite_output in zip(model_outputs[0],
-                                                rewrite_outputs[0]):
-            model_output = model_output.squeeze().cpu().numpy()
-            rewrite_output = rewrite_output.squeeze()
-            assert np.allclose(
-                model_output, rewrite_output, rtol=1e-03, atol=1e-05)
-    else:
-        for model_output, rewrite_output in zip(model_outputs[0],
-                                                rewrite_outputs[0]):
-            model_output = model_output.squeeze().cpu().numpy()
-            rewrite_output = rewrite_output.squeeze()
-            assert np.allclose(
-                model_output[0], rewrite_output, rtol=1e-03, atol=1e-05)
+    for model_output, rewrite_output in zip(model_outputs[0],
+                                            rewrite_outputs[0]):
+        model_output = model_output.squeeze().cpu().numpy()
+        rewrite_output = rewrite_output.squeeze()
+        assert np.allclose(
+            model_output, rewrite_output, rtol=1e-03, atol=1e-05)
 
 
 def _replace_r50_with_r18(model):
