@@ -12,7 +12,7 @@ def get_ops_path() -> str:
     """
     candidates = [
         '../../../build/lib/libmmdeploy_ncnn_ops.so',
-        '../../../build/bin/*/mmdeploy_ncnn_ops.dll'
+        '../../../build/bin/*/mmdeploy_ncnn_ops.pyd'
     ]
     return get_file_path(os.path.dirname(__file__), candidates)
 
