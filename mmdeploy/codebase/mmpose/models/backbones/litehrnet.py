@@ -8,9 +8,9 @@ from mmdeploy.core import FUNCTION_REWRITER
 @FUNCTION_REWRITER.register_rewriter(
     'mmpose.models.backbones.litehrnet.CrossResolutionWeighting.forward')
 def cross_resolution_weighting__forward(ctx, self, x):
-    """Rewrite `forward` for default backend.
+    """Rewrite ``forward`` for default backend.
 
-    Rewrite this function to support model dynamic shape export.
+    Rewrite this function to support export ``adaptive_avg_pool2d``.
 
     Args:
         x (list): block input.

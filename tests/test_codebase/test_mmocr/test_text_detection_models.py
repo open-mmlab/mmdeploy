@@ -60,6 +60,7 @@ class TestEnd2EndModel:
             'ori_shape': ori_shape,
             'img_shape': [IMAGE_SIZE, IMAGE_SIZE, 3],
             'scale_factor': [1., 1., 1., 1.],
+            'filename': ''
         }]]
         results = self.end2end_model.forward(imgs, img_metas)
         assert results is not None, 'failed to get output using '\

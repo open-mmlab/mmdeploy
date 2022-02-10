@@ -11,11 +11,10 @@ def top_down__forward(ctx, self, img, *args, **kwargs):
     Rewrite this function to run the model directly.
 
     Args:
-        img (torch.Tensor[NxCximgHximgW]): Input images.
+        img (torch.Tensor[NxCxHxW]): Input images.
 
     Returns:
-        dict|tuple: return predicted poses, boxes, image paths \
-            and heatmaps.
+        torch.Tensor: The predicted heatmaps.
     """
     features = self.backbone(img)
     if self.with_neck:
