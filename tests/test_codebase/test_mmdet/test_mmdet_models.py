@@ -437,10 +437,7 @@ def test_forward_of_gfl_head(backend_type):
         dict(
             backend_config=dict(type=backend_type.value),
             onnx_config=dict(input_shape=None)))
-    feats = [
-        torch.rand(1, 256, pow(2, i + 1), pow(2, i + 1))
-        for i in range(5, 0, -1)
-    ]
+    feats = [torch.rand(1, 256, pow(2, i), pow(2, i)) for i in range(5, 0, -1)]
     model_outputs = [head.forward(feats)]
     wrapped_model = WrapModel(head, 'forward')
     rewrite_inputs = {
