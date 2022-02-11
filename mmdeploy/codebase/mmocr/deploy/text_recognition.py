@@ -10,7 +10,7 @@ from torch import nn
 from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
-from mmdeploy.utils import Task, get_input_shape, get_root_logger
+from mmdeploy.utils import Task, get_input_shape
 from .mmocr import MMOCR_TASK
 
 
@@ -259,7 +259,8 @@ class TextRecognition(BaseTask):
                          metrics: Optional[str] = None,
                          out: Optional[str] = None,
                          metric_options: Optional[dict] = None,
-                         format_only: bool = False):
+                         format_only: bool = False,
+                         log_file: Optional[str] = None):
         """Perform post-processing to predictions of model.
 
         Args:
@@ -267,7 +268,7 @@ class TextRecognition(BaseTask):
             outputs (list): A list of predictions of model inference.
             dataset (Dataset): Input dataset to run test.
             metrics (str): Evaluation metrics, which depends on
-                the codebase and the dataset, e.g., e.g., "acc" for text
+                the codebase and the dataset, e.g., "acc" for text
                 recognition, and "hmean-iou" for text detection.
             out (str): Output result file in pickle format, defaults to `None`.
             metric_options (dict): Custom options for evaluation, will be
@@ -276,10 +277,14 @@ class TextRecognition(BaseTask):
                 evaluation. It is useful when you want to format the result
                 to a specific format and submit it to the test server. Defaults
                 to `False`.
+            log_file (str | None): The file to write the evaluation results.
+                Defaults to `None` and the results will only print on stdout.
         """
+        from mmcv.utils import get_logger
+        logger = get_logger('test', log_file=log_file)
+
         if out:
-            logger = get_root_logger()
-            logger.info(f'\nwriting results to {out}')
+            logger.debug(f'writing results to {out}')
             mmcv.dump(outputs, out)
         kwargs = {} if metric_options is None else metric_options
         if format_only:
@@ -293,7 +298,7 @@ class TextRecognition(BaseTask):
             ]:
                 eval_kwargs.pop(key, None)
             eval_kwargs.update(dict(metric=metrics, **kwargs))
-            print(dataset.evaluate(outputs, **eval_kwargs))
+            logger.info(dataset.evaluate(outputs, **eval_kwargs))
 
     def get_preprocess(self) -> Dict:
         """Get the preprocess information for SDK.

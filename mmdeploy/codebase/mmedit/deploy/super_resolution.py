@@ -10,7 +10,7 @@ from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
 from mmdeploy.codebase.mmedit.deploy.mmediting import MMEDIT_TASK
-from mmdeploy.utils import Task, get_input_shape, get_root_logger, load_config
+from mmdeploy.utils import Task, get_input_shape, load_config
 
 
 def process_model_config(model_cfg: mmcv.Config,
@@ -249,6 +249,7 @@ class SuperResolution(BaseTask):
                          out: Optional[str] = None,
                          metric_options: Optional[dict] = None,
                          format_only: bool = False,
+                         log_file: Optional[str] = None,
                          **kwargs) -> None:
         """Evaluation function implemented in mmedit.
 
@@ -265,17 +266,20 @@ class SuperResolution(BaseTask):
                 evaluation. It is useful when you want to format the result
                 to a specific format and submit it to the test server. Defaults
                 to `False`.
+            log_file (str | None): The file to write the evaluation results.
+                Defaults to `None` and the results will only print on stdout.
         """
+        from mmcv.utils import get_logger
+        logger = get_logger('test', log_file=log_file)
+
         if out:
-            logger = get_root_logger()
-            logger.info(f'\nwriting results to {out}')
+            logger.debug(f'writing results to {out}')
             mmcv.dump(outputs, out)
         # The Dataset doesn't need metrics
-        print('\n')
         # print metrics
         stats = dataset.evaluate(outputs)
         for stat in stats:
-            print('Eval-{}: {}'.format(stat, stats[stat]))
+            logger.info('Eval-{}: {}'.format(stat, stats[stat]))
 
     def get_preprocess(self) -> Dict:
         """Get the preprocess information for SDK.

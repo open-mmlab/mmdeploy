@@ -131,3 +131,7 @@ If the calibration dataset is not given, the data will be calibrated with the da
   TRT 7.2.1 switches to use cuBLASLt (previously it was cuBLAS). cuBLASLt is the default choice for SM version >= 7.0. However, you may need CUDA-10.2 Patch 1 (Released Aug 26, 2020) to resolve some cuBLASLt issues. Another option is to use the new TacticSource API and disable cuBLASLt tactics if you don't want to upgrade.
 
   Read [this](https://forums.developer.nvidia.com/t/matrixmultiply-failed-on-tensorrt-7-2-1/158187/4) for detail.
+
+- Install mmdeploy on Jetsons
+
+  We provide a tutorial to get start on Jetsons [here](../tutorials/how_to_install_mmdeploy_on_jetsons.md).

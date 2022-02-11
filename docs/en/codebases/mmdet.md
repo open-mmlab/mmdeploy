@@ -18,7 +18,7 @@ Please refer to [get_started.md](https://github.com/open-mmlab/mmdetection/blob/
 |        SSD         |   ObjectDetection    |      Y      |    Y     |   Y   |   N   |    Y     |     [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/ssd)      |
 |       VFNet        |   ObjectDetection    |      N      |    N     |   N   |   N   |    Y     |    [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/vfnet)     |
 |       YOLOv3       |   ObjectDetection    |      Y      |    Y     |   Y   |   N   |    Y     |     [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/yolo)     |
-|       YOLOX        |   ObjectDetection    |      Y      |    Y     |   N   |   N   |    Y     |    [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/yolox)     |
+|       YOLOX        |   ObjectDetection    |      Y      |    Y     |   Y   |   N   |    Y     |    [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/yolox)     |
 |   Cascade R-CNN    |   ObjectDetection    |      Y      |    Y     |   N   |   Y   |    Y     | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/cascade_rcnn) |
 |    Faster R-CNN    |   ObjectDetection    |      Y      |    Y     |   Y   |   Y   |    Y     | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/faster_rcnn)  |
 | Faster R-CNN + DCN |   ObjectDetection    |      Y      |    Y     |   Y   |   Y   |    Y     | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/faster_rcnn)  |

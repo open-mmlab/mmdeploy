@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved.
 #include "c10/cuda/CUDAStream.h"
 #include "modulated_deform_conv/modulated_deform_conv_cuda.cuh"
 #include "torch/script.h"
