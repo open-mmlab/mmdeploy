@@ -119,7 +119,7 @@ def test_get_model_name():
 
 
 def test_build_dataset_and_dataloader():
-    from torch.utils.data import Dataset, DataLoader
+    from torch.utils.data import DataLoader, Dataset
     dataset = task_processor.build_dataset(
         dataset_cfg=model_cfg, dataset_type='test')
     assert isinstance(dataset, Dataset), 'Failed to build dataset'
