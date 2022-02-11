@@ -42,7 +42,7 @@ ONNX 配置信息描述了如何将PyTorch模型转换为ONNX模型。
 - `output_names`: 模型计算图中输出节点的名称。
 - `input_shape`: 模型输入张量的高度和宽度。
 
-##### 示例
+#### 示例
 
 ```python
 onnx_config = dict(
@@ -62,7 +62,7 @@ onnx_config = dict(
 
 - `dynamic_axes`: 描述输入和输出的维度信息。
 
-##### 示例
+#### 示例
 
 ```python
     dynamic_axes={
@@ -91,7 +91,7 @@ onnx_config = dict(
 - `type`: OpenMMLab 系列模型代码库的简称， 包括 `mmcls`， `mmdet`， `mmseg`， `mmocr`， `mmedit`。
 - `task`: OpenMMLab 系列模型任务类型， 具体请参考 [OpenMMLab 系列模型任务列表](#list-of-tasks-in-all-codebases)。
 
-##### 示例
+#### 示例
 
 ```python
 codebase_config = dict(type='mmcls', task='Classification')
@@ -103,7 +103,7 @@ codebase_config = dict(type='mmcls', task='Classification')
 
 - `type`: 模型推理框架, 包括 `onnxruntime`， `ncnn`， `pplnn`， `tensorrt`， `openvino`。
 
-##### 示例
+#### 示例
 
 ```python
 backend_config = dict(
@@ -174,7 +174,7 @@ onnx_config = dict(
 - `backend name`: 推理框架名称。注意：如果你使用了量化，你需要指出量化类型。例如  `tensorrt-int8`。
 - `dynamic or static`: 动态或者静态尺寸导出。 注意：如果推理框架需要明确的形状信息，您需要添加输入大小的描述，格式为`高度 x 宽度`。 例如 `dynamic-512x1024-2048x2048`, 这意味着最小输入形状是`512x1024`，最大输入形状是`2048x2048`。
 
-##### 示例
+#### 示例
 
 ```bash
 detection_tensorrt-int8_dynamic-320x320-1344x1344.py
