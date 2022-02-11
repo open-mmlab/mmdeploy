@@ -72,6 +72,5 @@ mmdeploy_load_static(mmdeploy_tests MMDeployStaticModules)
 mmdeploy_load_dynamic(mmdeploy_tests MMDeployDynamicModules)
 target_link_libraries(mmdeploy_tests PRIVATE
         MMDeployLibs
-        mmdeploy_core
         mmdeploy_transform
         mmdeploy_opencv_utils)

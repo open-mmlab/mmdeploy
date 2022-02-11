@@ -18,7 +18,8 @@ class PadImpl : public ::mmdeploy::PadImpl {
     map<string, ppl::cv::BorderType> border_map{{"constant", ppl::cv::BORDER_CONSTANT},
                                                 {"edge", ppl::cv::BORDER_REPLICATE},
                                                 {"reflect", ppl::cv::BORDER_REFLECT_101},
-                                                {"symmetric", ppl::cv::BORDER_REFLECT}};
+                                                { "symmetric",
+                                                  ppl::cv::BORDER_REFLECT }};
 #else
     map<string, ppl::cv::BorderType> border_map{{"constant", ppl::cv::BORDER_TYPE_CONSTANT},
                                                 {"edge", ppl::cv::BORDER_TYPE_REPLICATE},
