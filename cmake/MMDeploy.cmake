@@ -10,7 +10,8 @@ endfunction ()
 
 
 function (mmdeploy_add_library NAME)
-    add_library(${NAME} ${ARGN})
+    cmake_parse_arguments(_MMDEPLOY "EXCLUDE" "" "" ${ARGN})
+    add_library(${NAME} ${_MMDEPLOY_UNPARSED_ARGUMENTS})
     target_compile_definitions(${NAME} PRIVATE -DMMDEPLOY_API_EXPORTS=1)
     get_target_property(_TYPE ${NAME} TYPE)
     if (_TYPE STREQUAL STATIC_LIBRARY)
@@ -19,8 +20,10 @@ function (mmdeploy_add_library NAME)
     else ()
         message(FATAL_ERROR "unsupported type: ${_TYPE}")
     endif ()
-    target_link_libraries(MMDeployLibs INTERFACE ${NAME})
-    mmdeploy_export(${NAME})
+    if (NOT _MMDEPLOY_EXCLUDE)
+        target_link_libraries(MMDeployLibs INTERFACE ${NAME})
+        mmdeploy_export(${NAME})
+    endif ()
 endfunction ()
 
 

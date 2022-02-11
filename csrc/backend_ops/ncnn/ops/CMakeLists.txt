@@ -17,7 +17,7 @@ target_include_directories(${PROJECT_NAME}_obj
         PUBLIC ${_COMMON_INCLUDE_DIRS})
 mmdeploy_export(${PROJECT_NAME}_obj)
 
-mmdeploy_add_library(${PROJECT_NAME} SHARED "")
+mmdeploy_add_library(${PROJECT_NAME} SHARED EXCLUDE "")
 target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}_obj)
 target_include_directories(${PROJECT_NAME}
         PUBLIC ${_COMMON_INCLUDE_DIRS})
