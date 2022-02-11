@@ -35,6 +35,13 @@ class Codebase(AdvancedEnum):
     MMEDIT = 'mmedit'
 
 
+class IR(AdvancedEnum):
+    """Define intermediate representation enumerations."""
+    ONNX = 'onnx'
+    TORCHSCRIPT = 'torchscript'
+    DEFAULT = 'default'
+
+
 class Backend(AdvancedEnum):
     """Define backend enumerations."""
     PYTORCH = 'pytorch'

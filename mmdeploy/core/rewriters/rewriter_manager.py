@@ -4,9 +4,10 @@ from typing import Dict
 import mmcv
 import torch.nn as nn
 
-from mmdeploy.utils.constants import Backend
+from mmdeploy.utils.constants import IR, Backend
 from .function_rewriter import FunctionRewriter
 from .module_rewriter import ModuleRewriter
+from .rewriter_utils import collect_env
 from .symbolic_rewriter import SymbolicRewriter
 
 
@@ -18,20 +19,8 @@ class RewriterManager:
         self.function_rewriter = FunctionRewriter()
         self.symbolic_rewriter = SymbolicRewriter()
 
-    def add_backend(self, backend: str):
-        """Add backend to all rewriters.
-
-        Args:
-            backend (str): The backend to support.
-        """
-        self.module_rewriter.add_backend(backend)
-        self.function_rewriter.add_backend(backend)
-        self.symbolic_rewriter.add_backend(backend)
-
 
 REWRITER_MANAGER = RewriterManager()
-for backend in Backend:
-    REWRITER_MANAGER.add_backend(backend.value)
 
 MODULE_REWRITER = REWRITER_MANAGER.module_rewriter
 FUNCTION_REWRITER = REWRITER_MANAGER.function_rewriter
@@ -84,20 +73,20 @@ class RewriterContext:
     def __init__(self,
                  cfg: Dict = dict(),
                  backend: str = Backend.DEFAULT.value,
+                 ir: IR = IR.DEFAULT,
                  rewriter_manager: RewriterManager = REWRITER_MANAGER,
                  **kwargs):
         self._cfg = cfg
-        self._backend = backend
         self._kwargs = kwargs
         self._rewriter_manager = rewriter_manager
+        # TODO: Make the type of parameter backend to Backend
+        self._env = collect_env(Backend.get(backend), ir)
 
     def enter(self):
         """Call the enter() of rewriters."""
-        self._rewriter_manager.function_rewriter.enter(self._cfg,
-                                                       self._backend,
+        self._rewriter_manager.function_rewriter.enter(self._cfg, self._env,
                                                        **self._kwargs)
-        self._rewriter_manager.symbolic_rewriter.enter(self._cfg,
-                                                       self._backend,
+        self._rewriter_manager.symbolic_rewriter.enter(self._cfg, self._env,
                                                        **self._kwargs)
 
     def exit(self):
