@@ -230,6 +230,7 @@ class Classification(BaseTask):
                 Defaults to `None` and the results will only print on stdout.
         """
         import warnings
+
         from mmcv.utils import get_logger
         logger = get_logger('test', log_file=log_file, log_level=logging.INFO)
 

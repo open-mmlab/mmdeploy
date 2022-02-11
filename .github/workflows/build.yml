@@ -44,6 +44,7 @@ jobs:
       - name: Install unittest dependencies
         run: |
           pip install -r requirements.txt
+          pip install -U numpy
       - name: Build and install
         run: rm -rf .eggs && pip install -e .
       - name: Run unittests and generate coverage report
@@ -85,6 +86,7 @@ jobs:
           python -V
           python -m pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cu102/${{matrix.torch_version}}/index.html
           python -m pip install -r requirements.txt
+          python -m pip install -U numpy
       - name: Build and install
         run: |
           rm -rf .eggs && python -m pip install -e .
@@ -128,6 +130,7 @@ jobs:
           python -V
           python -m pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cu111/${{matrix.torch_version}}/index.html
           python -m pip install -r requirements.txt
+          python -m pip install -U numpy
       - name: Build and install
         run: |
           rm -rf .eggs && python -m pip install -e .

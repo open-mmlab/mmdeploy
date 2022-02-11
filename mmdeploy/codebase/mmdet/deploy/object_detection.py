@@ -109,8 +109,8 @@ class ObjectDetection(BaseTask):
         Returns:
             tuple: (data, img), meta information for the input image and input.
         """
-        from mmdet.datasets.pipelines import Compose
         from mmcv.parallel import collate, scatter
+        from mmdet.datasets.pipelines import Compose
         if not isinstance(imgs, (list, tuple)):
             imgs = [imgs]
         dynamic_flag = is_dynamic_shape(self.deploy_cfg)

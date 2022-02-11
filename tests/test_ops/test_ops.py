@@ -619,8 +619,9 @@ def test_gather(backend,
 
     # ncnn mat has implicit batch for mat, the ncnn_output is a mat,
     # so the ncnn_outputs has 2 dimensions, not 1.
-    import onnxruntime
     import importlib
+
+    import onnxruntime
     assert importlib.util.find_spec('onnxruntime') is not None, 'onnxruntime \
          not installed.'
 

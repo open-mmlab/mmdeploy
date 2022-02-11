@@ -12,6 +12,6 @@ def is_available() -> bool:
 
 
 if is_available():
-    from .wrapper import OpenVINOWrapper
     from .onnx2openvino import get_output_model_file
+    from .wrapper import OpenVINOWrapper
     __all__ = ['OpenVINOWrapper', 'get_output_model_file']
