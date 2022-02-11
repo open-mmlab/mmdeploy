@@ -42,16 +42,7 @@ class ResizeImpl final : public ::mmdeploy::ResizeImpl {
  private:
   template <class T, int C, class... Args>
   ppl::common::RetCode DispatchImpl(Args&&... args) {
-#if PPLCV_VERSION_MAJOR == 0 && PPLCV_VERSION_MINOR == 6 && PPLCV_VERSION_PATCH == 0
-    if (arg_.interpolation == "bilinear") {
-      return ppl::cv::cuda::Resize<T, C>(std::forward<Args>(args)...,
-                                         ppl::cv::INTERPOLATION_TYPE_LINEAR);
-    }
-    if (arg_.interpolation == "nearest") {
-      return ppl::cv::cuda::Resize<T, C>(std::forward<Args>(args)...,
-                                         ppl::cv::INTERPOLATION_TYPE_NEAREST_POINT);
-    }
-#elif PPLCV_VERSION_MAJOR >= 0 && PPLCV_VERSION_MINOR >= 6 && PPLCV_VERSION_PATCH >= 1
+#if PPLCV_VERSION_MAJOR >= 0 && PPLCV_VERSION_MINOR >= 6 && PPLCV_VERSION_PATCH >= 2
     if (arg_.interpolation == "bilinear") {
       return ppl::cv::cuda::Resize<T, C>(std::forward<Args>(args)...,
                                          ppl::cv::INTERPOLATION_LINEAR);
@@ -61,12 +52,13 @@ class ResizeImpl final : public ::mmdeploy::ResizeImpl {
                                          ppl::cv::INTERPOLATION_NEAREST_POINT);
     }
 #else
-#warning "support for ppl.cv < 0.6 is deprecated and will be dropped in the future"
     if (arg_.interpolation == "bilinear") {
-      return ppl::cv::cuda::ResizeLinear<T, C>(std::forward<Args>(args)...);
+      return ppl::cv::cuda::Resize<T, C>(std::forward<Args>(args)...,
+                                         ppl::cv::INTERPOLATION_TYPE_LINEAR);
     }
     if (arg_.interpolation == "nearest") {
-      return ppl::cv::cuda::ResizeNearestPoint<T, C>(std::forward<Args>(args)...);
+      return ppl::cv::cuda::Resize<T, C>(std::forward<Args>(args)...,
+                                         ppl::cv::INTERPOLATION_TYPE_NEAREST_POINT);
     }
 #endif
     return ppl::common::RC_UNSUPPORTED;

@@ -14,7 +14,7 @@ namespace cuda {
 class PadImpl : public ::mmdeploy::PadImpl {
  public:
   explicit PadImpl(const Value& args) : ::mmdeploy::PadImpl(args) {
-#if PPLCV_VERSION_MAJOR >= 0 && PPLCV_VERSION_MINOR >= 6 && PPLCV_VERSION_PATCH >= 1
+#if PPLCV_VERSION_MAJOR >= 0 && PPLCV_VERSION_MINOR >= 6 && PPLCV_VERSION_PATCH >= 2
     map<string, ppl::cv::BorderType> border_map{{"constant", ppl::cv::BORDER_CONSTANT},
                                                 {"edge", ppl::cv::BORDER_REPLICATE},
                                                 {"reflect", ppl::cv::BORDER_REFLECT_101},
