@@ -45,8 +45,13 @@ class End2EndModel(BaseBackendModel):
     """End to end model for inference of detection.
 
     Args:
+        backend (Backend): The backend enum, specifying backend type.
+        backend_files (Sequence[str]): Paths to all required backend files
+                (e.g. '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
+        device (str): A string specifying device type.
         class_names (Sequence[str]): A list of string specifying class names.
-        device_id (int): An integer represents device index.
+        deploy_cfg (str|mmcv.Config): Deployment config file or loaded Config
+            object.
     """
 
     def __init__(self, backend: Backend, backend_files: Sequence[str],
@@ -286,11 +291,15 @@ class PartitionSingleStageModel(End2EndModel):
     """Partitioned single stage detection model.
 
     Args:
-        model_file (str): The path of input model file.
+        backend (Backend): The backend enum, specifying backend type.
+        backend_files (Sequence[str]): Paths to all required backend files
+                (e.g. '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
+        device (str): A string specifying device type.
         class_names (Sequence[str]): A list of string specifying class names.
-        model_cfg: (str | mmcv.Config): Input model config.
-        deploy_cfg: (str | mmcv.Config): Input deployment config.
-        device_id (int): An integer represents device index.
+        model_cfg (str|mmcv.Config): Input model config file or Config
+            object.
+        deploy_cfg (str|mmcv.Config): Deployment config file or loaded Config
+            object.
     """
 
     def __init__(self, backend: Backend, backend_files: Sequence[str],
@@ -366,10 +375,15 @@ class PartitionTwoStageModel(End2EndModel):
     """Partitioned two stage detection model.
 
     Args:
+        backend (Backend): The backend enum, specifying backend type.
+        backend_files (Sequence[str]): Paths to all required backend files
+                (e.g. '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
+        device (str): A string specifying device type.
         class_names (Sequence[str]): A list of string specifying class names.
-        model_cfg: (str | mmcv.Config): Input model config.
-        deploy_cfg: (str | mmcv.Config): Input deployment config.
-        device_id (int): An integer represents device index.
+        model_cfg (str|mmcv.Config): Input model config file or Config
+            object.
+        deploy_cfg (str|mmcv.Config): Deployment config file or loaded Config
+            object.
     """
 
     def __init__(self, backend: Backend, backend_files: Sequence[str],
@@ -385,6 +399,7 @@ class PartitionTwoStageModel(End2EndModel):
         super().__init__(backend, backend_files, device, class_names,
                          deploy_cfg, **kwargs)
         from mmdet.models.builder import build_head, build_roi_extractor
+
         from ..models.roi_heads.bbox_head import bbox_head__get_bboxes
 
         self.bbox_roi_extractor = build_roi_extractor(
@@ -543,11 +558,15 @@ class NCNNEnd2EndModel(End2EndModel):
     and its output is different from original mmdet style of `dets`, `labels`.
 
     Args:
-        model_file (str): The path of input model file.
+        backend (Backend): The backend enum, specifying backend type.
+        backend_files (Sequence[str]): Paths to all required backend files
+                (e.g. '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
+        device (str): A string specifying device type.
         class_names (Sequence[str]): A list of string specifying class names.
-        model_cfg: (str | mmcv.Config): Input model config.
-        deploy_cfg: (str | mmcv.Config): Input deployment config.
-        device_id (int): An integer represents device index.
+        model_cfg (str|mmcv.Config): Input model config file or Config
+            object.
+        deploy_cfg (str|mmcv.Config): Deployment config file or loaded Config
+            object.
     """
 
     def __init__(self, backend: Backend, backend_files: Sequence[str],
@@ -578,7 +597,7 @@ class NCNNEnd2EndModel(End2EndModel):
         outputs = self.wrapper({self.input_name: imgs})
         for key, item in outputs.items():
             if item is None:
-                return [np.zeros((1, 0, 6))]
+                return [np.zeros((1, 0, 5)), np.zeros((1, 0))]
         out = self.wrapper.output_to_list(outputs)[0]
         labels = out[:, :, 0] - 1
         scales = torch.tensor([W, H, W, H]).reshape(1, 1, 4)
@@ -691,7 +710,7 @@ def build_object_detection_model(model_files: Sequence[str],
         device (str):  Device to input model
 
     Returns:
-        DeployBaseDetector: Detector for a configured backend.
+        End2EndModel: Detector for a configured backend.
     """
     # load cfg if necessary
     deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)

@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+
 from mmcv.utils import collect_env as collect_base_env
 from mmcv.utils import get_git_hash
 
@@ -54,8 +55,57 @@ def check_backend():
     logger.info(f'openvino_is_avaliable: {openvino_apis.is_available()}')
 
 
+def check_codebase():
+    try:
+        import mmcls
+    except ImportError:
+        mmcls_version = None
+    else:
+        mmcls_version = mmcls.__version__
+    logger.info(f'mmcls: {mmcls_version}')
+
+    try:
+        import mmdet
+    except ImportError:
+        mmdet_version = None
+    else:
+        mmdet_version = mmdet.__version__
+    logger.info(f'mmdet: {mmdet_version}')
+
+    try:
+        import mmedit
+    except ImportError:
+        mmedit_version = None
+    else:
+        mmedit_version = mmedit.__version__
+    logger.info(f'mmedit: {mmedit_version}')
+
+    try:
+        import mmocr
+    except ImportError:
+        mmocr_version = None
+    else:
+        mmocr_version = mmocr.__version__
+    logger.info(f'mmocr: {mmocr_version}')
+
+    try:
+        import mmseg
+    except ImportError:
+        mmseg_version = None
+    else:
+        mmseg_version = mmseg.__version__
+    logger.info(f'mmseg: {mmseg_version}')
+
+
 if __name__ == '__main__':
     logger = get_root_logger()
+    logger.info('\n')
+    logger.info('**********Environmental information**********')
     for name, val in collect_env().items():
         logger.info('{}: {}'.format(name, val))
+    logger.info('\n')
+    logger.info('**********Backend information**********')
     check_backend()
+    logger.info('\n')
+    logger.info('**********Codebase information**********')
+    check_codebase()

@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved.
 #include "torch/script.h"
 
 TORCH_LIBRARY(mmdeploy, m) {

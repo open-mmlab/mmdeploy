@@ -55,6 +55,7 @@ class MMEditing(MMCodebase):
             Dataset: A PyTorch dataset.
         """
         from mmedit.datasets import build_dataset as build_dataset_mmedit
+
         from mmdeploy.utils import load_config
         dataset_cfg = load_config(dataset_cfg)[0]
         data = dataset_cfg.data

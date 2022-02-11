@@ -1,8 +1,10 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
 from typing import Any, Optional, Union
 
 import mmcv
 import torch
+from packaging.version import parse as version_parse
 
 from mmdeploy.backend.torchscript import get_ops_path
 from mmdeploy.core import RewriterContext, patch_model
@@ -42,15 +44,19 @@ def torch2torchscript_impl(model: torch.nn.Module, input: torch.Tensor,
 
     # perform optimize
     logger = get_root_logger()
+    logger.info('perform torchscript optimizer.')
     try:
+        # custom optimizer
         from mmdeploy.backend.torchscript import ts_optimizer
         logger = get_root_logger()
-        logger.info('perform torchscript optimizer.')
         ts_optimizer.optimize_for_backend(
             ts_model._c, ir='torchscript', backend=backend)
     except Exception:
-        logger.warn(
-            'ts_optimizer not found, optimize will not be performed.\n')
+        # use pytorch builtin optimizer
+        ts_model = torch.jit.freeze(ts_model)
+        torch_version = version_parse(torch.__version__)
+        if torch_version.minor >= 9:
+            ts_model = torch.jit.optimize_for_inference(ts_model)
 
     # save model
     torch.jit.save(ts_model, output_file)

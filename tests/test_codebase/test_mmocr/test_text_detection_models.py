@@ -39,8 +39,8 @@ class TestEnd2EndModel:
         model_cfg_path = 'tests/test_codebase/test_mmocr/data/dbnet.py'
         model_cfg = load_config(model_cfg_path)[0]
 
-        from mmdeploy.codebase.mmocr.deploy.text_detection_model \
-            import End2EndModel
+        from mmdeploy.codebase.mmocr.deploy.text_detection_model import \
+            End2EndModel
         cls.end2end_model = End2EndModel(
             Backend.ONNXRUNTIME, [''],
             device='cpu',
@@ -60,6 +60,7 @@ class TestEnd2EndModel:
             'ori_shape': ori_shape,
             'img_shape': [IMAGE_SIZE, IMAGE_SIZE, 3],
             'scale_factor': [1., 1., 1., 1.],
+            'filename': ''
         }]]
         results = self.end2end_model.forward(imgs, img_metas)
         assert results is not None, 'failed to get output using '\
@@ -96,8 +97,8 @@ def test_build_text_detection_model():
     # simplify backend inference
     with SwitchBackendWrapper(ORTWrapper) as wrapper:
         wrapper.set(model_cfg=model_cfg, deploy_cfg=deploy_cfg)
-        from mmdeploy.codebase.mmocr.deploy.text_detection_model import \
-            build_text_detection_model, End2EndModel
+        from mmdeploy.codebase.mmocr.deploy.text_detection_model import (
+            End2EndModel, build_text_detection_model)
         segmentor = build_text_detection_model([''], model_cfg, deploy_cfg,
                                                'cpu')
         assert isinstance(segmentor, End2EndModel)

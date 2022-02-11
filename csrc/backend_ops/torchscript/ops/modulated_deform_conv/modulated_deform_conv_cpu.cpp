@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved.
 #include "modulated_deform_conv/modulated_deform_conv_cpu.h"
 
 #include "torch/script.h"

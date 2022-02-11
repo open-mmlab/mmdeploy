@@ -7,8 +7,8 @@ import torch
 from mmcv.parallel import DataContainer
 from torch.utils.data import Dataset
 
-from mmdeploy.utils import Task, get_root_logger
-from mmdeploy.utils.config_utils import get_input_shape
+from mmdeploy.utils import Task
+from mmdeploy.utils.config_utils import get_input_shape, is_dynamic_shape
 from ...base import BaseTask
 from .mmdetection import MMDET_TASK
 
@@ -101,20 +101,31 @@ class ObjectDetection(BaseTask):
         """Create input for detector.
 
         Args:
-            task (Task): Specifying task type.
-            imgs (Any): Input image(s), accpeted data type are `str`,
-                `np.ndarray`, `torch.Tensor`.
+            imgs (str|np.ndarray): Input image(s), accpeted data type are
+                `str`, `np.ndarray`.
             input_shape (list[int]): A list of two integer in (width, height)
                 format specifying input shape. Defaults to `None`.
 
         Returns:
             tuple: (data, img), meta information for the input image and input.
         """
-        from mmdet.datasets.pipelines import Compose
         from mmcv.parallel import collate, scatter
+        from mmdet.datasets.pipelines import Compose
         if not isinstance(imgs, (list, tuple)):
             imgs = [imgs]
+        dynamic_flag = is_dynamic_shape(self.deploy_cfg)
         cfg = process_model_config(self.model_cfg, imgs, input_shape)
+        # Drop pad_to_square when static shape. Because static shape should
+        # ensure the shape before input image.
+        if not dynamic_flag:
+            transform = cfg.data.test.pipeline[1]
+            if 'transforms' in transform:
+                transform_list = transform['transforms']
+                for i, step in enumerate(transform_list):
+                    if step['type'] == 'Pad' and 'pad_to_square' in step \
+                       and step['pad_to_square']:
+                        transform_list.pop(i)
+                        break
         test_pipeline = Compose(cfg.data.test.pipeline)
         data_list = []
         for img in imgs:
@@ -224,7 +235,8 @@ class ObjectDetection(BaseTask):
                          metrics: Optional[str] = None,
                          out: Optional[str] = None,
                          metric_options: Optional[dict] = None,
-                         format_only: bool = False):
+                         format_only: bool = False,
+                         log_file: Optional[str] = None):
         """Perform post-processing to predictions of model.
 
         Args:
@@ -241,10 +253,14 @@ class ObjectDetection(BaseTask):
                 evaluation. It is useful when you want to format the result
                 to a specific format and submit it to the test server. Defaults
                 to `False`.
+            log_file (str | None): The file to write the evaluation results.
+                Defaults to `None` and the results will only print on stdout.
         """
+        from mmcv.utils import get_logger
+        logger = get_logger('test', log_file=log_file)
+
         if out:
-            logger = get_root_logger()
-            logger.info(f'\nwriting results to {out}')
+            logger.debug(f'writing results to {out}')
             mmcv.dump(outputs, out)
         kwargs = {} if metric_options is None else metric_options
         if format_only:
@@ -258,7 +274,7 @@ class ObjectDetection(BaseTask):
             ]:
                 eval_kwargs.pop(key, None)
             eval_kwargs.update(dict(metric=metrics, **kwargs))
-            print(dataset.evaluate(outputs, **eval_kwargs))
+            logger.info(dataset.evaluate(outputs, **eval_kwargs))
 
     def get_preprocess(self) -> Dict:
         """Get the preprocess information for SDK.

@@ -20,14 +20,14 @@
 
 注意:
 
-- 现在已支持的后端包括 [ONNX Runtime](../../en/backends/onnxruntime.md) ，[TensorRT](../../en/backends/tensorrt.md) ，[NCNN](../../en/backends/ncnn.md) ，[PPLNN](../../en/backends/pplnn.md)。
-- 现在已支持的代码库包括 [MMClassification](../../en/codebases/mmcls.md) ，[MMDetection](../../en/codebases/mmdet.md) ，[MMSegmentation](../../en/codebases/mmseg.md) ，[MMOCR](../../en/codebases/mmocr.md) ，[MMEditing](../../codebases/mmedit.md)。
+- 现在已支持的后端包括 [ONNX Runtime](https://mmdeploy.readthedocs.io/en/latest/backends/onnxruntime.html) ，[TensorRT](https://mmdeploy.readthedocs.io/en/latest/backends/tensorrt.html) ，[NCNN](https://mmdeploy.readthedocs.io/en/latest/backends/ncnn.html) ，[PPLNN](https://mmdeploy.readthedocs.io/en/latest/backends/pplnn.html), [OpenVINO](https://mmdeploy.readthedocs.io/en/latest/backends/openvino.html)。
+- 现在已支持的代码库包括 [MMClassification](https://mmdeploy.readthedocs.io/en/latest/codebases/mmcls.html) ，[MMDetection](https://mmdeploy.readthedocs.io/en/latest/codebases/mmdet.html) ，[MMSegmentation](https://mmdeploy.readthedocs.io/en/latest/codebases/mmseg.html) ，[MMOCR](https://mmdeploy.readthedocs.io/en/latest/codebases/mmocr.html) ，[MMEditing](https://mmdeploy.readthedocs.io/en/latest/codebases/mmedit.html)。
 
 ### 如何将模型从pytorch形式转换成其他后端形式
 
 #### 准备工作
 
-1. 安装你的目标后端。 你可以参考 [ONNXRuntime-install](../../en/backends/onnxruntime.md) ，[TensorRT-install](../../en/backends/tensorrt.md) ，[NCNN-install](../../en/backends/ncnn.md) ，[PPLNN-install](../../en/backends/pplnn.md)。
+1. 安装你的目标后端。 你可以参考 [ONNXRuntime-install](https://mmdeploy.readthedocs.io/en/latest/backends/onnxruntime.html) ，[TensorRT-install](https://mmdeploy.readthedocs.io/en/latest/backends/tensorrt.html) ，[NCNN-install](https://mmdeploy.readthedocs.io/en/latest/backends/ncnn.html) ，[PPLNN-install](https://mmdeploy.readthedocs.io/en/latest/backends/pplnn.html), [OpenVINO-install](https://mmdeploy.readthedocs.io/en/latest/backends/openvino.html)。
 2. 安装你的目标代码库。 你可以参考 [MMClassification-install](https://github.com/open-mmlab/mmclassification/blob/master/docs/zh_CN/install.md)， [MMDetection-install](https://github.com/open-mmlab/mmdetection/blob/master/docs/zh_cn/get_started.md)， [MMSegmentation-install](https://github.com/open-mmlab/mmsegmentation/blob/master/docs/zh_cn/get_started.md#installation)， [MMOCR-install](https://mmocr.readthedocs.io/en/latest/install.html)， [MMEditing-install](https://github.com/open-mmlab/mmediting/blob/master/docs/zh_cn/install.md)。
 
 #### 使用方法
@@ -86,7 +86,7 @@ python ./tools/deploy.py \
 
 ### 各后端已支持导出的模型列表
 
-参考[已支持的模型列表](../../en/supported_models.md)。
+参考[已支持的模型列表](https://mmdeploy.readthedocs.io/en/latest/supported_models.html)。
 
 ### 注意事项
 
