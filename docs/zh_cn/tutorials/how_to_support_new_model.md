@@ -83,4 +83,4 @@ def squeeze_default(ctx, g, self, dim=None):
 - 如果函数是 PyTorch 内置函数，则为True。
 - `arg_descriptors` 符号函数参数的描述符，将被传递给`torch.onnx.symbolic_helper._parse_arg`。
 
-就像函数重载器的`ctx`一样，第一个参数会提供上下文信息。上下文中了一些有用的信息，例如部署配置ctx.cfg和原始功能（已被重载）`ctx.origin_func`。请注意， `ctx.origin_func`只能在 时使用`is_pytorch==False`。
+就像函数重载器的`ctx`一样，第一个参数会提供上下文信息。上下文中了一些有用的信息，例如部署配置ctx.cfg和原始功能（已被重载）`ctx.origin_func`。请注意， `ctx.origin_func`只能在`is_pytorch==False`时使用。
