@@ -50,7 +50,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center" colspan="2">T4</td>
     <td align="center" colspan="2">SnapDragon888</td>
     <td align="center" colspan="2">Adreno660</td>
-    <td align="center" rowspan="3">model config file</td>
+    <td rowspan="3">model config file</td>
   </tr>
   <tr>
     <td align="center" colspan="2">fp32</td>
@@ -206,7 +206,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center" colspan="6">T4</td>
     <td align="center" colspan="2">Jetson TX2</td>
     <td align="center" colspan="2">T4</td>
-    <td align="center" rowspan="3">model config file</td>
+    <td rowspan="3">model config file</td>
   </tr>
   <tr>
     <td align="center" colspan="2">fp32</td>
@@ -237,8 +237,8 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">40.13</td>
     <td align="center">24.92</td>
     <td align="center">40.13</td>
-    <td align="center">?</td>
-    <td align="center">?</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
     <td align="center">18.07</td>
     <td align="center">55.35</td>
     <td>$MMDET_DIR/configs/yolo/yolov3_d53_320_273e_coco.py</td>
@@ -285,8 +285,8 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">43.20</td>
     <td align="center">17.68</td>
     <td align="center">56.57</td>
-    <td align="center">?</td>
-    <td align="center">?</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td>$MMDET_DIR/configs/fcos/fcos_r50_caffe_fpn_gn-head_1x_coco.py</td>
@@ -301,8 +301,8 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">47.58</td>
     <td align="center">13.50</td>
     <td align="center">74.08</td>
-    <td align="center">?</td>
-    <td align="center">?</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
     <td align="center">30.41</td>
     <td align="center">32.89</td>
     <td>$MMDET_DIR/configs/fsaf/fsaf_r50_fpn_1x_coco.py</td>
@@ -333,8 +333,8 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">4.14</td>
     <td align="center">-</td>
     <td align="center">-</td>
-    <td align="center">?</td>
-    <td align="center">?</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
     <td align="center">86.80</td>
     <td align="center">11.52</td>
     <td>$MMDET_DIR/configs/mask_rcnn/mask_rcnn_r50_fpn_1x_coco.py</td>
@@ -356,7 +356,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center" rowspan="3">Input</td>
     <td align="center" colspan="2">SnapDragon888</td>
     <td align="center" colspan="2">Adreno660</td>
-    <td align="center" rowspan="3">model config file</td>
+    <td rowspan="3">model config file</td>
   </tr>
   <tr>
     <td align="center" colspan="2">fp32</td>
@@ -423,7 +423,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center" colspan="6">T4</td>
     <td align="center" colspan="2">Jetson TX2</td>
     <td align="center" colspan="2">T4</td>
-    <td align="center" rowspan="3">model config file</td>
+    <td rowspan="3">model config file</td>
   </tr>
   <tr>
     <td align="center" colspan="2">fp32</td>
@@ -502,7 +502,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center" colspan="2">T4</td>
     <td align="center" colspan="2">SnapDragon888</td>
     <td align="center" colspan="2">Adreno660</td>
-    <td align="center" rowspan="3">model config file</td>
+    <td rowspan="3">model config file</td>
   </tr>
   <tr>
     <td align="center" colspan="2">fp32</td>
@@ -587,7 +587,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center" colspan="6">T4</td>
     <td align="center" colspan="2">Jetson TX2</td>
     <td align="center" colspan="2">T4</td>
-    <td align="center" rowspan="3">model config file</td>
+    <td rowspan="3">model config file</td>
   </tr>
   <tr>
     <td align="center" colspan="2">fp32</td>
@@ -708,7 +708,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">fp16</td>
     <td align="center">int8</td>
     <td align="center">fp16</td>
-    <td align="center">model config file</td>
+    <td>model config file</td>
   </tr>
   <tr>
     <td align="center" rowspan="2">ResNet-18</td>
@@ -869,7 +869,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">int8</td>
     <td align="center">fp16</td>
     <td align="center">fp32</td>
-    <td align="center">model config file</td>
+    <td>model config file</td>
   </tr>
   <tr>
     <td align="center">YOLOV3</td>
@@ -1053,7 +1053,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">fp16</td>
     <td align="center">int8</td>
     <td align="center">fp16</td>
-    <td align="center">model config file</td>
+    <td>model config file</td>
   </tr>
   <tr>
     <td align="center" rowspan="2">SRCNN</td>
@@ -1242,7 +1242,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">int8</td>
     <td align="center">fp16</td>
     <td align="center">fp32</td>
-    <td align="center">model config file</td>
+    <td>model config file</td>
   </tr>
   <tr>
     <td align="center" rowspan="3">DBNet*</td>
@@ -1336,7 +1336,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">fp16</td>
     <td align="center">int8</td>
     <td align="center">fp16</td>
-    <td align="center">model config file</td>
+    <td>model config file</td>
   </tr>
   <tr>
     <td align="center">FCN</td>
