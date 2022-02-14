@@ -180,6 +180,12 @@ def mark_tensors(xs: Any, func: str, func_id: int, io_type: str, ctx: Any,
     return impl(xs, (), level)
 
 
+@FUNCTION_REWRITER.register_rewriter(
+    'mmdeploy.core.optimizers.function_marker.mark_tensors')
+def remove_mark__torchscript(ctx, xs: Any, *args, **kwargs):
+    return xs
+
+
 def mark(func_name: Optional[str] = None,
          inputs: Optional[Sequence[str]] = None,
          outputs: Optional[Sequence[str]] = None,

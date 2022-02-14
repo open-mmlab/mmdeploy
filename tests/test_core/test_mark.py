@@ -6,6 +6,8 @@ import torch
 
 from mmdeploy.core import mark
 from mmdeploy.core.optimizers import attribute_to_dict
+from mmdeploy.utils.constants import Backend
+from mmdeploy.core import RewriterContext
 
 output_file = tempfile.NamedTemporaryFile(suffix='.onnx').name
 
@@ -29,6 +31,11 @@ def test_mark():
     # dummy input
     x = torch.rand(2, 3, 4)
     y = torch.rand(2, 3, 4)
+
+    with RewriterContext(
+            cfg=None, backend=Backend.TORCHSCRIPT.value), torch.no_grad(
+            ), torch.jit.optimized_execution(True):
+        torch.jit.trace(model, (x, y))
 
     torch.onnx.export(model, (x, y), output_file)
     onnx_model = onnx.load(output_file)
