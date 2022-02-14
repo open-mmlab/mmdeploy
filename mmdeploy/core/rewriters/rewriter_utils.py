@@ -60,7 +60,7 @@ def import_function(path: str) -> Tuple[Callable, Optional[type]]:
 
 
 def collect_env(backend: Backend, ir: IR, **kwargs):
-    from mmdeploy.utils import get_codebase_version, get_backend_version
+    from mmdeploy.utils import get_backend_version, get_codebase_version
     env = dict(backend=backend, ir=ir)
     env['mmdeploy'] = mmdeploy.__version__
     env.update(get_backend_version())
@@ -173,7 +173,12 @@ class RewriterRegistry:
                 # Check if the rewriter is default rewriter
                 if len(checkers) == 0:
                     #  Process the default rewriter exceptionally
-                    default_rewriter = record
+                    if default_rewriter is not None:
+                        default_rewriter = record
+                    else:
+                        warnings.warn(
+                            'Detect multiple valid rewriters for'
+                            f'{origin_function}, use the first rewriter.')
                 else:
                     # Check if the checker is valid.
                     # The checker is valid only if all the checks are passed
@@ -188,7 +193,7 @@ class RewriterRegistry:
                         if final_rewriter is not None:
                             warnings.warn(
                                 'Detect multiple valid rewriters for'
-                                f'{origin_function}, use the first rewriter')
+                                f'{origin_function}, use the first rewriter.')
                         else:
                             final_rewriter = record
 

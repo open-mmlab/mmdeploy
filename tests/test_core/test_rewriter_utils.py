@@ -15,7 +15,7 @@ def test_collect_env():
     assert env_dict['mmdeploy'] == mmdeploy.__version__
 
 
-class TestCheker:
+class TestChecker:
     env = collect_env(Backend.ONNXRUNTIME, IR.ONNX)
 
     def test_backend_checker(self):

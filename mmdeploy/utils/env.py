@@ -15,7 +15,7 @@ def get_library_version(lib):
     """
     try:
         lib = importlib.import_module(lib)
-    except ImportError:
+    except Exception:
         version = None
     else:
         version = lib.__version__
