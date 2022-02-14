@@ -28,12 +28,20 @@ class End2EndModel(BaseBackendModel):
                  backend_files: Sequence[str],
                  device: str,
                  deploy_cfg: Union[str, mmcv.Config] = None,
-                 model_cfg: Union[str, mmcv.Config] = None):
+                 model_cfg: Union[str, mmcv.Config] = None,
+                 **kwargs):
         super(End2EndModel, self).__init__(deploy_cfg=deploy_cfg)
+        from mmpose.models.heads.topdown_heatmap_base_head import \
+            TopdownHeatmapBaseHead
+
         self.deploy_cfg = deploy_cfg
         self.model_cfg = model_cfg
         self._init_wrapper(
             backend=backend, backend_files=backend_files, device=device)
+        # create base_head for decoding heatmap
+        base_head = TopdownHeatmapBaseHead()
+        base_head.test_cfg = model_cfg.model.test_cfg
+        self.base_head = base_head
 
     def _init_wrapper(self, backend, backend_files, device):
         """Initialize backend wrapper.
@@ -65,16 +73,11 @@ class End2EndModel(BaseBackendModel):
         Returns:
             list: A list contains predictions.
         """
-        from mmpose.models.heads.topdown_heatmap_base_head import \
-            TopdownHeatmapBaseHead
-
         input_img = img.contiguous()
         outputs = self.forward_test(input_img, img_metas, *args, **kwargs)
         heatmaps = outputs[0]
-        head = TopdownHeatmapBaseHead()
-        head.test_cfg = self.model_cfg.model.test_cfg
-        keypoints = head.decode(img_metas, heatmaps)
-        return keypoints
+        key_points = self.base_head.decode(img_metas, heatmaps)
+        return key_points
 
     def forward_test(self, imgs: torch.Tensor, *args, **kwargs) -> \
             List[np.ndarray]:
