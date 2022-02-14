@@ -8,15 +8,11 @@ Please refer to [official installation guide](https://mmpose.readthedocs.io/en/l
 
 ## MMEditing models support
 
-| Model     | Task          | ONNX Runtime | TensorRT | NCNN  | PPLNN | OpenVINO |                                        Model config                                         |
-| :-------- | :------------ | :----------: | :------: | :---: | :---: | :------: | :-----------------------------------------------------------------------------------------: |
-| HRNet     | PoseDetection |      Y       |    Y     |   N   |   N   |    N     |   [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#hrnet-cvpr-2019)   |
-| MSPN      | PoseDetection |      Y       |    Y     |   N   |   N   |    N     |   [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#mspn-arxiv-2019)   |
-| LiteHRNet | PoseDetection |      Y       |    Y     |   N   |   N   |    N     | [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#litehrnet-cvpr-2021) |
-
-## Note
-
-Usually, the mmpose model needs some extra information for input image, but we can't get it directly. So, when exporting the model, you can use `$MMDEPLOY_DIR/demo/resources/human-pose.jpg` as input.
+| Model     | Task          | ONNX Runtime | TensorRT | NCNN | PPLNN | OpenVINO |                                        Model config                                         |
+|:----------|:--------------|:------------:|:--------:|:----:|:-----:|:--------:|:-------------------------------------------------------------------------------------------:|
+| HRNet     | PoseDetection |      Y       |    Y     |  Y   |   N   |    Y     |   [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#hrnet-cvpr-2019)   |
+| MSPN      | PoseDetection |      Y       |    Y     |  Y   |   N   |    Y     |   [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#mspn-arxiv-2019)   |
+| LiteHRNet | PoseDetection |      Y       |    Y     |  N   |   N   |    Y     | [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#litehrnet-cvpr-2021) |
 
 ### Example
 
@@ -29,6 +25,10 @@ $MMDEPLOY_DIR/demo/resources/human-pose.jpg \
 --work-dir work-dirs/mmpose/topdown/hrnet/trt \
 --device cuda
 ```
+
+Note
+
+- Usually, mmpose models need some extra information for the input image, but we can't get it directly. So, when exporting the model, you can use `$MMDEPLOY_DIR/demo/resources/human-pose.jpg` as input.
 
 ## Reminder
 

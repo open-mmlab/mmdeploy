@@ -46,8 +46,8 @@ def generate_onnx_file():
 
 def onnx2backend(backend, onnx_file):
     if backend == Backend.TENSORRT:
-        from mmdeploy.backend.tensorrt import create_trt_engine,\
-            save_trt_engine
+        from mmdeploy.backend.tensorrt import (create_trt_engine,
+                                               save_trt_engine)
         backend_file = tempfile.NamedTemporaryFile(suffix='.engine').name
         engine = create_trt_engine(
             onnx_file, {
@@ -74,8 +74,7 @@ def onnx2backend(backend, onnx_file):
         subprocess.call([onnx2ncnn_path, onnx_file, param_file, bin_file])
         return param_file, bin_file
     elif backend == Backend.OPENVINO:
-        from mmdeploy.apis.openvino import onnx2openvino,\
-            get_output_model_file
+        from mmdeploy.apis.openvino import get_output_model_file, onnx2openvino
         backend_dir = tempfile.TemporaryDirectory().name
         backend_file = get_output_model_file(onnx_file, backend_dir)
         input_info = {'input': test_img.shape}

@@ -1,18 +1,16 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import io
-import sys
 import time
 import warnings
 from contextlib import contextmanager
-from typing import Union
+from typing import Optional
 
 import torch
+from mmcv.utils import get_logger
 
 
 class TimeCounter:
     """A tool for counting inference time of backends."""
     names = dict()
-    file = sys.stdout
 
     # Avoid instantiating every time
     @classmethod
@@ -76,10 +74,7 @@ class TimeCounter:
                         msg = f'[{func.__name__}]-{count} times per count: '\
                               f'{times_per_count:.2f} ms, '\
                               f'{1000/times_per_count:.2f} FPS'
-                        if cls.file != sys.stdout:
-                            msg += '\n'
-                        cls.file.write(msg)
-                        cls.file.flush()
+                        cls.logger.info(msg)
 
                 return result
 
@@ -94,7 +89,7 @@ class TimeCounter:
                  warmup: int = 1,
                  log_interval: int = 1,
                  with_sync: bool = False,
-                 file: Union[str, io.TextIOWrapper] = sys.stdout):
+                 file: Optional[str] = None):
         """Activate the time counter.
 
         Args:
@@ -104,13 +99,12 @@ class TimeCounter:
             log_interval (int): Interval between each log, default 1.
             with_sync (bool): Whether use cuda synchronize for time counting,
                 default False.
-            file (str | io.TextIOWrapper): A file or file-like object to save
-                output messages. The default is `sys.stdout`.
+            file (str | None): The file to save output messages. The default
+                is `None`.
         """
         assert warmup >= 1
-        if file != sys.stdout:
-            file = open(file, 'w+')
-        cls.file = file
+        logger = get_logger('test', log_file=file)
+        cls.logger = logger
         if func_name is not None:
             warnings.warn('func_name must be globally unique if you call '
                           'activate multiple times')
@@ -127,8 +121,6 @@ class TimeCounter:
                 cls.names[name]['with_sync'] = with_sync
                 cls.names[name]['enable'] = True
         yield
-        if file != sys.stdout:
-            cls.file.close()
         if func_name is not None:
             cls.names[func_name]['enable'] = False
         else:

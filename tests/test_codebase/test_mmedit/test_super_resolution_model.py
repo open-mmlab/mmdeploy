@@ -33,8 +33,8 @@ class TestEnd2EndModel:
             }})
         model_cfg = 'tests/test_codebase/test_mmedit/data/model.py'
         model_cfg = load_config(model_cfg)[0]
-        from mmdeploy.codebase.mmedit.deploy.super_resolution_model\
-            import End2EndModel
+        from mmdeploy.codebase.mmedit.deploy.super_resolution_model import \
+            End2EndModel
         cls.end2end_model = End2EndModel(Backend.ONNXRUNTIME, [''], 'cpu',
                                          model_cfg, deploy_cfg)
 

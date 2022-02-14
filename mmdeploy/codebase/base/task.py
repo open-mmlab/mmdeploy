@@ -230,6 +230,7 @@ class BaseTask(metaclass=ABCMeta):
                          out: Optional[str] = None,
                          metric_options: Optional[dict] = None,
                          format_only: bool = False,
+                         log_file: Optional[str] = None,
                          **kwargs):
         """Perform post-processing to predictions of model.
 
@@ -244,13 +245,16 @@ class BaseTask(metaclass=ABCMeta):
                 for single label dataset, and "mAP", "CP", "CR", "CF1",
                 "OP", "OR", "OF1" for multi-label dataset in mmcls.
                 Defaults is `None`.
-            out (str): Output result file in pickle format, defaults to `None`.
+            out (str): Output inference results in pickle format, defaults to
+                `None`.
             metric_options (dict): Custom options for evaluation, will be
                 kwargs for dataset.evaluate() function. Defaults to `None`.
             format_only (bool): Format the output results without perform
                 evaluation. It is useful when you want to format the result
                 to a specific format and submit it to the test server. Defaults
                 to `False`.
+            log_file (str | None): The file to write the evaluation results.
+                Defaults to `None` and the results will only print on stdout.
         """
         pass
 

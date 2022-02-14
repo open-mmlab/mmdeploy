@@ -70,14 +70,14 @@ def backend_model():
 
 
 def test_init_backend_model(backend_model):
-    from mmdeploy.codebase.mmdet.deploy.object_detection_model \
-        import End2EndModel
+    from mmdeploy.codebase.mmdet.deploy.object_detection_model import \
+        End2EndModel
     assert isinstance(backend_model, End2EndModel)
 
 
 def test_can_postprocess_masks():
-    from mmdeploy.codebase.mmdet.deploy.object_detection_model \
-        import End2EndModel
+    from mmdeploy.codebase.mmdet.deploy.object_detection_model import \
+        End2EndModel
     num_dets = [0, 1, 5]
     for num_det in num_dets:
         det_bboxes = np.random.randn(num_det, 4)

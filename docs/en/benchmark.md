@@ -32,26 +32,39 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
 <thead>
   <tr>
     <th align="center" colspan="3">MMCls</th>
-    <th align="center" colspan="6">TensorRT</th>
+    <th align="center" colspan="10">TensorRT</th>
     <th align="center" colspan="2">PPLNN</th>
     <th align="center" colspan="4">NCNN</th>
-    <th align="center"></th>
+    <th></th>
   </tr>
 </thead>
 <tbody>
   <tr>
-    <td align="center" rowspan="2">Model</td>
-    <td align="center" rowspan="2">Dataset</td>
-    <td align="center" rowspan="2">Input</td>
+    <td align="center" rowspan="3">Model</td>
+    <td align="center" rowspan="3">Dataset</td>
+    <td align="center" rowspan="3">Input</td>
+    <td align="center" colspan="6">T4</td>
+    <td align="center" colspan="4">JetsonNano2GB</td>
+    <td align="center" colspan="2">T4</td>
+    <td align="center" colspan="2">SnapDragon888</td>
+    <td align="center" colspan="2">Adreno660</td>
+    <td rowspan="3">model config file</td>
+  </tr>
+  <tr>
     <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
     <td align="center" colspan="2">int8</td>
+    <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
-    <td align="center" colspan="2">SnapDragon888-fp32</td>
-    <td align="center" colspan="2">Adreno660-fp32</td>
-    <td rowspan="2">model config file</td>
+    <td align="center" colspan="2">fp16</td>
+    <td align="center" colspan="2">fp32</td>
+    <td align="center" colspan="2">fp32</td>
   </tr>
   <tr>
+    <td align="center">latency (ms)</td>
+    <td align="center">FPS</td>
+    <td align="center">latency (ms)</td>
+    <td align="center">FPS</td>
     <td align="center">latency (ms)</td>
     <td align="center">FPS</td>
     <td align="center">latency (ms)</td>
@@ -75,6 +88,10 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center">791.89</td>
     <td align="center">1.21</td>
     <td align="center">829.66</td>
+    <td align="center">59.32</td>
+    <td align="center">16.86</td>
+    <td align="center">30.54</td>
+    <td align="center">32.75</td>
     <td align="center">1.30</td>
     <td align="center">768.28</td>
     <td align="center">33.91</td>
@@ -93,6 +110,10 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center">703.42</td>
     <td align="center">1.37</td>
     <td align="center">727.42</td>
+    <td align="center">88.10</td>
+    <td align="center">11.35</td>
+    <td align="center">49.18</td>
+    <td align="center">20.13</td>
     <td align="center">1.36</td>
     <td align="center">737.67</td>
     <td align="center">133.44</td>
@@ -111,6 +132,10 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center">600.73</td>
     <td align="center">1.51</td>
     <td align="center">662.90</td>
+    <td align="center">74.59</td>
+    <td align="center">13.41</td>
+    <td align="center">48.78</td>
+    <td align="center">20.50</td>
     <td align="center">1.91</td>
     <td align="center">524.07</td>
     <td align="center">107.84</td>
@@ -129,6 +154,10 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center">841.36</td>
     <td align="center">1.13</td>
     <td align="center">883.47</td>
+    <td align="center">15.26</td>
+    <td align="center">65.54</td>
+    <td align="center">10.23</td>
+    <td align="center">97.77</td>
     <td align="center">4.69</td>
     <td align="center">213.33</td>
     <td align="center">9.55</td>
@@ -157,14 +186,18 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
 </thead>
 <tbody>
   <tr>
-    <td align="center" rowspan="2">Model</td>
-    <td align="center" rowspan="2">Dataset</td>
-    <td align="center" rowspan="2">Input</td>
+    <td align="center" rowspan="3">Model</td>
+    <td align="center" rowspan="3">Dataset</td>
+    <td align="center" rowspan="3">Input</td>
+    <td align="center" colspan="6">T4</td>
+    <td align="center" colspan="2">T4</td>
+    <td rowspan="3">model config file</td>
+  </tr>
+  <tr>
     <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
     <td align="center" colspan="2">int8</td>
     <td align="center" colspan="2">fp16</td>
-    <td rowspan="2">model config file</td>
   </tr>
   <tr>
     <td align="center">latency (ms)</td>
@@ -286,12 +319,16 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
 </thead>
 <tbody>
   <tr>
-    <td align="center" rowspan="2">Model</td>
-    <td align="center" rowspan="2">Dataset</td>
-    <td align="center" rowspan="2">Input</td>
-    <td align="center" colspan="2">SnapDragon888-fp32</td>
-    <td align="center" colspan="2">Adreno660-fp32</td>
-    <td rowspan="2">model config file</td>
+    <td align="center" rowspan="3">Model</td>
+    <td align="center" rowspan="3">Dataset</td>
+    <td align="center" rowspan="3">Input</td>
+    <td align="center" colspan="2">SnapDragon888</td>
+    <td align="center" colspan="2">Adreno660</td>
+    <td rowspan="3">model config file</td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2">fp32</td>
+    <td align="center" colspan="2">fp32</td>
   </tr>
   <tr>
     <td align="center">latency (ms)</td>
@@ -348,13 +385,17 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
 </thead>
 <tbody>
   <tr>
-    <td align="center" rowspan="2">Model</td>
-    <td align="center" rowspan="2">Input</td>
+    <td align="center" rowspan="3">Model</td>
+    <td align="center" rowspan="3">Input</td>
+    <td align="center" colspan="6">T4</td>
+    <td align="center" colspan="2">T4</td>
+    <td rowspan="3">model config file</td>
+  </tr>
+  <tr>
     <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
     <td align="center" colspan="2">int8</td>
     <td align="center" colspan="2">fp16</td>
-    <td rowspan="2">model config file</td>
   </tr>
   <tr>
     <td align="center">latency (ms)</td>
@@ -412,16 +453,22 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
 </thead>
 <tbody>
   <tr>
-    <td align="center" rowspan="2">Model</td>
-    <td align="center" rowspan="2">Dataset</td>
-    <td align="center" rowspan="2">Input</td>
+    <td align="center" rowspan="3">Model</td>
+    <td align="center" rowspan="3">Dataset</td>
+    <td align="center" rowspan="3">Input</td>
+    <td align="center" colspan="6">T4</td>
+    <td align="center" colspan="2">T4</td>
+    <td align="center" colspan="2">SnapDragon888</td>
+    <td align="center" colspan="2">Adreno660</td>
+    <td rowspan="3">model config file</td>
+  </tr>
+  <tr>
     <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
     <td align="center" colspan="2">int8</td>
     <td align="center" colspan="2">fp16</td>
-    <td align="center" colspan="2">SnapDragon888-fp32</td>
-    <td align="center" colspan="2">Adreno660-fp32</td>
-    <td rowspan="2">model config file</td>
+    <td align="center" colspan="2">fp32</td>
+    <td align="center" colspan="2">fp32</td>
   </tr>
   <tr>
     <td align="center">latency (ms)</td>
@@ -491,14 +538,18 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
 </thead>
 <tbody>
   <tr>
-    <td align="center" rowspan="2">Model</td>
-    <td align="center" rowspan="2">Dataset</td>
-    <td align="center" rowspan="2">Input</td>
+    <td align="center" rowspan="3">Model</td>
+    <td align="center" rowspan="3">Dataset</td>
+    <td align="center" rowspan="3">Input</td>
+    <td align="center" colspan="6">T4</td>
+    <td align="center" colspan="2">T4</td>
+    <td rowspan="3">model config file</td>
+  </tr>
+  <tr>
     <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
     <td align="center" colspan="2">int8</td>
     <td align="center" colspan="2">fp16</td>
-    <td rowspan="2">model config file</td>
   </tr>
   <tr>
     <td align="center">latency (ms)</td>
@@ -1308,6 +1359,106 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
 </div>
 </details>
 
+<details>
+<summary style="margin-left: 25px;">MMPose</summary>
+<div style="margin-left: 25px;">
+<table class="docutils">
+<thead>
+  <tr>
+    <th align="center" colspan="4">MMpose</th>
+    <th align="center">Pytorch</th>
+    <th align="center">ONNXRuntime</th>
+    <th align="center" colspan="2">TensorRT</th>
+    <th align="center">PPLNN</th>
+    <th align="center">OpenVINO</th>
+    <th align="center">Model Config</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td align="center">Model</td>
+    <td align="center">Task</td>
+    <td align="center">Dataset</td>
+    <td align="center">Metrics</td>
+    <td align="center">fp32</td>
+    <td align="center">fp32</td>
+    <td align="center">fp32</td>
+    <td align="center">fp16</td>
+    <td align="center">fp16</td>
+    <td align="center">fp32</td>
+    <td>model config file</td>
+  </tr>
+  <tr>
+    <td align="center" rowspan="2">HRNet</td>
+    <td align="center" rowspan="2">Pose Detection</td>
+    <td align="center" rowspan="2">COCO</td>
+    <td align="center">AP</td>
+    <td align="center">0.748</td>
+    <td align="center">0.748</td>
+    <td align="center">0.748</td>
+    <td align="center">0.748</td>
+    <td align="center">-</td>
+    <td align="center">0.748</td>
+    <td rowspan="2">$MMPOSE_DIR/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/hrnet_w48_coco_256x192.py</td>
+  </tr>
+  <tr>
+    <td align="center">AR</td>
+    <td align="center">0.802</td>
+    <td align="center">0.802</td>
+    <td align="center">0.802</td>
+    <td align="center">0.802</td>
+    <td align="center">-</td>
+    <td align="center">0.802</td>
+  </tr>
+  <tr>
+    <td align="center" rowspan="2">LiteHRNet</td>
+    <td align="center" rowspan="2">Pose Detection</td>
+    <td align="center" rowspan="2">COCO</td>
+    <td align="center">AP</td>
+    <td align="center">0.663</td>
+    <td align="center">0.663</td>
+    <td align="center">0.663</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">0.663</td>
+    <td rowspan="2">$MMPOSE_DIR/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/litehrnet_30_coco_256x192.py</td>
+  </tr>
+  <tr>
+    <td align="center">AR</td>
+    <td align="center">0.728</td>
+    <td align="center">0.728</td>
+    <td align="center">0.728</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">0.728</td>
+  </tr>
+  <tr>
+    <td align="center" rowspan="2">MSPN </td>
+    <td align="center" rowspan="2">Pose Detection</td>
+    <td align="center" rowspan="2">COCO</td>
+    <td align="center">AP</td>
+    <td align="center">0.762</td>
+    <td align="center">0.762</td>
+    <td align="center">0.762</td>
+    <td align="center">0.762</td>
+    <td align="center">-</td>
+    <td align="center">0.762</td>
+    <td rowspan="2">$MMPOSE_DIR/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/4xmspn50_coco_256x192.py</td>
+  </tr>
+  <tr>
+    <td align="center">AR</td>
+    <td align="center">0.825</td>
+    <td align="center">0.825</td>
+    <td align="center">0.825</td>
+    <td align="center">0.825</td>
+    <td align="center">-</td>
+    <td align="center">0.825</td>
+  </tr>
+</tbody>
+</table>
+</div>
+</details>
+
 
 ### Notes
 - As some datasets contain images with various resolutions in codebase like MMDet. The speed benchmark is gained through static configs in MMDeploy, while the performance benchmark is gained through dynamic ones.
@@ -1317,3 +1468,5 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
 - DBNet uses the interpolate mode `nearest` in the neck of the model, which TensorRT-7 applies a quite different strategy from Pytorch. To make the repository compatible with TensorRT-7, we rewrite the neck to use the interpolate mode `bilinear` which improves final detection performance. To get the matched performance with Pytorch, TensorRT-8+ is recommended, which the interpolate methods are all the same as Pytorch.
 
 - Mask AP of Mask R-CNN drops by 1% for the backend. The main reason is that the predicted masks are directly interpolated to original image in PyTorch, while they are at first interpolated to the preprocessed input image of the model and then to original image in other backends.
+
+- MMPose models are tested with `flip_test` explicitly set to `False` in model configs.
