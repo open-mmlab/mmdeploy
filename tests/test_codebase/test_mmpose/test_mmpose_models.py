@@ -150,10 +150,50 @@ def test_top_down_heatmap_msmu_head_inference_model(backend_type: Backend):
 
 def get_cross_resolution_weighting_model():
     from mmpose.models.backbones.litehrnet import CrossResolutionWeighting
-    model = CrossResolutionWeighting([16], ratio=4)
 
+    class DummyModel(torch.nn.Module):
+
+        def __init__(self):
+            super().__init__()
+            self.model = CrossResolutionWeighting([16, 16], ratio=8)
+
+        def forward(self, x):
+            assert isinstance(x, torch.Tensor)
+            return self.model([x, x])
+
+    model = DummyModel()
     model.requires_grad_(False)
     return model
+
+
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
+def test_cross_resolution_weighting_forward(backend_type: Backend):
+    check_backend(backend_type, True)
+    model = get_cross_resolution_weighting_model()
+    model.cpu().eval()
+    imgs = torch.rand(1, 16, 16, 16)
+
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(type=backend_type.value),
+            onnx_config=dict(input_shape=None, output_names=['output']),
+            codebase_config=dict(
+                type=Codebase.MMPOSE, task=Task.POSE_DETECTION)))
+    rewrite_inputs = {'x': imgs}
+    model_outputs = model.forward(imgs)
+    wrapped_model = WrapModel(model, 'forward')
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg)
+    if isinstance(rewrite_outputs, dict):
+        rewrite_outputs = rewrite_outputs['output']
+    for model_output, rewrite_output in zip(model_outputs, rewrite_outputs):
+        model_output = model_output.cpu().numpy()
+        if isinstance(rewrite_output, torch.Tensor):
+            rewrite_output = rewrite_output.detach().cpu().numpy()
+        assert np.allclose(
+            model_output, rewrite_output, rtol=1e-03, atol=1e-05)
 
 
 def get_top_down_model():
@@ -179,55 +219,6 @@ def get_top_down_model():
 
     model.requires_grad_(False)
     return model
-
-
-@pytest.mark.parametrize('backend_type',
-                         [Backend.ONNXRUNTIME, Backend.TENSORRT])
-def test_cross_resolution_weighting_forward(backend_type: Backend):
-    check_backend(backend_type, True)
-    model = get_cross_resolution_weighting_model()
-    model.cpu().eval()
-    imgs = [torch.rand(1, 16, 16, 16)]
-    if backend_type == Backend.TENSORRT:
-        deploy_cfg = mmcv.Config(
-            dict(
-                backend_config=dict(
-                    type=backend_type.value,
-                    common_config=dict(max_workspace_size=1 << 30),
-                    model_inputs=[
-                        dict(
-                            input_shapes=dict(
-                                input=dict(
-                                    min_shape=[1, 16, 16, 16],
-                                    opt_shape=[1, 16, 16, 16],
-                                    max_shape=[1, 16, 16, 16])))
-                    ]),
-                onnx_config=dict(input_shape=None, output_names=['output']),
-                codebase_config=dict(
-                    type=Codebase.MMPOSE, task=Task.POSE_DETECTION)))
-        rewrite_inputs = {'x': imgs[0].unsqueeze(0)}
-    else:
-        deploy_cfg = mmcv.Config(
-            dict(
-                backend_config=dict(type=backend_type.value),
-                onnx_config=dict(input_shape=None, output_names=['output']),
-                codebase_config=dict(
-                    type=Codebase.MMPOSE, task=Task.POSE_DETECTION)))
-        rewrite_inputs = {'x': imgs}
-    model_outputs = model.forward(imgs)
-    wrapped_model = WrapModel(model, 'forward')
-    rewrite_outputs, is_backend_output = get_rewrite_outputs(
-        wrapped_model=wrapped_model,
-        model_inputs=rewrite_inputs,
-        deploy_cfg=deploy_cfg)
-    if isinstance(rewrite_outputs, dict):
-        rewrite_outputs = rewrite_outputs['output']
-    for model_output, rewrite_output in zip(model_outputs, rewrite_outputs):
-        model_output = model_output.cpu().numpy()
-        if isinstance(rewrite_output, torch.Tensor):
-            rewrite_output = rewrite_output.cpu().numpy()
-        assert np.allclose(
-            model_output, rewrite_output, rtol=1e-03, atol=1e-05)
 
 
 @pytest.mark.parametrize('backend_type',
