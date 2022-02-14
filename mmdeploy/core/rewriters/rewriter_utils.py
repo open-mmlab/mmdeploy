@@ -173,7 +173,7 @@ class RewriterRegistry:
                 # Check if the rewriter is default rewriter
                 if len(checkers) == 0:
                     #  Process the default rewriter exceptionally
-                    if default_rewriter is not None:
+                    if default_rewriter is None:
                         default_rewriter = record
                     else:
                         warnings.warn(
