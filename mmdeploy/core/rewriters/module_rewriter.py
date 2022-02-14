@@ -39,7 +39,10 @@ class ModuleRewriter:
 
         Args:
             module_type (str): The module type name to rewrite.
-            backend (str): The inference engine name.
+            backend (str): The rewriter will be activated on which backend.
+            ir (IR): The rewriter will be activated on which IR.
+            extra_checkers (Checker | List[Checker] | None): Other requirements
+                defined by Checker.
 
         Returns:
             nn.Module: The rewritten model.
@@ -51,8 +54,8 @@ class ModuleRewriter:
                     model: nn.Module,
                     cfg: mmcv.Config,
                     backend: str = Backend.DEFAULT.value,
-                    recursive: bool = True,
                     ir: IR = IR.DEFAULT,
+                    recursive: bool = True,
                     **kwargs) -> nn.Module:
         """Replace the models that was registered.
 
@@ -60,6 +63,7 @@ class ModuleRewriter:
             model (torch.nn.Module): The model to patch.
             cfg (Dict): Config dictionary of deployment.
             backend (str): The inference engine name.
+            ir (IR): The intermeditate representation name.
             recursive (bool): The flag to enable recursive patching.
 
         Returns:

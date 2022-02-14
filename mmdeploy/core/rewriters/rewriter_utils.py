@@ -70,52 +70,98 @@ def collect_env(backend: Backend, ir: IR, **kwargs):
 
 
 class Checker(metaclass=ABCMeta):
+    """The interface for checking whether a rewriter is valid."""
 
     def __init__(self):
         pass
 
     @abstractmethod
     def check(self, env: Dict) -> bool:
+        """Check the if the rewriter is valid according to environment.
+
+        Args:
+            env (Dict): The backend, IR info and version info.
+        """
         pass
 
 
 class BackendChecker(Checker):
+    """Checker that determines which backend the rewriter must run on.
+
+    Args:
+        required_backend (Backend): The rewriter will be activated on
+            which backend.
+    """
 
     def __init__(self, required_backend: Backend):
         super().__init__()
         self.required_backend = required_backend
 
     def check(self, env: Dict) -> bool:
+        """Check the if the rewriter is valid according to backend.
+
+        Args:
+            env (Dict): The backend, IR info and version info.
+        """
         return env['backend'] == self.required_backend
 
 
 class IRChecker(Checker):
+    """Checker that determines which IR the rewriter must run on.
 
-    def __init__(self, required_ir: Backend):
+    Args:
+        required_ir (IR): The rewriter will be activated on which IR.
+    """
+
+    def __init__(self, required_ir: IR):
         super().__init__()
         self.required_ir = required_ir
 
     def check(self, env: Dict) -> bool:
+        """Check the if the rewriter is valid according to IR.
+
+        Args:
+            env (Dict): The backend, IR info and version info.
+        """
         return env['ir'] == self.required_ir
 
 
 class LibVersionChecker(Checker):
+    """Checker that determines which IR the rewriter must run on.
 
-    def __init__(self, lib: str, min_version=None, max_version=None):
+    Args:
+        lib (str): The name of library.
+        min_version (str | None): The rewriter should no lower than which
+            version. Default to `None`.
+        max_version (str | None): The rewriter should no greater than which
+            version. Default to `None`.
+    """
+
+    def __init__(self,
+                 lib: str,
+                 min_version: Optional[str] = None,
+                 max_version: Optional[str] = None):
         super().__init__()
         self.lib = lib
         self.min_version = min_version
         self.max_version = max_version
 
     def check(self, env: Dict) -> bool:
+        """Check the if the rewriter is valid according to library version.
+
+        Args:
+            env (Dict): The backend, IR info and version info.
+        """
         from packaging import version
         valid = True
+        # The version should no less than min version and no greater than
+        # max version.
         if self.min_version is not None:
-            valid = version.parse(env[self.lib]) >= version.parse(
-                self.min_version)
+            if version.parse(env[self.lib]) < version.parse(self.min_version):
+                valid = False
         if self.max_version is not None:
-            valid = version.parse(env[self.lib]) <= version.parse(
-                self.max_version)
+            if version.parse(env[self.lib]) > version.parse(self.max_version):
+                valid = False
         return valid
 
 
@@ -146,7 +192,7 @@ class RewriterRegistry:
         """Get all registered records that are valid in the given environment
         from record table.
 
-        If the backend and ir of rewriter are set to 'default', then the
+        If the backend and IR of rewriter are set to 'default', then the
         rewriter is regarded as default rewriter. The default rewriter will be
         activated only when all other rewriters are not valid. If there are
         multiple rewriters are valid (except default rewriter), we will
@@ -154,7 +200,7 @@ class RewriterRegistry:
         rewriters are loaded).
 
         Args:
-            env (dict): Environment dictionary that includes backend, ir,
+            env (dict): Environment dictionary that includes backend, IR,
                 codebase version, etc.
 
         Returns:

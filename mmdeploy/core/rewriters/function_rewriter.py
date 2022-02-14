@@ -79,6 +79,9 @@ class FunctionRewriter:
         Args:
             func_name (str): The function name/path to rewrite.
             backend (str): The rewriter will be activated on which backend.
+            ir (IR): The rewriter will be activated on which IR.
+            extra_checkers (Checker | List[Checker] | None): Other requirements
+                defined by Checker.
 
         Returns:
             Callable: The process of registering function.

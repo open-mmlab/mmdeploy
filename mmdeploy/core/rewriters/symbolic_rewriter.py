@@ -49,11 +49,14 @@ class SymbolicRewriter:
 
         Args:
             func_name (str): The function name/path to override the symbolic.
-            backend (str): The inference engine name.
+            backend (str): The rewriter will be activated on which backend.
             is_pytorch (bool): Enable this flag if func_name is the name of \
                 a pytorch builtin function.
             arg_descriptors (Sequence[str]): The argument descriptors of the \
                 symbol.
+            ir (IR): The rewriter will be activated on which IR.
+            extra_checkers (Checker | List[Checker] | None): Other requirements
+                defined by Checker.
 
         Returns:
             Callable: The process of registered symbolic.

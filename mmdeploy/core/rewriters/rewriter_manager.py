@@ -30,6 +30,7 @@ SYMBOLIC_REWRITER = REWRITER_MANAGER.symbolic_rewriter
 def patch_model(model: nn.Module,
                 cfg: mmcv.Config,
                 backend: str = Backend.DEFAULT.value,
+                ir: IR = IR.DEFAULT,
                 recursive: bool = True,
                 **kwargs) -> nn.Module:
     """Patch the model, replace the modules that can be rewritten. Note that
@@ -39,6 +40,7 @@ def patch_model(model: nn.Module,
         model (torch.nn.Module): The model to patch.
         cfg (Dict): Config dictionary of deployment.
         backend (str): The inference engine name.
+        ir (IR): The intermeditate representation name.
         recursive (bool): The flag to enable recursive patching.
 
     Returns:
@@ -48,7 +50,7 @@ def patch_model(model: nn.Module,
         >>> from mmdeploy.core import patch_model
         >>> patched_model = patch_model(model, cfg=deploy_cfg, backend=backend)
     """
-    return MODULE_REWRITER.patch_model(model, cfg, backend, recursive,
+    return MODULE_REWRITER.patch_model(model, cfg, backend, ir, recursive,
                                        **kwargs)
 
 
@@ -60,6 +62,7 @@ class RewriterContext:
     Args:
         cfg (Dict): Config dictionary of deployment.
         backend (str): The inference engine name.
+        ir (IR): The intermeditate representation name.
         rewrite_manager (RewriterManager): An RewriteManager that consists of
             several rewriters
 
