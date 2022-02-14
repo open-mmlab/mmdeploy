@@ -53,6 +53,63 @@ class ListDummyMSMUHead(torch.nn.Module):
         return self.model.inference_model(model_inputs, flip_pairs=flip_pairs)
 
 
+def get_top_down_heatmap_simple_head_model():
+    from mmpose.models.heads import TopdownHeatmapSimpleHead
+    model = TopdownHeatmapSimpleHead(
+        2,
+        4,
+        num_deconv_filters=(16, 16, 16),
+        loss_keypoint=dict(type='JointsMSELoss', use_target_weight=False))
+    model.requires_grad_(False)
+    return model
+
+
+@pytest.mark.parametrize('backend_type',
+                         [Backend.ONNXRUNTIME, Backend.TENSORRT])
+def test_top_down_heatmap_simple_head_inference_model(backend_type: Backend):
+    check_backend(backend_type, True)
+    model = get_top_down_heatmap_simple_head_model()
+    model.cpu().eval()
+    if backend_type.value == 'tensorrt':
+        deploy_cfg = mmcv.Config(
+            dict(
+                backend_config=dict(
+                    type=backend_type.value,
+                    common_config=dict(max_workspace_size=1 << 30),
+                    model_inputs=[
+                        dict(
+                            input_shapes=dict(
+                                input=dict(
+                                    min_shape=[1, 3, 32, 48],
+                                    opt_shape=[1, 3, 32, 48],
+                                    max_shape=[1, 3, 32, 48])))
+                    ]),
+                onnx_config=dict(
+                    input_shape=[32, 48], output_names=['output']),
+                codebase_config=dict(type='mmpose', task='PoseDetection')))
+    else:
+        deploy_cfg = mmcv.Config(
+            dict(
+                backend_config=dict(type=backend_type.value),
+                onnx_config=dict(input_shape=None, output_names=['output']),
+                codebase_config=dict(type='mmpose', task='PoseDetection')))
+    img = torch.rand((1, 2, 32, 48))
+    model_outputs = model.inference_model(img)
+    wrapped_model = WrapModel(model, 'inference_model')
+    rewrite_inputs = {'x': img}
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg)
+    if isinstance(rewrite_outputs, dict):
+        rewrite_outputs = rewrite_outputs['output']
+    for model_output, rewrite_output in zip(model_outputs, rewrite_outputs):
+        if isinstance(rewrite_output, torch.Tensor):
+            rewrite_output = rewrite_output.cpu().numpy()
+        assert np.allclose(
+            model_output, rewrite_output, rtol=1e-03, atol=1e-05)
+
+
 def get_top_down_heatmap_msmu_head_model():
     model = ListDummyMSMUHead(
         (32, 48),
@@ -97,52 +154,9 @@ def test_top_down_heatmap_msmu_head_inference_model(backend_type: Backend):
             model_output, rewrite_output, rtol=1e-03, atol=1e-05)
 
 
-def get_top_down_heatmap_simple_head_model():
-    from mmpose.models.heads import TopdownHeatmapSimpleHead
-    model = TopdownHeatmapSimpleHead(
-        2,
-        4,
-        num_deconv_filters=(16, 16, 16),
-        loss_keypoint=dict(type='JointsMSELoss', use_target_weight=False))
-    model.requires_grad_(False)
-    return model
-
-
-@pytest.mark.parametrize('backend_type',
-                         [Backend.ONNXRUNTIME, Backend.TENSORRT])
-def test_top_down_heatmap_simple_head_inference_model(backend_type: Backend):
-    check_backend(backend_type, True)
-    model = get_top_down_heatmap_simple_head_model()
-    model.cpu().eval()
-    deploy_cfg = mmcv.Config(
-        dict(
-            backend_config=dict(type=backend_type.value),
-            onnx_config=dict(input_shape=None, output_names=['output']),
-            codebase_config=dict(type='mmpose', task='PoseDetection')))
-    img = torch.rand((1, 2, 32, 48))
-    flatten_img = []
-    for stage in img:
-        for unit in stage:
-            flatten_img.append(unit)
-    model_outputs = model.inference_model(img)
-    wrapped_model = WrapModel(model, 'inference_model')
-    rewrite_inputs = {'x': img}
-    rewrite_outputs, is_backend_output = get_rewrite_outputs(
-        wrapped_model=wrapped_model,
-        model_inputs=rewrite_inputs,
-        deploy_cfg=deploy_cfg)
-    if isinstance(rewrite_outputs, dict):
-        rewrite_outputs = rewrite_outputs['output']
-    for model_output, rewrite_output in zip(model_outputs, rewrite_outputs):
-        if isinstance(rewrite_output, torch.Tensor):
-            rewrite_output = rewrite_output.cpu().numpy()
-        assert np.allclose(
-            model_output, rewrite_output, rtol=1e-03, atol=1e-05)
-
-
 def get_cross_resolution_weighting_model():
     from mmpose.models.backbones.litehrnet import CrossResolutionWeighting
-    model = CrossResolutionWeighting([2, 4, 8, 16])
+    model = CrossResolutionWeighting([16], ratio=4)
 
     model.requires_grad_(False)
     return model
@@ -210,18 +224,37 @@ def test_cross_resolution_weighting_forward(backend_type: Backend):
     model = get_cross_resolution_weighting_model()
     model.cpu().eval()
     imgs = [
-        torch.rand(1, 2, 16, 16),
-        torch.rand(1, 4, 8, 8),
-        torch.rand(1, 8, 4, 4),
-        torch.rand(1, 16, 2, 2)
+        torch.rand(1, 16, 16, 16)
     ]
-
-    deploy_cfg = mmcv.Config(
-        dict(
-            backend_config=dict(type=backend_type.value),
-            onnx_config=dict(input_shape=None, output_names=['output']),
-            codebase_config=dict(type='mmpose', task='PoseDetection')))
-    rewrite_inputs = {'x': imgs}
+    if backend_type.value == 'tensorrt':
+        deploy_cfg = mmcv.Config(
+            dict(
+                backend_config=dict(
+                    type=backend_type.value,
+                    common_config=dict(max_workspace_size=1 << 30),
+                    model_inputs=[
+                        dict(
+                            input_shapes=dict(
+                                input=dict(
+                                    min_shape=[1, 16, 16, 16],
+                                    opt_shape=[1, 16, 16, 16],
+                                    max_shape=[1, 16, 16, 16])
+                                ))
+                    ]),
+                onnx_config=dict(
+                    input_shape=None,
+                    output_names=['output']),
+                codebase_config=dict(type='mmpose', task='PoseDetection')))
+        rewrite_inputs = {
+                    'x': imgs[0].unsqueeze(0)
+                }
+    else:
+        deploy_cfg = mmcv.Config(
+            dict(
+                backend_config=dict(type=backend_type.value),
+                onnx_config=dict(input_shape=None, output_names=['output']),
+                codebase_config=dict(type='mmpose', task='PoseDetection')))
+        rewrite_inputs = {'x': imgs}
     model_outputs = model.forward(imgs)
     wrapped_model = WrapModel(model, 'forward')
     rewrite_outputs, is_backend_output = get_rewrite_outputs(
@@ -231,6 +264,7 @@ def test_cross_resolution_weighting_forward(backend_type: Backend):
     if isinstance(rewrite_outputs, dict):
         rewrite_outputs = rewrite_outputs['output']
     for model_output, rewrite_output in zip(model_outputs, rewrite_outputs):
+        print(f'debugging: model_output: {model_output}, rewrite_output: {rewrite_output}')
         model_output = model_output.cpu().numpy()
         if isinstance(rewrite_output, torch.Tensor):
             rewrite_output = rewrite_output.cpu().numpy()
@@ -260,7 +294,7 @@ def test_top_down_forward(backend_type: Backend):
                     ]),
                 onnx_config=dict(
                     input_shape=[32, 32], output_names=['output']),
-                codebase_config=dict(type='mmcls', task='Classification')))
+                codebase_config=dict(type='mmpose', task='PoseDetection')))
     else:
         deploy_cfg = mmcv.Config(
             dict(
