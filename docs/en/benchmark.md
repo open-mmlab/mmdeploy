@@ -32,7 +32,7 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
 <thead>
   <tr>
     <th align="center" colspan="3">MMCls</th>
-    <th align="center" colspan="10">TensorRT</th>
+    <th align="center" colspan="12">TensorRT</th>
     <th align="center" colspan="2">PPLNN</th>
     <th align="center" colspan="4">NCNN</th>
     <th></th>
@@ -45,6 +45,7 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center" rowspan="3">Input</td>
     <td align="center" colspan="6">T4</td>
     <td align="center" colspan="4">JetsonNano2GB</td>
+    <td align="center" colspan="2">Jetson TX2</td>
     <td align="center" colspan="2">T4</td>
     <td align="center" colspan="2">SnapDragon888</td>
     <td align="center" colspan="2">Adreno660</td>
@@ -56,11 +57,14 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center" colspan="2">int8</td>
     <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
+    <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
     <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp32</td>
   </tr>
   <tr>
+    <td align="center">latency (ms)</td>
+    <td align="center">FPS</td>
     <td align="center">latency (ms)</td>
     <td align="center">FPS</td>
     <td align="center">latency (ms)</td>
@@ -92,6 +96,8 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center">16.86</td>
     <td align="center">30.54</td>
     <td align="center">32.75</td>
+    <td align="center">24.13</td>
+    <td align="center">41.44</td>
     <td align="center">1.30</td>
     <td align="center">768.28</td>
     <td align="center">33.91</td>
@@ -114,6 +120,8 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center">11.35</td>
     <td align="center">49.18</td>
     <td align="center">20.13</td>
+    <td align="center">37.45</td>
+    <td align="center">26.70</td>
     <td align="center">1.36</td>
     <td align="center">737.67</td>
     <td align="center">133.44</td>
@@ -136,6 +144,8 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center">13.41</td>
     <td align="center">48.78</td>
     <td align="center">20.50</td>
+    <td align="center">29.62</td>
+    <td align="center">33.76</td>
     <td align="center">1.91</td>
     <td align="center">524.07</td>
     <td align="center">107.84</td>
@@ -158,6 +168,8 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center">65.54</td>
     <td align="center">10.23</td>
     <td align="center">97.77</td>
+    <td align="center">7.37</td>
+    <td align="center">135.73</td>
     <td align="center">4.69</td>
     <td align="center">213.33</td>
     <td align="center">9.55</td>
@@ -175,13 +187,14 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
 <details>
 <summary style="margin-left: 25px;">MMDet</summary>
 <div style="margin-left: 25px;">
+
 <table class="docutils">
 <thead>
   <tr>
     <th align="center" colspan="3">MMDet</th>
-    <th align="center" colspan="6">TensorRT</th>
+    <th align="center" colspan="8">TensorRT</th>
     <th align="center" colspan="2">PPLNN</th>
-    <th align="center"></th>
+    <th></th>
   </tr>
 </thead>
 <tbody>
@@ -190,6 +203,7 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center" rowspan="3">Dataset</td>
     <td align="center" rowspan="3">Input</td>
     <td align="center" colspan="6">T4</td>
+    <td align="center" colspan="2">Jetson TX2</td>
     <td align="center" colspan="2">T4</td>
     <td rowspan="3">model config file</td>
   </tr>
@@ -197,9 +211,12 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
     <td align="center" colspan="2">int8</td>
+    <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
   </tr>
   <tr>
+    <td align="center">latency (ms)</td>
+    <td align="center">FPS</td>
     <td align="center">latency (ms)</td>
     <td align="center">FPS</td>
     <td align="center">latency (ms)</td>
@@ -219,6 +236,8 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center">40.13</td>
     <td align="center">24.92</td>
     <td align="center">40.13</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
     <td align="center">18.07</td>
     <td align="center">55.35</td>
     <td>$MMDET_DIR/configs/yolo/yolov3_d53_320_273e_coco.py</td>
@@ -233,6 +252,8 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center">108.56</td>
     <td align="center">8.04</td>
     <td align="center">124.38</td>
+    <td align="center">1.28</td>
+    <td align="center">1.28</td>
     <td align="center">19.72</td>
     <td align="center">50.71</td>
     <td>$MMDET_DIR/configs/ssd/ssdlite_mobilenetv2_scratch_600e_coco.py</td>
@@ -247,6 +268,8 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center">38.78</td>
     <td align="center">16.88</td>
     <td align="center">59.23</td>
+    <td align="center">780.48</td>
+    <td align="center">1.28</td>
     <td align="center">38.34</td>
     <td align="center">26.08</td>
     <td>$MMDET_DIR/configs/retinanet/retinanet_r50_fpn_1x_coco.py</td>
@@ -263,6 +286,8 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center">56.57</td>
     <td align="center">-</td>
     <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
     <td>$MMDET_DIR/configs/fcos/fcos_r50_caffe_fpn_gn-head_1x_coco.py</td>
   </tr>
   <tr>
@@ -275,6 +300,8 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center">47.58</td>
     <td align="center">13.50</td>
     <td align="center">74.08</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
     <td align="center">30.41</td>
     <td align="center">32.89</td>
     <td>$MMDET_DIR/configs/fsaf/fsaf_r50_fpn_1x_coco.py</td>
@@ -289,6 +316,8 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center">37.70</td>
     <td align="center">19.14</td>
     <td align="center">52.23</td>
+    <td align="center">733.81</td>
+    <td align="center">1.36</td>
     <td align="center">65.40</td>
     <td align="center">15.29</td>
     <td>$MMDET_DIR/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py</td>
@@ -301,6 +330,8 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center">3.12</td>
     <td align="center">241.32</td>
     <td align="center">4.14</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">86.80</td>
@@ -374,13 +405,14 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
 <details>
 <summary style="margin-left: 25px;">MMEdit</summary>
 <div style="margin-left: 25px;">
+
 <table class="docutils">
 <thead>
   <tr>
     <th align="center" colspan="2">MMEdit</th>
-    <th align="center" colspan="6">TensorRT</th>
+    <th align="center" colspan="8">TensorRT</th>
     <th align="center" colspan="2">PPLNN</th>
-    <th align="center"></th>
+    <th></th>
   </tr>
 </thead>
 <tbody>
@@ -388,6 +420,7 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center" rowspan="3">Model</td>
     <td align="center" rowspan="3">Input</td>
     <td align="center" colspan="6">T4</td>
+    <td align="center" colspan="2">Jetson TX2</td>
     <td align="center" colspan="2">T4</td>
     <td rowspan="3">model config file</td>
   </tr>
@@ -395,9 +428,12 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
     <td align="center" colspan="2">int8</td>
+    <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
   </tr>
   <tr>
+    <td align="center">latency (ms)</td>
+    <td align="center">FPS</td>
     <td align="center">latency (ms)</td>
     <td align="center">FPS</td>
     <td align="center">latency (ms)</td>
@@ -416,6 +452,8 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center">80.50</td>
     <td align="center">12.45</td>
     <td align="center">80.35</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
     <td align="center">7.67</td>
     <td align="center">130.39</td>
     <td>$MMEDIT_DIR/configs/restorers/esrgan/esrgan_psnr_x4c64b23g32_g1_1000k_div2k.py</td>
@@ -429,12 +467,15 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center">2836.62</td>
     <td align="center">0.26</td>
     <td align="center">3850.45</td>
+    <td align="center">58.86</td>
+    <td align="center">16.99</td>
     <td align="center">0.56</td>
     <td align="center">1775.11</td>
     <td>$MMEDIT_DIR/configs/restorers/srcnn/srcnn_x4k915_g1_1000k_div2k.py</td>
   </tr>
 </tbody>
 </table>
+
 </div>
 </details>
 
@@ -527,13 +568,14 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
 <details>
 <summary style="margin-left: 25px;">MMSeg</summary>
 <div style="margin-left: 25px;">
+
 <table class="docutils">
 <thead>
   <tr>
     <th align="center" colspan="3">MMSeg</th>
-    <th align="center" colspan="6">TensorRT</th>
+    <th align="center" colspan="8">TensorRT</th>
     <th align="center" colspan="2">PPLNN</th>
-    <th align="center"></th>
+    <th></th>
   </tr>
 </thead>
 <tbody>
@@ -542,6 +584,7 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center" rowspan="3">Dataset</td>
     <td align="center" rowspan="3">Input</td>
     <td align="center" colspan="6">T4</td>
+    <td align="center" colspan="2">Jetson TX2</td>
     <td align="center" colspan="2">T4</td>
     <td rowspan="3">model config file</td>
   </tr>
@@ -549,9 +592,12 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
     <td align="center" colspan="2">int8</td>
+    <td align="center" colspan="2">fp32</td>
     <td align="center" colspan="2">fp16</td>
   </tr>
   <tr>
+    <td align="center">latency (ms)</td>
+    <td align="center">FPS</td>
     <td align="center">latency (ms)</td>
     <td align="center">FPS</td>
     <td align="center">latency (ms)</td>
@@ -571,6 +617,8 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center">41.72</td>
     <td align="center">18.13</td>
     <td align="center">55.15</td>
+    <td align="center">1682.54</td>
+    <td align="center">0.59</td>
     <td align="center">27.00</td>
     <td align="center">37.04</td>
     <td>$MMSEG_DIR/configs/fcn/fcn_r50-d8_512x1024_40k_cityscapes.py</td>
@@ -585,6 +633,8 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center">41.49</td>
     <td align="center">16.33</td>
     <td align="center">61.23</td>
+    <td align="center">1586.19</td>
+    <td align="center">0.63</td>
     <td align="center">27.26</td>
     <td align="center">36.69</td>
     <td>$MMSEG_DIR/configs/pspnet/pspnet_r50-d8_512x1024_80k_cityscapes.py</td>
@@ -599,6 +649,8 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center">31.45</td>
     <td align="center">19.85</td>
     <td align="center">50.38</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
     <td align="center">36.01</td>
     <td align="center">27.77</td>
     <td>$MMSEG_DIR/configs/deeplabv3/deeplabv3_r50-d8_512x1024_80k_cityscapes.py</td>
@@ -613,12 +665,15 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <td align="center">21.26</td>
     <td align="center">50.38</td>
     <td align="center">26.67</td>
+    <td align="center">2534.96</td>
+    <td align="center">0.39</td>
     <td align="center">34.80</td>
     <td align="center">28.74</td>
     <td>$MMSEG_DIR/configs/deeplabv3plus/deeplabv3plus_r50-d8_512x1024_80k_cityscapes.py</td>
   </tr>
 </tbody>
 </table>
+
 </div>
 </details>
 
