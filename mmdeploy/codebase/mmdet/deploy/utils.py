@@ -5,6 +5,8 @@ import mmcv
 import torch
 from torch import Tensor
 
+from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.core.rewriters.rewriter_utils import LibVersionChecker
 from mmdeploy.utils import load_config
 
 
@@ -66,6 +68,32 @@ def clip_bboxes(x1: Tensor, y1: Tensor, x2: Tensor, y2: Tensor,
         y1 = torch.clamp(y1, 0, max_shape[0])
         x2 = torch.clamp(x2, 0, max_shape[1])
         y2 = torch.clamp(y2, 0, max_shape[0])
+    return x1, y1, x2, y2
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    func_name='mmdeploy.codebase.mmdet.deploy.utils.clip_bboxes',
+    backend='tensorrt',
+    extra_checkers=LibVersionChecker('tensorrt', min_version='8'))
+def clip_bboxes__trt8(x1: Tensor, y1: Tensor, x2: Tensor, y2: Tensor,
+                      max_shape: Union[Tensor, Sequence[int]]):
+    """Clip bboxes for onnx. From TensorRT 8 we can do the operators on the
+    tensors directly.
+
+    Args:
+        x1 (Tensor): The x1 for bounding boxes.
+        y1 (Tensor): The y1 for bounding boxes.
+        x2 (Tensor): The x2 for bounding boxes.
+        y2 (Tensor): The y2 for bounding boxes.
+        max_shape (Tensor | Sequence[int]): The (H,W) of original image.
+    Returns:
+        tuple(Tensor): The clipped x1, y1, x2, y2.
+    """
+    assert len(max_shape) == 2, '`max_shape` should be [h, w]'
+    x1 = torch.clamp(x1, 0, max_shape[1])
+    y1 = torch.clamp(y1, 0, max_shape[0])
+    x2 = torch.clamp(x2, 0, max_shape[1])
+    y2 = torch.clamp(y2, 0, max_shape[0])
     return x1, y1, x2, y2
 
 
