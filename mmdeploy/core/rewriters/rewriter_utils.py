@@ -60,8 +60,8 @@ def import_function(path: str) -> Tuple[Callable, Optional[type]]:
 
 
 def collect_env(backend: Backend, ir: IR, **kwargs) -> Dict:
-    """Collect current environment informations, including backend, ir, 
-    codebase version, etc. Rewriters will be checked according to env infos.
+    """Collect current environment information, including backend, ir, codebase
+    version, etc. Rewriters will be checked according to env infos.
 
     Args:
         backend (Backend): Current backend.
