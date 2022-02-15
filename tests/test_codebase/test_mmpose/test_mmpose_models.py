@@ -49,14 +49,16 @@ def test_top_down_heatmap_simple_head_inference_model(backend_type: Backend):
                 onnx_config=dict(
                     input_shape=[32, 48], output_names=['output']),
                 codebase_config=dict(
-                    type=Codebase.MMPOSE, task=Task.POSE_DETECTION)))
+                    type=Codebase.MMPOSE.value,
+                    task=Task.POSE_DETECTION.value)))
     else:
         deploy_cfg = mmcv.Config(
             dict(
                 backend_config=dict(type=backend_type.value),
                 onnx_config=dict(input_shape=None, output_names=['output']),
                 codebase_config=dict(
-                    type=Codebase.MMPOSE, task=Task.POSE_DETECTION)))
+                    type=Codebase.MMPOSE.value,
+                    task=Task.POSE_DETECTION.value)))
     img = torch.rand((1, 2, 32, 48))
     model_outputs = model.inference_model(img)
     wrapped_model = WrapModel(model, 'inference_model')
@@ -123,14 +125,16 @@ def test_top_down_heatmap_msmu_head_inference_model(backend_type: Backend):
                 onnx_config=dict(
                     input_shape=[32, 48], output_names=['output']),
                 codebase_config=dict(
-                    type=Codebase.MMPOSE, task=Task.POSE_DETECTION)))
+                    type=Codebase.MMPOSE.value,
+                    task=Task.POSE_DETECTION.value)))
     else:
         deploy_cfg = mmcv.Config(
             dict(
                 backend_config=dict(type=backend_type.value),
                 onnx_config=dict(input_shape=None, output_names=['output']),
                 codebase_config=dict(
-                    type=Codebase.MMPOSE, task=Task.POSE_DETECTION)))
+                    type=Codebase.MMPOSE.value,
+                    task=Task.POSE_DETECTION.value)))
     img = torch.rand((1, 2, 32, 48))
     model_outputs = model.inference_model(img)
     wrapped_model = WrapModel(model, 'inference_model')
@@ -178,7 +182,7 @@ def test_cross_resolution_weighting_forward(backend_type: Backend):
             backend_config=dict(type=backend_type.value),
             onnx_config=dict(input_shape=None, output_names=['output']),
             codebase_config=dict(
-                type=Codebase.MMPOSE, task=Task.POSE_DETECTION)))
+                type=Codebase.MMPOSE.value, task=Task.POSE_DETECTION.value)))
     rewrite_inputs = {'x': imgs}
     model_outputs = model.forward(imgs)
     wrapped_model = WrapModel(model, 'forward')
@@ -244,14 +248,16 @@ def test_top_down_forward(backend_type: Backend):
                 onnx_config=dict(
                     input_shape=[32, 32], output_names=['output']),
                 codebase_config=dict(
-                    type=Codebase.MMPOSE, task=Task.POSE_DETECTION)))
+                    type=Codebase.MMPOSE.value,
+                    task=Task.POSE_DETECTION.value)))
     else:
         deploy_cfg = mmcv.Config(
             dict(
                 backend_config=dict(type=backend_type.value),
                 onnx_config=dict(input_shape=None, output_names=['output']),
                 codebase_config=dict(
-                    type=Codebase.MMPOSE, task=Task.POSE_DETECTION)))
+                    type=Codebase.MMPOSE.value,
+                    task=Task.POSE_DETECTION.value)))
     img = torch.rand((1, 3, 32, 32))
     img_metas = {
         'image_file':

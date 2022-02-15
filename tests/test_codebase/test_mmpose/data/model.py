@@ -11,47 +11,18 @@ channel_cfg = dict(
     ])
 model = dict(
     type='TopDown',
-    backbone=dict(
-        type='HRNet',
-        in_channels=3,
-        extra=dict(
-            stage1=dict(
-                num_modules=1,
-                num_branches=1,
-                block='BOTTLENECK',
-                num_blocks=(4, ),
-                num_channels=(4, )),
-            stage2=dict(
-                num_modules=1,
-                num_branches=2,
-                block='BASIC',
-                num_blocks=(4, 4),
-                num_channels=(2, 4)),
-            stage3=dict(
-                num_modules=4,
-                num_branches=3,
-                block='BASIC',
-                num_blocks=(4, 4, 4),
-                num_channels=(2, 4, 8)),
-            stage4=dict(
-                num_modules=3,
-                num_branches=4,
-                block='BASIC',
-                num_blocks=(4, 4, 4, 4),
-                num_channels=(2, 4, 8, 16))),
-    ),
+    pretrained=None,
+    backbone=dict(type='ResNet', depth=18),
     keypoint_head=dict(
         type='TopdownHeatmapSimpleHead',
-        in_channels=2,
-        out_channels=channel_cfg['num_output_channels'],
-        num_deconv_layers=0,
-        extra=dict(final_conv_kernel=1, ),
+        in_channels=512,
+        out_channels=17,
         loss_keypoint=dict(type='JointsMSELoss', use_target_weight=True)),
     train_cfg=dict(),
     test_cfg=dict(
-        flip_test=True,
+        flip_test=False,
         post_process='default',
-        shift_heatmap=True,
+        shift_heatmap=False,
         modulate_kernel=11))
 
 data_cfg = dict(
@@ -93,16 +64,7 @@ test_pipeline = [
 
 dataset_info = dict(
     dataset_name='coco',
-    paper_info=dict(
-        author='Lin, Tsung-Yi and Maire, Michael and '
-        'Belongie, Serge and Hays, James and '
-        'Perona, Pietro and Ramanan, Deva and '
-        r'Doll{\'a}r, Piotr and Zitnick, C Lawrence',
-        title='Microsoft coco: Common objects in context',
-        container='European conference on computer vision',
-        year='2014',
-        homepage='http://cocodataset.org/',
-    ),
+    paper_info=dict(),
     keypoint_info={
         0:
         dict(name='nose', id=0, color=[51, 153, 255], type='upper', swap=''),

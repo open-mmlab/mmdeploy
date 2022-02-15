@@ -4,6 +4,7 @@ from tempfile import NamedTemporaryFile
 
 import mmcv
 import numpy as np
+import pytest
 import torch
 
 import mmdeploy.backend.onnxruntime as ort_apis
@@ -14,7 +15,11 @@ from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
 IMAGE_H = 192
 IMAGE_W = 256
 
-import_codebase(Codebase.MMPOSE)
+try:
+    import_codebase(Codebase.MMPOSE)
+except ImportError:
+    pytest.skip(
+        f'{Codebase.MMPOSE} is not installed.', allow_module_level=True)
 
 
 @backend_checker(Backend.ONNXRUNTIME)
@@ -90,9 +95,9 @@ def test_build_pose_detection_model():
     model_cfg = load_config(model_cfg_path)[0]
     deploy_cfg = mmcv.Config(
         dict(
-            backend_config=dict(type='onnxruntime'),
+            backend_config=dict(type=Backend.ONNXRUNTIME.value),
             onnx_config=dict(output_names=['outputs']),
-            codebase_config=dict(type='mmpose')))
+            codebase_config=dict(type=Codebase.MMPOSE.value)))
 
     from mmdeploy.backend.onnxruntime import ORTWrapper
     ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
