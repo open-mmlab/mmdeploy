@@ -2,7 +2,6 @@
 from typing import Optional, Union
 
 import mmcv
-import torch
 from mmcv.utils import Registry
 from torch.utils.data import DataLoader, Dataset
 
@@ -66,13 +65,3 @@ class MMDetection3d(MMCodebase):
             shuffle=shuffle,
             seed=seed,
             **kwargs)
-
-    @staticmethod
-    def single_gpu_test(model: torch.nn.Module,
-                        data_loader: DataLoader,
-                        show: bool = False,
-                        out_dir: Optional[str] = None,
-                        **kwargs):
-        from mmdet3d.apis import single_gpu_test
-        outputs = single_gpu_test(model, data_loader, show, out_dir, kwargs)
-        return outputs

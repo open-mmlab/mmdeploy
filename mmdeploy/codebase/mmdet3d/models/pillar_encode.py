@@ -1,7 +1,20 @@
 import torch
-from mmdet3d.models.voxel_encoders.utils import get_paddings_indicator
 
 from mmdeploy.core import FUNCTION_REWRITER
+
+
+def get_paddings_indicator(actual_num, max_num, axis=0):
+    actual_num = torch.unsqueeze(actual_num, axis + 1)
+    # tiled_actual_num: [N, M, 1]
+    max_num_shape = [1] * len(actual_num.shape)
+    max_num_shape[axis + 1] = -1
+    max_num = torch.arange(
+        max_num, dtype=torch.int, device=actual_num.device).view(max_num_shape)
+    # tiled_actual_num: [[3,3,3,3,3], [4,4,4,4,4], [2,2,2,2,2]]
+    # tiled_max_num: [[0,1,2,3,4], [0,1,2,3,4], [0,1,2,3,4]]
+    paddings_indicator = actual_num.int() > max_num
+    # paddings_indicator shape: [batch_size, max_num]
+    return paddings_indicator
 
 
 @FUNCTION_REWRITER.register_rewriter(
@@ -43,6 +56,8 @@ def forward(ctx, self, features, num_points, coors):
             f_center[:, :, 1] = f_center[:, :, 1] - (
                 coors[:, 2].type_as(features).unsqueeze(1) * self.vy +
                 self.y_offset)
+            features[:, :, 0] = f_center[:, :, 0]
+            features[:, :, 1] = f_center[:, :, 1]
         features_ls.append(f_center)
 
     if self._with_distance:
@@ -56,7 +71,8 @@ def forward(ctx, self, features, num_points, coors):
     # empty pillars remain set to zeros.
     voxel_count = features.shape[1]
     mask = get_paddings_indicator(num_points, voxel_count, axis=0)
-    mask = torch.unsqueeze(mask, -1).type_as(features).int()
+    # mask = torch.unsqueeze(mask, -1).type_as(features).int()
+    mask = torch.unsqueeze(mask, -1).type_as(features)
     features *= mask
 
     for pfn in self.pfn_layers:

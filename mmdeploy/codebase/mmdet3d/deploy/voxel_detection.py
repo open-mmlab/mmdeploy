@@ -5,31 +5,31 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
-from torch.utils.data import Dataset
+from torch.utils.data import DataLoader, Dataset
 
 from mmdeploy.codebase.base import BaseTask
 from mmdeploy.codebase.mmdet3d.deploy.mmdetection3d import MMDET3D_TASK
-from mmdeploy.utils import Task
+from mmdeploy.utils import Task, get_root_logger
 
 
-def voxelize(points, model_cfg):
-    from mmdet3d.ops import Voxelization
-    voxel_layer = model_cfg.model['voxel_layer']
-    voxel_layer = Voxelization(**voxel_layer)
-    voxels, coors, num_points = [], [], []
-    for res in points:
-        res_voxels, res_coors, res_num_points = voxel_layer(res)
-        voxels.append(res_voxels)
-        coors.append(res_coors)
-        num_points.append(res_num_points)
-    voxels = torch.cat(voxels, dim=0)
-    num_points = torch.cat(num_points, dim=0)
-    coors_batch = []
-    for i, coor in enumerate(coors):
-        coor_pad = F.pad(coor, (1, 0), mode='constant', value=i)
-        coors_batch.append(coor_pad)
-    coors_batch = torch.cat(coors_batch, dim=0)
-    return voxels, num_points, coors_batch
+def single_gpu_test(model,
+                    data_loader,
+                    show=False,
+                    out_dir=None,
+                    show_score_thr=0.3):
+    model.eval()
+    results = []
+    dataset = data_loader.dataset
+    prog_bar = mmcv.ProgressBar(len(dataset))
+    for i, data in enumerate(data_loader):
+        with torch.no_grad():
+
+            result = model(return_loss=False, rescale=True, **data)
+        results.extend(result)
+        batch_size = len(result)
+        for _ in range(batch_size):
+            prog_bar.update()
+    return results
 
 
 class VoxelDetectionWrap(nn.Module):
@@ -72,7 +72,6 @@ class VoxelDetection(BaseTask):
                      pcds: Union[str, np.ndarray],
                      img_shape=None,
                      **kwargs) -> Tuple[Dict, torch.Tensor]:
-
         from mmdet3d.datasets.pipelines import Compose
         from mmcv.parallel import collate, scatter
         from mmdet3d.core.bbox import get_box_type
@@ -114,13 +113,15 @@ class VoxelDetection(BaseTask):
             result['points'] = result['points'][0]
         voxels_batch, num_points_batch, coors_batch = [], [], []
         for point in result['points'][0]:
-            voxels, num_points, coors = voxelize([point], self.model_cfg)
+            voxels, num_points, coors = VoxelDetection.voxelize([point],
+                                                                self.model_cfg)
             voxels_batch.append(voxels)
             num_points_batch.append(num_points)
             coors_batch.append(coors)
         result['voxels'] = voxels_batch
         result['num_points'] = num_points_batch
         result['coors'] = coors_batch
+        self.img_meta = result['img_metas']
         return result, [voxels_batch[0], num_points_batch[0], coors_batch[0]]
 
     def visualize(self,
@@ -131,7 +132,9 @@ class VoxelDetection(BaseTask):
                   window_name: str = '',
                   show_result: bool = False,
                   **kwargs):
-        print(result)
+        torch.save(result['scores'], 'ort_scores.ts')
+        torch.save(result['bbox_preds'], 'ort_bbox.ts')
+        torch.save(result['dir_scores'], 'ort_dir.ts')
 
     @staticmethod
     def run_inference(model, model_inputs: Dict[str, torch.Tensor]):
@@ -148,7 +151,8 @@ class VoxelDetection(BaseTask):
                               **kwargs) -> torch.Tensor:
         pass
 
-    def evaluate_outputs(model_cfg,
+    def evaluate_outputs(self,
+                         model_cfg,
                          outputs: Sequence,
                          dataset: Dataset,
                          metrics: Optional[str] = None,
@@ -156,7 +160,24 @@ class VoxelDetection(BaseTask):
                          metric_options: Optional[dict] = None,
                          format_only: bool = False,
                          **kwargs):
-        pass
+        if out:
+            logger = get_root_logger()
+            logger.info(f'\nwriting results to {out}')
+            mmcv.dump(outputs, out)
+        kwargs = {} if metric_options is None else metric_options
+        if format_only:
+            dataset.format_results(outputs, **kwargs)
+        if metrics:
+            eval_kwargs = model_cfg.get('evaluation', {}).copy()
+            # hard-code way to remove EvalHook args
+            for key in [
+                    'interval', 'tmpdir', 'start', 'gpu_collect', 'save_best',
+                    'rule'
+            ]:
+                eval_kwargs.pop(key, None)
+                eval_kwargs.pop(key, None)
+            eval_kwargs.update(dict(metric=metrics, **kwargs))
+            print(dataset.evaluate(outputs, **eval_kwargs))
 
     def get_model_name(self) -> str:
         assert 'type' in self.model_cfg.model, 'model config contains no type'
@@ -171,3 +192,70 @@ class VoxelDetection(BaseTask):
 
     def get_preprocess(self) -> Dict:
         pass
+
+    @staticmethod
+    def voxelize(points, model_cfg):
+        from mmdet3d.ops import Voxelization
+        voxel_layer = model_cfg.model['voxel_layer']
+        voxel_layer = Voxelization(**voxel_layer)
+        voxels, coors, num_points = [], [], []
+        for res in points:
+            res_voxels, res_coors, res_num_points = voxel_layer(res)
+            voxels.append(res_voxels)
+            coors.append(res_coors)
+            num_points.append(res_num_points)
+        voxels = torch.cat(voxels, dim=0)
+        num_points = torch.cat(num_points, dim=0)
+        coors_batch = []
+        for i, coor in enumerate(coors):
+            coor_pad = F.pad(coor, (1, 0), mode='constant', value=i)
+            coors_batch.append(coor_pad)
+        coors_batch = torch.cat(coors_batch, dim=0)
+        return voxels, num_points, coors_batch
+
+    @staticmethod
+    def post_process(outs, img_metas, model_cfg):
+        from mmdet3d.models.builder import build_head
+        from mmdet3d.core import bbox3d2result
+        head = build_head(
+            dict(
+                **model_cfg.model['bbox_head'],
+                train_cfg=None,
+                test_cfg=model_cfg.model['test_cfg']))
+        cls_scores = [outs['scores']]
+        bbox_preds = [outs['bbox_preds']]
+        dir_scores = [outs['dir_scores']]
+        bbox_list = head.get_bboxes(
+            cls_scores, bbox_preds, dir_scores, img_metas, rescale=True)
+        bbox_results = [
+            bbox3d2result(bboxes, scores, labels)
+            for bboxes, scores, labels in bbox_list
+        ]
+        return bbox_results
+
+    def single_gpu_test(self,
+                        model: torch.nn.Module,
+                        data_loader: DataLoader,
+                        show: bool = False,
+                        out_dir: Optional[str] = None,
+                        **kwargs):
+        model.eval()
+        results = []
+        dataset = data_loader.dataset
+
+        prog_bar = mmcv.ProgressBar(len(dataset))
+        for i, data in enumerate(data_loader):
+            inputs = VoxelDetection.voxelize(data['points'][0].data[0],
+                                             self.model_cfg)
+            with torch.no_grad():
+                outs = model(*inputs)
+
+            result = VoxelDetection.post_process(outs,
+                                                 data['img_metas'][0].data[0],
+                                                 self.model_cfg)
+            results.extend(result)
+
+            batch_size = len(result)
+            for _ in range(batch_size):
+                prog_bar.update()
+        return results
