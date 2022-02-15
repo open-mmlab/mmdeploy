@@ -163,6 +163,10 @@ class LibVersionChecker(Checker):
         Args:
             env (Dict): The backend, IR info and version info.
         """
+        # If the library has not been installed
+        if env[self.lib] is None:
+            return False
+
         from packaging import version
         valid = True
         # The version should no less than min version and no greater than

@@ -75,12 +75,13 @@ def clip_bboxes(x1: Tensor, y1: Tensor, x2: Tensor, y2: Tensor,
     func_name='mmdeploy.codebase.mmdet.deploy.utils.clip_bboxes',
     backend='tensorrt',
     extra_checkers=LibVersionChecker('tensorrt', min_version='8'))
-def clip_bboxes__trt8(x1: Tensor, y1: Tensor, x2: Tensor, y2: Tensor,
+def clip_bboxes__trt8(ctx, x1: Tensor, y1: Tensor, x2: Tensor, y2: Tensor,
                       max_shape: Union[Tensor, Sequence[int]]):
     """Clip bboxes for onnx. From TensorRT 8 we can do the operators on the
     tensors directly.
 
     Args:
+        ctx (ContextCaller): The context with additional information.
         x1 (Tensor): The x1 for bounding boxes.
         y1 (Tensor): The y1 for bounding boxes.
         x2 (Tensor): The x2 for bounding boxes.
