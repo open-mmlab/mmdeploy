@@ -59,7 +59,18 @@ def import_function(path: str) -> Tuple[Callable, Optional[type]]:
         return obj, None
 
 
-def collect_env(backend: Backend, ir: IR, **kwargs):
+def collect_env(backend: Backend, ir: IR, **kwargs) -> Dict:
+    """Collect current environment informations, including backend, ir, 
+    codebase version, etc. Rewriters will be checked according to env infos.
+
+    Args:
+        backend (Backend): Current backend.
+        ir (IR): Current IR.
+
+    Returns:
+        Dict: Record the value of Backend and IR as well as the versions of
+        libraries.
+    """
     from mmdeploy.utils import get_backend_version, get_codebase_version
     env = dict(backend=backend, ir=ir)
     env['mmdeploy'] = mmdeploy.__version__
