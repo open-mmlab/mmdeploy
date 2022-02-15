@@ -74,7 +74,7 @@
 
     ```bash
     export cu_version=cu111 # cuda 11.1
-    export torch_version=torch1.8.0
+    export torch_version=torch1.8
     pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/${cu_version}/${torch_version}/index.html
     ```
 
