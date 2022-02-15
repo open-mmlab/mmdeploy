@@ -90,11 +90,10 @@ class PoseDetection(BaseTask):
         dataset_info = cfg.data.test.dataset_info
         dataset_info = DatasetInfo(dataset_info)
 
-        # create dummy person results
         if isinstance(imgs, str):
-            height, width = mmcv.imread(imgs).shape[:2]
-        else:
-            height, width = imgs.shape[:2]
+            imgs = mmcv.imread(imgs)
+        height, width = imgs.shape[:2]
+        # create dummy person results
         person_results = [{'bbox': np.array([0, 0, width, height])}]
         bboxes = np.array([box['bbox'] for box in person_results])
 

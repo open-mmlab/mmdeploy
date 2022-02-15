@@ -1371,7 +1371,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <th align="center" colspan="2">TensorRT</th>
     <th align="center">PPLNN</th>
     <th align="center">OpenVINO</th>
-    <th align="center">Model Config</th>
+    <th align="left">Model Config</th>
   </tr>
 </thead>
 <tbody>
