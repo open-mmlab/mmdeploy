@@ -22,6 +22,7 @@ ${MODEL_CFG} \
 --device ${DEVICE} \
 [--cfg-options ${CFG_OPTIONS}] \
 [--metric-options ${METRIC_OPTIONS}]
+[--log2file work_dirs/output.txt]
 ```
 
 ## Description of all arguments
@@ -39,6 +40,7 @@ ${MODEL_CFG} \
 * `--cfg-options`: Extra or overridden settings that will be merged into the current deploy config.
 * `--metric-options`: Custom options for evaluation. The key-value pair in xxx=yyy
 format will be kwargs for dataset.evaluate() function.
+* `--log2file`: log evaluation results (and speed) to file.
 
 \* Other arguments in `tools/test.py` are used for speed test. They have no concern with evaluation.
 

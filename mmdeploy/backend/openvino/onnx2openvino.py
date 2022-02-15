@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
 import subprocess
-from subprocess import CalledProcessError, run
+from subprocess import PIPE, CalledProcessError, run
 from typing import Dict, List, Union
 
 import mmcv
@@ -86,7 +86,7 @@ def onnx2openvino(input_info: Dict[str, Union[List[int], torch.Size]],
 
     logger = get_root_logger()
     logger.info(f'Args for Model Optimizer: {command}')
-    mo_output = run(command, capture_output=True, shell=True, check=True)
+    mo_output = run(command, stdout=PIPE, stderr=PIPE, shell=True, check=True)
     logger.info(mo_output.stdout.decode())
     logger.debug(mo_output.stderr.decode())
 

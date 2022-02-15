@@ -38,8 +38,8 @@ class TestEnd2EndModel:
                 'output_names': ['outputs']
             }})
 
-        from mmdeploy.codebase.mmseg.deploy.segmentation_model \
-            import End2EndModel
+        from mmdeploy.codebase.mmseg.deploy.segmentation_model import \
+            End2EndModel
         class_names = ['' for i in range(NUM_CLASS)]
         palette = np.random.randint(0, 255, size=(NUM_CLASS, 3))
         cls.end2end_model = End2EndModel(
@@ -86,8 +86,9 @@ class TestEnd2EndModel:
 @pytest.mark.parametrize('data_type', ['train', 'val', 'test'])
 def test_get_classes_palette_from_config(from_file, data_type):
     from mmseg.datasets import DATASETS
-    from mmdeploy.codebase.mmseg.deploy.segmentation_model \
-        import get_classes_palette_from_config
+
+    from mmdeploy.codebase.mmseg.deploy.segmentation_model import \
+        get_classes_palette_from_config
     dataset_type = 'CityscapesDataset'
     data_cfg = mmcv.Config({
         'data': {
@@ -131,8 +132,8 @@ def test_build_segmentation_model():
     # simplify backend inference
     with SwitchBackendWrapper(ORTWrapper) as wrapper:
         wrapper.set(model_cfg=model_cfg, deploy_cfg=deploy_cfg)
-        from mmdeploy.codebase.mmseg.deploy.segmentation_model import \
-            build_segmentation_model, End2EndModel
+        from mmdeploy.codebase.mmseg.deploy.segmentation_model import (
+            End2EndModel, build_segmentation_model)
         segmentor = build_segmentation_model([''], model_cfg, deploy_cfg,
                                              'cpu')
         assert isinstance(segmentor, End2EndModel)
