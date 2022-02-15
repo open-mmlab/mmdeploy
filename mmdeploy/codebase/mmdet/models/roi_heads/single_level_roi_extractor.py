@@ -4,6 +4,8 @@ from torch.autograd import Function
 
 from mmdeploy.core.optimizers import mark
 from mmdeploy.core.rewriters import FUNCTION_REWRITER
+from mmdeploy.utils.config_utils import get_backend
+from mmdeploy.utils.constants import Backend
 
 
 class MultiLevelRoiAlign(Function):
@@ -106,6 +108,7 @@ def single_roi_extractor__forward(ctx,
     Besides, this function adds mark for roi_extractor forward and remove
     unnecessary code of origin forward function.
     """
+    backend = get_backend(ctx.cfg)
     out_size = self.roi_layers[0].output_size
     num_levels = len(feats)
     roi_feats = feats[0].new_zeros(rois.shape[0], self.out_channels, *out_size)
@@ -129,6 +132,8 @@ def single_roi_extractor__forward(ctx,
         # concat len 2 zero tensors to dim 0 of roi_feats
         rois_i = torch.cat((rois.new_zeros(2, 5), rois[inds]))
 
+        if (backend == Backend.TORCHSCRIPT):
+            self.roi_layers[i].use_torchvision = True
         roi_feats_t = self.roi_layers[i](feats[i], rois_i)
 
         # correspondingly change the inds

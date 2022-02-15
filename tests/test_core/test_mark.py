@@ -4,10 +4,9 @@ import tempfile
 import onnx
 import torch
 
-from mmdeploy.core import mark
+from mmdeploy.core import RewriterContext, mark
 from mmdeploy.core.optimizers import attribute_to_dict
 from mmdeploy.utils.constants import Backend
-from mmdeploy.core import RewriterContext
 
 output_file = tempfile.NamedTemporaryFile(suffix='.onnx').name
 
