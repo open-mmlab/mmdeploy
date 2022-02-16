@@ -16,12 +16,69 @@ ResizeBBox::ResizeBBox(const Value& cfg) : MMDetection(cfg) {
     min_bbox_size_ = cfg["params"].value("min_bbox_size", 0.f);
   }
 }
+std::vector<Tensor> ResizeBBox::GetDetsLabels(const Value& prep_res, const Value& infer_res) {
+  std::vector<Tensor> results;
+  if (infer_res.contains("dets") && infer_res.contains("labels")) {
+    results.push_back(infer_res["dets"].get<Tensor>());
+    results.push_back(infer_res["labels"].get<Tensor>());
+    return results;
+  }
+  else if (infer_res.contains("detection_output") && (!infer_res.contains("dets")) && (!infer_res.contains("labels"))) {
+    int img_width = prep_res["img_metas"]["img_shape"][2].get<int>();
+    int img_height = prep_res["img_metas"]["img_shape"][1].get<int>();
+    auto detection_output = infer_res["detection_output"].get<Tensor>();
+    auto* detection_output_ptr = detection_output.data<float>();
+    // detection_output: (1, num_det, 6)
+    TensorDesc labeldesc = detection_output.desc();
+    int batch_size = detection_output.shape()[0];
+    int num_det = detection_output.shape()[1];
+    labeldesc.shape = {batch_size, num_det};
+    Tensor labels(labeldesc);
+    TensorDesc detdesc = detection_output.desc();
+    detdesc.shape = {batch_size, num_det, 5};
+    Tensor dets(detdesc);
+    auto* dets_ptr = dets.data<float>();
+    auto* labels_ptr = labels.data<float>();
+    for(int c = 0; c < batch_size; ++c)
+    {
+      for (int h = 0; h < num_det; ++h)
+      {
+        for (int w = 0; w < 6; ++w)
+        {
+          if (w == 0)
+          {
+            labels_ptr[c*num_det+h] = detection_output_ptr[c*num_det*6+h*6+w] - 1;
+          }
+          else if (w == 1)
+          {
+            dets_ptr[c*num_det*5+h*5+4] = detection_output_ptr[c*num_det*6+h*6+w];
+          }
+          else
+          {
+            if (w % 2 == 0)
+              dets_ptr[c*num_det*5+h*5+w-2] = detection_output_ptr[c*num_det*6+h*6+w] * img_width;
+            else
+              dets_ptr[c*num_det*5+h*5+w-2] = detection_output_ptr[c*num_det*6+h*6+w] * img_height;
+          }
+        }
+      }
+    }
+    results.push_back(dets);
+    results.push_back(labels);
+    return results;
+  }
+  else{
+    ERROR("No support for another key of detection results!");
+    return results;
+  }
+}
 Result<Value> ResizeBBox::operator()(const Value& prep_res, const Value& infer_res) {
-  DEBUG("prep_res: {}\ninfer_res: {}", prep_res, infer_res);
+  INFO("prep_res: {}\ninfer_res: {}", prep_res, infer_res);
   try {
-    auto dets = infer_res["dets"].get<Tensor>();
-    auto labels = infer_res["labels"].get<Tensor>();
-
+    Tensor dets, labels;
+    vector<Tensor> outputs = GetDetsLabels(prep_res, infer_res);
+    dets = outputs[0];
+    labels = outputs[1];
     DEBUG("dets.shape: {}", dets.shape());
     DEBUG("labels.shape: {}", labels.shape());
 
@@ -71,7 +128,6 @@ Result<DetectorOutput> ResizeBBox::GetBBoxes(const Value& prep_res, const Tensor
   DetectorOutput objs;
   auto* dets_ptr = dets.data<float>();
   auto* labels_ptr = labels.data<T>();
-
   vector<float> scale_factor;
   if (prep_res.contains("scale_factor")) {
     from_value(prep_res["scale_factor"], scale_factor);
