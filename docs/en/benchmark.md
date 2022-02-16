@@ -1414,6 +1414,106 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
 </div>
 </details>
 
+<details>
+<summary style="margin-left: 25px;">MMPose</summary>
+<div style="margin-left: 25px;">
+<table class="docutils">
+<thead>
+  <tr>
+    <th align="center" colspan="4">MMpose</th>
+    <th align="center">Pytorch</th>
+    <th align="center">ONNXRuntime</th>
+    <th align="center" colspan="2">TensorRT</th>
+    <th align="center">PPLNN</th>
+    <th align="center">OpenVINO</th>
+    <th align="left">Model Config</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td align="center">Model</td>
+    <td align="center">Task</td>
+    <td align="center">Dataset</td>
+    <td align="center">Metrics</td>
+    <td align="center">fp32</td>
+    <td align="center">fp32</td>
+    <td align="center">fp32</td>
+    <td align="center">fp16</td>
+    <td align="center">fp16</td>
+    <td align="center">fp32</td>
+    <td>model config file</td>
+  </tr>
+  <tr>
+    <td align="center" rowspan="2">HRNet</td>
+    <td align="center" rowspan="2">Pose Detection</td>
+    <td align="center" rowspan="2">COCO</td>
+    <td align="center">AP</td>
+    <td align="center">0.748</td>
+    <td align="center">0.748</td>
+    <td align="center">0.748</td>
+    <td align="center">0.748</td>
+    <td align="center">-</td>
+    <td align="center">0.748</td>
+    <td rowspan="2">$MMPOSE_DIR/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/hrnet_w48_coco_256x192.py</td>
+  </tr>
+  <tr>
+    <td align="center">AR</td>
+    <td align="center">0.802</td>
+    <td align="center">0.802</td>
+    <td align="center">0.802</td>
+    <td align="center">0.802</td>
+    <td align="center">-</td>
+    <td align="center">0.802</td>
+  </tr>
+  <tr>
+    <td align="center" rowspan="2">LiteHRNet</td>
+    <td align="center" rowspan="2">Pose Detection</td>
+    <td align="center" rowspan="2">COCO</td>
+    <td align="center">AP</td>
+    <td align="center">0.663</td>
+    <td align="center">0.663</td>
+    <td align="center">0.663</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">0.663</td>
+    <td rowspan="2">$MMPOSE_DIR/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/litehrnet_30_coco_256x192.py</td>
+  </tr>
+  <tr>
+    <td align="center">AR</td>
+    <td align="center">0.728</td>
+    <td align="center">0.728</td>
+    <td align="center">0.728</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">0.728</td>
+  </tr>
+  <tr>
+    <td align="center" rowspan="2">MSPN </td>
+    <td align="center" rowspan="2">Pose Detection</td>
+    <td align="center" rowspan="2">COCO</td>
+    <td align="center">AP</td>
+    <td align="center">0.762</td>
+    <td align="center">0.762</td>
+    <td align="center">0.762</td>
+    <td align="center">0.762</td>
+    <td align="center">-</td>
+    <td align="center">0.762</td>
+    <td rowspan="2">$MMPOSE_DIR/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/4xmspn50_coco_256x192.py</td>
+  </tr>
+  <tr>
+    <td align="center">AR</td>
+    <td align="center">0.825</td>
+    <td align="center">0.825</td>
+    <td align="center">0.825</td>
+    <td align="center">0.825</td>
+    <td align="center">-</td>
+    <td align="center">0.825</td>
+  </tr>
+</tbody>
+</table>
+</div>
+</details>
+
 
 ### Notes
 - As some datasets contain images with various resolutions in codebase like MMDet. The speed benchmark is gained through static configs in MMDeploy, while the performance benchmark is gained through dynamic ones.
@@ -1423,3 +1523,5 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
 - DBNet uses the interpolate mode `nearest` in the neck of the model, which TensorRT-7 applies a quite different strategy from Pytorch. To make the repository compatible with TensorRT-7, we rewrite the neck to use the interpolate mode `bilinear` which improves final detection performance. To get the matched performance with Pytorch, TensorRT-8+ is recommended, which the interpolate methods are all the same as Pytorch.
 
 - Mask AP of Mask R-CNN drops by 1% for the backend. The main reason is that the predicted masks are directly interpolated to original image in PyTorch, while they are at first interpolated to the preprocessed input image of the model and then to original image in other backends.
+
+- MMPose models are tested with `flip_test` explicitly set to `False` in model configs.

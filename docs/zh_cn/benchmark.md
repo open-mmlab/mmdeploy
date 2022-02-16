@@ -1415,6 +1415,105 @@ GPU: ncnn, TensorRT, PPLNN
 </div>
 </details>
 
+<details>
+<summary style="margin-left: 25px;">MMPose</summary>
+<div style="margin-left: 25px;">
+<table class="docutils">
+<thead>
+  <tr>
+    <th align="center" colspan="4">MMpose</th>
+    <th align="center">Pytorch</th>
+    <th align="center">ONNXRuntime</th>
+    <th align="center" colspan="2">TensorRT</th>
+    <th align="center">PPLNN</th>
+    <th align="center">OpenVINO</th>
+    <th align="left">Model Config</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td align="center">Model</td>
+    <td align="center">Task</td>
+    <td align="center">Dataset</td>
+    <td align="center">Metrics</td>
+    <td align="center">fp32</td>
+    <td align="center">fp32</td>
+    <td align="center">fp32</td>
+    <td align="center">fp16</td>
+    <td align="center">fp16</td>
+    <td align="center">fp32</td>
+    <td>model config file</td>
+  </tr>
+  <tr>
+    <td align="center" rowspan="2">HRNet</td>
+    <td align="center" rowspan="2">Pose Detection</td>
+    <td align="center" rowspan="2">COCO</td>
+    <td align="center">AP</td>
+    <td align="center">0.748</td>
+    <td align="center">0.748</td>
+    <td align="center">0.748</td>
+    <td align="center">0.748</td>
+    <td align="center">-</td>
+    <td align="center">0.748</td>
+    <td rowspan="2">$MMPOSE_DIR/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/hrnet_w48_coco_256x192.py</td>
+  </tr>
+  <tr>
+    <td align="center">AR</td>
+    <td align="center">0.802</td>
+    <td align="center">0.802</td>
+    <td align="center">0.802</td>
+    <td align="center">0.802</td>
+    <td align="center">-</td>
+    <td align="center">0.802</td>
+  </tr>
+  <tr>
+    <td align="center" rowspan="2">LiteHRNet</td>
+    <td align="center" rowspan="2">Pose Detection</td>
+    <td align="center" rowspan="2">COCO</td>
+    <td align="center">AP</td>
+    <td align="center">0.663</td>
+    <td align="center">0.663</td>
+    <td align="center">0.663</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">0.663</td>
+    <td rowspan="2">$MMPOSE_DIR/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/litehrnet_30_coco_256x192.py</td>
+  </tr>
+  <tr>
+    <td align="center">AR</td>
+    <td align="center">0.728</td>
+    <td align="center">0.728</td>
+    <td align="center">0.728</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">0.728</td>
+  </tr>
+  <tr>
+    <td align="center" rowspan="2">MSPN </td>
+    <td align="center" rowspan="2">Pose Detection</td>
+    <td align="center" rowspan="2">COCO</td>
+    <td align="center">AP</td>
+    <td align="center">0.762</td>
+    <td align="center">0.762</td>
+    <td align="center">0.762</td>
+    <td align="center">0.762</td>
+    <td align="center">-</td>
+    <td align="center">0.762</td>
+    <td rowspan="2">$MMPOSE_DIR/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/4xmspn50_coco_256x192.py</td>
+  </tr>
+  <tr>
+    <td align="center">AR</td>
+    <td align="center">0.825</td>
+    <td align="center">0.825</td>
+    <td align="center">0.825</td>
+    <td align="center">0.825</td>
+    <td align="center">-</td>
+    <td align="center">0.825</td>
+  </tr>
+</tbody>
+</table>
+</div>
+</details>
 
 
 ### 注意
@@ -1423,3 +1522,5 @@ GPU: ncnn, TensorRT, PPLNN
 - TensorRT 的一些 int8 性能基准测试需要具有 tensor core 的 Nvidia 卡，否则性能会大幅下降。
 
 - DBNet 在模型的颈部使用了`nearest`插值模式，TensorRT-7 应用了与 Pytorch 完全不同的策略。为了使与 TensorRT-7 兼容，我们重写了`neck`以使用`bilinear`插值模式，这提高了最终检测性能。为了获得与 Pytorch 匹配的性能，推荐使用 TensorRT-8+，其插值方法与 Pytorch 相同。
+
+- MMPose 中的模型是在模型配置文件中 `flip_test` 设置为 `False`条件下完成的。
