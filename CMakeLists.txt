@@ -14,12 +14,18 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+
 # options
 option(BUILD_SHARED_LIBS "build shared lib" ON)
 option(MMDEPLOY_BUILD_MODEL_OPTIMIZER "build MMDeploy's model optimizer" ON)
 option(MMDEPLOY_BUILD_SDK "build MMDeploy's SDK" OFF)
 option(MMDEPLOY_ZIP_MODEL "support sdk model in zip format" OFF)
 option(MMDEPLOY_BUILD_TEST "build MMDeploy's csrc's unittest" OFF)
+option(ANDROID_FP16_ACCELERATE "fp16 accelerate for android platform" ON)
+IF(ANDROID_FP16_ACCELERATE)
+    MESSAGE(STATUS "ANDROID_FP16_ACCELERATE ON!")
+    add_definitions("-DFP16_ACCELERATE")
+ENDIF(ANDROID_FP16_ACCELERATE)
 set(MMDEPLOY_TARGET_DEVICES
         "cpu" CACHE STRING "MMDeploy's target devices")
 set(MMDEPLOY_TARGET_BACKENDS "" CACHE STRING "MMDeploy's target inference engines")
