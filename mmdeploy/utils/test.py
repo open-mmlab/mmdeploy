@@ -471,6 +471,7 @@ def get_backend_outputs(onnx_file_path: str,
         backend_files = [openvino_file_path]
         backend_feats = flatten_model_inputs
         device = 'cpu'
+
     elif backend == Backend.DEFAULT:
         return None
     else:
@@ -478,8 +479,12 @@ def get_backend_outputs(onnx_file_path: str,
             f'Unimplemented backend type: {backend.value}')
 
     from mmdeploy.codebase.base import BaseBackendModel
-    backend_model = BaseBackendModel._build_wrapper(backend, backend_files,
-                                                    device, output_names)
+    backend_model = BaseBackendModel._build_wrapper(
+        backend,
+        backend_files,
+        device,
+        input_names=input_names,
+        output_names=output_names)
     with torch.no_grad():
         backend_outputs = backend_model(backend_feats)
     backend_outputs = backend_model.output_to_list(backend_outputs)

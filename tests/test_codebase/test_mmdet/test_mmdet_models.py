@@ -196,6 +196,7 @@ def test_l2norm_forward(backend_type):
         dict(
             backend_config=dict(type=backend_type.value),
             onnx_config=dict(input_shape=None)))
+    seed_everything(1234)
     feat = torch.rand(1, 16, s, s)
     model_outputs = [l2norm_neck.forward(feat)]
     wrapped_model = WrapModel(l2norm_neck, 'forward')
