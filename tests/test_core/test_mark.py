@@ -31,11 +31,6 @@ def test_mark():
     x = torch.rand(2, 3, 4)
     y = torch.rand(2, 3, 4)
 
-    with RewriterContext(
-            cfg=None, backend=Backend.TORCHSCRIPT.value), torch.no_grad(
-            ), torch.jit.optimized_execution(True):
-        torch.jit.trace(model, (x, y))
-
     torch.onnx.export(model, (x, y), output_file)
     onnx_model = onnx.load(output_file)
 
@@ -74,3 +69,8 @@ def test_mark():
         type='output',
         name='c',
         shape=[2, 3, 4])
+
+    with RewriterContext(
+            cfg=None, backend=Backend.TORCHSCRIPT.value), torch.no_grad(
+            ), torch.jit.optimized_execution(True):
+        torch.jit.trace(model, (x, y))

@@ -355,8 +355,10 @@ def get_dynamic_axes(
     """
     deploy_cfg = load_config(deploy_cfg)[0]
     ir_config = get_ir_config(deploy_cfg)
-    if ir_config is None:
-        raise KeyError('Field \'ir_config\' was not found in \'deploy_cfg\'.')
+    onnx_config = deploy_cfg.get('onnx_config', None)
+    if onnx_config is None:
+        raise KeyError(
+            'Field \'onnx_config\' was not found in \'deploy_cfg\'.')
     dynamic_axes = ir_config.get('dynamic_axes', None)
     if dynamic_axes and not isinstance(dynamic_axes, Dict):
         if axes_names is None:
