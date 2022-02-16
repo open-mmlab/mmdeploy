@@ -44,7 +44,6 @@ def clip_bboxes(x1: Tensor, y1: Tensor, x2: Tensor, y2: Tensor,
     """
     assert len(max_shape) == 2, '`max_shape` should be [h, w]'
     if isinstance(max_shape, torch.Tensor):
-        # TODO: This is only required for TensorRT 7.x
         # scale by 1/max_shape
         x1 = x1 / max_shape[1]
         y1 = y1 / max_shape[0]
