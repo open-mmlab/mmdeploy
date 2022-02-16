@@ -21,7 +21,12 @@ Result<void> NCNNNet::Init(const Value& args) {
   auto& context = args["context"];
   device_ = context["device"].get<Device>();
   stream_ = context["stream"].get<Stream>();
-
+  #ifdef __aarch64__
+    #ifndef FP16_ACCELERATE
+      net_.opt.use_fp16_storage = false;
+      net_.opt.use_fp16_arithmetic = false;
+    #endif
+  #endif
   if (!device_.is_host()) {
     return Status(eNotSupported);
   }
@@ -56,7 +61,6 @@ Result<void> NCNNNet::Init(const Value& args) {
         .name = x,
     });
   }
-
   return success();
 }
 
@@ -90,11 +94,29 @@ Result<void> NCNNNet::Forward() {
     OUTCOME_TRY(ncnn_status(extractor.extract(output_indices_[i], outputs[i])));
     auto& tensor = output_tensors_[i];
     auto shape = outputs[i].shape();
-    tensor.Reshape({1, shape.w, shape.h, shape.c});
+    if (outputs[i].dims == 1)
+    {
+      tensor.Reshape({1, shape.w});
+    }
+    else if (outputs[i].dims == 2)
+    {
+      tensor.Reshape({1, shape.h, shape.w});
+    }
+    else
+    {
+      // for dim==3 case and blank image.
+      tensor.Reshape({1, shape.c, shape.h, shape.w});
+    }
+    // tensor.Reshape({1, shape.c, shape.h, shape.w});
     // ncnn Mat may be padded, flatten to avoid that
-    auto flattened = outputs[i].reshape(shape.w * shape.h * shape.c);
-    OUTCOME_TRY(tensor.CopyFrom(flattened.data, stream_));
+    auto flattened = outputs[i].reshape(shape.c * shape.h * shape.w);
+    // if ((shape.c * shape.h * shape.w) > 0)
+    if (outputs[i].dims > 0)
+    {
+      OUTCOME_TRY(tensor.CopyFrom(flattened.data, stream_));
+    }
   }
+  OUTCOME_TRY(stream_.Wait());
   return success();
 }
 
