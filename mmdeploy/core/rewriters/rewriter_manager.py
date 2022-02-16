@@ -82,7 +82,6 @@ class RewriterContext:
         self._cfg = cfg
         self._kwargs = kwargs
         self._rewriter_manager = rewriter_manager
-        # TODO: Make the type of parameter backend to Backend
         self._env = collect_env(Backend.get(backend), ir)
 
     def enter(self):

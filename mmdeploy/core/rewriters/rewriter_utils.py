@@ -199,7 +199,6 @@ class RewriterRegistry:
         >>> records = FUNCTION_REGISTRY.get_record("default")
     """
 
-    # TODO: replace backend string with "Backend" constant
     def __init__(self):
         self._rewrite_records = dict()
 
