@@ -7,6 +7,6 @@ include(${CMAKE_SOURCE_DIR}/cmake/common.cmake)
 
 file(GLOB_RECURSE SRCS ${CMAKE_CURRENT_SOURCE_DIR} "*.cpp")
 build_target(${PROJECT_NAME} "${SRCS}")
-target_link_libraries(${PROJECT_NAME} PRIVATE mmdeploy::core opencv_core)
+target_link_libraries(${PROJECT_NAME} PRIVATE mmdeploy::core opencv_core opencv_imgproc mmdeploy_cpu_transform_impl)
 add_library(mmdeploy::mmdet ALIAS ${PROJECT_NAME})
 export_module(${PROJECT_NAME})

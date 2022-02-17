@@ -18,6 +18,6 @@ set(SRCS
 build_target(${PROJECT_NAME} "${SRCS}")
 target_link_libraries(${PROJECT_NAME}
         PUBLIC opencv_imgproc opencv_core
-        PRIVATE mmdeploy::core)
+        PRIVATE mmdeploy::core mmdeploy::transform)
 add_library(mmdeploy::transform_impl::cpu ALIAS ${PROJECT_NAME})
 export_module(${PROJECT_NAME})
