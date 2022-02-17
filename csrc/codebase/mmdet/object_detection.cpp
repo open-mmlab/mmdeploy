@@ -12,13 +12,13 @@ namespace mmdeploy::mmdet {
 
 ResizeBBox::ResizeBBox(const Value& cfg) : MMDetection(cfg) {
   if (cfg.contains("params")) {
-    #ifdef EVAL_MODE
-      INFO("EVAL_MODE, SDK uses postprocessing score_thr for evaluating performance.");
-      score_thr_ = cfg["params"].value("score_thr", 0.f);
-    #else
-      INFO("inference mode, SDK uses fixed 0.3 score_thr_ for inferencing.");
-      score_thr_ = 0.3;
-    #endif
+#ifdef EVAL_MODE
+    INFO("EVAL_MODE, SDK uses postprocessing score_thr for evaluating performance.");
+    score_thr_ = cfg["params"].value("score_thr", 0.f);
+#else
+    INFO("inference mode, SDK uses fixed 0.3 score_thr_ for inferencing.");
+    score_thr_ = 0.3;
+#endif
     min_bbox_size_ = cfg["params"].value("min_bbox_size", 0.f);
   }
 }
@@ -28,8 +28,8 @@ std::vector<Tensor> ResizeBBox::GetDetsLabels(const Value& prep_res, const Value
     results.push_back(infer_res["dets"].get<Tensor>());
     results.push_back(infer_res["labels"].get<Tensor>());
     return results;
-  }
-  else if (infer_res.contains("detection_output") && (!infer_res.contains("dets")) && (!infer_res.contains("labels"))) {
+  } else if (infer_res.contains("detection_output") && (!infer_res.contains("dets")) &&
+             (!infer_res.contains("labels"))) {
     int img_width = prep_res["img_metas"]["img_shape"][2].get<int>();
     int img_height = prep_res["img_metas"]["img_shape"][1].get<int>();
     auto detection_output = infer_res["detection_output"].get<Tensor>();
@@ -45,26 +45,21 @@ std::vector<Tensor> ResizeBBox::GetDetsLabels(const Value& prep_res, const Value
     Tensor dets(detdesc);
     auto* dets_ptr = dets.data<float>();
     auto* labels_ptr = labels.data<float>();
-    for(int c = 0; c < batch_size; ++c)
-    {
-      for (int h = 0; h < num_det; ++h)
-      {
-        for (int w = 0; w < 6; ++w)
-        {
-          if (w == 0)
-          {
-            labels_ptr[c*num_det+h] = detection_output_ptr[c*num_det*6+h*6+w] - 1;
-          }
-          else if (w == 1)
-          {
-            dets_ptr[c*num_det*5+h*5+4] = detection_output_ptr[c*num_det*6+h*6+w];
-          }
-          else
-          {
+    for (int c = 0; c < batch_size; ++c) {
+      for (int h = 0; h < num_det; ++h) {
+        for (int w = 0; w < 6; ++w) {
+          if (w == 0) {
+            labels_ptr[c * num_det + h] = detection_output_ptr[c * num_det * 6 + h * 6 + w] - 1;
+          } else if (w == 1) {
+            dets_ptr[c * num_det * 5 + h * 5 + 4] =
+                detection_output_ptr[c * num_det * 6 + h * 6 + w];
+          } else {
             if (w % 2 == 0)
-              dets_ptr[c*num_det*5+h*5+w-2] = detection_output_ptr[c*num_det*6+h*6+w] * img_width;
+              dets_ptr[c * num_det * 5 + h * 5 + w - 2] =
+                  detection_output_ptr[c * num_det * 6 + h * 6 + w] * img_width;
             else
-              dets_ptr[c*num_det*5+h*5+w-2] = detection_output_ptr[c*num_det*6+h*6+w] * img_height;
+              dets_ptr[c * num_det * 5 + h * 5 + w - 2] =
+                  detection_output_ptr[c * num_det * 6 + h * 6 + w] * img_height;
           }
         }
       }
@@ -72,8 +67,7 @@ std::vector<Tensor> ResizeBBox::GetDetsLabels(const Value& prep_res, const Value
     results.push_back(dets);
     results.push_back(labels);
     return results;
-  }
-  else{
+  } else {
     ERROR("No support for another key of detection results!");
     return results;
   }

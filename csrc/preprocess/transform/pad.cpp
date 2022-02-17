@@ -22,22 +22,15 @@ PadImpl::PadImpl(const Value& args) : TransformImpl(args) {
   }
 
   arg_.size_divisor = args.value("size_divisor", 1);
-  if (args.contains("pad_val"))
-  {
-    if (args["pad_val"].is_number())
-    {
+  if (args.contains("pad_val")) {
+    if (args["pad_val"].is_number()) {
       arg_.pad_val = args["pad_val"].get<float>();
-    }
-    else if(args["pad_val"].contains("img"))
-    {
+    } else if (args["pad_val"].contains("img")) {
       arg_.pad_val = args["pad_val"]["img"][0].get<float>();
-    }
-    else
-    {
+    } else {
       throw std::invalid_argument("args must be number or img dict");
     }
-  } else
-  {
+  } else {
     arg_.pad_val = 0.0f;
   }
   arg_.pad_to_square = args.value("pad_to_square", false);
