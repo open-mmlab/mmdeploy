@@ -1,6 +1,22 @@
 _base_ = ['../../_base_/torchscript_config.py']
 
-ir_config = dict(output_names=['dets', 'labels'], input_shape=[1344, 768])
+ir_config = dict(
+    output_names=['dets', 'labels'],
+    dynamic_axes={
+        'input': {
+            0: 'batch',
+            2: 'height',
+            3: 'width'
+        },
+        'dets': {
+            0: 'batch',
+            1: 'num_dets',
+        },
+        'labels': {
+            0: 'batch',
+            1: 'num_dets',
+        },
+    })
 codebase_config = dict(
     type='mmdet',
     task='ObjectDetection',

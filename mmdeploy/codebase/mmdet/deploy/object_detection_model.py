@@ -191,7 +191,6 @@ class End2EndModel(BaseBackendModel):
         """
         input_img = img[0].contiguous()
         outputs = self.forward_test(input_img, img_metas, *args, **kwargs)
-        return None
         outputs = End2EndModel.__clear_outputs(outputs)
         batch_dets, batch_labels = outputs[:2]
         batch_masks = outputs[2] if len(outputs) == 3 else None
