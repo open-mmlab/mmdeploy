@@ -9,7 +9,6 @@ using namespace std;
 namespace mmdeploy {
 
 PadImpl::PadImpl(const Value& args) : TransformImpl(args) {
-  INFO("debugging preprocess.transform.pad.cpp: line 12!");
   arg_.size[0] = arg_.size[1] = 0;
   if (args.contains("size") && args["size"].is_number_integer()) {
     arg_.size[0] = arg_.size[1] = (args["size"].get<int>());
@@ -31,7 +30,7 @@ PadImpl::PadImpl(const Value& args) : TransformImpl(args) {
     }
     else if(args["pad_val"].contains("img"))
     {
-      arg_.pad_val = args["pad_val"]["img"][0];
+      arg_.pad_val = args["pad_val"]["img"][0].get<float>();
     }
     else
     {
@@ -41,8 +40,6 @@ PadImpl::PadImpl(const Value& args) : TransformImpl(args) {
   {
     arg_.pad_val = 0.0f;
   }
-  //arg_.pad_val = args.value("pad_val", 0.0f);
-  INFO("debugging pad.cpp line 27 arg_.pad_val: {}", arg_.pad_val);
   arg_.pad_to_square = args.value("pad_to_square", false);
   arg_.padding_mode = args.value("padding_mode", std::string("constant"));
 }
@@ -52,23 +49,19 @@ Result<Value> PadImpl::Process(const Value& input) {
   Value output = input;
   auto img_fields = GetImageFields(input);
   for (auto& key : img_fields) {
-    INFO("debugging csrc/preprocess/transform/pad.cpp line 38 key: {}!", key);
     Tensor output_tensor;
     auto tensor = input[key].get<Tensor>();
-    INFO("debugging csrc/preprocess/transform/pad.cpp line 41! tensor.data_type: {}", tensor.data_type());
     assert(tensor.desc().shape.size() == 4);
     assert(tensor.desc().shape[0] == 1);
     assert(tensor.desc().shape[3] == 3 or tensor.desc().shape[3] == 1);
 
     int height = tensor.desc().shape[1];
     int width = tensor.desc().shape[2];
-    INFO("debugging csrc/preprocess/transform/pad.cpp line 48!, pad_to_square: {}, size_divisor: {}", arg_.pad_to_square, arg_.size_divisor);
     if (arg_.pad_to_square) {
       int max_size = std::max(tensor.desc().shape[1], tensor.desc().shape[2]);
       std::array padding{0, 0, max_size - width, max_size - height};
 
       OUTCOME_TRY(output_tensor, PadImage(tensor, padding));
-      INFO("debugging csrc/preprocess/transform/pad.cpp line 54! output_tensor.data_type: {}", output_tensor.data_type());
       output["pad_fixed_size"].push_back(max_size);
       output["pad_fixed_size"].push_back(max_size);
     } else if (arg_.size_divisor != 1) {
@@ -77,19 +70,15 @@ Result<Value> PadImpl::Process(const Value& input) {
       std::array padding{0, 0, pad_w - width, pad_h - height};
 
       OUTCOME_TRY(output_tensor, PadImage(tensor, padding));
-      INFO("debugging csrc/preprocess/transform/pad.cpp line 63! output_tensor.data_type: {}", output_tensor.data_type());
       output["pad_size_divisor"] = arg_.size_divisor;
       output["pad_fixed_size"].push_back(pad_h);
       output["pad_fixed_size"].push_back(pad_w);
     } else {
-      INFO("debugging csrc/preprocess/transform/pad.cpp line 69!, arg_.size[1]: {} , width: {}, arg_.size[0]: {}, height: {}", arg_.size[1], width, arg_.size[0] , height);
       std::array padding{0, 0, max(0, arg_.size[1] - width), max(0, arg_.size[0] - height)};
       OUTCOME_TRY(output_tensor, PadImage(tensor, padding));
-      INFO("debugging csrc/preprocess/transform/pad.cpp line 73! output_tensor.data_type: {}", output_tensor.data_type());
       output["pad_fixed_size"].push_back(height + max(0, arg_.size[0] - height));
       output["pad_fixed_size"].push_back(width + max(0, arg_.size[1] - width));
     }
-    INFO("debugging csrc/preprocess/transform/pad.cpp line 83!");
     output[key] = output_tensor;
     for (auto& v : output_tensor.desc().shape) {
       output["pad_shape"].push_back(v);
@@ -101,7 +90,6 @@ Result<Value> PadImpl::Process(const Value& input) {
 }
 
 Pad::Pad(const Value& args, int version) : Transform(args) {
-  INFO("debugging: preprocess.transform.pad.cpp line 83!");
   auto impl_creator = Registry<PadImpl>::Get().GetCreator(specified_platform_, version);
   if (nullptr == impl_creator) {
     ERROR("'Pad' is not supported on '{}' platform", specified_platform_);
