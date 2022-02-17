@@ -2,9 +2,10 @@
 import torch
 
 from mmdeploy.codebase.mmdet import (get_post_processing_params,
-                                     multiclass_nms, pad_with_value)
+                                     multiclass_nms,
+                                     pad_with_value_if_necessary)
 from mmdeploy.core import FUNCTION_REWRITER
-from mmdeploy.utils import Backend, get_backend, is_dynamic_shape
+from mmdeploy.utils import Backend, is_dynamic_shape
 
 
 @FUNCTION_REWRITER.register_rewriter(
@@ -95,13 +96,11 @@ def rpn_head__get_bboxes(ctx,
 
         anchors = anchors.expand_as(bbox_pred)
 
-        backend = get_backend(deploy_cfg)
         # topk in tensorrt does not support shape<k
         # concate zero to enable topk,
-        if backend == Backend.TENSORRT:
-            scores = pad_with_value(scores, 1, pre_topk, 0.)
-            bbox_pred = pad_with_value(bbox_pred, 1, pre_topk)
-            anchors = pad_with_value(anchors, 1, pre_topk)
+        scores = pad_with_value_if_necessary(scores, 1, pre_topk, 0.)
+        bbox_pred = pad_with_value_if_necessary(bbox_pred, 1, pre_topk)
+        anchors = pad_with_value_if_necessary(anchors, 1, pre_topk)
 
         if pre_topk > 0:
             _, topk_inds = scores.squeeze(2).topk(pre_topk)
@@ -145,7 +144,7 @@ def rpn_head__get_bboxes(ctx,
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    'mmdet.models.dense_heads.RPNHead.get_bboxes', backend='ncnn')
+    'mmdet.models.dense_heads.RPNHead.get_bboxes', backend=Backend.NCNN.value)
 def rpn_head__get_bboxes__ncnn(ctx,
                                self,
                                cls_scores,
