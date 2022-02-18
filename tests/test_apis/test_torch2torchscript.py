@@ -76,7 +76,8 @@ def test_torch2torchscript(input_name, output_name):
                         keys=['lq', 'gt'],
                         meta_keys=['lq_path', 'lq_path']),
                     dict(type='ImageToTensor', keys=['lq', 'gt'])
-                ])))
+                ])),
+        device='cpu')
 
     assert osp.exists(ts_file)
 
