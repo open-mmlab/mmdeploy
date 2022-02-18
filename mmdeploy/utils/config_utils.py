@@ -194,6 +194,10 @@ def is_dynamic_shape(deploy_cfg: Union[str, mmcv.Config],
         bool: Is config set dynamic shape (axis 2 and 3).
     """
 
+    # Always dynamic for exporting torchscript
+    if get_backend(deploy_cfg) == Backend.TORCHSCRIPT:
+        return True
+
     deploy_cfg = load_config(deploy_cfg)[0]
     ir_config = get_ir_config(deploy_cfg)
 
@@ -355,6 +359,8 @@ def get_dynamic_axes(
     """
     deploy_cfg = load_config(deploy_cfg)[0]
     ir_config = get_ir_config(deploy_cfg)
+
+    # TODO onnx will be deprecated in the future
     onnx_config = deploy_cfg.get('onnx_config', None)
     if onnx_config is None and ir_config == {}:
         raise KeyError(
