@@ -40,17 +40,18 @@ def forward(ctx, self, features, num_points, coors):
         features_ls.append(f_cluster)
 
     # Find distance of x, y, and z from pillar center
+    device = features.device
     if self._with_voxel_center:
         if not self.legacy:
             f_center = features[..., :2] - (
-                coors * torch.tensor([1, 1, self.vy, self.vx]).cuda() +
+                coors * torch.tensor([1, 1, self.vy, self.vx]).to(device) +
                 torch.tensor([1, 1, self.y_offset, self.x_offset
-                              ]).cuda()).unsqueeze(1).flip(2)[..., :2]
+                              ]).to(device)).unsqueeze(1).flip(2)[..., :2]
         else:
             f_center = features[..., :2] - (
-                coors * torch.tensor([1, 1, self.vy, self.vx]).cuda() +
+                coors * torch.tensor([1, 1, self.vy, self.vx]).to(device) +
                 torch.tensor([1, 1, self.y_offset, self.x_offset
-                              ]).cuda()).unsqueeze(1).flip(2)[..., :2]
+                              ]).to(device)).unsqueeze(1).flip(2)[..., :2]
             features_ls[0] = torch.cat((f_center, features[..., 2:]), dim=-1)
         features_ls.append(f_center)
 
