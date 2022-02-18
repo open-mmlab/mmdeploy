@@ -11,7 +11,7 @@ module_name = 'mmdeploy_python'
 
 candidates = [
     f'../../../build/lib/{module_name}.*.so',
-    f'../../../build/lib/*/{module_name}.*.pyd'
+    f'../../../build/bin/*/{module_name}.*.pyd'
 ]
 
 lib_path = get_file_path(os.path.dirname(__file__), candidates)
