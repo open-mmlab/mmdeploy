@@ -1,10 +1,14 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
 function (mmdeploy_export NAME)
+    set(_LIB_DIR lib)
+    if (MSVC)
+        set(_LIB_DIR bin)
+    endif ()
     install(TARGETS ${NAME}
             EXPORT MMDeployTargets
             ARCHIVE DESTINATION lib
-            LIBRARY DESTINATION lib
+            LIBRARY DESTINATION ${_LIB_DIR}
             RUNTIME DESTINATION bin)
 endfunction ()
 
@@ -28,19 +32,46 @@ endfunction ()
 
 
 function (mmdeploy_add_module NAME)
-    cmake_parse_arguments(_MMDEPLOY "EXCLUDE" "" "" ${ARGN})
-    add_library(${NAME} ${_MMDEPLOY_UNPARSED_ARGUMENTS})
+    # EXCLUDE: exclude from registering & exporting as SDK module
+    # LIBRARY: the module is also a library (add_libray with SHARED instead of MODULE)
+    cmake_parse_arguments(_MMDEPLOY "EXCLUDE;LIBRARY" "" "" ${ARGN})
+    # search for add_library keywords
+    cmake_parse_arguments(_KW "STATIC;SHARED;MODULE" "" "" ${_MMDEPLOY_UNPARSED_ARGUMENTS})
+
+    set(_MAYBE_MODULE)
+    # no library type specified
+    if (NOT (_KW_STATIC OR  _KW_SHARED OR _KW_MODULE))
+        # shared but not marked as a library, build module library so that no .lib dependency
+        # will be generated for MSVC
+        if (BUILD_SHARED_LIBS AND NOT _MMDEPLOY_LIBRARY)
+            set(_MAYBE_MODULE MODULE)
+        endif ()
+    endif ()
+
+    add_library(${NAME} ${_MAYBE_MODULE} ${_MMDEPLOY_UNPARSED_ARGUMENTS})
+
+    # automatically link mmdeploy::core if exists
+    if (TARGET mmdeploy::core)
+        target_link_libraries(${NAME} PRIVATE mmdeploy::core)
+    endif ()
+
+    # export public symbols when marked as a library
+    if (_MMDEPLOY_LIBRARY)
+        target_compile_definitions(${NAME} PRIVATE -DMMDEPLOY_API_EXPORTS)
+    endif ()
+
     get_target_property(_TYPE ${NAME} TYPE)
-    target_link_libraries(${NAME} PRIVATE mmdeploy::core)
     if (_TYPE STREQUAL STATIC_LIBRARY)
         set_target_properties(${NAME} PROPERTIES POSITION_INDEPENDENT_CODE 1)
         if (MSVC)
             target_link_options(${NAME} INTERFACE "/WHOLEARCHIVE:${NAME}")
         endif ()
+        # register static modules
         if (NOT _MMDEPLOY_EXCLUDE)
             target_link_libraries(MMDeployStaticModules INTERFACE ${NAME})
         endif ()
-    elseif (_TYPE STREQUAL SHARED_LIBRARY)
+    elseif (_TYPE STREQUAL SHARED_LIBRARY OR _TYPE STREQUAL MODULE_LIBRARY)
+        # register dynamic modules
         if (NOT _MMDEPLOY_EXCLUDE)
             target_link_libraries(MMDeployDynamicModules INTERFACE ${NAME})
         endif ()
@@ -99,16 +130,17 @@ function (mmdeploy_load_dynamic NAME)
         string(JOIN ",\n        " _MODULE_STR ${_MODULE_STR})
         set(_MMDEPLOY_DYNAMIC_MODULES ${_MODULE_STR})
 
-        set(_LOADER ${NAME}_loader)
+        set(_LOADER_NAME ${NAME}_loader)
 
         add_dependencies(${NAME} ${_MODULE_LIST})
 
+        set(_LOADER_PATH ${CMAKE_BINARY_DIR}/${_LOADER_NAME}.cpp)
         configure_file(
-                ${CMAKE_SOURCE_DIR}/csrc/loader/loader.cpp.in
-                ${CMAKE_BINARY_DIR}/${_LOADER}.cpp)
+                ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/loader.cpp.in
+                ${_LOADER_PATH})
 
-        mmdeploy_add_module(${_LOADER} STATIC EXCLUDE ${CMAKE_BINARY_DIR}/${_LOADER}.cpp)
-        mmdeploy_load_static(${NAME} ${_LOADER})
+        mmdeploy_add_module(${_LOADER_NAME} STATIC EXCLUDE ${_LOADER_PATH})
+        mmdeploy_load_static(${NAME} ${_LOADER_NAME})
     else ()
         target_link_libraries(${NAME} PRIVATE
                 -Wl,--no-as-needed

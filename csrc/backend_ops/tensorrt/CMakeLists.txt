@@ -32,6 +32,6 @@ target_link_libraries(${PROJECT_NAME}_obj
 mmdeploy_export(${PROJECT_NAME}_obj)
 
 # Build module library. It is used to convert onnx model to tensorrt engine
-mmdeploy_add_module(${PROJECT_NAME} SHARED EXCLUDE "")
+mmdeploy_add_module(${PROJECT_NAME} MODULE EXCLUDE "")
 target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}_obj)
 add_library(mmdeploy::tensorrt_ops ALIAS ${PROJECT_NAME})

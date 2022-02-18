@@ -14,8 +14,7 @@ set(SRCS
         pad.cpp
         resize.cpp
         transform.cpp)
-mmdeploy_add_module(${PROJECT_NAME} "${SRCS}")
+mmdeploy_add_module(${PROJECT_NAME} LIBRARY "${SRCS}")
 target_include_directories(
         ${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/preprocess>)
-target_compile_definitions(${PROJECT_NAME} PRIVATE -DMMDEPLOY_API_EXPORTS)
 add_library(mmdeploy::transform ALIAS ${PROJECT_NAME})

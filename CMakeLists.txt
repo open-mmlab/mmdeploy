@@ -11,7 +11,11 @@ set(CMAKE_CXX_STANDARD 17)
 
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+if (MSVC)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+else ()
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+endif ()
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # options
@@ -61,8 +65,8 @@ add_subdirectory(csrc)
 
 if (MMDEPLOY_BUILD_SDK)
     install(TARGETS MMDeployStaticModules
-                    MMDeployDynamicModules
-                    MMDeployLibs
+            MMDeployDynamicModules
+            MMDeployLibs
             EXPORT MMDeployTargets)
 
     if (MMDEPLOY_BUILD_TEST)
@@ -71,7 +75,7 @@ if (MMDEPLOY_BUILD_SDK)
 
     if (MMDEPLOY_BUILD_SDK_PYTHON_API)
         add_subdirectory(csrc/apis/python)
-    endif()
+    endif ()
 
     # export MMDeploy package
     install(EXPORT MMDeployTargets
@@ -97,6 +101,7 @@ if (MMDEPLOY_BUILD_SDK)
             ${CMAKE_CURRENT_BINARY_DIR}/MMDeployConfig.cmake
             ${CMAKE_CURRENT_BINARY_DIR}/MMDeployConfigVersion.cmake
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/MMDeploy.cmake
+            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/loader.cpp.in
             DESTINATION lib/cmake/MMDeploy
             )
 
