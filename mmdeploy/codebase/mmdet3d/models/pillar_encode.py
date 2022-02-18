@@ -40,24 +40,18 @@ def forward(ctx, self, features, num_points, coors):
         features_ls.append(f_cluster)
 
     # Find distance of x, y, and z from pillar center
-    dtype = features.dtype
     if self._with_voxel_center:
         if not self.legacy:
-            f_center = torch.zeros_like(features[:, :, :2])
-            f_center[:, :, 0] = features[:, :, 0] - (
-                coors[:, 3].to(dtype).unsqueeze(1) * self.vx + self.x_offset)
-            f_center[:, :, 1] = features[:, :, 1] - (
-                coors[:, 2].to(dtype).unsqueeze(1) * self.vy + self.y_offset)
+            f_center = features[..., :2] - (
+                coors * torch.tensor([1, 1, self.vy, self.vx]).cuda() +
+                torch.tensor([1, 1, self.y_offset, self.x_offset
+                              ]).cuda()).unsqueeze(1).flip(2)[..., :2]
         else:
-            f_center = features[:, :, :2]
-            f_center[:, :, 0] = f_center[:, :, 0] - (
-                coors[:, 3].type_as(features).unsqueeze(1) * self.vx +
-                self.x_offset)
-            f_center[:, :, 1] = f_center[:, :, 1] - (
-                coors[:, 2].type_as(features).unsqueeze(1) * self.vy +
-                self.y_offset)
-            features[:, :, 0] = f_center[:, :, 0]
-            features[:, :, 1] = f_center[:, :, 1]
+            f_center = features[..., :2] - (
+                coors * torch.tensor([1, 1, self.vy, self.vx]).cuda() +
+                torch.tensor([1, 1, self.y_offset, self.x_offset
+                              ]).cuda()).unsqueeze(1).flip(2)[..., :2]
+            features_ls[0] = torch.cat((f_center, features[..., 2:]), dim=-1)
         features_ls.append(f_center)
 
     if self._with_distance:
@@ -71,10 +65,8 @@ def forward(ctx, self, features, num_points, coors):
     # empty pillars remain set to zeros.
     voxel_count = features.shape[1]
     mask = get_paddings_indicator(num_points, voxel_count, axis=0)
-    # mask = torch.unsqueeze(mask, -1).type_as(features).int()
     mask = torch.unsqueeze(mask, -1).type_as(features)
     features *= mask
-
     for pfn in self.pfn_layers:
         features = pfn(features, num_points)
 

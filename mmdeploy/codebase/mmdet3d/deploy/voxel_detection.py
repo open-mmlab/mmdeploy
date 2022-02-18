@@ -72,9 +72,9 @@ class VoxelDetection(BaseTask):
                      pcds: Union[str, np.ndarray],
                      img_shape=None,
                      **kwargs) -> Tuple[Dict, torch.Tensor]:
-        from mmdet3d.datasets.pipelines import Compose
         from mmcv.parallel import collate, scatter
         from mmdet3d.core.bbox import get_box_type
+        from mmdet3d.datasets.pipelines import Compose
         if not isinstance(pcds, (list, tuple)):
             pcds = [pcds]
         cfg = self.model_cfg
@@ -122,7 +122,11 @@ class VoxelDetection(BaseTask):
         result['num_points'] = num_points_batch
         result['coors'] = coors_batch
         self.img_meta = result['img_metas']
-        return result, [voxels_batch[0], num_points_batch[0], coors_batch[0]]
+        torch.save(self.img_meta, 'img_meta.ts')
+        return result, [
+            voxels_batch[0].contiguous(), num_points_batch[0].contiguous(),
+            coors_batch[0].contiguous()
+        ]
 
     def visualize(self,
                   model: torch.nn.Module,
@@ -151,15 +155,15 @@ class VoxelDetection(BaseTask):
                               **kwargs) -> torch.Tensor:
         pass
 
-    def evaluate_outputs(self,
-                         model_cfg,
+    @staticmethod
+    def evaluate_outputs(model_cfg,
                          outputs: Sequence,
                          dataset: Dataset,
                          metrics: Optional[str] = None,
                          out: Optional[str] = None,
                          metric_options: Optional[dict] = None,
                          format_only: bool = False,
-                         **kwargs):
+                         log_file: Optional[str] = None):
         if out:
             logger = get_root_logger()
             logger.info(f'\nwriting results to {out}')
@@ -215,8 +219,8 @@ class VoxelDetection(BaseTask):
 
     @staticmethod
     def post_process(outs, img_metas, model_cfg):
-        from mmdet3d.models.builder import build_head
         from mmdet3d.core import bbox3d2result
+        from mmdet3d.models.builder import build_head
         head = build_head(
             dict(
                 **model_cfg.model['bbox_head'],

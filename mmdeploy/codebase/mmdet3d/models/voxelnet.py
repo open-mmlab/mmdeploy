@@ -15,6 +15,7 @@ def extract_feat(ctx, self, input, img_metas=None):
     voxels, num_points, coors = input
     voxel_features = self.voxel_encoder(voxels, num_points, coors)
     batch_size = coors[-1, 0] + 1  # refactor
+    assert batch_size == 1
     x = self.middle_encoder(voxel_features, coors, batch_size)
     x = self.backbone(x)
     if self.with_neck:
