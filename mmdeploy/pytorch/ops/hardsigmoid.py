@@ -7,7 +7,6 @@ from mmdeploy.core import SYMBOLIC_REWRITER
 @SYMBOLIC_REWRITER.register_symbolic(
     'hardsigmoid', is_pytorch=True, arg_descriptors=['v'])
 def hardsigmoid__default(ctx, g, self):
-    """Support export hardsigmoid
-    This rewrite enable export hardsigmoid in torch<=1.8.2
-    """
-    return g.op("HardSigmoid", self, alpha_f=1 / 6)
+    """Support export hardsigmoid This rewrite enable export hardsigmoid in
+    torch<=1.8.2."""
+    return g.op('HardSigmoid', self, alpha_f=1 / 6)
