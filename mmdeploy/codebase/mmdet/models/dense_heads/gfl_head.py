@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import torch
 import torch.nn.functional as F
 
@@ -89,7 +90,7 @@ def gfl_head__get_bbox(ctx,
     for cls_score, bbox_pred, score_factors, priors, stride in zip(
             mlvl_cls_scores, mlvl_bbox_preds, mlvl_score_factor, mlvl_priors,
             self.prior_generator.strides):
-        assert cls_score.size()[-2:] == bbox_pred.size()[1:-1]
+        assert cls_score.size()[-2:] == bbox_pred.size()[-2:]
         assert stride[0] == stride[1]
 
         scores = cls_score.permute(0, 2, 3, 1).reshape(batch_size, -1,
@@ -105,7 +106,7 @@ def gfl_head__get_bbox(ctx,
                                                   1).reshape(batch_size,
                                                              -1).sigmoid()
             score_factors = score_factors.unsqueeze(2)
-        bbox_pred = batched_integral(self.integral, bbox_pred) * stride[0]
+        bbox_pred = batched_integral(self.integral, bbox_pred.permute(0, 2, 3, 1)) * stride[0]
         if not is_dynamic_flag:
             priors = priors.data
         priors = priors.expand(batch_size, -1, priors.size(-1))
@@ -181,23 +182,3 @@ def batched_integral(intergral, x):
                  intergral.project.type_as(x).unsqueeze(0)).reshape(
                      batch_size, -1, 4)
     return x
-
-
-@FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdet.models.dense_heads.gfl_head.'
-    'GFLHead.forward_single')
-def gfl_head__forward_single(ctx, self, x, scale, **kwargs):
-    """Rewrite `forward_single` of `GFLHead` for default backend.
-
-    Rewrite this function to deploy model, (by richard.)
-    """
-    cls_feat = x
-    reg_feat = x
-    for cls_conv in self.cls_convs:
-        cls_feat = cls_conv(cls_feat)
-    for reg_conv in self.reg_convs:
-        reg_feat = reg_conv(reg_feat)
-    cls_score = self.gfl_cls(cls_feat)
-    bbox_pred = scale(self.gfl_reg(reg_feat)).float().permute(
-        0, 2, 3, 1)  # B, H, W, C(4*17)
-    return cls_score, bbox_pred
