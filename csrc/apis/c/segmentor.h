@@ -12,7 +12,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif  
+#endif
 
 typedef struct mm_segment_t {
   int height;   ///< height of \p mask that equals to the input image's height

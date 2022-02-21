@@ -12,7 +12,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif  
+#endif
 
 typedef struct mm_class_t {
   int label_id;

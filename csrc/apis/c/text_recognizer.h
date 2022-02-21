@@ -13,7 +13,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif 
+#endif
 
 typedef struct mm_text_recognize_t {
   char* text;

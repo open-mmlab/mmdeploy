@@ -12,7 +12,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif  
+#endif
 
 typedef struct mm_text_detect_t {
   mm_pointf_t bbox[4];  ///< a text bounding box of which the vertex are in clock-wise

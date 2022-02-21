@@ -12,7 +12,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif  
+#endif
 
 /**
  * @brief Create a restorer instance

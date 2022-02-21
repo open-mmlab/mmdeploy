@@ -12,7 +12,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif  
+#endif
 
 typedef struct mm_instance_mask_t {
   char* data;
