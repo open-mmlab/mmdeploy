@@ -21,7 +21,6 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
     # mmdeploy/utils/constants.py
 
     class Backend(AdvancedEnum):
-        # Take TensorRT as an example
         # 以现有的TensorRT为例
         TENSORRT = 'tensorrt'
     ```
@@ -106,7 +105,6 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
         call([onnx2ncnn_path, onnx_path, save_param, save_bin])\
     ```
 
-5. Define APIs in a new package in  `mmdeploy/apis`.
 5. 在 `mmdeploy/apis`中创建新后端库并声明对应 APIs
 
     **例子**
@@ -231,4 +229,4 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
                     output_names=output_names)
     ```
 
-5. 为新后端引擎代码添加相关注释和单元测试:)。
+5. 为新后端引擎代码添加相关注释和单元测试:).
