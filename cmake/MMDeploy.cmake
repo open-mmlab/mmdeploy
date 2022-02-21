@@ -43,7 +43,7 @@ function (mmdeploy_add_module NAME)
     if (NOT (_KW_STATIC OR  _KW_SHARED OR _KW_MODULE))
         # shared but not marked as a library, build module library so that no .lib dependency
         # will be generated for MSVC
-        if (BUILD_SHARED_LIBS AND NOT _MMDEPLOY_LIBRARY)
+        if (MSVC AND BUILD_SHARED_LIBS AND NOT _MMDEPLOY_LIBRARY)
             set(_MAYBE_MODULE MODULE)
         endif ()
     endif ()
