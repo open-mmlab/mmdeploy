@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 cmake_minimum_required(VERSION 3.14)
-set(CMAKE_CUDA_RUNTIME_LIBRARY Shared)
-project(mmdeploy-example CUDA CXX)
+project(mmdeploy-example)
 
 find_package(MMDeploy REQUIRED)
 find_package(spdlog REQUIRED)
