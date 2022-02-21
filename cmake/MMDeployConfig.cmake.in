@@ -10,17 +10,15 @@ set(MMDEPLOY_TARGET_BACKENDS @MMDEPLOY_TARGET_BACKENDS@)
 set(MMDEPLOY_BUILD_TYPE @CMAKE_BUILD_TYPE@)
 set(MMDEPLOY_BUILD_SHARED @BUILD_SHARED_LIBS@)
 
-if ("cuda" IN_LIST MMDEPLOY_TARGET_DEVICES)
-    set(CMAKE_CUDA_RUNTIME_LIBRARY Shared)
-    enable_language(CUDA)
-endif ()
-
 if (NOT MMDEPLOY_BUILD_SHARED)
     if ("cuda" IN_LIST MMDEPLOY_TARGET_DEVICES)
+        set(CMAKE_CUDA_RUNTIME_LIBRARY Shared)
+        enable_language(CUDA)
         find_package(pplcv REQUIRED)
     endif ()
 endif ()
 
+find_package(spdlog REQUIRED)
 find_package(OpenCV REQUIRED)
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)

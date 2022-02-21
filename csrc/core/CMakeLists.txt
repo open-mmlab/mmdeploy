@@ -15,7 +15,7 @@ set(SPDLOG_LIB)
 find_package(spdlog QUIET)
 if (spdlog_FOUND)
     message(STATUS "spdlog is found")
-    set(SPDLOG_LIB $<BUILD_INTERFACE:spdlog::spdlog>)
+    set(SPDLOG_LIB spdlog::spdlog)
 endif ()
 
 include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
