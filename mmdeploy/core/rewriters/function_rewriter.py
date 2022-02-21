@@ -116,7 +116,7 @@ class FunctionRewriter:
                     function_name = function_path.split('.')[-1]
                     try:
                         object.__getattribute__(origin_class,
-                                                      function_name)
+                                                function_name)
                     except Exception:
                         # The function is a method and it is derived from base
                         # class.
