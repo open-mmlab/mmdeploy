@@ -10,6 +10,10 @@
 
 #include "common.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif  
+
 typedef struct mm_instance_mask_t {
   char* data;
   int height;
@@ -74,5 +78,9 @@ MMDEPLOY_API void mmdeploy_detector_release_result(mm_detect_t* results, const i
  * @param[in] handle detector's handle created by \ref mmdeploy_detector_create_by_path
  */
 MMDEPLOY_API void mmdeploy_detector_destroy(mm_handle_t handle);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // MMDEPLOY_DETECTOR_H

@@ -5,7 +5,8 @@ project(mmdeploy-example)
 find_package(MMDeploy REQUIRED)
 
 function(add_example name)
-  add_executable(${name} ${name}.cpp)
+  file(GLOB _SRCS ${name}.c*)
+  add_executable(${name} ${_SRCS})
   if (NOT MSVC)
     # disable new dtags so that executables can run even without LD_LIBRARY_PATH set
     target_link_libraries(${name} PRIVATE -Wl,--disable-new-dtags)

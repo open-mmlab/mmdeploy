@@ -10,6 +10,10 @@
 
 #include "common.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif  
+
 /**
  * @brief Create a restorer instance
  * @param[in] model an instance of image restoration model created by
@@ -58,5 +62,9 @@ MMDEPLOY_API void mmdeploy_restorer_release_result(mm_mat_t* results, int count)
  * @param[in] handle handle of restorer created by \ref mmdeploy_restorer_create_by_path
  */
 MMDEPLOY_API void mmdeploy_restorer_destroy(mm_handle_t handle);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // MMDEPLOY_SRC_APIS_C_RESTORER_H_

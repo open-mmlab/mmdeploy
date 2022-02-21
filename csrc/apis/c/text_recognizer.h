@@ -11,6 +11,10 @@
 #include "common.h"
 #include "text_detector.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif 
+
 typedef struct mm_text_recognize_t {
   char* text;
   float* score;
@@ -87,5 +91,9 @@ MMDEPLOY_API void mmdeploy_text_recognizer_release_result(mm_text_recognize_t* r
  * mmdeploy_text_recognizer_create_by_path or \ref mmdeploy_text_recognizer_create
  */
 MMDEPLOY_API void mmdeploy_text_recognizer_destroy(mm_handle_t handle);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // MMDEPLOY_SRC_APIS_C_TEXT_RECOGNIZER_H_

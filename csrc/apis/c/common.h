@@ -3,7 +3,7 @@
 #ifndef MMDEPLOY_COMMON_H
 #define MMDEPLOY_COMMON_H
 
-#include <cstdint>
+#include <stdint.h>
 
 #ifndef MMDEPLOY_EXPORT
 #ifdef _MSC_VER

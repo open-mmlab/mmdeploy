@@ -10,6 +10,10 @@
 
 #include "common.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif  
+
 typedef struct mm_class_t {
   int label_id;
   float score;
@@ -70,5 +74,9 @@ MMDEPLOY_API void mmdeploy_classifier_release_result(mm_class_t* results, const 
  * @param[in] handle classifier's handle created by \ref mmdeploy_classifier_create_by_path
  */
 MMDEPLOY_API void mmdeploy_classifier_destroy(mm_handle_t handle);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // MMDEPLOY_CLASSIFIER_H

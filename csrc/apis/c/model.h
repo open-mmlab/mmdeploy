@@ -10,6 +10,10 @@
 
 #include "common.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @brief Create SDK Model instance from given model path
  * @param[in] path model path
@@ -33,5 +37,9 @@ MMDEPLOY_API int mmdeploy_model_create(const void* buffer, int size, mm_model_t*
  * mmdeploy_model_create
  */
 MMDEPLOY_API void mmdeploy_model_destroy(mm_model_t model);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // MMDEPLOY_SRC_APIS_C_MODEL_H_

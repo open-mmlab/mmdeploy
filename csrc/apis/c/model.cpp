@@ -1,11 +1,13 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "core/model.h"
+// clang-format off
+#include "model.h"
 
 #include <memory>
 
 #include "core/logger.h"
-#include "model.h"
+#include "core/model.h"
+// clang-format on
 
 using namespace mmdeploy;
 

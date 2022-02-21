@@ -10,6 +10,10 @@
 
 #include "common.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif  
+
 typedef struct mm_segment_t {
   int height;   ///< height of \p mask that equals to the input image's height
   int width;    ///< width of \p mask that equals to the input image's width
@@ -67,5 +71,9 @@ MMDEPLOY_API void mmdeploy_segmentor_release_result(mm_segment_t* results, int c
  * @param[in] handle segmentor's handle created by \ref mmdeploy_segmentor_create_by_path
  */
 MMDEPLOY_API void mmdeploy_segmentor_destroy(mm_handle_t handle);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // MMDEPLOY_SEGMENTOR_H

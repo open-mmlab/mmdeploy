@@ -10,6 +10,10 @@
 
 #include "common.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif  
+
 typedef struct mm_text_detect_t {
   mm_pointf_t bbox[4];  ///< a text bounding box of which the vertex are in clock-wise
   float score;
@@ -70,5 +74,9 @@ MMDEPLOY_API void mmdeploy_text_detector_release_result(mm_text_detect_t* result
  * \ref mmdeploy_text_detector_create
  */
 MMDEPLOY_API void mmdeploy_text_detector_destroy(mm_handle_t handle);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // MMDEPLOY_TEXT_DETECTOR_H
