@@ -14,7 +14,15 @@ ResizeBBox::ResizeBBox(const Value& cfg) : MMDetection(cfg) {
   if (cfg.contains("params")) {
 #ifdef EVAL_MODE
     INFO("EVAL_MODE, SDK uses postprocessing score_thr for evaluating performance.");
-    score_thr_ = cfg["params"].value("score_thr", 0.f);
+    if (cfg["params"].contains("conf_thr"))
+    {
+      // for mobilev2yolov3
+      score_thr_ = cfg["params"].value("conf_thr", 0.f);
+    }
+    else
+    {
+      score_thr_ = cfg["params"].value("score_thr", 0.f);
+    }
 #else
     INFO("inference mode, SDK uses fixed 0.3 score_thr_ for inferencing.");
     score_thr_ = 0.3;
@@ -143,6 +151,8 @@ Result<DetectorOutput> ResizeBBox::GetBBoxes(const Value& prep_res, const Tensor
   // `dets` has shape(1, n, 4) or shape(1, n, 5). The latter one has `score`
   auto bboxes_number = dets.shape()[1];
   auto channels = dets.shape()[2];
+  FILE* fp;
+  fp = fopen("/home/PJLAB/hanrui/workspace/mmdeploy_0_2_0_sdk_x8664/mmdeploy/tools/temp_det_result.txt", "w+");
   for (auto i = 0; i < bboxes_number; ++i, dets_ptr += channels, ++labels_ptr) {
     float score = 0.f;
     if (channels > 4 && dets_ptr[4] <= score_thr_) {
@@ -169,17 +179,19 @@ Result<DetectorOutput> ResizeBBox::GetBBoxes(const Value& prep_res, const Tensor
     det.label_id = static_cast<int>(*labels_ptr);
     det.score = score;
     det.bbox = rect;
+    fprintf(fp, "%f %f %f %f %f %f\n ", (float) det.label_id, det.score, det.bbox[0], det.bbox[1], det.bbox[2], det.bbox[3]);
     objs.detections.push_back(std::move(det));
   }
+  fclose(fp);
   return objs;
 }
 std::array<float, 4> ResizeBBox::MapToOriginImage(float left, float top, float right, float bottom,
                                                   const float* scale_factor, float x_offset,
                                                   float y_offset, int ori_width, int ori_height) {
-  left = std::max(left / scale_factor[0] + x_offset, 0.f);
-  top = std::max(top / scale_factor[1] + y_offset, 0.f);
-  right = std::min(right / scale_factor[2] + x_offset, (float)ori_width - 1.f);
-  bottom = std::min(bottom / scale_factor[3] + y_offset, (float)ori_height - 1.f);
+  left = left / scale_factor[0] + x_offset; // std::max(left / scale_factor[0] + x_offset, 0.f);
+  top = top / scale_factor[1] + y_offset; // std::max(top / scale_factor[1] + y_offset, 0.f);
+  right = right / scale_factor[2] + x_offset; //std::min(right / scale_factor[2] + x_offset, (float)ori_width - 1.f);
+  bottom = bottom / scale_factor[3] + y_offset; //std::min(bottom / scale_factor[3] + y_offset, (float)ori_height - 1.f);
   return {left, top, right, bottom};
 }
 
