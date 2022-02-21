@@ -156,7 +156,7 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
 
 ### 支持后端推理
 
-尽管后端引擎通常用C/C++实现，但如果后端提供Python推理接口，则测试和调试非常方便。我们鼓励贡献者在MMDeploy的Python接口中支持新后端推理。在本节中，我们将介绍支持后端推理的步骤。
+尽管后端引擎通常用C/C++实现，但如果后端提供Python推理接口，则测试和调试非常方便。我们鼓励贡献者在MMDeploy的Python接口中可以支持新后端推理。在本节中，我们将介绍支持后端推理的一般步骤。
 
 1. 添加一个名为 `wrapper.py` 的文件到 `mmdeploy/backend/{backend}` 中相应后端文件夹。例如，`mmdeploy/backend/tensorrt/wrapper`。此模块应实现并注册一个封装类，该类继承 `mmdeploy/backend/base/base_wrapper.py` 中的基类 `BaseWrapper`。
 
@@ -212,7 +212,6 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
 
 4. 为新封装装器添加默认初始化方法 `mmdeploy/codebase/base/backend_model.py`
 
-    **Example:**
     **例子**
 
     ```Python
