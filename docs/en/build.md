@@ -1,26 +1,11 @@
-# Build MMDeploy
+## Build MMDeploy
 
-- [Build MMDeploy](#build-mmdeploy)
-  - [Download MMDeploy](#download-mmdeploy)
-  - [Build for Linux-x86_64](#build-for-linux-x86_64)
-    - [1. Dockerfile (RECOMMENDED)](#1-dockerfile-recommended)
-    - [2. Build From Source](#2-build-from-source)
-      - [Install Toolchains](#install-toolchains)
-      - [Install Dependencies for Model Converter](#install-dependencies-for-model-converter)
-      - [Install Dependencies for SDK](#install-dependencies-for-sdk)
-      - [Install Inference Engines for MMDeploy](#install-inference-engines-for-mmdeploy)
-        - [ONNXRuntime](#onnxruntime)
-        - [TensorRT](#tensorrt)
-        - [ncnn](#ncnn)
-        - [pplnn](#pplnn)
-        - [OpenVINO](#openvino)
-      - [Build Model Converter](#build-model-converter)
-      - [Build SDK](#build-sdk)
-    - [3. Use Prebuit Package](#3-use-prebuit-package)
-  - [Build for Windows-x86_64](#build-for-windows-x86_64)
-    - [1. Build From Source](#1-build-from-source)
-    - [2. Use Prebuit Package](#2-use-prebuit-package)
-## Download MMDeploy
+We provide building methods for both physical and virtual machines. For virtual machine building methods, please refer to
+[how to use docker](tutorials/how_to_use_docker.md). For physical machine, please follow the steps below.
+
+### Preparation
+
+- Download MMDeploy
 
     ```bash
     git clone -b master git@github.com:open-mmlab/mmdeploy.git MMDeploy
@@ -28,8 +13,9 @@
     git submodule update --init --recursive
     ```
 
+    Note:
 
-Note: If fetching submodule fails, you could get submodule manually by following instructions:
+  - If fetching submodule fails, you could get submodule manually by following instructions:
 
       ```bash
       git clone git@github.com:NVIDIA/cub.git third_party/cub
@@ -43,18 +29,6 @@ Note: If fetching submodule fails, you could get submodule manually by following
       git checkout 70a58c5
       ```
 
-## Build for Linux-x86_64
-
-MMDeploy provides two build ways under linux-x86_64 platform, including dockerfile and building from source.
-
-### 1. Dockerfile (RECOMMENDED) 
-please refer to
-[how to use docker](tutorials/how_to_use_docker.md).
-
-### 2. Build From Source
-
-#### Install Toolchains
-  
 - Install cmake
 
     Install cmake>=3.14.0, you could refer to [cmake website](https://cmake.org/install) for more detailed info.
@@ -80,7 +54,7 @@ please refer to
     sudo apt-get install g++-7
     ```
 
-#### Install Dependencies for Model Converter
+### Create Environment
 
 - Create a conda virtual environment and activate it
 
@@ -100,15 +74,44 @@ please refer to
 
     ```bash
     export cu_version=cu111 # cuda 11.1
-    export torch_version=torch1.8.0
-    pip install mmcv-full -f https://download.openmmlab.com/mmcv/dist/${cu_version}/${torch_version}/index.html
+    export torch_version=torch1.8
+    pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/${cu_version}/${torch_version}/index.html
     ```
 
-#### Install Dependencies for SDK
 
-Readers can skip this chapter if only interested in model converter.
 
-The following packages are required to build MMDeploy SDK. Each package's installation command is given based on Ubuntu 18.04.
+### Build backend support
+
+Build the inference engine extension libraries you need.
+
+- [ONNX Runtime](backends/onnxruntime.md)
+- [TensorRT](backends/tensorrt.md)
+- [ncnn](backends/ncnn.md)
+- [pplnn](backends/pplnn.md)
+- [OpenVINO](backends/openvino.md)
+
+### Install mmdeploy
+
+```bash
+cd ${MMDEPLOY_DIR} # To mmdeploy root directory
+pip install -e .
+```
+
+**Note**
+
+- Some dependencies are optional. Simply running `pip install -e .` will only install the minimum runtime requirements.
+To use optional dependencies, install them manually with `pip install -r requirements/optional.txt` or specify desired extras when calling `pip` (e.g. `pip install -e . [optional]`).
+Valid keys for the extras field are: `all`, `tests`, `build`, `optional`.
+
+### Build SDK
+
+Readers can skip this chapter if you are only interested in model converter.
+
+#### Dependencies
+
+Currently, SDK is tested on Linux x86-64, more platforms will be added in the future. The following packages are required to build MMDeploy SDK.
+
+Each package's installation command is given based on Ubuntu 18.04.
 
 - OpenCV 3+
 
@@ -134,119 +137,25 @@ The following packages are required to build MMDeploy SDK. Each package's instal
 
   A high-performance image processing library of openPPL supporting x86 and cuda platforms.</br>
   It is **OPTIONAL** which only be needed if `cuda` platform is required.
-  ```bash
-  git clone git@github.com:openppl-public/ppl.cv.git
+
+  Using v0.6.1, since latest updates have broughtup breaking changes
+  ```Bash
+  wget https://github.com/openppl-public/ppl.cv/archive/refs/tags/v0.6.1.zip
+  unzip v0.6.1.zip && mv ppl.cv-0.6.1 ppl.cv
   cd ppl.cv
   ./build.sh cuda
   ```
 
-#### Install Inference Engines for MMDeploy
+- backend engines
 
-Both MMDeploy's model converter and SDK share the same inference engines.
+  SDK uses the same backends as model converter does. Please follow [build backend](#build-backend-support) guide to install your interested backend.
 
-Users can select their interested inference engines and do the installation by following the command.
+#### Set Build Option
 
-##### ONNXRuntime
+- Turn on SDK build switch
 
-*Please note that only **onnxruntime>=1.8.1** of CPU version on Linux platform is supported by now.*
-```bash
-# install ONNXRuntime python package
-pip install onnxruntime==1.8.1
+  `-DMMDEPLOY_BUILD_SDK=ON`
 
-# install ONNXRuntime's library for building custom ops
-wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
-
-tar -zxvf onnxruntime-linux-x64-1.8.1.tgz
-cd onnxruntime-linux-x64-1.8.1
-export ONNXRUNTIME_DIR=$(pwd)
-export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
-```
-
-Note that if you want to save onnxruntime env variables to bashrc, you could run
-
-    ```bash
-    echo '# set env for onnxruntime' >> ~/.bashrc
-    echo "export ONNXRUNTIME_DIR=${ONNXRUNTIME_DIR}" >> ~/.bashrc
-    echo 'export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH' >> ~/.bashrc
-    source ~/.bashrc
-    ```
-
-
-##### TensorRT
-
-Please install TensorRT 8 by following [install-guide](https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing).
-
-**Note**:
-
-- `pip Wheel File Installation` is not supported yet in this repo.
-- We strongly suggest you install TensorRT through [tar file](https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing-tar)
-- After installation, you'd better add TensorRT environment variables to bashrc by:
-
-    ```bash
-    cd ${TENSORRT_DIR} # To TensorRT root directory
-    echo '# set env for TensorRT' >> ~/.bashrc
-    echo "export TENSORRT_DIR=${TENSORRT_DIR}" >> ~/.bashrc
-    echo 'export LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$TENSORRT_DIR' >> ~/.bashrc
-    source ~/.bashrc
-    ```
-
-##### ncnn
-
-MMDeploy now supports ncnn version == 1.0.20211208
-Please refer to [how-to-build](https://github.com/Tencent/ncnn/wiki/how-to-build) to build and install ncnn and pyncnn
-
-##### pplnn
-
-Please install [ppl](https://github.com/openppl-public/ppl.nn) following [install-guide](https://github.com/openppl-public/ppl.nn/blob/master/docs/en/building-from-source.md).
-
-##### OpenVINO
-
-It is recommended to use the installer or install using pip. Installation example using [pip](https://pypi.org/project/openvino-dev/):
-```bash
-pip install openvino-dev
-```
-
-If you want to use OpenVINO in MMDeploy SDK, you need install OpenVINO with [install_guides](https://docs.openvino.ai/2021.4/openvino_docs_install_guides_installing_openvino_linux.html#install-openvino).
-   
-
-#### Build Model Converter
-
-If one of inference engines, such as ONNXRuntime, TensorRT and ncnn is selected, users have to build the corresponding custom ops.
-
-1. Build ONNXRuntime Custom Ops
-   
-  ```bash
-  cd ${MMDEPLOY_DIR} # To MMDeploy root directory
-  mkdir -p build && cd build
-  cmake -DMMDEPLOY_TARGET_BACKENDS=ort -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
-  make -j$(nproc)
-  ```
-
-2. Build TensorRT Custom Ops
-   
-  ```bash
-  cd ${MMDEPLOY_DIR} # To MMDeploy root directory
-  mkdir -p build && cd build
-  cmake -DMMDEPLOY_TARGET_BACKENDS=trt -DTENSORRT_DIR=${TENSORRT_DIR} ..
-  make -j$(nproc)
-  ```
-
-3. Build ncnn Custom Ops
-   
-```bash
-cd ${MMDEPLOY_DIR} # To MMDeploy root directory
-mkdir -p build && cd build
-cmake -DMMDEPLOY_TARGET_BACKENDS=ncnn -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn ..
-make -j$(nproc)
-```
-
-4. Install
-
-```bash
-cd ${MMDEPLOY_DIR} # 切换至项目根目录
-pip install -e .
-```
-#### Build SDK
 
 - Enabling Devices
 
@@ -254,10 +163,10 @@ pip install -e .
    passing a semicolon separated list of device names to `MMDEPLOY_TARGET_DEVICES` variable, e.g. `-DMMDEPLOY_TARGET_DEVICES="cpu;cuda"`. </br>
    Currently, the following devices are supported.
 
-   | device | name | path setter                       |
-   | ------ | ---- | --------------------------------- |
-   | Host   | cpu  | N/A                               |
-   | CUDA   | cuda | CUDA_TOOLKIT_ROOT_DIR & pplcv_DIR |
+   | device |  name | path setter |
+   |--------|-------|-------------|
+   |  Host  |  cpu  |    N/A      |
+   |  CUDA  |  cuda | CUDA_TOOLKIT_ROOT_DIR & pplcv_DIR |
 
    If you have multiple CUDA versions installed on your system, you will need to pass `CUDA_TOOLKIT_ROOT_DIR` to cmake to specify the version. </br>
    Meanwhile, `pplcv_DIR` has to be provided in order to build image processing operators on cuda platform.
@@ -270,13 +179,13 @@ pip install -e .
    e.g. `-DMMDEPLOY_TARGET_BACKENDS="trt;ort;pplnn;ncnn;openvino"`
    A path to the inference engine library is also needed. The following backends are currently supported
 
-   | library     | name     | path setter              |
-   | ----------- | -------- | ------------------------ |
-   | PPL.nn      | pplnn    | pplnn_DIR                |
-   | ncnn        | ncnn     | ncnn_DIR                 |
-   | ONNXRuntime | ort      | ONNXRUNTIME_DIR          |
+   |   library   |  name    |   path setter   |
+   |-------------|----------|-----------------|
+   | PPL.nn      | pplnn    | pplnn_DIR       |
+   | ncnn        | ncnn     | ncnn_DIR        |
+   | ONNXRuntime | ort      | ONNXRUNTIME_DIR |
    | TensorRT    | trt      | TENSORRT_DIR & CUDNN_DIR |
-   | OpenVINO    | openvino | InferenceEngine_DIR      |
+   | OpenVINO    | openvino | InferenceEngine_DIR |
 
 - Enabling codebase's postprocess components
 
@@ -316,13 +225,3 @@ pip install -e .
      -DMMDEPLOY_CODEBASES=all
    cmake --build . -- -j$(nproc) && cmake --install .
   ```
-
-### 3. Use Prebuit Package
-TODO
-
-## Build for Windows-x86_64
-
-### 1. Build From Source
-
-### 2. Use Prebuit Package
-TODO
