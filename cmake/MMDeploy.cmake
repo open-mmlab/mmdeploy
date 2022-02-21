@@ -135,6 +135,7 @@ function (mmdeploy_load_dynamic NAME)
         add_dependencies(${NAME} ${_MODULE_LIST})
 
         set(_LOADER_PATH ${CMAKE_BINARY_DIR}/${_LOADER_NAME}.cpp)
+        # ! CMAKE_CURRENT_FUNCTION_LIST_DIR requires cmake 3.17+
         configure_file(
                 ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/loader.cpp.in
                 ${_LOADER_PATH})
