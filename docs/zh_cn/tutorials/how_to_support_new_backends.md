@@ -75,7 +75,7 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
     onnx_config = dict(input_shape=None)
     ```
 
-4. 如果新后端需要模型文件或权重文件而不是“.onnx”文件，需要在相应的文件夹中创建一个 `onnx2backend.py` 文件(例如,创建 `mmdeploy/backend/tensorrt/onnx2tensorrt.py` )。然后在文件中添加一个转换函数 `onnx2backend` 。该函数应将给定的“.onnx”文件转换为给定工作目录中所需的后端文件。对函数的其他参数和实现细节没有要求，您可以使用任何工具进行转换。下面有些例子：
+4. 如果新后端需要模型文件或权重文件而不是“.onnx”文件，则需要在相应的文件夹中创建一个 `onnx2backend.py` 文件(例如,创建 `mmdeploy/backend/tensorrt/onnx2tensorrt.py` )。然后在文件中添加一个转换函数 `onnx2backend` 。该函数应将给定的“.onnx”文件转换为给定工作目录中所需的后端文件。对函数的其他参数和实现细节没有要求，您可以使用任何工具进行转换。下面有些例子：
 
     **使用python脚本**
 
