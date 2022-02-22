@@ -210,7 +210,7 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
             self.sess.run_with_iobinding(io_binding)
     ```
 
-4. 为新封装装器添加默认初始化方法 `mmdeploy/codebase/base/backend_model.py` 
+4. 为新封装装器添加默认初始化方法 `mmdeploy/codebase/base/backend_model.py`
 
     **例子**
 
