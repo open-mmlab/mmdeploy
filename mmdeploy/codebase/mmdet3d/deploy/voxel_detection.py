@@ -57,8 +57,7 @@ class VoxelDetection(BaseTask):
                      pcd: Union[str, np.ndarray],
                      img_shape=None,
                      **kwargs) -> Tuple[Dict, torch.Tensor]:
-        data = VoxelDetection.read_data_from_pcd_file(pcd, self.model_cfg,
-                                                      self.device)
+        data = VoxelDetection.read_pcd_file(pcd, self.model_cfg, self.device)
         voxels, num_points, coors = VoxelDetectionModel.voxelize(
             data['points'][0], self.model_cfg)
         data['voxels'] = voxels
@@ -71,23 +70,22 @@ class VoxelDetection(BaseTask):
                   image: Union[str, np.ndarray],
                   result: list,
                   output_file: str,
-                  window_name: str = '',
+                  window_name: str,
                   show_result: bool = False,
-                  **kwargs):
+                  score_thr: float = 0.3):
         from mmdet3d.apis import show_result_meshlab
-        data = VoxelDetection.read_data_from_pcd_file(image, self.model_cfg,
-                                                      self.device)
+        data = VoxelDetection.read_pcd_file(image, self.model_cfg, self.device)
         show_result_meshlab(
             data,
             result,
             output_file,
-            0.3,
+            score_thr,
             show=show_result,
-            snapshot=show_result,
+            snapshot=1 - show_result,
             task='det')
 
     @staticmethod
-    def read_data_from_pcd_file(pcd, model_cfg, device):
+    def read_pcd_file(pcd, model_cfg, device):
         if isinstance(pcd, (list, tuple)):
             pcd = pcd[0]
         test_pipeline = Compose(model_cfg.data.test.pipeline)
@@ -130,10 +128,6 @@ class VoxelDetection(BaseTask):
             img_metas=model_inputs['img_metas'])
         return [result]
 
-    def get_tensor_from_input(self, input_data: Dict[str, Any],
-                              **kwargs) -> torch.Tensor:
-        pass
-
     @staticmethod
     def evaluate_outputs(model_cfg,
                          outputs: Sequence,
@@ -166,6 +160,10 @@ class VoxelDetection(BaseTask):
         assert 'type' in self.model_cfg.model, 'model config contains no type'
         name = self.model_cfg.model.type.lower()
         return name
+
+    def get_tensor_from_input(self, input_data: Dict[str, Any],
+                              **kwargs) -> torch.Tensor:
+        pass
 
     def get_partition_cfg(partition_type: str, **kwargs) -> Dict:
         pass

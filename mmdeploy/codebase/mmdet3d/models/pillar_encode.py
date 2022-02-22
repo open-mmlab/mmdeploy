@@ -18,8 +18,9 @@ def get_paddings_indicator(actual_num, max_num, axis=0):
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    'mmdet3d.models.voxel_encoders.pillar_encoder.PillarFeatureNet.forward')
-def forward(ctx, self, features, num_points, coors):
+    'mmdet3d.models.voxel_encoders.pillar_encoder.PillarFeatureNet.forward',
+    backend='tensorrt')
+def pillar_encoder__forward(ctx, self, features, num_points, coors):
     """Forward function.
 
     Args:

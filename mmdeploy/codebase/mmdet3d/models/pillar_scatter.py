@@ -5,8 +5,9 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet3d.models.middle_encoders.pillar_scatter.'
-    'PointPillarsScatter.forward_batch')
-def forward(ctx, self, voxel_features, coors, batch_size):
+    'PointPillarsScatter.forward_batch',
+    backend='tensorrt')
+def pointpillarsscatter__forward(ctx, self, voxel_features, coors, batch_size):
     canvas = torch.zeros(
         self.in_channels,
         self.nx * self.ny,
