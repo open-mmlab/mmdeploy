@@ -74,7 +74,7 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
     onnx_config = dict(input_shape=None)
     ```
 
-4. 如果新后端需要模型文件或权重文件而不是“.onnx”文件，需要在相应的文件夹中创建一个 `onnx2backend.py` 文件(例如,创建 `mmdeploy/backend/tensorrt/onnx2tensorrt.py` )。然后在文件中添加一个转换函数  `onnx2backend` 。该函数应将给定的“.onnx”文件转换为给定工作目录中所需的后端文件。对函数的其他参数和实现细节没有要求，您可以使用任何工具进行转换。下面有些例子：
+4. 如果新后端需要模型文件或权重文件而不是“.onnx”文件，需要在相应的文件夹中创建一个 `onnx2backend.py` 文件(例如,创建 `mmdeploy/backend/tensorrt/onnx2tensorrt.py` )。然后在文件中添加一个转换函数 `onnx2backend` 。该函数应将给定的“.onnx”文件转换为给定工作目录中所需的后端文件。对函数的其他参数和实现细节没有要求，您可以使用任何工具进行转换。下面有些例子：
 
     **使用python脚本**
 
@@ -158,7 +158,8 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
 
 尽管后端引擎通常用C/C++实现，但如果后端提供Python推理接口，则测试和调试非常方便。我们鼓励贡献者在MMDeploy的Python接口中支持新后端推理。在本节中，我们将介绍支持后端推理的步骤。
 
-1. 添加一个名为 `wrapper.py` 的文件到 `mmdeploy/backend/{backend}` 中相应后端文件夹。例如，`mmdeploy/backend/tensorrt/wrapper`。此模块应实现并注册一个封装类，该类继承 `mmdeploy/backend/base/base_wrapper.py` 中的基类 `BaseWrapper`。
+1. 添加一个名为 `wrapper.py` 的文件到 `mmdeploy/backend/{backend}` 中相应后端文件夹。例如，`mmdeploy/backend/tensorrt/wrapper`。此模块应实现并注册一个封装类，该类继
+承 `mmdeploy/backend/base/base_wrapper.py` 中的基类 `BaseWrapper`。
 
 
     **例子**
@@ -171,7 +172,8 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
     class TRTWrapper(BaseWrapper):
     ```
 
-2. 封装类可以在函数 `__init__` 中初始化引擎以及在 `forward` 函数中进行推理。请注意，该 `__init__` 函数必须接受一个参数 `output_names` 并将其传递给基类以确定输出张量的顺序。其中 `forward` 输入和输出变量应表示tensors的名称和值的字典。
+2. 封装类在函数 `__init__` 中初始化后端引擎以及在 `forward` 函数中进行推理。请注意，该 `__init__` 函数必须接受一个参数 `output_names` 并将其传递给基类以确定输出张量的顺序。
+其中 `forward` 输入和输出变量应表示tensors的名称和值的字典。
 
 3. 为了方便性能测试，该类应该定义一个“执行”函数，只调用后端引擎的推理接口。该 `forward` 函数应在预处理数据后调用“执行”函数。
 
