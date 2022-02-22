@@ -15,26 +15,6 @@ from mmdeploy.codebase.mmdet3d.deploy.mmdetection3d import MMDET3D_TASK
 from mmdeploy.utils import Task, get_root_logger
 
 
-def single_gpu_test(model,
-                    data_loader,
-                    show=False,
-                    out_dir=None,
-                    show_score_thr=0.3):
-    model.eval()
-    results = []
-    dataset = data_loader.dataset
-    prog_bar = mmcv.ProgressBar(len(dataset))
-    for i, data in enumerate(data_loader):
-        with torch.no_grad():
-
-            result = model(return_loss=False, rescale=True, **data)
-        results.extend(result)
-        batch_size = len(result)
-        for _ in range(batch_size):
-            prog_bar.update()
-    return results
-
-
 class VoxelDetectionWrap(nn.Module):
 
     def __init__(self, model):
