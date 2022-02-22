@@ -83,6 +83,9 @@ class TorchscriptWrapper(BaseWrapper):
                 outputs = [outputs]
             outputs = dict(zip(self._output_names, outputs))
 
+        if isinstance(outputs, tuple) and self._output_names is not None:
+            assert len(outputs) == len(self._output_names)
+            outputs = dict(zip(self._output_names, outputs))
         return outputs
 
     @TimeCounter.count_time()

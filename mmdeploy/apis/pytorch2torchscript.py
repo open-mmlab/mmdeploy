@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
-from typing import Any, Optional, Union
+from typing import Any, Optional, Sequence, Union
 
 import mmcv
 import torch
@@ -12,14 +12,16 @@ from mmdeploy.utils import (get_backend, get_input_shape, get_root_logger,
                             load_config)
 
 
-def torch2torchscript_impl(model: torch.nn.Module, input: torch.Tensor,
+def torch2torchscript_impl(model: torch.nn.Module,
+                           inputs: Union[torch.Tensor, Sequence[torch.Tensor]],
                            deploy_cfg: Union[str,
                                              mmcv.Config], output_file: str):
     """Converting torch model to torchscript.
 
     Args:
         model (torch.nn.Module): Input pytorch model.
-        input (torch.Tensor): Input tensor used to convert model.
+        inputs (torch.Tensor | Sequence[torch.Tensor]): Input tensors used to
+            convert model.
         deploy_cfg (str | mmcv.Config): Deployment config file or
             Config object.
         output_file (str): Output file to save torchscript model.
@@ -40,9 +42,13 @@ def torch2torchscript_impl(model: torch.nn.Module, input: torch.Tensor,
             cfg=deploy_cfg,
             backend=backend), torch.no_grad(), torch.jit.optimized_execution(
                 True):
-        ts_model = torch.jit.trace(patched_model, input)
+        # for exporting models with weight that depends on inputs
+        patched_model(inputs)
+        ts_model = torch.jit.trace(patched_model, inputs)
 
-    # perform optimize
+    # perform optimize, note that optimizing models may trigger errors when
+    # loading the saved .pt file, as described in
+    # https://github.com/pytorch/pytorch/issues/62706
     logger = get_root_logger()
     logger.info('perform torchscript optimizer.')
     try:

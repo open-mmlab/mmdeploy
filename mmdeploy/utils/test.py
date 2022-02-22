@@ -375,14 +375,40 @@ def get_onnx_model(wrapped_model: nn.Module,
     return onnx_file_path
 
 
-def get_backend_outputs(onnx_file_path: str,
+def get_ts_model(wrapped_model: nn.Module,
+                 model_inputs: Dict[str, Union[Tuple, List, torch.Tensor]],
+                 deploy_cfg: mmcv.Config) -> str:
+    """To get path to onnx model after export.
+
+    Args:
+        wrapped_model (nn.Module): The input model.
+        model_inputs (dict): Inputs for model.
+        deploy_cfg (mmcv.Config): Deployment config.
+
+    Returns:
+        str: The path to the TorchScript model file.
+    """
+    ir_file_path = tempfile.NamedTemporaryFile(suffix='.pt').name
+    backend = get_backend(deploy_cfg)
+    patched_model = patch_model(
+        wrapped_model, cfg=deploy_cfg, backend=backend.value)
+
+    from mmdeploy.apis.pytorch2torchscript import torch2torchscript_impl
+    torch2torchscript_impl(
+        patched_model, [v for _, v in model_inputs.items()],
+        deploy_cfg=deploy_cfg,
+        output_file=ir_file_path)
+    return ir_file_path
+
+
+def get_backend_outputs(ir_file_path: str,
                         model_inputs: Dict[str, Union[Tuple, List,
                                                       torch.Tensor]],
                         deploy_cfg: mmcv.Config) -> Union[Any, None]:
     """To get backend outputs of model.
 
     Args:
-        onnx_file_path (str): The path to the ONNX file.
+        ir_file_path (str): The path to the IR file.
         model_inputs (dict): Inputs for model.
         deploy_cfg (mmcv.Config): Deployment config.
 
@@ -408,7 +434,7 @@ def get_backend_outputs(onnx_file_path: str,
             trt_file_path,
             0,
             deploy_cfg=deploy_cfg,
-            onnx_model=onnx_file_path)
+            onnx_model=ir_file_path)
         backend_files = [trt_file_path]
         for k, v in model_inputs.items():
             model_inputs[k] = model_inputs[k].cuda()
@@ -441,7 +467,7 @@ def get_backend_outputs(onnx_file_path: str,
                 backend_feats[input_names[i]] = feature_list[i]
             else:
                 backend_feats[str(i)] = feature_list[i]
-        backend_files = [onnx_file_path]
+        backend_files = [ir_file_path]
         device = 'cpu'
     elif backend == Backend.NCNN:
         import mmdeploy.apis.ncnn as ncnn_apis
@@ -449,8 +475,8 @@ def get_backend_outputs(onnx_file_path: str,
             return None
         work_dir = tempfile.TemporaryDirectory().name
         param_path, bin_path = ncnn_apis.get_output_model_file(
-            onnx_file_path, work_dir)
-        ncnn_apis.onnx2ncnn(onnx_file_path, param_path, bin_path)
+            ir_file_path, work_dir)
+        ncnn_apis.onnx2ncnn(ir_file_path, param_path, bin_path)
         backend_files = [param_path, bin_path]
         backend_feats = flatten_model_inputs
         device = 'cpu'
@@ -461,12 +487,12 @@ def get_backend_outputs(onnx_file_path: str,
             return None
         openvino_work_dir = tempfile.TemporaryDirectory().name
         openvino_file_path = openvino_apis.get_output_model_file(
-            onnx_file_path, openvino_work_dir)
+            ir_file_path, openvino_work_dir)
         input_info = {
             name: value.shape
             for name, value in flatten_model_inputs.items()
         }
-        openvino_apis.onnx2openvino(input_info, output_names, onnx_file_path,
+        openvino_apis.onnx2openvino(input_info, output_names, ir_file_path,
                                     openvino_work_dir)
         backend_files = [openvino_file_path]
         backend_feats = flatten_model_inputs
@@ -474,6 +500,10 @@ def get_backend_outputs(onnx_file_path: str,
 
     elif backend == Backend.DEFAULT:
         return None
+    elif backend == Backend.TORCHSCRIPT:
+        backend_files = [ir_file_path]
+        device = 'cpu'
+        backend_feats = [v for _, v in model_inputs.items()]
     else:
         raise NotImplementedError(
             f'Unimplemented backend type: {backend.value}')
@@ -516,11 +546,15 @@ def get_rewrite_outputs(wrapped_model: nn.Module,
             cfg=deploy_cfg, backend=backend.value, opset=11), torch.no_grad():
         ctx_outputs = wrapped_model(**model_inputs)
 
-    onnx_file_path = get_onnx_model(wrapped_model, model_inputs, deploy_cfg)
+    ir_type = get_ir_config(deploy_cfg).get('type', None)
+    if ir_type == 'torchscript':
+        ir_file_path = get_ts_model(wrapped_model, model_inputs, deploy_cfg)
+    else:  # TODO onnx as default, make it strict when more IR types involved
+        ir_file_path = get_onnx_model(wrapped_model, model_inputs, deploy_cfg)
 
     backend_outputs = None
     if run_with_backend:
-        backend_outputs = get_backend_outputs(onnx_file_path, model_inputs,
+        backend_outputs = get_backend_outputs(ir_file_path, model_inputs,
                                               deploy_cfg)
 
     if backend_outputs is None:
