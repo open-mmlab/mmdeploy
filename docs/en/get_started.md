@@ -49,7 +49,7 @@ Now you can do model inference with the APIs provided by the backend. But what i
 ```python
 from mmdeploy.apis import inference_model
 
-result = inference_model(model_cfg, deploy_cfg, backend_models, img=img, device=device)
+result = inference_model(model_cfg, deploy_cfg, backend_files, img=img, device=device)
 ```
 
 The `inference_model` will create a wrapper module and do the inference for you. The result has the same format as the original OpenMMLab repo.
@@ -103,8 +103,8 @@ conda activate openmmlab
 
 conda install pytorch==1.8.0 torchvision==0.9.0 cudatoolkit=10.2 -c pytorch -y
 
-# install the latest mmcv
-pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.8.0/index.html
+# install mmcv
+pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.8/index.html
 
 # install mmdetection
 git clone https://github.com/open-mmlab/mmdetection.git

@@ -74,7 +74,7 @@ We provide building methods for both physical and virtual machines. For virtual 
 
     ```bash
     export cu_version=cu111 # cuda 11.1
-    export torch_version=torch1.8.0
+    export torch_version=torch1.8
     pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/${cu_version}/${torch_version}/index.html
     ```
 
@@ -137,8 +137,11 @@ Each package's installation command is given based on Ubuntu 18.04.
 
   A high-performance image processing library of openPPL supporting x86 and cuda platforms.</br>
   It is **OPTIONAL** which only be needed if `cuda` platform is required.
-  ```bash
-  git clone git@github.com:openppl-public/ppl.cv.git
+
+  Using v0.6.1, since latest updates have broughtup breaking changes
+  ```Bash
+  wget https://github.com/openppl-public/ppl.cv/archive/refs/tags/v0.6.1.zip
+  unzip v0.6.1.zip && mv ppl.cv-0.6.1 ppl.cv
   cd ppl.cv
   ./build.sh cuda
   ```

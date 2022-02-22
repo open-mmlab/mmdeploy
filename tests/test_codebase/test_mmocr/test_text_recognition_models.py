@@ -36,8 +36,8 @@ class TestEnd2EndModel:
         model_cfg_path = 'tests/test_codebase/test_mmocr/data/crnn.py'
         model_cfg = load_config(model_cfg_path)[0]
 
-        from mmdeploy.codebase.mmocr.deploy.text_recognition_model \
-            import End2EndModel
+        from mmdeploy.codebase.mmocr.deploy.text_recognition_model import \
+            End2EndModel
         cls.end2end_model = End2EndModel(
             Backend.ONNXRUNTIME, [''],
             device='cpu',
@@ -94,8 +94,8 @@ def test_build_text_recognition_model():
     # simplify backend inference
     with SwitchBackendWrapper(ORTWrapper) as wrapper:
         wrapper.set(model_cfg=model_cfg, deploy_cfg=deploy_cfg)
-        from mmdeploy.codebase.mmocr.deploy.text_recognition_model import \
-            build_text_recognition_model, End2EndModel
+        from mmdeploy.codebase.mmocr.deploy.text_recognition_model import (
+            End2EndModel, build_text_recognition_model)
         segmentor = build_text_recognition_model([''], model_cfg, deploy_cfg,
                                                  'cpu')
         assert isinstance(segmentor, End2EndModel)

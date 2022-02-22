@@ -74,7 +74,7 @@
 
     ```bash
     export cu_version=cu111 # cuda 11.1
-    export torch_version=torch1.8.0
+    export torch_version=torch1.8
     pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/${cu_version}/${torch_version}/index.html
     ```
 
@@ -135,7 +135,8 @@ pip install -e .
   此依赖项为可选项，只有在cuda平台下，才需安装。安装命令如下所示:
 
   ```bash
-  git clone git@github.com:openppl-public/ppl.cv.git
+  wget https://github.com/openppl-public/ppl.cv/archive/refs/tags/v0.6.1.zip
+  unzip v0.6.1.zip && mv ppl.cv-0.6.1 ppl.cv
   cd ppl.cv
   ./build.sh cuda
   ```
