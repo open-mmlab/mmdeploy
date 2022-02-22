@@ -1,4 +1,4 @@
-_base_ = ['./base_static.py', '../../_base_/backends/openvino.py']
+_base_ = ['./base_dynamic.py', '../../_base_/backends/openvino.py']
 
 onnx_config = dict(input_shape=None)
 
