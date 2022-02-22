@@ -27,7 +27,7 @@
 2. 把 cmake 路径加入到环境变量 PATH 中, "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin" <br>
 3. 如果系统中配置了 NVIDIA 显卡，根据官网教程，下载并安装 cuda toolkit。<br>
 ### 安装依赖包
-  
+
 #### 安装 MMDeploy Converter 依赖
 <table>
 <thead>
@@ -136,7 +136,7 @@
   <tr>
     <td rowspan="2">TensorRT<br> </td>
     <td>TensorRT <br> </td>
-    <td> 
+    <td>
     1. 从NVIDIA官网下载二进制包, 比如，<br>
    https://developer.nvidia.com/compute/machine-learning/tensorrt/secure/8.2.3.0/zip/TensorRT-8.2.3.0.Windows10.x86_64.cuda-11.4.cudnn8.2.zip <br>
     1. 解压二进制包到目标路径。我们使用 <code>tensorrt_dir</code> 代表此路径 <br>
@@ -184,7 +184,7 @@
 ##### 编译自定义算子
 - **ONNXRuntime** 自定义算子
 ```powershell
-mkdir build 
+mkdir build
 cd build
 cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DMMDEPLOY_TARGET_BACKENDS="ort" -DONNXRUNTIME_DIR={onnxruntime_dir}
 cmake --build . --config Release -- /maxcpucount:4
@@ -193,16 +193,16 @@ cmake --build . --config Release -- /maxcpucount:4
 - **TensorRT** 自定义算子
 
 ```powershell
-mkdir build 
+mkdir build
 cd build
 cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DMMDEPLOY_TARGET_BACKENDS="trt" -DTENSORRT_DIR={tensorrt_dir} -DCUDNN_DIR={cudnn_dir}
 cmake --build . --config Release -- /maxcpucount:4
 ```
 
 - **ncnn** 自定义算子
-  
+
   TODO
-   
+
 ##### 安装 Model Converter
 ```powershell
 cd root/path/of/MMDeploy
@@ -278,7 +278,7 @@ pip install -e .
 下文展示2个构建SDK的样例，分别用于不同的运行环境。
 
 - cpu + ONNXRuntime
-  
+
   ```PowerShell
   mkdir build
   cd build
