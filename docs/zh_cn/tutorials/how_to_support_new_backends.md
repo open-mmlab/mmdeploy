@@ -21,7 +21,6 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
     # mmdeploy/utils/constants.py
 
     class Backend(AdvancedEnum):
-        # Take TensorRT as an example
         # 以现有的TensorRT为例
         TENSORRT = 'tensorrt'
     ```
@@ -66,7 +65,7 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
             fp16_mode=False, max_workspace_size=0))
     ```
 
-    在拥有一个基本的后端配置文件后，您已经可以通过继承轻松构建一个完整的部署配置。有关详细信息，请参阅我们的[配置教程](https://github.com/open-mmlab/mmdeploy/blob/master/docs/zh_cn/tutorials/how_to_write_config.md)。下面是一个例子：
+    在拥有一个基本的后端配置文件后，您已经可以通过继承轻松构建一个完整的部署配置。有关详细信息，请参阅我们的[配置教程](how_to_write_config.md)。下面是一个例子：
 
     ```Python
     _base_ = ['../_base_/backends/onnxruntime.py']
@@ -106,7 +105,6 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
         call([onnx2ncnn_path, onnx_path, save_param, save_bin])\
     ```
 
-5. Define APIs in a new package in  `mmdeploy/apis`.
 5. 在 `mmdeploy/apis`中创建新后端库并声明对应 APIs
 
     **例子**
@@ -152,7 +150,7 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
     # ...
     ```
 
-6. 将 OpenMMLab 的模型转换后(如有必要)并在后端引擎上进行推理。如果在测试时发现一些不兼容的算子，可以尝试按照重写器教程为后端重写原始模型或添加自定义算子。
+6. 将 OpenMMLab 的模型转换后(如有必要)并在后端引擎上进行推理。如果在测试时发现一些不兼容的算子，可以尝试按照[重写器教程](how_to_support_new_model.md)为后端重写原始模型或添加自定义算子。
 
 7. 为新后端引擎代码添加相关注释和单元测试:).
 
@@ -231,4 +229,4 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
                     output_names=output_names)
     ```
 
-5. 为新后端引擎代码添加相关注释和单元测试:)。
+5. 为新后端引擎代码添加相关注释和单元测试 :).
