@@ -7,12 +7,12 @@ import torch.nn as nn
 from mmcv.parallel import collate, scatter
 from mmdet3d.core.bbox import get_box_type
 from mmdet3d.datasets.pipelines import Compose
-from torch.nn import functional as F
 from torch.utils.data import DataLoader, Dataset
 
 from mmdeploy.codebase.base import BaseTask
 from mmdeploy.codebase.mmdet3d.deploy.mmdetection3d import MMDET3D_TASK
 from mmdeploy.utils import Task, get_root_logger
+from .voxel_detection_model import VoxelDetectionModel
 
 
 class VoxelDetectionWrap(nn.Module):
@@ -59,7 +59,7 @@ class VoxelDetection(BaseTask):
                      **kwargs) -> Tuple[Dict, torch.Tensor]:
         data = VoxelDetection.read_data_from_pcd_file(pcd, self.model_cfg,
                                                       self.device)
-        voxels, num_points, coors = VoxelDetection.voxelize(
+        voxels, num_points, coors = VoxelDetectionModel.voxelize(
             data['points'][0], self.model_cfg)
         data['voxels'] = voxels
         data['num_points'] = num_points
@@ -77,8 +77,6 @@ class VoxelDetection(BaseTask):
         from mmdet3d.apis import show_result_meshlab
         data = VoxelDetection.read_data_from_pcd_file(image, self.model_cfg,
                                                       self.device)
-        result = VoxelDetection.post_process(result, data['img_metas'][0],
-                                             self.model_cfg)
         show_result_meshlab(
             data,
             result,
@@ -126,17 +124,10 @@ class VoxelDetection(BaseTask):
 
     @staticmethod
     def run_inference(model, model_inputs: Dict[str, torch.Tensor]):
-        from mmdeploy.utils.constants import Backend
-        if model_inputs['backend'] == Backend.PYTORCH:
-            result = model(
-                return_loss=False,
-                points=model_inputs['points'],
-                img_metas=model_inputs['img_metas'])
-        else:
-            voxels = model_inputs['voxels']
-            num_points = model_inputs['num_points']
-            coors = model_inputs['coors']
-            result = model(voxels, num_points, coors)
+        result = model(
+            return_loss=False,
+            points=model_inputs['points'],
+            img_metas=model_inputs['img_metas'])
         return [result]
 
     def get_tensor_from_input(self, input_data: Dict[str, Any],
@@ -185,48 +176,6 @@ class VoxelDetection(BaseTask):
     def get_preprocess(self) -> Dict:
         pass
 
-    @staticmethod
-    def voxelize(points, model_cfg):
-        if isinstance(model_cfg, str):
-            model_cfg = mmcv.Config.fromfile(model_cfg)
-        from mmdet3d.ops import Voxelization
-        voxel_layer = model_cfg.model['voxel_layer']
-        voxel_layer = Voxelization(**voxel_layer)
-        voxels, coors, num_points = [], [], []
-        for res in points:
-            res_voxels, res_coors, res_num_points = voxel_layer(res)
-            voxels.append(res_voxels)
-            coors.append(res_coors)
-            num_points.append(res_num_points)
-        voxels = torch.cat(voxels, dim=0)
-        num_points = torch.cat(num_points, dim=0)
-        coors_batch = []
-        for i, coor in enumerate(coors):
-            coor_pad = F.pad(coor, (1, 0), mode='constant', value=i)
-            coors_batch.append(coor_pad)
-        coors_batch = torch.cat(coors_batch, dim=0)
-        return voxels, num_points, coors_batch
-
-    @staticmethod
-    def post_process(outs, img_metas, model_cfg):
-        from mmdet3d.core import bbox3d2result
-        from mmdet3d.models.builder import build_head
-        head = build_head(
-            dict(
-                **model_cfg.model['bbox_head'],
-                train_cfg=None,
-                test_cfg=model_cfg.model['test_cfg']))
-        cls_scores = [outs['scores']]
-        bbox_preds = [outs['bbox_preds']]
-        dir_scores = [outs['dir_scores']]
-        bbox_list = head.get_bboxes(
-            cls_scores, bbox_preds, dir_scores, img_metas, rescale=True)
-        bbox_results = [
-            bbox3d2result(bboxes, scores, labels)
-            for bboxes, scores, labels in bbox_list
-        ]
-        return bbox_results
-
     def single_gpu_test(self,
                         model: torch.nn.Module,
                         data_loader: DataLoader,
@@ -239,14 +188,9 @@ class VoxelDetection(BaseTask):
 
         prog_bar = mmcv.ProgressBar(len(dataset))
         for i, data in enumerate(data_loader):
-            inputs = VoxelDetection.voxelize(data['points'][0].data[0],
-                                             self.model_cfg)
             with torch.no_grad():
-                outs = model(*inputs)
-
-            result = VoxelDetection.post_process(outs,
-                                                 data['img_metas'][0].data[0],
-                                                 self.model_cfg)
+                result = model(data['points'][0].data,
+                               data['img_metas'][0].data, False)
             results.extend(result)
 
             batch_size = len(result)
