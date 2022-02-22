@@ -22,7 +22,7 @@ def get_invertedresudual_model():
     return model
 
 
-def test_baseclassfier_forward():
+def test_baseclassifier_forward():
     from mmcls.models.classifiers import BaseClassifier
 
     class DummyClassifier(BaseClassifier):

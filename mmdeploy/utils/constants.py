@@ -25,6 +25,7 @@ class Task(AdvancedEnum):
     OBJECT_DETECTION = 'ObjectDetection'
     INSTANCE_SEGMENTATION = 'InstanceSegmentation'
     VOXEL_DETECTION = 'VoxelDetection'
+    POSE_DETECTION = 'PoseDetection'
 
 
 class Codebase(AdvancedEnum):
@@ -35,6 +36,7 @@ class Codebase(AdvancedEnum):
     MMOCR = 'mmocr'
     MMEDIT = 'mmedit'
     MMDET3D = 'mmdet3d'
+    MMPOSE = 'mmpose'
 
 
 class Backend(AdvancedEnum):
