@@ -64,7 +64,7 @@ class VoxelDetection(BaseTask):
         data['voxels'] = voxels
         data['num_points'] = num_points
         data['coors'] = coors
-        return data, [voxels, num_points, coors]
+        return data, (voxels, num_points, coors)
 
     def visualize(self,
                   model: torch.nn.Module,

@@ -41,7 +41,6 @@ class TRTWrapper(BaseWrapper):
         load_tensorrt_plugin()
         self.engine = engine
         if isinstance(self.engine, str):
-
             self.engine = load_trt_engine(engine)
 
         if not isinstance(self.engine, trt.ICudaEngine):
@@ -124,6 +123,7 @@ class TRTWrapper(BaseWrapper):
             bindings[idx] = output.data_ptr()
 
         self.__trt_execute(bindings=bindings)
+
         return outputs
 
     @TimeCounter.count_time()

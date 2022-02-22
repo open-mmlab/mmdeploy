@@ -55,7 +55,6 @@ def visualize_model(model_cfg: Union[str, mmcv.Config],
             model = task_processor.init_backend_model(model)
 
     model_inputs, _ = task_processor.create_input(img, input_shape)
-    model_inputs['backend'] = backend
     with torch.no_grad():
         result = task_processor.run_inference(model, model_inputs)[0]
 

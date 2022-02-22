@@ -41,7 +41,7 @@ def torch2onnx_impl(model: torch.nn.Module, input: torch.Tensor,
             opset=opset_version), torch.no_grad():
         torch.onnx.export(
             patched_model,
-            tuple(input),
+            input,
             output_file,
             export_params=onnx_cfg['export_params'],
             input_names=input_names,
