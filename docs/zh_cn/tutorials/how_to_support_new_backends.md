@@ -162,11 +162,11 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
 1. 添加一个名为 `wrapper.py` 的文件到 `mmdeploy/backend/{backend}` 中相应后端文件夹。例如， `mmdeploy/backend/tensorrt/wrapper` 。此模块应实现并注册一个封装类，该类继承 `mmdeploy/backend/base/base_wrapper.py` 中的基类 `BaseWrapper` 。
 
     **例子**
-    
+
     ```Python
     from mmdeploy.utils import Backend
     from ..base import BACKEND_WRAPPER, BaseWrapper
-    
+
     @BACKEND_WRAPPER.register_module(Backend.TENSORRT.value)
     class TRTWrapper(BaseWrapper):
     ```
@@ -190,7 +190,7 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
                      device: str,
                      output_names: Optional[Sequence[str]] = None):
             # Initialization
-            # 
+            #
             # ...
             super().__init__(output_names)
 
