@@ -4,6 +4,9 @@ import mmcv
 import numpy as np
 import torch
 import torch.nn as nn
+from mmcv.parallel import collate, scatter
+from mmdet3d.core.bbox import get_box_type
+from mmdet3d.datasets.pipelines import Compose
 from torch.nn import functional as F
 from torch.utils.data import DataLoader, Dataset
 
@@ -62,71 +65,26 @@ class VoxelDetection(BaseTask):
     def init_pytorch_model(self,
                            model_checkpoint: Optional[str] = None,
                            cfg_options: Optional[Dict] = None,
+                           is_onnx_export=False,
                            **kwargs) -> torch.nn.Module:
         from mmdet3d.apis import init_model
         model = init_model(self.model_cfg, model_checkpoint, self.device)
-        model = VoxelDetectionWrap(model)
+        if is_onnx_export:
+            model = VoxelDetectionWrap(model)
         return model.eval()
 
     def create_input(self,
-                     pcds: Union[str, np.ndarray],
+                     pcd: Union[str, np.ndarray],
                      img_shape=None,
                      **kwargs) -> Tuple[Dict, torch.Tensor]:
-        from mmcv.parallel import collate, scatter
-        from mmdet3d.core.bbox import get_box_type
-        from mmdet3d.datasets.pipelines import Compose
-        if not isinstance(pcds, (list, tuple)):
-            pcds = [pcds]
-        cfg = self.model_cfg
-        test_pipeline = Compose(cfg.data.test.pipeline)
-        box_type_3d, box_mode_3d = get_box_type(cfg.data.test.box_type_3d)
-        data_list = []
-        for pcd in pcds:
-            data = dict(
-                pts_filename=pcd,
-                box_type_3d=box_type_3d,
-                box_mode_3d=box_mode_3d,
-                # for ScanNet demo we need axis_align_matrix
-                ann_info=dict(axis_align_matrix=np.eye(4)),
-                sweeps=[],
-                # set timestamp = 0
-                timestamp=[0],
-                img_fields=[],
-                bbox3d_fields=[],
-                pts_mask_fields=[],
-                pts_seg_fields=[],
-                bbox_fields=[],
-                mask_fields=[],
-                seg_fields=[])
-            data = test_pipeline(data)
-            data_list.append(data)
-
-        result = collate(data_list, samples_per_gpu=len(pcds))
-        result['img_metas'] = [
-            img_metas.data[0] for img_metas in result['img_metas']
-        ]
-        result['points'] = [point.data[0] for point in result['points']]
-        if self.device != 'cpu':
-            result = scatter(result, [self.device])[0]
-        else:
-            result['img_metas'] = result['img_metas'][0]
-            result['points'] = result['points'][0]
-        voxels_batch, num_points_batch, coors_batch = [], [], []
-        for point in result['points'][0]:
-            voxels, num_points, coors = VoxelDetection.voxelize([point],
-                                                                self.model_cfg)
-            voxels_batch.append(voxels)
-            num_points_batch.append(num_points)
-            coors_batch.append(coors)
-        result['voxels'] = voxels_batch
-        result['num_points'] = num_points_batch
-        result['coors'] = coors_batch
-        self.img_meta = result['img_metas']
-        torch.save(self.img_meta, 'img_meta.ts')
-        return result, [
-            voxels_batch[0].contiguous(), num_points_batch[0].contiguous(),
-            coors_batch[0].contiguous()
-        ]
+        data = VoxelDetection.read_data_from_pcd_file(pcd, self.model_cfg,
+                                                      self.device)
+        voxels, num_points, coors = VoxelDetection.voxelize(
+            data['points'][0], self.model_cfg)
+        data['voxels'] = voxels
+        data['num_points'] = num_points
+        data['coors'] = coors
+        return data, [voxels, num_points, coors]
 
     def visualize(self,
                   model: torch.nn.Module,
@@ -136,20 +94,70 @@ class VoxelDetection(BaseTask):
                   window_name: str = '',
                   show_result: bool = False,
                   **kwargs):
-        torch.save(result['scores'], 'ort_scores.ts')
-        torch.save(result['bbox_preds'], 'ort_bbox.ts')
-        torch.save(result['dir_scores'], 'ort_dir.ts')
+        from mmdet3d.apis import show_result_meshlab
+        data = VoxelDetection.read_data_from_pcd_file(image, self.model_cfg,
+                                                      self.device)
+        result = VoxelDetection.post_process(result, data['img_metas'][0],
+                                             self.model_cfg)
+        show_result_meshlab(
+            data,
+            result,
+            output_file,
+            0.3,
+            show=show_result,
+            snapshot=show_result,
+            task='det')
+
+    @staticmethod
+    def read_data_from_pcd_file(pcd, model_cfg, device):
+        if isinstance(pcd, (list, tuple)):
+            pcd = pcd[0]
+        test_pipeline = Compose(model_cfg.data.test.pipeline)
+        box_type_3d, box_mode_3d = get_box_type(
+            model_cfg.data.test.box_type_3d)
+        data = dict(
+            pts_filename=pcd,
+            box_type_3d=box_type_3d,
+            box_mode_3d=box_mode_3d,
+            # for ScanNet demo we need axis_align_matrix
+            ann_info=dict(axis_align_matrix=np.eye(4)),
+            sweeps=[],
+            # set timestamp = 0
+            timestamp=[0],
+            img_fields=[],
+            bbox3d_fields=[],
+            pts_mask_fields=[],
+            pts_seg_fields=[],
+            bbox_fields=[],
+            mask_fields=[],
+            seg_fields=[])
+        data = test_pipeline(data)
+        data = collate([data], samples_per_gpu=1)
+        data['img_metas'] = [
+            img_metas.data[0] for img_metas in data['img_metas']
+        ]
+        data['points'] = [point.data[0] for point in data['points']]
+        if device != 'cpu':
+            data = scatter(data, [device])[0]
+        else:
+            data['img_metas'] = data['img_metas'][0]
+            data['points'] = data['points'][0]
+        return data
 
     @staticmethod
     def run_inference(model, model_inputs: Dict[str, torch.Tensor]):
-        batch_size = len(model_inputs['voxels'])
-        result = []
-        for i in range(batch_size):
-            voxels = model_inputs['voxels'][i]
-            num_points = model_inputs['num_points'][i]
-            coors = model_inputs['coors'][i]
-            result.append(model(voxels, num_points, coors))
-        return result
+        from mmdeploy.utils.constants import Backend
+        if model_inputs['backend'] == Backend.PYTORCH:
+            result = model(
+                return_loss=False,
+                points=model_inputs['points'],
+                img_metas=model_inputs['img_metas'])
+        else:
+            voxels = model_inputs['voxels']
+            num_points = model_inputs['num_points']
+            coors = model_inputs['coors']
+            result = model(voxels, num_points, coors)
+        return [result]
 
     def get_tensor_from_input(self, input_data: Dict[str, Any],
                               **kwargs) -> torch.Tensor:
@@ -199,6 +207,8 @@ class VoxelDetection(BaseTask):
 
     @staticmethod
     def voxelize(points, model_cfg):
+        if isinstance(model_cfg, str):
+            model_cfg = mmcv.Config.fromfile(model_cfg)
         from mmdet3d.ops import Voxelization
         voxel_layer = model_cfg.model['voxel_layer']
         voxel_layer = Voxelization(**voxel_layer)
