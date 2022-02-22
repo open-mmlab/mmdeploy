@@ -63,6 +63,26 @@ Notes:
 the RoiAlign operation is replaced with the [ExperimentalDetectronROIFeatureExtractor](https://docs.openvinotoolkit.org/latest/openvino_docs_ops_detection_ExperimentalDetectronROIFeatureExtractor_6.html) operation in the ONNX graph.
 - Models "VFNet" and "Faster R-CNN + DCN" use the custom "DeformableConv2D" operation.
 
+### Deployment config
+
+With the deployment config, you can specify additional options for the Model Optimizer.
+To do this, add the necessary parameters to the `backend_config` in the fields `mo_args` (for parameters with values) and `mo_flags` (for flags).
+
+Example:
+```bash
+backend_config = dict(
+    mo_args=dict({
+        '--mean_values': [0, 0, 0],
+        '--scale_values': [255, 255, 255],
+        '--data_type': 'FP32',
+    }),
+    mo_flags=['--disable_fusing'],
+)
+```
+
+Information about the possible parameters for the Model Optimizer can be found in the [documentation](https://docs.openvino.ai/latest/openvino_docs_MO_DG_prepare_model_convert_model_Converting_Model.html).
+
+
 ### FAQs
 
 - None

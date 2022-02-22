@@ -214,7 +214,8 @@ def main():
             create_process(
                 f'onnx2openvino with {onnx_path}',
                 target=onnx2openvino,
-                args=(input_info, output_names, onnx_path, args.work_dir),
+                args=(input_info, output_names, onnx_path, args.work_dir,
+                      deploy_cfg),
                 kwargs=dict(),
                 ret_value=ret_value)
             openvino_files.append(model_xml_path)
