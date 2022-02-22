@@ -87,6 +87,9 @@ Result<void> NCNNNet::Forward() {
     auto shape = tensor.shape();
     assert(shape[0] == 1);
     inputs[i] = ncnn::Mat(shape[3], shape[2], shape[1], tensor.data());
+    INFO("debugging: ncnn_net.cpp line 90: inputs[i].shape: ({}, {}, {}), abs: {}, {}", inputs[i].c,
+         inputs[i].h, inputs[i].w, inputs[i].channel(0).row(0)[0],
+         inputs[i].channel(inputs[i].c - 1).row(inputs[i].h - 1)[inputs[i].w - 1]);
     OUTCOME_TRY(ncnn_status(extractor.input(input_indices_[i], inputs[i])));
   }
   std::vector<ncnn::Mat> outputs(output_indices_.size());
