@@ -176,7 +176,6 @@ Result<DetectorOutput> ResizeBBox::GetBBoxes(const Value& prep_res, const Tensor
     det.bbox = rect;
     objs.detections.push_back(std::move(det));
   }
-  fclose(fp);
   return objs;
 }
 std::array<float, 4> ResizeBBox::MapToOriginImage(float left, float top, float right, float bottom,
