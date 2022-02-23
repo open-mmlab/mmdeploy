@@ -93,6 +93,8 @@ def check_backend(backend: Backend, require_plugin: bool = False):
             from mmdeploy.apis.ncnn import is_plugin_available
     elif backend == Backend.OPENVINO:
         from mmdeploy.apis.openvino import is_available
+    elif backend == Backend.TORCHSCRIPT:
+        from mmdeploy.backend.torchscript import ops_available as is_available
     else:
         warnings.warn('The backend checker is not available')
         return

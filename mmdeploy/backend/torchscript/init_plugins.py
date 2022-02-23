@@ -16,3 +16,12 @@ def get_ops_path() -> str:
     paths = glob.glob(wildcard)
     lib_path = paths[0] if len(paths) > 0 else ''
     return lib_path
+
+
+def ops_available() -> bool:
+    """Return whether ops are available.
+
+    Returns:
+        bool: Whether ops are available.
+    """
+    return osp.exists(get_ops_path())

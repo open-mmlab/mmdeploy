@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # flake8: noqa
-
-from .init_plugins import get_ops_path
+from .init_plugins import get_ops_path, ops_available
 
 
 def is_available():
@@ -13,7 +12,7 @@ def is_available():
     return True
 
 
-__all__ = ['get_ops_path']
+__all__ = ['get_ops_path', 'ops_available']
 
 if is_available():
     from .wrapper import TorchscriptWrapper
