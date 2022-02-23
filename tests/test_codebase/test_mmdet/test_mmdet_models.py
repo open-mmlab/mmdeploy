@@ -1146,8 +1146,7 @@ def get_deploy_cfg(backend_type: Backend, ir_type: str):
                          [(Backend.ONNXRUNTIME, 'onnx'),
                           (Backend.OPENVINO, 'onnx'),
                           (Backend.TORCHSCRIPT, 'torchscript')])
-def test_base_dense_head_get_bboxes(backend_type: Backend,
-                                    ir_type: mmcv.Config):
+def test_base_dense_head_get_bboxes(backend_type: Backend, ir_type: str):
     """Test get_bboxes rewrite of base dense head."""
     check_backend(backend_type)
     anchor_head = get_anchor_head_model()
