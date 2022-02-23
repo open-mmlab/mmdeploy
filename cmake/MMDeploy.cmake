@@ -57,7 +57,7 @@ function (mmdeploy_add_module NAME)
 
     # export public symbols when marked as a library
     if (_MMDEPLOY_LIBRARY)
-        target_compile_definitions(${NAME} PRIVATE -DMMDEPLOY_API_EXPORTS)
+        target_compile_definitions(${NAME} PRIVATE -DMMDEPLOY_API_EXPORTS=1)
     endif ()
 
     get_target_property(_TYPE ${NAME} TYPE)
