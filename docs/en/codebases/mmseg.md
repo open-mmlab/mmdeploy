@@ -37,11 +37,11 @@ Please refer to [get_started.md](https://github.com/open-mmlab/mmsegmentation/bl
 | STDC                        |      Y      |    Y     |  Y   |   N   |    Y     |     [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/stdc)      |
 | UPerNet[*](#static_shape)   |      Y      |    Y     |  N   |   N   |    N     |    [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/upernet)    |
 | DANet                       |      Y      |    Y     |  N   |   N   |    N     |     [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/danet)     |
+| Segmenter[*](#static_shape) |      Y      |    Y     |  N   |   N   |    N     |   [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/segmenter)   |
+| SegFormer[*](#static_shape) |      Y      |    Y     |  N   |   N   |    N     |   [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/segformer)   |
 | CCNet                       |      N      |    N     |  N   |   N   |    N     |     [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/ccnet)     |
 | PSANet                      |      N      |    N     |  N   |   N   |    N     |    [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/psanet)     |
-| SegFormer                   |      N      |    N     |  N   |   N   |    N     |   [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/segformer)   |
 | DPT                         |      N      |    N     |  N   |   N   |    N     |      [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/dpt)      |
-| Segmenter                   |      N      |    N     |  N   |   N   |    N     |   [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/segmenter)   |
 | SETR                        |      N      |    N     |  N   |   N   |    N     |     [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/setr)      |
 
 ### Reminder
