@@ -27,6 +27,9 @@ Result<void> NCNNNet::Init(const Value& args) {
   net_.opt.use_fp16_arithmetic = false;
 #endif
 #endif
+#ifdef NCNN_NET_VULKAN
+  net_.opt.use_vulkan_compute = true;
+#endif
   if (!device_.is_host()) {
     return Status(eNotSupported);
   }
