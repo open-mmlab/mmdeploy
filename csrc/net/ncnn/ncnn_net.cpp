@@ -28,6 +28,11 @@ Result<void> NCNNNet::Init(const Value& args) {
 #endif
 #endif
 #ifdef NCNN_NET_VULKAN
+  net_.opt.use_fp16_packed = false;
+  net_.opt.use_fp16_storage = false;
+  net_.opt.use_fp16_arithmetic = false;
+  net_.opt.use_int8_storage = false;
+  net_.opt.use_int8_arithmetic = false;
   net_.opt.use_vulkan_compute = true;
 #endif
   if (!device_.is_host()) {

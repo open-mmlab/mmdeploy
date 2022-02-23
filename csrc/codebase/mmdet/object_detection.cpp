@@ -78,7 +78,7 @@ std::vector<Tensor> ResizeBBox::GetDetsLabels(const Value& prep_res, const Value
   }
 }
 Result<Value> ResizeBBox::operator()(const Value& prep_res, const Value& infer_res) {
-  INFO("prep_res: {}\ninfer_res: {}", prep_res, infer_res);
+  DEBUG("prep_res: {}\ninfer_res: {}", prep_res, infer_res);
   try {
     Tensor dets, labels;
     vector<Tensor> outputs = GetDetsLabels(prep_res, infer_res);
@@ -181,10 +181,10 @@ Result<DetectorOutput> ResizeBBox::GetBBoxes(const Value& prep_res, const Tensor
 std::array<float, 4> ResizeBBox::MapToOriginImage(float left, float top, float right, float bottom,
                                                   const float* scale_factor, float x_offset,
                                                   float y_offset, int ori_width, int ori_height) {
-  std::max(left / scale_factor[0] + x_offset, 0.f);
-  std::max(top / scale_factor[1] + y_offset, 0.f);
-  std::min(right / scale_factor[2] + x_offset, (float)ori_width - 1.f);
-  std::min(bottom / scale_factor[3] + y_offset, (float)ori_height - 1.f);
+  left = std::max(left / scale_factor[0] + x_offset, 0.f);
+  top = std::max(top / scale_factor[1] + y_offset, 0.f);
+  right = std::min(right / scale_factor[2] + x_offset, (float)ori_width - 1.f);
+  bottom = std::min(bottom / scale_factor[3] + y_offset, (float)ori_height - 1.f);
   return {left, top, right, bottom};
 }
 
