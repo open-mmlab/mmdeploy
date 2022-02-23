@@ -89,6 +89,7 @@ Build the inference engine extension libraries you need.
 - [ncnn](backends/ncnn.md)
 - [pplnn](backends/pplnn.md)
 - [OpenVINO](backends/openvino.md)
+- [TorchScript](backends/torchscript.md)
 
 ### Install mmdeploy
 

@@ -87,6 +87,7 @@
 - [ncnn](https://mmdeploy.readthedocs.io/en/latest/backends/ncnn.html)
 - [PPLNN](https://mmdeploy.readthedocs.io/en/latest/backends/pplnn.html)
 - [OpenVINO](https://mmdeploy.readthedocs.io/en/latest/backends/openvino.html)
+- [TorchScript](https://mmdeploy.readthedocs.io/en/latest/backends/torchscript.md)
 
 ### 安装 MMDeploy
 
