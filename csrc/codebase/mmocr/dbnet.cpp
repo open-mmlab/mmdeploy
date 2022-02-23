@@ -133,7 +133,7 @@ class DBHead : public MMOCR {
 
     cv::Mat mask(rect.size(), CV_8U, cv::Scalar(0));
 
-    cv::fillPoly(mask, std::vector{box}, 1, cv::LINE_8, 0, -rect.tl());
+    cv::fillPoly(mask, std::vector<std::vector<cv::Point>>{box}, 1, cv::LINE_8, 0, -rect.tl());
     auto mean = cv::mean(bitmap(rect), mask)[0];
     return static_cast<float>(mean);
   }
