@@ -78,7 +78,7 @@ std::vector<Tensor> ResizeBBox::GetDetsLabels(const Value& prep_res, const Value
   }
 }
 Result<Value> ResizeBBox::operator()(const Value& prep_res, const Value& infer_res) {
-  INFO("prep_res: {}\ninfer_res: {}", prep_res, infer_res);
+  DEBUG("prep_res: {}\ninfer_res: {}", prep_res, infer_res);
   try {
     Tensor dets, labels;
     vector<Tensor> outputs = GetDetsLabels(prep_res, infer_res);
