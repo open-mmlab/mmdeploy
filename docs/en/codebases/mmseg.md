@@ -16,31 +16,33 @@ Please refer to [get_started.md](https://github.com/open-mmlab/mmsegmentation/bl
 | DeepLabV3+                  |      Y      |    Y     |  Y   |   Y   |    Y     | [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/deeplabv3plus) |
 | Fast-SCNN[*](#static_shape) |      Y      |    Y     |  N   |   Y   |    Y     |   [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/fastscnn)    |
 | UNet[*](#static_shape)      |      Y      |    Y     |  Y   |   Y   |    Y     |     [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/unet)      |
-| ANN                         |      Y      |    Y     |  N   |   N   |    N     |       [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/)        |
-| APCNet                      |      Y      |    Y     |  N   |   Y   |    N     |       [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/)        |
-| BiSeNetV1                   |      Y      |    Y     |  N   |   Y   |    Y     |       [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/)        |
-| BiSeNetV2                   |      Y      |    Y     |  N   |   Y   |    Y     |       [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/)        |
-| CCNet                       |      N      |    N     |  N   |   N   |    N     |       [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/)        |
-| CGNet                       |      Y      |    Y     |  N   |   Y   |    Y     |       [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/)        |
-| DMNet                       |      Y      |    N     |  N   |   N   |    N     |       [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/)        |
-| DNLNet                      |      Y      |    Y     |  N   |   Y   |    Y     |       [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/)        |
-| EMANet                      |      N      |    N     |  N   |   N   |    N     |       [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/)        |
-| EncNet                      |      Y      |    Y     |  N   |   N   |    Y     |       [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/)        |
-| ERFNet                      |      Y      |    Y     |  N   |   Y   |    Y     |       [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/)        |
-| FastFCN                     |      Y      |    Y     |  N   |   Y   |    Y     |       [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/)        |
-| GCNet                       |      Y      |    Y     |  N   |   N   |    N     |       [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/)        |
-| ICNet                       |      N      |    N     |  N   |   N   |    N     |       [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/)        |
-| ISANet                      |      Y      |    Y     |  N   |   N   |    Y     |       [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/)        |
-| NonLocal Net                |      Y      |    N     |  N   |   Y   |    Y     |       [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/)        |
-| OCRNet                      |      Y      |    Y     |  N   |   Y   |    Y     |       [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/)        |
-| PointRend                   |      Y      |    N     |  N   |   N   |    Y     |       [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/)        |
-| PSANet                      |      N      |    N     |  N   |   N   |    N     |       [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/)        |
-| SegFormer                   |      N      |    N     |  N   |   N   |    N     |       [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/)        |
-| Semantic FPN                |      Y      |    Y     |  N   |   Y   |    Y     |       [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/)        |
-| STDC1                       |      Y      |    Y     |  N   |   Y   |    Y     |       [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/)        |
-| STDC2                       |      Y      |    Y     |  N   |   Y   |    Y     |       [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/)        |
-| UPerNet                     |      Y      |    Y     |  N   |   N   |    N     |       [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/)        |
-
+| ANN[*](#static_shape)       |      Y      |    Y     |  N   |   N   |    N     |      [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/ann)      |
+| APCNet                      |      Y      |    Y     |  Y   |   N   |    N     |    [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/apcnet)     |
+| BiSeNetV1                   |      Y      |    Y     |  Y   |   N   |    Y     |   [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/bisenetv1)   |
+| BiSeNetV2                   |      Y      |    Y     |  Y   |   N   |    Y     |   [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/bisenetv2)   |
+| CGNet                       |      Y      |    Y     |  Y   |   N   |    Y     |     [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/cgnet)     |
+| DMNet                       |      Y      |    N     |  N   |   N   |    N     |     [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/dmnet)     |
+| DNLNet                      |      Y      |    Y     |  Y   |   N   |    Y     |    [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/dnlnet)     |
+| EMANet                      |      Y      |    Y     |  N   |   N   |    Y     |    [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/emanet)     |
+| EncNet                      |      Y      |    Y     |  N   |   N   |    Y     |    [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/encnet)     |
+| ERFNet                      |      Y      |    Y     |  Y   |   N   |    Y     |    [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/erfnet)     |
+| FastFCN                     |      Y      |    Y     |  Y   |   N   |    Y     |    [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/fastfcn)    |
+| GCNet                       |      Y      |    Y     |  N   |   N   |    N     |     [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/gcnet)     |
+| ICNet[*](#static_shape)     |      Y      |    Y     |  N   |   N   |    Y     |     [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/icnet)     |
+| ISANet                      |      Y      |    Y     |  N   |   N   |    Y     |    [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/isanet)     |
+| NonLocal Net                |      Y      |    Y     |  Y   |   N   |    Y     | [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/nonlocal_net)  |
+| OCRNet                      |      Y      |    Y     |  Y   |   N   |    Y     |    [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/ocrnet)     |
+| PointRend                   |      Y      |    Y     |  N   |   N   |    Y     |  [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/point_rend)   |
+| Semantic FPN                |      Y      |    Y     |  Y   |   N   |    Y     |    [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/sem_fpn)    |
+| STDC                        |      Y      |    Y     |  Y   |   N   |    Y     |     [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/stdc)      |
+| UPerNet[*](#static_shape)   |      Y      |    Y     |  N   |   N   |    N     |    [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/upernet)    |
+| DANet                       |      Y      |    Y     |  N   |   N   |    N     |     [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/danet)     |
+| CCNet                       |      N      |    N     |  N   |   N   |    N     |     [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/ccnet)     |
+| PSANet                      |      N      |    N     |  N   |   N   |    N     |    [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/psanet)     |
+| SegFormer                   |      N      |    N     |  N   |   N   |    N     |   [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/segformer)   |
+| DPT                         |      N      |    N     |  N   |   N   |    N     |      [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/dpt)      |
+| Segmenter                   |      N      |    N     |  N   |   N   |    N     |   [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/segmenter)   |
+| SETR                        |      N      |    N     |  N   |   N   |    N     |     [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/setr)      |
 
 ### Reminder
 
