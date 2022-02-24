@@ -9,7 +9,7 @@
       - [编译安装 Model Converter](#编译安装-model-converter)
         - [编译自定义算子](#编译自定义算子)
         - [安装 Model Converter](#安装-model-converter)
-      - [编译安装 SDK](#编译安装-sdk)
+      - [编译 SDK](#编译-sdk)
         - [编译选项说明](#编译选项说明)
         - [编译样例](#编译样例)
         - [编译 SDK Demo](#编译-sdk-demo)
@@ -96,7 +96,7 @@
   </tr>
   <tr>
     <td>pplcv </td>
-    <td>pplcv 是在x86和cuda平台下的高性能图像处理库。 <b>此依赖项为可选项，只有在cuda平台下，才需安装。而且，必须使用v0.6.2</b><br>
+    <td>pplcv 是在x86和cuda平台下的高性能图像处理库。 <b>此依赖项为可选项，只有在cuda平台下，才需安装。而且，目前必须使用v0.6.2，且需要使用git clone的方式下载源码并编译安装</b><br>
     <pre><code>
     git@github.com:openppl-public/ppl.cv.git
     cd ppl.cv
@@ -208,7 +208,7 @@ cmake --build . --config Release -- /maxcpucount:4
 cd root/path/of/MMDeploy
 pip install -e .
 ```
-#### 编译安装 SDK
+#### 编译 SDK
 ##### 编译选项说明
 <table>
 <thead>
