@@ -13,9 +13,9 @@ The table below lists the models that are guaranteed to be exportable to other b
 | Mask R-CNN                | MMDetection      |      Y      |      Y      |     Y    |   N  |   N   |     Y    | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/mask_rcnn)              |
 | SSD[*](#note)             | MMDetection      |      Y      |      Y      |     Y    |   Y  |   N   |     Y    | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/ssd)                    |
 | FoveaBox                  | MMDetection      |      Y      |      Y      |     N    |   N  |   N   |     Y    | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/foveabox)               |
-| ATSS                      | MMDetection      |      Y      |      Y      |     Y    |   N  |   N   |     Y    | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/atss)                   |
-| Cascade R-CNN             | MMDetection      |      Y      |      Y      |     Y    |   N  |   Y   |     Y    | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/cascade_rcnn)           |
-| Cascade Mask R-CNN        | MMDetection      |      Y      |      Y      |     N    |   N  |   N   |     Y    | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/cascade_rcnn)           |
+| ATSS                      | MMDetection      |      N      |      Y      |     Y    |   N  |   N   |     Y    | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/atss)                   |
+| Cascade R-CNN             | MMDetection      |      N      |      Y      |     Y    |   N  |   Y   |     Y    | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/cascade_rcnn)           |
+| Cascade Mask R-CNN        | MMDetection      |      N      |      Y      |     N    |   N  |   N   |     Y    | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/cascade_rcnn)           |
 | VFNet                     | MMDetection      |      N      |      N      |     N    |   N  |   N   |     Y    | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/vfnet)                  |
 | ResNet                    | MMClassification |      Y      |      Y      |     Y    |   Y  |   Y   |     Y    | [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnet)            |
 | ResNeXt                   | MMClassification |      Y      |      Y      |     Y    |   Y  |   Y   |     Y    | [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnext)           |
@@ -38,7 +38,7 @@ The table below lists the models that are guaranteed to be exportable to other b
 | RDN                       | MMEditing        |      Y      |      Y      |     Y    |   Y  |   Y   |     Y    | [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/rdn)            |
 | DBNet                     | MMOCR            |      Y      |      Y      |     Y    |   Y  |   Y   |     Y    | [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/dbnet)                  |
 | CRNN                      | MMOCR            |      Y      |      Y      |     Y    |   Y  |   Y   |     N    | [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/crnn)                 |
-| SAR                       | MMOCR            |      Y      |      Y      |     N    |   N  |   N   |     N    | [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/sar)                  |
+| SAR                       | MMOCR            |      N      |      Y      |     N    |   N  |   N   |     N    | [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/sar)                  |
 
 ### Note
 

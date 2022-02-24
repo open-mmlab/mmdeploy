@@ -94,7 +94,16 @@ def get_models(deploy_cfg: Union[str, mmcv.Config],
     weights = ''
     backend = get_backend(deploy_cfg=deploy_cfg)
 
-    def replace_suffix(file_name, dst_suffix):
+    def replace_suffix(file_name: str, dst_suffix: str) -> str:
+        """Replace the suffix to the destination one.
+
+        Args:
+            file_name (str): The file name to be operated.
+            dst_suffix (str): The destination suffix.
+
+        Return:
+            str: The file name of which the suffix has been replaced.
+        """
         return re.sub(r'\.[a-z]+', dst_suffix, file_name)
 
     if backend == Backend.TENSORRT:

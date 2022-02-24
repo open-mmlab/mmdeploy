@@ -132,7 +132,8 @@ def single_roi_extractor__forward(ctx,
         # concat len 2 zero tensors to dim 0 of roi_feats
         rois_i = torch.cat((rois.new_zeros(2, 5), rois[inds]))
 
-        if (backend == Backend.TORCHSCRIPT):
+        # use the roi align in torhcvision for TorchScript
+        if backend == Backend.TORCHSCRIPT:
             self.roi_layers[i].use_torchvision = True
         roi_feats_t = self.roi_layers[i](feats[i], rois_i)
 

@@ -89,10 +89,15 @@ class TorchscriptWrapper(BaseWrapper):
         return outputs
 
     @TimeCounter.count_time()
-    def __torchscript_execute(self, inputs: Sequence[int]):
-        """Run inference with TensorRT.
+    def __torchscript_execute(
+            self, inputs: Sequence[torch.Tensor]) -> Sequence[torch.Tensor]:
+        """Run inference with TorchScript.
 
         Args:
-            bindings (list[int]): A list of integer binding the input/output.
+            inputs (Sequence[torch.Tensor]): A list of integer binding the
+            input/output.
+        Returns:
+            torch.Tensor | Sequence[torch.Tensor]: The inference outputs from
+            TorchScript.
         """
         return self.ts_model(*inputs)
