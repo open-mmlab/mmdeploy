@@ -10,7 +10,7 @@ Please refer to [getting_started.md](https://github.com/open-mmlab/mmdetection3d
 
 |       Model        |         Task         | OnnxRuntime | TensorRT | NCNN  | PPLNN | OpenVINO |                                     Model config                                                         |
 | :----------------: | :------------------: | :---------: | :------: | :---: | :---: | :------: | :------------------------------------------------------------------------------------------------------: |
-|    PointPillar     |   VoxelDetection     |      N      |    Y     |   N   |   N   |    N     |     [config](https://github.com/open-mmlab/mmdetection3d/blob/master/configs/pointpillars)     |
+|    PointPillars    |   VoxelDetection     |      N      |    Y     |   N   |   N   |    N     |     [config](https://github.com/open-mmlab/mmdetection3d/blob/master/configs/pointpillars)     |
 
 ### Reminder
 
