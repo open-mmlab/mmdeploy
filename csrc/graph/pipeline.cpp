@@ -21,7 +21,7 @@ Pipeline::Pipeline(const Value& cfg) : BaseNode(cfg["pipeline"]) {
       node_input_idx_.push_back(UpdateBindings(nodes_.back()->inputs(), kRead));
       node_output_idx_.push_back(UpdateBindings(nodes_.back()->outputs(), kWrite));
     } else {
-      ERROR("could not create {}:{}", name, type);
+      MMDEPLOY_ERROR("could not create {}:{}", name, type);
       throw_exception(eFail);
     }
   }
@@ -57,7 +57,7 @@ std::vector<int> Pipeline::UpdateBindings(const vector<std::string>& names, Bind
     auto it = binding_name_to_idx_.lower_bound(name);
     if (it == binding_name_to_idx_.end() || it->first != name) {
       if (type == kRead) {
-        ERROR("unknown binding name: {}", name);
+        MMDEPLOY_ERROR("unknown binding name: {}", name);
         throw_exception(eEntryNotFound);
       } else {
         auto index = static_cast<int>(binding_name_to_idx_.size());

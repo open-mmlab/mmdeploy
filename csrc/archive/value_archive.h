@@ -114,12 +114,16 @@ inline T from_value(const Value& value) {
   return x;
 }
 
+namespace detail {
+
 inline void load(ValueInputArchive& archive, Value& v) { archive.native(v); }
 
 template <class T, std::enable_if_t<std::is_same<std::decay_t<T>, Value>::value, bool> = true>
 inline void save(ValueOutputArchive& archive, T&& v) {
   archive.native(std::forward<T>(v));
 }
+
+}  // namespace detail
 
 }  // namespace mmdeploy
 

@@ -8,7 +8,7 @@
 #include "core/utils/formatter.h"
 #include "core/value.h"
 #include "experimental/module_adapter.h"
-#include "preprocess/cpu/opencv_utils.h"
+#include "opencv_utils.h"
 
 namespace mmdeploy {
 

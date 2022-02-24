@@ -16,11 +16,11 @@ class DefaultAllocator {
  public:
   DefaultAllocator() = default;
   ~DefaultAllocator() {
-    ERROR("=== CUDA Default Allocator ===");
-    ERROR("  Allocation: count={}, size={}MB, time={}ms", alloc_count_,
-          alloc_size_ / (1024 * 1024.f), alloc_time_ / 1000000.f);
-    ERROR("Deallocation: count={}, size={}MB, time={}ms", dealloc_count_,
-          dealloc_size_ / (1024 * 1024.f), dealloc_time_ / 1000000.f);
+    MMDEPLOY_ERROR("=== CUDA Default Allocator ===");
+    MMDEPLOY_ERROR("  Allocation: count={}, size={}MB, time={}ms", alloc_count_,
+                   alloc_size_ / (1024 * 1024.f), alloc_time_ / 1000000.f);
+    MMDEPLOY_ERROR("Deallocation: count={}, size={}MB, time={}ms", dealloc_count_,
+                   dealloc_size_ / (1024 * 1024.f), dealloc_time_ / 1000000.f);
   }
   [[nodiscard]] void* Allocate(std::size_t n) {
     void* p{};
@@ -29,7 +29,7 @@ class DefaultAllocator {
     auto t1 = std::chrono::high_resolution_clock::now();
     alloc_time_ += (int64_t)std::chrono::duration<double, std::nano>(t1 - t0).count();
     if (ret != cudaSuccess) {
-      ERROR("error allocating cuda memory: {}", cudaGetErrorString(ret));
+      MMDEPLOY_ERROR("error allocating cuda memory: {}", cudaGetErrorString(ret));
       return nullptr;
     }
     alloc_count_ += 1;
@@ -43,7 +43,7 @@ class DefaultAllocator {
     auto t1 = std::chrono::high_resolution_clock::now();
     dealloc_time_ += (int64_t)std::chrono::duration<double, std::nano>(t1 - t0).count();
     if (ret != cudaSuccess) {
-      ERROR("error deallocating cuda memory: {}", cudaGetErrorString(ret));
+      MMDEPLOY_ERROR("error deallocating cuda memory: {}", cudaGetErrorString(ret));
       return;
     }
     dealloc_count_ += 1;

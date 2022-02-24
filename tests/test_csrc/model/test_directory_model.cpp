@@ -24,14 +24,14 @@ TEST_CASE("test directory model", "[model]") {
   REQUIRE(!directory_model_list.empty());
   auto model_dir = "sdk_models/good_model";
   REQUIRE(gResource.IsDir(model_dir));
-  auto model_path = gResource.resource_root_path() + "/" + model_dir;
-  REQUIRE(!model_impl->Init(model_path).has_error());
+  auto model_path = gResource.resource_root_path() / model_dir;
+  REQUIRE(!model_impl->Init(model_path.string()).has_error());
   REQUIRE(!model_impl->ReadFile("deploy.json").has_error());
   REQUIRE(model_impl->ReadFile("not-existing-file").has_error());
 
   model_dir = "sdk_models/bad_model";
   REQUIRE(gResource.IsDir(model_dir));
-  model_path = gResource.resource_root_path() + "/" + model_dir;
-  REQUIRE(!model_impl->Init(model_path).has_error());
+  model_path = gResource.resource_root_path() / model_dir;
+  REQUIRE(!model_impl->Init(model_path.string()).has_error());
   REQUIRE(model_impl->ReadMeta().has_error());
 }

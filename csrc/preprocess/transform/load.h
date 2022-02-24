@@ -8,7 +8,7 @@
 #include "transform.h"
 
 namespace mmdeploy {
-class PrepareImageImpl : public TransformImpl {
+class MMDEPLOY_API PrepareImageImpl : public TransformImpl {
  public:
   explicit PrepareImageImpl(const Value& args);
   ~PrepareImageImpl() = default;
@@ -29,7 +29,7 @@ class PrepareImageImpl : public TransformImpl {
   ArgType arg_;
 };
 
-class PrepareImage : public Transform {
+class MMDEPLOY_API PrepareImage : public Transform {
  public:
   explicit PrepareImage(const Value& args, int version = 0);
   ~PrepareImage() = default;
@@ -39,6 +39,8 @@ class PrepareImage : public Transform {
  private:
   std::unique_ptr<PrepareImageImpl> impl_;
 };
+
+MMDEPLOY_DECLARE_REGISTRY(PrepareImageImpl);
 
 }  // namespace mmdeploy
 

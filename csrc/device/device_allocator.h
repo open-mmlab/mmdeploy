@@ -162,12 +162,14 @@ class Stats : public AllocatorImpl {
       : allocator_(std::move(allocator)), name_(std::move(name)) {}
 
   ~Stats() override {
-    INFO("=== {} ===", name_);
-    INFO("  Allocation: count={}, size={}MB, time={}ms", data_.allocation_count,
-         data_.allocated_bytes / (1024 * 1024.f), static_cast<float>(data_.allocation_time));
-    INFO("Deallocation: count={}, size={}MB, time={}ms", data_.deallocation_count,
-         data_.deallocated_bytes / (1024 * 1024.f), static_cast<float>(data_.deallocation_time));
-    INFO("Peak memory usage: size={}MB", data_.peak / (1024 * 1024.f));
+    MMDEPLOY_INFO("=== {} ===", name_);
+    MMDEPLOY_INFO("  Allocation: count={}, size={}MB, time={}ms", data_.allocation_count,
+                  data_.allocated_bytes / (1024 * 1024.f),
+                  static_cast<float>(data_.allocation_time));
+    MMDEPLOY_INFO("Deallocation: count={}, size={}MB, time={}ms", data_.deallocation_count,
+                  data_.deallocated_bytes / (1024 * 1024.f),
+                  static_cast<float>(data_.deallocation_time));
+    MMDEPLOY_INFO("Peak memory usage: size={}MB", data_.peak / (1024 * 1024.f));
   }
 
   Block Allocate(size_t size) noexcept override {
@@ -281,10 +283,10 @@ class Bucketizer : public AllocatorImpl {
   Bucketizer(const AllocatorCreator& creator, size_t min_size, size_t max_size, size_t step_size)
       : min_size_(min_size), max_size_(max_size), step_size_(step_size) {
     for (auto base = min_size_; base < max_size_; base += step_size_) {
-      //      ERROR("{}, {}", base, base + step_size - 1);
+      //      MMDEPLOY_ERROR("{}, {}", base, base + step_size - 1);
       allocator_.push_back(creator(base, base + step_size - 1));
     }
-    //    ERROR("{}", allocator_.size());
+    //    MMDEPLOY_ERROR("{}", allocator_.size());
   }
 
   Block Allocate(size_t size) noexcept override {

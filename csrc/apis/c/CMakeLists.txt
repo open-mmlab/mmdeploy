@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.14)
 project(capis)
 
-include(${CMAKE_SOURCE_DIR}/cmake/common.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
 
 if ("all" IN_LIST MMDEPLOY_CODEBASES)
     set(TASK_LIST "classifier;detector;segmentor;text_detector;text_recognizer;restorer;model")
@@ -28,16 +28,13 @@ endif ()
 
 foreach (TASK ${TASK_LIST})
     set(TARGET_NAME mmdeploy_${TASK})
-    build_target(${TARGET_NAME} ${TASK}.cpp)
+    mmdeploy_add_library(${TARGET_NAME} ${TASK}.cpp)
     target_link_libraries(${TARGET_NAME} PRIVATE mmdeploy::core)
     target_include_directories(${TARGET_NAME} PUBLIC
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
             $<INSTALL_INTERFACE:include/c>)
-    export_target(${TARGET_NAME})
-
     install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/${TASK}.h
             DESTINATION include/c)
-
 endforeach ()
 
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/common.h

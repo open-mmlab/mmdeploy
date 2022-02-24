@@ -11,7 +11,7 @@
 
 namespace mmdeploy {
 
-class Mat final {
+class MMDEPLOY_API Mat final {
  public:
   Mat() = default;
 

@@ -13,7 +13,7 @@
 #include "core/value.h"
 #include "experimental/module_adapter.h"
 #include "mmocr.h"
-#include "preprocess/cpu/opencv_utils.h"
+#include "opencv_utils.h"
 
 namespace mmdeploy::mmocr {
 
@@ -37,21 +37,21 @@ class DBHead : public MMOCR {
   }
 
   Result<Value> operator()(const Value& _data, const Value& _prob) {
-    DEBUG("preprocess_result: {}", _data);
-    DEBUG("inference_result: {}", _prob);
+    MMDEPLOY_DEBUG("preprocess_result: {}", _data);
+    MMDEPLOY_DEBUG("inference_result: {}", _prob);
 
     auto img = _data["img"].get<Tensor>();
-    DEBUG("img shape: {}", img.shape());
+    MMDEPLOY_DEBUG("img shape: {}", img.shape());
 
     Device cpu_device{"cpu"};
     OUTCOME_TRY(auto conf,
                 MakeAvailableOnDevice(_prob["output"].get<Tensor>(), cpu_device, stream_));
     OUTCOME_TRY(stream_.Wait());
-    DEBUG("shape: {}", conf.shape());
+    MMDEPLOY_DEBUG("shape: {}", conf.shape());
 
     if (!(conf.shape().size() == 4 && conf.data_type() == DataType::kFLOAT)) {
-      ERROR("unsupported `output` tensor, shape: {}, dtype: {}", conf.shape(),
-            (int)conf.data_type());
+      MMDEPLOY_ERROR("unsupported `output` tensor, shape: {}, dtype: {}", conf.shape(),
+                     (int)conf.data_type());
       return Status(eNotSupported);
     }
 
@@ -103,7 +103,7 @@ class DBHead : public MMOCR {
       } else {
         assert(0);
       }
-      DEBUG("score: {}", score);
+      MMDEPLOY_DEBUG("score: {}", score);
       //      cv::drawContours(score_map, vector<vector<cv::Point>>{approx}, -1, 1);
 
       vector<cv::Point2f> scaled(begin(approx), end(approx));
@@ -133,7 +133,7 @@ class DBHead : public MMOCR {
 
     cv::Mat mask(rect.size(), CV_8U, cv::Scalar(0));
 
-    cv::fillPoly(mask, std::vector{box}, 1, cv::LINE_8, 0, -rect.tl());
+    cv::fillPoly(mask, std::vector<std::vector<cv::Point>>{box}, 1, cv::LINE_8, 0, -rect.tl());
     auto mean = cv::mean(bitmap(rect), mask)[0];
     return static_cast<float>(mean);
   }

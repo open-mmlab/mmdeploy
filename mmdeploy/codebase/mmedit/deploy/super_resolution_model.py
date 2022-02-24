@@ -204,11 +204,7 @@ class SDKEnd2EndModel(End2EndModel):
         output = self.wrapper.invoke([img])[0]
         if test_mode:
             output = torch.from_numpy(output)
-            output = torch.permute(output, (
-                2,
-                0,
-                1,
-            ))
+            output = output.permute(2, 0, 1)
             output = output / 255.
             results = self.test_post_process([output], lq, gt)
             return results

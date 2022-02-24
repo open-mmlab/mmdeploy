@@ -3,8 +3,10 @@
 #include "core/graph.h"
 
 #include "archive/value_archive.h"
+#include "core/registry.h"
 
-namespace mmdeploy::graph {
+namespace mmdeploy {
+namespace graph {
 
 TaskGraph::Handle* TaskGraph::Add(TaskFunction fn) {
   function_.push_back(std::move(fn));
@@ -14,7 +16,8 @@ TaskGraph::Handle* TaskGraph::Add(TaskFunction fn) {
 
 TaskGraph::~TaskGraph() {
   for (int i = 0; i < time_.size(); ++i) {
-    INFO("node {} ({}): {} ms", i, handle_[i]->name(), static_cast<float>(time_[i]) / count_);
+    MMDEPLOY_INFO("node {} ({}): {} ms", i, handle_[i]->name(),
+                  static_cast<float>(time_[i]) / count_);
   }
 }
 
@@ -75,4 +78,8 @@ std::vector<Result<Value>> Context::Execute(Span<std::function<Result<Value>()>>
   return graph_->Execute(tasks);
 }
 
-}  // namespace mmdeploy::graph
+}  // namespace graph
+
+MMDEPLOY_DEFINE_REGISTRY(graph::Node);
+
+}  // namespace mmdeploy

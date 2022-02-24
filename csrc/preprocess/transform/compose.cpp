@@ -17,15 +17,15 @@ Compose::Compose(const Value& args, int version) : Transform(args) {
   for (auto cfg : args["transforms"]) {
     cfg["context"] = context;
     auto type = cfg.value("type", std::string{});
-    DEBUG("creating transform: {} with cfg: {}", type, mmdeploy::to_json(cfg).dump(2));
+    MMDEPLOY_DEBUG("creating transform: {} with cfg: {}", type, mmdeploy::to_json(cfg).dump(2));
     auto creator = Registry<Transform>::Get().GetCreator(type, version);
     if (!creator) {
-      ERROR("unable to find creator: {}", type);
+      MMDEPLOY_ERROR("unable to find creator: {}", type);
       throw std::invalid_argument("unable to find creator");
     }
     auto transform = creator->Create(cfg);
     if (!transform) {
-      ERROR("failed to create transform: {}", type);
+      MMDEPLOY_ERROR("failed to create transform: {}", type);
       throw std::invalid_argument("failed to create transform");
     }
     transforms_.push_back(std::move(transform));

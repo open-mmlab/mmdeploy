@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import glob
 import os
+
+from mmdeploy.utils import get_file_path
 
 
 def get_ops_path() -> str:
@@ -9,14 +10,11 @@ def get_ops_path() -> str:
     Returns:
         str: The library path of NCNN custom ops.
     """
-    wildcard = os.path.abspath(
-        os.path.join(
-            os.path.dirname(__file__),
-            '../../../build/lib/libmmdeploy_ncnn_ops.so'))
-
-    paths = glob.glob(wildcard)
-    lib_path = paths[0] if len(paths) > 0 else ''
-    return lib_path
+    candidates = [
+        '../../../build/lib/libmmdeploy_ncnn_ops.so',
+        '../../../build/bin/*/mmdeploy_ncnn_ops.pyd'
+    ]
+    return get_file_path(os.path.dirname(__file__), candidates)
 
 
 def get_onnx2ncnn_path() -> str:
@@ -25,10 +23,7 @@ def get_onnx2ncnn_path() -> str:
     Returns:
         str: A path of onnx2ncnn tool.
     """
-    wildcard = os.path.abspath(
-        os.path.join(
-            os.path.dirname(__file__), '../../../build/bin/onnx2ncnn'))
-
-    paths = glob.glob(wildcard)
-    lib_path = paths[0] if len(paths) > 0 else ''
-    return lib_path
+    candidates = [
+        '../../../build/bin/onnx2ncnn', '../../../build/bin/*/onnx2ncnn'
+    ]
+    return get_file_path(os.path.dirname(__file__), candidates)

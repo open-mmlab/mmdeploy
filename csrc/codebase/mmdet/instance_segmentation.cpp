@@ -5,7 +5,7 @@
 #include "experimental/module_adapter.h"
 #include "object_detection.h"
 #include "opencv2/imgproc/imgproc.hpp"
-#include "preprocess/cpu/opencv_utils.h"
+#include "opencv_utils.h"
 
 namespace mmdeploy::mmdet {
 
@@ -19,35 +19,35 @@ class ResizeInstanceMask : public ResizeBBox {
 
   // TODO: remove duplication
   Result<Value> operator()(const Value& prep_res, const Value& infer_res) {
-    DEBUG("prep_res: {}\ninfer_res: {}", prep_res, infer_res);
+    MMDEPLOY_DEBUG("prep_res: {}\ninfer_res: {}", prep_res, infer_res);
     try {
       auto dets = infer_res["dets"].get<Tensor>();
       auto labels = infer_res["labels"].get<Tensor>();
       auto masks = infer_res["masks"].get<Tensor>();
 
-      DEBUG("dets.shape: {}", dets.shape());
-      DEBUG("labels.shape: {}", labels.shape());
-      DEBUG("masks.shape: {}", masks.shape());
+      MMDEPLOY_DEBUG("dets.shape: {}", dets.shape());
+      MMDEPLOY_DEBUG("labels.shape: {}", labels.shape());
+      MMDEPLOY_DEBUG("masks.shape: {}", masks.shape());
 
       // `dets` is supposed to have 3 dims. They are 'batch', 'bboxes_number'
       // and 'channels' respectively
       if (!(dets.shape().size() == 3 && dets.data_type() == DataType::kFLOAT)) {
-        ERROR("unsupported `dets` tensor, shape: {}, dtype: {}", dets.shape(),
-              (int)dets.data_type());
+        MMDEPLOY_ERROR("unsupported `dets` tensor, shape: {}, dtype: {}", dets.shape(),
+                       (int)dets.data_type());
         return Status(eNotSupported);
       }
 
       // `labels` is supposed to have 2 dims, which are 'batch' and
       // 'bboxes_number'
       if (labels.shape().size() != 2) {
-        ERROR("unsupported `labels`, tensor, shape: {}, dtype: {}", labels.shape(),
-              (int)labels.data_type());
+        MMDEPLOY_ERROR("unsupported `labels`, tensor, shape: {}, dtype: {}", labels.shape(),
+                       (int)labels.data_type());
         return Status(eNotSupported);
       }
 
       if (!(masks.shape().size() == 4 && masks.data_type() == DataType::kFLOAT)) {
-        ERROR("unsupported `mask` tensor, shape: {}, dtype: {}", masks.shape(),
-              (int)masks.data_type());
+        MMDEPLOY_ERROR("unsupported `mask` tensor, shape: {}, dtype: {}", masks.shape(),
+                       (int)masks.data_type());
         return Status(eNotSupported);
       }
 
@@ -65,7 +65,7 @@ class ResizeInstanceMask : public ResizeBBox {
 
       return to_value(result);
     } catch (const std::exception& e) {
-      ERROR("{}", e.what());
+      MMDEPLOY_ERROR("{}", e.what());
       return Status(eFail);
     }
   }
@@ -74,10 +74,10 @@ class ResizeInstanceMask : public ResizeBBox {
   void ProcessMasks(DetectorOutput& result, Tensor cpu_masks, int img_w, int img_h) const {
     auto shape = TensorShape{cpu_masks.shape(1), cpu_masks.shape(2), cpu_masks.shape(3)};
     cpu_masks.Reshape(shape);
-
+    MMDEPLOY_DEBUG("{}, {}", cpu_masks.shape(), cpu_masks.data_type());
     for (auto& det : result.detections) {
       auto mask = cpu_masks.Slice(det.index);
-      cv::Mat mask_mat(mask.shape(1), mask.shape(2), CV_32F, mask.data<float>());
+      cv::Mat mask_mat((int)mask.shape(1), (int)mask.shape(2), CV_32F, mask.data<float>());
       cv::Mat warped_mask;
       auto& bbox = det.bbox;
       // same as mmdet with skip_empty = True
@@ -97,7 +97,9 @@ class ResizeInstanceMask : public ResizeBBox {
       cv::warpAffine(mask_mat, warped_mask, m, cv::Size{width, height},
                      cv::INTER_LINEAR | cv::WARP_INVERSE_MAP);
       warped_mask = warped_mask > mask_thr_binary_;
-      det.mask = cpu::CVMat2Mat(warped_mask, PixelFormat::kGRAYSCALE);
+
+      det.mask = Mat(height, width, PixelFormat::kGRAYSCALE, DataType::kINT8,
+                     std::shared_ptr<void>(warped_mask.data, [mat = warped_mask](void*) {}));
     }
   }
 

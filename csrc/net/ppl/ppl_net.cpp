@@ -22,7 +22,7 @@ Result<void> ppl_try(int code) {
   if (code == 0) {
     return success();
   }
-  ERROR("ppl error: {}", ppl::common::GetRetCodeStr(code));
+  MMDEPLOY_ERROR("ppl error: {}", ppl::common::GetRetCodeStr(code));
   return Status(eFail);
 }
 
@@ -86,9 +86,9 @@ Result<void> PPLNet::Init(const Value& args) {
     /// debug only
     auto& desc = inputs_internal_[i]->GetShape();
     std::vector<long> shape_(desc.GetDims(), desc.GetDims() + desc.GetDimCount());
-    DEBUG("input {}: datatype = {}, dataformat = {}, shape = {}", i,
-          ppl::common::GetDataTypeStr(desc.GetDataType()),
-          ppl::common::GetDataFormatStr(desc.GetDataFormat()), shape_);
+    MMDEPLOY_DEBUG("input {}: datatype = {}, dataformat = {}, shape = {}", i,
+                   ppl::common::GetDataTypeStr(desc.GetDataType()),
+                   ppl::common::GetDataFormatStr(desc.GetDataFormat()), shape_);
   }
 
   for (int i = 0; i < runtime->GetOutputCount(); ++i) {
@@ -98,9 +98,9 @@ Result<void> PPLNet::Init(const Value& args) {
 
     auto desc = outputs_internal_[i]->GetShape();
     std::vector<long> shape_(desc.GetDims(), desc.GetDims() + desc.GetDimCount());
-    DEBUG("output {}: datatype = {}, dataformat = {}, shape = {}", i,
-          ppl::common::GetDataTypeStr(desc.GetDataType()),
-          ppl::common::GetDataFormatStr(desc.GetDataFormat()), shape_);
+    MMDEPLOY_DEBUG("output {}: datatype = {}, dataformat = {}, shape = {}", i,
+                   ppl::common::GetDataTypeStr(desc.GetDataType()),
+                   ppl::common::GetDataFormatStr(desc.GetDataFormat()), shape_);
     TensorShape shape(desc.GetDims(), desc.GetDims() + desc.GetDimCount());
   }
 
@@ -176,8 +176,8 @@ Result<void> PPLNet::Forward() {
     auto& internal = *outputs_internal_[i];
     auto format = internal.GetShape().GetDataFormat();
     if (format != ppl::common::DATAFORMAT_NDARRAY) {
-      ERROR("output {}'s format is {}, only NDARRAY is currently supported", i,
-            ppl::common::GetDataFormatStr(format));
+      MMDEPLOY_ERROR("output {}'s format is {}, only NDARRAY is currently supported", i,
+                     ppl::common::GetDataFormatStr(format));
       return Status(eNotSupported);
     }
     auto& external = outputs_external_[i];
@@ -200,7 +200,8 @@ Result<void> PPLNet::Forward() {
       if (external.size() > 0) {
         OUTCOME_TRY(Tensor(external.desc(), data).CopyTo(external, stream_));
       } else {
-        WARN("copy skipped due to zero sized tensor: {} {}", external.name(), external.shape());
+        MMDEPLOY_WARN("copy skipped due to zero sized tensor: {} {}", external.name(),
+                      external.shape());
       }
     }
   }
@@ -235,7 +236,7 @@ Result<void> PPLNet::Reshape(Span<TensorShape> input_shapes) {
   if (can_infer_output_shapes_) {
     OUTCOME_TRY(auto output_shapes,
                 InferOutputShapes(input_shapes, prev_in_shapes, prev_out_shapes));
-    //    ERROR("inferred output shapes: {}", output_shapes);
+    //    MMDEPLOY_ERROR("inferred output shapes: {}", output_shapes);
     for (int i = 0; i < outputs_external_.size(); ++i) {
       auto& output = outputs_external_[i];
       output.Reshape(output_shapes[i]);
@@ -304,7 +305,7 @@ class PPLNetCreator : public Creator<Net> {
     if (auto r = p->Init(args)) {
       return p;
     } else {
-      ERROR("error creating PPLNet: {}", r.error().message().c_str());
+      MMDEPLOY_ERROR("error creating PPLNet: {}", r.error().message().c_str());
       return nullptr;
     }
   }

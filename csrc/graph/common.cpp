@@ -10,7 +10,7 @@ mmdeploy::graph::BaseNode::BaseNode(const mmdeploy::Value& cfg) {
     from_value(cfg["output"], outputs_);
     name_ = cfg.value<std::string>("name", "");
   } catch (...) {
-    ERROR("error parsing config: {}", cfg);
+    MMDEPLOY_ERROR("error parsing config: {}", cfg);
     throw;
   }
 }
