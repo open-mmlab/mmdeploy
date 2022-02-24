@@ -39,6 +39,7 @@ The table below lists the models that are guaranteed to be exportable to other b
 | DBNet                     | MMOCR            |      Y      |    Y     |  Y   |   Y   |    Y     |         [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/dbnet)          |
 | CRNN                      | MMOCR            |      Y      |    Y     |  Y   |   Y   |    N     |         [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/crnn)         |
 | SAR                       | MMOCR            |      Y      |    N     |  N   |   N   |    N     |         [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/sar)          |
+| PointPillar               | MMDetection3d    |      N      |    Y     |  N   |   N   |    N     |    [config](https://github.com/open-mmlab/mmdetection3d/blob/master/configs/pointpillars)      |
 
 ### Note
 
