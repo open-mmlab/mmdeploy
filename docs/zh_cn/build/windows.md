@@ -98,7 +98,7 @@
     <td>pplcv </td>
     <td>pplcv 是在x86和cuda平台下的高性能图像处理库。 <b>此依赖项为可选项，只有在cuda平台下，才需安装。而且，目前必须使用v0.6.2，且需要使用git clone的方式下载源码并编译安装</b><br>
     <pre><code>
-    git@github.com:openppl-public/ppl.cv.git
+    git clone --recursive git@github.com:openppl-public/ppl.cv.git
     cd ppl.cv
     git checkout tags/v0.6.2 -b v0.6.2
     ./build.bat -G "Visual Studio 16 2019" -T v142 -A x64 -DHPCC_USE_CUDA=ON -DHPCC_MSVC_MD=ON
