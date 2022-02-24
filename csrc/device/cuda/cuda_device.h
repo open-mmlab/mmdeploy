@@ -21,7 +21,7 @@ class CudaPlatformImpl : public PlatformImpl {
     // As a workaround, simply leak per device resources and let the driver handle it
     // FIXME: maybe a pair of global mmdeploy_init/deinit function would be a
     //  better solution
-    for (auto& data: per_device_data_storage_) {
+    for (auto& data : per_device_data_storage_) {
       data.release();
     }
   }
