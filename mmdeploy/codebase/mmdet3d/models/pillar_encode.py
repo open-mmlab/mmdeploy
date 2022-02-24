@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import torch
 
 from mmdeploy.core import FUNCTION_REWRITER
@@ -21,7 +22,7 @@ def get_paddings_indicator(actual_num, max_num, axis=0):
     'mmdet3d.models.voxel_encoders.pillar_encoder.PillarFeatureNet.forward',
     backend='tensorrt')
 def pillar_encoder__forward(ctx, self, features, num_points, coors):
-    """Forward function.
+    """Rewrite this func to optimize node.
 
     Args:
         features (torch.Tensor): Point features or raw points in shape

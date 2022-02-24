@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from mmdeploy.core import FUNCTION_REWRITER
 
 
@@ -5,15 +6,18 @@ from mmdeploy.core import FUNCTION_REWRITER
     'mmdet3d.models.detectors.base.Base3DDetector.forward_test')
 def base3ddetector__forward_test(ctx,
                                  self,
-                                 voxel_input,
-                                 img_metas,
+                                 voxels,
+                                 num_points,
+                                 coors,
+                                 img_metas=None,
                                  img=None,
                                  rescale=True):
-    img = [img] if img is None else img
-    return self.simple_test(voxel_input, img_metas, img[0])
+    """Rewrite this function to run simple_test directly."""
+    return self.simple_test(voxels, num_points, coors, img_metas, img)
 
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet3d.models.detectors.base.Base3DDetector.forward')
-def base3ddetector__forward(ctx, self, return_loss=True, **kwargs):
-    return self.forward_test(**kwargs)
+def base3ddetector__forward(ctx, self, *args):
+    """Rewrite this function to run the model directly."""
+    return self.forward_test(*args)

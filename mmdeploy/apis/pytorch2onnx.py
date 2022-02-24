@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
-from typing import Any, Optional, Union
+from typing import Any, Optional, Tuple, Union
 
 import mmcv
 import torch
@@ -10,12 +10,12 @@ from mmdeploy.utils import (get_backend, get_dynamic_axes, get_input_shape,
                             get_onnx_config, load_config)
 
 
-def torch2onnx_impl(model: torch.nn.Module, input: torch.Tensor,
+def torch2onnx_impl(model: torch.nn.Module, input: Union[torch.Tensor, Tuple],
                     deploy_cfg: Union[str, mmcv.Config], output_file: str):
     """Converting torch model to ONNX.
 
     Args:
-        model (torch.nn.Module): Input pytorch model.
+        model (torch.nn.Module | Tuple): Input pytorch model.
         input (torch.Tensor): Input tensor used to convert model.
         deploy_cfg (str | mmcv.Config): Deployment config file or
             Config object.

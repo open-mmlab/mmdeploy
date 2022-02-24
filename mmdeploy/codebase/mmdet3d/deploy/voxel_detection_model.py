@@ -21,6 +21,17 @@ __BACKEND_MODEL = mmcv.utils.Registry(
 
 @__BACKEND_MODEL.register_module('end2end')
 class VoxelDetectionModel(BaseBackendModel):
+    """End to end model for inference of 3d voxel detection.
+
+    Args:
+        backend (Backend): The backend enum, specifying backend type.
+        backend_files (Sequence[str]): Paths to all required backend files
+                (e.g. '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
+        device (str): A string specifying device type.
+        model_cfg (str | mmcv.Config): The model config.
+        deploy_cfg (str|mmcv.Config): Deployment config file or loaded Config
+            object.
+    """
 
     def __init__(self,
                  backend: Backend,
@@ -36,6 +47,14 @@ class VoxelDetectionModel(BaseBackendModel):
 
     def _init_wrapper(self, backend: Backend, backend_files: Sequence[str],
                       device: str):
+        """Initialize backend wrapper.
+
+        Args:
+            backend (Backend): The backend enum, specifying backend type.
+            backend_files (Sequence[str]): Paths to all required backend files
+                (e.g. '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
+            device (str): A string specifying device type.
+        """
         output_names = self.output_names
         self.wrapper = BaseBackendModel._build_wrapper(
             backend=backend,
@@ -45,29 +64,80 @@ class VoxelDetectionModel(BaseBackendModel):
             deploy_cfg=self.deploy_cfg)
 
     def forward(self, points, img_metas, return_loss=False):
+        """Run forward inference.
+
+        Args:
+            points (Sequence[torch.Tensor]): A list contains input pcd(s)
+                in [N, ndim] float tensor. points[:, :3] contain xyz points
+                and points[:, 3:] contain other information like reflectivity
+            img_metas (Sequence[dict]): A list of meta info for image(s).
+            return_loss (Bool): Consistent with the pytorch model.
+                Default = False.
+
+        Returns:
+            list: A list contains predictions.
+        """
         result_list = []
         for i in range(len(img_metas)):
             voxels, num_points, coors = VoxelDetectionModel.voxelize(
-                points[i], self.model_cfg)
+                self.model_cfg, points[i])
             input_dict = {
                 'voxels': voxels,
                 'num_points': num_points,
                 'coors': coors
             }
             outputs = self.wrapper(input_dict)
-            result = VoxelDetectionModel.post_process(outputs, img_metas[i],
-                                                      self.model_cfg)[0]
+            result = VoxelDetectionModel.post_process(
+                self.model_cfg,
+                outputs,
+                img_metas[i],
+            )[0]
             result_list.append(result)
         return result_list
 
-    def show_result(self, *args, **kwargs):
-        pass
+    def show_result(self, data, result, out_dir, show=False, score_thr=None):
+        from mmcv.parallel import DataContainer as DC
+        from mmdet3d.core import show_result
+        if isinstance(data['points'][0], DC):
+            points = data['points'][0]._data[0][0].numpy()
+        elif mmcv.is_list_of(data['points'][0], torch.Tensor):
+            points = data['points'][0]
+        else:
+            ValueError(f"Unsupported data type {type(data['points'][0])} "
+                       f'for visualization!')
+        pred_bboxes = result[0]['boxes_3d']
+        pred_labels = result[0]['labels_3d']
+        pred_bboxes = pred_bboxes.tensor.cpu().numpy()
+        show_result(
+            points,
+            None,
+            pred_bboxes,
+            './',
+            'buff.bin',
+            show=show,
+            pred_labels=pred_labels)
 
     @staticmethod
-    def voxelize(points, model_cfg):
-        if isinstance(model_cfg, str):
-            model_cfg = mmcv.Config.fromfile(model_cfg)
+    def voxelize(model_cfg, points):
+        """convert kitti points(N, >=3) to voxels.
+
+        Args:
+            model_cfg (str | mmcv.Config): The model config.
+            points (torch.Tensor): [N, ndim] float tensor. points[:, :3]
+                contain xyz points and points[:, 3:] contain other information
+                like reflectivity.
+
+        Returns:
+            voxels: [M, max_points, ndim] float tensor. only contain points
+                and returned when max_points != -1.
+            coordinates: [M, 3] int32 tensor, always returned.
+            num_points_per_voxel: [M] int32 tensor. Only returned when
+                max_points != -1.
+        """
         from mmdet3d.ops import Voxelization
+
+        # if isinstance(model_cfg, str):
+        #     model_cfg = mmcv.Config.fromfile(model_cfg)
         voxel_layer = model_cfg.model['voxel_layer']
         voxel_layer = Voxelization(**voxel_layer)
         voxels, coors, num_points = [], [], []
@@ -86,7 +156,17 @@ class VoxelDetectionModel(BaseBackendModel):
         return voxels, num_points, coors_batch
 
     @staticmethod
-    def post_process(outs, img_metas, model_cfg):
+    def post_process(model_cfg, outs, img_metas):
+        """model post process.
+
+        Args:
+            model_cfg (str | mmcv.Config): The model config.
+            outs (torch.Tensor): Output of model's head.
+            img_metas(Dict): Meta info for pcd.
+
+        Returns:
+            list: A list contains predictions, include bboxes, scores, labels.
+        """
         from mmdet3d.core import bbox3d2result
         from mmdet3d.models.builder import build_head
         head = build_head(
@@ -110,6 +190,19 @@ def build_voxel_detection_model(model_files: Sequence[str],
                                 model_cfg: Union[str, mmcv.Config],
                                 deploy_cfg: Union[str,
                                                   mmcv.Config], device: str):
+    """Build 3d voxel object detection model for different backends.
+
+    Args:
+        model_files (Sequence[str]): Input model file(s).
+        model_cfg (str | mmcv.Config): Input model config file or Config
+            object.
+        deploy_cfg (str | mmcv.Config): Input deployment config file or
+            Config object.
+        device (str):  Device to input model
+
+    Returns:
+        VoxelDetectionModel: Detector for a configured backend.
+    """
     deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
 
     backend = get_backend(deploy_cfg)
