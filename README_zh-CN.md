@@ -46,6 +46,7 @@ MMDeploy 是一个开源深度学习模型部署工具箱，它是 [OpenMMLab](h
   - [x] MMSegmentation
   - [x] MMEditing
   - [x] MMOCR
+  - [x] MMPose
 
 - **支持多种推理后端**
 
