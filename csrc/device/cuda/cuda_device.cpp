@@ -79,9 +79,9 @@ Allocator CreateDefaultAllocator() {
   using namespace device_allocator;
   AllocatorImplPtr allocator = std::make_shared<Mallocator>();
   allocator = std::make_shared<Stats>(allocator, "cudaMalloc");
-  allocator = std::make_shared<Tree>(allocator, -1, .0);
+  allocator = std::make_shared<Tree>(allocator, -1, .5);
   allocator = std::make_shared<Stats>(allocator, "Tree");
-  INFO("Default CUDA allocator initialized");
+  MMDEPLOY_INFO("Default CUDA allocator initialized");
   return Access::create<Allocator>(allocator);
 }
 
@@ -265,7 +265,7 @@ void CudaPlatformImpl::PerDeviceData::init() {
 CudaPlatformImpl::CudaPlatformImpl() {
   int count{};
   if (auto err = cudaGetDeviceCount(&count); err != cudaSuccess) {
-    ERROR("error getting device count: {}", cudaGetErrorString(err));
+    MMDEPLOY_ERROR("error getting device count: {}", cudaGetErrorString(err));
     throw_exception(eFail);
   }
   per_device_data_storage_.reserve(count);

@@ -107,7 +107,7 @@ def test_get_classes_from_config(from_file, data_type):
 
 
 @backend_checker(Backend.ONNXRUNTIME)
-def test_build_classificaation_model():
+def test_build_classification_model():
     model_cfg = mmcv.Config(dict(data=dict(test={'type': 'ImageNet'})))
     deploy_cfg = mmcv.Config(
         dict(

@@ -5,6 +5,7 @@
 #include "core/logger.h"
 #include "core/model.h"
 #include "core/utils/formatter.h"
+#include "ncnn_ops_register.h"
 
 namespace mmdeploy {
 
@@ -32,6 +33,8 @@ Result<void> NCNNNet::Init(const Value& args) {
 
   OUTCOME_TRY(params_, model.ReadFile(config.net));
   OUTCOME_TRY(weights_, model.ReadFile(config.weights));
+
+  register_mmdeploy_custom_layers(net_);
 
   OUTCOME_TRY(ncnn_status(net_.load_param_mem(params_.c_str())));
   net_.load_model(reinterpret_cast<const unsigned char*>(weights_.data()));
@@ -107,7 +110,7 @@ class NCNNNetCreator : public Creator<Net> {
     if (auto r = p->Init(args)) {
       return p;
     } else {
-      ERROR("error creating NCNNNet: {}", r.error().message().c_str());
+      MMDEPLOY_ERROR("error creating NCNNNet: {}", r.error().message().c_str());
       return nullptr;
     }
   }

@@ -8,7 +8,7 @@
 
 namespace mmdeploy {
 
-class NormalizeImpl : public TransformImpl {
+class MMDEPLOY_API NormalizeImpl : public TransformImpl {
  public:
   explicit NormalizeImpl(const Value& args);
   ~NormalizeImpl() = default;
@@ -28,7 +28,7 @@ class NormalizeImpl : public TransformImpl {
   ArgType arg_;
 };
 
-class Normalize : public Transform {
+class MMDEPLOY_API Normalize : public Transform {
  public:
   explicit Normalize(const Value& args, int version = 0);
   ~Normalize() = default;
@@ -38,6 +38,8 @@ class Normalize : public Transform {
  private:
   std::unique_ptr<NormalizeImpl> impl_;
 };
+
+MMDEPLOY_DECLARE_REGISTRY(NormalizeImpl);
 
 }  // namespace mmdeploy
 #endif  // MMDEPLOY_NORMALIZE_H

@@ -3,7 +3,7 @@
 #ifndef MMDEPLOY_SRC_UTILS_SOURCE_LOCATION_H_
 #define MMDEPLOY_SRC_UTILS_SOURCE_LOCATION_H_
 
-#if __has_include(<source_location>)
+#if __has_include(<source_location>) && !_MSC_VER
 #include <source_location>
 namespace mmdeploy {
 using SourceLocation = std::source_location;

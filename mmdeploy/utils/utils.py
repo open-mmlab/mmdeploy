@@ -1,5 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import glob
 import logging
+import os
 import sys
 import traceback
 from typing import Callable, Optional, Union
@@ -103,3 +105,21 @@ def deprecate(status: str = 'future',
         return fun
 
     return _register
+
+
+def get_file_path(prefix, candidates) -> str:
+    """Search for file in candidates.
+
+    Args:
+        prefix (str): Prefix of the paths.
+        cancidates (str): Candidate paths
+    Returns:
+        str: file path or '' if not found
+    """
+    for candidate in candidates:
+        wildcard = os.path.abspath(os.path.join(prefix, candidate))
+        paths = glob.glob(wildcard)
+        if paths:
+            lib_path = paths[0]
+            return lib_path
+    return ''

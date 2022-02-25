@@ -17,7 +17,7 @@ class PadImpl : public ::mmdeploy::PadImpl {
                                        {"reflect", cv::BORDER_REFLECT_101},
                                        {"symmetric", cv::BORDER_REFLECT}};
     if (border_map.find(arg_.padding_mode) == border_map.end()) {
-      ERROR("unsupported padding_mode '{}'", arg_.padding_mode);
+      MMDEPLOY_ERROR("unsupported padding_mode '{}'", arg_.padding_mode);
       throw std::invalid_argument("unsupported padding_mode");
     }
     border_type_ = border_map[arg_.padding_mode];

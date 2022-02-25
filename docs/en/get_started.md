@@ -49,7 +49,7 @@ Now you can do model inference with the APIs provided by the backend. But what i
 ```python
 from mmdeploy.apis import inference_model
 
-result = inference_model(model_cfg, deploy_cfg, backend_models, img=img, device=device)
+result = inference_model(model_cfg, deploy_cfg, backend_files, img=img, device=device)
 ```
 
 The `inference_model` will create a wrapper module and do the inference for you. The result has the same format as the original OpenMMLab repo.

@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "macro.h"
 #include "value.h"
 
 namespace mmdeploy {
@@ -30,73 +31,58 @@ using get_return_type_t = typename get_return_type<EntryType>::type;
 
 }  // namespace detail
 
+template <class EntryType>
+class Creator;
+
+template <>
+class Creator<void> {
+ public:
+  virtual ~Creator() = default;
+  virtual const char *GetName() const = 0;
+  virtual int GetVersion() const { return 0; }
+};
+
 template <typename EntryType>
-class Creator {
+class Creator : public Creator<void> {
  public:
   using ReturnType = detail::get_return_type_t<EntryType>;
 
  public:
-  virtual ~Creator() = default;
-  virtual const char *GetName() const = 0;
-  virtual int GetVersion() const = 0;
   virtual ReturnType Create(const Value &args) = 0;
 };
 
-template <typename EntryType>
-class Registry {
+template <class EntryType>
+class Registry;
+
+template <>
+class MMDEPLOY_API Registry<void> {
  public:
-  static Registry &Get() {
-    static Registry registry;
-    return registry;
-  }
+  Registry();
 
-  bool AddCreator(Creator<EntryType> &creator) {
-    auto key = creator.GetName();
-    if (entries_.find(key) == entries_.end()) {
-      entries_.insert(std::make_pair(key, &creator));
-      return true;
-    }
+  ~Registry();
 
-    for (auto iter = entries_.lower_bound(key); iter != entries_.upper_bound(key); ++iter) {
-      if (iter->second->GetVersion() == creator.GetVersion()) {
-        return false;
-      }
-    }
+  bool AddCreator(Creator<void> &creator);
 
-    entries_.insert(std::make_pair(key, &creator));
-    return true;
-  }
+  Creator<void> *GetCreator(const std::string &type, int version = 0);
+
+ private:
+  std::multimap<std::string, Creator<void> *> entries_;
+};
+
+template <class EntryType>
+class Registry : public Registry<void> {
+ public:
+  bool AddCreator(Creator<EntryType> &creator) { return Registry<void>::AddCreator(creator); }
 
   Creator<EntryType> *GetCreator(const std::string &type, int version = 0) {
-    auto iter = entries_.find(type);
-    if (iter == entries_.end()) {
-      return nullptr;
-    }
-    if (0 == version) {
-      return iter->second;
-    }
-
-    for (auto iter = entries_.lower_bound(type); iter != entries_.upper_bound(type); ++iter) {
-      if (iter->second->GetVersion() == version) {
-        return iter->second;
-      }
-    }
-    return nullptr;
+    auto creator = Registry<void>::GetCreator(type, version);
+    return static_cast<Creator<EntryType> *>(creator);
   }
 
-  std::vector<std::string> ListCreators() {
-    std::vector<std::string> keys;
-    for (const auto &[key, _] : entries_) {
-      keys.push_back(key);
-    }
-    return keys;
-  }
+  static Registry &Get();
 
  private:
   Registry() = default;
-
- private:
-  std::multimap<std::string, Creator<EntryType> *> entries_;
 };
 
 template <typename EntryType, typename CreatorType>
@@ -109,6 +95,17 @@ class Registerer {
 };
 
 }  // namespace mmdeploy
+
+#define MMDEPLOY_DECLARE_REGISTRY(EntryType) \
+  template <>                                \
+  Registry<EntryType> &Registry<EntryType>::Get();
+
+#define MMDEPLOY_DEFINE_REGISTRY(EntryType)                         \
+  template <>                                                       \
+  MMDEPLOY_EXPORT Registry<EntryType> &Registry<EntryType>::Get() { \
+    static Registry v;                                              \
+    return v;                                                       \
+  }
 
 #define REGISTER_MODULE(EntryType, CreatorType) \
   static ::mmdeploy::Registerer<EntryType, CreatorType> g_register_##EntryType##_##CreatorType{};

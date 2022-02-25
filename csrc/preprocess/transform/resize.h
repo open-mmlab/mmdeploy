@@ -3,11 +3,13 @@
 #ifndef MMDEPLOY_RESIZE_H
 #define MMDEPLOY_RESIZE_H
 
+#include <array>
+
 #include "core/tensor.h"
 #include "transform.h"
 
 namespace mmdeploy {
-class ResizeImpl : public TransformImpl {
+class MMDEPLOY_API ResizeImpl : public TransformImpl {
  public:
   explicit ResizeImpl(const Value& args);
   ~ResizeImpl() override = default;
@@ -29,7 +31,7 @@ class ResizeImpl : public TransformImpl {
   ArgType arg_;
 };
 
-class Resize : public Transform {
+class MMDEPLOY_API Resize : public Transform {
  public:
   explicit Resize(const Value& args, int version = 0);
   ~Resize() override = default;
@@ -40,5 +42,8 @@ class Resize : public Transform {
   std::unique_ptr<ResizeImpl> impl_;
   static const std::string name_;
 };
+
+MMDEPLOY_DECLARE_REGISTRY(ResizeImpl);
+
 }  // namespace mmdeploy
 #endif  // MMDEPLOY_RESIZE_H

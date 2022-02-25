@@ -14,7 +14,7 @@ namespace mmdeploy {
 class Context {
  public:
   explicit Context(const Value& config) {
-    DEBUG("config: {}", config);
+    MMDEPLOY_DEBUG("config: {}", config);
     device_ = config["context"]["device"].get<Device>();
     stream_ = config["context"]["stream"].get<Stream>();
   }
@@ -35,17 +35,17 @@ class CodebaseCreator : public Creator<Module> {
   std::unique_ptr<Module> Create(const Value& cfg) override {
     constexpr auto key{"component"};
     if (!cfg.contains(key)) {
-      ERROR("no key '{}' in config {}", key, cfg);
+      MMDEPLOY_ERROR("no key '{}' in config {}", key, cfg);
       throw_exception(eInvalidArgument);
     }
     if (!cfg[key].is_string()) {
-      ERROR("key '{}' is not a string", key);
+      MMDEPLOY_ERROR("key '{}' is not a string", key);
       throw_exception(eInvalidArgument);
     }
     auto postprocess_type = cfg[key].get<std::string>();
     auto creator = Registry<Tag>::Get().GetCreator(postprocess_type);
     if (creator == nullptr) {
-      ERROR("could not found entry '{}' in {}", postprocess_type, Tag::name);
+      MMDEPLOY_ERROR("could not found entry '{}' in {}", postprocess_type, Tag::name);
       throw_exception(eEntryNotFound);
     }
     return creator->Create(cfg);

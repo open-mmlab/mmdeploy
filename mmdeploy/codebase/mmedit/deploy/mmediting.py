@@ -7,7 +7,7 @@ from mmcv.utils import Registry
 from torch.utils.data import DataLoader, Dataset
 
 from mmdeploy.codebase.base import CODEBASE, BaseTask, MMCodebase
-from mmdeploy.utils import Codebase, get_task_type
+from mmdeploy.utils import Codebase, get_task_type, load_config
 
 
 def __build_mmedit_task(model_cfg: mmcv.Config, deploy_cfg: mmcv.Config,
@@ -56,7 +56,6 @@ class MMEditing(MMCodebase):
         """
         from mmedit.datasets import build_dataset as build_dataset_mmedit
 
-        from mmdeploy.utils import load_config
         dataset_cfg = load_config(dataset_cfg)[0]
         data = dataset_cfg.data
 

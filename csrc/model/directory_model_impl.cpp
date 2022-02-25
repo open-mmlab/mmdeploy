@@ -5,16 +5,9 @@
 #include "archive/json_archive.h"
 #include "core/model.h"
 #include "core/model_impl.h"
+#include "core/utils/filesystem.h"
 
 using nlohmann::json;
-
-#if __GNUC__ >= 8
-#include <filesystem>
-namespace fs = std::filesystem;
-#else
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
-#endif
 
 namespace mmdeploy {
 
@@ -52,7 +45,7 @@ class DirectoryModelImpl : public ModelImpl {
       from_json(json::parse(deploy_json), meta);
       return meta;
     } catch (std::exception& e) {
-      ERROR("exception happened: {}", e.what());
+      MMDEPLOY_ERROR("exception happened: {}", e.what());
       return Status(eFail);
     }
   }
