@@ -36,13 +36,13 @@ Please refer to [get_started.md](https://github.com/open-mmlab/mmsegmentation/bl
 | Semantic FPN                |      Y      |    Y     |  Y   |   N   |    Y     |    [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/sem_fpn)    |
 | STDC                        |      Y      |    Y     |  Y   |   N   |    Y     |     [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/stdc)      |
 | UPerNet[*](#static_shape)   |      Y      |    Y     |  N   |   N   |    N     |    [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/upernet)    |
-| DANet                       |      Y      |    Y     |  N   |   N   |    N     |     [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/danet)     |
+| DANet                       |      Y      |    Y     |  N   |   N   |    Y     |     [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/danet)     |
 | Segmenter[*](#static_shape) |      Y      |    Y     |  N   |   N   |    N     |   [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/segmenter)   |
-| SegFormer[*](#static_shape) |      Y      |    Y     |  N   |   N   |    N     |   [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/segformer)   |
+| SegFormer[*](#static_shape) |      Y      |    Y     |  N   |   N   |    Y     |   [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/segformer)   |
+| SETR                        |      Y      |    N     |  N   |   N   |    Y     |     [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/setr)      |
 | CCNet                       |      N      |    N     |  N   |   N   |    N     |     [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/ccnet)     |
 | PSANet                      |      N      |    N     |  N   |   N   |    N     |    [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/psanet)     |
 | DPT                         |      N      |    N     |  N   |   N   |    N     |      [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/dpt)      |
-| SETR                        |      N      |    N     |  N   |   N   |    N     |     [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/setr)      |
 
 ### Reminder
 
