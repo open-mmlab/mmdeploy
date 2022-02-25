@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Sequence, Union
+from typing import Dict, List, Sequence, Union
 
 import mmcv
 import torch
@@ -11,12 +11,13 @@ from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
                             load_config)
 
 
-def __build_backend_model(cls_name: str, registry: Registry, *args, **kwargs):
+def __build_backend_voxel_model(cls_name: str, registry: Registry, *args,
+                                **kwargs):
     return registry.module_dict[cls_name](*args, **kwargs)
 
 
 __BACKEND_MODEL = mmcv.utils.Registry(
-    'backend_detectors', build_func=__build_backend_model)
+    'backend_voxel_detectors', build_func=__build_backend_voxel_model)
 
 
 @__BACKEND_MODEL.register_module('end2end')
@@ -63,7 +64,10 @@ class VoxelDetectionModel(BaseBackendModel):
             output_names=output_names,
             deploy_cfg=self.deploy_cfg)
 
-    def forward(self, points, img_metas, return_loss=False):
+    def forward(self,
+                points: Sequence[torch.Tensor],
+                img_metas: Sequence[dict],
+                return_loss=False):
         """Run forward inference.
 
         Args:
@@ -95,7 +99,12 @@ class VoxelDetectionModel(BaseBackendModel):
             result_list.append(result)
         return result_list
 
-    def show_result(self, data, result, out_dir, show=False, score_thr=None):
+    def show_result(self,
+                    data: Dict,
+                    result: List,
+                    out_dir: str,
+                    show=False,
+                    **kwargs):
         from mmcv.parallel import DataContainer as DC
         from mmdet3d.core import show_result
         if isinstance(data['points'][0], DC):
@@ -112,13 +121,13 @@ class VoxelDetectionModel(BaseBackendModel):
             points,
             None,
             pred_bboxes,
-            './',
-            'buff.bin',
+            out_dir,
+            'backend_result.bin',
             show=show,
             pred_labels=pred_labels)
 
     @staticmethod
-    def voxelize(model_cfg, points):
+    def voxelize(model_cfg: Union[str, mmcv.Config], points: torch.Tensor):
         """convert kitti points(N, >=3) to voxels.
 
         Args:
@@ -134,10 +143,8 @@ class VoxelDetectionModel(BaseBackendModel):
             num_points_per_voxel: [M] int32 tensor. Only returned when
                 max_points != -1.
         """
-        from mmdet3d.ops import Voxelization
-
-        # if isinstance(model_cfg, str):
-        #     model_cfg = mmcv.Config.fromfile(model_cfg)
+        from mmcv.ops import Voxelization
+        model_cfg = load_config(model_cfg)
         voxel_layer = model_cfg.model['voxel_layer']
         voxel_layer = Voxelization(**voxel_layer)
         voxels, coors, num_points = [], [], []
@@ -156,7 +163,8 @@ class VoxelDetectionModel(BaseBackendModel):
         return voxels, num_points, coors_batch
 
     @staticmethod
-    def post_process(model_cfg, outs, img_metas):
+    def post_process(model_cfg: Union[str, mmcv.Config], outs: torch.Tensor,
+                     img_metas: Dict):
         """model post process.
 
         Args:
@@ -169,14 +177,15 @@ class VoxelDetectionModel(BaseBackendModel):
         """
         from mmdet3d.core import bbox3d2result
         from mmdet3d.models.builder import build_head
+        model_cfg = load_config(model_cfg)
         head = build_head(
             dict(
                 **model_cfg.model['bbox_head'],
                 train_cfg=None,
                 test_cfg=model_cfg.model['test_cfg']))
-        cls_scores = [outs['scores']]
-        bbox_preds = [outs['bbox_preds']]
-        dir_scores = [outs['dir_scores']]
+        cls_scores = [outs['scores'].cuda()]
+        bbox_preds = [outs['bbox_preds'].cuda()]
+        dir_scores = [outs['dir_scores'].cuda()]
         bbox_list = head.get_bboxes(
             cls_scores, bbox_preds, dir_scores, img_metas, rescale=True)
         bbox_results = [

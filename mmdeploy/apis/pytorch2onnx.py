@@ -15,8 +15,8 @@ def torch2onnx_impl(model: torch.nn.Module, input: Union[torch.Tensor, Tuple],
     """Converting torch model to ONNX.
 
     Args:
-        model (torch.nn.Module | Tuple): Input pytorch model.
-        input (torch.Tensor): Input tensor used to convert model.
+        model (torch.nn.Module): Input pytorch model.
+        input (torch.Tensor | Tuple): Input tensor used to convert model.
         deploy_cfg (str | mmcv.Config): Deployment config file or
             Config object.
         output_file (str): Output file to save ONNX model.
