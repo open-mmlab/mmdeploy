@@ -48,6 +48,7 @@ a part of the [OpenMMLab](https://openmmlab.com/) project.
   - [x] MMSegmentation
   - [x] MMEditing
   - [x] MMOCR
+  - [x] MMPose
 
 - **Multiple inference backends are available**
 
