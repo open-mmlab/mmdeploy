@@ -1573,6 +1573,7 @@ GPU: ncnn, TensorRT, PPLNN
 </div>
 </details>
 
+
 ### 注意
 - 由于某些数据集在代码库中包含各种分辨率的图像，例如 MMDet，速度基准是通过 MMDeploy 中的静态配置获得的，而性能基准是通过动态配置获得的。
 
