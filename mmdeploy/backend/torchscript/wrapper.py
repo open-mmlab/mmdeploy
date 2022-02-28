@@ -72,7 +72,7 @@ class TorchscriptWrapper(BaseWrapper):
             assert self._input_names is not None, \
                 'input names have not been given.'
             inputs = [inputs[input_name] for input_name in self._input_names]
-        if isinstance(inputs, torch.Tensor):
+        elif isinstance(inputs, torch.Tensor):
             inputs = [inputs]
 
         outputs = self.__torchscript_execute(inputs)

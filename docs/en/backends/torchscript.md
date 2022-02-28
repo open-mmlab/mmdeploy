@@ -10,7 +10,7 @@
 
 - Download libtorch from the official website [here](https://pytorch.org/get-started/locally/).
 
-*Please note that only **Pre-cxx11 ABI** on Linux platform is supported by now.*
+*Please note that only **Pre-cxx11 ABI** and **version 1.8.1+** on Linux platform are supported by now.*
 
 For previous versions of libtorch, users can find through the [issue comment](https://github.com/pytorch/pytorch/issues/40961#issuecomment-1017317786). Libtorch1.8.1+cu102 as an example, extract it, expose `Torch_DIR` and add the lib path to `LD_LIBRARY_PATH` as below:
 

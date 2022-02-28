@@ -122,6 +122,9 @@ def single_roi_extractor__forward(ctx,
         rois = self.roi_rescale(rois, roi_scale_factor)
 
     if backend == Backend.TORCHSCRIPT:
+        # Risky when the input tensor for exporting contains no targets.
+        # But the way of concatenating zeros makes index out of range when
+        # running test.py for torchscript.
         for i in range(num_levels):
             mask = target_lvls == i
             inds = mask.nonzero(as_tuple=False).squeeze(1)
