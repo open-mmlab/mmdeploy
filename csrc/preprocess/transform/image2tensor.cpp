@@ -13,12 +13,16 @@ ImageToTensorImpl::ImageToTensorImpl(const Value& args) : TransformImpl(args) {
   for (auto& key : args["keys"]) {
     arg_.keys.push_back(key.get<std::string>());
   }
+  if (args.contains("img_to_float")) {
+    img_to_float_ = args["img_to_float"].get<bool>();
+  }
 }
 
 Result<Value> ImageToTensorImpl::Process(const Value& input) {
   MMDEPLOY_DEBUG("input: {}", to_json(input).dump(2));
   Value output = input;
   for (auto& key : arg_.keys) {
+    MMDEPLOY_INFO("DEBUGGING image2tensor.cpp line 22: key: {}", key);
     assert(input.contains(key));
     Tensor src_tensor = input[key].get<Tensor>();
     auto& shape = src_tensor.desc().shape;
@@ -26,7 +30,7 @@ Result<Value> ImageToTensorImpl::Process(const Value& input) {
     assert(shape.size() == 4);
     assert(shape[3] == 1 || shape[3] == 3);
 
-    OUTCOME_TRY(output[key], HWC2CHW(src_tensor));
+    OUTCOME_TRY(output[key], HWC2CHW(src_tensor, img_to_float_));
   }  // for key
   MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));
   return output;
