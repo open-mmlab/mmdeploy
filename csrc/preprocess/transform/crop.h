@@ -3,12 +3,14 @@
 #ifndef MMDEPLOY_CROP_H
 #define MMDEPLOY_CROP_H
 
+#include <array>
+
 #include "core/tensor.h"
 #include "transform.h"
 
 namespace mmdeploy {
 
-class CenterCropImpl : public TransformImpl {
+class MMDEPLOY_API CenterCropImpl : public TransformImpl {
  public:
   explicit CenterCropImpl(const Value& args);
   ~CenterCropImpl() = default;
@@ -29,7 +31,7 @@ class CenterCropImpl : public TransformImpl {
   ArgType arg_;
 };
 
-class CenterCrop : public Transform {
+class MMDEPLOY_API CenterCrop : public Transform {
  public:
   explicit CenterCrop(const Value& args, int version = 0);
   ~CenterCrop() = default;
@@ -39,6 +41,8 @@ class CenterCrop : public Transform {
  protected:
   std::unique_ptr<CenterCropImpl> impl_;
 };
+
+MMDEPLOY_DECLARE_REGISTRY(CenterCropImpl);
 
 }  // namespace mmdeploy
 

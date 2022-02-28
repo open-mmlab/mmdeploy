@@ -4,16 +4,19 @@
 #define MMDEPLOY_SRC_CORE_MODULE_H_
 
 #include "core/macro.h"
+#include "core/registry.h"
 #include "core/status_code.h"
 #include "core/value.h"
 
 namespace mmdeploy {
 
-class MM_SDK_API Module {
+class MMDEPLOY_API Module {
  public:
   virtual ~Module() = default;
   virtual Result<Value> Process(const Value& args) = 0;
 };
+
+MMDEPLOY_DECLARE_REGISTRY(Module);
 
 }  // namespace mmdeploy
 

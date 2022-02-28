@@ -7,7 +7,6 @@ const char *c_MMDeployOpDomain = "mmdeploy";
 
 OrtStatus *ORT_API_CALL RegisterCustomOps(OrtSessionOptions *options, const OrtApiBase *api) {
   const OrtApi *kOrtApi = api->GetApi(ORT_API_VERSION);
-
   OrtStatus *status = nullptr;
   for (auto &_op_list_pair : mmdeploy::get_mmdeploy_custom_ops()) {
     OrtCustomOpDomain *domain = nullptr;

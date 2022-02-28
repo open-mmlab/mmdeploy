@@ -12,7 +12,7 @@ TEST_CASE("test model c capi", "[model]") {
   std::string model_path;
   for (auto const &codebase : gResource.codebases()) {
     for (auto const &backend : gResource.backends()) {
-      if (auto _model_list = gResource.LocateModelResources(codebase + "/" + backend);
+      if (auto _model_list = gResource.LocateModelResources(fs::path{codebase} / backend);
           !_model_list.empty()) {
         model_path = _model_list.front();
         break;

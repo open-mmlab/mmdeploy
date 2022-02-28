@@ -98,7 +98,7 @@ class End2EndModel(BaseBackendModel):
     def show_result(self,
                     img: np.ndarray,
                     result: list,
-                    win_name: str,
+                    win_name: str = '',
                     show: bool = True,
                     out_file: str = None):
         """Show predictions of classification.

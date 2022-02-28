@@ -61,7 +61,7 @@ def create_process(name, target, args, kwargs, ret_value=None):
     if ret_value is not None:
         if ret_value.value != 0:
             logger.error(f'{name} failed.')
-            exit()
+            exit(1)
         else:
             logger.info(f'{name} success.')
 
@@ -181,7 +181,7 @@ def main():
 
         if not is_available_ncnn():
             logger.error('ncnn support is not available.')
-            exit(-1)
+            exit(1)
 
         from mmdeploy.apis.ncnn import get_output_model_file, onnx2ncnn
 

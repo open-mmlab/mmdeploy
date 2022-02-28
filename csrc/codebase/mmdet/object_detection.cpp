@@ -13,7 +13,7 @@ namespace mmdeploy::mmdet {
 ResizeBBox::ResizeBBox(const Value& cfg) : MMDetection(cfg) {
   if (cfg.contains("params")) {
 #ifdef EVAL_MODE
-    INFO("EVAL_MODE, SDK uses postprocessing score_thr for evaluating performance.");
+    MMDEPLOY_INFO("EVAL_MODE, SDK uses postprocessing score_thr for evaluating performance.");
     if (cfg["params"].contains("conf_thr")) {
       // for mobilev2yolov3
       score_thr_ = cfg["params"].value("conf_thr", 0.f);
@@ -21,7 +21,7 @@ ResizeBBox::ResizeBBox(const Value& cfg) : MMDetection(cfg) {
       score_thr_ = cfg["params"].value("score_thr", 0.f);
     }
 #else
-    INFO("inference mode, SDK uses fixed 0.3 score_thr_ for inferencing.");
+    MMDEPLOY_INFO("inference mode, SDK uses fixed 0.3 score_thr_ for inferencing.");
     score_thr_ = 0.3;
 #endif
     min_bbox_size_ = cfg["params"].value("min_bbox_size", 0.f);
@@ -73,32 +73,32 @@ std::vector<Tensor> ResizeBBox::GetDetsLabels(const Value& prep_res, const Value
     results.push_back(labels);
     return results;
   } else {
-    ERROR("No support for another key of detection results!");
+    MMDEPLOY_ERROR("No support for another key of detection results!");
     return results;
   }
 }
 Result<Value> ResizeBBox::operator()(const Value& prep_res, const Value& infer_res) {
-  DEBUG("prep_res: {}\ninfer_res: {}", prep_res, infer_res);
+  MMDEPLOY_DEBUG("prep_res: {}\ninfer_res: {}", prep_res, infer_res);
   try {
     Tensor dets, labels;
     vector<Tensor> outputs = GetDetsLabels(prep_res, infer_res);
     dets = outputs[0];
     labels = outputs[1];
-    DEBUG("dets.shape: {}", dets.shape());
-    DEBUG("labels.shape: {}", labels.shape());
-
+    MMDEPLOY_DEBUG("dets.shape: {}", dets.shape());
+    MMDEPLOY_DEBUG("labels.shape: {}", labels.shape());
     // `dets` is supposed to have 3 dims. They are 'batch', 'bboxes_number'
     // and 'channels' respectively
     if (!(dets.shape().size() == 3 && dets.data_type() == DataType::kFLOAT)) {
-      ERROR("unsupported `dets` tensor, shape: {}, dtype: {}", dets.shape(), (int)dets.data_type());
+      MMDEPLOY_ERROR("unsupported `dets` tensor, shape: {}, dtype: {}", dets.shape(),
+                     (int)dets.data_type());
       return Status(eNotSupported);
     }
 
     // `labels` is supposed to have 2 dims, which are 'batch' and
     // 'bboxes_number'
     if (labels.shape().size() != 2) {
-      ERROR("unsupported `labels`, tensor, shape: {}, dtype: {}", labels.shape(),
-            (int)labels.data_type());
+      MMDEPLOY_ERROR("unsupported `labels`, tensor, shape: {}, dtype: {}", labels.shape(),
+                     (int)labels.data_type());
       return Status(eNotSupported);
     }
 
@@ -159,16 +159,17 @@ Result<DetectorOutput> ResizeBBox::GetBBoxes(const Value& prep_res, const Tensor
     auto right = dets_ptr[2];
     auto bottom = dets_ptr[3];
 
-    DEBUG("ori left {}, top {}, right {}, bottom {}, label {}", left, top, right, bottom,
-          *labels_ptr);
+    MMDEPLOY_DEBUG("ori left {}, top {}, right {}, bottom {}, label {}", left, top, right, bottom,
+                   *labels_ptr);
     auto rect = MapToOriginImage(left, top, right, bottom, scale_factor.data(), w_offset, h_offset,
                                  ori_width, ori_height);
     if (rect[2] - rect[0] < min_bbox_size_ || rect[3] - rect[1] < min_bbox_size_) {
-      DEBUG("ignore small bbox with width '{}' and height '{}", rect[2] - rect[0],
-            rect[3] - rect[1]);
+      MMDEPLOY_DEBUG("ignore small bbox with width '{}' and height '{}", rect[2] - rect[0],
+                     rect[3] - rect[1]);
       continue;
     }
-    DEBUG("remap left {}, top {}, right {}, bottom {}", rect[0], rect[1], rect[2], rect[3]);
+    MMDEPLOY_DEBUG("remap left {}, top {}, right {}, bottom {}", rect[0], rect[1], rect[2],
+                   rect[3]);
     DetectorOutput::Detection det{};
     det.index = i;
     det.label_id = static_cast<int>(*labels_ptr);

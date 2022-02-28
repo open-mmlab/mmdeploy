@@ -650,22 +650,22 @@ class Value {
 
   template <typename Key>
   bool contains(Key&& key) const {
-    return _unwrap().template _contains(std::forward<Key>(key));
+    return _unwrap()._contains(std::forward<Key>(key));
   }
 
   template <typename Key>
   iterator find(Key&& key) {
-    return _unwrap().template _find(std::forward<Key>(key));
+    return _unwrap()._find(std::forward<Key>(key));
   }
 
   template <typename Key>
   const_iterator find(Key&& key) const {
-    return _unwrap().template _find(std::forward<Key>(key));
+    return _unwrap()._find(std::forward<Key>(key));
   }
 
   template <typename T>
   T value(const typename Object::key_type& key, const T& default_value) const {
-    return _unwrap().template _value(key, default_value);
+    return _unwrap()._value(key, default_value);
   }
 
   iterator begin() { return _unwrap()._begin(); }

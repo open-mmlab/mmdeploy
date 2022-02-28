@@ -12,7 +12,7 @@ using namespace mmdeploy;
 
 TEST_CASE("test openvino net", "[openvino_net]") {
   auto& gResource = MMDeployTestResources::Get();
-  auto model_list = gResource.LocateModelResources("mmcls/openvino");
+  auto model_list = gResource.LocateModelResources(fs::path{"mmcls"} / "openvino");
   REQUIRE(!model_list.empty());
 
   Model model(model_list.front());

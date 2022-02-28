@@ -6,12 +6,13 @@
 
 #include "apis/c/detector.h"
 #include "core/logger.h"
+#include "core/utils/formatter.h"
 #include "opencv2/opencv.hpp"
 #include "test_resource.h"
-
 using namespace std;
 
 TEST_CASE("test detector's c api", "[detector]") {
+  MMDEPLOY_INFO("test detector");
   auto test = [](const string &device, const string &model_path, const vector<string> &img_list) {
     mm_handle_t handle{nullptr};
     auto ret = mmdeploy_detector_create_by_path(model_path.c_str(), device.c_str(), 0, &handle);
@@ -32,26 +33,30 @@ TEST_CASE("test detector's c api", "[detector]") {
     REQUIRE(ret == MM_SUCCESS);
     auto result_ptr = results;
     for (auto i = 0; i < mats.size(); ++i) {
-      INFO("the '{}-th' image has '{}' objects", i, result_count[i]);
+      MMDEPLOY_INFO("the '{}-th' image has '{}' objects", i, result_count[i]);
       for (auto j = 0; j < result_count[i]; ++j, ++result_ptr) {
         auto &bbox = result_ptr->bbox;
-        INFO(" >> bbox[{}, {}, {}, {}], label_id {}, score {}", bbox.left, bbox.top, bbox.right,
-             bbox.bottom, result_ptr->label_id, result_ptr->score);
+        MMDEPLOY_INFO(" >> bbox[{}, {}, {}, {}], label_id {}, score {}", bbox.left, bbox.top,
+                      bbox.right, bbox.bottom, result_ptr->label_id, result_ptr->score);
       }
     }
     mmdeploy_detector_release_result(results, result_count, (int)mats.size());
     mmdeploy_detector_destroy(handle);
   };
-
-  auto gResources = MMDeployTestResources::Get();
-  auto img_lists = gResources.LocateImageResources("mmdet/images");
+  MMDEPLOY_INFO("get test resources");
+  auto &gResources = MMDeployTestResources::Get();
+  MMDEPLOY_INFO("locate image resources");
+  auto img_lists = gResources.LocateImageResources(fs::path{"mmdet"} / "images");
+  MMDEPLOY_INFO("{}", img_lists.size());
   REQUIRE(!img_lists.empty());
 
   for (auto &backend : gResources.backends()) {
+    MMDEPLOY_INFO("backend: {}", backend);
     DYNAMIC_SECTION("loop backend: " << backend) {
-      auto model_list = gResources.LocateModelResources("mmdet/" + backend);
+      auto model_list = gResources.LocateModelResources(fs::path{"mmdet"} / backend);
       REQUIRE(!model_list.empty());
       for (auto &model_path : model_list) {
+        MMDEPLOY_INFO("model: {}", model_path);
         for (auto &device_name : gResources.device_names(backend)) {
           test(device_name, model_path, img_lists);
         }

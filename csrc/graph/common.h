@@ -12,15 +12,16 @@ namespace mmdeploy::graph {
 
 template <typename EntryType, typename RetType = typename Creator<EntryType>::ReturnType>
 inline Result<RetType> CreateFromRegistry(const Value& config, const char* key = "type") {
-  INFO("config: {}", config);
+  MMDEPLOY_INFO("config: {}", config);
   auto type = config[key].get<std::string>();
   auto creator = Registry<EntryType>::Get().GetCreator(type);
   if (!creator) {
+    MMDEPLOY_ERROR("failed to find module creator: {}", type);
     return Status(eEntryNotFound);
   }
   auto inst = creator->Create(config);
   if (!inst) {
-    ERROR("failed to create module: {}", type);
+    MMDEPLOY_ERROR("failed to create module: {}", type);
     return Status(eFail);
   }
   return std::move(inst);

@@ -7,7 +7,7 @@
 
 namespace mmdeploy {
 
-class Compose : public Transform {
+class MMDEPLOY_API Compose : public Transform {
  public:
   explicit Compose(const Value& args, int version = 0);
   ~Compose() override = default;

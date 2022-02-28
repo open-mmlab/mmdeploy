@@ -39,7 +39,7 @@ class ModelImpl;
  * in case of faster-rcnn model, it splits into two models, one is rpn and the
  * other is cnn for roi classification.
  */
-class Model {
+class MMDEPLOY_API Model {
  public:
   Model() = default;
 
@@ -115,7 +115,7 @@ class Model {
  * };
  * ANewModelImplRegister a_new_model_impl_register;
  */
-class ModelRegistry {
+class MMDEPLOY_API ModelRegistry {
  public:
   using Creator = std::function<std::unique_ptr<ModelImpl>()>;
   struct Entry {
@@ -126,10 +126,7 @@ class ModelRegistry {
   /**
    * @brief Return global instance of `ModelRegistry`
    */
-  static ModelRegistry& Get() {
-    static ModelRegistry inst;
-    return inst;
-  }
+  static ModelRegistry& Get();
 
   /**
    * @brief Register an sdk model format denoted by an specified `ModelImpl`

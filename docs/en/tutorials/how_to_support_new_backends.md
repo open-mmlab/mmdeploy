@@ -94,7 +94,7 @@ The backends in MMDeploy must support the ONNX. The backend loads the ".onnx" fi
                   f'--input_shape="{input_shapes}" ' \
                   f'--disable_fusing '
         command = f'mo.py {mo_args}'
-        mo_output = run(command, capture_output=True, shell=True, check=True)
+        mo_output = run(command, stdout=PIPE, stderr=PIPE, shell=True, check=True)
     ```
 
     **Use executable program:**

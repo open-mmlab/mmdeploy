@@ -17,7 +17,7 @@ Inference::Inference(const Value& cfg) : BaseNode(cfg) {
     auto model_path = model_value.get<std::string>();
     model_ = Model(model_path);
   } else {
-    ERROR("unsupported model specification");
+    MMDEPLOY_ERROR("unsupported model specification");
     throw_exception(eInvalidArgument);
   }
 
@@ -31,7 +31,7 @@ Inference::Inference(const Value& cfg) : BaseNode(cfg) {
   value["context"] = context;
   pipeline_ = std::make_unique<Pipeline>(value);
   if (!pipeline_) {
-    ERROR("failed to create pipeline");
+    MMDEPLOY_ERROR("failed to create pipeline");
     throw_exception(eFail);
   }
 }
