@@ -4,12 +4,14 @@
 
 #include "archive/json_archive.h"
 #include "archive/value_archive.h"
+#include "core/registry.h"
 #include "core/tensor.h"
 #include "core/utils/device_utils.h"
 #include "core/utils/formatter.h"
 #include "opencv2/imgproc.hpp"
-#include "preprocess/cpu/opencv_utils.h"
+#include "opencv_utils.h"
 #include "preprocess/transform/resize.h"
+#include "preprocess/transform/transform.h"
 
 using namespace std;
 
@@ -37,7 +39,7 @@ class ResizeOCRImpl : public Module {
   ~ResizeOCRImpl() override = default;
 
   Result<Value> Process(const Value& input) override {
-    DEBUG("input: {}", input);
+    MMDEPLOY_DEBUG("input: {}", input);
     auto dst_height = height_;
     auto dst_min_width = min_width_;
     auto dst_max_width = max_width_;
@@ -84,7 +86,7 @@ class ResizeOCRImpl : public Module {
     output["resize_shape"] = to_value(img_resize.desc().shape);
     output["pad_shape"] = output["resize_shape"];
     output["valid_ratio"] = valid_ratio;
-    DEBUG("output: {}", to_json(output).dump(2));
+    MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));
     return output;
   }
 
@@ -95,7 +97,7 @@ class ResizeOCRImpl : public Module {
     int h = desc.shape[1];
     int w = desc.shape[2];
     int c = desc.shape[3];
-    assert(c == 3 or c == 1);
+    assert(c == 3 || c == 1);
     cv::Mat src_mat, dst_mat;
     if (3 == c) {  // rgb
       src_mat = cv::Mat(h, w, CV_8UC3, const_cast<uint8_t*>(img.data<uint8_t>()));
@@ -134,6 +136,8 @@ class ResizeOCRImplCreator : public Creator<ResizeOCRImpl> {
   int GetVersion() const override { return 1; }
   ReturnType Create(const Value& args) override { return std::make_unique<ResizeOCRImpl>(args); }
 };
+
+MMDEPLOY_DEFINE_REGISTRY(ResizeOCRImpl);
 
 REGISTER_MODULE(ResizeOCRImpl, ResizeOCRImplCreator);
 

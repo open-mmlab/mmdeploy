@@ -1,0 +1,39 @@
+// Copyright (c) OpenMMLab. All rights reserved.
+
+#include <Windows.h>
+
+#include <cstdio>
+
+namespace mmdeploy {
+namespace {
+
+void* mmdeploy_load_library(const char* name) {
+  fprintf(stderr, "loading %s ...\n", name);
+  auto handle = LoadLibraryA(name);
+  if (!handle) {
+    fprintf(stderr, "failed to load library %s\n", name);
+    return nullptr;
+  }
+  return handle;
+}
+
+// clang-format off
+
+class Loader {
+ public:
+  Loader() {
+    const char* modules[] = {
+        @_MMDEPLOY_DYNAMIC_MODULES@
+    };
+    for (const auto name : modules) {
+      mmdeploy_load_library(name);
+    }
+  }
+};
+
+// clang-format on
+
+static Loader loader;
+
+}  // namespace
+}  // namespace mmdeploy

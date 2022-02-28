@@ -13,7 +13,7 @@ namespace mmdeploy {
 
 class Value;
 
-std::string format_value(const Value& value);
+MMDEPLOY_API std::string format_value(const Value& value);
 
 }  // namespace mmdeploy
 

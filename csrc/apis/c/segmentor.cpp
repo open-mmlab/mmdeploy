@@ -53,28 +53,28 @@ int mmdeploy_segmentor_create_impl(ModelType&& m, const char* device_name, int d
     return MM_SUCCESS;
 
   } catch (const std::exception& e) {
-    ERROR("exception caught: {}", e.what());
+    MMDEPLOY_ERROR("exception caught: {}", e.what());
   } catch (...) {
-    ERROR("unknown exception caught");
+    MMDEPLOY_ERROR("unknown exception caught");
   }
   return MM_E_FAIL;
 }
 
 }  // namespace
 
-MM_SDK_API int mmdeploy_segmentor_create(mm_model_t model, const char* device_name, int device_id,
-                                         mm_handle_t* handle) {
+int mmdeploy_segmentor_create(mm_model_t model, const char* device_name, int device_id,
+                              mm_handle_t* handle) {
   return mmdeploy_segmentor_create_impl(*static_cast<Model*>(model), device_name, device_id,
                                         handle);
 }
 
-MM_SDK_API int mmdeploy_segmentor_create_by_path(const char* model_path, const char* device_name,
-                                                 int device_id, mm_handle_t* handle) {
+int mmdeploy_segmentor_create_by_path(const char* model_path, const char* device_name,
+                                      int device_id, mm_handle_t* handle) {
   return mmdeploy_segmentor_create_impl(model_path, device_name, device_id, handle);
 }
 
-MM_SDK_API int mmdeploy_segmentor_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
-                                        mm_segment_t** results) {
+int mmdeploy_segmentor_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
+                             mm_segment_t** results) {
   if (handle == nullptr || mats == nullptr || mat_count == 0 || results == nullptr) {
     return MM_E_INVALID_ARG;
   }
@@ -97,7 +97,7 @@ MM_SDK_API int mmdeploy_segmentor_apply(mm_handle_t handle, const mm_mat_t* mats
     auto results_ptr = _results.get();
     for (auto i = 0; i < mat_count; ++i, ++results_ptr) {
       auto& output_item = output[i];
-      DEBUG("the {}-th item in output: {}", i, output_item);
+      MMDEPLOY_DEBUG("the {}-th item in output: {}", i, output_item);
       auto segmentor_output = from_value<mmseg::SegmentorOutput>(output_item);
       results_ptr->height = segmentor_output.height;
       results_ptr->width = segmentor_output.width;
@@ -110,14 +110,14 @@ MM_SDK_API int mmdeploy_segmentor_apply(mm_handle_t handle, const mm_mat_t* mats
     return MM_SUCCESS;
 
   } catch (const std::exception& e) {
-    ERROR("exception caught: {}", e.what());
+    MMDEPLOY_ERROR("exception caught: {}", e.what());
   } catch (...) {
-    ERROR("unknown exception caught");
+    MMDEPLOY_ERROR("unknown exception caught");
   }
   return MM_E_FAIL;
 }
 
-MM_SDK_API void mmdeploy_segmentor_release_result(mm_segment_t* results, int count) {
+void mmdeploy_segmentor_release_result(mm_segment_t* results, int count) {
   if (results == nullptr) {
     return;
   }
@@ -128,7 +128,7 @@ MM_SDK_API void mmdeploy_segmentor_release_result(mm_segment_t* results, int cou
   delete[] results;
 }
 
-MM_SDK_API void mmdeploy_segmentor_destroy(mm_handle_t handle) {
+void mmdeploy_segmentor_destroy(mm_handle_t handle) {
   if (handle != nullptr) {
     auto segmentor = static_cast<Handle*>(handle);
     delete segmentor;

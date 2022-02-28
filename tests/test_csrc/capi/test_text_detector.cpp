@@ -34,12 +34,12 @@ TEST_CASE("test text detector's c api", "[text-detector]") {
 
     auto result_ptr = results;
     for (auto i = 0; i < mats.size(); ++i) {
-      INFO("the {}-th image has '{}' objects", i, result_count[i]);
+      MMDEPLOY_INFO("the {}-th image has '{}' objects", i, result_count[i]);
       for (auto j = 0; j < result_count[i]; ++j, ++result_ptr) {
         auto& bbox = result_ptr->bbox;
-        INFO(">> bbox[{}].score: {}, coordinate: ", i, result_ptr->score);
+        MMDEPLOY_INFO(">> bbox[{}].score: {}, coordinate: ", i, result_ptr->score);
         for (auto& _bbox : result_ptr->bbox) {
-          INFO(">> >> ({}, {})", _bbox.x, _bbox.y);
+          MMDEPLOY_INFO(">> >> ({}, {})", _bbox.x, _bbox.y);
         }
       }
     }
@@ -49,12 +49,12 @@ TEST_CASE("test text detector's c api", "[text-detector]") {
   };
 
   auto& gResources = MMDeployTestResources::Get();
-  auto img_list = gResources.LocateImageResources("mmocr/images");
+  auto img_list = gResources.LocateImageResources(fs::path{"mmocr"} / "images");
   REQUIRE(!img_list.empty());
 
   for (auto& backend : gResources.backends()) {
     DYNAMIC_SECTION("loop backend: " << backend) {
-      auto model_list = gResources.LocateModelResources("mmocr/textdet/" + backend);
+      auto model_list = gResources.LocateModelResources(fs::path{"mmocr"} / "textdet" / "backend");
       REQUIRE(!model_list.empty());
       for (auto& model_path : model_list) {
         for (auto& device_name : gResources.device_names(backend)) {

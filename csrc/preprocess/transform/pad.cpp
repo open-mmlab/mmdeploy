@@ -28,7 +28,7 @@ PadImpl::PadImpl(const Value& args) : TransformImpl(args) {
 }
 
 Result<Value> PadImpl::Process(const Value& input) {
-  DEBUG("input: {}", to_json(input).dump(2));
+  MMDEPLOY_DEBUG("input: {}", to_json(input).dump(2));
   Value output = input;
   auto img_fields = GetImageFields(input);
 
@@ -38,7 +38,7 @@ Result<Value> PadImpl::Process(const Value& input) {
 
     assert(tensor.desc().shape.size() == 4);
     assert(tensor.desc().shape[0] == 1);
-    assert(tensor.desc().shape[3] == 3 or tensor.desc().shape[3] == 1);
+    assert(tensor.desc().shape[3] == 3 || tensor.desc().shape[3] == 1);
 
     int height = tensor.desc().shape[1];
     int width = tensor.desc().shape[2];
@@ -75,14 +75,14 @@ Result<Value> PadImpl::Process(const Value& input) {
     }
   }
 
-  DEBUG("output: {}", to_json(output).dump(2));
+  MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));
   return output;
 }
 
 Pad::Pad(const Value& args, int version) : Transform(args) {
   auto impl_creator = Registry<PadImpl>::Get().GetCreator(specified_platform_, version);
   if (nullptr == impl_creator) {
-    ERROR("'Pad' is not supported on '{}' platform", specified_platform_);
+    MMDEPLOY_ERROR("'Pad' is not supported on '{}' platform", specified_platform_);
     throw std::domain_error("'Pad' is not supported on specified platform");
   }
   impl_ = impl_creator->Create(args);
@@ -99,5 +99,7 @@ class PadCreator : public Creator<Transform> {
 };
 
 REGISTER_MODULE(Transform, PadCreator);
+
+MMDEPLOY_DEFINE_REGISTRY(PadImpl);
 
 }  // namespace mmdeploy

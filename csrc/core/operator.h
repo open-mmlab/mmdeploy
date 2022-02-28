@@ -11,13 +11,18 @@ using std::string;
 using std::tuple;
 using std::vector;
 
-Result<void> Gather(const Value::Array& array, const vector<int>& idxs, Value::Array& output);
-Result<void> Gather(Value::Array&& array, const vector<int>& idxs, Value::Array& output);
-Result<void> Gather(const Value::Object& object, const vector<std::string>& keys,
-                    Value::Array& output);
-Result<void> Gather(Value::Object&& object, const vector<std::string>& keys, Value::Array& output);
-Result<void> Scatter(Value::Array array, const vector<int>& idxs, Value::Array& output);
-Result<void> Scatter(Value::Array array, const vector<std::string>& keys, Value::Object& output);
+MMDEPLOY_API Result<void> Gather(const Value::Array& array, const vector<int>& idxs,
+                                 Value::Array& output);
+MMDEPLOY_API Result<void> Gather(Value::Array&& array, const vector<int>& idxs,
+                                 Value::Array& output);
+MMDEPLOY_API Result<void> Gather(const Value::Object& object, const vector<std::string>& keys,
+                                 Value::Array& output);
+MMDEPLOY_API Result<void> Gather(Value::Object&& object, const vector<std::string>& keys,
+                                 Value::Array& output);
+MMDEPLOY_API Result<void> Scatter(Value::Array array, const vector<int>& idxs,
+                                  Value::Array& output);
+MMDEPLOY_API Result<void> Scatter(Value::Array array, const vector<std::string>& keys,
+                                  Value::Object& output);
 
 inline Result<Value::Array> Gather(const Value::Array& array, const vector<int>& idxs) {
   Value::Array output;
@@ -95,13 +100,13 @@ Result<Value> Unflatten(V&& input, const vector<int>& idxs) {
 }
 
 // object of arrays -> array of objects, all arrays must be of same length
-Result<Value> DistribOA(const Value& oa);
+MMDEPLOY_API Result<Value> DistribOA(const Value& oa);
 
 // array of objects -> object of arrays, all objects must be isomorphic
-Result<Value> DistribAO(const Value& ao);
+MMDEPLOY_API Result<Value> DistribAO(const Value& ao);
 
 // array of arrays -> array of arrays, this is equivalent to transpose
-Result<Value> DistribAA(const Value& a);
+MMDEPLOY_API Result<Value> DistribAA(const Value& a);
 
 }  // namespace mmdeploy::graph
 

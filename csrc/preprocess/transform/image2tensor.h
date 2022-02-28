@@ -14,7 +14,7 @@ namespace mmdeploy {
  * it to (1, C, H, W).
  *
  */
-class ImageToTensorImpl : public TransformImpl {
+class MMDEPLOY_API ImageToTensorImpl : public TransformImpl {
  public:
   ImageToTensorImpl(const Value& args);
   ~ImageToTensorImpl() = default;
@@ -34,7 +34,7 @@ class ImageToTensorImpl : public TransformImpl {
   ArgType arg_;
 };
 
-class ImageToTensor : public Transform {
+class MMDEPLOY_API ImageToTensor : public Transform {
  public:
   explicit ImageToTensor(const Value& args, int version = 0);
   ~ImageToTensor() = default;
@@ -44,6 +44,8 @@ class ImageToTensor : public Transform {
  private:
   std::unique_ptr<ImageToTensorImpl> impl_;
 };
+
+MMDEPLOY_DECLARE_REGISTRY(ImageToTensorImpl);
 
 }  // namespace mmdeploy
 

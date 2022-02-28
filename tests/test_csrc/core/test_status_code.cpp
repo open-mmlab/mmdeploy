@@ -26,13 +26,13 @@ TEST_CASE("test status_code", "[status_code]") {
     sqrt_of_negative().value();
   } catch (const Exception& e) {
     REQUIRE(e.code() == eInvalidArgument);
-    INFO("{}", e.what());
+    MMDEPLOY_INFO("{}", e.what());
   }
 
   auto r = sqrt_of_negative();
   REQUIRE(!r);
   REQUIRE(r.error() == eInvalidArgument);
-  INFO("{}", r.error().message().c_str());
+  MMDEPLOY_INFO("{}", r.error().message().c_str());
 }
 
 }  // namespace mmdeploy

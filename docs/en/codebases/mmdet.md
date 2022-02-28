@@ -22,6 +22,7 @@ Please refer to [get_started.md](https://github.com/open-mmlab/mmdetection/blob/
 |   Cascade R-CNN    |   ObjectDetection    |      Y      |    Y     |   N   |   Y   |    Y     | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/cascade_rcnn) |
 |    Faster R-CNN    |   ObjectDetection    |      Y      |    Y     |   Y   |   Y   |    Y     | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/faster_rcnn)  |
 | Faster R-CNN + DCN |   ObjectDetection    |      Y      |    Y     |   Y   |   Y   |    Y     | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/faster_rcnn)  |
+|       GFL          |   ObjectDetection    |      Y      |    Y     |   N   |   ?   |    Y     |      [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/gfl)     |
 | Cascade Mask R-CNN | InstanceSegmentation |      Y      |    N     |   N   |   N   |    Y     | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/cascade_rcnn) |
 |     Mask R-CNN     | InstanceSegmentation |      Y      |    Y     |   N   |   N   |    Y     |  [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/mask_rcnn)   |
 

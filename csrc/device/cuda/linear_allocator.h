@@ -25,11 +25,11 @@ class LinearAllocator {
     std::size_t space = base_ + size_ - ptr_;
 
     if (std::align(16, n, ptr, space)) {
-      ERROR("success n={}, total={}, count={}", n, total_, count_);
+      MMDEPLOY_ERROR("success n={}, total={}, count={}", n, total_, count_);
       ptr_ = static_cast<uint8_t*>(ptr) + n;
       return ptr;
     }
-    ERROR("fallback {}, total={}, count={}", n, total_, count_);
+    MMDEPLOY_ERROR("fallback {}, total={}, count={}", n, total_, count_);
     return gDefaultAllocator().Allocate(n);
   }
   void Deallocate(void* _p, std::size_t n) {
@@ -43,7 +43,7 @@ class LinearAllocator {
     }
     total_ -= n;
     --count_;
-    ERROR("deallocate total={}, count={}", total_, count_);
+    MMDEPLOY_ERROR("deallocate total={}, count={}", total_, count_);
     if (total_ == 0) {
       assert(count_ == 0);
       ptr_ = base_;

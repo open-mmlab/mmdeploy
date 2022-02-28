@@ -31,7 +31,7 @@ PrepareImageImpl::PrepareImageImpl(const Value& args) : TransformImpl(args) {
    */
 
 Result<Value> PrepareImageImpl::Process(const Value& input) {
-  DEBUG("input: {}", to_json(input).dump(2));
+  MMDEPLOY_DEBUG("input: {}", to_json(input).dump(2));
   assert(input.contains("ori_img"));
 
   // copy input data, and update its properties later
@@ -50,7 +50,7 @@ Result<Value> PrepareImageImpl::Process(const Value& input) {
   }
   output["ori_shape"] = {1, src_mat.height(), src_mat.width(), src_mat.channel()};
   output["img_fields"].push_back("img");
-  DEBUG("output: {}", to_json(output).dump(2));
+  MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));
 
   return output;
 }
@@ -58,7 +58,7 @@ Result<Value> PrepareImageImpl::Process(const Value& input) {
 PrepareImage::PrepareImage(const Value& args, int version) : Transform(args) {
   auto impl_creator = Registry<PrepareImageImpl>::Get().GetCreator(specified_platform_, version);
   if (nullptr == impl_creator) {
-    ERROR("'PrepareImage' is not supported on '{}' platform", specified_platform_);
+    MMDEPLOY_ERROR("'PrepareImage' is not supported on '{}' platform", specified_platform_);
     throw std::domain_error("'PrepareImage' is not supported on specified platform");
   }
   impl_ = impl_creator->Create(args);
@@ -80,4 +80,7 @@ class PrepareImageCreator : public Creator<Transform> {
 };
 
 REGISTER_MODULE(Transform, PrepareImageCreator);
+
+MMDEPLOY_DEFINE_REGISTRY(PrepareImageImpl);
+
 }  // namespace mmdeploy

@@ -16,7 +16,7 @@ ImageToTensorImpl::ImageToTensorImpl(const Value& args) : TransformImpl(args) {
 }
 
 Result<Value> ImageToTensorImpl::Process(const Value& input) {
-  DEBUG("input: {}", to_json(input).dump(2));
+  MMDEPLOY_DEBUG("input: {}", to_json(input).dump(2));
   Value output = input;
   for (auto& key : arg_.keys) {
     assert(input.contains(key));
@@ -28,14 +28,14 @@ Result<Value> ImageToTensorImpl::Process(const Value& input) {
 
     OUTCOME_TRY(output[key], HWC2CHW(src_tensor));
   }  // for key
-  DEBUG("output: {}", to_json(output).dump(2));
+  MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));
   return output;
 }
 
 ImageToTensor::ImageToTensor(const Value& args, int version) : Transform(args) {
   auto impl_creator = Registry<ImageToTensorImpl>::Get().GetCreator(specified_platform_, version);
   if (nullptr == impl_creator) {
-    ERROR("'ImageToTensor' is not supported on '{}' platform", specified_platform_);
+    MMDEPLOY_ERROR("'ImageToTensor' is not supported on '{}' platform", specified_platform_);
     throw std::domain_error("'ImageToTensor' is not supported on specified platform");
   }
   impl_ = impl_creator->Create(args);
@@ -53,4 +53,5 @@ class ImageToTensorCreator : public Creator<Transform> {
   int version_{1};
 };
 REGISTER_MODULE(Transform, ImageToTensorCreator);
+MMDEPLOY_DEFINE_REGISTRY(ImageToTensorImpl);
 }  // namespace mmdeploy

@@ -2,6 +2,8 @@
 
 #include "operator.h"
 
+#include <algorithm>
+
 namespace mmdeploy::graph {
 
 Result<void> Gather(const Value::Array& array, const vector<int>& idxs, Value::Array& output) {

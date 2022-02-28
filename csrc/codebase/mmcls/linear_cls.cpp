@@ -1,5 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
+#include <algorithm>
 #include <numeric>
 
 #include "codebase/mmcls/mmcls.h"
@@ -18,19 +19,19 @@ class LinearClsHead : public MMClassification {
     if (cfg.contains("params")) {
       topk_ = cfg["params"].value("topk", 1);
       if (topk_ <= 0) {
-        ERROR("'topk' should be greater than 0, but got '{}'", topk_);
+        MMDEPLOY_ERROR("'topk' should be greater than 0, but got '{}'", topk_);
         throw_exception(eInvalidArgument);
       }
     }
   }
 
   Result<Value> operator()(const Value& infer_res) {
-    DEBUG("infer_res: {}", infer_res);
+    MMDEPLOY_DEBUG("infer_res: {}", infer_res);
     auto output = infer_res["output"].get<Tensor>();
 
     if (!(output.shape().size() >= 2 && output.data_type() == DataType::kFLOAT)) {
-      ERROR("unsupported `output` tensor, shape: {}, dtype: {}", output.shape(),
-            (int)output.data_type());
+      MMDEPLOY_ERROR("unsupported `output` tensor, shape: {}, dtype: {}", output.shape(),
+                     (int)output.data_type());
       return Status(eNotSupported);
     }
 
@@ -53,7 +54,7 @@ class LinearClsHead : public MMClassification {
                  [&](int i, int j) { return scores_data[i] > scores_data[j]; });
     for (int i = 0; i < topk_; ++i) {
       auto label = ClassifyOutput::Label{idx[i], scores_data[idx[i]]};
-      DEBUG("label_id: {}, score: {}", label.label_id, label.score);
+      MMDEPLOY_DEBUG("label_id: {}, score: {}", label.label_id, label.score);
       output.labels.push_back(label);
     }
     return to_value(std::move(output));

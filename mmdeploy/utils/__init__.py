@@ -9,7 +9,7 @@ from .config_utils import (cfg_apply_marks, get_backend, get_backend_config,
 from .constants import IR, SDK_TASK_MAP, Backend, Codebase, Task
 from .device import parse_cuda_device_id, parse_device_id
 from .env import get_backend_version, get_codebase_version, get_library_version
-from .utils import get_root_logger, target_wrapper
+from .utils import get_file_path, get_root_logger, target_wrapper
 
 __all__ = [
     'is_dynamic_batch', 'is_dynamic_shape', 'get_task_type', 'get_codebase',
@@ -20,5 +20,5 @@ __all__ = [
     'parse_device_id', 'parse_cuda_device_id', 'get_codebase_config',
     'get_backend_config', 'get_root_logger', 'get_dynamic_axes',
     'target_wrapper', 'SDK_TASK_MAP', 'get_library_version',
-    'get_codebase_version', 'get_backend_version', 'IR'
+    'get_codebase_version', 'get_backend_version', 'IR', 'get_file_path'
 ]
