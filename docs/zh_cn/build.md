@@ -128,7 +128,7 @@ pip install -e .
   sudo dpkg -i libspdlog-dev_0.16.3-1_amd64.deb
   ```
 
-  你也可以使用spdlog的源码进行编译，激活它更多的特性。但是，请务必打开 **`-fPIC`** 编译选项。
+  您也可以使用spdlog的源码进行编译，激活它更多的特性。但是，请务必打开 **`-fPIC`** 编译选项。
 
 - pplcv
 
@@ -153,7 +153,7 @@ pip install -e .
 
 - 设置目标设备
 
-  cpu 是 SDK 目标设备的默认选项。你也可以通过`MMDEPLOY_TARGET_DEVICES`传入其他设备名称。当有多个设备时，设备名称之间使用分号隔开。
+  cpu 是 SDK 目标设备的默认选项。您也可以通过`MMDEPLOY_TARGET_DEVICES`传入其他设备名称。当有多个设备时，设备名称之间使用分号隔开。
   比如，`-DMMDEPLOY_TARGET_DEVICES="cpu;cuda"`。
   当前，SDK支持以下设备：
 
@@ -162,12 +162,12 @@ pip install -e .
   | Host | cpu  | N/A                                |
   | CUDA | cuda | CUDA_TOOLKIT_ROOT_DIR 和 pplcv_DIR |
 
-  如果你的开发环境中有多个cuda版本，则需要通过`-DCUDA_TOOLKIT_ROOT_DIR=/path/of/cuda`来明确使用的版本。
+  如果您的开发环境中有多个cuda版本，则需要通过`-DCUDA_TOOLKIT_ROOT_DIR=/path/of/cuda`来明确使用的版本。
   于此同时，还需设置`-Dpplcv_DIR=ppl.cv/path/install/lib/cmake/ppl`，用以编译cuda平台下的图像处理算子。
 
 - 设置推理后端
 
-  **默认情况下，SDK不设置任何后端**, 因为它与应用场景高度相关。你可以通过设置`MMDEPLOY_TARGET_BACKENDS`激活感兴趣的推理后端。
+  **默认情况下，SDK不设置任何后端**, 因为它与应用场景高度相关。您可以通过设置`MMDEPLOY_TARGET_BACKENDS`激活感兴趣的推理后端。
   当选择多个时， 中间使用分号隔开。比如：`-DMMDEPLOY_TARGET_BACKENDS="trt;ort;pplnn;ncnn;openvino"`
   构建时，几乎每个后端，都需设置一些环境变量，用来查找依赖包。
   下表展示了目前SDK支持的后端，以及构建时，每个后端需要设置的变量：
