@@ -40,9 +40,11 @@ class OpenVINOWrapper(BaseWrapper):
         self.ie = IECore()
         bin_path = osp.splitext(ir_model_file)[0] + '.bin'
         self.net = self.ie.read_network(ir_model_file, bin_path)
-        # for input in self.net.input_info.values():
-        #     batch_size = input.input_data.shape[0]
-        #     assert batch_size == 1, 'Only batch 1 is supported.'
+        for input in self.net.input_info.values():
+            batch_size = input.input_data.shape[0]
+            dims = len(input.input_data.shape)
+            assert not dims == 4 or batch_size == 1, \
+                'Only batch 1 is supported.'
         self.device = 'cpu'
         self.sess = self.ie.load_network(
             network=self.net, device_name=self.device.upper(), num_requests=1)

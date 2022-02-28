@@ -198,19 +198,50 @@ class VoxelDetection(BaseTask):
             dataset.evaluate(outputs, **eval_kwargs)
 
     def get_model_name(self) -> str:
+        """Get the model name.
+
+        Return:
+            str: the name of the model.
+        """
         raise NotImplementedError
 
     def get_tensor_from_input(self, input_data: Dict[str, Any],
                               **kwargs) -> torch.Tensor:
+        """Get input tensor from input data.
+
+        Args:
+            input_data (dict): Input data containing meta info and image
+                tensor.
+        Returns:
+            torch.Tensor: An image in `Tensor`.
+        """
         raise NotImplementedError
 
     def get_partition_cfg(partition_type: str, **kwargs) -> Dict:
+        """Get a certain partition config for mmdet.
+
+        Args:
+            partition_type (str): A string specifying partition type.
+
+        Returns:
+            dict: A dictionary of partition config.
+        """
         raise NotImplementedError
 
     def get_postprocess(self) -> Dict:
+        """Get the postprocess information for SDK.
+
+        Return:
+            dict: Composed of the postprocess information.
+        """
         raise NotImplementedError
 
     def get_preprocess(self) -> Dict:
+        """Get the preprocess information for SDK.
+
+        Return:
+            dict: Composed of the preprocess information.
+        """
         raise NotImplementedError
 
     def single_gpu_test(self,
