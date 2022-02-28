@@ -8,7 +8,8 @@ from mmdeploy.core import FUNCTION_REWRITER
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet3d.models.voxel_encoders.pillar_encoder.PillarFeatureNet.forward')
 def pillar_encoder__forward(ctx, self, features, num_points, coors):
-    """Rewrite this func to optimize node.
+    """Rewrite this func to optimize node. Modify the code at
+    _with_voxel_center and use slice instead of the original operation.
 
     Args:
         features (torch.Tensor): Point features or raw points in shape

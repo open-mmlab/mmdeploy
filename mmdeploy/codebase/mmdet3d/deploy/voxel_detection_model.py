@@ -8,7 +8,7 @@ from torch.nn import functional as F
 
 from mmdeploy.codebase.base import BaseBackendModel
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
-                            load_config)
+                            get_root_logger, load_config)
 
 
 def __build_backend_voxel_model(cls_name: str, registry: Registry, *args,
@@ -43,6 +43,7 @@ class VoxelDetectionModel(BaseBackendModel):
         super().__init__(deploy_cfg=deploy_cfg)
         self.deploy_cfg = deploy_cfg
         self.model_cfg = model_cfg
+        self.device = device
         self._init_wrapper(
             backend=backend, backend_files=backend_files, device=device)
 
@@ -91,11 +92,9 @@ class VoxelDetectionModel(BaseBackendModel):
                 'coors': coors
             }
             outputs = self.wrapper(input_dict)
-            result = VoxelDetectionModel.post_process(
-                self.model_cfg,
-                outputs,
-                img_metas[i],
-            )[0]
+            result = VoxelDetectionModel.post_process(self.model_cfg, outputs,
+                                                      img_metas[i],
+                                                      self.device)[0]
             result_list.append(result)
         return result_list
 
@@ -164,7 +163,7 @@ class VoxelDetectionModel(BaseBackendModel):
 
     @staticmethod
     def post_process(model_cfg: Union[str, mmcv.Config], outs: torch.Tensor,
-                     img_metas: Dict):
+                     img_metas: Dict, device):
         """model post process.
 
         Args:
@@ -183,9 +182,15 @@ class VoxelDetectionModel(BaseBackendModel):
                 **model_cfg.model['bbox_head'],
                 train_cfg=None,
                 test_cfg=model_cfg.model['test_cfg']))
-        cls_scores = [outs['scores'].cuda()]
-        bbox_preds = [outs['bbox_preds'].cuda()]
-        dir_scores = [outs['dir_scores'].cuda()]
+        if device == 'cpu':
+            logger = get_root_logger()
+            logger.warning(
+                'Don\'t suggest using CPU device. Post process can\'t support.'
+            )
+            device = 'cuda'
+        cls_scores = [outs['scores'].to(device)]
+        bbox_preds = [outs['bbox_preds'].to(device)]
+        dir_scores = [outs['dir_scores'].to(device)]
         bbox_list = head.get_bboxes(
             cls_scores, bbox_preds, dir_scores, img_metas, rescale=True)
         bbox_results = [

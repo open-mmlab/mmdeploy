@@ -10,13 +10,14 @@ Please refer to [getting_started.md](https://github.com/open-mmlab/mmdetection3d
 
 |       Model        |         Task         | OnnxRuntime | TensorRT | NCNN  | PPLNN | OpenVINO |                                     Model config                                                         |
 | :----------------: | :------------------: | :---------: | :------: | :---: | :---: | :------: | :------------------------------------------------------------------------------------------------------: |
-|    PointPillars    |   VoxelDetection     |      Y      |    Y     |   N   |   N   |    N     |     [config](https://github.com/open-mmlab/mmdetection3d/blob/master/configs/pointpillars)     |
+|    PointPillars    |   VoxelDetection     |      Y      |    Y     |   N   |   N   |    Y     |     [config](https://github.com/open-mmlab/mmdetection3d/blob/master/configs/pointpillars)     |
 
 ### Reminder
 
 Voxel detection onnx model excludes model.voxelize layer and model post process, and you can use python api to call these func.
 
 Example:
+
 ```python
 from mmdeploy.codebase.mmdet3d.deploy import VoxelDetectionModel
 VoxelDetectionModel.voxelize(...)
