@@ -41,22 +41,20 @@ Result<void> NCNNNet::Init(const Value& args) {
 
   input_indices_ = net_.input_indexes();
   for (const auto& x : net_.input_names()) {
-    //    input_names_.emplace_back(x);
     input_tensors_.emplace_back(TensorDesc{
-        .device = Device("cpu"),
-        .data_type = DataType::kFLOAT,
-        .shape = {},
-        .name = x,
+        Device("cpu"),
+        DataType::kFLOAT,
+        {},
+        x,
     });
   }
   output_indices_ = net_.output_indexes();
   for (const auto& x : net_.output_names()) {
-    //    output_names_.emplace_back(x);
     output_tensors_.emplace_back(TensorDesc{
-        .device = Device("cpu"),
-        .data_type = DataType::kFLOAT,
-        .shape = {},
-        .name = x,
+        Device("cpu"),
+        DataType::kFLOAT,
+        {},
+        x,
     });
   }
 

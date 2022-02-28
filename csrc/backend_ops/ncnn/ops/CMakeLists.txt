@@ -7,9 +7,9 @@ include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
 # add plugin source
 file(GLOB_RECURSE NCNN_OPS_SRCS *.cpp)
 add_library(${PROJECT_NAME}_obj OBJECT "${NCNN_OPS_SRCS}")
+target_compile_definitions(${PROJECT_NAME}_obj PRIVATE -DMMDEPLOY_API_EXPORTS=1)
 set_target_properties(${PROJECT_NAME}_obj PROPERTIES POSITION_INDEPENDENT_CODE 1)
-target_include_directories(${PROJECT_NAME}_obj PUBLIC
-        $<TARGET_PROPERTY:ncnn,INTERFACE_INCLUDE_DIRECTORIES>)
+target_link_libraries(${PROJECT_NAME}_obj PRIVATE ncnn)
 set(_COMMON_INCLUDE_DIRS
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/csrc>)

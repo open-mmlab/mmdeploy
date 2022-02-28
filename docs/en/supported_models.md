@@ -14,6 +14,7 @@ The table below lists the models that are guaranteed to be exportable to other b
 | SSD[*](#note)             | MMDetection      |      Y      |      Y      |     Y    |   Y  |   N   |     Y    | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/ssd)                    |
 | FoveaBox                  | MMDetection      |      Y      |      Y      |     N    |   N  |   N   |     Y    | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/foveabox)               |
 | ATSS                      | MMDetection      |      N      |      Y      |     Y    |   N  |   N   |     Y    | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/atss)                   |
+| GFL                       | MMDetection      |      N      |      Y      |     Y    |  N   |   ?   |     Y    | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/gfl)                    |
 | Cascade R-CNN             | MMDetection      |      N      |      Y      |     Y    |   N  |   Y   |     Y    | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/cascade_rcnn)           |
 | Cascade Mask R-CNN        | MMDetection      |      N      |      Y      |     N    |   N  |   N   |     Y    | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/cascade_rcnn)           |
 | VFNet                     | MMDetection      |      N      |      N      |     N    |   N  |   N   |     Y    | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/vfnet)                  |
