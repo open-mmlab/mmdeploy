@@ -144,7 +144,7 @@ class VoxelDetectionModel(BaseBackendModel):
                 max_points != -1.
         """
         from mmcv.ops import Voxelization
-        model_cfg = load_config(model_cfg)
+        model_cfg = load_config(model_cfg)[0]
         voxel_layer = model_cfg.model['voxel_layer']
         voxel_layer = Voxelization(**voxel_layer)
         voxels, coors, num_points = [], [], []
@@ -177,7 +177,7 @@ class VoxelDetectionModel(BaseBackendModel):
         """
         from mmdet3d.core import bbox3d2result
         from mmdet3d.models.builder import build_head
-        model_cfg = load_config(model_cfg)
+        model_cfg = load_config(model_cfg)[0]
         head = build_head(
             dict(
                 **model_cfg.model['bbox_head'],

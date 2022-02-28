@@ -120,7 +120,7 @@ class VoxelDetection(BaseTask):
         """
         if isinstance(pcd, (list, tuple)):
             pcd = pcd[0]
-        model_cfg = load_config(model_cfg)
+        model_cfg = load_config(model_cfg)[0]
         test_pipeline = Compose(model_cfg.data.test.pipeline)
         box_type_3d, box_mode_3d = get_box_type(
             model_cfg.data.test.box_type_3d)
