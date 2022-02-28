@@ -950,7 +950,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center">-</td>
     <td align="center">40.2</td>
     <td align="center">40.2</td>
-    <td align="center">-</td>
+    <td align="center">40.0</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td>$MMDET_DIR/configs/gfl/gfl_r50_fpn_1x_coco.py</td>
