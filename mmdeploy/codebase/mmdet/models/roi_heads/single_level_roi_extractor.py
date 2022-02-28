@@ -121,33 +121,43 @@ def single_roi_extractor__forward(ctx,
     if roi_scale_factor is not None:
         rois = self.roi_rescale(rois, roi_scale_factor)
 
-    # concat len num_levels * 2 of zero tensors to dim 0 of roi_feats
-    roi_feats = torch.cat(
-        (roi_feats.new_zeros(num_levels * 2,
-                             *roi_feats.shape[-3:]), roi_feats))
-    for i in range(num_levels):
-        mask = target_lvls == i
-        inds = mask.nonzero(as_tuple=False).squeeze(1)
-
-        # concat len 2 zero tensors to dim 0 of roi_feats
-        rois_i = torch.cat((rois.new_zeros(2, 5), rois[inds]))
-
-        # use the roi align in torhcvision for TorchScript
-        if backend == Backend.TORCHSCRIPT:
+    if backend == Backend.TORCHSCRIPT:
+        for i in range(num_levels):
+            mask = target_lvls == i
+            inds = mask.nonzero(as_tuple=False).squeeze(1)
+            # use the roi align in torhcvision for TorchScript
             self.roi_layers[i].use_torchvision = True
-        roi_feats_t = self.roi_layers[i](feats[i], rois_i)
+            roi_feats_t = self.roi_layers[i](feats[i], rois[inds])
+            roi_feats[inds] = roi_feats_t
+        return roi_feats
+    else:
+        # concat len num_levels * 2 of zero tensors to dim 0 of roi_feats
+        roi_feats = torch.cat(
+            (roi_feats.new_zeros(num_levels * 2,
+                                 *roi_feats.shape[-3:]), roi_feats))
+        for i in range(num_levels):
+            mask = target_lvls == i
+            inds = mask.nonzero(as_tuple=False).squeeze(1)
 
-        # correspondingly change the inds
-        inds = torch.cat([
-            torch.tensor([2 * i, 2 * i + 1],
-                         device=inds.device,
-                         dtype=inds.dtype), inds + num_levels * 2
-        ])
-        roi_feats[inds] = roi_feats_t
+            # concat len 2 zero tensors to dim 0 of roi_feats
+            rois_i = torch.cat((rois.new_zeros(2, 5), rois[inds]))
 
-    # slice and recover tensors
-    roi_feats = roi_feats[num_levels * (2):]
-    return roi_feats
+            # use the roi align in torhcvision for TorchScript
+            if backend == Backend.TORCHSCRIPT:
+                self.roi_layers[i].use_torchvision = True
+            roi_feats_t = self.roi_layers[i](feats[i], rois_i)
+
+            # correspondingly change the inds
+            inds = torch.cat([
+                torch.tensor([2 * i, 2 * i + 1],
+                             device=inds.device,
+                             dtype=inds.dtype), inds + num_levels * 2
+            ])
+            roi_feats[inds] = roi_feats_t
+
+        # slice and recover tensors
+        roi_feats = roi_feats[num_levels * (2):]
+        return roi_feats
 
 
 class SingleRoIExtractorOpenVINO(Function):
