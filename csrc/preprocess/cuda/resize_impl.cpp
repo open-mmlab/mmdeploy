@@ -14,7 +14,7 @@ class ResizeImpl final : public ::mmdeploy::ResizeImpl {
  public:
   explicit ResizeImpl(const Value& args) : ::mmdeploy::ResizeImpl(args) {
     if (arg_.interpolation != "bilinear" && arg_.interpolation != "nearest") {
-      ERROR("{} interpolation is not supported", arg_.interpolation);
+      MMDEPLOY_ERROR("{} interpolation is not supported", arg_.interpolation);
       throw_exception(eNotSupported);
     }
   }
@@ -33,7 +33,7 @@ class ResizeImpl final : public ::mmdeploy::ResizeImpl {
     } else if (tensor.data_type() == DataType::kFLOAT) {
       OUTCOME_TRY(ResizeDispatch<float>(src_tensor, dst_tensor, stream));
     } else {
-      ERROR("unsupported data type {}", tensor.data_type());
+      MMDEPLOY_ERROR("unsupported data type {}", tensor.data_type());
       return Status(eNotSupported);
     }
     return dst_tensor;
@@ -42,7 +42,16 @@ class ResizeImpl final : public ::mmdeploy::ResizeImpl {
  private:
   template <class T, int C, class... Args>
   ppl::common::RetCode DispatchImpl(Args&&... args) {
-#ifdef PPLCV_VERSION_MAJOR
+#if PPLCV_VERSION_MAJOR >= 0 && PPLCV_VERSION_MINOR >= 6 && PPLCV_VERSION_PATCH >= 2
+    if (arg_.interpolation == "bilinear") {
+      return ppl::cv::cuda::Resize<T, C>(std::forward<Args>(args)...,
+                                         ppl::cv::INTERPOLATION_LINEAR);
+    }
+    if (arg_.interpolation == "nearest") {
+      return ppl::cv::cuda::Resize<T, C>(std::forward<Args>(args)...,
+                                         ppl::cv::INTERPOLATION_NEAREST_POINT);
+    }
+#else
     if (arg_.interpolation == "bilinear") {
       return ppl::cv::cuda::Resize<T, C>(std::forward<Args>(args)...,
                                          ppl::cv::INTERPOLATION_TYPE_LINEAR);
@@ -50,15 +59,6 @@ class ResizeImpl final : public ::mmdeploy::ResizeImpl {
     if (arg_.interpolation == "nearest") {
       return ppl::cv::cuda::Resize<T, C>(std::forward<Args>(args)...,
                                          ppl::cv::INTERPOLATION_TYPE_NEAREST_POINT);
-    }
-
-#else
-#warning "support for ppl.cv < 0.6 is deprecated and will be dropped in the future"
-    if (arg_.interpolation == "bilinear") {
-      return ppl::cv::cuda::ResizeLinear<T, C>(std::forward<Args>(args)...);
-    }
-    if (arg_.interpolation == "nearest") {
-      return ppl::cv::cuda::ResizeNearestPoint<T, C>(std::forward<Args>(args)...);
     }
 #endif
     return ppl::common::RC_UNSUPPORTED;
@@ -82,7 +82,7 @@ class ResizeImpl final : public ::mmdeploy::ResizeImpl {
     } else if (4 == c) {
       ret = DispatchImpl<T, 4>(stream, h, w, w * c, input, dst_h, dst_w, dst_w * c, output);
     } else {
-      ERROR("unsupported channels {}", c);
+      MMDEPLOY_ERROR("unsupported channels {}", c);
       return Status(eNotSupported);
     }
     return ret == 0 ? success() : Result<void>(Status(eFail));

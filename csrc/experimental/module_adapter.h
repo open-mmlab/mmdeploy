@@ -31,7 +31,7 @@ struct InvokeImpl {
                             std::forward<Ts>(ts)...);
       return make_ret_val(std::move(ret));
     } catch (const std::exception& e) {
-      ERROR("unhandled exception: {}", e.what());
+      MMDEPLOY_ERROR("unhandled exception: {}", e.what());
       return Status(eFail);
     } catch (...) {
       return Status(eFail);

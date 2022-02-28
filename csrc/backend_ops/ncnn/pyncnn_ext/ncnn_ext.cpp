@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 #include <pybind11/pybind11.h>
 
-#include "../ops/ncnn_ops_register.h"
+#include "ncnn_ops_register.h"
 #include "net.h"
 
 PYBIND11_MODULE(ncnn_ext, m) {

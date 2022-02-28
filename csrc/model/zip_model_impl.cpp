@@ -7,14 +7,8 @@
 #include "core/logger.h"
 #include "core/model.h"
 #include "core/model_impl.h"
+#include "core/utils/filesystem.h"
 #include "zip.h"
-#if __GNUC__ >= 8
-#include <filesystem>
-namespace fs = std::filesystem;
-#else
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
-#endif
 
 using nlohmann::json;
 
@@ -40,10 +34,10 @@ class ZipModelImpl : public ModelImpl {
     int ret = 0;
     zip_ = zip_open(model_path.c_str(), 0, &ret);
     if (ret != 0) {
-      INFO("open zip file {} failed, ret {}", model_path.c_str(), ret);
+      MMDEPLOY_INFO("open zip file {} failed, ret {}", model_path.c_str(), ret);
       return Status(eInvalidArgument);
     }
-    INFO("open sdk model file {} successfully", model_path.c_str());
+    MMDEPLOY_INFO("open sdk model file {} successfully", model_path.c_str());
     return InitZip();
   }
 
@@ -70,24 +64,25 @@ class ZipModelImpl : public ModelImpl {
 
     auto iter = file_index_.find(file_path);
     if (iter == file_index_.end()) {
-      ERROR("cannot find file {} under dir {}", file_path.c_str(), root_dir_.c_str());
+      MMDEPLOY_ERROR("cannot find file {} under dir {}", file_path.c_str(), root_dir_.c_str());
       return Status(eFail);
     }
     index = iter->second;
     struct zip_file* pzip = zip_fopen_index(zip_, index, 0);
     if (nullptr == pzip) {
-      ERROR("read file {} in zip file failed, whose index is {}", file_path.c_str(), index);
+      MMDEPLOY_ERROR("read file {} in zip file failed, whose index is {}", file_path.c_str(),
+                     index);
       return Status(eFail);
     }
     struct zip_stat stat {};
     if ((ret = zip_stat_index(zip_, index, 0, &stat)) < 0) {
-      ERROR("get stat of file {} error, ret {}", file_path.c_str(), ret);
+      MMDEPLOY_ERROR("get stat of file {} error, ret {}", file_path.c_str(), ret);
       return Status(eFail);
     }
-    DEBUG("file size {}", (int)stat.size);
+    MMDEPLOY_DEBUG("file size {}", (int)stat.size);
     std::vector<char> buf(stat.size);
     if ((ret = zip_fread(pzip, buf.data(), stat.size)) < 0) {
-      ERROR("read data of file {} error, ret {}", file_path.c_str(), ret);
+      MMDEPLOY_ERROR("read data of file {} error, ret {}", file_path.c_str(), ret);
       return Status(eFail);
     }
     return std::string(buf.begin(), buf.end());
@@ -100,7 +95,7 @@ class ZipModelImpl : public ModelImpl {
       from_json(json::parse(deploy_json), meta);
       return meta;
     } catch (std::exception& e) {
-      ERROR("exception happened: {}", e.what());
+      MMDEPLOY_ERROR("exception happened: {}", e.what());
       return Status(eFail);
     }
   }
@@ -108,7 +103,7 @@ class ZipModelImpl : public ModelImpl {
  private:
   Result<void> InitZip() {
     int files = zip_get_num_files(zip_);
-    INFO("there are {} files in sdk model file", files);
+    MMDEPLOY_INFO("there are {} files in sdk model file", files);
     if (files == 0) {
       return Status(eFail);
     }
@@ -119,9 +114,9 @@ class ZipModelImpl : public ModelImpl {
       fs::path path(stat.name);
       auto file_name = path.filename().string();
       if (file_name == ".") {
-        DEBUG("{}-th file name is: {}， which is a directory", i, stat.name);
+        MMDEPLOY_DEBUG("{}-th file name is: {}， which is a directory", i, stat.name);
       } else {
-        DEBUG("{}-th file name is: {}， which is a file", i, stat.name);
+        MMDEPLOY_DEBUG("{}-th file name is: {}， which is a file", i, stat.name);
         file_index_[file_name] = i;
       }
     }

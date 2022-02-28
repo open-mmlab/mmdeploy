@@ -1,5 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
+#include <algorithm>
 #include <sstream>
 
 #include "core/device.h"
@@ -22,7 +23,7 @@ class CTCConvertor : public MMOCR {
   explicit CTCConvertor(const Value& cfg) : MMOCR(cfg) {
     auto model = cfg["context"]["model"].get<Model>();
     if (!cfg.contains("params")) {
-      ERROR("'params' is required, but it's not in the config");
+      MMDEPLOY_ERROR("'params' is required, but it's not in the config");
       throw_exception(eInvalidArgument);
     }
     // BaseConverter
@@ -40,11 +41,11 @@ class CTCConvertor : public MMOCR {
       } else if (dict_type == "DICT90") {
         idx2char_ = SplitChars(DICT90);
       } else {
-        ERROR("unknown dict_type: {}", dict_type);
+        MMDEPLOY_ERROR("unknown dict_type: {}", dict_type);
         throw_exception(eInvalidArgument);
       }
     } else {
-      ERROR("either dict_file, dict_list or dict_type must be specified");
+      MMDEPLOY_ERROR("either dict_file, dict_list or dict_type must be specified");
       throw_exception(eInvalidArgument);
     }
     // CTCConverter
@@ -62,8 +63,8 @@ class CTCConvertor : public MMOCR {
     auto d_conf = _prob["output"].get<Tensor>();
 
     if (!(d_conf.shape().size() == 3 && d_conf.data_type() == DataType::kFLOAT)) {
-      ERROR("unsupported `output` tensor, shape: {}, dtype: {}", d_conf.shape(),
-            (int)d_conf.data_type());
+      MMDEPLOY_ERROR("unsupported `output` tensor, shape: {}, dtype: {}", d_conf.shape(),
+                     (int)d_conf.data_type());
       return Status(eNotSupported);
     }
 
@@ -80,7 +81,7 @@ class CTCConvertor : public MMOCR {
     auto [indexes, scores] = Tensor2Idx(data, w, c, valid_ratio);
 
     auto text = Idx2Str(indexes);
-    DEBUG("text: {}", text);
+    MMDEPLOY_DEBUG("text: {}", text);
 
     TextRecognizerOutput output{text, scores};
 

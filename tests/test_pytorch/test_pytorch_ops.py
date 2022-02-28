@@ -116,3 +116,10 @@ class TestSqueeze:
         nodes = get_model_onnx_nodes(model, x)
         assert nodes[0].attribute[0].ints == [0]
         assert nodes[0].op_type == 'Squeeze'
+
+
+def test_hardsigmoid():
+    x = torch.rand(1, 2, 3, 4)
+    model = torch.nn.Hardsigmoid().eval()
+    nodes = get_model_onnx_nodes(model, x)
+    assert nodes[0].op_type == 'HardSigmoid'

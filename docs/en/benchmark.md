@@ -997,6 +997,20 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td>$MMDET_DIR/configs/cascade_rcnn/cascade_rcnn_r50_caffe_fpn_1x_coco.py</td>
   </tr>
   <tr>
+    <td align="center">GFL</td>
+    <td align="center">Object Detection</td>
+    <td align="center">COCO2017</td>
+    <td align="center">box AP</td>
+    <td align="center">40.2</td>
+    <td align="center">-</td>
+    <td align="center">40.2</td>
+    <td align="center">40.2</td>
+    <td align="center">40.0</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMDET_DIR/configs/gfl/gfl_r50_fpn_1x_coco.py</td>
+  </tr>
+  <tr>
     <td align="center" rowspan="2">Mask R-CNN</td>
     <td align="center" rowspan="2">Instance Segmentation</td>
     <td align="center" rowspan="2">COCO2017</td>

@@ -131,3 +131,7 @@ work_dirs/
 
 # the generated header files
 /tests/test_csrc/test_define.h
+
+#
+!docs/zh_cn/build
+!docs/en/build

@@ -36,7 +36,7 @@ static size_t GetBatchSize(const Value& args) {
 Task::Task(const Value& cfg) : BaseNode(cfg) {
   auto module = CreateFromRegistry<Module>(cfg, "module");
   if (!module) {
-    ERROR("failed to create task: {}", cfg);
+    MMDEPLOY_ERROR("failed to create task: {}", cfg);
     throw_exception(eFail);
   }
   module_ = std::move(module).value();
@@ -50,7 +50,8 @@ void Task::Build(TaskGraph& graph) {
     auto args = ctx.pop().array();
     auto rets = Value::Array{};
     auto batch_size = GetBatchSize(args);
-    //    ERROR("name: {}, is_batched: {}, INPUT batch_size: {}", name_, is_batched_, batch_size);
+    //    MMDEPLOY_ERROR("name: {}, is_batched: {}, INPUT batch_size: {}", name_, is_batched_,
+    //    batch_size);
     if (!is_batched_ && batch_size) {
       rets.resize(outputs_.size(), Value::kArray);
       if (!is_thread_safe_) {
@@ -86,7 +87,7 @@ void Task::Build(TaskGraph& graph) {
       rets = std::move(tmp).array();
     }
     ctx.push(std::move(rets));
-    //    ERROR("name: {}, is_batched: {}, OUTPUT batch_size: {}", name_, is_batched_,
+    //    MMDEPLOY_ERROR("name: {}, is_batched: {}, OUTPUT batch_size: {}", name_, is_batched_,
     //          GetBatchSize(rets));
     return success();
   });

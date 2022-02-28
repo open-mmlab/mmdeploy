@@ -20,7 +20,7 @@ void FlattenNode::Build(TaskGraph& graph) {
       if (idxs.empty()) {
         idxs = std::move(idx);
       } else if (idx != idxs) {
-        ERROR("args does not have same structure");
+        MMDEPLOY_ERROR("args does not have same structure");
         return Status(eInvalidArgument);
       }
       rets.push_back(std::move(ret));

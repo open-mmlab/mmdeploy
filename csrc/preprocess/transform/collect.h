@@ -6,7 +6,7 @@
 #include "transform.h"
 namespace mmdeploy {
 
-class CollectImpl : public Module {
+class MMDEPLOY_API CollectImpl : public Module {
  public:
   explicit CollectImpl(const Value& args);
   ~CollectImpl() = default;
@@ -24,7 +24,7 @@ class CollectImpl : public Module {
   ArgType arg_;
 };
 
-class Collect : public Transform {
+class MMDEPLOY_API Collect : public Transform {
  public:
   explicit Collect(const Value& args, int version = 0);
   ~Collect() = default;
@@ -34,6 +34,8 @@ class Collect : public Transform {
  private:
   std::unique_ptr<CollectImpl> impl_;
 };
+
+MMDEPLOY_DECLARE_REGISTRY(CollectImpl);
 
 }  // namespace mmdeploy
 

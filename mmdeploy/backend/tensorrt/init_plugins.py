@@ -1,9 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import ctypes
-import glob
 import os
 
-from mmdeploy.utils import get_root_logger
+from mmdeploy.utils import get_file_path, get_root_logger
 
 
 def get_ops_path() -> str:
@@ -12,14 +11,11 @@ def get_ops_path() -> str:
     Returns:
         str: A path of the TensorRT plugin library.
     """
-    wildcard = os.path.abspath(
-        os.path.join(
-            os.path.dirname(__file__),
-            '../../../build/lib/libmmdeploy_tensorrt_ops.so'))
-
-    paths = glob.glob(wildcard)
-    lib_path = paths[0] if len(paths) > 0 else ''
-    return lib_path
+    candidates = [
+        '../../../build/lib/libmmdeploy_tensorrt_ops.so',
+        '../../../build/bin/*/mmdeploy_tensorrt_ops.dll'
+    ]
+    return get_file_path(os.path.dirname(__file__), candidates)
 
 
 def load_tensorrt_plugin() -> bool:

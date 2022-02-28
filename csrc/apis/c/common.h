@@ -3,9 +3,23 @@
 #ifndef MMDEPLOY_COMMON_H
 #define MMDEPLOY_COMMON_H
 
-#include <cstdint>
+#include <stdint.h>
 
-#define MM_SDK_API
+#ifndef MMDEPLOY_EXPORT
+#ifdef _MSC_VER
+#define MMDEPLOY_EXPORT __declspec(dllexport)
+#else
+#define MMDEPLOY_EXPORT __attribute__((visibility("default")))
+#endif
+#endif
+
+#ifndef MMDEPLOY_API
+#ifdef MMDEPLOY_API_EXPORTS
+#define MMDEPLOY_API MMDEPLOY_EXPORT
+#else
+#define MMDEPLOY_API
+#endif
+#endif
 
 // clang-format off
 

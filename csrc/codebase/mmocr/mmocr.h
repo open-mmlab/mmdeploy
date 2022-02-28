@@ -7,7 +7,8 @@
 #include "core/device.h"
 #include "core/module.h"
 
-namespace mmdeploy::mmocr {
+namespace mmdeploy {
+namespace mmocr {
 
 struct TextDetectorOutput {
   std::vector<std::array<float, 8>> boxes;
@@ -23,6 +24,9 @@ struct TextRecognizerOutput {
 
 DECLARE_CODEBASE(MMOCR, mmocr);
 
-}  // namespace mmdeploy::mmocr
+}  // namespace mmocr
+
+MMDEPLOY_DECLARE_REGISTRY(mmocr::MMOCR);
+}  // namespace mmdeploy
 
 #endif  // MMDEPLOY_MMOCR_H
