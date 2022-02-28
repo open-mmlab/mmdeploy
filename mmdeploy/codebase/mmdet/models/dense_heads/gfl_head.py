@@ -106,7 +106,8 @@ def gfl_head__get_bbox(ctx,
                                                   1).reshape(batch_size,
                                                              -1).sigmoid()
             score_factors = score_factors.unsqueeze(2)
-        bbox_pred = batched_integral(self.integral, bbox_pred.permute(0, 2, 3, 1)) * stride[0]
+        bbox_pred = batched_integral(self.integral,
+                                     bbox_pred.permute(0, 2, 3, 1)) * stride[0]
         if not is_dynamic_flag:
             priors = priors.data
         priors = priors.expand(batch_size, -1, priors.size(-1))

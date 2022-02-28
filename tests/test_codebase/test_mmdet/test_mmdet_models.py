@@ -408,7 +408,7 @@ def test_get_bboxes_of_gfl_head(backend_type):
         torch.rand(1, 3, pow(2, i), pow(2, i)) for i in range(5, 0, -1)
     ]
     seed_everything(5678)
-    bboxes = [torch.rand(1, pow(2, i), pow(2, i), 16) for i in range(5, 0, -1)]
+    bboxes = [torch.rand(1, 16, pow(2, i), pow(2, i)) for i in range(5, 0, -1)]
 
     # to get outputs of onnx model after rewrite
     img_metas[0]['img_shape'] = torch.Tensor([s, s])
