@@ -90,7 +90,8 @@ def interpolate__tensorrt(
                 'tensor. Which is not available for custom ops. Computed scale'
                 '_factor might be the right way to get final shape.')
             scale_factor = [
-                s_out / s_in for s_out, s_in in zip(size, input_size[2:])
+                float(s_out / s_in)
+                for s_out, s_in in zip(size, input_size[2:])
             ]
         return BicubicInterpolate.apply(input, scale_factor, align_corners)
     else:
