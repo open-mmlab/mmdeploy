@@ -197,7 +197,7 @@ def get_preprocess(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config):
     for i, transform in enumerate(transforms):
         if transform['type'] == 'DefaultFormatBundle':
             transforms[i] = dict(type='ImageToTensor', keys=['img'])
-            if transforms[i]['type'] != "Normalize":
+            if transforms[i]['type'] != 'Normalize':
                 insert_normalize_pos = i
         if 'keys' in transform and transform['keys'] == ['lq']:
             transform['keys'] = ['img']
