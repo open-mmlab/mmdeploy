@@ -36,7 +36,7 @@ def process_model_config(model_cfg: mmcv.Config,
     # for static exporting
     if input_shape is not None:
         cfg.data.test.pipeline[1]['img_scale'] = tuple(input_shape)
-    cfg.data.test.pipeline[1]['transforms'][0]['keep_ratio'] = False
+        cfg.data.test.pipeline[1]['transforms'][0]['keep_ratio'] = False
     cfg.data.test.pipeline = [LoadImage()] + cfg.data.test.pipeline[1:]
 
     return cfg
