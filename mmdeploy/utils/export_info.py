@@ -155,12 +155,13 @@ def get_inference_info(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
     input_names = onnx_config.get('input_names', None)
     input_name = input_names[0] if input_names else 'input'
     input_map = dict(img=input_name)
-    return_dict = dict(name=name,
-                       type=type,
-                       module=module,
-                       input=input,
-                       output=output,
-                       input_map=input_map)
+    return_dict = dict(
+        name=name,
+        type=type,
+        module=module,
+        input=input,
+        output=output,
+        input_map=input_map)
     if 'use_vulkan' in deploy_cfg['backend_config']:
         return_dict['use_vulkan'] = deploy_cfg['backend_config']['use_vulkan']
     return return_dict
