@@ -157,6 +157,31 @@ def get_single_roi_extractor():
     return model
 
 
+def get_gfl_head_model():
+    test_cfg = mmcv.Config(
+        dict(
+            nms_pre=1000,
+            min_bbox_size=0,
+            score_thr=0.05,
+            nms=dict(type='nms', iou_threshold=0.6),
+            max_per_img=100))
+    anchor_generator = dict(
+        type='AnchorGenerator',
+        scales_per_octave=1,
+        octave_base_scale=8,
+        ratios=[1.0],
+        strides=[8, 16, 32, 64, 128])
+    from mmdet.models.dense_heads import GFLHead
+    model = GFLHead(
+        num_classes=3,
+        in_channels=256,
+        reg_max=3,
+        test_cfg=test_cfg,
+        anchor_generator=anchor_generator)
+    model.requires_grad_(False)
+    return model
+
+
 def test_focus_forward_ncnn():
     backend_type = Backend.NCNN
     check_backend(backend_type)
@@ -347,6 +372,88 @@ def test_get_bboxes_of_rpn_head(backend_type: Backend):
         deploy_cfg=deploy_cfg,
         run_with_backend=run_with_backend)
     assert rewrite_outputs is not None
+
+
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
+def test_get_bboxes_of_gfl_head(backend_type):
+    check_backend(backend_type)
+    head = get_gfl_head_model()
+    head.cpu().eval()
+    s = 4
+    img_metas = [{
+        'scale_factor': np.ones(4),
+        'pad_shape': (s, s, 3),
+        'img_shape': (s, s, 3)
+    }]
+    output_names = ['dets']
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(type=backend_type.value),
+            onnx_config=dict(output_names=output_names, input_shape=None),
+            codebase_config=dict(
+                type='mmdet',
+                task='ObjectDetection',
+                model_type='ncnn_end2end',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    iou_threshold=0.5,
+                    max_output_boxes_per_class=200,
+                    pre_top_k=5000,
+                    keep_top_k=100,
+                    background_label_id=-1,
+                ))))
+
+    seed_everything(1234)
+    cls_score = [
+        torch.rand(1, 3, pow(2, i), pow(2, i)) for i in range(5, 0, -1)
+    ]
+    seed_everything(5678)
+    bboxes = [torch.rand(1, 16, pow(2, i), pow(2, i)) for i in range(5, 0, -1)]
+
+    # to get outputs of onnx model after rewrite
+    img_metas[0]['img_shape'] = torch.Tensor([s, s])
+    wrapped_model = WrapModel(
+        head, 'get_bboxes', img_metas=img_metas, with_nms=True)
+    rewrite_inputs = {
+        'cls_scores': cls_score,
+        'bbox_preds': bboxes,
+    }
+    # do not run with ncnn backend
+    run_with_backend = False if backend_type in [Backend.NCNN] else True
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg,
+        run_with_backend=run_with_backend)
+    assert rewrite_outputs is not None
+
+
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
+def test_forward_of_gfl_head(backend_type):
+    check_backend(backend_type)
+    head = get_gfl_head_model()
+    head.cpu().eval()
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(type=backend_type.value),
+            onnx_config=dict(input_shape=None)))
+    feats = [torch.rand(1, 256, pow(2, i), pow(2, i)) for i in range(5, 0, -1)]
+    model_outputs = [head.forward(feats)]
+    wrapped_model = WrapModel(head, 'forward')
+    rewrite_inputs = {
+        'feats': feats,
+    }
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg)
+    model_outputs[0] = [*model_outputs[0][0], *model_outputs[0][1]]
+    for model_output, rewrite_output in zip(model_outputs[0],
+                                            rewrite_outputs[0]):
+        model_output = model_output.squeeze().cpu().numpy()
+        rewrite_output = rewrite_output.squeeze()
+        assert np.allclose(
+            model_output, rewrite_output, rtol=1e-03, atol=1e-05)
 
 
 def _replace_r50_with_r18(model):
