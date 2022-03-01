@@ -57,13 +57,13 @@ Result<Value> PadImpl::Process(const Value& input) {
       OUTCOME_TRY(output_tensor, PadImage(tensor, padding));
       output["pad_fixed_size"].push_back(max_size);
       output["pad_fixed_size"].push_back(max_size);
-    } else if(arg_.size[0] != 0 && arg_.size[1] != 0) {
+    } else if (arg_.size[0] != 0 && arg_.size[1] != 0) {
       output_tensor = tensor;
       std::array padding{0, 0, arg_.size[1] - width, arg_.size[0] - height};
       OUTCOME_TRY(output_tensor, PadImage(tensor, padding));
       output["pad_fixed_size"].push_back(arg_.size[0]);
       output["pad_fixed_size"].push_back(arg_.size[1]);
-    } else{
+    } else {
       auto pad_h = (height + arg_.size_divisor - 1) / arg_.size_divisor * arg_.size_divisor;
       auto pad_w = (width + arg_.size_divisor - 1) / arg_.size_divisor * arg_.size_divisor;
       std::array padding{0, 0, pad_w - width, pad_h - height};
