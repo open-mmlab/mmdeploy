@@ -12,18 +12,15 @@ class ImageToTensorImpl : public ::mmdeploy::ImageToTensorImpl {
   explicit ImageToTensorImpl(const Value& args) : ::mmdeploy::ImageToTensorImpl(args) {}
 
  protected:
-  Result<Tensor> HWC2CHW(const Tensor& tensor, bool img_to_float) override {
+  Result<Tensor> HWC2CHW(const Tensor& tensor) override {
     OUTCOME_TRY(auto src_tensor, MakeAvailableOnDevice(tensor, device_, stream_));
     auto shape = src_tensor.shape();
     int height = shape[1];
     int width = shape[2];
     int channels = shape[3];
+
     auto dst_mat = Transpose(Tensor2CVMat(src_tensor));
-    if (img_to_float) {
-      cv::Mat dst_mat_float;
-      dst_mat.convertTo(dst_mat_float, CV_32F);
-      dst_mat = dst_mat_float;
-    }
+
     auto dst_tensor = CVMat2Tensor(dst_mat);
     dst_tensor.Reshape({1, channels, height, width});
 

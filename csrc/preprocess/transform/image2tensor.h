@@ -22,7 +22,7 @@ class MMDEPLOY_API ImageToTensorImpl : public TransformImpl {
   Result<Value> Process(const Value& input) override;
 
  protected:
-  virtual Result<Tensor> HWC2CHW(const Tensor& tensor, bool img_to_float) = 0;
+  virtual Result<Tensor> HWC2CHW(const Tensor& tensor) = 0;
 
  protected:
   struct to_img_tensor_arg_t {
@@ -32,7 +32,6 @@ class MMDEPLOY_API ImageToTensorImpl : public TransformImpl {
 
  protected:
   ArgType arg_;
-  bool img_to_float_ = true;
 };
 
 class MMDEPLOY_API ImageToTensor : public Transform {
