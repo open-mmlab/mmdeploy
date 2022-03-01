@@ -107,9 +107,11 @@ Result<void> NCNNNet::Forward() {
       tensor.Reshape({1, shape.w});
     } else if (outputs[i].dims == 2) {
       tensor.Reshape({1, shape.h, shape.w});
+    } else if (outputs[i].dims == 3) {
+      tensor.Reshape({1, shape.d, shape.h, shape.w});
     } else {
-      // for dim==3 case and blank image.
-      tensor.Reshape({1, shape.c, shape.h, shape.w});
+      // for dim==4 case and blank image.
+      tensor.Reshape({1, shape.c, shape.d, shape.h, shape.w});
     }
     // tensor.Reshape({1, shape.c, shape.h, shape.w});
     // ncnn Mat may be padded, flatten to avoid that
