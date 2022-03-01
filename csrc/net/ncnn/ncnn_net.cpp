@@ -22,10 +22,9 @@ Result<void> NCNNNet::Init(const Value& args) {
   auto& context = args["context"];
   device_ = context["device"].get<Device>();
   stream_ = context["stream"].get<Stream>();
-
-#ifdef NCNN_NET_VULKAN
-  net_.opt.use_vulkan_compute = true;
-#endif
+  if (args.contains("use_vulkan")) {
+    net_.opt.use_vulkan_compute = args["use_vulkan"].get<bool>();
+  }
   if (!device_.is_host()) {
     return Status(eNotSupported);
   }
