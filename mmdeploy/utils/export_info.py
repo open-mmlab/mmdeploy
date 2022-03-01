@@ -112,6 +112,8 @@ def get_models(deploy_cfg: Union[str, mmcv.Config],
     elif backend == Backend.NCNN:
         net = onnx_name.replace('.onnx', '.param')
         weights = onnx_name.replace('.onnx', '.bin')
+        if 'precision' in deploy_cfg['backend_config']:
+            precision = deploy_cfg['backend_config']['precision']
     elif backend == Backend.ONNXRUNTIME:
         pass
     else:

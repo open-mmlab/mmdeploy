@@ -22,18 +22,8 @@ Result<void> NCNNNet::Init(const Value& args) {
   auto& context = args["context"];
   device_ = context["device"].get<Device>();
   stream_ = context["stream"].get<Stream>();
-#ifdef __aarch64__
-#ifndef FP16_ACCELERATE
-  net_.opt.use_fp16_storage = false;
-  net_.opt.use_fp16_arithmetic = false;
-#endif
-#endif
+
 #ifdef NCNN_NET_VULKAN
-  net_.opt.use_fp16_packed = false;
-  net_.opt.use_fp16_storage = false;
-  net_.opt.use_fp16_arithmetic = false;
-  net_.opt.use_int8_storage = false;
-  net_.opt.use_int8_arithmetic = false;
   net_.opt.use_vulkan_compute = true;
 #endif
   if (!device_.is_host()) {
@@ -43,10 +33,29 @@ Result<void> NCNNNet::Init(const Value& args) {
   auto name = args["name"].get<std::string>();
   auto model = context["model"].get<Model>();
   OUTCOME_TRY(auto config, model.GetModelConfig(name));
-
+  auto precision = config.precision;
+  if (!strcmp(precision.c_str(), "FP16")) {
+    net_.opt.use_fp16_packed = true;
+    net_.opt.use_fp16_storage = true;
+    net_.opt.use_fp16_arithmetic = true;
+  } else if (!strcmp(precision.c_str(), "INT8")) {
+    // in android platform, ncnn will automatically start FP16 accelerate.
+    // In INT8 case, we set fp16 as false explicitly.
+    net_.opt.use_int8_packed = true;
+    net_.opt.use_int8_storage = true;
+    net_.opt.use_int8_arithmetic = true;
+    net_.opt.use_fp16_packed = false;
+    net_.opt.use_fp16_storage = false;
+    net_.opt.use_fp16_arithmetic = false;
+  } else {
+    // in android platform, ncnn will automatically start FP16 accelerate.
+    // In FP32 case, we set fp16 as false explicitly.
+    net_.opt.use_fp16_packed = false;
+    net_.opt.use_fp16_storage = false;
+    net_.opt.use_fp16_arithmetic = false;
+  }
   OUTCOME_TRY(params_, model.ReadFile(config.net));
   OUTCOME_TRY(weights_, model.ReadFile(config.weights));
-
   register_mmdeploy_custom_layers(net_);
 
   OUTCOME_TRY(ncnn_status(net_.load_param_mem(params_.c_str())));
