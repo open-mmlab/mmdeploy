@@ -50,24 +50,16 @@ std::vector<Tensor> ResizeBBox::GetDetsLabels(const Value& prep_res, const Value
     Tensor dets(detdesc);
     auto* dets_ptr = dets.data<float>();
     auto* labels_ptr = labels.data<float>();
-    for (int c = 0; c < batch_size; ++c) {
-      for (int h = 0; h < num_det; ++h) {
-        for (int w = 0; w < 6; ++w) {
-          if (w == 0) {
-            labels_ptr[c * num_det + h] = detection_output_ptr[c * num_det * 6 + h * 6 + w] - 1;
-          } else if (w == 1) {
-            dets_ptr[c * num_det * 5 + h * 5 + 4] =
-                detection_output_ptr[c * num_det * 6 + h * 6 + w];
-          } else {
-            if (w % 2 == 0)
-              dets_ptr[c * num_det * 5 + h * 5 + w - 2] =
-                  detection_output_ptr[c * num_det * 6 + h * 6 + w] * img_width;
-            else
-              dets_ptr[c * num_det * 5 + h * 5 + w - 2] =
-                  detection_output_ptr[c * num_det * 6 + h * 6 + w] * img_height;
-          }
-        }
-      }
+
+    for (int i = 0; i < batch_size * num_det; ++i) {
+      *labels_ptr++ = detection_output_ptr[0] - 1;
+      dets_ptr[4] = detection_output_ptr[1];
+      dets_ptr[0] = detection_output_ptr[2] * img_width;
+      dets_ptr[1] = detection_output_ptr[3] * img_height;
+      dets_ptr[2] = detection_output_ptr[4] * img_width;
+      dets_ptr[3] = detection_output_ptr[5] * img_height;
+      dets_ptr += 5;
+      detection_output_ptr += 6;
     }
     results.push_back(dets);
     results.push_back(labels);
