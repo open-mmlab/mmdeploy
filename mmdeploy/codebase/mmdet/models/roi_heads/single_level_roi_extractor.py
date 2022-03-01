@@ -4,8 +4,6 @@ from torch.autograd import Function
 
 from mmdeploy.core.optimizers import mark
 from mmdeploy.core.rewriters import FUNCTION_REWRITER
-from mmdeploy.utils.config_utils import get_backend
-from mmdeploy.utils.constants import Backend
 
 
 class MultiLevelRoiAlign(Function):
@@ -100,15 +98,17 @@ def single_roi_extractor__forward(ctx,
                                   roi_scale_factor=None):
     """Rewrite `forward` of SingleRoIExtractor for default backend.
 
-    Rewrite this function to enable exporting to onnx even though the input
+    Rewrite this function to:
+    1. enable exporting to IR even though the input
     image contains no targets. Note that, `ScatterND` of onnx may conflict with
     `Reshape` if a tensor have a dim size of 0. Thus, we have to cat zeros to
     the dim 0 of `roi_feats` and recover back after all roi align finished.
 
-    Besides, this function adds mark for roi_extractor forward and remove
-    unnecessary code of origin forward function.
+    2. this function adds mark for roi_extractor forward and remove
+    unnecessary code of origin forward function when using ONNX as IR.
+
+    3. use the roi align in torhcvision to accelerate the inference.
     """
-    backend = get_backend(ctx.cfg)
     out_size = self.roi_layers[0].output_size
     num_levels = len(feats)
     roi_feats = feats[0].new_zeros(rois.shape[0], self.out_channels, *out_size)
@@ -121,42 +121,28 @@ def single_roi_extractor__forward(ctx,
     if roi_scale_factor is not None:
         rois = self.roi_rescale(rois, roi_scale_factor)
 
-    if backend == Backend.TORCHSCRIPT:
-        # Risky when the input tensor for exporting contains no targets.
-        # But the way of concatenating zeros makes index out of range when
-        # running test.py for torchscript.
-        for i in range(num_levels):
-            mask = target_lvls == i
-            inds = mask.nonzero(as_tuple=False).squeeze(1)
-            # use the roi align in torhcvision for TorchScript
-            self.roi_layers[i].use_torchvision = True
-            roi_feats_t = self.roi_layers[i](feats[i], rois[inds])
-            roi_feats[inds] = roi_feats_t
-        return roi_feats
-    else:
-        # concat len num_levels * 2 of zero tensors to dim 0 of roi_feats
-        roi_feats = torch.cat(
-            (roi_feats.new_zeros(num_levels * 2,
-                                 *roi_feats.shape[-3:]), roi_feats))
-        for i in range(num_levels):
-            mask = target_lvls == i
-            inds = mask.nonzero(as_tuple=False).squeeze(1)
-
-            # concat len 2 zero tensors to dim 0 of roi_feats
-            rois_i = torch.cat((rois.new_zeros(2, 5), rois[inds]))
-            roi_feats_t = self.roi_layers[i](feats[i], rois_i)
-
-            # correspondingly change the inds
-            inds = torch.cat([
-                torch.tensor([2 * i, 2 * i + 1],
-                             device=inds.device,
-                             dtype=inds.dtype), inds + num_levels * 2
-            ])
-            roi_feats[inds] = roi_feats_t
-
-        # slice and recover tensors
-        roi_feats = roi_feats[num_levels * (2):]
-        return roi_feats
+    # concate zeros to rois and roi_feats for empty tensor cases
+    roi_feats = torch.cat(
+        (roi_feats.new_zeros(num_levels * 2,
+                             *roi_feats.shape[-3:]), roi_feats))
+    rois = torch.cat((rois.new_zeros(num_levels * 2, 5), rois))
+    _tmp = torch.linspace(
+        0,
+        num_levels - 1,
+        num_levels,
+        dtype=target_lvls.dtype,
+        device=target_lvls.device)
+    target_lvls = torch.cat((_tmp, _tmp, target_lvls))
+    for i in range(num_levels):
+        # use the roi align in torhcvision to accelerate the inference
+        self.roi_layers[i].use_torchvision = True
+        mask = target_lvls == i
+        inds = mask.nonzero(as_tuple=False).squeeze(1)
+        roi_feats_t = self.roi_layers[i](feats[i], rois[inds])
+        roi_feats[inds] = roi_feats_t
+    # slice to recover original size
+    roi_feats = roi_feats[num_levels * 2:]
+    return roi_feats
 
 
 class SingleRoIExtractorOpenVINO(Function):
