@@ -190,9 +190,15 @@ def get_preprocess(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config):
         item for item in transforms if 'Random' not in item['type']
         and 'RescaleToZeroOne' not in item['type']
     ]
+    # insert Normalize if there is not normalize in transform to keep float
+    # tensor.
+    insert_normalize_pos = -1
+    # transform
     for i, transform in enumerate(transforms):
         if transform['type'] == 'DefaultFormatBundle':
             transforms[i] = dict(type='ImageToTensor', keys=['img'])
+            if transforms[i]['type'] != "Normalize":
+                insert_normalize_pos = i
         if 'keys' in transform and transform['keys'] == ['lq']:
             transform['keys'] = ['img']
         if 'key' in transform and transform['key'] == 'lq':
@@ -201,6 +207,10 @@ def get_preprocess(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config):
             meta_keys += transform[
                 'meta_keys'] if 'meta_keys' in transform else []
             transform['meta_keys'] = list(set(meta_keys))
+    if insert_normalize_pos >= 0:
+        img_norm_cfg = dict(mean=[0., 0., 0.], std=[1., 1., 1.], to_rgb=False)
+        normalize = dict(type='Normalize', **img_norm_cfg)
+        transforms.insert(insert_normalize_pos, normalize)
     assert transforms[0]['type'] == 'LoadImageFromFile', 'The first item type'\
         ' of pipeline should be LoadImageFromFile'
 
