@@ -12,18 +12,12 @@ namespace mmdeploy::mmdet {
 
 ResizeBBox::ResizeBBox(const Value& cfg) : MMDetection(cfg) {
   if (cfg.contains("params")) {
-#ifdef EVAL_MODE
-    MMDEPLOY_INFO("EVAL_MODE, SDK uses postprocessing score_thr for evaluating performance.");
     if (cfg["params"].contains("conf_thr")) {
       // for mobilev2yolov3
       score_thr_ = cfg["params"].value("conf_thr", 0.f);
     } else {
       score_thr_ = cfg["params"].value("score_thr", 0.f);
     }
-#else
-    MMDEPLOY_INFO("inference mode, SDK uses fixed 0.3 score_thr_ for inferencing.");
-    score_thr_ = 0.3;
-#endif
     min_bbox_size_ = cfg["params"].value("min_bbox_size", 0.f);
   }
 }
