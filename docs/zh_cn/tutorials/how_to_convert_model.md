@@ -55,7 +55,7 @@ python ./tools/deploy.py \
 - `img` : 用于模型转换时使用的图像文件路径。
 - `--test-img` : 用于测试模型的图像文件路径。默认设置成`None`。
 - `--work-dir` : 工作目录，用来保存日志和模型文件。
-- `--calib-dataset-cfg` : 用于校准的配置文件。默认是`None`。
+- `--calib-dataset-cfg` : 此参数只有int8模式下生效，用于校准数据集配置文件。若在int8模式下未传入参数，则会自动使用模型配置文件中的'val'数据集进行校准。
 - `--device` : 用于模型转换的设备。 默认是`cpu`。
 - `--log-level` : 设置日记的等级，选项包括`'CRITICAL'， 'FATAL'， 'ERROR'， 'WARN'， 'WARNING'， 'INFO'， 'DEBUG'， 'NOTSET'`。 默认是`INFO`。
 - `--show` : 是否显示检测的结果。
