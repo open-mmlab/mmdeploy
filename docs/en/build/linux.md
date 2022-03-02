@@ -339,9 +339,9 @@ pip install -e .
     After specifying the inference engine, it's package path has to be passed to cmake as follows, <br>
     1. <b>trt</b>: TensorRT <pre><code>-DTENSORRT_DIR=${TENSORRT_DIR}<br>-DCUDNN_DIR=${CUDNN_DIR}</code></pre>
     2. <b>ort</b>: ONNXRuntime <pre><code>-DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR}</code></pre>
-    3. <b>pplnn</b>: PPL.NN <pre><code>-Dpplnn_DIR=${PPLNN_DIR}</code></pre><br>
-    4. <b>ncnn</b>: ncnn <pre><code>-Dncnn_DIR=${NCNN_DIR}</code></pre> <br>
-    5. <b>openvino</b>: OpenVINO <pre><code>-DInferenceEngine_DIR=${INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/share</code></pre></b>
+    3. <b>pplnn</b>: PPL.NN <pre><code>-Dpplnn_DIR=${PPLNN_DIR}</code></pre>
+    4. <b>ncnn</b>: ncnn <pre><code>-Dncnn_DIR=${NCNN_DIR}</code></pre>
+    5. <b>openvino</b>: OpenVINO <pre><code>-DInferenceEngine_DIR=${INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/share</code></pre>
    </td>
   </tr>
   <tr>
