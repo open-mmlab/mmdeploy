@@ -102,6 +102,7 @@ class VoxelDetectionModel(BaseBackendModel):
                     data: Dict,
                     result: List,
                     out_dir: str,
+                    file_name: str,
                     show=False,
                     **kwargs):
         from mmcv.parallel import DataContainer as DC
@@ -109,7 +110,7 @@ class VoxelDetectionModel(BaseBackendModel):
         if isinstance(data['points'][0], DC):
             points = data['points'][0]._data[0][0].numpy()
         elif mmcv.is_list_of(data['points'][0], torch.Tensor):
-            points = data['points'][0]
+            points = data['points'][0][0]
         else:
             ValueError(f"Unsupported data type {type(data['points'][0])} "
                        f'for visualization!')
@@ -121,7 +122,7 @@ class VoxelDetectionModel(BaseBackendModel):
             None,
             pred_bboxes,
             out_dir,
-            'backend_result.bin',
+            file_name,
             show=show,
             pred_labels=pred_labels)
 
@@ -162,26 +163,29 @@ class VoxelDetectionModel(BaseBackendModel):
         return voxels, num_points, coors_batch
 
     @staticmethod
-    def post_process(model_cfg: Union[str, mmcv.Config], outs: torch.Tensor,
-                     img_metas: Dict, device):
+    def post_process(model_cfg: Union[str, mmcv.Config],
+                     outs: torch.Tensor,
+                     img_metas: Dict,
+                     device: str,
+                     rescale=False):
         """model post process.
 
         Args:
             model_cfg (str | mmcv.Config): The model config.
             outs (torch.Tensor): Output of model's head.
             img_metas(Dict): Meta info for pcd.
-
+            device (str): A string specifying device type.
+            rescale (list[torch.Tensor]): whether th rescale bbox.
         Returns:
             list: A list contains predictions, include bboxes, scores, labels.
         """
         from mmdet3d.core import bbox3d2result
         from mmdet3d.models.builder import build_head
         model_cfg = load_config(model_cfg)[0]
-        head = build_head(
-            dict(
-                **model_cfg.model['bbox_head'],
-                train_cfg=None,
-                test_cfg=model_cfg.model['test_cfg']))
+        head_cfg = dict(**model_cfg.model['bbox_head'])
+        head_cfg['train_cfg'] = None
+        head_cfg['test_cfg'] = model_cfg.model['test_cfg']
+        head = build_head(head_cfg)
         if device == 'cpu':
             logger = get_root_logger()
             logger.warning(
@@ -192,7 +196,7 @@ class VoxelDetectionModel(BaseBackendModel):
         bbox_preds = [outs['bbox_preds'].to(device)]
         dir_scores = [outs['dir_scores'].to(device)]
         bbox_list = head.get_bboxes(
-            cls_scores, bbox_preds, dir_scores, img_metas, rescale=True)
+            cls_scores, bbox_preds, dir_scores, img_metas, rescale=False)
         bbox_results = [
             bbox3d2result(bboxes, scores, labels)
             for bboxes, scores, labels in bbox_list

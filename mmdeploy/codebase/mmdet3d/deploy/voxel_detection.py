@@ -267,7 +267,7 @@ class VoxelDetection(BaseTask):
         dataset = data_loader.dataset
 
         prog_bar = mmcv.ProgressBar(len(dataset))
-        for data in data_loader:
+        for i, data in enumerate(data_loader):
             with torch.no_grad():
                 result = model(data['points'][0].data,
                                data['img_metas'][0].data, False)
@@ -275,7 +275,12 @@ class VoxelDetection(BaseTask):
                 # Visualize the results of MMDetection3D model
                 # 'show_results' is MMdetection3D visualization API
                 model.module.show_result(
-                    data, result, out_dir=out_dir, show=show, score_thr=0.3)
+                    data,
+                    result,
+                    out_dir=out_dir,
+                    file_name=f'model_output{i}.bin',
+                    show=show,
+                    score_thr=0.3)
             results.extend(result)
 
             batch_size = len(result)

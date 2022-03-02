@@ -7,11 +7,15 @@ from mmdeploy.core import FUNCTION_REWRITER
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet3d.models.middle_encoders.pillar_scatter.'
     'PointPillarsScatter.forward_batch', )
-def pointpillarsscatter__forward(ctx, self, voxel_features, coors, batch_size):
+def pointpillarsscatter__forward(ctx,
+                                 self,
+                                 voxel_features,
+                                 coors,
+                                 batch_size=1):
     """Scatter features of single sample.
 
     Args:
-        voxel_features (torch.Tensor): Voxel features in shape (N, M, C).
+        voxel_features (torch.Tensor): Voxel features from voxel encoder layer.
         coors (torch.Tensor): Coordinates of each voxel.
             The first column indicates the sample ID.
         batch_size (int): Number of samples in the current batch.
