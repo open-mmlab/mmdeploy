@@ -53,7 +53,6 @@ Result<Value> PadImpl::Process(const Value& input) {
     if (arg_.pad_to_square) {
       int max_size = std::max(tensor.desc().shape[1], tensor.desc().shape[2]);
       std::array padding{0, 0, max_size - width, max_size - height};
-
       OUTCOME_TRY(output_tensor, PadImage(tensor, padding));
       output["pad_fixed_size"].push_back(max_size);
       output["pad_fixed_size"].push_back(max_size);
@@ -63,7 +62,7 @@ Result<Value> PadImpl::Process(const Value& input) {
       OUTCOME_TRY(output_tensor, PadImage(tensor, padding));
       output["pad_fixed_size"].push_back(arg_.size[0]);
       output["pad_fixed_size"].push_back(arg_.size[1]);
-    } else {
+    } else if (arg_.size_divisor != 1) {
       auto pad_h = (height + arg_.size_divisor - 1) / arg_.size_divisor * arg_.size_divisor;
       auto pad_w = (width + arg_.size_divisor - 1) / arg_.size_divisor * arg_.size_divisor;
       std::array padding{0, 0, pad_w - width, pad_h - height};
@@ -71,6 +70,10 @@ Result<Value> PadImpl::Process(const Value& input) {
       output["pad_size_divisor"] = arg_.size_divisor;
       output["pad_fixed_size"].push_back(pad_h);
       output["pad_fixed_size"].push_back(pad_w);
+    } else {
+      output_tensor = tensor;
+      output["pad_fixed_size"].push_back(height);
+      output["pad_fixed_size"].push_back(width);
     }
     output[key] = output_tensor;
     for (auto& v : output_tensor.desc().shape) {
