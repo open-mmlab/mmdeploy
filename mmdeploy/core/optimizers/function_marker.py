@@ -5,7 +5,7 @@ from typing import Any, Callable, Dict, Optional, Sequence
 import torch
 
 from mmdeploy.core.rewriters import FUNCTION_REWRITER
-from mmdeploy.utils import cfg_apply_marks, get_partition_config
+from mmdeploy.utils import IR, cfg_apply_marks, get_partition_config
 
 MARK_FUNCTION_COUNT = dict()
 
@@ -181,7 +181,7 @@ def mark_tensors(xs: Any, func: str, func_id: int, io_type: str, ctx: Any,
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    'mmdeploy.core.optimizers.function_marker.mark_tensors')
+    'mmdeploy.core.optimizers.function_marker.mark_tensors', IR=IR.TORCHSCRIPT)
 def remove_mark__torchscript(ctx, xs: Any, *args, **kwargs):
     return xs
 
