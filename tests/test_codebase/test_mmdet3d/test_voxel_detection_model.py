@@ -7,7 +7,6 @@ import torch
 
 import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.codebase import import_codebase
-from mmdeploy.codebase.mmdet3d.deploy.voxel_detection import VoxelDetection
 from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
 
@@ -16,6 +15,7 @@ try:
 except ImportError:
     pytest.skip(
         f'{Codebase.MMDET3D} is not installed.', allow_module_level=True)
+from mmdeploy.codebase.mmdet3d.deploy.voxel_detection import VoxelDetection
 
 pcd_path = 'tests/test_codebase/test_mmdet3d/data/kitti/kitti_000008.bin'
 model_cfg = 'tests/test_codebase/test_mmdet3d/data/model_cfg.py'
