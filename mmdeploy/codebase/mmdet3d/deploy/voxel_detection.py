@@ -278,7 +278,7 @@ class VoxelDetection(BaseTask):
                     data,
                     result,
                     out_dir=out_dir,
-                    file_name=f'model_output{i}.bin',
+                    file_name=f'model_output{i}',
                     show=show,
                     score_thr=0.3)
             results.extend(result)
