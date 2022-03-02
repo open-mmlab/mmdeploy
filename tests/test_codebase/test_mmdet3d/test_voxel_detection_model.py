@@ -52,7 +52,7 @@ class TestVoxelDetectionModel:
             VoxelDetectionModel
         cls.end2end_model = VoxelDetectionModel(
             Backend.ONNXRUNTIME, [''],
-            device='cpu',
+            device='cuda',
             deploy_cfg=deploy_cfg,
             model_cfg=model_cfg)
 
@@ -60,7 +60,7 @@ class TestVoxelDetectionModel:
         reason='Only support GPU test',
         condition=not torch.cuda.is_available())
     def test_forward_and_show_result(self):
-        data = VoxelDetection.read_pcd_file(pcd_path, model_cfg, 'cuda:0')
+        data = VoxelDetection.read_pcd_file(pcd_path, model_cfg, 'cuda')
         results = self.end2end_model.forward(data['points'], data['img_metas'])
         assert results is not None
         from tempfile import TemporaryDirectory
