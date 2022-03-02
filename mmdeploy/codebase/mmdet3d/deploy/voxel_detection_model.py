@@ -193,7 +193,10 @@ class VoxelDetectionModel(BaseBackendModel):
             logger.warning(
                 'Don\'t suggest using CPU device. Post process can\'t support.'
             )
-            raise NotImplementedError
+            if torch.cuda.is_available():
+                device = 'cuda'
+            else:
+                raise NotImplementedError
         cls_scores = [outs['scores'].to(device)]
         bbox_preds = [outs['bbox_preds'].to(device)]
         dir_scores = [outs['dir_scores'].to(device)]
