@@ -37,6 +37,13 @@ class Codebase(AdvancedEnum):
     MMPOSE = 'mmpose'
 
 
+class IR(AdvancedEnum):
+    """Define intermediate representation enumerations."""
+    ONNX = 'onnx'
+    TORCHSCRIPT = 'torchscript'
+    DEFAULT = 'default'
+
+
 class Backend(AdvancedEnum):
     """Define backend enumerations."""
     PYTORCH = 'pytorch'
