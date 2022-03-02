@@ -18,7 +18,6 @@ else ()
 endif ()
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-
 # options
 option(BUILD_SHARED_LIBS "build shared lib" ON)
 option(MMDEPLOY_BUILD_MODEL_OPTIMIZER "build MMDeploy's model optimizer" ON)
