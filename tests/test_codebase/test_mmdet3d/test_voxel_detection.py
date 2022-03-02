@@ -14,7 +14,11 @@ from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Codebase, load_config
 from mmdeploy.utils.test import DummyModel, SwitchBackendWrapper
 
-import_codebase(Codebase.MMDET3D)
+try:
+    import_codebase(Codebase.MMDET3D)
+except ImportError:
+    pytest.skip(
+        f'{Codebase.MMDET3D} is not installed.', allow_module_level=True)
 
 model_cfg_path = 'tests/test_codebase/test_mmdet3d/data/model_cfg.py'
 pcd_path = 'tests/test_codebase/test_mmdet3d/data/kitti/kitti_000008.bin'
