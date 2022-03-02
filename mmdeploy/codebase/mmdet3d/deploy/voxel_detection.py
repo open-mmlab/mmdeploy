@@ -274,13 +274,24 @@ class VoxelDetection(BaseTask):
             if show:
                 # Visualize the results of MMDetection3D model
                 # 'show_results' is MMdetection3D visualization API
-                model.module.show_result(
-                    data,
-                    result,
-                    out_dir=out_dir,
-                    file_name=f'model_output{i}',
-                    show=show,
-                    score_thr=0.3)
+                if out_dir is None:
+                    model.module.show_result(
+                        data,
+                        result,
+                        out_dir='',
+                        file_name='',
+                        show=show,
+                        snapshot=False,
+                        score_thr=0.3)
+                else:
+                    model.module.show_result(
+                        data,
+                        result,
+                        out_dir=out_dir,
+                        file_name=f'model_output{i}',
+                        show=show,
+                        snapshot=True,
+                        score_thr=0.3)
             results.extend(result)
 
             batch_size = len(result)

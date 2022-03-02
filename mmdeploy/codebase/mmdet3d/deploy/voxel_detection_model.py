@@ -104,6 +104,7 @@ class VoxelDetectionModel(BaseBackendModel):
                     out_dir: str,
                     file_name: str,
                     show=False,
+                    snapshot=False,
                     **kwargs):
         from mmcv.parallel import DataContainer as DC
         from mmdet3d.core import show_result
@@ -124,6 +125,7 @@ class VoxelDetectionModel(BaseBackendModel):
             out_dir,
             file_name,
             show=show,
+            snapshot=snapshot,
             pred_labels=pred_labels)
 
     @staticmethod
