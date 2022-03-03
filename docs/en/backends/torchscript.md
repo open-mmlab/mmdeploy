@@ -12,12 +12,12 @@
 
 *Please note that only **Pre-cxx11 ABI** and **version 1.8.1+** on Linux platform are supported by now.*
 
-For previous versions of libtorch, users can find through the [issue comment](https://github.com/pytorch/pytorch/issues/40961#issuecomment-1017317786). Libtorch1.8.1+cu102 as an example, extract it, expose `Torch_DIR` and add the lib path to `LD_LIBRARY_PATH` as below:
+For previous versions of libtorch, users can find through the [issue comment](https://github.com/pytorch/pytorch/issues/40961#issuecomment-1017317786). Libtorch1.8.1+cu111 as an example, extract it, expose `Torch_DIR` and add the lib path to `LD_LIBRARY_PATH` as below:
 
 ```bash
-wget https://download.pytorch.org/libtorch/cu102/libtorch-shared-with-deps-1.8.1%2Bcu102.zip
+wget https://download.pytorch.org/libtorch/cu111/libtorch-shared-with-deps-1.8.1%2Bcu111.zip
 
-unzip libtorch-shared-with-deps-1.8.1+cu102.zip
+unzip libtorch-shared-with-deps-1.8.1+cu111.zip
 cd libtorch
 export Torch_DIR=$(pwd)
 export LD_LIBRARY_PATH=$Torch_DIR/lib:$LD_LIBRARY_PATH
