@@ -49,4 +49,6 @@ make -j$(nproc)
 
 ### FAQs
 
-- None
+- Error: `projects/thirdparty/libtorch/share/cmake/Caffe2/Caffe2Config.cmake:96 (message):Your installed Caffe2 version uses cuDNN but I cannot find the cuDNN libraries.  Please set the proper cuDNN prefixes and / or install cuDNN.`
+
+  May export CUDNN_ROOT=/root/path/to/cudnn to resolve the build error.
