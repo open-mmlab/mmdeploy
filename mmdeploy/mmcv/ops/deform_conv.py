@@ -3,6 +3,37 @@ from mmdeploy.core import SYMBOLIC_REWRITER
 
 
 @SYMBOLIC_REWRITER.register_symbolic(
+    'mmcv.ops.deform_conv.DeformConv2dFunction')
+def deform_conv__default(ctx,
+                         g,
+                         input,
+                         offset,
+                         weight,
+                         stride,
+                         padding,
+                         dilation,
+                         groups,
+                         deform_groups,
+                         bias=False,
+                         im2col_step=32):
+    """Rewrite symbolic function for default backend."""
+    assert not bias, 'The "bias" parameter should be False.'
+    assert groups == 1, 'The "groups" parameter should be 1.'
+    domain = 'mmdeploy'
+    op_name = 'MMCVDeformConv2d'
+    return g.op(
+        f'{domain}::{op_name}',
+        input,
+        offset,
+        weight,
+        stride_i=stride,
+        padding_i=[p for pair in zip(padding, padding) for p in pair],
+        dilation_i=dilation,
+        groups_i=groups,
+        deformable_groups_i=deform_groups)
+
+
+@SYMBOLIC_REWRITER.register_symbolic(
     'mmcv.ops.deform_conv.DeformConv2dFunction', backend='openvino')
 def deform_conv_openvino(ctx,
                          g,
