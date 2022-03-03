@@ -32,16 +32,18 @@ def pillar_encoder__forward(ctx, self, features, num_points, coors):
     device = features.device
     if self._with_voxel_center:
         if not self.legacy:
-            f_center = features[..., :2] - (
-                coors * torch.tensor([1, 1, self.vy, self.vx]).to(device) +
-                torch.tensor([1, 1, self.y_offset, self.x_offset
-                              ]).to(device)).unsqueeze(1).flip(2)[..., :2]
+            f_center = features[..., :3] - (
+                coors * torch.tensor([1, self.vz, self.vy, self.vx]).to(device)
+                +
+                torch.tensor([1, self.z_offset, self.y_offset, self.x_offset
+                              ]).to(device)).unsqueeze(1).flip(2)[..., :3]
         else:
-            f_center = features[..., :2] - (
-                coors * torch.tensor([1, 1, self.vy, self.vx]).to(device) +
-                torch.tensor([1, 1, self.y_offset, self.x_offset
-                              ]).to(device)).unsqueeze(1).flip(2)[..., :2]
-            features_ls[0] = torch.cat((f_center, features[..., 2:]), dim=-1)
+            f_center = features[..., :3] - (
+                coors * torch.tensor([1, self.vz, self.vy, self.vx]).to(device)
+                +
+                torch.tensor([1, self.z_offset, self.y_offset, self.x_offset
+                              ]).to(device)).unsqueeze(1).flip(2)[..., :3]
+            features_ls[0] = torch.cat((f_center, features[..., 3:]), dim=-1)
         features_ls.append(f_center)
 
     if self._with_distance:
