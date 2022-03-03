@@ -104,7 +104,10 @@ constexpr const void* __get_fallback_typeid() {
 }
 
 template <class T>
-inline bool __compare_typeid(const void* __fallback_id) {
+inline bool __compare_typeid(traits::type_id_t __id, const void* __fallback_id) {
+  if (__id && __id == traits::TypeId<T>::value) {
+    return true;
+  }
   if (__fallback_id == __static_any_impl::__get_fallback_typeid<T>()) {
     return true;
   }
@@ -287,7 +290,7 @@ struct _SmallHandler {
   }
 
   static void* __get(StaticAny& self, traits::type_id_t info, const void* fallback_id) {
-    if (info && info == __type_info() || __static_any_impl::__compare_typeid<T>(fallback_id)) {
+    if (__static_any_impl::__compare_typeid<T>(info, fallback_id)) {
       return static_cast<void*>(&self.s_.buf_);
     }
     return nullptr;
@@ -351,7 +354,7 @@ struct _LargeHandler {
   }
 
   static void* __get(StaticAny& self, traits::type_id_t info, const void* fallback_info) {
-    if (info && info == __type_info() || __static_any_impl::__compare_typeid<T>(fallback_info)) {
+    if (__static_any_impl::__compare_typeid<T>(info, fallback_info)) {
       return static_cast<void*>(self.s_.ptr_);
     }
     return nullptr;
