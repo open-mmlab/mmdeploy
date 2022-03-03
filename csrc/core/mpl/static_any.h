@@ -91,24 +91,8 @@ template <class T>
 struct _LargeHandler;
 
 template <class T>
-struct __unique_typeinfo {
-  static constexpr int __id = 0;
-};
-// N4649, [class.static.data], this usage is redundant and deprecated
-template <class T>
-constexpr int __unique_typeinfo<T>::__id;  // NOLINT
-
-template <class T>
-constexpr const void* __get_fallback_typeid() {
-  return &__unique_typeinfo<std::decay_t<T>>::__id;
-}
-
-template <class T>
-inline bool __compare_typeid(traits::type_id_t __id, const void* __fallback_id) {
+inline bool __compare_typeid(traits::type_id_t __id) {
   if (__id && __id == traits::TypeId<T>::value) {
-    return true;
-  }
-  if (__fallback_id == __static_any_impl::__get_fallback_typeid<T>()) {
     return true;
   }
   return false;
@@ -201,8 +185,7 @@ class StaticAny {
  private:
   using _Action = __static_any_impl::_Action;
   using _Ret = __static_any_impl::_Ret;
-  using _HandleFuncPtr = _Ret (*)(_Action, const StaticAny*, StaticAny*, traits::type_id_t info,
-                                  const void* fallback_info);
+  using _HandleFuncPtr = _Ret (*)(_Action, const StaticAny*, StaticAny*, traits::type_id_t info);
 
   union _Storage {
     constexpr _Storage() : ptr_(nullptr) {}
@@ -210,14 +193,12 @@ class StaticAny {
     __static_any_impl::_Buffer buf_;
   };
 
-  _Ret __call(_Action a, StaticAny* other = nullptr, traits::type_id_t info = 0,
-              const void* fallback_info = nullptr) const {
-    return h_(a, this, other, info, fallback_info);
+  _Ret __call(_Action a, StaticAny* other = nullptr, traits::type_id_t info = 0) const {
+    return h_(a, this, other, info);
   }
 
-  _Ret __call(_Action a, StaticAny* other = nullptr, traits::type_id_t info = 0,
-              const void* fallback_info = nullptr) {
-    return h_(a, this, other, info, fallback_info);
+  _Ret __call(_Action a, StaticAny* other = nullptr, traits::type_id_t info = 0) {
+    return h_(a, this, other, info);
   }
 
   template <class>
@@ -241,7 +222,7 @@ namespace __static_any_impl {
 template <class T>
 struct _SmallHandler {
   static _Ret __handle(_Action action, const StaticAny* self, StaticAny* other,
-                       traits::type_id_t info, const void* fallback_info) {
+                       traits::type_id_t info) {
     _Ret ret;
     ret.ptr_ = nullptr;
     switch (action) {
@@ -255,7 +236,7 @@ struct _SmallHandler {
         __move(const_cast<StaticAny&>(*self), *other);
         break;
       case _Action::_Get:
-        ret.ptr_ = __get(const_cast<StaticAny&>(*self), info, fallback_info);
+        ret.ptr_ = __get(const_cast<StaticAny&>(*self), info);
         break;
       case _Action::_TypeInfo:
         ret.type_id_ = __type_info();
@@ -289,8 +270,8 @@ struct _SmallHandler {
     __destroy(self);
   }
 
-  static void* __get(StaticAny& self, traits::type_id_t info, const void* fallback_id) {
-    if (__static_any_impl::__compare_typeid<T>(info, fallback_id)) {
+  static void* __get(StaticAny& self, traits::type_id_t info) {
+    if (__static_any_impl::__compare_typeid<T>(info)) {
       return static_cast<void*>(&self.s_.buf_);
     }
     return nullptr;
@@ -302,7 +283,7 @@ struct _SmallHandler {
 template <class T>
 struct _LargeHandler {
   static _Ret __handle(_Action action, const StaticAny* self, StaticAny* other,
-                       traits::type_id_t info, const void* fallback_info) {
+                       traits::type_id_t info) {
     _Ret ret;
     ret.ptr_ = nullptr;
     switch (action) {
@@ -316,7 +297,7 @@ struct _LargeHandler {
         __move(const_cast<StaticAny&>(*self), *other);
         break;
       case _Action::_Get:
-        ret.ptr_ = __get(const_cast<StaticAny&>(*self), info, fallback_info);
+        ret.ptr_ = __get(const_cast<StaticAny&>(*self), info);
         break;
       case _Action::_TypeInfo:
         ret.type_id_ = __type_info();
@@ -353,8 +334,8 @@ struct _LargeHandler {
     self.h_ = nullptr;
   }
 
-  static void* __get(StaticAny& self, traits::type_id_t info, const void* fallback_info) {
-    if (__static_any_impl::__compare_typeid<T>(info, fallback_info)) {
+  static void* __get(StaticAny& self, traits::type_id_t info) {
+    if (__static_any_impl::__compare_typeid<T>(info)) {
       return static_cast<void*>(self.s_.ptr_);
     }
     return nullptr;
@@ -488,9 +469,7 @@ std::add_pointer_t<ValueType> static_any_cast(StaticAny* any) noexcept {
   static_assert(!std::is_reference<ValueType>::value, "ValueType may not be a reference.");
   using ReturnType = std::add_pointer_t<ValueType>;
   if (any && any->h_) {
-    void* p = any->__call(_Action::_Get, nullptr, traits::TypeId<ValueType>::value,
-                          __static_any_impl::__get_fallback_typeid<ValueType>())
-                  .ptr_;
+    void* p = any->__call(_Action::_Get, nullptr, traits::TypeId<ValueType>::value).ptr_;
     return __pointer_or_func_test<ReturnType>(p, std::is_function<ValueType>{});
   }
   return nullptr;
