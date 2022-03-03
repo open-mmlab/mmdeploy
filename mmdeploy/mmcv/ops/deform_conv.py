@@ -17,12 +17,8 @@ def deform_conv__default(ctx,
                          bias=False,
                          im2col_step=32):
     """Rewrite symbolic function for default backend."""
-    assert not bias, 'The "bias" parameter should be False.'
-    assert groups == 1, 'The "groups" parameter should be 1.'
-    domain = 'mmdeploy'
-    op_name = 'MMCVDeformConv2d'
     return g.op(
-        f'{domain}::{op_name}',
+        'mmdeploy::MMCVDeformConv2d',
         input,
         offset,
         weight,
