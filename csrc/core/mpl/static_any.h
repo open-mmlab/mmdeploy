@@ -3,6 +3,12 @@
 #ifndef MMDEPLOY_CSRC_CORE_MPL_STATIC_ANY_H_
 #define MMDEPLOY_CSRC_CORE_MPL_STATIC_ANY_H_
 
+#include <cstdint>
+#include <memory>
+#include <stdexcept>
+#include <type_traits>
+#include <utility>
+
 // re-implementation of std::any, relies on static type id instead of RTTI.
 // adjusted from libc++-10
 
