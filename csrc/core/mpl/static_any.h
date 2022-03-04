@@ -120,20 +120,21 @@ class StaticAny {
   }
 
   template <class ValueType, class T = std::decay_t<ValueType>,
-            class = std::enable_if_t<!std::is_same<T, StaticAny>::value &&
-                                     !detail::is_in_place_type<ValueType>::value &&
-                                     std::is_copy_constructible<T>::value>>
+            class = std::enable_if_t<
+                !std::is_same<T, StaticAny>::value && !detail::is_in_place_type<ValueType>::value &&
+                std::is_copy_constructible<T>::value && traits::TypeId<T>::value>>
   explicit StaticAny(ValueType&& value);
 
-  template <class ValueType, class... Args, class T = std::decay_t<ValueType>,
-            class = std::enable_if_t<std::is_constructible<T, Args...>::value &&
-                                     std::is_copy_constructible<T>::value>>
+  template <
+      class ValueType, class... Args, class T = std::decay_t<ValueType>,
+      class = std::enable_if_t<std::is_constructible<T, Args...>::value &&
+                               std::is_copy_constructible<T>::value && traits::TypeId<T>::value>>
   explicit StaticAny(std::in_place_type_t<ValueType>, Args&&... args);
 
   template <class ValueType, class U, class... Args, class T = std::decay_t<ValueType>,
             class = std::enable_if_t<
                 std::is_constructible<T, std::initializer_list<U>&, Args...>::value &&
-                std::is_copy_constructible<T>::value>>
+                std::is_copy_constructible<T>::value && traits::TypeId<T>::value>>
   explicit StaticAny(std::in_place_type_t<ValueType>, std::initializer_list<U>, Args&&... args);
 
   ~StaticAny() { this->reset(); }
@@ -148,20 +149,22 @@ class StaticAny {
     return *this;
   }
 
-  template <class ValueType, class T = std::decay_t<ValueType>,
-            class = std::enable_if_t<!std::is_same<T, StaticAny>::value &&
-                                     std::is_copy_constructible<T>::value>>
+  template <
+      class ValueType, class T = std::decay_t<ValueType>,
+      class = std::enable_if_t<!std::is_same<T, StaticAny>::value &&
+                               std::is_copy_constructible<T>::value && traits::TypeId<T>::value>>
   StaticAny& operator=(ValueType&& v);
 
-  template <class ValueType, class... Args, class T = std::decay_t<ValueType>,
-            class = std::enable_if_t<std::is_constructible<T, Args...>::value &&
-                                     std::is_copy_constructible<T>::value>>
+  template <
+      class ValueType, class... Args, class T = std::decay_t<ValueType>,
+      class = std::enable_if_t<std::is_constructible<T, Args...>::value &&
+                               std::is_copy_constructible<T>::value && traits::TypeId<T>::value>>
   T& emplace(Args&&... args);
 
   template <class ValueType, class U, class... Args, class T = std::decay_t<ValueType>,
             class = std::enable_if_t<
                 std::is_constructible<T, std::initializer_list<U>&, Args...>::value &&
-                std::is_copy_constructible<T>::value>>
+                std::is_copy_constructible<T>::value && traits::TypeId<T>::value>>
   T& emplace(std::initializer_list<U>, Args&&...);
 
   void reset() noexcept {
