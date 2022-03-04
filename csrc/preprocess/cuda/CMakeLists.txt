@@ -14,6 +14,7 @@ include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
 set(SRCS
         crop_impl.cpp
         image2tensor_impl.cpp
+        default_format_bundle_impl.cpp
         load_impl.cpp
         normalize_impl.cpp
         pad_impl.cpp
