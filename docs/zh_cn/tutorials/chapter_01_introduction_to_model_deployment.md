@@ -87,7 +87,7 @@ class SuperResolutionNet(nn.Module):
         out = self.relu(self.conv2(out))
         out = self.conv3(out)
         return out
-        
+
 # Download checkpoint and test image
 urls = ['https://download.openmmlab.com/mmediting/restorers/srcnn/srcnn_x4k915_1x16_1000k_div2k_20200608-4186f232.pth',
     'https://raw.githubusercontent.com/open-mmlab/mmediting/master/tests/data/face/000001.png']
@@ -98,9 +98,9 @@ for url, name in zip(urls, names):
 
 def init_torch_model():
     torch_model = SuperResolutionNet(upscale_factor=3)
-    
+
     state_dict = torch.load('srcnn.pth')['state_dict']
-    
+
     # Adapt the checkpoint
     for old_key in list(state_dict.keys()):
         new_key = '.'.join(old_key.split('.')[1:])
@@ -232,6 +232,6 @@ cv2.imwrite("face_ort.png", ort_output)
 - PyTorch 框架自带对 ONNX 的支持，只需要构造一组随机的输入，并对模型调用 torch.onnx.export 即可完成 PyTorch 到 ONNX 的转换。
 - 推理引擎 ONNX Runtime 对 ONNX 模型有原生的支持。给定一个 .onnx 文件，只需要简单使用 ONNX Runtime 的 Python API 就可以完成模型推理。
 
-为了实现深度学习算法的落地，充满挑战的模型部署是一个逃不开的步骤。MMDeploy 实现了 OpenMMLab 中目标检测、图像分割、超分辨率等多个视觉任务模型的部署，支持 ONNX Runtime，TensorRT，ncnn ，openppl，OpenVINO等多个推理引擎。 
+为了实现深度学习算法的落地，充满挑战的模型部署是一个逃不开的步骤。MMDeploy 实现了 OpenMMLab 中目标检测、图像分割、超分辨率等多个视觉任务模型的部署，支持 ONNX Runtime，TensorRT，ncnn ，openppl，OpenVINO等多个推理引擎。
 
 在后续的模型部署教程中，我们将在介绍模型部署技术的同时， 介绍这些技术是如何运用在 MMDeploy 中的。
