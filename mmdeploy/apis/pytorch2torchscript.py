@@ -39,8 +39,8 @@ def torch2torchscript_impl(model: torch.nn.Module,
     patched_model = patch_model(model, cfg=deploy_cfg, backend=backend)
 
     with RewriterContext(
-            cfg=deploy_cfg,
-            backend=backend), torch.no_grad(), torch.jit.optimized_execution(
+            cfg=deploy_cfg, backend=backend,
+            ir=IR.TORCHSCRIPT), torch.no_grad(), torch.jit.optimized_execution(
                 True):
         # for exporting models with weight that depends on inputs
         patched_model(
