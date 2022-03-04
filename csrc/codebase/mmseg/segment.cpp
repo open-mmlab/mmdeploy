@@ -4,7 +4,7 @@
 #include "core/tensor.h"
 #include "core/utils/device_utils.h"
 #include "core/utils/formatter.h"
-#include "preprocess/cpu/opencv_utils.h"
+#include "opencv_utils.h"
 #include "preprocess/transform/transform.h"
 
 namespace mmdeploy::mmseg {
@@ -15,19 +15,19 @@ class ResizeMask : public MMSegmentation {
     try {
       classes_ = cfg["params"]["num_classes"].get<int>();
     } catch (const std::exception &e) {
-      ERROR("no ['params']['num_classes'] is specified in cfg: {}", cfg);
+      MMDEPLOY_ERROR("no ['params']['num_classes'] is specified in cfg: {}", cfg);
       throw_exception(eInvalidArgument);
     }
   }
 
   Result<Value> operator()(const Value &preprocess_result, const Value &inference_result) {
-    DEBUG("preprocess: {}\ninference: {}", preprocess_result, inference_result);
+    MMDEPLOY_DEBUG("preprocess: {}\ninference: {}", preprocess_result, inference_result);
 
     auto mask = inference_result["output"].get<Tensor>();
-    DEBUG("tensor.name: {}, tensor.shape: {}, tensor.data_type: {}", mask.name(), mask.shape(),
-          mask.data_type());
+    MMDEPLOY_DEBUG("tensor.name: {}, tensor.shape: {}, tensor.data_type: {}", mask.name(),
+                   mask.shape(), mask.data_type());
     if (!(mask.shape().size() == 4 && mask.shape(0) == 1 && mask.shape(1) == 1)) {
-      ERROR("unsupported `output` tensor, shape: {}", mask.shape());
+      MMDEPLOY_ERROR("unsupported `output` tensor, shape: {}", mask.shape());
       return Status(eNotSupported);
     }
 
@@ -40,16 +40,14 @@ class ResizeMask : public MMSegmentation {
     OUTCOME_TRY(stream_.Wait());
     if (mask.data_type() == DataType::kINT64) {
       // change kINT64 to 2 INT32
-      TensorDesc desc{.device = host_tensor.device(),
-                      .data_type = DataType::kINT32,
-                      .shape = {1, 2, height, width},
-                      .name = host_tensor.name()};
+      TensorDesc desc{
+          host_tensor.device(), DataType::kINT32, {1, 2, height, width}, host_tensor.name()};
       Tensor _host_tensor(desc, mask.buffer());
       return MaskResize(_host_tensor, input_height, input_width);
     } else if (mask.data_type() == DataType::kINT32) {
       return MaskResize(host_tensor, input_height, input_width);
     } else {
-      ERROR("unsupported `output` tensor, dtype: {}", (int)mask.data_type());
+      MMDEPLOY_ERROR("unsupported `output` tensor, dtype: {}", (int)mask.data_type());
       return Status(eNotSupported);
     }
   }

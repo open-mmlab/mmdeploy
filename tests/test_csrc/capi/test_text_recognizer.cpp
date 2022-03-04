@@ -35,7 +35,7 @@ TEST_CASE("test text recognizer's c api", "[text-recognizer]") {
 
     for (auto i = 0; i < mats.size(); ++i) {
       std::vector<float> score(results[i].score, results[i].score + results[i].length);
-      INFO("image {}, text = {}, score = {}", i, results[i].text, score);
+      MMDEPLOY_INFO("image {}, text = {}, score = {}", i, results[i].text, score);
     }
 
     mmdeploy_text_recognizer_release_result(results, (int)mats.size());
@@ -43,12 +43,12 @@ TEST_CASE("test text recognizer's c api", "[text-recognizer]") {
   };
 
   auto& gResources = MMDeployTestResources::Get();
-  auto img_list = gResources.LocateImageResources("mmocr/images");
+  auto img_list = gResources.LocateImageResources(fs::path{"mmocr"} / "images");
   REQUIRE(!img_list.empty());
 
   for (auto& backend : gResources.backends()) {
     DYNAMIC_SECTION("loop backend: " << backend) {
-      auto model_list = gResources.LocateModelResources("mmocr/textreg/" + backend);
+      auto model_list = gResources.LocateModelResources(fs::path{"mmocr"} / "textreg" / "backend");
       REQUIRE(!model_list.empty());
       for (auto& model_path : model_list) {
         for (auto& device_name : gResources.device_names(backend)) {
@@ -93,7 +93,7 @@ TEST_CASE("test text detector-recognizer combo", "[text-detector-recognizer]") {
       for (int j = 0; j < bbox_count[i]; ++j) {
         auto& text = texts[offset + j];
         std::vector<float> score(text.score, text.score + text.length);
-        INFO("image {}, text = {}, score = {}", i, text.text, score);
+        MMDEPLOY_INFO("image {}, text = {}, score = {}", i, text.text, score);
       }
       offset += bbox_count[i];
     }
@@ -106,13 +106,15 @@ TEST_CASE("test text detector-recognizer combo", "[text-detector-recognizer]") {
   };
 
   auto& gResources = MMDeployTestResources::Get();
-  auto img_list = gResources.LocateImageResources("mmocr/images");
+  auto img_list = gResources.LocateImageResources(fs::path{"mmocr"} / "images");
   REQUIRE(!img_list.empty());
 
   for (auto& backend : gResources.backends()) {
     DYNAMIC_SECTION("loop backend: " << backend) {
-      auto det_model_list = gResources.LocateModelResources("/mmocr/textdet/" + backend);
-      auto reg_model_list = gResources.LocateModelResources("/mmocr/textreg/" + backend);
+      auto det_model_list =
+          gResources.LocateModelResources(fs::path{"mmocr"} / "textdet" / backend);
+      auto reg_model_list =
+          gResources.LocateModelResources(fs::path{"mmocr"} / "textreg" / backend);
       REQUIRE(!det_model_list.empty());
       REQUIRE(!reg_model_list.empty());
       auto det_model_path = det_model_list.front();

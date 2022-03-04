@@ -10,6 +10,10 @@
 
 #include "common.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct mm_text_detect_t {
   mm_pointf_t bbox[4];  ///< a text bounding box of which the vertex are in clock-wise
   float score;
@@ -25,8 +29,8 @@ typedef struct mm_text_detect_t {
  * by \ref mmdeploy_text_detector_destroy
  * @return status of creating text-detector's handle
  */
-MM_SDK_API int mmdeploy_text_detector_create(mm_model_t model, const char* device_name,
-                                             int device_id, mm_handle_t* handle);
+MMDEPLOY_API int mmdeploy_text_detector_create(mm_model_t model, const char* device_name,
+                                               int device_id, mm_handle_t* handle);
 
 /**
  * @brief Create text-detector's handle
@@ -37,9 +41,9 @@ MM_SDK_API int mmdeploy_text_detector_create(mm_model_t model, const char* devic
  * by \ref mmdeploy_text_detector_destroy
  * @return status of creating text-detector's handle
  */
-MM_SDK_API int mmdeploy_text_detector_create_by_path(const char* model_path,
-                                                     const char* device_name, int device_id,
-                                                     mm_handle_t* handle);
+MMDEPLOY_API int mmdeploy_text_detector_create_by_path(const char* model_path,
+                                                       const char* device_name, int device_id,
+                                                       mm_handle_t* handle);
 
 /**
  * @brief Apply text-detector to batch images and get their inference results
@@ -52,22 +56,27 @@ MM_SDK_API int mmdeploy_text_detector_create_by_path(const char* model_path,
  * results of each image. It must be released by \ref mmdeploy_detector_release_result
  * @return status of inference
  */
-MM_SDK_API int mmdeploy_text_detector_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
-                                            mm_text_detect_t** results, int** result_count);
+MMDEPLOY_API int mmdeploy_text_detector_apply(mm_handle_t handle, const mm_mat_t* mats,
+                                              int mat_count, mm_text_detect_t** results,
+                                              int** result_count);
 
 /** @brief Release the inference result buffer returned by \ref mmdeploy_text_detector_apply
  * @param[in] results text detection result buffer
  * @param[in] result_count  \p results size buffer
  * @param[in] count the length of buffer \p result_count
  */
-MM_SDK_API void mmdeploy_text_detector_release_result(mm_text_detect_t* results,
-                                                      const int* result_count, int count);
+MMDEPLOY_API void mmdeploy_text_detector_release_result(mm_text_detect_t* results,
+                                                        const int* result_count, int count);
 
 /**
  * @brief Destroy text-detector's handle
  * @param[in] handle text-detector's handle created by \ref mmdeploy_text_detector_create_by_path or
  * \ref mmdeploy_text_detector_create
  */
-MM_SDK_API void mmdeploy_text_detector_destroy(mm_handle_t handle);
+MMDEPLOY_API void mmdeploy_text_detector_destroy(mm_handle_t handle);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif  // MMDEPLOY_TEXT_DETECTOR_H

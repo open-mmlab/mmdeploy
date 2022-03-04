@@ -16,6 +16,16 @@ class CudaPlatformImpl : public PlatformImpl {
  public:
   CudaPlatformImpl();
 
+  ~CudaPlatformImpl() override {
+    // The CUDA driver may have already shutdown before the platform dtor is called.
+    // As a workaround, simply leak per device resources and let the driver handle it
+    // FIXME: maybe a pair of global mmdeploy_init/deinit function would be a
+    //  better solution
+    for (auto& data : per_device_data_storage_) {
+      data.release();
+    }
+  }
+
   const char* GetPlatformName() const noexcept override { return "cuda"; }
 
   shared_ptr<BufferImpl> CreateBuffer(Device device) override;

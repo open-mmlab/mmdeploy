@@ -51,9 +51,9 @@ int mmdeploy_restorer_create_impl(ModelType &&m, const char *device_name, int de
     return MM_SUCCESS;
 
   } catch (const std::exception &e) {
-    ERROR("exception caught: {}", e.what());
+    MMDEPLOY_ERROR("exception caught: {}", e.what());
   } catch (...) {
-    ERROR("unknown exception caught");
+    MMDEPLOY_ERROR("unknown exception caught");
   }
   return MM_E_FAIL;
 }
@@ -105,9 +105,9 @@ int mmdeploy_restorer_apply(mm_handle_t handle, const mm_mat_t *images, int coun
     *results = _results.release();
     return MM_SUCCESS;
   } catch (const std::exception &e) {
-    ERROR("exception caught: {}", e.what());
+    MMDEPLOY_ERROR("exception caught: {}", e.what());
   } catch (...) {
-    ERROR("unknown exception caught");
+    MMDEPLOY_ERROR("unknown exception caught");
   }
   return MM_E_FAIL;
 }

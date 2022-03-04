@@ -1,6 +1,8 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
+#include <array>
 #include <iostream>
+#include <numeric>
 
 #include "catch.hpp"
 #include "core/logger.h"

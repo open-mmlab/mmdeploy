@@ -17,26 +17,27 @@ ResizeBBox::ResizeBBox(const Value& cfg) : MMDetection(cfg) {
   }
 }
 Result<Value> ResizeBBox::operator()(const Value& prep_res, const Value& infer_res) {
-  DEBUG("prep_res: {}\ninfer_res: {}", prep_res, infer_res);
+  MMDEPLOY_DEBUG("prep_res: {}\ninfer_res: {}", prep_res, infer_res);
   try {
     auto dets = infer_res["dets"].get<Tensor>();
     auto labels = infer_res["labels"].get<Tensor>();
 
-    DEBUG("dets.shape: {}", dets.shape());
-    DEBUG("labels.shape: {}", labels.shape());
+    MMDEPLOY_DEBUG("dets.shape: {}", dets.shape());
+    MMDEPLOY_DEBUG("labels.shape: {}", labels.shape());
 
     // `dets` is supposed to have 3 dims. They are 'batch', 'bboxes_number'
     // and 'channels' respectively
     if (!(dets.shape().size() == 3 && dets.data_type() == DataType::kFLOAT)) {
-      ERROR("unsupported `dets` tensor, shape: {}, dtype: {}", dets.shape(), (int)dets.data_type());
+      MMDEPLOY_ERROR("unsupported `dets` tensor, shape: {}, dtype: {}", dets.shape(),
+                     (int)dets.data_type());
       return Status(eNotSupported);
     }
 
     // `labels` is supposed to have 2 dims, which are 'batch' and
     // 'bboxes_number'
     if (labels.shape().size() != 2) {
-      ERROR("unsupported `labels`, tensor, shape: {}, dtype: {}", labels.shape(),
-            (int)labels.data_type());
+      MMDEPLOY_ERROR("unsupported `labels`, tensor, shape: {}, dtype: {}", labels.shape(),
+                     (int)labels.data_type());
       return Status(eNotSupported);
     }
 
@@ -98,16 +99,17 @@ Result<DetectorOutput> ResizeBBox::GetBBoxes(const Value& prep_res, const Tensor
     auto right = dets_ptr[2];
     auto bottom = dets_ptr[3];
 
-    DEBUG("ori left {}, top {}, right {}, bottom {}, label {}", left, top, right, bottom,
-          *labels_ptr);
+    MMDEPLOY_DEBUG("ori left {}, top {}, right {}, bottom {}, label {}", left, top, right, bottom,
+                   *labels_ptr);
     auto rect = MapToOriginImage(left, top, right, bottom, scale_factor.data(), w_offset, h_offset,
                                  ori_width, ori_height);
     if (rect[2] - rect[0] < min_bbox_size_ || rect[3] - rect[1] < min_bbox_size_) {
-      DEBUG("ignore small bbox with width '{}' and height '{}", rect[2] - rect[0],
-            rect[3] - rect[1]);
+      MMDEPLOY_DEBUG("ignore small bbox with width '{}' and height '{}", rect[2] - rect[0],
+                     rect[3] - rect[1]);
       continue;
     }
-    DEBUG("remap left {}, top {}, right {}, bottom {}", rect[0], rect[1], rect[2], rect[3]);
+    MMDEPLOY_DEBUG("remap left {}, top {}, right {}, bottom {}", rect[0], rect[1], rect[2],
+                   rect[3]);
     DetectorOutput::Detection det{};
     det.index = i;
     det.label_id = static_cast<int>(*labels_ptr);

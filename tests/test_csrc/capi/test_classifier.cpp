@@ -33,11 +33,11 @@ TEST_CASE("test classifier's c api", "[classifier]") {
     ret = mmdeploy_classifier_apply(handle, mats.data(), (int)mats.size(), &results, &result_count);
     REQUIRE(ret == MM_SUCCESS);
     auto result_ptr = results;
-    INFO("model_path: {}", model_path);
+    MMDEPLOY_INFO("model_path: {}", model_path);
     for (auto i = 0; i < (int)mats.size(); ++i) {
-      INFO("the {}-th classification result: ", i);
+      MMDEPLOY_INFO("the {}-th classification result: ", i);
       for (int j = 0; j < *result_count; ++j, ++result_ptr) {
-        INFO("\t label: {}, score: {}", result_ptr->label_id, result_ptr->score);
+        MMDEPLOY_INFO("\t label: {}, score: {}", result_ptr->label_id, result_ptr->score);
       }
     }
 
@@ -46,12 +46,12 @@ TEST_CASE("test classifier's c api", "[classifier]") {
   };
 
   auto gResources = MMDeployTestResources::Get();
-  auto img_lists = gResources.LocateImageResources("mmcls/images");
+  auto img_lists = gResources.LocateImageResources(fs::path{"mmcls"} / "images");
   REQUIRE(!img_lists.empty());
 
   for (auto& backend : gResources.backends()) {
     DYNAMIC_SECTION("loop backend: " << backend) {
-      auto model_list = gResources.LocateModelResources("mmcls/" + backend);
+      auto model_list = gResources.LocateModelResources(fs::path{"mmcls/"} / backend);
       REQUIRE(!model_list.empty());
       for (auto& model_path : model_list) {
         for (auto& device_name : gResources.device_names(backend)) {

@@ -5,6 +5,7 @@
 
 #include <system_error>
 
+#include "core/macro.h"
 #include "outcome-experimental.hpp"
 #if MMDEPLOY_STATUS_USE_SOURCE_LOCATION
 #include "utils/source_location.h"
@@ -71,7 +72,7 @@ inline const char *to_string(ErrorCode code) {
   }
 }
 
-struct Status {
+struct MMDEPLOY_API Status {
   ErrorCode ec{};
   Status() = default;
   SYSTEM_ERROR2_NAMESPACE::status_code_domain::string_ref message() const;
@@ -94,7 +95,7 @@ class StatusDomain;
 
 using StatusCode = SYSTEM_ERROR2_NAMESPACE::status_code<StatusDomain>;
 
-class StatusDomain : public SYSTEM_ERROR2_NAMESPACE::status_code_domain {
+class MMDEPLOY_API StatusDomain : public SYSTEM_ERROR2_NAMESPACE::status_code_domain {
   using _base = status_code_domain;
 
  public:

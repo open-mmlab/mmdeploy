@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
 #include <fstream>
-#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgcodecs/imgcodecs.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <random>
 #include <string>
@@ -13,7 +13,7 @@ using namespace std;
 
 vector<cv::Vec3b> gen_palette(int num_classes) {
   std::mt19937 gen;
-  std::uniform_int_distribution<uchar> uniform_dist(0, 255);
+  std::uniform_int_distribution<ushort> uniform_dist(0, 255);
 
   vector<cv::Vec3b> palette;
   palette.reserve(num_classes);

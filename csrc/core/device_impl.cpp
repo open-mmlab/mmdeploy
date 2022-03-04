@@ -144,7 +144,7 @@ Stream::Stream(Device device, uint64_t flags) {
       r.error().throw_exception();
     }
   } else {
-    ERROR("{}, {}", device.device_id(), device.platform_id());
+    MMDEPLOY_ERROR("{}, {}", device.device_id(), device.platform_id());
     throw_exception(eInvalidArgument);
   }
 }
