@@ -181,8 +181,16 @@ def mark_tensors(xs: Any, func: str, func_id: int, io_type: str, ctx: Any,
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    'mmdeploy.core.optimizers.function_marker.mark_tensors', IR=IR.TORCHSCRIPT)
+    'mmdeploy.core.optimizers.function_marker.mark_tensors', ir=IR.TORCHSCRIPT)
 def remove_mark__torchscript(ctx, xs: Any, *args, **kwargs):
+    """Disable all marks for TorchScript backend.
+
+    As the Node `mark` is not able to be traced, we just return original input
+    for the function `mark_tensors`.
+
+    Args:
+        xs (Any): Input structure which contains tensor.
+    """
     return xs
 
 

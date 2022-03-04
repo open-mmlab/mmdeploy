@@ -7,6 +7,7 @@ import mmcv
 import pytest
 
 from mmdeploy.apis import torch2torchscript
+from mmdeploy.utils import IR, Backend
 from mmdeploy.utils.test import get_random_name
 
 ts_file = tempfile.NamedTemporaryFile(suffix='.pt').name
@@ -18,14 +19,12 @@ def get_deploy_cfg(input_name, output_name):
     return mmcv.Config(
         dict(
             ir_config=dict(
-                type='torchscript',
+                type=IR.TORCHSCRIPT.value,
                 input_names=[input_name],
                 output_names=[output_name],
                 input_shape=None),
-            codebase_config=dict(type='mmedit',
-                                 task='SuperResolution'),  # useless
-            backend_config=dict(type='torchscript')  # useless
-        ))
+            codebase_config=dict(type='mmedit', task='SuperResolution'),
+            backend_config=dict(type=Backend.TORCHSCRIPT.value)))
 
 
 def get_model_cfg():

@@ -8,7 +8,7 @@ from packaging.version import parse as version_parse
 
 from mmdeploy.backend.torchscript import get_ops_path
 from mmdeploy.core import RewriterContext, patch_model
-from mmdeploy.utils import (get_backend, get_input_shape, get_root_logger,
+from mmdeploy.utils import (IR, get_backend, get_input_shape, get_root_logger,
                             load_config)
 
 
@@ -57,7 +57,7 @@ def torch2torchscript_impl(model: torch.nn.Module,
         from mmdeploy.backend.torchscript import ts_optimizer
         logger = get_root_logger()
         ts_optimizer.optimize_for_backend(
-            ts_model._c, ir='torchscript', backend=backend)
+            ts_model._c, ir=IR.TORCHSCRIPT.value, backend=backend)
     except Exception:
         # use pytorch builtin optimizer
         ts_model = torch.jit.freeze(ts_model)

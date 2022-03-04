@@ -11,7 +11,7 @@ from torch.multiprocessing import Process, set_start_method
 from mmdeploy.apis import (create_calib_table, extract_model,
                            get_predefined_partition_cfg, torch2onnx,
                            torch2torchscript, visualize_model)
-from mmdeploy.utils import (Backend, get_backend, get_calib_filename,
+from mmdeploy.utils import (IR, Backend, get_backend, get_calib_filename,
                             get_ir_config, get_model_inputs,
                             get_partition_config, get_root_logger, load_config,
                             target_wrapper)
@@ -66,10 +66,16 @@ def create_process(name, target, args, kwargs, ret_value=None):
             logger.info(f'{name} success.')
 
 
-def torch2ir(ir_type: str):
-    if ir_type == 'onnx':
+def torch2ir(ir_type: IR):
+    """Return the conversion function from torch to the intermediate
+    representation.
+
+    Args:
+        ir_type (IR): The type of the intermediate representation.
+    """
+    if ir_type == IR.ONNX:
         return torch2onnx
-    elif ir_type == 'torchscript':
+    elif ir_type == IR.TORCHSCRIPT:
         return torch2torchscript
     else:
         raise KeyError(f'Unexpected IR type {ir_type}')
@@ -99,9 +105,9 @@ def main():
     # convert to IR
     ir_config = get_ir_config(deploy_cfg)
     ir_save_file = ir_config['save_file']
-    ir_type = ir_config['type']
+    ir_type = IR.get(ir_config['type'])
     create_process(
-        f'torch2{ir_type}',
+        f'torch2{ir_type.value}',
         target=torch2ir(ir_type),
         args=(args.img, args.work_dir, ir_save_file, deploy_cfg_path,
               model_cfg_path, checkpoint_path),

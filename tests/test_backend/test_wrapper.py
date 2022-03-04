@@ -50,7 +50,8 @@ def generate_torchscript_file():
     import mmcv
 
     from mmdeploy.apis import torch2torchscript_impl
-    deploy_cfg = mmcv.Config({'backend_config': dict(type='torchscript')})
+    deploy_cfg = mmcv.Config(
+        {'backend_config': dict(type=Backend.TORCHSCRIPT.value)})
     with torch.no_grad():
         torch2torchscript_impl(model, torch.rand(1, 3, 8, 8), deploy_cfg,
                                ts_file)

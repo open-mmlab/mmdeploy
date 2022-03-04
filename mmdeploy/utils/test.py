@@ -14,7 +14,7 @@ from torch import nn
 
 import mmdeploy.codebase  # noqa: F401,F403
 from mmdeploy.core import RewriterContext, patch_model
-from mmdeploy.utils import (Backend, get_backend, get_dynamic_axes,
+from mmdeploy.utils import (IR, Backend, get_backend, get_dynamic_axes,
                             get_ir_config, get_onnx_config)
 
 
@@ -549,7 +549,7 @@ def get_rewrite_outputs(wrapped_model: nn.Module,
         ctx_outputs = wrapped_model(**model_inputs)
 
     ir_type = get_ir_config(deploy_cfg).get('type', None)
-    if ir_type == 'torchscript':
+    if ir_type == IR.TORCHSCRIPT.value:
         ir_file_path = get_ts_model(wrapped_model, model_inputs, deploy_cfg)
     else:  # TODO onnx as default, make it strict when more IR types involved
         ir_file_path = get_onnx_model(wrapped_model, model_inputs, deploy_cfg)
