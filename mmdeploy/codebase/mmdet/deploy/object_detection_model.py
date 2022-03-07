@@ -78,6 +78,7 @@ class End2EndModel(BaseBackendModel):
             backend=backend,
             backend_files=backend_files,
             device=device,
+            input_names=[self.input_name],
             output_names=output_names,
             deploy_cfg=self.deploy_cfg)
 
@@ -424,13 +425,14 @@ class PartitionTwoStageModel(End2EndModel):
             backend,
             backend_files[0:n],
             device,
-            partition0_output_names,
+            output_names=partition0_output_names,
             deploy_cfg=self.deploy_cfg)
 
         self.second_wrapper = BaseBackendModel._build_wrapper(
             backend,
             backend_files[n:2 * n],
-            device, ['cls_score', 'bbox_pred'],
+            device,
+            output_names=['cls_score', 'bbox_pred'],
             deploy_cfg=self.deploy_cfg)
 
     def partition0_postprocess(self, x: Sequence[torch.Tensor],
