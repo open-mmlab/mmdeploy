@@ -517,9 +517,8 @@ def get_backend_outputs(ir_file_path: str,
             name: value.shape
             for name, value in flatten_model_inputs.items()
         }
-        mo_options = get_mo_options_from_cfg(deploy_cfg)
         openvino_apis.onnx2openvino(input_info, output_names, ir_file_path,
-                                    openvino_work_dir, mo_options)
+                                    openvino_work_dir)
         backend_files = [openvino_file_path]
         backend_feats = flatten_model_inputs
         device = 'cpu'

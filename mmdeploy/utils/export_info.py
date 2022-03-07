@@ -125,8 +125,6 @@ def get_models(deploy_cfg: Union[str, mmcv.Config],
     elif backend == Backend.NCNN:
         net = replace_suffix(ir_name, '.param')
         weights = replace_suffix(ir_name, '.bin')
-        if 'precision' in deploy_cfg['backend_config']:
-            precision = deploy_cfg['backend_config']['precision']
     elif backend in [Backend.ONNXRUNTIME, Backend.TORCHSCRIPT]:
         pass
     else:
