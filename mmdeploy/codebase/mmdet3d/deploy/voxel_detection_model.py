@@ -147,7 +147,12 @@ class VoxelDetectionModel(BaseBackendModel):
         """
         from mmcv.ops import Voxelization
         model_cfg = load_config(model_cfg)[0]
-        voxel_layer = model_cfg.model['voxel_layer']
+        if 'voxel_layer' in model_cfg.model.keys():
+            voxel_layer = model_cfg.model['voxel_layer']
+        elif 'pts_voxel_layer' in model_cfg.model.keys():
+            voxel_layer = model_cfg.model['pts_voxel_layer']
+        else:
+            raise
         voxel_layer = Voxelization(**voxel_layer)
         voxels, coors, num_points = [], [], []
         for res in points:
@@ -196,7 +201,8 @@ class VoxelDetectionModel(BaseBackendModel):
             if torch.cuda.is_available():
                 device = 'cuda'
             else:
-                raise NotImplementedError
+                raise NotImplementedError(
+                    'Post process don\'t support device=cpu')
         cls_scores = [outs['scores'].to(device)]
         bbox_preds = [outs['bbox_preds'].to(device)]
         dir_scores = [outs['dir_scores'].to(device)]

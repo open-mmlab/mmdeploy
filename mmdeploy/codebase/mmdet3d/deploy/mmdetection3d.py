@@ -69,8 +69,7 @@ class MMDetection3d(MMCodebase):
                          dist: bool = False,
                          shuffle: bool = False,
                          seed: Optional[int] = None,
-                         drop_last: bool = False,
-                         pin_memory: bool = True,
+                         runner_type: str = 'EpochBasedRunner',
                          persistent_workers: bool = True,
                          **kwargs) -> DataLoader:
         """Build dataloader for detection3d.
@@ -88,6 +87,12 @@ class MMDetection3d(MMCodebase):
             shuffle (bool): Whether to shuffle the data at every epoch.
                 Defaults to `False`.
             seed (int): An integer set to be seed. Default is `None`.
+            runner_type (str): Type of runner. Default: `EpochBasedRunner`.
+            persistent_workers (bool): If True, the data loader will not
+                shutdown the worker processes after a dataset has been consumed
+                once. This allows to maintain the workers `Dataset` instances
+                alive. This argument is only valid when PyTorch>=1.7.0.
+                Default: False.
             kwargs: Any other keyword argument to be used to initialize
                 DataLoader.
 
@@ -104,4 +109,6 @@ class MMDetection3d(MMCodebase):
             dist=dist,
             shuffle=shuffle,
             seed=seed,
+            runner_type=runner_type,
+            persistent_workers=persistent_workers,
             **kwargs)

@@ -54,7 +54,8 @@ class VoxelDetection(BaseTask):
                 codebases.
         """
         from mmdet3d.apis import init_model
-        model = init_model(self.model_cfg, model_checkpoint, self.device)
+        device = self.device
+        model = init_model(self.model_cfg, model_checkpoint, device)
         return model.eval()
 
     def create_input(self, pcd: str, *args) -> Tuple[Dict, torch.Tensor]:

@@ -16,10 +16,10 @@ def voxelnet__simple_test(ctx,
     post process.
 
     Args:
-    voxels(torch.Tensor): Point features or raw points in shape (N, M, C).
-    num_points (torch.Tensor): Number of points in each pillar.
-    coors (torch.Tensor): Coordinates of each voxel.
-    input_metas (list[dict]): Contain pcd meta info.
+        voxels(torch.Tensor): Point features or raw points in shape (N, M, C).
+        num_points (torch.Tensor): Number of points in each pillar.
+        coors (torch.Tensor): Coordinates of each voxel.
+        input_metas (list[dict]): Contain pcd meta info.
 
     Returns:
         List: Result of model.
