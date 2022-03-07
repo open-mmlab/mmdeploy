@@ -1,6 +1,6 @@
 # 第一章：模型部署简介
 
-OpenMMLab 的算法如何部署？是很多社区用户的困惑。而[模型部署工具箱 MMDeploy](https://zhuanlan.zhihu.com/p/450342651) 的开源，强势打通了从算法模型到应用程序这 "最后一公里"！
+OpenMMLab 的算法如何部署？这是很多社区用户的困惑。而[模型部署工具箱 MMDeploy](https://zhuanlan.zhihu.com/p/450342651) 的开源，强势打通了从算法模型到应用程序这 "最后一公里"！
 今天我们将开启模型部署入门系列教程，在模型部署开源库 MMDeploy 的辅助下，介绍以下内容：
 
 - 中间表示 ONNX 的定义标准。
@@ -32,8 +32,8 @@ OpenMMLab 的算法如何部署？是很多社区用户的困惑。而[模型部
 ## 部署第一个模型
 
 ### 创建 PyTorch 模型
-仿照 PyTorch 的官方部署教程，让我们用 PyTorch 实现一个超分辨率模型，并把模型部署到 ONNX Runtime 这个推理引擎上。
-首先，我们需要创建一个有 PyTorch 库的 Python 编程环境。如果你的 PyTorch 环境还没有装好，可以参考官方的入门教程。我们强烈推荐使用 conda 来管理 Python 库。使用 conda 可以靠如下的命令初始化一个 PyTorch 环境：
+仿照 PyTorch 的官方[部署教程](https://pytorch.org/tutorials/advanced/super_resolution_with_onnxruntime.html)，让我们用 PyTorch 实现一个超分辨率模型，并把模型部署到 ONNX Runtime 这个推理引擎上。
+首先，我们需要创建一个有 PyTorch 库的 Python 编程环境。如果你的 PyTorch 环境还没有装好，可以参考官方的[入门教程](https://pytorch.org/get-started/locally/)。我们强烈推荐使用 conda 来管理 Python 库。使用 conda 可以靠如下的命令初始化一个 PyTorch 环境：
 ```bash
 # 创建预安装 Python 3.7 的名叫 deploy 虚拟环境
 conda create -n deploy python=3.7 -y
@@ -234,4 +234,4 @@ cv2.imwrite("face_ort.png", ort_output)
 
 为了实现深度学习算法的落地，充满挑战的模型部署是一个逃不开的步骤。MMDeploy 实现了 OpenMMLab 中目标检测、图像分割、超分辨率等多个视觉任务模型的部署，支持 ONNX Runtime，TensorRT，ncnn ，openppl，OpenVINO等多个推理引擎。
 
-在后续的模型部署教程中，我们将在介绍模型部署技术的同时， 介绍这些技术是如何运用在 MMDeploy 中的。
+在后续的模型部署教程中，我们将在介绍模型部署技术的同时，介绍这些技术是如何运用在 MMDeploy 中的。
