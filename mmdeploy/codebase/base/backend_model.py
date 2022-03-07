@@ -35,8 +35,11 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
     def _build_wrapper(backend: Backend,
                        backend_files: Sequence[str],
                        device: str,
+                       input_names: Optional[Sequence[str]] = None,
                        output_names: Optional[Sequence[str]] = None,
-                       deploy_cfg: Optional[mmcv.Config] = None):
+                       deploy_cfg: Optional[mmcv.Config] = None,
+                       *args,
+                       **kwargs):
         """The default methods to build backend wrappers.
 
         Args:
@@ -44,6 +47,8 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
             beckend_files (Sequence[str]): Paths to all required backend files(
                 e.g. '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
             device (str): A string specifying device type.
+            input_names (Sequence[str] | None): Names of model inputs in
+                order. Defaults to `None`.
             output_names (Sequence[str] | None): Names of model outputs in
                 order. Defaults to `None` and the wrapper will load the output
                 names from the model.
@@ -85,6 +90,12 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
                 model_file=backend_files[0],
                 task_name=task_name,
                 device=device)
+        elif backend == Backend.TORCHSCRIPT:
+            from mmdeploy.backend.torchscript import TorchscriptWrapper
+            return TorchscriptWrapper(
+                model=backend_files[0],
+                input_names=input_names,
+                output_names=output_names)
         else:
             raise NotImplementedError(f'Unknown backend type: {backend.value}')
 

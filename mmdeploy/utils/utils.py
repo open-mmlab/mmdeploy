@@ -4,7 +4,7 @@ import logging
 import os
 import sys
 import traceback
-from typing import Callable, Optional
+from typing import Callable, Optional, Union
 
 import torch.multiprocessing as mp
 from mmcv.utils import get_logger
@@ -58,6 +58,53 @@ def get_root_logger(log_file=None, log_level=logging.INFO) -> logging.Logger:
         name='mmdeploy', log_file=log_file, log_level=log_level)
 
     return logger
+
+
+def deprecate(status: str = 'future',
+              dst_obj: Optional[Union[object, str]] = None,
+              msg: str = '',
+              *args,
+              **kwargs) -> None:
+    """Deprecate a function or a class.
+
+    Args:
+        status (str, optional): The status of the function or class.
+            Defaults to future.
+        dst_obj (str, object, optional): The object that will replace
+            the original one. Defaults to None.
+        msg (str): Additional message to be printed.
+
+    Examples:
+        >>> from math import ceil
+        >>> from mmdeploy.utils.utils import deprecate
+        >>> @deprecate(status='past', dst_obj=ceil, msg='')
+        >>> def my_ceil(num):
+        >>>     num = num if(num==int(num)) else int(num) + 1
+        >>>     return num
+    """
+    logger = get_root_logger()
+
+    def _register(src_obj):
+
+        def fun(*args, **kwargs):
+            if status == 'future':
+                logger.warning(
+                    f'DeprecationWarning: {src_obj.__name__} will be '
+                    f'deprecated in the future. {msg}')
+            elif status == 'past':
+                assert dst_obj is not None, 'for deprecated object, there'
+                ' must be a destination object'
+                logger.warning(
+                    f'DeprecationWarning: {src_obj.__name__} was deprecated,'
+                    f' use {dst_obj.__name__} instead. {msg}')
+            else:
+                raise KeyError(f'Unexpected key {status}')
+            result = src_obj(*args, **kwargs)
+            return result
+
+        return fun
+
+    return _register
 
 
 def get_file_path(prefix, candidates) -> str:
