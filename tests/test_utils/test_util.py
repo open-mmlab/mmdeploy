@@ -145,7 +145,8 @@ class TestGetOnnxConfig:
 
 class TestIsDynamic:
 
-    config_with_onnx_config = mmcv.Config(dict(onnx_config=dict()))
+    config_with_onnx_config = mmcv.Config(
+        dict(onnx_config=dict(), backend_config=dict(type='default')))
 
     config_with_dynamic_axes = mmcv.Config(
         dict(
@@ -155,7 +156,8 @@ class TestIsDynamic:
                     0: 'batch',
                     2: 'height',
                     3: 'width'
-                }})))
+                }}),
+            backend_config=dict(type='default')))
 
     config_with_dynamic_axes_and_input_names = mmcv.Config(
         dict(
@@ -166,12 +168,14 @@ class TestIsDynamic:
                     0: 'batch',
                     2: 'height',
                     3: 'width'
-                }})))
+                }}),
+            backend_config=dict(type='default')))
 
     config_with_dynamic_axes_list = mmcv.Config(
         dict(
             onnx_config=dict(
-                type='onnx', input_names=['image'], dynamic_axes=[[0, 2, 3]])))
+                type='onnx', input_names=['image'], dynamic_axes=[[0, 2, 3]]),
+            backend_config=dict(type='default')))
 
     def test_is_dynamic_batch_none(self):
         assert util.is_dynamic_batch(
