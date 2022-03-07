@@ -35,9 +35,10 @@ class TorchscriptWrapper(BaseWrapper):
         >>> print(outputs)
     """
 
-    def __init__(self, model: Union[str, torch.jit.RecursiveScriptModule],
-                 input_names: Optional[Sequence[str]],
-                 output_names: Optional[Sequence[str]]):
+    def __init__(self,
+                 model: Union[str, torch.jit.RecursiveScriptModule],
+                 input_names: Optional[Sequence[str]] = None,
+                 output_names: Optional[Sequence[str]] = None):
         # load custom ops if exist
         custom_ops_path = get_ops_path()
         if osp.exists(custom_ops_path):
@@ -60,10 +61,14 @@ class TorchscriptWrapper(BaseWrapper):
         """Run forward inference.
 
         Args:
-            inputs: The input name and tensor pairs.
+            inputs (torch.Tensor | Sequence[torch.Tensor] | Dict[str,
+                torch.Tensor]): The input tensor, or tensor sequence, or pairs
+                of input names and tensors.
 
         Return:
-            outputs: The output name and tensor pairs.
+            outputs (torch.Tensor | Sequence[torch.Tensor] | Dict[str,
+                torch.Tensor]): The input tensor, or tensor sequence, or pairs
+                of input names and tensors.
         """
 
         is_dict_inputs = isinstance(inputs, Dict)

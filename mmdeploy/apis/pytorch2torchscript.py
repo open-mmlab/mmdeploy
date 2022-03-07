@@ -33,7 +33,6 @@ def torch2torchscript_impl(model: torch.nn.Module,
 
     deploy_cfg = load_config(deploy_cfg)[0]
 
-    # ir_cfg = get_ir_config(deploy_cfg)
     backend = get_backend(deploy_cfg).value
 
     patched_model = patch_model(model, cfg=deploy_cfg, backend=backend)
