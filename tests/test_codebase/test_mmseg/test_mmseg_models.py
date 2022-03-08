@@ -232,3 +232,32 @@ def test_psphead_forward(backend):
     rewrite_outputs = rewrite_outputs.to(model_outputs).reshape(
         model_outputs.shape)
     assert torch.allclose(rewrite_outputs, model_outputs, rtol=1, atol=1)
+
+
+@pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME])
+def test_emamodule_forward(backend):
+    check_backend(backend)
+    from mmseg.models.decode_heads.ema_head import EMAModule
+    head = EMAModule(8, 2, 2, 1.0).eval()
+
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(type=backend.value),
+            onnx_config=dict(
+                output_names=['result'], input_shape=(1, 8, 16, 16)),
+            codebase_config=dict(type='mmseg', task='Segmentation')))
+    feats = torch.randn(1, 8, 16, 16)
+    model_inputs = {'feats': feats}
+    with torch.no_grad():
+        model_outputs = get_model_outputs(head, 'forward', model_inputs)
+    wrapped_model = WrapModel(head, 'forward')
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=model_inputs,
+        deploy_cfg=deploy_cfg)
+    if is_backend_output:
+        rewrite_outputs = rewrite_outputs[0]
+    rewrite_outputs = rewrite_outputs.to(model_outputs).reshape(
+        model_outputs.shape)
+    assert torch.allclose(
+        rewrite_outputs, model_outputs, rtol=1e-03, atol=1e-05)
