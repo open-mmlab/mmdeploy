@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+
+import torch.nn as nn
 from mmseg.ops import resize
 
 from mmdeploy.core import FUNCTION_REWRITER
@@ -30,6 +32,15 @@ def ppm__forward(ctx, self, x):
 
     ppm_outs = []
     for ppm in self:
+        if isinstance(ppm[0], nn.AdaptiveAvgPool2d) and \
+                ppm[0].output_size != 1:
+            assert not is_dynamic_flag, 'AdaptiveAvgPool2d is not \
+                supported with dynamic shape in backends'
+
+            # replace AdaptiveAvgPool2d with AvgPool2d explicitly
+            output_size = 2 * [ppm[0].output_size]
+            k = [int(size[i] / output_size[i]) for i in range(0, len(size))]
+            ppm[0] = nn.AvgPool2d(k, stride=k, padding=0, ceil_mode=False)
         ppm_out = ppm(x)
         upsampled_ppm_out = resize(
             ppm_out,
