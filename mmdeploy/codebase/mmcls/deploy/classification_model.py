@@ -155,8 +155,10 @@ def get_classes_from_config(model_cfg: Union[str, mmcv.Config]):
     model_cfg = load_config(model_cfg)[0]
     data_cfg = model_cfg.data
 
-    def _get_class_names(dataset_type):
+    def _get_class_names(dataset_type: str):
         dataset = data_cfg[dataset_type]
+        if not dataset:
+            return None
         module = module_dict[dataset.type]
         if module.CLASSES is not None:
             return module.CLASSES
