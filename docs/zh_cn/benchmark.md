@@ -1468,6 +1468,240 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
     <td>$MMSEG_DIR/configs/unet/fcn_unet_s5-d16_4x4_512x1024_160k_cityscapes.py</td>
   </tr>
+  <tr>
+    <td align="center">ANN</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">77.40</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">77.32</td>
+    <td align="center">77.32</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/ann/ann_r50-d8_512x1024_40k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">APCNet</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">77.40</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">77.32</td>
+    <td align="center">77.32</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/apcnet/apcnet_r50-d8_512x1024_40k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">BiSeNetV1</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">74.44</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">74.44</td>
+    <td align="center">74.43</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/bisenetv1/bisenetv1_r18-d32_4x4_1024x1024_160k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">BiSeNetV2</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">73.21</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">73.21</td>
+    <td align="center">73.21</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/bisenetv2/bisenetv2_fcn_4x4_1024x1024_160k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">CGNet</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">68.25</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">68.27</td>
+    <td align="center">68.27</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/cgnet/cgnet_512x1024_60k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">EMANet</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">77.59</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">77.59</td>
+    <td align="center">77.6</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/emanet/emanet_r50-d8_512x1024_80k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">EncNet</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">75.67</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">75.66</td>
+    <td align="center">75.66</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/encnet/encnet_r50-d8_512x1024_40k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">ERFNet</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">71.08</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">71.08</td>
+    <td align="center">71.07</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/erfnet/erfnet_fcn_4x4_512x1024_160k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">FastFCN</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">79.12</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">79.12</td>
+    <td align="center">79.12</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/fastfcn/fastfcn_r50-d32_jpu_aspp_512x1024_80k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">GCNet</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">77.69</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">77.69</td>
+    <td align="center">77.69</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/gcnet/gcnet_r50-d8_512x1024_40k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">ICNet</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">76.29</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">76.36</td>
+    <td align="center">76.36</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/icnet/icnet_r18-d8_832x832_80k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">ISANet</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">78.49</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">78.49</td>
+    <td align="center">78.49</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/isanet/isanet_r50-d8_512x1024_40k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">OCRNet</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">74.30</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">73.66</td>
+    <td align="center">73.67</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/ocrnet/ocrnet_hr18s_512x1024_40k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">PointRend</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">76.47</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">76.41</td>
+    <td align="center">76.42</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/point_rend/pointrend_r50_512x1024_80k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">Semantic FPN</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">74.52</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">74.52</td>
+    <td align="center">74.52</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/sem_fpn/fpn_r50_512x1024_80k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">STDC</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">75.10</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">75.10</td>
+    <td align="center">75.10</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/stdc/stdc1_in1k-pre_512x1024_80k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">STDC</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">77.17</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">77.17</td>
+    <td align="center">77.17</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/stdc/stdc2_in1k-pre_512x1024_80k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">UPerNet</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">77.10</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">77.19</td>
+    <td align="center">77.18</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/upernet/upernet_r50_512x1024_40k_cityscapes.py</td>
+  </tr>
 </tbody>
 </table>
 </div>
