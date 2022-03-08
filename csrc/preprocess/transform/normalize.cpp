@@ -10,9 +10,11 @@ using namespace std;
 
 namespace mmdeploy {
 
+// MMDEPLOY_DEFINE_REGISTRY(NormalizeImpl);
+
 NormalizeImpl::NormalizeImpl(const Value& args) : TransformImpl(args) {
-  if (!args.contains("mean") or !args.contains("std")) {
-    ERROR("no 'mean' or 'std' is configured");
+  if (!args.contains("mean") || !args.contains("std")) {
+    MMDEPLOY_ERROR("no 'mean' or 'std' is configured");
     throw std::invalid_argument("no 'mean' or 'std' is configured");
   }
   for (auto& v : args["mean"]) {
@@ -50,7 +52,7 @@ NormalizeImpl::NormalizeImpl(const Value& args) : TransformImpl(args) {
  */
 
 Result<Value> NormalizeImpl::Process(const Value& input) {
-  DEBUG("input: {}", to_json(input).dump(2));
+  MMDEPLOY_DEBUG("input: {}", to_json(input).dump(2));
 
   // copy input data, and update its properties later
   Value output = input;
@@ -73,14 +75,14 @@ Result<Value> NormalizeImpl::Process(const Value& input) {
     }
     output["img_norm_cfg"]["to_rgb"] = arg_.to_rgb;
   }
-  DEBUG("output: {}", to_json(output).dump(2));
+  MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));
   return output;
 }
 
 Normalize::Normalize(const Value& args, int version) : Transform(args) {
   auto impl_creator = Registry<NormalizeImpl>::Get().GetCreator(specified_platform_, version);
   if (nullptr == impl_creator) {
-    ERROR("'Normalize' is not supported on '{}' platform", specified_platform_);
+    MMDEPLOY_ERROR("'Normalize' is not supported on '{}' platform", specified_platform_);
     throw std::domain_error("'Normalize' is not supported on specified platform");
   }
   impl_ = impl_creator->Create(args);
@@ -97,5 +99,7 @@ class NormalizeCreator : public Creator<Transform> {
 };
 
 REGISTER_MODULE(Transform, NormalizeCreator);
+
+MMDEPLOY_DEFINE_REGISTRY(NormalizeImpl);
 
 }  // namespace mmdeploy

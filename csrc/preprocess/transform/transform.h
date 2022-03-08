@@ -9,7 +9,7 @@
 
 namespace mmdeploy {
 
-class TransformImpl : public Module {
+class MMDEPLOY_API TransformImpl : public Module {
  public:
   TransformImpl() = default;
   explicit TransformImpl(const Value& args);
@@ -23,41 +23,36 @@ class TransformImpl : public Module {
   Stream stream_;
 };
 
-class Transform : public Module {
+class MMDEPLOY_API Transform : public Module {
  public:
+  ~Transform() override = default;
+
   Transform() = default;
   explicit Transform(const Value& args);
-  ~Transform() override = default;
+  Transform(const Transform&) = delete;
+  Transform& operator=(const Transform&) = delete;
 
   const std::string& RuntimePlatform() const { return runtime_platform_; }
 
  protected:
   template <typename T>
-  [[deprecated]]
-  /*
-   * We cannot LOG the error message, because WARN/INFO/ERROR causes
-   * redefinition when building UTs "catch2.hpp" used in UTs has the same LOG
-   * declaration
-   */
-  std::unique_ptr<T>
-  Instantiate(const char* transform_type, const Value& args, int version = 0) {
+  [[deprecated]] std::unique_ptr<T> Instantiate(const char* transform_type, const Value& args,
+                                                int version = 0) {
     std::unique_ptr<T> impl(nullptr);
     auto impl_creator = Registry<T>::Get().GetCreator(specified_platform_, version);
     if (nullptr == impl_creator) {
-      //      WARN("cannot find {} implementation on specific platform {} ",
-      //           transform_type, specified_platform_);
+      MMDEPLOY_WARN("cannot find {} implementation on specific platform {} ", transform_type,
+                    specified_platform_);
       for (auto& name : candidate_platforms_) {
         impl_creator = Registry<T>::Get().GetCreator(name);
         if (impl_creator) {
-          //          INFO("fallback {} implementation to platform {}", transform_type,
-          //               name);
+          MMDEPLOY_INFO("fallback {} implementation to platform {}", transform_type, name);
           break;
         }
       }
     }
     if (nullptr == impl_creator) {
-      //      ERROR("cannot find {} implementation on any registered platform ",
-      //            transform_type);
+      MMDEPLOY_ERROR("cannot find {} implementation on any registered platform ", transform_type);
       return nullptr;
     } else {
       return impl_creator->Create(args);
@@ -69,6 +64,8 @@ class Transform : public Module {
   std::string runtime_platform_;
   std::vector<std::string> candidate_platforms_;
 };
+
+MMDEPLOY_DECLARE_REGISTRY(Transform);
 
 }  // namespace mmdeploy
 

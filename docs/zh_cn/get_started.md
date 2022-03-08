@@ -49,7 +49,7 @@ python ${MMDEPLOY_DIR}/tools/deploy.py \
 ```python
 from mmdeploy.apis import inference_model
 
-result = inference_model(model_cfg, deploy_cfg, backend_models, img=img, device=device)
+result = inference_model(model_cfg, deploy_cfg, backend_files, img=img, device=device)
 ```
 
 `inference_model`会创建一个对后端模型的封装，通过该封装进行推理。推理的结果会保持与OpenMMLab中原模型同样的格式。

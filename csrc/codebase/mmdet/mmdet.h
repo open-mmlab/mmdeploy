@@ -3,13 +3,17 @@
 #ifndef MMDEPLOY_SRC_CODEBASE_MMDET_MMDET_H_
 #define MMDEPLOY_SRC_CODEBASE_MMDET_MMDET_H_
 
+#include <array>
+
 #include "codebase/common.h"
 #include "core/device.h"
 #include "core/mat.h"
 #include "core/module.h"
+#include "core/registry.h"
 #include "core/serialization.h"
 
-namespace mmdeploy::mmdet {
+namespace mmdeploy {
+namespace mmdet {
 
 struct DetectorOutput {
   struct Detection {
@@ -25,7 +29,9 @@ struct DetectorOutput {
 };
 
 DECLARE_CODEBASE(MMDetection, mmdet);
+}  // namespace mmdet
 
-}  // namespace mmdeploy::mmdet
+MMDEPLOY_DECLARE_REGISTRY(mmdet::MMDetection);
+}  // namespace mmdeploy
 
 #endif  // MMDEPLOY_SRC_CODEBASE_MMDET_MMDET_H_

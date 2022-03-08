@@ -1,9 +1,13 @@
 // Copyright (c) OpenMMLab. All rights reserved.
+
 #include "ort_net.h"
+
+#include <algorithm>
 
 #include "core/logger.h"
 #include "core/model.h"
 #include "core/utils/formatter.h"
+#include "onnxruntime_register.h"
 
 namespace mmdeploy {
 
@@ -25,7 +29,7 @@ static Result<DataType> ConvertElementType(ONNXTensorElementDataType type) {
     case ONNX_TENSOR_ELEMENT_DATA_TYPE_INT64:
       return DataType::kINT64;
     default:
-      ERROR("unsupported ONNXTensorElementDataType: {}", static_cast<int>(type));
+      MMDEPLOY_ERROR("unsupported ONNXTensorElementDataType: {}", static_cast<int>(type));
       return Status(eNotSupported);
   }
 }
@@ -45,6 +49,9 @@ Result<void> OrtNet::Init(const Value& args) {
 
   Ort::SessionOptions options;
   options.SetLogSeverityLevel(3);
+
+  RegisterCustomOps(options, OrtGetApiBase());
+
   if (device_.is_device()) {
     OrtCUDAProviderOptions cuda_options{};
     cuda_options.device_id = device_.device_id();
@@ -69,12 +76,11 @@ Result<void> OrtNet::Init(const Value& args) {
     auto input_name = session_.GetInputName(i, allocator);
     auto type_info = session_.GetInputTypeInfo(i);
     auto shape = to_shape(type_info);
-    INFO("input {}, shape = {}", i, shape);
+    MMDEPLOY_INFO("input {}, shape = {}", i, shape);
     filter_shape(shape);
     OUTCOME_TRY(auto data_type,
                 ConvertElementType(type_info.GetTensorTypeAndShapeInfo().GetElementType()));
-    input_tensors_.emplace_back(
-        TensorDesc{.device = device_, .data_type = data_type, .shape = shape, .name = input_name});
+    input_tensors_.emplace_back(TensorDesc{device_, data_type, shape, input_name});
     allocator.Free(input_name);
   }
 
@@ -84,12 +90,11 @@ Result<void> OrtNet::Init(const Value& args) {
     auto output_name = session_.GetOutputName(i, allocator);
     auto type_info = session_.GetOutputTypeInfo(i);
     auto shape = to_shape(type_info);
-    INFO("output {}, shape = {}", i, shape);
+    MMDEPLOY_INFO("output {}, shape = {}", i, shape);
     filter_shape(shape);
     OUTCOME_TRY(auto data_type,
                 ConvertElementType(type_info.GetTensorTypeAndShapeInfo().GetElementType()));
-    output_tensors_.emplace_back(
-        TensorDesc{.device = device_, .data_type = data_type, .shape = shape, .name = output_name});
+    output_tensors_.emplace_back(TensorDesc{device_, data_type, shape, output_name});
     allocator.Free(output_name);
   }
 
@@ -166,7 +171,7 @@ Result<void> OrtNet::Forward() {
 
     OUTCOME_TRY(stream_.Wait());
   } catch (const std::exception& e) {
-    ERROR(e.what());
+    MMDEPLOY_ERROR(e.what());
     return Status(eFail);
   }
   return success();
@@ -182,11 +187,11 @@ class OrtNetCreator : public Creator<Net> {
       if (auto r = p->Init(args)) {
         return p;
       } else {
-        ERROR("error creating OrtNet: {}", r.error().message().c_str());
+        MMDEPLOY_ERROR("error creating OrtNet: {}", r.error().message().c_str());
         return nullptr;
       }
     } catch (const std::exception& e) {
-      ERROR("unhandled exception when creating ORTNet: {}", e.what());
+      MMDEPLOY_ERROR("unhandled exception when creating ORTNet: {}", e.what());
       return nullptr;
     }
   }

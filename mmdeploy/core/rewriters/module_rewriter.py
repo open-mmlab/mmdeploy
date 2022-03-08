@@ -1,11 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import inspect
+from typing import Dict, List, Optional, Union
 
 import mmcv
 from torch import nn
 
-from mmdeploy.utils.constants import Backend
-from .rewriter_utils import RewriterRegistry, eval_with_import
+from mmdeploy.utils.constants import IR, Backend
+from .rewriter_utils import (Checker, RewriterRegistry, collect_env,
+                             eval_with_import)
 
 
 class ModuleRewriter:
@@ -26,29 +28,33 @@ class ModuleRewriter:
     def __init__(self):
         self._registry = RewriterRegistry()
 
-    def add_backend(self, backend: str):
-        """Add a backend by calling the _registry.add_backend."""
-        self._registry.add_backend(backend)
-
-    def register_rewrite_module(self,
-                                module_type: str,
-                                backend: str = Backend.DEFAULT.value,
-                                **kwargs):
+    def register_rewrite_module(
+            self,
+            module_type: str,
+            backend: str = Backend.DEFAULT.value,
+            ir: IR = IR.DEFAULT,
+            extra_checkers: Optional[Union[Checker, List[Checker]]] = None,
+            **kwargs):
         """The interface of module rewriter decorator.
 
         Args:
             module_type (str): The module type name to rewrite.
-            backend (str): The inference engine name.
+            backend (str): The rewriter will be activated on which backend.
+            ir (IR): The rewriter will be activated on which IR.
+            extra_checkers (Checker | List[Checker] | None): Other requirements
+                defined by Checker.
 
         Returns:
-            nn.Module: THe rewritten model.
+            nn.Module: The rewritten model.
         """
-        return self._registry.register_object(module_type, backend, **kwargs)
+        return self._registry.register_object(module_type, backend, ir,
+                                              extra_checkers, **kwargs)
 
     def patch_model(self,
                     model: nn.Module,
                     cfg: mmcv.Config,
                     backend: str = Backend.DEFAULT.value,
+                    ir: IR = IR.DEFAULT,
                     recursive: bool = True,
                     **kwargs) -> nn.Module:
         """Replace the models that was registered.
@@ -57,6 +63,7 @@ class ModuleRewriter:
             model (torch.nn.Module): The model to patch.
             cfg (Dict): Config dictionary of deployment.
             backend (str): The inference engine name.
+            ir (IR): The intermeditate representation name.
             recursive (bool): The flag to enable recursive patching.
 
         Returns:
@@ -67,7 +74,9 @@ class ModuleRewriter:
             >>> patched_model = patch_model(model, cfg=deploy_cfg,
             >>>                             backend=backend)
         """
-        self._collect_record(backend)
+        # TODO: Make the type of parameter backend to Backend
+        env = collect_env(Backend.get(backend), ir)
+        self._collect_record(env)
         return self._replace_module(model, cfg, recursive, **kwargs)
 
     def _replace_one_module(self, module, cfg, **kwargs):
@@ -103,9 +112,9 @@ class ModuleRewriter:
 
         return _replace_module_impl(model, cfg, **kwargs)
 
-    def _collect_record(self, backend: str):
+    def _collect_record(self, env: Dict):
         """Collect models in registry."""
         self._records = {}
-        records = self._registry.get_records(backend)
+        records = self._registry.get_records(env)
         for name, kwargs in records:
             self._records[eval_with_import(name)] = kwargs

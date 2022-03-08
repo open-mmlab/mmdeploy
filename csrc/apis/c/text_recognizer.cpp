@@ -74,9 +74,9 @@ int mmdeploy_text_recognizer_create_impl(ModelType &&m, const char *device_name,
     return MM_SUCCESS;
 
   } catch (const std::exception &e) {
-    ERROR("exception caught: {}", e.what());
+    MMDEPLOY_ERROR("exception caught: {}", e.what());
   } catch (...) {
-    ERROR("unknown exception caught");
+    MMDEPLOY_ERROR("unknown exception caught");
   }
   return MM_E_FAIL;
 }
@@ -178,9 +178,9 @@ int mmdeploy_text_recognizer_apply_bbox(mm_handle_t handle, const mm_mat_t *imag
     return MM_SUCCESS;
 
   } catch (const std::exception &e) {
-    ERROR("exception caught: {}", e.what());
+    MMDEPLOY_ERROR("exception caught: {}", e.what());
   } catch (...) {
-    ERROR("unknown exception caught");
+    MMDEPLOY_ERROR("unknown exception caught");
   }
   return MM_E_FAIL;
 }

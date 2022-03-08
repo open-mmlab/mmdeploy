@@ -1,5 +1,12 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
+// clang-format off
+
+#include "catch.hpp"
+
+// clang-format on
+
+#include <array>
 #include <deque>
 #include <iostream>
 #include <list>
@@ -8,10 +15,9 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-#include "core/utils/formatter.h"
 
 #include "archive/value_archive.h"
-#include "catch.hpp"
+#include "core/utils/formatter.h"
 
 // clang-format off
 
@@ -41,8 +47,8 @@ TEMPLATE_LIST_TEST_CASE("test array-like for value", "[value]", ArrayLikeTypes) 
 }
 
 TEST_CASE("test native array for value archive", "[value1]") {
-  const int a[10] = {0,1,2,3,4,5,6,7,8,9};
-  int b[10] = {0,0,0,0,0,0,0,0,0,0};
+  const int a[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+  int b[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
   mmdeploy::Value value;
   mmdeploy::ValueOutputArchive oa(value);
   oa(a);

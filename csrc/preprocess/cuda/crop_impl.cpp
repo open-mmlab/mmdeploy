@@ -43,7 +43,7 @@ class CenterCropImpl : public ::mmdeploy::CenterCropImpl {
       } else if (1 == c) {
         Crop<uint8_t, 1>(input, desc.shape[2], output, h, w, top, left, stream);
       } else {
-        ERROR("unsupported channels {}", c);
+        MMDEPLOY_ERROR("unsupported channels {}", c);
         return Status(eNotSupported);
       }
     } else if (DataType::kFLOAT == type) {
@@ -54,11 +54,11 @@ class CenterCropImpl : public ::mmdeploy::CenterCropImpl {
       } else if (1 == c) {
         Crop<float, 1>(input, desc.shape[2], output, h, w, top, left, stream);
       } else {
-        ERROR("unsupported channels {}", c);
+        MMDEPLOY_ERROR("unsupported channels {}", c);
         return Status(eNotSupported);
       }
     } else {
-      ERROR("unsupported channels {}", c);
+      MMDEPLOY_ERROR("unsupported channels {}", c);
       return Status(eNotSupported);
     }
     return dst_tensor;

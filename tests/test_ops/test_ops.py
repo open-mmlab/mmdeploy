@@ -105,12 +105,14 @@ def test_grid_sample(backend,
 @pytest.mark.parametrize('dynamic_export', [True, False])
 @pytest.mark.parametrize('mode', ['bicubic', 'nearest'])
 @pytest.mark.parametrize('align_corners', [True, False])
-@pytest.mark.parametrize('scale_factor', [2, 4])
+@pytest.mark.parametrize('output_size', [[10, 20], None])
+@pytest.mark.parametrize('scale_factor', [2])
 @pytest.mark.parametrize('n, c, h, w', [(2, 3, 5, 10)])
 def test_bicubic_interpolate(backend,
                              dynamic_export,
                              mode,
                              align_corners,
+                             output_size,
                              scale_factor,
                              n,
                              c,
@@ -140,8 +142,12 @@ def test_bicubic_interpolate(backend,
 
     if mode == 'nearest':
         align_corners = None
-    resize = nn.Upsample(
-        scale_factor=scale_factor, mode=mode, align_corners=align_corners)
+    if output_size is None:
+        resize = nn.Upsample(
+            scale_factor=scale_factor, mode=mode, align_corners=align_corners)
+    else:
+        resize = nn.Upsample(
+            size=output_size, mode=mode, align_corners=align_corners)
     expected_result = resize(input).cuda()
     wrapped_model = WrapFunction(resize).eval()
 

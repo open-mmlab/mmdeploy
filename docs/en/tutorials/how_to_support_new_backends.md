@@ -218,6 +218,7 @@ Although the backend engines are usually implemented in C/C++, it is convenient 
         def _build_wrapper(backend: Backend,
                            backend_files: Sequence[str],
                            device: str,
+                           input_names: Optional[Sequence[str]] = None,
                            output_names: Optional[Sequence[str]] = None):
             if backend == Backend.ONNXRUNTIME:
                 from mmdeploy.backend.onnxruntime import ORTWrapper

@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#ifndef MMDEPLOY_OPENCV_UTILS_H
-#define MMDEPLOY_OPENCV_UTILS_H
+#ifndef MMDEPLOY_CSRC_UTILS_OPENCV_OPENCV_UTILS_H_
+#define MMDEPLOY_CSRC_UTILS_OPENCV_OPENCV_UTILS_H_
 
 #include "core/mat.h"
 #include "core/mpl/type_traits.h"
@@ -12,11 +12,11 @@
 namespace mmdeploy {
 namespace cpu {
 
-cv::Mat Mat2CVMat(const Mat& mat);
-cv::Mat Tensor2CVMat(const Tensor& tensor);
+MMDEPLOY_API cv::Mat Mat2CVMat(const Mat& mat);
+MMDEPLOY_API cv::Mat Tensor2CVMat(const Tensor& tensor);
 
-Mat CVMat2Mat(const cv::Mat& mat, PixelFormat format);
-Tensor CVMat2Tensor(const cv::Mat& mat);
+MMDEPLOY_API Mat CVMat2Mat(const cv::Mat& mat, PixelFormat format);
+MMDEPLOY_API Tensor CVMat2Tensor(const cv::Mat& mat);
 
 /**
  * @brief resize an image to specified size
@@ -26,7 +26,8 @@ Tensor CVMat2Tensor(const cv::Mat& mat);
  * @param dst_width output image's width
  * @return output image if success, error code otherwise
  */
-cv::Mat Resize(const cv::Mat& src, int dst_height, int dst_width, const std::string& interpolation);
+MMDEPLOY_API cv::Mat Resize(const cv::Mat& src, int dst_height, int dst_width,
+                            const std::string& interpolation);
 
 /**
  * @brief crop an image
@@ -38,7 +39,7 @@ cv::Mat Resize(const cv::Mat& src, int dst_height, int dst_width, const std::str
  * @param right
  * @return cv::Mat
  */
-cv::Mat Crop(const cv::Mat& src, int top, int left, int bottom, int right);
+MMDEPLOY_API cv::Mat Crop(const cv::Mat& src, int top, int left, int bottom, int right);
 
 /**
  * @brief Do normalization to an image
@@ -50,8 +51,8 @@ cv::Mat Crop(const cv::Mat& src, int top, int left, int bottom, int right);
  * @param inplace
  * @return cv::Mat
  */
-cv::Mat Normalize(cv::Mat& src, const std::vector<float>& mean, const std::vector<float>& std,
-                  bool to_rgb, bool inplace = true);
+MMDEPLOY_API cv::Mat Normalize(cv::Mat& src, const std::vector<float>& mean,
+                               const std::vector<float>& std, bool to_rgb, bool inplace = true);
 
 /**
  * @brief tranpose an image, from {h, w, c} to {c, h, w}
@@ -59,7 +60,7 @@ cv::Mat Normalize(cv::Mat& src, const std::vector<float>& mean, const std::vecto
  * @param src input image
  * @return
  */
-cv::Mat Transpose(const cv::Mat& src);
+MMDEPLOY_API cv::Mat Transpose(const cv::Mat& src);
 
 /**
  * @brief convert an image to another color space
@@ -69,7 +70,8 @@ cv::Mat Transpose(const cv::Mat& src);
  * @param dst_format
  * @return
  */
-cv::Mat ColorTransfer(const cv::Mat& src, PixelFormat src_format, PixelFormat dst_format);
+MMDEPLOY_API cv::Mat ColorTransfer(const cv::Mat& src, PixelFormat src_format,
+                                   PixelFormat dst_format);
 
 /**
  *
@@ -82,8 +84,8 @@ cv::Mat ColorTransfer(const cv::Mat& src, PixelFormat src_format, PixelFormat ds
  * @param val
  * @return
  */
-cv::Mat Pad(const cv::Mat& src, int top, int left, int bottom, int right, int border_type,
-            float val);
+MMDEPLOY_API cv::Mat Pad(const cv::Mat& src, int top, int left, int bottom, int right,
+                         int border_type, float val);
 
 /**
  * @brief compare two images
@@ -92,7 +94,7 @@ cv::Mat Pad(const cv::Mat& src, int top, int left, int bottom, int right, int bo
  * @param src2 the other input image
  * @return bool true means the images are the same
  */
-bool Compare(const cv::Mat& src1, const cv::Mat& src2);
+MMDEPLOY_API bool Compare(const cv::Mat& src1, const cv::Mat& src2);
 
 }  // namespace cpu
 
@@ -103,8 +105,6 @@ struct IsCvPoint : std::false_type {};
 
 template <typename T>
 struct IsCvPoint<::cv::Point_<T>> : std::true_type {};
-
-}  // namespace detail
 
 template <typename Archive, typename T,
           std::enable_if_t<detail::IsCvPoint<uncvref_t<T>>::value, int> = 0>
@@ -146,6 +146,8 @@ void load(Archive& archive, std::vector<T>& v) {
   }
 }
 
+}  // namespace detail
+
 }  // namespace mmdeploy
 
-#endif  // MMDEPLOY_OPENCV_UTILS_H
+#endif  // MMDEPLOY_CSRC_UTILS_OPENCV_OPENCV_UTILS_H_

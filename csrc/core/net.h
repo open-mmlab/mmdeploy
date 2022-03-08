@@ -22,6 +22,8 @@ class Net {
   virtual Result<void> ForwardAsync(Event* event) = 0;
 };
 
+MMDEPLOY_DECLARE_REGISTRY(Net);
+
 }  // namespace mmdeploy
 
 #endif  // MMDEPLOY_SRC_CORE_NET_H_

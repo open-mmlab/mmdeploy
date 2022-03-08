@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "core/macro.h"
 #include "core/status_code.h"
 
 namespace mmdeploy {
@@ -67,7 +68,7 @@ class Device {
   constexpr explicit Device(int platform_id, int device_id = 0)
       : platform_id_(platform_id), device_id_(device_id) {}
 
-  explicit Device(const char *platform_name, int device_id = 0);
+  MMDEPLOY_API explicit Device(const char *platform_name, int device_id = 0);
 
   constexpr int device_id() const noexcept { return device_id_; }
 
@@ -100,7 +101,7 @@ class Device {
 
 enum class MemcpyKind : int { HtoD, DtoH, DtoD };
 
-class Platform {
+class MMDEPLOY_API Platform {
  public:
   // throws if not found
   explicit Platform(const char *platform_name);
@@ -133,7 +134,7 @@ Platform GetPlatform(int platform_id);
 
 Platform GetPlatform(const char *platform_name);
 
-class Stream {
+class MMDEPLOY_API Stream {
  public:
   Stream() = default;
 
@@ -187,7 +188,7 @@ T GetNative(Stream &stream, ErrorCode *ec = nullptr) {
   return reinterpret_cast<T>(stream.GetNative(ec));
 }
 
-class Event {
+class MMDEPLOY_API Event {
  public:
   Event() = default;
 
@@ -226,7 +227,7 @@ T GetNative(Event &event, ErrorCode *ec = nullptr) {
   return reinterpret_cast<T>(event.GetNative(ec));
 }
 
-class Kernel {
+class MMDEPLOY_API Kernel {
  public:
   Kernel() = default;
   explicit Kernel(std::shared_ptr<KernelImpl> impl) : impl_(std::move(impl)) {}
@@ -246,7 +247,7 @@ T GetNative(Kernel &kernel, ErrorCode *ec = nullptr) {
   return reinterpret_cast<T>(kernel.GetNative(ec));
 }
 
-class Allocator {
+class MMDEPLOY_API Allocator {
   friend class Access;
 
  public:
@@ -259,7 +260,7 @@ class Allocator {
   std::shared_ptr<AllocatorImpl> impl_;
 };
 
-class Buffer {
+class MMDEPLOY_API Buffer {
  public:
   Buffer() = default;
 
@@ -304,7 +305,7 @@ T GetNative(const Buffer &buffer, ErrorCode *ec = nullptr) {
   return reinterpret_cast<T>(buffer.GetNative(ec));
 }
 
-class PlatformRegistry {
+class MMDEPLOY_API PlatformRegistry {
  public:
   using Creator = std::function<std::shared_ptr<PlatformImpl>()>;
 
@@ -332,6 +333,6 @@ class PlatformRegistry {
   std::vector<Entry> entries_;
 };
 
-PlatformRegistry &gPlatformRegistry();
+MMDEPLOY_API PlatformRegistry &gPlatformRegistry();
 
 }  // namespace mmdeploy

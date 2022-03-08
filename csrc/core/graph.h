@@ -14,7 +14,9 @@
 #include "taskflow/taskflow.hpp"
 #endif
 
-namespace mmdeploy::graph {
+namespace mmdeploy {
+
+namespace graph {
 
 using std::pair;
 using std::string;
@@ -24,7 +26,7 @@ using std::vector;
 class TaskGraph;
 class Node;
 
-class Context {
+class MMDEPLOY_API Context {
  public:
   explicit Context(TaskGraph* graph) : graph_(graph) {}
 
@@ -48,7 +50,7 @@ class Context {
   TaskGraph* graph_;
 };
 
-class TaskGraph {
+class MMDEPLOY_API TaskGraph {
   friend class Context;
 
  public:
@@ -64,6 +66,10 @@ class TaskGraph {
   };
 
   ~TaskGraph();
+
+  TaskGraph() = default;
+  TaskGraph(const TaskGraph&) = delete;
+  TaskGraph& operator=(const TaskGraph&) = delete;
 
   Handle* Add(TaskFunction fn);
 
@@ -82,7 +88,7 @@ class TaskGraph {
   int64_t count_{};
 };
 
-class Node {
+class MMDEPLOY_API Node {
  public:
   virtual ~Node() = default;
   virtual void Build(TaskGraph& graph) = 0;
@@ -96,6 +102,10 @@ class Node {
   std::vector<std::string> outputs_;
 };
 
-}  // namespace mmdeploy::graph
+}  // namespace graph
+
+MMDEPLOY_DECLARE_REGISTRY(graph::Node);
+
+}  // namespace mmdeploy
 
 #endif  // MMDEPLOY_SRC_EXPERIMENTAL_PIPELINE_IR_H_

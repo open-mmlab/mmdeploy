@@ -1,8 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Callable, Dict
+from typing import Callable, Dict, List, Optional, Union
 
-from mmdeploy.utils import Backend, get_root_logger
-from .rewriter_utils import ContextCaller, RewriterRegistry, import_function
+from mmdeploy.utils import IR, Backend, get_root_logger
+from .rewriter_utils import (Checker, ContextCaller, RewriterRegistry,
+                             import_function)
 
 
 def _set_func(origin_func_path: str, rewrite_func: Callable):
@@ -66,32 +67,33 @@ class FunctionRewriter:
     def __init__(self):
         self._registry = RewriterRegistry()
 
-    def add_backend(self, backend: str):
-        """Add a backend by calling the _registry.add_backend."""
-        self._registry.add_backend(backend)
-
-    def register_rewriter(self,
-                          func_name: str,
-                          backend: str = Backend.DEFAULT.value,
-                          **kwargs):
+    def register_rewriter(
+            self,
+            func_name: str,
+            backend: str = Backend.DEFAULT.value,
+            ir: IR = IR.DEFAULT,
+            extra_checkers: Optional[Union[Checker, List[Checker]]] = None,
+            **kwargs):
         """The interface of function rewriter decorator.
 
         Args:
             func_name (str): The function name/path to rewrite.
-            backend (str): The inference engine name.
+            backend (str): The rewriter will be activated on which backend.
+            ir (IR): The rewriter will be activated on which IR.
+            extra_checkers (Checker | List[Checker] | None): Other requirements
+                defined by Checker.
+
         Returns:
             Callable: The process of registering function.
         """
 
-        return self._registry.register_object(func_name, backend, **kwargs)
+        return self._registry.register_object(func_name, backend, ir,
+                                              extra_checkers, **kwargs)
 
-    def enter(self,
-              cfg: Dict = dict(),
-              backend: str = Backend.DEFAULT.value,
-              **kwargs):
+    def enter(self, cfg: Dict = dict(), env: Dict = dict(), **kwargs):
         """The implementation of function rewrite."""
         # Get current records
-        functions_records = self._registry.get_records(backend)
+        functions_records = self._registry.get_records(env)
 
         self._origin_functions = list()
         self._additional_functions = list()

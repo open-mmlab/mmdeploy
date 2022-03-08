@@ -8,47 +8,14 @@
 #include <type_traits>
 #include <utility>
 
+#include "core/macro.h"
 #include "core/status_code.h"
 #include "mpl/detected.h"
 #include "mpl/type_traits.h"
 
 namespace mmdeploy {
 
-#define _MMDEPLOY_NTH_ARG(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, _15, _16, \
-                          N, ...)                                                                \
-  N
-
-#define _MMDEPLOY_ARCHIVE_1(x) MMDEPLOY_NVP(x)
-#define _MMDEPLOY_ARCHIVE_2(x, ...) MMDEPLOY_NVP(x), _MMDEPLOY_ARCHIVE_1(__VA_ARGS__)
-#define _MMDEPLOY_ARCHIVE_3(x, ...) MMDEPLOY_NVP(x), _MMDEPLOY_ARCHIVE_2(__VA_ARGS__)
-#define _MMDEPLOY_ARCHIVE_4(x, ...) MMDEPLOY_NVP(x), _MMDEPLOY_ARCHIVE_3(__VA_ARGS__)
-#define _MMDEPLOY_ARCHIVE_5(x, ...) MMDEPLOY_NVP(x), _MMDEPLOY_ARCHIVE_4(__VA_ARGS__)
-#define _MMDEPLOY_ARCHIVE_6(x, ...) MMDEPLOY_NVP(x), _MMDEPLOY_ARCHIVE_5(__VA_ARGS__)
-#define _MMDEPLOY_ARCHIVE_7(x, ...) MMDEPLOY_NVP(x), _MMDEPLOY_ARCHIVE_6(__VA_ARGS__)
-#define _MMDEPLOY_ARCHIVE_8(x, ...) MMDEPLOY_NVP(x), _MMDEPLOY_ARCHIVE_7(__VA_ARGS__)
-#define _MMDEPLOY_ARCHIVE_9(x, ...) MMDEPLOY_NVP(x), _MMDEPLOY_ARCHIVE_8(__VA_ARGS__)
-#define _MMDEPLOY_ARCHIVE_10(x, ...) MMDEPLOY_NVP(x), _MMDEPLOY_ARCHIVE_9(__VA_ARGS__)
-#define _MMDEPLOY_ARCHIVE_11(x, ...) MMDEPLOY_NVP(x), _MMDEPLOY_ARCHIVE_10(__VA_ARGS__)
-#define _MMDEPLOY_ARCHIVE_12(x, ...) MMDEPLOY_NVP(x), _MMDEPLOY_ARCHIVE_11(__VA_ARGS__)
-#define _MMDEPLOY_ARCHIVE_13(x, ...) MMDEPLOY_NVP(x), _MMDEPLOY_ARCHIVE_12(__VA_ARGS__)
-#define _MMDEPLOY_ARCHIVE_14(x, ...) MMDEPLOY_NVP(x), _MMDEPLOY_ARCHIVE_13(__VA_ARGS__)
-#define _MMDEPLOY_ARCHIVE_15(x, ...) MMDEPLOY_NVP(x), _MMDEPLOY_ARCHIVE_14(__VA_ARGS__)
-#define _MMDEPLOY_ARCHIVE_16(x, ...) MMDEPLOY_NVP(x), _MMDEPLOY_ARCHIVE_15(__VA_ARGS__)
-
-#define _MMDEPLOY_ARCHIVE_DISPATCH(...)                                                   \
-  _MMDEPLOY_NTH_ARG(__VA_ARGS__, _MMDEPLOY_ARCHIVE_16(__VA_ARGS__),                       \
-                    _MMDEPLOY_ARCHIVE_15(__VA_ARGS__), _MMDEPLOY_ARCHIVE_14(__VA_ARGS__), \
-                    _MMDEPLOY_ARCHIVE_13(__VA_ARGS__), _MMDEPLOY_ARCHIVE_12(__VA_ARGS__), \
-                    _MMDEPLOY_ARCHIVE_11(__VA_ARGS__), _MMDEPLOY_ARCHIVE_10(__VA_ARGS__), \
-                    _MMDEPLOY_ARCHIVE_9(__VA_ARGS__), _MMDEPLOY_ARCHIVE_8(__VA_ARGS__),   \
-                    _MMDEPLOY_ARCHIVE_7(__VA_ARGS__), _MMDEPLOY_ARCHIVE_6(__VA_ARGS__),   \
-                    _MMDEPLOY_ARCHIVE_5(__VA_ARGS__), _MMDEPLOY_ARCHIVE_4(__VA_ARGS__),   \
-                    _MMDEPLOY_ARCHIVE_3(__VA_ARGS__), _MMDEPLOY_ARCHIVE_2(__VA_ARGS__),   \
-                    _MMDEPLOY_ARCHIVE_1(__VA_ARGS__))
-
-#define MMDEPLOY_ARCHIVE_NVP(archive, ...) archive(_MMDEPLOY_ARCHIVE_DISPATCH(__VA_ARGS__))
-
-#define MMDEPLOY_ARCHIVE(archive, ...) archive(__VA_ARGS__)
+#define MMDEPLOY_ARCHIVE_NVP(archive, ...) archive(MMDEPLOY_PP_MAP(MMDEPLOY_NVP, __VA_ARGS__))
 
 #define MMDEPLOY_ARCHIVE_MEMBERS(...)           \
   template <typename Archive>                   \
@@ -273,32 +240,26 @@ void load(Archive &&archive, T &&object) {
   }
 }
 
-template <typename Archive, typename T>
-using save_t = decltype(save(std::declval<Archive>(), std::declval<T>()));
-
 struct save_fn {
   template <typename Archive, typename T>
-  auto operator()(Archive &&a, T &&v) const -> save_t<Archive, T> {
+  auto operator()(Archive &&a, T &&v) const
+      -> decltype(save(std::forward<Archive>(a), std::forward<T>(v))) {
     return save(std::forward<Archive>(a), std::forward<T>(v));
   }
 };
 
-template <typename Archive, typename T>
-using load_t = decltype(load(std::declval<Archive>(), std::declval<T>()));
-
 struct load_fn {
   template <typename Archive, typename T>
-  auto operator()(Archive &&a, T &&v) const -> load_t<Archive, T> {
+  auto operator()(Archive &&a, T &&v) const
+      -> decltype(load(std::forward<Archive>(a), std::forward<T>(v))) {
     return load(std::forward<Archive>(a), std::forward<T>(v));
   }
 };
 
-template <typename Archive, typename T>
-using serialize_t = decltype(serialize(std::declval<Archive>(), std::declval<T>()));
-
 struct serialize_fn {
   template <typename Archive, typename T>
-  auto operator()(Archive &&a, T &&v) const -> serialize_t<Archive, T> {
+  auto operator()(Archive &&a, T &&v) const
+      -> decltype(serialize(std::forward<Archive>(a), std::forward<T>(v))) {
     return serialize(std::forward<Archive>(a), std::forward<T>(v));
   }
 };
@@ -319,15 +280,18 @@ struct adl_serializer;
 template <typename, typename>
 struct adl_serializer {
   template <typename Archive, typename T>
-  static auto save(Archive &&a, T &&v) -> detail::save_t<Archive, T> {
+  static auto save(Archive &&a, T &&v)
+      -> decltype(::mmdeploy::save(std::forward<Archive>(a), std::forward<T>(v))) {
     ::mmdeploy::save(std::forward<Archive>(a), std::forward<T>(v));
   }
   template <typename Archive, typename T>
-  static auto load(Archive &&a, T &&v) -> detail::load_t<Archive, T> {
+  static auto load(Archive &&a, T &&v)
+      -> decltype(::mmdeploy::load(std::forward<Archive>(a), std::forward<T>(v))) {
     ::mmdeploy::load(std::forward<Archive>(a), std::forward<T>(v));
   }
   template <typename Archive, typename T>
-  static auto serialize(Archive &&a, T &&v) -> detail::serialize_t<Archive, T> {
+  static auto serialize(Archive &&a, T &&v)
+      -> decltype(::mmdeploy::serialize(std::forward<Archive>(a), std::forward<T>(v))) {
     ::mmdeploy::serialize(std::forward<Archive>(a), std::forward<T>(v));
   }
 };

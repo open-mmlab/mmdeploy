@@ -67,6 +67,7 @@ class End2EndModel(BaseBackendModel):
             backend=backend,
             backend_files=backend_files,
             device=device,
+            input_names=[self.input_name],
             output_names=output_names,
             deploy_cfg=self.deploy_cfg)
 
