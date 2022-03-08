@@ -27,8 +27,8 @@
 
 #### 准备工作
 
-1. 安装你的目标后端。 你可以参考 [ONNXRuntime-install](https://mmdeploy.readthedocs.io/en/latest/backends/onnxruntime.html) ，[TensorRT-install](https://mmdeploy.readthedocs.io/en/latest/backends/tensorrt.html) ，[NCNN-install](https://mmdeploy.readthedocs.io/en/latest/backends/ncnn.html) ，[PPLNN-install](https://mmdeploy.readthedocs.io/en/latest/backends/pplnn.html), [OpenVINO-install](https://mmdeploy.readthedocs.io/en/latest/backends/openvino.html)。
-2. 安装你的目标代码库。 你可以参考 [MMClassification-install](https://github.com/open-mmlab/mmclassification/blob/master/docs/zh_CN/install.md)， [MMDetection-install](https://github.com/open-mmlab/mmdetection/blob/master/docs/zh_cn/get_started.md)， [MMSegmentation-install](https://github.com/open-mmlab/mmsegmentation/blob/master/docs/zh_cn/get_started.md#installation)， [MMOCR-install](https://mmocr.readthedocs.io/en/latest/install.html)， [MMEditing-install](https://github.com/open-mmlab/mmediting/blob/master/docs/zh_cn/install.md)。
+1. 安装您的目标后端。 您可以参考 [ONNXRuntime-install](https://mmdeploy.readthedocs.io/en/latest/backends/onnxruntime.html) ，[TensorRT-install](https://mmdeploy.readthedocs.io/en/latest/backends/tensorrt.html) ，[NCNN-install](https://mmdeploy.readthedocs.io/en/latest/backends/ncnn.html) ，[PPLNN-install](https://mmdeploy.readthedocs.io/en/latest/backends/pplnn.html), [OpenVINO-install](https://mmdeploy.readthedocs.io/en/latest/backends/openvino.html)。
+2. 安装您的目标代码库。 您可以参考 [MMClassification-install](https://github.com/open-mmlab/mmclassification/blob/master/docs/zh_CN/install.md)， [MMDetection-install](https://github.com/open-mmlab/mmdetection/blob/master/docs/zh_cn/get_started.md)， [MMSegmentation-install](https://github.com/open-mmlab/mmsegmentation/blob/master/docs/zh_cn/get_started.md#installation)， [MMOCR-install](https://mmocr.readthedocs.io/en/latest/install.html)， [MMEditing-install](https://github.com/open-mmlab/mmediting/blob/master/docs/zh_cn/install.md)。
 
 #### 使用方法
 
@@ -63,9 +63,9 @@ python ./tools/deploy.py \
 
 #### 如何查找pytorch模型对应的部署配置文件
 
-1. 在 `configs/` 文件夹中找到模型对应的代码库文件夹。 例如，转换一个yolov3模型你可以查找到 `configs/mmdet` 文件夹。
-2. 根据模型的任务类型在 `configs/codebase_folder/` 下查找对应的文件夹。 例如yolov3模型，你可以查找到 `configs/mmdet/detection` 文件夹。
-3. 在 `configs/codebase_folder/task_folder/` 下找到模型的部署配置文件。 例如部署yolov3你可以使用 `configs/mmdet/detection/detection_onnxruntime_dynamic.py`。
+1. 在 `configs/` 文件夹中找到模型对应的代码库文件夹。 例如，转换一个yolov3模型您可以查找到 `configs/mmdet` 文件夹。
+2. 根据模型的任务类型在 `configs/codebase_folder/` 下查找对应的文件夹。 例如yolov3模型，您可以查找到 `configs/mmdet/detection` 文件夹。
+3. 在 `configs/codebase_folder/task_folder/` 下找到模型的部署配置文件。 例如部署yolov3您可以使用 `configs/mmdet/detection/detection_onnxruntime_dynamic.py`。
 
 #### 示例
 
@@ -82,7 +82,7 @@ python ./tools/deploy.py \
 
 ### 如何评测模型
 
-你可以尝试去评测转换出来的模型 ，参考 [how_to_evaluate_a_model](./how_to_evaluate_a_model.md)。
+您可以尝试去评测转换出来的模型 ，参考 [how_to_evaluate_a_model](./how_to_evaluate_a_model.md)。
 
 ### 各后端已支持导出的模型列表
 

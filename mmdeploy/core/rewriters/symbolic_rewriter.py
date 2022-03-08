@@ -1,13 +1,14 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Callable, Dict, Optional, Sequence
+from typing import Callable, Dict, List, Optional, Sequence, Union
 
 from torch.autograd import Function
 from torch.onnx.symbolic_helper import parse_args
 from torch.onnx.symbolic_registry import _registry as pytorch_registry
 from torch.onnx.symbolic_registry import register_op
 
-from mmdeploy.utils import Backend, get_root_logger
-from .rewriter_utils import ContextCaller, RewriterRegistry, eval_with_import
+from mmdeploy.utils import IR, Backend, get_root_logger
+from .rewriter_utils import (Checker, ContextCaller, RewriterRegistry,
+                             eval_with_import)
 
 
 class SymbolicRewriter:
@@ -35,25 +36,27 @@ class SymbolicRewriter:
     def __init__(self) -> None:
         self._registry = RewriterRegistry()
 
-    def add_backend(self, backend: str):
-        """Add a backend by calling the _registry.add_backend."""
-        self._registry.add_backend(backend)
-
     def register_symbolic(self,
                           func_name: str,
                           backend: str = Backend.DEFAULT.value,
                           is_pytorch: bool = False,
                           arg_descriptors: Optional[Sequence[str]] = None,
+                          ir: IR = IR.DEFAULT,
+                          extra_checkers: Optional[Union[
+                              Checker, List[Checker]]] = None,
                           **kwargs) -> Callable:
         """The decorator of the custom symbolic.
 
         Args:
             func_name (str): The function name/path to override the symbolic.
-            backend (str): The inference engine name.
+            backend (str): The rewriter will be activated on which backend.
             is_pytorch (bool): Enable this flag if func_name is the name of \
                 a pytorch builtin function.
             arg_descriptors (Sequence[str]): The argument descriptors of the \
                 symbol.
+            ir (IR): The rewriter will be activated on which IR.
+            extra_checkers (Checker | List[Checker] | None): Other requirements
+                defined by Checker.
 
         Returns:
             Callable: The process of registered symbolic.
@@ -61,18 +64,20 @@ class SymbolicRewriter:
         return self._registry.register_object(
             func_name,
             backend,
+            ir,
+            extra_checkers,
             is_pytorch=is_pytorch,
             arg_descriptors=arg_descriptors,
             **kwargs)
 
     def enter(self,
               cfg: Dict = dict(),
-              backend: str = Backend.DEFAULT.value,
+              env: Dict = dict(),
               opset: int = 11,
               **kwargs):
         """The implementation of symbolic register."""
         # Get current records
-        symbolic_records = self._registry.get_records(backend)
+        symbolic_records = self._registry.get_records(env)
 
         self._pytorch_symbolic = list()
         self._extra_symbolic = list()

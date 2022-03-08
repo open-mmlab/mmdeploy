@@ -14,6 +14,7 @@
    :maxdepth: 1
    :caption: 教程
 
+   tutorials/chapter_01_introduction_to_model_deployment.md
    tutorials/how_to_convert_model.md
    tutorials/how_to_use_docker.md
 

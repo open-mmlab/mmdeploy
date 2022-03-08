@@ -30,3 +30,9 @@ if ("ncnn" IN_LIST MMDEPLOY_TARGET_BACKENDS)
     message(STATUS "Build NCNN custom ops")
     add_subdirectory(ncnn)
 endif ()
+
+# build TorchScript ops
+if ("torchscript" IN_LIST MMDEPLOY_TARGET_BACKENDS)
+  message(STATUS "Build torchsciprt custom ops")
+  add_subdirectory(torchscript)
+endif ()
