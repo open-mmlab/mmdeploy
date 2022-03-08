@@ -10,6 +10,7 @@ We provide building methods for both physical and virtual machines. For virtual 
     ```bash
     git clone -b master git@github.com:open-mmlab/mmdeploy.git MMDeploy
     cd MMDeploy
+    export MMDEPLOY_DIR=$(pwd)
     git submodule update --init --recursive
     ```
 
@@ -49,7 +50,7 @@ We provide building methods for both physical and virtual machines. For virtual 
     ```bash
     # Add repository if ubuntu < 18.04
     sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-
+    # Install
     sudo apt-get install gcc-7
     sudo apt-get install g++-7
     ```
@@ -105,7 +106,7 @@ Valid keys for the extras field are: `all`, `tests`, `build`, `optional`.
 
 ### Build SDK
 
-Readers can skip this chapter if you are only interested in model converter.
+You can skip this chapter if you are only interested in model converter.
 
 #### Dependencies
 
@@ -156,7 +157,6 @@ Each package's installation command is given based on Ubuntu 18.04.
 
   `-DMMDEPLOY_BUILD_SDK=ON`
 
-
 - Enabling Devices
 
    By default, only CPU device is included in the target devices. You can enable device support for other devices by
@@ -179,13 +179,13 @@ Each package's installation command is given based on Ubuntu 18.04.
    e.g. `-DMMDEPLOY_TARGET_BACKENDS="trt;ort;pplnn;ncnn;openvino"`
    A path to the inference engine library is also needed. The following backends are currently supported
 
-   |   library   |  name    |   path setter   |
-   |-------------|----------|-----------------|
-   | PPL.nn      | pplnn    | pplnn_DIR       |
-   | ncnn        | ncnn     | ncnn_DIR        |
-   | ONNXRuntime | ort      | ONNXRUNTIME_DIR |
+   |   library   |  name    |   path setter            |
+   |-------------|----------|--------------------------|
+   | PPL.nn      | pplnn    | pplnn_DIR                |
+   | ncnn        | ncnn     | ncnn_DIR                 |
+   | ONNXRuntime | ort      | ONNXRUNTIME_DIR          |
    | TensorRT    | trt      | TENSORRT_DIR & CUDNN_DIR |
-   | OpenVINO    | openvino | InferenceEngine_DIR |
+   | OpenVINO    | openvino | InferenceEngine_DIR      |
 
 - Enabling codebase's postprocess components
 
