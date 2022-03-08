@@ -74,7 +74,7 @@ conda activate mmdeploy
     </td>
   </tr>
   <tr>
-    <td>pytorch <br>(>=1.8.0) </td>
+    <td>PyTorch <br>(>=1.8.0) </td>
     <td>
     Choose an appropriate PyTorch package from <a href="https://pytorch.org/get-started/locally/">here</a>. Make sure that your compilation CUDA version and runtime CUDA version match. e.g., if you have CUDA 11.1 installed under <code>/usr/local/cuda</code>, you can install pytorch 1.8 like, <br>
 <pre><code>
@@ -84,7 +84,7 @@ conda install pytorch==1.8.0 torchvision==0.9.0 cudatoolkit=11.1 -c pytorch -c c
   </tr>
   <tr>
     <td>mmcv-full </td>
-    <td>Currently, MMDeploy supports mmcv-full <b>v1.4.0</b>. As shown in below, you can replace <code>{cu_version}</code>  and <code>{torch_version}</code> in the url to your desire one. See <a href="https://github.com/open-mmlab/mmcv#installation">here</a> for different versions of MMCV compatible to different PyTorch and CUDA versions.<br>
+    <td>Install mmcv-full as follows. Refer to the <a href="https://github.com/open-mmlab/mmcv#installation">guide</a> for details.
 <pre><code>
 export cu_version=cu111 # cuda 11.1
 export torch_version=torch1.8
@@ -261,7 +261,7 @@ source ~/.bashrc
 ##### Build Custom Ops
 If one of inference engines among ONNXRuntime, TensorRT and ncnn is selected, you have to build the corresponding custom ops.
 
-- Build ONNXRuntime Custom Ops
+- **ONNXRuntime** Custom Ops
 
   ```bash
   cd ${MMDEPLOY_DIR}
@@ -270,7 +270,7 @@ If one of inference engines among ONNXRuntime, TensorRT and ncnn is selected, yo
   cmake --build . -- -j$(nproc)
   ```
 
-- Build TensorRT Custom Ops
+- **TensorRT** Custom Ops
 
   ```bash
   cd ${MMDEPLOY_DIR}
@@ -279,7 +279,7 @@ If one of inference engines among ONNXRuntime, TensorRT and ncnn is selected, yo
   cmake --build . -- -j$(nproc)
   ```
 
-- Build ncnn Custom Ops
+- **ncnn** Custom Ops
 
   ```bash
   cd ${MMDEPLOY_DIR}
@@ -343,11 +343,16 @@ pip install -e .
     <td>N/A</td>
     <td>Enabling inference engine. <b>By default, no target inference engine is set, since it highly depends on the use case.</b> When more than one engine are specified, it has to be set with a semicolon separated list of inference backend names, e.g. <pre><code>-DMMDEPLOY_TARGET_BACKENDS="trt;ort;pplnn;ncnn;openvino"</code></pre>
     After specifying the inference engine, it's package path has to be passed to cmake as follows, <br>
-    1. <b>trt</b>: TensorRT <pre><code>-DTENSORRT_DIR=${TENSORRT_DIR}<br>-DCUDNN_DIR=${CUDNN_DIR}</code></pre>
-    2. <b>ort</b>: ONNXRuntime <pre><code>-DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR}</code></pre>
-    3. <b>pplnn</b>: PPL.NN <pre><code>-Dpplnn_DIR=${PPLNN_DIR}</code></pre>
-    4. <b>ncnn</b>: ncnn <pre><code>-Dncnn_DIR=${NCNN_DIR}</code></pre>
-    5. <b>openvino</b>: OpenVINO <pre><code>-DInferenceEngine_DIR=${INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/share</code></pre>
+    1. <b>trt</b>: TensorRT. <code>TENSORRT_DIR</code> and <code>CUDNN_DIR</code> are needed. 
+<pre><code>-DTENSORRT_DIR=${TENSORRT_DIR}<br>-DCUDNN_DIR=${CUDNN_DIR}</code></pre>
+    2. <b>ort</b>: ONNXRuntime. <code>ONNXRUNTIME_DIR</code> is needed.
+<pre><code>-DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR}</code></pre>
+    3. <b>pplnn</b>: PPL.NN. <code>pplnn_DIR</code> is needed.
+<pre><code>-Dpplnn_DIR=${PPLNN_DIR}</code></pre>
+    4. <b>ncnn</b>: ncnn. <code>ncnn_DIR</code> is needed.
+<pre><code>-Dncnn_DIR=${NCNN_DIR}</code></pre>
+    5. <b>openvino</b>: OpenVINO. <code>InferenceEngine_DIR</code> is needed.
+<pre><code>-DInferenceEngine_DIR=${INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/share</code></pre>
    </td>
   </tr>
   <tr>

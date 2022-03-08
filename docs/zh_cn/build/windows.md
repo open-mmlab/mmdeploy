@@ -39,12 +39,11 @@
 <tbody>
   <tr>
     <td>conda </td>
-    <td>强烈建议安装conda，或者miniconda。比如， <br>https://repo.anaconda.com/miniconda/Miniconda3-py37_4.11.0-Windows-x86_64.exe <br>安装完毕后，打开系统开始菜单，输入prompt，选择并打开 anaconda powershell prompt。 <br><b>下文中的安装命令均是在 anaconda powershell 中测试验证的。</b> </td>
+    <td>强烈建议安装 conda，或者 miniconda。比如， <br>https://repo.anaconda.com/miniconda/Miniconda3-py37_4.11.0-Windows-x86_64.exe <br>安装完毕后，打开系统开始菜单，输入prompt，选择并打开 anaconda powershell prompt。 <br><b>下文中的安装命令均是在 anaconda powershell 中测试验证的。</b> </td>
   </tr>
   <tr>
-    <td>pytorch <br>(>=1.8.0) </td>
-    <td>
-    参考<a href="https://pytorch.org/get-started/locally/">pytorch官网</a>，根据系统环境, 选择合适的预编译包进行安装。比如, <br>
+    <td>PyTorch <br>(>=1.8.0) </td>
+    <td> 安装 PyTorch，要求版本是 torch>=1.8.0。可查看<a href="https://pytorch.org/">官网</a>获取更多详细的安装教程。<br>
     <pre><code>
     pip install torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
     </code></pre>
@@ -52,10 +51,10 @@
   </tr>
   <tr>
     <td>mmcv-full </td>
-    <td>参考<a href="https://github.com/open-mmlab/mmcv">mmcv官网</a>，根据系统环境，选择预编译包进行安装。比如，<br>
+    <td>参考如下命令安装 mmcv-full。更多安装方式，可查看 <a href="https://github.com/open-mmlab/mmcv">mmcv 官网</a><br>
     <pre><code>
     $env:cu_version="cu111"
-    $env:torch_version="torch1.8.0"
+    $env:torch_version="torch1.8"
     pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/$env:cu_version/$env:torch_version/index.html
     </code></pre>
     </td>
@@ -65,6 +64,7 @@
 
 
 #### 安装 MMDeploy SDK 依赖
+如果您只对模型转换感兴趣，那么可以跳过本章节。
 <table>
 <thead>
   <tr>
@@ -157,7 +157,7 @@
     2. 在 PATH 中增加 cudnn libs 路径
    <pre><code>
    $env:path = "{cudnn_dir}/bin;" + $env:path
-   </code><pre>
+   </code></pre>
    </td>
   </tr>
   <tr>
@@ -182,6 +182,7 @@
 
 #### 编译安装 Model Converter
 ##### 编译自定义算子
+如果您选择了ONNXRuntime，TensorRT 和 ncnn 任一种推理后端，您需要编译对应的自定义算子库。
 - **ONNXRuntime** 自定义算子
 ```powershell
 mkdir build
@@ -208,6 +209,9 @@ cmake --build . --config Release -- /maxcpucount:4
 cd root/path/of/MMDeploy
 pip install -e .
 ```
+**注意**
+- 有些依赖项是可选的。运行 `pip install -e .` 将进行最小化依赖安装。 如果需安装其他可选依赖项，请执行`pip install -r requirements/optional.txt`，
+  或者 `pip install -e .[optional]`。其中，`[optional]`可以替换为：`all`、`tests`、`build` 或 `optional`。
 #### 编译 SDK
 ##### 编译选项说明
 <table>
@@ -236,7 +240,7 @@ pip install -e .
     <td>MMDEPLOY_BUILD_TEST</td>
     <td>{ON, OFF}</td>
     <td>OFF</td>
-    <td>MMDeploy SDK的测试程序编译开关</td>
+    <td>MMDeploy SDK 的单元测试程序编译开关</td>
   </tr>
   <tr>
     <td>MMDEPLOY_TARGET_DEVICES</td>
@@ -249,12 +253,14 @@ pip install -e .
     <td>{"trt", "ort", "pplnn", "ncnn", "openvino"}</td>
     <td>N/A</td>
     <td> <b>默认情况下，SDK不设置任何后端</b>, 因为它与应用场景高度相关。 当选择多个后端时， 中间使用分号隔开。比如，<pre><code>-DMMDEPLOY_TARGET_BACKENDS="trt;ort;pplnn;ncnn;openvino"</code></pre>
-    构建时，几乎每个后端，都需设置一些环境变量，用来查找依赖包。<br>
-    1. <b>trt</b>: 表示 TensorRT, 需要设置 TENSORRT_DIR 和 CUDNN_DIR。类似， <pre><code>-DTENSORRT_DIR={tensorrt_dir}<br>-DCUDNN_DIR={cudnn_dir}</code></pre>
-    2. <b>ort</b>: 表示 ONNXRuntime，需要设置 ONNXRUNTIME_DIR。类似， <pre><code>-DONNXRUNTIME_DIR={onnxruntime_dir}</code></pre>
-    3. <b>pplnn</b>: 表示 PPL.NN，需要设置 pplnn_DIR。<b>当前版本尚未验证</b> <br>
-    4. <b>ncnn</b>：需要设置 ncnn_DIR。<b>当前版本尚未验证</b> <br>
-    5. <b>openvino</b>: 表示 OpenVINO，需要设置 InferenceEngine_DIR。<b>当前版本尚未验证通过</b>
+    构建时，几乎每个后端，都需设置一些路径变量，用来查找依赖包。<br>
+    1. <b>trt</b>: 表示 TensorRT。需要设置 <code>TENSORRT_DIR</code> 和 <code>CUDNN_DIR</code>。
+<pre><code>-DTENSORRT_DIR={tensorrt_dir}<br>-DCUDNN_DIR={cudnn_dir}</code></pre>
+    2. <b>ort</b>: 表示 ONNXRuntime。需要设置 <code>ONNXRUNTIME_DIR</code>。
+<pre><code>-DONNXRUNTIME_DIR={onnxruntime_dir}</code></pre>
+    3. <b>pplnn</b>: 表示 PPL.NN。需要设置 <code>pplnn_DIR</code>。<b>当前版本尚未验证</b> <br>
+    4. <b>ncnn</b>：表示 ncnn。需要设置 <code>ncnn_DIR</code>。<b>当前版本尚未验证</b> <br>
+    5. <b>openvino</b>: 表示 OpenVINO。需要设置 <code>InferenceEngine_DIR</code>。<b>当前版本尚未验证通过</b>
    </td>
   </tr>
   <tr>
@@ -273,7 +279,7 @@ pip install -e .
 </table>
 
 
-##### 编译样例
+##### 编译 SDK 库
 
 下文展示2个构建SDK的样例，分别用于不同的运行环境。
 
