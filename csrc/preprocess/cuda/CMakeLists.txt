@@ -7,7 +7,20 @@ if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.18.0")
     cmake_policy(SET CMP0104 OLD)
 endif ()
 
-find_package(pplcv REQUIRED)
+find_package(pplcv)
+
+if(NOT pplcv_FOUND)
+  include(ExternalProject)
+  ExternalProject_Add(pplcv-0.6.2
+    PREFIX pplcv-0.6.2
+    URL https://github.com/openppl-public/ppl.cv/archive/refs/tags/v0.6.2.zip
+    CMAKE_ARGS
+      -DCMAKE_BUILD_TYPE=Release
+      -DHPCC_USE_CUDA=ON
+      -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/pplcv_install
+  )
+  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pplcv_install/ DESTINATION ${CMAKE_INSTALL_PREFIX})
+endif()
 
 include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
 
@@ -23,8 +36,15 @@ set(SRCS
         normalize.cu
         transpose.cu)
 mmdeploy_add_module(${PROJECT_NAME} "${SRCS}")
+if(NOT pplcv_FOUND)
+  add_dependencies(${PROJECT_NAME} pplcv-0.6.2)
+endif()
 target_link_libraries(${PROJECT_NAME} PRIVATE
         mmdeploy::transform ${PPLCV_LIBRARIES})
-target_include_directories(${PROJECT_NAME}
-        PUBLIC ${CUDA_TOOLKIT_ROOT_DIR}/include ${PPLCV_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PUBLIC
+        ${CUDA_TOOLKIT_ROOT_DIR}/include
+        ${PPLCV_INCLUDE_DIRS}
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/pplcv_install/include>
+        $<INSTALL_INTERFACE:include>
+        )
 add_library(mmdeploy::transform_impl::cuda ALIAS ${PROJECT_NAME})
