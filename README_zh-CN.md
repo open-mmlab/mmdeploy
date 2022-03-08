@@ -97,7 +97,7 @@ MMDeploy 是一个开源深度学习模型部署工具箱，它是 [OpenMMLab](h
 
 ## 引用
 
-如果你在研究中使用了本项目的代码或者性能基准，请参考如下 bibtex 引用 MMDeploy:
+如果您在研究中使用了本项目的代码或者性能基准，请参考如下 bibtex 引用 MMDeploy:
 
 ```BibTeX
 @misc{=mmdeploy,
@@ -148,4 +148,4 @@ MMDeploy 是一个开源深度学习模型部署工具箱，它是 [OpenMMLab](h
 - 🏃 获取更高效的问题答疑和意见反馈
 - 🔥 提供与各行各业开发者充分交流的平台
 
-干货满满 📘，等你来撩 💗，OpenMMLab 社区期待您的加入 👬
+干货满满 📘，等您来撩 💗，OpenMMLab 社区期待您的加入 👬
