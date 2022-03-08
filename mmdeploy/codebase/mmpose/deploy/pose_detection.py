@@ -81,7 +81,7 @@ class PoseDetection(BaseTask):
         Returns:
             tuple: (data, img), meta information for the input image and input.
         """
-        from mmpose.apis.inference import LoadImage, _box2cs
+        from mmpose.apis.inference import _box2cs
         from mmpose.datasets.dataset_info import DatasetInfo
         from mmpose.datasets.pipelines import Compose
 
@@ -98,10 +98,7 @@ class PoseDetection(BaseTask):
         bboxes = np.array([box['bbox'] for box in person_results])
 
         # build the data pipeline
-        channel_order = cfg.test_pipeline[0].get('channel_order', 'rgb')
-        test_pipeline = [LoadImage(channel_order=channel_order)
-                         ] + cfg.test_pipeline[1:]
-        test_pipeline = Compose(test_pipeline)
+        test_pipeline = Compose(cfg.test_pipeline)
         dataset_name = dataset_info.dataset_name
         flip_pairs = dataset_info.flip_pairs
         batch_data = []
@@ -114,7 +111,7 @@ class PoseDetection(BaseTask):
 
             # prepare data
             data = {
-                'img_or_path':
+                'img':
                 imgs,
                 'center':
                 center,
@@ -138,6 +135,7 @@ class PoseDetection(BaseTask):
                     'flip_pairs': flip_pairs
                 }
             }
+
             data = test_pipeline(data)
             batch_data.append(data)
 
