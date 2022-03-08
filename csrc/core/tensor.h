@@ -19,7 +19,7 @@ struct TensorDesc {
   std::string name;
 };
 
-class Tensor {
+class MMDEPLOY_API Tensor {
  public:
   Tensor() = default;
   Tensor(const Tensor&) = default;

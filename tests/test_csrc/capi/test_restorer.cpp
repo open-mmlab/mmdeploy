@@ -40,12 +40,12 @@ TEST_CASE("test restorer's c api", "[restorer]") {
   };
 
   auto gResources = MMDeployTestResources::Get();
-  auto img_lists = gResources.LocateImageResources("mmedit/images");
+  auto img_lists = gResources.LocateImageResources(fs::path{"mmedit"} / "images");
   REQUIRE(!img_lists.empty());
 
   for (auto &backend : gResources.backends()) {
     DYNAMIC_SECTION("loop backend: " << backend) {
-      auto model_list = gResources.LocateModelResources("mmedit/" + backend);
+      auto model_list = gResources.LocateModelResources(fs::path{"mmedit"} / backend);
       REQUIRE(!model_list.empty());
       for (auto &model_path : model_list) {
         for (auto &device_name : gResources.device_names(backend)) {

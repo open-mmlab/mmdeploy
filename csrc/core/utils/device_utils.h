@@ -14,7 +14,8 @@ namespace mmdeploy {
  * @param stream
  * @return
  */
-Result<Mat> MakeAvailableOnDevice(const Mat& src, const Device& device, Stream& stream);
+MMDEPLOY_API Result<Mat> MakeAvailableOnDevice(const Mat& src, const Device& device,
+                                               Stream& stream);
 
 /**
  *
@@ -23,7 +24,8 @@ Result<Mat> MakeAvailableOnDevice(const Mat& src, const Device& device, Stream& 
  * @param stream
  * @return
  */
-Result<Tensor> MakeAvailableOnDevice(const Tensor& src, const Device& device, Stream& stream);
+MMDEPLOY_API Result<Tensor> MakeAvailableOnDevice(const Tensor& src, const Device& device,
+                                                  Stream& stream);
 }  // namespace mmdeploy
 
 #endif  // MMDEPLOY_TRANSFORM_UTILS_H

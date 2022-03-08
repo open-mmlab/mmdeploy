@@ -24,7 +24,7 @@ CenterCropImpl::CenterCropImpl(const Value& args) : TransformImpl(args) {
 }
 
 Result<Value> CenterCropImpl::Process(const Value& input) {
-  DEBUG("input: {}", to_json(input).dump(2));
+  MMDEPLOY_DEBUG("input: {}", to_json(input).dump(2));
   auto img_fields = GetImageFields(input);
 
   // copy input data, and update its properties
@@ -63,14 +63,14 @@ Result<Value> CenterCropImpl::Process(const Value& input) {
     }
   }
 
-  DEBUG("output: {}", to_json(output).dump(2));
+  MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));
   return output;
 }
 
 CenterCrop::CenterCrop(const Value& args, int version) : Transform(args) {
   auto impl_creator = Registry<CenterCropImpl>::Get().GetCreator(specified_platform_, version);
   if (nullptr == impl_creator) {
-    ERROR("'CenterCrop' is not supported on '{}' platform", specified_platform_);
+    MMDEPLOY_ERROR("'CenterCrop' is not supported on '{}' platform", specified_platform_);
     throw std::domain_error("'Resize' is not supported on specified platform");
   }
   impl_ = impl_creator->Create(args);
@@ -87,4 +87,5 @@ class CenterCropCreator : public Creator<Transform> {
 };
 
 REGISTER_MODULE(Transform, CenterCropCreator);
+MMDEPLOY_DEFINE_REGISTRY(CenterCropImpl);
 }  // namespace mmdeploy

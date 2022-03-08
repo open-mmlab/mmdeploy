@@ -9,17 +9,13 @@ if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.18.0")
     cmake_policy(SET CMP0104 OLD)
 endif ()
 
-include(${CMAKE_SOURCE_DIR}/cmake/common.cmake)
-set_targets(${PROJECT_NAME} CUDA_DEVICE_OBJ CUDA_DEVICE_STATIC CUDA_DEVICE_SHARED)
+include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
 
 set(SRCS
         cuda_device.cpp
         cuda_builtin_kernels.cu)
-build_target(${PROJECT_NAME} "${SRCS}")
+mmdeploy_add_module(${PROJECT_NAME} "${SRCS}")
 target_include_directories(${PROJECT_NAME} PUBLIC ${CUDA_INCLUDE_DIRS})
 target_link_directories(${PROJECT_NAME} PUBLIC ${CUDA_TOOLKIT_ROOT_DIR}/lib64)
-target_link_libraries(${PROJECT_NAME}
-        PRIVATE mmdeploy::core
-        PUBLIC cudart cuda)
+target_link_libraries(${PROJECT_NAME} PRIVATE cudart cuda)
 add_library(mmdeploy::device::cuda ALIAS ${PROJECT_NAME})
-export_module(${PROJECT_NAME})

@@ -25,7 +25,7 @@ class BuddyAllocator {
     block_count_ = size / block_size_;
     if (!IsPowerOfTwo(block_count_)) {
       block_count_ = RoundToPowerOfTwo(block_count_);
-      WARN("Rounding up block_count to next power of 2 {}", block_count_);
+      MMDEPLOY_WARN("Rounding up block_count to next power of 2 {}", block_count_);
     }
     base_ = LogPowerOfTwo(block_count_);
     size_ = block_size_ * block_count_;
@@ -34,17 +34,18 @@ class BuddyAllocator {
     free_.resize(base_ + 1);
     Build(1, 0);
     Add(1, 0);
-    ERROR("size = {}, block_size = {}, block_count = {}", size_, block_size_, block_count_);
+    MMDEPLOY_ERROR("size = {}, block_size = {}, block_count = {}", size_, block_size_,
+                   block_count_);
     size = size_;
     for (int i = 0; i <= base_; ++i) {
-      ERROR("level {}, size = {}", i, size);
+      MMDEPLOY_ERROR("level {}, size = {}", i, size);
       size /= 2;
     }
   }
 
   ~BuddyAllocator() {
     for (int i = 0; i < free_.size(); ++i) {
-      ERROR("free_[{}].size(): {}", i, free_[i].size());
+      MMDEPLOY_ERROR("free_[{}].size(): {}", i, free_[i].size());
     }
     gDefaultAllocator().Deallocate(memory_, size_);
   }
@@ -62,7 +63,7 @@ class BuddyAllocator {
       }
     }
     if (level < 0) {
-      WARN("failed to allocate memory size = {} bytes", n);
+      MMDEPLOY_WARN("failed to allocate memory size = {} bytes", n);
       return nullptr;
     }
     for (; level < n_level; ++level) {
@@ -80,7 +81,7 @@ class BuddyAllocator {
     std::lock_guard lock{mutex_};
     auto offset = static_cast<uint8_t*>(p) - static_cast<uint8_t*>(memory_);
     if (offset < 0 || offset % block_size_) {
-      ERROR("invalid address: {}", p);
+      MMDEPLOY_ERROR("invalid address: {}", p);
     }
     offset /= static_cast<long>(block_size_);
     auto level = GetLevel(n);

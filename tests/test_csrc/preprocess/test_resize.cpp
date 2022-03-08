@@ -3,7 +3,7 @@
 #include "catch.hpp"
 #include "core/mat.h"
 #include "core/utils/device_utils.h"
-#include "preprocess/cpu/opencv_utils.h"
+#include "opencv_utils.h"
 #include "preprocess/transform/transform.h"
 #include "test_resource.h"
 #include "test_utils.h"

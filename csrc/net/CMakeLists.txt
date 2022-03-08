@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.14)
 project(mmdeploy_net_module)
 
-include(${CMAKE_SOURCE_DIR}/cmake/common.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
 
 if ("trt" IN_LIST MMDEPLOY_TARGET_BACKENDS)
     add_subdirectory(trt)
@@ -24,7 +24,5 @@ if ("openvino" IN_LIST MMDEPLOY_TARGET_BACKENDS)
     add_subdirectory(openvino)
 endif ()
 
-build_target(${PROJECT_NAME} net_module.cpp)
-target_link_libraries(${PROJECT_NAME} PRIVATE mmdeploy::core)
+mmdeploy_add_module(${PROJECT_NAME} net_module.cpp)
 add_library(mmdeploy::net_module ALIAS ${PROJECT_NAME})
-export_module(${PROJECT_NAME})

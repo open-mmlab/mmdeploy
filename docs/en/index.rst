@@ -46,6 +46,7 @@ You can switch between Chinese and English documents in the lower-left corner of
    backends/openvino.md
    backends/ncnn.md
    backends/pplnn.md
+   backends/torchscript.md
 
 .. toctree::
    :maxdepth: 1

@@ -20,12 +20,12 @@ class Handle {
     config["context"].update({{"device", device_}, {"stream", stream_}});
     auto creator = Registry<graph::Node>::Get().GetCreator("Pipeline");
     if (!creator) {
-      ERROR("failed to find Pipeline creator");
+      MMDEPLOY_ERROR("failed to find Pipeline creator");
       throw_exception(eEntryNotFound);
     }
     pipeline_ = creator->Create(config);
     if (!pipeline_) {
-      ERROR("create pipeline failed");
+      MMDEPLOY_ERROR("create pipeline failed");
       throw_exception(eFail);
     }
     pipeline_->Build(graph_);

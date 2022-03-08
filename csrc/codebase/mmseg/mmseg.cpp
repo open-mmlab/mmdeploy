@@ -4,8 +4,12 @@
 
 using namespace std;
 
-namespace mmdeploy::mmseg {
+namespace mmdeploy {
+namespace mmseg {
 
 REGISTER_CODEBASE(MMSegmentation);
 
-}  // namespace mmdeploy::mmseg
+}
+
+MMDEPLOY_DEFINE_REGISTRY(mmseg::MMSegmentation);
+}  // namespace mmdeploy

@@ -10,9 +10,9 @@ from torch.multiprocessing import Process, set_start_method
 
 from mmdeploy.apis import (create_calib_table, extract_model,
                            get_predefined_partition_cfg, torch2onnx,
-                           visualize_model)
-from mmdeploy.utils import (Backend, get_backend, get_calib_filename,
-                            get_ir_config, get_model_inputs, get_onnx_config,
+                           torch2torchscript, visualize_model)
+from mmdeploy.utils import (IR, Backend, get_backend, get_calib_filename,
+                            get_ir_config, get_model_inputs,
                             get_partition_config, get_root_logger, load_config,
                             target_wrapper)
 from mmdeploy.utils.export_info import dump_info
@@ -66,6 +66,21 @@ def create_process(name, target, args, kwargs, ret_value=None):
             logger.info(f'{name} success.')
 
 
+def torch2ir(ir_type: IR):
+    """Return the conversion function from torch to the intermediate
+    representation.
+
+    Args:
+        ir_type (IR): The type of the intermediate representation.
+    """
+    if ir_type == IR.ONNX:
+        return torch2onnx
+    elif ir_type == IR.TORCHSCRIPT:
+        return torch2torchscript
+    else:
+        raise KeyError(f'Unexpected IR type {ir_type}')
+
+
 def main():
     args = parse_args()
     set_start_method('spawn')
@@ -87,18 +102,20 @@ def main():
 
     ret_value = mp.Value('d', 0, lock=False)
 
-    # convert onnx
-    onnx_save_file = get_onnx_config(deploy_cfg)['save_file']
+    # convert to IR
+    ir_config = get_ir_config(deploy_cfg)
+    ir_save_file = ir_config['save_file']
+    ir_type = IR.get(ir_config['type'])
     create_process(
-        'torch2onnx',
-        target=torch2onnx,
-        args=(args.img, args.work_dir, onnx_save_file, deploy_cfg_path,
+        f'torch2{ir_type.value}',
+        target=torch2ir(ir_type),
+        args=(args.img, args.work_dir, ir_save_file, deploy_cfg_path,
               model_cfg_path, checkpoint_path),
         kwargs=dict(device=args.device),
         ret_value=ret_value)
 
     # convert backend
-    onnx_files = [osp.join(args.work_dir, onnx_save_file)]
+    ir_files = [osp.join(args.work_dir, ir_save_file)]
 
     # partition model
     partition_cfgs = get_partition_config(deploy_cfg)
@@ -112,8 +129,8 @@ def main():
             partition_cfgs = get_predefined_partition_cfg(
                 deploy_cfg, partition_cfgs['type'])
 
-        origin_onnx_file = onnx_files[0]
-        onnx_files = []
+        origin_ir_file = ir_files[0]
+        ir_files = []
         for partition_cfg in partition_cfgs:
             save_file = partition_cfg['save_file']
             save_path = osp.join(args.work_dir, save_file)
@@ -124,11 +141,11 @@ def main():
             create_process(
                 f'partition model {save_file} with start: {start}, end: {end}',
                 extract_model,
-                args=(origin_onnx_file, start, end),
+                args=(origin_ir_file, start, end),
                 kwargs=dict(dynamic_axes=dynamic_axes, save_file=save_path),
                 ret_value=ret_value)
 
-            onnx_files.append(save_path)
+            ir_files.append(save_path)
 
     # calib data
     calib_filename = get_calib_filename(deploy_cfg)
@@ -146,12 +163,12 @@ def main():
                 device=args.device),
             ret_value=ret_value)
 
-    backend_files = onnx_files
+    backend_files = ir_files
     # convert backend
     backend = get_backend(deploy_cfg)
     if backend == Backend.TENSORRT:
         model_params = get_model_inputs(deploy_cfg)
-        assert len(model_params) == len(onnx_files)
+        assert len(model_params) == len(ir_files)
 
         from mmdeploy.apis.tensorrt import is_available as trt_is_available
         from mmdeploy.apis.tensorrt import onnx2tensorrt
@@ -160,7 +177,7 @@ def main():
             + ' please install TensorRT and build TensorRT custom ops first.'
         backend_files = []
         for model_id, model_param, onnx_path in zip(
-                range(len(onnx_files)), model_params, onnx_files):
+                range(len(ir_files)), model_params, ir_files):
             onnx_name = osp.splitext(osp.split(onnx_path)[1])[0]
             save_file = model_param.get('save_file', onnx_name + '.engine')
 
@@ -186,7 +203,7 @@ def main():
         from mmdeploy.apis.ncnn import get_output_model_file, onnx2ncnn
 
         backend_files = []
-        for onnx_path in onnx_files:
+        for onnx_path in ir_files:
             model_param_path, model_bin_path = get_output_model_file(
                 onnx_path, args.work_dir)
             create_process(
@@ -207,7 +224,7 @@ def main():
                                             get_output_model_file,
                                             onnx2openvino)
         openvino_files = []
-        for onnx_path in onnx_files:
+        for onnx_path in ir_files:
             model_xml_path = get_output_model_file(onnx_path, args.work_dir)
             input_info = get_input_info_from_cfg(deploy_cfg)
             output_names = get_ir_config(deploy_cfg).output_names
@@ -227,7 +244,7 @@ def main():
 
         from mmdeploy.apis.pplnn import onnx2pplnn
         pplnn_files = []
-        for onnx_path in onnx_files:
+        for onnx_path in ir_files:
             algo_file = onnx_path.replace('.onnx', '.json')
             model_inputs = get_model_inputs(deploy_cfg)
             assert 'opt_shape' in model_inputs, 'Expect opt_shape ' \
