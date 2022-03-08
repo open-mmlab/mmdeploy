@@ -48,7 +48,7 @@ please refer to
     ```bash
     # Add repository if ubuntu < 18.04
     sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-
+    sudo apt-get update
     sudo apt-get install gcc-7
     sudo apt-get install g++-7
     ```
@@ -76,7 +76,7 @@ conda activate mmdeploy
   <tr>
     <td>pytorch <br>(>=1.8.0) </td>
     <td>
-    Choose an appropriate PyTorch package from <a href="https://pytorch.org/get-started/locally/">here</a>. Make sure that your compilation CUDA version and runtime CUDA version match. e.g., If you have CUDA 11.1 installed under <code>/usr/local/cuda</code>, you can install pytorch 1.8 like, <br>
+    Choose an appropriate PyTorch package from <a href="https://pytorch.org/get-started/locally/">here</a>. Make sure that your compilation CUDA version and runtime CUDA version match. e.g., if you have CUDA 11.1 installed under <code>/usr/local/cuda</code>, you can install pytorch 1.8 like, <br>
 <pre><code>
 conda install pytorch==1.8.0 torchvision==0.9.0 cudatoolkit=11.1 -c pytorch -c conda-forge
 </code></pre>
@@ -124,9 +124,11 @@ sudo dpkg -i libspdlog-dev_0.16.3-1_amd64.deb
   <tr>
     <td>OpenCV<br>(>=3.0) </td>
     <td>
+    On Ubuntu >=18.04,
 <pre><code>
 sudo apt-get install libopencv-dev
 </code></pre>
+    On Ubuntu 16.04, OpenCV has to be built from the source code. Please refer to the <a href="https://docs.opencv.org/3.4/d7/d9f/tutorial_linux_install.html">guide</a>.
     </td>
 
   </tr>
@@ -162,14 +164,15 @@ Users can select their interested inference engines and do the installation by f
   </tr>
 </thead>
 <tbody>
-    <tr>
+  <tr>
     <td>ONNXRuntime</td>
     <td>onnxruntime<br>(>=1.8.1) </td>
     <td>
     1. Install python package
        <pre><code>pip install onnxruntime==1.8.1</code></pre>
     2. Download the prebuilt binary package from <a href="https://github.com/microsoft/onnxruntime/releases/tag/v1.8.1">here</a>.  Extract it and export environment variables <code>ONNXRUNTIME_DIR</code> and  <code>LD_LIBRARY_PATH</code> as below:
-<pre><code>wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
+<pre><code>
+wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
 tar -zxvf onnxruntime-linux-x64-1.8.1.tgz
 cd onnxruntime-linux-x64-1.8.1
 export ONNXRUNTIME_DIR=$(pwd)
@@ -184,10 +187,9 @@ export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
    Download the TensorRT tar file from <a href="https://developer.nvidia.com/nvidia-tensorrt-download">here</a> that matches the CPU architecture and CUDA version you are using. Follow the <a href="https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing-tar">guide</a> to install TensorRT. Here is an example of installing TensorRT 8.2 GA Update 2 for Linux x86_64 and CUDA 11.x.
 <pre><code>
 Download from url: https://developer.nvidia.com/compute/machine-learning/tensorrt/secure/8.2.3.0/tars/tensorrt-8.2.3.0.linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz
-tar -zxvf tensorrt-8.2.3.0.linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz
-cd tensorrt-8.2.3.0
-pip install python/tensorrt-8.2.3.0-cp37-none-linux_x86_64.whl
-export TENSORRT_DIR=$(pwd)
+tar -zxvf TensorRT-8.2.3.0.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz
+pip install TensorRT-8.2.3.0/python/tensorrt-8.2.3.0-cp37-none-linux_x86_64.whl
+export TENSORRT_DIR=$(pwd)/TensorRT-8.2.3.0
 export LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
 </code></pre>
    </td>
@@ -199,8 +201,7 @@ export LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
 <pre><code>
 Download cuDNN from url: https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.2.1.32/11.3_06072021/cudnn-11.3-linux-x64-v8.2.1.32.tgz
 tar -zxvf cudnn-11.3-linux-x64-v8.2.1.32.tgz
-cd cudnn-8.2.1
-export CUDNN_DIR=$(pwd)
+export CUDNN_DIR=$(pwd)/cuda
 export LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
 </code></pre>
    </td>
@@ -247,7 +248,7 @@ pip install -e .
 </table>
 
 Note: <br>
-If you want to make the above environment variables permanent, you could add them to <code>~/.bashrc</code>. For example,
+If you want to make the above environment variables permanent, you could add them to <code>~/.bashrc</code>. Take ONNXRuntime for example,
 <pre><code>
 echo '# set env for onnxruntime' >> ~/.bashrc
 echo "export ONNXRUNTIME_DIR=${ONNXRUNTIME_DIR}" >> ~/.bashrc
@@ -265,8 +266,8 @@ If one of inference engines among ONNXRuntime, TensorRT and ncnn is selected, yo
   ```bash
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
-  cmake -DMMDEPLOY_TARGET_BACKENDS=ort -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
-  make -j$(nproc)
+  cmake -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_TARGET_BACKENDS=ort -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
+  cmake --build . -- -j$(nproc)
   ```
 
 - Build TensorRT Custom Ops
@@ -274,8 +275,8 @@ If one of inference engines among ONNXRuntime, TensorRT and ncnn is selected, yo
   ```bash
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
-  cmake -DMMDEPLOY_TARGET_BACKENDS=trt -DTENSORRT_DIR=${TENSORRT_DIR} -DCUDNN_DIR=${CUDNN_DIR} ..
-  make -j$(nproc)
+  cmake -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_TARGET_BACKENDS=trt -DTENSORRT_DIR=${TENSORRT_DIR} -DCUDNN_DIR=${CUDNN_DIR} ..
+  cmake --build . -- -j$(nproc)
   ```
 
 - Build ncnn Custom Ops
@@ -283,8 +284,8 @@ If one of inference engines among ONNXRuntime, TensorRT and ncnn is selected, yo
   ```bash
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
-  cmake -DMMDEPLOY_TARGET_BACKENDS=ncnn -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn ..
-  make -j$(nproc)
+  cmake -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_TARGET_BACKENDS=ncnn -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn ..
+  cmake --build . -- -j$(nproc)
   ```
 
 ##### Install Model Converter
@@ -293,6 +294,11 @@ If one of inference engines among ONNXRuntime, TensorRT and ncnn is selected, yo
 cd ${MMDEPLOY_DIR}
 pip install -e .
 ```
+**Note**
+
+- Some dependencies are optional. Simply running `pip install -e .` will only install the minimum runtime requirements.
+  To use optional dependencies, install them manually with `pip install -r requirements/optional.txt` or specify desired extras when calling `pip` (e.g. `pip install -e .[optional]`).
+  Valid keys for the extras field are: `all`, `tests`, `build`, `optional`.
 #### Build SDK
 
 ##### Build Options
@@ -365,7 +371,8 @@ You can also activate other engines after the model.
 
 - cpu + ONNXRuntime
   ```Bash
-  mkdir build && cd build
+  cd ${MMDEPLOY_DIR}
+  mkdir -p build && cd build
   cmake .. \
       -DCMAKE_CXX_COMPILER=g++-7 \
       -DMMDEPLOY_BUILD_SDK=ON \
@@ -380,23 +387,27 @@ You can also activate other engines after the model.
 
 - cuda + TensorRT
   ```Bash
-   mkdir build && cd build
-   cmake .. \
-     -DCMAKE_CXX_COMPILER=g++-7 \
-     -DMMDEPLOY_BUILD_SDK=ON \
-     -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
-     -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
-     -DMMDEPLOY_TARGET_BACKENDS=trt \
-     -DMMDEPLOY_CODEBASES=all \
-     -Dpplcv_DIR=${PPLCV_DIR}/cuda-build/install/lib/cmake/ppl \
-     -DTENSORRT_DIR=${TENSORRT_DIR} \
-     -DCUDNN_DIR=${CUDNN_DIR}
+  cd ${MMDEPLOY_DIR}
+  mkdir -p build && cd build
+  cmake .. \
+      -DCMAKE_CXX_COMPILER=g++-7 \
+      -DMMDEPLOY_BUILD_SDK=ON \
+      -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
+      -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
+      -DMMDEPLOY_TARGET_BACKENDS=trt \
+      -DMMDEPLOY_CODEBASES=all \
+      -Dpplcv_DIR=${PPLCV_DIR}/cuda-build/install/lib/cmake/ppl \
+      -DTENSORRT_DIR=${TENSORRT_DIR} \
+      -DCUDNN_DIR=${CUDNN_DIR}
 
-   cmake --build . -- -j$(nproc) && cmake --install .
+  cmake --build . -- -j$(nproc) && cmake --install .
   ```
 
 ##### Build SDK Demo
 
 ```Bash
-cd build/install/example
+cd ${MMDEPLOY_DIR}/build/install/example
+mkdir -p build && cd build
+cmake .. -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy
+cmake --build . -- -j$(nproc)
 ```
