@@ -29,8 +29,7 @@ def parse_args():
     parser.add_argument('--work-dir', help='the dir to save logs and models')
     parser.add_argument(
         '--calib-dataset-cfg',
-        help='dataset config path used to calibrate in int8 mode. If not \
-            specified,it will use "val" dataset in model config instead.',
+        help='dataset config path used to calibrate.',
         default=None)
     parser.add_argument(
         '--device', help='device used for conversion', default='cpu')
