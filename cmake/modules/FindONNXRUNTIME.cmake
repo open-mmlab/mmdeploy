@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 if (NOT ONNXRUNTIME_DIR)
     message(FATAL_ERROR "Please set ONNXRUNTIME_DIR with cmake -D option.")
 endif()

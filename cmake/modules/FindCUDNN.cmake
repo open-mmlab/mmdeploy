@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 find_path(
     CUDNN_INCLUDE_DIR cudnn.h
     HINTS ${CUDNN_DIR} ${CUDA_TOOLKIT_ROOT_DIR}

@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 if (NOT TENSORRT_DIR)
     message(FATAL_ERROR "Please set TENSORRT_DIR with cmake -D option.")
 endif()
