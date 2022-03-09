@@ -33,11 +33,11 @@ Result<void> NCNNNet::Init(const Value& args) {
   auto model = context["model"].get<Model>();
   OUTCOME_TRY(auto config, model.GetModelConfig(name));
   auto precision = config.precision;
-  if (!strcmp(precision.c_str(), "FP16")) {
+  if (precision == "FP16") {
     net_.opt.use_fp16_packed = true;
     net_.opt.use_fp16_storage = true;
     net_.opt.use_fp16_arithmetic = true;
-  } else if (!strcmp(precision.c_str(), "INT8")) {
+  } else if (precision == "INT8") {
     // in android platform, ncnn will automatically start FP16 accelerate.
     // In INT8 case, we set fp16 as false explicitly.
     net_.opt.use_int8_packed = true;
