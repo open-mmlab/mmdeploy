@@ -33,6 +33,13 @@ def onnx2ncnn(onnx_path: str, save_param: str, save_bin: str):
     a executable program to convert the `.onnx` file to a `.param` file and
     a `.bin` file. The output files will save to work_dir.
 
+    Example:
+        >>> from mmdeploy.backend.ncnn.onnx2ncnn import onnx2ncnn
+        >>> onnx_path = 'work_dir/end2end.onnx'
+        >>> save_param = 'work_dir/end2end.param'
+        >>> save_bin = 'work_dir/end2end.bin'
+        >>> onnx2ncnn(onnx_path, save_param, save_bin)
+
     Args:
         onnx_path (str): The path of the onnx model.
         save_param (str): The path to save the output `.param` file.
