@@ -195,4 +195,3 @@ cmake .. \
       -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy
 cmake --build . -- -j$(nproc)
 ```
-
