@@ -24,8 +24,7 @@ def encoder_decoder__simple_test(ctx, self, img, img_meta, **kwargs):
     Returns:
         torch.Tensor: Output segmentation map pf shape [N, 1, H, W].
     """
-    x = self.extract_feat(img)
-    seg_logit = self._decode_head_forward_test(x, img_meta)
+    seg_logit = self.encode_decode(img, img_meta)
     seg_logit = resize(
         input=seg_logit,
         size=img_meta['img_shape'],
