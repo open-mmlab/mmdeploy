@@ -4,6 +4,7 @@ from typing import Dict, List, Optional, Union
 import mmcv
 
 from .constants import Backend, Codebase, Task
+from .utils import deprecate
 
 
 def load_config(*args) -> List[mmcv.Config]:
@@ -126,6 +127,7 @@ def get_ir_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
     return ir_config
 
 
+@deprecate(dst_obj=get_ir_config)
 def get_onnx_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
     """Get the onnx parameters in export() from config.
 
@@ -135,7 +137,6 @@ def get_onnx_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
     Returns:
         Dict: The config dictionary of onnx parameters
     """
-
     onnx_config = get_ir_config(deploy_cfg=deploy_cfg)
     ir_type = onnx_config.get('type', None)
     assert ir_type is None or ir_type == 'onnx', 'Expect IR type is ONNX,'\
@@ -192,6 +193,10 @@ def is_dynamic_shape(deploy_cfg: Union[str, mmcv.Config],
     Returns:
         bool: Is config set dynamic shape (axis 2 and 3).
     """
+
+    # Always dynamic for exporting torchscript
+    if get_backend(deploy_cfg) == Backend.TORCHSCRIPT:
+        return True
 
     deploy_cfg = load_config(deploy_cfg)[0]
     ir_config = get_ir_config(deploy_cfg)
@@ -353,18 +358,21 @@ def get_dynamic_axes(
             Dictionary with dynamic axes.
     """
     deploy_cfg = load_config(deploy_cfg)[0]
+    ir_config = get_ir_config(deploy_cfg)
+
+    # TODO onnx will be deprecated in the future
     onnx_config = deploy_cfg.get('onnx_config', None)
-    if onnx_config is None:
+    if onnx_config is None and ir_config == {}:
         raise KeyError(
             'Field \'onnx_config\' was not found in \'deploy_cfg\'.')
-    dynamic_axes = onnx_config.get('dynamic_axes', None)
+    dynamic_axes = ir_config.get('dynamic_axes', None)
     if dynamic_axes and not isinstance(dynamic_axes, Dict):
         if axes_names is None:
             axes_names = []
-            input_names = onnx_config.get('input_names', None)
+            input_names = ir_config.get('input_names', None)
             if input_names:
                 axes_names += input_names
-            output_names = onnx_config.get('output_names', None)
+            output_names = ir_config.get('output_names', None)
             if output_names:
                 axes_names += output_names
             if not axes_names:

@@ -10,6 +10,7 @@ from mmdeploy.utils.constants import Backend
 from mmdeploy.utils.test import check_backend
 
 onnx_file = tempfile.NamedTemporaryFile(suffix='.onnx').name
+ts_file = tempfile.NamedTemporaryFile(suffix='.pt').name
 test_img = torch.rand(1, 3, 8, 8)
 output_names = ['output']
 input_names = ['input']
@@ -42,6 +43,18 @@ def generate_onnx_file():
             verbose=False,
             opset_version=11,
             dynamic_axes=None)
+
+
+@pytest.fixture(autouse=True, scope='module')
+def generate_torchscript_file():
+    import mmcv
+
+    from mmdeploy.apis import torch2torchscript_impl
+    deploy_cfg = mmcv.Config(
+        {'backend_config': dict(type=Backend.TORCHSCRIPT.value)})
+    with torch.no_grad():
+        torch2torchscript_impl(model, torch.rand(1, 3, 8, 8), deploy_cfg,
+                               ts_file)
 
 
 def onnx2backend(backend, onnx_file):
@@ -107,6 +120,11 @@ def create_wrapper(backend, model_files):
         from mmdeploy.backend.openvino import OpenVINOWrapper
         openvino_model = OpenVINOWrapper(model_files, output_names)
         return openvino_model
+    elif backend == Backend.TORCHSCRIPT:
+        from mmdeploy.backend.torchscript import TorchscriptWrapper
+        torchscript_model = TorchscriptWrapper(
+            model_files, input_names=input_names, output_names=output_names)
+        return torchscript_model
     else:
         raise NotImplementedError(f'Unknown backend type: {backend.value}')
 
@@ -134,20 +152,26 @@ def run_wrapper(backend, wrapper, input):
         results = wrapper({'input': input})['output']
         results = results.detach().cpu()
         return results
+    elif backend == Backend.TORCHSCRIPT:
+        results = wrapper({'input': input})['output']
+        return results
     else:
         raise NotImplementedError(f'Unknown backend type: {backend.value}')
 
 
 ALL_BACKEND = [
     Backend.TENSORRT, Backend.ONNXRUNTIME, Backend.PPLNN, Backend.NCNN,
-    Backend.OPENVINO
+    Backend.OPENVINO, Backend.TORCHSCRIPT
 ]
 
 
 @pytest.mark.parametrize('backend', ALL_BACKEND)
 def test_wrapper(backend):
     check_backend(backend, True)
-    model_files = onnx2backend(backend, onnx_file)
+    if backend == Backend.TORCHSCRIPT:
+        model_files = ts_file
+    else:
+        model_files = onnx2backend(backend, onnx_file)
     assert model_files is not None
     wrapper = create_wrapper(backend, model_files)
     assert wrapper is not None
