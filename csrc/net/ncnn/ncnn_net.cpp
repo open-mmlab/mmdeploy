@@ -128,8 +128,8 @@ Result<void> NCNNNet::Forward() {
     if (outputs[i].dims > 0) {
       OUTCOME_TRY(tensor.CopyFrom(flattened.data, stream_));
     }
+    OUTCOME_TRY(stream_.Wait());
   }
-  OUTCOME_TRY(stream_.Wait());
   return success();
 }
 
