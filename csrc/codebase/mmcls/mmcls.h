@@ -8,7 +8,8 @@
 #include "core/module.h"
 #include "core/serialization.h"
 
-namespace mmdeploy::mmcls {
+namespace mmdeploy {
+namespace mmcls {
 
 struct ClassifyOutput {
   struct Label {
@@ -21,7 +22,9 @@ struct ClassifyOutput {
 };
 
 DECLARE_CODEBASE(MMClassification, mmcls);
+}  // namespace mmcls
 
-}  // namespace mmdeploy::mmcls
+MMDEPLOY_DECLARE_REGISTRY(mmcls::MMClassification);
+}  // namespace mmdeploy
 
 #endif  // MMDEPLOY_SRC_CODEBASE_MMCLS_MMCLS_H_

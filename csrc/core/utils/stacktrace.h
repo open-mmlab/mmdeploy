@@ -4,6 +4,7 @@
 #define MMDEPLOY_SRC_CORE_STACKTRACE_H_
 
 #include <memory>
+#include <string>
 
 namespace mmdeploy {
 

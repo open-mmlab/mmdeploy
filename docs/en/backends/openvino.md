@@ -27,7 +27,7 @@ sudo apt-get install libpython3.7
 Example:
 ```bash
 python tools/deploy.py \
-    configs/mmdet/detection/detection_openvino_dynamic.py \
+    configs/mmdet/detection/detection_openvino_static-300x300.py \
     /mmdetection_dir/mmdetection/configs/ssd/ssd300_coco.py \
     /tmp/snapshots/ssd300_coco_20210803_015428-d231a06e.pth \
     tests/data/tiger.jpeg \

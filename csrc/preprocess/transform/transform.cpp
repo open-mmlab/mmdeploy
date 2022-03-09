@@ -48,4 +48,6 @@ Transform::Transform(const Value &args) {
   }
 }
 
+MMDEPLOY_DEFINE_REGISTRY(Transform);
+
 }  // namespace mmdeploy

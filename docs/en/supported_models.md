@@ -14,6 +14,7 @@ The table below lists the models that are guaranteed to be exportable to other b
 | SSD[*](#note)             | MMDetection      |      Y      |    Y     |  Y   |   N   |    Y     |          [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/ssd)           |
 | FoveaBox                  | MMDetection      |      Y      |    N     |  N   |   N   |    Y     |        [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/foveabox)        |
 | ATSS                      | MMDetection      |      Y      |    Y     |  N   |   N   |    Y     |          [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/atss)          |
+| GFL                       | MMDetection      |      Y      |    Y     |  N   |   ?   |    Y     |          [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/gfl)           |
 | Cascade R-CNN             | MMDetection      |      Y      |    Y     |  N   |   Y   |    Y     |      [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/cascade_rcnn)      |
 | Cascade Mask R-CNN        | MMDetection      |      Y      |    N     |  N   |   N   |    Y     |      [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/cascade_rcnn)      |
 | VFNet                     | MMDetection      |      N      |    N     |  N   |   N   |    Y     |         [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/vfnet)          |
@@ -39,6 +40,9 @@ The table below lists the models that are guaranteed to be exportable to other b
 | DBNet                     | MMOCR            |      Y      |    Y     |  Y   |   Y   |    Y     |         [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/dbnet)          |
 | CRNN                      | MMOCR            |      Y      |    Y     |  Y   |   Y   |    N     |         [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/crnn)         |
 | SAR                       | MMOCR            |      Y      |    N     |  N   |   N   |    N     |         [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/sar)          |
+| HRNet                     | MMPose           |      Y      |    Y     |  Y   |   N   |    Y     |    [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#hrnet-cvpr-2019)     |
+| MSPN                      | MMPose           |      Y      |    Y     |  Y   |   N   |    Y     |    [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#mspn-arxiv-2019)     |
+| LiteHRNet                 | MMPose           |      Y      |    Y     |  N   |   N   |    Y     |  [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#litehrnet-cvpr-2021)   |
 
 ### Note
 

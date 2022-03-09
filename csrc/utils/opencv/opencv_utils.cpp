@@ -42,7 +42,7 @@ cv::Mat Mat2CVMat(const Mat& mat) {
                                       {DataType::kINT32, CV_32S}};
   auto type = CV_MAKETYPE(type_mapper[mat.type()], mat.channel());
   auto format = mat.pixel_format();
-  if (PixelFormat::kBGR == format or PixelFormat::kRGB == format) {
+  if (PixelFormat::kBGR == format || PixelFormat::kRGB == format) {
     return cv::Mat(mat.height(), mat.width(), type, mat.data<void>());
   } else if (PixelFormat::kGRAYSCALE == format) {
     return cv::Mat(mat.height(), mat.width(), type, mat.data<void>());
@@ -59,7 +59,7 @@ cv::Mat Mat2CVMat(const Mat& mat) {
   } else if (PixelFormat::kBGRA == format) {
     return cv::Mat(mat.height(), mat.width(), type, mat.data<void>());
   } else {
-    ERROR("unsupported mat format {}", format);
+    MMDEPLOY_ERROR("unsupported mat format {}", format);
     return {};
   }
 }
@@ -78,7 +78,7 @@ cv::Mat Tensor2CVMat(const Tensor& tensor) {
     return {h, w, CV_32SC(c), const_cast<void*>(tensor.data())};
   } else {
     assert(0);
-    ERROR("unsupported type: {}", desc.data_type);
+    MMDEPLOY_ERROR("unsupported type: {}", desc.data_type);
     return {};
   }
 }
@@ -95,7 +95,7 @@ Tensor CVMat2Tensor(const cv::Mat& mat) {
     shape = {1, mat.rows, mat.cols, mat.channels()};
     data_type = DataType::kINT32;
   } else {
-    ERROR("unsupported mat dat type {}", mat.type());
+    MMDEPLOY_ERROR("unsupported mat dat type {}", mat.type());
     assert(0);
     return {};
   }
@@ -118,7 +118,7 @@ cv::Mat Resize(const cv::Mat& src, int dst_height, int dst_width,
   } else if (interpolation == "lanczos") {
     cv::resize(src, dst, dst.size(), 0, 0, cv::INTER_LANCZOS4);
   } else {
-    ERROR("{} interpolation is not supported", interpolation);
+    MMDEPLOY_ERROR("{} interpolation is not supported", interpolation);
     assert(0);
   }
   return dst;
@@ -189,7 +189,7 @@ cv::Mat ColorTransfer(const cv::Mat& src, PixelFormat src_format, PixelFormat ds
         cv::cvtColor(src, dst, cv::COLOR_BGRA2BGR);
         break;
       default:
-        ERROR("unsupported src mat's element type {}", src_format);
+        MMDEPLOY_ERROR("unsupported src mat's element type {}", src_format);
         assert(0);
         return {};
     }
@@ -214,7 +214,7 @@ cv::Mat ColorTransfer(const cv::Mat& src, PixelFormat src_format, PixelFormat ds
         cv::cvtColor(src, dst, cv::COLOR_BGRA2RGB);
         break;
       default:
-        ERROR("unsupported src mat's element type {}", src_format);
+        MMDEPLOY_ERROR("unsupported src mat's element type {}", src_format);
         assert(0);
         return {};
     }
@@ -239,12 +239,12 @@ cv::Mat ColorTransfer(const cv::Mat& src, PixelFormat src_format, PixelFormat ds
         cv::cvtColor(src, dst, cv::COLOR_BGRA2GRAY);
         break;
       default:
-        ERROR("unsupported src mat's element type {}", src_format);
+        MMDEPLOY_ERROR("unsupported src mat's element type {}", src_format);
         assert(0);
         return {};
     }
   } else {
-    ERROR("unsupported target mat's element type {}", dst_format);
+    MMDEPLOY_ERROR("unsupported target mat's element type {}", dst_format);
     assert(0);
     return {};
   }
@@ -267,7 +267,7 @@ bool Compare(const cv::Mat& src1, const cv::Mat& src2) {
   cv::subtract(_src1, _src2, diff);
   diff = cv::abs(diff);
   auto sum = cv::sum(cv::sum(diff));
-  DEBUG("sum: {}, average: {}", sum[0], sum[0] * 1.0 / (src1.rows * src1.cols));
+  MMDEPLOY_DEBUG("sum: {}, average: {}", sum[0], sum[0] * 1.0 / (src1.rows * src1.cols));
   return sum[0] / (src1.rows * src1.cols) < 0.5f;
 }
 

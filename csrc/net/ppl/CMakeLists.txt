@@ -2,10 +2,10 @@
 cmake_minimum_required(VERSION 3.14)
 project(mmdeploy_pplnn_net)
 
-include(${CMAKE_SOURCE_DIR}/cmake/common.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
 find_package(pplnn REQUIRED)
 
-add_library(${PROJECT_NAME} SHARED ppl_net.cpp)
+mmdeploy_add_module(${PROJECT_NAME} ppl_net.cpp)
 target_include_directories(${PROJECT_NAME} PUBLIC
         $<BUILD_INTERFACE:${PPLNN_INCLUDE_DIRS}>)
 if ("cpu" IN_LIST MMDEPLOY_TARGET_DEVICES)
@@ -17,7 +17,5 @@ if ("cuda" IN_LIST MMDEPLOY_TARGET_DEVICES)
     target_link_directories(${PROJECT_NAME} PUBLIC ${CUDA_TOOLKIT_ROOT_DIR}/lib64)
 endif ()
 target_link_libraries(${PROJECT_NAME}
-        PRIVATE mmdeploy::core ${PPLNN_LIBRARIES}
-        PUBLIC nvrtc)
+        PRIVATE ${PPLNN_LIBRARIES} nvrtc)
 add_library(mmdeploy::pplnn_net ALIAS ${PROJECT_NAME})
-export_module(${PROJECT_NAME})

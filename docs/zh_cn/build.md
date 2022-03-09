@@ -34,7 +34,7 @@
     要求 cmake>=3.14.0, 通过如下指令安装 cmake。您也通过 [cmake](https://cmake.org/install) 官网查看更多安装信息。
 
     ```bash
-    apt-get install -y libssl-dev
+    sudo apt-get install -y libssl-dev
     wget https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0.tar.gz
     tar -zxvf cmake-3.20.0.tar.gz
     cd cmake-3.20.0
@@ -48,8 +48,9 @@
   MMDeploy SDK 使用了 C++17 特性，因此需要安装gcc 7+以上的版本。
 
   ```bash
-    # Add repository if ubuntu < 18.04
+    # 如果 Ubuntu 版本 < 18.04，需要加入仓库
     sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+    # 安装
     sudo apt-get install gcc-7
     sudo apt-get install g++-7
     ```
@@ -98,15 +99,15 @@ pip install -e .
 **Note**
 
 - 有些依赖项是可选的。运行 `pip install -e .` 将进行最小化依赖安装。 如果需安装其他可选依赖项，请执行`pip install -r requirements/optional.txt`，
-或者 `pip install -e . [optional]`。其中，`[optional]`可以填写`all`, `tests`, `build`, `optional`
+或者 `pip install -e . [optional]`。其中，`[optional]`可以替换为：`all`、`tests`、`build` 或 `optional`。
 
 ### 构建 SDK
 
-读者如果只对模型转换感兴趣，那么可以跳过本章节
+如果您只对模型转换感兴趣，那么可以跳过本章节
 
 #### 安装依赖项
 
-目前，SDK在Linux-x86_64经过测试验证，未来将加入对更多平台的支持。 使用SDK，需要安装若干依赖包。本文以 Ubuntu 18.04为例，逐一介绍各依赖项的安装方法
+目前，SDK在Linux-x86_64经过测试验证，未来将加入对更多平台的支持。 使用SDK，需要安装若干依赖包。本章节以 Ubuntu 18.04 为例，逐一介绍各依赖项的安装方法。
 
 - OpenCV 3+
 
@@ -127,7 +128,7 @@ pip install -e .
   sudo dpkg -i libspdlog-dev_0.16.3-1_amd64.deb
   ```
 
-  你也可以使用spdlog源码编译，激活它更多的特性。但是，请务必打开 **`-fPIC`** 编译选项。
+  您也可以使用spdlog的源码进行编译，激活它更多的特性。但是，请务必打开 **`-fPIC`** 编译选项。
 
 - pplcv
 
@@ -142,7 +143,7 @@ pip install -e .
   ```
 
 - 推理引擎
-  SDK 和 model converter 使用相同的推理引擎。 请参考前文中”安装推理引擎“章节，选择合适的进行安装.
+  SDK 和 model converter 使用相同的推理引擎。 请参考前文中[安装推理引擎](#安装推理引擎)章节，以此来选择合适的引擎进行安装.
 
 #### 设置编译选项
 
@@ -152,26 +153,26 @@ pip install -e .
 
 - 设置目标设备
 
-  cpu 是 SDK 目标设备的默认选项。你也可以通过`MMDEPLOY_TARGET_DEVICES`传入其他设备名称。当有多个设备时，设备名称之间使用分号隔开。
+  cpu 是 SDK 目标设备的默认选项。您也可以通过`MMDEPLOY_TARGET_DEVICES`传入其他设备名称。当有多个设备时，设备名称之间使用分号隔开。
   比如，`-DMMDEPLOY_TARGET_DEVICES="cpu;cuda"`。
-  当前，SDK支持以下设备，
+  当前，SDK支持以下设备：
 
   | 设备 | 名称 | 查找路径                           |
   | :--- | :--- | :--------------------------------- |
   | Host | cpu  | N/A                                |
   | CUDA | cuda | CUDA_TOOLKIT_ROOT_DIR 和 pplcv_DIR |
 
-  如果你的开发环境中有多个cuda版本，则需要通过`-DCUDA_TOOLKIT_ROOT_DIR=/path/of/cuda`来明确使用的版本。
+  如果您的开发环境中有多个cuda版本，则需要通过`-DCUDA_TOOLKIT_ROOT_DIR=/path/of/cuda`来明确使用的版本。
   于此同时，还需设置`-Dpplcv_DIR=ppl.cv/path/install/lib/cmake/ppl`，用以编译cuda平台下的图像处理算子。
 
 - 设置推理后端
 
-  **默认情况下，SDK不设置任何后端**, 因为它与应用场景高度相关。你可以通过设置`MMDEPLOY_TARGET_BACKENDS`激活感兴趣的推理后端。
-  当选择多个时， 中间使用分号隔开。比如，`-DMMDEPLOY_TARGET_BACKENDS="trt;ort;pplnn;ncnn;openvino"`
+  **默认情况下，SDK不设置任何后端**, 因为它与应用场景高度相关。您可以通过设置`MMDEPLOY_TARGET_BACKENDS`激活感兴趣的推理后端。
+  当选择多个时， 中间使用分号隔开。比如：`-DMMDEPLOY_TARGET_BACKENDS="trt;ort;pplnn;ncnn;openvino"`
   构建时，几乎每个后端，都需设置一些环境变量，用来查找依赖包。
-  下表展示了目前SDK支持的后端，以及构建时，每个后端需要设置的变量。
+  下表展示了目前SDK支持的后端，以及构建时，每个后端需要设置的变量：
 
-  | 推理引擎    | 名称     | 查找路径                 |
+  | 推理引擎     | 名称     | 查找路径                  |
   | :---------- | :------- | :----------------------- |
   | PPL.nn      | pplnn    | pplnn_DIR                |
   | ncnn        | ncnn     | ncnn_DIR                 |
@@ -187,32 +188,33 @@ pip install -e .
 - 汇总以上
 
   下文展示2个构建SDK的样例，分别用于不同的运行环境。
-  使用cpu设备和ONNXRuntime推理，请参考
 
-  ```Bash
-  mkdir build && cd build
-  cmake .. \
+  - 使用cpu设备和ONNXRuntime推理，请参考
+
+    ```Bash
+    mkdir build && cd build
+    cmake .. \
+        -DMMDEPLOY_BUILD_SDK=ON \
+        -DCMAKE_CXX_COMPILER=g++-7 \
+        -DONNXRUNTIME_DIR=/path/to/onnxruntime \
+        -DMMDEPLOY_TARGET_DEVICES=cpu \
+        -DMMDEPLOY_TARGET_BACKENDS=ort \
+        -DMMDEPLOY_CODEBASES=all
+    cmake --build . -- -j$(nproc) && cmake --install .
+    ```
+
+  - 使用cuda设备和TensorRT推理，请按照此例构建
+
+    ```Bash
+    mkdir build && cd build
+    cmake .. \
       -DMMDEPLOY_BUILD_SDK=ON \
       -DCMAKE_CXX_COMPILER=g++-7 \
-      -DONNXRUNTIME_DIR=/path/to/onnxruntime \
-      -DMMDEPLOY_TARGET_DEVICES=cpu \
-      -DMMDEPLOY_TARGET_BACKENDS=ort \
+      -Dpplcv_DIR=/path/to/ppl.cv/cuda-build/install/lib/cmake/ppl \
+      -DTENSORRT_DIR=/path/to/tensorrt \
+      -DCUDNN_DIR=/path/to/cudnn \
+      -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
+      -DMMDEPLOY_TARGET_BACKENDS=trt \
       -DMMDEPLOY_CODEBASES=all
-  cmake --build . -- -j$(nproc) && cmake --install .
-  ```
-
-  使用cuda设备和TensorRT推理，请按照此例构建
-
-  ```Bash
-   mkdir build && cd build
-   cmake .. \
-     -DMMDEPLOY_BUILD_SDK=ON \
-     -DCMAKE_CXX_COMPILER=g++-7 \
-     -Dpplcv_DIR=/path/to/ppl.cv/cuda-build/install/lib/cmake/ppl \
-     -DTENSORRT_DIR=/path/to/tensorrt \
-     -DCUDNN_DIR=/path/to/cudnn \
-     -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
-     -DMMDEPLOY_TARGET_BACKENDS=trt \
-     -DMMDEPLOY_CODEBASES=all
-   cmake --build . -- -j$(nproc) && cmake --install .
-  ```
+    cmake --build . -- -j$(nproc) && cmake --install .
+    ```

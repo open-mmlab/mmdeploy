@@ -219,7 +219,7 @@ TEST_CASE("test pointer of Value", "[value]") {
   REQUIRE(p["object"].is_object());
   REQUIRE(p["array"].is_array());
   REQUIRE(p["array"].is_array());
-  INFO("{}", p);
+  MMDEPLOY_INFO("{}", p);
 }
 
 TEST_CASE("test null Value", "[value]") {
@@ -332,7 +332,7 @@ TEST_CASE("test speed of value", "[value]") {
   }
   auto t1 = std::chrono::high_resolution_clock::now();
   auto dt = std::chrono::duration<double, std::milli>(t1 - t0).count();
-  INFO("time = {}ms", (float)dt);
+  MMDEPLOY_INFO("time = {}ms", (float)dt);
 }
 
 TEST_CASE("test ctor of value", "[value]") {

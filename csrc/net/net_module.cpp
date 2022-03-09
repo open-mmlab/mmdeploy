@@ -24,7 +24,7 @@ struct NetModule::Impl {
   using Output = std::map<std::string, Tensor>;
 
   explicit Impl(const Value& args) {
-    DEBUG("Net Module cfg: {}", args);
+    MMDEPLOY_DEBUG("Net Module cfg: {}", args);
     auto init = [&]() -> Result<void> {
       auto name = args["name"].get<std::string>();
       auto& context = args["context"];
@@ -34,7 +34,7 @@ struct NetModule::Impl {
       stream_ = context.value("stream", Stream::GetDefault(device_));
       auto creator = Registry<Net>::Get().GetCreator(config.backend);
       if (!creator) {
-        ERROR("Net backend not found: {}", config.backend);
+        MMDEPLOY_ERROR("Net backend not found: {}", config.backend);
         return Status(eEntryNotFound);
       }
       auto net_cfg = args;
@@ -82,13 +82,13 @@ struct NetModule::Impl {
       return shape;
     }
     if (shape[0] != 1) {
-      ERROR("unsupported shape for batch assemble: {}", shape);
+      MMDEPLOY_ERROR("unsupported shape for batch assemble: {}", shape);
       return Status(eNotSupported);
     }
     for (int i = 1; i < input.size(); ++i) {
       auto& sample = input[i];
       if (sample.shape() != shape) {
-        ERROR("shapes are not consistent across the batch");
+        MMDEPLOY_ERROR("shapes are not consistent across the batch");
         return Status(eNotSupported);
       }
     }
@@ -122,7 +122,7 @@ struct NetModule::Impl {
         if (auto it = sample.find(name); it != sample.end()) {
           tmp.push_back(it->second);
         } else {
-          ERROR("sample {} missing key {}", i, name);
+          MMDEPLOY_ERROR("sample {} missing key {}", i, name);
           return Status(eInvalidArgument);
         }
       }
@@ -140,7 +140,7 @@ struct NetModule::Impl {
       auto& src = input_samples[i];
       auto& dst = inputs_[i];
       if (dst.shape() != input_shapes[i]) {
-        ERROR("inconsistent input shape, expect {}, got {}", input_shapes[i], dst.shape());
+        MMDEPLOY_ERROR("inconsistent input shape, expect {}, got {}", input_shapes[i], dst.shape());
         return Status(eFail);
       }
       if (src.size() > 1) {
@@ -165,7 +165,7 @@ struct NetModule::Impl {
       if (tmp.size()) {
         OUTCOME_TRY(t.CopyTo(tmp, stream_));
       } else {
-        WARN("copy skipped due to zero sized tensor");
+        MMDEPLOY_WARN("copy skipped due to zero sized tensor");
       }
       if (output.size() > 1) {
         for (int i = 0; i < output.size(); ++i) {

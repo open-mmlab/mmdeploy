@@ -19,14 +19,14 @@ ResizeImpl::ResizeImpl(const Value& args) : TransformImpl(args) {
       arg_.img_scale = {size, size};
     } else if (args["size"].is_array()) {
       if (args["size"].size() != 2) {
-        ERROR("'size' expects an array of size 2, but got {}", args["size"].size());
+        MMDEPLOY_ERROR("'size' expects an array of size 2, but got {}", args["size"].size());
         throw std::length_error("'size' expects an array of size 2");
       }
       auto height = args["size"][0].get<int>();
       auto width = args["size"][1].get<int>();
       arg_.img_scale = {height, width};
     } else {
-      ERROR("'size' is expected to be an integer or and array of size 2");
+      MMDEPLOY_ERROR("'size' is expected to be an integer or and array of size 2");
       throw std::domain_error("'size' is expected to be an integer or and array of size 2");
     }
   }
@@ -35,13 +35,13 @@ ResizeImpl::ResizeImpl(const Value& args) : TransformImpl(args) {
   vector<string> interpolations{"nearest", "bilinear", "bicubic", "area", "lanczos"};
   if (std::find(interpolations.begin(), interpolations.end(), arg_.interpolation) ==
       interpolations.end()) {
-    ERROR("'{}' interpolation is not supported", arg_.interpolation);
+    MMDEPLOY_ERROR("'{}' interpolation is not supported", arg_.interpolation);
     throw std::invalid_argument("unexpected interpolation");
   }
 }
 
 Result<Value> ResizeImpl::Process(const Value& input) {
-  DEBUG("input: {}", to_json(input).dump(2));
+  MMDEPLOY_DEBUG("input: {}", to_json(input).dump(2));
   Value output = input;
   auto img_fields = GetImageFields(input);
 
@@ -66,7 +66,7 @@ Result<Value> ResizeImpl::Process(const Value& input) {
       dst_h = int(h * scale_factor + 0.5);
       dst_w = int(w * scale_factor + 0.5);
     } else if (!arg_.img_scale.empty()) {
-      DEBUG(
+      MMDEPLOY_WARN(
           "neither 'scale' or 'scale_factor' is provided in input value. "
           "'img_scale' will be used");
       if (-1 == arg_.img_scale[1]) {
@@ -82,7 +82,7 @@ Result<Value> ResizeImpl::Process(const Value& input) {
         dst_w = arg_.img_scale[1];
       }
     } else {
-      ERROR("no resize related parameter is provided");
+      MMDEPLOY_ERROR("no resize related parameter is provided");
       return Status(eInvalidArgument);
     }
     if (arg_.keep_ratio) {
@@ -111,14 +111,14 @@ Result<Value> ResizeImpl::Process(const Value& input) {
     output[key] = dst_img;
   }
 
-  DEBUG("output: {}", to_json(output).dump(2));
+  MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));
   return output;
 }
 
 Resize::Resize(const Value& args, int version) : Transform(args) {
   auto impl_creator = Registry<ResizeImpl>::Get().GetCreator(specified_platform_, version);
   if (nullptr == impl_creator) {
-    ERROR("'Resize' is not supported on '{}' platform", specified_platform_);
+    MMDEPLOY_ERROR("'Resize' is not supported on '{}' platform", specified_platform_);
     throw std::domain_error("'Resize' is not supported on specified platform");
   }
   impl_ = impl_creator->Create(args);
@@ -135,5 +135,7 @@ class ResizeCreator : public Creator<Transform> {
 };
 
 REGISTER_MODULE(Transform, ResizeCreator);
+
+MMDEPLOY_DEFINE_REGISTRY(ResizeImpl);
 
 }  // namespace mmdeploy

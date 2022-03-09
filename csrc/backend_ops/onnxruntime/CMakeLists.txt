@@ -2,26 +2,23 @@
 cmake_minimum_required(VERSION 3.14)
 project(mmdeploy_onnxruntime_ops)
 
-include(${CMAKE_SOURCE_DIR}/cmake/common.cmake)
-set_targets(${PROJECT_NAME} ORT_OPS_OBJ ORT_OPS_STATIC ORT_OPS_MODULE)
+include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
 
 # add plugin source
 file(GLOB_RECURSE ORT_OPS_SRCS *.cpp)
-build_object_target(${ORT_OPS_OBJ} "${ORT_OPS_SRCS}")
-target_include_directories(${ORT_OPS_OBJ} PUBLIC
+add_library(${PROJECT_NAME}_obj OBJECT "${ORT_OPS_SRCS}")
+target_compile_definitions(${PROJECT_NAME}_obj PRIVATE -DMMDEPLOY_API_EXPORTS=1)
+set_target_properties(${PROJECT_NAME}_obj PROPERTIES POSITION_INDEPENDENT_CODE 1)
+mmdeploy_export(${PROJECT_NAME}_obj)
+
+target_include_directories(${PROJECT_NAME}_obj PUBLIC
         $<BUILD_INTERFACE:${ONNXRUNTIME_DIR}/include>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/common>)
-target_link_directories(${ORT_OPS_OBJ} PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/common>
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/csrc>)
+target_link_directories(${PROJECT_NAME}_obj PUBLIC
         ${ONNXRUNTIME_DIR}/lib)
-target_link_libraries(${ORT_OPS_OBJ} PUBLIC onnxruntime)
+target_link_libraries(${PROJECT_NAME}_obj PUBLIC onnxruntime)
 
-add_library(${ORT_OPS_MODULE} MODULE $<TARGET_OBJECTS:${ORT_OPS_OBJ}>)
-target_link_libraries(${ORT_OPS_MODULE} PRIVATE ${ORT_OPS_OBJ})
-add_library(mmdeploy::onnxruntime::ops ALIAS ${ORT_OPS_MODULE})
-install_targets(${ORT_OPS_MODULE})
-
-if (MMDEPLOY_BUILD_SDK)
-    ## Build static library. SDK's uses it to build `ort_net` module
-    build_static_target(${ORT_OPS_STATIC} ${ORT_OPS_OBJ} "PRIVATE")
-    add_library(mmdeploy::onnxruntime::ops::static ALIAS ${ORT_OPS_STATIC})
-endif ()
+mmdeploy_add_library(${PROJECT_NAME} SHARED EXCLUDE "")
+target_link_libraries(${PROJECT_NAME} PUBLIC ${PROJECT_NAME}_obj)
+add_library(mmdeploy::onnxruntime::ops ALIAS ${PROJECT_NAME})

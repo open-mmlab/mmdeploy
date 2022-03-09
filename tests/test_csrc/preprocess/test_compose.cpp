@@ -11,7 +11,7 @@
 #include "core/registry.h"
 #include "core/utils/formatter.h"
 #include "json.hpp"
-#include "preprocess/cpu/opencv_utils.h"
+#include "opencv_utils.h"
 #include "test_resource.h"
 #include "test_utils.h"
 

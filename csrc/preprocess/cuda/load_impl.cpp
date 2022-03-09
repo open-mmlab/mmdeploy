@@ -70,11 +70,11 @@ class PrepareImageImpl : public ::mmdeploy::PrepareImageImpl {
         BGRA2BGR<uint8_t>(stream, src_h, src_w, src_stride, src_ptr, dst_stride, dst_ptr);
         break;
       default:
-        ERROR("src type: unknown type {}", img.pixel_format());
+        MMDEPLOY_ERROR("src type: unknown type {}", img.pixel_format());
         return Status(eNotSupported);
     }
     if (ret != 0) {
-      ERROR("color transfer from {} to BGR failed, ret {}", img.pixel_format(), ret);
+      MMDEPLOY_ERROR("color transfer from {} to BGR failed, ret {}", img.pixel_format(), ret);
       return Status(eFail);
     }
     if (arg_.to_float32) {
@@ -140,11 +140,11 @@ class PrepareImageImpl : public ::mmdeploy::PrepareImageImpl {
         BGRA2GRAY<uint8_t>(stream, src_h, src_w, src_stride, src_ptr, dst_stride, dst_ptr);
         break;
       default:
-        ERROR("src type: unknown type {}", img.pixel_format());
+        MMDEPLOY_ERROR("src type: unknown type {}", img.pixel_format());
         throw Status(eNotSupported);
     }
     if (ret != 0) {
-      ERROR("color transfer from {} to Gray failed", img.pixel_format());
+      MMDEPLOY_ERROR("color transfer from {} to Gray failed", img.pixel_format());
       throw Status(eFail);
     }
     if (arg_.to_float32) {

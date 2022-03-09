@@ -87,16 +87,16 @@ void Tensor::Reshape(const TensorShape& shape) {
 
 Result<void> Tensor::CopyFrom(const Tensor& tensor, Stream stream) {
   if (desc_.shape.empty() || tensor.desc().shape.empty()) {
-    ERROR("uninitialized tensor");
+    MMDEPLOY_ERROR("uninitialized tensor");
     return Status(eInvalidArgument);
   }
   if (!(desc_.shape == tensor.desc().shape)) {
-    ERROR("mismatched shape {} vs {}", shape_string(desc_.shape),
-          shape_string(tensor.desc().shape));
+    MMDEPLOY_ERROR("mismatched shape {} vs {}", shape_string(desc_.shape),
+                   shape_string(tensor.desc().shape));
     return Status(eShapeMismatch);
   }
   if (desc_.data_type != tensor.desc().data_type) {
-    ERROR("mismatched data type {} vs {}", desc_.data_type, tensor.desc().data_type);
+    MMDEPLOY_ERROR("mismatched data type {} vs {}", desc_.data_type, tensor.desc().data_type);
     return Status(eShapeMismatch);
   }
   Allocate();
@@ -112,17 +112,17 @@ Result<void> Tensor::CopyFrom(const Tensor& tensor, Stream stream) {
 
 Result<void> Tensor::CopyTo(Tensor& tensor, Stream stream) const {
   if (desc_.shape.empty() || tensor.desc().shape.empty()) {
-    ERROR("uninitialized tensor");
+    MMDEPLOY_ERROR("uninitialized tensor");
     return Status(eInvalidArgument);
   }
 
   if (!(desc_.shape == tensor.desc().shape)) {
-    ERROR("mismatched shape {} vs {}", shape_string(desc_.shape),
-          shape_string(tensor.desc().shape));
+    MMDEPLOY_ERROR("mismatched shape {} vs {}", shape_string(desc_.shape),
+                   shape_string(tensor.desc().shape));
     return Status(eShapeMismatch);
   }
   if (desc_.data_type != tensor.desc().data_type) {
-    ERROR("mismatched data type {} vs {}", desc_.data_type, tensor.desc().data_type);
+    MMDEPLOY_ERROR("mismatched data type {} vs {}", desc_.data_type, tensor.desc().data_type);
     return Status(eShapeMismatch);
   }
   tensor.Allocate();
@@ -140,7 +140,7 @@ Result<void> Tensor::CopyFrom(void* host_ptr, Stream stream) {
     return Status(eInvalidArgument);
   }
   if (desc_.shape.empty()) {
-    ERROR("uninitialized tensor");
+    MMDEPLOY_ERROR("uninitialized tensor");
     return Status(eInvalidArgument);
   }
   Allocate();
@@ -157,7 +157,7 @@ Result<void> Tensor::CopyTo(void* host_ptr, Stream stream) const {
     return Status(eInvalidArgument);
   }
   if (desc_.shape.empty()) {
-    ERROR("uninitialized tensor");
+    MMDEPLOY_ERROR("uninitialized tensor");
     return Status(eInvalidArgument);
   }
   if (!stream) {

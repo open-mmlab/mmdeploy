@@ -18,14 +18,14 @@ class TRTLogger : public nvinfer1::ILogger {
   void log(Severity severity, const char* msg) noexcept override {
     switch (severity) {
       case Severity::kINFO:
-        // INFO("TRTNet: {}", msg);
+        // MMDEPLOY_INFO("TRTNet: {}", msg);
         break;
       case Severity::kWARNING:
-        WARN("TRTNet: {}", msg);
+        MMDEPLOY_WARN("TRTNet: {}", msg);
         break;
       case Severity::kERROR:
       case Severity::kINTERNAL_ERROR:
-        ERROR("TRTNet: {}", msg);
+        MMDEPLOY_ERROR("TRTNet: {}", msg);
         break;
       default:
         break;
@@ -72,7 +72,7 @@ static inline Result<void> trt_try(bool code, const char* msg = nullptr, Status 
     return success();
   }
   if (msg) {
-    ERROR("{}", msg);
+    MMDEPLOY_ERROR("{}", msg);
   }
   return e;
 }
@@ -102,7 +102,7 @@ Result<void> TRTNet::Init(const Value& args) {
   auto& context = args["context"];
   device_ = context["device"].get<Device>();
   if (device_.is_host()) {
-    ERROR("TRTNet: device must be a GPU!");
+    MMDEPLOY_ERROR("TRTNet: device must be a GPU!");
     return Status(eNotSupported);
   }
   stream_ = context["stream"].get<Stream>();
@@ -129,19 +129,18 @@ Result<void> TRTNet::Init(const Value& args) {
     auto binding_name = engine_->getBindingName(i);
     auto dims = engine_->getBindingDimensions(i);
     if (engine_->isShapeBinding(i)) {
-      ERROR("shape binding is not supported.");
+      MMDEPLOY_ERROR("shape binding is not supported.");
       return Status(eNotSupported);
     }
     OUTCOME_TRY(auto dtype, MapDataType(engine_->getBindingDataType(i)));
-    TensorDesc desc{
-        .device = device_, .data_type = dtype, .shape = to_shape(dims), .name = binding_name};
+    TensorDesc desc{device_, dtype, to_shape(dims), binding_name};
     if (engine_->bindingIsInput(i)) {
-      DEBUG("input binding {} {} {}", i, binding_name, to_string(dims));
+      MMDEPLOY_DEBUG("input binding {} {} {}", i, binding_name, to_string(dims));
       input_ids_.push_back(i);
       input_names_.emplace_back(binding_name);
       input_tensors_.emplace_back(desc, Buffer());
     } else {
-      DEBUG("output binding {} {} {}", i, binding_name, to_string(dims));
+      MMDEPLOY_DEBUG("output binding {} {} {}", i, binding_name, to_string(dims));
       output_ids_.push_back(i);
       output_names_.emplace_back(binding_name);
       output_tensors_.emplace_back(desc, Buffer());
@@ -169,17 +168,17 @@ Result<void> TRTNet::Reshape(Span<TensorShape> input_shapes) {
   }
   for (int i = 0; i < input_tensors_.size(); ++i) {
     auto dims = to_dims(input_shapes[i]);
-    //    ERROR("input shape: {}", to_string(dims));
+    //    MMDEPLOY_ERROR("input shape: {}", to_string(dims));
     TRT_TRY(context_->setBindingDimensions(input_ids_[i], dims));
     input_tensors_[i].Reshape(input_shapes[i]);
   }
   if (!context_->allInputDimensionsSpecified()) {
-    ERROR("not all input dimensions specified");
+    MMDEPLOY_ERROR("not all input dimensions specified");
     return Status(eFail);
   }
   for (int i = 0; i < output_tensors_.size(); ++i) {
     auto dims = context_->getBindingDimensions(output_ids_[i]);
-    //    ERROR("output shape: {}", to_string(dims));
+    //    MMDEPLOY_ERROR("output shape: {}", to_string(dims));
     output_tensors_[i].Reshape(to_shape(dims));
   }
   return success();

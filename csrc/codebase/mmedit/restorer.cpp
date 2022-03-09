@@ -32,8 +32,8 @@ class TensorToImg : public MMEdit {
       mat_hwc.convertTo(rescale_uint8, CV_8UC(channels), 255.f);
       return mat;
     } else {
-      ERROR("unsupported `output` tensor, shape: {}, dtype: {}", upscale.shape(),
-            (int)upscale.data_type());
+      MMDEPLOY_ERROR("unsupported `output` tensor, shape: {}, dtype: {}", upscale.shape(),
+                     (int)upscale.data_type());
       return Status(eNotSupported);
     }
   }
