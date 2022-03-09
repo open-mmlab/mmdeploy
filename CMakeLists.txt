@@ -104,6 +104,10 @@ if (MMDEPLOY_BUILD_SDK)
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/loader.cpp.in
             DESTINATION lib/cmake/MMDeploy
             )
+    install(DIRECTORY
+            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules
+            DESTINATION lib/cmake/MMDeploy
+            )
 
     install(DIRECTORY ${CMAKE_SOURCE_DIR}/demo/csrc/ DESTINATION example)
 endif ()
