@@ -23,6 +23,12 @@ class MMDEPLOY_API TransformImpl : public Module {
   Stream stream_;
 };
 
+template <typename Key, typename Val>
+void SetTransformData(Value& dst, Key&& key, Val val) {
+  dst[std::forward<Key>(key)] = val;
+  dst["__data__"].push_back(std::move(val));
+}
+
 class MMDEPLOY_API Transform : public Module {
  public:
   ~Transform() override = default;

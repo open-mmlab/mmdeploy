@@ -69,10 +69,12 @@ Result<Value> PadImpl::Process(const Value& input) {
       output["pad_fixed_size"].push_back(arg_.size[0]);
       output["pad_fixed_size"].push_back(arg_.size[1]);
     }
-    output[key] = output_tensor;
+
     for (auto& v : output_tensor.desc().shape) {
       output["pad_shape"].push_back(v);
     }
+
+    SetTransformData(output, key, std::move(output_tensor));
   }
 
   MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));

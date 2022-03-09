@@ -47,7 +47,6 @@ Result<Value> CenterCropImpl::Process(const Value& input) {
 
     auto& shape = dst_tensor.desc().shape;
 
-    output[key] = dst_tensor;
     output["img_shape"] = {shape[0], shape[1], shape[2], shape[3]};
     if (input.contains("scale_factor")) {
       // image has been processed by `Resize` transform before.
@@ -61,6 +60,8 @@ Result<Value> CenterCropImpl::Process(const Value& input) {
       output["offset"].push_back(x1);
       output["offset"].push_back(y1);
     }
+
+    SetTransformData(output, key, std::move(dst_tensor));
   }
 
   MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));

@@ -50,6 +50,11 @@ class ValueRef;
 template <typename T>
 class ValueIterator {
  public:
+  using value_type = Value;
+  using difference_type = std::ptrdiff_t;
+  using pointer = value_type*;
+  using reference = value_type&;
+  using iterator_category = std::bidirectional_iterator_tag;
   using object_iterator_t = typename T::Object::iterator;
   using array_iterator_t = typename T::Array::iterator;
   ValueIterator() = default;

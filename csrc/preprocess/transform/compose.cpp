@@ -34,14 +34,17 @@ Compose::Compose(const Value& args, int version) : Transform(args) {
 
 Result<Value> Compose::Process(const Value& input) {
   Value output = input;
+  Value::Array intermediates;
   for (auto& transform : transforms_) {
-    auto t = transform->Process(output);
-    OUTCOME_TRY(stream_.Wait());
-    if (!t) {
-      return t;
+    OUTCOME_TRY(auto t, transform->Process(output));
+    if (auto it = t.find("__data__"); it != t.end()) {
+      // move from the result so no copy will be needed later
+      std::move(it->begin(), it->end(), std::back_inserter(intermediates));
+      *it = Value::Array{};
     }
-    output = std::move(t).value();
+    output = std::move(t);
   }
+  OUTCOME_TRY(stream_.Wait());
   return std::move(output);
 }
 
