@@ -459,6 +459,7 @@ def get_backend_outputs(onnx_file_path: str,
         import mmdeploy.apis.openvino as openvino_apis
         if not openvino_apis.is_available():
             return None
+        from mmdeploy.apis.openvino import get_mo_options_from_cfg
         openvino_work_dir = tempfile.TemporaryDirectory().name
         openvino_file_path = openvino_apis.get_output_model_file(
             onnx_file_path, openvino_work_dir)
@@ -466,8 +467,9 @@ def get_backend_outputs(onnx_file_path: str,
             name: value.shape
             for name, value in flatten_model_inputs.items()
         }
+        mo_options = get_mo_options_from_cfg(deploy_cfg)
         openvino_apis.onnx2openvino(input_info, output_names, onnx_file_path,
-                                    openvino_work_dir, deploy_cfg)
+                                    openvino_work_dir, mo_options)
         backend_files = [openvino_file_path]
         backend_feats = flatten_model_inputs
         device = 'cpu'

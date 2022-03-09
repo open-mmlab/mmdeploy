@@ -2,13 +2,13 @@
 import os.path as osp
 import subprocess
 from subprocess import PIPE, CalledProcessError, run
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
 import mmcv
 import torch
 
 from mmdeploy.utils import get_root_logger
-from mmdeploy.utils.config_utils import get_backend_config, load_config
+from .utils import ModelOptimizerOptions
 
 
 def get_mo_command() -> str:
@@ -39,26 +39,6 @@ def get_mo_command() -> str:
     return mo_command
 
 
-def get_mo_args(backend_config: mmcv.Config) -> str:
-    """Creates a string with additional arguments for the Model Optimizer from
-    the deployment config.
-
-    Args:
-        backend_config (mmcv.Config): Deployment config.
-
-    Returns:
-        str: The string with additional arguments for the Model Optimizer.
-    """
-    mo_args = ''
-    if 'mo_args' in backend_config:
-        for key, value in backend_config['mo_args'].items():
-            value_str = f'"{value}"' if isinstance(value, list) else value
-            mo_args += f'{key}={value_str} '
-    if 'mo_flags' in backend_config:
-        mo_args += ' '.join(backend_config['mo_flags'])
-    return mo_args
-
-
 def get_output_model_file(onnx_path: str, work_dir: str) -> str:
     """Returns the path to the .xml file with export result.
 
@@ -79,7 +59,7 @@ def onnx2openvino(input_info: Dict[str, Union[List[int], torch.Size]],
                   output_names: List[str],
                   onnx_path: str,
                   work_dir: str,
-                  deploy_cfg: Union[None, str, mmcv.Config] = None):
+                  mo_options: Optional[ModelOptimizerOptions] = None):
     """Convert ONNX to OpenVINO.
 
     Args:
@@ -88,8 +68,8 @@ def onnx2openvino(input_info: Dict[str, Union[List[int], torch.Size]],
         output_names (List[str]): Output names. Example: ['dets', 'labels'].
         onnx_path (str): The path to the onnx model.
         work_dir (str): The path to the directory for saving the results.
-        deploy_cfg (None | str | mmcv.Config): Deployment config. Using it,
-            you can specify additional parameters for the Model Optimizer.
+        mo_options (None | ModelOptimizerOptions): The class with
+            additional arguments for the Model Optimizer.
     """
     input_names = ','.join(input_info.keys())
     input_shapes = ','.join(str(list(elem)) for elem in input_info.values())
@@ -106,10 +86,8 @@ def onnx2openvino(input_info: Dict[str, Union[List[int], torch.Size]],
               f'--output="{output}" ' \
               f'--input="{input_names}" ' \
               f'--input_shape="{input_shapes}" '
-    if deploy_cfg is not None:
-        deploy_cfg = load_config(deploy_cfg)[0]
-        backend_config = get_backend_config(deploy_cfg)
-        mo_args += get_mo_args(backend_config)
+    if mo_options is not None:
+        mo_args += mo_options.get_options()
 
     command = f'{mo_command} {mo_args}'
 

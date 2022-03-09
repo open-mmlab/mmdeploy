@@ -70,9 +70,9 @@ def get_deploy_cfg_with_mo_args():
         dict(
             backend_config=dict(
                 type='openvino',
-                mo_args={'--data_type': 'FP32'},
-                mo_flags=['--disable_fusing'],
-            )))
+                mo_options=dict(
+                    args={'--data_type': 'FP32'}, flags=['--disable_fusing'
+                                                         ]))))
     return deploy_cfg
 
 
@@ -81,7 +81,8 @@ def get_deploy_cfg_with_mo_args():
     [lambda: None, get_base_deploy_cfg, get_deploy_cfg_with_mo_args])
 @backend_checker(Backend.OPENVINO)
 def test_onnx2openvino(get_deploy_cfg):
-    from mmdeploy.apis.openvino import get_output_model_file, onnx2openvino
+    from mmdeploy.apis.openvino import (get_mo_options_from_cfg,
+                                        get_output_model_file, onnx2openvino)
     pytorch_model = TestModel().eval()
     export_img = torch.rand([1, 3, 8, 8])
     onnx_file = tempfile.NamedTemporaryFile(suffix='.onnx').name
@@ -94,8 +95,9 @@ def test_onnx2openvino(get_deploy_cfg):
     output_names = [output_name]
     openvino_dir = tempfile.TemporaryDirectory().name
     deploy_cfg = get_deploy_cfg()
+    mo_options = get_mo_options_from_cfg(deploy_cfg)
     onnx2openvino(input_info, output_names, onnx_file, openvino_dir,
-                  deploy_cfg)
+                  mo_options)
     openvino_model_path = get_output_model_file(onnx_file, openvino_dir)
     assert osp.exists(openvino_model_path), \
         'The file (.xml) for OpenVINO IR has not been created.'

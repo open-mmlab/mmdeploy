@@ -66,17 +66,19 @@ the RoiAlign operation is replaced with the [ExperimentalDetectronROIFeatureExtr
 ### Deployment config
 
 With the deployment config, you can specify additional options for the Model Optimizer.
-To do this, add the necessary parameters to the `backend_config` in the fields `mo_args` (for parameters with values) and `mo_flags` (for flags).
+To do this, add the necessary parameters to the `backend_config.mo_options` in the fields `args` (for parameters with values) and `flags` (for flags).
 
 Example:
-```bash
+```python
 backend_config = dict(
-    mo_args=dict({
-        '--mean_values': [0, 0, 0],
-        '--scale_values': [255, 255, 255],
-        '--data_type': 'FP32',
-    }),
-    mo_flags=['--disable_fusing'],
+    mo_options=dict(
+        args=dict({
+            '--mean_values': [0, 0, 0],
+            '--scale_values': [255, 255, 255],
+            '--data_type': 'FP32',
+        }),
+        flags=['--disable_fusing'],
+    )
 )
 ```
 
