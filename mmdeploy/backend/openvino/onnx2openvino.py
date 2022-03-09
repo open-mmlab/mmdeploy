@@ -65,6 +65,7 @@ def onnx2openvino(input_info: Dict[str, Union[List[int], torch.Size]],
         >>> onnx_path = 'work_dir/end2end.onnx'
         >>> work_dir = 'work_dir'
         >>> onnx2openvino(input_info, output_names, onnx_path, work_dir)
+
     Args:
         input_info (Dict[str, Union[List[int], torch.Size]]):
             The shape of each input.
