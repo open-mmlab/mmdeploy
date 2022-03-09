@@ -31,16 +31,22 @@ Result<Value> DefaultFormatBundleImpl::Process(const Value& input) {
 
   Tensor tensor = output["img"].get<Tensor>();
   // set default meta keys
-  for (auto v : tensor.shape()) {
-    output["pad_shape"].push_back(v);
+  if (!output.contains("pad_shape")) {
+    for (auto v : tensor.shape()) {
+      output["pad_shape"].push_back(v);
+    }
   }
-  output["scale_factor"].push_back(1.0);
-  int channel = tensor.shape()[3];
-  for (int i = 0; i < channel; i++) {
-    output["img_norm_cfg"]["mean"].push_back(0.0);
-    output["img_norm_cfg"]["std"].push_back(1.0);
+  if (!output.contains("scale_factor")) {
+    output["scale_factor"].push_back(1.0);
   }
-  output["img_norm_cfg"]["to_rgb"] = false;
+  if (!output.contains("img_norm_cfg")) {
+    int channel = tensor.shape()[3];
+    for (int i = 0; i < channel; i++) {
+      output["img_norm_cfg"]["mean"].push_back(0.0);
+      output["img_norm_cfg"]["std"].push_back(1.0);
+    }
+    output["img_norm_cfg"]["to_rgb"] = false;
+  }
 
   // transpose
   OUTCOME_TRY(output["img"], HWC2CHW(tensor));
