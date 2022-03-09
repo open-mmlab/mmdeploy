@@ -16,12 +16,13 @@ static const char *PLUGIN_NAME{"MMCVMultiLevelRoiAlign"};
 }  // namespace
 
 TRTMultiLevelRoiAlign::TRTMultiLevelRoiAlign(const std::string &name, int alignedHeight,
-                                             int alignedWidth, int sampleNum,
+                                             int alignedWidth, int poolMode, int sampleNum,
                                              const std::vector<float> &featmapStrides,
                                              float roiScaleFactor, int finestScale, bool aligned)
     : TRTPluginBase(name),
       mAlignedHeight(alignedHeight),
       mAlignedWidth(alignedWidth),
+      mPoolMode(poolMode),
       mSampleNum(sampleNum),
       mFeatmapStrides(featmapStrides),
       mRoiScaleFactor(roiScaleFactor),
@@ -33,6 +34,7 @@ TRTMultiLevelRoiAlign::TRTMultiLevelRoiAlign(const std::string name, const void 
     : TRTPluginBase(name) {
   deserialize_value(&data, &length, &mAlignedHeight);
   deserialize_value(&data, &length, &mAlignedWidth);
+  deserialize_value(&data, &length, &mPoolMode);
   deserialize_value(&data, &length, &mSampleNum);
   deserialize_value(&data, &length, &mRoiScaleFactor);
   deserialize_value(&data, &length, &mFinestScale);
@@ -42,7 +44,7 @@ TRTMultiLevelRoiAlign::TRTMultiLevelRoiAlign(const std::string name, const void 
 
 nvinfer1::IPluginV2DynamicExt *TRTMultiLevelRoiAlign::clone() const TRT_NOEXCEPT {
   TRTMultiLevelRoiAlign *plugin =
-      new TRTMultiLevelRoiAlign(mLayerName, mAlignedHeight, mAlignedWidth, mSampleNum,
+      new TRTMultiLevelRoiAlign(mLayerName, mAlignedHeight, mAlignedWidth, mPoolMode, mSampleNum,
                                 mFeatmapStrides, mRoiScaleFactor, mFinestScale, mAligned);
   plugin->setPluginNamespace(getPluginNamespace());
 
@@ -113,8 +115,8 @@ int TRTMultiLevelRoiAlign::enqueue(const nvinfer1::PluginTensorDesc *inputDesc,
 
   multi_level_roi_align<float>((float *)outputs[0], (const float *)rois, num_rois, feats, num_feats,
                                batch_size, channels, &heights[0], &widths[0], &strides[0],
-                               mAlignedHeight, mAlignedWidth, mSampleNum, mRoiScaleFactor,
-                               mFinestScale, mAligned, stream);
+                               mAlignedHeight, mAlignedWidth, mPoolMode, mSampleNum,
+                               mRoiScaleFactor, mFinestScale, mAligned, stream);
 
   return 0;
 }
@@ -134,7 +136,7 @@ int TRTMultiLevelRoiAlign::getNbOutputs() const TRT_NOEXCEPT { return 1; }
 
 size_t TRTMultiLevelRoiAlign::getSerializationSize() const TRT_NOEXCEPT {
   return serialized_size(mFeatmapStrides) + serialized_size(mAlignedHeight) +
-         serialized_size(mAlignedWidth) + serialized_size(mSampleNum) +
+         serialized_size(mAlignedWidth) + serialized_size(mPoolMode) + serialized_size(mSampleNum) +
          serialized_size(mRoiScaleFactor) + serialized_size(mFinestScale) +
          serialized_size(mAligned);
 }
@@ -142,6 +144,7 @@ size_t TRTMultiLevelRoiAlign::getSerializationSize() const TRT_NOEXCEPT {
 void TRTMultiLevelRoiAlign::serialize(void *buffer) const TRT_NOEXCEPT {
   serialize_value(&buffer, mAlignedHeight);
   serialize_value(&buffer, mAlignedWidth);
+  serialize_value(&buffer, mPoolMode);
   serialize_value(&buffer, mSampleNum);
   serialize_value(&buffer, mRoiScaleFactor);
   serialize_value(&buffer, mFinestScale);
@@ -152,9 +155,9 @@ void TRTMultiLevelRoiAlign::serialize(void *buffer) const TRT_NOEXCEPT {
 TRTMultiLevelRoiAlignCreator::TRTMultiLevelRoiAlignCreator() {
   mPluginAttributes = std::vector<nvinfer1::PluginField>(
       {nvinfer1::PluginField("output_height"), nvinfer1::PluginField("output_width"),
-       nvinfer1::PluginField("sampling_ratio"), nvinfer1::PluginField("featmap_strides"),
-       nvinfer1::PluginField("roi_scale_factor"), nvinfer1::PluginField("finest_scale"),
-       nvinfer1::PluginField("aligned")});
+       nvinfer1::PluginField("pool_mode"), nvinfer1::PluginField("sampling_ratio"),
+       nvinfer1::PluginField("featmap_strides"), nvinfer1::PluginField("roi_scale_factor"),
+       nvinfer1::PluginField("finest_scale"), nvinfer1::PluginField("aligned")});
   mFC.nbFields = mPluginAttributes.size();
   mFC.fields = mPluginAttributes.data();
 }
@@ -169,6 +172,7 @@ nvinfer1::IPluginV2 *TRTMultiLevelRoiAlignCreator::createPlugin(
     const char *name, const nvinfer1::PluginFieldCollection *fc) TRT_NOEXCEPT {
   int alignedHeight = 7;
   int alignedWidth = 7;
+  int poolMode = 0;
   int sampleNum = 2;
   std::vector<float> featmapStrides;
   float roiScaleFactor = -1;
@@ -185,6 +189,8 @@ nvinfer1::IPluginV2 *TRTMultiLevelRoiAlignCreator::createPlugin(
       alignedHeight = static_cast<const int *>(fc->fields[i].data)[0];
     } else if (field_name.compare("output_width") == 0) {
       alignedWidth = static_cast<const int *>(fc->fields[i].data)[0];
+    } else if (field_name.compare("pool_mode") == 0) {
+      poolMode = static_cast<const int *>(fc->fields[i].data)[0];
     } else if (field_name.compare("sampling_ratio") == 0) {
       sampleNum = static_cast<const int *>(fc->fields[i].data)[0];
     } else if (field_name.compare("roi_scale_factor") == 0) {
@@ -204,8 +210,8 @@ nvinfer1::IPluginV2 *TRTMultiLevelRoiAlignCreator::createPlugin(
   ASSERT(featmapStrides.size() != 0);
 
   TRTMultiLevelRoiAlign *plugin =
-      new TRTMultiLevelRoiAlign(name, alignedHeight, alignedWidth, sampleNum, featmapStrides,
-                                roiScaleFactor, finestScale, aligned);
+      new TRTMultiLevelRoiAlign(name, alignedHeight, alignedWidth, poolMode, sampleNum,
+                                featmapStrides, roiScaleFactor, finestScale, aligned);
   plugin->setPluginNamespace(getPluginNamespace());
   return plugin;
 }

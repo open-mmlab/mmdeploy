@@ -1,4 +1,5 @@
 // Copyright (c) OpenMMLab. All rights reserved.
+#include <float.h>
 #include <stdio.h>
 
 #include <algorithm>
@@ -19,7 +20,7 @@ struct FeatData {
   int num_featmap;
 };
 
-template <typename scalar_t, bool aligned>
+template <typename scalar_t, bool aligned, int pool_mode>
 __device__ scalar_t roi_align_single(const scalar_t *__restrict__ bottom_data,
                                      const int roi_batch_ind, const scalar_t roi_start_w,
                                      const scalar_t roi_start_h, const scalar_t roi_end_w,
@@ -40,7 +41,7 @@ __device__ scalar_t roi_align_single(const scalar_t *__restrict__ bottom_data,
   const int sample_num_h = (sample_num > 0) ? sample_num : ceil(roi_height / pooled_height);
   const int sample_num_w = (sample_num > 0) ? sample_num : ceil(roi_width / pooled_width);
 
-  scalar_t output_val = 0;
+  scalar_t output_val = (pool_mode == 0) ? -FLT_MAX : 0;
   const scalar_t y_offset = roi_start_h + ph * bin_size_h;
   const scalar_t y_scale = bin_size_h / (scalar_t)(sample_num_h);
   const scalar_t x_offset = roi_start_w + pw * bin_size_w;
@@ -50,10 +51,16 @@ __device__ scalar_t roi_align_single(const scalar_t *__restrict__ bottom_data,
     for (int ix = 0; ix < sample_num_w; ix++) {
       const scalar_t x = fma(scalar_t(ix) + scalar_t(.5f), x_scale, x_offset);
       scalar_t val = bilinear_interpolate<scalar_t>(offset_bottom_data, height, width, y, x);
-      output_val += val;
+      if (pool_mode == 0) {
+        output_val = max(output_val, val);
+      } else {
+        output_val += val;
+      }
     }
   }
-  output_val /= max(sample_num_h * sample_num_w, 1);
+  if (pool_mode != 0) {
+    output_val /= max(sample_num_h * sample_num_w, 1);
+  }
 
   return output_val;
 }
@@ -61,9 +68,10 @@ __device__ scalar_t roi_align_single(const scalar_t *__restrict__ bottom_data,
 template <typename scalar_t, bool aligned>
 __global__ void roi_extractor_kernel(scalar_t *__restrict__ output,
                                      const scalar_t *__restrict__ bottom_rois, FeatData feat_data,
-                                     const int sample_num, const float roi_scale_factor,
-                                     const int finest_scale, const int pooled_height,
-                                     const int pooled_width, int nThreads) {
+                                     const int pool_mode, const int sample_num,
+                                     const float roi_scale_factor, const int finest_scale,
+                                     const int pooled_height, const int pooled_width,
+                                     int nThreads) {
   CUDA_1D_KERNEL_LOOP(index, nThreads) {
     const int channels = feat_data.channels;
     int tmp_index = index;
@@ -118,18 +126,24 @@ __global__ void roi_extractor_kernel(scalar_t *__restrict__ output,
     const scalar_t roi_end_h =
         fma(roi_offset_y1, spatial_scale, offset);  // (roi_offset_y1)*spatial_scale - offset;
 
-    const scalar_t output_val = roi_align_single<scalar_t, aligned>(
-        bottom_data, roi_batch_ind, roi_start_w, roi_start_h, roi_end_w, roi_end_h, spatial_scale,
-        pw, ph, c, sample_num, channels, height, width, pooled_height, pooled_width);
-
-    output[index] = output_val;
+    if (pool_mode == 0) {
+      const scalar_t output_val = roi_align_single<scalar_t, aligned, 0>(
+          bottom_data, roi_batch_ind, roi_start_w, roi_start_h, roi_end_w, roi_end_h, spatial_scale,
+          pw, ph, c, sample_num, channels, height, width, pooled_height, pooled_width);
+      output[index] = output_val;
+    } else {
+      const scalar_t output_val = roi_align_single<scalar_t, aligned, 1>(
+          bottom_data, roi_batch_ind, roi_start_w, roi_start_h, roi_end_w, roi_end_h, spatial_scale,
+          pw, ph, c, sample_num, channels, height, width, pooled_height, pooled_width);
+      output[index] = output_val;
+    }
   }
 }
 
 template <typename T>
 void multi_level_roi_align(T *output, const T *rois, int num_rois, const void *const *feats,
                            int num_feats, int n, int c, int *h, int *w, float *strides,
-                           int aligned_height, int aligned_width, int sample_num,
+                           int aligned_height, int aligned_width, int pool_mode, int sample_num,
                            float roi_scale_factor, int finest_scale, bool aligned,
                            cudaStream_t stream) {
   FeatData feat_data;
@@ -145,18 +159,18 @@ void multi_level_roi_align(T *output, const T *rois, int num_rois, const void *c
   int nThreads = num_rois * c * aligned_height * aligned_width;
   if (aligned) {
     roi_extractor_kernel<T, true><<<GET_BLOCKS(nThreads), THREADS_PER_BLOCK, 0, stream>>>(
-        output, rois, feat_data, sample_num, roi_scale_factor, finest_scale, aligned_height,
-        aligned_width, nThreads);
+        output, rois, feat_data, pool_mode, sample_num, roi_scale_factor, finest_scale,
+        aligned_height, aligned_width, nThreads);
   } else {
     roi_extractor_kernel<T, false><<<GET_BLOCKS(nThreads), THREADS_PER_BLOCK, 0, stream>>>(
-        output, rois, feat_data, sample_num, roi_scale_factor, finest_scale, aligned_height,
-        aligned_width, nThreads);
+        output, rois, feat_data, pool_mode, sample_num, roi_scale_factor, finest_scale,
+        aligned_height, aligned_width, nThreads);
   }
 }
 
 template void multi_level_roi_align<float>(float *output, const float *rois, int num_rois,
                                            const void *const *feats, int num_feats, int n, int c,
                                            int *h, int *w, float *strides, int aligned_height,
-                                           int aligned_width, int sample_num,
+                                           int aligned_width, int pool_mode, int sample_num,
                                            float roi_scale_factor, int finest_scale, bool aligned,
                                            cudaStream_t stream);
