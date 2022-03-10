@@ -12,9 +12,16 @@ ENV FORCE_CUDA="1"
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-### change the source in the ubuntu image to Alibaba source
-RUN sed -i s/archive.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list && \
-    sed -i s/security.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list
+### change the system source for install libs
+ARG USE_SRC_INSIDE
+RUN if [ -z ${USE_SRC_INSIDE}] ; \
+    then \
+        echo "Use official source for install libs" ; \
+    else \
+        sed -i s/archive.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list && \
+        sed -i s/security.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list \
+        echo "Use aliyun source for install libs" ; \
+    fi
 
 ### update apt and install libs
 RUN apt-get update &&\
