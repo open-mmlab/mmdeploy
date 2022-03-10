@@ -23,11 +23,6 @@ class MMDEPLOY_API TransformImpl : public Module {
   Stream stream_;
 };
 
-template <typename Key, typename Val>
-void SetTransformData(Value& dst, Key&& key, Val val) {
-  dst[std::forward<Key>(key)] = val;
-  dst["__data__"].push_back(std::move(val));
-}
 
 class MMDEPLOY_API Transform : public Module {
  public:
@@ -70,6 +65,12 @@ class MMDEPLOY_API Transform : public Module {
   std::string runtime_platform_;
   std::vector<std::string> candidate_platforms_;
 };
+
+template <typename Key, typename Val>
+void SetTransformData(Value& dst, Key&& key, Val val) {
+  dst[std::forward<Key>(key)] = val;
+  dst["__data__"].push_back(val);
+}
 
 MMDEPLOY_DECLARE_REGISTRY(Transform);
 

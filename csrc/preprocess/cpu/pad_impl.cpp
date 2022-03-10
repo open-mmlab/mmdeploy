@@ -26,6 +26,10 @@ class PadImpl : public ::mmdeploy::PadImpl {
  protected:
   Result<Tensor> PadImage(const Tensor& img, const std::array<int, 4>& padding) override {
     OUTCOME_TRY(auto tensor, MakeAvailableOnDevice(img, device_, stream_));
+
+    ForceSync sync(stream_, tensor);
+    sync.set_active(tensor.buffer() != img.buffer());
+
     cv::Mat dst_mat = Pad(Tensor2CVMat(tensor), padding[1], padding[0], padding[3], padding[2],
                           border_type_, arg_.pad_val);
     return CVMat2Tensor(dst_mat);

@@ -18,6 +18,9 @@ class CenterCropImpl : public ::mmdeploy::CenterCropImpl {
                            int right) override {
     OUTCOME_TRY(auto src_tensor, MakeAvailableOnDevice(tensor, device_, stream_));
 
+    ForceSync sync(stream_, src_tensor);
+    sync.set_active(src_tensor.buffer() != tensor.buffer());
+
     cv::Mat mat = Tensor2CVMat(src_tensor);
     cv::Mat cropped_mat = Crop(mat, top, left, bottom, right);
     return CVMat2Tensor(cropped_mat);

@@ -18,6 +18,10 @@ class ImageToTensorImpl final : public ::mmdeploy::ImageToTensorImpl {
  protected:
   Result<Tensor> HWC2CHW(const Tensor& tensor) override {
     OUTCOME_TRY(auto src_tensor, MakeAvailableOnDevice(tensor, device_, stream_));
+
+    ForceSync sync(stream_, src_tensor);
+    sync.set_active(src_tensor.buffer() != tensor.buffer());
+
     auto h = tensor.shape(1);
     auto w = tensor.shape(2);
     auto c = tensor.shape(3);
