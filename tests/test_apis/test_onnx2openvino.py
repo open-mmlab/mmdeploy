@@ -76,9 +76,8 @@ def get_deploy_cfg_with_mo_args():
     return deploy_cfg
 
 
-@pytest.mark.parametrize(
-    'get_deploy_cfg',
-    [lambda: None, get_base_deploy_cfg, get_deploy_cfg_with_mo_args])
+@pytest.mark.parametrize('get_deploy_cfg',
+                         [get_base_deploy_cfg, get_deploy_cfg_with_mo_args])
 @backend_checker(Backend.OPENVINO)
 def test_onnx2openvino(get_deploy_cfg):
     from mmdeploy.apis.openvino import (get_mo_options_from_cfg,

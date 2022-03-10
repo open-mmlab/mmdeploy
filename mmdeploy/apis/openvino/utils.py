@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 import mmcv
 
@@ -53,20 +53,17 @@ def get_input_info_from_cfg(deploy_cfg: mmcv.Config) -> Dict[str, List]:
     return input_info
 
 
-def get_mo_options_from_cfg(
-        deploy_cfg: Optional[mmcv.Config]) -> ModelOptimizerOptions:
+def get_mo_options_from_cfg(deploy_cfg: mmcv.Config) -> ModelOptimizerOptions:
     """Get additional parameters for the Model Optimizer from the deploy
     config.
 
     Args:
-        deploy_cfg (None | mmcv.Config): Deployment config.
+        deploy_cfg (mmcv.Config): Deployment config.
 
     Returns:
         ModelOptimizerOptions: A class that will contain additional arguments.
     """
-    mo_options = None
-    if deploy_cfg:
-        backend_config = get_backend_config(deploy_cfg)
-        mo_options = backend_config.get('mo_options', None)
+    backend_config = get_backend_config(deploy_cfg)
+    mo_options = backend_config.get('mo_options', None)
     mo_options = ModelOptimizerOptions(mo_options)
     return mo_options
