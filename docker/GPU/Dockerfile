@@ -12,6 +12,10 @@ ENV FORCE_CUDA="1"
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+### change the source in the ubuntu image to Alibaba source
+RUN sed -i s/archive.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list && \
+    sed -i s/security.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list
+
 ### update apt and install libs
 RUN apt-get update &&\
     apt-get install -y vim libsm6 libxext6 libxrender-dev libgl1-mesa-glx git wget libssl-dev libopencv-dev libspdlog-dev --no-install-recommends &&\
