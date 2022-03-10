@@ -68,13 +68,13 @@ Result<Value> PadImpl::Process(const Value& input) {
       output["pad_fixed_size"].push_back(arg_.size[1]);
     }
 
-    if (std::count(begin(padding), end(padding), 0) == 4) {
+    if (std::count(begin(padding), end(padding), 0) != 4) {
       OUTCOME_TRY(output_tensor, PadImage(tensor, padding));
     } else {
       output_tensor = tensor;
     }
 
-    for (auto& v : output_tensor.desc().shape) {
+    for (auto& v : output_tensor.shape()) {
       output["pad_shape"].push_back(v);
     }
 
