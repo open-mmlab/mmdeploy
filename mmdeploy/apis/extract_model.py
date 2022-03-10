@@ -23,6 +23,30 @@ def extract_model(model: Union[str, onnx.ModelProto],
     The sub-model is defined by the names of the input and output tensors
     exactly.
 
+    Examples:
+        >>> from mmdeploy.apis import extract_model
+        >>> model = 'work_dir/fastrcnn.onnx'
+        >>> start = 'detector:input'
+        >>> end = ['extract_feat:output', 'multiclass_nms[0]:input']
+        >>> dynamic_axes = {
+            'input': {
+                0: 'batch',
+                2: 'height',
+                3: 'width'
+            },
+            'scores': {
+                0: 'batch',
+                1: 'num_boxes',
+            },
+            'boxes': {
+                0: 'batch',
+                1: 'num_boxes',
+            }
+        }
+        >>> save_file = 'partition_model.onnx'
+        >>> extract_model(model, start, end, dynamic_axes=dynamic_axes, \
+                save_file=save_file)
+
     Args:
         model (str | onnx.ModelProto): Input ONNX model to be extracted.
         start (str | Sequence[str]): Start marker(s) to extract.
