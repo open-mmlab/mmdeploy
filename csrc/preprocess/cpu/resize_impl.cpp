@@ -20,8 +20,7 @@ class ResizeImpl final : public ::mmdeploy::ResizeImpl {
   Result<Tensor> ResizeImage(const Tensor& img, int dst_h, int dst_w) override {
     OUTCOME_TRY(auto src_tensor, MakeAvailableOnDevice(img, device_, stream_));
 
-    ForceSync sync(stream_, src_tensor);
-    sync.set_active(src_tensor.buffer() != img.buffer());
+    SyncOnScopeExit sync(stream_, src_tensor.buffer() != img.buffer(), src_tensor);
 
     auto src_mat = Tensor2CVMat(src_tensor);
     auto dst_mat = Resize(src_mat, dst_h, dst_w, arg_.interpolation);

@@ -28,7 +28,7 @@ Result<Tensor> MakeAvailableOnDevice(const Tensor& src, const Device& device, St
   return dst;
 }
 
-ForceSync::~ForceSync() {
+SyncOnScopeExit::~SyncOnScopeExit() {
   if (active_ && stream_) {
     if (!stream_.Wait()) {
       MMDEPLOY_ERROR("Implicit stream synchronization failed.");

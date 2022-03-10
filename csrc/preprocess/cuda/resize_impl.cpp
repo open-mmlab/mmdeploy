@@ -24,8 +24,7 @@ class ResizeImpl final : public ::mmdeploy::ResizeImpl {
   Result<Tensor> ResizeImage(const Tensor& tensor, int dst_h, int dst_w) override {
     OUTCOME_TRY(auto src_tensor, MakeAvailableOnDevice(tensor, device_, stream_));
 
-    ForceSync sync(stream_, src_tensor);
-    sync.set_active(src_tensor.buffer() != tensor.buffer());
+    SyncOnScopeExit sync(stream_, src_tensor.buffer() != tensor.buffer(), src_tensor);
 
     TensorDesc dst_desc{
         device_, src_tensor.data_type(), {1, dst_h, dst_w, src_tensor.shape(3)}, src_tensor.name()};

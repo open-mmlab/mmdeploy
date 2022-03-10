@@ -3,6 +3,8 @@
 #ifndef MMDEPLOY_TRANSFORM_UTILS_H
 #define MMDEPLOY_TRANSFORM_UTILS_H
 
+#include <utility>
+
 #include "core/mat.h"
 #include "core/tensor.h"
 
@@ -27,16 +29,16 @@ MMDEPLOY_API Result<Mat> MakeAvailableOnDevice(const Mat& src, const Device& dev
 MMDEPLOY_API Result<Tensor> MakeAvailableOnDevice(const Tensor& src, const Device& device,
                                                   Stream& stream);
 
-class ForceSync {
+class SyncOnScopeExit {
  public:
-  template <typename...Ts>
-  explicit ForceSync(Stream& stream, Ts&...) noexcept: stream_(stream) {}
+  template <typename... Ts>
+  explicit SyncOnScopeExit(Stream& stream, bool active, Ts&&...) noexcept
+      : stream_(stream), active_(active) {}
 
-  void set_active(bool active) noexcept { active_ = active; }
-  
-  ~ForceSync();
+  ~SyncOnScopeExit();
+
  private:
-  bool active_ = true;
+  bool active_;
   Stream& stream_;
 };
 

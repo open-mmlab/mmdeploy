@@ -38,9 +38,8 @@ Result<Value> Compose::Process(const Value& input) {
   for (auto& transform : transforms_) {
     OUTCOME_TRY(auto t, transform->Process(output));
     if (auto it = t.find("__data__"); it != t.end()) {
-      // move from the result so no copy will be needed later
       std::move(it->begin(), it->end(), std::back_inserter(intermediates));
-      *it = Value::Array{};
+      it->array().clear();
     }
     output = std::move(t);
   }

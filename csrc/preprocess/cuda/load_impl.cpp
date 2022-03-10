@@ -39,7 +39,7 @@ class PrepareImageImpl : public ::mmdeploy::PrepareImageImpl {
     cudaStream_t stream = ::mmdeploy::GetNative<cudaStream_t>(stream_);
     Mat dst_mat(src_mat.height(), src_mat.width(), PixelFormat::kBGR, src_mat.type(), device_);
 
-    ForceSync sync(stream_, src_mat, dst_mat);
+    SyncOnScopeExit sync(stream_, true, src_mat, dst_mat);
 
     ppl::common::RetCode ret = 0;
 
@@ -100,7 +100,7 @@ class PrepareImageImpl : public ::mmdeploy::PrepareImageImpl {
     Mat dst_mat(src_mat.height(), src_mat.width(), PixelFormat::kGRAYSCALE, src_mat.type(),
                 device_);
 
-    ForceSync sync(stream_, src_mat, dst_mat);
+    SyncOnScopeExit sync(stream_, true, src_mat, dst_mat);
 
     ppl::common::RetCode ret = 0;
 

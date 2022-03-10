@@ -23,7 +23,6 @@ class MMDEPLOY_API TransformImpl : public Module {
   Stream stream_;
 };
 
-
 class MMDEPLOY_API Transform : public Module {
  public:
   ~Transform() override = default;
@@ -69,7 +68,7 @@ class MMDEPLOY_API Transform : public Module {
 template <typename Key, typename Val>
 void SetTransformData(Value& dst, Key&& key, Val val) {
   dst[std::forward<Key>(key)] = val;
-  dst["__data__"].push_back(val);
+  dst["__data__"].push_back(std::move(val));
 }
 
 MMDEPLOY_DECLARE_REGISTRY(Transform);
