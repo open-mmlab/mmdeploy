@@ -64,6 +64,7 @@ The table below lists the models that are guaranteed to be exportable to other b
 | HRNet                     | MMPose           |      ?      |      Y      |    Y     |  Y   |   N   |    Y     |    [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#hrnet-cvpr-2019)     |
 | MSPN                      | MMPose           |      ?      |      Y      |    Y     |  Y   |   N   |    Y     |    [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#mspn-arxiv-2019)     |
 | LiteHRNet                 | MMPose           |      ?      |      Y      |    Y     |  N   |   N   |    Y     |  [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#litehrnet-cvpr-2021)   |
+| PointPillars              | MMDetection3d    |      ?      |      Y      |    Y     |  N   |   N   |    Y     | [config](https://github.com/open-mmlab/mmdetection3d/blob/master/configs/pointpillars)         |
 
 ### Note
 
