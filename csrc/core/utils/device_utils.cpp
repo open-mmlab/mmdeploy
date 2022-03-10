@@ -1,6 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
 #include "device_utils.h"
+
 #include "core/logger.h"
 
 namespace mmdeploy {
