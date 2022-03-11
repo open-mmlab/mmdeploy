@@ -125,6 +125,7 @@ def get_l2norm_forward_model():
     """L2Norm Neck Config."""
     from mmdet.models.necks.ssd_neck import L2Norm
     model = L2Norm(16)
+    torch.nn.init.uniform_(model.weight)
 
     model.requires_grad_(False)
     return model
