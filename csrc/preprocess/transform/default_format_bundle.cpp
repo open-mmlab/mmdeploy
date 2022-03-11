@@ -13,43 +13,37 @@ DefaultFormatBundleImpl::DefaultFormatBundleImpl(const Value& args) : TransformI
   if (args.contains("img_to_float") && args["img_to_float"].is_boolean()) {
     arg_.img_to_float = args["img_to_float"].get<bool>();
   }
-  if (args.contains("pad_val") && args["pad_val"].is_object()) {
-    for (auto& [key, _] : arg_.pad_val)
-      if (args["pad_val"].contains(key) && args["pad_val"][key].is_number_float()) {
-        arg_.pad_val[key] = args["pad_val"][key].get<float>();
-      }
-  }
 }
 
 Result<Value> DefaultFormatBundleImpl::Process(const Value& input) {
   MMDEPLOY_DEBUG("DefaultFormatBundle input: {}", to_json(input).dump(2));
   Value output = input;
   if (input.contains("img")) {
-    Tensor tensor = input["img"].get<Tensor>();
-    OUTCOME_TRY(output["img"], ToFloat32(tensor, arg_.img_to_float));
-  }
+    Tensor in_tensor = input["img"].get<Tensor>();
+    OUTCOME_TRY(output["img"], ToFloat32(in_tensor, arg_.img_to_float));
 
-  Tensor tensor = output["img"].get<Tensor>();
-  // set default meta keys
-  if (!output.contains("pad_shape")) {
-    for (auto v : tensor.shape()) {
-      output["pad_shape"].push_back(v);
+    Tensor tensor = output["img"].get<Tensor>();
+    // set default meta keys
+    if (!output.contains("pad_shape")) {
+      for (auto v : tensor.shape()) {
+        output["pad_shape"].push_back(v);
+      }
     }
-  }
-  if (!output.contains("scale_factor")) {
-    output["scale_factor"].push_back(1.0);
-  }
-  if (!output.contains("img_norm_cfg")) {
-    int channel = tensor.shape()[3];
-    for (int i = 0; i < channel; i++) {
-      output["img_norm_cfg"]["mean"].push_back(0.0);
-      output["img_norm_cfg"]["std"].push_back(1.0);
+    if (!output.contains("scale_factor")) {
+      output["scale_factor"].push_back(1.0);
     }
-    output["img_norm_cfg"]["to_rgb"] = false;
-  }
+    if (!output.contains("img_norm_cfg")) {
+      int channel = tensor.shape()[3];
+      for (int i = 0; i < channel; i++) {
+        output["img_norm_cfg"]["mean"].push_back(0.0);
+        output["img_norm_cfg"]["std"].push_back(1.0);
+      }
+      output["img_norm_cfg"]["to_rgb"] = false;
+    }
 
-  // transpose
-  OUTCOME_TRY(output["img"], HWC2CHW(tensor));
+    // transpose
+    OUTCOME_TRY(output["img"], HWC2CHW(tensor));
+  }
 
   MMDEPLOY_DEBUG("DefaultFormatBundle output: {}", to_json(output).dump(2));
   return output;
