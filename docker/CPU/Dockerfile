@@ -7,15 +7,15 @@ ARG MMCV_VERSION=1.4.0
 ARG CMAKE_VERSION=3.20.0
 USER root
 
-### change the system source for install libs
-ARG USE_SRC_INSIDE
-RUN if [ -z ${USE_SRC_INSIDE}] ; \
+### change the system source for installing libs
+ARG USE_SRC_INSIDE=false
+RUN if [ ${USE_SRC_INSIDE} == true ] ; \
     then \
-        echo "Use official source for install libs" ; \
+        sed -i s/archive.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list ; \
+        sed -i s/security.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list ; \
+        echo "Use aliyun source for installing libs" ; \
     else \
-        sed -i s/archive.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list && \
-        sed -i s/security.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list \
-        echo "Use aliyun source for install libs" ; \
+        echo "Keep the download source unchanged" ; \
     fi
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
