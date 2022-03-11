@@ -24,7 +24,6 @@ class MMDEPLOY_API DefaultFormatBundleImpl : public TransformImpl {
  protected:
   struct default_format_bundle_arg_t {
     bool img_to_float = true;
-    std::map<std::string, float> pad_val = {{"img", 0}, {"mask", 0}, {"seg", 255}};
   };
   using ArgType = struct default_format_bundle_arg_t;
 
