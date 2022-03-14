@@ -5,7 +5,8 @@ import torch
 
 from mmdeploy.codebase import import_codebase
 from mmdeploy.codebase.mmdet import (clip_bboxes, get_post_processing_params,
-                                     pad_with_value)
+                                     pad_with_value,
+                                     pad_with_value_if_necessary)
 from mmdeploy.utils import Codebase
 
 import_codebase(Codebase.MMDET)
@@ -26,6 +27,15 @@ def test_pad_with_value():
     padded_x = pad_with_value(x, pad_dim=1, pad_size=4, pad_value=0)
     assert np.allclose(
         padded_x.shape, torch.Size([3, 6]), rtol=1e-03, atol=1e-05)
+    assert np.allclose(padded_x.sum(), x.sum(), rtol=1e-03, atol=1e-05)
+
+
+def test_pad_with_value_if_necessary():
+    x = torch.rand(3, 2)
+    padded_x = pad_with_value_if_necessary(
+        x, pad_dim=1, pad_size=4, pad_value=0)
+    assert np.allclose(
+        padded_x.shape, torch.Size([3, 2]), rtol=1e-03, atol=1e-05)
     assert np.allclose(padded_x.sum(), x.sum(), rtol=1e-03, atol=1e-05)
 
 
