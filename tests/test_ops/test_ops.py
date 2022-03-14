@@ -334,11 +334,14 @@ def test_batched_nms(backend,
 
 
 @pytest.mark.parametrize('backend', [TEST_TENSORRT])
-@pytest.mark.parametrize('out_size, sampling_ratio,roi_scale_factor,'
-                         ' finest_scale,featmap_strides, aligned',
-                         [(tuple([2, 2]), 2, 1.0, 2, list([2.0, 4.0]), 1)])
+@pytest.mark.parametrize(
+    'out_size, pool_mode, sampling_ratio,roi_scale_factor,'
+    ' finest_scale,featmap_strides, aligned',
+    [(tuple([2, 2]), 0, 2, 1.0, 2, list([2.0, 4.0]), 1),
+     (tuple([2, 2]), 1, 2, 1.0, 2, list([2.0, 4.0]), 1)])
 def test_multi_level_roi_align(backend,
                                out_size,
+                               pool_mode,
                                sampling_ratio,
                                roi_scale_factor,
                                finest_scale,
@@ -376,10 +379,21 @@ def test_multi_level_roi_align(backend,
                             [0.9178, 0.7282, 0.0291, 0.3028]]]])
         ]
         rois = torch.tensor([[0., 0., 0., 4., 4.]])
-        expected_result = torch.tensor([[[[0.1939, 0.3950], [0.3437, 0.4543]],
-                                         [[0.0778, 0.1641], [0.1305, 0.2301]],
-                                         [[0.1542, 0.2413], [0.2094,
-                                                             0.2688]]]])
+        if pool_mode == 1:
+            expected_result = torch.tensor([[[[0.1939, 0.3950],
+                                              [0.3437, 0.4543]],
+                                             [[0.0778, 0.1641],
+                                              [0.1305, 0.2301]],
+                                             [[0.1542, 0.2413],
+                                              [0.2094, 0.2688]]]])
+        else:
+            expected_result = torch.tensor([[[[0.1939, 0.4956],
+                                              [0.4185, 0.5167]],
+                                             [[0.0778, 0.2073],
+                                              [0.1569, 0.3162]],
+                                             [[0.1542, 0.2849],
+                                              [0.2370, 0.3053]]]])
+
     else:
         input = input_list[0]
         rois = input_list[1]
@@ -405,6 +419,7 @@ def test_multi_level_roi_align(backend,
         'MMCVMultiLevelRoiAlign_0',
         None,
         'mmdeploy',
+        pool_mode=pool_mode,
         aligned=aligned,
         featmap_strides=featmap_strides,
         finest_scale=finest_scale,
