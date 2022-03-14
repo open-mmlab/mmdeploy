@@ -5,10 +5,11 @@ from mmdet.core.bbox.coder import (DeltaXYWHBBoxCoder, DistancePointBBoxCoder,
 from mmdet.core.bbox.transforms import distance2bbox
 
 from mmdeploy.codebase.mmdet import (get_post_processing_params,
-                                     multiclass_nms, pad_with_value)
+                                     multiclass_nms,
+                                     pad_with_value_if_necessary)
 from mmdeploy.codebase.mmdet.core.ops import ncnn_detection_output_forward
 from mmdeploy.core import FUNCTION_REWRITER
-from mmdeploy.utils import Backend, get_backend, is_dynamic_shape
+from mmdeploy.utils import Backend, is_dynamic_shape
 
 
 @FUNCTION_REWRITER.register_rewriter(
@@ -60,7 +61,6 @@ def base_dense_head__get_bbox(ctx,
     """
     deploy_cfg = ctx.cfg
     is_dynamic_flag = is_dynamic_shape(deploy_cfg)
-    backend = get_backend(deploy_cfg)
     num_levels = len(cls_scores)
 
     featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
@@ -98,10 +98,8 @@ def base_dense_head__get_bbox(ctx,
                                                        self.cls_out_channels)
         if self.use_sigmoid_cls:
             scores = scores.sigmoid()
-            nms_pre_score = scores
         else:
             scores = scores.softmax(-1)
-            nms_pre_score = scores
         if with_score_factors:
             score_factors = score_factors.permute(0, 2, 3,
                                                   1).reshape(batch_size,
@@ -112,16 +110,16 @@ def base_dense_head__get_bbox(ctx,
             priors = priors.data
         priors = priors.expand(batch_size, -1, priors.size(-1))
         if pre_topk > 0:
+            priors = pad_with_value_if_necessary(priors, 1, pre_topk)
+            bbox_pred = pad_with_value_if_necessary(bbox_pred, 1, pre_topk)
+            scores = pad_with_value_if_necessary(scores, 1, pre_topk, 0.)
+            if with_score_factors:
+                score_factors = pad_with_value_if_necessary(
+                    score_factors, 1, pre_topk, 0.)
+
+            nms_pre_score = scores
             if with_score_factors:
                 nms_pre_score = nms_pre_score * score_factors
-            if backend == Backend.TENSORRT:
-                priors = pad_with_value(priors, 1, pre_topk)
-                bbox_pred = pad_with_value(bbox_pred, 1, pre_topk)
-                scores = pad_with_value(scores, 1, pre_topk, 0.)
-                nms_pre_score = pad_with_value(nms_pre_score, 1, pre_topk, 0.)
-                if with_score_factors:
-                    score_factors = pad_with_value(score_factors, 1, pre_topk,
-                                                   0.)
 
             # Get maximum scores for foreground classes.
             if self.use_sigmoid_cls:
@@ -180,7 +178,7 @@ def base_dense_head__get_bbox(ctx,
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.dense_heads.base_dense_head.BaseDenseHead'
     '.get_bboxes',
-    backend='ncnn')
+    backend=Backend.NCNN.value)
 def base_dense_head__get_bboxes__ncnn(ctx,
                                       self,
                                       cls_scores,
