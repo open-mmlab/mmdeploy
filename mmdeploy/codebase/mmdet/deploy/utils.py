@@ -7,7 +7,7 @@ from torch import Tensor
 
 from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.core.rewriters.rewriter_utils import LibVersionChecker
-from mmdeploy.utils import load_config
+from mmdeploy.utils import Backend, load_config
 
 
 def get_post_processing_params(deploy_cfg: Union[str, mmcv.Config]):
@@ -127,3 +127,62 @@ def pad_with_value(x: Tensor,
     x_pad = x_pad.repeat(*repeat_size)
     x = torch.cat([x, x_pad], dim=pad_dim)
     return x
+
+
+def pad_with_value_if_necessary(x: Tensor,
+                                pad_dim: int,
+                                pad_size: int,
+                                pad_value: Optional[Any] = None):
+    """Pad a tensor with a value along some dim if necessary.
+
+    Args:
+        x (Tensor): Input tensor.
+        pad_dim (int): Along which dim to pad.
+        pad_size (int): To which size to pad.
+        pad_value (Any): Filled value for padding. Defaults to `None`.
+
+    Returns:
+        Tensor: Padded tensor.
+    """
+    return __pad_with_value_if_necessary(
+        x, pad_dim, pad_size=pad_size, pad_value=pad_value)
+
+
+def __pad_with_value_if_necessary(x: Tensor,
+                                  pad_dim: int,
+                                  pad_size: int,
+                                  pad_value: Optional[Any] = None):
+    """Pad a tensor with a value along some dim, do nothing on default.
+
+    Args:
+        x (Tensor): Input tensor.
+        pad_dim (int): Along which dim to pad.
+        pad_size (int): To which size to pad.
+        pad_value (Any): Filled value for padding. Defaults to `None`.
+
+    Returns:
+        Tensor: Padded tensor.
+    """
+    return x
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    'mmdeploy.codebase.mmdet.deploy.utils.__pad_with_value_if_necessary',
+    backend=Backend.TENSORRT.value)
+def __pad_with_value_if_necessary__tensorrt(ctx,
+                                            x: Tensor,
+                                            pad_dim: int,
+                                            pad_size: int,
+                                            pad_value: Optional[Any] = None):
+    """Pad a tensor with a value along some dim.
+
+    Args:
+        x (Tensor): Input tensor.
+        pad_dim (int): Along which dim to pad.
+        pad_size (int): To which size to pad.
+        pad_value (Any): Filled value for padding. Defaults to `None`.
+
+    Returns:
+        Tensor: Padded tensor.
+    """
+    return pad_with_value(x, pad_dim, pad_size=pad_size, pad_value=pad_value)
