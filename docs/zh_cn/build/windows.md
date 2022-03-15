@@ -38,24 +38,29 @@
 <tbody>
   <tr>
     <td>conda </td>
-    <td>强烈建议安装 conda，或者 miniconda。比如， <br>https://repo.anaconda.com/miniconda/Miniconda3-py37_4.11.0-Windows-x86_64.exe <br>安装完毕后，打开系统开始菜单，输入prompt，选择并打开 anaconda powershell prompt。 <br><b>下文中的安装命令均是在 anaconda powershell 中测试验证的。</b> </td>
+    <td>强烈建议安装 conda，或者 miniconda。比如， <br>https://repo.anaconda.com/miniconda/Miniconda3-py37_4.11.0-Windows-x86_64.exe <br>
+安装完毕后，打开系统开始菜单，输入prompt，<b>以管理员的身份打开 anaconda powershell prompt</b>。 <br>
+<b>因为，下文中的安装命令均是在 anaconda powershell 中测试验证的。</b><br>
+<b>并且，为简化 MMDeploy 编译命令，有些第三方库选择安装在系统目录中。</b><br>
+<b>说明：如果你对 cmake 工作原理很熟悉，也可以使用普通用户权限打开 anaconda powershell prompt</b>。
+</td>
   </tr>
   <tr>
     <td>PyTorch <br>(>=1.8.0) </td>
     <td> 安装 PyTorch，要求版本是 torch>=1.8.0。可查看<a href="https://pytorch.org/">官网</a>获取更多详细的安装教程。<br>
-    <pre><code>
-    pip install torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
-    </code></pre>
+<pre><code>
+pip install torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
+</code></pre>
     </td>
   </tr>
   <tr>
     <td>mmcv-full </td>
     <td>参考如下命令安装 mmcv-full。更多安装方式，可查看 <a href="https://github.com/open-mmlab/mmcv">mmcv 官网</a><br>
-    <pre><code>
-    $env:cu_version="cu111"
-    $env:torch_version="torch1.8"
-    pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/$env:cu_version/$env:torch_version/index.html
-    </code></pre>
+<pre><code>
+$env:cu_version="cu111"
+$env:torch_version="torch1.8"
+pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/$env:cu_version/$env:torch_version/index.html
+</code></pre>
     </td>
   </tr>
 </tbody>
@@ -75,21 +80,24 @@
   <tr>
     <td>spdlog </td>
     <td>spdlog是一个精巧的日志管理库。请参考如下命令安装： <br>
-    1. 下载 https://github.com/gabime/spdlog/archive/refs/tags/v1.9.2.zip <br>
-    2. 解压后，进入到文件夹 spdlog-v1.9.2 <br>
-    3. 执行编译安装命令 <br>
 <pre><code>
+Invoke-WebRequest -Uri https://github.com/gabime/spdlog/archive/refs/tags/v1.9.2.zip -OutFile spdlog-1.9.2.zip
+Expand-Archive spdlog-1.9.2.zip .
+cd spdlog-1.9.2
 mkdir build
 cd build
-cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_INSTALL_PREFIX=install -DCMAKE_BUILD_TYPE=Release
+cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release
 cmake --build . --target install -j --config Release
+cd ../..
 </code></pre>
-   </td>
+    </td>
   </tr>
   <tr>
     <td>OpenCV </td>
     <td>
-    1. 下载并安装 OpenCV 在 windows 下的预编译包: https://github.com/opencv/opencv/releases/download/4.5.5/opencv-4.5.5-vc14_vc15.exe <br>
+    1. 下载并安装 OpenCV 3+ 在 windows 下的预编译包。
+比如，<a href="https://github.com/opencv/opencv/releases/download/4.5.5/opencv-4.5.5-vc14_vc15.exe">opencv-4.5.5</a><br>
+如需获取更多 OpenCV 版本，请参考<a href="https://github.com/opencv/opencv/releases">这里</a>
     2. 把 OpenCV 库的路径加入到环境变量 PATH 中</td>
 
   </tr>
@@ -126,10 +134,11 @@ $env:PPLCV_DIR = "$pwd"
     <td>onnxruntime </td>
     <td>
     1. 下载二进制包
-<pre><code>Invoke-WebRequest -Uri https://github.com/microsoft/onnxruntime/releases/download/v1.8.0/onnxruntime-win-x64-1.8.0.zip -OutFile onnxruntime-win-x64-1.8.0.zip</code></pre>
+<pre><code>
+Invoke-WebRequest -Uri https://github.com/microsoft/onnxruntime/releases/download/v1.8.0/onnxruntime-win-x64-1.8.0.zip -OutFile onnxruntime-win-x64-1.8.0.zip
+</code></pre>
     2. 解压 onnxruntime 压缩包，并设置环境变量
 <pre><code>
-cd \the\path\of\onnxruntime\zip\file
 Expand-Archive onnxruntime-win-x64-1.8.0.zip .
 $env:ONNXRUNTIME_DIR = "$pwd\onnxruntime-win-x86-1.8.0"
 $env:path = "$env:ONNXRUNTIME_DIR\lib;" + $env:path
@@ -308,8 +317,6 @@ pip install -e .
       -DMMDEPLOY_TARGET_BACKENDS="ort" `
       -DMMDEPLOY_CODEBASES="all" `
       -DONNXRUNTIME_DIR=$env:ONNXRUNTIME_DIR `
-      -Dspdlog_DIR={spdlog_dir}/build/install/lib/cmake/spdlog `
-      -DOpenCV_DIR={opencv_dir}/build
   cmake --build . --config Release -- /maxcpucount:4
   cmake --install . --config Release
   ```
@@ -327,8 +334,6 @@ pip install -e .
      -Dpplcv_DIR=$env:PPLCV_DIR/pplcv-build/install/lib/cmake/ppl `
      -DTENSORRT_DIR=$env:TENSORRT_DIR `
      -DCUDNN_DIR=$env:CUDNN_DIR `
-     -Dspdlog_DIR={spdlog_dir}/build/install/lib/cmake/spdlog `
-     -DOpenCV_DIR={opencv_dir}/build
    cmake --build . --config Release -- /maxcpucount:4
    cmake --install . --config Release
   ```
