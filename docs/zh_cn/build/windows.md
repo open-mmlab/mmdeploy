@@ -78,12 +78,12 @@
     1. 下载 https://github.com/gabime/spdlog/archive/refs/tags/v1.9.2.zip <br>
     2. 解压后，进入到文件夹 spdlog-v1.9.2 <br>
     3. 执行编译安装命令 <br>
-    <pre><code>
-    mkdir build
-    cd build
-    cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_INSTALL_PREFIX=install -DCMAKE_BUILD_TYPE=Release
-    cmake --build . --target install -j --config Release
-    </code></pre>
+<pre><code>
+mkdir build
+cd build
+cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_INSTALL_PREFIX=install -DCMAKE_BUILD_TYPE=Release
+cmake --build . --target install -j --config Release
+</code></pre>
    </td>
   </tr>
   <tr>
@@ -96,12 +96,13 @@
   <tr>
     <td>pplcv </td>
     <td>pplcv 是在x86和cuda平台下的高性能图像处理库。 <b>此依赖项为可选项，只有在cuda平台下，才需安装。而且，目前必须使用v0.6.2，且需要使用git clone的方式下载源码并编译安装</b><br>
-    <pre><code>
-    git clone --recursive git@github.com:openppl-public/ppl.cv.git
-    cd ppl.cv
-    git checkout tags/v0.6.2 -b v0.6.2
-    ./build.bat -G "Visual Studio 16 2019" -T v142 -A x64 -DHPCC_USE_CUDA=ON -DHPCC_MSVC_MD=ON
-    </code></pre>
+<pre><code>
+git clone --recursive git@github.com:openppl-public/ppl.cv.git
+cd ppl.cv
+git checkout tags/v0.6.2 -b v0.6.2
+./build.bat -G "Visual Studio 16 2019" -T v142 -A x64 -DHPCC_USE_CUDA=ON -DHPCC_MSVC_MD=ON
+$env:PPLCV_DIR = "$pwd"
+</code></pre>
    </td>
   </tr>
 </tbody>
@@ -120,43 +121,53 @@
   </tr>
 </thead>
 <tbody>
-    <tr>
+  <tr>
     <td>ONNXRuntime</td>
     <td>onnxruntime </td>
     <td>
-    1. 下载二进制包：https://github.com/microsoft/onnxruntime/releases/download/v1.8.0/onnxruntime-win-x64-1.8.0.zip <br>
-    2. 解压到目标路径。我们使用 <code>onnxruntime_dir</code> 代表此路径 <br>
-    3. 在 PATH 中增加 onnxruntime libs 路径,
-    <pre><code>
-    $env:path = "{onnxruntime_dir}/lib;" + $env:path
-    </code></pre>
+    1. 下载二进制包
+<pre><code>Invoke-WebRequest -Uri https://github.com/microsoft/onnxruntime/releases/download/v1.8.0/onnxruntime-win-x64-1.8.0.zip -OutFile onnxruntime-win-x64-1.8.0.zip</code></pre>
+    2. 解压 onnxruntime 压缩包，并设置环境变量
+<pre><code>
+cd \the\path\of\onnxruntime\zip\file
+Expand-Archive onnxruntime-win-x64-1.8.0.zip .
+$env:ONNXRUNTIME_DIR = "$pwd\onnxruntime-win-x86-1.8.0"
+$env:path = "$env:ONNXRUNTIME_DIR\lib;" + $env:path
+</code></pre>
     </td>
   </tr>
   <tr>
     <td rowspan="2">TensorRT<br> </td>
     <td>TensorRT <br> </td>
     <td>
-    1. 从NVIDIA官网下载二进制包, 比如，<br>
-   https://developer.nvidia.com/compute/machine-learning/tensorrt/secure/8.2.3.0/zip/TensorRT-8.2.3.0.Windows10.x86_64.cuda-11.4.cudnn8.2.zip <br>
-    1. 解压二进制包到目标路径。我们使用 <code>tensorrt_dir</code> 代表此路径 <br>
-    2. 安装 tensorrt 的 python package<br>
-    3. 在 PATH 中增加 tensorrt libs 路径
-   <pre><code>
-   pip install {tensorrt_dir}/python/tensorrt-8.2.3.0-cp37-none-win_amd64.whl
-   $env:path = "{tensorrt_dir}/lib;" + $env:path
-   </code></pre>
+    1. 登录 NVIDIA 官网。根据你环境中的 CUDA 版本，
+从 <a href="https://developer.nvidia.com/nvidia-tensorrt-download">TensorRT Archive</a> 中选择并下载合适的 TensorRT 安装包。推荐使用 TensorRT 8。
+此处，我们下载 <a href="https://developer.nvidia.com/compute/machine-learning/tensorrt/secure/8.2.3.0/zip/TensorRT-8.2.3.0.Windows10.x86_64.cuda-11.4.cudnn8.2.zip">CUDA 11.x TensorRT 8.2.3.0</a> 说明安装过程<br>
+    2. 解压安装包，并设置环境变量
+<pre><code>
+cd the\path\of\tensorrt\zip\file
+Expand-Archive TensorRT-8.2.3.0.Windows10.x86_64.cuda-11.4.cudnn8.2.zip .
+$env:TENSORRT_DIR = "$pwd\TensorRT-8.2.3.0"
+$env:path = "$env:TENSORRT_DIR\lib;" + $env:path
+</code></pre>
+    3. 安装 tensorrt 的 python package<br>
+<pre><code>
+pip install $env:TENSORRT_DIR\python\tensorrt-8.2.3.0-cp37-none-win_amd64.whl
+</code></pre>
    </td>
   </tr>
   <tr>
     <td>cudnn </td>
     <td>
-    1. 从NVIDIA官网下载二进制包, 比如, <br>
-   https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.2.1.32/11.3_06072021/cudnn-11.3-windows-x64-v8.2.1.32.zip <br>
-    1. 解压二进制包到目标路径。我们使用 <code>cudnn_dir</code> 代表此路径 <br>
-    2. 在 PATH 中增加 cudnn libs 路径
-   <pre><code>
-   $env:path = "{cudnn_dir}/bin;" + $env:path
-   </code></pre>
+    1. 根据你环境中的 CUDA 版本，从 <a href="https://developer.nvidia.com/rdp/cudnn-archive">cuDNN archive</a> 中选择并下载合适的 cuDNN 库。
+此处，我们下载 <a href="https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.2.1.32/11.3_06072021/cudnn-11.3-windows-x64-v8.2.1.32.zip">CUDA 11.x cuDNN 8.2</a> 来说明安装过程 <br>
+    2. 解压压缩包，并设置环境变量 
+<pre><code>
+cd the\path\of\cudnn\zip\file
+Expand-Archive cudnn-11.3-windows-x64-v8.2.1.32.zip .
+$env:CUDNN_DIR="$pwd\cuda" 
+$env:path = "$env:CUDNN_DIR\bin;" + $env:path
+</code></pre>
    </td>
   </tr>
   <tr>
@@ -178,7 +189,10 @@
 </table>
 
 ### 编译 MMDeploy
-
+```powershell
+cd \the\root\path\of\MMDeploy
+$env:MMDEPLOY_DIR="$pwd"
+```
 #### 编译安装 Model Converter
 ##### 编译自定义算子
 如果您选择了ONNXRuntime，TensorRT 和 ncnn 任一种推理后端，您需要编译对应的自定义算子库。
@@ -186,7 +200,7 @@
 ```powershell
 mkdir build
 cd build
-cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DMMDEPLOY_TARGET_BACKENDS="ort" -DONNXRUNTIME_DIR={onnxruntime_dir}
+cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DMMDEPLOY_TARGET_BACKENDS="ort" -DONNXRUNTIME_DIR=$env:ONNXRUNTIME_DIR
 cmake --build . --config Release -- /maxcpucount:4
 ```
 
@@ -195,7 +209,7 @@ cmake --build . --config Release -- /maxcpucount:4
 ```powershell
 mkdir build
 cd build
-cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DMMDEPLOY_TARGET_BACKENDS="trt" -DTENSORRT_DIR={tensorrt_dir} -DCUDNN_DIR={cudnn_dir}
+cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DMMDEPLOY_TARGET_BACKENDS="trt" -DTENSORRT_DIR=$env:TENSORRT_DIR -DCUDNN_DIR=$env:CUDNN_DIR
 cmake --build . --config Release -- /maxcpucount:4
 ```
 
@@ -205,7 +219,7 @@ cmake --build . --config Release -- /maxcpucount:4
 
 ##### 安装 Model Converter
 ```powershell
-cd root/path/of/MMDeploy
+cd $env:MMDEPLOY_DIR
 pip install -e .
 ```
 **注意**
@@ -254,9 +268,9 @@ pip install -e .
     <td> <b>默认情况下，SDK不设置任何后端</b>, 因为它与应用场景高度相关。 当选择多个后端时， 中间使用分号隔开。比如，<pre><code>-DMMDEPLOY_TARGET_BACKENDS="trt;ort;pplnn;ncnn;openvino"</code></pre>
     构建时，几乎每个后端，都需设置一些路径变量，用来查找依赖包。<br>
     1. <b>trt</b>: 表示 TensorRT。需要设置 <code>TENSORRT_DIR</code> 和 <code>CUDNN_DIR</code>。
-<pre><code>-DTENSORRT_DIR={tensorrt_dir}<br>-DCUDNN_DIR={cudnn_dir}</code></pre>
+<pre><code>-DTENSORRT_DIR=$env:TENSORRT_DIR<br>-DCUDNN_DIR=$env:CUDNN_DIR</code></pre>
     2. <b>ort</b>: 表示 ONNXRuntime。需要设置 <code>ONNXRUNTIME_DIR</code>。
-<pre><code>-DONNXRUNTIME_DIR={onnxruntime_dir}</code></pre>
+<pre><code>-DONNXRUNTIME_DIR=$env:ONNXRUNTIME_DIR</code></pre>
     3. <b>pplnn</b>: 表示 PPL.NN。需要设置 <code>pplnn_DIR</code>。<b>当前版本尚未验证</b> <br>
     4. <b>ncnn</b>：表示 ncnn。需要设置 <code>ncnn_DIR</code>。<b>当前版本尚未验证</b> <br>
     5. <b>openvino</b>: 表示 OpenVINO。需要设置 <code>InferenceEngine_DIR</code>。<b>当前版本尚未验证通过</b>
@@ -265,8 +279,9 @@ pip install -e .
   <tr>
     <td>MMDEPLOY_CODEBASES</td>
     <td>{"mmcls", "mmdet", "mmseg", "mmedit", "mmocr", "all"}</td>
-    <td>N/A</td>
-    <td>用来设置SDK后处理组件，加载OpenMMLab算法仓库的后处理功能。已支持的算法仓库有'mmcls'，'mmdet'，'mmedit'，'mmseg'和'mmocr'。如果选择多个codebase，中间使用分号隔开。比如，<code>-DMMDEPLOY_CODEBASES="mmcls;mmdet"</code>。也可以通过 <code>-DMMDEPLOY_CODEBASES=all</code> 方式，加载所有codebase。</td>
+    <td>all</td>
+    <td>用来设置SDK后处理组件，加载OpenMMLab算法仓库的后处理功能。已支持的算法仓库有'mmcls'，'mmdet'，'mmedit'，'mmseg'和'mmocr'。如果选择多个codebase，中间使用分号隔开。比如，<code>-DMMDEPLOY_CODEBASES="mmcls;mmdet"</code>。
+也可以通过 <code>-DMMDEPLOY_CODEBASES=all</code> 方式，加载所有codebase。</td>
   </tr>
   <tr>
     <td>BUILD_SHARED_LIBS</td>
@@ -292,7 +307,7 @@ pip install -e .
       -DMMDEPLOY_TARGET_DEVICES="cpu" `
       -DMMDEPLOY_TARGET_BACKENDS="ort" `
       -DMMDEPLOY_CODEBASES="all" `
-      -DONNXRUNTIME_DIR={onnxruntime_dir} `
+      -DONNXRUNTIME_DIR=$env:ONNXRUNTIME_DIR `
       -Dspdlog_DIR={spdlog_dir}/build/install/lib/cmake/spdlog `
       -DOpenCV_DIR={opencv_dir}/build
   cmake --build . --config Release -- /maxcpucount:4
@@ -309,9 +324,9 @@ pip install -e .
      -DMMDEPLOY_TARGET_DEVICES="cuda" `
      -DMMDEPLOY_TARGET_BACKENDS="trt" `
      -DMMDEPLOY_CODEBASES="all" `
-     -Dpplcv_DIR={pplcv_dir}/pplcv-build/install/lib/cmake/ppl `
-     -DTENSORRT_DIR={tensorrt_dir} `
-     -DCUDNN_DIR={cudnn_dir} `
+     -Dpplcv_DIR=$env:PPLCV_DIR/pplcv-build/install/lib/cmake/ppl `
+     -DTENSORRT_DIR=$env:TENSORRT_DIR `
+     -DCUDNN_DIR=$env:CUDNN_DIR `
      -Dspdlog_DIR={spdlog_dir}/build/install/lib/cmake/spdlog `
      -DOpenCV_DIR={opencv_dir}/build
    cmake --build . --config Release -- /maxcpucount:4
@@ -328,12 +343,12 @@ cd install/example
 mkdir build
 cd build
 cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
-  -DMMDeploy_DIR={mmdeploy_dir}/build/install/lib/cmake/MMDeploy `
+  -DMMDeploy_DIR=$env:MMDEPLOY_DIR/build/install/lib/cmake/MMDeploy `
   -Dspdlog_DIR={spdlog_dir}/build/install/lib/cmake/spdlog `
   -DOpenCV_DIR={opencv_dir}/build
 cmake --build . --config Release -- /maxcpucount:4
 
-$env:path = "${mmdeploy_dir}/build/install/bin;" + $env:path
+$env:path = "$env:MMDEPLOY_DIR/build/install/bin;" + $env:path
 
 ```
 
