@@ -1,5 +1,5 @@
-
 # Windows 下构建方式
+
 - [Windows 下构建方式](#windows-下构建方式)
   - [源码安装](#源码安装)
     - [安装构建和编译工具链](#安装构建和编译工具链)
@@ -13,7 +13,7 @@
         - [安装 Model Converter](#安装-model-converter)
       - [编译 SDK](#编译-sdk)
         - [编译选项说明](#编译选项说明)
-        - [编译样例](#编译样例)
+        - [编译 SDK](#编译-sdk-1)
         - [编译 SDK Demo](#编译-sdk-demo)
     - [注意事项](#注意事项)
 ---
@@ -21,12 +21,13 @@
 
 ## 源码安装
 下述安装方式，均是在 **Windows 10** 下进行
+
 ### 安装构建和编译工具链
 1. 下载并安装 [Visual Studio 2019](https://visualstudio.microsoft.com) 。安装时请勾选 "使用C++的桌面开发, "Windows 10 SDK <br>
 2. 把 cmake 路径加入到环境变量 PATH 中, "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin" <br>
 3. 如果系统中配置了 NVIDIA 显卡，根据[官网教程](https://developer.nvidia.com\/cuda-downloads)，下载并安装 cuda toolkit。<br>
-### 安装依赖包
 
+### 安装依赖包
 #### 安装 MMDeploy Converter 依赖
 <table>
 <thead>
@@ -38,10 +39,9 @@
 <tbody>
   <tr>
     <td>conda </td>
-    <td>强烈建议安装 conda，或者 miniconda。比如， <br>https://repo.anaconda.com/miniconda/Miniconda3-py37_4.11.0-Windows-x86_64.exe <br>
-安装完毕后，打开系统开始菜单，输入prompt，<b>以管理员的身份打开 anaconda powershell prompt</b>。 <br>
-<b>因为，下文中的安装命令均是在 anaconda powershell 中测试验证的。</b><br>
-<b>并且，为简化 MMDeploy 编译命令，有些第三方库选择安装在系统目录中。</b><br>
+    <td>请参考 <a href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html">这里</a> 安装 conda。安装完毕后，打开系统开始菜单，<b>以管理员的身份打开 anaconda powershell prompt</b>。 因为，<br>
+<b>1. 下文中的安装命令均是在 anaconda powershell 中测试验证的。</b><br>
+<b>2. 为简化 MMDeploy 编译命令，有些第三方库选择安装在系统目录中。</b><br>
 <b>说明：如果你对 cmake 工作原理很熟悉，也可以使用普通用户权限打开 anaconda powershell prompt</b>。
 </td>
   </tr>
@@ -95,10 +95,8 @@ cd ../..
   <tr>
     <td>OpenCV </td>
     <td>
-    1. 下载并安装 OpenCV 3+ 在 windows 下的预编译包。
-比如，<a href="https://github.com/opencv/opencv/releases/download/4.5.5/opencv-4.5.5-vc14_vc15.exe">opencv-4.5.5</a><br>
-如需获取更多 OpenCV 版本，请参考<a href="https://github.com/opencv/opencv/releases">这里</a>
-    2. 把 OpenCV 库的路径加入到环境变量 PATH 中</td>
+    1. 从<a href="https://github.com/opencv/opencv/releases">这里</a>下载 OpenCV 3+ 在 windows 下的预编译包。
+    2. 安装 OpenCV，并把 OpenCV 库的路径加入到环境变量 PATH 中</td>
 
   </tr>
   <tr>
@@ -116,10 +114,10 @@ $env:PPLCV_DIR = "$pwd"
 </tbody>
 </table>
 
-
-
 #### 安装推理引擎
-目前，在 Windows 平台下，MMDeploy 支持 ONNXRuntime 和 TensorRT 两种推理引擎。其他推理引擎尚未进行验证，或者验证未通过。后续将陆续予以支持
+MMDeploy 的 Model Converter 和 SDK 共享推理引擎。您可以参考下文，选择自己感兴趣的推理引擎安装。
+
+**目前，在 Windows 平台下，MMDeploy 支持 ONNXRuntime 和 TensorRT 两种推理引擎**。其他推理引擎尚未进行验证，或者验证未通过。后续将陆续予以支持
 <table>
 <thead>
   <tr>
@@ -131,16 +129,15 @@ $env:PPLCV_DIR = "$pwd"
 <tbody>
   <tr>
     <td>ONNXRuntime</td>
-    <td>onnxruntime </td>
+    <td>onnxruntime<br>(>=1.8.1) </td>
     <td>
-    1. 下载二进制包
+    1. 安装 onnxruntime 的 python 包
+<pre><code>pip install onnxruntime==1.8.1</code></pre>
+    1. 从<a href="https://github.com/microsoft/onnxruntime/releases/tag/v1.8.1">这里</a>下载 onnxruntime 的预编译二进制包，解压并配置环境变量
 <pre><code>
-Invoke-WebRequest -Uri https://github.com/microsoft/onnxruntime/releases/download/v1.8.0/onnxruntime-win-x64-1.8.0.zip -OutFile onnxruntime-win-x64-1.8.0.zip
-</code></pre>
-    2. 解压 onnxruntime 压缩包，并设置环境变量
-<pre><code>
-Expand-Archive onnxruntime-win-x64-1.8.0.zip .
-$env:ONNXRUNTIME_DIR = "$pwd\onnxruntime-win-x86-1.8.0"
+Invoke-WebRequest -Uri https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-win-x64-1.8.1.zip -OutFile onnxruntime-win-x64-1.8.1.zip
+Expand-Archive onnxruntime-win-x64-1.8.1.zip .
+$env:ONNXRUNTIME_DIR = "$pwd\onnxruntime-win-x86-1.8.1"
 $env:path = "$env:ONNXRUNTIME_DIR\lib;" + $env:path
 </code></pre>
     </td>
@@ -149,12 +146,13 @@ $env:path = "$env:ONNXRUNTIME_DIR\lib;" + $env:path
     <td rowspan="2">TensorRT<br> </td>
     <td>TensorRT <br> </td>
     <td>
-    1. 登录 NVIDIA 官网。根据你环境中的 CUDA 版本，
-从 <a href="https://developer.nvidia.com/nvidia-tensorrt-download">TensorRT Archive</a> 中选择并下载合适的 TensorRT 安装包。推荐使用 TensorRT 8。
-此处，我们下载 <a href="https://developer.nvidia.com/compute/machine-learning/tensorrt/secure/8.2.3.0/zip/TensorRT-8.2.3.0.Windows10.x86_64.cuda-11.4.cudnn8.2.zip">CUDA 11.x TensorRT 8.2.3.0</a> 说明安装过程<br>
+    1. 登录 NVIDIA 官网。从<a href="https://developer.nvidia.com/nvidia-tensorrt-download">这里</a>选取并下载TensorRT tar包。要保证它和您机器的CPU架构以及CUDA版本是匹配的。<br>
+   您可以参考这份 <a href="https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing-tar">指南</a> 安装 TensorRT。<br>
+   这里也有一份 TensorRT 8.2 GA Update 2 在 Windows x86_64 和 CUDA 11.x 下的安装示例，供您参考。<br>
+   点击<a href="https://developer.nvidia.com/compute/machine-learning/tensorrt/secure/8.2.3.0/zip/TensorRT-8.2.3.0.Windows10.x86_64.cuda-11.4.cudnn8.2.zip">此处</a>下载 CUDA 11.x TensorRT 8.2.3.0<br>
     2. 解压安装包，并设置环境变量
 <pre><code>
-cd the\path\of\tensorrt\zip\file
+cd \the\path\of\tensorrt\zip\file
 Expand-Archive TensorRT-8.2.3.0.Windows10.x86_64.cuda-11.4.cudnn8.2.zip .
 $env:TENSORRT_DIR = "$pwd\TensorRT-8.2.3.0"
 $env:path = "$env:TENSORRT_DIR\lib;" + $env:path
@@ -168,11 +166,10 @@ pip install $env:TENSORRT_DIR\python\tensorrt-8.2.3.0-cp37-none-win_amd64.whl
   <tr>
     <td>cudnn </td>
     <td>
-    1. 根据你环境中的 CUDA 版本，从 <a href="https://developer.nvidia.com/rdp/cudnn-archive">cuDNN archive</a> 中选择并下载合适的 cuDNN 库。
-此处，我们下载 <a href="https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.2.1.32/11.3_06072021/cudnn-11.3-windows-x64-v8.2.1.32.zip">CUDA 11.x cuDNN 8.2</a> 来说明安装过程 <br>
+    1. 从 <a href="https://developer.nvidia.com/rdp/cudnn-archive">cuDNN Archive</a> 中选择和您环境中 CPU 架构、CUDA版本以及 TensorRT 版本配套的 cuDNN。以前文 TensorRT 安装说明为例，它需要 cudnn8.2。因此，可以下载 <a href="https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.2.1.32/11.3_06072021/cudnn-11.3-windows-x64-v8.2.1.32.zip">CUDA 11.x cuDNN 8.2</a><br>
     2. 解压压缩包，并设置环境变量 
 <pre><code>
-cd the\path\of\cudnn\zip\file
+cd \the\path\of\cudnn\zip\file
 Expand-Archive cudnn-11.3-windows-x64-v8.2.1.32.zip .
 $env:CUDNN_DIR="$pwd\cuda" 
 $env:path = "$env:CUDNN_DIR\bin;" + $env:path
@@ -302,13 +299,13 @@ pip install -e .
 </table>
 
 
-##### 编译 SDK 库
-
-下文展示2个构建SDK的样例，分别用于不同的运行环境。
+##### 编译 SDK
+下文展示2个构建SDK的样例，分别用 ONNXRuntime 和 TensorRT 作为推理引擎。您可以参考它们，并结合前文 SDK 的编译选项说明，激活其他的推理引擎。
 
 - cpu + ONNXRuntime
 
   ```PowerShell
+  cd $env:MMDEPLOY_DIR
   mkdir build
   cd build
   cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
@@ -324,37 +321,33 @@ pip install -e .
 - cuda + TensorRT
 
   ```PowerShell
-   mkdir build
-   cd build
-   cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
-     -DMMDEPLOY_BUILD_SDK=ON `
-     -DMMDEPLOY_TARGET_DEVICES="cuda" `
-     -DMMDEPLOY_TARGET_BACKENDS="trt" `
-     -DMMDEPLOY_CODEBASES="all" `
-     -Dpplcv_DIR=$env:PPLCV_DIR/pplcv-build/install/lib/cmake/ppl `
-     -DTENSORRT_DIR=$env:TENSORRT_DIR `
-     -DCUDNN_DIR=$env:CUDNN_DIR `
-   cmake --build . --config Release -- /maxcpucount:4
-   cmake --install . --config Release
+  cd $env:MMDEPLOY_DIR
+  mkdir build
+  cd build
+  cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
+    -DMMDEPLOY_BUILD_SDK=ON `
+    -DMMDEPLOY_TARGET_DEVICES="cuda" `
+    -DMMDEPLOY_TARGET_BACKENDS="trt" `
+    -DMMDEPLOY_CODEBASES="all" `
+    -Dpplcv_DIR=$env:PPLCV_DIR/pplcv-build/install/lib/cmake/ppl `
+    -DTENSORRT_DIR=$env:TENSORRT_DIR `
+    -DCUDNN_DIR=$env:CUDNN_DIR `
+  cmake --build . --config Release -- /maxcpucount:4
+  cmake --install . --config Release
   ```
-- 其他
-
-  请参考上述两个示例，以及前述 SDK 的编译选项，在其他运行环境下编译 SDK
 
 ##### 编译 SDK Demo
 
 ```PowerShell
-cd install/example
+cd install\example
 mkdir build
 cd build
 cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
-  -DMMDeploy_DIR=$env:MMDEPLOY_DIR/build/install/lib/cmake/MMDeploy `
-  -Dspdlog_DIR={spdlog_dir}/build/install/lib/cmake/spdlog `
-  -DOpenCV_DIR={opencv_dir}/build
+  -DMMDeploy_DIR=$env:MMDEPLOY_DIR/build/install/lib/cmake/MMDeploy
+
 cmake --build . --config Release -- /maxcpucount:4
 
 $env:path = "$env:MMDEPLOY_DIR/build/install/bin;" + $env:path
-
 ```
 
 ### 注意事项

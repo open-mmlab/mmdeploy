@@ -21,8 +21,7 @@
 MMDeploy provides two build ways for linux-x86_64 platform, including dockerfile and build from source.
 
 ## Dockerfile (RECOMMENDED)
-please refer to
-[how to use docker](tutorials/how_to_use_docker.md).
+please refer to [how to use docker](tutorials/how_to_use_docker.md).
 
 ## Build From Source
 
@@ -76,7 +75,7 @@ conda activate mmdeploy
   <tr>
     <td>PyTorch <br>(>=1.8.0) </td>
     <td>
-    Choose an appropriate PyTorch package from <a href="https://pytorch.org/get-started/locally/">here</a>. Make sure that your compilation CUDA version and runtime CUDA version match. e.g., if you have CUDA 11.1 installed under <code>/usr/local/cuda</code>, you can install pytorch 1.8 like, <br>
+    Install PyTorch>=1.8.0, following the [official instructions](https://pytorch.org/)
 <pre><code>
 conda install pytorch==1.8.0 torchvision==0.9.0 cudatoolkit=11.1 -c pytorch -c conda-forge
 </code></pre>
@@ -134,7 +133,7 @@ sudo apt-get install libopencv-dev
   </tr>
   <tr>
     <td>pplcv </td>
-    <td>A high-performance image processing library of openPPL supporting x86 and cuda platforms.</br>
+    <td>A high-performance image processing library of openPPL supporting x86 and cuda platforms.<br>
   <b>It is optional which only be needed if <code>cuda</code> platform is required.
   Now, MMDeploy supports v0.6.2 and has to use <code>git clone</code> to download it.</b><br>
 <pre><code>
@@ -184,9 +183,12 @@ export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
     <td rowspan="2">TensorRT<br> </td>
     <td>TensorRT <br> </td>
     <td>
-   Download the TensorRT tar file from <a href="https://developer.nvidia.com/nvidia-tensorrt-download">here</a> that matches the CPU architecture and CUDA version you are using. Follow the <a href="https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing-tar">guide</a> to install TensorRT. Here is an example of installing TensorRT 8.2 GA Update 2 for Linux x86_64 and CUDA 11.x.
+   Download the TensorRT tar file from <a href="https://developer.nvidia.com/nvidia-tensorrt-download">here</a> that matches the CPU architecture and CUDA version you are using. <br>
+Follow the <a href="https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing-tar">guide</a> to install TensorRT. <br>
+Here is an example of installing TensorRT 8.2 GA Update 2 for Linux x86_64 and CUDA 11.x you can refer to. <br>
+First of all, click <a href="https://developer.nvidia.com/compute/machine-learning/tensorrt/secure/8.2.3.0/tars/tensorrt-8.2.3.0.linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz">here</a> to download CUDA 11.x TensorRT 8.2.3.0  
 <pre><code>
-Download from url: https://developer.nvidia.com/compute/machine-learning/tensorrt/secure/8.2.3.0/tars/tensorrt-8.2.3.0.linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz
+cd /the/path/of/tensorrt/zip/file
 tar -zxvf TensorRT-8.2.3.0.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz
 pip install TensorRT-8.2.3.0/python/tensorrt-8.2.3.0-cp37-none-linux_x86_64.whl
 export TENSORRT_DIR=$(pwd)/TensorRT-8.2.3.0
@@ -197,9 +199,11 @@ export LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
   <tr>
     <td>cuDNN </td>
     <td>
-    Download cuDNN that matches the CPU architecture, CUDA version and TensorRT version you are using from <a href="https://developer.nvidia.com/rdp/cudnn-archive">here</a>. In the above TensorRT's installation example, it requires cudnn8.2. Thus, you can execute the following commands:
+    1. Download cuDNN that matches the CPU architecture, CUDA version and TensorRT version you are using from <a href="https://developer.nvidia.com/rdp/cudnn-archive"> cuDNN Archive</a>. <br>
+In the above TensorRT's installation example, it requires cudnn8.2. Thus, you can download <a href="https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.2.1.32/11.3_06072021/cudnn-11.3-linux-x64-v8.2.1.32.tgz">CUDA 11.x cuDNN 8.2</a><br>
+    2. Extract the zip file and set the environment variables 
 <pre><code>
-Download cuDNN from url: https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.2.1.32/11.3_06072021/cudnn-11.3-linux-x64-v8.2.1.32.tgz
+cd /the/path/of/cudnn/zip/file
 tar -zxvf cudnn-11.3-linux-x64-v8.2.1.32.tgz
 export CUDNN_DIR=$(pwd)/cuda
 export LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
@@ -358,7 +362,7 @@ pip install -e .
   <tr>
     <td>MMDEPLOY_CODEBASES</td>
     <td>{"mmcls", "mmdet", "mmseg", "mmedit", "mmocr", "all"}</td>
-    <td>N/A</td>
+    <td>all</td>
     <td>Enable codebase's postprocess modules. It MUST be set by a semicolon separated list of codebase names. The currently supported codebases are 'mmcls', 'mmdet', 'mmedit', 'mmseg', 'mmocr'. Instead of listing them one by one, you can also pass <code>all</code> to enable them all, i.e., <code>-DMMDEPLOY_CODEBASES=all</code></td>
   </tr>
   <tr>
@@ -370,7 +374,7 @@ pip install -e .
 </tbody>
 </table>
 
-##### Build SDK Libraries
+##### Build SDK
 MMDeploy provides two recipes as shown below for building SDK with ONNXRuntime and TensorRT as inference engines respectively.
 You can also activate other engines after the model.
 

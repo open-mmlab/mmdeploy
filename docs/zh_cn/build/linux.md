@@ -1,6 +1,6 @@
-# # Linux-x86_64 下构建方式
+# Linux-x86_64 下构建方式
 
-- [# Linux-x86_64 下构建方式](#-linux-x86_64-下构建方式)
+- [Linux-x86_64 下构建方式](#linux-x86_64-下构建方式)
   - [Dockerfile 方式 (推荐)](#dockerfile-方式-推荐)
   - [源码安装](#源码安装)
     - [安装构建和编译工具链](#安装构建和编译工具链)
@@ -14,13 +14,13 @@
         - [安装 Model Converter](#安装-model-converter)
       - [编译SDK](#编译sdk)
         - [编译选项说明](#编译选项说明)
-        - [编译 SDK 库](#编译-sdk-库)
+        - [编译 SDK](#编译-sdk)
         - [编译 SDK Demo](#编译-sdk-demo)
 ---
 MMDeploy 为 Linux-x86_64 平台提供 2 种编译安装方式，分别是 Dockerfile 方式和源码方式
 
 ## Dockerfile 方式 (推荐)
-请参考[how to use docker](tutorials/how_to_use_docker.md).
+请参考[how to use docker](tutorials/how_to_use_docker.md)
 
 ## 源码安装
 
@@ -28,7 +28,7 @@ MMDeploy 为 Linux-x86_64 平台提供 2 种编译安装方式，分别是 Docke
 
 - cmake
 
-    **保证 cmake的版本 >= 3.14.0**. 如果不是，可以参考以下命令安装 3.20.0 版本. 如要获取其他版本，请参考 [这里](https://cmake.org/install).
+    **保证 cmake的版本 >= 3.14.0**。如果不是，可以参考以下命令安装 3.20.0 版本。如需获取其他版本，请参考 [这里](https://cmake.org/install)。
 
     ```bash
     sudo apt-get install -y libssl-dev
@@ -64,7 +64,7 @@ MMDeploy 为 Linux-x86_64 平台提供 2 种编译安装方式，分别是 Docke
 <tbody>
   <tr>
     <td>conda </td>
-    <td>请参考 <a href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html">这里</a> 安装 conda. <br> 通过 conda 创建并激活 Python 环境. <br>
+    <td>请参考 <a href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html">这里</a> 安装 conda。<br> 通过 conda 创建并激活 Python 环境。<br>
 <pre><code>
 conda create -n mmdeploy python=3.7 -y
 conda activate mmdeploy
@@ -163,7 +163,7 @@ MMDeploy 的 Model Converter 和 SDK 共享推理引擎。您可以参考下文�
     <td>
     1. 安装 onnxruntime 的 python 包
        <pre><code>pip install onnxruntime==1.8.1</code></pre>
-    2. 从<a href="https://github.com/microsoft/onnxruntime/releases/tag/v1.8.1">这里</a>下载 onnxruntime 的预编译包。参考如下命令，解压压缩包并导出环境变量 <code>ONNXRUNTIME_DIR</code> 和 <code>LD_LIBRARY_PATH</code>
+    2. 从<a href="https://github.com/microsoft/onnxruntime/releases/tag/v1.8.1">这里</a>下载 onnxruntime 的预编译包。参考如下命令，解压压缩包并设置环境变量
 <pre><code>
 wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
 tar -zxvf onnxruntime-linux-x64-1.8.1.tgz
@@ -177,9 +177,12 @@ export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
     <td rowspan="2">TensorRT<br> </td>
     <td>TensorRT <br> </td>
     <td>
-   从<a href="https://developer.nvidia.com/nvidia-tensorrt-download">这里</a>选取并下载TensorRT tar包。要保证它和您机器的CPU架构以及CUDA版本是匹配的。您可以参考这份 <a href="https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing-tar">指南</a> 安装 TensorRT。这里也有一份 TensorRT 8.2 GA Update 2 在 Linux x86_64 和 CUDA 11.x 下的安装示例，供您参考：
+   登录 NVIDIA 官网，从<a href="https://developer.nvidia.com/nvidia-tensorrt-download">这里</a>选取并下载TensorRT tar包。要保证它和您机器的CPU架构以及CUDA版本是匹配的。<br>
+   您可以参考这份 <a href="https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing-tar">指南</a> 安装 TensorRT。<br>
+   这里也有一份 TensorRT 8.2 GA Update 2 在 Linux x86_64 和 CUDA 11.x 下的安装示例，供您参考。<br>
+   点击<a href="https://developer.nvidia.com/compute/machine-learning/tensorrt/secure/8.2.3.0/tars/tensorrt-8.2.3.0.linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz">此处下载 CUDA 11.x TensorRT 8.2.3.0
 <pre><code>
-下载: https://developer.nvidia.com/compute/machine-learning/tensorrt/secure/8.2.3.0/tars/tensorrt-8.2.3.0.linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz
+cd /the/path/of/tensorrt/zip/file
 tar -zxvf TensorRT-8.2.3.0.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz
 pip install TensorRT-8.2.3.0/python/tensorrt-8.2.3.0-cp37-none-linux_x86_64.whl
 export TENSORRT_DIR=$(pwd)/TensorRT-8.2.3.0
@@ -190,9 +193,10 @@ export LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
   <tr>
     <td>cuDNN </td>
     <td>
-    从 <a href="https://developer.nvidia.com/rdp/cudnn-archive">这里</a> 选择和您环境中 CPU 架构、CUDA版本以及 TensorRT 版本配套的 cuDNN。以前文 TensorRT 安装说明为例，它需要 cudnn8.2。因此，您可以使用如下命令安装：
+    1. 从 <a href="https://developer.nvidia.com/rdp/cudnn-archive">cuDNN Archive</a> 选择和您环境中 CPU 架构、CUDA版本以及 TensorRT 版本配套的 cuDNN。以前文 TensorRT 安装说明为例，它需要 cudnn8.2。因此，可以下载<a href="https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.2.1.32/11.3_06072021/cudnn-11.3-linux-x64-v8.2.1.32.tgz">CUDA 11.x cuDNN 8.2</a><br>
+    2. 解压压缩包，并设置环境变量
 <pre><code>
-下载：https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.2.1.32/11.3_06072021/cudnn-11.3-linux-x64-v8.2.1.32.tgz
+cd /the/path/of/cudnn/zip/file
 tar -zxvf cudnn-11.3-linux-x64-v8.2.1.32.tgz
 export CUDNN_DIR=$(pwd)/cuda
 export LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
@@ -350,7 +354,7 @@ pip install -e .
   <tr>
     <td>MMDEPLOY_CODEBASES</td>
     <td>{"mmcls", "mmdet", "mmseg", "mmedit", "mmocr", "all"}</td>
-    <td>N/A</td>
+    <td>all</td>
     <td>用来设置 SDK 后处理组件，加载 OpenMMLab 算法仓库的后处理功能。已支持的算法仓库有'mmcls'，'mmdet'，'mmedit'，'mmseg'和'mmocr'。如果选择多个codebase，中间使用分号隔开。比如，<code>-DMMDEPLOY_CODEBASES="mmcls;mmdet"</code>。也可以通过 <code>-DMMDEPLOY_CODEBASES=all</code> 方式，加载所有 codebase。</td>
   </tr>
   <tr>
@@ -362,7 +366,7 @@ pip install -e .
 </tbody>
 </table>
 
-#####  编译 SDK 库
+#####  编译 SDK
 下文展示2个构建SDK的样例，分别用 ONNXRuntime 和 TensorRT 作为推理引擎。您可以参考它们，激活其他的推理引擎。
 
 - cpu + ONNXRuntime
