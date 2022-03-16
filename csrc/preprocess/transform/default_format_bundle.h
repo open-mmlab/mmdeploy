@@ -13,7 +13,7 @@ namespace mmdeploy {
 class MMDEPLOY_API DefaultFormatBundleImpl : public TransformImpl {
  public:
   DefaultFormatBundleImpl(const Value& args);
-  ~DefaultFormatBundleImpl() = default;
+  ~DefaultFormatBundleImpl() override = default;
 
   Result<Value> Process(const Value& input) override;
 
@@ -34,7 +34,7 @@ class MMDEPLOY_API DefaultFormatBundleImpl : public TransformImpl {
 class MMDEPLOY_API DefaultFormatBundle : public Transform {
  public:
   explicit DefaultFormatBundle(const Value& args, int version = 0);
-  ~DefaultFormatBundle() = default;
+  ~DefaultFormatBundle() override = default;
 
   Result<Value> Process(const Value& input) override { return impl_->Process(input); }
 

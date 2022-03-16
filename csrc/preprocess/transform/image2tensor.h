@@ -17,7 +17,7 @@ namespace mmdeploy {
 class MMDEPLOY_API ImageToTensorImpl : public TransformImpl {
  public:
   ImageToTensorImpl(const Value& args);
-  ~ImageToTensorImpl() = default;
+  ~ImageToTensorImpl() override = default;
 
   Result<Value> Process(const Value& input) override;
 
@@ -37,7 +37,7 @@ class MMDEPLOY_API ImageToTensorImpl : public TransformImpl {
 class MMDEPLOY_API ImageToTensor : public Transform {
  public:
   explicit ImageToTensor(const Value& args, int version = 0);
-  ~ImageToTensor() = default;
+  ~ImageToTensor() override = default;
 
   Result<Value> Process(const Value& input) override { return impl_->Process(input); }
 

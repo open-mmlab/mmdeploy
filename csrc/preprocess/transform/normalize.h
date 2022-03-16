@@ -11,7 +11,7 @@ namespace mmdeploy {
 class MMDEPLOY_API NormalizeImpl : public TransformImpl {
  public:
   explicit NormalizeImpl(const Value& args);
-  ~NormalizeImpl() = default;
+  ~NormalizeImpl() override = default;
 
   Result<Value> Process(const Value& input) override;
 
@@ -31,7 +31,7 @@ class MMDEPLOY_API NormalizeImpl : public TransformImpl {
 class MMDEPLOY_API Normalize : public Transform {
  public:
   explicit Normalize(const Value& args, int version = 0);
-  ~Normalize() = default;
+  ~Normalize() override = default;
 
   Result<Value> Process(const Value& input) override { return impl_->Process(input); }
 
