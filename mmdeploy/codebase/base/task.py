@@ -284,3 +284,21 @@ class BaseTask(metaclass=ABCMeta):
             str: the name of the model.
         """
         pass
+
+    @property
+    def from_mmrazor(self) -> bool:
+        """Whether the codebase from mmrazor.
+
+        Returns:
+            bool: From mmrazor or not.
+
+        Raises:
+            TypeError: An error when type of `from_mmrazor` is not boolean.
+        """
+        from_mmrazor = getattr(self.deploy_cfg.codebase_config, 'from_mmrazor',
+                               False)
+        if not isinstance(from_mmrazor, bool):
+            raise TypeError('`from_mmrazor` attribute must be boolean type! '
+                            f'but got: {from_mmrazor}')
+
+        return from_mmrazor
