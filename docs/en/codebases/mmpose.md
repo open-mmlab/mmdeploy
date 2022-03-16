@@ -6,7 +6,7 @@
 
 Please refer to [official installation guide](https://mmpose.readthedocs.io/en/latest/install.html) to install the codebase.
 
-## MMEditing models support
+## MMPose models support
 
 | Model     | Task          | ONNX Runtime | TensorRT | NCNN | PPLNN | OpenVINO |                                        Model config                                         |
 |:----------|:--------------|:------------:|:--------:|:----:|:-----:|:--------:|:-------------------------------------------------------------------------------------------:|

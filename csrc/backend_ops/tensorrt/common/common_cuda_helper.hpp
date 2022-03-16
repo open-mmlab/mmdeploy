@@ -49,44 +49,31 @@ cublasStatus_t cublasGemmWrap(cublasHandle_t handle, cublasOperation_t transa,
                               const scalar_t* beta, scalar_t* C, int ldc);
 
 template <typename scalar_t>
-__device__ scalar_t bilinear_interpolate(const scalar_t* input, const int height, const int width,
-                                         scalar_t y, scalar_t x) {
+__device__ __forceinline__ scalar_t bilinear_interpolate(const scalar_t* __restrict__ input,
+                                                         const int height, const int width,
+                                                         scalar_t y, scalar_t x) {
   // deal with cases that inverse elements are out of feature map boundary
   if (y < -1.0 || y > height || x < -1.0 || x > width) return 0;
 
-  if (y <= 0) y = 0;
-  if (x <= 0) x = 0;
+  y = min(scalar_t(height - 1), max(scalar_t(0), y));
+  x = min(scalar_t(width - 1), max(scalar_t(0), x));
 
-  int y_low = (int)y;
-  int x_low = (int)x;
-  int y_high;
-  int x_high;
+  const int y_low = floor(y);
+  const int x_low = floor(x);
+  const int y_high = ceil(y);
+  const int x_high = ceil(x);
 
-  if (y_low >= height - 1) {
-    y_high = y_low = height - 1;
-    y = (scalar_t)y_low;
-  } else {
-    y_high = y_low + 1;
-  }
+  const scalar_t v1 = input[y_low * width + x_low];
+  const scalar_t v2 = input[y_low * width + x_high];
+  const scalar_t v3 = input[y_high * width + x_low];
+  const scalar_t v4 = input[y_high * width + x_high];
 
-  if (x_low >= width - 1) {
-    x_high = x_low = width - 1;
-    x = (scalar_t)x_low;
-  } else {
-    x_high = x_low + 1;
-  }
-
-  scalar_t ly = y - y_low;
-  scalar_t lx = x - x_low;
-  scalar_t hy = 1. - ly, hx = 1. - lx;
-  // do bilinear interpolation
-  scalar_t v1 = input[y_low * width + x_low];
-  scalar_t v2 = input[y_low * width + x_high];
-  scalar_t v3 = input[y_high * width + x_low];
-  scalar_t v4 = input[y_high * width + x_high];
-  scalar_t w1 = hy * hx, w2 = hy * lx, w3 = ly * hx, w4 = ly * lx;
-
-  scalar_t val = (w1 * v1 + w2 * v2 + w3 * v3 + w4 * v4);
+  // lerp can be performed by fma
+  const scalar_t ly = y - y_low;
+  const scalar_t lx = x - x_low;
+  const scalar_t v_low = fma(v2 - v1, lx, v1);
+  const scalar_t v_high = fma(v4 - v3, lx, v3);
+  const scalar_t val = fma(v_high - v_low, ly, v_low);
 
   return val;
 }
