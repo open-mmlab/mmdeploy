@@ -176,6 +176,7 @@ make install
       -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn \
       -DMMDEPLOY_TARGET_BACKENDS=ncnn \
       -DMMDEPLOY_CODEBASES=all \
+      -DBUILD_SHARED_LIBS=OFF \
       -DCMAKE_TOOLCHAIN_FILE=${NDK_DIR}/build/cmake/android.toolchain.cmake \
       -DANDROID_ABI=arm64-v8a \
       -DANDROID_PLATFORM=android-30 \
