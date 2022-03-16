@@ -48,6 +48,9 @@ def test_init_pytorch_model(from_mmrazor: Any):
         _model_cfg_path = 'tests/test_codebase/test_mmcls/data/' \
             'mmrazor_model.py'
         _model_cfg = load_config(_model_cfg_path)[0]
+        _model_cfg.algorithm.architecture.model.type = 'mmcls.ImageClassifier'
+        _model_cfg.algorithm.architecture.model.backbone = dict(
+            type='SearchableShuffleNetV2', widen_factor=1.0)
         _deploy_cfg = copy.deepcopy(deploy_cfg)
         _deploy_cfg.codebase_config['from_mmrazor'] = from_mmrazor
         _task_processor = build_task_processor(_model_cfg, _deploy_cfg, 'cpu')
@@ -59,10 +62,10 @@ def test_init_pytorch_model(from_mmrazor: Any):
                 'boolean type! '
                 f'but got: {from_mmrazor}'):
             _ = _task_processor.from_mmrazor
-    else:
-        assert from_mmrazor == _task_processor.from_mmrazor
+        return
+    assert from_mmrazor == _task_processor.from_mmrazor
 
-    model = task_processor.init_pytorch_model(None)
+    model = _task_processor.init_pytorch_model(None)
     assert isinstance(model, BaseClassifier)
 
 
