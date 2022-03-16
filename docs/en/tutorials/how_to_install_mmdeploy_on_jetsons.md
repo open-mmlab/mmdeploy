@@ -121,7 +121,7 @@ Then reinstall mmdeploy.
 
 ### FAQs
 
-- For devices with arch==7.2 , `#assertion/root/workspace/mmdeploy/csrc/backend_ops/tensorrt/batched_nms/trt_batched_nms.cpp,98 2022-02-08 07:15:09,334 - mmdeploy - ERROR - visualize tensorrt model failed.`
+- For Jetson TX2 and Jetson Nano, `#assertion/root/workspace/mmdeploy/csrc/backend_ops/tensorrt/batched_nms/trt_batched_nms.cpp,98 2022-02-08 07:15:09,334 - mmdeploy - ERROR - visualize tensorrt model failed.`
 
     Set MAX N mode and `sudo nvpmodel -m 0 && sudo jetson_clocks`.
     Reducing the number of [pre_top_k](https://github.com/open-mmlab/mmdeploy/blob/34879e638cc2db511e798a376b9a4b9932660fe1/configs/mmdet/_base_/base_static.py#L13) to reduce the number of proposals may resolve the problem.

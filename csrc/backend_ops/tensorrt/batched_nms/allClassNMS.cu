@@ -5,6 +5,8 @@
 
 #include "kernel.h"
 
+#define CudaAssert( X ) if ( !(X) ) { printf( "Thread %d:%d failed assert at %s:%d!\n", blockIdx.x, threadIdx.x, __FILE__, __LINE__ ); return; }
+
 template <typename T_BBOX>
 __device__ T_BBOX bboxSize(const Bbox<T_BBOX> &bbox, const bool normalized, T_BBOX offset) {
   if (bbox.xmax < bbox.xmin || bbox.ymax < bbox.ymin) {
@@ -84,6 +86,10 @@ __global__ void allClassNMS_kernel(const int num, const int num_classes,
                                    bool flipXY = false) {
   //__shared__ bool kept_bboxinfo_flag[CAFFE_CUDA_NUM_THREADS * TSIZE];
   extern __shared__ bool kept_bboxinfo_flag[];
+
+#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ <=720
+  CudaAssert((top_k<201) && "pre_top_k in deploy_cfg should be reduced for devices with arch 7.2!\n" );
+#endif
 
   for (int i = 0; i < num; i++) {
     const int offset = i * num_classes * num_preds_per_class + blockIdx.x * num_preds_per_class;
