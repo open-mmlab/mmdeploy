@@ -21,7 +21,7 @@ cd mmdeploy
 docker build docker/GPU/ -t mmdeploy:0.1.0 --build-arg  VERSION=0.1.0
 ```
 
-For installing libs with the aliyun source, we can append `--build-arg USE_SRC_INSIDE=${USE_SRC_INSIDE}` to build command. 
+For installing libs with the aliyun source, we can append `--build-arg USE_SRC_INSIDE=${USE_SRC_INSIDE}` to build command.
 ```
 # GPU for example
 cd mmdeploy
