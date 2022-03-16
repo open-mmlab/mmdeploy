@@ -191,8 +191,6 @@ def get_preprocess(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config):
         and 'RescaleToZeroOne' not in item['type']
     ]
     for i, transform in enumerate(transforms):
-        if transform['type'] == 'DefaultFormatBundle':
-            transforms[i] = dict(type='ImageToTensor', keys=['img'])
         if 'keys' in transform and transform['keys'] == ['lq']:
             transform['keys'] = ['img']
         if 'key' in transform and transform['key'] == 'lq':

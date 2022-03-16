@@ -9,6 +9,7 @@ set(SRCS
         compose.cpp
         crop.cpp
         image2tensor.cpp
+        default_format_bundle.cpp
         load.cpp
         normalize.cpp
         pad.cpp
