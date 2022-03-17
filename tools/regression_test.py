@@ -33,6 +33,9 @@ def get_model_metafile_info(global_info, model_info, logger):
         global_info (dict): global info from deploy yaml.
         model_info (dict):  model info from deploy yaml.
         logger (logging.Logger): logger.
+
+    Returns:
+        Dict: Meta infos of each model config
     """
 
     # get info from global_info and model_info
@@ -87,11 +90,23 @@ def get_model_metafile_info(global_info, model_info, logger):
     return model_meta_info
 
 
-def get_pytorch_result(global_info, model_info, logger):
-    """Using pytorch to run the metric
+def get_pytorch_result(meta_info, model_config_name):
+    """Get metric from metafile info of the model
 
+    Args:
+        meta_info (dict): metafile info from model's metafile.yml.
+        model_config_name (str):  model config name for getting meta info
+
+    Returns:
+        Dict: metric info of the model
     """
-    return False
+
+    if model_config_name not in meta_info:
+        return {}
+
+    model_info = meta_info.get(model_config_name, None)
+    metric = model_info.get('Results', None)
+    return metric
 
 
 def convert_model(global_info, model_info, logger):
@@ -154,7 +169,7 @@ def main():
             model_metafile_info = get_model_metafile_info(global_info, models, logger)
 
             for model_config in model_metafile_info:
-                pytorch_result = get_pytorch_result(global_info, models, logger)
+                pytorch_result = get_pytorch_result(model_metafile_info, model_config)
                 convert_result = convert_model(global_info, models, logger)
                 onnxruntime_result = get_onnxruntime_result(global_info, models, logger)
                 tensorrt_result = get_tensorrt_result(global_info, models, logger)
