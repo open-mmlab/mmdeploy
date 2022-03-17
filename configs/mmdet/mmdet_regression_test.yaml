@@ -1,0 +1,86 @@
+globals:
+  codebase_name: mmdet
+  codebase_release: V2.22.0
+  codebase_dir: ../../mmdetection
+  checkpoint_force_download: False
+  checkpoint_dir: ../checkpoints
+  metric_tolerance:
+    box_AP: 0.1
+    mask_AP: 0.1
+  default_deploy_config:
+    - onnxruntime:
+      static:
+        fp32: &default_onnxruntime_static_fp32 detection_onnxruntime_static.py
+      dynamic:
+        fp32: &default_onnxruntime_dynamic_fp32 detection_onnxruntime_dynamic.py
+    - tensorrt:
+      static:
+        fp32: &default_tensorrt_static_fp32 None
+        fp16: &default_tensorrt_static_fp16 None
+        int8: &default_tensorrt_static_int8 None
+      dynamic:
+        fp32: &default_tensorrt_dynamic_fp32 None
+        fp16: &default_tensorrt_dynamic_fp16 None
+        int8: &default_tensorrt_dynamic_int8 None
+    - openvino:
+      static:
+        fp32: &default_openvino_static_fp32 None
+      dynamic:
+        fp32: &default_openvino_dynamic_fp32 None
+    - ncnn:
+      static:
+        fp32: &default_ncnn_static_fp32 None
+      dynamic:
+        fp32: &default_ncnn_dynamic_fp32 None
+    - pplnn:
+      static:
+        fp32: &default_pplnn_static_fp32 None
+      dynamic:
+        fp32: &default_pplnn_dynamic_fp32 None
+    - sdk:
+      static:
+        fp32: &default_sdk_static_fp32 None
+        fp16: &default_sdk_static_fp16 None
+        int8: &default_sdk_static_int8 None
+      dynamic:
+        fp32: &default_sdk_dynamic_fp32 None
+        fp16: &default_sdk_dynamic_fp16 None
+        int8: &default_sdk_dynamic_int8 None
+
+models:
+  - name: yolo
+    model_config_root: ./configs/yolo
+    model_configs:
+      - yolov3_d53_320_273e_coco.py
+      - yolov3_d53_fp16_mstrain-608_273e_coco.py
+      - yolov3_d53_mstrain-416_273e_coco.py
+      - yolov3_d53_mstrain-608_273e_coco.py
+      - yolov3_mobilenetv2_320_300e_coco.py
+      - yolov3_mobilenetv2_mstrain-416_300e_coco.py
+    metafile: configs/yolo/metafile.yml
+    calib-dataset-cfg: None
+    backends: &onnx_backend_config
+      - onnxruntime:
+          performance_align: True
+          deploy_config:
+            static:
+              fp32: *default_onnxruntime_static_fp32
+            dynamic:
+              fp32: *default_onnxruntime_dynamic_fp32
+      - tensorrt:
+          performance_align: True
+          deploy_config:
+            static:
+              fp32: None
+              fp16: None
+              int8: None
+            dynamic:
+              fp32: None
+              fp16: None
+              int8: None
+      - ncnn:
+      - openvino:
+      - pplnn:
+      - sdk:
+
+  - name: hrnet
