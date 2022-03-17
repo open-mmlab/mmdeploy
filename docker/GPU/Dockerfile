@@ -12,6 +12,17 @@ ENV FORCE_CUDA="1"
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+### change the system source for installing libs
+ARG USE_SRC_INSIDE=false
+RUN if [ ${USE_SRC_INSIDE} == true ] ; \
+    then \
+        sed -i s/archive.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list ; \
+        sed -i s/security.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list ; \
+        echo "Use aliyun source for installing libs" ; \
+    else \
+        echo "Keep the download source unchanged" ; \
+    fi
+
 ### update apt and install libs
 RUN apt-get update &&\
     apt-get install -y vim libsm6 libxext6 libxrender-dev libgl1-mesa-glx git wget libssl-dev libopencv-dev libspdlog-dev --no-install-recommends &&\

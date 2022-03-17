@@ -6,6 +6,18 @@ ARG ONNXRUNTIME_VERSION=1.8.1
 ARG MMCV_VERSION=1.4.0
 ARG CMAKE_VERSION=3.20.0
 USER root
+
+### change the system source for installing libs
+ARG USE_SRC_INSIDE=false
+RUN if [ ${USE_SRC_INSIDE} == true ] ; \
+    then \
+        sed -i s/archive.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list ; \
+        sed -i s/security.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list ; \
+        echo "Use aliyun source for installing libs" ; \
+    else \
+        echo "Keep the download source unchanged" ; \
+    fi
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
         libopencv-dev libspdlog-dev \
