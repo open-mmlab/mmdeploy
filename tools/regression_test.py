@@ -26,12 +26,12 @@ def parse_args():
     return args
 
 
-def get_model_weight(global_info, model_info, logger):
-    """Automatically scaling LR according to GPU number and sample per GPU.
+def get_model_metafile_info(global_info, model_info, logger):
+    """Get model metafile information.
 
     Args:
-        global_info (dict): training config.
-        model_info (dict): logger.
+        global_info (dict): global info from deploy yaml.
+        model_info (dict):  model info from deploy yaml.
         logger (logging.Logger): logger.
     """
 
@@ -58,14 +58,17 @@ def get_model_weight(global_info, model_info, logger):
     with open(metafile_path) as f:
         metafile_info = yaml.load(f, Loader=yaml.FullLoader)
 
+    model_meta_info = dict()
     for meta_model in metafile_info.get('Models'):
         if str(meta_model.get('Name')) + ".py" not in model_config_files:
             # skip if the model not in model_config_files
             continue
 
+        # get meta info
+        model_meta_info.update({meta_model.get('Name'): meta_model})
+
         # get weight url
         weights_url = meta_model.get('Weights')
-
         weights_name = str(weights_url).split('/')[-1]
         weights_save_path = checkpoint_save_dir.joinpath(weights_name)
         if weights_save_path.exists() and \
@@ -80,7 +83,8 @@ def get_model_weight(global_info, model_info, logger):
         if not weights_save_path.exists():
             raise FileExistsError(f'Weight {weights_name} download fail')
 
-    return True
+    logger.info(f'All models had been downloaded successful.')
+    return model_meta_info
 
 
 def get_pytorch_result(global_info, model_info, logger):
@@ -147,16 +151,18 @@ def main():
             if 'model_configs' not in models:
                 continue
 
-            get_model_weight(global_info, models, logger)
-            pytorch_result = get_pytorch_result(global_info, models, logger)
-            convert_result = convert_model(global_info, models, logger)
-            onnxruntime_result = get_onnxruntime_result(global_info, models, logger)
-            tensorrt_result = get_tensorrt_result(global_info, models, logger)
-            openvino_result = get_openvino_result(global_info, models, logger)
-            ncnn_result = get_ncnn_result(global_info, models, logger)
-            pplnn_result = get_pplnn_result(global_info, models, logger)
-            sdk_result = get_sdk_result(global_info, models, logger)
-            save_report()
+            model_metafile_info = get_model_metafile_info(global_info, models, logger)
+
+            for model_config in model_metafile_info:
+                pytorch_result = get_pytorch_result(global_info, models, logger)
+                convert_result = convert_model(global_info, models, logger)
+                onnxruntime_result = get_onnxruntime_result(global_info, models, logger)
+                tensorrt_result = get_tensorrt_result(global_info, models, logger)
+                openvino_result = get_openvino_result(global_info, models, logger)
+                ncnn_result = get_ncnn_result(global_info, models, logger)
+                pplnn_result = get_pplnn_result(global_info, models, logger)
+                sdk_result = get_sdk_result(global_info, models, logger)
+                save_report()
 
 
 if __name__ == '__main__':
