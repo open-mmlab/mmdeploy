@@ -42,39 +42,43 @@ def get_model_weight(global_info, model_info, logger):
     codebase_dir = global_info.get('codebase_dir', None)
     assert codebase_dir is not None
 
+    codebase_name = global_info.get('codebase_name', None)
+    assert codebase_name is not None
+
     model_config_files = model_info.get('model_configs', [])
     assert len(model_config_files) > 0
 
     # make checkpoint save directory
-    checkpoint_save_dir = Path(checkpoint_dir).joinpath(model_info.get('name'))
+    checkpoint_save_dir = Path(checkpoint_dir).joinpath(codebase_name,
+                                                        model_info.get('name'))
     checkpoint_save_dir.mkdir(parents=True, exist_ok=True)
 
     # get model metafile info
     metafile_path = Path(codebase_dir).joinpath(model_info.get('metafile'))
     with open(metafile_path) as f:
         metafile_info = yaml.load(f, Loader=yaml.FullLoader)
-        for meta_model in metafile_info.get('Models'):
-            if str(meta_model.get('Name')) + ".py" not in model_config_files:
-                # skip if the model not in model_config_files
-                continue
 
-            # get weight url
-            weights_url = meta_model.get('Weights')
-            print(f'{meta_model.get("Name")}: {weights_url}')
+    for meta_model in metafile_info.get('Models'):
+        if str(meta_model.get('Name')) + ".py" not in model_config_files:
+            # skip if the model not in model_config_files
+            continue
 
-            weights_name = str(weights_url).split('/')[-1]
-            weights_save_path = checkpoint_save_dir.joinpath(weights_name)
-            if weights_save_path.exists() and \
-                    not global_info.get('checkpoint_force_download', False):
-                continue
+        # get weight url
+        weights_url = meta_model.get('Weights')
 
-            # Download weight
-            logger.info(f'Downloading {weights_url} to {weights_save_path}')
-            torch.hub.download_url_to_file(weights_url, str(weights_save_path), progress=True)
+        weights_name = str(weights_url).split('/')[-1]
+        weights_save_path = checkpoint_save_dir.joinpath(weights_name)
+        if weights_save_path.exists() and \
+                not global_info.get('checkpoint_force_download', False):
+            continue
 
-            # check weather the weight download successful
-            if not weights_save_path.exists():
-                raise FileExistsError(f'Weight {weights_name} download fail')
+        # Download weight
+        logger.info(f'Downloading {weights_url} to {weights_save_path}')
+        torch.hub.download_url_to_file(weights_url, str(weights_save_path), progress=True)
+
+        # check weather the weight download successful
+        if not weights_save_path.exists():
+            raise FileExistsError(f'Weight {weights_name} download fail')
 
     return True
 
@@ -137,9 +141,7 @@ def main():
             yaml_info = yaml.load(f, Loader=yaml.FullLoader)
 
         global_info = yaml_info.get('globals')
-        print(f'global_info = {global_info}')
         models_info = yaml_info.get('models')
-        print(f'models_info = {models_info}')
 
         for models in models_info:
             if 'model_configs' not in models:

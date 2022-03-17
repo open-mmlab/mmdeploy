@@ -3,7 +3,7 @@ globals:
   codebase_release: V2.22.0
   codebase_dir: ../../mmdetection
   checkpoint_force_download: False
-  checkpoint_dir: ../checkpoints
+  checkpoint_dir: ../../mmdeploy_checkpoints
   metric_tolerance:
     box_AP: 0.1
     mask_AP: 0.1
