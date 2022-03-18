@@ -76,7 +76,7 @@ ENV BACKUP_LD_LIBRARY_PATH=$LD_LIBRARY_PATH
 ENV LD_LIBRARY_PATH=/usr/local/cuda-11.3/compat/lib.real/:$LD_LIBRARY_PATH
 
 RUN cd /root/workspace/mmdeploy &&\
-    rm -rf build/CM* build/cmake-install.cmake &&\
+    rm -rf build/CM* build/cmake-install.cmake build/Makefile build/csrc &&\
     mkdir -p build && cd build &&\
     cmake .. \
         -DMMDEPLOY_BUILD_SDK=ON \
