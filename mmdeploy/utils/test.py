@@ -358,7 +358,11 @@ def get_onnx_model(wrapped_model: nn.Module,
     patched_model = patch_model(
         wrapped_model, cfg=deploy_cfg, backend=backend.value)
     flatten_model_inputs = get_flatten_inputs(model_inputs)
-    input_names = [k for k, v in flatten_model_inputs.items() if k != 'ctx']
+    input_names = onnx_cfg.get('input_names', None)
+    if input_names is None:
+        input_names = [
+            k for k, v in flatten_model_inputs.items() if k != 'ctx'
+        ]
     output_names = onnx_cfg.get('output_names', None)
     dynamic_axes = get_dynamic_axes(deploy_cfg, input_names)
 
@@ -366,7 +370,7 @@ def get_onnx_model(wrapped_model: nn.Module,
             cfg=deploy_cfg, backend=backend.value, opset=11), torch.no_grad():
         torch.onnx.export(
             patched_model,
-            tuple([v for k, v in model_inputs.items()]),
+            tuple([flatten_model_inputs[name] for name in input_names]),
             onnx_file_path,
             export_params=True,
             input_names=input_names,
