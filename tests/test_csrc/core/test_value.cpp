@@ -283,12 +283,22 @@ struct Doge {
   int value;
 };
 
+namespace mmdeploy {
+
+MMDEPLOY_REGISTER_TYPE_ID(Meow, 1234);
+MMDEPLOY_REGISTER_TYPE_ID(Doge, 3456);
+
+}  // namespace mmdeploy
+
 template <>
 struct mmdeploy::is_cast_by_erasure<Meow> : std::true_type {};
 
 TEST_CASE("test dynamic interface for value", "[value]") {
   Value meow(Meow{100});
   REQUIRE(meow.is_any());
+  REQUIRE(meow.is_any<Meow>());
+  REQUIRE_FALSE(meow.is_any<int>());
+  REQUIRE_FALSE(meow.is_any<Doge>());
   REQUIRE(meow.get<Meow>().value == 100);
   REQUIRE(meow.get_ref<Meow&>().value == 100);
   REQUIRE(meow.get_ptr<Meow*>() == &meow.get_ref<Meow&>());
