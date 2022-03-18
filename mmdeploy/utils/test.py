@@ -333,9 +333,12 @@ def get_flatten_inputs(
         if isinstance(value, torch.Tensor):
             flatten_inputs[name] = value
         elif isinstance(value, (list, tuple)):
-            for i, tensor in enumerate(value):
-                name_i = f'{name}_{i}'
-                flatten_inputs[name_i] = tensor
+            if len(value) == 1:
+                flatten_inputs[name] = value[0]
+            else:
+                for i, tensor in enumerate(value):
+                    name_i = f'{name}_{i}'
+                    flatten_inputs[name_i] = tensor
     return flatten_inputs
 
 
@@ -363,6 +366,7 @@ def get_onnx_model(wrapped_model: nn.Module,
         input_names = [
             k for k, v in flatten_model_inputs.items() if k != 'ctx'
         ]
+        assert len(input_names) == 1, 'Only support one input'
     output_names = onnx_cfg.get('output_names', None)
     dynamic_axes = get_dynamic_axes(deploy_cfg, input_names)
 
@@ -370,7 +374,7 @@ def get_onnx_model(wrapped_model: nn.Module,
             cfg=deploy_cfg, backend=backend.value, opset=11), torch.no_grad():
         torch.onnx.export(
             patched_model,
-            tuple([flatten_model_inputs[name] for name in input_names]),
+            tuple([model_inputs[name] for name in input_names]),
             onnx_file_path,
             export_params=True,
             input_names=input_names,
