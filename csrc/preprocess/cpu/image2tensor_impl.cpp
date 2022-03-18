@@ -20,6 +20,7 @@ class ImageToTensorImpl : public ::mmdeploy::ImageToTensorImpl {
     int channels = shape[3];
 
     auto dst_mat = Transpose(Tensor2CVMat(src_tensor));
+
     auto dst_tensor = CVMat2Tensor(dst_mat);
     dst_tensor.Reshape({1, channels, height, width});
 
