@@ -4,7 +4,6 @@ ARG TORCH_VERSION=1.8.0
 ARG TORCHVISION_VERSION=0.9.0
 ARG ONNXRUNTIME_VERSION=1.8.1
 ARG MMCV_VERSION=1.4.0
-ARG CMAKE_VERSION=3.20.0
 USER root
 
 ### change the system source for installing libs
@@ -58,14 +57,6 @@ RUN wget https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTI
     && tar -zxvf onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz
 
 ENV ONNXRUNTIME_DIR=/root/workspace/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}
-
-### update cmake to 20
-RUN wget https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}.tar.gz &&\
-    tar -zxvf cmake-${CMAKE_VERSION}.tar.gz &&\
-    cd cmake-${CMAKE_VERSION} &&\
-    ./bootstrap &&\
-    make &&\
-    make install
 
 ### install onnxruntme and openvino
 RUN /opt/conda/bin/pip install onnxruntime==${ONNXRUNTIME_VERSION} openvino-dev
