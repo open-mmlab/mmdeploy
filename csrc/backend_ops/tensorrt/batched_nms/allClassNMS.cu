@@ -5,8 +5,6 @@
 
 #include "kernel.h"
 
-#define CudaAssert( X ) if ( !(X) ) { printf( "Thread %d:%d failed assert at %s:%d!\n", blockIdx.x, threadIdx.x, __FILE__, __LINE__ ); return; }
-
 template <typename T_BBOX>
 __device__ T_BBOX bboxSize(const Bbox<T_BBOX> &bbox, const bool normalized, T_BBOX offset) {
   if (bbox.xmax < bbox.xmin || bbox.ymax < bbox.ymin) {
@@ -86,11 +84,6 @@ __global__ void allClassNMS_kernel(const int num, const int num_classes,
                                    bool flipXY = false) {
   //__shared__ bool kept_bboxinfo_flag[CAFFE_CUDA_NUM_THREADS * TSIZE];
   extern __shared__ bool kept_bboxinfo_flag[];
-
-#if defined(__CUDA_ARCH__) && __CUDA_ARCH__ <=720
-  CudaAssert((top_k<201) && "pre_top_k in deploy_cfg should be reduced for devices with arch 7.2!\n" );
-#endif
-
   for (int i = 0; i < num; i++) {
     const int offset = i * num_classes * num_preds_per_class + blockIdx.x * num_preds_per_class;
     const int max_idx = offset + top_k;  // put top_k bboxes into NMS calculation
@@ -257,6 +250,11 @@ pluginStatus_t allClassNMS(cudaStream_t stream, const int num, const int num_cla
                            const bool isNormalized, const DataType DT_SCORE, const DataType DT_BBOX,
                            void *bbox_data, void *beforeNMS_scores, void *beforeNMS_index_array,
                            void *afterNMS_scores, void *afterNMS_index_array, bool flipXY) {
+  auto __cuda_arch__ = get_cuda_arch(0);  // assume there is only one arch 7.2 device
+  if (__cuda_arch__ == 720 && top_k > 200) {
+    printf("pre_top_k need to be reduced for devices with arch 7.2\n");
+    return STATUS_BAD_PARAM;
+  }
   nmsLaunchConfigSSD lc = nmsLaunchConfigSSD(DT_SCORE, DT_BBOX, allClassNMS_gpu<float, float>);
   for (unsigned i = 0; i < nmsFuncVec.size(); ++i) {
     if (lc == nmsFuncVec[i]) {
