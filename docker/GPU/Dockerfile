@@ -51,14 +51,6 @@ RUN wget https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTI
 ### cp trt from pip to conda
 RUN cp -r /usr/local/lib/python${PYTHON_VERSION}/dist-packages/tensorrt* /opt/conda/lib/python${PYTHON_VERSION}/site-packages/
 
-### update cmake
-RUN  wget https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}.tar.gz &&\
-    tar -zxvf cmake-${CMAKE_VERSION}.tar.gz &&\
-    cd cmake-${CMAKE_VERSION} &&\
-    ./bootstrap &&\
-    make &&\
-    make install
-
 ### install mmdeploy
 ENV ONNXRUNTIME_DIR=/root/workspace/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}
 ENV TENSORRT_DIR=/workspace/tensorrt
@@ -67,12 +59,9 @@ RUN git clone https://github.com/open-mmlab/mmdeploy &&\
     cd mmdeploy &&\
     if [ -z ${VERSION} ] ; then echo "No MMDeploy version passed in, building on master" ; else git checkout tags/v${VERSION} -b tag_v${VERSION} ; fi &&\
     git submodule update --init --recursive &&\
-    rm -rf build &&\
-    mkdir build &&\
+    mkdir -p build &&\
     cd build &&\
-    cmake -DMMDEPLOY_TARGET_BACKENDS=ort .. &&\
-    make -j$(nproc) &&\
-    cmake -DMMDEPLOY_TARGET_BACKENDS=trt .. &&\
+    cmake -DMMDEPLOY_TARGET_BACKENDS="ort;trt" .. &&\
     make -j$(nproc) &&\
     cd .. &&\
     pip install -e .
@@ -83,8 +72,11 @@ RUN wget https://github.com/openppl-public/ppl.cv/archive/refs/tags/v${PPLCV_VER
     cd ppl.cv &&\
     ./build.sh cuda
 
+ENV BACKUP_LD_LIBRARY_PATH=$LD_LIBRARY_PATH
+ENV LD_LIBRARY_PATH=/usr/local/cuda-11.3/compat/lib.real/:$LD_LIBRARY_PATH
+
 RUN cd /root/workspace/mmdeploy &&\
-    rm -rf build/CM* &&\
+    rm -rf build/CM* build/cmake-install.cmake &&\
     mkdir -p build && cd build &&\
     cmake .. \
         -DMMDEPLOY_BUILD_SDK=ON \
@@ -95,10 +87,10 @@ RUN cd /root/workspace/mmdeploy &&\
         -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
         -DMMDEPLOY_TARGET_BACKENDS="trt" \
         -DMMDEPLOY_CODEBASES=all &&\
-    cmake --build . -- -j$(nproc) && cmake --install . &&\
+    make -j$(nproc) && make install &&\
     cd install/example  && mkdir -p build && cd build &&\
     cmake -DMMDeploy_DIR=/root/workspace/mmdeploy/build/install/lib/cmake/MMDeploy .. &&\
-    cmake --build . && export SPDLOG_LEVEL=warn &&\
+    make -j$(nproc) && export SPDLOG_LEVEL=warn &&\
     if [ -z ${VERSION} ] ; then echo "Built MMDeploy master for GPU devices successfully!" ; else echo "Built MMDeploy version v${VERSION} for GPU devices successfully!" ; fi
 
-ENV LD_LIBRARY_PATH="/root/workspace/mmdeploy/build/lib:${LD_LIBRARY_PATH}"
+ENV LD_LIBRARY_PATH="/root/workspace/mmdeploy/build/lib:${BACKUP_LD_LIBRARY_PATH}"
