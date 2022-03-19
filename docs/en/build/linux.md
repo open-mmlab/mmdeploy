@@ -9,19 +9,18 @@
       - [Install Dependencies for SDK](#install-dependencies-for-sdk)
       - [Install Inference Engines for MMDeploy](#install-inference-engines-for-mmdeploy)
     - [Build MMDeploy](#build-mmdeploy)
+      - [Build Options Spec](#build-options-spec)
       - [Build Model Converter](#build-model-converter)
         - [Build Custom Ops](#build-custom-ops)
         - [Install Model Converter](#install-model-converter)
       - [Build SDK](#build-sdk)
-        - [Build Options](#build-options)
-        - [Build SDK](#build-sdk-1)
-        - [Build SDK Demo](#build-sdk-demo)
+      - [Build Demo](#build-demo)
 
 ---
 MMDeploy provides two build ways for linux-x86_64 platform, including dockerfile and build from source.
 
 ## Dockerfile (RECOMMENDED)
-please refer to [how to use docker](tutorials/how_to_use_docker.md).
+please refer to [how to use docker](../tutorials/how_to_use_docker.md).
 
 ## Build From Source
 
@@ -29,7 +28,7 @@ please refer to [how to use docker](tutorials/how_to_use_docker.md).
 
 - cmake
 
-    **Make sure cmake version >= 3.14.0**. The below script shows how to install cmake 3.20.0. You can find more versions on [here](https://cmake.org/install).
+    **Make sure cmake version >= 3.14.0**. The below script shows how to install cmake 3.20.0. You can find more versions [here](https://cmake.org/install).
 
     ```bash
     sudo apt-get install -y libssl-dev
@@ -255,63 +254,21 @@ pip install -e .
 
 Note: <br>
 If you want to make the above environment variables permanent, you could add them to <code>~/.bashrc</code>. Take the ONNXRuntime for example,
-<pre><code>
+
+```bash
 echo '# set env for onnxruntime' >> ~/.bashrc
 echo "export ONNXRUNTIME_DIR=${ONNXRUNTIME_DIR}" >> ~/.bashrc
 echo 'export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH' >> ~/.bashrc
 source ~/.bashrc
-</code></pre>
+```
+
 ### Build MMDeploy
 ```bash
 cd /the/root/path/of/MMDeploy
 export MMDEPLOY_DIR=$(pwd)
 ```
-#### Build Model Converter
 
-##### Build Custom Ops
-If one of inference engines among ONNXRuntime, TensorRT and ncnn is selected, you have to build the corresponding custom ops.
-
-- **ONNXRuntime** Custom Ops
-
-  ```bash
-  cd ${MMDEPLOY_DIR}
-  mkdir -p build && cd build
-  cmake -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_TARGET_BACKENDS=ort -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
-  cmake --build . -- -j$(nproc)
-  ```
-
-- **TensorRT** Custom Ops
-
-  ```bash
-  cd ${MMDEPLOY_DIR}
-  mkdir -p build && cd build
-  cmake -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_TARGET_BACKENDS=trt -DTENSORRT_DIR=${TENSORRT_DIR} -DCUDNN_DIR=${CUDNN_DIR} ..
-  cmake --build . -- -j$(nproc)
-  ```
-
-- **ncnn** Custom Ops
-
-  ```bash
-  cd ${MMDEPLOY_DIR}
-  mkdir -p build && cd build
-  cmake -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_TARGET_BACKENDS=ncnn -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn ..
-  cmake --build . -- -j$(nproc)
-  ```
-
-##### Install Model Converter
-
-```bash
-cd ${MMDEPLOY_DIR}
-pip install -e .
-```
-**Note**
-
-- Some dependencies are optional. Simply running `pip install -e .` will only install the minimum runtime requirements.
-  To use optional dependencies, install them manually with `pip install -r requirements/optional.txt` or specify desired extras when calling `pip` (e.g. `pip install -e .[optional]`).
-  Valid keys for the extras field are: `all`, `tests`, `build`, `optional`.
-#### Build SDK
-
-##### Build Options
+#### Build Options Spec
 <table class="docutils">
 <thead>
   <tr>
@@ -380,7 +337,51 @@ pip install -e .
 </tbody>
 </table>
 
-##### Build SDK
+#### Build Model Converter
+
+##### Build Custom Ops
+If one of inference engines among ONNXRuntime, TensorRT and ncnn is selected, you have to build the corresponding custom ops.
+
+- **ONNXRuntime** Custom Ops
+
+  ```bash
+  cd ${MMDEPLOY_DIR}
+  mkdir -p build && cd build
+  cmake -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_TARGET_BACKENDS=ort -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
+  make -j$(nproc)
+  ```
+
+- **TensorRT** Custom Ops
+
+  ```bash
+  cd ${MMDEPLOY_DIR}
+  mkdir -p build && cd build
+  cmake -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_TARGET_BACKENDS=trt -DTENSORRT_DIR=${TENSORRT_DIR} -DCUDNN_DIR=${CUDNN_DIR} ..
+  make -j$(nproc)
+  ```
+
+- **ncnn** Custom Ops
+
+  ```bash
+  cd ${MMDEPLOY_DIR}
+  mkdir -p build && cd build
+  cmake -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_TARGET_BACKENDS=ncnn -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn ..
+  make -j$(nproc)
+  ```
+
+##### Install Model Converter
+
+```bash
+cd ${MMDEPLOY_DIR}
+pip install -e .
+```
+**Note**
+
+- Some dependencies are optional. Simply running `pip install -e .` will only install the minimum runtime requirements.
+  To use optional dependencies, install them manually with `pip install -r requirements/optional.txt` or specify desired extras when calling `pip` (e.g. `pip install -e .[optional]`).
+  Valid keys for the extras field are: `all`, `tests`, `build`, `optional`.
+#### Build SDK
+
 MMDeploy provides two recipes as shown below for building SDK with ONNXRuntime and TensorRT as inference engines respectively.
 You can also activate other engines after the model.
 
@@ -397,7 +398,7 @@ You can also activate other engines after the model.
       -DMMDEPLOY_CODEBASES=all \
       -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR}
 
-  cmake --build . -- -j$(nproc) && cmake --install .
+  make -j$(nproc) && make install
   ```
 
 - cuda + TensorRT
@@ -415,14 +416,14 @@ You can also activate other engines after the model.
       -DTENSORRT_DIR=${TENSORRT_DIR} \
       -DCUDNN_DIR=${CUDNN_DIR}
 
-  cmake --build . -- -j$(nproc) && cmake --install .
+  make -j$(nproc) && make install
   ```
 
-##### Build SDK Demo
+#### Build Demo
 
 ```Bash
 cd ${MMDEPLOY_DIR}/build/install/example
 mkdir -p build && cd build
 cmake .. -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy
-cmake --build . -- -j$(nproc)
+make -j$(nproc)
 ```

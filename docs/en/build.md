@@ -2,11 +2,12 @@
 
 ## Download MMDeploy
 
-    ```bash
-    git clone -b master git@github.com:open-mmlab/mmdeploy.git MMDeploy
-    cd MMDeploy
-    git submodule update --init --recursive
-    ```
+```bash
+git clone -b master git@github.com:open-mmlab/mmdeploy.git MMDeploy
+cd MMDeploy
+git submodule update --init --recursive
+```
+
 
 Note:
 

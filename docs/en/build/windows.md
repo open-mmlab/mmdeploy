@@ -8,13 +8,12 @@
       - [Install Dependencies for SDK](#install-dependencies-for-sdk)
       - [Install Inference Engines for MMDeploy](#install-inference-engines-for-mmdeploy)
     - [Build MMDeploy](#build-mmdeploy)
+      - [Build Options Spec](#build-options-spec)
       - [Build Model Converter](#build-model-converter)
         - [Build Custom Ops](#build-custom-ops)
         - [Install Model Converter](#install-model-converter)
       - [Build SDK](#build-sdk)
-        - [Build Options](#build-options)
-        - [Build SDK](#build-sdk-1)
-        - [Build SDK Demo](#build-sdk-demo)
+      - [Build Demo](#build-demo)
 
 ---
 Currently, MMDeploy only provides build-from-source method for windows platform. Prebuilt package will be released in the future.
@@ -209,45 +208,7 @@ mkdir build
 cd build
 ```
 
-#### Build Model Converter
-
-##### Build Custom Ops
-If one of inference engines among ONNXRuntime, TensorRT and ncnn is selected, you have to build the corresponding custom ops.
-
-- **ONNXRuntime** Custom Ops
-
-```powershell
-cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DMMDEPLOY_TARGET_BACKENDS="ort" -DONNXRUNTIME_DIR=$env:ONNXRUNTIME_DIR
-cmake --build . --config Release -- /maxcpucount:4
-```
-
-- **TensorRT** Custom Ops
-
-```powershell
-cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DMMDEPLOY_TARGET_BACKENDS="trt" -DTENSORRT_DIR=$env:TENSORRT_DIR -DCUDNN_DIR=$env:CUDNN_DIR
-cmake --build . --config Release -- /maxcpucount:4
-```
-
-- **ncnn** Custom Ops
-
-  TODO
-
-##### Install Model Converter
-
-```powershell
-cd $env:MMDEPLOY_DIR
-pip install -e .
-```
-
-**Note**
-
-- Some dependencies are optional. Simply running `pip install -e .` will only install the minimum runtime requirements.
-  To use optional dependencies, install them manually with `pip install -r requirements/optional.txt` or specify desired extras when calling `pip` (e.g. `pip install -e .[optional]`).
-  Valid keys for the extras field are: `all`, `tests`, `build`, `optional`.
-
-#### Build SDK
-
-##### Build Options
+#### Build Options Spec
 <table class="docutils">
 <thead>
   <tr>
@@ -313,7 +274,45 @@ pip install -e .
 </tbody>
 </table>
 
-##### Build SDK
+
+#### Build Model Converter
+
+##### Build Custom Ops
+If one of inference engines among ONNXRuntime, TensorRT and ncnn is selected, you have to build the corresponding custom ops.
+
+- **ONNXRuntime** Custom Ops
+
+```powershell
+cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DMMDEPLOY_TARGET_BACKENDS="ort" -DONNXRUNTIME_DIR=$env:ONNXRUNTIME_DIR
+cmake --build . --config Release -- /maxcpucount:4
+```
+
+- **TensorRT** Custom Ops
+
+```powershell
+cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DMMDEPLOY_TARGET_BACKENDS="trt" -DTENSORRT_DIR=$env:TENSORRT_DIR -DCUDNN_DIR=$env:CUDNN_DIR
+cmake --build . --config Release -- /maxcpucount:4
+```
+
+- **ncnn** Custom Ops
+
+  TODO
+
+##### Install Model Converter
+
+```powershell
+cd $env:MMDEPLOY_DIR
+pip install -e .
+```
+
+**Note**
+
+- Some dependencies are optional. Simply running `pip install -e .` will only install the minimum runtime requirements.
+  To use optional dependencies, install them manually with `pip install -r requirements/optional.txt` or specify desired extras when calling `pip` (e.g. `pip install -e .[optional]`).
+  Valid keys for the extras field are: `all`, `tests`, `build`, `optional`.
+
+#### Build SDK
+
 MMDeploy provides two recipes as shown below for building SDK with ONNXRuntime and TensorRT as inference engines respectively.
 You can also activate other engines after the model.
 
@@ -351,7 +350,7 @@ You can also activate other engines after the model.
    cmake --install . --config Release
   ```
 
-##### Build SDK Demo
+#### Build Demo
 
 ```PowerShell
 cd install\example
