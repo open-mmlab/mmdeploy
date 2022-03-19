@@ -14,6 +14,7 @@
         - [Install Model Converter](#install-model-converter)
       - [Build SDK](#build-sdk)
       - [Build Demo](#build-demo)
+    - [Note](#note)
 
 ---
 Currently, MMDeploy only provides build-from-source method for windows platform. Prebuilt package will be released in the future.
@@ -48,7 +49,7 @@ Note: if you are familiar with how cmake works, you can also use <code>anaconda 
   <tr>
     <td>PyTorch <br>(>=1.8.0) </td>
     <td>
-    Install PyTorch>=1.8.0 by following the <a href="https://pytorch.org/">official instructions</a>. Be sure it matches the CUDA version in your host.
+    Install PyTorch>=1.8.0 by following the <a href="https://pytorch.org/">official instructions</a>. Be sure the CUDA version PyTorch requires matches that in your host.
 <pre><code>
 pip install torch==1.8.0+cu111 torchvision==0.9.0+cu111 torchaudio==0.8.0 -f https://download.pytorch.org/whl/torch_stable.html
 </code></pre>
@@ -154,10 +155,8 @@ $env:path = "$env:ONNXRUNTIME_DIR\lib;" + $env:path
     <td rowspan="2">TensorRT<br> </td>
     <td>TensorRT <br> </td>
     <td>
-   Login <a href="https://www.nvidia.com/">NVIDIA</a> and download the TensorRT tar file that matches the CPU architecture and CUDA version you are using from <a href="https://developer.nvidia.com/nvidia-tensorrt-download">here</a>. <br>
-Follow the <a href="https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing-tar">guide</a> to install TensorRT. <br>
-Here is an example of installing TensorRT 8.2 GA Update 2 for Windows x86_64 and CUDA 11.x that you can refer to. <br>
-First of all, click <a href="https://developer.nvidia.com/compute/machine-learning/tensorrt/secure/8.2.3.0/zip/TensorRT-8.2.3.0.Windows10.x86_64.cuda-11.4.cudnn8.2.zip">here</a> to download CUDA 11.x TensorRT 8.2.3.0
+   1. Login <a href="https://www.nvidia.com/">NVIDIA</a> and download the TensorRT tar file that matches the CPU architecture and CUDA version you are using from <a href="https://developer.nvidia.com/nvidia-tensorrt-download">here</a>. Follow the <a href="https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing-tar">guide</a> to install TensorRT. <br>
+   2. Here is an example of installing TensorRT 8.2 GA Update 2 for Windows x86_64 and CUDA 11.x that you can refer to. <br> First of all, click <a href="https://developer.nvidia.com/compute/machine-learning/tensorrt/secure/8.2.3.0/zip/TensorRT-8.2.3.0.Windows10.x86_64.cuda-11.4.cudnn8.2.zip">here</a> to download CUDA 11.x TensorRT 8.2.3.0 and then install it like below:
 <pre><code>
 cd \the\path\of\tensorrt\zip\file
 Expand-Archive TensorRT-8.2.3.0.Windows10.x86_64.cuda-11.4.cudnn8.2.zip .
@@ -171,11 +170,11 @@ $env:path = "$env:TENSORRT_DIR\lib;" + $env:path
     <td>
     1. Download cuDNN that matches the CPU architecture, CUDA version and TensorRT version you are using from <a href="https://developer.nvidia.com/rdp/cudnn-archive"> cuDNN Archive</a>. <br>
 In the above TensorRT's installation example, it requires cudnn8.2. Thus, you can download <a href="https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.2.1.32/11.3_06072021/cudnn-11.3-windows-x64-v8.2.1.32.zip">CUDA 11.x cuDNN 8.2</a><br>
-    2. Extract the zip file and set the environment variables 
+    2. Extract the zip file and set the environment variables
 <pre><code>
 cd \the\path\of\cudnn\zip\file
 Expand-Archive cudnn-11.3-windows-x64-v8.2.1.32.zip .
-$env:CUDNN_DIR="$pwd\cuda" 
+$env:CUDNN_DIR="$pwd\cuda"
 $env:path = "$env:CUDNN_DIR\bin;" + $env:path
 </code></pre>
    </td>
@@ -250,7 +249,7 @@ cd build
     <td>N/A</td>
     <td>Enabling inference engine. <b>By default, no target inference engine is set, since it highly depends on the use case.</b> When more than one engine are specified, it has to be set with a semicolon separated list of inference backend names, e.g. <pre><code>-DMMDEPLOY_TARGET_BACKENDS="trt;ort;pplnn;ncnn;openvino"</code></pre>
     After specifying the inference engine, it's package path has to be passed to cmake as follows, <br>
-    1. <b>trt</b>: TensorRT. <code>TENSORRT_DIR</code> and <code>CUDNN_DIR</code> are needed. 
+    1. <b>trt</b>: TensorRT. <code>TENSORRT_DIR</code> and <code>CUDNN_DIR</code> are needed.
 <pre><code>-DTENSORRT_DIR=$env:TENSORRT_DIR<br>-DCUDNN_DIR=$env:CUDNN_DIR</code></pre>
     2. <b>ort</b>: ONNXRuntime. <code>ONNXRUNTIME_DIR</code> is needed.
 <pre><code>-DONNXRUNTIME_DIR=$env:ONNXRUNTIME_DIR</code></pre>
@@ -363,3 +362,6 @@ cmake --build . --config Release -- /maxcpucount:4
 
 $env:path = "$env:MMDEPLOY_DIR/build/install/bin;" + $env:path
 ```
+
+### Note
+  1. Release / Debug libraries can not be mixed. If MMDeploy is built with Release mode, all its dependent thirdparty libraries have to be built in Release mode too and vice versa.

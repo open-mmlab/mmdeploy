@@ -2,11 +2,13 @@
 
 ## Download MMDeploy
 
-```bash
-git clone -b master git@github.com:open-mmlab/mmdeploy.git MMDeploy
-cd MMDeploy
-git submodule update --init --recursive
-```
+
+  ```bash
+  git clone -b master git@github.com:open-mmlab/mmdeploy.git MMDeploy
+  cd MMDeploy
+  export MMDEPLOY_DIR=$(pwd)
+  git submodule update --init --recursive
+  ```
 
 
 Note:
@@ -27,6 +29,6 @@ Note:
 
 ## Build MMDeploy
 Build MMDeploy according to the target platforms.
-- Build on [Linux-x86_64](build/linux.md)
-- Build on [Windows](build/windows.md)
-- Build on [NVIDIA Jetson](tutorials/how_to_install_mmdeploy_on_jetsons.md)
+- [Linux-x86_64](build/linux.md)
+- [Windows](build/windows.md)
+- [NVIDIA Jetson](tutorials/how_to_install_mmdeploy_on_jetsons.md)
