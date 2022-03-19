@@ -1,26 +1,28 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
-import copy
 import logging
+from functools import partial
 from pathlib import Path
 
 import pandas as pd
-import torch
 import yaml
+import torch.multiprocessing as mp
+from torch.hub import download_url_to_file
+from torch.multiprocessing import Process, set_start_method
 
-# from mmdeploy.apis import torch2onnx
-from mmdeploy.utils import get_root_logger
+from mmdeploy.apis import torch2onnx
+from mmdeploy.utils import get_root_logger, load_config, target_wrapper
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Process Regression Test')
     parser.add_argument('--deploy-yml', help='regression test yaml path',
-                        default='../configs/mmdet/mmdet_regression_test.yaml')
+                        default='./configs/mmdet/mmdet_regression_test.yaml')
     parser.add_argument('--test-type', help='`test type', default="precision")
     parser.add_argument('--backend', help='test specific backend(s)',
                         default="all")
     parser.add_argument('--work-dir', help='the dir to save logs and models',
-                        default='../../mmdeploy_regression_working_dir')
+                        default='../mmdeploy_regression_working_dir')
     parser.add_argument('--device-id', help='`the CUDA device id', default=0)
     parser.add_argument(
         '--log-level',
@@ -86,7 +88,7 @@ def get_model_metafile_info(global_info, model_info, logger):
 
         # Download weight
         logger.info(f'Downloading {weights_url} to {weights_save_path}')
-        torch.hub.download_url_to_file(weights_url, str(weights_save_path), progress=True)
+        download_url_to_file(weights_url, str(weights_save_path), progress=True)
 
         # check weather the weight download successful
         if not weights_save_path.exists():
@@ -143,7 +145,8 @@ def update_report(report_dict,
     report_dict.get('test_pass').append(test_pass)
 
 
-def get_pytorch_result(model_name, meta_info, checkpoint_path, model_config_name, metric_tolerance, report_dict, logger):
+def get_pytorch_result(model_name, meta_info, checkpoint_path, model_config_name, metric_tolerance, report_dict,
+                       logger):
     """Get metric from metafile info of the model
 
     Args:
@@ -211,6 +214,82 @@ def get_pytorch_result(model_name, meta_info, checkpoint_path, model_config_name
     return pytorch_metric
 
 
+def test_backends():
+    if args.out is not None and not args.out.endswith(('.pkl', '.pickle')):
+        raise ValueError('The output file must be a pkl file.')
+    deploy_cfg_path = args.deploy_cfg
+    model_cfg_path = args.model_cfg
+
+    # load deploy_cfg
+    deploy_cfg, model_cfg = load_config(deploy_cfg_path, model_cfg_path)
+
+    # merge options for model cfg
+    if args.cfg_options is not None:
+        model_cfg.merge_from_dict(args.cfg_options)
+
+    task_processor = build_task_processor(model_cfg, deploy_cfg, args.device)
+
+    # prepare the dataset loader
+    dataset_type = 'test'
+    dataset = task_processor.build_dataset(model_cfg, dataset_type)
+    data_loader = task_processor.build_dataloader(
+        dataset,
+        samples_per_gpu=1,
+        workers_per_gpu=model_cfg.data.workers_per_gpu)
+
+    # load the model of the backend
+    model = task_processor.init_backend_model(args.model)
+
+    is_device_cpu = (args.device == 'cpu')
+    device_id = None if is_device_cpu else parse_device_id(args.device)
+
+    model = MMDataParallel(model, device_ids=[device_id])
+    # The whole dataset test wrapped a MMDataParallel class outside the module.
+    # As mmcls.apis.test.py single_gpu_test defined, the MMDataParallel needs
+    # a 'CLASSES' attribute. So we ensure the MMDataParallel class has the same
+    # CLASSES attribute as the inside module.
+    if hasattr(model.module, 'CLASSES'):
+        model.CLASSES = model.module.CLASSES
+    if args.speed_test:
+        with_sync = not is_device_cpu
+
+        with TimeCounter.activate(
+                warmup=args.warmup,
+                log_interval=args.log_interval,
+                with_sync=with_sync,
+                file=args.log2file):
+            outputs = task_processor.single_gpu_test(model, data_loader,
+                                                     args.show, args.show_dir)
+    else:
+        outputs = task_processor.single_gpu_test(model, data_loader, args.show,
+                                                 args.show_dir)
+    task_processor.evaluate_outputs(model_cfg, outputs, dataset, args.metrics,
+                                    args.out, args.metric_options,
+                                    args.format_only, args.log2file)
+
+
+def create_process(name, target, args, kwargs, ret_value=None):
+    logger = get_root_logger()
+    logger.info(f'{name} start.')
+    log_level = logger.level
+
+    wrap_func = partial(target_wrapper, target, log_level, ret_value)
+
+    process = Process(target=wrap_func, args=args, kwargs=kwargs)
+    process.start()
+    process.join()
+
+    if ret_value is not None:
+        if ret_value.value != 0:
+            logger.error(f'{name} failed.')
+            return False
+        else:
+            logger.info(f'{name} success.')
+            return True
+
+    return False
+
+
 def get_onnxruntime_result(backends_info, model_cfg_path, deploy_config_dir, checkpoint_path,
                            work_dir, device, pytorch_metric, metric_tolerance, report_dict, logger):
     """Convert model to onnx and then get metric.
@@ -243,72 +322,75 @@ def get_onnxruntime_result(backends_info, model_cfg_path, deploy_config_dir, che
     for infer_type, deploy_cfg_info in deploy_cfg_path_list.items():
         for fp_size, deploy_cfg in deploy_cfg_info.items():
 
-            # convert
             fps = ''
-            convert_result = True
-            onnxruntime_path = Path(checkpoint_path).with_suffix('.onnx')
+            # img = r'../demo_output/000000000034.jpg'
             img = None
             metric_list = []
             test_pass = True
 
-            deploy_cfg_path = Path(deploy_config_dir).joinpath(deploy_cfg)
-            logger.info(f'torch2onnx: \n\tmodel_cfg: {model_cfg_path} '
+            # file path
+            onnxruntime_path = Path(checkpoint_path).with_suffix('.onnx').absolute()
+            deploy_cfg_path = Path(deploy_config_dir).joinpath(deploy_cfg).absolute()
+            logger.info(f'torch2onnx: \n\tmodel_cfg: {model_cfg_path.absolute()} '
                         f'\n\tdeploy_cfg: {deploy_cfg_path}')
 
-            try:
-                torch2onnx(
-                    img,
-                    str(work_dir),
-                    str(onnxruntime_path),
-                    deploy_cfg=str(deploy_cfg_path),
-                    model_cfg=str(model_cfg_path),
-                    model_checkpoint=str(checkpoint_path),
-                    device=device)
-                logger.info('torch2onnx success.')
+            # # load deploy_cfg
+            # deploy_cfg, model_cfg = load_config(str(deploy_cfg_path),
+            #                                     str(model_cfg_path.absolute()))
 
-            except Exception as e:
-                logger.error(e)
-                logger.error('torch2onnx failed.')
-                convert_result = False
+            # convert the model
+            ret_value = mp.Value('d', 0, lock=False)
+            convert_result = create_process(
+                f'torch2onnx',
+                target=torch2onnx,
+                args=(img,
+                      str(work_dir),
+                      str(onnxruntime_path),
+                      str(deploy_cfg_path),
+                      str(model_cfg_path),
+                      str(checkpoint_path)),
+                kwargs=dict(device=device),
+                ret_value=ret_value)
 
-            finally:
-                if convert_result:
-                    for metric_name in metric_name_list:
-                        # test the model
-                        metric_value, fps = test()
-                        metric_list.append({metric_name: metric_value})
-                        metric_pytorch = pytorch_metric.get(str(metric_name).replace('_', ' '))
-                        metric_tolerance_value = metric_tolerance.get(metric_name)
-                        if (metric_value - metric_tolerance_value) <= \
-                                metric_pytorch < \
-                                (metric_value + metric_tolerance_value):
-                            test_pass = True
-                        else:
-                            test_pass = False
-                else:
-                    for metric in metric_name_list:
-                        metric_list.append({metric: '-'})
-                    test_pass = False
-
-                # update useless metric
-                metric_useless = set(metric_all_list) - set(metric_name_list)
-                for metric in metric_useless:
+            # Test the model
+            if convert_result:
+                for metric_name in metric_name_list:
+                    # test the model
+                    metric_value, fps = test_backends()
+                    metric_list.append({metric_name: metric_value})
+                    metric_pytorch = pytorch_metric.get(str(metric_name).replace('_', ' '))
+                    metric_tolerance_value = metric_tolerance.get(metric_name)
+                    if (metric_value - metric_tolerance_value) <= \
+                            metric_pytorch < \
+                            (metric_value + metric_tolerance_value):
+                        test_pass = True
+                    else:
+                        test_pass = False
+            else:
+                for metric in metric_name_list:
                     metric_list.append({metric: '-'})
+                test_pass = False
 
-                update_report(
-                    report_dict=report_dict,
-                    model_name=model_cfg_path.parent.name,
-                    model_config=str(model_cfg_path),
-                    model_checkpoint_name=str(checkpoint_path),
-                    dataset='',
-                    backend_name='onnxruntime',
-                    deploy_config=str(deploy_cfg_path),
-                    static_or_dynamic=infer_type,
-                    conversion_result=str(convert_result),
-                    fps=fps,
-                    metric_info=metric_list,
-                    test_pass=str(test_pass)
-                )
+            # update useless metric
+            metric_useless = set(metric_all_list) - set(metric_name_list)
+            for metric in metric_useless:
+                metric_list.append({metric: '-'})
+
+            # update the report
+            update_report(
+                report_dict=report_dict,
+                model_name=model_cfg_path.parent.name,
+                model_config=str(model_cfg_path),
+                model_checkpoint_name=str(checkpoint_path),
+                dataset='',
+                backend_name='onnxruntime',
+                deploy_config=str(deploy_cfg_path),
+                static_or_dynamic=infer_type,
+                conversion_result=str(convert_result),
+                fps=fps,
+                metric_info=metric_list,
+                test_pass=str(test_pass)
+            )
 
 
 def get_tensorrt_result(global_info, model_info, logger):
@@ -351,8 +433,10 @@ def save_report(report_info, report_save_path, logger):
 
 def main():
     args = parse_args()
-    logger = get_root_logger(log_level=args.log_level)
 
+    set_start_method('spawn')
+
+    logger = get_root_logger(log_level=args.log_level)
     logger.info('Processing regression test.')
 
     deploy_yaml_list = str(args.deploy_yml).replace(' ', '').split(',')

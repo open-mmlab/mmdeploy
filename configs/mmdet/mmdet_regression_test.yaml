@@ -1,9 +1,9 @@
 globals:
   codebase_name: mmdet
   codebase_release: V2.22.0
-  codebase_dir: ../../mmdetection
+  codebase_dir: ../mmdetection
   checkpoint_force_download: False
-  checkpoint_dir: ../../mmdeploy_checkpoints
+  checkpoint_dir: ../mmdeploy_checkpoints
   dataset_path:
     COCO:
   metric_tolerance:
@@ -60,7 +60,7 @@ models:
       - yolov3_mobilenetv2_320_300e_coco.py
       - yolov3_mobilenetv2_mstrain-416_300e_coco.py
     metafile: configs/yolo/metafile.yml
-    deploy_config_dir: ../../configs/mmdet/detection
+    deploy_config_dir: ./configs/mmdet/detection
     calib-dataset-cfg: None
     backends: &onnx_backend_config
       onnxruntime:
