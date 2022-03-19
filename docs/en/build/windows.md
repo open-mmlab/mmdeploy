@@ -13,7 +13,7 @@
         - [Install Model Converter](#install-model-converter)
       - [Build SDK](#build-sdk)
         - [Build Options](#build-options)
-        - [Build SDK Libraries](#build-sdk-libraries)
+        - [Build SDK](#build-sdk-1)
         - [Build SDK Demo](#build-sdk-demo)
 
 ---
@@ -24,12 +24,12 @@ All the commands listed in the following chapters are verified on **Windows 10**
 
 ### Install Toolchains
 1. Download and install [Visual Studio 2019](https://visualstudio.microsoft.com)
-2. Add the path of `cmake` the environment variable `PATH`, i.e., "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin"
+2. Add the path of `cmake` to the environment variable `PATH`, i.e., "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin"
 3. Install cuda toolkit if NVIDIA gpu is available. You can refer to the official [guide](https://developer.nvidia.com/cuda-downloads).
 
 ### Install Dependencies
 #### Install Dependencies for Model Converter
-<table>
+<table class="docutils">
 <thead>
   <tr>
     <th>NAME </th>
@@ -39,19 +39,19 @@ All the commands listed in the following chapters are verified on **Windows 10**
 <tbody>
   <tr>
     <td>conda </td>
-    <td> Please install conda by following its official website <a href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html">here</a>.
- After installation, open 'anaconda powershell prompt' under the Start Menu <b>as the administrator, </b>because<br>
+    <td> Please install conda according to the official <a href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html">guide</a>. <br>
+ After installation, open <code>anaconda powershell prompt</code> under the Start Menu <b>as the administrator</b>, because: <br>
 1. <b>All the commands listed in the following text are verified in anaconda powershell </b><br>
-2. <b>Some of the thirdparty libraries are installed to the system path so as to simplify MMDeploy build command</b><br>
-Note: if you are familiar with how cmake works, you can use anaconda powershell prompt as an ordinary user.
+2. <b>As an administrator, you can install the thirdparty libraries to the system path so as to simplify MMDeploy build command</b><br>
+Note: if you are familiar with how cmake works, you can also use <code>anaconda powershell prompt</code> as an ordinary user.
     </td>
   </tr>
   <tr>
     <td>PyTorch <br>(>=1.8.0) </td>
     <td>
-    Install PyTorch>=1.8.0, following the [official instructions](https://pytorch.org/)
+    Install PyTorch>=1.8.0 by following the <a href="https://pytorch.org/">official instructions</a>. Be sure it matches the CUDA version in your host.
 <pre><code>
-conda install pytorch==1.8.0 torchvision==0.9.0 cudatoolkit=11.1 -c pytorch -c conda-forge
+pip install torch==1.8.0+cu111 torchvision==0.9.0+cu111 torchaudio==0.8.0 -f https://download.pytorch.org/whl/torch_stable.html
 </code></pre>
     </td>
   </tr>
@@ -59,8 +59,8 @@ conda install pytorch==1.8.0 torchvision==0.9.0 cudatoolkit=11.1 -c pytorch -c c
     <td>mmcv-full </td>
     <td>Install mmcv-full as follows. Refer to the <a href="https://github.com/open-mmlab/mmcv#installation">guide</a> for details.
 <pre><code>
-export cu_version=cu111 # cuda 11.1
-export torch_version=torch1.8
+$env:cu_version="cu111"
+$env:torch_version="torch1.8.0"
 pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/${cu_version}/${torch_version}/index.html
 </code></pre>
     </td>
@@ -70,8 +70,8 @@ pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/${cu_ve
 
 #### Install Dependencies for SDK
 
-You can skip this chapter if only interested in model converter.
-<table>
+You can skip this chapter if you are only interested in the model converter.
+<table class="docutils">
 <thead>
   <tr>
     <th>NAME </th>
@@ -90,7 +90,7 @@ cd spdlog-1.9.2
 mkdir build
 cd build
 cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release
-cmake --build . --target install -j --config Release
+cmake --build . --target install  --config Release -- /maxcpucount:4
 cd ../..
 </code></pre>
    </td>
@@ -98,17 +98,17 @@ cd ../..
   <tr>
     <td>OpenCV<br>(>=3.0) </td>
     <td>
-    1. Find and download OpenCV 3+ prebuilt package for windows from <a href="https://github.com/opencv/opencv/releases">here</a>
-    2. Install it and add it's <code>bin</code> directory path to the environment variable <code>PATH</code>
+    1. Find and download OpenCV 3+ prebuilt package for windows from <a href="https://github.com/opencv/opencv/releases">here</a> <br>
+    2. Click the downloaded program and install it to the system
     </td>
   </tr>
   <tr>
     <td>pplcv </td>
-    <td>A high-performance image processing library of openPPL supporting x86 and cuda platforms.<br>
+    <td>A high-performance image processing library of openPPL.<br>
   <b>It is optional which only be needed if <code>cuda</code> platform is required.
   Now, MMDeploy supports v0.6.2 and has to use <code>git clone</code> to download it.</b><br>
 <pre><code>
-git clone --recursive git@github.com:openppl-public/ppl.cv.git
+git clone https://github.com/openppl-public/ppl.cv.git
 cd ppl.cv
 git checkout tags/v0.6.2 -b v0.6.2
 ./build.bat -G "Visual Studio 16 2019" -T v142 -A x64 -DHPCC_USE_CUDA=ON -DHPCC_MSVC_MD=ON
@@ -122,12 +122,12 @@ $env:PPLCV_DIR = "$pwd"
 #### Install Inference Engines for MMDeploy
 
 Both MMDeploy's model converter and SDK share the same inference engines.
-You can select your interested inference engines and do the installation by following the command.
+You can select your interested inference engines and do the installation by following the given commands.
 
 **Currently, MMDeploy only verified ONNXRuntime and TensorRT for windows platform**.
-And the rest of them will be supported in the future.
+As for the rest, MMDeploy will support them in the future.
 
-<table>
+<table class="docutils">
 <thead>
   <tr>
     <th>NAME</th>
@@ -142,7 +142,7 @@ And the rest of them will be supported in the future.
     <td>
     1. Install python package
 <pre><code>pip install onnxruntime==1.8.1</code></pre>
-    2. Download the prebuilt binary package from <a href="https://github.com/microsoft/onnxruntime/releases/tag/v1.8.1">here</a>. Extract it and export environment variables as below:
+    2. Download the windows prebuilt binary package from <a href="https://github.com/microsoft/onnxruntime/releases/tag/v1.8.1">here</a>. Extract it and export environment variables as below:
 <pre><code>
 Invoke-WebRequest -Uri https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-win-x64-1.8.1.zip -OutFile onnxruntime-win-x64-1.8.1.zip
 Expand-Archive onnxruntime-win-x64-1.8.1.zip .
@@ -155,9 +155,9 @@ $env:path = "$env:ONNXRUNTIME_DIR\lib;" + $env:path
     <td rowspan="2">TensorRT<br> </td>
     <td>TensorRT <br> </td>
     <td>
-   Download the TensorRT tar file from <a href="https://developer.nvidia.com/nvidia-tensorrt-download">here</a> that matches the CPU architecture and CUDA version you are using. <br>
+   Login <a href="https://www.nvidia.com/">NVIDIA</a> and download the TensorRT tar file that matches the CPU architecture and CUDA version you are using from <a href="https://developer.nvidia.com/nvidia-tensorrt-download">here</a>. <br>
 Follow the <a href="https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing-tar">guide</a> to install TensorRT. <br>
-Here is an example of installing TensorRT 8.2 GA Update 2 for Windows x86_64 and CUDA 11.x you can refer to. <br>
+Here is an example of installing TensorRT 8.2 GA Update 2 for Windows x86_64 and CUDA 11.x that you can refer to. <br>
 First of all, click <a href="https://developer.nvidia.com/compute/machine-learning/tensorrt/secure/8.2.3.0/zip/TensorRT-8.2.3.0.Windows10.x86_64.cuda-11.4.cudnn8.2.zip">here</a> to download CUDA 11.x TensorRT 8.2.3.0
 <pre><code>
 cd \the\path\of\tensorrt\zip\file
@@ -204,6 +204,9 @@ $env:path = "$env:CUDNN_DIR\bin;" + $env:path
 ```powershell
 cd \the\root\path\of\MMDeploy
 $env:MMDEPLOY_DIR="$pwd"
+
+mkdir build
+cd build
 ```
 
 #### Build Model Converter
@@ -214,8 +217,6 @@ If one of inference engines among ONNXRuntime, TensorRT and ncnn is selected, yo
 - **ONNXRuntime** Custom Ops
 
 ```powershell
-mkdir build
-cd build
 cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DMMDEPLOY_TARGET_BACKENDS="ort" -DONNXRUNTIME_DIR=$env:ONNXRUNTIME_DIR
 cmake --build . --config Release -- /maxcpucount:4
 ```
@@ -223,8 +224,6 @@ cmake --build . --config Release -- /maxcpucount:4
 - **TensorRT** Custom Ops
 
 ```powershell
-mkdir build
-cd build
 cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DMMDEPLOY_TARGET_BACKENDS="trt" -DTENSORRT_DIR=$env:TENSORRT_DIR -DCUDNN_DIR=$env:CUDNN_DIR
 cmake --build . --config Release -- /maxcpucount:4
 ```
@@ -249,7 +248,7 @@ pip install -e .
 #### Build SDK
 
 ##### Build Options
-<table>
+<table class="docutils">
 <thead>
   <tr>
     <th>NAME</th>
@@ -303,7 +302,7 @@ pip install -e .
     <td>MMDEPLOY_CODEBASES</td>
     <td>{"mmcls", "mmdet", "mmseg", "mmedit", "mmocr", "all"}</td>
     <td>all</td>
-    <td>Enable codebase's postprocess modules. It MUST be set by a semicolon separated list of codebase names. The currently supported codebases are 'mmcls', 'mmdet', 'mmedit', 'mmseg', 'mmocr'. Instead of listing them one by one, you can also pass <code>all</code> to enable them all, i.e., <code>-DMMDEPLOY_CODEBASES=all</code></td>
+    <td>Enable codebase's postprocess modules. You can provide a semicolon separated list of codebase names to enable them. Or you can pass <code>all</code> to enable them all, i.e., <code>-DMMDEPLOY_CODEBASES=all</code></td>
   </tr>
   <tr>
     <td>BUILD_SHARED_LIBS</td>

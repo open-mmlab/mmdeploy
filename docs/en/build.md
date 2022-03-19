@@ -26,5 +26,6 @@ Note:
 
 ## Build MMDeploy
 Build MMDeploy according to the target platforms.
-- [linux-x86_64](build/linux.md)
-- [windows](build/windows.md)
+- Build on [Linux-x86_64](build/linux.md)
+- Build on [Windows](build/windows.md)
+- Build on [NVIDIA Jetson](tutorials/how_to_install_mmdeploy_on_jetsons.md)
