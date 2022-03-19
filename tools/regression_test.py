@@ -3,11 +3,14 @@ import argparse
 import logging
 from pathlib import Path
 
-import yaml
+import pandas as pd
 import torch
-# from mmdeploy.apis import torch2onnx
+import yaml
 
 from mmdeploy.utils import get_root_logger
+
+
+# from mmdeploy.apis import torch2onnx
 
 
 def parse_args():
@@ -94,71 +97,207 @@ def get_model_metafile_info(global_info, model_info, logger):
     return model_meta_info, checkpoint_save_dir, codebase_dir
 
 
-def get_pytorch_result(meta_info, model_config_name, logger):
+def update_report(report_dict,
+                  model_name,
+                  model_config,
+                  model_checkpoint_name,
+                  dataset,
+                  backend_name,
+                  deploy_config,
+                  static_or_dynamic,
+                  conversion_result,
+                  fps,
+                  metric_info,
+                  test_pass,
+                  ):
+    """Update report information
+
+    Args:
+        report_dict (dict): Report info dict.
+        model_name (str): Model name.
+        model_config (str): Model config name.
+        model_checkpoint_name (str): Model checkpoint name.
+        dataset (str): Dataset name.
+        backend_name (str): Backend name.
+        deploy_config (str): Deploy config name.
+        static_or_dynamic (str): Static or dynamic.
+        conversion_result (str): Conversion result: Successful or Fail.
+        fps (str): Inference speed (ms/im).
+        metric_info (list): Metric info list of the ${modelName}.yml.
+        test_pass (str): Test result: Pass or Fail.
+    """
+    report_dict.get('model_name').append(model_name)
+    report_dict.get('model_config').append(model_config)
+    report_dict.get('model_checkpoint_name').append(model_checkpoint_name)
+    report_dict.get('dataset').append(dataset)
+    report_dict.get('backend_name').append(backend_name)
+    report_dict.get('deploy_config').append(deploy_config)
+    report_dict.get('static_or_dynamic').append(static_or_dynamic)
+    report_dict.get('conversion_result').append(conversion_result)
+    report_dict.get('fps').append(fps)
+
+    for metric in metric_info:
+        for metric_name, metric_value in metric.items():
+            metric_name = str(metric_name).replace(' ', '_')
+            report_dict.get(metric_name).append(metric_value)
+
+    report_dict.get('test_pass').append(test_pass)
+
+
+def get_pytorch_result(model_name, meta_info, checkpoint_name, model_config_name, metric_all_list, report_dict, logger):
     """Get metric from metafile info of the model
 
     Args:
-        meta_info (dict): metafile info from model's metafile.yml.
-        model_config_name (str):  model config name for getting meta info
-        logger (logging.Logger): logger.
+        model_name (str): Name of model.
+        meta_info (dict): Metafile info from model's metafile.yml.
+        checkpoint_name (str):  Name of checkpoint.
+        metric_all_list (list): All metric name.
+        model_config_name (str):  Model config name for getting meta info
+        report_dict (dict): Report info dict.
+        logger (logging.Logger): Logger.
 
     Returns:
-        Dict: metric info of the model
+        List: metric info of the model
     """
 
     if model_config_name not in meta_info:
         return {}
 
     model_info = meta_info.get(model_config_name, None)
-    metric = model_info.get('Results', None)
 
-    logger.info(f'Got {model_config_name} metric: {metric}')
-    return metric
+    # get metric
+    metric_info = model_info.get('Results', None)
+    metric_list = []
+    for metric in metric_info:
+        metric_list.append(metric.get('Metrics'))
+
+    # update useless metric
+    metric_useless = set(metric_all_list) - \
+                     set([str(list(metric.keys())[0]).replace(' ', '_') for metric in metric_list])
+    for metric in metric_useless:
+        metric_list.append({metric: '-'})
+
+    # get pytorch fps value
+    fps_info = model_info.get('Metadata').get('inference time (ms/im)')
+    if fps_info is None:
+        fps = "-"
+    elif isinstance(fps_info, list):
+        fps = fps_info[0].get('value')
+    else:
+        fps = fps_info.get('value')
+
+    # update report
+    dataset_type = ""
+    for metric in metric_info:
+        dataset_type += f"{metric.get('Dataset')},"
+
+    update_report(
+        report_dict=report_dict,
+        model_name=model_name,
+        model_config=model_config_name,
+        model_checkpoint_name=checkpoint_name,
+        dataset=dataset_type,
+        backend_name='Pytorch',
+        deploy_config='-',
+        static_or_dynamic='-',
+        conversion_result='-',
+        fps=fps,
+        metric_info=metric_list,
+        test_pass='-'
+    )
+
+    logger.info(f'Got {model_config_name} metric: {metric_list}')
+    return metric_list
 
 
-def get_onnxruntime_result(backends_info, model_cfg_path, deploy_config_dir, checkpoint_path, work_dir, device, logger):
+def get_onnxruntime_result(backends_info, model_cfg_path, deploy_config_dir, checkpoint_path,
+                           work_dir, device, metric_all_list, report_dict, logger):
     """Convert model to onnx and then get metric.
 
     Args:
-        backends_info (dict):  backend info of test yaml.
-        model_cfg_path (Path): model config file path.
-        deploy_config_dir (str): deploy config directory.
-        checkpoint_path (Path): checkpoints path.
+        backends_info (dict):  Backend info of test yaml.
+        model_cfg_path (Path): Model config file path.
+        deploy_config_dir (str): Deploy config directory.
+        checkpoint_path (Path): Checkpoints path.
         work_dir (Path): A working directory.
         device (str): A string specifying device, defaults to 'cuda:0'.
-        logger (logging.Logger): logger.
+        metric_all_list (list): All metric name.
+        report_dict (dict): Report info dict.
+        logger (logging.Logger): Logger.
 
     Returns:
         Dict: metric info of the model
     """
 
-    # convert
     backends_info = backends_info.get('onnxruntime', [])
     if len(backends_info) <= 0:
         return {}
 
+    metric_name_list = backends_info.get('metric', [])
+    assert len(metric_name_list) > 0
+    test_pass = '-'
+
     deploy_cfg_path_list = backends_info.get('deploy_config')
     for infer_type, deploy_cfg_info in deploy_cfg_path_list.items():
         for fp_size, deploy_cfg in deploy_cfg_info.items():
+
+            # convert
+            fps = ''
+            convert_result = True
+            onnxruntime_path = Path(checkpoint_path).with_suffix('.onnx')
             img = None
+            metric_list = []
             deploy_cfg_path = Path(deploy_config_dir).joinpath(deploy_cfg)
             logger.info(f'torch2onnx: \n\tmodel_cfg: {model_cfg_path} '
                         f'\n\tdeploy_cfg: {deploy_cfg_path}')
+
             try:
                 torch2onnx(
                     img,
                     work_dir,
-                    Path(checkpoint_path).with_suffix('.onnx'),
+                    onnxruntime_path,
                     deploy_cfg=deploy_cfg_path,
                     model_cfg=model_cfg_path,
                     model_checkpoint=checkpoint_path,
                     device=device)
                 logger.info('torch2onnx success.')
+
             except Exception as e:
                 logger.error(e)
                 logger.error('torch2onnx failed.')
+                convert_result = False
 
-    return False
+            finally:
+                if convert_result:
+                    for metric in metric_list:
+                        # test the model
+                        # metric_dict.update({metric: 0})
+                        # fps = 0
+                        # metric_tolerance
+                        pass
+                else:
+                    for metric in metric_name_list:
+                        metric_list.append({metric: '-'})
+
+                # update useless metric
+                metric_useless = set(metric_all_list) - set(metric_name_list)
+                for metric in metric_useless:
+                    metric_list.append({metric: '-'})
+
+                update_report(
+                    report_dict=report_dict,
+                    model_name=model_cfg_path.parent.name,
+                    model_config=str(model_cfg_path),
+                    model_checkpoint_name=str(checkpoint_path),
+                    dataset='',
+                    backend_name='onnxruntime',
+                    deploy_config=str(deploy_cfg_path),
+                    static_or_dynamic=infer_type,
+                    conversion_result=str(convert_result),
+                    fps=fps,
+                    metric_info=metric_list,
+                    test_pass=test_pass
+                )
 
 
 def get_tensorrt_result(global_info, model_info, logger):
@@ -181,8 +320,22 @@ def get_sdk_result(global_info, model_info, logger):
     return False
 
 
-def save_report():
-    pass
+def save_report(report_info, report_save_path, logger):
+    """Convert model to onnx and then get metric.
+
+    Args:
+        report_info (dict):  Report info dict.
+        report_save_path (Path): Report save path.
+        logger (logging.Logger): Logger.
+    """
+    logger.info(f'Save regression test report '
+                f'to {report_save_path}, pls wait...')
+
+    df = pd.DataFrame(report_info)
+    df.to_excel(report_save_path)
+
+    logger.info(f'Saved regression test report '
+                f'to {report_save_path}.')
 
 
 def main():
@@ -206,7 +359,28 @@ def main():
         with open(deploy_yaml) as f:
             yaml_info = yaml.load(f, Loader=yaml.FullLoader)
 
+        report_save_path = work_dir.joinpath(Path(deploy_yaml).stem + '_report.xlsx')
+        report_dict = {
+            'model_name': [],
+            'model_config': [],
+            'model_checkpoint_name': [],
+            'dataset': [],
+            'backend_name': [],
+            'deploy_config': [],
+            'static_or_dynamic': [],
+            'conversion_result': [],
+            'fps': []
+        }
+
         global_info = yaml_info.get('globals')
+
+        metric_all_list = []
+        for metric_name in global_info.get('metric_tolerance', {}):
+            report_dict.update({metric_name: []})
+            metric_all_list.append(metric_name)
+
+        report_dict.update({'test_pass': []})
+
         models_info = yaml_info.get('models')
 
         for models in models_info:
@@ -237,16 +411,18 @@ def main():
                 if backends_info is None:
                     continue
 
-                pytorch_result = get_pytorch_result(model_metafile_info, model_config, logger)
-                onnxruntime_result = get_onnxruntime_result(backends_info, model_cfg_path, deploy_config_dir,
-                                                            checkpoint_path, work_dir, args.device_id, logger)
+                pytorch_result = get_pytorch_result(models.get('name'), model_metafile_info, checkpoint_name,
+                                                    model_config, metric_all_list, report_dict, logger)
+                get_onnxruntime_result(backends_info, model_cfg_path, deploy_config_dir,
+                                       checkpoint_path, work_dir, args.device_id, metric_all_list,
+                                       report_dict, logger)
                 tensorrt_result = get_tensorrt_result(global_info, models, logger)
                 openvino_result = get_openvino_result(global_info, models, logger)
                 ncnn_result = get_ncnn_result(global_info, models, logger)
                 pplnn_result = get_pplnn_result(global_info, models, logger)
                 sdk_result = get_sdk_result(global_info, models, logger)
 
-            save_report()
+        save_report(report_dict, report_save_path, logger)
 
 
 if __name__ == '__main__':
