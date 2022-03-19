@@ -5,6 +5,8 @@ from pathlib import Path
 
 import yaml
 import torch
+# from mmdeploy.apis import torch2onnx
+
 from mmdeploy.utils import get_root_logger
 
 
@@ -13,8 +15,10 @@ def parse_args():
     parser.add_argument('--deploy-yml', help='regression test yaml path',
                         default='../configs/mmdet/mmdet_regression_test.yaml')
     parser.add_argument('--test-type', help='`test type', default="precision")
-    parser.add_argument('--backend', help='test specific backend(s)')
-    parser.add_argument('--work-dir', help='the dir to save logs and models')
+    parser.add_argument('--backend', help='test specific backend(s)',
+                        default="all")
+    parser.add_argument('--work-dir', help='the dir to save logs and models',
+                        default='../../mmdeploy_regression_working_dir')
     parser.add_argument('--device-id', help='`the CUDA device id', default=0)
     parser.add_argument(
         '--log-level',
@@ -87,15 +91,16 @@ def get_model_metafile_info(global_info, model_info, logger):
             raise FileExistsError(f'Weight {weights_name} download fail')
 
     logger.info(f'All models had been downloaded successful.')
-    return model_meta_info
+    return model_meta_info, checkpoint_save_dir, codebase_dir
 
 
-def get_pytorch_result(meta_info, model_config_name):
+def get_pytorch_result(meta_info, model_config_name, logger):
     """Get metric from metafile info of the model
 
     Args:
         meta_info (dict): metafile info from model's metafile.yml.
         model_config_name (str):  model config name for getting meta info
+        logger (logging.Logger): logger.
 
     Returns:
         Dict: metric info of the model
@@ -106,14 +111,53 @@ def get_pytorch_result(meta_info, model_config_name):
 
     model_info = meta_info.get(model_config_name, None)
     metric = model_info.get('Results', None)
+
+    logger.info(f'Got {model_config_name} metric: {metric}')
     return metric
 
 
-def convert_model(global_info, model_info, logger):
-    return False
+def get_onnxruntime_result(backends_info, model_cfg_path, deploy_config_dir, checkpoint_path, work_dir, device, logger):
+    """Convert model to onnx and then get metric.
 
+    Args:
+        backends_info (dict):  backend info of test yaml.
+        model_cfg_path (Path): model config file path.
+        deploy_config_dir (str): deploy config directory.
+        checkpoint_path (Path): checkpoints path.
+        work_dir (Path): A working directory.
+        device (str): A string specifying device, defaults to 'cuda:0'.
+        logger (logging.Logger): logger.
 
-def get_onnxruntime_result(global_info, model_info, logger):
+    Returns:
+        Dict: metric info of the model
+    """
+
+    # convert
+    backends_info = backends_info.get('onnxruntime', [])
+    if len(backends_info) <= 0:
+        return {}
+
+    deploy_cfg_path_list = backends_info.get('deploy_config')
+    for infer_type, deploy_cfg_info in deploy_cfg_path_list.items():
+        for fp_size, deploy_cfg in deploy_cfg_info.items():
+            img = None
+            deploy_cfg_path = Path(deploy_config_dir).joinpath(deploy_cfg)
+            logger.info(f'torch2onnx: \n\tmodel_cfg: {model_cfg_path} '
+                        f'\n\tdeploy_cfg: {deploy_cfg_path}')
+            try:
+                torch2onnx(
+                    img,
+                    work_dir,
+                    Path(checkpoint_path).with_suffix('.onnx'),
+                    deploy_cfg=deploy_cfg_path,
+                    model_cfg=model_cfg_path,
+                    model_checkpoint=checkpoint_path,
+                    device=device)
+                logger.info('torch2onnx success.')
+            except Exception as e:
+                logger.error(e)
+                logger.error('torch2onnx failed.')
+
     return False
 
 
@@ -150,6 +194,9 @@ def main():
     deploy_yaml_list = str(args.deploy_yml).replace(' ', '').split(',')
     assert len(deploy_yaml_list) > 0
 
+    work_dir = Path(args.work_dir)
+    work_dir.mkdir(parents=True, exist_ok=True)
+
     for deploy_yaml in deploy_yaml_list:
 
         if not Path(deploy_yaml).exists():
@@ -166,18 +213,40 @@ def main():
             if 'model_configs' not in models:
                 continue
 
-            model_metafile_info = get_model_metafile_info(global_info, models, logger)
-
+            model_metafile_info, checkpoint_save_dir, codebase_dir = \
+                get_model_metafile_info(global_info, models, logger)
             for model_config in model_metafile_info:
-                pytorch_result = get_pytorch_result(model_metafile_info, model_config)
-                convert_result = convert_model(global_info, models, logger)
-                onnxruntime_result = get_onnxruntime_result(global_info, models, logger)
+                logger.info(f'Processing regression test for {model_config}.py...')
+
+                # get model config path
+                model_cfg_path = Path(codebase_dir). \
+                    joinpath(models.get("codebase_model_config_dir", ""), model_config).with_suffix('.py')
+                assert model_cfg_path.exists()
+
+                # get checkpoint path
+                checkpoint_name = Path(model_metafile_info.get(model_config).get('Weights')).name
+                checkpoint_path = Path(checkpoint_save_dir).joinpath(checkpoint_name)
+                assert checkpoint_path.exists()
+
+                # get deploy config directory
+                deploy_config_dir = models.get('deploy_config_dir', '')
+                assert deploy_config_dir != ''
+
+                # get backends info
+                backends_info = models.get('backends', None)
+                if backends_info is None:
+                    continue
+
+                pytorch_result = get_pytorch_result(model_metafile_info, model_config, logger)
+                onnxruntime_result = get_onnxruntime_result(backends_info, model_cfg_path, deploy_config_dir,
+                                                            checkpoint_path, work_dir, args.device_id, logger)
                 tensorrt_result = get_tensorrt_result(global_info, models, logger)
                 openvino_result = get_openvino_result(global_info, models, logger)
                 ncnn_result = get_ncnn_result(global_info, models, logger)
                 pplnn_result = get_pplnn_result(global_info, models, logger)
                 sdk_result = get_sdk_result(global_info, models, logger)
-                save_report()
+
+            save_report()
 
 
 if __name__ == '__main__':
