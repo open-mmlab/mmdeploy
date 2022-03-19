@@ -65,8 +65,6 @@ models:
     backends: &onnx_backend_config
       onnxruntime:
         performance_align: True
-        metric:
-          - box_AP
         deploy_config:
           static:
             fp32: *default_onnxruntime_static_fp32

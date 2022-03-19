@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
+import copy
 import logging
 from pathlib import Path
 
@@ -170,10 +171,11 @@ def get_pytorch_result(model_name, meta_info, checkpoint_name, model_config_name
     metric_list = []
     for metric in metric_info:
         metric_list.append(metric.get('Metrics'))
+    pytorch_metric = copy.deepcopy(metric_list)
 
     # update useless metric
-    metric_useless = set(metric_all_list) - \
-                     set([str(list(metric.keys())[0]).replace(' ', '_') for metric in metric_list])
+    metric_useless = set(metric_all_list) - set(
+        [str(list(metric.keys())[0]).replace(' ', '_') for metric in pytorch_metric])
     for metric in metric_useless:
         metric_list.append({metric: '-'})
 
@@ -206,12 +208,12 @@ def get_pytorch_result(model_name, meta_info, checkpoint_name, model_config_name
         test_pass='-'
     )
 
-    logger.info(f'Got {model_config_name} metric: {metric_list}')
-    return metric_list
+    logger.info(f'Got {model_config_name} metric: {pytorch_metric}')
+    return pytorch_metric
 
 
 def get_onnxruntime_result(backends_info, model_cfg_path, deploy_config_dir, checkpoint_path,
-                           work_dir, device, metric_all_list, report_dict, logger):
+                           work_dir, device, pytorch_metric, metric_all_list, report_dict, logger):
     """Convert model to onnx and then get metric.
 
     Args:
@@ -221,6 +223,7 @@ def get_onnxruntime_result(backends_info, model_cfg_path, deploy_config_dir, che
         checkpoint_path (Path): Checkpoints path.
         work_dir (Path): A working directory.
         device (str): A string specifying device, defaults to 'cuda:0'.
+        pytorch_metric (list): All pytorch metric info.
         metric_all_list (list): All metric name.
         report_dict (dict): Report info dict.
         logger (logging.Logger): Logger.
@@ -233,9 +236,8 @@ def get_onnxruntime_result(backends_info, model_cfg_path, deploy_config_dir, che
     if len(backends_info) <= 0:
         return {}
 
-    metric_name_list = backends_info.get('metric', [])
+    metric_name_list = [str(list(metric.keys())[0]).replace(' ', '_') for metric in pytorch_metric]
     assert len(metric_name_list) > 0
-    test_pass = '-'
 
     deploy_cfg_path_list = backends_info.get('deploy_config')
     for infer_type, deploy_cfg_info in deploy_cfg_path_list.items():
@@ -247,6 +249,8 @@ def get_onnxruntime_result(backends_info, model_cfg_path, deploy_config_dir, che
             onnxruntime_path = Path(checkpoint_path).with_suffix('.onnx')
             img = None
             metric_list = []
+            test_pass = '-'
+
             deploy_cfg_path = Path(deploy_config_dir).joinpath(deploy_cfg)
             logger.info(f'torch2onnx: \n\tmodel_cfg: {model_cfg_path} '
                         f'\n\tdeploy_cfg: {deploy_cfg_path}')
@@ -411,11 +415,11 @@ def main():
                 if backends_info is None:
                     continue
 
-                pytorch_result = get_pytorch_result(models.get('name'), model_metafile_info, checkpoint_name,
+                pytorch_metric = get_pytorch_result(models.get('name'), model_metafile_info, checkpoint_name,
                                                     model_config, metric_all_list, report_dict, logger)
                 get_onnxruntime_result(backends_info, model_cfg_path, deploy_config_dir,
-                                       checkpoint_path, work_dir, args.device_id, metric_all_list,
-                                       report_dict, logger)
+                                       checkpoint_path, work_dir, args.device_id, pytorch_metric,
+                                       metric_all_list, report_dict, logger)
                 tensorrt_result = get_tensorrt_result(global_info, models, logger)
                 openvino_result = get_openvino_result(global_info, models, logger)
                 ncnn_result = get_ncnn_result(global_info, models, logger)
