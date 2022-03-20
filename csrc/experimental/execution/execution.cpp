@@ -2,6 +2,8 @@
 // Created by li on 2022/3/11.
 //
 #include "execution.h"
+#include "static_thread_pool.h"
+#include "type_erased.h"
 
 using namespace mmdeploy;
 
@@ -40,6 +42,13 @@ mmdeploy_sender_t mmdeploy_executor_then(mmdeploy_sender_t input, mmdeploy_invoc
   });
   auto output = MakeTypeErasedSender(std::move(sndr2));
   return reinterpret_cast<mmdeploy_sender_t>(output);
+}
+
+mmdeploy_sender_t mmdeploy_executor_split(mmdeploy_sender_t input) {
+  auto input_sender = reinterpret_cast<AbstractSender*>(input);
+  auto split = Split(input_sender);
+  auto output_sender = MakeTypeErasedSender(std::move(split));
+  return reinterpret_cast<mmdeploy_sender_t>(output_sender);
 }
 
 mmdeploy_value_t mmdeploy_executor_sync_wait(mmdeploy_sender_t input) {

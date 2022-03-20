@@ -35,7 +35,7 @@ set(SRCS
         utils/device_utils.cpp
         utils/formatter.cpp
         utils/stacktrace.cpp
-        ../experimental/execution.cpp)
+        ../experimental/execution/execution.cpp)
 
 mmdeploy_add_library(${PROJECT_NAME} ${SRCS})
 target_compile_definitions(${PROJECT_NAME} PUBLIC -DMMDEPLOY_STATUS_USE_SOURCE_LOCATION=1)

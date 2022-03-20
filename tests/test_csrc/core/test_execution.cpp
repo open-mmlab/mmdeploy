@@ -1,6 +1,6 @@
 #include "catch.hpp"
 #include "core/utils/formatter.h"
-#include "experimental/execution.h"
+#include "experimental/execution/type_erased.h"
 
 using namespace mmdeploy;
 
@@ -13,6 +13,39 @@ TEST_CASE("test basic execution", "[execution]") {
   auto c = Then(b, [](Value v) -> Value { return {{"c", v["a"].get<int>() + v["b"].get<int>()}}; });
   auto d = SyncWait(c);
   MMDEPLOY_ERROR("{}", d);
+}
+
+template <class Sender>
+auto GetKey(Sender&& sndr, const std::string& key) {
+  return Then((Sender &&) sndr, [key](const Value& v) { return v[key]; });
+}
+
+TEST_CASE("test split", "[execution]") {
+  auto a = Just({{"x", 100}, {"y", 1000}});
+  auto s = Split(a);
+  auto x = GetKey(s, "x");
+  auto y = GetKey(s, "y");
+  auto x_v = SyncWait(x);
+  auto y_v = SyncWait(y);
+  MMDEPLOY_ERROR("x = {}, y = {}", x_v, y_v);
+}
+
+TEST_CASE("test when_all", "[execution]") {
+  auto a = Just(100);
+  auto b = Just(200);
+  auto t = WhenAll(a, b);
+  auto v = SyncWait(t);
+  MMDEPLOY_ERROR("v = {}", v);
+}
+
+TEST_CASE("test fork-join", "[execution]") {
+  auto a = Just({{"x", 100}, {"y", 1000}});
+  auto s = Split(a);
+  auto x = GetKey(s, "x");
+  auto y = GetKey(s, "y");
+  auto xy = WhenAll(x, y);
+  auto v = SyncWait(xy);
+  MMDEPLOY_ERROR("v = {}", v);
 }
 
 mmdeploy_value_t f(mmdeploy_value_t v, void*) {
