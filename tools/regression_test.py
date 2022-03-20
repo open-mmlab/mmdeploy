@@ -5,13 +5,14 @@ from functools import partial
 from pathlib import Path
 
 import pandas as pd
-import yaml
 import torch.multiprocessing as mp
+import yaml
+from mmcv.parallel import MMDataParallel
 from torch.hub import download_url_to_file
 from torch.multiprocessing import Process, set_start_method
 
-from mmdeploy.apis import torch2onnx
-from mmdeploy.utils import get_root_logger, load_config, target_wrapper
+from mmdeploy.apis import torch2onnx, build_task_processor
+from mmdeploy.utils import get_root_logger, load_config, target_wrapper, parse_device_id
 
 
 def parse_args():
@@ -214,34 +215,47 @@ def get_pytorch_result(model_name, meta_info, checkpoint_path, model_config_name
     return pytorch_metric
 
 
-def test_backends():
-    if args.out is not None and not args.out.endswith(('.pkl', '.pickle')):
-        raise ValueError('The output file must be a pkl file.')
-    deploy_cfg_path = args.deploy_cfg
-    model_cfg_path = args.model_cfg
+def test_backends(deploy_cfg_path, model_cfg_path, checkpoint_path, device, work_dir,
+                  metrics, logger):
+    """Test the backend.
+
+    Args:
+        deploy_cfg_path (str): Deploy config file path.
+        model_cfg_path (str): Model config file path.
+        checkpoint_path (str): Backend converted model file path.
+        device (str): A string specifying device, defaults to 'cuda:0'.
+        work_dir (str): A working directory.
+        metrics (str): Evaluation metrics, which depends on
+            the codebase and the dataset, e.g., "bbox", "segm", "proposal"
+            for COCO, and "mAP", "recall" for PASCAL VOC in mmdet;
+            "accuracy", "precision", "recall", "f1_score", "support"
+            for single label dataset, and "mAP", "CP", "CR", "CF1",
+            "OP", "OR", "OF1" for multi-label dataset in mmcls.
+            Defaults is `None`.
+        logger (logging.Logger): Logger.
+
+    Returns:
+        Dict: metric info of the model
+    """
 
     # load deploy_cfg
-    deploy_cfg, model_cfg = load_config(deploy_cfg_path, model_cfg_path)
+    deploy_cfg, model_cfg = load_config(str(deploy_cfg_path), str(model_cfg_path))
 
-    # merge options for model cfg
-    if args.cfg_options is not None:
-        model_cfg.merge_from_dict(args.cfg_options)
-
-    task_processor = build_task_processor(model_cfg, deploy_cfg, args.device)
+    task_processor = build_task_processor(model_cfg, deploy_cfg, device)
 
     # prepare the dataset loader
-    dataset_type = 'test'
-    dataset = task_processor.build_dataset(model_cfg, dataset_type)
+    logger.info('Loading dataset to memory...')
+    dataset = task_processor.build_dataset(model_cfg, 'test')
     data_loader = task_processor.build_dataloader(
         dataset,
         samples_per_gpu=1,
         workers_per_gpu=model_cfg.data.workers_per_gpu)
 
     # load the model of the backend
-    model = task_processor.init_backend_model(args.model)
+    model = task_processor.init_backend_model([str(checkpoint_path)])
 
-    is_device_cpu = (args.device == 'cpu')
-    device_id = None if is_device_cpu else parse_device_id(args.device)
+    is_device_cpu = (device == 'cpu')
+    device_id = None if is_device_cpu else parse_device_id(device)
 
     model = MMDataParallel(model, device_ids=[device_id])
     # The whole dataset test wrapped a MMDataParallel class outside the module.
@@ -250,22 +264,31 @@ def test_backends():
     # CLASSES attribute as the inside module.
     if hasattr(model.module, 'CLASSES'):
         model.CLASSES = model.module.CLASSES
-    if args.speed_test:
-        with_sync = not is_device_cpu
+    # if args.speed_test:
+    #     with_sync = not is_device_cpu
+    #
+    #     with TimeCounter.activate(
+    #             warmup=args.warmup,
+    #             log_interval=args.log_interval,
+    #             with_sync=with_sync,
+    #             file=args.log2file):
+    #         outputs = task_processor.single_gpu_test(model, data_loader,
+    #                                                  args.show, args.show_dir)
+    # else:
+    outputs = task_processor.single_gpu_test(model,
+                                             data_loader,
+                                             show=False,
+                                             out_dir=None)
+    task_processor.evaluate_outputs(model_cfg,
+                                    outputs,
+                                    dataset,
+                                    metrics,
+                                    out=None,
+                                    metric_options=None,
+                                    format_only=False,
+                                    log2file=None)
 
-        with TimeCounter.activate(
-                warmup=args.warmup,
-                log_interval=args.log_interval,
-                with_sync=with_sync,
-                file=args.log2file):
-            outputs = task_processor.single_gpu_test(model, data_loader,
-                                                     args.show, args.show_dir)
-    else:
-        outputs = task_processor.single_gpu_test(model, data_loader, args.show,
-                                                 args.show_dir)
-    task_processor.evaluate_outputs(model_cfg, outputs, dataset, args.metrics,
-                                    args.out, args.metric_options,
-                                    args.format_only, args.log2file)
+    return 0, 0
 
 
 def create_process(name, target, args, kwargs, ret_value=None):
@@ -323,13 +346,18 @@ def get_onnxruntime_result(backends_info, model_cfg_path, deploy_config_dir, che
         for fp_size, deploy_cfg in deploy_cfg_info.items():
 
             fps = ''
-            # img = r'../demo_output/000000000034.jpg'
-            img = None
+            # img = (np.ones((425, 640, 3))).astype(np.uint8)  # fake image
+            img = '../demo_output/000000000034.jpg'
             metric_list = []
             test_pass = True
 
             # file path
-            onnxruntime_path = Path(checkpoint_path).with_suffix('.onnx').absolute()
+            # onnxruntime_path = Path(checkpoint_path).with_suffix('.onnx').absolute()
+            onnxruntime_path = Path(work_dir). \
+                joinpath(Path(checkpoint_path).parent.parent.name,
+                         Path(checkpoint_path).parent.name,
+                         Path(checkpoint_path).name).with_suffix('.onnx').absolute()
+            onnxruntime_path.parent.mkdir(parents=True, exist_ok=True)
             deploy_cfg_path = Path(deploy_config_dir).joinpath(deploy_cfg).absolute()
             logger.info(f'torch2onnx: \n\tmodel_cfg: {model_cfg_path.absolute()} '
                         f'\n\tdeploy_cfg: {deploy_cfg_path}')
@@ -356,7 +384,13 @@ def get_onnxruntime_result(backends_info, model_cfg_path, deploy_config_dir, che
             if convert_result:
                 for metric_name in metric_name_list:
                     # test the model
-                    metric_value, fps = test_backends()
+                    metric_value, fps = test_backends(deploy_cfg_path=deploy_cfg_path,
+                                                      model_cfg_path=model_cfg_path.absolute(),
+                                                      checkpoint_path=onnxruntime_path.resolve(),
+                                                      device=str(device),
+                                                      work_dir=str(onnxruntime_path.parent),
+                                                      metrics='bbox',
+                                                      logger=logger)
                     metric_list.append({metric_name: metric_value})
                     metric_pytorch = pytorch_metric.get(str(metric_name).replace('_', ' '))
                     metric_tolerance_value = metric_tolerance.get(metric_name)
