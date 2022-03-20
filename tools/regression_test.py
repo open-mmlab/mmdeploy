@@ -220,9 +220,9 @@ def test_backends(deploy_cfg_path, model_cfg_path, checkpoint_path, device, work
     """Test the backend.
 
     Args:
-        deploy_cfg_path (str): Deploy config file path.
-        model_cfg_path (str): Model config file path.
-        checkpoint_path (str): Backend converted model file path.
+        deploy_cfg_path (Path): Deploy config file path.
+        model_cfg_path (Path): Model config file path.
+        checkpoint_path (Path): Backend converted model file path.
         device (str): A string specifying device, defaults to 'cuda:0'.
         work_dir (str): A working directory.
         metrics (str): Evaluation metrics, which depends on
@@ -282,7 +282,7 @@ def test_backends(deploy_cfg_path, model_cfg_path, checkpoint_path, device, work
     task_processor.evaluate_outputs(model_cfg,
                                     outputs,
                                     dataset,
-                                    metrics,
+                                    metrics=None,
                                     out=None,
                                     metric_options=None,
                                     format_only=False,
@@ -343,7 +343,14 @@ def get_onnxruntime_result(backends_info, model_cfg_path, deploy_config_dir, che
     metric_all_list = [str(metric) for metric in metric_tolerance]
     deploy_cfg_path_list = backends_info.get('deploy_config')
     for infer_type, deploy_cfg_info in deploy_cfg_path_list.items():
+
+        if infer_type == 'static':
+            continue
+
         for fp_size, deploy_cfg in deploy_cfg_info.items():
+
+            if deploy_cfg is None:
+                continue
 
             fps = ''
             # img = (np.ones((425, 640, 3))).astype(np.uint8)  # fake image
@@ -356,15 +363,12 @@ def get_onnxruntime_result(backends_info, model_cfg_path, deploy_config_dir, che
             onnxruntime_path = Path(work_dir). \
                 joinpath(Path(checkpoint_path).parent.parent.name,
                          Path(checkpoint_path).parent.name,
+                         infer_type,
                          Path(checkpoint_path).name).with_suffix('.onnx').absolute()
             onnxruntime_path.parent.mkdir(parents=True, exist_ok=True)
             deploy_cfg_path = Path(deploy_config_dir).joinpath(deploy_cfg).absolute()
             logger.info(f'torch2onnx: \n\tmodel_cfg: {model_cfg_path.absolute()} '
                         f'\n\tdeploy_cfg: {deploy_cfg_path}')
-
-            # # load deploy_cfg
-            # deploy_cfg, model_cfg = load_config(str(deploy_cfg_path),
-            #                                     str(model_cfg_path.absolute()))
 
             # convert the model
             ret_value = mp.Value('d', 0, lock=False)
@@ -387,9 +391,9 @@ def get_onnxruntime_result(backends_info, model_cfg_path, deploy_config_dir, che
                     metric_value, fps = test_backends(deploy_cfg_path=deploy_cfg_path,
                                                       model_cfg_path=model_cfg_path.absolute(),
                                                       checkpoint_path=onnxruntime_path.resolve(),
-                                                      device=str(device),
+                                                      device='cuda',
                                                       work_dir=str(onnxruntime_path.parent),
-                                                      metrics='bbox',
+                                                      metrics=None,
                                                       logger=logger)
                     metric_list.append({metric_name: metric_value})
                     metric_pytorch = pytorch_metric.get(str(metric_name).replace('_', ' '))
