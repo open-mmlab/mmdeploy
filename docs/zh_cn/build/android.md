@@ -68,12 +68,12 @@ MMDeploy 的交叉编译分为两步:
     <td>spdlog </td>
     <td>
 <pre><code>
-git clone git@github.com:gabime/spdlog.git
+git clone https://github.com/gabime/spdlog.git
 cd spdlog
 mkdir -p build
 cd build
-cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_TOOLCHAIN_FILE=${PATH_TO_NDK}/build/cmake/android.toolchain.cmake -DANDROID_ABI="arm64-v8a" -DANDROID_PLATFORM=android-30 ..
-make install DESTDIR=${YOUR_PATH}
+cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_INSTALL_PREFIX=${SPDLOG_DIR} -DCMAKE_TOOLCHAIN_FILE=${PATH_TO_NDK}/build/cmake/android.toolchain.cmake -DANDROID_ABI="arm64-v8a" -DANDROID_PLATFORM=android-30 ..
+make install
 </code></pre>
    </td>
   </tr>
@@ -81,6 +81,7 @@ make install DESTDIR=${YOUR_PATH}
     <td>OpenCV<br>(>=3.0) </td>
     <td>
 <pre><code>
+export OPENCV_VERSION=4.5.4
 wget https://github.com/opencv/opencv/releases/download/${OPENCV_VERSION}/opencv-${OPENCV_VERSION}-android-sdk.zip
 </code></pre>
     </td>
@@ -91,7 +92,7 @@ wget https://github.com/opencv/opencv/releases/download/${OPENCV_VERSION}/opencv
     <td>ncnn 是支持 android 平台的高效神经网络推理计算框架</br>
   <b> 目前, MMDeploy 支持 ncnn 的 20211208 版本, 且必须使用<code>git clone</code> 下载源码的方式安装</b><br>
 <pre><code>
-git clone -b 20211208 git@github.com:Tencent/ncnn.git
+git clone -b 20211208 https://github.com/Tencent/ncnn.git
 cd ncnn
 mkdir -p build
 cd build
@@ -179,7 +180,7 @@ make install
       -DANDROID_PLATFORM=android-30 \
       -DANDROID_CPP_FEATURES="rtti exceptions"
 
-  cmake --build . -- -j$(nproc) && cmake --install .
+  make -j$(nproc) && make install
   ```
 
 #### 编译 Demo
