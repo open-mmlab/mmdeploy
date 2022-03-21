@@ -99,7 +99,7 @@ cd ../..
     <td>OpenCV<br>(>=3.0) </td>
     <td>
     1. Find and download OpenCV 3+ for windows from <a href="https://github.com/opencv/opencv/releases">here</a>.<br>
-    2. You can download the prebuilt package and install it to the target directory. Or you can build OpenCV from its source. <br> 
+    2. You can download the prebuilt package and install it to the target directory. Or you can build OpenCV from its source. <br>
     3. Find where <code>OpenCVConfig.cmake</code> locates in the installation directory. And export its path to the environment variable <code>PATH</code> like this,
 <pre><code>$env:path = "\the\path\where\OpenCVConfig.cmake\locates;" + "$env:path"</code></pre>
     </td>
