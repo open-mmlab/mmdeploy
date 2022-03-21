@@ -5,13 +5,13 @@
 using mmdeploy::TensorDesc;
 
 template <class scalar_t>
-__global__ void copy_permute_kernel(scalar_t *dst, const scalar_t *src, int n,
-                                    TensorDesc ts_src_stride, TensorDesc ts_dst_stride,
+__global__ void copy_permute_kernel(scalar_t *__restrict__ dst, const scalar_t *__restrict__ src,
+                                    int n, TensorDesc ts_src_stride, TensorDesc ts_dst_stride,
                                     TensorDesc ts_permute) {
   const int src_dim = ts_src_stride.dim;
-  int *src_stride = &(ts_src_stride.stride[0]);
-  int *dst_stride = &(ts_dst_stride.stride[0]);
-  int *permute = &(ts_permute.shape[0]);
+  const auto src_stride = ts_src_stride.stride;
+  const auto dst_stride = ts_dst_stride.stride;
+  const auto permute = ts_permute.shape;
   CUDA_1D_KERNEL_LOOP(index, n) {
     size_t dst_index = index;
     size_t src_index = 0;
