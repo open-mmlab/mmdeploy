@@ -98,9 +98,10 @@ cd ../..
   <tr>
     <td>OpenCV<br>(>=3.0) </td>
     <td>
-    1. Find and download OpenCV 3+ prebuilt package for windows from <a href="https://github.com/opencv/opencv/releases">here</a> <br>
-    2. Click the downloaded program and install it to the target directory. Export the path where <code>OpenCVConfig.cmake</code> locates to the environment variable <code>PATH</code> like this,
-<pre><code>$env:PATH = "\the\path\where\OpenCVConfig.cmake\locates;" + "$env:path"</code></pre>
+    1. Find and download OpenCV 3+ for windows from <a href="https://github.com/opencv/opencv/releases">here</a>.<br>
+    2. You can download the prebuilt package and install it to the target directory. Or you can build OpenCV from its source. <br> 
+    3. Find where <code>OpenCVConfig.cmake</code> locates in the installation directory. And export its path to the environment variable <code>PATH</code> like this,
+<pre><code>$env:path = "\the\path\where\OpenCVConfig.cmake\locates;" + "$env:path"</code></pre>
     </td>
   </tr>
   <tr>
@@ -162,6 +163,7 @@ $env:path = "$env:ONNXRUNTIME_DIR\lib;" + $env:path
 <pre><code>
 cd \the\path\of\tensorrt\zip\file
 Expand-Archive TensorRT-8.2.3.0.Windows10.x86_64.cuda-11.4.cudnn8.2.zip .
+pip install $env:TENSORRT_DIR\python\tensorrt-8.2.3.0-cp37-none-win_amd64.whl
 $env:TENSORRT_DIR = "$pwd\TensorRT-8.2.3.0"
 $env:path = "$env:TENSORRT_DIR\lib;" + $env:path
 </code></pre>
@@ -339,7 +341,6 @@ You can also activate other engines after the model.
 
   ```PowerShell
   cd $env:MMDEPLOY_DIR
-  mkdir build
   mkdir build -ErrorAction SilentlyContinue
   cd build
   cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
@@ -358,11 +359,11 @@ You can also activate other engines after the model.
 #### Build Demo
 
 ```PowerShell
-cd install\example
-mkdir build
+cd $env:MMDEPLOY_DIR\build\install\example
+mkdir build -ErrorAction SilentlyContinue
 cd build
 cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
-  -DMMDeploy_DIR=$env:MMDEPLOY_DIR/build/install/lib/cmake/MMDeploy
+  -DMMDeploy_DIR="$env:MMDEPLOY_DIR/build/install/lib/cmake/MMDeploy"
 
 cmake --build . --config Release -- /maxcpucount:4
 

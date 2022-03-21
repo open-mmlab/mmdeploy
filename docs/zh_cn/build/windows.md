@@ -94,8 +94,10 @@ cd ../..
   <tr>
     <td>OpenCV </td>
     <td>
-    1. 从<a href="https://github.com/opencv/opencv/releases">这里</a>下载 OpenCV 3+ 在 windows 下的预编译包。
-    2. 安装 OpenCV 到系统路径下</td>
+    1. 从<a href="https://github.com/opencv/opencv/releases">这里</a>下载 OpenCV 3+。
+    2. 您可以下载并安装 OpenCV 预编译包到指定的目录下。也可以选择源码编译安装的方式
+    3. 在安装目录中，找到 <code>OpenCVConfig.cmake</code>，并把它的路径添加到环境变量 <code>PATH</code> 中。像这样：</td>
+<pre><code>$env:path = "\the\path\where\OpenCVConfig.cmake\locates;" + "$env:path"</code></pre>
 
   </tr>
   <tr>
@@ -136,7 +138,7 @@ MMDeploy 的 Model Converter 和 SDK 共享推理引擎。您可以参考下文�
 <pre><code>
 Invoke-WebRequest -Uri https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-win-x64-1.8.1.zip -OutFile onnxruntime-win-x64-1.8.1.zip
 Expand-Archive onnxruntime-win-x64-1.8.1.zip .
-$env:ONNXRUNTIME_DIR = "$pwd\onnxruntime-win-x86-1.8.1"
+$env:ONNXRUNTIME_DIR = "$pwd\onnxruntime-win-x64-1.8.1"
 $env:path = "$env:ONNXRUNTIME_DIR\lib;" + $env:path
 </code></pre>
     </td>
@@ -191,9 +193,6 @@ $env:path = "$env:CUDNN_DIR\bin;" + $env:path
 ```powershell
 cd \the\root\path\of\MMDeploy
 $env:MMDEPLOY_DIR="$pwd"
-
-mkdir build
-cd build
 ```
 
 #### 编译选项说明
@@ -267,14 +266,18 @@ cd build
 如果您选择了ONNXRuntime，TensorRT 和 ncnn 任一种推理后端，您需要编译对应的自定义算子库。
 - **ONNXRuntime** 自定义算子
 ```powershell
-cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DMMDEPLOY_TARGET_BACKENDS="ort" -DONNXRUNTIME_DIR=$env:ONNXRUNTIME_DIR
+mkdir build -ErrorAction SilentlyContinue
+cd build
+cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DMMDEPLOY_TARGET_BACKENDS="ort" -DONNXRUNTIME_DIR="$env:ONNXRUNTIME_DIR"
 cmake --build . --config Release -- /maxcpucount:4
 ```
 
 - **TensorRT** 自定义算子
 
 ```powershell
-cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DMMDEPLOY_TARGET_BACKENDS="trt" -DTENSORRT_DIR=$env:TENSORRT_DIR -DCUDNN_DIR=$env:CUDNN_DIR
+mkdir build -ErrorAction SilentlyContinue
+cd build
+cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DMMDEPLOY_TARGET_BACKENDS="trt" -DTENSORRT_DIR="$env:TENSORRT_DIR" -DCUDNN_DIR="$env:CUDNN_DIR"
 cmake --build . --config Release -- /maxcpucount:4
 ```
 
@@ -298,14 +301,15 @@ pip install -e .
 
   ```PowerShell
   cd $env:MMDEPLOY_DIR
-  mkdir build
+  mkdir build -ErrorAction SilentlyContinue
   cd build
   cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
       -DMMDEPLOY_BUILD_SDK=ON `
       -DMMDEPLOY_TARGET_DEVICES="cpu" `
       -DMMDEPLOY_TARGET_BACKENDS="ort" `
       -DMMDEPLOY_CODEBASES="all" `
-      -DONNXRUNTIME_DIR=$env:ONNXRUNTIME_DIR `
+      -DONNXRUNTIME_DIR="$env:ONNXRUNTIME_DIR"
+
   cmake --build . --config Release -- /maxcpucount:4
   cmake --install . --config Release
   ```
@@ -321,9 +325,10 @@ pip install -e .
     -DMMDEPLOY_TARGET_DEVICES="cuda" `
     -DMMDEPLOY_TARGET_BACKENDS="trt" `
     -DMMDEPLOY_CODEBASES="all" `
-    -Dpplcv_DIR=$env:PPLCV_DIR/pplcv-build/install/lib/cmake/ppl `
-    -DTENSORRT_DIR=$env:TENSORRT_DIR `
-    -DCUDNN_DIR=$env:CUDNN_DIR `
+    -Dpplcv_DIR="$env:PPLCV_DIR/pplcv-build/install/lib/cmake/ppl" `
+    -DTENSORRT_DIR="$env:TENSORRT_DIR" `
+    -DCUDNN_DIR="$env:CUDNN_DIR"
+
   cmake --build . --config Release -- /maxcpucount:4
   cmake --install . --config Release
   ```
@@ -331,11 +336,11 @@ pip install -e .
 #### 编译 Demo
 
 ```PowerShell
-cd install\example
-mkdir build
+cd $env:MMDEPLOY_DIR\build\install\example
+mkdir build -ErrorAction SilentlyContinue
 cd build
 cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
-  -DMMDeploy_DIR=$env:MMDEPLOY_DIR/build/install/lib/cmake/MMDeploy
+  -DMMDeploy_DIR="$env:MMDEPLOY_DIR/build/install/lib/cmake/MMDeploy"
 
 cmake --build . --config Release -- /maxcpucount:4
 
