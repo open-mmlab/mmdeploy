@@ -4,6 +4,7 @@
 
 #include <cublas_v2.h>
 #include <cuda.h>
+#include <stdio.h>
 
 #include <algorithm>
 
