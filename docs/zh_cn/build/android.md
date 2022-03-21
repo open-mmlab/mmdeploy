@@ -6,10 +6,9 @@
     - [安装依赖包](#安装依赖包)
       - [安装 MMDeploy SDK 依赖](#安装-MMDeploy-SDK-依赖)
     - [编译 MMDeploy](#编译-mmdeploy)
+      - [编译选项说明](#编译选项说明)
       - [编译 SDK](#编译-sdk)
-        - [编译选项说明](#编译选项说明)
-        - [编译 SDK 库](#编译-sdk-库)
-        - [编译 SDK Demo](#编译-sdk-demo)
+      - [编译 Demo](#编译-demo)
 
 ---
 MMDeploy 为 android 平台提供交叉编译的构建方式.
@@ -105,9 +104,7 @@ make install
 </table>
 
 ### 编译 MMDeploy
-#### 编译 SDK
-
-##### 编译选项说明
+#### 编译选项说明
 <table>
 <thead>
   <tr>
@@ -150,7 +147,7 @@ make install
     <td>MMDEPLOY_CODEBASES</td>
     <td>{"mmcls", "mmdet", "mmseg", "mmedit", "mmocr", "all"}</td>
     <td>N/A</td>
-    <td>用来设置 SDK 后处理组件,加载 OpenMMLab 算法仓库的后处理功能. 已支持的算法仓库有'mmcls','mmdet','mmedit','mmseg'和'mmocr'. 如果选择多个codebase,中间使用分号隔开. 比如, 'mmcls', 'mmdet', 'mmedit', 'mmseg', 'mmocr'. 也可以通过 <code>all</code> 的方式, 加载所有codebase, 即 <code>-DMMDEPLOY_CODEBASES=all</code></td>.
+    <td>用来设置 SDK 后处理组件,加载 OpenMMLab 算法仓库的后处理功能. 已支持的算法仓库有'mmcls','mmdet','mmedit','mmseg'和'mmocr'. 如果选择多个codebase,中间使用分号隔开. 比如, 'mmcls', 'mmdet', 'mmedit', 'mmseg', 'mmocr'. 也可以通过 <code>all</code> 的方式, 加载所有codebase, 即 <code>-DMMDEPLOY_CODEBASES=all.</code></td>
   </tr>
   <tr>
     <td>BUILD_SHARED_LIBS</td>
@@ -161,7 +158,7 @@ make install
 </tbody>
 </table>
 
-##### 编译 SDK 库
+#### 编译 SDK
 
 下文展示构建SDK的样例，用 ncnn 作为推理引擎。
 
@@ -185,7 +182,7 @@ make install
   cmake --build . -- -j$(nproc) && cmake --install .
   ```
 
-##### 编译 SDK Demo
+#### 编译 Demo
 
 ```Bash
 cd ${MMDEPLOY_DIR}/build/install/example

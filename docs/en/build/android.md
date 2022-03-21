@@ -6,10 +6,9 @@
     - [Install Dependencies](#install-dependencies)
       - [Install Dependencies for SDK](#install-dependencies-for-sdk)
     - [Build MMDeploy](#build-mmdeploy)
+      - [Build Options Spec](#build-options-spec)
       - [Build SDK](#build-sdk)
-        - [Build Options](#build-options)
-        - [Build SDK Libraries](#build-sdk-libraries)
-        - [Build SDK Demo](#build-sdk-demo)
+      - [Build Demo](#build-demo)
 
 ---
 MMDeploy provides cross compile for android platform.
@@ -105,9 +104,7 @@ make install
 </table>
 
 ### Build MMDeploy
-#### Build SDK
-
-##### Build Options
+#### Build Options Spec
 <table>
 <thead>
   <tr>
@@ -167,7 +164,7 @@ make install
 </tbody>
 </table>
 
-##### Build SDK Libraries
+#### Build SDK
 MMDeploy provides a recipe as shown below for building SDK with ncnn as inference engine for android.
 
 - cpu + ncnn
@@ -190,7 +187,7 @@ MMDeploy provides a recipe as shown below for building SDK with ncnn as inferenc
   cmake --build . -- -j$(nproc) && cmake --install .
   ```
 
-##### Build SDK Demo
+#### Build Demo
 
 ```Bash
 cd ${MMDEPLOY_DIR}/build/install/example
