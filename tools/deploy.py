@@ -247,29 +247,33 @@ def main():
 
     if args.test_img is None:
         args.test_img = args.img
-    # visualize model of the backend
-    create_process(
-        f'visualize {backend.value} model',
-        target=visualize_model,
-        args=(model_cfg_path, deploy_cfg_path, backend_files, args.test_img,
-              args.device),
-        kwargs=dict(
-            backend=backend,
-            output_file=osp.join(args.work_dir, f'output_{backend.value}.jpg'),
-            show_result=args.show),
-        ret_value=ret_value)
+    import os
+    is_display = os.getenv("DISPLAY")
+    # for headless installation.
+    if is_display is not None:
+        # visualize model of the backend
+        create_process(
+            f'visualize {backend.value} model',
+            target=visualize_model,
+            args=(model_cfg_path, deploy_cfg_path, backend_files, args.test_img,
+                  args.device),
+            kwargs=dict(
+                backend=backend,
+                output_file=osp.join(args.work_dir, f'output_{backend.value}.jpg'),
+                show_result=args.show),
+            ret_value=ret_value)
 
-    # visualize pytorch model
-    create_process(
-        'visualize pytorch model',
-        target=visualize_model,
-        args=(model_cfg_path, deploy_cfg_path, [checkpoint_path],
-              args.test_img, args.device),
-        kwargs=dict(
-            backend=Backend.PYTORCH,
-            output_file=osp.join(args.work_dir, 'output_pytorch.jpg'),
-            show_result=args.show),
-        ret_value=ret_value)
+        # visualize pytorch model
+        create_process(
+            'visualize pytorch model',
+            target=visualize_model,
+            args=(model_cfg_path, deploy_cfg_path, [checkpoint_path],
+                  args.test_img, args.device),
+            kwargs=dict(
+                backend=Backend.PYTORCH,
+                output_file=osp.join(args.work_dir, 'output_pytorch.jpg'),
+                show_result=args.show),
+            ret_value=ret_value)
 
     logger.info('All process success.')
 

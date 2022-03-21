@@ -71,14 +71,10 @@ def visualize_model(model_cfg: Union[str, mmcv.Config],
     with torch.no_grad():
         result = task_processor.run_inference(model, model_inputs)[0]
 
-    import os
-    is_display = os.getenv("DISPLAY")
-    # for headless installation.
-    if is_display is not None:
-        task_processor.visualize(
-            image=img,
-            model=model,
-            result=result,
-            output_file=output_file,
-            window_name=backend.value,
-            show_result=show_result)
+    task_processor.visualize(
+        image=img,
+        model=model,
+        result=result,
+        output_file=output_file,
+        window_name=backend.value,
+        show_result=show_result)
