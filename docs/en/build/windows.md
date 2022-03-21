@@ -99,7 +99,8 @@ cd ../..
     <td>OpenCV<br>(>=3.0) </td>
     <td>
     1. Find and download OpenCV 3+ prebuilt package for windows from <a href="https://github.com/opencv/opencv/releases">here</a> <br>
-    2. Click the downloaded program and install it to the system
+    2. Click the downloaded program and install it to the target directory. Export the path where <code>OpenCVConfig.cmake</code> locates to the environment variable <code>PATH</code> like this,
+<pre><code>$env:PATH = "\the\path\where\OpenCVConfig.cmake\locates;" + "$env:path"</code></pre>
     </td>
   </tr>
   <tr>
@@ -113,6 +114,7 @@ cd ppl.cv
 git checkout tags/v0.6.2 -b v0.6.2
 ./build.bat -G "Visual Studio 16 2019" -T v142 -A x64 -DHPCC_USE_CUDA=ON -DHPCC_MSVC_MD=ON
 $env:PPLCV_DIR = "$pwd"
+cd ..
 </code></pre>
    </td>
   </tr>
@@ -146,7 +148,7 @@ As for the rest, MMDeploy will support them in the future.
 <pre><code>
 Invoke-WebRequest -Uri https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-win-x64-1.8.1.zip -OutFile onnxruntime-win-x64-1.8.1.zip
 Expand-Archive onnxruntime-win-x64-1.8.1.zip .
-$env:ONNXRUNTIME_DIR = "$pwd\onnxruntime-win-x86-1.8.1"
+$env:ONNXRUNTIME_DIR = "$pwd\onnxruntime-win-x64-1.8.1"
 $env:path = "$env:ONNXRUNTIME_DIR\lib;" + $env:path
 </code></pre>
     </td>
@@ -202,9 +204,6 @@ $env:path = "$env:CUDNN_DIR\bin;" + $env:path
 ```powershell
 cd \the\root\path\of\MMDeploy
 $env:MMDEPLOY_DIR="$pwd"
-
-mkdir build
-cd build
 ```
 
 #### Build Options Spec
@@ -282,14 +281,18 @@ If one of inference engines among ONNXRuntime, TensorRT and ncnn is selected, yo
 - **ONNXRuntime** Custom Ops
 
 ```powershell
-cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DMMDEPLOY_TARGET_BACKENDS="ort" -DONNXRUNTIME_DIR=$env:ONNXRUNTIME_DIR
+mkdir build -ErrorAction SilentlyContinue
+cd build
+cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DMMDEPLOY_TARGET_BACKENDS="ort" -DONNXRUNTIME_DIR="$env:ONNXRUNTIME_DIR"
 cmake --build . --config Release -- /maxcpucount:4
 ```
 
 - **TensorRT** Custom Ops
 
 ```powershell
-cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DMMDEPLOY_TARGET_BACKENDS="trt" -DTENSORRT_DIR=$env:TENSORRT_DIR -DCUDNN_DIR=$env:CUDNN_DIR
+mkdir build -ErrorAction SilentlyContinue
+cd build
+cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DMMDEPLOY_TARGET_BACKENDS="trt" -DTENSORRT_DIR="$env:TENSORRT_DIR" -DCUDNN_DIR="$env:CUDNN_DIR"
 cmake --build . --config Release -- /maxcpucount:4
 ```
 
@@ -319,14 +322,15 @@ You can also activate other engines after the model.
 
   ```PowerShell
   cd $env:MMDEPLOY_DIR
-  mkdir build
+  mkdir build -ErrorAction SilentlyContinue
   cd build
   cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
       -DMMDEPLOY_BUILD_SDK=ON `
       -DMMDEPLOY_TARGET_DEVICES="cpu" `
       -DMMDEPLOY_TARGET_BACKENDS="ort" `
       -DMMDEPLOY_CODEBASES="all" `
-      -DONNXRUNTIME_DIR=$env:ONNXRUNTIME_DIR `
+      -DONNXRUNTIME_DIR="$env:ONNXRUNTIME_DIR"
+
   cmake --build . --config Release -- /maxcpucount:4
   cmake --install . --config Release
   ```
@@ -335,18 +339,20 @@ You can also activate other engines after the model.
 
   ```PowerShell
   cd $env:MMDEPLOY_DIR
-   mkdir build
-   cd build
-   cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
-     -DMMDEPLOY_BUILD_SDK=ON `
-     -DMMDEPLOY_TARGET_DEVICES="cuda" `
-     -DMMDEPLOY_TARGET_BACKENDS="trt" `
-     -DMMDEPLOY_CODEBASES="all" `
-     -Dpplcv_DIR=$env:PPLCV_DIR/pplcv-build/install/lib/cmake/ppl `
-     -DTENSORRT_DIR=$env:TENSORRT_DIR `
-     -DCUDNN_DIR=$env:CUDNN_DIR `
-   cmake --build . --config Release -- /maxcpucount:4
-   cmake --install . --config Release
+  mkdir build
+  mkdir build -ErrorAction SilentlyContinue
+  cd build
+  cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
+    -DMMDEPLOY_BUILD_SDK=ON `
+    -DMMDEPLOY_TARGET_DEVICES="cuda" `
+    -DMMDEPLOY_TARGET_BACKENDS="trt" `
+    -DMMDEPLOY_CODEBASES="all" `
+    -Dpplcv_DIR="$env:PPLCV_DIR/pplcv-build/install/lib/cmake/ppl" `
+    -DTENSORRT_DIR="$env:TENSORRT_DIR" `
+    -DCUDNN_DIR="$env:CUDNN_DIR"
+
+  cmake --build . --config Release -- /maxcpucount:4
+  cmake --install . --config Release
   ```
 
 #### Build Demo
