@@ -5,7 +5,10 @@
 #ifndef MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_H_
 #define MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_H_
 
+#include <condition_variable>
+#include <mutex>
 #include <optional>
+#include <thread>
 #include <type_traits>
 
 #include "core/mpl/detected.h"
@@ -60,14 +63,13 @@ struct InlineScheduler {
 
   struct _Receiver {
     Value* data_;
-    friend void SetValue(_Receiver& r, Value data) noexcept { *r.data_ = std::move(data); }
+    friend void SetValue(_Receiver&& r, Value data) noexcept { *r.data_ = std::move(data); }
   };
 
   template <class S>
   friend Value SyncWait(InlineScheduler, S&& sender) {
     Value data;
-    _Receiver r{&data};
-    auto op_state = Connect(((S &&) sender), r);
+    auto op_state = Connect(((S &&) sender), _Receiver{&data});
     Start(op_state);
     return data;
   }
@@ -143,7 +145,7 @@ struct _Operation1 {
   connect_result_t<CvrefSender, Receiver1> state1_;
   std::optional<connect_result_t<schedule_result_t<Scheduler>, Receiver2>> state2_;
 
-  template <class R>  //, _decays_to<R, Receiver, bool> = true>
+  template <class R>
   _Operation1(Scheduler sched, CvrefSender&& sndr, R&& rcvr)
       : sched_(sched),
         rcvr_((R &&) rcvr),
@@ -246,7 +248,7 @@ struct _SharedState {
 
   connect_result_t<Sender, Receiver> op_state2_;
 
-  std::atomic<void*> head_;
+  std::atomic<void*> head_{nullptr};
 
   explicit _SharedState(Sender& sndr) : op_state2_(Connect((Sender &&) sndr, Receiver{*this})) {}
 
