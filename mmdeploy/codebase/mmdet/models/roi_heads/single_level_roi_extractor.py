@@ -4,7 +4,7 @@ from torch.autograd import Function
 
 from mmdeploy.core.optimizers import mark
 from mmdeploy.core.rewriters import FUNCTION_REWRITER
-from mmdeploy.utils import get_backend
+from mmdeploy.utils import get_backend, get_ir_config
 from mmdeploy.utils.constants import Backend
 
 
@@ -137,14 +137,24 @@ def single_roi_extractor__forward(ctx,
         device=target_lvls.device)
     target_lvls = torch.cat((_tmp, _tmp, target_lvls))
     for i in range(num_levels):
-        # use the roi align in torhcvision to accelerate the inference
-        # roi_align in MMCV is same as torchvision when pool mode is 'avg'
-        if backend == Backend.TORCHSCRIPT or self.roi_layers[
-                i].pool_mode == 'avg':
-            self.roi_layers[i].use_torchvision = True
         mask = target_lvls == i
         inds = mask.nonzero(as_tuple=False).squeeze(1)
-        roi_feats_t = self.roi_layers[i](feats[i], rois[inds])
+        rois_t = rois[inds]
+        # use the roi align in torhcvision
+        if backend == Backend.TORCHSCRIPT:
+            self.roi_layers[i].use_torchvision = True
+        if backend == Backend.ONNXRUNTIME:
+            ir_cfg = get_ir_config(ctx.cfg)
+            opset_version = ir_cfg.get('opset_version', 11)
+            if self.roi_layers[i].aligned is False and opset_version <= 16:
+                # use RoiAlign in onnxruntime and preprocess rois to
+                # make compatible with op_set 10
+                mask_rois = torch.tensor(
+                    [0, 1, 1, 1, 1], dtype=rois_t.dtype,
+                    device=rois_t.device).expand_as(rois_t).bool()
+                rois_t[mask_rois] = (rois_t[mask_rois] +
+                                     0.5) / self.roi_layers[i].spatial_scale
+        roi_feats_t = self.roi_layers[i](feats[i], rois_t)
         roi_feats[inds] = roi_feats_t
     # slice to recover original size
     roi_feats = roi_feats[num_levels * 2:]

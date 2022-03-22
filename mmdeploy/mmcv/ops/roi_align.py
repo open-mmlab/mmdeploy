@@ -1,10 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import List
 
+import torch
 from torch import Tensor
 
 from mmdeploy.core import SYMBOLIC_REWRITER
-from mmdeploy.utils import Backend, get_backend
+from mmdeploy.utils import Backend, get_backend, get_ir_config
 
 
 # Here using mmcv.ops.roi_align.__self__ to find
@@ -40,6 +41,49 @@ def roi_align_default(ctx, g, input: Tensor, rois: Tensor,
     backend = get_backend(ctx.cfg)
     if backend == Backend.PPLNN:
         domain = 'mmcv'
+    elif backend == Backend.ONNXRUNTIME:
+        from torch.onnx.symbolic_opset9 import _cast_Long
+        from torch.onnx.symbolic_opset11 import select, squeeze
+        batch_indices = _cast_Long(
+            g,
+            squeeze(
+                g,
+                select(
+                    g, rois, 1,
+                    g.op(
+                        'Constant',
+                        value_t=torch.tensor([0], dtype=torch.long))), 1),
+            False)
+        rois = select(
+            g, rois, 1,
+            g.op(
+                'Constant',
+                value_t=torch.tensor([1, 2, 3, 4], dtype=torch.long)))
+        ir_cfg = get_ir_config(ctx.cfg)
+        opset_version = ir_cfg.get('opset_version', 11)
+        if (opset_version < 16):
+            return g.op(
+                'RoiAlign',
+                input,
+                rois,
+                batch_indices,
+                output_height_i=output_size[0],
+                output_width_i=output_size[1],
+                spatial_scale_f=spatial_scale,
+                sampling_ratio_i=sampling_ratio,
+                mode_s=pool_mode)
+        else:
+            return g.op(
+                'RoiAlign',
+                input,
+                rois,
+                batch_indices,
+                output_height_i=output_size[0],
+                output_width_i=output_size[1],
+                spatial_scale_f=spatial_scale,
+                sampling_ratio_i=sampling_ratio,
+                mode_s=pool_mode,
+                aligned_i=aligned)
     else:
         domain = 'mmdeploy'
     return g.op(
