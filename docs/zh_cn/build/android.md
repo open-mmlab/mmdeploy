@@ -86,6 +86,7 @@ make install
 export OPENCV_VERSION=4.5.4
 wget https://github.com/opencv/opencv/releases/download/${OPENCV_VERSION}/opencv-${OPENCV_VERSION}-android-sdk.zip
 unzip opencv-${OPENCV_VERSION}-android-sdk.zip
+export OPENCV_ANDROID_SDK_DIR=${PWD}/OpenCV-android-sdk
 </code></pre>
     </td>
 
@@ -97,6 +98,7 @@ unzip opencv-${OPENCV_VERSION}-android-sdk.zip
 <pre><code>
 git clone -b 20211208 https://github.com/Tencent/ncnn.git
 cd ncnn
+git submodule update --init
 mkdir -p build
 cd build
 cmake -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake -DANDROID_ABI="arm64-v8a" -DANDROID_PLATFORM=android-30 -DNCNN_VULKAN=ON -DNCNN_DISABLE_EXCEPTION=OFF -DNCNN_DISABLE_RTTI=OFF ..
