@@ -69,7 +69,7 @@ You can skip this chapter if only interested in model converter.
     <td>spdlog </td>
     <td>
 <pre><code>
-git clone https://github.com/gabime/spdlog.git
+git clone -b v1.9.2 https://github.com/gabime/spdlog.git
 cd spdlog
 export SPDLOG_DIR=${PWD}
 mkdir -p build
@@ -99,6 +99,7 @@ export OPENCV_ANDROID_SDK_DIR=${PWD}/OpenCV-android-sdk
 git clone -b 20211208 https://github.com/Tencent/ncnn.git
 cd ncnn
 git submodule update --init
+export NCNN_DIR=${PWD}
 mkdir -p build
 cd build
 cmake -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake -DANDROID_ABI="arm64-v8a" -DANDROID_PLATFORM=android-30 -DNCNN_VULKAN=ON -DNCNN_DISABLE_EXCEPTION=OFF -DNCNN_DISABLE_RTTI=OFF ..
@@ -180,12 +181,12 @@ MMDeploy provides a recipe as shown below for building SDK with ncnn as inferenc
   cmake .. \
       -DMMDEPLOY_BUILD_SDK=ON \
       -DOpenCV_DIR=${OPENCV_ANDROID_SDK_DIR}/sdk/native/jni/abi-arm64-v8a \
-      -Dspdlog_DIR=${SPDLOG_DIR}/build/install/usr/local/lib/cmake/spdlog \
+      -Dspdlog_DIR=${SPDLOG_DIR}/lib/cmake/spdlog \
       -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn \
       -DMMDEPLOY_TARGET_BACKENDS=ncnn \
       -DMMDEPLOY_CODEBASES=all \
       -DBUILD_SHARED_LIBS=OFF \
-      -DCMAKE_TOOLCHAIN_FILE=${NDK_DIR}/build/cmake/android.toolchain.cmake \
+      -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake \
       -DANDROID_ABI=arm64-v8a \
       -DANDROID_PLATFORM=android-30 \
       -DANDROID_CPP_FEATURES="rtti exceptions"
@@ -200,7 +201,10 @@ cd ${MMDEPLOY_DIR}/build/install/example
 mkdir -p build && cd build
 cmake .. \
       -DOpenCV_DIR=${OPENCV_ANDROID_SDK_DIR}/sdk/native/jni/abi-arm64-v8a \
-      -Dspdlog_DIR=${SPDLOG_DIR}/build/install/usr/local/lib/cmake/spdlog \
-      -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy
+      -Dspdlog_DIR=${SPDLOG_DIR}/lib/cmake/spdlog \
+      -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy \
+      -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake \
+      -DANDROID_ABI=arm64-v8a \
+      -DANDROID_PLATFORM=android-30
 cmake --build . -- -j$(nproc)
 ```
