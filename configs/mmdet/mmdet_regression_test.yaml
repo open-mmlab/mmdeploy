@@ -61,7 +61,7 @@ models:
       - yolov3_mobilenetv2_mstrain-416_300e_coco.py
     metafile: configs/yolo/metafile.yml
     deploy_config_dir: ./configs/mmdet/detection
-    calib-dataset-cfg: None
+    calib_dataset_cfg: None
     backends: &onnx_backend_config
       onnxruntime:
         performance_align: True

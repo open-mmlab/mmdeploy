@@ -13,6 +13,7 @@ from torch.multiprocessing import Process, set_start_method
 
 from mmdeploy.apis import torch2onnx, build_task_processor
 from mmdeploy.utils import get_root_logger, load_config, target_wrapper, parse_device_id
+from mmdeploy.utils.timer import TimeCounter
 
 
 def parse_args():
@@ -256,6 +257,7 @@ def test_backends(deploy_cfg_path, model_cfg_path, checkpoint_path, device, work
 
     is_device_cpu = (device == 'cpu')
     device_id = None if is_device_cpu else parse_device_id(device)
+    print(f'Got device_id = {device_id}')
 
     model = MMDataParallel(model, device_ids=[device_id])
     # The whole dataset test wrapped a MMDataParallel class outside the module.
@@ -264,29 +266,34 @@ def test_backends(deploy_cfg_path, model_cfg_path, checkpoint_path, device, work
     # CLASSES attribute as the inside module.
     if hasattr(model.module, 'CLASSES'):
         model.CLASSES = model.module.CLASSES
-    # if args.speed_test:
-    #     with_sync = not is_device_cpu
-    #
-    #     with TimeCounter.activate(
-    #             warmup=args.warmup,
-    #             log_interval=args.log_interval,
-    #             with_sync=with_sync,
-    #             file=args.log2file):
-    #         outputs = task_processor.single_gpu_test(model, data_loader,
-    #                                                  args.show, args.show_dir)
-    # else:
-    outputs = task_processor.single_gpu_test(model,
-                                             data_loader,
-                                             show=False,
-                                             out_dir=None)
+
+    log_path = checkpoint_path.with_suffix('.log').absolute()
+    result_path = checkpoint_path.with_suffix('.pkl').absolute()
+
+    speed_test = True
+    if speed_test:
+        with_sync = not is_device_cpu
+
+        with TimeCounter.activate(
+                warmup=10,
+                log_interval=100,
+                with_sync=with_sync,
+                file=str(log_path)):
+            outputs = task_processor.single_gpu_test(model, data_loader,
+                                                     show=False, out_dir=None)
+    else:
+        outputs = task_processor.single_gpu_test(model,
+                                                 data_loader,
+                                                 show=False,
+                                                 out_dir=None)
     task_processor.evaluate_outputs(model_cfg,
                                     outputs,
                                     dataset,
                                     metrics=None,
-                                    out=None,
+                                    out=str(result_path),
                                     metric_options=None,
                                     format_only=False,
-                                    log2file=None)
+                                    log_file=str(log_path))
 
     return 0, 0
 
@@ -343,10 +350,6 @@ def get_onnxruntime_result(backends_info, model_cfg_path, deploy_config_dir, che
     metric_all_list = [str(metric) for metric in metric_tolerance]
     deploy_cfg_path_list = backends_info.get('deploy_config')
     for infer_type, deploy_cfg_info in deploy_cfg_path_list.items():
-
-        if infer_type == 'static':
-            continue
-
         for fp_size, deploy_cfg in deploy_cfg_info.items():
 
             if deploy_cfg is None:
@@ -385,7 +388,7 @@ def get_onnxruntime_result(backends_info, model_cfg_path, deploy_config_dir, che
                 ret_value=ret_value)
 
             # Test the model
-            if convert_result:
+            if convert_result and infer_type == 'dynamic':
                 for metric_name in metric_name_list:
                     # test the model
                     metric_value, fps = test_backends(deploy_cfg_path=deploy_cfg_path,
