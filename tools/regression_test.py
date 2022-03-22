@@ -223,26 +223,25 @@ def get_info_from_log_file(info_type, log_path):
     if log_path.exists():
         with open(log_path, 'r+') as f_log:
             lines = f_log.readlines()
-            f_log.truncate()  # clear log file context
+        with open(log_path, 'w') as f_log:
+            f_log.truncate()
     else:
         lines = []
 
-    if len(lines) > 1:
-
-        if info_type == 'FPS':
-            line_count = 0
-            fps_sum = 0.00
-            for line in lines[-6:]:
-                if 'FPS' not in line:
-                    continue
-                line_count += 1
-                fps_sum = float(line.split(' ')[-2])
-            info_value = f'{fps_sum / line_count:.2f}'
-        elif info_type == 'metric':
-            info_value = '0.00'
-
-        else:
-            info_value = '0.00'
+    if info_type == 'FPS' and len(lines) > 1:
+        line_count = 0
+        fps_sum = 0.00
+        for line in lines[-6:]:
+            if 'FPS' not in line:
+                continue
+            line_count += 1
+            fps_sum += float(line.split(' ')[-2])
+        info_value = f'{fps_sum / line_count:.2f}'
+    elif info_type == 'metric' and len(lines) < 2:
+        for line in lines:
+            if 'OrderedDict' not in line:
+                continue
+        info_value = '0.00'
     else:
         info_value = '0.00'
 
