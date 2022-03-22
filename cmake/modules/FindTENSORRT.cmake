@@ -1,4 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+
+if (NOT DEFINED TENSORRT_DIR)
+    set(TENSORRT_DIR $ENV{TENSORRT_DIR})
+endif ()
 if (NOT TENSORRT_DIR)
     message(FATAL_ERROR "Please set TENSORRT_DIR with cmake -D option.")
 endif()

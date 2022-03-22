@@ -1,4 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+
+if (NOT DEFINED CUDNN_DIR)
+    set(CUDNN_DIR $ENV{CUDNN_DIR})
+endif ()
+
 find_path(
     CUDNN_INCLUDE_DIR cudnn.h
     HINTS ${CUDNN_DIR} ${CUDA_TOOLKIT_ROOT_DIR}
