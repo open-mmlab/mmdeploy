@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 cmake_minimum_required(VERSION 3.14)
-project(mmdeploy_python)
+project(mmdeploy_python CUDA CXX)
 
 if (NOT TARGET pybind11)
     add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/pybind11 pybind11)
