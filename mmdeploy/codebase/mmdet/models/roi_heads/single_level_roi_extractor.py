@@ -146,14 +146,12 @@ def single_roi_extractor__forward(ctx,
         if backend == Backend.ONNXRUNTIME:
             ir_cfg = get_ir_config(ctx.cfg)
             opset_version = ir_cfg.get('opset_version', 11)
-            if self.roi_layers[i].aligned is False and opset_version <= 16:
+            offset = 0.5 if self.roi_layers[i].aligned is True else 0.0
+            if opset_version <= 16:
                 # use RoiAlign in onnxruntime and preprocess rois to
                 # make compatible with op_set 10
-                mask_rois = torch.tensor(
-                    [0, 1, 1, 1, 1], dtype=rois_t.dtype,
-                    device=rois_t.device).expand_as(rois_t).bool()
-                rois_t[mask_rois] = (rois_t[mask_rois] +
-                                     0.5) / self.roi_layers[i].spatial_scale
+                rois_t[:, 1:] = rois_t[:, 1:] - offset / self.roi_layers[
+                    i].spatial_scale
         roi_feats_t = self.roi_layers[i](feats[i], rois_t)
         roi_feats[inds] = roi_feats_t
     # slice to recover original size

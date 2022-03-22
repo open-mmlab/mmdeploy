@@ -16,7 +16,7 @@ TEST_TENSORRT = TestTensorRTExporter()
 TEST_NCNN = TestNCNNExporter()
 
 
-@pytest.mark.parametrize('backend', [TEST_ONNXRT, TEST_TENSORRT])
+@pytest.mark.parametrize('backend', [TEST_TENSORRT])
 @pytest.mark.parametrize('pool_h,pool_w,spatial_scale,sampling_ratio',
                          [(2, 2, 1.0, 2), (4, 4, 2.0, 4)])
 def test_roi_align(backend,
