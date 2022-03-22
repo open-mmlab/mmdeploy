@@ -4,6 +4,7 @@ import logging
 from functools import partial
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import torch.multiprocessing as mp
 import yaml
@@ -216,13 +217,45 @@ def get_pytorch_result(model_name, meta_info, checkpoint_path, model_config_name
     return pytorch_metric
 
 
-def test_backends(deploy_cfg_path, model_cfg_path, checkpoint_path, device, work_dir,
+def get_info_from_log_file(info_type, log_path):
+
+    # get fps from log file
+    if log_path.exists():
+        with open(log_path, 'r+') as f_log:
+            lines = f_log.readlines()
+            f_log.truncate()  # clear log file context
+    else:
+        lines = []
+
+    if len(lines) > 1:
+
+        if info_type == 'FPS':
+            line_count = 0
+            fps_sum = 0.00
+            for line in lines[-6:]:
+                if 'FPS' not in line:
+                    continue
+                line_count += 1
+                fps_sum = float(line.split(' ')[-2])
+            info_value = f'{fps_sum / line_count:.2f}'
+        elif info_type == 'metric':
+            info_value = '0.00'
+
+        else:
+            info_value = '0.00'
+    else:
+        info_value = '0.00'
+
+    return info_value
+
+
+def test_backends(deploy_cfg, model_cfg, checkpoint_path, device, work_dir,
                   metrics, logger):
     """Test the backend.
 
     Args:
-        deploy_cfg_path (Path): Deploy config file path.
-        model_cfg_path (Path): Model config file path.
+        deploy_cfg (mmcv.Config): Deploy config file path.
+        model_cfg (mmcv.Config): Model config file path.
         checkpoint_path (Path): Backend converted model file path.
         device (str): A string specifying device, defaults to 'cuda:0'.
         work_dir (str): A working directory.
@@ -238,9 +271,6 @@ def test_backends(deploy_cfg_path, model_cfg_path, checkpoint_path, device, work
     Returns:
         Dict: metric info of the model
     """
-
-    # load deploy_cfg
-    deploy_cfg, model_cfg = load_config(str(deploy_cfg_path), str(model_cfg_path))
 
     task_processor = build_task_processor(model_cfg, deploy_cfg, device)
 
@@ -267,8 +297,15 @@ def test_backends(deploy_cfg_path, model_cfg_path, checkpoint_path, device, work
     if hasattr(model.module, 'CLASSES'):
         model.CLASSES = model.module.CLASSES
 
-    log_path = checkpoint_path.with_suffix('.log').absolute()
+    log_path = checkpoint_path.with_name('backend_test_log.log').absolute()
+    if log_path.exists():
+        with open(log_path, 'w') as f_log:
+            f_log.truncate()  # clear the log file
+    print(f'Log path = {log_path}')
+
     result_path = checkpoint_path.with_suffix('.pkl').absolute()
+    if result_path.exists():
+        result_path.unlink()
 
     speed_test = True
     if speed_test:
@@ -286,16 +323,27 @@ def test_backends(deploy_cfg_path, model_cfg_path, checkpoint_path, device, work
                                                  data_loader,
                                                  show=False,
                                                  out_dir=None)
+
+    fps = get_info_from_log_file('FPS', log_path)
+    print(f'Got fps = {fps}')
+
+    # Get metric
     task_processor.evaluate_outputs(model_cfg,
                                     outputs,
                                     dataset,
-                                    metrics=None,
+                                    metrics=metrics,
                                     out=str(result_path),
                                     metric_options=None,
                                     format_only=False,
                                     log_file=str(log_path))
 
-    return 0, 0
+    # Get metric from log file
+    metric = get_info_from_log_file('metric', log_path)
+    print(f'Got metric = {metric}')
+
+    exit(0)
+
+    return metric, fps
 
 
 def create_process(name, target, args, kwargs, ret_value=None):
@@ -330,7 +378,7 @@ def get_onnxruntime_result(backends_info, model_cfg_path, deploy_config_dir, che
         deploy_config_dir (str): Deploy config directory.
         checkpoint_path (Path): Checkpoints path.
         work_dir (Path): A working directory.
-        device (str): A string specifying device, defaults to 'cuda:0'.
+        device (str): A string specifying device, defaults to '0'.
         pytorch_metric (dict): All pytorch metric info.
         metric_tolerance (dict):Tolerance for metrics.
         report_dict (dict): Report info dict.
@@ -356,8 +404,8 @@ def get_onnxruntime_result(backends_info, model_cfg_path, deploy_config_dir, che
                 continue
 
             fps = ''
-            # img = (np.ones((425, 640, 3))).astype(np.uint8)  # fake image
-            img = '../demo_output/000000000034.jpg'
+            img = (np.ones((425, 640, 3))).astype(np.uint8)  # fake image
+            # img = '../demo_output/000000000034.jpg'
             metric_list = []
             test_pass = True
 
@@ -389,15 +437,36 @@ def get_onnxruntime_result(backends_info, model_cfg_path, deploy_config_dir, che
 
             # Test the model
             if convert_result and infer_type == 'dynamic':
-                for metric_name in metric_name_list:
-                    # test the model
-                    metric_value, fps = test_backends(deploy_cfg_path=deploy_cfg_path,
-                                                      model_cfg_path=model_cfg_path.absolute(),
+
+                # load deploy_cfg
+                deploy_cfg, model_cfg = load_config(str(deploy_cfg_path),
+                                                    str(model_cfg_path.absolute()))
+                # Get evaluation metric from model config
+                metrics_eval_list = model_cfg.evaluation.get('metric', [])
+                assert len(metrics_eval_list) > 0
+                print(f'Got metrics_eval_list = {metrics_eval_list}')
+
+                # test the model metric
+                for metric_name in metrics_eval_list:
+                    metric_value, fps = test_backends(deploy_cfg=deploy_cfg,
+                                                      model_cfg=model_cfg,
                                                       checkpoint_path=onnxruntime_path.resolve(),
-                                                      device='cuda',
+                                                      device='cuda' if device != '-1' else 'cpu',
                                                       work_dir=str(onnxruntime_path.parent),
-                                                      metrics=None,
+                                                      metrics=metric_name,
                                                       logger=logger)
+
+                    metric_exchange_dict = {
+                        # mmdet
+                        'bbox': 'box_AP',
+                        'segm': 'mask_AP',
+                        'proposal': 'PQ',
+                    }
+                    metric_name = metric_exchange_dict.get(metric_name, None)
+                    if metric_name is None:
+                        print(f'metrics_eval_list: {metrics_eval_list} has not exchange name')
+                    assert metric_name is not None
+
                     metric_list.append({metric_name: metric_value})
                     metric_pytorch = pytorch_metric.get(str(metric_name).replace('_', ' '))
                     metric_tolerance_value = metric_tolerance.get(metric_name)
