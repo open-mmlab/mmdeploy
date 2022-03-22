@@ -48,7 +48,8 @@ This doc is only for how to build SDK using android toolchain on linux.
     ```bash
     wget https://dl.google.com/android/repository/android-ndk-r23b-linux.zip
     unzip android-ndk-r23b-linux.zip
-    cd android-ndk-r23b-linux.zip
+    cd android-ndk-r23b
+    export NDK_PATH=${PWD}
     ```
 
 ### Install Dependencies
@@ -70,9 +71,10 @@ You can skip this chapter if only interested in model converter.
 <pre><code>
 git clone https://github.com/gabime/spdlog.git
 cd spdlog
+export SPDLOG_DIR=${PWD}
 mkdir -p build
 cd build
-cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_INSTALL_PREFIX=${SPDLOG_DIR} -DCMAKE_TOOLCHAIN_FILE=${PATH_TO_NDK}/build/cmake/android.toolchain.cmake -DANDROID_ABI="arm64-v8a" -DANDROID_PLATFORM=android-30 ..
+cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_INSTALL_PREFIX=${SPDLOG_DIR} -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake -DANDROID_ABI="arm64-v8a" -DANDROID_PLATFORM=android-30 ..
 make install
 </code></pre>
    </td>
@@ -83,6 +85,7 @@ make install
 <pre><code>
 export OPENCV_VERSION=4.5.4
 wget https://github.com/opencv/opencv/releases/download/${OPENCV_VERSION}/opencv-${OPENCV_VERSION}-android-sdk.zip
+unzip opencv-${OPENCV_VERSION}-android-sdk.zip
 </code></pre>
     </td>
 
@@ -96,7 +99,7 @@ git clone -b 20211208 https://github.com/Tencent/ncnn.git
 cd ncnn
 mkdir -p build
 cd build
-cmake -DCMAKE_TOOLCHAIN_FILE=${PATH_TO_NDK}/build/cmake/android.toolchain.cmake -DANDROID_ABI="arm64-v8a" -DANDROID_PLATFORM=android-30 -DNCNN_VULKAN=ON -DNCNN_DISABLE_EXCEPTION=OFF -DNCNN_DISABLE_RTTI=OFF ..
+cmake -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake -DANDROID_ABI="arm64-v8a" -DANDROID_PLATFORM=android-30 -DNCNN_VULKAN=ON -DNCNN_DISABLE_EXCEPTION=OFF -DNCNN_DISABLE_RTTI=OFF ..
 make install
 </code></pre>
    </td>
@@ -147,7 +150,7 @@ make install
     <td>Enabling inference engine. <br><b>By default, no target inference engine is set, since it highly depends on the use case.</b><br> Only ncnn backend is supported for android platform now.<br>
     After specifying the inference engine, it's package path has to be passed to cmake as follows, <br>
     1. <b>ncnn</b>: ncnn. <code>ncnn_DIR</code> is needed.
-<pre><code>-Dncnn_DIR=${NCNN_DIR}</code></pre>
+<pre><code>-Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn</code></pre>
    </td>
   </tr>
   <tr>

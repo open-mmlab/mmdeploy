@@ -48,7 +48,8 @@ MMDeploy 的交叉编译分为两步:
     ```bash
     wget https://dl.google.com/android/repository/android-ndk-r23b-linux.zip
     unzip android-ndk-r23b-linux.zip
-    cd android-ndk-r23b-linux.zip
+    cd android-ndk-r23b
+    export NDK_PATH=${PWD}
     ```
 
 ### 安装依赖包
@@ -70,9 +71,10 @@ MMDeploy 的交叉编译分为两步:
 <pre><code>
 git clone https://github.com/gabime/spdlog.git
 cd spdlog
+export SPDLOG_DIR=${PWD}
 mkdir -p build
 cd build
-cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_INSTALL_PREFIX=${SPDLOG_DIR} -DCMAKE_TOOLCHAIN_FILE=${PATH_TO_NDK}/build/cmake/android.toolchain.cmake -DANDROID_ABI="arm64-v8a" -DANDROID_PLATFORM=android-30 ..
+cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_INSTALL_PREFIX=${SPDLOG_DIR} -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake -DANDROID_ABI="arm64-v8a" -DANDROID_PLATFORM=android-30 ..
 make install
 </code></pre>
    </td>
@@ -83,6 +85,7 @@ make install
 <pre><code>
 export OPENCV_VERSION=4.5.4
 wget https://github.com/opencv/opencv/releases/download/${OPENCV_VERSION}/opencv-${OPENCV_VERSION}-android-sdk.zip
+unzip opencv-${OPENCV_VERSION}-android-sdk.zip
 </code></pre>
     </td>
 
@@ -96,7 +99,7 @@ git clone -b 20211208 https://github.com/Tencent/ncnn.git
 cd ncnn
 mkdir -p build
 cd build
-cmake -DCMAKE_TOOLCHAIN_FILE=${PATH_TO_NDK}/build/cmake/android.toolchain.cmake -DANDROID_ABI="arm64-v8a" -DANDROID_PLATFORM=android-30 -DNCNN_VULKAN=ON -DNCNN_DISABLE_EXCEPTION=OFF -DNCNN_DISABLE_RTTI=OFF ..
+cmake -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake -DANDROID_ABI="arm64-v8a" -DANDROID_PLATFORM=android-30 -DNCNN_VULKAN=ON -DNCNN_DISABLE_EXCEPTION=OFF -DNCNN_DISABLE_RTTI=OFF ..
 make install
 </code></pre>
    </td>
@@ -141,7 +144,7 @@ make install
     <td>设置推理后端. <br><b>默认情况下,SDK不设置任何后端, 因为它与应用场景高度相关.</b><br> Android 端目前只支持ncnn一个后端 <br>
     构建时,几乎每个后端,都需传入一些路径变量,用来查找依赖包. <br>
     1. <b>ncnn</b>: 表示 ncnn. 需要设置<code>ncnn_DIR</code>.
-<pre><code>-Dncnn_DIR=${NCNN_DIR}</code></pre>
+<pre><code>-Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn</code></pre>
    </td>
   </tr>
   <tr>
