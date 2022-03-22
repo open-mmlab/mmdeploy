@@ -147,7 +147,7 @@ class VoxelDetectionModel(BaseBackendModel):
             num_points_per_voxel: [M] int32 tensor. Only returned when
                 max_points != -1.
         """
-        from mmdet3d.ops import Voxelization
+        from mmcv.ops import Voxelization
         model_cfg = load_config(model_cfg)[0]
         if 'voxel_layer' in model_cfg.model.keys():
             voxel_layer = model_cfg.model['voxel_layer']

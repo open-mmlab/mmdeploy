@@ -6,36 +6,22 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    'mmdet3d.models.detectors.mvx_two_stage.MVXTwoStageDetector.simple_test')
-def mvxtwostagedetector__simple_test(ctx,
-                                     self,
-                                     voxels,
-                                     num_points,
-                                     coors,
-                                     img_metas,
-                                     img=None,
-                                     rescale=False):
-    _, pts_feats = self.extract_feat(
-        voxels, num_points, coors, img=img, img_metas=img_metas)
-    if pts_feats and self.with_pts_bbox:
-        bbox_pts = self.simple_test_pts(pts_feats, img_metas, rescale=rescale)
-    return bbox_pts
-
-
-@FUNCTION_REWRITER.register_rewriter(
-    'mmdet3d.models.detectors.mvx_two_stage.MVXTwoStageDetector.extract_feat')
-def mvxtwostagedetector__extract_feat(ctx, self, voxels, num_points, coors,
-                                      img, img_metas):
-    img_feats = self.extract_img_feat(img, img_metas)
-    pts_feats = self.extract_pts_feat(voxels, num_points, coors, img_feats,
-                                      img_metas)
-    return (img_feats, pts_feats)
-
-
-@FUNCTION_REWRITER.register_rewriter(
     'mmdet3d.models.detectors.centerpoint.CenterPoint.extract_pts_feat')
 def centerpoint__extract_pts_feat(ctx, self, voxels, num_points, coors,
                                   img_feats, img_metas):
+    """Extract features from points. Rewrite this func to remove voxelize op.
+
+    Args:
+        voxels (torch.Tensor): Point features or raw points in shape (N, M, C).
+        num_points (torch.Tensor): Number of points in each voxel.
+        coors (torch.Tensor): Coordinates of each voxel.
+        img_feats (list[torch.Tensor], optional): Image features used for
+            multi-modality fusion. Defaults to None.
+        img_metas (list[dict]): Meta information of samples.
+
+    Returns:
+        torch.Tensor: Points feature.
+    """
     if not self.with_pts_bbox:
         return None
 
@@ -51,6 +37,16 @@ def centerpoint__extract_pts_feat(ctx, self, voxels, num_points, coors,
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet3d.models.detectors.centerpoint.CenterPoint.simple_test_pts')
 def centerpoint__simple_test_pts(ctx, self, x, img_metas, rescale=False):
+    """Rewrite this func to format model outputs.
+
+    Args:
+        x (torch.Tensor): Input points feature.
+        img_metas (list[dict]): Meta information of samples.
+        rescale (bool): Whether need rescale.
+
+    Returns:
+        List: Result of model.
+    """
     outs = self.pts_bbox_head(x)
     bbox_preds, scores, dir_scores = [], [], []
     for task_res in outs:
@@ -77,15 +73,31 @@ def centerpoint__get_bbox(ctx,
                           img_metas,
                           img=None,
                           rescale=False):
+    """Rewrite this func to format func inputs.
+
+    Args
+        cls_scores (list[torch.Tensor]): Classification predicts results.
+        bbox_preds (list[torch.Tensor]): Bbox predicts results.
+        dir_scores (list[torch.Tensor]): Dir predicts results.
+        img_metas (list[dict]): Point cloud and image's meta info.
+        img (torch.Tensor): Input image.
+        rescale (Bool): Whether need rescale.
+
+    Returns:
+        list[dict]: Decoded bbox, scores and labels after nms.
+    """
     rets = []
+    # common_heads = self.task_heads[0].heads
     batch_size = 1
     scores_range = [0]
-    bbox_range = []
-    dir_range = []
-    for i in range(len(self.num_classes)):
+    bbox_range = [0]
+    dir_range = [0]
+    self.test_cfg = self.test_cfg['pts']
+    for i, task_head in enumerate(self.task_heads):
         scores_range.append(scores_range[i] + self.num_classes[i])
-        bbox_range.append(i * 8)
-        dir_range.append(i * 2)
+        bbox_range.append(bbox_range[i] +
+                          8 if 'vel' in task_head.heads.keys() else 6)
+        dir_range.append(dir_range[i] + 2)
     for task_id in range(len(self.num_classes)):
         num_class_with_bg = self.num_classes[task_id]
 
@@ -108,13 +120,13 @@ def centerpoint__get_bbox(ctx,
                                       3:bbox_range[task_id] + 6, ...]
 
         batch_vel = bbox_preds[0][:, bbox_range[task_id] +
-                                  6:bbox_range[task_id] + 8, ...]
+                                  6:bbox_range[task_id + 1], ...]
 
         batch_rots = dir_scores[0][:,
-                                   dir_range[task_id]:dir_range[task_id] + 2,
+                                   dir_range[task_id]:dir_range[task_id + 1],
                                    ...][:, 0].unsqueeze(1)
         batch_rotc = dir_scores[0][:,
-                                   dir_range[task_id]:dir_range[task_id] + 2,
+                                   dir_range[task_id]:dir_range[task_id + 1],
                                    ...][:, 1].unsqueeze(1)
 
         # if 'vel' in preds_dict[0]:
@@ -131,11 +143,11 @@ def centerpoint__get_bbox(ctx,
             batch_vel,
             reg=batch_reg,
             task_id=task_id)
-        assert self.test_cfg['pts']['nms_type'] in ['circle', 'rotate']
+        assert self.test_cfg['nms_type'] in ['circle', 'rotate']
         batch_reg_preds = [box['bboxes'] for box in temp]
         batch_cls_preds = [box['scores'] for box in temp]
         batch_cls_labels = [box['labels'] for box in temp]
-        if self.test_cfg['pts']['nms_type'] == 'circle':
+        if self.test_cfg['nms_type'] == 'circle':
             ret_task = []
             for i in range(batch_size):
                 boxes3d = temp[i]['bboxes']
@@ -146,8 +158,8 @@ def centerpoint__get_bbox(ctx,
                 keep = torch.tensor(
                     circle_nms(
                         boxes.detach().cpu().numpy(),
-                        self.test_cfg['pts']['min_radius'][task_id],
-                        post_max_size=self.test_cfg['pts']['post_max_size']),
+                        self.test_cfg['min_radius'][task_id],
+                        post_max_size=self.test_cfg['post_max_size']),
                     dtype=torch.long,
                     device=boxes.device)
 
