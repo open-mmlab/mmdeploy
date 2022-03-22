@@ -275,6 +275,8 @@ def main():
                 output_file=osp.join(args.work_dir, 'output_pytorch.jpg'),
                 show_result=args.show),
             ret_value=ret_value)
+    else:
+        logger.warning('$DISPLAY is none.')
 
     logger.info('All process success.')
 
