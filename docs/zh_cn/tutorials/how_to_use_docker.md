@@ -21,6 +21,17 @@ cd mmdeploy
 docker build docker/GPU/ -t mmdeploy:0.1.0 --build-arg  VERSION=0.1.0
 ```
 
+要切换成阿里源安装依赖，我们可以将 `--build-arg USE_SRC_INSIDE=${USE_SRC_INSIDE}` 附加到构建命令中。
+```
+# 以 GPU 为例
+cd mmdeploy
+docker build docker/GPU/ -t mmdeploy:inside --build-arg  USE_SRC_INSIDE=true
+
+# 以 CPU 为例
+cd mmdeploy
+docker build docker/CPU/ -t mmdeploy:inside --build-arg  USE_SRC_INSIDE=true
+```
+
 ### 运行 docker 容器
 
 构建 docker 镜像成功后，我们可以使用 `docker run` 启动 docker 服务。 GPU 镜像为例：
