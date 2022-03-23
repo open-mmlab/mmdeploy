@@ -5,7 +5,7 @@ import pytest
 import torch
 
 from mmdeploy.codebase import import_codebase
-from mmdeploy.utils import Backend, Codebase, Task
+from mmdeploy.utils import Backend, Codebase, Task, load_config
 from mmdeploy.utils.test import WrapModel, check_backend, get_rewrite_outputs
 
 try:
@@ -107,3 +107,53 @@ def test_pointpillars_scatter(backend_type: Backend):
             rewrite_output = rewrite_output.cpu().numpy()
         assert np.allclose(
             model_output.shape, rewrite_output.shape, rtol=1e-03, atol=1e-03)
+
+
+def get_centerpoint():
+    from mmdet3d.models.detectors.centerpoint import CenterPoint
+    model_cfg = load_config('data/model_cfg.py')[0]
+    model = CenterPoint(**model_cfg.centerpoint_model)
+    model.requires_grad_(False)
+    return model
+
+
+def get_centerpoint_head():
+    from mmdet3d.models import builder
+    model_cfg = load_config('data/model_cfg.py')[0]
+    model_cfg.centerpoint_model.pts_bbox_head.test_cfg = model_cfg.\
+        centerpoint_model.test_cfg
+    head = builder.build_head(model_cfg.centerpoint_model.pts_bbox_head)
+    head.requires_grad_(False)
+    return head
+
+
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
+def test_centerpoint(backend_type: Backend):
+    from mmdeploy.codebase.mmdet3d.deploy.voxel_detection import VoxelDetection
+    from mmdeploy.core import RewriterContext
+    check_backend(backend_type, True)
+    model = get_centerpoint()
+    model.cpu().eval()
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(type=backend_type.value),
+            onnx_config=dict(
+                input_shape=None,
+                opset_version=11,
+                input_names=['voxels', 'num_points', 'coors'],
+                output_names=['outputs']),
+            codebase_config=dict(
+                type=Codebase.MMDET3D.value, task=Task.VOXEL_DETECTION.value)))
+    model_cfg = load_config('data/model_cfg.py')[0]
+    voxeldetection = VoxelDetection(model_cfg, deploy_cfg, 'cpu')
+    inputs, data = voxeldetection.create_input('data/kitti/kitti_000008.bin')
+
+    with RewriterContext(
+            cfg=deploy_cfg,
+            backend=deploy_cfg.backend_config.type,
+            opset=deploy_cfg.onnx_config.opset_version):
+        outputs = model.forward(*data)
+        head = get_centerpoint_head()
+        rewrite_outputs = head.get_bboxes(*[[i] for i in outputs],
+                                          inputs['img_metas'][0])
+    assert rewrite_outputs is not None

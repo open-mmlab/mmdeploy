@@ -22,9 +22,10 @@ python tools/deploy.py \
 ```
 ### List of MMDetection3d models supported by MMDeploy
 
-|       Model        |         Task         | OnnxRuntime | TensorRT | NCNN  | PPLNN | OpenVINO |                                     Model config                                                         |
-| :----------------: | :------------------: | :---------: | :------: | :---: | :---: | :------: | :------------------------------------------------------------------------------------------------------: |
-|    PointPillars    |   VoxelDetection     |      Y      |    Y     |   N   |   N   |    Y     |     [config](https://github.com/open-mmlab/mmdetection3d/blob/master/configs/pointpillars)     |
+|        Model         |      Task      | OnnxRuntime | TensorRT | NCNN  | PPLNN | OpenVINO |                                      Model config                                      |
+| :------------------: | :------------: | :---------: | :------: | :---: | :---: | :------: | :------------------------------------------------------------------------------------: |
+|     PointPillars     | VoxelDetection |      Y      |    Y     |   N   |   N   |    Y     | [config](https://github.com/open-mmlab/mmdetection3d/blob/master/configs/pointpillars) |
+| CenterPoint (pillar) | VoxelDetection |      Y      |    Y     |   N   |   N   |    Y     | [config](https://github.com/open-mmlab/mmdetection3d/blob/master/configs/centerpoint)  |
 
 ### Reminder
 
