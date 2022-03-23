@@ -276,7 +276,8 @@ def main():
                 show_result=args.show),
             ret_value=ret_value)
     else:
-        logger.warning('$DISPLAY is none.')
+        logger.warning('$DISPLAY is none. \
+            Are you using a headless device now?')
 
     logger.info('All process success.')
 
