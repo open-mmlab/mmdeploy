@@ -67,13 +67,13 @@ def roi_align_default(ctx, g, input: Tensor, rois: Tensor,
         if opset_version < 16:
             # preprocess rois to make compatible with opset 16-
             # as for opset 16+, `aligned` get implemented inside onnxruntime.
-            offset = 0.5 if aligned is True else 0.0
-            rois = add(
-                g, rois,
-                g.op(
-                    'Constant',
-                    value_t=torch.tensor([-offset / spatial_scale],
-                                         dtype=torch.float)))
+            if aligned is True:
+                rois = add(
+                    g, rois,
+                    g.op(
+                        'Constant',
+                        value_t=torch.tensor([-0.5 / spatial_scale],
+                                             dtype=torch.float)))
             return g.op(
                 'RoiAlign',
                 input,
