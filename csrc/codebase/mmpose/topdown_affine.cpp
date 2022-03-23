@@ -70,7 +70,7 @@ class TopDownAffineImpl : public Module {
 
     Value output = input;
     output["img"] = cpu::CVMat2Tensor(dst);
-    output["img_shape"] = {1, image_size_[0], image_size_[1], dst.channels()};
+    output["img_shape"] = {1, image_size_[1], image_size_[0], dst.channels()};
     output["center"] = to_value(c);
     output["scale"] = to_value(s);
     MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));
