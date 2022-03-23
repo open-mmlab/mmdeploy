@@ -327,7 +327,7 @@ class PoseDetection(BaseTask):
         """Get the postprocess information for SDK."""
         postprocess = {'type': 'UNKNOWN'}
         if self.model_cfg.model.type == 'TopDown':
-            postprocess['type'] = 'TopDown'
+            postprocess['type'] = self.model_cfg.model.keypoint_head.type + "Decode"
             postprocess.update(self.model_cfg.model.test_cfg)
         return postprocess
 

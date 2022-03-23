@@ -19,9 +19,9 @@ namespace mmdeploy::mmpose {
 using std::string;
 using std::vector;
 
-class TopDown : public MMPose {
+class TopdownHeatmapBaseHeadDecode : public MMPose {
  public:
-  explicit TopDown(const Value& config) : MMPose(config) {
+  explicit TopdownHeatmapBaseHeadDecode(const Value& config) : MMPose(config) {
     if (config.contains("params")) {
       auto& params = config["params"];
       flip_test_ = params.value("flip_test", flip_test_);
@@ -42,6 +42,12 @@ class TopDown : public MMPose {
     OUTCOME_TRY(auto heatmap,
                 MakeAvailableOnDevice(_prob["output"].get<Tensor>(), cpu_device, stream()));
     OUTCOME_TRY(stream().Wait());
+    if (!(heatmap.shape().size() == 4 && heatmap.data_type() == DataType::kFLOAT)) {
+      MMDEPLOY_ERROR("unsupported `output` tensor, shape: {}, dtype: {}", heatmap.shape(),
+                     (int)heatmap.data_type());
+      return Status(eNotSupported);
+    }
+
     auto& img_metas = _data["img_metas"];
 
     vector<float> center;
@@ -266,6 +272,14 @@ class TopDown : public MMPose {
   string target_type_{"GaussianHeatmap"};
 };
 
-REGISTER_CODEBASE_COMPONENT(MMPose, TopDown);
+REGISTER_CODEBASE_COMPONENT(MMPose, TopdownHeatmapBaseHeadDecode);
+
+// decode process is same
+using TopdownHeatmapSimpleHeadDecode = TopdownHeatmapBaseHeadDecode;
+REGISTER_CODEBASE_COMPONENT(MMPose, TopdownHeatmapSimpleHeadDecode);
+using TopdownHeatmapMultiStageHeadDecode = TopdownHeatmapBaseHeadDecode;
+REGISTER_CODEBASE_COMPONENT(MMPose, TopdownHeatmapMultiStageHeadDecode);
+using ViPNASHeatmapSimpleHeadDecode = TopdownHeatmapBaseHeadDecode;
+REGISTER_CODEBASE_COMPONENT(MMPose, ViPNASHeatmapSimpleHeadDecode);
 
 }  // namespace mmdeploy::mmpose
