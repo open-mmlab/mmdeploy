@@ -80,6 +80,7 @@ def create_trt_engine(onnx_model: Union[str, onnx.ModelProto],
         builder.max_workspace_size = max_workspace_size
 
     config = builder.create_builder_config()
+    config.set_tactic_sources(1 << int(trt.TacticSource.CUBLAS) | 0 << int(trt.TacticSource.CUBLAS_LT))
     config.max_workspace_size = max_workspace_size
     profile = builder.create_optimization_profile()
 
