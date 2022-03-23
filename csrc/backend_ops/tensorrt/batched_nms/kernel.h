@@ -33,6 +33,8 @@ struct BboxInfo {
   BboxInfo() = default;
 };
 
+size_t get_cuda_arch(int devID);
+
 int8_t* alignPtr(int8_t* ptr, uintptr_t to);
 
 int8_t* nextWorkspacePtr(int8_t* ptr, uintptr_t previousWorkspaceSize);

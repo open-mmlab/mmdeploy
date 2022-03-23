@@ -11,6 +11,15 @@
 
 #define CUDA_MEM_ALIGN 256
 
+// return cuda arch
+size_t get_cuda_arch(int devID) {
+  int computeMode = -1, major = 0, minor = 0;
+  CUASSERT(cudaDeviceGetAttribute(&computeMode, cudaDevAttrComputeMode, devID));
+  CUASSERT(cudaDeviceGetAttribute(&major, cudaDevAttrComputeCapabilityMajor, devID));
+  CUASSERT(cudaDeviceGetAttribute(&minor, cudaDevAttrComputeCapabilityMinor, devID));
+  return major * 100 + minor * 10;
+}
+
 // ALIGNPTR
 int8_t *alignPtr(int8_t *ptr, uintptr_t to) {
   uintptr_t addr = (uintptr_t)ptr;
