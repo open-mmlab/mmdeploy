@@ -252,7 +252,8 @@ pluginStatus_t allClassNMS(cudaStream_t stream, const int num, const int num_cla
                            void *afterNMS_scores, void *afterNMS_index_array, bool flipXY) {
   auto __cuda_arch__ = get_cuda_arch(0);  // assume there is only one arch 7.2 device
   if (__cuda_arch__ == 720 && top_k >= 1000) {
-    printf("Warning: pre_top_k need to be reduced for devices with arch 7.2, got pre_top_k=%d\n", top_k);
+    printf("Warning: pre_top_k need to be reduced for devices with arch 7.2, got pre_top_k=%d\n",
+        top_k);
   }
   nmsLaunchConfigSSD lc = nmsLaunchConfigSSD(DT_SCORE, DT_BBOX, allClassNMS_gpu<float, float>);
   for (unsigned i = 0; i < nmsFuncVec.size(); ++i) {
