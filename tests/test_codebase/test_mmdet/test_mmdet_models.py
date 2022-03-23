@@ -542,14 +542,10 @@ def test_single_roi_extractor(backend_type: Backend):
     model_outputs = get_model_outputs(single_roi_extractor, 'forward',
                                       model_inputs)
 
-    backend_outputs, from_backend = get_rewrite_outputs(
+    backend_outputs, _ = get_rewrite_outputs(
         wrapped_model=single_roi_extractor,
         model_inputs=model_inputs,
         deploy_cfg=deploy_cfg)
-    if backend_type == Backend.ONNXRUNTIME and from_backend is False:
-        pytest.skip('As we preprocessed rois, the results are different from '
-                    'model_output if they are not from backend in github CI.')
-
     if isinstance(backend_outputs, dict):
         backend_outputs = backend_outputs.values()
     for model_output, backend_output in zip(model_outputs[0], backend_outputs):
