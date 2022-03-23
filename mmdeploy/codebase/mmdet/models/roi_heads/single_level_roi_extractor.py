@@ -4,7 +4,7 @@ from torch.autograd import Function
 
 from mmdeploy.core.optimizers import mark
 from mmdeploy.core.rewriters import FUNCTION_REWRITER
-from mmdeploy.utils import get_backend, get_ir_config
+from mmdeploy.utils import get_backend
 from mmdeploy.utils.constants import Backend
 
 
@@ -143,15 +143,6 @@ def single_roi_extractor__forward(ctx,
         # use the roi align in torhcvision
         if backend == Backend.TORCHSCRIPT:
             self.roi_layers[i].use_torchvision = True
-        if backend == Backend.ONNXRUNTIME:
-            ir_cfg = get_ir_config(ctx.cfg)
-            opset_version = ir_cfg.get('opset_version', 11)
-            offset = 0.5 if self.roi_layers[i].aligned is True else 0.0
-            if opset_version <= 16:
-                # use RoiAlign in onnxruntime and preprocess rois to
-                # make compatible with op_set 10
-                rois_t[:, 1:] = rois_t[:, 1:] - offset / self.roi_layers[
-                    i].spatial_scale
         roi_feats_t = self.roi_layers[i](feats[i], rois_t)
         roi_feats[inds] = roi_feats_t
     # slice to recover original size

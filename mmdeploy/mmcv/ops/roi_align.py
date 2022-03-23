@@ -18,7 +18,10 @@ def roi_align_default(ctx, g, input: Tensor, rois: Tensor,
                       sampling_ratio: int, pool_mode: str, aligned: bool):
     """Rewrite symbolic function for default backend.
 
-    Replace onnx::RoiAlign with mmdeploy::MMCVRoiAlign.
+    Replace onnx::RoiAlign with mmcv::MMCVRoiAlign for PPLNN. For ONNXRuntime,
+    align operation get done outside the inference engine for opset versions
+    lower than 16. By default,  onnx::RoiAlign get replaced to
+    mmdeploy::MMCVRoiAlign.
 
     Args:
         ctx (ContextCaller): The context with additional information.
@@ -43,7 +46,7 @@ def roi_align_default(ctx, g, input: Tensor, rois: Tensor,
         domain = 'mmcv'
     elif backend == Backend.ONNXRUNTIME:
         from torch.onnx.symbolic_opset9 import _cast_Long
-        from torch.onnx.symbolic_opset11 import select, squeeze
+        from torch.onnx.symbolic_opset11 import add, select, squeeze
         batch_indices = _cast_Long(
             g,
             squeeze(
@@ -61,7 +64,16 @@ def roi_align_default(ctx, g, input: Tensor, rois: Tensor,
                 value_t=torch.tensor([1, 2, 3, 4], dtype=torch.long)))
         ir_cfg = get_ir_config(ctx.cfg)
         opset_version = ir_cfg.get('opset_version', 11)
-        if (opset_version < 16):
+        if opset_version < 16:
+            # preprocess rois to make compatible with opset 16-
+            # as for opset 16+, `aligned` get implemented inside onnxruntime.
+            offset = 0.5 if aligned is True else 0.0
+            rois = add(
+                g, rois,
+                g.op(
+                    'Constant',
+                    value_t=torch.tensor([-offset / spatial_scale],
+                                         dtype=torch.float)))
             return g.op(
                 'RoiAlign',
                 input,
