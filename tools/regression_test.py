@@ -248,7 +248,7 @@ def get_info_from_log_file(info_type, log_path):
 
 
 def test_backends(deploy_cfg, model_cfg, checkpoint_path, device, work_dir,
-                  metrics_name, logger):
+                  metrics_name, logger, metric_exchange_dict):
     """Test the backend.
 
     Args:
@@ -327,9 +327,15 @@ def test_backends(deploy_cfg, model_cfg, checkpoint_path, device, work_dir,
                                                       metric_options=None,
                                                       format_only=False,
                                                       log_file=str(log_path))
-    metric = evaluate_result.get(metrics_name, '')
+    print(f'Got evaluate_result = {evaluate_result}')
+
+    metric_eval_name = metric_exchange_dict.get(metrics_name, {}).get('metric_name', '0.00')
+    print(f'Got metric_eval_name = {metric_eval_name}')
+
+    metric = evaluate_result.get(metric_eval_name, '')
+    print(f'Got metric float= {metric}')
     if not isinstance(metric, float):
-        metric = f'{metric:.2f}'
+        metric = f'{float(metric):.2f}'
     print(f'Got metric = {metric}')
 
     return metric, fps
@@ -393,9 +399,18 @@ def get_backend_result(backends_info, model_cfg_path, deploy_config_dir, checkpo
 
     metric_exchange_dict = {
         # mmdet
-        'bbox': 'box_AP',
-        'segm': 'mask_AP',
-        'proposal': 'PQ',
+        'bbox': {
+            'meta_name': 'box_AP',
+            'metric_name': 'bbox_mAP',
+        },
+        'segm': {
+            'meta_name': 'mask_AP',
+            'metric_name': '?',
+        },
+        'proposal': {
+            'meta_name': 'PQ',
+            'metric_name': '?',
+        },
     }
 
     performance_align = backends_info.get('performance_align', False)
@@ -461,9 +476,10 @@ def get_backend_result(backends_info, model_cfg_path, deploy_config_dir, checkpo
                                                       device='cuda' if device != '-1' else 'cpu',
                                                       work_dir=str(backend_output_path.parent),
                                                       metrics_name=metric_name,
-                                                      logger=logger)
+                                                      logger=logger,
+                                                      metric_exchange_dict=metric_exchange_dict)
 
-                    metric_name = metric_exchange_dict.get(metric_name, None)
+                    metric_name = metric_exchange_dict.get(metric_name, {}).get('meta_name', None)
                     if metric_name is None:
                         print(f'metrics_eval_list: {metrics_eval_list} has not exchange name')
                     assert metric_name is not None
@@ -604,11 +620,11 @@ def main():
                                                   metric_tolerance, report_dict, logger)
 
                 backend_result_function('onnxruntime')
-                backend_result_function('tensorrt')
-                backend_result_function('openvino')
-                backend_result_function('ncnn')
-                backend_result_function('pplnn')
-                backend_result_function('sdk')
+                # backend_result_function('tensorrt')
+                # backend_result_function('openvino')
+                # backend_result_function('ncnn')
+                # backend_result_function('pplnn')
+                # backend_result_function('sdk')
 
         save_report(report_dict, report_save_path, logger)
 
