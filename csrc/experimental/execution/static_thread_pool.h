@@ -50,7 +50,7 @@ class StaticThreadPool {
 
       template <class Receiver>
       friend Operation<std::decay_t<Receiver>> Connect(Sender s, Receiver&& r) {
-        return s.template MakeOperation_((Receiver &&) r);
+        return s.MakeOperation_((Receiver &&) r);
       }
 
       friend StaticThreadPool::Scheduler GetCompletionScheduler(Sender s) noexcept {

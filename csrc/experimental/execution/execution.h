@@ -319,8 +319,9 @@ using __result_sender_t = __call_result_t<Fun, __decay_ref<As>...>;
 
 template <class Sender, class Receiver, class Fun>
 struct _Storage {
+  using operation_t = connect_result_t<__result_sender_t<Fun, Value>, Receiver>;
   Value data_;
-  std::optional<connect_result_t<__result_sender_t<Fun, Value>, Receiver>> op_state3_;
+  std::optional<operation_t> op_state3_;
 };
 
 template <class Sender, class Receiver, class Fun>
@@ -330,35 +331,12 @@ template <class Sender, class Receiver, class Fun>
 struct _Receiver {
   _Operation<Sender, Receiver, Fun>* op_state_;
 
-  // mmdeploy::__then::_Sender<mmdeploy::__just::_Sender,
-  // Func()::<lambda(mmdeploy::Value&)>::<lambda(mmdeploy::Value)> >
-  // mmdeploy::__just::_Sender::_Operation<mmdeploy::__then::_Receiver<mmdeploy::__sync_wait::_Receiver,
-  // Func()::<lambda(mmdeploy::Value&)>::<lambda(mmdeploy::Value)> > >
-
   friend void SetValue(_Receiver&& self, Value v) noexcept {
     self.op_state_->storage_.data_ = (Value &&) v;
-    //    self.op_state_->storage_.op_state3_.emplace(__conv{[&]() -> __result_sender_t<Fun, Value>
-    //    {
-    //      return Connect(std::move(self.op_state_->fun_)(self.op_state_->storage_.data_),
-    //                     std::move(self.op_state_->rcvr_));
-    //    }});
-
-    //    __conv{[&]() -> __result_sender_t<Fun, Value> {
-    //      return Connect(std::move(self.op_state_->fun_)(self.op_state_->storage_.data_),
-    //                     std::move(self.op_state_->rcvr_));
-    //    }};
-    //    __result_sender_t<Fun, Value>* x = "hello";
-    //    decltype(Connect(std::move(self.op_state_->fun_)(self.op_state_->storage_.data_),
-    //                     std::move(self.op_state_->rcvr_)))* y = "hello";
-
-    //    decltype(std::move(self.op_state_->fun_)(self.op_state_->storage_.data_))* x = "hello";
-
-    auto sender = std::move(self.op_state_->fun_)(self.op_state_->storage_.data_);
-    decltype(Connect(std::move(sender), std::move(self.op_state_->rcvr_)))* x = "hello";
-//    static_assert(
-//        std::is_same_v<__result_sender_t<Fun, Value>,
-//                       decltype(Connect(std::move(sender, std::move(self.op_state_->rcvr_))))>);
-    Start(*self.op_state_->storage_.op_state3_);
+    Start(self.op_state_->storage_.op_state3_.emplace(__conv{[&]() {
+      return Connect(std::move(self.op_state_->fun_)(self.op_state_->storage_.data_),
+                     std::move(self.op_state_->rcvr_));
+    }}));
   }
 };
 
