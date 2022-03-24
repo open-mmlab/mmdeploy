@@ -276,9 +276,8 @@ def main():
                 show_result=args.show),
             ret_value=ret_value)
     else:
-        logger.warning('$DISPLAY is none. \
-            Are you using a headless device now?')
-
+        logger.warning('\"visualize_model\" has been skipped may be because it\'s \
+            running on a headless device.')
     logger.info('All process success.')
 
 
