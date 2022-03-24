@@ -13,9 +13,9 @@
 namespace mmdeploy {
 class TRTMultiLevelRoiAlign : public TRTPluginBase {
  public:
-  TRTMultiLevelRoiAlign(const std::string &name, int alignedHeight, int alignedWidth, int sampleNum,
-                        const std::vector<float> &featmapStrides, float roiScaleFactor = -1,
-                        int finestScale = 56, bool aligned = false);
+  TRTMultiLevelRoiAlign(const std::string &name, int alignedHeight, int alignedWidth, int poolMode,
+                        int sampleNum, const std::vector<float> &featmapStrides,
+                        float roiScaleFactor = -1, int finestScale = 56, bool aligned = false);
 
   TRTMultiLevelRoiAlign(const std::string name, const void *data, size_t length);
 
@@ -52,6 +52,7 @@ class TRTMultiLevelRoiAlign : public TRTPluginBase {
  private:
   int mAlignedHeight;
   int mAlignedWidth;
+  int mPoolMode;
   int mSampleNum;
   std::vector<float> mFeatmapStrides;
   float mRoiScaleFactor;

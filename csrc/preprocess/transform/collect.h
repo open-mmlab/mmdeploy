@@ -9,7 +9,7 @@ namespace mmdeploy {
 class MMDEPLOY_API CollectImpl : public Module {
  public:
   explicit CollectImpl(const Value& args);
-  ~CollectImpl() = default;
+  ~CollectImpl() override = default;
 
   Result<Value> Process(const Value& input) override;
 
@@ -27,7 +27,7 @@ class MMDEPLOY_API CollectImpl : public Module {
 class MMDEPLOY_API Collect : public Transform {
  public:
   explicit Collect(const Value& args, int version = 0);
-  ~Collect() = default;
+  ~Collect() override = default;
 
   Result<Value> Process(const Value& input) override;
 

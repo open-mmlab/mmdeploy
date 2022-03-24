@@ -13,7 +13,7 @@ namespace mmdeploy {
 class MMDEPLOY_API CenterCropImpl : public TransformImpl {
  public:
   explicit CenterCropImpl(const Value& args);
-  ~CenterCropImpl() = default;
+  ~CenterCropImpl() override = default;
 
   Result<Value> Process(const Value& input) override;
 
@@ -34,7 +34,7 @@ class MMDEPLOY_API CenterCropImpl : public TransformImpl {
 class MMDEPLOY_API CenterCrop : public Transform {
  public:
   explicit CenterCrop(const Value& args, int version = 0);
-  ~CenterCrop() = default;
+  ~CenterCrop() override = default;
 
   Result<Value> Process(const Value& input) override { return impl_->Process(input); }
 
