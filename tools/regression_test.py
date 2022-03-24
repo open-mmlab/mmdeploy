@@ -218,7 +218,6 @@ def get_pytorch_result(model_name, meta_info, checkpoint_path, model_config_name
 
 
 def get_info_from_log_file(info_type, log_path):
-
     # get fps from log file
     if log_path.exists():
         with open(log_path, 'r+') as f_log:
@@ -237,11 +236,11 @@ def get_info_from_log_file(info_type, log_path):
             line_count += 1
             fps_sum += float(line.split(' ')[-2])
         info_value = f'{fps_sum / line_count:.2f}'
-    elif info_type == 'metric' and len(lines) < 2:
-        for line in lines:
-            if 'OrderedDict' not in line:
-                continue
-        info_value = '0.00'
+    # elif info_type == 'metric' and len(lines) < 2:
+    #     for line in lines:
+    #         if 'OrderedDict' not in line:
+    #             continue
+    #     info_value = '0.00'
     else:
         info_value = '0.00'
 
@@ -249,7 +248,7 @@ def get_info_from_log_file(info_type, log_path):
 
 
 def test_backends(deploy_cfg, model_cfg, checkpoint_path, device, work_dir,
-                  metrics, logger):
+                  metrics_name, logger):
     """Test the backend.
 
     Args:
@@ -258,7 +257,7 @@ def test_backends(deploy_cfg, model_cfg, checkpoint_path, device, work_dir,
         checkpoint_path (Path): Backend converted model file path.
         device (str): A string specifying device, defaults to 'cuda:0'.
         work_dir (str): A working directory.
-        metrics (str): Evaluation metrics, which depends on
+        metrics_name (str): Evaluation metrics, which depends on
             the codebase and the dataset, e.g., "bbox", "segm", "proposal"
             for COCO, and "mAP", "recall" for PASCAL VOC in mmdet;
             "accuracy", "precision", "recall", "f1_score", "support"
@@ -306,41 +305,32 @@ def test_backends(deploy_cfg, model_cfg, checkpoint_path, device, work_dir,
     if result_path.exists():
         result_path.unlink()
 
-    speed_test = True
-    if speed_test:
-        with_sync = not is_device_cpu
+    with_sync = not is_device_cpu
 
-        with TimeCounter.activate(
-                warmup=10,
-                log_interval=100,
-                with_sync=with_sync,
-                file=str(log_path)):
-            outputs = task_processor.single_gpu_test(model, data_loader,
-                                                     show=False, out_dir=None)
-    else:
-        outputs = task_processor.single_gpu_test(model,
-                                                 data_loader,
-                                                 show=False,
-                                                 out_dir=None)
+    with TimeCounter.activate(
+            warmup=10,
+            log_interval=100,
+            with_sync=with_sync,
+            file=str(log_path)):
+        outputs = task_processor.single_gpu_test(model, data_loader,
+                                                 show=False, out_dir=None)
 
     fps = get_info_from_log_file('FPS', log_path)
     print(f'Got fps = {fps}')
 
     # Get metric
-    task_processor.evaluate_outputs(model_cfg,
-                                    outputs,
-                                    dataset,
-                                    metrics=metrics,
-                                    out=str(result_path),
-                                    metric_options=None,
-                                    format_only=False,
-                                    log_file=str(log_path))
-
-    # Get metric from log file
-    metric = get_info_from_log_file('metric', log_path)
+    evaluate_result = task_processor.evaluate_outputs(model_cfg,
+                                                      outputs,
+                                                      dataset,
+                                                      metrics=metrics_name,
+                                                      out=str(result_path),
+                                                      metric_options=None,
+                                                      format_only=False,
+                                                      log_file=str(log_path))
+    metric = evaluate_result.get(metrics_name, '')
+    if not isinstance(metric, float):
+        metric = f'{metric:.2f}'
     print(f'Got metric = {metric}')
-
-    exit(0)
 
     return metric, fps
 
@@ -367,8 +357,9 @@ def create_process(name, target, args, kwargs, ret_value=None):
     return False
 
 
-def get_onnxruntime_result(backends_info, model_cfg_path, deploy_config_dir, checkpoint_path,
-                           work_dir, device, pytorch_metric, metric_tolerance, report_dict, logger):
+def get_backend_result(backends_info, model_cfg_path, deploy_config_dir, checkpoint_path,
+                       work_dir, device, pytorch_metric, metric_tolerance, report_dict,
+                       logger, backends_name):
     """Convert model to onnx and then get metric.
 
     Args:
@@ -382,14 +373,32 @@ def get_onnxruntime_result(backends_info, model_cfg_path, deploy_config_dir, che
         metric_tolerance (dict):Tolerance for metrics.
         report_dict (dict): Report info dict.
         logger (logging.Logger): Logger.
+        backends_name (str):  Backend name.
 
     Returns:
         Dict: metric info of the model
     """
 
-    backends_info = backends_info.get('onnxruntime', [])
+    backends_info = backends_info.get(backends_name, [])
     if len(backends_info) <= 0:
         return {}
+
+    backend_exchange_info = {
+        'onnxruntime': {
+            'suffix': '.onnx',
+            'function': torch2onnx,
+            'function_name': 'torch2onnx',
+        }
+    }
+
+    metric_exchange_dict = {
+        # mmdet
+        'bbox': 'box_AP',
+        'segm': 'mask_AP',
+        'proposal': 'PQ',
+    }
+
+    performance_align = backends_info.get('performance_align', False)
 
     metric_name_list = [str(metric).replace(' ', '_') for metric in pytorch_metric]
     assert len(metric_name_list) > 0
@@ -398,24 +407,21 @@ def get_onnxruntime_result(backends_info, model_cfg_path, deploy_config_dir, che
     deploy_cfg_path_list = backends_info.get('deploy_config')
     for infer_type, deploy_cfg_info in deploy_cfg_path_list.items():
         for fp_size, deploy_cfg in deploy_cfg_info.items():
-
             if deploy_cfg is None:
                 continue
-
             fps = ''
             img = (np.ones((425, 640, 3))).astype(np.uint8)  # fake image
-            # img = '../demo_output/000000000034.jpg'
             metric_list = []
             test_pass = True
 
             # file path
-            # onnxruntime_path = Path(checkpoint_path).with_suffix('.onnx').absolute()
-            onnxruntime_path = Path(work_dir). \
+            backend_suffix = backend_exchange_info.get(backends_name).get('suffix')
+            backend_output_path = Path(work_dir). \
                 joinpath(Path(checkpoint_path).parent.parent.name,
                          Path(checkpoint_path).parent.name,
                          infer_type,
-                         Path(checkpoint_path).name).with_suffix('.onnx').absolute()
-            onnxruntime_path.parent.mkdir(parents=True, exist_ok=True)
+                         Path(checkpoint_path).name).with_suffix(backend_suffix).absolute()
+            backend_output_path.parent.mkdir(parents=True, exist_ok=True)
             deploy_cfg_path = Path(deploy_config_dir).joinpath(deploy_cfg).absolute()
             logger.info(f'torch2onnx: \n\tmodel_cfg: {model_cfg_path.absolute()} '
                         f'\n\tdeploy_cfg: {deploy_cfg_path}')
@@ -423,11 +429,11 @@ def get_onnxruntime_result(backends_info, model_cfg_path, deploy_config_dir, che
             # convert the model
             ret_value = mp.Value('d', 0, lock=False)
             convert_result = create_process(
-                f'torch2onnx',
-                target=torch2onnx,
+                backend_exchange_info.get(backends_name).get('function_name', None),
+                target=backend_exchange_info.get(backends_name).get('function', None),
                 args=(img,
                       str(work_dir),
-                      str(onnxruntime_path),
+                      str(backend_output_path),
                       str(deploy_cfg_path),
                       str(model_cfg_path),
                       str(checkpoint_path)),
@@ -435,7 +441,9 @@ def get_onnxruntime_result(backends_info, model_cfg_path, deploy_config_dir, che
                 ret_value=ret_value)
 
             # Test the model
-            if convert_result and infer_type == 'dynamic':
+            if convert_result and \
+                    infer_type == 'dynamic' and \
+                    performance_align:
 
                 # load deploy_cfg
                 deploy_cfg, model_cfg = load_config(str(deploy_cfg_path),
@@ -449,18 +457,12 @@ def get_onnxruntime_result(backends_info, model_cfg_path, deploy_config_dir, che
                 for metric_name in metrics_eval_list:
                     metric_value, fps = test_backends(deploy_cfg=deploy_cfg,
                                                       model_cfg=model_cfg,
-                                                      checkpoint_path=onnxruntime_path.resolve(),
+                                                      checkpoint_path=backend_output_path.resolve(),
                                                       device='cuda' if device != '-1' else 'cpu',
-                                                      work_dir=str(onnxruntime_path.parent),
-                                                      metrics=metric_name,
+                                                      work_dir=str(backend_output_path.parent),
+                                                      metrics_name=metric_name,
                                                       logger=logger)
 
-                    metric_exchange_dict = {
-                        # mmdet
-                        'bbox': 'box_AP',
-                        'segm': 'mask_AP',
-                        'proposal': 'PQ',
-                    }
                     metric_name = metric_exchange_dict.get(metric_name, None)
                     if metric_name is None:
                         print(f'metrics_eval_list: {metrics_eval_list} has not exchange name')
@@ -500,26 +502,6 @@ def get_onnxruntime_result(backends_info, model_cfg_path, deploy_config_dir, che
                 metric_info=metric_list,
                 test_pass=str(test_pass)
             )
-
-
-def get_tensorrt_result(global_info, model_info, logger):
-    return False
-
-
-def get_openvino_result(global_info, model_info, logger):
-    return False
-
-
-def get_ncnn_result(global_info, model_info, logger):
-    return False
-
-
-def get_pplnn_result(global_info, model_info, logger):
-    return False
-
-
-def get_sdk_result(global_info, model_info, logger):
-    return False
 
 
 def save_report(report_info, report_save_path, logger):
@@ -616,14 +598,17 @@ def main():
 
                 pytorch_metric = get_pytorch_result(models.get('name'), model_metafile_info, checkpoint_path,
                                                     model_cfg_path, metric_tolerance, report_dict, logger)
-                get_onnxruntime_result(backends_info, model_cfg_path, deploy_config_dir,
-                                       checkpoint_path, work_dir, args.device_id, pytorch_metric,
-                                       metric_tolerance, report_dict, logger)
-                tensorrt_result = get_tensorrt_result(global_info, models, logger)
-                openvino_result = get_openvino_result(global_info, models, logger)
-                ncnn_result = get_ncnn_result(global_info, models, logger)
-                pplnn_result = get_pplnn_result(global_info, models, logger)
-                sdk_result = get_sdk_result(global_info, models, logger)
+
+                backend_result_function = partial(get_backend_result, backends_info, model_cfg_path, deploy_config_dir,
+                                                  checkpoint_path, work_dir, args.device_id, pytorch_metric,
+                                                  metric_tolerance, report_dict, logger)
+
+                backend_result_function('onnxruntime')
+                backend_result_function('tensorrt')
+                backend_result_function('openvino')
+                backend_result_function('ncnn')
+                backend_result_function('pplnn')
+                backend_result_function('sdk')
 
         save_report(report_dict, report_save_path, logger)
 
