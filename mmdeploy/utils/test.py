@@ -333,9 +333,12 @@ def get_flatten_inputs(
         if isinstance(value, torch.Tensor):
             flatten_inputs[name] = value
         elif isinstance(value, (list, tuple)):
-            for i, tensor in enumerate(value):
-                name_i = f'{name}_{i}'
-                flatten_inputs[name_i] = tensor
+            if len(value) == 1:
+                flatten_inputs[name] = value[0]
+            else:
+                for i, tensor in enumerate(value):
+                    name_i = f'{name}_{i}'
+                    flatten_inputs[name_i] = tensor
     return flatten_inputs
 
 
@@ -358,15 +361,29 @@ def get_onnx_model(wrapped_model: nn.Module,
     patched_model = patch_model(
         wrapped_model, cfg=deploy_cfg, backend=backend.value)
     flatten_model_inputs = get_flatten_inputs(model_inputs)
-    input_names = [k for k, v in flatten_model_inputs.items() if k != 'ctx']
+    input_names = onnx_cfg.get('input_names', None)
+    if input_names is None:
+        input_names = [
+            k for k, v in flatten_model_inputs.items() if k != 'ctx'
+        ]
     output_names = onnx_cfg.get('output_names', None)
     dynamic_axes = get_dynamic_axes(deploy_cfg, input_names)
+
+    class DummyModel(torch.nn.Module):
+
+        def __init__(self):
+            super(DummyModel, self).__init__()
+            self.model = patched_model
+
+        def forward(self, inputs: dict):
+            return self.model(**inputs)
+
+    model = DummyModel().eval()
 
     with RewriterContext(
             cfg=deploy_cfg, backend=backend.value, opset=11), torch.no_grad():
         torch.onnx.export(
-            patched_model,
-            tuple([v for k, v in model_inputs.items()]),
+            model, (model_inputs, {}),
             onnx_file_path,
             export_params=True,
             input_names=input_names,
@@ -421,8 +438,13 @@ def get_backend_outputs(ir_file_path: str,
     """
     backend = get_backend(deploy_cfg)
     flatten_model_inputs = get_flatten_inputs(model_inputs)
-    input_names = [k for k, v in flatten_model_inputs.items() if k != 'ctx']
-    output_names = get_ir_config(deploy_cfg).get('output_names', None)
+    ir_config = get_ir_config(deploy_cfg)
+    input_names = ir_config.get('input_names', None)
+    output_names = ir_config.get('output_names', None)
+    if input_names is None:
+        input_names = [
+            k for k, v in flatten_model_inputs.items() if k != 'ctx'
+        ]
 
     # prepare backend model and input features
     if backend == Backend.TENSORRT:
