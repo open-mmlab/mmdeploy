@@ -6,7 +6,7 @@ import sys
 import traceback
 from typing import Callable, Optional, Union
 
-import torch.multiprocessing as mp
+import multiprocess as mp
 from mmcv.utils import get_logger
 
 

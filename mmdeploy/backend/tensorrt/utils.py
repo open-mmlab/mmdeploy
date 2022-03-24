@@ -4,11 +4,9 @@ from typing import Dict, Sequence, Union
 
 import onnx
 import tensorrt as trt
-import torch
 from packaging import version
 
 from mmdeploy.utils import get_root_logger
-from .calib_utils import HDF5Calibrator
 from .init_plugins import load_tensorrt_plugin
 
 
@@ -54,8 +52,17 @@ def create_trt_engine(onnx_model: Union[str, onnx.ModelProto],
         >>>             device_id=0)
         >>>             })
     """
+
+    import os
+    old_cuda_device = os.environ.get('CUDA_DEVICE', None)
+    os.environ['CUDA_DEVICE'] = str(device_id)
+    import pycuda.autoinit  # noqa:F401
+    if old_cuda_device is not None:
+        os.environ['CUDA_DEVICE'] = old_cuda_device
+    else:
+        os.environ.pop('CUDA_DEVICE')
+
     load_tensorrt_plugin()
-    device = torch.device('cuda:{}'.format(device_id))
     # create builder and network
     logger = trt.Logger(log_level)
     builder = trt.Builder(logger)
@@ -96,6 +103,7 @@ def create_trt_engine(onnx_model: Union[str, onnx.ModelProto],
         config.set_flag(trt.BuilderFlag.FP16)
 
     if int8_mode:
+        from .calib_utils import HDF5Calibrator
         config.set_flag(trt.BuilderFlag.INT8)
         assert int8_param is not None
         config.int8_calibrator = HDF5Calibrator(
@@ -110,8 +118,7 @@ def create_trt_engine(onnx_model: Union[str, onnx.ModelProto],
             builder.int8_calibrator = config.int8_calibrator
 
     # create engine
-    with torch.cuda.device(device):
-        engine = builder.build_engine(network, config)
+    engine = builder.build_engine(network, config)
 
     assert engine is not None, 'Failed to create TensorRT engine'
     return engine
@@ -143,46 +150,6 @@ def load_trt_engine(path: str) -> trt.ICudaEngine:
             engine_bytes = f.read()
         engine = runtime.deserialize_cuda_engine(engine_bytes)
         return engine
-
-
-def torch_dtype_from_trt(dtype: trt.DataType) -> torch.dtype:
-    """Convert pytorch dtype to TensorRT dtype.
-
-    Args:
-        dtype (str.DataType): The data type in tensorrt.
-
-    Returns:
-        torch.dtype: The corresponding data type in torch.
-    """
-
-    if dtype == trt.bool:
-        return torch.bool
-    elif dtype == trt.int8:
-        return torch.int8
-    elif dtype == trt.int32:
-        return torch.int32
-    elif dtype == trt.float16:
-        return torch.float16
-    elif dtype == trt.float32:
-        return torch.float32
-    else:
-        raise TypeError(f'{dtype} is not supported by torch')
-
-
-def torch_device_from_trt(device: trt.TensorLocation):
-    """Convert pytorch device to TensorRT device.
-
-    Args:
-        device (trt.TensorLocation): The device in tensorrt.
-    Returns:
-        torch.device: The corresponding device in torch.
-    """
-    if device == trt.TensorLocation.DEVICE:
-        return torch.device('cuda')
-    elif device == trt.TensorLocation.HOST:
-        return torch.device('cpu')
-    else:
-        return TypeError(f'{device} is not supported by torch')
 
 
 def get_trt_log_level() -> trt.Logger.Severity:

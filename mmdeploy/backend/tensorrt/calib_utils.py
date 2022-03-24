@@ -3,8 +3,9 @@ from typing import Dict, Sequence, Union
 
 import h5py
 import numpy as np
+import pycuda.autoinit  # noqa:F401
+import pycuda.driver as cuda
 import tensorrt as trt
-import torch
 
 DEFAULT_CALIBRATION_ALGORITHM = trt.CalibrationAlgoType.ENTROPY_CALIBRATION_2
 
@@ -67,30 +68,28 @@ class HDF5Calibrator(trt.IInt8Calibrator):
             ret = []
             for name in names:
                 input_group = self.calib_data[name]
-                data_np = input_group[str(self.count)][...]
-                data_torch = torch.from_numpy(data_np)
+                data_np = input_group[str(self.count)][...].astype(np.float32)
 
                 # tile the tensor so we can keep the same distribute
                 opt_shape = self.input_shapes[name]['opt_shape']
-                data_shape = data_torch.shape
+                data_shape = data_np.shape
 
                 reps = [
                     int(np.ceil(opt_s / data_s))
                     for opt_s, data_s in zip(opt_shape, data_shape)
                 ]
 
-                data_torch = data_torch.tile(reps)
+                data_np = np.tile(data_np, reps)
 
-                for dim, opt_s in enumerate(opt_shape):
-                    if data_torch.shape[dim] != opt_s:
-                        data_torch = data_torch.narrow(dim, 0, opt_s)
+                slice_list = tuple(slice(0, end) for end in opt_shape)
+                data_np = data_np[slice_list]
 
-                if name not in self.buffers:
-                    self.buffers[name] = data_torch.cuda(self.device_id)
-                else:
-                    self.buffers[name].copy_(data_torch.cuda(self.device_id))
+                data_np_cuda_ptr = cuda.mem_alloc(data_np.nbytes)
+                cuda.memcpy_htod(data_np_cuda_ptr,
+                                 np.ascontiguousarray(data_np))
+                self.buffers[name] = data_np_cuda_ptr
 
-                ret.append(int(self.buffers[name].data_ptr()))
+                ret.append(self.buffers[name])
             self.count += 1
             return ret
         else:
