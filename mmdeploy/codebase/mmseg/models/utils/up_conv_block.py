@@ -23,7 +23,10 @@ def up_conv_block__forward(ctx, self, skip, x):
     Returns:
         Tensor: Upsampled output feature map.
     """
-    if is_dynamic_shape(ctx.cfg):
+    from mmcv.cnn import ConvModule
+
+    # only valid when self.upsample is from build_upsample_layer
+    if is_dynamic_shape(ctx.cfg) and not isinstance(self.upsample, ConvModule):
         # upsample with `size` instead of `scale_factor`
         from mmseg.ops import Upsample
         for c in self.upsample.interp_upsample:
