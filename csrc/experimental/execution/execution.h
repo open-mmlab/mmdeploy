@@ -569,6 +569,54 @@ auto WhenAll(Senders&&... sndrs) -> __when_all::_Sender<std::decay_t<Senders>...
   return __when_all::_Sender<std::decay_t<Senders>...>{(Senders &&) sndrs...};
 }
 
+namespace __ensure_started {
+
+struct _OperationBase {
+  void (*notify_)(_OperationBase*);
+};
+
+template <class Sender>
+struct _SharedState {
+  // stop_source
+  // op_state
+  // op_state = connect(s, r)
+  Value data_;
+};
+
+template <class Sender, class Receiver>
+struct _Receiver {
+  std::shared_ptr<_SharedState<Sender>> shared_state_;
+  friend void SetValue(_Receiver&& self, Value v) {
+    assert(self.shared_state_);
+    self.shared_state_->data = std::move(v);
+    self.shared_state_.reset();
+  }
+};
+
+template <class Sender, class Receiver>
+struct _Operation {
+  Receiver rcvr_;
+  std::shared_ptr<_SharedState<Sender>> shared_state_;
+
+  friend void Start(_Operation& op_state) {
+    if (true) {
+      SetValue((Receiver&&)op_state.rcvr_, std::move(op_state.shared_state_->data_));
+    }
+  }
+};
+
+template <class Sender>
+struct _Sender {
+  std::shared_ptr<_SharedState<Sender>> shared_state_;
+
+  template <class Self, class Receiver, _decays_to<Self, _Sender, bool> = true>
+  friend auto Connect(Self&& self, Receiver&& rcvr) -> _Operation<Sender, std::decay_t<Receiver>> {
+    return {(Receiver &&) rcvr, std::move(self.shared_state_)};
+  }
+};
+
+}  // namespace __ensure_started
+
 namespace __loop {
 class RunLoop;
 
