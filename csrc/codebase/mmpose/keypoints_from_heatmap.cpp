@@ -1,5 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
+#include <cctype>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
 
@@ -19,12 +20,22 @@ namespace mmdeploy::mmpose {
 using std::string;
 using std::vector;
 
+std::string to_lower(const std::string& s) {
+  std::string t = s;
+  std::transform(t.begin(), t.end(), t.begin(), [](unsigned char c) { return std::tolower(c); });
+  return t;
+}
+
 class TopdownHeatmapBaseHeadDecode : public MMPose {
  public:
   explicit TopdownHeatmapBaseHeadDecode(const Value& config) : MMPose(config) {
     if (config.contains("params")) {
       auto& params = config["params"];
       flip_test_ = params.value("flip_test", flip_test_);
+      use_udp_ = params.value("use_udp", use_udp_);
+      target_type_ = params.value("target_type", target_type_);
+      valid_radius_factor_ = params.value("valid_radius_factor", valid_radius_factor_);
+      unbiased_decoding_ = params.value("unbiased_decoding", unbiased_decoding_);
       if (params.contains("post_process")) {
         post_process_ =
             params["post_process"].is_null() ? "null" : params.value("post_process", post_process_);
@@ -84,17 +95,66 @@ class TopdownHeatmapBaseHeadDecode : public MMPose {
     heatmap.CopyFrom(_heatmap, stream()).value();
     stream().Wait().value();
 
-    if (post_process == "megvii") {
-      heatmap = gaussian_blur(heatmap, modulate_kernel);
-    }
     int K = heatmap.shape(1);
     int H = heatmap.shape(2);
     int W = heatmap.shape(3);
 
+    if (post_process == "megvii") {
+      heatmap = gaussian_blur(heatmap, modulate_kernel);
+    }
+
     Tensor pred;
 
     if (use_udp) {
-      // TODO;
+      if (to_lower(target_type) == to_lower(string("GaussianHeatMap"))) {
+        pred = get_max_pred(heatmap);
+        post_dark_udp(pred, heatmap, modulate_kernel);
+      } else if (to_lower(target_type) == to_lower(string("CombinedTarget"))) {
+        // output channel = 3 * channel_cfg['num_output_channels']
+        assert(K % 3 == 0);
+        cv::parallel_for_(cv::Range(0, K), [&](const cv::Range& r) {
+          for (int i = r.start; i < r.end; i++) {
+            int kt = (i % 3 == 0) ? 2 * modulate_kernel + 1 : modulate_kernel;
+            float* data = heatmap.data<float>() + i * H * W;
+            cv::Mat work = cv::Mat(H, W, CV_32FC(1), data);
+            cv::GaussianBlur(work, work, {kt, kt}, 0);  // inplace
+          }
+        });
+        float valid_radius = valid_radius_factor_ * H;
+        TensorDesc desc = {Device{"cpu"}, {DataType::kFLOAT}, {1, K / 3, H, W}};
+        Tensor offset_x(desc);
+        Tensor offset_y(desc);
+        Tensor heatmap_(desc);
+        {
+          // split heatmap
+          float* src = heatmap.data<float>();
+          float* dst0 = heatmap_.data<float>();
+          float* dst1 = offset_x.data<float>();
+          float* dst2 = offset_y.data<float>();
+          for (int i = 0; i < K; i++) {
+            if (i % 3 == 0) {
+              std::copy_n(src, H * W, dst0);
+              dst0 += H * W;
+            } else if (i % 3 == 1) {
+              std::transform(src, src + H * W, dst1, [=](float& x) { return x * valid_radius; });
+              dst1 += H * W;
+            } else if (i % 3 == 2) {
+              std::transform(src, src + H * W, dst2, [=](float& x) { return x * valid_radius; });
+              dst2 += H * W;
+            }
+            src += H * W;
+          }
+        }
+        pred = get_max_pred(heatmap_);
+        for (int i = 0; i < K / 3; i++) {
+          float* data = pred.data<float>() + i * 3;
+          int index = *(data + 0) + *(data + 1) * W + H * W * i;
+          float* offx = offset_x.data<float>() + index;
+          float* offy = offset_y.data<float>() + index;
+          *(data + 0) += *offx;
+          *(data + 1) += *offy;
+        }
+      }
     } else {
       pred = get_max_pred(heatmap);
       if (post_process_ == "unbiased") {
@@ -132,6 +192,8 @@ class TopdownHeatmapBaseHeadDecode : public MMPose {
       }
     }
 
+    K = pred.shape(1);  // changed if target_type is CombinedTarget
+
     // Transform back to the image
     for (int i = 0; i < K; i++) {
       transform_pred(pred, i, center, scale, {W, H}, use_udp);
@@ -150,6 +212,56 @@ class TopdownHeatmapBaseHeadDecode : public MMPose {
     }
 
     return pred;
+  }
+
+  void post_dark_udp(Tensor& pred, Tensor& heatmap, int kernel) {
+    int K = heatmap.shape(1);
+    int H = heatmap.shape(2);
+    int W = heatmap.shape(3);
+    cv::parallel_for_(cv::Range(0, K), [&](const cv::Range& r) {
+      for (int i = r.start; i < r.end; i++) {
+        float* data = heatmap.data<float>() + i * H * W;
+        cv::Mat work = cv::Mat(H, W, CV_32FC(1), data);
+        cv::GaussianBlur(work, work, {kernel, kernel}, 0);  // inplace
+      }
+    });
+    std::for_each_n(heatmap.data<float>(), K * H * W, [](float& x) {
+      x = std::max(0.001f, std::min(50.f, x));
+      x = std::log(x);
+    });
+    auto _heatmap_data = [&](int index, int c) -> float {
+      int y = index / (W + 2);
+      int x = index % (W + 2);
+      y = std::max(0, y - 1);
+      x = std::max(0, x - 1);
+      return *(heatmap.data<float>() + c * H * W + y * W + x);
+    };
+    cv::parallel_for_(cv::Range(0, K), [&](const cv::Range& r) {
+      for (int i = r.start; i < r.end; i++) {
+        float* data = pred.data<float>() + i * 3;
+        int index = *(data + 0) + 1 + (*(data + 1) + 1) * (W + 2);
+        float i_ = _heatmap_data(index, i);
+        float ix1 = _heatmap_data(index + 1, i);
+        float iy1 = _heatmap_data(index + W + 2, i);
+        float ix1y1 = _heatmap_data(index + W + 3, i);
+        float ix1_y1_ = _heatmap_data(index - W - 3, i);
+        float ix1_ = _heatmap_data(index - 1, i);
+        float iy1_ = _heatmap_data(index - 2 - W, i);
+        float dx = 0.5 * (ix1 - ix1_);
+        float dy = 0.5 * (iy1 - iy1_);
+        float dxx = ix1 - 2 * i_ + ix1_;
+        float dyy = iy1 - 2 * i_ + iy1_;
+        float dxy = 0.5 * (ix1y1 - ix1 - iy1 + i_ + i_ - ix1_ - iy1_ + ix1_y1_);
+        vector<float> _data0 = {dx, dy};
+        vector<float> _data1 = {dxx, dxy, dxy, dyy};
+        cv::Mat derivative = cv::Mat(2, 1, CV_32FC1, _data0.data());
+        cv::Mat hessian = cv::Mat(2, 2, CV_32FC1, _data1.data());
+        cv::Mat hessianinv = hessian.inv();
+        cv::Mat offset = -hessianinv * derivative;
+        *(data + 0) += offset.at<float>(0, 0);
+        *(data + 1) += offset.at<float>(1, 0);
+      }
+    });
   }
 
   void transform_pred(Tensor& pred, int k, const vector<float>& center, const vector<float>& _scale,
@@ -192,7 +304,7 @@ class TopdownHeatmapBaseHeadDecode : public MMPose {
       vector<float> _data1 = {dxx, dxy, dxy, dyy};
       cv::Mat derivative = cv::Mat(2, 1, CV_32FC1, _data0.data());
       cv::Mat hessian = cv::Mat(2, 2, CV_32FC1, _data1.data());
-      if (std::fabs(dxx * dyy - dxy * dxy) < 1e-6) {
+      if (std::fabs(dxx * dyy - dxy * dxy) > 1e-6) {
         cv::Mat hessianinv = hessian.inv();
         cv::Mat offset = -hessianinv * derivative;
         *(pred.data<float>() + k * 3 + 0) += offset.at<float>(0, 0);
@@ -218,12 +330,12 @@ class TopdownHeatmapBaseHeadDecode : public MMPose {
       int offset = i * H * W;
       float* data = const_cast<float*>(_heatmap.data<float>()) + offset;
       float origin_max = *std::max_element(data, data + num_points);
-      cv::Mat work = cv::Mat(H + 2 * border, W + 2 * border, CV_32FC1, {});
+      cv::Mat work = cv::Mat(H + 2 * border, W + 2 * border, CV_32FC1, cv::Scalar{});
       cv::Mat curr = cv::Mat(H, W, CV_32FC1, data);
       cv::Rect roi = {border, border, W, H};
       curr.copyTo(work(roi));
       cv::GaussianBlur(work, work, {kernel, kernel}, 0);
-      cv::Mat valid = curr(roi).clone();
+      cv::Mat valid = work(roi).clone();
       float cur_max = *std::max_element((float*)valid.data, (float*)valid.data + num_points);
       float* dst = heatmap.data<float>() + offset;
       std::transform((float*)valid.data, (float*)valid.data + num_points, dst,
