@@ -10,6 +10,7 @@
 #include <optional>
 #include <thread>
 #include <type_traits>
+#include <variant>
 
 #include "core/mpl/detected.h"
 #include "core/utils/formatter.h"
@@ -20,6 +21,21 @@ namespace mmdeploy {
 
 template <class T, class E, class U = void>
 using _decays_to = std::enable_if_t<std::is_same<std::decay_t<T>, E>::value, U>;
+
+template <class... Ts>
+using __decayed_tuple = std::tuple<std::decay_t<Ts>...>;
+
+template <class Fun, class... As>
+using __call_result_t = decltype(std::declval<Fun>()(std::declval<As>()...));
+
+template <class F>
+struct __conv {
+  F f_;
+  operator __call_result_t<F>() && { return ((F &&) f_)(); }
+};
+
+template <class F>
+__conv(F) -> __conv<F>;
 
 template <class _Member, class _Self>
 _Member _Self::*__memptr(const _Self&);
@@ -101,6 +117,78 @@ struct _Sender {
 }  // namespace __just
 
 inline __just::_Sender Just(Value v) { return {std::move(v)}; }
+
+namespace __on {
+
+template <class Scheduler, class Sender, class Receiver>
+struct _Operation;
+
+template <class Scheduler, class Sender, class Receiver>
+struct _ReceiverRef {
+  _Operation<Scheduler, Sender, Receiver>* op_state_;
+  template <class... Args>
+  friend void SetValue(_ReceiverRef&& self, Args&&... args) {
+    SetValue((Receiver &&) self.op_state_->rcvr_, ((Args &&) args)...);
+  }
+};
+
+template <class Scheduler, class Sender, class Receiver>
+struct _Receiver {
+  _Operation<Scheduler, Sender, Receiver>* op_state_;
+  using ReceiverRef = _ReceiverRef<Scheduler, Sender, Receiver>;
+  friend void SetValue(_Receiver&& self) {
+    auto op_state = self.op_state_;
+    Start(op_state->data_.template emplace<1>(
+        Connect((Sender &&) op_state->sndr_, ReceiverRef{op_state})));
+  }
+};
+
+template <class Scheduler, class Sender, class Receiver>
+struct _Operation {
+  using __Receiver = _Receiver<Scheduler, Sender, Receiver>;
+  using __ReceiverRef = _ReceiverRef<Scheduler, Sender, Receiver>;
+
+  template <class Sender2, class Receiver2>
+  _Operation(Scheduler sched, Sender2&& sndr, Receiver2&& rcvr)
+      : data_(std::in_place_index<0>, Connect(Schedule(sched), __Receiver{this})),
+        scheduler_(sched),
+        sndr_((Sender2 &&) sndr),
+        rcvr_((Receiver2 &&) rcvr) {}
+
+  friend void Start(_Operation& self) { Start(std::get<0>(self.data_)); }
+
+  std::variant<connect_result_t<schedule_result_t<Scheduler>, __Receiver>,
+               connect_result_t<Sender, __ReceiverRef>>
+      data_;
+  Scheduler scheduler_;
+  Sender sndr_;
+  Receiver rcvr_;
+};
+
+template <class Scheduler, class Sender>
+struct _Sender {
+  Scheduler sched_;
+  Sender sndr_;
+
+  template <class Receiver>
+  using _ReceiverRef = _ReceiverRef<Scheduler, Sender, Receiver>;
+  template <class Receiver>
+  using _Receiver = _Receiver<Scheduler, Sender, Receiver>;
+  template <class Receiver>
+  using _Operation = _Operation<Scheduler, Sender, Receiver>;
+
+  template <class Self, class Receiver, _decays_to<Self, _Sender, bool> = true>
+  friend auto Connect(Self&& self, Receiver&& rcvr) -> _Operation<std::decay_t<Receiver>> {
+    return {((Self &&) self).sched_, ((Self &&) self).sndr_, (Receiver &&) rcvr};
+  }
+};
+
+}  // namespace __on
+
+template <class Scheduler, class Sender>
+__on::_Sender<Scheduler, Sender> On(Scheduler&& sched, Sender&& sndr) {
+  return {(Scheduler &&) sched, (Sender &&) sndr};
+}
 
 namespace __schedule_from {
 
@@ -199,14 +287,12 @@ struct _Sender {
   S s_;
   F f_;
 
-  template <typename R>
-  friend auto Connect(_Sender&& self, R r) {
-    return Connect((_Sender &&) self.s_, _Receiver<R, F>{(R &&) r, (F &&) self.f_});
-  }
+  template <class Receiver>
+  using receiver_t = _Receiver<std::decay_t<Receiver>, F>;
 
-  template <typename R>
-  friend auto Connect(_Sender& self, R r) {
-    return Connect(self.s_, _Receiver<R, F>{(R &&) r, (F &&) self.f_});
+  template <class Self, class R, _decays_to<Self, _Sender, bool> = true>
+  friend auto Connect(Self&& self, R r) {
+    return Connect(((Self &&) self).s_, receiver_t<R>{(R &&) r, (F &&) self.f_});
   }
 
   template <class Sender = S>
@@ -221,6 +307,101 @@ struct _Sender {
 template <class S, class F>
 __then::_Sender<std::decay_t<S>, F> Then(S&& s, F f) {
   return {(S &&) s, (F &&) f};
+}
+
+namespace __let_value {
+
+template <class T>
+using __decay_ref = std::decay_t<T>&;
+
+template <class Fun, class... As>
+using __result_sender_t = __call_result_t<Fun, __decay_ref<As>...>;
+
+template <class Sender, class Receiver, class Fun>
+struct _Storage {
+  Value data_;
+  std::optional<connect_result_t<__result_sender_t<Fun, Value>, Receiver>> op_state3_;
+};
+
+template <class Sender, class Receiver, class Fun>
+struct _Operation;
+
+template <class Sender, class Receiver, class Fun>
+struct _Receiver {
+  _Operation<Sender, Receiver, Fun>* op_state_;
+
+  // mmdeploy::__then::_Sender<mmdeploy::__just::_Sender,
+  // Func()::<lambda(mmdeploy::Value&)>::<lambda(mmdeploy::Value)> >
+  // mmdeploy::__just::_Sender::_Operation<mmdeploy::__then::_Receiver<mmdeploy::__sync_wait::_Receiver,
+  // Func()::<lambda(mmdeploy::Value&)>::<lambda(mmdeploy::Value)> > >
+
+  friend void SetValue(_Receiver&& self, Value v) noexcept {
+    self.op_state_->storage_.data_ = (Value &&) v;
+    //    self.op_state_->storage_.op_state3_.emplace(__conv{[&]() -> __result_sender_t<Fun, Value>
+    //    {
+    //      return Connect(std::move(self.op_state_->fun_)(self.op_state_->storage_.data_),
+    //                     std::move(self.op_state_->rcvr_));
+    //    }});
+
+    //    __conv{[&]() -> __result_sender_t<Fun, Value> {
+    //      return Connect(std::move(self.op_state_->fun_)(self.op_state_->storage_.data_),
+    //                     std::move(self.op_state_->rcvr_));
+    //    }};
+    //    __result_sender_t<Fun, Value>* x = "hello";
+    //    decltype(Connect(std::move(self.op_state_->fun_)(self.op_state_->storage_.data_),
+    //                     std::move(self.op_state_->rcvr_)))* y = "hello";
+
+    //    decltype(std::move(self.op_state_->fun_)(self.op_state_->storage_.data_))* x = "hello";
+
+    auto sender = std::move(self.op_state_->fun_)(self.op_state_->storage_.data_);
+    decltype(Connect(std::move(sender), std::move(self.op_state_->rcvr_)))* x = "hello";
+//    static_assert(
+//        std::is_same_v<__result_sender_t<Fun, Value>,
+//                       decltype(Connect(std::move(sender, std::move(self.op_state_->rcvr_))))>);
+    Start(*self.op_state_->storage_.op_state3_);
+  }
+};
+
+template <class Sender, class Receiver, class Fun>
+struct _Operation {
+  using receiver_t = _Receiver<Sender, Receiver, Fun>;
+
+  friend void Start(_Operation& self) noexcept { Start(self.op_state2_); }
+
+  template <class Receiver2>
+  _Operation(Sender&& sndr, Receiver2&& rcvr, Fun fun)
+      : op_state2_(Connect((Sender &&) sndr, receiver_t{this})),
+        rcvr_((Receiver2 &&) rcvr),
+        fun_((Fun &&) fun) {}
+
+  connect_result_t<Sender, receiver_t> op_state2_;
+  Receiver rcvr_;
+  Fun fun_;
+  _Storage<Sender, Receiver, Fun> storage_;
+};
+
+template <class Sender, class Fun>
+struct _Sender {
+  template <class Self, class Receiver>
+  using operation_t = _Operation<_copy_cvref_t<Self, Sender>, std::decay_t<Receiver>, Fun>;
+  template <class Self, class Receiver>
+  using receiver_t = _Receiver<_copy_cvref_t<Self, Sender>, std::decay_t<Receiver>, Fun>;
+
+  template <class Self, class Receiver, _decays_to<Self, _Sender, bool> = true>
+  friend auto Connect(Self&& self, Receiver&& rcvr) -> operation_t<Self, Receiver> {
+    return operation_t<Self, Receiver>{((Self &&) self).sndr_, (Receiver &&) rcvr,
+                                       ((Self &&) self).fun_};
+  }
+  Sender sndr_;
+  Fun fun_;
+};
+
+}  // namespace __let_value
+
+template <class Sender, class Fun,
+          typename _Sender = __let_value::_Sender<std::decay_t<Sender>, Fun>>
+_Sender LetValue(Sender&& s, Fun&& f) {
+  return _Sender{(Sender &&) s, (Fun &&) f};
 }
 
 namespace __split {

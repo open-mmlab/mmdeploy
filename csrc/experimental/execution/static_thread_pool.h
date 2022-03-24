@@ -44,7 +44,9 @@ class StaticThreadPool {
 
     class Sender {
       template <class Receiver>
-      Operation<std::decay_t<Receiver>> MakeOperation_(Receiver&& r) const {}
+      Operation<std::decay_t<Receiver>> MakeOperation_(Receiver&& r) const {
+        return {pool_, (Receiver &&) r};
+      }
 
       template <class Receiver>
       friend Operation<std::decay_t<Receiver>> Connect(Sender s, Receiver&& r) {
@@ -113,8 +115,7 @@ class Operation : TaskBase {
   StaticThreadPool& pool_;
   Receiver receiver_;
 
-  explicit Operation(StaticThreadPool& pool, Receiver&& r)
-      : pool_(pool), receiver_((Receiver &&) r) {
+  Operation(StaticThreadPool& pool, Receiver&& r) : pool_(pool), receiver_((Receiver &&) r) {
     this->execute_ = [](TaskBase* t) noexcept {
       auto& op = *static_cast<Operation*>(t);
       SetValue((Receiver &&) op.receiver_);

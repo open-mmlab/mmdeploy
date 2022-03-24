@@ -1,5 +1,6 @@
 #include "catch.hpp"
 #include "core/utils/formatter.h"
+#include "experimental/execution/static_thread_pool.h"
 #include "experimental/execution/type_erased.h"
 
 using namespace mmdeploy;
@@ -38,6 +39,22 @@ TEST_CASE("test when_all", "[execution]") {
   MMDEPLOY_ERROR("v = {}", v);
 }
 
+void Func() {
+  auto a = Just({100, 200});
+  auto b = LetValue(a, [](Value& v) {
+    auto c = Just(v[0].get<int>() + v[1].get<int>());
+    auto d = Then(std::move(c), [](Value v) -> Value { return v.get<int>() * v.get<int>(); });
+    return d;
+  });
+  auto v = SyncWait(b);
+
+  MMDEPLOY_ERROR("v = {}", v);
+}
+
+TEST_CASE("test let_value", "[execution]") {
+  Func();
+}
+
 TEST_CASE("test fork-join", "[execution]") {
   auto a = Just({{"x", 100}, {"y", 1000}});
   auto s = Split(a);
@@ -46,6 +63,16 @@ TEST_CASE("test fork-join", "[execution]") {
   auto xy = WhenAll(x, y);
   auto v = SyncWait(xy);
   MMDEPLOY_ERROR("v = {}", v);
+}
+
+TEST_CASE("test thread pool", "[execution]") {}
+
+TEST_CASE("test on", "[execution]") {
+  auto a = Just(100);
+  __static_thread_pool::StaticThreadPool pool;
+  auto b = On(pool.GetScheduler(), a);
+  auto c = SyncWait(b);
+  MMDEPLOY_ERROR("c = {}", c);
 }
 
 mmdeploy_value_t f(mmdeploy_value_t v, void*) {
