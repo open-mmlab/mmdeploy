@@ -7,7 +7,6 @@ import traceback
 from typing import Callable, Optional, Union
 
 import multiprocess as mp
-from mmcv.utils import get_logger
 
 
 def target_wrapper(target: Callable,
@@ -27,8 +26,7 @@ def target_wrapper(target: Callable,
     """
     logger = logging.getLogger()
     logging.basicConfig(
-        format='%(asctime)s,%(name)s %(levelname)-8s'
-        ' [%(filename)s:%(lineno)d] %(message)s',
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         datefmt='%Y-%m-%d:%H:%M:%S')
     logger.level
     logger.setLevel(log_level)
@@ -44,6 +42,9 @@ def target_wrapper(target: Callable,
         traceback.print_exc(file=sys.stdout)
 
 
+mmdeploy_logger = None
+
+
 def get_root_logger(log_file=None, log_level=logging.INFO) -> logging.Logger:
     """Get root logger.
 
@@ -54,9 +55,39 @@ def get_root_logger(log_file=None, log_level=logging.INFO) -> logging.Logger:
     Returns:
         logging.Logger: The obtained logger
     """
-    logger = get_logger(
-        name='mmdeploy', log_file=log_file, log_level=log_level)
+    try:
+        from mmcv.utils import get_logger
+        logger = get_logger(
+            name='mmdeploy', log_file=log_file, log_level=log_level)
+    except Exception:
+        global mmdeploy_logger
+        if mmdeploy_logger is not None:
+            return mmdeploy_logger
+        import logging
+        logger = logging.getLogger('mmdeploy')
 
+        for handler in logger.root.handlers:
+            if type(handler) is logging.StreamHandler:
+                handler.setLevel(logging.ERROR)
+
+        stream_handler = logging.StreamHandler()
+        handlers = [stream_handler]
+        file_mode = 'w'
+
+        if log_file is not None:
+            file_handler = logging.FileHandler(log_file, file_mode)
+            handlers.append(file_handler)
+
+        formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        for handler in handlers:
+            handler.setFormatter(formatter)
+            handler.setLevel(log_level)
+            logger.addHandler(handler)
+
+        logger.setLevel(log_level)
+
+        mmdeploy_logger = logger
     return logger
 
 
