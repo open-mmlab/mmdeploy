@@ -31,15 +31,14 @@ class End2EndModel(BaseBackendModel):
                  model_cfg: Union[str, mmcv.Config] = None,
                  **kwargs):
         super(End2EndModel, self).__init__(deploy_cfg=deploy_cfg)
-        from mmpose.models.heads.topdown_heatmap_base_head import \
-            TopdownHeatmapBaseHead
+        from mmpose.models import builder
 
         self.deploy_cfg = deploy_cfg
         self.model_cfg = model_cfg
         self._init_wrapper(
             backend=backend, backend_files=backend_files, device=device)
         # create base_head for decoding heatmap
-        base_head = TopdownHeatmapBaseHead()
+        base_head = builder.build_head(model_cfg.model.keypoint_head)
         base_head.test_cfg = model_cfg.model.test_cfg
         self.base_head = base_head
 
@@ -73,10 +72,12 @@ class End2EndModel(BaseBackendModel):
         Returns:
             list: A list contains predictions.
         """
+        batch_size, _, img_height, img_width = img.shape
         input_img = img.contiguous()
         outputs = self.forward_test(input_img, img_metas, *args, **kwargs)
         heatmaps = outputs[0]
-        key_points = self.base_head.decode(img_metas, heatmaps)
+        key_points = self.base_head.decode(
+            img_metas, heatmaps, img_size=[img_width, img_height])
         return key_points
 
     def forward_test(self, imgs: torch.Tensor, *args, **kwargs) -> \

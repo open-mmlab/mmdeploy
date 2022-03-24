@@ -186,7 +186,7 @@ class PoseDetection(BaseTask):
                 'rotation':
                 0,
                 'ann_info': {
-                    'image_size': image_size,
+                    'image_size': np.array(image_size),
                     'num_joints': cfg.data_cfg['num_joints'],
                     'flip_pairs': flip_pairs
                 }
