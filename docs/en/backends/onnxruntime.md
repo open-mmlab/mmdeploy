@@ -57,7 +57,6 @@ make -j$(nproc)
 
 | Operator                                                                     |  CPU  |  GPU  | MMDeploy Releases |
 | :--------------------------------------------------------------------------- | :---: | :---: | :---------------- |
-| [RoIAlign](../ops/onnxruntime.md#roialign)                                   |   Y   |   N   | master            |
 | [grid_sampler](../ops/onnxruntime.md#grid_sampler)                           |   Y   |   N   | master            |
 | [MMCVModulatedDeformConv2d](../ops/onnxruntime.md#mmcvmodulateddeformconv2d) |   Y   |   N   | master            |
 
