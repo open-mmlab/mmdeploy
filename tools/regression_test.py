@@ -332,7 +332,7 @@ def test_backends(deploy_cfg, model_cfg, checkpoint_path, device, work_dir,
     metric_eval_name = metric_exchange_dict.get(metrics_name, {}).get('metric_name', '0.00')
     print(f'Got metric_eval_name = {metric_eval_name}')
 
-    metric = evaluate_result.get(metric_eval_name, '')
+    metric = evaluate_result.get(metric_eval_name, 0.00) * 100
     print(f'Got metric float= {metric}')
     if not isinstance(metric, float):
         metric = f'{float(metric):.2f}'
