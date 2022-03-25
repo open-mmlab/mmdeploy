@@ -22,9 +22,9 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Process Regression Test')
     parser.add_argument('--deploy-yml', help='regression test yaml path',
                         default='./configs/mmdet/mmdet_regression_test.yaml')
-    parser.add_argument('--test-type', help='`test type', default="precision")
+    parser.add_argument('--test-type', help='`test type', default='precision')
     parser.add_argument('--backend', help='test specific backend(s)',
-                        default="all")
+                        default='all')
     parser.add_argument('--work-dir', help='the dir to save logs and models',
                         default='../mmdeploy_regression_working_dir')
     parser.add_argument('--device-id', help='`the CUDA device id', default=0)
@@ -75,7 +75,7 @@ def get_model_metafile_info(global_info, model_info, logger):
 
     model_meta_info = dict()
     for meta_model in metafile_info.get('Models'):
-        if str(meta_model.get('Name')) + ".py" not in model_config_files:
+        if str(meta_model.get('Name')) + '.py' not in model_config_files:
             # skip if the model not in model_config_files
             continue
 
@@ -196,16 +196,16 @@ def get_pytorch_result(model_name,
     # get pytorch fps value
     fps_info = model_info.get('Metadata').get('inference time (ms/im)')
     if fps_info is None:
-        fps = "-"
+        fps = '-'
     elif isinstance(fps_info, list):
         fps = fps_info[0].get('value')
     else:
         fps = fps_info.get('value')
 
     # update report
-    dataset_type = ""
+    dataset_type = ''
     for metric in metric_info:
-        dataset_type += f"{metric.get('Dataset')},"
+        dataset_type += f'{metric.get("Dataset")},'
 
     update_report(
         report_dict=report_dict,
@@ -643,7 +643,7 @@ def main():
 
                 # get model config path
                 model_cfg_path = Path(codebase_dir). \
-                    joinpath(models.get("codebase_model_config_dir", ""),
+                    joinpath(models.get('codebase_model_config_dir', ''),
                              model_config).with_suffix('.py')
                 assert model_cfg_path.exists()
 
