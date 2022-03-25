@@ -1,20 +1,20 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import argparse
 import logging
-from functools import partial
+import argparse
 from pathlib import Path
+from functools import partial
 
+import yaml
 import numpy as np
 import pandas as pd
 import torch.multiprocessing as mp
-import yaml
-from mmcv.parallel import MMDataParallel
 from torch.hub import download_url_to_file
+from mmcv.parallel import MMDataParallel
 from torch.multiprocessing import Process, set_start_method
 
 from mmdeploy.apis import torch2onnx, build_task_processor
-from mmdeploy.utils import (get_root_logger, load_config,
-                            target_wrapper, parse_device_id)
+from mmdeploy.utils import (load_config, target_wrapper, get_root_logger,
+                            parse_device_id)
 from mmdeploy.utils.timer import TimeCounter
 
 
