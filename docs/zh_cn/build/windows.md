@@ -237,7 +237,10 @@ $env:MMDEPLOY_DIR="$pwd"
     <td> <b>默认情况下，SDK不设置任何后端</b>, 因为它与应用场景高度相关。 当选择多个后端时， 中间使用分号隔开。比如，<pre><code>-DMMDEPLOY_TARGET_BACKENDS="trt;ort;pplnn;ncnn;openvino"</code></pre>
     构建时，几乎每个后端，都需设置一些路径变量，用来查找依赖包。<br>
     1. <b>trt</b>: 表示 TensorRT。需要设置 <code>TENSORRT_DIR</code> 和 <code>CUDNN_DIR</code>。
-<pre><code>-DTENSORRT_DIR=$env:TENSORRT_DIR<br>-DCUDNN_DIR=$env:CUDNN_DIR</code></pre>
+<pre><code>
+-DTENSORRT_DIR=$env:TENSORRT_DIR
+-DCUDNN_DIR=$env:CUDNN_DIR
+</code></pre>
     2. <b>ort</b>: 表示 ONNXRuntime。需要设置 <code>ONNXRUNTIME_DIR</code>。
 <pre><code>-DONNXRUNTIME_DIR=$env:ONNXRUNTIME_DIR</code></pre>
     3. <b>pplnn</b>: 表示 PPL.NN。需要设置 <code>pplnn_DIR</code>。<b>当前版本尚未验证</b> <br>

@@ -305,7 +305,10 @@ export MMDEPLOY_DIR=$(pwd)
     <td>Enabling inference engine. <b>By default, no target inference engine is set, since it highly depends on the use case.</b> When more than one engine are specified, it has to be set with a semicolon separated list of inference backend names, e.g. <pre><code>-DMMDEPLOY_TARGET_BACKENDS="trt;ort;pplnn;ncnn;openvino"</code></pre>
     After specifying the inference engine, it's package path has to be passed to cmake as follows, <br>
     1. <b>trt</b>: TensorRT. <code>TENSORRT_DIR</code> and <code>CUDNN_DIR</code> are needed.
-<pre><code>-DTENSORRT_DIR=${TENSORRT_DIR}<br>-DCUDNN_DIR=${CUDNN_DIR}</code></pre>
+<pre><code>
+-DTENSORRT_DIR=${TENSORRT_DIR}
+-DCUDNN_DIR=${CUDNN_DIR}
+</code></pre>
     2. <b>ort</b>: ONNXRuntime. <code>ONNXRUNTIME_DIR</code> is needed.
 <pre><code>-DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR}</code></pre>
     3. <b>pplnn</b>: PPL.NN. <code>pplnn_DIR</code> is needed.
