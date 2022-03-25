@@ -27,7 +27,7 @@ MMDeploy 为 Linux-x86_64 平台提供 2 种编译安装方式，分别是 Docke
 
 - cmake
 
-    **保证 cmake的版本 >= 3.14.0**。如果不是，可以参考以下命令安装 3.20.0 版本。如需获取其他版本，请参考 [这里](https://cmake.org/install)。
+    **保证 cmake的版本 >= 3.14.0**。如果不是，可以参考以下命令安装 3.20.0 版本。如需获取其他版本，请参考[这里](https://cmake.org/install)。
 
     ```bash
     wget https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0-linux-x86_64.tar.gz
@@ -59,7 +59,7 @@ MMDeploy 为 Linux-x86_64 平台提供 2 种编译安装方式，分别是 Docke
 <tbody>
   <tr>
     <td>conda </td>
-    <td>请参考 <a href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html">官方说明</a> 安装 conda。<br> 通过 conda 创建并激活 Python 环境。<br>
+    <td>请参考<a href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html">官方说明</a>安装 conda。<br> 通过 conda 创建并激活 Python 环境。<br>
 <pre><code>
 conda create -n mmdeploy python=3.7 -y
 conda activate mmdeploy
@@ -120,7 +120,7 @@ sudo dpkg -i libspdlog-dev_0.16.3-1_amd64.deb
 <pre><code>
 sudo apt-get install libopencv-dev
 </code></pre>
-    在 Ubuntu 16.04 中，需要源码安装 OpenCV。您可以参考 <a href="https://docs.opencv.org/3.4/d7/d9f/tutorial_linux_install.html">此处</a>.
+    在 Ubuntu 16.04 中，需要源码安装 OpenCV。您可以参考<a href="https://docs.opencv.org/3.4/d7/d9f/tutorial_linux_install.html">此处</a>.
     </td>
 
   </tr>
@@ -173,7 +173,7 @@ export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
     <td>TensorRT <br> </td>
     <td>
    1. 登录 <a href="https://www.nvidia.com/">NVIDIA 官网</a>，从<a href="https://developer.nvidia.com/nvidia-tensorrt-download">这里</a>选取并下载 TensorRT tar 包。要保证它和您机器的 CPU 架构以及 CUDA 版本是匹配的。<br>
-   您可以参考这份 <a href="https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing-tar">指南</a> 安装 TensorRT。<br>
+   您可以参考这份<a href="https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing-tar">指南</a>安装 TensorRT。<br>
    2. 这里也有一份 TensorRT 8.2 GA Update 2 在 Linux x86_64 和 CUDA 11.x 下的安装示例，供您参考。首先，点击<a href="https://developer.nvidia.com/compute/machine-learning/tensorrt/secure/8.2.3.0/tars/tensorrt-8.2.3.0.linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz">此处</a>下载 CUDA 11.x TensorRT 8.2.3.0。然后，根据如下命令，安装并配置 TensorRT。
 <pre><code>
 cd /the/path/of/tensorrt/tar/gz/file
@@ -187,7 +187,7 @@ export LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
   <tr>
     <td>cuDNN </td>
     <td>
-    1. 从 <a href="https://developer.nvidia.com/rdp/cudnn-archive">cuDNN Archive</a> 选择和您环境中 CPU 架构、CUDA 版本以及 TensorRT 版本配套的 cuDNN。以前文 TensorRT 安装说明为例，它需要 cudnn8.2。因此，可以下载<a href="https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.2.1.32/11.3_06072021/cudnn-11.3-linux-x64-v8.2.1.32.tgz">CUDA 11.x cuDNN 8.2</a><br>
+    1. 从 <a href="https://developer.nvidia.com/rdp/cudnn-archive">cuDNN Archive</a> 选择和您环境中 CPU 架构、CUDA 版本以及 TensorRT 版本配套的 cuDNN。以前文 TensorRT 安装说明为例，它需要 cudnn8.2。因此，可以下载 <a href="https://developer.nvidia.com/compute/machine-learning/cudnn/secure/8.2.1.32/11.3_06072021/cudnn-11.3-linux-x64-v8.2.1.32.tgz">CUDA 11.x cuDNN 8.2</a><br>
     2. 解压压缩包，并设置环境变量
 <pre><code>
 cd /the/path/of/cudnn/tgz/file
@@ -235,6 +235,21 @@ cd ${NCNN_DIR}/python
 pip install -e .
 </code></pre>
     </td>
+  </tr>
+  <tr>
+  <td>TorchScript</td>
+  <td>libtorch</td>
+  <td>
+  1. Download libtorch from <a href="https://pytorch.org/get-started/locally/">here</a>. Please note that only <b>Pre-cxx11 ABI</b> and <b>version 1.8.1+</b> on Linux platform are supported by now. For previous versions of libtorch, you can find them in the <a href="https://github.com/pytorch/pytorch/issues/40961#issuecomment-1017317786">issue comment</a>. <br>
+  2. Take Libtorch1.8.1+cu111 as an example. You can install it like this:
+  <pre><code>
+wget https://download.pytorch.org/libtorch/cu111/libtorch-shared-with-deps-1.8.1%2Bcu111.zip
+unzip libtorch-shared-with-deps-1.8.1+cu111.zip
+cd libtorch
+export Torch_DIR=$(pwd)
+export LD_LIBRARY_PATH=$Torch_DIR/lib:$LD_LIBRARY_PATH
+  </code></pre>
+  </td>
   </tr>
 </tbody>
 </table>
@@ -291,7 +306,7 @@ export MMDEPLOY_DIR=$(pwd)
   </tr>
   <tr>
     <td>MMDEPLOY_TARGET_BACKENDS</td>
-    <td>{"trt", "ort", "pplnn", "ncnn", "openvino"}</td>
+    <td>{"trt", "ort", "pplnn", "ncnn", "openvino", "torchscript"}</td>
     <td>N/A</td>
     <td> <b>默认情况下，SDK不设置任何后端</b>, 因为它与应用场景高度相关。 当选择多个后端时， 中间使用分号隔开。比如，<pre><code>-DMMDEPLOY_TARGET_BACKENDS="trt;ort;pplnn;ncnn;openvino"</code></pre>
     构建时，几乎每个后端，都需传入一些路径变量，用来查找依赖包。<br>
@@ -308,6 +323,9 @@ export MMDEPLOY_DIR=$(pwd)
 <pre><code>-Dncnn_DIR=${NCNN_DIR}</code></pre>
     5. <b>openvino</b>: 表示 OpenVINO。需要设置 <code>InferenceEngine_DIR</code>
 <pre><code>-DInferenceEngine_DIR=${INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/share</code></pre>
+    6. <b>torchscript</b>: TorchScript. 需要设置<code>Torch_DIR</code>
+<pre><code>-DTorch_DIR=${Torch_DIR}</code></pre>
+目前，<b>模型转换支持 torchscript，但 SDK 尚不支持 </b>
    </td>
   </tr>
   <tr>
@@ -328,7 +346,7 @@ export MMDEPLOY_DIR=$(pwd)
 #### 编译安装 Model Converter
 
 ##### 编译自定义算子
-如果您选择了ONNXRuntime，TensorRT 和 ncnn 任一种推理后端，您需要编译对应的自定义算子库。
+如果您选择了ONNXRuntime，TensorRT，ncnn 和 torchscript 任一种推理后端，您需要编译对应的自定义算子库。
 
 - **ONNXRuntime** 自定义算子
 
@@ -354,6 +372,15 @@ export MMDEPLOY_DIR=$(pwd)
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
   cmake -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_TARGET_BACKENDS=ncnn -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn ..
+  make -j$(nproc)
+  ```
+
+- **torchscript** 自定义算子
+
+  ```bash
+  cd ${MMDEPLOY_DIR}
+  mkdir -p build && cd build
+  cmake -DMMDEPLOY_TARGET_BACKENDS=torchscript -DTorch_DIR=${Torch_DIR} ..
   make -j$(nproc)
   ```
 

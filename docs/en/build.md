@@ -6,10 +6,8 @@
   ```bash
   git clone -b master git@github.com:open-mmlab/mmdeploy.git MMDeploy
   cd MMDeploy
-  export MMDEPLOY_DIR=$(pwd)
   git submodule update --init --recursive
   ```
-
 
 Note:
 
@@ -26,9 +24,16 @@ Note:
       cd pybind11
       git checkout 70a58c5
       ```
+  - If it fails when `git clone` via `SSH`, you can try the `HTTPS` protocol like this:
+  
+    ```bash
+    git clone -b master https://github.com/open-mmlab/mmdeploy.git MMDeploy
+    cd MMDeploy
+    git submodule update --init --recursive
+    ```
 
 ## Build MMDeploy
-Build MMDeploy according to the target platforms.
+Please visit the following links to find out how to build MMDeploy according to the target platform.
 - [Linux-x86_64](build/linux.md)
 - [Windows](build/windows.md)
 - [NVIDIA Jetson](tutorials/how_to_install_mmdeploy_on_jetsons.md)

@@ -243,6 +243,21 @@ pip install -e .
 </code></pre>
     </td>
   </tr>
+  <tr>
+    <td>TorchScript</td>
+    <td>libtorch</td>
+    <td>
+    1. Download libtorch from <a href="https://pytorch.org/get-started/locally/">here</a>. Please note that only <b>Pre-cxx11 ABI</b> and <b>version 1.8.1+</b> on Linux platform are supported by now. For previous versions of libtorch, you can find them in the <a href="https://github.com/pytorch/pytorch/issues/40961#issuecomment-1017317786">issue comment</a>. <br>
+    2. Take Libtorch1.8.1+cu111 as an example. You can install it like this:
+   <pre><code>
+wget https://download.pytorch.org/libtorch/cu111/libtorch-shared-with-deps-1.8.1%2Bcu111.zip
+unzip libtorch-shared-with-deps-1.8.1+cu111.zip
+cd libtorch
+export Torch_DIR=$(pwd)
+export LD_LIBRARY_PATH=$Torch_DIR/lib:$LD_LIBRARY_PATH
+   </code></pre>
+    </td>
+  </tr>
 </tbody>
 </table>
 
@@ -300,7 +315,7 @@ export MMDEPLOY_DIR=$(pwd)
   </tr>
   <tr>
     <td>MMDEPLOY_TARGET_BACKENDS</td>
-    <td>{"trt", "ort", "pplnn", "ncnn", "openvino"}</td>
+    <td>{"trt", "ort", "pplnn", "ncnn", "openvino", "torchscript"}</td>
     <td>N/A</td>
     <td>Enabling inference engine. <b>By default, no target inference engine is set, since it highly depends on the use case.</b> When more than one engine are specified, it has to be set with a semicolon separated list of inference backend names, e.g. <pre><code>-DMMDEPLOY_TARGET_BACKENDS="trt;ort;pplnn;ncnn;openvino"</code></pre>
     After specifying the inference engine, it's package path has to be passed to cmake as follows, <br>
@@ -317,6 +332,9 @@ export MMDEPLOY_DIR=$(pwd)
 <pre><code>-Dncnn_DIR=${NCNN_DIR}</code></pre>
     5. <b>openvino</b>: OpenVINO. <code>InferenceEngine_DIR</code> is needed.
 <pre><code>-DInferenceEngine_DIR=${INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/share</code></pre>
+    6. <b>torchscript</b>: TorchScript. <code>Torch_DIR</code> is needed.
+<pre><code>-DTorch_DIR=${Torch_DIR}</code></pre>
+Currently, <b>The Model Converter supports torchscript, but SDK doesn't</b>.
    </td>
   </tr>
   <tr>
@@ -337,7 +355,7 @@ export MMDEPLOY_DIR=$(pwd)
 #### Build Model Converter
 
 ##### Build Custom Ops
-If one of inference engines among ONNXRuntime, TensorRT and ncnn is selected, you have to build the corresponding custom ops.
+If one of inference engines among ONNXRuntime, TensorRT, ncnn and libtorch is selected, you have to build the corresponding custom ops.
 
 - **ONNXRuntime** Custom Ops
 
@@ -363,6 +381,15 @@ If one of inference engines among ONNXRuntime, TensorRT and ncnn is selected, yo
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
   cmake -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_TARGET_BACKENDS=ncnn -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn ..
+  make -j$(nproc)
+  ```
+
+- **TorchScript** Custom Ops
+
+  ```bash
+  cd ${MMDEPLOY_DIR}
+  mkdir -p build && cd build
+  cmake -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_TARGET_BACKENDS=torchscript -DTorch_DIR=${Torch_DIR} ..
   make -j$(nproc)
   ```
 

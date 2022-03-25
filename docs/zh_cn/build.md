@@ -6,7 +6,6 @@
   ```bash
   git clone -b master git@github.com:open-mmlab/mmdeploy.git MMDeploy
   cd MMDeploy
-  export MMDEPLOY_DIR=$(pwd)
   git submodule update --init --recursive
   ```
 
@@ -26,7 +25,15 @@
     git checkout 70a58c5
     ```
 
+- 如果以 `SSH` 方式 `git clone` 代码失败，您可以尝试使用 `HTTPS` 协议下载代码：
+
+  ```bash
+  git clone -b master https://github.com/open-mmlab/mmdeploy.git MMDeploy
+  cd MMDeploy
+  git submodule update --init --recursive
+  ```
 ### 编译 MMDeploy
 根据您的目标平台，点击如下对应的链接，按照说明编译 MMDeploy
 - [Linux-x86_64](build/linux.md)
 - [Windows](build/windows.md)
+- [NVIDIA Jetson](../en/tutorials/how_to_install_mmdeploy_on_jetsons.md)
