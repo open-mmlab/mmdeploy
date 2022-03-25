@@ -496,7 +496,7 @@ def get_backend_result(backends_info, model_cfg_path, deploy_config_dir, checkpo
             else:
                 for metric in metric_name_list:
                     metric_list.append({metric: '-'})
-                test_pass = False
+                test_pass = True if convert_result else False
 
             # update useless metric
             metric_useless = set(metric_all_list) - set(metric_name_list)
