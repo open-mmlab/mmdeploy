@@ -30,13 +30,9 @@ MMDeploy 为 Linux-x86_64 平台提供 2 种编译安装方式，分别是 Docke
     **保证 cmake的版本 >= 3.14.0**。如果不是，可以参考以下命令安装 3.20.0 版本。如需获取其他版本，请参考 [这里](https://cmake.org/install)。
 
     ```bash
-    sudo apt-get install -y libssl-dev
-    wget https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0.tar.gz
-    tar -zxvf cmake-3.20.0.tar.gz
-    cd cmake-3.20.0
-    ./bootstrap
-    make
-    sudo make install
+    wget https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0-linux-x86_64.tar.gz
+    tar -xzvf cmake-3.20.0-linux-x86_64.tar.gz
+    sudo ln -sf $(pwd)/cmake-3.20.0-linux-x86_64/bin/* /usr/bin/
     ```
 
 - GCC 7+
