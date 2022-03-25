@@ -213,9 +213,12 @@ struct _Receiver1 {
 
   _Operation1<Scheduler, CvrefSender, Receiver>* op_state_;
 
-  template <class V, _decays_to<V, Value, bool> = true>
-  friend void SetValue(_Receiver1&& self, V&& v) {
-    self.op_state_->data_ = (V &&) v;
+//  template <class V, _decays_to<V, Value, bool> = true>
+  template <class...As>
+  friend void SetValue(_Receiver1&& self, As&&...as) {
+    if constexpr (sizeof...(as) == 1) {
+      self.op_state_->data_ = Value(((As&&)as)...);
+    }
     auto sndr = Schedule(self.op_state_->sched_);
     self.op_state_->state2_.emplace(Connect(std::move(sndr), Receiver2{self.op_state_}));
     Start(*self.op_state_->state2_);
@@ -267,6 +270,12 @@ template <class Scheduler, class Sender>
 __schedule_from::_Sender<std::decay_t<Scheduler>, std::decay_t<Sender>> ScheduleFrom(
     Scheduler&& sched, Sender&& sndr) {
   return {(Scheduler &&) sched, (Sender &&) sndr};
+}
+
+template <class Sender, class Scheduler>
+auto Transfer(Sender&& sndr, Scheduler&& sched)
+    -> decltype(ScheduleFrom((Scheduler &&) sched, (Sender &&) sndr)) {
+  return ScheduleFrom((Scheduler &&) sched, (Sender &&) sndr);
 }
 
 namespace __then {
@@ -575,39 +584,72 @@ struct _OperationBase {
   void (*notify_)(_OperationBase*);
 };
 
-template <class Sender>
-struct _SharedState {
-  // stop_source
-  // op_state
-  // op_state = connect(s, r)
-  Value data_;
-};
-
-template <class Sender, class Receiver>
+template <class SharedState>
 struct _Receiver {
-  std::shared_ptr<_SharedState<Sender>> shared_state_;
+  std::shared_ptr<SharedState> shared_state_;
   friend void SetValue(_Receiver&& self, Value v) {
     assert(self.shared_state_);
-    self.shared_state_->data = std::move(v);
-    self.shared_state_.reset();
+    self.shared_state_->data_ = std::move(v);
+    self.shared_state_->_Notify();
+  }
+};
+
+template <class Sender>
+struct _SharedState {
+  Value data_;
+  std::optional<connect_result_t<Sender, _Receiver<_SharedState>>> op_state2_;
+  std::atomic<void*> awaiting_{nullptr};
+
+  void _Notify() noexcept {
+    void* const completion_state = static_cast<void*>(this);
+    void* old = awaiting_.exchange(completion_state, std::memory_order_acq_rel);
+    auto* op_state = static_cast<_OperationBase*>(old);
+
+    if (op_state != nullptr) {
+      op_state->notify_(op_state);
+    }
   }
 };
 
 template <class Sender, class Receiver>
-struct _Operation {
+struct _Operation : public _OperationBase {
   Receiver rcvr_;
   std::shared_ptr<_SharedState<Sender>> shared_state_;
 
-  friend void Start(_Operation& op_state) {
-    if (true) {
-      SetValue((Receiver&&)op_state.rcvr_, std::move(op_state.shared_state_->data_));
-    }
+  _Operation(Receiver&& rcvr, std::shared_ptr<_SharedState<Sender>> shared_state)
+      : _OperationBase{_Notify}, rcvr_(std::move(rcvr)), shared_state_(std::move(shared_state)) {}
+
+  static void _Notify(_OperationBase* self) noexcept {
+    auto op_state = static_cast<_Operation*>(self);
+    SetValue((Receiver &&) op_state->rcvr_, op_state->shared_state_->data_);
+  }
+
+  friend void Start(_Operation& self) {
+    auto shared_state = self.shared_state_.get();
+    std::atomic<void*>& awaiting = shared_state->awaiting_;
+    void* const completion_state = static_cast<void*>(shared_state);
+    void* old = awaiting.load(std::memory_order_acquire);
+
+    do {
+      if (old == completion_state) {
+        _Notify(&self);
+        return;
+      }
+    } while (awaiting.compare_exchange_weak(old, static_cast<void*>(&self),
+                                            std::memory_order_release, std::memory_order_acquire));
   }
 };
 
 template <class Sender>
 struct _Sender {
-  std::shared_ptr<_SharedState<Sender>> shared_state_;
+  using SharedState = _SharedState<Sender>;
+
+  std::shared_ptr<SharedState> shared_state_;
+
+  explicit _Sender(Sender sndr) : shared_state_(std::make_shared<SharedState>()) {
+    Start(shared_state_->op_state2_.emplace(
+        __conv{[&] { return Connect((Sender &&) sndr, _Receiver<SharedState>{shared_state_}); }}));
+  }
 
   template <class Self, class Receiver, _decays_to<Self, _Sender, bool> = true>
   friend auto Connect(Self&& self, Receiver&& rcvr) -> _Operation<Sender, std::decay_t<Receiver>> {
@@ -616,6 +658,56 @@ struct _Sender {
 };
 
 }  // namespace __ensure_started
+
+template <class Sender, class _Sender = __ensure_started::_Sender<std::decay_t<Sender>>>
+_Sender EnsureStarted(Sender&& sender) {
+  return _Sender{(Sender &&) sender};
+}
+
+namespace __submit {
+
+namespace __impl {
+
+template <class Sender, class Receiver>
+struct _Operation {
+  struct _Receiver {
+    _Operation* op_state_;
+    template <class... As>
+    friend void SetValue(_Receiver&& self, As&&... as) noexcept {
+      std::unique_ptr<_Operation> _g{self.op_state_};
+      return SetValue((Receiver &&) self.op_state_->rcvr_, (As &&) as...);
+    }
+  };
+  Receiver rcvr_;
+  connect_result_t<Sender, _Receiver> op_state_;
+  template <class R, _decays_to<R, Receiver, bool> = true>
+  _Operation(Sender&& sndr, R&& rcvr)
+      : rcvr_((R &&) rcvr), op_state_(Connect((Sender &&) sndr, _Receiver{this})) {}
+};
+
+}  // namespace __impl
+
+}  // namespace __submit
+
+template <class Sender, class Receiver>
+void __Submit(Sender&& sndr, Receiver&& rcvr) noexcept(false) {
+  using _Operation = __submit::__impl::_Operation<Sender, std::decay_t<Receiver>>;
+  Start((new _Operation((Sender &&) sndr, (Receiver &&) rcvr))->op_state_);
+}
+
+namespace __start_detached {
+
+struct _Receiver {
+  template <class... As>
+  friend void SetValue(_Receiver&&, As&&...) noexcept {}
+};
+
+}  // namespace __start_detached
+
+template <class Sender>
+void StartDetached(Sender&& sndr) {
+  __Submit((Sender &&) sndr, __start_detached::_Receiver{});
+}
 
 namespace __loop {
 class RunLoop;
@@ -632,7 +724,6 @@ class _Operation final : _Task {
   friend void Start(_Operation& op_state) noexcept { op_state._Start(); }
 
   void _Execute() noexcept override { SetValue((Receiver &&) rcvr_); }
-
   void _Start() noexcept;
 
   Receiver rcvr_;
@@ -654,42 +745,31 @@ class RunLoop {
   class _Scheduler {
     class _ScheduleTask {
       friend _Scheduler;
-
       template <class _Receiver>
       friend auto Connect(const _ScheduleTask& self, _Receiver&& rcvr)
           -> __impl::_Operation<std::decay_t<_Receiver>> {
         return {(_Receiver &&) rcvr, self.loop_};
       }
-
       explicit _ScheduleTask(RunLoop* loop) noexcept : loop_(loop) {}
-
       RunLoop* const loop_;
     };
-
     friend RunLoop;
-
     explicit _Scheduler(RunLoop* loop) noexcept : loop_(loop) {}
 
    public:
     friend _ScheduleTask Schedule(const _Scheduler& self) noexcept { return self._Schedule(); }
-
     bool operator==(const _Scheduler& other) const noexcept { return loop_ == other.loop_; }
 
    private:
     _ScheduleTask _Schedule() const noexcept { return _ScheduleTask{loop_}; }
-
     RunLoop* loop_;
   };
-
   _Scheduler GetScheduler() { return _Scheduler{this}; }
-
   void _Run();
-
   void _Finish();
 
  private:
   void _push_back(__impl::_Task* task);
-
   __impl::_Task* _pop_front();
 
   std::mutex mutex_;
@@ -765,11 +845,11 @@ struct _Receiver {
 
 }  // namespace __sync_wait
 
-template <class S, std::enable_if_t<_has_completion_scheduler<S>, bool> = true>
-Value SyncWait(S&& sender) {
-  auto scheduler = GetCompletionScheduler(sender);
-  return SyncWait(scheduler, sender);
-}
+//template <class S, std::enable_if_t<_has_completion_scheduler<S>, bool> = true>
+//Value SyncWait(S&& sender) {
+//  auto scheduler = GetCompletionScheduler(sender);
+//  return SyncWait(scheduler, sender);
+//}
 
 template <class S>
 Value _SyncWaitDefault(S&& sndr) {
@@ -784,7 +864,7 @@ Value _SyncWaitDefault(S&& sndr) {
   return data;
 }
 
-template <class S, std::enable_if_t<!_has_completion_scheduler<S>, bool> = true>
+template <class S>//, std::enable_if_t<!_has_completion_scheduler<S>, bool> = true>
 Value SyncWait(S&& sndr) {
   return _SyncWaitDefault((S &&) sndr);
 }

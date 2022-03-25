@@ -1,9 +1,16 @@
+#include <chrono>
+
 #include "catch.hpp"
 #include "core/utils/formatter.h"
 #include "experimental/execution/static_thread_pool.h"
 #include "experimental/execution/type_erased.h"
 
 using namespace mmdeploy;
+
+__static_thread_pool::StaticThreadPool& gThreadPool() {
+  static __static_thread_pool::StaticThreadPool instance;
+  return instance;
+}
 
 TEST_CASE("test basic execution", "[execution]") {
   InlineScheduler sch;
@@ -47,13 +54,10 @@ void Func() {
     return d;
   });
   auto v = SyncWait(b);
-
   MMDEPLOY_ERROR("v = {}", v);
 }
 
-TEST_CASE("test let_value", "[execution]") {
-  Func();
-}
+TEST_CASE("test let_value", "[execution]") { Func(); }
 
 TEST_CASE("test fork-join", "[execution]") {
   auto a = Just({{"x", 100}, {"y", 1000}});
@@ -65,12 +69,43 @@ TEST_CASE("test fork-join", "[execution]") {
   MMDEPLOY_ERROR("v = {}", v);
 }
 
-TEST_CASE("test thread pool", "[execution]") {}
+TEST_CASE("test ensure_started", "[execution]") {
+  auto s = Schedule(gThreadPool().GetScheduler());
+  auto a = Then(s, []() -> Value {
+    MMDEPLOY_INFO("ensure_started sleep start...");
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    MMDEPLOY_INFO("ensure_started sleep end");
+    return 23333;
+  });
+  MMDEPLOY_INFO("ensure_started call");
+  auto c = EnsureStarted(a);
+  MMDEPLOY_INFO("ensure_started ret");
+  std::this_thread::sleep_for(std::chrono::milliseconds(500));
+  MMDEPLOY_INFO("ensure_started sync_wait");
+  auto v = SyncWait(c);
+  MMDEPLOY_ERROR("ensure_started: {}", v);
+}
+
+TEST_CASE("test start_detached", "[execution]") {
+  {
+    auto s = Schedule(gThreadPool().GetScheduler());
+    auto a = Then(s, [] {
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+      return Value(100);
+    });
+    auto b = Then(a, [](...) {
+      MMDEPLOY_INFO("OK");
+      return Value(200);
+    });
+    StartDetached(b);
+    MMDEPLOY_INFO("StartDetached ret");
+  }
+//  gThreadPool().RequestStop();
+}
 
 TEST_CASE("test on", "[execution]") {
   auto a = Just(100);
-  __static_thread_pool::StaticThreadPool pool;
-  auto b = On(pool.GetScheduler(), a);
+  auto b = On(gThreadPool().GetScheduler(), a);
   auto c = SyncWait(b);
   MMDEPLOY_ERROR("c = {}", c);
 }
@@ -93,4 +128,37 @@ TEST_CASE("test executor C API", "[execution]") {
   auto c = mmdeploy_executor_sync_wait(b);
   REQUIRE(c);
   MMDEPLOY_CRITICAL("{}", *(Value*)c);
+}
+
+auto Gen(int k) {
+  return [k](...) -> Value {
+    MMDEPLOY_INFO("{}: start sleeping", k);
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    MMDEPLOY_INFO("{}: done sleeping", k);
+    return k;
+  };
+}
+
+void Fn() {
+  auto sched = gThreadPool().GetScheduler();
+//  auto sched = InlineScheduler{};
+  auto begin = Schedule(sched);
+  auto a = Then(begin, []() -> Value { return 100; });
+  auto b = LetValue(a, [&](Value& v) {
+    auto b1 = Then(Schedule(sched), Gen(1));
+    auto b2 = Then(Schedule(sched), Gen(2));
+    auto b3 = Then(Schedule(sched), Gen(3));
+    return WhenAll(b1, b2, b3);
+  });
+//  auto s = Split(a);
+//  auto b1 = Then(s, Gen(1));
+//  auto b2 = Then(s, Gen(2));
+//  auto b3 = Then(s, Gen(3));
+//  auto c = Transfer(WhenAll(b1, b2, b3), sched);
+  auto v = SyncWait(b);
+  MMDEPLOY_INFO("threaded split: {}", v);
+}
+
+TEST_CASE("test threaded split", "[execution1]") {
+  Fn();
 }
