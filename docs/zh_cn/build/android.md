@@ -1,10 +1,10 @@
 # Android 下构建方式
 
-- [Android 下构建方式](#Android 下构建方式)
+- [Android 下构建方式](#android-下构建方式)
   - [源码安装](#源码安装)
     - [安装构建和编译工具链](#安装构建和编译工具链)
     - [安装依赖包](#安装依赖包)
-      - [安装 MMDeploy SDK 依赖](#安装-MMDeploy-SDK-依赖)
+      - [安装 MMDeploy SDK 依赖](#安装-mmdeploy-sdk-依赖)
     - [编译 MMDeploy](#编译-mmdeploy)
       - [编译选项说明](#编译选项说明)
       - [编译 SDK](#编译-sdk)
@@ -32,13 +32,9 @@ MMDeploy 的交叉编译分为两步:
     **保证 cmake的版本 >= 3.14.0**. 如果不是,可以参考以下命令安装 3.20.0 版本. 如要获取其他版本,请参考 [这里](https://cmake.org/install)
 
     ```bash
-    sudo apt-get install -y libssl-dev
-    wget https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0.tar.gz
-    tar -zxvf cmake-3.20.0.tar.gz
-    cd cmake-3.20.0
-    ./bootstrap
-    make
-    sudo make install
+    wget https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0-linux-x86_64.tar.gz
+    tar -xzvf cmake-3.20.0-linux-x86_64.tar.gz
+    sudo ln -sf $(pwd)/cmake-3.20.0-linux-x86_64/bin/* /usr/bin/
     ```
 
 - ANDROID NDK 19+
@@ -201,5 +197,5 @@ cmake .. \
       -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake \
       -DANDROID_ABI=arm64-v8a \
       -DANDROID_PLATFORM=android-30
-cmake --build . -- -j$(nproc)
+make -j$(nproc)
 ```

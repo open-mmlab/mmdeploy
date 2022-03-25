@@ -36,4 +36,5 @@
 根据您的目标平台，点击如下对应的链接，按照说明编译 MMDeploy
 - [Linux-x86_64](build/linux.md)
 - [Windows](build/windows.md)
+- [Android-aarch64](build/android.md)
 - [NVIDIA Jetson](../en/tutorials/how_to_install_mmdeploy_on_jetsons.md)

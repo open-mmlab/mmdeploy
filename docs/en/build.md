@@ -36,4 +36,5 @@ Note:
 Please visit the following links to find out how to build MMDeploy according to the target platform.
 - [Linux-x86_64](build/linux.md)
 - [Windows](build/windows.md)
+- [Android-aarch64](build/android.md)
 - [NVIDIA Jetson](tutorials/how_to_install_mmdeploy_on_jetsons.md)
