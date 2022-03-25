@@ -1,15 +1,6 @@
-import logging
-
 from setuptools import find_packages, setup
 
 version_file = 'mmdeploy/version.py'
-
-try:
-    from torch.utils.cpp_extension import BuildExtension
-    cmd_class = {'build_ext': BuildExtension}
-except ModuleNotFoundError:
-    cmd_class = {}
-    logging.warning('Skip building ext ops due to the absence of torch.')
 
 
 def readme():
@@ -135,5 +126,5 @@ if __name__ == '__main__':
             'optional': parse_requirements('requirements/optional.txt'),
         },
         ext_modules=[],
-        cmdclass=cmd_class,
+        cmdclass={},
         zip_safe=False)
