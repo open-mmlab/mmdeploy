@@ -34,7 +34,7 @@ SyncOnScopeExit::~SyncOnScopeExit() {
     if (!stream_.Wait()) {
       MMDEPLOY_ERROR("Implicit stream synchronization failed.");
     } else {
-      MMDEPLOY_INFO("Implicit stream synchronization succeeded.");
+      MMDEPLOY_DEBUG("Implicit stream synchronization succeeded.");
     }
   }
 }
