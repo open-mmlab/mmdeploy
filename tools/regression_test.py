@@ -13,7 +13,8 @@ from torch.hub import download_url_to_file
 from torch.multiprocessing import Process, set_start_method
 
 from mmdeploy.apis import torch2onnx, build_task_processor
-from mmdeploy.utils import get_root_logger, load_config, target_wrapper, parse_device_id
+from mmdeploy.utils import (get_root_logger, load_config,
+                            target_wrapper, parse_device_id)
 from mmdeploy.utils.timer import TimeCounter
 
 
@@ -91,13 +92,15 @@ def get_model_metafile_info(global_info, model_info, logger):
 
         # Download weight
         logger.info(f'Downloading {weights_url} to {weights_save_path}')
-        download_url_to_file(weights_url, str(weights_save_path), progress=True)
+        download_url_to_file(weights_url,
+                             str(weights_save_path),
+                             progress=True)
 
         # check weather the weight download successful
         if not weights_save_path.exists():
             raise FileExistsError(f'Weight {weights_name} download fail')
 
-    logger.info(f'All models had been downloaded successful.')
+    logger.info('All models had been downloaded successful !')
     return model_meta_info, checkpoint_save_dir, codebase_dir
 
 
@@ -148,7 +151,12 @@ def update_report(report_dict,
     report_dict.get('test_pass').append(test_pass)
 
 
-def get_pytorch_result(model_name, meta_info, checkpoint_path, model_config_name, metric_tolerance, report_dict,
+def get_pytorch_result(model_name,
+                       meta_info,
+                       checkpoint_path,
+                       model_config_name,
+                       metric_tolerance,
+                       report_dict,
                        logger):
     """Get metric from metafile info of the model
 
@@ -156,8 +164,8 @@ def get_pytorch_result(model_name, meta_info, checkpoint_path, model_config_name
         model_name (str): Name of model.
         meta_info (dict): Metafile info from model's metafile.yml.
         checkpoint_path (Path): Checkpoint path.
-        metric_tolerance (dict):Tolerance for metrics.
         model_config_name (Path):  Model config name for getting meta info
+        metric_tolerance (dict):Tolerance for metrics.
         report_dict (dict): Report info dict.
         logger (logging.Logger): Logger.
 
@@ -180,7 +188,8 @@ def get_pytorch_result(model_name, meta_info, checkpoint_path, model_config_name
 
     # update useless metric
     metric_all_list = [str(metric) for metric in metric_tolerance]
-    metric_useless = set(metric_all_list) - set([str(metric).replace(' ', '_') for metric in pytorch_metric])
+    metric_useless = set(metric_all_list) - set(
+        [str(metric).replace(' ', '_') for metric in pytorch_metric])
     for metric in metric_useless:
         metric_list.append({metric: '-'})
 
@@ -247,8 +256,13 @@ def get_info_from_log_file(info_type, log_path):
     return info_value
 
 
-def test_backends(deploy_cfg, model_cfg, checkpoint_path, device, work_dir,
-                  metrics_name, logger, metric_exchange_dict):
+def test_backends(deploy_cfg,
+                  model_cfg,
+                  checkpoint_path,
+                  device,
+                  metrics_name,
+                  logger,
+                  metric_info_dict):
     """Test the backend.
 
     Args:
@@ -256,7 +270,6 @@ def test_backends(deploy_cfg, model_cfg, checkpoint_path, device, work_dir,
         model_cfg (mmcv.Config): Model config file path.
         checkpoint_path (Path): Backend converted model file path.
         device (str): A string specifying device, defaults to 'cuda:0'.
-        work_dir (str): A working directory.
         metrics_name (str): Evaluation metrics, which depends on
             the codebase and the dataset, e.g., "bbox", "segm", "proposal"
             for COCO, and "mAP", "recall" for PASCAL VOC in mmdet;
@@ -265,6 +278,7 @@ def test_backends(deploy_cfg, model_cfg, checkpoint_path, device, work_dir,
             "OP", "OR", "OF1" for multi-label dataset in mmcls.
             Defaults is `None`.
         logger (logging.Logger): Logger.
+        metric_info_dict (dict): Metric info dict.
 
     Returns:
         Dict: metric info of the model
@@ -312,8 +326,10 @@ def test_backends(deploy_cfg, model_cfg, checkpoint_path, device, work_dir,
             log_interval=100,
             with_sync=with_sync,
             file=str(log_path)):
-        outputs = task_processor.single_gpu_test(model, data_loader,
-                                                 show=False, out_dir=None)
+        outputs = task_processor.single_gpu_test(model,
+                                                 data_loader,
+                                                 show=False,
+                                                 out_dir=None)
 
     fps = get_info_from_log_file('FPS', log_path)
     print(f'Got fps = {fps}')
@@ -329,7 +345,8 @@ def test_backends(deploy_cfg, model_cfg, checkpoint_path, device, work_dir,
                                                       log_file=str(log_path))
     print(f'Got evaluate_result = {evaluate_result}')
 
-    metric_eval_name = metric_exchange_dict.get(metrics_name, {}).get('metric_name', '0.00')
+    metric_eval_name = \
+        metric_info_dict.get(metrics_name, {}).get('metric_name', '0.00')
     print(f'Got metric_eval_name = {metric_eval_name}')
 
     metric = evaluate_result.get(metric_eval_name, 0.00) * 100
@@ -363,9 +380,17 @@ def create_process(name, target, args, kwargs, ret_value=None):
     return False
 
 
-def get_backend_result(backends_info, model_cfg_path, deploy_config_dir, checkpoint_path,
-                       work_dir, device, pytorch_metric, metric_tolerance, report_dict,
-                       logger, backends_name):
+def get_backend_result(backends_info,
+                       model_cfg_path,
+                       deploy_config_dir,
+                       checkpoint_path,
+                       work_dir,
+                       device,
+                       pytorch_metric,
+                       metric_tolerance,
+                       report_dict,
+                       logger,
+                       backends_name):
     """Convert model to onnx and then get metric.
 
     Args:
@@ -397,7 +422,7 @@ def get_backend_result(backends_info, model_cfg_path, deploy_config_dir, checkpo
         }
     }
 
-    metric_exchange_dict = {
+    metric_info_dict = {
         # mmdet
         'bbox': {
             'meta_name': 'box_AP',
@@ -415,7 +440,8 @@ def get_backend_result(backends_info, model_cfg_path, deploy_config_dir, checkpo
 
     performance_align = backends_info.get('performance_align', False)
 
-    metric_name_list = [str(metric).replace(' ', '_') for metric in pytorch_metric]
+    metric_name_list = [str(metric).replace(' ', '_')
+                        for metric in pytorch_metric]
     assert len(metric_name_list) > 0
 
     metric_all_list = [str(metric) for metric in metric_tolerance]
@@ -424,28 +450,38 @@ def get_backend_result(backends_info, model_cfg_path, deploy_config_dir, checkpo
         for fp_size, deploy_cfg in deploy_cfg_info.items():
             if deploy_cfg is None:
                 continue
+            # fake image
+            img = (np.ones((425, 640, 3))).astype(np.uint8)
             fps = ''
-            img = (np.ones((425, 640, 3))).astype(np.uint8)  # fake image
             metric_list = []
             test_pass = True
 
+            backends_name_info = backend_exchange_info.get(backends_name, {})
+
             # file path
-            backend_suffix = backend_exchange_info.get(backends_name).get('suffix')
+            backend_suffix = backends_name_info.get('suffix')
             backend_output_path = Path(work_dir). \
                 joinpath(Path(checkpoint_path).parent.parent.name,
                          Path(checkpoint_path).parent.name,
                          infer_type,
-                         Path(checkpoint_path).name).with_suffix(backend_suffix).absolute()
+                         Path(checkpoint_path).name). \
+                with_suffix(backend_suffix)
+            backend_output_path = backend_output_path.absolute().resolve()
             backend_output_path.parent.mkdir(parents=True, exist_ok=True)
-            deploy_cfg_path = Path(deploy_config_dir).joinpath(deploy_cfg).absolute()
-            logger.info(f'torch2onnx: \n\tmodel_cfg: {model_cfg_path.absolute()} '
-                        f'\n\tdeploy_cfg: {deploy_cfg_path}')
+            deploy_cfg_path = Path(deploy_config_dir, deploy_cfg).absolute()
 
             # convert the model
             ret_value = mp.Value('d', 0, lock=False)
+            process_name = backends_name_info.get('function_name', None)
+            process_target = backends_name_info.get('function', None)
+
+            logger.info(f'{process_name}: '
+                        f'\n\tmodel_cfg: {model_cfg_path.absolute()} '
+                        f'\n\tdeploy_cfg: {deploy_cfg_path}')
+
             convert_result = create_process(
-                backend_exchange_info.get(backends_name).get('function_name', None),
-                target=backend_exchange_info.get(backends_name).get('function', None),
+                process_name,
+                target=process_target,
                 args=(img,
                       str(work_dir),
                       str(backend_output_path),
@@ -461,31 +497,36 @@ def get_backend_result(backends_info, model_cfg_path, deploy_config_dir, checkpo
                     performance_align:
 
                 # load deploy_cfg
-                deploy_cfg, model_cfg = load_config(str(deploy_cfg_path),
-                                                    str(model_cfg_path.absolute()))
+                deploy_cfg, model_cfg = \
+                    load_config(str(deploy_cfg_path),
+                                str(model_cfg_path.absolute()))
                 # Get evaluation metric from model config
                 metrics_eval_list = model_cfg.evaluation.get('metric', [])
                 assert len(metrics_eval_list) > 0
                 print(f'Got metrics_eval_list = {metrics_eval_list}')
 
                 # test the model metric
+                device_type = 'cuda' if device != '-1' else 'cpu'
                 for metric_name in metrics_eval_list:
-                    metric_value, fps = test_backends(deploy_cfg=deploy_cfg,
-                                                      model_cfg=model_cfg,
-                                                      checkpoint_path=backend_output_path.resolve(),
-                                                      device='cuda' if device != '-1' else 'cpu',
-                                                      work_dir=str(backend_output_path.parent),
-                                                      metrics_name=metric_name,
-                                                      logger=logger,
-                                                      metric_exchange_dict=metric_exchange_dict)
+                    metric_value, fps = \
+                        test_backends(deploy_cfg=deploy_cfg,
+                                      model_cfg=model_cfg,
+                                      checkpoint_path=backend_output_path,
+                                      device=device_type,
+                                      metrics_name=metric_name,
+                                      logger=logger,
+                                      metric_info_dict=metric_info_dict)
 
-                    metric_name = metric_exchange_dict.get(metric_name, {}).get('meta_name', None)
+                    metric_name = metric_info_dict. \
+                        get(metric_name, {}).get('meta_name', None)
                     if metric_name is None:
-                        print(f'metrics_eval_list: {metrics_eval_list} has not exchange name')
+                        logger.error(f'metrics_eval_list: {metrics_eval_list} '
+                                     'has not info name')
                     assert metric_name is not None
 
                     metric_list.append({metric_name: metric_value})
-                    metric_pytorch = pytorch_metric.get(str(metric_name).replace('_', ' '))
+                    metric_pytorch = \
+                        pytorch_metric.get(str(metric_name).replace('_', ' '))
                     metric_tolerance_value = metric_tolerance.get(metric_name)
                     if (metric_value - metric_tolerance_value) <= \
                             metric_pytorch < \
@@ -561,7 +602,8 @@ def main():
         with open(deploy_yaml) as f:
             yaml_info = yaml.load(f, Loader=yaml.FullLoader)
 
-        report_save_path = work_dir.joinpath(Path(deploy_yaml).stem + '_report.xlsx')
+        report_save_path = \
+            work_dir.joinpath(Path(deploy_yaml).stem + '_report.xlsx')
         report_dict = {
             'model_name': [],
             'model_config': [],
@@ -591,7 +633,8 @@ def main():
             model_metafile_info, checkpoint_save_dir, codebase_dir = \
                 get_model_metafile_info(global_info, models, logger)
             for model_config in model_metafile_info:
-                logger.info(f'Processing regression test for {model_config}.py...')
+                logger.info('Processing regression test '
+                            f'for {model_config}.py...')
 
                 # get backends info
                 backends_info = models.get('backends', None)
@@ -600,24 +643,39 @@ def main():
 
                 # get model config path
                 model_cfg_path = Path(codebase_dir). \
-                    joinpath(models.get("codebase_model_config_dir", ""), model_config).with_suffix('.py')
+                    joinpath(models.get("codebase_model_config_dir", ""),
+                             model_config).with_suffix('.py')
                 assert model_cfg_path.exists()
 
                 # get checkpoint path
-                checkpoint_name = Path(model_metafile_info.get(model_config).get('Weights')).name
-                checkpoint_path = Path(checkpoint_save_dir).joinpath(checkpoint_name)
+                checkpoint_name = Path(model_metafile_info.
+                                       get(model_config).get('Weights')).name
+                checkpoint_path = Path(checkpoint_save_dir, checkpoint_name)
                 assert checkpoint_path.exists()
 
                 # get deploy config directory
                 deploy_config_dir = models.get('deploy_config_dir', '')
                 assert deploy_config_dir != ''
 
-                pytorch_metric = get_pytorch_result(models.get('name'), model_metafile_info, checkpoint_path,
-                                                    model_cfg_path, metric_tolerance, report_dict, logger)
+                pytorch_metric = get_pytorch_result(models.get('name'),
+                                                    model_metafile_info,
+                                                    checkpoint_path,
+                                                    model_cfg_path,
+                                                    metric_tolerance,
+                                                    report_dict,
+                                                    logger)
 
-                backend_result_function = partial(get_backend_result, backends_info, model_cfg_path, deploy_config_dir,
-                                                  checkpoint_path, work_dir, args.device_id, pytorch_metric,
-                                                  metric_tolerance, report_dict, logger)
+                backend_result_function = partial(get_backend_result,
+                                                  backends_info,
+                                                  model_cfg_path,
+                                                  deploy_config_dir,
+                                                  checkpoint_path,
+                                                  work_dir,
+                                                  args.device_id,
+                                                  pytorch_metric,
+                                                  metric_tolerance,
+                                                  report_dict,
+                                                  logger)
 
                 backend_result_function('onnxruntime')
                 # backend_result_function('tensorrt')
