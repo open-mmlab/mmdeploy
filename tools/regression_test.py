@@ -529,7 +529,7 @@ def get_backend_result(backends_info,
                         pytorch_metric.get(str(metric_name).replace('_', ' '))
                     metric_tolerance_value = metric_tolerance.get(metric_name)
                     if (metric_value - metric_tolerance_value) <= \
-                            metric_pytorch < \
+                            metric_pytorch <= \
                             (metric_value + metric_tolerance_value):
                         test_pass = True
                     else:
@@ -678,7 +678,7 @@ def main():
                                                   logger)
 
                 backend_result_function('onnxruntime')
-                # backend_result_function('tensorrt')
+                backend_result_function('tensorrt')
                 # backend_result_function('openvino')
                 # backend_result_function('ncnn')
                 # backend_result_function('pplnn')
