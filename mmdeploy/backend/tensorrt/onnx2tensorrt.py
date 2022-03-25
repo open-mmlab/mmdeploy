@@ -21,6 +21,17 @@ def onnx2tensorrt(work_dir: str,
                   **kwargs):
     """Convert ONNX to TensorRT.
 
+    Examples:
+        >>> from mmdeploy.backend.tensorrt.onnx2tensorrt import onnx2tensorrt
+        >>> work_dir = 'work_dir'
+        >>> save_file = 'end2end.engine'
+        >>> model_id = 0
+        >>> deploy_cfg = 'configs/mmdet/detection/' \
+                'detection_tensorrt_dynamic-320x320-1344x1344.py'
+        >>> onnx_model = 'work_dir/end2end.onnx'
+        >>> onnx2tensorrt(work_dir, save_file, model_id, deploy_cfg, \
+                onnx_model, 'cuda:0')
+
     Args:
         work_dir (str): A working directory.
         save_file (str): The base name of the file to save TensorRT engine.

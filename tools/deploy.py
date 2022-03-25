@@ -29,7 +29,8 @@ def parse_args():
     parser.add_argument('--work-dir', help='the dir to save logs and models')
     parser.add_argument(
         '--calib-dataset-cfg',
-        help='dataset config path used to calibrate.',
+        help='dataset config path used to calibrate in int8 mode. If not \
+            specified,it will use "val" dataset in model config instead.',
         default=None)
     parser.add_argument(
         '--device', help='device used for conversion', default='cpu')
@@ -246,30 +247,37 @@ def main():
 
     if args.test_img is None:
         args.test_img = args.img
-    # visualize model of the backend
-    create_process(
-        f'visualize {backend.value} model',
-        target=visualize_model,
-        args=(model_cfg_path, deploy_cfg_path, backend_files, args.test_img,
-              args.device),
-        kwargs=dict(
-            backend=backend,
-            output_file=osp.join(args.work_dir, f'output_{backend.value}.jpg'),
-            show_result=args.show),
-        ret_value=ret_value)
+    import os
+    is_display = os.getenv('DISPLAY')
+    # for headless installation.
+    if is_display is not None:
+        # visualize model of the backend
+        create_process(
+            f'visualize {backend.value} model',
+            target=visualize_model,
+            args=(model_cfg_path, deploy_cfg_path, backend_files,
+                  args.test_img, args.device),
+            kwargs=dict(
+                backend=backend,
+                output_file=osp.join(args.work_dir,
+                                     f'output_{backend.value}.jpg'),
+                show_result=args.show),
+            ret_value=ret_value)
 
-    # visualize pytorch model
-    create_process(
-        'visualize pytorch model',
-        target=visualize_model,
-        args=(model_cfg_path, deploy_cfg_path, [checkpoint_path],
-              args.test_img, args.device),
-        kwargs=dict(
-            backend=Backend.PYTORCH,
-            output_file=osp.join(args.work_dir, 'output_pytorch.jpg'),
-            show_result=args.show),
-        ret_value=ret_value)
-
+        # visualize pytorch model
+        create_process(
+            'visualize pytorch model',
+            target=visualize_model,
+            args=(model_cfg_path, deploy_cfg_path, [checkpoint_path],
+                  args.test_img, args.device),
+            kwargs=dict(
+                backend=Backend.PYTORCH,
+                output_file=osp.join(args.work_dir, 'output_pytorch.jpg'),
+                show_result=args.show),
+            ret_value=ret_value)
+    else:
+        logger.warning('\"visualize_model\" has been skipped may be because it\'s \
+            running on a headless device.')
     logger.info('All process success.')
 
 

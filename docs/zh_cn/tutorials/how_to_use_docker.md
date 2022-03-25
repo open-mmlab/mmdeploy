@@ -21,6 +21,17 @@ cd mmdeploy
 docker build docker/GPU/ -t mmdeploy:0.1.0 --build-arg  VERSION=0.1.0
 ```
 
+要切换成阿里源安装依赖，我们可以将 `--build-arg USE_SRC_INSIDE=${USE_SRC_INSIDE}` 附加到构建命令中。
+```
+# 以 GPU 为例
+cd mmdeploy
+docker build docker/GPU/ -t mmdeploy:inside --build-arg  USE_SRC_INSIDE=true
+
+# 以 CPU 为例
+cd mmdeploy
+docker build docker/CPU/ -t mmdeploy:inside --build-arg  USE_SRC_INSIDE=true
+```
+
 ### 运行 docker 容器
 
 构建 docker 镜像成功后，我们可以使用 `docker run` 启动 docker 服务。 GPU 镜像为例：
@@ -32,7 +43,7 @@ docker run --gpus all -it -p 8080:8081 mmdeploy:master-gpu
 
 1. CUDA error: the provided PTX was compiled with an unsupported toolchain:
 
-    如 [这里](https://forums.developer.nvidia.com/t/cuda-error-the-provided-ptx-was-compiled-with-an-unsupported-toolchain/185754)所说，更新 GPU 的驱动到你的GPU能使用的最新版本。
+    如 [这里](https://forums.developer.nvidia.com/t/cuda-error-the-provided-ptx-was-compiled-with-an-unsupported-toolchain/185754)所说，更新 GPU 的驱动到您的GPU能使用的最新版本。
 
 2. docker: Error response from daemon: could not select device driver "" with capabilities: [[gpu]].
     ```

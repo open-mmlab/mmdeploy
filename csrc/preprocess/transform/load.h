@@ -11,7 +11,7 @@ namespace mmdeploy {
 class MMDEPLOY_API PrepareImageImpl : public TransformImpl {
  public:
   explicit PrepareImageImpl(const Value& args);
-  ~PrepareImageImpl() = default;
+  ~PrepareImageImpl() override = default;
 
   Result<Value> Process(const Value& input) override;
 
@@ -32,7 +32,7 @@ class MMDEPLOY_API PrepareImageImpl : public TransformImpl {
 class MMDEPLOY_API PrepareImage : public Transform {
  public:
   explicit PrepareImage(const Value& args, int version = 0);
-  ~PrepareImage() = default;
+  ~PrepareImage() override = default;
 
   Result<Value> Process(const Value& input) override { return impl_->Process(input); }
 

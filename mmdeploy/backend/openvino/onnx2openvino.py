@@ -58,6 +58,14 @@ def onnx2openvino(input_info: Dict[str, Union[List[int], torch.Size]],
                   output_names: List[str], onnx_path: str, work_dir: str):
     """Convert ONNX to OpenVINO.
 
+    Examples:
+        >>> from mmdeploy.backend.openvino.onnx2openvino import onnx2openvino
+        >>> input_info = {'input': [1,3,800,1344]}
+        >>> output_names = ['dets', 'labels']
+        >>> onnx_path = 'work_dir/end2end.onnx'
+        >>> work_dir = 'work_dir'
+        >>> onnx2openvino(input_info, output_names, onnx_path, work_dir)
+
     Args:
         input_info (Dict[str, Union[List[int], torch.Size]]):
             The shape of each input.

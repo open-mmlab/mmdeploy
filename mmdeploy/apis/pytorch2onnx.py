@@ -32,6 +32,8 @@ def torch2onnx_impl(model: torch.nn.Module, input: torch.Tensor,
     output_names = onnx_cfg['output_names']
     axis_names = input_names + output_names
     dynamic_axes = get_dynamic_axes(deploy_cfg, axis_names)
+    verbose = not onnx_cfg.get('strip_doc_string', True) or onnx_cfg.get(
+        'verbose', False)
 
     # patch model
     patched_model = patch_model(model, cfg=deploy_cfg, backend=backend)
@@ -50,7 +52,7 @@ def torch2onnx_impl(model: torch.nn.Module, input: torch.Tensor,
             dynamic_axes=dynamic_axes,
             keep_initializers_as_inputs=onnx_cfg[
                 'keep_initializers_as_inputs'],
-            strip_doc_string=onnx_cfg.get('strip_doc_string', True))
+            verbose=verbose)
 
 
 def torch2onnx(img: Any,
@@ -61,6 +63,21 @@ def torch2onnx(img: Any,
                model_checkpoint: Optional[str] = None,
                device: str = 'cuda:0'):
     """Convert PyTorch model to ONNX model.
+
+    Examples:
+        >>> from mmdeploy.apis import torch2onnx
+        >>> img = 'demo.jpg'
+        >>> work_dir = 'work_dir'
+        >>> save_file = 'fcos.onnx'
+        >>> deploy_cfg = 'configs/mmdet/detection/' \
+            'detection_onnxruntime_dynamic.py'
+        >>> model_cfg = 'mmdetection/configs/fcos/' \
+            'fcos_r50_caffe_fpn_gn-head_1x_coco.py'
+        >>> model_checkpoint = 'checkpoints/' \
+            'fcos_r50_caffe_fpn_gn-head_1x_coco-821213aa.pth'
+        >>> device = 'cpu'
+        >>> torch2onnx(img, work_dir, save_file, deploy_cfg, \
+            model_cfg, model_checkpoint, device)
 
     Args:
         img (str | np.ndarray | torch.Tensor): Input image used to assist

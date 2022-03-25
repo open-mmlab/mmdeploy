@@ -54,7 +54,7 @@ python ./tools/deploy.py \
 - `img` : The path of image file that used to convert model.
 - `--test-img` : The path of image file that used to test model. If not specified, it will be set to `None`.
 - `--work-dir` : The path of work directory that used to save logs and models.
-- `--calib-dataset-cfg` : Config used for calibration. If not specified, it will be set to `None`.
+- `--calib-dataset-cfg` : Only valid in int8 mode. Config used for calibration. If not specified, it will be set to `None` and  use "val" dataset in model config for calibration.
 - `--device` : The device used for conversion. If not specified, it will be set to `cpu`.
 - `--log-level` : To set log level which in `'CRITICAL', 'FATAL', 'ERROR', 'WARN', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'`. If not specified, it will be set to `INFO`.
 - `--show` : Whether to show detection outputs.

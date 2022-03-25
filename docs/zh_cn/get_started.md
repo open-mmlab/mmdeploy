@@ -1,26 +1,26 @@
 ## 快速上手
 
-MMDeploy提供了一系列工具，帮助你更轻松的将OpenMMLab下的算法部署到各种设备与平台上。你可以使用我们设计的流程一“部”到位，也可以定制你自己的转换流程。这份指引将会向你展示MMDeploy的基本使用方式，并帮助你将 MMDeploy SDK 整合进你的应用。
+MMDeploy提供了一系列工具，帮助您更轻松的将OpenMMLab下的算法部署到各种设备与平台上。您可以使用我们设计的流程一“部”到位，也可以定制您自己的转换流程。这份指引将会向您展示MMDeploy的基本使用方式，并帮助您将 MMDeploy SDK 整合进您的应用。
 
 ### 准备工作
 
-首先我们需要根据[安装指南](./build.md)正确安装MMDeploy。**注意！** 不同推理后端的安装方式略有不同。可以根据下面的介绍选择最适合你的推理后端：
+首先我们需要根据[安装指南](./build.md)正确安装MMDeploy。**注意！** 不同推理后端的安装方式略有不同。可以根据下面的介绍选择最适合您的推理后端：
 
 - [ONNXRuntime](https://mmdeploy.readthedocs.io/en/latest/backends/onnxruntime.html): ONNX Runtime 是一个跨平台的机器学习训练推理加速器，通过图形优化和变换以及硬件加速器提供优秀的推理性能。<span style="color:red">拥有完善的对ONNX的支持</span>。
-- [TensorRT](https://mmdeploy.readthedocs.io/en/latest/backends/tensorrt.html): NVIDIA® TensorRT™ 是一个用于高性能深度学习推理的开发工具包（SDK）。借助Nvidia的设备特性，TensorRT可以优化模型的推理，提供更低的推理延迟以及更高的吞吐量。如果你希望将模型部署在<span style="color:red">NVIDIA硬件设备</span>上，那么TensorRT就是一个合适的选择。
-- [ncnn](https://mmdeploy.readthedocs.io/en/latest/backends/ncnn.html): ncnn 是一个<span style="color:red">为手机端极致优化</span>的高性能神经网络前向计算框架。ncnn 从设计之初深刻考虑手机端的部署和使用。无第三方依赖，跨平台。基于 ncnn，开发者能够将深度学习算法轻松移植到手机端高效执行，开发出人工智能 APP，将 AI 带到你的指尖。
+- [TensorRT](https://mmdeploy.readthedocs.io/en/latest/backends/tensorrt.html): NVIDIA® TensorRT™ 是一个用于高性能深度学习推理的开发工具包（SDK）。借助Nvidia的设备特性，TensorRT可以优化模型的推理，提供更低的推理延迟以及更高的吞吐量。如果您希望将模型部署在<span style="color:red">NVIDIA硬件设备</span>上，那么TensorRT就是一个合适的选择。
+- [ncnn](https://mmdeploy.readthedocs.io/en/latest/backends/ncnn.html): ncnn 是一个<span style="color:red">为手机端极致优化</span>的高性能神经网络前向计算框架。ncnn 从设计之初深刻考虑手机端的部署和使用。无第三方依赖，跨平台。基于 ncnn，开发者能够将深度学习算法轻松移植到手机端高效执行，开发出人工智能 APP，将 AI 带到您的指尖。
 - [PPLNN](https://mmdeploy.readthedocs.io/en/latest/backends/pplnn.html): PPLNN是一个为高效AI推理所开发的高性能深度学习推理引擎。可以用于各种ONNX模型的推理。并且<span style="color:red">对OpenMMLab有非常强的支持</span>。
 - [OpenVINO](https://mmdeploy.readthedocs.io/en/latest/backends/openvino.html): OpenVINO™ 是一个为优化与部署AI推理开发的开源工具集。该工具集<span style="color:red">可无缝集成到 Intel 硬件平台</span>，包括最新的神经网络加速芯片，Intel计算棒，边缘设备等。
 
-选择最适合你的推理后端，点击对应的连接查看具体安装细节
+选择最适合您的推理后端，点击对应的连接查看具体安装细节
 
 ### 模型转换
 
-一旦你完成了MMDeploy的安装，就可以用一条指令轻松的将OpenMMLab的PyTorch模型转换成推理后端支持的格式！以 [MMDetection](https://github.com/open-mmlab/mmdetection) 中的 `Faster-RCNN` 到 `TensorRT` 的转换为例：
+一旦您完成了MMDeploy的安装，就可以用一条指令轻松的将OpenMMLab的PyTorch模型转换成推理后端支持的格式！以 [MMDetection](https://github.com/open-mmlab/mmdetection) 中的 `Faster-RCNN` 到 `TensorRT` 的转换为例：
 
 ```bash
 # 本例假设 MMDeploy 所在目录为 ${MMDEPLOY_DIR}， MMDetection 所在目录为 ${MMDET_DIR}
-# 如果你不知道具体的安装位置，可以在终端通过命令 `pip show mmdeploy` 和 `pip show mmdet` 查看
+# 如果您不知道具体的安装位置，可以在终端通过命令 `pip show mmdeploy` 和 `pip show mmdet` 查看
 
 python ${MMDEPLOY_DIR}/tools/deploy.py \
     ${MMDEPLOY_DIR}/configs/mmdet/detection/detection_tensorrt_dynamic-320x320-1344x1344.py \
@@ -40,11 +40,11 @@ python ${MMDEPLOY_DIR}/tools/deploy.py \
 <任务名>_<推理后端>-[后端特性]_<动态模型支持>.py
 ```
 
-可以很容易的通过文件名来确定最适合的那个配置文件。如果你希望定制自己的转换配置，可以修改配置文件中的具体条目。我们提供了 [如何编写配置文件](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_write_config.html) 来指导你如何进行编辑。
+可以很容易的通过文件名来确定最适合的那个配置文件。如果您希望定制自己的转换配置，可以修改配置文件中的具体条目。我们提供了 [如何编写配置文件](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_write_config.html) 来指导您如何进行编辑。
 
 ### 模型推理
 
-得到了转换后的模型之后，就可以使用推理后端提供的API来进行推理。也许你想绕过API的学习与开发，确认下转换后的模型效果。我们提供了对这些API的统一封装：
+得到了转换后的模型之后，就可以使用推理后端提供的API来进行推理。也许您想绕过API的学习与开发，确认下转换后的模型效果。我们提供了对这些API的统一封装：
 
 ```python
 from mmdeploy.apis import inference_model
@@ -115,7 +115,7 @@ pip install -v -e .
 
 #### 下载 Faster R-CNN 的模型文件
 
-请从[本链接](https://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/faster_rcnn_r50_fpn_1x_coco/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth)下载模型文件，放在`{MMDET_ROOT}/checkpoints`目录下。其中`{MMDET_ROOT}`为你的MMDetection的根目录。
+请从[本链接](https://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/faster_rcnn_r50_fpn_1x_coco/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth)下载模型文件，放在`{MMDET_ROOT}/checkpoints`目录下。其中`{MMDET_ROOT}`为您的MMDetection的根目录。
 
 #### 安装 MMDeploy 以及 ONNX Runtime
 
@@ -170,7 +170,7 @@ make -j$(nproc) && make install
 
 ```bash
 # 本例假设 MMDeploy 所在目录为 ${MMDEPLOY_DIR}， MMDetection 所在目录为 ${MMDET_DIR}
-# 如果你不知道具体的安装位置，可以在终端通过命令 `pip show mmdeploy` 和 `pip show mmdet` 查看
+# 如果您不知道具体的安装位置，可以在终端通过命令 `pip show mmdeploy` 和 `pip show mmdet` 查看
 
 python ${MMDEPLOY_DIR}/tools/deploy.py \
     ${MMDEPLOY_DIR}/configs/mmdet/detection/detection_onnxruntime_dynamic.py \
@@ -209,7 +209,7 @@ export SPDLOG_LEVEL=warn
 
 ### 新模型的支持？
 
-如果你希望使用的模型尚未被 MMDeploy 所支持，你可以尝试自己添加对应的支持。我们准备了如下的文档：
+如果您希望使用的模型尚未被 MMDeploy 所支持，您可以尝试自己添加对应的支持。我们准备了如下的文档：
 - 请阅读[如何支持新模型](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_support_new_models.html)了解我们的模型重写机制。
 
 最后，欢迎大家踊跃提PR。

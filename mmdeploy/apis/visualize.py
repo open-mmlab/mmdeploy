@@ -19,6 +19,18 @@ def visualize_model(model_cfg: Union[str, mmcv.Config],
                     show_result: bool = False):
     """Run inference with PyTorch or backend model and show results.
 
+    Examples:
+        >>> from mmdeploy.apis import visualize_model
+        >>> model_cfg = 'mmdetection/configs/fcos/' \
+            'fcos_r50_caffe_fpn_gn-head_1x_coco.py'
+        >>> deploy_cfg = 'configs/mmdet/detection/' \
+            'detection_onnxruntime_dynamic.py'
+        >>> model = 'work_dir/fcos.onnx'
+        >>> img = 'demo.jpg'
+        >>> device = 'cpu'
+        >>> visualize_model(model_cfg, deploy_cfg, model, \
+            img, device, show_result=True)
+
     Args:
         model_cfg (str | mmcv.Config): Model config file or Config object.
         deploy_cfg (str | mmcv.Config): Deployment config file or Config

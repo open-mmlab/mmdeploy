@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
+from mmcv.ops import RoIAlign
 from torch.autograd import Function
 
 from mmdeploy.core.optimizers import mark
@@ -24,7 +25,9 @@ class MultiLevelRoiAlign(Function):
         finest_scale = args[-3]
         roi_scale_factor = args[-4]
         sampling_ratio = args[-5]
-        output_size = args[-6]
+        pool_mode = args[-6]
+        pool_mode_flag = 0 if pool_mode == 'max' else 1
+        output_size = args[-7]
         inputs = args[:len(featmap_strides)]
         rois = args[len(featmap_strides)]
         return g.op(
@@ -33,6 +36,7 @@ class MultiLevelRoiAlign(Function):
             *inputs,
             output_height_i=output_size[1],
             output_width_i=output_size[0],
+            pool_mode_i=pool_mode_flag,
             sampling_ratio_i=sampling_ratio,
             roi_scale_factor_f=roi_scale_factor,
             finest_scale_i=finest_scale,
@@ -47,7 +51,7 @@ class MultiLevelRoiAlign(Function):
         # finest_scale = args[-3]
         # roi_scale_factor = args[-4]
         # sampling_ratio = args[-5]
-        output_size = args[-6]
+        output_size = args[-7]
         inputs = args[:len(featmap_strides)]
         rois = args[len(featmap_strides)]
 
@@ -75,17 +79,23 @@ def single_roi_extractor__forward__tensorrt(ctx,
     featmap_strides = self.featmap_strides
     finest_scale = self.finest_scale
 
+    for roi_layer in self.roi_layers:
+        assert isinstance(
+            roi_layer,
+            RoIAlign), f'{type(roi_layer)} is not supported in TensorRT.'
+
     roi_layer = self.roi_layers[0]
     out_size = roi_layer.output_size
     sampling_ratio = roi_layer.sampling_ratio
+    pool_mode = roi_layer.pool_mode
     aligned = roi_layer.aligned
     if roi_scale_factor is None:
         roi_scale_factor = 1.0
 
     featmap_strides = [float(s) for s in featmap_strides]
-    return MultiLevelRoiAlign.apply(*feats, rois, out_size, sampling_ratio,
-                                    roi_scale_factor, finest_scale,
-                                    featmap_strides, aligned)
+    return MultiLevelRoiAlign.apply(*feats, rois, out_size, pool_mode,
+                                    sampling_ratio, roi_scale_factor,
+                                    finest_scale, featmap_strides, aligned)
 
 
 @FUNCTION_REWRITER.register_rewriter(
