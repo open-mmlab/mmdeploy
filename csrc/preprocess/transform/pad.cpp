@@ -54,19 +54,16 @@ Result<Value> PadImpl::Process(const Value& input) {
     std::array<int, 4> padding{0, 0, 0, 0};
     if (arg_.pad_to_square) {
       int max_size = std::max(tensor.shape(1), tensor.shape(2));
-
       padding = {0, 0, max_size - width, max_size - height};
       output["pad_fixed_size"].push_back(max_size);
       output["pad_fixed_size"].push_back(max_size);
     } else if (arg_.size[0] != 0 && arg_.size[1] != 0) {
-      output_tensor = tensor;
       padding = {0, 0, arg_.size[1] - width, arg_.size[0] - height};
       output["pad_fixed_size"].push_back(arg_.size[0]);
       output["pad_fixed_size"].push_back(arg_.size[1]);
     } else if (arg_.size_divisor != 1) {
       auto pad_h = (height + arg_.size_divisor - 1) / arg_.size_divisor * arg_.size_divisor;
       auto pad_w = (width + arg_.size_divisor - 1) / arg_.size_divisor * arg_.size_divisor;
-
       padding = {0, 0, pad_w - width, pad_h - height};
       output["pad_size_divisor"] = arg_.size_divisor;
       output["pad_fixed_size"].push_back(pad_h);
