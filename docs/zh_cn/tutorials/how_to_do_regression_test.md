@@ -32,11 +32,11 @@ python ./tools/regression_test.py \
 
 ### 参数解析
 
-- `--deploy-yml` : 需要测试的 codebase， eg.mmdeploy/test/regression/mmdet.yml ，如果设置为 mmdeploy/test/regression/ 即全部测试
-- `--work-dir` : 模型转换、报告生成的路径
-- `--device` : 使用的设备，默认是显卡
-- `--test-type` : 测试模式：convert 测试转换，precision 测试精度
-- `--backend` : 筛选测试的后端, 默认None: 测全部backend,  也可传入若干个后端，例如 "mmdet,mmcls"
+- `--deploy-yml` : 需要测试的 codebase， eg.mmdeploy/test/regression/mmdet.yml ，如果设置为 mmdeploy/test/regression/ 即全部测试。
+- `--work-dir` : 模型转换、报告生成的路径。
+- `--device` : 使用的设备，默认是显卡。
+- `--test-type` : 测试模式：convert 测试转换，precision 测试精度。
+- `--backend` : 筛选测试的后端, 默认None: 测全部backend,  也可传入若干个后端，例如 "mmdet,mmcls"。
 - `--log-level` : 设置日记的等级，选项包括`'CRITICAL'， 'FATAL'， 'ERROR'， 'WARN'， 'WARNING'， 'INFO'， 'DEBUG'， 'NOTSET'`。 默认是`INFO`。
 
 ## 2. 回归测试配置文件
