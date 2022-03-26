@@ -730,6 +730,9 @@ def test_expand(backend,
             save_dir=save_dir)
 
 
+@pytest.mark.parametrize('backend', [TEST_ONNXRT])
+@pytest.mark.parametrize('pool_h,pool_w,spatial_scale,sampling_ratio',
+                         [(2, 2, 1.0, 2), (4, 4, 2.0, 4)])
 def test_roi_align_rotated(backend,
                            pool_h,
                            pool_w,
