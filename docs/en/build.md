@@ -25,7 +25,7 @@ Note:
       git checkout 70a58c5
       ```
   - If it fails when `git clone` via `SSH`, you can try the `HTTPS` protocol like this:
-  
+
     ```bash
     git clone -b master https://github.com/open-mmlab/mmdeploy.git MMDeploy
     cd MMDeploy
