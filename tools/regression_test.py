@@ -1,19 +1,18 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import logging
 import argparse
-from pathlib import Path
+import logging
+import os
 from functools import partial
+from pathlib import Path
 
-import yaml
-import numpy as np
 import pandas as pd
-import torch.multiprocessing as mp
-from torch.hub import download_url_to_file
+import yaml
 from mmcv.parallel import MMDataParallel
-from torch.multiprocessing import Process, set_start_method
+from torch.hub import download_url_to_file
+from torch.multiprocessing import set_start_method
 
-from mmdeploy.apis import torch2onnx, build_task_processor
-from mmdeploy.utils import (load_config, target_wrapper, get_root_logger,
+from mmdeploy.apis import build_task_processor
+from mmdeploy.utils import (load_config, get_root_logger,
                             parse_device_id)
 from mmdeploy.utils.timer import TimeCounter
 
@@ -358,28 +357,6 @@ def test_backends(deploy_cfg,
     return metric, fps
 
 
-def create_process(name, target, args, kwargs, ret_value=None):
-    logger = get_root_logger()
-    logger.info(f'{name} start.')
-    log_level = logger.level
-
-    wrap_func = partial(target_wrapper, target, log_level, ret_value)
-
-    process = Process(target=wrap_func, args=args, kwargs=kwargs)
-    process.start()
-    process.join()
-
-    if ret_value is not None:
-        if ret_value.value != 0:
-            logger.error(f'{name} failed.')
-            return False
-        else:
-            logger.info(f'{name} success.')
-            return True
-
-    return False
-
-
 def get_backend_result(backends_info,
                        model_cfg_path,
                        deploy_config_dir,
@@ -390,7 +367,7 @@ def get_backend_result(backends_info,
                        metric_tolerance,
                        report_dict,
                        logger,
-                       backends_name):
+                       backend_name):
     """Convert model to onnx and then get metric.
 
     Args:
@@ -404,22 +381,19 @@ def get_backend_result(backends_info,
         metric_tolerance (dict):Tolerance for metrics.
         report_dict (dict): Report info dict.
         logger (logging.Logger): Logger.
-        backends_name (str):  Backend name.
+        backend_name (str):  Backend name.
 
     Returns:
         Dict: metric info of the model
     """
 
-    backends_info = backends_info.get(backends_name, [])
+    backends_info = backends_info.get(backend_name, [])
     if len(backends_info) <= 0:
         return {}
 
-    backend_exchange_info = {
-        'onnxruntime': {
-            'suffix': '.onnx',
-            'function': torch2onnx,
-            'function_name': 'torch2onnx',
-        }
+    backend_file_info = {
+        'onnxruntime': 'end2end.onnx',
+        'tensorrt': 'end2end.engine',
     }
 
     metric_info_dict = {
@@ -447,71 +421,73 @@ def get_backend_result(backends_info,
     metric_all_list = [str(metric) for metric in metric_tolerance]
     deploy_cfg_path_list = backends_info.get('deploy_config')
     for infer_type, deploy_cfg_info in deploy_cfg_path_list.items():
-        for fp_size, deploy_cfg in deploy_cfg_info.items():
-            if deploy_cfg is None:
+        for fp_size, deploy_cfg_name in deploy_cfg_info.items():
+            if deploy_cfg_name is None:
                 continue
-            # fake image
-            img = (np.ones((425, 640, 3))).astype(np.uint8)
-            fps = ''
+
             metric_list = []
-            test_pass = True
 
-            backends_name_info = backend_exchange_info.get(backends_name, {})
+            device_type = 'cuda' if device != '-1' else 'cpu'
+            deploy_cfg_path = Path(deploy_config_dir, deploy_cfg_name).absolute()
 
-            # file path
-            backend_suffix = backends_name_info.get('suffix')
             backend_output_path = Path(work_dir). \
                 joinpath(Path(checkpoint_path).parent.parent.name,
                          Path(checkpoint_path).parent.name,
+                         backend_name,
                          infer_type,
-                         Path(checkpoint_path).name). \
-                with_suffix(backend_suffix)
+                         Path(checkpoint_path).stem)
             backend_output_path = backend_output_path.absolute().resolve()
-            backend_output_path.parent.mkdir(parents=True, exist_ok=True)
-            deploy_cfg_path = Path(deploy_config_dir, deploy_cfg).absolute()
+            backend_output_path.mkdir(parents=True, exist_ok=True)
 
-            # convert the model
-            ret_value = mp.Value('d', 0, lock=False)
-            process_name = backends_name_info.get('function_name', None)
-            process_target = backends_name_info.get('function', None)
+            cmd_str = f'cd {str(Path().cwd())} && ' \
+                      'python3 ./tools/deploy.py ' \
+                      f'{str(deploy_cfg_path.absolute().resolve())} ' \
+                      f'{str(model_cfg_path.absolute().resolve())} ' \
+                      f'{str(checkpoint_path.absolute().resolve())} ' \
+                      './tests/data/tiger.jpeg ' \
+                      f'--work-dir {backend_output_path} ' \
+                      f'--device {device_type} ' \
+                      '--log-level INFO'
 
-            logger.info(f'{process_name}: '
-                        f'\n\tmodel_cfg: {model_cfg_path.absolute()} '
-                        f'\n\tdeploy_cfg: {deploy_cfg_path}')
+            print(f'Process cmd = {cmd_str}')
 
-            convert_result = create_process(
-                process_name,
-                target=process_target,
-                args=(img,
-                      str(work_dir),
-                      str(backend_output_path),
-                      str(deploy_cfg_path),
-                      str(model_cfg_path),
-                      str(checkpoint_path)),
-                kwargs=dict(device=device),
-                ret_value=ret_value)
+            # Convert the model to specific backend
+            os.system(cmd_str)
+
+            # check if converted successes or not.
+            convert_checkpoint_path = backend_output_path. \
+                joinpath(backend_file_info.get(backend_name, ''))
+            if convert_checkpoint_path.exists() and \
+                    convert_checkpoint_path.stat().st_size > 0:
+                convert_result = True
+            else:
+                convert_result = False
+            print(f'******** Got convert_result = {convert_result}')
 
             # Test the model
+            fps = '-'
             if convert_result and \
                     infer_type == 'dynamic' and \
                     performance_align:
+
+                test_pass = False
 
                 # load deploy_cfg
                 deploy_cfg, model_cfg = \
                     load_config(str(deploy_cfg_path),
                                 str(model_cfg_path.absolute()))
+
                 # Get evaluation metric from model config
                 metrics_eval_list = model_cfg.evaluation.get('metric', [])
                 assert len(metrics_eval_list) > 0
                 print(f'Got metrics_eval_list = {metrics_eval_list}')
 
                 # test the model metric
-                device_type = 'cuda' if device != '-1' else 'cpu'
                 for metric_name in metrics_eval_list:
                     metric_value, fps = \
                         test_backends(deploy_cfg=deploy_cfg,
                                       model_cfg=model_cfg,
-                                      checkpoint_path=backend_output_path,
+                                      checkpoint_path=convert_checkpoint_path,
                                       device=device_type,
                                       metrics_name=metric_name,
                                       logger=logger,
@@ -551,7 +527,7 @@ def get_backend_result(backends_info,
                 model_config=str(model_cfg_path),
                 model_checkpoint_name=str(checkpoint_path),
                 dataset='',
-                backend_name='onnxruntime',
+                backend_name=backend_name,
                 deploy_config=str(deploy_cfg_path),
                 static_or_dynamic=infer_type,
                 conversion_result=str(convert_result),
