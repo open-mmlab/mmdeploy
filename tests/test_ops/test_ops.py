@@ -16,46 +16,6 @@ TEST_TENSORRT = TestTensorRTExporter()
 TEST_NCNN = TestNCNNExporter()
 
 
-def test_roi_align_rotated(backend,
-                           pool_h,
-                           pool_w,
-                           spatial_scale,
-                           sampling_ratio,
-                           input_list=None,
-                           save_dir=None):
-    backend.check_env()
-
-    if input_list is None:
-        # input = torch.rand(1, 1, 16, 16, dtype=torch.float32)
-        input = torch.tensor([[[[1., 2.], [3., 4.]]]], dtype=torch.float32)
-        single_roi = torch.tensor([[0., 0.5, 0.5, 1., 1., 0]],
-                                  dtype=torch.float32)
-    else:
-        input = torch.tensor(input_list[0], dtype=torch.float32)
-        single_roi = torch.tensor(input_list[1], dtype=torch.float32)
-
-    from mmcv.ops import roi_align_rotated
-
-    def wrapped_function(torch_input, torch_rois):
-        return roi_align_rotated(torch_input, torch_rois, (pool_w, pool_h),
-                                 spatial_scale, sampling_ratio, True, False)
-
-    wrapped_model = WrapFunction(wrapped_function).eval()
-
-    with RewriterContext(
-            Config({'backend_config': {
-                'type': backend.backend_name
-            }}),
-            backend=backend.backend_name,
-            opset=11):
-        backend.run_and_validate(
-            wrapped_model, [input, single_roi],
-            'roi_align_rotated',
-            input_names=['input', 'rois'],
-            output_names=['roi_feat'],
-            save_dir=save_dir)
-
-
 @pytest.mark.parametrize('backend', [TEST_ONNXRT, TEST_TENSORRT])
 @pytest.mark.parametrize('pool_h,pool_w,spatial_scale,sampling_ratio',
                          [(2, 2, 1.0, 2), (4, 4, 2.0, 4)])
@@ -767,4 +727,44 @@ def test_expand(backend,
             'expand',
             input_names=['input', 'shape'],
             output_names=['output'],
+            save_dir=save_dir)
+
+
+def test_roi_align_rotated(backend,
+                           pool_h,
+                           pool_w,
+                           spatial_scale,
+                           sampling_ratio,
+                           input_list=None,
+                           save_dir=None):
+    backend.check_env()
+
+    if input_list is None:
+        # input = torch.rand(1, 1, 16, 16, dtype=torch.float32)
+        input = torch.tensor([[[[1., 2.], [3., 4.]]]], dtype=torch.float32)
+        single_roi = torch.tensor([[0., 0.5, 0.5, 1., 1., 0]],
+                                  dtype=torch.float32)
+    else:
+        input = torch.tensor(input_list[0], dtype=torch.float32)
+        single_roi = torch.tensor(input_list[1], dtype=torch.float32)
+
+    from mmcv.ops import roi_align_rotated
+
+    def wrapped_function(torch_input, torch_rois):
+        return roi_align_rotated(torch_input, torch_rois, (pool_w, pool_h),
+                                 spatial_scale, sampling_ratio, True, False)
+
+    wrapped_model = WrapFunction(wrapped_function).eval()
+
+    with RewriterContext(
+            Config({'backend_config': {
+                'type': backend.backend_name
+            }}),
+            backend=backend.backend_name,
+            opset=11):
+        backend.run_and_validate(
+            wrapped_model, [input, single_roi],
+            'roi_align_rotated',
+            input_names=['input', 'rois'],
+            output_names=['roi_feat'],
             save_dir=save_dir)
