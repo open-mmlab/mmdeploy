@@ -14,7 +14,7 @@ __static_thread_pool::StaticThreadPool& gThreadPool() {
 
 TEST_CASE("test basic execution", "[execution]") {
   InlineScheduler sch;
-  auto a = Just({{"a", 100}, {"b", 200}});
+  auto a = Just(Value{{"a", 100}, {"b", 200}});
   auto b = ScheduleFrom(sch, a);
   //  auto begin = Schedule(sch);
   //  auto b = Then(begin, [] { return Value{{"a", 100}, {"b", 200}}; });
@@ -29,7 +29,7 @@ auto GetKey(Sender&& sndr, const std::string& key) {
 }
 
 TEST_CASE("test split", "[execution]") {
-  auto a = Just({{"x", 100}, {"y", 1000}});
+  auto a = Just(Value{{"x", 100}, {"y", 1000}});
   auto s = Split(a);
   auto x = GetKey(s, "x");
   auto y = GetKey(s, "y");
@@ -47,7 +47,7 @@ TEST_CASE("test when_all", "[execution]") {
 }
 
 void Func() {
-  auto a = Just({100, 200});
+  auto a = Just(Value{100, 200});
   auto b = LetValue(a, [](Value& v) {
     auto c = Just(v[0].get<int>() + v[1].get<int>());
     auto d = Then(std::move(c), [](Value v) -> Value { return v.get<int>() * v.get<int>(); });
@@ -60,7 +60,7 @@ void Func() {
 TEST_CASE("test let_value", "[execution]") { Func(); }
 
 TEST_CASE("test fork-join", "[execution]") {
-  auto a = Just({{"x", 100}, {"y", 1000}});
+  auto a = Just(Value{{"x", 100}, {"y", 1000}});
   auto s = Split(a);
   auto x = GetKey(s, "x");
   auto y = GetKey(s, "y");
@@ -100,7 +100,7 @@ TEST_CASE("test start_detached", "[execution]") {
     StartDetached(b);
     MMDEPLOY_INFO("StartDetached ret");
   }
-//  gThreadPool().RequestStop();
+  //  gThreadPool().RequestStop();
 }
 
 TEST_CASE("test on", "[execution]") {
@@ -140,19 +140,22 @@ auto Gen(int k) {
 }
 
 void Fn() {
-  auto sched = gThreadPool().GetScheduler();
-  //  auto sched = InlineScheduler{};
+  auto pool = __static_thread_pool::StaticThreadPool{1};
+  //  auto sched = pool.GetScheduler();
+  auto sched = InlineScheduler{};
   auto begin = Schedule(sched);
   auto a = Then(begin, []() -> Value { return 100; });
   auto b = LetValue(a, [&](Value& v) {
     auto b1 = Then(Schedule(sched), Gen(1));
     auto b2 = Then(Schedule(sched), Gen(2));
     auto b3 = Then(Schedule(sched), Gen(3));
-    return WhenAll(b1, b2, b3);
+    auto b4 = Then(Schedule(sched), Gen(4));
+    return WhenAll(b1, b2, b3, b4);
   });
   auto v = SyncWait(b);
-  gThreadPool().RequestStop();
   MMDEPLOY_INFO("threaded split: {}", v);
 }
 
 TEST_CASE("test threaded split", "[execution1]") { Fn(); }
+
+TEST_CASE("test inference pipeline", "[execution][pipeline]") {}

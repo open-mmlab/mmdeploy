@@ -78,6 +78,7 @@ class intrusive_queue<Next> {
     } else {
       tail_->*Next = item;
     }
+    tail_ = item;
   }
 
   void append(intrusive_queue other) noexcept {

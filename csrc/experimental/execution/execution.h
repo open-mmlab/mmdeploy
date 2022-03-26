@@ -102,30 +102,40 @@ struct InlineScheduler {
 
 namespace __just {
 
+template <class... Ts>
 struct _Sender {
-  Value v_;
+  std::tuple<Ts...> vals_;
 
-  template <class R>
+  template <class Receiver>
   struct _Operation {
-    Value v_;
-    R r_;
-    friend void Start(_Operation& s) noexcept { SetValue(std::move(s.r_), std::move(s.v_)); }
+    std::tuple<Ts...> vals_;
+    Receiver rcvr_;
+    friend void Start(_Operation& op_state) noexcept {
+      std::apply(
+          [&](Ts&... ts) noexcept -> void {
+            SetValue((Receiver &&) op_state.rcvr_, (Ts &&) ts...);
+          },
+          op_state.vals_);
+    }
   };
 
-  template <class R>
-  friend _Operation<std::decay_t<R>> Connect(_Sender&& s, R&& r) {
-    return {std::move(s).v_, std::forward<R>(r)};
+  template <class Receiver>
+  friend _Operation<std::decay_t<Receiver>> Connect(const _Sender& sndr, Receiver&& rcvr) {
+    return {sndr.vals_, (Receiver &&) rcvr};
   }
 
-  template <class R>
-  friend _Operation<std::decay_t<R>> Connect(const _Sender& s, R&& r) {
-    return {s.v_, std::forward<R>(r)};
+  template <class Receiver>
+  friend _Operation<std::decay_t<Receiver>> Connect(_Sender&& sndr, Receiver&& rcvr) {
+    return {((_Sender &&) sndr).vals_, (Receiver &&) rcvr};
   }
 };
 
 }  // namespace __just
 
-inline __just::_Sender Just(Value v) { return {std::move(v)}; }
+template <class... Ts>
+inline __just::_Sender<std::decay_t<Ts>...> Just(Ts&&... ts) {
+  return {{(Ts &&) ts...}};
+}
 
 namespace __on {
 
