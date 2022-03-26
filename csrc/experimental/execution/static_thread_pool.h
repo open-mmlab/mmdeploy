@@ -172,6 +172,7 @@ inline void StaticThreadPool::Run(std::uint32_t index) noexcept {
     if (task == nullptr) {
       task = thread_states_[index].pop();
       if (task == nullptr) {
+        // request_stop() was called
         return;
       }
     }
@@ -222,12 +223,15 @@ inline TaskBase* StaticThreadPool::ThreadState::pop() {
 }
 
 inline bool StaticThreadPool::ThreadState::try_push(TaskBase* task) {
-  std::unique_lock lock{mutex_, std::try_to_lock};
-  if (!lock) {
-    return false;
+  bool was_empty{};
+  {
+    std::unique_lock lock{mutex_, std::try_to_lock};
+    if (!lock) {
+      return false;
+    }
+    was_empty = queue_.empty();
+    queue_.push_back(task);
   }
-  const bool was_empty = queue_.empty();
-  queue_.push_back(task);
   if (was_empty) {
     cv_.notify_one();
   }
@@ -235,17 +239,22 @@ inline bool StaticThreadPool::ThreadState::try_push(TaskBase* task) {
 }
 
 inline void StaticThreadPool::ThreadState::push(TaskBase* task) {
-  std::lock_guard lock{mutex_};
-  const bool was_empty = queue_.empty();
-  queue_.push_back(task);
+  bool was_empty{};
+  {
+    std::lock_guard lock{mutex_};
+    was_empty = queue_.empty();
+    queue_.push_back(task);
+  }
   if (was_empty) {
     cv_.notify_one();
   }
 }
 
 inline void StaticThreadPool::ThreadState::request_stop() {
-  std::lock_guard lock{mutex_};
-  stop_requested_ = true;
+  {
+    std::lock_guard lock{mutex_};
+    stop_requested_ = true;
+  }
   cv_.notify_one();
 }
 

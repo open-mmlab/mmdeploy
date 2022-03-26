@@ -31,11 +31,20 @@ using __call_result_t = decltype(std::declval<Fun>()(std::declval<As>()...));
 template <class F>
 struct __conv {
   F f_;
-  operator __call_result_t<F>() && { return ((F &&) f_)(); }
+  using type = __call_result_t<F>;
+  operator type() && { return ((F &&) f_)(); }
 };
 
 template <class F>
 __conv(F) -> __conv<F>;
+
+template <class T, class = std::enable_if_t<std::is_destructible_v<T>>>
+struct __conv_proxy {
+  T v_;
+  template <class F>
+  explicit __conv_proxy(F&& f) : v_(((F &&) f)()) {}
+  T& operator*() noexcept { return v_; }
+};
 
 template <class _Member, class _Self>
 _Member _Self::*__memptr(const _Self&);
@@ -213,14 +222,15 @@ struct _Receiver1 {
 
   _Operation1<Scheduler, CvrefSender, Receiver>* op_state_;
 
-//  template <class V, _decays_to<V, Value, bool> = true>
-  template <class...As>
-  friend void SetValue(_Receiver1&& self, As&&...as) {
+  //  template <class V, _decays_to<V, Value, bool> = true>
+  template <class... As>
+  friend void SetValue(_Receiver1&& self, As&&... as) {
     if constexpr (sizeof...(as) == 1) {
-      self.op_state_->data_ = Value(((As&&)as)...);
+      self.op_state_->data_ = Value(((As &&) as)...);
     }
     auto sndr = Schedule(self.op_state_->sched_);
-    self.op_state_->state2_.emplace(Connect(std::move(sndr), Receiver2{self.op_state_}));
+    self.op_state_->state2_.emplace(
+        __conv{[&] { return Connect(std::move(sndr), Receiver2{self.op_state_}); }});
     Start(*self.op_state_->state2_);
   }
 };
@@ -330,7 +340,8 @@ template <class Sender, class Receiver, class Fun>
 struct _Storage {
   using operation_t = connect_result_t<__result_sender_t<Fun, Value>, Receiver>;
   Value data_;
-  std::optional<operation_t> op_state3_;
+  // workaround for MSVC v142 toolset, copy elision does not work here
+  std::optional<__conv_proxy<operation_t>> proxy_;
 };
 
 template <class Sender, class Receiver, class Fun>
@@ -341,11 +352,14 @@ struct _Receiver {
   _Operation<Sender, Receiver, Fun>* op_state_;
 
   friend void SetValue(_Receiver&& self, Value v) noexcept {
-    self.op_state_->storage_.data_ = (Value &&) v;
-    Start(self.op_state_->storage_.op_state3_.emplace(__conv{[&]() {
-      return Connect(std::move(self.op_state_->fun_)(self.op_state_->storage_.data_),
-                     std::move(self.op_state_->rcvr_));
-    }}));
+    using operation_t = typename _Storage<Sender, Receiver, Fun>::operation_t;
+    auto* op_state = self.op_state_;
+    op_state->storage_.data_ = (Value &&) v;
+    op_state->storage_.proxy_.emplace([&] {
+      return Connect(std::move(op_state->fun_)(op_state->storage_.data_),
+                     std::move(op_state->rcvr_));
+    });
+    Start(**op_state->storage_.proxy_);
   }
 };
 
@@ -506,7 +520,6 @@ struct _Sender {
 
   template <class CvrefReceiver, size_t Index>
   struct _Receiver {
-    using WhenAll = _copy_cvref_t<CvrefReceiver, _Sender>;
     using Receiver = std::decay_t<CvrefReceiver>;
     _Operation<CvrefReceiver>* op_state_;
 
@@ -518,23 +531,25 @@ struct _Sender {
 
   template <class CvrefReceiver>
   struct _Operation {
-    using WhenAll = _copy_cvref_t<CvrefReceiver, _Sender>;
+    using _WhenAll = _copy_cvref_t<CvrefReceiver, _Sender>;
     using Receiver = std::decay_t<CvrefReceiver>;
     template <class Sender, size_t Index>
     using _ChildOpState =
-        connect_result_t<_copy_cvref_t<WhenAll, Sender>, _Receiver<CvrefReceiver, Index>>;
+        connect_result_t<_copy_cvref_t<_WhenAll, Sender>, _Receiver<CvrefReceiver, Index>>;
 
     using _Indices = std::index_sequence_for<Senders...>;
 
     template <size_t... Is>
-    static auto _ConnectChildren(_Operation* self, WhenAll&& when_all, std::index_sequence<Is...>)
+    static auto _ConnectChildren(_Operation* self, _WhenAll&& when_all, std::index_sequence<Is...>)
         -> std::tuple<_ChildOpState<Senders, Is>...> {
-      return std::tuple<_ChildOpState<Senders, Is>...>{Connect(
-          std::get<Is>(((WhenAll &&) when_all).sndrs_), _Receiver<CvrefReceiver, Is>{self})...};
+      return std::tuple<_ChildOpState<Senders, Is>...>{__conv{[&] {
+        return Connect(std::get<Is>(((_WhenAll &&) when_all).sndrs_),
+                       _Receiver<CvrefReceiver, Is>{self});
+      }}...};
     }
 
     using _ChildOpStatesTuple =
-        decltype(_ConnectChildren(nullptr, std::declval<WhenAll>(), _Indices{}));
+        decltype(_ConnectChildren(nullptr, std::declval<_WhenAll>(), _Indices{}));
 
     void _Arrive() noexcept {
       if (0 == --count_) {
@@ -547,8 +562,8 @@ struct _Sender {
       SetValue((Receiver &&) recvr_, std::move(values_));
     }
 
-    _Operation(WhenAll&& when_all, Receiver rcvr)
-        : child_states_{_ConnectChildren(this, (WhenAll &&) when_all, _Indices{})},
+    _Operation(_WhenAll&& when_all, Receiver rcvr)
+        : child_states_{_ConnectChildren(this, (_WhenAll &&) when_all, _Indices{})},
           recvr_((Receiver &&) rcvr),
           values_(sizeof...(Senders)) {}
 
@@ -557,6 +572,11 @@ struct _Sender {
                  self.child_states_);
     }
 
+    _Operation(const _Operation&) = delete;
+    _Operation(_Operation&&) = delete;
+    _Operation& operator=(const _Operation&) = delete;
+    _Operation& operator=(_Operation&&) = delete;
+
     _ChildOpStatesTuple child_states_;
     Receiver recvr_;
     std::atomic<size_t> count_{sizeof...(Senders)};
@@ -564,7 +584,8 @@ struct _Sender {
   };
 
   template <class Self, class Receiver, _decays_to<Self, _Sender, bool> = true>
-  friend auto Connect(Self&& self, Receiver&& rcvr) -> _Operation<_copy_cvref_t<Self, Receiver>> {
+  friend auto Connect(Self&& self, Receiver&& rcvr)
+      -> _Operation<_copy_cvref_t<Self, std::decay_t<Receiver>>> {
     return {(Self &&) self, (Receiver &&) rcvr};
   }
 
@@ -845,11 +866,11 @@ struct _Receiver {
 
 }  // namespace __sync_wait
 
-//template <class S, std::enable_if_t<_has_completion_scheduler<S>, bool> = true>
-//Value SyncWait(S&& sender) {
-//  auto scheduler = GetCompletionScheduler(sender);
-//  return SyncWait(scheduler, sender);
-//}
+// template <class S, std::enable_if_t<_has_completion_scheduler<S>, bool> = true>
+// Value SyncWait(S&& sender) {
+//   auto scheduler = GetCompletionScheduler(sender);
+//   return SyncWait(scheduler, sender);
+// }
 
 template <class S>
 Value _SyncWaitDefault(S&& sndr) {
@@ -864,7 +885,7 @@ Value _SyncWaitDefault(S&& sndr) {
   return data;
 }
 
-template <class S>//, std::enable_if_t<!_has_completion_scheduler<S>, bool> = true>
+template <class S>  //, std::enable_if_t<!_has_completion_scheduler<S>, bool> = true>
 Value SyncWait(S&& sndr) {
   return _SyncWaitDefault((S &&) sndr);
 }

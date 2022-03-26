@@ -141,7 +141,7 @@ auto Gen(int k) {
 
 void Fn() {
   auto sched = gThreadPool().GetScheduler();
-//  auto sched = InlineScheduler{};
+  //  auto sched = InlineScheduler{};
   auto begin = Schedule(sched);
   auto a = Then(begin, []() -> Value { return 100; });
   auto b = LetValue(a, [&](Value& v) {
@@ -150,15 +150,9 @@ void Fn() {
     auto b3 = Then(Schedule(sched), Gen(3));
     return WhenAll(b1, b2, b3);
   });
-//  auto s = Split(a);
-//  auto b1 = Then(s, Gen(1));
-//  auto b2 = Then(s, Gen(2));
-//  auto b3 = Then(s, Gen(3));
-//  auto c = Transfer(WhenAll(b1, b2, b3), sched);
   auto v = SyncWait(b);
+  gThreadPool().RequestStop();
   MMDEPLOY_INFO("threaded split: {}", v);
 }
 
-TEST_CASE("test threaded split", "[execution1]") {
-  Fn();
-}
+TEST_CASE("test threaded split", "[execution1]") { Fn(); }
