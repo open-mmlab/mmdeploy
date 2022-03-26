@@ -1,19 +1,18 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import argparse
-import logging
 import os
-from functools import partial
+import logging
+import argparse
 from pathlib import Path
+from functools import partial
 
-import pandas as pd
 import yaml
-from mmcv.parallel import MMDataParallel
+import pandas as pd
 from torch.hub import download_url_to_file
+from mmcv.parallel import MMDataParallel
 from torch.multiprocessing import set_start_method
 
 from mmdeploy.apis import build_task_processor
-from mmdeploy.utils import (load_config, get_root_logger,
-                            parse_device_id)
+from mmdeploy.utils import load_config, get_root_logger, parse_device_id
 from mmdeploy.utils.timer import TimeCounter
 
 
@@ -76,6 +75,9 @@ def get_model_metafile_info(global_info, model_info, logger):
     for meta_model in metafile_info.get('Models'):
         if str(meta_model.get('Name')) + '.py' not in model_config_files:
             # skip if the model not in model_config_files
+            logger.warning(f'{str(meta_model.get("Name")) + ".py"} '
+                           f'not in {model_config_files}, pls check ! '
+                           'Skip it...')
             continue
 
         # get meta info
@@ -144,7 +146,7 @@ def update_report(report_dict,
 
     for metric in metric_info:
         for metric_name, metric_value in metric.items():
-            metric_name = str(metric_name).replace(' ', '_')
+            metric_name = str(metric_name)
             report_dict.get(metric_name).append(metric_value)
 
     report_dict.get('test_pass').append(test_pass)
@@ -188,7 +190,7 @@ def get_pytorch_result(model_name,
     # update useless metric
     metric_all_list = [str(metric) for metric in metric_tolerance]
     metric_useless = set(metric_all_list) - set(
-        [str(metric).replace(' ', '_') for metric in pytorch_metric])
+        [str(metric) for metric in pytorch_metric])
     for metric in metric_useless:
         metric_list.append({metric: '-'})
 
@@ -399,11 +401,11 @@ def get_backend_result(backends_info,
     metric_info_dict = {
         # mmdet
         'bbox': {
-            'meta_name': 'box_AP',
+            'meta_name': 'box AP',
             'metric_name': 'bbox_mAP',
         },
         'segm': {
-            'meta_name': 'mask_AP',
+            'meta_name': 'mask AP',
             'metric_name': '?',
         },
         'proposal': {
@@ -414,12 +416,12 @@ def get_backend_result(backends_info,
 
     performance_align = backends_info.get('performance_align', False)
 
-    metric_name_list = [str(metric).replace(' ', '_')
-                        for metric in pytorch_metric]
+    metric_name_list = [str(metric) for metric in pytorch_metric]
     assert len(metric_name_list) > 0
 
     metric_all_list = [str(metric) for metric in metric_tolerance]
     deploy_cfg_path_list = backends_info.get('deploy_config')
+
     for infer_type, deploy_cfg_info in deploy_cfg_path_list.items():
         for fp_size, deploy_cfg_name in deploy_cfg_info.items():
             if deploy_cfg_name is None:
@@ -479,6 +481,10 @@ def get_backend_result(backends_info,
 
                 # Get evaluation metric from model config
                 metrics_eval_list = model_cfg.evaluation.get('metric', [])
+                if isinstance(metrics_eval_list, str):
+                    # some config is using str only
+                    metrics_eval_list = [metrics_eval_list]
+
                 assert len(metrics_eval_list) > 0
                 print(f'Got metrics_eval_list = {metrics_eval_list}')
 
@@ -501,8 +507,7 @@ def get_backend_result(backends_info,
                     assert metric_name is not None
 
                     metric_list.append({metric_name: metric_value})
-                    metric_pytorch = \
-                        pytorch_metric.get(str(metric_name).replace('_', ' '))
+                    metric_pytorch = pytorch_metric.get(str(metric_name))
                     metric_tolerance_value = metric_tolerance.get(metric_name)
                     if (metric_value - metric_tolerance_value) <= \
                             metric_pytorch <= \
@@ -604,6 +609,7 @@ def main():
 
         for models in models_info:
             if 'model_configs' not in models:
+                print(f'Skip {models.get("name")}')
                 continue
 
             model_metafile_info, checkpoint_save_dir, codebase_dir = \
