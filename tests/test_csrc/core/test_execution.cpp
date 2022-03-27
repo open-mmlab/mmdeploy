@@ -7,10 +7,7 @@
 
 using namespace mmdeploy;
 
-__static_thread_pool::StaticThreadPool& gThreadPool() {
-  static __static_thread_pool::StaticThreadPool instance;
-  return instance;
-}
+#if 1
 
 TEST_CASE("test basic execution", "[execution]") {
   InlineScheduler sch;
@@ -70,7 +67,9 @@ TEST_CASE("test fork-join", "[execution]") {
 }
 
 TEST_CASE("test ensure_started", "[execution]") {
-  auto s = Schedule(gThreadPool().GetScheduler());
+  //  auto s = Schedule(gThreadPool().GetScheduler());
+  auto pool = __static_thread_pool::StaticThreadPool{};
+  auto s = Schedule(pool.GetScheduler());
   auto a = Then(s, []() -> Value {
     MMDEPLOY_INFO("ensure_started sleep start...");
     std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -87,25 +86,24 @@ TEST_CASE("test ensure_started", "[execution]") {
 }
 
 TEST_CASE("test start_detached", "[execution]") {
-  {
-    auto s = Schedule(gThreadPool().GetScheduler());
-    auto a = Then(s, [] {
-      std::this_thread::sleep_for(std::chrono::seconds(1));
-      return Value(100);
-    });
-    auto b = Then(a, [](...) {
-      MMDEPLOY_INFO("OK");
-      return Value(200);
-    });
-    StartDetached(b);
-    MMDEPLOY_INFO("StartDetached ret");
-  }
-  //  gThreadPool().RequestStop();
+  auto pool = __static_thread_pool::StaticThreadPool{4};
+  auto s = Schedule(pool.GetScheduler());
+  auto a = Then(s, [] {
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    return Value(100);
+  });
+  auto b = Then(a, [](...) {
+    MMDEPLOY_INFO("OK");
+    return Value(200);
+  });
+  StartDetached(b);
+  MMDEPLOY_INFO("StartDetached ret");
 }
 
 TEST_CASE("test on", "[execution]") {
+  auto pool = __static_thread_pool::StaticThreadPool{4};
   auto a = Just(100);
-  auto b = On(gThreadPool().GetScheduler(), a);
+  auto b = On(pool.GetScheduler(), a);
   auto c = SyncWait(b);
   MMDEPLOY_ERROR("c = {}", c);
 }
@@ -140,9 +138,9 @@ auto Gen(int k) {
 }
 
 void Fn() {
-  auto pool = __static_thread_pool::StaticThreadPool{1};
-  //  auto sched = pool.GetScheduler();
-  auto sched = InlineScheduler{};
+  auto pool = __static_thread_pool::StaticThreadPool{4};
+  auto sched = pool.GetScheduler();
+  //  auto sched = InlineScheduler{};
   auto begin = Schedule(sched);
   auto a = Then(begin, []() -> Value { return 100; });
   auto b = LetValue(a, [&](Value& v) {
@@ -150,12 +148,42 @@ void Fn() {
     auto b2 = Then(Schedule(sched), Gen(2));
     auto b3 = Then(Schedule(sched), Gen(3));
     auto b4 = Then(Schedule(sched), Gen(4));
-    return WhenAll(b1, b2, b3, b4);
+    auto b = WhenAll(b1, b2, b3, b4);
+    return LetValue(b, [&](Value& v) {
+      int sum = 0;
+      for (int i = 0; i < 4; ++i) {
+        MMDEPLOY_INFO("v[{}] = {}", i, v[i].get<int>());
+        sum += v[i].get<int>();
+      }
+      return Just(Value(sum));
+    });
   });
   auto v = SyncWait(b);
   MMDEPLOY_INFO("threaded split: {}", v);
 }
 
-TEST_CASE("test threaded split", "[execution1]") { Fn(); }
+void Gn() {
+  auto v = SyncWait(LetValue(Just(Value(100)), [&](Value& v) {
+    return LetValue(Just(Value(200)), [&](Value& u) {
+      return LetValue(Just(Value(300)), [&](Value& w) {
+        return LetValue(Just(Value(400)), [&](Value& x) {
+          return Just(Value(u.get<int>() + v.get<int>() + w.get<int>() + x.get<int>()));
+        });
+      });
+    });
+  }));
+  MMDEPLOY_INFO("Gn: {}", v);
+}
 
-TEST_CASE("test inference pipeline", "[execution][pipeline]") {}
+TEST_CASE("test threaded split", "[execution]") { Fn(); }
+
+TEST_CASE("test inference pipeline", "[execution][pipeline]") { Gn(); }
+
+#endif
+
+TEST_CASE("test generic just", "[execution]") {
+  auto j = Just(1, 2, 3, 4.0);
+  auto s = LetValue(j, [](const auto&... vs) { return Just((vs + ...)); });
+  auto v = SyncWait(s);
+  MMDEPLOY_INFO("generic: {}", v);
+}

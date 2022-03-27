@@ -45,13 +45,13 @@ class AbstractScheduler {
   virtual ~AbstractScheduler() = default;
 
   virtual AbstractSender* _Schedule() = 0;
-  virtual Value _SyncWait(AbstractSender*) = 0;
+//  virtual Value _SyncWait(AbstractSender*) = 0;
 
   friend AbstractSender* Schedule(AbstractScheduler* self) { return self->_Schedule(); }
 
-  friend Value SyncWait(AbstractScheduler* self, AbstractSender* sender) {
-    return self->_SyncWait(sender);
-  }
+//  friend Value SyncWait(AbstractScheduler* self, AbstractSender* sender) {
+//    return self->_SyncWait(sender);
+//  }
 };
 
 class AbstractSender {
@@ -68,13 +68,13 @@ class AbstractSender {
   friend AbstractScheduler* GetCompletionScheduler(AbstractSender* self) {
     return self->_GetCompletionScheduler();
   }
-  friend Value SyncWait(AbstractSender* self) {
-    if (auto sched = self->_GetCompletionScheduler(); sched != nullptr) {
-      return SyncWait(sched, self);
-    } else {
-      return _SyncWaitDefault(self);
-    }
-  }
+//  friend Value SyncWait(AbstractSender* self) {
+//    if (auto sched = self->_GetCompletionScheduler(); sched != nullptr) {
+//      return SyncWait(sched, self);
+//    } else {
+//      return std::get<Value>(_SyncWaitDefault(self));
+//    }
+//  }
 };
 
 class AbstractOperation {
@@ -107,7 +107,7 @@ class TypeErasedScheduler : public AbstractScheduler {
 
   AbstractSender* _Schedule() override { return MakeTypeErasedSender(Schedule(scheduler_)); }
 
-  Value _SyncWait(AbstractSender* sender) override { return SyncWait(scheduler_, sender); }
+//  Value _SyncWait(AbstractSender* sender) override { return SyncWait(scheduler_, sender); }
 
  private:
   _Scheduler scheduler_;

@@ -61,8 +61,32 @@ using connect_result_t = decltype(Connect(std::declval<S>(), std::declval<R>()))
 template <class Sched>
 using schedule_result_t = decltype(Schedule(std::declval<Sched>()));
 
+template <class...>
+struct _types
+#if defined(__GNUC__) && !defined(__clang__)
+{
+}
+#endif
+;
+
 template <class Sender>
 using _get_completion_scheduler_t = decltype(GetCompletionScheduler(std::declval<Sender>()));
+
+template <class T>
+using _empty_if_void_t = std::conditional_t<std::is_same_v<std::tuple<void>, T>, std::tuple<>, T>;
+
+template <class Sender, class SFINAE = void>
+struct _completion_signature_for {
+  using type = std::tuple<Value>;
+};
+
+template <class Sender>
+struct _completion_signature_for<Sender, std::void_t<typename Sender::value_type>> {
+  using type = typename Sender::value_type;
+};
+
+template <class Sender>
+using completion_signature_for_t = typename _completion_signature_for<Sender>::type;
 
 template <class Sender>
 inline constexpr auto _has_completion_scheduler =
@@ -76,6 +100,8 @@ struct InlineScheduler {
   };
 
   struct _Sender {
+    using value_type = std::tuple<>;
+
     template <typename R>
     friend auto Connect(_Sender, R&& rec) -> _Operation<std::decay_t<R>> {
       return {(R &&) rec};
@@ -86,29 +112,30 @@ struct InlineScheduler {
 
   friend _Sender Schedule(const InlineScheduler) noexcept { return {}; }
 
-  struct _Receiver {
-    Value* data_;
-    friend void SetValue(_Receiver&& r, Value data) noexcept { *r.data_ = std::move(data); }
-  };
+  //  struct _Receiver {
+  //    Value* data_;
+  //    friend void SetValue(_Receiver&& r, Value data) noexcept { *r.data_ = std::move(data); }
+  //  };
 
-  template <class S>
-  friend Value SyncWait(InlineScheduler, S&& sender) {
-    Value data;
-    auto op_state = Connect(((S &&) sender), _Receiver{&data});
-    Start(op_state);
-    return data;
-  }
+  //  template <class S>
+  //  friend Value SyncWait(InlineScheduler, S&& sender) {
+  //    Value data;
+  //    auto op_state = Connect(((S &&) sender), _Receiver{&data});
+  //    Start(op_state);
+  //    return data;
+  //  }
 };
 
 namespace __just {
 
 template <class... Ts>
 struct _Sender {
-  std::tuple<Ts...> vals_;
+  using value_type = std::tuple<Ts...>;
+  value_type vals_;
 
   template <class Receiver>
   struct _Operation {
-    std::tuple<Ts...> vals_;
+    value_type vals_;
     Receiver rcvr_;
     friend void Start(_Operation& op_state) noexcept {
       std::apply(
@@ -232,7 +259,6 @@ struct _Receiver1 {
 
   _Operation1<Scheduler, CvrefSender, Receiver>* op_state_;
 
-  //  template <class V, _decays_to<V, Value, bool> = true>
   template <class... As>
   friend void SetValue(_Receiver1&& self, As&&... as) {
     if constexpr (sizeof...(as) == 1) {
@@ -307,12 +333,18 @@ struct _Receiver {
 
   template <class... Args>
   friend void SetValue(_Receiver&& self, Args&&... args) {
-    SetValue(std::move(self.r_), ((F &&) self.f_)(std::forward<Args>(args)...));
+    //    std::tuple<Args...>* x = 100;
+    //    auto v = ((F &&) self.f_)(((Args &&) args)...);
+    //    v = r_;
+    SetValue(std::move(self.r_), std::invoke((F &&) self.f_, (Args &&) args...));
   }
 };
 
 template <class S, class F>
 struct _Sender {
+  using value_type = _empty_if_void_t<std::tuple<decltype(std::apply(
+      std::declval<F>(), std::declval<completion_signature_for_t<S>>()))>>;
+
   S s_;
   F f_;
 
@@ -346,49 +378,62 @@ using __decay_ref = std::decay_t<T>&;
 template <class Fun, class... As>
 using __result_sender_t = __call_result_t<Fun, __decay_ref<As>...>;
 
-template <class Sender, class Receiver, class Fun>
+template <class Fun, class Tup>
+struct __value_type {};
+
+template <class Fun, class... As>
+struct __value_type<Fun, std::tuple<As...>> {
+  using type = __result_sender_t<Fun, As...>;
+};
+
+template <class Fun, class Tup>
+using __value_type_t = typename __value_type<Fun, Tup>::type;
+
+template <class CvrefSender, class Receiver, class Fun>
 struct _Storage {
-  using operation_t = connect_result_t<__result_sender_t<Fun, Value>, Receiver>;
-  Value data_;
+  using Sender = std::decay_t<CvrefSender>;
+  using operation_t =
+      connect_result_t<__value_type_t<Fun, completion_signature_for_t<Sender>>, Receiver>;
+  std::optional<completion_signature_for_t<Sender>> args_;
   // workaround for MSVC v142 toolset, copy elision does not work here
   std::optional<__conv_proxy<operation_t>> proxy_;
 };
 
-template <class Sender, class Receiver, class Fun>
+template <class CvrefSender, class Receiver, class Fun>
 struct _Operation;
 
-template <class Sender, class Receiver, class Fun>
+template <class CvrefSender, class Receiver, class Fun>
 struct _Receiver {
-  _Operation<Sender, Receiver, Fun>* op_state_;
+  _Operation<CvrefSender, Receiver, Fun>* op_state_;
 
-  friend void SetValue(_Receiver&& self, Value v) noexcept {
-    using operation_t = typename _Storage<Sender, Receiver, Fun>::operation_t;
+  template <class... As>
+  friend void SetValue(_Receiver&& self, As&&... as) noexcept {
+    using operation_t = typename _Storage<CvrefSender, Receiver, Fun>::operation_t;
     auto* op_state = self.op_state_;
-    op_state->storage_.data_ = (Value &&) v;
+    auto& args = op_state->storage_.args_.emplace((As)as...);
     op_state->storage_.proxy_.emplace([&] {
-      return Connect(std::move(op_state->fun_)(op_state->storage_.data_),
-                     std::move(op_state->rcvr_));
+      return Connect(std::apply(std::move(op_state->fun_), args), std::move(op_state->rcvr_));
     });
     Start(**op_state->storage_.proxy_);
   }
 };
 
-template <class Sender, class Receiver, class Fun>
+template <class CvrefSender, class Receiver, class Fun>
 struct _Operation {
-  using receiver_t = _Receiver<Sender, Receiver, Fun>;
+  using receiver_t = _Receiver<CvrefSender, Receiver, Fun>;
 
   friend void Start(_Operation& self) noexcept { Start(self.op_state2_); }
 
   template <class Receiver2>
-  _Operation(Sender&& sndr, Receiver2&& rcvr, Fun fun)
-      : op_state2_(Connect((Sender &&) sndr, receiver_t{this})),
+  _Operation(CvrefSender&& sndr, Receiver2&& rcvr, Fun fun)
+      : op_state2_(Connect((CvrefSender &&) sndr, receiver_t{this})),
         rcvr_((Receiver2 &&) rcvr),
         fun_((Fun &&) fun) {}
 
-  connect_result_t<Sender, receiver_t> op_state2_;
+  connect_result_t<CvrefSender, receiver_t> op_state2_;
   Receiver rcvr_;
   Fun fun_;
-  _Storage<Sender, Receiver, Fun> storage_;
+  _Storage<CvrefSender, Receiver, Fun> storage_;
 };
 
 template <class Sender, class Fun>
@@ -865,11 +910,19 @@ using RunLoop = __loop::RunLoop;
 
 namespace __sync_wait {
 
+template <class Sender>
+struct _State {
+  std::optional<completion_signature_for_t<Sender>> data_;
+};
+
+template <class Sender>
 struct _Receiver {
-  Value* data_;
+  _State<Sender>* state_;
   RunLoop* loop_;
-  inline friend void SetValue(_Receiver&& rcvr, Value value) noexcept {
-    *rcvr.data_ = std::move(value);
+
+  template <class... As>
+  inline friend void SetValue(_Receiver&& rcvr, As&&... as) noexcept {
+    rcvr.state_->data_.emplace(((As &&) as)...);
     rcvr.loop_->_Finish();
   }
 };
@@ -882,21 +935,21 @@ struct _Receiver {
 //   return SyncWait(scheduler, sender);
 // }
 
-template <class S>
-Value _SyncWaitDefault(S&& sndr) {
-  Value data;
+template <class S, class DecayS = std::decay_t<S>>
+auto _SyncWaitDefault(S&& sndr) -> completion_signature_for_t<DecayS> {
   RunLoop loop;
+  __sync_wait::_State<DecayS> state;
 
-  auto op_state = Connect((S &&) sndr, __sync_wait::_Receiver{&data, &loop});
+  auto op_state = Connect((S &&) sndr, __sync_wait::_Receiver<DecayS>{&state, &loop});
   Start(op_state);
 
   loop._Run();
 
-  return data;
+  return std::move(*state.data_);
 }
 
 template <class S>  //, std::enable_if_t<!_has_completion_scheduler<S>, bool> = true>
-Value SyncWait(S&& sndr) {
+auto SyncWait(S&& sndr) -> decltype(_SyncWaitDefault((S &&) sndr)) {
   return _SyncWaitDefault((S &&) sndr);
 }
 

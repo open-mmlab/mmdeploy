@@ -62,6 +62,9 @@ class StaticThreadPool {
       explicit Sender(StaticThreadPool& pool) noexcept : pool_(pool) {}
 
       StaticThreadPool& pool_;
+
+     public:
+      using value_type = std::tuple<>;
     };
 
     Sender MakeSender_() const { return Sender{*pool_}; }

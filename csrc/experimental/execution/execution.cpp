@@ -7,6 +7,8 @@
 
 using namespace mmdeploy;
 
+#if 1
+
 mmdeploy_scheduler_t mmdeploy_inline_scheduler() {
   static auto v = MakeTypeErasedScheduler(InlineScheduler{});
   return reinterpret_cast<mmdeploy_scheduler_t>(v);
@@ -53,6 +55,9 @@ mmdeploy_sender_t mmdeploy_executor_split(mmdeploy_sender_t input) {
 
 mmdeploy_value_t mmdeploy_executor_sync_wait(mmdeploy_sender_t input) {
   auto _input = reinterpret_cast<AbstractSender*>(input);
-  auto output = new Value(SyncWait(_input));
+  auto output = new Value(std::get<Value>(SyncWait(_input)));
   return reinterpret_cast<mmdeploy_value_t>(output);
 }
+
+
+#endif
