@@ -45,13 +45,13 @@ class AbstractScheduler {
   virtual ~AbstractScheduler() = default;
 
   virtual AbstractSender* _Schedule() = 0;
-//  virtual Value _SyncWait(AbstractSender*) = 0;
+  //  virtual Value _SyncWait(AbstractSender*) = 0;
 
   friend AbstractSender* Schedule(AbstractScheduler* self) { return self->_Schedule(); }
 
-//  friend Value SyncWait(AbstractScheduler* self, AbstractSender* sender) {
-//    return self->_SyncWait(sender);
-//  }
+  //  friend Value SyncWait(AbstractScheduler* self, AbstractSender* sender) {
+  //    return self->_SyncWait(sender);
+  //  }
 };
 
 class AbstractSender {
@@ -68,13 +68,13 @@ class AbstractSender {
   friend AbstractScheduler* GetCompletionScheduler(AbstractSender* self) {
     return self->_GetCompletionScheduler();
   }
-//  friend Value SyncWait(AbstractSender* self) {
-//    if (auto sched = self->_GetCompletionScheduler(); sched != nullptr) {
-//      return SyncWait(sched, self);
-//    } else {
-//      return std::get<Value>(_SyncWaitDefault(self));
-//    }
-//  }
+  //  friend Value SyncWait(AbstractSender* self) {
+  //    if (auto sched = self->_GetCompletionScheduler(); sched != nullptr) {
+  //      return SyncWait(sched, self);
+  //    } else {
+  //      return std::get<Value>(_SyncWaitDefault(self));
+  //    }
+  //  }
 };
 
 class AbstractOperation {
@@ -107,7 +107,7 @@ class TypeErasedScheduler : public AbstractScheduler {
 
   AbstractSender* _Schedule() override { return MakeTypeErasedSender(Schedule(scheduler_)); }
 
-//  Value _SyncWait(AbstractSender* sender) override { return SyncWait(scheduler_, sender); }
+  //  Value _SyncWait(AbstractSender* sender) override { return SyncWait(scheduler_, sender); }
 
  private:
   _Scheduler scheduler_;
@@ -208,6 +208,8 @@ typedef mmdeploy_value_t (*mmdeploy_invocable_t)(mmdeploy_value_t, void*);
 struct mmdeploy_sender;
 struct mmdeploy_scheduler;
 
+typedef mmdeploy_sender (*mmdeploy_kleisli_t)(mmdeploy_value_t, void*);
+
 typedef struct mmdeploy_sender* mmdeploy_sender_t;
 typedef struct mmdeploy_scheduler* mmdeploy_scheduler_t;
 
@@ -221,7 +223,10 @@ mmdeploy_sender_t mmdeploy_executor_transfer(mmdeploy_sender_t input,
                                              mmdeploy_scheduler_t scheduler);
 
 mmdeploy_sender_t mmdeploy_executor_then(mmdeploy_sender_t input, mmdeploy_invocable_t fn,
-                                         void* data);
+                                         void* context);
+
+mmdeploy_sender_t mmdeploy_executor_let_value(mmdeploy_sender_t input, mmdeploy_kleisli_t kleisli,
+                                              void* context);
 
 mmdeploy_sender_t mmdeploy_executor_split(mmdeploy_sender_t input);
 

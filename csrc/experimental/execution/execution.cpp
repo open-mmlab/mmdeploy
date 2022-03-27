@@ -2,6 +2,7 @@
 // Created by li on 2022/3/11.
 //
 #include "execution.h"
+
 #include "static_thread_pool.h"
 #include "type_erased.h"
 
@@ -34,10 +35,10 @@ mmdeploy_sender_t mmdeploy_executor_transfer(mmdeploy_sender_t input,
 }
 
 mmdeploy_sender_t mmdeploy_executor_then(mmdeploy_sender_t input, mmdeploy_invocable_t fn,
-                                         void* data) {
+                                         void* context) {
   auto sndr1 = reinterpret_cast<AbstractSender*>(input);
-  auto sndr2 = Then(sndr1, [fn, data](Value u) {
-    auto v = reinterpret_cast<Value*>(fn(reinterpret_cast<mmdeploy_value_t>(&u), data));
+  auto sndr2 = Then(sndr1, [fn, context](Value u) {
+    auto v = reinterpret_cast<Value*>(fn(reinterpret_cast<mmdeploy_value_t>(&u), context));
     Value w = std::move(*v);
     delete v;
     return w;
@@ -58,6 +59,5 @@ mmdeploy_value_t mmdeploy_executor_sync_wait(mmdeploy_sender_t input) {
   auto output = new Value(std::get<Value>(SyncWait(_input)));
   return reinterpret_cast<mmdeploy_value_t>(output);
 }
-
 
 #endif
