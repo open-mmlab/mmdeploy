@@ -1,11 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 cmake_minimum_required(VERSION 3.14)
+include(${CMAKE_SOURCE_DIR}/cmake/cuda.cmake NO_POLICY_SCOPE)
 project(mmdeploy_trt_net)
-
-if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.18.0")
-    # suppress 'CMAKE_CUDA_ARCHITECTURES' warning
-    cmake_policy(SET CMP0104 OLD)
-endif ()
 
 include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/tensorrt.cmake)
