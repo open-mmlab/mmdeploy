@@ -385,7 +385,7 @@ def get_backend_result(backends_info, model_cfg_path, deploy_config_dir,
 
     backends_info = backends_info.get(backend_name, [])
     if len(backends_info) <= 0:
-        logger.warning('Can not get info of ' f'{backend_name}, skip it...')
+        logger.warning(f'Can not get info of {backend_name}, skip it...')
         return
 
     backend_file_info = {
@@ -564,7 +564,7 @@ def save_report(report_info, report_save_path, logger):
     df = pd.DataFrame(report_info)
     df.to_excel(report_save_path)
 
-    logger.info(f'Saved regression test report ' f'to {report_save_path}.')
+    logger.info(f'Saved regression test report to {report_save_path}.')
 
 
 def main():
