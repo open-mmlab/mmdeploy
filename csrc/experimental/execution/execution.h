@@ -14,7 +14,6 @@
 
 #include "core/mpl/detected.h"
 #include "core/utils/formatter.h"
-#include "core/value.h"
 #include "intrusive_queue.h"
 
 namespace mmdeploy {
@@ -213,6 +212,7 @@ struct _Operation {
 
 template <class Scheduler, class Sender>
 struct _Sender {
+  using value_type = completion_signature_for_t<Sender>;
   Scheduler sched_;
   Sender sndr_;
 
@@ -232,7 +232,8 @@ struct _Sender {
 }  // namespace __on
 
 template <class Scheduler, class Sender>
-__on::_Sender<Scheduler, Sender> On(Scheduler&& sched, Sender&& sndr) {
+auto On(Scheduler&& sched, Sender&& sndr)
+    -> __on::_Sender<std::decay_t<Scheduler>, std::decay_t<Sender>> {
   return {(Scheduler &&) sched, (Sender &&) sndr};
 }
 
@@ -249,7 +250,9 @@ struct _Receiver2 {
   _Operation1<Scheduler, CvrefSender, Receiver>* op_state_;
 
   friend void SetValue(_Receiver2&& self) noexcept {
-    SetValue(std::move(self.op_state_->rcvr_), std::move(self.op_state_->data_));
+    std::apply(
+        [&](auto&&... vals) { SetValue(std::move(self.op_state_->rcvr_), std::move(vals)...); },
+        std::move(*self.op_state_->data_));
   }
 };
 
@@ -261,9 +264,7 @@ struct _Receiver1 {
 
   template <class... As>
   friend void SetValue(_Receiver1&& self, As&&... as) {
-    if constexpr (sizeof...(as) == 1) {
-      self.op_state_->data_ = Value(((As &&) as)...);
-    }
+    self.op_state_->data_.emplace((As &&) as...);
     auto sndr = Schedule(self.op_state_->sched_);
     self.op_state_->state2_.emplace(
         __conv{[&] { return Connect(std::move(sndr), Receiver2{self.op_state_}); }});
@@ -278,7 +279,7 @@ struct _Operation1 {
 
   Scheduler sched_;
   Receiver rcvr_;
-  Value data_;
+  std::optional<completion_signature_for_t<std::decay_t<CvrefSender>>> data_;
   connect_result_t<CvrefSender, Receiver1> state1_;
   std::optional<connect_result_t<schedule_result_t<Scheduler>, Receiver2>> state2_;
 
@@ -298,6 +299,8 @@ struct _Operation1 {
 
 template <class Scheduler, class Sender>
 struct _Sender {
+  using value_type = completion_signature_for_t<Sender>;
+
   Scheduler sched_;
   Sender sndr_;
 
@@ -442,6 +445,9 @@ struct _Sender {
   using operation_t = _Operation<_copy_cvref_t<Self, Sender>, std::decay_t<Receiver>, Fun>;
   template <class Self, class Receiver>
   using receiver_t = _Receiver<_copy_cvref_t<Self, Sender>, std::decay_t<Receiver>, Fun>;
+
+  using value_type =
+      completion_signature_for_t<__value_type_t<Fun, completion_signature_for_t<Sender>>>;
 
   template <class Self, class Receiver, _decays_to<Self, _Sender, bool> = true>
   friend auto Connect(Self&& self, Receiver&& rcvr) -> operation_t<Self, Receiver> {
@@ -683,16 +689,18 @@ struct _OperationBase {
 template <class SharedState>
 struct _Receiver {
   std::shared_ptr<SharedState> shared_state_;
-  friend void SetValue(_Receiver&& self, Value v) {
+
+  template <class... As>
+  friend void SetValue(_Receiver&& self, As&&... as) {
     assert(self.shared_state_);
-    self.shared_state_->data_ = std::move(v);
+    self.shared_state_->data_.emplace((As &&) as...);
     self.shared_state_->_Notify();
   }
 };
 
 template <class Sender>
 struct _SharedState {
-  Value data_;
+  std::optional<completion_signature_for_t<Sender>> data_;
   std::optional<connect_result_t<Sender, _Receiver<_SharedState>>> op_state2_;
   std::atomic<void*> awaiting_{nullptr};
 
@@ -717,7 +725,12 @@ struct _Operation : public _OperationBase {
 
   static void _Notify(_OperationBase* self) noexcept {
     auto op_state = static_cast<_Operation*>(self);
-    SetValue((Receiver &&) op_state->rcvr_, op_state->shared_state_->data_);
+
+    std::apply(
+        [&](auto&&... vals) -> void {
+          SetValue((Receiver &&) op_state->rcvr_, (decltype(vals)&&)vals...);
+        },
+        *op_state->shared_state_->data_);
   }
 
   friend void Start(_Operation& self) {
@@ -739,6 +752,7 @@ struct _Operation : public _OperationBase {
 template <class Sender>
 struct _Sender {
   using SharedState = _SharedState<Sender>;
+  using value_type = completion_signature_for_t<Sender>;
 
   std::shared_ptr<SharedState> shared_state_;
 

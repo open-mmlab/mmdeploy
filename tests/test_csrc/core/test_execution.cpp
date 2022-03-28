@@ -45,13 +45,12 @@ TEST_CASE("test when_all", "[execution]") {
 }
 
 void Func() {
-  auto a = Just(Value{100, 200});
-  auto b = LetValue(a, [](Value& v) {
-    auto c = Just(v[0].get<int>() + v[1].get<int>());
-    auto d = Then(std::move(c), [](Value v) -> Value { return v.get<int>() * v.get<int>(); });
-    return d;
+  auto a = Just(100, 200);
+  auto b = LetValue(a, [](int& x, int& y) {
+    return Then(Just(x + y), [](int v) { return v * v; });
   });
   auto v = SyncWait(b);
+  static_assert(std::is_same_v<decltype(v), std::tuple<int>>);
   MMDEPLOY_ERROR("v = {}", v);
 }
 
@@ -104,9 +103,10 @@ TEST_CASE("test start_detached", "[execution]") {
 
 TEST_CASE("test on", "[execution]") {
   auto pool = __static_thread_pool::StaticThreadPool{4};
-  auto a = Just(100);
+  auto a = Just(100, 200);
   auto b = On(pool.GetScheduler(), a);
   auto c = SyncWait(b);
+  static_assert(std::is_same_v<decltype(c), std::tuple<int, int>>);
   MMDEPLOY_ERROR("c = {}", c);
 }
 

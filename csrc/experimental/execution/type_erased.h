@@ -6,6 +6,7 @@
 #define MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_TYPE_ERASED_H_
 
 #include "execution.h"
+#include "core/value.h"
 
 namespace mmdeploy {
 
