@@ -86,7 +86,7 @@ cd spdlog-1.9.2
 mkdir build
 cd build
 cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release
-cmake --build . --target install --config Release  -- /maxcpucount:4
+cmake --build . --target install --config Release  -- /m
 cd ../..
 </code></pre>
     </td>
@@ -107,8 +107,13 @@ cd ../..
 git clone https://github.com/openppl-public/ppl.cv.git
 cd ppl.cv
 git checkout tags/v0.6.2 -b v0.6.2
-./build.bat -G "Visual Studio 16 2019" -T v142 -A x64 -DHPCC_USE_CUDA=ON -DHPCC_MSVC_MD=ON
 $env:PPLCV_DIR = "$pwd"
+mkdir pplcv-build
+cd pplcv-build
+cmake .. -G "Visual Studio 16 2019" -T v142 -A x64 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install -DHPCC_USE_CUDA=ON -DHPCC_MSVC_MD=ON
+cmake --build . --config Release -- /m
+cmake --install . --config Release
+cd ../..
 </code></pre>
    </td>
   </tr>
@@ -272,7 +277,7 @@ $env:MMDEPLOY_DIR="$pwd"
 mkdir build -ErrorAction SilentlyContinue
 cd build
 cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DMMDEPLOY_TARGET_BACKENDS="ort" -DONNXRUNTIME_DIR="$env:ONNXRUNTIME_DIR"
-cmake --build . --config Release -- /maxcpucount:4
+cmake --build . --config Release -- /m
 ```
 
 - **TensorRT** 自定义算子
@@ -281,7 +286,7 @@ cmake --build . --config Release -- /maxcpucount:4
 mkdir build -ErrorAction SilentlyContinue
 cd build
 cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DMMDEPLOY_TARGET_BACKENDS="trt" -DTENSORRT_DIR="$env:TENSORRT_DIR" -DCUDNN_DIR="$env:CUDNN_DIR"
-cmake --build . --config Release -- /maxcpucount:4
+cmake --build . --config Release -- /m
 ```
 
 - **ncnn** 自定义算子
@@ -313,7 +318,7 @@ pip install -e .
       -DMMDEPLOY_CODEBASES="all" `
       -DONNXRUNTIME_DIR="$env:ONNXRUNTIME_DIR"
 
-  cmake --build . --config Release -- /maxcpucount:4
+  cmake --build . --config Release -- /m
   cmake --install . --config Release
   ```
 
@@ -332,7 +337,7 @@ pip install -e .
     -DTENSORRT_DIR="$env:TENSORRT_DIR" `
     -DCUDNN_DIR="$env:CUDNN_DIR"
 
-  cmake --build . --config Release -- /maxcpucount:4
+  cmake --build . --config Release -- /m
   cmake --install . --config Release
   ```
 
@@ -345,7 +350,7 @@ cd build
 cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
   -DMMDeploy_DIR="$env:MMDEPLOY_DIR/build/install/lib/cmake/MMDeploy"
 
-cmake --build . --config Release -- /maxcpucount:4
+cmake --build . --config Release -- /m
 
 $env:path = "$env:MMDEPLOY_DIR/build/install/bin;" + $env:path
 ```
