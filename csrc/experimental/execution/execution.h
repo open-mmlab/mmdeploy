@@ -470,16 +470,18 @@ struct _OperationBase {
 template <class SharedState>
 struct _Receiver {
   SharedState& shared_state_;
-  friend void SetValue(_Receiver&& recvr, Value v) {
+
+  template <class... As>
+  friend void SetValue(_Receiver&& recvr, As&&... as) {
     auto& state = recvr.shared_state_;
-    state.data_ = std::move(v);
+    state.data_.emplace((As &&) as...);
     state._Notify();
   }
 };
 
 template <class Sender>
 struct _SharedState {
-  std::optional<Value> data_;
+  std::optional<completion_signature_for_t<Sender>> data_;
 
   using Receiver = _Receiver<_SharedState>;
 
@@ -514,7 +516,8 @@ struct _Operation : _OperationBase {
 
   static void _Notify(_OperationBase* self) noexcept {
     auto op = static_cast<_Operation*>(self);
-    SetValue((Receiver &&) op->recvr_, *op->shared_state_->data_);
+    std::apply([&](auto&... args) { SetValue((Receiver &&) op->recvr_, args...); },
+               op->shared_state_->data_.value());
   }
 
   friend void Start(_Operation& self) {
@@ -544,6 +547,8 @@ struct _Sender {
   template <class Receiver>
   using Operation = _Operation<Sender, std::decay_t<Receiver>>;
 
+  using value_type = completion_signature_for_t<Sender>;
+
   Sender sndr_;
   std::shared_ptr<SharedState> shared_state_;
 
@@ -566,6 +571,9 @@ auto Split(Sender&& sndr) -> __split::_Sender<std::decay_t<Sender>> {
 namespace __when_all {
 
 template <class... Senders>
+using __concat_t = decltype(std::tuple_cat(std::declval<completion_signature_for_t<Senders>>()...));
+
+template <class... Senders>
 struct _Sender {
   template <class... _Sndrs>
   explicit _Sender(_Sndrs&&... sndrs) : sndrs_((_Sndrs &&) sndrs...) {}
@@ -573,13 +581,16 @@ struct _Sender {
   template <class CvrefReceiver>
   struct _Operation;
 
+  using value_type = __concat_t<Senders...>;
+
   template <class CvrefReceiver, size_t Index>
   struct _Receiver {
     using Receiver = std::decay_t<CvrefReceiver>;
     _Operation<CvrefReceiver>* op_state_;
 
-    friend void SetValue(_Receiver&& self, Value v) noexcept {
-      self.op_state_->values_[Index] = std::move(v);
+    template <class... As>
+    friend void SetValue(_Receiver&& self, As&&... as) noexcept {
+      std::get<Index>(self.op_state_->vals_).emplace((As &&) as...);
       self.op_state_->_Arrive();
     }
   };
@@ -606,6 +617,8 @@ struct _Sender {
     using _ChildOpStatesTuple =
         decltype(_ConnectChildren(nullptr, std::declval<_WhenAll>(), _Indices{}));
 
+    using _ChildValueTuple = std::tuple<std::optional<completion_signature_for_t<Senders>>...>;
+
     void _Arrive() noexcept {
       if (0 == --count_) {
         _Complete();
@@ -613,14 +626,21 @@ struct _Sender {
     }
 
     void _Complete() noexcept {
-      // just forward array to receiver for now
-      SetValue((Receiver &&) recvr_, std::move(values_));
+      std::apply(
+          [this](auto&... opt_vals) -> void {
+            std::apply(
+                [this](auto&... all_vals) -> void {
+                  SetValue((Receiver &&) recvr_, std::move(all_vals)...);
+                },
+                std::tuple_cat(
+                    std::apply([](auto&... vals) { return std::tie(vals...); }, *opt_vals)...));
+          },
+          vals_);
     }
 
     _Operation(_WhenAll&& when_all, Receiver rcvr)
         : child_states_{_ConnectChildren(this, (_WhenAll &&) when_all, _Indices{})},
-          recvr_((Receiver &&) rcvr),
-          values_(sizeof...(Senders)) {}
+          recvr_((Receiver &&) rcvr) {}
 
     friend void Start(_Operation& self) noexcept {
       std::apply([](auto&&... child_ops) noexcept -> void { (Start(child_ops), ...); },
@@ -635,7 +655,7 @@ struct _Sender {
     _ChildOpStatesTuple child_states_;
     Receiver recvr_;
     std::atomic<size_t> count_{sizeof...(Senders)};
-    Value::Array values_;
+    _ChildValueTuple vals_;
   };
 
   template <class Self, class Receiver, _decays_to<Self, _Sender, bool> = true>

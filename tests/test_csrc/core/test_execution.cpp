@@ -7,8 +7,6 @@
 
 using namespace mmdeploy;
 
-#if 1
-
 TEST_CASE("test basic execution", "[execution]") {
   InlineScheduler sch;
   auto a = Just(Value{{"a", 100}, {"b", 200}});
@@ -38,7 +36,10 @@ TEST_CASE("test split", "[execution]") {
 TEST_CASE("test when_all", "[execution]") {
   auto a = Just(100);
   auto b = Just(200);
-  auto t = WhenAll(a, b);
+  auto c = Just(300);
+  auto d = Just(400);
+  auto e = Just(500);
+  auto t = WhenAll(a, b, c, d, e);
   auto v = SyncWait(t);
   MMDEPLOY_ERROR("v = {}", v);
 }
@@ -63,6 +64,7 @@ TEST_CASE("test fork-join", "[execution]") {
   auto y = GetKey(s, "y");
   auto xy = WhenAll(x, y);
   auto v = SyncWait(xy);
+  static_assert(std::is_same_v<decltype(v), std::tuple<Value, Value>>);
   MMDEPLOY_ERROR("v = {}", v);
 }
 
@@ -149,13 +151,9 @@ void Fn() {
     auto b3 = Then(Schedule(sched), Gen(3));
     auto b4 = Then(Schedule(sched), Gen(4));
     auto b = WhenAll(b1, b2, b3, b4);
-    return LetValue(b, [&](Value& v) {
-      int sum = 0;
-      for (int i = 0; i < 4; ++i) {
-        MMDEPLOY_INFO("v[{}] = {}", i, v[i].get<int>());
-        sum += v[i].get<int>();
-      }
-      return Just(Value(sum));
+    return LetValue(b, [&](auto&... vals) {
+      MMDEPLOY_INFO("vals = {}", std::tuple{vals.template get<int>()...});
+      return Just(Value((vals.template get<int>() + ...)));
     });
   });
   auto v = SyncWait(b);
@@ -179,11 +177,20 @@ TEST_CASE("test threaded split", "[execution]") { Fn(); }
 
 TEST_CASE("test inference pipeline", "[execution][pipeline]") { Gn(); }
 
-#endif
-
 TEST_CASE("test generic just", "[execution]") {
   auto j = Just(1, 2, 3, 4.0);
   auto s = LetValue(j, [](const auto&... vs) { return Just((vs + ...)); });
   auto v = SyncWait(s);
   MMDEPLOY_INFO("generic: {}", v);
+}
+
+TEST_CASE("test generic split", "[execution]") {
+  auto j = Just(1, 2, 3);
+  auto s = Split(j);
+  auto a1 = Then(s, [](int x, auto...) { return x; });
+  auto a2 = Then(s, [](int, int y, auto...) { return y; });
+  auto a3 = Then(s, [](int, int, int z) { return z; });
+  auto a = WhenAll(a3, a2, a1);
+  auto [z, y, x] = SyncWait(a);
+  MMDEPLOY_INFO("generic split: {} {} {}", z, y, x);
 }
