@@ -56,7 +56,7 @@ const Value& config_template() {
 
 template <class ModelType>
 int mmdeploy_pose_detector_create_impl(ModelType&& m, const char* device_name, int device_id,
-                                        mm_handle_t* handle) {
+                                       mm_handle_t* handle) {
   try {
     auto value = config_template();
     value["pipeline"]["tasks"][1]["params"]["model"] = std::forward<ModelType>(m);
@@ -77,24 +77,24 @@ int mmdeploy_pose_detector_create_impl(ModelType&& m, const char* device_name, i
 }  // namespace
 
 int mmdeploy_pose_detector_create(mm_model_t model, const char* device_name, int device_id,
-                                   mm_handle_t* handle) {
+                                  mm_handle_t* handle) {
   return mmdeploy_pose_detector_create_impl(*static_cast<Model*>(model), device_name, device_id,
-                                             handle);
+                                            handle);
 }
 
 int mmdeploy_pose_detector_create_by_path(const char* model_path, const char* device_name,
-                                           int device_id, mm_handle_t* handle) {
+                                          int device_id, mm_handle_t* handle) {
   return mmdeploy_pose_detector_create_impl(model_path, device_name, device_id, handle);
 }
 
 int mmdeploy_pose_detector_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
-                                  mm_pose_estimate_t** results, int** result_count) {
+                                 mm_pose_estimate_t** results, int** result_count) {
   return mmdeploy_pose_detector_apply_bbox(handle, mats, mat_count, nullptr, nullptr, results);
 }
 
 int mmdeploy_pose_detector_apply_bbox(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
-                                       const mm_rect_t* bboxes, const int* bbox_count,
-                                       mm_pose_estimate_t** results) {
+                                      const mm_rect_t* bboxes, const int* bbox_count,
+                                      mm_pose_estimate_t** results) {
   if (handle == nullptr || mats == nullptr || mat_count == 0 || results == nullptr) {
     return MM_E_INVALID_ARG;
   }
@@ -112,8 +112,8 @@ int mmdeploy_pose_detector_apply_bbox(mm_handle_t handle, const mm_mat_t* mats, 
         for (int j = 0; j < bbox_count[i]; ++j) {
           Value obj;
           obj["ori_img"] = _mat;
-          float width = std::min(int(bboxes[j].right - bboxes[j].left + 1), _mat.width());
-          float height = std::min(int(bboxes[j].bottom - bboxes[j].top + 1), _mat.height());
+          float width = std::min(bboxes[j].right - bboxes[j].left + 1, (float)_mat.width());
+          float height = std::min(bboxes[j].bottom - bboxes[j].top + 1, (float)_mat.height());
           obj["box"] = {bboxes[j].left, bboxes[j].top, width, height, 1.0};
           obj["rotation"] = 0.f;
           img_with_boxes.push_back(obj);

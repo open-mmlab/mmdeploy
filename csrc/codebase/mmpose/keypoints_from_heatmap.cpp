@@ -36,10 +36,7 @@ class TopdownHeatmapBaseHeadDecode : public MMPose {
       target_type_ = params.value("target_type", target_type_);
       valid_radius_factor_ = params.value("valid_radius_factor", valid_radius_factor_);
       unbiased_decoding_ = params.value("unbiased_decoding", unbiased_decoding_);
-      if (params.contains("post_process")) {
-        post_process_ =
-            params["post_process"].is_null() ? "null" : params.value("post_process", post_process_);
-      }
+      post_process_ = params.value("post_process", post_process_);
       shift_heatmap_ = params.value("shift_heatmap", shift_heatmap_);
       modulate_kernel_ = params.value("modulate_kernel", modulate_kernel_);
     }
@@ -157,7 +154,7 @@ class TopdownHeatmapBaseHeadDecode : public MMPose {
       }
     } else {
       pred = get_max_pred(heatmap);
-      if (post_process_ == "unbiased") {
+      if (post_process == "unbiased") {
         heatmap = gaussian_blur(heatmap, modulate_kernel);
         float* data = heatmap.data<float>();
         std::for_each(data, data + K * H * W, [](float& v) {
@@ -170,7 +167,7 @@ class TopdownHeatmapBaseHeadDecode : public MMPose {
           }
         });
 
-      } else if (post_process_ != "null") {
+      } else if (post_process != "null") {
         cv::parallel_for_(cv::Range(0, K), [&](const cv::Range& r) {
           for (int i = r.start; i < r.end; i++) {
             float* data = heatmap.data<float>() + i * W * H;
