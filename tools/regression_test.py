@@ -611,7 +611,7 @@ def main():
     assert isinstance(backend_list, list)
     logger.info(f'Regression test backend list = {backend_list}')
 
-    deploy_yaml_list = args.deploy_yaml_list
+    deploy_yaml_list = args.deploy_yml
     assert isinstance(deploy_yaml_list, list)
     assert len(deploy_yaml_list) > 0
 
