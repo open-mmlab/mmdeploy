@@ -459,12 +459,11 @@ def get_backend_result(backends_info, model_cfg_path, deploy_config_dir,
 
             try:
                 # Convert the model to specific backend
-                os.system(cmd_str)
+                shell_res = os.system(cmd_str)
+                print(f'Got shell_res = {shell_res}')
+
                 # check if converted successes or not.
-                convert_checkpoint_path = backend_output_path. \
-                    joinpath(backend_file_info.get(backend_name, ''))
-                if convert_checkpoint_path.exists() and \
-                        convert_checkpoint_path.stat().st_size > 0:
+                if shell_res == 0:
                     convert_result = True
                 else:
                     convert_result = False
@@ -473,6 +472,9 @@ def get_backend_result(backends_info, model_cfg_path, deploy_config_dir,
             except Exception as e:
                 print(f'Got error: {e}')
                 convert_result = False
+
+            convert_checkpoint_path = backend_output_path. \
+                joinpath(backend_file_info.get(backend_name, ''))
 
             # Test the model
             fps = '-'
