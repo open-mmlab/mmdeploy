@@ -480,22 +480,22 @@ def get_backend_result(backends_info,
 
             print(f'Process cmd = {cmd_str}')
 
-            # Convert the model to specific backend
             try:
+                # Convert the model to specific backend
                 os.system(cmd_str)
+                # check if converted successes or not.
+                convert_checkpoint_path = backend_output_path. \
+                    joinpath(backend_file_info.get(backend_name, ''))
+                if convert_checkpoint_path.exists() and \
+                        convert_checkpoint_path.stat().st_size > 0:
+                    convert_result = True
+                else:
+                    convert_result = False
+                print(f'Got convert_result = {convert_result}')
+
             except Exception as e:
                 print(f'Got error: {e}')
                 convert_result = False
-
-            # check if converted successes or not.
-            convert_checkpoint_path = backend_output_path. \
-                joinpath(backend_file_info.get(backend_name, ''))
-            if convert_checkpoint_path.exists() and \
-                    convert_checkpoint_path.stat().st_size > 0:
-                convert_result = True
-            else:
-                convert_result = False
-            print(f'Got convert_result = {convert_result}')
 
             # Test the model
             fps = '-'
