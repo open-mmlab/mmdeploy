@@ -611,13 +611,17 @@ struct _Sender {
 
     using _Indices = std::index_sequence_for<Senders...>;
 
+    // workaround for a bug in GCC7 that Is in a lambda is treated as unexpanded parameter pack
+    template <class S, class R>
+    static auto _Connect1(S&& s, R&& r) {
+      return __conv{[&]() mutable { return Connect((S &&) s, (R &&) r); }};
+    }
+
     template <size_t... Is>
     static auto _ConnectChildren(_Operation* self, _WhenAll&& when_all, std::index_sequence<Is...>)
         -> std::tuple<_ChildOpState<Senders, Is>...> {
-      return std::tuple<_ChildOpState<Senders, Is>...>{__conv{[&] {
-        return Connect(std::get<Is>(((_WhenAll &&) when_all).sndrs_),
-                       _Receiver<CvrefReceiver, Is>{self});
-      }}...};
+      return {_Connect1(std::get<Is>(((_WhenAll &&) when_all).sndrs_),
+                        _Receiver<CvrefReceiver, Is>{self})...};
     }
 
     using _ChildOpStatesTuple =
