@@ -1,18 +1,18 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import os
-import logging
 import argparse
-from pathlib import Path
+import logging
+import os
 from functools import partial
+from pathlib import Path
 
-import yaml
 import pandas as pd
+import yaml
+from mmcv.parallel import MMDataParallel
 from torch.hub import download_url_to_file
 from torch.multiprocessing import set_start_method
 
-from mmcv.parallel import MMDataParallel
 from mmdeploy.apis import build_task_processor
-from mmdeploy.utils import load_config, get_root_logger, parse_device_id
+from mmdeploy.utils import get_root_logger, load_config, parse_device_id
 from mmdeploy.utils.timer import TimeCounter
 
 
@@ -40,10 +40,7 @@ def parse_args():
         help='the dir to save logs and models',
         default='../mmdeploy_regression_working_dir')
     parser.add_argument(
-        '--device-id',
-        type=str,
-        help='`the CUDA device id',
-        default='cuda')
+        '--device-id', type=str, help='`the CUDA device id', default='cuda')
     parser.add_argument(
         '--log-level',
         help='set log level',
@@ -80,8 +77,8 @@ def get_model_metafile_info(global_info, model_info, logger):
     assert len(model_config_files) > 0
 
     # make checkpoint save directory
-    checkpoint_save_dir = Path(checkpoint_dir).joinpath(codebase_name,
-                                                        model_info.get('name'))
+    checkpoint_save_dir = Path(checkpoint_dir).joinpath(
+        codebase_name, model_info.get('name'))
     checkpoint_save_dir.mkdir(parents=True, exist_ok=True)
 
     # get model metafile info
@@ -111,9 +108,8 @@ def get_model_metafile_info(global_info, model_info, logger):
 
         # Download weight
         logger.info(f'Downloading {weights_url} to {weights_save_path}')
-        download_url_to_file(weights_url,
-                             str(weights_save_path),
-                             progress=True)
+        download_url_to_file(
+            weights_url, str(weights_save_path), progress=True)
 
         # check weather the weight download successful
         if not weights_save_path.exists():
@@ -123,20 +119,21 @@ def get_model_metafile_info(global_info, model_info, logger):
     return model_meta_info, checkpoint_save_dir, codebase_dir
 
 
-def update_report(report_dict,
-                  model_name,
-                  model_config,
-                  model_checkpoint_name,
-                  dataset,
-                  backend_name,
-                  deploy_config,
-                  static_or_dynamic,
-                  conversion_result,
-                  fps,
-                  metric_info,
-                  test_pass,
-                  ):
-    """Update report information
+def update_report(
+    report_dict,
+    model_name,
+    model_config,
+    model_checkpoint_name,
+    dataset,
+    backend_name,
+    deploy_config,
+    static_or_dynamic,
+    conversion_result,
+    fps,
+    metric_info,
+    test_pass,
+):
+    """Update report information.
 
     Args:
         report_dict (dict): Report info dict.
@@ -170,14 +167,10 @@ def update_report(report_dict,
     report_dict.get('test_pass').append(test_pass)
 
 
-def get_pytorch_result(model_name,
-                       meta_info,
-                       checkpoint_path,
-                       model_config_name,
-                       metric_tolerance,
-                       report_dict,
+def get_pytorch_result(model_name, meta_info, checkpoint_path,
+                       model_config_name, metric_tolerance, report_dict,
                        logger):
-    """Get metric from metafile info of the model
+    """Get metric from metafile info of the model.
 
     Args:
         model_name (str): Name of model.
@@ -238,8 +231,7 @@ def get_pytorch_result(model_name,
         conversion_result='-',
         fps=fps,
         metric_info=metric_list,
-        test_pass='-'
-    )
+        test_pass='-')
 
     logger.info(f'Got {model_config_name} metric: {pytorch_metric}')
     return pytorch_metric
@@ -275,13 +267,8 @@ def get_info_from_log_file(info_type, log_path):
     return info_value
 
 
-def test_backends(deploy_cfg,
-                  model_cfg,
-                  checkpoint_path,
-                  device,
-                  metrics_name,
-                  logger,
-                  metric_info_dict):
+def test_backends(deploy_cfg, model_cfg, checkpoint_path, device, metrics_name,
+                  logger, metric_info_dict):
     """Test the backend.
 
     Args:
@@ -341,27 +328,24 @@ def test_backends(deploy_cfg,
     with_sync = not is_device_cpu
 
     with TimeCounter.activate(
-            warmup=10,
-            log_interval=100,
-            with_sync=with_sync,
+            warmup=10, log_interval=100, with_sync=with_sync,
             file=str(log_path)):
-        outputs = task_processor.single_gpu_test(model,
-                                                 data_loader,
-                                                 show=False,
-                                                 out_dir=None)
+        outputs = task_processor.single_gpu_test(
+            model, data_loader, show=False, out_dir=None)
 
     fps = get_info_from_log_file('FPS', log_path)
     print(f'Got fps = {fps}')
 
     # Get metric
-    evaluate_result = task_processor.evaluate_outputs(model_cfg,
-                                                      outputs,
-                                                      dataset,
-                                                      metrics=metrics_name,
-                                                      out=str(result_path),
-                                                      metric_options=None,
-                                                      format_only=False,
-                                                      log_file=str(log_path))
+    evaluate_result = task_processor.evaluate_outputs(
+        model_cfg,
+        outputs,
+        dataset,
+        metrics=metrics_name,
+        out=str(result_path),
+        metric_options=None,
+        format_only=False,
+        log_file=str(log_path))
     print(f'Got evaluate_result = {evaluate_result}')
 
     metric_eval_name = \
@@ -377,19 +361,10 @@ def test_backends(deploy_cfg,
     return metric, fps
 
 
-def get_backend_result(backends_info,
-                       model_cfg_path,
-                       deploy_config_dir,
-                       checkpoint_path,
-                       work_dir,
-                       device_type,
-                       pytorch_metric,
-                       metric_tolerance,
-                       report_dict,
-                       test_type,
-                       test_image_info,
-                       logger,
-                       backend_name):
+def get_backend_result(backends_info, model_cfg_path, deploy_config_dir,
+                       checkpoint_path, work_dir, device_type, pytorch_metric,
+                       metric_tolerance, report_dict, test_type,
+                       test_image_info, logger, backend_name):
     """Convert model to onnx and then get metric.
 
     Args:
@@ -410,8 +385,7 @@ def get_backend_result(backends_info,
 
     backends_info = backends_info.get(backend_name, [])
     if len(backends_info) <= 0:
-        logger.warning('Can not get info of '
-                       f'{backend_name}, skip it...')
+        logger.warning('Can not get info of ' f'{backend_name}, skip it...')
         return
 
     backend_file_info = {
@@ -437,7 +411,7 @@ def get_backend_result(backends_info,
 
     performance_align = backends_info.get('performance_align', False)
     dynamic_test_img_path = \
-        test_image_info.get("dynamic_test_img_path", None)
+        test_image_info.get('dynamic_test_img_path', None)
 
     metric_name_list = [str(metric) for metric in pytorch_metric]
     assert len(metric_name_list) > 0
@@ -573,8 +547,7 @@ def get_backend_result(backends_info,
                 conversion_result=str(convert_result),
                 fps=fps,
                 metric_info=metric_list,
-                test_pass=str(test_pass)
-            )
+                test_pass=str(test_pass))
 
 
 def save_report(report_info, report_save_path, logger):
@@ -591,8 +564,7 @@ def save_report(report_info, report_save_path, logger):
     df = pd.DataFrame(report_info)
     df.to_excel(report_save_path)
 
-    logger.info(f'Saved regression test report '
-                f'to {report_save_path}.')
+    logger.info(f'Saved regression test report ' f'to {report_save_path}.')
 
 
 def main():
@@ -605,20 +577,17 @@ def main():
 
     backend_list = args.backends
     if backend_list == ['all']:
-        backend_list = ['onnxruntime', 'tensorrt',
-                        'openvino', 'ncnn',
-                        'pplnn', 'sdk', 'torchscript']
+        backend_list = [
+            'onnxruntime', 'tensorrt', 'openvino', 'ncnn', 'pplnn', 'sdk',
+            'torchscript'
+        ]
     assert isinstance(backend_list, list)
     logger.info(f'Regression test backend list = {backend_list}')
-
-    deploy_yaml_list = args.deploy_yaml_list
-    assert isinstance(deploy_yaml_list, list)
-    assert len(deploy_yaml_list) > 0
 
     work_dir = Path(args.work_dir)
     work_dir.mkdir(parents=True, exist_ok=True)
 
-    for deploy_yaml in deploy_yaml_list:
+    for deploy_yaml in args.deploy_yml:
 
         if not Path(deploy_yaml).exists():
             raise FileNotFoundError(f'deploy_yaml {deploy_yaml} not found, '
@@ -674,8 +643,8 @@ def main():
                 assert model_cfg_path.exists()
 
                 # get checkpoint path
-                checkpoint_name = Path(model_metafile_info.
-                                       get(model_config).get('Weights')).name
+                checkpoint_name = Path(
+                    model_metafile_info.get(model_config).get('Weights')).name
                 checkpoint_path = Path(checkpoint_save_dir, checkpoint_name)
                 assert checkpoint_path.exists()
 
@@ -683,13 +652,9 @@ def main():
                 deploy_config_dir = models.get('deploy_config_dir', '')
                 assert deploy_config_dir != ''
 
-                pytorch_metric = get_pytorch_result(models.get('name'),
-                                                    model_metafile_info,
-                                                    checkpoint_path,
-                                                    model_cfg_path,
-                                                    metric_tolerance,
-                                                    report_dict,
-                                                    logger)
+                pytorch_metric = get_pytorch_result(
+                    models.get('name'), model_metafile_info, checkpoint_path,
+                    model_cfg_path, metric_tolerance, report_dict, logger)
                 input_img_path = \
                     models.get('input_img_path', './tests/data/tiger.jpeg')
                 dynamic_test_img_path = \
@@ -700,19 +665,11 @@ def main():
                     'dynamic_test_img_path': dynamic_test_img_path
                 }
 
-                backend_result_function = partial(get_backend_result,
-                                                  backends_info,
-                                                  model_cfg_path,
-                                                  deploy_config_dir,
-                                                  checkpoint_path,
-                                                  work_dir,
-                                                  args.device_id,
-                                                  pytorch_metric,
-                                                  metric_tolerance,
-                                                  report_dict,
-                                                  args.test_type,
-                                                  test_image_info,
-                                                  logger)
+                backend_result_function = partial(
+                    get_backend_result, backends_info, model_cfg_path,
+                    deploy_config_dir, checkpoint_path, work_dir,
+                    args.device_id, pytorch_metric, metric_tolerance,
+                    report_dict, args.test_type, test_image_info, logger)
 
                 for backend in backend_list:
                     backend_result_function(backend)
