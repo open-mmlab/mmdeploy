@@ -452,6 +452,9 @@ def get_backend_result(backends_info,
                       f'--device {device_type} ' \
                       '--log-level INFO'
 
+            if backend_name == 'sdk':
+                cmd_str += ' --dump-info'
+
             print(f'Process cmd = {cmd_str}')
 
             # Convert the model to specific backend
