@@ -64,9 +64,11 @@ globals:
           fp32: &default_sdk_dynamic_fp32
     torchscript: &default_ts_config
       performace_align: False
+      dynamic_test_img_path:
       deploy_config:
         dynamic:
           fp32: &default_ts_dynamic_fp32 detection_torchscript.py
+
 models:
   - name: yolo
     codebase_model_config_dir: ./configs/yolo
@@ -74,7 +76,7 @@ models:
       - yolov3_mobilenetv2_320_300e_coco.py
     metafile: configs/yolo/metafile.yml
     deploy_config_dir: ./configs/mmdet/detection
-    calib_dataset_cfg: None
+    calib_dataset_cfg:
     backends:
       onnxruntime:
         performance_align: False
@@ -125,7 +127,7 @@ models:
       - retinanet_r50_fpn_1x_coco.py
     metafile: configs/retinanet/metafile.yml
     deploy_config_dir: ./configs/mmdet/detection
-    calib_dataset_cfg: None
+    calib_dataset_cfg:
     backends:
       onnxruntime:
         performance_align: False
