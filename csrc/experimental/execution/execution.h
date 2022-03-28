@@ -699,6 +699,7 @@ struct _Receiver {
     assert(self.shared_state_);
     self.shared_state_->data_.emplace((As &&) as...);
     self.shared_state_->_Notify();
+    self.shared_state_.reset();
   }
 };
 
