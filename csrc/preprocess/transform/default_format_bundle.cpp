@@ -20,9 +20,8 @@ Result<Value> DefaultFormatBundleImpl::Process(const Value& input) {
   Value output = input;
   if (input.contains("img")) {
     Tensor in_tensor = input["img"].get<Tensor>();
-    OUTCOME_TRY(output["img"], ToFloat32(in_tensor, arg_.img_to_float));
+    OUTCOME_TRY(auto tensor, ToFloat32(in_tensor, arg_.img_to_float));
 
-    Tensor tensor = output["img"].get<Tensor>();
     // set default meta keys
     if (!output.contains("pad_shape")) {
       for (auto v : tensor.shape()) {
@@ -42,7 +41,8 @@ Result<Value> DefaultFormatBundleImpl::Process(const Value& input) {
     }
 
     // transpose
-    OUTCOME_TRY(output["img"], HWC2CHW(tensor));
+    OUTCOME_TRY(tensor, HWC2CHW(tensor));
+    SetTransformData(output, "img", std::move(tensor));
   }
 
   MMDEPLOY_DEBUG("DefaultFormatBundle output: {}", to_json(output).dump(2));
