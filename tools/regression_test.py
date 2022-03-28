@@ -8,9 +8,9 @@ from functools import partial
 import yaml
 import pandas as pd
 from torch.hub import download_url_to_file
-from mmcv.parallel import MMDataParallel
 from torch.multiprocessing import set_start_method
 
+from mmcv.parallel import MMDataParallel
 from mmdeploy.apis import build_task_processor
 from mmdeploy.utils import load_config, get_root_logger, parse_device_id
 from mmdeploy.utils.timer import TimeCounter
@@ -430,7 +430,8 @@ def get_backend_result(backends_info,
             metric_list = []
 
             device_type = 'cuda' if device != '-1' else 'cpu'
-            deploy_cfg_path = Path(deploy_config_dir, deploy_cfg_name).absolute()
+            deploy_cfg_path = Path(deploy_config_dir,
+                                   deploy_cfg_name).absolute()
 
             backend_output_path = Path(work_dir). \
                 joinpath(Path(checkpoint_path).parent.parent.name,
