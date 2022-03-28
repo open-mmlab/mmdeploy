@@ -5,8 +5,8 @@
 #ifndef MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_TYPE_ERASED_H_
 #define MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_TYPE_ERASED_H_
 
-#include "execution.h"
 #include "core/value.h"
+#include "execution.h"
 
 namespace mmdeploy {
 
@@ -214,26 +214,27 @@ typedef mmdeploy_sender (*mmdeploy_kleisli_t)(mmdeploy_value_t, void*);
 typedef struct mmdeploy_sender* mmdeploy_sender_t;
 typedef struct mmdeploy_scheduler* mmdeploy_scheduler_t;
 
-mmdeploy_scheduler_t mmdeploy_inline_scheduler();
+MMDEPLOY_API mmdeploy_scheduler_t mmdeploy_inline_scheduler();
 
-mmdeploy_sender_t mmdeploy_executor_just(mmdeploy_value_t value);
+MMDEPLOY_API mmdeploy_sender_t mmdeploy_executor_just(mmdeploy_value_t value);
 
-mmdeploy_sender_t mmdeploy_executor_schedule(mmdeploy_scheduler_t scheduler);
+MMDEPLOY_API mmdeploy_sender_t mmdeploy_executor_schedule(mmdeploy_scheduler_t scheduler);
 
-mmdeploy_sender_t mmdeploy_executor_transfer(mmdeploy_sender_t input,
-                                             mmdeploy_scheduler_t scheduler);
+MMDEPLOY_API mmdeploy_sender_t mmdeploy_executor_transfer(mmdeploy_sender_t input,
+                                                          mmdeploy_scheduler_t scheduler);
 
-mmdeploy_sender_t mmdeploy_executor_then(mmdeploy_sender_t input, mmdeploy_invocable_t fn,
-                                         void* context);
+MMDEPLOY_API mmdeploy_sender_t mmdeploy_executor_then(mmdeploy_sender_t input,
+                                                      mmdeploy_invocable_t fn, void* context);
 
-mmdeploy_sender_t mmdeploy_executor_let_value(mmdeploy_sender_t input, mmdeploy_kleisli_t kleisli,
-                                              void* context);
+MMDEPLOY_API mmdeploy_sender_t mmdeploy_executor_let_value(mmdeploy_sender_t input,
+                                                           mmdeploy_kleisli_t kleisli,
+                                                           void* context);
 
-mmdeploy_sender_t mmdeploy_executor_split(mmdeploy_sender_t input);
+MMDEPLOY_API mmdeploy_sender_t mmdeploy_executor_split(mmdeploy_sender_t input);
 
-mmdeploy_sender_t mmdeploy_executor_when_all(mmdeploy_sender_t* inputs, int32_t n);
+MMDEPLOY_API mmdeploy_sender_t mmdeploy_executor_when_all(mmdeploy_sender_t* inputs, int32_t n);
 
-mmdeploy_value_t mmdeploy_executor_sync_wait(mmdeploy_sender_t input);
+MMDEPLOY_API mmdeploy_value_t mmdeploy_executor_sync_wait(mmdeploy_sender_t input);
 
 #if __cplusplus
 }

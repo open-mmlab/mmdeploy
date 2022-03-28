@@ -3,6 +3,8 @@
 #ifndef MMDEPLOY_SRC_UTILS_FORMATTER_H_
 #define MMDEPLOY_SRC_UTILS_FORMATTER_H_
 
+#include <utility>
+
 #include "core/logger.h"
 
 #if FMT_VERSION >= 50000
@@ -53,6 +55,19 @@ auto format_arg(BasicFormatter<char> &f, const char *, const T &v)
     first = false;
   }
   f.writer() << "]";
+}
+
+template <class Tuple, size_t... Is>
+void format_tuple_impl(BasicFormatter<char> &f, const Tuple &t, std::index_sequence<Is...>) {
+  constexpr int last = sizeof...(Is) - 1;
+  f.writer() << "(";
+  ((f.writer() << fmt::format("{}", std::get<Is>(t)) << (Is != last ? ", " : "")), ...);
+  f.writer() << ")";
+}
+
+template <typename... Ts>
+void format_arg(BasicFormatter<char> &f, const char *, const std::tuple<Ts...> &t) {
+  format_tuple_impl(f, t, std::index_sequence_for<Ts...>{});
 }
 
 #endif
