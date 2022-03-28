@@ -28,7 +28,7 @@ globals:
           fp32: &default_tensorrt_dynamic_fp32 detection_tensorrt_dynamic-320x320-1344x1344.py
           fp16: &default_tensorrt_dynamic_fp16 detection_tensorrt-fp16_dynamic-320x320-1344x1344.py
           int8: &default_tensorrt_dynamic_int8 detection_tensorrt-int8_dynamic-320x320-1344x1344.py
-    openvino:  &default_openvino_config
+    openvino: &default_openvino_config
       performance_align: False
       deploy_config:
         static:
