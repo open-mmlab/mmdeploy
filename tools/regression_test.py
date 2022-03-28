@@ -120,18 +120,18 @@ def get_model_metafile_info(global_info, model_info, logger):
 
 
 def update_report(
-    report_dict,
-    model_name,
-    model_config,
-    model_checkpoint_name,
-    dataset,
-    backend_name,
-    deploy_config,
-    static_or_dynamic,
-    conversion_result,
-    fps,
-    metric_info,
-    test_pass,
+        report_dict,
+        model_name,
+        model_config,
+        model_checkpoint_name,
+        dataset,
+        backend_name,
+        deploy_config,
+        static_or_dynamic,
+        conversion_result,
+        fps,
+        metric_info,
+        test_pass,
 ):
     """Update report information.
 
@@ -479,7 +479,6 @@ def get_backend_result(backends_info, model_cfg_path, deploy_config_dir,
             # Test the model
             fps = '-'
             if convert_result and \
-                    infer_type == 'dynamic' and \
                     performance_align and \
                     test_type != 'convert':
 
