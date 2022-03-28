@@ -43,7 +43,7 @@ def parse_args():
         '--device-id',
         type=str,
         help='`the CUDA device id',
-        default='cuda')
+        default='cuda:0')
     parser.add_argument(
         '--log-level',
         help='set log level',
