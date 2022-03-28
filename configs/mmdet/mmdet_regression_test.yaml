@@ -1,6 +1,5 @@
 globals:
   codebase_name: mmdet
-  codebase_release: V2.22.0
   codebase_dir: ../mmdetection
   checkpoint_force_download: False
   checkpoint_dir: ../mmdeploy_checkpoints
