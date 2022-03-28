@@ -32,13 +32,9 @@ This doc is only for how to build SDK using android toolchain on linux.
     **Make sure cmake version >= 3.14.0**. If not, you can follow instructions below to install cmake 3.20.0. For more versions of cmake, please refer to [cmake website](https://cmake.org/install).
 
     ```bash
-    sudo apt-get install -y libssl-dev
-    wget https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0.tar.gz
-    tar -zxvf cmake-3.20.0.tar.gz
-    cd cmake-3.20.0
-    ./bootstrap
-    make
-    sudo make install
+    wget https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0-linux-x86_64.tar.gz
+    tar -xzvf cmake-3.20.0-linux-x86_64.tar.gz
+    sudo ln -sf $(pwd)/cmake-3.20.0-linux-x86_64/bin/* /usr/bin/
     ```
 
 - ANDROID NDK 19+
@@ -206,5 +202,5 @@ cmake .. \
       -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake \
       -DANDROID_ABI=arm64-v8a \
       -DANDROID_PLATFORM=android-30
-cmake --build . -- -j$(nproc)
+make -j$(nproc)
 ```
