@@ -415,6 +415,7 @@ def get_backend_result(backends_info,
     }
 
     performance_align = backends_info.get('performance_align', False)
+    dynamic_test_img_path = backends_info.get('dynamic_test_img_path', False)
 
     metric_name_list = [str(metric) for metric in pytorch_metric]
     assert len(metric_name_list) > 0
@@ -454,6 +455,10 @@ def get_backend_result(backends_info,
 
             if backend_name == 'sdk':
                 cmd_str += ' --dump-info'
+
+            if infer_type == 'dynamic' and \
+                    dynamic_test_img_path is not None:
+                cmd_str += f' --test-img {dynamic_test_img_path}'
 
             print(f'Process cmd = {cmd_str}')
 
