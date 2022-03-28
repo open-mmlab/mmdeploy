@@ -255,7 +255,7 @@ class PoseDetection(BaseTask):
                          metric_options: Optional[dict] = None,
                          format_only: bool = False,
                          log_file: Optional[str] = None,
-                         **kwargs):
+                         ** kwargs):
         """Perform post-processing to predictions of model.
 
         Args:

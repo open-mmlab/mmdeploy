@@ -6,9 +6,19 @@ import numpy as np
 import torch
 
 from mmdeploy.codebase.base import BaseBackendModel
-from mmdeploy.utils import Backend, get_backend, load_config
+from mmdeploy.utils import Backend, get_backend, load_config, get_codebase_config
+from mmcv.utils import Registry
 
 
+def __build_backend_model(cls_name: str, registry: Registry, *args, **kwargs):
+    return registry.module_dict[cls_name](*args, **kwargs)
+
+
+__BACKEND_MODEL = mmcv.utils.Registry(
+    'backend_text_recognizer', build_func=__build_backend_model)
+
+
+@__BACKEND_MODEL.register_module('end2end')
 class End2EndModel(BaseBackendModel):
     """End to end model for inference of pose detection.
 
@@ -56,7 +66,9 @@ class End2EndModel(BaseBackendModel):
             backend=backend,
             backend_files=backend_files,
             device=device,
-            output_names=output_names)
+            input_names=[self.input_name],
+            output_names=output_names,
+            deploy_cfg=self.deploy_cfg)
 
     def forward(self, img: torch.Tensor, img_metas: Sequence[Sequence[dict]],
                 *args, **kwargs):
@@ -137,6 +149,67 @@ class End2EndModel(BaseBackendModel):
             win_name=win_name)
 
 
+@__BACKEND_MODEL.register_module('sdk')
+class SDKEnd2EndModel(End2EndModel):
+    """SDK inference class, converts SDK output to mmcls format."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def _cs2xyxy(self, _center: np.ndarray, _scale: np.ndarray, padding: float = 1.25):
+        """This encodes bbox(x,y,w,h) into (center, scale)
+
+        Args:
+            _center: (np.ndarray[float32](2,)) Center of the bbox (x, y)
+            _scale: (np.ndarray[float32](2,)) Scale of the bbox w & h
+
+        Returns:
+            - np.ndarray[float32](2,): fake box if keypoint, the process in
+                topdown_affine will calculate original center, scale.
+        """
+        scale = _scale.copy()
+        scale = scale / padding * 200
+        center = _center.copy()
+        # fake box
+        box = np.array([center - 0.5 * scale, center +
+                       0.5 * scale - 1]).flatten()
+        return box
+
+    def forward(self, img: List[torch.Tensor], *args, **kwargs) -> list:
+        """Run forward inference.
+
+        Args:
+            img (List[torch.Tensor]): A list contains input image(s)
+                in [N x C x H x W] format.
+            *args: Other arguments.
+            **kwargs: Other key-pair arguments.
+
+        Returns:
+            list: A list contains predictions.
+        """
+        image_paths = []
+        boxes = np.zeros(shape=(img.shape[0], 6))
+        bbox_ids = []
+        sdk_boxes = []
+        for i, img_meta in enumerate(kwargs['img_metas']):
+            center = img_meta['center']
+            scale = img_meta['scale']
+            boxes[i, :2] = center
+            boxes[i, 2:4] = scale
+            boxes[i, 4] = np.prod(scale * 200.0)
+            boxes[i, 5] = img_meta['bbox_score'] if 'bbox_score' in img_meta else 1.0
+            sdk_boxes.append(self._cs2xyxy(center, scale))
+            image_paths.append(img_meta['image_file'])
+            bbox_ids.append(img_meta['bbox_id'])
+
+        pred = self.wrapper.handle(
+            [img[0].contiguous().detach().cpu().numpy()], sdk_boxes)[0]
+
+        result = dict(preds=pred, boxes=boxes,
+                      image_paths=image_paths, bbox_ids=bbox_ids)
+        return result
+
+
 def build_pose_detection_model(model_files: Sequence[str],
                                model_cfg: Union[str, mmcv.Config],
                                deploy_cfg: Union[str, mmcv.Config],
@@ -158,12 +231,14 @@ def build_pose_detection_model(model_files: Sequence[str],
     deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
 
     backend = get_backend(deploy_cfg)
-    backend_pose_model = End2EndModel(
-        backend,
-        model_files,
-        device,
-        deploy_cfg=deploy_cfg,
+    model_type = get_codebase_config(deploy_cfg).get('model_type', 'end2end')
+
+    backend_pose_model = __BACKEND_MODEL.build(
+        model_type,
+        backend=backend,
+        backend_files=model_files,
+        device=device,
         model_cfg=model_cfg,
-        **kwargs)
+        deploy_cfg=deploy_cfg)
 
     return backend_pose_model
