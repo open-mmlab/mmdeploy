@@ -39,6 +39,33 @@ python ./tools/regression_test.py \
 - `--backend` : 筛选测试的后端, 默认None: 测全部backend,  也可传入若干个后端，例如 "mmdet,mmcls"。
 - `--log-level` : 设置日记的等级，选项包括`'CRITICAL'， 'FATAL'， 'ERROR'， 'WARN'， 'WARNING'， 'INFO'， 'DEBUG'， 'NOTSET'`。 默认是`INFO`。
 
+## 例子
+
+1. 测试 mmdet 和 mmpose 的所有 backend
+
+```shell
+python ./tools/regression_test.py \
+    --deploy-yml ./configs/mmdet/mmdet_regression_test.yaml ./configs/mmdet/mmpose.yaml \
+    --test-type "precision" \
+    --backends all \
+    --work-dir "../mmdeploy_regression_working_dir" \
+    --device "cuda" \
+    --log-level INFO
+```
+
+2. 测试 mmdet 和 mmpose 的某几个 backend
+
+```shell
+python ./tools/regression_test.py \
+    --deploy-yml ./configs/mmdet/mmdet_regression_test.yaml ./configs/mmdet/mmpose.yaml \
+    --test-type "precision" \
+    --backends onnxruntime tesnsorrt \
+    --work-dir "../mmdeploy_regression_working_dir" \
+    --device "cuda" \
+    --log-level INFO
+```
+
+
 ## 2. 回归测试配置文件
 
 ### 示例

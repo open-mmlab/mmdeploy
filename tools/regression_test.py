@@ -17,15 +17,33 @@ from mmdeploy.utils.timer import TimeCounter
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Process Regression Test')
-    parser.add_argument('--deploy-yml', help='regression test yaml path',
-                        default='./configs/mmdet/mmdet_regression_test.yaml')
-    parser.add_argument('--test-type', help='`test type', default='precision')
-    parser.add_argument('--backend', help='test specific backend(s)',
-                        default='all')
-    parser.add_argument('--work-dir', help='the dir to save logs and models',
-                        default='../mmdeploy_regression_working_dir')
-    parser.add_argument('--device-id', help='`the CUDA device id', default=0)
+    parser = argparse.ArgumentParser(description='Regression Test')
+    parser.add_argument(
+        '--deploy-yml',
+        nargs='+',
+        help='regression test yaml path.',
+        default=['./configs/mmdet/mmdet_regression_test.yaml'])
+    parser.add_argument(
+        '--test-type',
+        type=str,
+        help='`test type',
+        default='precision',
+        choices=['precision', 'convert'])
+    parser.add_argument(
+        '--backends',
+        nargs='+',
+        help='test specific backend(s)',
+        default=['all'])
+    parser.add_argument(
+        '--work-dir',
+        type=str,
+        help='the dir to save logs and models',
+        default='../mmdeploy_regression_working_dir')
+    parser.add_argument(
+        '--device-id',
+        type=str,
+        help='`the CUDA device id',
+        default='cuda')
     parser.add_argument(
         '--log-level',
         help='set log level',
@@ -364,10 +382,11 @@ def get_backend_result(backends_info,
                        deploy_config_dir,
                        checkpoint_path,
                        work_dir,
-                       device,
+                       device_type,
                        pytorch_metric,
                        metric_tolerance,
                        report_dict,
+                       test_type,
                        logger,
                        backend_name):
     """Convert model to onnx and then get metric.
@@ -378,20 +397,20 @@ def get_backend_result(backends_info,
         deploy_config_dir (str): Deploy config directory.
         checkpoint_path (Path): Checkpoints path.
         work_dir (Path): A working directory.
-        device (str): A string specifying device, defaults to '0'.
+        device_type (str): A string specifying device, defaults to 'cuda'.
         pytorch_metric (dict): All pytorch metric info.
         metric_tolerance (dict):Tolerance for metrics.
         report_dict (dict): Report info dict.
+        test_type (sgr): Test type. 'precision' or 'convert'.
         logger (logging.Logger): Logger.
         backend_name (str):  Backend name.
-
-    Returns:
-        Dict: metric info of the model
     """
 
     backends_info = backends_info.get(backend_name, [])
     if len(backends_info) <= 0:
-        return {}
+        logger.warning('Can not get info of '
+                       f'{backend_name}, skip it...')
+        return
 
     backend_file_info = {
         'onnxruntime': 'end2end.onnx',
@@ -430,7 +449,6 @@ def get_backend_result(backends_info,
 
             metric_list = []
 
-            device_type = 'cuda' if device != '-1' else 'cpu'
             deploy_cfg_path = Path(deploy_config_dir,
                                    deploy_cfg_name).absolute()
 
@@ -483,7 +501,8 @@ def get_backend_result(backends_info,
             fps = '-'
             if convert_result and \
                     infer_type == 'dynamic' and \
-                    performance_align:
+                    performance_align and \
+                    test_type != 'convert':
 
                 test_pass = False
 
@@ -581,7 +600,16 @@ def main():
     logger = get_root_logger(log_level=args.log_level)
     logger.info('Processing regression test.')
 
-    deploy_yaml_list = str(args.deploy_yml).replace(' ', '').split(',')
+    backend_list = args.backends
+    if backend_list == ['all']:
+        backend_list = ['onnxruntime', 'tensorrt',
+                        'openvino', 'ncnn',
+                        'pplnn', 'sdk', 'torchscript']
+    assert isinstance(backend_list, list)
+    logger.info(f'Regression test backend list = {backend_list}')
+
+    deploy_yaml_list = args.deploy_yaml_list
+    assert isinstance(deploy_yaml_list, list)
     assert len(deploy_yaml_list) > 0
 
     work_dir = Path(args.work_dir)
@@ -670,14 +698,11 @@ def main():
                                                   pytorch_metric,
                                                   metric_tolerance,
                                                   report_dict,
+                                                  args.test_type,
                                                   logger)
 
-                backend_result_function('onnxruntime')
-                backend_result_function('tensorrt')
-                # backend_result_function('openvino')
-                # backend_result_function('ncnn')
-                # backend_result_function('pplnn')
-                # backend_result_function('sdk')
+                for backend in backend_list:
+                    backend_result_function(backend)
 
         save_report(report_dict, report_save_path, logger)
 
