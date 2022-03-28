@@ -112,8 +112,8 @@ int mmdeploy_pose_detector_apply_bbox(mm_handle_t handle, const mm_mat_t* mats, 
         for (int j = 0; j < bbox_count[i]; ++j) {
           Value obj;
           obj["ori_img"] = _mat;
-          float width = std::min(bboxes[j].right - bboxes[j].left + 1, (float)_mat.width());
-          float height = std::min(bboxes[j].bottom - bboxes[j].top + 1, (float)_mat.height());
+          float width = bboxes[j].right - bboxes[j].left + 1;
+          float height = bboxes[j].bottom - bboxes[j].top + 1;
           obj["box"] = {bboxes[j].left, bboxes[j].top, width, height, 1.0};
           obj["rotation"] = 0.f;
           img_with_boxes.push_back(obj);
