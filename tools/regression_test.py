@@ -387,6 +387,7 @@ def get_backend_result(backends_info,
                        metric_tolerance,
                        report_dict,
                        test_type,
+                       test_image_info,
                        logger,
                        backend_name):
     """Convert model to onnx and then get metric.
@@ -402,6 +403,7 @@ def get_backend_result(backends_info,
         metric_tolerance (dict):Tolerance for metrics.
         report_dict (dict): Report info dict.
         test_type (sgr): Test type. 'precision' or 'convert'.
+        test_image_info (dict): Test image paths info.
         logger (logging.Logger): Logger.
         backend_name (str):  Backend name.
     """
@@ -434,7 +436,8 @@ def get_backend_result(backends_info,
     }
 
     performance_align = backends_info.get('performance_align', False)
-    dynamic_test_img_path = backends_info.get('dynamic_test_img_path', False)
+    dynamic_test_img_path = \
+        test_image_info.get("dynamic_test_img_path", None)
 
     metric_name_list = [str(metric) for metric in pytorch_metric]
     assert len(metric_name_list) > 0
@@ -466,7 +469,7 @@ def get_backend_result(backends_info,
                       f'{str(deploy_cfg_path.absolute().resolve())} ' \
                       f'{str(model_cfg_path.absolute().resolve())} ' \
                       f'{str(checkpoint_path.absolute().resolve())} ' \
-                      './tests/data/tiger.jpeg ' \
+                      f'{test_image_info.get("input_img_path")} ' \
                       f'--work-dir {backend_output_path} ' \
                       f'--device {device_type} ' \
                       '--log-level INFO'
@@ -687,6 +690,15 @@ def main():
                                                     metric_tolerance,
                                                     report_dict,
                                                     logger)
+                input_img_path = \
+                    models.get('input_img_path', './tests/data/tiger.jpeg')
+                dynamic_test_img_path = \
+                    models.get('dynamic_test_img_path', None)
+
+                test_image_info = {
+                    'input_img_path': input_img_path,
+                    'dynamic_test_img_path': dynamic_test_img_path
+                }
 
                 backend_result_function = partial(get_backend_result,
                                                   backends_info,
@@ -699,6 +711,7 @@ def main():
                                                   metric_tolerance,
                                                   report_dict,
                                                   args.test_type,
+                                                  test_image_info,
                                                   logger)
 
                 for backend in backend_list:
