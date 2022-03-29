@@ -1,6 +1,4 @@
-//
-// Created by li on 2022/3/11.
-//
+// Copyright (c) OpenMMLab. All rights reserved.
 
 #ifndef MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_H_
 #define MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_H_
@@ -464,6 +462,55 @@ template <class Sender, class Fun,
           typename _Sender = __let_value::_Sender<std::decay_t<Sender>, Fun>>
 _Sender LetValue(Sender&& s, Fun&& f) {
   return _Sender{(Sender &&) s, (Fun &&) f};
+}
+
+namespace __bulk {
+
+template <class Sender, class Shape, class Fun, class Receiver>
+struct _Operation;
+
+template <class Sender, class Shape, class Fun, class Receiver>
+struct _Receiver {
+  Shape shape_;
+  Fun fun_;
+  Receiver rcvr_;
+  template <class... As>
+  friend void SetValue(_Receiver&& self, As&&... as) {
+    for (Shape i = 0; i < self.shape_; ++i) {
+      self.fun_(i, as...);
+    }
+    SetValue((Receiver &&) self.rcvr_, (As &&) as...);
+  }
+};
+
+template <class Sender, class Shape, class Fun, class Receiver>
+struct _Operation {
+  connect_result_t<Sender, _Receiver<Sender, Shape, Fun, Receiver>> op_state2_;
+  friend void Start(_Operation& op_state) { Start(op_state.op_state2_); }
+};
+
+template <class Sender, class Shape, class Fun>
+struct _Sender {
+  using value_type = completion_signature_for_t<Sender>;
+
+  Sender sndr_;
+  Shape shape_;
+  Fun fun_;
+
+  template <class Self, class Receiver, _decays_to<Self, _Sender, bool> = true>
+  friend auto Connect(Self&& self, Receiver&& rcvr)
+      -> _Operation<std::decay_t<Sender>, Shape, Fun, Receiver> {
+    using receiver_t = _Receiver<Sender, Shape, Fun, Receiver>;
+    return {Connect(((Self &&) self).sndr_, receiver_t{((Self &&) self).shape_,
+                                                       ((Self &&) self).fun_, (Receiver &&) rcvr})};
+  }
+};
+
+}  // namespace __bulk
+
+template <class Sender, class Shape, class Fun>
+__bulk::_Sender<std::decay_t<Sender>, Shape, Fun> Bulk(Sender&& sndr, Shape shape, Fun fun) {
+  return {(Sender &&) sndr, shape, (Fun &&) fun};
 }
 
 namespace __split {

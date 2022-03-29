@@ -46,9 +46,8 @@ TEST_CASE("test when_all", "[execution]") {
 
 void Func() {
   auto a = Just(100, 200);
-  auto b = LetValue(a, [](int& x, int& y) {
-    return Then(Just(x + y), [](int v) { return v * v; });
-  });
+  auto b =
+      LetValue(a, [](int& x, int& y) { return Then(Just(x + y), [](int v) { return v * v; }); });
   auto v = SyncWait(b);
   static_assert(std::is_same_v<decltype(v), std::tuple<int>>);
   MMDEPLOY_ERROR("v = {}", v);
@@ -193,4 +192,17 @@ TEST_CASE("test generic split", "[execution]") {
   auto a = WhenAll(a3, a2, a1);
   auto [z, y, x] = SyncWait(a);
   MMDEPLOY_INFO("generic split: {} {} {}", z, y, x);
+}
+
+TEST_CASE("test bulk", "[execution]") {
+  constexpr int N = 1024;
+  std::vector<float> a(N), b(N), c(N);
+  std::iota(begin(a), end(a), 0);
+  std::iota(rbegin(b), rend(b), 0);
+  auto init = Just(std::move(a), std::move(b), std::move(c));
+  auto fma = Bulk(init, N, [](int index, const auto& a, const auto& b, auto& c) {
+    c[index] += a[index] * b[index];
+  });
+  auto [x, y, z] = SyncWait(fma);
+  MMDEPLOY_INFO("{}", z);
 }
