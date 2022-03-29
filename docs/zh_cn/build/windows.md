@@ -96,9 +96,9 @@ cd ../..
     <td>
     1. 从<a href="https://github.com/opencv/opencv/releases">这里</a>下载 OpenCV 3+。
     2. 您可以下载并安装 OpenCV 预编译包到指定的目录下。也可以选择源码编译安装的方式
-    3. 在安装目录中，找到 <code>OpenCVConfig.cmake</code>，并把它的路径添加到环境变量 <code>PATH</code> 中。像这样：</td>
+    3. 在安装目录中，找到 <code>OpenCVConfig.cmake</code>，并把它的路径添加到环境变量 <code>PATH</code> 中。像这样：
 <pre><code>$env:path = "\the\path\where\OpenCVConfig.cmake\locates;" + "$env:path"</code></pre>
-
+    </td>
   </tr>
   <tr>
     <td>pplcv </td>
