@@ -42,8 +42,8 @@ def torch2torchscript_impl(model: torch.nn.Module,
             ir=IR.TORCHSCRIPT), torch.no_grad(), torch.jit.optimized_execution(
                 True):
         # for exporting models with weight that depends on inputs
-        patched_model(*inputs) if isinstance(
-            inputs, Sequence) else patched_model(inputs)
+        patched_model(*inputs) if isinstance(inputs, Sequence) \
+            else patched_model(inputs)
         ts_model = torch.jit.trace(patched_model, inputs)
 
     # perform optimize, note that optimizing models may trigger errors when
