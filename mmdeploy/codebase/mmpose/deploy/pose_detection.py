@@ -1,8 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
+import copy
 import logging
 import os
-import copy
 from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
 import mmcv
@@ -12,9 +12,8 @@ from mmcv.parallel import collate
 from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
-from mmdeploy.utils import Task, get_input_shape
 from mmdeploy.codebase.mmpose.deploy.mmpose import MMPOSE_TASK
-from mmdeploy.utils import Task
+from mmdeploy.utils import Task, get_input_shape
 
 
 def process_model_config(
@@ -44,9 +43,8 @@ def process_model_config(
     while idx < len(test_pipeline):
         trans = test_pipeline[idx]
         if trans.type == 'ToTensor':
-            assert idx + \
-                1 < len(
-                    test_pipeline) and test_pipeline[idx + 1].type == 'NormalizeTensor'
+            assert idx + 1 < len(test_pipeline) and \
+                test_pipeline[idx + 1].type == 'NormalizeTensor'
             trans = test_pipeline[idx + 1]
             trans.type = 'Normalize'
             trans['to_rgb'] = (channel_order == 'rgb')
@@ -59,7 +57,7 @@ def process_model_config(
 
         if trans.type == 'LoadImageFromFile':
             if 'color_type' in trans:
-                color_type = trans['color_type']
+                color_type = trans['color_type']  # NOQA
             if 'channel_order' in trans:
                 channel_order = trans['channel_order']
         if trans.type == 'TopDownAffine':
@@ -255,7 +253,7 @@ class PoseDetection(BaseTask):
                          metric_options: Optional[dict] = None,
                          format_only: bool = False,
                          log_file: Optional[str] = None,
-                         ** kwargs):
+                         **kwargs):
         """Perform post-processing to predictions of model.
 
         Args:
@@ -327,7 +325,8 @@ class PoseDetection(BaseTask):
         """Get the postprocess information for SDK."""
         postprocess = {'type': 'UNKNOWN'}
         if self.model_cfg.model.type == 'TopDown':
-            postprocess['type'] = self.model_cfg.model.keypoint_head.type + "Decode"
+            postprocess[
+                'type'] = self.model_cfg.model.keypoint_head.type + 'Decode'
             postprocess.update(self.model_cfg.model.test_cfg)
         return postprocess
 

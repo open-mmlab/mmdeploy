@@ -4,10 +4,11 @@ from typing import List, Optional, Sequence, Union
 import mmcv
 import numpy as np
 import torch
+from mmcv.utils import Registry
 
 from mmdeploy.codebase.base import BaseBackendModel
-from mmdeploy.utils import Backend, get_backend, load_config, get_codebase_config
-from mmcv.utils import Registry
+from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
+                            load_config)
 
 
 def __build_backend_model(cls_name: str, registry: Registry, *args, **kwargs):
@@ -156,7 +157,10 @@ class SDKEnd2EndModel(End2EndModel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def _cs2xyxy(self, _center: np.ndarray, _scale: np.ndarray, padding: float = 1.25):
+    def _cs2xyxy(self,
+                 _center: np.ndarray,
+                 _scale: np.ndarray,
+                 padding: float = 1.25):
         """This encodes bbox(x,y,w,h) into (center, scale)
 
         Args:
@@ -171,8 +175,8 @@ class SDKEnd2EndModel(End2EndModel):
         scale = scale / padding * 200
         center = _center.copy()
         # fake box
-        box = np.array([center - 0.5 * scale, center +
-                       0.5 * scale - 1]).flatten()
+        box = np.array([center - 0.5 * scale,
+                        center + 0.5 * scale - 1]).flatten()
         return box
 
     def forward(self, img: List[torch.Tensor], *args, **kwargs) -> list:
@@ -197,7 +201,8 @@ class SDKEnd2EndModel(End2EndModel):
             boxes[i, :2] = center
             boxes[i, 2:4] = scale
             boxes[i, 4] = np.prod(scale * 200.0)
-            boxes[i, 5] = img_meta['bbox_score'] if 'bbox_score' in img_meta else 1.0
+            boxes[i, 5] = img_meta[
+                'bbox_score'] if 'bbox_score' in img_meta else 1.0
             sdk_boxes.append(self._cs2xyxy(center, scale))
             image_paths.append(img_meta['image_file'])
             bbox_ids.append(img_meta['bbox_id'])
@@ -205,8 +210,11 @@ class SDKEnd2EndModel(End2EndModel):
         pred = self.wrapper.handle(
             [img[0].contiguous().detach().cpu().numpy()], sdk_boxes)[0]
 
-        result = dict(preds=pred, boxes=boxes,
-                      image_paths=image_paths, bbox_ids=bbox_ids)
+        result = dict(
+            preds=pred,
+            boxes=boxes,
+            image_paths=image_paths,
+            bbox_ids=bbox_ids)
         return result
 
 

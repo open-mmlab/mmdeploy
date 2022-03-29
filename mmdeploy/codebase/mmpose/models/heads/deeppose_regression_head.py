@@ -5,10 +5,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmpose.models.heads.DeepposeRegressionHead.inference_model')
-def deeppose_regression_head__inference_model(ctx,
-                                              self,
-                                              x,
-                                              flip_pairs=None):
+def deeppose_regression_head__inference_model(ctx, self, x, flip_pairs=None):
     """Rewrite `forward_test` of TopDown for default backend.
 
     Rewrite this function to run forward directly. And we don't need to
