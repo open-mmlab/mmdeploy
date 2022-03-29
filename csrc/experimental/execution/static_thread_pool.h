@@ -32,7 +32,7 @@ class StaticThreadPool {
 
  public:
   StaticThreadPool();
-  StaticThreadPool(std::uint32_t thread_count);
+  explicit StaticThreadPool(std::uint32_t thread_count);
   ~StaticThreadPool();
 
   struct Scheduler {
@@ -274,6 +274,70 @@ inline void StaticThreadPool::ThreadState::request_stop() {
     stop_requested_ = true;
   }
   cv_.notify_one();
+}
+
+namespace __bulk {
+
+template <class CvrefSender, class Shape, class Fun, class Receiver>
+struct _Operation;
+
+template <class Receiver, class Shape, class Fun, class Tuple>
+struct _Receiver {
+  struct State {
+    Receiver rcvr_;
+    Shape shape_;
+    Fun fun_;
+    std::optional<Tuple> vals_;
+    StaticThreadPool::Scheduler sched_;
+    std::atomic<int> count_;
+  };
+
+  std::shared_ptr<State> state_;
+
+  _Receiver(Receiver&& rcvr, Shape shape, Fun fun, StaticThreadPool::Scheduler sched)
+      : state_(new State{(Receiver &&) rcvr, shape, (Fun &&) fun, std::nullopt, sched, shape}) {}
+
+  template <class... As>
+  friend void SetValue(_Receiver&& self, As&&... as) {
+    auto& state = self.state_;
+    state->vals_.emplace((As &&) as...);
+    for (Shape index = {}; index < state->shape_; ++index) {
+      StartDetached(Then(Schedule(state->sched_), [state, index] {
+        std::apply([&](auto&... vals) { state->fun_(index, vals...); }, state->vals_.value());
+        if (0 == --state->count_) {
+          std::apply(
+              [&](auto&... vals) { SetValue((Receiver &&) state->rcvr_, std::move(vals)...); },
+              state->vals_.value());
+        }
+        return 0;
+      }));
+    }
+  }
+};
+
+template <class Sender, class Shape, class Fun>
+struct _Sender {
+  using value_type = completion_signature_for_t<Sender>;
+
+  Sender sndr_;
+  StaticThreadPool::Scheduler sched_;
+  Shape shape_;
+  Fun fun_;
+
+  template <class Self, class Receiver, _decays_to<Self, _Sender, bool> = true>
+  friend auto Connect(Self&& self, Receiver&& rcvr) {
+    return Connect(((Self &&) self).sndr_, _Receiver<Receiver, Shape, Fun, value_type>{
+                                               (Receiver &&) rcvr, ((Self &&) self).shape_,
+                                               ((Self &&) self).fun_, ((Self &&) self).sched_});
+  }
+};
+
+}  // namespace __bulk
+
+template <class Sender, class Shape, class Fun>
+auto Bulk(StaticThreadPool::Scheduler sched, Sender&& sndr, Shape shape, Fun fun)
+    -> __bulk::_Sender<std::decay_t<Sender>, Shape, Fun> {
+  return {(Sender &&) sndr, sched, shape, (Fun &&) fun};
 }
 
 }  // namespace __static_thread_pool

@@ -7,12 +7,15 @@
 #include "core/mat.h"
 #include "core/utils/formatter.h"
 #include "experimental/execution/execution.h"
+#include "experimental/execution/static_thread_pool.h"
 #include "net/net_module.h"
 #include "preprocess/transform_module.h"
 
 namespace mmdeploy {
 
 using std::unique_ptr;
+
+__static_thread_pool::StaticThreadPool pool;
 
 struct StaticDetector {
  public:
@@ -26,7 +29,8 @@ struct StaticDetector {
     //      batch_detections.push_back(from_value<mmdet::DetectorOutput>(postprocess_data));
     //    }
     using Array = Value::Array;
-    auto pre = Bulk(Just(images, Array(images.size())), images.size(),
+    auto sched = pool.GetScheduler();
+    auto pre = Bulk(sched, Just(images, Array(images.size())), images.size(),
                     [&](size_t index, const std::vector<Mat>& images, Array& pre) {
                       pre[index] = preprocess_({{"ori_img", images[index]}}).value();
                     });
@@ -35,14 +39,15 @@ struct StaticDetector {
 
     auto output_sender = Just(std::vector<Detections>(images.size()));
 
-    auto post = Bulk(WhenAll(pre_s, std::move(infer), std::move(output_sender)), images.size(),
-                     [&](size_t index, auto&&, const Array& pre, const Value& infer,
-                         std::vector<Detections>& out) {
-                       auto value = postprocess_(pre[index], infer[index]).value();
-                       out[index] = from_value<Detections>(value);
-                     });
-    auto [a, b, c, d] = SyncWait(post);
-    return d;
+    auto post =
+        Bulk(sched, WhenAll(pre_s, std::move(infer), std::move(output_sender)), images.size(),
+             [&](size_t index, auto&&, const Array& pre, const Value& infer,
+                 std::vector<Detections>& out) {
+               auto value = postprocess_(pre[index], infer[index]).value();
+               out[index] = from_value<Detections>(value);
+             });
+
+    return std::get<std::vector<Detections>>(SyncWait(post));
   }
 
   Stream stream_;
