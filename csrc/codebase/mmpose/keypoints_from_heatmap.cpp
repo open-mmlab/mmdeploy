@@ -390,5 +390,7 @@ using TopdownHeatmapMultiStageHeadDecode = TopdownHeatmapBaseHeadDecode;
 REGISTER_CODEBASE_COMPONENT(MMPose, TopdownHeatmapMultiStageHeadDecode);
 using ViPNASHeatmapSimpleHeadDecode = TopdownHeatmapBaseHeadDecode;
 REGISTER_CODEBASE_COMPONENT(MMPose, ViPNASHeatmapSimpleHeadDecode);
+using TopdownHeatmapMSMUHeadDecode = TopdownHeatmapBaseHeadDecode;
+REGISTER_CODEBASE_COMPONENT(MMPose, TopdownHeatmapMSMUHeadDecode);
 
 }  // namespace mmdeploy::mmpose
