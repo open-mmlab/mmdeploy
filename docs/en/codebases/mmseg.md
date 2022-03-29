@@ -15,7 +15,7 @@ Please refer to [get_started.md](https://github.com/open-mmlab/mmsegmentation/bl
 | DeepLabV3                   |      Y      |    Y     |  Y   |   Y   |    Y     |   [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/deeplabv3)   |
 | DeepLabV3+                  |      Y      |    Y     |  Y   |   Y   |    Y     | [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/deeplabv3plus) |
 | Fast-SCNN[*](#static_shape) |      Y      |    Y     |  N   |   Y   |    Y     |   [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/fastscnn)    |
-| UNet[*](#static_shape)      |      Y      |    Y     |  Y   |   Y   |    Y     |     [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/unet)      |
+| UNet                        |      Y      |    Y     |  Y   |   Y   |    Y     |     [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/unet)      |
 | ANN[*](#static_shape)       |      Y      |    Y     |  N   |   N   |    N     |      [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/ann)      |
 | APCNet                      |      Y      |    Y     |  Y   |   N   |    N     |    [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/apcnet)     |
 | BiSeNetV1                   |      Y      |    Y     |  Y   |   N   |    Y     |   [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/bisenetv1)   |

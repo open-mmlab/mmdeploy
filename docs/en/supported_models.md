@@ -29,7 +29,7 @@ The table below lists the models that are guaranteed to be exportable to other b
 | DeepLabV3                 | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     | [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/deeplabv3)           |
 | DeepLabV3+                | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     | [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/deeplabv3plus)       |
 | Fast-SCNN[*static](#note) | MMSegmentation   |      Y      |      Y      |    Y     |  N   |   Y   |    Y     | [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/fastscnn)            |
-| UNet[*static](#note)      | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     | [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/unet)                |
+| UNet                      | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     | [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/unet)                |
 | ANN[*](#note)             | MMSegmentation   |      ?      |      Y      |    Y     |  N   |   N   |    N     | [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/ann)                 |
 | APCNet                    | MMSegmentation   |      ?      |      Y      |    Y     |  Y   |   N   |    N     | [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/apcnet)              |
 | BiSeNetV1                 | MMSegmentation   |      ?      |      Y      |    Y     |  Y   |   N   |    Y     | [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/bisenetv1)           |
@@ -61,8 +61,10 @@ The table below lists the models that are guaranteed to be exportable to other b
 | DBNet                     | MMOCR            |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     | [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/dbnet)                  |
 | CRNN                      | MMOCR            |      Y      |      Y      |    Y     |  Y   |   Y   |    N     | [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/crnn)                 |
 | SAR                       | MMOCR            |      N      |      Y      |    N     |  N   |   N   |    N     | [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/sar)                  |
+| HRNet                     | MMPose           |      ?      |      Y      |    Y     |  Y   |   N   |    Y     |    [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#hrnet-cvpr-2019)     |
+| MSPN                      | MMPose           |      ?      |      Y      |    Y     |  Y   |   N   |    Y     |    [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#mspn-arxiv-2019)     |
+| LiteHRNet                 | MMPose           |      ?      |      Y      |    Y     |  N   |   N   |    Y     |  [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#litehrnet-cvpr-2021)   |
 | PointPillars              | MMDetection3d    |      ?      |      Y      |    Y     |  N   |   N   |    Y     | [config](https://github.com/open-mmlab/mmdetection3d/blob/master/configs/pointpillars)         |
-
 
 ### Note
 
