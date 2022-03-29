@@ -334,9 +334,6 @@ struct _Receiver {
 
   template <class... Args>
   friend void SetValue(_Receiver&& self, Args&&... args) {
-    //    std::tuple<Args...>* x = 100;
-    //    auto v = ((F &&) self.f_)(((Args &&) args)...);
-    //    v = r_;
     SetValue(std::move(self.r_), std::invoke((F &&) self.f_, (Args &&) args...));
   }
 };
@@ -466,14 +463,15 @@ _Sender LetValue(Sender&& s, Fun&& f) {
 
 namespace __bulk {
 
-template <class Sender, class Shape, class Fun, class Receiver>
+template <class CvrefSender, class Shape, class Fun, class Receiver>
 struct _Operation;
 
-template <class Sender, class Shape, class Fun, class Receiver>
+template <class Receiver, class Shape, class Fun>
 struct _Receiver {
+  Receiver rcvr_;
   Shape shape_;
   Fun fun_;
-  Receiver rcvr_;
+
   template <class... As>
   friend void SetValue(_Receiver&& self, As&&... as) {
     for (Shape i = 0; i < self.shape_; ++i) {
@@ -483,9 +481,9 @@ struct _Receiver {
   }
 };
 
-template <class Sender, class Shape, class Fun, class Receiver>
+template <class CvrefSender, class Shape, class Fun, class Receiver>
 struct _Operation {
-  connect_result_t<Sender, _Receiver<Sender, Shape, Fun, Receiver>> op_state2_;
+  connect_result_t<CvrefSender, _Receiver<Receiver, Shape, Fun>> op_state2_;
   friend void Start(_Operation& op_state) { Start(op_state.op_state2_); }
 };
 
@@ -499,10 +497,10 @@ struct _Sender {
 
   template <class Self, class Receiver, _decays_to<Self, _Sender, bool> = true>
   friend auto Connect(Self&& self, Receiver&& rcvr)
-      -> _Operation<std::decay_t<Sender>, Shape, Fun, Receiver> {
-    using receiver_t = _Receiver<Sender, Shape, Fun, Receiver>;
-    return {Connect(((Self &&) self).sndr_, receiver_t{((Self &&) self).shape_,
-                                                       ((Self &&) self).fun_, (Receiver &&) rcvr})};
+      -> _Operation<_copy_cvref_t<Self, Sender>, Shape, Fun, Receiver> {
+    return {Connect(((Self &&) self).sndr_,
+                    _Receiver<Receiver, Shape, Fun>{(Receiver &&) rcvr, ((Self &&) self).shape_,
+                                                    ((Self &&) self).fun_})};
   }
 };
 
@@ -569,7 +567,7 @@ struct _Operation : _OperationBase {
 
   static void _Notify(_OperationBase* self) noexcept {
     auto op = static_cast<_Operation*>(self);
-    std::apply([&](auto&... args) { SetValue((Receiver &&) op->recvr_, args...); },
+    std::apply([&](const auto&... args) { SetValue((Receiver &&) op->recvr_, args...); },
                op->shared_state_->data_.value());
   }
 

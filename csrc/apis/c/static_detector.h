@@ -16,15 +16,33 @@ using std::unique_ptr;
 
 struct StaticDetector {
  public:
-  std::vector<mmdet::DetectorOutput> Run(const std::vector<Mat>& images) {
-    std::vector<mmdet::DetectorOutput> batch_detections;
-    for (const auto& img : images) {
-      auto preprocess_data = preprocess_({{"ori_img", img}}).value();
-      auto inference_data = net_(preprocess_data).value();
-      auto postprocess_data = postprocess_(preprocess_data, inference_data).value();
-      batch_detections.push_back(from_value<mmdet::DetectorOutput>(postprocess_data));
-    }
-    return batch_detections;
+  using Detections = mmdet::DetectorOutput;
+  std::vector<Detections> Run(const std::vector<Mat>& images) {
+    //    std::vector<Detections> batch_detections;
+    //    for (const auto& img : images) {
+    //      auto preprocess_data = preprocess_({{"ori_img", img}}).value();
+    //      auto inference_data = net_(preprocess_data).value();
+    //      auto postprocess_data = postprocess_(preprocess_data, inference_data).value();
+    //      batch_detections.push_back(from_value<mmdet::DetectorOutput>(postprocess_data));
+    //    }
+    using Array = Value::Array;
+    auto pre = Bulk(Just(images, Array(images.size())), images.size(),
+                    [&](size_t index, const std::vector<Mat>& images, Array& pre) {
+                      pre[index] = preprocess_({{"ori_img", images[index]}}).value();
+                    });
+    auto pre_s = Split(std::move(pre));
+    auto infer = Then(pre_s, [&](auto&&, const Array& pre) { return net_(pre).value(); });
+
+    auto output_sender = Just(std::vector<Detections>(images.size()));
+
+    auto post = Bulk(WhenAll(pre_s, std::move(infer), std::move(output_sender)), images.size(),
+                     [&](size_t index, auto&&, const Array& pre, const Value& infer,
+                         std::vector<Detections>& out) {
+                       auto value = postprocess_(pre[index], infer[index]).value();
+                       out[index] = from_value<Detections>(value);
+                     });
+    auto [a, b, c, d] = SyncWait(post);
+    return d;
   }
 
   Stream stream_;
