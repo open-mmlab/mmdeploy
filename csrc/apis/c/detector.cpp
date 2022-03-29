@@ -11,6 +11,7 @@
 #include "core/mat.h"
 #include "core/utils/formatter.h"
 #include "handle.h"
+#include "static_detector.h"
 
 using namespace std;
 using namespace mmdeploy;
@@ -46,12 +47,14 @@ template <class ModelType>
 int mmdeploy_detector_create_impl(ModelType&& m, const char* device_name, int device_id,
                                   mm_handle_t* handle) {
   try {
-    auto value = config_template();
-    value["pipeline"]["tasks"][0]["params"]["model"] = std::forward<ModelType>(m);
+    Device device(device_name, device_id);
+    if (!device) {
+      MMDEPLOY_ERROR("invalid device ({}, {})", device_name, device_id);
+      return MM_E_FAIL;
+    }
+    Stream stream(device);
 
-    auto detector = std::make_unique<Handle>(device_name, device_id, std::move(value));
-
-    *handle = detector.release();
+    *handle = CreateStaticDetector((ModelType &&) m, stream);
     return MM_SUCCESS;
 
   } catch (const std::exception& e) {
@@ -71,7 +74,7 @@ int mmdeploy_detector_create(mm_model_t model, const char* device_name, int devi
 
 int mmdeploy_detector_create_by_path(const char* model_path, const char* device_name, int device_id,
                                      mm_handle_t* handle) {
-  return mmdeploy_detector_create_impl(model_path, device_name, device_id, handle);
+  return mmdeploy_detector_create_impl(Model{model_path}, device_name, device_id, handle);
 }
 
 int mmdeploy_detector_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
@@ -81,19 +84,22 @@ int mmdeploy_detector_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_co
   }
 
   try {
-    auto detector = static_cast<Handle*>(handle);
+    auto detector = static_cast<StaticDetector*>(handle);
 
-    Value input{Value::kArray};
+//    Value input{Value::kArray};
+    std::vector<Mat> inputs;
     for (int i = 0; i < mat_count; ++i) {
       mmdeploy::Mat _mat{mats[i].height,         mats[i].width, PixelFormat(mats[i].format),
                          DataType(mats[i].type), mats[i].data,  Device{"cpu"}};
-      input.front().push_back({{"ori_img", _mat}});
+      inputs.push_back(std::move(_mat));
+//      input.front().push_back({{"ori_img", _mat}});
     }
 
-    auto output = detector->Run(std::move(input)).value().front();
+//    auto output = detector->Run(std::move(input)).value().front();
     MMDEPLOY_DEBUG("output: {}", output);
 
-    auto detector_outputs = from_value<vector<mmdet::DetectorOutput>>(output);
+//    auto detector_outputs = from_value<vector<mmdet::DetectorOutput>>(output);
+    auto detector_outputs = detector->Run(inputs);
 
     vector<int> _result_count;
     _result_count.reserve(mat_count);
@@ -165,7 +171,7 @@ void mmdeploy_detector_release_result(mm_detect_t* results, const int* result_co
 
 void mmdeploy_detector_destroy(mm_handle_t handle) {
   if (handle != nullptr) {
-    auto detector = static_cast<Handle*>(handle);
+    auto detector = static_cast<StaticDetector*>(handle);
     delete detector;
   }
 }

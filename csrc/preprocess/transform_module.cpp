@@ -12,6 +12,8 @@ namespace mmdeploy {
 
 TransformModule::~TransformModule() = default;
 
+TransformModule::TransformModule(TransformModule&&) noexcept = default;
+
 TransformModule::TransformModule(const Value& args) {
   const auto type = "Compose";
   auto creator = Registry<Transform>::Get().GetCreator(type, 1);
