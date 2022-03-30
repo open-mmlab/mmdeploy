@@ -118,7 +118,7 @@ class TopdownHeatmapBaseHeadDecode : public MMPose {
           }
         });
         float valid_radius = valid_radius_factor_ * H;
-        TensorDesc desc = {Device{"cpu"}, {DataType::kFLOAT}, {1, K / 3, H, W}};
+        TensorDesc desc = {Device{"cpu"}, DataType::kFLOAT, {1, K / 3, H, W}};
         Tensor offset_x(desc);
         Tensor offset_y(desc);
         Tensor heatmap_(desc);
@@ -222,7 +222,7 @@ class TopdownHeatmapBaseHeadDecode : public MMPose {
         cv::GaussianBlur(work, work, {kernel, kernel}, 0);  // inplace
       }
     });
-    std::for_each_n(heatmap.data<float>(), K * H * W, [](float& x) {
+    std::for_each(heatmap.data<float>(), heatmap.data<float>() + K * H * W, [](float& x) {
       x = std::max(0.001f, std::min(50.f, x));
       x = std::log(x);
     });
@@ -346,7 +346,7 @@ class TopdownHeatmapBaseHeadDecode : public MMPose {
     int H = heatmap.shape(2);
     int W = heatmap.shape(3);
     int num_points = H * W;
-    TensorDesc pred_desc = {Device{"cpu"}, {DataType::kFLOAT}, {1, K, 3}};
+    TensorDesc pred_desc = {Device{"cpu"}, DataType::kFLOAT, {1, K, 3}};
     Tensor pred(pred_desc);
 
     cv::parallel_for_(cv::Range(0, K), [&](const cv::Range& r) {

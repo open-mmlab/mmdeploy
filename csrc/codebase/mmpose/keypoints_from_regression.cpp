@@ -72,7 +72,7 @@ class DeepposeRegressionHeadDecode : public MMPose {
   Tensor keypoints_from_regression(const Tensor& output, const vector<float>& center,
                                    const vector<float>& scale, const vector<int>& img_size) {
     int K = output.shape(1);
-    TensorDesc pred_desc = {Device{"cpu"}, {DataType::kFLOAT}, {1, K, 3}};
+    TensorDesc pred_desc = {Device{"cpu"}, DataType::kFLOAT, {1, K, 3}};
     Tensor pred(pred_desc);
 
     float* src = const_cast<float*>(output.data<float>());
