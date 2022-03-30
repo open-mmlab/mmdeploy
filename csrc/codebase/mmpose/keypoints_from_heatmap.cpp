@@ -196,11 +196,6 @@ class TopdownHeatmapBaseHeadDecode : public MMPose {
       transform_pred(pred, i, center, scale, {W, H}, use_udp);
     }
 
-    // for (int i = 0; i < K; i++) {
-    //   float *data = pred.data<float>() + i * 3;
-    //   std::cout << *(data + 0) << " " << *(data + 1) << " " << *(data + 2) << "\n";
-    // }
-
     if (post_process_ == "megvii") {
       for (int i = 0; i < K; i++) {
         float* data = pred.data<float>() + i * 3 + 2;

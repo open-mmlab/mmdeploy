@@ -21,11 +21,7 @@ using std::vector;
 
 class DeepposeRegressionHeadDecode : public MMPose {
  public:
-  explicit DeepposeRegressionHeadDecode(const Value& config) : MMPose(config) {
-    if (config.contains("params")) {
-      // No params
-    }
-  }
+  explicit DeepposeRegressionHeadDecode(const Value& config) : MMPose(config) {}
 
   Result<Value> operator()(const Value& _data, const Value& _prob) {
     MMDEPLOY_DEBUG("preprocess_result: {}", _data);
@@ -89,11 +85,6 @@ class DeepposeRegressionHeadDecode : public MMPose {
     for (int i = 0; i < K; i++) {
       transform_pred(pred, i, center, scale, img_size, false);
     }
-
-    // for (int i = 0; i < K; i++) {
-    //   float* data = pred.data<float>() + i * 3;
-    //   std::cout << *(data + 0) << " " << *(data + 1) << " " << *(data + 2) << "\n";
-    // }
 
     return pred;
   }
