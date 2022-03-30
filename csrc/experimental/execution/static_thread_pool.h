@@ -289,7 +289,7 @@ struct _Receiver {
     Fun fun_;
     std::optional<Tuple> vals_;
     StaticThreadPool::Scheduler sched_;
-    std::atomic<int> count_;
+    std::atomic<Shape> count_;
   };
 
   std::shared_ptr<State> state_;

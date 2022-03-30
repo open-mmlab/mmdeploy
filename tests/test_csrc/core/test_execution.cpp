@@ -1,4 +1,5 @@
 #include <chrono>
+#include <numeric>
 
 #include "catch.hpp"
 #include "core/utils/formatter.h"
