@@ -25,7 +25,7 @@ else ()
         list(APPEND TASK_LIST "text_recognizer")
     endif ()
     if ("mmpose" IN_LIST MMDEPLOY_CODEBASES)
-        list(APPEND TASK_LIST "pose_estimator")
+        list(APPEND TASK_LIST "pose_detector")
     endif ()
 endif ()
 

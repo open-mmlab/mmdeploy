@@ -14,11 +14,11 @@
 extern "C" {
 #endif
 
-typedef struct mm_pose_estimate_t {
+typedef struct mm_pose_detect_t {
   mm_pointf_t* point;
   float* score;
   int length;
-} mm_pose_estimate_t;
+} mm_pose_detect_t;
 
 /**
  * @brief Create a pose detector instance
@@ -57,7 +57,7 @@ MMDEPLOY_API int mmdeploy_pose_detector_create_by_path(const char* model_path,
  * @return status code of the operation
  */
 MMDEPLOY_API int mmdeploy_pose_detector_apply(mm_handle_t handle, const mm_mat_t* mats,
-                                              int mat_count, mm_pose_estimate_t** results,
+                                              int mat_count, mm_pose_detect_t** results,
                                               int** result_count);
 
 /**
@@ -75,14 +75,14 @@ MMDEPLOY_API int mmdeploy_pose_detector_apply(mm_handle_t handle, const mm_mat_t
 MMDEPLOY_API int mmdeploy_pose_detector_apply_bbox(mm_handle_t handle, const mm_mat_t* mats,
                                                    int mat_count, const mm_rect_t* bboxes,
                                                    const int* bbox_count,
-                                                   mm_pose_estimate_t** results);
+                                                   mm_pose_detect_t** results);
 
 /** @brief Release result buffer returned by \ref mmdeploy_pose_detector_apply or \ref
  * mmdeploy_pose_detector_apply_bbox
  * @param[in] results result buffer by pose detector
  * @param[in] count length of \p result
  */
-MMDEPLOY_API void mmdeploy_pose_detector_release_result(mm_pose_estimate_t* results, int count);
+MMDEPLOY_API void mmdeploy_pose_detector_release_result(mm_pose_detect_t* results, int count);
 
 /**
  * @brief destroy pose_detector

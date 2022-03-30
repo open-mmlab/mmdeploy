@@ -29,7 +29,7 @@ class PyPoseDedector {
       mm_rect_t box = {_box[0], _box[1], _box[2], _box[3]};
       boxes.push_back(box);
     }
-    mm_pose_estimate_t *detection{};
+    mm_pose_detect_t *detection{};
     int num_box = boxes.size();
     auto status = mmdeploy_pose_detector_apply_bbox(handle_, mats.data(), (int)mats.size(),
                                                     boxes.data(), &num_box, &detection);

@@ -20,6 +20,13 @@ namespace mmdeploy::mmpose {
 using std::string;
 using std::vector;
 
+template <class F>
+struct _LoopBody : public cv::ParallelLoopBody {
+  F f_;
+  _LoopBody(F f) : f_(std::move(f)) {}
+  void operator()(const cv::Range& range) const override { f_(range); }
+};
+
 std::string to_lower(const std::string& s) {
   std::string t = s;
   std::transform(t.begin(), t.end(), t.begin(), [](unsigned char c) { return std::tolower(c); });
@@ -109,14 +116,14 @@ class TopdownHeatmapBaseHeadDecode : public MMPose {
       } else if (to_lower(target_type) == to_lower(string("CombinedTarget"))) {
         // output channel = 3 * channel_cfg['num_output_channels']
         assert(K % 3 == 0);
-        cv::parallel_for_(cv::Range(0, K), [&](const cv::Range& r) {
-          for (int i = r.start; i < r.end; i++) {
-            int kt = (i % 3 == 0) ? 2 * modulate_kernel + 1 : modulate_kernel;
-            float* data = heatmap.data<float>() + i * H * W;
-            cv::Mat work = cv::Mat(H, W, CV_32FC(1), data);
-            cv::GaussianBlur(work, work, {kt, kt}, 0);  // inplace
-          }
-        });
+        cv::parallel_for_(cv::Range(0, K), _LoopBody{[&](const cv::Range& r) {
+                            for (int i = r.start; i < r.end; i++) {
+                              int kt = (i % 3 == 0) ? 2 * modulate_kernel + 1 : modulate_kernel;
+                              float* data = heatmap.data<float>() + i * H * W;
+                              cv::Mat work = cv::Mat(H, W, CV_32FC(1), data);
+                              cv::GaussianBlur(work, work, {kt, kt}, 0);  // inplace
+                            }
+                          }});
         float valid_radius = valid_radius_factor_ * H;
         TensorDesc desc = {Device{"cpu"}, DataType::kFLOAT, {1, K / 3, H, W}};
         Tensor offset_x(desc);
@@ -128,18 +135,16 @@ class TopdownHeatmapBaseHeadDecode : public MMPose {
           float* dst0 = heatmap_.data<float>();
           float* dst1 = offset_x.data<float>();
           float* dst2 = offset_y.data<float>();
-          for (int i = 0; i < K; i++) {
-            if (i % 3 == 0) {
-              std::copy_n(src, H * W, dst0);
-              dst0 += H * W;
-            } else if (i % 3 == 1) {
-              std::transform(src, src + H * W, dst1, [=](float& x) { return x * valid_radius; });
-              dst1 += H * W;
-            } else if (i % 3 == 2) {
-              std::transform(src, src + H * W, dst2, [=](float& x) { return x * valid_radius; });
-              dst2 += H * W;
-            }
-            src += H * W;
+          for (int i = 0; i < K / 3; i++) {
+            std::copy_n(src, H * W, dst0);
+            std::transform(src + H * W, src + 2 * H * W, dst1,
+                           [=](float& x) { return x * valid_radius; });
+            std::transform(src + 2 * H * W, src + 3 * H * W, dst2,
+                           [=](float& x) { return x * valid_radius; });
+            src += 3 * H * W;
+            dst0 += H * W;
+            dst1 += H * W;
+            dst2 += H * W;
           }
         }
         pred = get_max_pred(heatmap_);
@@ -161,31 +166,32 @@ class TopdownHeatmapBaseHeadDecode : public MMPose {
           double _v = std::max((double)v, 1e-10);
           v = std::log(_v);
         });
-        cv::parallel_for_(cv::Range(0, K), [&](const cv::Range& r) {
-          for (int i = r.start; i < r.end; i++) {
-            taylor(heatmap, pred, i);
-          }
-        });
+        cv::parallel_for_(cv::Range(0, K), _LoopBody{[&](const cv::Range& r) {
+                            for (int i = r.start; i < r.end; i++) {
+                              taylor(heatmap, pred, i);
+                            }
+                          }});
 
       } else if (post_process != "null") {
-        cv::parallel_for_(cv::Range(0, K), [&](const cv::Range& r) {
-          for (int i = r.start; i < r.end; i++) {
-            float* data = heatmap.data<float>() + i * W * H;
-            auto _data = [&](int y, int x) { return *(data + y * W + x); };
-            int px = *(pred.data<float>() + i * 3 + 0);
-            int py = *(pred.data<float>() + i * 3 + 1);
-            if (1 < px && px < W - 1 && 1 < py && py < H - 1) {
-              float v1 = _data(py, px + 1) - _data(py, px - 1);
-              float v2 = _data(py + 1, px) - _data(py - 1, px);
-              *(pred.data<float>() + i * 3 + 0) += (v1 > 0) ? 0.25 : ((v1 < 0) ? -0.25 : 0);
-              *(pred.data<float>() + i * 3 + 1) += (v2 > 0) ? 0.25 : ((v2 < 0) ? -0.25 : 0);
-              if (post_process_ == "megvii") {
-                *(pred.data<float>() + i * 3 + 0) += 0.5;
-                *(pred.data<float>() + i * 3 + 1) += 0.5;
+        cv::parallel_for_(
+            cv::Range(0, K), _LoopBody{[&](const cv::Range& r) {
+              for (int i = r.start; i < r.end; i++) {
+                float* data = heatmap.data<float>() + i * W * H;
+                auto _data = [&](int y, int x) { return *(data + y * W + x); };
+                int px = *(pred.data<float>() + i * 3 + 0);
+                int py = *(pred.data<float>() + i * 3 + 1);
+                if (1 < px && px < W - 1 && 1 < py && py < H - 1) {
+                  float v1 = _data(py, px + 1) - _data(py, px - 1);
+                  float v2 = _data(py + 1, px) - _data(py - 1, px);
+                  *(pred.data<float>() + i * 3 + 0) += (v1 > 0) ? 0.25 : ((v1 < 0) ? -0.25 : 0);
+                  *(pred.data<float>() + i * 3 + 1) += (v2 > 0) ? 0.25 : ((v2 < 0) ? -0.25 : 0);
+                  if (post_process_ == "megvii") {
+                    *(pred.data<float>() + i * 3 + 0) += 0.5;
+                    *(pred.data<float>() + i * 3 + 1) += 0.5;
+                  }
+                }
               }
-            }
-          }
-        });
+            }});
       }
     }
 
@@ -210,13 +216,13 @@ class TopdownHeatmapBaseHeadDecode : public MMPose {
     int K = heatmap.shape(1);
     int H = heatmap.shape(2);
     int W = heatmap.shape(3);
-    cv::parallel_for_(cv::Range(0, K), [&](const cv::Range& r) {
-      for (int i = r.start; i < r.end; i++) {
-        float* data = heatmap.data<float>() + i * H * W;
-        cv::Mat work = cv::Mat(H, W, CV_32FC(1), data);
-        cv::GaussianBlur(work, work, {kernel, kernel}, 0);  // inplace
-      }
-    });
+    cv::parallel_for_(cv::Range(0, K), _LoopBody{[&](const cv::Range& r) {
+                        for (int i = r.start; i < r.end; i++) {
+                          float* data = heatmap.data<float>() + i * H * W;
+                          cv::Mat work = cv::Mat(H, W, CV_32FC(1), data);
+                          cv::GaussianBlur(work, work, {kernel, kernel}, 0);  // inplace
+                        }
+                      }});
     std::for_each(heatmap.data<float>(), heatmap.data<float>() + K * H * W, [](float& x) {
       x = std::max(0.001f, std::min(50.f, x));
       x = std::log(x);
@@ -228,32 +234,32 @@ class TopdownHeatmapBaseHeadDecode : public MMPose {
       x = std::max(0, x - 1);
       return *(heatmap.data<float>() + c * H * W + y * W + x);
     };
-    cv::parallel_for_(cv::Range(0, K), [&](const cv::Range& r) {
-      for (int i = r.start; i < r.end; i++) {
-        float* data = pred.data<float>() + i * 3;
-        int index = *(data + 0) + 1 + (*(data + 1) + 1) * (W + 2);
-        float i_ = _heatmap_data(index, i);
-        float ix1 = _heatmap_data(index + 1, i);
-        float iy1 = _heatmap_data(index + W + 2, i);
-        float ix1y1 = _heatmap_data(index + W + 3, i);
-        float ix1_y1_ = _heatmap_data(index - W - 3, i);
-        float ix1_ = _heatmap_data(index - 1, i);
-        float iy1_ = _heatmap_data(index - 2 - W, i);
-        float dx = 0.5 * (ix1 - ix1_);
-        float dy = 0.5 * (iy1 - iy1_);
-        float dxx = ix1 - 2 * i_ + ix1_;
-        float dyy = iy1 - 2 * i_ + iy1_;
-        float dxy = 0.5 * (ix1y1 - ix1 - iy1 + i_ + i_ - ix1_ - iy1_ + ix1_y1_);
-        vector<float> _data0 = {dx, dy};
-        vector<float> _data1 = {dxx, dxy, dxy, dyy};
-        cv::Mat derivative = cv::Mat(2, 1, CV_32FC1, _data0.data());
-        cv::Mat hessian = cv::Mat(2, 2, CV_32FC1, _data1.data());
-        cv::Mat hessianinv = hessian.inv();
-        cv::Mat offset = -hessianinv * derivative;
-        *(data + 0) += offset.at<float>(0, 0);
-        *(data + 1) += offset.at<float>(1, 0);
-      }
-    });
+    cv::parallel_for_(cv::Range(0, K), _LoopBody{[&](const cv::Range& r) {
+                        for (int i = r.start; i < r.end; i++) {
+                          float* data = pred.data<float>() + i * 3;
+                          int index = *(data + 0) + 1 + (*(data + 1) + 1) * (W + 2);
+                          float i_ = _heatmap_data(index, i);
+                          float ix1 = _heatmap_data(index + 1, i);
+                          float iy1 = _heatmap_data(index + W + 2, i);
+                          float ix1y1 = _heatmap_data(index + W + 3, i);
+                          float ix1_y1_ = _heatmap_data(index - W - 3, i);
+                          float ix1_ = _heatmap_data(index - 1, i);
+                          float iy1_ = _heatmap_data(index - 2 - W, i);
+                          float dx = 0.5 * (ix1 - ix1_);
+                          float dy = 0.5 * (iy1 - iy1_);
+                          float dxx = ix1 - 2 * i_ + ix1_;
+                          float dyy = iy1 - 2 * i_ + iy1_;
+                          float dxy = 0.5 * (ix1y1 - ix1 - iy1 + i_ + i_ - ix1_ - iy1_ + ix1_y1_);
+                          vector<float> _data0 = {dx, dy};
+                          vector<float> _data1 = {dxx, dxy, dxy, dyy};
+                          cv::Mat derivative = cv::Mat(2, 1, CV_32FC1, _data0.data());
+                          cv::Mat hessian = cv::Mat(2, 2, CV_32FC1, _data1.data());
+                          cv::Mat hessianinv = hessian.inv();
+                          cv::Mat offset = -hessianinv * derivative;
+                          *(data + 0) += offset.at<float>(0, 0);
+                          *(data + 1) += offset.at<float>(1, 0);
+                        }
+                      }});
   }
 
   void transform_pred(Tensor& pred, int k, const vector<float>& center, const vector<float>& _scale,
@@ -344,23 +350,23 @@ class TopdownHeatmapBaseHeadDecode : public MMPose {
     TensorDesc pred_desc = {Device{"cpu"}, DataType::kFLOAT, {1, K, 3}};
     Tensor pred(pred_desc);
 
-    cv::parallel_for_(cv::Range(0, K), [&](const cv::Range& r) {
-      for (int i = r.start; i < r.end; i++) {
-        float* src_data = const_cast<float*>(heatmap.data<float>()) + i * H * W;
-        cv::Mat mat = cv::Mat(H, W, CV_32FC1, src_data);
-        double min_val, max_val;
-        cv::Point min_loc, max_loc;
-        cv::minMaxLoc(mat, &min_val, &max_val, &min_loc, &max_loc);
-        float* dst_data = pred.data<float>() + i * 3;
-        *(dst_data + 0) = -1;
-        *(dst_data + 1) = -1;
-        *(dst_data + 2) = max_val;
-        if (max_val > 0.0) {
-          *(dst_data + 0) = max_loc.x;
-          *(dst_data + 1) = max_loc.y;
-        }
-      }
-    });
+    cv::parallel_for_(cv::Range(0, K), _LoopBody{[&](const cv::Range& r) {
+                        for (int i = r.start; i < r.end; i++) {
+                          float* src_data = const_cast<float*>(heatmap.data<float>()) + i * H * W;
+                          cv::Mat mat = cv::Mat(H, W, CV_32FC1, src_data);
+                          double min_val, max_val;
+                          cv::Point min_loc, max_loc;
+                          cv::minMaxLoc(mat, &min_val, &max_val, &min_loc, &max_loc);
+                          float* dst_data = pred.data<float>() + i * 3;
+                          *(dst_data + 0) = -1;
+                          *(dst_data + 1) = -1;
+                          *(dst_data + 2) = max_val;
+                          if (max_val > 0.0) {
+                            *(dst_data + 0) = max_loc.x;
+                            *(dst_data + 1) = max_loc.y;
+                          }
+                        }
+                      }});
 
     return pred;
   }

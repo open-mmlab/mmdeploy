@@ -88,19 +88,19 @@ int mmdeploy_pose_detector_create_by_path(const char* model_path, const char* de
 }
 
 int mmdeploy_pose_detector_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
-                                 mm_pose_estimate_t** results, int** result_count) {
+                                 mm_pose_detect_t** results, int** result_count) {
   return mmdeploy_pose_detector_apply_bbox(handle, mats, mat_count, nullptr, nullptr, results);
 }
 
 int mmdeploy_pose_detector_apply_bbox(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
                                       const mm_rect_t* bboxes, const int* bbox_count,
-                                      mm_pose_estimate_t** results) {
+                                      mm_pose_detect_t** results) {
   if (handle == nullptr || mats == nullptr || mat_count == 0 || results == nullptr) {
     return MM_E_INVALID_ARG;
   }
 
   try {
-    auto recognizer = static_cast<Handle*>(handle);
+    auto pose_detector = static_cast<Handle*>(handle);
     Value input{Value::kArray};
     auto result_count = 0;
     for (int i = 0; i < mat_count; ++i) {
@@ -132,7 +132,7 @@ int mmdeploy_pose_detector_apply_bbox(mm_handle_t handle, const mm_mat_t* mats, 
       input.front().push_back(img_with_boxes);
     }
 
-    auto output = recognizer->Run(std::move(input)).value().front();
+    auto output = pose_detector->Run(std::move(input)).value().front();
 
     auto pose_outputs = from_value<vector<vector<mmpose::PoseDetectorOutput>>>(output);
 
@@ -145,12 +145,12 @@ int mmdeploy_pose_detector_apply_bbox(mm_handle_t handle, const mm_mat_t* mats, 
     std::vector<int> offsets{0};
     std::partial_sum(begin(counts), end(counts), back_inserter(offsets));
 
-    auto deleter = [&](mm_pose_estimate_t* p) {
+    auto deleter = [&](mm_pose_detect_t* p) {
       mmdeploy_pose_detector_release_result(p, offsets.back());
     };
 
-    std::unique_ptr<mm_pose_estimate_t[], decltype(deleter)> _results(
-        new mm_pose_estimate_t[result_count]{}, deleter);
+    std::unique_ptr<mm_pose_detect_t[], decltype(deleter)> _results(
+        new mm_pose_detect_t[result_count]{}, deleter);
 
     for (int i = 0; i < mat_count; ++i) {
       auto& pose_output = pose_outputs[i];
@@ -180,7 +180,7 @@ int mmdeploy_pose_detector_apply_bbox(mm_handle_t handle, const mm_mat_t* mats, 
   return MM_E_FAIL;
 }
 
-void mmdeploy_pose_detector_release_result(mm_pose_estimate_t* results, int count) {
+void mmdeploy_pose_detector_release_result(mm_pose_detect_t* results, int count) {
   for (int i = 0; i < count; ++i) {
     delete[] results[i].point;
     delete[] results[i].score;
