@@ -198,6 +198,7 @@ class PoseDetection(BaseTask):
                          out: Optional[str] = None,
                          metric_options: Optional[dict] = None,
                          format_only: bool = False,
+                         log_file: Optional[str] = None,
                          **kwargs):
         """Perform post-processing to predictions of model.
 
@@ -215,10 +216,15 @@ class PoseDetection(BaseTask):
                 evaluation. It is useful when you want to format the result
                 to a specific format and submit it to the test server. Defaults
                 to `False`.
+            log_file (str | None): The file to write the evaluation results.
+                Defaults to `None` and the results will only print on stdout.
         """
+        from mmcv.utils import get_logger
+        logger = get_logger('test', log_file=log_file, log_level=logging.INFO)
+
         res_folder = '.'
         if out:
-            logging.info(f'\nwriting results to {out}')
+            logger.info(f'\nwriting results to {out}')
             mmcv.dump(outputs, out)
             res_folder, _ = os.path.split(out)
         os.makedirs(res_folder, exist_ok=True)
@@ -229,7 +235,7 @@ class PoseDetection(BaseTask):
 
         results = dataset.evaluate(outputs, res_folder, **eval_config)
         for k, v in sorted(results.items()):
-            print(f'{k}: {v}')
+            logger.info(f'{k}: {v:.4f}')
 
     def get_model_name(self) -> str:
         """Get the model name.

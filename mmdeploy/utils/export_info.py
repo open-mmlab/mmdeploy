@@ -125,6 +125,8 @@ def get_models(deploy_cfg: Union[str, mmcv.Config],
     elif backend == Backend.NCNN:
         net = replace_suffix(ir_name, '.param')
         weights = replace_suffix(ir_name, '.bin')
+        if 'precision' in deploy_cfg['backend_config']:
+            precision = deploy_cfg['backend_config']['precision']
     elif backend in [Backend.ONNXRUNTIME, Backend.TORCHSCRIPT]:
         pass
     else:
@@ -166,13 +168,16 @@ def get_inference_info(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
     input_names = ir_config.get('input_names', None)
     input_name = input_names[0] if input_names else 'input'
     input_map = dict(img=input_name)
-    return dict(
+    return_dict = dict(
         name=name,
         type=type,
         module=module,
         input=input,
         output=output,
         input_map=input_map)
+    if 'use_vulkan' in deploy_cfg['backend_config']:
+        return_dict['use_vulkan'] = deploy_cfg['backend_config']['use_vulkan']
+    return return_dict
 
 
 def get_preprocess(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config):

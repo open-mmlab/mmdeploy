@@ -154,7 +154,11 @@ def single_roi_extractor__forward(ctx,
             self.roi_layers[i].use_torchvision = True
         mask = target_lvls == i
         inds = mask.nonzero(as_tuple=False).squeeze(1)
-        roi_feats_t = self.roi_layers[i](feats[i], rois[inds])
+        rois_t = rois[inds]
+        # use the roi align in torhcvision
+        if backend == Backend.TORCHSCRIPT:
+            self.roi_layers[i].use_torchvision = True
+        roi_feats_t = self.roi_layers[i](feats[i], rois_t)
         roi_feats[inds] = roi_feats_t
     # slice to recover original size
     roi_feats = roi_feats[num_levels * 2:]

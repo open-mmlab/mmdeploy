@@ -23,6 +23,8 @@ class CenterCropImpl : public ::mmdeploy::CenterCropImpl {
                            int right) override {
     OUTCOME_TRY(auto device_tensor, MakeAvailableOnDevice(tensor, device_, stream_));
 
+    SyncOnScopeExit sync(stream_, device_tensor.buffer() != tensor.buffer(), device_tensor);
+
     auto stream = GetNative<cudaStream_t>(stream_);
     auto desc = device_tensor.desc();
 

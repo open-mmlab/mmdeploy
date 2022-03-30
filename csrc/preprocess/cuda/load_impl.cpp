@@ -25,8 +25,7 @@ class PrepareImageImpl : public ::mmdeploy::PrepareImageImpl {
   Tensor Mat2Tensor(const mmdeploy::Mat& mat) {
     TensorDesc desc{
         mat.buffer().GetDevice(), mat.type(), {1, mat.height(), mat.width(), mat.channel()}, ""};
-    shared_ptr<void> data(mat.data<void>(), [mat = mat](void* p) {});
-    return Tensor(desc, data);
+    return Tensor(std::move(desc), mat.buffer());
   }
 
  protected:
@@ -39,6 +38,9 @@ class PrepareImageImpl : public ::mmdeploy::PrepareImageImpl {
 
     cudaStream_t stream = ::mmdeploy::GetNative<cudaStream_t>(stream_);
     Mat dst_mat(src_mat.height(), src_mat.width(), PixelFormat::kBGR, src_mat.type(), device_);
+
+    SyncOnScopeExit sync(stream_, true, src_mat, dst_mat);
+
     ppl::common::RetCode ret = 0;
 
     int src_h = src_mat.height();
@@ -97,6 +99,9 @@ class PrepareImageImpl : public ::mmdeploy::PrepareImageImpl {
     cudaStream_t stream = ::mmdeploy::GetNative<cudaStream_t>(stream_);
     Mat dst_mat(src_mat.height(), src_mat.width(), PixelFormat::kGRAYSCALE, src_mat.type(),
                 device_);
+
+    SyncOnScopeExit sync(stream_, true, src_mat, dst_mat);
+
     ppl::common::RetCode ret = 0;
 
     int src_h = src_mat.height();

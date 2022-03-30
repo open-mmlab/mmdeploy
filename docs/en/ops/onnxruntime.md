@@ -3,63 +3,20 @@
 <!-- TOC -->
 
 - [ONNX Runtime Ops](#onnx-runtime-ops)
-  - [RoIAlign](#roialign)
+  - [grid_sampler](#grid_sampler)
     - [Description](#description)
     - [Parameters](#parameters)
     - [Inputs](#inputs)
     - [Outputs](#outputs)
     - [Type Constraints](#type-constraints)
-  - [grid_sampler](#grid_sampler)
+  - [MMCVModulatedDeformConv2d](#mmcvmodulateddeformconv2d)
     - [Description](#description-1)
     - [Parameters](#parameters-1)
     - [Inputs](#inputs-1)
     - [Outputs](#outputs-1)
     - [Type Constraints](#type-constraints-1)
-  - [MMCVModulatedDeformConv2d](#mmcvmodulateddeformconv2d)
-    - [Description](#description-2)
-    - [Parameters](#parameters-2)
-    - [Inputs](#inputs-2)
-    - [Outputs](#outputs-2)
-    - [Type Constraints](#type-constraints-2)
 
 <!-- TOC -->
-
-### RoIAlign
-
-#### Description
-
-Perform RoIAlign on output feature, used in bbox_head of most two-stage detectors.
-
-#### Parameters
-
-| Type    | Parameter        | Description                                                                                                   |
-| ------- | ---------------- | ------------------------------------------------------------------------------------------------------------- |
-| `int`   | `output_height`  | height of output roi                                                                                          |
-| `int`   | `output_width`   | width of output roi                                                                                           |
-| `float` | `spatial_scale`  | used to scale the input boxes                                                                                 |
-| `int`   | `sampling_ratio` | number of input samples to take for each output sample. `0` means to take samples densely for current models. |
-| `str`   | `mode`           | pooling mode in each bin. `avg` or `max`                                                                      |
-| `int`   | `aligned`        | If `aligned=0`, use the legacy implementation in MMDetection. Else, align the results more perfectly.         |
-
-#### Inputs
-
-<dl>
-<dt><tt>input</tt>: T</dt>
-<dd>Input feature map; 4D tensor of shape (N, C, H, W), where N is the batch size, C is the numbers of channels, H and W are the height and width of the data.</dd>
-<dt><tt>rois</tt>: T</dt>
-<dd>RoIs (Regions of Interest) to pool over; 2-D tensor of shape (num_rois, 5) given as [[batch_index, x1, y1, x2, y2], ...]. The RoIs' coordinates are the coordinate system of input.</dd>
-</dl>
-
-#### Outputs
-
-<dl>
-<dt><tt>feat</tt>: T</dt>
-<dd>RoI pooled output, 4-D tensor of shape (num_rois, C, output_height, output_width). The r-th batch element feat[r-1] is a pooled feature map corresponding to the r-th RoI RoIs[r-1].<dd>
-</dl>
-
-#### Type Constraints
-
-- T:tensor(float32)
 
 ### grid_sampler
 

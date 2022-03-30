@@ -48,7 +48,7 @@ target_include_directories(${PROJECT_NAME}
         $<INSTALL_INTERFACE:include/cpp>
         )
 target_link_libraries(${PROJECT_NAME} PUBLIC ${SPDLOG_LIB})
-if (NOT MSVC)
+if (NOT (MSVC OR ANDROID))
     target_link_libraries(${PROJECT_NAME} PUBLIC stdc++fs)
 endif ()
 add_library(mmdeploy::core ALIAS ${PROJECT_NAME})

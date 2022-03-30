@@ -546,7 +546,6 @@ def test_single_roi_extractor(backend_type: Backend):
         wrapped_model=single_roi_extractor,
         model_inputs=model_inputs,
         deploy_cfg=deploy_cfg)
-
     if isinstance(backend_outputs, dict):
         backend_outputs = backend_outputs.values()
     for model_output, backend_output in zip(model_outputs[0], backend_outputs):
