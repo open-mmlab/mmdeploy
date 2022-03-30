@@ -114,7 +114,7 @@ class End2EndModel(BaseBackendModel):
                              det_masks: np.ndarray,
                              img_w: int,
                              img_h: int,
-                             device: str,
+                             device: str = "cpu",
                              mask_thr_binary: float = 0.5) -> np.ndarray:
         """Additional processing of masks. Resizes masks from [num_det, 28, 28]
         to [num_det, img_w, img_h]. Analog of the 'mmdeploy.codebase.mmdet.
@@ -216,7 +216,7 @@ class End2EndModel(BaseBackendModel):
                 y_off = img_metas[i]['border'][0]
                 dets[:, [0, 2]] -= x_off
                 dets[:, [1, 3]] -= y_off
-                dets[:, :4] *= (dets[:, :4] > 0).astype(dets.dtype)
+                dets[:, :4] *= (dets[:, :4] > 0)
 
             dets_results = bbox2result(dets, labels, len(self.CLASSES))
 
