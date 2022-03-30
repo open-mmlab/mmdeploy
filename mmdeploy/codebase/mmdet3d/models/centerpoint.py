@@ -95,8 +95,7 @@ def centerpoint__get_bbox(ctx,
     self.test_cfg = self.test_cfg['pts']
     for i, task_head in enumerate(self.task_heads):
         scores_range.append(scores_range[i] + self.num_classes[i])
-        bbox_range.append(bbox_range[i] +
-                          8 if 'vel' in task_head.heads.keys() else 6)
+        bbox_range.append(bbox_range[i] + 8)
         dir_range.append(dir_range[i] + 2)
     for task_id in range(len(self.num_classes)):
         num_class_with_bg = self.num_classes[task_id]
