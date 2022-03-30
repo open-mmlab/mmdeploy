@@ -50,8 +50,8 @@ class TopDownAffineImpl : public Module {
     // prepare data
     vector<float> box;
     from_value(input["box"], box);
-    vector<float> c;
-    vector<float> s;
+    vector<float> c;  // center
+    vector<float> s;  // scale
     Box2cs(box, c, s);
     auto r = input["rotation"].get<float>();
 
