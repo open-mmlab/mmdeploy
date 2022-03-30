@@ -21,6 +21,9 @@ class NormalizeImpl : public ::mmdeploy::NormalizeImpl {
  protected:
   Result<Tensor> NormalizeImage(const Tensor& tensor) override {
     OUTCOME_TRY(auto src_tensor, MakeAvailableOnDevice(tensor, device_, stream_));
+
+    SyncOnScopeExit sync(stream_, src_tensor.buffer() != tensor.buffer(), src_tensor);
+
     auto src_desc = src_tensor.desc();
     int h = (int)src_desc.shape[1];
     int w = (int)src_desc.shape[2];
