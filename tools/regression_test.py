@@ -361,7 +361,47 @@ def test_backends(deploy_cfg, model_cfg, checkpoint_path, device, metrics_name,
     return metric, fps
 
 
-def get_backend_result(backends_info, model_cfg_path, deploy_config_dir,
+def get_backend_fps_metric(deploy_cfg,
+                           model_cfg,
+                           convert_checkpoint_path,
+                           device_type,
+                           metric_name,
+                           logger,
+                           metric_info_dict,
+                           metrics_eval_list,
+                           metric_list,
+                           pytorch_metric,
+                           metric_tolerance
+                           ):
+    metric_value, fps = \
+        test_backends(deploy_cfg=deploy_cfg,
+                      model_cfg=model_cfg,
+                      checkpoint_path=convert_checkpoint_path,
+                      device=device_type,
+                      metrics_name=metric_name,
+                      logger=logger,
+                      metric_info_dict=metric_info_dict)
+
+    metric_name = metric_info_dict.get(metric_name, {}).get('meta_name', None)
+    if metric_name is None:
+        logger.error(f'metrics_eval_list: {metrics_eval_list} '
+                     'has not info name')
+    assert metric_name is not None
+
+    metric_list.append({metric_name: metric_value})
+    metric_pytorch = pytorch_metric.get(str(metric_name))
+    metric_tolerance_value = metric_tolerance.get(metric_name)
+    if (metric_value - metric_tolerance_value) <= \
+            metric_pytorch <= \
+            (metric_value + metric_tolerance_value):
+        test_pass = True
+    else:
+        test_pass = False
+
+    return metric_value, fps, test_pass
+
+
+def get_backend_result(backends_info, sdk_info, model_cfg_path, deploy_config_dir,
                        checkpoint_path, work_dir, device_type, pytorch_metric,
                        metric_tolerance, report_dict, test_type,
                        test_image_info, logger, backend_name):
@@ -369,6 +409,7 @@ def get_backend_result(backends_info, model_cfg_path, deploy_config_dir,
 
     Args:
         backends_info (dict):  Backend info of test yaml.
+        sdk_info (dict):  SDK info of test yaml.
         model_cfg_path (Path): Model config file path.
         deploy_config_dir (str): Deploy config directory.
         checkpoint_path (Path): Checkpoints path.
@@ -412,6 +453,7 @@ def get_backend_result(backends_info, model_cfg_path, deploy_config_dir,
     performance_align = backends_info.get('performance_align', False)
     dynamic_test_img_path = \
         test_image_info.get('dynamic_test_img_path', None)
+    sdk_test = backends_info.get('sdk_test', False)
 
     metric_name_list = [str(metric) for metric in pytorch_metric]
     assert len(metric_name_list) > 0
@@ -448,14 +490,14 @@ def get_backend_result(backends_info, model_cfg_path, deploy_config_dir,
                       f'--device {device_type} ' \
                       '--log-level INFO'
 
-            if backend_name == 'sdk':
+            if sdk_test:
                 cmd_str += ' --dump-info'
 
             if infer_type == 'dynamic' and \
                     dynamic_test_img_path is not None:
                 cmd_str += f' --test-img {dynamic_test_img_path}'
 
-            print(f'Process cmd = {cmd_str}')
+            logger.info(f'Process cmd = {cmd_str}')
 
             try:
                 # Convert the model to specific backend
@@ -500,31 +542,36 @@ def get_backend_result(backends_info, model_cfg_path, deploy_config_dir,
 
                 # test the model metric
                 for metric_name in metrics_eval_list:
-                    metric_value, fps = \
-                        test_backends(deploy_cfg=deploy_cfg,
-                                      model_cfg=model_cfg,
-                                      checkpoint_path=convert_checkpoint_path,
-                                      device=device_type,
-                                      metrics_name=metric_name,
-                                      logger=logger,
-                                      metric_info_dict=metric_info_dict)
+                    metric_value, fps, test_pass = \
+                        get_backend_fps_metric(deploy_cfg=deploy_cfg,
+                                               model_cfg=model_cfg,
+                                               convert_checkpoint_path=convert_checkpoint_path,
+                                               device_type=device_type,
+                                               metric_name=metric_name,
+                                               logger=logger,
+                                               metric_info_dict=metric_info_dict,
+                                               metrics_eval_list=metrics_eval_list,
+                                               metric_list=metric_list,
+                                               pytorch_metric=pytorch_metric,
+                                               metric_tolerance=metric_tolerance
+                                               )
 
-                    metric_name = metric_info_dict. \
-                        get(metric_name, {}).get('meta_name', None)
-                    if metric_name is None:
-                        logger.error(f'metrics_eval_list: {metrics_eval_list} '
-                                     'has not info name')
-                    assert metric_name is not None
-
-                    metric_list.append({metric_name: metric_value})
-                    metric_pytorch = pytorch_metric.get(str(metric_name))
-                    metric_tolerance_value = metric_tolerance.get(metric_name)
-                    if (metric_value - metric_tolerance_value) <= \
-                            metric_pytorch <= \
-                            (metric_value + metric_tolerance_value):
-                        test_pass = True
-                    else:
-                        test_pass = False
+                    if sdk_test:
+                        sdk_deploy_cfg = \
+                            sdk_info.get('deploy_config', {}).get(infer_type, {}).get(fp_size, None)
+                        metric_value, fps, test_pass = \
+                            get_backend_fps_metric(deploy_cfg=sdk_deploy_cfg,
+                                               model_cfg=model_cfg,
+                                               convert_checkpoint_path=str(work_dir),
+                                               device_type=device_type,
+                                               metric_name=metric_name,
+                                               logger=logger,
+                                               metric_info_dict=metric_info_dict,
+                                               metrics_eval_list=metrics_eval_list,
+                                               metric_list=metric_list,
+                                               pytorch_metric=pytorch_metric,
+                                               metric_tolerance=metric_tolerance
+                                               )
             else:
                 for metric in metric_name_list:
                     metric_list.append({metric: '-'})
@@ -666,11 +713,14 @@ def main():
                     'dynamic_test_img_path': dynamic_test_img_path
                 }
 
+                sdk_info = models.get('sdk_config', None)
+
                 backend_result_function = partial(
-                    get_backend_result, backends_info, model_cfg_path,
-                    deploy_config_dir, checkpoint_path, work_dir,
-                    args.device_id, pytorch_metric, metric_tolerance,
-                    report_dict, args.test_type, test_image_info, logger)
+                    get_backend_result, backends_info, sdk_info,
+                    model_cfg_path, deploy_config_dir, checkpoint_path,
+                    work_dir, args.device_id, pytorch_metric,
+                    metric_tolerance, report_dict, args.test_type,
+                    test_image_info, logger)
 
                 for backend in backend_list:
                     backend_result_function(backend)
