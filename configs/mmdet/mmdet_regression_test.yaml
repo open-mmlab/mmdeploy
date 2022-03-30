@@ -10,116 +10,69 @@ globals:
     mask AP: 0.1
     PQ: 0.1
 
-default_deploy_config: &default_deploy_config
+default_config: &default_config
   input_img_path: &default_input_img_path ./tests/data/tiger.jpeg
   dynamic_test_img_path: &default_dynamic_test_img_path
-  onnxruntime: &default_onnxruntime_config
-    performance_align: False
-    dynamic_test_img_path:
-    deploy_config:
-      static:
-        fp32: &default_onnxruntime_static_fp32 detection_onnxruntime_static.py
-      dynamic:
-        fp32: &default_onnxruntime_dynamic_fp32 detection_onnxruntime_dynamic.py
-  tensorrt: &default_tensorrt_config
-    performance_align: False
-    dynamic_test_img_path:
-    deploy_config:
-      static:
-        fp32: &default_tensorrt_static_fp32 detection_tensorrt_static-800x1344.py
-        fp16: &default_tensorrt_static_fp16 detection_tensorrt-fp16_static-800x1344.py
-        int8: &default_tensorrt_static_int8 detection_tensorrt-int8_static-800x1344.py
-      dynamic:
-        fp32: &default_tensorrt_dynamic_fp32 detection_tensorrt_dynamic-320x320-1344x1344.py
-        fp16: &default_tensorrt_dynamic_fp16 detection_tensorrt-fp16_dynamic-320x320-1344x1344.py
-        int8: &default_tensorrt_dynamic_int8 detection_tensorrt-int8_dynamic-320x320-1344x1344.py
-  openvino: &default_openvino_config
-    performance_align: False
-    dynamic_test_img_path:
-    deploy_config:
-      static:
-        fp32: &default_openvino_static_fp32
-      dynamic:
-        fp32: &default_openvino_dynamic_fp32 detection_openvino_dynamic-800x1344.py
-  ncnn: &default_ncnn_config
-    performance_align: False
-    dynamic_test_img_path:
-    deploy_config:
-      static:
-        fp32: &default_ncnn_static_fp32 single-stage_ncnn_static-800x1344.py
-      dynamic:
-        fp32: &default_ncnn_dynamic_fp32 single-stage_ncnn_dynamic.py
-  pplnn: &default_pplnn_config
-    performance_align: False
-    dynamic_test_img_path:
-    deploy_config:
-      static:
-        fp32: &default_pplnn_static_fp32
-      dynamic:
-        fp32: &default_pplnn_dynamic_fp32 detection_pplnn_dynamic-800x1344.py
-  sdk: &default_sdk_config
-    performance_align: False
-    dynamic_test_img_path:
-    deploy_config:
-      static:
-        fp32: &default_sdk_static_fp32
-      dynamic:
-        fp32: &default_sdk_dynamic_fp32
-  torchscript: &default_ts_config
-    performace_align: False
-    dynamic_test_img_path:
-    deploy_config:
-      dynamic:
-        fp32: &default_ts_dynamic_fp32 detection_torchscript.py
+  sdk_config: &default_sdk_config
+      performance_align: False
+      deploy_config:
+        static:
+          fp32: &default_sdk_static_fp32
+        dynamic:
+          fp32: &default_sdk_dynamic_fp32
+  backends:
+    onnxruntime: &default_onnxruntime_config
+      performance_align: False
+      dynamic_test_img_path:
+      deploy_config:
+        static:
+          fp32: &default_onnxruntime_static_fp32 detection_onnxruntime_static.py
+        dynamic:
+          fp32: &default_onnxruntime_dynamic_fp32 detection_onnxruntime_dynamic.py
+    tensorrt: &default_tensorrt_config
+      performance_align: False
+      dynamic_test_img_path:
+      deploy_config:
+        static:
+          fp32: &default_tensorrt_static_fp32 detection_tensorrt_static-800x1344.py
+          fp16: &default_tensorrt_static_fp16 detection_tensorrt-fp16_static-800x1344.py
+          int8: &default_tensorrt_static_int8 detection_tensorrt-int8_static-800x1344.py
+        dynamic:
+          fp32: &default_tensorrt_dynamic_fp32 detection_tensorrt_dynamic-320x320-1344x1344.py
+          fp16: &default_tensorrt_dynamic_fp16 detection_tensorrt-fp16_dynamic-320x320-1344x1344.py
+          int8: &default_tensorrt_dynamic_int8 detection_tensorrt-int8_dynamic-320x320-1344x1344.py
+    openvino: &default_openvino_config
+      performance_align: False
+      dynamic_test_img_path:
+      deploy_config:
+        static:
+          fp32: &default_openvino_static_fp32
+        dynamic:
+          fp32: &default_openvino_dynamic_fp32 detection_openvino_dynamic-800x1344.py
+    ncnn: &default_ncnn_config
+      performance_align: False
+      dynamic_test_img_path:
+      deploy_config:
+        static:
+          fp32: &default_ncnn_static_fp32 single-stage_ncnn_static-800x1344.py
+        dynamic:
+          fp32: &default_ncnn_dynamic_fp32 single-stage_ncnn_dynamic.py
+    pplnn: &default_pplnn_config
+      performance_align: False
+      dynamic_test_img_path:
+      deploy_config:
+        static:
+          fp32: &default_pplnn_static_fp32
+        dynamic:
+          fp32: &default_pplnn_dynamic_fp32 detection_pplnn_dynamic-800x1344.py
+    torchscript: &default_ts_config
+      performace_align: False
+      dynamic_test_img_path:
+      deploy_config:
+        dynamic:
+          fp32: &default_ts_dynamic_fp32 detection_torchscript.py
 
 models:
-  - name: yolo
-    codebase_model_config_dir: ./configs/yolo
-    model_configs:
-      - yolov3_mobilenetv2_320_300e_coco.py
-    metafile: configs/yolo/metafile.yml
-    deploy_config_dir: ./configs/mmdet/detection
-    input_img_path: *default_input_img_path
-    dynamic_test_img_path:
-    calib_dataset_cfg:
-    backends:
-      onnxruntime:
-        performance_align: False
-        deploy_config:
-          dynamic:
-            fp32: *default_onnxruntime_dynamic_fp32
-      tensorrt:
-        performance_align: True
-        deploy_config:
-          dynamic:
-            fp32: detection_tensorrt_dynamic-160x160-608x608.py
-            fp16: detection_tensorrt-fp16_dynamic-160x160-608x608.py
-            int8: detection_tensorrt-int8_dynamic-160x160-608x608.py
-      ncnn:
-        performance_align: False
-        deploy_config:
-          dynamic:
-            fp32: *default_ncnn_dynamic_fp32
-      openvino:
-        performance_align: False
-        deploy_config:
-          static:
-            fp32:
-          dynamic:
-            fp32:
-      pplnn:
-        performance_align: False
-        deploy_config:
-          dynamic:
-            fp32:
-      sdk:
-        performance_align: False
-        deploy_config:
-          static:
-            fp32:
-          dynamic:
-            fp32:
-
   - name: retinanet
     codebase_model_config_dir: ./configs/retinanet
     model_configs:
@@ -129,14 +82,21 @@ models:
     input_img_path: *default_input_img_path
     dynamic_test_img_path:
     calib_dataset_cfg:
+    sdk_config:
+      performance_align: False
+      deploy_config:
+        dynamic:
+          fp32: *default_sdk_dynamic_fp32
     backends:
       onnxruntime:
         performance_align: False
+        sdk_test: False
         deploy_config:
           dynamic:
             fp32: *default_onnxruntime_dynamic_fp32
       tensorrt:
         performance_align: True
+        sdk_test: False
         deploy_config:
           dynamic:
             fp32: *default_tensorrt_dynamic_fp32
@@ -144,6 +104,7 @@ models:
             int8: *default_tensorrt_dynamic_int8
       ncnn:
         performance_align: False
+        sdk_test: False
         deploy_config:
           static:
             fp32:
@@ -151,16 +112,72 @@ models:
             fp32:
       openvino:
         performance_align: False
+        sdk_test: False
         deploy_config:
           dynamic:
             fp32: *default_openvino_dynamic_fp32
       pplnn:
         performance_align: False
+        sdk_test: False
         deploy_config:
           dynamic:
             fp32: *default_pplnn_dynamic_fp32
-      sdk:
-        performance_align: False
+      torchscript:
+        performace_align: False
+        sdk_test: False
+        dynamic_test_img_path:
         deploy_config:
           dynamic:
-            fp32: *default_sdk_dynamic_fp32
+            fp32: *default_ts_dynamic_fp32
+
+#  - name: yolo
+#    codebase_model_config_dir: ./configs/yolo
+#    model_configs:
+#      - yolov3_mobilenetv2_320_300e_coco.py
+#    metafile: configs/yolo/metafile.yml
+#    deploy_config_dir: ./configs/mmdet/detection
+#    input_img_path: *default_input_img_path
+#    dynamic_test_img_path:
+#    calib_dataset_cfg:
+#    backends:
+#      onnxruntime:
+#        performance_align: False
+#        sdk_test: False
+#        deploy_config:
+#          dynamic:
+#            fp32: *default_onnxruntime_dynamic_fp32
+#      tensorrt:
+#        performance_align: True
+#        sdk_test: False
+#        deploy_config:
+#          dynamic:
+#            fp32: detection_tensorrt_dynamic-160x160-608x608.py
+#            fp16: detection_tensorrt-fp16_dynamic-160x160-608x608.py
+#            int8: detection_tensorrt-int8_dynamic-160x160-608x608.py
+#      ncnn:
+#        performance_align: False
+#        sdk_test: False
+#        deploy_config:
+#          dynamic:
+#            fp32: *default_ncnn_dynamic_fp32
+#      openvino:
+#        performance_align: False
+#        sdk_test: False
+#        deploy_config:
+#          static:
+#            fp32:
+#          dynamic:
+#            fp32:
+#      pplnn:
+#        performance_align: False
+#        sdk_test: False
+#        deploy_config:
+#          dynamic:
+#            fp32:
+#      torchscript:
+#        performace_align: False
+#        sdk_test: False
+#        dynamic_test_img_path:
+#        deploy_config:
+#          dynamic:
+#            fp32: *default_ts_dynamic_fp32
