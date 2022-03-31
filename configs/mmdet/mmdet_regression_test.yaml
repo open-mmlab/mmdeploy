@@ -14,12 +14,11 @@ default_config: &default_config
   input_img_path: &default_input_img_path ./tests/data/tiger.jpeg
   dynamic_test_img_path: &default_dynamic_test_img_path
   sdk_config: &default_sdk_config
-      performance_align: False
-      deploy_config:
-        static:
-          fp32: &default_sdk_static_fp32
-        dynamic:
-          fp32: &default_sdk_dynamic_fp32
+    deploy_config:
+      static:
+        fp32: &default_sdk_static_fp32
+      dynamic:
+        fp32: &default_sdk_dynamic_fp32 detection_sdk_dynamic.py
   backends:
     onnxruntime: &default_onnxruntime_config
       performance_align: False
@@ -83,7 +82,7 @@ models:
     dynamic_test_img_path:
     calib_dataset_cfg:
     sdk_config:
-      performance_align: False
+      deploy_config_dir: ./configs/mmdet/detection
       deploy_config:
         dynamic:
           fp32: *default_sdk_dynamic_fp32
