@@ -73,5 +73,7 @@ SDK_TASK_MAP = {
     Task.TEXT_DETECTION:
     dict(component='TextDetHead', cls_name='TextDetector'),
     Task.TEXT_RECOGNITION:
-    dict(component='CTCConvertor', cls_name='TextRecognizer')
+    dict(component='CTCConvertor', cls_name='TextRecognizer'),
+    Task.POSE_DETECTION:
+    dict(component='Detector', cls_name='PoseDetector')
 }

@@ -24,6 +24,7 @@ mmdeploy_python_add_module(segmentor)
 mmdeploy_python_add_module(text_detector)
 mmdeploy_python_add_module(text_recognizer)
 mmdeploy_python_add_module(restorer)
+mmdeploy_python_add_module(pose_detector)
 
 pybind11_add_module(${PROJECT_NAME} ${MMDEPLOY_PYTHON_SRCS})
 
