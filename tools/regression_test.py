@@ -657,8 +657,8 @@ def main():
     backend_list = args.backends
     if backend_list == ['all']:
         backend_list = [
-            'onnxruntime', 'tensorrt', 'openvino', 'ncnn', 'pplnn', 'sdk',
-            'torchscript'
+            'onnxruntime', 'tensorrt', 'openvino', 'ncnn',
+            'pplnn', 'torchscript'
         ]
     assert isinstance(backend_list, list)
     logger.info(f'Regression test backend list = {backend_list}')
