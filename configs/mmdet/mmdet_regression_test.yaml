@@ -95,7 +95,7 @@ models:
             fp32: *default_onnxruntime_dynamic_fp32
       tensorrt:
         performance_align: True
-        sdk_test: False
+        sdk_test: True
         deploy_config:
           dynamic:
             fp32: *default_tensorrt_dynamic_fp32
