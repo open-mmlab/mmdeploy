@@ -88,7 +88,7 @@ int mmdeploy_pose_detector_create_by_path(const char* model_path, const char* de
 }
 
 int mmdeploy_pose_detector_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
-                                 mm_pose_detect_t** results, int** result_count) {
+                                 mm_pose_detect_t** results) {
   return mmdeploy_pose_detector_apply_bbox(handle, mats, mat_count, nullptr, nullptr, results);
 }
 

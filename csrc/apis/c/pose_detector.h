@@ -15,9 +15,9 @@ extern "C" {
 #endif
 
 typedef struct mm_pose_detect_t {
-  mm_pointf_t* point;
-  float* score;
-  int length;
+  mm_pointf_t* point;  ///< keypoint
+  float* score;        ///< keypoint score
+  int length;          ///< number of keypoint
 } mm_pose_detect_t;
 
 /**
@@ -57,8 +57,7 @@ MMDEPLOY_API int mmdeploy_pose_detector_create_by_path(const char* model_path,
  * @return status code of the operation
  */
 MMDEPLOY_API int mmdeploy_pose_detector_apply(mm_handle_t handle, const mm_mat_t* mats,
-                                              int mat_count, mm_pose_detect_t** results,
-                                              int** result_count);
+                                              int mat_count, mm_pose_detect_t** results);
 
 /**
  * @brief Apply pose detector to a batch of images supplied with bboxes(roi)
