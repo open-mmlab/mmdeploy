@@ -16,7 +16,6 @@ namespace mmdeploy {
  */
 MMDEPLOY_API Result<Mat> MakeAvailableOnDevice(const Mat& src, const Device& device,
                                                Stream& stream);
-
 /**
  *
  * @param src
