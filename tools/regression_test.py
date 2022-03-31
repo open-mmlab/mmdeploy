@@ -361,8 +361,8 @@ def test_backends(deploy_cfg, model_cfg, checkpoint_path, device, metrics_name,
     return metric, fps
 
 
-def get_backend_fps_metric(deploy_cfg,
-                           model_cfg,
+def get_backend_fps_metric(deploy_cfg_path,
+                           model_cfg_path,
                            convert_checkpoint_path,
                            device_type,
                            metric_name,
@@ -371,8 +371,18 @@ def get_backend_fps_metric(deploy_cfg,
                            metrics_eval_list,
                            metric_list,
                            pytorch_metric,
-                           metric_tolerance
+                           metric_tolerance,
+                           backend_name,
+                           metric_useless,
+                           convert_result,
+                           report_dict,
+                           infer_type
                            ):
+    # load deploy_cfg
+    deploy_cfg, model_cfg = \
+        load_config(str(deploy_cfg_path),
+                    str(model_cfg_path.absolute()))
+
     metric_value, fps = \
         test_backends(deploy_cfg=deploy_cfg,
                       model_cfg=model_cfg,
@@ -398,7 +408,24 @@ def get_backend_fps_metric(deploy_cfg,
     else:
         test_pass = False
 
-    return metric_value, fps, test_pass
+    # update useless metric
+    for metric in metric_useless:
+        metric_list.append({metric: '-'})
+
+    # update the report
+    update_report(
+        report_dict=report_dict,
+        model_name=model_cfg_path.parent.name,
+        model_config=str(model_cfg_path),
+        model_checkpoint_name=str(convert_checkpoint_path),
+        dataset='',
+        backend_name=backend_name,
+        deploy_config=str(deploy_cfg_path),
+        static_or_dynamic=infer_type,
+        conversion_result=str(convert_result),
+        fps=fps,
+        metric_info=metric_list,
+        test_pass=str(test_pass))
 
 
 def get_backend_result(backends_info, sdk_info, model_cfg_path, deploy_config_dir,
@@ -459,8 +486,9 @@ def get_backend_result(backends_info, sdk_info, model_cfg_path, deploy_config_di
     assert len(metric_name_list) > 0
 
     metric_all_list = [str(metric) for metric in metric_tolerance]
-    deploy_cfg_path_list = backends_info.get('deploy_config')
+    metric_useless = set(metric_all_list) - set(metric_name_list)
 
+    deploy_cfg_path_list = backends_info.get('deploy_config')
     for infer_type, deploy_cfg_info in deploy_cfg_path_list.items():
         for fp_size, deploy_cfg_name in deploy_cfg_info.items():
             if deploy_cfg_name is None:
@@ -520,12 +548,7 @@ def get_backend_result(backends_info, sdk_info, model_cfg_path, deploy_config_di
 
             # Test the model
             fps = '-'
-            if convert_result and \
-                    performance_align and \
-                    test_type != 'convert':
-
-                test_pass = False
-
+            if convert_result and test_type != 'convert':
                 # load deploy_cfg
                 deploy_cfg, model_cfg = \
                     load_config(str(deploy_cfg_path),
@@ -542,9 +565,9 @@ def get_backend_result(backends_info, sdk_info, model_cfg_path, deploy_config_di
 
                 # test the model metric
                 for metric_name in metrics_eval_list:
-                    metric_value, fps, test_pass = \
-                        get_backend_fps_metric(deploy_cfg=deploy_cfg,
-                                               model_cfg=model_cfg,
+                    if performance_align:
+                        get_backend_fps_metric(deploy_cfg_path=deploy_cfg_path,
+                                               model_cfg_path=model_cfg_path,
                                                convert_checkpoint_path=convert_checkpoint_path,
                                                device_type=device_type,
                                                metric_name=metric_name,
@@ -553,15 +576,18 @@ def get_backend_result(backends_info, sdk_info, model_cfg_path, deploy_config_di
                                                metrics_eval_list=metrics_eval_list,
                                                metric_list=metric_list,
                                                pytorch_metric=pytorch_metric,
-                                               metric_tolerance=metric_tolerance
+                                               metric_tolerance=metric_tolerance,
+                                               backend_name=backend_name,
+                                               convert_result=convert_result,
+                                               report_dict=report_dict,
+                                               infer_type=infer_type
                                                )
 
                     if sdk_test:
                         sdk_deploy_cfg = \
                             sdk_info.get('deploy_config', {}).get(infer_type, {}).get(fp_size, None)
-                        metric_value, fps, test_pass = \
-                            get_backend_fps_metric(deploy_cfg=sdk_deploy_cfg,
-                                               model_cfg=model_cfg,
+                        get_backend_fps_metric(deploy_cfg_path=sdk_deploy_cfg,
+                                               model_cfg_path=model_cfg_path,
                                                convert_checkpoint_path=str(work_dir),
                                                device_type=device_type,
                                                metric_name=metric_name,
@@ -570,32 +596,36 @@ def get_backend_result(backends_info, sdk_info, model_cfg_path, deploy_config_di
                                                metrics_eval_list=metrics_eval_list,
                                                metric_list=metric_list,
                                                pytorch_metric=pytorch_metric,
-                                               metric_tolerance=metric_tolerance
+                                               metric_tolerance=metric_tolerance,
+                                               backend_name='SDK',
+                                               metric_useless=metric_useless,
+                                               convert_result=convert_result,
+                                               report_dict=report_dict,
+                                               infer_type=infer_type
                                                )
             else:
                 for metric in metric_name_list:
                     metric_list.append({metric: '-'})
                 test_pass = True if convert_result else False
 
-            # update useless metric
-            metric_useless = set(metric_all_list) - set(metric_name_list)
-            for metric in metric_useless:
-                metric_list.append({metric: '-'})
+                # update useless metric
+                for metric in metric_useless:
+                    metric_list.append({metric: '-'})
 
-            # update the report
-            update_report(
-                report_dict=report_dict,
-                model_name=model_cfg_path.parent.name,
-                model_config=str(model_cfg_path),
-                model_checkpoint_name=str(checkpoint_path),
-                dataset='',
-                backend_name=backend_name,
-                deploy_config=str(deploy_cfg_path),
-                static_or_dynamic=infer_type,
-                conversion_result=str(convert_result),
-                fps=fps,
-                metric_info=metric_list,
-                test_pass=str(test_pass))
+                # update the report
+                update_report(
+                    report_dict=report_dict,
+                    model_name=model_cfg_path.parent.name,
+                    model_config=str(model_cfg_path),
+                    model_checkpoint_name=str(checkpoint_path),
+                    dataset='',
+                    backend_name=backend_name,
+                    deploy_config=str(deploy_cfg_path),
+                    static_or_dynamic=infer_type,
+                    conversion_result=str(convert_result),
+                    fps=fps,
+                    metric_info=metric_list,
+                    test_pass=str(test_pass))
 
 
 def save_report(report_info, report_save_path, logger):
