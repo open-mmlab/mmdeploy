@@ -33,3 +33,9 @@
 - Error: `libtorch/share/cmake/Caffe2/Caffe2Config.cmake:96 (message):Your installed Caffe2 version uses cuDNN but I cannot find the cuDNN libraries.  Please set the proper cuDNN prefixes and / or install cuDNN.`
 
   May `export CUDNN_ROOT=/root/path/to/cudnn` to resolve the build error.
+
+
+### Windows
+- Error: similar like this `OSError: [WinError 1455] 页面文件太小，无法完成操作 Error loading "C:\Users\cx\miniconda3\lib\site-packages\torch\lib\cudnn_cnn_infer64_8.dll" or one of its dependencies`
+
+  Solution: https://stackoverflow.com/questions/64837376/how-to-efficiently-run-multiple-pytorch-processes-models-at-once-traceback
