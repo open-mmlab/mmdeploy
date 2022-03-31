@@ -578,6 +578,7 @@ def get_backend_result(backends_info, sdk_info, model_cfg_path, deploy_config_di
                                                pytorch_metric=pytorch_metric,
                                                metric_tolerance=metric_tolerance,
                                                backend_name=backend_name,
+                                               metric_useless=metric_useless,
                                                convert_result=convert_result,
                                                report_dict=report_dict,
                                                infer_type=infer_type
