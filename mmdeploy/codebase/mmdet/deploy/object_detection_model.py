@@ -114,7 +114,7 @@ class End2EndModel(BaseBackendModel):
                              det_masks: np.ndarray,
                              img_w: int,
                              img_h: int,
-                             device: str = "cpu",
+                             device: str = 'cpu',
                              mask_thr_binary: float = 0.5) -> np.ndarray:
         """Additional processing of masks. Resizes masks from [num_det, 28, 28]
         to [num_det, img_w, img_h]. Analog of the 'mmdeploy.codebase.mmdet.
@@ -148,8 +148,16 @@ class End2EndModel(BaseBackendModel):
             x0_int, y0_int = 0, 0
             x1_int, y1_int = img_w, img_h
 
-            img_y = torch.arange(y0_int, y1_int, dtype=torch.float32, device=torch.device(device)) + 0.5
-            img_x = torch.arange(x0_int, x1_int, dtype=torch.float32, device=torch.device(device)) + 0.5
+            img_y = torch.arange(
+                y0_int,
+                y1_int,
+                dtype=torch.float32,
+                device=torch.device(device)) + 0.5
+            img_x = torch.arange(
+                x0_int,
+                x1_int,
+                dtype=torch.float32,
+                device=torch.device(device)) + 0.5
             x0, y0, x1, y1 = bbox
 
             img_y = (img_y - y0) / (y1 - y0) * 2 - 1
@@ -169,7 +177,7 @@ class End2EndModel(BaseBackendModel):
                 mask.to(dtype=torch.float32)[None, None, :, :],
                 grid[None, :, :, :],
                 align_corners=False)
-            
+
             result_masks.append(img_masks)
         result_masks = torch.cat(result_masks, 1)
         return result_masks.squeeze(0)
@@ -205,7 +213,8 @@ class End2EndModel(BaseBackendModel):
                 if isinstance(scale_factor, (list, tuple, np.ndarray)):
                     assert len(scale_factor) == 4
                     scale_factor = np.array(scale_factor)[None, :]  # [1,4]
-                scale_factor = torch.from_numpy(scale_factor).to(device=torch.device(self.device))
+                scale_factor = torch.from_numpy(scale_factor).to(
+                    device=torch.device(self.device))
                 dets[:, :4] /= scale_factor
 
             if 'border' in img_metas[i]:
@@ -265,7 +274,6 @@ class End2EndModel(BaseBackendModel):
         """
         outputs = self.wrapper({self.input_name: imgs})
         outputs = self.wrapper.output_to_list(outputs)
-        #outputs = [out.detach().cpu().numpy() for out in outputs]
         return outputs
 
     def show_result(self,
