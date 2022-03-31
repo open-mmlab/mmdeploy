@@ -252,19 +252,18 @@ def main():
     # for headless installation.
     if is_display is None and args.show is True:
         args.show = False
-        logger.warning('\"args.show\" has been forced to be False as it\'s \
-            running on a headless device.')
+    logger.warning('''"args.show" has been forced to be False as it's '''
+                   '''running on a headless device.''')
 
     # visualize model of the backend
     create_process(
         f'visualize {backend.value} model',
         target=visualize_model,
-        args=(model_cfg_path, deploy_cfg_path, backend_files,
-                args.test_img, args.device),
+        args=(model_cfg_path, deploy_cfg_path, backend_files, args.test_img,
+              args.device),
         kwargs=dict(
             backend=backend,
-            output_file=osp.join(args.work_dir,
-                                    f'output_{backend.value}.jpg'),
+            output_file=osp.join(args.work_dir, f'output_{backend.value}.jpg'),
             show_result=args.show),
         ret_value=ret_value)
 
@@ -273,7 +272,7 @@ def main():
         'visualize pytorch model',
         target=visualize_model,
         args=(model_cfg_path, deploy_cfg_path, [checkpoint_path],
-                args.test_img, args.device),
+              args.test_img, args.device),
         kwargs=dict(
             backend=Backend.PYTORCH,
             output_file=osp.join(args.work_dir, 'output_pytorch.jpg'),
