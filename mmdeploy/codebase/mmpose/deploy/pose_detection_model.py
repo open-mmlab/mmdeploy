@@ -161,14 +161,20 @@ class SDKEnd2EndModel(End2EndModel):
                  _center: np.ndarray,
                  _scale: np.ndarray,
                  padding: float = 1.25):
-        """This encodes bbox(x,y,w,h) into (center, scale)
+        """This encodes (center, scale) to fake bbox(x,y,x,y) The dataloader in
+        mmpose convert the bbox of image to (center, scale) and use these
+        information in the pre/post process of model. Some setting of
+        dataloader will not collect bbox key. While in practice, we receive
+        image and bbox as input. Therefore this method try to convert the
+        (center, scale) back to bbox. It can not restore the real box with just
+        (center, scale) information, but sdk can handle the fake bbox normally.
 
         Args:
             _center: (np.ndarray[float32](2,)) Center of the bbox (x, y)
             _scale: (np.ndarray[float32](2,)) Scale of the bbox w & h
 
         Returns:
-            - np.ndarray[float32](2,): fake box if keypoint, the process in
+            - np.ndarray[float32](4,): fake box if keypoint, the process in
                 topdown_affine will calculate original center, scale.
         """
         scale = _scale.copy()
