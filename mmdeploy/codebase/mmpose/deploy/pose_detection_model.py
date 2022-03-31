@@ -16,7 +16,7 @@ def __build_backend_model(cls_name: str, registry: Registry, *args, **kwargs):
 
 
 __BACKEND_MODEL = mmcv.utils.Registry(
-    'backend_text_recognizer', build_func=__build_backend_model)
+    'backend_pose_detectors', build_func=__build_backend_model)
 
 
 @__BACKEND_MODEL.register_module('end2end')
