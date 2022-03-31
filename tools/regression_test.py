@@ -591,7 +591,9 @@ def get_backend_result(backends_info, sdk_info, model_cfg_path, deploy_config_di
                         if sdk_deploy_cfg_name is None:
                             continue
 
-                        deploy_config_dir = sdk_info.get('deploy_config', {}).get('deploy_config_dir', None)
+                        deploy_config_dir = sdk_info.get('deploy_config_dir', None)
+                        assert deploy_config_dir is not None
+
                         sdk_deploy_cfg = Path(deploy_config_dir).joinpath(sdk_deploy_cfg_name)
 
                         get_backend_fps_metric(deploy_cfg_path=str(sdk_deploy_cfg),
