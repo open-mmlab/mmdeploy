@@ -276,7 +276,8 @@ def main():
                 show_result=args.show),
             ret_value=ret_value)
     else:
-        logger.warning('\"visualize_model\" has been skipped may be because it\'s \
+        logger.warning(
+            '\"visualize_model\" has been skipped may be because it\'s \
             running on a headless device.')
     logger.info('All process success.')
 
