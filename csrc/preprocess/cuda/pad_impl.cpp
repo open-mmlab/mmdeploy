@@ -37,6 +37,8 @@ class PadImpl : public ::mmdeploy::PadImpl {
   Result<Tensor> PadImage(const Tensor& img, const array<int, 4>& padding) override {
     OUTCOME_TRY(auto src_tensor, MakeAvailableOnDevice(img, device_, stream_));
 
+    SyncOnScopeExit sync(stream_, src_tensor.buffer() != img.buffer(), src_tensor);
+
     auto desc = src_tensor.desc();
     int height = desc.shape[1];
     int width = desc.shape[2];

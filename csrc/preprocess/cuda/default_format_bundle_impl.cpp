@@ -21,6 +21,9 @@ class DefaultFormatBundleImpl final : public ::mmdeploy::DefaultFormatBundleImpl
  protected:
   Result<Tensor> ToFloat32(const Tensor& tensor, const bool& img_to_float) override {
     OUTCOME_TRY(auto src_tensor, MakeAvailableOnDevice(tensor, device_, stream_));
+
+    SyncOnScopeExit sync(stream_, src_tensor.buffer() != tensor.buffer(), src_tensor);
+
     auto data_type = src_tensor.data_type();
     auto h = tensor.shape(1);
     auto w = tensor.shape(2);
@@ -45,6 +48,9 @@ class DefaultFormatBundleImpl final : public ::mmdeploy::DefaultFormatBundleImpl
 
   Result<Tensor> HWC2CHW(const Tensor& tensor) override {
     OUTCOME_TRY(auto src_tensor, MakeAvailableOnDevice(tensor, device_, stream_));
+
+    SyncOnScopeExit sync(stream_, src_tensor.buffer() != tensor.buffer(), src_tensor);
+
     auto h = tensor.shape(1);
     auto w = tensor.shape(2);
     auto c = tensor.shape(3);

@@ -1,6 +1,9 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
 #include "device_utils.h"
+
+#include "core/logger.h"
+
 namespace mmdeploy {
 
 Result<Mat> MakeAvailableOnDevice(const Mat& src, const Device& device, Stream& stream) {
@@ -24,6 +27,16 @@ Result<Tensor> MakeAvailableOnDevice(const Tensor& src, const Device& device, St
   OUTCOME_TRY(stream.Copy(src.buffer(), dst.buffer(), src.byte_size()));
 
   return dst;
+}
+
+SyncOnScopeExit::~SyncOnScopeExit() {
+  if (active_ && stream_) {
+    if (!stream_.Wait()) {
+      MMDEPLOY_ERROR("Implicit stream synchronization failed.");
+    } else {
+      MMDEPLOY_DEBUG("Implicit stream synchronization succeeded.");
+    }
+  }
 }
 
 }  // namespace mmdeploy
