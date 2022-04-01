@@ -598,7 +598,7 @@ def get_backend_result(backends_info, sdk_info, model_cfg_path, deploy_config_di
 
                         get_backend_fps_metric(deploy_cfg_path=str(sdk_deploy_cfg),
                                                model_cfg_path=model_cfg_path,
-                                               convert_checkpoint_path=str(work_dir),
+                                               convert_checkpoint_path=str(backend_output_path),
                                                device_type=device_type,
                                                metric_name=metric_name,
                                                logger=logger,
