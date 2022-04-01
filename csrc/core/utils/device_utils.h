@@ -16,6 +16,7 @@ namespace mmdeploy {
  */
 MMDEPLOY_API Result<Mat> MakeAvailableOnDevice(const Mat& src, const Device& device,
                                                Stream& stream);
+
 /**
  *
  * @param src
@@ -25,6 +26,7 @@ MMDEPLOY_API Result<Mat> MakeAvailableOnDevice(const Mat& src, const Device& dev
  */
 MMDEPLOY_API Result<Tensor> MakeAvailableOnDevice(const Tensor& src, const Device& device,
                                                   Stream& stream);
+
 }  // namespace mmdeploy
 
 #endif  // MMDEPLOY_TRANSFORM_UTILS_H
