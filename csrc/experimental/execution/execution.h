@@ -410,7 +410,7 @@ struct _Receiver {
     auto* op_state = self.op_state_;
     auto& args = op_state->storage_.args_.emplace((As)as...);
     op_state->storage_.proxy_.emplace([&] {
-      return Connect(std::apply(std::move(op_state->fun_), args), std::move(op_state->rcvr_));
+        return Connect(std::apply(std::move(op_state->fun_), args), std::move(op_state->rcvr_));
     });
     Start(**op_state->storage_.proxy_);
   }

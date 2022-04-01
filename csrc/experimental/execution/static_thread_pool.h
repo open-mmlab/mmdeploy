@@ -166,28 +166,19 @@ inline void StaticThreadPool::Run(std::uint32_t index) noexcept {
     TaskBase* task = nullptr;
     for (std::uint32_t i = 0; i < thread_count_; ++i) {
       auto queue_index = (index + i) < thread_count_ ? (index + i) : (index + i - thread_count_);
-      //      MMDEPLOY_INFO("queue_index {}", queue_index);
       auto& state = thread_states_[queue_index];
-      //      MMDEPLOY_INFO("try_pop...");
       task = state.try_pop();
       if (task != nullptr) {
-        //        MMDEPLOY_INFO("try_pop success");
         break;
       }
-      //      MMDEPLOY_INFO("try_pop fail");
     }
     if (task == nullptr) {
-      //      MMDEPLOY_INFO("pop");
       task = thread_states_[index].pop();
-      //      MMDEPLOY_INFO("pop done");
       if (task == nullptr) {
-        // request_stop() was called
         return;
       }
     }
-    //    MMDEPLOY_INFO("start work {}", index);
     task->execute_(task);
-    //    MMDEPLOY_INFO("end work {}", index);
   }
 }
 
@@ -202,27 +193,18 @@ inline void StaticThreadPool::Enqueue(TaskBase* task) noexcept {
   const std::uint32_t thread_count = static_cast<std::uint32_t>(threads_.size());
   const std::uint32_t start_index =
       next_thread_.fetch_add(1, std::memory_order_relaxed) % thread_count;
-  //  MMDEPLOY_INFO("enqueue start index {}", start_index);
   for (std::uint32_t i = 0; i < thread_count; ++i) {
     const auto index =
         (start_index + i) < thread_count ? (start_index + i) : (start_index + i - thread_count);
-    //    MMDEPLOY_INFO("try_push...");
     if (thread_states_[index].try_push(task)) {
-      //      MMDEPLOY_INFO("try_push success");
       return;
     }
-    //    MMDEPLOY_INFO("try_push fail");
   }
-  //  MMDEPLOY_INFO("push...");
   thread_states_[start_index].push(task);
-  //  MMDEPLOY_INFO("push down");
 }
 
 inline TaskBase* StaticThreadPool::ThreadState::try_pop() {
   std::unique_lock lock{mutex_, std::try_to_lock};
-  if (lock) {
-    //    MMDEPLOY_INFO("queue.empty(): {}", queue_.empty());
-  }
   if (!lock || queue_.empty()) {
     return nullptr;
   }

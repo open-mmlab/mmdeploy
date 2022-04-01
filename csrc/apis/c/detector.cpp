@@ -12,6 +12,7 @@
 #include "core/utils/formatter.h"
 #include "handle.h"
 #include "static_detector.h"
+#include "async_detector.h"
 
 using namespace std;
 using namespace mmdeploy;

@@ -13,8 +13,6 @@
 
 namespace mmdeploy {
 
-using std::unique_ptr;
-
 __static_thread_pool::StaticThreadPool pool;
 
 struct StaticDetector {

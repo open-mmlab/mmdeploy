@@ -4,6 +4,7 @@
 #include "catch.hpp"
 #include "core/utils/formatter.h"
 #include "experimental/execution/static_thread_pool.h"
+#include "experimental/execution/timed_single_thread_context.h"
 #include "experimental/execution/type_erased.h"
 
 using namespace mmdeploy;
@@ -206,4 +207,18 @@ TEST_CASE("test bulk", "[execution]") {
   });
   auto [x, y, z] = SyncWait(fma);
   MMDEPLOY_INFO("{}", z);
+}
+
+TEST_CASE("test schedule_after", "[execution]") {
+  TimedSingleThreadContext context;
+  auto sched = context.GetScheduler();
+
+  auto s = ScheduleAfter(sched, std::chrono::seconds(1));
+  auto t = Then(s, [start = std::chrono::steady_clock::now()] {
+    auto end = std::chrono::steady_clock::now();
+    auto dt = std::chrono::duration<double>(end - start).count();
+    MMDEPLOY_INFO("{} seconds passed", dt);
+    return 0;
+  });
+  SyncWait(t);
 }
