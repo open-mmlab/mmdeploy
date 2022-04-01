@@ -3,6 +3,7 @@ globals:
   codebase_dir: ../mmdetection
   checkpoint_force_download: False
   checkpoint_dir: ../mmdeploy_checkpoints
+  deploy_config_dir: ./configs/mmdet/detection
   dataset_path:
     COCO:
   metric_tolerance:
@@ -77,12 +78,10 @@ models:
     model_configs:
       - retinanet_r50_fpn_1x_coco.py
     metafile: configs/retinanet/metafile.yml
-    deploy_config_dir: ./configs/mmdet/detection
     input_img_path: *default_input_img_path
     dynamic_test_img_path:
     calib_dataset_cfg:
     sdk_config:
-      deploy_config_dir: ./configs/mmdet/detection
       deploy_config:
         dynamic:
           fp32: *default_sdk_dynamic_fp32
@@ -134,7 +133,6 @@ models:
 #    model_configs:
 #      - yolov3_mobilenetv2_320_300e_coco.py
 #    metafile: configs/yolo/metafile.yml
-#    deploy_config_dir: ./configs/mmdet/detection
 #    input_img_path: *default_input_img_path
 #    dynamic_test_img_path:
 #    calib_dataset_cfg:

@@ -591,9 +591,6 @@ def get_backend_result(backends_info, sdk_info, model_cfg_path, deploy_config_di
                         if sdk_deploy_cfg_name is None:
                             continue
 
-                        deploy_config_dir = sdk_info.get('deploy_config_dir', None)
-                        assert deploy_config_dir is not None
-
                         sdk_deploy_cfg = Path(deploy_config_dir).joinpath(sdk_deploy_cfg_name)
 
                         get_backend_fps_metric(deploy_cfg_path=str(sdk_deploy_cfg),
@@ -700,6 +697,10 @@ def main():
 
         global_info = yaml_info.get('globals')
 
+        # get deploy config directory
+        deploy_config_dir = global_info.get('deploy_config_dir', '')
+        assert deploy_config_dir != ''
+
         for metric_name in global_info.get('metric_tolerance', {}):
             report_dict.update({metric_name: []})
         metric_tolerance = global_info.get('metric_tolerance', {})
@@ -735,10 +736,6 @@ def main():
                     model_metafile_info.get(model_config).get('Weights')).name
                 checkpoint_path = Path(checkpoint_save_dir, checkpoint_name)
                 assert checkpoint_path.exists()
-
-                # get deploy config directory
-                deploy_config_dir = models.get('deploy_config_dir', '')
-                assert deploy_config_dir != ''
 
                 pytorch_metric = get_pytorch_result(
                     models.get('name'), model_metafile_info, checkpoint_path,
