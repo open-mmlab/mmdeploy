@@ -289,7 +289,7 @@ def test_backends(deploy_cfg, model_cfg, checkpoint_path, device, metrics_name,
     Returns:
         Dict: metric info of the model
     """
-
+    checkpoint_path = Path(checkpoint_path)
     task_processor = build_task_processor(model_cfg, deploy_cfg, device)
 
     # prepare the dataset loader
@@ -737,6 +737,7 @@ def main():
                 checkpoint_path = Path(checkpoint_save_dir, checkpoint_name)
                 assert checkpoint_path.exists()
 
+                #  Get pytorch from metafile.yml
                 pytorch_metric = get_pytorch_result(
                     models.get('name'), model_metafile_info, checkpoint_path,
                     model_cfg_path, metric_tolerance, report_dict, logger)
@@ -745,13 +746,13 @@ def main():
                 dynamic_test_img_path = \
                     models.get('dynamic_test_img_path', None)
 
+                # image info
                 test_image_info = {
                     'input_img_path': input_img_path,
                     'dynamic_test_img_path': dynamic_test_img_path
                 }
 
                 sdk_info = models.get('sdk_config', None)
-
                 backend_result_function = partial(
                     get_backend_result, backends_info, sdk_info,
                     model_cfg_path, deploy_config_dir, checkpoint_path,
