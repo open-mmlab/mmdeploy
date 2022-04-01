@@ -327,10 +327,10 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">Mask-RCNN</td>
     <td align="center">COCO</td>
     <td align="center">1x3x800x1344</td>
-    <td align="center">320.86 </td>
-    <td align="center">3.12</td>
-    <td align="center">241.32</td>
-    <td align="center">4.14</td>
+    <td align="center">104.83</td>
+    <td align="center">9.54</td>
+    <td align="center">58.27</td>
+    <td align="center">17.16</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
