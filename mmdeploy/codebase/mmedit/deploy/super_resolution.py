@@ -281,6 +281,8 @@ class SuperResolution(BaseTask):
         for stat in stats:
             logger.info('Eval-{}: {}'.format(stat, stats[stat]))
 
+        return stats
+
     def get_preprocess(self) -> Dict:
         """Get the preprocess information for SDK.
 
