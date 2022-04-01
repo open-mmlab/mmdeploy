@@ -1,5 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 include(${CMAKE_SOURCE_DIR}/cmake/cuda.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/modules/FindTENSORRT.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/modules/FindCUDNN.cmake)
 find_path(
         TENSORRT_INCLUDE_DIR NvInfer.h
         HINTS ${TENSORRT_DIR} ${CUDA_TOOLKIT_ROOT_DIR}

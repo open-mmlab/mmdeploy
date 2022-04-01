@@ -2,12 +2,13 @@
 import os.path as osp
 import subprocess
 from subprocess import PIPE, CalledProcessError, run
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
 import mmcv
 import torch
 
 from mmdeploy.utils import get_root_logger
+from .utils import ModelOptimizerOptions
 
 
 def get_mo_command() -> str:
@@ -55,7 +56,10 @@ def get_output_model_file(onnx_path: str, work_dir: str) -> str:
 
 
 def onnx2openvino(input_info: Dict[str, Union[List[int], torch.Size]],
-                  output_names: List[str], onnx_path: str, work_dir: str):
+                  output_names: List[str],
+                  onnx_path: str,
+                  work_dir: str,
+                  mo_options: Optional[ModelOptimizerOptions] = None):
     """Convert ONNX to OpenVINO.
 
     Examples:
@@ -72,8 +76,9 @@ def onnx2openvino(input_info: Dict[str, Union[List[int], torch.Size]],
         output_names (List[str]): Output names. Example: ['dets', 'labels'].
         onnx_path (str): The path to the onnx model.
         work_dir (str): The path to the directory for saving the results.
+        mo_options (None | ModelOptimizerOptions): The class with
+            additional arguments for the Model Optimizer.
     """
-
     input_names = ','.join(input_info.keys())
     input_shapes = ','.join(str(list(elem)) for elem in input_info.values())
     output = ','.join(output_names)
@@ -88,8 +93,10 @@ def onnx2openvino(input_info: Dict[str, Union[List[int], torch.Size]],
               f'--output_dir="{work_dir}" ' \
               f'--output="{output}" ' \
               f'--input="{input_names}" ' \
-              f'--input_shape="{input_shapes}" ' \
-              f'--disable_fusing '
+              f'--input_shape="{input_shapes}" '
+    if mo_options is not None:
+        mo_args += mo_options.get_options()
+
     command = f'{mo_command} {mo_args}'
 
     logger = get_root_logger()

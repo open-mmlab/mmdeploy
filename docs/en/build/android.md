@@ -198,6 +198,7 @@ mkdir -p build && cd build
 cmake .. \
       -DOpenCV_DIR=${OPENCV_ANDROID_SDK_DIR}/sdk/native/jni/abi-arm64-v8a \
       -Dspdlog_DIR=${SPDLOG_DIR}/lib/cmake/spdlog \
+      -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn \
       -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy \
       -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake \
       -DANDROID_ABI=arm64-v8a \

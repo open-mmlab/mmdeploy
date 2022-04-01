@@ -8,11 +8,11 @@ repos:
     hooks:
       - id: isort
   - repo: https://github.com/pre-commit/mirrors-yapf
-    rev: v0.30.0
+    rev: v0.32.0
     hooks:
       - id: yapf
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v3.1.0
+    rev: v4.1.0
     hooks:
       - id: trailing-whitespace
       - id: check-yaml
@@ -42,7 +42,7 @@ repos:
         args: ["--skip=third_party/*,*.proto"]
 
   - repo: https://github.com/myint/docformatter
-    rev: v1.3.1
+    rev: v1.4
     hooks:
       - id: docformatter
         args: ["--in-place", "--wrap-descriptions", "79"]
