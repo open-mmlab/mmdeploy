@@ -16,7 +16,7 @@ def voxelnet__simple_test(ctx,
     post process.
 
     Args:
-        voxels(torch.Tensor): Point features or raw points in shape (N, M, C).
+        voxels (torch.Tensor): Point features or raw points in shape (N, M, C).
         num_points (torch.Tensor): Number of points in each pillar.
         coors (torch.Tensor): Coordinates of each voxel.
         input_metas (list[dict]): Contain pcd meta info.
@@ -40,7 +40,7 @@ def voxelnet__extract_feat(ctx,
     """Extract features from points. Rewrite this func to remove voxelize op.
 
     Args:
-        voxels(torch.Tensor): Point features or raw points in shape (N, M, C).
+        voxels (torch.Tensor): Point features or raw points in shape (N, M, C).
         num_points (torch.Tensor): Number of points in each pillar.
         coors (torch.Tensor): Coordinates of each voxel.
         input_metas (list[dict]): Contain pcd meta info.

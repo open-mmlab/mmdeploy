@@ -11,7 +11,7 @@ def base3ddetector__forward_test(ctx,
                                  coors,
                                  img_metas=None,
                                  img=None,
-                                 rescale=True):
+                                 rescale=False):
     """Rewrite this function to run simple_test directly."""
     return self.simple_test(voxels, num_points, coors, img_metas, img)
 

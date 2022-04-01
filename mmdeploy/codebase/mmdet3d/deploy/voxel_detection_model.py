@@ -7,6 +7,7 @@ from mmcv.utils import Registry
 from torch.nn import functional as F
 
 from mmdeploy.codebase.base import BaseBackendModel
+from mmdeploy.core import RewriterContext
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
                             get_root_logger, load_config)
 
@@ -92,7 +93,8 @@ class VoxelDetectionModel(BaseBackendModel):
                 'coors': coors
             }
             outputs = self.wrapper(input_dict)
-            result = VoxelDetectionModel.post_process(self.model_cfg, outputs,
+            result = VoxelDetectionModel.post_process(self.model_cfg,
+                                                      self.deploy_cfg, outputs,
                                                       img_metas[i],
                                                       self.device)[0]
             result_list.append(result)
@@ -171,6 +173,7 @@ class VoxelDetectionModel(BaseBackendModel):
 
     @staticmethod
     def post_process(model_cfg: Union[str, mmcv.Config],
+                     deploy_cfg: Union[str, mmcv.Config],
                      outs: torch.Tensor,
                      img_metas: Dict,
                      device: str,
@@ -179,6 +182,8 @@ class VoxelDetectionModel(BaseBackendModel):
 
         Args:
             model_cfg (str | mmcv.Config): The model config.
+            deploy_cfg (str|mmcv.Config): Deployment config file or loaded
+            Config object.
             outs (torch.Tensor): Output of model's head.
             img_metas(Dict): Meta info for pcd.
             device (str): A string specifying device type.
@@ -189,7 +194,13 @@ class VoxelDetectionModel(BaseBackendModel):
         from mmdet3d.core import bbox3d2result
         from mmdet3d.models.builder import build_head
         model_cfg = load_config(model_cfg)[0]
-        head_cfg = dict(**model_cfg.model['bbox_head'])
+        deploy_cfg = load_config(deploy_cfg)[0]
+        if 'bbox_head' in model_cfg.model.keys():
+            head_cfg = dict(**model_cfg.model['bbox_head'])
+        elif 'pts_bbox_head' in model_cfg.model.keys():
+            head_cfg = dict(**model_cfg.model['pts_bbox_head'])
+        else:
+            raise NotImplementedError('Not supported model.')
         head_cfg['train_cfg'] = None
         head_cfg['test_cfg'] = model_cfg.model['test_cfg']
         head = build_head(head_cfg)
@@ -206,12 +217,16 @@ class VoxelDetectionModel(BaseBackendModel):
         cls_scores = [outs['scores'].to(device)]
         bbox_preds = [outs['bbox_preds'].to(device)]
         dir_scores = [outs['dir_scores'].to(device)]
-        bbox_list = head.get_bboxes(
-            cls_scores, bbox_preds, dir_scores, img_metas, rescale=False)
-        bbox_results = [
-            bbox3d2result(bboxes, scores, labels)
-            for bboxes, scores, labels in bbox_list
-        ]
+        with RewriterContext(
+                cfg=deploy_cfg,
+                backend=deploy_cfg.backend_config.type,
+                opset=deploy_cfg.onnx_config.opset_version):
+            bbox_list = head.get_bboxes(
+                cls_scores, bbox_preds, dir_scores, img_metas, rescale=False)
+            bbox_results = [
+                bbox3d2result(bboxes, scores, labels)
+                for bboxes, scores, labels in bbox_list
+            ]
         return bbox_results
 
 
