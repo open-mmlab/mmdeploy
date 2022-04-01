@@ -87,8 +87,6 @@ def centerpoint__get_bbox(ctx,
         list[dict]: Decoded bbox, scores and labels after nms.
     """
     rets = []
-    # common_heads = self.task_heads[0].heads
-    batch_size = 1
     scores_range = [0]
     bbox_range = [0]
     dir_range = [0]
@@ -128,11 +126,6 @@ def centerpoint__get_bbox(ctx,
                                    dir_range[task_id]:dir_range[task_id + 1],
                                    ...][:, 1].unsqueeze(1)
 
-        # if 'vel' in preds_dict[0]:
-        #     batch_vel = preds_dict[0]['vel']
-        # else:
-        #     batch_vel = None
-
         temp = self.bbox_coder.decode(
             batch_heatmap,
             batch_rots,
@@ -147,26 +140,25 @@ def centerpoint__get_bbox(ctx,
         batch_cls_preds = [box['scores'] for box in temp]
         batch_cls_labels = [box['labels'] for box in temp]
         if self.test_cfg['nms_type'] == 'circle':
-            ret_task = []
-            for i in range(batch_size):
-                boxes3d = temp[i]['bboxes']
-                scores = temp[i]['scores']
-                labels = temp[i]['labels']
-                centers = boxes3d[:, [0, 1]]
-                boxes = torch.cat([centers, scores.view(-1, 1)], dim=1)
-                keep = torch.tensor(
-                    circle_nms(
-                        boxes.detach().cpu().numpy(),
-                        self.test_cfg['min_radius'][task_id],
-                        post_max_size=self.test_cfg['post_max_size']),
-                    dtype=torch.long,
-                    device=boxes.device)
 
-                boxes3d = boxes3d[keep]
-                scores = scores[keep]
-                labels = labels[keep]
-                ret = dict(bboxes=boxes3d, scores=scores, labels=labels)
-                ret_task.append(ret)
+            boxes3d = temp[0]['bboxes']
+            scores = temp[0]['scores']
+            labels = temp[0]['labels']
+            centers = boxes3d[:, [0, 1]]
+            boxes = torch.cat([centers, scores.view(-1, 1)], dim=1)
+            keep = torch.tensor(
+                circle_nms(
+                    boxes.detach().cpu().numpy(),
+                    self.test_cfg['min_radius'][task_id],
+                    post_max_size=self.test_cfg['post_max_size']),
+                dtype=torch.long,
+                device=boxes.device)
+
+            boxes3d = boxes3d[keep]
+            scores = scores[keep]
+            labels = labels[keep]
+            ret = dict(bboxes=boxes3d, scores=scores, labels=labels)
+            ret_task = [ret]
             rets.append(ret_task)
         else:
             rets.append(

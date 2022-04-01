@@ -41,7 +41,11 @@ class TestVoxelDetectionModel:
         deploy_cfg = mmcv.Config({
             'onnx_config': {
                 'input_names': ['voxels', 'num_points', 'coors'],
-                'output_names': ['scores', 'bbox_preds', 'dir_scores']
+                'output_names': ['scores', 'bbox_preds', 'dir_scores'],
+                'opset_version': 11
+            },
+            'backend_config': {
+                'type': 'tensorrt'
             }
         })
 
@@ -71,7 +75,7 @@ class TestVoxelDetectionModel:
 
 
 @backend_checker(Backend.ONNXRUNTIME)
-def test_build_pose_detection_model():
+def test_build_voxel_detection_model():
     from mmdeploy.utils import load_config
     model_cfg_path = 'tests/test_codebase/test_mmdet3d/data/model_cfg.py'
     model_cfg = load_config(model_cfg_path)[0]

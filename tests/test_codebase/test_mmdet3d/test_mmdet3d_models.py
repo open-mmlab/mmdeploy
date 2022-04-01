@@ -111,7 +111,8 @@ def test_pointpillars_scatter(backend_type: Backend):
 
 def get_centerpoint():
     from mmdet3d.models.detectors.centerpoint import CenterPoint
-    model_cfg = load_config('data/model_cfg.py')[0]
+    model_cfg = load_config(
+        'tests/test_codebase/test_mmdet3d/data/model_cfg.py')[0]
     model = CenterPoint(**model_cfg.centerpoint_model)
     model.requires_grad_(False)
     return model
@@ -119,7 +120,8 @@ def get_centerpoint():
 
 def get_centerpoint_head():
     from mmdet3d.models import builder
-    model_cfg = load_config('data/model_cfg.py')[0]
+    model_cfg = load_config(
+        'tests/test_codebase/test_mmdet3d/data/model_cfg.py')[0]
     model_cfg.centerpoint_model.pts_bbox_head.test_cfg = model_cfg.\
         centerpoint_model.test_cfg
     head = builder.build_head(model_cfg.centerpoint_model.pts_bbox_head)
@@ -144,9 +146,12 @@ def test_centerpoint(backend_type: Backend):
                 output_names=['outputs']),
             codebase_config=dict(
                 type=Codebase.MMDET3D.value, task=Task.VOXEL_DETECTION.value)))
-    model_cfg = load_config('data/model_cfg.py')[0]
+    model_cfg = load_config(
+        'tests/test_codebase/test_mmdet3d/data/model_cfg.pytests/'
+        'test_codebase/test_mmdet3d/data/model_cfg.py')[0]
     voxeldetection = VoxelDetection(model_cfg, deploy_cfg, 'cpu')
-    inputs, data = voxeldetection.create_input('data/kitti/kitti_000008.bin')
+    inputs, data = voxeldetection.create_input(
+        'tests/test_codebase/test_mmdet3d/data/kitti/kitti_000008.bin')
 
     with RewriterContext(
             cfg=deploy_cfg,

@@ -200,7 +200,7 @@ class VoxelDetectionModel(BaseBackendModel):
         elif 'pts_bbox_head' in model_cfg.model.keys():
             head_cfg = dict(**model_cfg.model['pts_bbox_head'])
         else:
-            raise
+            raise NotImplementedError('Not supported model.')
         head_cfg['train_cfg'] = None
         head_cfg['test_cfg'] = model_cfg.model['test_cfg']
         head = build_head(head_cfg)
