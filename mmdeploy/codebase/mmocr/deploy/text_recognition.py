@@ -298,7 +298,11 @@ class TextRecognition(BaseTask):
             ]:
                 eval_kwargs.pop(key, None)
             eval_kwargs.update(dict(metric=metrics, **kwargs))
-            logger.info(dataset.evaluate(outputs, **eval_kwargs))
+
+            result = dataset.evaluate(outputs, **eval_kwargs)
+            logger.info(result)
+
+            return result
 
     def get_preprocess(self) -> Dict:
         """Get the preprocess information for SDK.

@@ -196,7 +196,9 @@ class VoxelDetection(BaseTask):
                 eval_kwargs.pop(key, None)
                 eval_kwargs.pop(key, None)
             eval_kwargs.update(dict(metric=metrics, **kwargs))
-            dataset.evaluate(outputs, **eval_kwargs)
+            result = dataset.evaluate(outputs, **eval_kwargs)
+
+            return result
 
     def get_model_name(self) -> str:
         """Get the model name.

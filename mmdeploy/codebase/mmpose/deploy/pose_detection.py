@@ -231,6 +231,8 @@ class PoseDetection(BaseTask):
         for k, v in sorted(results.items()):
             print(f'{k}: {v}')
 
+        return results
+
     def get_model_name(self) -> str:
         """Get the model name.
 
