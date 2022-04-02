@@ -256,13 +256,8 @@ def get_info_from_log_file(info_type, log_path):
             line_count += 1
             fps_sum += float(line.split(' ')[-2])
         info_value = f'{fps_sum / line_count:.2f}'
-    # elif info_type == 'metric' and len(lines) < 2:
-    #     for line in lines:
-    #         if 'OrderedDict' not in line:
-    #             continue
-    #     info_value = '0.00'
     else:
-        info_value = '0.00'
+        info_value = '-'
 
     return info_value
 
@@ -369,7 +364,6 @@ def get_backend_fps_metric(deploy_cfg_path,
                            logger,
                            metric_info_dict,
                            metrics_eval_list,
-                           metric_list,
                            pytorch_metric,
                            metric_tolerance,
                            backend_name,
@@ -378,6 +372,8 @@ def get_backend_fps_metric(deploy_cfg_path,
                            report_dict,
                            infer_type
                            ):
+    metric_list = []
+
     # load deploy_cfg
     deploy_cfg, model_cfg = \
         load_config(str(deploy_cfg_path),
@@ -428,10 +424,11 @@ def get_backend_fps_metric(deploy_cfg_path,
         test_pass=str(test_pass))
 
 
-def get_backend_result(backends_info, sdk_info, model_cfg_path, deploy_config_dir,
-                       checkpoint_path, work_dir, device_type, pytorch_metric,
-                       metric_tolerance, report_dict, test_type,
-                       test_image_info, logger, backend_name):
+def get_backend_result(backends_info, sdk_info, model_cfg_path,
+                       deploy_config_dir, checkpoint_path, work_dir,
+                       device_type, pytorch_metric, metric_tolerance,
+                       report_dict, test_type, test_image_info, logger,
+                       backend_name):
     """Convert model to onnx and then get metric.
 
     Args:
@@ -494,7 +491,6 @@ def get_backend_result(backends_info, sdk_info, model_cfg_path, deploy_config_di
             if deploy_cfg_name is None:
                 continue
 
-            metric_list = []
 
             deploy_cfg_path = Path(deploy_config_dir,
                                    deploy_cfg_name).absolute()
@@ -574,7 +570,6 @@ def get_backend_result(backends_info, sdk_info, model_cfg_path, deploy_config_di
                                                logger=logger,
                                                metric_info_dict=metric_info_dict,
                                                metrics_eval_list=metrics_eval_list,
-                                               metric_list=metric_list,
                                                pytorch_metric=pytorch_metric,
                                                metric_tolerance=metric_tolerance,
                                                backend_name=backend_name,
@@ -601,7 +596,6 @@ def get_backend_result(backends_info, sdk_info, model_cfg_path, deploy_config_di
                                                logger=logger,
                                                metric_info_dict=metric_info_dict,
                                                metrics_eval_list=metrics_eval_list,
-                                               metric_list=metric_list,
                                                pytorch_metric=pytorch_metric,
                                                metric_tolerance=metric_tolerance,
                                                backend_name='SDK',
@@ -611,6 +605,8 @@ def get_backend_result(backends_info, sdk_info, model_cfg_path, deploy_config_di
                                                infer_type=infer_type
                                                )
             else:
+                metric_list = []
+
                 for metric in metric_name_list:
                     metric_list.append({metric: '-'})
                 test_pass = True if convert_result else False
@@ -697,18 +693,16 @@ def main():
 
         global_info = yaml_info.get('globals')
 
+        for metric_name in global_info.get('metric_tolerance', {}):
+            report_dict.update({metric_name: []})
+        metric_tolerance = global_info.get('metric_tolerance', {})
+        report_dict.update({'test_pass': []})
+
         # get deploy config directory
         deploy_config_dir = global_info.get('deploy_config_dir', '')
         assert deploy_config_dir != ''
 
-        for metric_name in global_info.get('metric_tolerance', {}):
-            report_dict.update({metric_name: []})
-        metric_tolerance = global_info.get('metric_tolerance', {})
-
-        report_dict.update({'test_pass': []})
-
         models_info = yaml_info.get('models')
-
         for models in models_info:
             if 'model_configs' not in models:
                 print(f'Skip {models.get("name")}')

@@ -67,11 +67,11 @@ default_config: &default_config
           fp32: &default_ts_dynamic_fp32 detection_torchscript.py
 
 models:
-  - name: fsaf
-    codebase_model_config_dir: ./configs/fsaf
+  - name: retinanet
+    codebase_model_config_dir: ./configs/retinanet
     model_configs:
-      - fsaf_r50_fpn_1x_coco.py
-    metafile: configs/fsaf/metafile.yml
+      - retinanet_r50_fpn_1x_coco.py
+    metafile: configs/retinanet/metafile.yml
     input_img_path: *default_input_img_path
     dynamic_test_img_path:
     calib_dataset_cfg:
@@ -85,7 +85,7 @@ models:
         sdk_test: False
         deploy_config:
           dynamic:
-            fp32: *default_onnxruntime_dynamic_fp32
+            fp32: # *default_onnxruntime_dynamic_fp32
       tensorrt:
         performance_align: True
         sdk_test: True
