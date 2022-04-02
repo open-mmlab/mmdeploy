@@ -78,9 +78,8 @@ class Mallocator : public AllocatorImpl {
 Allocator CreateDefaultAllocator() {
   using namespace device_allocator;
   AllocatorImplPtr allocator = std::make_shared<Mallocator>();
-  allocator = std::make_shared<Stats>(allocator, "cudaMalloc");
   allocator = std::make_shared<Tree>(allocator, -1, .5);
-  allocator = std::make_shared<Stats>(allocator, "Tree");
+  allocator = std::make_shared<Locked>(allocator);
   MMDEPLOY_INFO("Default CUDA allocator initialized");
   return Access::create<Allocator>(allocator);
 }
