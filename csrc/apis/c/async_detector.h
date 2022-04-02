@@ -65,13 +65,13 @@ struct Postprocess {
 template <class Scheduler>
 struct Collate {
   struct _OperationBase {
+    Value pre_;
+    Collate* collate_;
     void (*notify_)(_OperationBase*);
   };
 
   template <class Receiver>
   class _Operation : public _OperationBase {
-    Value pre_;
-    Collate* collate_;
     Receiver rcvr_;
 
     static void Notify(_OperationBase* p) {
@@ -80,10 +80,7 @@ struct Collate {
     }
 
     _Operation(Value pre, Collate* collate, Receiver&& rcvr)
-        : _OperationBase{&_Operation::Notify},
-          pre_(std::move(pre)),
-          collate_(collate),
-          rcvr_(std::move(rcvr)) {}
+        : _OperationBase{std::move(pre), collate, &_Operation::Notify}, rcvr_(std::move(rcvr)) {}
 
     friend void Start(_Operation& op_state) { op_state.collate_->Add(&op_state); }
   };
@@ -97,18 +94,41 @@ struct Collate {
     }
   };
 
-  void Add(_OperationBase* op_state) {}
+  void Add(_OperationBase* op_state) {
+    std::lock_guard lock{mutex_};
+    if (!op_states_) {
+      Setup();
+    }
+    op_states_->push_back(op_state);
+    if (op_states_.size() == max_batch_size_) {
+      Complete();
+    }
+  }
+
+  void Setup() {
+    op_states_ = std::make_shared<std::vector<_OperationBase*>>();
+    op_states_->reserve(max_batch_size_);
+    auto sched = timer_.GetScheduler();
+    Then(ScheduleAfter(sched, duration_), [this] {
+      this->Complete();
+      return 0;
+    });
+  }
+
+  void Complete() {}
 
   template <class Sender>
   auto Process(Sender&& sndr) {
     return LetValue((Sender &&) sndr, [&](Value& pre) { return _Sender{std::move(pre), this}; });
   }
 
-  std::vector<Value> pres_;
+  std::shared_ptr<std::vector<_OperationBase*>> op_states_;
 
   std::mutex mutex_;
   int max_batch_size_;
   std::chrono::microseconds duration_;
+
+  TimedSingleThreadContext timer_;
 
   NetModule net_;
 };

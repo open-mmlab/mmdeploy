@@ -214,11 +214,13 @@ TEST_CASE("test schedule_after", "[execution]") {
   auto sched = context.GetScheduler();
 
   auto s = ScheduleAfter(sched, std::chrono::seconds(1));
-  auto t = Then(s, [start = std::chrono::steady_clock::now()] {
+  std::chrono::steady_clock::time_point start;
+  auto t = Then(s, [&start] {
     auto end = std::chrono::steady_clock::now();
     auto dt = std::chrono::duration<double>(end - start).count();
     MMDEPLOY_INFO("{} seconds passed", dt);
     return 0;
   });
+  start = std::chrono::steady_clock::now();
   SyncWait(t);
 }
