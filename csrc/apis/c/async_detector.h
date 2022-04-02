@@ -176,7 +176,7 @@ struct Detector {
     return post;
   }
 
-  Stream stream_;
+  //  Stream stream_;
   TransformModule preprocess_;
   BatchedInference batch_infer_;
   mmdet::ResizeBBox postprocess_;
@@ -193,8 +193,10 @@ auto CreateDetector(Model model, const Stream& stream) {
   auto preprocess = CreateTransformModule(tasks[0], stream);
   auto net = CreateNetModule(tasks[1], model, stream);
   auto postprocess = CreateResizeBBox(tasks[2], stream);
-  return new BatchedInference(8, std::chrono::milliseconds(100), std::move(net));
-}
+  return new Detector{std::move(preprocess),
+                      BatchedInference(8, std::chrono::milliseconds(100), std::move(net)),
+                      std::move(postprocess)};
+};
 
 }  // namespace mmdeploy::async
 
