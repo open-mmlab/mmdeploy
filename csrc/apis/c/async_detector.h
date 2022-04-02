@@ -148,9 +148,13 @@ struct BatchedInference {
           for (auto& op_state : op_states) {
             pres.push_back(std::move(op_state->pre_));
           }
-          auto infer = net_(pres).value();
+//          auto infer = net_(pres).value();
+//          for (size_t i = 0; i < op_states.size(); ++i) {
+//            op_states[i]->notify_(op_states[i], pres[i], infer[i]);
+//          }
           for (size_t i = 0; i < op_states.size(); ++i) {
-            op_states[i]->notify_(op_states[i], pres[i], infer[i]);
+            Value a, b;
+            op_states[i]->notify_(op_states[i], a, b);
           }
         } catch (const std::exception& e) {
           MMDEPLOY_ERROR("exception: {}", e.what());
@@ -182,8 +186,9 @@ struct Detector {
     auto pre = Then(Schedule(sched), [&, img] { return preprocess_({{"ori_img", img}}).value(); });
     auto infer = batch_infer_.Process(pre);
     auto post = Then(infer, [&](const Value& pre, const Value& infer) {
-      auto value = postprocess_(pre, infer).value();
-      return from_value<Detections>(value);
+      return Detections{};
+//      auto value = postprocess_(pre, infer).value();
+//      return from_value<Detections>(value);
     });
     return post;
   }
