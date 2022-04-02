@@ -95,13 +95,13 @@ int mmdeploy_detector_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_co
       inputs.push_back(std::move(_mat));
     }
 
-    using Sender = decltype(detector->Detect(Mat{}));
+    using Sender = decltype(EnsureStarted(detector->Detect(Mat{})));
 
     std::vector<Sender> output_senders;
     output_senders.reserve(inputs.size());
 
     for (const Mat& img : inputs) {
-      output_senders.push_back(detector->Detect(img));
+      output_senders.push_back(EnsureStarted(detector->Detect(img)));
     }
 
     vector<mmdet::DetectorOutput> detector_outputs;

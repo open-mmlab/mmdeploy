@@ -138,6 +138,7 @@ struct BatchedInference {
   void Complete(size_t index) {
     MMDEPLOY_INFO("Complete({})", index);
     if (sh_state_->index_ == index) {
+      MMDEPLOY_INFO("index match! ({})", sh_state_->op_states_.size());
       auto sched = gThreadPool().GetScheduler();
       // auto sched = InlineScheduler{};
       StartDetached(Then(Schedule(sched), [this, sh_state = std::move(sh_state_)] {
@@ -177,8 +178,7 @@ struct Detector {
     using Array = Value::Array;
     auto sched = gThreadPool().GetScheduler();
     // auto sched = InlineScheduler{};
-    auto pre = Then(Schedule(sched), [&, img = img] {
-      MMDEPLOY_INFO("");
+    auto pre = Then(Schedule(sched), [&, img] {
       return preprocess_({{"ori_img", img}}).value();
     });
     auto infer = batch_infer_.Process(pre);
@@ -207,7 +207,7 @@ auto CreateDetector(Model model, const Stream& stream) {
   auto net = CreateNetModule(tasks[1], model, stream);
   auto postprocess = CreateResizeBBox(tasks[2], stream);
   return new Detector{std::move(preprocess),
-                      BatchedInference(8, std::chrono::milliseconds(10000), std::move(net)),
+                      BatchedInference(16, std::chrono::milliseconds(100), std::move(net)),
                       std::move(postprocess)};
 };
 
