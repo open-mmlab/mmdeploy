@@ -5,6 +5,7 @@
 #include <numeric>
 
 #include "archive/value_archive.h"
+#include "async_detector.h"
 #include "codebase/mmdet/mmdet.h"
 #include "core/device.h"
 #include "core/graph.h"
@@ -12,7 +13,6 @@
 #include "core/utils/formatter.h"
 #include "handle.h"
 #include "static_detector.h"
-#include "async_detector.h"
 
 using namespace std;
 using namespace mmdeploy;
@@ -55,7 +55,8 @@ int mmdeploy_detector_create_impl(ModelType&& m, const char* device_name, int de
     }
     Stream stream(device);
 
-    *handle = CreateStaticDetector((ModelType &&) m, stream);
+    *handle = async::CreateDetector((ModelType &&) m, stream);
+    //    *handle = CreateStaticDetector((ModelType &&) m, stream);
     return MM_SUCCESS;
 
   } catch (const std::exception& e) {
@@ -85,22 +86,29 @@ int mmdeploy_detector_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_co
   }
 
   try {
-    auto detector = static_cast<StaticDetector*>(handle);
+    auto detector = static_cast<async::Detector*>(handle);
 
-//    Value input{Value::kArray};
     std::vector<Mat> inputs;
     for (int i = 0; i < mat_count; ++i) {
       mmdeploy::Mat _mat{mats[i].height,         mats[i].width, PixelFormat(mats[i].format),
                          DataType(mats[i].type), mats[i].data,  Device{"cpu"}};
       inputs.push_back(std::move(_mat));
-//      input.front().push_back({{"ori_img", _mat}});
     }
 
-//    auto output = detector->Run(std::move(input)).value().front();
-    MMDEPLOY_DEBUG("output: {}", output);
+    using Sender = decltype(detector->Detect(Mat{}));
 
-//    auto detector_outputs = from_value<vector<mmdet::DetectorOutput>>(output);
-    auto detector_outputs = detector->Run(inputs);
+    std::vector<Sender> output_senders;
+    output_senders.reserve(inputs.size());
+
+    for (const Mat& img : inputs) {
+      output_senders.push_back(detector->Detect(img));
+    }
+
+    vector<mmdet::DetectorOutput> detector_outputs;
+    detector_outputs.reserve(inputs.size());
+    for (auto& s : output_senders) {
+      detector_outputs.push_back(std::get<0>(SyncWait(s)));
+    }
 
     vector<int> _result_count;
     _result_count.reserve(mat_count);
@@ -172,7 +180,7 @@ void mmdeploy_detector_release_result(mm_detect_t* results, const int* result_co
 
 void mmdeploy_detector_destroy(mm_handle_t handle) {
   if (handle != nullptr) {
-    auto detector = static_cast<StaticDetector*>(handle);
+    auto detector = static_cast<async::Detector*>(handle);
     delete detector;
   }
 }

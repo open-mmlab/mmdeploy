@@ -1,4 +1,5 @@
 // Copyright (c) OpenMMLab. All rights reserved.
+#pragma once
 
 #include "archive/json_archive.h"
 #include "codebase/mmdet/object_detection.h"
@@ -13,7 +14,10 @@
 
 namespace mmdeploy {
 
-__static_thread_pool::StaticThreadPool pool;
+inline auto& gThreadPool() {
+  static __static_thread_pool::StaticThreadPool pool;
+  return pool;
+}
 
 struct StaticDetector {
  public:
@@ -27,7 +31,7 @@ struct StaticDetector {
     //      batch_detections.push_back(from_value<mmdet::DetectorOutput>(postprocess_data));
     //    }
     using Array = Value::Array;
-    auto sched = pool.GetScheduler();
+    auto sched = gThreadPool().GetScheduler();
     auto pre = Bulk(sched, Just(images, Array(images.size())), images.size(),
                     [&](size_t index, const std::vector<Mat>& images, Array& pre) {
                       pre[index] = preprocess_({{"ori_img", images[index]}}).value();

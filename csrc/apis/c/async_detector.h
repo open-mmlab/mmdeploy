@@ -5,20 +5,11 @@
 #ifndef MMDEPLOY_CSRC_APIS_C_ASYNC_DETECTOR_H_
 #define MMDEPLOY_CSRC_APIS_C_ASYNC_DETECTOR_H_
 
-#include "archive/json_archive.h"
-#include "codebase/mmdet/object_detection.h"
-#include "core/device.h"
-#include "core/graph.h"
-#include "core/mat.h"
-#include "core/utils/formatter.h"
-#include "experimental/execution/execution.h"
-#include "experimental/execution/static_thread_pool.h"
 #include "experimental/execution/timed_single_thread_context.h"
-#include "net/net_module.h"
-#include "preprocess/transform_module.h"
+#include "static_detector.h"
 
 namespace mmdeploy::async {
-
+#if 0
 template <class Scheduler>
 struct Preprocess {
   Scheduler sched_;
@@ -61,77 +52,149 @@ struct Postprocess {
     });
   }
 };
+#endif
 
-template <class Scheduler>
-struct Collate {
+struct BatchedInference {
   struct _OperationBase {
     Value pre_;
-    Collate* collate_;
-    void (*notify_)(_OperationBase*);
+    BatchedInference* cls_;
+    void (*notify_)(_OperationBase*, Value::Array& pre, Value& infer);
   };
+
+  struct SharedState {
+    size_t index_{0};
+    std::vector<_OperationBase*> op_states_;
+  };
+
+  std::shared_ptr<SharedState> sh_state_;
+  size_t counter_{0};
+
+  std::mutex mutex_;
+
+  const int max_batch_size_;
+  const std::chrono::microseconds duration_;
+
+  TimedSingleThreadContext timer_;
+
+  NetModule net_;
+
+  BatchedInference(int max_batch_size, std::chrono::microseconds delay, NetModule net)
+      : max_batch_size_(max_batch_size), duration_(delay), net_(std::move(net)) {}
 
   template <class Receiver>
-  class _Operation : public _OperationBase {
+  struct _Operation : _OperationBase {
     Receiver rcvr_;
 
-    static void Notify(_OperationBase* p) {
-      auto& self = *static_cast<_OperationBase*>(p);
-      SetValue(std::move(self.rcvr_));
+    static void Notify(_OperationBase* p, Value::Array& pre, Value& infer) {
+      auto& self = *static_cast<_Operation*>(p);
+      SetValue(std::move(self.rcvr_), std::move(pre), std::move(infer));
     }
 
-    _Operation(Value pre, Collate* collate, Receiver&& rcvr)
-        : _OperationBase{std::move(pre), collate, &_Operation::Notify}, rcvr_(std::move(rcvr)) {}
+    _Operation(Value pre, BatchedInference* cls, Receiver&& rcvr)
+        : _OperationBase{std::move(pre), cls, &_Operation::Notify}, rcvr_(std::move(rcvr)) {}
 
-    friend void Start(_Operation& op_state) { op_state.collate_->Add(&op_state); }
+    friend void Start(_Operation& op_state) { op_state.cls_->Add(&op_state); }
   };
 
-  class _Sender {
+  struct _Sender {
+    using value_type = std::tuple<Value::Array, Value>;
     Value pre_;
-    Collate* collate_;
+    BatchedInference* cls_;
+
     template <class Self, class Receiver, _decays_to<Self, _Sender, bool> = true>
     friend auto Connect(Self&& self, Receiver&& rcvr) -> _Operation<Receiver> {
-      return {((Self &&) self).pre_, self.collate_, (Receiver &&) rcvr};
+      return {((Self &&) self).pre_, self.cls_, (Receiver &&) rcvr};
     }
   };
 
   void Add(_OperationBase* op_state) {
     std::lock_guard lock{mutex_};
-    if (!op_states_) {
+    if (!sh_state_) {
       Setup();
     }
-    op_states_->push_back(op_state);
-    if (op_states_.size() == max_batch_size_) {
-      Complete();
+    sh_state_->op_states_.push_back(op_state);
+    if (sh_state_->op_states_.size() == max_batch_size_) {
+      Complete(sh_state_->index_);
     }
   }
 
   void Setup() {
-    op_states_ = std::make_shared<std::vector<_OperationBase*>>();
-    op_states_->reserve(max_batch_size_);
+    sh_state_ = std::make_shared<SharedState>();
+    sh_state_->index_ = counter_++;
+    sh_state_->op_states_.reserve(max_batch_size_);
     auto sched = timer_.GetScheduler();
-    Then(ScheduleAfter(sched, duration_), [this] {
-      this->Complete();
+    Then(ScheduleAfter(sched, duration_), [this, index = sh_state_->index_] {
+      this->Complete(index);
       return 0;
     });
   }
 
-  void Complete() {}
+  void Complete(size_t index) {
+    if (sh_state_->index_ == index) {
+      auto sched = gThreadPool().GetScheduler();
+      StartDetached(Then(Schedule(sched), [this, sh_state = std::move(sh_state_)] {
+        std::vector<Value> pres;
+        auto& op_states = sh_state->op_states_;
+        pres.reserve(op_states.size());
+        for (auto& op_state : op_states) {
+          pres.push_back(std::move(op_state->pre_));
+        }
+        auto infer = net_(pres).value();
+        for (auto& op_state : op_states) {
+          op_state->notify_(op_state, pres, infer);
+        }
+        return 0;
+      }));
+    }
+  }
 
   template <class Sender>
   auto Process(Sender&& sndr) {
-    return LetValue((Sender &&) sndr, [&](Value& pre) { return _Sender{std::move(pre), this}; });
+    return LetValue((Sender &&) sndr, [&](Value pre) { return _Sender{std::move(pre), this}; });
+  }
+};
+
+struct Detector {
+ public:
+  using Detections = mmdet::DetectorOutput;
+
+  auto Detect(const Mat& img) {
+    using Array = Value::Array;
+    auto sched = InlineScheduler{};
+
+    auto pre = Then(Just(img), [&](const Mat& img) {
+      return preprocess_({{"ori_img", img}}).value();
+    });
+
+    auto infer = batch_infer_.Process(pre);
+
+    auto post = Then(infer, [&](const Value& pre, const Value& infer) {
+      auto value = postprocess_(pre, infer).value();
+      return from_value<Detections>(value);
+    });
+
+    return post;
   }
 
-  std::shared_ptr<std::vector<_OperationBase*>> op_states_;
-
-  std::mutex mutex_;
-  int max_batch_size_;
-  std::chrono::microseconds duration_;
-
-  TimedSingleThreadContext timer_;
-
-  NetModule net_;
+  Stream stream_;
+  TransformModule preprocess_;
+  BatchedInference batch_infer_;
+  mmdet::ResizeBBox postprocess_;
 };
+
+auto CreateDetector(Model model, const Stream& stream) {
+  assert(model);
+  assert(stream);
+  auto device = stream.GetDevice();
+  auto pipeline_json = model.ReadFile("pipeline.json").value();
+  auto cfg = from_json<Value>(nlohmann::json::parse(pipeline_json));
+  auto& tasks = cfg["pipeline"]["tasks"];
+  assert(tasks.size() == 3);
+  auto preprocess = CreateTransformModule(tasks[0], stream);
+  auto net = CreateNetModule(tasks[1], model, stream);
+  auto postprocess = CreateResizeBBox(tasks[2], stream);
+  return new BatchedInference(8, std::chrono::milliseconds(100), std::move(net));
+}
 
 }  // namespace mmdeploy::async
 
