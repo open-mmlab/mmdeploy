@@ -31,8 +31,7 @@ int main(int argc, char *argv[]) {
   mm_mat_t mat{img.data, img.rows, img.cols, 3, MM_BGR, MM_INT8};
 
   mm_pose_detect_t *res{};
-  int *res_count{};
-  status = mmdeploy_pose_detector_apply(pose_estimator, &mat, 1, &res, &res_count);
+  status = mmdeploy_pose_detector_apply(pose_estimator, &mat, 1, &res);
   if (status != MM_SUCCESS) {
     fprintf(stderr, "failed to apply pose estimator, code: %d\n", (int)status);
     return 1;
