@@ -109,18 +109,23 @@ struct InlineScheduler {
 
   friend _Sender Schedule(const InlineScheduler) noexcept { return {}; }
 
-  //  struct _Receiver {
-  //    Value* data_;
-  //    friend void SetValue(_Receiver&& r, Value data) noexcept { *r.data_ = std::move(data); }
-  //  };
+  template <class Sender>
+  struct _Receiver {
+    std::optional<completion_signature_for_t<Sender>>* data_;
+    template <class... As>
+    friend void SetValue(_Receiver&& r, As&&... as) noexcept {
+      r.data_->emplace((As &&) as...);
+    }
+  };
 
-  //  template <class S>
-  //  friend Value SyncWait(InlineScheduler, S&& sender) {
-  //    Value data;
-  //    auto op_state = Connect(((S &&) sender), _Receiver{&data});
-  //    Start(op_state);
-  //    return data;
-  //  }
+  template <class S, class Sender = std::decay_t<S>,
+            class Tuple = completion_signature_for_t<Sender>>
+  friend Tuple SyncWait(InlineScheduler, S&& sender) {
+    std::optional<Tuple> data;
+    auto op_state = Connect(((S &&) sender), _Receiver<Sender>{&data});
+    Start(op_state);
+    return std::move(data).value();
+  }
 };
 
 namespace __just {
@@ -340,8 +345,8 @@ struct _Receiver {
 
 template <class S, class F>
 struct _Sender {
-  using value_type = _empty_if_void_t<std::tuple<decltype(std::apply(
-      std::declval<F>(), std::declval<completion_signature_for_t<S>>()))>>;
+  using value_type = _empty_if_void_t<std::tuple<decltype(
+      std::apply(std::declval<F>(), std::declval<completion_signature_for_t<S>>()))>>;
 
   S s_;
   F f_;
@@ -410,7 +415,7 @@ struct _Receiver {
     auto* op_state = self.op_state_;
     auto& args = op_state->storage_.args_.emplace((As)as...);
     op_state->storage_.proxy_.emplace([&] {
-        return Connect(std::apply(std::move(op_state->fun_), args), std::move(op_state->rcvr_));
+      return Connect(std::apply(std::move(op_state->fun_), args), std::move(op_state->rcvr_));
     });
     Start(**op_state->storage_.proxy_);
   }

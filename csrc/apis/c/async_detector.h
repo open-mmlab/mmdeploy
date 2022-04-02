@@ -58,7 +58,7 @@ struct BatchedInference {
   struct _OperationBase {
     Value pre_;
     BatchedInference* cls_;
-    void (*notify_)(_OperationBase*, Value::Array& pre, Value& infer);
+    void (*notify_)(_OperationBase*, Value& pre, Value& infer);
   };
 
   struct SharedState {
@@ -85,7 +85,7 @@ struct BatchedInference {
   struct _Operation : _OperationBase {
     Receiver rcvr_;
 
-    static void Notify(_OperationBase* p, Value::Array& pre, Value& infer) {
+    static void Notify(_OperationBase* p, Value& pre, Value& infer) {
       auto& self = *static_cast<_Operation*>(p);
       SetValue(std::move(self.rcvr_), std::move(pre), std::move(infer));
     }
@@ -93,11 +93,14 @@ struct BatchedInference {
     _Operation(Value pre, BatchedInference* cls, Receiver&& rcvr)
         : _OperationBase{std::move(pre), cls, &_Operation::Notify}, rcvr_(std::move(rcvr)) {}
 
-    friend void Start(_Operation& op_state) { op_state.cls_->Add(&op_state); }
+    friend void Start(_Operation& op_state) {
+      MMDEPLOY_INFO("Start(_Operation&)");
+      op_state.cls_->Add(&op_state);
+    }
   };
 
   struct _Sender {
-    using value_type = std::tuple<Value::Array, Value>;
+    using value_type = std::tuple<Value, Value>;
     Value pre_;
     BatchedInference* cls_;
 
@@ -108,6 +111,7 @@ struct BatchedInference {
   };
 
   void Add(_OperationBase* op_state) {
+    MMDEPLOY_INFO("Add({})", (void*)op_state);
     std::lock_guard lock{mutex_};
     if (!sh_state_) {
       Setup();
@@ -123,25 +127,33 @@ struct BatchedInference {
     sh_state_->index_ = counter_++;
     sh_state_->op_states_.reserve(max_batch_size_);
     auto sched = timer_.GetScheduler();
-    Then(ScheduleAfter(sched, duration_), [this, index = sh_state_->index_] {
+    StartDetached(Then(ScheduleAfter(sched, duration_), [this, index = sh_state_->index_] {
+      MMDEPLOY_INFO("Timer trigger ({})", index);
+      std::lock_guard lock{mutex_};
       this->Complete(index);
       return 0;
-    });
+    }));
   }
 
   void Complete(size_t index) {
+    MMDEPLOY_INFO("Complete({})", index);
     if (sh_state_->index_ == index) {
       auto sched = gThreadPool().GetScheduler();
+      // auto sched = InlineScheduler{};
       StartDetached(Then(Schedule(sched), [this, sh_state = std::move(sh_state_)] {
-        std::vector<Value> pres;
-        auto& op_states = sh_state->op_states_;
-        pres.reserve(op_states.size());
-        for (auto& op_state : op_states) {
-          pres.push_back(std::move(op_state->pre_));
-        }
-        auto infer = net_(pres).value();
-        for (auto& op_state : op_states) {
-          op_state->notify_(op_state, pres, infer);
+        try {
+          std::vector<Value> pres;
+          auto& op_states = sh_state->op_states_;
+          pres.reserve(op_states.size());
+          for (auto& op_state : op_states) {
+            pres.push_back(std::move(op_state->pre_));
+          }
+          auto infer = net_(pres).value();
+          for (size_t i = 0; i < op_states.size(); ++i) {
+            op_states[i]->notify_(op_states[i], pres[i], infer[i]);
+          }
+        } catch (const std::exception& e) {
+          MMDEPLOY_ERROR("exception: {}", e.what());
         }
         return 0;
       }));
@@ -150,7 +162,10 @@ struct BatchedInference {
 
   template <class Sender>
   auto Process(Sender&& sndr) {
-    return LetValue((Sender &&) sndr, [&](Value pre) { return _Sender{std::move(pre), this}; });
+    return LetValue((Sender &&) sndr, [&](Value pre) {
+      MMDEPLOY_INFO("LetValue::Lambda");
+      return _Sender{std::move(pre), this};
+    });
   }
 };
 
@@ -160,19 +175,17 @@ struct Detector {
 
   auto Detect(const Mat& img) {
     using Array = Value::Array;
-    auto sched = InlineScheduler{};
-
-    auto pre = Then(Just(img), [&](const Mat& img) {
+    auto sched = gThreadPool().GetScheduler();
+    // auto sched = InlineScheduler{};
+    auto pre = Then(Schedule(sched), [&, img = img] {
+      MMDEPLOY_INFO("");
       return preprocess_({{"ori_img", img}}).value();
     });
-
     auto infer = batch_infer_.Process(pre);
-
     auto post = Then(infer, [&](const Value& pre, const Value& infer) {
       auto value = postprocess_(pre, infer).value();
       return from_value<Detections>(value);
     });
-
     return post;
   }
 
@@ -194,7 +207,7 @@ auto CreateDetector(Model model, const Stream& stream) {
   auto net = CreateNetModule(tasks[1], model, stream);
   auto postprocess = CreateResizeBBox(tasks[2], stream);
   return new Detector{std::move(preprocess),
-                      BatchedInference(8, std::chrono::milliseconds(100), std::move(net)),
+                      BatchedInference(8, std::chrono::milliseconds(10000), std::move(net)),
                       std::move(postprocess)};
 };
 
