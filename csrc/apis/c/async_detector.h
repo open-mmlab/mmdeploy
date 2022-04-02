@@ -139,12 +139,11 @@ struct BatchedInference {
     MMDEPLOY_INFO("Complete({})", index);
     if (sh_state_->index_ == index) {
       MMDEPLOY_INFO("index match! ({})", sh_state_->op_states_.size());
-      auto sched = gThreadPool().GetScheduler();
-      // auto sched = InlineScheduler{};
-      StartDetached(Then(Schedule(sched), [this, sh_state = std::move(sh_state_)] {
+      auto sched = timer_.GetScheduler();
+      auto work = [this, sh_state = std::move(sh_state_)] {
         try {
-          std::vector<Value> pres;
           auto& op_states = sh_state->op_states_;
+          std::vector<Value> pres;
           pres.reserve(op_states.size());
           for (auto& op_state : op_states) {
             pres.push_back(std::move(op_state->pre_));
@@ -157,7 +156,9 @@ struct BatchedInference {
           MMDEPLOY_ERROR("exception: {}", e.what());
         }
         return 0;
-      }));
+      };
+      auto zero = std::chrono::duration<int>::zero();
+      StartDetached(Then(ScheduleAfter(sched, zero), std::move(work)));
     }
   }
 
@@ -178,9 +179,7 @@ struct Detector {
     using Array = Value::Array;
     auto sched = gThreadPool().GetScheduler();
     // auto sched = InlineScheduler{};
-    auto pre = Then(Schedule(sched), [&, img] {
-      return preprocess_({{"ori_img", img}}).value();
-    });
+    auto pre = Then(Schedule(sched), [&, img] { return preprocess_({{"ori_img", img}}).value(); });
     auto infer = batch_infer_.Process(pre);
     auto post = Then(infer, [&](const Value& pre, const Value& infer) {
       auto value = postprocess_(pre, infer).value();

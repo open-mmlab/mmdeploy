@@ -345,8 +345,8 @@ struct _Receiver {
 
 template <class S, class F>
 struct _Sender {
-  using value_type = _empty_if_void_t<std::tuple<decltype(
-      std::apply(std::declval<F>(), std::declval<completion_signature_for_t<S>>()))>>;
+  using value_type = _empty_if_void_t<std::tuple<decltype(std::apply(
+      std::declval<F>(), std::declval<completion_signature_for_t<S>>()))>>;
 
   S s_;
   F f_;
@@ -1041,6 +1041,23 @@ template <class S>  //, std::enable_if_t<!_has_completion_scheduler<S>, bool> = 
 auto SyncWait(S&& sndr) -> decltype(_SyncWaitDefault((S &&) sndr)) {
   return _SyncWaitDefault((S &&) sndr);
 }
+
+class SingleThreadContext {
+  RunLoop loop_;
+  std::thread thread_;
+
+ public:
+  SingleThreadContext() : loop_(), thread_([this] { loop_._Run(); }) {}
+
+  ~SingleThreadContext() {
+    loop_._Finish();
+    thread_.join();
+  }
+
+  auto GetScheduler() noexcept { return loop_.GetScheduler(); }
+
+  std::thread::id GetThreadId() const noexcept { return thread_.get_id(); }
+};
 
 }  // namespace mmdeploy
 
