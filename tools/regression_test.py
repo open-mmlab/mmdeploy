@@ -240,11 +240,12 @@ def get_pytorch_result(model_name, meta_info, checkpoint_path,
 def get_info_from_log_file(info_type, log_path):
     # get fps from log file
     if log_path.exists():
-        with open(log_path, 'r+') as f_log:
+        with open(log_path, 'r') as f_log:
             lines = f_log.readlines()
-        with open(log_path, 'w') as f_log:
-            f_log.truncate()
+        # with open(log_path, 'w') as f_log:
+        #     f_log.write('')
     else:
+        print(f'{log_path} do not exist !!!')
         lines = []
 
     if info_type == 'FPS' and len(lines) > 1:
@@ -263,7 +264,7 @@ def get_info_from_log_file(info_type, log_path):
 
 
 def test_backends(deploy_cfg, model_cfg, checkpoint_path, device, metrics_name,
-                  logger, metric_info_dict):
+                  logger, metric_info_dict, log_path):
     """Test the backend.
 
     Args:
@@ -280,6 +281,7 @@ def test_backends(deploy_cfg, model_cfg, checkpoint_path, device, metrics_name,
             Defaults is `None`.
         logger (logging.Logger): Logger.
         metric_info_dict (dict): Metric info dict.
+        log_path (Path): Path of logger file.
 
     Returns:
         Dict: metric info of the model
@@ -310,10 +312,9 @@ def test_backends(deploy_cfg, model_cfg, checkpoint_path, device, metrics_name,
     if hasattr(model.module, 'CLASSES'):
         model.CLASSES = model.module.CLASSES
 
-    log_path = checkpoint_path.with_name('backend_test_log.log').absolute()
-    if log_path.exists():
-        with open(log_path, 'w') as f_log:
-            f_log.truncate()  # clear the log file
+    # if log_path.exists():
+    #     with open(log_path, 'w') as f_log:
+    #         f_log.write('')  # clear the log file
     print(f'Log path = {log_path}')
 
     result_path = checkpoint_path.with_suffix('.pkl').absolute()
@@ -370,7 +371,8 @@ def get_backend_fps_metric(deploy_cfg_path,
                            metric_useless,
                            convert_result,
                            report_dict,
-                           infer_type
+                           infer_type,
+                           log_path
                            ):
     metric_list = []
 
@@ -386,7 +388,8 @@ def get_backend_fps_metric(deploy_cfg_path,
                       device=device_type,
                       metrics_name=metric_name,
                       logger=logger,
-                      metric_info_dict=metric_info_dict)
+                      metric_info_dict=metric_info_dict,
+                      log_path=log_path)
 
     metric_name = metric_info_dict.get(metric_name, {}).get('meta_name', None)
     if metric_name is None:
@@ -428,7 +431,7 @@ def get_backend_result(backends_info, sdk_info, model_cfg_path,
                        deploy_config_dir, checkpoint_path, work_dir,
                        device_type, pytorch_metric, metric_tolerance,
                        report_dict, test_type, test_image_info, logger,
-                       backend_name):
+                       log_path, backend_name):
     """Convert model to onnx and then get metric.
 
     Args:
@@ -445,6 +448,7 @@ def get_backend_result(backends_info, sdk_info, model_cfg_path,
         test_type (sgr): Test type. 'precision' or 'convert'.
         test_image_info (dict): Test image paths info.
         logger (logging.Logger): Logger.
+        log_path (Path): Path for logger file.
         backend_name (str):  Backend name.
     """
 
@@ -490,7 +494,6 @@ def get_backend_result(backends_info, sdk_info, model_cfg_path,
         for fp_size, deploy_cfg_name in deploy_cfg_info.items():
             if deploy_cfg_name is None:
                 continue
-
 
             deploy_cfg_path = Path(deploy_config_dir,
                                    deploy_cfg_name).absolute()
@@ -576,7 +579,8 @@ def get_backend_result(backends_info, sdk_info, model_cfg_path,
                                                metric_useless=metric_useless,
                                                convert_result=convert_result,
                                                report_dict=report_dict,
-                                               infer_type=infer_type
+                                               infer_type=infer_type,
+                                               log_path=log_path
                                                )
 
                     if sdk_test:
@@ -602,7 +606,8 @@ def get_backend_result(backends_info, sdk_info, model_cfg_path,
                                                metric_useless=metric_useless,
                                                convert_result=convert_result,
                                                report_dict=report_dict,
-                                               infer_type=infer_type
+                                               infer_type=infer_type,
+                                               log_path=log_path
                                                )
             else:
                 metric_list = []
@@ -667,6 +672,12 @@ def main():
 
     work_dir = Path(args.work_dir)
     work_dir.mkdir(parents=True, exist_ok=True)
+
+    log_path = work_dir.joinpath('regression_test.log').absolute()
+    if log_path.exists():
+        with open(log_path, 'w') as f_log:
+            f_log.write('')  # clear the log file
+    logger.info(f'Savine log in {str(log_path)}')
 
     for deploy_yaml in args.deploy_yml:
 
@@ -752,7 +763,7 @@ def main():
                     model_cfg_path, deploy_config_dir, checkpoint_path,
                     work_dir, args.device_id, pytorch_metric,
                     metric_tolerance, report_dict, args.test_type,
-                    test_image_info, logger)
+                    test_image_info, logger, log_path)
 
                 for backend in backend_list:
                     backend_result_function(backend)
