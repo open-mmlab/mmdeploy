@@ -5,7 +5,6 @@
 #ifndef MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_TYPE_ERASED_H_
 #define MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_TYPE_ERASED_H_
 
-#include "core/value.h"
 #include "execution.h"
 
 namespace mmdeploy {
@@ -22,15 +21,6 @@ class _TypeErasedReceiver;
 class _TypeErasedScheduler;
 
 #define MMDEPLOY_REQUIRES(...) std::enable_if_t<__VA_ARGS__, int> = 0
-
-// template <class Sender, class ValueTypes>
-// struct _TypeErasedSenderImpl;
-//
-// template <class Receiver, class ValueTypes>
-// struct _TypeErasedReceiverImpl;
-//
-// template <class Scheduler>
-// struct _TypeErasedSchedulerImpl;
 
 template <class ValueTypes>
 class _TypeErasedSender {
@@ -52,6 +42,8 @@ class _TypeErasedSender {
   }
 
  public:
+  using value_type = ValueTypes;
+
   template <class Sender,
             class = std::enable_if_t<!std::is_same_v<std::decay_t<Sender>, _TypeErasedSender>>>
   explicit _TypeErasedSender(Sender&& sender);
@@ -123,53 +115,6 @@ _TypeErasedReceiver<ValueTypes>::_TypeErasedReceiver(Receiver&& receiver) {
   using _Receiver = std::decay_t<Receiver>;
   impl_ = std::make_unique<_TypeErasedReceiverImpl<_Receiver, ValueTypes>>((Receiver &&) receiver);
 }
-
-
-// template <class Receiver, class ValueTypes>
-// struct _TypeErasedReceiverImpl;
-//
-// template <class... Ts>
-// class _TypeErasedReceiver<std::tuple<Ts...>> {
-//
-//  template <class Receiver, class ValueTypes>
-//  friend struct _TypeErasedReceiverImpl;
-//
-//  struct Impl {
-//    virtual void SetValue(Ts...) = 0;
-//  };
-//  std::unique_ptr<Impl> impl_;
-//
-//  template <class... As>
-//  friend void SetValue(_TypeErasedReceiver&& self, As&&... as) {
-//    return self.impl_->SetValue((As &&) as...);
-//  }
-//
-// public:
-//  template <class Receiver,
-//            class = std::enable_if_t<!std::is_same_v<std::decay_t<Receiver>,
-//            _TypeErasedReceiver>>>
-//  explicit _TypeErasedReceiver(Receiver&&);
-//};
-//
-// template <class Receiver, class... Ts>
-// struct _TypeErasedReceiverImpl<Receiver, std::tuple<Ts...>>
-//    : _TypeErasedReceiver<std::tuple<Ts...>>::Impl {
-//
-//  void _SetValue(Ts... ts) override { SetValue((Receiver &&) receiver_, ts...); }
-//
-//  template <class _Receiver>
-//  explicit _TypeErasedReceiverImpl(_Receiver&& receiver) : receiver_((_Receiver &&) receiver) {}
-//
-//  Receiver receiver_;
-//};
-//
-// template <class... Ts>
-// template <class Receiver, class>
-//_TypeErasedReceiver<std::tuple<Ts...>>::_TypeErasedReceiver(Receiver&& receiver) {
-//  using _Receiver = std::decay_t<Receiver>;
-//  impl_ = std::make_unique<_TypeErasedReceiverImpl<_Receiver, std::tuple<Ts...>>>((Receiver &&)
-//                                                                                      receiver);
-//}
 
 class _TypeErasedScheduler {
   template <class Scheduler>

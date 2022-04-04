@@ -3,6 +3,7 @@
 //
 #include "execution.h"
 
+#include "core/value.h"
 #include "static_thread_pool.h"
 #include "type_erased.h"
 
@@ -11,7 +12,6 @@ using namespace mmdeploy;
 #if 1
 
 using _Value = std::tuple<Value>;
-using _Empty = std::tuple<>;
 
 mmdeploy_scheduler_t mmdeploy_inline_scheduler() {
   static auto v = new _TypeErasedScheduler(InlineScheduler{});
@@ -26,7 +26,8 @@ mmdeploy_sender_t mmdeploy_executor_just(mmdeploy_value_t value) {
 
 mmdeploy_sender_t mmdeploy_executor_schedule(mmdeploy_scheduler_t scheduler) {
   auto sched = reinterpret_cast<_TypeErasedScheduler*>(scheduler);
-  return reinterpret_cast<mmdeploy_sender_t>(new _TypeErasedSender<_Empty>(Schedule(*sched)));
+  auto wrapped = Then(Schedule(*sched), [] { return Value(); });
+  return reinterpret_cast<mmdeploy_sender_t>(new _TypeErasedSender<_Value>(std::move(wrapped)));
 }
 
 mmdeploy_sender_t mmdeploy_executor_transfer(mmdeploy_sender_t input,
@@ -40,17 +41,15 @@ mmdeploy_sender_t mmdeploy_executor_transfer(mmdeploy_sender_t input,
 
 mmdeploy_sender_t mmdeploy_executor_then(mmdeploy_sender_t input, mmdeploy_invocable_t fn,
                                          void* context) {
-  return nullptr;
-  //  auto sndr1 = reinterpret_cast<AbstractSender*>(input);
-  //  auto sndr2 = Then(sndr1, [fn, context](Value u) {
-  //    auto v = reinterpret_cast<Value*>(fn(reinterpret_cast<mmdeploy_value_t>(&u), context));
-  //    Value w = std::move(*v);
-  //    delete v;
-  //    return w;
-  //  });
-  //  auto output = MakeTypeErasedSender(std::move(sndr2));
-  //  return reinterpret_cast<mmdeploy_sender_t>(output);
-
+  auto sender1 = reinterpret_cast<_TypeErasedSender<_Value>*>(input);
+  auto sender2 = Then(std::move(*sender1), [fn, context](Value u) {
+    auto v = reinterpret_cast<Value*>(fn(reinterpret_cast<mmdeploy_value_t>(&u), context));
+    Value w = std::move(*v);
+    delete v;
+    return w;
+  });
+  auto output = new _TypeErasedSender<_Value>(std::move(sender2));
+  return reinterpret_cast<mmdeploy_sender_t>(output);
 }
 
 mmdeploy_sender_t mmdeploy_executor_split(mmdeploy_sender_t input) {
