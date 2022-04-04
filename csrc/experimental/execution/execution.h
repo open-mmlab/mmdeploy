@@ -413,7 +413,7 @@ struct _Receiver {
   friend void SetValue(_Receiver&& self, As&&... as) noexcept {
     using operation_t = typename _Storage<CvrefSender, Receiver, Fun>::operation_t;
     auto* op_state = self.op_state_;
-    auto& args = op_state->storage_.args_.emplace((As)as...);
+    auto& args = op_state->storage_.args_.emplace((As &&) as...);
     op_state->storage_.proxy_.emplace([&] {
       return Connect(std::apply(std::move(op_state->fun_), args), std::move(op_state->rcvr_));
     });

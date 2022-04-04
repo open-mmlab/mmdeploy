@@ -164,7 +164,7 @@ struct BatchedInference {
 
   template <class Sender>
   auto Process(Sender&& sndr) {
-    return LetValue((Sender &&) sndr, [&](Value pre) {
+    return LetValue((Sender &&) sndr, [&](Value& pre) {
       MMDEPLOY_DEBUG("LetValue::Lambda");
       return _Sender{std::move(pre), this};
     });
