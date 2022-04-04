@@ -119,6 +119,76 @@ mmdeploy_value_t f(mmdeploy_value_t v, void*) {
   return (mmdeploy_value_t)(new Value{arr[0].get<int>() + arr[1].get<int>()});
 }
 
+template <class... Ts>
+using TypeErasedSender = _TypeErasedSender<std::tuple<Ts...>>;
+
+namespace __expand {
+
+template <class Sender, class Receiver>
+struct _Operation;
+
+template <class Sender, class Receiver>
+struct _Receiver {
+  _Operation<Sender, Receiver>* op_state_;
+
+  template <class Tuple>
+  friend void SetValue(_Receiver&& self, Tuple&& tup) {
+    std::apply(
+        [&](auto&&... args) {
+          SetValue((Receiver &&) self.op_state_->receiver_, (decltype(args)&&)args...);
+        },
+        (Tuple &&) tup);
+  }
+};
+
+template <class Sender, class Receiver>
+struct _Operation {
+  connect_result_t<Sender, _Receiver<Sender, Receiver>> op_state2_;
+  Receiver receiver_;
+
+  template <class Sender2>
+  _Operation(Sender2&& sender, Receiver&& receiver)
+      : op_state2_(Connect((Sender2 &&) sender, _Receiver<Sender, Receiver>{this})),
+        receiver_((Receiver &&) receiver) {}
+
+  friend void Start(_Operation& op_state) { Start(op_state.op_state2_); }
+};
+
+template <class Sender>
+struct _Sender {
+  using value_type = std::tuple_element_t<0, completion_signature_for_t<Sender>>;
+  Sender sndr_;
+
+  template <class Self, class Receiver, _decays_to<Self, _Sender, bool> = true>
+  friend auto Connect(Self&& self, Receiver&& receiver) -> _Operation<Sender, Receiver> {
+    //
+    return _Operation<Sender, Receiver>(((Self &&) self).sndr_, (Receiver &&) receiver);
+  }
+};
+
+}  // namespace __expand
+
+template <class Sender>
+__expand::_Sender<std::decay_t<Sender>> Expand(Sender&& sender) {
+  return {(Sender &&) sender};
+}
+
+void G() {
+  auto sched = _TypeErasedScheduler(InlineScheduler{});
+  auto int2_sender = TypeErasedSender<int, int>(Just(100, 200));
+  auto float2_sender = Then(std::move(int2_sender),
+                            [](int x, int y) { return std::make_tuple((float)y, (float)x); });
+  auto b = Then(Expand(std::move(float2_sender)), [](float x, float y) {
+    MMDEPLOY_INFO("{}, {}", x, y);
+    return static_cast<double>(x + y);
+  });
+  auto c = TypeErasedSender<double>(std::move(b));
+  auto val = SyncWait(std::move(c));
+  MMDEPLOY_INFO("val = {}", val);
+}
+
+TEST_CASE("test type erase", "[execution]") { G(); }
+
 TEST_CASE("test executor C API", "[execution]") {
   auto sched = mmdeploy_inline_scheduler();
   REQUIRE(sched);

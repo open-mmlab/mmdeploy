@@ -58,7 +58,7 @@ struct _TypeErasedSenderImpl : _TypeErasedSender<ValueTypes>::Impl {
   explicit _TypeErasedSenderImpl(_Sender&& sender) : sender_((_Sender &&) sender) {}
 
   _Operation _Connect(_Receiver receiver) override {
-    return _Operation{[&] { return Connect(sender_, std::move(receiver)); }};
+    return _Operation{[&] { return Connect(std::move(sender_), std::move(receiver)); }};
   }
 
  private:
