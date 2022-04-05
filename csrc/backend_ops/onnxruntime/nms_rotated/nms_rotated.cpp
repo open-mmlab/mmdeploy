@@ -368,7 +368,7 @@ void NMSRotatedKernel::Compute(OrtKernelContext *context) {
     }
   }
 
-  std::vector<int64_t> inds_dims({res_order.size()}); // nms 后的结果数量
+  std::vector<int64_t> inds_dims({(int64_t)res_order.size()}); // nms 后的结果数量
 
   // 取得输出变量指针
   OrtValue *res = ort_.KernelContext_GetOutput(context, 0, inds_dims.data(),
