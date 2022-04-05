@@ -47,6 +47,9 @@ class _TypeErasedSender {
   explicit _TypeErasedSender(Sender&& sender);
 };
 
+template <class Sender>
+_TypeErasedSender(Sender&&) -> _TypeErasedSender<completion_signature_for_t<std::decay_t<Sender>>>;
+
 template <class Sender, class ValueTypes = completion_signature_for_t<Sender>>
 struct _TypeErasedSenderImpl : _TypeErasedSender<ValueTypes>::Impl {
  public:

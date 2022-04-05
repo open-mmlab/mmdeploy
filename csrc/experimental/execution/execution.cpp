@@ -43,18 +43,18 @@ mmdeploy_scheduler_t mmdeploy_inline_scheduler() {
 
 mmdeploy_sender_t mmdeploy_executor_just(mmdeploy_value_t value) {
   auto j = Just(*Cast(value));
-  return Cast(new _TypeErasedSender<_Value>(std::move(j)));
+  return Cast(new _TypeErasedSender(std::move(j)));
 }
 
 mmdeploy_sender_t mmdeploy_executor_schedule(mmdeploy_scheduler_t scheduler) {
   auto wrapped = Then(Schedule(*Cast(scheduler)), [] { return Value(); });
-  return Cast(new _TypeErasedSender<_Value>(std::move(wrapped)));
+  return Cast(new _TypeErasedSender(std::move(wrapped)));
 }
 
 mmdeploy_sender_t mmdeploy_executor_transfer(mmdeploy_sender_t input,
                                              mmdeploy_scheduler_t scheduler) {
   auto output_sender = ScheduleFrom(*Cast(scheduler), std::move(*Cast(input)));
-  return Cast(new _TypeErasedSender<_Value>(std::move(output_sender)));
+  return Cast(new _TypeErasedSender(std::move(output_sender)));
 }
 
 mmdeploy_sender_t mmdeploy_executor_then(mmdeploy_sender_t input, mmdeploy_invocable_t fn,
@@ -65,12 +65,12 @@ mmdeploy_sender_t mmdeploy_executor_then(mmdeploy_sender_t input, mmdeploy_invoc
     delete v;
     return w;
   });
-  return Cast(new _TypeErasedSender<_Value>(std::move(sender2)));
+  return Cast(new _TypeErasedSender(std::move(sender2)));
 }
 
 mmdeploy_sender_t mmdeploy_executor_split(mmdeploy_sender_t input) {
   auto split = Split(std::move(*Cast(input)));
-  return Cast(new _TypeErasedSender<_Value>(std::move(split)));
+  return Cast(new _TypeErasedSender(std::move(split)));
 }
 
 mmdeploy_value_t mmdeploy_executor_sync_wait(mmdeploy_sender_t input) {
