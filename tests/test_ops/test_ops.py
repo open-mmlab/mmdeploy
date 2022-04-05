@@ -774,3 +774,34 @@ def test_expand(backend,
             input_names=['input', 'shape'],
             output_names=['output'],
             save_dir=save_dir)
+
+
+@pytest.mark.parametrize('backend', [TEST_ONNXRT])
+@pytest.mark.parametrize('iou_threshold', [0.1, 0.3])
+def test_nms_rotated(backend, iou_threshold, save_dir=None):
+    backend.check_env()
+
+    boxes = torch.tensor(
+        [[60, 75, 20, 50, 0], [65, 80, 10, 40, 0], [30, 30, 40, 40, 0]],
+        dtype=torch.float32)
+    scores = torch.tensor([0.5, 0.6, 0.7], dtype=torch.float32)
+
+    from mmdeploy.mmcv.ops import ONNXNMSRotatedOp
+
+    def wrapped_function(torch_boxes, torch_scores):
+        return ONNXNMSRotatedOp.apply(torch_boxes, torch_scores, iou_threshold)
+
+    wrapped_model = WrapFunction(wrapped_function).eval()
+
+    with RewriterContext(
+            Config({'backend_config': {
+                'type': backend.backend_name
+            }}),
+            backend=backend.backend_name,
+            opset=11):
+        backend.run_and_validate(
+            wrapped_model, [boxes, scores],
+            'nms_rotated',
+            input_names=['boxes', 'scores'],
+            output_names=['keep_inds'],
+            save_dir=save_dir)
