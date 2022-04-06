@@ -7,13 +7,10 @@ from pathlib import Path
 
 import pandas as pd
 import yaml
-from mmcv.parallel import MMDataParallel
 from torch.hub import download_url_to_file
 from torch.multiprocessing import set_start_method
 
-from mmdeploy.apis import build_task_processor
 from mmdeploy.utils import get_root_logger, load_config, parse_device_id
-from mmdeploy.utils.timer import TimeCounter
 
 
 def parse_args():
@@ -237,13 +234,11 @@ def get_pytorch_result(model_name, meta_info, checkpoint_path,
     return pytorch_metric
 
 
-def get_info_from_log_file(info_type, log_path):
+def get_info_from_log_file(info_type, log_path, metric_info=None):
     # get fps from log file
     if log_path.exists():
         with open(log_path, 'r') as f_log:
             lines = f_log.readlines()
-        # with open(log_path, 'w') as f_log:
-        #     f_log.write('')
     else:
         print(f'{log_path} do not exist !!!')
         lines = []
@@ -251,12 +246,28 @@ def get_info_from_log_file(info_type, log_path):
     if info_type == 'FPS' and len(lines) > 1:
         line_count = 0
         fps_sum = 0.00
-        for line in lines[-6:]:
+        for line in lines[-6:-1]:
             if 'FPS' not in line:
                 continue
             line_count += 1
             fps_sum += float(line.split(' ')[-2])
         info_value = f'{fps_sum / line_count:.2f}'
+    elif info_type == 'metric' and len(lines) > 1:
+        metric_line = lines[-1]
+        metric_dict = metric_line.split('OrderDict')[-1]
+        print('Got metric_line.split("OrderDict") = '
+              f'{metric_line.split("OrderDict")}')
+        evaluate_result = eval(metric_dict)
+        if isinstance(evaluate_result, dict):
+            print(f'Got error metric_dict = {metric_dict}')
+            return '-'
+        print(f'Got metric_eval_name = {metric_info}')
+        metric = evaluate_result.get(metric_info, 0.00) * 100
+        print(f'Got metric float= {metric}')
+        if not isinstance(metric, float):
+            metric = f'{float(metric):.2f}'
+        print(f'Got metric = {metric}')
+        info_value = metric
     else:
         info_value = '-'
 
@@ -287,71 +298,36 @@ def test_backends(deploy_cfg, model_cfg, checkpoint_path, device, metrics_name,
         Dict: metric info of the model
     """
     checkpoint_path = Path(checkpoint_path)
-    task_processor = build_task_processor(model_cfg, deploy_cfg, device)
-
-    # prepare the dataset loader
-    logger.info('Loading dataset to memory...')
-    dataset = task_processor.build_dataset(model_cfg, 'test')
-    data_loader = task_processor.build_dataloader(
-        dataset,
-        samples_per_gpu=1,
-        workers_per_gpu=model_cfg.data.workers_per_gpu)
-
-    # load the model of the backend
-    model = task_processor.init_backend_model([str(checkpoint_path)])
-
-    is_device_cpu = (device == 'cpu')
-    device_id = None if is_device_cpu else parse_device_id(device)
-    print(f'Got device_id = {device_id}')
-
-    model = MMDataParallel(model, device_ids=[device_id])
-    # The whole dataset test wrapped a MMDataParallel class outside the module.
-    # As mmcls.apis.test.py single_gpu_test defined, the MMDataParallel needs
-    # a 'CLASSES' attribute. So we ensure the MMDataParallel class has the same
-    # CLASSES attribute as the inside module.
-    if hasattr(model.module, 'CLASSES'):
-        model.CLASSES = model.module.CLASSES
-
-    # if log_path.exists():
-    #     with open(log_path, 'w') as f_log:
-    #         f_log.write('')  # clear the log file
-    print(f'Log path = {log_path}')
-
     result_path = checkpoint_path.with_suffix('.pkl').absolute()
-    if result_path.exists():
-        result_path.unlink()
 
-    with_sync = not is_device_cpu
+    cmd_str = 'python tools/test.py ' \
+              f'{deploy_cfg} ' \
+              f'{model_cfg} ' \
+              f'--model {str(checkpoint_path)} ' \
+              f'--out {result_path} ' \
+              f'--metrics {metrics_name} ' \
+              f'--device {device} ' \
+              f'--log2file {log_path} ' \
+              f'--speed-test'
 
-    with TimeCounter.activate(
-            warmup=10, log_interval=100, with_sync=with_sync,
-            file=str(log_path)):
-        outputs = task_processor.single_gpu_test(
-            model, data_loader, show=False, out_dir=None)
+    logger.info(f'Process cmd = {cmd_str}')
 
+    # Test backend
+    shell_res = os.system(cmd_str)
+    print(f'Got shell_res = {shell_res}')
+
+    # check if converted successes or not.
+    if shell_res != 0:
+        return '-', '-'
+
+    # Got fps from log file
     fps = get_info_from_log_file('FPS', log_path)
     print(f'Got fps = {fps}')
 
-    # Get metric
-    evaluate_result = task_processor.evaluate_outputs(
-        model_cfg,
-        outputs,
-        dataset,
-        metrics=metrics_name,
-        out=str(result_path),
-        metric_options=None,
-        format_only=False,
-        log_file=str(log_path))
-    print(f'Got evaluate_result = {evaluate_result}')
-
+    # Got metric from log file
     metric_eval_name = \
         metric_info_dict.get(metrics_name, {}).get('metric_name', '0.00')
-    print(f'Got metric_eval_name = {metric_eval_name}')
-
-    metric = evaluate_result.get(metric_eval_name, 0.00) * 100
-    print(f'Got metric float= {metric}')
-    if not isinstance(metric, float):
-        metric = f'{float(metric):.2f}'
+    metric = get_info_from_log_file('metric', log_path, metric_eval_name)
     print(f'Got metric = {metric}')
 
     return metric, fps
