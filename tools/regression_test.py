@@ -3,7 +3,6 @@ import argparse
 import logging
 import os
 from collections import OrderedDict
-from functools import partial
 from pathlib import Path
 
 import pandas as pd
@@ -11,7 +10,8 @@ import yaml
 from torch.hub import download_url_to_file
 from torch.multiprocessing import set_start_method
 
-from mmdeploy.utils import get_root_logger, load_config
+from mmdeploy.utils import get_root_logger, load_config, \
+    get_backend, is_dynamic_shape
 
 
 def parse_args():
@@ -362,18 +362,16 @@ def get_backend_fps_metric(deploy_cfg_path,
         test_pass=str(test_pass))
 
 
-def get_backend_result(backends_info, sdk_info, model_cfg_path,
-                       deploy_config_dir, checkpoint_path, work_dir,
+def get_backend_result(pipeline_info, model_cfg_path,
+                       checkpoint_path, work_dir,
                        device_type, pytorch_metric, metric_tolerance,
-                       report_dict, test_type, test_image_info, logger,
-                       log_path, backend_name):
+                       report_dict, test_type, logger,
+                       log_path):
     """Convert model to onnx and then get metric.
 
     Args:
-        backends_info (dict):  Backend info of test yaml.
-        sdk_info (dict):  SDK info of test yaml.
+        pipeline_info (dict):  Pipeline info of test yaml.
         model_cfg_path (Path): Model config file path.
-        deploy_config_dir (str): Deploy config directory.
         checkpoint_path (Path): Checkpoints path.
         work_dir (Path): A working directory.
         device_type (str): A string specifying device, defaults to 'cuda'.
@@ -381,15 +379,19 @@ def get_backend_result(backends_info, sdk_info, model_cfg_path,
         metric_tolerance (dict):Tolerance for metrics.
         report_dict (dict): Report info dict.
         test_type (sgr): Test type. 'precision' or 'convert'.
-        test_image_info (dict): Test image paths info.
         logger (logging.Logger): Logger.
         log_path (Path): Path for logger file.
-        backend_name (str):  Backend name.
     """
 
     backend_file_info = {
         'onnxruntime': 'end2end.onnx',
         'tensorrt': 'end2end.engine',
+        'torchscript': 'end2end.pt',
+
+        # unknown
+        'openvino': '',
+        'ncnn': '',
+        'pplnn': '',
     }
 
     metric_info_dict = {
@@ -408,162 +410,152 @@ def get_backend_result(backends_info, sdk_info, model_cfg_path,
         },
     }
 
-    backend_test = backends_info.get('backend_test', False)
-    dynamic_test_img_path = \
-        test_image_info.get('dynamic_test_img_path', None)
-    sdk_test = backends_info.get('sdk_test', False)
+    # get backend_test info
+    backend_test = pipeline_info.get('backend_test', False)
+
+    # get convert_image info
+    input_img_path = \
+        pipeline_info.get('convert_image', {}).get('input_img', './tests/data/tiger.jpeg')
+    test_img_path = \
+        pipeline_info.get('convert_image', {}).get('test_img', None)
+
+    # get sdk_cfg info
+    sdk_config = pipeline_info.get('sdk_config', None)
+    if sdk_config is not None:
+        sdk_config = Path(sdk_config).absolute().resolve()
 
     metric_name_list = [str(metric) for metric in pytorch_metric]
     assert len(metric_name_list) > 0
-
     metric_all_list = [str(metric) for metric in metric_tolerance]
     metric_useless = set(metric_all_list) - set(metric_name_list)
 
-    deploy_cfg_path_list = backends_info.get('deploy_config')
-    for infer_type, deploy_cfg_info in deploy_cfg_path_list.items():
-        for fp_size, deploy_cfg_name in deploy_cfg_info.items():
-            if deploy_cfg_name is None:
-                continue
+    deploy_cfg_path = Path(pipeline_info.get('deploy_config')).absolute().resolve()
+    backend_name = str(get_backend(str(deploy_cfg_path)).name).lower()
+    infer_type = 'dynamic' if is_dynamic_shape(str(deploy_cfg_path)) else 'static'
 
-            deploy_cfg_path = Path(deploy_config_dir,
-                                   deploy_cfg_name).absolute()
+    backend_output_path = Path(work_dir). \
+        joinpath(Path(checkpoint_path).parent.parent.name,
+                 Path(checkpoint_path).parent.name,
+                 backend_name,
+                 infer_type,
+                 Path(checkpoint_path).stem)
+    backend_output_path = backend_output_path.absolute().resolve()
+    backend_output_path.mkdir(parents=True, exist_ok=True)
 
-            backend_output_path = Path(work_dir). \
-                joinpath(Path(checkpoint_path).parent.parent.name,
-                         Path(checkpoint_path).parent.name,
-                         backend_name,
-                         infer_type,
-                         Path(checkpoint_path).stem)
-            backend_output_path = backend_output_path.absolute().resolve()
-            backend_output_path.mkdir(parents=True, exist_ok=True)
+    # convert cmd string
+    cmd_str = f'cd {str(Path().cwd())} && ' \
+              'python3 ./tools/deploy.py ' \
+              f'{str(deploy_cfg_path.absolute().resolve())} ' \
+              f'{str(model_cfg_path.absolute().resolve())} ' \
+              f'{str(checkpoint_path.absolute().resolve())} ' \
+              f'{input_img_path} ' \
+              f'--work-dir {backend_output_path} ' \
+              f'--device {device_type} ' \
+              '--log-level INFO'
 
-            cmd_str = f'cd {str(Path().cwd())} && ' \
-                      'python3 ./tools/deploy.py ' \
-                      f'{str(deploy_cfg_path.absolute().resolve())} ' \
-                      f'{str(model_cfg_path.absolute().resolve())} ' \
-                      f'{str(checkpoint_path.absolute().resolve())} ' \
-                      f'{test_image_info.get("input_img_path")} ' \
-                      f'--work-dir {backend_output_path} ' \
-                      f'--device {device_type} ' \
-                      '--log-level INFO'
+    if sdk_config is not None:
+        cmd_str += ' --dump-info'
 
-            if sdk_test:
-                cmd_str += ' --dump-info'
+    if infer_type == 'dynamic' and test_img_path is not None:
+        cmd_str += f' --test-img {test_img_path}'
 
-            if infer_type == 'dynamic' and \
-                    dynamic_test_img_path is not None:
-                cmd_str += f' --test-img {dynamic_test_img_path}'
+    logger.info(f'Process cmd = {cmd_str}')
 
-            logger.info(f'Process cmd = {cmd_str}')
+    # Convert the model to specific backend
+    shell_res = os.system(cmd_str)
+    print(f'Got shell_res = {shell_res}')
 
-            try:
-                # Convert the model to specific backend
-                shell_res = os.system(cmd_str)
-                print(f'Got shell_res = {shell_res}')
+    # check if converted successes or not.
+    if shell_res == 0:
+        convert_result = True
+    else:
+        convert_result = False
+    print(f'Got convert_result = {convert_result}')
 
-                # check if converted successes or not.
-                if shell_res == 0:
-                    convert_result = True
-                else:
-                    convert_result = False
-                print(f'Got convert_result = {convert_result}')
+    convert_checkpoint_path = \
+        backend_output_path.joinpath(backend_file_info.get(backend_name, ''))
 
-            except Exception as e:
-                print(f'Got error: {e}')
-                convert_result = False
+    # Test the model
+    fps = '-'
+    if convert_result and test_type != 'convert':
+        # load deploy_cfg
+        deploy_cfg, model_cfg = \
+            load_config(str(deploy_cfg_path),
+                        str(model_cfg_path.absolute()))
 
-            convert_checkpoint_path = backend_output_path. \
-                joinpath(backend_file_info.get(backend_name, ''))
+        # Get evaluation metric from model config
+        metrics_eval_list = model_cfg.evaluation.get('metric', [])
+        if isinstance(metrics_eval_list, str):
+            # some config is using str only
+            metrics_eval_list = [metrics_eval_list]
 
-            # Test the model
-            fps = '-'
-            if convert_result and test_type != 'convert':
-                # load deploy_cfg
-                deploy_cfg, model_cfg = \
-                    load_config(str(deploy_cfg_path),
-                                str(model_cfg_path.absolute()))
+        assert len(metrics_eval_list) > 0
+        print(f'Got metrics_eval_list = {metrics_eval_list}')
 
-                # Get evaluation metric from model config
-                metrics_eval_list = model_cfg.evaluation.get('metric', [])
-                if isinstance(metrics_eval_list, str):
-                    # some config is using str only
-                    metrics_eval_list = [metrics_eval_list]
+        # test the model metric
+        for metric_name in metrics_eval_list:
+            if backend_test:
+                get_backend_fps_metric(deploy_cfg_path=deploy_cfg_path,
+                                       model_cfg_path=model_cfg_path,
+                                       convert_checkpoint_path=convert_checkpoint_path,
+                                       device_type=device_type,
+                                       metric_name=metric_name,
+                                       logger=logger,
+                                       metric_info_dict=metric_info_dict,
+                                       metrics_eval_list=metrics_eval_list,
+                                       pytorch_metric=pytorch_metric,
+                                       metric_tolerance=metric_tolerance,
+                                       backend_name=backend_name,
+                                       metric_useless=metric_useless,
+                                       convert_result=convert_result,
+                                       report_dict=report_dict,
+                                       infer_type=infer_type,
+                                       log_path=log_path
+                                       )
 
-                assert len(metrics_eval_list) > 0
-                print(f'Got metrics_eval_list = {metrics_eval_list}')
+            if sdk_config is not None:
+                get_backend_fps_metric(deploy_cfg_path=str(sdk_config),
+                                       model_cfg_path=model_cfg_path,
+                                       convert_checkpoint_path=str(backend_output_path),
+                                       device_type=device_type,
+                                       metric_name=metric_name,
+                                       logger=logger,
+                                       metric_info_dict=metric_info_dict,
+                                       metrics_eval_list=metrics_eval_list,
+                                       pytorch_metric=pytorch_metric,
+                                       metric_tolerance=metric_tolerance,
+                                       backend_name='SDK',
+                                       metric_useless=metric_useless,
+                                       convert_result=convert_result,
+                                       report_dict=report_dict,
+                                       infer_type=infer_type,
+                                       log_path=log_path
+                                       )
+    else:
+        metric_list = []
 
-                # test the model metric
-                for metric_name in metrics_eval_list:
-                    if backend_test:
-                        get_backend_fps_metric(deploy_cfg_path=deploy_cfg_path,
-                                               model_cfg_path=model_cfg_path,
-                                               convert_checkpoint_path=convert_checkpoint_path,
-                                               device_type=device_type,
-                                               metric_name=metric_name,
-                                               logger=logger,
-                                               metric_info_dict=metric_info_dict,
-                                               metrics_eval_list=metrics_eval_list,
-                                               pytorch_metric=pytorch_metric,
-                                               metric_tolerance=metric_tolerance,
-                                               backend_name=backend_name,
-                                               metric_useless=metric_useless,
-                                               convert_result=convert_result,
-                                               report_dict=report_dict,
-                                               infer_type=infer_type,
-                                               log_path=log_path
-                                               )
+        for metric in metric_name_list:
+            metric_list.append({metric: '-'})
+        test_pass = True if convert_result else False
 
-                    if sdk_test:
-                        sdk_deploy_cfg_name = \
-                            sdk_info.get('deploy_config', {}).get(infer_type, {}).get(fp_size, None)
+        # update useless metric
+        for metric in metric_useless:
+            metric_list.append({metric: '-'})
 
-                        if sdk_deploy_cfg_name is None:
-                            continue
-
-                        sdk_deploy_cfg = Path(deploy_config_dir).joinpath(sdk_deploy_cfg_name)
-
-                        get_backend_fps_metric(deploy_cfg_path=str(sdk_deploy_cfg),
-                                               model_cfg_path=model_cfg_path,
-                                               convert_checkpoint_path=str(backend_output_path),
-                                               device_type=device_type,
-                                               metric_name=metric_name,
-                                               logger=logger,
-                                               metric_info_dict=metric_info_dict,
-                                               metrics_eval_list=metrics_eval_list,
-                                               pytorch_metric=pytorch_metric,
-                                               metric_tolerance=metric_tolerance,
-                                               backend_name='SDK',
-                                               metric_useless=metric_useless,
-                                               convert_result=convert_result,
-                                               report_dict=report_dict,
-                                               infer_type=infer_type,
-                                               log_path=log_path
-                                               )
-            else:
-                metric_list = []
-
-                for metric in metric_name_list:
-                    metric_list.append({metric: '-'})
-                test_pass = True if convert_result else False
-
-                # update useless metric
-                for metric in metric_useless:
-                    metric_list.append({metric: '-'})
-
-                # update the report
-                update_report(
-                    report_dict=report_dict,
-                    model_name=model_cfg_path.parent.name,
-                    model_config=str(model_cfg_path),
-                    model_checkpoint_name=str(checkpoint_path),
-                    dataset='',
-                    backend_name=backend_name,
-                    deploy_config=str(deploy_cfg_path),
-                    static_or_dynamic=infer_type,
-                    conversion_result=str(convert_result),
-                    fps=fps,
-                    metric_info=metric_list,
-                    test_pass=str(test_pass))
+        # update the report
+        update_report(
+            report_dict=report_dict,
+            model_name=model_cfg_path.parent.name,
+            model_config=str(model_cfg_path),
+            model_checkpoint_name=str(checkpoint_path),
+            dataset='',
+            backend_name=backend_name,
+            deploy_config=str(deploy_cfg_path),
+            static_or_dynamic=infer_type,
+            conversion_result=str(convert_result),
+            fps=fps,
+            metric_info=metric_list,
+            test_pass=str(test_pass))
 
 
 def save_report(report_info, report_save_path, logger):
@@ -639,10 +631,6 @@ def main():
         metric_tolerance = global_info.get('metric_tolerance', {})
         report_dict.update({'test_pass': []})
 
-        # get deploy config directory
-        deploy_config_dir = global_info.get('deploy_config_dir', '')
-        assert deploy_config_dir != ''
-
         models_info = yaml_info.get('models')
         for models in models_info:
             if 'model_configs' not in models:
@@ -652,8 +640,7 @@ def main():
             model_metafile_info, checkpoint_save_dir, codebase_dir = \
                 get_model_metafile_info(global_info, models, logger)
             for model_config in model_metafile_info:
-                logger.info('Processing regression test '
-                            f'for {model_config}.py...')
+                logger.info(f'Processing test for {model_config}.py...')
 
                 # get backends info
                 pipelines_info = models.get('pipelines', None)
@@ -676,25 +663,17 @@ def main():
                 pytorch_metric = get_pytorch_result(
                     models.get('name'), model_metafile_info, checkpoint_path,
                     model_cfg_path, metric_tolerance, report_dict, logger)
-                input_img_path = \
-                    models.get('convert_image', {}).get('input_img', './tests/data/tiger.jpeg')
-                dynamic_test_img_path = \
-                    models.get('convert_image', {}).get('test_img', None)
 
-                # image info
-                test_image_info = {
-                    'input_img_path': input_img_path,
-                    'dynamic_test_img_path': dynamic_test_img_path
-                }
+                for pipeline in pipelines_info:
+                    backend_name = get_backend(str(pipeline.get('deploy_config'))).name
+                    if str(backend_name).lower() not in backend_list:
+                        continue
 
-                sdk_info = models.get('sdk', None)
-                for backend in backend_list:
                     get_backend_result(
-                        pipelines_info, sdk_info,
-                        model_cfg_path, deploy_config_dir, checkpoint_path,
+                        pipeline, model_cfg_path, checkpoint_path,
                         work_dir, args.device_id, pytorch_metric,
                         metric_tolerance, report_dict, args.test_type,
-                        test_image_info, logger, log_path, backend)
+                        logger, log_path)
 
         save_report(report_dict, report_save_path, logger)
 
