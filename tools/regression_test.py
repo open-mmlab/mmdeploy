@@ -424,6 +424,9 @@ def get_backend_result(pipeline_info, model_cfg_path,
     if sdk_config is not None:
         sdk_config = Path(sdk_config).absolute().resolve()
 
+    if backend_test is False and sdk_config is None:
+        test_type = 'convert'
+
     metric_name_list = [str(metric) for metric in pytorch_metric]
     assert len(metric_name_list) > 0
     metric_all_list = [str(metric) for metric in metric_tolerance]
@@ -476,8 +479,7 @@ def get_backend_result(pipeline_info, model_cfg_path,
         backend_output_path.joinpath(backend_file_info.get(backend_name, ''))
 
     # Test the model
-    fps = '-'
-    if convert_result and test_type != 'convert':
+    if convert_result and test_type == 'precision':
         # load deploy_cfg
         deploy_cfg, model_cfg = \
             load_config(str(deploy_cfg_path),
@@ -532,7 +534,9 @@ def get_backend_result(pipeline_info, model_cfg_path,
                                        log_path=log_path
                                        )
     else:
+        logger.info('Only test convert, saving to report...')
         metric_list = []
+        fps = '-'
 
         for metric in metric_name_list:
             metric_list.append({metric: '-'})
