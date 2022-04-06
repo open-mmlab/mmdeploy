@@ -656,10 +656,14 @@ def main():
                     model_cfg_path, metric_info, report_dict, logger)
 
                 for pipeline in pipelines_info:
-                    backend_name = get_backend(str(pipeline.get('deploy_config'))).name
-                    if str(backend_name).lower() not in backend_list:
+                    backend_name = get_backend(pipeline.get('deploy_config')).name.lower()
+                    if backend_name not in backend_list:
                         continue
-                    backend_file_name = backend_file_info.get(backend_name, '')
+
+                    backend_file_name = backend_file_info.get(backend_name, None)
+                    if backend_file_name is None:
+                        continue
+
                     get_backend_result(
                         pipeline, model_cfg_path, checkpoint_path,
                         work_dir, args.device_id, pytorch_metric,
