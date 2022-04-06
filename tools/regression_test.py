@@ -387,11 +387,6 @@ def get_backend_result(backends_info, sdk_info, model_cfg_path,
         backend_name (str):  Backend name.
     """
 
-    backends_info = backends_info.get(backend_name, [])
-    if len(backends_info) <= 0:
-        logger.warning(f'Can not get info of {backend_name}, skip it...')
-        return
-
     backend_file_info = {
         'onnxruntime': 'end2end.onnx',
         'tensorrt': 'end2end.engine',
@@ -413,7 +408,7 @@ def get_backend_result(backends_info, sdk_info, model_cfg_path,
         },
     }
 
-    performance_align = backends_info.get('performance_align', False)
+    backend_test = backends_info.get('backend_test', False)
     dynamic_test_img_path = \
         test_image_info.get('dynamic_test_img_path', None)
     sdk_test = backends_info.get('sdk_test', False)
@@ -499,7 +494,7 @@ def get_backend_result(backends_info, sdk_info, model_cfg_path,
 
                 # test the model metric
                 for metric_name in metrics_eval_list:
-                    if performance_align:
+                    if backend_test:
                         get_backend_fps_metric(deploy_cfg_path=deploy_cfg_path,
                                                model_cfg_path=model_cfg_path,
                                                convert_checkpoint_path=convert_checkpoint_path,
@@ -661,8 +656,8 @@ def main():
                             f'for {model_config}.py...')
 
                 # get backends info
-                backends_info = models.get('backends', None)
-                if backends_info is None:
+                pipelines_info = models.get('pipelines', None)
+                if pipelines_info is None:
                     continue
 
                 # get model config path
@@ -682,9 +677,9 @@ def main():
                     models.get('name'), model_metafile_info, checkpoint_path,
                     model_cfg_path, metric_tolerance, report_dict, logger)
                 input_img_path = \
-                    models.get('input_img_path', './tests/data/tiger.jpeg')
+                    models.get('convert_image', {}).get('input_img', './tests/data/tiger.jpeg')
                 dynamic_test_img_path = \
-                    models.get('dynamic_test_img_path', None)
+                    models.get('convert_image', {}).get('test_img', None)
 
                 # image info
                 test_image_info = {
@@ -692,16 +687,14 @@ def main():
                     'dynamic_test_img_path': dynamic_test_img_path
                 }
 
-                sdk_info = models.get('sdk_config', None)
-                backend_result_function = partial(
-                    get_backend_result, backends_info, sdk_info,
-                    model_cfg_path, deploy_config_dir, checkpoint_path,
-                    work_dir, args.device_id, pytorch_metric,
-                    metric_tolerance, report_dict, args.test_type,
-                    test_image_info, logger, log_path)
-
+                sdk_info = models.get('sdk', None)
                 for backend in backend_list:
-                    backend_result_function(backend)
+                    get_backend_result(
+                        pipelines_info, sdk_info,
+                        model_cfg_path, deploy_config_dir, checkpoint_path,
+                        work_dir, args.device_id, pytorch_metric,
+                        metric_tolerance, report_dict, args.test_type,
+                        test_image_info, logger, log_path, backend)
 
         save_report(report_dict, report_save_path, logger)
 
