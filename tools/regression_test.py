@@ -266,75 +266,12 @@ def get_info_from_log_file(info_type, log_path, metric_info=None):
             return '-'
         print(f'Got metric_eval_name = {metric_info}')
         metric = evaluate_result.get(metric_info, 0.00) * 100
-        print(f'Got metric float= {metric}')
-        if not isinstance(metric, float):
-            metric = f'{float(metric):.2f}'
         print(f'Got metric = {metric}')
         info_value = metric
     else:
         info_value = '-'
 
     return info_value
-
-
-def test_backends(deploy_cfg, model_cfg, checkpoint_path, device, metrics_name,
-                  logger, metric_info_dict, log_path):
-    """Test the backend.
-
-    Args:
-        deploy_cfg (str): Deploy config file path.
-        model_cfg (str): Model config file path.
-        checkpoint_path (str): Backend converted model file path.
-        device (str): A string specifying device, defaults to 'cuda:0'.
-        metrics_name (str): Evaluation metrics, which depends on
-            the codebase and the dataset, e.g., "bbox", "segm", "proposal"
-            for COCO, and "mAP", "recall" for PASCAL VOC in mmdet;
-            "accuracy", "precision", "recall", "f1_score", "support"
-            for single label dataset, and "mAP", "CP", "CR", "CF1",
-            "OP", "OR", "OF1" for multi-label dataset in mmcls.
-            Defaults is `None`.
-        logger (logging.Logger): Logger.
-        metric_info_dict (dict): Metric info dict.
-        log_path (Path): Path of logger file.
-
-    Returns:
-        Dict: metric info of the model
-    """
-    checkpoint_path = Path(checkpoint_path)
-    result_path = checkpoint_path.with_suffix('.pkl').absolute()
-
-    cmd_str = f'cd {str(Path().cwd())} && ' \
-              'python3 tools/test.py ' \
-              f'{deploy_cfg} ' \
-              f'{model_cfg} ' \
-              f'--model {str(checkpoint_path)} ' \
-              f'--out {str(result_path)} ' \
-              f'--metrics {metrics_name} ' \
-              f'--device {device} ' \
-              f'--log2file {log_path} ' \
-              f'--speed-test'
-
-    logger.info(f'Process cmd = {cmd_str}')
-
-    # Test backend
-    shell_res = os.system(cmd_str)
-    print(f'Got shell_res = {shell_res}')
-
-    # check if converted successes or not.
-    if shell_res != 0:
-        return '-', '-'
-
-    # Got fps from log file
-    fps = get_info_from_log_file('FPS', log_path)
-    print(f'Got fps = {fps}')
-
-    # Got metric from log file
-    metric_eval_name = \
-        metric_info_dict.get(metrics_name, {}).get('metric_name', '0.00')
-    metric = get_info_from_log_file('metric', log_path, metric_eval_name)
-    print(f'Got metric = {metric}')
-
-    return metric, fps
 
 
 def get_backend_fps_metric(deploy_cfg_path,
@@ -356,15 +293,39 @@ def get_backend_fps_metric(deploy_cfg_path,
                            ):
     metric_list = []
 
-    metric_value, fps = \
-        test_backends(deploy_cfg=str(deploy_cfg_path),
-                      model_cfg=str(model_cfg_path.absolute()),
-                      checkpoint_path=str(convert_checkpoint_path),
-                      device=device_type,
-                      metrics_name=metric_name,
-                      logger=logger,
-                      metric_info_dict=metric_info_dict,
-                      log_path=log_path)
+    result_path = convert_checkpoint_path.with_suffix('.pkl').absolute()
+
+    cmd_str = f'cd {str(Path().cwd())} && ' \
+              'python3 tools/test.py ' \
+              f'{deploy_cfg_path} ' \
+              f'{str(model_cfg_path.absolute())} ' \
+              f'--model {str(convert_checkpoint_path)} ' \
+              f'--out {str(result_path)} ' \
+              f'--metrics {metric_name} ' \
+              f'--device {device_type} ' \
+              f'--log2file {log_path} ' \
+              f'--speed-test'
+
+    logger.info(f'Process cmd = {cmd_str}')
+
+    # Test backend
+    shell_res = os.system(cmd_str)
+    print(f'Got shell_res = {shell_res}')
+
+    # check if converted successes or not.
+    if shell_res != 0:
+        fps = '-'
+        metric_value = '-'
+    else:
+        # Got fps from log file
+        fps = get_info_from_log_file('FPS', log_path)
+        print(f'Got fps = {fps}')
+
+        # Got metric from log file
+        metric_eval_name = \
+            metric_info_dict.get(metric_name, {}).get('metric_name', '0.00')
+        metric_value = get_info_from_log_file('metric', log_path, metric_eval_name)
+    print(f'Got metric = {metric_value}')
 
     metric_name = metric_info_dict.get(metric_name, {}).get('meta_name', None)
     if metric_name is None:
