@@ -12,10 +12,19 @@ globals:
     COCO:
       image:
       annotation:
-  metric_tolerance:
-    box AP: 0.1
-    mask AP: 0.1
-    PQ: 0.1
+  metric_info: &metric_info
+    box AP:
+      eval_name: bbox       #  test.py --metrics args
+      metric_key: bbox_mAP  #  eval OrderedDict key name
+      tolerance: 0.1
+    mask AP:
+      eval_name: segm
+      metric_key: '?'
+      tolerance: 0.1
+    PQ:
+      eval_name: proposal
+      metric_key: '?'
+      tolerance: 0.1
   convert_image: &convert_image
     input_img: *img_coco_320x320
     test_img: *img_coco_300x300
@@ -25,34 +34,40 @@ globals:
 
 onnxruntime:
   pipeline_ort_static_fp32: &pipeline_ort_static_fp32
+    <<: *metric_info
     <<: *convert_image
     deploy_config: configs/mmdet/detection/detection_onnxruntime_static.py
 
   pipeline_ort_dynamic_fp32: &pipeline_ort_dynamic_fp32
+    <<: *metric_info
     <<: *convert_image
     deploy_config: configs/mmdet/detection/detection_onnxruntime_dynamic.py
 
 tensorrt:
   pipeline_trt_static_fp32: &pipeline_trt_static_fp32
     backend_test: *default_backend_test
+    <<: *metric_info
     <<: *convert_image
     deploy_config: configs/mmdet/detection/detection_tensorrt_static-800x1344.py
 
   pipeline_trt_dynamic_fp32: &pipeline_trt_dynamic_fp32
     backend_test: *default_backend_test
+    <<: *metric_info
     <<: *convert_image
     sdk_config: *sdk_dynamic_fp32
     deploy_config: configs/mmdet/detection/detection_tensorrt_dynamic-320x320-1344x1344.py
 
   pipeline_trt_dynamic_fp16: &pipeline_trt_dynamic_fp16
-    backend_test: *default_backend_test
+    <<: *metric_info
     <<: *convert_image
+    backend_test: *default_backend_test
     sdk_config: *sdk_dynamic_fp32
     deploy_config: configs/mmdet/detection/detection_tensorrt-fp16_dynamic-320x320-1344x1344.py
 
   pipeline_trt_dynamic_int8: &pipeline_trt_dynamic_int8
-    backend_test: *default_backend_test
+    <<: *metric_info
     <<: *convert_image
+    backend_test: *default_backend_test
     sdk_config: *sdk_dynamic_fp32
     deploy_config: configs/mmdet/detection/detection_tensorrt-int8_dynamic-300x300-512x512.py
 

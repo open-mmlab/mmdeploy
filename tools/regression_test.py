@@ -166,7 +166,7 @@ def update_report(
 
 
 def get_pytorch_result(model_name, meta_info, checkpoint_path,
-                       model_config_name, metric_tolerance, report_dict,
+                       model_config_name, metric_name_info, report_dict,
                        logger):
     """Get metric from metafile info of the model.
 
@@ -175,7 +175,7 @@ def get_pytorch_result(model_name, meta_info, checkpoint_path,
         meta_info (dict): Metafile info from model's metafile.yml.
         checkpoint_path (Path): Checkpoint path.
         model_config_name (Path):  Model config name for getting meta info
-        metric_tolerance (dict):Tolerance for metrics.
+        metric_name_info (dict): Metrics info.
         report_dict (dict): Report info dict.
         logger (logging.Logger): Logger.
 
@@ -197,7 +197,7 @@ def get_pytorch_result(model_name, meta_info, checkpoint_path,
         pytorch_metric.update(metric.get('Metrics'))
 
     # update useless metric
-    metric_all_list = [str(metric) for metric in metric_tolerance]
+    metric_all_list = [str(metric) for metric in metric_name_info]
     metric_useless = set(metric_all_list) - set(
         [str(metric) for metric in pytorch_metric])
     for metric in metric_useless:
@@ -279,10 +279,9 @@ def get_backend_fps_metric(deploy_cfg_path,
                            device_type,
                            metric_name,
                            logger,
-                           metric_info_dict,
                            metrics_eval_list,
                            pytorch_metric,
-                           metric_tolerance,
+                           metric_info,
                            backend_name,
                            metric_useless,
                            convert_result,
@@ -311,6 +310,16 @@ def get_backend_fps_metric(deploy_cfg_path,
     shell_res = os.system(cmd_str)
     print(f'Got shell_res = {shell_res}')
 
+    metric_eval_name = ''
+    for metric_key, metric_value in metric_info.items():
+        if metric_value.get('eval_name', '') == metric_name:
+            metric_name = metric_key
+            metric_eval_name = metric_value.get('metric_key', '')
+            break
+
+    logger.info(f'Got metric_name = {metric_name}')
+    logger.info(f'Got metric_eval_name = {metric_eval_name}')
+
     # check if converted successes or not.
     if shell_res != 0:
         fps = '-'
@@ -321,12 +330,9 @@ def get_backend_fps_metric(deploy_cfg_path,
         print(f'Got fps = {fps}')
 
         # Got metric from log file
-        metric_eval_name = \
-            metric_info_dict.get(metric_name, {}).get('metric_name', '0.00')
         metric_value = get_info_from_log_file('metric', log_path, metric_eval_name)
-    print(f'Got metric = {metric_value}')
+        print(f'Got metric = {metric_value}')
 
-    metric_name = metric_info_dict.get(metric_name, {}).get('meta_name', None)
     if metric_name is None:
         logger.error(f'metrics_eval_list: {metrics_eval_list} '
                      'has not info name')
@@ -334,7 +340,7 @@ def get_backend_fps_metric(deploy_cfg_path,
 
     metric_list.append({metric_name: metric_value})
     metric_pytorch = pytorch_metric.get(str(metric_name))
-    metric_tolerance_value = metric_tolerance.get(metric_name)
+    metric_tolerance_value = metric_info.get(metric_name, {}).get('tolerance', 0.00)
     if (metric_value - metric_tolerance_value) <= \
             metric_pytorch <= \
             (metric_value + metric_tolerance_value):
@@ -364,9 +370,9 @@ def get_backend_fps_metric(deploy_cfg_path,
 
 def get_backend_result(pipeline_info, model_cfg_path,
                        checkpoint_path, work_dir,
-                       device_type, pytorch_metric, metric_tolerance,
+                       device_type, pytorch_metric, metric_info,
                        report_dict, test_type, logger,
-                       log_path):
+                       log_path, backend_file_name):
     """Convert model to onnx and then get metric.
 
     Args:
@@ -376,40 +382,13 @@ def get_backend_result(pipeline_info, model_cfg_path,
         work_dir (Path): A working directory.
         device_type (str): A string specifying device, defaults to 'cuda'.
         pytorch_metric (dict): All pytorch metric info.
-        metric_tolerance (dict):Tolerance for metrics.
+        metric_info (dict): Metrics info.
         report_dict (dict): Report info dict.
         test_type (sgr): Test type. 'precision' or 'convert'.
         logger (logging.Logger): Logger.
         log_path (Path): Path for logger file.
+        backend_file_name (str): backend file save name.
     """
-
-    backend_file_info = {
-        'onnxruntime': 'end2end.onnx',
-        'tensorrt': 'end2end.engine',
-        'torchscript': 'end2end.pt',
-
-        # unknown
-        'openvino': '',
-        'ncnn': '',
-        'pplnn': '',
-    }
-
-    metric_info_dict = {
-        # mmdet
-        'bbox': {
-            'meta_name': 'box AP',
-            'metric_name': 'bbox_mAP',
-        },
-        'segm': {
-            'meta_name': 'mask AP',
-            'metric_name': '?',
-        },
-        'proposal': {
-            'meta_name': 'PQ',
-            'metric_name': '?',
-        },
-    }
-
     # get backend_test info
     backend_test = pipeline_info.get('backend_test', False)
 
@@ -429,7 +408,7 @@ def get_backend_result(pipeline_info, model_cfg_path,
 
     metric_name_list = [str(metric) for metric in pytorch_metric]
     assert len(metric_name_list) > 0
-    metric_all_list = [str(metric) for metric in metric_tolerance]
+    metric_all_list = [str(metric) for metric in metric_info]
     metric_useless = set(metric_all_list) - set(metric_name_list)
 
     deploy_cfg_path = Path(pipeline_info.get('deploy_config')).absolute().resolve()
@@ -475,8 +454,7 @@ def get_backend_result(pipeline_info, model_cfg_path,
         convert_result = False
     print(f'Got convert_result = {convert_result}')
 
-    convert_checkpoint_path = \
-        backend_output_path.joinpath(backend_file_info.get(backend_name, ''))
+    convert_checkpoint_path = backend_output_path.joinpath(backend_file_name)
 
     # Test the model
     if convert_result and test_type == 'precision':
@@ -503,10 +481,9 @@ def get_backend_result(pipeline_info, model_cfg_path,
                                        device_type=device_type,
                                        metric_name=metric_name,
                                        logger=logger,
-                                       metric_info_dict=metric_info_dict,
                                        metrics_eval_list=metrics_eval_list,
                                        pytorch_metric=pytorch_metric,
-                                       metric_tolerance=metric_tolerance,
+                                       metric_info=metric_info,
                                        backend_name=backend_name,
                                        metric_useless=metric_useless,
                                        convert_result=convert_result,
@@ -522,10 +499,9 @@ def get_backend_result(pipeline_info, model_cfg_path,
                                        device_type=device_type,
                                        metric_name=metric_name,
                                        logger=logger,
-                                       metric_info_dict=metric_info_dict,
                                        metrics_eval_list=metrics_eval_list,
                                        pytorch_metric=pytorch_metric,
-                                       metric_tolerance=metric_tolerance,
+                                       metric_info=metric_info,
                                        backend_name='SDK',
                                        metric_useless=metric_useless,
                                        convert_result=convert_result,
@@ -587,6 +563,17 @@ def main():
     logger = get_root_logger(log_level=args.log_level)
     logger.info('Processing regression test.')
 
+    backend_file_info = {
+        'onnxruntime': 'end2end.onnx',
+        'tensorrt': 'end2end.engine',
+        'torchscript': 'end2end.pt',
+
+        # unknown
+        'openvino': '',
+        'ncnn': '',
+        'pplnn': '',
+    }
+
     backend_list = args.backends
     if backend_list == ['all']:
         backend_list = [
@@ -630,9 +617,9 @@ def main():
 
         global_info = yaml_info.get('globals')
 
-        for metric_name in global_info.get('metric_tolerance', {}):
+        for metric_name in global_info.get('metric_info', {}):
             report_dict.update({metric_name: []})
-        metric_tolerance = global_info.get('metric_tolerance', {})
+        metric_info = global_info.get('metric_info', {})
         report_dict.update({'test_pass': []})
 
         models_info = yaml_info.get('models')
@@ -666,18 +653,18 @@ def main():
                 #  Get pytorch from metafile.yml
                 pytorch_metric = get_pytorch_result(
                     models.get('name'), model_metafile_info, checkpoint_path,
-                    model_cfg_path, metric_tolerance, report_dict, logger)
+                    model_cfg_path, metric_info, report_dict, logger)
 
                 for pipeline in pipelines_info:
                     backend_name = get_backend(str(pipeline.get('deploy_config'))).name
                     if str(backend_name).lower() not in backend_list:
                         continue
-
+                    backend_file_name = backend_file_info.get(backend_name, '')
                     get_backend_result(
                         pipeline, model_cfg_path, checkpoint_path,
                         work_dir, args.device_id, pytorch_metric,
-                        metric_tolerance, report_dict, args.test_type,
-                        logger, log_path)
+                        metric_info, report_dict, args.test_type,
+                        logger, log_path, backend_file_name)
 
         save_report(report_dict, report_save_path, logger)
 
