@@ -22,16 +22,19 @@ class _TypeErasedScheduler;
 
 template <class ValueTypes>
 class _TypeErasedSender {
-  template <class Sender, class _ValueTypes>
-  friend struct _TypeErasedSenderImpl;
+ public:
   using _Operation = _TypeErasedOperation<ValueTypes>;
   using _Receiver = _TypeErasedReceiver<ValueTypes>;
 
-  class Impl {
-   public:
+  using value_type = ValueTypes;
+
+  struct Impl {
     virtual _Operation _Connect(_Receiver) = 0;
   };
-  std::unique_ptr<Impl> impl_;
+
+  template <class Sender,
+            class = std::enable_if_t<!std::is_same_v<std::decay_t<Sender>, _TypeErasedSender>>>
+  explicit _TypeErasedSender(Sender&& sender);
 
   template <class Self, class Receiver,
             MMDEPLOY_REQUIRES(std::is_same_v<std::decay_t<Self>, _TypeErasedSender>)>
@@ -39,12 +42,8 @@ class _TypeErasedSender {
     return self.impl_->_Connect(_TypeErasedReceiver<ValueTypes>((Receiver &&) receiver));
   }
 
- public:
-  using value_type = ValueTypes;
-
-  template <class Sender,
-            class = std::enable_if_t<!std::is_same_v<std::decay_t<Sender>, _TypeErasedSender>>>
-  explicit _TypeErasedSender(Sender&& sender);
+ private:
+  std::unique_ptr<Impl> impl_;
 };
 
 template <class Sender>
@@ -77,24 +76,22 @@ _TypeErasedSender<ValueTypes>::_TypeErasedSender(Sender&& sender) {
 
 template <class ValueTypes>
 class _TypeErasedReceiver {
-  template <class Receiver, class _ValueTypes>
-  friend struct _TypeErasedReceiverImpl;
-
+ public:
   struct Impl {
     virtual void _SetValue(ValueTypes) = 0;
   };
 
-  std::unique_ptr<Impl> impl_;
+  template <class Receiver,
+            class = std::enable_if_t<!std::is_same_v<std::decay_t<Receiver>, _TypeErasedReceiver>>>
+  explicit _TypeErasedReceiver(Receiver&&);
 
   template <class... As>
   friend void SetValue(_TypeErasedReceiver&& self, As&&... as) {
     self.impl_->_SetValue(std::forward_as_tuple((As &&) as...));
   }
 
- public:
-  template <class Receiver,
-            class = std::enable_if_t<!std::is_same_v<std::decay_t<Receiver>, _TypeErasedReceiver>>>
-  explicit _TypeErasedReceiver(Receiver&&);
+ private:
+  std::unique_ptr<Impl> impl_;
 };
 
 template <class Receiver, class ValueTypes>
@@ -118,22 +115,23 @@ _TypeErasedReceiver<ValueTypes>::_TypeErasedReceiver(Receiver&& receiver) {
 }
 
 class _TypeErasedScheduler {
-  template <class Scheduler>
-  friend struct _TypeErasedSchedulerImpl;
-  class Impl {
-   public:
+ public:
+  struct Impl {
     virtual _TypeErasedSender<std::tuple<>> _Schedule() = 0;
   };
-  std::shared_ptr<Impl> impl_;
 
-  friend _TypeErasedSender<std::tuple<>> Schedule(_TypeErasedScheduler& self) {
-    return self.impl_->_Schedule();
-  }
-
- public:
   template <class Scheduler, class = std::enable_if_t<
                                  !std::is_same_v<std::decay_t<Scheduler>, _TypeErasedScheduler>>>
   explicit _TypeErasedScheduler(Scheduler&& sched);
+
+  template <class Self,
+            class = std::enable_if_t<std::is_same_v<std::decay_t<Self>, _TypeErasedScheduler>>>
+  friend _TypeErasedSender<std::tuple<>> Schedule(Self&& self) {
+    return self.impl_->_Schedule();
+  }
+
+ private:
+  std::shared_ptr<Impl> impl_;
 };
 
 template <class Scheduler>
@@ -153,18 +151,18 @@ _TypeErasedScheduler::_TypeErasedScheduler(Scheduler&& scheduler) {
 
 template <class ValueTypes>
 class _TypeErasedOperation {
-  template <class Operation, class _ValueTypes>
-  friend struct _TypeErasedOperationImpl;
+ public:
   struct Impl {
     virtual void _Start() = 0;
   };
-  std::unique_ptr<Impl> impl_;
+
+  template <class Fun, class = std::enable_if_t<std::is_invocable_v<Fun>>>
+  explicit _TypeErasedOperation(Fun&& fun);
 
   friend void Start(_TypeErasedOperation& op_state) { op_state.impl_->_Start(); }
 
- public:
-  template <class Fun, class = std::enable_if_t<std::is_invocable_v<Fun>>>
-  explicit _TypeErasedOperation(Fun&& fun);
+ private:
+  std::unique_ptr<Impl> impl_;
 };
 
 template <class Operation, class ValueTypes>
