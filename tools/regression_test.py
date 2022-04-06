@@ -255,14 +255,13 @@ def get_info_from_log_file(info_type, log_path, metric_info=None):
         info_value = f'{fps_sum / line_count:.2f}'
     elif info_type == 'metric' and len(lines) > 1:
         metric_line = lines[-1]
-        metric_dict = \
+        metric_dict_str = \
             metric_line.replace('\n', '').replace('\r', '').split(' - ')[-1]
-        print('Got metric_line.split(" - ") = '
-              f'{metric_line.split(" - ")}')
+        print(f'Got metric_dict = {metric_dict_str}')
 
-        evaluate_result = eval(metric_dict)
+        evaluate_result = eval(metric_dict_str)
         if not isinstance(evaluate_result, OrderedDict):
-            print(f'Got error metric_dict = {metric_dict}')
+            print(f'Got error metric_dict = {metric_dict_str}')
             return '-'
         print(f'Got metric_eval_name = {metric_info}')
         metric = evaluate_result.get(metric_info, 0.00) * 100
@@ -293,7 +292,7 @@ def get_backend_fps_metric(deploy_cfg_path,
                            ):
     metric_list = []
 
-    result_path = convert_checkpoint_path.with_suffix('.pkl').absolute()
+    result_path = Path(convert_checkpoint_path).with_suffix('.pkl').absolute()
 
     cmd_str = f'cd {str(Path().cwd())} && ' \
               'python3 tools/test.py ' \
