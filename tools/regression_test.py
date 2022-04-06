@@ -2,6 +2,7 @@
 import argparse
 import logging
 import os
+from collections import OrderedDict
 from functools import partial
 from pathlib import Path
 
@@ -10,7 +11,7 @@ import yaml
 from torch.hub import download_url_to_file
 from torch.multiprocessing import set_start_method
 
-from mmdeploy.utils import get_root_logger, load_config, parse_device_id
+from mmdeploy.utils import get_root_logger, load_config
 
 
 def parse_args():
@@ -254,11 +255,13 @@ def get_info_from_log_file(info_type, log_path, metric_info=None):
         info_value = f'{fps_sum / line_count:.2f}'
     elif info_type == 'metric' and len(lines) > 1:
         metric_line = lines[-1]
-        metric_dict = metric_line.split('OrderDict')[-1]
-        print('Got metric_line.split("OrderDict") = '
-              f'{metric_line.split("OrderDict")}')
+        metric_dict = \
+            metric_line.replace('\n', '').replace('\r', '').split(' - ')[-1]
+        print('Got metric_line.split(" - ") = '
+              f'{metric_line.split(" - ")}')
+
         evaluate_result = eval(metric_dict)
-        if isinstance(evaluate_result, dict):
+        if not isinstance(evaluate_result, OrderedDict):
             print(f'Got error metric_dict = {metric_dict}')
             return '-'
         print(f'Got metric_eval_name = {metric_info}')
@@ -279,9 +282,9 @@ def test_backends(deploy_cfg, model_cfg, checkpoint_path, device, metrics_name,
     """Test the backend.
 
     Args:
-        deploy_cfg (mmcv.Config): Deploy config file path.
-        model_cfg (mmcv.Config): Model config file path.
-        checkpoint_path (Path): Backend converted model file path.
+        deploy_cfg (str): Deploy config file path.
+        model_cfg (str): Model config file path.
+        checkpoint_path (str): Backend converted model file path.
         device (str): A string specifying device, defaults to 'cuda:0'.
         metrics_name (str): Evaluation metrics, which depends on
             the codebase and the dataset, e.g., "bbox", "segm", "proposal"
@@ -300,11 +303,12 @@ def test_backends(deploy_cfg, model_cfg, checkpoint_path, device, metrics_name,
     checkpoint_path = Path(checkpoint_path)
     result_path = checkpoint_path.with_suffix('.pkl').absolute()
 
-    cmd_str = 'python tools/test.py ' \
+    cmd_str = f'cd {str(Path().cwd())} && ' \
+              'python3 tools/test.py ' \
               f'{deploy_cfg} ' \
               f'{model_cfg} ' \
               f'--model {str(checkpoint_path)} ' \
-              f'--out {result_path} ' \
+              f'--out {str(result_path)} ' \
               f'--metrics {metrics_name} ' \
               f'--device {device} ' \
               f'--log2file {log_path} ' \
@@ -352,15 +356,10 @@ def get_backend_fps_metric(deploy_cfg_path,
                            ):
     metric_list = []
 
-    # load deploy_cfg
-    deploy_cfg, model_cfg = \
-        load_config(str(deploy_cfg_path),
-                    str(model_cfg_path.absolute()))
-
     metric_value, fps = \
-        test_backends(deploy_cfg=deploy_cfg,
-                      model_cfg=model_cfg,
-                      checkpoint_path=convert_checkpoint_path,
+        test_backends(deploy_cfg=str(deploy_cfg_path),
+                      model_cfg=str(model_cfg_path.absolute()),
+                      checkpoint_path=str(convert_checkpoint_path),
                       device=device_type,
                       metrics_name=metric_name,
                       logger=logger,
