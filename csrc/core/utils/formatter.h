@@ -7,6 +7,8 @@
 
 #if FMT_VERSION >= 50000
 #include "spdlog/fmt/bundled/ranges.h"
+#else
+#include <type_traits>
 #endif
 
 namespace mmdeploy {
