@@ -22,7 +22,9 @@ Result<void> NCNNNet::Init(const Value& args) {
   auto& context = args["context"];
   device_ = context["device"].get<Device>();
   stream_ = context["stream"].get<Stream>();
-
+  if (args.contains("use_vulkan")) {
+    net_.opt.use_vulkan_compute = args["use_vulkan"].get<bool>();
+  }
   if (!device_.is_host()) {
     return Status(eNotSupported);
   }
@@ -30,10 +32,29 @@ Result<void> NCNNNet::Init(const Value& args) {
   auto name = args["name"].get<std::string>();
   auto model = context["model"].get<Model>();
   OUTCOME_TRY(auto config, model.GetModelConfig(name));
-
+  auto precision = config.precision;
+  if (precision == "FP16") {
+    net_.opt.use_fp16_packed = true;
+    net_.opt.use_fp16_storage = true;
+    net_.opt.use_fp16_arithmetic = true;
+  } else if (precision == "INT8") {
+    // in android platform, ncnn will automatically start FP16 accelerate.
+    // In INT8 case, we set fp16 as false explicitly.
+    net_.opt.use_int8_packed = true;
+    net_.opt.use_int8_storage = true;
+    net_.opt.use_int8_arithmetic = true;
+    net_.opt.use_fp16_packed = false;
+    net_.opt.use_fp16_storage = false;
+    net_.opt.use_fp16_arithmetic = false;
+  } else {
+    // in android platform, ncnn will automatically start FP16 accelerate.
+    // In FP32 case, we set fp16 as false explicitly.
+    net_.opt.use_fp16_packed = false;
+    net_.opt.use_fp16_storage = false;
+    net_.opt.use_fp16_arithmetic = false;
+  }
   OUTCOME_TRY(params_, model.ReadFile(config.net));
   OUTCOME_TRY(weights_, model.ReadFile(config.weights));
-
   register_mmdeploy_custom_layers(net_);
 
   OUTCOME_TRY(ncnn_status(net_.load_param_mem(params_.c_str())));
@@ -57,7 +78,6 @@ Result<void> NCNNNet::Init(const Value& args) {
         x,
     });
   }
-
   return success();
 }
 
@@ -91,10 +111,24 @@ Result<void> NCNNNet::Forward() {
     OUTCOME_TRY(ncnn_status(extractor.extract(output_indices_[i], outputs[i])));
     auto& tensor = output_tensors_[i];
     auto shape = outputs[i].shape();
-    tensor.Reshape({1, shape.w, shape.h, shape.c});
+    if (outputs[i].dims == 1) {
+      tensor.Reshape({1, shape.w});
+    } else if (outputs[i].dims == 2) {
+      tensor.Reshape({1, shape.h, shape.w});
+    } else if (outputs[i].dims == 3) {
+      tensor.Reshape({1, shape.d, shape.h, shape.w});
+    } else {
+      // for dim==4 case and blank image.
+      tensor.Reshape({1, shape.c, shape.d, shape.h, shape.w});
+    }
+    // tensor.Reshape({1, shape.c, shape.h, shape.w});
     // ncnn Mat may be padded, flatten to avoid that
-    auto flattened = outputs[i].reshape(shape.w * shape.h * shape.c);
-    OUTCOME_TRY(tensor.CopyFrom(flattened.data, stream_));
+    auto flattened = outputs[i].reshape(shape.c * shape.h * shape.w);
+    // if ((shape.c * shape.h * shape.w) > 0)
+    if (outputs[i].dims > 0) {
+      OUTCOME_TRY(tensor.CopyFrom(flattened.data, stream_));
+    }
+    OUTCOME_TRY(stream_.Wait());
   }
   return success();
 }

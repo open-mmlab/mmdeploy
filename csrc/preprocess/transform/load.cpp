@@ -44,12 +44,14 @@ Result<Value> PrepareImageImpl::Process(const Value& input) {
 
   OUTCOME_TRY(auto tensor, std::move(res));
 
-  output["img"] = tensor;
   for (auto v : tensor.desc().shape) {
     output["img_shape"].push_back(v);
   }
   output["ori_shape"] = {1, src_mat.height(), src_mat.width(), src_mat.channel()};
   output["img_fields"].push_back("img");
+
+  SetTransformData(output, "img", std::move(tensor));
+
   MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));
 
   return output;

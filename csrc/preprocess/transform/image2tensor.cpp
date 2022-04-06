@@ -26,7 +26,8 @@ Result<Value> ImageToTensorImpl::Process(const Value& input) {
     assert(shape.size() == 4);
     assert(shape[3] == 1 || shape[3] == 3);
 
-    OUTCOME_TRY(output[key], HWC2CHW(src_tensor));
+    OUTCOME_TRY(auto dst, HWC2CHW(src_tensor));
+    SetTransformData(output, key, std::move(dst));
   }  // for key
   MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));
   return output;

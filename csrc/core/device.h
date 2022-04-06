@@ -208,9 +208,9 @@ class MMDEPLOY_API Event {
 
   void *GetNative(ErrorCode *ec = nullptr);
 
-  bool operator==(const Event &other);
+  bool operator==(const Event &other) const { return impl_ == other.impl_; }
 
-  bool operator!=(const Event &other);
+  bool operator!=(const Event &other) const { return !(*this == other); }
 
   explicit operator bool() const noexcept { return static_cast<bool>(impl_); }
 
@@ -284,6 +284,10 @@ class MMDEPLOY_API Buffer {
   Device GetDevice() const;
 
   Allocator GetAllocator() const;
+
+  bool operator==(const Buffer &other) const { return impl_ == other.impl_; }
+
+  bool operator!=(const Buffer &other) const { return !(*this == other); }
 
   explicit operator bool() const noexcept { return static_cast<bool>(impl_); }
 

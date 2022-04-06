@@ -4,7 +4,6 @@ include(${CMAKE_SOURCE_DIR}/cmake/cuda.cmake NO_POLICY_SCOPE)
 project(mmdeploy_tensorrt_ops CUDA CXX)
 
 include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
-include(${CMAKE_SOURCE_DIR}/cmake/cuda.cmake NO_POLICY_SCOPE)
 include(${CMAKE_SOURCE_DIR}/cmake/tensorrt.cmake NO_POLICY_SCOPE)
 
 # cub
@@ -20,15 +19,16 @@ set_target_properties(${PROJECT_NAME}_obj PROPERTIES POSITION_INDEPENDENT_CODE 1
 target_compile_definitions(${PROJECT_NAME}_obj
         PRIVATE -DTHRUST_IGNORE_DEPRECATED_CPP_DIALECT=1)
 target_include_directories(${PROJECT_NAME}_obj
+        PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../common)
+target_include_directories(${PROJECT_NAME}_obj
         PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/common)
 target_include_directories(${PROJECT_NAME}_obj
         PRIVATE ${CUDA_TOOLKIT_ROOT_DIR}/include)
 target_include_directories(${PROJECT_NAME}_obj PRIVATE ${TENSORRT_INCLUDE_DIR})
 target_include_directories(${PROJECT_NAME}_obj PRIVATE ${CUDNN_DIR}/include)
 target_include_directories(${PROJECT_NAME}_obj PRIVATE ${CUB_ROOT_DIR})
-target_link_directories(${PROJECT_NAME}_obj PUBLIC ${CUDNN_DIR}/lib64 ${CUDNN_DIR}/lib/x64)
 target_link_libraries(${PROJECT_NAME}_obj
-        PUBLIC ${TENSORRT_LIBRARY} ${CUDA_CUBLAS_LIBRARIES} cudnn)
+        PUBLIC ${TENSORRT_LIBS} cublas cudnn)
 mmdeploy_export(${PROJECT_NAME}_obj)
 
 # Build module library. It is used to convert onnx model to tensorrt engine

@@ -4,8 +4,9 @@ import tempfile
 import onnx
 import torch
 
-from mmdeploy.core import mark
+from mmdeploy.core import RewriterContext, mark
 from mmdeploy.core.optimizers import attribute_to_dict
+from mmdeploy.utils.constants import IR, Backend
 
 output_file = tempfile.NamedTemporaryFile(suffix='.onnx').name
 
@@ -68,3 +69,9 @@ def test_mark():
         type='output',
         name='c',
         shape=[2, 3, 4])
+
+    with RewriterContext(
+            cfg=None, backend=Backend.TORCHSCRIPT.value,
+            ir=IR.TORCHSCRIPT), torch.no_grad(), torch.jit.optimized_execution(
+                True):
+        torch.jit.trace(model, (x, y))

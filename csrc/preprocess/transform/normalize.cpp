@@ -65,7 +65,8 @@ Result<Value> NormalizeImpl::Process(const Value& input) {
     assert(desc.shape.size() == 4 /*n, h, w, c*/);
     assert(desc.shape[3] == arg_.mean.size());
 
-    OUTCOME_TRY(output[key], NormalizeImage(tensor));
+    OUTCOME_TRY(auto dst, NormalizeImage(tensor));
+    SetTransformData(output, key, std::move(dst));
 
     for (auto& v : arg_.mean) {
       output["img_norm_cfg"]["mean"].push_back(v);

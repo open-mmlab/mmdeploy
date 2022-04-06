@@ -327,10 +327,10 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">Mask-RCNN</td>
     <td align="center">COCO</td>
     <td align="center">1x3x800x1344</td>
-    <td align="center">320.86 </td>
-    <td align="center">3.12</td>
-    <td align="center">241.32</td>
-    <td align="center">4.14</td>
+    <td align="center">104.83</td>
+    <td align="center">9.54</td>
+    <td align="center">58.27</td>
+    <td align="center">17.16</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
@@ -682,6 +682,7 @@ GPU: ncnn, TensorRT, PPLNN
 
 用户可以直接通过[如何测试性能](tutorials/how_to_evaluate_a_model.md)获得想要的性能测试结果。下面是我们环境中的测试结果：
 
+
 <details>
 <summary style="margin-left: 25px;">MMCls</summary>
 <div style="margin-left: 25px;">
@@ -691,6 +692,7 @@ GPU: ncnn, TensorRT, PPLNN
   <tr>
     <th align="center" colspan="3">MMCls</th>
     <th align="center">PyTorch</th>
+    <th align="center">TorchScript</th>
     <th align="center">ONNX Runtime</th>
     <th align="center" colspan="3">TensorRT</th>
     <th align="center">PPLNN</th>
@@ -703,6 +705,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">Task</td>
     <td align="center">Metrics</td>
     <td align="center">fp32</td>
+    <td align="center">seresnet</td>
     <td align="center">fp32</td>
     <td align="center">fp32</td>
     <td align="center">fp16</td>
@@ -715,6 +718,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center" rowspan="2">Classification</td>
     <td align="center">top-1</td>
     <td align="center">69.90</td>
+    <td align="center">69.90</td>
     <td align="center">69.88</td>
     <td align="center">69.88</td>
     <td align="center">69.86</td>
@@ -724,6 +728,7 @@ GPU: ncnn, TensorRT, PPLNN
   </tr>
   <tr>
     <td align="center">top-5</td>
+    <td align="center">89.43</td>
     <td align="center">89.43</td>
     <td align="center">89.34</td>
     <td align="center">89.34</td>
@@ -738,6 +743,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">77.90</td>
     <td align="center">77.90</td>
     <td align="center">77.90</td>
+    <td align="center">77.90</td>
     <td align="center">-</td>
     <td align="center">77.78</td>
     <td align="center">77.89</td>
@@ -745,6 +751,7 @@ GPU: ncnn, TensorRT, PPLNN
   </tr>
   <tr>
     <td align="center">top-5</td>
+    <td align="center">93.66</td>
     <td align="center">93.66</td>
     <td align="center">93.66</td>
     <td align="center">93.66</td>
@@ -759,6 +766,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">77.74</td>
     <td align="center">77.74</td>
     <td align="center">77.74</td>
+    <td align="center">77.74</td>
     <td align="center">77.75</td>
     <td align="center">77.63</td>
     <td align="center">77.73</td>
@@ -766,6 +774,7 @@ GPU: ncnn, TensorRT, PPLNN
   </tr>
   <tr>
     <td align="center">top-5</td>
+    <td align="center">93.84</td>
     <td align="center">93.84</td>
     <td align="center">93.84</td>
     <td align="center">93.84</td>
@@ -781,12 +790,14 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">68.13</td>
     <td align="center">68.13</td>
     <td align="center">68.13</td>
+    <td align="center">68.13</td>
     <td align="center">67.71</td>
     <td align="center">68.11</td>
     <td rowspan="2">$MMCLS_DIR/configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py</td>
   </tr>
   <tr>
     <td align="center">top-5</td>
+    <td align="center">87.81</td>
     <td align="center">87.81</td>
     <td align="center">87.81</td>
     <td align="center">87.81</td>
@@ -801,6 +812,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">69.55</td>
     <td align="center">69.55</td>
     <td align="center">69.55</td>
+    <td align="center">69.55</td>
     <td align="center">69.54</td>
     <td align="center">69.10</td>
     <td align="center">69.54</td>
@@ -808,6 +820,7 @@ GPU: ncnn, TensorRT, PPLNN
   </tr>
   <tr>
     <td align="center">top-5</td>
+    <td align="center">88.92</td>
     <td align="center">88.92</td>
     <td align="center">88.92</td>
     <td align="center">88.92</td>
@@ -822,6 +835,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">71.86</td>
     <td align="center">71.86</td>
     <td align="center">71.86</td>
+    <td align="center">71.86</td>
     <td align="center">71.87</td>
     <td align="center">70.91</td>
     <td align="center">71.84</td>
@@ -829,6 +843,7 @@ GPU: ncnn, TensorRT, PPLNN
   </tr>
   <tr>
     <td align="center">top-5</td>
+    <td align="center">90.42</td>
     <td align="center">90.42</td>
     <td align="center">90.42</td>
     <td align="center">90.42</td>
@@ -849,6 +864,7 @@ GPU: ncnn, TensorRT, PPLNN
   <tr>
     <th align="center" colspan="4">MMDet</th>
     <th align="center">Pytorch</th>
+    <th align="center">TorchScript</th>
     <th align="center">ONNXRuntime</th>
     <th align="center" colspan="3">TensorRT</th>
     <th align="center">PPLNN</th>
@@ -865,6 +881,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">fp32</td>
     <td align="center">fp32</td>
     <td align="center">fp32</td>
+    <td align="center">fp32</td>
     <td align="center">fp16</td>
     <td align="center">int8</td>
     <td align="center">fp16</td>
@@ -876,6 +893,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">Object Detection</td>
     <td align="center">COCO2017</td>
     <td align="center">box AP</td>
+    <td align="center">33.7</td>
     <td align="center">33.7</td>
     <td align="center">-</td>
     <td align="center">33.5</td>
@@ -891,6 +909,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">COCO2017</td>
     <td align="center">box AP</td>
     <td align="center">25.5</td>
+    <td align="center">25.5</td>
     <td align="center">-</td>
     <td align="center">25.5</td>
     <td align="center">25.5</td>
@@ -905,6 +924,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">COCO2017</td>
     <td align="center">box AP</td>
     <td align="center">36.5</td>
+    <td align="center">36.4</td>
     <td align="center">-</td>
     <td align="center">36.4</td>
     <td align="center">36.4</td>
@@ -920,6 +940,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">box AP</td>
     <td align="center">36.6</td>
     <td align="center">-</td>
+    <td align="center">-</td>
     <td align="center">36.6</td>
     <td align="center">36.5</td>
     <td align="center">-</td>
@@ -932,6 +953,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">Object Detection</td>
     <td align="center">COCO2017</td>
     <td align="center">box AP</td>
+    <td align="center">37.4</td>
     <td align="center">37.4</td>
     <td align="center">-</td>
     <td align="center">37.4</td>
@@ -947,6 +969,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">COCO2017</td>
     <td align="center">box AP</td>
     <td align="center">40.5</td>
+    <td align="center">40.3</td>
     <td align="center">-</td>
     <td align="center">40.3</td>
     <td align="center">40.3</td>
@@ -961,6 +984,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">COCO2017</td>
     <td align="center">box AP</td>
     <td align="center">37.4</td>
+    <td align="center">37.3</td>
     <td align="center">-</td>
     <td align="center">37.3</td>
     <td align="center">37.3</td>
@@ -976,6 +1000,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">box AP</td>
     <td align="center">39.4</td>
     <td align="center">-</td>
+    <td align="center">-</td>
     <td align="center">39.4</td>
     <td align="center">39.4</td>
     <td align="center">-</td>
@@ -990,6 +1015,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">box AP</td>
     <td align="center">40.4</td>
     <td align="center">-</td>
+    <td align="center">-</td>
     <td align="center">40.4</td>
     <td align="center">40.4</td>
     <td align="center">-</td>
@@ -1003,6 +1029,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center" rowspan="2">COCO2017</td>
     <td align="center">box AP</td>
     <td align="center">38.2</td>
+    <td align="center">38.1</td>
     <td align="center">-</td>
     <td align="center">38.1</td>
     <td align="center">38.1</td>
@@ -1013,6 +1040,7 @@ GPU: ncnn, TensorRT, PPLNN
   </tr>
   <tr>
     <td align="center">mask AP</td>
+    <td align="center">34.7</td>
     <td align="center">34.7</td>
     <td align="center">-</td>
     <td align="center">33.7</td>
@@ -1034,6 +1062,7 @@ GPU: ncnn, TensorRT, PPLNN
   <tr>
     <th align="center" colspan="4">MMEdit</th>
     <th align="center">Pytorch</th>
+    <th align="center">TorchScript</th>
     <th align="center">ONNX Runtime</th>
     <th align="center" colspan="3">TensorRT</th>
     <th align="center">PPLNN</th>
@@ -1041,12 +1070,12 @@ GPU: ncnn, TensorRT, PPLNN
   </tr>
 </thead>
 <tbody>
-
   <tr>
     <td align="center">Model</td>
     <td align="center">Task</td>
     <td align="center">Dataset</td>
     <td align="center">Metrics</td>
+    <td align="center">fp32</td>
     <td align="center">fp32</td>
     <td align="center">fp32</td>
     <td align="center">fp32</td>
@@ -1061,6 +1090,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center" rowspan="2">Set5</td>
     <td align="center">PSNR</td>
     <td align="center">28.4316</td>
+    <td align="center">28.4120</td>
     <td align="center">28.4323</td>
     <td align="center">28.4323</td>
     <td align="center">28.4286</td>
@@ -1071,6 +1101,7 @@ GPU: ncnn, TensorRT, PPLNN
   <tr>
     <td align="center">SSIM</td>
     <td align="center">0.8099</td>
+    <td align="center">0.8106</td>
     <td align="center">0.8097</td>
     <td align="center">0.8097</td>
     <td align="center">0.8096</td>
@@ -1083,6 +1114,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center" rowspan="2">Set5</td>
     <td align="center">PSNR</td>
     <td align="center">28.2700</td>
+    <td align="center">28.2619</td>
     <td align="center">28.2592</td>
     <td align="center">28.2592</td>
     <td align="center"> - </td>
@@ -1093,6 +1125,7 @@ GPU: ncnn, TensorRT, PPLNN
   <tr>
     <td align="center">SSIM</td>
     <td align="center">0.7778</td>
+    <td align="center">0.7784</td>
     <td align="center">0.7764</td>
     <td align="center">0.7774</td>
     <td align="center"> - </td>
@@ -1105,6 +1138,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center" rowspan="2">Set5</td>
     <td align="center">PSNR</td>
     <td align="center">30.6428</td>
+    <td align="center">30.6306</td>
     <td align="center">30.6444</td>
     <td align="center">30.6430</td>
     <td align="center"> - </td>
@@ -1113,8 +1147,9 @@ GPU: ncnn, TensorRT, PPLNN
     <td rowspan="2">$MMEDIT_DIR/configs/restorers/esrgan/esrgan_psnr_x4c64b23g32_g1_1000k_div2k.py</td>
   </tr>
   <tr>
-    <td align="center"></td>
+    <td align="center">SSIM</td>
     <td align="center">0.8559</td>
+    <td align="center">0.8565</td>
     <td align="center">0.8558</td>
     <td align="center">0.8558</td>
     <td align="center"> - </td>
@@ -1127,16 +1162,18 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center" rowspan="2">Set5</td>
     <td align="center">PSNR</td>
     <td align="center">27.9499</td>
+    <td align="center">27.9252</td>
     <td align="center">27.9408</td>
     <td align="center">27.9408</td>
     <td align="center"> - </td>
     <td align="center"> - </td>
     <td align="center">27.9388</td>
-    <td rowspan="2">$MMEDIT_DIR/configs/restorers/srresnet_srgan/srgan_x4c64b16_g1_1000k_div2k.pyy</td>
+    <td rowspan="2">$MMEDIT_DIR/configs/restorers/srresnet_srgan/srgan_x4c64b16_g1_1000k_div2k.py</td>
   </tr>
   <tr>
     <td align="center">SSIM</td>
     <td align="center">0.7846</td>
+    <td align="center">0.7851</td>
     <td align="center">0.7839</td>
     <td align="center">0.7839</td>
     <td align="center"> - </td>
@@ -1149,6 +1186,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center" rowspan="2">Set5</td>
     <td align="center">PSNR</td>
     <td align="center">30.2252</td>
+    <td align="center">30.2069</td>
     <td align="center">30.2300</td>
     <td align="center">30.2300</td>
     <td align="center"> - </td>
@@ -1157,8 +1195,9 @@ GPU: ncnn, TensorRT, PPLNN
     <td rowspan="2">$MMEDIT_DIR/configs/restorers/srresnet_srgan/msrresnet_x4c64b16_g1_1000k_div2k.py</td>
   </tr>
   <tr>
-    <td align="center"></td>
+    <td align="center">SSIM</td>
     <td align="center">0.8491</td>
+    <td align="center">0.8497</td>
     <td align="center">0.8488</td>
     <td align="center">0.8488</td>
     <td align="center"> - </td>
@@ -1171,6 +1210,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center" rowspan="2">Set5</td>
     <td align="center">PSNR</td>
     <td align="center">28.0297</td>
+    <td align="center">-</td>
     <td align="center">27.7016</td>
     <td align="center">27.7016</td>
     <td align="center"> - </td>
@@ -1181,6 +1221,7 @@ GPU: ncnn, TensorRT, PPLNN
   <tr>
     <td align="center">SSIM</td>
     <td align="center">0.8236</td>
+    <td align="center">-</td>
     <td align="center">0.8122</td>
     <td align="center">0.8122</td>
     <td align="center"> - </td>
@@ -1193,6 +1234,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center" rowspan="2">Set5</td>
     <td align="center">PSNR</td>
     <td align="center">30.2223</td>
+    <td align="center">30.2192</td>
     <td align="center">30.2214</td>
     <td align="center">30.2214</td>
     <td align="center">30.2211</td>
@@ -1203,6 +1245,7 @@ GPU: ncnn, TensorRT, PPLNN
   <tr>
     <td align="center">SSIM</td>
     <td align="center">0.8500</td>
+    <td align="center">0.8507</td>
     <td align="center">0.8497</td>
     <td align="center">0.8497</td>
     <td align="center">0.8497</td>
@@ -1222,6 +1265,7 @@ GPU: ncnn, TensorRT, PPLNN
   <tr>
     <th align="center" colspan="4">MMOCR</th>
     <th align="center">Pytorch</th>
+    <th align="center">TorchScript</th>
     <th align="center">ONNXRuntime</th>
     <th align="center" colspan="3">TensorRT</th>
     <th align="center">PPLNN</th>
@@ -1238,6 +1282,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">fp32</td>
     <td align="center">fp32</td>
     <td align="center">fp32</td>
+    <td align="center">fp32</td>
     <td align="center">fp16</td>
     <td align="center">int8</td>
     <td align="center">fp16</td>
@@ -1250,6 +1295,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center" rowspan="3">ICDAR2015</td>
     <td align="center">recall</td>
     <td align="center">0.7310</td>
+    <td align="center">0.7308</td>
     <td align="center">0.7304</td>
     <td align="center">0.7198</td>
     <td align="center">0.7179</td>
@@ -1262,6 +1308,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">precision</td>
     <td align="center">0.8714</td>
     <td align="center">0.8718</td>
+    <td align="center">0.8714</td>
     <td align="center">0.8677</td>
     <td align="center">0.8674</td>
     <td align="center">0.8688</td>
@@ -1272,6 +1319,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">hmean</td>
     <td align="center">0.7950</td>
     <td align="center">0.7949</td>
+    <td align="center">0.7950</td>
     <td align="center">0.7868</td>
     <td align="center">0.7856</td>
     <td align="center">0.7821</td>
@@ -1283,6 +1331,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">TextRecognition</td>
     <td align="center">IIIT5K</td>
     <td align="center">acc</td>
+    <td align="center">0.8067</td>
     <td align="center">0.8067</td>
     <td align="center">0.8067</td>
     <td align="center">0.8067</td>
@@ -1298,6 +1347,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">IIIT5K</td>
     <td align="center">acc</td>
     <td align="center">0.9517</td>
+    <td align="center">-</td>
     <td align="center">0.9287</td>
     <td align="center">-</td>
     <td align="center">-</td>
@@ -1319,6 +1369,7 @@ GPU: ncnn, TensorRT, PPLNN
   <tr>
     <th align="center" colspan="3">MMSeg</th>
     <th align="center">Pytorch</th>
+    <th align="center">TorchScript</th>
     <th align="center">ONNXRuntime</th>
     <th align="center" colspan="3">TensorRT</th>
     <th align="center">PPLNN</th>
@@ -1333,6 +1384,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">fp32</td>
     <td align="center">fp32</td>
     <td align="center">fp32</td>
+    <td align="center">fp32</td>
     <td align="center">fp16</td>
     <td align="center">int8</td>
     <td align="center">fp16</td>
@@ -1343,6 +1395,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">72.25</td>
+    <td align="center">72.36</td>
     <td align="center">-</td>
     <td align="center">72.36</td>
     <td align="center">72.35</td>
@@ -1355,6 +1408,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">78.55</td>
+    <td align="center">78.66</td>
     <td align="center">-</td>
     <td align="center">78.26</td>
     <td align="center">78.24</td>
@@ -1367,6 +1421,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">79.09</td>
+    <td align="center">79.12</td>
     <td align="center">-</td>
     <td align="center">79.12</td>
     <td align="center">79.12</td>
@@ -1379,6 +1434,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">79.61</td>
+    <td align="center">79.60</td>
     <td align="center">-</td>
     <td align="center">79.60</td>
     <td align="center">79.60</td>
@@ -1390,6 +1446,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">Fast-SCNN</td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
+    <td align="center">70.96</td>
     <td align="center">70.96</td>
     <td align="center">-</td>
     <td align="center">70.93</td>
@@ -1404,11 +1461,246 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">mIoU</td>
     <td align="center">69.10</td>
     <td align="center">-</td>
+    <td align="center">-</td>
     <td align="center">69.10</td>
     <td align="center">69.10</td>
     <td align="center">68.95</td>
     <td align="center">-</td>
     <td>$MMSEG_DIR/configs/unet/fcn_unet_s5-d16_4x4_512x1024_160k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">ANN</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">77.40</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">77.32</td>
+    <td align="center">77.32</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/ann/ann_r50-d8_512x1024_40k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">APCNet</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">77.40</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">77.32</td>
+    <td align="center">77.32</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/apcnet/apcnet_r50-d8_512x1024_40k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">BiSeNetV1</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">74.44</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">74.44</td>
+    <td align="center">74.43</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/bisenetv1/bisenetv1_r18-d32_4x4_1024x1024_160k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">BiSeNetV2</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">73.21</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">73.21</td>
+    <td align="center">73.21</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/bisenetv2/bisenetv2_fcn_4x4_1024x1024_160k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">CGNet</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">68.25</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">68.27</td>
+    <td align="center">68.27</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/cgnet/cgnet_512x1024_60k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">EMANet</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">77.59</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">77.59</td>
+    <td align="center">77.6</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/emanet/emanet_r50-d8_512x1024_80k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">EncNet</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">75.67</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">75.66</td>
+    <td align="center">75.66</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/encnet/encnet_r50-d8_512x1024_40k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">ERFNet</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">71.08</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">71.08</td>
+    <td align="center">71.07</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/erfnet/erfnet_fcn_4x4_512x1024_160k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">FastFCN</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">79.12</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">79.12</td>
+    <td align="center">79.12</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/fastfcn/fastfcn_r50-d32_jpu_aspp_512x1024_80k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">GCNet</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">77.69</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">77.69</td>
+    <td align="center">77.69</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/gcnet/gcnet_r50-d8_512x1024_40k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">ICNet</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">76.29</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">76.36</td>
+    <td align="center">76.36</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/icnet/icnet_r18-d8_832x832_80k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">ISANet</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">78.49</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">78.49</td>
+    <td align="center">78.49</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/isanet/isanet_r50-d8_512x1024_40k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">OCRNet</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">74.30</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">73.66</td>
+    <td align="center">73.67</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/ocrnet/ocrnet_hr18s_512x1024_40k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">PointRend</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">76.47</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">76.41</td>
+    <td align="center">76.42</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/point_rend/pointrend_r50_512x1024_80k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">Semantic FPN</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">74.52</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">74.52</td>
+    <td align="center">74.52</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/sem_fpn/fpn_r50_512x1024_80k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">STDC</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">75.10</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">75.10</td>
+    <td align="center">75.10</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/stdc/stdc1_in1k-pre_512x1024_80k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">STDC</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">77.17</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">77.17</td>
+    <td align="center">77.17</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/stdc/stdc2_in1k-pre_512x1024_80k_cityscapes.py</td>
+  </tr>
+  <tr>
+    <td align="center">UPerNet</td>
+    <td align="center">Cityscapes</td>
+    <td align="center">mIoU</td>
+    <td align="center">77.10</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">77.19</td>
+    <td align="center">77.18</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMSEG_DIR/configs/upernet/upernet_r50_512x1024_40k_cityscapes.py</td>
   </tr>
 </tbody>
 </table>
