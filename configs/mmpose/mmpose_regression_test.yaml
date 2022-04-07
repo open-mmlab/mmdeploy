@@ -1,0 +1,57 @@
+globals:
+  codebase_name: mmpose
+  codebase_dir: ../mmpose
+  checkpoint_force_download: False
+  checkpoint_dir: ../mmdeploy_checkpoints
+  images:
+    img_224x224: &img_224x224 ./tests/data/tiger.jpeg
+    img_300x300: &img_300x300
+    img_800x1344: &img_800x1344
+    img_blank: &img_blank
+  dataset_path:
+    Cityscapes:
+      image:
+      annotation:
+  metric_info: &metric_info
+    AP: # named after metafile.Results.Metrics
+      eval_name: AP # test.py --metrics args
+      metric_key: AP # eval OrderedDict key name
+      tolerance: 0.01
+    AR:
+      eval_name: AR # test.py --metrics args
+      metric_key: AR # eval OrderedDict key name
+      tolerance: 0.01
+  convert_image: &convert_image
+    input_img: *img_224x224
+    test_img: *img_300x300
+  backend_test: &default_backend_test True
+  sdk:
+    sdk_static_fp32: &sdk_static_fp32 configs/mmpose/pose-detection_sdk_static.py
+
+onnxruntime:
+  pipeline_ort_static_fp32: &pipeline_ort_static_fp32
+    convert_image: *convert_image
+    deploy_config: configs/mmpose/pose-detection_onnxruntime_static.py
+
+tensorrt:
+  pipeline_trt_static_fp16: &pipeline_trt_static_fp16
+    convert_image: *convert_image
+    backend_test: *default_backend_test
+    sdk_config: *sdk_static_fp32
+    deploy_config: configs/mmpose/pose-detection_tensorrt-fp16_static-256x192.py
+
+openvino:
+ncnn:
+pplnn:
+torchscript:
+
+
+models:
+  - name: hrnet
+    codebase_model_config_dir: ./configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco
+    metafile: configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/hrnet_coco.yml
+    model_configs:
+      - hrnet_w48_coco_256x192.py
+    pipelines:
+      - *pipeline_ort_static_fp32
+      - *pipeline_trt_static_fp16

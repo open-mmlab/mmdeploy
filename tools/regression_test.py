@@ -23,7 +23,8 @@ def parse_args():
         default=[
             './configs/mmdet/mmdet_regression_test.yaml',
             './configs/mmcls/mmcls_regression_test.yaml',
-            './configs/mmseg/mmseg_regression_test.yaml'
+            './configs/mmseg/mmseg_regression_test.yaml',
+            './configs/mmpose/mmpose_regression_test.yaml'
         ])
     parser.add_argument(
         '--test-type',
@@ -297,6 +298,12 @@ def get_info_from_log_file(info_type, log_path, metric_info=None):
         if metric_info in ['accuracy_top-1', 'mIoU']:
             # info in last second line
             metric_line = lines[line_index - 1]
+        elif metric_info == 'AP':
+            # info in last second line
+            metric_line = lines[line_index - 10]
+        elif metric_info == 'AR':
+            # info in last second line
+            metric_line = lines[line_index - 5]
         else:
             # info in final line
             metric_line = lines[line_index]
@@ -321,6 +328,8 @@ def get_info_from_log_file(info_type, log_path, metric_info=None):
             metric = eval(metric_str.strip().split('|')[2])
             if metric <= 1:
                 metric *= 100
+        elif metric_info in ['AP', 'AR']:
+            metric = eval(metric_str.split(': ')[-1])
         else:
             metric = 'x'
         info_value = metric
@@ -401,11 +410,16 @@ def get_fps_metric(shell_res, pytorch_metric, metric_key, metric_name,
                                  pytorch_metric, metric_info)
 
     # same eval_name and multi metric output in one test
-    second_get_metric = False
     if metric_name == 'Top 1 Accuracy':
         # mmcls
         metric_name = 'Top 5 Accuracy'
         second_get_metric = True
+    elif metric_name == 'AP':
+        # mmcls
+        metric_name = 'AR'
+        second_get_metric = True
+    else:
+        second_get_metric = False
 
     if second_get_metric:
         metric_key = metric_info.get(metric_name).get('metric_key')
