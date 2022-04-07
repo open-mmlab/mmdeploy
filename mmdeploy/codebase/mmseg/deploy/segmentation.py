@@ -236,7 +236,8 @@ class Segmentation(BaseTask):
         if format_only:
             dataset.format_results(outputs, **kwargs)
         if metrics:
-            result = dataset.evaluate(outputs, metrics, logger=logger, **kwargs)
+            result = dataset.evaluate(outputs, metrics,
+                                      logger=logger, **kwargs)
             return result
 
     def get_preprocess(self) -> Dict:
