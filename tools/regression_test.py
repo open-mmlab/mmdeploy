@@ -683,8 +683,8 @@ def main():
         'onnxruntime': 'end2end.onnx',
         'tensorrt': 'end2end.engine',
         'openvino': 'end2end.xml',
-        'ncnn': 'end2end.bin',
-        'pplnn': 'end2end.json',
+        'ncnn': ['end2end.param', 'end2end.bin'],
+        'pplnn': ['end2end.onnx', 'end2end.json'],
         'torchscript': 'end2end.pt'
     }
 
