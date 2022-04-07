@@ -539,7 +539,7 @@ def get_backend_result(pipeline_info, model_cfg_path,
     # get sdk_cfg info
     sdk_config = pipeline_info.get('sdk_config', None)
     if sdk_config is not None:
-        sdk_config = Path(sdk_config).absolute().resolve()
+        sdk_config = Path(sdk_config)
 
     if backend_test is False and sdk_config is None:
         test_type = 'convert'
@@ -549,8 +549,7 @@ def get_backend_result(pipeline_info, model_cfg_path,
     metric_all_list = [str(metric) for metric in metric_info]
     metric_useless = set(metric_all_list) - set(metric_name_list)
 
-    deploy_cfg_path = \
-        Path(pipeline_info.get('deploy_config')).absolute().resolve()
+    deploy_cfg_path =  Path(pipeline_info.get('deploy_config'))
     backend_name = str(get_backend(str(deploy_cfg_path)).name).lower()
     infer_type = \
         'dynamic' if is_dynamic_shape(str(deploy_cfg_path)) else 'static'
