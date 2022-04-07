@@ -1,0 +1,61 @@
+globals:
+  codebase_name: mmseg
+  codebase_dir: ../mmsegmentation
+  checkpoint_force_download: False
+  checkpoint_dir: ../mmdeploy_checkpoints
+  images:
+    img_cityscapes_224x224: &img_cityscapes_224x224 ./tests/data/tiger.jpeg
+    img_cityscapes_300x300: &img_cityscapes_300x300
+    img_cityscapes_800x1344: &img_cityscapes_800x1344
+    img_blank: &img_blank
+  dataset_path:
+    Cityscapes:
+      image:
+      annotation:
+  metric_info: &metric_info
+    mIoU: # named after metafile.Results.Metrics
+      eval_name: accuracy # test.py --metrics args
+      metric_key: accuracy_top-1 # eval OrderedDict key name
+      tolerance: 0.5
+    mIoU(ms+flip):
+      eval_name: accuracy
+      metric_key: accuracy_top-5
+      tolerance: 0.5
+  convert_image: &convert_image
+    input_img: *img_cityscapes_224x224
+    test_img: *img_cityscapes_300x300
+  backend_test: &default_backend_test True
+  sdk:
+    sdk_dynamic_fp32: &sdk_dynamic_fp32 configs/mmseg/segmentation_sdk_dynamic.py
+
+onnxruntime:
+  pipeline_ort_static_fp32: &pipeline_ort_static_fp32
+    convert_image: *convert_image
+    deploy_config: configs/mmseg/segmentation_onnxruntime_static-512x512.py
+
+  pipeline_ort_dynamic_fp32: &pipeline_ort_dynamic_fp32
+    convert_image: *convert_image
+    deploy_config: configs/mmseg/segmentation_onnxruntime_dynamic.py
+
+tensorrt:
+  pipeline_trt_dynamic_fp16: &pipeline_trt_dynamic_fp16
+    convert_image: *convert_image
+    backend_test: *default_backend_test
+    sdk_config: *sdk_dynamic_fp32
+    deploy_config: configs/mmseg/segmentation_tensorrt-fp16_dynamic-512x1024-2048x2048.py
+
+openvino:
+ncnn:
+pplnn:
+torchscript:
+
+
+models:
+  - name: deeplabv3plus
+    codebase_model_config_dir: ./configs/deeplabv3plus
+    metafile: configs/deeplabv3plus/deeplabv3plus.yml
+    model_configs:
+      - deeplabv3plus_r18-d8_4x4_896x896_80k_isaid.py
+    pipelines:
+      - *pipeline_ort_dynamic_fp32
+      - *pipeline_trt_dynamic_fp16
