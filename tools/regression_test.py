@@ -403,14 +403,11 @@ def get_backend_fps_metric(deploy_cfg_path,
                            infer_type,
                            log_path
                            ):
-    result_path = Path(convert_checkpoint_path).with_suffix('.pkl').absolute()
-
     cmd_str = f'cd {str(Path().cwd())} && ' \
               'python3 tools/test.py ' \
               f'{deploy_cfg_path} ' \
               f'{str(model_cfg_path.absolute())} ' \
               f'--model {str(convert_checkpoint_path)} ' \
-              f'--out {str(result_path)} ' \
               f'--metrics {eval_name} ' \
               f'--device {device_type} ' \
               f'--log2file {log_path} ' \
