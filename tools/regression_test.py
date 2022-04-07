@@ -527,7 +527,7 @@ def get_backend_result(pipeline_info, model_cfg_path,
     if sdk_config is not None:
         cmd_str += ' --dump-info'
 
-    if infer_type == 'dynamic' and test_img_path is not None:
+    if test_img_path is not None:
         cmd_str += f' --test-img {test_img_path}'
 
     logger.info(f'Process cmd = {cmd_str}')
