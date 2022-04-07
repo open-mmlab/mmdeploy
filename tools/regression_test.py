@@ -563,7 +563,6 @@ def get_backend_result(pipeline_info, model_cfg_path,
                  backend_name,
                  infer_type,
                  Path(checkpoint_path).stem)
-    backend_output_path = backend_output_path.absolute().resolve()
     backend_output_path.mkdir(parents=True, exist_ok=True)
 
     # convert cmd string
