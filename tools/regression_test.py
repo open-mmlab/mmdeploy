@@ -682,12 +682,10 @@ def main():
     backend_file_info = {
         'onnxruntime': 'end2end.onnx',
         'tensorrt': 'end2end.engine',
-        'torchscript': 'end2end.pt',
-
-        # unknown
-        'openvino': '',
-        'ncnn': '',
-        'pplnn': '',
+        'openvino': 'end2end.xml',
+        'ncnn': 'end2end.bin',
+        'pplnn': 'end2end.json',
+        'torchscript': 'end2end.pt'
     }
 
     backend_list = args.backends
