@@ -13,9 +13,9 @@ globals:
       image:
       annotation:
   metric_info: &metric_info
-    box AP:                 # named after metafile.Metric
-      eval_name: bbox       # test.py --metrics args
-      metric_key: bbox_mAP  # eval OrderedDict key name
+    box AP: # named after metafile.Metric
+      eval_name: bbox # test.py --metrics args
+      metric_key: bbox_mAP # eval OrderedDict key name
       tolerance: 0.1
     mask AP:
       eval_name: segm

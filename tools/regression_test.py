@@ -20,7 +20,7 @@ def parse_args():
         '--deploy-yml',
         nargs='+',
         help='regression test yaml path.',
-        default=['./configs/mmdet/mmdet_regression_test.yaml'])
+        default=['./configs/mmcls/mmcls_regression_test.yaml'])
     parser.add_argument(
         '--test-type',
         type=str,
