@@ -123,20 +123,10 @@ def get_model_metafile_info(global_info, model_info, logger):
 
 
 def update_report(
-        report_dict,
-        model_name,
-        model_config,
-        model_checkpoint_name,
-        dataset,
-        backend_name,
-        deploy_config,
-        static_or_dynamic,
-        precision_type,
-        conversion_result,
-        fps,
-        metric_info,
-        test_pass,
-):
+        report_dict, model_name, model_config,
+        model_checkpoint_name, dataset, backend_name,
+        deploy_config, static_or_dynamic, precision_type,
+        conversion_result, fps, metric_info, test_pass):
     """Update report information.
 
     Args:
@@ -436,28 +426,16 @@ def get_fps_metric(shell_res, pytorch_metric, metric_key, metric_name,
     return fps, metric_list, test_pass
 
 
-def get_backend_fps_metric(deploy_cfg_path,
-                           model_cfg_path,
-                           convert_checkpoint_path,
-                           device_type,
-                           eval_name,
-                           logger,
-                           metrics_eval_list,
-                           pytorch_metric,
-                           metric_info,
-                           backend_name,
-                           precision_type,
-                           metric_useless,
-                           convert_result,
-                           report_dict,
-                           infer_type,
-                           log_path
-                           ):
+def get_backend_fps_metric(
+        deploy_cfg_path, model_cfg_path, convert_checkpoint_path, device_type,
+        eval_name, logger, metrics_eval_list, pytorch_metric, metric_info,
+        backend_name, precision_type, metric_useless, convert_result,
+        report_dict, infer_type, log_path):
     cmd_str = f'cd {str(Path().cwd())} && ' \
               'python3 tools/test.py ' \
               f'{deploy_cfg_path} ' \
               f'{str(model_cfg_path.absolute())} ' \
-              f'--model {str(convert_checkpoint_path)} ' \
+              f'--model {convert_checkpoint_path} ' \
               f'--metrics {eval_name} ' \
               f'--device {device_type} ' \
               f'--log2file {log_path} ' \
@@ -493,7 +471,7 @@ def get_backend_fps_metric(deploy_cfg_path,
         report_dict=report_dict,
         model_name=model_cfg_path.parent.name,
         model_config=str(model_cfg_path),
-        model_checkpoint_name=str(convert_checkpoint_path),
+        model_checkpoint_name=convert_checkpoint_path,
         dataset='',
         backend_name=backend_name,
         deploy_config=str(deploy_cfg_path),
@@ -535,7 +513,7 @@ def get_backend_result(pipeline_info, model_cfg_path,
         test_type (sgr): Test type. 'precision' or 'convert'.
         logger (logging.Logger): Logger.
         log_path (Path): Path for logger file.
-        backend_file_name (str): backend file save name.
+        backend_file_name (str | list): backend file save name.
     """
     # get backend_test info
     backend_test = pipeline_info.get('backend_test', False)
@@ -563,7 +541,7 @@ def get_backend_result(pipeline_info, model_cfg_path,
     metric_all_list = [str(metric) for metric in metric_info]
     metric_useless = set(metric_all_list) - set(metric_name_list)
 
-    deploy_cfg_path =  Path(pipeline_info.get('deploy_config'))
+    deploy_cfg_path = Path(pipeline_info.get('deploy_config'))
     backend_name = str(get_backend(str(deploy_cfg_path)).name).lower()
     infer_type = \
         'dynamic' if is_dynamic_shape(str(deploy_cfg_path)) else 'static'
@@ -608,7 +586,12 @@ def get_backend_result(pipeline_info, model_cfg_path,
         convert_result = False
     print(f'Got convert_result = {convert_result}')
 
-    convert_checkpoint_path = backend_output_path.joinpath(backend_file_name)
+    if isinstance(backend_file_name, list):
+        convert_checkpoint_path = ''
+        for backend_file in backend_file_name:
+            convert_checkpoint_path += f' {str(backend_output_path.joinpath(backend_file))}'
+    else:
+        convert_checkpoint_path = str(backend_output_path.joinpath(backend_file_name))
 
     # Test the model
     if convert_result and test_type == 'precision':
