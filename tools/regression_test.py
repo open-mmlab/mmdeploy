@@ -20,8 +20,11 @@ def parse_args():
         '--deploy-yml',
         nargs='+',
         help='regression test yaml path.',
-        default=['./configs/mmdet/mmdet_regression_test.yaml',
-                 './configs/mmcls/mmcls_regression_test.yaml'])
+        default=[
+            './configs/mmdet/mmdet_regression_test.yaml',
+            './configs/mmcls/mmcls_regression_test.yaml',
+            './configs/mmseg/mmseg_regression_test.yaml'
+        ])
     parser.add_argument(
         '--test-type',
         type=str,
@@ -197,8 +200,17 @@ def get_pytorch_result(model_name, meta_info, checkpoint_path,
     metric_list = []
     pytorch_metric = dict()
     for metric in metric_info:
-        metric_list.append(metric.get('Metrics'))
-        pytorch_metric.update(metric.get('Metrics'))
+        pytorch_meta_metric = metric.get('Metrics')
+        use_metric = dict()
+
+        # remove some metric which not in metric_info from test yaml
+        for k, v in pytorch_meta_metric.items():
+            if k not in metric_name_info:
+                continue
+            use_metric.update({k: v})
+
+        metric_list.append(use_metric)
+        pytorch_metric.update(use_metric)
 
     # update useless metric
     metric_all_list = [str(metric) for metric in metric_name_info]
@@ -263,20 +275,30 @@ def get_info_from_log_file(info_type, log_path, metric_info=None):
     if info_type == 'FPS' and len(lines) > 1:
         line_count = 0
         fps_sum = 0.00
-        for line in lines[-6:-1]:
+        if metric_info == 'mIoU':
+            fps_lines = lines[:10]
+        else:
+            fps_lines = lines[-8:-1]
+
+        for line in fps_lines:
             if 'FPS' not in line:
                 continue
             line_count += 1
             fps_sum += float(line.split(' ')[-2])
         info_value = f'{fps_sum / line_count:.2f}'
+
     elif info_type == 'metric' and len(lines) > 1:
+        # To calculate the final line index
         if lines[-1] != '' and lines[-1] != '\n':
             line_index = -1
         else:
             line_index = -2
-        if metric_info == 'accuracy_top-1':
+
+        if metric_info in ['accuracy_top-1', 'mIoU']:
+            # info in last second line
             metric_line = lines[line_index - 1]
         else:
+            # info in final line
             metric_line = lines[line_index]
         print(f'Got metric_line = {metric_line}')
 
@@ -293,6 +315,10 @@ def get_info_from_log_file(info_type, log_path, metric_info=None):
             metric = evaluate_result.get(metric_info, 0.00) * 100
         elif 'accuracy_top' in metric_str:
             metric = eval(metric_str.split(': ')[-1])
+            if metric <= 1:
+                metric *= 100
+        elif metric_info == 'mIoU' and '|' in metric_str:
+            metric = eval(metric_str.strip().split('|')[2])
             if metric <= 1:
                 metric *= 100
         else:
@@ -356,7 +382,8 @@ def get_fps_metric(shell_res, pytorch_metric, metric_key, metric_name,
         metric_value = 'x'
     else:
         # Got fps from log file
-        fps = get_info_from_log_file('FPS', log_path)
+        fps = get_info_from_log_file('FPS', log_path,
+                                     metric_key)
         print(f'Got fps = {fps}')
 
         # Got metric from log file
@@ -374,13 +401,19 @@ def get_fps_metric(shell_res, pytorch_metric, metric_key, metric_name,
                                  pytorch_metric, metric_info)
 
     # same eval_name and multi metric output in one test
+    second_get_metric = False
     if metric_name == 'Top 1 Accuracy':
+        # mmcls
         metric_name = 'Top 5 Accuracy'
+        second_get_metric = True
+
+    if second_get_metric:
+        metric_key = metric_info.get(metric_name).get('metric_key')
         if shell_res != 0:
             metric_value = 'x'
         else:
             metric_value = get_info_from_log_file('metric', log_path,
-                                                  'accuracy_top-5')
+                                                  metric_key)
         metric_list.append({metric_name: metric_value})
         if test_pass:
             test_pass = calculate_metric(metric_value, metric_name,

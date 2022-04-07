@@ -14,13 +14,9 @@ globals:
       annotation:
   metric_info: &metric_info
     mIoU: # named after metafile.Results.Metrics
-      eval_name: accuracy # test.py --metrics args
-      metric_key: accuracy_top-1 # eval OrderedDict key name
-      tolerance: 0.5
-    mIoU(ms+flip):
-      eval_name: accuracy
-      metric_key: accuracy_top-5
-      tolerance: 0.5
+      eval_name: mIoU # test.py --metrics args
+      metric_key: mIoU # eval OrderedDict key name
+      tolerance: 0.1
   convert_image: &convert_image
     input_img: *img_cityscapes_224x224
     test_img: *img_cityscapes_300x300
@@ -51,11 +47,11 @@ torchscript:
 
 
 models:
-  - name: deeplabv3plus
-    codebase_model_config_dir: ./configs/deeplabv3plus
-    metafile: configs/deeplabv3plus/deeplabv3plus.yml
+  - name: deeplabv3
+    codebase_model_config_dir: ./configs/deeplabv3
+    metafile: configs/deeplabv3/deeplabv3.yml
     model_configs:
-      - deeplabv3plus_r18-d8_4x4_896x896_80k_isaid.py
+      - deeplabv3_r18-d8_512x1024_80k_cityscapes.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
