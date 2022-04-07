@@ -13,7 +13,7 @@ globals:
       image:
       annotation:
   metric_info: &metric_info
-    box AP: # named after metafile.Metric
+    box AP: # named after metafile.Results.Metrics
       eval_name: bbox # test.py --metrics args
       metric_key: bbox_mAP # eval OrderedDict key name
       tolerance: 0.1
