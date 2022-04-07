@@ -73,10 +73,12 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
                 output_names=output_names)
         elif backend == Backend.NCNN:
             from mmdeploy.backend.ncnn import NCNNWrapper
+            use_vulkan = deploy_cfg['backend_config']['use_vulkan']
             return NCNNWrapper(
                 param_file=backend_files[0],
                 bin_file=backend_files[1],
-                output_names=output_names)
+                output_names=output_names,
+                use_vulkan=use_vulkan)
         elif backend == Backend.OPENVINO:
             from mmdeploy.backend.openvino import OpenVINOWrapper
             return OpenVINOWrapper(
