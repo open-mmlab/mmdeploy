@@ -20,7 +20,8 @@ def parse_args():
         '--deploy-yml',
         nargs='+',
         help='regression test yaml path.',
-        default=['./configs/mmdet/mmdet_regression_test.yaml'])
+        default=['./configs/mmdet/mmdet_regression_test.yaml',
+                 './configs/mmcls/mmcls_regression_test.yaml'])
     parser.add_argument(
         '--test-type',
         type=str,
@@ -236,7 +237,17 @@ def get_pytorch_result(model_name, meta_info, checkpoint_path,
 
 
 def get_info_from_log_file(info_type, log_path, metric_info=None):
-    # get fps from log file
+    """Get fps and metric result from log file.
+
+    Args:
+        info_type (str): Get which type of info: 'FPS' or 'metric'
+        log_path (str): Logger path.
+        metric_info (str): Name of metric.
+
+    Returns:
+        Float: Info value which get from logger file
+    """
+
     if log_path.exists():
         with open(log_path, 'r') as f_log:
             lines = f_log.readlines()
@@ -254,18 +265,33 @@ def get_info_from_log_file(info_type, log_path, metric_info=None):
             fps_sum += float(line.split(' ')[-2])
         info_value = f'{fps_sum / line_count:.2f}'
     elif info_type == 'metric' and len(lines) > 1:
-        metric_line = lines[-1]
-        metric_dict_str = \
-            metric_line.replace('\n', '').replace('\r', '').split(' - ')[-1]
-        print(f'Got metric_dict = {metric_dict_str}')
+        if lines[-1] != '' and lines[-1] != '\n':
+            line_index = -1
+        else:
+            line_index = -2
+        if metric_info == 'accuracy_top-1':
+            metric_line = lines[line_index-1]
+        else:
+            metric_line = lines[line_index]
+        print(f'Got metric_line = {metric_line}')
 
-        evaluate_result = eval(metric_dict_str)
-        if not isinstance(evaluate_result, OrderedDict):
-            print(f'Got error metric_dict = {metric_dict_str}')
-            return '-'
-        print(f'Got metric_eval_name = {metric_info}')
-        metric = evaluate_result.get(metric_info, 0.00) * 100
-        print(f'Got metric = {metric}')
+        metric_str = \
+            metric_line.replace('\n', '').replace('\r', '').split(' - ')[-1]
+        print(f'Got metric_str = {metric_str}')
+        print(f'Got metric_info = {metric_info}')
+
+        if 'OrderedDict' in metric_str:
+            evaluate_result = eval(metric_str)
+            if not isinstance(evaluate_result, OrderedDict):
+                print(f'Got error metric_dict = {metric_str}')
+                return '-'
+            metric = evaluate_result.get(metric_info, 0.00) * 100
+        elif 'accuracy_top' in metric_str:
+            metric = eval(metric_str.split(': ')[-1])
+            if metric <= 1:
+                metric *= 100
+        else:
+            metric = '-'
         info_value = metric
     else:
         info_value = '-'
@@ -273,52 +299,50 @@ def get_info_from_log_file(info_type, log_path, metric_info=None):
     return info_value
 
 
-def get_backend_fps_metric(deploy_cfg_path,
-                           model_cfg_path,
-                           convert_checkpoint_path,
-                           device_type,
-                           metric_name,
-                           logger,
-                           metrics_eval_list,
-                           pytorch_metric,
-                           metric_info,
-                           backend_name,
-                           metric_useless,
-                           convert_result,
-                           report_dict,
-                           infer_type,
-                           log_path
-                           ):
+def calculate_metric(metric_value, metric_name, pytorch_metric, metric_info):
+    """Calculate metric value, see if the test is passed.
+
+    Args:
+        metric_value (float): Metric value
+        metric_name (str): Logger path.
+        pytorch_metric (dict): Pytorch metric which get from metafile.
+        metric_info (dict): Metric info.
+
+    Returns:
+        Bool: If the test pass or not.
+    """
+    if metric_value == '-':
+        return False
+
+    metric_pytorch = pytorch_metric.get(str(metric_name))
+    tolerance_value = metric_info.get(metric_name, {}).get('tolerance', 0.00)
+    if (metric_value - tolerance_value) <= metric_pytorch <= \
+            (metric_value + tolerance_value):
+        test_pass = True
+    else:
+        test_pass = False
+    return test_pass
+
+
+def get_fps_metric(shell_res, pytorch_metric, metric_key, metric_name,
+                   log_path, metrics_eval_list, metric_info):
+    """Get fps and metric.
+
+    Args:
+        shell_res (int): Backend convert result: 0 is success
+        pytorch_metric (dict): Metric info of pytorch metafile
+        metric_key (str):Metric info.
+        metric_name (str): Name of metric.
+        log_path (str): Logger path.
+        metrics_eval_list (dict): Metric list from test yaml.
+        metric_info (dict): Metric info.
+
+    Returns:
+        Float: fps: FPS of the model
+        List: metric_list: metric result list
+        Bool: test_pass: If the test pass or not.
+    """
     metric_list = []
-
-    result_path = Path(convert_checkpoint_path).with_suffix('.pkl').absolute()
-
-    cmd_str = f'cd {str(Path().cwd())} && ' \
-              'python3 tools/test.py ' \
-              f'{deploy_cfg_path} ' \
-              f'{str(model_cfg_path.absolute())} ' \
-              f'--model {str(convert_checkpoint_path)} ' \
-              f'--out {str(result_path)} ' \
-              f'--metrics {metric_name} ' \
-              f'--device {device_type} ' \
-              f'--log2file {log_path} ' \
-              f'--speed-test'
-
-    logger.info(f'Process cmd = {cmd_str}')
-
-    # Test backend
-    shell_res = os.system(cmd_str)
-    print(f'Got shell_res = {shell_res}')
-
-    metric_eval_name = ''
-    for metric_key, metric_value in metric_info.items():
-        if metric_value.get('eval_name', '') == metric_name:
-            metric_name = metric_key
-            metric_eval_name = metric_value.get('metric_key', '')
-            break
-
-    logger.info(f'Got metric_name = {metric_name}')
-    logger.info(f'Got metric_eval_name = {metric_eval_name}')
 
     # check if converted successes or not.
     if shell_res != 0:
@@ -331,24 +355,81 @@ def get_backend_fps_metric(deploy_cfg_path,
 
         # Got metric from log file
         metric_value = get_info_from_log_file('metric', log_path,
-                                              metric_eval_name)
+                                              metric_key)
         print(f'Got metric = {metric_value}')
 
     if metric_name is None:
         logger.error(f'metrics_eval_list: {metrics_eval_list} '
-                     'has not info name')
+                     'has not metric name')
     assert metric_name is not None
 
     metric_list.append({metric_name: metric_value})
-    metric_pytorch = pytorch_metric.get(str(metric_name))
-    metric_tolerance_value = \
-        metric_info.get(metric_name, {}).get('tolerance', 0.00)
-    if (metric_value - metric_tolerance_value) <= \
-            metric_pytorch <= \
-            (metric_value + metric_tolerance_value):
-        test_pass = True
-    else:
-        test_pass = False
+    test_pass = calculate_metric(metric_value, metric_name,
+                                 pytorch_metric, metric_info)
+
+    # same eval_name and multi metric output in one test
+    if metric_name == 'Top 1 Accuracy':
+        metric_name = 'Top 5 Accuracy'
+        metric_value = get_info_from_log_file('metric', log_path,
+                                              'accuracy_top-5')
+        metric_list.append({metric_name: metric_value})
+        if test_pass:
+            test_pass = calculate_metric(metric_value, metric_name,
+                                         pytorch_metric, metric_info)
+
+    return fps, metric_list, test_pass
+
+
+def get_backend_fps_metric(deploy_cfg_path,
+                           model_cfg_path,
+                           convert_checkpoint_path,
+                           device_type,
+                           eval_name,
+                           logger,
+                           metrics_eval_list,
+                           pytorch_metric,
+                           metric_info,
+                           backend_name,
+                           metric_useless,
+                           convert_result,
+                           report_dict,
+                           infer_type,
+                           log_path
+                           ):
+
+    result_path = Path(convert_checkpoint_path).with_suffix('.pkl').absolute()
+
+    cmd_str = f'cd {str(Path().cwd())} && ' \
+              'python3 tools/test.py ' \
+              f'{deploy_cfg_path} ' \
+              f'{str(model_cfg_path.absolute())} ' \
+              f'--model {str(convert_checkpoint_path)} ' \
+              f'--out {str(result_path)} ' \
+              f'--metrics {eval_name} ' \
+              f'--device {device_type} ' \
+              f'--log2file {log_path} ' \
+              f'--speed-test'
+
+    logger.info(f'Process cmd = {cmd_str}')
+
+    # Test backend
+    shell_res = os.system(cmd_str)
+    print(f'Got shell_res = {shell_res}')
+
+    metric_key = ''
+    metric_name = ''
+    for key, value in metric_info.items():
+        if value.get('eval_name', '') == eval_name:
+            metric_name = key
+            metric_key = value.get('metric_key', '')
+            break
+
+    logger.info(f'Got metric_name = {metric_name}')
+    logger.info(f'Got metric_key = {metric_key}')
+
+    fps, metric_list, test_pass = \
+        get_fps_metric(shell_res, pytorch_metric, metric_key, metric_name,
+                       log_path, metrics_eval_list, metric_info)
 
     # update useless metric
     for metric in metric_useless:
@@ -488,7 +569,7 @@ def get_backend_result(pipeline_info, model_cfg_path,
                     model_cfg_path=model_cfg_path,
                     convert_checkpoint_path=convert_checkpoint_path,
                     device_type=device_type,
-                    metric_name=metric_name,
+                    eval_name=metric_name,
                     logger=logger,
                     metrics_eval_list=metrics_eval_list,
                     pytorch_metric=pytorch_metric,
@@ -507,7 +588,7 @@ def get_backend_result(pipeline_info, model_cfg_path,
                     model_cfg_path=model_cfg_path,
                     convert_checkpoint_path=str(backend_output_path),
                     device_type=device_type,
-                    metric_name=metric_name,
+                    eval_name=metric_name,
                     logger=logger,
                     metrics_eval_list=metrics_eval_list,
                     pytorch_metric=pytorch_metric,
@@ -558,9 +639,11 @@ def save_report(report_info, report_save_path, logger):
     """
     logger.info(f'Save regression test report '
                 f'to {report_save_path}, pls wait...')
-
-    df = pd.DataFrame(report_info)
-    df.to_excel(report_save_path)
+    try:
+        df = pd.DataFrame(report_info)
+        df.to_excel(report_save_path)
+    except ValueError:
+        logger.info(f'Got error report_info = {report_info}')
 
     logger.info(f'Saved regression test report to {report_save_path}.')
 
