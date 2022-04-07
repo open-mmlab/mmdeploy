@@ -4,7 +4,7 @@ globals:
   checkpoint_force_download: False
   checkpoint_dir: ../mmdeploy_checkpoints
   images:
-    img_coco_320x320: &img_coco_320x320 ./tests/data/tiger.jpeg
+    img_coco_224x224: &img_coco_224x224 ./tests/data/tiger.jpeg
     img_coco_300x300: &img_coco_300x300
     img_coco_800x1344: &img_coco_800x1344
     img_blank: &img_blank
@@ -22,7 +22,7 @@ globals:
       metric_key: accuracy_top-5
       tolerance: 0.5
   convert_image: &convert_image
-    input_img: *img_coco_320x320
+    input_img: *img_coco_224x224
     test_img: *img_coco_300x300
   backend_test: &default_backend_test True
   sdk:
