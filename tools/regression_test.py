@@ -589,9 +589,11 @@ def get_backend_result(pipeline_info, model_cfg_path,
     if isinstance(backend_file_name, list):
         convert_checkpoint_path = ''
         for backend_file in backend_file_name:
-            convert_checkpoint_path += f' {str(backend_output_path.joinpath(backend_file))}'
+            backend_path = backend_output_path.joinpath(backend_file)
+            convert_checkpoint_path += f' {str(backend_path)}'
     else:
-        convert_checkpoint_path = str(backend_output_path.joinpath(backend_file_name))
+        convert_checkpoint_path = \
+            str(backend_output_path.joinpath(backend_file_name))
 
     # Test the model
     if convert_result and test_type == 'precision':
@@ -799,8 +801,8 @@ def main():
                     model_cfg_path, metric_info, report_dict, logger)
 
                 for pipeline in pipelines_info:
-                    backend_name = \
-                        get_backend(pipeline.get('deploy_config')).name.lower()
+                    deploy_config = pipeline.get('deploy_config')
+                    backend_name = get_backend(deploy_config).name.lower()
                     if backend_name not in backend_list:
                         continue
 
