@@ -127,6 +127,7 @@ def update_report(
         backend_name,
         deploy_config,
         static_or_dynamic,
+        precision_type,
         conversion_result,
         fps,
         metric_info,
@@ -143,6 +144,7 @@ def update_report(
         backend_name (str): Backend name.
         deploy_config (str): Deploy config name.
         static_or_dynamic (str): Static or dynamic.
+        precision_type (str): Precision type of the model.
         conversion_result (str): Conversion result: Successful or Fail.
         fps (str): Inference speed (ms/im).
         metric_info (list): Metric info list of the ${modelName}.yml.
@@ -155,6 +157,7 @@ def update_report(
     report_dict.get('backend_name').append(backend_name)
     report_dict.get('deploy_config').append(deploy_config)
     report_dict.get('static_or_dynamic').append(static_or_dynamic)
+    report_dict.get('precision_type').append(precision_type)
     report_dict.get('conversion_result').append(conversion_result)
     report_dict.get('fps').append(fps)
 
@@ -227,6 +230,7 @@ def get_pytorch_result(model_name, meta_info, checkpoint_path,
         backend_name='Pytorch',
         deploy_config='-',
         static_or_dynamic='-',
+        precision_type='-',
         conversion_result='-',
         fps=fps,
         metric_info=metric_list,
@@ -247,6 +251,7 @@ def get_info_from_log_file(info_type, log_path, metric_info=None):
     Returns:
         Float: Info value which get from logger file
     """
+    log_path = Path(log_path)
 
     if log_path.exists():
         with open(log_path, 'r') as f_log:
@@ -270,7 +275,7 @@ def get_info_from_log_file(info_type, log_path, metric_info=None):
         else:
             line_index = -2
         if metric_info == 'accuracy_top-1':
-            metric_line = lines[line_index-1]
+            metric_line = lines[line_index - 1]
         else:
             metric_line = lines[line_index]
         print(f'Got metric_line = {metric_line}')
@@ -325,7 +330,7 @@ def calculate_metric(metric_value, metric_name, pytorch_metric, metric_info):
 
 
 def get_fps_metric(shell_res, pytorch_metric, metric_key, metric_name,
-                   log_path, metrics_eval_list, metric_info):
+                   log_path, metrics_eval_list, metric_info, logger):
     """Get fps and metric.
 
     Args:
@@ -336,6 +341,7 @@ def get_fps_metric(shell_res, pytorch_metric, metric_key, metric_name,
         log_path (str): Logger path.
         metrics_eval_list (dict): Metric list from test yaml.
         metric_info (dict): Metric info.
+        logger (Logger): Logger handler.
 
     Returns:
         Float: fps: FPS of the model
@@ -390,13 +396,13 @@ def get_backend_fps_metric(deploy_cfg_path,
                            pytorch_metric,
                            metric_info,
                            backend_name,
+                           precision_type,
                            metric_useless,
                            convert_result,
                            report_dict,
                            infer_type,
                            log_path
                            ):
-
     result_path = Path(convert_checkpoint_path).with_suffix('.pkl').absolute()
 
     cmd_str = f'cd {str(Path().cwd())} && ' \
@@ -429,7 +435,7 @@ def get_backend_fps_metric(deploy_cfg_path,
 
     fps, metric_list, test_pass = \
         get_fps_metric(shell_res, pytorch_metric, metric_key, metric_name,
-                       log_path, metrics_eval_list, metric_info)
+                       log_path, metrics_eval_list, metric_info, logger)
 
     # update useless metric
     for metric in metric_useless:
@@ -445,10 +451,22 @@ def get_backend_fps_metric(deploy_cfg_path,
         backend_name=backend_name,
         deploy_config=str(deploy_cfg_path),
         static_or_dynamic=infer_type,
+        precision_type=precision_type,
         conversion_result=str(convert_result),
         fps=fps,
         metric_info=metric_list,
         test_pass=str(test_pass))
+
+
+def get_precision_type(deploy_cfg_name: str):
+    if 'int8' in deploy_cfg_name:
+        precision_type = 'int8'
+    elif 'fp16' in deploy_cfg_name:
+        precision_type = 'fp16'
+    else:
+        precision_type = 'fp32'
+
+    return precision_type
 
 
 def get_backend_result(pipeline_info, model_cfg_path,
@@ -503,6 +521,8 @@ def get_backend_result(pipeline_info, model_cfg_path,
     backend_name = str(get_backend(str(deploy_cfg_path)).name).lower()
     infer_type = \
         'dynamic' if is_dynamic_shape(str(deploy_cfg_path)) else 'static'
+
+    precision_type = get_precision_type(deploy_cfg_path.name)
 
     backend_output_path = Path(work_dir). \
         joinpath(Path(checkpoint_path).parent.parent.name,
@@ -575,6 +595,7 @@ def get_backend_result(pipeline_info, model_cfg_path,
                     pytorch_metric=pytorch_metric,
                     metric_info=metric_info,
                     backend_name=backend_name,
+                    precision_type=precision_type,
                     metric_useless=metric_useless,
                     convert_result=convert_result,
                     report_dict=report_dict,
@@ -594,6 +615,7 @@ def get_backend_result(pipeline_info, model_cfg_path,
                     pytorch_metric=pytorch_metric,
                     metric_info=metric_info,
                     backend_name='SDK',
+                    precision_type=precision_type,
                     metric_useless=metric_useless,
                     convert_result=convert_result,
                     report_dict=report_dict,
@@ -623,6 +645,7 @@ def get_backend_result(pipeline_info, model_cfg_path,
             backend_name=backend_name,
             deploy_config=str(deploy_cfg_path),
             static_or_dynamic=infer_type,
+            precision_type=precision_type,
             conversion_result=str(convert_result),
             fps=fps,
             metric_info=metric_list,
@@ -704,6 +727,7 @@ def main():
             'backend_name': [],
             'deploy_config': [],
             'static_or_dynamic': [],
+            'precision_type': [],
             'conversion_result': [],
             'fps': []
         }
