@@ -267,6 +267,7 @@ def get_info_from_log_file(info_type, log_path, metric_info=None):
         line_count = 0
         fps_sum = 0.00
         if metric_info == 'mIoU':
+            # mmseg
             fps_lines = lines[:10]
         else:
             fps_lines = lines[-8:-1]
@@ -287,15 +288,19 @@ def get_info_from_log_file(info_type, log_path, metric_info=None):
 
         if metric_info in ['accuracy_top-1', 'mIoU']:
             # info in last second line
+            # mmcls, mmseg
             metric_line = lines[line_index - 1]
         elif metric_info == 'AP':
-            # info in last second line
+            # info in last tenth line
+            # mmpose
             metric_line = lines[line_index - 10]
         elif metric_info == 'AR':
-            # info in last second line
+            # info in last fifth line
+            # mmpose
             metric_line = lines[line_index - 5]
         else:
             # info in final line
+            # mmdet
             metric_line = lines[line_index]
         print(f'Got metric_line = {metric_line}')
 
@@ -305,20 +310,24 @@ def get_info_from_log_file(info_type, log_path, metric_info=None):
         print(f'Got metric_info = {metric_info}')
 
         if 'OrderedDict' in metric_str:
+            # mmdet
             evaluate_result = eval(metric_str)
             if not isinstance(evaluate_result, OrderedDict):
                 print(f'Got error metric_dict = {metric_str}')
                 return 'x'
             metric = evaluate_result.get(metric_info, 0.00) * 100
         elif 'accuracy_top' in metric_str:
+            # mmcls
             metric = eval(metric_str.split(': ')[-1])
             if metric <= 1:
                 metric *= 100
         elif metric_info == 'mIoU' and '|' in metric_str:
+            # mmseg
             metric = eval(metric_str.strip().split('|')[2])
             if metric <= 1:
                 metric *= 100
         elif metric_info in ['AP', 'AR']:
+            # mmpose
             metric = eval(metric_str.split(': ')[-1])
         else:
             metric = 'x'
@@ -329,8 +338,8 @@ def get_info_from_log_file(info_type, log_path, metric_info=None):
     return info_value
 
 
-def calculate_metric(metric_value, metric_name, pytorch_metric, metric_info):
-    """Calculate metric value, see if the test is passed.
+def compare_metric(metric_value, metric_name, pytorch_metric, metric_info):
+    """Compare metric value with the pytorch metric value and the tolerance.
 
     Args:
         metric_value (float): Metric value
@@ -396,8 +405,8 @@ def get_fps_metric(shell_res, pytorch_metric, metric_key, metric_name,
     assert metric_name is not None
 
     metric_list.append({metric_name: metric_value})
-    test_pass = calculate_metric(metric_value, metric_name,
-                                 pytorch_metric, metric_info)
+    test_pass = compare_metric(metric_value, metric_name,
+                               pytorch_metric, metric_info)
 
     # same eval_name and multi metric output in one test
     if metric_name == 'Top 1 Accuracy':
@@ -405,7 +414,7 @@ def get_fps_metric(shell_res, pytorch_metric, metric_key, metric_name,
         metric_name = 'Top 5 Accuracy'
         second_get_metric = True
     elif metric_name == 'AP':
-        # mmcls
+        # mmpose
         metric_name = 'AR'
         second_get_metric = True
     else:
@@ -420,8 +429,8 @@ def get_fps_metric(shell_res, pytorch_metric, metric_key, metric_name,
                                                   metric_key)
         metric_list.append({metric_name: metric_value})
         if test_pass:
-            test_pass = calculate_metric(metric_value, metric_name,
-                                         pytorch_metric, metric_info)
+            test_pass = compare_metric(metric_value, metric_name,
+                                       pytorch_metric, metric_info)
 
     return fps, metric_list, test_pass
 
