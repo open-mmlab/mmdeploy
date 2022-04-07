@@ -289,17 +289,17 @@ def get_info_from_log_file(info_type, log_path, metric_info=None):
             evaluate_result = eval(metric_str)
             if not isinstance(evaluate_result, OrderedDict):
                 print(f'Got error metric_dict = {metric_str}')
-                return '-'
+                return 'x'
             metric = evaluate_result.get(metric_info, 0.00) * 100
         elif 'accuracy_top' in metric_str:
             metric = eval(metric_str.split(': ')[-1])
             if metric <= 1:
                 metric *= 100
         else:
-            metric = '-'
+            metric = 'x'
         info_value = metric
     else:
-        info_value = '-'
+        info_value = 'x'
 
     return info_value
 
@@ -316,7 +316,7 @@ def calculate_metric(metric_value, metric_name, pytorch_metric, metric_info):
     Returns:
         Bool: If the test pass or not.
     """
-    if metric_value == '-':
+    if metric_value == 'x':
         return False
 
     metric_pytorch = pytorch_metric.get(str(metric_name))
@@ -352,8 +352,8 @@ def get_fps_metric(shell_res, pytorch_metric, metric_key, metric_name,
 
     # check if converted successes or not.
     if shell_res != 0:
-        fps = '-'
-        metric_value = '-'
+        fps = 'x'
+        metric_value = 'x'
     else:
         # Got fps from log file
         fps = get_info_from_log_file('FPS', log_path)
@@ -376,8 +376,11 @@ def get_fps_metric(shell_res, pytorch_metric, metric_key, metric_name,
     # same eval_name and multi metric output in one test
     if metric_name == 'Top 1 Accuracy':
         metric_name = 'Top 5 Accuracy'
-        metric_value = get_info_from_log_file('metric', log_path,
-                                              'accuracy_top-5')
+        if shell_res != 0:
+            metric_value = 'x'
+        else:
+            metric_value = get_info_from_log_file('metric', log_path,
+                                                  'accuracy_top-5')
         metric_list.append({metric_name: metric_value})
         if test_pass:
             test_pass = calculate_metric(metric_value, metric_name,
