@@ -49,8 +49,8 @@ torchscript:
 
 models:
   - name: deeplabv3
-    codebase_model_config_dir: ./configs/deeplabv3
     metafile: configs/deeplabv3/deeplabv3.yml
+    codebase_model_config_dir: ./configs/deeplabv3
     model_configs:
       - deeplabv3_r18-d8_512x1024_80k_cityscapes.py
     pipelines:

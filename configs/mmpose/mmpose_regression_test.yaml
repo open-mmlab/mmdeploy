@@ -50,8 +50,8 @@ torchscript:
 
 models:
   - name: hrnet
-    codebase_model_config_dir: ./configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco
     metafile: configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/hrnet_coco.yml
+    codebase_model_config_dir: ./configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco
     model_configs:
       - hrnet_w48_coco_256x192.py
     pipelines:

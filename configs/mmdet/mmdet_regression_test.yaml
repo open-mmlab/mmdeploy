@@ -76,8 +76,8 @@ torchscript:
 
 models:
   - name: retinanet
-    codebase_model_config_dir: ./configs/retinanet
     metafile: configs/retinanet/metafile.yml
+    codebase_model_config_dir: ./configs/retinanet
     model_configs:
       - retinanet_r50_fpn_1x_coco.py
     pipelines:

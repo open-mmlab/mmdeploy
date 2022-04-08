@@ -93,8 +93,8 @@ torchscript:
 
 models:
   - name: mobilenet_v2
-    codebase_model_config_dir: ./configs/mobilenet_v2
     metafile: configs/mobilenet_v2/metafile.yml
+    codebase_model_config_dir: ./configs/mobilenet_v2
     model_configs:
       - mobilenet-v2_8xb32_in1k.py
     pipelines:
