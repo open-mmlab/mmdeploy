@@ -17,14 +17,17 @@ globals:
       eval_name: bbox # test.py --metrics args
       metric_key: bbox_mAP # eval OrderedDict key name
       tolerance: 0.1
+      task_name: Object Detection
     mask AP:
       eval_name: segm
       metric_key: '?'
       tolerance: 0.1
+      task_name: Instance Segmentation
     PQ:
       eval_name: proposal
       metric_key: '?'
       tolerance: 0.1
+      task_name: Panoptic Segmentation
   convert_image: &convert_image
     input_img: *img_coco_320x320
     test_img: *img_coco_300x300

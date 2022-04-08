@@ -17,10 +17,12 @@ globals:
       eval_name: AP # test.py --metrics args
       metric_key: AP # eval OrderedDict key name
       tolerance: 0.01
+      task_name: Body 2D Keypoint
     AR:
       eval_name: AR # test.py --metrics args
       metric_key: AR # eval OrderedDict key name
       tolerance: 0.01
+      task_name: Body 2D Keypoint
   convert_image: &convert_image
     input_img: *img_224x224
     test_img: *img_300x300
