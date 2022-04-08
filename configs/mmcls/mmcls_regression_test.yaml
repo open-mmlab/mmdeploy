@@ -55,6 +55,7 @@ tensorrt:
 
   pipeline_trt_dynamic_int8: &pipeline_trt_dynamic_int8
     convert_image: *convert_image
+    calib_dataset_cfg:
     backend_test: *default_backend_test
     sdk_config: *sdk_dynamic_fp32
     deploy_config: configs/mmcls/classification_tensorrt-int8_dynamic-224x224-224x224.py

@@ -625,6 +625,11 @@ def get_backend_result(pipeline_info, model_cfg_path,
     if test_img_path is not None:
         cmd_str += f' --test-img {test_img_path}'
 
+    if precision_type == 'int8':
+        calib_dataset_cfg = pipeline_info.get('calib_dataset_cfg', None)
+        if calib_dataset_cfg is not None:
+            cmd_str += f' --calib-dataset-cfg {calib_dataset_cfg}'
+
     logger.info(f'Process cmd = {cmd_str}')
 
     # Convert the model to specific backend
