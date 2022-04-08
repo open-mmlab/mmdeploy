@@ -5,13 +5,14 @@ import os
 from collections import OrderedDict
 from pathlib import Path
 
+import mmcv
 import pandas as pd
 import yaml
 from torch.hub import download_url_to_file
 from torch.multiprocessing import set_start_method
 
 from mmdeploy.utils import get_root_logger, load_config, \
-    get_backend, is_dynamic_shape
+    get_backend, is_dynamic_shape, get_codebase
 
 
 def parse_args():
@@ -500,6 +501,33 @@ def get_precision_type(deploy_cfg_name: str):
     return precision_type
 
 
+def replace_top_in_pipeline_json(backend_output_path, logger):
+    # replace topk with num_classes in pipeline.json
+
+    sdk_pipeline_json_path = backend_output_path.joinpath('pipeline.json')
+    sdk_pipeline_json = mmcv.load(sdk_pipeline_json_path)
+
+    pipeline_tasks = sdk_pipeline_json.get('pipeline', {}).get('tasks', [])
+    for index, task in enumerate(pipeline_tasks):
+        if task.get('name', '') != 'postprocess':
+            continue
+        num_classes = task.get('params', {}).get('num_classes', 0)
+        if 'topk' not in task.get('params', {}):
+            continue
+        sdk_pipeline_json['pipeline']['tasks'][index]['params']['topk'] = \
+            num_classes
+
+    logger.info(f'sdk_pipeline_json = {sdk_pipeline_json}')
+
+    mmcv.dump(
+        sdk_pipeline_json,
+        sdk_pipeline_json_path,
+        sort_keys=False,
+        indent=4)
+
+    logger.info('replace done')
+
+
 def get_backend_result(pipeline_info, model_cfg_path,
                        checkpoint_path, work_dir,
                        device_type, pytorch_metric, metric_info,
@@ -553,6 +581,7 @@ def get_backend_result(pipeline_info, model_cfg_path,
         'dynamic' if is_dynamic_shape(str(deploy_cfg_path)) else 'static'
 
     precision_type = get_precision_type(deploy_cfg_path.name)
+    codebase_name = get_codebase(str(deploy_cfg_path)).value
 
     backend_output_path = Path(work_dir). \
         joinpath(Path(checkpoint_path).parent.parent.name,
@@ -643,6 +672,11 @@ def get_backend_result(pipeline_info, model_cfg_path,
                 )
 
             if sdk_config is not None:
+
+                if codebase_name == 'mmcls':
+                    replace_top_in_pipeline_json(backend_output_path, logger)
+
+                # sdk test
                 get_backend_fps_metric(
                     deploy_cfg_path=str(sdk_config),
                     model_cfg_path=model_cfg_path,
