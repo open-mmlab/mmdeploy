@@ -25,7 +25,8 @@ def parse_args():
             './configs/mmdet/mmdet_regression_test.yaml',
             './configs/mmcls/mmcls_regression_test.yaml',
             './configs/mmseg/mmseg_regression_test.yaml',
-            './configs/mmpose/mmpose_regression_test.yaml'
+            './configs/mmpose/mmpose_regression_test.yaml',
+            './configs/mmocr/mmocr_regression_test.yaml'
         ])
     parser.add_argument(
         '--test-type',
@@ -361,6 +362,13 @@ def get_info_from_log_file(info_type, log_path, metric_info=None):
         elif metric_info in ['AP', 'AR']:
             # mmpose
             metric = eval(metric_str.split(': ')[-1])
+        elif metric_info == '0_word_acc_ignore_case':
+            # mmocr
+            evaluate_result = eval(metric_str)
+            if not isinstance(evaluate_result, dict):
+                print(f'Got error metric_dict = {metric_str}')
+                return 'x'
+            metric = evaluate_result.get(metric_info, 0.00) * 100
         else:
             metric = 'x'
         info_value = metric
@@ -679,7 +687,10 @@ def get_backend_result(pipeline_info, model_cfg_path,
         load_config(str(deploy_cfg_path),
                     str(model_cfg_path.absolute()))
     # get dataset type
-    dataset_type = str(model_cfg.dataset_type).upper().replace('DATASET', '')
+    if 'dataset_type' in model_cfg:
+        dataset_type = str(model_cfg.dataset_type).upper().replace('DATASET', '')
+    else:
+        dataset_type = '-'
 
     # Test the model
     if convert_result and test_type == 'precision':
