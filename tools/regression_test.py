@@ -606,7 +606,7 @@ def get_backend_result(pipeline_info, model_cfg_path,
         load_config(str(deploy_cfg_path),
                     str(model_cfg_path.absolute()))
     # get dataset type
-    dataset_type = str(model_cfg.dataset_type).upper().replace('Dataset', '')
+    dataset_type = str(model_cfg.dataset_type).upper().replace('DATASET', '')
 
     # Test the model
     if convert_result and test_type == 'precision':
