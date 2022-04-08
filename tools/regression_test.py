@@ -223,6 +223,7 @@ def get_pytorch_result(model_name, meta_info, checkpoint_path,
     dataset_type = ''
     for metric in metric_info:
         dataset_type += f'{metric.get("Dataset")},'
+    dataset_type = dataset_type[:-1].upper()  # remove the final ','
 
     update_report(
         report_dict=report_dict,
@@ -435,7 +436,7 @@ def get_backend_fps_metric(
         deploy_cfg_path, model_cfg_path, convert_checkpoint_path, device_type,
         eval_name, logger, metrics_eval_list, pytorch_metric, metric_info,
         backend_name, precision_type, metric_useless, convert_result,
-        report_dict, infer_type, log_path):
+        report_dict, infer_type, log_path, dataset_type):
     cmd_str = f'cd {str(Path().cwd())} && ' \
               'python3 tools/test.py ' \
               f'{deploy_cfg_path} ' \
@@ -477,7 +478,7 @@ def get_backend_fps_metric(
         model_name=model_cfg_path.parent.name,
         model_config=str(model_cfg_path),
         model_checkpoint_name=convert_checkpoint_path,
-        dataset='',
+        dataset=dataset_type,
         backend_name=backend_name,
         deploy_config=str(deploy_cfg_path),
         static_or_dynamic=infer_type,
@@ -600,13 +601,15 @@ def get_backend_result(pipeline_info, model_cfg_path,
         convert_checkpoint_path = \
             str(backend_output_path.joinpath(backend_file_name))
 
+    # load deploy_cfg
+    deploy_cfg, model_cfg = \
+        load_config(str(deploy_cfg_path),
+                    str(model_cfg_path.absolute()))
+    # get dataset type
+    dataset_type = str(model_cfg.dataset_type).upper().replace('Dataset', '')
+
     # Test the model
     if convert_result and test_type == 'precision':
-        # load deploy_cfg
-        deploy_cfg, model_cfg = \
-            load_config(str(deploy_cfg_path),
-                        str(model_cfg_path.absolute()))
-
         # Get evaluation metric from model config
         metrics_eval_list = model_cfg.evaluation.get('metric', [])
         if isinstance(metrics_eval_list, str):
@@ -635,7 +638,8 @@ def get_backend_result(pipeline_info, model_cfg_path,
                     convert_result=convert_result,
                     report_dict=report_dict,
                     infer_type=infer_type,
-                    log_path=log_path
+                    log_path=log_path,
+                    dataset_type=dataset_type
                 )
 
             if sdk_config is not None:
@@ -655,7 +659,8 @@ def get_backend_result(pipeline_info, model_cfg_path,
                     convert_result=convert_result,
                     report_dict=report_dict,
                     infer_type=infer_type,
-                    log_path=log_path
+                    log_path=log_path,
+                    dataset_type=dataset_type
                 )
     else:
         logger.info('Only test convert, saving to report...')
@@ -676,7 +681,7 @@ def get_backend_result(pipeline_info, model_cfg_path,
             model_name=model_cfg_path.parent.name,
             model_config=str(model_cfg_path),
             model_checkpoint_name=str(checkpoint_path),
-            dataset='',
+            dataset=dataset_type,
             backend_name=backend_name,
             deploy_config=str(deploy_cfg_path),
             static_or_dynamic=infer_type,
