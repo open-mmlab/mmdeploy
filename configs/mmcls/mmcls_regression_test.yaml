@@ -4,10 +4,8 @@ globals:
   checkpoint_force_download: False
   checkpoint_dir: ../mmdeploy_checkpoints
   images:
-    img_imagenet_224x224: &img_imagenet_224x224 ./tests/data/tiger.jpeg
-    img_imagenet_300x300: &img_imagenet_300x300
-    img_imagenet_800x1344: &img_imagenet_800x1344
-    img_blank: &img_blank
+    img_snake: &img_snake ../mmclassification/demo/demo.JPEG
+    img_cat: &img_cat ../mmclassification/tests/data/color.jpg
   dataset_path:
     ImageNet-1K:
       image:
@@ -22,8 +20,8 @@ globals:
       metric_key: accuracy_top-5
       tolerance: 0.5
   convert_image: &convert_image
-    input_img: *img_imagenet_224x224
-    test_img: *img_imagenet_300x300
+    input_img: *img_snake
+    test_img: *img_cat
   backend_test: &default_backend_test True
   sdk:
     sdk_dynamic_fp32: &sdk_dynamic_fp32 configs/mmcls/classification_sdk_dynamic.py
@@ -62,10 +60,33 @@ tensorrt:
     deploy_config: configs/mmcls/classification_tensorrt-int8_dynamic-224x224-224x224.py
 
 openvino:
-ncnn:
-pplnn:
-torchscript:
+  pipeline_openvino_dynamic_fp32: &pipeline_openvino_dynamic_fp32
+    convert_image: *convert_image
+    backend_test: False
+    deploy_config: configs/mmcls/classification_openvino_dynamic-224x224.py
 
+ncnn:
+  pipeline_ncnn_static_fp32: &pipeline_ncnn_static_fp32
+    convert_image: *convert_image
+    backend_test: False
+    deploy_config: configs/mmcls/classification_ncnn_static.py
+
+  pipeline_ncnn_dynamic_fp32: &pipeline_ncnn_dynamic_fp32
+    convert_image: *convert_image
+    backend_test: False
+    deploy_config: configs/mmcls/classification_ncnn_dynamic.py
+
+pplnn:
+  pipeline_ppl_dynamic_fp32: &pipeline_ppl_dynamic_fp32
+    convert_image: *convert_image
+    backend_test: False
+    deploy_config: configs/mmcls/classification_pplnn_dynamic-224x224.py
+
+torchscript:
+  pipeline_ts_fp32: &pipeline_ts_fp32
+    convert_image: *convert_image
+    backend_test: False
+    deploy_config: configs/mmcls/classification_torchscript.py
 
 models:
   - name: mobilenet_v2
@@ -76,3 +97,7 @@ models:
     pipelines:
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
+      - *pipeline_openvino_dynamic_fp32
+      - *pipeline_ncnn_static_fp32
+      - *pipeline_ppl_dynamic_fp32
+      - *pipeline_ts_fp32
