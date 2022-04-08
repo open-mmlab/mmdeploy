@@ -147,6 +147,14 @@ def update_report(
         test_pass (str): Test result: Pass or Fail.
         report_txt_path (Path): Report txt path.
     """
+    if '.pth' not in model_checkpoint_name:
+        # make model path shorter by cutting the work_dir_root
+        work_dir_root = report_txt_path.parent.absolute().resolve()
+        model_checkpoint_abs = Path(model_checkpoint_name).absolute().resolve()
+        model_checkpoint_name = \
+            str(model_checkpoint_abs).replace(str(work_dir_root),
+                                              '${WORK_DIR}')
+
     # save to tmp file
     tmp_str = f'{model_name},{model_config},{model_checkpoint_name},' \
               f'{dataset},{backend_name},{deploy_config},' \
@@ -453,7 +461,7 @@ def get_backend_fps_metric(
         eval_name, logger, metrics_eval_list, pytorch_metric, metric_info,
         backend_name, precision_type, metric_useless, convert_result,
         report_dict, infer_type, log_path, dataset_type, report_txt_path):
-    cmd_str = f'cd {str(Path().cwd())} && ' \
+    cmd_str = f'cd {str(Path(__file__).absolute().parent.parent)} && ' \
               'python3 tools/test.py ' \
               f'{deploy_cfg_path} ' \
               f'{str(model_cfg_path.absolute())} ' \
@@ -609,7 +617,7 @@ def get_backend_result(pipeline_info, model_cfg_path,
     backend_output_path.mkdir(parents=True, exist_ok=True)
 
     # convert cmd string
-    cmd_str = f'cd {str(Path().cwd())} && ' \
+    cmd_str = f'cd {str(str(Path(__file__).absolute().parent.parent))} && ' \
               'python3 ./tools/deploy.py ' \
               f'{str(deploy_cfg_path.absolute().resolve())} ' \
               f'{str(model_cfg_path.absolute().resolve())} ' \
