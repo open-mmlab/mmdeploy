@@ -217,18 +217,39 @@ def get_pytorch_result(model_name, meta_info, checkpoint_path,
     metric_info = model_info.get('Results', None)
     metric_list = []
     pytorch_metric = dict()
+    dataset_type = ''
+    task_name = ''
+
+    using_dataset = []
+    for _, v in metric_name_info.items():
+        if v.get('dataset') is None:
+            continue
+        using_dataset.append(v.get('dataset'))
+
     for metric in metric_info:
         pytorch_meta_metric = metric.get('Metrics')
+
+        dataset = metric.get('Dataset', '')
+        if (len(using_dataset) > 1) and (dataset not in using_dataset):
+            continue
+
+        dataset_type += f'{dataset} | '
+        task_name += f'{metric.get("Task", "")} | '
+
         use_metric = dict()
 
         # remove some metric which not in metric_info from test yaml
         for k, v in pytorch_meta_metric.items():
             if k not in metric_name_info:
                 continue
+
             use_metric.update({k: v})
 
         metric_list.append(use_metric)
         pytorch_metric.update(use_metric)
+
+    dataset_type = dataset_type[:-3].upper()  # remove the final ' | '
+    task_name = task_name[:-3]  # remove the final ' | '
 
     # update useless metric
     metric_all_list = [str(metric) for metric in metric_name_info]
@@ -245,18 +266,6 @@ def get_pytorch_result(model_name, meta_info, checkpoint_path,
         fps = fps_info[0].get('value')
     else:
         fps = fps_info.get('value')
-
-    # Get dataset
-    dataset_type = ''
-    for metric in metric_info:
-        dataset_type += f'{metric.get("Dataset", "")} | '
-    dataset_type = dataset_type[:-3].upper()  # remove the final ' | '
-
-    # Get task_name
-    task_name = ''
-    for metric in metric_info:
-        task_name += f'{metric.get("Task", "")} | '
-    task_name = task_name[:-3]  # remove the final ' | '
 
     # update report
     update_report(
@@ -690,7 +699,7 @@ def get_backend_result(pipeline_info, model_cfg_path,
     if 'dataset_type' in model_cfg:
         dataset_type = str(model_cfg.dataset_type).upper().replace('DATASET', '')
     else:
-        dataset_type = '-'
+        dataset_type = 'x'
 
     # Test the model
     if convert_result and test_type == 'precision':
