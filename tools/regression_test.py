@@ -127,7 +127,8 @@ def update_report(
         report_dict, model_name, model_config,
         model_checkpoint_name, dataset, backend_name,
         deploy_config, static_or_dynamic, precision_type,
-        conversion_result, fps, metric_info, test_pass):
+        conversion_result, fps, metric_info, test_pass,
+        report_txt_path):
     """Update report information.
 
     Args:
@@ -144,7 +145,14 @@ def update_report(
         fps (str): Inference speed (ms/im).
         metric_info (list): Metric info list of the ${modelName}.yml.
         test_pass (str): Test result: Pass or Fail.
+        report_txt_path (Path): Report txt path.
     """
+    # save to tmp file
+    tmp_str = f'{model_name},{model_config},{model_checkpoint_name},' \
+              f'{dataset},{backend_name},{deploy_config},' \
+              f'{static_or_dynamic},{precision_type},{conversion_result},{fps},'
+
+    # save to report
     report_dict.get('model_name').append(model_name)
     report_dict.get('model_config').append(model_config)
     report_dict.get('model_checkpoint_name').append(model_checkpoint_name)
@@ -160,13 +168,18 @@ def update_report(
         for metric_name, metric_value in metric.items():
             metric_name = str(metric_name)
             report_dict.get(metric_name).append(metric_value)
-
+            tmp_str += f'{metric_value},'
     report_dict.get('test_pass').append(test_pass)
+
+    tmp_str += f'{test_pass}\n'
+
+    with open(report_txt_path, 'a+', encoding='utf-8') as f:
+        f.write(tmp_str)
 
 
 def get_pytorch_result(model_name, meta_info, checkpoint_path,
                        model_config_name, metric_name_info, report_dict,
-                       logger):
+                       logger, report_txt_path):
     """Get metric from metafile info of the model.
 
     Args:
@@ -177,6 +190,7 @@ def get_pytorch_result(model_name, meta_info, checkpoint_path,
         metric_name_info (dict): Metrics info.
         report_dict (dict): Report info dict.
         logger (logging.Logger): Logger.
+        report_txt_path (Path): Report txt path.
 
     Returns:
         Dict: metric info of the model
@@ -239,7 +253,8 @@ def get_pytorch_result(model_name, meta_info, checkpoint_path,
         conversion_result='-',
         fps=fps,
         metric_info=metric_list,
-        test_pass='-')
+        test_pass='-',
+        report_txt_path=report_txt_path)
 
     logger.info(f'Got {model_config_name} metric: {pytorch_metric}')
     return pytorch_metric
@@ -437,7 +452,7 @@ def get_backend_fps_metric(
         deploy_cfg_path, model_cfg_path, convert_checkpoint_path, device_type,
         eval_name, logger, metrics_eval_list, pytorch_metric, metric_info,
         backend_name, precision_type, metric_useless, convert_result,
-        report_dict, infer_type, log_path, dataset_type):
+        report_dict, infer_type, log_path, dataset_type, report_txt_path):
     cmd_str = f'cd {str(Path().cwd())} && ' \
               'python3 tools/test.py ' \
               f'{deploy_cfg_path} ' \
@@ -487,7 +502,8 @@ def get_backend_fps_metric(
         conversion_result=str(convert_result),
         fps=fps,
         metric_info=metric_list,
-        test_pass=str(test_pass))
+        test_pass=str(test_pass),
+        report_txt_path=report_txt_path)
 
 
 def get_precision_type(deploy_cfg_name: str):
@@ -532,7 +548,7 @@ def get_backend_result(pipeline_info, model_cfg_path,
                        checkpoint_path, work_dir,
                        device_type, pytorch_metric, metric_info,
                        report_dict, test_type, logger,
-                       log_path, backend_file_name):
+                       log_path, backend_file_name, report_txt_path):
     """Convert model to onnx and then get metric.
 
     Args:
@@ -548,6 +564,7 @@ def get_backend_result(pipeline_info, model_cfg_path,
         logger (logging.Logger): Logger.
         log_path (Path): Path for logger file.
         backend_file_name (str | list): backend file save name.
+        report_txt_path (Path): report txt path.
     """
     # get backend_test info
     backend_test = pipeline_info.get('backend_test', False)
@@ -668,8 +685,8 @@ def get_backend_result(pipeline_info, model_cfg_path,
                     report_dict=report_dict,
                     infer_type=infer_type,
                     log_path=log_path,
-                    dataset_type=dataset_type
-                )
+                    dataset_type=dataset_type,
+                    report_txt_path=report_txt_path)
 
             if sdk_config is not None:
 
@@ -694,8 +711,8 @@ def get_backend_result(pipeline_info, model_cfg_path,
                     report_dict=report_dict,
                     infer_type=infer_type,
                     log_path=log_path,
-                    dataset_type=dataset_type
-                )
+                    dataset_type=dataset_type,
+                    report_txt_path=report_txt_path)
     else:
         logger.info('Only test convert, saving to report...')
         metric_list = []
@@ -723,7 +740,8 @@ def get_backend_result(pipeline_info, model_cfg_path,
             conversion_result=str(convert_result),
             fps=fps,
             metric_info=metric_list,
-            test_pass=str(test_pass))
+            test_pass=str(test_pass),
+            report_txt_path=report_txt_path)
 
 
 def save_report(report_info, report_save_path, logger):
@@ -791,6 +809,9 @@ def main():
 
         report_save_path = \
             work_dir.joinpath(Path(deploy_yaml).stem + '_report.xlsx')
+
+        report_txt_path = report_save_path.with_suffix('.txt')
+
         report_dict = {
             'model_name': [],
             'model_config': [],
@@ -810,6 +831,13 @@ def main():
             report_dict.update({metric_name: []})
         metric_info = global_info.get('metric_info', {})
         report_dict.update({'test_pass': []})
+
+        with open(report_txt_path, 'w') as f_report:
+            title_str = ''
+            for key in report_dict:
+                title_str += f'{key},'
+            title_str = title_str[:-1] + '\n'
+            f_report.write(title_str)  # clear the report tmp file
 
         models_info = yaml_info.get('models')
         for models in models_info:
@@ -842,7 +870,7 @@ def main():
                 #  Get pytorch from metafile.yml
                 pytorch_metric = get_pytorch_result(
                     models.get('name'), model_metafile_info, checkpoint_path,
-                    model_cfg_path, metric_info, report_dict, logger)
+                    model_cfg_path, metric_info, report_dict, logger, report_txt_path)
 
                 for pipeline in pipelines_info:
                     deploy_config = pipeline.get('deploy_config')
@@ -856,10 +884,10 @@ def main():
                         continue
 
                     get_backend_result(
-                        pipeline, model_cfg_path, checkpoint_path,
-                        work_dir, args.device_id, pytorch_metric,
-                        metric_info, report_dict, args.test_type,
-                        logger, log_path, backend_file_name)
+                        pipeline, model_cfg_path, checkpoint_path, work_dir,
+                        args.device_id, pytorch_metric, metric_info,
+                        report_dict, args.test_type, logger, log_path,
+                        backend_file_name, report_txt_path)
 
         save_report(report_dict, report_save_path, logger)
 
