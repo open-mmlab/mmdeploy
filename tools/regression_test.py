@@ -124,7 +124,7 @@ def get_model_metafile_info(global_info, model_info, logger):
 
 
 def update_report(
-        report_dict, model_name, model_config,
+        report_dict, model_name, model_config, task_name,
         model_checkpoint_name, dataset, backend_name,
         deploy_config, static_or_dynamic, precision_type,
         conversion_result, fps, metric_info, test_pass,
@@ -135,6 +135,7 @@ def update_report(
         report_dict (dict): Report info dict.
         model_name (str): Model name.
         model_config (str): Model config name.
+        task_name (str): Task name.
         model_checkpoint_name (str): Model checkpoint name.
         dataset (str): Dataset name.
         backend_name (str): Backend name.
@@ -156,13 +157,15 @@ def update_report(
                                               '${WORK_DIR}')
 
     # save to tmp file
-    tmp_str = f'{model_name},{model_config},{model_checkpoint_name},' \
-              f'{dataset},{backend_name},{deploy_config},' \
-              f'{static_or_dynamic},{precision_type},{conversion_result},{fps},'
+    tmp_str = f'{model_name},{model_config},{task_name},' \
+              f'{model_checkpoint_name},{dataset},{backend_name},' \
+              f'{deploy_config},{static_or_dynamic},{precision_type},' \
+              f'{conversion_result},{fps},'
 
     # save to report
     report_dict.get('model_name').append(model_name)
     report_dict.get('model_config').append(model_config)
+    report_dict.get('task_name').append(task_name)
     report_dict.get('model_checkpoint_name').append(model_checkpoint_name)
     report_dict.get('dataset').append(dataset)
     report_dict.get('backend_name').append(backend_name)
@@ -242,16 +245,24 @@ def get_pytorch_result(model_name, meta_info, checkpoint_path,
     else:
         fps = fps_info.get('value')
 
-    # update report
+    # Get dataset
     dataset_type = ''
     for metric in metric_info:
-        dataset_type += f'{metric.get("Dataset")},'
-    dataset_type = dataset_type[:-1].upper()  # remove the final ','
+        dataset_type += f'{metric.get("Dataset", "")} | '
+    dataset_type = dataset_type[:-3].upper()  # remove the final ' | '
 
+    # Get task_name
+    task_name = ''
+    for metric in metric_info:
+        task_name += f'{metric.get("Task", "")} | '
+    task_name = task_name[:-3]  # remove the final ' | '
+
+    # update report
     update_report(
         report_dict=report_dict,
         model_name=model_name,
         model_config=str(model_config_name),
+        task_name=task_name,
         model_checkpoint_name=str(checkpoint_path),
         dataset=dataset_type,
         backend_name='Pytorch',
@@ -479,10 +490,12 @@ def get_backend_fps_metric(
 
     metric_key = ''
     metric_name = ''
+    task_name = ''
     for key, value in metric_info.items():
         if value.get('eval_name', '') == eval_name:
             metric_name = key
             metric_key = value.get('metric_key', '')
+            task_name = value.get('task_name', '')
             break
 
     logger.info(f'Got metric_name = {metric_name}')
@@ -501,6 +514,7 @@ def get_backend_fps_metric(
         report_dict=report_dict,
         model_name=model_cfg_path.parent.name,
         model_config=str(model_cfg_path),
+        task_name=task_name,
         model_checkpoint_name=convert_checkpoint_path,
         dataset=dataset_type,
         backend_name=backend_name,
@@ -731,8 +745,15 @@ def get_backend_result(pipeline_info, model_cfg_path,
         metric_list = []
         fps = '-'
 
+        task_name = ''
         for metric in metric_name_list:
             metric_list.append({metric: '-'})
+            metric_task_name = metric_info.get(metric, {}).get("task_name", "")
+            if metric_task_name in task_name:
+                continue
+            task_name += f'{metric_task_name} | '
+        if ' | ' == task_name[-3:]:
+            task_name = task_name[:-3]
         test_pass = True if convert_result else False
 
         # update useless metric
@@ -744,6 +765,7 @@ def get_backend_result(pipeline_info, model_cfg_path,
             report_dict=report_dict,
             model_name=model_cfg_path.parent.name,
             model_config=str(model_cfg_path),
+            task_name=task_name,
             model_checkpoint_name=str(checkpoint_path),
             dataset=dataset_type,
             backend_name=backend_name,
@@ -828,6 +850,7 @@ def main():
         report_dict = {
             'model_name': [],
             'model_config': [],
+            'task_name': [],
             'model_checkpoint_name': [],
             'dataset': [],
             'backend_name': [],
