@@ -119,9 +119,6 @@ mmdeploy_value_t f(mmdeploy_value_t v, void*) {
   return (mmdeploy_value_t)(new Value{arr[0].get<int>() + arr[1].get<int>()});
 }
 
-template <class... Ts>
-using TypeErasedSender = _TypeErasedSender<std::tuple<Ts...>>;
-
 namespace __expand {
 
 template <class Sender, class Receiver>

@@ -30,11 +30,21 @@ class _TypeErasedSender {
 
   struct Impl {
     virtual _Operation _Connect(_Receiver) = 0;
+    virtual std::unique_ptr<Impl> _Clone() const = 0;
   };
 
   template <class Sender,
             class = std::enable_if_t<!std::is_same_v<std::decay_t<Sender>, _TypeErasedSender>>>
-  explicit _TypeErasedSender(Sender&& sender);
+  _TypeErasedSender(Sender&& sender);
+
+  _TypeErasedSender(_TypeErasedSender&& other) noexcept = default;
+  _TypeErasedSender& operator=(_TypeErasedSender&& other) noexcept = default;
+
+  _TypeErasedSender(const _TypeErasedSender& other) : impl_(other.impl_->_Clone()) {}
+  _TypeErasedSender& operator=(const _TypeErasedSender& other) {
+    impl_ = other.impl_->_Clone();
+    return *this;
+  }
 
   template <class Self, class Receiver,
             MMDEPLOY_REQUIRES(std::is_same_v<std::decay_t<Self>, _TypeErasedSender>)>
@@ -46,14 +56,19 @@ class _TypeErasedSender {
   std::unique_ptr<Impl> impl_;
 };
 
+template <class... Ts>
+using TypeErasedSender = _TypeErasedSender<std::tuple<Ts...>>;
+
 template <class Sender>
 _TypeErasedSender(Sender&&) -> _TypeErasedSender<completion_signature_for_t<std::decay_t<Sender>>>;
 
 template <class Sender, class ValueTypes = completion_signature_for_t<Sender>>
 struct _TypeErasedSenderImpl : _TypeErasedSender<ValueTypes>::Impl {
  public:
+  using Base = typename _TypeErasedSender<ValueTypes>::Impl;
   using _Operation = _TypeErasedOperation<ValueTypes>;
   using _Receiver = _TypeErasedReceiver<ValueTypes>;
+//  using Type = typename _TypeErasedSender<ValueTypes>::Impl::Type;
 
   template <class _Sender,
             class = std::enable_if_t<!std::is_same_v<std::decay_t<_Sender>, _TypeErasedSenderImpl>>>
@@ -61,6 +76,16 @@ struct _TypeErasedSenderImpl : _TypeErasedSender<ValueTypes>::Impl {
 
   _Operation _Connect(_Receiver receiver) override {
     return _Operation{[&] { return Connect(std::move(sender_), std::move(receiver)); }};
+  }
+
+  std::unique_ptr<Base> _Clone() const override {
+    if constexpr (std::is_copy_constructible_v<Sender>) {
+      return std::make_unique<_TypeErasedSenderImpl>(sender_);
+    } else {
+      MMDEPLOY_ERROR("attempt to clone non-copyable sender");
+      std::abort();
+    }
+    return {};
   }
 
  private:
@@ -164,6 +189,9 @@ class _TypeErasedOperation {
  private:
   std::unique_ptr<Impl> impl_;
 };
+
+template <class... Ts>
+using TypeErasedOperation = _TypeErasedOperation<std::tuple<Ts...>>;
 
 template <class Operation, class ValueTypes>
 struct _TypeErasedOperationImpl : _TypeErasedOperation<ValueTypes>::Impl {
