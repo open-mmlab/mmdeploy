@@ -371,13 +371,16 @@ def get_info_from_log_file(info_type, log_path, metric_info=None):
         elif metric_info in ['AP', 'AR']:
             # mmpose
             metric = eval(metric_str.split(': ')[-1])
-        elif metric_info == '0_word_acc_ignore_case':
+        elif metric_info == '0_word_acc_ignore_case' or \
+                metric_info == '0_hmean-iou:hmean':
             # mmocr
             evaluate_result = eval(metric_str)
             if not isinstance(evaluate_result, dict):
                 print(f'Got error metric_dict = {metric_str}')
                 return 'x'
-            metric = evaluate_result.get(metric_info, 0.00) * 100
+            metric = evaluate_result.get(metric_info, 0.00)
+            if metric_info == '0_word_acc_ignore_case':
+                metric *= 100
         else:
             metric = 'x'
         info_value = metric

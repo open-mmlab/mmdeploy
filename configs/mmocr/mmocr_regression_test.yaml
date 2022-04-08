@@ -10,8 +10,8 @@ globals:
     img_blank: &img_blank
   metric_info: &metric_info
     hmean-iou: # named after metafile.Results.Metrics
-      eval_name: hmean # test.py --metrics args
-      metric_key: hmean # eval key name
+      eval_name: hmean-iou # test.py --metrics args
+      metric_key: 0_hmean-iou:hmean # eval key name
       tolerance: 0.1
       task_name: Text Detection # metafile.Results.Task
       dataset: ICDAR2015 # metafile.Results.Dataset
@@ -40,12 +40,22 @@ onnxruntime:
     sdk_config: *sdk_recognition_dynamic_fp32
     deploy_config: configs/mmocr/text-recognition/text-recognition_onnxruntime_dynamic.py
 
+  pipeline_ort_detection_dynamic_fp32: &pipeline_ort_detection_dynamic_fp32
+    convert_image: *convert_image
+    deploy_config: configs/mmocr/text-detection/text-detection_onnxruntime_dynamic.py
+
 tensorrt:
   pipeline_trt_recognition_dynamic_fp16: &pipeline_trt_recognition_dynamic_fp16
     convert_image: *convert_image
     backend_test: *default_backend_test
     sdk_config: *sdk_recognition_dynamic_fp32
     deploy_config: configs/mmocr/text-recognition/text-recognition_tensorrt-fp16_dynamic-1x32x32-1x32x640.py
+
+  pipeline_trt_detection_dynamic_fp16: &pipeline_trt_detection_dynamic_fp16
+    convert_image: *convert_image
+    backend_test: *default_backend_test
+    sdk_config: *sdk_detection_dynamic_fp32
+    deploy_config: configs/mmocr/text-detection/text-detection_tensorrt-fp16_dynamic-320x320-1024x1824.py
 
 openvino:
 ncnn:
@@ -61,7 +71,6 @@ models:
       - crnn_academic_dataset.py
     pipelines:
       - *pipeline_ort_recognition_dynamic_fp32
-#      - *pipeline_trt_recognition_dynamic_fp16
 
   - name: dbnet
     metafile: configs/textdet/dbnet/metafile.yml
@@ -69,5 +78,5 @@ models:
     model_configs:
       - dbnet_r18_fpnc_1200e_icdar2015.py
     pipelines:
-#      - *pipeline_ort_recognition_dynamic_fp32
-      - *pipeline_trt_recognition_dynamic_fp16
+      - *pipeline_ort_detection_dynamic_fp32
+      - *pipeline_trt_detection_dynamic_fp16
