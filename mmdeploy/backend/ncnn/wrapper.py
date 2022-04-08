@@ -37,8 +37,8 @@ class NCNNWrapper(BaseWrapper):
     def __init__(self,
                  param_file: str,
                  bin_file: str,
+                 use_vulkan: bool,
                  output_names: Optional[Sequence[str]] = None,
-                 use_vulkan: Optional[bool] = False,
                  **kwargs):
 
         net = ncnn.Net()
