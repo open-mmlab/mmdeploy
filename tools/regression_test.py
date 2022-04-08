@@ -266,11 +266,7 @@ def get_info_from_log_file(info_type, log_path, metric_info=None):
     if info_type == 'FPS' and len(lines) > 1:
         line_count = 0
         fps_sum = 0.00
-        if metric_info == 'mIoU':
-            # mmseg
-            fps_lines = lines[:10]
-        else:
-            fps_lines = lines[-8:-1]
+        fps_lines = lines[1:11]
 
         for line in fps_lines:
             if 'FPS' not in line:
