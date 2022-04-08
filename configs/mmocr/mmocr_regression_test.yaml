@@ -1,0 +1,66 @@
+globals:
+  codebase_name: mmocr
+  codebase_dir: ../mmocr
+  checkpoint_force_download: False
+  checkpoint_dir: ../mmdeploy_checkpoints
+  images:
+    img_224x224: &img_224x224 ./tests/data/tiger.jpeg
+    img_300x300: &img_300x300
+    img_800x1344: &img_cityscapes_800x1344
+    img_blank: &img_blank
+  dataset_path:
+    Cityscapes:
+      image:
+      annotation:
+  metric_info: &metric_info
+    hmean-iou: # named after metafile.Results.Metrics
+      eval_name: hmean # test.py --metrics args
+      metric_key: 0_word_acc_ignore_case # eval key name
+      tolerance: 0.1
+      task_name: Text Detection
+    word_acc:
+      eval_name: acc
+      metric_key: 0_word_acc_ignore_case
+      tolerance: 0.1
+      task_name: Text Recognition
+  convert_image: &convert_image
+    input_img: *img_224x224
+    test_img: *img_300x300
+  backend_test: &default_backend_test True
+  sdk:
+    sdk_detection_dynamic_fp32: &sdk_detection_dynamic_fp32 configs/mmocr/text-detection/text-detection_sdk_dynamic.py
+    sdk_recognition_dynamic_fp32: &sdk_recognition_dynamic_fp32 configs/mmocr/text-recognition/text-recognition_sdk_dynamic.py
+
+onnxruntime:
+  pipeline_ort_recognition_static_fp32: &pipeline_ort_recognition_static_fp32
+    convert_image: *convert_image
+    deploy_config: configs/mmocr/text-recognition/text-recognition_onnxruntime_static.py
+
+  pipeline_ort_recognition_dynamic_fp32: &pipeline_ort_recognition_dynamic_fp32
+    convert_image: *convert_image
+    backend_test: *default_backend_test
+    sdk_config: *sdk_recognition_dynamic_fp32
+    deploy_config: configs/mmocr/text-recognition/text-recognition_onnxruntime_dynamic.py
+
+tensorrt:
+  pipeline_trt_recognition_dynamic_fp16: &pipeline_trt_recognition_dynamic_fp16
+    convert_image: *convert_image
+    backend_test: *default_backend_test
+    sdk_config: *sdk_recognition_dynamic_fp32
+    deploy_config: configs/mmocr/text-recognition/text-recognition_tensorrt-fp16_dynamic-1x32x32-1x32x640.py
+
+openvino:
+ncnn:
+pplnn:
+torchscript:
+
+
+models:
+  - name: crnn
+    metafile: configs/textrecog/crnn/metafile.yml
+    codebase_model_config_dir: ./configs/textrecog/crnn
+    model_configs:
+      - crnn_academic_dataset.py
+    pipelines:
+      - *pipeline_ort_recognition_dynamic_fp32
+#      - *pipeline_trt_recognition_dynamic_fp16
