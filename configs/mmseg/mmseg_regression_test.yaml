@@ -8,16 +8,13 @@ globals:
     img_cityscapes_300x300: &img_cityscapes_300x300
     img_cityscapes_800x1344: &img_cityscapes_800x1344
     img_blank: &img_blank
-  dataset_path:
-    Cityscapes:
-      image:
-      annotation:
   metric_info: &metric_info
     mIoU: # named after metafile.Results.Metrics
       eval_name: mIoU # test.py --metrics args
       metric_key: mIoU # eval OrderedDict key name
       tolerance: 0.1
-      task_name: Semantic Segmentation
+      task_name: Semantic Segmentation # metafile.Results.Task
+      dataset: Cityscapes # metafile.Results.Dataset
   convert_image: &convert_image
     input_img: *img_cityscapes_224x224
     test_img: *img_cityscapes_300x300

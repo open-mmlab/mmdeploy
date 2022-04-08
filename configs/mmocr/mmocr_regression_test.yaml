@@ -8,21 +8,19 @@ globals:
     img_300x300: &img_300x300
     img_800x1344: &img_cityscapes_800x1344
     img_blank: &img_blank
-  dataset_path:
-    Cityscapes:
-      image:
-      annotation:
   metric_info: &metric_info
     hmean-iou: # named after metafile.Results.Metrics
       eval_name: hmean # test.py --metrics args
-      metric_key: 0_word_acc_ignore_case # eval key name
+      metric_key: hmean # eval key name
       tolerance: 0.1
-      task_name: Text Detection
+      task_name: Text Detection # metafile.Results.Task
+      dataset: ICDAR2015 # metafile.Results.Dataset
     word_acc:
       eval_name: acc
       metric_key: 0_word_acc_ignore_case
-      tolerance: 0.1
+      tolerance: 0.2
       task_name: Text Recognition
+      dataset: IIIT5K
   convert_image: &convert_image
     input_img: *img_224x224
     test_img: *img_300x300
@@ -58,9 +56,18 @@ torchscript:
 models:
   - name: crnn
     metafile: configs/textrecog/crnn/metafile.yml
-    codebase_model_config_dir: ./configs/textrecog/crnn
+    codebase_model_config_dir: configs/textrecog/crnn
     model_configs:
       - crnn_academic_dataset.py
     pipelines:
       - *pipeline_ort_recognition_dynamic_fp32
 #      - *pipeline_trt_recognition_dynamic_fp16
+
+  - name: dbnet
+    metafile: configs/textdet/dbnet/metafile.yml
+    codebase_model_config_dir: configs/textdet/dbnet
+    model_configs:
+      - dbnet_r18_fpnc_1200e_icdar2015.py
+    pipelines:
+#      - *pipeline_ort_recognition_dynamic_fp32
+      - *pipeline_trt_recognition_dynamic_fp16

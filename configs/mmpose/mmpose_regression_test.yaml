@@ -8,21 +8,19 @@ globals:
     img_300x300: &img_300x300
     img_800x1344: &img_800x1344
     img_blank: &img_blank
-  dataset_path:
-    Cityscapes:
-      image:
-      annotation:
   metric_info: &metric_info
     AP: # named after metafile.Results.Metrics
       eval_name: AP # test.py --metrics args
       metric_key: AP # eval OrderedDict key name
       tolerance: 0.01
-      task_name: Body 2D Keypoint
+      task_name: Body 2D Keypoint # metafile.Results.Task
+      dataset: # metafile.Results.Dataset
     AR:
-      eval_name: AR # test.py --metrics args
-      metric_key: AR # eval OrderedDict key name
+      eval_name: AR
+      metric_key: AR
       tolerance: 0.01
       task_name: Body 2D Keypoint
+      dataset:
   convert_image: &convert_image
     input_img: *img_224x224
     test_img: *img_300x300

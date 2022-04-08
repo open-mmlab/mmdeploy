@@ -8,21 +8,19 @@ globals:
     img_coco_300x300: &img_coco_300x300
     img_coco_800x1344: &img_coco_800x1344
     img_blank: &img_blank
-  dataset_path:
-    COCO:
-      image:
-      annotation:
   metric_info: &metric_info
     box AP: # named after metafile.Results.Metrics
       eval_name: bbox # test.py --metrics args
       metric_key: bbox_mAP # eval OrderedDict key name
       tolerance: 0.1
-      task_name: Object Detection
+      task_name: Object Detection # metafile.Results.Task
+      dataset: COCO # metafile.Results.Dataset
     mask AP:
       eval_name: segm
       metric_key: '?'
       tolerance: 0.1
       task_name: Instance Segmentation
+      dataset: COCO
     PQ:
       eval_name: proposal
       metric_key: '?'
