@@ -259,8 +259,6 @@ class Classification(BaseTask):
             logger.debug(f'writing results to {out}')
             mmcv.dump(results, out)
 
-        return results
-
     def get_preprocess(self) -> Dict:
         """Get the preprocess information for SDK.
 

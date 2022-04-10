@@ -285,11 +285,7 @@ class TextDetection(BaseTask):
             ]:
                 eval_kwargs.pop(key, None)
             eval_kwargs.update(dict(metric=metrics, **kwargs))
-
-            result = dataset.evaluate(outputs, **eval_kwargs)
-            logger.info(result)
-
-            return result
+            logger.info(dataset.evaluate(outputs, **eval_kwargs))
 
     def get_preprocess(self) -> Dict:
         """Get the preprocess information for SDK.
