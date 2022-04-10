@@ -236,9 +236,7 @@ class Segmentation(BaseTask):
         if format_only:
             dataset.format_results(outputs, **kwargs)
         if metrics:
-            result = dataset.evaluate(outputs, metrics,
-                                      logger=logger, **kwargs)
-            return result
+            dataset.evaluate(outputs, metrics, logger=logger, **kwargs)
 
     def get_preprocess(self) -> Dict:
         """Get the preprocess information for SDK.

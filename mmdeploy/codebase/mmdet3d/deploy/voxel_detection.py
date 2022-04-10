@@ -180,7 +180,6 @@ class VoxelDetection(BaseTask):
                          format_only: bool = False,
                          log_file: Optional[str] = None):
         if out:
-            logger = get_root_logger()
             logger.info(f'\nwriting results to {out}')
             mmcv.dump(outputs, out)
         kwargs = {} if metric_options is None else metric_options
@@ -196,7 +195,7 @@ class VoxelDetection(BaseTask):
                 eval_kwargs.pop(key, None)
                 eval_kwargs.pop(key, None)
             eval_kwargs.update(dict(metric=metrics, **kwargs))
-            logger.info(dataset.evaluate(outputs, **eval_kwargs))
+            dataset.evaluate(outputs, **eval_kwargs)
 
     def get_model_name(self) -> str:
         """Get the model name.
