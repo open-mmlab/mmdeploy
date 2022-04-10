@@ -125,12 +125,10 @@ def get_model_metafile_info(global_info, model_info, logger):
     return model_meta_info, checkpoint_save_dir, codebase_dir
 
 
-def update_report(
-        report_dict, model_name, model_config, task_name,
-        model_checkpoint_name, dataset, backend_name,
-        deploy_config, static_or_dynamic, precision_type,
-        conversion_result, fps, metric_info, test_pass,
-        report_txt_path):
+def update_report(report_dict, model_name, model_config, task_name,
+                  model_checkpoint_name, dataset, backend_name, deploy_config,
+                  static_or_dynamic, precision_type, conversion_result, fps,
+                  metric_info, test_pass, report_txt_path):
     """Update report information.
 
     Args:
@@ -462,13 +460,11 @@ def get_fps_metric(shell_res, pytorch_metric, metric_key,
         metric_value = 'x'
     else:
         # Got fps from log file
-        fps = get_info_from_log_file('FPS', log_path,
-                                     metric_key)
+        fps = get_info_from_log_file('FPS', log_path, metric_key)
         print(f'Got fps = {fps}')
 
         # Got metric from log file
-        metric_value = get_info_from_log_file('metric', log_path,
-                                              metric_key)
+        metric_value = get_info_from_log_file('metric', log_path, metric_key)
         print(f'Got metric = {metric_value}')
 
     if yaml_metric_info_name is None:
@@ -605,19 +601,15 @@ def replace_top_in_pipeline_json(backend_output_path, logger):
     logger.info(f'sdk_pipeline_json = {sdk_pipeline_json}')
 
     mmcv.dump(
-        sdk_pipeline_json,
-        sdk_pipeline_json_path,
-        sort_keys=False,
-        indent=4)
+        sdk_pipeline_json, sdk_pipeline_json_path, sort_keys=False, indent=4)
 
     logger.info('replace done')
 
 
-def get_backend_result(pipeline_info, model_cfg_path,
-                       checkpoint_path, work_dir,
-                       device_type, pytorch_metric, metric_info,
-                       report_dict, test_type, logger,
-                       log_path, backend_file_name, report_txt_path):
+def get_backend_result(pipeline_info, model_cfg_path, checkpoint_path,
+                       work_dir, device_type, pytorch_metric, metric_info,
+                       report_dict, test_type, logger, log_path,
+                       backend_file_name, report_txt_path):
     """Convert model to onnx and then get metric.
 
     Args:
@@ -871,8 +863,8 @@ def main():
     backend_list = args.backends
     if backend_list == ['all']:
         backend_list = [
-            'onnxruntime', 'tensorrt', 'openvino', 'ncnn',
-            'pplnn', 'torchscript'
+            'onnxruntime', 'tensorrt', 'openvino', 'ncnn', 'pplnn',
+            'torchscript'
         ]
     assert isinstance(backend_list, list)
     logger.info(f'Regression test backend list = {backend_list}')
@@ -973,11 +965,12 @@ def main():
                     if backend_file_name is None:
                         continue
 
-                    get_backend_result(
-                        pipeline, model_cfg_path, checkpoint_path, work_dir,
-                        args.device_id, pytorch_metric, metric_info,
-                        report_dict, args.test_type, logger, log_path,
-                        backend_file_name, report_txt_path)
+                    get_backend_result(pipeline, model_cfg_path,
+                                       checkpoint_path, work_dir,
+                                       args.device_id, pytorch_metric,
+                                       metric_info, report_dict,
+                                       args.test_type, logger, log_path,
+                                       backend_file_name, report_txt_path)
 
         save_report(report_dict, report_save_path, logger)
 
