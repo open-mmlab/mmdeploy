@@ -9,7 +9,7 @@ globals:
   metric_info: &metric_info
     Top 1 Accuracy: # named after metafile.Results.Metrics
       eval_name: accuracy # test.py --metrics args
-      metric_key: accuracy_top-1 # eval OrderedDict key name
+      metric_key: accuracy_top-1 # eval Dict key name
       tolerance: 0.5
       task_name: Image Classification # metafile.Results.Task
       dataset: ImageNet-1k # metafile.Results.Dataset
