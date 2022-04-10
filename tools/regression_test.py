@@ -11,8 +11,8 @@ import yaml
 from torch.hub import download_url_to_file
 from torch.multiprocessing import set_start_method
 
-from mmdeploy.utils import get_root_logger, load_config, \
-    get_backend, is_dynamic_shape, get_codebase
+from mmdeploy.utils import (get_backend, get_codebase, get_root_logger,
+                            is_dynamic_shape, load_config)
 
 
 def parse_args():
