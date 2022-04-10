@@ -7,12 +7,18 @@ globals:
     img_320x320: &img_320x320 ./tests/data/tiger.jpeg
     img_blank: &img_blank
   metric_info: &metric_info
-    Set5: # named after metafile.Results.Metrics
-      eval_name: '?' # test.py --metrics args
-      metric_key: '?' # eval OrderedDict key name
-      tolerance: 0.5
+    PSNR: # named after metafile.Results.Metrics
+      eval_name: PSNR # test.py --metrics args
+      metric_key: Eval-PSNR # eval log key name
+      tolerance: 1
       task_name: Restorers # metafile.Results.Task
       dataset: DIV2K # metafile.Results.Dataset
+    SSIM:
+      eval_name: SSIM
+      metric_key: Eval-SSIM
+      tolerance: 0.1
+      task_name: Restorers
+      dataset: DIV2K
   convert_image: &convert_image
     input_img: *img_320x320
     test_img: *img_blank
@@ -44,5 +50,5 @@ models:
     model_configs:
       - srcnn_x4k915_g1_1000k_div2k.py
     pipelines:
-#      - *pipeline_ort_dynamic_fp32
+      - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16

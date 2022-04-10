@@ -26,7 +26,8 @@ def parse_args():
             './configs/mmcls/mmcls_regression_test.yaml',
             './configs/mmseg/mmseg_regression_test.yaml',
             './configs/mmpose/mmpose_regression_test.yaml',
-            './configs/mmocr/mmocr_regression_test.yaml'
+            './configs/mmocr/mmocr_regression_test.yaml',
+            './configs/mmedit/mmedit_regression_test.yaml'
         ])
     parser.add_argument(
         '--test-type',
@@ -236,17 +237,26 @@ def get_pytorch_result(model_name, meta_info, checkpoint_path,
         dataset_type += f'{dataset} | '
         task_name += f'{metric.get("Task", "")} | '
 
-        use_metric = dict()
-
         # remove some metric which not in metric_info from test yaml
         for k, v in pytorch_meta_metric.items():
-            if k not in metric_name_info:
+
+            if k not in metric_name_info and 'Restorers' not in task_name:
                 continue
 
-            use_metric.update({k: v})
+            if 'Restorers' in task_name and k not in dataset_type:
+                # mmedit
+                continue
 
-        metric_list.append(use_metric)
-        pytorch_metric.update(use_metric)
+            if isinstance(v, dict):
+                # mmedit
+                for sub_k, sub_v in v.items():
+                    use_metric = {sub_k: sub_v}
+                    metric_list.append(use_metric)
+                    pytorch_metric.update(use_metric)
+            else:
+                use_metric = {k: v}
+                metric_list.append(use_metric)
+                pytorch_metric.update(use_metric)
 
     dataset_type = dataset_type[:-3].upper()  # remove the final ' | '
     task_name = task_name[:-3]  # remove the final ' | '
@@ -266,6 +276,9 @@ def get_pytorch_result(model_name, meta_info, checkpoint_path,
         fps = fps_info[0].get('value')
     else:
         fps = fps_info.get('value')
+
+    logger.info(f'Got metric_list = {metric_list} ')
+    logger.info(f'Got pytorch_metric = {pytorch_metric} ')
 
     # update report
     update_report(
@@ -289,13 +302,13 @@ def get_pytorch_result(model_name, meta_info, checkpoint_path,
     return pytorch_metric
 
 
-def get_info_from_log_file(info_type, log_path, metric_info=None):
+def get_info_from_log_file(info_type, log_path, yaml_metric_key=None):
     """Get fps and metric result from log file.
 
     Args:
         info_type (str): Get which type of info: 'FPS' or 'metric'
         log_path (str): Logger path.
-        metric_info (str): Name of metric.
+        yaml_metric_key (str): Name of metric from yaml metric_key.
 
     Returns:
         Float: Info value which get from logger file
@@ -319,7 +332,10 @@ def get_info_from_log_file(info_type, log_path, metric_info=None):
                 continue
             line_count += 1
             fps_sum += float(line.split(' ')[-2])
-        info_value = f'{fps_sum / line_count:.2f}'
+        if fps_sum > 0.00:
+            info_value = f'{fps_sum / line_count:.2f}'
+        else:
+            info_value = 'x'
 
     elif info_type == 'metric' and len(lines) > 1:
         # To calculate the final line index
@@ -328,18 +344,18 @@ def get_info_from_log_file(info_type, log_path, metric_info=None):
         else:
             line_index = -2
 
-        if metric_info in ['accuracy_top-1', 'mIoU']:
+        if yaml_metric_key in ['accuracy_top-1', 'mIoU', 'Eval-PSNR']:
             # info in last second line
-            # mmcls, mmseg
+            # mmcls, mmseg, mmedit
             metric_line = lines[line_index - 1]
-        elif metric_info == 'AP':
+        elif yaml_metric_key == 'AP':
             # info in last tenth line
             # mmpose
-            metric_line = lines[line_index - 10]
-        elif metric_info == 'AR':
+            metric_line = lines[line_index - 9]
+        elif yaml_metric_key == 'AR':
             # info in last fifth line
             # mmpose
-            metric_line = lines[line_index - 5]
+            metric_line = lines[line_index - 4]
         else:
             # info in final line
             # mmdet
@@ -349,7 +365,7 @@ def get_info_from_log_file(info_type, log_path, metric_info=None):
         metric_str = \
             metric_line.replace('\n', '').replace('\r', '').split(' - ')[-1]
         print(f'Got metric_str = {metric_str}')
-        print(f'Got metric_info = {metric_info}')
+        print(f'Got metric_info = {yaml_metric_key}')
 
         if 'OrderedDict' in metric_str:
             # mmdet
@@ -357,30 +373,33 @@ def get_info_from_log_file(info_type, log_path, metric_info=None):
             if not isinstance(evaluate_result, OrderedDict):
                 print(f'Got error metric_dict = {metric_str}')
                 return 'x'
-            metric = evaluate_result.get(metric_info, 0.00) * 100
+            metric = evaluate_result.get(yaml_metric_key, 0.00) * 100
         elif 'accuracy_top' in metric_str:
             # mmcls
             metric = eval(metric_str.split(': ')[-1])
             if metric <= 1:
                 metric *= 100
-        elif metric_info == 'mIoU' and '|' in metric_str:
+        elif yaml_metric_key == 'mIoU' and '|' in metric_str:
             # mmseg
             metric = eval(metric_str.strip().split('|')[2])
             if metric <= 1:
                 metric *= 100
-        elif metric_info in ['AP', 'AR']:
+        elif yaml_metric_key in ['AP', 'AR']:
             # mmpose
             metric = eval(metric_str.split(': ')[-1])
-        elif metric_info == '0_word_acc_ignore_case' or \
-                metric_info == '0_hmean-iou:hmean':
+        elif yaml_metric_key == '0_word_acc_ignore_case' or \
+                yaml_metric_key == '0_hmean-iou:hmean':
             # mmocr
             evaluate_result = eval(metric_str)
             if not isinstance(evaluate_result, dict):
                 print(f'Got error metric_dict = {metric_str}')
                 return 'x'
-            metric = evaluate_result.get(metric_info, 0.00)
-            if metric_info == '0_word_acc_ignore_case':
+            metric = evaluate_result.get(yaml_metric_key, 0.00)
+            if yaml_metric_key == '0_word_acc_ignore_case':
                 metric *= 100
+        elif yaml_metric_key in ['Eval-PSNR', 'Eval-SSIM']:
+            # mmedit
+            metric = eval(metric_str.split(': ')[-1])
         else:
             metric = 'x'
         info_value = metric
@@ -395,9 +414,9 @@ def compare_metric(metric_value, metric_name, pytorch_metric, metric_info):
 
     Args:
         metric_value (float): Metric value
-        metric_name (str): Logger path.
+        metric_name (str): metric name.
         pytorch_metric (dict): Pytorch metric which get from metafile.
-        metric_info (dict): Metric info.
+        metric_info (dict): Metric info from test yaml.
 
     Returns:
         Bool: If the test pass or not.
@@ -415,7 +434,7 @@ def compare_metric(metric_value, metric_name, pytorch_metric, metric_info):
     return test_pass
 
 
-def get_fps_metric(shell_res, pytorch_metric, metric_key, metric_name,
+def get_fps_metric(shell_res, pytorch_metric, metric_key, yaml_metric_info_name,
                    log_path, metrics_eval_list, metric_info, logger):
     """Get fps and metric.
 
@@ -423,7 +442,7 @@ def get_fps_metric(shell_res, pytorch_metric, metric_key, metric_name,
         shell_res (int): Backend convert result: 0 is success
         pytorch_metric (dict): Metric info of pytorch metafile
         metric_key (str):Metric info.
-        metric_name (str): Name of metric.
+        yaml_metric_info_name (str): Name of metric info in test yaml.
         log_path (str): Logger path.
         metrics_eval_list (dict): Metric list from test yaml.
         metric_info (dict): Metric info.
@@ -451,37 +470,41 @@ def get_fps_metric(shell_res, pytorch_metric, metric_key, metric_name,
                                               metric_key)
         print(f'Got metric = {metric_value}')
 
-    if metric_name is None:
+    if yaml_metric_info_name is None:
         logger.error(f'metrics_eval_list: {metrics_eval_list} '
                      'has not metric name')
-    assert metric_name is not None
+    assert yaml_metric_info_name is not None
 
-    metric_list.append({metric_name: metric_value})
-    test_pass = compare_metric(metric_value, metric_name,
+    metric_list.append({yaml_metric_info_name: metric_value})
+    test_pass = compare_metric(metric_value, yaml_metric_info_name,
                                pytorch_metric, metric_info)
 
     # same eval_name and multi metric output in one test
-    if metric_name == 'Top 1 Accuracy':
+    if yaml_metric_info_name == 'Top 1 Accuracy':
         # mmcls
-        metric_name = 'Top 5 Accuracy'
+        yaml_metric_info_name = 'Top 5 Accuracy'
         second_get_metric = True
-    elif metric_name == 'AP':
+    elif yaml_metric_info_name == 'AP':
         # mmpose
-        metric_name = 'AR'
+        yaml_metric_info_name = 'AR'
+        second_get_metric = True
+    elif yaml_metric_info_name == 'PSNR':
+        # mmedit
+        yaml_metric_info_name = 'SSIM'
         second_get_metric = True
     else:
         second_get_metric = False
 
     if second_get_metric:
-        metric_key = metric_info.get(metric_name).get('metric_key')
+        metric_key = metric_info.get(yaml_metric_info_name).get('metric_key')
         if shell_res != 0:
             metric_value = 'x'
         else:
             metric_value = get_info_from_log_file('metric', log_path,
                                                   metric_key)
-        metric_list.append({metric_name: metric_value})
+        metric_list.append({yaml_metric_info_name: metric_value})
         if test_pass:
-            test_pass = compare_metric(metric_value, metric_name,
+            test_pass = compare_metric(metric_value, yaml_metric_info_name,
                                        pytorch_metric, metric_info)
 
     return fps, metric_list, test_pass
@@ -497,10 +520,13 @@ def get_backend_fps_metric(
               f'{deploy_cfg_path} ' \
               f'{str(model_cfg_path.absolute())} ' \
               f'--model {convert_checkpoint_path} ' \
-              f'--metrics {eval_name} ' \
               f'--device {device_type} ' \
               f'--log2file {log_path} ' \
-              f'--speed-test'
+              f'--speed-test '
+
+    # mmedit eval_name will get a 'PSNR'
+    if eval_name != 'PSNR':
+        cmd_str += f'--metrics {eval_name} '
 
     logger.info(f'Process cmd = {cmd_str}')
 
@@ -712,8 +738,10 @@ def get_backend_result(pipeline_info, model_cfg_path,
             # some config is using str only
             metrics_eval_list = [metrics_eval_list]
 
-        assert len(metrics_eval_list) > 0
+        # assert len(metrics_eval_list) > 0
         print(f'Got metrics_eval_list = {metrics_eval_list}')
+        if len(metrics_eval_list) == 0 and codebase_name == 'mmedit':
+            metrics_eval_list = ['PSNR']
 
         # test the model metric
         for metric_name in metrics_eval_list:
