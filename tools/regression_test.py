@@ -434,8 +434,9 @@ def compare_metric(metric_value, metric_name, pytorch_metric, metric_info):
     return test_pass
 
 
-def get_fps_metric(shell_res, pytorch_metric, metric_key, yaml_metric_info_name,
-                   log_path, metrics_eval_list, metric_info, logger):
+def get_fps_metric(shell_res, pytorch_metric, metric_key,
+                   yaml_metric_info_name, log_path, metrics_eval_list,
+                   metric_info, logger):
     """Get fps and metric.
 
     Args:
@@ -726,7 +727,8 @@ def get_backend_result(pipeline_info, model_cfg_path,
                     str(model_cfg_path.absolute()))
     # get dataset type
     if 'dataset_type' in model_cfg:
-        dataset_type = str(model_cfg.dataset_type).upper().replace('DATASET', '')
+        dataset_type = \
+            str(model_cfg.dataset_type).upper().replace('DATASET', '')
     else:
         dataset_type = 'x'
 
@@ -799,7 +801,7 @@ def get_backend_result(pipeline_info, model_cfg_path,
         task_name = ''
         for metric in metric_name_list:
             metric_list.append({metric: '-'})
-            metric_task_name = metric_info.get(metric, {}).get("task_name", "")
+            metric_task_name = metric_info.get(metric, {}).get('task_name', '')
             if metric_task_name in task_name:
                 continue
             task_name += f'{metric_task_name} | '
@@ -957,7 +959,8 @@ def main():
                 #  Get pytorch from metafile.yml
                 pytorch_metric = get_pytorch_result(
                     models.get('name'), model_metafile_info, checkpoint_path,
-                    model_cfg_path, metric_info, report_dict, logger, report_txt_path)
+                    model_cfg_path, metric_info, report_dict, logger,
+                    report_txt_path)
 
                 for pipeline in pipelines_info:
                     deploy_config = pipeline.get('deploy_config')
