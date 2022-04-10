@@ -180,6 +180,7 @@ class VoxelDetection(BaseTask):
                          format_only: bool = False,
                          log_file: Optional[str] = None):
         if out:
+            logger = get_root_logger()
             logger.info(f'\nwriting results to {out}')
             mmcv.dump(outputs, out)
         kwargs = {} if metric_options is None else metric_options
