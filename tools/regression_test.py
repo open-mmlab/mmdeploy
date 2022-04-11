@@ -32,8 +32,8 @@ def parse_args():
     parser.add_argument(
         '--performance',
         default=False,
-        action="store_true",
-        help='`test performance if it set')
+        action='store_true',
+        help='test performance if it set')
     parser.add_argument(
         '--backends',
         nargs='+',
