@@ -29,7 +29,7 @@ python ./tools/regression_test.py \
     --test-type "${TEST_TYPE}" \
     --backends "${BACKEND}" \
     --work-dir "${WORK_DIR}" \
-    --device-id "${DEVICE}" \
+    --device "${DEVICE}" \
     --log-level INFO
 ```
 
@@ -39,7 +39,7 @@ python ./tools/regression_test.py \
 - `--test-type` : 测试模式：`convert` 测试转换，`precision` 测试精度。
 - `--backends` : 筛选测试的后端, 默认 `all`: 测全部`backend`, 也可传入若干个后端，例如 `onnxruntime tesnsorrt`。
 - `--work-dir` : 模型转换、报告生成的路径。
-- `--device-id` : 使用的设备，默认 `cuda`。
+- `--device` : 使用的设备，默认 `cuda`。
 - `--log-level` : 设置日记的等级，选项包括`'CRITICAL'， 'FATAL'， 'ERROR'， 'WARN'， 'WARNING'， 'INFO'， 'DEBUG'， 'NOTSET'`。默认是`INFO`。
 
 ## 例子
@@ -52,7 +52,7 @@ python ./tools/regression_test.py \
     --test-type "precision" \
     --backends all \
     --work-dir "../mmdeploy_regression_working_dir" \
-    --device-id "cuda" \
+    --device "cuda" \
     --log-level INFO
 ```
 
@@ -64,7 +64,7 @@ python ./tools/regression_test.py \
     --test-type "precision" \
     --backends onnxruntime tesnsorrt \
     --work-dir "../mmdeploy_regression_working_dir" \
-    --device-id "cuda" \
+    --device "cuda" \
     --log-level INFO
 ```
 

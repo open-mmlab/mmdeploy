@@ -46,7 +46,7 @@ def parse_args():
         help='the dir to save logs and models',
         default='../mmdeploy_regression_working_dir')
     parser.add_argument(
-        '--device-id', type=str, help='`the CUDA device id', default='cuda')
+        '--device', type=str, help='`the CUDA device id', default='cuda')
     parser.add_argument(
         '--log-level',
         help='set log level',
@@ -967,7 +967,7 @@ def main():
 
                     get_backend_result(pipeline, model_cfg_path,
                                        checkpoint_path, work_dir,
-                                       args.device_id, pytorch_metric,
+                                       args.device, pytorch_metric,
                                        metric_info, report_dict,
                                        args.test_type, logger, log_path,
                                        backend_file_name, report_txt_path)
