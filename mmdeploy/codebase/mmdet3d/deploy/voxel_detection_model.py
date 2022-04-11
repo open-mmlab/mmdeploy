@@ -174,7 +174,7 @@ class VoxelDetectionModel(BaseBackendModel):
     @staticmethod
     def post_process(model_cfg: Union[str, mmcv.Config],
                      deploy_cfg: Union[str, mmcv.Config],
-                     outs: torch.Tensor,
+                     outs: Dict,
                      img_metas: Dict,
                      device: str,
                      rescale=False):
@@ -184,7 +184,7 @@ class VoxelDetectionModel(BaseBackendModel):
             model_cfg (str | mmcv.Config): The model config.
             deploy_cfg (str|mmcv.Config): Deployment config file or loaded
             Config object.
-            outs (torch.Tensor): Output of model's head.
+            outs (Dict): Output of model's head.
             img_metas(Dict): Meta info for pcd.
             device (str): A string specifying device type.
             rescale (list[torch.Tensor]): whether th rescale bbox.
