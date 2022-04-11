@@ -966,11 +966,11 @@ def main():
                         continue
 
                     get_backend_result(pipeline, model_cfg_path,
-                                       checkpoint_path, work_dir,
-                                       args.device, pytorch_metric,
-                                       metric_info, report_dict,
-                                       args.test_type, logger, log_path,
-                                       backend_file_name, report_txt_path)
+                                       checkpoint_path, work_dir, args.device,
+                                       pytorch_metric, metric_info,
+                                       report_dict, args.test_type, logger,
+                                       log_path, backend_file_name,
+                                       report_txt_path)
 
         save_report(report_dict, report_save_path, logger)
 
