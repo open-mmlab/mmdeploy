@@ -22,3 +22,6 @@ target_link_libraries(${PROJECT_NAME}_obj PUBLIC onnxruntime)
 mmdeploy_add_library(${PROJECT_NAME} SHARED EXCLUDE "")
 target_link_libraries(${PROJECT_NAME} PUBLIC ${PROJECT_NAME}_obj)
 add_library(mmdeploy::onnxruntime::ops ALIAS ${PROJECT_NAME})
+
+set(_ORT_OPS_DIR ${CMAKE_SOURCE_DIR}/mmdeploy/lib)
+install(TARGETS ${PROJECT_NAME} DESTINATION ${_ORT_OPS_DIR})

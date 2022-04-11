@@ -12,6 +12,8 @@ if (PROTOBUF_FOUND)
             ${CMAKE_CURRENT_BINARY_DIR})
     target_link_libraries(onnx2ncnn PRIVATE ${PROTOBUF_LIBRARIES})
 
+    set(_NCNN_CONVERTER_DIR ${CMAKE_SOURCE_DIR}/mmdeploy/backend/ncnn)
+    install(TARGETS onnx2ncnn DESTINATION ${_NCNN_CONVERTER_DIR})
 else ()
     message(
             FATAL_ERROR "Protobuf not found, onnx model convert tool won't be built")

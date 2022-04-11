@@ -1,7 +1,9 @@
 import logging
+import os
 
 from setuptools import find_packages, setup
 
+pwd = os.path.dirname(__file__)
 version_file = 'mmdeploy/version.py'
 
 try:
@@ -13,13 +15,13 @@ except ModuleNotFoundError:
 
 
 def readme():
-    with open('README.md', encoding='utf-8') as f:
+    with open(os.path.join(pwd, 'README.md'), encoding='utf-8') as f:
         content = f.read()
     return content
 
 
 def get_version():
-    with open(version_file, 'r') as f:
+    with open(os.path.join(pwd, version_file), 'r') as f:
         exec(compile(f.read(), version_file, 'exec'))
     return locals()['__version__']
 

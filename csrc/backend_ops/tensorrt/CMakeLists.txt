@@ -35,3 +35,6 @@ mmdeploy_export(${PROJECT_NAME}_obj)
 mmdeploy_add_module(${PROJECT_NAME} MODULE EXCLUDE "")
 target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}_obj)
 add_library(mmdeploy::tensorrt_ops ALIAS ${PROJECT_NAME})
+
+set(_TRT_OPS_DIR ${CMAKE_SOURCE_DIR}/mmdeploy/lib)
+install(TARGETS ${PROJECT_NAME} DESTINATION ${_TRT_OPS_DIR})
