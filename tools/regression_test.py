@@ -30,11 +30,10 @@ def parse_args():
             './configs/mmedit/mmedit_regression_test.yaml'
         ])
     parser.add_argument(
-        '--test-type',
-        type=str,
-        help='`test type',
-        default='precision',
-        choices=['precision', 'convert'])
+        '--performance',
+        default=False,
+        action="store_true",
+        help='`test performance if it set')
     parser.add_argument(
         '--backends',
         nargs='+',
@@ -851,6 +850,8 @@ def main():
     logger = get_root_logger(log_level=args.log_level)
     logger.info('Processing regression test.')
 
+    test_type = 'precision' if args.performance else 'convert'
+
     backend_file_info = {
         'onnxruntime': 'end2end.onnx',
         'tensorrt': 'end2end.engine',
@@ -968,7 +969,7 @@ def main():
                     get_backend_result(pipeline, model_cfg_path,
                                        checkpoint_path, work_dir, args.device,
                                        pytorch_metric, metric_info,
-                                       report_dict, args.test_type, logger,
+                                       report_dict, test_type, logger,
                                        log_path, backend_file_name,
                                        report_txt_path)
 

@@ -26,42 +26,53 @@
 ```shell
 python ./tools/regression_test.py \
     --deploy-yml "${DEPLOY_YML_PATH}" \
-    --test-type "${TEST_TYPE}" \
     --backends "${BACKEND}" \
     --work-dir "${WORK_DIR}" \
     --device "${DEVICE}" \
-    --log-level INFO
+    --log-level INFO \
+    [--performance]
 ```
 
 ### 参数解析
 
 - `--deploy-yml` : 需要测试的 codebase，eg.`configs/mmdet/mmdet_regression_test.yaml`，如果设置为 `all` 即全部测试。
-- `--test-type` : 测试模式：`convert` 测试转换，`precision` 测试精度。
 - `--backends` : 筛选测试的后端, 默认 `all`: 测全部`backend`, 也可传入若干个后端，例如 `onnxruntime tesnsorrt`。
 - `--work-dir` : 模型转换、报告生成的路径。
 - `--device` : 使用的设备，默认 `cuda`。
 - `--log-level` : 设置日记的等级，选项包括`'CRITICAL'， 'FATAL'， 'ERROR'， 'WARN'， 'WARNING'， 'INFO'， 'DEBUG'， 'NOTSET'`。默认是`INFO`。
+- `--performance` : 是否测试精度，加上则测试转换+精度，不加上则只测试转换
 
 ## 例子
 
-1. 测试 mmdet 和 mmpose 的所有 backend
+1. 测试 mmdet 和 mmpose 的所有 backend 的 转换+精度
 
 ```shell
 python ./tools/regression_test.py \
     --deploy-yml ./configs/mmdet/mmdet_regression_test.yaml ./configs/mmpose/mmpose_regression_test.yaml \
-    --test-type "precision" \
     --backends all \
     --work-dir "../mmdeploy_regression_working_dir" \
     --device "cuda" \
-    --log-level INFO
+    --log-level INFO \
+    --performance
 ```
 
-2. 测试 mmdet 和 mmpose 的某几个 backend
+2. 测试 mmdet 和 mmpose 的某几个 backend 的 转换+精度
 
 ```shell
 python ./tools/regression_test.py \
     --deploy-yml ./configs/mmdet/mmdet_regression_test.yaml ./configs/mmdet/mmpose.yaml \
-    --test-type "precision" \
+    --backends onnxruntime tesnsorrt \
+    --work-dir "../mmdeploy_regression_working_dir" \
+    --device "cuda" \
+    --log-level INFO \
+    --performance
+```
+
+3. 测试 mmdet 和 mmpose 的某几个 backend，只需测试转换
+
+```shell
+python ./tools/regression_test.py \
+    --deploy-yml ./configs/mmdet/mmdet_regression_test.yaml ./configs/mmdet/mmpose.yaml \
     --backends onnxruntime tesnsorrt \
     --work-dir "../mmdeploy_regression_working_dir" \
     --device "cuda" \
