@@ -65,7 +65,7 @@ def get_model_metafile_info(global_info, model_info, logger):
         logger (logging.Logger): logger.
 
     Returns:
-        Dict: Meta infos of each model config
+        Dict: Meta info of each model config
     """
 
     # get info from global_info and model_info
@@ -299,13 +299,14 @@ def get_pytorch_result(model_name, meta_info, checkpoint_path,
     return pytorch_metric
 
 
-def get_info_from_log_file(info_type, log_path, yaml_metric_key=None):
+def get_info_from_log_file(info_type, log_path, yaml_metric_key, logger):
     """Get fps and metric result from log file.
 
     Args:
         info_type (str): Get which type of info: 'FPS' or 'metric'
         log_path (str): Logger path.
         yaml_metric_key (str): Name of metric from yaml metric_key.
+        logger (Logger): Logger handler.
 
     Returns:
         Float: Info value which get from logger file
@@ -316,7 +317,7 @@ def get_info_from_log_file(info_type, log_path, yaml_metric_key=None):
         with open(log_path, 'r') as f_log:
             lines = f_log.readlines()
     else:
-        print(f'{log_path} do not exist !!!')
+        logger.warning(f'{log_path} do not exist !!!')
         lines = []
 
     if info_type == 'FPS' and len(lines) > 1:
@@ -357,18 +358,18 @@ def get_info_from_log_file(info_type, log_path, yaml_metric_key=None):
             # info in final line
             # mmdet
             metric_line = lines[line_index]
-        print(f'Got metric_line = {metric_line}')
+        logger.info(f'Got metric_line = {metric_line}')
 
         metric_str = \
             metric_line.replace('\n', '').replace('\r', '').split(' - ')[-1]
-        print(f'Got metric_str = {metric_str}')
-        print(f'Got metric_info = {yaml_metric_key}')
+        logger.info(f'Got metric_str = {metric_str}')
+        logger.info(f'Got metric_info = {yaml_metric_key}')
 
         if 'OrderedDict' in metric_str:
             # mmdet
             evaluate_result = eval(metric_str)
             if not isinstance(evaluate_result, OrderedDict):
-                print(f'Got error metric_dict = {metric_str}')
+                logger.warning(f'Got error metric_dict = {metric_str}')
                 return 'x'
             metric = evaluate_result.get(yaml_metric_key, 0.00) * 100
         elif 'accuracy_top' in metric_str:
@@ -389,7 +390,7 @@ def get_info_from_log_file(info_type, log_path, yaml_metric_key=None):
             # mmocr
             evaluate_result = eval(metric_str)
             if not isinstance(evaluate_result, dict):
-                print(f'Got error metric_dict = {metric_str}')
+                logger.warning(f'Got error metric_dict = {metric_str}')
                 return 'x'
             metric = evaluate_result.get(yaml_metric_key, 0.00)
             if yaml_metric_key == '0_word_acc_ignore_case':
@@ -459,12 +460,13 @@ def get_fps_metric(shell_res, pytorch_metric, metric_key,
         metric_value = 'x'
     else:
         # Got fps from log file
-        fps = get_info_from_log_file('FPS', log_path, metric_key)
-        print(f'Got fps = {fps}')
+        fps = get_info_from_log_file('FPS', log_path, metric_key, logger)
+        logger.info(f'Got fps = {fps}')
 
         # Got metric from log file
-        metric_value = get_info_from_log_file('metric', log_path, metric_key)
-        print(f'Got metric = {metric_value}')
+        metric_value = get_info_from_log_file('metric', log_path, metric_key,
+                                              logger)
+        logger.info(f'Got metric = {metric_value}')
 
     if yaml_metric_info_name is None:
         logger.error(f'metrics_eval_list: {metrics_eval_list} '
@@ -497,7 +499,7 @@ def get_fps_metric(shell_res, pytorch_metric, metric_key,
             metric_value = 'x'
         else:
             metric_value = get_info_from_log_file('metric', log_path,
-                                                  metric_key)
+                                                  metric_key, logger)
         metric_list.append({yaml_metric_info_name: metric_value})
         if test_pass:
             test_pass = compare_metric(metric_value, yaml_metric_info_name,
@@ -528,7 +530,7 @@ def get_backend_fps_metric(
 
     # Test backend
     shell_res = os.system(cmd_str)
-    print(f'Got shell_res = {shell_res}')
+    logger.info(f'Got shell_res = {shell_res}')
 
     metric_key = ''
     metric_name = ''
@@ -582,7 +584,12 @@ def get_precision_type(deploy_cfg_name: str):
 
 
 def replace_top_in_pipeline_json(backend_output_path, logger):
-    # replace topk with num_classes in pipeline.json
+    """Replace `topk` with num_classes in pipeline.json
+
+    Args:
+        backend_output_path (Path): Backend convert result saving path
+        logger (Logger): Logger handler.
+    """
 
     sdk_pipeline_json_path = backend_output_path.joinpath('pipeline.json')
     sdk_pipeline_json = mmcv.load(sdk_pipeline_json_path)
@@ -694,14 +701,14 @@ def get_backend_result(pipeline_info, model_cfg_path, checkpoint_path,
 
     # Convert the model to specific backend
     shell_res = os.system(cmd_str)
-    print(f'Got shell_res = {shell_res}')
+    logger.info(f'Got shell_res = {shell_res}')
 
     # check if converted successes or not.
     if shell_res == 0:
         convert_result = True
     else:
         convert_result = False
-    print(f'Got convert_result = {convert_result}')
+    logger.info(f'Got convert_result = {convert_result}')
 
     if isinstance(backend_file_name, list):
         convert_checkpoint_path = ''
@@ -732,7 +739,7 @@ def get_backend_result(pipeline_info, model_cfg_path, checkpoint_path,
             metrics_eval_list = [metrics_eval_list]
 
         # assert len(metrics_eval_list) > 0
-        print(f'Got metrics_eval_list = {metrics_eval_list}')
+        logger.info(f'Got metrics_eval_list = {metrics_eval_list}')
         if len(metrics_eval_list) == 0 and codebase_name == 'mmedit':
             metrics_eval_list = ['PSNR']
 
@@ -924,7 +931,7 @@ def main():
         models_info = yaml_info.get('models')
         for models in models_info:
             if 'model_configs' not in models:
-                print(f'Skip {models.get("name")}')
+                logger.info(f'Skip {models.get("name")}')
                 continue
 
             model_metafile_info, checkpoint_save_dir, codebase_dir = \
