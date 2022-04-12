@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import os.path as osp
 from typing import List, Optional, Sequence, Union
 
 import mmcv
@@ -6,7 +7,6 @@ import numpy as np
 import torch
 from mmcv.utils import Registry
 from mmedit.core import psnr, ssim, tensor2img
-import os.path as osp
 
 from mmdeploy.codebase.base import BaseBackendModel
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
