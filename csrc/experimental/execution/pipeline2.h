@@ -13,6 +13,7 @@
 
 namespace mmdeploy::async {
 
+using std::pair;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -65,35 +66,19 @@ class Pipeline : public Node {
   Sender<Value> Process(Sender<Value> args) override;
 
   struct Coords {
+    // source node index
     int index;
-    std::vector<std::pair<int, int>> mapping;
+    // source output port -> destination input port mapping
+    vector<pair<int, int>> mapping;
   };
 
-  class State {
-   public:
-    State(vector<int> use_count, Sender<Value> args);
-
-    void Write(int index, Sender<Value> value);
-    // ! coords must last until finish of the async operation.
-    Sender<Value> Collect(const vector<Coords>& coords);
-
-   private:
-    Sender<Value> Read(int index);
-    // collect inputs from outputs of multiple nodes
-    Sender<Value> CollectN(const vector<Coords>& coords);
-    // collect inputs from 1 node's outputs
-    Sender<Value> Collect1(const Coords& coords);
-
-   private:
-    vector<int> use_count_;
-    std::vector<std::optional<Sender<Value>>> values_;
-  };
+  class State;
 
  private:
-  const vector<unique_ptr<Node>> nodes_;
-  const vector<int> use_count_;
-  const vector<vector<Coords>> input_coords_;
-  const vector<Coords> ret_coords_;
+  vector<unique_ptr<Node>> nodes_;
+  vector<int> use_count_;
+  vector<vector<Coords>> input_coords_;
+  vector<Coords> ret_coords_;
 };
 
 class PipelineParser {
@@ -101,15 +86,14 @@ class PipelineParser {
   Result<unique_ptr<Pipeline>> Parse(const Value& config);
 
  private:
-  vector<string> inputs_;
-  vector<string> outputs_;
-  vector<unique_ptr<Node>> nodes_;
-  vector<int> input_idx_;
-  vector<int> output_idx_;
-  vector<vector<int>> node_input_idx_;
-  vector<vector<int>> node_output_idx_;
-  std::map<string, int> binding_name_to_idx_;
-  std::map<int, string> binding_idx_to_name_;
+  Result<vector<Pipeline::Coords>> GetInputCoords(const vector<string>& names);
+
+  Result<void> UpdateOutputCoords(int index, const vector<string>& names);
+
+  // use count for each node's output
+  vector<int> use_count_;
+  // name -> (node_id, port_id)
+  std::map<string, pair<int, int>> output_name_to_coords_;
 };
 
 }  // namespace mmdeploy::async

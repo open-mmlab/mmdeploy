@@ -157,8 +157,8 @@ struct BatchedInference {
         }
         return 0;
       };
-      auto zero = std::chrono::duration<int>::zero();
-      StartDetached(Then(ScheduleAfter(sched, zero), std::move(work)));
+      auto now = std::chrono::duration<int>::zero();
+      StartDetached(Then(ScheduleAfter(sched, now), std::move(work)));
     }
   }
 
