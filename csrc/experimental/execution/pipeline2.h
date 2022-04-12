@@ -11,7 +11,9 @@
 #include "experimental/execution/type_erased.h"
 #include "experimental/execution/when_all_value.h"
 
-namespace mmdeploy::async {
+namespace mmdeploy {
+
+namespace async {
 
 using std::pair;
 using std::string;
@@ -56,7 +58,7 @@ class Task : public Node {
 
 class TaskParser {
  public:
-  Result<unique_ptr<Task>> Parse(const Value& config);
+  static Result<unique_ptr<Task>> Parse(const Value& config);
 };
 
 class Pipeline : public Node {
@@ -96,6 +98,10 @@ class PipelineParser {
   std::map<string, pair<int, int>> output_name_to_coords_;
 };
 
-}  // namespace mmdeploy::async
+}  // namespace async
+
+MMDEPLOY_DECLARE_REGISTRY(async::Node);
+
+}  // namespace mmdeploy
 
 #endif  // MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_PIPELINE2_H_

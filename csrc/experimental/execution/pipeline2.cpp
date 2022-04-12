@@ -6,7 +6,9 @@
 #include "graph/common.h"
 #include "timed_batch_operation.h"
 
-namespace mmdeploy::async {
+namespace mmdeploy {
+
+namespace async {
 
 struct Pipeline::State {
  public:
@@ -211,4 +213,38 @@ Result<void> PipelineParser::UpdateOutputCoords(int index, const vector<string>&
   return success();
 }
 
-}  // namespace mmdeploy::async
+class PipelineCreator : public Creator<Node> {
+ public:
+  const char* GetName() const override { return "async::Pipeline"; }
+  int GetVersion() const override { return 0; }
+  std::unique_ptr<Node> Create(const Value& value) override {
+    return PipelineParser{}.Parse(value).value();
+  }
+};
+
+class TaskCreator : public Creator<Node> {
+ public:
+  const char* GetName() const override { return "async::Task"; }
+  int GetVersion() const override { return 0; }
+  std::unique_ptr<Node> Create(const Value& value) override {
+    return TaskParser::Parse(value).value();
+  }
+};
+
+
+REGISTER_MODULE(Node, TaskCreator);
+REGISTER_MODULE(Node, PipelineCreator);
+
+}  // namespace async
+
+MMDEPLOY_DEFINE_REGISTRY(async::Node);
+
+//using AsyncNode = async::Node;
+//using AsyncPipelineCreator = async::PipelineCreator;
+//REGISTER_MODULE(AsyncNode, AsyncPipelineCreator);
+
+//using AsyncTask = async::Task;
+//using AsyncTaskCreator = async::TaskCreator;
+//REGISTER_MODULE(AsyncNode, AsyncTaskCreator);
+
+}  // namespace mmdeploy
