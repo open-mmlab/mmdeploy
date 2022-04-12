@@ -191,11 +191,11 @@ models:
 | 6    | dbnet| ../mmocr/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py | Text Detection   | ${WORK_DIR}/mmocr/dbnet/tensorrt/dynamic/dbnet_r18_fpnc_sbn_1200e_icdar2015_20210329-ba3ab597 | ICDAR     | SDK-tensorrt    | configs/mmocr/text-detection/text-detection_sdk_dynamic.py   | dynamic  | fp16  | True     | 140.06    | 0.795073 | -         | True|
 
 ## 4. 支持的后端
-- [x] onnxruntime
+- [x] ONNX Runtime
 - [x] TensorRT
 - [x] PPLNN
-- [x] NCNN
-- [x] OpenVino
+- [x] ncnn
+- [x] OpenVINO
 - [x] MMDeploy SDK
 
 ## 5. 支持的Codebase及其Metric
