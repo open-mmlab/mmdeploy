@@ -6,6 +6,7 @@ import numpy as np
 import torch
 from mmcv.utils import Registry
 from mmedit.core import psnr, ssim, tensor2img
+import os.path as osp
 
 from mmdeploy.codebase.base import BaseBackendModel
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
@@ -88,6 +89,9 @@ class End2EndModel(BaseBackendModel):
     def forward_test(self,
                      lq: torch.Tensor,
                      gt: Optional[torch.Tensor] = None,
+                     meta=None,
+                     save_image=False,
+                     save_path=None,
                      *args,
                      **kwargs):
         """Run inference for restorer to generate evaluation result.
@@ -96,14 +100,28 @@ class End2EndModel(BaseBackendModel):
             lq (torch.Tensor): The input low-quality image of the model.
             gt (torch.Tensor): The ground truth of input image. Defaults to
                 `None`.
+            save_image (bool): Whether to save image. Default: False.
+            save_path (str): Path to save image. Default: None.
             *args: Other arguments.
             **kwargs: Other key-pair arguments.
 
         Returns:
             dict: Evaluation results.
         """
+        gt = (gt + 1) / 2.0
         outputs = self.forward_dummy(lq)
         result = self.test_post_process(outputs, lq, gt)
+
+        # Align to mmediting BasicRestorer
+        if save_image and save_path:
+            outputs = [torch.from_numpy(i) for i in outputs]
+
+            lq_path = meta[0]['lq_path']
+            folder_name = osp.splitext(osp.basename(lq_path))[0]
+            save_path = osp.join(save_path, f'{folder_name}.png')
+
+            mmcv.imwrite(tensor2img(outputs), save_path)
+
         return result
 
     def forward_dummy(self, lq: torch.Tensor, *args, **kwargs):
