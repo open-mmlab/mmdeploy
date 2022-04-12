@@ -196,7 +196,7 @@ def get_pytorch_result(model_name, meta_info, checkpoint_path,
         model_name (str): Name of model.
         meta_info (dict): Metafile info from model's metafile.yml.
         checkpoint_path (Path): Checkpoint path.
-        model_config_name (Path):  Model config name for getting meta info
+        model_config_name (Path):  Model config name for getting meta info.
         metric_name_info (dict): Metrics info.
         report_dict (dict): Report info dict.
         logger (logging.Logger): Logger.
@@ -303,13 +303,13 @@ def get_info_from_log_file(info_type, log_path, yaml_metric_key, logger):
     """Get fps and metric result from log file.
 
     Args:
-        info_type (str): Get which type of info: 'FPS' or 'metric'
+        info_type (str): Get which type of info: 'FPS' or 'metric'.
         log_path (str): Logger path.
         yaml_metric_key (str): Name of metric from yaml metric_key.
         logger (Logger): Logger handler.
 
     Returns:
-        Float: Info value which get from logger file
+        Float: Info value which get from logger file.
     """
     log_path = Path(log_path)
 
@@ -411,7 +411,7 @@ def compare_metric(metric_value, metric_name, pytorch_metric, metric_info):
     """Compare metric value with the pytorch metric value and the tolerance.
 
     Args:
-        metric_value (float): Metric value
+        metric_value (float): Metric value.
         metric_name (str): metric name.
         pytorch_metric (dict): Pytorch metric which get from metafile.
         metric_info (dict): Metric info from test yaml.
@@ -438,8 +438,8 @@ def get_fps_metric(shell_res, pytorch_metric, metric_key,
     """Get fps and metric.
 
     Args:
-        shell_res (int): Backend convert result: 0 is success
-        pytorch_metric (dict): Metric info of pytorch metafile
+        shell_res (int): Backend convert result: 0 is success.
+        pytorch_metric (dict): Metric info of pytorch metafile.
         metric_key (str):Metric info.
         yaml_metric_info_name (str): Name of metric info in test yaml.
         log_path (str): Logger path.
@@ -448,8 +448,8 @@ def get_fps_metric(shell_res, pytorch_metric, metric_key,
         logger (Logger): Logger handler.
 
     Returns:
-        Float: fps: FPS of the model
-        List: metric_list: metric result list
+        Float: fps: FPS of the model.
+        List: metric_list: metric result list.
         Bool: test_pass: If the test pass or not.
     """
     metric_list = []
@@ -584,10 +584,10 @@ def get_precision_type(deploy_cfg_name: str):
 
 
 def replace_top_in_pipeline_json(backend_output_path, logger):
-    """Replace `topk` with num_classes in pipeline.json
+    """Replace `topk` with `num_classes` in `pipeline.json`.
 
     Args:
-        backend_output_path (Path): Backend convert result saving path
+        backend_output_path (Path): Backend convert result path.
         logger (Logger): Logger handler.
     """
 
