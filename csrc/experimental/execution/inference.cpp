@@ -39,4 +39,15 @@ Result<unique_ptr<Pipeline>> InferenceParser::Parse(const Value& config) {
   }
 }
 
+class InferenceCreator : public Creator<Node> {
+ public:
+  const char* GetName() const override { return "Inference"; }
+  int GetVersion() const override { return 0; }
+  std::unique_ptr<Node> Create(const Value& value) override {
+    return InferenceParser::Parse(value).value();
+  }
+};
+
+REGISTER_MODULE(Node, InferenceCreator);
+
 }  // namespace mmdeploy::async

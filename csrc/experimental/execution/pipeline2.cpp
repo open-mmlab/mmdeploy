@@ -215,7 +215,7 @@ Result<void> PipelineParser::UpdateOutputCoords(int index, const vector<string>&
 
 class PipelineCreator : public Creator<Node> {
  public:
-  const char* GetName() const override { return "async::Pipeline"; }
+  const char* GetName() const override { return "Pipeline"; }
   int GetVersion() const override { return 0; }
   std::unique_ptr<Node> Create(const Value& value) override {
     return PipelineParser{}.Parse(value).value();
@@ -224,7 +224,7 @@ class PipelineCreator : public Creator<Node> {
 
 class TaskCreator : public Creator<Node> {
  public:
-  const char* GetName() const override { return "async::Task"; }
+  const char* GetName() const override { return "Task"; }
   int GetVersion() const override { return 0; }
   std::unique_ptr<Node> Create(const Value& value) override {
     return TaskParser::Parse(value).value();

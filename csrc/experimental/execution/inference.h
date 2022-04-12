@@ -9,7 +9,7 @@ namespace mmdeploy::async {
 
 class InferenceParser {
  public:
-  Result<unique_ptr<Pipeline>> Parse(const Value& config);
+  static Result<unique_ptr<Pipeline>> Parse(const Value& config);
 };
 
 }  // namespace mmdeploy::async

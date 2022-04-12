@@ -5,19 +5,64 @@
 #include <numeric>
 
 #include "archive/value_archive.h"
-#include "async_detector.h"
+//#include "async_detector.h"
 #include "codebase/mmdet/mmdet.h"
 #include "core/device.h"
 #include "core/graph.h"
 #include "core/mat.h"
 #include "core/utils/formatter.h"
-#include "handle.h"
-#include "static_detector.h"
+
+//#include "handle.h"
+//#include "static_detector.h"
+
+#include "experimental/execution/pipeline2.h"
 
 using namespace std;
 using namespace mmdeploy;
 
 namespace {
+
+class Handle {
+ public:
+  Handle(const char* device_name, int device_id, Value config) {
+    device_ = Device(device_name, device_id);
+    stream_ = Stream(device_);
+    config["context"].update({{"device", device_}, {"stream", stream_}});
+    auto creator = Registry<async::Node>::Get().GetCreator("Pipeline");
+    if (!creator) {
+      MMDEPLOY_ERROR("failed to find Pipeline creator");
+      throw_exception(eEntryNotFound);
+    }
+    pipeline_ = creator->Create(config);
+    if (!pipeline_) {
+      MMDEPLOY_ERROR("create pipeline failed");
+      throw_exception(eFail);
+    }
+    //    pipeline_->Build(graph_);
+  }
+
+  //  template <typename T>
+  //  Result<Value> Run(T&& input) {
+  //    OUTCOME_TRY(auto output, graph_.Run(std::forward<T>(input)));
+  //    OUTCOME_TRY(stream_.Wait());
+  //    return output;
+  //  }
+
+  async::Sender<Value> Process(async::Sender<Value> input) {
+    return pipeline_->Process(std::move(input));
+  }
+
+  Device& device() { return device_; }
+
+  Stream& stream() { return stream_; }
+
+ private:
+  Device device_;
+  Stream stream_;
+  //  graph::TaskGraph graph_;
+  //  std::unique_ptr<graph::Node> pipeline_;
+  unique_ptr<async::Node> pipeline_;
+};
 
 Value& config_template() {
   // clang-format off
@@ -55,7 +100,7 @@ int mmdeploy_detector_create_impl(ModelType&& m, const char* device_name, int de
     }
     Stream stream(device);
 
-    *handle = async::CreateDetector((ModelType &&) m, stream);
+    //    *handle = async::CreateDetector((ModelType &&) m, stream);
     //    *handle = CreateStaticDetector((ModelType &&) m, stream);
     return MM_SUCCESS;
 
@@ -86,7 +131,7 @@ int mmdeploy_detector_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_co
   }
 
   try {
-    auto detector = static_cast<async::Detector*>(handle);
+    auto detector = static_cast<Handle*>(handle);
 
     std::vector<Mat> inputs;
     for (int i = 0; i < mat_count; ++i) {
@@ -95,19 +140,21 @@ int mmdeploy_detector_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_co
       inputs.push_back(std::move(_mat));
     }
 
-    using Sender = decltype(EnsureStarted(detector->Detect(Mat{})));
+    //    using Sender = decltype(EnsureStarted(detector->Process(Mat{})));
 
-    std::vector<Sender> output_senders;
+    std::vector<async::Sender<Value>> output_senders;
     output_senders.reserve(inputs.size());
 
     for (const Mat& img : inputs) {
-      output_senders.push_back(EnsureStarted(detector->Detect(img)));
+      output_senders.emplace_back(EnsureStarted(detector->Process(Just(Value{{"ori_img", img}}))));
     }
 
-    vector<mmdet::DetectorOutput> detector_outputs;
+    using Dets = mmdet::DetectorOutput;
+
+    vector<Dets> detector_outputs;
     detector_outputs.reserve(inputs.size());
     for (auto& s : output_senders) {
-      detector_outputs.push_back(std::get<0>(SyncWait(s)));
+      detector_outputs.push_back(from_value<Dets>(std::get<0>(SyncWait(s))));
     }
 
     vector<int> _result_count;
@@ -180,7 +227,7 @@ void mmdeploy_detector_release_result(mm_detect_t* results, const int* result_co
 
 void mmdeploy_detector_destroy(mm_handle_t handle) {
   if (handle != nullptr) {
-    auto detector = static_cast<async::Detector*>(handle);
+    auto detector = static_cast<Handle*>(handle);
     delete detector;
   }
 }
