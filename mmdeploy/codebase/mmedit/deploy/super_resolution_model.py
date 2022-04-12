@@ -108,7 +108,6 @@ class End2EndModel(BaseBackendModel):
         Returns:
             dict: Evaluation results.
         """
-        gt = (gt + 1) / 2.0
         outputs = self.forward_dummy(lq)
         result = self.test_post_process(outputs, lq, gt)
 
