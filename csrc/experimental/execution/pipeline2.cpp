@@ -4,6 +4,7 @@
 
 #include "archive/value_archive.h"
 #include "graph/common.h"
+#include "timed_batch_operation.h"
 
 namespace mmdeploy::async {
 
