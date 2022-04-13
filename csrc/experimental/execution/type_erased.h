@@ -29,6 +29,7 @@ class _TypeErasedSender {
   using value_type = ValueTypes;
 
   struct Impl {
+    virtual ~Impl() = default;
     virtual _Operation _Connect(_Receiver) = 0;
     virtual std::unique_ptr<Impl> _Clone() const = 0;
   };
@@ -103,6 +104,7 @@ template <class ValueTypes>
 class _TypeErasedReceiver {
  public:
   struct Impl {
+    virtual ~Impl() = default;
     virtual void _SetValue(ValueTypes) = 0;
   };
 
@@ -143,6 +145,7 @@ _TypeErasedReceiver<ValueTypes>::_TypeErasedReceiver(Receiver&& receiver) {
 class _TypeErasedScheduler {
  public:
   struct Impl {
+    virtual ~Impl() = default;
     virtual _TypeErasedSender<std::tuple<>> _Schedule() = 0;
   };
 
@@ -179,6 +182,7 @@ template <class ValueTypes>
 class _TypeErasedOperation {
  public:
   struct Impl {
+    virtual ~Impl() = default;
     virtual void _Start() = 0;
   };
 
