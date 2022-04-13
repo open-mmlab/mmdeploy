@@ -4,12 +4,12 @@
 #include <assert.h>
 
 #include <algorithm>
+#include <cassert>
 #include <cmath>
 #include <iostream>
 #include <iterator>
 #include <numeric>  // std::iota
 #include <vector>
-#include <cassert>
 
 #include "ort_utils.h"
 
@@ -22,36 +22,24 @@ struct RotatedBox {
 struct Point {
   float x, y;
   Point(const float& px = 0, const float& py = 0) : x(px), y(py) {}
-  Point operator+(const Point& p) const {
-    return Point(x + p.x, y + p.y);
-  }
+  Point operator+(const Point& p) const { return Point(x + p.x, y + p.y); }
   Point& operator+=(const Point& p) {
     x += p.x;
     y += p.y;
     return *this;
   }
-  Point operator-(const Point& p) const {
-    return Point(x - p.x, y - p.y);
-  }
+  Point operator-(const Point& p) const { return Point(x - p.x, y - p.y); }
   Point operator*(const float coeff) const {
     return Point(x * coeff, y * coeff);
   }
 };
 
+float dot_2d(const Point& A, const Point& B) { return A.x * B.x + A.y * B.y; }
 
-float dot_2d(const Point& A, const Point& B) {
-  return A.x * B.x + A.y * B.y;
-}
+float cross_2d(const Point& A, const Point& B) { return A.x * B.y - B.x * A.y; }
+}  // namespace
 
-
-float cross_2d(const Point& A, const Point& B) {
-  return A.x * B.y - B.x * A.y;
-}
-}
-
-
-void get_rotated_vertices(const RotatedBox& box,
-                                             Point (&pts)[4]) {
+void get_rotated_vertices(const RotatedBox& box, Point (&pts)[4]) {
   // M_PI / 180. == 0.01745329251
   // double theta = box.a * 0.01745329251;
   // MODIFIED
@@ -70,10 +58,8 @@ void get_rotated_vertices(const RotatedBox& box,
   pts[3].y = 2 * box.y_ctr - pts[1].y;
 }
 
-
-int get_intersection_points(const Point (&pts1)[4],
-                                               const Point (&pts2)[4],
-                                               Point (&intersections)[24]) {
+int get_intersection_points(const Point (&pts1)[4], const Point (&pts2)[4],
+                            Point (&intersections)[24]) {
   // Line vector
   // A line from p1 to p2 is: p1 + (p2-p1)*t, t=[0,1]
   Point vec1[4], vec2[4];
@@ -150,10 +136,8 @@ int get_intersection_points(const Point (&pts1)[4],
   return num;
 }
 
-
-int convex_hull_graham(const Point (&p)[24],
-                                          const int& num_in, Point (&q)[24],
-                                          bool shift_to_zero = false) {
+int convex_hull_graham(const Point (&p)[24], const int& num_in, Point (&q)[24],
+                       bool shift_to_zero = false) {
   assert(num_in >= 2);
 
   // Step 1:
@@ -189,15 +173,14 @@ int convex_hull_graham(const Point (&p)[24],
   }
 
   // CPU version
-  std::sort(q + 1, q + num_in,
-            [](const Point& A, const Point& B) -> bool {
-              float temp = cross_2d(A, B);
-              if (fabs(temp) < 1e-6) {
-                return dot_2d(A, A) < dot_2d(B, B);
-              } else {
-                return temp > 0;
-              }
-            });
+  std::sort(q + 1, q + num_in, [](const Point& A, const Point& B) -> bool {
+    float temp = cross_2d(A, B);
+    if (fabs(temp) < 1e-6) {
+      return dot_2d(A, A) < dot_2d(B, B);
+    } else {
+      return temp > 0;
+    }
+  });
   // compute distance to origin after sort, since the points are now different.
   for (int i = 0; i < num_in; i++) {
     dist[i] = dot_2d(q[i], q[i]);
@@ -247,7 +230,6 @@ int convex_hull_graham(const Point (&p)[24],
   return m;
 }
 
-
 float polygon_area(const Point (&q)[24], const int& m) {
   if (m <= 2) {
     return 0;
@@ -261,9 +243,8 @@ float polygon_area(const Point (&q)[24], const int& m) {
   return area / 2.0;
 }
 
-
 float rotated_boxes_intersection(const RotatedBox& box1,
-                                                const RotatedBox& box2) {
+                                 const RotatedBox& box2) {
   // There are up to 4 x 4 + 4 + 4 = 24 intersections (including dups) returned
   // from rotated_rect_intersection_pts
   Point intersectPts[24], orderedPts[24];
@@ -285,8 +266,7 @@ float rotated_boxes_intersection(const RotatedBox& box1,
   return polygon_area(orderedPts, num_convex);
 }
 
-
-NMSRotatedKernel::NMSRotatedKernel(OrtApi api, const OrtKernelInfo *info)
+NMSRotatedKernel::NMSRotatedKernel(OrtApi api, const OrtKernelInfo* info)
     : api_(api), ort_(api_), info_(info) {
   iou_threshold_ = ort_.KernelInfoGetAttribute<float>(info, "iou_threshold");
 
@@ -294,26 +274,26 @@ NMSRotatedKernel::NMSRotatedKernel(OrtApi api, const OrtKernelInfo *info)
   allocator_ = Ort::AllocatorWithDefaultOptions();
 }
 
-void NMSRotatedKernel::Compute(OrtKernelContext *context) {
+void NMSRotatedKernel::Compute(OrtKernelContext* context) {
   const float iou_threshold = iou_threshold_;
 
-  const OrtValue *boxes = ort_.KernelContext_GetInput(context, 0);
-  const float *boxes_data =
-      reinterpret_cast<const float *>(ort_.GetTensorData<float>(boxes));
-  const OrtValue *scores = ort_.KernelContext_GetInput(context, 1);
-  const float *scores_data =
-      reinterpret_cast<const float *>(ort_.GetTensorData<float>(scores));
+  const OrtValue* boxes = ort_.KernelContext_GetInput(context, 0);
+  const float* boxes_data =
+      reinterpret_cast<const float*>(ort_.GetTensorData<float>(boxes));
+  const OrtValue* scores = ort_.KernelContext_GetInput(context, 1);
+  const float* scores_data =
+      reinterpret_cast<const float*>(ort_.GetTensorData<float>(scores));
 
   OrtTensorDimensions boxes_dim(ort_, boxes);
   OrtTensorDimensions scores_dim(ort_, scores);
 
   int64_t nboxes = boxes_dim[0];
-  assert(boxes_dim[1] == 5); //(cx,cy,w,h,theta)
+  assert(boxes_dim[1] == 5);  //(cx,cy,w,h,theta)
 
   // allocate tmp memory
-  float *tmp_boxes = (float *)allocator_.Alloc(sizeof(float) * nboxes * 5);
-  float *sc = (float *)allocator_.Alloc(sizeof(float) * nboxes);
-  bool *select = (bool *)allocator_.Alloc(sizeof(bool) * nboxes);
+  float* tmp_boxes = (float*)allocator_.Alloc(sizeof(float) * nboxes * 5);
+  float* sc = (float*)allocator_.Alloc(sizeof(float) * nboxes);
+  bool* select = (bool*)allocator_.Alloc(sizeof(bool) * nboxes);
   for (int64_t i = 0; i < nboxes; i++) {
     select[i] = true;
   }
@@ -331,7 +311,6 @@ void NMSRotatedKernel::Compute(OrtKernelContext *context) {
   std::sort(order.begin(), order.end(), [&tmp_sc](int64_t id1, int64_t id2) {
     return tmp_sc[id1] > tmp_sc[id2];
   });
-
 
   for (int64_t _i = 0; _i < nboxes; _i++) {
     if (select[_i] == false) continue;
@@ -371,9 +350,9 @@ void NMSRotatedKernel::Compute(OrtKernelContext *context) {
 
   std::vector<int64_t> inds_dims({(int64_t)res_order.size()});
 
-  OrtValue *res = ort_.KernelContext_GetOutput(context, 0, inds_dims.data(),
+  OrtValue* res = ort_.KernelContext_GetOutput(context, 0, inds_dims.data(),
                                                inds_dims.size());
-  int64_t *res_data = ort_.GetTensorMutableData<int64_t>(res);
+  int64_t* res_data = ort_.GetTensorMutableData<int64_t>(res);
 
   memcpy(res_data, res_order.data(), sizeof(int64_t) * res_order.size());
 }
