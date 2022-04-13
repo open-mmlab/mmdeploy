@@ -7,8 +7,8 @@ from mmdeploy.core import SYMBOLIC_REWRITER
 
 
 # Here using mmcv.ops.roi_align_rotated.__self__ to find
-# mmcv.ops.roi_align.RoIAlignRotatedFunction, because RoIAlignRotatedFunction is not
-# visible in mmcv.
+# mmcv.ops.roi_align.RoIAlignRotatedFunction, because RoIAlignRotatedFunction
+# is not visible in mmcv.
 @SYMBOLIC_REWRITER.register_symbolic(
     'mmcv.ops.roi_align_rotated.__self__', backend='default')
 def roi_align_rotated_default(ctx, g, input: Tensor, rois: Tensor,
