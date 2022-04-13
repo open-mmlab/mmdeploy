@@ -1,16 +1,16 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#ifndef MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_TIMED_BATCH_OPERATION_H_
-#define MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_TIMED_BATCH_OPERATION_H_
+#ifndef MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_DEFERRED_BATCH_OPERATION_H_
+#define MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_DEFERRED_BATCH_OPERATION_H_
 
 #include "experimental/execution/timed_single_thread_context.h"
 #include "pipeline2.h"
 
 namespace mmdeploy::async {
 
-class TimedBatchOperation : public Node {
+class DeferredBatchOperation : public Node {
   struct _OperationBase {
-    TimedBatchOperation* cls_;
+    DeferredBatchOperation* cls_;
     void (*notify_)(_OperationBase*, Value);
   };
 
@@ -45,7 +45,7 @@ class TimedBatchOperation : public Node {
     }
 
     template <class Sender2, class = _decays_to<Sender2, Sender>>
-    _Operation(Sender2&& sender, TimedBatchOperation* cls, Receiver&& receiver)
+    _Operation(Sender2&& sender, DeferredBatchOperation* cls, Receiver&& receiver)
         : _OperationBase{cls, &_Operation::Notify},
           op_state2_(Connect((Sender2 &&) sender, receiver_t{this})),
           receiver_(std::move(receiver)) {}
@@ -59,7 +59,7 @@ class TimedBatchOperation : public Node {
   struct _Sender {
     using value_type = std::tuple<Value>;
     Sender sender_;
-    TimedBatchOperation* cls_;
+    DeferredBatchOperation* cls_;
 
     template <class Self, class Receiver, class = _decays_to<Self, _Sender>>
     friend auto Connect(Self&& self, Receiver&& receiver)
@@ -127,14 +127,14 @@ class TimedBatchOperation : public Node {
   const int max_batch_size_;
   const std::chrono::microseconds delay_;
   unique_ptr<Node> operation_;
-  std::unique_ptr<Batch> batch_;
+  unique_ptr<Batch> batch_;
   size_t counter_{0};
   std::mutex mutex_;
   TimedSingleThreadContext timer_;
 
  public:
-  TimedBatchOperation(unique_ptr<Node> operation, int max_batch_size,
-                      std::chrono::microseconds delay)
+  DeferredBatchOperation(unique_ptr<Node> operation, int max_batch_size,
+                         std::chrono::microseconds delay)
       : max_batch_size_(max_batch_size), delay_(delay), operation_(std::move(operation)) {
     name_ = operation_->name();
     inputs_ = operation_->inputs();
@@ -146,4 +146,4 @@ class TimedBatchOperation : public Node {
 
 }  // namespace mmdeploy::async
 
-#endif  // MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_TIMED_BATCH_OPERATION_H_
+#endif  // MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_DEFERRED_BATCH_OPERATION_H_
