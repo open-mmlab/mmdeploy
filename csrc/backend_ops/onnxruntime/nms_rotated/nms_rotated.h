@@ -12,8 +12,8 @@
 
 namespace mmdeploy {
 struct NMSRotatedKernel {
-  NMSRotatedKernel(OrtApi api, const OrtKernelInfo *info); 
-  
+  NMSRotatedKernel(OrtApi api, const OrtKernelInfo *info);
+
   void Compute(OrtKernelContext* context);
 
  private:
