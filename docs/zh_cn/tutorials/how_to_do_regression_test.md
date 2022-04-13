@@ -196,6 +196,7 @@ models:
 - [x] PPLNN
 - [x] ncnn
 - [x] OpenVINO
+- [x] TorchScript
 - [x] MMDeploy SDK
 
 ## 5. 支持的Codebase及其Metric
