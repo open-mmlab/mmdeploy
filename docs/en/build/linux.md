@@ -445,9 +445,11 @@ You can also activate other engines after the model.
 
 #### Build Demo
 
+Take ncnn backend as example:
+
 ```Bash
 cd ${MMDEPLOY_DIR}/build/install/example
 mkdir -p build && cd build
-cmake .. -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy
+cmake .. -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn 
 make -j$(nproc)
 ```
