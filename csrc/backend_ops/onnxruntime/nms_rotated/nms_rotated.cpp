@@ -15,6 +15,7 @@
 
 namespace mmdeploy {
 
+namespace {
 struct RotatedBox {
   float x_ctr, y_ctr, w, h, a;
 };
@@ -45,6 +46,7 @@ float dot_2d(const Point& A, const Point& B) {
 
 float cross_2d(const Point& A, const Point& B) {
   return A.x * B.y - B.x * A.y;
+}
 }
 
 
@@ -302,13 +304,13 @@ void NMSRotatedKernel::Compute(OrtKernelContext *context) {
   const float *scores_data =
       reinterpret_cast<const float *>(ort_.GetTensorData<float>(scores));
 
-  OrtTensorDimensions boxes_dim(ort_, boxes); // 得到输入的维度
+  OrtTensorDimensions boxes_dim(ort_, boxes);
   OrtTensorDimensions scores_dim(ort_, scores);
 
-  int64_t nboxes = boxes_dim[0]; // 拿到 boxes 的数量
-  assert(boxes_dim[1] == 5); // 假定 boxes 的第二维为 ，即（cx,cy,w,h,theta）
+  int64_t nboxes = boxes_dim[0];
+  assert(boxes_dim[1] == 5); //(cx,cy,w,h,theta)
 
-  // allocate tmp memory 申请临时内存
+  // allocate tmp memory
   float *tmp_boxes = (float *)allocator_.Alloc(sizeof(float) * nboxes * 5);
   float *sc = (float *)allocator_.Alloc(sizeof(float) * nboxes);
   bool *select = (bool *)allocator_.Alloc(sizeof(bool) * nboxes);
@@ -316,11 +318,10 @@ void NMSRotatedKernel::Compute(OrtKernelContext *context) {
     select[i] = true;
   }
 
-  // 往临时变量复制数据
   memcpy(tmp_boxes, boxes_data, sizeof(float) * nboxes * 5);
   memcpy(sc, scores_data, sizeof(float) * nboxes);
 
-  // sort scores 排序
+  // sort scores
   std::vector<float> tmp_sc;
   for (int i = 0; i < nboxes; i++) {
     tmp_sc.push_back(sc[i]);
@@ -361,22 +362,19 @@ void NMSRotatedKernel::Compute(OrtKernelContext *context) {
       if (ovr > iou_threshold) select[_j] = false;
     }
   }
-  std::vector<int64_t> res_order; // 得到 nms 的结果 index
+  std::vector<int64_t> res_order;
   for (int i = 0; i < nboxes; i++) {
     if (select[i]) {
       res_order.push_back(order[i]);
     }
   }
 
-  std::vector<int64_t> inds_dims({(int64_t)res_order.size()}); // nms 后的结果数量
+  std::vector<int64_t> inds_dims({(int64_t)res_order.size()});
 
-  // 取得输出变量指针
   OrtValue *res = ort_.KernelContext_GetOutput(context, 0, inds_dims.data(),
                                                inds_dims.size());
-  // 声明输出变量的数据类型
   int64_t *res_data = ort_.GetTensorMutableData<int64_t>(res);
 
-  // 将结果复制给输出变量
   memcpy(res_data, res_order.data(), sizeof(int64_t) * res_order.size());
 }
 
