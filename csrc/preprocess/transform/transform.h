@@ -65,6 +65,12 @@ class MMDEPLOY_API Transform : public Module {
   std::vector<std::string> candidate_platforms_;
 };
 
+template <typename Key, typename Val>
+void SetTransformData(Value& dst, Key&& key, Val val) {
+  dst[std::forward<Key>(key)] = val;
+  dst["__data__"].push_back(std::move(val));
+}
+
 MMDEPLOY_DECLARE_REGISTRY(Transform);
 
 }  // namespace mmdeploy

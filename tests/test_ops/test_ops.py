@@ -16,7 +16,7 @@ TEST_TENSORRT = TestTensorRTExporter()
 TEST_NCNN = TestNCNNExporter()
 
 
-@pytest.mark.parametrize('backend', [TEST_ONNXRT, TEST_TENSORRT])
+@pytest.mark.parametrize('backend', [TEST_TENSORRT])
 @pytest.mark.parametrize('pool_h,pool_w,spatial_scale,sampling_ratio',
                          [(2, 2, 1.0, 2), (4, 4, 2.0, 4)])
 def test_roi_align(backend,
@@ -210,6 +210,52 @@ def test_modulated_deform_conv(backend,
             model, [input, offset, mask],
             'modulated_deform_conv',
             input_names=['input', 'offset', 'mask'],
+            output_names=['output'],
+            save_dir=save_dir)
+
+
+@pytest.mark.parametrize('backend', [TEST_TENSORRT])
+@pytest.mark.parametrize('in_channels,out_channels,stride,padding,'
+                         'dilation,groups,deform_groups,kernel_size',
+                         [(3, 64, 1, 0, 1, 1, 1, 3),
+                          (1, 32, 3, 2, 1, 1, 1, 3)])
+def test_deform_conv(backend,
+                     in_channels,
+                     out_channels,
+                     stride,
+                     padding,
+                     dilation,
+                     groups,
+                     deform_groups,
+                     kernel_size,
+                     input_list=None,
+                     save_dir=None):
+    backend.check_env()
+
+    if input_list is None:
+        input = torch.rand(
+            1, in_channels, 28, 28, requires_grad=False)  # (n, c, h, w)
+    else:
+        input = torch.tensor(input_list[0])
+    conv_offset = nn.Conv2d(
+        in_channels=in_channels,
+        out_channels=deform_groups * 2 * kernel_size * kernel_size,
+        kernel_size=kernel_size,
+        stride=stride,
+        padding=padding,
+        dilation=dilation,
+        bias=True)
+    offset = conv_offset(input)
+
+    from mmcv.ops import DeformConv2d
+    model = DeformConv2d(in_channels, out_channels, kernel_size, stride,
+                         padding, dilation, groups, deform_groups).eval()
+
+    with RewriterContext(cfg={}, backend=backend.backend_name, opset=11):
+        backend.run_and_validate(
+            model, [input, offset],
+            'deform_conv',
+            input_names=['input', 'offset'],
             output_names=['output'],
             save_dir=save_dir)
 

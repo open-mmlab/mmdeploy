@@ -5,7 +5,7 @@ from typing import Any, Callable, Dict, Optional, Sequence
 import torch
 
 from mmdeploy.core.rewriters import FUNCTION_REWRITER
-from mmdeploy.utils import cfg_apply_marks, get_partition_config
+from mmdeploy.utils import IR, cfg_apply_marks, get_partition_config
 
 MARK_FUNCTION_COUNT = dict()
 
@@ -178,6 +178,20 @@ def mark_tensors(xs: Any, func: str, func_id: int, io_type: str, ctx: Any,
         return ret
 
     return impl(xs, (), level)
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    'mmdeploy.core.optimizers.function_marker.mark_tensors', ir=IR.TORCHSCRIPT)
+def remove_mark__torchscript(ctx, xs: Any, *args, **kwargs):
+    """Disable all marks for TorchScript backend.
+
+    As the Node `mark` is not able to be traced, we just return original input
+    for the function `mark_tensors`.
+
+    Args:
+        xs (Any): Input structure which contains tensor.
+    """
+    return xs
 
 
 def mark(func_name: Optional[str] = None,

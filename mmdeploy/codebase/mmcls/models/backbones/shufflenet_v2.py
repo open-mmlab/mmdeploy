@@ -3,13 +3,17 @@ import torch
 from mmcls.models.utils import channel_shuffle
 
 from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.utils import Backend
 
 
 # torch.chunk will export dynamic shape slice, which will lead integer input
 # on ncnn backend. So the model needs to rewrite.
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmcls.models.backbones.shufflenet_v2.InvertedResidual.forward',
-    backend='ncnn')
+    backend=Backend.NCNN.value)
+@FUNCTION_REWRITER.register_rewriter(
+    func_name='mmcls.models.backbones.shufflenet_v2.InvertedResidual.forward',
+    backend=Backend.TORCHSCRIPT.value)
 def shufflenetv2_backbone__forward__ncnn(ctx, self, x):
     """Rewrite `forward` of InvertedResidual used in shufflenet_v2 for ncnn
     backend.

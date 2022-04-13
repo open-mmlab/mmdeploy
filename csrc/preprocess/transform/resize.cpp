@@ -106,9 +106,9 @@ Result<Value> ResizeImpl::Process(const Value& input) {
     auto h_scale = dst_h * 1.0 / h;
     output["scale_factor"] = {w_scale, h_scale, w_scale, h_scale};
     output["img_shape"] = {1, dst_h, dst_w, desc.shape[3]};
-    //    output["pad_shape"] = output["img_shape"];
     output["keep_ratio"] = arg_.keep_ratio;
-    output[key] = dst_img;
+
+    SetTransformData(output, key, std::move(dst_img));
   }
 
   MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));
