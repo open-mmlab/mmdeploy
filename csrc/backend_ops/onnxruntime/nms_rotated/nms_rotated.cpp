@@ -29,9 +29,7 @@ struct Point {
     return *this;
   }
   Point operator-(const Point& p) const { return Point(x - p.x, y - p.y); }
-  Point operator*(const float coeff) const {
-    return Point(x * coeff, y * coeff);
-  }
+  Point operator*(const float coeff) const { return Point(x * coeff, y * coeff); }
 };
 
 float dot_2d(const Point& A, const Point& B) { return A.x * B.x + A.y * B.y; }
@@ -107,8 +105,7 @@ int get_intersection_points(const Point (&pts1)[4], const Point (&pts2)[4],
       auto APdotAB = dot_2d(AP, AB);
       auto APdotAD = -dot_2d(AP, DA);
 
-      if ((APdotAB >= 0) && (APdotAD >= 0) && (APdotAB <= ABdotAB) &&
-          (APdotAD <= ADdotAD)) {
+      if ((APdotAB >= 0) && (APdotAD >= 0) && (APdotAB <= ABdotAB) && (APdotAD <= ADdotAD)) {
         intersections[num++] = pts1[i];
       }
     }
@@ -126,8 +123,7 @@ int get_intersection_points(const Point (&pts1)[4], const Point (&pts2)[4],
       auto APdotAB = dot_2d(AP, AB);
       auto APdotAD = -dot_2d(AP, DA);
 
-      if ((APdotAB >= 0) && (APdotAD >= 0) && (APdotAB <= ABdotAB) &&
-          (APdotAD <= ADdotAD)) {
+      if ((APdotAB >= 0) && (APdotAD >= 0) && (APdotAB <= ABdotAB) && (APdotAD <= ADdotAD)) {
         intersections[num++] = pts2[i];
       }
     }
@@ -243,8 +239,7 @@ float polygon_area(const Point (&q)[24], const int& m) {
   return area / 2.0;
 }
 
-float rotated_boxes_intersection(const RotatedBox& box1,
-                                 const RotatedBox& box2) {
+float rotated_boxes_intersection(const RotatedBox& box1, const RotatedBox& box2) {
   // There are up to 4 x 4 + 4 + 4 = 24 intersections (including dups) returned
   // from rotated_rect_intersection_pts
   Point intersectPts[24], orderedPts[24];
@@ -278,11 +273,9 @@ void NMSRotatedKernel::Compute(OrtKernelContext* context) {
   const float iou_threshold = iou_threshold_;
 
   const OrtValue* boxes = ort_.KernelContext_GetInput(context, 0);
-  const float* boxes_data =
-      reinterpret_cast<const float*>(ort_.GetTensorData<float>(boxes));
+  const float* boxes_data = reinterpret_cast<const float*>(ort_.GetTensorData<float>(boxes));
   const OrtValue* scores = ort_.KernelContext_GetInput(context, 1);
-  const float* scores_data =
-      reinterpret_cast<const float*>(ort_.GetTensorData<float>(scores));
+  const float* scores_data = reinterpret_cast<const float*>(ort_.GetTensorData<float>(scores));
 
   OrtTensorDimensions boxes_dim(ort_, boxes);
   OrtTensorDimensions scores_dim(ort_, scores);
@@ -308,9 +301,8 @@ void NMSRotatedKernel::Compute(OrtKernelContext* context) {
   }
   std::vector<int64_t> order(tmp_sc.size());
   std::iota(order.begin(), order.end(), 0);
-  std::sort(order.begin(), order.end(), [&tmp_sc](int64_t id1, int64_t id2) {
-    return tmp_sc[id1] > tmp_sc[id2];
-  });
+  std::sort(order.begin(), order.end(),
+            [&tmp_sc](int64_t id1, int64_t id2) { return tmp_sc[id1] > tmp_sc[id2]; });
 
   for (int64_t _i = 0; _i < nboxes; _i++) {
     if (select[_i] == false) continue;
@@ -350,8 +342,7 @@ void NMSRotatedKernel::Compute(OrtKernelContext* context) {
 
   std::vector<int64_t> inds_dims({(int64_t)res_order.size()});
 
-  OrtValue* res = ort_.KernelContext_GetOutput(context, 0, inds_dims.data(),
-                                               inds_dims.size());
+  OrtValue* res = ort_.KernelContext_GetOutput(context, 0, inds_dims.data(), inds_dims.size());
   int64_t* res_data = ort_.GetTensorMutableData<int64_t>(res);
 
   memcpy(res_data, res_order.data(), sizeof(int64_t) * res_order.size());
