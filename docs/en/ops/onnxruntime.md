@@ -16,11 +16,11 @@
     - [Outputs](#outputs-1)
     - [Type Constraints](#type-constraints-1)
   - [RoIAlignRotated](#roialignrotated)
-    - [Description](#description)
-    - [Parameters](#parameters)
-    - [Inputs](#inputs)
-    - [Outputs](#outputs)
-    - [Type Constraints](#type-constraints)
+    - [Description](#description-2)
+    - [Parameters](#parameters-2)
+    - [Inputs](#inputs-2)
+    - [Outputs](#outputs-2)
+    - [Type Constraints](#type-constraints-2)
 
 <!-- TOC -->
 
