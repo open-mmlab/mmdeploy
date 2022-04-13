@@ -18,25 +18,24 @@ struct PreCalc {
   float w4;
 };
 
-void pre_calc_for_bilinear_interpolate(
-    const int height, const int width, const int pooled_height,
-    const int pooled_width, const int iy_upper, const int ix_upper,
-    float roi_start_h, float roi_start_w, float bin_size_h, float bin_size_w,
-    int roi_bin_grid_h, int roi_bin_grid_w, float roi_center_h,
-    float roi_center_w, float cos_theta, float sin_theta,
-    std::vector<PreCalc> &pre_calc) {
+void pre_calc_for_bilinear_interpolate(const int height, const int width, const int pooled_height,
+                                       const int pooled_width, const int iy_upper,
+                                       const int ix_upper, float roi_start_h, float roi_start_w,
+                                       float bin_size_h, float bin_size_w, int roi_bin_grid_h,
+                                       int roi_bin_grid_w, float roi_center_h, float roi_center_w,
+                                       float cos_theta, float sin_theta,
+                                       std::vector<PreCalc> &pre_calc) {
   int pre_calc_index = 0;
   for (int ph = 0; ph < pooled_height; ph++) {
     for (int pw = 0; pw < pooled_width; pw++) {
       for (int iy = 0; iy < iy_upper; iy++) {
-        const float yy =
-            roi_start_h + ph * bin_size_h +
-            static_cast<float>(iy + .5f) * bin_size_h /
-                static_cast<float>(roi_bin_grid_h);  // e.g., 0.5, 1.5
+        const float yy = roi_start_h + ph * bin_size_h +
+                         static_cast<float>(iy + .5f) * bin_size_h /
+                             static_cast<float>(roi_bin_grid_h);  // e.g., 0.5, 1.5
         for (int ix = 0; ix < ix_upper; ix++) {
-          const float xx = roi_start_w + pw * bin_size_w +
-                           static_cast<float>(ix + .5f) * bin_size_w /
-                               static_cast<float>(roi_bin_grid_w);
+          const float xx =
+              roi_start_w + pw * bin_size_w +
+              static_cast<float>(ix + .5f) * bin_size_w / static_cast<float>(roi_bin_grid_w);
 
           // Rotate by theta around the center and translate
           // In image space, (y, x) is the order for Right Handed System,
@@ -111,12 +110,10 @@ void pre_calc_for_bilinear_interpolate(
   }
 }
 
-void ROIAlignRotatedForwardCPU(const int nthreads, const float *input,
-                               const float *rois, float *output,
-                               const float &spatial_scale, const int aligned,
-                               const int clockwise, const int channels,
-                               const int height, const int width,
-                               const int pooled_height, const int pooled_width,
+void ROIAlignRotatedForwardCPU(const int nthreads, const float *input, const float *rois,
+                               float *output, const float &spatial_scale, const int aligned,
+                               const int clockwise, const int channels, const int height,
+                               const int width, const int pooled_height, const int pooled_width,
                                const int sampling_ratio) {
   int n_rois = nthreads / channels / pooled_width / pooled_height;
   // (n, c, ph, pw) is an element in the pooled output
@@ -146,42 +143,34 @@ void ROIAlignRotatedForwardCPU(const int nthreads, const float *input,
       roi_height = std::max(roi_height, (float)1.);
     }
 
-    float bin_size_h =
-        static_cast<float>(roi_height) / static_cast<float>(pooled_height);
-    float bin_size_w =
-        static_cast<float>(roi_width) / static_cast<float>(pooled_width);
+    float bin_size_h = static_cast<float>(roi_height) / static_cast<float>(pooled_height);
+    float bin_size_w = static_cast<float>(roi_width) / static_cast<float>(pooled_width);
 
     // We use roi_bin_grid to sample the grid and mimic integral
-    int roi_bin_grid_h = (sampling_ratio > 0)
-                             ? sampling_ratio
-                             : ceil(roi_height / pooled_height);  // e.g., = 2
-    int roi_bin_grid_w =
-        (sampling_ratio > 0) ? sampling_ratio : ceil(roi_width / pooled_width);
+    int roi_bin_grid_h =
+        (sampling_ratio > 0) ? sampling_ratio : ceil(roi_height / pooled_height);  // e.g., = 2
+    int roi_bin_grid_w = (sampling_ratio > 0) ? sampling_ratio : ceil(roi_width / pooled_width);
 
     // We do average (integral) pooling inside a bin
-    const float count =
-        std::max(roi_bin_grid_h * roi_bin_grid_w, 1);  // e.g. = 4
+    const float count = std::max(roi_bin_grid_h * roi_bin_grid_w, 1);  // e.g. = 4
 
     // we want to precalculate indices and weights shared by all channels,
     // this is the key point of optimization
-    std::vector<PreCalc> pre_calc(roi_bin_grid_h * roi_bin_grid_w *
-                                  pooled_width * pooled_height);
+    std::vector<PreCalc> pre_calc(roi_bin_grid_h * roi_bin_grid_w * pooled_width * pooled_height);
 
     // roi_start_h and roi_start_w are computed wrt the center of RoI (x, y).
     // Appropriate translation needs to be applied after.
     float roi_start_h = -roi_height / 2.0;
     float roi_start_w = -roi_width / 2.0;
 
-    pre_calc_for_bilinear_interpolate(
-        height, width, pooled_height, pooled_width, roi_bin_grid_h,
-        roi_bin_grid_w, roi_start_h, roi_start_w, bin_size_h, bin_size_w,
-        roi_bin_grid_h, roi_bin_grid_w, roi_center_h, roi_center_w, cos_theta,
-        sin_theta, pre_calc);
+    pre_calc_for_bilinear_interpolate(height, width, pooled_height, pooled_width, roi_bin_grid_h,
+                                      roi_bin_grid_w, roi_start_h, roi_start_w, bin_size_h,
+                                      bin_size_w, roi_bin_grid_h, roi_bin_grid_w, roi_center_h,
+                                      roi_center_w, cos_theta, sin_theta, pre_calc);
 
     for (int c = 0; c < channels; c++) {
       int index_n_c = index_n + c * pooled_width * pooled_height;
-      const float *offset_input =
-          input + (roi_batch_ind * channels + c) * height * width;
+      const float *offset_input = input + (roi_batch_ind * channels + c) * height * width;
       int pre_calc_index = 0;
 
       for (int ph = 0; ph < pooled_height; ph++) {
@@ -192,10 +181,8 @@ void ROIAlignRotatedForwardCPU(const int nthreads, const float *input,
           for (int iy = 0; iy < roi_bin_grid_h; iy++) {
             for (int ix = 0; ix < roi_bin_grid_w; ix++) {
               PreCalc pc = pre_calc[pre_calc_index];
-              output_val += pc.w1 * offset_input[pc.pos1] +
-                            pc.w2 * offset_input[pc.pos2] +
-                            pc.w3 * offset_input[pc.pos3] +
-                            pc.w4 * offset_input[pc.pos4];
+              output_val += pc.w1 * offset_input[pc.pos1] + pc.w2 * offset_input[pc.pos2] +
+                            pc.w3 * offset_input[pc.pos3] + pc.w4 * offset_input[pc.pos4];
 
               pre_calc_index += 1;
             }
@@ -212,11 +199,10 @@ void ROIAlignRotatedForwardCPU(const int nthreads, const float *input,
 void MMCVRoIAlignRotatedKernel::Compute(OrtKernelContext *context) {
   // Setup inputs
   const OrtValue *input_X = ort_.KernelContext_GetInput(context, 0);
-  const float *X_data =
-      reinterpret_cast<const float *>(ort_.GetTensorData<float>(input_X));
+  const float *X_data = reinterpret_cast<const float *>(ort_.GetTensorData<float>(input_X));
   const OrtValue *input_rois = ort_.KernelContext_GetInput(context, 1);
-  const float *rois = reinterpret_cast<const float *>(
-      ort_.GetTensorData<const float *>(input_rois));
+  const float *rois =
+      reinterpret_cast<const float *>(ort_.GetTensorData<const float *>(input_rois));
 
   // Setup output
   OrtTensorDimensions out_dimensions(ort_, input_X);
@@ -231,8 +217,8 @@ void MMCVRoIAlignRotatedKernel::Compute(OrtKernelContext *context) {
   out_dimensions.data()[2] = aligned_height_;
   out_dimensions.data()[3] = aligned_width_;
 
-  OrtValue *output = ort_.KernelContext_GetOutput(
-      context, 0, out_dimensions.data(), out_dimensions.size());
+  OrtValue *output =
+      ort_.KernelContext_GetOutput(context, 0, out_dimensions.data(), out_dimensions.size());
   float *out = ort_.GetTensorMutableData<float>(output);
   OrtTensorTypeAndShapeInfo *output_info = ort_.GetTensorTypeAndShape(output);
   ort_.ReleaseTensorTypeAndShapeInfo(output_info);
@@ -242,10 +228,9 @@ void MMCVRoIAlignRotatedKernel::Compute(OrtKernelContext *context) {
   for (auto i = 1; i < out_dimensions.size(); ++i) {
     output_size *= out_dimensions.data()[i];
   }
-  ROIAlignRotatedForwardCPU(output_size, X_data, rois, out, spatial_scale_,
-                            aligned_, clockwise_, input_channels, input_height,
-                            input_width, aligned_height_, aligned_width_,
-                            sampling_ratio_);
+  ROIAlignRotatedForwardCPU(output_size, X_data, rois, out, spatial_scale_, aligned_, clockwise_,
+                            input_channels, input_height, input_width, aligned_height_,
+                            aligned_width_, sampling_ratio_);
 }
 
 REGISTER_ONNXRUNTIME_OPS(mmdeploy, MMCVRoIAlignRotatedCustomOp);

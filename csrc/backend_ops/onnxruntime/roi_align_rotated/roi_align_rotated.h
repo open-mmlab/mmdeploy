@@ -13,13 +13,10 @@
 namespace mmdeploy {
 struct MMCVRoIAlignRotatedKernel {
  public:
-  MMCVRoIAlignRotatedKernel(Ort::CustomOpApi ort, const OrtKernelInfo* info)
-      : ort_(ort) {
-    aligned_height_ =
-        ort_.KernelInfoGetAttribute<int64_t>(info, "output_height");
+  MMCVRoIAlignRotatedKernel(Ort::CustomOpApi ort, const OrtKernelInfo* info) : ort_(ort) {
+    aligned_height_ = ort_.KernelInfoGetAttribute<int64_t>(info, "output_height");
     aligned_width_ = ort_.KernelInfoGetAttribute<int64_t>(info, "output_width");
-    sampling_ratio_ =
-        ort_.KernelInfoGetAttribute<int64_t>(info, "sampling_ratio");
+    sampling_ratio_ = ort_.KernelInfoGetAttribute<int64_t>(info, "sampling_ratio");
     spatial_scale_ = ort_.KernelInfoGetAttribute<float>(info, "spatial_scale");
     aligned_ = ort_.KernelInfoGetAttribute<int64_t>(info, "aligned");
     clockwise_ = ort_.KernelInfoGetAttribute<int64_t>(info, "clockwise");
@@ -38,8 +35,7 @@ struct MMCVRoIAlignRotatedKernel {
 };
 
 struct MMCVRoIAlignRotatedCustomOp
-    : Ort::CustomOpBase<MMCVRoIAlignRotatedCustomOp,
-                        MMCVRoIAlignRotatedKernel> {
+    : Ort::CustomOpBase<MMCVRoIAlignRotatedCustomOp, MMCVRoIAlignRotatedKernel> {
   void* CreateKernel(Ort::CustomOpApi api, const OrtKernelInfo* info) const {
     return new MMCVRoIAlignRotatedKernel(api, info);
   }
@@ -56,9 +52,7 @@ struct MMCVRoIAlignRotatedCustomOp
   }
 
   // force cpu
-  const char* GetExecutionProviderType() const {
-    return "CPUExecutionProvider";
-  }
+  const char* GetExecutionProviderType() const { return "CPUExecutionProvider"; }
 };
 }  // namespace mmdeploy
 
