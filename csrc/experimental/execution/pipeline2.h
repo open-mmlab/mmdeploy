@@ -49,7 +49,10 @@ class Task : public Node {
 
  public:
   Sender<Value> Process(Sender<Value> input) override {
-    return Then(std::move(input), [&](const Value& v) { return module_->Process(v).value(); });
+    return Then(std::move(input), [&](const Value& v) {
+      auto value = module_->Process(v).value();
+      return value;
+    });
   }
 
  private:

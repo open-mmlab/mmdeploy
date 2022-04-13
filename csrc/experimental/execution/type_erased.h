@@ -60,7 +60,7 @@ template <class... Ts>
 using TypeErasedSender = _TypeErasedSender<std::tuple<Ts...>>;
 
 template <class Sender>
-_TypeErasedSender(Sender&&) -> _TypeErasedSender<completion_signature_for_t<std::decay_t<Sender>>>;
+_TypeErasedSender(Sender &&) -> _TypeErasedSender<completion_signature_for_t<std::decay_t<Sender>>>;
 
 template <class Sender, class ValueTypes = completion_signature_for_t<Sender>>
 struct _TypeErasedSenderImpl : _TypeErasedSender<ValueTypes>::Impl {
@@ -68,7 +68,7 @@ struct _TypeErasedSenderImpl : _TypeErasedSender<ValueTypes>::Impl {
   using Base = typename _TypeErasedSender<ValueTypes>::Impl;
   using _Operation = _TypeErasedOperation<ValueTypes>;
   using _Receiver = _TypeErasedReceiver<ValueTypes>;
-//  using Type = typename _TypeErasedSender<ValueTypes>::Impl::Type;
+  //  using Type = typename _TypeErasedSender<ValueTypes>::Impl::Type;
 
   template <class _Sender,
             class = std::enable_if_t<!std::is_same_v<std::decay_t<_Sender>, _TypeErasedSenderImpl>>>
@@ -112,7 +112,8 @@ class _TypeErasedReceiver {
 
   template <class... As>
   friend void SetValue(_TypeErasedReceiver&& self, As&&... as) {
-    self.impl_->_SetValue(std::forward_as_tuple((As &&) as...));
+    self.impl_->_SetValue(std::make_tuple((As &&) as...));
+    // self.impl_->_SetValue(std::forward_as_tuple((As &&) as...));
   }
 
  private:

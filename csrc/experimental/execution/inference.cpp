@@ -7,7 +7,9 @@
 
 namespace mmdeploy::async {
 
-Result<unique_ptr<Pipeline>> InferenceParser::Parse(const Value& config) {
+void __link_inference() {}
+
+Result<unique_ptr<Inference>> InferenceParser::Parse(const Value& config) {
   try {
     auto& model_config = config["params"]["model"];
     Model model;
@@ -25,14 +27,11 @@ Result<unique_ptr<Pipeline>> InferenceParser::Parse(const Value& config) {
     auto pipeline_config = from_json<Value>(json);
     pipeline_config["context"] = context;
 
-    // transfer basic configs
-    pipeline_config["input"] = config["input"];
-    pipeline_config["output"] = config["output"];
-    pipeline_config["name"] = config["name"];
+    auto inference = std::make_unique<Inference>();
+    OUTCOME_TRY(NodeParser::Parse(config, *inference));
+    OUTCOME_TRY(inference->pipeline_, PipelineParser{}.Parse(pipeline_config));
 
-    PipelineParser parser;
-    return parser.Parse(pipeline_config);
-
+    return std::move(inference);
   } catch (const Exception& e) {
     MMDEPLOY_ERROR("exception: {}", e.what());
     return failure(e.code());

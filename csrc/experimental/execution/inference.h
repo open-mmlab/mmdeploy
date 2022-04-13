@@ -7,9 +7,20 @@
 
 namespace mmdeploy::async {
 
+class Inference : public Node {
+  friend class InferenceParser;
+
+ public:
+  Sender<Value> Process(Sender<Value> input) override {
+    return pipeline_->Process(std::move(input));
+  }
+
+  unique_ptr<Pipeline> pipeline_;
+};
+
 class InferenceParser {
  public:
-  static Result<unique_ptr<Pipeline>> Parse(const Value& config);
+  static Result<unique_ptr<Inference>> Parse(const Value& config);
 };
 
 }  // namespace mmdeploy::async

@@ -74,6 +74,7 @@ Sender<Value> Pipeline::State::Collect(const vector<Coords>& coords) {
 }
 
 void Pipeline::State::Write(int index, Sender<Value> value) {
+  assert(!values_[index]);
   if (use_count_[index] > 1) {
     // ! split to create a copyable sender
     values_[index] = Split(std::move(value));
@@ -83,6 +84,7 @@ void Pipeline::State::Write(int index, Sender<Value> value) {
 }
 
 Sender<Value> Pipeline::State::Read(int index) {
+  assert(values_[index]);
   if (--use_count_[index] == 0) {
     return std::move(*values_[index]);
   } else {
@@ -92,7 +94,7 @@ Sender<Value> Pipeline::State::Read(int index) {
 }
 
 Pipeline::State::State(vector<int> use_count, Sender<Value> args)
-    : use_count_(std::move(use_count)), values_(use_count_.size() + 1) {
+    : use_count_(std::move(use_count)), values_(use_count_.size()) {
   values_.back() = std::move(args);
 }
 
@@ -105,6 +107,9 @@ Sender<Value> Pipeline::Process(Sender<Value> args) {
   }
   return state.Collect(ret_coords_);
 }
+
+/////////////////////////////////////////////////////////////////////
+/// parsers
 
 Result<void> NodeParser::Parse(const Value& config, Node& node) {
   try {
@@ -144,6 +149,9 @@ Result<unique_ptr<Pipeline>> PipelineParser::Parse(const Value& config) {
     vector<vector<Pipeline::Coords>> input_coords;
     input_coords.reserve(size);
 
+    use_count_.resize(size + 1);
+
+    // MMDEPLOY_INFO("pipeline->inputs: {}", pipeline->inputs());
     OUTCOME_TRY(UpdateOutputCoords(static_cast<int>(size), pipeline->inputs()));
     for (auto task_config : task_configs) {
       auto index = static_cast<int>(nodes.size());
@@ -156,10 +164,15 @@ Result<unique_ptr<Pipeline>> PipelineParser::Parse(const Value& config) {
       }
       OUTCOME_TRY(auto node, graph::CreateFromRegistry<Node>(task_config));
       if (node) {
-        OUTCOME_TRY(auto coords, GetInputCoords(node->inputs()));
-        input_coords.push_back(std::move(coords));
+        // OUTCOME_TRY(auto coords, GetInputCoords(node->inputs()));
+        auto coords = GetInputCoords(node->inputs());
+        // if (!coords) {
+        //   MMDEPLOY_CRITICAL("{}", node->inputs());
+        //   MMDEPLOY_CRITICAL("{}", pipeline->inputs());
+        //   MMDEPLOY_CRITICAL("{}", config);
+        // }
+        input_coords.push_back(std::move(coords).value());
         OUTCOME_TRY(UpdateOutputCoords(index, node->outputs()));
-        use_count_.emplace_back();
         nodes.push_back(std::move(node));
       } else {
         MMDEPLOY_ERROR("could not create {}: {}", name, type);
@@ -173,12 +186,15 @@ Result<unique_ptr<Pipeline>> PipelineParser::Parse(const Value& config) {
     pipeline->input_coords_ = std::move(input_coords);
     pipeline->ret_coords_ = std::move(coords);
 
+    return std::move(pipeline);
+
   } catch (const std::exception& e) {
     MMDEPLOY_ERROR("error parsing config: {}", e.what());
   }
 }
 
 Result<vector<Pipeline::Coords>> PipelineParser::GetInputCoords(const vector<string>& names) {
+  // MMDEPLOY_INFO("GetInputCoords: {}", names);
   vector<Pipeline::Coords> ret;
   ret.reserve(names.size());
   for (int i = 0; i < names.size(); ++i) {
@@ -193,7 +209,11 @@ Result<vector<Pipeline::Coords>> PipelineParser::GetInputCoords(const vector<str
       }
       ct->mapping.emplace_back(port_id, i);
     } else {
-      MMDEPLOY_ERROR("missing input: ", input);
+      MMDEPLOY_ERROR("missing input: {}", input);
+      // for (const auto& [k, v]: output_name_to_coords_) {
+      //   MMDEPLOY_ERROR("key: {}", k);
+      // }
+      // __builtin_trap();
       return Status(eEntryNotFound);
     }
   }
@@ -207,17 +227,21 @@ Result<void> PipelineParser::UpdateOutputCoords(int index, const vector<string>&
       MMDEPLOY_ERROR("duplicate output: ", output);
       return Status(eNotSupported);
     } else {
+      // MMDEPLOY_ERROR("insert: {}", output);
       output_name_to_coords_.insert({output, {index, i}});
     }
   }
   return success();
 }
 
+void __link_inference();
+
 class PipelineCreator : public Creator<Node> {
  public:
   const char* GetName() const override { return "Pipeline"; }
   int GetVersion() const override { return 0; }
   std::unique_ptr<Node> Create(const Value& value) override {
+    __link_inference();
     return PipelineParser{}.Parse(value).value();
   }
 };
@@ -231,20 +255,11 @@ class TaskCreator : public Creator<Node> {
   }
 };
 
-
 REGISTER_MODULE(Node, TaskCreator);
 REGISTER_MODULE(Node, PipelineCreator);
 
 }  // namespace async
 
 MMDEPLOY_DEFINE_REGISTRY(async::Node);
-
-//using AsyncNode = async::Node;
-//using AsyncPipelineCreator = async::PipelineCreator;
-//REGISTER_MODULE(AsyncNode, AsyncPipelineCreator);
-
-//using AsyncTask = async::Task;
-//using AsyncTaskCreator = async::TaskCreator;
-//REGISTER_MODULE(AsyncNode, AsyncTaskCreator);
 
 }  // namespace mmdeploy

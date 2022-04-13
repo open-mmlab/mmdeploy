@@ -93,15 +93,12 @@ template <class ModelType>
 int mmdeploy_detector_create_impl(ModelType&& m, const char* device_name, int device_id,
                                   mm_handle_t* handle) {
   try {
-    Device device(device_name, device_id);
-    if (!device) {
-      MMDEPLOY_ERROR("invalid device ({}, {})", device_name, device_id);
-      return MM_E_FAIL;
-    }
-    Stream stream(device);
+    auto value = config_template();
+    value["pipeline"]["tasks"][0]["params"]["model"] = std::forward<ModelType>(m);
 
-    //    *handle = async::CreateDetector((ModelType &&) m, stream);
-    //    *handle = CreateStaticDetector((ModelType &&) m, stream);
+    auto detector = std::make_unique<Handle>(device_name, device_id, std::move(value));
+
+    *handle = detector.release();
     return MM_SUCCESS;
 
   } catch (const std::exception& e) {
@@ -146,7 +143,8 @@ int mmdeploy_detector_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_co
     output_senders.reserve(inputs.size());
 
     for (const Mat& img : inputs) {
-      output_senders.emplace_back(EnsureStarted(detector->Process(Just(Value{{"ori_img", img}}))));
+      output_senders.emplace_back(
+          EnsureStarted(detector->Process(Just(Value{{{"ori_img", img}}}))));
     }
 
     using Dets = mmdet::DetectorOutput;
@@ -154,7 +152,7 @@ int mmdeploy_detector_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_co
     vector<Dets> detector_outputs;
     detector_outputs.reserve(inputs.size());
     for (auto& s : output_senders) {
-      detector_outputs.push_back(from_value<Dets>(std::get<0>(SyncWait(s))));
+      detector_outputs.push_back(from_value<Dets>(std::get<Value>(SyncWait(s)).front()));
     }
 
     vector<int> _result_count;

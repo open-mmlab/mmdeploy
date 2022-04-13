@@ -47,6 +47,7 @@ struct __Operation<Receiver>::type {
     op_states.reserve(sndrs.size());
     for (size_t i = 0; i < sndrs.size(); ++i)
       op_states.push_back(Connect(std::move(sndrs[i]), _Receiver<Receiver>{i, this}));
+    return op_states;
   }
 
   type(std::vector<TypeErasedSender<Value>> sndrs, Receiver rcvr)
