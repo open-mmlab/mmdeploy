@@ -41,7 +41,9 @@ struct NMSRotatedOp : Ort::CustomOpBase<NMSRotatedOp, NMSRotatedKernel> {
   }
 
   // force cpu
-  const char* GetExecutionProviderType() const { return "CPUExecutionProvider"; }
+  const char* GetExecutionProviderType() const {
+    return "CPUExecutionProvider";
+  }
 };
 }  // namespace mmdeploy
 
