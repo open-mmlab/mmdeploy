@@ -80,7 +80,7 @@ conda install pytorch==1.8.0 torchvision==0.9.0 cudatoolkit=11.1 -c pytorch -c c
 <pre><code>
 export cu_version=cu111 # cuda 11.1
 export torch_version=torch1.8
-pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/${cu_version}/${torch_version}/index.html
+python3 -m pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/${cu_version}/${torch_version}/index.html
 </code></pre>
     </td>
   </tr>
@@ -157,7 +157,7 @@ MMDeploy 的 Model Converter 和 SDK 共享推理引擎。您可以参考下文�
     <td>onnxruntime<br>(>=1.8.1) </td>
     <td>
     1. 安装 onnxruntime 的 python 包
-       <pre><code>pip install onnxruntime==1.8.1</code></pre>
+       <pre><code>python3 -m pip install onnxruntime==1.8.1</code></pre>
     2. 从<a href="https://github.com/microsoft/onnxruntime/releases/tag/v1.8.1">这里</a>下载 onnxruntime 的预编译包。参考如下命令，解压压缩包并设置环境变量
 <pre><code>
 wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
@@ -178,7 +178,7 @@ export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 <pre><code>
 cd /the/path/of/tensorrt/tar/gz/file
 tar -zxvf TensorRT-8.2.3.0.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz
-pip install TensorRT-8.2.3.0/python/tensorrt-8.2.3.0-cp37-none-linux_x86_64.whl
+python3 -m pip install TensorRT-8.2.3.0/python/tensorrt-8.2.3.0-cp37-none-linux_x86_64.whl
 export TENSORRT_DIR=$(pwd)/TensorRT-8.2.3.0
 export LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
 </code></pre>
@@ -214,7 +214,7 @@ export PPLNN_DIR=$(pwd)
     <td>openvino </td>
     <td>1. 安装 <a href="https://docs.openvino.ai/2021.4/get_started.html">OpenVINO</a>
 <pre><code>
-pip install openvino-dev
+python3 -m pip install openvino-dev
 </code></pre>
 2. <b>可选</b>. 如果您想在 MMDeploy SDK 中使用 OpenVINO，请根据<a href="https://docs.openvino.ai/2021.4/openvino_docs_install_guides_installing_openvino_linux.html#install-openvino">指南</a>安装并配置它
     </td>
@@ -232,7 +232,7 @@ export NCNN_DIR=$(pwd)
 3. 安装 pyncnn
 <pre><code>
 cd ${NCNN_DIR}/python
-pip install -e .
+python3 -m pip install -e .
 </code></pre>
     </td>
   </tr>
@@ -388,12 +388,12 @@ export MMDEPLOY_DIR=$(pwd)
 
 ```bash
 cd ${MMDEPLOY_DIR}
-pip install -e .
+python3 -m pip install -e .
 ```
 **注意**
 
-- 有些依赖项是可选的。运行 `pip install -e .` 将进行最小化依赖安装。 如果需安装其他可选依赖项，请执行`pip install -r requirements/optional.txt`，
-或者 `pip install -e .[optional]`。其中，`[optional]`可以替换为：`all`、`tests`、`build` 或 `optional`。
+- 有些依赖项是可选的。运行 `python3 -m pip install -e .` 将进行最小化依赖安装。 如果需安装其他可选依赖项，请执行`python3 -m pip install -r requirements/optional.txt`，
+或者 `python3 -m pip install -e .[optional]`。其中，`[optional]`可以替换为：`all`、`tests`、`build` 或 `optional`。
 #### 编译SDK
 
 下文展示2个构建SDK的样例，分别用 ONNXRuntime 和 TensorRT 作为推理引擎。您可以参考它们，激活其他的推理引擎。

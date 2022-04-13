@@ -104,13 +104,13 @@ conda activate openmmlab
 conda install pytorch==1.8.0 torchvision==0.9.0 cudatoolkit=10.2 -c pytorch -y
 
 # 安装 mmcv
-pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.8/index.html
+python3 -m pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.8/index.html
 
 # 安装mmdetection
 git clone https://github.com/open-mmlab/mmdetection.git
 cd mmdetection
-pip install -r requirements/build.txt
-pip install -v -e .
+python3 -m pip install -r requirements/build.txt
+python3 -m pip install -v -e .
 ```
 
 #### 下载 Faster R-CNN 的模型文件
@@ -127,13 +127,13 @@ conda activate openmmlab
 git clone https://github.com/open-mmlab/mmdeploy.git
 cd mmdeploy
 git submodule update --init --recursive
-pip install -e .
+python3 -m pip install -e .
 ```
 
 一旦我们完成MMDeploy的安装，我们需要选择一个模型的推理引擎。这里我们以ONNX Runtime为例。运行下面命令来[安装ONNX Runtime](https://mmdeploy.readthedocs.io/en/latest/backends/onnxruntime.html)：
 
 ```bash
-pip install onnxruntime==1.8.1
+python3 -m pip install onnxruntime==1.8.1
 ```
 
 然后下载 ONNX Runtime Library来编译 MMDeploy 中的算子插件：

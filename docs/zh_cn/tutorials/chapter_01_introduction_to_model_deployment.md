@@ -52,7 +52,7 @@ conda install pytorch torchvision cudatoolkit=11.3 -c pytorch
 本教程会用到其他一些第三方库。你可以用以下命令来安装这些库：
 ```bash
 # 安装 ONNX Runtime, ONNX, OpenCV
-pip install onnxruntime onnx opencv-python
+python3 -m pip install onnxruntime onnx opencv-python
 ```
 
 在一切都配置完毕后，用下面的代码来创建一个超分辨率模型。

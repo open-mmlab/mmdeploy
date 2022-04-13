@@ -11,7 +11,7 @@
 - Install ONNX Runtime python package
 
 ```bash
-pip install onnxruntime==1.8.1
+python3 -m pip install onnxruntime==1.8.1
 ```
 
 ### Build custom ops

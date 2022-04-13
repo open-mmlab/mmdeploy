@@ -48,7 +48,7 @@
     <td>PyTorch <br>(>=1.8.0) </td>
     <td> 安装 PyTorch，要求版本是 torch>=1.8.0。可查看<a href="https://pytorch.org/">官网</a>获取更多详细的安装教程。请确保 PyTorch 要求的 CUDA 版本和您主机的 CUDA 版本是一致<br>
 <pre><code>
-pip install torch==1.8.0+cu111 torchvision==0.9.0+cu111 torchaudio==0.8.0 -f https://download.pytorch.org/whl/torch_stable.html
+python3 -m pip install torch==1.8.0+cu111 torchvision==0.9.0+cu111 torchaudio==0.8.0 -f https://download.pytorch.org/whl/torch_stable.html
 </code></pre>
     </td>
   </tr>
@@ -58,7 +58,7 @@ pip install torch==1.8.0+cu111 torchvision==0.9.0+cu111 torchaudio==0.8.0 -f htt
 <pre><code>
 $env:cu_version="cu111"
 $env:torch_version="torch1.8"
-pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/$env:cu_version/$env:torch_version/index.html
+python3 -m pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/$env:cu_version/$env:torch_version/index.html
 </code></pre>
     </td>
   </tr>
@@ -138,7 +138,7 @@ MMDeploy 的 Model Converter 和 SDK 共享推理引擎。您可以参考下文�
     <td>onnxruntime<br>(>=1.8.1) </td>
     <td>
     1. 安装 onnxruntime 的 python 包
-<pre><code>pip install onnxruntime==1.8.1</code></pre>
+<pre><code>python3 -m pip install onnxruntime==1.8.1</code></pre>
     2. 从<a href="https://github.com/microsoft/onnxruntime/releases/tag/v1.8.1">这里</a>下载 onnxruntime 的预编译二进制包，解压并配置环境变量
 <pre><code>
 Invoke-WebRequest -Uri https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-win-x64-1.8.1.zip -OutFile onnxruntime-win-x64-1.8.1.zip
@@ -157,7 +157,7 @@ $env:path = "$env:ONNXRUNTIME_DIR\lib;" + $env:path
 <pre><code>
 cd \the\path\of\tensorrt\zip\file
 Expand-Archive TensorRT-8.2.3.0.Windows10.x86_64.cuda-11.4.cudnn8.2.zip .
-pip install $env:TENSORRT_DIR\python\tensorrt-8.2.3.0-cp37-none-win_amd64.whl
+python3 -m pip install $env:TENSORRT_DIR\python\tensorrt-8.2.3.0-cp37-none-win_amd64.whl
 $env:TENSORRT_DIR = "$pwd\TensorRT-8.2.3.0"
 $env:path = "$env:TENSORRT_DIR\lib;" + $env:path
 </code></pre>
@@ -296,11 +296,11 @@ cmake --build . --config Release -- /m
 ##### 安装 Model Converter
 ```powershell
 cd $env:MMDEPLOY_DIR
-pip install -e .
+python3 -m pip install -e .
 ```
 **注意**
-- 有些依赖项是可选的。运行 `pip install -e .` 将进行最小化依赖安装。 如果需安装其他可选依赖项，请执行`pip install -r requirements/optional.txt`，
-  或者 `pip install -e .[optional]`。其中，`[optional]`可以替换为：`all`、`tests`、`build` 或 `optional`。
+- 有些依赖项是可选的。运行 `python3 -m pip install -e .` 将进行最小化依赖安装。 如果需安装其他可选依赖项，请执行`python3 -m pip install -r requirements/optional.txt`，
+  或者 `python3 -m pip install -e .[optional]`。其中，`[optional]`可以替换为：`all`、`tests`、`build` 或 `optional`。
 #### 编译 SDK
 
 下文展示2个构建SDK的样例，分别用 ONNXRuntime 和 TensorRT 作为推理引擎。您可以参考它们，并结合前文 SDK 的编译选项说明，激活其他的推理引擎。

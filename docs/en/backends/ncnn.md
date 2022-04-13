@@ -44,7 +44,7 @@ You should ensure your gcc satisfies `gcc >= 6`.
         ```bash
         cd ${NCNN_DIR} # To NCNN root directory
         cd python
-        pip install -e .
+        python3 -m pip install -e .
         ```
 
 #### Build custom ops

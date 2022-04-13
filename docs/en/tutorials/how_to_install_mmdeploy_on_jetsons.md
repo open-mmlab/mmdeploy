@@ -63,7 +63,7 @@ libmpi_cxx.so.20: cannot open shared object file: No such file or directory
 ```
 
 ### Install torchvision
-We can't directly use `pip install torchvision` to install torchvision for Jetson Nano. But we can clone the repository from Github and build it locally. First we have to install some dependencies:
+We can't directly use `python3 -m pip install torchvision` to install torchvision for Jetson Nano. But we can clone the repository from Github and build it locally. First we have to install some dependencies:
 ```
 sudo apt-get install libjpeg-dev libpython3-dev libavcodec-dev libavformat-dev libswscale-dev
 ```
@@ -72,7 +72,7 @@ Then just clone and compile the project:
 git clone git@github.com:pytorch/vision.git
 cd vision
 git co tags/v0.7.0 -b vision07
-pip install -e .
+python3 -m pip install -e .
 ```
 
 ### Install mmcv
@@ -81,7 +81,7 @@ Install openssl first:
 ```
 sudo apt-get install libssl-dev
 ```
-Then install it from source like `MMCV_WITH_OPS=1 pip install -e .`
+Then install it from source like `MMCV_WITH_OPS=1 python3 -m pip install -e .`
 
 ### Update cmake
 
@@ -105,7 +105,7 @@ cmake --version
 Just follow the instruction [here](../build.md). If it throws `failed building wheel for numpy...ERROR: Failed to build one or more wheels` when installing `h5py`, try install `h5py` manually.
 ```
 sudo apt-get install pkg-config libhdf5-100 libhdf5-dev
-pip install versioned-hdf5 --no-cache-dir
+python3 -m pip install versioned-hdf5 --no-cache-dir
 ```
 
 Then install onnx manually. First, we have to install protobuf compiler:
@@ -114,7 +114,7 @@ sudo apt-get install libprotobuf-dev protobuf-compiler
 ```
 Then install onnx through:
 ```
-pip install onnx
+python3 -m pip install onnx
 ```
 Then reinstall mmdeploy.
 

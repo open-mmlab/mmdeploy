@@ -104,13 +104,13 @@ conda activate openmmlab
 conda install pytorch==1.8.0 torchvision==0.9.0 cudatoolkit=10.2 -c pytorch -y
 
 # install mmcv
-pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.8/index.html
+python3 -m pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.8/index.html
 
 # install mmdetection
 git clone https://github.com/open-mmlab/mmdetection.git
 cd mmdetection
-pip install -r requirements/build.txt
-pip install -v -e .
+python3 -m pip install -r requirements/build.txt
+python3 -m pip install -v -e .
 ```
 
 #### Download the Checkpoint of Faster R-CNN
@@ -126,12 +126,12 @@ conda activate openmmlab
 git clone https://github.com/open-mmlab/mmdeploy.git
 cd mmdeploy
 git submodule update --init --recursive
-pip install -e .
+python3 -m pip install -e .
 ```
 
 Once we have installed the MMDeploy, we should select an inference engine for model inference. Here we take ONNX Runtime as an example. Run the following command to [install ONNX Runtime](./backends/onnxruntime.md):
 ```bash
-pip install onnxruntime==1.8.1
+python3 -m pip install onnxruntime==1.8.1
 ```
 
 Then download the ONNX Runtime library to build the mmdeploy plugin for ONNX Runtime:

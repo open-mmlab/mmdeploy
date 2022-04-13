@@ -83,7 +83,7 @@ conda install pytorch==1.8.0 torchvision==0.9.0 cudatoolkit=11.1 -c pytorch -c c
 <pre><code>
 export cu_version=cu111 # cuda 11.1
 export torch_version=torch1.8
-pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/${cu_version}/${torch_version}/index.html
+python3 -m pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/${cu_version}/${torch_version}/index.html
 </code></pre>
     </td>
   </tr>
@@ -164,7 +164,7 @@ You can select you interested inference engines and do the installation by follo
     <td>onnxruntime<br>(>=1.8.1) </td>
     <td>
     1. Install python package
-       <pre><code>pip install onnxruntime==1.8.1</code></pre>
+       <pre><code>python3 -m pip install onnxruntime==1.8.1</code></pre>
     2. Download the linux prebuilt binary package from <a href="https://github.com/microsoft/onnxruntime/releases/tag/v1.8.1">here</a>.  Extract it and export environment variables as below:
 <pre><code>
 wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
@@ -184,7 +184,7 @@ export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 <pre><code>
 cd /the/path/of/tensorrt/tar/gz/file
 tar -zxvf TensorRT-8.2.3.0.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz
-pip install TensorRT-8.2.3.0/python/tensorrt-8.2.3.0-cp37-none-linux_x86_64.whl
+python3 -m pip install TensorRT-8.2.3.0/python/tensorrt-8.2.3.0-cp37-none-linux_x86_64.whl
 export TENSORRT_DIR=$(pwd)/TensorRT-8.2.3.0
 export LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
 </code></pre>
@@ -221,7 +221,7 @@ export PPLNN_DIR=$(pwd)
     <td>openvino </td>
     <td>1. Install <a href="https://docs.openvino.ai/2021.4/get_started.html">OpenVINO</a> package
 <pre><code>
-pip install openvino-dev
+python3 -m pip install openvino-dev
 </code></pre>
 2. <b>Optional</b>. If you want to use OpenVINO in MMDeploy SDK, please install and configure it by following the <a href="https://docs.openvino.ai/2021.4/openvino_docs_install_guides_installing_openvino_linux.html#install-openvino">guide</a>.
     </td>
@@ -239,7 +239,7 @@ export NCNN_DIR=$(pwd)
 3. Install pyncnn
 <pre><code>
 cd ${NCNN_DIR}/python
-pip install -e .
+python3 -m pip install -e .
 </code></pre>
     </td>
   </tr>
@@ -397,12 +397,12 @@ If one of inference engines among ONNXRuntime, TensorRT, ncnn and libtorch is se
 
 ```bash
 cd ${MMDEPLOY_DIR}
-pip install -e .
+python3 -m pip install -e .
 ```
 **Note**
 
-- Some dependencies are optional. Simply running `pip install -e .` will only install the minimum runtime requirements.
-  To use optional dependencies, install them manually with `pip install -r requirements/optional.txt` or specify desired extras when calling `pip` (e.g. `pip install -e .[optional]`).
+- Some dependencies are optional. Simply running `python3 -m pip install -e .` will only install the minimum runtime requirements.
+  To use optional dependencies, install them manually with `python3 -m pip install -r requirements/optional.txt` or specify desired extras when calling `pip` (e.g. `python3 -m pip install -e .[optional]`).
   Valid keys for the extras field are: `all`, `tests`, `build`, `optional`.
 #### Build SDK
 

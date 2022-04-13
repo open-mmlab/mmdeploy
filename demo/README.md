@@ -6,7 +6,7 @@ In `demo_rewrite.py`, a resnet18 model from `torchvision` is rewritten through m
 ### Prerequisite
 Before we run `demp_rewrite.py`, we need to install `pyppeteer` through:
 ```
-pip install pyppeteer
+python3 -m pip install pyppeteer
 ```
 
 ### Demo results

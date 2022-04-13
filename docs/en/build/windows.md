@@ -51,7 +51,7 @@ Note: if you are familiar with how cmake works, you can also use <code>anaconda 
     <td>
     Install PyTorch>=1.8.0 by following the <a href="https://pytorch.org/">official instructions</a>. Be sure the CUDA version PyTorch requires matches that in your host.
 <pre><code>
-pip install torch==1.8.0+cu111 torchvision==0.9.0+cu111 torchaudio==0.8.0 -f https://download.pytorch.org/whl/torch_stable.html
+python3 -m pip install torch==1.8.0+cu111 torchvision==0.9.0+cu111 torchaudio==0.8.0 -f https://download.pytorch.org/whl/torch_stable.html
 </code></pre>
     </td>
   </tr>
@@ -61,7 +61,7 @@ pip install torch==1.8.0+cu111 torchvision==0.9.0+cu111 torchaudio==0.8.0 -f htt
 <pre><code>
 $env:cu_version="cu111"
 $env:torch_version="torch1.8.0"
-pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/${cu_version}/${torch_version}/index.html
+python3 -m pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/${cu_version}/${torch_version}/index.html
 </code></pre>
     </td>
   </tr>
@@ -148,7 +148,7 @@ As for the rest, MMDeploy will support them in the future.
     <td>onnxruntime<br>(>=1.8.1) </td>
     <td>
     1. Install python package
-<pre><code>pip install onnxruntime==1.8.1</code></pre>
+<pre><code>python3 -m pip install onnxruntime==1.8.1</code></pre>
     2. Download the windows prebuilt binary package from <a href="https://github.com/microsoft/onnxruntime/releases/tag/v1.8.1">here</a>. Extract it and export environment variables as below:
 <pre><code>
 Invoke-WebRequest -Uri https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-win-x64-1.8.1.zip -OutFile onnxruntime-win-x64-1.8.1.zip
@@ -167,7 +167,7 @@ $env:path = "$env:ONNXRUNTIME_DIR\lib;" + $env:path
 <pre><code>
 cd \the\path\of\tensorrt\zip\file
 Expand-Archive TensorRT-8.2.3.0.Windows10.x86_64.cuda-11.4.cudnn8.2.zip .
-pip install $env:TENSORRT_DIR\python\tensorrt-8.2.3.0-cp37-none-win_amd64.whl
+python3 -m pip install $env:TENSORRT_DIR\python\tensorrt-8.2.3.0-cp37-none-win_amd64.whl
 $env:TENSORRT_DIR = "$pwd\TensorRT-8.2.3.0"
 $env:path = "$env:TENSORRT_DIR\lib;" + $env:path
 </code></pre>
@@ -313,13 +313,13 @@ cmake --build . --config Release -- /m
 
 ```powershell
 cd $env:MMDEPLOY_DIR
-pip install -e .
+python3 -m pip install -e .
 ```
 
 **Note**
 
-- Some dependencies are optional. Simply running `pip install -e .` will only install the minimum runtime requirements.
-  To use optional dependencies, install them manually with `pip install -r requirements/optional.txt` or specify desired extras when calling `pip` (e.g. `pip install -e .[optional]`).
+- Some dependencies are optional. Simply running `python3 -m pip install -e .` will only install the minimum runtime requirements.
+  To use optional dependencies, install them manually with `python3 -m pip install -r requirements/optional.txt` or specify desired extras when calling `pip` (e.g. `python3 -m pip install -e .[optional]`).
   Valid keys for the extras field are: `all`, `tests`, `build`, `optional`.
 
 #### Build SDK
