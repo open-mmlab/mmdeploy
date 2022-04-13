@@ -12,14 +12,14 @@
 
 namespace mmdeploy {
 struct NMSRotatedKernel {
-  NMSRotatedKernel(OrtApi api, const OrtKernelInfo *info);
+  NMSRotatedKernel(OrtApi api, const OrtKernelInfo* info);
 
   void Compute(OrtKernelContext* context);
 
  private:
   OrtApi api_;
   Ort::CustomOpApi ort_;
-  const OrtKernelInfo *info_;
+  const OrtKernelInfo* info_;
   Ort::AllocatorWithDefaultOptions allocator_;
   float iou_threshold_;
 };
@@ -41,7 +41,9 @@ struct NMSRotatedOp : Ort::CustomOpBase<NMSRotatedOp, NMSRotatedKernel> {
   }
 
   // force cpu
-  const char* GetExecutionProviderType() const { return "CPUExecutionProvider"; }
+  const char* GetExecutionProviderType() const {
+    return "CPUExecutionProvider";
+  }
 };
 }  // namespace mmdeploy
 
