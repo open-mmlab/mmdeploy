@@ -26,6 +26,7 @@ class Task(AdvancedEnum):
     INSTANCE_SEGMENTATION = 'InstanceSegmentation'
     VOXEL_DETECTION = 'VoxelDetection'
     POSE_DETECTION = 'PoseDetection'
+    ROTATED_DETECTION = 'RotatedDetection'
 
 
 class Codebase(AdvancedEnum):
@@ -37,6 +38,7 @@ class Codebase(AdvancedEnum):
     MMEDIT = 'mmedit'
     MMDET3D = 'mmdet3d'
     MMPOSE = 'mmpose'
+    MMROTATE = 'mmrotate'
 
 
 class IR(AdvancedEnum):
