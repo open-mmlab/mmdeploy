@@ -235,6 +235,7 @@ Make sure to enable <code>-DNCNN_PYTHON=ON</code> in your build command. <br>
 <pre><code>
 cd ncnn
 export NCNN_DIR=$(pwd)
+export LD_LIBRARY_PATH=${NCNN_DIR}/build/install/lib/cmake/ncnn:$LD_LIBRARY_PATH
 </code></pre>
 3. Install pyncnn
 <pre><code>
@@ -445,11 +446,9 @@ You can also activate other engines after the model.
 
 #### Build Demo
 
-Take ncnn backend as example:
-
 ```Bash
 cd ${MMDEPLOY_DIR}/build/install/example
 mkdir -p build && cd build
-cmake .. -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn
+cmake .. -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy
 make -j$(nproc)
 ```
