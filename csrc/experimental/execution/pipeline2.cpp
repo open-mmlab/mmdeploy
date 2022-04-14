@@ -3,8 +3,8 @@
 #include "pipeline2.h"
 
 #include "archive/value_archive.h"
-#include "graph/common.h"
 #include "deferred_batch_operation.h"
+#include "graph/common.h"
 
 namespace mmdeploy {
 
@@ -164,6 +164,11 @@ Result<unique_ptr<Pipeline>> PipelineParser::Parse(const Value& config) {
       }
       OUTCOME_TRY(auto node, graph::CreateFromRegistry<Node>(task_config));
       if (node) {
+        if (node->name() == "yolox") {
+          node = std::make_unique<DeferredBatchOperation>(std::move(node), 1,
+                                                          std::chrono::milliseconds(10000));
+        }
+
         // OUTCOME_TRY(auto coords, GetInputCoords(node->inputs()));
         auto coords = GetInputCoords(node->inputs());
         // if (!coords) {

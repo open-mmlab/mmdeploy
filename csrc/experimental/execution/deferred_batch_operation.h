@@ -3,6 +3,7 @@
 #ifndef MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_DEFERRED_BATCH_OPERATION_H_
 #define MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_DEFERRED_BATCH_OPERATION_H_
 
+#include "core/operator.h"
 #include "experimental/execution/timed_single_thread_context.h"
 #include "pipeline2.h"
 
@@ -85,6 +86,7 @@ class DeferredBatchOperation : public Node {
       auto sched = timer_.GetScheduler();
       auto now = std::chrono::duration<int>::zero();
       StartDetached(LetValue(ScheduleAfter(sched, now), [this, state = std::move(state)]() mutable {
+        // MMDEPLOY_INFO("batch index {} - triggered by reaching max batch size", state->index_);
         return Run(std::move(state));
       }));
     }
@@ -100,6 +102,7 @@ class DeferredBatchOperation : public Node {
         LetValue(ScheduleAfter(sched, delay_), [this, index = batch_->index_]() -> Sender<int> {
           std::lock_guard lock{mutex_};
           if (batch_ && batch_->index_ == index) {
+            // MMDEPLOY_INFO("batch index {} - triggered by timer", index);
             return Run(std::move(batch_));
           }
           return Just(0);
@@ -107,8 +110,9 @@ class DeferredBatchOperation : public Node {
   }
 
   Sender<int> Run(std::unique_ptr<Batch> batch) {
-    auto vals = Just(Value(std::move(batch->vals_)));
-    return Then(operation_->Process(std::move(vals)), [batch = std::move(batch)](Value rets) {
+    auto vals = Just(graph::DistribAA(Value(batch->vals_)).value());
+    return Then(operation_->Process(std::move(vals)), [batch = std::move(batch)](Value _rets) {
+      auto rets = graph::DistribAA(_rets).value();
       assert(rets.size() == batch->op_states_.size());
       for (size_t idx = 0; idx < rets.size(); ++idx) {
         auto op_state = batch->op_states_[idx];
