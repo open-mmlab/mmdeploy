@@ -458,6 +458,6 @@ Take ncnn backend as example:
 ```Bash
 cd ${MMDEPLOY_DIR}/build/install/example
 mkdir -p build && cd build
-cmake .. -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn 
+cmake .. -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn
 make -j$(nproc)
 ```
