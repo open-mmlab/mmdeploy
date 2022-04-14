@@ -63,7 +63,7 @@ def get_model_metafile_info(global_info: dict, model_info: dict,
     Args:
         global_info (dict): global info from deploy yaml.
         model_info (dict):  model info from deploy yaml.
-        logger (logging.Logger): Logger.
+        logger (logging.Logger): Logger handler.
 
     Returns:
         Dict: Meta info of each model config
@@ -522,7 +522,7 @@ def get_backend_fps_metric(deploy_cfg_path: str, model_cfg_path: Path,
                            convert_result: bool, report_dict: dict,
                            infer_type: str, log_path: Path, dataset_type: str,
                            report_txt_path: Path):
-    """Get backend fps and metric
+    """Get backend fps and metric.
 
     Args:
         deploy_cfg_path (str): Deploy config path.
