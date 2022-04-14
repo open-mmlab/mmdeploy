@@ -56,13 +56,14 @@ def parse_args():
     return args
 
 
-def get_model_metafile_info(global_info, model_info, logger):
+def get_model_metafile_info(global_info: dict, model_info: dict,
+                            logger: logging.Logger):
     """Get model metafile information.
 
     Args:
         global_info (dict): global info from deploy yaml.
         model_info (dict):  model info from deploy yaml.
-        logger (logging.Logger): logger.
+        logger (logging.Logger): Logger.
 
     Returns:
         Dict: Meta info of each model config
@@ -124,10 +125,12 @@ def get_model_metafile_info(global_info, model_info, logger):
     return model_meta_info, checkpoint_save_dir, codebase_dir
 
 
-def update_report(report_dict, model_name, model_config, task_name,
-                  model_checkpoint_name, dataset, backend_name, deploy_config,
-                  static_or_dynamic, precision_type, conversion_result, fps,
-                  metric_info, test_pass, report_txt_path):
+def update_report(report_dict: dict, model_name: str, model_config: str,
+                  task_name: str, model_checkpoint_name: str, dataset: str,
+                  backend_name: str, deploy_config: str,
+                  static_or_dynamic: str, precision_type: str,
+                  conversion_result: str, fps: str, metric_info: list,
+                  test_pass: str, report_txt_path: Path):
     """Update report information.
 
     Args:
@@ -187,9 +190,10 @@ def update_report(report_dict, model_name, model_config, task_name,
         f.write(tmp_str)
 
 
-def get_pytorch_result(model_name, meta_info, checkpoint_path,
-                       model_config_name, metric_name_info, report_dict,
-                       logger, report_txt_path):
+def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
+                       model_config_name: Path, metric_name_info: dict,
+                       report_dict: dict, logger: logging.Logger,
+                       report_txt_path: Path):
     """Get metric from metafile info of the model.
 
     Args:
@@ -299,20 +303,19 @@ def get_pytorch_result(model_name, meta_info, checkpoint_path,
     return pytorch_metric
 
 
-def get_info_from_log_file(info_type, log_path, yaml_metric_key, logger):
+def get_info_from_log_file(info_type: str, log_path: Path,
+                           yaml_metric_key: str, logger: logging.Logger):
     """Get fps and metric result from log file.
 
     Args:
         info_type (str): Get which type of info: 'FPS' or 'metric'.
-        log_path (str): Logger path.
+        log_path (Path): Logger path.
         yaml_metric_key (str): Name of metric from yaml metric_key.
-        logger (Logger): Logger handler.
+        logger (logger.Logger): Logger handler.
 
     Returns:
         Float: Info value which get from logger file.
     """
-    log_path = Path(log_path)
-
     if log_path.exists():
         with open(log_path, 'r') as f_log:
             lines = f_log.readlines()
@@ -407,7 +410,8 @@ def get_info_from_log_file(info_type, log_path, yaml_metric_key, logger):
     return info_value
 
 
-def compare_metric(metric_value, metric_name, pytorch_metric, metric_info):
+def compare_metric(metric_value: float, metric_name: str, pytorch_metric: dict,
+                   metric_info: dict):
     """Compare metric value with the pytorch metric value and the tolerance.
 
     Args:
@@ -432,9 +436,10 @@ def compare_metric(metric_value, metric_name, pytorch_metric, metric_info):
     return test_pass
 
 
-def get_fps_metric(shell_res, pytorch_metric, metric_key,
-                   yaml_metric_info_name, log_path, metrics_eval_list,
-                   metric_info, logger):
+def get_fps_metric(shell_res: int, pytorch_metric: dict, metric_key: str,
+                   yaml_metric_info_name: str, log_path: Path,
+                   metrics_eval_list: dict, metric_info: dict,
+                   logger: logging.Logger):
     """Get fps and metric.
 
     Args:
@@ -442,10 +447,10 @@ def get_fps_metric(shell_res, pytorch_metric, metric_key,
         pytorch_metric (dict): Metric info of pytorch metafile.
         metric_key (str):Metric info.
         yaml_metric_info_name (str): Name of metric info in test yaml.
-        log_path (str): Logger path.
+        log_path (Path): Logger path.
         metrics_eval_list (dict): Metric list from test yaml.
         metric_info (dict): Metric info.
-        logger (Logger): Logger handler.
+        logger (logger.Logger): Logger handler.
 
     Returns:
         Float: fps: FPS of the model.
@@ -508,11 +513,37 @@ def get_fps_metric(shell_res, pytorch_metric, metric_key,
     return fps, metric_list, test_pass
 
 
-def get_backend_fps_metric(
-        deploy_cfg_path, model_cfg_path, convert_checkpoint_path, device_type,
-        eval_name, logger, metrics_eval_list, pytorch_metric, metric_info,
-        backend_name, precision_type, metric_useless, convert_result,
-        report_dict, infer_type, log_path, dataset_type, report_txt_path):
+def get_backend_fps_metric(deploy_cfg_path: str, model_cfg_path: Path,
+                           convert_checkpoint_path: str, device_type: str,
+                           eval_name: str, logger: logging.Logger,
+                           metrics_eval_list: dict, pytorch_metric: dict,
+                           metric_info: dict, backend_name: str,
+                           precision_type: str, metric_useless: set,
+                           convert_result: bool, report_dict: dict,
+                           infer_type: str, log_path: Path, dataset_type: str,
+                           report_txt_path: Path):
+    """Get backend fps and metric
+
+    Args:
+        deploy_cfg_path (str): Deploy config path.
+        model_cfg_path (Path): Model config path.
+        convert_checkpoint_path (str): Converted checkpoint path.
+        device_type (str): Device for converting.
+        eval_name (str): Name of evaluation.
+        logger (logging.Logger): Logger handler.
+        metrics_eval_list (dict): Evaluation metric info dict.
+        pytorch_metric (dict): Pytorch metric info dict get from metafile.
+        metric_info (dict): Metric info from test yaml.
+        backend_name (str): Backend name.
+        precision_type (str): Precision type for evaluation.
+        metric_useless (set): Useless metric for specific the model.
+        convert_result (bool): Backend convert result.
+        report_dict (dict): Backend convert result.
+        infer_type (str): Infer type.
+        log_path (Path): Logger save path.
+        dataset_type (str): Dataset type.
+        report_txt_path (Path): report txt save path.
+    """
     cmd_str = f'cd {str(Path(__file__).absolute().parent.parent)} && ' \
               'python3 tools/test.py ' \
               f'{deploy_cfg_path} ' \
@@ -573,6 +604,14 @@ def get_backend_fps_metric(
 
 
 def get_precision_type(deploy_cfg_name: str):
+    """Get backend precision_type according to the name of deploy config.
+
+    Args:
+        deploy_cfg_name (str): Name of the deploy config.
+
+    Returns:
+        Str: precision_type: Precision type of the deployment name.
+    """
     if 'int8' in deploy_cfg_name:
         precision_type = 'int8'
     elif 'fp16' in deploy_cfg_name:
@@ -583,12 +622,13 @@ def get_precision_type(deploy_cfg_name: str):
     return precision_type
 
 
-def replace_top_in_pipeline_json(backend_output_path, logger):
+def replace_top_in_pipeline_json(backend_output_path: Path,
+                                 logger: logging.Logger):
     """Replace `topk` with `num_classes` in `pipeline.json`.
 
     Args:
         backend_output_path (Path): Backend convert result path.
-        logger (Logger): Logger handler.
+        logger (logger.Logger): Logger handler.
     """
 
     sdk_pipeline_json_path = backend_output_path.joinpath('pipeline.json')
@@ -612,10 +652,12 @@ def replace_top_in_pipeline_json(backend_output_path, logger):
     logger.info('replace done')
 
 
-def get_backend_result(pipeline_info, model_cfg_path, checkpoint_path,
-                       work_dir, device_type, pytorch_metric, metric_info,
-                       report_dict, test_type, logger, log_path,
-                       backend_file_name, report_txt_path):
+def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
+                       checkpoint_path: Path, work_dir: Path, device_type: str,
+                       pytorch_metric: dict, metric_info: dict,
+                       report_dict: dict, test_type: str,
+                       logger: logging.Logger, log_path: Path,
+                       backend_file_name: [str, list], report_txt_path: Path):
     """Convert model to onnx and then get metric.
 
     Args:
@@ -627,7 +669,7 @@ def get_backend_result(pipeline_info, model_cfg_path, checkpoint_path,
         pytorch_metric (dict): All pytorch metric info.
         metric_info (dict): Metrics info.
         report_dict (dict): Report info dict.
-        test_type (sgr): Test type. 'precision' or 'convert'.
+        test_type (str): Test type. 'precision' or 'convert'.
         logger (logging.Logger): Logger.
         log_path (Path): Path for logger file.
         backend_file_name (str | list): backend file save name.
@@ -747,7 +789,7 @@ def get_backend_result(pipeline_info, model_cfg_path, checkpoint_path,
         for metric_name in metrics_eval_list:
             if backend_test:
                 get_backend_fps_metric(
-                    deploy_cfg_path=deploy_cfg_path,
+                    deploy_cfg_path=str(deploy_cfg_path),
                     model_cfg_path=model_cfg_path,
                     convert_checkpoint_path=convert_checkpoint_path,
                     device_type=device_type,
@@ -830,7 +872,8 @@ def get_backend_result(pipeline_info, model_cfg_path, checkpoint_path,
             report_txt_path=report_txt_path)
 
 
-def save_report(report_info, report_save_path, logger):
+def save_report(report_info: dict, report_save_path: Path,
+                logger: logging.Logger):
     """Convert model to onnx and then get metric.
 
     Args:
