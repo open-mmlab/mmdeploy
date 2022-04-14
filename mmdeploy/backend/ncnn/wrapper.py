@@ -38,12 +38,14 @@ class NCNNWrapper(BaseWrapper):
                  param_file: str,
                  bin_file: str,
                  output_names: Optional[Sequence[str]] = None,
+                 use_vulkan: bool = False,
                  **kwargs):
 
         net = ncnn.Net()
         if importlib.util.find_spec('mmdeploy.backend.ncnn.ncnn_ext'):
             from mmdeploy.backend.ncnn import ncnn_ext
             ncnn_ext.register_mmdeploy_custom_layers(net)
+        net.opt.use_vulkan_compute = use_vulkan
         net.load_param(param_file)
         net.load_model(bin_file)
 
