@@ -20,7 +20,7 @@ def __build_mmrotate_task(model_cfg: mmcv.Config, deploy_cfg: mmcv.Config,
 MMROTATE_TASK = Registry('mmrotate_tasks', build_func=__build_mmrotate_task)
 
 
-@CODEBASE.register_module(Codebase.MMOCR.value)
+@CODEBASE.register_module(Codebase.MMROTATE.value)
 class MMROTATE(MMCodebase):
     """mmrotate codebase class."""
 
@@ -50,7 +50,7 @@ class MMROTATE(MMCodebase):
     def build_dataset(dataset_cfg: Union[str, mmcv.Config],
                       dataset_type: str = 'val',
                       **kwargs) -> Dataset:
-        """Build dataset for mmocr.
+        """Build dataset for mmrotate.
 
         Args:
             dataset_cfg (str | mmcv.Config): The input dataset config.
