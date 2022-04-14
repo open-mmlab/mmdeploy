@@ -87,14 +87,6 @@ pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/${cu_ve
 </code></pre>
     </td>
   </tr>
-  <tr>
-    <td>onnx </td>
-    <td>Install onnx as follows. Refer to the <a href="https://github.com/onnx/onnx">guide</a> for details.
-<pre><code>
-conda install -c conda-forge onnx
-</code></pre>
-    </td>
-  </tr>
 </tbody>
 </table>
 
