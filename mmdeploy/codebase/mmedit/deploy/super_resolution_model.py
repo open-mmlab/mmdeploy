@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
-from typing import List, Optional, Sequence, Union
+from typing import Dict, List, Optional, Sequence, Union
 
 import mmcv
 import numpy as np
@@ -89,7 +89,7 @@ class End2EndModel(BaseBackendModel):
     def forward_test(self,
                      lq: torch.Tensor,
                      gt: Optional[torch.Tensor] = None,
-                     meta=None,
+                     meta: List[Dict] = None,
                      save_path=None,
                      *args,
                      **kwargs):
@@ -99,6 +99,7 @@ class End2EndModel(BaseBackendModel):
             lq (torch.Tensor): The input low-quality image of the model.
             gt (torch.Tensor): The ground truth of input image. Defaults to
                 `None`.
+            meta (List[Dict]): The meta infomations of MMEditing.
             save_path (str): Path to save image. Default: None.
             *args: Other arguments.
             **kwargs: Other key-pair arguments.
