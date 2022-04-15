@@ -76,10 +76,11 @@ class ResizeMask : public MMSegmentation {
     }
 
     bool IsLittleEndian() {
-      union un {
+      union Un {
         char a;
         int b;
-      } un.b = 1;
+      } un;
+      un.b = 1;
       return (int)un.a == 1;
     }
   }
