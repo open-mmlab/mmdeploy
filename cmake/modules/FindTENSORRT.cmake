@@ -26,7 +26,7 @@ foreach(__component ${__TENSORRT_LIB_COMPONENTS})
         PATH_SUFFIXES lib lib64 lib/x64)
     if (NOT __component_path)
         message(FATAL_ERROR "Cannot find TensorRT lib ${__component} in "
-            "CUDNN_DIR: ${CUDNN_DIR} or CUDA_TOOLKIT_ROOT_DIR: ${CUDA_TOOLKIT_ROOT_DIR}, "
+            "TENSORRT_DIR: ${TENSORRT_DIR} or CUDA_TOOLKIT_ROOT_DIR: ${CUDA_TOOLKIT_ROOT_DIR}, "
             "please check if the path is correct")
     endif()
 
