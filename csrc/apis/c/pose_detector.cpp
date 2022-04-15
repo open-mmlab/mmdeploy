@@ -105,7 +105,7 @@ int mmdeploy_pose_detector_apply_bbox(mm_handle_t handle, const mm_mat_t* mats, 
     auto result_count = 0;
     for (int i = 0; i < mat_count; ++i) {
       mmdeploy::Mat _mat{mats[i].height,       mats[i].width, PixelFormat(mats[i].format),
-                         DataType(mats->type), mats[i].data,  Device{"cpu"}};
+                         DataType(mats[i].type), mats[i].data,  Device{"cpu"}};
 
       Value img_with_boxes;
       if (bboxes && bbox_count) {
