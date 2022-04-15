@@ -8,6 +8,8 @@ ONNX 是目前模型部署中最重要的中间表示之一。学懂了 ONNX 的
 [TorchScript](https://pytorch.org/docs/stable/jit.html) 是一种序列化和优化 PyTorch 模型的格式，在优化过程中，一个`torch.nn.Module`模型会被转换成 TorchScript 的`torch.jit.ScriptModule`模型。现在， TorchScript 也被常当成一种中间表示使用。我们在[其他文章](https://zhuanlan.zhihu.com/p/486914187)中对 TorchScript 有详细的介绍，这里介绍 TorchScript 仅用于说明 PyTorch 模型转 ONNX的原理。
 `torch.onnx.export`中需要的模型实际上是一个`torch.jit.ScriptModule`。而要把普通 PyTorch 模型转一个这样的 TorchScript 模型，有跟踪（trace）和记录（script）两种导出计算图的方法。如果给`torch.onnx.export`传入了一个普通 PyTorch 模型（`torch.nn.Module`)，那么这个模型会默认使用跟踪的方法导出。这一过程如下图所示：
 
+![image](https://user-images.githubusercontent.com/47652064/163531613-9eb3c851-933e-4b0d-913a-bf92ac36e80b.png)
+
 回忆一下我们[第一篇教程](./chapter_01_introduction_to_model_deployment.md)知识：跟踪法只能通过实际运行一遍模型的方法导出模型的静态图，即无法识别出模型中的控制流（如循环）；记录法则能通过解析模型来正确记录所有的控制流。我们以下面这段代码为例来看一看这两种转换方法的区别：
 
 ```python
@@ -44,7 +46,11 @@ for model, model_name in zip(models, model_names):
 值得一提的是，由于这里的两个模型（`model_trace`, `model_script`)是 TorchScript 模型，`export`函数已经不需要再运行一遍模型了。（如果模型是用跟踪法得到的，那么在执行`torch.jit.trace`的时候就运行过一遍了；而用记录法导出时，模型不需要实际运行）参数中的`dummy_input`和`dummy_output`仅仅是为了获取输入和输出张量的类型和形状。
 运行上面的代码，我们把得到的4个 onnx 文件用 Netron 可视化：
 
+![image](https://user-images.githubusercontent.com/47652064/163531637-994ffa0a-847d-4c0d-a9e3-0ecd78c9a3aa.png)
+
 首先看跟踪法得到的 ONNX 模型结构。可以看出来，对于不同的 `n`,ONNX 模型的结构是不一样的。
+
+![image](https://user-images.githubusercontent.com/47652064/163531659-b06e5df2-6e18-462e-82ff-b16d95b9765c.png)
 
 而用记录法的话，最终的 ONNX 模型用 `Loop` 节点来表示循环。这样哪怕对于不同的 `n`，ONNX 模型也有同样的结构。
 由于推理引擎对静态图的支持更好，通常我们在模型部署时不需要显式地把 PyTorch 模型转成 TorchScript 模型，直接把 PyTorch 模型用 `torch.onnx.export` 跟踪导出即可。了解这部分的知识主要是为了在模型转换报错时能够更好地定位问题是否发生在 PyTorch 转 TorchScript 阶段。
@@ -222,14 +228,22 @@ torch.onnx.export(model, dummy_input, 'a.onnx')
 ### ONNX 算子文档
 ONNX 算子的定义情况，都可以在官方的[算子文档](https://github.com/onnx/onnx/blob/main/docs/Operators.md)中查看。这份文档十分重要，我们碰到任何和 ONNX 算子有关的问题都得来”请教“这份文档。
 
+![image](https://user-images.githubusercontent.com/47652064/163531682-306991b9-1ffe-49fe-8aee-be27b618b096.png)
+
 这份文档中最重要的开头的这个算子变更表格。表格的第一列是算子名，第二列是该算子发生变动的算子集版本号，也就是我们之前在`torch.onnx.export`中提到的`opset_version`表示的算子集版本号。通过查看算子第一次发生变动的版本号，我们可以知道某个算子是从哪个版本开始支持的；通过查看某算子小于等于`opset_version`的第一个改动记录，我们可以知道当前算子集版本中该算子的定义规则。
+
+![image](https://user-images.githubusercontent.com/47652064/163531690-2d70e6d2-728b-4f7f-8f5a-efaaf620ff02.png)
 
 通过点击表格中的链接，我们可以查看某个算子的输入、输出参数规定及使用示例。比如上图是Relu在 ONNX 中的定义规则，这份定义表明 Relu 应该有一个输入和一个输入，输入输出的类型相同，均为 tensor。
 ### PyTorch 对 ONNX 算子的映射
 在 PyTorch 中，和 ONNX 有关的定义全部放在 [torch.onnx 目录](https://github.com/pytorch/pytorch/tree/master/torch/onnx)中，如下图所示：
 
+![image](https://user-images.githubusercontent.com/47652064/163531700-ddf994e5-6989-483c-a1a3-f1b50dfd84f0.png)
+
 其中，`symbloic_opset{n}.py`（符号表文件）即表示 PyTorch 在支持第 n 版 ONNX 算子集时新加入的内容。我们之前讲过， bicubic 插值是在第 11 个版本开始支持的。我们以它为例来看看如何查找算子的映射情况。
 首先，使用搜索功能，在`torch/onnx`文件夹搜索"bicubic"，可以发现这个这个插值在第 11 个版本的定义文件中：
+
+![image](https://user-images.githubusercontent.com/47652064/163531714-7cf9b784-5b7f-4438-ba01-8cff4c7c9ddc.png)
 
 之后，我们按照代码的调用逻辑，逐步跳转直到最底层的 ONNX 映射函数：
 ```python
