@@ -42,7 +42,7 @@ class ResizeMask : public MMSegmentation {
       // change kINT64 to 2 INT32
       TensorDesc desc{
           host_tensor.device(), DataType::kINT32, {1, 2, height, width}, host_tensor.name()};
-      Tensor _host_tensor(desc, mask.buffer());
+      Tensor _host_tensor(desc, host_tensor.buffer());
       return MaskResize(_host_tensor, input_height, input_width);
     } else if (mask.data_type() == DataType::kINT32) {
       return MaskResize(host_tensor, input_height, input_width);
@@ -68,10 +68,19 @@ class ResizeMask : public MMSegmentation {
       return to_value(output);
     } else {
       cv::Mat _dst;
-      cv::extractChannel(dst, _dst, 0);
+      int channel = IsLittleEndian() ? 0 : dst.dims - 1;
+      cv::extractChannel(dst, _dst, channel);
       auto output_tensor = cpu::CVMat2Tensor(_dst);
       SegmentorOutput output{output_tensor, dst_height, dst_width, classes_};
       return to_value(output);
+    }
+
+    bool IsLittleEndian() {
+      union un {
+        char a;
+        int b;
+      } un.b = 1;
+      return (int)un.a == 1;
     }
   }
 
