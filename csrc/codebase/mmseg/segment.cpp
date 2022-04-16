@@ -1,4 +1,5 @@
 // Copyright (c) OpenMMLab. All rights reserved.
+#include <cstdint>
 
 #include "codebase/mmseg/mmseg.h"
 #include "core/tensor.h"
@@ -14,6 +15,7 @@ class ResizeMask : public MMSegmentation {
   explicit ResizeMask(const Value &cfg) : MMSegmentation(cfg) {
     try {
       classes_ = cfg["params"]["num_classes"].get<int>();
+      little_endian_ = IsLittleEndian();
     } catch (const std::exception &e) {
       MMDEPLOY_ERROR("no ['params']['num_classes'] is specified in cfg: {}", cfg);
       throw_exception(eInvalidArgument);
@@ -68,25 +70,26 @@ class ResizeMask : public MMSegmentation {
       return to_value(output);
     } else {
       cv::Mat _dst;
-      int channel = IsLittleEndian() ? 0 : dst.dims - 1;
+      int channel = little_endian_ ? 0 : dst.dims - 1;
       cv::extractChannel(dst, _dst, channel);
       auto output_tensor = cpu::CVMat2Tensor(_dst);
       SegmentorOutput output{output_tensor, dst_height, dst_width, classes_};
       return to_value(output);
     }
+  }
 
-    bool IsLittleEndian() {
-      union Un {
-        char a;
-        int b;
-      } un;
-      un.b = 1;
-      return (int)un.a == 1;
-    }
+  bool IsLittleEndian() {
+    union Un {
+      char a;
+      int b;
+    } un;
+    un.b = 1;
+    return (int)un.a == 1;
   }
 
  protected:
   int classes_{};
+  bool little_endian_;
 };
 
 REGISTER_CODEBASE_COMPONENT(MMSegmentation, ResizeMask);
