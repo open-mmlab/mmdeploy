@@ -59,6 +59,7 @@ make -j$(nproc)
 | :--------------------------------------------------------------------------- | :---: | :---: | :---------------- |
 | [grid_sampler](../ops/onnxruntime.md#grid_sampler)                           |   Y   |   N   | master            |
 | [MMCVModulatedDeformConv2d](../ops/onnxruntime.md#mmcvmodulateddeformconv2d) |   Y   |   N   | master            |
+| [NMSRotated](../ops/onnxruntime.md#nmsrotated)                               |   Y   |   N   | master            |
 
 ### How to add a new custom op
 
