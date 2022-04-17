@@ -41,8 +41,23 @@ tensorrt:
     deploy_config: configs/mmpose/pose-detection_tensorrt-fp16_static-256x192.py
 
 openvino:
+  pipeline_openvino_static_fp32: &pipeline_openvino_static_fp32
+    convert_image: *convert_image
+    backend_test: *default_backend_test
+    deploy_config: configs/mmpose/pose-detection_openvino_static-256x192.py
+
 ncnn:
+  pipeline_ncnn_static_fp32: &pipeline_ncnn_static_fp32
+    convert_image: *convert_image
+    backend_test: False
+    deploy_config: configs/mmpose/pose-detection_ncnn_static-256x192.py
+
 pplnn:
+  pipeline_ppl_static_fp32: &pipeline_ppl_static_fp32
+    convert_image: *convert_image
+    backend_test: False
+    deploy_config: configs/mmpose/pose-detection_pplnn_static-256x192.py
+
 torchscript:
 
 
@@ -55,3 +70,6 @@ models:
     pipelines:
       - *pipeline_ort_static_fp32
       - *pipeline_trt_static_fp16
+      - *pipeline_openvino_static_fp32
+      - *pipeline_ncnn_static_fp32
+      - *pipeline_ppl_static_fp32
