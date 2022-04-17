@@ -153,10 +153,9 @@ def update_report(report_dict: dict, model_name: str, model_config: str,
     if '.pth' not in model_checkpoint_name:
         # make model path shorter by cutting the work_dir_root
         work_dir_root = report_txt_path.parent.absolute().resolve()
-        model_checkpoint_abs = Path(model_checkpoint_name).absolute().resolve()
         model_checkpoint_name = \
-            str(model_checkpoint_abs).replace(str(work_dir_root),
-                                              '${WORK_DIR}')
+            str(model_checkpoint_name).replace(str(work_dir_root),
+                                               '${WORK_DIR}')
 
     # save to tmp file
     tmp_str = f'{model_name},{model_config},{task_name},' \
@@ -756,7 +755,8 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
         convert_checkpoint_path = ''
         for backend_file in backend_file_name:
             backend_path = backend_output_path.joinpath(backend_file)
-            convert_checkpoint_path += f' {str(backend_path)}'
+            backend_path = backend_path.absolute().resolve()
+            convert_checkpoint_path += f'{str(backend_path)} '
     else:
         convert_checkpoint_path = \
             str(backend_output_path.joinpath(backend_file_name))
