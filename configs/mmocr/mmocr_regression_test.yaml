@@ -58,9 +58,28 @@ tensorrt:
     deploy_config: configs/mmocr/text-detection/text-detection_tensorrt-fp16_dynamic-320x320-1024x1824.py
 
 openvino:
+  pipeline_openvino_detection_dynamic_fp32: &pipeline_openvino_detection_dynamic_fp32
+    convert_image: *convert_image
+    backend_test: *default_backend_test
+    deploy_config: configs/mmocr/text-detection/text-detection_openvino_dynamic-640x640.py
+
 ncnn:
+  pipeline_ncnn_detection_static_fp32: &pipeline_ncnn_detection_static_fp32
+    convert_image: *convert_image
+    backend_test: False
+    deploy_config: configs/mmocr/text-detection/text-detection_ncnn_static.py
+
 pplnn:
+  pipeline_ppl_detection_dynamic_fp32: &pipeline_ppl_detection_dynamic_fp32
+    convert_image: *convert_image
+    backend_test: False
+    deploy_config: configs/mmocr/text-detection/text-detection_pplnn_dynamic-640x640.py
+
 torchscript:
+  pipeline_ts_detection_fp32: &pipeline_ts_detection_fp32
+    convert_image: *convert_image
+    backend_test: *default_backend_test
+    deploy_config: configs/mmocr/text-detection/text-detection_torchscript.py
 
 
 models:
@@ -80,3 +99,7 @@ models:
     pipelines:
       - *pipeline_ort_detection_dynamic_fp32
       - *pipeline_trt_detection_dynamic_fp16
+      - *pipeline_openvino_detection_dynamic_fp32
+      - *pipeline_ncnn_detection_static_fp32
+      - *pipeline_ppl_detection_dynamic_fp32
+      - *pipeline_ts_detection_fp32
