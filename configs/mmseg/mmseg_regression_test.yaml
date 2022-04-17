@@ -39,9 +39,28 @@ tensorrt:
     deploy_config: configs/mmseg/segmentation_tensorrt-fp16_dynamic-512x1024-2048x2048.py
 
 openvino:
+  pipeline_openvino_dynamic_fp32: &pipeline_openvino_dynamic_fp32
+    convert_image: *convert_image
+    backend_test: *default_backend_test
+    deploy_config: configs/mmseg/segmentation_openvino_dynamic-1024x2048.py
+
 ncnn:
+  pipeline_ncnn_static_fp32: &pipeline_ncnn_static_fp32
+    convert_image: *convert_image
+    backend_test: False
+    deploy_config: configs/mmseg/segmentation_ncnn_static-1024x2048.py
+
 pplnn:
+  pipeline_ppl_dynamic_fp32: &pipeline_ppl_dynamic_fp32
+    convert_image: *convert_image
+    backend_test: False
+    deploy_config: configs/mmseg/segmentation_pplnn_dynamic-1024x2048.py
+
 torchscript:
+  pipeline_ts_fp32: &pipeline_ts_fp32
+    convert_image: *convert_image
+    backend_test: *default_backend_test
+    deploy_config: configs/mmseg/segmentation_torchscript.py
 
 
 models:
@@ -53,3 +72,7 @@ models:
     pipelines:
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
+      - *pipeline_openvino_dynamic_fp32
+      - *pipeline_ncnn_static_fp32
+      - *pipeline_ppl_dynamic_fp32
+      - *pipeline_ts_fp32
