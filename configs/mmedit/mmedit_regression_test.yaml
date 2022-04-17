@@ -43,10 +43,28 @@ tensorrt:
     deploy_config: configs/mmedit/super-resolution/super-resolution_tensorrt-fp16_dynamic-32x32-512x512.py
 
 openvino:
-ncnn:
-pplnn:
-torchscript:
+  pipeline_openvino_dynamic_fp32: &pipeline_openvino_dynamic_fp32
+    convert_image: *convert_image
+    backend_test: *default_backend_test
+    deploy_config: configs/mmedit/super-resolution/super-resolution_openvino_dynamic-256x256.py
 
+ncnn:
+  pipeline_ncnn_dynamic_fp32: &pipeline_ncnn_dynamic_fp32
+    convert_image: *convert_image
+    backend_test: False
+    deploy_config: configs/mmedit/super-resolution/super-resolution_ncnn_dynamic.py
+
+pplnn:
+  pipeline_ppl_dynamic_fp32: &pipeline_ppl_dynamic_fp32
+    convert_image: *convert_image
+    backend_test: False
+    deploy_config: configs/mmedit/super-resolution/super-resolution_pplnn_dynamic-32x32.py
+
+torchscript:
+  pipeline_ts_fp32: &pipeline_ts_fp32
+    convert_image: *convert_image
+    backend_test: *default_backend_test
+    deploy_config: configs/mmedit/super-resolution/super-resolution_torchscript.py
 
 models:
   - name: srcnn
@@ -57,3 +75,7 @@ models:
     pipelines:
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
+      - *pipeline_openvino_dynamic_fp32
+      - *pipeline_ncnn_dynamic_fp32
+      - *pipeline_ppl_dynamic_fp32
+      - *pipeline_ts_fp32
