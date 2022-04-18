@@ -927,7 +927,7 @@ def main():
     if log_path.exists():
         with open(log_path, 'w') as f_log:
             f_log.write('')  # clear the log file
-    logger.info(f'Savine log in {str(log_path)}')
+    logger.info(f'Saving log in {str(log_path)}')
 
     for deploy_yaml in args.deploy_yml:
 

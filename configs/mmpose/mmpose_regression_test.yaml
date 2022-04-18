@@ -4,9 +4,8 @@ globals:
   checkpoint_force_download: False
   checkpoint_dir: ../mmdeploy_checkpoints
   images:
-    img_224x224: &img_224x224 ./tests/data/tiger.jpeg
-    img_300x300: &img_300x300
-    img_800x1344: &img_800x1344
+    img_human_pose: &img_human_pose ../mmpose/tests/data/coco/000000000785.jpg
+    img_human_pose_256x192: &img_human_pose_256x192 ./demo/resources/human-pose.jpg
     img_blank: &img_blank
   metric_info: &metric_info
     AP: # named after metafile.Results.Metrics
@@ -22,8 +21,8 @@ globals:
       task_name: Body 2D Keypoint
       dataset:
   convert_image: &convert_image
-    input_img: *img_224x224
-    test_img: *img_300x300
+    input_img: *img_human_pose
+    test_img: *img_human_pose_256x192
   backend_test: &default_backend_test True
   sdk:
     sdk_static_fp32: &sdk_static_fp32 configs/mmpose/pose-detection_sdk_static.py
@@ -34,11 +33,21 @@ onnxruntime:
     deploy_config: configs/mmpose/pose-detection_onnxruntime_static.py
 
 tensorrt:
+  pipeline_trt_static_fp32: &pipeline_trt_static_fp32
+    convert_image: *convert_image
+    backend_test: *default_backend_test
+    sdk_config: *sdk_static_fp32
+    deploy_config: configs/mmpose/pose-detection_tensorrt_static-256x192.py
   pipeline_trt_static_fp16: &pipeline_trt_static_fp16
     convert_image: *convert_image
     backend_test: *default_backend_test
     sdk_config: *sdk_static_fp32
     deploy_config: configs/mmpose/pose-detection_tensorrt-fp16_static-256x192.py
+  pipeline_trt_static_int8: &pipeline_trt_static_int8
+    convert_image: *convert_image
+    backend_test: *default_backend_test
+    sdk_config: *sdk_static_fp32
+    deploy_config: configs/mmpose/pose-detection_tensorrt-int8_static-256x192.py
 
 openvino:
   pipeline_openvino_static_fp32: &pipeline_openvino_static_fp32
@@ -59,7 +68,10 @@ pplnn:
     deploy_config: configs/mmpose/pose-detection_pplnn_static-256x192.py
 
 torchscript:
-
+  pipeline_ts_static_fp32: &pipeline_ts_fp32
+    convert_image: *convert_image
+    backend_test: False
+    deploy_config: configs/mmpose/pose-detection_torchscript.py
 
 models:
   - name: hrnet
@@ -67,6 +79,29 @@ models:
     codebase_model_config_dir: ./configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco
     model_configs:
       - hrnet_w48_coco_256x192.py
+    pipelines:
+      - *pipeline_ort_static_fp32
+      - *pipeline_trt_static_fp16
+      - *pipeline_openvino_static_fp32
+      - *pipeline_ncnn_static_fp32
+      - *pipeline_ppl_static_fp32
+      - *pipeline_ts_fp32
+  - name: litehrnet
+    metafile: configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/litehrnet_coco.yml
+    codebase_model_config_dir: ./configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco
+    model_configs:
+      - litehrnet_30_coco_256x192.py
+    pipelines:
+      - *pipeline_ort_static_fp32
+      - *pipeline_trt_static_fp32
+      - *pipeline_openvino_static_fp32
+      - *pipeline_ncnn_static_fp32
+      - *pipeline_ppl_static_fp32
+  - name: mspn
+    metafile: configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/mspn_coco.yml
+    codebase_model_config_dir: ./configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco
+    model_configs:
+      - 4xmspn50_coco_256x192.py
     pipelines:
       - *pipeline_ort_static_fp32
       - *pipeline_trt_static_fp16
