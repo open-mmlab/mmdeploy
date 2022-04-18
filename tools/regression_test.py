@@ -933,7 +933,7 @@ def main():
         # clear the log file
         with open(log_path, 'w') as f_log:
             f_log.write('')
-    logger.info(f'Savine log in {str(log_path.absolute().resolve())}')
+    logger.info(f'Saving log in {str(log_path.absolute().resolve())}')
 
     for deploy_yaml in args.deploy_yml:
 
