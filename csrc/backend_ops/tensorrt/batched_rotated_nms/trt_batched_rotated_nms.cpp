@@ -45,7 +45,7 @@ nvinfer1::DimsExprs TRTBatchedRotatedNMS::getOutputDimensions(
   switch (outputIndex) {
     case 0:
       ret.nbDims = 3;
-      ret.d[2] = exprBuilder.constant(5);
+      ret.d[2] = exprBuilder.constant(6);
       break;
     case 1:
       ret.nbDims = 2;
