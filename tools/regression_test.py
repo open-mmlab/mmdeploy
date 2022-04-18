@@ -200,7 +200,7 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
         meta_info (dict): Metafile info from model's metafile.yml.
         checkpoint_path (Path): Checkpoint path.
         model_config_path (Path): Model config path.
-        model_config_name (str): Name fo model config in meta_info.
+        model_config_name (str): Name of model config in meta_info.
         metric_name_info (dict): Metrics info.
         report_dict (dict): Report info dict.
         logger (logging.Logger): Logger.
