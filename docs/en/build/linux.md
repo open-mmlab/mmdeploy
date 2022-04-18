@@ -235,6 +235,7 @@ Make sure to enable <code>-DNCNN_PYTHON=ON</code> in your build command. <br>
 <pre><code>
 cd ncnn
 export NCNN_DIR=$(pwd)
+export LD_LIBRARY_PATH=${NCNN_DIR}/build/install/lib/:$LD_LIBRARY_PATH
 </code></pre>
 3. Install pyncnn
 <pre><code>
