@@ -171,7 +171,7 @@ __expand::_Sender<std::decay_t<Sender>> Expand(Sender&& sender) {
 }
 
 void G() {
-  auto sched = _TypeErasedScheduler(InlineScheduler{});
+  auto sched = _TypeErasedScheduler<std::tuple<>>(InlineScheduler{});
   auto int2_sender = TypeErasedSender<int, int>(Just(100, 200));
   auto float2_sender = Then(std::move(int2_sender),
                             [](int x, int y) { return std::make_tuple((float)y, (float)x); });

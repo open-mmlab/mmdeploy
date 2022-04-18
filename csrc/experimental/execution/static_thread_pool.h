@@ -71,6 +71,8 @@ class StaticThreadPool {
 
     friend Sender Schedule(const Scheduler& s) noexcept { return s.MakeSender_(); }
 
+    friend void* GetSchedulerId(const Scheduler& self) { return self.pool_; }
+
     friend class StaticThreadPool;
 
    public:

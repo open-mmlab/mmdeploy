@@ -49,6 +49,8 @@ class Scheduler {
 
   friend bool operator!=(Scheduler a, Scheduler b) noexcept { return a.context_ != b.context_; }
 
+  friend void* GetSchedulerId(const Scheduler& self) { return self.context_; }
+
   TimedSingleThreadContext* context_;
 
   template <class Rep, class Ratio>

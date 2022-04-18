@@ -15,11 +15,11 @@ using _Value = std::tuple<Value>;
 
 namespace {
 
-inline _TypeErasedScheduler* Cast(mmdeploy_scheduler_t s) {
-  return reinterpret_cast<_TypeErasedScheduler*>(s);
+inline _TypeErasedScheduler<_Value>* Cast(mmdeploy_scheduler_t s) {
+  return reinterpret_cast<_TypeErasedScheduler<_Value>*>(s);
 }
 
-inline mmdeploy_scheduler_t Cast(_TypeErasedScheduler* s) {
+inline mmdeploy_scheduler_t Cast(_TypeErasedScheduler<_Value>* s) {
   return reinterpret_cast<mmdeploy_scheduler_t>(s);
 }
 
@@ -40,7 +40,7 @@ inline Value* Cast(mmdeploy_value_t s) { return reinterpret_cast<Value*>(s); }
 using Sender = _TypeErasedSender<_Value>;
 
 mmdeploy_scheduler_t mmdeploy_inline_scheduler() {
-  static auto v = new _TypeErasedScheduler(InlineScheduler{});
+  static auto v = new _TypeErasedScheduler<_Value>(InlineScheduler{});
   return Cast(v);
 }
 

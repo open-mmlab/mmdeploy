@@ -109,6 +109,8 @@ struct InlineScheduler {
 
   friend _Sender Schedule(const InlineScheduler) noexcept { return {}; }
 
+  friend void* GetSchedulerId(const InlineScheduler& self) { return (void*)1u; }
+
   template <class Sender>
   struct _Receiver {
     std::optional<completion_signature_for_t<Sender>>* data_;
@@ -140,11 +142,9 @@ struct _Sender {
     value_type vals_;
     Receiver rcvr_;
     friend void Start(_Operation& op_state) noexcept {
-      std::apply(
-          [&](Ts&... ts) noexcept -> void {
-            SetValue((Receiver &&) op_state.rcvr_, (Ts &&) ts...);
-          },
-          op_state.vals_);
+      std::apply([&](Ts&... ts) noexcept
+                 -> void { SetValue((Receiver &&) op_state.rcvr_, (Ts &&) ts...); },
+                 op_state.vals_);
     }
   };
 
