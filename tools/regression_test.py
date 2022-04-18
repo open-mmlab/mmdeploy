@@ -211,7 +211,8 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
     """
 
     if model_config_name not in meta_info:
-        logger.warning(f'{model_config_name} not in meta_info, which is {meta_info}')
+        logger.warning(
+            f'{model_config_name} not in meta_info, which is {meta_info}')
         return {}
 
     model_info = meta_info.get(model_config_name, None)
@@ -886,15 +887,16 @@ def save_report(report_info: dict, report_save_path: Path,
         report_save_path (Path): Report save path.
         logger (logging.Logger): Logger.
     """
-    logger.info(f'Save regression test report '
-                f'to {report_save_path}, pls wait...')
+    logger.info('Saving regression test report to '
+                f'{report_save_path.absolute().resolve()}, pls wait...')
     try:
         df = pd.DataFrame(report_info)
         df.to_excel(report_save_path)
     except ValueError:
         logger.info(f'Got error report_info = {report_info}')
 
-    logger.info(f'Saved regression test report to {report_save_path}.')
+    logger.info('Saved regression test report to '
+                f'{report_save_path.absolute().resolve()}.')
 
 
 def main():
