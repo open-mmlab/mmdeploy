@@ -69,9 +69,8 @@ torchscript:
 models:
   - name: srcnn
     metafile: configs/restorers/srcnn/metafile.yml
-    codebase_model_config_dir: configs/restorers/srcnn
     model_configs:
-      - srcnn_x4k915_g1_1000k_div2k.py
+      - configs/restorers/srcnn/srcnn_x4k915_g1_1000k_div2k.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16

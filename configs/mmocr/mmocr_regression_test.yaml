@@ -85,17 +85,15 @@ torchscript:
 models:
   - name: crnn
     metafile: configs/textrecog/crnn/metafile.yml
-    codebase_model_config_dir: configs/textrecog/crnn
     model_configs:
-      - crnn_academic_dataset.py
+      - configs/textrecog/crnn/crnn_academic_dataset.py
     pipelines:
       - *pipeline_ort_recognition_dynamic_fp32
 
   - name: dbnet
     metafile: configs/textdet/dbnet/metafile.yml
-    codebase_model_config_dir: configs/textdet/dbnet
     model_configs:
-      - dbnet_r18_fpnc_1200e_icdar2015.py
+      - configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py
     pipelines:
       - *pipeline_ort_detection_dynamic_fp32
       - *pipeline_trt_detection_dynamic_fp16
