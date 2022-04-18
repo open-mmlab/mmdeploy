@@ -15,6 +15,12 @@
     - [Inputs](#inputs-1)
     - [Outputs](#outputs-1)
     - [Type Constraints](#type-constraints-1)
+- [NMSRotated](#nmsrotated)
+    - [Description](#description-2)
+    - [Parameters](#parameters-2)
+    - [Inputs](#inputs-2)
+    - [Outputs](#outputs-2)
+    - [Type Constraints](#type-constraints-2)
 
 <!-- TOC -->
 
@@ -88,6 +94,39 @@ Perform Modulated Deformable Convolution on input feature, read [Deformable Conv
 <dl>
 <dt><tt>outputs[0]</tt>: T</dt>
 <dd>Output feature; 4-D tensor of shape (N, output_channel, outH, outW).</dd>
+</dl>
+
+#### Type Constraints
+
+- T:tensor(float32, Linear)
+
+### NMSRotated
+
+#### Description
+
+Non Max Suppression for rotated bboxes.
+
+#### Parameters
+
+| Type           | Parameter           | Description                                                                           |
+| -------------- | ------------------- | ------------------------------------------------------------------------------------- |
+| `float`         | `iou_threshold`     | The IoU threshold for NMS.                                                            |
+
+
+#### Inputs
+
+<dl>
+<dt><tt>inputs[0]</tt>: T</dt>
+<dd>Input feature; 2-D tensor of shape (N, 5), where N is the number of rotated bboxes, .</dd>
+<dt><tt>inputs[1]</tt>: T</dt>
+<dd>Input offset; 1-D tensor of shape (N, ), where N is the number of rotated bboxes.</dd>
+</dl>
+
+#### Outputs
+
+<dl>
+<dt><tt>outputs[0]</tt>: T</dt>
+<dd>Output feature; 1-D tensor of shape (K, ), where K is the number of keep bboxes.</dd>
 </dl>
 
 #### Type Constraints

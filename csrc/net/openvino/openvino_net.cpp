@@ -86,10 +86,10 @@ Result<void> OpenVINONet::Init(const Value& args) {
   OUTCOME_TRY(auto raw_bin, model.ReadFile(config.weights));
 
   try {
-    std::ofstream xml_out(tmp_xml);
+    std::ofstream xml_out(tmp_xml, std::ios::binary);
     xml_out << raw_xml;
     xml_out.close();
-    std::ofstream bin_out(tmp_bin);
+    std::ofstream bin_out(tmp_bin, std::ios::binary);
     bin_out << raw_bin;
     bin_out.close();
   } catch (const std::exception& e) {

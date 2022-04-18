@@ -142,8 +142,8 @@ int mmdeploy_text_recognizer_apply_bbox(mm_handle_t handle, const mm_mat_t *imag
       }
 
       result_index[i] = static_cast<int>(input_images.size());
-      mmdeploy::Mat _mat{images[i].height,       images[i].width, PixelFormat(images[i].format),
-                         DataType(images->type), images[i].data,  Device{"cpu"}};
+      mmdeploy::Mat _mat{images[i].height,         images[i].width, PixelFormat(images[i].format),
+                         DataType(images[i].type), images[i].data,  Device{"cpu"}};
       input_images.push_back({{"ori_img", _mat}});
     }
 

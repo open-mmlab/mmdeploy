@@ -181,7 +181,7 @@ class LibVersionChecker(Checker):
 
 
 class RewriterRegistry:
-    """A registry that recoreds rewrite objects.
+    """A registry that records rewrite objects.
 
     Logically this class is a two-dimensional table which maintains an object
     list for each backend. The records can be inserted to this table through
@@ -304,7 +304,7 @@ class RewriterRegistry:
             name (str): The import path to access the function/module.
             backend (str): The rewriter will be activated on which backend.
             ir (IR): The rewriter will be activated on which ir.
-            extra_chekcers (None | Checker | List[Checker]): Other requirements
+            extra_checkers (None | Checker | List[Checker]): Other requirements
                 for the rewriters. Default to `None`.
 
         Returns:
