@@ -22,8 +22,8 @@ def parse_args():
         nargs='+',
         help='regression test yaml path.',
         default=[
-            './configs/mmdet/mmdet_regression_test.yaml',
             './configs/mmcls/mmcls_regression_test.yaml',
+            './configs/mmdet/mmdet_regression_test.yaml',
             './configs/mmseg/mmseg_regression_test.yaml',
             './configs/mmpose/mmpose_regression_test.yaml',
             './configs/mmocr/mmocr_regression_test.yaml',
@@ -94,15 +94,15 @@ def get_model_metafile_info(global_info: dict, model_info: dict,
 
     model_meta_info = dict()
     for meta_model in metafile_info.get('Models'):
-        if str(meta_model.get('Name')) + '.py' not in model_config_files:
+        if str(meta_model.get('Config')) not in model_config_files:
             # skip if the model not in model_config_files
-            logger.warning(f'{str(meta_model.get("Name")) + ".py"} '
+            logger.warning(f'{meta_model.get("Config")} '
                            f'not in {model_config_files}, pls check ! '
                            'Skip it...')
             continue
 
         # get meta info
-        model_meta_info.update({meta_model.get('Name'): meta_model})
+        model_meta_info.update({meta_model.get('Config'): meta_model})
 
         # get weight url
         weights_url = meta_model.get('Weights')
@@ -190,16 +190,17 @@ def update_report(report_dict: dict, model_name: str, model_config: str,
 
 
 def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
-                       model_config_name: Path, metric_name_info: dict,
-                       report_dict: dict, logger: logging.Logger,
-                       report_txt_path: Path):
+                       model_config_path: Path, model_config_name: str,
+                       metric_name_info: dict, report_dict: dict,
+                       logger: logging.Logger, report_txt_path: Path):
     """Get metric from metafile info of the model.
 
     Args:
         model_name (str): Name of model.
         meta_info (dict): Metafile info from model's metafile.yml.
         checkpoint_path (Path): Checkpoint path.
-        model_config_name (Path):  Model config name for getting meta info.
+        model_config_path (Path): Model config path.
+        model_config_name (str): Name fo model config in meta_info.
         metric_name_info (dict): Metrics info.
         report_dict (dict): Report info dict.
         logger (logging.Logger): Logger.
@@ -209,10 +210,11 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
         Dict: metric info of the model
     """
 
-    if model_config_name.stem not in meta_info:
+    if model_config_name not in meta_info:
+        logger.warning(f'{model_config_name} not in meta_info, which is {meta_info}')
         return {}
 
-    model_info = meta_info.get(model_config_name.stem, None)
+    model_info = meta_info.get(model_config_name, None)
 
     # get metric
     metric_info = model_info.get('Results', None)
@@ -221,12 +223,14 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
     dataset_type = ''
     task_name = ''
 
+    # Get dataset
     using_dataset = []
     for _, v in metric_name_info.items():
         if v.get('dataset') is None:
             continue
         using_dataset.append(v.get('dataset'))
 
+    # Get metrics info from metafile
     for metric in metric_info:
         pytorch_meta_metric = metric.get('Metrics')
 
@@ -284,7 +288,7 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
     update_report(
         report_dict=report_dict,
         model_name=model_name,
-        model_config=str(model_config_name),
+        model_config=str(model_config_path),
         task_name=task_name,
         model_checkpoint_name=str(checkpoint_path),
         dataset=dataset_type,
@@ -298,7 +302,7 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
         test_pass='-',
         report_txt_path=report_txt_path)
 
-    logger.info(f'Got {model_config_name} metric: {pytorch_metric}')
+    logger.info(f'Got {model_config_path} metric: {pytorch_metric}')
     return pytorch_metric
 
 
@@ -323,6 +327,7 @@ def get_info_from_log_file(info_type: str, log_path: Path,
         lines = []
 
     if info_type == 'FPS' and len(lines) > 1:
+        # Get FPS
         line_count = 0
         fps_sum = 0.00
         fps_lines = lines[1:11]
@@ -894,13 +899,11 @@ def save_report(report_info: dict, report_save_path: Path,
 
 def main():
     args = parse_args()
-
     set_start_method('spawn')
-
     logger = get_root_logger(log_level=args.log_level)
-    logger.info('Processing regression test.')
 
     test_type = 'precision' if args.performance else 'convert'
+    logger.info(f'Processing regression test in {test_type} mode.')
 
     backend_file_info = {
         'onnxruntime': 'end2end.onnx',
@@ -925,9 +928,10 @@ def main():
 
     log_path = work_dir.joinpath('regression_test.log').absolute()
     if log_path.exists():
+        # clear the log file
         with open(log_path, 'w') as f_log:
-            f_log.write('')  # clear the log file
-    logger.info(f'Savine log in {str(log_path)}')
+            f_log.write('')
+    logger.info(f'Savine log in {str(log_path.absolute().resolve())}')
 
     for deploy_yaml in args.deploy_yml:
 
@@ -940,7 +944,6 @@ def main():
 
         report_save_path = \
             work_dir.joinpath(Path(deploy_yaml).stem + '_report.xlsx')
-
         report_txt_path = report_save_path.with_suffix('.txt')
 
         report_dict = {
@@ -958,7 +961,6 @@ def main():
         }
 
         global_info = yaml_info.get('globals')
-
         for metric_name in global_info.get('metric_info', {}):
             report_dict.update({metric_name: []})
         metric_info = global_info.get('metric_info', {})
@@ -980,30 +982,28 @@ def main():
             model_metafile_info, checkpoint_save_dir, codebase_dir = \
                 get_model_metafile_info(global_info, models, logger)
             for model_config in model_metafile_info:
-                logger.info(f'Processing test for {model_config}.py...')
+                logger.info(f'Processing test for {model_config}...')
 
-                # get backends info
+                # Get backends info
                 pipelines_info = models.get('pipelines', None)
                 if pipelines_info is None:
                     continue
 
-                # get model config path
-                model_cfg_path = Path(codebase_dir). \
-                    joinpath(models.get('codebase_model_config_dir', ''),
-                             model_config).with_suffix('.py')
+                # Get model config path
+                model_cfg_path = Path(codebase_dir).joinpath(model_config)
                 assert model_cfg_path.exists()
 
-                # get checkpoint path
+                # Get checkpoint path
                 checkpoint_name = Path(
                     model_metafile_info.get(model_config).get('Weights')).name
                 checkpoint_path = Path(checkpoint_save_dir, checkpoint_name)
                 assert checkpoint_path.exists()
 
-                #  Get pytorch from metafile.yml
+                # Get pytorch from metafile.yml
                 pytorch_metric = get_pytorch_result(
                     models.get('name'), model_metafile_info, checkpoint_path,
-                    model_cfg_path, metric_info, report_dict, logger,
-                    report_txt_path)
+                    model_cfg_path, model_config, metric_info, report_dict,
+                    logger, report_txt_path)
 
                 for pipeline in pipelines_info:
                     deploy_config = pipeline.get('deploy_config')
