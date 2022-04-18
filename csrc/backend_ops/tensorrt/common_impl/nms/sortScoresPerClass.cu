@@ -4,8 +4,8 @@
 #include <vector>
 
 #include "cub/cub.cuh"
-#include "cub_helper.h"
-#include "kernel.h"
+#include "nms/cub_helper.h"
+#include "nms/kernel.h"
 #include "trt_plugin_helper.hpp"
 
 template <typename T_SCORE, unsigned nthds_per_cta>
