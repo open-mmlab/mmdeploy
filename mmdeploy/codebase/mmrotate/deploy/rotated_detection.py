@@ -104,7 +104,7 @@ class RotatedDetection(BaseTask):
                      imgs: Union[str, np.ndarray],
                      input_shape: Sequence[int] = None) \
             -> Tuple[Dict, torch.Tensor]:
-        """Create input for segmentor.
+        """Create input for rotated object detection.
 
         Args:
             imgs (str | np.ndarray): Input image(s), accepted data type are
@@ -125,7 +125,6 @@ class RotatedDetection(BaseTask):
             raise AssertionError('imgs must be strings or numpy arrays')
         cfg = process_model_config(self.model_cfg, imgs, input_shape)
         from mmdet.datasets.pipelines import Compose
-        from mmrotate.datasets import build_dataset  # noqa: F401
         test_pipeline = Compose(cfg.data.test.pipeline)
 
         data_list = []
