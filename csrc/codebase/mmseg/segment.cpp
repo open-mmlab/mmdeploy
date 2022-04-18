@@ -1,5 +1,4 @@
 // Copyright (c) OpenMMLab. All rights reserved.
-#include <cstdint>
 
 #include "codebase/mmseg/mmseg.h"
 #include "core/tensor.h"
