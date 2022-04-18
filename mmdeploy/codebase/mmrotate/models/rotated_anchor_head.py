@@ -2,8 +2,9 @@
 import torch
 
 from mmdeploy.codebase.mmdet import (get_post_processing_params,
-                                     multiclass_nms,
                                      pad_with_value_if_necessary)
+from mmdeploy.codebase.mmrotate.core.post_processing import \
+    multiclass_nms_rotated
 from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.utils import is_dynamic_shape
 
@@ -15,7 +16,6 @@ def rotated_anchor_head__get_bbox(ctx,
                                   self,
                                   cls_scores,
                                   bbox_preds,
-                                  score_factors=None,
                                   img_metas=None,
                                   cfg=None,
                                   rescale=False,
@@ -34,10 +34,7 @@ def rotated_anchor_head__get_bbox(ctx,
             (batch_size, num_priors * num_classes, H, W).
         bbox_preds (list[Tensor]): Box energies / deltas for all
             scale levels, each is a 4D-tensor, has shape
-            (batch_size, num_priors * 4, H, W).
-        score_factors (list[Tensor], Optional): Score factor for
-            all scale level, each is a 4D-tensor, has shape
-            (batch_size, num_priors * 1, H, W). Default None.
+            (batch_size, num_priors * 5, H, W).
         img_metas (list[dict], Optional): Image meta info. Default None.
         cfg (mmcv.Config, Optional): Test / postprocessing configuration,
             if None, test_cfg would be used.  Default None.
@@ -65,15 +62,6 @@ def rotated_anchor_head__get_bbox(ctx,
 
     mlvl_cls_scores = [cls_scores[i].detach() for i in range(num_levels)]
     mlvl_bbox_preds = [bbox_preds[i].detach() for i in range(num_levels)]
-    if score_factors is None:
-        with_score_factors = False
-        mlvl_score_factor = [None for _ in range(num_levels)]
-    else:
-        with_score_factors = True
-        mlvl_score_factor = [
-            score_factors[i].detach() for i in range(num_levels)
-        ]
-        mlvl_score_factors = []
     assert img_metas is not None
     img_shape = img_metas[0]['img_shape']
 
@@ -86,9 +74,8 @@ def rotated_anchor_head__get_bbox(ctx,
     mlvl_valid_scores = []
     mlvl_valid_priors = []
 
-    for cls_score, bbox_pred, score_factors, priors in zip(
-            mlvl_cls_scores, mlvl_bbox_preds, mlvl_score_factor, mlvl_priors):
-        assert cls_score.size()[-2:] == bbox_pred.size()[-2:]
+    for cls_score, bbox_pred, priors in zip(mlvl_cls_scores, mlvl_bbox_preds,
+                                            mlvl_priors):
 
         scores = cls_score.permute(0, 2, 3, 1).reshape(batch_size, -1,
                                                        self.cls_out_channels)
@@ -96,11 +83,6 @@ def rotated_anchor_head__get_bbox(ctx,
             scores = scores.sigmoid()
         else:
             scores = scores.softmax(-1)
-        if with_score_factors:
-            score_factors = score_factors.permute(0, 2, 3,
-                                                  1).reshape(batch_size,
-                                                             -1).sigmoid()
-            score_factors = score_factors.unsqueeze(2)
         bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, 5)
         if not is_dynamic_flag:
             priors = priors.data
@@ -109,13 +91,8 @@ def rotated_anchor_head__get_bbox(ctx,
             priors = pad_with_value_if_necessary(priors, 1, pre_topk)
             bbox_pred = pad_with_value_if_necessary(bbox_pred, 1, pre_topk)
             scores = pad_with_value_if_necessary(scores, 1, pre_topk, 0.)
-            if with_score_factors:
-                score_factors = pad_with_value_if_necessary(
-                    score_factors, 1, pre_topk, 0.)
 
             nms_pre_score = scores
-            if with_score_factors:
-                nms_pre_score = nms_pre_score * score_factors
 
             # Get maximum scores for foreground classes.
             if self.use_sigmoid_cls:
@@ -129,43 +106,31 @@ def rotated_anchor_head__get_bbox(ctx,
             priors = priors[batch_inds, topk_inds, :]
             bbox_pred = bbox_pred[batch_inds, topk_inds, :]
             scores = scores[batch_inds, topk_inds, :]
-            if with_score_factors:
-                score_factors = score_factors[batch_inds, topk_inds, :]
 
         mlvl_valid_bboxes.append(bbox_pred)
         mlvl_valid_scores.append(scores)
         mlvl_valid_priors.append(priors)
-        if with_score_factors:
-            mlvl_score_factors.append(score_factors)
 
     batch_mlvl_bboxes_pred = torch.cat(mlvl_valid_bboxes, dim=1)
     batch_scores = torch.cat(mlvl_valid_scores, dim=1)
     batch_priors = torch.cat(mlvl_valid_priors, dim=1)
     batch_bboxes = self.bbox_coder.decode(
-        batch_priors, batch_mlvl_bboxes_pred, max_shape=img_shape)
-    if with_score_factors:
-        batch_score_factors = torch.cat(mlvl_score_factors, dim=1)
+        batch_priors[0], batch_mlvl_bboxes_pred[0], max_shape=img_shape)
 
     if not self.use_sigmoid_cls:
         batch_scores = batch_scores[..., :self.num_classes]
-
-    if with_score_factors:
-        batch_scores = batch_scores * batch_score_factors
 
     if not with_nms:
         return batch_bboxes, batch_scores
 
     post_params = get_post_processing_params(deploy_cfg)
-    max_output_boxes_per_class = post_params.max_output_boxes_per_class
     iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)
     score_threshold = cfg.get('score_thr', post_params.score_threshold)
-    pre_top_k = post_params.pre_top_k
     keep_top_k = cfg.get('max_per_img', post_params.keep_top_k)
-    return multiclass_nms(
+
+    return multiclass_nms_rotated(
         batch_bboxes,
-        batch_scores,
-        max_output_boxes_per_class,
+        batch_scores[0],
         iou_threshold=iou_threshold,
         score_threshold=score_threshold,
-        pre_top_k=pre_top_k,
         keep_top_k=keep_top_k)
