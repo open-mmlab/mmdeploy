@@ -106,9 +106,8 @@ class MMROTATE(MMCodebase):
         Returns:
             DataLoader: A PyTorch dataloader.
         """
-        from mmrotate.datasets import \
-            build_dataloader as build_dataloader_mmrotate
-        return build_dataloader_mmrotate(
+        from mmdet.datasets import build_dataloader as build_dataloader_mmdet
+        return build_dataloader_mmdet(
             dataset,
             samples_per_gpu,
             workers_per_gpu,
