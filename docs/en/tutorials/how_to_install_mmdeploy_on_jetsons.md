@@ -42,9 +42,9 @@ source ~/.bashrc
 conda --version
 ```
 
-After we installed the Archiconda successfully, we can create the virtual env `mmdeploy` using the command below. 
+After we installed the Archiconda successfully, we can create the virtual env `mmdeploy` using the command below.
 ```shell
-conda create -n mmdeploy python=3.6  # must be python 3.6
+conda create -n mmdeploy python=3.6 # must be python 3.6
 conda activate mmdeploy
 ```
 
@@ -75,7 +75,7 @@ After that, download the PyTorch wheel for Jetson **specifically**. Click [here]
 
 After the download finished, using cmd to install it.
 ```shell
-pip3 install /your/path/dwonload/xxx.whl
+pip3 install /your/path/dwonload/torch-1.8.0-cp36-cp36m-linux_aarch64.whl
 ```
 
 ### Install torchvision
@@ -99,7 +99,7 @@ Install openssl first:
 ```shell
 sudo apt-get install -y libssl-dev
 ```
-Then install it from source, MMDeploy using mmcv version is `1.4.0`
+Then install it from source, MMDeploy using mmcv version is `1.4.0`:
 ```shell
 git clone https://github.com/open-mmlab/mmcv.git
 cd mmcv
@@ -138,8 +138,7 @@ sudo apt-get install libspdlog-dev
 ```shell
 pip install onnxruntime==1.8.1
 ```
-
-2. Download the linux prebuilt binary package from [here](https://github.com/microsoft/onnxruntime/releases/tag/v1.8.1).  Extract it and export environment variables as below:
+2. Download the linux prebuilt binary package from [here](https://github.com/microsoft/onnxruntime/releases/tag/v1.8.1). Extract it and export environment variables as below:
 ```shell
 wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
 tar -zxvf onnxruntime-linux-x64-1.8.1.tgz
