@@ -20,6 +20,8 @@ REGISTER_MODULE(Scheduler, InlineSchedulerCreator);
 
 namespace {
 
+// Create type-erased scheduler by calling Context::GetScheduler and then move the context into the
+// deleter of the impl ptr of the type-erased scheduler
 template <class Context>
 Scheduler CreateFromContext(std::unique_ptr<Context> context) {
   using SchedType = decltype(context->GetScheduler());
