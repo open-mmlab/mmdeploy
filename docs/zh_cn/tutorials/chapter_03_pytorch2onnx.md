@@ -95,8 +95,8 @@ class Model(torch.nn.Module):
 
 model = Model()
 dummy_input = torch.rand(1, 3, 10, 10)
-model_names = ['model_static.onnx', 
-'model_dynamic_0.onnx', 
+model_names = ['model_static.onnx',
+'model_dynamic_0.onnx',
 'model_dynamic_23.onnx']
 
 dynamic_axes_0 = {
@@ -108,11 +108,11 @@ dynamic_axes_23 = {
     'out' : [2, 3]
 }
 
-torch.onnx.export(model, dummy_input, model_names[0], 
+torch.onnx.export(model, dummy_input, model_names[0],
 input_names=['in'], output_names=['out'])
-torch.onnx.export(model, dummy_input, model_names[1], 
+torch.onnx.export(model, dummy_input, model_names[1],
 input_names=['in'], output_names=['out'], dynamic_axes=dynamic_axes_0)
-torch.onnx.export(model, dummy_input, model_names[2], 
+torch.onnx.export(model, dummy_input, model_names[2],
 input_names=['in'], output_names=['out'], dynamic_axes=dynamic_axes_23)
 ```
 首先，我们导出3个 ONNX 模型，分别为没有动态维度、第0维动态、第2第3维动态的模型。
@@ -177,7 +177,7 @@ print(exceptions[(1, 'model_static.onnx')])
 ```
 
 这段报错告诉我们名字叫`in`的输入的第0维不匹配。本来该维的长度应该为1，但我们的输入是2。实际部署中，如果我们碰到了类似的报错，就可以通过设置动态维度来解决问题。
-### 使用提示
+### 使用技巧
 通过学习之前的知识，我们基本掌握了 `torch.onnx.export` 函数的部分实现原理和参数设置方法，足以完成简单模型的转换了。但在实际应用中，使用该函数还会踩很多坑。这里我们模型部署团队把在实战中积累的一些经验分享给大家。
 #### 使模型在 ONNX 转换时有不同的行为
 有些时候，我们希望模型在直接用 PyTorch 推理时有一套逻辑，而在导出的ONNX模型中有另一套逻辑。比如，我们可以把一些后处理的逻辑放在模型里，以简化除运行模型之外的其他代码。`torch.onnx.is_in_onnx_export()`可以实现这一任务，该函数仅在执行 `torch.onnx.export()`时为真。以下是一个例子：
@@ -208,7 +208,7 @@ class Model(torch.nn.Module):
         x = x * x[0].item()
         return x, torch.Tensor([i for i in x])
 
-model = Model()      
+model = Model()
 dummy_input = torch.rand(10)
 torch.onnx.export(model, dummy_input, 'a.onnx')
 ```
@@ -253,13 +253,13 @@ upsample_bicubic2d = _interpolate("upsample_bicubic2d", 4, "cubic")
 
 def _interpolate(name, dim, interpolate_mode):
     return sym_help._interpolate_helper(name, dim, interpolate_mode)
-    
+
 ->
 
 def _interpolate_helper(name, dim, interpolate_mode):
     def symbolic_fn(g, input, output_size, *args):
         ...
-        
+
     return symbolic_fn
 ```
 最后，在`symbolic_fn`中，我们可以看到插值算子是怎么样被映射成多个 ONNX 算子的。其中，每一个`g.op`就是一个 ONNX 的定义。比如其中的 `Resize` 算子就是这样写的：
@@ -292,4 +292,3 @@ def _interpolate_helper(name, dim, interpolate_mode):
 3. 在[第一篇教程](./chapter_01_introduction_to_model_deployment.md）中，我们讲过 PyTorch （截至第 11 号算子集）不支持在插值中设置动态的放缩系数。这个系数对应 `torch.onnx.symbolic_helper._interpolate_helper`的symbolic_fn的Resize算子映射关系中的哪个参数？我们是如何修改这一参数的？
 
 练习的答案会在下期教程中揭晓。
-
