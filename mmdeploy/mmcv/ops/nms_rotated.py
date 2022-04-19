@@ -13,7 +13,7 @@ class ONNXNMSRotatedOp(torch.autograd.Function):
 
         Args:
             ctx (Context): The context with meta information.
-            boxes (Tensor): The bounding boxes of shape [N, num_boxes, 4].
+            boxes (Tensor): The bounding boxes of shape [N, num_boxes, 5].
             scores (Tensor): The detection scores of shape
                 [N, num_boxes, num_classes].
             iou_threshold (float): IOU threshold of nms.
@@ -23,12 +23,21 @@ class ONNXNMSRotatedOp(torch.autograd.Function):
         """
         from mmcv.utils import ext_loader
         ext_module = ext_loader.load_ext('_ext', ['nms_rotated'])
+        batch_size = scores.shape[0]
 
-        _, order = scores.sort(0, descending=True)
-        dets_sorted = boxes.index_select(0, order)
-        keep_inds = ext_module.nms_rotated(boxes, scores, order, dets_sorted,
-                                           iou_threshold, 0)
-        return keep_inds
+        indices = []
+        for batch_id in range(batch_size):
+            _boxes = boxes[batch_id, ...]
+            _scores = scores[batch_id, ...]
+            _, order = _scores.sort(0, descending=True)
+            dets_sorted = _boxes.index_select(0, order)
+            box_inds = ext_module.nms_rotated(_boxes, _scores, order,
+                                              dets_sorted, iou_threshold, 0)
+            batch_inds = torch.zeros_like(box_inds) + batch_id
+            indices.append(torch.stack([batch_inds, box_inds], dim=-1))
+
+        indices = torch.cat(indices)
+        return indices
 
     @staticmethod
     def symbolic(g, boxes: Tensor, scores: Tensor, iou_threshold: float):
