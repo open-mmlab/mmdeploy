@@ -26,98 +26,175 @@ Sometimes we just need to reboot the jetson device when it gets stuck in initial
 ### Cuda
 
 The Cuda is installed by default while the cudnn is not if we use the first method. We have to write the cuda path and lib to `$PATH` and `$LD_LIBRARY_PATH`:
-```
+```shell
 export PATH=$PATH:/usr/local/cuda/bin
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64
 ```
 Then we can use `nvcc -V` the get the version of cuda we use.
 
-### Anaconda
+### Conda
 
 We have to install [Archiconda](https://github.com/Archiconda/build-tools/releases) instead as the Anaconda does not provide the wheel built for jetson.
+```shell
+wget https://github.com/Archiconda/build-tools/releases/download/0.2.3/Archiconda3-0.2.3-Linux-aarch64.sh
+bash Archiconda3-0.2.3-Linux-aarch64.sh
+source ~/.bashrc
+conda --version
+```
 
-After we installed the Archiconda successfully and created the virtual env correctly. If the pip in the env does not work properly or throw `Illegal instruction (core dumped)`, we may consider re-install the pip manually, reinstalling the whole JetPack SDK is the last method we can try.
+After we installed the Archiconda successfully, we can creat the virtual env `mmdeploy` using the command below. 
+```shell
+conda create -n mmdeploy python=3.6  # must be python 3.6
+conda activate mmdeploy
+```
 
 ### Move tensorrt to conda env
-After we installed the Archiconda, we can use it to create a virtual env like `mmdeploy`. Then we have to move the pre-installed tensorrt package in Jetpack to the virtual env.
+Then we have to move the pre-installed tensorrt package in Jetpack to the virtual env.
 
 First we use `find` to get where the tensorrt is
-```
+```shell
 sudo find / -name tensorrt
 ```
 Then copy the tensorrt to our destination like:
+```shell
+cp -r /usr/lib/python3.6/dist-packages/tensorrt* /your/path/to/archiconda3/envs/mmdeploy/lib/python3.6/site-packages/
 ```
-cp -r /usr/lib/python3.6/dist-packages/tensorrt* /home/archiconda3/env/mmdeploy/lib/python3.6/site-packages/
-```
-Meanwhle, tensorrt libs like `libnvinfer.so` can be found in `LD_LIBRARY_PATH`, which is done by Jetpack as well.
+Meanwhile, tensorrt libs like `libnvinfer.so` can be found in `LD_LIBRARY_PATH`, which is done by Jetpack as well.
 
-### Install torch
+### Install PyTorch
 
-Install the PyTorch for Jetsons **specifically**. Click [here](https://forums.developer.nvidia.com/t/pytorch-for-jetson-version-1-10-now-available/72048) to get the wheel. Before we use `pip install`, we have to install `libopenblas-base`, `libopenmpi-dev` first:
-```
-sudo apt-get install libopenblas-base libopenmpi-dev
+Before we use `pip install`, we have to install `libopenblas-base`, `libopenmpi-dev` first:
+```shell
+sudo apt-get install -y libopenblas-base libopenmpi-dev
 ```
 Or, it will throw the following error when we import torch in python:
 ```
 libmpi_cxx.so.20: cannot open shared object file: No such file or directory
 ```
+After that, download the PyTorch wheel for Jetson **specifically**. Click [here](https://forums.developer.nvidia.com/t/pytorch-for-jetson-version-1-10-now-available/72048) to get the wheel. MMDeploy is using `pytorch==1.8.0`.
+
+After the download finished, using cmd to install it.
+```shell
+pip3 install /your/path/dwonload/xxx.whl
+```
 
 ### Install torchvision
 We can't directly use `pip install torchvision` to install torchvision for Jetson Nano. But we can clone the repository from Github and build it locally. First we have to install some dependencies:
-```
-sudo apt-get install libjpeg-dev libpython3-dev libavcodec-dev libavformat-dev libswscale-dev
+```shell
+sudo apt-get install -y libjpeg-dev libpython3-dev libavcodec-dev libavformat-dev libswscale-dev
 ```
 Then just clone and compile the project:
-```
-git clone git@github.com:pytorch/vision.git
+```shell
+git clone https://github.com/pytorch/vision.git
 cd vision
-git co tags/v0.7.0 -b vision07
+git checkout v0.9.0
 pip install -e .
 ```
+
+**Note:** If the `pip install` throws error: `Illegal instruction (core dumped)`, then add `export OPENBLAS_CORETYPE=ARMV8` in `~/.bashrc` and then `source ~/.bashrc && conda activate mmdeploy` will solve the problem.
 
 ### Install mmcv
 
 Install openssl first:
+```shell
+sudo apt-get install -y libssl-dev
 ```
-sudo apt-get install libssl-dev
+Then install it from source, MMDeploy using mmcv version is `1.4.0`
+```shell
+git clone https://github.com/open-mmlab/mmcv.git
+cd mmcv
+git checkout v1.4.0
+MMCV_WITH_OPS=1 pip install -e .
 ```
-Then install it from source like `MMCV_WITH_OPS=1 pip install -e .`
 
 ### Update cmake
 
 We choose cmake version 20 as an example.
-```
+```shell
+sudo apt remove cmake
+sudo apt purge --auto-remove cmake
 sudo apt-get install -y libssl-dev
 wget https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0.tar.gz
 tar -zxvf cmake-3.20.0.tar.gz
 cd cmake-3.20.0
 ./bootstrap
-make
+make -j$(nproc)
 sudo make install
 ```
 Then we can check the cmake version through:
-```
+```shell
 source ~/.bashrc
 cmake --version
 ```
 
-### Install mmdeploy
-Just follow the instruction [here](../build.md). If it throws `failed building wheel for numpy...ERROR: Failed to build one or more wheels` when installing `h5py`, try install `h5py` manually.
+### Install spdlog
+```shell
+sudo apt-get install libspdlog-dev
 ```
+
+### Install onnxruntime
+
+1. Install python package
+```shell
+pip install onnxruntime==1.8.1
+```
+
+2. Download the linux prebuilt binary package from [here](https://github.com/microsoft/onnxruntime/releases/tag/v1.8.1).  Extract it and export environment variables as below:
+```shell
+wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
+tar -zxvf onnxruntime-linux-x64-1.8.1.tgz
+cd onnxruntime-linux-x64-1.8.1
+export ONNXRUNTIME_DIR=$(pwd)
+export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
+```
+
+### Install pplcv
+A high-performance image processing library of openPPL. Now, MMDeploy supports `v0.6.2` and has to use git clone to download it.
+```shell
+git clone https://github.com/openppl-public/ppl.cv.git
+cd ppl.cv
+export PPLCV_DIR=$(pwd)
+git checkout tags/v0.6.2 -b v0.6.2
+./build.sh cuda
+```
+
+### Install h5py
+```shell
 sudo apt-get install pkg-config libhdf5-100 libhdf5-dev
 pip install versioned-hdf5 --no-cache-dir
 ```
 
-Then install onnx manually. First, we have to install protobuf compiler:
-```
-sudo apt-get install libprotobuf-dev protobuf-compiler
-```
-Then install onnx through:
-```
-pip install onnx
-```
-Then reinstall mmdeploy.
+### Install MMDeploy
+Using git to clone MMDeploy source code.
+```shell
+git clone -b master https://github.com/open-mmlab/mmdeploy.git MMDeploy
+cd MMDeploy
+git submodule update --init --recursive
+````
 
+Build MMDeploy from source:
+```shell
+mkdir -p build && cd build
+cmake .. \
+    -DCMAKE_CXX_COMPILER=g++-7 \
+    -DMMDEPLOY_BUILD_SDK=ON \
+    -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
+    -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
+    -DMMDEPLOY_TARGET_BACKENDS="ort,trt" \
+    -DMMDEPLOY_CODEBASES=all \
+    -Dpplcv_DIR=${PPLCV_DIR}/cuda-build/install/lib/cmake/ppl \
+    -DTENSORRT_DIR=/usr/src/tensorrt \
+    -DCUDNN_DIR=/etc/alternatives
+
+make -j$(nproc) && make install
+```
+
+### Install MMDeploy Python API 
+
+```shell
+cd /path/to/mmdeploy
+pip install -e .
+```
 
 ### FAQs
 
