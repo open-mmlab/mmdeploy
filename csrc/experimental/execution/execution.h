@@ -90,6 +90,75 @@ using completion_signature_for_t = typename _completion_signature_for<Sender>::t
 template <class Sender>
 inline constexpr bool _is_sender = detail::is_detected_v<completion_signature_for_t, Sender>;
 
+namespace __closure {
+
+template <class D>
+struct SenderAdaptorClosure;
+
+}  // namespace __closure
+
+using __closure::SenderAdaptorClosure;
+
+namespace __closure {
+
+template <class T0, class T1>
+struct _Compose : SenderAdaptorClosure<_Compose<T0, T1>> {
+  T0 t0_;
+  T1 t1_;
+
+  template <class Sender, class = std::enable_if_t<_is_sender<std::decay_t<Sender>>>>
+  std::invoke_result_t<T1, std::invoke_result_t<T0, Sender>> operator()(Sender&& sender) && {
+    return ((T1 &&) t1_)(((T0 &&) t0_)((Sender &&) sender));
+  }
+
+  template <class Sender, class = std::enable_if_t<_is_sender<std::decay_t<Sender>>>>
+  std::invoke_result_t<T1, std::invoke_result_t<T0, Sender>> operator()(Sender&& sender) const& {
+    return t1_(t0_((Sender &&) sender));
+  }
+};
+
+template <class D>
+struct SenderAdaptorClosure {};
+
+template <class T0, class T1,
+          class = std::enable_if_t<
+              std::is_base_of_v<SenderAdaptorClosure<std::decay_t<T0>>, std::decay_t<T0>> &&
+              std::is_base_of_v<SenderAdaptorClosure<std::decay_t<T1>>, std::decay_t<T1>>>>
+_Compose<std::decay_t<T0>, std::decay_t<T1>> operator|(T0&& t0, T1&& t1) {
+  return {(T0 &&) t0, (T1 &&) t1};
+}
+
+template <class Sender, class Closure,
+          class = std::enable_if_t<_is_sender<std::decay_t<Sender>> &&
+                                   std::is_base_of_v<SenderAdaptorClosure<std::decay_t<Closure>>,
+                                                     std::decay_t<Closure>>>>
+std::invoke_result_t<Closure, Sender> operator|(Sender&& sender, Closure&& closure) {
+  return ((Closure &&) closure)((Sender &&) sender);
+}
+
+template <class Fun, class... As>
+struct _BinderBack : SenderAdaptorClosure<_BinderBack<Fun, As...>> {
+  Fun fun_;
+  std::tuple<As...> as_;
+
+  template <class Sender, class = std::enable_if_t<_is_sender<std::decay_t<Sender>>>>
+  std::invoke_result_t<Fun, Sender, As...> operator()(Sender&& sender) && {
+    return std::apply(
+        [&sender, this](As&... as) { return ((Fun &&) fun_)((Sender &&) sender, (As &&) as...); },
+        as_);
+  }
+
+  template <class Sender, class = std::enable_if_t<_is_sender<std::decay_t<Sender>>>>
+  std::invoke_result_t<Fun, Sender, As...> operator()(Sender&& sender) const& {
+    return std::apply([&sender, this](const As&... as) { return fun_((Sender &&) sender, as...); },
+                      as_);
+  }
+};
+
+}  // namespace __closure
+
+using __closure::_BinderBack;
+
 namespace __just {
 
 template <class... Ts>
@@ -326,12 +395,21 @@ struct _Sender {
   }
 };
 
+struct then_t {
+  template <class Sender, class Fun>
+  _Sender<std::decay_t<Sender>, Fun> operator()(Sender&& sender, Fun fun) const {
+    return {(Sender &&) sender, std::move(fun)};
+  }
+  template <class Fun>
+  _BinderBack<then_t, Fun> operator()(Fun fun) const {
+    return {{}, {}, {std::move(fun)}};
+  }
+};
+
 }  // namespace __then
 
-template <class S, class F>
-__then::_Sender<std::decay_t<S>, F> Then(S&& s, F f) {
-  return {(S &&) s, (F &&) f};
-}
+using __then::then_t;
+inline constexpr then_t Then;
 
 namespace __let_value {
 

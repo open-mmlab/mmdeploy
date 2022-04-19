@@ -295,3 +295,9 @@ TEST_CASE("test schedule_after", "[execution]") {
   start = std::chrono::steady_clock::now();
   SyncWait(t);
 }
+
+TEST_CASE("pipeable sender", "[execution]") {
+  auto sender = Just(1) | Then([](int x) { return x + 1; });
+  auto [two] = SyncWait(sender);
+  MMDEPLOY_INFO("pipeable sender: {}", two);
+}
