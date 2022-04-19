@@ -179,7 +179,7 @@ cmake .. \
     -DMMDEPLOY_BUILD_SDK=ON \
     -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
     -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
-    -DMMDEPLOY_TARGET_BACKENDS="ort,trt" \
+    -DMMDEPLOY_TARGET_BACKENDS="ort;trt" \
     -DMMDEPLOY_CODEBASES=all \
     -Dpplcv_DIR=${PPLCV_DIR}/cuda-build/install/lib/cmake/ppl \
     -DTENSORRT_DIR=/usr/src/tensorrt \
