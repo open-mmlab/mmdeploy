@@ -3,6 +3,7 @@
 #include "execution.h"
 
 #include "core/value.h"
+#include "inlined_scheduler.h"
 #include "static_thread_pool.h"
 #include "type_erased.h"
 #include "when_all_value.h"

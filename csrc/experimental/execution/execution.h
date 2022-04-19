@@ -69,13 +69,15 @@ struct _types
 template <class Sender>
 using _get_completion_scheduler_t = decltype(GetCompletionScheduler(std::declval<Sender>()));
 
+template <class Sender>
+inline constexpr auto _has_completion_scheduler =
+    detail::is_detected_v<_get_completion_scheduler_t, Sender>;
+
 template <class T>
 using _empty_if_void_t = std::conditional_t<std::is_same_v<std::tuple<void>, T>, std::tuple<>, T>;
 
 template <class Sender, class SFINAE = void>
-struct _completion_signature_for {
-  using type = std::tuple<Value>;
-};
+struct _completion_signature_for {};
 
 template <class Sender>
 struct _completion_signature_for<Sender, std::void_t<typename Sender::value_type>> {
@@ -86,49 +88,7 @@ template <class Sender>
 using completion_signature_for_t = typename _completion_signature_for<Sender>::type;
 
 template <class Sender>
-inline constexpr auto _has_completion_scheduler =
-    detail::is_detected_v<_get_completion_scheduler_t, Sender>;
-
-struct InlineScheduler {
-  template <typename R>
-  struct _Operation {
-    R rec_;
-    friend void Start(_Operation& op) noexcept { SetValue((R &&) op.rec_); }
-  };
-
-  struct _Sender {
-    using value_type = std::tuple<>;
-
-    template <typename R>
-    friend auto Connect(_Sender, R&& rec) -> _Operation<std::decay_t<R>> {
-      return {(R &&) rec};
-    }
-
-    friend InlineScheduler GetCompletionScheduler(_Sender) noexcept { return {}; }
-  };
-
-  friend _Sender Schedule(const InlineScheduler) noexcept { return {}; }
-
-  friend void* GetSchedulerId(const InlineScheduler& self) { return (void*)1u; }
-
-  template <class Sender>
-  struct _Receiver {
-    std::optional<completion_signature_for_t<Sender>>* data_;
-    template <class... As>
-    friend void SetValue(_Receiver&& r, As&&... as) noexcept {
-      r.data_->emplace((As &&) as...);
-    }
-  };
-
-  template <class S, class Sender = std::decay_t<S>,
-            class Tuple = completion_signature_for_t<Sender>>
-  friend Tuple SyncWait(InlineScheduler, S&& sender) {
-    std::optional<Tuple> data;
-    auto op_state = Connect(((S &&) sender), _Receiver<Sender>{&data});
-    Start(op_state);
-    return std::move(data).value();
-  }
-};
+inline constexpr bool _is_sender = detail::is_detected_v<completion_signature_for_t, Sender>;
 
 namespace __just {
 
@@ -511,8 +471,9 @@ struct _Sender {
 
 }  // namespace __bulk
 
-template <class Sender, class Shape, class Fun>
-__bulk::_Sender<std::decay_t<Sender>, Shape, Fun> Bulk(Sender&& sndr, Shape shape, Fun fun) {
+template <class Sender, class Shape, class Fun, class SenderT = std::decay_t<Sender>>
+auto Bulk(Sender&& sndr, Shape shape, Fun fun)
+    -> std::enable_if_t<_is_sender<SenderT>, __bulk::_Sender<SenderT, Shape, Fun>> {
   return {(Sender &&) sndr, shape, (Fun &&) fun};
 }
 

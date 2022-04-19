@@ -49,13 +49,22 @@ class Task : public Node {
 
  public:
   Sender<Value> Process(Sender<Value> input) override {
-    return Then(std::move(input), [&](const Value& v) {
-      auto value = module_->Process(v).value();
-      return value;
+    return LetValue(sched_->ScheduleFrom(std::move(input)), [this](Value& v) -> Sender<Value> {
+      if (v[0].is_array()) {
+        auto output = Then(Schedule(*sched_), [&]() -> Value { return Value::Array(v.size()); });
+        auto process = sched_->Bulk(std::move(output), v.size(), [&](size_t index, Value& output) {
+          output[index] = module_->Process(v).value();
+        });
+        return process;
+      } else {
+        auto output = module_->Process(v).value();
+        return Just(std::move(output));
+      }
     });
   }
 
  private:
+  std::optional<TypeErasedScheduler<Value>> sched_;
   unique_ptr<Module> module_;
 };
 
@@ -104,6 +113,17 @@ class PipelineParser {
 }  // namespace async
 
 MMDEPLOY_DECLARE_REGISTRY(async::Node);
+
+namespace detail {
+
+template <>
+struct get_return_type<TypeErasedScheduler<Value>> {
+  using type = TypeErasedScheduler<Value>;
+};
+
+}  // namespace detail
+
+MMDEPLOY_DECLARE_REGISTRY(TypeErasedScheduler<Value>);
 
 }  // namespace mmdeploy
 

@@ -267,4 +267,6 @@ REGISTER_MODULE(Node, PipelineCreator);
 
 MMDEPLOY_DEFINE_REGISTRY(async::Node);
 
+MMDEPLOY_DEFINE_REGISTRY(TypeErasedScheduler<Value>);
+
 }  // namespace mmdeploy

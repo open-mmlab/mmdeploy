@@ -6,6 +6,7 @@
 #include "catch.hpp"
 #include "core/utils/formatter.h"
 #include "core/value.h"
+#include "experimental/execution/inlined_scheduler.h"
 #include "experimental/execution/static_thread_pool.h"
 #include "experimental/execution/timed_single_thread_context.h"
 #include "experimental/execution/type_erased.h"

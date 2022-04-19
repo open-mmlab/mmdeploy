@@ -58,6 +58,11 @@ class Scheduler {
       -> __schedule_after::_Sender<std::chrono::duration<Rep, Ratio>> {
     return {self.context_, delay};
   }
+
+  template <class Duration = std::chrono::microseconds>
+  friend auto Schedule(const Scheduler& self) noexcept -> __schedule_after::_Sender<Duration> {
+    return {self.context_, Duration::zero()};
+  }
 };
 
 }  // namespace _timed_single_thread_context
@@ -101,7 +106,7 @@ struct _Operation : TaskBase {
   _Operation(TimedSingleThreadContext& context, Duration duration, Receiver2&& receiver)
       : TaskBase(context, &_Operation::ExecuteImpl),
         duration_(duration),
-        receiver_((Receiver2)receiver) {}
+        receiver_((Receiver2 &&) receiver) {}
 
   static void ExecuteImpl(TaskBase* p) noexcept {
     auto& self = *static_cast<_Operation*>(p);
