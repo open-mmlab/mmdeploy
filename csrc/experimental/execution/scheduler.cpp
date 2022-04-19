@@ -55,4 +55,10 @@ class StaticThreadPoolSchedCreator : public Creator<Scheduler> {
 
 REGISTER_MODULE(Scheduler, StaticThreadPoolSchedCreator);
 
+namespace async {
+
+void __link_scheduler() {}
+
+}  // namespace async
+
 }  // namespace mmdeploy

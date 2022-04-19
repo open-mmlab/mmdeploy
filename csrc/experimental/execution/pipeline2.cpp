@@ -249,6 +249,7 @@ Result<void> PipelineParser::UpdateOutputCoords(int index, const vector<string>&
 }
 
 void __link_inference();
+void __link_scheduler();
 
 class PipelineCreator : public Creator<Node> {
  public:
@@ -256,6 +257,7 @@ class PipelineCreator : public Creator<Node> {
   int GetVersion() const override { return 0; }
   std::unique_ptr<Node> Create(const Value& value) override {
     __link_inference();
+    __link_scheduler();
     return PipelineParser{}.Parse(value).value();
   }
 };
