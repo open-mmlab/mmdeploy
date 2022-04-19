@@ -188,7 +188,7 @@ cmake .. \
 make -j$(nproc) && make install
 ```
 
-### Install MMDeploy Python API 
+### Install MMDeploy Python API
 
 ```shell
 cd /path/to/mmdeploy
