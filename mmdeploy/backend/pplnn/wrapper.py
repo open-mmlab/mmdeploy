@@ -51,7 +51,7 @@ def register_engines(device_id: int,
                              pplcommon.GetRetCodeStr(status))
                 sys.exit(-1)
 
-        engines.append(pplnn.Engine(x86_engine))
+        engines.append(x86_engine)
 
     else:
         cuda_options = pplnn.CudaEngineOptions()
@@ -97,7 +97,7 @@ def register_engines(device_id: int,
                     'failed: ' + pplcommon.GetRetCodeStr(status))
                 sys.exit(-1)
 
-        engines.append(pplnn.Engine(cuda_engine))
+        engines.append(cuda_engine)
 
     return engines
 
@@ -142,10 +142,17 @@ class PPLNNWrapper(BaseWrapper):
             disable_avx512=False,
             quick_select=False,
             import_algo_file=algo_file)
-        runtime_builder = pplnn.OnnxRuntimeBuilderFactory.CreateFromFile(
-            onnx_file, engines)
+        runtime_builder = pplnn.OnnxRuntimeBuilderFactory.Create()
         assert runtime_builder is not None, 'Failed to create '\
             'OnnxRuntimeBuilder.'
+
+        retcode = runtime_builder.InitFromFile(onnx_file, engines)
+        assert retcode == pplcommon.RC_SUCCESS, \
+            'Failed to init OnnxRuntimeBuilder'
+
+        retcode = runtime_builder.Preprocess()
+        assert retcode == pplcommon.RC_SUCCESS, \
+            'Failed to preprocess OnnxRuntimeBuilder'
 
         runtime = runtime_builder.CreateRuntime()
         assert runtime is not None, 'Failed to create the instance of Runtime.'
