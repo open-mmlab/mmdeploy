@@ -15,7 +15,7 @@ class ONNXNMSRotatedOp(torch.autograd.Function):
             ctx (Context): The context with meta information.
             boxes (Tensor): The bounding boxes of shape [N, num_boxes, 5].
             scores (Tensor): The detection scores of shape
-                [N, num_boxes, num_classes].
+                [N, num_classes, num_boxes].
             iou_threshold (float): IOU threshold of nms.
 
         Returns:
@@ -23,18 +23,23 @@ class ONNXNMSRotatedOp(torch.autograd.Function):
         """
         from mmcv.utils import ext_loader
         ext_module = ext_loader.load_ext('_ext', ['nms_rotated'])
-        batch_size = scores.shape[0]
+        batch_size, num_class, _ = scores.shape
 
         indices = []
         for batch_id in range(batch_size):
-            _boxes = boxes[batch_id, ...]
-            _scores = scores[batch_id, ...]
-            _, order = _scores.sort(0, descending=True)
-            dets_sorted = _boxes.index_select(0, order)
-            box_inds = ext_module.nms_rotated(_boxes, _scores, order,
-                                              dets_sorted, iou_threshold, 0)
-            batch_inds = torch.zeros_like(box_inds) + batch_id
-            indices.append(torch.stack([batch_inds, box_inds], dim=-1))
+            for cls_id in range(num_class):
+                _boxes = boxes[batch_id, ...]
+                # score_threshold=0 requires scores to be contiguous
+                _scores = scores[batch_id, cls_id, ...].contiguous()
+                _, order = _scores.sort(0, descending=True)
+                dets_sorted = _boxes.index_select(0, order)
+                box_inds = ext_module.nms_rotated(_boxes, _scores, order,
+                                                  dets_sorted, iou_threshold,
+                                                  0)
+                batch_inds = torch.zeros_like(box_inds) + batch_id
+                cls_inds = torch.zeros_like(box_inds) + cls_id
+                indices.append(
+                    torch.stack([batch_inds, cls_inds, box_inds], dim=-1))
 
         indices = torch.cat(indices)
         return indices

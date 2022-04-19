@@ -785,8 +785,10 @@ def test_nms_rotated(backend, iou_threshold, save_dir=None):
         [[[60, 75, 20, 50, 0], [65, 80, 10, 40, 0], [30, 30, 40, 40, 0]],
          [[60, 75, 20, 50, 0], [65, 80, 10, 40, 0], [30, 30, 40, 40, 0]]],
         dtype=torch.float32)
-    scores = torch.tensor([[0.5, 0.6, 0.7], [0.7, 0.6, 0.5]],
-                          dtype=torch.float32)
+    scores = torch.tensor(
+        [[[0.5, 0.1, 0.1], [0.1, 0.6, 0.1], [0.1, 0.1, 0.7], [0.1, 0.1, 0.1]],
+         [[0.1, 0.1, 0.1], [0.7, 0.1, 0.1], [0.1, 0.6, 0.1], [0.1, 0.1, 0.5]]],
+        dtype=torch.float32)
 
     from mmdeploy.mmcv.ops import ONNXNMSRotatedOp
 
