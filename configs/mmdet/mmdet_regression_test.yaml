@@ -4,9 +4,8 @@ globals:
   checkpoint_force_download: False
   checkpoint_dir: ../mmdeploy_checkpoints
   images:
-    img_coco_320x320: &img_coco_320x320 ./tests/data/tiger.jpeg
-    img_coco_300x300: &img_coco_300x300
-    img_coco_800x1344: &img_coco_800x1344
+    input_img: &input_img ../mmdetection/demo/demo.jpg
+    test_img: &test_img ./tests/data/tiger.jpeg
     img_blank: &img_blank
   metric_info: &metric_info
     box AP: # named after metafile.Results.Metrics
@@ -27,8 +26,8 @@ globals:
       tolerance: 0.1
       task_name: Panoptic Segmentation
   convert_image: &convert_image
-    input_img: *img_coco_320x320
-    test_img: *img_coco_300x300
+    input_img: *input_img
+    test_img: *test_img
   backend_test: &default_backend_test True
   sdk:
     sdk_dynamic_fp32: &sdk_dynamic_fp32 configs/mmdet/detection/detection_sdk_dynamic.py
@@ -37,16 +36,36 @@ onnxruntime:
   pipeline_ort_static_fp32: &pipeline_ort_static_fp32
     convert_image: *convert_image
     deploy_config: configs/mmdet/detection/detection_onnxruntime_static.py
+    backend_test: False
 
   pipeline_ort_dynamic_fp32: &pipeline_ort_dynamic_fp32
     convert_image: *convert_image
     deploy_config: configs/mmdet/detection/detection_onnxruntime_dynamic.py
+    backend_test: False
+
+  pipeline_seg_ort_static_fp32: &pipeline_seg_ort_static_fp32
+    convert_image: *convert_image
+    deploy_config: configs/mmdet/instance-seg/instance-seg_onnxruntime_static.py
+
+  pipeline_seg_ort_dynamic_fp32: &pipeline_seg_ort_dynamic_fp32
+    convert_image: *convert_image
+    deploy_config: configs/mmdet/instance-seg/instance-seg_onnxruntime_dynamic.py
 
 tensorrt:
   pipeline_trt_static_fp32: &pipeline_trt_static_fp32
     convert_image: *convert_image
-    backend_test: *default_backend_test
+    backend_test: False
     deploy_config: configs/mmdet/detection/detection_tensorrt_static-800x1344.py
+
+  pipeline_trt_static_fp16: &pipeline_trt_static_fp16
+    convert_image: *convert_image
+    backend_test: False
+    deploy_config: configs/mmdet/detection/detection_tensorrt-fp16_static-800x1344.py
+
+  pipeline_trt_static_int8: &pipeline_trt_static_int8
+    convert_image: *convert_image
+    backend_test: False
+    deploy_config: configs/mmdet/detection/detection_tensorrt-int8_static-800x1344.py
 
   pipeline_trt_dynamic_fp32: &pipeline_trt_dynamic_fp32
     convert_image: *convert_image
@@ -64,19 +83,25 @@ tensorrt:
     convert_image: *convert_image
     backend_test: *default_backend_test
     sdk_config: *sdk_dynamic_fp32
-    deploy_config: configs/mmdet/detection/detection_tensorrt-int8_dynamic-300x300-512x512.py
+    deploy_config: configs/mmdet/detection/detection_tensorrt-int8_dynamic-320x320-1344x1344.py
+
+  pipeline_seg_trt_dynamic_fp16: &pipeline_seg_trt_dynamic_fp16
+    convert_image: *convert_image
+    backend_test: *default_backend_test
+    sdk_config: *sdk_dynamic_fp32
+    deploy_config: configs/mmdet/instance-seg/instance-seg_tensorrt-fp16_dynamic-320x320-1344x1344.py
 
 openvino:
   pipeline_openvino_dynamic_fp32: &pipeline_openvino_dynamic_fp32
     convert_image: *convert_image
     backend_test: *default_backend_test
-    deploy_config: configs/mmdet/detection/detection_openvino_dynamic-300x300.py
+    deploy_config: configs/mmdet/detection/detection_openvino_dynamic-800x1344.py
 
 ncnn:
   pipeline_ncnn_static_fp32: &pipeline_ncnn_static_fp32
     convert_image: *convert_image
     backend_test: False
-    deploy_config: configs/mmdet/detection/single-stage_ncnn_static-416x416.py
+    deploy_config: configs/mmdet/detection/single-stage_ncnn_static-800x1344.py
 
   pipeline_ncnn_dynamic_fp32: &pipeline_ncnn_dynamic_fp32
     convert_image: *convert_image
@@ -108,3 +133,18 @@ models:
       - *pipeline_ncnn_static_fp32
       - *pipeline_ppl_dynamic_fp32
       - *pipeline_ts_fp32
+  - name: ssd
+    metafile: configs/ssd/metafile.yml
+    model_configs:
+      - configs/ssd/ssd300_coco.py
+    pipelines: # special cases
+      - deploy_config: configs/mmdet/detection/detection_tensorrt-fp16_dynamic-300x300-512x512.py
+        convert_image: *convert_image
+      - deploy_config: configs/mmdet/detection/single-stage_ncnn_static-300x300.py
+        convert_image: *convert_image
+  - name: mask_rcnn
+    metafile: configs/mask_rcnn/metafile.yml
+    model_configs:
+      - configs/mask_rcnn/mask_rcnn_r50_fpn_1x_coco.py
+    pipelines:
+      - *pipeline_seg_trt_dynamic_fp16
