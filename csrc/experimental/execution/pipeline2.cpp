@@ -5,6 +5,7 @@
 #include "archive/value_archive.h"
 #include "deferred_batch_operation.h"
 #include "graph/common.h"
+#include "inlined_scheduler.h"
 
 namespace mmdeploy {
 
@@ -111,6 +112,8 @@ Sender<Value> Pipeline::Process(Sender<Value> args) {
 /////////////////////////////////////////////////////////////////////
 /// parsers
 
+using graph::CreateFromRegistry;
+
 Result<void> NodeParser::Parse(const Value& config, Node& node) {
   try {
     from_value(config["input"], node.inputs_);
@@ -127,7 +130,13 @@ Result<unique_ptr<Task>> TaskParser::Parse(const Value& config) {
   try {
     auto task = std::make_unique<Task>();
     OUTCOME_TRY(NodeParser::Parse(config, *task));
-    OUTCOME_TRY(task->module_, graph::CreateFromRegistry<Module>(config, "module"));
+    OUTCOME_TRY(task->module_, CreateFromRegistry<Module>(config, "module"));
+    if (config.contains("scheduler")) {
+      auto sched_name = config["scheduler"].get<string>();
+      task->sched_ = config["context"]["schedulers"][sched_name].get<TypeErasedScheduler<Value>>();
+    } else {
+      task->sched_ = TypeErasedScheduler<Value>{InlineScheduler{}};
+    }
     return std::move(task);
   } catch (const std::exception& e) {
     MMDEPLOY_ERROR("error parsing config: {}", config);
@@ -139,6 +148,14 @@ Result<unique_ptr<Pipeline>> PipelineParser::Parse(const Value& config) {
   try {
     auto pipeline = std::make_unique<Pipeline>();
     OUTCOME_TRY(NodeParser::Parse(config["pipeline"], *pipeline));
+
+    Value schedulers(Value::kObject);
+    if (config.contains("create_scheduler")) {
+      const auto& sched_cfg = config["create_scheduler"];
+      for (auto it = sched_cfg.begin(); it != sched_cfg.end(); ++it) {
+        OUTCOME_TRY(schedulers[it.key()], CreateFromRegistry<TypeErasedScheduler<Value>>(*it));
+      }
+    }
 
     const auto& task_configs = config["pipeline"]["tasks"];
     auto size = task_configs.size();
@@ -161,22 +178,18 @@ Result<unique_ptr<Pipeline>> PipelineParser::Parse(const Value& config) {
       // propagate context
       if (config.contains("context")) {
         task_config["context"].update(config["context"]);
-      }
-      OUTCOME_TRY(auto node, graph::CreateFromRegistry<Node>(task_config));
-      if (node) {
-        if (node->name() == "yolox") {
-          node = std::make_unique<DeferredBatchOperation>(std::move(node), 1,
-                                                          std::chrono::milliseconds(10000));
+        if (!schedulers.empty()) {
+          task_config["context"]["schedulers"].update(schedulers);
         }
-
-        // OUTCOME_TRY(auto coords, GetInputCoords(node->inputs()));
-        auto coords = GetInputCoords(node->inputs());
-        // if (!coords) {
-        //   MMDEPLOY_CRITICAL("{}", node->inputs());
-        //   MMDEPLOY_CRITICAL("{}", pipeline->inputs());
-        //   MMDEPLOY_CRITICAL("{}", config);
-        // }
-        input_coords.push_back(std::move(coords).value());
+      }
+      OUTCOME_TRY(auto node, CreateFromRegistry<Node>(task_config));
+      if (node) {
+        //        if (node->name() == "yolox") {
+        //          node = std::make_unique<DeferredBatchOperation>(std::move(node), 1,
+        //                                                          std::chrono::milliseconds(10000));
+        //        }
+        OUTCOME_TRY(auto coords, GetInputCoords(node->inputs()));
+        input_coords.push_back(std::move(coords));
         OUTCOME_TRY(UpdateOutputCoords(index, node->outputs()));
         nodes.push_back(std::move(node));
       } else {
@@ -215,10 +228,6 @@ Result<vector<Pipeline::Coords>> PipelineParser::GetInputCoords(const vector<str
       ct->mapping.emplace_back(port_id, i);
     } else {
       MMDEPLOY_ERROR("missing input: {}", input);
-      // for (const auto& [k, v]: output_name_to_coords_) {
-      //   MMDEPLOY_ERROR("key: {}", k);
-      // }
-      // __builtin_trap();
       return Status(eEntryNotFound);
     }
   }
