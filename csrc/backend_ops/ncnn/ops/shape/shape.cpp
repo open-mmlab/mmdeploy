@@ -21,27 +21,27 @@ int Shape::forward(const Mat &bottom_blob, Mat &top_blob, const Option &opt) con
     return -100;
   }
   float *outptr = top_blob;
+
   if (dims == 1) {
     outptr[0] = 1.0f;
     outptr[1] = w;
-    return 0;
-  }
-  if (dims == 2) {
+  } else if (dims == 2) {
     int h = bottom_blob.h;
     outptr[0] = 1.0f;
     outptr[1] = h;
     outptr[2] = w;
-    return 0;
-  }
-  if (dims == 3) {
+  } else if (dims == 3) {
     int h = bottom_blob.h;
     int channels = bottom_blob.c;
     outptr[0] = 1.0f;
     outptr[1] = channels;
     outptr[2] = h;
     outptr[3] = w;
-    return 0;
+  } else {
+    fprintf(stdout, "Unsupported dims=%d\n", dims);
   }
+
+  return 0;
 }
 
 }  // namespace mmdeploy
