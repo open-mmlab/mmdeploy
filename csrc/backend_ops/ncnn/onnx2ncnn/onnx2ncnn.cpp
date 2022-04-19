@@ -3200,7 +3200,9 @@ int main(int argc, char** argv) {
       fprintf(pp, "%-16s", "UnaryOp");
     } else if (op == "Gather") {
       fprintf(pp, "%-16s", "Gather");
-    } else if (op == "Gemm") {
+    } else if (op == "Gelu") {
+      fprintf(pp, "%-16s", "Gelu");
+    }else if (op == "Gemm") {
       float alpha = get_node_attr_f(node, "alpha", 1.f);
       float beta = get_node_attr_f(node, "beta", 1.f);
       int transA = get_node_attr_i(node, "transA", 0);
@@ -3835,6 +3837,8 @@ int main(int argc, char** argv) {
         fprintf(stderr, "Unsupported Gather axis: %d\n", axis + 1);
       }
       fprintf(pp, " 0=%d", axis);
+    } else if (op == "Gelu") {
+      fprintf(pp, " 0=0");
     } else if (op == "Gemm") {
       float alpha = get_node_attr_f(node, "alpha", 1.f);
       float beta = get_node_attr_f(node, "beta", 1.f);
