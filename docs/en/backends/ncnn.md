@@ -1,6 +1,6 @@
 ## ncnn Support
 
-MMDeploy now supports ncnn version == 1.0.20211208
+MMDeploy now supports ncnn version == 1.0.20220216
 
 ### Installation
 
