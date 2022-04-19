@@ -42,7 +42,7 @@ source ~/.bashrc
 conda --version
 ```
 
-After we installed the Archiconda successfully, we can creat the virtual env `mmdeploy` using the command below. 
+After we installed the Archiconda successfully, we can create the virtual env `mmdeploy` using the command below. 
 ```shell
 conda create -n mmdeploy python=3.6  # must be python 3.6
 conda activate mmdeploy
