@@ -150,7 +150,7 @@ git checkout tags/v0.6.2 -b v0.6.2
 ### Install h5py
 ```shell
 sudo apt-get install pkg-config libhdf5-100 libhdf5-dev
-pip install versioned-hdf5 --no-cache-dir
+pip install versioned-hdf5
 ```
 
 ### Install MMDeploy
