@@ -5,6 +5,7 @@ import mmcv
 import numpy as np
 import torch
 from mmcv.utils import Registry
+from mmdet.datasets import DATASETS
 from mmrotate.models.builder import build_head
 from mmrotate.models.detectors import RotatedBaseDetector
 
@@ -40,12 +41,14 @@ class End2EndModel(BaseBackendModel):
         self,
         backend: Backend,
         backend_files: Sequence[str],
+        class_names: Sequence[str],
         device: str,
         deploy_cfg: Union[str, mmcv.Config] = None,
         model_cfg: Union[str, mmcv.Config] = None,
     ):
         super(End2EndModel, self).__init__(deploy_cfg=deploy_cfg)
         model_cfg, deploy_cfg = load_config(model_cfg, deploy_cfg)
+        self.CLASSES = class_names
         self.deploy_cfg = deploy_cfg
         self.show_score = False
         self.bbox_head = build_head(model_cfg.model.bbox_head)
@@ -87,20 +90,30 @@ class End2EndModel(BaseBackendModel):
         input_img = img[0].contiguous()
         img_metas = img_metas[0]
         outputs = self.forward_test(input_img, img_metas, *args, **kwargs)
-        rescale = kwargs.get('rescale', False)
-        if len(img_metas) > 1:
-            boundaries = [
-                self.bbox_head.get_boundary(
-                    *(outputs[i].unsqueeze(0)), [img_metas[i]],
-                    rescale=rescale) for i in range(len(img_metas))
-            ]
+        batch_dets, batch_labels = outputs[:2]
+        # batch_size = input_img.shape[0]
+        # rescale = kwargs.get('rescale', False)
 
-        else:
-            boundaries = [
-                self.bbox_head.get_boundary(
-                    *outputs, img_metas, rescale=rescale)
-            ]
-        return boundaries
+        dets, labels = batch_dets, batch_labels
+
+        dets = dets.cpu().numpy()
+        labels = labels.cpu().numpy()
+        # dets_results = bbox2result(dets, labels, len(self.CLASSES))
+        dets_results = [dets[labels == i, :] for i in range(len(self.CLASSES))]
+
+        # for i in range(batch_size):
+        #     dets, labels = batch_dets[i], batch_labels[i]
+        #     if rescale:
+        #         scale_factor = img_metas[i]['scale_factor']
+
+        #         if isinstance(scale_factor, (list, tuple, np.ndarray)):
+        #             assert len(scale_factor) == 4
+        #             scale_factor = np.array(scale_factor)[None, :]  # [1,4]
+        #         scale_factor = torch.from_numpy(scale_factor).to(
+        #             device=torch.device(self.device))
+        #         dets[:, :4] /= scale_factor
+
+        return dets_results
 
     def forward_test(self, imgs: torch.Tensor, *args, **kwargs) -> \
             List[torch.Tensor]:
@@ -146,30 +159,49 @@ class End2EndModel(BaseBackendModel):
             out_file=out_file)
 
 
-@__BACKEND_MODEL.register_module('sdk')
-class SDKEnd2EndModel(End2EndModel):
-    """SDK inference class, converts SDK output to mmrotate format."""
+def get_classes_from_config(model_cfg: Union[str, mmcv.Config], **kwargs) -> \
+        List[str]:
+    """Get class name from config. The class name is the `classes` field if it
+    is set in the config, or the classes in `module_dict` of MMDet whose type
+    is set in the config.
 
-    def forward(self, img: Sequence[torch.Tensor],
-                img_metas: Sequence[Sequence[dict]], *args, **kwargs) -> list:
-        """Run forward inference.
+    Args:
+        model_cfg (str | mmcv.Config): Input model config file or
+            Config object.
 
-        Args:
-            img (Sequence[torch.Tensor]): A list contains input image(s)
-                in [N x C x H x W] format.
-            img_metas (Sequence[Sequence[dict]]): A list of meta info for
-                image(s).
+    Returns:
+        List[str]: A list of string specifying names of different class.
+    """
+    # load cfg if necessary
+    model_cfg = load_config(model_cfg)[0]
 
-        Returns:
-            list: A list contains predictions.
-        """
-        boundaries = self.wrapper.invoke(
-            [img[0].contiguous().detach().cpu().numpy()])[0]
-        boundaries = [list(x) for x in boundaries]
-        return [
-            dict(
-                boundary_result=boundaries, filename=img_metas[0]['filename'])
-        ]
+    # For custom dataset
+    if 'classes' in model_cfg:
+        return list(model_cfg['classes'])
+
+    module_dict = DATASETS.module_dict
+    data_cfg = model_cfg.data
+    classes = None
+    module = None
+
+    keys = ['test', 'val', 'train']
+
+    for key in keys:
+        if key in data_cfg:
+            if 'classes' in data_cfg[key]:
+                classes = list(data_cfg[key]['classes'])
+                break
+            elif 'type' in data_cfg[key]:
+                module = module_dict[data_cfg[key]['type']]
+                break
+
+    if classes is None and module is None:
+        raise RuntimeError(f'No dataset config found in: {model_cfg}')
+
+    if classes is not None:
+        return classes
+    else:
+        return module.CLASSES
 
 
 def build_rotated_detection_model(model_files: Sequence[str],
@@ -193,12 +225,14 @@ def build_rotated_detection_model(model_files: Sequence[str],
     deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
 
     backend = get_backend(deploy_cfg)
+    class_names = get_classes_from_config(model_cfg)
     model_type = get_codebase_config(deploy_cfg).get('model_type', 'end2end')
 
     backend_rotated_detector = __BACKEND_MODEL.build(
         model_type,
         backend=backend,
         backend_files=model_files,
+        class_names=class_names,
         device=device,
         deploy_cfg=deploy_cfg,
         model_cfg=model_cfg,

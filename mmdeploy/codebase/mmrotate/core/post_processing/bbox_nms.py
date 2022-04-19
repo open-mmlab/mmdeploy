@@ -59,5 +59,6 @@ def multiclass_nms_rotated(multi_bboxes: Tensor,
     bboxes = bboxes[keep]
     scores = scores[keep]
     labels = labels[keep]
+    dets = torch.cat([bboxes, scores[:, None]], 1)
 
-    return torch.cat([bboxes, scores[:, None]], 1), labels
+    return dets, labels
