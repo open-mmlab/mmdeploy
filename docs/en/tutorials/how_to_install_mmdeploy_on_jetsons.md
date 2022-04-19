@@ -133,18 +133,8 @@ sudo apt-get install libspdlog-dev
 ```
 
 ### Install onnxruntime
-
-1. Install python package
 ```shell
 pip install onnxruntime==1.8.1
-```
-2. Download the linux prebuilt binary package from [here](https://github.com/microsoft/onnxruntime/releases/tag/v1.8.1). Extract it and export environment variables as below:
-```shell
-wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
-tar -zxvf onnxruntime-linux-x64-1.8.1.tgz
-cd onnxruntime-linux-x64-1.8.1
-export ONNXRUNTIME_DIR=$(pwd)
-export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 ```
 
 ### Install pplcv
@@ -179,7 +169,7 @@ cmake .. \
     -DMMDEPLOY_BUILD_SDK=ON \
     -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
     -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
-    -DMMDEPLOY_TARGET_BACKENDS="ort;trt" \
+    -DMMDEPLOY_TARGET_BACKENDS="trt" \
     -DMMDEPLOY_CODEBASES=all \
     -Dpplcv_DIR=${PPLCV_DIR}/cuda-build/install/lib/cmake/ppl \
     -DTENSORRT_DIR=/usr/src/tensorrt \
