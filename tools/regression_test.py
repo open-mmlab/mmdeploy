@@ -859,13 +859,18 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
         for metric in metric_useless:
             metric_list.append({metric: '-'})
 
+        if convert_result:
+            report_checkpoint = convert_checkpoint_path
+        else:
+            report_checkpoint = str(checkpoint_path)
+
         # update the report
         update_report(
             report_dict=report_dict,
             model_name=model_cfg_path.parent.name,
             model_config=str(model_cfg_path),
             task_name=task_name,
-            model_checkpoint_name=str(checkpoint_path),
+            model_checkpoint_name=report_checkpoint,
             dataset=dataset_type,
             backend_name=backend_name,
             deploy_config=str(deploy_cfg_path),
