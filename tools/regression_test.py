@@ -526,7 +526,7 @@ def get_backend_fps_metric(deploy_cfg_path: str, model_cfg_path: Path,
                            precision_type: str, metric_useless: set,
                            convert_result: bool, report_dict: dict,
                            infer_type: str, log_path: Path, dataset_type: str,
-                           report_txt_path: Path):
+                           report_txt_path: Path, model_name: str):
     """Get backend fps and metric.
 
     Args:
@@ -548,6 +548,7 @@ def get_backend_fps_metric(deploy_cfg_path: str, model_cfg_path: Path,
         log_path (Path): Logger save path.
         dataset_type (str): Dataset type.
         report_txt_path (Path): report txt save path.
+        model_name (str): Name of model in test yaml.
     """
     cmd_str = f'cd {str(Path(__file__).absolute().parent.parent)} && ' \
               'python3 tools/test.py ' \
@@ -592,7 +593,7 @@ def get_backend_fps_metric(deploy_cfg_path: str, model_cfg_path: Path,
     # update the report
     update_report(
         report_dict=report_dict,
-        model_name=model_cfg_path.parent.name,
+        model_name=model_name,
         model_config=str(model_cfg_path),
         task_name=task_name,
         model_checkpoint_name=convert_checkpoint_path,
@@ -663,7 +664,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
                        report_dict: dict, test_type: str,
                        logger: logging.Logger, log_path: Path,
                        backend_file_name: [str, list], report_txt_path: Path,
-                       metafile_dataset: str):
+                       metafile_dataset: str, model_name: str):
     """Convert model to onnx and then get metric.
 
     Args:
@@ -680,7 +681,8 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
         log_path (Path): Path for logger file.
         backend_file_name (str | list): backend file save name.
         report_txt_path (Path): report txt path.
-        metafile_dataset (str): Dataset type get from meatfile.
+        metafile_dataset (str): Dataset type get from metafile.
+        model_name (str): Name of model in test yaml.
     """
     # get backend_test info
     backend_test = pipeline_info.get('backend_test', False)
@@ -814,7 +816,8 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
                     infer_type=infer_type,
                     log_path=log_path,
                     dataset_type=dataset_type,
-                    report_txt_path=report_txt_path)
+                    report_txt_path=report_txt_path,
+                    model_name=model_name)
 
             if sdk_config is not None:
 
@@ -840,7 +843,8 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
                     infer_type=infer_type,
                     log_path=log_path,
                     dataset_type=dataset_type,
-                    report_txt_path=report_txt_path)
+                    report_txt_path=report_txt_path,
+                    model_name=model_name)
     else:
         logger.info('Only test convert, saving to report...')
         metric_list = []
@@ -869,7 +873,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
         # update the report
         update_report(
             report_dict=report_dict,
-            model_name=model_cfg_path.parent.name,
+            model_name=model_name,
             model_config=str(model_cfg_path),
             task_name=task_name,
             model_checkpoint_name=report_checkpoint,
@@ -985,7 +989,8 @@ def main():
         models_info = yaml_info.get('models')
         for models in models_info:
             if 'model_configs' not in models:
-                logger.info(f'Skip {models.get("name")}')
+                logger.warning('Can not find field "model_configs", '
+                               f'skipping {models.get("name")}...')
                 continue
 
             model_metafile_info, checkpoint_save_dir, codebase_dir = \
@@ -1030,7 +1035,8 @@ def main():
                                        pytorch_metric, metric_info,
                                        report_dict, test_type, logger,
                                        log_path, backend_file_name,
-                                       report_txt_path, metafile_dataset)
+                                       report_txt_path, metafile_dataset,
+                                       models.get('name'))
 
         save_report(report_dict, report_save_path, logger)
 
