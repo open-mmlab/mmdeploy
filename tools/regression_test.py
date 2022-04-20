@@ -304,7 +304,7 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
         report_txt_path=report_txt_path)
 
     logger.info(f'Got {model_config_path} metric: {pytorch_metric}')
-    return pytorch_metric
+    return pytorch_metric, dataset_type
 
 
 def get_info_from_log_file(info_type: str, log_path: Path,
@@ -662,7 +662,8 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
                        pytorch_metric: dict, metric_info: dict,
                        report_dict: dict, test_type: str,
                        logger: logging.Logger, log_path: Path,
-                       backend_file_name: [str, list], report_txt_path: Path):
+                       backend_file_name: [str, list], report_txt_path: Path,
+                       metafile_dataset: str):
     """Convert model to onnx and then get metric.
 
     Args:
@@ -679,6 +680,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
         log_path (Path): Path for logger file.
         backend_file_name (str | list): backend file save name.
         report_txt_path (Path): report txt path.
+        metafile_dataset (str): Dataset type get from meatfile.
     """
     # get backend_test info
     backend_test = pipeline_info.get('backend_test', False)
@@ -776,7 +778,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
         dataset_type = \
             str(model_cfg.dataset_type).upper().replace('DATASET', '')
     else:
-        dataset_type = 'x'
+        dataset_type = metafile_dataset
 
     # Test the model
     if convert_result and test_type == 'precision':
@@ -1007,7 +1009,7 @@ def main():
                 assert checkpoint_path.exists()
 
                 # Get pytorch from metafile.yml
-                pytorch_metric = get_pytorch_result(
+                pytorch_metric, metafile_dataset = get_pytorch_result(
                     models.get('name'), model_metafile_info, checkpoint_path,
                     model_cfg_path, model_config, metric_info, report_dict,
                     logger, report_txt_path)
@@ -1028,7 +1030,7 @@ def main():
                                        pytorch_metric, metric_info,
                                        report_dict, test_type, logger,
                                        log_path, backend_file_name,
-                                       report_txt_path)
+                                       report_txt_path, metafile_dataset)
 
         save_report(report_dict, report_save_path, logger)
 
