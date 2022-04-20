@@ -45,7 +45,7 @@ def parse_args():
         help='the dir to save logs and models',
         default='../mmdeploy_regression_working_dir')
     parser.add_argument(
-        '--device', type=str, help='`the CUDA device id', default='cuda')
+        '--device', type=str, help='Device type, cuda or cpu', default='cuda')
     parser.add_argument(
         '--log-level',
         help='set log level',
