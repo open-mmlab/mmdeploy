@@ -69,7 +69,7 @@ class StaticThreadPool {
 
     Sender MakeSender_() const { return Sender{*pool_}; }
 
-    friend Sender Schedule(const Scheduler& s) noexcept { return s.MakeSender_(); }
+    friend Sender mmdeploySchedule(const Scheduler& s) noexcept { return s.MakeSender_(); }
 
     friend void* GetSchedulerId(const Scheduler& self) { return self.pool_; }
 

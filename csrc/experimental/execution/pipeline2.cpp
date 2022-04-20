@@ -39,7 +39,7 @@ Sender<Value> Pipeline::State::CollectN(const vector<Coords>& coords) {
     predecessors.push_back(Read(coord.index));
     count += coord.mapping.size();
   }
-  return Then(WhenAll(std::move(predecessors)), [count, &coords](Value::Array vals) {
+  return Then(WhenAll_(std::move(predecessors)), [count, &coords](Value::Array vals) {
     Value ret(ValueType::kArray);
     auto& args = ret.array();
     args.resize(count);

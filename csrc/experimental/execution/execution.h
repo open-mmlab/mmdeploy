@@ -55,9 +55,6 @@ using _copy_cvref_t = __member_t<From, To>;
 template <class S, class R>
 using connect_result_t = decltype(Connect(std::declval<S>(), std::declval<R>()));
 
-template <class Sched>
-using schedule_result_t = decltype(Schedule(std::declval<Sched>()));
-
 template <class...>
 struct _types
 #if defined(__GNUC__) && !defined(__clang__)
@@ -159,6 +156,25 @@ struct _BinderBack : SenderAdaptorClosure<_BinderBack<Fun, As...>> {
 
 using __closure::_BinderBack;
 
+namespace __schedule {
+
+struct schedule_t {
+  template <class Scheduler>
+  auto operator()(Scheduler&& scheduler) const
+      -> decltype(mmdeploySchedule((Scheduler &&) scheduler)) {
+    return mmdeploySchedule((Scheduler &&) scheduler);
+  }
+};
+
+}  // namespace __schedule
+
+using __schedule::schedule_t;
+inline constexpr schedule_t Schedule{};
+
+template <class Sched>
+using schedule_result_t = decltype(Schedule(std::declval<Sched>()));
+
+
 namespace __just {
 
 template <class... Ts>
@@ -188,12 +204,17 @@ struct _Sender {
   }
 };
 
+struct just_t {
+  template <class... Ts>
+  _Sender<std::decay_t<Ts>...> operator()(Ts&&... ts) const {
+    return {{(Ts &&) ts...}};
+  }
+};
+
 }  // namespace __just
 
-template <class... Ts>
-inline __just::_Sender<std::decay_t<Ts>...> Just(Ts&&... ts) {
-  return {{(Ts &&) ts...}};
-}
+using __just::just_t;
+inline constexpr just_t Just{};
 
 namespace __on {
 
@@ -261,13 +282,18 @@ struct _Sender {
   }
 };
 
+struct on_t {
+  template <class Scheduler, class Sender>
+  _Sender<std::decay_t<Scheduler>, std::decay_t<Sender>> operator()(Scheduler&& scheduler,
+                                                                    Sender&& sender) const {
+    return {(Scheduler &&) scheduler, (Sender &&) sender};
+  }
+};
+
 }  // namespace __on
 
-template <class Scheduler, class Sender>
-auto On(Scheduler&& sched, Sender&& sndr)
-    -> __on::_Sender<std::decay_t<Scheduler>, std::decay_t<Sender>> {
-  return {(Scheduler &&) sched, (Sender &&) sndr};
-}
+using __on::on_t;
+inline constexpr on_t On{};
 
 namespace __schedule_from {
 
@@ -345,19 +371,37 @@ struct _Sender {
   friend Scheduler GetCompletionScheduler(const _Sender& self) noexcept { return self.sched_; }
 };
 
+struct schedule_from_t {
+  template <class Scheduler, class Sender>
+  _Sender<std::decay_t<Scheduler>, std::decay_t<Sender>> operator()(Scheduler&& scheduler,
+                                                                    Sender&& sender) const {
+    return {(Scheduler &&) scheduler, (Sender &&) sender};
+  }
+};
+
 }  // namespace __schedule_from
 
-template <class Scheduler, class Sender>
-__schedule_from::_Sender<std::decay_t<Scheduler>, std::decay_t<Sender>> ScheduleFrom(
-    Scheduler&& sched, Sender&& sndr) {
-  return {(Scheduler &&) sched, (Sender &&) sndr};
-}
+using __schedule_from::schedule_from_t;
+inline constexpr schedule_from_t ScheduleFrom{};
 
-template <class Sender, class Scheduler>
-auto Transfer(Sender&& sndr, Scheduler&& sched)
-    -> decltype(ScheduleFrom((Scheduler &&) sched, (Sender &&) sndr)) {
-  return ScheduleFrom((Scheduler &&) sched, (Sender &&) sndr);
-}
+namespace __transfer {
+
+struct transfer_t {
+  template <class Sender, class Scheduler>
+  auto operator()(Sender&& sender, Scheduler&& scheduler) const {
+    return ScheduleFrom((Scheduler &&) scheduler, (Sender &&) sender);
+  }
+
+  template <class Scheduler>
+  _BinderBack<transfer_t, std::decay_t<Scheduler>> operator()(Scheduler&& scheduler) const {
+    return {{}, {}, {(Scheduler &&) scheduler}};
+  }
+};
+
+}  // namespace __transfer
+
+using __transfer::transfer_t;
+inline constexpr transfer_t Transfer{};
 
 namespace __then {
 
@@ -496,13 +540,21 @@ struct _Sender {
   Fun fun_;
 };
 
+struct let_value_t {
+  template <class Sender, class Fun>
+  _Sender<std::decay_t<Sender>, Fun> operator()(Sender&& sender, Fun fun) const {
+    return {(Sender &&) sender, std::move(fun)};
+  }
+  template <class Fun>
+  _BinderBack<let_value_t, Fun> operator()(Fun fun) const {
+    return {{}, {}, {std::move(fun)}};
+  }
+};
+
 }  // namespace __let_value
 
-template <class Sender, class Fun,
-          typename _Sender = __let_value::_Sender<std::decay_t<Sender>, Fun>>
-_Sender LetValue(Sender&& s, Fun&& f) {
-  return _Sender{(Sender &&) s, (Fun &&) f};
-}
+using __let_value::let_value_t;
+inline constexpr let_value_t LetValue{};
 
 namespace __bulk {
 
@@ -547,13 +599,23 @@ struct _Sender {
   }
 };
 
+struct bulk_t {
+  template <class Sender, class Shape, class Fun,
+            class = std::enable_if_t<_is_sender<std::decay_t<Sender>>>>
+  __bulk::_Sender<std::decay_t<Sender>, Shape, Fun> operator()(Sender&& sender, Shape shape,
+                                                               Fun fun) const {
+    return {(Sender &&) sender, shape, std::move(fun)};
+  }
+  template <class Shape, class Fun>
+  _BinderBack<bulk_t, Shape, Fun> operator()(Shape shape, Fun fun) const {
+    return {{}, {}, {shape, std::move(fun)}};
+  }
+};
+
 }  // namespace __bulk
 
-template <class Sender, class Shape, class Fun, class SenderT = std::decay_t<Sender>>
-auto Bulk(Sender&& sndr, Shape shape, Fun fun)
-    -> std::enable_if_t<_is_sender<SenderT>, __bulk::_Sender<SenderT, Shape, Fun>> {
-  return {(Sender &&) sndr, shape, (Fun &&) fun};
-}
+using __bulk::bulk_t;
+inline constexpr bulk_t Bulk{};
 
 namespace __split {
 
@@ -656,12 +718,18 @@ struct _Sender {
   }
 };
 
+struct split_t {
+  template <class Sender>
+  _Sender<std::decay_t<Sender>> operator()(Sender&& sender) const {
+    return _Sender<std::decay_t<Sender>>{(Sender &&) sender};
+  }
+  _BinderBack<split_t> operator()() const { return {{}, {}, {}}; }
+};
+
 }  // namespace __split
 
-template <class Sender>
-auto Split(Sender&& sndr) -> __split::_Sender<std::decay_t<Sender>> {
-  return __split::_Sender<std::decay_t<Sender>>{(Sender &&) sndr};
-}
+using __split::split_t;
+inline constexpr split_t Split{};
 
 namespace __when_all {
 
@@ -670,8 +738,8 @@ using __concat_t = decltype(std::tuple_cat(std::declval<completion_signature_for
 
 template <class... Senders>
 struct _Sender {
-  template <class... _Sndrs>
-  explicit _Sender(_Sndrs&&... sndrs) : sndrs_((_Sndrs &&) sndrs...) {}
+  //  template <class... _Sndrs>
+  //  explicit _Sender(_Sndrs&&... sndrs) : sndrs_((_Sndrs &&) sndrs...) {}
 
   template <class CvrefReceiver>
   struct _Operation;
@@ -766,12 +834,17 @@ struct _Sender {
   std::tuple<Senders...> sndrs_;
 };
 
+struct when_all_t {
+  template <class... Senders, class = std::enable_if_t<(_is_sender<std::decay_t<Senders>> && ...)>>
+  _Sender<std::decay_t<Senders>...> operator()(Senders&&... senders) const {
+    return {{(Senders &&) senders...}};
+  }
+};
+
 }  // namespace __when_all
 
-template <class... Senders, std::enable_if_t<(sizeof...(Senders) > 0), bool> = true>
-auto WhenAll(Senders&&... sndrs) -> __when_all::_Sender<std::decay_t<Senders>...> {
-  return __when_all::_Sender<std::decay_t<Senders>...>{(Senders &&) sndrs...};
-}
+using __when_all::when_all_t;
+inline constexpr when_all_t WhenAll{};
 
 namespace __ensure_started {
 
@@ -861,12 +934,17 @@ struct _Sender {
   }
 };
 
+struct ensure_started_t {
+  template <class Sender, class = std::enable_if_t<_is_sender<std::decay_t<Sender>>>>
+  _Sender<std::decay_t<Sender>> operator()(Sender&& sender) const {
+    return _Sender{(Sender &&) sender};
+  }
+};
+
 }  // namespace __ensure_started
 
-template <class Sender, class _Sender = __ensure_started::_Sender<std::decay_t<Sender>>>
-_Sender EnsureStarted(Sender&& sender) {
-  return _Sender{(Sender &&) sender};
-}
+using __ensure_started::ensure_started_t;
+inline constexpr ensure_started_t EnsureStarted{};
 
 namespace __submit {
 
@@ -906,12 +984,17 @@ struct _Receiver {
   friend void SetValue(_Receiver&&, As&&...) noexcept {}
 };
 
+struct start_detached_t {
+  template <class Sender>
+  void operator()(Sender&& sender) const {
+    __Submit((Sender &&) sender, __start_detached::_Receiver{});
+  }
+};
+
 }  // namespace __start_detached
 
-template <class Sender>
-void StartDetached(Sender&& sndr) {
-  __Submit((Sender &&) sndr, __start_detached::_Receiver{});
-}
+using __start_detached::start_detached_t;
+inline constexpr start_detached_t StartDetached{};
 
 namespace __loop {
 class RunLoop;
@@ -961,7 +1044,7 @@ class RunLoop {
     explicit _Scheduler(RunLoop* loop) noexcept : loop_(loop) {}
 
    public:
-    friend _ScheduleTask Schedule(const _Scheduler& self) noexcept { return self._Schedule(); }
+    friend _ScheduleTask mmdeploySchedule(const _Scheduler& self) noexcept { return self._Schedule(); }
     bool operator==(const _Scheduler& other) const noexcept { return loop_ == other.loop_; }
 
    private:
@@ -1055,31 +1138,25 @@ struct _Receiver {
   }
 };
 
+struct sync_wait_t {
+  template <class Sender>
+  completion_signature_for_t<std::decay_t<Sender>> operator()(Sender&& sender) const {
+    _State<std::decay_t<Sender>> state;
+    RunLoop loop;
+    // connect to internal receiver
+    auto op_state = Connect((Sender &&) sender, _Receiver<std::decay_t<Sender>>{&state, &loop});
+    Start(op_state);
+
+    loop._Run();
+    // extract the returned values
+    return std::move(*state.data_);
+  }
+};
+
 }  // namespace __sync_wait
 
-// template <class S, std::enable_if_t<_has_completion_scheduler<S>, bool> = true>
-// Value SyncWait(S&& sender) {
-//   auto scheduler = GetCompletionScheduler(sender);
-//   return SyncWait(scheduler, sender);
-// }
-
-template <class S, class DecayS = std::decay_t<S>>
-auto _SyncWaitDefault(S&& sndr) -> completion_signature_for_t<DecayS> {
-  RunLoop loop;
-  __sync_wait::_State<DecayS> state;
-
-  auto op_state = Connect((S &&) sndr, __sync_wait::_Receiver<DecayS>{&state, &loop});
-  Start(op_state);
-
-  loop._Run();
-
-  return std::move(*state.data_);
-}
-
-template <class S>  //, std::enable_if_t<!_has_completion_scheduler<S>, bool> = true>
-auto SyncWait(S&& sndr) -> decltype(_SyncWaitDefault((S &&) sndr)) {
-  return _SyncWaitDefault((S &&) sndr);
-}
+using __sync_wait::sync_wait_t;
+inline constexpr sync_wait_t SyncWait{};
 
 class SingleThreadContext {
   RunLoop loop_;

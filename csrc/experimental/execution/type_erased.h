@@ -237,7 +237,7 @@ class _TypeErasedScheduler {
 
   template <class Self,
             class = std::enable_if_t<std::is_same_v<std::decay_t<Self>, _TypeErasedScheduler>>>
-  friend _TypeErasedSender<std::tuple<>> Schedule(Self&& self) {
+  friend _TypeErasedSender<std::tuple<>> mmdeploySchedule(Self&& self) {
     return self.impl_->_Schedule();
   }
 

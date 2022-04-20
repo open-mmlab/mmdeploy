@@ -84,7 +84,7 @@ mmdeploy_sender_t mmdeploy_executor_when_all(mmdeploy_sender_t* inputs, int32_t 
     senders.emplace_back(std::move(*Cast(inputs[i])));
   }
   return Cast(new Sender(
-      Then(WhenAll(std::move(senders)), [](Value::Array&& v) { return Value(std::move(v)); })));
+      Then(WhenAll_(std::move(senders)), [](Value::Array&& v) { return Value(std::move(v)); })));
 }
 
 mmdeploy_value_t mmdeploy_executor_sync_wait(mmdeploy_sender_t input) {

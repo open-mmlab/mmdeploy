@@ -87,7 +87,7 @@ struct __Sender::type {
 
 }  // namespace __when_all_value
 
-inline __when_all_value::_Sender WhenAll(std::vector<TypeErasedSender<Value>> sndrs) {
+inline __when_all_value::_Sender WhenAll_(std::vector<TypeErasedSender<Value>> sndrs) {
   return {std::move(sndrs)};
 }
 

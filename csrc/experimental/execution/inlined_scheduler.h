@@ -25,7 +25,7 @@ struct InlineScheduler {
     friend InlineScheduler GetCompletionScheduler(_Sender) noexcept { return {}; }
   };
 
-  friend _Sender Schedule(const InlineScheduler) noexcept { return {}; }
+  friend _Sender mmdeploySchedule(const InlineScheduler) noexcept { return {}; }
 
   friend void* GetSchedulerId(const InlineScheduler& self) { return (void*)1u; }
 
@@ -38,14 +38,14 @@ struct InlineScheduler {
     }
   };
 
-  template <class S, class Sender = std::decay_t<S>,
-            class Tuple = completion_signature_for_t<Sender>>
-  friend Tuple SyncWait(InlineScheduler, S&& sender) {
-    std::optional<Tuple> data;
-    auto op_state = Connect(((S &&) sender), _Receiver<Sender>{&data});
-    Start(op_state);
-    return std::move(data).value();
-  }
+//  template <class S, class Sender = std::decay_t<S>,
+//            class Tuple = completion_signature_for_t<Sender>>
+//  friend Tuple SyncWait(InlineScheduler, S&& sender) {
+//    std::optional<Tuple> data;
+//    auto op_state = Connect(((S &&) sender), _Receiver<Sender>{&data});
+//    Start(op_state);
+//    return std::move(data).value();
+//  }
 };
 
 }  // namespace mmdeploy

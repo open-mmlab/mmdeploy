@@ -297,7 +297,8 @@ TEST_CASE("test schedule_after", "[execution]") {
 }
 
 TEST_CASE("pipeable sender", "[execution]") {
-  auto sender = Just(1) | Then([](int x) { return x + 1; });
+  InlineScheduler sched;
+  auto sender = Just(1) | Transfer(sched) | Then([](int x) { return x + 1; });
   auto [two] = SyncWait(sender);
   MMDEPLOY_INFO("pipeable sender: {}", two);
 }
