@@ -153,6 +153,11 @@ def update_report(report_dict: dict, model_name: str, model_config: str,
     if '.pth' not in model_checkpoint_name:
         # make model path shorter by cutting the work_dir_root
         work_dir_root = report_txt_path.parent.absolute().resolve()
+
+        if ' ' not in model_checkpoint_name:
+            model_checkpoint_name = \
+                Path(model_checkpoint_name).absolute().resolve()
+
         model_checkpoint_name = \
             str(model_checkpoint_name).replace(str(work_dir_root),
                                                '${WORK_DIR}')
