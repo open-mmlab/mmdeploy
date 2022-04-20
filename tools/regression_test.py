@@ -702,6 +702,16 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
     if sdk_config is not None:
         sdk_config = Path(sdk_config)
 
+    # Overwrite metric tolerance
+    metric_tolerance = pipeline_info.get('metric_tolerance', None)
+    if metric_tolerance is not None:
+        for metric, new_tolerance in metric_tolerance.items():
+            if metric not in metric_info:
+                continue
+            if new_tolerance is None:
+                continue
+            metric_info[metric]['tolerance'] = new_tolerance
+
     if backend_test is False and sdk_config is None:
         test_type = 'convert'
 
