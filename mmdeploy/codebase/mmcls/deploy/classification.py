@@ -235,7 +235,7 @@ class Classification(BaseTask):
         """
         import warnings
 
-        from mmcv.utils import get_logger
+        from mmdeploy.utils.logging import get_logger
         logger = get_logger('test', log_file=log_file, log_level=logging.INFO)
 
         if metrics:

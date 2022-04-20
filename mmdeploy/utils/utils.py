@@ -8,7 +8,7 @@ from typing import Callable, Optional, Union
 
 import multiprocess as mp
 
-mmdeploy_logger = None
+from mmdeploy.utils.logging import get_logger
 
 
 def target_wrapper(target: Callable,
@@ -54,34 +54,9 @@ def get_root_logger(log_file=None, log_level=logging.INFO) -> logging.Logger:
     Returns:
         logging.Logger: The obtained logger
     """
-    global mmdeploy_logger
-    if mmdeploy_logger is not None:
-        return mmdeploy_logger
-    import logging
-    logger = logging.getLogger('mmdeploy')
+    logger = get_logger(
+        name='mmdeploy', log_file=log_file, log_level=log_level)
 
-    for handler in logger.root.handlers:
-        if type(handler) is logging.StreamHandler:
-            handler.setLevel(logging.ERROR)
-
-    stream_handler = logging.StreamHandler()
-    handlers = [stream_handler]
-    file_mode = 'w'
-
-    if log_file is not None:
-        file_handler = logging.FileHandler(log_file, file_mode)
-        handlers.append(file_handler)
-
-    formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    for handler in handlers:
-        handler.setFormatter(formatter)
-        handler.setLevel(log_level)
-        logger.addHandler(handler)
-
-    logger.setLevel(log_level)
-
-    mmdeploy_logger = logger
     return logger
 
 

@@ -260,7 +260,7 @@ class ObjectDetection(BaseTask):
             log_file (str | None): The file to write the evaluation results.
                 Defaults to `None` and the results will only print on stdout.
         """
-        from mmcv.utils import get_logger
+        from mmdeploy.utils.logging import get_logger
         logger = get_logger('test', log_file=log_file)
 
         if out:
