@@ -11,22 +11,7 @@ class NcnnAdaptiveAvgPoolingOp(torch.autograd.Function):
     automatically.
 
     Args:
-        loc (Tensor): The predicted boxes location tensor.
-        conf (Tensor): The predicted boxes confidence of
-            num_classes.
-        anchor (Tensor): The prior anchors.
-        score_threshold (float): Threshold of object
-            score.
-            Default: 0.35.
-        nms_threshold (float): IoU threshold for NMS.
-            Default: 0.45.
-        nms_top_k (int): Number of bboxes after NMS.
-            Default: 100.
-        keep_top_k (int): Max number of bboxes of detection result.
-            Default: 100.
-        num_class (int): Number of classes, includes the background
-            class.
-            Default: 81.
+        x (Tensor): The input tensor.
     """
 
     @staticmethod
@@ -44,7 +29,7 @@ class NcnnAdaptiveAvgPoolingOp(torch.autograd.Function):
     def forward(ctx,
                 x,
                 output_size):
-        """Forward function of dummy onnx DetectionOutput op for ncnn."""
+        """Forward function of dummy onnx AdaptiveAvgPooling op for ncnn."""
         return torch.rand(x.shape[0], x.shape[1], output_size[0], output_size[1])
 
 

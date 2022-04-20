@@ -42,7 +42,6 @@ class NCNNWrapper(BaseWrapper):
                  **kwargs):
 
         net = ncnn.Net()
-        net.opt.use_vulkan_compute = True
         if importlib.util.find_spec('mmdeploy.backend.ncnn.ncnn_ext'):
             from mmdeploy.backend.ncnn import ncnn_ext
             ncnn_ext.register_mmdeploy_custom_layers(net)
