@@ -5,9 +5,9 @@ globals:
   checkpoint_dir: ../mmdeploy_checkpoints
   images:
     img_snake: &img_snake ../mmclassification/demo/demo.JPEG
-    img_bird: &img_bird: ../mmclassification/demo/bird.JPEG
-    img_cat_dog: &img_cat_dog: ../mmclassification/demo/cat-dog.png
-    img_dog: &img_dog: ../mmclassification/demo/dog.jpg
+    img_bird: &img_bird ../mmclassification/demo/bird.JPEG
+    img_cat_dog: &img_cat_dog ../mmclassification/demo/cat-dog.png
+    img_dog: &img_dog ../mmclassification/demo/dog.jpg
     img_color_cat: &img_color_cat ../mmclassification/tests/data/color.jpg
     img_gray_cat: &img_gray_cat ../mmclassification/tests/data/gray.jpg
 
