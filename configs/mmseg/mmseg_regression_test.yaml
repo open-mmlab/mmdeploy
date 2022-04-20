@@ -4,10 +4,12 @@ globals:
   checkpoint_force_download: False
   checkpoint_dir: ../mmdeploy_checkpoints
   images:
-    img_cityscapes_224x224: &img_cityscapes_224x224 ./tests/data/tiger.jpeg
-    img_cityscapes_300x300: &img_cityscapes_300x300
-    img_cityscapes_800x1344: &img_cityscapes_800x1344
-    img_blank: &img_blank
+    img_leftImg8bit: &img_leftImg8bit ../mmsegmentation/tests/data/pseudo_cityscapes_dataset/leftImg8bit/frankfurt_000000_000294_leftImg8bit.png
+    img_loveda_0: &img_loveda_0 ../mmsegmentation/tests/data/pseudo_loveda_dataset/img_dir/0.png
+    img_loveda_1: &img_loveda_1 ../mmsegmentation/tests/data/pseudo_loveda_dataset/img_dir/1.png
+    img_loveda_2: &img_loveda_2 ../mmsegmentation/tests/data/pseudo_loveda_dataset/img_dir/2.png
+    img_potsdam: &img_potsdam ../mmsegmentation/tests/data/pseudo_potsdam_dataset/img_dir/2_10_0_0_512_512.png
+    img_vaihingen: &img_vaihingen ../mmsegmentation/tests/data/pseudo_vaihingen_dataset/img_dir/area1_0_0_512_512.png
   metric_info: &metric_info
     mIoU: # named after metafile.Results.Metrics
       eval_name: mIoU # test.py --metrics args
@@ -16,8 +18,8 @@ globals:
       task_name: Semantic Segmentation # metafile.Results.Task
       dataset: Cityscapes # metafile.Results.Dataset
   convert_image: &convert_image
-    input_img: *img_cityscapes_224x224
-    test_img: *img_cityscapes_300x300
+    input_img: *img_leftImg8bit
+    test_img: *img_loveda_0
   backend_test: &default_backend_test True
   sdk:
     sdk_dynamic_fp32: &sdk_dynamic_fp32 configs/mmseg/segmentation_sdk_dynamic.py
