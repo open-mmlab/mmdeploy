@@ -108,15 +108,21 @@ int mmdeploy_text_recognizer_apply_bbox(mm_handle_t handle, const mm_mat_t *imag
 
   try {
     auto recognizer = static_cast<Handle *>(handle);
-    Value input{Value::kArray, Value::kArray};
+    Value::Array input_images;
+    Value::Array input_bboxes;
     auto _bboxes = bboxes;
     auto result_count = 0;
-    for (int i = 0; i < image_count; ++i) {
-      mmdeploy::Mat _mat{images[i].height,       images[i].width, PixelFormat(images[i].format),
-                         DataType(images->type), images[i].data,  Device{"cpu"}};
-      input[0].push_back({{"ori_img", _mat}});
 
+    // mapping from image index to result index, -1 represents invalid image with no bboxes
+    // supplied.
+    std::vector<int> result_index(image_count, -1);
+
+    for (int i = 0; i < image_count; ++i) {
       if (bboxes && bbox_count) {
+        if (bbox_count[i] == 0) {
+          // skip images with no bounding boxes (push nothing)
+          continue;
+        }
         Value boxes(Value::kArray);
         for (int j = 0; j < bbox_count[i]; ++j) {
           Value box;
@@ -128,17 +134,26 @@ int mmdeploy_text_recognizer_apply_bbox(mm_handle_t handle, const mm_mat_t *imag
         }
         _bboxes += bbox_count[i];
         result_count += bbox_count[i];
-        input[1].push_back({{"boxes", boxes}});
+        input_bboxes.push_back({{"boxes", boxes}});
       } else {
-        input[1].push_back(Value::kNull);
+        // bboxes or bbox_count not supplied, use whole image
         result_count += 1;
+        input_bboxes.push_back(Value::kNull);
       }
+
+      result_index[i] = static_cast<int>(input_images.size());
+      mmdeploy::Mat _mat{images[i].height,         images[i].width, PixelFormat(images[i].format),
+                         DataType(images[i].type), images[i].data,  Device{"cpu"}};
+      input_images.push_back({{"ori_img", _mat}});
     }
 
-    auto output = recognizer->Run(std::move(input)).value().front();
+    std::vector<std::vector<mmocr::TextRecognizerOutput>> recognizer_outputs;
 
-    auto recognizer_outputs =
-        from_value<std::vector<std::vector<mmocr::TextRecognizerOutput>>>(output);
+    if (!input_images.empty()) {
+      Value input{std::move(input_images), std::move(input_bboxes)};
+      auto output = recognizer->Run(std::move(input)).value().front();
+      from_value(output, recognizer_outputs);
+    }
 
     std::vector<int> counts;
     if (bboxes && bbox_count) {
@@ -157,21 +172,23 @@ int mmdeploy_text_recognizer_apply_bbox(mm_handle_t handle, const mm_mat_t *imag
         new mm_text_recognize_t[result_count]{}, deleter);
 
     for (int i = 0; i < image_count; ++i) {
-      auto &recog_output = recognizer_outputs[i];
-      for (int j = 0; j < recog_output.size(); ++j) {
-        auto &res = _results[offsets[i] + j];
+      if (result_index[i] >= 0) {
+        auto &recog_output = recognizer_outputs[result_index[i]];
+        for (int j = 0; j < recog_output.size(); ++j) {
+          auto &res = _results[offsets[i] + j];
 
-        auto &box_result = recog_output[j];
+          auto &box_result = recog_output[j];
 
-        auto &score = box_result.score;
-        res.length = static_cast<int>(score.size());
+          auto &score = box_result.score;
+          res.length = static_cast<int>(score.size());
 
-        res.score = new float[score.size()];
-        std::copy_n(score.data(), score.size(), res.score);
+          res.score = new float[score.size()];
+          std::copy_n(score.data(), score.size(), res.score);
 
-        auto text = box_result.text;
-        res.text = new char[text.length() + 1];
-        std::copy_n(text.data(), text.length() + 1, res.text);
+          auto text = box_result.text;
+          res.text = new char[text.length() + 1];
+          std::copy_n(text.data(), text.length() + 1, res.text);
+        }
       }
     }
     *results = _results.release();

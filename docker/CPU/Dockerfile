@@ -103,6 +103,8 @@ RUN cd mmdeploy && rm -rf build/CM* && mkdir -p build && cd build && cmake .. \
     -DMMDEPLOY_CODEBASES=all &&\
     cmake --build . -- -j$(nproc) && cmake --install . &&\
     cd install/example  && mkdir -p build && cd build &&\
-    cmake -DMMDeploy_DIR=/root/workspace/mmdeploy/build/install/lib/cmake/MMDeploy .. &&\
+    cmake .. -DMMDeploy_DIR=/root/workspace/mmdeploy/build/install/lib/cmake/MMDeploy \
+    -DInferenceEngine_DIR=/opt/intel/openvino/deployment_tools/inference_engine/share \
+    -Dncnn_DIR=/root/workspace/ncnn/build/install/lib/cmake/ncnn &&\
     cmake --build . && export SPDLOG_LEVEL=warn &&\
     if [ -z ${VERSION} ] ; then echo "Built MMDeploy master for CPU devices successfully!" ; else echo "Built MMDeploy version v${VERSION} for CPU devices successfully!" ; fi

@@ -86,8 +86,8 @@ int mmdeploy_classifier_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_
 
     Value input{Value::kArray};
     for (int i = 0; i < mat_count; ++i) {
-      mmdeploy::Mat _mat{mats[i].height,       mats[i].width, PixelFormat(mats[i].format),
-                         DataType(mats->type), mats[i].data,  Device{"cpu"}};
+      mmdeploy::Mat _mat{mats[i].height,         mats[i].width, PixelFormat(mats[i].format),
+                         DataType(mats[i].type), mats[i].data,  Device{"cpu"}};
       input.front().push_back({{"ori_img", _mat}});
     }
 
