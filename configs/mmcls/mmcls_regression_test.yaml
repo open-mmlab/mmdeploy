@@ -68,8 +68,8 @@ tensorrt:
     sdk_config: *sdk_dynamic_fp32
     deploy_config: configs/mmcls/classification_tensorrt-fp16_dynamic-224x224-224x224.py
     metric_tolerance:
-      Top 1 Accuracy: 0.5
-      Top 5 Accuracy: 0.5
+      Top 1 Accuracy: 1
+      Top 5 Accuracy: 1
 
   pipeline_trt_dynamic_int8: &pipeline_trt_dynamic_int8
     convert_image: *convert_image
@@ -108,10 +108,70 @@ torchscript:
     deploy_config: configs/mmcls/classification_torchscript.py
 
 models:
-  - name: mobilenet_v2
+  - name: ResNet
+    metafile: configs/resnet/metafile.yml
+    model_configs:
+      - configs/resnet/resnet18_b32x8_imagenet.py
+    pipelines:
+      - *pipeline_ort_dynamic_fp32
+      - *pipeline_trt_dynamic_fp16
+      - *pipeline_openvino_dynamic_fp32
+      - *pipeline_ncnn_static_fp32
+      - *pipeline_ppl_dynamic_fp32
+      - *pipeline_ts_fp32
+
+  - name: ResNeXt
+    metafile: configs/resnext/metafile.yml
+    model_configs:
+      - configs/resnext/resnext50_32x4d_b32x8_imagenet.py
+    pipelines:
+      - *pipeline_ort_dynamic_fp32
+      - *pipeline_trt_dynamic_fp16
+      - *pipeline_openvino_dynamic_fp32
+      - *pipeline_ncnn_static_fp32
+      - *pipeline_ppl_dynamic_fp32
+      - *pipeline_ts_fp32
+
+  - name: SE-ResNet
+    metafile: configs/seresnet/metafile.yml
+    model_configs:
+      - configs/seresnet/seresnet50_b32x8_imagenet.py
+    pipelines:
+      - *pipeline_ort_dynamic_fp32
+      - *pipeline_trt_dynamic_fp16
+      - *pipeline_openvino_dynamic_fp32
+      - *pipeline_ncnn_static_fp32
+      - *pipeline_ppl_dynamic_fp32
+      - *pipeline_ts_fp32
+
+  - name: MobileNetV2
     metafile: configs/mobilenet_v2/metafile.yml
     model_configs:
       - configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py
+    pipelines:
+      - *pipeline_ort_dynamic_fp32
+      - *pipeline_trt_dynamic_fp16
+      - *pipeline_openvino_dynamic_fp32
+      - *pipeline_ncnn_static_fp32
+      - *pipeline_ppl_dynamic_fp32
+      - *pipeline_ts_fp32
+
+  - name: ShuffleNetV1
+    metafile: configs/shufflenet_v1/metafile.yml
+    model_configs:
+      - configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py
+    pipelines:
+      - *pipeline_ort_dynamic_fp32
+      - *pipeline_trt_dynamic_fp16
+      - *pipeline_openvino_dynamic_fp32
+      - *pipeline_ncnn_static_fp32
+      - *pipeline_ppl_dynamic_fp32
+      - *pipeline_ts_fp32
+
+  - name: ShuffleNetV2
+    metafile: configs/shufflenet_v2/metafile.yml
+    model_configs:
+      - configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
