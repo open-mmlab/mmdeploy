@@ -5,6 +5,7 @@ from contextlib import contextmanager
 from typing import Optional
 
 import torch
+
 from mmdeploy.utils.logging import get_logger
 
 
