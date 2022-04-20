@@ -63,7 +63,7 @@ The table below lists the models that are guaranteed to be exportable to other b
 | SAR                       | MMOCR            |      N      |      Y      |     N    |   N   |   N   |     N    | [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/sar)                  |
 | HRNet                     | MMPose           |      N      |      Y      |     Y    |   Y   |   N   |     Y    |    [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#hrnet-cvpr-2019)     |
 | MSPN                      | MMPose           |      N      |      Y      |     Y    |   Y   |   N   |     Y    |    [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#mspn-arxiv-2019)     |
-| LiteHRNet                 | MMPose           |      N      |      Y      |     Y    |   N   |   N   |     Y    |  [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#litehrnet-cvpr-2021)   |
+| LiteHRNet                 | MMPose           |      N      |      Y      |     Y    |   Y   |   N   |     Y    |  [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#litehrnet-cvpr-2021)   |
 | PointPillars              | MMDetection3d    |      ?      |      Y      |     Y    |   N   |   N   |     Y    | [config](https://github.com/open-mmlab/mmdetection3d/blob/master/configs/pointpillars)         |
 | CenterPoint (pillar)      | MMDetection3d    |      ?      |      Y      |     Y    |   N   |   N   |     Y    | [config](https://github.com/open-mmlab/mmdetection3d/blob/master/configs/centerpoint)          |
 
