@@ -4,10 +4,10 @@ globals:
   checkpoint_force_download: False
   checkpoint_dir: ../mmdeploy_checkpoints
   images:
-    img_224x224: &img_224x224 ./tests/data/tiger.jpeg
-    img_300x300: &img_300x300
-    img_800x1344: &img_cityscapes_800x1344
-    img_blank: &img_blank
+    img_densetext_det: &img_densetext_det ../mmocr/demo/demo_densetext_det.jpg
+    img_demo_text_det: &img_demo_text_det ../mmocr/demo/demo_text_det.jpg
+    img_demo_text_ocr: &img_demo_text_ocr ../mmocr/demo/demo_text_ocr.jpg
+    img_demo_text_recog: &img_demo_text_recog ../mmocr/demo/demo_text_recog.jpg
   metric_info: &metric_info
     hmean-iou: # named after metafile.Results.Metrics
       eval_name: hmean-iou # test.py --metrics args
@@ -21,9 +21,12 @@ globals:
       tolerance: 0.2
       task_name: Text Recognition
       dataset: IIIT5K
-  convert_image: &convert_image
-    input_img: *img_224x224
-    test_img: *img_300x300
+  convert_image_det: &convert_image_det
+    input_img: *img_densetext_det
+    test_img: *img_demo_text_det
+  convert_image_rec: &convert_image_rec
+    input_img: *img_demo_text_recog
+    test_img: *img_demo_text_recog
   backend_test: &default_backend_test True
   sdk:
     sdk_detection_dynamic: &sdk_detection_dynamic configs/mmocr/text-detection/text-detection_sdk_dynamic.py
@@ -32,22 +35,22 @@ globals:
 onnxruntime:
   # ======= detection =======
   pipeline_ort_detection_static_fp32: &pipeline_ort_detection_static_fp32
-    convert_image: *convert_image
+    convert_image: *convert_image_det
     deploy_config: configs/mmocr/text-detection/text-detection_onnxruntime_static.py
 
   pipeline_ort_detection_dynamic_fp32: &pipeline_ort_detection_dynamic_fp32
-    convert_image: *convert_image
+    convert_image: *convert_image_det
     backend_test: *default_backend_test
     sdk_config: *sdk_recognition_dynamic
     deploy_config: configs/mmocr/text-detection/text-detection_onnxruntime_dynamic.py
 
   # ======= recognition =======
   pipeline_ort_recognition_static_fp32: &pipeline_ort_recognition_static_fp32
-    convert_image: *convert_image
+    convert_image: *convert_image_rec
     deploy_config: configs/mmocr/text-recognition/text-recognition_onnxruntime_static.py
 
   pipeline_ort_recognition_dynamic_fp32: &pipeline_ort_recognition_dynamic_fp32
-    convert_image: *convert_image
+    convert_image: *convert_image_rec
     backend_test: *default_backend_test
     sdk_config: *sdk_recognition_dynamic
     deploy_config: configs/mmocr/text-recognition/text-recognition_onnxruntime_dynamic.py
@@ -55,119 +58,119 @@ onnxruntime:
 tensorrt:
   # ======= detection =======
   pipeline_trt_detection_static_fp32: &pipeline_trt_detection_static_fp32
-    convert_image: *convert_image
+    convert_image: *convert_image_det
     backend_test: *default_backend_test
     sdk_config: *sdk_detection_dynamic
     deploy_config: configs/mmocr/text-detection/text-detection_tensorrt_static-512x512.py
 
   pipeline_trt_detection_static_fp16: &pipeline_trt_detection_static_fp16
-    convert_image: *convert_image
+    convert_image: *convert_image_det
     backend_test: *default_backend_test
     sdk_config: *sdk_detection_dynamic
     deploy_config: configs/mmocr/text-detection/text-detection_tensorrt-fp16_static-512x512.py
 
   pipeline_trt_detection_static_int8: &pipeline_trt_detection_static_int8
-    convert_image: *convert_image
+    convert_image: *convert_image_det
     backend_test: *default_backend_test
     sdk_config: *sdk_detection_dynamic
     deploy_config: configs/mmocr/text-detection/text-detection_tensorrt-int8_static-512x512.py
 
   pipeline_trt_detection_dynamic_fp32: &pipeline_trt_detection_dynamic_fp32
-    convert_image: *convert_image
+    convert_image: *convert_image_det
     backend_test: *default_backend_test
     sdk_config: *sdk_detection_dynamic
     deploy_config: configs/mmocr/text-detection/text-detection_tensorrt_dynamic-320x320-1024x1824.py
 
   pipeline_trt_detection_dynamic_fp16: &pipeline_trt_detection_dynamic_fp16
-    convert_image: *convert_image
+    convert_image: *convert_image_det
     backend_test: *default_backend_test
     sdk_config: *sdk_detection_dynamic
     deploy_config: configs/mmocr/text-detection/text-detection_tensorrt-fp16_dynamic-320x320-1024x1824.py
 
   pipeline_trt_detection_dynamic_int8: &pipeline_trt_detection_dynamic_int8
-    convert_image: *convert_image
+    convert_image: *convert_image_det
     backend_test: *default_backend_test
     sdk_config: *sdk_detection_dynamic
     deploy_config: configs/mmocr/text-detection/text-detection_tensorrt-int8_dynamic-320x320-1024x1824.py
 
   # ======= recognition =======
   pipeline_trt_recognition_static_fp32: &pipeline_trt_recognition_static_fp32
-    convert_image: *convert_image
+    convert_image: *convert_image_rec
     backend_test: *default_backend_test
     sdk_config: *sdk_recognition_dynamic
     deploy_config: configs/mmocr/text-recognition/text-recognition_tensorrt_static-1x32x32.py
 
   pipeline_trt_recognition_static_fp16: &pipeline_trt_recognition_static_fp16
-    convert_image: *convert_image
+    convert_image: *convert_image_rec
     backend_test: *default_backend_test
     sdk_config: *sdk_recognition_dynamic
     deploy_config: configs/mmocr/text-recognition/text-recognition_tensorrt-fp16_static-1x32x32.py
 
   pipeline_trt_recognition_static_int8: &pipeline_trt_recognition_static_int8
-    convert_image: *convert_image
+    convert_image: *convert_image_rec
     backend_test: *default_backend_test
     sdk_config: *sdk_recognition_dynamic
     deploy_config: configs/mmocr/text-recognition/text-recognition_tensorrt-int8_static-1x32x32.py
 
   pipeline_trt_recognition_dynamic_fp32: &pipeline_trt_recognition_dynamic_fp32
-    convert_image: *convert_image
+    convert_image: *convert_image_rec
     backend_test: *default_backend_test
     sdk_config: *sdk_recognition_dynamic
     deploy_config: configs/mmocr/text-recognition/text-recognition_tensorrt_dynamic-1x32x32-1x32x640.py
 
   pipeline_trt_recognition_dynamic_fp16: &pipeline_trt_recognition_dynamic_fp16
-    convert_image: *convert_image
+    convert_image: *convert_image_rec
     backend_test: *default_backend_test
     sdk_config: *sdk_recognition_dynamic
     deploy_config: configs/mmocr/text-recognition/text-recognition_tensorrt-fp16_dynamic-1x32x32-1x32x640.py
 
   pipeline_trt_recognition_dynamic_int8: &pipeline_trt_recognition_dynamic_int8
-    convert_image: *convert_image
+    convert_image: *convert_image_rec
     backend_test: *default_backend_test
     sdk_config: *sdk_recognition_dynamic
     deploy_config: configs/mmocr/text-recognition/text-recognition_tensorrt-int8_dynamic-1x32x32-1x32x640.py
 
 openvino:
   pipeline_openvino_detection_dynamic_fp32: &pipeline_openvino_detection_dynamic_fp32
-    convert_image: *convert_image
+    convert_image: *convert_image_det
     backend_test: *default_backend_test
     deploy_config: configs/mmocr/text-detection/text-detection_openvino_dynamic-640x640.py
 
 #  pipeline_openvino_recognition_dynamic_fp32: &pipeline_openvino_recognition_dynamic_fp32
-#    convert_image: *convert_image
+#    convert_image: *convert_image_rec
 #    backend_test: *default_backend_test
 #    deploy_config:
 
 ncnn:
   pipeline_ncnn_detection_static_fp32: &pipeline_ncnn_detection_static_fp32
-    convert_image: *convert_image
+    convert_image: *convert_image_det
     backend_test: False
     deploy_config: configs/mmocr/text-detection/text-detection_ncnn_static.py
 
   pipeline_ncnn_recognition_static_fp32: &pipeline_ncnn_recognition_static_fp32
-    convert_image: *convert_image
+    convert_image: *convert_image_rec
     backend_test: False
     deploy_config: configs/mmocr/text-recognition/text-recognition_ncnn_static.py
 
 pplnn:
   pipeline_pplnn_detection_dynamic_fp32: &pipeline_pplnn_detection_dynamic_fp32
-    convert_image: *convert_image
+    convert_image: *convert_image_det
     backend_test: False
     deploy_config: configs/mmocr/text-detection/text-detection_pplnn_dynamic-640x640.py
 
   pipeline_pplnn_recognition_dynamic_fp32: &pipeline_pplnn_recognition_dynamic_fp32
-    convert_image: *convert_image
+    convert_image: *convert_image_rec
     backend_test: False
     deploy_config: configs/mmocr/text-recognition/text-recognition_pplnn_dynamic-1x32x32.py
 
 torchscript:
   pipeline_ts_detection_fp32: &pipeline_ts_detection_fp32
-    convert_image: *convert_image
+    convert_image: *convert_image_det
     backend_test: *default_backend_test
     deploy_config: configs/mmocr/text-detection/text-detection_torchscript.py
 
   pipeline_ts_recognition_fp32: &pipeline_ts_recognition_fp32
-    convert_image: *convert_image
+    convert_image: *convert_image_rec
     backend_test: *default_backend_test
     deploy_config: configs/mmocr/text-recognition/text-recognition_torchscript.py
 
