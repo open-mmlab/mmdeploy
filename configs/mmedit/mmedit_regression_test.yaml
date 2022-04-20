@@ -4,8 +4,8 @@ globals:
   checkpoint_force_download: False
   checkpoint_dir: ../mmdeploy_checkpoints
   images:
-    img_320x320: &img_320x320 ./tests/data/tiger.jpeg
-    img_blank: &img_blank
+    img_face: &img_face ../mmediting/tests/data/face/000001.png
+    img_bg: &img_bg ../mmediting/tests/data/bg/GT26r.jpg
   metric_info: &metric_info
     PSNR: # named after metafile.Results.Metrics
       eval_name: PSNR # test.py --metrics args
@@ -20,8 +20,8 @@ globals:
       task_name: Restorers
       dataset: DIV2K
   convert_image: &convert_image
-    input_img: *img_320x320
-    test_img: *img_blank
+    input_img: *img_face
+    test_img: *img_bg
   backend_test: &default_backend_test True
   sdk:
     sdk_dynamic_fp32: &sdk_dynamic_fp32 configs/mmedit/super-resolution/super-resolution_sdk_dynamic.py
