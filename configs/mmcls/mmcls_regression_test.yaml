@@ -26,7 +26,7 @@ globals:
       dataset: ImageNet-1k
   convert_image: &convert_image
     input_img: *img_snake
-    test_img: *img_cat
+    test_img: *img_color_cat
   backend_test: &default_backend_test True
   sdk:
     sdk_dynamic_fp32: &sdk_dynamic_fp32 configs/mmcls/classification_sdk_dynamic.py
