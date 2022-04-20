@@ -6,11 +6,11 @@ ONNX 是目前模型部署中最重要的中间表示之一。学懂了 ONNX 的
 在这一节里，我们将详细介绍 PyTorch 到 ONNX 的转换函数—— torch.onnx.export。我们希望大家能够更加灵活地使用这个模型转换接口，并通过了解它的实现原理来更好地应对该函数的报错（由于模型部署的兼容性问题，部署复杂模型时该函数时常会报错）。
 ### 计算图导出方法
 [TorchScript](https://pytorch.org/docs/stable/jit.html) 是一种序列化和优化 PyTorch 模型的格式，在优化过程中，一个`torch.nn.Module`模型会被转换成 TorchScript 的`torch.jit.ScriptModule`模型。现在， TorchScript 也被常当成一种中间表示使用。我们在[其他文章](https://zhuanlan.zhihu.com/p/486914187)中对 TorchScript 有详细的介绍，这里介绍 TorchScript 仅用于说明 PyTorch 模型转 ONNX的原理。
-`torch.onnx.export`中需要的模型实际上是一个`torch.jit.ScriptModule`。而要把普通 PyTorch 模型转一个这样的 TorchScript 模型，有跟踪（trace）和记录（script）两种导出计算图的方法。如果给`torch.onnx.export`传入了一个普通 PyTorch 模型（`torch.nn.Module`)，那么这个模型会默认使用跟踪的方法导出。这一过程如下图所示：
+`torch.onnx.export`中需要的模型实际上是一个`torch.jit.ScriptModule`。而要把普通 PyTorch 模型转一个这样的 TorchScript 模型，有跟踪（trace）和脚本化（script）两种导出计算图的方法。如果给`torch.onnx.export`传入了一个普通 PyTorch 模型（`torch.nn.Module`)，那么这个模型会默认使用跟踪的方法导出。这一过程如下图所示：
 
 ![image](https://user-images.githubusercontent.com/47652064/163531613-9eb3c851-933e-4b0d-913a-bf92ac36e80b.png)
 
-回忆一下我们[第一篇教程](./chapter_01_introduction_to_model_deployment.md)知识：跟踪法只能通过实际运行一遍模型的方法导出模型的静态图，即无法识别出模型中的控制流（如循环）；记录法则能通过解析模型来正确记录所有的控制流。我们以下面这段代码为例来看一看这两种转换方法的区别：
+回忆一下我们[第一篇教程](./chapter_01_introduction_to_model_deployment.md)知识：跟踪法只能通过实际运行一遍模型的方法导出模型的静态图，即无法识别出模型中的控制流（如循环）；脚本化则能通过解析模型来正确记录所有的控制流。我们以下面这段代码为例来看一看这两种转换方法的区别：
 
 ```python
 import torch
@@ -38,12 +38,12 @@ for model, model_name in zip(models, model_names):
 
     # 跟踪法与直接 torch.onnx.export(model, ...)等价
     torch.onnx.export(model_trace, dummy_input, f'{model_name}_trace.onnx', example_outputs=dummy_output)
-    # 记录法必须先调用 torch.jit.sciprt
+    # 脚本化必须先调用 torch.jit.sciprt
     torch.onnx.export(model_script, dummy_input, f'{model_name}_script.onnx', example_outputs=dummy_output)
 ```
 
-在这段代码里，我们定义了一个带循环的模型，模型通过参数`n`来控制输入张量被卷积的次数。之后，我们各创建了一个`n=2`和`n=3`的模型。我们把这两个模型分别用跟踪和记录的方法进行导出。
-值得一提的是，由于这里的两个模型（`model_trace`, `model_script`)是 TorchScript 模型，`export`函数已经不需要再运行一遍模型了。（如果模型是用跟踪法得到的，那么在执行`torch.jit.trace`的时候就运行过一遍了；而用记录法导出时，模型不需要实际运行）参数中的`dummy_input`和`dummy_output`仅仅是为了获取输入和输出张量的类型和形状。
+在这段代码里，我们定义了一个带循环的模型，模型通过参数`n`来控制输入张量被卷积的次数。之后，我们各创建了一个`n=2`和`n=3`的模型。我们把这两个模型分别用跟踪和脚本化的方法进行导出。
+值得一提的是，由于这里的两个模型（`model_trace`, `model_script`)是 TorchScript 模型，`export`函数已经不需要再运行一遍模型了。（如果模型是用跟踪法得到的，那么在执行`torch.jit.trace`的时候就运行过一遍了；而用脚本化导出时，模型不需要实际运行）参数中的`dummy_input`和`dummy_output`仅仅是为了获取输入和输出张量的类型和形状。
 运行上面的代码，我们把得到的4个 onnx 文件用 Netron 可视化：
 
 ![image](https://user-images.githubusercontent.com/47652064/163531637-994ffa0a-847d-4c0d-a9e3-0ecd78c9a3aa.png)
@@ -52,7 +52,7 @@ for model, model_name in zip(models, model_names):
 
 ![image](https://user-images.githubusercontent.com/47652064/163531659-b06e5df2-6e18-462e-82ff-b16d95b9765c.png)
 
-而用记录法的话，最终的 ONNX 模型用 `Loop` 节点来表示循环。这样哪怕对于不同的 `n`，ONNX 模型也有同样的结构。
+而用脚本化的话，最终的 ONNX 模型用 `Loop` 节点来表示循环。这样哪怕对于不同的 `n`，ONNX 模型也有同样的结构。
 由于推理引擎对静态图的支持更好，通常我们在模型部署时不需要显式地把 PyTorch 模型转成 TorchScript 模型，直接把 PyTorch 模型用 `torch.onnx.export` 跟踪导出即可。了解这部分的知识主要是为了在模型转换报错时能够更好地定位问题是否发生在 PyTorch 转 TorchScript 阶段。
 ### 参数讲解
 了解完转换函数的原理后，我们来详细介绍一下该函数的主要参数的作用。我们主要会从应用的角度来介绍每个参数在不同的模型部署场景中应该如何设置，而不会去列出每个参数的所有设置方法。该函数详细的 API 文档可参考 [torch.onnx ‒ PyTorch 1.11.0 documentation](https://pytorch.org/docs/stable/onnx.html#functions)
@@ -278,7 +278,7 @@ def _interpolate_helper(name, dim, interpolate_mode):
 掌握了如何查询 PyTorch 映射到 ONNX 的关系后，我们在实际应用时就可以在 `torch.onnx.export()`的`opset_version`中先预设一个版本号，碰到了问题就去对应的 PyTorch 符号表文件里去查。如果某算子确实不存在，或者算子的映射关系不满足我们的要求，我们就可能得用其他的算子绕过去，或者自定义算子了。
 ## 总结
 在这篇教程中，我们系统地介绍了 PyTorch 转 ONNX 的原理。我们先是着重讲解了使用最频繁的 `torch.onnx.export`函数，又给出了查询 PyTorch 对 ONNX 算子支持情况的方法。通过本文，我们希望大家能够成功转换出大部分不需要添加新算子的 ONNX 模型，并在碰到算子问题时能够有效定位问题原因。具体而言，大家读完本文后应该了解以下的知识：
-- 跟踪法和记录法在导出带控制语句的计算图时有什么区别。
+- 跟踪法和脚本化在导出带控制语句的计算图时有什么区别。
 - `torch.onnx.export()`中该如何设置 i`nput_names, output_names, dynamic_axes`。
 - 使用 `torch.onnx.is_in_onnx_export()`来使模型在转换到 ONNX 时有不同的行为。
 - 如何查询 [ONNX 算子文档](https://github.com/onnx/onnx/blob/main/docs/Operators.md)。
