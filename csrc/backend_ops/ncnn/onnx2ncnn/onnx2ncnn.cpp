@@ -74,7 +74,7 @@ static std::vector<int> get_node_attr_ai(const onnx::NodeProto& node, const char
   return v;
 }
 
-static void set_node_attr_ai(const onnx::NodeProto& node, const char* key, const std::vector<int>& value) {
+static void set_node_attr_ai(onnx::NodeProto& node, const char* key, const std::vector<int>& value) {
   onnx::AttributeProto* attr_group = node.add_attribute();
   attr_group->set_name(key);
   for(auto v: value) {
@@ -2564,7 +2564,7 @@ static void fuse_multiheadattention(onnx::GraphProto* mutable_graph,
  * @param name 
  * @return onnx::NodeProto* 
  */
-static onnx::NodeProto* find_node_by_output_name(const onnx::GraphProto* mutable_graph, const std::string& name) {
+static onnx::NodeProto* find_node_by_output_name(onnx::GraphProto* mutable_graph, const std::string& name) {
   const int input_count = mutable_graph->input_size();
 
   for (int i = 0; i < input_count; ++i) {
@@ -2583,38 +2583,35 @@ static onnx::NodeProto* find_node_by_output_name(const onnx::GraphProto* mutable
 /**
  * @brief 
  * 
- * @param mutable_graph 
+ * @param mutable_graph query target node output shape
  * @param target 
  * @param weights 
- * @param blob_names 
- * @param context 
+ * @param context <tensor name, shape>
  * @return std::tuple<bool, std::vector<int>> 
  */
 static std::tuple<bool, std::vector<int>> query_shape(
-                                    const onnx::GraphProto* mutable_graph,
-                                    const onnx::NodeProto* target,
-                                    std::map<std::string, onnx::TensorProto>& weights,
-                                    const std::set<std::string>& blob_names,
+                                    onnx::GraphProto* mutable_graph,
+                                    onnx::NodeProto* target,
+                                    const std::map<std::string, onnx::TensorProto>& weights,
                                     std::map<std::string, std::vector<int>>& context) {
   // emplace all input nodes
   const int input_count = mutable_graph->input_size();
   for (int i = 0; i < input_count; i++) {
     auto inp = mutable_graph->input(i);
     onnx::TypeProto inp_type = inp.type();
-    onnx::TypeProto_Tensor inp_type_tensor = inp_type.type_tensor();
-    onnx::TensorShapeProto shape_proto = inp_type_tensor.shape();
+    onnx::TensorShapeProto shape_proto = inp_type.tensor_type().shape();
 
     auto dim_size = shape_proto.dim_size();
     std::vector<int> shape(dim_size);
     for (int index = 0; index < dim_size; ++index) {
-      shape[index] = shape_proto.dim(index);
+      shape[index] = shape_proto.dim(index).dim_value();
     }
 
-    context.insert(std::make_tuple(inp.name(), shape));
+    context.emplace(inp.name(), shape);
   }
 
-  // BFS the tree, `target` as root, onnx::graph inputs as leaf nodes
-  std::vector<NodeProto*> serial = {target};
+  // BFS the tree, `target` as root, onnx::graph inputs and weights as leaf nodes
+  std::vector<onnx::NodeProto*> serial = {target};
   {
     std::set<std::string> mark_as_appended = {};
     while(true) {
@@ -2632,12 +2629,12 @@ static std::tuple<bool, std::vector<int>> query_shape(
 
           if (weights.find(name) != weights.end()) {
             // if founded in weights, extract shape to context
-            auto weight = weights[name];
+            auto weight = weights.at(name);
             std::vector<int> shape;
-            for (auto index = 0; index < weight.dim_size(); ++index) {
+            for (auto index = 0; index < weight.dims_size(); ++index) {
               shape.emplace_back(weight.dims(index));
             }
-            context.insert(make_tuple(name, shape));
+            context.emplace(name, shape);
             continue;
           }
 
@@ -2649,7 +2646,7 @@ static std::tuple<bool, std::vector<int>> query_shape(
           auto depend_ptr = find_node_by_output_name(mutable_graph, name);
           if (depend_ptr == nullptr) {
             fprintf(stderr, "cannot find %s from graph !\n", name.c_str());
-            return std::make_tuple(false, {});
+            return std::make_tuple(false, std::vector<int>{});
           }
           mark_as_appended.insert(name);
           serial.emplace_back(depend_ptr);
@@ -2667,22 +2664,22 @@ static std::tuple<bool, std::vector<int>> query_shape(
     }
   }
 
-  // for each node in serialization list, calculate the output
+  // for each node in serialization list, calculate the output shape
   {
-    std::reverse(serial.begin, serial.end());
+    std::reverse(serial.begin(), serial.end());
     for (auto node: serial) {
       if (node->op_type() == "Conv") {
         auto inp = context[node->input(0)];
         auto weight = context[node->input(1)];
-        assert(inp.size() == 4 and kernel.size() == 4);
+        assert(inp.size() == 4 and weight.size() == 4);
 
-        int group = get_node_attr_i(node, "group", 1);
+        int group = get_node_attr_i(*node, "group", 1);
         assert(group == 1);
 
 #define EXTRACT_REPEATED_PARAM(NAME, ATTR, DEFAULT) \
   int ATTR = DEFAULT; \
   { \
-    std::vector<int> _vec = get_node_attr_ai(node, NAME); \
+    std::vector<int> _vec = get_node_attr_ai(*node, NAME); \
     if (not _vec.empty()) { \
       ATTR = _vec[0]; \
     } \
@@ -2698,37 +2695,37 @@ static std::tuple<bool, std::vector<int>> query_shape(
         int oc = weight[0];
         int oh = (inp[2] + 2 * pad - weight[2]) / stride + 1;
         int ow = (inp[3] + 2 * pad - weight[3]) / stride + 1;
-        context.insert(std::make_tuple(node->output(0), {on, oc, oh, ow}));
+        context.emplace(node->output(0), std::vector<int>{on, oc, oh, ow});
 
       } else if (node->op_type() == "Shape") {
         auto inp = context[node->input(0)];
-        context.insert(std::make_tuple(node->output(0), {1, inp[1], inp[2], inp[3]}));
+        context.emplace(node->output(0), std::vector<int>{1, inp[1], inp[2], inp[3]});
 
       } else if (node->op_type() == "Slice") {
         assert(node->input_size() > 4);
 
         auto inp = context[node->input(0)];
-        auto start = weights.find(node->input(1)).int64_data(0);
-        auto end = weights.find(node->input(2)).int64_data(0);
-        auto axes = weights.find(node->input(3)).int64_data(0);
+        auto start = weights.at(node->input(1)).int64_data(0);
+        auto end = weights.at(node->input(2)).int64_data(0);
+        auto axes = weights.at(node->input(3)).int64_data(0);
 
         if (axes != 0) {
-          fprintf(stderr, "Not support axes=%d !\n", axes);
-          return std::make_tuple(false, {});
+          fprintf(stderr, "Not support axes=%ld !\n", axes);
+          return std::make_tuple(false, std::vector<int>{});
         }
 
         assert(inp.size() >= end - start);
-        context.insert(std::make_tuple(node->output(0), {inp.begin() + start, inp.begin() + end}));
+        context.emplace(node->output(0), std::vector<int>{inp.begin() + start, inp.begin() + end});
 
       } else if (node->op_type() == "Concat") {
         auto axis = get_node_attr_i(*node, "axis", 0);
         if (axis != 0) {
           fprintf(stderr, "Not support axes=%d !\n", axis);
-          return std::make_tuple(false, {});
+          return std::make_tuple(false, std::vector<int>{});
         }
 
-        auto inp = context[node->input(0)];
-        auto weight = weights.find(node->input(1));
+        std::vector<int> inp = context[node->input(0)];
+        auto weight = weights.at(node->input(1));
         auto len = weight.int64_data_size();
         std::vector<int> w_data(len);
         for (int index = 0; index < len; ++index) {
@@ -2737,11 +2734,11 @@ static std::tuple<bool, std::vector<int>> query_shape(
 
         // concat data
         inp.insert(inp.end(), w_data.begin(), w_data.end());
-        context.insert(std::make_tuple(node->output(0), inp));
+        context.emplace(node->output(0), inp);
 
       } else {
         fprintf(stderr, "Unsupported type %s in query_shape !\n", node->op_type().c_str());
-        return std::make_tuple(false, {});
+        return std::make_tuple(false, std::vector<int>{});
       }
     }
   }
@@ -2754,13 +2751,13 @@ static std::tuple<bool, std::vector<int>> query_shape(
 /**
  * @brief fuse subgraph
  * 
- * conv - - - - - - - - - - - - reshape
+ * conv - - - - - - - - - - - -> reshape
  *     \                        /      
  *       shape - slice - concat
  * 
  * to 
  * 
- * conv -- reshape
+ * conv --> reshape
  * 
  * @param mutable_graph 
  * @param weights 
@@ -2771,12 +2768,11 @@ static std::tuple<bool, std::vector<int>> query_shape(
 static void fuse_conv_reshape(onnx::GraphProto* mutable_graph,
                                     std::map<std::string, onnx::TensorProto>& weights,
                                     std::map<std::string, int>& node_reference,
-                                    std::set<std::string>& blob_names, int& reduced_node_count,
+                                    std::set<std::string>& blob_names, int& reduced_node_count
                                     ) {
 
-  std::map<std::string, std::vector<int>>& shape_context;
-
-  int node_count = mutable_graph->node_size();
+  std::map<std::string, std::vector<int>> shape_context;
+  const int node_count = mutable_graph->node_size();
 
   for (int i = 0; i < node_count; i++) {
     onnx::NodeProto* conv = mutable_graph->mutable_node(i);
@@ -2835,7 +2831,7 @@ static void fuse_conv_reshape(onnx::GraphProto* mutable_graph,
     }
 
     // add reshape attr
-    auto result = query_shape(mutable_graph, concat->name(), shape_context);
+    auto result = query_shape(mutable_graph, concat, weights, shape_context);
     if (!std::get<0>(result)) {
       continue;
     }
@@ -2858,7 +2854,14 @@ static void fuse_conv_reshape(onnx::GraphProto* mutable_graph,
       shape->clear_input();
       reshape->clear_input();
       reshape->set_input(0, conv->output(0));
+
+      shape->set_op_type("noop_reducedncnn");
+      slice->set_op_type("noop_reducedncnn");
+      concat->set_op_type("noop_reducedncnn");
+
+      reduced_node_count += 3;
     }
+    i += 3;
   }
 }
 
@@ -3099,9 +3102,7 @@ int main(int argc, char** argv) {
   fuse_lstm_gru_rnn(mutable_graph, weights, node_reference, blob_names, reduced_node_count);
   fuse_multiheadattention(mutable_graph, weights, node_reference, blob_names, reduced_node_count);
   fuse_binaryop_with_scalar(mutable_graph, weights, node_reference, blob_names, reduced_node_count);
-
-  // shape inference
-  fuse_conv_reshape(mutable_graph, weights, node_reference, blob_names, reduced_node_count, shapes);
+  fuse_conv_reshape(mutable_graph, weights, node_reference, blob_names, reduced_node_count);
 
   // reduce common const weight node_reference
   for (int i = 0; i < node_count; i++) {
