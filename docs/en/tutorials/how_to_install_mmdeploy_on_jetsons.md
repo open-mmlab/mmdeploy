@@ -42,9 +42,21 @@ source ~/.bashrc
 conda --version
 ```
 
-After we installed the Archiconda successfully, we can create the virtual env `mmdeploy` using the command below.
+After we installed the Archiconda successfully, we need to check the tensorrt python package pre-installed by Jetpack by command below.
 ```shell
-conda create -n mmdeploy python=3.6 # must be python 3.6
+sudo find / -name tensorrt
+```
+Then you can see something like those in the terminal, take Jetson Nano as example:
+```shell
+...
+/usr/lib/python3.6/dist-packages/tensorrt
+...
+```
+The `python3.6` is the version we need to use in the conda env later.
+
+We can create the virtual env `mmdeploy` using the command below. The version of python we got from the previous step.
+```shell
+conda create -n mmdeploy python=x.x
 conda activate mmdeploy
 ```
 
