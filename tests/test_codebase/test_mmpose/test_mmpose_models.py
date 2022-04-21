@@ -174,7 +174,6 @@ def get_conditional_channel_weighting_model():
     from mmpose.models.backbones.litehrnet import ConditionalChannelWeighting
 
     class DummyModel(torch.nn.Module):
-        
         def __init__(self):
             super().__init__()
             self.model = ConditionalChannelWeighting([16, 16], 1, 0.5)
@@ -230,7 +229,7 @@ def test_conditional_channel_weighting_forward(backend_type: Backend):
         if isinstance(rewrite_output, torch.Tensor):
             rewrite_output = rewrite_output.detach().cpu().numpy()
         assert np.allclose(
-            model_output, rewrite_output, rtol=1e-03, atol=1e-05)    
+            model_output, rewrite_output, rtol=1e-03, atol=1e-05)
 
 
 @pytest.mark.parametrize('backend_type', [Backend.NCNN])
@@ -304,14 +303,16 @@ def test_cross_resolution_weighting_forward(backend_type: Backend):
                 backend_config=dict(type=backend_type.value, use_vulkan=False),
                 onnx_config=dict(input_shape=None, output_names=['output']),
                 codebase_config=dict(
-                    type=Codebase.MMPOSE.value, task=Task.POSE_DETECTION.value)))
+                    type=Codebase.MMPOSE.value, 
+                    task=Task.POSE_DETECTION.value)))
     else:
         deploy_cfg = mmcv.Config(
             dict(
                 backend_config=dict(type=backend_type.value),
                 onnx_config=dict(input_shape=None, output_names=['output']),
                 codebase_config=dict(
-                    type=Codebase.MMPOSE.value, task=Task.POSE_DETECTION.value)))
+                    type=Codebase.MMPOSE.value, 
+                    task=Task.POSE_DETECTION.value)))
     rewrite_inputs = {'x': imgs}
     model_outputs = model.forward(imgs)
     wrapped_model = WrapModel(model, 'forward')

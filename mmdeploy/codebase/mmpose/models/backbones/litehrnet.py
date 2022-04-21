@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from ast import Return
 import torch
 import torch.nn.functional as F
 
@@ -36,7 +35,7 @@ def cross_resolution_weighting__forward(ctx, self, x):
 def cross_resolution_weighting__forward__ncnn(ctx, self, x):
     """Rewrite ``forward`` for ncnn backend.
 
-    Rewrite this function to support export ``adaptive_avg_pool2d`` 
+    Rewrite this function to support export ``adaptive_avg_pool2d``
     for ncnn. Ncnn has its own implement of adaptive average pooling.
 
     Args:

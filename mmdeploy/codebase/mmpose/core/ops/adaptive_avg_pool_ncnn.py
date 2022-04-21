@@ -30,7 +30,8 @@ class NcnnAdaptiveAvgPoolingOp(torch.autograd.Function):
                 x,
                 output_size):
         """Forward function of dummy onnx AdaptiveAvgPooling op for ncnn."""
-        return torch.rand(x.shape[0], x.shape[1], output_size[0], output_size[1])
+        return torch.rand(x.shape[0], x.shape[1], 
+                          output_size[0], output_size[1])
 
 
 ncnn_adaptive_avg_pool_forward = NcnnAdaptiveAvgPoolingOp.apply
