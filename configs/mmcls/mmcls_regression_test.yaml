@@ -31,6 +31,7 @@ globals:
   sdk:
     sdk_dynamic_fp32: &sdk_dynamic_fp32 configs/mmcls/classification_sdk_dynamic.py
 
+
 onnxruntime:
   pipeline_ort_static_fp32: &pipeline_ort_static_fp32
     convert_image: *convert_image
@@ -41,9 +42,7 @@ onnxruntime:
     convert_image: *convert_image
     backend_test: False
     deploy_config: configs/mmcls/classification_onnxruntime_dynamic.py
-    metric_tolerance:
-      Top 1 Accuracy: 0.02
-      Top 5 Accuracy: 0.09
+
 
 tensorrt:
   pipeline_trt_static_fp32: &pipeline_trt_static_fp32
@@ -66,18 +65,12 @@ tensorrt:
     backend_test: *default_backend_test
     sdk_config: *sdk_dynamic_fp32
     deploy_config: configs/mmcls/classification_tensorrt_dynamic-224x224-224x224.py
-    metric_tolerance:
-      Top 1 Accuracy: 0.02
-      Top 5 Accuracy: 0.09
 
   pipeline_trt_dynamic_fp16: &pipeline_trt_dynamic_fp16
     convert_image: *convert_image
     backend_test: *default_backend_test
     sdk_config: *sdk_dynamic_fp32
     deploy_config: configs/mmcls/classification_tensorrt-fp16_dynamic-224x224-224x224.py
-    metric_tolerance:
-      Top 1 Accuracy: 0.04
-      Top 5 Accuracy: 0.10
 
   pipeline_trt_dynamic_int8: &pipeline_trt_dynamic_int8
     convert_image: *convert_image
@@ -85,15 +78,14 @@ tensorrt:
     backend_test: *default_backend_test
     sdk_config: *sdk_dynamic_fp32
     deploy_config: configs/mmcls/classification_tensorrt-int8_dynamic-224x224-224x224.py
-    metric_tolerance:
-      Top 1 Accuracy: 0.95
-      Top 5 Accuracy: 0.57
+
 
 openvino:
   pipeline_openvino_dynamic_fp32: &pipeline_openvino_dynamic_fp32
     convert_image: *convert_image
     backend_test: False
     deploy_config: configs/mmcls/classification_openvino_dynamic-224x224.py
+
 
 ncnn:
   pipeline_ncnn_static_fp32: &pipeline_ncnn_static_fp32
@@ -106,23 +98,20 @@ ncnn:
     backend_test: False
     deploy_config: configs/mmcls/classification_ncnn_dynamic.py
 
+
 pplnn:
   pipeline_ppl_dynamic_fp32: &pipeline_ppl_dynamic_fp32
     convert_image: *convert_image
     backend_test: False
     deploy_config: configs/mmcls/classification_pplnn_dynamic-224x224.py
-    metric_tolerance:
-      Top 1 Accuracy: 0.04
-      Top 5 Accuracy: 0.09
+
 
 torchscript:
   pipeline_ts_fp32: &pipeline_ts_fp32
     convert_image: *convert_image
     backend_test: False
     deploy_config: configs/mmcls/classification_torchscript.py
-    metric_tolerance:
-      Top 1 Accuracy: 0.00
-      Top 5 Accuracy: 0.00
+
 
 models:
   - name: ResNet
