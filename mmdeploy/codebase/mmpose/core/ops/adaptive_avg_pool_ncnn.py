@@ -15,23 +15,15 @@ class NcnnAdaptiveAvgPoolingOp(torch.autograd.Function):
     """
 
     @staticmethod
-    def symbolic(g,
-                 x,
-                 output_size):
+    def symbolic(g, x, output_size):
         """Symbolic function of dummy onnx AdaptiveAvgPooling op for ncnn."""
-        return g.op(
-            'mmdeploy::adaptive_avg_pool2d',
-            x,
-            output_size,
-            outputs=1)
+        return g.op('mmdeploy::adaptive_avg_pool2d', x, output_size, outputs=1)
 
     @staticmethod
-    def forward(ctx,
-                x,
-                output_size):
+    def forward(ctx, x, output_size):
         """Forward function of dummy onnx AdaptiveAvgPooling op for ncnn."""
-        return torch.rand(x.shape[0], x.shape[1], 
-                          output_size[0], output_size[1])
+        return torch.rand(x.shape[0], x.shape[1], output_size[0],
+                          output_size[1])
 
 
 ncnn_adaptive_avg_pool_forward = NcnnAdaptiveAvgPoolingOp.apply
