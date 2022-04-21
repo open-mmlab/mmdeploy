@@ -34,7 +34,7 @@ Then we can use `nvcc -V` the get the version of cuda we use.
 
 ### Conda
 
-We have to install [Archiconda](https://github.com/Archiconda/build-tools/releases) instead as the Anaconda does not provide the wheel built for jetson. The commands below is an example for installation, you can choose another version of Archiconda by accessing [Archiconda releases page](https://github.com/Archiconda/build-tools/releases).
+We have to install [Archiconda](https://github.com/Archiconda/build-tools/releases) instead as the Anaconda does not provide the wheel built for jetson. The commands below are the example for installation, you can choose another version of Archiconda by accessing [Archiconda releases page](https://github.com/Archiconda/build-tools/releases).
 ```shell
 wget https://github.com/Archiconda/build-tools/releases/download/0.2.3/Archiconda3-0.2.3-Linux-aarch64.sh
 bash Archiconda3-0.2.3-Linux-aarch64.sh
@@ -150,7 +150,7 @@ pip install onnx
 ```
 
 ### Install pplcv
-A high-performance image processing library of openPPL. Now, MMDeploy supports `v0.6.2` and has to use git clone to download it.
+PPL.CV is a high-performance image processing library of OpenPPL. Now, MMDeploy supports `v0.6.2` and has to use git clone to download it.
 ```shell
 git clone https://github.com/openppl-public/ppl.cv.git
 cd ppl.cv
@@ -173,6 +173,13 @@ cd MMDeploy
 git submodule update --init --recursive
 ````
 
+We need the path of TensorRT and cuDNN path for MMDeploy installation.
+- for Jetson Nano:
+```shell
+export TENSORRT_DIR=/usr/src/tensorrt
+export CUDNN_DIR=/etc/alternatives
+```
+
 Build MMDeploy from source:
 ```shell
 mkdir -p build && cd build
@@ -184,8 +191,8 @@ cmake .. \
     -DMMDEPLOY_TARGET_BACKENDS="trt" \
     -DMMDEPLOY_CODEBASES=all \
     -Dpplcv_DIR=${PPLCV_DIR}/cuda-build/install/lib/cmake/ppl \
-    -DTENSORRT_DIR=/usr/src/tensorrt \
-    -DCUDNN_DIR=/etc/alternatives
+    -DTENSORRT_DIR=${TENSORRT_DIR} \
+    -DCUDNN_DIR=${CUDNN_DIR}
 
 make -j$(nproc) && make install
 ```
