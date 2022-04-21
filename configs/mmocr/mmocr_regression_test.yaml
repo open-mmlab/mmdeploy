@@ -183,26 +183,25 @@ models:
     model_configs:
       - configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py
     pipelines:
+      - *pipeline_ts_detection_fp32
       - *pipeline_ort_detection_dynamic_fp32
 #      - *pipeline_trt_detection_dynamic_fp32
       - *pipeline_trt_detection_dynamic_fp16
 #      - *pipeline_trt_detection_dynamic_int8
-      - *pipeline_openvino_detection_dynamic_fp32
       - *pipeline_ncnn_detection_static_fp32
       - *pipeline_pplnn_detection_dynamic_fp32
-      - *pipeline_ts_detection_fp32
+      - *pipeline_openvino_detection_dynamic_fp32
 
   - name: CRNN
     metafile: configs/textrecog/crnn/metafile.yml
     model_configs:
       - configs/textrecog/crnn/crnn_academic_dataset.py
     pipelines:
+      - *pipeline_ts_recognition_fp32
       - *pipeline_ort_recognition_dynamic_fp32
       - *pipeline_trt_recognition_dynamic_fp16
-#      - *pipeline_openvino_recognition_dynamic_fp32
       - *pipeline_ncnn_recognition_static_fp32
       - *pipeline_pplnn_recognition_dynamic_fp32
-      - *pipeline_ts_recognition_fp32
 
   - name: SAR
     metafile: configs/textrecog/sar/metafile.yml

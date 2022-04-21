@@ -114,73 +114,73 @@ models:
     model_configs:
       - configs/fcn/fcn_r50-d8_512x1024_40k_cityscapes.py
     pipelines:
+      - *pipeline_ts_fp32
       - *pipeline_ort_dynamic_fp32
 #      - *pipeline_trt_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
 #      - *pipeline_trt_dynamic_int8
-      - *pipeline_openvino_dynamic_fp32
       - *pipeline_ncnn_static_fp32
       - *pipeline_pplnn_dynamic_fp32
-      - *pipeline_ts_fp32
+      - *pipeline_openvino_dynamic_fp32
 
   - name: PSPNet
     metafile: configs/pspnet/pspnet.yml
     model_configs:
       - configs/pspnet/pspnet_r50-d8_512x1024_80k_cityscapes.py
     pipelines:
+      - *pipeline_ts_fp32
       - *pipeline_ort_static_fp32
       - *pipeline_trt_static_fp16
-      - *pipeline_openvino_static_fp32
       - *pipeline_ncnn_static_fp32
       - *pipeline_pplnn_static_fp32
-      - *pipeline_ts_fp32
+      - *pipeline_openvino_static_fp32
 
   - name: deeplabv3
     metafile: configs/deeplabv3/deeplabv3.yml
     model_configs:
       - configs/deeplabv3/deeplabv3_r50-d8_512x1024_40k_cityscapes.py
     pipelines:
+      - *pipeline_ts_fp32
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
-      - *pipeline_openvino_dynamic_fp32
       - *pipeline_ncnn_static_fp32
       - *pipeline_pplnn_dynamic_fp32
-      - *pipeline_ts_fp32
+      - *pipeline_openvino_dynamic_fp32
 
   - name: deeplabv3+
     metafile: configs/deeplabv3plus/deeplabv3plus.yml
     model_configs:
       - configs/deeplabv3plus/deeplabv3plus_r50-d8_512x1024_40k_cityscapes.py
     pipelines:
+      - *pipeline_ts_fp32
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
-      - *pipeline_openvino_dynamic_fp32
       - *pipeline_ncnn_static_fp32
       - *pipeline_pplnn_dynamic_fp32
-      - *pipeline_ts_fp32
+      - *pipeline_openvino_dynamic_fp32
 
   - name: Fast-SCNN
     metafile: configs/fastscnn/fastscnn.yml
     model_configs:
       - configs/fastscnn/fast_scnn_lr0.12_8x4_160k_cityscapes.py
     pipelines:
+      - *pipeline_ts_fp32
       - *pipeline_ort_static_fp32
       - *pipeline_trt_static_fp16
-      - *pipeline_openvino_static_fp32
       - *pipeline_pplnn_static_fp32
-      - *pipeline_ts_fp32
+      - *pipeline_openvino_static_fp32
 
   - name: UNet
     metafile: configs/unet/unet.yml
     model_configs:
       - configs/unet/fcn_unet_s5-d16_4x4_512x1024_160k_cityscapes.py
     pipelines:
+      - *pipeline_ts_fp32
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
-      - *pipeline_openvino_dynamic_fp32
       - *pipeline_ncnn_static_fp32
       - *pipeline_pplnn_dynamic_fp32
-      - *pipeline_ts_fp32
+      - *pipeline_openvino_dynamic_fp32
 
   - name: ANN
     metafile: configs/ann/ann.yml

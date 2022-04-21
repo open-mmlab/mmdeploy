@@ -128,84 +128,85 @@ models:
     model_configs:
       - configs/yolo/yolov3_d53_320_273e_coco.py
     pipelines:
-#      - *pipeline_ort_dynamic_fp32
+      - *pipeline_ts_fp32
+      - *pipeline_ort_dynamic_fp32
 #      - *pipeline_trt_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
 #      - *pipeline_trt_dynamic_int8
-      - *pipeline_openvino_dynamic_fp32
       - *pipeline_ncnn_static_fp32
 #      - *pipeline_pplnn_dynamic_fp32
-      - *pipeline_ts_fp32
+      - *pipeline_openvino_dynamic_fp32
 
   - name: SSD
     metafile: configs/ssd/metafile.yml
     model_configs:
       - configs/ssd/ssd300_coco.py
     pipelines: # special cases
+      - *pipeline_ts_fp32
       - *pipeline_ort_static_fp32
-#      - *pipeline_trt_static_fp32
       - deploy_config: configs/mmdet/detection/detection_tensorrt-fp16_dynamic-300x300-512x512.py
         convert_image: *convert_image
-#      - *pipeline_trt_static_int8
       - deploy_config: configs/mmdet/detection/single-stage_ncnn_static-300x300.py
         convert_image: *convert_image
-      - *pipeline_ts_fp32
+#      - *pipeline_openvino_static_fp32
 
   - name: RetinaNet
     metafile: configs/retinanet/metafile.yml
     model_configs:
       - configs/retinanet/retinanet_r50_fpn_1x_coco.py
     pipelines:
+      - *pipeline_ts_fp32
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
-      - *pipeline_openvino_dynamic_fp32
       - *pipeline_ncnn_static_fp32
       - *pipeline_pplnn_dynamic_fp32
-      - *pipeline_ts_fp32
+      - *pipeline_openvino_dynamic_fp32
 
   - name: FCOS
     metafile: configs/fcos/metafile.yml
     model_configs:
       - configs/fcos/fcos_r50_caffe_fpn_gn-head_1x_coco.py
     pipelines:
+      - *pipeline_ts_fp32
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
-      - *pipeline_openvino_dynamic_fp32
       - *pipeline_ncnn_static_fp32
-      - *pipeline_ts_fp32
+      - *pipeline_openvino_dynamic_fp32
 
   - name: FSAF
     metafile: configs/fsaf/metafile.yml
     model_configs:
       - configs/fsaf/fsaf_r50_fpn_1x_coco.py
     pipelines:
+      - *pipeline_ts_fp32
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
-      - *pipeline_openvino_dynamic_fp32
       - *pipeline_ncnn_static_fp32
       - *pipeline_pplnn_dynamic_fp32
-      - *pipeline_ts_fp32
+      - *pipeline_openvino_dynamic_fp32
 
   - name: YOLOX
     metafile: configs/yolox/metafile.yml
     model_configs:
       - configs/yolox/yolox_s_8x8_300e_coco.py
     pipelines:
+      - *pipeline_ts_fp32
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
-      - *pipeline_openvino_dynamic_fp32
       - *pipeline_ncnn_static_fp32
-      - *pipeline_ts_fp32
+      - *pipeline_openvino_dynamic_fp32
 
   - name: Faster R-CNN
     metafile: configs/faster_rcnn/metafile.yml
     model_configs:
       - configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py
     pipelines:
+      - *pipeline_ts_fp32
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
+      - *pipeline_ncnn_static_fp32
+      - *pipeline_pplnn_dynamic_fp32
       - *pipeline_openvino_dynamic_fp32
-      - *pipeline_ts_fp32
 
   - name: ATSS
     metafile: configs/atss/metafile.yml
@@ -215,7 +216,6 @@ models:
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
       - *pipeline_openvino_dynamic_fp32
-      - *pipeline_ts_fp32
 
   - name: Cascade R-CNN
     metafile: configs/cascade_rcnn/metafile.yml
@@ -224,9 +224,8 @@ models:
     pipelines:
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
-      - *pipeline_openvino_dynamic_fp32
       - *pipeline_pplnn_dynamic_fp32
-      - *pipeline_ts_fp32
+      - *pipeline_openvino_dynamic_fp32
 
   - name: GFL
     metafile: configs/gfl/metafile.yml
@@ -242,7 +241,7 @@ models:
     model_configs:
       - configs/mask_rcnn/mask_rcnn_r50_fpn_1x_coco.py
     pipelines:
+      - *pipeline_ts_fp32
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
       - *pipeline_openvino_dynamic_fp32
-      - *pipeline_ts_fp32
