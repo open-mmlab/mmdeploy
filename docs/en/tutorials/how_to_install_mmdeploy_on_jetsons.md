@@ -173,7 +173,7 @@ cd MMDeploy
 git submodule update --init --recursive
 ````
 
-We need the path of TensorRT and cuDNN path for MMDeploy installation.
+We need the path of TensorRT and cuDNN for MMDeploy installation.
 - for Jetson Nano:
 ```shell
 export TENSORRT_DIR=/usr/src/tensorrt
