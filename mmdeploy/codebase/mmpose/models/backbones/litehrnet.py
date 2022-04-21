@@ -41,8 +41,7 @@ def cross_resolution_weighting__forward__ncnn(ctx, self, x):
     Args:
         x (list): block input.
     """
-    from mmdeploy.codebase.mmpose.core.ops import \
-        ncnn_adaptive_avg_pool_forward
+    from mmdeploy.python import ncnn_adaptive_avg_pool_forward
 
     mini_size = torch.tensor(x[-1].shape[-2:])
     # Replace torch.nn.functional.adaptive_avg_pool2d to a dummy onnx op,
