@@ -34,7 +34,7 @@ def rotated_anchor_head__get_bbox(ctx,
             (batch_size, num_priors * num_classes, H, W).
         bbox_preds (list[Tensor]): Box energies / deltas for all
             scale levels, each is a 4D-tensor, has shape
-            (batch_size, num_priors * 5, H, W).
+            , 1., num_priors * 5, H, W).
         img_metas (list[dict], Optional): Image meta info. Default None.
         cfg (mmcv.Config, Optional): Test / postprocessing configuration,
             if None, test_cfg would be used.  Default None.
@@ -115,7 +115,7 @@ def rotated_anchor_head__get_bbox(ctx,
     batch_scores = torch.cat(mlvl_valid_scores, dim=1)
     batch_priors = torch.cat(mlvl_valid_priors, dim=1)
     batch_bboxes = self.bbox_coder.decode(
-        batch_priors[0], batch_mlvl_bboxes_pred[0], max_shape=img_shape)
+        batch_priors, batch_mlvl_bboxes_pred, max_shape=img_shape)
 
     if not self.use_sigmoid_cls:
         batch_scores = batch_scores[..., :self.num_classes]
@@ -126,11 +126,13 @@ def rotated_anchor_head__get_bbox(ctx,
     post_params = get_post_processing_params(deploy_cfg)
     iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)
     score_threshold = cfg.get('score_thr', post_params.score_threshold)
+    pre_top_k = post_params.pre_top_k
     keep_top_k = cfg.get('max_per_img', post_params.keep_top_k)
 
     return multiclass_nms_rotated(
         batch_bboxes,
-        batch_scores[0],
+        batch_scores,
         iou_threshold=iou_threshold,
         score_threshold=score_threshold,
+        pre_top_k=pre_top_k,
         keep_top_k=keep_top_k)
