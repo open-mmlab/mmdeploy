@@ -2723,6 +2723,8 @@ static std::tuple<bool, std::vector<int>> query_shape(
         context.emplace(node->output(0), std::vector<int>{inp.begin() + start, inp.begin() + end});
 
       } else if (node->op_type() == "Concat") {
+        assert(node->input_size() >= 2);
+
         auto axis = get_node_attr_i(*node, "axis", 0);
         if (axis != 0) {
           fprintf(stderr, "Not support axes=%d !\n", axis);
@@ -2730,12 +2732,7 @@ static std::tuple<bool, std::vector<int>> query_shape(
         }
 
         std::vector<int> inp = context[node->input(0)];
-        auto weight = weights.at(node->input(1));
-        auto len = weight.int64_data_size();
-        std::vector<int> w_data(len);
-        for (int index = 0; index < len; ++index) {
-          w_data[index] = weight.int64_data(index);
-        }
+        std::vector<int> w_data =  get_node_attr_from_input_ai(weights.at(node->input(1)));
 
         // concat data
         inp.insert(inp.end(), w_data.begin(), w_data.end());
@@ -2748,8 +2745,8 @@ static std::tuple<bool, std::vector<int>> query_shape(
     }
   }
 
-  assert(context.find(target->name()) != context.end());
-  auto target_shape = context[target->name()];
+  assert(context.find(target->output(0)) != context.end());
+  auto target_shape = context[target->output(0)];
   return std::make_tuple(true, target_shape);
 }
 
@@ -2780,10 +2777,10 @@ static void fuse_conv_reshape(onnx::GraphProto* mutable_graph,
   std::map<std::string, std::vector<int>> shape_context;
   const int node_count = mutable_graph->node_size();
 
-  for (int i = 0; i< node_count; ++i) {
-    onnx::NodeProto* node = mutable_graph->mutable_node(i);
-    fprintf(stdout, "node name %s type %s \n", node->name().c_str(), node->op_type().c_str());
-  }
+  // for (int i = 0; i< node_count; ++i) {
+  //   onnx::NodeProto* node = mutable_graph->mutable_node(i);
+  //   fprintf(stdout, "node name %s type %s \n", node->name().c_str(), node->op_type().c_str());
+  // }
   
   for (int i = 0; i < node_count; i++) {
     onnx::NodeProto* conv = mutable_graph->mutable_node(i);
@@ -2861,14 +2858,25 @@ static void fuse_conv_reshape(onnx::GraphProto* mutable_graph,
       node_reference[shape->input(0)] -= 1;
 
       // remove tensor/blob on edge
-      blob_names.erase(shape->output(0));
-      blob_names.erase(slice->output(0));
-      blob_names.erase(concat->output(0));
+      blob_names.erase(slice->input(0));
+      blob_names.erase(slice->input(1));
+      blob_names.erase(slice->input(2));
+      blob_names.erase(slice->input(3));
+      weights.erase(slice->input(1));
+      weights.erase(slice->input(2));
+      weights.erase(slice->input(3));
+
+      blob_names.erase(concat->input(0));
+      blob_names.erase(concat->input(1));
+      weights.erase(concat->input(1));
+
+      blob_names.erase(reshape->input(0));
+
       
       // update edge
       shape->clear_input();
       reshape->clear_input();
-      reshape->set_input(0, conv->output(0));
+      reshape->add_input(conv->output(0));
 
       shape->set_op_type("noop_reducedncnn");
       slice->set_op_type("noop_reducedncnn");
@@ -3536,7 +3544,7 @@ int main(int argc, char** argv) {
     } else if (op == "Gather") {
       fprintf(pp, "%-16s", "Gather");
     } else if (op == "Gelu") {
-      fprintf(pp, "%-16s", "Gelu");
+      fprintf(pp, "%-16s", "GELU");
     }else if (op == "Gemm") {
       float alpha = get_node_attr_f(node, "alpha", 1.f);
       float beta = get_node_attr_f(node, "beta", 1.f);
