@@ -15,13 +15,13 @@ globals:
     Top 1 Accuracy: # named after metafile.Results.Metrics
       eval_name: accuracy # test.py --metrics args
       metric_key: accuracy_top-1 # eval Dict key name
-      tolerance: 0.5
+      tolerance: 1
       task_name: Image Classification # metafile.Results.Task
       dataset: ImageNet-1k # metafile.Results.Dataset
     Top 5 Accuracy:
       eval_name: accuracy
       metric_key: accuracy_top-5
-      tolerance: 0.5
+      tolerance: 1
       task_name: Image Classification
       dataset: ImageNet-1k
   convert_image: &convert_image
