@@ -83,7 +83,7 @@ def test_chunk_ncnn():
     model_output = input.chunk(2, dim=1)
 
     def chunk_caller(input):
-        return  input.chunk(2, dim=1)
+        return input.chunk(2, dim=1)
 
     wrapped_func = WrapFunction(chunk_caller)
     rewrite_output, _ = get_rewrite_outputs(
@@ -94,7 +94,8 @@ def test_chunk_ncnn():
 
     assert len(model_output) == len(rewrite_output)
     for i in range(len(model_output)):
-        assert np.allclose(model_output[i], rewrite_output[i], rtol=1e-03, atol=1e-05)
+        assert np.allclose(
+            model_output[i], rewrite_output[i], rtol=1e-03, atol=1e-05)
 
 
 @backend_checker(Backend.NCNN)
