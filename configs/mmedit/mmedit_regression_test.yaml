@@ -24,13 +24,13 @@ globals:
     test_img: *img_bg
   backend_test: &default_backend_test True
   sdk:
-    sdk_dynamic_fp32: &sdk_dynamic_fp32 configs/mmedit/super-resolution/super-resolution_sdk_dynamic.py
+    sdk_dynamic: &sdk_dynamic configs/mmedit/super-resolution/super-resolution_sdk_dynamic.py
 
 onnxruntime:
   pipeline_ort_static_fp32: &pipeline_ort_static_fp32
     convert_image: *convert_image
     backend_test: *default_backend_test
-    sdk_config: *sdk_dynamic_fp32
+    sdk_config: *sdk_dynamic
     deploy_config: configs/mmedit/super-resolution/super-resolution_onnxruntime_static.py
 
   pipeline_ort_dynamic_fp32: &pipeline_ort_dynamic_fp32
@@ -41,37 +41,37 @@ tensorrt:
   pipeline_trt_static_fp32: &pipeline_trt_static_fp32
     convert_image: *convert_image
     backend_test: *default_backend_test
-    sdk_config: *sdk_dynamic_fp32
+    sdk_config: *sdk_dynamic
     deploy_config: configs/mmedit/super-resolution/super-resolution_tensorrt_static-256x256.py
 
   pipeline_trt_static_fp16: &pipeline_trt_static_fp16
     convert_image: *convert_image
     backend_test: *default_backend_test
-    sdk_config: *sdk_dynamic_fp32
+    sdk_config: *sdk_dynamic
     deploy_config: configs/mmedit/super-resolution/super-resolution_tensorrt-fp16_static-256x256.py
 
   pipeline_trt_static_int8: &pipeline_trt_static_int8
     convert_image: *convert_image
     backend_test: *default_backend_test
-    sdk_config: *sdk_dynamic_fp32
+    sdk_config: *sdk_dynamic
     deploy_config: configs/mmedit/super-resolution/super-resolution_tensorrt-int8_static-256x256.py
 
   pipeline_trt_dynamic_fp32: &pipeline_trt_dynamic_fp32
     convert_image: *convert_image
     backend_test: *default_backend_test
-    sdk_config: *sdk_dynamic_fp32
+    sdk_config: *sdk_dynamic
     deploy_config: configs/mmedit/super-resolution/super-resolution_tensorrt_dynamic-32x32-512x512.py
 
   pipeline_trt_dynamic_fp16: &pipeline_trt_dynamic_fp16
     convert_image: *convert_image
     backend_test: *default_backend_test
-    sdk_config: *sdk_dynamic_fp32
+    sdk_config: *sdk_dynamic
     deploy_config: configs/mmedit/super-resolution/super-resolution_tensorrt-fp16_dynamic-32x32-512x512.py
 
   pipeline_trt_dynamic_int8: &pipeline_trt_dynamic_int8
     convert_image: *convert_image
     backend_test: *default_backend_test
-    sdk_config: *sdk_dynamic_fp32
+    sdk_config: *sdk_dynamic
     deploy_config: configs/mmedit/super-resolution/super-resolution_tensorrt-int8_dynamic-32x32-512x512.py
 
 openvino:

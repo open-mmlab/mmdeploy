@@ -30,13 +30,13 @@ globals:
     test_img: *test_img
   backend_test: &default_backend_test True
   sdk:
-    sdk_dynamic_fp32: &sdk_dynamic_fp32 configs/mmdet/detection/detection_sdk_dynamic.py
+    sdk_dynamic: &sdk_dynamic configs/mmdet/detection/detection_sdk_dynamic.py
 
 onnxruntime:
   pipeline_ort_static_fp32: &pipeline_ort_static_fp32
     convert_image: *convert_image
     backend_test: *default_backend_test
-    sdk_config: *sdk_dynamic_fp32
+    sdk_config: *sdk_dynamic
     deploy_config: configs/mmdet/detection/detection_onnxruntime_static.py
 
   pipeline_ort_dynamic_fp32: &pipeline_ort_dynamic_fp32
@@ -71,25 +71,25 @@ tensorrt:
   pipeline_trt_dynamic_fp32: &pipeline_trt_dynamic_fp32
     convert_image: *convert_image
     backend_test: *default_backend_test
-    sdk_config: *sdk_dynamic_fp32
+    sdk_config: *sdk_dynamic
     deploy_config: configs/mmdet/detection/detection_tensorrt_dynamic-320x320-1344x1344.py
 
   pipeline_trt_dynamic_fp16: &pipeline_trt_dynamic_fp16
     convert_image: *convert_image
     backend_test: *default_backend_test
-    sdk_config: *sdk_dynamic_fp32
+    sdk_config: *sdk_dynamic
     deploy_config: configs/mmdet/detection/detection_tensorrt-fp16_dynamic-320x320-1344x1344.py
 
   pipeline_trt_dynamic_int8: &pipeline_trt_dynamic_int8
     convert_image: *convert_image
     backend_test: *default_backend_test
-    sdk_config: *sdk_dynamic_fp32
+    sdk_config: *sdk_dynamic
     deploy_config: configs/mmdet/detection/detection_tensorrt-int8_dynamic-320x320-1344x1344.py
 
   pipeline_seg_trt_dynamic_fp16: &pipeline_seg_trt_dynamic_fp16
     convert_image: *convert_image
     backend_test: *default_backend_test
-    sdk_config: *sdk_dynamic_fp32
+    sdk_config: *sdk_dynamic
     deploy_config: configs/mmdet/instance-seg/instance-seg_tensorrt-fp16_dynamic-320x320-1344x1344.py
 
 openvino:
