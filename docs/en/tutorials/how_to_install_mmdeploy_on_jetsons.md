@@ -95,7 +95,7 @@ We can't directly use `pip install torchvision` to install torchvision for Jetso
 ```shell
 sudo apt-get install -y libjpeg-dev libpython3-dev libavcodec-dev libavformat-dev libswscale-dev
 ```
-Then just clone and compile the project, MMDeploy using `torchvision=0.9.0`:
+Then just clone and compile the project, MMDeploy is using `torchvision=0.9.0`:
 ```shell
 git clone https://github.com/pytorch/vision.git
 cd vision
