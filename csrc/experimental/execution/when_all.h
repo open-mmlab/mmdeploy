@@ -127,7 +127,8 @@ struct _Sender<Senders...>::type {
                                                                      // type
     return std::apply(
         [&](auto&&... senders) {
-          return operation_t<_copy_cvref_t<Self, std::decay_t<Receiver>>>(
+          // MSVC v142 doesn't recognize operation_t here
+          return Operation<_copy_cvref_t<Self, std::decay_t<Receiver>>, Senders...>(
               (Receiver &&) receiver, (decltype(senders)&&)senders...);
         },
         ((Self &&) self).senders_);
@@ -148,6 +149,6 @@ struct when_all_t {
 using __when_all::when_all_t;
 inline constexpr when_all_t WhenAll{};
 
-}
+}  // namespace mmdeploy
 
 #endif  // MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_WHEN_ALL_H_

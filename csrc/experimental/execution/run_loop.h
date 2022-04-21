@@ -47,7 +47,7 @@ struct _Operation<Receiver>::type final : _Task {
 
 class RunLoop {
   template <typename>
-  friend class __impl::_Operation;
+  friend struct __impl::_Operation;
 
  public:
   class _Scheduler {
