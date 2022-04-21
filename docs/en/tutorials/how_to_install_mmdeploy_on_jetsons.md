@@ -171,13 +171,6 @@ Using git to clone MMDeploy source code.
 git clone -b master https://github.com/open-mmlab/mmdeploy.git MMDeploy
 cd MMDeploy
 git submodule update --init --recursive
-````
-
-We need the path of TensorRT and cuDNN for MMDeploy installation.
-- for Jetson Nano:
-```shell
-export TENSORRT_DIR=/usr/src/tensorrt
-export CUDNN_DIR=/etc/alternatives
 ```
 
 Build MMDeploy from source:
@@ -191,8 +184,8 @@ cmake .. \
     -DMMDEPLOY_TARGET_BACKENDS="trt" \
     -DMMDEPLOY_CODEBASES=all \
     -Dpplcv_DIR=${PPLCV_DIR}/cuda-build/install/lib/cmake/ppl \
-    -DTENSORRT_DIR=${TENSORRT_DIR} \
-    -DCUDNN_DIR=${CUDNN_DIR}
+    -DTENSORRT_DIR=/usr/include/aarch64-linux-gnu \
+    -DCUDNN_DIR=/usr/include/aarch64-linux-gnu
 
 make -j$(nproc) && make install
 ```
