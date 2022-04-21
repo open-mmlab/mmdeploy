@@ -10,13 +10,13 @@ globals:
     PSNR: # named after metafile.Results.Metrics
       eval_name: PSNR # test.py --metrics args
       metric_key: Eval-PSNR # eval log key name
-      tolerance: 1
+      tolerance: 0.4
       task_name: Restorers # metafile.Results.Task
       dataset: DIV2K # metafile.Results.Dataset
     SSIM:
       eval_name: SSIM
       metric_key: Eval-SSIM
-      tolerance: 0.1
+      tolerance: 0.02
       task_name: Restorers
       dataset: DIV2K
   convert_image: &convert_image
@@ -29,6 +29,8 @@ globals:
 onnxruntime:
   pipeline_ort_static_fp32: &pipeline_ort_static_fp32
     convert_image: *convert_image
+    backend_test: *default_backend_test
+    sdk_config: *sdk_dynamic_fp32
     deploy_config: configs/mmedit/super-resolution/super-resolution_onnxruntime_static.py
 
   pipeline_ort_dynamic_fp32: &pipeline_ort_dynamic_fp32
@@ -75,7 +77,7 @@ tensorrt:
 openvino:
   pipeline_openvino_dynamic_fp32: &pipeline_openvino_dynamic_fp32
     convert_image: *convert_image
-    backend_test: *default_backend_test
+    backend_test: False
     deploy_config: configs/mmedit/super-resolution/super-resolution_openvino_dynamic-256x256.py
 
 ncnn:
@@ -97,14 +99,65 @@ torchscript:
     deploy_config: configs/mmedit/super-resolution/super-resolution_torchscript.py
 
 models:
-  - name: srcnn
+  - name: SRCNN
     metafile: configs/restorers/srcnn/metafile.yml
     model_configs:
       - configs/restorers/srcnn/srcnn_x4k915_g1_1000k_div2k.py
+    pipelines:
+      - *pipeline_ort_dynamic_fp32
+#      - *pipeline_trt_dynamic_fp32
+      - *pipeline_trt_dynamic_fp16
+#      - *pipeline_trt_dynamic_int8
+      - *pipeline_openvino_dynamic_fp32
+      - *pipeline_ncnn_dynamic_fp32
+      - *pipeline_pplnn_dynamic_fp32
+      - *pipeline_ts_fp32
+
+  - name: ESRGAN
+    metafile: configs/restorers/esrgan/metafile.yml
+    model_configs:
+      - configs/restorers/esrgan/esrgan_x4c64b23g32_g1_400k_div2k.py
+      - configs/restorers/esrgan/esrgan_psnr_x4c64b23g32_g1_1000k_div2k.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
       - *pipeline_openvino_dynamic_fp32
       - *pipeline_ncnn_dynamic_fp32
       - *pipeline_pplnn_dynamic_fp32
+      - *pipeline_ts_fp32
+
+  - name: SRGAN
+    metafile: configs/restorers/srresnet_srgan/metafile.yml
+    model_configs:
+      - configs/restorers/srresnet_srgan/srgan_x4c64b16_g1_1000k_div2k.py
+      - configs/restorers/srresnet_srgan/msrresnet_x4c64b16_g1_1000k_div2k.py
+    pipelines:
+      - *pipeline_ort_dynamic_fp32
+      - *pipeline_trt_dynamic_fp16
+      - *pipeline_openvino_dynamic_fp32
+      - *pipeline_ncnn_dynamic_fp32
+      - *pipeline_pplnn_dynamic_fp32
+      - *pipeline_ts_fp32
+
+  - name: Real-ESRNet
+    metafile: configs/restorers/real_esrgan/metafile.yml
+    model_configs:
+      - configs/restorers/real_esrgan/realesrnet_c64b23g32_12x4_lr2e-4_1000k_df2k_ost.py
+    pipelines:
+      - *pipeline_ort_dynamic_fp32
+      - *pipeline_trt_dynamic_fp16
+      - *pipeline_openvino_dynamic_fp32
+      - *pipeline_ncnn_dynamic_fp32
+      - *pipeline_pplnn_dynamic_fp32
+      - *pipeline_ts_fp32
+
+  - name: EDSR
+    metafile: configs/restorers/edsr/metafile.yml
+    model_configs:
+      - configs/restorers/edsr/edsr_x4c64b16_g1_300k_div2k.py
+    pipelines:
+      - *pipeline_ort_dynamic_fp32
+      - *pipeline_trt_dynamic_fp16
+      - *pipeline_openvino_dynamic_fp32
+      - *pipeline_ncnn_dynamic_fp32
       - *pipeline_ts_fp32

@@ -95,7 +95,7 @@ tensorrt:
 openvino:
   pipeline_openvino_dynamic_fp32: &pipeline_openvino_dynamic_fp32
     convert_image: *convert_image
-    backend_test: *default_backend_test
+    backend_test: False
     deploy_config: configs/mmdet/detection/detection_openvino_dynamic-800x1344.py
 
 ncnn:
