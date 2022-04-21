@@ -208,6 +208,7 @@ Result<unique_ptr<Pipeline>> PipelineParser::Parse(const Value& config) {
 
   } catch (const std::exception& e) {
     MMDEPLOY_ERROR("error parsing config: {}", e.what());
+    return Status(eFail);
   }
 }
 

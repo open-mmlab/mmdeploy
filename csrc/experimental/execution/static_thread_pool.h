@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "execution.h"
+#include "intrusive_queue.h"
 
 namespace mmdeploy {
 
