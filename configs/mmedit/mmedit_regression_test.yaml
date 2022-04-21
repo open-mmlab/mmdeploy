@@ -85,7 +85,7 @@ ncnn:
     deploy_config: configs/mmedit/super-resolution/super-resolution_ncnn_dynamic.py
 
 pplnn:
-  pipeline_ppl_dynamic_fp32: &pipeline_ppl_dynamic_fp32
+  pipeline_pplnn_dynamic_fp32: &pipeline_pplnn_dynamic_fp32
     convert_image: *convert_image
     backend_test: False
     deploy_config: configs/mmedit/super-resolution/super-resolution_pplnn_dynamic-32x32.py
@@ -106,5 +106,5 @@ models:
       - *pipeline_trt_dynamic_fp16
       - *pipeline_openvino_dynamic_fp32
       - *pipeline_ncnn_dynamic_fp32
-      - *pipeline_ppl_dynamic_fp32
+      - *pipeline_pplnn_dynamic_fp32
       - *pipeline_ts_fp32

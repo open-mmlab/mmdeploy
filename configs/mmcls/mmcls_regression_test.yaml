@@ -36,6 +36,7 @@ onnxruntime:
   pipeline_ort_static_fp32: &pipeline_ort_static_fp32
     convert_image: *convert_image
     backend_test: *default_backend_test
+    sdk_config: *sdk_dynamic_fp32
     deploy_config: configs/mmcls/classification_onnxruntime_static.py
 
   pipeline_ort_dynamic_fp32: &pipeline_ort_dynamic_fp32
@@ -100,7 +101,7 @@ ncnn:
 
 
 pplnn:
-  pipeline_ppl_dynamic_fp32: &pipeline_ppl_dynamic_fp32
+  pipeline_pplnn_dynamic_fp32: &pipeline_pplnn_dynamic_fp32
     convert_image: *convert_image
     backend_test: False
     deploy_config: configs/mmcls/classification_pplnn_dynamic-224x224.py
@@ -125,7 +126,7 @@ models:
 #      - *pipeline_trt_dynamic_int8
       - *pipeline_openvino_dynamic_fp32
       - *pipeline_ncnn_static_fp32
-      - *pipeline_ppl_dynamic_fp32
+      - *pipeline_pplnn_dynamic_fp32
       - *pipeline_ts_fp32
 
   - name: ResNeXt
@@ -137,7 +138,7 @@ models:
       - *pipeline_trt_dynamic_fp16
       - *pipeline_openvino_dynamic_fp32
       - *pipeline_ncnn_static_fp32
-      - *pipeline_ppl_dynamic_fp32
+      - *pipeline_pplnn_dynamic_fp32
       - *pipeline_ts_fp32
 
   - name: SE-ResNet
@@ -149,7 +150,7 @@ models:
       - *pipeline_trt_dynamic_fp16
       - *pipeline_openvino_dynamic_fp32
       - *pipeline_ncnn_static_fp32
-      - *pipeline_ppl_dynamic_fp32
+      - *pipeline_pplnn_dynamic_fp32
       - *pipeline_ts_fp32
 
   - name: MobileNetV2
@@ -161,7 +162,7 @@ models:
       - *pipeline_trt_dynamic_fp16
       - *pipeline_openvino_dynamic_fp32
       - *pipeline_ncnn_static_fp32
-      - *pipeline_ppl_dynamic_fp32
+      - *pipeline_pplnn_dynamic_fp32
       - *pipeline_ts_fp32
 
 #  - name: ShuffleNetV1 # TODO Convert fail
@@ -173,7 +174,7 @@ models:
 #      - *pipeline_trt_dynamic_fp16
 #      - *pipeline_openvino_dynamic_fp32
 #      - *pipeline_ncnn_static_fp32
-#      - *pipeline_ppl_dynamic_fp32
+#      - *pipeline_pplnn_dynamic_fp32
 #      - *pipeline_ts_fp32
 #
 #  - name: ShuffleNetV2 # TODO Convert fail
@@ -185,5 +186,5 @@ models:
 #      - *pipeline_trt_dynamic_fp16
 #      - *pipeline_openvino_dynamic_fp32
 #      - *pipeline_ncnn_static_fp32
-#      - *pipeline_ppl_dynamic_fp32
+#      - *pipeline_pplnn_dynamic_fp32
 #      - *pipeline_ts_fp32

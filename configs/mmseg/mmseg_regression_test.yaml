@@ -89,7 +89,7 @@ ncnn:
     deploy_config: configs/mmseg/segmentation_ncnn_static-512x512.py
 
 pplnn:
-  pipeline_ppl_dynamic_fp32: &pipeline_ppl_dynamic_fp32
+  pipeline_pplnn_dynamic_fp32: &pipeline_pplnn_dynamic_fp32
     convert_image: *convert_image
     backend_test: False
     deploy_config: configs/mmseg/segmentation_pplnn_dynamic-1024x2048.py
@@ -116,5 +116,5 @@ models:
       - *pipeline_trt_dynamic_fp16
       - *pipeline_openvino_dynamic_fp32
       - *pipeline_ncnn_static_fp32
-      - *pipeline_ppl_dynamic_fp32
+      - *pipeline_pplnn_dynamic_fp32
       - *pipeline_ts_fp32
