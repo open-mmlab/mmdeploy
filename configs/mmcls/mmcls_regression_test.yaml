@@ -120,9 +120,9 @@ models:
       - configs/resnet/resnet18_8xb32_in1k.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
-      - *pipeline_trt_dynamic_fp32
+#      - *pipeline_trt_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
-      - *pipeline_trt_dynamic_int8
+#      - *pipeline_trt_dynamic_int8
       - *pipeline_openvino_dynamic_fp32
       - *pipeline_ncnn_static_fp32
       - *pipeline_ppl_dynamic_fp32
@@ -134,9 +134,7 @@ models:
       - configs/resnext/resnext50-32x4d_8xb32_in1k.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
-      - *pipeline_trt_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
-      - *pipeline_trt_dynamic_int8
       - *pipeline_openvino_dynamic_fp32
       - *pipeline_ncnn_static_fp32
       - *pipeline_ppl_dynamic_fp32
@@ -148,9 +146,7 @@ models:
       - configs/seresnet/seresnet50_8xb32_in1k.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
-      - *pipeline_trt_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
-      - *pipeline_trt_dynamic_int8
       - *pipeline_openvino_dynamic_fp32
       - *pipeline_ncnn_static_fp32
       - *pipeline_ppl_dynamic_fp32
@@ -162,9 +158,7 @@ models:
       - configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
-      - *pipeline_trt_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
-      - *pipeline_trt_dynamic_int8
       - *pipeline_openvino_dynamic_fp32
       - *pipeline_ncnn_static_fp32
       - *pipeline_ppl_dynamic_fp32
@@ -176,9 +170,7 @@ models:
 #      - configs/shufflenet_v1/shufflenet-v1-1x_16xb64_in1k.py
 #    pipelines:
 #      - *pipeline_ort_dynamic_fp32
-#      - *pipeline_trt_dynamic_fp32
 #      - *pipeline_trt_dynamic_fp16
-#      - *pipeline_trt_dynamic_int8
 #      - *pipeline_openvino_dynamic_fp32
 #      - *pipeline_ncnn_static_fp32
 #      - *pipeline_ppl_dynamic_fp32
@@ -190,9 +182,7 @@ models:
 #      - configs/shufflenet_v2/shufflenet-v2-1x_16xb64_in1k.py
 #    pipelines:
 #      - *pipeline_ort_dynamic_fp32
-#      - *pipeline_trt_dynamic_fp32
 #      - *pipeline_trt_dynamic_fp16
-#      - *pipeline_trt_dynamic_int8
 #      - *pipeline_openvino_dynamic_fp32
 #      - *pipeline_ncnn_static_fp32
 #      - *pipeline_ppl_dynamic_fp32
