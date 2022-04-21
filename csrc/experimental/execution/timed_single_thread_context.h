@@ -60,7 +60,8 @@ class Scheduler {
   }
 
   template <class Duration = std::chrono::microseconds>
-  friend auto mmdeploySchedule(const Scheduler& self) noexcept -> __schedule_after::_Sender<Duration> {
+  friend auto mmdeploySchedule(const Scheduler& self) noexcept
+      -> __schedule_after::_Sender<Duration> {
     return {self.context_, Duration::zero()};
   }
 };

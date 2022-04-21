@@ -2,8 +2,8 @@
 
 #include "inlined_scheduler.h"
 #include "pipeline2.h"
+#include "single_thread_context.h"
 #include "static_thread_pool.h"
-#include "timed_single_thread_context.h"
 
 namespace mmdeploy {
 
@@ -38,7 +38,7 @@ class SingleThreadSchedCreator : public Creator<Scheduler> {
   const char *GetName() const override { return "SingleThread"; }
   int GetVersion() const override { return 0; }
   ReturnType Create(const Value &) override {
-    return CreateFromContext(std::make_unique<TimedSingleThreadContext>());
+    return CreateFromContext(std::make_unique<SingleThreadContext>());
   }
 };
 

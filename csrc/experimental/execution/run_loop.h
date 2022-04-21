@@ -46,7 +46,7 @@ struct _Operation<Receiver>::type final : _Task {
 }  // namespace __impl
 
 class RunLoop {
-  template <class>
+  template <typename>
   friend class __impl::_Operation;
 
  public:
@@ -54,12 +54,14 @@ class RunLoop {
     class _ScheduleTask {
       friend _Scheduler;
       template <typename Receiver>
-      friend auto Connect(const _ScheduleTask& self, Receiver&& receiver)
-          -> __impl::Operation<Receiver> {
-        return {(Receiver &&) receiver, self.loop_};
+      friend __impl::Operation<Receiver> Connect(const _ScheduleTask& self, Receiver&& receiver) {
+        return __impl::Operation<Receiver>{(Receiver &&) receiver, self.loop_};
       }
       explicit _ScheduleTask(RunLoop* loop) noexcept : loop_(loop) {}
       RunLoop* const loop_;
+
+     public:
+      using value_type = std::tuple<>;
     };
     friend RunLoop;
     explicit _Scheduler(RunLoop* loop) noexcept : loop_(loop) {}
