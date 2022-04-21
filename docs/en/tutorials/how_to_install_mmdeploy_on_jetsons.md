@@ -144,9 +144,9 @@ cmake --version
 sudo apt-get install libspdlog-dev
 ```
 
-### Install onnxruntime
+### Install onnx
 ```shell
-pip install onnxruntime==1.8.1
+pip install onnx
 ```
 
 ### Install pplcv
