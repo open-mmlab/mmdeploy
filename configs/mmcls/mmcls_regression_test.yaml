@@ -34,11 +34,16 @@ globals:
 onnxruntime:
   pipeline_ort_static_fp32: &pipeline_ort_static_fp32
     convert_image: *convert_image
+    backend_test: *default_backend_test
     deploy_config: configs/mmcls/classification_onnxruntime_static.py
 
   pipeline_ort_dynamic_fp32: &pipeline_ort_dynamic_fp32
     convert_image: *convert_image
+    backend_test: False
     deploy_config: configs/mmcls/classification_onnxruntime_dynamic.py
+    metric_tolerance:
+      Top 1 Accuracy: 0.02
+      Top 5 Accuracy: 0.09
 
 tensorrt:
   pipeline_trt_static_fp32: &pipeline_trt_static_fp32
@@ -61,6 +66,9 @@ tensorrt:
     backend_test: *default_backend_test
     sdk_config: *sdk_dynamic_fp32
     deploy_config: configs/mmcls/classification_tensorrt_dynamic-224x224-224x224.py
+    metric_tolerance:
+      Top 1 Accuracy: 0.02
+      Top 5 Accuracy: 0.09
 
   pipeline_trt_dynamic_fp16: &pipeline_trt_dynamic_fp16
     convert_image: *convert_image
@@ -68,8 +76,8 @@ tensorrt:
     sdk_config: *sdk_dynamic_fp32
     deploy_config: configs/mmcls/classification_tensorrt-fp16_dynamic-224x224-224x224.py
     metric_tolerance:
-      Top 1 Accuracy: 1
-      Top 5 Accuracy: 1
+      Top 1 Accuracy: 0.04
+      Top 5 Accuracy: 0.10
 
   pipeline_trt_dynamic_int8: &pipeline_trt_dynamic_int8
     convert_image: *convert_image
@@ -77,6 +85,9 @@ tensorrt:
     backend_test: *default_backend_test
     sdk_config: *sdk_dynamic_fp32
     deploy_config: configs/mmcls/classification_tensorrt-int8_dynamic-224x224-224x224.py
+    metric_tolerance:
+      Top 1 Accuracy: 0.95
+      Top 5 Accuracy: 0.57
 
 openvino:
   pipeline_openvino_dynamic_fp32: &pipeline_openvino_dynamic_fp32
@@ -100,21 +111,29 @@ pplnn:
     convert_image: *convert_image
     backend_test: False
     deploy_config: configs/mmcls/classification_pplnn_dynamic-224x224.py
+    metric_tolerance:
+      Top 1 Accuracy: 0.04
+      Top 5 Accuracy: 0.09
 
 torchscript:
   pipeline_ts_fp32: &pipeline_ts_fp32
     convert_image: *convert_image
     backend_test: False
     deploy_config: configs/mmcls/classification_torchscript.py
+    metric_tolerance:
+      Top 1 Accuracy: 0.00
+      Top 5 Accuracy: 0.00
 
 models:
   - name: ResNet
     metafile: configs/resnet/metafile.yml
     model_configs:
-      - configs/resnet/resnet18_b32x8_imagenet.py
+      - configs/resnet/resnet18_8xb32_in1k.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
+      - *pipeline_trt_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
+      - *pipeline_trt_dynamic_int8
       - *pipeline_openvino_dynamic_fp32
       - *pipeline_ncnn_static_fp32
       - *pipeline_ppl_dynamic_fp32
@@ -123,10 +142,12 @@ models:
   - name: ResNeXt
     metafile: configs/resnext/metafile.yml
     model_configs:
-      - configs/resnext/resnext50_32x4d_b32x8_imagenet.py
+      - configs/resnext/resnext50-32x4d_8xb32_in1k.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
+      - *pipeline_trt_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
+      - *pipeline_trt_dynamic_int8
       - *pipeline_openvino_dynamic_fp32
       - *pipeline_ncnn_static_fp32
       - *pipeline_ppl_dynamic_fp32
@@ -135,10 +156,12 @@ models:
   - name: SE-ResNet
     metafile: configs/seresnet/metafile.yml
     model_configs:
-      - configs/seresnet/seresnet50_b32x8_imagenet.py
+      - configs/seresnet/seresnet50_8xb32_in1k.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
+      - *pipeline_trt_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
+      - *pipeline_trt_dynamic_int8
       - *pipeline_openvino_dynamic_fp32
       - *pipeline_ncnn_static_fp32
       - *pipeline_ppl_dynamic_fp32
@@ -150,32 +173,38 @@ models:
       - configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
+      - *pipeline_trt_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
+      - *pipeline_trt_dynamic_int8
       - *pipeline_openvino_dynamic_fp32
       - *pipeline_ncnn_static_fp32
       - *pipeline_ppl_dynamic_fp32
       - *pipeline_ts_fp32
 
-  - name: ShuffleNetV1
-    metafile: configs/shufflenet_v1/metafile.yml
-    model_configs:
-      - configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py
-    pipelines:
-      - *pipeline_ort_dynamic_fp32
-      - *pipeline_trt_dynamic_fp16
-      - *pipeline_openvino_dynamic_fp32
-      - *pipeline_ncnn_static_fp32
-      - *pipeline_ppl_dynamic_fp32
-      - *pipeline_ts_fp32
-
-  - name: ShuffleNetV2
-    metafile: configs/shufflenet_v2/metafile.yml
-    model_configs:
-      - configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py
-    pipelines:
-      - *pipeline_ort_dynamic_fp32
-      - *pipeline_trt_dynamic_fp16
-      - *pipeline_openvino_dynamic_fp32
-      - *pipeline_ncnn_static_fp32
-      - *pipeline_ppl_dynamic_fp32
-      - *pipeline_ts_fp32
+#  - name: ShuffleNetV1
+#    metafile: configs/shufflenet_v1/metafile.yml
+#    model_configs:
+#      - configs/shufflenet_v1/shufflenet-v1-1x_16xb64_in1k.py
+#    pipelines:
+#      - *pipeline_ort_dynamic_fp32
+#      - *pipeline_trt_dynamic_fp32
+#      - *pipeline_trt_dynamic_fp16
+#      - *pipeline_trt_dynamic_int8
+#      - *pipeline_openvino_dynamic_fp32
+#      - *pipeline_ncnn_static_fp32
+#      - *pipeline_ppl_dynamic_fp32
+#      - *pipeline_ts_fp32
+#
+#  - name: ShuffleNetV2
+#    metafile: configs/shufflenet_v2/metafile.yml
+#    model_configs:
+#      - configs/shufflenet_v2/shufflenet-v2-1x_16xb64_in1k.py
+#    pipelines:
+#      - *pipeline_ort_dynamic_fp32
+#      - *pipeline_trt_dynamic_fp32
+#      - *pipeline_trt_dynamic_fp16
+#      - *pipeline_trt_dynamic_int8
+#      - *pipeline_openvino_dynamic_fp32
+#      - *pipeline_ncnn_static_fp32
+#      - *pipeline_ppl_dynamic_fp32
+#      - *pipeline_ts_fp32
