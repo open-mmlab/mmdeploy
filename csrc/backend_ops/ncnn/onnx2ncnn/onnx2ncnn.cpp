@@ -148,8 +148,9 @@ static onnx::TensorProto get_node_attr_tensor(const onnx::NodeProto& node, const
   return onnx::TensorProto();
 }
 
-static float get_node_attr_from_input_f(const onnx::TensorProto& tp) {
-  float v = 0.f;
+template<typename T>
+static T get_node_attr_from_input(const onnx::TensorProto& tp) {
+  T v = 0.f;
 
   // float
   if (tp.data_type() == 1) {
@@ -194,7 +195,7 @@ static float get_node_attr_from_input_f(const onnx::TensorProto& tp) {
   } else {
     // fprintf(stderr, "tp.name: %s\n", tp.name().c_str());
     fprintf(stderr, "Unknown data type %d\n", tp.data_type());
-    fprintf(stderr, "get_node_attr_from_input_f\n");
+    fprintf(stderr, "get_node_attr_from_input\n");
     abort();
   }
 
@@ -691,7 +692,7 @@ static void fuse_hardswish(onnx::GraphProto* mutable_graph,
       const onnx::TensorProto& add_three = weights[node->input(1)];
       if (add_three.dims_size() != 0 || get_tensor_proto_data_size(add_three) != 1) continue;
 
-      float constant_add_three = get_node_attr_from_input_f(add_three);
+      float constant_add_three = get_node_attr_from_input<float>(add_three);
       if (constant_add_three != 3.f) continue;
 
       onnx::NodeProto* node2 = mutable_graph->mutable_node(i + 1);
@@ -719,8 +720,8 @@ static void fuse_hardswish(onnx::GraphProto* mutable_graph,
         const onnx::TensorProto& min_tp = weights[node2->input(1)];
         const onnx::TensorProto& max_tp = weights[node2->input(2)];
 
-        relu6_min = get_node_attr_from_input_f(min_tp);
-        relu6_max = get_node_attr_from_input_f(max_tp);
+        relu6_min = get_node_attr_from_input<float>(min_tp);
+        relu6_max = get_node_attr_from_input<float>(max_tp);
       }
       if (relu6_min != 0.f || relu6_max != 6.f) continue;
 
@@ -733,7 +734,7 @@ static void fuse_hardswish(onnx::GraphProto* mutable_graph,
       const onnx::TensorProto& div_six = weights[node4->input(1)];
       if (div_six.dims_size() != 0 || get_tensor_proto_data_size(div_six) != 1) continue;
 
-      float constant_div_six = get_node_attr_from_input_f(div_six);
+      float constant_div_six = get_node_attr_from_input<float>(div_six);
       if (node4->op_type() == "Div" && constant_div_six != 6.f) continue;
       if (node4->op_type() == "Mul" && constant_div_six != 1 / 6.f) continue;
 
@@ -842,7 +843,7 @@ static void fuse_hardsigmoid(onnx::GraphProto* mutable_graph,
       const onnx::TensorProto& add_three = weights[node->input(1)];
       if (add_three.dims_size() != 0 || get_tensor_proto_data_size(add_three) != 1) continue;
 
-      float constant_add_three = get_node_attr_from_input_f(add_three);
+      float constant_add_three = get_node_attr_from_input<float>(add_three);
       if (constant_add_three != 3.f) continue;
 
       onnx::NodeProto* node2 = mutable_graph->mutable_node(i + 1);
@@ -868,8 +869,8 @@ static void fuse_hardsigmoid(onnx::GraphProto* mutable_graph,
         const onnx::TensorProto& min_tp = weights[node2->input(1)];
         const onnx::TensorProto& max_tp = weights[node2->input(2)];
 
-        relu6_min = get_node_attr_from_input_f(min_tp);
-        relu6_max = get_node_attr_from_input_f(max_tp);
+        relu6_min = get_node_attr_from_input<float>(min_tp);
+        relu6_max = get_node_attr_from_input<float>(max_tp);
       }
       if (relu6_min != 0.f || relu6_max != 6.f) continue;
 
@@ -878,7 +879,7 @@ static void fuse_hardsigmoid(onnx::GraphProto* mutable_graph,
       const onnx::TensorProto& div_six = weights[node3->input(1)];
       if (div_six.dims_size() != 0 || get_tensor_proto_data_size(div_six) != 1) continue;
 
-      float constant_div_six = get_node_attr_from_input_f(div_six);
+      float constant_div_six = get_node_attr_from_input<float>(div_six);
       if (node3->op_type() == "Div" && constant_div_six != 6.f) continue;
       if (node3->op_type() == "Mul" && constant_div_six != 1 / 6.f) continue;
 
@@ -1101,7 +1102,7 @@ static void fuse_normalize(onnx::GraphProto* mutable_graph,
       } else {
         const onnx::TensorProto& min_tp = weights[node2->input(1)];
 
-        clip_min = get_node_attr_from_input_f(min_tp);
+        clip_min = get_node_attr_from_input<float>(min_tp);
       }
 
       // reduce
@@ -1354,7 +1355,7 @@ static void fuse_layernorm(onnx::GraphProto* mutable_graph,
       const onnx::TensorProto& pow_two = weights[node3->input(1)];
       if (pow_two.dims_size() != 0 || get_tensor_proto_data_size(pow_two) != 1) continue;
 
-      float constant_pow_two = get_node_attr_from_input_f(pow_two);
+      float constant_pow_two = get_node_attr_from_input<float>(pow_two);
       if (constant_pow_two != 2.f) continue;
 
       std::vector<int> axes4 = get_node_attr_ai(*node4, "axes");
@@ -1371,7 +1372,7 @@ static void fuse_layernorm(onnx::GraphProto* mutable_graph,
       const onnx::TensorProto& add_eps = weights[node5->input(1)];
       if (add_eps.dims_size() != 0 || get_tensor_proto_data_size(add_eps) != 1) continue;
 
-      float eps = get_node_attr_from_input_f(add_eps);
+      float eps = get_node_attr_from_input<float>(add_eps);
 
       int affine = 0;
       while (i + 8 < node_count) {
@@ -2565,16 +2566,20 @@ static void fuse_multiheadattention(onnx::GraphProto* mutable_graph,
  * @return onnx::NodeProto* 
  */
 static onnx::NodeProto* find_node_by_output_name(onnx::GraphProto* mutable_graph, const std::string& name) {
-  const int input_count = mutable_graph->input_size();
-
+  const int input_count = mutable_graph->node_size();
+  // fprintf(stdout, "outputname: %s\n", name.c_str());
   for (int i = 0; i < input_count; ++i) {
     onnx::NodeProto* node = mutable_graph->mutable_node(i);
+    // fprintf(stdout, "%s %d: ",node->name().c_str(), node->output_size());
+
     for (int j = 0; j < node->output_size(); ++j) {
       auto output = node->output(j);
+      // fprintf(stdout, "%s, ", output.c_str());
       if (output == name) {
         return node;
       }
     }
+    // fprintf(stdout, "\n");
   }
 
   return nullptr;
@@ -2702,15 +2707,15 @@ static std::tuple<bool, std::vector<int>> query_shape(
         context.emplace(node->output(0), std::vector<int>{1, inp[1], inp[2], inp[3]});
 
       } else if (node->op_type() == "Slice") {
-        assert(node->input_size() > 4);
+        assert(node->input_size() >= 4);
 
         auto inp = context[node->input(0)];
-        auto start = weights.at(node->input(1)).int64_data(0);
-        auto end = weights.at(node->input(2)).int64_data(0);
-        auto axes = weights.at(node->input(3)).int64_data(0);
+        int start = get_node_attr_from_input<int>(weights.at(node->input(1)));
+        int end = get_node_attr_from_input<int>(weights.at(node->input(2)));
+        int axes = get_node_attr_from_input<int>(weights.at(node->input(3)));
 
         if (axes != 0) {
-          fprintf(stderr, "Not support axes=%ld !\n", axes);
+          fprintf(stderr, "Not support axes=%d !\n", axes);
           return std::make_tuple(false, std::vector<int>{});
         }
 
@@ -2771,9 +2776,15 @@ static void fuse_conv_reshape(onnx::GraphProto* mutable_graph,
                                     std::set<std::string>& blob_names, int& reduced_node_count
                                     ) {
 
+
   std::map<std::string, std::vector<int>> shape_context;
   const int node_count = mutable_graph->node_size();
 
+  for (int i = 0; i< node_count; ++i) {
+    onnx::NodeProto* node = mutable_graph->mutable_node(i);
+    fprintf(stdout, "node name %s type %s \n", node->name().c_str(), node->op_type().c_str());
+  }
+  
   for (int i = 0; i < node_count; i++) {
     onnx::NodeProto* conv = mutable_graph->mutable_node(i);
 
@@ -2785,38 +2796,42 @@ static void fuse_conv_reshape(onnx::GraphProto* mutable_graph,
       continue;
     }
 
-    // fetch matched node pointers
     onnx::NodeProto* shape, *slice, *concat, *reshape;
-    std::vector<onnx::NodeProto*> tails(4);
-    for (size_t offset = 0; offset < tails.size(); ++offset) {
-      tails[i] = mutable_graph->mutable_node(i + offset + 1);
+
+    // match [Shape ... Slice, Concat ... Reshape] from near sequence, skip useless Constant
+    std::vector<std::tuple<std::string, onnx::NodeProto**>> candidates = {
+      {"Shape", &shape},
+      {"Slice", &slice},
+      {"Concat", &concat},
+      {"Reshape", &reshape}
+    };
+
+    int MAX = std::min(10, node_count - i);
+    int pos_candidate = 0;
+
+    for (int j = 0; j < MAX; ++j) {
+      auto node_ptr = mutable_graph->mutable_node(j + i + 1);
+      if (node_ptr->op_type() == "Constant") {
+        continue;
+      }
+      if (node_ptr->op_type() == std::get<0>(candidates[pos_candidate])) {
+        *(std::get<1>(candidates[pos_candidate])) = node_ptr;
+        pos_candidate ++;
+      }
     }
 
-    if (tails[0]->op_type() == "Shape") {
-      shape = tails[0];
-      slice = tails[1];
-      concat = tails[2];
-      reshape = tails[3];
-    } else if(tails[0]->op_type() == "Reshape") {
-      reshape = tails[0];
-      shape = tails[1];
-      slice = tails[2];
-      concat = tails[3];
-    } else {
+    if (pos_candidate != candidates.size()) {
+      // not match the sequence
       continue;
     }
 
-    if (shape->op_type() != "Shape" || slice->op_type() != "Slice" ||
-        concat->op_type() != "Concat" || reshape->op_type() != "Reshape") {
-      continue;
-    }
-
-    if (node_reference[conv->output(0)] != 1 || node_reference[shape->output(0)] != 1 ||
+    if (node_reference[conv->output(0)] != 2 || node_reference[shape->output(0)] != 1 ||
         node_reference[slice->output(0)] != 1 || node_reference[concat->output(0)] != 1 ||
         node_reference[reshape->output(0)] != 1) {
       continue;
     }
     
+    // check the connections
     if (shape->input(0) != conv->output(0) || reshape->input(0) != conv->output(0)) {
       continue;
     }
@@ -2882,7 +2897,7 @@ static void fuse_binaryop_with_scalar(onnx::GraphProto* mutable_graph,
       const onnx::TensorProto& scalar_b = weights[node->input(1)];
       if (scalar_b.dims_size() != 0 || get_tensor_proto_data_size(scalar_b) != 1) continue;
 
-      float b = get_node_attr_from_input_f(scalar_b);
+      float b = get_node_attr_from_input<float>(scalar_b);
 
       node_reference[node->input(1)] -= 1;
 
@@ -3082,6 +3097,7 @@ int main(int argc, char** argv) {
 
   // op chain fusion
   int reduced_node_count = 0;
+  fuse_conv_reshape(mutable_graph, weights, node_reference, blob_names, reduced_node_count);
   // fuse_weight_reshape(mutable_graph, weights, node_reference, blob_names, reduced_node_count);
   fuse_weight_transpose(mutable_graph, weights, node_reference, blob_names, reduced_node_count);
   fuse_shufflechannel(mutable_graph, weights, node_reference, blob_names, reduced_node_count);
@@ -3102,7 +3118,6 @@ int main(int argc, char** argv) {
   fuse_lstm_gru_rnn(mutable_graph, weights, node_reference, blob_names, reduced_node_count);
   fuse_multiheadattention(mutable_graph, weights, node_reference, blob_names, reduced_node_count);
   fuse_binaryop_with_scalar(mutable_graph, weights, node_reference, blob_names, reduced_node_count);
-  fuse_conv_reshape(mutable_graph, weights, node_reference, blob_names, reduced_node_count);
 
   // reduce common const weight node_reference
   for (int i = 0; i < node_count; i++) {
@@ -3864,10 +3879,10 @@ int main(int argc, char** argv) {
         max = get_node_attr_f(node, "max", FLT_MAX);
       } else {
         min = weights.find(node.input(1)) != weights.end()
-                  ? get_node_attr_from_input_f(weights[node.input(1)])
+                  ? get_node_attr_from_input<float>(weights[node.input(1)])
                   : -FLT_MAX;
         max = weights.find(node.input(2)) != weights.end()
-                  ? get_node_attr_from_input_f(weights[node.input(2)])
+                  ? get_node_attr_from_input<float>(weights[node.input(2)])
                   : FLT_MAX;
       }
 
@@ -4876,17 +4891,17 @@ int main(int argc, char** argv) {
       // fprintf(stderr, "node.input_size(): %d\n", node.input_size());
       if (node.input_size() >= 3) {
         // fprintf(stderr, "ok12!\n");
-        max_dets = (int)(get_node_attr_from_input_f(weights[node.input(2)]) + 0.5);
+        max_dets = (int)(get_node_attr_from_input<float>(weights[node.input(2)]) + 0.5);
       }
       if (node.input_size() >= 4) {
         // fprintf(stderr, "iou_thre: %f\n",
-        // get_node_attr_from_input_f(weights[node.input(3)]));
-        iou_thre = get_node_attr_from_input_f(weights[node.input(3)]);
+        // get_node_attr_from_input<float>(weights[node.input(3)]));
+        iou_thre = get_node_attr_from_input<float>(weights[node.input(3)]);
       }
       if (node.input_size() >= 5) {
         // fprintf(stderr, "score_thre: %f\n",
-        // get_node_attr_from_input_f(weights[node.input(4)]));
-        score_thre = get_node_attr_from_input_f(weights[node.input(4)]);
+        // get_node_attr_from_input<float>(weights[node.input(4)]));
+        score_thre = get_node_attr_from_input<float>(weights[node.input(4)]);
       }
       fprintf(pp, " 0=%d", max_dets);
       fprintf(pp, " 1=%f", iou_thre);
