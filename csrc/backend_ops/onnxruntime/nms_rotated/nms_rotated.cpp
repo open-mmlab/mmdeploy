@@ -264,6 +264,7 @@ float rotated_boxes_intersection(const RotatedBox& box1, const RotatedBox& box2)
 NMSRotatedKernel::NMSRotatedKernel(OrtApi api, const OrtKernelInfo* info)
     : api_(api), ort_(api_), info_(info) {
   iou_threshold_ = ort_.KernelInfoGetAttribute<float>(info, "iou_threshold");
+  score_threshold_ = ort_.KernelInfoGetAttribute<float>(info, "score_threshold");
 
   // create allocator
   allocator_ = Ort::AllocatorWithDefaultOptions();
@@ -271,6 +272,7 @@ NMSRotatedKernel::NMSRotatedKernel(OrtApi api, const OrtKernelInfo* info)
 
 void NMSRotatedKernel::Compute(OrtKernelContext* context) {
   const float iou_threshold = iou_threshold_;
+  const float score_threshold = score_threshold_;
 
   const OrtValue* boxes = ort_.KernelContext_GetInput(context, 0);
   const float* boxes_data = reinterpret_cast<const float*>(ort_.GetTensorData<float>(boxes));
@@ -301,6 +303,7 @@ void NMSRotatedKernel::Compute(OrtKernelContext* context) {
       // sort scores
       std::vector<float> tmp_sc;
       for (int i = 0; i < nboxes; i++) {
+        // if (sc[k * nboxes * nclass + g * nboxes + i] <= score_threshold) select[i] = false;
         tmp_sc.push_back(sc[k * nboxes * nclass + g * nboxes + i]);
       }
       std::vector<int64_t> order(tmp_sc.size());
@@ -340,7 +343,7 @@ void NMSRotatedKernel::Compute(OrtKernelContext* context) {
         }
       }
       for (int i = 0; i < nboxes; i++) {
-        if (select[i]) {
+        if (select[i] & (tmp_sc[order[i]] > score_threshold)) {
           res_order.push_back(k);
           res_order.push_back(g);
           res_order.push_back(order[i]);
