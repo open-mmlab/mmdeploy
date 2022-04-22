@@ -42,10 +42,10 @@ def model_to_graph__custom_optimizer(
 
     custom_passes = getattr(ctx, 'onnx_custom_passes', None)
 
-    assert isinstance(
-        custom_passes, Callable
-    ), f'Expect a callable onnx_custom_passes, get {type(custom_passes)}.'
     if custom_passes is not None:
+        assert isinstance(
+            custom_passes, Callable
+        ), f'Expect a callable onnx_custom_passes, get {type(custom_passes)}.'
         graph, params_dict, torch_out = custom_passes(graph, params_dict,
                                                       torch_out)
 
