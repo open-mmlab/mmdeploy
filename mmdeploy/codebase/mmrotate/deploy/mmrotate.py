@@ -4,11 +4,11 @@ from typing import Optional, Union
 import mmcv
 import torch
 from mmcv.utils import Registry
+from mmdet.datasets import replace_ImageToTensor
 from torch.utils.data import DataLoader, Dataset
 
 from mmdeploy.codebase.base import CODEBASE, BaseTask, MMCodebase
 from mmdeploy.utils import Codebase, get_task_type
-from mmdeploy.utils.config_utils import load_config
 
 
 def __build_mmrotate_task(model_cfg: mmcv.Config, deploy_cfg: mmcv.Config,
@@ -62,9 +62,24 @@ class MMROTATE(MMCodebase):
         """
         from mmrotate.datasets import build_dataset as build_dataset_mmrotate
 
-        dataset_cfg = load_config(dataset_cfg)[0]
+        # dataset_cfg = load_config(dataset_cfg)[0]
         assert dataset_type in dataset_cfg.data
         data_cfg = dataset_cfg.data[dataset_type]
+        # in case the dataset is concatenated
+        if isinstance(data_cfg, dict):
+            data_cfg.test_mode = True
+            samples_per_gpu = data_cfg.pop('samples_per_gpu', 1)
+            if samples_per_gpu > 1:
+                # Replace 'ImageToTensor' to 'DefaultFormatBundle'
+                data_cfg.pipeline = replace_ImageToTensor(data_cfg.pipeline)
+        elif isinstance(data_cfg, list):
+            for ds_cfg in data_cfg:
+                ds_cfg.test_mode = True
+            samples_per_gpu = max(
+                [ds_cfg.pop('samples_per_gpu', 1) for ds_cfg in data_cfg])
+            if samples_per_gpu > 1:
+                for ds_cfg in data_cfg:
+                    ds_cfg.pipeline = replace_ImageToTensor(ds_cfg.pipeline)
         dataset = build_dataset_mmrotate(data_cfg)
         return dataset
 
