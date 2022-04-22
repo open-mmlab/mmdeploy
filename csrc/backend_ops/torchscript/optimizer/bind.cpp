@@ -5,6 +5,7 @@
 
 #include "optimizer.h"
 #include "passes/merge_shape_concate.h"
+#include "passes/onnx_peephole.h"
 
 namespace mmdeploy {
 namespace torch_jit {
@@ -28,6 +29,7 @@ PYBIND11_MODULE(ts_optimizer, m) {
         py::arg("ir") = std::string("torchscript"),
         py::arg("backend") = std::string("torchscript"));
   m.def("_jit_pass_merge_shape_concate", MergeShapeConcate, py::arg("graph"));
+  m.def("_jit_pass_onnx_peephole", ONNXPeephole, py::arg("graph"));
 }
 
 }  // namespace torch_jit

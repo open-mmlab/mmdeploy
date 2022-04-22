@@ -8,10 +8,15 @@ import torch
 from mmdeploy.core import RewriterContext, patch_model
 from mmdeploy.utils import (get_backend, get_dynamic_axes, get_input_shape,
                             get_onnx_config, load_config)
+from .onnx.optimizer import *  # noqa
+from .onnx.passes import optimize_onnx
 
 
-def torch2onnx_impl(model: torch.nn.Module, input: Union[torch.Tensor, Tuple],
-                    deploy_cfg: Union[str, mmcv.Config], output_file: str):
+def torch2onnx_impl(model: torch.nn.Module,
+                    input: Union[torch.Tensor, Tuple],
+                    deploy_cfg: Union[str, mmcv.Config],
+                    output_file: str,
+                    optimize: bool = True):
     """Converting torch model to ONNX.
 
     Args:
@@ -20,6 +25,7 @@ def torch2onnx_impl(model: torch.nn.Module, input: Union[torch.Tensor, Tuple],
         deploy_cfg (str | mmcv.Config): Deployment config file or
             Config object.
         output_file (str): Output file to save ONNX model.
+        optimize (bool): Run optimize passes.
     """
     # load deploy_cfg if needed
     deploy_cfg = load_config(deploy_cfg)[0]
@@ -38,9 +44,12 @@ def torch2onnx_impl(model: torch.nn.Module, input: Union[torch.Tensor, Tuple],
     # patch model
     patched_model = patch_model(model, cfg=deploy_cfg, backend=backend)
 
+    onnx_custom_passes = optimize_onnx if optimize else None
     with RewriterContext(
-            cfg=deploy_cfg, backend=backend,
-            opset=opset_version), torch.no_grad():
+            cfg=deploy_cfg,
+            backend=backend,
+            opset=opset_version,
+            onnx_custom_passes=onnx_custom_passes), torch.no_grad():
         torch.onnx.export(
             patched_model,
             input,

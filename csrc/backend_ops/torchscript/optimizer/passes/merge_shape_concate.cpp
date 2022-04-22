@@ -1,6 +1,5 @@
+// Copyright (c) OpenMMLab. All rights reserved.
 #include "merge_shape_concate.h"
-
-#include <torch/csrc/jit/passes/dead_code_elimination.h>
 
 #include <vector>
 
