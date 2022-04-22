@@ -42,6 +42,11 @@ python ./tools/regression_test.py \
 - `--log-level` : 设置日记的等级，选项包括`'CRITICAL'， 'FATAL'， 'ERROR'， 'WARN'， 'WARNING'， 'INFO'， 'DEBUG'， 'NOTSET'`。默认是`INFO`。
 - `--performance` : 是否测试精度，加上则测试转换+精度，不加上则只测试转换
 
+### 注意事项
+对于 Windows 用户：
+1. 要在 shell 命令中使用 `&&` 连接符，需要下载并使用 `PowerShell 7 Preview 5+`。
+2. 如果您使用 conda env，可能需要在 regression_test.py 中将 `python3` 更改为 `python`，因为 `%USERPROFILE%\AppData\Local\Microsoft\WindowsApps` 目录中有 `python3.exe`。
+
 ## 例子
 
 1. 测试 mmdet 和 mmpose 的所有 backend 的 转换+精度
@@ -112,18 +117,20 @@ globals:
     test_img: *img_300x300
   backend_test: &default_backend_test True # 是否对 backend 进行精度测试
   sdk: # SDK 配置文件
-    sdk_detection_dynamic_fp32: &sdk_detection_dynamic_fp32 configs/mmocr/text-detection/text-detection_sdk_dynamic.py
-    sdk_recognition_dynamic_fp32: &sdk_recognition_dynamic_fp32 configs/mmocr/text-recognition/text-recognition_sdk_dynamic.py
+    sdk_detection_dynamic: &sdk_detection_dynamic configs/mmocr/text-detection/text-detection_sdk_dynamic.py
+    sdk_recognition_dynamic: &sdk_recognition_dynamic configs/mmocr/text-recognition/text-recognition_sdk_dynamic.py
 
 onnxruntime:
   pipeline_ort_recognition_static_fp32: &pipeline_ort_recognition_static_fp32
-    convert_image: *convert_image
-    deploy_config: configs/mmocr/text-recognition/text-recognition_onnxruntime_static.py
+    convert_image: *convert_image # 转换过程中使用的图片
+    backend_test: *default_backend_test # 是否进行后端测试，存在则判断，不存在则视为 False
+    sdk_config: *sdk_recognition_dynamic # 是否进行SDK测试，存在则使用特定的 SDK config 进行测试，不存在则视为不进行 SDK 测试
+    deploy_config: configs/mmocr/text-recognition/text-recognition_onnxruntime_static.py # 使用的 deploy cfg 路径，基于 mmdeploy 的路径
 
   pipeline_ort_recognition_dynamic_fp32: &pipeline_ort_recognition_dynamic_fp32
     convert_image: *convert_image
     backend_test: *default_backend_test
-    sdk_config: *sdk_recognition_dynamic_fp32
+    sdk_config: *sdk_recognition_dynamic
     deploy_config: configs/mmocr/text-recognition/text-recognition_onnxruntime_dynamic.py
 
   pipeline_ort_detection_dynamic_fp32: &pipeline_ort_detection_dynamic_fp32
@@ -134,19 +141,23 @@ tensorrt:
   pipeline_trt_recognition_dynamic_fp16: &pipeline_trt_recognition_dynamic_fp16
     convert_image: *convert_image
     backend_test: *default_backend_test
-    sdk_config: *sdk_recognition_dynamic_fp32
+    sdk_config: *sdk_recognition_dynamic
     deploy_config: configs/mmocr/text-recognition/text-recognition_tensorrt-fp16_dynamic-1x32x32-1x32x640.py
 
   pipeline_trt_detection_dynamic_fp16: &pipeline_trt_detection_dynamic_fp16
     convert_image: *convert_image
     backend_test: *default_backend_test
-    sdk_config: *sdk_detection_dynamic_fp32
+    sdk_config: *sdk_detection_dynamic
     deploy_config: configs/mmocr/text-detection/text-detection_tensorrt-fp16_dynamic-320x320-1024x1824.py
 
 openvino:
+  # 此处省略，内容同上
 ncnn:
+  # 此处省略，内容同上
 pplnn:
+  # 此处省略，内容同上
 torchscript:
+  # 此处省略，内容同上
 
 
 models:
