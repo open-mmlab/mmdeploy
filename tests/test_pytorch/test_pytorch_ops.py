@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from sys import api_version
 import tempfile
 
 import onnx
