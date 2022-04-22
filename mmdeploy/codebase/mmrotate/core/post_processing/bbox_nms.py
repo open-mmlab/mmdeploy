@@ -108,7 +108,8 @@ def multiclass_nms_rotated(boxes: Tensor,
         scores = scores[batch_inds, topk_inds, :]
 
     scores = scores.permute(0, 2, 1)
-    selected_indices = ONNXNMSRotatedOp.apply(boxes, scores, iou_threshold)
+    selected_indices = ONNXNMSRotatedOp.apply(boxes, scores, iou_threshold,
+                                              score_threshold)
 
     dets, labels = select_nms_index(
         scores, boxes, selected_indices, batch_size, keep_top_k=keep_top_k)

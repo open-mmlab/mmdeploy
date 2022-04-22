@@ -50,6 +50,7 @@ class End2EndModel(BaseBackendModel):
         model_cfg, deploy_cfg = load_config(model_cfg, deploy_cfg)
         self.CLASSES = class_names
         self.deploy_cfg = deploy_cfg
+        self.device = device
         self.show_score = False
         self.bbox_head = build_head(model_cfg.model.bbox_head)
         self._init_wrapper(
@@ -91,29 +92,29 @@ class End2EndModel(BaseBackendModel):
         img_metas = img_metas[0]
         outputs = self.forward_test(input_img, img_metas, *args, **kwargs)
         batch_dets, batch_labels = outputs[:2]
-        # batch_size = input_img.shape[0]
-        # rescale = kwargs.get('rescale', False)
+        batch_size = input_img.shape[0]
+        rescale = kwargs.get('rescale', False)
 
-        dets, labels = batch_dets, batch_labels
+        results = []
 
-        dets = dets.cpu().numpy()
-        labels = labels.cpu().numpy()
-        # dets_results = bbox2result(dets, labels, len(self.CLASSES))
-        dets_results = [dets[labels == i, :] for i in range(len(self.CLASSES))]
+        for i in range(batch_size):
+            dets, labels = batch_dets[i], batch_labels[i]
+            if rescale:
+                scale_factor = img_metas[i]['scale_factor']
 
-        # for i in range(batch_size):
-        #     dets, labels = batch_dets[i], batch_labels[i]
-        #     if rescale:
-        #         scale_factor = img_metas[i]['scale_factor']
+                if isinstance(scale_factor, (list, tuple, np.ndarray)):
+                    assert len(scale_factor) == 4
+                    scale_factor = np.array(scale_factor)[None, :]  # [1,4]
+                scale_factor = torch.from_numpy(scale_factor).to(
+                    device=torch.device(self.device))
+                dets[:, :4] /= scale_factor
 
-        #         if isinstance(scale_factor, (list, tuple, np.ndarray)):
-        #             assert len(scale_factor) == 4
-        #             scale_factor = np.array(scale_factor)[None, :]  # [1,4]
-        #         scale_factor = torch.from_numpy(scale_factor).to(
-        #             device=torch.device(self.device))
-        #         dets[:, :4] /= scale_factor
+            dets_results = [
+                dets[labels == i, :] for i in range(len(self.CLASSES))
+            ]
+            results.append(dets_results)
 
-        return dets_results
+        return results
 
     def forward_test(self, imgs: torch.Tensor, *args, **kwargs) -> \
             List[torch.Tensor]:
