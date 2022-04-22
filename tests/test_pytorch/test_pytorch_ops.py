@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from sys import api_version
 import tempfile
 
 import onnx
@@ -81,6 +82,15 @@ class TestAdaptivePool:
                         [2, 2, 2]).eval()
         nodes = get_model_onnx_nodes(model, x)
         assert nodes[0].op_type == 'AveragePool'
+
+    def test_adaptive_pool_2d_ncnn(self):
+        from mmdeploy.pytorch.ops import adaptive_avg_pool2d__ncnn
+        x = torch.rand(2, 2, 2)
+        model = OpModel(adaptive_avg_pool2d__ncnn,
+                        torch.tensor([2, 2], dtype=torch.int64)).eval()
+        nodes = get_model_onnx_nodes(model, x)
+        assert nodes[1].op_type == 'adaptive_avg_pool2d'
+        assert nodes[1].domain == 'mmdeploy'
 
 
 def test_grid_sampler():
