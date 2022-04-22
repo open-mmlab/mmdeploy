@@ -99,12 +99,12 @@ pplnn:
   pipeline_pplnn_static_fp32: &pipeline_pplnn_static_fp32
     convert_image: *convert_image
     backend_test: False
-    deploy_config: configs/mmseg/segmentation_pplnn_static-512x512.py
+    deploy_config: configs/mmseg/segmentation_pplnn_static-1024x2048.py
 
 torchscript:
   pipeline_ts_fp32: &pipeline_ts_fp32
     convert_image: *convert_image
-    backend_test: *default_backend_test
+    backend_test: False
     deploy_config: configs/mmseg/segmentation_torchscript.py
 
 
