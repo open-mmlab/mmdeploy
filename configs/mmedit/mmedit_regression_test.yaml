@@ -12,13 +12,13 @@ globals:
       metric_key: Eval-PSNR # eval log key name
       tolerance: 0.4
       task_name: Restorers # metafile.Results.Task
-      dataset: DIV2K # metafile.Results.Dataset
+      dataset: Set5 # metafile.Results.Dataset
     SSIM:
       eval_name: SSIM
       metric_key: Eval-SSIM
       tolerance: 0.02
       task_name: Restorers
-      dataset: DIV2K
+      dataset: Set5
   convert_image: &convert_image
     input_img: *img_face
     test_img: *img_bg
