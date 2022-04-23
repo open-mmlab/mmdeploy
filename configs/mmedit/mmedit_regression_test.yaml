@@ -95,7 +95,7 @@ pplnn:
 torchscript:
   pipeline_ts_fp32: &pipeline_ts_fp32
     convert_image: *convert_image
-    backend_test: *default_backend_test
+    backend_test: False
     deploy_config: configs/mmedit/super-resolution/super-resolution_torchscript.py
 
 models:

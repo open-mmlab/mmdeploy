@@ -42,8 +42,6 @@ onnxruntime:
 
   pipeline_ort_detection_dynamic_fp32: &pipeline_ort_detection_dynamic_fp32
     convert_image: *convert_image_det
-    backend_test: *default_backend_test
-    sdk_config: *sdk_recognition_dynamic
     deploy_config: configs/mmocr/text-detection/text-detection_onnxruntime_dynamic.py
 
   # ======= recognition =======
@@ -53,8 +51,6 @@ onnxruntime:
 
   pipeline_ort_recognition_dynamic_fp32: &pipeline_ort_recognition_dynamic_fp32
     convert_image: *convert_image_rec
-    backend_test: *default_backend_test
-    sdk_config: *sdk_recognition_dynamic
     deploy_config: configs/mmocr/text-recognition/text-recognition_onnxruntime_dynamic.py
 
 tensorrt:
@@ -168,12 +164,12 @@ pplnn:
 torchscript:
   pipeline_ts_detection_fp32: &pipeline_ts_detection_fp32
     convert_image: *convert_image_det
-    backend_test: *default_backend_test
+    backend_test: False
     deploy_config: configs/mmocr/text-detection/text-detection_torchscript.py
 
   pipeline_ts_recognition_fp32: &pipeline_ts_recognition_fp32
     convert_image: *convert_image_rec
-    backend_test: *default_backend_test
+    backend_test: False
     deploy_config: configs/mmocr/text-recognition/text-recognition_torchscript.py
 
 

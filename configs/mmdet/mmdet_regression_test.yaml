@@ -42,7 +42,6 @@ onnxruntime:
   pipeline_ort_dynamic_fp32: &pipeline_ort_dynamic_fp32
     convert_image: *convert_image
     deploy_config: configs/mmdet/detection/detection_onnxruntime_dynamic.py
-    backend_test: False
 
   pipeline_seg_ort_static_fp32: &pipeline_seg_ort_static_fp32
     convert_image: *convert_image
@@ -118,7 +117,7 @@ pplnn:
 torchscript:
   pipeline_ts_fp32: &pipeline_ts_fp32
     convert_image: *convert_image
-    backend_test: *default_backend_test
+    backend_test: False
     deploy_config: configs/mmdet/detection/detection_torchscript.py
 
 
