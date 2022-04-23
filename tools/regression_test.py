@@ -241,11 +241,16 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
         pytorch_meta_metric = metafile_metric.get('Metrics')
 
         dataset = metafile_metric.get('Dataset', '')
+        task_name = metafile_metric.get("Task", "")
+
+        if task_name == 'Restorers':
+            # mmedit
+            dataset = 'Set5'
+
         if (len(using_dataset) > 1) and (dataset not in using_dataset):
             continue
         dataset_type += f'{dataset} | '
 
-        task_name = metafile_metric.get("Task", "")
         if using_dataset.get(dataset) != task_name:
             # only add the metric with the correct dataset
             continue
