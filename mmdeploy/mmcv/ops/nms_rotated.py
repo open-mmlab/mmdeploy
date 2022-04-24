@@ -7,8 +7,8 @@ class ONNXNMSRotatedOp(torch.autograd.Function):
     """Create onnx::NMSRotated op."""
 
     @staticmethod
-    def forward(ctx, boxes: Tensor, scores: Tensor,
-                iou_threshold: float) -> Tensor:
+    def forward(ctx, boxes: Tensor, scores: Tensor, iou_threshold: float,
+                score_threshold: float) -> Tensor:
         """Get NMS rotated output indices.
 
         Args:
@@ -17,6 +17,8 @@ class ONNXNMSRotatedOp(torch.autograd.Function):
             scores (Tensor): The detection scores of shape
                 [N, num_classes, num_boxes].
             iou_threshold (float): IOU threshold of nms.
+            score_threshold (float): bbox threshold, bboxes with scores
+            lower than it will not be considered.
 
         Returns:
             Tensor: Selected indices of boxes.
@@ -31,11 +33,16 @@ class ONNXNMSRotatedOp(torch.autograd.Function):
                 _boxes = boxes[batch_id, ...]
                 # score_threshold=0 requires scores to be contiguous
                 _scores = scores[batch_id, cls_id, ...].contiguous()
+                valid_mask = _scores > score_threshold
+                _boxes, _scores = _boxes[valid_mask], _scores[valid_mask]
+                valid_inds = torch.nonzero(
+                    valid_mask, as_tuple=False).squeeze(dim=1)
                 _, order = _scores.sort(0, descending=True)
                 dets_sorted = _boxes.index_select(0, order)
                 box_inds = ext_module.nms_rotated(_boxes, _scores, order,
                                                   dets_sorted, iou_threshold,
                                                   0)
+                box_inds = valid_inds[box_inds]
                 batch_inds = torch.zeros_like(box_inds) + batch_id
                 cls_inds = torch.zeros_like(box_inds) + cls_id
                 indices.append(
@@ -45,7 +52,8 @@ class ONNXNMSRotatedOp(torch.autograd.Function):
         return indices
 
     @staticmethod
-    def symbolic(g, boxes: Tensor, scores: Tensor, iou_threshold: float):
+    def symbolic(g, boxes: Tensor, scores: Tensor, iou_threshold: float,
+                 score_threshold: float):
         """Symbolic function for onnx::NMSRotated.
 
         Args:
@@ -54,6 +62,8 @@ class ONNXNMSRotatedOp(torch.autograd.Function):
             scores (Tensor): The detection scores of shape
                 [N, num_boxes, num_classes].
             iou_threshold (float): IOU threshold of nms.
+            score_threshold (float): bbox threshold, bboxes with scores
+            lower than it will not be considered.
 
         Returns:
             NMSRotated op for onnx.
@@ -62,4 +72,5 @@ class ONNXNMSRotatedOp(torch.autograd.Function):
             'mmdeploy::NMSRotated',
             boxes,
             scores,
-            iou_threshold_f=float(iou_threshold))
+            iou_threshold_f=float(iou_threshold),
+            score_threshold_f=float(score_threshold))
