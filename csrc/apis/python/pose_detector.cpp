@@ -9,14 +9,6 @@
 
 namespace mmdeploy {
 
-template <typename... Args>
-std::string SFormat(const std::string &format, Args... args) {
-  size_t size = 1 + snprintf(nullptr, 0, format.c_str(), args...);
-  std::vector<char> bytes(size);
-  snprintf(bytes.data(), size, format.c_str(), args...);
-  return std::string(bytes.begin(), bytes.end());
-}
-
 using Rect = std::array<float, 4>;
 
 class PyPoseDedector {
@@ -35,7 +27,7 @@ class PyPoseDedector {
     }
     if (vboxes.size() != 0 && vboxes.size() != imgs.size()) {
       std::string error =
-          SFormat("imgs length not equal with vboxes [%d vs %d]", imgs.size(), vboxes.size());
+          fmt::format("imgs length not equal with vboxes [{} vs {}]", imgs.size(), vboxes.size());
       throw std::invalid_argument(error);
     }
 
