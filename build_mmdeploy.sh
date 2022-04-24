@@ -2,7 +2,7 @@
 # build_mmdeploy.sh
 #   Date: 08-03-2022, 24-04-2022
 #
-#   Run this script to build MMDeploy SDK and prerequisites. 
+#   Run this script to build MMDeploy SDK and prerequisites.
 #   This script will also setup python venv
 #
 BUILD_TYPE="Release"
@@ -128,7 +128,7 @@ prereqs() {
   if [[ "$ARCH" == aarch64 ]]; then
     cat /usr/include/${ARCH}-linux-gnu/NvInferVersion.h | grep NV_TENSORRT
   else
-    cat ${TENSORRT_DIR}/include/NvInferVersion.h | grep NV_TENSORRT 
+    cat ${TENSORRT_DIR}/include/NvInferVersion.h | grep NV_TENSORRT
   fi
   read -p "Is TensorRT >=8.0.1.6 installed? (Always installed on Jetson) (y/n)" -n 1 -r
   echo
@@ -203,7 +203,7 @@ py_venv() {
     sudo rm -r torchvision
     git clone --branch v0.11.1 https://github.com/pytorch/vision torchvision
     cd torchvision
-    export BUILD_VERSION=0.11.1  # where 0.x.0 is the torchvision version  
+    export BUILD_VERSION=0.11.1  # where 0.x.0 is the torchvision version
     python3 setup.py install
     cd ../
     # torchaudio
