@@ -241,7 +241,7 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
         pytorch_meta_metric = metafile_metric.get('Metrics')
 
         dataset = metafile_metric.get('Dataset', '')
-        task_name = metafile_metric.get("Task", "")
+        task_name = metafile_metric.get('Task', '')
 
         if task_name == 'Restorers':
             # mmedit
