@@ -71,7 +71,7 @@ Then just clone and compile the project:
 ```
 git clone git@github.com:pytorch/vision.git
 cd vision
-git co tags/v0.7.0 -b vision07
+git checkout tags/v0.7.0 -b vision07
 pip install -e .
 ```
 
