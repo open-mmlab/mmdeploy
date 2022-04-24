@@ -320,7 +320,7 @@ export MMDEPLOY_DIR=$(pwd)
     3. <b>pplnn</b>: 表示 PPL.NN。需要设置 <code>pplnn_DIR</code>
 <pre><code>-Dpplnn_DIR=${PPLNN_DIR}</code></pre>
     4. <b>ncnn</b>: 表示 ncnn。需要设置 <code>ncnn_DIR</code>
-<pre><code>-Dncnn_DIR=${NCNN_DIR}</code></pre>
+<pre><code>-Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn</code></pre>
     5. <b>openvino</b>: 表示 OpenVINO。需要设置 <code>InferenceEngine_DIR</code>
 <pre><code>-DInferenceEngine_DIR=${INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/share</code></pre>
     6. <b>torchscript</b>: TorchScript. 需要设置<code>Torch_DIR</code>
