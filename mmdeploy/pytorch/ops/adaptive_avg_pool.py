@@ -80,7 +80,11 @@ def adaptive_avg_pool3d__default(ctx, *args):
     return adaptive_avg_pool3d(*args)
 
 
-@SYMBOLIC_REWRITER.register_symbolic('adaptive_avg_pool2d', is_pytorch=True,
-                                     backend='ncnn')
+@SYMBOLIC_REWRITER.register_symbolic(
+    'adaptive_avg_pool2d', is_pytorch=True, backend='ncnn')
 def adaptive_avg_pool2d__ncnn(ctx, g, x, output_size):
+    """Register ncnn symbolic function for `adaptive_avg_pool2d`.
+
+    Align symbolic of adaptive_avg_pool2d in ncnn.
+    """
     return g.op('mmdeploy::adaptive_avg_pool2d', x, output_size)
