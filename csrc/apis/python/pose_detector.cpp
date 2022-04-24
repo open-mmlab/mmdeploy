@@ -14,7 +14,7 @@ class PyPoseDedector {
     auto status =
         mmdeploy_pose_detector_create_by_path(model_path, device_name, device_id, &handle_);
     if (status != MM_SUCCESS) {
-      throw std::runtime_error("failed to create pose_detedtor");
+      throw std::runtime_error("failed to create pose_detector");
     }
   }
   py::list Apply(const std::vector<PyImage> &imgs, const std::vector<std::vector<float>> &_boxes) {
