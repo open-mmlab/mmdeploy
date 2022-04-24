@@ -134,7 +134,7 @@ class MultiHeadAttentionop(torch.autograd.Function):
             v_weight, v_bias,
             o_weight, o_bias,
             embed_dim_i = embed_dims,
-            num_head_i = num_heads)
+            num_heads_i = num_heads)
 
 
 # ncnn have implemented MultiheadAttention, onnx would split this opr. So the model needs to rewrite.
@@ -156,7 +156,9 @@ def multiheadattention__forward__ncnn(ctx, self, qkv_input):
 
     # split qkv weight and bias
     # [768, 2304] => 3 * [768, 768]
-    qkv_weight = self.qkv.weight.data.reshape(self.input_dims, 3, self.embed_dims).permute(1, 0, 2)
+    # qkv_weight = self.qkv.weight.data.reshape(self.input_dims, 3, self.embed_dims).permute(1, 0, 2)
+    qkv_weight = self.qkv.weight.data.reshape(3, self.input_dims, self.embed_dims)
+    
     q_weight = qkv_weight[0]
     k_weight = qkv_weight[1]
     v_weight = qkv_weight[2]

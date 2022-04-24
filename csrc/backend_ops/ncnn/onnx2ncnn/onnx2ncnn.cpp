@@ -4752,7 +4752,7 @@ int main(int argc, char** argv) {
 
           for (int j = 0; j < embed_dim; j++) {
             for (int k = 0; k < embed_dim; k++) {
-              float vb = wptr[k * embed_dim * 3 + j];
+              float vb = wptr[j * embed_dim * 3 + k];
               fwrite(&vb, sizeof(float), 1, bp);
             }
           }
@@ -4771,7 +4771,7 @@ int main(int argc, char** argv) {
 
           for (int j = 0; j < embed_dim; j++) {
             for (int k = 0; k < embed_dim; k++) {
-              float vb = wptr[k * embed_dim * 3 + j + embed_dim];
+              float vb = wptr[j * embed_dim * 3 + k + embed_dim];
               fwrite(&vb, sizeof(float), 1, bp);
             }
           }
@@ -4790,7 +4790,7 @@ int main(int argc, char** argv) {
 
           for (int j = 0; j < embed_dim; j++) {
             for (int k = 0; k < embed_dim; k++) {
-              float vb = wptr[k * embed_dim * 3 + j + embed_dim * 2];
+              float vb = wptr[j * embed_dim * 3 + k + embed_dim * 2];
               fwrite(&vb, sizeof(float), 1, bp);
             }
           }
@@ -4806,7 +4806,7 @@ int main(int argc, char** argv) {
 
           for (int j = 0; j < embed_dim; j++) {
             for (int k = 0; k < embed_dim; k++) {
-              float vb = wptr[k * embed_dim + j];
+              float vb = wptr[j * embed_dim + k];
               fwrite(&vb, sizeof(float), 1, bp);
             }
           }
@@ -4836,7 +4836,7 @@ int main(int argc, char** argv) {
 
           for (int j = 0; j < embed_dim; j++) {
             for (int k = 0; k < embed_dim; k++) {
-              float vb = wptr[k * embed_dim + j];
+              float vb = wptr[j * embed_dim + k];
               fwrite(&vb, sizeof(float), 1, bp);
             }
           }
@@ -4851,7 +4851,7 @@ int main(int argc, char** argv) {
 
           for (int j = 0; j < embed_dim; j++) {
             for (int k = 0; k < embed_dim; k++) {
-              float vb = wptr[k * embed_dim + j];
+              float vb = wptr[j * embed_dim + k];
               fwrite(&vb, sizeof(float), 1, bp);
             }
           }
@@ -4866,7 +4866,7 @@ int main(int argc, char** argv) {
 
           for (int j = 0; j < embed_dim; j++) {
             for (int k = 0; k < embed_dim; k++) {
-              float vb = wptr[k * embed_dim + j];
+              float vb = wptr[j * embed_dim + k];
               fwrite(&vb, sizeof(float), 1, bp);
             }
           }
@@ -4881,7 +4881,7 @@ int main(int argc, char** argv) {
 
           for (int j = 0; j < embed_dim; j++) {
             for (int k = 0; k < embed_dim; k++) {
-              float vb = wptr[k * embed_dim + j];
+              float vb = wptr[j * embed_dim + k];
               fwrite(&vb, sizeof(float), 1, bp);
             }
           }
