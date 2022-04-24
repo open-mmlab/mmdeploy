@@ -5,11 +5,12 @@ import mmcv
 import numpy as np
 import torch
 from mmcv.utils import Registry
-from mmdet.datasets import DATASETS
 from mmrotate.models.builder import build_head
 from mmrotate.models.detectors import RotatedBaseDetector
 
 from mmdeploy.codebase.base import BaseBackendModel
+from mmdeploy.codebase.mmdet.deploy.object_detection_model import \
+    get_classes_from_config
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
                             load_config)
 
@@ -30,6 +31,7 @@ class End2EndModel(BaseBackendModel):
         backend (Backend): The backend enum, specifying backend type.
         backend_files (Sequence[str]): Paths to all required backend files(e.g.
             '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
+        class_names (Sequence[str]): A list of string specifying class names.
         device (str): A string represents device type.
         deploy_cfg (str | mmcv.Config): Deployment config file or loaded Config
             object.
@@ -158,51 +160,6 @@ class End2EndModel(BaseBackendModel):
             show=show,
             win_name=win_name,
             out_file=out_file)
-
-
-def get_classes_from_config(model_cfg: Union[str, mmcv.Config], **kwargs) -> \
-        List[str]:
-    """Get class name from config. The class name is the `classes` field if it
-    is set in the config, or the classes in `module_dict` of MMDet whose type
-    is set in the config.
-
-    Args:
-        model_cfg (str | mmcv.Config): Input model config file or
-            Config object.
-
-    Returns:
-        List[str]: A list of string specifying names of different class.
-    """
-    # load cfg if necessary
-    model_cfg = load_config(model_cfg)[0]
-
-    # For custom dataset
-    if 'classes' in model_cfg:
-        return list(model_cfg['classes'])
-
-    module_dict = DATASETS.module_dict
-    data_cfg = model_cfg.data
-    classes = None
-    module = None
-
-    keys = ['test', 'val', 'train']
-
-    for key in keys:
-        if key in data_cfg:
-            if 'classes' in data_cfg[key]:
-                classes = list(data_cfg[key]['classes'])
-                break
-            elif 'type' in data_cfg[key]:
-                module = module_dict[data_cfg[key]['type']]
-                break
-
-    if classes is None and module is None:
-        raise RuntimeError(f'No dataset config found in: {model_cfg}')
-
-    if classes is not None:
-        return classes
-    else:
-        return module.CLASSES
 
 
 def build_rotated_detection_model(model_files: Sequence[str],

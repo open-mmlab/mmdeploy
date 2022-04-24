@@ -5,7 +5,6 @@ import mmcv
 import numpy as np
 import torch
 from mmcv.parallel import DataContainer, collate, scatter
-from mmdet.datasets import replace_ImageToTensor
 from torch import nn
 from torch.utils.data import Dataset
 
@@ -29,24 +28,25 @@ def process_model_config(model_cfg: mmcv.Config,
     Returns:
         mmcv.Config: the model config after processing.
     """
-    if model_cfg.data.test['type'] == 'ConcatDataset':
-        model_cfg.data.test.pipeline = \
-            model_cfg.data.test['datasets'][0].pipeline
+    from mmdet.datasets import replace_ImageToTensor
 
-    is_ndarray = isinstance(imgs[0], np.ndarray)
+    cfg = model_cfg.copy()
 
-    if is_ndarray:
-        model_cfg.data.test.pipeline[0].type = 'LoadImageFromNdarray'
-
-    test_pipeline = model_cfg.data.test.pipeline
-    test_pipeline = replace_ImageToTensor(test_pipeline)
+    if isinstance(imgs[0], np.ndarray):
+        cfg = cfg.copy()
+        # set loading pipeline type
+        cfg.data.test.pipeline[0].type = 'LoadImageFromWebcam'
     # for static exporting
     if input_shape is not None:
-        test_pipeline[1].img_scale = tuple(input_shape)
-        test_pipeline[1].transforms[0].keep_ratio = False
-        test_pipeline[1].transforms[0].img_scale = tuple(input_shape)
-    model_cfg.data.test.pipeline = test_pipeline
-    return model_cfg
+        cfg.data.test.pipeline[1]['img_scale'] = tuple(input_shape)
+        transforms = cfg.data.test.pipeline[1]['transforms']
+        for trans in transforms:
+            trans_type = trans['type']
+            if trans_type == 'Pad':
+                trans['size_divisor'] = 1
+
+    cfg.data.test.pipeline = replace_ImageToTensor(cfg.data.test.pipeline)
+    return cfg
 
 
 @MMROTATE_TASK.register_module(Task.ROTATED_DETECTION.value)
