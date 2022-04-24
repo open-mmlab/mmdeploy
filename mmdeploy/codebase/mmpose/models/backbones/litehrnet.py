@@ -27,33 +27,3 @@ def cross_resolution_weighting__forward(ctx, self, x):
         for s, a in zip(x, out)
     ]
     return out
-
-
-@FUNCTION_REWRITER.register_rewriter(
-    'mmpose.models.backbones.litehrnet.CrossResolutionWeighting.forward',
-    backend='ncnn')
-def cross_resolution_weighting__forward__ncnn(ctx, self, x):
-    """Rewrite ``forward`` for ncnn backend.
-
-    Rewrite this function to support export ``adaptive_avg_pool2d``
-    for ncnn. Ncnn has its own implement of adaptive average pooling.
-
-    Args:
-        x (list): block input.
-    """
-    from mmdeploy.pytorch.ops import adaptive_avg_pool2d__ncnn
-
-    mini_size = torch.tensor(x[-1].shape[-2:])
-    # Replace torch.nn.functional.adaptive_avg_pool2d to a dummy onnx op,
-    # which is used for ncnn implement.
-    out = [adaptive_avg_pool2d__ncnn(s, mini_size) for s in x[:-1]] + \
-        [x[-1]]
-    out = torch.cat(out, dim=1)
-    out = self.conv1(out)
-    out = self.conv2(out)
-    out = torch.split(out, self.channels, dim=1)
-    out = [
-        s * F.interpolate(a, size=s.size()[-2:], mode='nearest')
-        for s, a in zip(x, out)
-    ]
-    return out

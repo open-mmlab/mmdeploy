@@ -2,7 +2,6 @@
 # Modified from:
 # https://github.com/pytorch/pytorch/blob/9ade03959392e5a90b74261012de1d806cab2253/torch/onnx/symbolic_opset9.py
 
-import torch
 from torch.nn.modules.utils import _pair, _single, _triple
 from torch.onnx.symbolic_helper import parse_args
 
@@ -81,28 +80,7 @@ def adaptive_avg_pool3d__default(ctx, *args):
     return adaptive_avg_pool3d(*args)
 
 
-class NcnnAdaptiveAvgPoolingOp(torch.autograd.Function):
-    """Create AdaptiveAvgPooling op for ncnn.
-
-    A dummy AdaptiveAvgPooling operator for ncnn end2end deployment.
-    It will map to the AdaptiveAvgPooling op of ncnn. After converting
-    to ncnn, AdaptiveAvgPooling op of ncnn will get called
-    automatically.
-
-    Args:
-        x (Tensor): The input tensor.
-    """
-
-    @staticmethod
-    def symbolic(g, x, output_size):
-        """Symbolic function of dummy onnx AdaptiveAvgPooling op for ncnn."""
-        return g.op('mmdeploy::adaptive_avg_pool2d', x, output_size, outputs=1)
-
-    @staticmethod
-    def forward(ctx, x, output_size):
-        """Forward function of dummy onnx AdaptiveAvgPooling op for ncnn."""
-        return torch.rand(x.shape[0], x.shape[1], output_size[0],
-                          output_size[1])
-
-
-adaptive_avg_pool2d__ncnn = NcnnAdaptiveAvgPoolingOp.apply
+@SYMBOLIC_REWRITER.register_symbolic('adaptive_avg_pool2d', is_pytorch=True,
+                                     backend='ncnn')
+def adaptive_avg_pool2d__ncnn(ctx, g, x, output_size):
+    return g.op('mmdeploy::adaptive_avg_pool2d', x, output_size)
