@@ -2560,10 +2560,10 @@ static void fuse_multiheadattention(onnx::GraphProto* mutable_graph,
 
 /**
  * @brief find graph node by output name
- * 
- * @param graph 
- * @param name 
- * @return onnx::NodeProto* 
+ *
+ * @param graph
+ * @param name
+ * @return onnx::NodeProto*
  */
 static onnx::NodeProto* find_node_by_output_name(onnx::GraphProto* mutable_graph, const std::string& name) {
   const int input_count = mutable_graph->node_size();
@@ -2586,13 +2586,13 @@ static onnx::NodeProto* find_node_by_output_name(onnx::GraphProto* mutable_graph
 }
 
 /**
- * @brief 
- * 
+ * @brief
+ *
  * @param mutable_graph query target node output shape
- * @param target 
- * @param weights 
+ * @param target
+ * @param weights
  * @param context <tensor name, shape>
- * @return std::tuple<bool, std::vector<int>> 
+ * @return std::tuple<bool, std::vector<int>>
  */
 static std::tuple<bool, std::vector<int>> query_shape(
                                     onnx::GraphProto* mutable_graph,
@@ -2752,20 +2752,20 @@ static std::tuple<bool, std::vector<int>> query_shape(
 
 /**
  * @brief fuse subgraph
- * 
+ *
  * conv - - - - - - - - - - - -> reshape
- *     \                        /      
+ *     \                        /
  *       shape - slice - concat
- * 
- * to 
- * 
+ *
+ * to
+ *
  * conv --> reshape
- * 
- * @param mutable_graph 
- * @param weights 
- * @param node_reference 
- * @param blob_names 
- * @param reduced_node_count 
+ *
+ * @param mutable_graph
+ * @param weights
+ * @param node_reference
+ * @param blob_names
+ * @param reduced_node_count
  */
 static void fuse_conv_reshape(onnx::GraphProto* mutable_graph,
                                     std::map<std::string, onnx::TensorProto>& weights,
@@ -2781,7 +2781,7 @@ static void fuse_conv_reshape(onnx::GraphProto* mutable_graph,
   //   onnx::NodeProto* node = mutable_graph->mutable_node(i);
   //   fprintf(stdout, "node name %s type %s \n", node->name().c_str(), node->op_type().c_str());
   // }
-  
+
   for (int i = 0; i < node_count; i++) {
     onnx::NodeProto* conv = mutable_graph->mutable_node(i);
 
@@ -2827,7 +2827,7 @@ static void fuse_conv_reshape(onnx::GraphProto* mutable_graph,
         node_reference[reshape->output(0)] != 1) {
       continue;
     }
-    
+
     // check the connections
     if (shape->input(0) != conv->output(0) || reshape->input(0) != conv->output(0)) {
       continue;
@@ -2872,7 +2872,7 @@ static void fuse_conv_reshape(onnx::GraphProto* mutable_graph,
 
       blob_names.erase(reshape->input(0));
 
-      
+
       // update edge
       shape->clear_input();
       reshape->clear_input();
