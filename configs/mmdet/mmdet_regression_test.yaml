@@ -25,6 +25,7 @@ globals:
       metric_key: '?'
       tolerance: 0.1
       task_name: Panoptic Segmentation
+      dataset: COCO
   convert_image: &convert_image
     input_img: *input_img
     test_img: *test_img
