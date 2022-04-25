@@ -21,7 +21,7 @@ def rotated_anchor_head__get_bbox(ctx,
                                   rescale=False,
                                   with_nms=True,
                                   **kwargs):
-    """Rewrite `get_bboxes` of `BaseDenseHead` for default backend.
+    """Rewrite `get_bboxes` of `RotatedAnchorHead` for default backend.
 
     Rewrite this function to deploy model, transform network output for a
     batch into bbox predictions.
