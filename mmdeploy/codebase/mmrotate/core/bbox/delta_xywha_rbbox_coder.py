@@ -24,8 +24,7 @@ def delta2bbox(ctx,
                proj_xy=False):
     """Rewrite `delta2bbox` for default backend.
 
-    Since the need of clip op with dynamic min and max, this function uses
-    clip_bboxes function to support dynamic shape.
+    Support batch bbox decoder.
 
     Args:
         ctx (ContextCaller): The context with additional information.
