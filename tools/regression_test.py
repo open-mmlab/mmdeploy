@@ -12,6 +12,7 @@ import yaml
 from torch.hub import download_url_to_file
 from torch.multiprocessing import set_start_method
 
+import mmdeploy.version
 from mmdeploy.utils import (get_backend, get_codebase, get_root_logger,
                             is_dynamic_shape, load_config)
 
@@ -64,7 +65,9 @@ def merge_report(work_dir: str):
         work_dir (str): Work dir that including all reports.
     """
     work_dir = Path(work_dir)
-    res_file = work_dir.joinpath('all_codebase_result.xlsx')
+    res_file = work_dir.joinpath(
+        f'mmdeploy_regression_test_{mmdeploy.version.__version__}.xlsx')
+
     if res_file.exists():
         # delete if it existed
         res_file.unlink()
