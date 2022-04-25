@@ -43,7 +43,17 @@
   `python fixNvPe.py --input=C:\Users\user\AppData\Local\Programs\Python\Python38\lib\site-packages\torch\lib\*.dll`
 
    You can find your pytorch installation path with:
-   ``` python
+   ```python
    import torch
    print(torch.__file__)
    ```
+
+### Pip
+- pip installed package but could not `import` them.
+
+  Make sure your are using conda pip.
+  ```bash
+  $ which pip
+  # /path/to/.local/bin/pip
+  /path/to/miniconda3/lib/python3.9/site-packages/pip
+  ```

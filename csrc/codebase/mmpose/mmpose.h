@@ -3,6 +3,8 @@
 #ifndef MMDEPLOY_MMPOSE_H
 #define MMDEPLOY_MMPOSE_H
 
+#include <array>
+
 #include "codebase/common.h"
 #include "core/device.h"
 #include "core/module.h"

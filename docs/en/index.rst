@@ -24,7 +24,6 @@ You can switch between Chinese and English documents in the lower-left corner of
    tutorials/how_to_add_test_units_for_backend_ops.md
    tutorials/how_to_test_rewritten_models.md
    tutorials/how_to_use_docker.md
-   tutorials/how_to_write_config.md
    tutorials/how_to_install_mmdeploy_on_jetsons.md
 
 .. toctree::
