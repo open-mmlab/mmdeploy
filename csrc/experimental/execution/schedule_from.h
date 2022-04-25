@@ -3,8 +3,9 @@
 #ifndef MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_SCHEDULE_FROM_H_
 #define MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_SCHEDULE_FROM_H_
 
-#include "utility.h"
 #include <optional>
+
+#include "utility.h"
 
 namespace mmdeploy {
 
@@ -67,7 +68,7 @@ struct _Operation1<Scheduler, CvrefSender, Receiver>::type {
 
   Scheduler scheduler_;
   Receiver receiver_;
-  std::optional<completion_signature_for_t<std::decay_t<CvrefSender>>> data_;
+  std::optional<completion_signatures_of_t<remove_cvref_t<CvrefSender>>> data_;
   connect_result_t<CvrefSender, _receiver1_t> op_state1_;
   std::optional<connect_result_t<schedule_result_t<Scheduler>, _receiver2_t>> op_state2_;
 
@@ -85,33 +86,45 @@ struct _Operation1<Scheduler, CvrefSender, Receiver>::type {
   friend void Start(type& op_state) noexcept { Start(op_state.op_state1_); }
 };
 
-template <typename Scheduler, typename Predecessor>
+template <typename Scheduler, typename Sender>
 struct _Sender {
   struct type;
 };
-template <typename Scheduler, typename Predecessor>
-using sender_t = typename _Sender<std::decay_t<Scheduler>, std::decay_t<Predecessor>>::type;
+template <typename Scheduler, typename Sender>
+using sender_t = typename _Sender<std::decay_t<Scheduler>, std::decay_t<Sender>>::type;
 
-template <typename Scheduler, typename Predecessor>
-struct _Sender<Scheduler, Predecessor>::type {
-  using value_type = completion_signature_for_t<Predecessor>;
+template <typename Scheduler, typename Sender>
+struct _Sender<Scheduler, Sender>::type {
+  using value_types = completion_signatures_of_t<Sender>;
 
   Scheduler scheduler_;
-  Predecessor sender_;
+  Sender sender_;
 
   template <typename Self, typename Receiver, _decays_to<Self, type, int> = 0>
   friend auto Connect(Self&& self, Receiver&& receiver)
-      -> operation1_t<Scheduler, _copy_cvref_t<Self, Predecessor>, std::decay_t<Receiver>> {
+      -> operation1_t<Scheduler, _copy_cvref_t<Self, Sender>, std::decay_t<Receiver>> {
     return {self.scheduler_, ((Self &&) self).sender_, (Receiver &&) receiver};
   }
 
-  friend Scheduler GetCompletionScheduler(const type& self) noexcept { return self.scheduler_; }
+  friend Scheduler tag_invoke(get_completion_scheduler_t, const type& self) noexcept {
+    return self.scheduler_;
+  }
 };
 
 struct schedule_from_t {
-  template <typename Scheduler, typename Predecessor>
-  sender_t<Scheduler, Predecessor> operator()(Scheduler&& scheduler, Predecessor&& pred) const {
-    return {(Scheduler &&) scheduler, (Predecessor &&) pred};
+  template <typename Scheduler, typename Sender,
+            std::enable_if_t<
+                _is_sender<Sender> && tag_invocable<schedule_from_t, Scheduler, Sender>, int> = 0>
+  auto operator()(Scheduler&& scheduler, Sender&& sender) const
+      -> tag_invoke_result<schedule_from_t, Scheduler, Sender> {
+    return tag_invoke(schedule_from_t{}, (Scheduler &&) scheduler, (Sender &&) sender);
+  }
+
+  template <typename Scheduler, typename Sender,
+            std::enable_if_t<
+                _is_sender<Sender> && !tag_invocable<schedule_from_t, Scheduler, Sender>, int> = 0>
+  sender_t<Scheduler, Sender> operator()(Scheduler&& scheduler, Sender&& sender) const {
+    return {(Scheduler &&) scheduler, (Sender &&) sender};
   }
 };
 
@@ -120,6 +133,6 @@ struct schedule_from_t {
 using __schedule_from::schedule_from_t;
 inline constexpr schedule_from_t ScheduleFrom{};
 
-}
+}  // namespace mmdeploy
 
 #endif  // MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_SCHEDULE_FROM_H_

@@ -14,7 +14,7 @@ namespace __sync_wait {
 
 template <typename Sender>
 struct _State {
-  std::optional<completion_signature_for_t<Sender>> data_;
+  std::optional<completion_signatures_of_t<Sender>> data_;
 };
 
 template <typename Sender>
@@ -22,7 +22,7 @@ struct _Receiver {
   struct type;
 };
 template <typename Sender>
-using receiver_t = typename _Receiver<std::decay_t<Sender>>::type;
+using receiver_t = typename _Receiver<remove_cvref_t<Sender>>::type;
 
 template <typename Sender>
 struct _Receiver<Sender>::type {
@@ -37,9 +37,32 @@ struct _Receiver<Sender>::type {
 };
 
 struct sync_wait_t {
-  template <typename Sender>
-  completion_signature_for_t<std::decay_t<Sender>> operator()(Sender&& sender) const {
-    _State<std::decay_t<Sender>> state;
+  template <typename Sender,
+            std::enable_if_t<_is_sender<Sender> &&
+                                 _tag_invocable_with_completion_scheduler<sync_wait_t, Sender>,
+                             int> = 0>
+  auto operator()(Sender&& sender) const
+      -> tag_invoke_result<sync_wait_t, _completion_scheduler_for<Sender>, Sender> {
+    auto scheduler = GetCompletionScheduler(sender);
+    return tag_invoke(sync_wait_t{}, std::move(scheduler), (Sender &&) sender);
+  }
+
+  template <typename Sender,
+            std::enable_if_t<_is_sender<Sender> &&
+                                 !_tag_invocable_with_completion_scheduler<sync_wait_t, Sender> &&
+                                 tag_invocable<sync_wait_t, Sender>,
+                             int> = 0>
+  auto operator()(Sender&& sender) const -> tag_invoke_result<sync_wait_t, Sender> {
+    return tag_invoke(sync_wait_t{}, (Sender &&) sender);
+  }
+
+  template <typename Sender,
+            std::enable_if_t<_is_sender<Sender> &&
+                                 !_tag_invocable_with_completion_scheduler<sync_wait_t, Sender> &&
+                                 !tag_invocable<sync_wait_t, Sender>,
+                             int> = 0>
+  completion_signatures_of_t<Sender> operator()(Sender&& sender) const {
+    _State<remove_cvref_t<Sender>> state;
     RunLoop loop;
     // connect to internal receiver
     auto op_state = Connect((Sender &&) sender, receiver_t<Sender>{&state, &loop});

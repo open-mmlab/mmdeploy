@@ -58,7 +58,7 @@ class DeferredBatchOperation : public Node {
 
   template <class Sender>
   struct _Sender {
-    using value_type = std::tuple<Value>;
+    using value_types = std::tuple<Value>;
     Sender sender_;
     DeferredBatchOperation* cls_;
 

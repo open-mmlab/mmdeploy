@@ -75,7 +75,7 @@ struct __Sender {
 using _Sender = __Sender::type;
 
 struct __Sender::type {
-  using value_type = std::tuple<std::vector<Value>>;
+  using value_types = std::tuple<std::vector<Value>>;
 
   std::vector<TypeErasedSender<Value>> sndrs_;
 
@@ -87,8 +87,9 @@ struct __Sender::type {
 
 }  // namespace __when_all_value
 
-inline __when_all_value::_Sender WhenAll_(std::vector<TypeErasedSender<Value>> sndrs) {
-  return {std::move(sndrs)};
+inline __when_all_value::_Sender tag_invoke(when_all_t,
+                                            std::vector<TypeErasedSender<Value>> senders) {
+  return {std::move(senders)};
 }
 
 }  // namespace mmdeploy

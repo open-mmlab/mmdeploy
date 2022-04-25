@@ -3,6 +3,8 @@
 #ifndef MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_THEN_H_
 #define MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_THEN_H_
 
+#include "closure.h"
+#include "concepts.h"
 #include "utility.h"
 
 namespace mmdeploy {
@@ -27,45 +29,66 @@ struct _Receiver<Receiver, Func>::type {
   }
 };
 
-template <typename Predecessor, typename Func>
+template <typename Sender, typename Func>
 struct _Sender {
   struct type;
 };
-template <typename Predecessor, typename Func>
-using Sender = typename _Sender<std::decay_t<Predecessor>, std::decay_t<Func>>::type;
+template <typename Sender, typename Func>
+using sender_t = typename _Sender<remove_cvref_t<Sender>, std::decay_t<Func>>::type;
 
-template <typename Predecessor, typename Func>
-struct _Sender<Predecessor, Func>::type {
+template <typename Sender, typename Func>
+struct _Sender<Sender, Func>::type {
   using _ret_type = decltype(std::apply(std::declval<Func>(),
-                                        std::declval<completion_signature_for_t<Predecessor>>()));
+                                        std::declval<completion_signatures_of_t<Sender>>()));
 
-  using value_type =
+  using value_types =
       std::conditional_t<std::is_void_v<_ret_type>, std::tuple<>, std::tuple<_ret_type>>;
 
-  Predecessor pred_;
+  Sender sender_;
   Func func_;
 
-  template <class Self, class Receiver, _decays_to<Self, type, int> = 0>
+  template <typename Self, typename Receiver, _decays_to<Self, type, int> = 0>
   friend auto Connect(Self&& self, Receiver&& receiver) {
-    return Connect(((Self &&) self).pred_,
+    return Connect(((Self &&) self).sender_,
                    receiver_t<Receiver, Func>{(Receiver &&) receiver, std::move(self.func_)});
   }
 
-  template <class Sender = Predecessor>
-  friend auto GetCompletionScheduler(const _Sender& self) noexcept
-      -> decltype(GetCompletionScheduler(std::declval<Sender>())) {
-    return GetCompletionScheduler(self.pred_);
+  friend auto tag_invoke(get_completion_scheduler_t, const _Sender& self) noexcept {
+    return GetCompletionScheduler(self.sender_);
   }
 };
 
 struct then_t {
-  template <class Predecessor, class Func>
-  Sender<Predecessor, Func> operator()(Predecessor&& pred, Func func) const {
-    return {(Predecessor &&) pred, std::move(func)};
+  template <typename Sender, typename Func,
+            std::enable_if_t<_is_sender<Sender> &&
+                            _tag_invocable_with_completion_scheduler<then_t, Sender, Func>,
+                        int> = 0>
+  auto operator()(Sender&& sender, Func func) const {
+    auto scheduler = GetCompletionScheduler(sender);
+    return tag_invoke(then_t{}, std::move(scheduler), (Sender &&) sender, std::move(func));
   }
-  template <class Fun>
-  _BinderBack<then_t, Fun> operator()(Fun fun) const {
-    return {{}, {}, {std::move(fun)}};
+
+  template <typename Sender, typename Func,
+            std::enable_if_t<_is_sender<Sender> &&
+                            !_tag_invocable_with_completion_scheduler<then_t, Sender, Func> &&
+                            tag_invocable<then_t, Sender, Func>,
+                        int> = 0>
+  auto operator()(Sender&& sender, Func func) const {
+    auto scheduler = GetCompletionScheduler(sender);
+    return tag_invoke(then_t{}, std::move(scheduler), (Sender &&) sender, std::move(func));
+  }
+
+  template <typename Sender, typename Func,
+            std::enable_if_t<_is_sender<Sender> &&
+                            !_tag_invocable_with_completion_scheduler<then_t, Sender, Func> &&
+                            !tag_invocable<then_t, Sender, Func>,
+                        int> = 0>
+  sender_t<Sender, Func> operator()(Sender&& sender, Func func) const {
+    return {(Sender &&) sender, std::move(func)};
+  }
+  template <typename Func>
+  _BinderBack<then_t, Func> operator()(Func func) const {
+    return {{}, {}, {std::move(func)}};
   }
 };
 
@@ -74,6 +97,6 @@ struct then_t {
 using __then::then_t;
 inline constexpr then_t Then;
 
-}
+}  // namespace mmdeploy
 
 #endif  // MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_THEN_H_

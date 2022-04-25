@@ -10,7 +10,7 @@ namespace mmdeploy {
 namespace __when_all {
 
 template <typename... Senders>
-using __concat_t = decltype(std::tuple_cat(std::declval<completion_signature_for_t<Senders>>()...));
+using __concat_t = decltype(std::tuple_cat(std::declval<completion_signatures_of_t<Senders>>()...));
 
 template <typename CvrefReceiver, typename... Senders>
 struct _Operation {
@@ -65,7 +65,7 @@ struct _Operation<CvrefReceiver, Senders...>::type {
   using _ChildOpStates = decltype(_ConnectChildren(
       nullptr, _Indices{}, std::declval<_copy_cvref_t<CvrefReceiver, Senders>>()...));
 
-  using _ChildValueTuple = std::tuple<std::optional<completion_signature_for_t<Senders>>...>;
+  using _ChildValueTuple = std::tuple<std::optional<completion_signatures_of_t<Senders>>...>;
 
   void _Arrive() noexcept {
     if (0 == --count_) {
@@ -116,7 +116,7 @@ using Sender = typename _Sender<std::decay_t<Senders>...>::type;
 
 template <typename... Senders>
 struct _Sender<Senders...>::type {
-  using value_type = __concat_t<Senders...>;
+  using value_types = __concat_t<Senders...>;
 
   template <typename Receiver>
   using operation_t = Operation<Receiver, Senders...>;
@@ -138,7 +138,26 @@ struct _Sender<Senders...>::type {
 };
 
 struct when_all_t {
-  template <typename... Senders, std::enable_if_t<(_decays_to_sender<Senders> && ...), int> = 0>
+  template <typename... Senders,
+            std::enable_if_t<(_is_sender<Senders> && ...) && (sizeof...(Senders) > 0) &&
+                                 tag_invocable<when_all_t, Senders...>,
+                             int> = 0>
+  auto operator()(Senders&&... senders) const {
+    return tag_invoke(when_all_t{}, (Senders &&) senders...);
+  }
+
+  template <
+      typename Range, typename ValueType = typename remove_cvref_t<Range>::value_type,
+      std::enable_if_t<
+          _is_range_v<Range> && _is_sender<ValueType> && tag_invocable<when_all_t, Range>, int> = 0>
+  auto operator()(Range&& range) const {
+    return tag_invoke(when_all_t{}, (Range &&) range);
+  }
+
+  template <typename... Senders,
+            std::enable_if_t<(_is_sender<Senders> && ...) && (sizeof...(Senders) > 0) &&
+                                 !tag_invocable<when_all_t, Senders...>,
+                             int> = 0>
   Sender<Senders...> operator()(Senders&&... senders) const {
     return {{(Senders &&) senders...}};
   }

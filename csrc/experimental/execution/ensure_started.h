@@ -3,6 +3,7 @@
 #ifndef MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_ENSURE_STARTED_H_
 #define MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_ENSURE_STARTED_H_
 
+#include "concepts.h"
 #include "utility.h"
 
 namespace mmdeploy {
@@ -33,10 +34,10 @@ struct _Receiver<SharedState>::type {
   }
 };
 
-template <typename Predecessor>
+template <typename Sender>
 struct _SharedState {
-  std::optional<completion_signature_for_t<Predecessor>> data_;
-  std::optional<connect_result_t<Predecessor, receiver_t<_SharedState>>> op_state2_;
+  std::optional<completion_signatures_of_t<Sender>> data_;
+  std::optional<connect_result_t<Sender, receiver_t<_SharedState>>> op_state2_;
   std::atomic<void*> awaiting_{nullptr};
 
   void _Notify() noexcept {
@@ -50,19 +51,19 @@ struct _SharedState {
   }
 };
 
-template <typename Predecessor, typename Receiver>
+template <typename Sender, typename Receiver>
 struct _Operation {
   struct type;
 };
-template <typename Predecessor, typename Receiver>
-using Operation = typename _Operation<Predecessor, std::decay_t<Receiver>>::type;
+template <typename Sender, typename Receiver>
+using Operation = typename _Operation<Sender, remove_cvref_t<Receiver>>::type;
 
-template <typename Predecessor, typename Receiver>
-struct _Operation<Predecessor, Receiver>::type : public _OperationBase {
+template <typename Sender, typename Receiver>
+struct _Operation<Sender, Receiver>::type : public _OperationBase {
   Receiver receiver_;
-  std::shared_ptr<_SharedState<Predecessor>> shared_state_;
+  std::shared_ptr<_SharedState<Sender>> shared_state_;
 
-  type(Receiver&& receiver, std::shared_ptr<_SharedState<Predecessor>> shared_state)
+  type(Receiver&& receiver, std::shared_ptr<_SharedState<Sender>> shared_state)
       : _OperationBase{_Notify},
         receiver_(std::move(receiver)),
         shared_state_(std::move(shared_state)) {}
@@ -93,36 +94,61 @@ struct _Operation<Predecessor, Receiver>::type : public _OperationBase {
   }
 };
 
-template <typename Predecessor>
+template <typename Sender>
 struct _Sender {
   struct type;
 };
-template <typename Predecessor>
-using Sender = typename _Sender<std::decay_t<Predecessor>>::type;
+template <typename Sender>
+using sender_t = typename _Sender<remove_cvref_t<Sender>>::type;
 
-template <typename Predecessor>
-struct _Sender<Predecessor>::type {
-  using SharedState = _SharedState<Predecessor>;
-  using value_type = completion_signature_for_t<Predecessor>;
+template <typename Sender>
+struct _Sender<Sender>::type {
+  using value_types = completion_signatures_of_t<Sender>;
+  
+  using SharedState = _SharedState<Sender>;
 
   std::shared_ptr<SharedState> shared_state_;
 
-  template <typename Pred, std::enable_if_t<!std::is_same_v<std::decay_t<Pred>, type>, int> = 0>
-  explicit type(Pred&& pred) : shared_state_(std::make_shared<SharedState>()) {
+  template <typename Sndr, std::enable_if_t<!std::is_same_v<remove_cvref_t<Sndr>, type>, int> = 0>
+  explicit type(Sndr&& sender) : shared_state_(std::make_shared<SharedState>()) {
     Start(shared_state_->op_state2_.emplace(
-        __conv{[&] { return Connect((Pred &&) pred, receiver_t<SharedState>{shared_state_}); }}));
+        __conv{[&] { return Connect((Sndr &&) sender, receiver_t<SharedState>{shared_state_}); }}));
   }
 
   template <typename Self, typename Receiver, _decays_to<Self, type, int> = 0>
-  friend auto Connect(Self&& self, Receiver&& receiver) -> Operation<Predecessor, Receiver> {
+  friend auto Connect(Self&& self, Receiver&& receiver) -> Operation<Sender, Receiver> {
     return {(Receiver &&) receiver, std::move(self.shared_state_)};
   }
 };
 
 struct ensure_started_t {
-  template <typename Predecessor, std::enable_if_t<_decays_to_sender<Predecessor>, int> = 0>
-  Sender<Predecessor> operator()(Predecessor&& pred) const {
-    return Sender<Predecessor>{(Predecessor &&) pred};
+  template <typename Sender,
+            std::enable_if_t<_is_sender<Sender> &&
+                                 _tag_invocable_with_completion_scheduler<ensure_started_t, Sender>,
+                             int> = 0>
+  auto operator()(Sender&& sender) const {
+    auto scheduler = GetCompletionScheduler(sender);
+    return tag_invoke(ensure_started_t{}, std::move(scheduler), (Sender &&) sender);
+  }
+
+  template <
+      typename Sender,
+      std::enable_if_t<_is_sender<Sender> &&
+                           !_tag_invocable_with_completion_scheduler<ensure_started_t, Sender> &&
+                           tag_invocable<ensure_started_t, Sender>,
+                       int> = 0>
+  auto operator()(Sender&& sender) const {
+    return tag_invoke(ensure_started_t{}, (Sender &&) sender);
+  }
+
+  template <
+      typename Sender,
+      std::enable_if_t<_is_sender<Sender> &&
+                           !_tag_invocable_with_completion_scheduler<ensure_started_t, Sender> &&
+                           !tag_invocable<ensure_started_t, Sender>,
+                       int> = 0>
+  sender_t<Sender> operator()(Sender&& sender) const {
+    return sender_t<Sender>{(Sender &&) sender};
   }
 };
 
@@ -131,6 +157,6 @@ struct ensure_started_t {
 using __ensure_started::ensure_started_t;
 inline constexpr ensure_started_t EnsureStarted{};
 
-}
+}  // namespace mmdeploy
 
 #endif  // MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_ENSURE_STARTED_H_

@@ -24,64 +24,70 @@ struct TaskBase {
   void (*execute_)(TaskBase*) noexcept;
 };
 
-template <class Receiver>
-class Operation;
+template <typename Receiver>
+struct _Operation {
+  struct type;
+};
+template <typename Receiver>
+using operation_t = typename _Operation<std::decay_t<Receiver>>::type;
+
+class StaticThreadPool;
+
+struct Scheduler {
+  template <typename Receiver>
+  friend struct _Operation;
+
+  struct Sender {
+    using value_types = std::tuple<>;
+
+    template <typename Receiver>
+    operation_t<Receiver> MakeOperation(Receiver&& r) const {
+      return {pool_, (Receiver &&) r};
+    }
+
+    template <typename Receiver>
+    friend operation_t<Receiver> Connect(Sender s, Receiver&& r) {
+      return s.MakeOperation((Receiver &&) r);
+    }
+
+    friend auto tag_invoke(get_completion_scheduler_t, const Sender& sender) noexcept -> Scheduler {
+      return Scheduler{sender.pool_};
+    }
+
+    friend struct Scheduler;
+
+    explicit Sender(StaticThreadPool& pool) noexcept : pool_(pool) {}
+
+    StaticThreadPool& pool_;
+  };
+
+  Sender MakeSender_() const { return Sender{*pool_}; }
+
+  friend void* GetSchedulerId(const Scheduler& self) { return self.pool_; }
+
+  friend class StaticThreadPool;
+
+ public:
+  explicit Scheduler(StaticThreadPool& pool) noexcept : pool_(&pool) {}
+
+  friend bool operator==(Scheduler a, Scheduler b) noexcept { return a.pool_ == b.pool_; }
+
+  friend bool operator!=(Scheduler a, Scheduler b) noexcept { return a.pool_ != b.pool_; }
+
+  Sender Schedule() const noexcept { return MakeSender_(); }
+
+ private:
+  StaticThreadPool* pool_{nullptr};
+};
 
 class StaticThreadPool {
-  template <class Receiver>
-  friend class Operation;
+  template <typename Receiver>
+  friend struct _Operation;
 
  public:
   StaticThreadPool();
   explicit StaticThreadPool(std::uint32_t thread_count);
   ~StaticThreadPool();
-
-  struct Scheduler {
-    bool operator==(const Scheduler&) const;
-
-   private:
-    template <class Receiver>
-    friend class Operation;
-
-    class Sender {
-      template <class Receiver>
-      Operation<std::decay_t<Receiver>> MakeOperation_(Receiver&& r) const {
-        return {pool_, (Receiver &&) r};
-      }
-
-      template <class Receiver>
-      friend Operation<std::decay_t<Receiver>> Connect(Sender s, Receiver&& r) {
-        return s.MakeOperation_((Receiver &&) r);
-      }
-
-      friend StaticThreadPool::Scheduler GetCompletionScheduler(Sender s) noexcept {
-        return StaticThreadPool::Scheduler{s.pool_};
-      }
-
-      friend struct StaticThreadPool::Scheduler;
-
-      explicit Sender(StaticThreadPool& pool) noexcept : pool_(pool) {}
-
-      StaticThreadPool& pool_;
-
-     public:
-      using value_type = std::tuple<>;
-    };
-
-    Sender MakeSender_() const { return Sender{*pool_}; }
-
-    friend Sender mmdeploySchedule(const Scheduler& s) noexcept { return s.MakeSender_(); }
-
-    friend void* GetSchedulerId(const Scheduler& self) { return self.pool_; }
-
-    friend class StaticThreadPool;
-
-   public:
-    explicit Scheduler(StaticThreadPool& pool) noexcept : pool_(&pool) {}
-
-   private:
-    StaticThreadPool* pool_;
-  };
 
   Scheduler GetScheduler() noexcept { return Scheduler{*this}; }
 
@@ -100,7 +106,7 @@ class StaticThreadPool {
     std::mutex mutex_;
     std::condition_variable cv_;
     intrusive_queue<&TaskBase::next_> queue_;
-    bool stop_requested_;
+    bool stop_requested_{false};
   };
 
   void Run(std::uint32_t index) noexcept;
@@ -114,23 +120,23 @@ class StaticThreadPool {
   std::atomic<std::uint32_t> next_thread_;
 };
 
-template <class Receiver>
-class Operation : TaskBase {
-  friend StaticThreadPool::Scheduler::Sender;
+template <typename Receiver>
+struct _Operation<Receiver>::type : TaskBase {
+  friend Scheduler::Sender;
 
   StaticThreadPool& pool_;
   Receiver receiver_;
 
-  Operation(StaticThreadPool& pool, Receiver&& r) : pool_(pool), receiver_((Receiver &&) r) {
+  type(StaticThreadPool& pool, Receiver&& r) : TaskBase{}, pool_(pool), receiver_((Receiver &&) r) {
     this->execute_ = [](TaskBase* t) noexcept {
-      auto& op = *static_cast<Operation*>(t);
+      auto& op = *static_cast<type*>(t);
       SetValue((Receiver &&) op.receiver_);
     };
   }
 
   void enqueue_(TaskBase* op) const { return pool_.Enqueue(op); }
 
-  friend void Start(Operation& op) noexcept { op.enqueue_(&op); }
+  friend void Start(type& op) noexcept { op.enqueue_(&op); }
 };
 
 inline StaticThreadPool::StaticThreadPool()
@@ -193,7 +199,7 @@ inline void StaticThreadPool::Join() noexcept {
 }
 
 inline void StaticThreadPool::Enqueue(TaskBase* task) noexcept {
-  const std::uint32_t thread_count = static_cast<std::uint32_t>(threads_.size());
+  const auto thread_count = static_cast<std::uint32_t>(threads_.size());
   const std::uint32_t start_index =
       next_thread_.fetch_add(1, std::memory_order_relaxed) % thread_count;
   for (std::uint32_t i = 0; i < thread_count; ++i) {
@@ -263,36 +269,48 @@ inline void StaticThreadPool::ThreadState::request_stop() {
 
 namespace __bulk {
 
-template <class CvrefSender, class Shape, class Fun, class Receiver>
-struct _Operation;
+template <typename CvrefSender, typename Shape, typename Func, typename Receiver>
+struct _Operation {
+  struct type;
+};
+template <typename CvrefSender, typename Shape, typename Func, typename Receiver>
+using operation_t = typename _Operation<CvrefSender, Shape, Func, Receiver>::type;
 
-template <class Receiver, class Shape, class Fun, class Tuple>
+template <typename Receiver, typename Shape, typename Func, typename Tuple>
 struct _Receiver {
+  struct type;
+};
+template <typename Receiver, typename Shape, typename Func, typename Tuple>
+using receiver_t = typename _Receiver<remove_cvref_t<Receiver>, Shape, Func, Tuple>::type;
+
+template <typename Receiver, typename Shape, typename Func, typename Tuple>
+struct _Receiver<Receiver, Shape, Func, Tuple>::type {
   struct State {
-    Receiver rcvr_;
+    Receiver receiver_;
     Shape shape_;
-    Fun fun_;
-    std::optional<Tuple> vals_;
-    StaticThreadPool::Scheduler sched_;
+    Func func_;
+    std::optional<Tuple> values_;
+    Scheduler scheduler_;
     std::atomic<Shape> count_;
   };
 
   std::shared_ptr<State> state_;
 
-  _Receiver(Receiver&& rcvr, Shape shape, Fun fun, StaticThreadPool::Scheduler sched)
-      : state_(new State{(Receiver &&) rcvr, shape, (Fun &&) fun, std::nullopt, sched, shape}) {}
+  type(Receiver&& receiver, Shape shape, Func func, Scheduler scheduler)
+      : state_(new State{(Receiver &&) receiver, shape, (Func &&) func, std::nullopt, scheduler,
+                         shape}) {}
 
-  template <class... As>
-  friend void SetValue(_Receiver&& self, As&&... as) {
+  template <typename... As>
+  friend void SetValue(type&& self, As&&... as) {
     auto& state = self.state_;
-    state->vals_.emplace((As &&) as...);
+    state->values_.emplace((As &&) as...);
     for (Shape index = {}; index < state->shape_; ++index) {
-      StartDetached(Then(Schedule(state->sched_), [state, index] {
-        std::apply([&](auto&... vals) { state->fun_(index, vals...); }, state->vals_.value());
+      StartDetached(Then(Schedule(state->scheduler_), [state, index] {
+        std::apply([&](auto&... vals) { state->func_(index, vals...); }, state->values_.value());
         if (0 == --state->count_) {
           std::apply(
-              [&](auto&... vals) { SetValue((Receiver &&) state->rcvr_, std::move(vals)...); },
-              state->vals_.value());
+              [&](auto&... vals) { SetValue(std::move(state->receiver_), std::move(vals)...); },
+              state->values_.value());
         }
         return 0;
       }));
@@ -300,29 +318,38 @@ struct _Receiver {
   }
 };
 
-template <class Sender, class Shape, class Fun>
+template <typename Sender, typename Shape, typename Func>
 struct _Sender {
-  using value_type = completion_signature_for_t<Sender>;
+  struct type;
+};
+template <typename Sender, typename Shape, typename Func>
+using sender_t = typename _Sender<remove_cvref_t<Sender>, remove_cvref_t<Shape>, Func>::type;
 
-  Sender sndr_;
-  StaticThreadPool::Scheduler sched_;
+template <typename Sender, typename Shape, typename Func>
+struct _Sender<Sender, Shape, Func>::type {
+  using value_types = completion_signatures_of_t<Sender>;
+  template <typename Receiver>
+  using _receiver_t = receiver_t<Receiver, Shape, Func, value_types>;
+
+  Sender sender_;
+  Scheduler scheduler_;
   Shape shape_;
-  Fun fun_;
+  Func func_;
 
-  template <class Self, class Receiver, _decays_to<Self, _Sender, bool> = true>
-  friend auto Connect(Self&& self, Receiver&& rcvr) {
-    return Connect(((Self &&) self).sndr_, _Receiver<Receiver, Shape, Fun, value_type>{
-                                               (Receiver &&) rcvr, ((Self &&) self).shape_,
-                                               ((Self &&) self).fun_, ((Self &&) self).sched_});
+  template <typename Self, typename Receiver, _decays_to<Self, type, int> = 0>
+  friend auto Connect(Self&& self, Receiver&& receiver) {
+    return Connect(((Self &&) self).sender_,
+                   _receiver_t<Receiver>{(Receiver &&) receiver, ((Self &&) self).shape_,
+                                         ((Self &&) self).func_, ((Self &&) self).scheduler_});
   }
 };
 
 }  // namespace __bulk
 
-template <class Sender, class Shape, class Fun>
-auto Bulk(StaticThreadPool::Scheduler sched, Sender&& sndr, Shape shape, Fun fun)
-    -> __bulk::_Sender<std::decay_t<Sender>, Shape, Fun> {
-  return {(Sender &&) sndr, sched, shape, (Fun &&) fun};
+template <typename Sender, typename Shape, typename Func>
+__bulk::sender_t<Sender, Shape, Func> tag_invoke(bulk_t, Scheduler scheduler, Sender&& sender,
+                                                 Shape&& shape, Func&& func) {
+  return {(Sender &&) sender, scheduler, (Shape &&) shape, (Func &&) func};
 }
 
 }  // namespace __static_thread_pool

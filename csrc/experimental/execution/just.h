@@ -5,6 +5,7 @@
 
 #include <tuple>
 
+#include "concepts.h"
 #include "utility.h"
 
 namespace mmdeploy {
@@ -16,7 +17,7 @@ struct _Operation {
   struct type;
 };
 template <typename Receiver, typename... Ts>
-using Operation = typename _Operation<std::decay_t<Receiver>, Ts...>::type;
+using operation_t = typename _Operation<remove_cvref_t<Receiver>, Ts...>::type;
 
 template <typename Receiver, typename... Ts>
 struct _Operation<Receiver, Ts...>::type {
@@ -34,28 +35,28 @@ struct _Sender {
   struct type;
 };
 template <typename... Ts>
-using Sender = typename _Sender<std::decay_t<Ts>...>::type;
+using sender_t = typename _Sender<std::decay_t<Ts>...>::type;
 
 template <typename... Ts>
 struct _Sender<Ts...>::type {
-  using value_type = std::tuple<Ts...>;
-  value_type values_;
+  using value_types = std::tuple<Ts...>;
+  value_types values_;
 
   template <typename Receiver>
-  friend Operation<Receiver, Ts...> Connect(const type& self, Receiver&& receiver) {
+  friend operation_t<Receiver, Ts...> Connect(const type& self, Receiver&& receiver) {
     return {self.values_, (Receiver &&) receiver};
   }
 
   template <typename Receiver>
-  friend Operation<Receiver, Ts...> Connect(type&& self, Receiver&& receiver) {
+  friend operation_t<Receiver, Ts...> Connect(type&& self, Receiver&& receiver) {
     return {std::move(self).values_, (Receiver &&) receiver};
   }
 };
 
 struct just_t {
   template <typename... Ts>
-  Sender<Ts...> operator()(Ts&&... ts) const {
-    return Sender<Ts...>{{(Ts &&) ts...}};
+  sender_t<Ts...> operator()(Ts&&... ts) const {
+    return {{(Ts &&) ts...}};
   }
 };
 

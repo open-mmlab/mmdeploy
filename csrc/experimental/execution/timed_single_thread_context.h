@@ -32,11 +32,19 @@ class Scheduler;
 
 namespace __schedule_after {
 
-template <class Duration, class Receiver>
-struct _Operation;
+template <typename Duration, typename Receiver>
+struct _Operation {
+  struct type;
+};
+template <typename Duration, typename Receiver>
+using operation_t = typename _Operation<Duration, std::decay_t<Receiver>>::type;
 
-template <class Duration>
-struct _Sender;
+template <typename Duration>
+struct _Sender {
+  struct type;
+};
+template <typename Duration>
+using sender_t = typename _Sender<Duration>::type;
 
 }  // namespace __schedule_after
 
@@ -55,13 +63,18 @@ class Scheduler {
 
   template <class Rep, class Ratio>
   friend auto ScheduleAfter(const Scheduler& self, std::chrono::duration<Rep, Ratio> delay) noexcept
-      -> __schedule_after::_Sender<std::chrono::duration<Rep, Ratio>> {
+      -> __schedule_after::sender_t<std::chrono::duration<Rep, Ratio>> {
     return {self.context_, delay};
   }
 
+  //  template <class Duration = std::chrono::microseconds>
+  //  friend auto mmdeploySchedule(const Scheduler& self) noexcept
+  //      -> __schedule_after::sender_t<Duration> {
+  //    return {self.context_, Duration::zero()};
+  //  }
+ public:
   template <class Duration = std::chrono::microseconds>
-  friend auto mmdeploySchedule(const Scheduler& self) noexcept
-      -> __schedule_after::_Sender<Duration> {
+  __schedule_after::sender_t<Duration> Schedule(const Scheduler& self) noexcept {
     return {self.context_, Duration::zero()};
   }
 };
@@ -72,7 +85,7 @@ class TimedSingleThreadContext {
   using Clock = _timed_single_thread_context::Clock;
   using Scheduler = _timed_single_thread_context::Scheduler;
   using TaskBase = _timed_single_thread_context::TaskBase;
-  template <class Duration, class Receiver>
+  template <typename Duration, typename Receiver>
   friend struct _timed_single_thread_context::__schedule_after::_Operation;
   friend Scheduler;
 
@@ -98,39 +111,39 @@ class TimedSingleThreadContext {
 
 namespace _timed_single_thread_context::__schedule_after {
 
-template <class Duration, class Receiver>
-struct _Operation : TaskBase {
+template <typename Duration, typename Receiver>
+struct _Operation<Duration, Receiver>::type : TaskBase {
   Duration duration_;
   Receiver receiver_;
 
   template <class Receiver2>
-  _Operation(TimedSingleThreadContext& context, Duration duration, Receiver2&& receiver)
-      : TaskBase(context, &_Operation::ExecuteImpl),
+  type(TimedSingleThreadContext& context, Duration duration, Receiver2&& receiver)
+      : TaskBase(context, &type::ExecuteImpl),
         duration_(duration),
         receiver_((Receiver2 &&) receiver) {}
 
   static void ExecuteImpl(TaskBase* p) noexcept {
-    auto& self = *static_cast<_Operation*>(p);
+    auto& self = *static_cast<type*>(p);
     SetValue((Receiver &&) self.receiver_);
   }
 
   void Enqueue() { context_->Enqueue(this); }
 
-  friend void Start(_Operation& op_state) noexcept {
+  friend void Start(type& op_state) noexcept {
     op_state.due_time_ = Clock::now() + op_state.duration_;
     op_state.Enqueue();
   }
 };
 
 template <class Duration>
-struct _Sender {
-  using value_type = std::tuple<>;
+struct _Sender<Duration>::type {
+  using value_types = std::tuple<>;
 
   TimedSingleThreadContext* context_;
   Duration duration_;
 
-  template <class Self, class Receiver, _decays_to<Self, _Sender, bool> = true>
-  friend _Operation<Duration, Receiver> Connect(Self&& self, Receiver&& receiver) {
+  template <class Self, class Receiver, _decays_to<Self, type, int> = 0>
+  friend operation_t<Duration, Receiver> Connect(Self&& self, Receiver&& receiver) {
     return {*self.context_, self.duration_, (Receiver &&) receiver};
   }
 };

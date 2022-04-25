@@ -4,6 +4,7 @@
 #define MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_TYPE_ERASED_H_
 
 #include "execution.h"
+#include "static_thread_pool.h"
 
 namespace mmdeploy {
 
@@ -51,7 +52,7 @@ class _TypeErasedSender {
   using _Operation = _TypeErasedOperation<ValueTypes>;
   using _Receiver = _TypeErasedReceiver<ValueTypes>;
 
-  using value_type = ValueTypes;
+  using value_types = ValueTypes;
 
   struct Impl {
     virtual ~Impl() = default;
@@ -90,9 +91,9 @@ template <class... Ts>
 using TypeErasedSender = _TypeErasedSender<std::tuple<Ts...>>;
 
 template <class Sender>
-_TypeErasedSender(Sender&&) -> _TypeErasedSender<completion_signature_for_t<std::decay_t<Sender>>>;
+_TypeErasedSender(Sender&&) -> _TypeErasedSender<completion_signatures_of_t<Sender>>;
 
-template <class Sender, class ValueTypes = completion_signature_for_t<Sender>>
+template <class Sender, class ValueTypes = completion_signatures_of_t<Sender>>
 struct _TypeErasedSenderImpl : _TypeErasedSender<ValueTypes>::Impl {
  public:
   using Base = typename _TypeErasedSender<ValueTypes>::Impl;
@@ -108,7 +109,7 @@ struct _TypeErasedSenderImpl : _TypeErasedSender<ValueTypes>::Impl {
   }
 
   void* _GetCompletionSchedulerId() const override {
-    if constexpr (_has_completion_scheduler<Sender>) {
+    if constexpr (_has_completion_scheduler_v<Sender>) {
       auto sched = GetCompletionScheduler(sender_);
       return GetSchedulerId(sched);
     } else {
@@ -220,7 +221,9 @@ class _TypeErasedScheduler {
     // virtual SenderType _Then(SenderType, ThenFun) = 0;
     // virtual SenderType _LetValue() = 0;
     // virtual SenderType _On(SenderType) = 0;
-    virtual SenderType _Bulk(SenderType, size_t, BulkFun) = 0;
+    virtual SenderType _Bulk(SenderType input, size_t shape, BulkFun fun) {
+      return ::mmdeploy::Bulk(std::move(input), shape, std::move(fun));
+    }
     // virtual SenderType _Split(SenderType) = 0;
     // virtual SenderType _WhenAll(std::vector<SenderType>) = 0;
     // virtual SenderType _TransferWhenAll(std::vector<SenderType>) = 0;
@@ -235,11 +238,7 @@ class _TypeErasedScheduler {
 
   explicit _TypeErasedScheduler(std::shared_ptr<Impl> impl) : impl_(std::move(impl)) {}
 
-  template <class Self,
-            class = std::enable_if_t<std::is_same_v<std::decay_t<Self>, _TypeErasedScheduler>>>
-  friend _TypeErasedSender<std::tuple<>> mmdeploySchedule(Self&& self) {
-    return self.impl_->_Schedule();
-  }
+  _TypeErasedSender<std::tuple<>> Schedule() { return impl_->_Schedule(); }
 
   friend void* GetSchedulerId(const _TypeErasedScheduler& self) {
     return self.impl_->_GetSchedulerId();
@@ -259,6 +258,7 @@ template <class ValueTypes, class Scheduler>
 struct _TypeErasedSchedulerImpl : _TypeErasedScheduler<ValueTypes>::Impl {
   using _SenderType = _TypeErasedSender<std::tuple<>>;
 
+  using Base = typename _TypeErasedScheduler<ValueTypes>::Impl;
   using BulkFun = typename _TypeErasedScheduler<ValueTypes>::BulkFun;
   using EmptySender = typename _TypeErasedScheduler<ValueTypes>::EmptySender;
   using SenderType = typename _TypeErasedScheduler<ValueTypes>::SenderType;
@@ -276,10 +276,10 @@ struct _TypeErasedSchedulerImpl : _TypeErasedScheduler<ValueTypes>::Impl {
 
   SenderType _Bulk(SenderType input, size_t shape, BulkFun fun) override {
     assert(GetCompletionSchedulerId(input) == _GetSchedulerId());
-    if constexpr (detail::is_detected_v<_bulk_result_t, Scheduler, size_t, BulkFun>) {
-      return Bulk(scheduler_, std::move(input), shape, std::move(fun));
+    if constexpr (tag_invocable<bulk_t, Scheduler, SenderType, size_t, BulkFun>) {
+      return tag_invoke(Bulk, scheduler_, std::move(input), shape, std::move(fun));
     } else {
-      return Bulk(std::move(input), shape, std::move(fun));
+      return Base::_Bulk(std::move(input), shape, std::move(fun));
     }
   }
 

@@ -32,8 +32,8 @@ template <typename CvrefSender, typename Receiver, typename Fun>
 struct _Storage {
   using Sender = std::decay_t<CvrefSender>;
   using operation_t =
-      connect_result_t<__value_type_t<Fun, completion_signature_for_t<Sender>>, Receiver>;
-  std::optional<completion_signature_for_t<Sender>> args_;
+      connect_result_t<__value_type_t<Fun, completion_signatures_of_t<Sender>>, Receiver>;
+  std::optional<completion_signatures_of_t<Sender>> args_;
   // workaround for MSVC v142 toolset, copy elision does not work here
   std::optional<__conv_proxy<operation_t>> proxy_;
 };
@@ -43,24 +43,21 @@ struct _Operation {
   struct type;
 };
 template <typename CvrefSender, typename Receiver, typename Func>
-using Operation =
-    typename _Operation<CvrefSender, std::decay_t<Receiver>, std::decay_t<Func>>::type;
+using operation_t = typename _Operation<CvrefSender, remove_cvref_t<Receiver>, Func>::type;
 
 template <typename CvrefSender, typename Receiver, typename Func>
 struct _Receiver {
   struct type;
 };
 template <typename CvrefSender, typename Receiver, typename Func>
-using receiver_t =
-    typename _Receiver<CvrefSender, std::decay_t<Receiver>, std::decay_t<Func>>::type;
+using receiver_t = typename _Receiver<CvrefSender, Receiver, Func>::type;
 
 template <typename CvrefSender, typename Receiver, typename Func>
 struct _Receiver<CvrefSender, Receiver, Func>::type {
-  Operation<CvrefSender, Receiver, Func>* op_state_;
+  operation_t<CvrefSender, Receiver, Func>* op_state_;
 
   template <typename... As>
   friend void SetValue(type&& self, As&&... as) noexcept {
-    //    using operation_t = typename _Storage<CvrefSender, Receiver, Func>::operation_t;
     auto* op_state = self.op_state_;
     auto& args = op_state->storage_.args_.emplace((As &&) as...);
     op_state->storage_.proxy_.emplace([&] {
@@ -70,57 +67,80 @@ struct _Receiver<CvrefSender, Receiver, Func>::type {
   }
 };
 
-template <typename CvrefPredecessor, typename Receiver, typename Func>
-struct _Operation<CvrefPredecessor, Receiver, Func>::type {
-  using _receiver_t = receiver_t<CvrefPredecessor, Receiver, Func>;
+template <typename CvrefSender, typename Receiver, typename Func>
+struct _Operation<CvrefSender, Receiver, Func>::type {
+  using _receiver_t = receiver_t<CvrefSender, Receiver, Func>;
 
   friend void Start(type& self) noexcept { Start(self.op_state2_); }
 
   template <typename Receiver2>
-  type(CvrefPredecessor&& pred, Receiver2&& receiver, Func func)
-      : op_state2_(Connect((CvrefPredecessor &&) pred, _receiver_t{this})),
+  type(CvrefSender&& sender, Receiver2&& receiver, Func func)
+      : op_state2_(Connect((CvrefSender &&) sender, _receiver_t{this})),
         receiver_((Receiver2 &&) receiver),
         func_(std::move(func)) {}
 
-  connect_result_t<CvrefPredecessor, _receiver_t> op_state2_;
+  connect_result_t<CvrefSender, _receiver_t> op_state2_;
   Receiver receiver_;
   Func func_;
-  _Storage<CvrefPredecessor, Receiver, Func> storage_;
+  _Storage<CvrefSender, Receiver, Func> storage_;
 };
 
-template <typename Predecessor, typename Func>
+template <typename Sender, typename Func>
 struct _Sender {
   struct type;
 };
-template <typename Predecessor, typename Func>
-using Sender = typename _Sender<std::decay_t<Predecessor>, std::decay_t<Func>>::type;
+template <typename Sender, typename Func>
+using sender_t = typename _Sender<remove_cvref_t<Sender>, Func>::type;
 
-template <typename Predecessor, typename Func>
-struct _Sender<Predecessor, Func>::type {
+template <typename Sender, typename Func>
+struct _Sender<Sender, Func>::type {
   template <typename Self, typename Receiver>
-  using operation_t = Operation<_copy_cvref_t<Self, Predecessor>, Receiver, Func>;
+  using _operation_t = operation_t<_copy_cvref_t<Self, Sender>, Receiver, Func>;
 
-  using value_type =
-      completion_signature_for_t<__value_type_t<Func, completion_signature_for_t<Predecessor>>>;
+  using value_types =
+      completion_signatures_of_t<__value_type_t<Func, completion_signatures_of_t<Sender>>>;
 
   template <typename Self, typename Receiver, _decays_to<Self, type, int> = 0>
-  friend auto Connect(Self&& self, Receiver&& receiver) -> operation_t<Self, Receiver> {
-    return operation_t<Self, Receiver>{((Self &&) self).pred_, (Receiver &&) receiver,
-                                       ((Self &&) self).func_};
+  friend auto Connect(Self&& self, Receiver&& receiver) -> _operation_t<Self, Receiver> {
+    return _operation_t<Self, Receiver>{((Self &&) self).sender_, (Receiver &&) receiver,
+                                        ((Self &&) self).func_};
   }
-  Predecessor pred_;
+  Sender sender_;
   Func func_;
 };
 
+using std::enable_if_t;
+
 struct let_value_t {
-  template <typename Predecessor, typename Func,
-            std::enable_if_t<_decays_to_sender<Predecessor>, int> = 0>
-  Sender<Predecessor, Func> operator()(Predecessor&& pred, Func&& func) const {
-    return {(Predecessor &&) pred, (Func &&) func};
+  template <typename Sender, typename Func,
+            enable_if_t<_is_sender<Sender> &&
+                            _tag_invocable_with_completion_scheduler<let_value_t, Sender, Func>,
+                        int> = 0>
+  auto operator()(Sender&& sender, Func func) const {
+    auto scheduler = GetCompletionScheduler(sender);
+    return tag_invoke(let_value_t{}, std::move(scheduler), (Sender &&) sender, std::move(func));
+  }
+
+  template <typename Sender, typename Func,
+            enable_if_t<_is_sender<Sender> &&
+                            _tag_invocable_with_completion_scheduler<let_value_t, Sender, Func> &&
+                            tag_invocable<let_value_t, Sender, Func>,
+                        int> = 0>
+  auto operator()(Sender&& sender, Func func) const {
+    return tag_invoke(let_value_t{}, (Sender &&) sender, std::move(func));
+  }
+
+  template <typename Sender, typename Func,
+            enable_if_t<_is_sender<Sender> &&
+                            !_tag_invocable_with_completion_scheduler<let_value_t, Sender, Func> &&
+                            !tag_invocable<let_value_t, Sender>,
+                        int> = 0>
+  sender_t<Sender, Func> operator()(Sender&& sender, Func func) const {
+    return {(Sender &&) sender, std::move(func)};
   }
   template <typename Func>
-  _BinderBack<let_value_t, std::decay_t<Func>> operator()(Func&& func) const {
-    return {{}, {}, {(Func &&) func}};
+  _BinderBack<let_value_t, Func> operator()(Func func) const {
+    return {{}, {}, {std::move(func)}};
   }
 };
 

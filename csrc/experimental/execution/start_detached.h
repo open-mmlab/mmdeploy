@@ -16,9 +16,18 @@ struct _Receiver {
 };
 
 struct start_detached_t {
-  template <typename Predecessor>
-  void operator()(Predecessor&& pred) const {
-    __Submit((Predecessor &&) pred, _Receiver{});
+  template <
+      typename Sender,
+      std::enable_if_t<_is_sender<Sender> && tag_invocable<start_detached_t, Sender>, int> = 0>
+  void operator()(Sender&& sender) const {
+    (void)tag_invoke(start_detached_t{}, (Sender &&) sender);
+  }
+
+  template <
+      typename Sender,
+      std::enable_if_t<_is_sender<Sender> && !tag_invocable<start_detached_t, Sender>, int> = 0>
+  void operator()(Sender&& sender) const {
+    __Submit((Sender &&) sender, _Receiver{});
   }
 };
 

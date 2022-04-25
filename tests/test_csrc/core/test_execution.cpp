@@ -154,7 +154,7 @@ struct _Operation {
 
 template <class Sender>
 struct _Sender {
-  using value_type = std::tuple_element_t<0, completion_signature_for_t<Sender>>;
+  using value_types = std::tuple_element_t<0, completion_signatures_of_t<Sender>>;
   Sender sndr_;
 
   template <class Self, class Receiver, _decays_to<Self, _Sender, bool> = true>
@@ -268,14 +268,16 @@ TEST_CASE("test generic split", "[execution]") {
 }
 
 TEST_CASE("test bulk", "[execution]") {
+  __static_thread_pool::StaticThreadPool pool;
+  auto scheduler = pool.GetScheduler();
   constexpr int N = 1024;
   std::vector<float> a(N), b(N), c(N);
   std::iota(begin(a), end(a), 0);
   std::iota(rbegin(b), rend(b), 0);
-  auto init = Just(std::move(a), std::move(b), std::move(c));
-  auto fma = Bulk(init, N, [](int index, const auto& a, const auto& b, auto& c) {
-    c[index] += a[index] * b[index];
-  });
+  auto init = Just(std::move(a), std::move(b), std::move(c)) | Transfer(pool.GetScheduler());
+  auto fma = std::move(init) | Bulk(N, [](int index, const auto& a, const auto& b, auto& c) {
+               c[index] += a[index] * b[index];
+             });
   auto [x, y, z] = SyncWait(fma);
   MMDEPLOY_INFO("{}", z);
 }

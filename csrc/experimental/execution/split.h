@@ -33,18 +33,18 @@ struct _Receiver<SharedState>::type {
   }
 };
 
-template <typename Predecessor>
+template <typename Sender>
 struct _SharedState {
-  std::optional<completion_signature_for_t<Predecessor>> data_;
+  std::optional<completion_signatures_of_t<Sender>> data_;
 
   using Receiver = receiver_t<_SharedState>;
 
-  connect_result_t<Predecessor, Receiver> op_state2_;
+  connect_result_t<Sender, Receiver> op_state2_;
 
   std::atomic<void*> head_{nullptr};
 
-  explicit _SharedState(Predecessor& pred)
-      : op_state2_(Connect((Predecessor &&) pred, Receiver{*this})) {}
+  explicit _SharedState(Sender& sender)
+      : op_state2_(Connect((Sender &&) sender, Receiver{*this})) {}
 
   void _Notify() noexcept {
     void* const completion_state = static_cast<void*>(this);
@@ -59,19 +59,19 @@ struct _SharedState {
   }
 };
 
-template <typename Predecessor, typename Receiver>
+template <typename Sender, typename Receiver>
 struct _Operation {
   struct type;
 };
-template <typename Predecessor, typename Receiver>
-using Operation = typename _Operation<std::decay_t<Predecessor>, std::decay_t<Receiver>>::type;
+template <typename Sender, typename Receiver>
+using operation_t = typename _Operation<Sender, remove_cvref_t<Receiver>>::type;
 
-template <typename Predecessor, typename Receiver>
-struct _Operation<Predecessor, Receiver>::type : _OperationBase {
+template <typename Sender, typename Receiver>
+struct _Operation<Sender, Receiver>::type : _OperationBase {
   Receiver receiver_;
-  std::shared_ptr<_SharedState<Predecessor>> shared_state_;
+  std::shared_ptr<_SharedState<Sender>> shared_state_;
 
-  type(Receiver&& receiver, std::shared_ptr<_SharedState<Predecessor>> shared_state)
+  type(Receiver&& receiver, std::shared_ptr<_SharedState<Sender>> shared_state)
       : _OperationBase{nullptr, _Notify},
         receiver_(std::move(receiver)),
         shared_state_(std::move(shared_state)) {}
@@ -103,37 +103,59 @@ struct _Operation<Predecessor, Receiver>::type : _OperationBase {
   }
 };
 
-template <typename Predecessor>
+template <typename Sender>
 struct _Sender {
   struct type;
 };
-template <typename Predecessor>
-using Sender = typename _Sender<std::decay_t<Predecessor>>::type;
+template <typename Sender>
+using sender_t = typename _Sender<remove_cvref_t<Sender>>::type;
 
-template <typename Predecessor>
-struct _Sender<Predecessor>::type {
-  using SharedState = _SharedState<Predecessor>;
+template <typename Sender>
+struct _Sender<Sender>::type {
+  using SharedState = _SharedState<Sender>;
   template <typename Receiver>
-  using operation_t = Operation<Predecessor, Receiver>;
+  using _operation_t = operation_t<Sender, Receiver>;
 
-  using value_type = completion_signature_for_t<Predecessor>;
+  using value_types = completion_signatures_of_t<Sender>;
 
-  Predecessor pred_;
+  Sender sender_;
   std::shared_ptr<SharedState> shared_state_;
 
-  explicit type(Predecessor pred)
-      : pred_(std::move(pred)), shared_state_{std::make_shared<SharedState>(pred_)} {}
+  explicit type(Sender sender)
+      : sender_(std::move(sender)), shared_state_{std::make_shared<SharedState>(sender_)} {}
 
   template <typename Self, typename Receiver, _decays_to<Self, type, int> = 0>
-  friend auto Connect(Self&& self, Receiver&& receiver) -> operation_t<Receiver> {
-    return operation_t<Receiver>((Receiver &&) receiver, self.shared_state_);
+  friend auto Connect(Self&& self, Receiver&& receiver) -> _operation_t<Receiver> {
+    return _operation_t<Receiver>((Receiver &&) receiver, self.shared_state_);
   }
 };
 
 struct split_t {
-  template <typename Predecessor>
-  Sender<Predecessor> operator()(Predecessor&& pred) const {
-    return Sender<Predecessor>{(Predecessor &&) pred};
+  template <
+      typename Sender,
+      std::enable_if_t<
+          _is_sender<Sender> && _tag_invocable_with_completion_scheduler<split_t, Sender>, int> = 0>
+  auto operator()(Sender&& sender) const {
+    auto scheduler = GetCompletionScheduler(sender);
+    return tag_invoke(split_t{}, std::move(scheduler), (Sender &&) sender);
+  }
+
+  template <typename Sender,
+            std::enable_if_t<_is_sender<Sender> &&
+                                 !_tag_invocable_with_completion_scheduler<split_t, Sender> &&
+                                 tag_invocable<split_t, Sender>,
+                             int> = 0>
+  auto operator()(Sender&& sender) const {
+    return tag_invoke(split_t{}, (Sender &&) sender);
+  }
+
+  template <typename Sender,
+            std::enable_if_t<_is_sender<Sender> &&
+                                 !_tag_invocable_with_completion_scheduler<split_t, Sender> &&
+                                 !tag_invocable<split_t, Sender>,
+                             int> = 0>
+  sender_t<Sender> operator()(Sender&& sender) const {
+    return sender_t<Sender>{(Sender &&) sender};
   }
   _BinderBack<split_t> operator()() const { return {{}, {}, {}}; }
 };
@@ -143,6 +165,6 @@ struct split_t {
 using __split::split_t;
 inline constexpr split_t Split{};
 
-}
+}  // namespace mmdeploy
 
 #endif  // MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_SPLIT_H_

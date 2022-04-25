@@ -3,7 +3,11 @@
 #ifndef MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_BULK_H_
 #define MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_BULK_H_
 
+#include "closure.h"
+#include "concepts.h"
 #include "utility.h"
+
+#include "core/logger.h"
 
 namespace mmdeploy {
 
@@ -32,6 +36,7 @@ struct _Receiver<Receiver, Shape, Func>::type {
 
   template <class... As>
   friend void SetValue(type&& self, As&&... as) {
+    MMDEPLOY_ERROR("fallback Bulk");
     for (Shape i = 0; i < self.shape_; ++i) {
       self.func_(i, as...);
     }
@@ -45,43 +50,55 @@ struct _Operation<CvrefSender, Shape, Func, Receiver>::type {
   friend void Start(type& op_state) { Start(op_state.op_state2_); }
 };
 
-template <typename Predecessor, typename Shape, typename Func>
+template <typename Sender, typename Shape, typename Func>
 struct _Sender {
   struct type;
 };
-template <typename Predecessor, typename Shape, typename Func>
-using Sender =
-    typename _Sender<std::decay_t<Predecessor>, std::decay_t<Shape>, std::decay_t<Func>>::type;
+template <typename Sender, typename Shape, typename Func>
+using sender_t = typename _Sender<remove_cvref_t<Sender>, remove_cvref_t<Shape>, Func>::type;
 
-template <typename Predecessor, typename Shape, typename Func>
-struct _Sender<Predecessor, Shape, Func>::type {
-  using value_type = completion_signature_for_t<Predecessor>;
+template <typename Sender, typename Shape, typename Func>
+struct _Sender<Sender, Shape, Func>::type {
+  using value_types = completion_signatures_of_t<Sender>;
 
   template <typename Receiver>
   using _receiver_t = receiver_t<Receiver, Shape, Func>;
 
-  Predecessor pred_;
+  Sender pred_;
   Shape shape_;
   Func func_;
 
   template <typename Self, typename Receiver, _decays_to<Self, type, int> = 0>
   friend auto Connect(Self&& self, Receiver&& receiver)
-      -> Operation<_copy_cvref_t<Self, Predecessor>, Shape, Func, Receiver> {
+      -> Operation<_copy_cvref_t<Self, Sender>, Shape, Func, Receiver> {
     return {Connect(((Self &&) self).pred_,
                     _receiver_t<Receiver>{(Receiver &&) receiver, ((Self &&) self).shape_,
                                           ((Self &&) self).func_})};
   }
 };
 
+using std::enable_if_t;
+
 struct bulk_t {
-  template <typename Predecessor, typename Shape, typename Func,
-            std::enable_if_t<_decays_to_sender<Predecessor>, int> = 0>
-  auto operator()(Predecessor&& pred, Shape&& shape, Func func) const
-      -> __bulk::Sender<Predecessor, Shape, Func> {
-    return {(Predecessor &&) pred, (Shape &&) shape, std::move(func)};
+  template <typename Sender, typename Shape, typename Func,
+            enable_if_t<_is_sender<Sender> &&
+                            _tag_invocable_with_completion_scheduler<bulk_t, Sender, Shape, Func>,
+                        int> = 0>
+  auto operator()(Sender&& sender, Shape&& shape, Func func) const {
+    auto scheduler = GetCompletionScheduler(sender);
+    return tag_invoke(bulk_t{}, std::move(scheduler), (Sender &&) sender, (Shape &&) shape,
+                      (Func &&) func);
   }
-  template <class Shape, class Fun>
-  _BinderBack<bulk_t, Shape, Fun> operator()(Shape shape, Fun fun) const {
+
+  template <typename Sender, typename Shape, typename Func,
+            enable_if_t<_is_sender<Sender> &&
+                            !_tag_invocable_with_completion_scheduler<bulk_t, Sender, Shape, Func>,
+                        int> = 0>
+  auto operator()(Sender&& pred, Shape&& shape, Func func) const -> sender_t<Sender, Shape, Func> {
+    return {(Sender &&) pred, (Shape &&) shape, std::move(func)};
+  }
+  template <typename Shape, typename Func>
+  _BinderBack<bulk_t, Shape, Func> operator()(Shape shape, Func fun) const {
     return {{}, {}, {shape, std::move(fun)}};
   }
 };
@@ -91,8 +108,6 @@ struct bulk_t {
 using __bulk::bulk_t;
 inline constexpr bulk_t Bulk{};
 
-
-
-}
+}  // namespace mmdeploy
 
 #endif  // MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_BULK_H_

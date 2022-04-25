@@ -61,19 +61,17 @@ class RunLoop {
       RunLoop* const loop_;
 
      public:
-      using value_type = std::tuple<>;
+      using value_types = std::tuple<>;
     };
     friend RunLoop;
     explicit _Scheduler(RunLoop* loop) noexcept : loop_(loop) {}
 
    public:
-    friend _ScheduleTask mmdeploySchedule(const _Scheduler& self) noexcept {
-      return self._Schedule();
-    }
+    _ScheduleTask Schedule() const noexcept { return _ScheduleTask{loop_}; }
+
     bool operator==(const _Scheduler& other) const noexcept { return loop_ == other.loop_; }
 
    private:
-    _ScheduleTask _Schedule() const noexcept { return _ScheduleTask{loop_}; }
     RunLoop* loop_;
   };
   _Scheduler GetScheduler() { return _Scheduler{this}; }
