@@ -3096,7 +3096,7 @@ int main(int argc, char** argv) {
   // op chain fusion
   int reduced_node_count = 0;
   fuse_conv_reshape(mutable_graph, weights, node_reference, blob_names, reduced_node_count);
-  // fuse_weight_reshape(mutable_graph, weights, node_reference, blob_names, reduced_node_count);
+  fuse_weight_reshape(mutable_graph, weights, node_reference, blob_names, reduced_node_count);
   fuse_weight_transpose(mutable_graph, weights, node_reference, blob_names, reduced_node_count);
   fuse_shufflechannel(mutable_graph, weights, node_reference, blob_names, reduced_node_count);
   fuse_shufflechannel_split(mutable_graph, weights, node_reference, blob_names, reduced_node_count);
