@@ -16,7 +16,7 @@ struct _Operation {
   struct type;
 };
 template <typename Predecessor, typename Receiver>
-using Operation = typename _Operation<Predecessor, std::decay_t<Receiver>>::type;
+using Operation = typename _Operation<Predecessor, remove_cvref_t<Receiver>>::type;
 
 template <typename Predecessor, typename Receiver>
 struct _Operation<Predecessor, Receiver>::type {
@@ -52,6 +52,6 @@ struct __submit_t {
 using __submit::__submit_t;
 inline constexpr __submit_t __Submit{};
 
-}
+}  // namespace mmdeploy
 
 #endif  // MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_SUBMIT_H_

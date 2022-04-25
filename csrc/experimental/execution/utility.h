@@ -9,6 +9,8 @@
 #include "core/mpl/detected.h"
 #include "tag_invoke.h"
 
+#define MMDEPLOY_REQUIRES(...) std::enable_if_t<__VA_ARGS__, int> = 0
+
 namespace mmdeploy {
 
 template <typename T, typename E, typename U = void>
@@ -57,11 +59,6 @@ struct _types
 }
 #endif
 ;
-
-
-
-
-
 
 namespace __schedule {
 

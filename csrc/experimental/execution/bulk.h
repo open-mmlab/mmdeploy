@@ -5,9 +5,8 @@
 
 #include "closure.h"
 #include "concepts.h"
-#include "utility.h"
-
 #include "core/logger.h"
+#include "utility.h"
 
 namespace mmdeploy {
 
@@ -18,15 +17,14 @@ struct _Operation {
   struct type;
 };
 template <typename CvrefSender, typename Shape, typename Func, typename Receiver>
-using Operation =
-    typename _Operation<CvrefSender, Shape, std::decay_t<Func>, std::decay_t<Receiver>>::type;
+using Operation = typename _Operation<CvrefSender, Shape, Func, remove_cvref_t<Receiver>>::type;
 
 template <typename Receiver, typename Shape, typename Func>
 struct _Receiver {
   struct type;
 };
 template <typename Receiver, typename Shape, typename Func>
-using receiver_t = typename _Receiver<Receiver, Shape, std::decay_t<Func>>::type;
+using receiver_t = typename _Receiver<Receiver, Shape, Func>::type;
 
 template <typename Receiver, typename Shape, typename Func>
 struct _Receiver<Receiver, Shape, Func>::type {
@@ -64,14 +62,14 @@ struct _Sender<Sender, Shape, Func>::type {
   template <typename Receiver>
   using _receiver_t = receiver_t<Receiver, Shape, Func>;
 
-  Sender pred_;
+  Sender sender_;
   Shape shape_;
   Func func_;
 
   template <typename Self, typename Receiver, _decays_to<Self, type, int> = 0>
   friend auto Connect(Self&& self, Receiver&& receiver)
       -> Operation<_copy_cvref_t<Self, Sender>, Shape, Func, Receiver> {
-    return {Connect(((Self &&) self).pred_,
+    return {Connect(((Self &&) self).sender_,
                     _receiver_t<Receiver>{(Receiver &&) receiver, ((Self &&) self).shape_,
                                           ((Self &&) self).func_})};
   }
@@ -94,8 +92,9 @@ struct bulk_t {
             enable_if_t<_is_sender<Sender> &&
                             !_tag_invocable_with_completion_scheduler<bulk_t, Sender, Shape, Func>,
                         int> = 0>
-  auto operator()(Sender&& pred, Shape&& shape, Func func) const -> sender_t<Sender, Shape, Func> {
-    return {(Sender &&) pred, (Shape &&) shape, std::move(func)};
+  auto operator()(Sender&& sender, Shape&& shape, Func func) const
+      -> sender_t<Sender, Shape, Func> {
+    return {(Sender &&) sender, (Shape &&) shape, std::move(func)};
   }
   template <typename Shape, typename Func>
   _BinderBack<bulk_t, Shape, Func> operator()(Shape shape, Func fun) const {

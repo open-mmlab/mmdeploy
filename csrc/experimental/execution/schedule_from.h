@@ -91,7 +91,7 @@ struct _Sender {
   struct type;
 };
 template <typename Scheduler, typename Sender>
-using sender_t = typename _Sender<std::decay_t<Scheduler>, std::decay_t<Sender>>::type;
+using sender_t = typename _Sender<remove_cvref_t<Scheduler>, remove_cvref_t<Sender>>::type;
 
 template <typename Scheduler, typename Sender>
 struct _Sender<Scheduler, Sender>::type {
@@ -102,7 +102,7 @@ struct _Sender<Scheduler, Sender>::type {
 
   template <typename Self, typename Receiver, _decays_to<Self, type, int> = 0>
   friend auto Connect(Self&& self, Receiver&& receiver)
-      -> operation1_t<Scheduler, _copy_cvref_t<Self, Sender>, std::decay_t<Receiver>> {
+      -> operation1_t<Scheduler, _copy_cvref_t<Self, Sender>, remove_cvref_t<Receiver>> {
     return {self.scheduler_, ((Self &&) self).sender_, (Receiver &&) receiver};
   }
 

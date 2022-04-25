@@ -10,49 +10,46 @@ namespace mmdeploy {
 
 namespace __when_all_value {
 
-template <class Receiver>
-struct __Operation {
+template <typename Receiver>
+struct _Operation {
   struct type;
 };
+template <typename Receiver>
+using operation_t = typename _Operation<Receiver>::type;
 
-template <class Receiver>
-using _Operation = typename __Operation<Receiver>::type;
-
-template <class Receiver>
-struct __Receiver {
+template <typename Receiver>
+struct _Receiver {
   struct type;
 };
+template <typename Receiver>
+using receiver_t = typename _Receiver<Receiver>::type;
 
-template <class Receiver>
-using _Receiver = typename __Receiver<Receiver>::type;
-
-template <class Receiver>
-struct __Receiver<Receiver>::type {
+template <typename Receiver>
+struct _Receiver<Receiver>::type {
   size_t index_;
-  _Operation<Receiver>* op_state_;
+  operation_t<Receiver>* op_state_;
 
-  friend void SetValue(type&& self, Value val) noexcept {
-    self.op_state_->values_[self.index_] = std::move(val);
+  friend void SetValue(type&& self, Value value) noexcept {
+    self.op_state_->values_[self.index_] = std::move(value);
     if (0 == --self.op_state_->count_) {
       SetValue(std::move(self.op_state_->rcvr_), std::move(self.op_state_->values_));
     }
   }
 };
 
-template <class Receiver>
-struct __Operation<Receiver>::type {
+template <typename Receiver>
+struct _Operation<Receiver>::type {
   std::vector<TypeErasedOperation<Value>> ConnectChildren(
-      std::vector<TypeErasedSender<Value>> sndrs) {
+      std::vector<TypeErasedSender<Value>> senders) {
     std::vector<TypeErasedOperation<Value>> op_states;
-    op_states.reserve(sndrs.size());
-    for (size_t i = 0; i < sndrs.size(); ++i)
-      op_states.push_back(Connect(std::move(sndrs[i]), _Receiver<Receiver>{i, this}));
+    op_states.reserve(senders.size());
+    for (size_t i = 0; i < senders.size(); ++i)
+      op_states.push_back(Connect(std::move(senders[i]), receiver_t<Receiver>{i, this}));
     return op_states;
   }
-
-  type(std::vector<TypeErasedSender<Value>> sndrs, Receiver rcvr)
-      : child_op_states_{ConnectChildren(std::move(sndrs))},
-        rcvr_((Receiver &&) rcvr),
+  type(std::vector<TypeErasedSender<Value>> senders, Receiver receiver)
+      : child_op_states_{ConnectChildren(std::move(senders))},
+        rcvr_((Receiver &&) receiver),
         count_(child_op_states_.size()),
         values_(child_op_states_.size()) {}
 
@@ -68,27 +65,21 @@ struct __Operation<Receiver>::type {
   }
 };
 
-struct __Sender {
-  struct type;
-};
-
-using _Sender = __Sender::type;
-
-struct __Sender::type {
+struct sender_t {
   using value_types = std::tuple<std::vector<Value>>;
 
-  std::vector<TypeErasedSender<Value>> sndrs_;
+  std::vector<TypeErasedSender<Value>> senders_;
 
-  template <class Self, class Receiver, class = _decays_to<Self, type>>
-  friend _Operation<std::decay_t<Receiver>> Connect(Self&& self, Receiver&& rcvr) {
-    return {((Self &&) self).sndrs_, (Receiver &&) rcvr};
+  template <typename Self, typename Receiver, typename = _decays_to<Self, sender_t>>
+  friend operation_t<remove_cvref_t<Receiver>> Connect(Self&& self, Receiver&& receiver) {
+    return {((Self &&) self).senders_, (Receiver &&) receiver};
   }
 };
 
 }  // namespace __when_all_value
 
-inline __when_all_value::_Sender tag_invoke(when_all_t,
-                                            std::vector<TypeErasedSender<Value>> senders) {
+inline __when_all_value::sender_t tag_invoke(when_all_t,
+                                             std::vector<TypeErasedSender<Value>> senders) {
   return {std::move(senders)};
 }
 

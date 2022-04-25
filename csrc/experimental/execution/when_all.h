@@ -28,7 +28,7 @@ using receiver_t = typename _Receiver<CvrefReceiver, Index, Senders...>::type;
 
 template <typename CvrefReceiver, size_t Index, typename... Senders>
 struct _Receiver<CvrefReceiver, Index, Senders...>::type {
-  using Receiver = std::decay_t<CvrefReceiver>;
+  using Receiver = remove_cvref_t<CvrefReceiver>;
   Operation<CvrefReceiver, Senders...>* op_state_;
 
   template <typename... As>
@@ -40,7 +40,7 @@ struct _Receiver<CvrefReceiver, Index, Senders...>::type {
 
 template <typename CvrefReceiver, typename... Senders>
 struct _Operation<CvrefReceiver, Senders...>::type {
-  using Receiver = std::decay_t<CvrefReceiver>;
+  using Receiver = remove_cvref_t<CvrefReceiver>;
 
   template <size_t Index>
   using _receiver_t = receiver_t<CvrefReceiver, Index, Senders...>;
@@ -112,7 +112,7 @@ struct _Sender {
   struct type;
 };
 template <typename... Senders>
-using Sender = typename _Sender<std::decay_t<Senders>...>::type;
+using Sender = typename _Sender<remove_cvref_t<Senders>...>::type;
 
 template <typename... Senders>
 struct _Sender<Senders...>::type {
@@ -123,12 +123,12 @@ struct _Sender<Senders...>::type {
 
   template <typename Self, typename Receiver, _decays_to<Self, type, int> = 0>
   friend auto Connect(Self&& self, Receiver&& receiver)
-      -> operation_t<_copy_cvref_t<Self, std::decay_t<Receiver>>> {  // cvref encoded in receiver
-                                                                     // type
+      -> operation_t<_copy_cvref_t<Self, remove_cvref_t<Receiver>>> {  // cvref encoded in receiver
+                                                                       // type
     return std::apply(
         [&](auto&&... senders) {
           // MSVC v142 doesn't recognize operation_t here
-          return Operation<_copy_cvref_t<Self, std::decay_t<Receiver>>, Senders...>(
+          return Operation<_copy_cvref_t<Self, remove_cvref_t<Receiver>>, Senders...>(
               (Receiver &&) receiver, (decltype(senders)&&)senders...);
         },
         ((Self &&) self).senders_);

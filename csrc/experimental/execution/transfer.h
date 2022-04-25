@@ -38,7 +38,7 @@ struct transfer_t {
     return ScheduleFrom((Scheduler &&) scheduler, (Sender &&) sender);
   }
   template <typename Scheduler>
-  _BinderBack<transfer_t, std::decay_t<Scheduler>> operator()(Scheduler&& scheduler) const {
+  _BinderBack<transfer_t, remove_cvref_t<Scheduler>> operator()(Scheduler&& scheduler) const {
     return {{}, {}, {(Scheduler &&) scheduler}};
   }
 };

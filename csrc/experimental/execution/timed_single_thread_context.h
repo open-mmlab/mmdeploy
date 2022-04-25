@@ -37,7 +37,7 @@ struct _Operation {
   struct type;
 };
 template <typename Duration, typename Receiver>
-using operation_t = typename _Operation<Duration, std::decay_t<Receiver>>::type;
+using operation_t = typename _Operation<Duration, remove_cvref_t<Receiver>>::type;
 
 template <typename Duration>
 struct _Sender {

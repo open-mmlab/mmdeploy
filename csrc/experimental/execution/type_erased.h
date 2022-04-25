@@ -20,8 +20,6 @@ class _TypeErasedReceiver;
 template <class ValueTypes>
 class _TypeErasedScheduler;
 
-#define MMDEPLOY_REQUIRES(...) std::enable_if_t<__VA_ARGS__, int> = 0
-
 template <class... As>
 using _transfer_result_t = decltype(Transfer(std::declval<As>()...));
 

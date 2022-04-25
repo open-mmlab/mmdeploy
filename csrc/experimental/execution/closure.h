@@ -40,16 +40,16 @@ struct SenderAdaptorClosure {};
 
 template <typename T0, typename T1,
           typename = std::enable_if_t<
-              std::is_base_of_v<SenderAdaptorClosure<std::decay_t<T0>>, std::decay_t<T0>> &&
-              std::is_base_of_v<SenderAdaptorClosure<std::decay_t<T1>>, std::decay_t<T1>>>>
-_Compose<std::decay_t<T0>, std::decay_t<T1>> operator|(T0&& t0, T1&& t1) {
+              std::is_base_of_v<SenderAdaptorClosure<remove_cvref_t<T0>>, remove_cvref_t<T0>> &&
+              std::is_base_of_v<SenderAdaptorClosure<remove_cvref_t<T1>>, remove_cvref_t<T1>>>>
+_Compose<remove_cvref_t<T0>, remove_cvref_t<T1>> operator|(T0&& t0, T1&& t1) {
   return {(T0 &&) t0, (T1 &&) t1};
 }
 
 template <typename Sender, typename Closure,
-          typename = std::enable_if_t<_is_sender<Sender> &&
-                                      std::is_base_of_v<SenderAdaptorClosure<std::decay_t<Closure>>,
-                                                        std::decay_t<Closure>>>>
+          typename = std::enable_if_t<
+              _is_sender<Sender> && std::is_base_of_v<SenderAdaptorClosure<remove_cvref_t<Closure>>,
+                                                      remove_cvref_t<Closure>>>>
 std::invoke_result_t<Closure, Sender> operator|(Sender&& sender, Closure&& closure) {
   return ((Closure &&) closure)((Sender &&) sender);
 }

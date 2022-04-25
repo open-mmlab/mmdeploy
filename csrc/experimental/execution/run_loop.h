@@ -25,7 +25,7 @@ struct _Operation {
   struct type;
 };
 template <typename Receiver>
-using Operation = typename _Operation<std::decay_t<Receiver>>::type;
+using operation_t = typename _Operation<remove_cvref_t<Receiver>>::type;
 
 template <typename Receiver>
 struct _Operation<Receiver>::type final : _Task {
@@ -54,8 +54,8 @@ class RunLoop {
     class _ScheduleTask {
       friend _Scheduler;
       template <typename Receiver>
-      friend __impl::Operation<Receiver> Connect(const _ScheduleTask& self, Receiver&& receiver) {
-        return __impl::Operation<Receiver>{(Receiver &&) receiver, self.loop_};
+      friend __impl::operation_t<Receiver> Connect(const _ScheduleTask& self, Receiver&& receiver) {
+        return __impl::operation_t<Receiver>{(Receiver &&) receiver, self.loop_};
       }
       explicit _ScheduleTask(RunLoop* loop) noexcept : loop_(loop) {}
       RunLoop* const loop_;

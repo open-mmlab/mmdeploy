@@ -34,7 +34,7 @@ struct _Sender {
   struct type;
 };
 template <typename Sender, typename Func>
-using sender_t = typename _Sender<remove_cvref_t<Sender>, std::decay_t<Func>>::type;
+using sender_t = typename _Sender<remove_cvref_t<Sender>, remove_cvref_t<Func>>::type;
 
 template <typename Sender, typename Func>
 struct _Sender<Sender, Func>::type {
@@ -61,8 +61,8 @@ struct _Sender<Sender, Func>::type {
 struct then_t {
   template <typename Sender, typename Func,
             std::enable_if_t<_is_sender<Sender> &&
-                            _tag_invocable_with_completion_scheduler<then_t, Sender, Func>,
-                        int> = 0>
+                                 _tag_invocable_with_completion_scheduler<then_t, Sender, Func>,
+                             int> = 0>
   auto operator()(Sender&& sender, Func func) const {
     auto scheduler = GetCompletionScheduler(sender);
     return tag_invoke(then_t{}, std::move(scheduler), (Sender &&) sender, std::move(func));
@@ -70,9 +70,9 @@ struct then_t {
 
   template <typename Sender, typename Func,
             std::enable_if_t<_is_sender<Sender> &&
-                            !_tag_invocable_with_completion_scheduler<then_t, Sender, Func> &&
-                            tag_invocable<then_t, Sender, Func>,
-                        int> = 0>
+                                 !_tag_invocable_with_completion_scheduler<then_t, Sender, Func> &&
+                                 tag_invocable<then_t, Sender, Func>,
+                             int> = 0>
   auto operator()(Sender&& sender, Func func) const {
     auto scheduler = GetCompletionScheduler(sender);
     return tag_invoke(then_t{}, std::move(scheduler), (Sender &&) sender, std::move(func));
@@ -80,9 +80,9 @@ struct then_t {
 
   template <typename Sender, typename Func,
             std::enable_if_t<_is_sender<Sender> &&
-                            !_tag_invocable_with_completion_scheduler<then_t, Sender, Func> &&
-                            !tag_invocable<then_t, Sender, Func>,
-                        int> = 0>
+                                 !_tag_invocable_with_completion_scheduler<then_t, Sender, Func> &&
+                                 !tag_invocable<then_t, Sender, Func>,
+                             int> = 0>
   sender_t<Sender, Func> operator()(Sender&& sender, Func func) const {
     return {(Sender &&) sender, std::move(func)};
   }

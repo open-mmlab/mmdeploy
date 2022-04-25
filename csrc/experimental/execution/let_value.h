@@ -30,7 +30,7 @@ using __value_type_t = typename __value_type<Func, Tuple>::type;
 
 template <typename CvrefSender, typename Receiver, typename Fun>
 struct _Storage {
-  using Sender = std::decay_t<CvrefSender>;
+  using Sender = remove_cvref_t<CvrefSender>;
   using operation_t =
       connect_result_t<__value_type_t<Fun, completion_signatures_of_t<Sender>>, Receiver>;
   std::optional<completion_signatures_of_t<Sender>> args_;

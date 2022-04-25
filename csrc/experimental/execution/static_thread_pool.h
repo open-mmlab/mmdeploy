@@ -29,7 +29,7 @@ struct _Operation {
   struct type;
 };
 template <typename Receiver>
-using operation_t = typename _Operation<std::decay_t<Receiver>>::type;
+using operation_t = typename _Operation<remove_cvref_t<Receiver>>::type;
 
 class StaticThreadPool;
 
