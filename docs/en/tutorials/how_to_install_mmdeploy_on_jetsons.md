@@ -214,7 +214,7 @@ running the object detection example:
 
 ### FAQs
 
-- **F-1**: **For Jetson TX2 and Jetson Nano**, `#assertion/root/workspace/mmdeploy/csrc/backend_ops/tensorrt/batched_nms/trt_batched_nms.cpp,98` or `pre_top_k need to be reduced for devices with arch 7.2`
+- **F-1**: For **Jetson TX2** and **Jetson Nano**, may get the error: `#assertion/root/workspace/mmdeploy/csrc/backend_ops/tensorrt/batched_nms/trt_batched_nms.cpp,98` or `pre_top_k need to be reduced for devices with arch 7.2`.
 
   **Q**: There 2 steps you need to do:
   1. Set `MAX N` mode and process `sudo nvpmodel -m 0 && sudo jetson_clocks`.
