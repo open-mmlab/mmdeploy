@@ -84,11 +84,11 @@ def merge_report(work_dir: str):
         values = df.values.tolist()
 
         # sheet name
-        sheet_name = report_file.stem.split("_")[0]
+        sheet_name = report_file.stem.split('_')[0]
 
         # begin to write
         if res_file.exists():
-            # load if it exist
+            # load if it existed
             wb = openpyxl.load_workbook(str(res_file))
         else:
             wb = openpyxl.Workbook()
