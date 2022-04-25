@@ -2584,9 +2584,9 @@ static onnx::NodeProto* find_node_by_output_name(onnx::GraphProto* mutable_graph
 }
 
 /**
- * @brief
+ * @brief query output shape of target node
  *
- * @param mutable_graph query output shape of target node
+ * @param mutable_graph
  * @param target
  * @param weights
  * @param context <tensor name, shape>
@@ -2771,11 +2771,6 @@ static void fuse_conv_reshape(onnx::GraphProto* mutable_graph,
                               std::set<std::string>& blob_names, int& reduced_node_count) {
   std::map<std::string, std::vector<int>> shape_context;
   const int node_count = mutable_graph->node_size();
-
-  // for (int i = 0; i< node_count; ++i) {
-  //   onnx::NodeProto* node = mutable_graph->mutable_node(i);
-  //   fprintf(stdout, "node name %s type %s \n", node->name().c_str(), node->op_type().c_str());
-  // }
 
   for (int i = 0; i < node_count; i++) {
     onnx::NodeProto* conv = mutable_graph->mutable_node(i);
