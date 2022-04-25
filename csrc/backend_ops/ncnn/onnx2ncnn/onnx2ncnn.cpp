@@ -74,10 +74,11 @@ static std::vector<int> get_node_attr_ai(const onnx::NodeProto& node, const char
   return v;
 }
 
-static void set_node_attr_ai(onnx::NodeProto& node, const char* key, const std::vector<int>& value) {
+static void set_node_attr_ai(onnx::NodeProto& node, const char* key,
+                             const std::vector<int>& value) {
   onnx::AttributeProto* attr_group = node.add_attribute();
   attr_group->set_name(key);
-  for(auto v: value) {
+  for (auto v : value) {
     attr_group->add_ints(v);
   }
 
@@ -148,7 +149,7 @@ static onnx::TensorProto get_node_attr_tensor(const onnx::NodeProto& node, const
   return onnx::TensorProto();
 }
 
-template<typename T>
+template <typename T>
 static T get_node_attr_from_input(const onnx::TensorProto& tp) {
   T v = 0.f;
 
@@ -2565,7 +2566,8 @@ static void fuse_multiheadattention(onnx::GraphProto* mutable_graph,
  * @param name
  * @return onnx::NodeProto*
  */
-static onnx::NodeProto* find_node_by_output_name(onnx::GraphProto* mutable_graph, const std::string& name) {
+static onnx::NodeProto* find_node_by_output_name(onnx::GraphProto* mutable_graph,
+                                                 const std::string& name) {
   const int input_count = mutable_graph->node_size();
   // fprintf(stdout, "outputname: %s\n", name.c_str());
   for (int i = 0; i < input_count; ++i) {
@@ -2595,10 +2597,9 @@ static onnx::NodeProto* find_node_by_output_name(onnx::GraphProto* mutable_graph
  * @return std::tuple<bool, std::vector<int>>
  */
 static std::tuple<bool, std::vector<int>> query_shape(
-                                    onnx::GraphProto* mutable_graph,
-                                    onnx::NodeProto* target,
-                                    const std::map<std::string, onnx::TensorProto>& weights,
-                                    std::map<std::string, std::vector<int>>& context) {
+    onnx::GraphProto* mutable_graph, onnx::NodeProto* target,
+    const std::map<std::string, onnx::TensorProto>& weights,
+    std::map<std::string, std::vector<int>>& context) {
   // emplace all input nodes
   const int input_count = mutable_graph->input_size();
   for (int i = 0; i < input_count; i++) {
@@ -2619,7 +2620,7 @@ static std::tuple<bool, std::vector<int>> query_shape(
   std::vector<onnx::NodeProto*> serial = {target};
   {
     std::set<std::string> mark_as_appended = {};
-    while(true) {
+    while (true) {
       int start = 0, end = serial.size();
       for (int i = start; i < end; ++i) {
         auto node_ptr = serial[i];
@@ -2672,7 +2673,7 @@ static std::tuple<bool, std::vector<int>> query_shape(
   // for each node in serialization list, calculate the output shape
   {
     std::reverse(serial.begin(), serial.end());
-    for (auto node: serial) {
+    for (auto node : serial) {
       if (node->op_type() == "Conv") {
         auto inp = context[node->input(0)];
         auto weight = context[node->input(1)];
@@ -2681,13 +2682,13 @@ static std::tuple<bool, std::vector<int>> query_shape(
         int group = get_node_attr_i(*node, "group", 1);
         assert(group == 1);
 
-#define EXTRACT_REPEATED_PARAM(NAME, ATTR, DEFAULT) \
-  int ATTR = DEFAULT; \
-  { \
+#define EXTRACT_REPEATED_PARAM(NAME, ATTR, DEFAULT)        \
+  int ATTR = DEFAULT;                                      \
+  {                                                        \
     std::vector<int> _vec = get_node_attr_ai(*node, NAME); \
-    if (not _vec.empty()) { \
-      ATTR = _vec[0]; \
-    } \
+    if (not _vec.empty()) {                                \
+      ATTR = _vec[0];                                      \
+    }                                                      \
   }
 
         EXTRACT_REPEATED_PARAM("dilations", dilation, 1);
@@ -2732,7 +2733,7 @@ static std::tuple<bool, std::vector<int>> query_shape(
         }
 
         std::vector<int> inp = context[node->input(0)];
-        std::vector<int> w_data =  get_node_attr_from_input_ai(weights.at(node->input(1)));
+        std::vector<int> w_data = get_node_attr_from_input_ai(weights.at(node->input(1)));
 
         // concat data
         inp.insert(inp.end(), w_data.begin(), w_data.end());
@@ -2768,12 +2769,9 @@ static std::tuple<bool, std::vector<int>> query_shape(
  * @param reduced_node_count
  */
 static void fuse_conv_reshape(onnx::GraphProto* mutable_graph,
-                                    std::map<std::string, onnx::TensorProto>& weights,
-                                    std::map<std::string, int>& node_reference,
-                                    std::set<std::string>& blob_names, int& reduced_node_count
-                                    ) {
-
-
+                              std::map<std::string, onnx::TensorProto>& weights,
+                              std::map<std::string, int>& node_reference,
+                              std::set<std::string>& blob_names, int& reduced_node_count) {
   std::map<std::string, std::vector<int>> shape_context;
   const int node_count = mutable_graph->node_size();
 
@@ -2793,15 +2791,11 @@ static void fuse_conv_reshape(onnx::GraphProto* mutable_graph,
       continue;
     }
 
-    onnx::NodeProto* shape, *slice, *concat, *reshape;
+    onnx::NodeProto *shape, *slice, *concat, *reshape;
 
     // match [Shape ... Slice, Concat ... Reshape] from near sequence, skip useless Constant
     std::vector<std::tuple<std::string, onnx::NodeProto**>> candidates = {
-      {"Shape", &shape},
-      {"Slice", &slice},
-      {"Concat", &concat},
-      {"Reshape", &reshape}
-    };
+        {"Shape", &shape}, {"Slice", &slice}, {"Concat", &concat}, {"Reshape", &reshape}};
 
     int MAX = std::min(10, node_count - i);
     int pos_candidate = 0;
@@ -2813,7 +2807,7 @@ static void fuse_conv_reshape(onnx::GraphProto* mutable_graph,
       }
       if (node_ptr->op_type() == std::get<0>(candidates[pos_candidate])) {
         *(std::get<1>(candidates[pos_candidate])) = node_ptr;
-        pos_candidate ++;
+        pos_candidate++;
       }
     }
 
@@ -2871,7 +2865,6 @@ static void fuse_conv_reshape(onnx::GraphProto* mutable_graph,
       weights.erase(concat->input(1));
 
       blob_names.erase(reshape->input(0));
-
 
       // update edge
       shape->clear_input();
@@ -3545,7 +3538,7 @@ int main(int argc, char** argv) {
       fprintf(pp, "%-16s", "Gather");
     } else if (op == "Gelu") {
       fprintf(pp, "%-16s", "GELU");
-    }else if (op == "Gemm") {
+    } else if (op == "Gemm") {
       float alpha = get_node_attr_f(node, "alpha", 1.f);
       float beta = get_node_attr_f(node, "beta", 1.f);
       int transA = get_node_attr_i(node, "transA", 0);
