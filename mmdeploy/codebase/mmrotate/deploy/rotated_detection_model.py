@@ -5,7 +5,6 @@ import mmcv
 import numpy as np
 import torch
 from mmcv.utils import Registry
-from mmrotate.models.builder import build_head
 from mmrotate.models.detectors import RotatedBaseDetector
 
 from mmdeploy.codebase.base import BaseBackendModel
@@ -54,7 +53,6 @@ class End2EndModel(BaseBackendModel):
         self.deploy_cfg = deploy_cfg
         self.device = device
         self.show_score = False
-        self.bbox_head = build_head(model_cfg.model.bbox_head)
         self._init_wrapper(
             backend=backend, backend_files=backend_files, device=device)
 
