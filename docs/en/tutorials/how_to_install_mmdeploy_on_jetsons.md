@@ -117,3 +117,11 @@ Then install onnx through:
 pip install onnx
 ```
 Then reinstall mmdeploy.
+
+
+### FAQs
+
+- For Jetson TX2 and Jetson Nano, `#assertion/root/workspace/mmdeploy/csrc/backend_ops/tensorrt/batched_nms/trt_batched_nms.cpp,98` or `pre_top_k need to be reduced for devices with arch 7.2`
+
+    Set MAX N mode and `sudo nvpmodel -m 0 && sudo jetson_clocks`.
+    Reducing the number of [pre_top_k](https://github.com/open-mmlab/mmdeploy/blob/34879e638cc2db511e798a376b9a4b9932660fe1/configs/mmdet/_base_/base_static.py#L13) to reduce the number of proposals may resolve the problem.

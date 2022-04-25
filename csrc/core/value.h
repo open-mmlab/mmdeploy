@@ -3,7 +3,6 @@
 #ifndef MMDEPLOY_TYPES_VALUE_H_
 #define MMDEPLOY_TYPES_VALUE_H_
 
-#include <any>
 #include <cassert>
 #include <cstdint>
 #include <iostream>
@@ -16,6 +15,7 @@
 #include "core/logger.h"
 #include "core/status_code.h"
 #include "mpl/priority_tag.h"
+#include "mpl/static_any.h"
 #include "mpl/type_traits.h"
 
 namespace mmdeploy {
@@ -50,6 +50,11 @@ class ValueRef;
 template <typename T>
 class ValueIterator {
  public:
+  using value_type = Value;
+  using difference_type = std::ptrdiff_t;
+  using pointer = value_type*;
+  using reference = value_type&;
+  using iterator_category = std::bidirectional_iterator_tag;
   using object_iterator_t = typename T::Object::iterator;
   using array_iterator_t = typename T::Array::iterator;
   ValueIterator() = default;
@@ -164,6 +169,14 @@ struct is_cast_by_erasure<Tensor> : std::true_type {};
 template <>
 struct is_cast_by_erasure<Mat> : std::true_type {};
 
+MMDEPLOY_REGISTER_TYPE_ID(Device, 1);
+MMDEPLOY_REGISTER_TYPE_ID(Buffer, 2);
+MMDEPLOY_REGISTER_TYPE_ID(Stream, 3);
+MMDEPLOY_REGISTER_TYPE_ID(Event, 4);
+MMDEPLOY_REGISTER_TYPE_ID(Model, 5);
+MMDEPLOY_REGISTER_TYPE_ID(Tensor, 6);
+MMDEPLOY_REGISTER_TYPE_ID(Mat, 7);
+
 template <typename T>
 struct is_value : std::is_same<T, Value> {};
 
@@ -204,8 +217,8 @@ class Value {
   using Array = std::vector<Value>;
   using Object = std::map<std::string, Value>;
   using Pointer = std::shared_ptr<Value>;
-  using Dynamic = mmdeploy::Dynamic;
-  using Any = std::any;
+  using Dynamic = ::mmdeploy::Dynamic;
+  using Any = ::mmdeploy::StaticAny;
   using ValueRef = detail::ValueRef;
 
   static constexpr const auto kNull = ValueType::kNull;
@@ -349,7 +362,7 @@ class Value {
     if constexpr (std::is_void_v<T>) {
       return true;
     } else {
-      return typeid(T) == data_.any->type();
+      return traits::TypeId<T>::value == data_.any->type();
     }
   }
 
@@ -440,11 +453,11 @@ class Value {
 
   template <typename T>
   T* get_erased_ptr(EraseType<T>*) noexcept {
-    return _is_any() ? std::any_cast<T>(data_.any) : nullptr;
+    return _is_any() ? static_any_cast<T>(data_.any) : nullptr;
   }
   template <typename T>
   const T* get_erased_ptr(const EraseType<T>*) const noexcept {
-    return _is_any() ? std::any_cast<T>(const_cast<const std::any*>(data_.any)) : nullptr;
+    return _is_any() ? static_any_cast<T>(const_cast<const Any*>(data_.any)) : nullptr;
   }
 
   template <typename T, typename This>

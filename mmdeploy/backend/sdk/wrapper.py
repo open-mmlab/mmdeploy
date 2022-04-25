@@ -2,6 +2,7 @@
 import mmdeploy_python as c_api
 
 from mmdeploy.utils import Backend
+from mmdeploy.utils.timer import TimeCounter
 from ..base import BACKEND_WRAPPER, BaseWrapper
 
 
@@ -14,6 +15,7 @@ class SDKWrapper(BaseWrapper):
         # TODO: get device id somewhere
         self.handle = creator(model_file, device, 0)
 
+    @TimeCounter.count_time()
     def invoke(self, imgs):
         return self.handle(imgs)
 

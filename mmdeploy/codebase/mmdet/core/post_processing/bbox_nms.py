@@ -5,7 +5,7 @@ from torch import Tensor
 import mmdeploy
 from mmdeploy.core import FUNCTION_REWRITER, mark
 from mmdeploy.mmcv.ops import ONNXNMSop, TRTBatchedNMSop
-from mmdeploy.utils import is_dynamic_batch
+from mmdeploy.utils import Backend, is_dynamic_batch
 
 
 def select_nms_index(scores: torch.Tensor,
@@ -269,3 +269,60 @@ def multiclass_nms(*args, **kwargs):
     """Wrapper function for `_multiclass_nms`."""
     return mmdeploy.codebase.mmdet.core.post_processing._multiclass_nms(
         *args, **kwargs)
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    func_name='mmdeploy.codebase.mmdet.core.post_processing._multiclass_nms',
+    backend=Backend.TORCHSCRIPT.value)
+def multiclass_nms__torchscript(ctx,
+                                boxes: Tensor,
+                                scores: Tensor,
+                                max_output_boxes_per_class: int = 1000,
+                                iou_threshold: float = 0.5,
+                                score_threshold: float = 0.05,
+                                pre_top_k: int = -1,
+                                keep_top_k: int = -1):
+    """rewrite for torchscript batched nms.
+
+    Use batched_nms from torchvision instead of custom nms.
+    """
+    # TODO: simplify inference for non-batch model
+    from torchvision.ops import batched_nms
+    batch_size = scores.shape[0]
+    num_boxes = scores.shape[1]
+    num_classes = scores.shape[2]
+    box_per_cls = len(boxes.shape) == 4
+    scores = torch.where(scores > score_threshold, scores, scores.new_zeros(1))
+
+    # pre-topk
+    if pre_top_k > 0:
+        max_scores, _ = scores.max(-1)
+        _, topk_inds = max_scores.topk(pre_top_k)
+        batch_inds = torch.arange(batch_size).view(
+            -1, 1).expand_as(topk_inds).long()
+        boxes = boxes[batch_inds, topk_inds, ...]
+        scores = scores[batch_inds, topk_inds, :]
+        num_boxes = scores.shape[1]
+
+    idxs = torch.arange(0, batch_size, device=scores.device).unsqueeze(1)
+    idxs = idxs.repeat(1, num_boxes).view(-1)
+
+    keeps = [None] * num_classes
+    for cls_id in range(num_classes):
+        box = boxes if not box_per_cls else boxes[:, :, cls_id, :]
+        score = scores[:, :, cls_id]
+        box = box.view(-1, 4)
+        score = score.view(-1)
+        box_keep = batched_nms(box, score, idxs, iou_threshold=iou_threshold)
+        box_keep = box_keep[:max_output_boxes_per_class * batch_size]
+        batch_keep = idxs[box_keep]
+        cls_keep = torch.ones_like(box_keep) * cls_id
+        box_keep = box_keep - batch_keep * num_boxes
+        keeps[cls_id] = torch.stack([batch_keep, cls_keep, box_keep], dim=1)
+
+    keeps = torch.cat(keeps)
+    scores = scores.permute(0, 2, 1)
+    dets, labels = select_nms_index(
+        scores, boxes, keeps, batch_size, keep_top_k=keep_top_k)
+
+    return dets, labels

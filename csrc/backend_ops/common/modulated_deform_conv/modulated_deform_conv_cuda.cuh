@@ -68,7 +68,7 @@
 
 #include <float.h>
 
-#include "common_cuda_helper.hpp"
+#include "common_cuda_helper.cuh"
 
 template <typename T>
 __device__ T dmcn_im2col_bilinear(const T *input, const int data_width, const int height,

@@ -26,6 +26,8 @@ class ResizeBBox : public MMDetection {
                                         const float* scale_factor, float x_offset, float y_offset,
                                         int ori_width, int ori_height);
 
+  std::vector<Tensor> GetDetsLabels(const Value& prep_res, const Value& infer_res);
+
  protected:
   constexpr static Device kHost{0, 0};
   float score_thr_{0.f};

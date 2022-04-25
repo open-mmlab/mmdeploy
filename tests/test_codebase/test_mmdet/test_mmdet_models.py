@@ -11,6 +11,7 @@ import torch
 
 from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Backend, Codebase
+from mmdeploy.utils.config_utils import get_ir_config
 from mmdeploy.utils.test import (WrapModel, check_backend, get_model_outputs,
                                  get_rewrite_outputs)
 
@@ -125,6 +126,7 @@ def get_l2norm_forward_model():
     """L2Norm Neck Config."""
     from mmdet.models.necks.ssd_neck import L2Norm
     model = L2Norm(16)
+    torch.nn.init.uniform_(model.weight)
 
     model.requires_grad_(False)
     return model
@@ -221,6 +223,7 @@ def test_l2norm_forward(backend_type):
         dict(
             backend_config=dict(type=backend_type.value),
             onnx_config=dict(input_shape=None)))
+    seed_everything(1234)
     feat = torch.rand(1, 16, s, s)
     model_outputs = [l2norm_neck.forward(feat)]
     wrapped_model = WrapModel(l2norm_neck, 'forward')
@@ -543,7 +546,6 @@ def test_single_roi_extractor(backend_type: Backend):
         wrapped_model=single_roi_extractor,
         model_inputs=model_inputs,
         deploy_cfg=deploy_cfg)
-
     if isinstance(backend_outputs, dict):
         backend_outputs = backend_outputs.values()
     for model_output, backend_output in zip(model_outputs[0], backend_outputs):
@@ -1226,26 +1228,14 @@ def test_get_bboxes_of_vfnet_head(backend_type: Backend):
         assert rewrite_outputs is not None
 
 
-@pytest.mark.parametrize('backend_type',
-                         [Backend.ONNXRUNTIME, Backend.OPENVINO])
-def test_base_dense_head_get_bboxes(backend_type: Backend):
-    """Test get_bboxes rewrite of base dense head."""
-    check_backend(backend_type)
-    anchor_head = get_anchor_head_model()
-    anchor_head.cpu().eval()
-    s = 128
-    img_metas = [{
-        'scale_factor': np.ones(4),
-        'pad_shape': (s, s, 3),
-        'img_shape': (s, s, 3)
-    }]
-
-    output_names = ['dets', 'labels']
-
-    deploy_cfg = mmcv.Config(
+def get_deploy_cfg(backend_type: Backend, ir_type: str):
+    return mmcv.Config(
         dict(
             backend_config=dict(type=backend_type.value),
-            onnx_config=dict(output_names=output_names, input_shape=None),
+            onnx_config=dict(
+                type=ir_type,
+                output_names=['dets', 'labels'],
+                input_shape=None),
             codebase_config=dict(
                 type='mmdet',
                 task='ObjectDetection',
@@ -1257,6 +1247,26 @@ def test_base_dense_head_get_bboxes(backend_type: Backend):
                     keep_top_k=100,
                     background_label_id=-1,
                 ))))
+
+
+@pytest.mark.parametrize('backend_type, ir_type',
+                         [(Backend.ONNXRUNTIME, 'onnx'),
+                          (Backend.OPENVINO, 'onnx'),
+                          (Backend.TORCHSCRIPT, 'torchscript')])
+def test_base_dense_head_get_bboxes(backend_type: Backend, ir_type: str):
+    """Test get_bboxes rewrite of base dense head."""
+    check_backend(backend_type)
+    anchor_head = get_anchor_head_model()
+    anchor_head.cpu().eval()
+    s = 128
+    img_metas = [{
+        'scale_factor': np.ones(4),
+        'pad_shape': (s, s, 3),
+        'img_shape': (s, s, 3)
+    }]
+
+    deploy_cfg = get_deploy_cfg(backend_type, ir_type)
+    output_names = get_ir_config(deploy_cfg).get('output_names', None)
 
     # the cls_score's size: (1, 36, 32, 32), (1, 36, 16, 16),
     # (1, 36, 8, 8), (1, 36, 4, 4), (1, 36, 2, 2).

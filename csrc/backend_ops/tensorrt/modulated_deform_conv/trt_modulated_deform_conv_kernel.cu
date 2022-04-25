@@ -3,7 +3,7 @@
 #include <cuda_fp16.h>
 
 #include "common_cuda_helper.hpp"
-#include "trt_modulated_deform_conv_kernel.hpp"
+#include "modulated_deform_conv/modulated_deform_conv_cuda.cuh"
 #include "trt_plugin_helper.hpp"
 
 template <typename T>

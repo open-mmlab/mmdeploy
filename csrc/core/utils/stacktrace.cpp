@@ -36,7 +36,7 @@ std::string Stacktrace::to_string() const {
 }  // namespace mmdeploy
 
 #else
-
+#include <string>
 namespace mmdeploy {
 
 struct Stacktrace::Impl {};

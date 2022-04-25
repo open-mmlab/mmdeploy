@@ -1,14 +1,14 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import importlib
+import re
 from typing import Dict, List, Tuple, Union
 
 import mmcv
 
 from mmdeploy.apis import build_task_processor
 from mmdeploy.utils import (Backend, Task, get_backend, get_codebase,
-                            get_common_config, get_onnx_config,
-                            get_root_logger, get_task_type, is_dynamic_batch,
-                            load_config)
+                            get_common_config, get_ir_config, get_root_logger,
+                            get_task_type, is_dynamic_batch, load_config)
 from mmdeploy.utils.constants import SDK_TASK_MAP as task_map
 
 
@@ -89,12 +89,25 @@ def get_models(deploy_cfg: Union[str, mmcv.Config],
     """
     name, _ = get_model_name_customs(deploy_cfg, model_cfg, work_dir)
     precision = 'FP32'
-    onnx_name = get_onnx_config(deploy_cfg)['save_file']
-    net = onnx_name
+    ir_name = get_ir_config(deploy_cfg)['save_file']
+    net = ir_name
     weights = ''
     backend = get_backend(deploy_cfg=deploy_cfg)
+
+    def replace_suffix(file_name: str, dst_suffix: str) -> str:
+        """Replace the suffix to the destination one.
+
+        Args:
+            file_name (str): The file name to be operated.
+            dst_suffix (str): The destination suffix.
+
+        Return:
+            str: The file name of which the suffix has been replaced.
+        """
+        return re.sub(r'\.[a-z]+', dst_suffix, file_name)
+
     if backend == Backend.TENSORRT:
-        net = onnx_name.replace('.onnx', '.engine')
+        net = replace_suffix(ir_name, '.engine')
         common_cfg = get_common_config(deploy_cfg)
         fp16_mode = common_cfg.get('fp16_mode', False)
         int8_mode = common_cfg.get('int8_mode', False)
@@ -104,15 +117,17 @@ def get_models(deploy_cfg: Union[str, mmcv.Config],
             precision = 'INT8'
     elif backend == Backend.PPLNN:
         precision = 'FP16'
-        weights = onnx_name.replace('.onnx', '.json')
-        net = onnx_name
+        weights = replace_suffix(ir_name, '.json')
+        net = ir_name
     elif backend == Backend.OPENVINO:
-        net = onnx_name.replace('.onnx', '.xml')
-        weights = onnx_name.replace('.onnx', '.bin')
+        net = replace_suffix(ir_name, '.xml')
+        weights = replace_suffix(ir_name, '.bin')
     elif backend == Backend.NCNN:
-        net = onnx_name.replace('.onnx', '.param')
-        weights = onnx_name.replace('.onnx', '.bin')
-    elif backend == Backend.ONNXRUNTIME:
+        net = replace_suffix(ir_name, '.param')
+        weights = replace_suffix(ir_name, '.bin')
+        if 'precision' in deploy_cfg['backend_config']:
+            precision = deploy_cfg['backend_config']['precision']
+    elif backend in [Backend.ONNXRUNTIME, Backend.TORCHSCRIPT]:
         pass
     else:
         raise NotImplementedError(f'Not supported backend: {backend.value}.')
@@ -149,17 +164,20 @@ def get_inference_info(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
     module = 'Net'
     input = ['prep_output']
     output = ['infer_output']
-    onnx_config = get_onnx_config(deploy_cfg)
-    input_names = onnx_config.get('input_names', None)
+    ir_config = get_ir_config(deploy_cfg)
+    input_names = ir_config.get('input_names', None)
     input_name = input_names[0] if input_names else 'input'
     input_map = dict(img=input_name)
-    return dict(
+    return_dict = dict(
         name=name,
         type=type,
         module=module,
         input=input,
         output=output,
         input_map=input_map)
+    if 'use_vulkan' in deploy_cfg['backend_config']:
+        return_dict['use_vulkan'] = deploy_cfg['backend_config']['use_vulkan']
+    return return_dict
 
 
 def get_preprocess(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config):
@@ -191,8 +209,6 @@ def get_preprocess(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config):
         and 'RescaleToZeroOne' not in item['type']
     ]
     for i, transform in enumerate(transforms):
-        if transform['type'] == 'DefaultFormatBundle':
-            transforms[i] = dict(type='ImageToTensor', keys=['img'])
         if 'keys' in transform and transform['keys'] == ['lq']:
             transform['keys'] = ['img']
         if 'key' in transform and transform['key'] == 'lq':
@@ -320,14 +336,14 @@ def get_detail(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
     codebase['pth'] = pth
     codebase['config'] = model_cfg.filename
     codebase_config = deploy_cfg.get('codebase_config', dict())
-    onnx_config = get_onnx_config(deploy_cfg)
+    ir_config = get_ir_config(deploy_cfg)
     backend_config = deploy_cfg.get('backend_config', dict())
     calib_config = deploy_cfg.get('calib_config', dict())
     return dict(
         version=version,
         codebase=codebase,
         codebase_config=codebase_config,
-        onnx_config=onnx_config,
+        onnx_config=ir_config,
         backend_config=backend_config,
         calib_config=calib_config)
 

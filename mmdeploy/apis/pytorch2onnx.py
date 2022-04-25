@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
-from typing import Any, Optional, Union
+from typing import Any, Optional, Tuple, Union
 
 import mmcv
 import torch
@@ -10,13 +10,13 @@ from mmdeploy.utils import (get_backend, get_dynamic_axes, get_input_shape,
                             get_onnx_config, load_config)
 
 
-def torch2onnx_impl(model: torch.nn.Module, input: torch.Tensor,
+def torch2onnx_impl(model: torch.nn.Module, input: Union[torch.Tensor, Tuple],
                     deploy_cfg: Union[str, mmcv.Config], output_file: str):
     """Converting torch model to ONNX.
 
     Args:
         model (torch.nn.Module): Input pytorch model.
-        input (torch.Tensor): Input tensor used to convert model.
+        input (torch.Tensor | Tuple): Input tensor used to convert model.
         deploy_cfg (str | mmcv.Config): Deployment config file or
             Config object.
         output_file (str): Output file to save ONNX model.
@@ -32,6 +32,8 @@ def torch2onnx_impl(model: torch.nn.Module, input: torch.Tensor,
     output_names = onnx_cfg['output_names']
     axis_names = input_names + output_names
     dynamic_axes = get_dynamic_axes(deploy_cfg, axis_names)
+    verbose = not onnx_cfg.get('strip_doc_string', True) or onnx_cfg.get(
+        'verbose', False)
 
     # patch model
     patched_model = patch_model(model, cfg=deploy_cfg, backend=backend)
@@ -50,7 +52,7 @@ def torch2onnx_impl(model: torch.nn.Module, input: torch.Tensor,
             dynamic_axes=dynamic_axes,
             keep_initializers_as_inputs=onnx_cfg[
                 'keep_initializers_as_inputs'],
-            strip_doc_string=onnx_cfg.get('strip_doc_string', True))
+            verbose=verbose)
 
 
 def torch2onnx(img: Any,
@@ -101,7 +103,7 @@ def torch2onnx(img: Any,
 
     torch_model = task_processor.init_pytorch_model(model_checkpoint)
     data, model_inputs = task_processor.create_input(img, input_shape)
-    if not isinstance(model_inputs, torch.Tensor):
+    if not isinstance(model_inputs, torch.Tensor) and len(model_inputs) == 1:
         model_inputs = model_inputs[0]
 
     torch2onnx_impl(
