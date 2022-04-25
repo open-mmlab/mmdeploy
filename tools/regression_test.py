@@ -900,7 +900,8 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
         # test the model metric
         for metric_name in metrics_eval_list:
             if backend_test:
-                log_path = gen_log_path(backend_output_path, 'backend_test.log')
+                log_path = \
+                    gen_log_path(backend_output_path, 'backend_test.log')
                 get_backend_fps_metric(
                     deploy_cfg_path=str(deploy_cfg_path),
                     model_cfg_path=model_cfg_path,
@@ -1138,7 +1139,7 @@ def main():
                                        pytorch_metric, metric_info,
                                        report_dict, test_type, logger,
                                        backend_file_name, report_txt_path,
-                                       metafile_dataset, odels.get('name'))
+                                       metafile_dataset, models.get('name'))
 
         save_report(report_dict, report_save_path, logger)
 
