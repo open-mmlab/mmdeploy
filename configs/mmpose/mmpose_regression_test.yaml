@@ -9,13 +9,13 @@ globals:
     img_blank: &img_blank
   metric_info: &metric_info
     AP: # named after metafile.Results.Metrics
-      eval_name: AP # test.py --metrics args
-      metric_key: AP # eval OrderedDict key name
+      eval_name: mAP # test.py --metrics args
+      metric_key: AP # eval key name
       tolerance: 0.01
       task_name: Body 2D Keypoint # metafile.Results.Task
       dataset: COCO # metafile.Results.Dataset
     AR:
-      eval_name: AR
+      eval_name: mAP
       metric_key: AR
       tolerance: 0.01
       task_name: Body 2D Keypoint
