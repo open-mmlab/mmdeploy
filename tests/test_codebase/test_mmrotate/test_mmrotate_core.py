@@ -8,11 +8,7 @@ from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import (WrapFunction, backend_checker, get_onnx_model,
                                  get_rewrite_outputs)
 
-try:
-    import_codebase(Codebase.MMROTATE)
-except ImportError:
-    pytest.skip(
-        f'{Codebase.MMROTATE} is not installed.', allow_module_level=True)
+import_codebase(Codebase.MMROTATE)
 
 
 @backend_checker(Backend.ONNXRUNTIME)
