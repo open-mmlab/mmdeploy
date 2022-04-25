@@ -15,7 +15,7 @@
 //#include "handle.h"
 //#include "static_detector.h"
 
-#include "experimental/execution/pipeline2.h"
+#include "execution/graph/pipeline2.h"
 
 using namespace std;
 using namespace mmdeploy;

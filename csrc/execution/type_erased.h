@@ -4,7 +4,7 @@
 #define MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_TYPE_ERASED_H_
 
 #include "execution.h"
-#include "static_thread_pool.h"
+#include "execution/schedulers/static_thread_pool.h"
 
 namespace mmdeploy {
 

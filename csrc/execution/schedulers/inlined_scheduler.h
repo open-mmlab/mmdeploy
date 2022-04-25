@@ -3,7 +3,7 @@
 #ifndef MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_INLINED_SCHEDULER_H_
 #define MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_INLINED_SCHEDULER_H_
 
-#include "execution.h"
+#include "execution/execution.h"
 
 namespace mmdeploy {
 

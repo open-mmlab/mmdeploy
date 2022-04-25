@@ -6,10 +6,10 @@
 #include "catch.hpp"
 #include "core/utils/formatter.h"
 #include "core/value.h"
-#include "experimental/execution/inlined_scheduler.h"
-#include "experimental/execution/static_thread_pool.h"
-#include "experimental/execution/timed_single_thread_context.h"
-#include "experimental/execution/type_erased.h"
+#include "execution/schedulers/inlined_scheduler.h"
+#include "execution/schedulers/static_thread_pool.h"
+#include "execution/schedulers/timed_single_thread_context.h"
+#include "execution/type_erased.h"
 
 using namespace mmdeploy;
 

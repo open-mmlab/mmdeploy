@@ -4,6 +4,7 @@ add_subdirectory(backend_ops)
 
 if (MMDEPLOY_BUILD_SDK)
     add_subdirectory(core)
+    add_subdirectory(execution)
     add_subdirectory(utils)
     add_subdirectory(archive)
     add_subdirectory(device)

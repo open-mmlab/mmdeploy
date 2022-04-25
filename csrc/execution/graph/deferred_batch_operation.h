@@ -4,8 +4,8 @@
 #define MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_DEFERRED_BATCH_OPERATION_H_
 
 #include "core/operator.h"
-#include "experimental/execution/timed_single_thread_context.h"
-#include "pipeline2.h"
+#include "execution/graph/pipeline2.h"
+#include "execution/schedulers/timed_single_thread_context.h"
 
 namespace mmdeploy::async {
 

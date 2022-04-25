@@ -35,12 +35,6 @@ set(SRCS
         utils/device_utils.cpp
         utils/formatter.cpp
         utils/stacktrace.cpp
-        ../experimental/execution/execution.cpp
-        ../experimental/execution/timed_single_thread_context.cpp
-        ../experimental/execution/pipeline2.cpp
-        ../experimental/execution/inference.cpp
-        ../experimental/execution/deferred_batch_context.cpp
-        ../experimental/execution/scheduler.cpp
         )
 
 mmdeploy_add_library(${PROJECT_NAME} ${SRCS})

@@ -3,7 +3,7 @@
 #ifndef MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_INFERENCE_H_
 #define MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_INFERENCE_H_
 
-#include "pipeline2.h"
+#include "execution/graph/pipeline2.h"
 
 namespace mmdeploy::async {
 

@@ -1,9 +1,9 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
+#include "execution/graph/pipeline2.h"
+#include "execution/schedulers/single_thread_context.h"
+#include "execution/schedulers/static_thread_pool.h"
 #include "inlined_scheduler.h"
-#include "pipeline2.h"
-#include "single_thread_context.h"
-#include "static_thread_pool.h"
 
 namespace mmdeploy {
 

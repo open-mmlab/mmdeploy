@@ -4,8 +4,8 @@
 
 #include "archive/value_archive.h"
 #include "deferred_batch_operation.h"
+#include "execution/schedulers/inlined_scheduler.h"
 #include "graph/common.h"
-#include "inlined_scheduler.h"
 
 namespace mmdeploy {
 
