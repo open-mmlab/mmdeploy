@@ -197,9 +197,26 @@ cd /path/to/mmdeploy
 pip install -e .
 ```
 
+### Build MMDeploy SDK Example
+
+```shell
+cd ${MMDEPLOY_DIR}/build/install/example
+mkdir -p build && cd build
+cmake .. \
+  -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy \
+  -DTENSORRT_DIR=/usr/include/aarch64-linux-gnu
+make -j$(nproc)
+```
+
+running the object detection example:
+```shell
+./object_detection cuda ${work_dir} ${path/to/an/image}
+```
+
 ### FAQs
 
-- For Jetson TX2 and Jetson Nano, `#assertion/root/workspace/mmdeploy/csrc/backend_ops/tensorrt/batched_nms/trt_batched_nms.cpp,98` or `pre_top_k need to be reduced for devices with arch 7.2`
+- **F-1**: For Jetson TX2 and Jetson Nano, `#assertion/root/workspace/mmdeploy/csrc/backend_ops/tensorrt/batched_nms/trt_batched_nms.cpp,98` or `pre_top_k need to be reduced for devices with arch 7.2`
 
-    Set MAX N mode and `sudo nvpmodel -m 0 && sudo jetson_clocks`.
-    Reducing the number of [pre_top_k](https://github.com/open-mmlab/mmdeploy/blob/34879e638cc2db511e798a376b9a4b9932660fe1/configs/mmdet/_base_/base_static.py#L13) to reduce the number of proposals may resolve the problem.
+  **Q**: There tow step you need to do:
+  1. Set `MAX N` mode and process `sudo nvpmodel -m 0 && sudo jetson_clocks`.
+  2. Reducing the number of `pre_top_k` like [mmedt pre_top_k](https://github.com/open-mmlab/mmdeploy/blob/34879e638cc2db511e798a376b9a4b9932660fe1/configs/mmdet/_base_/base_static.py#L13) to reduce the number of proposals may resolve the problem. For Jetson Nano and TX2 I use `1000` to make it work.
