@@ -12,11 +12,11 @@ from mmdeploy.utils import Backend
     'mmcls.models.backbones.vision_transformer.VisionTransformer.forward',
     backend=Backend.NCNN.value)
 def visiontransformer__forward__ncnn(ctx, self, x):
-    """Rewrite `forward` of MultiHeadAttention used in vision_transformer for
-    ncnn backend.
+    """Rewrite `forward` of VisionTransformer for ncnn backend.
 
-    The chunk in original InvertedResidual.forward will convert to dynamic
-    `Slice` operator in ONNX, which will raise error in ncnn.
+    The chunk in original VisionTransformer.forward will convert
+    `self.cls_token` to `where` operator in ONNX, which will raise
+    error in ncnn.
 
     Args:
         ctx (ContextCaller): The context with additional information.
@@ -123,7 +123,8 @@ def multiheadattention__forward__ncnn(ctx, self, qkv_input):
 
     Args:
         ctx (ContextCaller): The context with additional information.
-        self (VisionTransformer): The instance of the class VisionTransformer.
+        self (MultiheadAttention): The instance of the class
+        MultiheadAttention.
         x (Tensor): Input features of shape (N, Cin, H, W).
     Returns:
         out (Tensor): A feature map output from MultiHeadAttention. The tensor
