@@ -80,10 +80,12 @@ class MultiHeadAttentionop(torch.autograd.Function):
         return torch.rand_like(q)
 
     @staticmethod
-    def symbolic(g, q: Tensor, k: Tensor, v: Tensor, q_weight: Tensor,
-                 q_bias: Tensor, k_weight: Tensor, k_bias: Tensor,
-                 v_weight: Tensor, v_bias: Tensor, o_weight: Tensor,
-                 o_bias: Tensor, embed_dims: int, num_heads: int):
+    def symbolic(g, q: torch._C.Value, k: torch._C.Value, v: torch._C.Value,
+                 q_weight: torch._C.Value, q_bias: torch._C.Value,
+                 k_weight: torch._C.Value, k_bias: torch._C.Value,
+                 v_weight: torch._C.Value, v_bias: torch._C.Value,
+                 o_weight: torch._C.Value, o_bias: torch._C.Value,
+                 embed_dims: int, num_heads: int):
 
         q_weight.setDebugName('q_weight')
         q_bias.setDebugName('q_bias')
