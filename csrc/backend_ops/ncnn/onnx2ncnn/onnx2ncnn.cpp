@@ -2791,13 +2791,13 @@ static void fuse_conv_reshape(onnx::GraphProto* mutable_graph,
       continue;
     }
 
-    onnx::NodeProto *shape, *slice, *concat, *reshape;
+    onnx::NodeProto *shape = nullptr, *slice = nullptr, *concat = nullptr, *reshape = nullptr;
 
     // match [Shape ... Slice, Concat ... Reshape] from near sequence, skip useless Constant
     std::vector<std::tuple<std::string, onnx::NodeProto**>> candidates = {
         {"Shape", &shape}, {"Slice", &slice}, {"Concat", &concat}, {"Reshape", &reshape}};
 
-    int MAX = std::min(10, node_count - i);
+    int MAX = std::min(10, node_count - i - 1);
     int pos_candidate = 0;
 
     for (int j = 0; j < MAX; ++j) {
