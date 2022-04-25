@@ -6,11 +6,13 @@ from collections import OrderedDict
 from pathlib import Path
 
 import mmcv
+import openpyxl
 import pandas as pd
 import yaml
 from torch.hub import download_url_to_file
 from torch.multiprocessing import set_start_method
 
+import mmdeploy.version
 from mmdeploy.utils import (get_backend, get_codebase, get_root_logger,
                             is_dynamic_shape, load_config)
 
@@ -54,6 +56,62 @@ def parse_args():
     args = parser.parse_args()
 
     return args
+
+
+def merge_report(work_dir: str):
+    """Merge all the report into one report.
+
+    Args:
+        work_dir (str): Work dir that including all reports.
+    """
+    work_dir = Path(work_dir)
+    res_file = work_dir.joinpath(
+        f'mmdeploy_regression_test_{mmdeploy.version.__version__}.xlsx')
+
+    if res_file.exists():
+        # delete if it existed
+        res_file.unlink()
+
+    for report_file in work_dir.iterdir():
+        if report_file.suffix != '.xlsx' or \
+                report_file.name == res_file or \
+                not report_file.is_file():
+            # skip other file
+            continue
+        # get info from report
+        df = pd.read_excel(report_file)
+        df.rename(columns={'Unnamed: 0': 'Index'}, inplace=True)
+
+        # get key then convert to list
+        keys = list(df.keys())
+        values = df.values.tolist()
+
+        # sheet name
+        sheet_name = report_file.stem.split('_')[0]
+
+        # begin to write
+        if res_file.exists():
+            # load if it existed
+            wb = openpyxl.load_workbook(str(res_file))
+        else:
+            wb = openpyxl.Workbook()
+
+        # delete if sheet already exist
+        if sheet_name in wb.sheetnames:
+            wb.remove_sheet(wb[sheet_name])
+        # create sheet
+        wb.create_sheet(title=sheet_name, index=0)
+        # write in row
+        wb[sheet_name].append(keys)
+        for value in values:
+            wb[sheet_name].append(value)
+        # delete the blank sheet
+        for name in wb.sheetnames:
+            ws = wb[name]
+            if ws.cell(1, 1).value is None:
+                wb.remove_sheet(ws)
+        # save to file
+        wb.save(res_file)
 
 
 def get_model_metafile_info(global_info: dict, model_info: dict,
@@ -1083,6 +1141,9 @@ def main():
                                        metafile_dataset, odels.get('name'))
 
         save_report(report_dict, report_save_path, logger)
+
+    # merge report
+    merge_report(str(work_dir))
 
 
 if __name__ == '__main__':
