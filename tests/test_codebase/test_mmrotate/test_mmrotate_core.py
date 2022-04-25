@@ -1,12 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import mmcv
+import numpy as np
 import pytest
 import torch
 
 from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Backend, Codebase
-from mmdeploy.utils.test import (WrapFunction, backend_checker, get_onnx_model,
-                                 get_rewrite_outputs)
+from mmdeploy.utils.test import (WrapFunction, backend_checker, check_backend,
+                                 get_onnx_model, get_rewrite_outputs)
 
 import_codebase(Codebase.MMROTATE)
 
@@ -122,3 +123,57 @@ def test_multiclass_nms_rotated_with_keep_top_k(pre_top_k):
         'multiclass_nms_rotated returned more values than "keep_top_k"\n' \
         f'dets.shape: {dets.shape}\n' \
         f'keep_top_k: {keep_top_k}'
+
+
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
+@pytest.mark.parametrize('add_ctr_clamp', [True, False])
+@pytest.mark.parametrize('max_shape,proj_xy,edge_swap',
+                         [(None, False, False),
+                          (torch.tensor([100, 200]), True, True)])
+def test_delta2bbox(backend_type: Backend, add_ctr_clamp: bool,
+                    max_shape: tuple, proj_xy: bool, edge_swap: bool):
+    check_backend(backend_type)
+    deploy_cfg = mmcv.Config(
+        dict(
+            onnx_config=dict(output_names=None, input_shape=None),
+            backend_config=dict(type=backend_type.value, model_inputs=None),
+            codebase_config=dict(type='mmrotate', task='RotatedDetection')))
+
+    # wrap function to enable rewrite
+    def delta2bbox(*args, **kwargs):
+        import mmrotate
+        return mmrotate.core.bbox.coder.delta_xywha_rbbox_coder.delta2bbox(
+            *args, **kwargs)
+
+    rois = torch.rand(5, 5)
+    deltas = torch.rand(5, 5)
+    original_outputs = delta2bbox(
+        rois,
+        deltas,
+        max_shape=max_shape,
+        add_ctr_clamp=add_ctr_clamp,
+        proj_xy=proj_xy,
+        edge_swap=edge_swap)
+
+    # wrap function to nn.Module, enable torch.onnx.export
+    wrapped_func = WrapFunction(
+        delta2bbox,
+        max_shape=max_shape,
+        add_ctr_clamp=add_ctr_clamp,
+        proj_xy=proj_xy,
+        edge_swap=edge_swap)
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_func,
+        model_inputs={
+            'rois': rois.unsqueeze(0),
+            'deltas': deltas.unsqueeze(0)
+        },
+        deploy_cfg=deploy_cfg)
+
+    if is_backend_output:
+        model_output = original_outputs.squeeze().cpu().numpy()
+        rewrite_output = rewrite_outputs[0].squeeze().cpu().numpy()
+        assert np.allclose(
+            model_output, rewrite_output, rtol=1e-03, atol=1e-05)
+    else:
+        assert rewrite_outputs is not None
