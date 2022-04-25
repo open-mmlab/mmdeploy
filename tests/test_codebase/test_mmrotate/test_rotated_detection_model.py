@@ -12,7 +12,11 @@ from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Backend, Codebase, load_config
 from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
 
-import_codebase(Codebase.MMROTATE)
+try:
+    import_codebase(Codebase.MMROTATE)
+except ImportError:
+    pytest.skip(
+        f'{Codebase.MMROTATE} is not installed.', allow_module_level=True)
 
 IMAGE_SIZE = 32
 
