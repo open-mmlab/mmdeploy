@@ -108,7 +108,8 @@ class End2EndModel(BaseBackendModel):
                 scale_factor = torch.from_numpy(scale_factor).to(
                     device=torch.device(self.device))
                 dets[:, :4] /= scale_factor
-
+            dets = dets.cpu().numpy()
+            labels = labels.cpu().numpy()
             dets_results = [
                 dets[labels == i, :] for i in range(len(self.CLASSES))
             ]

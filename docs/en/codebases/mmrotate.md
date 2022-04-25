@@ -15,6 +15,7 @@ Please refer to [official installation guide](https://mmrotate.readthedocs.io/en
 ### Example
 
 ```bash
+# convert ort
 python tools/deploy.py \
 configs/mmrotate/rotated-detection_onnxruntime_dynamic.py \
 $MMROTATE_DIR/configs/rotated_retinanet/rotated_retinanet_obb_r50_fpn_1x_dota_le135.py \
@@ -22,6 +23,21 @@ $MMROTATE_DIR/checkpoints/rotated_retinanet_obb_r50_fpn_1x_dota_le135-e4131166.p
 $MMROTATE_DIR/demo/demo.jpg \
 --work-dir work-dirs/mmrotate/rotated_retinanet/ort \
 --device cpu
+
+# compute metric
+python tools/test.py \
+    configs/mmrotate/rotated-detection_onnxruntime_dynamic.py \
+    $MMROTATE_DIR/configs/rotated_retinanet/rotated_retinanet_obb_r50_fpn_1x_dota_le135.py \
+    --model work-dirs/mmrotate/rotated_retinanet/ort/end2end.onnx \
+    --metrics mAP
+
+# generate submit file
+python tools/test.py \
+    configs/mmrotate/rotated-detection_onnxruntime_dynamic.py \
+    $MMROTATE_DIR/configs/rotated_retinanet/rotated_retinanet_obb_r50_fpn_1x_dota_le135.py \
+    --model work-dirs/mmrotate/rotated_retinanet/ort/end2end.onnx \
+    --format-only \
+    --metric-options submission_dir=work-dirs/mmrotate/rotated_retinanet/ort/Task1_results
 ```
 
 Note
