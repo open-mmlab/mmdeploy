@@ -42,14 +42,18 @@ def delta2bbox(ctx,
            (H, W). Default None.
         wh_ratio_clip (float): Maximum aspect ratio for boxes. Default
             16 / 1000.
-        clip_border (bool, optional): Whether clip the objects outside the
-            border of the image. Default True.
         add_ctr_clamp (bool): Whether to add center clamp. When set to True,
             the center of the prediction bounding box will be clamped to
             avoid being too far away from the center of the anchor.
             Only used by YOLOF. Default False.
         ctr_clamp (int): the maximum pixel shift to clamp. Only used by YOLOF.
             Default 32.
+        angle_range (str, optional): Angle representations. Defaults to 'oc'.
+        norm_factor (None|float, optional): Regularization factor of angle.
+        edge_swap (bool, optional): Whether swap the edge if w < h.
+            Defaults to False.
+        proj_xy (bool, optional): Whether project x and y according to angle.
+            Defaults to False.
 
     Return:
         bboxes (Tensor): Boxes with shape (N, num_classes * 5) or (N, 5),
