@@ -680,13 +680,23 @@ def replace_top_in_pipeline_json(backend_output_path: Path,
     logger.info('replace done')
 
 
+def gen_log_path(backend_output_path: Path, log_name: str):
+    log_path = backend_output_path.joinpath(log_name).absolute().resolve()
+    if log_path.exists():
+        # clear the log file
+        with open(log_path, 'w') as f_log:
+            f_log.write('')
+
+    return log_path
+
+
 def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
                        checkpoint_path: Path, work_dir: Path, device_type: str,
                        pytorch_metric: dict, metric_info: dict,
                        report_dict: dict, test_type: str,
-                       logger: logging.Logger, log_path: Path,
-                       backend_file_name: [str, list], report_txt_path: Path,
-                       metafile_dataset: str, model_name: str):
+                       logger: logging.Logger, backend_file_name: [str, list],
+                       report_txt_path: Path, metafile_dataset: str,
+                       model_name: str):
     """Convert model to onnx and then get metric.
 
     Args:
@@ -700,7 +710,6 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
         report_dict (dict): Report info dict.
         test_type (str): Test type. 'precision' or 'convert'.
         logger (logging.Logger): Logger.
-        log_path (Path): Path for logger file.
         backend_file_name (str | list): backend file save name.
         report_txt_path (Path): report txt path.
         metafile_dataset (str): Dataset type get from metafile.
@@ -833,6 +842,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
         # test the model metric
         for metric_name in metrics_eval_list:
             if backend_test:
+                log_path = gen_log_path(backend_output_path, 'backend_test.log')
                 get_backend_fps_metric(
                     deploy_cfg_path=str(deploy_cfg_path),
                     model_cfg_path=model_cfg_path,
@@ -859,6 +869,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
                 if codebase_name == 'mmcls':
                     replace_top_in_pipeline_json(backend_output_path, logger)
 
+                log_path = gen_log_path(backend_output_path, 'sdk_test.log')
                 # sdk test
                 get_backend_fps_metric(
                     deploy_cfg_path=str(sdk_config),
@@ -975,13 +986,6 @@ def main():
     work_dir = Path(args.work_dir)
     work_dir.mkdir(parents=True, exist_ok=True)
 
-    log_path = work_dir.joinpath('regression_test.log').absolute()
-    if log_path.exists():
-        # clear the log file
-        with open(log_path, 'w') as f_log:
-            f_log.write('')
-    logger.info(f'Saving log in {str(log_path.absolute().resolve())}')
-
     for deploy_yaml in args.deploy_yml:
 
         if not Path(deploy_yaml).exists():
@@ -1075,9 +1079,8 @@ def main():
                                        checkpoint_path, work_dir, args.device,
                                        pytorch_metric, metric_info,
                                        report_dict, test_type, logger,
-                                       log_path, backend_file_name,
-                                       report_txt_path, metafile_dataset,
-                                       models.get('name'))
+                                       backend_file_name, report_txt_path,
+                                       metafile_dataset, odels.get('name'))
 
         save_report(report_dict, report_save_path, logger)
 
