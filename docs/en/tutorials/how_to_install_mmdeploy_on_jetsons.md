@@ -155,7 +155,6 @@ PPL.CV is a high-performance image processing library of OpenPPL. Now, MMDeploy 
 git clone https://github.com/openppl-public/ppl.cv.git
 cd ppl.cv
 export PPLCV_DIR=$(pwd)
-git checkout tags/v0.6.2 -b v0.6.2
 ./build.sh cuda
 ```
 
