@@ -235,7 +235,10 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
     for _, v in test_yaml_metric_info.items():
         if v.get('dataset') is None:
             continue
-        using_dataset.update({v.get('dataset'): v.get('task_name')})
+        dataset_tmp = using_dataset.get(v.get('dataset'), [])
+        if v.get('task_name') not in dataset_tmp:
+            dataset_tmp.append(v.get('task_name'))
+        using_dataset.update({v.get('dataset'): dataset_tmp})
 
     # Get metrics info from metafile
     for metafile_metric in metafile_metric_info:
@@ -249,14 +252,14 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
             dataset = 'Set5'
 
         if (len(using_dataset) > 1) and (dataset not in using_dataset):
-            logger.debug(f'dataset not in {using_dataset}, skip it...')
+            logger.info(f'dataset not in {using_dataset}, skip it...')
             continue
         dataset_type += f'{dataset} | '
 
-        if using_dataset.get(dataset) != task_name:
+        if task_name not in using_dataset.get(dataset):
             # only add the metric with the correct dataset
-            logger.debug(f'task_name ({task_name}) is not '
-                         f'{using_dataset.get(dataset)}, skip it...')
+            logger.info(f'task_name ({task_name}) is not in'
+                        f'{using_dataset.get(dataset)}, skip it...')
             continue
         task_type += f'{task_name} | '
 
