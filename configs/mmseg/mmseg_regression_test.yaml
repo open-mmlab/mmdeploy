@@ -196,7 +196,7 @@ models:
       - configs/apcnet/apcnet_r50-d8_512x1024_40k_cityscapes.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
-      - *pipeline_trt_dynamic_int8
+      - *pipeline_trt_dynamic_fp16
       - *pipeline_ncnn_static_fp32
 
   - name: BiSeNetV1
@@ -205,7 +205,7 @@ models:
       - configs/bisenetv1/bisenetv1_r18-d32_4x4_1024x1024_160k_cityscapes.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
-      - *pipeline_trt_dynamic_int8
+      - *pipeline_trt_dynamic_fp16
       - *pipeline_ncnn_static_fp32
       - *pipeline_openvino_dynamic_fp32
 
@@ -215,7 +215,7 @@ models:
       - configs/bisenetv2/bisenetv2_fcn_4x4_1024x1024_160k_cityscapes.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
-      - *pipeline_trt_dynamic_int8
+      - *pipeline_trt_dynamic_fp16
       - *pipeline_ncnn_static_fp32
       - *pipeline_openvino_dynamic_fp32
 
@@ -225,7 +225,7 @@ models:
       - configs/cgnet/cgnet_512x1024_60k_cityscapes.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
-      - *pipeline_trt_dynamic_int8
+      - *pipeline_trt_dynamic_fp16
       - *pipeline_ncnn_static_fp32
       - *pipeline_openvino_dynamic_fp32
 
@@ -235,7 +235,7 @@ models:
       - configs/emanet/emanet_r50-d8_512x1024_80k_cityscapes.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
-      - *pipeline_trt_dynamic_int8
+      - *pipeline_trt_dynamic_fp16
       - *pipeline_openvino_dynamic_fp32
 
   - name: EncNet
@@ -244,7 +244,7 @@ models:
       - configs/encnet/encnet_r50-d8_512x1024_40k_cityscapes.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
-      - *pipeline_trt_dynamic_int8
+      - *pipeline_trt_dynamic_fp16
       - *pipeline_openvino_dynamic_fp32
 
   - name: ERFNet
@@ -253,7 +253,7 @@ models:
       - configs/erfnet/erfnet_fcn_4x4_512x1024_160k_cityscapes.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
-      - *pipeline_trt_dynamic_int8
+      - *pipeline_trt_dynamic_fp16
       - *pipeline_ncnn_static_fp32
       - *pipeline_openvino_dynamic_fp32
 
@@ -263,7 +263,7 @@ models:
       - configs/fastfcn/fastfcn_r50-d32_jpu_aspp_512x1024_80k_cityscapes.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
-      - *pipeline_trt_dynamic_int8
+      - *pipeline_trt_dynamic_fp16
       - *pipeline_ncnn_static_fp32
       - *pipeline_openvino_dynamic_fp32
 
@@ -273,7 +273,7 @@ models:
       - configs/gcnet/gcnet_r50-d8_512x1024_40k_cityscapes.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
-      - *pipeline_trt_dynamic_int8
+      - *pipeline_trt_dynamic_fp16
 
   - name: ICNet
     metafile: configs/icnet/icnet.yml
@@ -281,7 +281,7 @@ models:
       - configs/icnet/icnet_r18-d8_832x832_80k_cityscapes.py
     pipelines:
       - *pipeline_ort_static_fp32
-      - *pipeline_trt_static_int8
+      - *pipeline_trt_static_fp16
       - *pipeline_openvino_static_fp32
 
   - name: ISANet
@@ -290,7 +290,7 @@ models:
       - configs/isanet/isanet_r50-d8_512x1024_40k_cityscapes.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
-      - *pipeline_trt_dynamic_int8
+      - *pipeline_trt_dynamic_fp16
       - *pipeline_openvino_dynamic_fp32
 
   - name: OCRNet
@@ -299,7 +299,7 @@ models:
       - configs/ocrnet/ocrnet_hr18s_512x1024_40k_cityscapes.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
-      - *pipeline_trt_dynamic_int8
+      - *pipeline_trt_dynamic_fp16
       - *pipeline_ncnn_static_fp32
       - *pipeline_openvino_dynamic_fp32
 
@@ -309,7 +309,7 @@ models:
       - configs/point_rend/pointrend_r50_512x1024_80k_cityscapes.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
-      - *pipeline_trt_dynamic_int8
+      - *pipeline_trt_dynamic_fp16
       - *pipeline_openvino_dynamic_fp32
 
   - name: Semantic FPN
@@ -318,7 +318,7 @@ models:
       - configs/sem_fpn/fpn_r50_512x1024_80k_cityscapes.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
-      - *pipeline_trt_dynamic_int8
+      - *pipeline_trt_dynamic_fp16
       - *pipeline_ncnn_static_fp32
       - *pipeline_openvino_dynamic_fp32
 
@@ -329,7 +329,7 @@ models:
       - configs/stdc/stdc2_in1k-pre_512x1024_80k_cityscapes.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
-      - *pipeline_trt_dynamic_int8
+      - *pipeline_trt_dynamic_fp16
       - *pipeline_ncnn_static_fp32
       - *pipeline_openvino_dynamic_fp32
 
@@ -339,4 +339,4 @@ models:
       - configs/upernet/upernet_r50_512x1024_40k_cityscapes.py
     pipelines:
       - *pipeline_ort_static_fp32
-      - *pipeline_trt_static_int8
+      - *pipeline_trt_static_fp16
