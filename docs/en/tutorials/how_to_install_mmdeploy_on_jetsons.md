@@ -218,4 +218,4 @@ running the object detection example:
 
   **Q**: There 2 steps you need to do:
   1. Set `MAX N` mode and process `sudo nvpmodel -m 0 && sudo jetson_clocks`.
-  2. Reducing the number of `pre_top_k` like [mmedt pre_top_k](https://github.com/open-mmlab/mmdeploy/blob/34879e638cc2db511e798a376b9a4b9932660fe1/configs/mmdet/_base_/base_static.py#L13) to reduce the number of proposals may resolve the problem. For Jetson Nano and TX2 I use `1000` to make it work.
+  2. Reducing the number of `pre_top_k` like [mmedt pre_top_k](https://github.com/open-mmlab/mmdeploy/blob/34879e638cc2db511e798a376b9a4b9932660fe1/configs/mmdet/_base_/base_static.py#L13) to reduce the number of proposals may resolve the problem. For Jetson Nano and TX2, I use `1000` to make it work.
