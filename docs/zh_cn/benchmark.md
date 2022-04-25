@@ -1843,7 +1843,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center" rowspan="2">DOTA-v1.0</td>
     <td align="center">mAP</td>
     <td align="center">0.698</td>
-    <td align="center">-</td>
+    <td align="center">0.698</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
