@@ -196,7 +196,7 @@ def update_report(report_dict: dict, model_name: str, model_config: str,
 
 def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
                        model_config_path: Path, model_config_name: str,
-                       metric_name_info: dict, report_dict: dict,
+                       test_yaml_metric_info: dict, report_dict: dict,
                        logger: logging.Logger, report_txt_path: Path):
     """Get metric from metafile info of the model.
 
@@ -206,7 +206,7 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
         checkpoint_path (Path): Checkpoint path.
         model_config_path (Path): Model config path.
         model_config_name (str): Name of model config in meta_info.
-        metric_name_info (dict): Metrics info.
+        test_yaml_metric_info (dict): Metrics info from test yaml.
         report_dict (dict): Report info dict.
         logger (logging.Logger): Logger.
         report_txt_path (Path): Report txt path.
@@ -220,40 +220,50 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
             f'{model_config_name} not in meta_info, which is {meta_info}')
         return {}
 
-    model_info = meta_info.get(model_config_name, None)
-
     # get metric
-    metric_info = model_info.get('Results', None)
+    model_info = meta_info.get(model_config_name, None)
+    metafile_metric_info = model_info.get('Results', None)
+
     metric_list = []
     pytorch_metric = dict()
     dataset_type = ''
-    task_name = ''
+    task_type = ''
 
     # Get dataset
-    using_dataset = []
-    for _, v in metric_name_info.items():
+    using_dataset = dict()
+    for _, v in test_yaml_metric_info.items():
         if v.get('dataset') is None:
             continue
-        using_dataset.append(v.get('dataset'))
+        using_dataset.update({v.get('dataset'): v.get('task_name')})
 
     # Get metrics info from metafile
-    for metric in metric_info:
-        pytorch_meta_metric = metric.get('Metrics')
+    for metafile_metric in metafile_metric_info:
+        pytorch_meta_metric = metafile_metric.get('Metrics')
 
-        dataset = metric.get('Dataset', '')
+        dataset = metafile_metric.get('Dataset', '')
+        task_name = metafile_metric.get('Task', '')
+
+        if task_name == 'Restorers':
+            # mmedit
+            dataset = 'Set5'
+
         if (len(using_dataset) > 1) and (dataset not in using_dataset):
             continue
-
         dataset_type += f'{dataset} | '
-        task_name += f'{metric.get("Task", "")} | '
+
+        if using_dataset.get(dataset) != task_name:
+            # only add the metric with the correct dataset
+            continue
+        task_type += f'{task_name} | '
 
         # remove some metric which not in metric_info from test yaml
         for k, v in pytorch_meta_metric.items():
 
-            if k not in metric_name_info and 'Restorers' not in task_name:
+            if k not in test_yaml_metric_info and \
+                    'Restorers' not in task_type:
                 continue
 
-            if 'Restorers' in task_name and k not in dataset_type:
+            if 'Restorers' in task_type and k not in dataset_type:
                 # mmedit
                 continue
 
@@ -269,10 +279,10 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
                 pytorch_metric.update(use_metric)
 
     dataset_type = dataset_type[:-3].upper()  # remove the final ' | '
-    task_name = task_name[:-3]  # remove the final ' | '
+    task_type = task_type[:-3]  # remove the final ' | '
 
     # update useless metric
-    metric_all_list = [str(metric) for metric in metric_name_info]
+    metric_all_list = [str(metric) for metric in test_yaml_metric_info]
     metric_useless = set(metric_all_list) - set(
         [str(metric) for metric in pytorch_metric])
     for metric in metric_useless:
@@ -295,7 +305,7 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
         report_dict=report_dict,
         model_name=model_name,
         model_config=str(model_config_path),
-        task_name=task_name,
+        task_name=task_type,
         model_checkpoint_name=str(checkpoint_path),
         dataset=dataset_type,
         backend_name='Pytorch',
