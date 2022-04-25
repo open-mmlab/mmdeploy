@@ -110,6 +110,7 @@ def get_model_metafile_info(global_info: dict, model_info: dict,
         weights_save_path = checkpoint_save_dir.joinpath(weights_name)
         if weights_save_path.exists() and \
                 not global_info.get('checkpoint_force_download', False):
+            logger.info(f'model {weights_name} exist, skip download it...')
             continue
 
         # Download weight
@@ -248,11 +249,14 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
             dataset = 'Set5'
 
         if (len(using_dataset) > 1) and (dataset not in using_dataset):
+            logger.debug(f'dataset not in {using_dataset}, skip it...')
             continue
         dataset_type += f'{dataset} | '
 
         if using_dataset.get(dataset) != task_name:
             # only add the metric with the correct dataset
+            logger.debug(f'task_name ({task_name}) is not '
+                         f'{using_dataset.get(dataset)}, skip it...')
             continue
         task_type += f'{task_name} | '
 
@@ -722,8 +726,11 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
     if metric_tolerance is not None:
         for metric, new_tolerance in metric_tolerance.items():
             if metric not in metric_info:
+                logger.debug(f'{metric} not in {metric_info},'
+                             'skip compare it...')
                 continue
             if new_tolerance is None:
+                logger.debug('new_tolerance is None, skip it ...')
                 continue
             metric_info[metric]['tolerance'] = new_tolerance
 
@@ -880,6 +887,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
             metric_list.append({metric: '-'})
             metric_task_name = metric_info.get(metric, {}).get('task_name', '')
             if metric_task_name in task_name:
+                logger.debug('metric_task_name exist, skip for adding it...')
                 continue
             task_name += f'{metric_task_name} | '
         if ' | ' == task_name[-3:]:
@@ -1026,6 +1034,7 @@ def main():
                 # Get backends info
                 pipelines_info = models.get('pipelines', None)
                 if pipelines_info is None:
+                    logger.warning('pipelines_info is None, skip it...')
                     continue
 
                 # Get model config path
@@ -1048,11 +1057,15 @@ def main():
                     deploy_config = pipeline.get('deploy_config')
                     backend_name = get_backend(deploy_config).name.lower()
                     if backend_name not in backend_list:
+                        logger.warning(f'backend_name ({backend_name}) not '
+                                       f'in {backend_list}, skip it...')
                         continue
 
                     backend_file_name = \
                         backend_file_info.get(backend_name, None)
                     if backend_file_name is None:
+                        logger.warning('backend_file_name is None, '
+                                       'skip it...')
                         continue
 
                     get_backend_result(pipeline, model_cfg_path,
