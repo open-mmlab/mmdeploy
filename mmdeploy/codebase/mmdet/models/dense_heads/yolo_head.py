@@ -3,9 +3,10 @@ import numpy as np
 import torch
 
 from mmdeploy.codebase.mmdet import (get_post_processing_params,
-                                     multiclass_nms, pad_with_value)
+                                     multiclass_nms,
+                                     pad_with_value_if_necessary)
 from mmdeploy.core import FUNCTION_REWRITER
-from mmdeploy.utils import Backend, get_backend, is_dynamic_shape
+from mmdeploy.utils import Backend, is_dynamic_shape
 
 
 @FUNCTION_REWRITER.register_rewriter(
@@ -90,13 +91,11 @@ def yolov3_head__get_bboxes(ctx,
         conf_pred = torch.sigmoid(pred_map[..., 4])
         cls_pred = torch.sigmoid(pred_map[..., 5:]).view(
             batch_size, -1, self.num_classes)  # Cls pred one-hot.
-        backend = get_backend(ctx.cfg)
         # topk in tensorrt does not support shape<k
         # concate zero to enable topk,
-        if backend == Backend.TENSORRT:
-            bbox_pred = pad_with_value(bbox_pred, 1, pre_topk)
-            conf_pred = pad_with_value(conf_pred, 1, pre_topk, 0.)
-            cls_pred = pad_with_value(cls_pred, 1, pre_topk, 0.)
+        bbox_pred = pad_with_value_if_necessary(bbox_pred, 1, pre_topk)
+        conf_pred = pad_with_value_if_necessary(conf_pred, 1, pre_topk, 0.)
+        cls_pred = pad_with_value_if_necessary(cls_pred, 1, pre_topk, 0.)
 
         if pre_topk > 0:
             _, topk_inds = conf_pred.topk(pre_topk)
@@ -161,7 +160,8 @@ def yolov3_head__get_bboxes(ctx,
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdet.models.dense_heads.YOLOV3Head.get_bboxes', backend='ncnn')
+    func_name='mmdet.models.dense_heads.YOLOV3Head.get_bboxes',
+    backend=Backend.NCNN.value)
 def yolov3_head__get_bboxes__ncnn(ctx,
                                   self,
                                   pred_maps,

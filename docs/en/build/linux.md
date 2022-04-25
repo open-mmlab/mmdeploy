@@ -235,6 +235,7 @@ Make sure to enable <code>-DNCNN_PYTHON=ON</code> in your build command. <br>
 <pre><code>
 cd ncnn
 export NCNN_DIR=$(pwd)
+export LD_LIBRARY_PATH=${NCNN_DIR}/build/install/lib/:$LD_LIBRARY_PATH
 </code></pre>
 3. Install pyncnn
 <pre><code>
@@ -329,7 +330,7 @@ export MMDEPLOY_DIR=$(pwd)
     3. <b>pplnn</b>: PPL.NN. <code>pplnn_DIR</code> is needed.
 <pre><code>-Dpplnn_DIR=${PPLNN_DIR}</code></pre>
     4. <b>ncnn</b>: ncnn. <code>ncnn_DIR</code> is needed.
-<pre><code>-Dncnn_DIR=${NCNN_DIR}</code></pre>
+<pre><code>-Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn</code></pre>
     5. <b>openvino</b>: OpenVINO. <code>InferenceEngine_DIR</code> is needed.
 <pre><code>-DInferenceEngine_DIR=${INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/share</code></pre>
     6. <b>torchscript</b>: TorchScript. <code>Torch_DIR</code> is needed.

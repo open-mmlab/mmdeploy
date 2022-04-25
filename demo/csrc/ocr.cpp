@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
   }
 
   mm_handle_t text_recognizer{};
-  status = mmdeploy_text_recognizer_create_by_path(reg_model_path, "cpu", 0, &text_recognizer);
+  status = mmdeploy_text_recognizer_create_by_path(reg_model_path, device_name, 0, &text_recognizer);
   if (status != MM_SUCCESS) {
     fprintf(stderr, "failed to create text_recognizer, code: %d\n", (int)status);
     return 1;

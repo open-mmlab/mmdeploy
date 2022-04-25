@@ -90,9 +90,9 @@ export OPENCV_ANDROID_SDK_DIR=${PWD}/OpenCV-android-sdk
   <tr>
     <td>ncnn </td>
     <td>A high-performance neural network inference computing framework supporting for android.</br>
-  <b> Now, MMDeploy supports v20211208 and has to use <code>git clone</code> to download it.</b><br>
+  <b> Now, MMDeploy supports v20220216 and has to use <code>git clone</code> to download it.</b><br>
 <pre><code>
-git clone -b 20211208 https://github.com/Tencent/ncnn.git
+git clone -b 20220216 https://github.com/Tencent/ncnn.git
 cd ncnn
 git submodule update --init
 export NCNN_DIR=${PWD}
@@ -198,6 +198,7 @@ mkdir -p build && cd build
 cmake .. \
       -DOpenCV_DIR=${OPENCV_ANDROID_SDK_DIR}/sdk/native/jni/abi-arm64-v8a \
       -Dspdlog_DIR=${SPDLOG_DIR}/lib/cmake/spdlog \
+      -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn \
       -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy \
       -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake \
       -DANDROID_ABI=arm64-v8a \

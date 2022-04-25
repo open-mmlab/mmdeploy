@@ -82,6 +82,13 @@ if (MMDEPLOY_BUILD_SDK)
             FILE MMDeployTargets.cmake
             DESTINATION lib/cmake/MMDeploy)
 
+    # append backend deps
+    mmdeploy_add_deps(trt BACKENDS ${MMDEPLOY_TARGET_BACKENDS} DEPS TENSORRT CUDNN)
+    mmdeploy_add_deps(ort BACKENDS ${MMDEPLOY_TARGET_BACKENDS} DEPS ONNXRUNTIME)
+    mmdeploy_add_deps(ncnn BACKENDS ${MMDEPLOY_TARGET_BACKENDS} DEPS ncnn)
+    mmdeploy_add_deps(openvino BACKENDS ${MMDEPLOY_TARGET_BACKENDS} DEPS InferenceEngine)
+    mmdeploy_add_deps(pplnn BACKENDS ${MMDEPLOY_TARGET_BACKENDS} DEPS pplnn)
+
     include(CMakePackageConfigHelpers)
     # generate the config file that is includes the exports
     configure_package_config_file(${CMAKE_SOURCE_DIR}/cmake/MMDeployConfig.cmake.in
@@ -102,6 +109,10 @@ if (MMDEPLOY_BUILD_SDK)
             ${CMAKE_CURRENT_BINARY_DIR}/MMDeployConfigVersion.cmake
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/MMDeploy.cmake
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/loader.cpp.in
+            DESTINATION lib/cmake/MMDeploy
+            )
+    install(DIRECTORY
+            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules
             DESTINATION lib/cmake/MMDeploy
             )
 

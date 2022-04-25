@@ -29,7 +29,6 @@ MMDEPLOY_API Result<Mat> MakeAvailableOnDevice(const Mat& src, const Device& dev
 MMDEPLOY_API Result<Tensor> MakeAvailableOnDevice(const Tensor& src, const Device& device,
                                                   Stream& stream);
 
-
 // Calls stream.Wait() on destruction if active is true. This class is used to force a wait
 // operation before intermediate variables goes out of scope. Add variables in consideration to the
 // tailing parameter pack to ensure correctness (this make sure SyncOnScopeExit is created later

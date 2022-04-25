@@ -82,9 +82,10 @@ RUN cd /root/workspace/mmdeploy &&\
         -DCMAKE_CXX_COMPILER=g++ \
         -Dpplcv_DIR=/root/workspace/ppl.cv/cuda-build/install/lib/cmake/ppl \
         -DTENSORRT_DIR=${TENSORRT_DIR} \
+        -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} \
         -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
         -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
-        -DMMDEPLOY_TARGET_BACKENDS="trt" \
+        -DMMDEPLOY_TARGET_BACKENDS="ort;trt" \
         -DMMDEPLOY_CODEBASES=all &&\
     make -j$(nproc) && make install &&\
     cd install/example  && mkdir -p build && cd build &&\

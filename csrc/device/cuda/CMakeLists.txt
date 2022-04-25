@@ -10,7 +10,6 @@ set(SRCS
         cuda_device.cpp
         cuda_builtin_kernels.cu)
 mmdeploy_add_module(${PROJECT_NAME} "${SRCS}")
-target_include_directories(${PROJECT_NAME} PUBLIC ${CUDA_INCLUDE_DIRS})
-target_link_directories(${PROJECT_NAME} PUBLIC ${CUDA_TOOLKIT_ROOT_DIR}/lib64)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CUDA_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} PRIVATE cudart cuda)
 add_library(mmdeploy::device::cuda ALIAS ${PROJECT_NAME})
