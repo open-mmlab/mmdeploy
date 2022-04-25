@@ -13,13 +13,13 @@ globals:
       metric_key: AP # eval OrderedDict key name
       tolerance: 0.01
       task_name: Body 2D Keypoint # metafile.Results.Task
-      dataset: # metafile.Results.Dataset
+      dataset: COCO # metafile.Results.Dataset
     AR:
       eval_name: AR
       metric_key: AR
       tolerance: 0.01
       task_name: Body 2D Keypoint
-      dataset:
+      dataset: COCO
   convert_image: &convert_image
     input_img: *img_human_pose
     test_img: *img_human_pose_256x192
