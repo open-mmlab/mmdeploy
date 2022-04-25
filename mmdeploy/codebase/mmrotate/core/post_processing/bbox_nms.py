@@ -10,7 +10,7 @@ def select_nms_index(scores: torch.Tensor,
                      nms_index: torch.Tensor,
                      batch_size: int,
                      keep_top_k: int = -1):
-    """Transform NMS output.
+    """Transform NMSRotated output.
 
     Args:
         scores (Tensor): The detection scores of shape
@@ -77,7 +77,12 @@ def multiclass_nms_rotated(boxes: Tensor,
                            score_threshold: float = 0.05,
                            pre_top_k: int = -1,
                            keep_top_k: int = -1):
-    """NMS for multi-class bboxes.
+    """NMSRotated for multi-class bboxes.
+
+    This function helps exporting to onnx with batch and multiclass NMSRotated
+    op. It only supports class-agnostic detection results. That is, the scores
+    is of shape (N, num_bboxes, num_classes) and the boxes is of shape
+    (N, num_boxes, 5).
 
     Args:
         boxes (Tensor): The bounding boxes of shape [N, num_boxes, 5].
@@ -95,8 +100,6 @@ def multiclass_nms_rotated(boxes: Tensor,
         tuple[Tensor, Tensor]: (dets, labels), `dets` of shape [N, num_det, 6]
             and `labels` of shape [N, num_det].
     """
-    # iou_threshold = torch.tensor([iou_threshold], dtype=torch.float32)
-    # score_threshold = torch.tensor([score_threshold], dtype=torch.float32)
     batch_size = scores.shape[0]
 
     if pre_top_k > 0:
