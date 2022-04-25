@@ -8,7 +8,7 @@ from mmdeploy.utils import Backend
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name=
+    func_name=  # noqa: E251
     'mmcls.models.backbones.vision_transformer.VisionTransformer.forward',
     backend=Backend.NCNN.value)
 def visiontransformer__forward__ncnn(ctx, self, x):

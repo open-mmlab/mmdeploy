@@ -2569,19 +2569,15 @@ static void fuse_multiheadattention(onnx::GraphProto* mutable_graph,
 static onnx::NodeProto* find_node_by_output_name(onnx::GraphProto* mutable_graph,
                                                  const std::string& name) {
   const int input_count = mutable_graph->node_size();
-  // fprintf(stdout, "outputname: %s\n", name.c_str());
   for (int i = 0; i < input_count; ++i) {
     onnx::NodeProto* node = mutable_graph->mutable_node(i);
-    // fprintf(stdout, "%s %d: ",node->name().c_str(), node->output_size());
 
     for (int j = 0; j < node->output_size(); ++j) {
       auto output = node->output(j);
-      // fprintf(stdout, "%s, ", output.c_str());
       if (output == name) {
         return node;
       }
     }
-    // fprintf(stdout, "\n");
   }
 
   return nullptr;
@@ -2590,7 +2586,7 @@ static onnx::NodeProto* find_node_by_output_name(onnx::GraphProto* mutable_graph
 /**
  * @brief
  *
- * @param mutable_graph query target node output shape
+ * @param mutable_graph query output shape of target node
  * @param target
  * @param weights
  * @param context <tensor name, shape>
@@ -2645,7 +2641,7 @@ static std::tuple<bool, std::vector<int>> query_shape(
           }
 
           if (mark_as_appended.find(name) != mark_as_appended.end()) {
-            // if marked as append, skip
+            // if mark as appended, skip
             continue;
           }
           // else append it to serialization list
@@ -2664,7 +2660,7 @@ static std::tuple<bool, std::vector<int>> query_shape(
         break;
       }
 
-      // update start,end position
+      // update start and end position, continue BFS the tree
       start = end;
       end = serial.size();
     }
@@ -2682,6 +2678,7 @@ static std::tuple<bool, std::vector<int>> query_shape(
         int group = get_node_attr_i(*node, "group", 1);
         assert(group == 1);
 
+        // treat multiple spatial attr as single one
 #define EXTRACT_REPEATED_PARAM(NAME, ATTR, DEFAULT)        \
   int ATTR = DEFAULT;                                      \
   {                                                        \
@@ -2735,7 +2732,7 @@ static std::tuple<bool, std::vector<int>> query_shape(
         std::vector<int> inp = context[node->input(0)];
         std::vector<int> w_data = get_node_attr_from_input_ai(weights.at(node->input(1)));
 
-        // concat data
+        // concat data on axis 0
         inp.insert(inp.end(), w_data.begin(), w_data.end());
         context.emplace(node->output(0), inp);
 
