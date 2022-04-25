@@ -73,8 +73,8 @@ def merge_report(work_dir: str):
         res_file.unlink()
 
     for report_file in work_dir.iterdir():
-        if report_file.suffix != '.xlsx' or \
-                report_file.name == res_file or \
+        if '_report.xlsx' in report_file.name or \
+                report_file.name == res_file.name or \
                 not report_file.is_file():
             # skip other file
             continue
