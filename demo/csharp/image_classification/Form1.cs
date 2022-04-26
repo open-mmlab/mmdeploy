@@ -104,7 +104,7 @@ namespace image_classification
             FolderBrowserDialog dilog = new FolderBrowserDialog();
             if (dilog.ShowDialog() == DialogResult.OK)
             {
-                textBox1.Text = dilog.SelectedPath;   
+                textBox1.Text = dilog.SelectedPath;
             }
         }
 
@@ -113,7 +113,7 @@ namespace image_classification
             if (classifier != null)
             {
                 classifier.Close();
-                
+
             }
             classifier = null;
             textBox4.Text = "init model ...";
@@ -129,7 +129,7 @@ namespace image_classification
                 textBox4.Text = "init model failed.";
             }
 
-            
+
         }
 
         private void pictureBox1_Click(object sender, EventArgs e)
@@ -152,7 +152,7 @@ namespace image_classification
 
         private void button4_Click(object sender, EventArgs e)
         {
-            textBox2.Clear(); 
+            textBox2.Clear();
             if (classifier == null)
             {
                 MessageBox.Show("init model first");

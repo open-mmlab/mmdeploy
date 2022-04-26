@@ -84,7 +84,7 @@ namespace MMDeploySharp
         /// <summary>
         /// Throw exception is result is not zero.
         /// </summary>
-        /// <param name="result">fuction return value.</param>
+        /// <param name="result">function return value.</param>
         protected static void ThrowException(int result)
         {
             if (result != 0)

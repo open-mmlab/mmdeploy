@@ -15,34 +15,34 @@ dotnet_diagnostic.SA0001.severity = None
 
 # The file header is missing or not located at the Top of the file
 dotnet_diagnostic.SA1633.severity = None
-    
+
 # Use string.Empty for empty strings
 dotnet_diagnostic.SA1122.severity = None
-    
+
 # Variable '_' should begin with lower-case letter
 dotnet_diagnostic.SA1312.severity = None
-    
+
 # Parameter '_' should begin with lower-case letter
 dotnet_diagnostic.SA1313.severity = None
-    
+
 # Elements should be documented
 dotnet_diagnostic.SA1600.severity = None
-    
+
 # Prefix local calls with this
 dotnet_diagnostic.SA1101.severity = None
-    
+
 # 'public' members should come before 'private' members
 dotnet_diagnostic.SA1202.severity = None
-    
+
 # Comments should contain text
 dotnet_diagnostic.SA1120.severity = None
-    
+
 # Constant fields should appear before non-constant fields
 dotnet_diagnostic.SA1203.severity = None
-    
+
 # Field '_blah' should not begin with an underscore
 dotnet_diagnostic.SA1309.severity = None
-    
+
 # Use trailing comma in multi-line initializers
 dotnet_diagnostic.SA1413.severity = None
 
@@ -54,7 +54,7 @@ dotnet_diagnostic.SA1516.severity = None
 
 # The parameter spans multiple lines
 dotnet_diagnostic.SA1118.severity = None
-    
+
 # Static members should appear before non-static members
 dotnet_diagnostic.SA1204.severity = None
 
@@ -63,7 +63,7 @@ dotnet_diagnostic.SA1128.severity = None
 
 # Opening braces should not be preceded by blank line
 dotnet_diagnostic.SA1509.severity = None
-    
+
 # The parameter should begin on the line after the previous parameter
 dotnet_diagnostic.SA1115.severity = None
 

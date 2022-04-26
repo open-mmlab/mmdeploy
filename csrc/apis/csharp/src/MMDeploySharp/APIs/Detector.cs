@@ -74,7 +74,7 @@ namespace MMDeploySharp
         public float Score;
 
         /// <summary>
-        /// Bouding box.
+        /// Bounding box.
         /// </summary>
         public MmRect BBox;
 
