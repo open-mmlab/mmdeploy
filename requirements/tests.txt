@@ -6,4 +6,5 @@ isort==4.3.21
 openpyxl
 pandas
 pytest
+xlrd==1.2.0
 yapf

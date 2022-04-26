@@ -58,28 +58,31 @@ def parse_args():
     return args
 
 
-def merge_report(work_dir: str):
+def merge_report(work_dir: str, logger: logging.Logger):
     """Merge all the report into one report.
 
     Args:
         work_dir (str): Work dir that including all reports.
+        logger (logging.Logger): Logger handler.
     """
     work_dir = Path(work_dir)
     res_file = work_dir.joinpath(
         f'mmdeploy_regression_test_{mmdeploy.version.__version__}.xlsx')
+    logger.info(f'Whole result report saving in {res_file}')
 
     if res_file.exists():
         # delete if it existed
         res_file.unlink()
 
     for report_file in work_dir.iterdir():
-        if '_report.xlsx' in report_file.name or \
+        if '_report.xlsx' not in report_file.name or \
                 report_file.name == res_file.name or \
                 not report_file.is_file():
             # skip other file
             continue
         # get info from report
-        df = pd.read_excel(report_file)
+        logger.info(f'Merging {report_file}')
+        df = pd.read_excel(str(report_file))
         df.rename(columns={'Unnamed: 0': 'Index'}, inplace=True)
 
         # get key then convert to list
@@ -111,7 +114,7 @@ def merge_report(work_dir: str):
             if ws.cell(1, 1).value is None:
                 wb.remove_sheet(ws)
         # save to file
-        wb.save(res_file)
+        wb.save(str(res_file))
 
 
 def get_model_metafile_info(global_info: dict, model_info: dict,
@@ -1144,7 +1147,7 @@ def main():
         save_report(report_dict, report_save_path, logger)
 
     # merge report
-    merge_report(str(work_dir))
+    merge_report(str(work_dir), logger)
 
 
 if __name__ == '__main__':
