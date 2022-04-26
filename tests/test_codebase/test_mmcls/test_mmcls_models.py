@@ -188,5 +188,7 @@ def test_vision_transformer_backbone__forward(backend_type: Backend):
         if isinstance(rewrite_output, torch.Tensor):
             rewrite_output = rewrite_output.cpu().numpy()
         assert np.allclose(
-            model_output.reshape(-1).shape,
-            rewrite_output.reshape(-1).shape)
+            model_output.reshape(-1),
+            rewrite_output.reshape(-1),
+            rtol=1e-03,
+            atol=1e-05)
