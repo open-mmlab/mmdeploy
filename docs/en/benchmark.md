@@ -1,12 +1,15 @@
 ## Benchmark
 
 ### Backends
+
 CPU: ncnn, ONNXRuntime, OpenVINO
 
 GPU: ncnn, TensorRT, PPLNN
 
 ### Latency benchmark
+
 #### Platform
+
 - Ubuntu 18.04
 - ncnn 20211208
 - Cuda 11.3
@@ -15,6 +18,7 @@ GPU: ncnn, TensorRT, PPLNN
 - NVIDIA tesla T4 tensor core GPU for TensorRT.
 
 #### Other settings
+
 - Static graph
 - Batch size 1
 - Synchronize devices after each inference.
@@ -22,12 +26,11 @@ GPU: ncnn, TensorRT, PPLNN
 - Warm up. For ncnn, we warm up 30 iters for all codebases. As for other backends: for classification, we warm up 1010 iters; for other codebases, we warm up 10 iters.
 - Input resolution varies for different datasets of different codebases. All inputs are real images except for `mmediting` because the dataset is not large enough.
 
-
 Users can directly test the speed through [how_to_measure_performance_of_models.md](tutorials/how_to_measure_performance_of_models.md). And here is the benchmark in our environment.
+
 <details>
 <summary style="margin-left: 25px;">MMCls</summary>
 <div style="margin-left: 25px;">
-
 <table class="docutils">
 <thead>
   <tr>
@@ -180,14 +183,12 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
   </tr>
 </tbody>
 </table>
-
 </div>
 </details>
 
 <details>
 <summary style="margin-left: 25px;">MMDet</summary>
 <div style="margin-left: 25px;">
-
 <table class="docutils">
 <thead>
   <tr>
@@ -405,7 +406,6 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
 <details>
 <summary style="margin-left: 25px;">MMEdit</summary>
 <div style="margin-left: 25px;">
-
 <table class="docutils">
 <thead>
   <tr>
@@ -475,7 +475,6 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
   </tr>
 </tbody>
 </table>
-
 </div>
 </details>
 
@@ -568,7 +567,6 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
 <details>
 <summary style="margin-left: 25px;">MMSeg</summary>
 <div style="margin-left: 25px;">
-
 <table class="docutils">
 <thead>
   <tr>
@@ -673,7 +671,6 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
   </tr>
 </tbody>
 </table>
-
 </div>
 </details>
 
@@ -684,7 +681,6 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
 <details>
 <summary style="margin-left: 25px;">MMCls</summary>
 <div style="margin-left: 25px;">
-
 <table class="docutils">
 <thead>
   <tr>
@@ -781,7 +777,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center">93.84</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2">ShuffleNetV1 1.0x</td>
+    <td align="center" rowspan="2">ShuffleNetV1</td>
     <td align="center" rowspan="2">Classification</td>
     <td align="center">top-1</td>
     <td align="center">68.13</td>
@@ -791,7 +787,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center">68.13</td>
     <td align="center">67.71</td>
     <td align="center">68.11</td>
-    <td rowspan="2">$MMCLS_DIR/configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py</td>
+    <td rowspan="2">$MMCLS_DIR/configs/shufflenet_v1/shufflenet-v1-1x_16xb64_in1k.py</td>
   </tr>
   <tr>
     <td align="center">top-5</td>
@@ -804,7 +800,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center">87.80</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2">ShuffleNetV2 1.0x</td>
+    <td align="center" rowspan="2">ShuffleNetV2</td>
     <td align="center" rowspan="2">Classification</td>
     <td align="center">top-1</td>
     <td align="center">69.55</td>
@@ -814,7 +810,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center">69.54</td>
     <td align="center">69.10</td>
     <td align="center">69.54</td>
-    <td rowspan="2">$MMCLS_DIR/configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py</td>
+    <td rowspan="2">$MMCLS_DIR/configs/shufflenet_v2/shufflenet-v2-1x_16xb64_in1k.py</td>
   </tr>
   <tr>
     <td align="center">top-5</td>
@@ -837,7 +833,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center">71.87</td>
     <td align="center">70.91</td>
     <td align="center">71.84</td>
-    <td rowspan="2">$MMEDIT_DIR/configs/restorers/real_esrgan/realesrnet_c64b23g32_12x4_lr2e-4_1000k_df2k_ost.py</td>
+    <td rowspan="2">$MMEDIT_DIR/configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py</td>
   </tr>
   <tr>
     <td align="center">top-5</td>
@@ -1819,8 +1815,8 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
 </div>
 </details>
 
-
 ### Notes
+
 - As some datasets contain images with various resolutions in codebase like MMDet. The speed benchmark is gained through static configs in MMDeploy, while the performance benchmark is gained through dynamic ones.
 
 - Some int8 performance benchmarks of TensorRT require Nvidia cards with tensor core, or the performance would drop heavily.
