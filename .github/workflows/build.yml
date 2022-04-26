@@ -23,7 +23,7 @@ jobs:
       matrix:
         python-version: [3.7]
         torch: [1.8.0, 1.9.0]
-        mmcv: [1.4.0]
+        mmcv: [1.4.2]
         include:
           - torch: 1.8.0
             torch_version: torch1.8
@@ -65,7 +65,7 @@ jobs:
       matrix:
         python-version: [3.7]
         torch: [1.9.0+cu102]
-        mmcv: [1.4.0]
+        mmcv: [1.4.2]
         include:
           - torch: 1.9.0+cu102
             torch_version: torch1.9
@@ -108,7 +108,7 @@ jobs:
       matrix:
         python-version: [3.7]
         torch: [1.8.0+cu111]
-        mmcv: [1.4.0]
+        mmcv: [1.4.2]
         include:
           - torch: 1.8.0+cu111
             torch_version: torch1.8
