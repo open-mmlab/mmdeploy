@@ -34,7 +34,7 @@ Then we can use `nvcc -V` the get the version of cuda we use.
 
 ### Conda
 
-We have to install [Archiconda](https://github.com/Archiconda/build-tools/releases) instead as the Anaconda does not provide the wheel built for jetson. The commands below are the example for installation, you can choose another version of Archiconda by accessing [Archiconda releases page](https://github.com/Archiconda/build-tools/releases).
+We have to install [Archiconda](https://github.com/Archiconda/build-tools/releases) instead as the Anaconda does not provide the wheel built for jetson. The commands below are the example for installation. You can choose another version of Archiconda by accessing [Archiconda releases page](https://github.com/Archiconda/build-tools/releases).
 ```shell
 wget https://github.com/Archiconda/build-tools/releases/download/0.2.3/Archiconda3-0.2.3-Linux-aarch64.sh
 bash Archiconda3-0.2.3-Linux-aarch64.sh
@@ -56,7 +56,7 @@ The `python3.6` is the version we need to use in the conda env later.
 
 We can create the virtual env `mmdeploy` using the command below. The version of python we got from the previous step.
 ```shell
-conda create -n mmdeploy python=x.x
+conda create -n mmdeploy python=3.6
 conda activate mmdeploy
 ```
 
