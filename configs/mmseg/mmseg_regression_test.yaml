@@ -29,7 +29,7 @@ onnxruntime:
     convert_image: *convert_image
     backend_test: *default_backend_test
     sdk_config: *sdk_dynamic
-    deploy_config: configs/mmseg/segmentation_onnxruntime_static-512x512.py
+    deploy_config: configs/mmseg/segmentation_onnxruntime_static-1024x2048.py
 
   pipeline_ort_dynamic_fp32: &pipeline_ort_dynamic_fp32
     convert_image: *convert_image
@@ -40,19 +40,19 @@ tensorrt:
     convert_image: *convert_image
     backend_test: *default_backend_test
     sdk_config: *sdk_dynamic
-    deploy_config: configs/mmseg/segmentation_tensorrt_static-1024x1024.py
+    deploy_config: configs/mmseg/segmentation_tensorrt_static-1024x2048.py
 
   pipeline_trt_static_fp16: &pipeline_trt_static_fp16
     convert_image: *convert_image
     backend_test: *default_backend_test
     sdk_config: *sdk_dynamic
-    deploy_config: configs/mmseg/segmentation_tensorrt-fp16_static-1024x1024.py
+    deploy_config: configs/mmseg/segmentation_tensorrt-fp16_static-1024x2048.py
 
   pipeline_trt_static_int8: &pipeline_trt_static_int8
     convert_image: *convert_image
     backend_test: *default_backend_test
     sdk_config: *sdk_dynamic
-    deploy_config: configs/mmseg/segmentation_tensorrt-int8_static-1024x1024.py
+    deploy_config: configs/mmseg/segmentation_tensorrt-int8_static-1024x2048.py
 
 
   pipeline_trt_dynamic_fp32: &pipeline_trt_dynamic_fp32
@@ -82,7 +82,7 @@ openvino:
   pipeline_openvino_static_fp32: &pipeline_openvino_static_fp32
     convert_image: *convert_image
     backend_test: False
-    deploy_config: configs/mmseg/segmentation_openvino_static-512x512.py
+    deploy_config: configs/mmseg/segmentation_openvino_static-1024x2048.py
 
 ncnn:
   pipeline_ncnn_static_fp32: &pipeline_ncnn_static_fp32
