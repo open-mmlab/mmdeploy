@@ -13,19 +13,19 @@ namespace Demo
         /// <summary>
         /// transform input
         /// </summary>
-        static void CvMatToMmMat(Mat[] cvMats, out mm_mat_t[] mats)
+        static void CvMatToMmMat(Mat[] cvMats, out MmMat[] mats)
         {
-            mats = new mm_mat_t[cvMats.Length];
+            mats = new MmMat[cvMats.Length];
             unsafe
             {
                 for (int i = 0; i < cvMats.Length; i++)
                 {
-                    mats[i].data = cvMats[i].DataPointer;
-                    mats[i].height = cvMats[i].Height;
-                    mats[i].width = cvMats[i].Width;
-                    mats[i].channel = cvMats[i].Dims;
-                    mats[i].format = mm_pixel_format_t.MM_BGR;
-                    mats[i].type = mm_data_type_t.MM_INT8;
+                    mats[i].Data = cvMats[i].DataPointer;
+                    mats[i].Height = cvMats[i].Height;
+                    mats[i].Width = cvMats[i].Width;
+                    mats[i].Channel = cvMats[i].Dims;
+                    mats[i].Format = MmPixelFormat.MM_BGR;
+                    mats[i].Type = MmDataType.MM_INT8;
                 }
             }
         }
@@ -38,17 +38,17 @@ namespace Demo
         static void TestPoseDetector()
         {
             // 1. create handle
-            PoseDetector handle = new PoseDetector("E:/pjlab/testcs/trt", "cuda", 0);
+            PoseDetector handle = new PoseDetector(@"D:\test_model\hrnet", "cuda", 0);
 
             // 2. prepare input
-            Mat[] imgs = new Mat[1] { Cv2.ImRead(@"E:\pjlab\dev-v0.4.0\demo\resources\human-pose.jpg", ImreadModes.Color) };
+            Mat[] imgs = new Mat[1] { Cv2.ImRead(@"D:\test_model\hrnet\human-pose.jpg", ImreadModes.Color) };
             CvMatToMmMat(imgs, out var mats);
 
             // 3. process
             List<PoseDetectorOutput> output = handle.Apply(mats);
 
             // 4. show result
-            Func<int, Vec3b[]> gen_palette = n =>
+            Vec3b[] gen_palette(int n)
             {
                 Random rnd = new Random(2);
                 Vec3b[] _palette = new Vec3b[n];
@@ -60,14 +60,14 @@ namespace Demo
                     _palette[i] = new Vec3b(v1, v2, v3);
                 }
                 return _palette;
-            };
+            }
             Vec3b[] palette = gen_palette(output[0].Count);
             int index = 0;
-            foreach (var box in output[0].boxes)
+            foreach (var box in output[0].Results)
             {
-                foreach (var obj in box.points)
+                for (int i = 0; i < box.Points.Count; i++)
                 {
-                    Cv2.Circle(imgs[0], (int)obj.x, (int)obj.y, 1, new Scalar(palette[index][0], palette[index][1], palette[index][2]), 2);
+                    Cv2.Circle(imgs[0], (int)box.Points[i].X, (int)box.Points[i].Y, 1, new Scalar(palette[index][0], palette[index][1], palette[index][2]), 2);
                 }
                 index++;
             }
@@ -82,10 +82,10 @@ namespace Demo
         {
 
             // 1. create handle
-            Classifier handle = new Classifier(@"E:\pjlab\testcs\model\mmcls", "cuda", 0);
+            Classifier handle = new Classifier(@"D:\test_model\mmcls", "cuda", 0);
 
             // 2. prepare input
-            Mat[] imgs = new Mat[1] { Cv2.ImRead(@"E:\pjlab\testcs\model\mmcls\ILSVRC2012_val_00000174.JPEG", ImreadModes.Color) };
+            Mat[] imgs = new Mat[1] { Cv2.ImRead(@"D:\test_model\mmcls\ILSVRC2012_val_00000174.JPEG", ImreadModes.Color) };
             CvMatToMmMat(imgs, out var mats);
 
             // 3. process
@@ -94,9 +94,9 @@ namespace Demo
             // 4. show result
             int idx = 1;
             int offset = 50;
-            foreach (var obj in output[0].labels)
+            foreach (var obj in output[0].Results)
             {
-                String text = String.Format("top-{0}-label: {1}, score: {2}", idx, obj.label_id, obj.score);
+                string text = string.Format("Top-{0}-label: {1}, score: {2}", idx, obj.LabelId, obj.Score);
                 Cv2.PutText(imgs[0], text, new Point(5, offset), HersheyFonts.HersheySimplex, 0.7, new Scalar(0, 255, 0), 2);
                 idx++;
                 offset += 30;
@@ -111,34 +111,33 @@ namespace Demo
         static void TestDetector()
         {
             // 1. create handle
-            Detector handle = new Detector(@"E:\pjlab\testcs\model\maskrcnn", "cuda", 0);
+            Detector handle = new Detector(@"D:\test_model\mask_rcnn", "cuda", 0);
 
             // 2. prepare input
-            Mat[] imgs = new Mat[1] { Cv2.ImRead(@"E:\pjlab\testcs\model\maskrcnn\demo.jpg", ImreadModes.Color) };
+            Mat[] imgs = new Mat[1] { Cv2.ImRead(@"D:\test_model\mask_rcnn\demo.jpg", ImreadModes.Color) };
             CvMatToMmMat(imgs, out var mats);
 
             // 3. process
             List<DetectorOutput> output = handle.Apply(mats);
 
             // 4. show result
-            foreach (var obj in output[0].detects)
+            foreach (var obj in output[0].Results)
             {
-                if (obj.score > 0.3)
+                if (obj.Score > 0.3)
                 {
-                    if (obj.has_mask)
+                    if (obj.HasMask)
                     {
-                        Mat imgMask = new Mat(obj.mask.height, obj.mask.width, MatType.CV_8UC1, obj.mask.data);
-                        float x0 = Math.Max((float)Math.Floor(obj.bbox.left) - 1, 0f);
-                        float y0 = Math.Max((float)Math.Floor(obj.bbox.top) - 1, 0f);
-                        Rect roi = new Rect((int)x0, (int)y0, obj.mask.width, obj.mask.height);
-                        Mat[] ch = new Mat[3];
-                        Cv2.Split(imgs[0], out ch);
+                        Mat imgMask = new Mat(obj.Mask.Height, obj.Mask.Width, MatType.CV_8UC1, obj.Mask.Data);
+                        float x0 = Math.Max((float)Math.Floor(obj.BBox.Left) - 1, 0f);
+                        float y0 = Math.Max((float)Math.Floor(obj.BBox.Top) - 1, 0f);
+                        Rect roi = new Rect((int)x0, (int)y0, obj.Mask.Width, obj.Mask.Height);
+                        Cv2.Split(imgs[0], out Mat[] ch);
                         int col = 0;
                         Cv2.BitwiseOr(imgMask, ch[col][roi], ch[col][roi]);
                         Cv2.Merge(ch, imgs[0]);
                     }
 
-                    Cv2.Rectangle(imgs[0], new Point(obj.bbox.left, obj.bbox.top), new Point(obj.bbox.right, obj.bbox.bottom), new Scalar(0, 255, 0));
+                    Cv2.Rectangle(imgs[0], new Point((int)obj.BBox.Left, (int)obj.BBox.Top), new Point((int)obj.BBox.Right, obj.BBox.Bottom), new Scalar(0, 255, 0));
                 }
             }
             Cv2.NamedWindow("mmdet", WindowFlags.GuiExpanded);
@@ -151,17 +150,17 @@ namespace Demo
         static void TestRestorer()
         {
             // 1. create handle
-            Restorer handle = new Restorer(@"E:\pjlab\testcs\model\srcnn", "cuda", 0);
+            Restorer handle = new Restorer(@"D:\test_model\srcnn", "cuda", 0);
 
             // 2. prepare input
-            Mat[] imgs = new Mat[1] { Cv2.ImRead(@"E:\pjlab\testcs\model\srcnn\baby.png", ImreadModes.Color) };
+            Mat[] imgs = new Mat[1] { Cv2.ImRead(@"D:\test_model\srcnn\baby.png", ImreadModes.Color) };
             CvMatToMmMat(imgs, out var mats);
 
             // 3. process
             List<RestorerOutput> output = handle.Apply(mats);
 
             // 4. show result
-            Mat sr_img = new Mat(output[0].height, output[0].width, MatType.CV_8UC3, output[0].data);
+            Mat sr_img = new Mat(output[0].Height, output[0].Width, MatType.CV_8UC3, output[0].Data);
             Cv2.CvtColor(sr_img, sr_img, ColorConversionCodes.RGB2BGR);
             Cv2.NamedWindow("sr", WindowFlags.GuiExpanded);
             Cv2.ImShow("sr", sr_img);
@@ -173,17 +172,17 @@ namespace Demo
         static void TestSegmentor()
         {
             // 1. create handle
-            Segmentor handle = new Segmentor(@"E:\pjlab\testcs\model\fcn", "cuda", 0);
+            Segmentor handle = new Segmentor(@"D:\test_model\fcn", "cuda", 0);
 
             // 2. prepare input
-            Mat[] imgs = new Mat[1] { Cv2.ImRead(@"E:\pjlab\testcs\model\fcn\berlin_000000_000019_leftImg8bit.png", ImreadModes.Color) };
+            Mat[] imgs = new Mat[1] { Cv2.ImRead(@"D:\test_model\fcn\berlin_000000_000019_leftImg8bit.png", ImreadModes.Color) };
             CvMatToMmMat(imgs, out var mats);
 
             // 3. process
             List<SegmentorOutput> output = handle.Apply(mats);
 
             // 4. show result
-            Func<int, Vec3b[]> gen_palette = classes =>
+            Vec3b[] gen_palette(int classes)
             {
                 Random rnd = new Random(0);
                 Vec3b[] _palette = new Vec3b[classes];
@@ -195,19 +194,19 @@ namespace Demo
                     _palette[i] = new Vec3b(v1, v2, v3);
                 }
                 return _palette;
-            };
+            }
 
-            Mat color_mask = new Mat(output[0].height, output[0].width, MatType.CV_8UC3, new Scalar());
-            Vec3b[] palette = gen_palette(output[0].classes);
+            Mat color_mask = new Mat(output[0].Height, output[0].Width, MatType.CV_8UC3, new Scalar());
+            Vec3b[] palette = gen_palette(output[0].Classes);
             unsafe
             {
                 byte* data = color_mask.DataPointer;
-                fixed (int* _label = output[0].mask)
+                fixed (int* _label = output[0].Mask)
                 {
                     int* label = _label;
-                    for (int i = 0; i < output[0].height; i++)
+                    for (int i = 0; i < output[0].Height; i++)
                     {
-                        for (int j = 0; j < output[0].width; j++)
+                        for (int j = 0; j < output[0].Width; j++)
                         {
                             data[0] = palette[*label][0];
                             data[1] = palette[*label][1];
@@ -230,24 +229,24 @@ namespace Demo
         static void TestTextDetector()
         {
             // 1. create handle
-            MMDeploySharp.TextDetector handle = new MMDeploySharp.TextDetector(@"E:\pjlab\testcs\model\dbnet", "cuda", 0);
+            MMDeploySharp.TextDetector handle = new MMDeploySharp.TextDetector(@"D:\test_model\dbnet", "cuda", 0);
 
             // 2. prepare input
-            Mat[] imgs = new Mat[1] { Cv2.ImRead(@"E:\pjlab\testcs\model\dbnet\demo_text_det.jpg", ImreadModes.Color) };
+            Mat[] imgs = new Mat[1] { Cv2.ImRead(@"D:\test_model\dbnet\demo_text_det.jpg", ImreadModes.Color) };
             CvMatToMmMat(imgs, out var mats);
 
             // 3. process
             List<TextDetectorOutput> output = handle.Apply(mats);
 
             // 4. show result
-            foreach (var detect in output[0].detects)
+            foreach (var detect in output[0].Results)
             {
                 for (int i = 0; i < 4; i++)
                 {
                     int sp = i;
                     int ep = (i + 1) % 4;
-                    Cv2.Line(imgs[0], new Point((int)detect.bbox[sp].x, (int)detect.bbox[sp].y),
-                        new Point((int)detect.bbox[ep].x, (int)detect.bbox[ep].y), new Scalar(0, 255, 0));
+                    Cv2.Line(imgs[0], new Point((int)detect.BBox[sp].X, (int)detect.BBox[sp].Y),
+                        new Point((int)detect.BBox[ep].X, (int)detect.BBox[ep].Y), new Scalar(0, 255, 0));
                 }
             }
 
@@ -261,10 +260,10 @@ namespace Demo
         static void TestTextRecognizer()
         {
             // 1. create handle
-            TextRecognizer handle = new TextRecognizer(@"E:\pjlab\testcs\model\crnn", "cuda", 0);
+            TextRecognizer handle = new TextRecognizer(@"D:\test_model\crnn", "cuda", 0);
 
             // 2. prepare input
-            Mat[] imgs = new Mat[1] { Cv2.ImRead(@"E:\pjlab\testcs\model\crnn\demo_text_recog.jpg", ImreadModes.Color) };
+            Mat[] imgs = new Mat[1] { Cv2.ImRead(@"D:\test_model\crnn\demo_text_recog.jpg", ImreadModes.Color) };
             CvMatToMmMat(imgs, out var mats);
 
             // 3. process
@@ -272,9 +271,9 @@ namespace Demo
             List<TextRecognizerOutput> output = handle.Apply(mats);
 
             //// 4. show result
-            foreach (var box in output[0].boxes)
+            foreach (var box in output[0].Results)
             {
-                string text = System.Text.Encoding.UTF8.GetString(box.text);
+                string text = System.Text.Encoding.UTF8.GetString(box.Text);
                 Cv2.PutText(imgs[0], text, new Point(20, 20), HersheyFonts.HersheySimplex, 0.7, new Scalar(0, 255, 0), 1);
             }
 
@@ -286,15 +285,15 @@ namespace Demo
             handle.Close();
         }
 
-        static void Main(string[] args)
+        static void Main()
         {
             TestClassifier();
-            // TestPoseDetector();
-            // TestDetector();
-            // TestSegmentor();
-            // TestRestorer();
-            // TestTextDetector();
-            // TestTextRecognizer();
+            TestPoseDetector();
+            TestDetector();
+            TestSegmentor();
+            TestRestorer();
+            TestTextDetector();
+            TestTextRecognizer();
         }
     }
 }

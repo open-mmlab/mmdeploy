@@ -3,60 +3,101 @@ using System.Collections.Generic;
 
 namespace MMDeploySharp
 {
-    unsafe public struct mm_segment_t
+#pragma warning disable 0649
+    internal unsafe struct CMmSegment
     {
-        public int height;
-        public int width;
-        public int classes;
-        public int* mask;
+        public int Height;
+        public int Width;
+        public int Classes;
+        public int* Mask;
     }
+#pragma warning restore 0649
 
+    /// <summary>
+    /// Output of Segmentor.
+    /// </summary>
     public struct SegmentorOutput
     {
-        public int height;
-        public int width;
-        public int classes;
-        public int[] mask;
+        /// <summary>
+        /// Height of image.
+        /// </summary>
+        public int Height;
 
+        /// <summary>
+        /// Width if image.
+        /// </summary>
+        public int Width;
+
+        /// <summary>
+        /// Number of classes.
+        /// </summary>
+        public int Classes;
+
+        /// <summary>
+        /// Mask data.
+        /// </summary>
+        public int[] Mask;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SegmentorOutput"/> struct.
+        /// </summary>
+        /// <param name="height">height.</param>
+        /// <param name="width">width.</param>
+        /// <param name="classes">classes.</param>
+        /// <param name="mask">mask.</param>
         public SegmentorOutput(int height, int width, int classes, int[] mask)
         {
-            this.height = height;
-            this.width = width;
-            this.classes = classes;
-            this.mask = new int[height * width];
-            Array.Copy(mask, this.mask, mask.Length);
+            Height = height;
+            Width = width;
+            Classes = classes;
+            Mask = new int[Height * Width];
+            Array.Copy(mask, this.Mask, mask.Length);
         }
 
-        public unsafe SegmentorOutput(mm_segment_t* result)
+        internal unsafe SegmentorOutput(CMmSegment* result)
         {
-            this.height = result->height;
-            this.width = result->width;
-            this.classes = result->classes;
-            this.mask = new int[height * width];
-            int nbytes = height * width * sizeof(int);
-            fixed (int* data = this.mask)
+            Height = result->Height;
+            Width = result->Width;
+            Classes = result->Classes;
+            Mask = new int[Height * Width];
+            int nbytes = Height * Width * sizeof(int);
+            fixed (int* data = this.Mask)
             {
-                Buffer.MemoryCopy(result->mask, data, nbytes, nbytes);
+                Buffer.MemoryCopy(result->Mask, data, nbytes, nbytes);
             }
         }
     }
 
+    /// <summary>
+    /// Segmentor.
+    /// </summary>
     public class Segmentor : DisposableObject
     {
-        public Segmentor(String model_path, String device_name, int device_id)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Segmentor"/> class.
+        /// </summary>
+        /// <param name="modelPath">model path.</param>
+        /// <param name="deviceName">device name.</param>
+        /// <param name="deviceId">device id.</param>
+        public Segmentor(string modelPath, string deviceName, int deviceId)
         {
-            ThrowException(NativeMethods.c_mmdeploy_segmentor_create_by_path(model_path, device_name, device_id, out _handle));
+            ThrowException(NativeMethods.mmdeploy_segmentor_create_by_path(modelPath, deviceName, deviceId, out _handle));
         }
 
-        public List<SegmentorOutput> Apply(mm_mat_t[] mats)
+        /// <summary>
+        /// Get information of each image in a batch.
+        /// </summary>
+        /// <param name="mats">input mats.</param>
+        /// <returns>Results of each input mat.</returns>
+        public List<SegmentorOutput> Apply(MmMat[] mats)
         {
             List<SegmentorOutput> output = new List<SegmentorOutput>();
             unsafe
             {
-                mm_segment_t* results = null;
-                fixed (mm_mat_t* _mats = mats)
+                CMmSegment* results = null;
+                fixed (MmMat* _mats = mats)
                 {
-                    ThrowException(NativeMethods.c_mmdeploy_segmentor_apply(_handle, _mats, mats.Length, &results));
+                    ThrowException(NativeMethods.mmdeploy_segmentor_apply(_handle, _mats, mats.Length, &results));
                 }
 
                 FormatResult(mats.Length, results, ref output, out var total);
@@ -66,10 +107,10 @@ namespace MMDeploySharp
             return output;
         }
 
-        public unsafe void FormatResult(int mat_count, mm_segment_t* results, ref List<SegmentorOutput> output, out int total)
+        private unsafe void FormatResult(int matCount, CMmSegment* results, ref List<SegmentorOutput> output, out int total)
         {
             total = 0;
-            for (int i = 0; i < mat_count; i++)
+            for (int i = 0; i < matCount; i++)
             {
                 SegmentorOutput outi = new SegmentorOutput(results);
                 results++;
@@ -77,14 +118,15 @@ namespace MMDeploySharp
             }
         }
 
-        public unsafe void ReleaseResult(mm_segment_t* results, int count)
+        private unsafe void ReleaseResult(CMmSegment* results, int count)
         {
-            NativeMethods.c_mmdeploy_segmentor_release_result(results, count);
+            NativeMethods.mmdeploy_segmentor_release_result(results, count);
         }
 
+        /// <inheritdoc/>
         protected override void ReleaseHandle()
         {
-            NativeMethods.c_mmdeploy_segmentor_destroy(_handle);
+            NativeMethods.mmdeploy_segmentor_destroy(_handle);
         }
     }
 }

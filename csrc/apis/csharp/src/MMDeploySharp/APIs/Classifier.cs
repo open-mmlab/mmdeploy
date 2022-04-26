@@ -1,96 +1,135 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace MMDeploySharp
 {
-    public struct mm_class_t
+    /// <summary>
+    /// Single classification result of a picture.
+    /// A picture may contains multiple reuslts.
+    /// </summary>
+    public struct MmClass
     {
-        public int label_id;
-        public float score;
+        /// <summary>
+        /// Label id.
+        /// </summary>
+        public int LabelId;
+
+        /// <summary>
+        /// Score.
+        /// </summary>
+        public float Score;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MmClass"/> struct.
+        /// </summary>
+        /// <param name="labelId">label id.</param>
+        /// <param name="score">score.</param>
+        public MmClass(int labelId, float score)
+        {
+            LabelId = labelId;
+            Score = score;
+        }
     }
 
+    /// <summary>
+    /// Output of Classifier.
+    /// </summary>
     public struct ClassifierOutput
     {
-        public struct Label
-        {
-            public int label_id;
-            public float score;
+        /// <summary>
+        /// Classification results for single image.
+        /// </summary>
+        public List<MmClass> Results;
 
-            public Label(int label_id, float score)
+        /// <summary>
+        /// Add result to single image.
+        /// </summary>
+        /// <param name="labelId">label id.</param>
+        /// <param name="score">score.</param>
+        public void Add(int labelId, float score)
+        {
+            if (Results == null)
             {
-                this.label_id = label_id;
-                this.score = score;
+                Results = new List<MmClass>();
             }
+
+            Results.Add(new MmClass(labelId, score));
         }
 
-        public void Add(int label_id, float score)
-        {
-            if (labels == null)
-            {
-                labels = new List<Label>();
-            }
-            labels.Add(new Label(label_id, score));
-        }
-
+        /// <summary>
+        /// Gets number of output.
+        /// </summary>
         public int Count
         {
-            get { return (labels == null) ? 0 : labels.Count; }
+            get { return (Results == null) ? 0 : Results.Count; }
         }
-
-        public List<Label> labels;
     }
 
+    /// <summary>
+    /// classifier.
+    /// </summary>
     public class Classifier : DisposableObject
     {
-        public Classifier(String model_path, String device_name, int device_id)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Classifier"/> class.
+        /// </summary>
+        /// <param name="modelPath">model path.</param>
+        /// <param name="deviceName">device name.</param>
+        /// <param name="deviceId">deviceId.</param>
+        public Classifier(string modelPath, string deviceName, int deviceId)
         {
-            ThrowException(NativeMethods.c_mmdeploy_classifier_create_by_path(model_path, device_name, device_id, out _handle));
+            ThrowException(NativeMethods.mmdeploy_classifier_create_by_path(modelPath, deviceName, deviceId, out _handle));
         }
 
-        public List<ClassifierOutput> Apply(mm_mat_t[] mats)
+        /// <summary>
+        /// Get label information of each image in a batch.
+        /// </summary>
+        /// <param name="mats">input mats.</param>
+        /// <returns>Results of each input mat.</returns>
+        public List<ClassifierOutput> Apply(MmMat[] mats)
         {
             List<ClassifierOutput> output = new List<ClassifierOutput>();
             unsafe
             {
-                mm_class_t* results = null;
-                int* result_count = null;
-                fixed (mm_mat_t* _mats = mats)
+                MmClass* results = null;
+                int* resultCount = null;
+                fixed (MmMat* _mats = mats)
                 {
-                    ThrowException(NativeMethods.c_mmdeploy_classifier_apply(_handle, _mats, mats.Length, &results, &result_count));
+                    ThrowException(NativeMethods.mmdeploy_classifier_apply(_handle, _mats, mats.Length, &results, &resultCount));
                 }
 
-                FormatResult(mats.Length, result_count, results, ref output, out var total);
-                ReleaseResult(results, result_count, total);
+                FormatResult(mats.Length, resultCount, results, ref output, out var total);
+                ReleaseResult(results, resultCount, total);
             }
 
             return output;
         }
 
-
-        public unsafe void FormatResult(int mat_count, int* result_count, mm_class_t* results, ref List<ClassifierOutput> output, out int total)
+        private unsafe void FormatResult(int matCount, int* resultCount, MmClass* results, ref List<ClassifierOutput> output, out int total)
         {
             total = 0;
-            for (int i = 0; i < mat_count; i++)
+            for (int i = 0; i < matCount; i++)
             {
-                ClassifierOutput outi = new ClassifierOutput();
-                for (int j = 0; j < result_count[i]; j++)
+                ClassifierOutput outi = default;
+                for (int j = 0; j < resultCount[i]; j++)
                 {
-                    outi.Add(results[j].label_id, results[j].score);
+                    outi.Add(results[j].LabelId, results[j].Score);
                     results++;
                     total++;
                 }
+
                 output.Add(outi);
             }
         }
 
-        public unsafe void ReleaseResult(mm_class_t* results, int* result_count, int count)
+        private unsafe void ReleaseResult(MmClass* results, int* resultCount, int count)
         {
-            NativeMethods.c_mmdeploy_classifier_release_result(results, result_count, count);
+            NativeMethods.mmdeploy_classifier_release_result(results, resultCount, count);
         }
 
+        /// <inheritdoc/>
         protected override void ReleaseHandle()
         {
-            NativeMethods.c_mmdeploy_classifier_destroy(_handle);
+            NativeMethods.mmdeploy_classifier_destroy(_handle);
         }
     }
 }

@@ -10,8 +10,16 @@
     <Deterministic>true</Deterministic>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Platforms>AnyCPU;x64</Platforms>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
-  
+
+  <PropertyGroup>
+    <MMDeploySharpExternalNativeDlls>$(MSBuildThisFileDirectory)\..\..\..\..\..</MMDeploySharpExternalNativeDlls>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content CopyToOutputDirectory="PreserveNewest" Include="$(MMDeploySharpExternalNativeDlls)\build\bin\Release\MMDeploySharpExtern.dll" Pack="true" PackagePath="runtimes\win-x64\native\MMDeploySharpExtern.dll" />
+  </ItemGroup>
+
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -20,6 +28,12 @@
     <DefineConstants>TRACE</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="System" />

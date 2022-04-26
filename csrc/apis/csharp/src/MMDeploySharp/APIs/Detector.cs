@@ -3,146 +3,231 @@ using System.Collections.Generic;
 
 namespace MMDeploySharp
 {
-    unsafe public struct mm_instance_mask_t
+#pragma warning disable 0649
+    /// <summary>
+    /// mm_instance_mask_t of c code.
+    /// </summary>
+    internal unsafe struct CMmInstanceMask
     {
-        public char* data;
-        public int height;
-        public int width;
+        public char* Data;
+        public int Height;
+        public int Width;
     }
 
-    public unsafe struct mm_detect_t
+    /// <summary>
+    /// mm_detect_t of c code.
+    /// </summary>
+    internal unsafe struct CMmDetect
     {
-        public int label_id;
-        public float score;
-        public mm_rect_t bbox;
-        public mm_instance_mask_t* mask;
+        public int LabelId;
+        public float Score;
+        public MmRect BBox;
+        public CMmInstanceMask* Mask;
+    }
+#pragma warning restore 0649
+
+    /// <summary>
+    /// Instance mask.
+    /// </summary>
+    public struct MmInstanceMask
+    {
+        /// <summary>
+        /// Height.
+        /// </summary>
+        public int Height;
+
+        /// <summary>
+        /// Width.
+        /// </summary>
+        public int Width;
+
+        /// <summary>
+        /// Raw data.
+        /// </summary>
+        public byte[] Data;
+        internal unsafe MmInstanceMask(CMmInstanceMask* mask)
+        {
+            Height = mask->Height;
+            Width = mask->Width;
+            Data = new byte[Height * Width];
+            fixed (byte* data = this.Data)
+            {
+                Buffer.MemoryCopy(mask->Data, data, Height * Width, Height * Width);
+            }
+        }
     }
 
+    /// <summary>
+    /// Single detection result of a picture.
+    /// A picture may contains multiple reuslts.
+    /// </summary>
+    public struct MmDetect
+    {
+        /// <summary>
+        /// Label id.
+        /// </summary>
+        public int LabelId;
+
+        /// <summary>
+        /// Score.
+        /// </summary>
+        public float Score;
+
+        /// <summary>
+        /// Bouding box.
+        /// </summary>
+        public MmRect BBox;
+
+        /// <summary>
+        /// Whether has mask.
+        /// </summary>
+        public bool HasMask;
+
+        /// <summary>
+        /// Mask.
+        /// </summary>
+        public MmInstanceMask Mask;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MmDetect"/> struct.
+        /// </summary>
+        /// <param name="labelId">label id.</param>
+        /// <param name="score"> score.</param>
+        /// <param name="bbox">bounding box.</param>
+        public MmDetect(int labelId, float score, MmRect bbox)
+        {
+            LabelId = labelId;
+            Score = score;
+            BBox = bbox;
+            HasMask = false;
+            Mask = default;
+        }
+
+        internal unsafe MmDetect(CMmDetect* result) : this(result->LabelId, result->Score, result->BBox)
+        {
+            if (result->Mask != null)
+            {
+                HasMask = true;
+                CMmInstanceMask* mask = result->Mask;
+                Mask = new MmInstanceMask(mask);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Output of Detector.
+    /// </summary>
     public struct DetectorOutput
     {
-        public struct Mask
-        {
-            public unsafe Mask(mm_instance_mask_t* mask)
-            {
-                this.height = mask->height;
-                this.width = mask->width;
-                this.data = new byte[this.height * this.width];
-                fixed (byte* data = this.data)
-                {
-                    Buffer.MemoryCopy(mask->data, data, this.height * this.width, this.height * this.width);
-                }
-            }
-            public int height { get; set; }
-            public int width { get; set; }
-            public byte[] data;
-        }
+        /// <summary>
+        /// Detection results for single image.
+        /// </summary>
+        public List<MmDetect> Results;
 
-        public struct Detect
-        {
-            public Detect(int label_id, float score, mm_rect_t bbox)
-            {
-                this.label_id = label_id;
-                this.score = score;
-                this.bbox = bbox;
-                this.has_mask = false;
-                this.mask = new Mask();
-            }
-
-            public unsafe Detect(mm_detect_t* result) : this(result->label_id, result->score, result->bbox)
-            {
-                if (result->mask != null)
-                {
-                    this.has_mask = true;
-                    mm_instance_mask_t* mask = result->mask;
-                    this.mask = new Mask(mask);
-                }
-            }
-
-            public int label_id;
-            public float score;
-            public mm_rect_t bbox;
-            public bool has_mask;
-            public Mask mask;
-        }
-
+        /// <summary>
+        /// Init Reuslts.
+        /// </summary>
         public void Init()
         {
-            if (detects == null)
+            if (Results == null)
             {
-                detects = new List<Detect>();
+                Results = new List<MmDetect>();
             }
         }
 
-        public void Add(int label_id, float score, mm_rect_t bbox)
+        /// <summary>
+        /// Add result to single image.
+        /// </summary>
+        /// <param name="labelId">label id.</param>
+        /// <param name="score">score.</param>
+        /// <param name="bbox">bounding box.</param>
+        public void Add(int labelId, float score, MmRect bbox)
         {
             Init();
-            detects.Add(new Detect(label_id, score, bbox));
+            Results.Add(new MmDetect(labelId, score, bbox));
         }
 
-        public unsafe void Add(mm_detect_t* result)
+        internal unsafe void Add(CMmDetect* result)
         {
             Init();
-            detects.Add(new Detect(result));
+            Results.Add(new MmDetect(result));
         }
 
+        /// <summary>
+        /// Gets number of output.
+        /// </summary>
         public int Count
         {
-            get { return (detects == null) ? 0 : detects.Count; }
+            get { return (Results == null) ? 0 : Results.Count; }
         }
-
-        public List<Detect> detects;
     }
 
+    /// <summary>
+    /// Detector.
+    /// </summary>
     public class Detector : DisposableObject
     {
-        public Detector(String model_path, String device_name, int device_id)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Detector"/> class.
+        /// </summary>
+        /// <param name="modelPath">model path.</param>
+        /// <param name="deviceName">device name.</param>
+        /// <param name="deviceId">device id.</param>
+        public Detector(string modelPath, string deviceName, int deviceId)
         {
-            ThrowException(NativeMethods.c_mmdeploy_detector_create_by_path(model_path, device_name, device_id, out _handle));
+            ThrowException(NativeMethods.mmdeploy_detector_create_by_path(modelPath, deviceName, deviceId, out _handle));
         }
 
-        public List<DetectorOutput> Apply(mm_mat_t[] mats)
+        /// <summary>
+        /// Get information of each image in a batch.
+        /// </summary>
+        /// <param name="mats">input mats.</param>
+        /// <returns>Results of each input mat.</returns>
+        public List<DetectorOutput> Apply(MmMat[] mats)
         {
             List<DetectorOutput> output = new List<DetectorOutput>();
 
             unsafe
             {
-                mm_detect_t* results = null;
-                int* result_count = null;
-                fixed (mm_mat_t* _mats = mats)
+                CMmDetect* results = null;
+                int* resultCount = null;
+                fixed (MmMat* _mats = mats)
                 {
-                    ThrowException(NativeMethods.c_mmdeploy_detector_apply(_handle, _mats, mats.Length, &results, &result_count));
+                    ThrowException(NativeMethods.mmdeploy_detector_apply(_handle, _mats, mats.Length, &results, &resultCount));
                 }
-                FormatResult(mats.Length, result_count, results, ref output, out var total);
-                ReleaseResult(results, result_count, total);
+
+                FormatResult(mats.Length, resultCount, results, ref output, out var total);
+                ReleaseResult(results, resultCount, total);
             }
 
             return output;
         }
 
-
-        public unsafe void FormatResult(int mat_count, int* result_count, mm_detect_t* results, ref List<DetectorOutput> output, out int total)
+        private unsafe void FormatResult(int matCount, int* resultCount, CMmDetect* results, ref List<DetectorOutput> output, out int total)
         {
             total = 0;
-            for (int i = 0; i < mat_count; i++)
+            for (int i = 0; i < matCount; i++)
             {
-                DetectorOutput outi = new DetectorOutput();
-                for (int j = 0; j < result_count[i]; j++)
+                DetectorOutput outi = default;
+                for (int j = 0; j < resultCount[i]; j++)
                 {
                     outi.Add(results);
                     results++;
                 }
+
                 output.Add(outi);
             }
         }
 
-        public unsafe void ReleaseResult(mm_detect_t* results, int* result_count, int count)
+        private unsafe void ReleaseResult(CMmDetect* results, int* resultCount, int count)
         {
-            NativeMethods.c_mmdeploy_detector_release_result(results, result_count, count);
+            NativeMethods.mmdeploy_detector_release_result(results, resultCount, count);
         }
 
+        /// <inheritdoc/>
         protected override void ReleaseHandle()
         {
-            NativeMethods.c_mmdeploy_detector_destroy(_handle);
+            NativeMethods.mmdeploy_detector_destroy(_handle);
         }
     }
 }

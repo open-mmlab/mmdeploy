@@ -4,141 +4,144 @@ using System.Runtime.InteropServices;
 
 namespace MMDeploySharp
 {
-    public static partial class NativeMethods
+    /// <summary>
+    /// Nativate C methods.
+    /// </summary>
+    internal static partial class NativeMethods
     {
         #region model.h
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern int c_mmdeploy_model_create_by_path(String path, out IntPtr handle);
+        public static extern int mmdeploy_model_create_by_path(string path, out IntPtr handle);
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern int c_mmdeploy_model_create(IntPtr buffer, int size, out IntPtr handle);
+        public static extern int mmdeploy_model_create(IntPtr buffer, int size, out IntPtr handle);
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void c_mmdeploy_model_destroy(IntPtr model);
+        public static extern void mmdeploy_model_destroy(IntPtr model);
         #endregion
 
         #region pose_detector.h
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern int c_mmdeploy_pose_detector_create(IntPtr model, String device_name,
-            int device_id, out IntPtr handle);
+        public static extern int mmdeploy_pose_detector_create(IntPtr model, string deviceName,
+            int deviceId, out IntPtr handle);
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern int c_mmdeploy_pose_detector_create_by_path(String model_path,
-            String device_name, int device_id, out IntPtr handle);
+        public static extern int mmdeploy_pose_detector_create_by_path(string modelPath,
+            string deviceName, int deviceId, out IntPtr handle);
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern unsafe int c_mmdeploy_pose_detector_apply(IntPtr handle, mm_mat_t* mats,
-            int mat_count, mm_pose_detect_t** results);
+        public static extern unsafe int mmdeploy_pose_detector_apply(IntPtr handle, MmMat* mats,
+            int matCount, CMmPoseDetect** results);
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern unsafe int c_mmdeploy_pose_detector_apply_bbox(IntPtr handle, mm_mat_t* mats,
-            int mat_count, mm_rect_t* bboxes, int* bbox_count, mm_pose_detect_t** results);
+        public static extern unsafe int mmdeploy_pose_detector_apply_bbox(IntPtr handle, MmMat* mats,
+            int matCount, MmRect* bboxes, int* bbox_count, CMmPoseDetect** results);
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern unsafe int c_mmdeploy_pose_detector_release_result(mm_pose_detect_t* results,
+        public static extern unsafe int mmdeploy_pose_detector_release_result(CMmPoseDetect* results,
             int count);
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void c_mmdeploy_pose_detector_destroy(IntPtr handle);
+        public static extern void mmdeploy_pose_detector_destroy(IntPtr handle);
         #endregion
 
         #region classifier.h
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern int c_mmdeploy_classifier_create(IntPtr model, String device_name,
-            int device_id, out IntPtr handle);
+        public static extern int mmdeploy_classifier_create(IntPtr model, string deviceName,
+            int deviceId, out IntPtr handle);
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern int c_mmdeploy_classifier_create_by_path(String model_path,
-            String device_name, int device_id, out IntPtr handle);
+        public static extern int mmdeploy_classifier_create_by_path(string modelPath,
+            string deviceName, int deviceId, out IntPtr handle);
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern unsafe int c_mmdeploy_classifier_apply(IntPtr handle, mm_mat_t* mats,
-            int mat_count, mm_class_t** results, int** result_count);
+        public static extern unsafe int mmdeploy_classifier_apply(IntPtr handle, MmMat* mats,
+            int matCount, MmClass** results, int** resultCount);
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern unsafe void c_mmdeploy_classifier_release_result(mm_class_t* results,
-            int* result_count, int count);
+        public static extern unsafe void mmdeploy_classifier_release_result(MmClass* results,
+            int* resultCount, int count);
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void c_mmdeploy_classifier_destroy(IntPtr handle);
+        public static extern void mmdeploy_classifier_destroy(IntPtr handle);
         #endregion
 
         #region detector.h
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern int c_mmdeploy_detector_create(IntPtr model, String device_name,
-            int device_id, out IntPtr handle);
+        public static extern int mmdeploy_detector_create(IntPtr model, string deviceName,
+            int deviceId, out IntPtr handle);
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern int c_mmdeploy_detector_create_by_path(String model_path,
-            String device_name, int device_id, out IntPtr handle);
+        public static extern int mmdeploy_detector_create_by_path(string modelPath,
+            string deviceName, int deviceId, out IntPtr handle);
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern unsafe int c_mmdeploy_detector_apply(IntPtr handle, mm_mat_t* mats,
-            int mat_count, mm_detect_t** results, int** result_count);
+        public static extern unsafe int mmdeploy_detector_apply(IntPtr handle, MmMat* mats,
+            int matCount, CMmDetect** results, int** resultCount);
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern unsafe void c_mmdeploy_detector_release_result(mm_detect_t* results,
-            int* result_count, int count);
+        public static extern unsafe void mmdeploy_detector_release_result(CMmDetect* results,
+            int* resultCount, int count);
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void c_mmdeploy_detector_destroy(IntPtr handle);
+        public static extern void mmdeploy_detector_destroy(IntPtr handle);
         #endregion
 
         #region restorer.h
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern int c_mmdeploy_restorer_create(IntPtr model, String device_name,
-            int device_id, out IntPtr handle);
+        public static extern int mmdeploy_restorer_create(IntPtr model, string deviceName,
+            int deviceId, out IntPtr handle);
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern int c_mmdeploy_restorer_create_by_path(String model_path,
-            String device_name, int device_id, out IntPtr handle);
+        public static extern int mmdeploy_restorer_create_by_path(string modelPath,
+            string deviceName, int deviceId, out IntPtr handle);
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern unsafe int c_mmdeploy_restorer_apply(IntPtr handle, mm_mat_t* images,
-            int count, mm_mat_t** results);
+        public static extern unsafe int mmdeploy_restorer_apply(IntPtr handle, MmMat* images,
+            int count, MmMat** results);
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern unsafe void c_mmdeploy_restorer_release_result(mm_mat_t* results,
+        public static extern unsafe void mmdeploy_restorer_release_result(MmMat* results,
             int count);
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void c_mmdeploy_restorer_destroy(IntPtr handle);
+        public static extern void mmdeploy_restorer_destroy(IntPtr handle);
         #endregion
 
         #region segmentor.h
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern int c_mmdeploy_segmentor_create(IntPtr model, String device_name,
-            int device_id, out IntPtr handle);
+        public static extern int mmdeploy_segmentor_create(IntPtr model, string deviceName,
+            int deviceId, out IntPtr handle);
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern int c_mmdeploy_segmentor_create_by_path(String model_path,
-            String device_name, int device_id, out IntPtr handle);
+        public static extern int mmdeploy_segmentor_create_by_path(string modelPath,
+            string deviceName, int deviceId, out IntPtr handle);
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern unsafe int c_mmdeploy_segmentor_apply(IntPtr handle, mm_mat_t* mats,
-            int mat_count, mm_segment_t** results);
+        public static extern unsafe int mmdeploy_segmentor_apply(IntPtr handle, MmMat* mats,
+            int matCount, CMmSegment** results);
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern unsafe void c_mmdeploy_segmentor_release_result(mm_segment_t* results,
+        public static extern unsafe void mmdeploy_segmentor_release_result(CMmSegment* results,
             int count);
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void c_mmdeploy_segmentor_destroy(IntPtr handle);
+        public static extern void mmdeploy_segmentor_destroy(IntPtr handle);
         #endregion
 
         #region text_detector.h
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern int c_mmdeploy_text_detector_create(IntPtr model, String device_name,
-            int device_id, out IntPtr handle);
+        public static extern int mmdeploy_text_detector_create(IntPtr model, string deviceName,
+            int deviceId, out IntPtr handle);
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern int c_mmdeploy_text_detector_create_by_path(String model_path,
-            String device_name, int device_id, out IntPtr handle);
+        public static extern int mmdeploy_text_detector_create_by_path(string modelPath,
+            string deviceName, int deviceId, out IntPtr handle);
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern unsafe int c_mmdeploy_text_detector_apply(IntPtr handle, mm_mat_t* mats,
-            int mat_count, mm_text_detect_t** results, int** result_count);
+        public static extern unsafe int mmdeploy_text_detector_apply(IntPtr handle, MmMat* mats,
+            int matCount, MmTextDetect** results, int** resultCount);
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern unsafe void c_mmdeploy_text_detector_release_result(mm_text_detect_t* results,
-            int* result_count, int count);
+        public static extern unsafe void mmdeploy_text_detector_release_result(MmTextDetect* results,
+            int* resultCount, int count);
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void c_mmdeploy_text_detector_destroy(IntPtr handle);
+        public static extern void mmdeploy_text_detector_destroy(IntPtr handle);
         #endregion
 
         #region text_recognizer.h
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern int c_mmdeploy_text_recognizer_create(IntPtr model, String device_name,
-            int device_id, out IntPtr handle);
+        public static extern int mmdeploy_text_recognizer_create(IntPtr model, string deviceName,
+            int deviceId, out IntPtr handle);
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern int c_mmdeploy_text_recognizer_create_by_path(String model_path,
-            String device_name, int device_id, out IntPtr handle);
+        public static extern int mmdeploy_text_recognizer_create_by_path(string modelPath,
+            string deviceName, int deviceId, out IntPtr handle);
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern unsafe int c_mmdeploy_text_recognizer_apply(IntPtr handle, mm_mat_t* images,
-            int count, mm_text_recognize_t** results);
+        public static extern unsafe int mmdeploy_text_recognizer_apply(IntPtr handle, MmMat* images,
+            int count, CMmTextRecognize** results);
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern unsafe int c_mmdeploy_text_recognizer_apply_bbox(IntPtr handle,
-            mm_mat_t* images, int image_count, mm_text_detect_t* bboxes, int* bbox_count,
-            mm_text_recognize_t** results);
+        public static extern unsafe int mmdeploy_text_recognizer_apply_bbox(IntPtr handle,
+            MmMat* images, int image_count, MmTextDetect* bboxes, int* bbox_count,
+            CMmTextRecognize** results);
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern unsafe void c_mmdeploy_text_recognizer_release_result(
-            mm_text_recognize_t* results, int count);
+        public static extern unsafe void mmdeploy_text_recognizer_release_result(
+            CMmTextRecognize* results, int count);
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void c_mmdeploy_text_recognizer_destroy(IntPtr handle);
+        public static extern void mmdeploy_text_recognizer_destroy(IntPtr handle);
         #endregion
     }
 }

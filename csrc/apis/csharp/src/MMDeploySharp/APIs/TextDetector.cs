@@ -3,22 +3,46 @@ using System.Collections.Generic;
 
 namespace MMDeploySharp
 {
+    /// <summary>
+    /// Box.
+    /// </summary>
     public struct TextBox
     {
-        public mm_pointf_t p1;
-        public mm_pointf_t p2;
-        public mm_pointf_t p3;
-        public mm_pointf_t p4;
-        public mm_pointf_t this[int i]
+        /// <summary>
+        /// P1.
+        /// </summary>
+        public MmPointf P1;
+
+        /// <summary>
+        /// P2.
+        /// </summary>
+        public MmPointf P2;
+
+        /// <summary>
+        /// P3.
+        /// </summary>
+        public MmPointf P3;
+
+        /// <summary>
+        /// P4.
+        /// </summary>
+        public MmPointf P4;
+
+        /// <summary>
+        /// Get reference Pi.
+        /// </summary>
+        /// <param name="i">ith point.</param>
+        /// <returns>Pi reference.</returns>
+        public MmPointf this[int i]
         {
             readonly get
             {
                 return i switch
                 {
-                    0 => p1,
-                    1 => p2,
-                    2 => p3,
-                    3 => p4,
+                    0 => P1,
+                    1 => P2,
+                    2 => P3,
+                    3 => P4,
                     _ => throw new ArgumentOutOfRangeException(nameof(i))
                 };
             }
@@ -26,117 +50,164 @@ namespace MMDeploySharp
             {
                 switch (i)
                 {
-                    case 0: p1 = value; break;
-                    case 1: p2 = value; break;
-                    case 2: p3 = value; break;
-                    case 3: p4 = value; break;
+                    case 0: P1 = value; break;
+                    case 1: P2 = value; break;
+                    case 2: P3 = value; break;
+                    case 3: P4 = value; break;
                     default: throw new ArgumentOutOfRangeException(nameof(i));
                 }
             }
         }
     }
 
-    public struct mm_text_detect_t
+    /// <summary>
+    /// Single detection result of a picture.
+    /// A picture may contains multiple reuslts.
+    /// </summary>
+    public struct MmTextDetect
     {
-        public mm_text_detect_t(float score, TextBox bbox)
+        /// <summary>
+        /// Bounding box.
+        /// </summary>
+        public TextBox BBox;
+
+        /// <summary>
+        /// Score.
+        /// </summary>
+        public float Score;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MmTextDetect"/> struct.
+        /// </summary>
+        /// <param name="score">score.</param>
+        /// <param name="bbox">bbox.</param>
+        public MmTextDetect(TextBox bbox, float score)
         {
-            this.score = score;
-            this.bbox = bbox;
+            BBox = bbox;
+            Score = score;
         }
 
-        public unsafe mm_text_detect_t(mm_text_detect_t* result)
+        internal unsafe MmTextDetect(MmTextDetect* result)
         {
-            this.score = result->score;
-            bbox = new TextBox();
+            Score = result->Score;
+            BBox = default;
             for (int i = 0; i < 4; i++)
             {
-                this.bbox[i] = result->bbox[i];
+                BBox[i] = result->BBox[i];
             }
         }
-        public TextBox bbox;
-        public float score;
     }
 
+    /// <summary>
+    /// Output of DetectorOutput.
+    /// </summary>
     public struct TextDetectorOutput
     {
-        void Init()
+        /// <summary>
+        /// Detection results for single image.
+        /// </summary>
+        public List<MmTextDetect> Results;
+
+        private void Init()
         {
-            if (detects == null)
+            if (Results == null)
             {
-                detects = new List<mm_text_detect_t>();
+                Results = new List<MmTextDetect>();
             }
         }
 
-        public void Add(float score, TextBox bbox)
+        /// <summary>
+        /// Add result to single image.
+        /// </summary>
+        /// <param name="bbox">bbox.</param>
+        /// <param name="score">score.</param>
+        public void Add(TextBox bbox, float score)
         {
             Init();
-            detects.Add(new mm_text_detect_t(score, bbox));
+            Results.Add(new MmTextDetect(bbox, score));
         }
 
-        public unsafe void Add(mm_text_detect_t* result)
+        internal unsafe void Add(MmTextDetect* result)
         {
             Init();
-            detects.Add(new mm_text_detect_t(result));
+            Results.Add(new MmTextDetect(result));
         }
 
+        /// <summary>
+        /// Gets number of output.
+        /// </summary>
         public int Count
         {
-            get { return (detects == null) ? 0 : detects.Count; }
+            get { return (Results == null) ? 0 : Results.Count; }
         }
-
-        public List<mm_text_detect_t> detects;
     }
 
+    /// <summary>
+    /// TextDetector.
+    /// </summary>
     public class TextDetector : DisposableObject
     {
-        public TextDetector(String model_path, String device_name, int device_id)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TextDetector"/> class.
+        /// </summary>
+        /// <param name="modelPath">model path.</param>
+        /// <param name="deviceName">device name.</param>
+        /// <param name="deviceId">device id.</param>
+        public TextDetector(string modelPath, string deviceName, int deviceId)
         {
-            ThrowException(NativeMethods.c_mmdeploy_text_detector_create_by_path(model_path, device_name, device_id, out _handle));
+            ThrowException(NativeMethods.mmdeploy_text_detector_create_by_path(modelPath, deviceName, deviceId, out _handle));
         }
 
-        public List<TextDetectorOutput> Apply(mm_mat_t[] mats)
+        /// <summary>
+        /// Get information of each image in a batch.
+        /// </summary>
+        /// <param name="mats">input mats.</param>
+        /// <returns>Results of each input mat.</returns>
+        public List<TextDetectorOutput> Apply(MmMat[] mats)
         {
             List<TextDetectorOutput> output = new List<TextDetectorOutput>();
             unsafe
             {
-                mm_text_detect_t* results = null;
-                int* result_count = null;
-                fixed (mm_mat_t* _mats = mats)
+                MmTextDetect* results = null;
+                int* resultCount = null;
+                fixed (MmMat* _mats = mats)
                 {
-                    ThrowException(NativeMethods.c_mmdeploy_text_detector_apply(_handle, _mats, mats.Length, &results, &result_count));
+                    ThrowException(NativeMethods.mmdeploy_text_detector_apply(_handle, _mats, mats.Length, &results, &resultCount));
                 }
 
-                FormatResult(mats.Length, result_count, results, ref output, out var total);
-                ReleaseResult(results, result_count, total);
+                FormatResult(mats.Length, resultCount, results, ref output, out var total);
+                ReleaseResult(results, resultCount, total);
             }
 
             return output;
         }
 
-        public unsafe void FormatResult(int mat_count, int* result_count, mm_text_detect_t* results, ref List<TextDetectorOutput> output, out int total)
+        private unsafe void FormatResult(int matCount, int* resultCount, MmTextDetect* results, ref List<TextDetectorOutput> output, out int total)
         {
             total = 0;
-            for (int i = 0; i < mat_count; i++)
+            for (int i = 0; i < matCount; i++)
             {
-                TextDetectorOutput outi = new TextDetectorOutput();
-                for (int j = 0; j < result_count[i]; j++)
+                TextDetectorOutput outi = default;
+                for (int j = 0; j < resultCount[i]; j++)
                 {
                     outi.Add(results);
                     results++;
                     total++;
                 }
+
                 output.Add(outi);
             }
         }
 
-        public unsafe void ReleaseResult(mm_text_detect_t* results, int* result_count, int count)
+        private unsafe void ReleaseResult(MmTextDetect* results, int* resultCount, int count)
         {
-            NativeMethods.c_mmdeploy_text_detector_release_result(results, result_count, count);
+            NativeMethods.mmdeploy_text_detector_release_result(results, resultCount, count);
         }
 
+        /// <inheritdoc/>
         protected override void ReleaseHandle()
         {
-            NativeMethods.c_mmdeploy_text_detector_destroy(_handle);
+            NativeMethods.mmdeploy_text_detector_destroy(_handle);
         }
     }
 }

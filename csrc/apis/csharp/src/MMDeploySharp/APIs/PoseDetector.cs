@@ -1,103 +1,154 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-
-#pragma warning disable CS8602
 
 namespace MMDeploySharp
 {
-    unsafe public struct mm_pose_detect_t
+#pragma warning disable 0649
+    internal unsafe struct CMmPoseDetect
     {
-        public mm_pointf_t* point;  ///< keypoint
-        public float* score;        ///< keypoint score
-        public int length;          ///< number of keypoint
+        public MmPointf* Point;
+        public float* Score;
+        public int Length;
+    }
+#pragma warning restore 0649
+
+    /// <summary>
+    /// Single detection result of a bbox.
+    /// A picture may contains multiple reuslts.
+    /// </summary>
+    public struct MmPoseDetect
+    {
+        /// <summary>
+        /// Keypoins.
+        /// </summary>
+        public List<MmPointf> Points;
+
+        /// <summary>
+        /// Scores.
+        /// </summary>
+        public List<float> Scores;
+
+        /// <summary>
+        /// Init points and scores if empty.
+        /// </summary>
+        private void Init()
+        {
+            if (Points == null || Scores == null)
+            {
+                Points = new List<MmPointf>();
+                Scores = new List<float>();
+            }
+        }
+
+        /// <summary>
+        /// Add single keypoint to list.
+        /// </summary>
+        /// <param name="point">Keypoint.</param>
+        /// <param name="score">Score.</param>
+        public void Add(MmPointf point, float score)
+        {
+            Init();
+            Points.Add(point);
+            Scores.Add(score);
+        }
+
+        internal unsafe void Add(MmPointf* point, float score)
+        {
+            Init();
+            Points.Add(new MmPointf(point->X, point->Y));
+        }
     }
 
-    public struct KeyPoints2D
-    {
-        public struct Point
-        {
-            public Point(float x, float y, float z)
-            {
-                this.x = x;
-                this.y = y;
-                this.z = z;
-            }
-
-            public float x;
-            public float y;
-            public float z;
-        }
-
-        public void Add(float x, float y, float z)
-        {
-            if (points == null)
-            {
-                points = new List<Point>();
-            }
-            points.Add(new Point(x, y, z));
-        }
-
-        public List<Point> points;
-        public int Count
-        {
-            get { return (points == null) ? 0 : points.Count; }
-        }
-    }
-
+    /// <summary>
+    /// Output of PoseDetector.
+    /// </summary>
     public struct PoseDetectorOutput
     {
-        public List<KeyPoints2D> boxes;
+        /// <summary>
+        /// Pose detection results for single image.
+        /// </summary>
+        public List<MmPoseDetect> Results;
+
+        /// <summary>
+        /// Gets number of output.
+        /// </summary>
         public int Count
         {
-            get { return (boxes == null) ? 0 : boxes.Count; }
+            get { return (Results == null) ? 0 : Results.Count; }
         }
 
-        public void Add(KeyPoints2D box_res)
+        /// <summary>
+        /// Result for box level.
+        /// </summary>
+        /// <param name="boxRes">Box res.</param>
+        public void Add(MmPoseDetect boxRes)
         {
-            if (boxes == null)
+            if (Results == null)
             {
-                boxes = new List<KeyPoints2D>();
+                Results = new List<MmPoseDetect>();
             }
-            boxes.Add(box_res);
+
+            Results.Add(boxRes);
         }
     }
 
+    /// <summary>
+    /// PoseDetector.
+    /// </summary>
     public class PoseDetector : DisposableObject
     {
-        public PoseDetector(String model_path, String device_name, int device_id)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PoseDetector"/> class.
+        /// </summary>
+        /// <param name="modelPath">model path.</param>
+        /// <param name="deviceName">device name.</param>
+        /// <param name="deviceId">device id.</param>
+        public PoseDetector(string modelPath, string deviceName, int deviceId)
         {
-            ThrowException(NativeMethods.c_mmdeploy_pose_detector_create_by_path(model_path, device_name, device_id, out _handle));
+            ThrowException(NativeMethods.mmdeploy_pose_detector_create_by_path(modelPath, deviceName, deviceId, out _handle));
         }
 
-        public List<PoseDetectorOutput> Apply(mm_mat_t[] mats, mm_rect_t[] bboxes, int[] bbox_count)
+        /// <summary>
+        /// Get information of each image in a batch.
+        /// </summary>
+        /// <param name="mats">input mats.</param>
+        /// <param name="bboxes">bounding boxes..</param>
+        /// <param name="bboxCount">bounding boxes count for each image.</param>
+        /// <returns>Results of each input mat.</returns>
+        public List<PoseDetectorOutput> Apply(MmMat[] mats, MmRect[] bboxes, int[] bboxCount)
         {
             List<PoseDetectorOutput> output = new List<PoseDetectorOutput>();
 
             unsafe
             {
-                mm_pose_detect_t* results = null;
-                fixed (mm_mat_t* _mats = mats)
-                fixed (mm_rect_t* _bboxes = bboxes)
-                fixed (int* _bbox_count = bbox_count)
+                CMmPoseDetect* results = null;
+                fixed (MmMat* _mats = mats)
+                fixed (MmRect* _bboxes = bboxes)
+                fixed (int* _bboxCount = bboxCount)
                 {
-                    ThrowException(NativeMethods.c_mmdeploy_pose_detector_apply_bbox(_handle, _mats, mats.Length, _bboxes, _bbox_count, &results));
-                    FormatResult(mats.Length, _bbox_count, results, ref output, out var total);
+                    ThrowException(NativeMethods.mmdeploy_pose_detector_apply_bbox(_handle, _mats, mats.Length, _bboxes, _bboxCount, &results));
+                    FormatResult(mats.Length, _bboxCount, results, ref output, out var total);
                     ReleaseResult(results, total);
                 }
             }
+
             return output;
         }
 
-        public List<PoseDetectorOutput> Apply(mm_mat_t[] mats)
+        /// <summary>
+        /// Get information of each image in a batch.
+        /// </summary>
+        /// <param name="mats">Input mats.</param>
+        /// <returns>Results of each input mat.</returns>
+        public List<PoseDetectorOutput> Apply(MmMat[] mats)
         {
             List<PoseDetectorOutput> output = new List<PoseDetectorOutput>();
             unsafe
             {
-                mm_pose_detect_t* results = null;
-                fixed (mm_mat_t* _mats = mats)
+                CMmPoseDetect* results = null;
+                fixed (MmMat* _mats = mats)
                 {
-                    ThrowException(NativeMethods.c_mmdeploy_pose_detector_apply(_handle, _mats, mats.Length, &results));
+                    ThrowException(NativeMethods.mmdeploy_pose_detector_apply(_handle, _mats, mats.Length, &results));
                 }
 
                 int[] _bbox_count = Enumerable.Repeat(1, mats.Length).ToArray();
@@ -111,35 +162,38 @@ namespace MMDeploySharp
             return output;
         }
 
-        public unsafe void FormatResult(int mat_count, int* bbox_count, mm_pose_detect_t* results, ref List<PoseDetectorOutput> output, out int total)
+        private unsafe void FormatResult(int matCount, int* bboxCount, CMmPoseDetect* results, ref List<PoseDetectorOutput> output, out int total)
         {
             total = 0;
-            for (int i = 0; i < mat_count; i++)
+            for (int i = 0; i < matCount; i++)
             {
-                PoseDetectorOutput outi = new PoseDetectorOutput();
-                for (int j = 0; j < bbox_count[i]; j++)
+                PoseDetectorOutput outi = default;
+                for (int j = 0; j < bboxCount[i]; j++)
                 {
-                    KeyPoints2D box_res = new KeyPoints2D();
-                    for (int k = 0; k < results->length; k++)
+                    MmPoseDetect boxRes = default;
+                    for (int k = 0; k < results->Length; k++)
                     {
-                        box_res.Add(results->point[k].x, results->point[k].y, results->score[k]);
+                        boxRes.Add(results->Point[k], results->Score[k]);
                     }
-                    outi.Add(box_res);
+
+                    outi.Add(boxRes);
                     results++;
                     total++;
                 }
+
                 output.Add(outi);
             }
         }
 
-        public unsafe void ReleaseResult(mm_pose_detect_t* results, int count)
+        private unsafe void ReleaseResult(CMmPoseDetect* results, int count)
         {
-            NativeMethods.c_mmdeploy_pose_detector_release_result(results, count);
+            NativeMethods.mmdeploy_pose_detector_release_result(results, count);
         }
 
+        /// <inheritdoc/>
         protected override void ReleaseHandle()
         {
-            NativeMethods.c_mmdeploy_pose_detector_destroy(_handle);
+            NativeMethods.mmdeploy_pose_detector_destroy(_handle);
         }
     }
 }

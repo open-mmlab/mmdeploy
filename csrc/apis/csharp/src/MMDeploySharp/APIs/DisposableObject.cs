@@ -3,32 +3,51 @@ using System.Runtime.InteropServices;
 
 namespace MMDeploySharp
 {
+    /// <summary>
+    /// Base class which manages its own memory.
+    /// </summary>
     public class DisposableObject : IDisposable
     {
+#pragma warning disable SA1401 // Fields should be private
+        /// <summary>
+        /// Handle pointer.
+        /// </summary>
         protected IntPtr _handle;
+#pragma warning restore SA1401 // Fields should be private
 
-        bool disposed = false;
+        private bool disposed = false;
 
+        /// <summary>
+        /// Gets a value indicating whether this instance has been disposed.
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Close handle.
+        /// </summary>
         public void Close()
         {
             Dispose();
         }
 
+        /// <summary>
+        /// Releases the resources.
+        /// </summary>
         private void Dispose(bool disposing)
         {
             if (disposed)
+            {
                 return;
+            }
 
             if (disposing)
             {
                 // Free any other managed objects here.
-                //
+                ReleaseManaged();
             }
 
             // Free any unmanaged objects here.
@@ -39,16 +58,33 @@ namespace MMDeploySharp
             disposed = true;
         }
 
+        /// <summary>
+        /// Releases managed resources.
+        /// </summary>
+        protected virtual void ReleaseManaged()
+        {
+        }
+
+        /// <summary>
+        /// Releases unmanaged resources.
+        /// </summary>
         protected virtual void ReleaseHandle()
         {
             Marshal.FreeHGlobal(_handle);
         }
 
+        /// <summary>
+        /// Finalizes an instance of the <see cref="DisposableObject"/> class.
+        /// </summary>
         ~DisposableObject()
         {
             Dispose(false);
         }
 
+        /// <summary>
+        /// Throw exception is result is not zero.
+        /// </summary>
+        /// <param name="result">fuction return value.</param>
         protected static void ThrowException(int result)
         {
             if (result != 0)
@@ -56,6 +92,5 @@ namespace MMDeploySharp
                 throw new Exception();
             }
         }
-
     }
 }

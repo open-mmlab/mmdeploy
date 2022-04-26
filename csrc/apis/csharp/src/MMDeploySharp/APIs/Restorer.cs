@@ -3,61 +3,96 @@ using System.Collections.Generic;
 
 namespace MMDeploySharp
 {
+    /// <summary>
+    /// Output of Restorer.
+    /// </summary>
     public struct RestorerOutput
     {
+        /// <summary>
+        /// Height.
+        /// </summary>
+        public int Height;
+
+        /// <summary>
+        /// Width.
+        /// </summary>
+        public int Width;
+
+        /// <summary>
+        /// Raw data.
+        /// </summary>
+        public byte[] Data;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RestorerOutput"/> struct.
+        /// </summary>
+        /// <param name="height">height.</param>
+        /// <param name="width">width.</param>
+        /// <param name="data">data.</param>
         public RestorerOutput(int height, int width, byte[] data)
         {
-            this.height = height;
-            this.width = width;
-            this.data = new byte[height * width * 3];
-            Array.Copy(data, this.data, data.Length);
+            Height = height;
+            Width = width;
+            Data = new byte[height * width * 3];
+            Array.Copy(data, Data, data.Length);
         }
 
-        public unsafe RestorerOutput(mm_mat_t* result)
+        internal unsafe RestorerOutput(MmMat* result)
         {
-            this.height = result->height;
-            this.width = result->width;
-            this.data = new byte[height * width * 3];
-            int nbytes = this.height * this.width * 3;
-            fixed (byte* data = this.data)
+            Height = result->Height;
+            Width = result->Width;
+            Data = new byte[Height * Width * 3];
+            int nbytes = Height * Width * 3;
+            fixed (byte* data = this.Data)
             {
-                Buffer.MemoryCopy(result->data, data, nbytes, nbytes);
+                Buffer.MemoryCopy(result->Data, data, nbytes, nbytes);
             }
         }
-
-        public int height;
-        public int width;
-        public byte[] data;
     }
 
+    /// <summary>
+    /// Restorer.
+    /// </summary>
     public class Restorer : DisposableObject
     {
-        public Restorer(String model_path, String device_name, int device_id)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Restorer"/> class.
+        /// </summary>
+        /// <param name="modelPath">model path.</param>
+        /// <param name="deviceName">device name.</param>
+        /// <param name="deviceId">device id.</param>
+        public Restorer(string modelPath, string deviceName, int deviceId)
         {
-            ThrowException(NativeMethods.c_mmdeploy_restorer_create_by_path(model_path, device_name, device_id, out _handle));
+            ThrowException(NativeMethods.mmdeploy_restorer_create_by_path(modelPath, deviceName, deviceId, out _handle));
         }
 
-        public List<RestorerOutput> Apply(mm_mat_t[] mats)
+        /// <summary>
+        /// Get information of each image in a batch.
+        /// </summary>
+        /// <param name="mats">input mats.</param>
+        /// <returns>Results of each input mat.</returns>
+        public List<RestorerOutput> Apply(MmMat[] mats)
         {
             List<RestorerOutput> output = new List<RestorerOutput>();
             unsafe
             {
-                mm_mat_t* results = null;
-                fixed (mm_mat_t* _mats = mats)
+                MmMat* results = null;
+                fixed (MmMat* _mats = mats)
                 {
-                    ThrowException(NativeMethods.c_mmdeploy_restorer_apply(_handle, _mats, mats.Length, &results));
+                    ThrowException(NativeMethods.mmdeploy_restorer_apply(_handle, _mats, mats.Length, &results));
                 }
 
                 FormatResult(mats.Length, results, ref output, out var total);
                 ReleaseResult(results, total);
             }
+
             return output;
         }
 
-        public unsafe void FormatResult(int mat_count, mm_mat_t* results, ref List<RestorerOutput> output, out int total)
+        private unsafe void FormatResult(int matCount, MmMat* results, ref List<RestorerOutput> output, out int total)
         {
             total = 0;
-            for (int i = 0; i < mat_count; i++)
+            for (int i = 0; i < matCount; i++)
             {
                 output.Add(new RestorerOutput(results));
                 results++;
@@ -65,15 +100,15 @@ namespace MMDeploySharp
             }
         }
 
-
-        public unsafe void ReleaseResult(mm_mat_t* results, int count)
+        private unsafe void ReleaseResult(MmMat* results, int count)
         {
-            NativeMethods.c_mmdeploy_restorer_release_result(results, count);
+            NativeMethods.mmdeploy_restorer_release_result(results, count);
         }
 
+        /// <inheritdoc/>
         protected override void ReleaseHandle()
         {
-            NativeMethods.c_mmdeploy_restorer_destroy(_handle);
+            NativeMethods.mmdeploy_restorer_destroy(_handle);
         }
     }
 }

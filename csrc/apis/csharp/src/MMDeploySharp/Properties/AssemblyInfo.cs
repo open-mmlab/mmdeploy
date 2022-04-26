@@ -5,9 +5,9 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("MMDeploySharp")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("C# Wrapper For MMDeploy")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("OpenMMLab")]
 [assembly: AssemblyProduct("MMDeploySharp")]
 [assembly: AssemblyCopyright("Copyright ©  2022")]
 [assembly: AssemblyTrademark("")]
@@ -18,5 +18,5 @@ using System.Runtime.InteropServices;
 // COM, set the ComVisible attribute to true on that type.
 [assembly: ComVisible(false)]
 
-// 如果此项目向 COM 公开，则下列 GUID 用于类型库的 ID
+// The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("3dc914eb-a8fb-4a89-a7cf-7df9cc5284a6")]
