@@ -314,4 +314,3 @@ namespace image_classification
         private System.Windows.Forms.TextBox textBox4;
     }
 }
-
