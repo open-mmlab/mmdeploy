@@ -9,6 +9,8 @@ set(SRCS
         pipeline.cpp
         task.cpp
         flatten.cpp
-        unflatten.cpp)
+        unflatten.cpp
+        async/pipeline.cpp
+        async/inference.cpp)
 mmdeploy_add_module(${PROJECT_NAME} "${SRCS}")
 add_library(mmdeploy::graph ALIAS ${PROJECT_NAME})

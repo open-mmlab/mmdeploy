@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "pipeline2.h"
+#include "pipeline.h"
 
 #include "archive/value_archive.h"
 #include "deferred_batch_operation.h"

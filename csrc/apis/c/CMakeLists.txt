@@ -4,33 +4,37 @@ project(capis)
 
 include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
 
+set(TASK_LIST model executor)
+
 if ("all" IN_LIST MMDEPLOY_CODEBASES)
-    set(TASK_LIST "classifier;detector;segmentor;text_detector;text_recognizer;"
-        "pose_detector;restorer;model;rotated_detector")
+    list(APPEND TASK_LIST
+            classifier
+            detector
+            segmentor
+            text_detector
+            text_recognizer
+            pose_detector
+            restorer)
 else ()
-    set(TASK_LIST "model")
     if ("mmcls" IN_LIST MMDEPLOY_CODEBASES)
-        list(APPEND TASK_LIST "classifier")
+        list(APPEND TASK_LIST classifier)
     endif ()
     if ("mmdet" IN_LIST MMDEPLOY_CODEBASES)
-        list(APPEND TASK_LIST "detector")
+        list(APPEND TASK_LIST detector)
     endif ()
     if ("mmseg" IN_LIST MMDEPLOY_CODEBASES)
-        list(APPEND TASK_LIST "segmentor")
+        list(APPEND TASK_LIST segmentor)
     endif ()
     if ("mmedit" IN_LIST MMDEPLOY_CODEBASES)
-        list(APPEND TASK_LIST "restorer")
+        list(APPEND TASK_LIST restorer)
     endif ()
     if ("mmocr" IN_LIST MMDEPLOY_CODEBASES)
-        list(APPEND TASK_LIST "text_detector")
-        list(APPEND TASK_LIST "text_recognizer")
+        list(APPEND TASK_LIST text_detector)
+        list(APPEND TASK_LIST text_recognizer)
     endif ()
     if ("mmpose" IN_LIST MMDEPLOY_CODEBASES)
-        list(APPEND TASK_LIST "pose_detector")
+        list(APPEND TASK_LIST pose_detector)
     endif ()
-    if ("mmrotate" IN_LIST MMDEPLOY_CODEBASES)
-        list(APPEND TASK_LIST "rotated_detector")
-    endif()
 endif ()
 
 foreach (TASK ${TASK_LIST})

@@ -8,6 +8,7 @@
 #include "core/module.h"
 #include "core/operator.h"
 #include "core/value.h"
+#include "execution/schedulers/registry.h"
 #include "execution/type_erased.h"
 #include "execution/when_all_value.h"
 
@@ -113,22 +114,6 @@ class PipelineParser {
 }  // namespace async
 
 MMDEPLOY_DECLARE_REGISTRY(async::Node);
-
-namespace detail {
-
-template <>
-struct get_return_type<TypeErasedScheduler<Value>> {
-  using type = TypeErasedScheduler<Value>;
-};
-
-}  // namespace detail
-
-template <>
-struct is_cast_by_erasure<TypeErasedScheduler<Value>> : std::true_type {};
-
-MMDEPLOY_REGISTER_TYPE_ID(TypeErasedScheduler<Value>, 8);
-
-MMDEPLOY_DECLARE_REGISTRY(TypeErasedScheduler<Value>);
 
 }  // namespace mmdeploy
 

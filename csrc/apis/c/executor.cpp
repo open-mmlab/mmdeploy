@@ -1,12 +1,13 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "execution.h"
+#include "apis/c/executor.h"
 
 #include "core/value.h"
+#include "execution/execution.h"
 #include "execution/schedulers/inlined_scheduler.h"
 #include "execution/schedulers/static_thread_pool.h"
-#include "type_erased.h"
-#include "when_all_value.h"
+#include "execution/type_erased.h"
+#include "execution/when_all_value.h"
 
 using namespace mmdeploy;
 

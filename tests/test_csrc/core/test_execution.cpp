@@ -10,6 +10,7 @@
 #include "execution/schedulers/static_thread_pool.h"
 #include "execution/schedulers/timed_single_thread_context.h"
 #include "execution/type_erased.h"
+#include "apis/c/executor.h"
 
 using namespace mmdeploy;
 
