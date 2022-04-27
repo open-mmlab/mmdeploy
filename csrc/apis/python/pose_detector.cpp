@@ -2,10 +2,14 @@
 
 #include "pose_detector.h"
 
+#include <array>
+
 #include "common.h"
 #include "core/logger.h"
 
 namespace mmdeploy {
+
+using Rect = std::array<float, 4>;
 
 class PyPoseDedector {
  public:
@@ -17,41 +21,73 @@ class PyPoseDedector {
       throw std::runtime_error("failed to create pose_detector");
     }
   }
-  py::list Apply(const std::vector<PyImage> &imgs, const std::vector<std::vector<float>> &_boxes) {
+  py::list Apply(const std::vector<PyImage> &imgs, const std::vector<std::vector<Rect>> &vboxes) {
+    if (imgs.size() == 0 && vboxes.size() == 0) {
+      return py::list{};
+    }
+    if (vboxes.size() != 0 && vboxes.size() != imgs.size()) {
+      std::string error =
+          fmt::format("imgs length not equal with vboxes [{} vs {}]", imgs.size(), vboxes.size());
+      throw std::invalid_argument(error);
+    }
+
     std::vector<mm_mat_t> mats;
     std::vector<mm_rect_t> boxes;
+    std::vector<int> bbox_count;
     mats.reserve(imgs.size());
     for (const auto &img : imgs) {
       auto mat = GetMat(img);
       mats.push_back(mat);
     }
-    for (const auto &_box : _boxes) {
-      mm_rect_t box = {_box[0], _box[1], _box[2], _box[3]};
-      boxes.push_back(box);
+
+    for (auto _boxes : vboxes) {
+      for (auto _box : _boxes) {
+        mm_rect_t box = {_box[0], _box[1], _box[2], _box[3]};
+        boxes.push_back(box);
+      }
+      bbox_count.push_back(_boxes.size());
     }
+
+    // full image
+    if (vboxes.size() == 0) {
+      for (int i = 0; i < mats.size(); i++) {
+        mm_rect_t box = {0.f, 0.f, mats[i].width - 1, mats[i].height - 1};
+        boxes.push_back(box);
+        bbox_count.push_back(1);
+      }
+    }
+
     mm_pose_detect_t *detection{};
-    int num_box = boxes.size();
     auto status = mmdeploy_pose_detector_apply_bbox(handle_, mats.data(), (int)mats.size(),
-                                                    boxes.data(), &num_box, &detection);
+                                                    boxes.data(), bbox_count.data(), &detection);
     if (status != MM_SUCCESS) {
       throw std::runtime_error("failed to apply pose_detector, code: " + std::to_string(status));
     }
+
     auto output = py::list{};
     auto result = detection;
     for (int i = 0; i < mats.size(); i++) {
+      if (bbox_count[i] == 0) {
+        output.append(py::none());
+        continue;
+      }
       int n_point = result->length;
-      auto pred = py::array_t<float>({1, n_point, 3});
+      auto pred = py::array_t<float>({bbox_count[i], n_point, 3});
       auto dst = pred.mutable_data();
-      for (int j = 0; j < n_point; j++) {
-        dst[0] = result->point[j].x;
-        dst[1] = result->point[j].y;
-        dst[2] = result->score[j];
-        dst += 3;
+      for (int j = 0; j < bbox_count[i]; j++) {
+        for (int k = 0; k < n_point; k++) {
+          dst[0] = result->point[k].x;
+          dst[1] = result->point[k].y;
+          dst[2] = result->score[k];
+          dst += 3;
+        }
+        result++;
       }
       output.append(std::move(pred));
-      result++;
     }
-    mmdeploy_pose_detector_release_result(detection, (int)mats.size());
+
+    int total = std::accumulate(bbox_count.begin(), bbox_count.end(), 0);
+    mmdeploy_pose_detector_release_result(detection, total);
     return output;
   }
   ~PyPoseDedector() {
@@ -68,7 +104,8 @@ static void register_python_pose_detector(py::module &m) {
       .def(py::init([](const char *model_path, const char *device_name, int device_id) {
         return std::make_unique<PyPoseDedector>(model_path, device_name, device_id);
       }))
-      .def("__call__", &PyPoseDedector::Apply);
+      .def("__call__", &PyPoseDedector::Apply, py::arg("imgs"),
+           py::arg("vboxes") = std::vector<std::vector<Rect>>());
 }
 
 class PythonPoseDetectorRegisterer {
