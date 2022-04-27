@@ -637,9 +637,9 @@ def get_backend_fps_metric(deploy_cfg_path: str, model_cfg_path: Path,
               'python3 tools/test.py ' \
               f'{deploy_cfg_path} ' \
               f'{str(model_cfg_path.absolute())} ' \
-              f'--model {convert_checkpoint_path} ' \
+              f'--model "{convert_checkpoint_path}" ' \
               f'--device {device_type} ' \
-              f'--log2file {log_path} ' \
+              f'--log2file "{log_path}" ' \
               f'--speed-test '
 
     # mmedit eval_name will get a 'PSNR'
@@ -836,9 +836,9 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
               'python3 ./tools/deploy.py ' \
               f'{str(deploy_cfg_path.absolute().resolve())} ' \
               f'{str(model_cfg_path.absolute().resolve())} ' \
-              f'{str(checkpoint_path.absolute().resolve())} ' \
-              f'{input_img_path} ' \
-              f'--work-dir {backend_output_path} ' \
+              f'"{str(checkpoint_path.absolute().resolve())}" ' \
+              f'"{input_img_path}" ' \
+              f'--work-dir "{backend_output_path}" ' \
               f'--device {device_type} ' \
               '--log-level INFO'
 
