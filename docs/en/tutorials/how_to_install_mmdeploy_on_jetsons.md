@@ -121,23 +121,12 @@ MMCV_WITH_OPS=1 pip install -e .
 
 ### Update cmake
 
-We choose cmake version 20 as an example.
-```shell
-sudo apt remove cmake
-sudo apt purge --auto-remove cmake
-sudo apt-get install -y libssl-dev
-wget https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0.tar.gz
-tar -zxvf cmake-3.20.0.tar.gz
-cd cmake-3.20.0
-./bootstrap
-make -j$(nproc)
-sudo make install
-```
-Then we can check the cmake version through:
-```shell
-source ~/.bashrc
-cmake --version
-```
+We choose cmake version `v3.23.1` as an example. We use the pre-built cmake binary to update it.
+
+| Install type |
+| --- |
+| [cmake-3.23.1-linux-aarch64.sh](https://github.com/Kitware/CMake/releases/download/v3.23.1/cmake-3.23.1-linux-aarch64.sh) |
+|[cmake-3.23.1-linux-aarch64.tar.gz](https://github.com/Kitware/CMake/releases/download/v3.23.1/cmake-3.23.1-linux-aarch64.tar.gz)|
 
 ### Install spdlog
 ```shell
