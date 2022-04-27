@@ -1,30 +1,47 @@
 欢迎来到 MMDeploy 的中文文档！
 ====================================
 
-您可以在页面左下角切换中英文文档。
+点击页面左下角切换中英文。
 
 .. toctree::
    :maxdepth: 1
-   :caption: 快速上手
+   :caption: 编译
 
-   build.md
-   get_started.md
-
-.. toctree::
-   :maxdepth: 1
-   :caption: 教程
-
-   tutorials/chapter_01_introduction_to_model_deployment.md
-   tutorials/chapter_02_challenges.md
-   tutorials/how_to_convert_model.md
-   tutorials/how_to_use_docker.md
+   01-how-to-build/build_from_source.md
+   01-how-to-build/build_from_docker.md
+   01-how-to-build/android.md
+   01-how-to-build/linux-x86_64.md
+   01-how-to-build/windows.md
 
 .. toctree::
    :maxdepth: 1
-   :caption: 基准
+   :caption: 运行和测试
 
-   benchmark.md
+   02-how-to-run/convert_model.md
+   02-how-to-run/write_config.md
+   02-how-to-run/profile_model.md
+   02-how-to-run/do_regression_test.md
 
+.. toctree::
+   :maxdepth: 1
+   :caption: 开发者指南
+
+   03-developer-guide/support_new_model.md
+   03-developer-guide/support_new_backend.md
+
+.. toctree::
+   :maxdepth: 1
+   :caption: 菜鸟教程
+
+   04-tutorial/01_introduction_to_model_deployment.md
+   04-tutorial/02_challenges.md
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Benchmark
+
+   05-benchmark/benchmark.md
+   05-benchmark/supported_models.md
 
 .. toctree::
    :maxdepth: 1

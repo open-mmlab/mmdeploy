@@ -153,7 +153,7 @@ def rpn_head__get_bboxes__ncnn(ctx,
                                with_nms=True,
                                cfg=None,
                                **kwargs):
-    """Rewrite `get_bboxes` of `RPNHead` for NCNN backend.
+    """Rewrite `get_bboxes` of `RPNHead` for ncnn backend.
 
     Shape node and batch inference is not supported by ncnn. This function
     transform dynamic shape to constant shape and remove batch inference.
