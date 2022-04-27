@@ -11,19 +11,19 @@ globals:
     box AP: # named after metafile.Results.Metrics
       eval_name: bbox # test.py --metrics args
       metric_key: bbox_mAP # eval OrderedDict key name
-      tolerance: 0.2
+      tolerance: 0.2 # metric ±n%
       task_name: Object Detection # metafile.Results.Task
       dataset: COCO # metafile.Results.Dataset
     mask AP:
       eval_name: segm
       metric_key: '?'
-      tolerance: 0.1
+      tolerance: 0.1 # metric ±n%
       task_name: Instance Segmentation
       dataset: COCO
     PQ:
       eval_name: proposal
       metric_key: '?'
-      tolerance: 0.1
+      tolerance: 0.1 # metric ±n%
       task_name: Panoptic Segmentation
       dataset: COCO
   convert_image: &convert_image

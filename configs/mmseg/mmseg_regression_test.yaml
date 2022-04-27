@@ -14,7 +14,7 @@ globals:
     mIoU: # named after metafile.Results.Metrics
       eval_name: mIoU # test.py --metrics args
       metric_key: mIoU # eval OrderedDict key name
-      tolerance: 5
+      tolerance: 5 # metric ±n%
       task_name: Semantic Segmentation # metafile.Results.Task
       dataset: Cityscapes # metafile.Results.Dataset
   convert_image: &convert_image

@@ -11,13 +11,13 @@ globals:
     AP: # named after metafile.Results.Metrics
       eval_name: mAP # test.py --metrics args
       metric_key: AP # eval key name
-      tolerance: 0.01
+      tolerance: 0.10 # metric ±n
       task_name: Body 2D Keypoint # metafile.Results.Task
       dataset: COCO # metafile.Results.Dataset
     AR:
       eval_name: mAP
       metric_key: AR
-      tolerance: 0.01
+      tolerance: 0.08 # metric ±n
       task_name: Body 2D Keypoint
       dataset: COCO
   convert_image: &convert_image
