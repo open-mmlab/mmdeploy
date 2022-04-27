@@ -642,8 +642,9 @@ def get_backend_fps_metric(deploy_cfg_path: str, model_cfg_path: Path,
               f'--log2file "{log_path}" ' \
               f'--speed-test '
 
-    # mmedit eval_name will get a 'PSNR'
-    if eval_name != 'PSNR':
+    codebase_name = get_codebase(str(deploy_cfg_path)).value
+    if codebase_name != 'mmedit':
+        # mmedit dont --metric
         cmd_str += f'--metrics {eval_name} '
 
     logger.info(f'Process cmd = {cmd_str}')
@@ -672,6 +673,13 @@ def get_backend_fps_metric(deploy_cfg_path: str, model_cfg_path: Path,
     # update useless metric
     for metric in metric_useless:
         metric_list.append({metric: '-'})
+
+    if len(metrics_eval_list) > 1 and codebase_name == 'mmdet':
+        # one model has more than one task, like Mask R-CNN
+        for name in pytorch_metric:
+            if name in metric_useless or name == metric_name:
+                continue
+            metric_list.append({name: '-'})
 
     # update the report
     update_report(
