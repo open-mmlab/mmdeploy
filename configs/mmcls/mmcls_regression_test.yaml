@@ -165,26 +165,26 @@ models:
       - *pipeline_pplnn_dynamic_fp32
       - *pipeline_openvino_dynamic_fp32
 
-#  - name: ShuffleNetV1 # TODO Convert fail
-#    metafile: configs/shufflenet_v1/metafile.yml
-#    model_configs:
-#      - configs/shufflenet_v1/shufflenet-v1-1x_16xb64_in1k.py # TODO Not benchmark config
-#    pipelines:
-#      - *pipeline_ts_fp32
-#      - *pipeline_ort_dynamic_fp32
-#      - *pipeline_trt_dynamic_fp16
-#      - *pipeline_ncnn_static_fp32
+  - name: ShuffleNetV1
+    metafile: configs/shufflenet_v1/metafile.yml
+    model_configs:
+      - configs/shufflenet_v1/shufflenet-v1-1x_16xb64_in1k.py
+    pipelines:
+      - *pipeline_ts_fp32
+#      - *pipeline_ort_static_fp32
+      - *pipeline_trt_static_fp16
+      - *pipeline_ncnn_static_fp32
 #      - *pipeline_pplnn_dynamic_fp32
 #      - *pipeline_openvino_dynamic_fp32
-#
-#  - name: ShuffleNetV2 # TODO Convert fail
-#    metafile: configs/shufflenet_v2/metafile.yml
-#    model_configs:
-#      - configs/shufflenet_v2/shufflenet-v2-1x_16xb64_in1k.py # TODO Not benchmark config
-#    pipelines:
-#      - *pipeline_ts_fp32
-#      - *pipeline_ort_dynamic_fp32
-#      - *pipeline_trt_dynamic_fp16
-#      - *pipeline_ncnn_static_fp32
+
+  - name: ShuffleNetV2
+    metafile: configs/shufflenet_v2/metafile.yml
+    model_configs:
+      - configs/shufflenet_v2/shufflenet-v2-1x_16xb64_in1k.py
+    pipelines:
+      - *pipeline_ts_fp32
+#      - *pipeline_ort_static_fp32
+      - *pipeline_trt_static_fp16
+      - *pipeline_ncnn_static_fp32
 #      - *pipeline_pplnn_dynamic_fp32
 #      - *pipeline_openvino_dynamic_fp32
