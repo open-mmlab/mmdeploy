@@ -60,7 +60,7 @@ conda create -n mmdeploy python=3.6
 conda activate mmdeploy
 ```
 
-### Move tensorrt to conda env
+### Make TensorRT available in your Conda env
 Then we have to move the pre-installed tensorrt package in Jetpack to the virtual env.
 
 First we use `find` to get where the tensorrt is
@@ -164,6 +164,11 @@ sudo apt-get install pkg-config libhdf5-100 libhdf5-dev
 pip install versioned-hdf5
 ```
 
+### Export TensorRT source dir
+```shell
+export TENSORRT_DIR=/usr/include/aarch64-linux-gnu
+```
+
 ### Install MMDeploy
 Using git to clone MMDeploy source code.
 ```shell
@@ -182,9 +187,7 @@ cmake .. \
     -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
     -DMMDEPLOY_TARGET_BACKENDS="trt" \
     -DMMDEPLOY_CODEBASES=all \
-    -Dpplcv_DIR=${PPLCV_DIR}/cuda-build/install/lib/cmake/ppl \
-    -DTENSORRT_DIR=/usr/include/aarch64-linux-gnu \
-    -DCUDNN_DIR=/usr/include/aarch64-linux-gnu
+    -Dpplcv_DIR=${PPLCV_DIR}/cuda-build/install/lib/cmake/ppl
 
 make -j$(nproc) && make install
 ```
@@ -201,9 +204,7 @@ pip install -e .
 ```shell
 cd ${MMDEPLOY_DIR}/build/install/example
 mkdir -p build && cd build
-cmake .. \
-  -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy \
-  -DTENSORRT_DIR=/usr/include/aarch64-linux-gnu
+cmake .. -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy
 make -j$(nproc)
 ```
 
