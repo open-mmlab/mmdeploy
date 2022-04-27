@@ -161,7 +161,7 @@ int mmdeploy_pose_detector_apply_bbox(mm_handle_t handle, const mm_mat_t* mats, 
 
     int uid = 0;
     for (int i = 0; i < mat_count; ++i) {
-      if (bbox_count[i] == 0) {
+      if (counts[i] == 0) {
         continue;
       }
       auto& pose_output = pose_outputs[uid++];
