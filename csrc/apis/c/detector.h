@@ -9,6 +9,7 @@
 #define MMDEPLOY_DETECTOR_H
 
 #include "common.h"
+#include "executor.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -78,6 +79,21 @@ MMDEPLOY_API void mmdeploy_detector_release_result(mm_detect_t* results, const i
  * @param[in] handle detector's handle created by \ref mmdeploy_detector_create_by_path
  */
 MMDEPLOY_API void mmdeploy_detector_destroy(mm_handle_t handle);
+
+
+MMDEPLOY_API int mmdeploy_async_detector_create(mm_model_t model, const char* device_name,
+                                                int device_id, mm_handle_t* handle);
+
+MMDEPLOY_API void mmdeploy_async_detector_destroy(mm_handle_t handle);
+
+MMDEPLOY_API mmdeploy_value_t mmdeploy_async_detector_create_input(const mm_mat_t* mats,
+                                                                   int mat_count);
+
+MMDEPLOY_API mmdeploy_sender_t mmdeploy_async_detector_apply(mm_handle_t handle,
+                                                             mmdeploy_sender_t input);
+
+MMDEPLOY_API int mmdeploy_async_detector_get_result(mmdeploy_value_t output, mm_detect_t** results,
+                                                    int** result_count);
 
 #ifdef __cplusplus
 }
