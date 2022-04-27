@@ -42,11 +42,11 @@ source ~/.bashrc
 conda --version
 ```
 
-After we installed the Archiconda successfully, we need to check the tensorrt python package pre-installed by Jetpack by command below.
+After we install the Archiconda successfully, we need to check the tensorrt python package pre-installed by Jetpack by command below.
 ```shell
 sudo find / -name tensorrt
 ```
-Then you can see something like those in the terminal, take Jetson Nano as example:
+Then you can see something like those in the terminal. Take Jetson Nano as example:
 ```shell
 ...
 /usr/lib/python3.6/dist-packages/tensorrt
@@ -99,7 +99,7 @@ Then just clone and compile the project, MMDeploy is using `torchvision=0.9.0`:
 ```shell
 git clone https://github.com/pytorch/vision.git
 cd vision
-git checkout v0.9.0
+git checkout tags/v0.9.0 -b v0.9.0
 pip install -e .
 ```
 
@@ -150,7 +150,7 @@ pip install onnx
 ```
 
 ### Install pplcv
-PPL.CV is a high-performance image processing library of OpenPPL. Now, MMDeploy supports `v0.6.2` and has to use git clone to download it.
+PPL.CV is a high-performance image processing library of OpenPPL. We need to use git clone to download it.
 ```shell
 git clone https://github.com/openppl-public/ppl.cv.git
 cd ppl.cv
@@ -169,6 +169,7 @@ Using git to clone MMDeploy source code.
 ```shell
 git clone -b master https://github.com/open-mmlab/mmdeploy.git MMDeploy
 cd MMDeploy
+export MMDEPLOY_DIR=$(pwd)
 git submodule update --init --recursive
 ```
 
@@ -176,7 +177,6 @@ Build MMDeploy from source:
 ```shell
 mkdir -p build && cd build
 cmake .. \
-    -DCMAKE_CXX_COMPILER=g++-7 \
     -DMMDEPLOY_BUILD_SDK=ON \
     -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
     -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
@@ -192,7 +192,7 @@ make -j$(nproc) && make install
 ### Install MMDeploy Python API
 
 ```shell
-cd /path/to/mmdeploy
+cd ${MMDEPLOY_DIR}
 pip install -e .
 ```
 
