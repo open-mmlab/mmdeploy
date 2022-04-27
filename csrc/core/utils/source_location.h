@@ -4,7 +4,7 @@
 #define MMDEPLOY_SRC_UTILS_SOURCE_LOCATION_H_
 
 // clang-format off
-#if __has_include(<source_location>)
+#if __has_include(<source_location>) && (!_MSC_VER || __cplusplus >= 202002L)
   #include <source_location>
   #if __cpp_lib_source_location >= 201907L
     #define MMDEPLOY_HAS_SOURCE_LOCATION 1
