@@ -17,7 +17,7 @@
 #ifndef MMDEPLOY_HAS_SOURCE_LOCATION
   #if __has_include(<experimental/source_location>)
     #include <experimental/source_location>
-    #if __cpp_lib_experimental_source_location >= 201505
+    #if __cpp_lib_experimental_source_location >= 201505L
       #define MMDEPLOY_HAS_SOURCE_LOCATION 1
       namespace mmdeploy {
       using SourceLocation = std::experimental::source_location;
