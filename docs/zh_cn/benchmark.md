@@ -1,11 +1,11 @@
-## 基准
+## Benchmark
 
-### 后端
+### Backend
 CPU: ncnn, ONNXRuntime, OpenVINO
 
 GPU: ncnn, TensorRT, PPLNN
 
-### 延迟基准
+### 测试结果
 
 #### 平台
 - Ubuntu 18.04 操作系统
@@ -24,7 +24,7 @@ GPU: ncnn, TensorRT, PPLNN
 - 输入分辨率根据代码库的数据集不同而不同，除了`mmediting`，其他代码库均使用真实图片作为输入。
 
 
-用户可以直接通过[如何测试延迟](tutorials/how_to_measure_performance_of_models.md)获得想要的速度测试结果。下面是我们环境中的测试结果：
+用户可以直接通过[如何测试延迟](02-how-to-run/profile_model.md)获得想要的速度测试结果。下面是我们环境中的测试结果：
 <details>
 <summary style="margin-left: 25px;">MMCls</summary>
 <div style="margin-left: 25px;">
@@ -35,7 +35,7 @@ GPU: ncnn, TensorRT, PPLNN
     <th align="center" colspan="3">MMCls</th>
     <th align="center" colspan="12">TensorRT</th>
     <th align="center" colspan="2">PPLNN</th>
-    <th align="center" colspan="4">NCNN</th>
+    <th align="center" colspan="4">ncnn</th>
     <th></th>
   </tr>
 </thead>
@@ -345,7 +345,7 @@ GPU: ncnn, TensorRT, PPLNN
 <thead>
   <tr>
     <th align="center" colspan="3">MMDet</th>
-    <th align="center" colspan="4">NCNN</th>
+    <th align="center" colspan="4">ncnn</th>
     <th align="center"></th>
   </tr>
 </thead>
@@ -489,7 +489,7 @@ GPU: ncnn, TensorRT, PPLNN
     <th align="center" colspan="3">MMOCR</th>
     <th align="center" colspan="6">TensorRT</th>
     <th align="center" colspan="2">PPLNN</th>
-    <th align="center" colspan="4">NCNN</th>
+    <th align="center" colspan="4">ncnn</th>
     <th align="center"></th>
   </tr>
 </thead>
@@ -680,7 +680,7 @@ GPU: ncnn, TensorRT, PPLNN
 
 ### 性能基准
 
-用户可以直接通过[如何测试性能](tutorials/how_to_evaluate_a_model.md)获得想要的性能测试结果。下面是我们环境中的测试结果：
+用户可以直接通过[如何测试](02-how-to-run/profile_model.md)获得想要的性能测试结果。下面是我们环境中的测试结果：
 
 
 <details>

@@ -8,7 +8,7 @@ Please refer to [install.md](https://mmocr.readthedocs.io/en/latest/install.html
 
 ### List of MMOCR models supported by MMDeploy
 
-| Model | Task             | OnnxRuntime | TensorRT | NCNN  | PPLNN | OpenVINO |                                  Model config                                  |
+| Model | Task             | OnnxRuntime | TensorRT | ncnn  | PPLNN | OpenVINO |                                  Model config                                  |
 | :---- | :--------------- | :---------: | :------: | :---: | :---: | :------: | :----------------------------------------------------------------------------: |
 | DBNet | text-detection   |      Y      |    Y     |   Y   |   Y   |    Y     | [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/dbnet)  |
 | CRNN  | text-recognition |      Y      |    Y     |   Y   |   Y   |    N     | [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/crnn) |

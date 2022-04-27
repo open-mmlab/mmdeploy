@@ -1,6 +1,6 @@
-## List of supported models exportable to other backends
+## 支持列表
 
-The table below lists the models that are guaranteed to be exportable to other backends.
+自测完成的 model-backend 组合：
 
 | Model                     | Codebase         | TorchScript | OnnxRuntime | TensorRT | ncnn  | PPLNN | OpenVINO | Model config                                                                                   |
 | :------------------------ | :--------------- | :---------: | :---------: | :------: | :---: | :---: | :------: | :--------------------------------------------------------------------------------------------: |

@@ -152,7 +152,7 @@ def delta2bbox__ncnn(ctx,
                      ctr_clamp=32):
     """Rewrite `delta2bbox` for ncnn backend.
     Batch dimension is not supported by ncnn, but supported by pytorch.
-    NCNN regards the lowest two dimensions as continuous address with byte
+    ncnn regards the lowest two dimensions as continuous address with byte
     alignment, so the lowest two dimensions are not absolutely independent.
     Reshape operator with -1 arguments should operates ncnn::Mat with
     dimension >= 3.
