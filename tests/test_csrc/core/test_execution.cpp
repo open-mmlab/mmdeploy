@@ -191,17 +191,16 @@ TEST_CASE("test type erase", "[execution]") { G(); }
 TEST_CASE("test executor C API", "[execution]") {
   auto sched = mmdeploy_inline_scheduler();
   REQUIRE(sched);
-  auto ctx = (mmdeploy_value_t)new Value{100, 200};
-  auto ctx_sndr = mmdeploy_executor_just(&ctx);
-  REQUIRE(ctx_sndr);
-  auto a = mmdeploy_executor_transfer(&ctx_sndr, sched);
+  auto begin = mmdeploy_executor_just((mmdeploy_value_t)new Value{100, 200});
+  REQUIRE(begin);
+  auto a = mmdeploy_executor_transfer(begin, sched);
   REQUIRE(a);
-  auto b = mmdeploy_executor_then(&a, f, nullptr);
+  auto b = mmdeploy_executor_then(a, f, nullptr);
   REQUIRE(b);
-  auto c = mmdeploy_executor_sync_wait(&b);
+  auto c = mmdeploy_executor_sync_wait(b);
   REQUIRE(c);
   MMDEPLOY_CRITICAL("{}", *(Value*)c);
-  mmdeploy_value_destroy(&c);
+  mmdeploy_value_destroy(c);
 }
 
 auto Gen(int k) {

@@ -29,8 +29,8 @@ inline mmdeploy_value_t Cast(Value* s) { return reinterpret_cast<mmdeploy_value_
 
 inline Value* Cast(mmdeploy_value_t s) { return reinterpret_cast<Value*>(s); }
 
-inline SenderType Take(mmdeploy_sender_t* s) {
-  auto sender = std::move(*Cast(*s));
+inline SenderType Take(mmdeploy_sender_t s) {
+  auto sender = std::move(*Cast(s));
   mmdeploy_sender_destroy(s);
   return sender;
 }
@@ -42,8 +42,8 @@ inline mmdeploy_sender_t Take(T& s) {
   return Take(SenderType(std::move(s)));
 }
 
-inline Value Take(mmdeploy_value_t* v) {
-  auto value = std::move(*Cast(*v));
+inline Value Take(mmdeploy_value_t v) {
+  auto value = std::move(*Cast(v));
   mmdeploy_value_destroy(v);
   return value;
 }
@@ -79,9 +79,8 @@ mmdeploy_sender_t mmdeploy_sender_copy(mmdeploy_sender_t input) {
   return Take(SenderType(*Cast(input)));
 }
 
-int mmdeploy_sender_destroy(mmdeploy_sender_t* sender) {
-  delete Cast(*sender);
-  *sender = nullptr;
+int mmdeploy_sender_destroy(mmdeploy_sender_t sender) {
+  delete Cast(sender);
   return 0;
 }
 
@@ -89,9 +88,8 @@ mmdeploy_value_t mmdeploy_value_copy(mmdeploy_value_t input) {
   return Guard([&] { return Take(Value(*Cast(input))); });
 }
 
-int mmdeploy_value_destroy(mmdeploy_value_t* value) {
-  delete Cast(*value);
-  *value = nullptr;
+int mmdeploy_value_destroy(mmdeploy_value_t value) {
+  delete Cast(value);
   return 0;
 }
 
@@ -99,13 +97,12 @@ mmdeploy_scheduler_t mmdeploy_inline_scheduler() { return CreateScheduler("Inlin
 
 mmdeploy_scheduler_t mmdeploy_system_pool_scheduler() { return CreateScheduler("ThreadPool"); }
 
-int mmdeploy_scheduler_destroy(mmdeploy_scheduler_t* scheduler) {
-  delete Cast(*scheduler);
-  *scheduler = nullptr;
+int mmdeploy_scheduler_destroy(mmdeploy_scheduler_t scheduler) {
+  delete Cast(scheduler);
   return 0;
 }
 
-mmdeploy_sender_t mmdeploy_executor_just(mmdeploy_value_t* value) {
+mmdeploy_sender_t mmdeploy_executor_just(mmdeploy_value_t value) {
   return Guard([&] { return Take(Just(Take(value))); });
 }
 
@@ -113,16 +110,16 @@ mmdeploy_sender_t mmdeploy_executor_schedule(mmdeploy_scheduler_t scheduler) {
   return Guard([&] { return Take(Then(Schedule(*Cast(scheduler)), [] { return Value(); })); });
 }
 
-mmdeploy_sender_t mmdeploy_executor_transfer(mmdeploy_sender_t* input,
+mmdeploy_sender_t mmdeploy_executor_transfer(mmdeploy_sender_t input,
                                              mmdeploy_scheduler_t scheduler) {
   return Guard([&] { return Take(Transfer(Take(input), *Cast(scheduler))); });
 }
 
-mmdeploy_sender_t mmdeploy_executor_on(mmdeploy_scheduler_t scheduler, mmdeploy_sender_t* input) {
+mmdeploy_sender_t mmdeploy_executor_on(mmdeploy_scheduler_t scheduler, mmdeploy_sender_t input) {
   return Guard([&] { return Take(On(*Cast(scheduler), Take(input))); });
 }
 
-mmdeploy_sender_t mmdeploy_executor_then(mmdeploy_sender_t* input, mmdeploy_invocable_t fn,
+mmdeploy_sender_t mmdeploy_executor_then(mmdeploy_sender_t input, mmdeploy_invocable_t fn,
                                          void* context) {
   return Guard([&] {
     return Take(Then(Take(input), [fn, context](Value args) {
@@ -134,11 +131,11 @@ mmdeploy_sender_t mmdeploy_executor_then(mmdeploy_sender_t* input, mmdeploy_invo
   });
 }
 
-mmdeploy_sender_t mmdeploy_executor_let_value(mmdeploy_sender_t* input, mmdeploy_kleisli_t fn,
+mmdeploy_sender_t mmdeploy_executor_let_value(mmdeploy_sender_t input, mmdeploy_kleisli_t kleisli,
                                               void* context) {
   return Guard([&] {
-    return Take(LetValue(Take(input), [fn, context](Value& args) {
-      auto out = Cast(fn(Cast(&args), context));
+    return Take(LetValue(Take(input), [kleisli, context](Value& args) {
+      auto out = Cast(kleisli(Cast(&args), context));
       SenderType ret(std::move(*out));
       delete out;
       return ret;
@@ -146,11 +143,11 @@ mmdeploy_sender_t mmdeploy_executor_let_value(mmdeploy_sender_t* input, mmdeploy
   });
 }
 
-mmdeploy_sender_t mmdeploy_executor_split(mmdeploy_sender_t* input) {
+mmdeploy_sender_t mmdeploy_executor_split(mmdeploy_sender_t input) {
   return Guard([&] { return Take(Split(Take(input))); });
 }
 
-mmdeploy_sender_t mmdeploy_executor_when_all(mmdeploy_sender_t** inputs, int32_t n) {
+mmdeploy_sender_t mmdeploy_executor_when_all(mmdeploy_sender_t* inputs, int32_t n) {
   return Guard([&] {
     std::vector<SenderType> senders;
     senders.reserve(n);
@@ -162,11 +159,11 @@ mmdeploy_sender_t mmdeploy_executor_when_all(mmdeploy_sender_t** inputs, int32_t
   });
 }
 
-mmdeploy_sender_t mmdeploy_executor_ensure_started(mmdeploy_sender_t* input) {
+mmdeploy_sender_t mmdeploy_executor_ensure_started(mmdeploy_sender_t input) {
   return Guard([&] { return Take(EnsureStarted(Take(input))); });
 }
 
-int mmdeploy_executor_start_detached(mmdeploy_sender_t* input) {
+int mmdeploy_executor_start_detached(mmdeploy_sender_t input) {
   try {
     StartDetached(Take(input));
     return 0;
@@ -175,6 +172,6 @@ int mmdeploy_executor_start_detached(mmdeploy_sender_t* input) {
   return -1;
 }
 
-mmdeploy_value_t mmdeploy_executor_sync_wait(mmdeploy_sender_t* input) {
+mmdeploy_value_t mmdeploy_executor_sync_wait(mmdeploy_sender_t input) {
   return Guard([&] { return Take(std::get<Value>(SyncWait(Take(input)))); });
 }
