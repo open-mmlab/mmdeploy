@@ -55,7 +55,7 @@ def get_model_onnx_nodes(model, x, onnx_file=onnx_file):
     return nodes
 
 
-@pytest.mark.usefixtures("prepare_symbolics")
+@pytest.mark.usefixtures('prepare_symbolics')
 class TestAdaptivePool:
 
     def test_adaptive_pool_1d_global(self):
@@ -97,7 +97,7 @@ class TestAdaptivePool:
         assert nodes[0].op_type == 'AveragePool'
 
 
-@pytest.mark.usefixtures("prepare_symbolics_ncnn")
+@pytest.mark.usefixtures('prepare_symbolics_ncnn')
 def test_adaptive_pool_2d_ncnn():
     x = torch.rand(2, 2, 2)
     model = OpModel(torch.nn.functional.adaptive_avg_pool2d,
@@ -107,7 +107,7 @@ def test_adaptive_pool_2d_ncnn():
     assert nodes[1].domain == 'mmdeploy'
 
 
-@pytest.mark.usefixtures("prepare_symbolics")
+@pytest.mark.usefixtures('prepare_symbolics')
 def test_grid_sampler():
     x = torch.rand(1, 1, 2, 2)
     flow = torch.zeros([1, 2, 2, 2])
@@ -117,7 +117,7 @@ def test_grid_sampler():
     assert nodes[1].domain == 'mmdeploy'
 
 
-@pytest.mark.usefixtures("prepare_symbolics")
+@pytest.mark.usefixtures('prepare_symbolics')
 def test_instance_norm():
     x = torch.rand(1, 2, 2, 2)
     model = OpModel(torch.group_norm, 1, torch.rand([2]), torch.rand([2]),
@@ -127,7 +127,7 @@ def test_instance_norm():
     assert nodes[4].domain == 'mmdeploy'
 
 
-@pytest.mark.usefixtures("prepare_symbolics")
+@pytest.mark.usefixtures('prepare_symbolics')
 class TestSqueeze:
 
     def test_squeeze_default(self):
@@ -145,7 +145,7 @@ class TestSqueeze:
         assert nodes[0].op_type == 'Squeeze'
 
 
-@pytest.mark.usefixtures("prepare_symbolics")
+@pytest.mark.usefixtures('prepare_symbolics')
 def test_hardsigmoid():
     x = torch.rand(1, 2, 3, 4)
     model = torch.nn.Hardsigmoid().eval()
