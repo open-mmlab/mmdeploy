@@ -8,7 +8,7 @@ Please refer to [official installation guide](https://mmpose.readthedocs.io/en/l
 
 ## MMPose models support
 
-| Model     | Task          | ONNX Runtime | TensorRT | NCNN | PPLNN | OpenVINO |                                        Model config                                         |
+| Model     | Task          | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |                                        Model config                                         |
 |:----------|:--------------|:------------:|:--------:|:----:|:-----:|:--------:|:-------------------------------------------------------------------------------------------:|
 | HRNet     | PoseDetection |      Y       |    Y     |  Y   |   N   |    Y     |   [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#hrnet-cvpr-2019)   |
 | MSPN      | PoseDetection |      Y       |    Y     |  Y   |   N   |    Y     |   [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#mspn-arxiv-2019)   |

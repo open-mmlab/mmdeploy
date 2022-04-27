@@ -189,7 +189,7 @@ def base_dense_head__get_bboxes__ncnn(ctx,
                                       rescale=False,
                                       with_nms=True,
                                       **kwargs):
-    """Rewrite `get_bboxes` of AnchorHead for NCNN backend.
+    """Rewrite `get_bboxes` of AnchorHead for ncnn backend.
 
     Shape node and batch inference is not supported by ncnn. This function
     transform dynamic shape to constant shape and remove batch inference.
@@ -291,7 +291,7 @@ def base_dense_head__get_bboxes__ncnn(ctx,
             enumerate(zip(cls_scores, bbox_preds,
                       score_factor_list, batch_mlvl_priors)):
         assert cls_score.size()[-2:] == bbox_pred.size()[-2:]
-        # NCNN needs 3 dimensions to reshape when including -1 parameter in
+        # ncnn needs 3 dimensions to reshape when including -1 parameter in
         # width or height dimension.
         bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, 4)
         if with_score_factors:
@@ -299,7 +299,7 @@ def base_dense_head__get_bboxes__ncnn(ctx,
                 reshape(batch_size, -1, 1).sigmoid()
         cls_score = cls_score.permute(0, 2, 3, 1).\
             reshape(batch_size, -1, self.cls_out_channels)
-        # NCNN DetectionOutput op needs num_class + 1 classes. So if sigmoid
+        # ncnn DetectionOutput op needs num_class + 1 classes. So if sigmoid
         # score, we should padding background class according to mmdetection
         # num_class definition.
         if self.use_sigmoid_cls:
@@ -370,7 +370,7 @@ def _tblr_pred_to_delta_xywh_pred(bbox_pred: torch.Tensor,
     """Transform tblr format bbox prediction to delta_xywh format for ncnn.
 
     An internal function for transforming tblr format bbox prediction to
-    delta_xywh format. NCNN DetectionOutput layer needs delta_xywh format
+    delta_xywh format. ncnn DetectionOutput layer needs delta_xywh format
     bbox_pred as input.
 
     Args:

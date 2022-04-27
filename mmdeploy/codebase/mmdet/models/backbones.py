@@ -10,7 +10,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 def focus__forward__ncnn(ctx, self, x):
     """Rewrite forward function of Focus class for ncnn.
 
-    Focus width and height information into channel space. NCNN does not
+    Focus width and height information into channel space. ncnn does not
     support slice operator which step greater than 1, so we use another
     way to implement.
 

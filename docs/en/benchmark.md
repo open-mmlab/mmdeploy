@@ -34,7 +34,7 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <th align="center" colspan="3">MMCls</th>
     <th align="center" colspan="12">TensorRT</th>
     <th align="center" colspan="2">PPLNN</th>
-    <th align="center" colspan="4">NCNN</th>
+    <th align="center" colspan="4">ncnn</th>
     <th></th>
   </tr>
 </thead>
@@ -344,7 +344,7 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
 <thead>
   <tr>
     <th align="center" colspan="3">MMDet</th>
-    <th align="center" colspan="4">NCNN</th>
+    <th align="center" colspan="4">ncnn</th>
     <th align="center"></th>
   </tr>
 </thead>
@@ -488,7 +488,7 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <th align="center" colspan="3">MMOCR</th>
     <th align="center" colspan="6">TensorRT</th>
     <th align="center" colspan="2">PPLNN</th>
-    <th align="center" colspan="4">NCNN</th>
+    <th align="center" colspan="4">ncnn</th>
     <th align="center"></th>
   </tr>
 </thead>
