@@ -273,5 +273,5 @@ class Segmentation(BaseTask):
         elif 'type' in self.model_cfg.model.decode_head:
             name = self.model_cfg.model.decode_head.type[:-4].lower()
         else:
-            raise NotImplementedError('Could not get the name of the model')
+            name = 'mmseg_model'
         return name
