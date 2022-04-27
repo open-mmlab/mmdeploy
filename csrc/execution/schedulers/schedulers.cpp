@@ -11,7 +11,7 @@ using Scheduler = TypeErasedScheduler<Value>;
 
 class InlineSchedulerCreator : public Creator<Scheduler> {
  public:
-  const char *GetName() const override { return "Inline"; }
+  const char *GetName() const override { return "Inlined"; }
   int GetVersion() const override { return 0; }
   ReturnType Create(const Value &) override { return ReturnType{InlineScheduler{}}; }
 };

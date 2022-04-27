@@ -24,7 +24,7 @@ struct _Receiver<Receiver, Func>::type {
   Func func_;
 
   template <class... Args>
-  friend void SetValue(type&& self, Args&&... args) {
+  friend void tag_invoke(set_value_t, type&& self, Args&&... args) noexcept {
     SetValue(std::move(self.receiver_), std::invoke(std::move(self.func_), (Args &&) args...));
   }
 };
@@ -48,7 +48,7 @@ struct _Sender<Sender, Func>::type {
   Func func_;
 
   template <typename Self, typename Receiver, _decays_to<Self, type, int> = 0>
-  friend auto Connect(Self&& self, Receiver&& receiver) {
+  friend auto tag_invoke(connect_t, Self&& self, Receiver&& receiver) {
     return Connect(((Self &&) self).sender_,
                    receiver_t<Receiver, Func>{(Receiver &&) receiver, std::move(self.func_)});
   }

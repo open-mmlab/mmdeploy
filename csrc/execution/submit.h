@@ -11,30 +11,30 @@ namespace __submit {
 
 namespace __impl {
 
-template <typename Predecessor, typename Receiver>
+template <typename Sender, typename Receiver>
 struct _Operation {
   struct type;
 };
-template <typename Predecessor, typename Receiver>
-using Operation = typename _Operation<Predecessor, remove_cvref_t<Receiver>>::type;
+template <typename Sender, typename Receiver>
+using operation_t = typename _Operation<Sender, remove_cvref_t<Receiver>>::type;
 
-template <typename Predecessor, typename Receiver>
-struct _Operation<Predecessor, Receiver>::type {
+template <typename Sender, typename Receiver>
+struct _Operation<Sender, Receiver>::type {
   struct _Receiver {
     type* op_state_;
     template <typename... As>
-    friend void SetValue(_Receiver&& self, As&&... as) noexcept {
+    friend void tag_invoke(set_value_t, _Receiver&& self, As&&... as) noexcept {
       std::unique_ptr<type> _{self.op_state_};
       return SetValue(std::move(self.op_state_->receiver_), (As &&) as...);
     }
   };
   Receiver receiver_;
-  connect_result_t<Predecessor, _Receiver> op_state_;
+  connect_result_t<Sender, _Receiver> op_state_;
 
   template <typename Receiver2, _decays_to<Receiver2, Receiver, int> = 0>
-  type(Predecessor&& pred, Receiver2&& receiver)
+  type(Sender&& sender, Receiver2&& receiver)
       : receiver_((Receiver2 &&) receiver),
-        op_state_(Connect((Predecessor &&) pred, _Receiver{this})) {}
+        op_state_(Connect((Sender &&) sender, _Receiver{this})) {}
 };
 
 }  // namespace __impl
@@ -42,7 +42,7 @@ struct _Operation<Predecessor, Receiver>::type {
 struct __submit_t {
   template <typename Receiver, typename Sender>
   void operator()(Sender&& sender, Receiver&& receiver) const noexcept(false) {
-    Start((new __impl::Operation<Sender, Receiver>((Sender &&) sender, (Receiver &&) receiver))
+    Start((new __impl::operation_t<Sender, Receiver>((Sender &&) sender, (Receiver &&) receiver))
               ->op_state_);
   }
 };

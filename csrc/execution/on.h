@@ -29,7 +29,7 @@ template <typename Scheduler, typename Sender, typename Receiver>
 struct _ReceiverRef<Scheduler, Sender, Receiver>::type {
   operation_t<Scheduler, Sender, Receiver>* op_state_;
   template <typename... Args>
-  friend void SetValue(type&& self, Args&&... args) {
+  friend void tag_invoke(set_value_t, type&& self, Args&&... args) noexcept {
     SetValue((Receiver &&) self.op_state_->receiver_, ((Args &&) args)...);
   }
 };
@@ -46,7 +46,7 @@ struct _Receiver<Scheduler, Sender, Receiver>::type {
   operation_t<Scheduler, Sender, Receiver>* op_state_;
   using _receiver_ref_t = receiver_ref_t<Scheduler, Sender, Receiver>;
 
-  friend void SetValue(type&& self) {
+  friend void tag_invoke(set_value_t, type&& self) noexcept {
     auto op_state = self.op_state_;
     Start(op_state->data_.template emplace<1>(
         Connect((Sender &&) op_state->sender_, _receiver_ref_t{op_state})));
@@ -65,7 +65,7 @@ struct _Operation<Scheduler, Sender, Receiver>::type {
         sender_((Sender2 &&) sender),
         receiver_((Receiver2 &&) receiver) {}
 
-  friend void Start(type& self) { Start(std::get<0>(self.data_)); }
+  friend void tag_invoke(start_t, type& self) { Start(std::get<0>(self.data_)); }
 
   std::variant<connect_result_t<schedule_result_t<Scheduler>, _receiver_t>,
                connect_result_t<Sender, _receiver_ref_t>>
@@ -92,7 +92,7 @@ struct _Sender<Scheduler, Sender>::type {
   using _operation_t = operation_t<Scheduler, Sender, remove_cvref_t<Receiver>>;
 
   template <typename Self, typename Receiver, _decays_to<Self, type, int> = 0>
-  friend auto Connect(Self&& self, Receiver&& receiver) -> _operation_t<Receiver> {
+  friend auto tag_invoke(connect_t, Self&& self, Receiver&& receiver) -> _operation_t<Receiver> {
     return {((Self &&) self).scheduler_, ((Self &&) self).sender_, (Receiver &&) receiver};
   }
 };
@@ -104,7 +104,6 @@ struct on_t {
       -> tag_invoke_result<on_t, Scheduler, Sender> {
     return tag_invoke(on_t{}, (Scheduler &&) scheduler, (Sender &&) sender);
   }
-
   template <
       typename Scheduler, typename Sender,
       std::enable_if_t<_is_sender<Sender> && !tag_invocable<on_t, Scheduler, Sender>, int> = 0>

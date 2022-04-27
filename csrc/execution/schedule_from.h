@@ -36,7 +36,7 @@ template <typename Scheduler, typename CvrefSender, typename Receiver>
 struct _Receiver2<Scheduler, CvrefSender, Receiver>::type {
   operation1_t<Scheduler, CvrefSender, Receiver>* op_state_;
 
-  friend void SetValue(type&& self) noexcept {
+  friend void tag_invoke(set_value_t, type&& self) noexcept {
     std::apply(
         [&](auto&&... vals) {
           SetValue(std::move(self.op_state_->receiver_), std::move(vals)...);  //
@@ -52,7 +52,7 @@ struct _Receiver1<Scheduler, CvrefSender, Receiver>::type {
   operation1_t<Scheduler, CvrefSender, Receiver>* op_state_;
 
   template <typename... As>
-  friend void SetValue(type&& self, As&&... as) {
+  friend void tag_invoke(set_value_t, type&& self, As&&... as) noexcept {
     self.op_state_->data_.emplace((As &&) as...);
     auto sender = Schedule(self.op_state_->scheduler_);
     auto& op_state2 = self.op_state_->op_state2_.emplace(
@@ -83,7 +83,7 @@ struct _Operation1<Scheduler, CvrefSender, Receiver>::type {
   type& operator=(const type&) = delete;
   type& operator=(type&&) noexcept = delete;
 
-  friend void Start(type& op_state) noexcept { Start(op_state.op_state1_); }
+  friend void tag_invoke(start_t, type& op_state) noexcept { Start(op_state.op_state1_); }
 };
 
 template <typename Scheduler, typename Sender>
@@ -101,7 +101,7 @@ struct _Sender<Scheduler, Sender>::type {
   Sender sender_;
 
   template <typename Self, typename Receiver, _decays_to<Self, type, int> = 0>
-  friend auto Connect(Self&& self, Receiver&& receiver)
+  friend auto tag_invoke(connect_t, Self&& self, Receiver&& receiver)
       -> operation1_t<Scheduler, _copy_cvref_t<Self, Sender>, remove_cvref_t<Receiver>> {
     return {self.scheduler_, ((Self &&) self).sender_, (Receiver &&) receiver};
   }

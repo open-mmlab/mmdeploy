@@ -5,7 +5,8 @@
 #ifndef MMDEPLOY_CSRC_APIS_C_ASYNC_DETECTOR_H_
 #define MMDEPLOY_CSRC_APIS_C_ASYNC_DETECTOR_H_
 
-#include "experimental/execution/timed_single_thread_context.h"
+#include "execution/execution.h"
+#include "execution/schedulers/timed_single_thread_context.h"
 #include "static_detector.h"
 
 namespace mmdeploy::async {
@@ -93,9 +94,9 @@ struct BatchedInference {
     _Operation(Value pre, BatchedInference* cls, Receiver&& rcvr)
         : _OperationBase{std::move(pre), cls, &_Operation::Notify}, rcvr_(std::move(rcvr)) {}
 
-    friend void Start(_Operation& op_state) {
+    friend void tag_invoke(start_t, _Operation& self) {
       MMDEPLOY_DEBUG("Start(_Operation&)");
-      op_state.cls_->Add(&op_state);
+      self.cls_->Add(&self);
     }
   };
 
@@ -105,7 +106,7 @@ struct BatchedInference {
     BatchedInference* cls_;
 
     template <class Self, class Receiver, _decays_to<Self, _Sender, bool> = true>
-    friend auto Connect(Self&& self, Receiver&& rcvr) -> _Operation<Receiver> {
+    friend auto tag_invoke(connect_t, Self&& self, Receiver&& rcvr) -> _Operation<Receiver> {
       return {((Self &&) self).pre_, self.cls_, (Receiver &&) rcvr};
     }
   };

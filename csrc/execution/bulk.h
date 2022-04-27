@@ -33,7 +33,7 @@ struct _Receiver<Receiver, Shape, Func>::type {
   Func func_;
 
   template <class... As>
-  friend void SetValue(type&& self, As&&... as) {
+  friend void tag_invoke(set_value_t, type&& self, As&&... as) noexcept {
     MMDEPLOY_ERROR("fallback Bulk");
     for (Shape i = 0; i < self.shape_; ++i) {
       self.func_(i, as...);
@@ -45,7 +45,8 @@ struct _Receiver<Receiver, Shape, Func>::type {
 template <typename CvrefSender, typename Shape, typename Func, typename Receiver>
 struct _Operation<CvrefSender, Shape, Func, Receiver>::type {
   connect_result_t<CvrefSender, receiver_t<Receiver, Shape, Func>> op_state2_;
-  friend void Start(type& op_state) { Start(op_state.op_state2_); }
+
+  friend void tag_invoke(start_t, type& self) { Start(self.op_state2_); }
 };
 
 template <typename Sender, typename Shape, typename Func>
@@ -67,7 +68,7 @@ struct _Sender<Sender, Shape, Func>::type {
   Func func_;
 
   template <typename Self, typename Receiver, _decays_to<Self, type, int> = 0>
-  friend auto Connect(Self&& self, Receiver&& receiver)
+  friend auto tag_invoke(connect_t, Self&& self, Receiver&& receiver)
       -> Operation<_copy_cvref_t<Self, Sender>, Shape, Func, Receiver> {
     return {Connect(((Self &&) self).sender_,
                     _receiver_t<Receiver>{(Receiver &&) receiver, ((Self &&) self).shape_,

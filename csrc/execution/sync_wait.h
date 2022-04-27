@@ -30,7 +30,7 @@ struct _Receiver<Sender>::type {
   RunLoop* loop_;
 
   template <typename... As>
-  friend void SetValue(type&& receiver, As&&... as) noexcept {
+  friend void tag_invoke(set_value_t, type&& receiver, As&&... as) noexcept {
     receiver.state_->data_.emplace((As &&) as...);
     receiver.loop_->_Finish();
   }
@@ -46,7 +46,6 @@ struct sync_wait_t {
     auto scheduler = GetCompletionScheduler(sender);
     return tag_invoke(sync_wait_t{}, std::move(scheduler), (Sender &&) sender);
   }
-
   template <typename Sender,
             std::enable_if_t<_is_sender<Sender> &&
                                  !_tag_invocable_with_completion_scheduler<sync_wait_t, Sender> &&

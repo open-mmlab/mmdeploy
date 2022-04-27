@@ -26,7 +26,7 @@ struct _Receiver<SharedState>::type {
   std::shared_ptr<SharedState> shared_state_;
 
   template <typename... As>
-  friend void SetValue(type&& self, As&&... as) {
+  friend void tag_invoke(set_value_t, type&& self, As&&... as) noexcept {
     assert(self.shared_state_);
     self.shared_state_->data_.emplace((As &&) as...);
     self.shared_state_->_Notify();
@@ -78,7 +78,7 @@ struct _Operation<Sender, Receiver>::type : public _OperationBase {
         *op_state->shared_state_->data_);
   }
 
-  friend void Start(type& self) {
+  friend void tag_invoke(start_t, type& self) {
     auto shared_state = self.shared_state_.get();
     std::atomic<void*>& awaiting = shared_state->awaiting_;
     void* const completion_state = static_cast<void*>(shared_state);
@@ -104,7 +104,7 @@ using sender_t = typename _Sender<remove_cvref_t<Sender>>::type;
 template <typename Sender>
 struct _Sender<Sender>::type {
   using value_types = completion_signatures_of_t<Sender>;
-  
+
   using SharedState = _SharedState<Sender>;
 
   std::shared_ptr<SharedState> shared_state_;
@@ -116,7 +116,7 @@ struct _Sender<Sender>::type {
   }
 
   template <typename Self, typename Receiver, _decays_to<Self, type, int> = 0>
-  friend auto Connect(Self&& self, Receiver&& receiver) -> Operation<Sender, Receiver> {
+  friend auto tag_invoke(connect_t, Self&& self, Receiver&& receiver) -> Operation<Sender, Receiver> {
     return {(Receiver &&) receiver, std::move(self.shared_state_)};
   }
 };

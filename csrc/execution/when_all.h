@@ -32,7 +32,7 @@ struct _Receiver<CvrefReceiver, Index, Senders...>::type {
   Operation<CvrefReceiver, Senders...>* op_state_;
 
   template <typename... As>
-  friend void SetValue(type&& self, As&&... as) noexcept {
+  friend void tag_invoke(set_value_t, type&& self, As&&... as) noexcept {
     std::get<Index>(self.op_state_->vals_).emplace((As &&) as...);
     self.op_state_->_Arrive();
   }
@@ -91,7 +91,7 @@ struct _Operation<CvrefReceiver, Senders...>::type {
       : child_states_{_ConnectChildren(this, _Indices{}, (_Senders &&) senders...)},
         receiver_(std::move(receiver)) {}
 
-  friend void Start(type& self) noexcept {
+  friend void tag_invoke(start_t, type& self) noexcept {
     std::apply([](auto&&... child_ops) noexcept -> void { (Start(child_ops), ...); },
                self.child_states_);
   }
@@ -122,7 +122,7 @@ struct _Sender<Senders...>::type {
   using operation_t = Operation<Receiver, Senders...>;
 
   template <typename Self, typename Receiver, _decays_to<Self, type, int> = 0>
-  friend auto Connect(Self&& self, Receiver&& receiver)
+  friend auto tag_invoke(connect_t, Self&& self, Receiver&& receiver)
       -> operation_t<_copy_cvref_t<Self, remove_cvref_t<Receiver>>> {  // cvref encoded in receiver
                                                                        // type
     return std::apply(

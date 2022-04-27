@@ -20,30 +20,6 @@ class _TypeErasedReceiver;
 template <class ValueTypes>
 class _TypeErasedScheduler;
 
-template <class... As>
-using _transfer_result_t = decltype(Transfer(std::declval<As>()...));
-
-template <class... As>
-using _then_result_t = decltype(Then(std::declval<As>()...));
-
-template <class... As>
-using _bulk_result_t = decltype(Bulk(std::declval<As>()...));
-
-template <class... As>
-using _split_result_t = decltype(Split(std::declval<As>()...));
-
-template <class... As>
-using _when_all_result_t = decltype(WhenAll(std::declval<As>()...));
-
-template <class... As>
-using _ensure_started_result_t = decltype(EnsureStarted(std::declval<As>()...));
-
-template <class... As>
-using _start_detached_result_t = decltype(StartDetached(std::declval<As>()...));
-
-template <class... As>
-using _sync_wait_result_t = decltype(SyncWait(std::declval<As>()...));
-
 template <class ValueTypes>
 class _TypeErasedSender {
  public:
@@ -73,7 +49,7 @@ class _TypeErasedSender {
   }
 
   template <class Self, class Receiver, class = _decays_to<Self, _TypeErasedSender>>
-  friend _Operation Connect(Self&& self, Receiver&& receiver) {
+  friend _Operation tag_invoke(connect_t, Self&& self, Receiver&& receiver) {
     return self.impl_->_Connect(_TypeErasedReceiver<ValueTypes>((Receiver &&) receiver));
   }
 
@@ -149,7 +125,7 @@ class _TypeErasedReceiver {
   explicit _TypeErasedReceiver(Receiver&&);
 
   template <class... As>
-  friend void SetValue(_TypeErasedReceiver&& self, As&&... as) {
+  friend void tag_invoke(set_value_t, _TypeErasedReceiver&& self, As&&... as) noexcept {
     self.impl_->_SetValue(std::make_tuple((As &&) as...));
   }
 
@@ -161,8 +137,8 @@ template <class Receiver, class ValueTypes>
 struct _TypeErasedReceiverImpl : _TypeErasedReceiver<ValueTypes>::Impl {
   void _SetValue(ValueTypes vals) override {
     std::apply(
-        [&](auto&&... args) { SetValue((Receiver &&) receiver_, (decltype(args)&&)args...); },
-        vals);
+        [&](auto&&... args) noexcept { SetValue(std::move(receiver_), (decltype(args)&&)args...); },
+        std::move(vals));
   }
   Receiver receiver_;
 
@@ -214,9 +190,13 @@ class _TypeErasedScheduler {
 
     virtual void* _GetSchedulerId() = 0;
 
-    // virtual SenderType _Transfer(SenderType) = 0;
+    virtual SenderType _Transfer(SenderType input, _TypeErasedScheduler sched) {
+      return ::mmdeploy::Transfer(std::move(input), std::move(sched));
+    }
     virtual SenderType _ScheduleFrom(SenderType) = 0;
-    // virtual SenderType _Then(SenderType, ThenFun) = 0;
+    //    virtual SenderType _Then(SenderType input, ThenFun fun) {
+    //      return ::mmdeploy::Then(std::move(input), std::move(fun));
+    //    }
     // virtual SenderType _LetValue() = 0;
     // virtual SenderType _On(SenderType) = 0;
     virtual SenderType _Bulk(SenderType input, size_t shape, BulkFun fun) {
@@ -272,6 +252,10 @@ struct _TypeErasedSchedulerImpl : _TypeErasedScheduler<ValueTypes>::Impl {
     return Transfer(std::move(input), scheduler_);
   }
 
+  //  SenderType _Transfer(SenderType input, _TypeErasedScheduler<ValueTypes> sched) override {
+  //
+  //  }
+
   SenderType _Bulk(SenderType input, size_t shape, BulkFun fun) override {
     assert(GetCompletionSchedulerId(input) == _GetSchedulerId());
     if constexpr (tag_invocable<bulk_t, Scheduler, SenderType, size_t, BulkFun>) {
@@ -307,7 +291,7 @@ class _TypeErasedOperation {
   template <class Fun, class = std::enable_if_t<std::is_invocable_v<Fun>>>
   explicit _TypeErasedOperation(Fun&& fun);
 
-  friend void Start(_TypeErasedOperation& op_state) { op_state.impl_->_Start(); }
+  friend void tag_invoke(start_t, _TypeErasedOperation& op_state) { op_state.impl_->_Start(); }
 
  private:
   std::unique_ptr<Impl> impl_;
@@ -404,3 +388,11 @@ _TypeErasedOperation<ValueTypes>::_TypeErasedOperation(Fun&& fun) {
 // Execute(sch, f)
 // 1. Execute(sch, f)
 // 2. StartDetached(Then(Schedule(sch), f))
+
+///////////////////////////////////////////////////////////////////////////////////////////
+
+// monadic
+// let_value :: Sender a -> (a -> Sender b) -> Sender b
+
+// applicative
+// ???       :: Sender a -> Sender (a -> b) -> Sender b

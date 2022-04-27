@@ -29,7 +29,7 @@ struct _Receiver<Receiver>::type {
   size_t index_;
   operation_t<Receiver>* op_state_;
 
-  friend void SetValue(type&& self, Value value) noexcept {
+  friend void tag_invoke(set_value_t, type&& self, Value value) noexcept {
     self.op_state_->values_[self.index_] = std::move(value);
     if (0 == --self.op_state_->count_) {
       SetValue(std::move(self.op_state_->rcvr_), std::move(self.op_state_->values_));
@@ -58,7 +58,7 @@ struct _Operation<Receiver>::type {
   std::atomic<size_t> count_;
   std::vector<Value> values_;
 
-  friend void Start(type& op_state) {
+  friend void tag_invoke(start_t, type& op_state) {
     for (auto& op : op_state.child_op_states_) {
       Start(op);
     }
@@ -71,7 +71,7 @@ struct sender_t {
   std::vector<TypeErasedSender<Value>> senders_;
 
   template <typename Self, typename Receiver, typename = _decays_to<Self, sender_t>>
-  friend operation_t<remove_cvref_t<Receiver>> Connect(Self&& self, Receiver&& receiver) {
+  friend operation_t<remove_cvref_t<Receiver>> tag_invoke(connect_t, Self&& self, Receiver&& receiver) {
     return {((Self &&) self).senders_, (Receiver &&) receiver};
   }
 };

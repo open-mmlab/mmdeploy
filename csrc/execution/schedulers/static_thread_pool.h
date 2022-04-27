@@ -46,7 +46,7 @@ struct Scheduler {
     }
 
     template <typename Receiver>
-    friend operation_t<Receiver> Connect(Sender s, Receiver&& r) {
+    friend operation_t<Receiver> tag_invoke(connect_t, Sender s, Receiver&& r) {
       return s.MakeOperation((Receiver &&) r);
     }
 
@@ -136,7 +136,7 @@ struct _Operation<Receiver>::type : TaskBase {
 
   void enqueue_(TaskBase* op) const { return pool_.Enqueue(op); }
 
-  friend void Start(type& op) noexcept { op.enqueue_(&op); }
+  friend void tag_invoke(start_t, type& op) noexcept { op.enqueue_(&op); }
 };
 
 inline StaticThreadPool::StaticThreadPool()
@@ -301,7 +301,7 @@ struct _Receiver<Receiver, Shape, Func, Tuple>::type {
                          shape}) {}
 
   template <typename... As>
-  friend void SetValue(type&& self, As&&... as) {
+  friend void tag_invoke(set_value_t, type&& self, As&&... as) noexcept {
     auto& state = self.state_;
     state->values_.emplace((As &&) as...);
     for (Shape index = {}; index < state->shape_; ++index) {
@@ -337,7 +337,7 @@ struct _Sender<Sender, Shape, Func>::type {
   Func func_;
 
   template <typename Self, typename Receiver, _decays_to<Self, type, int> = 0>
-  friend auto Connect(Self&& self, Receiver&& receiver) {
+  friend auto tag_invoke(connect_t, Self&& self, Receiver&& receiver) {
     return Connect(((Self &&) self).sender_,
                    _receiver_t<Receiver>{(Receiver &&) receiver, ((Self &&) self).shape_,
                                          ((Self &&) self).func_, ((Self &&) self).scheduler_});

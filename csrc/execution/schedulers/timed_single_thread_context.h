@@ -129,7 +129,7 @@ struct _Operation<Duration, Receiver>::type : TaskBase {
 
   void Enqueue() { context_->Enqueue(this); }
 
-  friend void Start(type& op_state) noexcept {
+  friend void tag_invoke(start_t, type& op_state) noexcept {
     op_state.due_time_ = Clock::now() + op_state.duration_;
     op_state.Enqueue();
   }
@@ -143,7 +143,7 @@ struct _Sender<Duration>::type {
   Duration duration_;
 
   template <class Self, class Receiver, _decays_to<Self, type, int> = 0>
-  friend operation_t<Duration, Receiver> Connect(Self&& self, Receiver&& receiver) {
+  friend operation_t<Duration, Receiver> tag_invoke(connect_t, Self&& self, Receiver&& receiver) {
     return {*self.context_, self.duration_, (Receiver &&) receiver};
   }
 };

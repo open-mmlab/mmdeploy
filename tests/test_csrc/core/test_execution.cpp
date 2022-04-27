@@ -131,7 +131,7 @@ struct _Receiver {
   _Operation<Sender, Receiver>* op_state_;
 
   template <class Tuple>
-  friend void SetValue(_Receiver&& self, Tuple&& tup) {
+  friend void tag_invoke(set_value_t, _Receiver&& self, Tuple&& tup) noexcept {
     std::apply(
         [&](auto&&... args) {
           SetValue((Receiver &&) self.op_state_->receiver_, (decltype(args)&&)args...);
@@ -150,7 +150,7 @@ struct _Operation {
       : op_state2_(Connect((Sender2 &&) sender, _Receiver<Sender, Receiver>{this})),
         receiver_((Receiver &&) receiver) {}
 
-  friend void Start(_Operation& op_state) { Start(op_state.op_state2_); }
+  friend void tag_invoke(start_t, _Operation& op_state) { Start(op_state.op_state2_); }
 };
 
 template <class Sender>
@@ -159,7 +159,7 @@ struct _Sender {
   Sender sndr_;
 
   template <class Self, class Receiver, _decays_to<Self, _Sender, bool> = true>
-  friend auto Connect(Self&& self, Receiver&& receiver) -> _Operation<Sender, Receiver> {
+  friend auto tag_invoke(connect_t, Self&& self, Receiver&& receiver) -> _Operation<Sender, Receiver> {
     //
     return _Operation<Sender, Receiver>(((Self &&) self).sndr_, (Receiver &&) receiver);
   }
@@ -191,16 +191,17 @@ TEST_CASE("test type erase", "[execution]") { G(); }
 TEST_CASE("test executor C API", "[execution]") {
   auto sched = mmdeploy_inline_scheduler();
   REQUIRE(sched);
-  Value ctx{100, 200};
-  auto ctx_sndr = mmdeploy_executor_just(reinterpret_cast<mmdeploy_value_t>(&ctx));
+  auto ctx = (mmdeploy_value_t)new Value{100, 200};
+  auto ctx_sndr = mmdeploy_executor_just(&ctx);
   REQUIRE(ctx_sndr);
-  auto a = mmdeploy_executor_transfer(ctx_sndr, sched);
+  auto a = mmdeploy_executor_transfer(&ctx_sndr, sched);
   REQUIRE(a);
-  auto b = mmdeploy_executor_then(a, f, nullptr);
+  auto b = mmdeploy_executor_then(&a, f, nullptr);
   REQUIRE(b);
-  auto c = mmdeploy_executor_sync_wait(b);
+  auto c = mmdeploy_executor_sync_wait(&b);
   REQUIRE(c);
   MMDEPLOY_CRITICAL("{}", *(Value*)c);
+  mmdeploy_value_destroy(&c);
 }
 
 auto Gen(int k) {

@@ -29,7 +29,7 @@ using operation_t = typename _Operation<remove_cvref_t<Receiver>>::type;
 
 template <typename Receiver>
 struct _Operation<Receiver>::type final : _Task {
-  friend void Start(type& op_state) noexcept { op_state._Start(); }
+  friend void tag_invoke(start_t, type& op_state) noexcept { op_state._Start(); }
 
   void _Execute() noexcept override { SetValue(std::move(receiver_)); }
   void _Start() noexcept;
@@ -54,7 +54,8 @@ class RunLoop {
     class _ScheduleTask {
       friend _Scheduler;
       template <typename Receiver>
-      friend __impl::operation_t<Receiver> Connect(const _ScheduleTask& self, Receiver&& receiver) {
+      friend __impl::operation_t<Receiver> tag_invoke(connect_t, const _ScheduleTask& self,
+                                                      Receiver&& receiver) {
         return __impl::operation_t<Receiver>{(Receiver &&) receiver, self.loop_};
       }
       explicit _ScheduleTask(RunLoop* loop) noexcept : loop_(loop) {}

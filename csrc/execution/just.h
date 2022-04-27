@@ -23,7 +23,7 @@ template <typename Receiver, typename... Ts>
 struct _Operation<Receiver, Ts...>::type {
   std::tuple<Ts...> values_;
   Receiver receiver_;
-  friend void Start(type& op_state) noexcept {
+  friend void tag_invoke(start_t, type& op_state) noexcept {
     std::apply(
         [&](Ts&... ts) -> void { SetValue(std::move(op_state.receiver_), std::move(ts)...); },
         op_state.values_);
@@ -43,12 +43,12 @@ struct _Sender<Ts...>::type {
   value_types values_;
 
   template <typename Receiver>
-  friend operation_t<Receiver, Ts...> Connect(const type& self, Receiver&& receiver) {
+  friend operation_t<Receiver, Ts...> tag_invoke(connect_t, const type& self, Receiver&& receiver) {
     return {self.values_, (Receiver &&) receiver};
   }
 
   template <typename Receiver>
-  friend operation_t<Receiver, Ts...> Connect(type&& self, Receiver&& receiver) {
+  friend operation_t<Receiver, Ts...> tag_invoke(connect_t, type&& self, Receiver&& receiver) {
     return {std::move(self).values_, (Receiver &&) receiver};
   }
 };

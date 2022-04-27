@@ -26,7 +26,7 @@ struct _Receiver<SharedState>::type {
   SharedState& shared_state_;
 
   template <typename... As>
-  friend void SetValue(type&& self, As&&... as) {
+  friend void tag_invoke(set_value_t, type&& self, As&&... as) noexcept {
     auto& state = self.shared_state_;
     state.data_.emplace((As &&) as...);
     state._Notify();
@@ -82,7 +82,7 @@ struct _Operation<Sender, Receiver>::type : _OperationBase {
                op->shared_state_->data_.value());
   }
 
-  friend void Start(type& self) {
+  friend void tag_invoke(start_t, type& self) {
     auto shared_state = self.shared_state_.get();
     std::atomic<void*>& head = shared_state->head_;
     void* const completion_state = static_cast<void*>(shared_state);
@@ -125,7 +125,7 @@ struct _Sender<Sender>::type {
       : sender_(std::move(sender)), shared_state_{std::make_shared<SharedState>(sender_)} {}
 
   template <typename Self, typename Receiver, _decays_to<Self, type, int> = 0>
-  friend auto Connect(Self&& self, Receiver&& receiver) -> _operation_t<Receiver> {
+  friend auto tag_invoke(connect_t, Self&& self, Receiver&& receiver) -> _operation_t<Receiver> {
     return _operation_t<Receiver>((Receiver &&) receiver, self.shared_state_);
   }
 };

@@ -38,20 +38,12 @@ struct set_value_t {
     static_assert(is_nothrow_tag_invocable_v<set_value_t, Receiver, Args...>);
     (void)tag_invoke(set_value_t{}, (Receiver &&) receiver, (Args &&) args...);
   }
-  template <typename Receiver, typename... Args,
-            std::enable_if_t<!is_tag_invocable_v<set_value_t, Receiver, Args...>, int> = 0>
-  auto operator()(Receiver&& receiver, Args&&... args) const noexcept
-      -> decltype(((Receiver &&) receiver).SetValue((Args &&) args...)) {
-    static_assert(noexcept(((Receiver &&) receiver).SetValue((Args &&) args...)),
-                  "SetValue must be noexcept");
-    return ((Receiver &&) receiver).SetValue((Args &&) args...);
-  }
 };
 
 }  // namespace _set_value
 
-// using _set_value::set_value_t;
-// inline constexpr set_value_t SetValue{};
+using _set_value::set_value_t;
+inline constexpr set_value_t SetValue{};
 
 // template <typename Receiver>
 // inline constexpr bool is_receiver_v = std::is_move_constructible_v<remove_cvref<Receiver> >&&
@@ -64,22 +56,17 @@ struct set_value_t {
 namespace _start {
 
 struct start_t {
-  template <typename Operation, std::enable_if_t<is_tag_invocable_v<start_t, Operation>, int> = 0>
-  void operator()(Operation& op_state) const noexcept {
-    static_assert(is_nothrow_tag_invocable_v<start_t, Operation&>);
+  template <typename Operation, std::enable_if_t<tag_invocable<start_t, Operation&>, int> = 0>
+  void operator()(Operation& op_state) const
+      noexcept(is_nothrow_tag_invocable_v<start_t, Operation&>) {
     (void)tag_invoke(start_t{}, op_state);
-  }
-  template <typename Operation, std::enable_if_t<!is_tag_invocable_v<start_t, Operation>, int> = 0>
-  auto operator()(Operation& op) const noexcept -> decltype(op.Start()) {
-    static_assert(noexcept(op.Start()), "Start() must be noexcept");
-    return op.Start();
   }
 };
 
 }  // namespace _start
 
-// using _start::start_t;
-// inline constexpr start_t Start{};
+using _start::start_t;
+inline constexpr start_t Start{};
 
 // template <typename Operation>
 // inline constexpr bool is_operation_state_v =                           //
@@ -95,18 +82,12 @@ struct connect_t {
       -> tag_invoke_result_t<connect_t, Sender, Receiver> {
     return tag_invoke(connect_t{}, (Sender &&) sender, (Receiver &&) receiver);
   }
-  template <typename Sender, typename Receiver,
-            std::enable_if_t<!is_tag_invocable_v<connect_t, Sender, Receiver>, int> = 0>
-  auto operator()(Sender&& sender, Receiver&& receiver) const
-      -> decltype(((Sender &&) sender).Connect((Receiver &&) receiver)) {
-    return ((Sender &&) sender).Connect((Receiver &&) receiver);
-  }
 };
 
 }  // namespace _connect
 
-// using _connect::connect_t;
-// inline constexpr connect_t Connect{};
+using _connect::connect_t;
+inline constexpr connect_t Connect{};
 
 namespace _get_completion_scheduler {
 

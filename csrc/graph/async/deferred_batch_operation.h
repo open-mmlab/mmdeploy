@@ -29,7 +29,7 @@ class DeferredBatchOperation : public Node {
     _Operation<Sender, Receiver>* op_state_;
 
     template <class... As>
-    friend void SetValue(_Receiver&& self, As&&... as) {
+    friend void tag_invoke(set_value_t, _Receiver&& self, As&&... as) noexcept {
       self.op_state_->Arrive((As &&) as...);
     }
   };
@@ -53,7 +53,7 @@ class DeferredBatchOperation : public Node {
 
     void Arrive(Value val) { this->cls_->Arrive(this, std::move(val)); }
 
-    friend void Start(_Operation& self) { Start(self.op_state2_); }
+    friend void tag_invoke(start_t, _Operation& self) { Start(self.op_state2_); }
   };
 
   template <class Sender>
@@ -63,7 +63,7 @@ class DeferredBatchOperation : public Node {
     DeferredBatchOperation* cls_;
 
     template <class Self, class Receiver, class = _decays_to<Self, _Sender>>
-    friend auto Connect(Self&& self, Receiver&& receiver)
+    friend auto tag_invoke(connect_t, Self&& self, Receiver&& receiver)
         -> _Operation<Sender, std::decay_t<Receiver>> {
       return {((Self &&) self).sender_, self.cls_, (Receiver &&) receiver};
     }

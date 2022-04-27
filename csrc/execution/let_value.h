@@ -57,7 +57,7 @@ struct _Receiver<CvrefSender, Receiver, Func>::type {
   operation_t<CvrefSender, Receiver, Func>* op_state_;
 
   template <typename... As>
-  friend void SetValue(type&& self, As&&... as) noexcept {
+  friend void tag_invoke(set_value_t, type&& self, As&&... as) noexcept {
     auto* op_state = self.op_state_;
     auto& args = op_state->storage_.args_.emplace((As &&) as...);
     op_state->storage_.proxy_.emplace([&] {
@@ -71,7 +71,7 @@ template <typename CvrefSender, typename Receiver, typename Func>
 struct _Operation<CvrefSender, Receiver, Func>::type {
   using _receiver_t = receiver_t<CvrefSender, Receiver, Func>;
 
-  friend void Start(type& self) noexcept { Start(self.op_state2_); }
+  friend void tag_invoke(start_t, type& self) noexcept { Start(self.op_state2_); }
 
   template <typename Receiver2>
   type(CvrefSender&& sender, Receiver2&& receiver, Func func)
@@ -101,7 +101,7 @@ struct _Sender<Sender, Func>::type {
       completion_signatures_of_t<__value_type_t<Func, completion_signatures_of_t<Sender>>>;
 
   template <typename Self, typename Receiver, _decays_to<Self, type, int> = 0>
-  friend auto Connect(Self&& self, Receiver&& receiver) -> _operation_t<Self, Receiver> {
+  friend auto tag_invoke(connect_t, Self&& self, Receiver&& receiver) -> _operation_t<Self, Receiver> {
     return _operation_t<Self, Receiver>{((Self &&) self).sender_, (Receiver &&) receiver,
                                         ((Self &&) self).func_};
   }
