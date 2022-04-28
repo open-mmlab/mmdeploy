@@ -390,7 +390,7 @@ class TestParseDeviceID:
 
     def test_incorrect_cuda_device(self):
         device = 'cuda_5'
-        with pytest.raises(RuntimeError):
+        with pytest.raises(AssertionError):
             util.parse_device_id(device)
 
     def test_incorrect_device(self):

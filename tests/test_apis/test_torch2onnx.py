@@ -84,7 +84,7 @@ def test_torch2onnx(input_name, output_name, dynamic_axes):
         test_model,
         test_img,
         context_info=context_info,
-        output_prefix=output_prefix,
+        output_path_prefix=output_prefix,
         backend=backend,
         input_names=input_names,
         output_names=output_names,

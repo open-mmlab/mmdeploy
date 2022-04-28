@@ -82,7 +82,7 @@ def torch2onnx(img: Any,
     export(
         torch_model,
         model_inputs,
-        output_prefix=output_prefix,
+        output_path_prefix=output_prefix,
         backend=backend,
         input_names=input_names,
         output_names=output_names,
