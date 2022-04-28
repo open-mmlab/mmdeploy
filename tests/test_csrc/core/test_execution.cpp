@@ -3,6 +3,7 @@
 #include <chrono>
 #include <numeric>
 
+#include "apis/c/executor.h"
 #include "catch.hpp"
 #include "core/utils/formatter.h"
 #include "core/value.h"
@@ -10,7 +11,6 @@
 #include "execution/schedulers/static_thread_pool.h"
 #include "execution/schedulers/timed_single_thread_context.h"
 #include "execution/type_erased.h"
-#include "apis/c/executor.h"
 
 using namespace mmdeploy;
 
@@ -93,16 +93,14 @@ TEST_CASE("test ensure_started", "[execution]") {
 }
 
 TEST_CASE("test start_detached", "[execution]") {
-  auto pool = __static_thread_pool::StaticThreadPool{4};
+  MMDEPLOY_INFO("test start_detached");
+  __static_thread_pool::StaticThreadPool pool{4};
   auto s = Schedule(pool.GetScheduler());
   auto a = Then(s, [] {
     std::this_thread::sleep_for(std::chrono::seconds(1));
     return Value(100);
   });
-  auto b = Then(a, [](...) {
-    MMDEPLOY_INFO("OK");
-    return Value(200);
-  });
+  auto b = Then(a, [](auto&&...) { MMDEPLOY_INFO("OK {}", 1); });
   StartDetached(b);
   MMDEPLOY_INFO("StartDetached ret");
 }
@@ -159,7 +157,8 @@ struct _Sender {
   Sender sndr_;
 
   template <class Self, class Receiver, _decays_to<Self, _Sender, bool> = true>
-  friend auto tag_invoke(connect_t, Self&& self, Receiver&& receiver) -> _Operation<Sender, Receiver> {
+  friend auto tag_invoke(connect_t, Self&& self, Receiver&& receiver)
+      -> _Operation<Sender, Receiver> {
     //
     return _Operation<Sender, Receiver>(((Self &&) self).sndr_, (Receiver &&) receiver);
   }
@@ -191,7 +190,7 @@ TEST_CASE("test type erase", "[execution]") { G(); }
 TEST_CASE("test executor C API", "[execution]") {
   auto sched = mmdeploy_inline_scheduler();
   REQUIRE(sched);
-  auto begin = mmdeploy_executor_just((mmdeploy_value_t)new Value{100, 200});
+  auto begin = mmdeploy_executor_just((mmdeploy_value_t) new Value{100, 200});
   REQUIRE(begin);
   auto a = mmdeploy_executor_transfer(begin, sched);
   REQUIRE(a);
