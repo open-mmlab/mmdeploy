@@ -7,6 +7,7 @@
 
 #include "core/device.h"
 #include "core/graph.h"
+#include "graph/async/pipeline.h"
 
 namespace mmdeploy {
 
@@ -39,7 +40,6 @@ class Handle {
   }
 
   Device& device() { return device_; }
-
   Stream& stream() { return stream_; }
 
  private:
@@ -47,6 +47,37 @@ class Handle {
   Stream stream_;
   graph::TaskGraph graph_;
   std::unique_ptr<graph::Node> pipeline_;
+};
+
+class AsyncHandle {
+ public:
+  AsyncHandle(const char* device_name, int device_id, Value config) {
+    device_ = Device(device_name, device_id);
+    stream_ = Stream(device_);
+    config["context"].update({{"device", device_}, {"stream", stream_}});
+    auto creator = Registry<async::Node>::Get().GetCreator("Pipeline");
+    if (!creator) {
+      MMDEPLOY_ERROR("failed to find Pipeline creator");
+      throw_exception(eEntryNotFound);
+    }
+    pipeline_ = creator->Create(config);
+    if (!pipeline_) {
+      MMDEPLOY_ERROR("create pipeline failed");
+      throw_exception(eFail);
+    }
+  }
+
+  async::Sender<Value> Process(async::Sender<Value> input) {
+    return pipeline_->Process(std::move(input));
+  }
+
+  Device& device() { return device_; }
+  Stream& stream() { return stream_; }
+
+ private:
+  Device device_;
+  Stream stream_;
+  std::unique_ptr<async::Node> pipeline_;
 };
 
 }  // namespace
