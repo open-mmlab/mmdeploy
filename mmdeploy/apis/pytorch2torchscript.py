@@ -46,8 +46,7 @@ def torch2torchscript(img: Any,
 
     context_info = dict(deploy_cfg=deploy_cfg)
     backend = get_backend(deploy_cfg).value
-    output_prefix = osp.join(work_dir,
-                             osp.splitext(osp.basename(save_file))[0])
+    output_prefix = osp.join(work_dir, osp.splitext(save_file)[0])
 
     trace(
         torch_model,

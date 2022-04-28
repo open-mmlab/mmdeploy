@@ -412,6 +412,8 @@ def test_AdvancedEnum():
         assert k.value == v
 
 
+@pytest.mark.skipif(
+    not importlib.util.find_spec('mmedit'), reason='requires mmedit')
 def test_export_info():
     with tempfile.TemporaryDirectory() as dir:
         dump_info(correct_deploy_cfg, correct_model_cfg, dir, '')
