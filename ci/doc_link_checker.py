@@ -15,10 +15,6 @@ def make_parser():
     return parser
 
 
-# def accessible(url):
-#     resp = requests.get(url)
-#     return resp.ok
-
 pattern = re.compile(r'\[.*?\]\(.*?\)')
 
 
@@ -41,7 +37,6 @@ def analyze_doc(home, path):
                     fullpath = os.path.join(home, ref)
                     if not os.path.exists(fullpath):
                         problem_list.append(ref)
-                        # print(f' {fullpath}  in  {path} not exist!')
             else:
                 continue
     if len(problem_list) > 0:
