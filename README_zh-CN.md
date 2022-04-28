@@ -30,13 +30,12 @@
 
 [English](README.md) | 简体中文
 
-MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，为各算法库提供了统一的部署体验。基于 MMDeploy，开发者可以轻松从训练 repo 生成指定硬件所需 SDK，不必关心繁琐操作。
-
+MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为各算法库提供统一的部署体验**。基于 MMDeploy，开发者可以轻松从训练 repo 生成指定硬件所需 SDK，省去大量适配时间。
 
 ## 架构简析
 
-<div align="center">
-  <img src="resources/introduction.png" width="800"/>
+<div align="left">
+  <img src="resources/introduction.png" width="630"/>
 </div>
 
 ## 特性简介
@@ -49,18 +48,17 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，为各�
 - mmocr
 - mmpose
 - mmseg
-- [支持列表](docs/zh_cn/supported_models.md)
+- [支持列表](docs/en/supported_models.md)
 
 ### 支持多种推理后端
-|ONNX Runtime|TensorRT|ppl.nn|ncnn|OpenVINO|
-|------------|--------|------|----|--------|
-|✔️         |✔️      |✔️   |✔️  |✔️     |
+|ONNX Runtime|TensorRT|ppl.nn|ncnn|OpenVINO|more|
+|------------|--------|------|----|--------|----|
+|✔️         |✔️      |✔️   |✔️  |✔️     |[benchmark](docs/en/benchmark.md)|
 
 ### SDK 可高度定制化
 - Transform 数据预处理
 - Net 推理
 - Module 后处理
-
 
 ## 快速上手
 
@@ -69,6 +67,7 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，为各�
   * [Build for Linux](docs/zh_cn/01-how-to-build/linux-x86_64.md)
   * [Build for Win10](docs/zh_cn/01-how-to-build/windows.md)
   * [Build for Jetson](docs/en/tutorials/how_to_install_mmdeploy_on_jetsons.md)
+  * [Build from Docker](docs/zh_cn/01-how-to-build/build_from_docker.md)
 * 使用
   * [把模型转换到推理 Backend](docs/zh_cn/02-how-to-run/convert_model.md)
   * [配置转换参数](docs/zh_cn/02-how-to-run/write_config.md)
@@ -88,7 +87,7 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，为各�
 
 扫描下方二维码，关注 OpenMMLab [知乎官方账号](https://www.zhihu.com/people/openmmlab)、加入 OpenMMLab 团队的 [官方交流 QQ 群](https://jq.qq.com/?_wv=1027&k=aCvMxdr3)
 
-<div align="center">
+<div align="left">
   <img src="https://raw.githubusercontent.com/open-mmlab/mmcv/master/docs/en/_static/zhihu_qrcode.jpg" height="400" />
   <img src="https://raw.githubusercontent.com/open-mmlab/mmcv/master/docs/en/_static/qq_group_qrcode.jpg" height="400" />
 </div>
@@ -131,11 +130,11 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，为各�
 
 ## 开源许可证
 
-该项目采用 [Apache 2.0 开源许可证](LICENSE)。
+该项目采用 [Apache 2.0 开源许可证](LICENSE)
 
 ## 引用
 
-如果您在研究中使用了本项目的代码或者性能基准，请参考如下 bibtex 引用 MMDeploy:
+如果您在研究中使用了本项目的代码或者性能基准，请参考如下 bibtex 引用 MMDeploy
 
 ```BibTeX
 @misc{=mmdeploy,

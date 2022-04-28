@@ -5,7 +5,7 @@
 
 .. toctree::
    :maxdepth: 1
-   :caption: 如何编译
+   :caption: 编译
 
    01-how-to-build/build_from_source.md
    01-how-to-build/build_from_docker.md
@@ -15,10 +15,11 @@
 
 .. toctree::
    :maxdepth: 1
-   :caption: 如何运行
+   :caption: 运行和测试
 
    02-how-to-run/convert_model.md
    02-how-to-run/write_config.md
+   02-how-to-run/profile_model.md
 
 .. toctree::
    :maxdepth: 1
@@ -29,7 +30,7 @@
 
 .. toctree::
    :maxdepth: 1
-   :caption: 新手教程
+   :caption: 菜鸟教程
 
    04-tutorial/01_introduction_to_model_deployment.md
    04-tutorial/02_challenges.md
