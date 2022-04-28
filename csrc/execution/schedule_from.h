@@ -116,7 +116,7 @@ struct schedule_from_t {
             std::enable_if_t<
                 _is_sender<Sender> && tag_invocable<schedule_from_t, Scheduler, Sender>, int> = 0>
   auto operator()(Scheduler&& scheduler, Sender&& sender) const
-      -> tag_invoke_result<schedule_from_t, Scheduler, Sender> {
+      -> tag_invoke_result_t<schedule_from_t, Scheduler, Sender> {
     return tag_invoke(schedule_from_t{}, (Scheduler &&) scheduler, (Sender &&) sender);
   }
 

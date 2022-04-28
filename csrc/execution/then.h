@@ -58,7 +58,9 @@ struct _Sender<Sender, Func>::type {
                    receiver_t<Receiver, Func>{(Receiver &&) receiver, std::move(self.func_)});
   }
 
-  friend auto tag_invoke(get_completion_scheduler_t, const _Sender& self) noexcept {
+  template <typename SenderT = Sender>
+  friend auto tag_invoke(get_completion_scheduler_t, const type& self) noexcept
+      -> tag_invoke_result_t<get_completion_scheduler_t, SenderT> {
     return GetCompletionScheduler(self.sender_);
   }
 };

@@ -42,7 +42,7 @@ struct sync_wait_t {
                                  _tag_invocable_with_completion_scheduler<sync_wait_t, Sender>,
                              int> = 0>
   auto operator()(Sender&& sender) const
-      -> tag_invoke_result<sync_wait_t, _completion_scheduler_for<Sender>, Sender> {
+      -> tag_invoke_result_t<sync_wait_t, _completion_scheduler_for<Sender>, Sender> {
     auto scheduler = GetCompletionScheduler(sender);
     return tag_invoke(sync_wait_t{}, std::move(scheduler), (Sender &&) sender);
   }
@@ -51,7 +51,7 @@ struct sync_wait_t {
                                  !_tag_invocable_with_completion_scheduler<sync_wait_t, Sender> &&
                                  tag_invocable<sync_wait_t, Sender>,
                              int> = 0>
-  auto operator()(Sender&& sender) const -> tag_invoke_result<sync_wait_t, Sender> {
+  auto operator()(Sender&& sender) const -> tag_invoke_result_t<sync_wait_t, Sender> {
     return tag_invoke(sync_wait_t{}, (Sender &&) sender);
   }
 

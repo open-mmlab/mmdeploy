@@ -15,11 +15,14 @@
 using namespace mmdeploy;
 
 TEST_CASE("test basic execution", "[execution]") {
+  auto x = Then(Just(), [] {});
+  static_assert(!_has_completion_scheduler_v<decltype(x)>);
   InlineScheduler sch;
   auto a = Just(Value{{"a", 100}, {"b", 200}});
+  static_assert(!_has_completion_scheduler_v<decltype(a)>);
   auto b = ScheduleFrom(sch, a);
-  //  auto begin = Schedule(sch);
-  //  auto b = Then(begin, [] { return Value{{"a", 100}, {"b", 200}}; });
+  static_assert(_has_completion_scheduler_v<decltype(b)>);
+  static_assert(std::is_same_v<decltype(GetCompletionScheduler(b)), InlineScheduler>);
   auto c = Then(b, [](Value v) -> Value { return {{"c", v["a"].get<int>() + v["b"].get<int>()}}; });
   auto d = SyncWait(c);
   MMDEPLOY_ERROR("{}", d);

@@ -101,7 +101,7 @@ struct on_t {
   template <typename Scheduler, typename Sender,
             std::enable_if_t<_is_sender<Sender> && tag_invocable<on_t, Scheduler, Sender>, int> = 0>
   auto operator()(Scheduler&& scheduler, Sender&& sender) const
-      -> tag_invoke_result<on_t, Scheduler, Sender> {
+      -> tag_invoke_result_t<on_t, Scheduler, Sender> {
     return tag_invoke(on_t{}, (Scheduler &&) scheduler, (Sender &&) sender);
   }
   template <

@@ -29,8 +29,6 @@ struct _Sender {
   friend auto tag_invoke(connect_t, _Sender, Receiver&& receiver) -> operation_t<Receiver> {
     return {(Receiver &&) receiver};
   }
-
-  //
 };
 
 struct InlineScheduler {
