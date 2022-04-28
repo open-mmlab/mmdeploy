@@ -23,7 +23,7 @@ struct _Receiver<Receiver, Func>::type {
   Receiver receiver_;
   Func func_;
 
-  template <class... Args>
+  template <typename... Args>
   friend void tag_invoke(set_value_t, type&& self, Args&&... args) noexcept {
     if constexpr (std::is_void_v<std::invoke_result_t<Func&&, Args...>>) {
       std::invoke(std::move(self.func_), (Args &&) args...);
