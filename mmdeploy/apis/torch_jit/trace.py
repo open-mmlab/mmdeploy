@@ -5,10 +5,12 @@ from typing import Any, Dict, Optional, Sequence, Tuple, Union
 import torch
 from packaging.version import parse as version_parse
 
+from mmdeploy.apis.core import PIPELINE_MANAGER
 from mmdeploy.core import RewriterContext, patch_model
 from mmdeploy.utils import IR, Backend, get_root_logger
 
 
+@PIPELINE_MANAGER.register_pipeline(func_name='mmdeploy.apis.torch_jit.trace')
 def trace(func: torch.nn.Module,
           inputs: Union[torch.Tensor, Tuple],
           output_path_prefix: Optional[str] = None,
