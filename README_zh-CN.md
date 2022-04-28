@@ -79,7 +79,7 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
   * [tutorial01：术语解释、加载第一个模型](docs/zh_cn/04-tutorial/01_introduction_to_model_deployment.md)
   * [tutorial02：转成 onnx](docs/zh_cn/04-tutorial/01_introduction_to_model_deployment.md)
 
-* [FAQ](https://mmdeploy.readthedocs.io/zh_CN/latest/faq.html)
+* [FAQ](docs/zh_cn/faq.md)
 * [贡献者手册](.github/CONTRIBUTING.md)
 
 

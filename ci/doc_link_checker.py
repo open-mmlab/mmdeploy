@@ -5,8 +5,6 @@ import argparse
 import os
 import re
 
-import requests
-
 
 def make_parser():
     parser = argparse.ArgumentParser('Doc link checker')
@@ -17,10 +15,9 @@ def make_parser():
     return parser
 
 
-def accessible(url):
-    resp = requests.get(url)
-    return resp.ok
-
+# def accessible(url):
+#     resp = requests.get(url)
+#     return resp.ok
 
 pattern = re.compile(r'\[.*?\]\(.*?\)')
 
@@ -38,9 +35,6 @@ def analyze_doc(home, path, check_http):
                     ref = item[start + 1:end]
 
                     if ref.startswith('http') or ref.startswith('#'):
-                        if check_http and ref.startswith(
-                                'http') and accessible(ref) is False:
-                            problem_list.append(ref)
                         continue
                     if '.md#' in ref:
                         ref = ref[ref.find('#'):]
