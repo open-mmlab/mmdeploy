@@ -96,9 +96,16 @@ pluginStatus_t nmsInference(cudaStream_t stream, const int N, const int perBatch
   // ymax]
   bool flipXY = false;
   // NMS
-  status = allClassNMS(stream, N, numClasses, numPredsPerClass, topKVal, iouThreshold,
-                       shareLocation, isNormalized, DataType::kFLOAT, DataType::kFLOAT, bboxData,
-                       scores, indices, postNMSScores, postNMSIndices, flipXY);
+  if (rotated) {
+    status = allClassRotatedNMS(stream, N, numClasses, numPredsPerClass, topKVal, iouThreshold,
+                                shareLocation, isNormalized, DataType::kFLOAT, DataType::kFLOAT,
+                                bboxData, scores, indices, postNMSScores, postNMSIndices, flipXY);
+  } else {
+    status = allClassNMS(stream, N, numClasses, numPredsPerClass, topKVal, iouThreshold,
+                         shareLocation, isNormalized, DataType::kFLOAT, DataType::kFLOAT, bboxData,
+                         scores, indices, postNMSScores, postNMSIndices, flipXY);
+  }
+
   ASSERT_FAILURE(status == STATUS_SUCCESS);
 
   // Sort the bounding boxes after NMS using scores

@@ -376,7 +376,7 @@ __global__ void allClassRotatedNMS_kernel(const int num, const int num_classes,
         if ((kept_bboxinfo_flag[cur_idx]) && (item_idx > ref_item_idx)) {
           // TODO: may need to add bool normalized as argument, HERE true means
           // normalized
-          if (0.0f > nms_threshold) {
+          if (single_box_iou_rotated(&ref_bbox[0], loc_bbox + t * 5) > nms_threshold) {
             kept_bboxinfo_flag[cur_idx] = false;
           }
         }
