@@ -11,7 +11,7 @@ except Exception:
     import multiprocessing as mp
 
 
-def __get_func_name(func: Callable) -> str:
+def _get_func_name(func: Callable) -> str:
     """get function name."""
     assert isinstance(func, Callable), f'{func} is not a Callable object.'
     _func_name = None
@@ -35,7 +35,7 @@ class PipelineCaller:
         if func_name is not None:
             self._func_name = func_name
         else:
-            self._func_name = __get_func_name(func)
+            self._func_name = _get_func_name(func)
         self._func = func
         self._is_multiprocess_available = is_multiprocess_available
         self._enable_multiprocess = False
@@ -102,7 +102,7 @@ class PipelineCaller:
 
 
 class PipelineResult:
-    """The result of async pipeline"""
+    """The result of async pipeline."""
 
     def __init__(self, manager: Any, call_id: int) -> None:
         self._manager = manager
@@ -113,7 +113,7 @@ class PipelineResult:
         return self._call_id
 
     def get(self) -> Any:
-        """get result"""
+        """get result."""
         return self._manager.get_result_sync(self._call_id)
 
 
@@ -121,7 +121,7 @@ class PipelineManager:
     """This is a tool to manager all pipeline functions."""
 
     def __init__(self) -> None:
-        self._enable_multiprocess = False
+        self._enable_multiprocess = True
         self._mp_manager = None
         self._callers: Dict[str, PipelineCaller] = dict()
         self._call_id = 0
@@ -133,7 +133,7 @@ class PipelineManager:
         return self._mp_manager
 
     def get_caller(self, func_name: str) -> PipelineCaller:
-        """get caller of given function"""
+        """get caller of given function."""
         assert func_name in self._callers, \
             f'{func_name} has not been registered.'
         return self._callers[func_name]
@@ -142,7 +142,7 @@ class PipelineManager:
                          val_name: str,
                          val: Any,
                          func_name: Optional[str] = None) -> None:
-        """helper to set any caller value"""
+        """helper to set any caller value."""
         if func_name is None:
             for func_name_ in self._callers:
                 setattr(self.get_caller(func_name_), val_name, val)
@@ -263,8 +263,7 @@ class PipelineManager:
         return call_id
 
     def get_result_sync(self, call_id: int):
-        """get result of async call
-        """
+        """get result of async call."""
         assert call_id in self._proc_async, f'Unknown call id: {call_id}'
         func_name, proc = self._proc_async.pop(call_id)
         proc.join()
@@ -282,7 +281,8 @@ class PipelineManager:
             Any: The result of call function
         """
         pipe_caller = self.get_caller(func_name)
-        if pipe_caller.is_multiprocess:
+
+        if self._enable_multiprocess and pipe_caller.is_multiprocess:
             call_id = self.call_function_async(func_name, *args, **kwargs)
             if pipe_caller._mp_async:
                 return PipelineResult(self, call_id)
@@ -298,7 +298,7 @@ class PipelineManager:
         def _register(func):
             assert isinstance(func, Callable), f'{func} is not Callable.'
             func_name_ = func_name if func_name is not None \
-                else __get_func_name(func)
+                else _get_func_name(func)
             pipe_caller = PipelineCaller(
                 func,
                 func_name=func_name_,
@@ -315,3 +315,18 @@ class PipelineManager:
 
 
 PIPELINE_MANAGER = PipelineManager()
+
+
+class no_mp:
+    """The context manager used to disable multiprocess."""
+
+    def __init__(self, manager: PipelineManager = PIPELINE_MANAGER) -> None:
+        self._manager = manager
+        self._old_enable_multiprocess = True
+
+    def __enter__(self):
+        self._old_enable_multiprocess = self._manager._enable_multiprocess
+        self._manager._enable_multiprocess = False
+
+    def __exit__(self, type, val, tb):
+        self._manager._enable_multiprocess = self._old_enable_multiprocess
