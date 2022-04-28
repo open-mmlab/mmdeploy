@@ -90,6 +90,11 @@ Results and supported model list are available in the [benchmark](https://mmdepl
 
 We appreciate all contributions to improve MMDeploy. Please refer to [CONTRIBUTING.md](.github/CONTRIBUTING.md) for the contributing guideline.
 
+## Concat us
+
+Issue: https://github.com/open-mmlab/mmdeploy/issues
+QQ Group: 161709383
+
 ## Acknowledgement
 
 We would like to sincerely thank the following teams for their contributions to [MMDeploy](https://github.com/open-mmlab/mmdeploy):
