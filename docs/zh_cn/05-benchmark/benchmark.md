@@ -15,15 +15,11 @@ GPU: ncnn, TensorRT, PPLNN
 - NVIDIA tesla T4 tensor core GPU for TensorRT.
 
 ### 配置
-- Static graph
-- Batch size 1
-- Synchronize devices after each inference.
-- We count the average inference performance of 100 images of the dataset.
-- Warm up. For ncnn, we warm up 30 iters for all codebases. As for other backends: for classification, we warm up 1010 iters; for other codebases, we warm up 10 iters.
-- Input resolution varies for different datasets of different codebases. All inputs are real images except for `mmediting` because the dataset is not large enough.
+- 静态图导出
+- batch 大小为 1
+- 测试时，计算各个数据集中 100 张图片的平均耗时
 
-
-Users can directly test the speed through [model profiling](../02-how-to-run/profile_model.md). And here is the benchmark in our environment.
+用户可以直接通过[model profiling](../02-how-to-run/profile_model.md)获得想要的速度测试结果。下面是我们环境中的测试结果：
 
 ## 速度测试
 <div style="margin-left: 25px;">
@@ -270,7 +266,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center" colspan="1">fp16</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmediting/configs/restorers/esrgan/esrgan_psnr_x4c64b23g32_g1_1000k_div2k.py">ESRGAN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/esrgan/esrgan_psnr_x4c64b23g32_g1_1000k_div2k.py">ESRGAN</a></td>
     <td align="center">32x32</td>
     <td align="center">12.64</td>
     <td align="center">12.42</td>
@@ -279,7 +275,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">7.67</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmediting/configs/restorers/srcnn/srcnn_x4k915_g1_1000k_div2k.py">SRCNN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/srcnn/srcnn_x4k915_g1_1000k_div2k.py">SRCNN</a></td>
     <td align="center">32x32</td>
     <td align="center">0.70</td>
     <td align="center">0.35</td>
@@ -319,7 +315,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center" colspan="1">fp32</td>
   </tr>
     <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmocr/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py">DBNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmocr/tree/master/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py">DBNet</a></td>
     <td align="center">640x640</td>
     <td align="center">10.70</td>
     <td align="center">5.62</td>
@@ -329,7 +325,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmocr/configs/textrecog/crnn/crnn_academic_dataset.py">CRNN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmocr/tree/master/configs/textrecog/crnn/crnn_academic_dataset.py">CRNN</a></td>
     <td align="center">32x32</td>
     <td align="center">1.93 </td>
     <td align="center">1.40</td>
@@ -366,7 +362,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center" colspan="1">fp16</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/configs/fcn/fcn_r50-d8_512x1024_40k_cityscapes.py">FCN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/fcn/fcn_r50-d8_512x1024_40k_cityscapes.py">FCN</a></td>
     <td align="center">512x1024</td>
     <td align="center">128.42</td>
     <td align="center">23.97</td>
@@ -375,7 +371,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">27.00</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/configs/pspnet/pspnet_r50-d8_512x1024_80k_cityscapes.py">PSPNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/pspnet/pspnet_r50-d8_512x1024_80k_cityscapes.py">PSPNet</a></td>
     <td align="center">1x3x512x1024</td>
     <td align="center">119.77</td>
     <td align="center">24.10</td>
@@ -384,7 +380,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">27.26</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/configs/deeplabv3/deeplabv3_r50-d8_512x1024_80k_cityscapes.py">DeepLabV3</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/deeplabv3/deeplabv3_r50-d8_512x1024_80k_cityscapes.py">DeepLabV3</a></td>
     <td align="center">512x1024</td>
     <td align="center">226.75</td>
     <td align="center">31.80</td>
@@ -393,7 +389,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">36.01</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/configs/deeplabv3plus/deeplabv3plus_r50-d8_512x1024_80k_cityscapes.py">DeepLabV3+</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/deeplabv3plus/deeplabv3plus_r50-d8_512x1024_80k_cityscapes.py">DeepLabV3+</a></td>
     <td align="center">512x1024</td>
     <td align="center">151.25</td>
     <td align="center">47.03</td>
@@ -432,7 +428,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">fp16</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmclassification/configs/resnet/resnet18_b32x8_imagenet.py">ResNet-18</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmclassification/tree/master/configs/resnet/resnet18_b32x8_imagenet.py">ResNet-18</a></td>
     <td align="center">top-1</td>
     <td align="center">69.90</td>
     <td align="center">69.90</td>
@@ -453,7 +449,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">89.34</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmclassification/configs/resnext/resnext50_32x4d_b32x8_imagenet.py">ResNeXt-50</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmclassification/tree/master/configs/resnext/resnext50_32x4d_b32x8_imagenet.py">ResNeXt-50</a></td>
     <td align="center">top-1</td>
     <td align="center">77.90</td>
     <td align="center">77.90</td>
@@ -474,7 +470,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">93.65</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmclassification/configs/resnext/resnext50_32x4d_b32x8_imagenet.py">SE-ResNet-50</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmclassification/tree/master/configs/resnext/resnext50_32x4d_b32x8_imagenet.py">SE-ResNet-50</a></td>
     <td align="center">top-1</td>
     <td align="center">77.74</td>
     <td align="center">77.74</td>
@@ -495,7 +491,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">93.84</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmclassification/configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py">ShuffleNetV1 1.0x</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py">ShuffleNetV1 1.0x</a></td>
     <td align="center">top-1</td>
     <td align="center">68.13</td>
     <td align="center">68.13</td>
@@ -516,7 +512,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">87.80</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmclassification/configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py">ShuffleNetV2 1.0x</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py">ShuffleNetV2 1.0x</a></td>
     <td align="center">top-1</td>
     <td align="center">69.55</td>
     <td align="center">69.55</td>
@@ -588,7 +584,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">fp16</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/configs/yolo/yolov3_d53_320_273e_coco.py">YOLOV3</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/yolo/yolov3_d53_320_273e_coco.py">YOLOV3</a></td>
     <td align="center">Object Detection</td>
     <td align="center">COCO2017</td>
     <td align="center">box AP</td>
@@ -601,7 +597,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/configs/ssd/ssd300_coco.py">SSD</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/ssd/ssd300_coco.py">SSD</a></td>
     <td align="center">Object Detection</td>
     <td align="center">COCO2017</td>
     <td align="center">box AP</td>
@@ -614,7 +610,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/configs/retinanet/retinanet_r50_fpn_1x_coco.py">RetinaNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/retinanet/retinanet_r50_fpn_1x_coco.py">RetinaNet</a></td>
     <td align="center">Object Detection</td>
     <td align="center">COCO2017</td>
     <td align="center">box AP</td>
@@ -627,7 +623,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">36.5</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/configs/fcos/fcos_r50_caffe_fpn_gn-head_1x_coco.py">FCOS</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/fcos/fcos_r50_caffe_fpn_gn-head_1x_coco.py">FCOS</a></td>
     <td align="center">Object Detection</td>
     <td align="center">COCO2017</td>
     <td align="center">box AP</td>
@@ -640,7 +636,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/configs/fsaf/fsaf_r50_fpn_1x_coco.py">FSAF</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/fsaf/fsaf_r50_fpn_1x_coco.py">FSAF</a></td>
     <td align="center">Object Detection</td>
     <td align="center">COCO2017</td>
     <td align="center">box AP</td>
@@ -653,7 +649,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">37.4</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/configs/yolox/yolox_s_8x8_300e_coco.py">YOLOX</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/yolox/yolox_s_8x8_300e_coco.py">YOLOX</a></td>
     <td align="center">Object Detection</td>
     <td align="center">COCO2017</td>
     <td align="center">box AP</td>
@@ -666,7 +662,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py">Faster R-CNN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py">Faster R-CNN</a></td>
     <td align="center">Object Detection</td>
     <td align="center">COCO2017</td>
     <td align="center">box AP</td>
@@ -679,7 +675,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">37.3</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/configs/atss/atss_r50_fpn_1x_coco.py">ATSS</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/atss/atss_r50_fpn_1x_coco.py">ATSS</a></td>
     <td align="center">Object Detection</td>
     <td align="center">COCO2017</td>
     <td align="center">box AP</td>
@@ -692,7 +688,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/configs/cascade_rcnn/cascade_rcnn_r50_caffe_fpn_1x_coco.py">Cascade R-CNN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/cascade_rcnn/cascade_rcnn_r50_caffe_fpn_1x_coco.py">Cascade R-CNN</a></td>
     <td align="center">Object Detection</td>
     <td align="center">COCO2017</td>
     <td align="center">box AP</td>
@@ -705,7 +701,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">40.4</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/configs/gfl/gfl_r50_fpn_1x_coco.py">GFL</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/gfl/gfl_r50_fpn_1x_coco.py">GFL</a></td>
     <td align="center">Object Detection</td>
     <td align="center">COCO2017</td>
     <td align="center">box AP</td>
@@ -718,7 +714,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmdetection/configs/mask_rcnn/mask_rcnn_r50_fpn_1x_coco.py">Mask R-CNN</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/mask_rcnn/mask_rcnn_r50_fpn_1x_coco.py">Mask R-CNN</a></td>
     <td align="center" rowspan="2">Instance Segmentation</td>
     <td align="center" rowspan="2">COCO2017</td>
     <td align="center">box AP</td>
@@ -771,7 +767,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">fp16</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/configs/restorers/srcnn/srcnn_x4k915_g1_1000k_div2k.py">SRCNN</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/srcnn/srcnn_x4k915_g1_1000k_div2k.py">SRCNN</a></td>
     <td align="center" rowspan="2">Super Resolution</td>
     <td align="center" rowspan="2">Set5</td>
     <td align="center">PSNR</td>
@@ -794,7 +790,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">0.8096</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/configs/restorers/esrgan/esrgan_x4c64b23g32_g1_400k_div2k.py">ESRGAN</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/esrgan/esrgan_x4c64b23g32_g1_400k_div2k.py">ESRGAN</a></td>
     <td align="center" rowspan="2">Super Resolution</td>
     <td align="center" rowspan="2">Set5</td>
     <td align="center">PSNR</td>
@@ -817,7 +813,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">0.7765</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/configs/restorers/esrgan/esrgan_psnr_x4c64b23g32_g1_1000k_div2k.py">ESRGAN-PSNR</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/esrgan/esrgan_psnr_x4c64b23g32_g1_1000k_div2k.py">ESRGAN-PSNR</a></td>
     <td align="center" rowspan="2">Super Resolution</td>
     <td align="center" rowspan="2">Set5</td>
     <td align="center">PSNR</td>
@@ -840,7 +836,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">0.8557</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/configs/restorers/srresnet_srgan/srgan_x4c64b16_g1_1000k_div2k.py">SRGAN</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/srresnet_srgan/srgan_x4c64b16_g1_1000k_div2k.py">SRGAN</a></td>
     <td align="center" rowspan="2">Super Resolution</td>
     <td align="center" rowspan="2">Set5</td>
     <td align="center">PSNR</td>
@@ -863,7 +859,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">0.7839</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/configs/restorers/srresnet_srgan/msrresnet_x4c64b16_g1_1000k_div2k.py">SRResNet</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/srresnet_srgan/msrresnet_x4c64b16_g1_1000k_div2k.py">SRResNet</a></td>
     <td align="center" rowspan="2">Super Resolution</td>
     <td align="center" rowspan="2">Set5</td>
     <td align="center">PSNR</td>
@@ -886,7 +882,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">0.8488</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/configs/restorers/real_esrgan/realesrnet_c64b23g32_12x4_lr2e-4_1000k_df2k_ost.py">Real-ESRNet</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/real_esrgan/realesrnet_c64b23g32_12x4_lr2e-4_1000k_df2k_ost.py">Real-ESRNet</a></td>
     <td align="center" rowspan="2">Super Resolution</td>
     <td align="center" rowspan="2">Set5</td>
     <td align="center">PSNR</td>
@@ -909,7 +905,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">0.8123</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/configs/restorers/edsr/edsr_x4c64b16_g1_300k_div2k.py">EDSR</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/edsr/edsr_x4c64b16_g1_300k_div2k.py">EDSR</a></td>
     <td align="center" rowspan="2">Super Resolution</td>
     <td align="center" rowspan="2">Set5</td>
     <td align="center">PSNR</td>
@@ -964,7 +960,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">fp32</td>
   </tr>
   <tr>
-    <td align="center" rowspan="3"><a href="https://github.com/open-mmlab/mmocr/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py">DBNet*</a></td>
+    <td align="center" rowspan="3"><a href="https://github.com/open-mmlab/mmocr/tree/master/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py">DBNet*</a></td>
     <td align="center" rowspan="3">TextDetection</td>
     <td align="center" rowspan="3">ICDAR2015</td>
     <td align="center">recall</td>
@@ -1000,7 +996,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">0.7950</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmocr/configs/textrecog/crnn/crnn_academic_dataset.py">CRNN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmocr/tree/master/configs/textrecog/crnn/crnn_academic_dataset.py">CRNN</a></td>
     <td align="center">TextRecognition</td>
     <td align="center">IIIT5K</td>
     <td align="center">acc</td>
@@ -1014,7 +1010,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmocr/configs/textrecog/sar/sar_r31_parallel_decoder_academic.py">SAR</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmocr/tree/master/configs/textrecog/sar/sar_r31_parallel_decoder_academic.py">SAR</a></td>
     <td align="center">TextRecognition</td>
     <td align="center">IIIT5K</td>
     <td align="center">acc</td>
@@ -1057,7 +1053,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">fp16</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/configs/fcn/fcn_r50-d8_512x1024_40k_cityscapes.py">FCN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/fcn/fcn_r50-d8_512x1024_40k_cityscapes.py">FCN</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">72.25</td>
@@ -1069,7 +1065,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">72.35</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/configs/pspnet/pspnet_r50-d8_512x1024_80k_cityscapes.py">PSPNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/pspnet/pspnet_r50-d8_512x1024_80k_cityscapes.py">PSPNet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">78.55</td>
@@ -1081,7 +1077,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">78.09</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/configs/deeplabv3/deeplabv3_r50-d8_512x1024_40k_cityscapes.py">deeplabv3</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/deeplabv3/deeplabv3_r50-d8_512x1024_40k_cityscapes.py">deeplabv3</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">79.09</td>
@@ -1093,7 +1089,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">79.12</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/configs/deeplabv3plus/deeplabv3plus_r50-d8_512x1024_40k_cityscapes.py">deeplabv3+</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/deeplabv3plus/deeplabv3plus_r50-d8_512x1024_40k_cityscapes.py">deeplabv3+</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">79.61</td>
@@ -1105,7 +1101,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">79.60</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/configs/fastscnn/fast_scnn_lr0.12_8x4_160k_cityscapes.py">Fast-SCNN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/fastscnn/fast_scnn_lr0.12_8x4_160k_cityscapes.py">Fast-SCNN</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">70.96</td>
@@ -1117,7 +1113,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">70.92</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/configs/unet/fcn_unet_s5-d16_4x4_512x1024_160k_cityscapes.py">UNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/unet/fcn_unet_s5-d16_4x4_512x1024_160k_cityscapes.py">UNet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">69.10</td>
@@ -1129,7 +1125,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/configs/ann/ann_r50-d8_512x1024_40k_cityscapes.py">ANN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/ann/ann_r50-d8_512x1024_40k_cityscapes.py">ANN</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">77.40</td>
@@ -1141,7 +1137,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/configs/apcnet/apcnet_r50-d8_512x1024_40k_cityscapes.py">APCNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/apcnet/apcnet_r50-d8_512x1024_40k_cityscapes.py">APCNet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">77.40</td>
@@ -1153,7 +1149,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/configs/bisenetv1/bisenetv1_r18-d32_4x4_1024x1024_160k_cityscapes.py">BiSeNetV1</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/bisenetv1/bisenetv1_r18-d32_4x4_1024x1024_160k_cityscapes.py">BiSeNetV1</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">74.44</td>
@@ -1165,7 +1161,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/configs/bisenetv2/bisenetv2_fcn_4x4_1024x1024_160k_cityscapes.py">BiSeNetV2</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/bisenetv2/bisenetv2_fcn_4x4_1024x1024_160k_cityscapes.py">BiSeNetV2</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">73.21</td>
@@ -1177,7 +1173,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/configs/cgnet/cgnet_512x1024_60k_cityscapes.py">CGNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/cgnet/cgnet_512x1024_60k_cityscapes.py">CGNet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">68.25</td>
@@ -1189,7 +1185,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/configs/emanet/emanet_r50-d8_512x1024_80k_cityscapes.py">EMANet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/emanet/emanet_r50-d8_512x1024_80k_cityscapes.py">EMANet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">77.59</td>
@@ -1201,7 +1197,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/configs/encnet/encnet_r50-d8_512x1024_40k_cityscapes.py">EncNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/encnet/encnet_r50-d8_512x1024_40k_cityscapes.py">EncNet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">75.67</td>
@@ -1213,7 +1209,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/configs/erfnet/erfnet_fcn_4x4_512x1024_160k_cityscapes.py">ERFNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/erfnet/erfnet_fcn_4x4_512x1024_160k_cityscapes.py">ERFNet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">71.08</td>
@@ -1225,7 +1221,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/configs/fastfcn/fastfcn_r50-d32_jpu_aspp_512x1024_80k_cityscapes.py">FastFCN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/fastfcn/fastfcn_r50-d32_jpu_aspp_512x1024_80k_cityscapes.py">FastFCN</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">79.12</td>
@@ -1237,7 +1233,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/configs/gcnet/gcnet_r50-d8_512x1024_40k_cityscapes.py">GCNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/gcnet/gcnet_r50-d8_512x1024_40k_cityscapes.py">GCNet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">77.69</td>
@@ -1249,7 +1245,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/configs/icnet/icnet_r18-d8_832x832_80k_cityscapes.py">ICNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/icnet/icnet_r18-d8_832x832_80k_cityscapes.py">ICNet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">76.29</td>
@@ -1261,7 +1257,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/configs/isanet/isanet_r50-d8_512x1024_40k_cityscapes.py">ISANet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/isanet/isanet_r50-d8_512x1024_40k_cityscapes.py">ISANet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">78.49</td>
@@ -1273,7 +1269,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/configs/ocrnet/ocrnet_hr18s_512x1024_40k_cityscapes.py">OCRNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/ocrnet/ocrnet_hr18s_512x1024_40k_cityscapes.py">OCRNet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">74.30</td>
@@ -1285,7 +1281,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/configs/point_rend/pointrend_r50_512x1024_80k_cityscapes.py">PointRend</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/point_rend/pointrend_r50_512x1024_80k_cityscapes.py">PointRend</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">76.47</td>
@@ -1297,7 +1293,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/configs/sem_fpn/fpn_r50_512x1024_80k_cityscapes.py">Semantic FPN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/sem_fpn/fpn_r50_512x1024_80k_cityscapes.py">Semantic FPN</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">74.52</td>
@@ -1309,7 +1305,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/configs/stdc/stdc1_in1k-pre_512x1024_80k_cityscapes.py">STDC</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/stdc/stdc1_in1k-pre_512x1024_80k_cityscapes.py">STDC</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">75.10</td>
@@ -1321,7 +1317,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/configs/stdc/stdc2_in1k-pre_512x1024_80k_cityscapes.py">STDC</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/stdc/stdc2_in1k-pre_512x1024_80k_cityscapes.py">STDC</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">77.17</td>
@@ -1333,7 +1329,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/configs/upernet/upernet_r50_512x1024_40k_cityscapes.py">UPerNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/upernet/upernet_r50_512x1024_40k_cityscapes.py">UPerNet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">77.10</td>
@@ -1374,7 +1370,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">fp32</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmpose/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/hrnet_w48_coco_256x192.py">HRNet</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmpose/tree/master/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/hrnet_w48_coco_256x192.py">HRNet</a></td>
     <td align="center" rowspan="2">Pose Detection</td>
     <td align="center" rowspan="2">COCO</td>
     <td align="center">AP</td>
@@ -1395,7 +1391,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">0.802</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmpose/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/litehrnet_30_coco_256x192.py">LiteHRNet</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmpose/tree/master/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/litehrnet_30_coco_256x192.py">LiteHRNet</a></td>
     <td align="center" rowspan="2">Pose Detection</td>
     <td align="center" rowspan="2">COCO</td>
     <td align="center">AP</td>
@@ -1416,7 +1412,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">0.728</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmpose/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/4xmspn50_coco_256x192.py">MSPN</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmpose/tree/master/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/4xmspn50_coco_256x192.py">MSPN</a></td>
     <td align="center" rowspan="2">Pose Detection</td>
     <td align="center" rowspan="2">COCO</td>
     <td align="center">AP</td>
@@ -1441,13 +1437,9 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
 </div>
 
 
-### Notes
-- As some datasets contain images with various resolutions in codebase like MMDet. The speed benchmark is gained through static configs in MMDeploy, while the performance benchmark is gained through dynamic ones.
+### 备注
 
-- Some int8 performance benchmarks of TensorRT require Nvidia cards with tensor core, or the performance would drop heavily.
-
-- DBNet uses the interpolate mode `nearest` in the neck of the model, which TensorRT-7 applies a quite different strategy from Pytorch. To make the repository compatible with TensorRT-7, we rewrite the neck to use the interpolate mode `bilinear` which improves final detection performance. To get the matched performance with Pytorch, TensorRT-8+ is recommended, which the interpolate methods are all the same as Pytorch.
-
-- Mask AP of Mask R-CNN drops by 1% for the backend. The main reason is that the predicted masks are directly interpolated to original image in PyTorch, while they are at first interpolated to the preprocessed input image of the model and then to original image in other backends.
-
-- MMPose models are tested with `flip_test` explicitly set to `False` in model configs.
+- 由于某些数据集在代码库中包含各种分辨率的图像，例如 MMDet，速度基准是通过 MMDeploy 中的静态配置获得的，而性能基准是通过动态配置获得的
+- TensorRT 的一些 int8 性能基准测试需要有 tensor core 的 Nvidia 卡，否则性能会大幅下降
+- DBNet 在模型 `neck` 使用了`nearest` 插值，TensorRT-7 用了与 Pytorch 完全不同的策略。为了使与 TensorRT-7 兼容，我们重写了`neck`以使用`bilinear`插值，这提高了检测性能。为了获得与 Pytorch 匹配的性能，推荐使用 TensorRT-8+，其插值方法与 Pytorch 相同。
+- 对于 mmpose 模型，是在模型配置文件中 `flip_test` 需设置为 `False`

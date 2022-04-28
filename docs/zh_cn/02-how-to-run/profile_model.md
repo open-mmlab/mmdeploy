@@ -29,7 +29,7 @@ ${MODEL_CFG} \
 | log2file     | 保存日志和运行文件的路径              |
 | speed-test   | 是否做速度测试                       |
 | warm-up      | 执行前是否 warm-up                   |
-| log-interval | 执行前是否 warm-up                   |
+| log-interval | 日志打印间隔                         |
 
 
 ## 使用样例
