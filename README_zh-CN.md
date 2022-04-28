@@ -32,11 +32,16 @@
 
 MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，为各算法库提供了统一的部署体验。基于 MMDeploy，开发者可以轻松从训练 repo 生成指定硬件所需 SDK，不必关心繁琐操作。
 
+
+## 架构简析
+
 <div align="center">
   <img src="resources/introduction.png" width="800"/>
 </div>
 
-## 支持超多 OpenMMLab 算法库
+## 特性简介
+
+### 支持超多 OpenMMLab 算法库
 - mmcls
 - mmdet
 - mmdet3d
@@ -44,32 +49,30 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，为各�
 - mmocr
 - mmpose
 - mmseg
-- 更多[支持列表](docs/zh_cn/supported_models.md)
+- [支持列表](docs/zh_cn/supported_models.md)
 
-## 支持多种推理后端
+### 支持多种推理后端
+|ONNX Runtime|TensorRT|ppl.nn|ncnn|OpenVINO|
+|------------|--------|------|----|--------|
+|✔️         |✔️      |✔️   |✔️  |✔️     |
 
-- OpenVINO
-- ONNX Runtime
-- PPLNN
-- TensorRT
-- ncnn
-- 更多[测试结果](docs/zh_cn/benchmark.md)
-
-## SDK 可高度定制化
+### SDK 可高度定制化
 - Transform 数据预处理
 - Net 推理
 - Module 后处理
 
-## HowTo
 
-* [如何编译](docs/zh_cn/01-how-to-build/build_from_source.md)
+## 快速上手
+
+* [编译](docs/zh_cn/01-how-to-build/build_from_source.md)
   * [Build for Android](docs/zh_cn/01-how-to-build/android.md)
   * [Build for Linux](docs/zh_cn/01-how-to-build/linux-x86_64.md)
   * [Build for Win10](docs/zh_cn/01-how-to-build/windows.md)
   * [Build for Jetson](docs/en/tutorials/how_to_install_mmdeploy_on_jetsons.md)
-* 如何使用
-  * [模型转到推理 Backend](docs/zh_cn/02-how-to-run/convert_model.md)
+* 使用
+  * [把模型转换到推理 Backend](docs/zh_cn/02-how-to-run/convert_model.md)
   * [配置转换参数](docs/zh_cn/02-how-to-run/write_config.md)
+  * [测试转换完成的模型](docs/zh_cn/02-how-to-run/profile_model.md)
 * 开发指南
   * [支持新模型](docs/zh_cn/03-developer-guide/support_new_model.md)
   * [增加推理 Backend](docs/zh_cn/03-developer-guide/support_new_backend.md)
