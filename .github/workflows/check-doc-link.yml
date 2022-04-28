@@ -1,9 +1,6 @@
 name: check-doc-link
-on:
-  push:
-    branches: [master]
-  pull_request:
-    branches: [master]
+on: [push, pull_request]
+
 jobs:
   build:
     name: ubuntu-x86-cpu
@@ -17,4 +14,4 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: '3.8'
-      - run: ./ci/run_check.sh
+      - run: python3 ci/doc_link_checker.py --dir docs/zh_cn
