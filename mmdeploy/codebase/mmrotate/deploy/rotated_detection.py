@@ -3,6 +3,7 @@ from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
 import mmcv
 import numpy as np
+import copy
 import torch
 from mmcv.parallel import DataContainer, collate, scatter
 from torch import nn
@@ -12,6 +13,25 @@ from mmdeploy.codebase.base import BaseTask
 from mmdeploy.utils import Task, get_input_shape
 from .mmrotate import MMROTATE_TASK
 
+def replace_RResize(pipelines):
+    """Rename RResize to Resize
+
+    args:
+        pipelines (list[dict]): Data pipeline configs.
+
+    Returns:
+        list: The new pipeline list with all RResize renamed to
+            Resize.
+    """
+    pipelines = copy.deepcopy(pipelines)
+    for i, pipeline in enumerate(pipelines):
+        if pipeline['type'] == 'MultiScaleFlipAug':
+            assert 'transforms' in pipeline
+            pipeline['transforms'] = replace_RResize(
+                pipeline['transforms'])
+        elif pipeline.type == "RResize":
+            pipelines[i].type = "Resize"
+    return pipelines
 
 def process_model_config(model_cfg: mmcv.Config,
                          imgs: Union[Sequence[str], Sequence[np.ndarray]],
@@ -30,12 +50,13 @@ def process_model_config(model_cfg: mmcv.Config,
     """
     from mmdet.datasets import replace_ImageToTensor
 
-    cfg = model_cfg.copy()
+    cfg = copy.deepcopy(model_cfg)
 
     if isinstance(imgs[0], np.ndarray):
-        cfg = cfg.copy()
         # set loading pipeline type
         cfg.data.test.pipeline[0].type = 'LoadImageFromWebcam'
+    # rename RResize
+    cfg.data.test.pipeline = replace_RResize(cfg.data.test.pipeline)
     # for static exporting
     if input_shape is not None:
         cfg.data.test.pipeline[1]['img_scale'] = tuple(input_shape)
@@ -329,7 +350,7 @@ class RotatedDetection(BaseTask):
         Return:
             dict: Composed of the postprocess information.
         """
-        postprocess = self.model_cfg.model.bbox_head
+        postprocess = self.model_cfg.model.test_cfg
         return postprocess
 
     def get_model_name(self) -> str:
