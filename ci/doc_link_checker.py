@@ -22,7 +22,7 @@ def make_parser():
 pattern = re.compile(r'\[.*?\]\(.*?\)')
 
 
-def analyze_doc(home, path, check_http):
+def analyze_doc(home, path):
     problem_list = []
     with open(path) as f:
         lines = f.readlines()
@@ -51,7 +51,7 @@ def analyze_doc(home, path, check_http):
         print('\n')
 
 
-def traverse(_dir, args):
+def traverse(_dir):
     for home, dirs, files in os.walk(_dir):
         if './target' in home or './.github' in home:
             continue
@@ -59,9 +59,9 @@ def traverse(_dir, args):
             if filename.endswith('.md'):
                 path = os.path.join(home, filename)
                 if os.path.islink(path) is False:
-                    analyze_doc(home, path, args)
+                    analyze_doc(home, path)
 
 
 if __name__ == '__main__':
     args = make_parser().parse_args()
-    traverse(args.dir, args.http)
+    traverse(args.dir)
