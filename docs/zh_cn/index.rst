@@ -37,6 +37,13 @@
 
 .. toctree::
    :maxdepth: 1
+   :caption: Benchmark
+
+   05-benchmark/benchmark.md
+   05-benchmark/supported_models.md
+
+.. toctree::
+   :maxdepth: 1
    :caption: 常见问题
 
    faq.md

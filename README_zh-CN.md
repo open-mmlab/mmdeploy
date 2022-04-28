@@ -48,12 +48,12 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 - mmocr
 - mmpose
 - mmseg
-- [支持列表](docs/en/supported_models.md)
+- [支持列表](docs/zh_cn/05-benchmark/supported_models.md)
 
 ### 支持多种推理后端
 |ONNX Runtime|TensorRT|ppl.nn|ncnn|OpenVINO|more|
 |------------|--------|------|----|--------|----|
-|✔️         |✔️      |✔️   |✔️  |✔️     |[benchmark](docs/en/benchmark.md)|
+|✔️         |✔️      |✔️   |✔️  |✔️     |[benchmark](docs/zh_cn/05-benchmark/benchmark.md)|
 
 ### SDK 可高度定制化
 - Transform 数据预处理
