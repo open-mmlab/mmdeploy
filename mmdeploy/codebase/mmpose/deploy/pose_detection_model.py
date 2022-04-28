@@ -214,7 +214,7 @@ class SDKEnd2EndModel(End2EndModel):
             bbox_ids.append(img_meta['bbox_id'])
 
         pred = self.wrapper.handle(
-            [img[0].contiguous().detach().cpu().numpy()], sdk_boxes)[0]
+            [img[0].contiguous().detach().cpu().numpy()], [sdk_boxes])[0]
 
         result = dict(
             preds=pred,

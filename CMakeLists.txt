@@ -50,6 +50,7 @@ endif ()
 if (MSVC)
     add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/diagnostics:classic>)
     add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/Zc:preprocessor>) # /experimental:preprocessor on VS2017
+    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/Zc:__cplusplus>)
     add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/wd4251>)
 else ()
     add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-fvisibility=hidden>)

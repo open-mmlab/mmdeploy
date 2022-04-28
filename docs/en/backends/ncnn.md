@@ -1,6 +1,6 @@
 ## ncnn Support
 
-MMDeploy now supports ncnn version == 1.0.20211208
+MMDeploy now supports ncnn version == 1.0.20220216
 
 ### Installation
 
@@ -27,7 +27,7 @@ You should ensure your gcc satisfies `gcc >= 6`.
 
     - Download ncnn source code
         ```bash
-        git clone -b 20211208 git@github.com:Tencent/ncnn.git
+        git clone -b 20220216 git@github.com:Tencent/ncnn.git
         ```
 
     - <font color=red>Make install</font> ncnn library
@@ -82,7 +82,7 @@ If you haven't installed ncnn in the default path, please add `-Dncnn_DIR` flag 
 
 #### Reminder
 
-- In ncnn version >= 1.0.20201208, the dimension of ncnn.Mat should be no more than 4.
+- In ncnn version >= 1.0.20220216, the dimension of ncnn.Mat should be no more than 4.
 
 ### FAQs
 

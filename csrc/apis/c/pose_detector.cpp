@@ -109,6 +109,9 @@ int mmdeploy_pose_detector_apply_bbox(mm_handle_t handle, const mm_mat_t* mats, 
 
       Value img_with_boxes;
       if (bboxes && bbox_count) {
+        if (bbox_count[i] == 0) {
+          continue;
+        }
         for (int j = 0; j < bbox_count[i]; ++j) {
           Value obj;
           obj["ori_img"] = _mat;
@@ -132,8 +135,12 @@ int mmdeploy_pose_detector_apply_bbox(mm_handle_t handle, const mm_mat_t* mats, 
       input.front().push_back(img_with_boxes);
     }
 
-    auto output = pose_detector->Run(std::move(input)).value().front();
+    // no box
+    if (result_count == 0) {
+      return MM_SUCCESS;
+    }
 
+    auto output = pose_detector->Run(std::move(input)).value().front();
     auto pose_outputs = from_value<vector<vector<mmpose::PoseDetectorOutput>>>(output);
 
     std::vector<int> counts;
@@ -152,8 +159,12 @@ int mmdeploy_pose_detector_apply_bbox(mm_handle_t handle, const mm_mat_t* mats, 
     std::unique_ptr<mm_pose_detect_t[], decltype(deleter)> _results(
         new mm_pose_detect_t[result_count]{}, deleter);
 
+    int uid = 0;
     for (int i = 0; i < mat_count; ++i) {
-      auto& pose_output = pose_outputs[i];
+      if (counts[i] == 0) {
+        continue;
+      }
+      auto& pose_output = pose_outputs[uid++];
       for (int j = 0; j < pose_output.size(); ++j) {
         auto& res = _results[offsets[i] + j];
         auto& box_result = pose_output[j];
@@ -181,6 +192,9 @@ int mmdeploy_pose_detector_apply_bbox(mm_handle_t handle, const mm_mat_t* mats, 
 }
 
 void mmdeploy_pose_detector_release_result(mm_pose_detect_t* results, int count) {
+  if (results == nullptr) {
+    return;
+  }
   for (int i = 0; i < count; ++i) {
     delete[] results[i].point;
     delete[] results[i].score;

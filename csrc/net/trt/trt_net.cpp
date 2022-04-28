@@ -88,6 +88,7 @@ static Result<DataType> MapDataType(nvinfer1::DataType dtype) {
     case nvinfer1::DataType::kHALF:
       return DataType::kHALF;
     case nvinfer1::DataType::kINT8:
+    case nvinfer1::DataType::kBOOL:
       return DataType::kINT8;
     case nvinfer1::DataType::kINT32:
       return DataType::kINT32;
