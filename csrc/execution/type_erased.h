@@ -8,6 +8,8 @@
 
 namespace mmdeploy {
 
+namespace _type_erased {
+
 template <class ValueTypes>
 class _TypeErasedSender;
 
@@ -316,6 +318,12 @@ _TypeErasedOperation<ValueTypes>::_TypeErasedOperation(Fun&& fun) {
   using _Operation = std::invoke_result_t<Fun>;
   impl_.reset(new _TypeErasedOperationImpl<_Operation, ValueTypes>{(Fun &&) fun});
 }
+
+}
+
+using _type_erased::TypeErasedSender;
+using _type_erased::TypeErasedScheduler;
+using _type_erased::TypeErasedOperation;
 
 }  // namespace mmdeploy
 

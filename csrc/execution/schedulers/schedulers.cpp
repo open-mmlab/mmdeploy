@@ -25,7 +25,7 @@ namespace {
 template <class Context>
 Scheduler CreateFromContext(std::unique_ptr<Context> context) {
   using SchedType = decltype(context->GetScheduler());
-  using EraseType = TypeErasedSchedulerImpl<SchedType, Value>;
+  using EraseType = _type_erased::TypeErasedSchedulerImpl<SchedType, Value>;
   auto sched = new EraseType(context->GetScheduler());
   return Scheduler{std::shared_ptr<Scheduler::Impl>(
       sched, [context = std::move(context)](EraseType *p) { delete p; })};

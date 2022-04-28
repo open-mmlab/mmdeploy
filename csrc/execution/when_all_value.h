@@ -71,17 +71,22 @@ struct sender_t {
   std::vector<TypeErasedSender<Value>> senders_;
 
   template <typename Self, typename Receiver, typename = _decays_to<Self, sender_t>>
-  friend operation_t<remove_cvref_t<Receiver>> tag_invoke(connect_t, Self&& self, Receiver&& receiver) {
+  friend operation_t<remove_cvref_t<Receiver>> tag_invoke(connect_t, Self&& self,
+                                                          Receiver&& receiver) {
     return {((Self &&) self).senders_, (Receiver &&) receiver};
   }
 };
 
 }  // namespace __when_all_value
 
+namespace _type_erased {
+
 inline __when_all_value::sender_t tag_invoke(when_all_t,
                                              std::vector<TypeErasedSender<Value>> senders) {
   return {std::move(senders)};
 }
+
+}  // namespace _type_erased
 
 }  // namespace mmdeploy
 
