@@ -9,5 +9,5 @@ backend_config = dict(
                 input=dict(
                     min_shape=[1, 3, 320, 320],
                     opt_shape=[1, 3, 600, 800],
-                    max_shape=[1, 3, 1024, 1824])))
+                    max_shape=[1, 3, 1344, 2240])))
     ])
