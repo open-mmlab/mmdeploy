@@ -5,7 +5,7 @@
 #ifndef MMDEPLOY_CSRC_APIS_C_EXECUTOR_H_
 #define MMDEPLOY_CSRC_APIS_C_EXECUTOR_H_
 
-#include "apis/c/common.h"
+#include "common.h"
 
 #if __cplusplus
 extern "C" {

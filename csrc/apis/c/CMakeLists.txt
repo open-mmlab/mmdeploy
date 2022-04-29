@@ -40,6 +40,9 @@ endif ()
 foreach (TASK ${TASK_LIST})
     set(TARGET_NAME mmdeploy_${TASK})
     mmdeploy_add_library(${TARGET_NAME} ${TASK}.cpp)
+    if (NOT TASK STREQUAL executor)
+        target_link_libraries(${TARGET_NAME} PRIVATE mmdeploy_executor)
+    endif ()
     target_link_libraries(${TARGET_NAME} PRIVATE mmdeploy::core)
     target_include_directories(${TARGET_NAME} PUBLIC
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
