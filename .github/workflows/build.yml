@@ -3,14 +3,14 @@ name: build
 on:
   push:
     paths-ignore:
-      - 'demo/**'
-      - 'tools/**'
+      - "demo/**"
+      - "tools/**"
 
   pull_request:
     paths-ignore:
-      - 'demo/**'
-      - 'tools/**'
-      - 'docs/**'
+      - "demo/**"
+      - "tools/**"
+      - "docs/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -86,6 +86,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -V
+          python -m pip install setuptools --upgrade
           python -m pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cu102/${{matrix.torch_version}}/index.html
           python -m pip install -r requirements.txt
           python -m pip install -U numpy
@@ -130,6 +131,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -V
+          python -m pip install setuptools --upgrade
           python -m pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cu111/${{matrix.torch_version}}/index.html
           python -m pip install -r requirements.txt
           python -m pip install -U numpy
