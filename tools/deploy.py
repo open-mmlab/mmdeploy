@@ -8,10 +8,10 @@ import mmcv
 import torch.multiprocessing as mp
 from torch.multiprocessing import Process, set_start_method
 
-from mmdeploy.apis import (create_calib_table, extract_model,
-                           get_predefined_partition_cfg, torch2onnx,
-                           torch2torchscript, visualize_model)
+from mmdeploy.apis import (create_calib_table, get_predefined_partition_cfg,
+                           torch2onnx, torch2torchscript, visualize_model)
 from mmdeploy.apis.core import PIPELINE_MANAGER
+from mmdeploy.apis.onnx import extract_partition
 from mmdeploy.utils import (IR, Backend, get_backend, get_calib_filename,
                             get_ir_config, get_model_inputs,
                             get_partition_config, get_root_logger, load_config,
@@ -149,7 +149,7 @@ def main():
 
             create_process(
                 f'partition model {save_file} with start: {start}, end: {end}',
-                extract_model,
+                extract_partition,
                 args=(origin_ir_file, start, end),
                 kwargs=dict(dynamic_axes=dynamic_axes, save_file=save_path),
                 ret_value=ret_value)

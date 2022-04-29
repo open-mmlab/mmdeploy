@@ -10,24 +10,28 @@ from mmdeploy.core.optimizers import (attribute_to_dict, create_extractor,
                                       remove_identity, rename_value)
 from mmdeploy.utils import get_root_logger
 
+from mmdeploy.apis.core import PIPELINE_MANAGER
 
-def extract_model(model: Union[str, onnx.ModelProto],
-                  start: Union[str, Iterable[str]],
-                  end: Union[str, Iterable[str]],
-                  start_name_map: Optional[Dict[str, str]] = None,
-                  end_name_map: Optional[Dict[str, str]] = None,
-                  dynamic_axes: Optional[Dict[str, Dict[int, str]]] = None,
-                  save_file: Optional[str] = None) -> onnx.ModelProto:
-    """Extract sub-model from an ONNX model.
 
-    The sub-model is defined by the names of the input and output tensors
+@PIPELINE_MANAGER.register_pipeline(
+    func_name='mmdeploy.apis.onnx.extract_partition')
+def extract_partition(model: Union[str, onnx.ModelProto],
+                      start_marker: Union[str, Iterable[str]],
+                      end_marker: Union[str, Iterable[str]],
+                      start_name_map: Optional[Dict[str, str]] = None,
+                      end_name_map: Optional[Dict[str, str]] = None,
+                      dynamic_axes: Optional[Dict[str, Dict[int, str]]] = None,
+                      save_file: Optional[str] = None) -> onnx.ModelProto:
+    """Extract partition-model from an ONNX model.
+
+    The partition-model is defined by the names of the input and output tensors
     exactly.
 
     Examples:
         >>> from mmdeploy.apis import extract_model
         >>> model = 'work_dir/fastrcnn.onnx'
-        >>> start = 'detector:input'
-        >>> end = ['extract_feat:output', 'multiclass_nms[0]:input']
+        >>> start_marker = 'detector:input'
+        >>> end_marker = ['extract_feat:output', 'multiclass_nms[0]:input']
         >>> dynamic_axes = {
             'input': {
                 0: 'batch',
@@ -44,13 +48,14 @@ def extract_model(model: Union[str, onnx.ModelProto],
             }
         }
         >>> save_file = 'partition_model.onnx'
-        >>> extract_model(model, start, end, dynamic_axes=dynamic_axes, \
+        >>> extract_model(model, start_marker, end_marker, \
+                dynamic_axes=dynamic_axes, \
                 save_file=save_file)
 
     Args:
         model (str | onnx.ModelProto): Input ONNX model to be extracted.
-        start (str | Sequence[str]): Start marker(s) to extract.
-        end (str | Sequence[str]): End marker(s) to extract.
+        start_marker (str | Sequence[str]): Start marker(s) to extract.
+        end_marker (str | Sequence[str]): End marker(s) to extract.
         start_name_map (Dict[str, str]): A mapping of start names, defaults to
             `None`.
         end_name_map (Dict[str, str]): A mapping of end names, defaults to
@@ -70,9 +75,9 @@ def extract_model(model: Union[str, onnx.ModelProto],
     inputs = []
     outputs = []
     logger = get_root_logger()
-    if not isinstance(start, (list, tuple)):
-        start = [start]
-    for s in start:
+    if not isinstance(start_marker, (list, tuple)):
+        start_marker = [start_marker]
+    for s in start_marker:
         start_name, func_id, start_type = parse_extractor_io_string(s)
         for node in model.graph.node:
             if node.op_type == 'Mark':
@@ -96,9 +101,9 @@ def extract_model(model: Union[str, onnx.ModelProto],
     logger.info(f'inputs: {", ".join(inputs)}')
 
     # collect outputs
-    if not isinstance(end, (list, tuple)):
-        end = [end]
-    for e in end:
+    if not isinstance(end_marker, (list, tuple)):
+        end_marker = [end_marker]
+    for e in end_marker:
         end_name, func_id, end_type = parse_extractor_io_string(e)
         for node in model.graph.node:
             if node.op_type == 'Mark':
