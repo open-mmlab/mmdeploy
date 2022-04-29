@@ -34,8 +34,8 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 
 ## 架构简析
 
-<div align="left">
-  <img src="resources/introduction.png" width="630"/>
+<div align="center">
+  <img src="resources/introduction.png"/>
 </div>
 
 ## 特性简介
@@ -87,7 +87,7 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 
 扫描下方二维码，关注 OpenMMLab [知乎官方账号](https://www.zhihu.com/people/openmmlab)、加入 OpenMMLab 团队的 [官方交流 QQ 群](https://jq.qq.com/?_wv=1027&k=aCvMxdr3)
 
-<div align="left">
+<div align="center">
   <img src="https://raw.githubusercontent.com/open-mmlab/mmcv/master/docs/en/_static/zhihu_qrcode.jpg" height="400" />
   <img src="https://raw.githubusercontent.com/open-mmlab/mmcv/master/docs/en/_static/qq_group_qrcode.jpg" height="400" />
 </div>
