@@ -12,7 +12,7 @@ GPU: ncnn, TensorRT, PPLNN
 - Cuda 11.3
 - TensorRT 7.2.3.4
 - Docker 20.10.8
-- NVIDIA tesla T4 tensor core GPU for TensorRT.
+- NVIDIA tesla T4 tensor core GPU for TensorRT
 
 ### 配置
 - 静态图导出
@@ -113,8 +113,8 @@ GPU: ncnn, TensorRT, PPLNN
 <thead>
   <tr>
     <th align="center" colspan="2">mmdet part1</th>
-    <th align="center" colspan="4">TensorRT</th>
-    <th align="center" colspan="1">PPLNN</th>
+    <th align="center" colspan="4">TensorRT(ms)</th>
+    <th align="center" colspan="1">PPLNN(ms)</th>
   </tr>
 </thead>
 <tbody>
@@ -246,8 +246,8 @@ GPU: ncnn, TensorRT, PPLNN
 <thead>
   <tr>
     <th align="center" colspan="2">mmedit</th>
-    <th align="center" colspan="4">TensorRT</th>
-    <th align="center" colspan="1">PPLNN</th>
+    <th align="center" colspan="4">TensorRT(ms)</th>
+    <th align="center" colspan="1">PPLNN(ms)</th>
   </tr>
 </thead>
 <tbody>
@@ -292,9 +292,9 @@ GPU: ncnn, TensorRT, PPLNN
 <thead>
   <tr>
     <th align="center" colspan="2">mmocr</th>
-    <th align="center" colspan="3">TensorRT</th>
-    <th align="center" colspan="1">PPLNN</th>
-    <th align="center" colspan="2">ncnn</th>
+    <th align="center" colspan="3">TensorRT(ms)</th>
+    <th align="center" colspan="1">PPLNN(ms)</th>
+    <th align="center" colspan="2">ncnn(ms)</th>
   </tr>
 </thead>
 <tbody>
@@ -342,8 +342,8 @@ GPU: ncnn, TensorRT, PPLNN
 <thead>
   <tr>
     <th align="center" colspan="2">mmseg</th>
-    <th align="center" colspan="4">TensorRT</th>
-    <th align="center" colspan="1">PPLNN</th>
+    <th align="center" colspan="4">TensorRT(ms)</th>
+    <th align="center" colspan="1">PPLNN(ms)</th>
   </tr>
 </thead>
 <tbody>
@@ -533,7 +533,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">88.92</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2">MobileNet V2</td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmclassification/tree/master/configs/mobilenet_v2/mobilenet_v2_b32x8_imagenet.py">MobileNet V2</a></td>
     <td align="center">top-1</td>
     <td align="center">71.86</td>
     <td align="center">71.86</td>
@@ -1437,7 +1437,7 @@ GPU: ncnn, TensorRT, PPLNN
 </div>
 
 
-### 备注
+## 备注
 
 - 由于某些数据集在代码库中包含各种分辨率的图像，例如 MMDet，速度基准是通过 MMDeploy 中的静态配置获得的，而性能基准是通过动态配置获得的
 - TensorRT 的一些 int8 性能基准测试需要有 tensor core 的 Nvidia 卡，否则性能会大幅下降
