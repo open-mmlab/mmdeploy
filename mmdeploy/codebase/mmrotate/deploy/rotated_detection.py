@@ -13,6 +13,7 @@ from mmdeploy.codebase.base import BaseTask
 from mmdeploy.utils import Task, get_input_shape
 from .mmrotate import MMROTATE_TASK
 
+
 def replace_RResize(pipelines):
     """Rename RResize to Resize
 
@@ -31,7 +32,10 @@ def replace_RResize(pipelines):
                 pipeline['transforms'])
         elif pipeline.type == "RResize":
             pipelines[i].type = "Resize"
+            if 'keep_ratio' not in pipelines[i]:
+                pipelines[i]['keep_ratio'] = True  # default value
     return pipelines
+
 
 def process_model_config(model_cfg: mmcv.Config,
                          imgs: Union[Sequence[str], Sequence[np.ndarray]],
@@ -55,7 +59,7 @@ def process_model_config(model_cfg: mmcv.Config,
     if isinstance(imgs[0], np.ndarray):
         # set loading pipeline type
         cfg.data.test.pipeline[0].type = 'LoadImageFromWebcam'
-    # rename RResize
+    # rename sdk RResize
     cfg.data.test.pipeline = replace_RResize(cfg.data.test.pipeline)
     # for static exporting
     if input_shape is not None:
