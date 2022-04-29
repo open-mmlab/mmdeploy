@@ -14,9 +14,6 @@
 #include "core/utils/scope_counter.h"
 #include "experimental/module_adapter.h"
 
-using std::string;
-using std::vector;
-
 namespace mmdeploy {
 
 struct NetModule::Impl {
@@ -96,8 +93,8 @@ struct NetModule::Impl {
     return shape;
   }
 
-  Result<vector<TensorShape> > InferInputShape(const vector<vector<Tensor> >& inputs) {
-    vector<TensorShape> shapes;
+  Result<std::vector<TensorShape> > InferInputShape(const vector<vector<Tensor> >& inputs) {
+    std::vector<TensorShape> shapes;
     shapes.reserve(inputs.size());
     for (const auto& input : inputs) {
       OUTCOME_TRY(auto shape, InferInputShape(input));
@@ -156,7 +153,7 @@ struct NetModule::Impl {
     // 5. forward
     OUTCOME_TRY(net_->Forward());
 
-    vector<Output> output(batch_size);
+    std::vector<Output> output(batch_size);
     for (const auto& t : outputs_) {
       auto name = output_mapping_.at(t.name());
       auto desc = t.desc();
