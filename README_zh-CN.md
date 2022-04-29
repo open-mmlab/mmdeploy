@@ -60,7 +60,7 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 - Net 推理
 - Module 后处理
 
-## 快速上手
+## [快速上手](docs/zh_cn/get_started.md)
 
 * [编译](docs/zh_cn/01-how-to-build/build_from_source.md)
   * [Build for Android](docs/zh_cn/01-how-to-build/android.md)
@@ -68,7 +68,7 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
   * [Build for Win10](docs/zh_cn/01-how-to-build/windows.md)
   * [Build for Jetson](docs/en/tutorials/how_to_install_mmdeploy_on_jetsons.md)
   * [Build from Docker](docs/zh_cn/01-how-to-build/build_from_docker.md)
-* [使用](docs/zh_cn/get_started.md)
+* 使用
   * [把模型转换到推理 Backend](docs/zh_cn/02-how-to-run/convert_model.md)
   * [配置转换参数](docs/zh_cn/02-how-to-run/write_config.md)
   * [测试转换完成的模型](docs/zh_cn/02-how-to-run/profile_model.md)
