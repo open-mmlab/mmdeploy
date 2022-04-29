@@ -32,8 +32,9 @@ struct _Sender {
 };
 
 struct InlineScheduler {
-  _inline_sched::_Sender Schedule() const noexcept { return {}; }
-  friend void* GetSchedulerId(const InlineScheduler& self) { return (void*)1u; }
+  friend _inline_sched::_Sender tag_invoke(schedule_t, const InlineScheduler&) noexcept {
+    return {};
+  }
 };
 
 inline InlineScheduler tag_invoke(get_completion_scheduler_t, const _Sender&) { return {}; }

@@ -23,11 +23,10 @@ class SingleThreadContext {
     explicit Scheduler(SingleThreadContext* context)
         : context_(context), scheduler_(context_->loop_.GetScheduler()) {}
 
-    auto Schedule() -> decltype(mmdeploy::Schedule(std::declval<RunLoop::_Scheduler>())) {
-      return mmdeploy::Schedule(scheduler_);
+    friend auto tag_invoke(schedule_t, const Scheduler& self)
+        -> tag_invoke_result_t<schedule_t, RunLoop::_Scheduler> {
+      return Schedule(self.scheduler_);
     }
-
-    friend void* GetSchedulerId(const Scheduler& self) { return self.context_; }
 
    private:
     SingleThreadContext* context_;

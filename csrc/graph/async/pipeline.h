@@ -50,16 +50,15 @@ class Task : public Node {
 
  public:
   Sender<Value> Process(Sender<Value> input) override {
-    return LetValue(sched_->ScheduleFrom(std::move(input)), [this](Value& v) -> Sender<Value> {
-      if (v[0].is_array()) {
-        auto output = Then(Schedule(*sched_), [&]() -> Value { return Value::Array(v.size()); });
-        auto process = sched_->Bulk(std::move(output), v.size(), [&](size_t index, Value& output) {
-          output[index] = module_->Process(v).value();
-        });
-        return process;
+    return LetValue(std::move(input), [this](Value& v) -> Sender<Value> {
+      if (v.front().is_array()) {
+        return Schedule(*sched_) | Then([&]() -> Value { return Value::Array(v.size()); }) |
+               Bulk(v.size(), [&](size_t index, Value& output) {
+                 output[index] = module_->Process(v).value();
+               });
       } else {
         auto output = module_->Process(v).value();
-        return Just(std::move(output));
+        return Just(std::move(output)) | Transfer(*sched_);
       }
     });
   }

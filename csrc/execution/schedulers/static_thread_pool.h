@@ -63,8 +63,6 @@ struct Scheduler {
 
   Sender MakeSender_() const { return Sender{*pool_}; }
 
-  friend void* GetSchedulerId(const Scheduler& self) { return self.pool_; }
-
   friend class StaticThreadPool;
 
  public:
@@ -74,7 +72,9 @@ struct Scheduler {
 
   friend bool operator!=(Scheduler a, Scheduler b) noexcept { return a.pool_ != b.pool_; }
 
-  Sender Schedule() const noexcept { return MakeSender_(); }
+  friend Sender tag_invoke(schedule_t, const Scheduler& self) noexcept {
+    return self.MakeSender_();
+  }
 
  private:
   StaticThreadPool* pool_{nullptr};

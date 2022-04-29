@@ -68,12 +68,6 @@ struct schedule_t {
   auto operator()(Scheduler&& scheduler) const -> tag_invoke_result_t<schedule_t, Scheduler> {
     return tag_invoke(schedule_t{}, (Scheduler &&) scheduler);
   }
-
-  template <typename Scheduler,
-            std::enable_if_t<!is_tag_invocable_v<schedule_t, Scheduler>, int> = 0>
-  auto operator()(Scheduler&& scheduler) const -> decltype(((Scheduler &&) scheduler).Schedule()) {
-    return ((Scheduler &&) scheduler).Schedule();
-  }
 };
 
 }  // namespace __schedule
@@ -82,7 +76,7 @@ using __schedule::schedule_t;
 inline constexpr schedule_t Schedule{};
 
 template <typename Scheduler>
-using schedule_result_t = decltype(Schedule(std::declval<Scheduler>()));
+using schedule_result_t = decltype(std::declval<schedule_t>()(std::declval<Scheduler>()));
 
 }  // namespace mmdeploy
 

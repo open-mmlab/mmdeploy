@@ -58,21 +58,22 @@ class RunLoop {
                                                       Receiver&& receiver) {
         return __impl::operation_t<Receiver>{(Receiver &&) receiver, self.loop_};
       }
-      explicit _ScheduleTask(RunLoop* loop) noexcept : loop_(loop) {}
       RunLoop* const loop_;
 
      public:
+      explicit _ScheduleTask(RunLoop* loop) noexcept : loop_(loop) {}
       using value_types = std::tuple<>;
     };
     friend RunLoop;
     explicit _Scheduler(RunLoop* loop) noexcept : loop_(loop) {}
 
    public:
-    _ScheduleTask Schedule() const noexcept { return _ScheduleTask{loop_}; }
-
     bool operator==(const _Scheduler& other) const noexcept { return loop_ == other.loop_; }
 
    private:
+    friend _ScheduleTask tag_invoke(schedule_t, const _Scheduler& self) {
+      return _ScheduleTask{self.loop_};
+    }
     RunLoop* loop_;
   };
   _Scheduler GetScheduler() { return _Scheduler{this}; }

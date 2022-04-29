@@ -57,8 +57,6 @@ class Scheduler {
 
   friend bool operator!=(Scheduler a, Scheduler b) noexcept { return a.context_ != b.context_; }
 
-  friend void* GetSchedulerId(const Scheduler& self) { return self.context_; }
-
   TimedSingleThreadContext* context_;
 
   template <class Rep, class Ratio>
@@ -67,14 +65,9 @@ class Scheduler {
     return {self.context_, delay};
   }
 
-  //  template <class Duration = std::chrono::microseconds>
-  //  friend auto mmdeploySchedule(const Scheduler& self) noexcept
-  //      -> __schedule_after::sender_t<Duration> {
-  //    return {self.context_, Duration::zero()};
-  //  }
  public:
-  template <class Duration = std::chrono::microseconds>
-  __schedule_after::sender_t<Duration> Schedule(const Scheduler& self) noexcept {
+  template <typename Duration = std::chrono::microseconds>
+  __schedule_after::sender_t<Duration> tag_invoke(schedule_t, const Scheduler& self) noexcept {
     return {self.context_, Duration::zero()};
   }
 };

@@ -6,39 +6,73 @@
 #include "execution.h"
 #include "execution/schedulers/static_thread_pool.h"
 
+// ! DO NOT INCLUDE THIS FILE DIRECTLY IF SPECIALIZATION OF `capture_completion_scheduler` IS
+// NEEDED, ALL TRANSLATION UNITS MUST SEE THE SAME SPECIALIZATION
+
 namespace mmdeploy {
+
+namespace _capture_completion_scheduler {
+
+template <typename ValueTypes>
+struct capture_completion_scheduler : std::false_type {};
+
+}  // namespace _capture_completion_scheduler
+
+using _capture_completion_scheduler::capture_completion_scheduler;
+
+template <typename ValueTypes>
+inline constexpr bool _capture_completion_scheduler_v =
+    capture_completion_scheduler<ValueTypes>::value;
 
 namespace _type_erased {
 
-template <class ValueTypes>
+template <typename ValueTypes>
 class _TypeErasedSender;
 
-template <class ValueTypes>
+template <typename ValueTypes>
 class _TypeErasedOperation;
 
-template <class ValueTypes>
+template <typename ValueTypes>
 class _TypeErasedReceiver;
 
-template <class ValueTypes>
+template <typename ValueTypes>
 class _TypeErasedScheduler;
 
-template <class ValueTypes>
+template <typename>
+struct _ThenFn {};
+template <typename... Ts>
+struct _ThenFn<std::tuple<Ts...>> {
+  using type = std::function<std::tuple<Ts...>(Ts...)>;
+};
+template <typename ValueTypes>
+using _then_fn_t = typename _ThenFn<ValueTypes>::type;
+
+template <typename>
+struct _BulkFn {};
+template <typename... Ts>
+struct _BulkFn<std::tuple<Ts...>> {
+  using type = std::function<void(size_t, Ts&...)>;
+};
+template <typename ValueTypes>
+using _bulk_fn_t = typename _BulkFn<ValueTypes>::type;
+
+template <typename ValueTypes>
 class _TypeErasedSender {
  public:
   using _Operation = _TypeErasedOperation<ValueTypes>;
   using _Receiver = _TypeErasedReceiver<ValueTypes>;
-
+  using _Scheduler = _TypeErasedScheduler<ValueTypes>;
   using value_types = ValueTypes;
 
   struct Impl {
     virtual ~Impl() = default;
     virtual _Operation _Connect(_Receiver) = 0;
     virtual std::unique_ptr<Impl> _Clone() const = 0;
-    virtual void* _GetCompletionSchedulerId() const = 0;
+    virtual _Scheduler _GetCompletionScheduler() const = 0;
   };
 
-  template <class Sender,
-            class = std::enable_if_t<!std::is_same_v<std::decay_t<Sender>, _TypeErasedSender>>>
+  template <typename Sender,
+            typename = std::enable_if_t<!std::is_same_v<std::decay_t<Sender>, _TypeErasedSender>>>
   /* implicit */ _TypeErasedSender(Sender&& sender);
 
   _TypeErasedSender(_TypeErasedSender&& other) noexcept = default;
@@ -50,46 +84,52 @@ class _TypeErasedSender {
     return *this;
   }
 
-  template <class Self, class Receiver, class = _decays_to<Self, _TypeErasedSender>>
+  template <typename Self, typename Receiver, typename = _decays_to<Self, _TypeErasedSender>>
   friend _Operation tag_invoke(connect_t, Self&& self, Receiver&& receiver) {
     return self.impl_->_Connect(_TypeErasedReceiver<ValueTypes>((Receiver &&) receiver));
   }
 
-  friend void* GetCompletionSchedulerId(const _TypeErasedSender& self) {
-    return self.impl_->_GetCompletionSchedulerId();
+  using SenderType = _TypeErasedSender;
+
+  friend SenderType tag_invoke(bulk_t, SenderType input, size_t shape, _bulk_fn_t<ValueTypes> fn) {
+    auto sched = input.impl_->_GetCompletionScheduler();
+    return tag_invoke(bulk_t{}, sched, std::move(input), shape, std::move(fn));
   }
 
  private:
   std::unique_ptr<Impl> impl_;
 };
 
-template <class... Ts>
+template <typename... Ts>
 using TypeErasedSender = _TypeErasedSender<std::tuple<Ts...>>;
 
-template <class Sender>
+template <typename Sender>
 _TypeErasedSender(Sender&&) -> _TypeErasedSender<completion_signatures_of_t<Sender>>;
 
-template <class Sender, class ValueTypes = completion_signatures_of_t<Sender>>
+template <typename Sender, typename ValueTypes = completion_signatures_of_t<Sender>>
 struct _TypeErasedSenderImpl : _TypeErasedSender<ValueTypes>::Impl {
  public:
   using Base = typename _TypeErasedSender<ValueTypes>::Impl;
   using _Operation = _TypeErasedOperation<ValueTypes>;
   using _Receiver = _TypeErasedReceiver<ValueTypes>;
 
-  template <class _Sender,
-            class = std::enable_if_t<!std::is_same_v<std::decay_t<_Sender>, _TypeErasedSenderImpl>>>
+  template <typename _Sender, typename = std::enable_if_t<
+                                  !std::is_same_v<std::decay_t<_Sender>, _TypeErasedSenderImpl>>>
   explicit _TypeErasedSenderImpl(_Sender&& sender) : sender_((_Sender &&) sender) {}
 
   _Operation _Connect(_Receiver receiver) override {
     return _Operation{[&] { return Connect(std::move(sender_), std::move(receiver)); }};
   }
 
-  void* _GetCompletionSchedulerId() const override {
-    if constexpr (_has_completion_scheduler_v<Sender>) {
-      auto sched = GetCompletionScheduler(sender_);
-      return GetSchedulerId(sched);
+  _TypeErasedScheduler<ValueTypes> _GetCompletionScheduler() const override {
+    //    static_assert(!std::is_same_v<ValueTypes, std::tuple<mmdeploy::Value>> ||
+    //                  _capture_completion_scheduler_v<ValueTypes>);
+    if constexpr (_capture_completion_scheduler_v<ValueTypes> &&
+                  _has_completion_scheduler_v<Sender>) {
+      return GetCompletionScheduler(sender_);
     } else {
-      return nullptr;
+      return _TypeErasedScheduler<ValueTypes>{
+          std::shared_ptr<typename _TypeErasedScheduler<ValueTypes>::Impl>{}};
     }
   }
 
@@ -107,14 +147,14 @@ struct _TypeErasedSenderImpl : _TypeErasedSender<ValueTypes>::Impl {
   Sender sender_;
 };
 
-template <class ValueTypes>
-template <class Sender, class>
+template <typename ValueTypes>
+template <typename Sender, typename>
 _TypeErasedSender<ValueTypes>::_TypeErasedSender(Sender&& sender) {
   using _Sender = std::decay_t<Sender>;
   impl_ = std::make_unique<_TypeErasedSenderImpl<_Sender>>((Sender &&) sender);
 }
 
-template <class ValueTypes>
+template <typename ValueTypes>
 class _TypeErasedReceiver {
  public:
   struct Impl {
@@ -122,11 +162,11 @@ class _TypeErasedReceiver {
     virtual void _SetValue(ValueTypes) = 0;
   };
 
-  template <class Receiver,
-            class = std::enable_if_t<!std::is_same_v<std::decay_t<Receiver>, _TypeErasedReceiver>>>
+  template <typename Receiver, typename = std::enable_if_t<
+                                   !std::is_same_v<std::decay_t<Receiver>, _TypeErasedReceiver>>>
   explicit _TypeErasedReceiver(Receiver&&);
 
-  template <class... As>
+  template <typename... As>
   friend void tag_invoke(set_value_t, _TypeErasedReceiver&& self, As&&... as) noexcept {
     self.impl_->_SetValue(std::make_tuple((As &&) as...));
   }
@@ -135,7 +175,7 @@ class _TypeErasedReceiver {
   std::unique_ptr<Impl> impl_;
 };
 
-template <class Receiver, class ValueTypes>
+template <typename Receiver, typename ValueTypes>
 struct _TypeErasedReceiverImpl : _TypeErasedReceiver<ValueTypes>::Impl {
   void _SetValue(ValueTypes vals) override {
     std::apply(
@@ -144,12 +184,12 @@ struct _TypeErasedReceiverImpl : _TypeErasedReceiver<ValueTypes>::Impl {
   }
   Receiver receiver_;
 
-  template <class _Receiver>
+  template <typename _Receiver>
   explicit _TypeErasedReceiverImpl(_Receiver&& receiver) : receiver_((_Receiver &&) receiver) {}
 };
 
-template <class ValueTypes>
-template <class Receiver, class>
+template <typename ValueTypes>
+template <typename Receiver, typename>
 _TypeErasedReceiver<ValueTypes>::_TypeErasedReceiver(Receiver&& receiver) {
   using _Receiver = std::decay_t<Receiver>;
   impl_ = std::make_unique<_TypeErasedReceiverImpl<_Receiver, ValueTypes>>((Receiver &&) receiver);
@@ -158,52 +198,34 @@ _TypeErasedReceiver<ValueTypes>::_TypeErasedReceiver(Receiver&& receiver) {
 ////////////////////////////////////////////////////////
 /// _TypeErasedScheduler
 
-template <class... Ts>
+template <typename... Ts>
 using TypeErasedScheduler = _TypeErasedScheduler<std::tuple<Ts...>>;
 
-template <class>
-struct _ThenFn {};
-
-template <class... Ts>
-struct _ThenFn<std::tuple<Ts...>> {
-  using type = std::function<std::tuple<Ts...>(Ts...)>;
-};
-
-template <class>
-struct _BulkFn {};
-
-template <class... Ts>
-struct _BulkFn<std::tuple<Ts...>> {
-  using type = std::function<void(size_t, Ts&...)>;
-};
-
-template <class ValueTypes>
+template <typename ValueTypes>
 class _TypeErasedScheduler {
  public:
   using SenderType = _TypeErasedSender<ValueTypes>;
-  using EmptySender = _TypeErasedSender<std::tuple<>>;
+  using EmptySenderType = _TypeErasedSender<std::tuple<>>;
 
   using ThenFun = typename _ThenFn<ValueTypes>::type;
   using BulkFun = typename _BulkFn<ValueTypes>::type;
 
   struct Impl {
     virtual ~Impl() = default;
-    virtual EmptySender _Schedule() = 0;
-
-    virtual void* _GetSchedulerId() = 0;
-
+    virtual EmptySenderType _Schedule() {
+      MMDEPLOY_CRITICAL("Schedule called on null scheduler");
+      std::abort();
+    }
     virtual SenderType _Transfer(SenderType input, _TypeErasedScheduler sched) {
       return ::mmdeploy::Transfer(std::move(input), std::move(sched));
     }
-    virtual SenderType _ScheduleFrom(SenderType) = 0;
-    //    virtual SenderType _Then(SenderType input, ThenFun fun) {
-    //      return ::mmdeploy::Then(std::move(input), std::move(fun));
-    //    }
-    // virtual SenderType _LetValue() = 0;
-    // virtual SenderType _On(SenderType) = 0;
     virtual SenderType _Bulk(SenderType input, size_t shape, BulkFun fun) {
       return ::mmdeploy::Bulk(std::move(input), shape, std::move(fun));
     }
+    // virtual SenderType _ScheduleFrom(SenderType) = 0;
+    // virtual SenderType _Then(SenderType input, ThenFun fun) = 0;
+    // virtual SenderType _LetValue() = 0;
+    // virtual SenderType _On(SenderType) = 0;
     // virtual SenderType _Split(SenderType) = 0;
     // virtual SenderType _WhenAll(std::vector<SenderType>) = 0;
     // virtual SenderType _TransferWhenAll(std::vector<SenderType>) = 0;
@@ -212,56 +234,55 @@ class _TypeErasedScheduler {
     // virtual ValueTypes _SyncWait(SenderType) = 0;
   };
 
-  template <class Scheduler, class = std::enable_if_t<
-                                 !std::is_same_v<std::decay_t<Scheduler>, _TypeErasedScheduler>>>
+  template <typename Scheduler, typename = std::enable_if_t<
+                                    !std::is_same_v<std::decay_t<Scheduler>, _TypeErasedScheduler>>>
   explicit _TypeErasedScheduler(Scheduler&& sched);
 
-  explicit _TypeErasedScheduler(std::shared_ptr<Impl> impl) : impl_(std::move(impl)) {}
-
-  _TypeErasedSender<std::tuple<>> Schedule() { return impl_->_Schedule(); }
-
-  friend void* GetSchedulerId(const _TypeErasedScheduler& self) {
-    return self.impl_->_GetSchedulerId();
+  explicit _TypeErasedScheduler(std::shared_ptr<Impl> impl) : impl_(std::move(impl)) {
+    assert(impl_);
   }
 
-  SenderType ScheduleFrom(SenderType input) { return impl_->_ScheduleFrom(std::move(input)); }
+  friend EmptySenderType tag_invoke(schedule_t, const _TypeErasedScheduler& self) {
+    return self.impl_->_Schedule();
+  }
 
-  SenderType Bulk(SenderType input, size_t shape, BulkFun fun) {
-    return impl_->_Bulk(std::move(input), shape, std::move(fun));
+  friend SenderType tag_invoke(bulk_t, _TypeErasedScheduler& self, SenderType input, size_t shape,
+                               BulkFun fun) {
+    return self.impl_->_Bulk(std::move(input), shape, std::move(fun));
+  }
+
+  friend SenderType tag_invoke(bulk_t, _TypeErasedScheduler& self, SenderType input,
+                               _TypeErasedScheduler other) {
+    return self.impl_->_Transfer(std::move(input), std::move(other));
   }
 
  private:
   std::shared_ptr<Impl> impl_;
 };
 
-template <class ValueTypes, class Scheduler>
+template <typename ValueTypes, typename Scheduler>
 struct _TypeErasedSchedulerImpl : _TypeErasedScheduler<ValueTypes>::Impl {
   using _SenderType = _TypeErasedSender<std::tuple<>>;
 
   using Base = typename _TypeErasedScheduler<ValueTypes>::Impl;
   using BulkFun = typename _TypeErasedScheduler<ValueTypes>::BulkFun;
-  using EmptySender = typename _TypeErasedScheduler<ValueTypes>::EmptySender;
+  using EmptySender = typename _TypeErasedScheduler<ValueTypes>::EmptySenderType;
   using SenderType = typename _TypeErasedScheduler<ValueTypes>::SenderType;
 
-  EmptySender _Schedule() override { return _SenderType{Schedule(scheduler_)}; }
+  EmptySender _Schedule() override { return EmptySender{Schedule(scheduler_)}; }
 
-  void* _GetSchedulerId() override { return GetSchedulerId(scheduler_); }
-
-  SenderType _ScheduleFrom(SenderType input) override {
-    if (GetCompletionSchedulerId(input) == _GetSchedulerId()) {
-      return input;
+  SenderType _Transfer(SenderType input, _TypeErasedScheduler<ValueTypes> sched) override {
+    if constexpr (tag_invocable<transfer_t, Scheduler, SenderType,
+                                _TypeErasedScheduler<ValueTypes>>) {
+      return tag_invoke(transfer_t{}, scheduler_, std::move(input), std::move(sched));
+    } else {
+      return Base::_Transfer(std::move(input), std::move(sched));
     }
-    return Transfer(std::move(input), scheduler_);
   }
 
-  //  SenderType _Transfer(SenderType input, _TypeErasedScheduler<ValueTypes> sched) override {
-  //
-  //  }
-
   SenderType _Bulk(SenderType input, size_t shape, BulkFun fun) override {
-    assert(GetCompletionSchedulerId(input) == _GetSchedulerId());
     if constexpr (tag_invocable<bulk_t, Scheduler, SenderType, size_t, BulkFun>) {
-      return tag_invoke(Bulk, scheduler_, std::move(input), shape, std::move(fun));
+      return tag_invoke(bulk_t{}, scheduler_, std::move(input), shape, std::move(fun));
     } else {
       return Base::_Bulk(std::move(input), shape, std::move(fun));
     }
@@ -271,18 +292,18 @@ struct _TypeErasedSchedulerImpl : _TypeErasedScheduler<ValueTypes>::Impl {
   Scheduler scheduler_;
 };
 
-template <class Scheduler, class... Ts>
+template <typename Scheduler, typename... Ts>
 using TypeErasedSchedulerImpl = _TypeErasedSchedulerImpl<std::tuple<Ts...>, Scheduler>;
 
-template <class ValueTypes>
-template <class Scheduler, class>
+template <typename ValueTypes>
+template <typename Scheduler, typename>
 _TypeErasedScheduler<ValueTypes>::_TypeErasedScheduler(Scheduler&& scheduler) {
   using _Scheduler = std::decay_t<Scheduler>;
   impl_ =
       std::make_unique<_TypeErasedSchedulerImpl<ValueTypes, _Scheduler>>((Scheduler &&) scheduler);
 }
 
-template <class ValueTypes>
+template <typename ValueTypes>
 class _TypeErasedOperation {
  public:
   struct Impl {
@@ -290,7 +311,7 @@ class _TypeErasedOperation {
     virtual void _Start() = 0;
   };
 
-  template <class Fun, class = std::enable_if_t<std::is_invocable_v<Fun>>>
+  template <typename Fun, typename = std::enable_if_t<std::is_invocable_v<Fun>>>
   explicit _TypeErasedOperation(Fun&& fun);
 
   friend void tag_invoke(start_t, _TypeErasedOperation& op_state) { op_state.impl_->_Start(); }
@@ -299,31 +320,39 @@ class _TypeErasedOperation {
   std::unique_ptr<Impl> impl_;
 };
 
-template <class... Ts>
+template <typename... Ts>
 using TypeErasedOperation = _TypeErasedOperation<std::tuple<Ts...>>;
 
-template <class Operation, class ValueTypes>
+template <typename Operation, typename ValueTypes>
 struct _TypeErasedOperationImpl : _TypeErasedOperation<ValueTypes>::Impl {
   virtual void _Start() { Start(operation_); }
 
-  template <class Fun, class = std::enable_if_t<std::is_invocable_v<Fun>>>
+  template <typename Fun, typename = std::enable_if_t<std::is_invocable_v<Fun>>>
   explicit _TypeErasedOperationImpl(Fun&& fun) : operation_{((Fun &&) fun)()} {}
 
   Operation operation_;
 };
 
-template <class ValueTypes>
-template <class Fun, class>
+template <typename ValueTypes>
+template <typename Fun, typename>
 _TypeErasedOperation<ValueTypes>::_TypeErasedOperation(Fun&& fun) {
   using _Operation = std::invoke_result_t<Fun>;
   impl_.reset(new _TypeErasedOperationImpl<_Operation, ValueTypes>{(Fun &&) fun});
 }
 
-}
+}  // namespace _type_erased
 
-using _type_erased::TypeErasedSender;
-using _type_erased::TypeErasedScheduler;
 using _type_erased::TypeErasedOperation;
+using _type_erased::TypeErasedScheduler;
+using _type_erased::TypeErasedSender;
+
+// TODO move the specialization somewhere else in a consistent way
+class Value;
+
+namespace _capture_completion_scheduler {
+template <>
+struct capture_completion_scheduler<std::tuple<Value>> : std::true_type {};
+}  // namespace _capture_completion_scheduler
 
 }  // namespace mmdeploy
 

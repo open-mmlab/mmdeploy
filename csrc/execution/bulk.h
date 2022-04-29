@@ -88,7 +88,6 @@ struct bulk_t {
     return tag_invoke(bulk_t{}, std::move(scheduler), (Sender &&) sender, (Shape &&) shape,
                       (Func &&) func);
   }
-
   template <typename Sender, typename Shape, typename Func,
             enable_if_t<_is_sender<Sender> &&
                             !_tag_invocable_with_completion_scheduler<bulk_t, Sender, Shape, Func>,
