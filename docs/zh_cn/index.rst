@@ -20,7 +20,6 @@
    02-how-to-run/convert_model.md
    02-how-to-run/write_config.md
    02-how-to-run/profile_model.md
-   02-how-to-run/do_regression_test.md
 
 .. toctree::
    :maxdepth: 1
@@ -28,6 +27,7 @@
 
    03-developer-guide/support_new_model.md
    03-developer-guide/support_new_backend.md
+   03-developer-guide/do_regression_test.md
 
 .. toctree::
    :maxdepth: 1
