@@ -75,6 +75,7 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 * 开发指南
   * [支持新模型](docs/zh_cn/03-developer-guide/support_new_model.md)
   * [增加推理 Backend](docs/zh_cn/03-developer-guide/support_new_backend.md)
+  * [回归测试](docs/zh_cn/03-developer-guide/do_regression_test.md)
 * 菜鸟教程
   * [tutorial01：术语解释、加载第一个模型](docs/zh_cn/04-tutorial/01_introduction_to_model_deployment.md)
   * [tutorial02：转成 onnx](docs/zh_cn/04-tutorial/02_challenges.md)
