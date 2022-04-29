@@ -81,16 +81,16 @@ struct formatter<mmdeploy::Value> {
 
 #else
 
-inline void format_arg(BasicFormatter<char> &f, const char *, const mmdeploy::Value &d) {
+inline void format_arg(BasicFormatter<char>& f, const char*, const mmdeploy::Value& d) {
   f.writer() << mmdeploy::format_value(d);
 }
 
 template <typename T>
-auto format_arg(BasicFormatter<char> &f, const char *, const T &v)
+auto format_arg(BasicFormatter<char>& f, const char*, const T& v)
     -> std::void_t<decltype(begin(v), end(v))> {
   f.writer() << "[";
   bool first = true;
-  for (const auto &x : v) {
+  for (const auto& x : v) {
     f.writer() << (first ? "" : ", ") << fmt::format("{}", x);
     first = false;
   }
