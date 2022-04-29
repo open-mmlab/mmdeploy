@@ -6,7 +6,7 @@ from multiprocessing import Process
 import h5py
 import mmcv
 
-from mmdeploy.apis import create_calib_table
+from mmdeploy.apis.utils import create_calib_table
 
 calib_file = tempfile.NamedTemporaryFile(suffix='.h5').name
 ann_file = 'tests/data/annotation.json'

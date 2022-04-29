@@ -17,8 +17,7 @@ def create_calib_table(calib_file: str,
                        model_checkpoint: Optional[str] = None,
                        dataset_cfg: Optional[Union[str, mmcv.Config]] = None,
                        dataset_type: str = 'val',
-                       device: str = 'cuda:0',
-                       **kwargs) -> None:
+                       device: str = 'cuda:0') -> None:
     """Create calibration table.
 
     Examples:

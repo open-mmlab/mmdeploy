@@ -8,10 +8,11 @@ import mmcv
 import torch.multiprocessing as mp
 from torch.multiprocessing import Process, set_start_method
 
-from mmdeploy.apis import (create_calib_table, get_predefined_partition_cfg,
-                           torch2onnx, torch2torchscript, visualize_model)
+from mmdeploy.apis import (get_predefined_partition_cfg, torch2onnx,
+                           torch2torchscript, visualize_model)
 from mmdeploy.apis.core import PIPELINE_MANAGER
 from mmdeploy.apis.onnx import extract_partition
+from mmdeploy.apis.utils import create_calib_table
 from mmdeploy.utils import (IR, Backend, get_backend, get_calib_filename,
                             get_ir_config, get_model_inputs,
                             get_partition_config, get_root_logger, load_config,
