@@ -34,8 +34,8 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 
 ## 架构简析
 
-<div align="left">
-  <img src="resources/introduction.png" width="630"/>
+<div align="center">
+  <img src="resources/introduction.png"/>
 </div>
 
 ## 特性简介
@@ -60,7 +60,7 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 - Net 推理
 - Module 后处理
 
-## 快速上手
+## [快速上手](docs/zh_cn/get_started.md)
 
 * [编译](docs/zh_cn/01-how-to-build/build_from_source.md)
   * [Build for Android](docs/zh_cn/01-how-to-build/android.md)
@@ -68,7 +68,7 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
   * [Build for Win10](docs/zh_cn/01-how-to-build/windows.md)
   * [Build for Jetson](docs/en/tutorials/how_to_install_mmdeploy_on_jetsons.md)
   * [Build from Docker](docs/zh_cn/01-how-to-build/build_from_docker.md)
-* [使用](docs/zh_cn/get_started.md)
+* 使用
   * [把模型转换到推理 Backend](docs/zh_cn/02-how-to-run/convert_model.md)
   * [配置转换参数](docs/zh_cn/02-how-to-run/write_config.md)
   * [测试转换完成的模型](docs/zh_cn/02-how-to-run/profile_model.md)
@@ -87,7 +87,7 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 
 扫描下方二维码，关注 OpenMMLab [知乎官方账号](https://www.zhihu.com/people/openmmlab)、加入 OpenMMLab 团队的 [官方交流 QQ 群](https://jq.qq.com/?_wv=1027&k=aCvMxdr3)
 
-<div align="left">
+<div align="center">
   <img src="https://raw.githubusercontent.com/open-mmlab/mmcv/master/docs/en/_static/zhihu_qrcode.jpg" height="400" />
   <img src="https://raw.githubusercontent.com/open-mmlab/mmcv/master/docs/en/_static/qq_group_qrcode.jpg" height="400" />
 </div>
