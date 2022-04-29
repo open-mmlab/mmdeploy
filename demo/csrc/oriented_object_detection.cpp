@@ -20,11 +20,11 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  mm_handle_t pose_estimator{};
+  mm_handle_t detector{};
   int status{};
-  status = mmdeploy_rotation_detector_create_by_path(model_path, device_name, 0, &pose_estimator);
+  status = mmdeploy_rotation_detector_create_by_path(model_path, device_name, 0, &detector);
   if (status != MM_SUCCESS) {
-    fprintf(stderr, "failed to create pose_estimator, code: %d\n", (int)status);
+    fprintf(stderr, "failed to create rotation detector, code: %d\n", (int)status);
     return 1;
   }
 
@@ -32,9 +32,9 @@ int main(int argc, char *argv[]) {
 
   mm_rotate_detect_t *rbboxes{};
   int *res_count{};
-  status = mmdeploy_rotation_detector_apply(pose_estimator, &mat, 1, &rbboxes, &res_count);
+  status = mmdeploy_rotation_detector_apply(detector, &mat, 1, &rbboxes, &res_count);
   if (status != MM_SUCCESS) {
-    fprintf(stderr, "failed to apply pose estimator, code: %d\n", (int)status);
+    fprintf(stderr, "failed to apply rotation estimator, code: %d\n", (int)status);
     return 1;
   }
 
@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
   cv::imwrite("output_rotation.png", img);
 
   mmdeploy_rotation_detector_release_result(rbboxes, res_count);
-  mmdeploy_rotation_detector_destroy(pose_estimator);
+  mmdeploy_rotation_detector_destroy(detector);
 
   return 0;
 }
