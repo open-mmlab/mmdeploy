@@ -7,10 +7,10 @@
 
 #include "core/logger.h"
 #include "core/types.h"
+#include "spdlog/fmt/ostr.h"
 
 #if FMT_VERSION >= 50000
 #include "spdlog/fmt/bundled/ranges.h"
-#include "spdlog/fmt/ostr.h"
 #else
 #include <type_traits>
 #endif
@@ -83,11 +83,6 @@ struct formatter<mmdeploy::Value> {
 
 inline void format_arg(BasicFormatter<char> &f, const char *, const mmdeploy::Value &d) {
   f.writer() << mmdeploy::format_value(d);
-}
-
-template <typename T, std::enable_if_t<std::is_enum<std::decay_t<T> >::value, bool> = true>
-void format_arg(BasicFormatter<char> &f, const char *, const T &v) {
-  f.writer() << (int)v;
 }
 
 template <typename T>
