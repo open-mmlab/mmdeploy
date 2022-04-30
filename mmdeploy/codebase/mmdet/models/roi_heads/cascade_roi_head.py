@@ -84,8 +84,8 @@ def cascade_roi_head__simple_test(ctx, self, x, proposals, img_metas,
         return det_bboxes, det_labels
     else:
         batch_index = torch.arange(
-            det_bboxes.size(0), device=det_bboxes.device).float().view(
-                -1, 1, 1).expand(det_bboxes.size(0), det_bboxes.size(1), 1)
+            det_bboxes.size(0),
+            device=det_bboxes.device).float().view(-1, 1, 1)
         rois = det_bboxes[..., :4]
         mask_rois = torch.cat([batch_index, rois], dim=-1)
         mask_rois = mask_rois.view(-1, 5)
