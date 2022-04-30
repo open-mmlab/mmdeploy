@@ -3,14 +3,14 @@ name: build
 on:
   push:
     paths-ignore:
-      - 'demo/**'
-      - 'tools/**'
+      - "demo/**"
+      - "tools/**"
 
   pull_request:
     paths-ignore:
-      - 'demo/**'
-      - 'tools/**'
-      - 'docs/**'
+      - "demo/**"
+      - "tools/**"
+      - "docs/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -78,6 +78,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install system dependencies
         run: |
+          apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A4B469963BF863CC
           apt-get update && apt-get install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev python${{matrix.python-version}}-dev
           apt-get clean
           rm -rf /var/lib/apt/lists/*
@@ -122,6 +123,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install system dependencies
         run: |
+          apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A4B469963BF863CC
           apt-get update && apt-get install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev python${{matrix.python-version}}-dev
           apt-get clean
           rm -rf /var/lib/apt/lists/*
