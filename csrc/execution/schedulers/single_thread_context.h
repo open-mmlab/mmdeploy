@@ -9,6 +9,8 @@
 
 namespace mmdeploy {
 
+namespace _single_thread_context {
+
 class SingleThreadContext {
  public:
   SingleThreadContext() : loop_(), thread_([this] { loop_._Run(); }) {}
@@ -41,6 +43,8 @@ class SingleThreadContext {
   RunLoop loop_;
   std::thread thread_;
 };
+
+}  // namespace _single_thread_context
 
 }  // namespace mmdeploy
 

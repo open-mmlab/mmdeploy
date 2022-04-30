@@ -38,7 +38,7 @@ class SingleThreadSchedCreator : public Creator<Scheduler> {
   const char *GetName() const override { return "SingleThread"; }
   int GetVersion() const override { return 0; }
   ReturnType Create(const Value &) override {
-    return CreateFromContext(std::make_unique<SingleThreadContext>());
+    return CreateFromContext(std::make_unique<_single_thread_context::SingleThreadContext>());
   }
 };
 
