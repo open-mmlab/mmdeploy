@@ -2,21 +2,6 @@
 
 #include "net_module.h"
 
-#include <thread>
-
-#include "archive/value_archive.h"
-#include "core/logger.h"
-#include "core/model.h"
-#include "core/module.h"
-#include "core/net.h"
-#include "core/registry.h"
-#include "core/utils/formatter.h"
-#include "core/utils/scope_counter.h"
-#include "experimental/module_adapter.h"
-
-using std::string;
-using std::vector;
-
 namespace mmdeploy {
 
 struct NetModule::Impl {
@@ -74,7 +59,7 @@ struct NetModule::Impl {
     return success();
   }
 
-  Result<TensorShape> InferInputShape(const vector<Tensor>& input) {
+  Result<TensorShape> InferInputShape(const std::vector<Tensor>& input) {
     auto batch_size = input.size();
     auto& exemplar = input.front();
     auto shape = exemplar.shape();
@@ -96,12 +81,13 @@ struct NetModule::Impl {
     return shape;
   }
 
-  Result<vector<TensorShape> > InferInputShape(const vector<vector<Tensor> >& inputs) {
-    vector<TensorShape> shapes;
+  Result<std::vector<TensorShape> > InferInputShape(
+      const std::vector<std::vector<Tensor> >& inputs) {
+    std::vector<TensorShape> shapes;
     shapes.reserve(inputs.size());
     for (const auto& input : inputs) {
       OUTCOME_TRY(auto shape, InferInputShape(input));
-      shapes.push_back(std::move(shape));
+      shapes.emplace_back(std::move(shape));
     }
     return shapes;
   }
@@ -120,13 +106,13 @@ struct NetModule::Impl {
       for (int i = 0; i < input.size(); ++i) {
         auto& sample = input[i];
         if (auto it = sample.find(name); it != sample.end()) {
-          tmp.push_back(it->second);
+          tmp.emplace_back(it->second);
         } else {
           MMDEPLOY_ERROR("sample {} missing key {}", i, name);
           return Status(eInvalidArgument);
         }
       }
-      input_samples.push_back(std::move(tmp));
+      input_samples.emplace_back(std::move(tmp));
     }
 
     // 1. calculate input shape
@@ -156,7 +142,7 @@ struct NetModule::Impl {
     // 5. forward
     OUTCOME_TRY(net_->Forward());
 
-    vector<Output> output(batch_size);
+    std::vector<Output> output(batch_size);
     for (const auto& t : outputs_) {
       auto name = output_mapping_.at(t.name());
       auto desc = t.desc();
@@ -208,10 +194,10 @@ Result<Value> NetModule::operator()(const Value& input) {
   if (input.is_array()) {
     batch.reserve(input.size());
     for (const auto& sample : input) {
-      batch.push_back(filter(sample));
+      batch.emplace_back(filter(sample));
     }
   } else if (input.is_object()) {
-    batch.push_back(filter(input));
+    batch.emplace_back(filter(input));
   } else {
     return Status(eNotSupported);
   }
