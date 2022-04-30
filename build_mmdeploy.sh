@@ -1,23 +1,47 @@
 #!/bin/bash
-# build_mmdeploy.sh
+# build_linux_nvidia.sh
 #   Date: 08-03-2022, 24-04-2022
 #
-#   Run this script to build MMDeploy SDK and prerequisites.
+#   Run this script to build MMDeploy SDK and necessary prerequisites.
 #   This script will also setup python venv
 #
+
+#####
+# Build vars
 BUILD_TYPE="Release"
 ARCH=$(uname -i)
-WITH_PYTHON=1
-WITH_CLEAN=1
-# Get path to script to ensure script runs from 'logends' root
-WORKING_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROC_NUM=$(nproc)
+# Default GCC
+GCC_COMPILER="g++"
 
+#####
+# Directories
+# WORKING_DIR must correspond to script dir, i.e. MMDeploy root
+WORKING_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PPLCV_DIR=${WORKING_DIR}/ppl.cv
 MMDEPLOY_DIR=${WORKING_DIR}/MMDeploy
+
+#####
+# Versions
 PPLCV_VER="0.6.2"
 MMDEPLOY_VER="0.4.0"
-INSTALL_PREFIX="/usr/local"
-PYTHON_VENV_DIR="mmdeploy"
+CMAKE_VER="3.23.0"
+
+#####
+# Flags
+# WITH_PYTHON: Install misc. dependencies in the active venv
+WITH_PYTHON=1
+# WITH_CLEAN: Remove build output dirs
+WITH_CLEAN=1
+
+#####
+# Prefix: Set install prefix for ppl.cv, mmdeploy SDK depending on arch
+if [[ "$ARCH" == aarch64 ]]; then
+  INSTALL_PREFIX="/usr/local/aarch64-linux-gnu"
+else
+  INSTALL_PREFIX="/usr/local"
+fi
+PYTHON_VENV_DIR=${WORKING_DIR}/venv-mmdeploy
 
 appargument1=$1
 #appargument2=$2
@@ -43,9 +67,13 @@ contains_element () {
   for e; do [[ "$e" == "$match" ]] && return 0; done
   return 1
 }
+function version { 
+  echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; 
+}
 
 prereqs() {
   # spdlog
+  echo_green "Checking spdlog version..."
   read -p "Install latest spdlog from source? (y/n)" -n 1 -r
   echo
   if [[ $REPLY =~ ^[Yy]$ ]]
@@ -60,47 +88,41 @@ prereqs() {
     git checkout tags/v1.8.1
     mkdir build -p && cd build
     # we must build spdlog with -fPIC enabled
-    cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=ON && make -j
+    cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=ON && make -j${PROC_NUM}
     sudo make install
     sudo ldconfig
   fi
 
-  # cmake check
-  echo_green "Check your cmake version:"
-  cmake --version
-  read -p "Install latest CMake? (>=3.18 is required) (y/n)" -n 1 -r
-  echo
-  if [[ $REPLY =~ ^[Yy]$ ]]
-  then
+  # cmake check & install
+  echo_green "Checking your cmake version..."
+  CMAKE_DETECT_VER=$(cmake --version | grep -oP '(?<=version).*')
+  if [ $(version $CMAKE_DETECT_VER) -ge $(version "3.14.0") ]; then
+    echo_green "Cmake version $CMAKE_DETECT_VER is up to date"
+  else
+    echo_green "CMake too old, purging existing cmake and installing ${CMAKE_VER}..."
     # purge existing
     sudo apt-get purge cmake
     sudo snap remove cmake
-    # build cmake from source
-    sudo apt-get install -y libssl-dev
-    wget https://github.com/Kitware/CMake/releases/download/v3.23.0/cmake-3.23.0.tar.gz
-    tar -zxvf cmake-3.23.0.tar.gz
-    cd cmake-3.23.0
-    ./bootstrap
-    make -j
-    sudo make install
-    #
-    source ~/.bashrc
-    cmake --version
+    # install prebuild
+    wget https://github.com/Kitware/CMake/releases/download/v${CMAKE_VER}/cmake-${CMAKE_VER}-linux-${ARCH}.sh
+    chmod +x cmake-${CMAKE_VER}-linux-${ARCH}.sh
+    sudo ./cmake-${CMAKE_VER}-linux-${ARCH}.sh --prefix=/usr --skip-license
   fi
 
   # gcc-7 check
-  echo_green "Check your gcc version:"
-  gcc --version
-  read -p "Upgrade to GCC-7? (>=GCC-7 is required) (y/n)" -n 1 -r
-  echo
-  if [[ $REPLY =~ ^[Yy]$ ]]
-  then
+  echo_green "Checking your gcc version..."
+  GCC_DETECT_VER=$(gcc --version | grep -oP '(?<=\)).*' -m1)
+  if [ $(version $GCC_DETECT_VER) -ge $(version "7.0.0") ]; then
+    echo_green "GCC version $GCC_DETECT_VER is up to date"
+  else
+    echo_green "gcc version too old, installing ${CMAKE_VER}..."
+    echo_green "Purge existing cmake and install ${GCC_DETECT_VER}..."
     # Add repository if ubuntu < 18.04
     sudo add-apt-repository ppa:ubuntu-toolchain-r/test
     sudo apt-get update
     sudo apt-get install gcc-7
     sudo apt-get install g++-7
-    GCC
+    GCC_COMPILER="g++-7"
   fi
 
   # tensorrt check
@@ -116,6 +138,7 @@ prereqs() {
       echo 'export CUDNN_DIR="/usr/include/'${ARCH}'-linux-gnu/"' >> ${HOME}/.bashrc
       echo 'export LD_LIBRARY_PATH="/usr/lib/'${ARCH}'-linux-gnu/:$LD_LIBRARY_PATH"' >> ${HOME}/.bashrc
       source ${HOME}/.bashrc
+      echo_green "Please re-run this script for changes to apply!"
       exec bash
     else
       echo_red "Please Install TensorRT, CUDNN and add TENSORRT_DIR, CUDNN_DIR to environment variables before running this script!"
@@ -144,7 +167,7 @@ prereqs() {
 
 py_venv() {
   # deactivate venv, if it has already been activated
-  source deactivate
+  deactivate
 
   #check for python installed version
   pyv="$(python3 -V 2>&1)"
@@ -165,11 +188,15 @@ py_venv() {
   pip3 install testresources
   pip3 install --upgrade setuptools wheel
 
-  read -p "Remove existing Python venv? (y/n)" -n 1 -r
-  echo
-  if [[ $REPLY =~ ^[Yy]$ ]]
-  then
-    rm -r ${PYTHON_VENV_DIR}
+  if [ -d "${PYTHON_VENV_DIR}" ]; then
+    read -p "Reinstall existing Python venv ${PYTHON_VENV_DIR}? (y/n)" -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]
+    then
+      rm -r ${PYTHON_VENV_DIR}
+      python3 -m venv ${PYTHON_VENV_DIR} --system-site-packages #system site packages to keep trt from system installation
+    fi
+  else
     python3 -m venv ${PYTHON_VENV_DIR} --system-site-packages #system site packages to keep trt from system installation
   fi
 
@@ -177,14 +204,16 @@ py_venv() {
   python3 get-pip.py
   pip3 install testresources
   pip3 install --upgrade setuptools wheel
-  # protofbuf on jetson is quite old - must be upgraded
-  pip3 install --upgrade protobuf
-  # Latest pillow is not compatible with mmcv
+
+  # Latest PIL is not compatible with mmcv=1.4.1
   pip install Pillow==7.0.0
 
   if [[ "$ARCH" == aarch64 ]]
   then
-    # TODO Numpy might be installed per default so we should not remove it
+    # protofbuf on jetson is quite old - must be upgraded
+    pip3 install --upgrade protobuf
+    # Install numpy 1.19.4 as newer versions might give "Illegal instruction (core dumped)" on Jetson
+    # TODO Numpy might be installed per default so we should not remove it. 
     pip3 install numpy==1.19.4
   else
     pip3 install numpy
@@ -223,11 +252,13 @@ py_venv() {
     pip3 uninstall mmcv-full
     pip3 install mmcv-full==1.4.1 -f https://download.openmmlab.com/mmcv/dist/cu113/torch1.10.0/index.html
   fi
-
+  
+  # deactivate python venv again
+  deactivate
 }
 
 pplcv() {
-  ## ppl.cv - install in /usr/local
+  ## ppl.cv
   cd ${WORKING_DIR}
   echo_blue "checking out '${PPLCV_DIR}' pkg..."
   if [ -d "${PPLCV_DIR}" ]; then
@@ -239,21 +270,16 @@ pplcv() {
   git pull
   git checkout tags/v${PPLCV_VER}
   mkdir build -p && cd build
-  cmake -DHPCC_USE_CUDA=ON -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} .. && make -j${processor_num} && sudo make install
+  cmake -DHPCC_USE_CUDA=ON -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} .. && make -j${PROC_NUM} && sudo make install
   sudo ldconfig
-  # pack as tar.gz file
-  cd ..
-  tar -zcvf ${WORKING_DIR}/pplcv_${PPLCV_VER}_cuda-${ARCH}-build.tar.gz build/
+
+  # TODO pack prebuild as tar.gz file
+  #cd ..
+  #tar -zcvf ${WORKING_DIR}/pplcv_${PPLCV_VER}_cuda-${ARCH}-build.tar.gz build/
 }
 
 mmdeploy(){
-  ## h5py (Required by mmdeploy)
-  ## h5py not directly supported by jetson and must be built/installed manually
-  sudo apt-get install pkg-config libhdf5-10* libhdf5-dev -y
-  sudo pip3 install Cython
-  sudo env H5PY_SETUP_REQUIRES=0 pip3 install -U h5py==2.9.0
-
-  ## mmdeploy SDK - install in /usr/local
+  ## mmdeploy SDK
   cd ${WORKING_DIR}
   echo_blue "checking out '${MMDEPLOY_DIR}' pkg..."
   if [ -d "${MMDEPLOY_DIR}" ]; then
@@ -267,27 +293,39 @@ mmdeploy(){
   # reinit submodules
   git submodule update --init --recursive
 
+  # python dependencies
   if [[ $WITH_PYTHON -eq 1 ]]
   then
+    source ${PYTHON_VENV_DIR}/bin/activate
+
+    ## h5py (Required by mmdeploy)
+    ## h5py not directly supported by jetson and must be built/installed manually
+    sudo apt-get install pkg-config libhdf5-10* libhdf5-dev -y
+    sudo pip3 install Cython
+    sudo env H5PY_SETUP_REQUIRES=0 pip3 install -U h5py==2.9.0
+
     pip install -e .
   fi
-  rm -r build
+    
+  # build
   mkdir build -p && cd build
   cmake .. \
     -DMMDEPLOY_BUILD_SDK=ON \
     -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
-    -DCMAKE_CXX_COMPILER=g++ \
-    -Dpplcv_DIR=/usr/local/lib/cmake/ppl \
+    -DCMAKE_CXX_COMPILER=${GCC_COMPILER} \
+    -Dpplcv_DIR=${INSTALL_PREFIX}/lib/cmake/ppl \
     -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
     -DMMDEPLOY_TARGET_BACKENDS=trt \
     -DMMDEPLOY_CODEBASES=all \
+    -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
     -DTENSORRT_DIR=${TENSORRT_DIR} \
     -DCUDNN_DIR=${CUDNN_DIR}
-  cmake --build . -- -j$(nproc) && sudo cmake --install .
+  cmake --build . -- -j${PROC_NUM} && sudo cmake --install .
   sudo ldconfig
-  # pack as tar.gz file
-  cd ..
-  tar -zcvf ${WORKING_DIR}/mmdeploysdk_${MMDEPLOY_VER}_${ARCH}-build.tar.gz build/
+
+  # TODO Pack build output as tar.gz file
+  #cd ..
+  # tar -zcvf ${WORKING_DIR}/mmdeploysdk_${MMDEPLOY_VER}_${ARCH}-build.tar.gz build/
   # Unpack as tar -zxf mmdeploysdk_*.tar.gz --directory MMDeploy-aarch64
 
   ## build mmdeploy examples
@@ -297,6 +335,9 @@ mmdeploy(){
   mkdir build -p && cd build
   cmake .. -DMMDeploy_DIR=${INSTALL_PREFIX}
   make all
+
+  # deactivate python venv again
+  deactivate
 }
 
 all() {
@@ -328,12 +369,6 @@ else
     echo $i
   done
   exit
-fi
-
-# prepare build
-if [[ $WITH_PYTHON -eq 1 ]]
-then
-  source venv-mmdet/bin/activate
 fi
 
 # remove all build files
