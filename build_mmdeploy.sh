@@ -67,8 +67,8 @@ contains_element () {
   for e; do [[ "$e" == "$match" ]] && return 0; done
   return 1
 }
-function version { 
-  echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; 
+function version {
+  echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }';
 }
 
 prereqs() {
@@ -213,7 +213,7 @@ py_venv() {
     # protofbuf on jetson is quite old - must be upgraded
     pip3 install --upgrade protobuf
     # Install numpy 1.19.4 as newer versions might give "Illegal instruction (core dumped)" on Jetson
-    # TODO Numpy might be installed per default so we should not remove it. 
+    # TODO Numpy might be installed per default so we should not remove it.
     pip3 install numpy==1.19.4
   else
     pip3 install numpy
@@ -252,7 +252,7 @@ py_venv() {
     pip3 uninstall mmcv-full
     pip3 install mmcv-full==1.4.1 -f https://download.openmmlab.com/mmcv/dist/cu113/torch1.10.0/index.html
   fi
-  
+
   # deactivate python venv again
   deactivate
 }
@@ -306,7 +306,7 @@ mmdeploy(){
 
     pip install -e .
   fi
-    
+
   # build
   mkdir build -p && cd build
   cmake .. \
