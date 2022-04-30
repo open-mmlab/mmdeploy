@@ -12,7 +12,7 @@ from mmdeploy.utils.test import (WrapFunction, backend_checker,
 deploy_cfg_ncnn = mmcv.Config(
     dict(
         onnx_config=dict(input_shape=None),
-        backend_config=dict(type='ncnn', model_inputs=None),
+        backend_config=dict(type='ncnn', model_inputs=None, use_vulkan=False),
         codebase_config=dict(type='mmdet', task='ObjectDetection')))
 
 
@@ -74,6 +74,28 @@ def test_group_norm_ncnn():
         run_with_backend=True)
 
     assert np.allclose(model_output, rewrite_output[0], rtol=1e-03, atol=1e-05)
+
+
+@backend_checker(Backend.NCNN)
+def test_chunk_ncnn():
+    input = torch.rand(1, 16, 16, 16)
+
+    model_output = input.chunk(2, dim=1)
+
+    def chunk_caller(input):
+        return input.chunk(2, dim=1)
+
+    wrapped_func = WrapFunction(chunk_caller)
+    rewrite_output, _ = get_rewrite_outputs(
+        wrapped_func,
+        model_inputs={'input': input},
+        deploy_cfg=deploy_cfg_ncnn,
+        run_with_backend=True)
+
+    assert len(model_output) == len(rewrite_output)
+    for i in range(len(model_output)):
+        assert np.allclose(
+            model_output[i], rewrite_output[i], rtol=1e-03, atol=1e-05)
 
 
 @backend_checker(Backend.NCNN)
