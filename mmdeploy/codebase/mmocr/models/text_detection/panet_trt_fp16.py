@@ -1,0 +1,91 @@
+# Copyright (c) OpenMMLab. All rights reserved.
+import torch
+import torch.nn.functional as F
+
+from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.utils.constants import Backend
+
+FACTOR = 32
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    func_name='mmocr.models.textdet.necks.FPEM_FFM.forward',
+    backend=Backend.TENSORRT.value)
+def fpem_ffm__forward__trt(ctx, self, x, *args, **kwargs):
+    c2, c3, c4, c5 = x
+    # reduce channel
+    c2 = self.reduce_conv_c2(c2)
+    c3 = self.reduce_conv_c3(c3)
+    c4 = self.reduce_conv_c4(c4)
+
+    bn_w = self.reduce_conv_c5[1].weight / torch.sqrt(
+        self.reduce_conv_c5[1].running_var + self.reduce_conv_c5[1].eps)
+    bn_b = self.reduce_conv_c5[
+        1].bias - self.reduce_conv_c5[1].running_mean * bn_w
+    bn_w = bn_w.reshape(1, -1, 1, 1).repeat(1, 1, c5.size(2), c5.size(3))
+    bn_b = bn_b.reshape(1, -1, 1, 1).repeat(1, 1, c5.size(2), c5.size(3))
+    conv_b = self.reduce_conv_c5[0].bias.reshape(1, -1, 1, 1).repeat(
+        1, 1, c5.size(2), c5.size(3))
+    c5 = FACTOR * (self.reduce_conv_c5[:-1](c5)) - (FACTOR - 1) * (
+        bn_w * conv_b + bn_b)
+    c5 = self.reduce_conv_c5[-1](c5)
+
+    # FPEM
+    for i, fpem in enumerate(self.fpems):
+        c2, c3, c4, c5 = fpem(c2, c3, c4, c5)
+        if i == 0:
+            c2_ffm = c2
+            c3_ffm = c3
+            c4_ffm = c4
+            c5_ffm = c5
+        else:
+            c2_ffm += c2
+            c3_ffm += c3
+            c4_ffm += c4
+            c5_ffm += c5
+
+    # FFM
+    c5 = F.interpolate(
+        c5_ffm,
+        c2_ffm.size()[-2:],
+        mode='bilinear',
+        align_corners=self.align_corners)
+    c4 = F.interpolate(
+        c4_ffm,
+        c2_ffm.size()[-2:],
+        mode='bilinear',
+        align_corners=self.align_corners)
+    c3 = F.interpolate(
+        c3_ffm,
+        c2_ffm.size()[-2:],
+        mode='bilinear',
+        align_corners=self.align_corners)
+    outs = [c2_ffm, c3, c4, c5]
+    return tuple(outs)
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    func_name='mmdet.models.backbones.resnet.BasicBlock.forward',
+    backend=Backend.TENSORRT.value)
+def basic_block__forward__trt(ctx, self, x):
+    if self.conv1.in_channels < 400:
+        return ctx.origin_func(self, x)
+
+    identity = x
+
+    out = self.conv1(x)
+    out = self.norm1(out)
+    out = self.relu(out)
+
+    out = self.conv2(out)
+
+    # the output of the last bn layer exceeds the range of fp16
+    w1 = self.norm2.weight / torch.sqrt(self.norm2.running_var +
+                                        self.norm2.eps)
+    bias = self.norm2.bias - self.norm2.running_mean * w1
+    w1 = w1.reshape(1, -1, 1, 1).repeat(1, 1, out.size(2), out.size(3))
+    bias = bias.reshape(1, -1, 1, 1).repeat(1, 1, out.size(2),
+                                            out.size(3)) + identity
+    out = self.relu(w1 * (out / FACTOR) + bias / FACTOR)
+
+    return out
