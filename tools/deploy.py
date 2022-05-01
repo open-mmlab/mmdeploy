@@ -11,6 +11,7 @@ from torch.multiprocessing import Process, set_start_method
 from mmdeploy.apis import (create_calib_table, extract_model,
                            get_predefined_partition_cfg, torch2onnx,
                            torch2torchscript, visualize_model)
+from mmdeploy.apis.core import PIPELINE_MANAGER
 from mmdeploy.utils import (IR, Backend, get_backend, get_calib_filename,
                             get_ir_config, get_model_inputs,
                             get_partition_config, get_root_logger, load_config,
@@ -88,6 +89,12 @@ def main():
     logger = get_root_logger()
     logger.setLevel(args.log_level)
 
+    pipeline_funcs = [
+        'mmdeploy.apis.torch2onnx', 'mmdeploy.apis.torch2torchscript'
+    ]
+    PIPELINE_MANAGER.enable_multiprocess(True, pipeline_funcs)
+    PIPELINE_MANAGER.set_log_level(logging.INFO, pipeline_funcs)
+
     deploy_cfg_path = args.deploy_cfg
     model_cfg_path = args.model_cfg
     checkpoint_path = args.checkpoint
@@ -107,13 +114,21 @@ def main():
     ir_config = get_ir_config(deploy_cfg)
     ir_save_file = ir_config['save_file']
     ir_type = IR.get(ir_config['type'])
-    create_process(
-        f'torch2{ir_type.value}',
-        target=torch2ir(ir_type),
-        args=(args.img, args.work_dir, ir_save_file, deploy_cfg_path,
-              model_cfg_path, checkpoint_path),
-        kwargs=dict(device=args.device),
-        ret_value=ret_value)
+    torch2ir(ir_type)(
+        args.img,
+        args.work_dir,
+        ir_save_file,
+        deploy_cfg_path,
+        model_cfg_path,
+        checkpoint_path,
+        device=args.device)
+    # create_process(
+    #     f'torch2{ir_type.value}',
+    #     target=torch2ir(ir_type),
+    #     args=(args.img, args.work_dir, ir_save_file, deploy_cfg_path,
+    #           model_cfg_path, checkpoint_path),
+    #     kwargs=dict(device=args.device),
+    #     ret_value=ret_value)
 
     # convert backend
     ir_files = [osp.join(args.work_dir, ir_save_file)]

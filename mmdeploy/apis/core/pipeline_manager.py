@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import logging
 from functools import wraps
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
 from mmdeploy.utils import get_root_logger
 
@@ -27,22 +27,27 @@ def _get_func_name(func: Callable) -> str:
 class PipelineCaller:
     """Classes to record the attribute of each pipeline function."""
 
-    def __init__(self,
-                 func: Callable,
-                 func_name: Optional[str] = None,
-                 is_multiprocess_available: bool = True) -> None:
-        assert isinstance(func, Callable)
+    def __init__(
+            self,
+            #  func: Callable,
+            module_name: str,
+            impl_name: str,
+            func_name: Optional[str] = None,
+            is_multiprocess_available: bool = True) -> None:
         if func_name is not None:
             self._func_name = func_name
         else:
-            self._func_name = _get_func_name(func)
-        self._func = func
+            self._func_name = impl_name
+        # Can not save the function directly since multiprocess with spawn mode
+        # require all field can be pickled.
+        self._module_name = module_name
+        self._impl_name = impl_name
         self._is_multiprocess_available = is_multiprocess_available
         self._enable_multiprocess = False
         self._mp_dict = None
         self._mp_async = False
         self._call_id = 0
-        self._log_level = logging.INFO
+        self._log_level = logging.DEBUG
         self._input_hooks: List[Callable] = []
         self._output_hooks: List[Callable] = []
 
@@ -71,8 +76,7 @@ class PipelineCaller:
         assert self._mp_dict is not None, 'mp_dict is None.'
         call_id = self._call_id if call_id is None else call_id
         assert call_id in self._mp_dict, \
-            f'mp output of {self._func_name} ' \
-            f'with call id: {call_id} is not exist.'
+            f'`{self._func_name}` with Call id: {call_id} failed.'
         ret = self._mp_dict[call_id]
         self._mp_dict.pop(call_id)
         return ret
@@ -84,20 +88,25 @@ class PipelineCaller:
 
         logger = get_root_logger(log_level=self._log_level)
         mp_log_str = 'subprocess' if do_multiprocess else 'main process'
-        logger.debug(self._log_level,
-                     f'Start pipeline {self._func_name} in {mp_log_str}')
+        logger.log(self._log_level,
+                   f'Start pipeline {self._func_name} in {mp_log_str}')
 
         for input_hook in self.input_hooks:
             args, kwargs = input_hook(*args, **kwargs)
 
-        ret = self._func(*args, **kwargs)
+        module_name = self._module_name
+        impl_name = self._impl_name
+        # TODO: find another way to load function
+        exec(f'from {module_name} import {impl_name}')
+        func = eval(f'{impl_name}')
+        ret = func(*args, **kwargs)
         for output_hook in self.output_hooks:
             ret = output_hook(ret)
 
         if do_multiprocess:
             self._mp_dict[self._call_id] = ret
 
-        logger.debug(self._log_level, f'Finish pipeline {self._func_name}')
+        logger.log(self._log_level, f'Finish pipeline {self._func_name}')
         return ret
 
 
@@ -168,23 +177,27 @@ class PipelineManager:
         else:
             pipe_caller._mp_dict = None
 
-    def enable_multiprocess(self,
-                            val: bool,
-                            func_name: Optional[str] = None) -> None:
+    def enable_multiprocess(
+            self,
+            val: bool,
+            func_names: Optional[Union[str, Sequence[str]]] = None) -> None:
         """enable multiprocess for pipeline function.
 
         Args:
             val (bool): enable or disable multiprocess.
-            func_name (str | None): function name to enable. If func_name is
-                None, all registered function will be enabled.
+            func_names (str | List[str]): function names to enable. If
+                func_name is None, all registered function will be enabled.
         """
         if val is True:
             self._create_mp_manager()
-        if func_name is None:
+        if func_names is None:
             for func_name in self._callers:
                 self._enable_multiprocess_single(val, func_name=func_name)
         else:
-            self._enable_multiprocess_single(val, func_name=func_name)
+            if isinstance(func_names, str):
+                func_names = [func_names]
+            for func_name in func_names:
+                self._enable_multiprocess_single(val, func_name=func_name)
 
     def set_mp_async(self, val: bool, func_name: Optional[str] = None) -> None:
         """set multiprocess async of the pipeline function.
@@ -196,17 +209,21 @@ class PipelineManager:
         """
         self.__set_caller_val('_mp_async', val, func_name)
 
-    def set_log_level(self,
-                      level: int,
-                      func_name: Optional[str] = None) -> None:
+    def set_log_level(
+            self,
+            level: int,
+            func_names: Optional[Union[str, Sequence[str]]] = None) -> None:
         """set log level of the pipeline function.
 
         Args:
             level (int): the log level.
-            func_name (str | None): function name to set. If func_name is
-                None, all registered function will be set.
+            func_names (str | List[str]): function names to set. If func_names
+                is None, all registered function will be set.
         """
-        self.__set_caller_val('_log_level', level, func_name)
+        if isinstance(func_names, str):
+            func_names = [func_names]
+        for func_name in func_names:
+            self.__set_caller_val('_log_level', level, func_name)
 
     def get_input_hooks(self, func_name: str):
         """get input hooks of given function name.
@@ -299,12 +316,20 @@ class PipelineManager:
             assert isinstance(func, Callable), f'{func} is not Callable.'
             func_name_ = func_name if func_name is not None \
                 else _get_func_name(func)
+
+            # create global function to save the implementation
+            impl_name = f'_pipe_{func.__name__}__impl_'
+            func.__globals__[impl_name] = func
+
+            # create caller
             pipe_caller = PipelineCaller(
-                func,
+                func.__module__,
+                impl_name,
                 func_name=func_name_,
                 is_multiprocess_available=is_multiprocess_available)
             PIPELINE_MANAGER._callers[func_name_] = pipe_caller
 
+            # wrap call
             @wraps(func)
             def _wrap(*args, **kwargs):
                 return self.call_function(func_name_, *args, **kwargs)
