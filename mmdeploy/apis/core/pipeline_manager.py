@@ -84,8 +84,8 @@ class PipelineCaller:
 
         logger = get_root_logger(log_level=self._log_level)
         mp_log_str = 'subprocess' if do_multiprocess else 'main process'
-        logger.log(self._log_level,
-                   f'Start pipeline {self._func_name} in {mp_log_str}')
+        logger.debug(self._log_level,
+                     f'Start pipeline {self._func_name} in {mp_log_str}')
 
         for input_hook in self.input_hooks:
             args, kwargs = input_hook(*args, **kwargs)
@@ -97,7 +97,7 @@ class PipelineCaller:
         if do_multiprocess:
             self._mp_dict[self._call_id] = ret
 
-        logger.log(self._log_level, f'Finish pipeline {self._func_name}')
+        logger.debug(self._log_level, f'Finish pipeline {self._func_name}')
         return ret
 
 

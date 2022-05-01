@@ -5,10 +5,14 @@ from typing import Any, Optional, Union
 import mmcv
 import torch
 
+from mmdeploy.apis.core.pipeline_manager import no_mp
 from mmdeploy.utils import get_backend, get_input_shape, load_config
+from .core import PIPELINE_MANAGER
 from .torch_jit import trace
 
 
+@PIPELINE_MANAGER.register_pipeline(func_name='mmdeploy.apis.torch2torchscript'
+                                    )
 def torch2torchscript(img: Any,
                       work_dir: str,
                       save_file: str,
@@ -48,10 +52,11 @@ def torch2torchscript(img: Any,
     backend = get_backend(deploy_cfg).value
     output_prefix = osp.join(work_dir, osp.splitext(save_file)[0])
 
-    trace(
-        torch_model,
-        model_inputs,
-        output_path_prefix=output_prefix,
-        backend=backend,
-        context_info=context_info,
-        check_trace=False)
+    with no_mp():
+        trace(
+            torch_model,
+            model_inputs,
+            output_path_prefix=output_prefix,
+            backend=backend,
+            context_info=context_info,
+            check_trace=False)

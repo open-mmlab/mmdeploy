@@ -5,11 +5,14 @@ from typing import Any, Optional, Union
 import mmcv
 import torch
 
+from mmdeploy.apis.core.pipeline_manager import no_mp
 from mmdeploy.utils import (get_backend, get_dynamic_axes, get_input_shape,
                             get_onnx_config, load_config)
+from .core import PIPELINE_MANAGER
 from .onnx import export
 
 
+@PIPELINE_MANAGER.register_pipeline(func_name='mmdeploy.apis.torch2onnx')
 def torch2onnx(img: Any,
                work_dir: str,
                save_file: str,
@@ -79,15 +82,16 @@ def torch2onnx(img: Any,
         'verbose', False)
     keep_initializers_as_inputs = onnx_cfg.get('keep_initializers_as_inputs',
                                                True)
-    export(
-        torch_model,
-        model_inputs,
-        output_path_prefix=output_prefix,
-        backend=backend,
-        input_names=input_names,
-        output_names=output_names,
-        context_info=context_info,
-        opset_version=opset_version,
-        dynamic_axes=dynamic_axes,
-        verbose=verbose,
-        keep_initializers_as_inputs=keep_initializers_as_inputs)
+    with no_mp():
+        export(
+            torch_model,
+            model_inputs,
+            output_path_prefix=output_prefix,
+            backend=backend,
+            input_names=input_names,
+            output_names=output_names,
+            context_info=context_info,
+            opset_version=opset_version,
+            dynamic_axes=dynamic_axes,
+            verbose=verbose,
+            keep_initializers_as_inputs=keep_initializers_as_inputs)

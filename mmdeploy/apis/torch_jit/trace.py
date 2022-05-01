@@ -5,9 +5,9 @@ from typing import Any, Dict, Optional, Sequence, Tuple, Union
 import torch
 from packaging.version import parse as version_parse
 
-from mmdeploy.apis.core import PIPELINE_MANAGER
 from mmdeploy.core import RewriterContext, patch_model
 from mmdeploy.utils import IR, Backend, get_root_logger
+from ..core import PIPELINE_MANAGER
 
 
 @PIPELINE_MANAGER.register_pipeline(func_name='mmdeploy.apis.torch_jit.trace')
