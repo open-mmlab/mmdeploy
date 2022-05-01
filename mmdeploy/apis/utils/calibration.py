@@ -1,23 +1,26 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional, Union
+from copy import deepcopy
+from typing import Callable, Dict, Optional
 
 import h5py
-import mmcv
 import torch
-from mmcv.parallel import MMDataParallel
+import tqdm
+from torch.utils.data import DataLoader
 
-from mmdeploy.core import (RewriterContext, patch_model,
-                           reset_mark_function_count)
-from mmdeploy.utils import cfg_apply_marks, load_config
+from mmdeploy.core import RewriterContext, reset_mark_function_count
+from ..core import PIPELINE_MANAGER
 
 
+@PIPELINE_MANAGER.register_pipeline(
+    func_name='mmdeploy.apis.utils.create_calib_table')
 def create_calib_table(calib_file: str,
-                       deploy_cfg: Union[str, mmcv.Config],
-                       model_cfg: Union[str, mmcv.Config],
-                       model_checkpoint: Optional[str] = None,
-                       dataset_cfg: Optional[Union[str, mmcv.Config]] = None,
-                       dataset_type: str = 'val',
-                       device: str = 'cuda:0') -> None:
+                       model: torch.nn.Module,
+                       dataloader: DataLoader,
+                       get_tensor_func: Optional[Callable] = None,
+                       inference_func: Optional[Callable] = None,
+                       model_partition: bool = False,
+                       context_info: Dict = dict(),
+                       device: str = 'cpu') -> None:
     """Create calibration table.
 
     Examples:
@@ -42,49 +45,26 @@ def create_calib_table(calib_file: str,
         dataset_cfg (str | mmcv.Config): Dataset config, defaults to `None`
         dataset_type (str): A string specifying dataset type, e.g.: 'test',
             'val', defaults to 'val'.
-        device (str): Specifying the device to run on, defaults to 'cuda:0'.
+        device (str): Specifying the device to run on, defaults to 'cpu'.
     """
-    if dataset_cfg is None:
-        dataset_cfg = model_cfg
 
-    # load cfg if necessary
-    deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
-    device_id = torch.device(device).index
-    if device_id is None:
-        device_id = 0
-
-    if dataset_cfg is None:
-        dataset_cfg = model_cfg
-    # load dataset_cfg if necessary
-    dataset_cfg = load_config(dataset_cfg)[0]
-
-    from mmdeploy.apis.utils import build_task_processor
-    task_processor = build_task_processor(model_cfg, deploy_cfg, device)
-
-    apply_marks = cfg_apply_marks(deploy_cfg)
     backend = 'default'
-    model = task_processor.init_pytorch_model(model_checkpoint)
-    dataset = task_processor.build_dataset(dataset_cfg, dataset_type)
-
-    # patch model
-    patched_model = patch_model(model, cfg=deploy_cfg, backend=backend)
 
     with h5py.File(calib_file, mode='w') as file:
         calib_data_group = file.create_group('calib_data')
 
-        if not apply_marks:
+        if not model_partition:
             # create end2end group
             input_data_group = calib_data_group.create_group('end2end')
             input_group = input_data_group.create_group('input')
-        dataloader = task_processor.build_dataloader(
-            dataset, 1, 1, dist=False, shuffle=False)
-        patched_model = MMDataParallel(patched_model, device_ids=[device_id])
-        prog_bar = mmcv.ProgressBar(len(dataset))
-        for data_id, input_data in enumerate(dataloader):
+        for data_id, input_data in enumerate(tqdm.tqdm(dataloader)):
 
-            if not apply_marks:
+            if not model_partition:
                 # save end2end data
-                input_tensor = task_processor.get_tensor_from_input(input_data)
+                if get_tensor_func is not None:
+                    input_tensor = get_tensor_func(input_data)
+                else:
+                    input_tensor = input_data
                 input_ndarray = input_tensor.detach().cpu().numpy()
                 input_group.create_dataset(
                     str(data_id),
@@ -92,15 +72,20 @@ def create_calib_table(calib_file: str,
                     compression='gzip',
                     compression_opts=4,
                     data=input_ndarray)
+            else:
+                context_info_ = deepcopy(context_info)
+                if 'cfg' not in context_info:
+                    context_info_['cfg'] = dict()
+                context_info_['backend'] = backend
+                context_info_['create_calib'] = True
+                context_info_['calib_file'] = file
+                context_info_['data_id'] = data_id
 
-            with torch.no_grad(), RewriterContext(
-                    cfg=deploy_cfg,
-                    backend=backend,
-                    create_calib=True,
-                    calib_file=file,
-                    data_id=data_id):
-                reset_mark_function_count()
-                _ = task_processor.run_inference(patched_model, input_data)
+                with torch.no_grad(), RewriterContext(**context_info_):
+                    reset_mark_function_count()
+                    if inference_func is not None:
+                        inference_func(model, input_data)
+                    else:
+                        model(input_data)
+
             file.flush()
-
-            prog_bar.update()

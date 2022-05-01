@@ -5,12 +5,11 @@ import onnx
 import onnx.helper
 import onnx.utils
 
+from mmdeploy.apis.core import PIPELINE_MANAGER
 from mmdeploy.core.optimizers import (attribute_to_dict, create_extractor,
                                       get_new_name, parse_extractor_io_string,
                                       remove_identity, rename_value)
 from mmdeploy.utils import get_root_logger
-
-from mmdeploy.apis.core import PIPELINE_MANAGER
 
 
 @PIPELINE_MANAGER.register_pipeline(
@@ -48,7 +47,7 @@ def extract_partition(model: Union[str, onnx.ModelProto],
             }
         }
         >>> save_file = 'partition_model.onnx'
-        >>> extract_model(model, start_marker, end_marker, \
+        >>> extract_partition(model, start_marker, end_marker, \
                 dynamic_axes=dynamic_axes, \
                 save_file=save_file)
 
