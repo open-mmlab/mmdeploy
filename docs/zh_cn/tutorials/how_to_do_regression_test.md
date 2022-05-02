@@ -24,8 +24,8 @@
 ## 1. 用法
 
 ```shell
-python ./tools/regression_test.py \
-    --deploy-yml "${DEPLOY_YML_PATH}" \
+python ./regression_test/regression_test.py \
+    --codebase "${CODEBASE_NAME}" \
     --backends "${BACKEND}" \
     --work-dir "${WORK_DIR}" \
     --device "${DEVICE}" \
@@ -35,7 +35,7 @@ python ./tools/regression_test.py \
 
 ### 参数解析
 
-- `--deploy-yml` : 需要测试的 codebase，eg.`configs/mmdet/mmdet_regression_test.yaml`，如果设置为 `all` 即全部测试。
+- `--codebase` : 需要测试的 codebase，eg.`mmdet`, 测试多个 `mmcls mmdet ...`
 - `--backends` : 筛选测试的后端, 默认 `all`: 测全部`backend`, 也可传入若干个后端，例如 `onnxruntime tesnsorrt`。
 - `--work-dir` : 模型转换、报告生成的路径。
 - `--device` : 使用的设备，默认 `cuda`。
@@ -49,11 +49,11 @@ python ./tools/regression_test.py \
 
 ## 例子
 
-1. 测试 mmdet 和 mmpose 的所有 backend 的 转换+精度
+1. 测试 mmdet 和 mmpose 的所有 backend 的 **转换+精度**
 
 ```shell
-python ./tools/regression_test.py \
-    --deploy-yml ./configs/mmdet/mmdet_regression_test.yaml ./configs/mmpose/mmpose_regression_test.yaml \
+python ./regression_test/regression_test.py \
+    --codebase mmdet mmpose \
     --backends all \
     --work-dir "../mmdeploy_regression_working_dir" \
     --device "cuda" \
@@ -61,11 +61,11 @@ python ./tools/regression_test.py \
     --performance
 ```
 
-2. 测试 mmdet 和 mmpose 的某几个 backend 的 转换+精度
+2. 测试 mmdet 和 mmpose 的某几个 backend 的 **转换+精度**
 
 ```shell
 python ./tools/regression_test.py \
-    --deploy-yml ./configs/mmdet/mmdet_regression_test.yaml ./configs/mmdet/mmpose.yaml \
+    --codebase mmdet mmpose \
     --backends onnxruntime tesnsorrt \
     --work-dir "../mmdeploy_regression_working_dir" \
     --device "cuda" \
@@ -73,11 +73,11 @@ python ./tools/regression_test.py \
     --performance
 ```
 
-3. 测试 mmdet 和 mmpose 的某几个 backend，只需测试转换
+3. 测试 mmdet 和 mmpose 的某几个 backend，**只测试转换**
 
 ```shell
 python ./tools/regression_test.py \
-    --deploy-yml ./configs/mmdet/mmdet_regression_test.yaml ./configs/mmdet/mmpose.yaml \
+    --codebase mmdet mmpose \
     --backends onnxruntime tesnsorrt \
     --work-dir "../mmdeploy_regression_working_dir" \
     --device "cuda" \
@@ -213,6 +213,7 @@ models:
 ## 5. 支持的Codebase及其Metric
 - [x] mmdet
   - [x] bbox
+  - [x] segm
 - [x] mmcls
   - [x] accuracy
 - [x] mmseg
