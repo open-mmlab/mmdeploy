@@ -287,34 +287,34 @@ void NMSRotatedKernel::Compute(OrtKernelContext* context) {
   int64_t nboxes = boxes_dim[1];
   int64_t nclass = scores_dim[1];
   assert(boxes_dim[2] == 5);  //(cx,cy,w,h,theta)
+
+  // allocate tmp memory
+  float* tmp_boxes = (float*)allocator_.Alloc(sizeof(float) * nbatch * nboxes * 5);
+  float* sc = (float*)allocator_.Alloc(sizeof(float) * nbatch * nclass * nboxes);
+  bool* select = (bool*)allocator_.Alloc(sizeof(bool) * nbatch * nboxes);
+
+  memcpy(tmp_boxes, boxes_data, sizeof(float) * nbatch * nboxes * 5);
+  memcpy(sc, scores_data, sizeof(float) * nbatch * nclass * nboxes);
+
   // std::vector<std::vector<int64_t>> res_order;
   std::vector<int64_t> res_order;
   for (int64_t k = 0; k < nbatch; k++) {
     for (int64_t g = 0; g < nclass; g++) {
-      // allocate tmp memory
-      float* tmp_boxes = (float*)allocator_.Alloc(sizeof(float) * nbatch * nboxes * 5);
-      float* sc = (float*)allocator_.Alloc(sizeof(float) * nbatch * nclass * nboxes);
-      bool* select = (bool*)allocator_.Alloc(sizeof(bool) * nbatch * nboxes);
       for (int64_t i = 0; i < nboxes; i++) {
         select[i] = true;
       }
-      memcpy(tmp_boxes, boxes_data, sizeof(float) * nbatch * nboxes * 5);
-      memcpy(sc, scores_data, sizeof(float) * nbatch * nclass * nboxes);
       // sort scores
       std::vector<float> tmp_sc;
       for (int i = 0; i < nboxes; i++) {
-        // if (sc[k * nboxes * nclass + g * nboxes + i] <= score_threshold) select[i] = false;
         tmp_sc.push_back(sc[k * nboxes * nclass + g * nboxes + i]);
       }
       std::vector<int64_t> order(tmp_sc.size());
       std::iota(order.begin(), order.end(), 0);
       std::sort(order.begin(), order.end(),
                 [&tmp_sc](int64_t id1, int64_t id2) { return tmp_sc[id1] > tmp_sc[id2]; });
-
       for (int64_t _i = 0; _i < nboxes; _i++) {
         if (select[_i] == false) continue;
         auto i = order[_i];
-
         for (int64_t _j = _i + 1; _j < nboxes; _j++) {
           if (select[_j] == false) continue;
           auto j = order[_j];
