@@ -209,8 +209,8 @@ def main():
             logger.error('ncnn support is not available.')
             exit(1)
 
-        from mmdeploy.apis.ncnn import get_output_model_file
         import mmdeploy.apis.ncnn as ncnn_api
+        from mmdeploy.apis.ncnn import get_output_model_file
 
         ncnn_pipeline_funcs = ['mmdeploy.apis.ncnn.from_onnx']
         PIPELINE_MANAGER.set_log_level(logging.INFO, ncnn_pipeline_funcs)
@@ -229,23 +229,22 @@ def main():
         assert is_available_openvino(), \
             'OpenVINO is not available, please install OpenVINO first.'
 
+        import mmdeploy.apis.openvino as openvino_api
         from mmdeploy.apis.openvino import (get_input_info_from_cfg,
                                             get_mo_options_from_cfg,
-                                            get_output_model_file,
-                                            onnx2openvino)
+                                            get_output_model_file)
+
+        openvino_pipeline_funcs = ['mmdeploy.apis.openvino.from_onnx']
+        PIPELINE_MANAGER.set_log_level(logging.INFO, openvino_pipeline_funcs)
+
         openvino_files = []
         for onnx_path in ir_files:
             model_xml_path = get_output_model_file(onnx_path, args.work_dir)
             input_info = get_input_info_from_cfg(deploy_cfg)
             output_names = get_ir_config(deploy_cfg).output_names
             mo_options = get_mo_options_from_cfg(deploy_cfg)
-            create_process(
-                f'onnx2openvino with {onnx_path}',
-                target=onnx2openvino,
-                args=(input_info, output_names, onnx_path, args.work_dir,
-                      mo_options),
-                kwargs=dict(),
-                ret_value=ret_value)
+            openvino_api.from_onnx(onnx_path, args.work_dir, input_info,
+                                   output_names, mo_options)
             openvino_files.append(model_xml_path)
         backend_files = openvino_files
 
