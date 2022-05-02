@@ -1,15 +1,16 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import importlib
 
-from .constants import SDK_TASK_MAP, Backend, Codebase, Task
+from .constants import IR, SDK_TASK_MAP, Backend, Codebase, Task
 from .device import parse_cuda_device_id, parse_device_id
 from .env import get_backend_version, get_codebase_version, get_library_version
 from .utils import get_file_path, get_root_logger, target_wrapper
 
 __all__ = [
-    'SDK_TASK_MAP', 'Backend', 'Codebase', 'Task', 'parse_cuda_device_id',
-    'parse_device_id', 'get_file_path', 'get_root_logger', 'target_wrapper',
-    'get_backend_version', 'get_codebase_version', 'get_library_version'
+    'SDK_TASK_MAP', 'IR', 'Backend', 'Codebase', 'Task',
+    'parse_cuda_device_id', 'get_library_version', 'get_codebase_version',
+    'get_backend_version', 'parse_device_id', 'get_file_path',
+    'get_root_logger', 'target_wrapper'
 ]
 
 if importlib.util.find_spec('mmcv') is not None:
