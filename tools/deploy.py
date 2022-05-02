@@ -209,18 +209,18 @@ def main():
             logger.error('ncnn support is not available.')
             exit(1)
 
-        from mmdeploy.apis.ncnn import get_output_model_file, onnx2ncnn
+        from mmdeploy.apis.ncnn import get_output_model_file
+        import mmdeploy.apis.ncnn as ncnn_api
+
+        ncnn_pipeline_funcs = ['mmdeploy.apis.ncnn.from_onnx']
+        PIPELINE_MANAGER.set_log_level(logging.INFO, ncnn_pipeline_funcs)
 
         backend_files = []
         for onnx_path in ir_files:
             model_param_path, model_bin_path = get_output_model_file(
                 onnx_path, args.work_dir)
-            create_process(
-                f'onnx2ncnn with {onnx_path}',
-                target=onnx2ncnn,
-                args=(onnx_path, model_param_path, model_bin_path),
-                kwargs=dict(),
-                ret_value=ret_value)
+            onnx_name = osp.splitext(osp.split(onnx_path)[1])[0]
+            ncnn_api.from_onnx(onnx_path, osp.join(args.work_dir, onnx_name))
             backend_files += [model_param_path, model_bin_path]
 
     elif backend == Backend.OPENVINO:

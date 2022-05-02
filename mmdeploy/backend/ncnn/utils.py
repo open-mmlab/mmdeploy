@@ -20,7 +20,7 @@ def from_onnx(onnx_model: Union[onnx.ModelProto, str],
         >>> onnx_path = 'work_dir/end2end.onnx'
         >>> save_param = 'work_dir/end2end.param'
         >>> save_bin = 'work_dir/end2end.bin'
-        >>> onnx2ncnn(onnx_path, save_param, save_bin)
+        >>> from_onnx(onnx_path, save_param, save_bin)
 
     Args:
         onnx_path (ModelProto|str): The path of the onnx model.

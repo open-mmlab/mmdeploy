@@ -1,11 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
-from subprocess import call
 from typing import List
 
 import mmcv
-
-from .init_plugins import get_onnx2ncnn_path
 
 
 def get_output_model_file(onnx_path: str, work_dir: str) -> List[str]:
@@ -24,28 +21,3 @@ def get_output_model_file(onnx_path: str, work_dir: str) -> List[str]:
     save_param = osp.join(work_dir, file_name + '.param')
     save_bin = osp.join(work_dir, file_name + '.bin')
     return [save_param, save_bin]
-
-
-def onnx2ncnn(onnx_path: str, save_param: str, save_bin: str):
-    """Convert ONNX to ncnn.
-
-    The inputs of ncnn include a model file and a weight file. We need to use
-    a executable program to convert the `.onnx` file to a `.param` file and
-    a `.bin` file. The output files will save to work_dir.
-
-    Example:
-        >>> from mmdeploy.backend.ncnn.onnx2ncnn import onnx2ncnn
-        >>> onnx_path = 'work_dir/end2end.onnx'
-        >>> save_param = 'work_dir/end2end.param'
-        >>> save_bin = 'work_dir/end2end.bin'
-        >>> onnx2ncnn(onnx_path, save_param, save_bin)
-
-    Args:
-        onnx_path (str): The path of the onnx model.
-        save_param (str): The path to save the output `.param` file.
-        save_bin (str): The path to save the output `.bin` file.
-    """
-
-    onnx2ncnn_path = get_onnx2ncnn_path()
-
-    call([onnx2ncnn_path, onnx_path, save_param, save_bin])
