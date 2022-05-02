@@ -657,8 +657,8 @@ def get_backend_fps_metric(deploy_cfg_path: str, model_cfg_path: Path,
     # Test backend
     shell_res = subprocess.run(cmd_str,
                                cwd=str(Path(__file__).absolute().parent.parent),
-                               shell=True)
-    logger.info(f'Got shell_res = {shell_res.returncode}')
+                               shell=True).returncode
+    logger.info(f'Got shell_res = {shell_res}')
 
     metric_key = ''
     metric_name = ''
