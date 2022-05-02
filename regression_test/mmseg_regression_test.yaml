@@ -1,8 +1,6 @@
 globals:
-  codebase_name: mmseg
   codebase_dir: ../mmsegmentation
   checkpoint_force_download: False
-  checkpoint_dir: ../mmdeploy_checkpoints
   images:
     img_leftImg8bit: &img_leftImg8bit ../mmsegmentation/tests/data/pseudo_cityscapes_dataset/leftImg8bit/frankfurt_000000_000294_leftImg8bit.png
     img_loveda_0: &img_loveda_0 ../mmsegmentation/tests/data/pseudo_loveda_dataset/img_dir/0.png

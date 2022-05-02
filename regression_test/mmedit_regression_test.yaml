@@ -1,8 +1,6 @@
 globals:
-  codebase_name: mmedit
   codebase_dir: ../mmediting
   checkpoint_force_download: False
-  checkpoint_dir: ../mmdeploy_checkpoints
   images:
     img_face: &img_face ../mmediting/tests/data/face/000001.png
     img_bg: &img_bg ../mmediting/tests/data/bg/GT26r.jpg

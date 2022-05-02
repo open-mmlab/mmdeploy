@@ -47,6 +47,11 @@ def parse_args():
         help='the dir to save logs and models',
         default='../mmdeploy_regression_working_dir')
     parser.add_argument(
+        '--checkpoint-dir',
+        type=str,
+        help='the dir to save checkpoint for all model',
+        default='../mmdeploy_checkpoints')
+    parser.add_argument(
         '--device', type=str, help='Device type, cuda or cpu', default='cuda')
     parser.add_argument(
         '--log-level',
@@ -147,6 +152,7 @@ def get_model_metafile_info(global_info: dict, model_info: dict,
     checkpoint_save_dir = Path(checkpoint_dir).joinpath(
         codebase_name, model_info.get('name'))
     checkpoint_save_dir.mkdir(parents=True, exist_ok=True)
+    logger.info(f'Saving checkpoint in {checkpoint_save_dir}')
 
     # get model metafile info
     metafile_path = Path(codebase_dir).joinpath(model_info.get('metafile'))
@@ -1089,6 +1095,11 @@ def main():
         global_info = yaml_info.get('globals')
         for metric_name in global_info.get('metric_info', {}):
             report_dict.update({metric_name: []})
+
+        global_info.update({'checkpoint_dir': args.checkpoint_dir})
+        global_info.update(
+            {'codebase_name': Path(deploy_yaml).stem.split('_')[0]})
+
         metric_info = global_info.get('metric_info', {})
         report_dict.update({'test_pass': []})
 
