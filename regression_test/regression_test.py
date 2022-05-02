@@ -32,7 +32,7 @@ def parse_args():
             'mmedit'
         ])
     parser.add_argument(
-        '--performance',
+        '-p', '--performance',
         default=False,
         action='store_true',
         help='test performance if it set')

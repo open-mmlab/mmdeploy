@@ -30,7 +30,7 @@ python ./regression_test/regression_test.py \
     --work-dir "${WORK_DIR}" \
     --device "${DEVICE}" \
     --log-level INFO \
-    [--performance]
+    [--performance 或 -p]
 ```
 
 ### 参数解析
@@ -40,7 +40,7 @@ python ./regression_test/regression_test.py \
 - `--work-dir` : 模型转换、报告生成的路径。
 - `--device` : 使用的设备，默认 `cuda`。
 - `--log-level` : 设置日记的等级，选项包括`'CRITICAL'， 'FATAL'， 'ERROR'， 'WARN'， 'WARNING'， 'INFO'， 'DEBUG'， 'NOTSET'`。默认是`INFO`。
-- `--performance` : 是否测试精度，加上则测试转换+精度，不加上则只测试转换
+- `-p` 或 `--performance` : 是否测试精度，加上则测试转换+精度，不加上则只测试转换
 
 ### 注意事项
 对于 Windows 用户：
@@ -70,7 +70,7 @@ python ./tools/regression_test.py \
     --work-dir "../mmdeploy_regression_working_dir" \
     --device "cuda" \
     --log-level INFO \
-    --performance
+    -p
 ```
 
 3. 测试 mmdet 和 mmpose 的某几个 backend，**只测试转换**
