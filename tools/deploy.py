@@ -11,12 +11,7 @@ from torch.multiprocessing import Process, set_start_method
 from mmdeploy.apis import (create_calib_table, extract_model,
                            get_predefined_partition_cfg, torch2onnx,
                            torch2torchscript, visualize_model)
-<<<<<<< HEAD
 from mmdeploy.apis.core import PIPELINE_MANAGER
-from mmdeploy.apis.onnx import extract_partition
-from mmdeploy.apis.utils import create_calib_table
-=======
->>>>>>> Better create_calib_table
 from mmdeploy.utils import (IR, Backend, get_backend, get_calib_filename,
                             get_ir_config, get_model_inputs,
                             get_partition_config, get_root_logger, load_config,
@@ -95,7 +90,8 @@ def main():
     logger.setLevel(args.log_level)
 
     pipeline_funcs = [
-        'mmdeploy.apis.torch2onnx', 'mmdeploy.apis.torch2torchscript'
+        'mmdeploy.apis.torch2onnx', 'mmdeploy.apis.torch2torchscript',
+        'mmdeploy.apis.extract_model', 'mmdeploy.apis.create_calib_table'
     ]
     PIPELINE_MANAGER.enable_multiprocess(True, pipeline_funcs)
     PIPELINE_MANAGER.set_log_level(logging.INFO, pipeline_funcs)
@@ -152,12 +148,12 @@ def main():
             end = partition_cfg['end']
             dynamic_axes = partition_cfg.get('dynamic_axes', None)
 
-            create_process(
-                f'partition model {save_file} with start: {start}, end: {end}',
-                extract_model,
-                args=(origin_ir_file, start, end),
-                kwargs=dict(dynamic_axes=dynamic_axes, save_file=save_path),
-                ret_value=ret_value)
+            extract_model(
+                origin_ir_file,
+                start,
+                end,
+                dynamic_axes=dynamic_axes,
+                save_file=save_path)
 
             ir_files.append(save_path)
 
@@ -165,17 +161,14 @@ def main():
     calib_filename = get_calib_filename(deploy_cfg)
     if calib_filename is not None:
         calib_path = osp.join(args.work_dir, calib_filename)
-
-        create_process(
-            'calibration',
-            create_calib_table,
-            args=(calib_path, deploy_cfg_path, model_cfg_path,
-                  checkpoint_path),
-            kwargs=dict(
-                dataset_cfg=args.calib_dataset_cfg,
-                dataset_type='val',
-                device=args.device),
-            ret_value=ret_value)
+        create_calib_table(
+            calib_path,
+            deploy_cfg_path,
+            model_cfg_path,
+            checkpoint_path,
+            dataset_cfg=args.calib_dataset_cfg,
+            dataset_type='val',
+            device=args.device)
 
     backend_files = ir_files
     # convert backend
