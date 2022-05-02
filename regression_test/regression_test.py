@@ -20,16 +20,16 @@ from mmdeploy.utils import (get_backend, get_codebase, get_root_logger,
 def parse_args():
     parser = argparse.ArgumentParser(description='Regression Test')
     parser.add_argument(
-        '--deploy-yml',
+        '--codebase',
         nargs='+',
         help='regression test yaml path.',
         default=[
-            './configs/mmcls/mmcls_regression_test.yaml',
-            './configs/mmdet/mmdet_regression_test.yaml',
-            './configs/mmseg/mmseg_regression_test.yaml',
-            './configs/mmpose/mmpose_regression_test.yaml',
-            './configs/mmocr/mmocr_regression_test.yaml',
-            './configs/mmedit/mmedit_regression_test.yaml'
+            'mmcls',
+            'mmdet',
+            'mmseg',
+            'mmpose',
+            'mmocr',
+            'mmedit'
         ])
     parser.add_argument(
         '--performance',
@@ -1056,7 +1056,10 @@ def main():
     work_dir = Path(args.work_dir)
     work_dir.mkdir(parents=True, exist_ok=True)
 
-    for deploy_yaml in args.deploy_yml:
+    deploy_yaml_list = [f'./regression_test/{codebase}_regression_test.yaml'
+                        for codebase in args.codebase]
+
+    for deploy_yaml in deploy_yaml_list:
 
         if not Path(deploy_yaml).exists():
             raise FileNotFoundError(f'deploy_yaml {deploy_yaml} not found, '
