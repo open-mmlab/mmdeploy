@@ -47,7 +47,7 @@ int Expand::forward(const std::vector<Mat>& bottom_blobs, std::vector<Mat>& top_
     }
     return 0;
   }
-  if (bottom_blob.dims == 1 && shape_blob.w == 2) {
+  else if (bottom_blob.dims == 1 && shape_blob.w == 2) {
     int shape_0 = (int)(shape_blob[0] + 0.5);
     int shape_1 = (int)(shape_blob[1] + 0.5);
     if (bottom_blob.w != shape_1 && bottom_blob.w != 1 && shape_1 != 1) {
@@ -79,7 +79,7 @@ int Expand::forward(const std::vector<Mat>& bottom_blobs, std::vector<Mat>& top_
     }
     return 0;
   }
-  if (bottom_blob.dims == 1 && shape_blob.w == 3) {
+  else if (bottom_blob.dims == 1 && shape_blob.w == 3) {
     int shape_0 = (int)(shape_blob[0] + 0.5);
     int shape_1 = (int)(shape_blob[1] + 0.5);
     int shape_2 = (int)(shape_blob[2] + 0.5);
@@ -113,7 +113,7 @@ int Expand::forward(const std::vector<Mat>& bottom_blobs, std::vector<Mat>& top_
     }
     return 0;
   }
-  if (bottom_blob.dims == 2 && shape_blob.w == 2) {
+  else if (bottom_blob.dims == 2 && shape_blob.w == 2) {
     int shape_0 = (int)(shape_blob[0] + 0.5);
     int shape_1 = (int)(shape_blob[1] + 0.5);
     if (bottom_blob.w != shape_1 && bottom_blob.w != 1 && shape_1 != 1) {
@@ -161,7 +161,7 @@ int Expand::forward(const std::vector<Mat>& bottom_blobs, std::vector<Mat>& top_
     }
     return 0;
   }
-  if (bottom_blob.dims == 2 && shape_blob.w == 3) {
+  else if (bottom_blob.dims == 2 && shape_blob.w == 3) {
     int shape_0 = (int)(shape_blob[0] + 0.5);
     int shape_1 = (int)(shape_blob[1] + 0.5);
     int shape_2 = (int)(shape_blob[2] + 0.5);
@@ -220,7 +220,7 @@ int Expand::forward(const std::vector<Mat>& bottom_blobs, std::vector<Mat>& top_
     }
     return 0;
   }
-  if (bottom_blob.dims == 3 && shape_blob.w == 3) {
+  else if (bottom_blob.dims == 3 && shape_blob.w == 3) {
     int shape_0 = (int)(shape_blob[0] + 0.5);
     int shape_1 = (int)(shape_blob[1] + 0.5);
     int shape_2 = (int)(shape_blob[2] + 0.5);
@@ -332,6 +332,7 @@ int Expand::forward(const std::vector<Mat>& bottom_blobs, std::vector<Mat>& top_
   }
   fprintf(stderr, "Layer: Expand, bottom_blob.dims: %d, shape_blob.w: %d\n", bottom_blob.dims,
           shape_blob.w);
+  return -1;
 }
 
 }  // namespace mmdeploy
