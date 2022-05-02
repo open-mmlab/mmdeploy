@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
 import logging
-import os
+import subprocess
 from collections import OrderedDict
 from pathlib import Path
 
@@ -639,8 +639,7 @@ def get_backend_fps_metric(deploy_cfg_path: str, model_cfg_path: Path,
         report_txt_path (Path): report txt save path.
         model_name (str): Name of model in test yaml.
     """
-    cmd_str = f'cd {str(Path(__file__).absolute().parent.parent)} && ' \
-              'python3 tools/test.py ' \
+    cmd_str = 'python3 tools/test.py ' \
               f'{deploy_cfg_path} ' \
               f'{str(model_cfg_path.absolute())} ' \
               f'--model "{convert_checkpoint_path}" ' \
@@ -656,8 +655,10 @@ def get_backend_fps_metric(deploy_cfg_path: str, model_cfg_path: Path,
     logger.info(f'Process cmd = {cmd_str}')
 
     # Test backend
-    shell_res = os.system(cmd_str)
-    logger.info(f'Got shell_res = {shell_res}')
+    shell_res = subprocess.run(cmd_str,
+                               cwd=str(Path(__file__).absolute().parent.parent),
+                               shell=True)
+    logger.info(f'Got shell_res = {shell_res.returncode}')
 
     metric_key = ''
     metric_name = ''
@@ -846,8 +847,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
     backend_output_path.mkdir(parents=True, exist_ok=True)
 
     # convert cmd string
-    cmd_str = f'cd {str(str(Path(__file__).absolute().parent.parent))} && ' \
-              'python3 ./tools/deploy.py ' \
+    cmd_str = 'python3 ./tools/deploy.py ' \
               f'{str(deploy_cfg_path.absolute().resolve())} ' \
               f'{str(model_cfg_path.absolute().resolve())} ' \
               f'"{str(checkpoint_path.absolute().resolve())}" ' \
@@ -870,14 +870,26 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
     logger.info(f'Process cmd = {cmd_str}')
 
     # Convert the model to specific backend
-    shell_res = os.system(cmd_str)
-    logger.info(f'Got shell_res = {shell_res}')
+    precess_res = subprocess.Popen(cmd_str,
+                                   cwd=str(Path(__file__).absolute().parent.parent),
+                                   shell=True,
+                                   stdout=subprocess.PIPE,
+                                   bufsize=20)
+    precess_res.wait()
+    logger.info(f'Got shell_res = {precess_res.returncode}')
 
     # check if converted successes or not.
-    if shell_res == 0:
+    if precess_res.returncode == 0:
         convert_result = True
     else:
         convert_result = False
+        error_log_path = backend_output_path.joinpath('error.log')
+        logger.info(f'Logging error msg to {error_log_path} ...')
+        with open(error_log_path, 'w', encoding='utf-8') as f_log:
+            for line in precess_res.stdout.readlines():
+                line = line.decode('utf-8')
+                f_log.write(line)
+
     logger.info(f'Got convert_result = {convert_result}')
 
     if isinstance(backend_file_name, list):
