@@ -122,13 +122,6 @@ def main():
         model_cfg_path,
         checkpoint_path,
         device=args.device)
-    # create_process(
-    #     f'torch2{ir_type.value}',
-    #     target=torch2ir(ir_type),
-    #     args=(args.img, args.work_dir, ir_save_file, deploy_cfg_path,
-    #           model_cfg_path, checkpoint_path),
-    #     kwargs=dict(device=args.device),
-    #     ret_value=ret_value)
 
     # convert backend
     ir_files = [osp.join(args.work_dir, ir_save_file)]
