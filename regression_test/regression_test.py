@@ -23,14 +23,7 @@ def parse_args():
         '--codebase',
         nargs='+',
         help='regression test yaml path.',
-        default=[
-            'mmcls',
-            'mmdet',
-            'mmseg',
-            'mmpose',
-            'mmocr',
-            'mmedit'
-        ])
+        default=['mmcls', 'mmdet', 'mmseg', 'mmpose', 'mmocr', 'mmedit'])
     parser.add_argument(
         '-p',
         '--performance',
