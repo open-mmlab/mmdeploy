@@ -32,7 +32,8 @@ def parse_args():
             'mmedit'
         ])
     parser.add_argument(
-        '-p', '--performance',
+        '-p',
+        '--performance',
         default=False,
         action='store_true',
         help='test performance if it set')
@@ -655,9 +656,9 @@ def get_backend_fps_metric(deploy_cfg_path: str, model_cfg_path: Path,
     logger.info(f'Process cmd = {cmd_str}')
 
     # Test backend
-    shell_res = subprocess.run(cmd_str,
-                               cwd=str(Path(__file__).absolute().parent.parent),
-                               shell=True).returncode
+    shell_res = subprocess.run(
+        cmd_str, cwd=str(Path(__file__).absolute().parent.parent),
+        shell=True).returncode
     logger.info(f'Got shell_res = {shell_res}')
 
     metric_key = ''
@@ -870,11 +871,12 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
     logger.info(f'Process cmd = {cmd_str}')
 
     # Convert the model to specific backend
-    precess_res = subprocess.Popen(cmd_str,
-                                   cwd=str(Path(__file__).absolute().parent.parent),
-                                   shell=True,
-                                   stdout=subprocess.PIPE,
-                                   bufsize=20)
+    precess_res = subprocess.Popen(
+        cmd_str,
+        cwd=str(Path(__file__).absolute().parent.parent),
+        shell=True,
+        stdout=subprocess.PIPE,
+        bufsize=20)
     precess_res.wait()
     logger.info(f'Got shell_res = {precess_res.returncode}')
 
@@ -1074,8 +1076,10 @@ def main():
     work_dir = Path(args.work_dir)
     work_dir.mkdir(parents=True, exist_ok=True)
 
-    deploy_yaml_list = [f'./regression_test/{codebase}_regression_test.yaml'
-                        for codebase in args.codebase]
+    deploy_yaml_list = [
+        f'./regression_test/{codebase}_regression_test.yaml'
+        for codebase in args.codebase
+    ]
 
     for deploy_yaml in deploy_yaml_list:
 
