@@ -199,7 +199,7 @@ def update_report(report_dict: dict, model_name: str, model_config: str,
                   backend_name: str, deploy_config: str,
                   static_or_dynamic: str, precision_type: str,
                   conversion_result: str, fps: str, metric_info: list,
-                  test_pass: str, report_txt_path: Path):
+                  test_pass: str, report_txt_path: Path, codebase_name: str):
     """Update report information.
 
     Args:
@@ -218,8 +218,16 @@ def update_report(report_dict: dict, model_name: str, model_config: str,
         metric_info (list): Metric info list of the ${modelName}.yml.
         test_pass (str): Test result: Pass or Fail.
         report_txt_path (Path): Report txt path.
+        codebase_name (str): Codebase name.
     """
-    if '.pth' not in model_checkpoint_name:
+    if '.pth' in model_checkpoint_name:
+        model_checkpoint_name = \
+            Path(model_checkpoint_name).absolute().resolve()
+        model_checkpoint_name = \
+            str(model_checkpoint_name).split(f'/{codebase_name}/')[-1]
+        model_checkpoint_name = \
+            '${CHECKOUT_POINT_DIR}' + f'/{codebase_name}/{model_checkpoint_name}'
+    else:
         # make model path shorter by cutting the work_dir_root
         work_dir_root = report_txt_path.parent.absolute().resolve()
 
@@ -266,7 +274,8 @@ def update_report(report_dict: dict, model_name: str, model_config: str,
 def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
                        model_config_path: Path, model_config_name: str,
                        test_yaml_metric_info: dict, report_dict: dict,
-                       logger: logging.Logger, report_txt_path: Path):
+                       logger: logging.Logger, report_txt_path: Path,
+                       codebase_name: str):
     """Get metric from metafile info of the model.
 
     Args:
@@ -279,6 +288,7 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
         report_dict (dict): Report info dict.
         logger (logging.Logger): Logger.
         report_txt_path (Path): Report txt path.
+        codebase_name (str): Codebase name.
 
     Returns:
         Dict: metric info of the model
@@ -391,7 +401,8 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
         fps=fps,
         metric_info=metric_list,
         test_pass='-',
-        report_txt_path=report_txt_path)
+        report_txt_path=report_txt_path,
+        codebase_name=codebase_name)
 
     logger.info(f'Got {model_config_path} metric: {pytorch_metric}')
     return pytorch_metric, dataset_type
@@ -705,7 +716,8 @@ def get_backend_fps_metric(deploy_cfg_path: str, model_cfg_path: Path,
         fps=fps,
         metric_info=metric_list,
         test_pass=str(test_pass),
-        report_txt_path=report_txt_path)
+        report_txt_path=report_txt_path,
+        codebase_name=codebase_name)
 
 
 def get_precision_type(deploy_cfg_name: str):
@@ -1023,7 +1035,8 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
             fps=fps,
             metric_info=metric_list,
             test_pass=str(test_pass),
-            report_txt_path=report_txt_path)
+            report_txt_path=report_txt_path,
+            codebase_name=codebase_name)
 
 
 def save_report(report_info: dict, report_save_path: Path,
@@ -1158,7 +1171,7 @@ def main():
                 pytorch_metric, metafile_dataset = get_pytorch_result(
                     models.get('name'), model_metafile_info, checkpoint_path,
                     model_cfg_path, model_config, metric_info, report_dict,
-                    logger, report_txt_path)
+                    logger, report_txt_path, global_info.get('codebase_name'))
 
                 for pipeline in pipelines_info:
                     deploy_config = pipeline.get('deploy_config')
