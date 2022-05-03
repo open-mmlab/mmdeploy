@@ -206,7 +206,7 @@ models:
 
 ### 模板
 
-|| model_name | model_config | task_name       | model_checkpoint_name | dataset  | backend_name | deploy_config | static_or_dynamic | precision_type | conversion_result | fps | metric_1 | metric_2 | metric_n | test_pass |
+|| Model | Model Config | Task       | Checkpoint | Dataset  | Backend | Deploy Config | Static or Dynamic | Precision Type | Conversion Result | FPS | metric_1 | metric_2 | metric_n | Test Pass |
 |------------|--------------|-----------------|-----------------------|----------|--------------|---------------|-------------------|----------------|-------------------|---|----------|----------|-----------|-----------|-----|
 | 序号         | 模型名称         | model config 路径 | 执行的 task name      | `.pth`模型路径 | 数据集名称        | 后端名称    |  deploy cfg 路径    | 动态 or 静态          | 测试精度           | 模型转换结果       | FPS 数值     | 指标 1 数值 | 指标 2 数值        | 指标 n 数值         |  后端测试结果  |
 
@@ -214,7 +214,7 @@ models:
 
 这是 MMOCR 生成的报告
 
-|| model_name | model_config    | task_name  | model_checkpoint_name    | dataset   | backend_name    | deploy_config   | static_or_dynamic | precision_type | conversion_result | fps    | hmean-iou | word_acc | test_pass |
+|| Model | Model Config | Task       | Checkpoint | Dataset  | Backend | Deploy Config | Static or Dynamic | Precision Type | Conversion Result | FPS | hmean-iou | word_acc | Test Pass |
 | ---- | ---------- | ------------------------------------------------------------ | ---------------- | ------------------------------------------------------------ | --------- | --------------- | ------------------------------------------------------------ | ----------------- | -------------- | ----------------- |-----------|----------|-----------| --------- |
 | 0    | crnn | ../mmocr/configs/textrecog/crnn/crnn_academic_dataset.py     | Text Recognition | ../mmdeploy_checkpoints/mmocr/crnn/crnn_academic-a723a1c5.pth | IIIT5K    | Pytorch| -| -  | -     | -  | -         | -        | 80.5      | -|
 | 1    | crnn | ../mmocr/configs/textrecog/crnn/crnn_academic_dataset.py     | Text Recognition | ${WORK_DIR}/mmocr/crnn/onnxruntime/static/crnn_academic-a723a1c5/end2end.onnx | x| onnxruntime     | configs/mmocr/text-recognition/text-recognition_onnxruntime_dynamic.py | static   | fp32  | True     | 182.21    | -        | 80.67     | True|

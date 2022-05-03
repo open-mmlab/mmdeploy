@@ -246,24 +246,24 @@ def update_report(report_dict: dict, model_name: str, model_config: str,
               f'{conversion_result},{fps},'
 
     # save to report
-    report_dict.get('model_name').append(model_name)
-    report_dict.get('model_config').append(model_config)
-    report_dict.get('task_name').append(task_name)
-    report_dict.get('model_checkpoint_name').append(model_checkpoint_name)
-    report_dict.get('dataset').append(dataset)
-    report_dict.get('backend_name').append(backend_name)
-    report_dict.get('deploy_config').append(deploy_config)
-    report_dict.get('static_or_dynamic').append(static_or_dynamic)
-    report_dict.get('precision_type').append(precision_type)
-    report_dict.get('conversion_result').append(conversion_result)
-    report_dict.get('fps').append(fps)
+    report_dict.get('Model').append(model_name)
+    report_dict.get('Model Config').append(model_config)
+    report_dict.get('Task').append(task_name)
+    report_dict.get('Checkpoint').append(model_checkpoint_name)
+    report_dict.get('Dataset').append(dataset)
+    report_dict.get('Backend').append(backend_name)
+    report_dict.get('Deploy Config').append(deploy_config)
+    report_dict.get('Static or Dynamic').append(static_or_dynamic)
+    report_dict.get('Precision Type').append(precision_type)
+    report_dict.get('Conversion Result').append(conversion_result)
+    report_dict.get('FPS').append(fps)
 
     for metric in metric_info:
         for metric_name, metric_value in metric.items():
             metric_name = str(metric_name)
             report_dict.get(metric_name).append(metric_value)
             tmp_str += f'{metric_value},'
-    report_dict.get('test_pass').append(test_pass)
+    report_dict.get('Test Pass').append(test_pass)
 
     tmp_str += f'{test_pass}\n'
 
@@ -1108,29 +1108,28 @@ def main():
         report_txt_path = report_save_path.with_suffix('.txt')
 
         report_dict = {
-            'model_name': [],
-            'model_config': [],
-            'task_name': [],
-            'model_checkpoint_name': [],
-            'dataset': [],
-            'backend_name': [],
-            'deploy_config': [],
-            'static_or_dynamic': [],
-            'precision_type': [],
-            'conversion_result': [],
-            'fps': []
+            'Model': [],
+            'Model Config': [],
+            'Task': [],
+            'Checkpoint': [],
+            'Dataset': [],
+            'Backend': [],
+            'Deploy Config': [],
+            'Static or Dynamic': [],
+            'Precision Type': [],
+            'Conversion Result': [],
+            'FPS': []
         }
 
         global_info = yaml_info.get('globals')
-        for metric_name in global_info.get('metric_info', {}):
+        metric_info = global_info.get('metric_info', {})
+        for metric_name in metric_info:
             report_dict.update({metric_name: []})
+        report_dict.update({'Test Pass': []})
 
         global_info.update({'checkpoint_dir': args.checkpoint_dir})
         global_info.update(
             {'codebase_name': Path(deploy_yaml).stem.split('_')[0]})
-
-        metric_info = global_info.get('metric_info', {})
-        report_dict.update({'test_pass': []})
 
         with open(report_txt_path, 'w') as f_report:
             title_str = ''
