@@ -36,7 +36,7 @@ python ./regression_test/regression_test.py \
 ### 参数解析
 
 - `--codebase` : 需要测试的 codebase，eg.`mmdet`, 测试多个 `mmcls mmdet ...`
-- `--backends` : 筛选测试的后端, 默认 `all`: 测全部`backend`, 也可传入若干个后端，例如 `onnxruntime tesnsorrt`。
+- `--backends` : 筛选测试的后端, 默认 `all`: 测全部`backend`, 也可传入若干个后端，例如 `onnxruntime tesnsorrt`。如果需要一同进行 SDK 的测试，需要在 `${codebase}_regression_test.yaml` 里面的 `sdk_config` 进行配置。
 - `--work-dir` : 模型转换、报告生成的路径。
 - `--device` : 使用的设备，默认 `cuda`。
 - `--log-level` : 设置日记的等级，选项包括`'CRITICAL'， 'FATAL'， 'ERROR'， 'WARN'， 'WARNING'， 'INFO'， 'DEBUG'， 'NOTSET'`。默认是`INFO`。
@@ -90,10 +90,8 @@ python ./tools/regression_test.py \
 
 ```yaml
 globals:
-  codebase_name: mmocr # 回归测试的 codebase 名称
   codebase_dir: ../mmocr # 回归测试的 codebase 路径
   checkpoint_force_download: False # 回归测试是否重新下载模型即使其已经存在
-  checkpoint_dir: ../mmdeploy_checkpoints # 回归测试是否下载模型的路径
   images: # 测试使用图片
     img_224x224: &img_224x224 ./tests/data/tiger.jpeg
     img_300x300: &img_300x300
@@ -177,6 +175,12 @@ models:
     pipelines:
       - *pipeline_ort_detection_dynamic_fp32
       - *pipeline_trt_detection_dynamic_fp16
+      
+      # 特殊的 pipeline 可以这样加入
+      - convert_image: xxx
+        backend_test: xxx
+        sdk_config: xxx
+        deploy_config: configs/mmocr/text-detection/xxx
 ```
 
 ## 3. 生成的报告
