@@ -6,22 +6,41 @@
 <!-- TOC -->
 
 - [如何进行回归测试](#如何进行回归测试)
-    - [1. 用法](#1-用法)
+    - [1. 环境搭建](#1-环境搭建)
+        - [MMDeploy的安装及配置](#MMDeploy的安装及配置)
+        - [Python环境依赖](#Python环境依赖)
+    - [2. 用法](#2-用法)
         - [参数解析](#参数解析)
         - [示例](#示例)
-    - [2. 回归测试配置文件](#2-回归测试配置文件)
+    - [3. 回归测试配置文件](#3-回归测试配置文件)
         - [示例及参数解析](#示例及参数解析)
-    - [3. 生成的报告](#3-生成的报告)
+    - [4. 生成的报告](#4-生成的报告)
         - [模板](#模板)
         - [示例](#示例)
-    - [4. 支持的后端](#4-支持的后端)
-    - [5. 支持的Codebase及其Metric](#5-支持的Codebase及其Metric)
-    - [6. 注意事项](#7-注意事项)
-    - [7. 常见问题](#8-常见问题)
+    - [5. 支持的后端](#4-支持的后端)
+    - [6. 支持的Codebase及其Metric](#5-支持的Codebase及其Metric)
+    - [7. 注意事项](#7-注意事项)
+    - [8. 常见问题](#8-常见问题)
 
 <!-- TOC -->
 
-## 1. 用法
+
+## 1. 环境搭建
+
+### MMDeploy的安装及配置
+本章节的内容，需要提前根据[build 文档](../build.md)将 MMDeploy 安装配置好之后，才能进行。
+
+### Python环境依赖
+需要安装 test 的环境
+```shell
+pip install -r requirements/tests.txt
+```
+如果在使用过程是 numpy 报错，则更新一下 numpy
+```shell
+pip install -U numpy
+```
+
+## 2. 用法
 
 ```shell
 python ./regression_test/regression_test.py \
@@ -84,7 +103,7 @@ python ./tools/regression_test.py \
     --log-level INFO
 ```
 
-## 2. 回归测试配置文件
+## 3. 回归测试配置文件
 
 ### 示例及参数解析
 
@@ -183,7 +202,7 @@ models:
         deploy_config: configs/mmocr/text-detection/xxx
 ```
 
-## 3. 生成的报告
+## 4. 生成的报告
 
 ### 模板
 
@@ -205,7 +224,7 @@ models:
 | 5    | dbnet| ../mmocr/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py | Text Detection   | ${WORK_DIR}/mmocr/dbnet/tensorrt/dynamic/dbnet_r18_fpnc_sbn_1200e_icdar2015_20210329-ba3ab597/end2end.engine | ICDAR     | tensorrt  | configs/mmocr/text-detection/text-detection_tensorrt-fp16_dynamic-320x320-1024x1824.py | dynamic  | fp16  | True     | 229.06    | 0.793302 | -  | True|
 | 6    | dbnet| ../mmocr/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py | Text Detection   | ${WORK_DIR}/mmocr/dbnet/tensorrt/dynamic/dbnet_r18_fpnc_sbn_1200e_icdar2015_20210329-ba3ab597 | ICDAR     | SDK-tensorrt    | configs/mmocr/text-detection/text-detection_sdk_dynamic.py   | dynamic  | fp16  | True     | 140.06    | 0.795073 | -         | True|
 
-## 4. 支持的后端
+## 5. 支持的后端
 - [x] ONNX Runtime
 - [x] TensorRT
 - [x] PPLNN
@@ -214,7 +233,7 @@ models:
 - [x] TorchScript
 - [x] MMDeploy SDK
 
-## 5. 支持的Codebase及其Metric
+## 6. 支持的Codebase及其Metric
 - [x] mmdet
   - [x] bbox
   - [x] segm
@@ -232,10 +251,10 @@ models:
   - [x] PSNR
   - [x] SSIM
 
-## 6. 注意事项
+## 7. 注意事项
 
 暂无
 
-## 7. 常见问题
+## 8. 常见问题
 
 暂无
