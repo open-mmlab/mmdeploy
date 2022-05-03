@@ -194,7 +194,7 @@ models:
     pipelines:
       - *pipeline_ort_detection_dynamic_fp32
       - *pipeline_trt_detection_dynamic_fp16
-      
+
       # 特殊的 pipeline 可以这样加入
       - convert_image: xxx
         backend_test: xxx
