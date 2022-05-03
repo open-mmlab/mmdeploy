@@ -226,7 +226,7 @@ def update_report(report_dict: dict, model_name: str, model_config: str,
         model_checkpoint_name = \
             str(model_checkpoint_name).split(f'/{codebase_name}/')[-1]
         model_checkpoint_name = \
-            '${CHECKOUT_POINT_DIR}' + f'/{codebase_name}/{model_checkpoint_name}'
+            '${CHECKPOINT_DIR}' + f'/{codebase_name}/{model_checkpoint_name}'
     else:
         # make model path shorter by cutting the work_dir_root
         work_dir_root = report_txt_path.parent.absolute().resolve()
