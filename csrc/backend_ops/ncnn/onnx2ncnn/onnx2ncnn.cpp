@@ -23,7 +23,6 @@
 #include <tuple>
 
 #include "fuse_pass.h"
-#include "helper.h"
 #include "shape_inference.h"
 #include "utils.h"
 
