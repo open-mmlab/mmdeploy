@@ -46,7 +46,6 @@ source ~/.bashrc
 
 We have to install [Archiconda](https://github.com/Archiconda/build-tools/releases) instead as the Anaconda does not provide the wheel built for jetson. The commands below are the example for installation. You can choose another version of Archiconda by accessing [Archiconda releases page](https://github.com/Archiconda/build-tools/releases).
 ```shell
-cd /opt and 
 wget https://github.com/Archiconda/build-tools/releases/download/0.2.3/Archiconda3-0.2.3-Linux-aarch64.sh
 bash Archiconda3-0.2.3-Linux-aarch64.sh
 source ~/.bashrc
