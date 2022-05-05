@@ -4,14 +4,15 @@
 点击页面左下角切换中英文。
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: 编译
 
    01-how-to-build/build_from_source.md
+      01-how-to-build/android.md
+      01-how-to-build/linux-x86_64.md
+      01-how-to-build/windows.md
+
    01-how-to-build/build_from_docker.md
-   01-how-to-build/android.md
-   01-how-to-build/linux-x86_64.md
-   01-how-to-build/windows.md
 
 .. toctree::
    :maxdepth: 1
@@ -31,7 +32,7 @@
 
 .. toctree::
    :maxdepth: 1
-   :caption: tutorial
+   :caption: 新人解说
 
    get_started.md
    04-tutorial/01_introduction_to_model_deployment.md
