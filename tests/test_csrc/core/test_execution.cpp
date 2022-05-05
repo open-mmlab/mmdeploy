@@ -7,6 +7,7 @@
 #include "catch.hpp"
 #include "core/utils/formatter.h"
 #include "core/value.h"
+#include "execution/expand.h"
 #include "execution/schedulers/inlined_scheduler.h"
 #include "execution/schedulers/static_thread_pool.h"
 #include "execution/schedulers/timed_single_thread_context.h"
@@ -120,58 +121,6 @@ TEST_CASE("test on", "[execution]") {
 mmdeploy_value_t f(mmdeploy_value_t v, void*) {
   auto& arr = ((Value*)v)->array();
   return (mmdeploy_value_t)(new Value{arr[0].get<int>() + arr[1].get<int>()});
-}
-
-namespace __expand {
-
-template <class Sender, class Receiver>
-struct _Operation;
-
-template <class Sender, class Receiver>
-struct _Receiver {
-  _Operation<Sender, Receiver>* op_state_;
-
-  template <class Tuple>
-  friend void tag_invoke(set_value_t, _Receiver&& self, Tuple&& tup) noexcept {
-    std::apply(
-        [&](auto&&... args) {
-          SetValue((Receiver &&) self.op_state_->receiver_, (decltype(args)&&)args...);
-        },
-        (Tuple &&) tup);
-  }
-};
-
-template <class Sender, class Receiver>
-struct _Operation {
-  connect_result_t<Sender, _Receiver<Sender, Receiver>> op_state2_;
-  Receiver receiver_;
-
-  template <class Sender2>
-  _Operation(Sender2&& sender, Receiver&& receiver)
-      : op_state2_(Connect((Sender2 &&) sender, _Receiver<Sender, Receiver>{this})),
-        receiver_((Receiver &&) receiver) {}
-
-  friend void tag_invoke(start_t, _Operation& op_state) { Start(op_state.op_state2_); }
-};
-
-template <class Sender>
-struct _Sender {
-  using value_types = std::tuple_element_t<0, completion_signatures_of_t<Sender>>;
-  Sender sndr_;
-
-  template <class Self, class Receiver, _decays_to<Self, _Sender, bool> = true>
-  friend auto tag_invoke(connect_t, Self&& self, Receiver&& receiver)
-      -> _Operation<Sender, Receiver> {
-    //
-    return _Operation<Sender, Receiver>(((Self &&) self).sndr_, (Receiver &&) receiver);
-  }
-};
-
-}  // namespace __expand
-
-template <class Sender>
-__expand::_Sender<std::decay_t<Sender>> Expand(Sender&& sender) {
-  return {(Sender &&) sender};
 }
 
 void G() {

@@ -3,6 +3,8 @@
 #ifndef MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_SPLIT_H_
 #define MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_SPLIT_H_
 
+#include "closure.h"
+#include "concepts.h"
 #include "utility.h"
 
 namespace mmdeploy {
