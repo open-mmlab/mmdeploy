@@ -4,13 +4,13 @@
 点击页面左下角切换中英文。
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: 编译
 
    01-how-to-build/build_from_source.md
-      01-how-to-build/android.md
-      01-how-to-build/linux-x86_64.md
-      01-how-to-build/windows.md
+   01-how-to-build/android.md
+   01-how-to-build/linux-x86_64.md
+   01-how-to-build/windows.md
    01-how-to-build/build_from_docker.md
 
 .. toctree::
