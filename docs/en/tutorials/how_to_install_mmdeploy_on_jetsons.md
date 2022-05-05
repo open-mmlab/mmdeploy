@@ -25,14 +25,22 @@ For the first method, if it always throws `Attention something went wrong...` ev
 
 Sometimes we just need to reboot the jetson device when it gets stuck in initializing the system.
 
-### Cuda
+### CUDA
 
-The Cuda is installed by default while the cudnn is not if we use the first method. We have to write the cuda path and lib to `$PATH` and `$LD_LIBRARY_PATH`:
+The CUDA is installed by default and we have to write the CUDA path and lib to `$PATH` and `$LD_LIBRARY_PATH`:
 ```shell
 export PATH=$PATH:/usr/local/cuda/bin
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64
 ```
 Then we can use `nvcc -V` the get the version of cuda we use.
+
+If you want to save CUDA env variables to bashrc, you could run 
+```bash
+echo '# set env for CUDA and cuDNN' >> ~/.bashrc
+echo 'export PATH=$PATH:/usr/local/cuda/bin' >> ~/.bashrc
+echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64' >> ~/.bashrc
+source ~/.bashrc
+```
 
 ### Conda
 
