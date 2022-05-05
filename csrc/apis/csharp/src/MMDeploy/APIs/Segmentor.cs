@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace MMDeploySharp
+namespace MMDeploy
 {
 #pragma warning disable 0649
     internal unsafe struct CMmSegment

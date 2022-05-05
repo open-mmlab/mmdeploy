@@ -1,5 +1,5 @@
 ﻿#pragma warning disable 1591
-namespace MMDeploySharp
+namespace MMDeploy
 {
     /// <summary>
     /// Pixel format.

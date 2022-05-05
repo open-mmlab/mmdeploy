@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using OpenCvSharp;
-using MMDeploySharp;
+using MMDeploy;
 
 namespace ocr_detection
 {
@@ -32,7 +32,7 @@ namespace ocr_detection
         static void Main(string[] args)
         {
             // 1. create handle
-            MMDeploySharp.TextDetector handle = new MMDeploySharp.TextDetector(@"D:\test_model\dbnet", "cuda", 0);
+            MMDeploy.TextDetector handle = new MMDeploy.TextDetector(@"D:\test_model\dbnet", "cuda", 0);
 
             // 2. prepare input
             Mat[] imgs = new Mat[1] { Cv2.ImRead(@"D:\test_model\dbnet\demo_text_det.jpg", ImreadModes.Color) };

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace MMDeploySharp
+namespace MMDeploy
 {
     /// <summary>
     /// Single classification result of a picture.

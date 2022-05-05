@@ -4,8 +4,8 @@
     <TargetFrameworks>netcoreapp3.1;net48;</TargetFrameworks>
     <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
-    <AssemblyName>MMDeploySharp</AssemblyName>
-    <RootNamespace>MMDeploySharp</RootNamespace>
+    <AssemblyName>MMDeploy</AssemblyName>
+    <RootNamespace>MMDeploy</RootNamespace>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Deterministic>true</Deterministic>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -14,10 +14,10 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <MMDeploySharpExternalNativeDlls>$(MSBuildThisFileDirectory)\..\..\..\..\..</MMDeploySharpExternalNativeDlls>
+    <MMDeployExternalNativeDlls>$(MSBuildThisFileDirectory)\..\..\..\..\..</MMDeployExternalNativeDlls>
   </PropertyGroup>
   <ItemGroup>
-    <Content CopyToOutputDirectory="PreserveNewest" Include="$(MMDeploySharpExternalNativeDlls)\build\bin\Release\MMDeploySharpExtern.dll" Pack="true" PackagePath="runtimes\win-x64\native\MMDeploySharpExtern.dll" />
+    <Content CopyToOutputDirectory="PreserveNewest" Include="$(MMDeployExternalNativeDlls)\build\bin\Release\MMDeployExtern.dll" Pack="true" PackagePath="runtimes\win-x64\native\MMDeployExtern.dll" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

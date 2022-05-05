@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace MMDeploySharp
+namespace MMDeploy
 {
     /// <summary>
     /// Base class which manages its own memory.

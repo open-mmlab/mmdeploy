@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace MMDeploySharp
+namespace MMDeploy
 {
 #pragma warning disable 0649
     internal unsafe struct CMmPoseDetect

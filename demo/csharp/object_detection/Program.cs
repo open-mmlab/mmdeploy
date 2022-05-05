@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using OpenCvSharp;
-using MMDeploySharp;
+using MMDeploy;
 
 namespace object_detection
 {

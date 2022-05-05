@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace MMDeploySharp
+namespace MMDeploy
 {
     /// <summary>
     /// Box.
