@@ -1,0 +1,69 @@
+name: build
+
+on:
+  push:
+    paths-ignore:
+      - "demo/**"
+      - "tools/**"
+
+  pull_request:
+    paths-ignore:
+      - "demo/**"
+      - "tools/**"
+      - "docs/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build_cpu:
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        python-version: [3.7]
+        torch: [1.9.0]
+        mmcv: [1.4.2]
+        include:
+          - torch: 1.9.0
+            torch_version: torch1.9
+            torchvision: 0.10.0
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install PyTorch
+        run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
+      - name: Install MMCV
+        run: |
+          pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cpu/${{matrix.torch_version}}/index.html
+          python -c 'import mmcv; print(mmcv.__version__)'
+      - name: Install unittest dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -U numpy
+          pip install cmake
+      - name: Install ncnn
+        run: |
+          wget https://github.com/Tencent/ncnn/archive/refs/tags/20220420.tar.gz
+          tar xvf 20220420.tar.gz
+          pushd 20220420
+          export NCNN_DIR=$(pwd)
+          mkdir build && pushd build
+          cmake -DCMAKE_INSTALL_PREFIX=$(pwd)/../install ..
+          make -j && make install
+          export LD_LIBRARY_PATH=${NCNN_DIR}/install/lib/:$LD_LIBRARY_PATH
+          popd && popd
+      - name: Install mmdeploy with ncnn backend
+        run: |
+          mkdir -p build && pushd build
+          cmake -DMMDEPLOY_TARGET_BACKENDS=ncnn -Dncnn_DIR=${NCNN_DIR}/install/lib/cmake/ncnn ..
+          make onnx2ncnn -j
+          popd
+      - name: Test onnx2ncnn
+        run: |
+          echo $(pwd)
+          ln -s build/bin/onnx2ncnn ./
+          python3 ci/test_onnx2ncnn.py --run 1
