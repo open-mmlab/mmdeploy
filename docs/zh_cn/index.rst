@@ -31,8 +31,9 @@
 
 .. toctree::
    :maxdepth: 1
-   :caption: 菜鸟教程
+   :caption: tutorial
 
+   get_started.md
    04-tutorial/01_introduction_to_model_deployment.md
    04-tutorial/02_challenges.md
 
