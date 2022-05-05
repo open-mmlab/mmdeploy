@@ -113,7 +113,7 @@ Install openssl first:
 ```shell
 sudo apt-get install -y libssl-dev
 ```
-Then install it from source, MMDeploy is using mmcv version is `1.4.0`:
+Since MMDeploy is using mmcv 1.4.0, you can install it from source as below:
 ```shell
 git clone https://github.com/open-mmlab/mmcv.git
 cd mmcv
