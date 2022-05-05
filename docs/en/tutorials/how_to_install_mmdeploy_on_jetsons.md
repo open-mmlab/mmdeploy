@@ -7,7 +7,7 @@ This tutorial introduces how to install mmdeploy on Nvidia Jetson systems. It ma
 
 For Jetson Nano, we use Jetson Nano 2GB and install [JetPack SDK](https://developer.nvidia.com/embedded/jetpack) through SD card image method.
 
-**Note**: The JetPack we use is `4.6`, and the default python version of it is `3.6`
+**Note**: The JetPack we use is `4.6.1`, and the default python version of it is `3.6`
 
 ### Install JetPack SDK
 
@@ -36,7 +36,7 @@ Then we can use `nvcc -V` the get the version of cuda we use.
 
 If you want to save CUDA env variables to bashrc, you could run 
 ```bash
-echo '# set env for CUDA and cuDNN' >> ~/.bashrc
+echo '# set env for CUDA' >> ~/.bashrc
 echo 'export PATH=$PATH:/usr/local/cuda/bin' >> ~/.bashrc
 echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64' >> ~/.bashrc
 source ~/.bashrc
@@ -46,6 +46,7 @@ source ~/.bashrc
 
 We have to install [Archiconda](https://github.com/Archiconda/build-tools/releases) instead as the Anaconda does not provide the wheel built for jetson. The commands below are the example for installation. You can choose another version of Archiconda by accessing [Archiconda releases page](https://github.com/Archiconda/build-tools/releases).
 ```shell
+cd /opt and 
 wget https://github.com/Archiconda/build-tools/releases/download/0.2.3/Archiconda3-0.2.3-Linux-aarch64.sh
 bash Archiconda3-0.2.3-Linux-aarch64.sh
 source ~/.bashrc
