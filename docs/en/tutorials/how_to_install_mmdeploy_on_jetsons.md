@@ -75,6 +75,11 @@ cp -r /usr/lib/python3.6/dist-packages/tensorrt* /your/path/to/archiconda3/envs/
 ```
 Meanwhile, tensorrt libs like `libnvinfer.so` can be found in `LD_LIBRARY_PATH`, which is done by Jetpack as well.
 
+Final command of this step: export `TENSORRT_DIR` to the system env for MMDeploy installation:
+```shell
+export TENSORRT_DIR=/usr/include/aarch64-linux-gnu
+```
+
 ### Install PyTorch
 
 Before we use `pip install`, we have to install `libopenblas-base`, `libopenmpi-dev` first:
@@ -153,11 +158,6 @@ export PPLCV_DIR=$(pwd)
 ```shell
 sudo apt-get install pkg-config libhdf5-100 libhdf5-dev
 pip install versioned-hdf5
-```
-
-### Export TensorRT source dir
-```shell
-export TENSORRT_DIR=/usr/include/aarch64-linux-gnu
 ```
 
 ### Install MMDeploy
