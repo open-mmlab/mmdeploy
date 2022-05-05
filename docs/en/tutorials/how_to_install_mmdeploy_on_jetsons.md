@@ -7,6 +7,8 @@ This tutorial introduces how to install mmdeploy on Nvidia Jetson systems. It ma
 
 For Jetson Nano, we use Jetson Nano 2GB and install [JetPack SDK](https://developer.nvidia.com/embedded/jetpack) through SD card image method.
 
+**Note**: The JetPack we use is `4.6`, and the default python version of it is `3.6`
+
 ### Install JetPack SDK
 
 There are mainly two ways to install the JetPack:
@@ -54,7 +56,7 @@ Then you can see something like those in the terminal. Take Jetson Nano as examp
 ```
 The `python3.6` is the version we need to use in the conda env later.
 
-We can create the virtual env `mmdeploy` using the command below. The version of python we got from the previous step.
+We can create the virtual env `mmdeploy` using the command below. Ensure the python version in the command is the same as the above.
 ```shell
 conda create -n mmdeploy python=3.6
 conda activate mmdeploy
