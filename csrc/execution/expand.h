@@ -76,6 +76,7 @@ struct expand_t {
   auto operator()(Sender&& sender) const {
     return sender_t<Sender>{(Sender &&) sender};
   }
+  _BinderBack<expand_t> operator()() const { return {{}, {}, {}}; }
 };
 
 }  // namespace _expand
