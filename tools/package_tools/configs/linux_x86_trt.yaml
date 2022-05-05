@@ -1,0 +1,20 @@
+global_config:
+  CMAKE_CXX_COMPILER: "g++-7"
+  MMDEPLOY_BUILD_SDK: "ON"
+  MMDEPLOY_BUILD_SDK_PYTHON_API: "ON"
+  MMDEPLOY_TARGET_DEVICES: '"cpu;cuda"'
+  MMDEPLOY_TARGET_BACKENDS: "trt"
+  pplcv_DIR: ${pplcv_DIR}/cuda-build/install/lib/cmake/ppl
+
+local_configs:
+  - BUILD_NAME: "linux-x86-cuda102-trt7216"
+    TENSORRT_DIR: "${HOME}/SDK/TensorRT-7.2.1.6"
+    CUDA_TOOLKIT_ROOT_DIR: "/usr/local/cuda-10.2"
+
+  - BUILD_NAME: "linux-x86-cuda111-trt8016"
+    TENSORRT_DIR: "${HOME}/SDK/TensorRT-8.0.1.6"
+    CUDA_TOOLKIT_ROOT_DIR: "/usr/local/cuda-11.1"
+
+  - BUILD_NAME: "linux-x86-cuda113-trt8230"
+    TENSORRT_DIR: "${HOME}/SDK/TensorRT-8.2.3.0"
+    CUDA_TOOLKIT_ROOT_DIR: "/usr/local/cuda-11.3"
