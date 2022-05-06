@@ -38,9 +38,9 @@ jobs:
         run: |
           pip install cmake onnx
       - name: update
-        run: apt update
+        run: sudo apt update
       - name: gcc-multilib
-        run: apt install gcc-multilib g++-multilib wget -y
+        run: sudo apt install gcc-multilib g++-multilib wget
       - name: Install ncnn
         run: |
           wget https://github.com/Tencent/ncnn/archive/refs/tags/20220420.tar.gz
