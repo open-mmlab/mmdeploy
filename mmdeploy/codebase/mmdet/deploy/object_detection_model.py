@@ -208,6 +208,7 @@ class End2EndModel(BaseBackendModel):
         rescale = kwargs.get('rescale', True)
         for i in range(batch_size):
             dets, labels = batch_dets[i], batch_labels[i]
+            dets = dets.to(device=torch.device(self.device))
             if rescale:
                 scale_factor = img_metas[i]['scale_factor']
 
