@@ -17,7 +17,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build_cpu:
+  test_backend_ncnn:
     runs-on: ubuntu-18.04
     strategy:
       matrix:
@@ -48,8 +48,8 @@ jobs:
       - name: Install ncnn
         run: |
           wget https://github.com/Tencent/ncnn/archive/refs/tags/20220420.tar.gz
-          tar xvf 20220420.tar.gz
-          pushd 20220420
+          tar xf 20220420.tar.gz
+          pushd ncnn-20220420
           export NCNN_DIR=$(pwd)
           mkdir build && pushd build
           cmake -DCMAKE_INSTALL_PREFIX=$(pwd)/../install ..
