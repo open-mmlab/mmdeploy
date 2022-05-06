@@ -7,7 +7,7 @@ This tutorial introduces how to install mmdeploy on Nvidia Jetson systems. It ma
 
 For Jetson Nano, we use Jetson Nano 2GB and install [JetPack SDK](https://developer.nvidia.com/embedded/jetpack) through SD card image method.
 
-**Note**: The JetPack we use is `4.6.1`, and the default python version of it is `3.6`
+**Note**: The JetPack we use is `4.6.1`, and the default python version of it is `3.6`.
 
 ### Install JetPack SDK
 
@@ -34,7 +34,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64
 ```
 Then we can use `nvcc -V` the get the version of cuda we use.
 
-If you want to save CUDA env variables to bashrc, you could run 
+If you want to save CUDA env variables to bashrc, you could run:
 ```bash
 echo '# set env for CUDA' >> ~/.bashrc
 echo 'export PATH=$PATH:/usr/local/cuda/bin' >> ~/.bashrc
