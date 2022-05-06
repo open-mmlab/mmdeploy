@@ -106,7 +106,7 @@ class End2EndModel(BaseBackendModel):
                     assert len(scale_factor) == 4
                     scale_factor = np.array(scale_factor)[None, :]  # [1,4]
                 scale_factor = torch.from_numpy(scale_factor).to(
-                    device=torch.device(self.device))
+                    device=dets.device)
                 dets[:, :4] /= scale_factor
             dets = dets.cpu().numpy()
             labels = labels.cpu().numpy()
