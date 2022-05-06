@@ -54,8 +54,6 @@ jobs:
           cmake --build . -j2
           make install
           popd && popd
-      - name: Setup Debug Session
-        uses: csexton/debugger-action@master
       - name: Install mmdeploy with ncnn backend
         run: |
           mkdir -p build && pushd build
