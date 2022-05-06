@@ -29,15 +29,23 @@ Here we choose [JetPack 4.6.1](https://developer.nvidia.com/jetpack-sdk-461) as 
 Install [Archiconda](https://github.com/Archiconda/build-tools/releases) instead of Anaconda because the latter does not provide the wheel built for Jetson.
 ```shell
 wget https://github.com/Archiconda/build-tools/releases/download/0.2.3/Archiconda3-0.2.3-Linux-aarch64.sh
-bash Archiconda3-0.2.3-Linux-aarch64.sh
+bash Archiconda3-0.2.3-Linux-aarch64.sh -b
+
+echo -e '\n# set environment variable for conda' >> ~/.bashrc
+echo ". ~/archiconda3/etc/profile.d/conda.sh" >> ~/.bashrc
+echo 'export PATH=$PATH:~/archiconda3/bin' >> ~/.bashrc
+
+echo -e '\n# set environment variable for pip' >> ~/.bashrc
+echo 'export OPENBLAS_CORETYPE=ARMV8' >> ~/.bashrc
+
 source ~/.bashrc
 conda --version
 ```
 After the installation, create a conda environment and activate it.
 ```shell
-# get the version of python installed by default
+# get the version of python3 installed by default
 export PYTHON_VERSION=`python3 --version | cut -d' ' -f 2 | cut -d'.' -f1,2`
-conda create -n mmdeploy python=${PYTHON_VERSION}
+conda create -y -n mmdeploy python=${PYTHON_VERSION}
 conda activate mmdeploy
 ```
 
@@ -77,6 +85,7 @@ export ARCH=aarch64
 wget https://github.com/Kitware/CMake/releases/download/v${CMAKE_VER}/cmake-${CMAKE_VER}-linux-${ARCH}.sh
 chmod +x cmake-${CMAKE_VER}-linux-${ARCH}.sh
 sudo ./cmake-${CMAKE_VER}-linux-${ARCH}.sh --prefix=/usr --skip-license
+cmake --version
 ```
 
 ## Install Dependencies
@@ -91,7 +100,10 @@ And then, we will present the way to install dependencies of Model Converter and
 TensorRT is already packed into JetPack SDK. But In order to import it successfully in conda environment,
 we need to copy the tensorrt package to the conda environment created before.
 ```shell
-cp -r /usr/lib/python${PYTHON_VERSION}/dist-packages/tensorrt* /opt/archiconda3/envs/mmdeploy/lib/python${PYTHON_VERSION}/site-packages/
+cp -r /usr/lib/python${PYTHON_VERSION}/dist-packages/tensorrt* ~/archiconda3/envs/mmdeploy/lib/python${PYTHON_VERSION}/site-packages/
+conda deactivate
+conda activate mmdeploy
+python -c "import tensorrt; print(tensorrt.__version__)" # Will print the version of TensorRT
 
 # set environment variable for building mmdeploy later on
 export TENSORRT_DIR=/usr/include/aarch64-linux-gnu
@@ -104,14 +116,15 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64
 You can also make the above environment variables permanent by adding them to `~/.bashrc`.
 
 ```shell
-echo '# set environment variable for TensorRT' >> ~/.bashrc
+echo -e '\n# set environment variable for TensorRT' >> ~/.bashrc
 echo 'export TENSORRT_DIR=/usr/include/aarch64-linux-gnu' >> ~/.bashrc
 
-echo '# set env for CUDA' >> ~/.bashrc
+echo -e '\n# set environment variable for CUDA' >> ~/.bashrc
 echo 'export PATH=$PATH:/usr/local/cuda/bin' >> ~/.bashrc
 echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64' >> ~/.bashrc
 
 source ~/.bashrc
+conda activate mmdeploy
 ```
 ### Install Dependencies for Model Converter
 
@@ -138,7 +151,7 @@ source ~/.bashrc
   Model Converter employs HDF5 to save the calibration data for TensorRT INT8 quantization.
 
   ```shell
-  sudo apt-get install pkg-config libhdf5-100 libhdf5-dev
+  sudo apt-get install -y pkg-config libhdf5-100 libhdf5-dev
   pip install versioned-hdf5
   ```
 
@@ -151,7 +164,7 @@ You can skip this section if you don't need MMDeploy C/C++ Inference SDK.
   "`spdlog` is a very fast, header-only/compiled, C++ logging library"
 
   ```shell
-  sudo apt-get install libspdlog-dev
+  sudo apt-get install -y libspdlog-dev
   ```
 
 - Install [ppl.cv](https://github.com/openppl-public/ppl.cv)
@@ -162,6 +175,8 @@ You can skip this section if you don't need MMDeploy C/C++ Inference SDK.
   git clone https://github.com/openppl-public/ppl.cv.git
   cd ppl.cv
   export PPLCV_DIR=$(pwd)
+  echo -e '\n# set environment variable for ppl.cv' >> ~/.bashrc
+  echo "export PPLCV_DIR=$(pwd)" >> ~/.bashrc
   ./build.sh cuda
   ```
 
@@ -236,8 +251,16 @@ Take the object detection for example:
   ```shell
     echo '# set env for pip' >> ~/.bashrc
     echo 'export OPENBLAS_CORETYPE=ARMV8' >> ~/.bashrc
-    sudo reboot
-  ```
+    source ~/.bashrc
+    ```
+  
+  If steps below don't work, check if you are using any mirror, if you did, try this:
+  ```shell
+    rm .condarc
+    conda clean -i
+    conda create -n xxx python=${PYTHON_VERSION}
+    ```
+  
 ### Runtime
 
 - `#assertion/root/workspace/mmdeploy/csrc/backend_ops/tensorrt/batched_nms/trt_batched_nms.cpp,98` or `pre_top_k need to be reduced for devices with arch 7.2`
