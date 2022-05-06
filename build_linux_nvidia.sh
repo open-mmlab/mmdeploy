@@ -137,9 +137,11 @@ prereqs() {
       echo 'export TENSORRT_DIR="/usr/include/'${ARCH}'-linux-gnu/"' >> ${HOME}/.bashrc
       echo 'export CUDNN_DIR="/usr/include/'${ARCH}'-linux-gnu/"' >> ${HOME}/.bashrc
       echo 'export LD_LIBRARY_PATH="/usr/lib/'${ARCH}'-linux-gnu/:$LD_LIBRARY_PATH"' >> ${HOME}/.bashrc
-      source ${HOME}/.bashrc
-      echo_green "Please re-run this script for changes to apply!"
-      exec bash
+      #source ${HOME}/.bashrc
+      # sourcing in bash script won't set the env. variables so we will set them temporarily
+      export TENSORRT_DIR="/usr/include/'${ARCH}'-linux-gnu/"
+      export CUDNN_DIR="/usr/include/'${ARCH}'-linux-gnu/"
+      export LD_LIBRARY_PATH="/usr/lib/'${ARCH}'-linux-gnu/:$LD_LIBRARY_PATH"
     else
       echo_red "Please Install TensorRT, CUDNN and add TENSORRT_DIR, CUDNN_DIR to environment variables before running this script!"
       exit
@@ -161,8 +163,13 @@ prereqs() {
       exit
   fi
 
-  # opencv
-  sudo apt-get install libopencv-dev
+  read -p "Install OpenCV? (Always installed on Jetson) (y/n)" -n 1 -r
+  echo
+  if [[ $REPLY =~ ^[Yy]$ ]]
+  then
+    # opencv
+    sudo apt-get install libopencv-dev
+  fi
 }
 
 py_venv() {
@@ -212,12 +219,14 @@ py_venv() {
   then
     # protofbuf on jetson is quite old - must be upgraded
     pip3 install --upgrade protobuf
-    # Install numpy 1.19.4 as newer versions might give "Illegal instruction (core dumped)" on Jetson
-    # TODO Numpy might be installed per default so we should not remove it.
-    pip3 install numpy==1.19.4
-  else
-    pip3 install numpy
+    # Install numpy >1.19.4 might give "Illegal instruction (core dumped)" on Jetson
+    # To solve it, we should set OPENBLAS_CORETYPE
+    echo 'export OPENBLAS_CORETYPE=ARMV8' >> ~/.bashrc
+    #source ${HOME}/.bashrc
+    # sourcing in bash script won't set the env. variables so we will set them temporarily
+    export OPENBLAS_CORETYPE=ARMV8
   fi
+  pip3 install numpy
   pip3 install opencv-python
   pip3 install matplotlib
 
@@ -269,13 +278,21 @@ pplcv() {
   cd ${PPLCV_DIR}
   git pull
   git checkout tags/v${PPLCV_VER}
+
+  # remove all build files
+  if [[ $WITH_CLEAN -eq 1 ]]
+  then
+    sudo rm -r ${PPLCV_DIR}/build
+  fi
+
+  # build
   mkdir build -p && cd build
-  cmake -DHPCC_USE_CUDA=ON -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} .. && make -j${PROC_NUM} && sudo make install
+  cmake -DHPCC_USE_CUDA=ON -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} .. && make -j${processor_num} && sudo make install
   sudo ldconfig
 
-  # TODO pack prebuild as tar.gz file
-  #cd ..
-  #tar -zcvf ${WORKING_DIR}/pplcv_${PPLCV_VER}_cuda-${ARCH}-build.tar.gz build/
+  # generate prebuild and pack into .tar.gz
+  sudo make DESTDIR=./prebuild install
+  tar -zcvf ${WORKING_DIR}/pplcv_${PPLCV_VER}_cuda-${ARCH}-build.tar.gz -C ./prebuild/ .
 }
 
 mmdeploy(){
@@ -307,6 +324,12 @@ mmdeploy(){
     pip install -e .
   fi
 
+  # remove all build files
+  if [[ $WITH_CLEAN -eq 1 ]]
+  then
+    sudo rm -r ${MMDEPLOY_DIR}/build
+  fi
+
   # build
   mkdir build -p && cd build
   cmake .. \
@@ -323,9 +346,9 @@ mmdeploy(){
   cmake --build . -- -j${PROC_NUM} && sudo cmake --install .
   sudo ldconfig
 
-  # TODO Pack build output as tar.gz file
-  #cd ..
-  # tar -zcvf ${WORKING_DIR}/mmdeploysdk_${MMDEPLOY_VER}_${ARCH}-build.tar.gz build/
+  # generate prebuild and pack into .tar.gz
+  sudo make DESTDIR=./prebuild install
+  tar -zcvf ${WORKING_DIR}/mmdeploysdk_${MMDEPLOY_VER}_${ARCH}-build.tar.gz -C ./prebuild/ .
   # Unpack as tar -zxf mmdeploysdk_*.tar.gz --directory MMDeploy-aarch64
 
   ## build mmdeploy examples
@@ -333,10 +356,10 @@ mmdeploy(){
   cd ${WORKING_DIR}/MMDeploy/build/example
   rm -r build
   mkdir build -p && cd build
-  cmake .. -DMMDeploy_DIR=${INSTALL_PREFIX}
+  cmake -DMMDeploy_DIR=${INSTALL_PREFIX} ..
   make all
 
-  # deactivate python venv again
+  # deactivate venv before exit
   deactivate
 }
 
@@ -371,11 +394,9 @@ else
   exit
 fi
 
-# remove all build files
-if [[ $WITH_CLEAN -eq 1 ]]
-then
-  sudo rm -r ${PPLCV_DIR}/build
-  sudo rm -r ${MMDEPLOY_DIR}/build
-fi
-
 $appargument1
+
+cd ${WORKING_DIR}
+
+# update env. variables
+exec bash
