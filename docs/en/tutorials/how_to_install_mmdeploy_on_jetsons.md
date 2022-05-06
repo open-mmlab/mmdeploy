@@ -40,6 +40,7 @@ echo '# set env for CUDA' >> ~/.bashrc
 echo 'export PATH=$PATH:/usr/local/cuda/bin' >> ~/.bashrc
 echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64' >> ~/.bashrc
 source ~/.bashrc
+nvcc -V
 ```
 
 ### Conda
@@ -47,7 +48,10 @@ source ~/.bashrc
 We have to install [Archiconda](https://github.com/Archiconda/build-tools/releases) instead as the Anaconda does not provide the wheel built for jetson. The commands below are the example for installation. You can choose another version of Archiconda by accessing [Archiconda releases page](https://github.com/Archiconda/build-tools/releases).
 ```shell
 wget https://github.com/Archiconda/build-tools/releases/download/0.2.3/Archiconda3-0.2.3-Linux-aarch64.sh
-bash Archiconda3-0.2.3-Linux-aarch64.sh
+bash Archiconda3-0.2.3-Linux-aarch64.sh -b -p ~/conda
+rm Archiconda3-0.2.3-Linux-aarch64.sh
+echo '# set env for conda' >> ~/.bashrc
+echo 'export PATH=$PATH:~/conda/bin' >> ~/.bashrc
 source ~/.bashrc
 conda --version
 ```
@@ -66,7 +70,7 @@ The `python3.6` is the version we need to use in the conda env later.
 
 We can create the virtual env `mmdeploy` using the command below. Ensure the python version in the command is the same as the above.
 ```shell
-conda create -n mmdeploy python=3.6
+conda create -y -n mmdeploy python=3.6
 conda activate mmdeploy
 ```
 
