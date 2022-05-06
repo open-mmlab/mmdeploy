@@ -39,9 +39,8 @@ struct _Receiver<Receiver>::type {
 
 template <typename Receiver>
 struct _Operation<Receiver>::type {
-  std::vector<TypeErasedOperation<Value>> ConnectChildren(
-      std::vector<TypeErasedSender<Value>> senders) {
-    std::vector<TypeErasedOperation<Value>> op_states;
+  std::vector<TypeErasedOperation> ConnectChildren(std::vector<TypeErasedSender<Value>> senders) {
+    std::vector<TypeErasedOperation> op_states;
     op_states.reserve(senders.size());
     for (size_t i = 0; i < senders.size(); ++i)
       op_states.push_back(Connect(std::move(senders[i]), receiver_t<Receiver>{i, this}));
@@ -53,7 +52,7 @@ struct _Operation<Receiver>::type {
         count_(child_op_states_.size()),
         values_(child_op_states_.size()) {}
 
-  std::vector<TypeErasedOperation<Value>> child_op_states_;
+  std::vector<TypeErasedOperation> child_op_states_;
   Receiver rcvr_;
   std::atomic<size_t> count_;
   std::vector<Value> values_;

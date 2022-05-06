@@ -3,8 +3,7 @@
 #ifndef MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_TYPE_ERASED_H_
 #define MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_TYPE_ERASED_H_
 
-#include "execution.h"
-#include "execution/schedulers/static_thread_pool.h"
+#include "execution/execution.h"
 
 // ! DO NOT INCLUDE THIS FILE DIRECTLY IF SPECIALIZATION OF `capture_completion_scheduler` IS
 // NEEDED, ALL TRANSLATION UNITS MUST SEE THE SAME SPECIALIZATION
@@ -29,7 +28,6 @@ namespace _type_erased {
 template <typename ValueTypes>
 class _TypeErasedSender;
 
-template <typename ValueTypes>
 class _TypeErasedOperation;
 
 template <typename ValueTypes>
@@ -56,6 +54,48 @@ struct _BulkFn<std::tuple<Ts...>> {
 template <typename ValueTypes>
 using _bulk_fn_t = typename _BulkFn<ValueTypes>::type;
 
+///////////////////////////////////////////////////////////////////////////////
+// Operation
+///////////////////////////////////////////////////////////////////////////////
+
+using TypeErasedOperation = _TypeErasedOperation;
+
+class _TypeErasedOperation {
+ public:
+  struct Impl {
+    virtual ~Impl() = default;
+    virtual void _Start() = 0;
+  };
+
+  template <typename Fun, typename = std::enable_if_t<std::is_invocable_v<Fun>>>
+  explicit _TypeErasedOperation(Fun&& fun);
+
+  friend void tag_invoke(start_t, _TypeErasedOperation& op_state) { op_state.impl_->_Start(); }
+
+ private:
+  std::unique_ptr<Impl> impl_;
+};
+
+template <typename Operation>
+struct _TypeErasedOperationImpl : _TypeErasedOperation::Impl {
+  virtual void _Start() { Start(operation_); }
+
+  template <typename Fun, typename = std::enable_if_t<std::is_invocable_v<Fun>>>
+  explicit _TypeErasedOperationImpl(Fun&& fun) : operation_{((Fun &&) fun)()} {}
+
+  Operation operation_;
+};
+
+template <typename Fun, typename>
+_TypeErasedOperation::_TypeErasedOperation(Fun&& fun) {
+  using _Operation = std::invoke_result_t<Fun>;
+  impl_.reset(new _TypeErasedOperationImpl<_Operation>{(Fun &&) fun});
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Sender
+///////////////////////////////////////////////////////////////////////////////
+
 template <typename SenderType>
 class _TypeErasedSenderAdapter {
  public:
@@ -78,7 +118,7 @@ _TypeErasedSenderAdapter(SenderType&&) -> _TypeErasedSenderAdapter<remove_cvref_
 template <typename ValueTypes>
 class _TypeErasedSender {
  public:
-  using _Operation = _TypeErasedOperation<ValueTypes>;
+  using _Operation = _TypeErasedOperation;
   using _Receiver = _TypeErasedReceiver<ValueTypes>;
   using _Scheduler = _TypeErasedScheduler<ValueTypes>;
   using value_types = ValueTypes;
@@ -142,16 +182,14 @@ template <typename Sender, typename ValueTypes = completion_signatures_of_t<Send
 struct _TypeErasedSenderImpl : _TypeErasedSender<ValueTypes>::Impl {
  public:
   using Base = typename _TypeErasedSender<ValueTypes>::Impl;
-  using _Operation = _TypeErasedOperation<ValueTypes>;
+  using _Operation = _TypeErasedOperation;
   using _Receiver = _TypeErasedReceiver<ValueTypes>;
 
   template <typename _Sender, typename = std::enable_if_t<
                                   !std::is_same_v<std::decay_t<_Sender>, _TypeErasedSenderImpl>>>
   explicit _TypeErasedSenderImpl(_Sender&& sender) : sender_((_Sender &&) sender) {}
 
-  _Operation _Connect(_Receiver receiver) override {
-    return _Operation{[&] { return Connect(std::move(sender_), std::move(receiver)); }};
-  }
+  _TypeErasedOperation _Connect(_Receiver receiver) override;
 
   _TypeErasedScheduler<ValueTypes> _GetCompletionScheduler() const override {
     //    static_assert(
@@ -179,6 +217,11 @@ struct _TypeErasedSenderImpl : _TypeErasedSender<ValueTypes>::Impl {
  private:
   Sender sender_;
 };
+template <typename Sender, typename ValueTypes>
+_TypeErasedOperation _TypeErasedSenderImpl<Sender, ValueTypes>::_Connect(
+    _TypeErasedSenderImpl::_Receiver receiver) {
+  return _Operation{[&] { return Connect(std::move(sender_), std::move(receiver)); }};
+}
 
 template <typename ValueTypes>
 template <typename Sender, typename>
@@ -186,6 +229,10 @@ _TypeErasedSender<ValueTypes>::_TypeErasedSender(Sender&& sender) {
   using _Sender = remove_cvref_t<Sender>;
   impl_ = std::make_unique<_TypeErasedSenderImpl<_Sender>>((Sender &&) sender);
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// Receiver
+///////////////////////////////////////////////////////////////////////////////
 
 template <typename ValueTypes>
 class _TypeErasedReceiver {
@@ -228,8 +275,9 @@ _TypeErasedReceiver<ValueTypes>::_TypeErasedReceiver(Receiver&& receiver) {
   impl_ = std::make_unique<_TypeErasedReceiverImpl<_Receiver, ValueTypes>>((Receiver &&) receiver);
 }
 
-////////////////////////////////////////////////////////
-/// _TypeErasedScheduler
+///////////////////////////////////////////////////////////////////////////////
+// Scheduler
+///////////////////////////////////////////////////////////////////////////////
 
 template <typename... Ts>
 using TypeErasedScheduler = _TypeErasedScheduler<std::tuple<Ts...>>;
@@ -336,43 +384,6 @@ _TypeErasedScheduler<ValueTypes>::_TypeErasedScheduler(Scheduler&& scheduler) {
   using _Scheduler = std::decay_t<Scheduler>;
   impl_ =
       std::make_unique<_TypeErasedSchedulerImpl<ValueTypes, _Scheduler>>((Scheduler &&) scheduler);
-}
-
-template <typename ValueTypes>
-class _TypeErasedOperation {
- public:
-  struct Impl {
-    virtual ~Impl() = default;
-    virtual void _Start() = 0;
-  };
-
-  template <typename Fun, typename = std::enable_if_t<std::is_invocable_v<Fun>>>
-  explicit _TypeErasedOperation(Fun&& fun);
-
-  friend void tag_invoke(start_t, _TypeErasedOperation& op_state) { op_state.impl_->_Start(); }
-
- private:
-  std::unique_ptr<Impl> impl_;
-};
-
-template <typename... Ts>
-using TypeErasedOperation = _TypeErasedOperation<std::tuple<Ts...>>;
-
-template <typename Operation, typename ValueTypes>
-struct _TypeErasedOperationImpl : _TypeErasedOperation<ValueTypes>::Impl {
-  virtual void _Start() { Start(operation_); }
-
-  template <typename Fun, typename = std::enable_if_t<std::is_invocable_v<Fun>>>
-  explicit _TypeErasedOperationImpl(Fun&& fun) : operation_{((Fun &&) fun)()} {}
-
-  Operation operation_;
-};
-
-template <typename ValueTypes>
-template <typename Fun, typename>
-_TypeErasedOperation<ValueTypes>::_TypeErasedOperation(Fun&& fun) {
-  using _Operation = std::invoke_result_t<Fun>;
-  impl_.reset(new _TypeErasedOperationImpl<_Operation, ValueTypes>{(Fun &&) fun});
 }
 
 struct type_erase_t {
