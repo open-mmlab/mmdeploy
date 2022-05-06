@@ -253,14 +253,14 @@ Take the object detection for example:
     echo 'export OPENBLAS_CORETYPE=ARMV8' >> ~/.bashrc
     source ~/.bashrc
     ```
-  
+
   If steps below don't work, check if you are using any mirror, if you did, try this:
   ```shell
     rm .condarc
     conda clean -i
     conda create -n xxx python=${PYTHON_VERSION}
     ```
-  
+
 ### Runtime
 
 - `#assertion/root/workspace/mmdeploy/csrc/backend_ops/tensorrt/batched_nms/trt_batched_nms.cpp,98` or `pre_top_k need to be reduced for devices with arch 7.2`
