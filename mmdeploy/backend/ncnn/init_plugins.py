@@ -11,8 +11,7 @@ def get_ops_path() -> str:
         str: The library path of NCNN custom ops.
     """
     candidates = [
-        '../../lib/libmmdeploy_ncnn_ops.so',
-        '../../../build/bin/*/mmdeploy_ncnn_ops.dll'
+        '../../lib/libmmdeploy_ncnn_ops.so', '../../lib/mmdeploy_ncnn_ops.dll'
     ]
     return get_file_path(os.path.dirname(__file__), candidates)
 

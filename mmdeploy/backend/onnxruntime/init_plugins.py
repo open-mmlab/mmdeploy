@@ -12,6 +12,6 @@ def get_ops_path() -> str:
     """
     candidates = [
         '../../lib/libmmdeploy_onnxruntime_ops.so',
-        '../../../build/bin/*/mmdeploy_onnxruntime_ops.dll',
+        '../../lib/mmdeploy_onnxruntime_ops.dll',
     ]
     return get_file_path(os.path.dirname(__file__), candidates)

@@ -5,6 +5,7 @@ import logging
 import os
 import os.path as osp
 import shutil
+import sys
 import tarfile
 from glob import glob
 from subprocess import CalledProcessError, run
@@ -17,6 +18,16 @@ logger.setLevel(logging.INFO)
 
 CUR_DIR = os.path.dirname(os.path.abspath(__file__))
 PACKAGING_DIR = osp.join(CUR_DIR, 'packaging')
+
+
+def _merge_cfg(cfg0, cfg1):
+    cfg = copy.deepcopy(cfg0)
+    for k, v in cfg1.items():
+        if k in cfg:
+            cfg[k] = _merge_cfg(cfg0[k], cfg1[k])
+        else:
+            cfg[k] = v
+    return cfg
 
 
 def _remove_if_exist(path):
@@ -80,8 +91,10 @@ def clear_mmdeploy(mmdeploy_dir: str):
 
 
 def build_mmdeploy(cfg, mmdeploy_dir):
+    cmake_flags = cfg.get('cmake_flags', [])
+    cmake_envs = cfg.get('cmake_envs', dict())
 
-    args = [f'-D{k}={v}' for k, v in cfg.items()]
+    args = [f'-D{k}={v}' for k, v in cmake_envs.items()]
 
     # clear mmdeploy
     clear_mmdeploy(mmdeploy_dir)
@@ -90,17 +103,23 @@ def build_mmdeploy(cfg, mmdeploy_dir):
     if not osp.exists(build_dir):
         os.mkdir(build_dir)
 
-    # cmake cmd
-    cmake_cmd = ' '.join(['cmake ..'] + args)
+        # cmake cmd
+        cmake_cmd = ' '.join(['cmake ..'] + cmake_flags + args)
+        _call_command(cmake_cmd, build_dir)
 
-    # build cmd
-    build_cmd = 'cmake --build . -- -j$(nproc) && cmake --install .'
+    if sys.platform == 'win32':
+        # build cmd
+        build_cmd = 'cmake --build . --config Release -- /m'
+        _call_command(build_cmd, build_dir)
+        install_cmd = 'cmake --install . --config Release'
+        _call_command(install_cmd, build_dir)
+    else:
+        # build cmd
+        build_cmd = 'cmake --build . -- -j$(nproc) && cmake --install .'
+        _call_command(build_cmd, build_dir)
 
     # build wheel
     bdist_cmd = 'python setup.py bdist_wheel'
-
-    _call_command(cmake_cmd, build_dir)
-    _call_command(build_cmd, build_dir)
     _call_command(bdist_cmd, mmdeploy_dir)
 
 
@@ -109,8 +128,6 @@ def get_dir_name(cfg, tag, default_name):
         logging.warning(f'{tag} not found, use `{default_name}` as default.')
     else:
         default_name = cfg[tag]
-        cfg = copy.deepcopy(cfg)
-        cfg.pop(tag)
     return cfg, default_name
 
 
@@ -120,7 +137,8 @@ def create_package(cfg: Dict, mmdeploy_dir: str):
 
     # load flags
     cfg, build_dir = get_dir_name(cfg, 'BUILD_NAME', build_dir)
-    build_sdk_flag = cfg.get('MMDEPLOY_BUILD_SDK', False)
+    cmake_envs = cfg.get('cmake_envs', dict())
+    build_sdk_flag = cmake_envs.get('MMDEPLOY_BUILD_SDK', False)
     if 'TAR_NAME' in cfg:
         cfg, sdk_tar_name = get_dir_name(cfg, 'TAR_NAME', sdk_tar_name)
 
@@ -149,10 +167,15 @@ def create_package(cfg: Dict, mmdeploy_dir: str):
             _remove_if_exist(osp.join(sdk_tar_dir, 'example', 'build'))
 
             # create sdk python api wheel
+            # for linux
             python_api_lib_path = glob(
                 osp.join(mmdeploy_dir, 'build/lib/mmdeploy_python.*.so'))
+            # for windows
+            python_api_lib_path += glob(
+                osp.join(mmdeploy_dir, 'build/bin/*/mmdeploy_python.*.pyd'))
             num_libs = len(python_api_lib_path)
-            assert num_libs == 1, f'Expect one api lib, but found {num_libs}.'
+            if num_libs != 1:
+                logging.info('find multiple mmdeploy_python libraries.')
             python_api_lib_path = python_api_lib_path[0]
 
             sdk_python_package_dir = osp.join(build_dir, '.mmdeploy_python')
@@ -190,13 +213,17 @@ def parse_configs(cfg_path: str):
     global_cfg = cfgs.get('global_config', dict())
     local_cfgs = cfgs.get('local_configs', [])
 
-    if len(local_cfgs) == 0:
-        merged_cfgs = [global_cfg]
-    else:
-        merged_cfgs = [copy.deepcopy(global_cfg) for _ in local_cfgs]
+    merged_cfgs = [
+        _merge_cfg(global_cfg, local_cfg) for local_cfg in local_cfgs
+    ]
 
-        for cfg, local_cfg in zip(merged_cfgs, local_cfgs):
-            cfg.update(local_cfg)
+    # if len(local_cfgs) == 0:
+    #     merged_cfgs = [global_cfg]
+    # else:
+    #     merged_cfgs = [copy.deepcopy(global_cfg) for _ in local_cfgs]
+
+    # for cfg, local_cfg in zip(merged_cfgs, local_cfgs):
+    #     cfg.update(local_cfg)
 
     return merged_cfgs
 
