@@ -71,7 +71,6 @@ The `python3.6` is the version we need to use in the conda env later.
 We can create the virtual env `mmdeploy` using the command below. Ensure the python version in the command is the same as the above.
 ```shell
 conda create -y -n mmdeploy python=3.6
-conda activate mmdeploy
 ```
 
 ### Make TensorRT available in your Conda env
@@ -83,13 +82,20 @@ sudo find / -name tensorrt
 ```
 Then copy the tensorrt to our destination like:
 ```shell
-cp -r /usr/lib/python3.6/dist-packages/tensorrt* /your/path/to/archiconda3/envs/mmdeploy/lib/python3.6/site-packages/
+cp -r /usr/lib/python3.6/dist-packages/tensorrt* ~/conda/envs/mmdeploy/lib/python3.6/site-packages/
 ```
 Meanwhile, tensorrt libs like `libnvinfer.so` can be found in `LD_LIBRARY_PATH`, which is done by Jetpack as well.
 
 Final command of this step: export `TENSORRT_DIR` to the system env for MMDeploy installation:
 ```shell
-export TENSORRT_DIR=/usr/include/aarch64-linux-gnu
+echo '# set env for TensorRT' >> ~/.bashrc
+echo 'export TENSORRT_DIR=/usr/include/aarch64-linux-gnu' >> ~/.bashrc
+source ~/.bashrc
+```
+Then we can activate mmdeploy env for test it.
+```shell
+source activate mmdeploy
+python -c "import tensorrt; print(tensorrt.__version__)" # Will print the vresion of TensorRT
 ```
 
 ### Install PyTorch
