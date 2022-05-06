@@ -36,7 +36,7 @@ conda --version
 After the installation, create a conda environment and activate it.
 ```shell
 # get the version of python installed by default
-export PYTHON_VERSION=`python --version | cut -d' ' -f 2 | cut -d'.' -f1,2`
+export PYTHON_VERSION=`python3 --version | cut -d' ' -f 2 | cut -d'.' -f1,2`
 conda create -n mmdeploy python=${PYTHON_VERSION}
 conda activate mmdeploy
 ```
