@@ -1,4 +1,4 @@
-name: build
+name: backend
 
 on:
   push:
@@ -17,7 +17,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test_backend_ncnn:
+  test_onnx2ncnn:
     runs-on: ubuntu-18.04
     strategy:
       matrix:
