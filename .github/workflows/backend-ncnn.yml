@@ -34,17 +34,13 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install PyTorch
-        run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
-      - name: Install MMCV
-        run: |
-          pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cpu/${{matrix.torch_version}}/index.html
-          python -c 'import mmcv; print(mmcv.__version__)'
       - name: Install unittest dependencies
         run: |
-          pip install -r requirements.txt
-          pip install -U numpy
-          pip install cmake
+          pip install cmake onnx
+      - name: update
+        run: apt update
+      - name: gcc-multilib
+        run: apt install gcc-multilib g++-multilib wget -y
       - name: Install ncnn
         run: |
           wget https://github.com/Tencent/ncnn/archive/refs/tags/20220420.tar.gz
@@ -52,8 +48,9 @@ jobs:
           pushd ncnn-20220420
           export NCNN_DIR=$(pwd)
           mkdir build && pushd build
-          cmake -DCMAKE_INSTALL_PREFIX=$(pwd)/../install ..
-          make -j && make install
+          cmake -DCMAKE_INSTALL_PREFIX=$(pwd)/../install -DNCNN_BUILD_TESTS=OFF -DNCNN_BUILD_TOOLS=OFF -DNCNN_BUILD_EXAMPLES=OFF ..
+          cmake --build . -j
+          make install
           export LD_LIBRARY_PATH=${NCNN_DIR}/install/lib/:$LD_LIBRARY_PATH
           popd && popd
       - name: Install mmdeploy with ncnn backend
