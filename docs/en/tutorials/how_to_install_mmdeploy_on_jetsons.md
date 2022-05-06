@@ -43,6 +43,16 @@ source ~/.bashrc
 nvcc -V
 ```
 
+### pip env
+When we using `pip install` to install some package, it will throws error: `Illegal instruction (core dumped)`
+Follow the below step will solve the problem:
+```shell
+echo '# set env for TensorRT' >> ~/.bashrc
+echo 'export OPENBLAS_CORETYPE=ARMV8' >> ~/.bashrc
+source ~/.bashrc
+source activate mmdeploy
+```
+
 ### Conda
 
 We have to install [Archiconda](https://github.com/Archiconda/build-tools/releases) instead as the Anaconda does not provide the wheel built for jetson. The commands below are the example for installation. You can choose another version of Archiconda by accessing [Archiconda releases page](https://github.com/Archiconda/build-tools/releases).
@@ -229,3 +239,12 @@ running the object detection example:
   **Q**: There 2 steps you need to do:
   1. Set `MAX N` mode and process `sudo nvpmodel -m 0 && sudo jetson_clocks`.
   2. Reducing the number of `pre_top_k` in deploy config file like [mmedt pre_top_k](https://github.com/open-mmlab/mmdeploy/blob/34879e638cc2db511e798a376b9a4b9932660fe1/configs/mmdet/_base_/base_static.py#L13) to reduce the number of proposals may resolve the problem. I reduce it to `1000` and it work.
+
+- **F-2**: `pip install` throws error: `Illegal instruction (core dumped)`
+  **Q**: Follow the below step will solve the problem:
+  ```shell
+  echo '# set env for TensorRT' >> ~/.bashrc
+  echo 'export OPENBLAS_CORETYPE=ARMV8' >> ~/.bashrc
+  source ~/.bashrc
+  source activate mmdeploy
+  ```
