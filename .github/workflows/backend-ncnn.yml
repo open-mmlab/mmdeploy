@@ -43,7 +43,7 @@ jobs:
       - name: update
         run: sudo apt update
       - name: gcc-multilib
-        run: sudo apt install gcc-multilib g++-multilib wget libprotoc-dev
+        run: sudo apt install gcc-multilib g++-multilib wget libprotobuf-dev protobuf-compiler
       - name: Install ncnn
         run: |
           wget https://github.com/Tencent/ncnn/archive/refs/tags/20220420.tar.gz
