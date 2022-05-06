@@ -49,7 +49,7 @@ jobs:
           export NCNN_DIR=$(pwd)
           mkdir build && pushd build
           cmake -DCMAKE_INSTALL_PREFIX=$(pwd)/../install -DNCNN_BUILD_TESTS=OFF -DNCNN_BUILD_TOOLS=OFF -DNCNN_BUILD_EXAMPLES=OFF ..
-          cmake --build . -j
+          cmake --build . -j2
           make install
           export LD_LIBRARY_PATH=${NCNN_DIR}/install/lib/:$LD_LIBRARY_PATH
           popd && popd
