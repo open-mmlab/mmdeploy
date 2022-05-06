@@ -1,249 +1,246 @@
-## How to install mmdeploy on Jetsons
+# Build for Jetson
 
-This tutorial introduces how to install mmdeploy on Nvidia Jetson systems. It mainly introduces the installation of mmdeploy on three Jetson series boards:
+In this chapter, we introduce how to install mmdeploy on NVIDIA Jetson platforms, especially on three main Jetson series boards:
 - Jetson Nano
-- Jetson AGX Xavier
 - Jetson TX2
+- Jetson AGX Xavier
 
-For Jetson Nano, we use Jetson Nano 2GB and install [JetPack SDK](https://developer.nvidia.com/embedded/jetpack) through SD card image method.
+## Prerequisites
 
-**Note**: The JetPack we use is `4.6.1`, and the default python version of it is `3.6`.
+To equip a Jetson device, JetPack SDK is a must.
+Besides, the Model Converter of MMDeploy requires an environment with PyTorch for converting PyTorch models to ONNX models.
+Regarding the toolchain, cmake and gcc has to be upgraded no less than 3.14 and 7.0 respectively.
 
-### Install JetPack SDK
+### JetPack SDK
 
-There are mainly two ways to install the JetPack:
-1. Write the image to the SD card directly.
-2. Use the SDK Manager to do this.
+JetPack SDK provides a full development environment for hardware-accelerated AI-at-the-edge development.
+All Jetson modules and developer kits are supported by JetPack SDK.
 
-The first method does not need two separated machines and their display equipment or cables. We just follow the instruction to write the image. This is pretty convenient. Click [here](https://developer.nvidia.com/embedded/learn/get-started-jetson-nano-2gb-devkit#intro) for Jetson Nano 2GB to start. And click [here](https://developer.nvidia.com/embedded/learn/get-started-jetson-nano-devkit) for Jetson Nano 4GB to start the journey.
+There are two major installation methods including,
+1. SD Card Image Method
+2. NVIDIA SDK Manager Method
 
-The second method, however, requires we set up another display tool and cable to the jetson hardware. This method is safer than the previous one as the first method may sometimes cannot write the image in and throws a warning during validation. Click [here](https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html) to start.
+You can find a very detailed installation guide from NVIDIA [official website](https://developer.nvidia.com/jetpack-sdk-50dp).
 
-For the first method, if it always throws `Attention something went wrong...` even the file already get re-downloaded, just try `wget` to download the file and change the tail name instead.
-
-### Launch the system
-
-Sometimes we just need to reboot the jetson device when it gets stuck in initializing the system.
-
-### CUDA
-
-The CUDA is installed by default and we have to write the CUDA path and lib to `$PATH` and `$LD_LIBRARY_PATH`:
-```shell
-export PATH=$PATH:/usr/local/cuda/bin
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64
-```
-Then we can use `nvcc -V` the get the version of cuda we use.
-
-If you want to save CUDA env variables to bashrc, you could run:
-```bash
-echo '# set env for CUDA' >> ~/.bashrc
-echo 'export PATH=$PATH:/usr/local/cuda/bin' >> ~/.bashrc
-echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64' >> ~/.bashrc
-source ~/.bashrc
-nvcc -V
-```
-
-### pip env
-When we using `pip install` to install some package, it will throws error: `Illegal instruction (core dumped)`
-Follow the below step will solve the problem:
-```shell
-echo '# set env for pip' >> ~/.bashrc
-echo 'export OPENBLAS_CORETYPE=ARMV8' >> ~/.bashrc
-sudo reboot
-```
+Here we choose [JetPack 4.6.1](https://developer.nvidia.com/jetpack-sdk-461) as our best practice on setup Jetson platforms.
 
 ### Conda
 
-We have to install [Archiconda](https://github.com/Archiconda/build-tools/releases) instead as the Anaconda does not provide the wheel built for jetson. The commands below are the example for installation. You can choose another version of Archiconda by accessing [Archiconda releases page](https://github.com/Archiconda/build-tools/releases).
+Install [Archiconda](https://github.com/Archiconda/build-tools/releases) instead of Anaconda because the latter does not provide the wheel built for Jetson.
 ```shell
 wget https://github.com/Archiconda/build-tools/releases/download/0.2.3/Archiconda3-0.2.3-Linux-aarch64.sh
-bash Archiconda3-0.2.3-Linux-aarch64.sh -b -p ~/conda
-rm Archiconda3-0.2.3-Linux-aarch64.sh
-echo '# set env for conda' >> ~/.bashrc
-echo 'export PATH=$PATH:~/conda/bin' >> ~/.bashrc
+bash Archiconda3-0.2.3-Linux-aarch64.sh
 source ~/.bashrc
 conda --version
 ```
-
-After we install the Archiconda successfully, we need to check the tensorrt python package pre-installed by Jetpack by command below.
+After the installation, create a conda environment and activate it.
 ```shell
-sudo find / -name tensorrt
-```
-Then you can see something like those in the terminal. Take Jetson Nano as example:
-```shell
-...
-/usr/lib/python3.6/dist-packages/tensorrt
-...
-```
-The `python3.6` is the version we need to use in the conda env later.
-
-We can create the virtual env `mmdeploy` using the command below. Ensure the python version in the command is the same as the above.
-```shell
-conda create -y -n mmdeploy python=3.6
+# get the version of python installed by default
+export PYTHON_VERSION=`python --version | cut -d' ' -f 2 | cut -d'.' -f1,2`
+conda create -n mmdeploy python=${PYTHON_VERSION}
+conda activate mmdeploy
 ```
 
-### Make TensorRT available in your Conda env
-Then we have to move the pre-installed tensorrt package in Jetpack to the virtual env.
+```{note}
+JetPack SDK 4+ provides python 3.6. We strongly recommend using the default python. Trying to upgrade it probably ruin the JetPack environment.
 
-First we use `find` to get where the tensorrt is
-```shell
-sudo find / -name tensorrt
+If a higher-version python is necessary, you can install JetPack 5+, in which the python version is 3.8
 ```
-Then copy the tensorrt to our destination like:
-```shell
-cp -r /usr/lib/python3.6/dist-packages/tensorrt* ~/conda/envs/mmdeploy/lib/python3.6/site-packages/
-```
-Meanwhile, tensorrt libs like `libnvinfer.so` can be found in `LD_LIBRARY_PATH`, which is done by Jetpack as well.
+### PyTorch
 
-Final command of this step: export `TENSORRT_DIR` to the system env for MMDeploy installation:
-```shell
-echo '# set env for TensorRT' >> ~/.bashrc
-echo 'export TENSORRT_DIR=/usr/include/aarch64-linux-gnu' >> ~/.bashrc
-source ~/.bashrc
-```
-Then we can activate mmdeploy env for test it.
-```shell
-source activate mmdeploy
-python -c "import tensorrt; print(tensorrt.__version__)" # Will print the vresion of TensorRT
-```
+Download the PyTorch wheel for Jetson from [here](https://forums.developer.nvidia.com/t/pytorch-for-jetson-version-1-10-now-available/72048) and save it to the local directory `/opt`.
+And build torchvision from source as there is no prebuilt torchvision for Jetson platforms.
 
-### Install PyTorch
+Take `torch 1.8.0` and  `torchvision 0.9.0` for example. You can install them as below:
+```shell
+sudo apt-get install -y libopenblas-base libopenmpi-dev libjpeg-dev libpython3-dev libavcodec-dev libavformat-dev libswscale-dev
+pip install /opt/torch-1.8.0-cp36-cp36m-linux_aarch64.whl
 
-Before we use `pip install`, we have to install `libopenblas-base`, `libopenmpi-dev` first:
-```shell
-sudo apt-get install -y libopenblas-base libopenmpi-dev
-```
-Or, it will throw the following error when we import torch in python:
-```
-libmpi_cxx.so.20: cannot open shared object file: No such file or directory
-```
-After that, download the PyTorch wheel for Jetson **specifically**. Click [here](https://forums.developer.nvidia.com/t/pytorch-for-jetson-version-1-10-now-available/72048) to get the wheel. MMDeploy is using `pytorch==1.8.0`.
-
-After the download finished, using cmd to install it.
-```shell
-pip3 install /your/path/dwonload/torch-1.8.0-cp36-cp36m-linux_aarch64.whl
-```
-
-### Install torchvision
-We can't directly use `pip install torchvision` to install torchvision for Jetson Nano. But we can clone the repository from Github and build it locally. First we have to install some dependencies:
-```shell
-sudo apt-get install -y libjpeg-dev libpython3-dev libavcodec-dev libavformat-dev libswscale-dev
-```
-Then just clone and compile the project, MMDeploy is using `torchvision=0.9.0`:
-```shell
+# build torchvision
 git clone https://github.com/pytorch/vision.git
 cd vision
 git checkout tags/v0.9.0 -b v0.9.0
 pip install -e .
 ```
 
-**Note:** If the `pip install` throws error: `Illegal instruction (core dumped)`, then add `export OPENBLAS_CORETYPE=ARMV8` in `~/.bashrc` and then `source ~/.bashrc && conda activate mmdeploy` will solve the problem.
+### CMake
 
-### Install mmcv
-
-Install openssl first:
+We use the latest cmake v3.23.1 released in April 2022.
 ```shell
-sudo apt-get install -y libssl-dev
-```
-Since MMDeploy is using mmcv 1.4.0, you can install it from source as below:
-```shell
-git clone https://github.com/open-mmlab/mmcv.git
-cd mmcv
-git checkout v1.4.0
-MMCV_WITH_OPS=1 pip install -e .
-```
+# purge existing
+sudo apt-get purge cmake
+sudo snap remove cmake
 
-### Update cmake
-
-We choose cmake version `v3.23.1` as an example. We use the pre-built cmake binary to update it.
-
-| Install type |
-| --- |
-| [cmake-3.23.1-linux-aarch64.sh](https://github.com/Kitware/CMake/releases/download/v3.23.1/cmake-3.23.1-linux-aarch64.sh) |
-|[cmake-3.23.1-linux-aarch64.tar.gz](https://github.com/Kitware/CMake/releases/download/v3.23.1/cmake-3.23.1-linux-aarch64.tar.gz)|
-
-### Install spdlog
-```shell
-sudo apt-get install libspdlog-dev
+# install prebuilt binary
+export CMAKE_VER=3.23.1
+export ARCH=aarch64
+wget https://github.com/Kitware/CMake/releases/download/v${CMAKE_VER}/cmake-${CMAKE_VER}-linux-${ARCH}.sh
+chmod +x cmake-${CMAKE_VER}-linux-${ARCH}.sh
+sudo ./cmake-${CMAKE_VER}-linux-${ARCH}.sh --prefix=/usr --skip-license
 ```
 
-### Install onnx
+## Install Dependencies
+
+The Model Converter of MMDeploy on Jetson platforms depends on [MMCV](https://github.com/open-mmlab/mmcv) and the inference engine [TensorRT](https://developer.nvidia.com/tensorrt).
+While MMDeploy C/C++ Inference SDK relies on [spdlog](https://github.com/gabime/spdlog), OpenCV and [ppl.cv](https://github.com/openppl-public/ppl.cv) and so on as well as TensorRT.
+Thus, in the following sections, we will describe how to prepare TensorRT.
+And then, we will present the way to install dependencies of Model Converter and C/C++ Inference SDK respectively.
+
+### Prepare TensorRT
+
+TensorRT is already packed into JetPack SDK. But In order to import it successfully in conda environment,
+we need to copy the tensorrt package to the conda environment created before.
 ```shell
-pip install onnx
+cp -r /usr/lib/python${PYTHON_VERSION}/dist-packages/tensorrt* /opt/archiconda3/envs/mmdeploy/lib/python${PYTHON_VERSION}/site-packages/
+
+# set environment variable for building mmdeploy later on
+export TENSORRT_DIR=/usr/include/aarch64-linux-gnu
+
+# append cuda path and libraries to PATH and LD_LIBRARY_PATH, which is also used for building mmdeploy later on
+export PATH=$PATH:/usr/local/cuda/bin
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64
 ```
 
-### Install pplcv
-PPL.CV is a high-performance image processing library of OpenPPL. We need to use git clone to download it.
-```shell
-git clone https://github.com/openppl-public/ppl.cv.git
-cd ppl.cv
-export PPLCV_DIR=$(pwd)
-./build.sh cuda
-```
-
-### Install h5py
-```shell
-sudo apt-get install pkg-config libhdf5-100 libhdf5-dev
-pip install versioned-hdf5
-```
-
-### Install MMDeploy
-Using git to clone MMDeploy source code.
-```shell
-git clone -b master https://github.com/open-mmlab/mmdeploy.git MMDeploy
-cd MMDeploy
-export MMDEPLOY_DIR=$(pwd)
-git submodule update --init --recursive
-```
-
-Build MMDeploy from source:
-```shell
-mkdir -p build && cd build
-cmake .. \
-    -DMMDEPLOY_BUILD_SDK=ON \
-    -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
-    -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
-    -DMMDEPLOY_TARGET_BACKENDS="trt" \
-    -DMMDEPLOY_CODEBASES=all \
-    -Dpplcv_DIR=${PPLCV_DIR}/cuda-build/install/lib/cmake/ppl
-
-make -j$(nproc) && make install
-```
-
-### Install MMDeploy Python API
+You can also make the above environment variables permanent by adding them to `~/.bashrc`.
 
 ```shell
-cd ${MMDEPLOY_DIR}
-pip install -e .
+echo '# set environment variable for TensorRT' >> ~/.bashrc
+echo 'export TENSORRT_DIR=/usr/include/aarch64-linux-gnu' >> ~/.bashrc
+
+echo '# set env for CUDA' >> ~/.bashrc
+echo 'export PATH=$PATH:/usr/local/cuda/bin' >> ~/.bashrc
+echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64' >> ~/.bashrc
+
+source ~/.bashrc
 ```
+### Install Dependencies for Model Converter
 
-### Build MMDeploy SDK Example
+- Install [MMCV](https://github.com/open-mmlab/mmcv)
 
-```shell
-cd ${MMDEPLOY_DIR}/build/install/example
-mkdir -p build && cd build
-cmake .. -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy
-make -j$(nproc)
-```
+  MMCV hasn't provided prebuilt package for Jetson platforms, so we have to build it from source.
 
-running the object detection example:
-```shell
-./object_detection cuda ${work_dir} ${path/to/an/image}
-```
-
-### FAQs
-
-- **F-1**: For **Jetson TX2** and **Jetson Nano**, may get the error: `#assertion/root/workspace/mmdeploy/csrc/backend_ops/tensorrt/batched_nms/trt_batched_nms.cpp,98` or `pre_top_k need to be reduced for devices with arch 7.2`.
-
-  **Q**: There 2 steps you need to do:
-  1. Set `MAX N` mode and process `sudo nvpmodel -m 0 && sudo jetson_clocks`.
-  2. Reducing the number of `pre_top_k` in deploy config file like [mmedt pre_top_k](https://github.com/open-mmlab/mmdeploy/blob/34879e638cc2db511e798a376b9a4b9932660fe1/configs/mmdet/_base_/base_static.py#L13) to reduce the number of proposals may resolve the problem. I reduce it to `1000` and it work.
-
-- **F-2**: `pip install` throws error: `Illegal instruction (core dumped)`
-  **Q**: Follow the below step will solve the problem:
   ```shell
-  echo '# set env for pip' >> ~/.bashrc
-  echo 'export OPENBLAS_CORETYPE=ARMV8' >> ~/.bashrc
-  sudo reboot
-  
+  sudo apt-get install -y libssl-dev
+  git clone https://github.com/open-mmlab/mmcv.git
+  cd mmcv
+  git checkout v1.4.0
+  MMCV_WITH_OPS=1 pip install -e .
   ```
+
+- Install onnx
+
+  ```shell
+  pip install onnx
+  ```
+
+- Install h5py
+
+  Model Converter employs HDF5 to save the calibration data for TensorRT INT8 quantization.
+
+  ```shell
+  sudo apt-get install pkg-config libhdf5-100 libhdf5-dev
+  pip install versioned-hdf5
+  ```
+
+### Install Dependencies for SDK
+
+You can skip this section if you don't need MMDeploy C/C++ Inference SDK.
+
+- Install [spdlog](https://github.com/gabime/spdlog)
+
+  "`spdlog` is a very fast, header-only/compiled, C++ logging library"
+
+  ```shell
+  sudo apt-get install libspdlog-dev
+  ```
+
+- Install [ppl.cv](https://github.com/openppl-public/ppl.cv)
+
+  "`ppl.cv` is a high-performance image processing library of [openPPL](https://openppl.ai/home)"
+
+  ```shell
+  git clone https://github.com/openppl-public/ppl.cv.git
+  cd ppl.cv
+  export PPLCV_DIR=$(pwd)
+  ./build.sh cuda
+  ```
+
+## Install MMDeploy
+
+```shell
+git clone --recursive https://github.com/open-mmlab/mmdeploy.git
+cd mmdeploy
+export MMDEPLOY_DIR=$(pwd)
+```
+
+### Install Model Converter
+
+Since some operators adopted by OpenMMLab codebases are not supported by TenorRT,
+we build the custom TensorRT plugins to make it up, such as `roi_align`, `scatternd`, etc.
+You can find a full list of custom plugins from [here](../ops/tensorrt.md).
+
+```shell
+# build TensorRT custom operators
+mkdir -p build && cd build
+cmake .. -DMMDEPLOY_TARGET_BACKENDS="trt"
+make -j$(nproc)
+
+# install model converter
+cd ${MMDEPLOY_DIR}
+pip install -v -e .
+# "-v" means verbose, or more output
+# "-e" means installing a project in editable mode,
+# thus any local modifications made to the code will take effect without re-installation.
+```
+
+### Install C/C++ Inference SDK
+
+You can skip this section if you don't need MMDeploy C/C++ Inference SDK.
+
+1. Build SDK Libraries
+
+  ```shell
+  mkdir -p build && cd build
+  cmake .. \
+      -DMMDEPLOY_BUILD_SDK=ON \
+      -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
+      -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
+      -DMMDEPLOY_TARGET_BACKENDS="trt" \
+      -DMMDEPLOY_CODEBASES=all \
+      -Dpplcv_DIR=${PPLCV_DIR}/cuda-build/install/lib/cmake/ppl
+  make -j$(nproc) && make install
+  ```
+
+2. Build SDK demos
+
+  ```shell
+  cd ${MMDEPLOY_DIR}/build/install/example
+  mkdir -p build && cd build
+  cmake .. -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy
+  make -j$(nproc)
+  ```
+
+3. Run a demo
+
+Take the object detection for example:
+  ```shell
+  ./object_detection cuda ${directory/to/the/converted/models} ${path/to/an/image}
+  ```
+
+## Troubleshooting
+
+### Installation
+
+- `pip install` throws an error like `Illegal instruction (core dumped)`
+
+  ```shell
+    echo '# set env for pip' >> ~/.bashrc
+    echo 'export OPENBLAS_CORETYPE=ARMV8' >> ~/.bashrc
+    sudo reboot
+  ```
+### Runtime
+
+- `#assertion/root/workspace/mmdeploy/csrc/backend_ops/tensorrt/batched_nms/trt_batched_nms.cpp,98` or `pre_top_k need to be reduced for devices with arch 7.2`
+
+  1. Set `MAX N` mode and perform `sudo nvpmodel -m 0 && sudo jetson_clocks`.
+  2. Reduce the number of `pre_top_k` in deploy config file like [mmdet pre_top_k](https://github.com/open-mmlab/mmdeploy/blob/34879e638cc2db511e798a376b9a4b9932660fe1/configs/mmdet/_base_/base_static.py#L13) does, e.g., `1000`.
