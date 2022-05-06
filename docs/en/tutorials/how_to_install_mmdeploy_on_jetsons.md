@@ -47,10 +47,9 @@ nvcc -V
 When we using `pip install` to install some package, it will throws error: `Illegal instruction (core dumped)`
 Follow the below step will solve the problem:
 ```shell
-echo '# set env for TensorRT' >> ~/.bashrc
+echo '# set env for pip' >> ~/.bashrc
 echo 'export OPENBLAS_CORETYPE=ARMV8' >> ~/.bashrc
-source ~/.bashrc
-source activate mmdeploy
+sudo reboot
 ```
 
 ### Conda
@@ -243,8 +242,8 @@ running the object detection example:
 - **F-2**: `pip install` throws error: `Illegal instruction (core dumped)`
   **Q**: Follow the below step will solve the problem:
   ```shell
-  echo '# set env for TensorRT' >> ~/.bashrc
+  echo '# set env for pip' >> ~/.bashrc
   echo 'export OPENBLAS_CORETYPE=ARMV8' >> ~/.bashrc
-  source ~/.bashrc
-  source activate mmdeploy
+  sudo reboot
+  
   ```
