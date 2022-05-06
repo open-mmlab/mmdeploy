@@ -50,12 +50,29 @@ class Task : public Node {
 
  public:
   Sender<Value> Process(Sender<Value> input) override {
+    // tag_invoke(Transfer, std::move(input), *sched_);
     return LetValue(std::move(input), [this](Value& v) -> Sender<Value> {
-      if (v.front().is_array()) {
-        return Schedule(*sched_) | Then([&]() -> Value { return Value::Array(v.size()); }) |
-               Bulk(v.size(), [&](size_t index, Value& output) {
-                 output[index] = module_->Process(v).value();
-               });
+      //      MMDEPLOY_INFO("name = {}, val = {}", name(), v);
+      if (v.front().is_array() && !is_batched_) {
+        // clang-format off
+        auto batch_size = v.front().size();
+        Value output = Value::Array(batch_size);
+        return Just(std::move(output))
+             | Then([&](Value&& output) -> Value {
+                   auto input = graph::DistribAA(v).value();
+                   return Value{std::move(input), std::move(output)};
+                 })
+             | Transfer(*sched_)
+             | TypeErase()
+             | Bulk(batch_size, [&](size_t index, Value& in_out) {
+                   const auto& input = in_out[0];
+                   auto& output = in_out[1];
+                   output[index] = module_->Process(input[index]).value();
+                 })
+             | Then([](const Value& in_out) {
+                   return graph::DistribAA(in_out[1]).value();
+                 });
+        // clang-format on
       } else {
         auto output = module_->Process(v).value();
         return Just(std::move(output)) | Transfer(*sched_);
@@ -66,6 +83,8 @@ class Task : public Node {
  private:
   std::optional<TypeErasedScheduler<Value>> sched_;
   unique_ptr<Module> module_;
+  bool is_batched_{false};
+  bool is_thread_safe_{false};
 };
 
 class TaskParser {

@@ -65,9 +65,9 @@ class Scheduler {
     return {self.context_, delay};
   }
 
- public:
   template <typename Duration = std::chrono::microseconds>
-  __schedule_after::sender_t<Duration> tag_invoke(schedule_t, const Scheduler& self) noexcept {
+  friend __schedule_after::sender_t<Duration> tag_invoke(schedule_t,
+                                                         const Scheduler& self) noexcept {
     return {self.context_, Duration::zero()};
   }
 };

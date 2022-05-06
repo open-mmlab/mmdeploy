@@ -64,7 +64,7 @@ namespace __schedule {
 
 struct schedule_t {
   template <typename Scheduler,
-            std::enable_if_t<is_tag_invocable_v<schedule_t, Scheduler>, int> = 0>
+            std::enable_if_t<tag_invocable<schedule_t, Scheduler>, int> = 0>
   auto operator()(Scheduler&& scheduler) const -> tag_invoke_result_t<schedule_t, Scheduler> {
     return tag_invoke(schedule_t{}, (Scheduler &&) scheduler);
   }

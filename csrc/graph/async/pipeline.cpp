@@ -137,6 +137,8 @@ Result<unique_ptr<Task>> TaskParser::Parse(const Value& config) {
     } else {
       task->sched_ = TypeErasedScheduler<Value>{InlineScheduler{}};
     }
+    task->is_batched_ = config.value("is_batched", false);
+    task->is_thread_safe_ = config.value("is_thread_safe", false);
     return std::move(task);
   } catch (const std::exception& e) {
     MMDEPLOY_ERROR("error parsing config: {}", config);

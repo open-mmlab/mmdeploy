@@ -9,9 +9,12 @@
 #include "core/value.h"
 #include "execution/expand.h"
 #include "execution/schedulers/inlined_scheduler.h"
+#include "execution/schedulers/registry.h"
+#include "execution/schedulers/single_thread_context.h"
 #include "execution/schedulers/static_thread_pool.h"
 #include "execution/schedulers/timed_single_thread_context.h"
 #include "execution/type_erased.h"
+#include "execution/when_all_value.h"
 
 using namespace mmdeploy;
 
@@ -137,7 +140,101 @@ void G() {
   MMDEPLOY_INFO("val = {}", val);
 }
 
-TEST_CASE("test type erase", "[execution]") { G(); }
+TEST_CASE("test simple type erase", "[execution]") { G(); }
+
+void TestFunc(const char* sched_name) {
+  //  MMDEPLOY_INFO("testing with scheduler: {}", sched_name);
+  auto creator = Registry<TypeErasedScheduler<Value>>::Get().GetCreator(sched_name);
+  REQUIRE(creator);
+  auto sched = creator->Create({});
+  SECTION("Schedule") { (void)SyncWait(Schedule(sched)); }
+  SECTION("Just") {
+    auto [value] = SyncWait(Just(Value(100)) | TypeErase());
+    REQUIRE(value.get<int>() == 100);
+  }
+  SECTION("Transfer") {
+    auto sender = Just(Value(100)) | Transfer(sched) | TypeErase();
+    static_assert(std::is_same_v<decltype(sender), TypeErasedSender<Value>>);
+    auto [value] = SyncWait(std::move(sender));
+    REQUIRE(value.get<int>() == 100);
+  }
+  SECTION("Then") {
+    auto sender = Just(Value(100)) | Transfer(sched) |
+                  Then([](Value v) { return Value(v.get<int>() * v.get<int>()); });
+    auto value = std::get<Value>(SyncWait(std::move(sender)));
+    REQUIRE(value.get<int>() == 10000);
+  }
+  SECTION("On") {
+    auto sender = Just(Value(100)) |
+                  Then([](Value v) { return Value(v.get<int>() * v.get<int>()); }) | TypeErase();
+    auto [value] = SyncWait(On(sched, std::move(sender)));
+    REQUIRE(value.get<int>() == 10000);
+  }
+  SECTION("LetValue") {
+    auto sender = Just(Value(100)) | TypeErase() |
+                  LetValue([](Value& v) { return Just(Value(v.get<int>() * v.get<int>())); }) |
+                  TypeErase();
+    auto [value] = SyncWait(std::move(sender));
+    REQUIRE(value.get<int>() == 10000);
+  }
+  SECTION("Bulk") {
+    auto sender = Just(Value(Value::Array(100))) | Transfer(sched) | TypeErase() |
+                  Bulk(100, [](size_t index, Value& v) { v[index] = index; });
+    auto [value] = SyncWait(std::move(sender));
+    std::vector<int> a;
+    std::vector<int> b;
+    for (const auto& v : value) {
+      b.push_back(static_cast<int>(a.size()));
+      a.push_back(v.template get<int>());
+    }
+    REQUIRE(a == b);
+  }
+  SECTION("Split") {
+    auto sender = Just(Value(100)) | Split();
+    auto [a] = SyncWait(sender | Then([](Value v) { return Value(v.get<int>() + 100); }));
+    auto [b] = SyncWait(sender | Then([](Value v) { return Value(v.get<int>() + 200); }));
+    REQUIRE(a.get<int>() == 200);
+    REQUIRE(b.get<int>() == 300);
+  }
+  SECTION("WhenAll") {
+    auto sender = Just(Value(100)) | Split();
+    auto a_sender = sender | Then([](Value v) { return Value(v.get<int>() + 100); }) | TypeErase();
+    auto b_sender = sender | Then([](Value v) { return Value(v.get<int>() + 200); }) | TypeErase();
+    auto [value] = SyncWait(WhenAll(std::vector{std::move(a_sender), std::move(b_sender)}));
+    REQUIRE(value[0].get<int>() == 200);
+    REQUIRE(value[1].get<int>() == 300);
+  }
+  SECTION("EnsureStarted") {
+    auto sender = Just(Value(100)) |
+                  Then([](Value v) { return Value(v.get<int>() * v.get<int>()); }) | TypeErase();
+    sender = EnsureStarted(std::move(sender));
+    auto [value] = SyncWait(std::move(sender));
+    REQUIRE(value.get<int>() == 10000);
+  }
+  SECTION("StartDetached") {
+    auto sender = Just(Value(100)) |
+                  Then([](Value v) { MMDEPLOY_INFO("{}", v.get<int>() * v.get<int>()); }) |
+                  TypeErase();
+    StartDetached(std::move(sender));
+  }
+  SECTION("SyncWait") { (void)SyncWait(Schedule(sched)); }
+}
+
+struct _inlined {
+  static constexpr const char* value = "Inlined";
+};
+struct _single_thread {
+  static constexpr const char* value = "SingleThread";
+};
+struct _thread_pool {
+  static constexpr const char* value = "ThreadPool";
+};
+
+using Schedulers = std::tuple<_inlined, _single_thread, _thread_pool>;
+
+TEMPLATE_LIST_TEST_CASE("test type erase", "[execution]", Schedulers) {
+  TestFunc(TestType::value);
+}
 
 TEST_CASE("test executor C API", "[execution]") {
   auto sched = mmdeploy_inline_scheduler();
@@ -220,17 +317,20 @@ TEST_CASE("test generic split", "[execution]") {
 }
 
 TEST_CASE("test bulk", "[execution]") {
-  __static_thread_pool::StaticThreadPool pool;
-  auto scheduler = pool.GetScheduler();
+  //  __static_thread_pool::StaticThreadPool pool;
+  _single_thread_context::SingleThreadContext ctx;
+  auto scheduler = ctx.GetScheduler();
   constexpr int N = 1024;
   std::vector<float> a(N), b(N), c(N);
   std::iota(begin(a), end(a), 0);
   std::iota(rbegin(b), rend(b), 0);
-  auto init = Just(std::move(a), std::move(b), std::move(c)) | Transfer(pool.GetScheduler());
+  auto init = Just(std::move(a), std::move(b), std::move(c)) | Transfer(scheduler);
   auto fma = std::move(init) | Bulk(N, [](int index, const auto& a, const auto& b, auto& c) {
                c[index] += a[index] * b[index];
              });
+  MMDEPLOY_INFO(">>> test bulk");
   auto [x, y, z] = SyncWait(fma);
+  MMDEPLOY_INFO("<<< test bulk");
   MMDEPLOY_INFO("{}", z);
 }
 

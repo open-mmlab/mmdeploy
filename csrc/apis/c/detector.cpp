@@ -207,7 +207,7 @@ int mmdeploy_detector_get_result(mmdeploy_value_t output, mm_detect_t** results,
   }
   try {
     Value& value = *reinterpret_cast<Value*>(output);
-    auto detector_outputs = from_value<vector<mmdet::DetectorOutput>>(value);
+    auto detector_outputs = from_value<vector<mmdet::DetectorOutput>>(value.front());
 
     vector<int> _result_count;
     _result_count.reserve(detector_outputs.size());
