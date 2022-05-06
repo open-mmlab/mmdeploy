@@ -77,6 +77,10 @@ if (MMDEPLOY_BUILD_SDK)
         add_subdirectory(csrc/apis/python)
     endif ()
 
+    if (MMDEPLOY_BUILD_SDK_JAVA_API)
+        add_subdirectory(csrc/apis/java)
+    endif ()
+
     # export MMDeploy package
     install(EXPORT MMDeployTargets
             FILE MMDeployTargets.cmake
