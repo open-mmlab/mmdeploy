@@ -36,11 +36,11 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install unittest dependencies
         run: |
-          pip install cmake onnx protobuf
+          pip install cmake onnx
       - name: update
         run: sudo apt update
       - name: gcc-multilib
-        run: sudo apt install gcc-multilib g++-multilib wget
+        run: sudo apt install gcc-multilib g++-multilib wget libprotobuf-dev
       - name: Install ncnn
         run: |
           wget https://github.com/Tencent/ncnn/archive/refs/tags/20220420.tar.gz
