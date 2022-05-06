@@ -30,11 +30,9 @@ jobs:
             torchvision: 0.10.0
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
-      - name: Checkout submodules
-        uses: textbook/git-checkout-submodule-action@master
+        uses: actions/checkout@v3
         with:
-          remote: true
+          submodules: 'recursive'
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
