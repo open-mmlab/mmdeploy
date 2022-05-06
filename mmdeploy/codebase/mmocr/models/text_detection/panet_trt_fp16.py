@@ -6,6 +6,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.utils.constants import Backend
 
 FACTOR = 32
+ENABLE = False
 
 
 @FUNCTION_REWRITER.register_rewriter(
@@ -18,17 +19,20 @@ def fpem_ffm__forward__trt(ctx, self, x, *args, **kwargs):
     c3 = self.reduce_conv_c3(c3)
     c4 = self.reduce_conv_c4(c4)
 
-    bn_w = self.reduce_conv_c5[1].weight / torch.sqrt(
-        self.reduce_conv_c5[1].running_var + self.reduce_conv_c5[1].eps)
-    bn_b = self.reduce_conv_c5[
-        1].bias - self.reduce_conv_c5[1].running_mean * bn_w
-    bn_w = bn_w.reshape(1, -1, 1, 1).repeat(1, 1, c5.size(2), c5.size(3))
-    bn_b = bn_b.reshape(1, -1, 1, 1).repeat(1, 1, c5.size(2), c5.size(3))
-    conv_b = self.reduce_conv_c5[0].bias.reshape(1, -1, 1, 1).repeat(
-        1, 1, c5.size(2), c5.size(3))
-    c5 = FACTOR * (self.reduce_conv_c5[:-1](c5)) - (FACTOR - 1) * (
-        bn_w * conv_b + bn_b)
-    c5 = self.reduce_conv_c5[-1](c5)
+    if ENABLE:
+        bn_w = self.reduce_conv_c5[1].weight / torch.sqrt(
+            self.reduce_conv_c5[1].running_var + self.reduce_conv_c5[1].eps)
+        bn_b = self.reduce_conv_c5[
+            1].bias - self.reduce_conv_c5[1].running_mean * bn_w
+        bn_w = bn_w.reshape(1, -1, 1, 1).repeat(1, 1, c5.size(2), c5.size(3))
+        bn_b = bn_b.reshape(1, -1, 1, 1).repeat(1, 1, c5.size(2), c5.size(3))
+        conv_b = self.reduce_conv_c5[0].bias.reshape(1, -1, 1, 1).repeat(
+            1, 1, c5.size(2), c5.size(3))
+        c5 = FACTOR * (self.reduce_conv_c5[:-1](c5)) - (FACTOR - 1) * (
+            bn_w * conv_b + bn_b)
+        c5 = self.reduce_conv_c5[-1](c5)
+    else:
+        c5 = self.reduce_conv_c5(c5)
 
     # FPEM
     for i, fpem in enumerate(self.fpems):
@@ -79,13 +83,18 @@ def basic_block__forward__trt(ctx, self, x):
 
     out = self.conv2(out)
 
-    # the output of the last bn layer exceeds the range of fp16
-    w1 = self.norm2.weight / torch.sqrt(self.norm2.running_var +
-                                        self.norm2.eps)
-    bias = self.norm2.bias - self.norm2.running_mean * w1
-    w1 = w1.reshape(1, -1, 1, 1).repeat(1, 1, out.size(2), out.size(3))
-    bias = bias.reshape(1, -1, 1, 1).repeat(1, 1, out.size(2),
-                                            out.size(3)) + identity
-    out = self.relu(w1 * (out / FACTOR) + bias / FACTOR)
+    if torch.abs(self.norm2(out)).max() < 65504:
+        return self.norm2(out)
+    else:
+        global ENABLE
+        ENABLE = True
+        # the output of the last bn layer exceeds the range of fp16
+        w1 = self.norm2.weight / torch.sqrt(self.norm2.running_var +
+                                            self.norm2.eps)
+        bias = self.norm2.bias - self.norm2.running_mean * w1
+        w1 = w1.reshape(1, -1, 1, 1).repeat(1, 1, out.size(2), out.size(3))
+        bias = bias.reshape(1, -1, 1, 1).repeat(1, 1, out.size(2),
+                                                out.size(3)) + identity
+        out = self.relu(w1 * (out / FACTOR) + bias / FACTOR)
 
-    return out
+        return out
