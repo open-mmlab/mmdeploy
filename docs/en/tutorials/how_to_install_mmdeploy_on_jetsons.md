@@ -267,3 +267,4 @@ Take the object detection for example:
 
   1. Set `MAX N` mode and perform `sudo nvpmodel -m 0 && sudo jetson_clocks`.
   2. Reduce the number of `pre_top_k` in deploy config file like [mmdet pre_top_k](https://github.com/open-mmlab/mmdeploy/blob/34879e638cc2db511e798a376b9a4b9932660fe1/configs/mmdet/_base_/base_static.py#L13) does, e.g., `1000`.
+  3. Convert the model again and try SDK demo again.
