@@ -264,6 +264,7 @@ float rotated_boxes_intersection(const RotatedBox& box1, const RotatedBox& box2)
 NMSRotatedKernel::NMSRotatedKernel(OrtApi api, const OrtKernelInfo* info)
     : api_(api), ort_(api_), info_(info) {
   iou_threshold_ = ort_.KernelInfoGetAttribute<float>(info, "iou_threshold");
+  score_threshold_ = ort_.KernelInfoGetAttribute<float>(info, "score_threshold");
 
   // create allocator
   allocator_ = Ort::AllocatorWithDefaultOptions();
@@ -271,6 +272,7 @@ NMSRotatedKernel::NMSRotatedKernel(OrtApi api, const OrtKernelInfo* info)
 
 void NMSRotatedKernel::Compute(OrtKernelContext* context) {
   const float iou_threshold = iou_threshold_;
+  const float score_threshold = score_threshold_;
 
   const OrtValue* boxes = ort_.KernelContext_GetInput(context, 0);
   const float* boxes_data = reinterpret_cast<const float*>(ort_.GetTensorData<float>(boxes));
@@ -280,67 +282,77 @@ void NMSRotatedKernel::Compute(OrtKernelContext* context) {
   OrtTensorDimensions boxes_dim(ort_, boxes);
   OrtTensorDimensions scores_dim(ort_, scores);
 
-  int64_t nboxes = boxes_dim[0];
-  assert(boxes_dim[1] == 5);  //(cx,cy,w,h,theta)
+  // loop over batch
+  int64_t nbatch = boxes_dim[0];
+  int64_t nboxes = boxes_dim[1];
+  int64_t nclass = scores_dim[1];
+  assert(boxes_dim[2] == 5);  //(cx,cy,w,h,theta)
 
   // allocate tmp memory
-  float* tmp_boxes = (float*)allocator_.Alloc(sizeof(float) * nboxes * 5);
-  float* sc = (float*)allocator_.Alloc(sizeof(float) * nboxes);
-  bool* select = (bool*)allocator_.Alloc(sizeof(bool) * nboxes);
-  for (int64_t i = 0; i < nboxes; i++) {
-    select[i] = true;
-  }
+  float* tmp_boxes = (float*)allocator_.Alloc(sizeof(float) * nbatch * nboxes * 5);
+  float* sc = (float*)allocator_.Alloc(sizeof(float) * nbatch * nclass * nboxes);
+  bool* select = (bool*)allocator_.Alloc(sizeof(bool) * nbatch * nboxes);
 
-  memcpy(tmp_boxes, boxes_data, sizeof(float) * nboxes * 5);
-  memcpy(sc, scores_data, sizeof(float) * nboxes);
+  memcpy(tmp_boxes, boxes_data, sizeof(float) * nbatch * nboxes * 5);
+  memcpy(sc, scores_data, sizeof(float) * nbatch * nclass * nboxes);
 
-  // sort scores
-  std::vector<float> tmp_sc;
-  for (int i = 0; i < nboxes; i++) {
-    tmp_sc.push_back(sc[i]);
-  }
-  std::vector<int64_t> order(tmp_sc.size());
-  std::iota(order.begin(), order.end(), 0);
-  std::sort(order.begin(), order.end(),
-            [&tmp_sc](int64_t id1, int64_t id2) { return tmp_sc[id1] > tmp_sc[id2]; });
-
-  for (int64_t _i = 0; _i < nboxes; _i++) {
-    if (select[_i] == false) continue;
-    auto i = order[_i];
-
-    for (int64_t _j = _i + 1; _j < nboxes; _j++) {
-      if (select[_j] == false) continue;
-      auto j = order[_j];
-      RotatedBox box1, box2;
-      auto center_shift_x = (tmp_boxes[i * 5] + tmp_boxes[j * 5]) / 2.0;
-      auto center_shift_y = (tmp_boxes[i * 5 + 1] + tmp_boxes[j * 5 + 1]) / 2.0;
-      box1.x_ctr = tmp_boxes[i * 5] - center_shift_x;
-      box1.y_ctr = tmp_boxes[i * 5 + 1] - center_shift_y;
-      box1.w = tmp_boxes[i * 5 + 2];
-      box1.h = tmp_boxes[i * 5 + 3];
-      box1.a = tmp_boxes[i * 5 + 4];
-      box2.x_ctr = tmp_boxes[j * 5] - center_shift_x;
-      box2.y_ctr = tmp_boxes[j * 5 + 1] - center_shift_y;
-      box2.w = tmp_boxes[j * 5 + 2];
-      box2.h = tmp_boxes[j * 5 + 3];
-      box2.a = tmp_boxes[j * 5 + 4];
-      auto area1 = box1.w * box1.h;
-      auto area2 = box2.w * box2.h;
-      auto intersection = rotated_boxes_intersection(box1, box2);
-      float baseS = 1.0;
-      baseS = (area1 + area2 - intersection);
-      auto ovr = intersection / baseS;
-      if (ovr > iou_threshold) select[_j] = false;
-    }
-  }
+  // std::vector<std::vector<int64_t>> res_order;
   std::vector<int64_t> res_order;
-  for (int i = 0; i < nboxes; i++) {
-    if (select[i]) {
-      res_order.push_back(order[i]);
-    }
-  }
+  for (int64_t k = 0; k < nbatch; k++) {
+    for (int64_t g = 0; g < nclass; g++) {
+      for (int64_t i = 0; i < nboxes; i++) {
+        select[i] = true;
+      }
+      // sort scores
+      std::vector<float> tmp_sc;
+      for (int i = 0; i < nboxes; i++) {
+        tmp_sc.push_back(sc[k * nboxes * nclass + g * nboxes + i]);
+      }
+      std::vector<int64_t> order(tmp_sc.size());
+      std::iota(order.begin(), order.end(), 0);
+      std::sort(order.begin(), order.end(),
+                [&tmp_sc](int64_t id1, int64_t id2) { return tmp_sc[id1] > tmp_sc[id2]; });
+      for (int64_t _i = 0; _i < nboxes; _i++) {
+        if (select[_i] == false) continue;
+        auto i = order[_i];
+        for (int64_t _j = _i + 1; _j < nboxes; _j++) {
+          if (select[_j] == false) continue;
+          auto j = order[_j];
+          RotatedBox box1, box2;
+          auto center_shift_x =
+              (tmp_boxes[k * nboxes * 5 + i * 5] + tmp_boxes[k * nboxes * 5 + j * 5]) / 2.0;
+          auto center_shift_y =
+              (tmp_boxes[k * nboxes * 5 + i * 5 + 1] + tmp_boxes[k * nboxes * 5 + j * 5 + 1]) / 2.0;
+          box1.x_ctr = tmp_boxes[k * nboxes * 5 + i * 5] - center_shift_x;
+          box1.y_ctr = tmp_boxes[k * nboxes * 5 + i * 5 + 1] - center_shift_y;
+          box1.w = tmp_boxes[k * nboxes * 5 + i * 5 + 2];
+          box1.h = tmp_boxes[k * nboxes * 5 + i * 5 + 3];
+          box1.a = tmp_boxes[k * nboxes * 5 + i * 5 + 4];
+          box2.x_ctr = tmp_boxes[k * nboxes * 5 + j * 5] - center_shift_x;
+          box2.y_ctr = tmp_boxes[k * nboxes * 5 + j * 5 + 1] - center_shift_y;
+          box2.w = tmp_boxes[k * nboxes * 5 + j * 5 + 2];
+          box2.h = tmp_boxes[k * nboxes * 5 + j * 5 + 3];
+          box2.a = tmp_boxes[k * nboxes * 5 + j * 5 + 4];
+          auto area1 = box1.w * box1.h;
+          auto area2 = box2.w * box2.h;
+          auto intersection = rotated_boxes_intersection(box1, box2);
+          float baseS = 1.0;
+          baseS = (area1 + area2 - intersection);
+          auto ovr = intersection / baseS;
+          if (ovr > iou_threshold) select[_j] = false;
+        }
+      }
+      for (int i = 0; i < nboxes; i++) {
+        if (select[i] & (tmp_sc[order[i]] > score_threshold)) {
+          res_order.push_back(k);
+          res_order.push_back(g);
+          res_order.push_back(order[i]);
+        }
+      }
+    }  // class loop
+  }    // batch loop
 
-  std::vector<int64_t> inds_dims({(int64_t)res_order.size()});
+  std::vector<int64_t> inds_dims({(int64_t)res_order.size() / 3, 3});
 
   OrtValue* res = ort_.KernelContext_GetOutput(context, 0, inds_dims.data(), inds_dims.size());
   int64_t* res_data = ort_.GetTensorMutableData<int64_t>(res);

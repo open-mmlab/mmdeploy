@@ -4,7 +4,10 @@ import importlib
 from mmdeploy.utils import Codebase
 from .base import BaseTask, MMCodebase, get_codebase_class
 
-extra_dependent_library = {Codebase.MMOCR: ['mmdet']}
+extra_dependent_library = {
+    Codebase.MMOCR: ['mmdet'],
+    Codebase.MMROTATE: ['mmdet']
+}
 
 
 def import_codebase(codebase: Codebase):
