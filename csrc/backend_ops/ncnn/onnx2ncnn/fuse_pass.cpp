@@ -19,7 +19,6 @@ void fuse_rewrite_gather(onnx::GraphProto* mutable_graph,
     {
       // reconstruct node connections
       node_reference[gather->input(1)] -= 1;
-      blob_names.erase(gather->input(1));
       std::string origin_inp = gather->input(0);
       gather->clear_input();
       gather->add_input(origin_inp);
@@ -37,12 +36,8 @@ void fuse_rewrite_gather(onnx::GraphProto* mutable_graph,
       set_node_attr_ai(*gather, "ends", std::vector<int>{indice + 1});
       set_node_attr_ai(*gather, "axis", std::vector<int>{axis});
     }
-
-    reduced_node_count += 1;
-    i += 1;
   }
 }
-
 void fuse_weight_reshape(onnx::GraphProto* mutable_graph,
                          std::map<std::string, onnx::TensorProto>& weights,
                          std::map<std::string, int>& node_reference,
