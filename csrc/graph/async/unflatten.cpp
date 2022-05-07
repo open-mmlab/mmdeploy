@@ -25,8 +25,10 @@ class UnflattenCreator : public Creator<Node> {
  public:
   const char* GetName() const override { return "Unflatten"; }
   int GetVersion() const override { return 0; }
-  std::unique_ptr<Node> Create(const Value& value) override {
-    return std::make_unique<Unflatten>();
+  std::unique_ptr<Node> Create(const Value& config) override {
+    auto inst = std::make_unique<Unflatten>();
+    NodeParser::Parse(config, *inst).value();
+    return inst;
   }
 };
 
