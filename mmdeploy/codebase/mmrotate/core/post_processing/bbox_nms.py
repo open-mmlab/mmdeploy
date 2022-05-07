@@ -85,7 +85,6 @@ def _multiclass_nms_rotated(boxes: Tensor,
     op. It only supports class-agnostic detection results. That is, the scores
     is of shape (N, num_bboxes, num_classes) and the boxes is of shape
     (N, num_boxes, 5).
-
     Args:
         boxes (Tensor): The bounding boxes of shape [N, num_boxes, 5].
         scores (Tensor): The detection scores of shape
