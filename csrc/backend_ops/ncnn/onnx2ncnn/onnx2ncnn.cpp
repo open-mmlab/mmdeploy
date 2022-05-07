@@ -406,7 +406,6 @@ static void fuse_rewrite_gather(onnx::GraphProto* mutable_graph,
     {
       // reconstruct node connections
       node_reference[gather->input(1)] -= 1;
-      blob_names.erase(gather->input(1));
       std::string origin_inp = gather->input(0);
       gather->clear_input();
       gather->add_input(origin_inp);
@@ -424,9 +423,6 @@ static void fuse_rewrite_gather(onnx::GraphProto* mutable_graph,
       set_node_attr_ai(*gather, "ends", std::vector<int>{indice + 1});
       set_node_attr_ai(*gather, "axis", std::vector<int>{axis});
     }
-
-    reduced_node_count += 1;
-    i += 1;
   }
 }
 
@@ -3153,7 +3149,7 @@ int main(int argc, char** argv) {
   fuse_lstm_gru_rnn(mutable_graph, weights, node_reference, blob_names, reduced_node_count);
   fuse_multiheadattention(mutable_graph, weights, node_reference, blob_names, reduced_node_count);
   fuse_binaryop_with_scalar(mutable_graph, weights, node_reference, blob_names, reduced_node_count);
-  // fuse_rewrite_gather(mutable_graph, weights, node_reference, blob_names, reduced_node_count);
+  fuse_rewrite_gather(mutable_graph, weights, node_reference, blob_names, reduced_node_count);
 
   // reduce common const weight node_reference
   for (int i = 0; i < node_count; i++) {
@@ -4121,12 +4117,21 @@ int main(int argc, char** argv) {
       int op_type = 10;
       fprintf(pp, " 0=%d", op_type);
     } else if (op == "Crop") {
-      int starts = get_node_attr_i(node, "starts", 0);
-      fprintf(pp, " 9=%d", starts);
-      int ends = get_node_attr_i(node, "ends", 0);
-      fprintf(pp, " 10=%d", ends);
-      int axis = get_node_attr_i(node, "axis", 0);
-      fprintf(pp, " 11=%d", axis);
+      auto starts = get_node_attr_ai(node, "starts");
+      fprintf(pp, " -23309=%zu", starts.size());
+      for (size_t j = 0; j < starts.size(); ++j) {
+        fprintf(pp, ",%i", starts[j]);
+      }
+      auto ends = get_node_attr_ai(node, "ends");
+      fprintf(pp, " -23310=%zu", ends.size());
+      for (size_t j = 0; j < ends.size(); ++j) {
+        fprintf(pp, ",%i", ends[j]);
+      }
+      auto axis = get_node_attr_ai(node, "axis");
+      fprintf(pp, " -23311=%zu", axis.size());
+      for (size_t j = 0; j < axis.size(); ++j) {
+        fprintf(pp, ",%i", axis[j]);
+      }
     } else if (op == "DepthToSpace") {
       // pixelshuffle
       int scale_factor = get_node_attr_i(node, "blocksize", 1);
