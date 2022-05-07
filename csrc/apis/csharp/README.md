@@ -4,7 +4,7 @@
 
 We provide nuget package on our [release page](https://github.com/open-mmlab/mmdeploy/releases). Currently the prebuilt package only support tensorrt and onnxruntiem backend. 
 
-To use the nuget package, you also need to download the backend dependencies. For example, if you want to use the tensorrt backend, you should install cudatoolkit, cudnn and tensorrt, remember to add the dll directories to your system path. The version of backend dependencies will be offered in release note.
+To use the nuget package, you also need to download the backend dependencies. For example, if you want to use the tensorrt backend, you should install cudatoolkit, cudnn and tensorrt, remember to add the dll directories to your system path. The version of backend dependencies that our prebuit nuget package used will be offered in release note.
 
 | backend  | dependencies |
 | ------------- | ------------- |
