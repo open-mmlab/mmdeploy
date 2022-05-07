@@ -25,7 +25,7 @@ namespace MMDeployJava {
       jlong pdetector = env->GetLongField(handlePointer, id_address);
       // if detector is created from cpp data preparation, this if should be removed.
       if ((long) pdetector == 0) {
-        mm_handle_t detector{};
+        mm_handle_t detector = new mm_handle_t; //use heap.
         pdetector = (jlong) &detector;
       }
       int device_id = (int)deviceID;
