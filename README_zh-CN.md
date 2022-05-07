@@ -60,6 +60,10 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 - Net 推理
 - Module 后处理
 
+## 开源许可证
+
+该项目采用 [Apache 2.0 开源许可证](LICENSE)。
+
 ## [快速上手](docs/zh_cn/get_started.md)
 
 * [编译](docs/zh_cn/01-how-to-build/build_from_source.md)
@@ -73,9 +77,9 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
   * [配置转换参数](docs/zh_cn/02-how-to-run/write_config.md)
   * [测试转换完成的模型](docs/zh_cn/02-how-to-run/profile_model.md)
 * 开发指南
-  * [支持新模型](docs/zh_cn/03-developer-guide/support_new_model.md)
-  * [增加推理 Backend](docs/zh_cn/03-developer-guide/support_new_backend.md)
-  * [回归测试](docs/zh_cn/03-developer-guide/do_regression_test.md)
+  * [支持新模型](docs/zh_cn/04-developer-guide/support_new_model.md)
+  * [增加推理 Backend](docs/zh_cn/04-developer-guide/support_new_backend.md)
+  * [回归测试](docs/zh_cn/04-developer-guide/do_regression_test.md)
 * [FAQ](docs/zh_cn/faq.md)
 * [贡献者手册](.github/CONTRIBUTING.md)
 
@@ -83,32 +87,34 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
   * [01 术语解释、加载第一个模型](docs/zh_cn/04-tutorial/01_introduction_to_model_deployment.md)
   * [02 转成 onnx](docs/zh_cn/04-tutorial/02_challenges.md)
 
-## 欢迎加入 OpenMMLab 社区
+## 基准与模型库
 
-扫描下方二维码，关注 OpenMMLab [知乎官方账号](https://www.zhihu.com/people/openmmlab)、加入 OpenMMLab 团队的 [官方交流 QQ 群](https://jq.qq.com/?_wv=1027&k=aCvMxdr3)
+基准和支持的模型列表可以在[基准](https://mmdeploy.readthedocs.io/zh_CN/latest/benchmark.html)和[模型列表](https://mmdeploy.readthedocs.io/en/latest/supported_models.html)中获得。
 
-<div align="center">
-  <img src="https://raw.githubusercontent.com/open-mmlab/mmcv/master/docs/en/_static/zhihu_qrcode.jpg" height="400" />
-  <img src="https://raw.githubusercontent.com/open-mmlab/mmcv/master/docs/en/_static/qq_group_qrcode.jpg" height="400" />
-</div>
+## 贡献指南
 
-我们会在 OpenMMLab 社区为大家
-
-- 📢 分享 AI 框架的前沿核心技术
-- 💻 解读 PyTorch 常用模块源码
-- 📰 发布 OpenMMLab 的相关新闻
-- 🚀 介绍 OpenMMLab 开发的前沿算法
-- 🏃 获取更高效的问题答疑和意见反馈
-- 🔥 提供与各行各业开发者充分交流的平台
-
-干货满满 📘，等您来撩 💗，OpenMMLab 社区期待您的加入 👬
+我们感谢所有的贡献者为改进和提升 MMDeploy 所作出的努力。请参考[贡献指南](.github/CONTRIBUTING.md)来了解参与项目贡献的相关指引。
 
 ## 致谢
 - [OpenPPL](https://github.com/openppl-public/ppl.nn): 高性能推理框架底层库
 - [OpenVINO](https://github.com/openvinotoolkit/openvino): AI 推理优化和部署框架
 - [ncnn](https://github.com/tencent/ncnn): 为手机端极致优化的高性能神经网络前向计算框架
 
+## 引用
+
+如果您在研究中使用了本项目的代码或者性能基准，请参考如下 bibtex 引用 MMDeploy:
+
+```BibTeX
+@misc{=mmdeploy,
+    title={OpenMMLab's Model Deployment Toolbox.},
+    author={MMDeploy Contributors},
+    howpublished = {\url{https://github.com/open-mmlab/mmdeploy}},
+    year={2021}
+}
+```
+
 ## OpenMMLab 的其他项目
+
 - [MMCV](https://github.com/open-mmlab/mmcv): OpenMMLab 计算机视觉基础库
 - [MIM](https://github.com/open-mmlab/mim): MIM 是 OpenMMlab 项目、算法、模型的统一入口
 - [MMClassification](https://github.com/open-mmlab/mmclassification): OpenMMLab 图像分类工具箱
@@ -129,19 +135,22 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 - [MMGeneration](https://github.com/open-mmlab/mmgeneration): OpenMMLab 图片视频生成模型工具箱
 - [MMDeploy](https://github.com/open-mmlab/mmdeploy): OpenMMLab 模型部署框架
 
-## 开源许可证
+## 欢迎加入 OpenMMLab 社区
 
-该项目采用 [Apache 2.0 开源许可证](LICENSE)
+扫描下方的二维码可关注 OpenMMLab 团队的 [知乎官方账号](https://www.zhihu.com/people/openmmlab)，加入 OpenMMLab 团队的 [官方交流 QQ 群](https://jq.qq.com/?_wv=1027&k=aCvMxdr3)
 
-## 引用
+<div align="center">
+  <img src="https://raw.githubusercontent.com/open-mmlab/mmcv/master/docs/en/_static/zhihu_qrcode.jpg" height="400" />
+  <img src="https://raw.githubusercontent.com/open-mmlab/mmcv/master/docs/en/_static/qq_group_qrcode.jpg" height="400" />
+</div>
 
-如果您在研究中使用了本项目的代码或者性能基准，请参考如下 bibtex 引用 MMDeploy
+我们会在 OpenMMLab 社区为大家
 
-```BibTeX
-@misc{=mmdeploy,
-    title={OpenMMLab's Model Deployment Toolbox.},
-    author={MMDeploy Contributors},
-    howpublished = {\url{https://github.com/open-mmlab/mmdeploy}},
-    year={2021}
-}
-```
+- 📢 分享 AI 框架的前沿核心技术
+- 💻 解读 PyTorch 常用模块源码
+- 📰 发布 OpenMMLab 的相关新闻
+- 🚀 介绍 OpenMMLab 开发的前沿算法
+- 🏃 获取更高效的问题答疑和意见反馈
+- 🔥 提供与各行各业开发者充分交流的平台
+
+干货满满 📘，等您来撩 💗，OpenMMLab 社区期待您的加入 👬

@@ -23,26 +23,26 @@
 
 .. toctree::
    :maxdepth: 1
+   :caption: Benchmark
+
+   03-benchmark/benchmark.md
+   03-benchmark/supported_models.md
+
+.. toctree::
+   :maxdepth: 1
    :caption: 开发者指南
 
-   03-developer-guide/support_new_model.md
-   03-developer-guide/support_new_backend.md
-   03-developer-guide/do_regression_test.md
+   04-developer-guide/support_new_model.md
+   04-developer-guide/support_new_backend.md
+   04-developer-guide/do_regression_test.md
 
 .. toctree::
    :maxdepth: 1
    :caption: 新人解说
 
    get_started.md
-   04-tutorial/01_introduction_to_model_deployment.md
-   04-tutorial/02_challenges.md
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Benchmark
-
-   05-benchmark/benchmark.md
-   05-benchmark/supported_models.md
+   05-tutorial/01_introduction_to_model_deployment.md
+   05-tutorial/02_challenges.md
 
 .. toctree::
    :maxdepth: 1
