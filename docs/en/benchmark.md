@@ -1819,6 +1819,53 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
 </div>
 </details>
 
+<details>
+<summary style="margin-left: 25px;">MMRotate</summary>
+<div style="margin-left: 25px;">
+<table class="docutils">
+<thead>
+  <tr>
+    <th align="center" colspan="4">MMRotate</th>
+    <th align="center">Pytorch</th>
+    <th align="center">ONNXRuntime</th>
+    <th align="center" colspan="2">TensorRT</th>
+    <th align="center">PPLNN</th>
+    <th align="center">OpenVINO</th>
+    <th align="left">Model Config</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td align="center">Model</td>
+    <td align="center">Task</td>
+    <td align="center">Dataset</td>
+    <td align="center">Metrics</td>
+    <td align="center">fp32</td>
+    <td align="center">fp32</td>
+    <td align="center">fp32</td>
+    <td align="center">fp16</td>
+    <td align="center">fp16</td>
+    <td align="center">fp32</td>
+    <td>model config file</td>
+  </tr>
+  <tr>
+    <td align="center" rowspan="2">RotatedRetinaNet</td>
+    <td align="center" rowspan="2">Rotated Detection</td>
+    <td align="center" rowspan="2">DOTA-v1.0</td>
+    <td align="center">mAP</td>
+    <td align="center">0.698</td>
+    <td align="center">0.698</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td rowspan="2">$MMROTATE_DIR/configs/rotated_retinanet/rotated_retinanet_obb_r50_fpn_1x_dota_le135.py</td>
+  </tr>
+</tbody>
+</table>
+</div>
+</details>
+
 
 ### Notes
 - As some datasets contain images with various resolutions in codebase like MMDet. The speed benchmark is gained through static configs in MMDeploy, while the performance benchmark is gained through dynamic ones.
