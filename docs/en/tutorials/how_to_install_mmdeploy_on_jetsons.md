@@ -254,7 +254,7 @@ Take the object detection for example:
     source ~/.bashrc
     ```
 
-  If steps below don't work, check if you are using any mirror, if you did, try this:
+  If steps above don't work, check if you are using any mirror, if you did, try this:
   ```shell
     rm .condarc
     conda clean -i
