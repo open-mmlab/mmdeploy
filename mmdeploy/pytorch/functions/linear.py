@@ -25,7 +25,7 @@ def linear__ncnn(
 
     dim = input.dim()
 
-    if dim == 2:
+    if dim == 2 or dim == 3 and input.shape[0] == 1:
         return origin_func(input, weight, bias)
     else:
         out = origin_func(input, weight)

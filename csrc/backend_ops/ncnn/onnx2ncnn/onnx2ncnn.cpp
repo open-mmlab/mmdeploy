@@ -388,6 +388,48 @@ static void fwrite_tensor_proto_data_to_float(const onnx::TensorProto& tp, FILE*
   }
 }
 
+static void fuse_rewrite_gather(onnx::GraphProto* mutable_graph,
+                                std::map<std::string, onnx::TensorProto>& weights,
+                                std::map<std::string, int>& node_reference,
+                                std::set<std::string>& blob_names, int& reduced_node_count) {
+  const int node_count = mutable_graph->node_size();
+  for (int i = 0; i < node_count; ++i) {
+    onnx::NodeProto* gather = mutable_graph->mutable_node(i);
+    if (gather->op_type() != "Gather") {
+      continue;
+    }
+    auto indices = get_node_attr_from_input_ai(weights[gather->input(1)]);
+    if (indices.size() != 1) {
+      continue;
+    }
+
+    {
+      // reconstruct node connections
+      node_reference[gather->input(1)] -= 1;
+      blob_names.erase(gather->input(1));
+      std::string origin_inp = gather->input(0);
+      gather->clear_input();
+      gather->add_input(origin_inp);
+    }
+
+    {
+      // update axis, starts and ends
+      int axis = get_node_attr_i(*gather, "axis", 1) - 1;
+
+      gather->set_op_type("Crop");
+      gather->clear_attribute();
+
+      int indice = indices[0];
+      set_node_attr_ai(*gather, "starts", std::vector<int>{indice});
+      set_node_attr_ai(*gather, "ends", std::vector<int>{indice + 1});
+      set_node_attr_ai(*gather, "axis", std::vector<int>{axis});
+    }
+
+    reduced_node_count += 1;
+    i += 1;
+  }
+}
+
 static void fuse_weight_reshape(onnx::GraphProto* mutable_graph,
                                 std::map<std::string, onnx::TensorProto>& weights,
                                 std::map<std::string, int>& node_reference,
@@ -3111,6 +3153,7 @@ int main(int argc, char** argv) {
   fuse_lstm_gru_rnn(mutable_graph, weights, node_reference, blob_names, reduced_node_count);
   fuse_multiheadattention(mutable_graph, weights, node_reference, blob_names, reduced_node_count);
   fuse_binaryop_with_scalar(mutable_graph, weights, node_reference, blob_names, reduced_node_count);
+  // fuse_rewrite_gather(mutable_graph, weights, node_reference, blob_names, reduced_node_count);
 
   // reduce common const weight node_reference
   for (int i = 0; i < node_count; i++) {
@@ -3503,6 +3546,8 @@ int main(int argc, char** argv) {
       }
     } else if (op == "Cos") {
       fprintf(pp, "%-16s", "UnaryOp");
+    } else if (op == "Crop") {
+      fprintf(pp, "%-16s", "Crop");
     } else if (op == "DepthToSpace") {
       fprintf(pp, "%-16s", "PixelShuffle");
     } else if (op == "DetectionOutput") {
@@ -4075,6 +4120,13 @@ int main(int argc, char** argv) {
     } else if (op == "Cos") {
       int op_type = 10;
       fprintf(pp, " 0=%d", op_type);
+    } else if (op == "Crop") {
+      int starts = get_node_attr_i(node, "starts", 0);
+      fprintf(pp, " 9=%d", starts);
+      int ends = get_node_attr_i(node, "ends", 0);
+      fprintf(pp, " 10=%d", ends);
+      int axis = get_node_attr_i(node, "axis", 0);
+      fprintf(pp, " 11=%d", axis);
     } else if (op == "DepthToSpace") {
       // pixelshuffle
       int scale_factor = get_node_attr_i(node, "blocksize", 1);
