@@ -102,7 +102,7 @@ mmdeploy_sender_t mmdeploy_detector_apply_async(mm_handle_t handle, mmdeploy_sen
 
 int mmdeploy_detector_get_result(mmdeploy_value_t output, mm_detect_t** results,
                                  int** result_count) {
-  if (!(output && results && result_count)) {
+  if (!output || !results || !result_count) {
     return MM_E_INVALID_ARG;
   }
   try {

@@ -164,5 +164,6 @@ int mmdeploy_pipeline_apply(mm_handle_t handle, mmdeploy_value_t input, mmdeploy
   if (!_output) {
     return MM_E_FAIL;
   }
+  *output = _output;
   return MM_SUCCESS;
 }

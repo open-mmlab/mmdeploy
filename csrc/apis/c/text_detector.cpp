@@ -99,7 +99,7 @@ mmdeploy_sender_t mmdeploy_text_detector_apply_async(mm_handle_t handle, mmdeplo
 
 int mmdeploy_text_detector_get_result(mmdeploy_value_t output, mm_text_detect_t** results,
                                       int** result_count) {
-  if (!(output && results && result_count)) {
+  if (!output || !results || !result_count) {
     return MM_E_INVALID_ARG;
   }
   try {
