@@ -1,6 +1,6 @@
 # Build for Jetson
 
-In this chapter, we introduce how to install mmdeploy on NVIDIA Jetson platforms, especially on three main Jetson series boards:
+In this chapter, we introduce how to install mmdeploy on NVIDIA Jetson platforms, which we have verifed on the following models:
 - Jetson Nano
 - Jetson TX2
 - Jetson AGX Xavier
