@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from .adaptive_avg_pool import (adaptive_avg_pool1d__default,
                                 adaptive_avg_pool2d__default,
+                                adaptive_avg_pool2d__ncnn,
                                 adaptive_avg_pool3d__default)
 from .gelu import gelu__ncnn
 from .grid_sampler import grid_sampler__default
@@ -14,5 +15,6 @@ __all__ = [
     'adaptive_avg_pool1d__default', 'adaptive_avg_pool2d__default',
     'adaptive_avg_pool3d__default', 'grid_sampler__default',
     'hardsigmoid__default', 'instance_norm__tensorrt', 'generic_rnn__ncnn',
-    'squeeze__default', 'gelu__ncnn', 'layer_norm__ncnn'
+    'squeeze__default', 'adaptive_avg_pool2d__ncnn', 'gelu__ncnn',
+    'layer_norm__ncnn'
 ]

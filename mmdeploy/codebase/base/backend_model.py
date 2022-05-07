@@ -74,7 +74,14 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
                 output_names=output_names)
         elif backend == Backend.NCNN:
             from mmdeploy.backend.ncnn import NCNNWrapper
-            use_vulkan = get_backend_config('use_vulkan', False)
+
+            # For unittest deploy_config will not pass into _build_wrapper
+            # function.
+            if deploy_cfg:
+                backend_config = get_backend_config(deploy_cfg)
+                use_vulkan = backend_config.get('use_vulkan', False)
+            else:
+                use_vulkan = False
             return NCNNWrapper(
                 param_file=backend_files[0],
                 bin_file=backend_files[1],

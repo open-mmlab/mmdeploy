@@ -1432,6 +1432,47 @@ GPU: ncnn, TensorRT, PPLNN
 </div>
 
 
+<div style="margin-left: 25px;">
+<table class="docutils">
+<thead>
+  <tr>
+    <th align="center" colspan="4">mmrotate</th>
+    <th align="center">Pytorch</th>
+    <th align="center">ONNXRuntime</th>
+    <th align="center" colspan="2">TensorRT</th>
+    <th align="center">PPLNN</th>
+    <th align="center">OpenVINO</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td align="center">model</td>
+    <td align="center">task</td>
+    <td align="center">dataset</td>
+    <td align="center">metrics</td>
+    <td align="center">fp32</td>
+    <td align="center">fp32</td>
+    <td align="center">fp32</td>
+    <td align="center">fp16</td>
+    <td align="center">fp16</td>
+    <td align="center">fp32</td>
+  </tr>
+  <tr>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmrotate/tree/main/configs/rotated_retinanet/rotated_retinanet_obb_r50_fpn_1x_dota_le135.py">RotatedRetinaNet</a></td>
+    <td align="center" rowspan="2">Rotated Detection</td>
+    <td align="center" rowspan="2">DOTA-v1.0</td>
+    <td align="center">mAP</td>
+    <td align="center">0.698</td>
+    <td align="center">0.698</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+</tbody>
+</table>
+</div>
+
 ## 备注
 
 - 由于某些数据集在代码库中包含各种分辨率的图像，例如 MMDet，速度基准是通过 MMDeploy 中的静态配置获得的，而性能基准是通过动态配置获得的
