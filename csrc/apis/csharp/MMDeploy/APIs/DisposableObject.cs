@@ -89,8 +89,8 @@ namespace MMDeploy
         {
             if (result != 0)
             {
-                Console.WriteLine("Error code: {}", result);
-                throw new Exception();
+                string error = string.Format("Error code: {0}", result.ToString());
+                throw new Exception(error);
             }
         }
     }
