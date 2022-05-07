@@ -22,7 +22,8 @@ def export(model: torch.nn.Module,
            opset_version: int = 11,
            dynamic_axes: Optional[Dict] = None,
            verbose: bool = False,
-           keep_initializers_as_inputs: Optional[bool] = None):
+           keep_initializers_as_inputs: Optional[bool] = None,
+           **kwargs):
     """Export a PyTorch model into ONNX format. This is a wrap of
     `torch.onnx.export` with some enhancement.
 
