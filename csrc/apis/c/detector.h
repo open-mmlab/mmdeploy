@@ -66,6 +66,9 @@ MMDEPLOY_API int mmdeploy_detector_create_by_path(const char* model_path, const 
 MMDEPLOY_API int mmdeploy_detector_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
                                          mm_detect_t** results, int** result_count);
 
+MMDEPLOY_API int mmdeploy_detector_apply_v2(mm_handle_t handle, mmdeploy_value_t input,
+                                            mmdeploy_value_t* output);
+
 /** @brief Release the inference result buffer created by \ref mmdeploy_detector_apply
  * @param[in] results detection results buffer
  * @param[in] result_count  \p results size buffer
@@ -85,10 +88,11 @@ MMDEPLOY_API mmdeploy_value_t mmdeploy_detector_create_input(const mm_mat_t* mat
 MMDEPLOY_API int mmdeploy_detector_get_result(mmdeploy_value_t output, mm_detect_t** results,
                                               int** result_count);
 
+// TODO: remove sync handle, unify handle create & destroy
 MMDEPLOY_API int mmdeploy_async_detector_create(mm_model_t model, const char* device_name,
                                                 int device_id, mm_handle_t* handle);
 
-MMDEPLOY_API mmdeploy_sender_t mmdeploy_async_detector_apply(mm_handle_t handle,
+MMDEPLOY_API mmdeploy_sender_t mmdeploy_detector_apply_async(mm_handle_t handle,
                                                              mmdeploy_sender_t input);
 
 MMDEPLOY_API void mmdeploy_async_detector_destroy(mm_handle_t handle);

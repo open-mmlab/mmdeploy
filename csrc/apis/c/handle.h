@@ -7,6 +7,7 @@
 
 #include "core/device.h"
 #include "core/graph.h"
+#include "core/value.h"
 #include "graph/async/pipeline.h"
 
 namespace mmdeploy {

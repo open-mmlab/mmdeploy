@@ -1,14 +1,16 @@
 // Copyright (c) OpenMMLab. All rights reserved.
+
 #include "text_detector.h"
 
+#include "apis/c/common_internal.h"
+#include "apis/c/executor_internal.h"
+#include "apis/c/model.h"
 #include "archive/json_archive.h"
 #include "codebase/mmocr/mmocr.h"
 #include "core/device.h"
-#include "core/graph.h"
-#include "core/mat.h"
+#include "core/model.h"
 #include "core/status_code.h"
 #include "core/utils/formatter.h"
-#include "handle.h"
 
 using namespace std;
 using namespace mmdeploy;
@@ -40,61 +42,72 @@ const Value& config_template() {
   // clang-format on
 }
 
-template <class ModelType>
-int mmdeploy_text_detector_create_impl(ModelType&& m, const char* device_name, int device_id,
+int mmdeploy_text_detector_create_impl(mm_model_t model, const char* device_name, int device_id,
                                        mm_handle_t* handle) {
-  try {
-    auto value = config_template();
-    value["pipeline"]["tasks"][0]["params"]["model"] = std::forward<ModelType>(m);
+  auto config = config_template();
+  config["pipeline"]["tasks"][0]["params"]["model"] = *static_cast<Model*>(model);
 
-    auto text_detector = std::make_unique<Handle>(device_name, device_id, std::move(value));
-
-    *handle = text_detector.release();
-    return MM_SUCCESS;
-
-  } catch (const std::exception& e) {
-    MMDEPLOY_ERROR("exception caught: {}", e.what());
-  } catch (...) {
-    MMDEPLOY_ERROR("unknown exception caught");
-  }
-  return MM_E_FAIL;
+  return mmdeploy_pipeline_create(Cast(&config), device_name, device_id, handle);
 }
 
 }  // namespace
 
 int mmdeploy_text_detector_create(mm_model_t model, const char* device_name, int device_id,
                                   mm_handle_t* handle) {
-  return mmdeploy_text_detector_create_impl(*static_cast<Model*>(model), device_name, device_id,
-                                            handle);
+  return mmdeploy_text_detector_create_impl(model, device_name, device_id, handle);
 }
 
 int mmdeploy_text_detector_create_by_path(const char* model_path, const char* device_name,
                                           int device_id, mm_handle_t* handle) {
-  return mmdeploy_text_detector_create_impl(model_path, device_name, device_id, handle);
+  mm_model_t model{};
+  if (auto ec = mmdeploy_model_create_by_path(model_path, &model)) {
+    return ec;
+  }
+  auto ec = mmdeploy_text_detector_create_impl(model, device_name, device_id, handle);
+  mmdeploy_model_destroy(model);
+  return ec;
+}
+
+mmdeploy_value_t mmdeploy_text_detector_create_input(const mm_mat_t* mats, int mat_count) {
+  return mmdeploy_common_create_input(mats, mat_count);
 }
 
 int mmdeploy_text_detector_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
                                  mm_text_detect_t** results, int** result_count) {
-  if (handle == nullptr || mats == nullptr || mat_count == 0) {
+  auto input = mmdeploy_text_detector_create_input(mats, mat_count);
+  if (!input) {
+    return MM_E_FAIL;
+  }
+  wrapped<mmdeploy_value_t> output{};
+  if (auto ec = mmdeploy_text_detector_apply_v2(handle, input, output.ptr())) {
+    return ec;
+  }
+  if (auto ec = mmdeploy_text_detector_get_result(output, results, result_count)) {
+    return ec;
+  }
+  return MM_SUCCESS;
+}
+
+int mmdeploy_text_detector_apply_v2(mm_handle_t handle, mmdeploy_value_t input,
+                                    mmdeploy_value_t* output) {
+  return mmdeploy_pipeline_apply(handle, input, output);
+}
+
+mmdeploy_sender_t mmdeploy_text_detector_apply_async(mm_handle_t handle, mmdeploy_sender_t input) {
+  return mmdeploy_pipeline_apply_async(handle, input);
+}
+
+int mmdeploy_text_detector_get_result(mmdeploy_value_t output, mm_text_detect_t** results,
+                                      int** result_count) {
+  if (!(output && results && result_count)) {
     return MM_E_INVALID_ARG;
   }
-
   try {
-    auto text_detector = static_cast<Handle*>(handle);
+    Value& value = reinterpret_cast<Value*>(output)->front();
+    auto detector_outputs = from_value<std::vector<mmocr::TextDetectorOutput>>(value);
 
-    Value input{Value::kArray};
-    for (int i = 0; i < mat_count; ++i) {
-      mmdeploy::Mat _mat{mats[i].height,         mats[i].width, PixelFormat(mats[i].format),
-                         DataType(mats[i].type), mats[i].data,  Device{"cpu"}};
-      input.front().push_back({{"ori_img", _mat}});
-    }
-
-    auto output = text_detector->Run(std::move(input)).value().front();
-    MMDEPLOY_DEBUG("output: {}", output);
-
-    auto detector_outputs = from_value<std::vector<mmocr::TextDetectorOutput>>(output);
     vector<int> _result_count;
-    _result_count.reserve(mat_count);
+    _result_count.reserve(detector_outputs.size());
     for (const auto& det_output : detector_outputs) {
       _result_count.push_back((int)det_output.scores.size());
     }
@@ -124,11 +137,11 @@ int mmdeploy_text_detector_apply(mm_handle_t handle, const mm_mat_t* mats, int m
     return MM_SUCCESS;
 
   } catch (const std::exception& e) {
-    MMDEPLOY_ERROR("exception caught: {}", e.what());
+    MMDEPLOY_ERROR("unhandled exception: {}", e.what());
   } catch (...) {
     MMDEPLOY_ERROR("unknown exception caught");
   }
-  return MM_E_FAIL;
+  return 0;
 }
 
 void mmdeploy_text_detector_release_result(mm_text_detect_t* results, const int* result_count,
@@ -137,9 +150,4 @@ void mmdeploy_text_detector_release_result(mm_text_detect_t* results, const int*
   delete[] result_count;
 }
 
-void mmdeploy_text_detector_destroy(mm_handle_t handle) {
-  if (handle != nullptr) {
-    auto text_detector = static_cast<Handle*>(handle);
-    delete text_detector;
-  }
-}
+void mmdeploy_text_detector_destroy(mm_handle_t handle) { mmdeploy_pipeline_destroy(handle); }

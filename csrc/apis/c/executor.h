@@ -11,7 +11,6 @@
 extern "C" {
 #endif
 
-typedef struct mmdeploy_value* mmdeploy_value_t;
 typedef mmdeploy_value_t (*mmdeploy_invocable_t)(mmdeploy_value_t, void*);
 
 struct mmdeploy_sender;
@@ -73,10 +72,6 @@ MMDEPLOY_API mmdeploy_value_t mmdeploy_executor_sync_wait(mmdeploy_sender_t inpu
 MMDEPLOY_API mmdeploy_sender_t mmdeploy_sender_copy(mmdeploy_sender_t input);
 
 MMDEPLOY_API int mmdeploy_sender_destroy(mmdeploy_sender_t sender);
-
-MMDEPLOY_API mmdeploy_value_t mmdeploy_value_copy(mmdeploy_value_t input);
-
-MMDEPLOY_API int mmdeploy_value_destroy(mmdeploy_value_t value);
 
 #if __cplusplus
 }

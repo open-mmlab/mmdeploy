@@ -9,6 +9,7 @@
 #define MMDEPLOY_SRC_APIS_C_TEXT_RECOGNIZER_H_
 
 #include "common.h"
+#include "executor.h"
 #include "text_detector.h"
 
 #ifdef __cplusplus
@@ -47,6 +48,11 @@ MMDEPLOY_API int mmdeploy_text_recognizer_create_by_path(const char* model_path,
                                                          const char* device_name, int device_id,
                                                          mm_handle_t* handle);
 
+MMDEPLOY_API mmdeploy_value_t mmdeploy_text_recognizer_create_input(const mm_mat_t* mats,
+                                                                    int mat_count,
+                                                                    const mm_text_detect_t* bboxes,
+                                                                    const int* bbox_count);
+
 /**
  * @brief Apply text recognizer to a batch of text images
  * @param[in] handle text recognizer's handle created by \ref
@@ -59,6 +65,12 @@ MMDEPLOY_API int mmdeploy_text_recognizer_create_by_path(const char* model_path,
  */
 MMDEPLOY_API int mmdeploy_text_recognizer_apply(mm_handle_t handle, const mm_mat_t* images,
                                                 int count, mm_text_recognize_t** results);
+
+MMDEPLOY_API int mmdeploy_text_recognizer_apply_v2(mm_handle_t handle, mmdeploy_value_t input,
+                                                   mmdeploy_value_t* output);
+
+MMDEPLOY_API mmdeploy_sender_t mmdeploy_text_recognizer_apply_async(mm_handle_t handle,
+                                                                    mmdeploy_sender_t input);
 
 /**
  * @brief Apply text recognizer to a batch of images supplied with text bboxes
@@ -76,6 +88,9 @@ MMDEPLOY_API int mmdeploy_text_recognizer_apply_bbox(mm_handle_t handle, const m
                                                      int image_count,
                                                      const mm_text_detect_t* bboxes,
                                                      const int* bbox_count,
+                                                     mm_text_recognize_t** results);
+
+MMDEPLOY_API int mmdeploy_text_recognizer_get_result(mmdeploy_value_t output,
                                                      mm_text_recognize_t** results);
 
 /** @brief Release result buffer returned by \ref mmdeploy_text_recognizer_apply or \ref

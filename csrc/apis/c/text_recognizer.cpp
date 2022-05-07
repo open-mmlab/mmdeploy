@@ -4,14 +4,17 @@
 
 #include <numeric>
 
+#include "apis/c/common_internal.h"
+#include "apis/c/executor_internal.h"
+#include "apis/c/model.h"
 #include "archive/value_archive.h"
 #include "codebase/mmocr/mmocr.h"
 #include "core/device.h"
 #include "core/mat.h"
-#include "core/operator.h"
+#include "core/model.h"
 #include "core/status_code.h"
 #include "core/utils/formatter.h"
-#include "handle.h"
+#include "core/value.h"
 
 using namespace mmdeploy;
 
@@ -61,37 +64,30 @@ const Value &config_template() {
   return v;
 }
 
-template <class ModelType>
-int mmdeploy_text_recognizer_create_impl(ModelType &&m, const char *device_name, int device_id,
+int mmdeploy_text_recognizer_create_impl(mm_model_t model, const char *device_name, int device_id,
                                          mm_handle_t *handle) {
-  try {
-    auto value = config_template();
-    value["pipeline"]["tasks"][2]["params"]["model"] = std::forward<ModelType>(m);
+  auto config = config_template();
+  config["pipeline"]["tasks"][2]["params"]["model"] = *static_cast<Model *>(model);
 
-    auto recognizer = std::make_unique<Handle>(device_name, device_id, std::move(value));
-
-    *handle = recognizer.release();
-    return MM_SUCCESS;
-
-  } catch (const std::exception &e) {
-    MMDEPLOY_ERROR("exception caught: {}", e.what());
-  } catch (...) {
-    MMDEPLOY_ERROR("unknown exception caught");
-  }
-  return MM_E_FAIL;
+  return mmdeploy_pipeline_create(Cast(&config), device_name, device_id, handle);
 }
 
 }  // namespace
 
 int mmdeploy_text_recognizer_create(mm_model_t model, const char *device_name, int device_id,
                                     mm_handle_t *handle) {
-  return mmdeploy_text_recognizer_create_impl(*static_cast<Model *>(model), device_name, device_id,
-                                              handle);
+  return mmdeploy_text_recognizer_create_impl(model, device_name, device_id, handle);
 }
 
 int mmdeploy_text_recognizer_create_by_path(const char *model_path, const char *device_name,
                                             int device_id, mm_handle_t *handle) {
-  return mmdeploy_text_recognizer_create_impl(model_path, device_name, device_id, handle);
+  mm_model_t model{};
+  if (auto ec = mmdeploy_model_create_by_path(model_path, &model)) {
+    return ec;
+  }
+  auto ec = mmdeploy_text_recognizer_create_impl(model, device_name, device_id, handle);
+  mmdeploy_model_destroy(model);
+  return ec;
 }
 
 int mmdeploy_text_recognizer_apply(mm_handle_t handle, const mm_mat_t *images, int count,
@@ -99,15 +95,13 @@ int mmdeploy_text_recognizer_apply(mm_handle_t handle, const mm_mat_t *images, i
   return mmdeploy_text_recognizer_apply_bbox(handle, images, count, nullptr, nullptr, results);
 }
 
-int mmdeploy_text_recognizer_apply_bbox(mm_handle_t handle, const mm_mat_t *images, int image_count,
-                                        const mm_text_detect_t *bboxes, const int *bbox_count,
-                                        mm_text_recognize_t **results) {
-  if (handle == nullptr || images == nullptr || image_count == 0 || results == nullptr) {
-    return MM_E_INVALID_ARG;
+mmdeploy_value_t mmdeploy_text_recognizer_create_input(const mm_mat_t *images, int image_count,
+                                                       const mm_text_detect_t *bboxes,
+                                                       const int *bbox_count) {
+  if (image_count && images == nullptr) {
+    return nullptr;
   }
-
   try {
-    auto recognizer = static_cast<Handle *>(handle);
     Value::Array input_images;
     Value::Array input_bboxes;
     auto _bboxes = bboxes;
@@ -149,57 +143,96 @@ int mmdeploy_text_recognizer_apply_bbox(mm_handle_t handle, const mm_mat_t *imag
 
     std::vector<std::vector<mmocr::TextRecognizerOutput>> recognizer_outputs;
 
-    if (!input_images.empty()) {
-      Value input{std::move(input_images), std::move(input_bboxes)};
-      auto output = recognizer->Run(std::move(input)).value().front();
-      from_value(output, recognizer_outputs);
-    }
-
-    std::vector<int> counts;
-    if (bboxes && bbox_count) {
-      counts = std::vector<int>(bbox_count, bbox_count + image_count);
-    } else {
-      counts.resize(image_count, 1);
-    }
-    std::vector<int> offsets{0};
-    std::partial_sum(begin(counts), end(counts), back_inserter(offsets));
-
-    auto deleter = [&](mm_text_recognize_t *p) {
-      mmdeploy_text_recognizer_release_result(p, offsets.back());
-    };
-
-    std::unique_ptr<mm_text_recognize_t[], decltype(deleter)> _results(
-        new mm_text_recognize_t[result_count]{}, deleter);
-
-    for (int i = 0; i < image_count; ++i) {
-      if (result_index[i] >= 0) {
-        auto &recog_output = recognizer_outputs[result_index[i]];
-        for (int j = 0; j < recog_output.size(); ++j) {
-          auto &res = _results[offsets[i] + j];
-
-          auto &box_result = recog_output[j];
-
-          auto &score = box_result.score;
-          res.length = static_cast<int>(score.size());
-
-          res.score = new float[score.size()];
-          std::copy_n(score.data(), score.size(), res.score);
-
-          auto text = box_result.text;
-          res.text = new char[text.length() + 1];
-          std::copy_n(text.data(), text.length() + 1, res.text);
-        }
-      }
-    }
-    *results = _results.release();
-    return MM_SUCCESS;
-
+    Value input{std::move(input_images), std::move(input_bboxes)};
+    return Take(std::move(input));
   } catch (const std::exception &e) {
     MMDEPLOY_ERROR("exception caught: {}", e.what());
   } catch (...) {
     MMDEPLOY_ERROR("unknown exception caught");
   }
-  return MM_E_FAIL;
+  return nullptr;
+}
+
+int mmdeploy_text_recognizer_apply_bbox(mm_handle_t handle, const mm_mat_t *mats, int mat_count,
+                                        const mm_text_detect_t *bboxes, const int *bbox_count,
+                                        mm_text_recognize_t **results) {
+  auto input = mmdeploy_text_recognizer_create_input(mats, mat_count, bboxes, bbox_count);
+  if (!input) {
+    return MM_E_FAIL;
+  }
+  wrapped<mmdeploy_value_t> output{};
+  if (auto ec = mmdeploy_text_recognizer_apply_v2(handle, input, output.ptr())) {
+    return ec;
+  }
+  if (auto ec = mmdeploy_text_recognizer_get_result(output, results)) {
+    return ec;
+  }
+  return MM_SUCCESS;
+}
+
+int mmdeploy_text_recognizer_apply_v2(mm_handle_t handle, mmdeploy_value_t input,
+                                      mmdeploy_value_t *output) {
+  return mmdeploy_pipeline_apply(handle, input, output);
+}
+
+mmdeploy_sender_t mmdeploy_text_recognizer_apply_async(mm_handle_t handle,
+                                                       mmdeploy_sender_t input) {
+  return mmdeploy_pipeline_apply_async(handle, input);
+}
+
+MMDEPLOY_API int mmdeploy_text_recognizer_get_result(mmdeploy_value_t output,
+                                                     mm_text_recognize_t **results) {
+  if (!output || !results) {
+    return MM_E_INVALID_ARG;
+  }
+  try {
+    std::vector<std::vector<mmocr::TextRecognizerOutput>> recognizer_outputs;
+    from_value(Cast(output)->front(), recognizer_outputs);
+
+    std::vector<size_t> counts;
+    counts.reserve(recognizer_outputs.size());
+
+    for (const auto &v : recognizer_outputs) {
+      counts.push_back(v.size());
+    }
+
+    std::vector<size_t> offsets{0};
+    std::partial_sum(begin(counts), end(counts), back_inserter(offsets));
+
+    auto deleter = [&](mm_text_recognize_t *p) {
+      mmdeploy_text_recognizer_release_result(p, static_cast<int>(offsets.back()));
+    };
+
+    auto result_count = offsets.back();
+    auto image_count = recognizer_outputs.size();
+
+    std::unique_ptr<mm_text_recognize_t[], decltype(deleter)> _results(
+        new mm_text_recognize_t[result_count]{}, deleter);
+
+    size_t result_idx = 0;
+    for (const auto &img_result : recognizer_outputs) {
+      for (const auto &box_result : img_result) {
+        auto &res = _results[result_idx++];
+
+        auto &score = box_result.score;
+        res.length = static_cast<int>(score.size());
+
+        res.score = new float[score.size()];
+        std::copy_n(score.data(), score.size(), res.score);
+
+        auto text = box_result.text;
+        res.text = new char[text.length() + 1];
+        std::copy_n(text.data(), text.length() + 1, res.text);
+      }
+    }
+
+    *results = _results.release();
+  } catch (const std::exception &e) {
+    MMDEPLOY_ERROR("exception caught: {}", e.what());
+  } catch (...) {
+    MMDEPLOY_ERROR("unknown exception caught");
+  }
+  return MM_SUCCESS;
 }
 
 void mmdeploy_text_recognizer_release_result(mm_text_recognize_t *results, int count) {
@@ -210,4 +243,4 @@ void mmdeploy_text_recognizer_release_result(mm_text_recognize_t *results, int c
   delete[] results;
 }
 
-void mmdeploy_text_recognizer_destroy(mm_handle_t handle) { delete static_cast<Handle *>(handle); }
+void mmdeploy_text_recognizer_destroy(mm_handle_t handle) { mmdeploy_pipeline_destroy(handle); }

@@ -4,7 +4,10 @@ project(capis)
 
 include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
 
-set(TASK_LIST model executor)
+set(TASK_LIST
+        common
+        model
+        executor)
 
 if ("all" IN_LIST MMDEPLOY_CODEBASES)
     list(APPEND TASK_LIST

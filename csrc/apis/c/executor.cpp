@@ -2,55 +2,15 @@
 
 #include "apis/c/executor.h"
 
-#include "core/value.h"
-#include "execution/execution.h"
-#include "execution/schedulers/registry.h"
-#include "execution/type_erased.h"
+#include "common.h"
+#include "common_internal.h"
 #include "execution/when_all_value.h"
+#include "executor_internal.h"
+#include "handle.h"
 
 using namespace mmdeploy;
 
-using SenderType = TypeErasedSender<Value>;
-using SchedulerType = TypeErasedScheduler<Value>;
-
 namespace {
-
-inline SchedulerType* Cast(mmdeploy_scheduler_t s) { return reinterpret_cast<SchedulerType*>(s); }
-
-inline mmdeploy_scheduler_t Cast(SchedulerType* s) {
-  return reinterpret_cast<mmdeploy_scheduler_t>(s);
-}
-
-inline SenderType* Cast(mmdeploy_sender_t s) { return reinterpret_cast<SenderType*>(s); }
-
-inline mmdeploy_sender_t Cast(SenderType* s) { return reinterpret_cast<mmdeploy_sender_t>(s); }
-
-inline mmdeploy_value_t Cast(Value* s) { return reinterpret_cast<mmdeploy_value_t>(s); }
-
-inline Value* Cast(mmdeploy_value_t s) { return reinterpret_cast<Value*>(s); }
-
-inline SenderType Take(mmdeploy_sender_t s) {
-  auto sender = std::move(*Cast(s));
-  mmdeploy_sender_destroy(s);
-  return sender;
-}
-
-inline mmdeploy_sender_t Take(SenderType s) { return Cast(new SenderType(std::move(s))); }
-
-template <typename T, std::enable_if_t<_is_sender<T>, int> = 0>
-inline mmdeploy_sender_t Take(T& s) {
-  return Take(SenderType(std::move(s)));
-}
-
-inline Value Take(mmdeploy_value_t v) {
-  auto value = std::move(*Cast(v));
-  mmdeploy_value_destroy(v);
-  return value;
-}
-
-mmdeploy_value_t Take(Value v) {
-  return Cast(new Value(std::move(v)));  // NOLINT
-}
 
 mmdeploy_scheduler_t CreateScheduler(const char* type) {
   try {
@@ -63,33 +23,12 @@ mmdeploy_scheduler_t CreateScheduler(const char* type) {
 
 }  // namespace
 
-template <typename F>
-std::invoke_result_t<F> Guard(F f) {
-  try {
-    return f();
-  } catch (const std::exception& e) {
-    MMDEPLOY_ERROR("unhandled exception: {}", e.what());
-  } catch (...) {
-    MMDEPLOY_ERROR("unknown exception caught");
-  }
-  return nullptr;
-}
-
 mmdeploy_sender_t mmdeploy_sender_copy(mmdeploy_sender_t input) {
   return Take(SenderType(*Cast(input)));
 }
 
 int mmdeploy_sender_destroy(mmdeploy_sender_t sender) {
   delete Cast(sender);
-  return 0;
-}
-
-mmdeploy_value_t mmdeploy_value_copy(mmdeploy_value_t input) {
-  return Guard([&] { return Take(Value(*Cast(input))); });
-}
-
-int mmdeploy_value_destroy(mmdeploy_value_t value) {
-  delete Cast(value);
   return 0;
 }
 
@@ -174,4 +113,56 @@ int mmdeploy_executor_start_detached(mmdeploy_sender_t input) {
 
 mmdeploy_value_t mmdeploy_executor_sync_wait(mmdeploy_sender_t input) {
   return Guard([&] { return Take(std::get<Value>(SyncWait(Take(input)))); });
+}
+
+int mmdeploy_pipeline_create(mmdeploy_value_t config, const char* device_name, int device_id,
+                             mm_handle_t* handle) {
+  try {
+    auto _handle = std::make_unique<AsyncHandle>(device_name, device_id, *Cast(config));
+    *handle = _handle.release();
+    return MM_SUCCESS;
+  } catch (const std::exception& e) {
+    MMDEPLOY_ERROR("exception caught: {}", e.what());
+  } catch (...) {
+    MMDEPLOY_ERROR("unknown exception caught");
+  }
+  return MM_E_FAIL;
+}
+
+// TODO: handle empty input
+mmdeploy_sender_t mmdeploy_pipeline_apply_async(mm_handle_t handle, mmdeploy_sender_t input) {
+  if (!handle || !input) {
+    return nullptr;
+  }
+  try {
+    auto detector = static_cast<AsyncHandle*>(handle);
+    return Take(detector->Process(Take(input)));
+  } catch (const std::exception& e) {
+    MMDEPLOY_ERROR("exception caught: {}", e.what());
+  } catch (...) {
+    MMDEPLOY_ERROR("unknown exception caught");
+  }
+  return nullptr;
+}
+
+void mmdeploy_pipeline_destroy(mm_handle_t handle) {
+  if (handle != nullptr) {
+    delete static_cast<AsyncHandle*>(handle);
+  }
+}
+
+int mmdeploy_pipeline_apply(mm_handle_t handle, mmdeploy_value_t input, mmdeploy_value_t* output) {
+  auto input_sender = mmdeploy_executor_just(input);
+  if (!input_sender) {
+    return MM_E_FAIL;
+  }
+  auto output_sender = mmdeploy_pipeline_apply_async(handle, input_sender);
+  if (!output_sender) {
+    return MM_E_FAIL;
+  }
+  auto _output = mmdeploy_executor_sync_wait(output_sender);
+  if (!_output) {
+    return MM_E_FAIL;
+  }
+  return MM_SUCCESS;
 }

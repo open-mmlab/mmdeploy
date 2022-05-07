@@ -9,6 +9,7 @@
 #define MMDEPLOY_TEXT_DETECTOR_H
 
 #include "common.h"
+#include "executor.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -45,6 +46,9 @@ MMDEPLOY_API int mmdeploy_text_detector_create_by_path(const char* model_path,
                                                        const char* device_name, int device_id,
                                                        mm_handle_t* handle);
 
+MMDEPLOY_API mmdeploy_value_t mmdeploy_text_detector_create_input(const mm_mat_t* mats,
+                                                                  int mat_count);
+
 /**
  * @brief Apply text-detector to batch images and get their inference results
  * @param[in] handle text-detector's handle created by \ref mmdeploy_text_detector_create_by_path
@@ -59,6 +63,15 @@ MMDEPLOY_API int mmdeploy_text_detector_create_by_path(const char* model_path,
 MMDEPLOY_API int mmdeploy_text_detector_apply(mm_handle_t handle, const mm_mat_t* mats,
                                               int mat_count, mm_text_detect_t** results,
                                               int** result_count);
+
+MMDEPLOY_API int mmdeploy_text_detector_apply_v2(mm_handle_t handle, mmdeploy_value_t input,
+                                                 mmdeploy_value_t* output);
+
+MMDEPLOY_API mmdeploy_sender_t mmdeploy_text_detector_apply_async(mm_handle_t handle,
+                                                                  mmdeploy_sender_t input);
+
+MMDEPLOY_API int mmdeploy_text_detector_get_result(mmdeploy_value_t output,
+                                                   mm_text_detect_t** results, int** result_count);
 
 /** @brief Release the inference result buffer returned by \ref mmdeploy_text_detector_apply
  * @param[in] results text detection result buffer
