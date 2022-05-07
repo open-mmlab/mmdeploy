@@ -1,7 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using OpenCvSharp;
 using MMDeploy;
+using ImreadModes = OpenCvSharp.ImreadModes;
+using Cv2 = OpenCvSharp.Cv2;
+using CvMat = OpenCvSharp.Mat;
+using MatType = OpenCvSharp.MatType;
+using ColorConversionCodes = OpenCvSharp.ColorConversionCodes;
+using WindowFlags = OpenCvSharp.WindowFlags;
 
 namespace image_restorer
 {
@@ -10,9 +15,9 @@ namespace image_restorer
         /// <summary>
         /// transform input
         /// </summary>
-        static void CvMatToMmMat(Mat[] cvMats, out MmMat[] mats)
+        static void CvMatToMat(CvMat[] cvMats, out Mat[] mats)
         {
-            mats = new MmMat[cvMats.Length];
+            mats = new Mat[cvMats.Length];
             unsafe
             {
                 for (int i = 0; i < cvMats.Length; i++)
@@ -21,8 +26,8 @@ namespace image_restorer
                     mats[i].Height = cvMats[i].Height;
                     mats[i].Width = cvMats[i].Width;
                     mats[i].Channel = cvMats[i].Dims;
-                    mats[i].Format = MmPixelFormat.MM_BGR;
-                    mats[i].Type = MmDataType.MM_INT8;
+                    mats[i].Format = PixelFormat.BGR;
+                    mats[i].Type = DataType.Int8;
                 }
             }
         }
@@ -34,18 +39,28 @@ namespace image_restorer
 
         static void Main(string[] args)
         {
+            if (args.Length != 3)
+            {
+                Console.WriteLine("usage:\n  image_restorer deviceName modelPath imagePath\n");
+                Environment.Exit(1);
+            }
+
+            string deviceName = args[0];
+            string modelPath = args[1];
+            string imagePath = args[2];
+
             // 1. create handle
-            Restorer handle = new Restorer(@"D:\test_model\srcnn", "cuda", 0);
+            Restorer handle = new Restorer(modelPath, deviceName, 0);
 
             // 2. prepare input
-            Mat[] imgs = new Mat[1] { Cv2.ImRead(@"D:\test_model\srcnn\baby.png", ImreadModes.Color) };
-            CvMatToMmMat(imgs, out var mats);
+            CvMat[] imgs = new CvMat[1] { Cv2.ImRead(imagePath, ImreadModes.Color) };
+            CvMatToMat(imgs, out var mats);
 
             // 3. process
             List<RestorerOutput> output = handle.Apply(mats);
 
             // 4. show result
-            Mat sr_img = new Mat(output[0].Height, output[0].Width, MatType.CV_8UC3, output[0].Data);
+            CvMat sr_img = new CvMat(output[0].Height, output[0].Width, MatType.CV_8UC3, output[0].Data);
             Cv2.CvtColor(sr_img, sr_img, ColorConversionCodes.RGB2BGR);
             Cv2.NamedWindow("sr", WindowFlags.GuiExpanded);
             Cv2.ImShow("sr", sr_img);

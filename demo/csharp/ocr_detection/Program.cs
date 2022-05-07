@@ -7,9 +7,9 @@ namespace ocr_detection
 {
     class Program
     {
-        static void CvMatToMmMat(Mat[] cvMats, out MmMat[] mats)
+        static void CvMatToMat(OpenCvSharp.Mat[] cvMats, out MMDeploy.Mat[] mats)
         {
-            mats = new MmMat[cvMats.Length];
+            mats = new MMDeploy.Mat[cvMats.Length];
             unsafe
             {
                 for (int i = 0; i < cvMats.Length; i++)
@@ -18,8 +18,8 @@ namespace ocr_detection
                     mats[i].Height = cvMats[i].Height;
                     mats[i].Width = cvMats[i].Width;
                     mats[i].Channel = cvMats[i].Dims;
-                    mats[i].Format = MmPixelFormat.MM_BGR;
-                    mats[i].Type = MmDataType.MM_INT8;
+                    mats[i].Format = PixelFormat.BGR;
+                    mats[i].Type = DataType.Int8;
                 }
             }
         }
@@ -31,12 +31,22 @@ namespace ocr_detection
 
         static void Main(string[] args)
         {
+            if (args.Length != 3)
+            {
+                Console.WriteLine("usage:\n  ocr_detection deviceName modelPath imagePath\n");
+                Environment.Exit(1);
+            }
+
+            string deviceName = args[0];
+            string modelPath = args[1];
+            string imagePath = args[2];
+
             // 1. create handle
-            MMDeploy.TextDetector handle = new MMDeploy.TextDetector(@"D:\test_model\dbnet", "cuda", 0);
+            MMDeploy.TextDetector handle = new MMDeploy.TextDetector(modelPath, deviceName, 0);
 
             // 2. prepare input
-            Mat[] imgs = new Mat[1] { Cv2.ImRead(@"D:\test_model\dbnet\demo_text_det.jpg", ImreadModes.Color) };
-            CvMatToMmMat(imgs, out var mats);
+            OpenCvSharp.Mat[] imgs = new OpenCvSharp.Mat[1] { Cv2.ImRead(imagePath, ImreadModes.Color) };
+            CvMatToMat(imgs, out var mats);
 
             // 3. process
             List<TextDetectorOutput> output = handle.Apply(mats);

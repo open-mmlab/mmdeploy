@@ -8,12 +8,17 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using MMDeploy;
-using OpenCvSharp;
 using OpenCvSharp.Extensions;
+using ImreadModes = OpenCvSharp.ImreadModes;
+using Cv2 = OpenCvSharp.Cv2;
+using CvMat = OpenCvSharp.Mat;
+
+#pragma warning disable IDE1006
+#pragma warning disable IDE0044
 
 namespace image_classification
 {
-    public partial class Form1 : Form
+    public partial class FormDemo : Form
     {
         Classifier classifier;
         string modelPath = "";
@@ -55,7 +60,7 @@ namespace image_classification
                 }
             }
         }
-        private void Form1_Resize(object sender, EventArgs e)
+        private void FormDemo_Resize(object sender, EventArgs e)
         {
             float newx = (this.Width) / x;
             float newy = (this.Height) / y;
@@ -64,9 +69,9 @@ namespace image_classification
 
         #endregion
 
-        static void CvMatToMmMat(Mat[] cvMats, out MmMat[] mats)
+        static void CvMatToMat(CvMat[] cvMats, out Mat[] mats)
         {
-            mats = new MmMat[cvMats.Length];
+            mats = new Mat[cvMats.Length];
             unsafe
             {
                 for (int i = 0; i < cvMats.Length; i++)
@@ -75,13 +80,13 @@ namespace image_classification
                     mats[i].Height = cvMats[i].Height;
                     mats[i].Width = cvMats[i].Width;
                     mats[i].Channel = cvMats[i].Dims;
-                    mats[i].Format = MmPixelFormat.MM_BGR;
-                    mats[i].Type = MmDataType.MM_INT8;
+                    mats[i].Format = PixelFormat.BGR;
+                    mats[i].Type = DataType.Int8;
                 }
             }
         }
 
-        public Form1()
+        public FormDemo()
         {
             InitializeComponent();
             x = this.Width;
@@ -89,26 +94,26 @@ namespace image_classification
             setTag(this);
         }
 
-        private void radioButton1_CheckedChanged(object sender, EventArgs e)
+        private void radioButtonDeviceCpu_CheckedChanged(object sender, EventArgs e)
         {
             device = "cpu";
         }
 
-        private void radioButton2_CheckedChanged(object sender, EventArgs e)
+        private void radioButtonDeviceCuda_CheckedChanged(object sender, EventArgs e)
         {
             device = "cuda";
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void buttonSelectModelPath_Click(object sender, EventArgs e)
         {
             FolderBrowserDialog dilog = new FolderBrowserDialog();
             if (dilog.ShowDialog() == DialogResult.OK)
             {
-                textBox1.Text = dilog.SelectedPath;
+                textBoxModelPath.Text = dilog.SelectedPath;
             }
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private void buttonInitModel_Click(object sender, EventArgs e)
         {
             if (classifier != null)
             {
@@ -116,51 +121,46 @@ namespace image_classification
 
             }
             classifier = null;
-            textBox4.Text = "init model ...";
+            textBoxStatus.Text = "init model ...";
             try
             {
-                modelPath = textBox1.Text;
+                modelPath = textBoxModelPath.Text;
                 classifier = new Classifier(modelPath, device, deviceId);
-                textBox4.ForeColor = Color.Green;
-                textBox4.Text = "init model success.";
+                textBoxStatus.ForeColor = Color.Green;
+                textBoxStatus.Text = "init model success.";
             } catch
             {
-                textBox4.ForeColor = Color.Red;
-                textBox4.Text = "init model failed.";
+                textBoxStatus.ForeColor = Color.Red;
+                textBoxStatus.Text = "init model failed.";
             }
-
-
         }
 
-        private void pictureBox1_Click(object sender, EventArgs e)
+        private void buttonLoadImage_Click(object sender, EventArgs e)
         {
-            Console.WriteLine("device: " + device);
-        }
-
-        private void button3_Click(object sender, EventArgs e)
-        {
-            OpenFileDialog dilog = new OpenFileDialog();
-            dilog.Filter = "(*.jpg;*.bmp;*.png;*.JPEG)|*.jpg;*.bmp;*.png;*.JPEG";
+            OpenFileDialog dilog = new OpenFileDialog
+            {
+                Filter = "(*.jpg;*.bmp;*.png;*.JPEG)|*.jpg;*.bmp;*.png;*.JPEG"
+            };
             if (dilog.ShowDialog() == DialogResult.OK)
             {
                 imgPath = dilog.FileName;
-                Mat img = Cv2.ImRead(dilog.FileName);
+                CvMat img = Cv2.ImRead(dilog.FileName);
                 Bitmap bitmap = BitmapConverter.ToBitmap(img);
-                pictureBox1.Image = bitmap;
+                pictureBoxPicture.Image = bitmap;
             }
         }
 
-        private void button4_Click(object sender, EventArgs e)
+        private void buttonInference_Click(object sender, EventArgs e)
         {
-            textBox2.Clear();
+            textBoxResult.Clear();
             if (classifier == null)
             {
                 MessageBox.Show("init model first");
                 return;
             }
 
-            Mat[] imgs = new Mat[1] { Cv2.ImRead(imgPath, ImreadModes.Color) };
-            CvMatToMmMat(imgs, out var mats);
+            CvMat[] imgs = new CvMat[1] { Cv2.ImRead(imgPath, ImreadModes.Color) };
+            CvMatToMat(imgs, out var mats);
 
             try
             {
@@ -172,14 +172,14 @@ namespace image_classification
                     {
                         break;
                     }
-                    string res = string.Format("Top-{0}-label: {1}, score: {2:f3}", idx, obj.LabelId, obj.Score);
+                    string res = string.Format("Top-{0}-label: {1}, score: {2:f3}", idx, obj.Id, obj.Score);
                     if (idx == 1)
                     {
-                        textBox2.Text = res;
+                        textBoxResult.Text = res;
                     }
                     else
                     {
-                        textBox2.AppendText("\r\n" + res);
+                        textBoxResult.AppendText("\r\n" + res);
                     }
                     idx++;
                 }
@@ -189,16 +189,16 @@ namespace image_classification
             }
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        private void FormDemo_Load(object sender, EventArgs e)
         {
-            textBox3.Text = "1) select model dir" +
+            textBoxUsage.Text = "1) select model dir" +
                 "\r\n" + "2) choose device" +
                 "\r\n" + "3) init model" +
                 "\r\n" + "4) select image" +
                 "\r\n" + "5) do inference";
 
-            textBox4.ForeColor = Color.Gray;
-            textBox4.Text = "model not init";
+            textBoxStatus.ForeColor = Color.Gray;
+            textBoxStatus.Text = "model not init";
         }
     }
 }
