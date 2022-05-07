@@ -1,9 +1,45 @@
-## Installation
+# Installation
 
-1. Build mmdeploy sdk with DMMDEPLOY_BUILD_SDK=ON.
-a) When build mmdeploy sdk, there will generate MMDeployExtern.dll (may located in build\bin\Release, depend on your building).
-b) Add third party engine runtime to your path(tensorrt, onnxruntime for example, depend on what engine the sdk built with).
-c) It is better to build stacic library (mmdeploy、spdlog、opencv). If so, you only need add MMDeployExtern.dll to the system path, or you need add spdlog, mmdeploy and opencv runtime to the system path additionally.
+## Binaries
 
-2. Open MMDeploy.sln && Build MMDeploy
-Open csrc\apis\csharp\MMDeploy.sln, generate solution, and it will generate a nuget package located in csrc\apis\csharp\src\MMDeploy\bin\{Debug\Release}\MMDeploy.1.0.0.nupkg
+We provide nuget package on our [release page](https://github.com/open-mmlab/mmdeploy/releases). Currently the prebuilt package only support tensorrt and onnxruntiem backend. 
+
+To use the nuget package, you also need to download the backend dependencies. For example, if you want to use the tensorrt backend, you should install cudatoolkit, cudnn and tensorrt, remember to add the dll directories to your system path. The version of backend dependencies will be offered in release note.
+
+| backend  | dependencies |
+| ------------- | ------------- |
+| tensorrt  | cudatoolkit, cudnn, tensorrt   |
+| onnxruntime | onnxruntime / onnxruntime-gpu  |
+
+## From Source
+
+### Requirements
+
+* Environment required by building sdk
+* .NET Framework 4.8 / .NET core 3.1
+* Visual Studio 2019+
+
+### Installation
+ 
+**Step 0.** Build sdk.
+
+Before building the c# api, you need to build sdk first. Please follow this [tutorial](../../../docs/en/build/windows.md)/[教程](../../../docs/zh_cn/build/windows.md) to build sdk. We recommand setting `BUILD_SHARED_LIBS` to OFF and use the static third party libraries(spdlog, pplcv, opencv, etc.). If so, you only need add the backend dependencies to your system path, or you need to add all dependencies.
+
+If you follow the tutorial, the MMDeployExtern.dll will be built in `build\bin\release`. Make sure the expected dll is in that path or the next step will throw a file-not-exist error.
+
+**Step 1.** Build MMDeploy nuget package.
+
+There are two methods to build the nuget package.
+
+(*option 1*) Use the command.
+
+If your environment is well prepared, you can just go to the `csrc\apis\csharp` folder, open a terminal and type the following command, the nupkg will be built in `csrc\apis\csharp\MMDeploy\bin\Release\MMDeploy.1.0.0.nupkg`.
+```shell
+dotnet build --configuration Release -p:Version=1.0.0
+```
+
+(*option 2*) Open MMDeploy.sln && Build.
+
+You can set the package-version through `Properties -> Package Version`. The default version is 1.0.0 if you don't set it.
+
+If you meets some missing dependencies error, follow the vs instructions.
