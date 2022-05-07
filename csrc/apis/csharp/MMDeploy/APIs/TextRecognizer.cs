@@ -5,7 +5,7 @@ using System.Linq;
 namespace MMDeploy
 {
 #pragma warning disable 0649
-    internal unsafe struct CMmTextRecognize
+    internal unsafe struct CTextRecognize
     {
         public char* Text;
         public float* Score;
@@ -17,7 +17,7 @@ namespace MMDeploy
     /// Single result of a picture.
     /// A picture may contains multiple reuslts.
     /// </summary>
-    public struct MmTextRecognize
+    public struct TextRecognize
     {
         /// <summary>
         /// Texts.
@@ -29,7 +29,7 @@ namespace MMDeploy
         /// </summary>
         public float[] Score;
 
-        internal unsafe MmTextRecognize(CMmTextRecognize* result)
+        internal unsafe TextRecognize(CTextRecognize* result)
         {
             Text = new byte[result->Length];
             Score = new float[result->Length];
@@ -55,20 +55,20 @@ namespace MMDeploy
         /// <summary>
         /// Text recognization results for single image.
         /// </summary>
-        public List<MmTextRecognize> Results;
+        public List<TextRecognize> Results;
 
         private void Init()
         {
             if (Results == null)
             {
-                Results = new List<MmTextRecognize>();
+                Results = new List<TextRecognize>();
             }
         }
 
-        internal unsafe void Add(CMmTextRecognize* result)
+        internal unsafe void Add(CTextRecognize* result)
         {
             Init();
-            Results.Add(new MmTextRecognize(result));
+            Results.Add(new TextRecognize(result));
         }
     }
 
@@ -93,13 +93,13 @@ namespace MMDeploy
         /// </summary>
         /// <param name="mats">input mats.</param>
         /// <returns>Results of each input mat.</returns>
-        public List<TextRecognizerOutput> Apply(MmMat[] mats)
+        public List<TextRecognizerOutput> Apply(Mat[] mats)
         {
             List<TextRecognizerOutput> output = new List<TextRecognizerOutput>();
             unsafe
             {
-                CMmTextRecognize* results = null;
-                fixed (MmMat* _mats = mats)
+                CTextRecognize* results = null;
+                fixed (Mat* _mats = mats)
                 {
                     ThrowException(NativeMethods.mmdeploy_text_recognizer_apply(_handle, _mats, mats.Length, &results));
                 }
@@ -121,7 +121,7 @@ namespace MMDeploy
         /// <param name="mats">input mats.</param>
         /// <param name="vdetects">detection for each image.</param>
         /// <returns>Results of each input mat.</returns>
-        public List<TextRecognizerOutput> Apply(MmMat[] mats, List<TextDetectorOutput> vdetects)
+        public List<TextRecognizerOutput> Apply(Mat[] mats, List<TextDetectorOutput> vdetects)
         {
             List<TextRecognizerOutput> output = new List<TextRecognizerOutput>();
             unsafe
@@ -134,7 +134,7 @@ namespace MMDeploy
                     sz += bbox_count[i];
                 }
 
-                MmTextDetect[] bboxes = new MmTextDetect[sz];
+                TextDetect[] bboxes = new TextDetect[sz];
                 int pos = 0;
                 for (int i = 0; i < vdetects.Count; i++)
                 {
@@ -144,9 +144,9 @@ namespace MMDeploy
                     }
                 }
 
-                CMmTextRecognize* results = null;
-                fixed (MmMat* _mats = mats)
-                fixed (MmTextDetect* _bboxes = bboxes)
+                CTextRecognize* results = null;
+                fixed (Mat* _mats = mats)
+                fixed (TextDetect* _bboxes = bboxes)
                 fixed (int* _bbox_count = bbox_count)
                 {
                     ThrowException(NativeMethods.mmdeploy_text_recognizer_apply_bbox(_handle, _mats, mats.Length, _bboxes, _bbox_count, &results));
@@ -158,7 +158,7 @@ namespace MMDeploy
             return output;
         }
 
-        private unsafe void FormatResult(int matCount, int* resultCount, CMmTextRecognize* results, ref List<TextRecognizerOutput> output, out int total)
+        private unsafe void FormatResult(int matCount, int* resultCount, CTextRecognize* results, ref List<TextRecognizerOutput> output, out int total)
         {
             total = 0;
             for (int i = 0; i < matCount; i++)
@@ -175,7 +175,7 @@ namespace MMDeploy
             }
         }
 
-        private unsafe void ReleaseResult(CMmTextRecognize* results, int count)
+        private unsafe void ReleaseResult(CTextRecognize* results, int count)
         {
             NativeMethods.mmdeploy_text_recognizer_release_result(results, count);
         }

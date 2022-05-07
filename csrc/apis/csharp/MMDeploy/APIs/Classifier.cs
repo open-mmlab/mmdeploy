@@ -6,12 +6,12 @@ namespace MMDeploy
     /// Single classification result of a picture.
     /// A picture may contains multiple reuslts.
     /// </summary>
-    public struct MmClass
+    public struct Label
     {
         /// <summary>
-        /// Label id.
+        /// Id.
         /// </summary>
-        public int LabelId;
+        public int Id;
 
         /// <summary>
         /// Score.
@@ -19,13 +19,13 @@ namespace MMDeploy
         public float Score;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MmClass"/> struct.
+        /// Initializes a new instance of the <see cref="Label"/> struct.
         /// </summary>
-        /// <param name="labelId">label id.</param>
+        /// <param name="id">id.</param>
         /// <param name="score">score.</param>
-        public MmClass(int labelId, float score)
+        public Label(int id, float score)
         {
-            LabelId = labelId;
+            Id = id;
             Score = score;
         }
     }
@@ -38,21 +38,21 @@ namespace MMDeploy
         /// <summary>
         /// Classification results for single image.
         /// </summary>
-        public List<MmClass> Results;
+        public List<Label> Results;
 
         /// <summary>
         /// Add result to single image.
         /// </summary>
-        /// <param name="labelId">label id.</param>
+        /// <param name="id">id.</param>
         /// <param name="score">score.</param>
-        public void Add(int labelId, float score)
+        public void Add(int id, float score)
         {
             if (Results == null)
             {
-                Results = new List<MmClass>();
+                Results = new List<Label>();
             }
 
-            Results.Add(new MmClass(labelId, score));
+            Results.Add(new Label(id, score));
         }
 
         /// <summary>
@@ -85,14 +85,14 @@ namespace MMDeploy
         /// </summary>
         /// <param name="mats">input mats.</param>
         /// <returns>Results of each input mat.</returns>
-        public List<ClassifierOutput> Apply(MmMat[] mats)
+        public List<ClassifierOutput> Apply(Mat[] mats)
         {
             List<ClassifierOutput> output = new List<ClassifierOutput>();
             unsafe
             {
-                MmClass* results = null;
+                Label* results = null;
                 int* resultCount = null;
-                fixed (MmMat* _mats = mats)
+                fixed (Mat* _mats = mats)
                 {
                     ThrowException(NativeMethods.mmdeploy_classifier_apply(_handle, _mats, mats.Length, &results, &resultCount));
                 }
@@ -104,7 +104,7 @@ namespace MMDeploy
             return output;
         }
 
-        private unsafe void FormatResult(int matCount, int* resultCount, MmClass* results, ref List<ClassifierOutput> output, out int total)
+        private unsafe void FormatResult(int matCount, int* resultCount, Label* results, ref List<ClassifierOutput> output, out int total)
         {
             total = 0;
             for (int i = 0; i < matCount; i++)
@@ -112,7 +112,7 @@ namespace MMDeploy
                 ClassifierOutput outi = default;
                 for (int j = 0; j < resultCount[i]; j++)
                 {
-                    outi.Add(results[j].LabelId, results[j].Score);
+                    outi.Add(results[j].Id, results[j].Score);
                     results++;
                     total++;
                 }
@@ -121,7 +121,7 @@ namespace MMDeploy
             }
         }
 
-        private unsafe void ReleaseResult(MmClass* results, int* resultCount, int count)
+        private unsafe void ReleaseResult(Label* results, int* resultCount, int count)
         {
             NativeMethods.mmdeploy_classifier_release_result(results, resultCount, count);
         }

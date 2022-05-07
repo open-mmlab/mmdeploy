@@ -4,9 +4,9 @@ using System.Linq;
 namespace MMDeploy
 {
 #pragma warning disable 0649
-    internal unsafe struct CMmPoseDetect
+    internal unsafe struct CPoseDetect
     {
-        public MmPointf* Point;
+        public Pointf* Point;
         public float* Score;
         public int Length;
     }
@@ -16,12 +16,12 @@ namespace MMDeploy
     /// Single detection result of a bbox.
     /// A picture may contains multiple reuslts.
     /// </summary>
-    public struct MmPoseDetect
+    public struct PoseDetect
     {
         /// <summary>
         /// Keypoins.
         /// </summary>
-        public List<MmPointf> Points;
+        public List<Pointf> Points;
 
         /// <summary>
         /// Scores.
@@ -35,7 +35,7 @@ namespace MMDeploy
         {
             if (Points == null || Scores == null)
             {
-                Points = new List<MmPointf>();
+                Points = new List<Pointf>();
                 Scores = new List<float>();
             }
         }
@@ -45,17 +45,17 @@ namespace MMDeploy
         /// </summary>
         /// <param name="point">Keypoint.</param>
         /// <param name="score">Score.</param>
-        public void Add(MmPointf point, float score)
+        public void Add(Pointf point, float score)
         {
             Init();
             Points.Add(point);
             Scores.Add(score);
         }
 
-        internal unsafe void Add(MmPointf* point, float score)
+        internal unsafe void Add(Pointf* point, float score)
         {
             Init();
-            Points.Add(new MmPointf(point->X, point->Y));
+            Points.Add(new Pointf(point->X, point->Y));
         }
     }
 
@@ -67,7 +67,7 @@ namespace MMDeploy
         /// <summary>
         /// Pose detection results for single image.
         /// </summary>
-        public List<MmPoseDetect> Results;
+        public List<PoseDetect> Results;
 
         /// <summary>
         /// Gets number of output.
@@ -81,11 +81,11 @@ namespace MMDeploy
         /// Result for box level.
         /// </summary>
         /// <param name="boxRes">Box res.</param>
-        public void Add(MmPoseDetect boxRes)
+        public void Add(PoseDetect boxRes)
         {
             if (Results == null)
             {
-                Results = new List<MmPoseDetect>();
+                Results = new List<PoseDetect>();
             }
 
             Results.Add(boxRes);
@@ -115,15 +115,15 @@ namespace MMDeploy
         /// <param name="bboxes">bounding boxes..</param>
         /// <param name="bboxCount">bounding boxes count for each image.</param>
         /// <returns>Results of each input mat.</returns>
-        public List<PoseDetectorOutput> Apply(MmMat[] mats, MmRect[] bboxes, int[] bboxCount)
+        public List<PoseDetectorOutput> Apply(Mat[] mats, Rect[] bboxes, int[] bboxCount)
         {
             List<PoseDetectorOutput> output = new List<PoseDetectorOutput>();
 
             unsafe
             {
-                CMmPoseDetect* results = null;
-                fixed (MmMat* _mats = mats)
-                fixed (MmRect* _bboxes = bboxes)
+                CPoseDetect* results = null;
+                fixed (Mat* _mats = mats)
+                fixed (Rect* _bboxes = bboxes)
                 fixed (int* _bboxCount = bboxCount)
                 {
                     ThrowException(NativeMethods.mmdeploy_pose_detector_apply_bbox(_handle, _mats, mats.Length, _bboxes, _bboxCount, &results));
@@ -140,13 +140,13 @@ namespace MMDeploy
         /// </summary>
         /// <param name="mats">Input mats.</param>
         /// <returns>Results of each input mat.</returns>
-        public List<PoseDetectorOutput> Apply(MmMat[] mats)
+        public List<PoseDetectorOutput> Apply(Mat[] mats)
         {
             List<PoseDetectorOutput> output = new List<PoseDetectorOutput>();
             unsafe
             {
-                CMmPoseDetect* results = null;
-                fixed (MmMat* _mats = mats)
+                CPoseDetect* results = null;
+                fixed (Mat* _mats = mats)
                 {
                     ThrowException(NativeMethods.mmdeploy_pose_detector_apply(_handle, _mats, mats.Length, &results));
                 }
@@ -162,7 +162,7 @@ namespace MMDeploy
             return output;
         }
 
-        private unsafe void FormatResult(int matCount, int* bboxCount, CMmPoseDetect* results, ref List<PoseDetectorOutput> output, out int total)
+        private unsafe void FormatResult(int matCount, int* bboxCount, CPoseDetect* results, ref List<PoseDetectorOutput> output, out int total)
         {
             total = 0;
             for (int i = 0; i < matCount; i++)
@@ -170,7 +170,7 @@ namespace MMDeploy
                 PoseDetectorOutput outi = default;
                 for (int j = 0; j < bboxCount[i]; j++)
                 {
-                    MmPoseDetect boxRes = default;
+                    PoseDetect boxRes = default;
                     for (int k = 0; k < results->Length; k++)
                     {
                         boxRes.Add(results->Point[k], results->Score[k]);
@@ -185,7 +185,7 @@ namespace MMDeploy
             }
         }
 
-        private unsafe void ReleaseResult(CMmPoseDetect* results, int count)
+        private unsafe void ReleaseResult(CPoseDetect* results, int count)
         {
             NativeMethods.mmdeploy_pose_detector_release_result(results, count);
         }

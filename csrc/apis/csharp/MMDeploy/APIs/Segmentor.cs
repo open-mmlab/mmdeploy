@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace MMDeploy
 {
 #pragma warning disable 0649
-    internal unsafe struct CMmSegment
+    internal unsafe struct CSegment
     {
         public int Height;
         public int Width;
@@ -54,7 +54,7 @@ namespace MMDeploy
             Array.Copy(mask, this.Mask, mask.Length);
         }
 
-        internal unsafe SegmentorOutput(CMmSegment* result)
+        internal unsafe SegmentorOutput(CSegment* result)
         {
             Height = result->Height;
             Width = result->Width;
@@ -89,13 +89,13 @@ namespace MMDeploy
         /// </summary>
         /// <param name="mats">input mats.</param>
         /// <returns>Results of each input mat.</returns>
-        public List<SegmentorOutput> Apply(MmMat[] mats)
+        public List<SegmentorOutput> Apply(Mat[] mats)
         {
             List<SegmentorOutput> output = new List<SegmentorOutput>();
             unsafe
             {
-                CMmSegment* results = null;
-                fixed (MmMat* _mats = mats)
+                CSegment* results = null;
+                fixed (Mat* _mats = mats)
                 {
                     ThrowException(NativeMethods.mmdeploy_segmentor_apply(_handle, _mats, mats.Length, &results));
                 }
@@ -107,7 +107,7 @@ namespace MMDeploy
             return output;
         }
 
-        private unsafe void FormatResult(int matCount, CMmSegment* results, ref List<SegmentorOutput> output, out int total)
+        private unsafe void FormatResult(int matCount, CSegment* results, ref List<SegmentorOutput> output, out int total)
         {
             total = 0;
             for (int i = 0; i < matCount; i++)
@@ -118,7 +118,7 @@ namespace MMDeploy
             }
         }
 
-        private unsafe void ReleaseResult(CMmSegment* results, int count)
+        private unsafe void ReleaseResult(CSegment* results, int count)
         {
             NativeMethods.mmdeploy_segmentor_release_result(results, count);
         }

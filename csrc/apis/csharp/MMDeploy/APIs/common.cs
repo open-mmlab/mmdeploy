@@ -4,61 +4,61 @@ namespace MMDeploy
     /// <summary>
     /// Pixel format.
     /// </summary>
-    public enum MmPixelFormat
+    public enum PixelFormat
     {
-        MM_BGR,
-        MM_RGB,
-        MM_GRAYSCALE,
-        MM_NV12,
-        MM_NV21,
-        MM_BGRA,
-        MM_UNKNOWN_PIXEL_FORMAT
+        BGR,
+        RGB,
+        Grayscale,
+        NV12,
+        NV21,
+        BGRA,
+        UnknownPixelFormat
     }
 
     /// <summary>
     /// Mat data type.
     /// </summary>
-    public enum MmDataType
+    public enum DataType
     {
-        MM_FLOAT,
-        MM_HALF,
-        MM_INT8,
-        MM_INT32,
-        MM_UNKNOWN_DATA_TYPE
+        Float,
+        Half,
+        Int8,
+        Int32,
+        UnknownDataType
     }
 
     /// <summary>
     /// Function return value.
     /// </summary>
-    public enum MmStatus
+    public enum Status
     {
-        MM_SUCCESS = 0,
-        MM_E_INVALID_ARG = 1,
-        MM_E_NOT_SUPPORTED = 2,
-        MM_E_OUT_OF_RANGE = 3,
-        MM_E_OUT_OF_MEMORY = 4,
-        MM_E_FILE_NOT_EXIST = 5,
-        MM_E_FAIL = 6,
-        MM_E_UNKNOWN = -1,
+        Success = 0,
+        InvalidArg = 1,
+        NotSupported = 2,
+        OutOfRange = 3,
+        OutOfMemory = 4,
+        FileNotExist = 5,
+        Fail = 6,
+        Unknown = -1,
     }
 
     /// <summary>
     /// c struct of mm_mat_t.
     /// </summary>
-    public unsafe struct MmMat
+    public unsafe struct Mat
     {
         public byte* Data;
         public int Height;
         public int Width;
         public int Channel;
-        public MmPixelFormat Format;
-        public MmDataType Type;
+        public PixelFormat Format;
+        public DataType Type;
     }
 
     /// <summary>
     /// Rect of float value.
     /// </summary>
-    public struct MmRect
+    public struct Rect
     {
         public float Left;
         public float Top;
@@ -69,7 +69,7 @@ namespace MMDeploy
     /// <summary>
     /// Point of int.
     /// </summary>
-    public struct MmPointi
+    public struct Pointi
     {
         public int X;
         public int Y;
@@ -78,11 +78,11 @@ namespace MMDeploy
     /// <summary>
     /// Point of float.
     /// </summary>
-    public struct MmPointf
+    public struct Pointf
     {
         public float X;
         public float Y;
-        public MmPointf(float x, float y)
+        public Pointf(float x, float y)
         {
             X = x;
             Y = y;

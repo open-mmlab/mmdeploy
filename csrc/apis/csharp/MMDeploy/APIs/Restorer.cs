@@ -37,7 +37,7 @@ namespace MMDeploy
             Array.Copy(data, Data, data.Length);
         }
 
-        internal unsafe RestorerOutput(MmMat* result)
+        internal unsafe RestorerOutput(Mat* result)
         {
             Height = result->Height;
             Width = result->Width;
@@ -71,13 +71,13 @@ namespace MMDeploy
         /// </summary>
         /// <param name="mats">input mats.</param>
         /// <returns>Results of each input mat.</returns>
-        public List<RestorerOutput> Apply(MmMat[] mats)
+        public List<RestorerOutput> Apply(Mat[] mats)
         {
             List<RestorerOutput> output = new List<RestorerOutput>();
             unsafe
             {
-                MmMat* results = null;
-                fixed (MmMat* _mats = mats)
+                Mat* results = null;
+                fixed (Mat* _mats = mats)
                 {
                     ThrowException(NativeMethods.mmdeploy_restorer_apply(_handle, _mats, mats.Length, &results));
                 }
@@ -89,7 +89,7 @@ namespace MMDeploy
             return output;
         }
 
-        private unsafe void FormatResult(int matCount, MmMat* results, ref List<RestorerOutput> output, out int total)
+        private unsafe void FormatResult(int matCount, Mat* results, ref List<RestorerOutput> output, out int total)
         {
             total = 0;
             for (int i = 0; i < matCount; i++)
@@ -100,7 +100,7 @@ namespace MMDeploy
             }
         }
 
-        private unsafe void ReleaseResult(MmMat* results, int count)
+        private unsafe void ReleaseResult(Mat* results, int count)
         {
             NativeMethods.mmdeploy_restorer_release_result(results, count);
         }

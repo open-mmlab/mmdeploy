@@ -7,7 +7,7 @@ namespace MMDeploy
     /// <summary>
     /// mm_instance_mask_t of c code.
     /// </summary>
-    internal unsafe struct CMmInstanceMask
+    internal unsafe struct CInstanceMask
     {
         public char* Data;
         public int Height;
@@ -17,19 +17,19 @@ namespace MMDeploy
     /// <summary>
     /// mm_detect_t of c code.
     /// </summary>
-    internal unsafe struct CMmDetect
+    internal unsafe struct CDetect
     {
         public int LabelId;
         public float Score;
-        public MmRect BBox;
-        public CMmInstanceMask* Mask;
+        public Rect BBox;
+        public CInstanceMask* Mask;
     }
 #pragma warning restore 0649
 
     /// <summary>
     /// Instance mask.
     /// </summary>
-    public struct MmInstanceMask
+    public struct InstanceMask
     {
         /// <summary>
         /// Height.
@@ -45,7 +45,7 @@ namespace MMDeploy
         /// Raw data.
         /// </summary>
         public byte[] Data;
-        internal unsafe MmInstanceMask(CMmInstanceMask* mask)
+        internal unsafe InstanceMask(CInstanceMask* mask)
         {
             Height = mask->Height;
             Width = mask->Width;
@@ -61,7 +61,7 @@ namespace MMDeploy
     /// Single detection result of a picture.
     /// A picture may contains multiple reuslts.
     /// </summary>
-    public struct MmDetect
+    public struct Detect
     {
         /// <summary>
         /// Label id.
@@ -76,7 +76,7 @@ namespace MMDeploy
         /// <summary>
         /// Bounding box.
         /// </summary>
-        public MmRect BBox;
+        public Rect BBox;
 
         /// <summary>
         /// Whether has mask.
@@ -86,15 +86,15 @@ namespace MMDeploy
         /// <summary>
         /// Mask.
         /// </summary>
-        public MmInstanceMask Mask;
+        public InstanceMask Mask;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MmDetect"/> struct.
+        /// Initializes a new instance of the <see cref="Detect"/> struct.
         /// </summary>
         /// <param name="labelId">label id.</param>
         /// <param name="score"> score.</param>
         /// <param name="bbox">bounding box.</param>
-        public MmDetect(int labelId, float score, MmRect bbox)
+        public Detect(int labelId, float score, Rect bbox)
         {
             LabelId = labelId;
             Score = score;
@@ -103,13 +103,13 @@ namespace MMDeploy
             Mask = default;
         }
 
-        internal unsafe MmDetect(CMmDetect* result) : this(result->LabelId, result->Score, result->BBox)
+        internal unsafe Detect(CDetect* result) : this(result->LabelId, result->Score, result->BBox)
         {
             if (result->Mask != null)
             {
                 HasMask = true;
-                CMmInstanceMask* mask = result->Mask;
-                Mask = new MmInstanceMask(mask);
+                CInstanceMask* mask = result->Mask;
+                Mask = new InstanceMask(mask);
             }
         }
     }
@@ -122,7 +122,7 @@ namespace MMDeploy
         /// <summary>
         /// Detection results for single image.
         /// </summary>
-        public List<MmDetect> Results;
+        public List<Detect> Results;
 
         /// <summary>
         /// Init Reuslts.
@@ -131,7 +131,7 @@ namespace MMDeploy
         {
             if (Results == null)
             {
-                Results = new List<MmDetect>();
+                Results = new List<Detect>();
             }
         }
 
@@ -141,16 +141,16 @@ namespace MMDeploy
         /// <param name="labelId">label id.</param>
         /// <param name="score">score.</param>
         /// <param name="bbox">bounding box.</param>
-        public void Add(int labelId, float score, MmRect bbox)
+        public void Add(int labelId, float score, Rect bbox)
         {
             Init();
-            Results.Add(new MmDetect(labelId, score, bbox));
+            Results.Add(new Detect(labelId, score, bbox));
         }
 
-        internal unsafe void Add(CMmDetect* result)
+        internal unsafe void Add(CDetect* result)
         {
             Init();
-            Results.Add(new MmDetect(result));
+            Results.Add(new Detect(result));
         }
 
         /// <summary>
@@ -183,15 +183,15 @@ namespace MMDeploy
         /// </summary>
         /// <param name="mats">input mats.</param>
         /// <returns>Results of each input mat.</returns>
-        public List<DetectorOutput> Apply(MmMat[] mats)
+        public List<DetectorOutput> Apply(Mat[] mats)
         {
             List<DetectorOutput> output = new List<DetectorOutput>();
 
             unsafe
             {
-                CMmDetect* results = null;
+                CDetect* results = null;
                 int* resultCount = null;
-                fixed (MmMat* _mats = mats)
+                fixed (Mat* _mats = mats)
                 {
                     ThrowException(NativeMethods.mmdeploy_detector_apply(_handle, _mats, mats.Length, &results, &resultCount));
                 }
@@ -203,7 +203,7 @@ namespace MMDeploy
             return output;
         }
 
-        private unsafe void FormatResult(int matCount, int* resultCount, CMmDetect* results, ref List<DetectorOutput> output, out int total)
+        private unsafe void FormatResult(int matCount, int* resultCount, CDetect* results, ref List<DetectorOutput> output, out int total)
         {
             total = 0;
             for (int i = 0; i < matCount; i++)
@@ -219,7 +219,7 @@ namespace MMDeploy
             }
         }
 
-        private unsafe void ReleaseResult(CMmDetect* results, int* resultCount, int count)
+        private unsafe void ReleaseResult(CDetect* results, int* resultCount, int count)
         {
             NativeMethods.mmdeploy_detector_release_result(results, resultCount, count);
         }

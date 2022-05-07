@@ -11,29 +11,29 @@ namespace MMDeploy
         /// <summary>
         /// P1.
         /// </summary>
-        public MmPointf P1;
+        public Pointf P1;
 
         /// <summary>
         /// P2.
         /// </summary>
-        public MmPointf P2;
+        public Pointf P2;
 
         /// <summary>
         /// P3.
         /// </summary>
-        public MmPointf P3;
+        public Pointf P3;
 
         /// <summary>
         /// P4.
         /// </summary>
-        public MmPointf P4;
+        public Pointf P4;
 
         /// <summary>
         /// Get reference Pi.
         /// </summary>
         /// <param name="i">ith point.</param>
         /// <returns>Pi reference.</returns>
-        public MmPointf this[int i]
+        public Pointf this[int i]
         {
             readonly get
             {
@@ -64,7 +64,7 @@ namespace MMDeploy
     /// Single detection result of a picture.
     /// A picture may contains multiple reuslts.
     /// </summary>
-    public struct MmTextDetect
+    public struct TextDetect
     {
         /// <summary>
         /// Bounding box.
@@ -77,17 +77,17 @@ namespace MMDeploy
         public float Score;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MmTextDetect"/> struct.
+        /// Initializes a new instance of the <see cref="TextDetect"/> struct.
         /// </summary>
         /// <param name="score">score.</param>
         /// <param name="bbox">bbox.</param>
-        public MmTextDetect(TextBox bbox, float score)
+        public TextDetect(TextBox bbox, float score)
         {
             BBox = bbox;
             Score = score;
         }
 
-        internal unsafe MmTextDetect(MmTextDetect* result)
+        internal unsafe TextDetect(TextDetect* result)
         {
             Score = result->Score;
             BBox = default;
@@ -106,13 +106,13 @@ namespace MMDeploy
         /// <summary>
         /// Detection results for single image.
         /// </summary>
-        public List<MmTextDetect> Results;
+        public List<TextDetect> Results;
 
         private void Init()
         {
             if (Results == null)
             {
-                Results = new List<MmTextDetect>();
+                Results = new List<TextDetect>();
             }
         }
 
@@ -124,13 +124,13 @@ namespace MMDeploy
         public void Add(TextBox bbox, float score)
         {
             Init();
-            Results.Add(new MmTextDetect(bbox, score));
+            Results.Add(new TextDetect(bbox, score));
         }
 
-        internal unsafe void Add(MmTextDetect* result)
+        internal unsafe void Add(TextDetect* result)
         {
             Init();
-            Results.Add(new MmTextDetect(result));
+            Results.Add(new TextDetect(result));
         }
 
         /// <summary>
@@ -163,14 +163,14 @@ namespace MMDeploy
         /// </summary>
         /// <param name="mats">input mats.</param>
         /// <returns>Results of each input mat.</returns>
-        public List<TextDetectorOutput> Apply(MmMat[] mats)
+        public List<TextDetectorOutput> Apply(Mat[] mats)
         {
             List<TextDetectorOutput> output = new List<TextDetectorOutput>();
             unsafe
             {
-                MmTextDetect* results = null;
+                TextDetect* results = null;
                 int* resultCount = null;
-                fixed (MmMat* _mats = mats)
+                fixed (Mat* _mats = mats)
                 {
                     ThrowException(NativeMethods.mmdeploy_text_detector_apply(_handle, _mats, mats.Length, &results, &resultCount));
                 }
@@ -182,7 +182,7 @@ namespace MMDeploy
             return output;
         }
 
-        private unsafe void FormatResult(int matCount, int* resultCount, MmTextDetect* results, ref List<TextDetectorOutput> output, out int total)
+        private unsafe void FormatResult(int matCount, int* resultCount, TextDetect* results, ref List<TextDetectorOutput> output, out int total)
         {
             total = 0;
             for (int i = 0; i < matCount; i++)
@@ -199,7 +199,7 @@ namespace MMDeploy
             }
         }
 
-        private unsafe void ReleaseResult(MmTextDetect* results, int* resultCount, int count)
+        private unsafe void ReleaseResult(TextDetect* results, int* resultCount, int count)
         {
             NativeMethods.mmdeploy_text_detector_release_result(results, resultCount, count);
         }

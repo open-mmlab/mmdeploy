@@ -15,7 +15,7 @@ namespace MMDeploy
         protected IntPtr _handle;
 #pragma warning restore SA1401 // Fields should be private
 
-        private bool disposed = false;
+        private bool _disposed = false;
 
         /// <summary>
         /// Gets a value indicating whether this instance has been disposed.
@@ -39,7 +39,7 @@ namespace MMDeploy
         /// </summary>
         private void Dispose(bool disposing)
         {
-            if (disposed)
+            if (_disposed)
             {
                 return;
             }
@@ -55,7 +55,7 @@ namespace MMDeploy
 
             _handle = IntPtr.Zero;
 
-            disposed = true;
+            _disposed = true;
         }
 
         /// <summary>
