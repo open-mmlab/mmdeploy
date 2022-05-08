@@ -14,6 +14,20 @@ CHANNEL_THRESH = 400
     func_name='mmocr.models.textdet.necks.FPEM_FFM.forward',
     backend=Backend.TENSORRT.value)
 def fpem_ffm__forward__trt(ctx, self, x, *args, **kwargs):
+    """Rewrite `forward` of FPEM_FFM for tensorrt backend.
+
+    Rewrite this function avoid overflow for tensorrt-fp16 with the checkpoint
+    `https://download.openmmlab.com/mmocr/textdet/panet/panet_r18_fpem_ffm
+    _sbn_600e_icdar2015_20210219-42dbe46a.pth`
+
+    Args:
+        ctx (ContextCaller): The context with additional information.
+        self: The instance of the class FPEM_FFM.
+        x (List[Tensor]): A list of feature maps of shape (N, C, H, W).
+
+    Returns:
+        outs (List[Tensor]): A list of feature maps of shape (N, C, H, W).
+    """
     c2, c3, c4, c5 = x
     # reduce channel
     c2 = self.reduce_conv_c2(c2)
@@ -73,6 +87,20 @@ def fpem_ffm__forward__trt(ctx, self, x, *args, **kwargs):
     func_name='mmdet.models.backbones.resnet.BasicBlock.forward',
     backend=Backend.TENSORRT.value)
 def basic_block__forward__trt(ctx, self, x):
+    """Rewrite `forward` of BasicBlock for tensorrt backend.
+
+    Rewrite this function avoid overflow for tensorrt-fp16 with the checkpoint
+    `https://download.openmmlab.com/mmocr/textdet/panet/panet_r18_fpem_ffm
+    _sbn_600e_icdar2015_20210219-42dbe46a.pth`
+
+    Args:
+        ctx (ContextCaller): The context with additional information.
+        self: The instance of the class FPEM_FFM.
+        x (Tensor): The input tensor of shape (N, C, H, W).
+
+    Returns:
+        outs (Tensor): The output tensor of shape (N, C, H, W).
+    """
     if self.conv1.in_channels < CHANNEL_THRESH:
         return ctx.origin_func(self, x)
 
