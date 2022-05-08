@@ -20,7 +20,7 @@ And don't forget to install backend dependencies. Take tensorrt backend as examp
 
 **step 3.** Prepare the model.
 
-You can either convert your model according to this [tutorial](../../docs/en/tutorials/how_to_convert_model.md) or download the test models from [OneDrive](https://1drv.ms/u/s!Aqis6w3rjKXSh2dXZ5OqbZIZSu9P?e=nefSdY) or [BaiduYun](https://pan.baidu.com/s/1VJkLo2oqHos6ZWDT7xamFg?pwd=STAR). The web drive contains onnx and tensorrt models and the test models are converted under environment of cuda11.1 + cudnn8.2.1 + tensorrt 8.2.3.0 + GTX2070s. 
+You can either convert your model according to this [tutorial](../../docs/en/tutorials/how_to_convert_model.md) or download the test models from [OneDrive](https://1drv.ms/u/s!Aqis6w3rjKXSh2dXZ5OqbZIZSu9P?e=nefSdY) or [BaiduYun](https://pan.baidu.com/s/1VJkLo2oqHos6ZWDT7xamFg?pwd=STAR). The web drive contains onnx and tensorrt models and the test models are converted under environment of cuda11.1 + cudnn8.2.1 + tensorrt 8.2.3.0 + GTX2070s.
 
 *Note*:
 + a) If you want to use the tensorrt model from the link, make sure your environment and your gpu architecture is same with above.

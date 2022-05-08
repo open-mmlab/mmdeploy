@@ -53,9 +53,9 @@ namespace image_classification
             this.panelModelOptions.SuspendLayout();
             this.panelPicture.SuspendLayout();
             this.SuspendLayout();
-            // 
+            //
             // buttonSelectModelPath
-            // 
+            //
             this.buttonSelectModelPath.Location = new System.Drawing.Point(959, 76);
             this.buttonSelectModelPath.Name = "buttonSelectModelPath";
             this.buttonSelectModelPath.Size = new System.Drawing.Size(143, 41);
@@ -63,9 +63,9 @@ namespace image_classification
             this.buttonSelectModelPath.Text = "select";
             this.buttonSelectModelPath.UseVisualStyleBackColor = true;
             this.buttonSelectModelPath.Click += new System.EventHandler(this.buttonSelectModelPath_Click);
-            // 
+            //
             // buttonInitModel
-            // 
+            //
             this.buttonInitModel.ForeColor = System.Drawing.SystemColors.ControlText;
             this.buttonInitModel.Location = new System.Drawing.Point(920, 76);
             this.buttonInitModel.Name = "buttonInitModel";
@@ -74,9 +74,9 @@ namespace image_classification
             this.buttonInitModel.Text = "init model";
             this.buttonInitModel.UseVisualStyleBackColor = true;
             this.buttonInitModel.Click += new System.EventHandler(this.buttonInitModel_Click);
-            // 
+            //
             // buttonLoadImage
-            // 
+            //
             this.buttonLoadImage.Location = new System.Drawing.Point(461, 752);
             this.buttonLoadImage.Name = "buttonLoadImage";
             this.buttonLoadImage.Size = new System.Drawing.Size(185, 50);
@@ -84,18 +84,18 @@ namespace image_classification
             this.buttonLoadImage.Text = "load image";
             this.buttonLoadImage.UseVisualStyleBackColor = true;
             this.buttonLoadImage.Click += new System.EventHandler(this.buttonLoadImage_Click);
-            // 
+            //
             // pictureBoxPicture
-            // 
+            //
             this.pictureBoxPicture.Location = new System.Drawing.Point(4, 3);
             this.pictureBoxPicture.Name = "pictureBoxPicture";
             this.pictureBoxPicture.Size = new System.Drawing.Size(392, 456);
             this.pictureBoxPicture.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
             this.pictureBoxPicture.TabIndex = 3;
             this.pictureBoxPicture.TabStop = false;
-            // 
+            //
             // radioButtonDeviceCpu
-            // 
+            //
             this.radioButtonDeviceCpu.AutoSize = true;
             this.radioButtonDeviceCpu.Location = new System.Drawing.Point(244, 134);
             this.radioButtonDeviceCpu.Name = "radioButtonDeviceCpu";
@@ -104,9 +104,9 @@ namespace image_classification
             this.radioButtonDeviceCpu.Text = "cpu";
             this.radioButtonDeviceCpu.UseVisualStyleBackColor = true;
             this.radioButtonDeviceCpu.CheckedChanged += new System.EventHandler(this.radioButtonDeviceCpu_CheckedChanged);
-            // 
+            //
             // radioButtonDeviceCuda
-            // 
+            //
             this.radioButtonDeviceCuda.AutoSize = true;
             this.radioButtonDeviceCuda.Checked = true;
             this.radioButtonDeviceCuda.Location = new System.Drawing.Point(343, 134);
@@ -117,9 +117,9 @@ namespace image_classification
             this.radioButtonDeviceCuda.Text = "cuda";
             this.radioButtonDeviceCuda.UseVisualStyleBackColor = true;
             this.radioButtonDeviceCuda.CheckedChanged += new System.EventHandler(this.radioButtonDeviceCuda_CheckedChanged);
-            // 
+            //
             // buttonInference
-            // 
+            //
             this.buttonInference.Location = new System.Drawing.Point(849, 752);
             this.buttonInference.Name = "buttonInference";
             this.buttonInference.Size = new System.Drawing.Size(185, 50);
@@ -127,16 +127,16 @@ namespace image_classification
             this.buttonInference.Text = "inference";
             this.buttonInference.UseVisualStyleBackColor = true;
             this.buttonInference.Click += new System.EventHandler(this.buttonInference_Click);
-            // 
+            //
             // textBoxModelPath
-            // 
+            //
             this.textBoxModelPath.Location = new System.Drawing.Point(243, 76);
             this.textBoxModelPath.Name = "textBoxModelPath";
             this.textBoxModelPath.Size = new System.Drawing.Size(700, 38);
             this.textBoxModelPath.TabIndex = 7;
-            // 
+            //
             // labelModelPath
-            // 
+            //
             this.labelModelPath.AutoSize = true;
             this.labelModelPath.Location = new System.Drawing.Point(82, 76);
             this.labelModelPath.Name = "labelModelPath";
@@ -144,9 +144,9 @@ namespace image_classification
             this.labelModelPath.TabIndex = 8;
             this.labelModelPath.Text = "model path";
             this.labelModelPath.TextAlign = System.Drawing.ContentAlignment.TopRight;
-            // 
+            //
             // labelDevice
-            // 
+            //
             this.labelDevice.AutoSize = true;
             this.labelDevice.Location = new System.Drawing.Point(139, 134);
             this.labelDevice.Name = "labelDevice";
@@ -154,9 +154,9 @@ namespace image_classification
             this.labelDevice.TabIndex = 9;
             this.labelDevice.Text = "device";
             this.labelDevice.TextAlign = System.Drawing.ContentAlignment.TopRight;
-            // 
+            //
             // panelModelOptions
-            // 
+            //
             this.panelModelOptions.BackColor = System.Drawing.SystemColors.ButtonFace;
             this.panelModelOptions.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panelModelOptions.Controls.Add(this.textBoxStatus);
@@ -167,9 +167,9 @@ namespace image_classification
             this.panelModelOptions.Name = "panelModelOptions";
             this.panelModelOptions.Size = new System.Drawing.Size(1090, 139);
             this.panelModelOptions.TabIndex = 10;
-            // 
+            //
             // textBoxStatus
-            // 
+            //
             this.textBoxStatus.BackColor = System.Drawing.SystemColors.Control;
             this.textBoxStatus.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.textBoxStatus.ForeColor = System.Drawing.SystemColors.WindowText;
@@ -178,9 +178,9 @@ namespace image_classification
             this.textBoxStatus.ReadOnly = true;
             this.textBoxStatus.Size = new System.Drawing.Size(247, 31);
             this.textBoxStatus.TabIndex = 3;
-            // 
+            //
             // labelStatus
-            // 
+            //
             this.labelStatus.AutoSize = true;
             this.labelStatus.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
             this.labelStatus.Location = new System.Drawing.Point(556, 76);
@@ -188,9 +188,9 @@ namespace image_classification
             this.labelStatus.Size = new System.Drawing.Size(95, 31);
             this.labelStatus.TabIndex = 2;
             this.labelStatus.Text = "status: ";
-            // 
+            //
             // labelModelOptions
-            // 
+            //
             this.labelModelOptions.AutoSize = true;
             this.labelModelOptions.ForeColor = System.Drawing.SystemColors.ControlText;
             this.labelModelOptions.Location = new System.Drawing.Point(21, 35);
@@ -198,27 +198,27 @@ namespace image_classification
             this.labelModelOptions.Size = new System.Drawing.Size(185, 31);
             this.labelModelOptions.TabIndex = 11;
             this.labelModelOptions.Text = "Model Options";
-            // 
+            //
             // panelPicture
-            // 
+            //
             this.panelPicture.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panelPicture.Controls.Add(this.pictureBoxPicture);
             this.panelPicture.Location = new System.Drawing.Point(354, 259);
             this.panelPicture.Name = "panelPicture";
             this.panelPicture.Size = new System.Drawing.Size(397, 464);
             this.panelPicture.TabIndex = 12;
-            // 
+            //
             // labelPicture
-            // 
+            //
             this.labelPicture.AutoSize = true;
             this.labelPicture.Location = new System.Drawing.Point(343, 239);
             this.labelPicture.Name = "labelPicture";
             this.labelPicture.Size = new System.Drawing.Size(94, 31);
             this.labelPicture.TabIndex = 13;
             this.labelPicture.Text = "Picture";
-            // 
+            //
             // textBoxResult
-            // 
+            //
             this.textBoxResult.BackColor = System.Drawing.SystemColors.Control;
             this.textBoxResult.Location = new System.Drawing.Point(770, 267);
             this.textBoxResult.Multiline = true;
@@ -226,36 +226,36 @@ namespace image_classification
             this.textBoxResult.ReadOnly = true;
             this.textBoxResult.Size = new System.Drawing.Size(358, 456);
             this.textBoxResult.TabIndex = 14;
-            // 
+            //
             // labelResult
-            // 
+            //
             this.labelResult.AutoSize = true;
             this.labelResult.Location = new System.Drawing.Point(757, 233);
             this.labelResult.Name = "labelResult";
             this.labelResult.Size = new System.Drawing.Size(85, 31);
             this.labelResult.TabIndex = 15;
             this.labelResult.Text = "Result";
-            // 
+            //
             // labelUsage
-            // 
+            //
             this.labelUsage.AutoSize = true;
             this.labelUsage.Location = new System.Drawing.Point(21, 233);
             this.labelUsage.Name = "labelUsage";
             this.labelUsage.Size = new System.Drawing.Size(85, 31);
             this.labelUsage.TabIndex = 16;
             this.labelUsage.Text = "Usage";
-            // 
+            //
             // textBoxUsage
-            // 
+            //
             this.textBoxUsage.Location = new System.Drawing.Point(37, 267);
             this.textBoxUsage.Multiline = true;
             this.textBoxUsage.Name = "textBoxUsage";
             this.textBoxUsage.ReadOnly = true;
             this.textBoxUsage.Size = new System.Drawing.Size(294, 454);
             this.textBoxUsage.TabIndex = 17;
-            // 
+            //
             // FormDemo
-            // 
+            //
             this.AutoScaleDimensions = new System.Drawing.SizeF(14F, 31F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1157, 829);

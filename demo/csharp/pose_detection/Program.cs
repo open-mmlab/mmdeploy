@@ -72,7 +72,7 @@ namespace pose_detection
             {
                 for (int i = 0; i < box.Points.Count; i++)
                 {
-                    Cv2.Circle(imgs[0], (int)box.Points[i].X, (int)box.Points[i].Y, 1, 
+                    Cv2.Circle(imgs[0], (int)box.Points[i].X, (int)box.Points[i].Y, 1,
                         new Scalar(palette[index][0], palette[index][1], palette[index][2]), 2);
                 }
                 index++;

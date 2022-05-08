@@ -68,7 +68,7 @@ namespace object_detection
                         Cv2.Merge(ch, imgs[0]);
                     }
 
-                    Cv2.Rectangle(imgs[0], new Point((int)obj.BBox.Left, (int)obj.BBox.Top), 
+                    Cv2.Rectangle(imgs[0], new Point((int)obj.BBox.Left, (int)obj.BBox.Top),
                         new Point((int)obj.BBox.Right, obj.BBox.Bottom), new Scalar(0, 255, 0));
                 }
             }
