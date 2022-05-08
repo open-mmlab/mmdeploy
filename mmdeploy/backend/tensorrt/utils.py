@@ -20,6 +20,7 @@ def create_trt_engine(onnx_model: Union[str, onnx.ModelProto],
                       int8_param: dict = None,
                       max_workspace_size: int = 0,
                       device_id: int = 0,
+                      set_tactic_sources: bool = False,
                       **kwargs) -> trt.ICudaEngine:
     """Create a tensorrt engine from ONNX.
 
@@ -80,6 +81,8 @@ def create_trt_engine(onnx_model: Union[str, onnx.ModelProto],
         builder.max_workspace_size = max_workspace_size
 
     config = builder.create_builder_config()
+    if set_tactic_sources:
+        config.set_tactic_sources(1 << int(trt.TacticSource.CUBLAS))
     config.max_workspace_size = max_workspace_size
     profile = builder.create_optimization_profile()
 

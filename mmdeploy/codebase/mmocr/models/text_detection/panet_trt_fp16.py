@@ -7,6 +7,7 @@ from mmdeploy.utils.constants import Backend
 
 FACTOR = 32
 ENABLE = False
+CHANNEL_THRESH = 400
 
 
 @FUNCTION_REWRITER.register_rewriter(
@@ -72,7 +73,7 @@ def fpem_ffm__forward__trt(ctx, self, x, *args, **kwargs):
     func_name='mmdet.models.backbones.resnet.BasicBlock.forward',
     backend=Backend.TENSORRT.value)
 def basic_block__forward__trt(ctx, self, x):
-    if self.conv1.in_channels < 400:
+    if self.conv1.in_channels < CHANNEL_THRESH:
         return ctx.origin_func(self, x)
 
     identity = x
