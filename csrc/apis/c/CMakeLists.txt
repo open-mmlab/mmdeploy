@@ -44,7 +44,7 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/common.h
         DESTINATION include/c)
 
 # build MMDeployExtern.dll just for csharp nuget package.
-# no Installation for c/c++ pakcage.
+# no Installation for c/c++ package.
 file(GLOB SRCS "*.c" "*.cpp")
 add_library(MMDeployExtern SHARED ${SRCS})
 target_compile_definitions(MMDeployExtern PRIVATE -DMMDEPLOY_API_EXPORTS=1)
