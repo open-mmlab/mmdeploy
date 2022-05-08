@@ -1083,8 +1083,7 @@ def main():
     work_dir.mkdir(parents=True, exist_ok=True)
 
     deploy_yaml_list = [
-        f'./tests/regression/{codebase}.yml'
-        for codebase in args.codebase
+        f'./tests/regression/{codebase}.yml' for codebase in args.codebase
     ]
 
     for deploy_yaml in deploy_yaml_list:
