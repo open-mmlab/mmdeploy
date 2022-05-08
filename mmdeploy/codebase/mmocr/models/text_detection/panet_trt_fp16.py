@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Sequence
+
 import torch
 import torch.nn.functional as F
 
@@ -13,7 +15,8 @@ CHANNEL_THRESH = 400
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmocr.models.textdet.necks.FPEM_FFM.forward',
     backend=Backend.TENSORRT.value)
-def fpem_ffm__forward__trt(ctx, self, x, *args, **kwargs):
+def fpem_ffm__forward__trt(ctx, self, x: Sequence[torch.Tensor], *args,
+                           **kwargs) -> Sequence[torch.Tensor]:
     """Rewrite `forward` of FPEM_FFM for tensorrt backend.
 
     Rewrite this function avoid overflow for tensorrt-fp16 with the checkpoint
@@ -86,7 +89,7 @@ def fpem_ffm__forward__trt(ctx, self, x, *args, **kwargs):
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.backbones.resnet.BasicBlock.forward',
     backend=Backend.TENSORRT.value)
-def basic_block__forward__trt(ctx, self, x):
+def basic_block__forward__trt(ctx, self, x: torch.Tensor) -> torch.Tensor:
     """Rewrite `forward` of BasicBlock for tensorrt backend.
 
     Rewrite this function avoid overflow for tensorrt-fp16 with the checkpoint
