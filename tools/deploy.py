@@ -269,6 +269,7 @@ def main():
         args.test_img = args.img
     import os
     import platform
+
     # headless installation is only for linux platform.
     # for headless installation.
     if platform.system().lower() != 'linux' or os.getenv('DISPLAY'):
