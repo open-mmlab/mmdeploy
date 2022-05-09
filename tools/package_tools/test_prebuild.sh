@@ -17,7 +17,11 @@ python "${MMDEPLOY_DIR}/tools/package_tools/mmdeploy_builder.py" \
   "${MMDEPLOY_DIR}"
 
 # using another env to pip install it
-c
+conda deactivate
+conda activate mmdeploy_convert
+pip uninstall mmdeploy
+pip install xxx.whl
+pip install mmdet
 
 # test convert with RetinaNet of mmdetection
 mkdir /tmp/wheel_convert_test && cd /tmp/wheel_convert_test
