@@ -79,5 +79,5 @@ SDK_TASK_MAP = {
     Task.POSE_DETECTION:
     dict(component='Detector', cls_name='PoseDetector'),
     Task.ROTATED_DETECTION:
-    dict(component="ResizeRBBox", cls_name="RotatedDetector")
+    dict(component='ResizeRBBox', cls_name='RotatedDetector')
 }

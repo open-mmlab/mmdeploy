@@ -186,9 +186,7 @@ class SDKEnd2EndModel(End2EndModel):
         results = []
         dets, labels = self.wrapper.invoke(
             [img[0].contiguous().detach().cpu().numpy()])[0]
-        dets_results = [
-            dets[labels == i, :] for i in range(len(self.CLASSES))
-        ]
+        dets_results = [dets[labels == i, :] for i in range(len(self.CLASSES))]
         results.append(dets_results)
 
         return results

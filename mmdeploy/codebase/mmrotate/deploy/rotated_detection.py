@@ -1,9 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import copy
 from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
 import mmcv
 import numpy as np
-import copy
 import torch
 from mmcv.parallel import DataContainer, collate, scatter
 from torch import nn
@@ -15,7 +15,7 @@ from .mmrotate import MMROTATE_TASK
 
 
 def replace_RResize(pipelines):
-    """Rename RResize to Resize
+    """Rename RResize to Resize.
 
     args:
         pipelines (list[dict]): Data pipeline configs.
@@ -28,10 +28,9 @@ def replace_RResize(pipelines):
     for i, pipeline in enumerate(pipelines):
         if pipeline['type'] == 'MultiScaleFlipAug':
             assert 'transforms' in pipeline
-            pipeline['transforms'] = replace_RResize(
-                pipeline['transforms'])
-        elif pipeline.type == "RResize":
-            pipelines[i].type = "Resize"
+            pipeline['transforms'] = replace_RResize(pipeline['transforms'])
+        elif pipeline.type == 'RResize':
+            pipelines[i].type = 'Resize'
             if 'keep_ratio' not in pipelines[i]:
                 pipelines[i]['keep_ratio'] = True  # default value
     return pipelines
