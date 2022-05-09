@@ -4,9 +4,9 @@
 
 BUILD_CONFIG=$1
 
-PARAMETER_COUNT=1
-if [ $# != ${PARAMETER_COUNT} ]; then
-  echo "Number of parameter got $#, which expected for ${PARAMETER_COUNT} !!!"
+PARAMETER_NUMBER=1
+if [ $# != ${PARAMETER_NUMBER} ]; then
+  echo "Number of parameter got $#, which expected for ${PARAMETER_NUMBER} !!!"
   exit 1
 fi
 
