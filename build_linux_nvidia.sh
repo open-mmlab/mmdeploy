@@ -229,36 +229,41 @@ py_venv() {
   pip3 install opencv-python
   pip3 install matplotlib
 
-  # pytorch, torchvision, torchaudio
-  if [[ "$ARCH" == aarch64 ]]
+  read -p "Install PyTorch, Torchvision, mmcv? (y/n)" -n 1 -r
+  echo
+  if [[ $REPLY =~ ^[Yy]$ ]]
   then
-    # pytorch
-    wget https://nvidia.box.com/shared/static/fjtbno0vpo676a25cgvuqc1wty0fkkg6.whl -O torch-1.10.0-cp36-cp36m-linux_aarch64.whl
-    pip3 install torch-1.10.0-cp36-cp36m-linux_aarch64.whl
-    # torchvision
-    sudo apt-get install libjpeg-dev zlib1g-dev libpython3-dev libavcodec-dev libavformat-dev libswscale-dev -y
-    sudo rm -r torchvision
-    git clone --branch v0.11.1 https://github.com/pytorch/vision torchvision
-    cd torchvision
-    export BUILD_VERSION=0.11.1  # where 0.x.0 is the torchvision version
-    python3 setup.py install
-    cd ../
-    # torchaudio
-    #sudo apt-get install -y sox libsox-dev libsox-fmt-all
-    #sudo rm -r torchaudio
-    #git clone -b v0.10.0 https://github.com/pytorch/audio torchaudio
-    #cd torchaudio
-    #git submodule update --init --recursive
-    #python3 setup.py install
-    #cd ../
-    # mmcv
-    pip3 uninstall mmcv-full
-    pip3 install mmcv-full==1.4.1 -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.10.0/index.html
-  else
-    pip3 install torch==1.10.0+cu113 torchvision==0.11.1+cu113 torchaudio==0.10.0+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html
-    # mmcv
-    pip3 uninstall mmcv-full
-    pip3 install mmcv-full==1.4.1 -f https://download.openmmlab.com/mmcv/dist/cu113/torch1.10.0/index.html
+    # pytorch, torchvision, torchaudio
+    if [[ "$ARCH" == aarch64 ]]
+    then
+      # pytorch
+      wget https://nvidia.box.com/shared/static/fjtbno0vpo676a25cgvuqc1wty0fkkg6.whl -O torch-1.10.0-cp36-cp36m-linux_aarch64.whl
+      pip3 install torch-1.10.0-cp36-cp36m-linux_aarch64.whl
+      # torchvision
+      sudo apt-get install libjpeg-dev zlib1g-dev libpython3-dev libavcodec-dev libavformat-dev libswscale-dev -y
+      sudo rm -r torchvision
+      git clone --branch v0.11.1 https://github.com/pytorch/vision torchvision
+      cd torchvision
+      export BUILD_VERSION=0.11.1  # where 0.x.0 is the torchvision version
+      python3 setup.py install
+      cd ../
+      # torchaudio
+      #sudo apt-get install -y sox libsox-dev libsox-fmt-all
+      #sudo rm -r torchaudio
+      #git clone -b v0.10.0 https://github.com/pytorch/audio torchaudio
+      #cd torchaudio
+      #git submodule update --init --recursive
+      #python3 setup.py install
+      #cd ../
+      # mmcv
+      pip3 uninstall mmcv-full
+      pip3 install mmcv-full==1.4.1 -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.10.0/index.html
+    else
+      pip3 install torch==1.10.0+cu113 torchvision==0.11.1+cu113 torchaudio==0.10.0+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html
+      # mmcv
+      pip3 uninstall mmcv-full
+      pip3 install mmcv-full==1.4.1 -f https://download.openmmlab.com/mmcv/dist/cu113/torch1.10.0/index.html
+    fi
   fi
 
   # deactivate python venv again
