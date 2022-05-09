@@ -163,12 +163,14 @@ Result<unique_ptr<Task>> TaskParser::Parse(const Value& config) {
     OUTCOME_TRY(NodeParser::Parse(config, *task));
     OUTCOME_TRY(task->module_, CreateFromRegistry<Module>(config, "module"));
     bool sched_set = false;
-    if (config.contains("executor")) {
-      auto& exec_info = config["executor"];
+    if (config["context"].contains("executor")) {
+      auto& exec_info = config["context"]["executor"];
       for (auto it = exec_info.begin(); it != exec_info.end(); ++it) {
         if (it.key() == task->name()) {
           task->sched_ = it->get<TypeErasedScheduler<Value>>();
           sched_set = true;
+          MMDEPLOY_INFO("scheduler configured for task {}", task->name());
+          break;
         }
       }
     }
@@ -275,16 +277,11 @@ Result<void> PipelineParser::UpdateOutputCoords(int index, const vector<string>&
   return success();
 }
 
-void __link_inference();
-void __link_scheduler();
-
 class PipelineCreator : public Creator<Node> {
  public:
   const char* GetName() const override { return "Pipeline"; }
   int GetVersion() const override { return 0; }
   std::unique_ptr<Node> Create(const Value& value) override {
-    __link_inference();
-    __link_scheduler();
     return PipelineParser{}.Parse(value).value();
   }
 };

@@ -7,8 +7,6 @@
 
 namespace mmdeploy::async {
 
-void __link_inference() {}
-
 Result<unique_ptr<Inference>> InferenceParser::Parse(const Value& config) {
   try {
     auto& model_config = config["params"]["model"];

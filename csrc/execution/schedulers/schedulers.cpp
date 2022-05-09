@@ -49,8 +49,11 @@ class StaticThreadPoolSchedCreator : public Creator<Scheduler> {
   const char *GetName() const override { return "ThreadPool"; }
   int GetVersion() const override { return 0; }
   ReturnType Create(const Value &cfg) override {
-    auto num_threads = cfg.value("num_threads", 0);
-    if (num_threads) {
+    auto num_threads = -1;
+    if (cfg.is_object() && cfg.contains("num_threads")) {
+      num_threads = cfg["num_threads"].get<int>();
+    }
+    if (num_threads >= 1) {
       return CreateFromContext(
           std::make_unique<__static_thread_pool::StaticThreadPool>(num_threads));
     } else {
@@ -60,11 +63,5 @@ class StaticThreadPoolSchedCreator : public Creator<Scheduler> {
 };
 
 REGISTER_MODULE(Scheduler, StaticThreadPoolSchedCreator);
-
-namespace async {
-
-void __link_scheduler() {}
-
-}  // namespace async
 
 }  // namespace mmdeploy

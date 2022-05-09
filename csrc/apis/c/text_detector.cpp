@@ -47,7 +47,7 @@ int mmdeploy_text_detector_create_impl(mm_model_t model, const char* device_name
   auto config = config_template();
   config["pipeline"]["tasks"][0]["params"]["model"] = *static_cast<Model*>(model);
 
-  return mmdeploy_pipeline_create(Cast(&config), device_name, device_id, nullptr, handle);
+  return mmdeploy_pipeline_create(Cast(&config), device_name, device_id, exec_info, handle);
 }
 
 }  // namespace

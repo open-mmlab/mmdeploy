@@ -3,9 +3,9 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <string>
 
+#include "model.h"
 #include "text_detector.h"
 #include "text_recognizer.h"
-
 
 struct ctx_t {
   mm_mat_t* mat;
@@ -26,8 +26,7 @@ mmdeploy_sender_t cont(mmdeploy_value_t det_output, void* context) {
   return mmdeploy_executor_just(input);
 }
 
-
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   if (argc != 5) {
     fprintf(stderr, "usage:\n  ocr device_name det_model_path reg_model_path image_path\n");
     return 1;
@@ -42,16 +41,43 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
+  auto pool = mmdeploy_executor_system_pool();
+  auto thread = mmdeploy_executor_create_single_thread();
+
+  mmdeploy_exec_info prep_exec_info{{}, "Preprocess", pool};
+  mmdeploy_exec_info dbnet_exec_info{&prep_exec_info, "dbnet", thread};
+  mmdeploy_exec_info post_exec_info{&dbnet_exec_info, "postprocess", pool};
+
   mm_handle_t text_detector{};
   int status{};
-  status = mmdeploy_text_detector_create_by_path(det_model_path, device_name, 0, &text_detector);
+
+  mm_model_t det_model{};
+  status = mmdeploy_model_create_by_path(det_model_path, &det_model);
+  if (status != MM_SUCCESS) {
+    fprintf(stderr, "failed to create model %s\n", det_model_path);
+    return 1;
+  }
+
+  mm_model_t reg_model{};
+  status = mmdeploy_model_create_by_path(reg_model_path, &reg_model);
+  if (status != MM_SUCCESS) {
+    fprintf(stderr, "failed to create model %s\n", det_model_path);
+    return 1;
+  }
+
+  status =
+      mmdeploy_text_detector_create_v2(det_model, device_name, 0, &post_exec_info, &text_detector);
   if (status != MM_SUCCESS) {
     fprintf(stderr, "failed to create text_detector, code: %d\n", (int)status);
     return 1;
   }
 
+  mmdeploy_exec_info crnn_exec_info{&prep_exec_info, "crnnnet", thread};
+  post_exec_info.next = &crnn_exec_info;
+
   mm_handle_t text_recognizer{};
-  status = mmdeploy_text_recognizer_create_by_path(reg_model_path, device_name, 0, &text_recognizer);
+  status = mmdeploy_text_recognizer_create_v2(reg_model, device_name, 0, &post_exec_info,
+                                              &text_recognizer);
   if (status != MM_SUCCESS) {
     fprintf(stderr, "failed to create text_recognizer, code: %d\n", (int)status);
     return 1;
@@ -74,7 +100,7 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  ctx_t context {&mat, {}, {}};
+  ctx_t context{&mat, {}, {}};
   sender = mmdeploy_executor_let_value(sender, cont, &context);
   assert(sender);
 
@@ -90,13 +116,13 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  mm_text_recognize_t *texts{};
+  mm_text_recognize_t* texts{};
   mmdeploy_text_recognizer_get_result(output, &texts);
   if (!texts) {
     fprintf(stderr, "failed to gettext recognizer result\n");
     return 1;
   }
-  
+
   // det results is available after sync_wait
   auto bboxes = context.dets;
   auto bbox_count = context.det_count;
@@ -105,7 +131,7 @@ int main(int argc, char *argv[]) {
     fprintf(stdout, "box[%d]: %s\n", i, texts[i].text);
     std::vector<cv::Point> poly_points;
     for (int j = 0; j < 4; ++j) {
-      auto const &pt = bboxes[i].bbox[j];
+      auto const& pt = bboxes[i].bbox[j];
       fprintf(stdout, "x: %.2f, y: %.2f, ", pt.x, pt.y);
       poly_points.push_back({(int)pt.x, (int)pt.y});
     }
@@ -120,6 +146,9 @@ int main(int argc, char *argv[]) {
 
   mmdeploy_text_detector_release_result(bboxes, bbox_count, 1);
   mmdeploy_text_detector_destroy(text_detector);
+
+  mmdeploy_scheduler_destroy(pool);
+  mmdeploy_scheduler_destroy(thread);
 
   return 0;
 }

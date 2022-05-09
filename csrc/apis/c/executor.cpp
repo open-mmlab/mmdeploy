@@ -15,8 +15,13 @@ namespace {
 mmdeploy_scheduler_t CreateScheduler(const char* type, const Value& config = Value()) {
   try {
     auto creator = Registry<SchedulerType>::Get().GetCreator(type);
+    if (!creator) {
+      MMDEPLOY_ERROR("creator for {} not found.", type);
+      return nullptr;
+    }
     return Cast(new SchedulerType(creator->Create(config)));
-  } catch (...) {
+  } catch (const std::exception& e) {
+    MMDEPLOY_ERROR("failed to create {}, error: {}", type, e.what());
     return nullptr;
   }
 }
@@ -132,9 +137,15 @@ int mmdeploy_pipeline_create(mmdeploy_value_t config, const char* device_name, i
                              mmdeploy_exec_info_t exec_info, mm_handle_t* handle) {
   try {
     auto _config = *Cast(config);
-    auto& info = _config["context"]["executor"] = Value::kObject;
-    while (exec_info) {
-      info[exec_info->task_name] = *Cast(exec_info->scheduler);
+    if (exec_info) {
+      auto& info = _config["context"]["executor"] = Value::kObject;
+      for (auto p = exec_info; p; p = p->next) {
+        info[p->task_name] = *Cast(p->scheduler);
+        if (p->next == exec_info) {
+          MMDEPLOY_ERROR("circle detected in exec_info list.");
+          return MM_E_INVALID_ARG;
+        }
+      }
     }
     auto _handle = std::make_unique<AsyncHandle>(device_name, device_id, std::move(_config));
     *handle = _handle.release();
