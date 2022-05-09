@@ -10,15 +10,15 @@ global_config:
 local_configs:
   - BUILD_NAME: "linux-x86-cuda102-trt7216"
     cmake_envs:
-      TENSORRT_DIR: "${HOME}/SDK/TensorRT-7.2.1.6"
+      TENSORRT_DIR: "${HOME}/TensorRT-7.2.1.6"
       CUDA_TOOLKIT_ROOT_DIR: "/usr/local/cuda-10.2"
 
   - BUILD_NAME: "linux-x86-cuda111-trt8016"
     cmake_envs:
-      TENSORRT_DIR: "${HOME}/SDK/TensorRT-8.0.1.6"
+      TENSORRT_DIR: "${HOME}/TensorRT-8.0.1.6"
       CUDA_TOOLKIT_ROOT_DIR: "/usr/local/cuda-11.1"
 
   - BUILD_NAME: "linux-x86-cuda113-trt8230"
     cmake_envs:
-      TENSORRT_DIR: "${HOME}/SDK/TensorRT-8.2.3.0"
+      TENSORRT_DIR: "${HOME}/TensorRT-8.2.3.0"
       CUDA_TOOLKIT_ROOT_DIR: "/usr/local/cuda-11.3"

@@ -1,10 +1,14 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import logging
+from typing import Optional
 
 logger_initialized = {}
 
 
-def get_logger(name, log_file=None, log_level=logging.INFO, file_mode='w'):
+def get_logger(name: str,
+               log_file: Optional[str] = None,
+               log_level: int = logging.INFO,
+               file_mode: str = 'w'):
     """Initialize and get a logger by name.
 
     If the logger has not been initialized, this method will initialize the

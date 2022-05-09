@@ -217,14 +217,6 @@ def parse_configs(cfg_path: str):
         _merge_cfg(global_cfg, local_cfg) for local_cfg in local_cfgs
     ]
 
-    # if len(local_cfgs) == 0:
-    #     merged_cfgs = [global_cfg]
-    # else:
-    #     merged_cfgs = [copy.deepcopy(global_cfg) for _ in local_cfgs]
-
-    # for cfg, local_cfg in zip(merged_cfgs, local_cfgs):
-    #     cfg.update(local_cfg)
-
     return merged_cfgs
 
 
