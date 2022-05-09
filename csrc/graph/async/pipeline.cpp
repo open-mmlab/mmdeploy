@@ -109,6 +109,37 @@ Sender<Value> Pipeline::Process(Sender<Value> args) {
   return state.Collect(ret_coords_);
 }
 
+Sender<Value> Task::Process(Sender<Value> input) {
+  // tag_invoke(Transfer, std::move(input), *sched_);
+  return LetValue(std::move(input), [this](Value& v) -> Sender<Value> {
+    //      MMDEPLOY_INFO("name = {}, val = {}", name(), v);
+    if (v.front().is_array() && !is_batched_) {
+      // clang-format off
+      auto batch_size = v.front().size();
+      Value output = Value::Array(batch_size);
+      return Just(std::move(output))
+          | Then([&](Value&& output) -> Value {
+            auto input = graph::DistribAA(v).value();
+            return Value{std::move(input), std::move(output)};
+          })
+          | Transfer(*sched_)
+          | TypeErase()
+          | Bulk(batch_size, [&](size_t index, Value& in_out) {
+            const auto& input = in_out[0];
+            auto& output = in_out[1];
+            output[index] = module_->Process(input[index]).value();
+          })
+          | Then([](const Value& in_out) {
+            return graph::DistribAA(in_out[1]).value();
+          });
+      // clang-format on
+    } else {
+      auto output = module_->Process(v).value();
+      return Just(std::move(output)) | Transfer(*sched_);
+    }
+  });
+}
+
 /////////////////////////////////////////////////////////////////////
 /// parsers
 
@@ -131,11 +162,19 @@ Result<unique_ptr<Task>> TaskParser::Parse(const Value& config) {
     auto task = std::make_unique<Task>();
     OUTCOME_TRY(NodeParser::Parse(config, *task));
     OUTCOME_TRY(task->module_, CreateFromRegistry<Module>(config, "module"));
-    if (config.contains("scheduler")) {
-      auto sched_name = config["scheduler"].get<string>();
-      task->sched_ = config["context"]["schedulers"][sched_name].get<TypeErasedScheduler<Value>>();
-    } else {
-      task->sched_ = TypeErasedScheduler<Value>{InlineScheduler{}};
+    bool sched_set = false;
+    if (config.contains("executor")) {
+      auto& exec_info = config["executor"];
+      for (auto it = exec_info.begin(); it != exec_info.end(); ++it) {
+        if (it.key() == task->name()) {
+          task->sched_ = it->get<TypeErasedScheduler<Value>>();
+          sched_set = true;
+        }
+      }
+    }
+    if (!sched_set) {
+      task->sched_ =
+          TypeErasedScheduler<Value>{std::make_shared<TypeErasedScheduler<Value>::Impl>()};
     }
     task->is_batched_ = config.value("is_batched", false);
     task->is_thread_safe_ = config.value("is_thread_safe", false);
@@ -150,14 +189,6 @@ Result<unique_ptr<Pipeline>> PipelineParser::Parse(const Value& config) {
   try {
     auto pipeline = std::make_unique<Pipeline>();
     OUTCOME_TRY(NodeParser::Parse(config["pipeline"], *pipeline));
-
-    Value schedulers(Value::kObject);
-    if (config.contains("create_scheduler")) {
-      const auto& sched_cfg = config["create_scheduler"];
-      for (auto it = sched_cfg.begin(); it != sched_cfg.end(); ++it) {
-        OUTCOME_TRY(schedulers[it.key()], CreateFromRegistry<TypeErasedScheduler<Value>>(*it));
-      }
-    }
 
     const auto& task_configs = config["pipeline"]["tasks"];
     auto size = task_configs.size();
@@ -180,16 +211,9 @@ Result<unique_ptr<Pipeline>> PipelineParser::Parse(const Value& config) {
       // propagate context
       if (config.contains("context")) {
         task_config["context"].update(config["context"]);
-        if (!schedulers.empty()) {
-          task_config["context"]["schedulers"].update(schedulers);
-        }
       }
       OUTCOME_TRY(auto node, CreateFromRegistry<Node>(task_config));
       if (node) {
-        //        if (node->name() == "yolox") {
-        //          node = std::make_unique<DeferredBatchOperation>(std::move(node), 1,
-        //                                                          std::chrono::milliseconds(10000));
-        //        }
         OUTCOME_TRY(auto coords, GetInputCoords(node->inputs()));
         input_coords.push_back(std::move(coords));
         OUTCOME_TRY(UpdateOutputCoords(index, node->outputs()));

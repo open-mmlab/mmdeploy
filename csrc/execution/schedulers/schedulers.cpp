@@ -48,8 +48,14 @@ class StaticThreadPoolSchedCreator : public Creator<Scheduler> {
  public:
   const char *GetName() const override { return "ThreadPool"; }
   int GetVersion() const override { return 0; }
-  ReturnType Create(const Value &) override {
-    return CreateFromContext(std::make_unique<__static_thread_pool::StaticThreadPool>());
+  ReturnType Create(const Value &cfg) override {
+    auto num_threads = cfg.value("num_threads", 0);
+    if (num_threads) {
+      return CreateFromContext(
+          std::make_unique<__static_thread_pool::StaticThreadPool>(num_threads));
+    } else {
+      return CreateFromContext(std::make_unique<__static_thread_pool::StaticThreadPool>());
+    }
   }
 };
 

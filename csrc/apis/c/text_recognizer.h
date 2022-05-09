@@ -35,6 +35,10 @@ typedef struct mm_text_recognize_t {
 MMDEPLOY_API int mmdeploy_text_recognizer_create(mm_model_t model, const char* device_name,
                                                  int device_id, mm_handle_t* handle);
 
+MMDEPLOY_API int mmdeploy_text_recognizer_create_v2(mm_model_t model, const char* device_name,
+                                                    int device_id, mmdeploy_exec_info_t exec_info,
+                                                    mm_handle_t* handle);
+
 /**
  * @brief Create a text recognizer instance
  * @param[in] model_path path to text recognition model

@@ -40,6 +40,10 @@ typedef struct mm_detect_t {
 MMDEPLOY_API int mmdeploy_detector_create(mm_model_t model, const char* device_name, int device_id,
                                           mm_handle_t* handle);
 
+MMDEPLOY_API int mmdeploy_detector_create_v2(mm_model_t model, const char* device_name,
+                                             int device_id, mmdeploy_exec_info_t exec_info,
+                                             mm_handle_t* handle);
+
 /**
  * @brief Create detector's handle
  * @param[in] model_path path of mmdetection sdk model exported by mmdeploy model converter

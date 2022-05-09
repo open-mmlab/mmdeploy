@@ -65,18 +65,23 @@ const Value &config_template() {
 }
 
 int mmdeploy_text_recognizer_create_impl(mm_model_t model, const char *device_name, int device_id,
-                                         mm_handle_t *handle) {
+                                         mmdeploy_exec_info_t exec_info, mm_handle_t *handle) {
   auto config = config_template();
   config["pipeline"]["tasks"][2]["params"]["model"] = *static_cast<Model *>(model);
 
-  return mmdeploy_pipeline_create(Cast(&config), device_name, device_id, handle);
+  return mmdeploy_pipeline_create(Cast(&config), device_name, device_id, exec_info, handle);
 }
 
 }  // namespace
 
 int mmdeploy_text_recognizer_create(mm_model_t model, const char *device_name, int device_id,
                                     mm_handle_t *handle) {
-  return mmdeploy_text_recognizer_create_impl(model, device_name, device_id, handle);
+  return mmdeploy_text_recognizer_create_impl(model, device_name, device_id, nullptr, handle);
+}
+
+int mmdeploy_text_recognizer_create_v2(mm_model_t model, const char *device_name, int device_id,
+                                       mmdeploy_exec_info_t exec_info, mm_handle_t *handle) {
+  return mmdeploy_text_recognizer_create_impl(model, device_name, device_id, exec_info, handle);
 }
 
 int mmdeploy_text_recognizer_create_by_path(const char *model_path, const char *device_name,
@@ -85,7 +90,7 @@ int mmdeploy_text_recognizer_create_by_path(const char *model_path, const char *
   if (auto ec = mmdeploy_model_create_by_path(model_path, &model)) {
     return ec;
   }
-  auto ec = mmdeploy_text_recognizer_create_impl(model, device_name, device_id, handle);
+  auto ec = mmdeploy_text_recognizer_create_impl(model, device_name, device_id, nullptr, handle);
   mmdeploy_model_destroy(model);
   return ec;
 }

@@ -21,12 +21,24 @@ typedef struct mmdeploy_scheduler* mmdeploy_scheduler_t;
 
 typedef mmdeploy_sender_t (*mmdeploy_kleisli_t)(mmdeploy_value_t, void*);
 
+typedef struct mmdeploy_exec_info* mmdeploy_exec_info_t;
+
+struct mmdeploy_exec_info {
+  mmdeploy_exec_info_t next;
+  const char* task_name;
+  mmdeploy_scheduler_t scheduler;
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 // Scheduler
 ///////////////////////////////////////////////////////////////////////////////
-MMDEPLOY_API mmdeploy_scheduler_t mmdeploy_inline_scheduler();
+MMDEPLOY_API mmdeploy_scheduler_t mmdeploy_executor_inline();
 
-MMDEPLOY_API mmdeploy_scheduler_t mmdeploy_system_pool_scheduler();
+MMDEPLOY_API mmdeploy_scheduler_t mmdeploy_executor_system_pool();
+
+MMDEPLOY_API mmdeploy_scheduler_t mmdeploy_executor_create_thread_pool(int num_threads);
+
+MMDEPLOY_API mmdeploy_scheduler_t mmdeploy_executor_create_single_thread();
 
 MMDEPLOY_API int mmdeploy_scheduler_destroy(mmdeploy_scheduler_t scheduler);
 

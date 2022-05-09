@@ -12,10 +12,10 @@ using namespace mmdeploy;
 
 namespace {
 
-mmdeploy_scheduler_t CreateScheduler(const char* type) {
+mmdeploy_scheduler_t CreateScheduler(const char* type, const Value& config = Value()) {
   try {
     auto creator = Registry<SchedulerType>::Get().GetCreator(type);
-    return Cast(new SchedulerType(creator->Create(Value::kNull)));
+    return Cast(new SchedulerType(creator->Create(config)));
   } catch (...) {
     return nullptr;
   }
@@ -32,9 +32,22 @@ int mmdeploy_sender_destroy(mmdeploy_sender_t sender) {
   return 0;
 }
 
-mmdeploy_scheduler_t mmdeploy_inline_scheduler() { return CreateScheduler("Inlined"); }
+mmdeploy_scheduler_t mmdeploy_executor_inline() { return CreateScheduler("Inlined"); }
 
-mmdeploy_scheduler_t mmdeploy_system_pool_scheduler() { return CreateScheduler("ThreadPool"); }
+mmdeploy_scheduler_t mmdeploy_executor_system_pool() {
+  // create a thread pool context and hold its shared handle
+  static auto scheduler = *Cast(CreateScheduler("ThreadPool"));
+  // return a copy of the handle to the thread pool
+  return Cast(new SchedulerType(scheduler));
+}
+
+mmdeploy_scheduler_t mmdeploy_executor_create_thread_pool(int num_threads) {
+  return CreateScheduler("ThreadPool", {{"num_threads", num_threads}});
+}
+
+mmdeploy_scheduler_t mmdeploy_executor_create_single_thread() {
+  return CreateScheduler("SingleThread");
+}
 
 int mmdeploy_scheduler_destroy(mmdeploy_scheduler_t scheduler) {
   delete Cast(scheduler);
@@ -116,9 +129,14 @@ mmdeploy_value_t mmdeploy_executor_sync_wait(mmdeploy_sender_t input) {
 }
 
 int mmdeploy_pipeline_create(mmdeploy_value_t config, const char* device_name, int device_id,
-                             mm_handle_t* handle) {
+                             mmdeploy_exec_info_t exec_info, mm_handle_t* handle) {
   try {
-    auto _handle = std::make_unique<AsyncHandle>(device_name, device_id, *Cast(config));
+    auto _config = *Cast(config);
+    auto& info = _config["context"]["executor"] = Value::kObject;
+    while (exec_info) {
+      info[exec_info->task_name] = *Cast(exec_info->scheduler);
+    }
+    auto _handle = std::make_unique<AsyncHandle>(device_name, device_id, std::move(_config));
     *handle = _handle.release();
     return MM_SUCCESS;
   } catch (const std::exception& e) {

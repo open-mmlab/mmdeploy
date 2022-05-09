@@ -39,7 +39,8 @@ inline mmdeploy_sender_t Take(T& s) {
 }  // namespace
 
 MMDEPLOY_API int mmdeploy_pipeline_create(mmdeploy_value_t config, const char* device_name,
-                                          int device_id, mm_handle_t* handle);
+                                          int device_id, mmdeploy_exec_info_t exec_info,
+                                          mm_handle_t* handle);
 
 MMDEPLOY_API mmdeploy_sender_t mmdeploy_pipeline_apply_async(mm_handle_t handle,
                                                              mmdeploy_sender_t input);

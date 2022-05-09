@@ -237,7 +237,7 @@ TEMPLATE_LIST_TEST_CASE("test type erase", "[execution]", Schedulers) {
 }
 
 TEST_CASE("test executor C API", "[execution]") {
-  auto sched = mmdeploy_inline_scheduler();
+  auto sched = mmdeploy_executor_inline();
   REQUIRE(sched);
   auto begin = mmdeploy_executor_just((mmdeploy_value_t) new Value{100, 200});
   REQUIRE(begin);
