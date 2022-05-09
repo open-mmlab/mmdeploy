@@ -188,7 +188,7 @@ def get_model_metafile_info(global_info: dict, model_info: dict,
 
 
 def update_report(report_dict: dict, model_name: str, model_config: str,
-                  task_name: str, model_checkpoint_name: str, dataset: str,
+                  task_name: str, checkpoint: str, dataset: str,
                   backend_name: str, deploy_config: str,
                   static_or_dynamic: str, precision_type: str,
                   conversion_result: str, fps: str, metric_info: list,
@@ -200,7 +200,7 @@ def update_report(report_dict: dict, model_name: str, model_config: str,
         model_name (str): Model name.
         model_config (str): Model config name.
         task_name (str): Task name.
-        model_checkpoint_name (str): Model checkpoint name.
+        checkpoint (str): Model checkpoint name.
         dataset (str): Dataset name.
         backend_name (str): Backend name.
         deploy_config (str): Deploy config name.
@@ -213,36 +213,28 @@ def update_report(report_dict: dict, model_name: str, model_config: str,
         report_txt_path (Path): Report txt path.
         codebase_name (str): Codebase name.
     """
-    if '.pth' in model_checkpoint_name:
-        model_checkpoint_name = \
-            Path(model_checkpoint_name).absolute().resolve()
-        model_checkpoint_name = \
-            str(model_checkpoint_name).split(f'/{codebase_name}/')[-1]
-        model_checkpoint_name = \
-            '${CHECKPOINT_DIR}' + f'/{codebase_name}/{model_checkpoint_name}'
+    # make model path shorter
+    if '.pth' in checkpoint:
+        checkpoint = Path(checkpoint).absolute().resolve()
+        checkpoint = str(checkpoint).split(f'/{codebase_name}/')[-1]
+        checkpoint = '${CHECKPOINT_DIR}' + f'/{codebase_name}/{checkpoint}'
     else:
-        # make model path shorter by cutting the work_dir_root
-        work_dir_root = report_txt_path.parent.absolute().resolve()
-
-        if ' ' not in model_checkpoint_name:
-            model_checkpoint_name = \
-                Path(model_checkpoint_name).absolute().resolve()
-
-        model_checkpoint_name = \
-            str(model_checkpoint_name).replace(str(work_dir_root),
-                                               '${WORK_DIR}')
+        if ' ' not in checkpoint:
+            checkpoint = Path(checkpoint).absolute().resolve()
+        work_dir = report_txt_path.parent.absolute().resolve()
+        checkpoint = str(checkpoint).replace(str(work_dir), '${WORK_DIR}')
 
     # save to tmp file
-    tmp_str = f'{model_name},{model_config},{task_name},' \
-              f'{model_checkpoint_name},{dataset},{backend_name},' \
-              f'{deploy_config},{static_or_dynamic},{precision_type},' \
-              f'{conversion_result},{fps},'
+    tmp_str = f'{model_name},{model_config},{task_name},{checkpoint},' \
+              f'{dataset},{backend_name},{deploy_config},' \
+              f'{static_or_dynamic},{precision_type},{conversion_result},' \
+              f'{fps},'
 
     # save to report
     report_dict.get('Model').append(model_name)
     report_dict.get('Model Config').append(model_config)
     report_dict.get('Task').append(task_name)
-    report_dict.get('Checkpoint').append(model_checkpoint_name)
+    report_dict.get('Checkpoint').append(checkpoint)
     report_dict.get('Dataset').append(dataset)
     report_dict.get('Backend').append(backend_name)
     report_dict.get('Deploy Config').append(deploy_config)
