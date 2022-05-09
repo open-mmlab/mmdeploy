@@ -1,22 +1,22 @@
-# 如何编写配置文件
+# 如何写模型转换配置
 
 <!-- This tutorial describes how to write a config for model conversion and deployment. A deployment config includes `onnx config`, `codebase config`, `backend config`. -->
-这篇教程介绍了如何编写模型转换和部署的配置文件。部署配置文件由`ONNX配置信息`， `代码库配置信息`， `推理框架配置信息`组成。
+这篇教程介绍了如何编写模型转换和部署的配置文件。部署配置文件由`ONNX配置`， `代码库配置`， `推理框架配置`组成。
 
 <!-- TOC -->
 
 - [如何编写配置文件](#如何编写配置文件)
-  - [1. 如何编写ONNX配置信息](#1-如何编写onnx配置信息)
-    - [ONNX配置信息参数说明](#onnx配置信息参数说明)
+  - [1. 如何编写ONNX配置](#1-如何编写onnx配置)
+    - [ONNX配置参数说明](#onnx配置参数说明)
       - [示例](#示例)
     - [动态尺寸输入和输出配置](#动态尺寸输入和输出配置)
       - [示例](#示例-1)
-  - [2. 如何编写代码库配置信息](#2-如何编写代码库配置信息)
-    - [代码库配置信息参数说明](#代码库配置信息参数说明)
+  - [2. 如何编写代码库配置](#2-如何编写代码库配置)
+    - [代码库配置参数说明](#代码库配置参数说明)
       - [示例](#示例-2)
-  - [3. 如何编写推理框架配置信息](#3-如何编写推理框架配置信息)
+  - [3. 如何编写推理框架配置](#3-如何编写推理框架配置)
     - [示例](#示例-3)
-  - [4. 部署配置信息完整示例](#4-部署配置信息完整示例)
+  - [4. 部署配置完整示例](#4-部署配置完整示例)
   - [5. 部署配置文件命名规则](#5-部署配置文件命名规则)
     - [示例](#示例-4)
   - [6. 如何编写模型配置文件](#6-如何编写模型配置文件)
@@ -25,13 +25,13 @@
 
 <!-- TOC -->
 
-## 1. 如何编写ONNX配置信息
+## 1. 如何编写ONNX配置
 
-ONNX 配置信息描述了如何将PyTorch模型转换为ONNX模型。
+ONNX 配置描述了如何将PyTorch模型转换为ONNX模型。
 
-### ONNX配置信息参数说明
+### ONNX配置参数说明
 
-- `type`: 配置信息类型。 默认为 `onnx`。
+- `type`: 配置类型。 默认为 `onnx`。
 - `export_params`: 如果指定，将导出模型所有参数。如果您只想导出未训练模型将此项设置为 False。
 - `keep_initializers_as_inputs`:
 如果为 True，则所有初始化器（通常对应为参数）也将作为输入导出，添加到计算图中。 如果为 False，则初始化器不会作为输入导出，不添加到计算图中，仅将非参数输入添加到计算图中。
@@ -58,7 +58,7 @@ onnx_config = dict(
 
 ### 动态尺寸输入和输出配置
 
-如果模型要求动态尺寸的输入和输出，您需要在ONNX配置信息中加入dynamic_axes配置。
+如果模型要求动态尺寸的输入和输出，您需要在ONNX配置中加入dynamic_axes配置。
 
 - `dynamic_axes`: 描述输入和输出的维度信息。
 
@@ -82,11 +82,11 @@ onnx_config = dict(
     }
 ```
 
-## 2. 如何编写代码库配置信息
+## 2. 如何编写代码库配置
 
-代码库主要指OpenMMLab 系列模型代码库，代码库配置信息由OpenMMLab 系列模型代码库的简称和OpenMMLab 系列模型任务类型组成。
+代码库主要指OpenMMLab 系列模型代码库，代码库配置由OpenMMLab 系列模型代码库的简称和OpenMMLab 系列模型任务类型组成。
 
-### 代码库配置信息参数说明
+### 代码库配置参数说明
 
 - `type`: OpenMMLab 系列模型代码库的简称， 包括 `mmcls`， `mmdet`， `mmseg`， `mmocr`， `mmedit`。
 - `task`: OpenMMLab 系列模型任务类型， 具体请参考 [OpenMMLab 系列模型任务列表](#list-of-tasks-in-all-codebases)。
@@ -97,9 +97,9 @@ onnx_config = dict(
 codebase_config = dict(type='mmcls', task='Classification')
 ```
 
-## 3. 如何编写推理框架配置信息
+## 3. 如何编写推理框架配置
 
-推理框架配置信息主要用于指定模型运行在哪个推理框架，并提供模型在推理框架运行时所需的信息，具体参考 [ONNX Runtime](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/backends/onnxruntime.md)， [TensorRT](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/backends/tensorrt.md)， [NCNN](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/backends/ncnn.md)， [PPLNN](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/backends/pplnn.md)。
+推理框架配置主要用于指定模型运行在哪个推理框架，并提供模型在推理框架运行时所需的信息，具体参考 [ONNX Runtime](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/backends/onnxruntime.md)， [TensorRT](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/backends/tensorrt.md)， [ncnn](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/backends/ncnn.md)， [PPLNN](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/backends/pplnn.md)。
 
 - `type`: 模型推理框架, 包括 `onnxruntime`， `ncnn`， `pplnn`， `tensorrt`， `openvino`。
 
@@ -120,9 +120,9 @@ backend_config = dict(
     ])
 ```
 
-## 4. 部署配置信息完整示例
+## 4. 部署配置完整示例
 
-这里我们提供了一个以TensorRT为推理框架的基于mmcls图像分类任务的完整部署配置信息示例。
+这里我们提供了一个以TensorRT为推理框架的基于mmcls图像分类任务的完整部署配置示例。
 
 ```python
 
@@ -183,11 +183,3 @@ detection_tensorrt-int8_dynamic-320x320-1344x1344.py
 ## 6. 如何编写模型配置文件
 
 请根据模型具体任务的代码库，编写模型配置文件。 模型配置文件用于初始化模型，详情请参考[MMClassification](https://github.com/open-mmlab/mmclassification/blob/master/docs/zh_CN/tutorials/config.md)，[MMDetection](https://github.com/open-mmlab/mmdetection/blob/master/docs/zh_cn/tutorials/config.md)， [MMSegmentation](https://github.com/open-mmlab/mmsegmentation/blob/master/docs/zh_cn/tutorials/config.md)， [MMOCR](https://github.com/open-mmlab/mmocr/blob/main/docs/en/tutorials/config.md)，[MMEditing](https://github.com/open-mmlab/mmediting/blob/master/docs/zh_cn/config.md)。
-
-## 7. 注意事项
-
-None
-
-## 8. 常见问题
-
-None
