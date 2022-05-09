@@ -10,16 +10,14 @@ if [ $# != ${PARAMETER_NUMBER} ]; then
   exit 1
 fi
 
-# build wheel
+# build convert wheel
+conda activate mmdeploy
 python "${MMDEPLOY_DIR}/tools/package_tools/mmdeploy_builder.py" \
   "${MMDEPLOY_DIR}/tools/package_tools/configs/${BUILD_CONFIG}" \
   "${MMDEPLOY_DIR}"
 
 # using another env to pip install it
-conda deactivate
-conda activate mmdeploy_convert
-pip install xxx.whl
-pip install mmdet
+c
 
 # test convert with RetinaNet of mmdetection
 mkdir /tmp/wheel_convert_test && cd /tmp/wheel_convert_test
@@ -42,12 +40,20 @@ python tools/deploy.py \
   --dump-info || exit 2
 
 # build sdk wheel
+python "${MMDEPLOY_DIR}/tools/package_tools/mmdeploy_builder.py" \
+  "${MMDEPLOY_DIR}/tools/package_tools/configs/${BUILD_CONFIG}" \
+  "${MMDEPLOY_DIR}"
+
 cd ${MMDEPLOY_DIR}/build/install/example || exit 1
 mkdir -p build && cd build
 cmake .. -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy
 make -j$(nproc)
 
 # test sdk demo
+conda deactivate
+conda activate mmdeploy_sdk
+pip uninstall mmdeploy_builder
+pip install xxx.whl
 ./object_detection cuda \
   "${CONVERT_TEST_PATH}/retinanet_output" \
   "${MMDEPLOY_DIR}/../mmdetection/demo/demo.jpg"  || exit 3
