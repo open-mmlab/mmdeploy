@@ -420,7 +420,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">model</td>
     <td align="center">metric</td>
     <td align="center">fp32</td>
-    <td align="center">seresnet</td>
+    <td align="center">fp32</td>
     <td align="center">fp32</td>
     <td align="center">fp32</td>
     <td align="center">fp16</td>
