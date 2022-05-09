@@ -1,16 +1,14 @@
-## 安装 MMdeploy
+# 源码安装
 
+如果环境允许（网络良好且宿主机强劲），我们建议使用[docker 方式](build_from_docker.md)。
 
-### 下载代码仓库 MMDeploy
+## 下载
 
-  ```bash
-  git clone -b master git@github.com:open-mmlab/mmdeploy.git MMDeploy
-  cd MMDeploy
-  git submodule update --init --recursive
-  ```
+```bash
+git clone -b master git@github.com:open-mmlab/mmdeploy.git --recursive
+```
 
-  提示:
-
+### FAQ
 - 如果由于网络等原因导致拉取仓库子模块失败，可以尝试通过如下指令手动再次安装子模块:
 
     ```bash
@@ -31,10 +29,12 @@
   git clone -b master https://github.com/open-mmlab/mmdeploy.git MMDeploy
   cd MMDeploy
   git submodule update --init --recursive
-  ```
-### 编译 MMDeploy
+
+
+## 编译
+
 根据您的目标平台，点击如下对应的链接，按照说明编译 MMDeploy
-- [Linux-x86_64](build/linux.md)
-- [Windows](build/windows.md)
-- [Android-aarch64](build/android.md)
-- [NVIDIA Jetson](../en/tutorials/how_to_install_mmdeploy_on_jetsons.md)
+- [Linux-x86_64](linux-x86_64.md)
+- [Windows](windows.md)
+- [Android-aarch64](android.md)
+- [NVIDIA Jetson](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_install_mmdeploy_on_jetsons.html)

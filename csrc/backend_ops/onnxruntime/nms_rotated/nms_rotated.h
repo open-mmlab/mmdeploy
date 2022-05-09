@@ -22,6 +22,7 @@ struct NMSRotatedKernel {
   const OrtKernelInfo* info_;
   Ort::AllocatorWithDefaultOptions allocator_;
   float iou_threshold_;
+  float score_threshold_;
 };
 
 struct NMSRotatedOp : Ort::CustomOpBase<NMSRotatedOp, NMSRotatedKernel> {
