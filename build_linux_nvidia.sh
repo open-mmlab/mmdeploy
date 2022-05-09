@@ -19,12 +19,11 @@ GCC_COMPILER="g++"
 # WORKING_DIR must correspond to script dir, i.e. MMDeploy root
 WORKING_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PPLCV_DIR=${WORKING_DIR}/ppl.cv
-MMDEPLOY_DIR=${WORKING_DIR}/MMDeploy
+MMDEPLOY_DIR=${WORKING_DIR}
 
 #####
 # Versions
 PPLCV_VER="0.6.2"
-MMDEPLOY_VER="0.4.0"
 CMAKE_VER="3.23.0"
 
 #####
@@ -213,7 +212,7 @@ py_venv() {
   pip3 install --upgrade setuptools wheel
 
   # Latest PIL is not compatible with mmcv=1.4.1
-  pip install Pillow==7.0.0
+  pip3 install Pillow==7.0.0
 
   if [[ "$ARCH" == aarch64 ]]
   then
@@ -297,16 +296,10 @@ pplcv() {
 
 mmdeploy(){
   ## mmdeploy SDK
-  cd ${WORKING_DIR}
-  echo_blue "checking out '${MMDEPLOY_DIR}' pkg..."
-  if [ -d "${MMDEPLOY_DIR}" ]; then
-    echo_green "Already exists! Checking out the requested version..."
-  else
-    git clone https://github.com/open-mmlab/mmdeploy.git ${MMDEPLOY_DIR}
-  fi
   cd ${MMDEPLOY_DIR}
-  git pull
-  git checkout tags/v${MMDEPLOY_VER}
+
+  MMDEPLOY_DETECT_VER=$(cat MMDeploy/mmdeploy/version.py | grep -Eo '[0-9]\.[0-9].[0-9]+')
+
   # reinit submodules
   git submodule update --init --recursive
 
@@ -352,8 +345,8 @@ mmdeploy(){
   # Unpack as tar -zxf mmdeploysdk_*.tar.gz --directory MMDeploy-aarch64
 
   ## build mmdeploy examples
-  cp -r ${WORKING_DIR}/MMDeploy/demo/csrc ${WORKING_DIR}/MMDeploy/build/example
-  cd ${WORKING_DIR}/MMDeploy/build/example
+  cp -r ${MMDEPLOY_DIR}/demo/csrc ${MMDEPLOY_DIR}/build/example
+  cd ${MMDEPLOY_DIR}/build/example
   rm -r build
   mkdir build -p && cd build
   cmake -DMMDeploy_DIR=${INSTALL_PREFIX} ..
