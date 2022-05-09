@@ -43,7 +43,7 @@ pip install -U numpy
 ## 2. 用法
 
 ```shell
-python ./regression_test/regression_test.py \
+python ./tools/regression_test.py \
     --codebase "${CODEBASE_NAME}" \
     --backends "${BACKEND}" \
     --work-dir "${WORK_DIR}" \
@@ -71,7 +71,7 @@ python ./regression_test/regression_test.py \
 1. 测试 mmdet 和 mmpose 的所有 backend 的 **转换+精度**
 
 ```shell
-python ./regression_test/regression_test.py \
+python ./tools/regression_test.py \
     --codebase mmdet mmpose \
     --backends all \
     --work-dir "../mmdeploy_regression_working_dir" \
@@ -112,10 +112,10 @@ globals:
   codebase_dir: ../mmocr # 回归测试的 codebase 路径
   checkpoint_force_download: False # 回归测试是否重新下载模型即使其已经存在
   images: # 测试使用图片
-    img_224x224: &img_224x224 ./tests/data/tiger.jpeg
-    img_300x300: &img_300x300
-    img_800x1344: &img_cityscapes_800x1344
-    img_blank: &img_blank
+    img_densetext_det: &img_densetext_det ../mmocr/demo/demo_densetext_det.jpg
+    img_demo_text_det: &img_demo_text_det ../mmocr/demo/demo_text_det.jpg
+    img_demo_text_ocr: &img_demo_text_ocr ../mmocr/demo/demo_text_ocr.jpg
+    img_demo_text_recog: &img_demo_text_recog ../mmocr/demo/demo_text_recog.jpg
   metric_info: &metric_info # 指标参数
     hmean-iou: # 命名根据 metafile.Results.Metrics
       eval_name: hmean-iou # 命名根据 test.py --metrics args 入参名称
