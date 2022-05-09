@@ -267,8 +267,12 @@ def main():
 
     if args.test_img is None:
         args.test_img = args.img
-    import os
-    is_display = os.getenv('DISPLAY')
+    is_display = None
+    import platform
+    # headless installation is only for linux platform
+    if platform.system().lower() == 'linux':
+        import os
+        is_display = os.getenv('DISPLAY')
     # for headless installation.
     if is_display is not None:
         # visualize model of the backend
