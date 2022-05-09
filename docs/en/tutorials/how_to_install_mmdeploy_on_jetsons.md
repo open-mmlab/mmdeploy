@@ -22,7 +22,7 @@ There are two major installation methods including,
 
 You can find a very detailed installation guide from NVIDIA [official website](https://developer.nvidia.com/jetpack-sdk-50dp).
 
-Here we choose [JetPack 4.6.1](https://developer.nvidia.com/jetpack-sdk-461) as our best practice on setup Jetson platforms.
+Here we choose [JetPack 4.6.1](https://developer.nvidia.com/jetpack-sdk-461) as our best practice on setup Jetson platforms. MMDeploy has been tested on JetPack 4.6 rev3 and above and TensorRT 8.0.1.6 and above. Earlier JetPack versions has incompatibilities with TensorRT 7.x
 
 ### Conda
 
@@ -59,17 +59,22 @@ If a higher-version python is necessary, you can install JetPack 5+, in which th
 Download the PyTorch wheel for Jetson from [here](https://forums.developer.nvidia.com/t/pytorch-for-jetson-version-1-10-now-available/72048) and save it to the local directory `/opt`.
 And build torchvision from source as there is no prebuilt torchvision for Jetson platforms.
 
-Take `torch 1.8.0` and  `torchvision 0.9.0` for example. You can install them as below:
+Take `torch 1.10.0` and  `torchvision 0.11.1` for example. You can install them as below:
 ```shell
-sudo apt-get install -y libopenblas-base libopenmpi-dev libjpeg-dev libpython3-dev libavcodec-dev libavformat-dev libswscale-dev
-pip install /opt/torch-1.8.0-cp36-cp36m-linux_aarch64.whl
-
-# build torchvision
-git clone https://github.com/pytorch/vision.git
-cd vision
-git checkout tags/v0.9.0 -b v0.9.0
+# pytorch
+wget https://nvidia.box.com/shared/static/fjtbno0vpo676a25cgvuqc1wty0fkkg6.whl -O torch-1.10.0-cp36-cp36m-linux_aarch64.whl
+pip3 install torch-1.10.0-cp36-cp36m-linux_aarch64.whl
+# torchvision
+sudo apt-get install libjpeg-dev zlib1g-dev libpython3-dev libavcodec-dev libavformat-dev libswscale-dev -y
+sudo rm -r torchvision
+git clone https://github.com/pytorch/vision torchvision
+cd torchvision
+git checkout tags/v0.11.1 -b v0.11.1
+export BUILD_VERSION=0.11.1
 pip install -e .
 ```
+
+If you install other versions of PyTorch and torchvision, make sure the versions are compatible. Refer to the compatibility chart listed [here](https://pypi.org/project/torchvision/).
 
 ### CMake
 
