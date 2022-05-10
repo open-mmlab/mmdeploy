@@ -14,28 +14,6 @@
 namespace MMDeployJava {
 
   extern "C" {
-    JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved){
-      JNIEnv* env = NULL;
-      jint result = -1;
-      // ATTENTION JNI_VERSION VALUE!
-      if((*vm)->GetEnv(vm,(void**)&env,JNI_VERSION_1_6)!= JNI_OK){
-        return result;
-      }
-      // 定义函数映射关系（参数1：java native函数，参数2：函数描述符，参数3：C函数）
-      const JNINativeMethod method[]={
-              {"mmdeployDetectorCreateByPath","(Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Z",(void*)mmdeployDetectorCreateByPath},
-              {"mmdeployDetectorApply","(Ljava/lang/Object;Ljava/lang/Object;ILjava/lang/Object;Ljava/lang/Object;)Z",(void*)mmdeployDetectorApply},
-              {"mmdeployDetectorReleaseResult", "(Ljava/lang/Object;Ljava/lang/Object;int)Z", (void*)mmdeployDetectorReleaseResult};
-              {"mmdeployDetectorDestroy", "(Ljava/lang/Object;)Z", (void*)mmdeployDetectorDestroy};
-      };
-      jclass jClassName=(*env)->FindClass(env, java_package_name);
-      jint ret = (*env)->RegisterNatives(env,jClassName,method, 2);
-      if (ret != JNI_OK) {
-          __android_log_print(ANDROID_LOG_DEBUG, "JNITag", "jni_register Error");
-          return -1;
-      }
-      return JNI_VERSION_1_6;
-    }
     JNIEXPORT jboolean JNICALL mmdeployDetectorCreateByPath(JNIEnv* env, jobject thiz, jstring modelPath, jstring deviceName, jint deviceID, jobject handlePointer)
     {
       int status{};
@@ -95,6 +73,29 @@ namespace MMDeployJava {
     JNIEXPORT void JNICALL mmdeployDetectorDestroy(JNIEnv* env, jobject thiz, jobject handle) {
       mm_handle_t detector = (mm_handle_t) handle;
       mmdeploy_detector_destroy(handle);
+    }
+
+    JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved){
+      JNIEnv* env = NULL;
+      jint result = -1;
+      // ATTENTION JNI_VERSION VALUE!
+      if(vm->GetEnv((void**)&env,JNI_VERSION_1_6)!= JNI_OK){
+        return result;
+      }
+      // 定义函数映射关系（参数1：java native函数，参数2：函数描述符，参数3：C函数）
+      const JNINativeMethod method[]={
+              {"mmdeployDetectorCreateByPath","(Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Z",(void*)mmdeployDetectorCreateByPath},
+              {"mmdeployDetectorApply","(Ljava/lang/Object;Ljava/lang/Object;ILjava/lang/Object;Ljava/lang/Object;)Z",(void*)mmdeployDetectorApply},
+              {"mmdeployDetectorReleaseResult", "(Ljava/lang/Object;Ljava/lang/Object;int)Z", (void*)mmdeployDetectorReleaseResult},
+              {"mmdeployDetectorDestroy", "(Ljava/lang/Object;)Z", (void*)mmdeployDetectorDestroy}
+      };
+      jclass jClassName=env->FindClass("MMDeployDetector");
+      jint ret = env->RegisterNatives(jClassName,method, 2);
+      if (ret != JNI_OK) {
+          __android_log_print(ANDROID_LOG_DEBUG, "JNITag", "jni_register Error");
+          return -1;
+      }
+      return JNI_VERSION_1_6;
     }
   }
 }  // namespace mmdeployjava
