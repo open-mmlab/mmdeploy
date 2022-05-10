@@ -531,7 +531,9 @@ def test_sar_model(backend: Backend, decoder_type):
         assert False
 
 
-def test_resnet_basic_block__forward__trt():
+@pytest.mark.parametrize('backend', [Backend.TENSORRT])
+def test_resnet_basic_block__forward__trt(backend):
+    check_backend(backend)
     from mmdet.models.backbones.resnet import BasicBlock
 
     # test BasicBlock structure and forward
@@ -542,7 +544,9 @@ def test_resnet_basic_block__forward__trt():
     assert x_out.shape == torch.Size([1, 512, 14, 14])
 
 
-def test_fpem_ffm__forward_trt():
+@pytest.mark.parametrize('backend', [Backend.TENSORRT])
+def test_fpem_ffm__forward_trt(backend):
+    check_backend(backend)
     from mmocr.models.textdet.necks import FPEM_FFM
 
     # test BasicBlock structure and forward
