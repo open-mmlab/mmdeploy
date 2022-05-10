@@ -110,20 +110,18 @@ Sender<Value> Pipeline::Process(Sender<Value> args) {
 }
 
 Sender<Value> Task::Process(Sender<Value> input) {
-  // tag_invoke(Transfer, std::move(input), *sched_);
   return LetValue(std::move(input), [this](Value& v) -> Sender<Value> {
-    //      MMDEPLOY_INFO("name = {}, val = {}", name(), v);
+    // clang-format off
     if (v.front().is_array() && !is_batched_) {
-      // clang-format off
       auto batch_size = v.front().size();
       Value output = Value::Array(batch_size);
-      return Just(std::move(output))
+      return Just(std::move(output)) 
+          | Transfer(*sched_)
           | Then([&](Value&& output) -> Value {
             auto input = graph::DistribAA(v).value();
             return Value{std::move(input), std::move(output)};
           })
-          | Transfer(*sched_)
-          | TypeErase()
+          | TypeErase()  // TODO: capture bulk without type erasure
           | Bulk(batch_size, [&](size_t index, Value& in_out) {
             const auto& input = in_out[0];
             auto& output = in_out[1];
@@ -132,11 +130,12 @@ Sender<Value> Task::Process(Sender<Value> input) {
           | Then([](const Value& in_out) {
             return graph::DistribAA(in_out[1]).value();
           });
-      // clang-format on
     } else {
-      auto output = module_->Process(v).value();
-      return Just(std::move(output)) | Transfer(*sched_);
+      return Just(std::move(v)) 
+           | Transfer(*sched_) 
+           | Then([&](Value u) { return module_->Process(u).value(); });
     }
+    // clang-format on
   });
 }
 
