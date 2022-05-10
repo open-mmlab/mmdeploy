@@ -8,6 +8,7 @@
 #include <google/protobuf/text_format.h>
 #include <limits.h>
 
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
 
@@ -333,62 +334,69 @@ static void fwrite_tensor_proto_data_to_float(const onnx::TensorProto& tp, FILE*
     const std::string& raw_data = tp.raw_data();
     if (tp.data_type() == 6) {
       int* intdataptr = (int*)raw_data.data();
-      float* floatdataptr = (float*)malloc(sizeof(float) * size);
+      float* floatdataptr = (float*)std::malloc(sizeof(float) * size);
       for (int i = 0; i < size; i++) {
         floatdataptr[i] = (float)intdataptr[i];
       }
       written_size = fwrite(floatdataptr, sizeof(float), size, bp);
+      std::free(floatdataptr);
     } else if (tp.data_type() == 7) {
       int64_t* intdataptr = (int64_t*)raw_data.data();
-      float* floatdataptr = (float*)malloc(sizeof(float) * size);
+      float* floatdataptr = (float*)std::malloc(sizeof(float) * size);
       for (int i = 0; i < size; i++) {
         floatdataptr[i] = (float)intdataptr[i];
       }
       written_size = fwrite(floatdataptr, sizeof(float), size, bp);
       free(floatdataptr);
+      std::free(floatdataptr);
     } else if (tp.data_type() == 9) {
       bool* intdataptr = (bool*)raw_data.data();
-      float* floatdataptr = (float*)malloc(sizeof(float) * size);
+      float* floatdataptr = (float*)std::malloc(sizeof(float) * size);
       for (int i = 0; i < size; i++) {
         floatdataptr[i] = (float)intdataptr[i];
       }
       written_size = fwrite(floatdataptr, sizeof(float), size, bp);
+      std::free(floatdataptr);
     } else if (tp.data_type() == 11) {
       double* doubledataptr = (double*)raw_data.data();
-      float* floatdataptr = (float*)malloc(sizeof(float) * size);
+      float* floatdataptr = (float*)std::malloc(sizeof(float) * size);
       for (int i = 0; i < size; i++) {
         floatdataptr[i] = (float)doubledataptr[i];
       }
       written_size = fwrite(floatdataptr, sizeof(float), size, bp);
+      std::free(floatdataptr)
     }
   } else if (tp.data_type() == 6) {
     int* intdataptr = (int*)tp.int32_data().data();
-    float* floatdataptr = (float*)malloc(sizeof(float) * size);
+    float* floatdataptr = (float*)std::malloc(sizeof(float) * size);
     for (int i = 0; i < size; i++) {
       floatdataptr[i] = (float)intdataptr[i];
     }
     written_size = fwrite(floatdataptr, sizeof(float), size, bp);
+    std::free(floatdataptr);
   } else if (tp.data_type() == 7) {
     int64_t* intdataptr = (int64_t*)tp.int64_data().data();
-    float* floatdataptr = (float*)malloc(sizeof(float) * size);
+    float* floatdataptr = (float*)std::malloc(sizeof(float) * size);
     for (int i = 0; i < size; i++) {
       floatdataptr[i] = (float)intdataptr[i];
     }
     written_size = fwrite(floatdataptr, sizeof(float), size, bp);
-    free(floatdataptr);
+    std::free(floatdataptr);
   } else if (tp.data_type() == 9) {
     int* intdataptr = (int*)tp.int64_data().data();
-    float* floatdataptr = (float*)malloc(sizeof(float) * size);
+    float* floatdataptr = (float*)std::malloc(sizeof(float) * size);
     for (int i = 0; i < size; i++) {
       floatdataptr[i] = (float)intdataptr[i];
     }
     written_size = fwrite(floatdataptr, sizeof(float), size, bp);
+    std::free(floatdataptr);
   } else if (tp.data_type() == 11) {
     double* doubledataptr = (double*)tp.double_data().data();
-    float* floatdataptr = (float*)malloc(sizeof(float) * size);
+    float* floatdataptr = (float*)std::malloc(sizeof(float) * size);
     for (int i = 0; i < size; i++) {
       floatdataptr[i] = (float)doubledataptr[i];
     }
     written_size = fwrite(floatdataptr, sizeof(float), size, bp);
+    std::free(floatdataptr);
   }
 }

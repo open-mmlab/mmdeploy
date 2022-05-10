@@ -65,4 +65,4 @@ jobs:
         run: |
           echo $(pwd)
           ln -s build/bin/onnx2ncnn ./
-          python3 ci/test_onnx2ncnn.py --run 1
+          python3 .github/scripts/test_onnx2ncnn.py --run 1
