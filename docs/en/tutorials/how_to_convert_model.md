@@ -19,14 +19,14 @@
 This tutorial briefly introduces how to export an OpenMMlab model to a specific backend using MMDeploy tools.
 Notes:
 
-- Supported backends are [ONNXRuntime](../backends/onnxruntime.md), [TensorRT](../backends/tensorrt.md), [NCNN](../backends/ncnn.md), [PPLNN](../backends/pplnn.md), [OpenVINO](../backends/openvino.md).
+- Supported backends are [ONNXRuntime](../backends/onnxruntime.md), [TensorRT](../backends/tensorrt.md), [ncnn](../backends/ncnn.md), [PPLNN](../backends/pplnn.md), [OpenVINO](../backends/openvino.md).
 - Supported codebases are [MMClassification](../codebases/mmcls.md), [MMDetection](../codebases/mmdet.md), [MMSegmentation](../codebases/mmseg.md), [MMOCR](../codebases/mmocr.md), [MMEditing](../codebases/mmedit.md).
 
 ### How to convert models from Pytorch to other backends
 
 #### Prerequisite
 
-1. Install and build your target backend. You could refer to [ONNXRuntime-install](../backends/onnxruntime.md), [TensorRT-install](../backends/tensorrt.md), [NCNN-install](../backends/ncnn.md), [PPLNN-install](../backends/pplnn.md), [OpenVINO-install](../backends/openvino.md) for more information.
+1. Install and build your target backend. You could refer to [ONNXRuntime-install](../backends/onnxruntime.md), [TensorRT-install](../backends/tensorrt.md), [ncnn-install](../backends/ncnn.md), [PPLNN-install](../backends/pplnn.md), [OpenVINO-install](../backends/openvino.md) for more information.
 2. Install and build your target codebase. You could refer to [MMClassification-install](https://github.com/open-mmlab/mmclassification/blob/master/docs/en/install.md), [MMDetection-install](https://github.com/open-mmlab/mmdetection/blob/master/docs/en/get_started.md), [MMSegmentation-install](https://github.com/open-mmlab/mmsegmentation/blob/master/docs/en/get_started.md#installation), [MMOCR-install](https://mmocr.readthedocs.io/en/latest/install.html), [MMEditing-install](https://github.com/open-mmlab/mmediting/blob/master/docs/en/install.md).
 
 #### Usage

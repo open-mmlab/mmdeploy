@@ -152,3 +152,4 @@ jobs:
           env_vars: OS,PYTHON
           name: codecov-umbrella
           fail_ci_if_error: false
+          gcov_ignore : [".github/scripts/doc_link_checker.py"]
