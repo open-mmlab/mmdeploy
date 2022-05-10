@@ -347,7 +347,6 @@ static void fwrite_tensor_proto_data_to_float(const onnx::TensorProto& tp, FILE*
         floatdataptr[i] = (float)intdataptr[i];
       }
       written_size = fwrite(floatdataptr, sizeof(float), size, bp);
-      free(floatdataptr);
       std::free(floatdataptr);
     } else if (tp.data_type() == 9) {
       bool* intdataptr = (bool*)raw_data.data();
@@ -364,7 +363,7 @@ static void fwrite_tensor_proto_data_to_float(const onnx::TensorProto& tp, FILE*
         floatdataptr[i] = (float)doubledataptr[i];
       }
       written_size = fwrite(floatdataptr, sizeof(float), size, bp);
-      std::free(floatdataptr)
+      std::free(floatdataptr);
     }
   } else if (tp.data_type() == 6) {
     int* intdataptr = (int*)tp.int32_data().data();
