@@ -5,13 +5,12 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 
 @FUNCTION_REWRITER.register_rewriter(func_name='torch.triu')
-def triu(ctx, input: torch.Tensor, diagonal: int = 0, *args, **kwargs):
-    """Rewrite `linear` for NCNN backend.
-
-    The broadcast rules are different between ncnn and PyTorch. This function
-    add extra reshape and transpose to support linear operation of different
-    input shape.
-    """
+def triu(ctx,
+         input: torch.Tensor,
+         diagonal: int = 0,
+         *args,
+         **kwargs) -> torch.Tensor:
+    """Rewrite `triu` for exporting model to ONNX."""
     size = input.shape[0]
     arange = torch.arange(size, device=input.device)
     mask = arange.expand(size, size)

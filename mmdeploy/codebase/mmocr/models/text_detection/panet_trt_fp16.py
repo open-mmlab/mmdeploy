@@ -116,7 +116,10 @@ def basic_block__forward__trt(ctx, self, x: torch.Tensor) -> torch.Tensor:
     out = self.conv2(out)
 
     if torch.abs(self.norm2(out)).max() < 65504:
-        return self.norm2(out)
+        out = self.norm2(out)
+        out += identity
+        out = self.relu(out)
+        return out
     else:
         global ENABLE
         ENABLE = True
