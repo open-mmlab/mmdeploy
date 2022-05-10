@@ -267,12 +267,17 @@ def main():
 
     if args.test_img is None:
         args.test_img = args.img
-    import os
-    import platform
 
-    # headless installation is only for linux platform.
+    headless = False
+    # check headless or not for all platforms.
+    import tkinter
+    try:
+        tkinter.Tk()
+    except Exception:
+        headless = True
+
     # for headless installation.
-    if platform.system().lower() != 'linux' or os.getenv('DISPLAY'):
+    if not headless:
         # visualize model of the backend
         create_process(
             f'visualize {backend.value} model',
