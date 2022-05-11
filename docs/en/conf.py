@@ -19,7 +19,7 @@ from m2r import MdInclude
 from recommonmark.transform import AutoStructify
 from sphinx.builders.html import StandaloneHTMLBuilder
 
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('../..'))
 
 version_file = '../../mmdeploy/version.py'
 with open(version_file, 'r') as f:
@@ -56,6 +56,8 @@ extensions = [
     'myst_parser',
     'sphinx_copybutton',
 ]  # yapf: disable
+
+autodoc_mock_imports = ['tensorrt']
 
 autosectionlabel_prefix_document = True
 

@@ -1,6 +1,7 @@
 ## 基准
 
 ### 后端
+
 CPU: ncnn, ONNXRuntime, OpenVINO
 
 GPU: ncnn, TensorRT, PPLNN
@@ -8,6 +9,7 @@ GPU: ncnn, TensorRT, PPLNN
 ### 延迟基准
 
 #### 平台
+
 - Ubuntu 18.04 操作系统
 - ncnn 20211208
 - Cuda 11.3
@@ -16,6 +18,7 @@ GPU: ncnn, TensorRT, PPLNN
 - NVIDIA tesla T4 显卡.
 
 #### 其他设置
+
 - 静态图导出
 - 批次大小为 1
 - 每次推理后均同步
@@ -23,12 +26,11 @@ GPU: ncnn, TensorRT, PPLNN
 - 热身。 针对ncnn后端，我们热身30轮; 对于其他后端:针对分类任务，我们热身1010轮，对其他任务，我们热身10轮。
 - 输入分辨率根据代码库的数据集不同而不同，除了`mmediting`，其他代码库均使用真实图片作为输入。
 
-
 用户可以直接通过[如何测试延迟](tutorials/how_to_measure_performance_of_models.md)获得想要的速度测试结果。下面是我们环境中的测试结果：
+
 <details>
 <summary style="margin-left: 25px;">MMCls</summary>
 <div style="margin-left: 25px;">
-
 <table class="docutils">
 <thead>
   <tr>
@@ -181,14 +183,12 @@ GPU: ncnn, TensorRT, PPLNN
   </tr>
 </tbody>
 </table>
-
 </div>
 </details>
 
 <details>
 <summary style="margin-left: 25px;">MMDet</summary>
 <div style="margin-left: 25px;">
-
 <table class="docutils">
 <thead>
   <tr>
@@ -406,7 +406,6 @@ GPU: ncnn, TensorRT, PPLNN
 <details>
 <summary style="margin-left: 25px;">MMEdit</summary>
 <div style="margin-left: 25px;">
-
 <table class="docutils">
 <thead>
   <tr>
@@ -476,7 +475,6 @@ GPU: ncnn, TensorRT, PPLNN
   </tr>
 </tbody>
 </table>
-
 </div>
 </details>
 
@@ -569,7 +567,6 @@ GPU: ncnn, TensorRT, PPLNN
 <details>
 <summary style="margin-left: 25px;">MMSeg</summary>
 <div style="margin-left: 25px;">
-
 <table class="docutils">
 <thead>
   <tr>
@@ -674,7 +671,6 @@ GPU: ncnn, TensorRT, PPLNN
   </tr>
 </tbody>
 </table>
-
 </div>
 </details>
 
@@ -686,7 +682,6 @@ GPU: ncnn, TensorRT, PPLNN
 <details>
 <summary style="margin-left: 25px;">MMCls</summary>
 <div style="margin-left: 25px;">
-
 <table class="docutils">
 <thead>
   <tr>
@@ -783,7 +778,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">93.84</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2">ShuffleNetV1 1.0x</td>
+    <td align="center" rowspan="2">ShuffleNetV1</td>
     <td align="center" rowspan="2">Classification</td>
     <td align="center">top-1</td>
     <td align="center">68.13</td>
@@ -793,7 +788,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">68.13</td>
     <td align="center">67.71</td>
     <td align="center">68.11</td>
-    <td rowspan="2">$MMCLS_DIR/configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py</td>
+    <td rowspan="2">$MMCLS_DIR/configs/shufflenet_v1/shufflenet-v1-1x_16xb64_in1k.py</td>
   </tr>
   <tr>
     <td align="center">top-5</td>
@@ -806,7 +801,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">87.80</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2">ShuffleNetV2 1.0x</td>
+    <td align="center" rowspan="2">ShuffleNetV2</td>
     <td align="center" rowspan="2">Classification</td>
     <td align="center">top-1</td>
     <td align="center">69.55</td>
@@ -816,7 +811,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">69.54</td>
     <td align="center">69.10</td>
     <td align="center">69.54</td>
-    <td rowspan="2">$MMCLS_DIR/configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py</td>
+    <td rowspan="2">$MMCLS_DIR/configs/shufflenet_v2/shufflenet-v2-1x_16xb64_in1k.py</td>
   </tr>
   <tr>
     <td align="center">top-5</td>
@@ -839,7 +834,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">71.87</td>
     <td align="center">70.91</td>
     <td align="center">71.84</td>
-    <td rowspan="2">$MMEDIT_DIR/configs/restorers/real_esrgan/realesrnet_c64b23g32_12x4_lr2e-4_1000k_df2k_ost.py</td>
+    <td rowspan="2">$MMEDIT_DIR/configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py</td>
   </tr>
   <tr>
     <td align="center">top-5</td>
@@ -1807,8 +1802,8 @@ GPU: ncnn, TensorRT, PPLNN
 </div>
 </details>
 
-
 ### 注意
+
 - 由于某些数据集在代码库中包含各种分辨率的图像，例如 MMDet，速度基准是通过 MMDeploy 中的静态配置获得的，而性能基准是通过动态配置获得的。
 
 - TensorRT 的一些 int8 性能基准测试需要具有 tensor core 的 Nvidia 卡，否则性能会大幅下降。

@@ -1,2 +1,4 @@
+h5py
 mmcv
+onnx>=1.8.0
 torch
