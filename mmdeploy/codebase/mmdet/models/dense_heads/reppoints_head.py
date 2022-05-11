@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Sequence
+
 import torch
 
 from mmdeploy.codebase.mmdet import (get_post_processing_params,
@@ -11,7 +12,7 @@ from mmdeploy.utils import is_dynamic_shape
 
 def _bbox_pre_decode(points: torch.Tensor, bbox_pred: torch.Tensor,
                      stride: torch.Tensor):
-    """compute real bboxes"""
+    """compute real bboxes."""
     points = points[..., :2]
     bbox_pos_center = torch.cat([points, points], dim=-1)
     bboxes = bbox_pred * stride + bbox_pos_center
@@ -19,7 +20,7 @@ def _bbox_pre_decode(points: torch.Tensor, bbox_pred: torch.Tensor,
 
 
 def _bbox_post_decode(bboxes: torch.Tensor, max_shape: Sequence[int]):
-    """clamp bbox"""
+    """clamp bbox."""
     x1 = bboxes[..., 0].clamp(min=0, max=max_shape[1])
     y1 = bboxes[..., 1].clamp(min=0, max=max_shape[0])
     x2 = bboxes[..., 2].clamp(min=0, max=max_shape[1])
@@ -35,7 +36,6 @@ def reppoints_head__points2bbox(ctx, self, pts, y_first=True):
 
     Use `self.moment_transfer` in `points2bbox` will cause error:
     RuntimeError: Input, output and indices must be on the current device
-
     """
     moment_transfer = self.moment_transfer
     delattr(self, 'moment_transfer')

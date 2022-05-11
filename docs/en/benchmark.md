@@ -1033,7 +1033,23 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center">40.0</td>
     <td align="center">-</td>
     <td align="center">-</td>
+    <td align="center">-</td>
     <td>$MMDET_DIR/configs/gfl/gfl_r50_fpn_1x_coco.py</td>
+  </tr>
+  <tr>
+    <td align="center">RepPoints</td>
+    <td align="center">Object Detection</td>
+    <td align="center">COCO2017</td>
+    <td align="center">box AP</td>
+    <td align="center">37.0</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">36.9</td>
+    <td align="center">20.4</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMDET_DIR/configs/reppoints/reppoints_moment_r50_fpn_1x_coco.py</td>
   </tr>
   <tr>
     <td align="center" rowspan="2">Mask R-CNN</td>
