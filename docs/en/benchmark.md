@@ -1,20 +1,20 @@
-## Benchmark
+# Benchmark
 
-### Backends
+## Backends
 CPU: ncnn, ONNXRuntime, OpenVINO
 
 GPU: ncnn, TensorRT, PPLNN
 
-### Latency benchmark
-#### Platform
+## Latency benchmark
+### Platform
 - Ubuntu 18.04
 - ncnn 20211208
 - Cuda 11.3
 - TensorRT 7.2.3.4
 - Docker 20.10.8
-- NVIDIA tesla T4 tensor core GPU for TensorRT.
+- NVIDIA tesla T4 tensor core GPU for TensorRT
 
-#### Other settings
+### Other settings
 - Static graph
 - Batch size 1
 - Synchronize devices after each inference.
@@ -34,7 +34,7 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <th align="center" colspan="3">MMCls</th>
     <th align="center" colspan="12">TensorRT</th>
     <th align="center" colspan="2">PPLNN</th>
-    <th align="center" colspan="4">NCNN</th>
+    <th align="center" colspan="4">ncnn</th>
     <th></th>
   </tr>
 </thead>
@@ -344,7 +344,7 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
 <thead>
   <tr>
     <th align="center" colspan="3">MMDet</th>
-    <th align="center" colspan="4">NCNN</th>
+    <th align="center" colspan="4">ncnn</th>
     <th align="center"></th>
   </tr>
 </thead>
@@ -488,7 +488,7 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <th align="center" colspan="3">MMOCR</th>
     <th align="center" colspan="6">TensorRT</th>
     <th align="center" colspan="2">PPLNN</th>
-    <th align="center" colspan="4">NCNN</th>
+    <th align="center" colspan="4">ncnn</th>
     <th align="center"></th>
   </tr>
 </thead>
@@ -677,7 +677,7 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
 </div>
 </details>
 
-### Performance benchmark
+## Performance benchmark
 
 Users can directly test the performance through [how_to_evaluate_a_model.md](tutorials/how_to_evaluate_a_model.md). And here is the benchmark in our environment.
 
@@ -837,7 +837,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center">71.87</td>
     <td align="center">70.91</td>
     <td align="center">71.84</td>
-    <td rowspan="2">$MMEDIT_DIR/configs/restorers/real_esrgan/realesrnet_c64b23g32_12x4_lr2e-4_1000k_df2k_ost.py</td>
+    <td rowspan="2">$MMCLS_DIR$/configs/mobilenet_v2/mobilenet_v2_b32x8_imagenet.py</td>
   </tr>
   <tr>
     <td align="center">top-5</td>
@@ -1867,7 +1867,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
 </details>
 
 
-### Notes
+## Notes
 - As some datasets contain images with various resolutions in codebase like MMDet. The speed benchmark is gained through static configs in MMDeploy, while the performance benchmark is gained through dynamic ones.
 
 - Some int8 performance benchmarks of TensorRT require Nvidia cards with tensor core, or the performance would drop heavily.
