@@ -6,6 +6,7 @@ from collections import OrderedDict
 from pathlib import Path
 
 import mmcv
+import onnxruntime as ort
 import openpyxl
 import pandas as pd
 import yaml
@@ -640,9 +641,14 @@ def get_backend_fps_metric(deploy_cfg_path: str, model_cfg_path: Path,
               f'{deploy_cfg_path} ' \
               f'{str(model_cfg_path.absolute())} ' \
               f'--model "{convert_checkpoint_path}" ' \
-              f'--device {device_type} ' \
               f'--log2file "{log_path}" ' \
               f'--speed-test '
+
+    if backend_name == 'openvino' or \
+            (backend_name == 'onnxruntime' and ort.get_device() != 'GPU'):
+        cmd_str += f'--device cpu '
+    else:
+        cmd_str += f'--device {device_type} '
 
     codebase_name = get_codebase(str(deploy_cfg_path)).value
     if codebase_name != 'mmedit':
