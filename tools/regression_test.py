@@ -874,24 +874,24 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
     logger.info(f'Process cmd = {cmd_str}')
 
     # Convert the model to specific backend
-    precess_res = subprocess.Popen(
+    process_res = subprocess.Popen(
         cmd_str,
         cwd=str(Path(__file__).absolute().parent.parent),
         shell=True,
         stdout=subprocess.PIPE,
         bufsize=20)
-    precess_res.wait()
-    logger.info(f'Got shell_res = {precess_res.returncode}')
+    process_res.wait()
+    logger.info(f'Got shell_res = {process_res.returncode}')
 
     # check if converted successes or not.
-    if precess_res.returncode == 0:
+    if process_res.returncode == 0:
         convert_result = True
     else:
         convert_result = False
         error_log_path = backend_output_path.joinpath('error.log')
         logger.info(f'Logging error msg to {error_log_path} ...')
         with open(error_log_path, 'w', encoding='utf-8') as f_log:
-            for line in precess_res.stdout.readlines():
+            for line in process_res.stdout.readlines():
                 line = line.decode('utf-8')
                 f_log.write(line)
 
