@@ -61,6 +61,8 @@ void memcpyPermute(scalar_t *dst, const scalar_t *src, int *src_size, int *permu
 
 template void memcpyPermute<float>(float *dst, const float *src, int *src_size, int *permute,
                                    int src_dim, cudaStream_t stream);
+template void memcpyPermute<half>(half *dst, const half *src, int *src_size, int *permute,
+                                  int src_dim, cudaStream_t stream);
 
 cudnnStatus_t convert_trt2cudnn_dtype(nvinfer1::DataType trt_dtype, cudnnDataType_t *cudnn_dtype) {
   switch (trt_dtype) {
