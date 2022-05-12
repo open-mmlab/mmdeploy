@@ -30,7 +30,7 @@ def parse_args():
     parser.add_argument(
         '--calib-dataset-cfg',
         help='dataset config path used to calibrate in int8 mode. If not \
-            specified,it will use "val" dataset in model config instead.',
+            specified, it will use "val" dataset in model config instead.',
         default=None)
     parser.add_argument(
         '--device', help='device used for conversion', default='cpu')
@@ -43,8 +43,11 @@ def parse_args():
         '--show', action='store_true', help='Show detection outputs')
     parser.add_argument(
         '--dump-info', action='store_true', help='Output information for SDK')
+    parser.add_argument(
+        '--calibration-dir',
+        default=None,
+        help='Image directory for quantize model.')
     args = parser.parse_args()
-
     return args
 
 
@@ -148,26 +151,26 @@ def main():
 
             ir_files.append(save_path)
 
-    # calib data
-    calib_filename = get_calib_filename(deploy_cfg)
-    if calib_filename is not None:
-        calib_path = osp.join(args.work_dir, calib_filename)
-
-        create_process(
-            'calibration',
-            create_calib_table,
-            args=(calib_path, deploy_cfg_path, model_cfg_path,
-                  checkpoint_path),
-            kwargs=dict(
-                dataset_cfg=args.calib_dataset_cfg,
-                dataset_type='val',
-                device=args.device),
-            ret_value=ret_value)
-
     backend_files = ir_files
     # convert backend
     backend = get_backend(deploy_cfg)
     if backend == Backend.TENSORRT:
+        # calib data
+        calib_filename = get_calib_filename(deploy_cfg)
+        if calib_filename is not None:
+            calib_path = osp.join(args.work_dir, calib_filename)
+
+            create_process(
+                'trt_calibration',
+                create_calib_table,
+                args=(calib_path, deploy_cfg_path, model_cfg_path,
+                      checkpoint_path),
+                kwargs=dict(
+                    dataset_cfg=args.calib_dataset_cfg,
+                    dataset_type='val',
+                    device=args.device),
+                ret_value=ret_value)
+
         model_params = get_model_inputs(deploy_cfg)
         assert len(model_params) == len(ir_files)
 
@@ -214,6 +217,21 @@ def main():
                 kwargs=dict(),
                 ret_value=ret_value)
             backend_files += [model_param_path, model_bin_path]
+
+        # calib_filename = get_calib_filename(deploy_cfg)
+        # if calib_filename is not None:
+        #     calib_path = osp.join(args.work_dir, calib_filename)
+
+        #     create_process(
+        #         'ncnn_calibration',
+        #         create_calib_table,
+        #         args=(calib_path, deploy_cfg_path, model_cfg_path,
+        #             checkpoint_path),
+        #         kwargs=dict(
+        #             dataset_cfg=args.calib_dataset_cfg,
+        #             dataset_type='val',
+        #             device=args.device),
+        #         ret_value=ret_value)
 
     elif backend == Backend.OPENVINO:
         from mmdeploy.apis.openvino import \
