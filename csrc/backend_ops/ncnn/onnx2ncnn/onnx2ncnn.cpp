@@ -3255,7 +3255,8 @@ int main(int argc, char** argv) {
       if (node.input_size() >= 2) {
         node_reference[node.input(1)] -= 1;
       }
-    } else if (op == "adaptive_avg_pool2d" || op == "adaptive_max_pool2d") {
+    } else if (op == "AdaptiveAvgPool2d" || op == "adaptive_avg_pool2d" ||
+               op == "adaptive_max_pool2d") {
       if (node.input_size() >= 2) {
         node_reference[node.input(1)] -= 1;
       }
@@ -3546,7 +3547,8 @@ int main(int argc, char** argv) {
       fprintf(pp, "%-16s", "Pooling");
     } else if (op == "GlobalMaxPool") {
       fprintf(pp, "%-16s", "Pooling");
-    } else if (op == "adaptive_avg_pool2d" || op == "adaptive_max_pool2d") {
+    } else if (op == "AdaptiveAvgPool2d" || op == "adaptive_avg_pool2d" ||
+               op == "adaptive_max_pool2d") {
       fprintf(pp, "%-16s", "Pooling");
     } else if (op == "GroupNorm") {
       fprintf(pp, "%-16s", "GroupNorm");
@@ -4206,9 +4208,10 @@ int main(int argc, char** argv) {
 
       fprintf(pp, " 0=%d", pool);
       fprintf(pp, " 4=%d", global_pool);
-    } else if (op == "adaptive_avg_pool2d" || op == "adaptive_max_pool2d") {
+    } else if (op == "AdaptiveAvgPool2d" || op == "adaptive_avg_pool2d" ||
+               op == "adaptive_max_pool2d") {
       int pool = 0;
-      if (op == "adaptive_avg_pool2d") {
+      if (op == "AdaptiveAvgPool2d" || op == "adaptive_avg_pool2d") {
         pool = 1;
       }
       int adaptive_pooling = 1;

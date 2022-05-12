@@ -30,7 +30,7 @@ def parse_args():
     parser.add_argument(
         '--calib-dataset-cfg',
         help='dataset config path used to calibrate in int8 mode. If not \
-            specified,it will use "val" dataset in model config instead.',
+            specified, it will use "val" dataset in model config instead.',
         default=None)
     parser.add_argument(
         '--device', help='device used for conversion', default='cpu')
@@ -43,8 +43,13 @@ def parse_args():
         '--show', action='store_true', help='Show detection outputs')
     parser.add_argument(
         '--dump-info', action='store_true', help='Output information for SDK')
+    parser.add_argument(
+        '--quant-image-dir',
+        default=None,
+        help='Image directory for quantize model.')
+    parser.add_argument(
+        '--quant', action='store_true', help='Quantize model to low bit.')
     args = parser.parse_args()
-
     return args
 
 
@@ -91,6 +96,8 @@ def main():
     deploy_cfg_path = args.deploy_cfg
     model_cfg_path = args.model_cfg
     checkpoint_path = args.checkpoint
+    quant = args.quant
+    quant_image_dir = args.quant_image_dir
 
     # load deploy_cfg
     deploy_cfg, model_cfg = load_config(deploy_cfg_path, model_cfg_path)
@@ -148,26 +155,26 @@ def main():
 
             ir_files.append(save_path)
 
-    # calib data
-    calib_filename = get_calib_filename(deploy_cfg)
-    if calib_filename is not None:
-        calib_path = osp.join(args.work_dir, calib_filename)
-
-        create_process(
-            'calibration',
-            create_calib_table,
-            args=(calib_path, deploy_cfg_path, model_cfg_path,
-                  checkpoint_path),
-            kwargs=dict(
-                dataset_cfg=args.calib_dataset_cfg,
-                dataset_type='val',
-                device=args.device),
-            ret_value=ret_value)
-
     backend_files = ir_files
     # convert backend
     backend = get_backend(deploy_cfg)
     if backend == Backend.TENSORRT:
+        # calib data
+        calib_filename = get_calib_filename(deploy_cfg)
+        if calib_filename is not None:
+            calib_path = osp.join(args.work_dir, calib_filename)
+
+            create_process(
+                'trt_calibration',
+                create_calib_table,
+                args=(calib_path, deploy_cfg_path, model_cfg_path,
+                      checkpoint_path),
+                kwargs=dict(
+                    dataset_cfg=args.calib_dataset_cfg,
+                    dataset_type='val',
+                    device=args.device),
+                ret_value=ret_value)
+
         model_params = get_model_inputs(deploy_cfg)
         assert len(model_params) == len(ir_files)
 
@@ -213,7 +220,35 @@ def main():
                 args=(onnx_path, model_param_path, model_bin_path),
                 kwargs=dict(),
                 ret_value=ret_value)
-            backend_files += [model_param_path, model_bin_path]
+
+            if quant:
+                from onnx2ncnn_quant import get_table
+
+                from mmdeploy.apis.ncnn import get_quant_model_file, ncnn2int8
+
+                deploy_cfg, model_cfg = load_config(deploy_cfg_path,
+                                                    model_cfg_path)
+                quant_onnx, quant_table, quant_param, quant_bin = get_quant_model_file(  # noqa: E501
+                    onnx_path, args.work_dir)
+
+                create_process(
+                    'ncnn quant table',
+                    target=get_table,
+                    args=(onnx_path, deploy_cfg, model_cfg, quant_onnx,
+                          quant_table, quant_image_dir),
+                    kwargs=dict(),
+                    ret_value=ret_value)
+
+                create_process(
+                    'ncnn_int8',
+                    target=ncnn2int8,
+                    args=(model_param_path, model_bin_path, quant_table,
+                          quant_param, quant_bin),
+                    kwargs=dict(),
+                    ret_value=ret_value)
+                backend_files += [quant_param, quant_bin]
+            else:
+                backend_files += [model_param_path, model_bin_path]
 
     elif backend == Backend.OPENVINO:
         from mmdeploy.apis.openvino import \

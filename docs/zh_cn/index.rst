@@ -20,6 +20,7 @@
    02-how-to-run/convert_model.md
    02-how-to-run/write_config.md
    02-how-to-run/profile_model.md
+   02-how-to-run/quantize_model.md
 
 .. toctree::
    :maxdepth: 1
