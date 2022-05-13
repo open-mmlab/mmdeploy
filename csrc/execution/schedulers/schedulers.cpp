@@ -1,5 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
+#include "execution/schedulers/dynamic_batch_scheduler.h"
 #include "execution/schedulers/inlined_scheduler.h"
 #include "execution/schedulers/registry.h"
 #include "execution/schedulers/single_thread_context.h"

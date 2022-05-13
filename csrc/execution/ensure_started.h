@@ -84,6 +84,7 @@ struct _Operation<Sender, Receiver>::type : public _OperationBase {
     void* const completion_state = static_cast<void*>(shared_state);
     void* old = awaiting.load(std::memory_order_acquire);
 
+    // TODO: cancel the loop by replacing `compare_exchange_weak` with `compare_exchange_strong`
     do {
       if (old == completion_state) {
         _Notify(&self);
@@ -116,7 +117,8 @@ struct _Sender<Sender>::type {
   }
 
   template <typename Self, typename Receiver, _decays_to<Self, type, int> = 0>
-  friend auto tag_invoke(connect_t, Self&& self, Receiver&& receiver) -> Operation<Sender, Receiver> {
+  friend auto tag_invoke(connect_t, Self&& self, Receiver&& receiver)
+      -> Operation<Sender, Receiver> {
     return {(Receiver &&) receiver, std::move(self.shared_state_)};
   }
 };

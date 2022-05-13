@@ -354,6 +354,8 @@ __bulk::sender_t<Sender, Shape, Func> tag_invoke(bulk_t, Scheduler scheduler, Se
 
 }  // namespace __static_thread_pool
 
+using __static_thread_pool::StaticThreadPool;
+
 }  // namespace mmdeploy
 
 #endif  // MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_STATIC_THREAD_POOL_H_

@@ -113,7 +113,7 @@ class _TypeErasedSenderAdapter {
 };
 
 template <typename SenderType>
-_TypeErasedSenderAdapter(SenderType &&) -> _TypeErasedSenderAdapter<remove_cvref_t<SenderType>>;
+_TypeErasedSenderAdapter(SenderType&&) -> _TypeErasedSenderAdapter<remove_cvref_t<SenderType>>;
 
 template <typename ValueTypes>
 class _TypeErasedSender {
@@ -176,7 +176,7 @@ template <typename... Ts>
 using TypeErasedSender = _TypeErasedSender<std::tuple<Ts...>>;
 
 template <typename Sender>
-_TypeErasedSender(Sender &&) -> _TypeErasedSender<completion_signatures_of_t<Sender>>;
+_TypeErasedSender(Sender&&) -> _TypeErasedSender<completion_signatures_of_t<Sender>>;
 
 template <typename Sender, typename ValueTypes = completion_signatures_of_t<Sender>>
 struct _TypeErasedSenderImpl : _TypeErasedSender<ValueTypes>::Impl {
@@ -301,6 +301,10 @@ class _TypeErasedScheduler {
     virtual SenderType _Bulk(SenderAdapterType input, size_t shape, BulkFun fun) {
       return ::mmdeploy::Bulk(std::move(input), shape, std::move(fun));
     }
+    //    virtual SenderType _DynamicBatch(dynamic_batch_t& token, SenderAdapterType input, ThenFun
+    //    fun) {
+    //      return token(std::move(input), nullptr, std::move(fun));
+    //    }
     // virtual SenderType _ScheduleFrom(SenderType) = 0;
     // virtual SenderType _Then(SenderType input, ThenFun fun) = 0;
     // virtual SenderType _LetValue() = 0;
@@ -339,17 +343,62 @@ class _TypeErasedScheduler {
   std::shared_ptr<Impl> impl_;
 };
 
+namespace impl {
+
+struct BatchManager {
+  using range_t = std::pair<int, unsigned>;
+
+  static size_t get_size(const Value& x) { return x.empty() ? 0 : x.front().size(); }
+
+  static void transfer(Value& src, range_t src_range, Value& dst, range_t dst_range,
+                       size_t max_batch_size) {
+    if (dst.empty()) {
+      if (get_size(src) == max_batch_size) {
+        dst = std::move(src);
+        return;
+      } else {
+        dst = Value::Array(src.size(), Value::Array(max_batch_size));
+      }
+    }
+    auto count = src_range.second - src_range.first;
+    auto& u = src.array();
+    auto& v = dst.array();
+    for (size_t k = 0; k < src.size(); ++k) {
+      auto& x = u[k].array();
+      auto& y = v[k].array();
+      std::move(std::begin(x) + src_range.first, std::begin(x) + src_range.second,
+                std::begin(y) + dst_range.first);
+    }
+  }
+
+  template <typename ValueType>
+  static void input(std::tuple<ValueType> src, range_t src_range, std::tuple<Value>& dst,
+                    range_t dst_range, size_t max_batch_size) {
+    auto& [_src] = src;
+    auto& [_dst] = dst;
+    transfer(_src, src_range, _dst, dst_range, max_batch_size);
+  }
+
+  static void output(Value& src, range_t src_range, Value& dst, range_t dst_range,
+                     size_t max_batch_size) {
+    transfer(src, src_range, dst, dst_range, max_batch_size);
+  }
+};
+
+}  // namespace impl
+
 template <typename ValueTypes, typename Scheduler>
 struct _TypeErasedSchedulerImpl : _TypeErasedScheduler<ValueTypes>::Impl {
   using _SenderType = _TypeErasedSender<std::tuple<>>;
 
   using Base = typename _TypeErasedScheduler<ValueTypes>::Impl;
   using BulkFun = typename _TypeErasedScheduler<ValueTypes>::BulkFun;
-  using EmptySender = typename _TypeErasedScheduler<ValueTypes>::EmptySenderType;
+  using ThenFun = typename _TypeErasedScheduler<ValueTypes>::ThenFun;
+  using VoidSenderType = typename _TypeErasedScheduler<ValueTypes>::EmptySenderType;
   using SenderType = typename _TypeErasedScheduler<ValueTypes>::SenderType;
   using SenderAdapterType = _TypeErasedSenderAdapter<SenderType>;
 
-  EmptySender _Schedule() override { return EmptySender{Schedule(scheduler_)}; }
+  VoidSenderType _Schedule() override { return VoidSenderType{Schedule(scheduler_)}; }
 
   SenderType _Transfer(SenderAdapterType input, _TypeErasedScheduler<ValueTypes> sched) override {
     if constexpr (tag_invocable<transfer_t, Scheduler, SenderType,
@@ -367,6 +416,18 @@ struct _TypeErasedSchedulerImpl : _TypeErasedScheduler<ValueTypes>::Impl {
       return Base::_Bulk(std::move(input), shape, std::move(fun));
     }
   }
+
+  //  SenderType _DynamicBatch(dynamic_batch_t& token, SenderAdapterType input, ThenFun fun)
+  //  override {
+  //    if constexpr (tag_invocable<dynamic_batch_t&, Scheduler, SenderAdapterType,
+  //    impl::BatchManager,
+  //                                ThenFun>) {
+  //      return tag_invoke(token, scheduler_, std::move(input), impl::BatchManager{},
+  //      std::move(fun));
+  //    } else {
+  //      return Base::_DynamicBatch(token, std::move(input), std::move(fun));
+  //    }
+  //  }
 
   explicit _TypeErasedSchedulerImpl(Scheduler sched) : scheduler_(std::move(sched)) {}
   Scheduler scheduler_;
@@ -409,81 +470,6 @@ struct capture_completion_scheduler<std::tuple<Value>> : std::true_type {};
 }  // namespace _capture_completion_scheduler
 
 }  // namespace mmdeploy
+//
 
 #endif  // MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_TYPE_ERASED_H_
-
-// Schedule(s)
-
-// Just(...)
-
-// TransferJust(s, ...)
-// 1. TransferJust(s, ...)
-// 2. Transfer(Just(...), s)
-
-// On(sch, s)
-// 1. On(sch, s)
-// 2. ...
-
-// Transfer(s, sch)
-// 1. Transfer(GetCompletionScheduler(s), s, sch)
-// 2. Transfer(s, sch)
-// 3. ScheduleFrom(sch, s)
-
-// ScheduleFrom(sch, s)
-// 1. ScheduleFrom(sch, s)
-// 2. ...
-
-// Then(s, f)
-// 1. Then(GetCompletionScheduler(s), s, f)
-// 2. Then(s, f)
-// 3. ...
-
-// LetValue(s, f)
-// 1. LetValue(GetCompletionScheduler(s), s, f)
-// 2. LetValue(s, f)
-// 3. ...
-
-// Bulk(s, shape, f)
-// 1. Bulk(GetCompletionScheduler(s), s, shape, f)
-// 2. Bulk(s, shape, f)
-// 3. ...
-
-// Split(s)
-// 1. Split(GetCompletionScheduler(s), s)
-// 2. Split(s)
-// 3. ...
-
-// WhenAll(s...)
-// 1. WhenAll(s...)
-// 2. ...
-
-// TransferWhenAll(sch, s...)
-// 1. TransferWhenAll(sch, s...)
-// 2. Transfer(WhenAll(s...), sch)
-
-// EnsureStarted(s)
-// 1. EnsureStarted(GetCompletionScheduler(s), s)
-// 2. EnsureStarted(s)
-// 3. ...
-
-// StartDetached(s)
-// 1. StartDetached(GetCompletionScheduler(s), s)
-// 2. StartDetached(s)
-// 3. ...
-
-// SyncWait(s)
-// 1. SyncWait(GetCompletionScheduler(s), s)
-// 2. SyncWait(s)
-// 3. ...
-
-// Execute(sch, f)
-// 1. Execute(sch, f)
-// 2. StartDetached(Then(Schedule(sch), f))
-
-///////////////////////////////////////////////////////////////////////////////////////////
-
-// monadic
-// let_value :: Sender a -> (a -> Sender b) -> Sender b
-
-// applicative
-// ???       :: Sender a -> Sender (a -> b) -> Sender b

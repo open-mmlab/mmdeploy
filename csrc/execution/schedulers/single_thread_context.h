@@ -44,7 +44,11 @@ class SingleThreadContext {
   std::thread thread_;
 };
 
+using Scheduler = SingleThreadContext::Scheduler;
+
 }  // namespace _single_thread_context
+
+using _single_thread_context::SingleThreadContext;
 
 }  // namespace mmdeploy
 

@@ -13,7 +13,9 @@
 #include <variant>
 
 #include "bulk.h"
+#include "dynamic_batch.h"
 #include "ensure_started.h"
+#include "execute.h"
 #include "just.h"
 #include "let_value.h"
 #include "on.h"
@@ -24,6 +26,7 @@
 #include "sync_wait.h"
 #include "then.h"
 #include "transfer.h"
+#include "transfer_just.h"
 #include "utility.h"
 #include "when_all.h"
 

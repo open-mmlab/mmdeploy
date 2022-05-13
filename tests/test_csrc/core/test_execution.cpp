@@ -8,6 +8,7 @@
 #include "core/utils/formatter.h"
 #include "core/value.h"
 #include "execution/expand.h"
+#include "execution/schedulers/dynamic_batch_scheduler.h"
 #include "execution/schedulers/inlined_scheduler.h"
 #include "execution/schedulers/registry.h"
 #include "execution/schedulers/single_thread_context.h"
@@ -17,6 +18,8 @@
 #include "execution/when_all_value.h"
 
 using namespace mmdeploy;
+
+#if 0
 
 TEST_CASE("test basic execution", "[execution]") {
   auto x = Then(Just(), [] {});
@@ -232,9 +235,7 @@ struct _thread_pool {
 
 using Schedulers = std::tuple<_inlined, _single_thread, _thread_pool>;
 
-TEMPLATE_LIST_TEST_CASE("test type erase", "[execution]", Schedulers) {
-  TestFunc(TestType::value);
-}
+TEMPLATE_LIST_TEST_CASE("test type erase", "[execution]", Schedulers) { TestFunc(TestType::value); }
 
 TEST_CASE("test executor C API", "[execution]") {
   auto sched = mmdeploy_executor_inline();
@@ -355,4 +356,51 @@ TEST_CASE("pipeable sender", "[execution]") {
   auto sender = Just(1) | Transfer(sched) | Then([](int x) { return x + 1; });
   auto [two] = SyncWait(sender);
   MMDEPLOY_INFO("pipeable sender: {}", two);
+}
+
+#endif
+
+struct Manager {
+  std::atomic<dynamic_batch_t::context_base_t*> context_;
+  using range_t = std::pair<int, unsigned>;
+  static size_t get_size(int) { return 1; }
+  static void input(std::tuple<int>, range_t, std::tuple<int>& dst, range_t) { ++std::get<0>(dst); }
+  static void output(int&, range_t, int& dst, range_t) { ++dst; }
+};
+
+TEST_CASE("test dynamic batch", "[execution]") {
+  TimedSingleThreadContext timer;
+  SingleThreadContext thread;
+  StaticThreadPool pool;
+
+  _dynamic_batch_scheduler::DynamicBatchScheduler<InlineScheduler, __static_thread_pool::Scheduler>
+      scheduler{InlineScheduler{}, pool.GetScheduler(), &timer, 4, std::chrono::microseconds(10)};
+
+  Manager manager{};
+
+  constexpr const int N = 16;
+
+  std::vector<TypeErasedSender<int>> senders;
+  senders.reserve(N);
+  for (int i = 0; i < N; ++i) {
+    auto begin = TransferJust(scheduler, i);
+    // tag_invoke(DynamicBatch, scheduler, std::move(begin), manager, [](int x) { return x; });
+    // MMDEPLOY_INFO("+++ create {}", i);
+    senders.emplace_back(EnsureStarted(DynamicBatch(std::move(begin), manager, [](int x) {
+      MMDEPLOY_INFO("start, batch_size: {}", x);
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      MMDEPLOY_INFO("end");
+      return x;
+    })));
+    // MMDEPLOY_INFO("--- create {}", i);
+    //    if (i >= 5) {
+    //      std::this_thread::sleep_for(std::chrono::microseconds(1000));
+    //    }
+  }
+
+  MMDEPLOY_INFO("waiting starts...");
+  for (auto& s : senders) {
+    auto [v] = SyncWait(std::move(s));
+    //    MMDEPLOY_INFO("val: {}", v);
+  }
 }

@@ -54,6 +54,7 @@ class Task : public Node {
  private:
   std::optional<TypeErasedScheduler<Value>> sched_;
   unique_ptr<Module> module_;
+  dynamic_batch_t dynamic_batch_;
   bool is_batched_{false};
   bool is_thread_safe_{false};
 };

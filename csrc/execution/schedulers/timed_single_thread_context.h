@@ -59,7 +59,7 @@ class Scheduler {
 
   TimedSingleThreadContext* context_;
 
-  template <class Rep, class Ratio>
+  template <typename Rep, typename Ratio>
   friend auto ScheduleAfter(const Scheduler& self, std::chrono::duration<Rep, Ratio> delay) noexcept
       -> __schedule_after::sender_t<std::chrono::duration<Rep, Ratio>> {
     return {self.context_, delay};
@@ -109,7 +109,7 @@ struct _Operation<Duration, Receiver>::type : TaskBase {
   Duration duration_;
   Receiver receiver_;
 
-  template <class Receiver2>
+  template <typename Receiver2>
   type(TimedSingleThreadContext& context, Duration duration, Receiver2&& receiver)
       : TaskBase(context, &type::ExecuteImpl),
         duration_(duration),
@@ -128,14 +128,14 @@ struct _Operation<Duration, Receiver>::type : TaskBase {
   }
 };
 
-template <class Duration>
+template <typename Duration>
 struct _Sender<Duration>::type {
   using value_types = std::tuple<>;
 
   TimedSingleThreadContext* context_;
   Duration duration_;
 
-  template <class Self, class Receiver, _decays_to<Self, type, int> = 0>
+  template <typename Self, typename Receiver, _decays_to<Self, type, int> = 0>
   friend operation_t<Duration, Receiver> tag_invoke(connect_t, Self&& self, Receiver&& receiver) {
     return {*self.context_, self.duration_, (Receiver &&) receiver};
   }

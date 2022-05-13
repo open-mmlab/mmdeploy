@@ -49,6 +49,9 @@ MMDEPLOY_API mmdeploy_sender_t mmdeploy_executor_just(mmdeploy_value_t value);
 
 MMDEPLOY_API mmdeploy_sender_t mmdeploy_executor_schedule(mmdeploy_scheduler_t scheduler);
 
+MMDEPLOY_API mmdeploy_sender_t mmdeploy_executor_transfer_just(mmdeploy_scheduler_t scheduler,
+                                                               mmdeploy_value_t value);
+
 ///////////////////////////////////////////////////////////////////////////////
 // Sender adapters
 ///////////////////////////////////////////////////////////////////////////////
@@ -77,6 +80,9 @@ MMDEPLOY_API mmdeploy_sender_t mmdeploy_executor_ensure_started(mmdeploy_sender_
 MMDEPLOY_API int mmdeploy_executor_start_detached(mmdeploy_sender_t input);
 
 MMDEPLOY_API mmdeploy_value_t mmdeploy_executor_sync_wait(mmdeploy_sender_t input);
+
+MMDEPLOY_API void mmdeploy_executor_execute(mmdeploy_scheduler_t scheduler, mmdeploy_invocable_t fn,
+                                            void* context);
 
 ///////////////////////////////////////////////////////////////////////////////
 // Utilities

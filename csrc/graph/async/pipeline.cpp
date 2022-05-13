@@ -3,7 +3,6 @@
 #include "pipeline.h"
 
 #include "archive/value_archive.h"
-#include "deferred_batch_operation.h"
 #include "execution/schedulers/inlined_scheduler.h"
 #include "graph/common.h"
 
@@ -111,12 +110,11 @@ Sender<Value> Pipeline::Process(Sender<Value> args) {
 
 Sender<Value> Task::Process(Sender<Value> input) {
   return LetValue(std::move(input), [this](Value& v) -> Sender<Value> {
-    // clang-format off
     if (v.front().is_array() && !is_batched_) {
       auto batch_size = v.front().size();
       Value output = Value::Array(batch_size);
-      return Just(std::move(output)) 
-          | Transfer(*sched_)
+      // clang-format off
+      return TransferJust(*sched_, std::move(output))
           | Then([&](Value&& output) -> Value {
             auto input = graph::DistribAA(v).value();
             return Value{std::move(input), std::move(output)};
@@ -130,12 +128,11 @@ Sender<Value> Task::Process(Sender<Value> input) {
           | Then([](const Value& in_out) {
             return graph::DistribAA(in_out[1]).value();
           });
+      // clang-format on
     } else {
-      return Just(std::move(v)) 
-           | Transfer(*sched_) 
-           | Then([&](Value u) { return module_->Process(u).value(); });
+      return dynamic_batch_(TypeErase(TransferJust(*sched_, std::move(v))), nullptr,
+                            [&](const Value& u) { return module_->Process(u).value(); });
     }
-    // clang-format on
   });
 }
 
