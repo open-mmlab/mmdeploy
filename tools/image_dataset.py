@@ -1,12 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from torch.utils.data import DataLoader
+from torch.utils.data import Dataset, get_worker_info
 from mmcv import FileClient
 import mmcv
 from typing import Optional, Sequence
 
-class QuantizationImageDataset(DataLoader):
-    def __init__(self, data_prefix: str, processor, 
-                shape: tuple,
+class QuantizationImageDataset(Dataset):
+    def __init__(self, path: str, processor, 
                 file_client_args: Optional[dict] = None,
                 extensions: Sequence[str] = ('.jpg', '.jpeg', '.png', '.ppm',
                                               '.bmp', '.pgm', '.tif'),):
@@ -14,35 +13,29 @@ class QuantizationImageDataset(DataLoader):
         self.processor = processor
         self.samples = []
         self.extensions = tuple(set([i.lower() for i in extensions]))
-        self.file_client = FileClient.infer_client(file_client_args, data_prefix)
-        files = list(file_client.list_dir_or_file(
-                data_prefix,
+        self.file_client = FileClient.infer_client(file_client_args, path)
+        self.path = path
+            
+        assert self.file_client.isdir(path)
+        files = list(self.file_client.list_dir_or_file(
+                path,
                 list_dir=False,
                 list_file=True,
                 recursive=False,
             ))
-        for file in sorted(list(files)):
-            if self.is_valid_file(file):
-                path = file_client.join_path(file)
-                samples.append(path)
+        for file in files:
+            if self.is_valid_file(self.file_client.join_path(file)):
+                path = self.file_client.join_path(self.path, file)
+                self.samples.append(path)
 
-    def __iter__(self):
-        worker_info = torch.utils.data.get_worker_info()
-        if worker_info is None:
-            iter_start = self.start
-            iter_end = self.end
-        else:
-            per_worker = int(math.ceil((self.end - self.start) / float(worker_info.num_workers)))
-            worker_id = worker_info.id
-            iter_start = self.start + worker_id * per_worker
-            iter_end = min(iter_start + per_worker, self.end)
-        ret = []
-        for index in (iter_start, iter_end):
-            file = self.samples[index]
-            image = mmcv.imread(file)
-            tensor = self.processor.create_input(image, shape)
-            ret.append(tensor)
-        return ret
+    def __len__(self):
+        return len(self.samples)
+    
+    def __getitem__(self, index):
+        sample = self.samples[index]
+        image = mmcv.imread(sample)
+        input =  self.processor.create_input(image)
+        return {'img': input[1][0].squeeze()}
         
     def is_valid_file(self, filename: str) -> bool:
         """Check if a file is a valid sample."""
