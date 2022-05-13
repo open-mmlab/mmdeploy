@@ -12,8 +12,10 @@ namespace mmdeploy {
 
 namespace _dynamic_batch_scheduler {
 
-template <typename SubmitSch, typename ExecuteSch>
+template <typename SubmitSch, typename ExecuteSch, typename AssemblerType>
 struct DynamicBatchScheduler {
+  using Assembler = AssemblerType;
+
   SubmitSch submit_sch_;
   ExecuteSch execute_sch_;
   TimedSingleThreadContext* timer_;
@@ -25,40 +27,39 @@ struct DynamicBatchScheduler {
   }
 };
 
-template <typename SubmitSch, typename ExecuteSch>
-using scheduler_t = DynamicBatchScheduler<SubmitSch, ExecuteSch>;
+template <typename... Args>
+using scheduler_t = DynamicBatchScheduler<Args...>;
 
-template <typename Sender, typename Scheduler, typename Manager, typename Receiver, typename Func>
+template <typename Sender, typename Scheduler, typename Receiver, typename Func>
 struct _Operation {
   struct type;
 };
-template <typename Sender, typename Scheduler, typename Manager, typename Receiver, typename Func>
-using operation_t =
-    typename _Operation<Sender, Scheduler, Manager, remove_cvref_t<Receiver>, Func>::type;
+template <typename Sender, typename Scheduler, typename Receiver, typename Func>
+using operation_t = typename _Operation<Sender, Scheduler, remove_cvref_t<Receiver>, Func>::type;
 
-template <typename Sender, typename Scheduler, typename Manager, typename Receiver, typename Func>
+template <typename Sender, typename Scheduler, typename Receiver, typename Func>
 struct _Receiver {
   struct type {
-    operation_t<Sender, Scheduler, Manager, Receiver, Func>* op_state_;
+    operation_t<Sender, Scheduler, Receiver, Func>* op_state_;
     template <typename... Args>
     friend void tag_invoke(set_value_t, type&& self, Args&&... args) noexcept {
       self.op_state_->context_->Notify(self.op_state_, (Args &&) args...);
     }
   };
 };
-template <typename Sender, typename Scheduler, typename Manager, typename Receiver, typename Func>
-using receiver_t = typename _Receiver<Sender, Scheduler, Manager, Receiver, Func>::type;
+template <typename Sender, typename Scheduler, typename Receiver, typename Func>
+using receiver_t = typename _Receiver<Sender, Scheduler, Receiver, Func>::type;
 
 using context_base_t = dynamic_batch_t::context_base_t;
 
 using range_t = std::pair<int, unsigned>;
 
-template <typename Sender, typename Scheduler, typename Manager, typename Receiver, typename Func>
+template <typename Sender, typename Scheduler, typename Receiver, typename Func>
 struct Context : context_base_t {
   using _duration_t = std::chrono::duration<int64_t, std::micro>;
 
   Scheduler scheduler_;
-  Manager* manager_;
+  using Assembler = typename Scheduler::Assembler;
   Func func_;
   size_t max_batch_size_;
   _duration_t delay_;
@@ -67,16 +68,17 @@ struct Context : context_base_t {
   std::mutex mutex_;
   size_t counter_{0};
 
-  Context(Scheduler scheduler, Manager* manager, Func func)
-      : context_base_t{[](context_base_t* p) { delete p; }},
+  Context(Scheduler scheduler, Func func)
+      : context_base_t{[](context_base_t* p) { delete static_cast<Context*>(p); }},
         scheduler_(std::move(scheduler)),
-        manager_(manager),
         func_(std::move(func)),
         max_batch_size_(scheduler_.max_batch_size_),
         delay_(scheduler_.timeout_),
         timer_(scheduler_.timer_) {}
 
-  using _operation_t = operation_t<Sender, Scheduler, Manager, Receiver, Func>;
+  ~Context() { MMDEPLOY_INFO("~Context()"); }
+
+  using _operation_t = operation_t<Sender, Scheduler, Receiver, Func>;
 
   struct Batch {
     Context* context_;
@@ -101,8 +103,9 @@ struct Context : context_base_t {
     std::lock_guard lock{mutex_};
 
     std::unique_ptr<Batch> batch = std::move(batch_);
-    const size_t size = Manager::get_size((Args &&) args...);
+    const size_t size = Assembler::get_size((Args &&) args...);
     op_state->count_ = size;
+    op_state->batch_size_ = size;
 
     size_t index = 0;
     while (index != size) {
@@ -116,8 +119,8 @@ struct Context : context_base_t {
 
       batch->states_.push_back(op_state);
       batch->ranges_.emplace_back(start, count);
-      Manager::input(std::forward_as_tuple((Args &&) args...), {start, count}, batch->values_,
-                     {batch->size_, count});
+      Assembler::input(std::forward_as_tuple((Args &&) args...), {start, count}, batch->values_,
+                       {batch->size_, count}, max_batch_size_);
       batch->size_ += count;
 
       index += count;
@@ -172,10 +175,11 @@ struct Context : context_base_t {
   std::unique_ptr<Batch> batch_;
 };
 
-template <typename Sender, typename Scheduler, typename Manager, typename Receiver, typename Func>
-struct _Operation<Sender, Scheduler, Manager, Receiver, Func>::type {
-  using _context_t = Context<Sender, Scheduler, Manager, Receiver, Func>;
-  using _receiver_t = receiver_t<Sender, Scheduler, Manager, Receiver, Func>;
+template <typename Sender, typename Scheduler, typename Receiver, typename Func>
+struct _Operation<Sender, Scheduler, Receiver, Func>::type {
+  using Assembler = typename Scheduler::Assembler;
+  using _context_t = Context<Sender, Scheduler, Receiver, Func>;
+  using _receiver_t = receiver_t<Sender, Scheduler, Receiver, Func>;
   using _result_t = decltype(std::apply(std::declval<Func>(),
                                         std::declval<completion_signatures_of_t<Sender>>()));
 
@@ -185,21 +189,22 @@ struct _Operation<Sender, Scheduler, Manager, Receiver, Func>::type {
   _result_t vals_;
 
   std::atomic<size_t> count_{0};
+  size_t batch_size_{0};
 
   template <typename Receiver2>
-  type(Sender&& sender, Scheduler scheduler, Manager* manager, Func func, Receiver2&& receiver)
-      : context_(CreateContext(manager, std::move(scheduler), std::move(func))),
+  type(Sender&& sender, Scheduler scheduler, std::atomic<context_base_t*>* context, Func func,
+       Receiver2&& receiver)
+      : context_(CreateContext(*context, std::move(scheduler), std::move(func))),
         op_state_(Connect((Sender &&) sender, _receiver_t{this})),
         receiver_((Receiver2 &&) receiver),
         vals_{} {}
 
-  _context_t* CreateContext(Manager* manager, Scheduler scheduler, Func func) {
-    auto& context = manager->context_;
+  _context_t* CreateContext(std::atomic<context_base_t*>& context, Scheduler scheduler, Func func) {
     auto* old = context.load(std::memory_order_acquire);
     if (old) {
       return static_cast<_context_t*>(old);
     } else {
-      auto p = std::make_unique<_context_t>(scheduler, manager, std::move(func));
+      auto p = std::make_unique<_context_t>(scheduler, std::move(func));
       if (context.compare_exchange_strong(old, p.get(), std::memory_order_release,
                                           std::memory_order_acquire)) {
         // context is filled with p, and now it has the ownership of its value
@@ -214,7 +219,7 @@ struct _Operation<Sender, Scheduler, Manager, Receiver, Func>::type {
   friend void tag_invoke(start_t, type& self) { Start(self.op_state_); }
 
   void Notify(_result_t& rets, range_t rets_range, range_t vals_range) {
-    Manager::output(rets, rets_range, vals_, vals_range);
+    Assembler::output(rets, rets_range, vals_, vals_range, batch_size_);
     auto count = rets_range.second;
     if (count_.fetch_sub(count, std::memory_order_acq_rel) == count) {  // (count_ -= count) == 0
       SetValue(std::move(receiver_), std::move(vals_));
@@ -222,7 +227,7 @@ struct _Operation<Sender, Scheduler, Manager, Receiver, Func>::type {
   }
 };
 
-template <typename Sender, typename Scheduler, typename Manager, typename Func>
+template <typename Sender, typename Scheduler, typename Func>
 struct _Sender {
   struct type {
     using _result_t = decltype(std::apply(std::declval<Func>(),
@@ -233,35 +238,37 @@ struct _Sender {
     Sender sender_;
     Scheduler scheduler_;
     Func func_;
-    Manager* manager_;
+    std::atomic<context_base_t*>* context_;
 
     template <typename Sender2>
-    type(Sender2&& sender, Scheduler scheduler, Manager& manager, Func func)
+    type(Sender2&& sender, Scheduler scheduler, std::atomic<context_base_t*>& context, Func func)
         : sender_((Sender2 &&) sender),
           scheduler_(std::move(scheduler)),
-          manager_(&manager),
+          context_(&context),
           func_(std::move(func)) {}
 
     template <typename Receiver>
     friend auto tag_invoke(connect_t, type&& self, Receiver&& receiver)
-        -> operation_t<Sender, Scheduler, Manager, Receiver, Func> {
-      return {std::move(self).sender_, std::move(self).scheduler_, self.manager_,
+        -> operation_t<Sender, Scheduler, Receiver, Func> {
+      return {std::move(self).sender_, std::move(self).scheduler_, self.context_,
               std::move(self).func_, (Receiver &&) receiver};
     }
   };
 };
 
-template <typename Sender, typename Scheduler, typename Manager, typename Func>
-using sender_t = typename _Sender<remove_cvref_t<Sender>, Scheduler, Manager, Func>::type;
+template <typename Sender, typename Scheduler, typename Func>
+using sender_t = typename _Sender<remove_cvref_t<Sender>, Scheduler, Func>::type;
 
-template <typename SubmitSch, typename ExecuteSch, typename Sender, typename Manager, typename Func>
-auto tag_invoke(dynamic_batch_t, const scheduler_t<SubmitSch, ExecuteSch>& scheduler,
-                Sender&& sender, Manager& manager, Func func)
-    -> sender_t<Sender, scheduler_t<SubmitSch, ExecuteSch>, Manager, Func> {
-  return {(Sender &&) sender, scheduler, manager, std::move(func)};
+template <typename Sender, typename Func, typename... Args>
+auto tag_invoke(dynamic_batch_t, const scheduler_t<Args...>& scheduler, Sender&& sender,
+                std::atomic<context_base_t*>& context, Func func)
+    -> sender_t<Sender, scheduler_t<Args...>, Func> {
+  return {(Sender &&) sender, scheduler, context, std::move(func)};
 }
 
 }  // namespace _dynamic_batch_scheduler
+
+using _dynamic_batch_scheduler::DynamicBatchScheduler;
 
 }  // namespace mmdeploy
 

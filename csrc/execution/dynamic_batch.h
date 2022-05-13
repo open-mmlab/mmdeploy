@@ -17,20 +17,20 @@ struct dynamic_batch_t {
     void (*destroy_)(context_base_t*);
   };
 
-  template <typename Sender, typename Manager, typename Func,
-            std::enable_if_t<
-                _tag_invocable_with_completion_scheduler<dynamic_batch_t, Sender, Manager&, Func>,
-                int> = 0>
-  auto operator()(Sender&& sender, Manager& manager, Func func) const {
+  template <typename Sender, typename Func,
+            std::enable_if_t<_tag_invocable_with_completion_scheduler<
+                                 dynamic_batch_t, Sender, std::atomic<context_base_t*>&, Func>,
+                             int> = 0>
+  auto operator()(Sender&& sender, std::atomic<context_base_t*>& context, Func func) const {
     auto scheduler = GetCompletionScheduler(sender);
-    return tag_invoke(*this, std::move(scheduler), (Sender &&) sender, manager, std::move(func));
+    return tag_invoke(*this, std::move(scheduler), (Sender &&) sender, context, std::move(func));
   }
 
-  template <typename Sender, typename Manager, typename Func,
+  template <typename Sender, typename Context, typename Func,
             std::enable_if_t<
-                !_tag_invocable_with_completion_scheduler<dynamic_batch_t, Sender, Manager&, Func>,
+                !_tag_invocable_with_completion_scheduler<dynamic_batch_t, Sender, Context, Func>,
                 int> = 0>
-  auto operator()(Sender&& sender, Manager&&, Func func) const {
+  auto operator()(Sender&& sender, Context&&, Func func) const {
     return Then((Sender &&) sender, std::move(func));
   }
 };

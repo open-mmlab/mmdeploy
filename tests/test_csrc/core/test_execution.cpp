@@ -360,12 +360,13 @@ TEST_CASE("pipeable sender", "[execution]") {
 
 #endif
 
-struct Manager {
-  std::atomic<dynamic_batch_t::context_base_t*> context_;
+struct IntManager {
   using range_t = std::pair<int, unsigned>;
   static size_t get_size(int) { return 1; }
-  static void input(std::tuple<int>, range_t, std::tuple<int>& dst, range_t) { ++std::get<0>(dst); }
-  static void output(int&, range_t, int& dst, range_t) { ++dst; }
+  static void input(std::tuple<int>, range_t, std::tuple<int>& dst, range_t, size_t) {
+    ++std::get<0>(dst);
+  }
+  static void output(int&, range_t, int& dst, range_t, size_t) { ++dst; }
 };
 
 TEST_CASE("test dynamic batch", "[execution]") {
@@ -373,20 +374,20 @@ TEST_CASE("test dynamic batch", "[execution]") {
   SingleThreadContext thread;
   StaticThreadPool pool;
 
-  _dynamic_batch_scheduler::DynamicBatchScheduler<InlineScheduler, __static_thread_pool::Scheduler>
-      scheduler{InlineScheduler{}, pool.GetScheduler(), &timer, 4, std::chrono::microseconds(10)};
-
-  Manager manager{};
+  DynamicBatchScheduler<InlineScheduler, __static_thread_pool::Scheduler, IntManager> scheduler{
+      InlineScheduler{}, pool.GetScheduler(), &timer, 2, std::chrono::microseconds(10)};
 
   constexpr const int N = 16;
+
+  std::atomic<dynamic_batch_t::context_base_t*> context{};
 
   std::vector<TypeErasedSender<int>> senders;
   senders.reserve(N);
   for (int i = 0; i < N; ++i) {
     auto begin = TransferJust(scheduler, i);
-    // tag_invoke(DynamicBatch, scheduler, std::move(begin), manager, [](int x) { return x; });
+    // tag_invoke(DynamicBatch, scheduler, std::move(begin), context, [](int x) { return x; });
     // MMDEPLOY_INFO("+++ create {}", i);
-    senders.emplace_back(EnsureStarted(DynamicBatch(std::move(begin), manager, [](int x) {
+    senders.emplace_back(EnsureStarted(DynamicBatch(std::move(begin), context, [](int x) {
       MMDEPLOY_INFO("start, batch_size: {}", x);
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
       MMDEPLOY_INFO("end");
@@ -401,6 +402,83 @@ TEST_CASE("test dynamic batch", "[execution]") {
   MMDEPLOY_INFO("waiting starts...");
   for (auto& s : senders) {
     auto [v] = SyncWait(std::move(s));
-    //    MMDEPLOY_INFO("val: {}", v);
+    // MMDEPLOY_INFO("val: {}", v);
+  }
+
+  if (auto p = context.load(std::memory_order_acquire)) {
+    p->destroy_(p);
+  }
+}
+
+struct ValueManager {
+  using range_t = std::pair<int, unsigned>;
+
+  static size_t get_size(const Value& x) { return x.empty() ? 0 : x.front().size(); }
+
+  static void transfer(Value& src, range_t src_range, Value& dst, range_t dst_range,
+                       size_t batch_size) {
+    if (dst.empty()) {
+      dst = Value::Array(src.size(), Value::Array(batch_size));
+    }
+    auto count = src_range.second;
+    auto& u = src.array();
+    auto& v = dst.array();
+    for (size_t k = 0; k < src.size(); ++k) {
+      auto& x = u[k].array();
+      auto& y = v[k].array();
+      std::move(std::begin(x) + src_range.first, std::begin(x) + src_range.first + src_range.second,
+                std::begin(y) + dst_range.first);
+    }
+  }
+
+  template <typename ValueType>
+  static void input(std::tuple<ValueType> src, range_t src_range, std::tuple<Value>& dst,
+                    range_t dst_range, size_t batch_size) {
+    auto& [_src] = src;
+    auto& [_dst] = dst;
+    transfer(_src, src_range, _dst, dst_range, batch_size);
+  }
+
+  static void output(Value& src, range_t src_range, Value& dst, range_t dst_range,
+                     size_t batch_size) {
+    transfer(src, src_range, dst, dst_range, batch_size);
+  }
+};
+
+TEST_CASE("test dynamic batch for Value", "[execution1]") {
+  TimedSingleThreadContext timer;
+  SingleThreadContext thread;
+  StaticThreadPool pool;
+
+  DynamicBatchScheduler<InlineScheduler, InlineScheduler, ValueManager> scheduler{
+      inline_scheduler, inline_scheduler, nullptr, 8, std::chrono::microseconds(10)};
+
+  constexpr const int N = 256;
+
+  std::atomic<dynamic_batch_t::context_base_t*> context{};
+
+  std::vector<TypeErasedSender<Value>> senders;
+  senders.reserve(N);
+  for (int i = 0; i < N; ++i) {
+    auto begin = TransferJust(scheduler, Value{Value{i}});
+
+    senders.emplace_back(EnsureStarted(DynamicBatch(std::move(begin), context, [](Value x) {
+      MMDEPLOY_INFO("start, batch_size: {}", x.front().size());
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      for (auto& v : x.front()) {
+        v = v.get<int>() * v.get<int>();
+      }
+      return x;
+    })));
+  }
+
+  MMDEPLOY_INFO("waiting starts...");
+  for (auto& s : senders) {
+    auto [v] = SyncWait(std::move(s));
+    MMDEPLOY_INFO("val: {}", v[0][0]);
+  }
+
+  if (auto p = context.load(std::memory_order_acquire)) {
+    p->destroy_(p);
   }
 }

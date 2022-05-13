@@ -343,50 +343,6 @@ class _TypeErasedScheduler {
   std::shared_ptr<Impl> impl_;
 };
 
-namespace impl {
-
-struct BatchManager {
-  using range_t = std::pair<int, unsigned>;
-
-  static size_t get_size(const Value& x) { return x.empty() ? 0 : x.front().size(); }
-
-  static void transfer(Value& src, range_t src_range, Value& dst, range_t dst_range,
-                       size_t max_batch_size) {
-    if (dst.empty()) {
-      if (get_size(src) == max_batch_size) {
-        dst = std::move(src);
-        return;
-      } else {
-        dst = Value::Array(src.size(), Value::Array(max_batch_size));
-      }
-    }
-    auto count = src_range.second - src_range.first;
-    auto& u = src.array();
-    auto& v = dst.array();
-    for (size_t k = 0; k < src.size(); ++k) {
-      auto& x = u[k].array();
-      auto& y = v[k].array();
-      std::move(std::begin(x) + src_range.first, std::begin(x) + src_range.second,
-                std::begin(y) + dst_range.first);
-    }
-  }
-
-  template <typename ValueType>
-  static void input(std::tuple<ValueType> src, range_t src_range, std::tuple<Value>& dst,
-                    range_t dst_range, size_t max_batch_size) {
-    auto& [_src] = src;
-    auto& [_dst] = dst;
-    transfer(_src, src_range, _dst, dst_range, max_batch_size);
-  }
-
-  static void output(Value& src, range_t src_range, Value& dst, range_t dst_range,
-                     size_t max_batch_size) {
-    transfer(src, src_range, dst, dst_range, max_batch_size);
-  }
-};
-
-}  // namespace impl
-
 template <typename ValueTypes, typename Scheduler>
 struct _TypeErasedSchedulerImpl : _TypeErasedScheduler<ValueTypes>::Impl {
   using _SenderType = _TypeErasedSender<std::tuple<>>;
