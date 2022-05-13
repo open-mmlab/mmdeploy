@@ -61,6 +61,7 @@ def _call_command(cmd, cwd, stdout=None, stderr=None):
         if ret.returncode != 0:
             logging.error(f'Process cmd: "{cmd}"'
                           f' failed with returncode: {ret.returncode}')
+            exit()
     except Exception:
         logging.error(f'Process cmd: {cmd} failed.')
         exit()
