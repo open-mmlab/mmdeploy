@@ -19,7 +19,7 @@ def is_available():
     return has_pyncnn and osp.exists(onnx2ncnn)
 
 
-def is_plugin_available():
+def is_customops_available():
     """Check whether ncnn extension and custom ops are installed.
 
     Returns:

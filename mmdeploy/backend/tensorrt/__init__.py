@@ -19,7 +19,7 @@ def is_available():
         torch.cuda.is_available()
 
 
-def is_plugin_available():
+def is_customops_available():
     """Check whether TensorRT custom ops are installed.
 
     Returns:

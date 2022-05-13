@@ -12,11 +12,11 @@ from mmdeploy.apis import (create_calib_table, extract_model,
                            get_predefined_partition_cfg, torch2onnx,
                            torch2torchscript, visualize_model)
 from mmdeploy.apis.core import PIPELINE_MANAGER
+from mmdeploy.backend.sdk.export_info import export2SDK
 from mmdeploy.utils import (IR, Backend, get_backend, get_calib_filename,
                             get_ir_config, get_model_inputs,
                             get_partition_config, get_root_logger, load_config,
                             target_wrapper)
-from mmdeploy.utils.export_info import dump_info
 
 
 def parse_args():
@@ -106,7 +106,7 @@ def main():
     mmcv.mkdir_or_exist(osp.abspath(args.work_dir))
 
     if args.dump_info:
-        dump_info(deploy_cfg, model_cfg, args.work_dir, pth=checkpoint_path)
+        export2SDK(deploy_cfg, model_cfg, args.work_dir, pth=checkpoint_path)
 
     ret_value = mp.Value('d', 0, lock=False)
 
@@ -254,7 +254,11 @@ def main():
         assert is_available_pplnn(), \
             'PPLNN is not available, please install PPLNN first.'
 
-        from mmdeploy.apis.pplnn import onnx2pplnn
+        from mmdeploy.apis.pplnn import from_onnx
+
+        pplnn_pipeline_funcs = ['mmdeploy.apis.pplnn.from_onnx']
+        PIPELINE_MANAGER.set_log_level(logging.INFO, pplnn_pipeline_funcs)
+
         pplnn_files = []
         for onnx_path in ir_files:
             algo_file = onnx_path.replace('.onnx', '.json')
@@ -264,12 +268,12 @@ def main():
             # PPLNN accepts only 1 input shape for optimization,
             # may get changed in the future
             input_shapes = [model_inputs.opt_shape]
-            create_process(
-                f'onnx2pplnn with {onnx_path}',
-                target=onnx2pplnn,
-                args=(algo_file, onnx_path),
-                kwargs=dict(device=args.device, input_shapes=input_shapes),
-                ret_value=ret_value)
+            algo_prefix = osp.splitext(algo_file)[0]
+            from_onnx(
+                onnx_path,
+                algo_prefix,
+                device=args.device,
+                input_shapes=input_shapes)
             pplnn_files += [onnx_path, algo_file]
         backend_files = pplnn_files
 
