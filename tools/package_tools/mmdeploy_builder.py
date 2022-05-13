@@ -56,7 +56,14 @@ def _call_command(cmd, cwd, stdout=None, stderr=None):
         return
     logging.info(f'Process cmd: {cmd}')
     logging.info(f'work_path: {cwd}')
-    run(cmd, stdout=stdout, stderr=stderr, cwd=cwd, shell=True)
+    try:
+        ret = run(cmd, stdout=stdout, stderr=stderr, cwd=cwd, shell=True)
+        if ret.returncode != 0:
+            logging.error(f'Process cmd: "{cmd}"'
+                          f' failed with returncode: {ret.returncode}')
+    except Exception:
+        logging.error(f'Process cmd: {cmd} failed.')
+        exit()
 
 
 def _create_tar(path, tar_name):
