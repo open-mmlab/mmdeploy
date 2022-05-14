@@ -37,7 +37,9 @@ struct _Receiver<SharedState>::type {
 template <typename Sender>
 struct _SharedState {
   std::optional<completion_signatures_of_t<Sender>> data_;
-  std::optional<connect_result_t<Sender, receiver_t<_SharedState>>> op_state2_;
+  //  std::optional<connect_result_t<Sender, receiver_t<_SharedState>>> op_state2_;
+  std::optional<__conv_proxy<connect_result_t<Sender, receiver_t<_SharedState>>>> op_state2_proxy_;
+
   std::atomic<void*> awaiting_{nullptr};
 
   void _Notify() noexcept {
@@ -112,8 +114,12 @@ struct _Sender<Sender>::type {
 
   template <typename Sndr, std::enable_if_t<!std::is_same_v<remove_cvref_t<Sndr>, type>, int> = 0>
   explicit type(Sndr&& sender) : shared_state_(std::make_shared<SharedState>()) {
-    Start(shared_state_->op_state2_.emplace(
-        __conv{[&] { return Connect((Sndr &&) sender, receiver_t<SharedState>{shared_state_}); }}));
+    shared_state_->op_state2_proxy_.emplace(
+        [&] { return Connect((Sndr &&) sender, receiver_t<SharedState>{shared_state_}); });
+    Start(**shared_state_->op_state2_proxy_);
+    //    Start(shared_state_->op_state2_.emplace(
+    //        __conv{[&] { return Connect((Sndr &&) sender, receiver_t<SharedState>{shared_state_});
+    //        }}));
   }
 
   template <typename Self, typename Receiver, _decays_to<Self, type, int> = 0>

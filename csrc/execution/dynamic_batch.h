@@ -16,12 +16,20 @@ struct dynamic_batch_t {
   struct context_base_t {
     void (*destroy_)(context_base_t*);
   };
+  struct context_t {
+    std::atomic<context_base_t*> base{};
+    ~context_t() {
+      if (auto p = base.load()) {
+        p->destroy_(p);
+      }
+    }
+  };
 
   template <typename Sender, typename Func,
-            std::enable_if_t<_tag_invocable_with_completion_scheduler<
-                                 dynamic_batch_t, Sender, std::atomic<context_base_t*>&, Func>,
-                             int> = 0>
-  auto operator()(Sender&& sender, std::atomic<context_base_t*>& context, Func func) const {
+            std::enable_if_t<
+                _tag_invocable_with_completion_scheduler<dynamic_batch_t, Sender, context_t&, Func>,
+                int> = 0>
+  auto operator()(Sender&& sender, context_t& context, Func func) const {
     auto scheduler = GetCompletionScheduler(sender);
     return tag_invoke(*this, std::move(scheduler), (Sender &&) sender, context, std::move(func));
   }

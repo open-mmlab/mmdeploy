@@ -52,7 +52,8 @@ using receiver_t = typename _Receiver<Sender, Scheduler, Receiver, Func>::type;
 
 using context_base_t = dynamic_batch_t::context_base_t;
 
-using range_t = std::pair<int, unsigned>;
+//                         start   count
+using range_t = std::pair<size_t, size_t>;
 
 template <typename Sender, typename Scheduler, typename Receiver, typename Func>
 struct Context : context_base_t {
@@ -139,7 +140,7 @@ struct Context : context_base_t {
     batch_ = std::move(batch);
   }
 
-  void Submit(int batch_index) {
+  void Submit(size_t batch_index) {
     Execute(scheduler_.execute_sch_, [this, batch_index] {
       std::unique_ptr<Batch> batch;
       {
@@ -195,9 +196,14 @@ struct _Operation<Sender, Scheduler, Receiver, Func>::type {
   type(Sender&& sender, Scheduler scheduler, std::atomic<context_base_t*>* context, Func func,
        Receiver2&& receiver)
       : context_(CreateContext(*context, std::move(scheduler), std::move(func))),
-        op_state_(Connect((Sender &&) sender, _receiver_t{this})),
+        op_state_{Connect((Sender &&) sender, _receiver_t{this})},
         receiver_((Receiver2 &&) receiver),
         vals_{} {}
+
+  type(const type&) = delete;
+  type& operator=(const type&) = delete;
+  type(type&&) noexcept = delete;
+  type& operator=(type&&) noexcept = delete;
 
   _context_t* CreateContext(std::atomic<context_base_t*>& context, Scheduler scheduler, Func func) {
     auto* old = context.load(std::memory_order_acquire);
@@ -237,14 +243,14 @@ struct _Sender {
 
     Sender sender_;
     Scheduler scheduler_;
-    Func func_;
     std::atomic<context_base_t*>* context_;
+    Func func_;
 
     template <typename Sender2>
-    type(Sender2&& sender, Scheduler scheduler, std::atomic<context_base_t*>& context, Func func)
+    type(Sender2&& sender, Scheduler scheduler, std::atomic<context_base_t*>* context, Func func)
         : sender_((Sender2 &&) sender),
           scheduler_(std::move(scheduler)),
-          context_(&context),
+          context_(context),
           func_(std::move(func)) {}
 
     template <typename Receiver>
@@ -261,9 +267,9 @@ using sender_t = typename _Sender<remove_cvref_t<Sender>, Scheduler, Func>::type
 
 template <typename Sender, typename Func, typename... Args>
 auto tag_invoke(dynamic_batch_t, const scheduler_t<Args...>& scheduler, Sender&& sender,
-                std::atomic<context_base_t*>& context, Func func)
+                dynamic_batch_t::context_t& context, Func func)
     -> sender_t<Sender, scheduler_t<Args...>, Func> {
-  return {(Sender &&) sender, scheduler, context, std::move(func)};
+  return {(Sender &&) sender, scheduler, &context.base, std::move(func)};
 }
 
 }  // namespace _dynamic_batch_scheduler
