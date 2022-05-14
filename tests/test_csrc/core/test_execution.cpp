@@ -361,7 +361,7 @@ TEST_CASE("pipeable sender", "[execution]") {
 #endif
 
 struct IntManager {
-  using range_t = std::pair<int, unsigned>;
+  using range_t = std::pair<size_t, size_t>;
   static size_t get_size(int) { return 1; }
   static void input(std::tuple<int>, range_t, std::tuple<int>& dst, range_t, size_t) {
     ++std::get<0>(dst);
@@ -379,7 +379,7 @@ TEST_CASE("test dynamic batch", "[execution]") {
 
   constexpr const int N = 16;
 
-  std::atomic<dynamic_batch_t::context_base_t*> context{};
+  dynamic_batch_t::context_t context;
 
   std::vector<TypeErasedSender<int>> senders;
   senders.reserve(N);
@@ -404,66 +404,41 @@ TEST_CASE("test dynamic batch", "[execution]") {
     auto [v] = SyncWait(std::move(s));
     // MMDEPLOY_INFO("val: {}", v);
   }
-
-  if (auto p = context.load(std::memory_order_acquire)) {
-    p->destroy_(p);
-  }
 }
 
-struct ValueManager {
-  using range_t = std::pair<int, unsigned>;
-
-  static size_t get_size(const Value& x) { return x.empty() ? 0 : x.front().size(); }
-
-  static void transfer(Value& src, range_t src_range, Value& dst, range_t dst_range,
-                       size_t batch_size) {
-    if (dst.empty()) {
-      dst = Value::Array(src.size(), Value::Array(batch_size));
-    }
-    auto count = src_range.second;
-    auto& u = src.array();
-    auto& v = dst.array();
-    for (size_t k = 0; k < src.size(); ++k) {
-      auto& x = u[k].array();
-      auto& y = v[k].array();
-      std::move(std::begin(x) + src_range.first, std::begin(x) + src_range.first + src_range.second,
-                std::begin(y) + dst_range.first);
-    }
-  }
-
-  template <typename ValueType>
-  static void input(std::tuple<ValueType> src, range_t src_range, std::tuple<Value>& dst,
-                    range_t dst_range, size_t batch_size) {
-    auto& [_src] = src;
-    auto& [_dst] = dst;
-    transfer(_src, src_range, _dst, dst_range, batch_size);
-  }
-
-  static void output(Value& src, range_t src_range, Value& dst, range_t dst_range,
-                     size_t batch_size) {
-    transfer(src, src_range, dst, dst_range, batch_size);
-  }
-};
-
 TEST_CASE("test dynamic batch for Value", "[execution1]") {
-  TimedSingleThreadContext timer;
-  SingleThreadContext thread;
-  StaticThreadPool pool;
+  //  TimedSingleThreadContext timer;
+  //  SingleThreadContext thread;
+  //  StaticThreadPool pool(2);
+  //
+  //  auto get_scheduler = [&](TimedSingleThreadContext* timer, auto scheduler, size_t
+  //  max_batch_size,
+  //                           auto timeout) {
+  //    return DynamicBatchScheduler<InlineScheduler, decltype(scheduler), ValueAssembler>{
+  //        inline_scheduler, std::move(scheduler), timer, max_batch_size, timeout};
+  //  };
+  //
+  //  auto scheduler = TypeErasedScheduler<Value>(
+  //      get_scheduler(nullptr, pool.GetScheduler(), 8, std::chrono::microseconds(10)));
 
-  DynamicBatchScheduler<InlineScheduler, InlineScheduler, ValueManager> scheduler{
-      inline_scheduler, inline_scheduler, nullptr, 8, std::chrono::microseconds(10)};
+  auto exec_sched = mmdeploy_executor_system_pool();
+  auto dynamic_batch_sched = mmdeploy_executor_dynamic_batch(exec_sched, 8, -1);
+  auto& scheduler = *reinterpret_cast<TypeErasedScheduler<Value>*>(dynamic_batch_sched);
+  //  auto p = mmdeploy_executor_inlined();
+  //  auto& scheduler = *reinterpret_cast<TypeErasedScheduler<Value>*>(p);
 
   constexpr const int N = 256;
 
-  std::atomic<dynamic_batch_t::context_base_t*> context{};
+  dynamic_batch_t::context_t context;
 
   std::vector<TypeErasedSender<Value>> senders;
   senders.reserve(N);
   for (int i = 0; i < N; ++i) {
-    auto begin = TransferJust(scheduler, Value{Value{i}});
-
+    // FIXME:            GCC    MSVC
+    //  Value{Value{i}}  [[i]]   [i]
+    auto begin = TransferJust(scheduler, Value{Value::Array{i}}) | TypeErase();
     senders.emplace_back(EnsureStarted(DynamicBatch(std::move(begin), context, [](Value x) {
-      MMDEPLOY_INFO("start, batch_size: {}", x.front().size());
+      MMDEPLOY_INFO("batch_size: {}", x.front().size());
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
       for (auto& v : x.front()) {
         v = v.get<int>() * v.get<int>();
@@ -478,7 +453,6 @@ TEST_CASE("test dynamic batch for Value", "[execution1]") {
     MMDEPLOY_INFO("val: {}", v[0][0]);
   }
 
-  if (auto p = context.load(std::memory_order_acquire)) {
-    p->destroy_(p);
-  }
+  mmdeploy_scheduler_destroy(dynamic_batch_sched);
+  mmdeploy_scheduler_destroy(exec_sched);
 }

@@ -10,7 +10,7 @@ namespace mmdeploy {
 
 namespace async {
 
-struct Pipeline::State {
+class Pipeline::State {
  public:
   State(vector<int> use_count, Sender<Value> args);
 
@@ -130,8 +130,8 @@ Sender<Value> Task::Process(Sender<Value> input) {
           });
       // clang-format on
     } else {
-      return dynamic_batch_(TypeErase(TransferJust(*sched_, std::move(v))), nullptr,
-                            [&](const Value& u) { return module_->Process(u).value(); });
+      return DynamicBatch(TypeErase(TransferJust(*sched_, std::move(v))), nullptr,
+                          [&](const Value& u) { return module_->Process(u).value(); });
     }
   });
 }

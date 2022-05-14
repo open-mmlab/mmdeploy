@@ -37,7 +37,7 @@ int mmdeploy_sender_destroy(mmdeploy_sender_t sender) {
   return 0;
 }
 
-mmdeploy_scheduler_t mmdeploy_executor_inline() { return CreateScheduler("Inlined"); }
+mmdeploy_scheduler_t mmdeploy_executor_inlined() { return CreateScheduler("Inlined"); }
 
 mmdeploy_scheduler_t mmdeploy_executor_system_pool() {
   // create a thread pool context and hold its shared handle
@@ -52,6 +52,13 @@ mmdeploy_scheduler_t mmdeploy_executor_create_thread_pool(int num_threads) {
 
 mmdeploy_scheduler_t mmdeploy_executor_create_single_thread() {
   return CreateScheduler("SingleThread");
+}
+
+mmdeploy_scheduler_t mmdeploy_executor_dynamic_batch(mmdeploy_scheduler_t scheduler,
+                                                     int max_batch_size, int timeout) {
+  return CreateScheduler(
+      "DynamicBatch",
+      {{"scheduler", *Cast(scheduler)}, {"max_batch_size", max_batch_size}, {"timeout", timeout}});
 }
 
 int mmdeploy_scheduler_destroy(mmdeploy_scheduler_t scheduler) {

@@ -38,9 +38,13 @@ class _TypeErasedScheduler;
 
 template <typename>
 struct _ThenFn {};
-template <typename... Ts>
-struct _ThenFn<std::tuple<Ts...>> {
-  using type = std::function<std::tuple<Ts...>(Ts...)>;
+template <typename T>
+struct _ThenFn<std::tuple<T>> {
+  using type = std::function<T(T)>;
+};
+template <>
+struct _ThenFn<std::tuple<>> {
+  using type = std::function<void()>;
 };
 template <typename ValueTypes>
 using _then_fn_t = typename _ThenFn<ValueTypes>::type;
@@ -155,6 +159,12 @@ class _TypeErasedSender {
   friend SenderType tag_invoke(bulk_t, SenderType input, size_t shape, _bulk_fn_t<ValueTypes> fn) {
     auto sched = input.impl_->_GetCompletionScheduler();
     return tag_invoke(bulk_t{}, sched, std::move(input), shape, std::move(fn));
+  }
+
+  friend SenderType tag_invoke(dynamic_batch_t, SenderType input,
+                               dynamic_batch_t::context_t& context, _then_fn_t<ValueTypes> fn) {
+    auto sched = input.impl_->_GetCompletionScheduler();
+    return tag_invoke(dynamic_batch_t{}, sched, std::move(input), context, std::move(fn));
   }
 
   //  friend _Scheduler tag_invoke(get_completion_scheduler_t, const _TypeErasedSender& self) {
@@ -301,10 +311,10 @@ class _TypeErasedScheduler {
     virtual SenderType _Bulk(SenderAdapterType input, size_t shape, BulkFun fun) {
       return ::mmdeploy::Bulk(std::move(input), shape, std::move(fun));
     }
-    //    virtual SenderType _DynamicBatch(dynamic_batch_t& token, SenderAdapterType input, ThenFun
-    //    fun) {
-    //      return token(std::move(input), nullptr, std::move(fun));
-    //    }
+    virtual SenderType _DynamicBatch(SenderAdapterType input, dynamic_batch_t::context_t& context,
+                                     ThenFun fun) {
+      return ::mmdeploy::DynamicBatch(std::move(input), nullptr, std::move(fun));
+    }
     // virtual SenderType _ScheduleFrom(SenderType) = 0;
     // virtual SenderType _Then(SenderType input, ThenFun fun) = 0;
     // virtual SenderType _LetValue() = 0;
@@ -329,14 +339,19 @@ class _TypeErasedScheduler {
     return self.impl_->_Schedule();
   }
 
+  friend SenderType tag_invoke(transfer_t, _TypeErasedScheduler& self, SenderType input,
+                               _TypeErasedScheduler other) {
+    return self.impl_->_Transfer(SenderAdapterType{std::move(input)}, std::move(other));
+  }
+
   friend SenderType tag_invoke(bulk_t, _TypeErasedScheduler& self, SenderType input, size_t shape,
                                BulkFun fun) {
     return self.impl_->_Bulk(SenderAdapterType{std::move(input)}, shape, std::move(fun));
   }
 
-  friend SenderType tag_invoke(transfer_t, _TypeErasedScheduler& self, SenderType input,
-                               _TypeErasedScheduler other) {
-    return self.impl_->_Transfer(SenderAdapterType{std::move(input)}, std::move(other));
+  friend SenderType tag_invoke(dynamic_batch_t, _TypeErasedScheduler& self, SenderType input,
+                               dynamic_batch_t::context_t& context, ThenFun fun) {
+    return self.impl_->_DynamicBatch(SenderAdapterType{std::move(input)}, context, std::move(fun));
   }
 
  private:
@@ -373,17 +388,15 @@ struct _TypeErasedSchedulerImpl : _TypeErasedScheduler<ValueTypes>::Impl {
     }
   }
 
-  //  SenderType _DynamicBatch(dynamic_batch_t& token, SenderAdapterType input, ThenFun fun)
-  //  override {
-  //    if constexpr (tag_invocable<dynamic_batch_t&, Scheduler, SenderAdapterType,
-  //    impl::BatchManager,
-  //                                ThenFun>) {
-  //      return tag_invoke(token, scheduler_, std::move(input), impl::BatchManager{},
-  //      std::move(fun));
-  //    } else {
-  //      return Base::_DynamicBatch(token, std::move(input), std::move(fun));
-  //    }
-  //  }
+  SenderType _DynamicBatch(SenderAdapterType input, dynamic_batch_t::context_t& context,
+                           ThenFun fun) override {
+    if constexpr (tag_invocable<dynamic_batch_t, Scheduler, SenderAdapterType,
+                                dynamic_batch_t::context_t&, ThenFun>) {
+      return tag_invoke(dynamic_batch_t{}, scheduler_, std::move(input), context, std::move(fun));
+    } else {
+      return Base::_DynamicBatch(std::move(input), context, std::move(fun));
+    }
+  }
 
   explicit _TypeErasedSchedulerImpl(Scheduler sched) : scheduler_(std::move(sched)) {}
   Scheduler scheduler_;

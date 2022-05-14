@@ -32,13 +32,16 @@ struct mmdeploy_exec_info {
 ///////////////////////////////////////////////////////////////////////////////
 // Scheduler
 ///////////////////////////////////////////////////////////////////////////////
-MMDEPLOY_API mmdeploy_scheduler_t mmdeploy_executor_inline();
+MMDEPLOY_API mmdeploy_scheduler_t mmdeploy_executor_inlined();
 
 MMDEPLOY_API mmdeploy_scheduler_t mmdeploy_executor_system_pool();
 
 MMDEPLOY_API mmdeploy_scheduler_t mmdeploy_executor_create_thread_pool(int num_threads);
 
 MMDEPLOY_API mmdeploy_scheduler_t mmdeploy_executor_create_single_thread();
+
+MMDEPLOY_API mmdeploy_scheduler_t mmdeploy_executor_dynamic_batch(mmdeploy_scheduler_t scheduler,
+                                                                  int max_batch_size, int timeout);
 
 MMDEPLOY_API int mmdeploy_scheduler_destroy(mmdeploy_scheduler_t scheduler);
 

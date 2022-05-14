@@ -34,9 +34,19 @@ struct dynamic_batch_t {
     return tag_invoke(*this, std::move(scheduler), (Sender &&) sender, context, std::move(func));
   }
 
+  template <typename Sender, typename Func,
+            std::enable_if_t<!_tag_invocable_with_completion_scheduler<dynamic_batch_t, Sender,
+                                                                       context_t&, Func> &&
+                                 tag_invocable<dynamic_batch_t, Sender, context_t&, Func>,
+                             int> = 0>
+  auto operator()(Sender&& sender, context_t& context, Func func) const {
+    return tag_invoke(*this, (Sender &&) sender, context, std::move(func));
+  }
+
   template <typename Sender, typename Context, typename Func,
             std::enable_if_t<
-                !_tag_invocable_with_completion_scheduler<dynamic_batch_t, Sender, Context, Func>,
+                !_tag_invocable_with_completion_scheduler<dynamic_batch_t, Sender, Context, Func> &&
+                    !tag_invocable<dynamic_batch_t, Sender, Context, Func>,
                 int> = 0>
   auto operator()(Sender&& sender, Context&&, Func func) const {
     return Then((Sender &&) sender, std::move(func));
