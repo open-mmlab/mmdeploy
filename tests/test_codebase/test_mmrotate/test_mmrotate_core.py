@@ -221,3 +221,52 @@ def test_delta_midpointoffset_rbbox_delta2bbox(backend_type: Backend):
             model_output, rewrite_output, rtol=1e-03, atol=1e-05)
     else:
         assert rewrite_outputs is not None
+
+
+@backend_checker(Backend.ONNXRUNTIME)
+def test_fake_multiclass_nms_rotated():
+    from mmdeploy.codebase.mmrotate.core import fake_multiclass_nms_rotated
+    deploy_cfg = mmcv.Config(
+        dict(
+            onnx_config=dict(output_names=None, input_shape=None),
+            backend_config=dict(
+                type='onnxruntime',
+                common_config=dict(
+                    fp16_mode=False, max_workspace_size=1 << 20),
+                model_inputs=[
+                    dict(
+                        input_shapes=dict(
+                            boxes=dict(
+                                min_shape=[1, 5, 5],
+                                opt_shape=[1, 5, 5],
+                                max_shape=[1, 5, 5]),
+                            scores=dict(
+                                min_shape=[1, 5, 8],
+                                opt_shape=[1, 5, 8],
+                                max_shape=[1, 5, 8])))
+                ]),
+            codebase_config=dict(
+                type='mmrotate',
+                task='RotatedDetection',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    iou_threshold=0.5,
+                    pre_top_k=-1,
+                    keep_top_k=10,
+                ))))
+
+    boxes = torch.rand(1, 5, 5)
+    scores = torch.rand(1, 5, 8)
+    keep_top_k = 10
+    wrapped_func = WrapFunction(
+        fake_multiclass_nms_rotated, keep_top_k=keep_top_k)
+    rewrite_outputs, _ = get_rewrite_outputs(
+        wrapped_func,
+        model_inputs={
+            'boxes': boxes,
+            'scores': scores
+        },
+        deploy_cfg=deploy_cfg)
+
+    assert rewrite_outputs is not None, 'Got unexpected rewrite '\
+        'outputs: {}'.format(rewrite_outputs)
