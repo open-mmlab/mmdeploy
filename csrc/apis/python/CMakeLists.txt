@@ -4,13 +4,15 @@ project(mmdeploy_python)
 
 if ("cuda" IN_LIST MMDEPLOY_TARGET_DEVICES)
     include(${CMAKE_SOURCE_DIR}/cmake/cuda.cmake)
-endif()
+endif ()
 
 if (NOT TARGET pybind11)
     add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/pybind11 pybind11)
 endif ()
 
-set(MMDEPLOY_PYTHON_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/common.cpp)
+set(MMDEPLOY_PYTHON_SRCS
+        ${CMAKE_CURRENT_SOURCE_DIR}/common.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/executor.cpp)
 
 macro(mmdeploy_python_add_module name)
     if (TARGET mmdeploy_${name})
