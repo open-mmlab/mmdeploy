@@ -142,17 +142,3 @@ def rotated_rpn_head__get_bboxes(ctx,
         pre_top_k=pre_top_k,
         keep_top_k=keep_top_k,
         version=self.version)
-
-    # post_params = get_post_processing_params(deploy_cfg)
-    # iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)
-    # score_threshold = cfg.get('score_thr', post_params.score_threshold)
-    # pre_top_k = post_params.pre_top_k
-    # keep_top_k = cfg.get('max_per_img', post_params.keep_top_k)
-    # # only one class in rpn
-    # return multiclass_nms_rotated(
-    #     batch_mlvl_bboxes,
-    #     batch_mlvl_scores,
-    #     iou_threshold=iou_threshold,
-    #     score_threshold=score_threshold,
-    #     pre_top_k=pre_top_k,
-    #     keep_top_k=keep_top_k)
