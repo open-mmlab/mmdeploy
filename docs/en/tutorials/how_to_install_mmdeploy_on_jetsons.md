@@ -1,15 +1,15 @@
 # Build for Jetson
 
-In this chapter, we introduce how to install mmdeploy on NVIDIA Jetson platforms, which we have verifed on the following models:
+In this chapter, we introduce how to install MMDeploy on NVIDIA Jetson platforms, which we have verified on the following modules:
 - Jetson Nano
 - Jetson TX2
 - Jetson AGX Xavier
 
 ## Prerequisites
 
-To equip a Jetson device, JetPack SDK is a must.
+To equip a Jetson device, the JetPack SDK is a must.
 Besides, the Model Converter of MMDeploy requires an environment with PyTorch for converting PyTorch models to ONNX models.
-Regarding the toolchain, cmake and gcc has to be upgraded no less than 3.14 and 7.0 respectively.
+Regarding the toolchain, CMake and GCC has to be upgraded to no less than 3.14 and 7.0 respectively.
 
 ### JetPack SDK
 
@@ -27,6 +27,7 @@ Here we choose [JetPack 4.6.1](https://developer.nvidia.com/jetpack-sdk-461) as 
 ### Conda
 
 Install [Archiconda](https://github.com/Archiconda/build-tools/releases) instead of Anaconda because the latter does not provide the wheel built for Jetson.
+
 ```shell
 wget https://github.com/Archiconda/build-tools/releases/download/0.2.3/Archiconda3-0.2.3-Linux-aarch64.sh
 bash Archiconda3-0.2.3-Linux-aarch64.sh -b
@@ -41,7 +42,9 @@ echo 'export OPENBLAS_CORETYPE=ARMV8' >> ~/.bashrc
 source ~/.bashrc
 conda --version
 ```
+
 After the installation, create a conda environment and activate it.
+
 ```shell
 # get the version of python3 installed by default
 export PYTHON_VERSION=`python3 --version | cut -d' ' -f 2 | cut -d'.' -f1,2`
@@ -50,9 +53,9 @@ conda activate mmdeploy
 ```
 
 ```{note}
-JetPack SDK 4+ provides python 3.6. We strongly recommend using the default python. Trying to upgrade it probably ruin the JetPack environment.
+JetPack SDK 4+ provides python 3.6. We strongly recommend using the default python. Trying to upgrade it probably will ruin the JetPack environment.
 
-If a higher-version python is necessary, you can install JetPack 5+, in which the python version is 3.8
+If a higher-version python is necessary, you can install JetPack 5+, in which the python version is 3.8.
 ```
 ### PyTorch
 
@@ -60,6 +63,7 @@ Download the PyTorch wheel for Jetson from [here](https://forums.developer.nvidi
 And build torchvision from source as there is no prebuilt torchvision for Jetson platforms.
 
 Take `torch 1.10.0` and  `torchvision 0.11.1` for example. You can install them as below:
+
 ```shell
 # pytorch
 wget https://nvidia.box.com/shared/static/fjtbno0vpo676a25cgvuqc1wty0fkkg6.whl -O torch-1.10.0-cp36-cp36m-linux_aarch64.whl
@@ -79,6 +83,7 @@ If you install other versions of PyTorch and torchvision, make sure the versions
 ### CMake
 
 We use the latest cmake v3.23.1 released in April 2022.
+
 ```shell
 # purge existing
 sudo apt-get purge cmake
@@ -96,14 +101,15 @@ cmake --version
 ## Install Dependencies
 
 The Model Converter of MMDeploy on Jetson platforms depends on [MMCV](https://github.com/open-mmlab/mmcv) and the inference engine [TensorRT](https://developer.nvidia.com/tensorrt).
-While MMDeploy C/C++ Inference SDK relies on [spdlog](https://github.com/gabime/spdlog), OpenCV and [ppl.cv](https://github.com/openppl-public/ppl.cv) and so on as well as TensorRT.
+While MMDeploy C/C++ Inference SDK relies on [spdlog](https://github.com/gabime/spdlog), OpenCV and [ppl.cv](https://github.com/openppl-public/ppl.cv) and so on， as well as TensorRT.
 Thus, in the following sections, we will describe how to prepare TensorRT.
 And then, we will present the way to install dependencies of Model Converter and C/C++ Inference SDK respectively.
 
 ### Prepare TensorRT
 
-TensorRT is already packed into JetPack SDK. But In order to import it successfully in conda environment,
+TensorRT is already packed into JetPack SDK. However, in order to import it successfully in the conda environment,
 we need to copy the tensorrt package to the conda environment created before.
+
 ```shell
 cp -r /usr/lib/python${PYTHON_VERSION}/dist-packages/tensorrt* ~/archiconda3/envs/mmdeploy/lib/python${PYTHON_VERSION}/site-packages/
 conda deactivate
@@ -131,6 +137,7 @@ echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64' >> ~/.bashr
 source ~/.bashrc
 conda activate mmdeploy
 ```
+
 ### Install Dependencies for Model Converter
 
 - Install [MMCV](https://github.com/open-mmlab/mmcv)
@@ -145,7 +152,7 @@ conda activate mmdeploy
   MMCV_WITH_OPS=1 pip install -e .
   ```
 
-- Install onnx
+- Install ONNX
 
   ```shell
   pip install onnx
@@ -174,7 +181,7 @@ You can skip this section if you don't need MMDeploy C/C++ Inference SDK.
 
 - Install [ppl.cv](https://github.com/openppl-public/ppl.cv)
 
-  "`ppl.cv` is a high-performance image processing library of [openPPL](https://openppl.ai/home)"
+  "`ppl.cv` is a high-performance image processing library of [OpenPPL](https://openppl.ai/home)"
 
   ```shell
   git clone https://github.com/openppl-public/ppl.cv.git
@@ -219,33 +226,33 @@ You can skip this section if you don't need MMDeploy C/C++ Inference SDK.
 
 1. Build SDK Libraries
 
-  ```shell
-  mkdir -p build && cd build
-  cmake .. \
-      -DMMDEPLOY_BUILD_SDK=ON \
-      -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
-      -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
-      -DMMDEPLOY_TARGET_BACKENDS="trt" \
-      -DMMDEPLOY_CODEBASES=all \
-      -Dpplcv_DIR=${PPLCV_DIR}/cuda-build/install/lib/cmake/ppl
-  make -j$(nproc) && make install
-  ```
+    ```shell
+    mkdir -p build && cd build
+    cmake .. \
+        -DMMDEPLOY_BUILD_SDK=ON \
+        -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
+        -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
+        -DMMDEPLOY_TARGET_BACKENDS="trt" \
+        -DMMDEPLOY_CODEBASES=all \
+        -Dpplcv_DIR=${PPLCV_DIR}/cuda-build/install/lib/cmake/ppl
+    make -j$(nproc) && make install
+    ```
 
 2. Build SDK demos
 
-  ```shell
-  cd ${MMDEPLOY_DIR}/build/install/example
-  mkdir -p build && cd build
-  cmake .. -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy
-  make -j$(nproc)
-  ```
+    ```shell
+    cd ${MMDEPLOY_DIR}/build/install/example
+    mkdir -p build && cd build
+    cmake .. -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy
+    make -j$(nproc)
+    ```
 
 3. Run a demo
 
-Take the object detection for example:
-  ```shell
-  ./object_detection cuda ${directory/to/the/converted/models} ${path/to/an/image}
-  ```
+    Take the object detection for example:
+    ```shell
+    ./object_detection cuda ${directory/to/the/converted/models} ${path/to/an/image}
+    ```
 
 ## Troubleshooting
 
@@ -254,17 +261,17 @@ Take the object detection for example:
 - `pip install` throws an error like `Illegal instruction (core dumped)`
 
   ```shell
-    echo '# set env for pip' >> ~/.bashrc
-    echo 'export OPENBLAS_CORETYPE=ARMV8' >> ~/.bashrc
-    source ~/.bashrc
-    ```
+  echo '# set env for pip' >> ~/.bashrc
+  echo 'export OPENBLAS_CORETYPE=ARMV8' >> ~/.bashrc
+  source ~/.bashrc
+  ```
 
-  If steps above don't work, check if you are using any mirror, if you did, try this:
+  If the steps above don't work, check if you are using any mirror. If so, try this:
   ```shell
-    rm .condarc
-    conda clean -i
-    conda create -n xxx python=${PYTHON_VERSION}
-    ```
+  rm .condarc
+  conda clean -i
+  conda create -n xxx python=${PYTHON_VERSION}
+  ```
 
 ### Runtime
 
