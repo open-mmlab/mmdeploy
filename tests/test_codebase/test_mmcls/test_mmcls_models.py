@@ -122,7 +122,6 @@ def test_shufflenetv2_backbone__forward(backend_type: Backend):
             dict(
                 backend_config=dict(
                     type=backend_type.value,
-                    common_config=dict(max_workspace_size=1 << 30),
                     model_inputs=[
                         dict(
                             input_shapes=dict(
@@ -215,7 +214,6 @@ def test_gap__forward(backend_type: Backend, inputs: list):
             dict(
                 backend_config=dict(
                     type=backend_type.value,
-                    common_config=dict(max_workspace_size=1 << 30),
                     model_inputs=[
                         dict(
                             input_shapes=dict(
