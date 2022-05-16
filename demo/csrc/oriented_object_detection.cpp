@@ -4,7 +4,7 @@
 #include <opencv2/imgproc.hpp>
 #include <string>
 
-#include "rotation_detector.h"
+#include "rotated_detector.h"
 
 int main(int argc, char *argv[]) {
   if (argc != 4) {
@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
 
   mm_handle_t detector{};
   int status{};
-  status = mmdeploy_rotation_detector_create_by_path(model_path, device_name, 0, &detector);
+  status = mmdeploy_rotated_detector_create_by_path(model_path, device_name, 0, &detector);
   if (status != MM_SUCCESS) {
     fprintf(stderr, "failed to create rotation detector, code: %d\n", (int)status);
     return 1;
@@ -30,9 +30,9 @@ int main(int argc, char *argv[]) {
 
   mm_mat_t mat{img.data, img.rows, img.cols, 3, MM_BGR, MM_INT8};
 
-  mm_rotate_detect_t *rbboxes{};
+  mm_rotated_detect_t *rbboxes{};
   int *res_count{};
-  status = mmdeploy_rotation_detector_apply(detector, &mat, 1, &rbboxes, &res_count);
+  status = mmdeploy_rotated_detector_apply(detector, &mat, 1, &rbboxes, &res_count);
   if (status != MM_SUCCESS) {
     fprintf(stderr, "failed to apply rotation estimator, code: %d\n", (int)status);
     return 1;
@@ -62,8 +62,8 @@ int main(int argc, char *argv[]) {
   }
   cv::imwrite("output_rotation.png", img);
 
-  mmdeploy_rotation_detector_release_result(rbboxes, res_count);
-  mmdeploy_rotation_detector_destroy(detector);
+  mmdeploy_rotated_detector_release_result(rbboxes, res_count);
+  mmdeploy_rotated_detector_destroy(detector);
 
   return 0;
 }

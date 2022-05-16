@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "rotation_detector.h"
+#include "rotated_detector.h"
 
 #include "common.h"
 #include "core/logger.h"
@@ -12,7 +12,7 @@ class PyRotatedDetector {
   PyRotatedDetector(const char *model_path, const char *device_name, int device_id) {
     MMDEPLOY_INFO("{}, {}, {}", model_path, device_name, device_id);
     auto status =
-        mmdeploy_rotation_detector_create_by_path(model_path, device_name, device_id, &handle_);
+        mmdeploy_rotated_detector_create_by_path(model_path, device_name, device_id, &handle_);
     if (status != MM_SUCCESS) {
       throw std::runtime_error("failed to create rotation detector");
     }
@@ -25,10 +25,10 @@ class PyRotatedDetector {
       mats.push_back(mat);
     }
 
-    mm_rotate_detect_t *rbboxes{};
+    mm_rotated_detect_t *rbboxes{};
     int *res_count{};
-    auto status = mmdeploy_rotation_detector_apply(handle_, mats.data(), (int)mats.size(), &rbboxes,
-                                                   &res_count);
+    auto status = mmdeploy_rotated_detector_apply(handle_, mats.data(), (int)mats.size(), &rbboxes,
+                                                  &res_count);
     if (status != MM_SUCCESS) {
       throw std::runtime_error("failed to apply rotation detector, code: " +
                                std::to_string(status));
@@ -52,11 +52,11 @@ class PyRotatedDetector {
       counts++;
       output.append(py::make_tuple(std::move(_dets), std::move(_labels)));
     }
-    mmdeploy_rotation_detector_release_result(rbboxes, res_count);
+    mmdeploy_rotated_detector_release_result(rbboxes, res_count);
     return output;
   }
   ~PyRotatedDetector() {
-    mmdeploy_rotation_detector_destroy(handle_);
+    mmdeploy_rotated_detector_destroy(handle_);
     handle_ = {};
   }
 
@@ -64,7 +64,7 @@ class PyRotatedDetector {
   mm_handle_t handle_{};
 };
 
-static void register_python_rotation_detector(py::module &m) {
+static void register_python_rotated_detector(py::module &m) {
   py::class_<PyRotatedDetector>(m, "RotatedDetector")
       .def(py::init([](const char *model_path, const char *device_name, int device_id) {
         return std::make_unique<PyRotatedDetector>(model_path, device_name, device_id);
@@ -75,7 +75,7 @@ static void register_python_rotation_detector(py::module &m) {
 class PythonRotatedDetectorRegisterer {
  public:
   PythonRotatedDetectorRegisterer() {
-    gPythonBindings().emplace("rotation_detector", register_python_rotation_detector);
+    gPythonBindings().emplace("rotated_detector", register_python_rotated_detector);
   }
 };
 

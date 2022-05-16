@@ -6,7 +6,7 @@ include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
 
 if ("all" IN_LIST MMDEPLOY_CODEBASES)
     set(TASK_LIST "classifier;detector;segmentor;text_detector;text_recognizer;"
-        "pose_detector;restorer;model;rotation_detector")
+        "pose_detector;restorer;model;rotated_detector")
 else ()
     set(TASK_LIST "model")
     if ("mmcls" IN_LIST MMDEPLOY_CODEBASES)
@@ -29,7 +29,7 @@ else ()
         list(APPEND TASK_LIST "pose_detector")
     endif ()
     if ("mmrotate" IN_LIST MMDEPLOY_CODEBASES)
-        list(APPEND TASK_LIST "rotation_detector")
+        list(APPEND TASK_LIST "rotated_detector")
     endif()
 endif ()
 

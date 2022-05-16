@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "rotation_detector.h"
+#include "rotated_detector.h"
 
 #include <numeric>
 
@@ -42,8 +42,8 @@ Value& config_template() {
 }
 
 template <class ModelType>
-int mmdeploy_rotation_detector_create_impl(ModelType&& m, const char* device_name, int device_id,
-                                           mm_handle_t* handle) {
+int mmdeploy_rotated_detector_create_impl(ModelType&& m, const char* device_name, int device_id,
+                                          mm_handle_t* handle) {
   try {
     auto value = config_template();
     value["pipeline"]["tasks"][0]["params"]["model"] = std::forward<ModelType>(m);
@@ -63,19 +63,19 @@ int mmdeploy_rotation_detector_create_impl(ModelType&& m, const char* device_nam
 
 }  // namespace
 
-int mmdeploy_rotation_detector_create(mm_model_t model, const char* device_name, int device_id,
-                                      mm_handle_t* handle) {
-  return mmdeploy_rotation_detector_create_impl(*static_cast<Model*>(model), device_name, device_id,
-                                                handle);
+int mmdeploy_rotated_detector_create(mm_model_t model, const char* device_name, int device_id,
+                                     mm_handle_t* handle) {
+  return mmdeploy_rotated_detector_create_impl(*static_cast<Model*>(model), device_name, device_id,
+                                               handle);
 }
 
-int mmdeploy_rotation_detector_create_by_path(const char* model_path, const char* device_name,
-                                              int device_id, mm_handle_t* handle) {
-  return mmdeploy_rotation_detector_create_impl(model_path, device_name, device_id, handle);
+int mmdeploy_rotated_detector_create_by_path(const char* model_path, const char* device_name,
+                                             int device_id, mm_handle_t* handle) {
+  return mmdeploy_rotated_detector_create_impl(model_path, device_name, device_id, handle);
 }
 
-int mmdeploy_rotation_detector_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
-                                     mm_rotate_detect_t** results, int** result_count) {
+int mmdeploy_rotated_detector_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
+                                    mm_rotated_detect_t** results, int** result_count) {
   if (handle == nullptr || mats == nullptr || mat_count == 0 || results == nullptr ||
       result_count == nullptr) {
     return MM_E_INVALID_ARG;
@@ -106,11 +106,11 @@ int mmdeploy_rotation_detector_apply(mm_handle_t handle, const mm_mat_t* mats, i
     auto result_count_ptr = result_count_data.release();
     std::copy(_result_count.begin(), _result_count.end(), result_count_data.get());
 
-    auto deleter = [&](mm_rotate_detect_t* p) {
-      mmdeploy_rotation_detector_release_result(p, result_count_ptr);
+    auto deleter = [&](mm_rotated_detect_t* p) {
+      mmdeploy_rotated_detector_release_result(p, result_count_ptr);
     };
-    std::unique_ptr<mm_rotate_detect_t[], decltype(deleter)> result_data(
-        new mm_rotate_detect_t[total]{}, deleter);
+    std::unique_ptr<mm_rotated_detect_t[], decltype(deleter)> result_data(
+        new mm_rotated_detect_t[total]{}, deleter);
 
     auto result_ptr = result_data.get();
 
@@ -139,10 +139,10 @@ int mmdeploy_rotation_detector_apply(mm_handle_t handle, const mm_mat_t* mats, i
   return MM_E_FAIL;
 }
 
-void mmdeploy_rotation_detector_release_result(mm_rotate_detect_t* results,
-                                               const int* result_count) {
+void mmdeploy_rotated_detector_release_result(mm_rotated_detect_t* results,
+                                              const int* result_count) {
   delete[] results;
   delete[] result_count;
 }
 
-void mmdeploy_rotation_detector_destroy(mm_handle_t handle) { delete static_cast<Handle*>(handle); }
+void mmdeploy_rotated_detector_destroy(mm_handle_t handle) { delete static_cast<Handle*>(handle); }
