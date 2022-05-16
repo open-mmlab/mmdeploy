@@ -7,14 +7,25 @@ from mmdeploy.core import SYMBOLIC_REWRITER
 from mmdeploy.utils import Backend
 
 
+@parse_args('v', 'v', 'f', 'f', 'i', 'i')
+def linear_no_bias(g, input, weight):
+    """Symbolic function for `linear` without bias.
+
+    PyTorch `nn.Linear` will be exported as ONNX node 'Gemm'.
+    """
+    g.op(
+        'mmdeploy::Gemm', input, weight, alpha_f=1.0, beta_f=1.0, transA_i=0, transB_i=1)
+
+
+
 @parse_args('v', 'v', 'v', 'f', 'f', 'i', 'i')
-def linear(ctx, g, input, weight, bias):
+def linear_normal(g, input, weight, bias):
     """Symbolic function for `linear`.
 
     PyTorch `nn.Linear` will be exported as ONNX node 'Gemm'.
     """
     g.op(
-        'Gemm',
+        'mmdeploy::Gemm',
         input,
         weight,
         bias,
@@ -24,21 +35,18 @@ def linear(ctx, g, input, weight, bias):
         transB_i=1)
 
 
-@parse_args('v', 'v', 'f', 'f', 'i', 'i')
-def linear_without_bias(ctx, g, input, weight):
-    """Symbolic function for `linear` without bias.
-
-    PyTorch `nn.Linear` will be exported as ONNX node 'Gemm'.
-    """
-    g.op(
-        'Gemm', input, weight, alpha_f=1.0, beta_f=1.0, transA_i=0, transB_i=1)
-
-
 @SYMBOLIC_REWRITER.register_symbolic(
-    'linear', is_pytorch=True, backend=Backend.NCNN.value)
+    'linear', is_pytorch=True,
+    # arg_descriptors=['v', 'v', 'v', 'f', 'f', 'i', 'i'],
+    backend=Backend.NCNN.value)
 def linear__ncnn(ctx, g, input, weight, bias):
     """Support export linear This rewrite enable export Gemm."""
     if bias is None:
-        return linear_without_bias(g, input, weight, bias)
+        return linear_no_bias(g, input, weight)
     else:
-        return linear(g, input, weight)
+        return linear_normal(g, input, weight, bias)
+    # return linear(g, input, weight, bias)
+    # return g.op('mmdeploy::Gemm', input, weight, bias, alpha_f=1.0, beta_f=1.0, transA_i=0, transB_i=1)
+
+    # arg_descriptors=['v', 'v', 'f', 'f', 'i', 'i']
+    # return g.op('mmdeploy::Gemm', input, weight, alpha_f=1.0, beta_f=1.0, transA_i=0, transB_i=1)
