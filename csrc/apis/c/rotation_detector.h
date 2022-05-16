@@ -52,7 +52,7 @@ MMDEPLOY_API int mmdeploy_rotation_detector_create_by_path(const char* model_pat
  * @param[in] mat_count number of images in the batch
  * @param[out] results a linear buffer to save detection results of each image. It must be released
  * by \ref mmdeploy_rotation_detector_release_result
- * @param result_count a linear buffer with length being \p mat_count to save the number of
+ * @param[out] result_count a linear buffer with length being \p mat_count to save the number of
  * detection results of each image. And it must be released by \ref
  * mmdeploy_rotation_detector_release_result
  * @return status of inference
