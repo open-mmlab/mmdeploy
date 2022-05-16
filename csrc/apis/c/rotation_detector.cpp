@@ -8,7 +8,6 @@
 #include "core/device.h"
 #include "core/graph.h"
 #include "core/mat.h"
-#include "core/tensor.h"
 #include "core/utils/formatter.h"
 #include "handle.h"
 
@@ -77,7 +76,8 @@ int mmdeploy_rotation_detector_create_by_path(const char* model_path, const char
 
 int mmdeploy_rotation_detector_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
                                      mm_rotate_detect_t** results, int** result_count) {
-  if (handle == nullptr || mats == nullptr || mat_count == 0 || results == nullptr) {
+  if (handle == nullptr || mats == nullptr || mat_count == 0 || results == nullptr ||
+      result_count == nullptr) {
     return MM_E_INVALID_ARG;
   }
 
@@ -103,7 +103,7 @@ int mmdeploy_rotation_detector_apply(mm_handle_t handle, const mm_mat_t* mats, i
     auto total = std::accumulate(_result_count.begin(), _result_count.end(), 0);
 
     std::unique_ptr<int[]> result_count_data(new int[_result_count.size()]{});
-    auto result_count_ptr = result_count_data.get();
+    auto result_count_ptr = result_count_data.release();
     std::copy(_result_count.begin(), _result_count.end(), result_count_data.get());
 
     auto deleter = [&](mm_rotate_detect_t* p) {
@@ -111,8 +111,6 @@ int mmdeploy_rotation_detector_apply(mm_handle_t handle, const mm_mat_t* mats, i
     };
     std::unique_ptr<mm_rotate_detect_t[], decltype(deleter)> result_data(
         new mm_rotate_detect_t[total]{}, deleter);
-    // ownership transferred to result_data
-    result_count_data.release();
 
     auto result_ptr = result_data.get();
 
