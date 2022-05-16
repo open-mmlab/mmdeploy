@@ -235,7 +235,7 @@ class TestTopk:
 
 
 @backend_checker(Backend.TENSORRT)
-def test_triu_ncnn():
+def test_triu_trt():
     input = torch.rand([2, 2])
 
     def triu_caller(*arg, **kwargs):

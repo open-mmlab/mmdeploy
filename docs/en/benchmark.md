@@ -1314,7 +1314,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center">0.7111</td>
     <td align="center">0.7304</td>
     <td align="center">0.7309</td>
-    <td align="center" rowspan="3">$MMOCR_DIR/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py</td>
+    <td rowspan="3">$MMOCR_DIR/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py</td>
   </tr>
   <tr>
     <td align="center">precision</td>
@@ -1351,7 +1351,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center">0.7496</td>
     <td align="center">-</td>
     <td align="center">0.7526</td>
-    <td align="center" rowspan="3">$MMOCR_DIR/configs/textdet/psenet/psenet_r50_fpnf_600e_icdar2015.py</td>
+    <td rowspan="3">$MMOCR_DIR/configs/textdet/psenet/psenet_r50_fpnf_600e_icdar2015.py</td>
   </tr>
   <tr>
     <td align="center">precision</td>
@@ -1388,7 +1388,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">0.7401</td>
-    <td align="center" rowspan="3">$MMOCR_DIR/configs/textdet/panet/panet_r18_fpem_ffm_600e_icdar2015.py</td>
+    <td rowspan="3">$MMOCR_DIR/configs/textdet/panet/panet_r18_fpem_ffm_600e_icdar2015.py</td>
   </tr>
   <tr>
     <td align="center">precision</td>

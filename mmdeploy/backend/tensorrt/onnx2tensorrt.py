@@ -80,7 +80,6 @@ def onnx2tensorrt(work_dir: str,
         int8_mode=final_params.get('int8_mode', False),
         int8_param=int8_param,
         max_workspace_size=final_params.get('max_workspace_size', 0),
-        set_tactic_sources=final_params.get('set_tactic_sources', False),
         device_id=device_id)
 
     save_trt_engine(engine, osp.join(work_dir, save_file))
