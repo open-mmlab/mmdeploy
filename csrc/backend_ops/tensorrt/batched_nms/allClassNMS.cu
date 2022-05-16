@@ -218,7 +218,9 @@ pluginStatus_t allClassNMS_gpu(cudaStream_t stream, const int num, const int num
     // sm_53 (Jetson Nano) and sm_62 (Jetson TX2) requires reduced top_k < 1000
     auto __cuda_arch__ = get_cuda_arch(0);
     if ((__cuda_arch__ == 530 || __cuda_arch__ == 620) && top_k >= 1000) {
-      printf("Warning: pre_top_k need to be reduced for devices with arch 5.3, 6.2, got pre_top_k=%d\n",
+      printf(
+        "Warning: pre_top_k need to be reduced for devices with arch 5.3, 6.2, got "
+        "pre_top_k=%d\n",
         top_k);
     }
     return STATUS_FAILURE;
