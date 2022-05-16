@@ -529,35 +529,3 @@ def test_sar_model(backend: Backend, decoder_type):
         onnx.checker.check_model(model)
     except onnx.checker.ValidationError:
         assert False
-
-
-@pytest.mark.parametrize('backend', [Backend.TENSORRT])
-def test_resnet_basic_block__forward__trt(backend):
-    check_backend(backend)
-    from mmdet.models.backbones.resnet import BasicBlock
-
-    # test BasicBlock structure and forward
-    block = BasicBlock(512, 512)
-    x = torch.randn(1, 512, 14, 14)
-    with RewriterContext(backend=Backend.TENSORRT.value):
-        x_out = block(x)
-    assert x_out.shape == torch.Size([1, 512, 14, 14])
-
-
-@pytest.mark.parametrize('backend', [Backend.TENSORRT])
-def test_fpem_ffm__forward_trt(backend):
-    check_backend(backend)
-    from mmocr.models.textdet.necks import FPEM_FFM
-
-    # test BasicBlock structure and forward
-    in_channels = [64, 128, 256, 512]
-    from mmocr.utils import revert_sync_batchnorm
-    neck = FPEM_FFM(in_channels=in_channels)
-    neck = revert_sync_batchnorm(neck)
-    inputs = [
-        torch.randn(1, channels, 7 * (4 - i), 7 * (4 - i))
-        for i, channels in enumerate(in_channels)
-    ]
-    with RewriterContext(backend=Backend.TENSORRT.value):
-        x_out = neck.forward(inputs)
-    assert len(x_out) == 4
