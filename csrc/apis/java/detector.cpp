@@ -75,22 +75,20 @@ namespace MMDeployJava {
       mmdeploy_detector_destroy(handle);
     }
 
+    static JNINativeMethod method[]={
+      {"mmdeployDetectorCreateByPath", "(Ljava/lang/String;Ljava/lang/String;ILcom/openmmlab/mmdeployxdetector/PointerWrapper;)Z",(bool*)mmdeployDetectorCreateByPath},
+      {"mmdeployDetectorApply", "(Lcom/openmmlab/mmdeployxdetector/PointerWrapper;Lcom/openmmlab/mmdeployxdetector/PointerWrapper;ILcom/openmmlab/mmdeployxdetector/PointerWrapper;Lcom/openmmlab/mmdeployxdetector/PointerWrapper;)Z",(bool*)mmdeployDetectorApply},
+      {"mmdeployDetectorReleaseResult", "(Lcom/openmmlab/mmdeployxdetector/PointerWrapper;Lcom/openmmlab/mmdeployxdetector/PointerWrapper;I)V", (void*)mmdeployDetectorReleaseResult},
+      {"mmdeployDetectorDestroy", "(Lcom/openmmlab/mmdeployxdetector/PointerWrapper;)V", (void*)mmdeployDetectorDestroy}
+    };
     JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved){
       JNIEnv* env = NULL;
       jint result = -1;
-      // ATTENTION JNI_VERSION VALUE!
       if(vm->GetEnv((void**)&env,JNI_VERSION_1_6)!= JNI_OK){
         return result;
       }
-      // 定义函数映射关系（参数1：java native函数，参数2：函数描述符，参数3：C函数）
-      const JNINativeMethod method[]={
-              {"mmdeployDetectorCreateByPath","(Ljava/lang/String;Ljava/lang/String;ILjava/lang/Object;)Z",(void*)mmdeployDetectorCreateByPath},
-              {"mmdeployDetectorApply","(Ljava/lang/Object;Ljava/lang/Object;ILjava/lang/Object;Ljava/lang/Object;)Z",(void*)mmdeployDetectorApply},
-              {"mmdeployDetectorReleaseResult", "(Ljava/lang/Object;Ljava/lang/Object;int)Z", (void*)mmdeployDetectorReleaseResult},
-              {"mmdeployDetectorDestroy", "(Ljava/lang/Object;)Z", (void*)mmdeployDetectorDestroy}
-      };
-      jclass jClassName=env->FindClass("MMDeployDetector");
-      jint ret = env->RegisterNatives(jClassName,method, 2);
+      jclass jClassName=env->FindClass("com.openmmlab.mmdeployxdetector.MMDeployDetector");
+      jint ret = env->RegisterNatives(jClassName,method, sizeof(method)/sizeof(JNINativeMethod));
       if (ret != JNI_OK) {
           __android_log_print(ANDROID_LOG_DEBUG, "JNITag", "jni_register Error");
           return -1;
