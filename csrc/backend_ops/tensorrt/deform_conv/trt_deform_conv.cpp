@@ -67,7 +67,6 @@ nvinfer1::DimsExprs DeformableConvPluginDynamic::getOutputDimensions(
 bool DeformableConvPluginDynamic::supportsFormatCombination(
     int pos, const nvinfer1::PluginTensorDesc *ioDesc, int nbInputs, int nbOutputs) TRT_NOEXCEPT {
   if (pos == 0) {
-    return ((ioDesc[pos].type == nvinfer1::DataType::kHALF) &&
     return ((ioDesc[pos].type == nvinfer1::DataType::kFLOAT ||
              ioDesc[pos].type == nvinfer1::DataType::kHALF) &&
             ioDesc[pos].format == nvinfer1::TensorFormat::kLINEAR);
