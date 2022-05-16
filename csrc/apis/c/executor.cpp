@@ -83,7 +83,7 @@ mmdeploy_sender_t mmdeploy_executor_on(mmdeploy_scheduler_t scheduler, mmdeploy_
   return Guard([&] { return Take(On(*Cast(scheduler), Take(input))); });
 }
 
-mmdeploy_sender_t mmdeploy_executor_then(mmdeploy_sender_t input, mmdeploy_invocable_t fn,
+mmdeploy_sender_t mmdeploy_executor_then(mmdeploy_sender_t input, mmdeploy_then_fn_t fn,
                                          void* context) {
   return Guard([&] {
     return Take(Then(Take(input), [fn, context](Value args) {
@@ -95,11 +95,11 @@ mmdeploy_sender_t mmdeploy_executor_then(mmdeploy_sender_t input, mmdeploy_invoc
   });
 }
 
-mmdeploy_sender_t mmdeploy_executor_let_value(mmdeploy_sender_t input, mmdeploy_kleisli_t kleisli,
+mmdeploy_sender_t mmdeploy_executor_let_value(mmdeploy_sender_t input, mmdeploy_let_value_fn_t fn,
                                               void* context) {
   return Guard([&] {
-    return Take(LetValue(Take(input), [kleisli, context](Value& args) {
-      auto out = Cast(kleisli(Cast(&args), context));
+    return Take(LetValue(Take(input), [fn, context](Value& args) {
+      auto out = Cast(fn(Cast(&args), context));
       SenderType ret(std::move(*out));
       delete out;
       return ret;

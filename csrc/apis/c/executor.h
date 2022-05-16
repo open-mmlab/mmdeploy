@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-typedef mmdeploy_value_t (*mmdeploy_invocable_t)(mmdeploy_value_t, void*);
+typedef mmdeploy_value_t (*mmdeploy_then_fn_t)(mmdeploy_value_t, void*);
 
 struct mmdeploy_sender;
 struct mmdeploy_scheduler;
@@ -19,7 +19,7 @@ struct mmdeploy_scheduler;
 typedef struct mmdeploy_sender* mmdeploy_sender_t;
 typedef struct mmdeploy_scheduler* mmdeploy_scheduler_t;
 
-typedef mmdeploy_sender_t (*mmdeploy_kleisli_t)(mmdeploy_value_t, void*);
+typedef mmdeploy_sender_t (*mmdeploy_let_value_fn_t)(mmdeploy_value_t, void*);
 
 typedef struct mmdeploy_exec_info* mmdeploy_exec_info_t;
 
@@ -65,10 +65,10 @@ MMDEPLOY_API mmdeploy_sender_t mmdeploy_executor_on(mmdeploy_scheduler_t schedul
                                                     mmdeploy_sender_t input);
 
 MMDEPLOY_API mmdeploy_sender_t mmdeploy_executor_then(mmdeploy_sender_t input,
-                                                      mmdeploy_invocable_t fn, void* context);
+                                                      mmdeploy_then_fn_t fn, void* context);
 
 MMDEPLOY_API mmdeploy_sender_t mmdeploy_executor_let_value(mmdeploy_sender_t input,
-                                                           mmdeploy_kleisli_t kleisli,
+                                                           mmdeploy_let_value_fn_t fn,
                                                            void* context);
 
 MMDEPLOY_API mmdeploy_sender_t mmdeploy_executor_split(mmdeploy_sender_t input);
@@ -84,7 +84,7 @@ MMDEPLOY_API int mmdeploy_executor_start_detached(mmdeploy_sender_t input);
 
 MMDEPLOY_API mmdeploy_value_t mmdeploy_executor_sync_wait(mmdeploy_sender_t input);
 
-MMDEPLOY_API void mmdeploy_executor_execute(mmdeploy_scheduler_t scheduler, mmdeploy_invocable_t fn,
+MMDEPLOY_API void mmdeploy_executor_execute(mmdeploy_scheduler_t scheduler, mmdeploy_then_fn_t fn,
                                             void* context);
 
 ///////////////////////////////////////////////////////////////////////////////
