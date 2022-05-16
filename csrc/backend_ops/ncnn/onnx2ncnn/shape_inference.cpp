@@ -2,6 +2,8 @@
 
 #include "shape_inference.h"
 
+#include <algorithm>
+
 /**
  * @brief query output shape of target node
  *
