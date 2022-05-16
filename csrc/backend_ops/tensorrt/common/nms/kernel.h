@@ -43,13 +43,6 @@ pluginStatus_t allClassRotatedNMS(cudaStream_t stream, int num, int num_classes,
                                   void* beforeNMS_index_array, void* afterNMS_scores,
                                   void* afterNMS_index_array, bool flipXY = false);
 
-pluginStatus_t rotatedAllClassNMS(cudaStream_t stream, int num, int num_classes,
-                                  int num_preds_per_class, int top_k, float nms_threshold,
-                                  bool share_location, bool isNormalized, DataType DT_SCORE,
-                                  DataType DT_BBOX, void* bbox_data, void* beforeNMS_scores,
-                                  void* beforeNMS_index_array, void* afterNMS_scores,
-                                  void* afterNMS_index_array, bool flipXY = false);
-
 size_t detectionForwardBBoxDataSize(int N, int C1, DataType DT_BBOX);
 
 size_t detectionForwardBBoxPermuteSize(bool shareLocation, int N, int C1, DataType DT_BBOX);
