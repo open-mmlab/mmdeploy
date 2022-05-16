@@ -1,10 +1,13 @@
 global_config:
+  bdist_tags:
+    python_tag: "py37"
   cmake_envs:
     CMAKE_CXX_COMPILER: "g++-7"
     MMDEPLOY_BUILD_SDK: "ON"
     MMDEPLOY_BUILD_SDK_PYTHON_API: "ON"
     MMDEPLOY_TARGET_DEVICES: '"cpu;cuda"'
     MMDEPLOY_TARGET_BACKENDS: "trt"
+    CUDNN_DIR: "/usr/lib/x86_64-linux-gnu"
     pplcv_DIR: ${pplcv_DIR}/cuda-build/install/lib/cmake/ppl
 
 local_configs:

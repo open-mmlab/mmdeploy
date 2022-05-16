@@ -7,6 +7,7 @@ import os.path as osp
 import shutil
 import sys
 import tarfile
+from distutils.util import get_platform
 from glob import glob
 from subprocess import CalledProcessError, run
 from typing import Dict
@@ -18,6 +19,7 @@ logger.setLevel(logging.INFO)
 
 CUR_DIR = os.path.dirname(os.path.abspath(__file__))
 PACKAGING_DIR = osp.join(CUR_DIR, 'packaging')
+PLATFORM_TAG = get_platform().replace('-', '_').replace('.', '_')
 
 
 def _merge_cfg(cfg0, cfg1):
@@ -73,6 +75,28 @@ def _create_tar(path, tar_name):
         tar.add(path, arcname=os.path.basename(path))
 
 
+def _create_bdist_cmd(cfg, dist_dir=None):
+
+    bdist_tags = cfg.get('bdist_tags', {})
+
+    # base
+    bdist_cmd = 'python setup.py bdist_wheel '
+
+    # platform
+    bdist_cmd += f' --plat-name {PLATFORM_TAG} '
+
+    # python tag
+    if 'python_tag' in bdist_tags:
+        python_tag = bdist_tags['python_tag']
+        bdist_cmd += f' --python-tag {python_tag} '
+
+    # dist dir
+    if dist_dir is not None:
+        dist_dir = osp.abspath(dist_dir)
+        bdist_cmd += f' --dist-dir {dist_dir} '
+    return bdist_cmd
+
+
 def clear_mmdeploy(mmdeploy_dir: str):
     logging.info(f'cleaning mmdeploy: {mmdeploy_dir}')
 
@@ -98,7 +122,7 @@ def clear_mmdeploy(mmdeploy_dir: str):
         os.remove(ncnn_ext_path)
 
 
-def build_mmdeploy(cfg, mmdeploy_dir):
+def build_mmdeploy(cfg, mmdeploy_dir, dist_dir=None):
     cmake_flags = cfg.get('cmake_flags', [])
     cmake_envs = cfg.get('cmake_envs', dict())
 
@@ -127,7 +151,7 @@ def build_mmdeploy(cfg, mmdeploy_dir):
         _call_command(build_cmd, build_dir)
 
     # build wheel
-    bdist_cmd = 'python setup.py bdist_wheel'
+    bdist_cmd = _create_bdist_cmd(cfg, dist_dir)
     _call_command(bdist_cmd, mmdeploy_dir)
 
 
@@ -141,7 +165,7 @@ def get_dir_name(cfg, tag, default_name):
 
 def create_package(cfg: Dict, mmdeploy_dir: str):
     build_dir = 'build'
-    sdk_tar_name = 'sdk-tar'
+    sdk_tar_name = 'sdk'
 
     # load flags
     cfg, build_dir = get_dir_name(cfg, 'BUILD_NAME', build_dir)
@@ -160,10 +184,9 @@ def create_package(cfg: Dict, mmdeploy_dir: str):
     logging.debug(f'with config: {cfg}')
 
     try:
-        # clear mmdeploy
-        clear_mmdeploy(mmdeploy_dir)
-        build_mmdeploy(cfg, mmdeploy_dir)
-        _copy(osp.join(mmdeploy_dir, 'dist'), osp.join(build_dir, 'dist'))
+        # build dist
+        dist_dir = osp.join(build_dir, 'dist')
+        build_mmdeploy(cfg, mmdeploy_dir, dist_dir=dist_dir)
 
         if build_sdk_flag:
 
@@ -190,13 +213,9 @@ def create_package(cfg: Dict, mmdeploy_dir: str):
             _copy(PACKAGING_DIR, sdk_python_package_dir)
             _copy(python_api_lib_path,
                   osp.join(sdk_python_package_dir, 'mmdeploy_python'))
-            create_wheel_cmd = 'python setup.py bdist_wheel'
-            _call_command(create_wheel_cmd, sdk_python_package_dir)
-            wheel_src_dir = osp.join(sdk_python_package_dir, 'dist')
-            _copy(wheel_src_dir, osp.join(sdk_tar_dir, 'python'))
-
-            # create tar file
-            _create_tar(sdk_tar_dir, sdk_tar_dir + '.tar')
+            sdk_wheel_dir = osp.abspath(osp.join(sdk_tar_dir, 'python'))
+            bdist_cmd = _create_bdist_cmd(cfg, sdk_wheel_dir)
+            _call_command(bdist_cmd, sdk_python_package_dir)
 
         logging.info('build finish.')
 
