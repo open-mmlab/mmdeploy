@@ -127,6 +127,27 @@ def test_instance_norm():
     assert nodes[4].domain == 'mmdeploy'
 
 
+@pytest.mark.usefixtures('prepare_symbolics_ncnn')
+class TestLinear:
+
+    def test_normal(self):
+        x = torch.rand(1, 2, 3)
+        w = torch.rand(2, 3)
+        bias = torch.rand(2)
+        model = OpModel(torch.nn.functional.linear, w, bias).eval()
+        nodes = get_model_onnx_nodes(model, x)
+        print(nodes)
+        assert nodes[0].op_type == 'Matmal'
+
+    def test_no_bias(self):
+        x = torch.rand(1, 2, 3)
+        w = torch.rand(2, 3)
+        model = OpModel(torch.nn.functional.linear, w).eval()
+        nodes = get_model_onnx_nodes(model, x)
+        print(nodes)
+        assert nodes[0].op_type == 'Matmal'
+
+
 @pytest.mark.usefixtures('prepare_symbolics')
 class TestSqueeze:
 
