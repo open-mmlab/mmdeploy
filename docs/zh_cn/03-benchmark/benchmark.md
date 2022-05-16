@@ -713,6 +713,19 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
   </tr>
   <tr>
+    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/reppoints/reppoints_moment_r50_fpn_1x_coco.py">RepPoints</a></td>
+    <td align="center">Object Detection</td>
+    <td align="center">COCO2017</td>
+    <td align="center">box AP</td>
+    <td align="center">37.0</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">36.9</td>
+    <td align="center">20.4</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
     <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/mask_rcnn/mask_rcnn_r50_fpn_1x_coco.py">Mask R-CNN</a></td>
     <td align="center" rowspan="2">Instance Segmentation</td>
     <td align="center" rowspan="2">COCO2017</td>
