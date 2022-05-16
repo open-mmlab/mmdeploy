@@ -2,9 +2,9 @@
 #include "fuse_pass.h"
 
 void fuse_rewrite_gather(onnx::GraphProto* mutable_graph,
-                                std::map<std::string, onnx::TensorProto>& weights,
-                                std::map<std::string, int>& node_reference,
-                                std::set<std::string>& blob_names, int& reduced_node_count) {
+                         std::map<std::string, onnx::TensorProto>& weights,
+                         std::map<std::string, int>& node_reference,
+                         std::set<std::string>& blob_names, int& reduced_node_count) {
   const int node_count = mutable_graph->node_size();
   for (int i = 0; i < node_count; ++i) {
     onnx::NodeProto* gather = mutable_graph->mutable_node(i);

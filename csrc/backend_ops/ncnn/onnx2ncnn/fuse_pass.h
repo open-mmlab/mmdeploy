@@ -5,9 +5,9 @@
 #include "utils.h"
 
 void fuse_rewrite_gather(onnx::GraphProto* mutable_graph,
-                                std::map<std::string, onnx::TensorProto>& weights,
-                                std::map<std::string, int>& node_reference,
-                                std::set<std::string>& blob_names, int& reduced_node_count);
+                         std::map<std::string, onnx::TensorProto>& weights,
+                         std::map<std::string, int>& node_reference,
+                         std::set<std::string>& blob_names, int& reduced_node_count);
 
 void fuse_weight_reshape(onnx::GraphProto* mutable_graph,
                          std::map<std::string, onnx::TensorProto>& weights,
