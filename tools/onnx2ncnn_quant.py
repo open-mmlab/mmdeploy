@@ -102,14 +102,14 @@ def main():
     quant_onnx_path = args.quant_onnx_path
     image_dir = args.image_dir
 
-    logger.info(f'onnx2ncnn_quant_table: \n\tonnx_path: {onnx_path} ')
+    logger.info(f'onnx2ncnn_quant: \n\tonnx_path: {onnx_path} ')
     try:
         get_table(onnx_path, deploy_cfg, model_cfg, quant_onnx_path,
                   quant_table_path, image_dir)
-        logger.info('onnx2ncnn success.')
+        logger.info('onnx2ncnn_quant success.')
     except Exception as e:
         logger.error(e)
-        logger.error('onnx2ncnn_quant_table failed.')
+        logger.error('onnx2ncnn_quant failed.')
 
 
 if __name__ == '__main__':
