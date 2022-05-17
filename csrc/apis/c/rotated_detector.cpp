@@ -104,7 +104,7 @@ int mmdeploy_rotated_detector_apply(mm_handle_t handle, const mm_mat_t* mats, in
 
     std::unique_ptr<int[]> result_count_data(new int[_result_count.size()]{});
     auto result_count_ptr = result_count_data.release();
-    std::copy(_result_count.begin(), _result_count.end(), result_count_data.get());
+    std::copy(_result_count.begin(), _result_count.end(), result_count_ptr);
 
     auto deleter = [&](mm_rotated_detect_t* p) {
       mmdeploy_rotated_detector_release_result(p, result_count_ptr);
