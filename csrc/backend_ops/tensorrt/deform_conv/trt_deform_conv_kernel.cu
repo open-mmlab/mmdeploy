@@ -163,3 +163,10 @@ template void deform_conv<float>(const float* input, const float* weight, const 
                                  int dW, int dH, int padW, int padH, int dilationW, int dilationH,
                                  int group, int deformable_group, int im2col_step,
                                  cublasHandle_t cublas_handle, cudaStream_t stream);
+
+template void deform_conv<__half>(const __half* input, const __half* weight, const __half* offset,
+                                  __half* output, void* workspace, int batchSize, int nInputPlane,
+                                  int inputHeight, int inputWidth, int nOutputPlane, int kW, int kH,
+                                  int dW, int dH, int padW, int padH, int dilationW, int dilationH,
+                                  int group, int deformable_group, int im2col_step,
+                                  cublasHandle_t cublas_handle, cudaStream_t stream);
