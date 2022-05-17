@@ -1045,7 +1045,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">36.9</td>
-    <td align="center">20.4</td>
+    <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
@@ -1893,3 +1893,5 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
 - Mask AP of Mask R-CNN drops by 1% for the backend. The main reason is that the predicted masks are directly interpolated to original image in PyTorch, while they are at first interpolated to the preprocessed input image of the model and then to original image in other backends.
 
 - MMPose models are tested with `flip_test` explicitly set to `False` in model configs.
+
+- Some models might get low accuracy in fp16 mode. Please adjust the model to avoid value overflow.
