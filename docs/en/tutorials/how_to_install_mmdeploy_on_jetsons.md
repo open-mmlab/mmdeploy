@@ -29,7 +29,9 @@ There are two major installation methods including,
 
 You can find a very detailed installation guide from NVIDIA [official website](https://developer.nvidia.com/jetpack-sdk-461).
 
-**Note:** Please select the option to install "Jetson SDK Components" when using NVIDIA SDK Manager as this includes CUDA and TensorRT which are needed for this guide.
+```{note}
+Please select the option to install "Jetson SDK Components" when using NVIDIA SDK Manager as this includes CUDA and TensorRT which are needed for this guide.
+```
 
 Here we have chosen [JetPack 4.6.1](https://developer.nvidia.com/jetpack-sdk-461) as our best practice on setting up Jetson platforms. MMDeploy has been tested on JetPack 4.6 (rev.3) and above and TensorRT 8.0.1.6 and above. Earlier JetPack versions has incompatibilities with TensorRT 7.x
 
@@ -86,7 +88,9 @@ export BUILD_VERSION=0.11.1
 pip install -e .
 ```
 
-**Note:** It takes about 30 minutes to install torchvision on a Jetson Nano. So, please be patient until the installation is complete.
+```{note}
+It takes about 30 minutes to install torchvision on a Jetson Nano. So, please be patient until the installation is complete.
+```
 
 If you install other versions of PyTorch and torchvision, make sure the versions are compatible. Refer to the compatibility chart listed [here](https://pypi.org/project/torchvision/).
 
@@ -163,7 +167,9 @@ cd mmcv
 MMCV_WITH_OPS=1 pip install -e .
 ```
 
-**Note:** It takes about 1 hour 40 minutes to install MMCV on a Jetson Nano. So, please be patient until the installation is complete.
+```{note}
+It takes about 1 hour 40 minutes to install MMCV on a Jetson Nano. So, please be patient until the installation is complete.
+```
 
 #### Install ONNX
 
@@ -180,7 +186,9 @@ sudo apt-get install -y pkg-config libhdf5-100 libhdf5-dev
 pip install versioned-hdf5
 ```
 
-**Note:** It takes about 6 minutes to install versioned-hdf5 on a Jetson Nano. So, please be patient until the installation is complete.
+```{note}
+It takes about 6 minutes to install versioned-hdf5 on a Jetson Nano. So, please be patient until the installation is complete.
+```
 
 ### Install Dependencies for C/C++ Inference SDK
 
@@ -205,7 +213,9 @@ echo "export PPLCV_DIR=$(pwd)" >> ~/.bashrc
 ./build.sh cuda
 ```
 
-**Note:** It takes about 15 minutes to install ppl.cv on a Jetson Nano. So, please be patient until the installation is complete.
+```{note}
+It takes about 15 minutes to install ppl.cv on a Jetson Nano. So, please be patient until the installation is complete.
+```
 
 ## Install MMDeploy
 
@@ -234,7 +244,9 @@ pip install -v -e .
 # thus any local modifications made to the code will take effect without re-installation.
 ```
 
-**Note:** It takes about 5 minutes to install model converter on a Jetson Nano. So, please be patient until the installation is complete.
+```{note}
+It takes about 5 minutes to install model converter on a Jetson Nano. So, please be patient until the installation is complete.
+```
 
 ### Install C/C++ Inference SDK
 
@@ -252,7 +264,9 @@ cmake .. \
 make -j$(nproc) && make install
 ```
 
-**Note:** It takes about 9 minutes to build SDK libraries on a Jetson Nano. So, please be patient until the installation is complete.
+```{note}
+It takes about 9 minutes to build SDK libraries on a Jetson Nano. So, please be patient until the installation is complete.
+```
 
 2. Build SDK demos
 
