@@ -648,7 +648,7 @@ def get_backend_fps_metric(deploy_cfg_path: str, model_cfg_path: Path,
 
     if backend_name == 'openvino' or \
             (backend_name == 'onnxruntime' and ort.get_device() != 'GPU'):
-        cmd_str += f'--device cpu '
+        cmd_str += '--device cpu '
     else:
         cmd_str += f'--device {device_type} '
 
