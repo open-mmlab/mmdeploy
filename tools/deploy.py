@@ -28,7 +28,9 @@ def parse_args():
     parser.add_argument(
         '--test-img', default=None, help='image used to test model')
     parser.add_argument(
-        '--work-dir', default=None, help='the dir to save logs and models')
+        '--work-dir',
+        default=os.getcwd(),
+        help='the dir to save logs and models')
     parser.add_argument(
         '--calib-dataset-cfg',
         help='dataset config path used to calibrate in int8 mode. If not \
@@ -98,7 +100,6 @@ def main():
     deploy_cfg, model_cfg = load_config(deploy_cfg_path, model_cfg_path)
 
     # create work_dir if not
-    args.work_dir = os.getcwd() if args.work_dir is None else args.work_dir
     mmcv.mkdir_or_exist(osp.abspath(args.work_dir))
 
     if args.dump_info:
