@@ -11,12 +11,6 @@ reliably on all generators, or if a new generator is added in the future that ca
 projects using it will be stuck. Even if CONFIGURE_DEPENDS works reliably, there is still a cost
 to perform the check on every rebuild.
 #]==]
-set(SPDLOG_LIB)
-find_package(spdlog QUIET)
-if (spdlog_FOUND)
-    message(STATUS "spdlog is found")
-    set(SPDLOG_LIB spdlog::spdlog)
-endif ()
 
 include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
 
@@ -43,11 +37,11 @@ target_include_directories(${PROJECT_NAME}
         PUBLIC
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/csrc>
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/third_party/outcome>
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/third_party/spdlog/include>
         # TODO: remove dependency of `json`
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/third_party/json>
         $<INSTALL_INTERFACE:include/cpp>
         )
-target_link_libraries(${PROJECT_NAME} PUBLIC ${SPDLOG_LIB})
 if (NOT (MSVC OR ANDROID))
     target_link_libraries(${PROJECT_NAME} PUBLIC stdc++fs)
 endif ()

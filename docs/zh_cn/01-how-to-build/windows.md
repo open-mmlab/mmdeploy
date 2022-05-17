@@ -77,21 +77,6 @@ pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/$env:cu
 </thead>
 <tbody>
   <tr>
-    <td>spdlog </td>
-    <td>spdlog是一个精巧的日志管理库。请参考如下命令安装： <br>
-<pre><code>
-Invoke-WebRequest -Uri https://github.com/gabime/spdlog/archive/refs/tags/v1.9.2.zip -OutFile spdlog-1.9.2.zip
-Expand-Archive spdlog-1.9.2.zip .
-cd spdlog-1.9.2
-mkdir build
-cd build
-cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release
-cmake --build . --target install --config Release  -- /m
-cd ../..
-</code></pre>
-    </td>
-  </tr>
-  <tr>
     <td>OpenCV </td>
     <td>
     1. 从<a href="https://github.com/opencv/opencv/releases">这里</a>下载 OpenCV 3+。
