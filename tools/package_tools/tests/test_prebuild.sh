@@ -10,6 +10,9 @@ if [ $# != ${PARAMETER_NUMBER} ]; then
   exit 1
 fi
 
+# make conda available in shell
+source ~/miniconda3/etc/profile.d/conda.sh
+
 function activate_conda_env() {
   if [ "$(conda env list | grep "${1}")" == "" ]; then
     echo "${1} conda env not existed, create one."
@@ -19,7 +22,7 @@ function activate_conda_env() {
     else
       python_version=3.7
     fi
-    
+
     conda create -y -n "${1}" python=${python_version}
     conda activate "${1}"
     pip install mmdet
@@ -30,23 +33,19 @@ function activate_conda_env() {
 }
 
 # build convert wheel
-conda activate mmdeploy
+conda activate mmdeploy || exit 3
 python "${MMDEPLOY_DIR}/tools/package_tools/mmdeploy_builder.py" \
   "${MMDEPLOY_DIR}/tools/package_tools/configs/${BUILD_CONFIG}" \
   "${MMDEPLOY_DIR}"
 
-# using another env to pip install it
-conda deactivate
-activate_conda_env mmdeploy_convert
-pip uninstall mmdeploy
-pip install xxx.whl
-
 # test convert with RetinaNet of mmdetection
-mkdir /tmp/wheel_convert_test && cd /tmp/wheel_convert_test || exit 1
+mkdir -p /tmp/wheel_convert_test && cd /tmp/wheel_convert_test || exit 1
 readonly CONVERT_TEST_PATH=$(pwd)
-wget https://download.openmmlab.com/mmdetection/v2.0/retinanet/retinanet_r50_fpn_1x_coco/retinanet_r50_fpn_1x_coco_20200130-c2398f9e.pth
+if [ ! -f retinanet_r50_fpn_1x_coco_20200130-c2398f9e.pth ]; then
+  wget https://download.openmmlab.com/mmdetection/v2.0/retinanet/retinanet_r50_fpn_1x_coco/retinanet_r50_fpn_1x_coco_20200130-c2398f9e.pth
+fi
 
-cd "../${MMDEPLOY_DIR}" || exit 1
+cd "${MMDEPLOY_DIR}/../" || exit 1
 if [ ! -d mmdetection ]; then
   git clone -b master https://github.com/open-mmlab/mmdetection.git
 fi
@@ -61,10 +60,24 @@ python tools/deploy.py \
   --work-dir ${CONVERT_TEST_PATH}/retinanet_output \
   --dump-info || exit 2
 
+exit 0
+
+# using another env to pip install it
+conda deactivate
+activate_conda_env mmdeploy_convert
+pip uninstall mmdeploy
+pip install xxx.whl
+
+# test convert with pre-build wheel
+cd "${MMDEPLOY_DIR}/tools/package_tools/tests" || exit 1
+python pre-build-onnx2tensorrt.py \
+  ${CONVERT_TEST_PATH}/retinanet_output/end2end.onnx \
+  ${CONVERT_TEST_PATH}/retinanet_output_prebuild/prebuild_end2end.engine
+
 # build sdk wheel
-python "${MMDEPLOY_DIR}/tools/package_tools/mmdeploy_builder.py" \
-  "${MMDEPLOY_DIR}/tools/package_tools/configs/${BUILD_CONFIG}" \
-  "${MMDEPLOY_DIR}"
+#python "${MMDEPLOY_DIR}/tools/package_tools/mmdeploy_builder.py" \
+#  "${MMDEPLOY_DIR}/tools/package_tools/configs/${BUILD_CONFIG}" \
+#  "${MMDEPLOY_DIR}"
 
 cd ${MMDEPLOY_DIR}/build/install/example || exit 1
 mkdir -p build && cd build
