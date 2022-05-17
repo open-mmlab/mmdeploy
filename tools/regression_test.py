@@ -101,7 +101,7 @@ def merge_report(work_dir: str, logger: logging.Logger):
 
         # delete if sheet already exist
         if sheet_name in wb.sheetnames:
-            wb.remove_sheet(wb[sheet_name])
+            wb.remove(wb[sheet_name])
         # create sheet
         wb.create_sheet(title=sheet_name, index=0)
         # write in row
@@ -112,7 +112,7 @@ def merge_report(work_dir: str, logger: logging.Logger):
         for name in wb.sheetnames:
             ws = wb[name]
             if ws.cell(1, 1).value is None:
-                wb.remove_sheet(ws)
+                wb.remove(ws)
         # save to file
         wb.save(str(res_file))
 
