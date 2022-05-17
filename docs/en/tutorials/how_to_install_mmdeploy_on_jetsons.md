@@ -9,8 +9,8 @@ In this chapter, we introduce how to install MMDeploy on NVIDIA Jetson platforms
 
 Hardware recommendation:
 
-- [Seeed reComputer built with Jetson Nano module](https://www.seeedstudio.com/Jetson-10-1-A0-p-5336.html) 
-- [Seeed reComputer built with Jetson Xavier NX module](https://www.seeedstudio.com/Jetson-20-1-H1-p-5328.html) 
+- [Seeed reComputer built with Jetson Nano module](https://www.seeedstudio.com/Jetson-10-1-A0-p-5336.html)
+- [Seeed reComputer built with Jetson Xavier NX module](https://www.seeedstudio.com/Jetson-20-1-H1-p-5328.html)
 
 ## Prerequisites
 
@@ -294,7 +294,7 @@ pip install -r requirements/build.txt
 pip install -v -e .  # or "python setup.py develop"
 ```
 
-2. Follow [this document](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/tutorials/how_to_convert_model.md) on how to convert model files. 
+2. Follow [this document](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/tutorials/how_to_convert_model.md) on how to convert model files.
 
 For this example, we have used [retinanet_r18_fpn_1x_coco.py](https://github.com/open-mmlab/mmdetection/blob/master/configs/retinanet/retinanet_r18_fpn_1x_coco.py) as the model config, and [this file](https://download.openmmlab.com/mmdetection/v2.0/retinanet/retinanet_r18_fpn_1x_coco/retinanet_r18_fpn_1x_coco_20220407_171055-614fd399.pth) as the corresponding checkpoint file. Also for deploy config, we have used [detection_tensorrt_dynamic-320x320-1344x1344.py](https://github.com/open-mmlab/mmdeploy/blob/master/configs/mmdet/detection/detection_tensorrt_dynamic-320x320-1344x1344.py)
 
