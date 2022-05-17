@@ -58,8 +58,6 @@ def process_model_config(model_cfg: mmcv.Config,
     if isinstance(imgs[0], np.ndarray):
         # set loading pipeline type
         cfg.data.test.pipeline[0].type = 'LoadImageFromWebcam'
-    # rename sdk RResize
-    cfg.data.test.pipeline = replace_RResize(cfg.data.test.pipeline)
     # for static exporting
     if input_shape is not None:
         cfg.data.test.pipeline[1]['img_scale'] = tuple(input_shape)
@@ -344,6 +342,9 @@ class RotatedDetection(BaseTask):
         """
         input_shape = get_input_shape(self.deploy_cfg)
         model_cfg = process_model_config(self.model_cfg, [''], input_shape)
+        # rename sdk RResize -> Resize
+        model_cfg.data.test.pipeline = replace_RResize(
+            model_cfg.data.test.pipeline)
         preprocess = model_cfg.data.test.pipeline
         return preprocess
 
