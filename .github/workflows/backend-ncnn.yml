@@ -1,0 +1,68 @@
+name: backend
+
+on:
+  push:
+    paths-ignore:
+      - "demo/**"
+      - "tools/**"
+
+  pull_request:
+    paths-ignore:
+      - "demo/**"
+      - "tools/**"
+      - "docs/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test_onnx2ncnn:
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        python-version: [3.7]
+        torch: [1.9.0]
+        mmcv: [1.4.2]
+        include:
+          - torch: 1.9.0
+            torch_version: torch1.9
+            torchvision: 0.10.0
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install unittest dependencies
+        run: |
+          pip install cmake onnx
+      - name: update
+        run: sudo apt update
+      - name: gcc-multilib
+        run: sudo apt install gcc-multilib g++-multilib wget libprotobuf-dev protobuf-compiler
+      - name: Install ncnn
+        run: |
+          wget https://github.com/Tencent/ncnn/archive/refs/tags/20220420.tar.gz
+          tar xf 20220420.tar.gz
+          pushd ncnn-20220420
+          mkdir build && pushd build
+          cmake -DCMAKE_INSTALL_PREFIX=$(pwd)/../install -DNCNN_BUILD_TESTS=OFF -DNCNN_BUILD_TOOLS=OFF -DNCNN_BUILD_EXAMPLES=OFF ..
+          cmake --build . -j2
+          make install
+          popd && popd
+      - name: Install mmdeploy with ncnn backend
+        run: |
+          mkdir -p build && pushd build
+          export LD_LIBRARY_PATH=/home/runner/work/mmdeploy/mmdeploy/ncnn-20220420/install/lib/:$LD_LIBRARY_PATH
+          cmake -DMMDEPLOY_TARGET_BACKENDS=ncnn -Dncnn_DIR=/home/runner/work/mmdeploy/mmdeploy/ncnn-20220420/install/lib/cmake/ncnn/ ..
+          make onnx2ncnn -j2
+          popd
+      - name: Test onnx2ncnn
+        run: |
+          echo $(pwd)
+          ln -s build/bin/onnx2ncnn ./
+          python3 .github/scripts/test_onnx2ncnn.py --run 1
