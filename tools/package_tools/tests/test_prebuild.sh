@@ -10,6 +10,25 @@ if [ $# != ${PARAMETER_NUMBER} ]; then
   exit 1
 fi
 
+function activate_conda_env() {
+  if [ "$(conda env list | grep "${1}")" == "" ]; then
+    echo "${1} conda env not existed, create one."
+
+    if [[ "${BUILD_CONFIG}" =~ "jetson" ]]; then
+      python_version=3.6
+    else
+      python_version=3.7
+    fi
+    
+    conda create -y -n "${1}" python=${python_version}
+    conda activate "${1}"
+    pip install mmdet
+  else
+    echo "${1} conda env existed, activate it."
+    conda activate "${1}"
+  fi
+}
+
 # build convert wheel
 conda activate mmdeploy
 python "${MMDEPLOY_DIR}/tools/package_tools/mmdeploy_builder.py" \
@@ -18,14 +37,13 @@ python "${MMDEPLOY_DIR}/tools/package_tools/mmdeploy_builder.py" \
 
 # using another env to pip install it
 conda deactivate
-conda activate mmdeploy_convert
+activate_conda_env mmdeploy_convert
 pip uninstall mmdeploy
 pip install xxx.whl
-pip install mmdet
 
 # test convert with RetinaNet of mmdetection
-mkdir /tmp/wheel_convert_test && cd /tmp/wheel_convert_test
-export CONVERT_TEST_PATH=$(pwd)
+mkdir /tmp/wheel_convert_test && cd /tmp/wheel_convert_test || exit 1
+readonly CONVERT_TEST_PATH=$(pwd)
 wget https://download.openmmlab.com/mmdetection/v2.0/retinanet/retinanet_r50_fpn_1x_coco/retinanet_r50_fpn_1x_coco_20200130-c2398f9e.pth
 
 cd "../${MMDEPLOY_DIR}" || exit 1
@@ -55,11 +73,12 @@ make -j$(nproc)
 
 # test sdk demo
 conda deactivate
-conda activate mmdeploy_sdk
+activate_conda_env mmdeploy_sdk
 pip uninstall mmdeploy_builder
 pip install xxx.whl
 ./object_detection cuda \
   "${CONVERT_TEST_PATH}/retinanet_output" \
-  "${MMDEPLOY_DIR}/../mmdetection/demo/demo.jpg"  || exit 3
+  "${MMDEPLOY_DIR}/../mmdetection/demo/demo.jpg" || exit 3
 
+echo "All done, pass test."
 exit 0
