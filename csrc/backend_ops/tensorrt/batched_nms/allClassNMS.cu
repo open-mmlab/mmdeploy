@@ -262,7 +262,6 @@ pluginStatus_t allClassNMS(cudaStream_t stream, const int num, const int num_cla
                            const bool isNormalized, const DataType DT_SCORE, const DataType DT_BBOX,
                            void *bbox_data, void *beforeNMS_scores, void *beforeNMS_index_array,
                            void *afterNMS_scores, void *afterNMS_index_array, bool flipXY) {
-
   nmsLaunchConfigSSD lc = nmsLaunchConfigSSD(DT_SCORE, DT_BBOX, allClassNMS_gpu<float, float>);
   for (unsigned i = 0; i < nmsFuncVec.size(); ++i) {
     if (lc == nmsFuncVec[i]) {
