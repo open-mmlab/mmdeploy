@@ -5,6 +5,7 @@
 #include "apis/c/common_internal.h"
 #include "apis/c/executor_internal.h"
 #include "apis/c/model.h"
+#include "apis/c/pipeline.h"
 #include "archive/json_archive.h"
 #include "codebase/mmocr/mmocr.h"
 #include "core/device.h"

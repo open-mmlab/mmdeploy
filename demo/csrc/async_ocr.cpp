@@ -13,17 +13,19 @@ struct ctx_t {
   int* det_count;
 };
 
-mmdeploy_sender_t cont(mmdeploy_value_t det_output, void* context) {
+mmdeploy_value_t cont(mmdeploy_value_t det_output, void* context) {
   auto* ctx = static_cast<ctx_t*>(context);
   mmdeploy_text_detector_get_result(det_output, &ctx->dets, &ctx->det_count);
   if (!ctx->det_count) {
-    fprintf(stderr, "faield to get detection result\n");
+    fprintf(stderr, "failed to get detection result\n");
+    return nullptr;
   }
   auto input = mmdeploy_text_recognizer_create_input(ctx->mat, 1, ctx->dets, ctx->det_count);
   if (!input) {
     fprintf(stderr, "failed to create recognizer input\n");
+    return nullptr;
   }
-  return mmdeploy_executor_just(input);
+  return input;
 }
 
 int main(int argc, char* argv[]) {
@@ -42,7 +44,7 @@ int main(int argc, char* argv[]) {
   }
 
   auto pool = mmdeploy_executor_system_pool();
-  auto thread = mmdeploy_executor_create_single_thread();
+  auto thread = mmdeploy_executor_create_thread();
 
   mmdeploy_exec_info prep_exec_info{{}, "Preprocess", pool};
   mmdeploy_exec_info dbnet_exec_info{&prep_exec_info, "dbnet", thread};
@@ -101,7 +103,7 @@ int main(int argc, char* argv[]) {
   }
 
   ctx_t context{&mat, {}, {}};
-  sender = mmdeploy_executor_let_value(sender, cont, &context);
+  sender = mmdeploy_executor_then(sender, cont, &context);
   assert(sender);
 
   sender = mmdeploy_text_recognizer_apply_async(text_recognizer, sender);

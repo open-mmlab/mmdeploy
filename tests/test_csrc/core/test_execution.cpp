@@ -424,7 +424,7 @@ TEST_CASE("test dynamic batch for Value", "[execution1]") {
   auto exec_sched = mmdeploy_executor_system_pool();
   auto dynamic_batch_sched = mmdeploy_executor_dynamic_batch(exec_sched, 8, -1);
   auto& scheduler = *reinterpret_cast<TypeErasedScheduler<Value>*>(dynamic_batch_sched);
-  //  auto p = mmdeploy_executor_inlined();
+  //  auto p = mmdeploy_executor_inline();
   //  auto& scheduler = *reinterpret_cast<TypeErasedScheduler<Value>*>(p);
 
   constexpr const int N = 256;

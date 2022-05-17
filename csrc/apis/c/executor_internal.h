@@ -38,16 +38,4 @@ inline mmdeploy_sender_t Take(T& s) {
 
 }  // namespace
 
-MMDEPLOY_API int mmdeploy_pipeline_create(mmdeploy_value_t config, const char* device_name,
-                                          int device_id, mmdeploy_exec_info_t exec_info,
-                                          mm_handle_t* handle);
-
-MMDEPLOY_API mmdeploy_sender_t mmdeploy_pipeline_apply_async(mm_handle_t handle,
-                                                             mmdeploy_sender_t input);
-
-MMDEPLOY_API int mmdeploy_pipeline_apply(mm_handle_t handle, mmdeploy_value_t input,
-                                         mmdeploy_value_t* output);
-
-MMDEPLOY_API void mmdeploy_pipeline_destroy(mm_handle_t handle);
-
 #endif  // MMDEPLOY_CSRC_APIS_C_EXECUTOR_INTERNAL_H_

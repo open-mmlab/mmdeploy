@@ -32,10 +32,8 @@ struct PySender {
       StartDetached(std::move(sender_) |
                     Then([future = object_ptr{new py::object(future)}](const Value& value) mutable {
                       py::gil_scoped_acquire _;
-                      // MMDEPLOY_INFO("+++ set_result {}", value);
                       future->attr("set_result")(ConvertToPyObject(value));
                       delete future.release();
-                      // MMDEPLOY_INFO("--- set_result {}", value);
                     }));
     }
     return py::module::import("asyncio").attr("wrap_future")(future).attr("__await__")();
@@ -54,9 +52,7 @@ static void register_python_executor(py::module& m) {
     static StaticThreadPool pool;
     TypeErasedScheduler<Value> scheduler{pool.GetScheduler()};
     auto sender = TransferJust(scheduler, ConvertToValue(x)) | Then([](Value x) {
-                    // MMDEPLOY_INFO("+++ sleep {}", x);
                     // std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                    // MMDEPLOY_INFO("--- sleep {}", x);
                     return Value(x.get<int>() * x.get<int>());
                   });
     return std::make_unique<PySender>(std::move(sender));

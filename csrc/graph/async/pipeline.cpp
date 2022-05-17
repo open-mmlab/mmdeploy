@@ -130,7 +130,7 @@ Sender<Value> Task::Process(Sender<Value> input) {
           });
       // clang-format on
     } else {
-      return DynamicBatch(TypeErase(TransferJust(*sched_, std::move(v))), nullptr,
+      return DynamicBatch(TypeErase(TransferJust(*sched_, std::move(v))), batch_context_,
                           [&](const Value& u) { return module_->Process(u).value(); });
     }
   });

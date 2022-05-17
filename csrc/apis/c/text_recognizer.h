@@ -35,6 +35,10 @@ typedef struct mm_text_recognize_t {
 MMDEPLOY_API int mmdeploy_text_recognizer_create(mm_model_t model, const char* device_name,
                                                  int device_id, mm_handle_t* handle);
 
+/**
+ * @brief Same as \ref mmdeploy_text_recognizer_create, but allows to control execution context of
+ * tasks via exec_info
+ */
 MMDEPLOY_API int mmdeploy_text_recognizer_create_v2(mm_model_t model, const char* device_name,
                                                     int device_id, mmdeploy_exec_info_t exec_info,
                                                     mm_handle_t* handle);
@@ -52,6 +56,14 @@ MMDEPLOY_API int mmdeploy_text_recognizer_create_by_path(const char* model_path,
                                                          const char* device_name, int device_id,
                                                          mm_handle_t* handle);
 
+/**
+ * @brief Pack text-recognizer inputs into mmdeploy_value_t
+ * @param[in] mats a batch of images
+ * @param[in] mat_count number of images in the batch
+ * @param[in] bboxes bounding boxes detected by text detector
+ * @param[in] bbox_count number of bboxes of each \p images, must be same length as \p images
+ * @return value created
+ */
 MMDEPLOY_API mmdeploy_value_t mmdeploy_text_recognizer_create_input(const mm_mat_t* mats,
                                                                     int mat_count,
                                                                     const mm_text_detect_t* bboxes,
@@ -73,6 +85,10 @@ MMDEPLOY_API int mmdeploy_text_recognizer_apply(mm_handle_t handle, const mm_mat
 MMDEPLOY_API int mmdeploy_text_recognizer_apply_v2(mm_handle_t handle, mmdeploy_value_t input,
                                                    mmdeploy_value_t* output);
 
+/**
+ * @brief Same as \ref mmdeploy_text_recognizer_apply_bbox, but input and output are packed in \ref
+ * mmdeploy_value_t.
+ */
 MMDEPLOY_API mmdeploy_sender_t mmdeploy_text_recognizer_apply_async(mm_handle_t handle,
                                                                     mmdeploy_sender_t input);
 
@@ -94,6 +110,12 @@ MMDEPLOY_API int mmdeploy_text_recognizer_apply_bbox(mm_handle_t handle, const m
                                                      const int* bbox_count,
                                                      mm_text_recognize_t** results);
 
+/**
+ * @brief Unpack text-recognizer output from a mmdeploy_value_t
+ * @param[in] output
+ * @param[out] results
+ * @return status of the operation
+ */
 MMDEPLOY_API int mmdeploy_text_recognizer_get_result(mmdeploy_value_t output,
                                                      mm_text_recognize_t** results);
 

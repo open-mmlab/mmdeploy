@@ -56,6 +56,7 @@ class Task : public Node {
   unique_ptr<Module> module_;
   bool is_batched_{false};
   bool is_thread_safe_{false};
+  dynamic_batch_t::context_t batch_context_;
 };
 
 class TaskParser {

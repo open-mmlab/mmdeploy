@@ -37,7 +37,7 @@ int mmdeploy_sender_destroy(mmdeploy_sender_t sender) {
   return 0;
 }
 
-mmdeploy_scheduler_t mmdeploy_executor_inlined() { return CreateScheduler("Inlined"); }
+mmdeploy_scheduler_t mmdeploy_executor_inline() { return CreateScheduler("Inlined"); }
 
 mmdeploy_scheduler_t mmdeploy_executor_system_pool() {
   // create a thread pool context and hold its shared handle
@@ -50,9 +50,7 @@ mmdeploy_scheduler_t mmdeploy_executor_create_thread_pool(int num_threads) {
   return CreateScheduler("ThreadPool", {{"num_threads", num_threads}});
 }
 
-mmdeploy_scheduler_t mmdeploy_executor_create_single_thread() {
-  return CreateScheduler("SingleThread");
-}
+mmdeploy_scheduler_t mmdeploy_executor_create_thread() { return CreateScheduler("SingleThread"); }
 
 mmdeploy_scheduler_t mmdeploy_executor_dynamic_batch(mmdeploy_scheduler_t scheduler,
                                                      int max_batch_size, int timeout) {
@@ -138,68 +136,4 @@ int mmdeploy_executor_start_detached(mmdeploy_sender_t input) {
 
 mmdeploy_value_t mmdeploy_executor_sync_wait(mmdeploy_sender_t input) {
   return Guard([&] { return Take(std::get<Value>(SyncWait(Take(input)))); });
-}
-
-int mmdeploy_pipeline_create(mmdeploy_value_t config, const char* device_name, int device_id,
-                             mmdeploy_exec_info_t exec_info, mm_handle_t* handle) {
-  try {
-    auto _config = *Cast(config);
-    if (exec_info) {
-      auto& info = _config["context"]["executor"] = Value::kObject;
-      for (auto p = exec_info; p; p = p->next) {
-        info[p->task_name] = *Cast(p->scheduler);
-        if (p->next == exec_info) {
-          MMDEPLOY_ERROR("circle detected in exec_info list.");
-          return MM_E_INVALID_ARG;
-        }
-      }
-    }
-    auto _handle = std::make_unique<AsyncHandle>(device_name, device_id, std::move(_config));
-    *handle = _handle.release();
-    return MM_SUCCESS;
-  } catch (const std::exception& e) {
-    MMDEPLOY_ERROR("exception caught: {}", e.what());
-  } catch (...) {
-    MMDEPLOY_ERROR("unknown exception caught");
-  }
-  return MM_E_FAIL;
-}
-
-// TODO: handle empty input
-mmdeploy_sender_t mmdeploy_pipeline_apply_async(mm_handle_t handle, mmdeploy_sender_t input) {
-  if (!handle || !input) {
-    return nullptr;
-  }
-  try {
-    auto detector = static_cast<AsyncHandle*>(handle);
-    return Take(detector->Process(Take(input)));
-  } catch (const std::exception& e) {
-    MMDEPLOY_ERROR("exception caught: {}", e.what());
-  } catch (...) {
-    MMDEPLOY_ERROR("unknown exception caught");
-  }
-  return nullptr;
-}
-
-void mmdeploy_pipeline_destroy(mm_handle_t handle) {
-  if (handle != nullptr) {
-    delete static_cast<AsyncHandle*>(handle);
-  }
-}
-
-int mmdeploy_pipeline_apply(mm_handle_t handle, mmdeploy_value_t input, mmdeploy_value_t* output) {
-  auto input_sender = mmdeploy_executor_just(input);
-  if (!input_sender) {
-    return MM_E_FAIL;
-  }
-  auto output_sender = mmdeploy_pipeline_apply_async(handle, input_sender);
-  if (!output_sender) {
-    return MM_E_FAIL;
-  }
-  auto _output = mmdeploy_executor_sync_wait(output_sender);
-  if (!_output) {
-    return MM_E_FAIL;
-  }
-  *output = _output;
-  return MM_SUCCESS;
 }

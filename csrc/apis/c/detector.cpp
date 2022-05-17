@@ -7,6 +7,7 @@
 #include "apis/c/common_internal.h"
 #include "apis/c/executor_internal.h"
 #include "apis/c/model.h"
+#include "apis/c/pipeline.h"
 #include "archive/value_archive.h"
 #include "codebase/mmdet/mmdet.h"
 #include "core/device.h"
