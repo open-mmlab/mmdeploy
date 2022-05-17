@@ -93,7 +93,8 @@ def _demo_mm_inputs(input_shape=(1, 3, 8, 16), num_classes=10):
     return mm_inputs
 
 
-@pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME, Backend.OPENVINO])
+@pytest.mark.parametrize('backend',
+                         [Backend.ONNXRUNTIME, Backend.OPENVINO, Backend.NCNN])
 def test_encoderdecoder_simple_test(backend):
     check_backend(backend)
     segmentor = get_model()
@@ -109,7 +110,8 @@ def test_encoderdecoder_simple_test(backend):
         num_classes = segmentor.decode_head[-1].num_classes
     else:
         num_classes = segmentor.decode_head.num_classes
-    mm_inputs = _demo_mm_inputs(num_classes=num_classes)
+    mm_inputs = _demo_mm_inputs(
+        input_shape=(1, 3, 32, 32), num_classes=num_classes)
     imgs = mm_inputs.pop('imgs')
     img_metas = mm_inputs.pop('img_metas')
     model_inputs = {'img': imgs, 'img_meta': img_metas}
