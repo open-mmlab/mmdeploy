@@ -53,7 +53,7 @@ class ResizeRBBox : public MMRotate {
   }
 
   Result<RotatedDetectorOutput> DispatchGetBBoxes(const Value& prep_res, const Tensor& dets,
-                                                   const Tensor& labels) {
+                                                  const Tensor& labels) {
     auto data_type = labels.data_type();
     switch (data_type) {
       case DataType::kFLOAT:
@@ -69,7 +69,7 @@ class ResizeRBBox : public MMRotate {
 
   template <typename T>
   Result<RotatedDetectorOutput> GetRBBoxes(const Value& prep_res, const Tensor& dets,
-                                            const Tensor& labels) {
+                                           const Tensor& labels) {
     RotatedDetectorOutput objs;
     auto* dets_ptr = dets.data<float>();
     auto* labels_ptr = labels.data<T>();
