@@ -217,6 +217,9 @@ def create_package(cfg: Dict, mmdeploy_dir: str):
             bdist_cmd = _create_bdist_cmd(cfg, sdk_wheel_dir)
             _call_command(bdist_cmd, sdk_python_package_dir)
 
+            # remove temp package dir
+            _remove_if_exist(sdk_python_package_dir)
+
         logging.info('build finish.')
 
     except CalledProcessError:
