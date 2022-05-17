@@ -30,8 +30,7 @@ class PyRotatedDetector {
     auto status = mmdeploy_rotated_detector_apply(handle_, mats.data(), (int)mats.size(), &rbboxes,
                                                   &res_count);
     if (status != MM_SUCCESS) {
-      throw std::runtime_error("failed to apply rotated detector, code: " +
-                               std::to_string(status));
+      throw std::runtime_error("failed to apply rotated detector, code: " + std::to_string(status));
     }
     auto output = py::list{};
     auto result = rbboxes;
