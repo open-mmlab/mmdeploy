@@ -111,8 +111,6 @@ int mmdeploy_rotated_detector_apply(mm_handle_t handle, const mm_mat_t* mats, in
     };
     std::unique_ptr<mm_rotated_detect_t[], decltype(deleter)> result_data(
         new mm_rotated_detect_t[total]{}, deleter);
-    // ownership transferred to result_data
-    result_count_data.release();
 
     auto result_ptr = result_data.get();
 
@@ -128,7 +126,7 @@ int mmdeploy_rotated_detector_apply(mm_handle_t handle, const mm_mat_t* mats, in
       }
     }
 
-    *result_count = result_count_ptr;
+    *result_count = result_count_data.release();
     *results = result_data.release();
 
     return MM_SUCCESS;
