@@ -112,7 +112,7 @@ namespace MMDeploy
                 ClassifierOutput outi = default;
                 for (int j = 0; j < resultCount[i]; j++)
                 {
-                    outi.Add(results[j].Id, results[j].Score);
+                    outi.Add(results->Id, results->Score);
                     results++;
                     total++;
                 }

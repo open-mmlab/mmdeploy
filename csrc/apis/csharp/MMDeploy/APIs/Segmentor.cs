@@ -114,6 +114,7 @@ namespace MMDeploy
             {
                 SegmentorOutput outi = new SegmentorOutput(results);
                 results++;
+                total++;
                 output.Add(outi);
             }
         }

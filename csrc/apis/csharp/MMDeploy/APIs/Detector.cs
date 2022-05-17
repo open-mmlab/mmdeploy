@@ -213,6 +213,7 @@ namespace MMDeploy
                 {
                     outi.Add(results);
                     results++;
+                    total++;
                 }
 
                 output.Add(outi);
