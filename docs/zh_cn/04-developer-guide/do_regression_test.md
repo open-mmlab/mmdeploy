@@ -28,7 +28,7 @@
 ## 1. 环境搭建
 
 ### MMDeploy的安装及配置
-本章节的内容，需要提前根据[build 文档](../build.md)将 MMDeploy 安装配置好之后，才能进行。
+本章节的内容，需要提前根据[build 文档](../01-how-to-build/build_from_source.md)将 MMDeploy 安装配置好之后，才能进行。
 
 ### Python环境依赖
 需要安装 test 的环境
