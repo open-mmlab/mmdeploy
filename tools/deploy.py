@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
 import logging
+import os
 import os.path as osp
 from functools import partial
 
@@ -26,7 +27,10 @@ def parse_args():
     parser.add_argument('img', help='image used to convert model model')
     parser.add_argument(
         '--test-img', default=None, help='image used to test model')
-    parser.add_argument('--work-dir', help='the dir to save logs and models')
+    parser.add_argument(
+        '--work-dir',
+        default=os.getcwd(),
+        help='the dir to save logs and models')
     parser.add_argument(
         '--calib-dataset-cfg',
         help='dataset config path used to calibrate in int8 mode. If not \
