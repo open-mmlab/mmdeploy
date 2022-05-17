@@ -32,6 +32,8 @@ CMAKE_VER="3.23.0"
 WITH_PYTHON=1
 # WITH_CLEAN: Remove build output dirs
 WITH_CLEAN=1
+# WITH_PREBUILD: Generate prebuild archives
+WITH_PREBUILD=0
 
 #####
 # Prefix: Set install prefix for ppl.cv, mmdeploy SDK depending on arch
@@ -172,9 +174,6 @@ prereqs() {
 }
 
 py_venv() {
-  # deactivate venv, if it has already been activated
-  deactivate
-
   #check for python installed version
   pyv="$(python3 -V 2>&1)"
   pyv_old="Python 3.6"
@@ -265,9 +264,6 @@ py_venv() {
       pip3 install mmcv-full==1.4.1 -f https://download.openmmlab.com/mmcv/dist/cu113/torch1.10.0/index.html
     fi
   fi
-
-  # deactivate python venv again
-  deactivate
 }
 
 pplcv() {
@@ -295,8 +291,11 @@ pplcv() {
   sudo ldconfig
 
   # generate prebuild and pack into .tar.gz
-  sudo make DESTDIR=./prebuild install
-  tar -zcvf ${WORKING_DIR}/pplcv_${PPLCV_VER}_cuda-${ARCH}-build.tar.gz -C ./prebuild/ .
+  if [[ $WITH_PREBUILD -eq 1 ]]
+  then
+    sudo make DESTDIR=./prebuild install
+    tar -zcvf ${WORKING_DIR}/pplcv_${PPLCV_VER}_cuda-${ARCH}-build.tar.gz -C ./prebuild/ .
+  fi
 }
 
 mmdeploy(){
@@ -345,9 +344,11 @@ mmdeploy(){
   sudo ldconfig
 
   # generate prebuild and pack into .tar.gz
-  sudo make DESTDIR=./prebuild install
-  tar -zcvf ${WORKING_DIR}/mmdeploysdk_${MMDEPLOY_VER}_${ARCH}-build.tar.gz -C ./prebuild/ .
-  # Unpack as tar -zxf mmdeploysdk_*.tar.gz --directory MMDeploy-aarch64
+  if [[ $WITH_PREBUILD -eq 1 ]]
+  then
+    sudo make DESTDIR=./prebuild install
+    tar -zcvf ${WORKING_DIR}/mmdeploysdk_${MMDEPLOY_VER}_${ARCH}-build.tar.gz -C ./prebuild/ .
+  fi
 
   ## build mmdeploy examples
   cp -r ${MMDEPLOY_DIR}/demo/csrc ${MMDEPLOY_DIR}/build/example
@@ -356,9 +357,6 @@ mmdeploy(){
   mkdir build -p && cd build
   cmake -DMMDeploy_DIR=${INSTALL_PREFIX} ..
   make all
-
-  # deactivate venv before exit
-  deactivate
 }
 
 all() {
