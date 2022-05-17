@@ -130,7 +130,6 @@ def rotated_rpn_head__get_bboxes(ctx,
 
     post_params = get_post_processing_params(deploy_cfg)
     iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)
-    pre_top_k = post_params.pre_top_k
     keep_top_k = cfg.get('max_per_img', post_params.keep_top_k)
     # only one class in rpn
     max_output_boxes_per_class = keep_top_k
@@ -139,6 +138,5 @@ def rotated_rpn_head__get_bboxes(ctx,
         batch_mlvl_scores,
         max_output_boxes_per_class,
         iou_threshold=iou_threshold,
-        pre_top_k=pre_top_k,
         keep_top_k=keep_top_k,
         version=self.version)

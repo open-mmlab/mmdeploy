@@ -1866,8 +1866,8 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center">Rotated Detection</td>
     <td align="center">DOTA-v1.0</td>
     <td align="center">mAP</td>
-    <td align="center">xxx</td>
-    <td align="center">xxx</td>
+    <td align="center">0.756</td>
+    <td align="center">0.756</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
