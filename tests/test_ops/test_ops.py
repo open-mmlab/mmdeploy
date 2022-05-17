@@ -393,9 +393,7 @@ def test_batched_rotated_nms(backend,
                              input_list=None,
                              save_dir=None):
     backend.check_env()
-    import importlib
-    if importlib.util.find_spec('mmrotate') is None:
-        pytest.skip('MMRotate not found, skip test.')
+    pytest.importorskip('mmrotate', reason='mmrorate is not installed.')
 
     if input_list is None:
         nms_boxes = torch.tensor(
