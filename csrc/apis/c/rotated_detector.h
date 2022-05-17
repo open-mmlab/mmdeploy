@@ -21,32 +21,32 @@ typedef struct mm_rotated_detect_t {
 } mm_rotated_detect_t;
 
 /**
- * @brief Create rotation detector's handle
+ * @brief Create rotated detector's handle
  * @param[in] model an instance of mmrotate sdk model created by
  * \ref mmdeploy_model_create_by_path or \ref mmdeploy_model_create in \ref model.h
  * @param[in] device_name name of device, such as "cpu", "cuda", etc.
  * @param[in] device_id id of device.
- * @param[out] handle instance of a rotation detector
- * @return status of creating rotation detector's handle
+ * @param[out] handle instance of a rotated detector
+ * @return status of creating rotated detector's handle
  */
 MMDEPLOY_API int mmdeploy_rotated_detector_create(mm_model_t model, const char* device_name,
                                                   int device_id, mm_handle_t* handle);
 
 /**
- * @brief Create rotation detector's handle
+ * @brief Create rotated detector's handle
  * @param[in] model_path path of mmrotate sdk model exported by mmdeploy model converter
  * @param[in] device_name name of device, such as "cpu", "cuda", etc.
  * @param[in] device_id id of device.
- * @param[out] handle instance of a rotation detector
- * @return status of creating rotation detector's handle
+ * @param[out] handle instance of a rotated detector
+ * @return status of creating rotated detector's handle
  */
 MMDEPLOY_API int mmdeploy_rotated_detector_create_by_path(const char* model_path,
                                                           const char* device_name, int device_id,
                                                           mm_handle_t* handle);
 
 /**
- * @brief Apply rotation detector to batch images and get their inference results
- * @param[in] handle rotation detector's handle created by \ref
+ * @brief Apply rotated detector to batch images and get their inference results
+ * @param[in] handle rotated detector's handle created by \ref
  * mmdeploy_rotated_detector_create_by_path
  * @param[in] mats a batch of images
  * @param[in] mat_count number of images in the batch
@@ -62,15 +62,15 @@ MMDEPLOY_API int mmdeploy_rotated_detector_apply(mm_handle_t handle, const mm_ma
                                                  int** result_count);
 
 /** @brief Release the inference result buffer created by \ref mmdeploy_rotated_detector_apply
- * @param[in] results rotation detection results buffer
+ * @param[in] results rotated detection results buffer
  * @param[in] result_count  \p results size buffer
  */
 MMDEPLOY_API void mmdeploy_rotated_detector_release_result(mm_rotated_detect_t* results,
                                                            const int* result_count);
 
 /**
- * @brief Destroy rotation detector's handle
- * @param[in] handle rotation detector's handle created by \ref
+ * @brief Destroy rotated detector's handle
+ * @param[in] handle rotated detector's handle created by \ref
  * mmdeploy_rotated_detector_create_by_path or by \ref mmdeploy_rotated_detector_create
  */
 MMDEPLOY_API void mmdeploy_rotated_detector_destroy(mm_handle_t handle);

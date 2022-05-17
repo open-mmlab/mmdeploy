@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
   int status{};
   status = mmdeploy_rotated_detector_create_by_path(model_path, device_name, 0, &detector);
   if (status != MM_SUCCESS) {
-    fprintf(stderr, "failed to create rotation detector, code: %d\n", (int)status);
+    fprintf(stderr, "failed to create rotated detector, code: %d\n", (int)status);
     return 1;
   }
 
@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
   int *res_count{};
   status = mmdeploy_rotated_detector_apply(detector, &mat, 1, &rbboxes, &res_count);
   if (status != MM_SUCCESS) {
-    fprintf(stderr, "failed to apply rotation estimator, code: %d\n", (int)status);
+    fprintf(stderr, "failed to apply rotated detector, code: %d\n", (int)status);
     return 1;
   }
 
@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
     cv::drawContours(img, std::vector<std::vector<cv::Point>>{{p1, p2, p3, p4}}, -1, {0, 255, 0},
                      2);
   }
-  cv::imwrite("output_rotation.png", img);
+  cv::imwrite("output_rotated_detection.png", img);
 
   mmdeploy_rotated_detector_release_result(rbboxes, res_count);
   mmdeploy_rotated_detector_destroy(detector);

@@ -14,7 +14,7 @@ class PyRotatedDetector {
     auto status =
         mmdeploy_rotated_detector_create_by_path(model_path, device_name, device_id, &handle_);
     if (status != MM_SUCCESS) {
-      throw std::runtime_error("failed to create rotation detector");
+      throw std::runtime_error("failed to create rotated detector");
     }
   }
   py::list Apply(const std::vector<PyImage> &imgs) {
@@ -30,7 +30,7 @@ class PyRotatedDetector {
     auto status = mmdeploy_rotated_detector_apply(handle_, mats.data(), (int)mats.size(), &rbboxes,
                                                   &res_count);
     if (status != MM_SUCCESS) {
-      throw std::runtime_error("failed to apply rotation detector, code: " +
+      throw std::runtime_error("failed to apply rotated detector, code: " +
                                std::to_string(status));
     }
     auto output = py::list{};

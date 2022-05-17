@@ -52,7 +52,7 @@ class ResizeRBBox : public MMRotate {
     return to_value(result);
   }
 
-  Result<RotationDetectorOutput> DispatchGetBBoxes(const Value& prep_res, const Tensor& dets,
+  Result<RotatedDetectorOutput> DispatchGetBBoxes(const Value& prep_res, const Tensor& dets,
                                                    const Tensor& labels) {
     auto data_type = labels.data_type();
     switch (data_type) {
@@ -68,9 +68,9 @@ class ResizeRBBox : public MMRotate {
   }
 
   template <typename T>
-  Result<RotationDetectorOutput> GetRBBoxes(const Value& prep_res, const Tensor& dets,
+  Result<RotatedDetectorOutput> GetRBBoxes(const Value& prep_res, const Tensor& dets,
                                             const Tensor& labels) {
-    RotationDetectorOutput objs;
+    RotatedDetectorOutput objs;
     auto* dets_ptr = dets.data<float>();
     auto* labels_ptr = labels.data<T>();
     vector<float> scale_factor;
@@ -95,7 +95,7 @@ class ResizeRBBox : public MMRotate {
       auto width = dets_ptr[2] / scale_factor[0];
       auto height = dets_ptr[3] / scale_factor[1];
       auto angle = dets_ptr[4];
-      RotationDetectorOutput::Detection det{};
+      RotatedDetectorOutput::Detection det{};
       det.label_id = static_cast<int>(*labels_ptr);
       det.score = score;
       det.rbbox = {cx, cy, width, height, angle};

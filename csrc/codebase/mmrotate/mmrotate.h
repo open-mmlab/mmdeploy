@@ -12,7 +12,7 @@
 namespace mmdeploy {
 namespace mmrotate {
 
-struct RotationDetectorOutput {
+struct RotatedDetectorOutput {
   struct Detection {
     int label_id;
     float score;

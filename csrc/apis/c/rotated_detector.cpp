@@ -92,7 +92,7 @@ int mmdeploy_rotated_detector_apply(mm_handle_t handle, const mm_mat_t* mats, in
     }
 
     auto output = detector->Run(std::move(input)).value().front();
-    auto detector_outputs = from_value<vector<mmrotate::RotationDetectorOutput>>(output);
+    auto detector_outputs = from_value<vector<mmrotate::RotatedDetectorOutput>>(output);
 
     vector<int> _result_count;
     _result_count.reserve(mat_count);
