@@ -312,11 +312,13 @@ python ./tools/deploy.py \
 
 3. Finally run inference on an image
 
+<div align=center><img width=650 src="https://files.seeedstudio.com/wiki/open-mmlab/source_image.jpg"/></div>
+
 ```shell
 ./object_detection cuda ${directory/to/the/converted/models} ${path/to/an/image}
 ```
 
-<div align=center><img width=1000 src="https://files.seeedstudio.com/wiki/open-mmlab/output_detection.png"/></div>
+<div align=center><img width=650 src="https://files.seeedstudio.com/wiki/open-mmlab/output_detection.png"/></div>
 
 The above inference is done on a [Seeed reComputer built with Jetson Nano module](https://www.seeedstudio.com/Jetson-10-1-A0-p-5336.html)
 
