@@ -116,6 +116,8 @@ def merge_report(work_dir: str, logger: logging.Logger):
         # save to file
         wb.save(str(res_file))
 
+    logger.info('Report merge successful.')
+
 
 def get_model_metafile_info(global_info: dict, model_info: dict,
                             logger: logging.Logger):
@@ -1188,6 +1190,8 @@ def main():
 
     # merge report
     merge_report(str(work_dir), logger)
+
+    logger.info('All done.')
 
 
 if __name__ == '__main__':
