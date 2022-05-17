@@ -13,14 +13,8 @@ def linear_no_bias(g, input, weight):
 
     PyTorch `nn.Linear` will be exported as ONNX node 'Gemm'.
     """
-    g.op(
-        'mmdeploy::Gemm',
-        input,
-        weight,
-        alpha_f=1.0,
-        beta_f=1.0,
-        transA_i=0,
-        transB_i=1)
+    return g.op(
+        'Gemm', input, weight, alpha_f=1.0, beta_f=1.0, transA_i=0, transB_i=1)
 
 
 @parse_args('v', 'v', 'v', 'f', 'f', 'i', 'i')
@@ -29,8 +23,8 @@ def linear_normal(g, input, weight, bias):
 
     PyTorch `nn.Linear` will be exported as ONNX node 'Gemm'.
     """
-    g.op(
-        'mmdeploy::Gemm',
+    return g.op(
+        'Gemm',
         input,
         weight,
         bias,
@@ -41,10 +35,7 @@ def linear_normal(g, input, weight, bias):
 
 
 @SYMBOLIC_REWRITER.register_symbolic(
-    'torch.nn.functional.linear',
-    is_pytorch=True,
-    # arg_descriptors=['v', 'v', 'v', 'f', 'f', 'i', 'i'],
-    backend=Backend.NCNN.value)
+    'linear', is_pytorch=True, backend=Backend.NCNN.value)
 def linear__ncnn(ctx, g, input, weight, bias):
     """Support export linear This rewrite enable export Gemm."""
     if bias is None:

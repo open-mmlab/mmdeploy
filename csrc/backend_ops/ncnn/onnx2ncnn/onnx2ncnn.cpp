@@ -1304,7 +1304,7 @@ int main(int argc, char** argv) {
       }
       fprintf(pp, " 0=%d", axis);
     } else if (op == "Gelu") {
-      fprintf(pp, " 0=0");
+      fprintf(pp, " 0=1");
     } else if (op == "Gemm") {
       float alpha = get_node_attr_f(node, "alpha", 1.f);
       float beta = get_node_attr_f(node, "beta", 1.f);
