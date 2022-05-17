@@ -110,6 +110,11 @@ Sender<Value> Pipeline::Process(Sender<Value> args) {
 
 Sender<Value> Task::Process(Sender<Value> input) {
   return LetValue(std::move(input), [this](Value& v) -> Sender<Value> {
+    assert(v.is_array());
+    // handle empty input
+    if (v.front().empty()) {
+      return TransferJust(*sched_, Value(Value::Array(v.size(), Value::kArray)));
+    }
     if (v.front().is_array() && !is_batched_) {
       auto batch_size = v.front().size();
       Value output = Value::Array(batch_size);

@@ -37,7 +37,7 @@ int mmdeploy_sender_destroy(mmdeploy_sender_t sender) {
   return 0;
 }
 
-mmdeploy_scheduler_t mmdeploy_executor_inline() { return CreateScheduler("Inlined"); }
+mmdeploy_scheduler_t mmdeploy_executor_inline() { return CreateScheduler("Inline"); }
 
 mmdeploy_scheduler_t mmdeploy_executor_system_pool() {
   // create a thread pool context and hold its shared handle

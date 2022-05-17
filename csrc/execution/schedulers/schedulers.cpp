@@ -13,7 +13,7 @@ using Scheduler = TypeErasedScheduler<Value>;
 
 class InlineSchedulerCreator : public Creator<Scheduler> {
  public:
-  const char* GetName() const override { return "Inlined"; }
+  const char* GetName() const override { return "Inline"; }
   int GetVersion() const override { return 0; }
   ReturnType Create(const Value&) override { return ReturnType{InlineScheduler{}}; }
 };
@@ -72,8 +72,8 @@ struct ValueAssembler {
   static size_t get_size(const Value& x) { return x.empty() ? 0 : x.front().size(); }
 
   template <typename ValueType>
-  static void input(std::tuple<ValueType> _src, range_t src_range, std::tuple<Value>& _dst, range_t,
-                    size_t batch_size) {
+  static void input(std::tuple<ValueType> _src, range_t src_range, std::tuple<Value>& _dst,
+                    range_t dst_range, size_t batch_size) {
     auto& [src] = _src;
     auto& [dst] = _dst;
     if (dst.empty()) {
