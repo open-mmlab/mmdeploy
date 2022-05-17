@@ -93,7 +93,7 @@ def delta2bbox(ctx,
     max_diag_len, _ = torch.max(diag_len, dim=-1, keepdim=True)
     diag_scale_factor = max_diag_len / diag_len
     center_polys = center_polys * diag_scale_factor.transpose(3, 4).repeat(
-        1, 1, 1, 1, 2).view(1, 5, 1, -1, 1).transpose(3, 4)
+        1, 1, 1, 1, 2).view(*center_polys.shape[:3], -1, 1).transpose(3, 4)
     rectpolys = center_polys + center
 
     # poly2obb
