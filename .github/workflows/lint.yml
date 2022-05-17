@@ -27,7 +27,6 @@ jobs:
           source: csrc
           extensions: h,c,cpp,hpp,cu,cuh
           style: file
-          exclude: './third_party/spdlog'
       - name: Check docstring coverage
         run: |
           pip install interrogate
