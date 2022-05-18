@@ -37,14 +37,15 @@ def main():
         }
     }
 
-    engine = create_trt_engine(args.onnx_path,
-                               input_shapes=input_shapes,
-                               log_level=get_trt_log_level(),
-                               fp16_mode=False,
-                               int8_mode=False,
-                               int8_param={},
-                               max_workspace_size=1073741824,
-                               device_id=0)
+    engine = create_trt_engine(
+        args.onnx_path,
+        input_shapes=input_shapes,
+        log_level=get_trt_log_level(),
+        fp16_mode=False,
+        int8_mode=False,
+        int8_param={},
+        max_workspace_size=1073741824,
+        device_id=0)
 
     save_trt_engine(engine, args.output)
 
