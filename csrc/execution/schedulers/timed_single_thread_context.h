@@ -1,4 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
+// Modified from
+// https://github.com/facebookexperimental/libunifex/blob/main/include/unifex/timed_single_thread_context.hpp
 
 #pragma once
 

@@ -1,4 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
+// Modified from
+// https://github.com/brycelelbach/wg21_p2300_std_execution/blob/main/include/__utility.hpp
 
 #ifndef MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_UTILITY_H_
 #define MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_UTILITY_H_
@@ -63,8 +65,7 @@ struct _types
 namespace __schedule {
 
 struct schedule_t {
-  template <typename Scheduler,
-            std::enable_if_t<tag_invocable<schedule_t, Scheduler>, int> = 0>
+  template <typename Scheduler, std::enable_if_t<tag_invocable<schedule_t, Scheduler>, int> = 0>
   auto operator()(Scheduler&& scheduler) const -> tag_invoke_result_t<schedule_t, Scheduler> {
     return tag_invoke(schedule_t{}, (Scheduler &&) scheduler);
   }

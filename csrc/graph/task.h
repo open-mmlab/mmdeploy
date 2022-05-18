@@ -7,7 +7,6 @@
 
 namespace mmdeploy::graph {
 
-
 class Task : public Node {
   friend class TaskParser;
 
@@ -27,6 +26,6 @@ class TaskParser {
   static Result<unique_ptr<Task>> Parse(const Value& config);
 };
 
-}
+}  // namespace mmdeploy::graph
 
 #endif  // MMDEPLOY_CSRC_GRAPH_TASK_H_

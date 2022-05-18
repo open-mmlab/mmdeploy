@@ -42,7 +42,7 @@ else ()
     endif ()
     if ("mmrotate" IN_LIST MMDEPLOY_CODEBASES)
         list(APPEND TASK_LIST "rotated_detector")
-    endif()
+    endif ()
 endif ()
 
 foreach (TASK ${TASK_LIST})

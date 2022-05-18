@@ -45,14 +45,6 @@ struct set_value_t {
 using _set_value::set_value_t;
 inline constexpr set_value_t SetValue{};
 
-// template <typename Receiver>
-// inline constexpr bool is_receiver_v = std::is_move_constructible_v<remove_cvref<Receiver> >&&
-//     std::is_constructible_v<remove_cvref<Receiver>, Receiver>;
-//
-// template <typename Receiver, typename... Args>
-// inline constexpr bool is_receiver_of_v =
-//     is_tag_invocable_v<set_value_t, remove_cvref<Receiver>&&, Args...>;
-
 namespace _start {
 
 struct start_t {
@@ -67,11 +59,6 @@ struct start_t {
 
 using _start::start_t;
 inline constexpr start_t Start{};
-
-// template <typename Operation>
-// inline constexpr bool is_operation_state_v =                           //
-//     std::is_destructible_v<Operation>&& std::is_object_v<Operation>&&  //
-//         std::is_invocable_v<start_t, Operation&>;                      //
 
 namespace _connect {
 
@@ -115,17 +102,6 @@ struct _has_completion_scheduler : std::bool_constant<_has_completion_scheduler_
 
 template <typename Sender>
 using _completion_scheduler_for = std::invoke_result_t<get_completion_scheduler_t, Sender>;
-
-// template <typename Func, typename Sender, typename... Args>
-// inline constexpr bool _tag_invocable_with_completion_scheduler =
-//     _has_completion_scheduler_v<Sender>&&
-//         std::is_invocable_v<Func, _completion_scheduler_for<Sender>, Sender, Args...>;
-
-// template <typename Func, typename Sender, typename... Args>
-// inline constexpr bool _tag_invocable_with_completion_scheduler = std::conjunction_v<
-//     _has_completion_scheduler<Sender>,
-//     _defer_args<std::is_invocable, identity<Func>, _defer<_completion_scheduler_for, Sender>,
-//                 identity<Sender>, identity<Args>...>>;
 
 namespace impl {
 

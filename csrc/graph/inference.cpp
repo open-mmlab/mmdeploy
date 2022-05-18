@@ -47,4 +47,4 @@ class InferenceCreator : public Creator<Node> {
 
 REGISTER_MODULE(Node, InferenceCreator);
 
-}  // namespace mmdeploy::async
+}  // namespace mmdeploy::graph

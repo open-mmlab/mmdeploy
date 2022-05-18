@@ -1,4 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
+// Modified from
+// https://github.com/brycelelbach/wg21_p2300_std_execution/blob/main/include/execution.hpp
 
 #ifndef MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_ENSURE_STARTED_H_
 #define MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_ENSURE_STARTED_H_

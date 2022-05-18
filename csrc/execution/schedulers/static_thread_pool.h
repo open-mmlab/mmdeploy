@@ -1,6 +1,6 @@
-//
-// Created by li on 2022/3/19.
-//
+// Copyright (c) OpenMMLab. All rights reserved.
+// Modified from
+// https://github.com/brycelelbach/wg21_p2300_std_execution/blob/main/examples/schedulers/static_thread_pool.hpp
 
 #ifndef MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_STATIC_THREAD_POOL_H_
 #define MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_STATIC_THREAD_POOL_H_

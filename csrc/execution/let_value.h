@@ -101,7 +101,8 @@ struct _Sender<Sender, Func>::type {
       completion_signatures_of_t<__value_type_t<Func, completion_signatures_of_t<Sender>>>;
 
   template <typename Self, typename Receiver, _decays_to<Self, type, int> = 0>
-  friend auto tag_invoke(connect_t, Self&& self, Receiver&& receiver) -> _operation_t<Self, Receiver> {
+  friend auto tag_invoke(connect_t, Self&& self, Receiver&& receiver)
+      -> _operation_t<Self, Receiver> {
     return _operation_t<Self, Receiver>{((Self &&) self).sender_, (Receiver &&) receiver,
                                         ((Self &&) self).func_};
   }

@@ -23,6 +23,6 @@ class InferenceParser {
   static Result<unique_ptr<Inference>> Parse(const Value& config);
 };
 
-}  // namespace mmdeploy::async
+}  // namespace mmdeploy::graph
 
 #endif  // MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_INFERENCE_H_

@@ -14,8 +14,6 @@
 
 namespace mmdeploy::graph {
 
-
-
 class Pipeline : public Node {
   friend class PipelineParser;
 

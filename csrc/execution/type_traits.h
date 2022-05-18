@@ -1,4 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
+// Modified from
+// https://github.com/facebookexperimental/libunifex/blob/main/include/unifex/type_traits.hpp
 
 #ifndef MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_TYPE_TRAITS_H_
 #define MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_TYPE_TRAITS_H_

@@ -1,11 +1,10 @@
 // Copyright (c) OpenMMLab. All rights reserved.
-
+// Modified from
+// https://github.com/facebookexperimental/libunifex/blob/main/include/unifex/tag_invoke.hpp
 #ifndef MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_TAG_INVOKE_H_
 #define MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_TAG_INVOKE_H_
 
 #include "type_traits.h"
-
-#define MMDEPLOY_TAG_INVOKE tag_invoke
 
 namespace mmdeploy {
 
