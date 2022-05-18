@@ -48,15 +48,15 @@ static void register_python_executor(py::module& m) {
   py::class_<PySender, std::unique_ptr<PySender>>(m, "PySender")
       .def("__await__", &PySender::__await__);
 
-  m.def("test_async", [](const py::object& x) {
-    static StaticThreadPool pool;
-    TypeErasedScheduler<Value> scheduler{pool.GetScheduler()};
-    auto sender = TransferJust(scheduler, ConvertToValue(x)) | Then([](Value x) {
-                    // std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                    return Value(x.get<int>() * x.get<int>());
-                  });
-    return std::make_unique<PySender>(std::move(sender));
-  });
+  // m.def("test_async", [](const py::object& x) {
+  //   static StaticThreadPool pool;
+  //   TypeErasedScheduler<Value> scheduler{pool.GetScheduler()};
+  //   auto sender = TransferJust(scheduler, ConvertToValue(x)) | Then([](Value x) {
+  //                   // std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  //                   return Value(x.get<int>() * x.get<int>());
+  //                 });
+  //   return std::make_unique<PySender>(std::move(sender));
+  // });
 }
 
 class PythonExecutorRegisterer {

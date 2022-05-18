@@ -197,8 +197,8 @@ MMDEPLOY_API int mmdeploy_text_recognizer_get_result(mmdeploy_value_t output,
 
     size_t image_count = recognizer_outputs.size();
     size_t result_count = 0;
-    for (const auto& v : recognizer_outputs) {
-      result_count += recognizer_outputs.size();
+    for (const auto& img_outputs : recognizer_outputs) {
+      result_count += img_outputs.size();
     }
 
     auto deleter = [&](mm_text_recognize_t* p) {
