@@ -422,7 +422,7 @@ TEST_CASE("test dynamic batch for Value", "[execution1]") {
   //      get_scheduler(nullptr, pool.GetScheduler(), 8, std::chrono::microseconds(10)));
 
   auto exec_sched = mmdeploy_executor_system_pool();
-  auto dynamic_batch_sched = mmdeploy_executor_dynamic_batch(exec_sched, 8, -1);
+  auto dynamic_batch_sched = mmdeploy_executor_dynamic_batch(exec_sched, 32, -1);
   auto& scheduler = *reinterpret_cast<TypeErasedScheduler<Value>*>(dynamic_batch_sched);
   //  auto p = mmdeploy_executor_inline();
   //  auto& scheduler = *reinterpret_cast<TypeErasedScheduler<Value>*>(p);
@@ -450,7 +450,7 @@ TEST_CASE("test dynamic batch for Value", "[execution1]") {
   MMDEPLOY_INFO("waiting starts...");
   for (auto& s : senders) {
     auto [v] = SyncWait(std::move(s));
-    MMDEPLOY_INFO("val: {}", v[0][0]);
+    // MMDEPLOY_INFO("val: {}", v[0][0]);
   }
 
   mmdeploy_scheduler_destroy(dynamic_batch_sched);

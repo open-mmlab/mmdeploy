@@ -4,12 +4,13 @@
 
 #include <numeric>
 
+#include "apis/c/common_internal.h"
+#include "apis/c/handle.h"
+#include "apis/c/pipeline.h"
 #include "codebase/mmrotate/mmrotate.h"
-#include "core/device.h"
 #include "core/graph.h"
 #include "core/mat.h"
 #include "core/utils/formatter.h"
-#include "handle.h"
 
 using namespace std;
 using namespace mmdeploy;
@@ -48,7 +49,7 @@ int mmdeploy_rotated_detector_create_impl(ModelType&& m, const char* device_name
     auto value = config_template();
     value["pipeline"]["tasks"][0]["params"]["model"] = std::forward<ModelType>(m);
 
-    auto pose_estimator = std::make_unique<Handle>(device_name, device_id, std::move(value));
+    auto pose_estimator = std::make_unique<AsyncHandle>(device_name, device_id, std::move(value));
 
     *handle = pose_estimator.release();
     return MM_SUCCESS;
@@ -76,26 +77,62 @@ int mmdeploy_rotated_detector_create_by_path(const char* model_path, const char*
 
 int mmdeploy_rotated_detector_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
                                     mm_rotated_detect_t** results, int** result_count) {
-  if (handle == nullptr || mats == nullptr || mat_count == 0 || results == nullptr ||
-      result_count == nullptr) {
+  wrapped<mmdeploy_value_t> input;
+  if (auto ec = mmdeploy_rotated_detector_create_input(mats, mat_count, input.ptr())) {
+    return ec;
+  }
+  wrapped<mmdeploy_value_t> output;
+  if (auto ec = mmdeploy_rotated_detector_apply_v2(handle, input, output.ptr())) {
+    return ec;
+  }
+  if (auto ec = mmdeploy_rotated_detector_get_result(output, results, result_count)) {
+    return ec;
+  }
+  return MM_SUCCESS;
+}
+
+void mmdeploy_rotated_detector_release_result(mm_rotated_detect_t* results,
+                                              const int* result_count) {
+  delete[] results;
+  delete[] result_count;
+}
+
+void mmdeploy_rotated_detector_destroy(mm_handle_t handle) {
+  delete static_cast<AsyncHandle*>(handle);
+}
+
+int mmdeploy_rotated_detector_create_v2(mm_model_t model, const char* device_name, int device_id,
+                                        mmdeploy_exec_info_t exec_info, mm_handle_t* handle) {
+  return 0;
+}
+
+int mmdeploy_rotated_detector_create_input(const mm_mat_t* mats, int mat_count,
+                                           mmdeploy_value_t* input) {
+  return mmdeploy_common_create_input_v2(mats, mat_count, input);
+}
+
+int mmdeploy_rotated_detector_apply_v2(mm_handle_t handle, mmdeploy_value_t input,
+                                       mmdeploy_value_t* output) {
+  return mmdeploy_pipeline_apply(handle, input, output);
+}
+
+int mmdeploy_rotated_detector_apply_async(mm_handle_t handle, mmdeploy_sender_t input,
+                                          mmdeploy_sender_t* output) {
+  return mmdeploy_pipeline_apply_async(handle, input, output);
+}
+
+int mmdeploy_rotated_detector_get_result(mmdeploy_value_t output, mm_rotated_detect_t** results,
+                                         int** result_count) {
+  if (!output || !results || !result_count) {
     return MM_E_INVALID_ARG;
   }
 
   try {
-    auto detector = static_cast<Handle*>(handle);
-
-    Value input{Value::kArray};
-    for (int i = 0; i < mat_count; ++i) {
-      mmdeploy::Mat _mat{mats[i].height,         mats[i].width, PixelFormat(mats[i].format),
-                         DataType(mats[i].type), mats[i].data,  Device{"cpu"}};
-      input.front().push_back({{"ori_img", _mat}});
-    }
-
-    auto output = detector->Run(std::move(input)).value().front();
-    auto detector_outputs = from_value<vector<mmrotate::RotatedDetectorOutput>>(output);
+    Value& value = Cast(output)->front();
+    auto detector_outputs = from_value<vector<mmrotate::RotatedDetectorOutput>>(value);
 
     vector<int> _result_count;
-    _result_count.reserve(mat_count);
+    _result_count.reserve(detector_outputs.size());
     for (const auto& det_output : detector_outputs) {
       _result_count.push_back((int)det_output.detections.size());
     }
@@ -126,17 +163,9 @@ int mmdeploy_rotated_detector_apply(mm_handle_t handle, const mm_mat_t* mats, in
     return MM_SUCCESS;
 
   } catch (const std::exception& e) {
-    MMDEPLOY_ERROR("exception caught: {}", e.what());
+    MMDEPLOY_ERROR("unhandled exception: {}", e.what());
   } catch (...) {
     MMDEPLOY_ERROR("unknown exception caught");
   }
   return MM_E_FAIL;
 }
-
-void mmdeploy_rotated_detector_release_result(mm_rotated_detect_t* results,
-                                              const int* result_count) {
-  delete[] results;
-  delete[] result_count;
-}
-
-void mmdeploy_rotated_detector_destroy(mm_handle_t handle) { delete static_cast<Handle*>(handle); }

@@ -2,107 +2,83 @@
 
 #include "graph/task.h"
 
-#include "archive/value_archive.h"
-#include "core/graph.h"
 #include "core/operator.h"
 #include "graph/common.h"
 
 namespace mmdeploy::graph {
 
-static int GetDepth(const Value& input) {
-  if (input.is_array() && input.size() > 0) {
-    return GetDepth(input[0]) + 1;
-  }
-  return input.is_array();
-}
-
-// all args are array of the same length
-static size_t GetBatchSize(const Value& args) {
-  size_t batch_size = 0;
-  for (const auto& x : args) {
-    if (x.is_array()) {
-      if (!batch_size) {
-        batch_size = x.size();
-      } else if (batch_size != x.size()) {
-        return 0;
-      }
-    } else {
-      return 0;
+Sender<Value> Task::Process(Sender<Value> input) {
+  return LetValue(std::move(input), [this](Value& v) -> Sender<Value> {
+    assert(v.is_array());
+    // handle empty input
+    if (v.front().empty()) {
+      return TransferJust(*sched_, Value(Value::Array(v.size(), Value::kArray)));
     }
-  }
-  return batch_size;
-}
-
-Task::Task(const Value& cfg) : BaseNode(cfg) {
-  auto module = CreateFromRegistry<Module>(cfg, "module");
-  if (!module) {
-    MMDEPLOY_ERROR("failed to create task: {}", cfg);
-    throw_exception(eFail);
-  }
-  module_ = std::move(module).value();
-  name_ = cfg.value("name", string{});
-  is_batched_ = cfg.value("is_batched", false);
-  is_thread_safe_ = cfg.value("is_thread_safe", false);
-}
-
-void Task::Build(TaskGraph& graph) {
-  auto handle = graph.Add([this](Context& ctx) -> Result<void> {
-    auto args = ctx.pop().array();
-    auto rets = Value::Array{};
-    auto batch_size = GetBatchSize(args);
-    //    MMDEPLOY_ERROR("name: {}, is_batched: {}, INPUT batch_size: {}", name_, is_batched_,
-    //    batch_size);
-    if (!is_batched_ && batch_size) {
-      rets.resize(outputs_.size(), Value::kArray);
-      if (!is_thread_safe_) {
-        for (int i = 0; i < batch_size; ++i) {
-          Value sample = Value::kArray;
-          for (const auto& a : args) {
-            sample.push_back(a[i]);
-          }
-          OUTCOME_TRY(auto ret, module_->Process(sample));
-          for (int j = 0; j < ret.size(); ++j) {
-            rets[j].push_back(std::move(ret[j]));
-          }
-        }
-      } else {
-        std::vector<std::function<Result<Value>()>> tasks;
-        tasks.reserve(batch_size);
-        OUTCOME_TRY(auto batch_args, DistribAA(args));
-        for (int sample_id = 0; sample_id < batch_size; ++sample_id) {
-          tasks.emplace_back([&, sample_id]() -> Result<Value> {
-            return module_->Process(batch_args[sample_id]);
+    if (v.front().is_array() && !is_batched_) {
+      auto batch_size = v.front().size();
+      Value output = Value::Array(batch_size);
+      // clang-format off
+      return TransferJust(*sched_, std::move(output))
+          | Then([&](Value&& output) -> Value {
+            auto input = graph::DistribAA(v).value();
+            return Value{std::move(input), std::move(output)};
+          })
+          | TypeErase()  // TODO: capture bulk without type erasure
+          | Bulk(batch_size, [&](size_t index, Value& in_out) {
+            const auto& input = in_out[0];
+            auto& output = in_out[1];
+            output[index] = module_->Process(input[index]).value();
+          })
+          | Then([](const Value& in_out) {
+            return graph::DistribAA(in_out[1]).value();
           });
-        }
-        auto batch_rets = ctx.Execute(tasks);
-        for (auto& batch_ret : batch_rets) {
-          OUTCOME_TRY(auto ret, std::move(batch_ret));
-          for (int j = 0; j < rets.size(); ++j) {
-            rets[j].push_back(std::move(ret[j]));
-          }
-        }
-      }
+      // clang-format on
     } else {
-      OUTCOME_TRY(auto&& tmp, module_->Process(args));
-      rets = std::move(tmp).array();
+      return DynamicBatch(TypeErase(TransferJust(*sched_, std::move(v))), batch_context_,
+                          [&](const Value& u) { return module_->Process(u).value(); });
     }
-    ctx.push(std::move(rets));
-    //    MMDEPLOY_ERROR("name: {}, is_batched: {}, OUTPUT batch_size: {}", name_, is_batched_,
-    //          GetBatchSize(rets));
-    return success();
   });
-  handle->set_name(name_);
 }
 
-class TaskNodeCreator : public Creator<Node> {
+Result<unique_ptr<Task>> TaskParser::Parse(const Value& config) {
+  try {
+    auto task = std::make_unique<Task>();
+    OUTCOME_TRY(NodeParser::Parse(config, *task));
+    OUTCOME_TRY(task->module_, CreateFromRegistry<Module>(config, "module"));
+    bool sched_set = false;
+    if (config["context"].contains("executor")) {
+      auto& exec_info = config["context"]["executor"];
+      for (auto it = exec_info.begin(); it != exec_info.end(); ++it) {
+        if (it.key() == task->name()) {
+          task->sched_ = it->get<TypeErasedScheduler<Value>>();
+          sched_set = true;
+          MMDEPLOY_INFO("scheduler configured for task {}", task->name());
+          break;
+        }
+      }
+    }
+    if (!sched_set) {
+      task->sched_ =
+          TypeErasedScheduler<Value>{std::make_shared<TypeErasedScheduler<Value>::Impl>()};
+    }
+    task->is_batched_ = config.value("is_batched", false);
+    task->is_thread_safe_ = config.value("is_thread_safe", false);
+    return std::move(task);
+  } catch (const std::exception& e) {
+    MMDEPLOY_ERROR("error parsing config: {}", config);
+    return nullptr;
+  }
+}
+
+class TaskCreator : public Creator<Node> {
  public:
   const char* GetName() const override { return "Task"; }
   int GetVersion() const override { return 0; }
   std::unique_ptr<Node> Create(const Value& value) override {
-    return std::make_unique<Task>(value);
+    return TaskParser::Parse(value).value();
   }
 };
 
-REGISTER_MODULE(Node, TaskNodeCreator);
+REGISTER_MODULE(Node, TaskCreator);
 
 }  // namespace mmdeploy::graph

@@ -1,23 +1,28 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#ifndef MMDEPLOY_SRC_PIPELINE_INFERENCE_H_
-#define MMDEPLOY_SRC_PIPELINE_INFERENCE_H_
+#ifndef MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_INFERENCE_H_
+#define MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_INFERENCE_H_
 
-#include "graph/pipeline.h"
+#include "pipeline.h"
 
 namespace mmdeploy::graph {
 
-class Inference : public BaseNode {
+class Inference : public Node {
+  friend class InferenceParser;
+
  public:
-  explicit Inference(const Value& cfg);
+  Sender<Value> Process(Sender<Value> input) override {
+    return pipeline_->Process(std::move(input));
+  }
 
-  void Build(TaskGraph& graph) override;
-
- private:
-  Model model_;
   unique_ptr<Pipeline> pipeline_;
 };
 
-}  // namespace mmdeploy::graph
+class InferenceParser {
+ public:
+  static Result<unique_ptr<Inference>> Parse(const Value& config);
+};
 
-#endif  // MMDEPLOY_SRC_PIPELINE_INFERNECE_H_
+}  // namespace mmdeploy::async
+
+#endif  // MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_INFERENCE_H_

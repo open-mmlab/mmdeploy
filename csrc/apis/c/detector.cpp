@@ -77,15 +77,15 @@ int mmdeploy_detector_create_by_path(const char* model_path, const char* device_
   return ec;
 }
 
-mmdeploy_value_t mmdeploy_detector_create_input(const mm_mat_t* mats, int mat_count) {
-  return mmdeploy_common_create_input(mats, mat_count);
+int mmdeploy_detector_create_input(const mm_mat_t* mats, int mat_count, mmdeploy_value_t* input) {
+  return mmdeploy_common_create_input_v2(mats, mat_count, input);
 }
 
 int mmdeploy_detector_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
                             mm_detect_t** results, int** result_count) {
-  auto input = mmdeploy_detector_create_input(mats, mat_count);
-  if (!input) {
-    return MM_E_FAIL;
+  wrapped<mmdeploy_value_t> input;
+  if (auto ec = mmdeploy_detector_create_input(mats, mat_count, input.ptr())) {
+    return ec;
   }
   wrapped<mmdeploy_value_t> output;
   if (auto ec = mmdeploy_detector_apply_v2(handle, input, output.ptr())) {
@@ -102,8 +102,9 @@ int mmdeploy_detector_apply_v2(mm_handle_t handle, mmdeploy_value_t input,
   return mmdeploy_pipeline_apply(handle, input, output);
 }
 
-mmdeploy_sender_t mmdeploy_detector_apply_async(mm_handle_t handle, mmdeploy_sender_t input) {
-  return mmdeploy_pipeline_apply_async(handle, input);
+int mmdeploy_detector_apply_async(mm_handle_t handle, mmdeploy_sender_t input,
+                                  mmdeploy_sender_t* output) {
+  return mmdeploy_pipeline_apply_async(handle, input, output);
 }
 
 int mmdeploy_detector_get_result(mmdeploy_value_t output, mm_detect_t** results,

@@ -89,8 +89,8 @@ MMDEPLOY_API int mmdeploy_text_recognizer_apply_v2(mm_handle_t handle, mmdeploy_
  * @brief Same as \ref mmdeploy_text_recognizer_apply_bbox, but input and output are packed in \ref
  * mmdeploy_value_t.
  */
-MMDEPLOY_API mmdeploy_sender_t mmdeploy_text_recognizer_apply_async(mm_handle_t handle,
-                                                                    mmdeploy_sender_t input);
+MMDEPLOY_API int mmdeploy_text_recognizer_apply_async(mm_handle_t handle, mmdeploy_sender_t input,
+                                                      mmdeploy_sender_t* output);
 
 /**
  * @brief Apply text recognizer to a batch of images supplied with text bboxes

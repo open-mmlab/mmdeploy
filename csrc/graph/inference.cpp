@@ -1,52 +1,50 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "graph/inference.h"
+#include "inference.h"
 
 #include "archive/json_archive.h"
-#include "archive/value_archive.h"
-#include "core/operator.h"
-#include "graph/common.h"
+#include "core/model.h"
 
 namespace mmdeploy::graph {
 
-Inference::Inference(const Value& cfg) : BaseNode(cfg) {
-  auto& model_value = cfg["params"]["model"];
-  if (model_value.is_any<Model>()) {
-    model_ = model_value.get<Model>();
-  } else if (model_value.is_string()) {
-    auto model_path = model_value.get<std::string>();
-    model_ = Model(model_path);
-  } else {
-    MMDEPLOY_ERROR("unsupported model specification");
-    throw_exception(eInvalidArgument);
-  }
+Result<unique_ptr<Inference>> InferenceParser::Parse(const Value& config) {
+  try {
+    auto& model_config = config["params"]["model"];
+    Model model;
+    if (model_config.is_any<Model>()) {
+      model = model_config.get<Model>();
+    } else {
+      model = Model(model_config.get<string>());
+    }
+    OUTCOME_TRY(auto pipeline_json, model.ReadFile("pipeline.json"));
+    auto json = nlohmann::json::parse(pipeline_json);
 
-  auto pipeline_json = model_.ReadFile("pipeline.json").value();
-  auto json = nlohmann::json::parse(pipeline_json);
+    auto context = config.value("context", Value(ValueType::kObject));
+    context["model"] = std::move(model);
 
-  auto context = cfg.value("context", Value(ValueType::kObject));
-  context["model"] = model_;
+    auto pipeline_config = from_json<Value>(json);
+    pipeline_config["context"] = context;
 
-  auto value = from_json<Value>(json);
-  value["context"] = context;
-  pipeline_ = std::make_unique<Pipeline>(value);
-  if (!pipeline_) {
-    MMDEPLOY_ERROR("failed to create pipeline");
-    throw_exception(eFail);
+    auto inference = std::make_unique<Inference>();
+    OUTCOME_TRY(NodeParser::Parse(config, *inference));
+    OUTCOME_TRY(inference->pipeline_, PipelineParser{}.Parse(pipeline_config));
+
+    return std::move(inference);
+  } catch (const Exception& e) {
+    MMDEPLOY_ERROR("exception: {}", e.what());
+    return failure(e.code());
   }
 }
 
-void Inference::Build(TaskGraph& graph) { pipeline_->Build(graph); }
-
-class InferenceNodeCreator : public Creator<Node> {
+class InferenceCreator : public Creator<Node> {
  public:
   const char* GetName() const override { return "Inference"; }
   int GetVersion() const override { return 0; }
   std::unique_ptr<Node> Create(const Value& value) override {
-    return std::make_unique<Inference>(value);
+    return InferenceParser::Parse(value).value();
   }
 };
 
-REGISTER_MODULE(Node, InferenceNodeCreator);
+REGISTER_MODULE(Node, InferenceCreator);
 
-}  // namespace mmdeploy::graph
+}  // namespace mmdeploy::async

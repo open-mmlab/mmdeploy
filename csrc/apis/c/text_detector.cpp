@@ -2,13 +2,13 @@
 
 #include "text_detector.h"
 
+#include <numeric>
+
 #include "apis/c/common_internal.h"
 #include "apis/c/executor_internal.h"
 #include "apis/c/model.h"
 #include "apis/c/pipeline.h"
-#include "archive/json_archive.h"
 #include "codebase/mmocr/mmocr.h"
-#include "core/device.h"
 #include "core/model.h"
 #include "core/status_code.h"
 #include "core/utils/formatter.h"
@@ -54,7 +54,7 @@ int mmdeploy_text_detector_create_impl(mm_model_t model, const char* device_name
 }  // namespace
 
 int mmdeploy_text_detector_create(mm_model_t model, const char* device_name, int device_id,
-                                  mmdeploy_exec_info_t exec_info, mm_handle_t* handle) {
+                                  mm_handle_t* handle) {
   return mmdeploy_text_detector_create_impl(model, device_name, device_id, nullptr, handle);
 }
 
@@ -78,6 +78,11 @@ mmdeploy_value_t mmdeploy_text_detector_create_input(const mm_mat_t* mats, int m
   return mmdeploy_common_create_input(mats, mat_count);
 }
 
+int mmdeploy_text_detector_create_input_v2(const mm_mat_t* mats, int mat_count,
+                                           mmdeploy_value_t* input) {
+  return mmdeploy_common_create_input_v2(mats, mat_count, input);
+}
+
 int mmdeploy_text_detector_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
                                  mm_text_detect_t** results, int** result_count) {
   auto input = mmdeploy_text_detector_create_input(mats, mat_count);
@@ -99,8 +104,9 @@ int mmdeploy_text_detector_apply_v2(mm_handle_t handle, mmdeploy_value_t input,
   return mmdeploy_pipeline_apply(handle, input, output);
 }
 
-mmdeploy_sender_t mmdeploy_text_detector_apply_async(mm_handle_t handle, mmdeploy_sender_t input) {
-  return mmdeploy_pipeline_apply_async(handle, input);
+int mmdeploy_text_detector_apply_async(mm_handle_t handle, mmdeploy_sender_t input,
+                                       mmdeploy_sender_t* output) {
+  return mmdeploy_pipeline_apply_async(handle, input, output);
 }
 
 int mmdeploy_text_detector_get_result(mmdeploy_value_t output, mm_text_detect_t** results,
@@ -157,3 +163,59 @@ void mmdeploy_text_detector_release_result(mm_text_detect_t* results, const int*
 }
 
 void mmdeploy_text_detector_destroy(mm_handle_t handle) { mmdeploy_pipeline_destroy(handle); }
+
+int mmdeploy_text_detector_apply_async_v2(mm_handle_t handle, const mm_mat_t* imgs, int img_count,
+                                          mmdeploy_text_detector_continuation_t cont, void* context,
+                                          mmdeploy_sender_t* output) {
+  mmdeploy_sender_t result_sender{};
+  if (auto ec = mmdeploy_text_detector_apply_async_v3(handle, imgs, img_count, &result_sender)) {
+    return ec;
+  }
+  if (auto ec = mmdeploy_text_detector_continue_async(result_sender, cont, context, output)) {
+    return ec;
+  }
+  return MM_SUCCESS;
+}
+
+int mmdeploy_text_detector_apply_async_v3(mm_handle_t handle, const mm_mat_t* imgs, int img_count,
+                                          mmdeploy_sender_t* output) {
+  wrapped<mmdeploy_value_t> input_val;
+  if (auto ec = mmdeploy_text_detector_create_input_v2(imgs, img_count, input_val.ptr())) {
+    return ec;
+  }
+
+  mmdeploy_sender_t input_sndr = mmdeploy_executor_just(input_val);
+
+  mmdeploy_sender_t output_sndr{};
+  if (auto ec = mmdeploy_text_detector_apply_async(handle, input_sndr, &output_sndr)) {
+    return ec;
+  }
+
+  return MM_SUCCESS;
+}
+
+int mmdeploy_text_detector_continue_async(mmdeploy_sender_t input,
+                                          mmdeploy_text_detector_continuation_t cont, void* context,
+                                          mmdeploy_sender_t* output) {
+  auto sender = Guard([&] {
+    return Take(
+        LetValue(Take(input), [fn = cont, context](Value& value) -> TypeErasedSender<Value> {
+          mm_text_detect_t* results{};
+          int* result_count{};
+          if (auto ec = mmdeploy_text_detector_get_result(Cast(&value), &results, &result_count)) {
+            return Just(Value());
+          }
+          value = nullptr;
+          mmdeploy_sender_t output{};
+          if (auto ec = fn(results, result_count, context, &output); ec || !output) {
+            return Just(Value());
+          }
+          return Take(output);
+        }));
+  });
+  if (sender) {
+    *output = sender;
+    return MM_SUCCESS;
+  }
+  return MM_E_FAIL;
+}

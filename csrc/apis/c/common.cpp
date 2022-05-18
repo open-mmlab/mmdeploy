@@ -14,8 +14,14 @@ int mmdeploy_value_destroy(mmdeploy_value_t value) {
 }
 
 mmdeploy_value_t mmdeploy_common_create_input(const mm_mat_t* mats, int mat_count) {
+  mmdeploy_value_t value{};
+  (void)mmdeploy_common_create_input_v2(mats, mat_count, &value);
+  return value;
+}
+
+int mmdeploy_common_create_input_v2(const mm_mat_t* mats, int mat_count, mmdeploy_value_t* value) {
   if (mat_count && mats == nullptr) {
-    return nullptr;
+    return MM_E_INVALID_ARG;
   }
   try {
     auto input = std::make_unique<Value>(Value{Value::kArray});
@@ -24,11 +30,11 @@ mmdeploy_value_t mmdeploy_common_create_input(const mm_mat_t* mats, int mat_coun
                          DataType(mats[i].type), mats[i].data,  Device{"cpu"}};
       input->front().push_back({{"ori_img", _mat}});
     }
-    return reinterpret_cast<mmdeploy_value_t>(input.release());
+    *value = Cast(input.release());
   } catch (const std::exception& e) {
     MMDEPLOY_ERROR("unhandled exception: {}", e.what());
   } catch (...) {
     MMDEPLOY_ERROR("unknown exception caught");
   }
-  return nullptr;
+  return MM_SUCCESS;
 }

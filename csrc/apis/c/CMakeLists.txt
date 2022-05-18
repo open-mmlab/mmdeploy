@@ -18,7 +18,8 @@ if ("all" IN_LIST MMDEPLOY_CODEBASES)
             text_detector
             text_recognizer
             pose_detector
-            restorer)
+            restorer
+            rotated_detector)
 else ()
     if ("mmcls" IN_LIST MMDEPLOY_CODEBASES)
         list(APPEND TASK_LIST classifier)
@@ -39,6 +40,9 @@ else ()
     if ("mmpose" IN_LIST MMDEPLOY_CODEBASES)
         list(APPEND TASK_LIST pose_detector)
     endif ()
+    if ("mmrotate" IN_LIST MMDEPLOY_CODEBASES)
+        list(APPEND TASK_LIST "rotated_detector")
+    endif()
 endif ()
 
 foreach (TASK ${TASK_LIST})

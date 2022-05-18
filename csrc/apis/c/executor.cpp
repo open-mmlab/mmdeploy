@@ -6,7 +6,6 @@
 #include "common_internal.h"
 #include "execution/when_all_value.h"
 #include "executor_internal.h"
-#include "handle.h"
 
 using namespace mmdeploy;
 

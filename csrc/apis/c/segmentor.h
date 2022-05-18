@@ -9,6 +9,7 @@
 #define MMDEPLOY_SEGMENTOR_H
 
 #include "common.h"
+#include "executor.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -60,7 +61,8 @@ MMDEPLOY_API int mmdeploy_segmentor_create_by_path(const char* model_path, const
 MMDEPLOY_API int mmdeploy_segmentor_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
                                           mm_segment_t** results);
 
-/** @brief Release result buffer returned by \ref mmdeploy_segmentor_apply
+/**
+ * @brief Release result buffer returned by \ref mmdeploy_segmentor_apply
  * @param[in] results result buffer
  * @param[in] count length of \p results
  */
@@ -71,6 +73,21 @@ MMDEPLOY_API void mmdeploy_segmentor_release_result(mm_segment_t* results, int c
  * @param[in] handle segmentor's handle created by \ref mmdeploy_segmentor_create_by_path
  */
 MMDEPLOY_API void mmdeploy_segmentor_destroy(mm_handle_t handle);
+
+MMDEPLOY_API int mmdeploy_segmentor_create_v2(mm_model_t model, const char* device_name,
+                                              int device_id, mmdeploy_exec_info_t exec_info,
+                                              mm_handle_t* handle);
+
+MMDEPLOY_API int mmdeploy_segmentor_create_input(const mm_mat_t* mats, int mat_count,
+                                                 mmdeploy_value_t* value);
+
+MMDEPLOY_API int mmdeploy_segmentor_apply_v2(mm_handle_t handle, mmdeploy_value_t input,
+                                             mmdeploy_value_t* output);
+
+MMDEPLOY_API int mmdeploy_segmentor_apply_async(mm_handle_t handle, mmdeploy_sender_t input,
+                                                mmdeploy_sender_t* output);
+
+MMDEPLOY_API int mmdeploy_segmentor_get_result(mmdeploy_value_t output, mm_segment_t** results);
 
 #ifdef __cplusplus
 }

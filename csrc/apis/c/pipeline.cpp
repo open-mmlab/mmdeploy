@@ -31,20 +31,21 @@ int mmdeploy_pipeline_create(mmdeploy_value_t config, const char* device_name, i
   return MM_E_FAIL;
 }
 
-// TODO: handle empty input
-mmdeploy_sender_t mmdeploy_pipeline_apply_async(mm_handle_t handle, mmdeploy_sender_t input) {
-  if (!handle || !input) {
-    return nullptr;
+int mmdeploy_pipeline_apply_async(mm_handle_t handle, mmdeploy_sender_t input,
+                                  mmdeploy_sender_t* output) {
+  if (!handle || !input || !output) {
+    return MM_E_INVALID_ARG;
   }
   try {
-    auto detector = static_cast<AsyncHandle*>(handle);
-    return Take(detector->Process(Take(input)));
+    auto h = static_cast<AsyncHandle*>(handle);
+    *output = Take(h->Process(Take(input)));
+    return MM_SUCCESS;
   } catch (const std::exception& e) {
     MMDEPLOY_ERROR("exception caught: {}", e.what());
   } catch (...) {
     MMDEPLOY_ERROR("unknown exception caught");
   }
-  return nullptr;
+  return MM_E_FAIL;
 }
 
 void mmdeploy_pipeline_destroy(mm_handle_t handle) {
@@ -58,9 +59,9 @@ int mmdeploy_pipeline_apply(mm_handle_t handle, mmdeploy_value_t input, mmdeploy
   if (!input_sender) {
     return MM_E_FAIL;
   }
-  auto output_sender = mmdeploy_pipeline_apply_async(handle, input_sender);
-  if (!output_sender) {
-    return MM_E_FAIL;
+  mmdeploy_sender_t output_sender{};
+  if (auto ec = mmdeploy_pipeline_apply_async(handle, input_sender, &output_sender)) {
+    return ec;
   }
   auto _output = mmdeploy_executor_sync_wait(output_sender);
   if (!_output) {

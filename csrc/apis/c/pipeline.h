@@ -36,30 +36,15 @@ MMDEPLOY_API int mmdeploy_pipeline_apply(mm_handle_t handle, mmdeploy_value_t in
                                          mmdeploy_value_t* output);
 
 /**
- * @brief Apply pipeline asynchronously
- * @param[in] handle handle of the pipeline
- * @param[in] input input sender that will be consumed by the operation
- * @return output sender
- */
-MMDEPLOY_API mmdeploy_sender_t mmdeploy_pipeline_apply_async(mm_handle_t handle,
-                                                             mmdeploy_sender_t input);
-
-// TODO: for discussion only, not implemented
-MMDEPLOY_API mmdeploy_sender_t mmdeploy_pipeline_apply_async_v2(mm_handle_t handle,
-                                                                mmdeploy_sender_t* input);
-
-// TODO: for discussion only, not implemented
-/**
- * @brief Apply pipeline asynchronously
- * @param[in] handle handle of the pipeline
- * @param[in] input input sender that will be consumed by the operation
- * @param[out] output output sender
+ * Apply pipeline asynchronously
+ * @param handle handle of the pipeline
+ * @param input input sender that will be consumed by the operation
+ * @param output output sender
  * @return status of the operation
  */
-MMDEPLOY_API int mmdeploy_pipeline_apply_async_v3(mm_handle_t handle, mmdeploy_sender_t* input,
-                                                  mmdeploy_sender_t* output);
+MMDEPLOY_API int mmdeploy_pipeline_apply_async(mm_handle_t handle, mmdeploy_sender_t input,
+                                               mmdeploy_sender_t* output);
 
-// TODO: should all destructive API take pointer to handles?
 /**
  * @brief destroy pipeline
  * @param[in] handle
