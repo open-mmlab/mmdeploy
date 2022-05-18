@@ -82,6 +82,7 @@ install
 │   └── cpp
 └── lib
 ```
+
 where `include/c` and `include/cpp` correspond to C and C++ API respectively.
 
 **Caution: The C++ API is highly volatile and not recommended at the moment.**
@@ -120,6 +121,7 @@ Download the checkpoint from this [link](https://download.openmmlab.com/mmdetect
 #### Install MMDeploy and ONNX Runtime
 
 Please run the following command in Anaconda environment to [install MMDeploy](./build.md).
+
 ```bash
 conda activate openmmlab
 
@@ -130,11 +132,13 @@ pip install -e .
 ```
 
 Once we have installed the MMDeploy, we should select an inference engine for model inference. Here we take ONNX Runtime as an example. Run the following command to [install ONNX Runtime](./backends/onnxruntime.md):
+
 ```bash
 pip install onnxruntime==1.8.1
 ```
 
 Then download the ONNX Runtime library to build the mmdeploy plugin for ONNX Runtime:
+
 ```bash
 wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
 
@@ -186,6 +190,7 @@ If the script runs successfully, two images will display on the screen one by on
 
 After model conversion, SDK Model is saved in directory ${work_dir}.
 Here is a recipe for building & running object detection demo.
+
 ```Bash
 cd build/install/example
 
@@ -204,14 +209,13 @@ export SPDLOG_LEVEL=warn
 ./object_detection cpu ${work_dirs} ${path/to/an/image}
 
 ```
+
 If the demo runs successfully, an image named "output_detection.png" is supposed to be found showing detection objects.
 
 ### Add New Model Support?
 
 If the models you want to deploy have not been supported yet in MMDeploy, you can try to support them by yourself. Here are some documents that may help you:
+
 - Read [how_to_support_new_models](./tutorials/how_to_support_new_models.md) to learn more about the rewriter.
-
-
-
 
 Finally, we welcome your PR!

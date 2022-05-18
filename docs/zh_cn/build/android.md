@@ -1,16 +1,17 @@
 # Android 下构建方式
 
-- [Android 下构建方式](#android-下构建方式)
-  - [源码安装](#源码安装)
-    - [安装构建和编译工具链](#安装构建和编译工具链)
-    - [安装依赖包](#安装依赖包)
-      - [安装 MMDeploy SDK 依赖](#安装-mmdeploy-sdk-依赖)
-    - [编译 MMDeploy](#编译-mmdeploy)
-      - [编译选项说明](#编译选项说明)
-      - [编译 SDK](#编译-sdk)
-      - [编译 Demo](#编译-demo)
+- [Android 下构建方式](#android-%E4%B8%8B%E6%9E%84%E5%BB%BA%E6%96%B9%E5%BC%8F)
+  - [源码安装](#%E6%BA%90%E7%A0%81%E5%AE%89%E8%A3%85)
+    - [安装构建和编译工具链](#%E5%AE%89%E8%A3%85%E6%9E%84%E5%BB%BA%E5%92%8C%E7%BC%96%E8%AF%91%E5%B7%A5%E5%85%B7%E9%93%BE)
+    - [安装依赖包](#%E5%AE%89%E8%A3%85%E4%BE%9D%E8%B5%96%E5%8C%85)
+      - [安装 MMDeploy SDK 依赖](#%E5%AE%89%E8%A3%85-mmdeploy-sdk-%E4%BE%9D%E8%B5%96)
+    - [编译 MMDeploy](#%E7%BC%96%E8%AF%91-mmdeploy)
+      - [编译选项说明](#%E7%BC%96%E8%AF%91%E9%80%89%E9%A1%B9%E8%AF%B4%E6%98%8E)
+      - [编译 SDK](#%E7%BC%96%E8%AF%91-sdk)
+      - [编译 Demo](#%E7%BC%96%E8%AF%91-demo)
 
----
+______________________________________________________________________
+
 MMDeploy 为 android 平台提供交叉编译的构建方式.
 
 MMDeploy converter 部分在 linux 平台上执行,SDK 部分在 android 平台上执行.
@@ -29,30 +30,31 @@ MMDeploy 的交叉编译分为两步:
 
 - cmake
 
-    **保证 cmake的版本 >= 3.14.0**. 如果不是,可以参考以下命令安装 3.20.0 版本. 如要获取其他版本,请参考 [这里](https://cmake.org/install)
+  **保证 cmake的版本 >= 3.14.0**. 如果不是,可以参考以下命令安装 3.20.0 版本. 如要获取其他版本,请参考 [这里](https://cmake.org/install)
 
-    ```bash
-    wget https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0-linux-x86_64.tar.gz
-    tar -xzvf cmake-3.20.0-linux-x86_64.tar.gz
-    sudo ln -sf $(pwd)/cmake-3.20.0-linux-x86_64/bin/* /usr/bin/
-    ```
+  ```bash
+  wget https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0-linux-x86_64.tar.gz
+  tar -xzvf cmake-3.20.0-linux-x86_64.tar.gz
+  sudo ln -sf $(pwd)/cmake-3.20.0-linux-x86_64/bin/* /usr/bin/
+  ```
 
 - ANDROID NDK 19+
 
-    **保证 android ndk 的版本 >= 19.0**. 如果不是,可以参考以下命令安装 r23b 版本. 如要获取其他版本,请参考 [这里](https://developer.android.com/ndk/downloads)
+  **保证 android ndk 的版本 >= 19.0**. 如果不是,可以参考以下命令安装 r23b 版本. 如要获取其他版本,请参考 [这里](https://developer.android.com/ndk/downloads)
 
-    ```bash
-    wget https://dl.google.com/android/repository/android-ndk-r23b-linux.zip
-    unzip android-ndk-r23b-linux.zip
-    cd android-ndk-r23b
-    export NDK_PATH=${PWD}
-    ```
+  ```bash
+  wget https://dl.google.com/android/repository/android-ndk-r23b-linux.zip
+  unzip android-ndk-r23b-linux.zip
+  cd android-ndk-r23b
+  export NDK_PATH=${PWD}
+  ```
 
 ### 安装依赖包
 
 #### 安装 MMDeploy SDK 依赖
 
 如果您只对模型转换感兴趣,那么可以跳过本章节.
+
 <table>
 <thead>
   <tr>
@@ -86,7 +88,7 @@ export OPENCV_ANDROID_SDK_DIR=${PWD}/OpenCV-android-sdk
 </code></pre>
     </td>
 
-  </tr>
+</tr>
   <tr>
     <td>ncnn </td>
     <td>ncnn 是支持 android 平台的高效神经网络推理计算框架</br>
@@ -107,7 +109,9 @@ make install
 </table>
 
 ### 编译 MMDeploy
+
 #### 编译选项说明
+
 <table>
 <thead>
   <tr>

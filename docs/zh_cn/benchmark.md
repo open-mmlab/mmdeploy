@@ -678,7 +678,6 @@ GPU: ncnn, TensorRT, PPLNN
 
 用户可以直接通过[如何测试性能](tutorials/how_to_evaluate_a_model.md)获得想要的性能测试结果。下面是我们环境中的测试结果：
 
-
 <details>
 <summary style="margin-left: 25px;">MMCls</summary>
 <div style="margin-left: 25px;">
