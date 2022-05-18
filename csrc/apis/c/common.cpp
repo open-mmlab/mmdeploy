@@ -13,13 +13,7 @@ int mmdeploy_value_destroy(mmdeploy_value_t value) {
   return 0;
 }
 
-mmdeploy_value_t mmdeploy_common_create_input(const mm_mat_t* mats, int mat_count) {
-  mmdeploy_value_t value{};
-  (void)mmdeploy_common_create_input_v2(mats, mat_count, &value);
-  return value;
-}
-
-int mmdeploy_common_create_input_v2(const mm_mat_t* mats, int mat_count, mmdeploy_value_t* value) {
+int mmdeploy_common_create_input(const mm_mat_t* mats, int mat_count, mmdeploy_value_t* value) {
   if (mat_count && mats == nullptr) {
     return MM_E_INVALID_ARG;
   }

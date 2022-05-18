@@ -90,8 +90,8 @@ MMDEPLOY_API int mmdeploy_text_detector_create_v2(mm_model_t model, const char* 
  * @param[in] mat_count number of images in the batch
  * @return the created value
  */
-MMDEPLOY_API mmdeploy_value_t mmdeploy_text_detector_create_input(const mm_mat_t* mats,
-                                                                  int mat_count);
+MMDEPLOY_API int mmdeploy_text_detector_create_input(const mm_mat_t* mats, int mat_count,
+                                                     mmdeploy_value_t* input);
 
 /**
  * @brief Same as \ref mmdeploy_text_detector_apply, but input and output are packed in \ref

@@ -108,7 +108,7 @@ mmdeploy_sender_t mmdeploy_executor_split(mmdeploy_sender_t input) {
   return Guard([&] { return Take(Split(Take(input))); });
 }
 
-mmdeploy_sender_t mmdeploy_executor_when_all(mmdeploy_sender_t* inputs, int32_t n) {
+mmdeploy_sender_t mmdeploy_executor_when_all(mmdeploy_sender_t inputs[], int32_t n) {
   return Guard([&] {
     std::vector<SenderType> senders;
     senders.reserve(n);

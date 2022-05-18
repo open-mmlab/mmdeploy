@@ -97,7 +97,7 @@ int mmdeploy_restorer_create_v2(mm_model_t model, const char* device_name, int d
 }
 
 int mmdeploy_restorer_create_input(const mm_mat_t* mats, int mat_count, mmdeploy_value_t* value) {
-  return mmdeploy_common_create_input_v2(mats, mat_count, value);
+  return mmdeploy_common_create_input(mats, mat_count, value);
 }
 
 int mmdeploy_restorer_apply_v2(mm_handle_t handle, mmdeploy_value_t input,

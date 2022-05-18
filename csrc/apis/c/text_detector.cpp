@@ -74,22 +74,18 @@ int mmdeploy_text_detector_create_by_path(const char* model_path, const char* de
   return ec;
 }
 
-mmdeploy_value_t mmdeploy_text_detector_create_input(const mm_mat_t* mats, int mat_count) {
-  return mmdeploy_common_create_input(mats, mat_count);
-}
-
-int mmdeploy_text_detector_create_input_v2(const mm_mat_t* mats, int mat_count,
-                                           mmdeploy_value_t* input) {
-  return mmdeploy_common_create_input_v2(mats, mat_count, input);
+int mmdeploy_text_detector_create_input(const mm_mat_t* mats, int mat_count,
+                                        mmdeploy_value_t* input) {
+  return mmdeploy_common_create_input(mats, mat_count, input);
 }
 
 int mmdeploy_text_detector_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
                                  mm_text_detect_t** results, int** result_count) {
-  auto input = mmdeploy_text_detector_create_input(mats, mat_count);
-  if (!input) {
-    return MM_E_FAIL;
+  wrapped<mmdeploy_value_t> input;
+  if (auto ec = mmdeploy_text_detector_create_input(mats, mat_count, input.ptr())) {
+    return ec;
   }
-  wrapped<mmdeploy_value_t> output{};
+  wrapped<mmdeploy_value_t> output;
   if (auto ec = mmdeploy_text_detector_apply_v2(handle, input, output.ptr())) {
     return ec;
   }
@@ -180,7 +176,7 @@ int mmdeploy_text_detector_apply_async_v2(mm_handle_t handle, const mm_mat_t* im
 int mmdeploy_text_detector_apply_async_v3(mm_handle_t handle, const mm_mat_t* imgs, int img_count,
                                           mmdeploy_sender_t* output) {
   wrapped<mmdeploy_value_t> input_val;
-  if (auto ec = mmdeploy_text_detector_create_input_v2(imgs, img_count, input_val.ptr())) {
+  if (auto ec = mmdeploy_text_detector_create_input(imgs, img_count, input_val.ptr())) {
     return ec;
   }
 

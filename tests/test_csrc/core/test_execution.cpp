@@ -19,8 +19,6 @@
 
 using namespace mmdeploy;
 
-#if 0
-
 TEST_CASE("test basic execution", "[execution]") {
   auto x = Then(Just(), [] {});
   static_assert(!_has_completion_scheduler_v<decltype(x)>);
@@ -358,8 +356,6 @@ TEST_CASE("pipeable sender", "[execution]") {
   MMDEPLOY_INFO("pipeable sender: {}", two);
 }
 
-#endif
-
 struct IntManager {
   using range_t = std::pair<size_t, size_t>;
   static size_t get_size(int) { return 1; }
@@ -406,7 +402,7 @@ TEST_CASE("test dynamic batch", "[execution]") {
   }
 }
 
-TEST_CASE("test dynamic batch for Value", "[execution1]") {
+TEST_CASE("test dynamic batch for Value", "[execution]") {
   //  TimedSingleThreadContext timer;
   //  SingleThreadContext thread;
   //  StaticThreadPool pool(2);

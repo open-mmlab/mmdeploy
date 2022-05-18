@@ -73,9 +73,6 @@ MMDEPLOY_API mmdeploy_sender_t mmdeploy_sender_copy(mmdeploy_sender_t input);
  */
 MMDEPLOY_API int mmdeploy_sender_destroy(mmdeploy_sender_t sender);
 
-// TODO: for discussion only, not implemented
-MMDEPLOY_API int mmdeploy_sender_destroy_v2(mmdeploy_sender_t* sender);
-
 ///////////////////////////////////////////////////////////////////////////////
 // Sender factories
 ///////////////////////////////////////////////////////////////////////////////
@@ -86,12 +83,6 @@ MMDEPLOY_API int mmdeploy_sender_destroy_v2(mmdeploy_sender_t* sender);
  * @return created sender
  */
 MMDEPLOY_API mmdeploy_sender_t mmdeploy_executor_just(mmdeploy_value_t value);
-
-// TODO: for discussion only, not implemented
-MMDEPLOY_API mmdeploy_sender_t mmdeploy_executor_just_v2(mmdeploy_value_t* value);
-
-// TODO: for discussion only, not implemented
-MMDEPLOY_API int mmdeploy_executor_just_v3(mmdeploy_value_t* value, mmdeploy_sender_t* sender);
 
 /**
  * @brief
@@ -122,26 +113,13 @@ MMDEPLOY_API mmdeploy_sender_t mmdeploy_executor_on(mmdeploy_scheduler_t schedul
 MMDEPLOY_API mmdeploy_sender_t mmdeploy_executor_then(mmdeploy_sender_t input,
                                                       mmdeploy_then_fn_t fn, void* context);
 
-// TODO: for discussion only, not implemented
-MMDEPLOY_API mmdeploy_sender_t mmdeploy_executor_then_v2(mmdeploy_sender_t* input,
-                                                         mmdeploy_then_fn_v2_t fn, void* context);
-
-// TODO: for discussion only, not implemented
-MMDEPLOY_API int mmdeploy_executor_then_v3(mmdeploy_sender_t* input, mmdeploy_then_fn_v3_t,
-                                           void* context, mmdeploy_sender_t* output);
-
 MMDEPLOY_API mmdeploy_sender_t mmdeploy_executor_let_value(mmdeploy_sender_t input,
                                                            mmdeploy_let_value_fn_t fn,
                                                            void* context);
 
 MMDEPLOY_API mmdeploy_sender_t mmdeploy_executor_split(mmdeploy_sender_t input);
 
-MMDEPLOY_API mmdeploy_sender_t mmdeploy_executor_when_all(mmdeploy_sender_t* inputs, int32_t n);
-
-// TODO: for discussion only, not implemented
-MMDEPLOY_API mmdeploy_sender_t mmdeploy_executor_when_all_v2(mmdeploy_sender_t* inputs[],
-                                                             int32_t n);
-
+MMDEPLOY_API mmdeploy_sender_t mmdeploy_executor_when_all(mmdeploy_sender_t inputs[], int32_t n);
 
 MMDEPLOY_API mmdeploy_sender_t mmdeploy_executor_ensure_started(mmdeploy_sender_t input);
 
@@ -151,6 +129,8 @@ MMDEPLOY_API mmdeploy_sender_t mmdeploy_executor_ensure_started(mmdeploy_sender_
 MMDEPLOY_API int mmdeploy_executor_start_detached(mmdeploy_sender_t input);
 
 MMDEPLOY_API mmdeploy_value_t mmdeploy_executor_sync_wait(mmdeploy_sender_t input);
+
+MMDEPLOY_API int mmdeploy_executor_sync_wait_v2(mmdeploy_sender_t input, mmdeploy_value_t* output);
 
 MMDEPLOY_API void mmdeploy_executor_execute(mmdeploy_scheduler_t scheduler, mmdeploy_then_fn_t fn,
                                             void* context);

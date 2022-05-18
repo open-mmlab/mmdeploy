@@ -36,8 +36,12 @@ class _TypeErasedReceiver;
 template <typename ValueTypes>
 class _TypeErasedScheduler;
 
+struct _unit {};
+
 template <typename>
-struct _ThenFn {};
+struct _ThenFn {
+  using type = _unit;
+};
 template <typename T>
 struct _ThenFn<std::tuple<T>> {
   using type = std::function<T(T)>;
@@ -313,7 +317,11 @@ class _TypeErasedScheduler {
     }
     virtual SenderType _DynamicBatch(SenderAdapterType input, dynamic_batch_t::context_t& context,
                                      ThenFun fun) {
-      return ::mmdeploy::DynamicBatch(std::move(input), nullptr, std::move(fun));
+      if constexpr (!std::is_same_v<ThenFun, _unit>) {
+        return ::mmdeploy::DynamicBatch(std::move(input), nullptr, std::move(fun));
+      } else {
+        std::abort();
+      }
     }
     // virtual SenderType _ScheduleFrom(SenderType) = 0;
     // virtual SenderType _Then(SenderType input, ThenFun fun) = 0;

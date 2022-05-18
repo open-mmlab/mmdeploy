@@ -78,7 +78,7 @@ int mmdeploy_detector_create_by_path(const char* model_path, const char* device_
 }
 
 int mmdeploy_detector_create_input(const mm_mat_t* mats, int mat_count, mmdeploy_value_t* input) {
-  return mmdeploy_common_create_input_v2(mats, mat_count, input);
+  return mmdeploy_common_create_input(mats, mat_count, input);
 }
 
 int mmdeploy_detector_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
