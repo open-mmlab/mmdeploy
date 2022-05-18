@@ -2,7 +2,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # Script for test pre-build wheel
 
-BUILD_CONFIG=$1
+BUILD_CONFIG=${1}
 
 PARAMETER_NUMBER=1
 if [ $# != ${PARAMETER_NUMBER} ]; then
