@@ -161,7 +161,7 @@ void mmdeploy_text_detector_release_result(mm_text_detect_t* results, const int*
 void mmdeploy_text_detector_destroy(mm_handle_t handle) { mmdeploy_pipeline_destroy(handle); }
 
 int mmdeploy_text_detector_apply_async_v2(mm_handle_t handle, const mm_mat_t* imgs, int img_count,
-                                          mmdeploy_text_detector_continuation_t cont, void* context,
+                                          mmdeploy_text_detector_continue_t cont, void* context,
                                           mmdeploy_sender_t* output) {
   mmdeploy_sender_t result_sender{};
   if (auto ec = mmdeploy_text_detector_apply_async_v3(handle, imgs, img_count, &result_sender)) {
@@ -186,12 +186,11 @@ int mmdeploy_text_detector_apply_async_v3(mm_handle_t handle, const mm_mat_t* im
   if (auto ec = mmdeploy_text_detector_apply_async(handle, input_sndr, &output_sndr)) {
     return ec;
   }
-
   return MM_SUCCESS;
 }
 
 int mmdeploy_text_detector_continue_async(mmdeploy_sender_t input,
-                                          mmdeploy_text_detector_continuation_t cont, void* context,
+                                          mmdeploy_text_detector_continue_t cont, void* context,
                                           mmdeploy_sender_t* output) {
   auto sender = Guard([&] {
     return Take(

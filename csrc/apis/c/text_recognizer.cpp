@@ -245,3 +245,45 @@ void mmdeploy_text_recognizer_release_result(mm_text_recognize_t* results, int c
 }
 
 void mmdeploy_text_recognizer_destroy(mm_handle_t handle) { mmdeploy_pipeline_destroy(handle); }
+
+int mmdeploy_text_recognizer_apply_async_v3(mm_handle_t handle, const mm_mat_t* imgs, int img_count,
+                                            const mm_text_detect_t* bboxes, const int* bbox_count,
+                                            mmdeploy_sender_t* output) {
+  wrapped<mmdeploy_value_t> input_val;
+  if (auto ec = mmdeploy_text_recognizer_create_input(imgs, img_count, bboxes, bbox_count,
+                                                      input_val.ptr())) {
+    return ec;
+  }
+  mmdeploy_sender_t input_sndr = mmdeploy_executor_just(input_val);
+
+  mmdeploy_sender_t output_sndr{};
+  if (auto ec = mmdeploy_text_recognizer_apply_async(handle, input_sndr, &output_sndr)) {
+    return ec;
+  }
+  return MM_SUCCESS;
+}
+
+int mmdeploy_text_recognizer_continue_async(mmdeploy_sender_t input,
+                                            mmdeploy_text_recognizer_continue_t cont, void* context,
+                                            mmdeploy_sender_t* output) {
+  auto sender = Guard([&] {
+    return Take(
+        LetValue(Take(input), [fn = cont, context](Value& value) -> TypeErasedSender<Value> {
+          mm_text_recognize_t* results{};
+          if (auto ec = mmdeploy_text_recognizer_get_result(Cast(&value), &results)) {
+            return Just(Value());
+          }
+          value = nullptr;
+          mmdeploy_sender_t output{};
+          if (auto ec = fn(results, context, &output); ec || !output) {
+            return Just(Value());
+          }
+          return Take(output);
+        }));
+  });
+  if (sender) {
+    *output = sender;
+    return MM_SUCCESS;
+  }
+  return MM_E_FAIL;
+}

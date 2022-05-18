@@ -123,19 +123,20 @@ MMDEPLOY_API
 int mmdeploy_text_detector_get_result(mmdeploy_value_t output, mm_text_detect_t** results,
                                       int** result_count);
 
-typedef int (*mmdeploy_text_detector_continuation_t)(mm_text_detect_t* results, int* result_count,
-                                                     void* context, mmdeploy_sender_t* output);
+typedef int (*mmdeploy_text_detector_continue_t)(mm_text_detect_t* results, int* result_count,
+                                                 void* context, mmdeploy_sender_t* output);
 
-MMDEPLOY_API int mmdeploy_text_detector_apply_async_v2(mm_handle_t handle, const mm_mat_t* imgs,
-                                                       int img_count,
-                                                       mmdeploy_text_detector_continuation_t cont,
-                                                       void* context, mmdeploy_sender_t* output);
+// MMDEPLOY_API int mmdeploy_text_detector_apply_async_v2(mm_handle_t handle, const mm_mat_t* imgs,
+//                                                        int img_count,
+//                                                        mmdeploy_text_detector_continuation_t
+//                                                        cont, void* context, mmdeploy_sender_t*
+//                                                        output);
 
 MMDEPLOY_API int mmdeploy_text_detector_apply_async_v3(mm_handle_t handle, const mm_mat_t* imgs,
                                                        int img_count, mmdeploy_sender_t* output);
 
 MMDEPLOY_API int mmdeploy_text_detector_continue_async(mmdeploy_sender_t input,
-                                                       mmdeploy_text_detector_continuation_t cont,
+                                                       mmdeploy_text_detector_continue_t cont,
                                                        void* context, mmdeploy_sender_t* output);
 
 #ifdef __cplusplus

@@ -92,6 +92,19 @@ MMDEPLOY_API int mmdeploy_text_recognizer_apply_v2(mm_handle_t handle, mmdeploy_
 MMDEPLOY_API int mmdeploy_text_recognizer_apply_async(mm_handle_t handle, mmdeploy_sender_t input,
                                                       mmdeploy_sender_t* output);
 
+typedef int (*mmdeploy_text_recognizer_continue_t)(mm_text_recognize_t* results, void* context,
+                                                   mmdeploy_sender_t* output);
+
+MMDEPLOY_API int mmdeploy_text_recognizer_apply_async_v3(mm_handle_t handle, const mm_mat_t* imgs,
+                                                         int img_count,
+                                                         const mm_text_detect_t* bboxes,
+                                                         const int* bbox_count,
+                                                         mmdeploy_sender_t* output);
+
+MMDEPLOY_API int mmdeploy_text_recognizer_continue_async(mmdeploy_sender_t input,
+                                                         mmdeploy_text_recognizer_continue_t cont,
+                                                         void* context, mmdeploy_sender_t* output);
+
 /**
  * @brief Apply text recognizer to a batch of images supplied with text bboxes
  * @param[in] handle text recognizer's handle created by \ref
