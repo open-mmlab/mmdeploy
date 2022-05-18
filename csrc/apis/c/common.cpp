@@ -5,6 +5,9 @@
 #include "core/mat.h"
 
 mmdeploy_value_t mmdeploy_value_copy(mmdeploy_value_t input) {
+  if (!input) {
+    return nullptr;
+  }
   return Guard([&] { return Take(Value(*Cast(input))); });
 }
 

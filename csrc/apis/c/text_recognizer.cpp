@@ -255,9 +255,7 @@ int mmdeploy_text_recognizer_apply_async_v3(mm_handle_t handle, const mm_mat_t* 
     return ec;
   }
   mmdeploy_sender_t input_sndr = mmdeploy_executor_just(input_val);
-
-  mmdeploy_sender_t output_sndr{};
-  if (auto ec = mmdeploy_text_recognizer_apply_async(handle, input_sndr, &output_sndr)) {
+  if (auto ec = mmdeploy_text_recognizer_apply_async(handle, input_sndr, output)) {
     return ec;
   }
   return MM_SUCCESS;

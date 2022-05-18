@@ -179,11 +179,8 @@ int mmdeploy_text_detector_apply_async_v3(mm_handle_t handle, const mm_mat_t* im
   if (auto ec = mmdeploy_text_detector_create_input(imgs, img_count, input_val.ptr())) {
     return ec;
   }
-
   mmdeploy_sender_t input_sndr = mmdeploy_executor_just(input_val);
-
-  mmdeploy_sender_t output_sndr{};
-  if (auto ec = mmdeploy_text_detector_apply_async(handle, input_sndr, &output_sndr)) {
+  if (auto ec = mmdeploy_text_detector_apply_async(handle, input_sndr, output)) {
     return ec;
   }
   return MM_SUCCESS;
