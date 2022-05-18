@@ -1033,7 +1033,23 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center">40.0</td>
     <td align="center">-</td>
     <td align="center">-</td>
+    <td align="center">-</td>
     <td>$MMDET_DIR/configs/gfl/gfl_r50_fpn_1x_coco.py</td>
+  </tr>
+  <tr>
+    <td align="center">RepPoints</td>
+    <td align="center">Object Detection</td>
+    <td align="center">COCO2017</td>
+    <td align="center">box AP</td>
+    <td align="center">37.0</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">36.9</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMDET_DIR/configs/reppoints/reppoints_moment_r50_fpn_1x_coco.py</td>
   </tr>
   <tr>
     <td align="center" rowspan="2">Mask R-CNN</td>
@@ -1877,3 +1893,5 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
 - Mask AP of Mask R-CNN drops by 1% for the backend. The main reason is that the predicted masks are directly interpolated to original image in PyTorch, while they are at first interpolated to the preprocessed input image of the model and then to original image in other backends.
 
 - MMPose models are tested with `flip_test` explicitly set to `False` in model configs.
+
+- Some models might get low accuracy in fp16 mode. Please adjust the model to avoid value overflow.
