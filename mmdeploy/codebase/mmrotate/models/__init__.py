@@ -3,10 +3,10 @@ from .oriented_standard_roi_head import (
     oriented_standard_roi_head__simple_test,
     oriented_standard_roi_head__simple_test_bboxes)
 from .rotated_anchor_head import rotated_anchor_head__get_bbox
+from .rotated_bbox_head import rotated_bbox_head__get_bboxes
 from .rotated_rpn_head import rotated_rpn_head__get_bboxes
 from .single_stage_rotated_detector import \
     single_stage_rotated_detector__simple_test
-from .test_mixins import rotated_bbox_head__get_bboxes
 
 __all__ = [
     'single_stage_rotated_detector__simple_test',
