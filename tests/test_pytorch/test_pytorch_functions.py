@@ -235,8 +235,10 @@ class TestTopk:
 
 
 @backend_checker(Backend.TENSORRT)
-def test_triu_trt():
-    input = torch.rand([2, 2])
+@pytest.mark.parametrize('shape', [[2, 2], [4, 2], [2, 4], [2, 4, 2]])
+def test_triu_trt(shape):
+
+    input = torch.rand(shape)
 
     def triu_caller(*arg, **kwargs):
         return torch.triu(*arg, **kwargs)
@@ -249,7 +251,7 @@ def test_triu_trt():
     from mmdeploy.core import RewriterContext
     onnx_file = tempfile.NamedTemporaryFile(suffix='onnx').name
     with RewriterContext(
-            cfg=get_trt_config('output', [2, 2]),
+            cfg=get_trt_config('output', shape),
             backend=Backend.TENSORRT.value,
             opset=11), torch.no_grad():
         torch.onnx.export(wrapped_func, input, onnx_file, opset_version=11)
