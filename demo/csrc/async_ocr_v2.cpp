@@ -13,24 +13,23 @@ struct ctx_t {
   mm_mat_t* mat;
   mm_text_detect_t* dets{};
   int* det_count;
+  mm_text_recognize_t* regs{};
+  mm_handle_t recognizer;
 };
 
-mmdeploy_value_t cont(mmdeploy_value_t det_output, void* context) {
-  auto* ctx = static_cast<ctx_t*>(context);
-  int ec = MM_SUCCESS;
-  ec = mmdeploy_text_detector_get_result(det_output, &ctx->dets, &ctx->det_count);
-  if (ec) {
-    fprintf(stderr, "failed to get detection result, code = %d\n", ec);
-    return nullptr;
-  }
-  mmdeploy_value_destroy(det_output);
-  mmdeploy_value_t input{};
-  ec = mmdeploy_text_recognizer_create_input(ctx->mat, 1, ctx->dets, ctx->det_count, &input);
-  if (ec) {
-    fprintf(stderr, "failed to create recognizer input, code = %d\n", ec);
-    return nullptr;
-  }
-  return input;
+int det_to_reg(mm_text_detect_t* results, int* result_count, void* context,
+               mmdeploy_sender_t* output) {
+  auto ctx = static_cast<ctx_t*>(context);
+  ctx->dets = results;
+  ctx->det_count = result_count;
+  int ec = mmdeploy_text_recognizer_apply_async_v3(ctx->recognizer, ctx->mat, 1, results,
+                                                   result_count, output);
+  return ec;
+}
+
+int reg_cont(mm_text_recognize_t* results, void* context, mmdeploy_sender_t*) {
+  static_cast<ctx_t*>(context)->regs = results;
+  return 0;
 }
 
 int main(int argc, char* argv[]) {
@@ -73,7 +72,7 @@ int main(int argc, char* argv[]) {
   }
 
   status =
-      mmdeploy_text_detector_create_v2(det_model, device_name, 0, &post_exec_info, &text_detector);
+      mmdeploy_text_detector_create_v2(det_model, device_name, 0, nullptr, &text_detector);
   if (status != MM_SUCCESS) {
     fprintf(stderr, "failed to create text_detector, code: %d\n", (int)status);
     return 1;
@@ -83,7 +82,7 @@ int main(int argc, char* argv[]) {
   post_exec_info.next = &crnn_exec_info;
 
   mm_handle_t text_recognizer{};
-  status = mmdeploy_text_recognizer_create_v2(reg_model, device_name, 0, &post_exec_info,
+  status = mmdeploy_text_recognizer_create_v2(reg_model, device_name, 0, nullptr,
                                               &text_recognizer);
   if (status != MM_SUCCESS) {
     fprintf(stderr, "failed to create text_recognizer, code: %d\n", (int)status);
@@ -92,46 +91,40 @@ int main(int argc, char* argv[]) {
 
   mm_mat_t mat{img.data, img.rows, img.cols, 3, MM_BGR, MM_INT8};
 
-  mmdeploy_value_t input{};
-  if ((status = mmdeploy_text_detector_create_input(&mat, 1, &input)) != 0) {
-    fprintf(stderr, "failed to create input for text detector, code = %d\n", status);
-    return 1;
-  }
+  mmdeploy_sender_t sender{};
 
-  auto sender = mmdeploy_executor_just(input);
-  assert(sender);
-
-  if ((status = mmdeploy_text_detector_apply_async(text_detector, sender, &sender)) != 0) {
+  status = mmdeploy_text_detector_apply_async_v3(text_detector, &mat, 1, &sender);
+  if (status != 0) {
     fprintf(stderr, "failed to apply text detector asyncly, code = %d\n", status);
     return 1;
   }
 
-  ctx_t context{&mat, {}, {}};
-  sender = mmdeploy_executor_then(sender, cont, &context);
-  assert(sender);
+  ctx_t context{};
+  context.mat = &mat;
+  context.recognizer = text_recognizer;
 
-  if ((status = mmdeploy_text_recognizer_apply_async(text_recognizer, sender, &sender)) != 0) {
-    fprintf(stderr, "failed to apply text recognizer asyncly, code = %d\n", status);
+  status = mmdeploy_text_detector_continue_async(sender, det_to_reg, &context, &sender);
+  if (status != 0) {
+    fprintf(stderr, "failed to attach continuation for text detector, code = %d\n", status);
     return 1;
   }
 
-  auto output = mmdeploy_executor_sync_wait(sender);
-  if (!output) {
-    fprintf(stderr, "failed to sync wait result\n");
+  status = mmdeploy_text_recognizer_continue_async(sender, reg_cont, &context, &sender);
+  if (status != 0) {
+    fprintf(stderr, "failed to attach continuation for text recognizer, code = %d\n", status);
     return 1;
   }
 
-  mm_text_recognize_t* texts{};
-  mmdeploy_text_recognizer_get_result(output, &texts);
-  if (!texts) {
-    fprintf(stderr, "failed to gettext recognizer result\n");
+  status = mmdeploy_executor_sync_wait_v2(sender, nullptr);
+  if (status) {
+    fprintf(stderr, "failed to sync wait result, code = %d\n", status);
     return 1;
   }
-  mmdeploy_value_destroy(output);
 
-  // det results is available after sync_wait
+  // results are available after sync_wait
   auto bboxes = context.dets;
   auto bbox_count = context.det_count;
+  auto texts = context.regs;
 
   for (int i = 0; i < *bbox_count; ++i) {
     fprintf(stdout, "box[%d]: %s\n", i, texts[i].text);
