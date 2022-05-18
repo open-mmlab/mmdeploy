@@ -101,11 +101,11 @@ int mmdeploy_text_recognizer_apply(mm_handle_t handle, const mm_mat_t* images, i
   return mmdeploy_text_recognizer_apply_bbox(handle, images, count, nullptr, nullptr, results);
 }
 
-mmdeploy_value_t mmdeploy_text_recognizer_create_input(const mm_mat_t* images, int image_count,
-                                                       const mm_text_detect_t* bboxes,
-                                                       const int* bbox_count) {
+int mmdeploy_text_recognizer_create_input(const mm_mat_t* images, int image_count,
+                                          const mm_text_detect_t* bboxes, const int* bbox_count,
+                                          mmdeploy_value_t* output) {
   if (image_count && images == nullptr) {
-    return nullptr;
+    return MM_E_INVALID_ARG;
   }
   try {
     Value::Array input_images;
@@ -150,19 +150,20 @@ mmdeploy_value_t mmdeploy_text_recognizer_create_input(const mm_mat_t* images, i
     std::vector<std::vector<mmocr::TextRecognizerOutput>> recognizer_outputs;
 
     Value input{std::move(input_images), std::move(input_bboxes)};
-    return Take(std::move(input));
+    *output = Take(std::move(input));
+    return MM_SUCCESS;
   } catch (const std::exception& e) {
     MMDEPLOY_ERROR("exception caught: {}", e.what());
   } catch (...) {
     MMDEPLOY_ERROR("unknown exception caught");
   }
-  return nullptr;
+  return MM_E;
 }
 
 int mmdeploy_text_recognizer_apply_bbox(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
                                         const mm_text_detect_t* bboxes, const int* bbox_count,
                                         mm_text_recognize_t** results) {
-  auto input = mmdeploy_text_recognizer_create_input(mats, mat_count, bboxes, bbox_count);
+  auto input = mmdeploy_text_recognizer_create_input(mats, mat_count, bboxes, bbox_count, nullptr);
   if (!input) {
     return MM_E_FAIL;
   }

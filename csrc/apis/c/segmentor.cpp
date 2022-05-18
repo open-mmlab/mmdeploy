@@ -70,8 +70,8 @@ int mmdeploy_segmentor_create_by_path(const char* model_path, const char* device
 
 int mmdeploy_segmentor_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
                              mm_segment_t** results) {
-  mmdeploy_value_t input{};
-  if (auto ec = mmdeploy_segmentor_create_input(mats, mat_count, &input)) {
+  wrapped<mmdeploy_value_t> input;
+  if (auto ec = mmdeploy_segmentor_create_input(mats, mat_count, input.ptr())) {
     return ec;
   }
   wrapped<mmdeploy_value_t> output;

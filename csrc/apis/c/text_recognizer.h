@@ -58,16 +58,16 @@ MMDEPLOY_API int mmdeploy_text_recognizer_create_by_path(const char* model_path,
 
 /**
  * @brief Pack text-recognizer inputs into mmdeploy_value_t
- * @param[in] mats a batch of images
- * @param[in] mat_count number of images in the batch
+ * @param[in] images a batch of images
+ * @param[in] image_count number of images in the batch
  * @param[in] bboxes bounding boxes detected by text detector
  * @param[in] bbox_count number of bboxes of each \p images, must be same length as \p images
  * @return value created
  */
-MMDEPLOY_API mmdeploy_value_t mmdeploy_text_recognizer_create_input(const mm_mat_t* mats,
-                                                                    int mat_count,
-                                                                    const mm_text_detect_t* bboxes,
-                                                                    const int* bbox_count);
+MMDEPLOY_API int mmdeploy_text_recognizer_create_input(const mm_mat_t* images, int image_count,
+                                                       const mm_text_detect_t* bboxes,
+                                                       const int* bbox_count,
+                                                       mmdeploy_value_t* output);
 
 /**
  * @brief Apply text recognizer to a batch of text images
