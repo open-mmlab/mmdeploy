@@ -81,7 +81,7 @@ int mmdeploy_classifier_create_input(const mm_mat_t* mats, int mat_count, mmdepl
 
 int mmdeploy_classifier_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
                               mm_class_t** results, int** result_count) {
-  wrapped<mmdeploy_value_t> input{};
+  wrapped<mmdeploy_value_t> input;
   if (auto ec = mmdeploy_classifier_create_input(mats, mat_count, input.ptr())) {
     return ec;
   }

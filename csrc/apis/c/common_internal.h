@@ -81,6 +81,6 @@ class wrapped<T, std::void_t<decltype(Cast(T{}))> > {
 }  // namespace
 
 MMDEPLOY_API int mmdeploy_common_create_input(const mm_mat_t* mats, int mat_count,
-                                                 mmdeploy_value_t* value);
+                                              mmdeploy_value_t* value);
 
 #endif  // MMDEPLOY_CSRC_APIS_C_COMMON_INTERNAL_H_

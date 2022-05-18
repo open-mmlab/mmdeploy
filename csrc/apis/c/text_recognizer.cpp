@@ -157,17 +157,18 @@ int mmdeploy_text_recognizer_create_input(const mm_mat_t* images, int image_coun
   } catch (...) {
     MMDEPLOY_ERROR("unknown exception caught");
   }
-  return MM_E;
+  return MM_E_FAIL;
 }
 
 int mmdeploy_text_recognizer_apply_bbox(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
                                         const mm_text_detect_t* bboxes, const int* bbox_count,
                                         mm_text_recognize_t** results) {
-  auto input = mmdeploy_text_recognizer_create_input(mats, mat_count, bboxes, bbox_count, nullptr);
-  if (!input) {
-    return MM_E_FAIL;
+  wrapped<mmdeploy_value_t> input;
+  if (auto ec =
+          mmdeploy_text_recognizer_create_input(mats, mat_count, bboxes, bbox_count, input.ptr())) {
+    return ec;
   }
-  wrapped<mmdeploy_value_t> output{};
+  wrapped<mmdeploy_value_t> output;
   if (auto ec = mmdeploy_text_recognizer_apply_v2(handle, input, output.ptr())) {
     return ec;
   }
