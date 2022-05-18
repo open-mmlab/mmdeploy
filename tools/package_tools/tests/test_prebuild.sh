@@ -2,6 +2,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # Script for test pre-build wheel
 
+set -x
+
 BUILD_CONFIG=${1}
 
 PARAMETER_NUMBER=1
@@ -50,17 +52,22 @@ if [ ! -d mmdetection ]; then
   git clone -b master https://github.com/open-mmlab/mmdetection.git
 fi
 
+if [ -d "${CONVERT_TEST_PATH}/retinanet_output" ]; then
+  # clean work dir
+  rm -rf ${CONVERT_TEST_PATH}/retinanet_output
+fi
+
+#TODO If there many version of trt , we need to install each of it then test
+
 cd "${MMDEPLOY_DIR}" || exit 1
 python tools/deploy.py \
   configs/mmdet/detection/detection_tensorrt_dynamic-320x320-1344x1344.py \
   ../mmdetection/configs/retinanet/retinanet_r50_fpn_1x_coco.py \
   ${CONVERT_TEST_PATH}/retinanet_r50_fpn_1x_coco_20200130-c2398f9e.pth \
   ../mmdetection/demo/demo.jpg \
-  --device cuda \
+  --device cuda:0 \
   --work-dir ${CONVERT_TEST_PATH}/retinanet_output \
   --dump-info || exit 2
-
-exit 0
 
 # using another env to pip install it
 conda deactivate
@@ -69,6 +76,11 @@ pip uninstall mmdeploy
 pip install xxx.whl
 
 # test convert with pre-build wheel
+if [ -d "${CONVERT_TEST_PATH}/retinanet_output_prebuild" ]; then
+  # clean work dir
+  rm -rf ${CONVERT_TEST_PATH}/retinanet_output_prebuild
+fi
+
 cd "${MMDEPLOY_DIR}/tools/package_tools/tests" || exit 1
 python pre-build-onnx2tensorrt.py \
   ${CONVERT_TEST_PATH}/retinanet_output/end2end.onnx \
