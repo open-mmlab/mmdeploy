@@ -184,9 +184,6 @@ void Tensor::Allocate() {
 }
 
 Tensor Tensor::Slice(int start, int end) {
-  if (end < 0) {
-    end += static_cast<int>(shape().size());
-  }
   Tensor slice = *this;
   slice.desc_.shape[0] = 1;
   auto bytes = element_size(desc_.data_type) * get_size(slice.desc_.shape);

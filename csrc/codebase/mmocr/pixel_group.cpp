@@ -44,24 +44,24 @@ std::vector<std::vector<float>> estimate_confidence(const int32_t* label, const 
 
 std::vector<std::vector<float>> pixel_group_cpu(const cv::Mat_<float>& score,
                                                 const cv::Mat_<uint8_t>& mask,
-                                                const Tensor& embedding,
+                                                const cv::Mat_<float>& embedding,
                                                 const cv::Mat_<int32_t>& kernel_label,
                                                 const cv::Mat_<uint8_t>& kernel_contour,
                                                 int kernel_region_num, float dis_threshold) {
-  assert(embedding.shape().size() == 3);
   int height = score.rows;
   int width = score.cols;
-  assert(height == mask.rows == embedding.shape(1) == kernel_label.rows);
-  assert(width == mask.cols == embedding.shape(2) == kernel_label.cols);
+  assert(embedding.rows == height * width);
+  assert(height == mask.rows);
+  assert(width == mask.cols);
 
   auto threshold_square = dis_threshold * dis_threshold;
   auto ptr_score = score.ptr<float>();
   auto ptr_mask = mask.ptr<uint8_t>();
   auto ptr_kernel_contour = kernel_contour.ptr<uint8_t>();
-  auto ptr_embedding = embedding.data<float>();
+  auto ptr_embedding = embedding.ptr<float>();
   auto ptr_kernel_label = kernel_label.ptr<int32_t>();
   std::queue<std::tuple<int, int, int32_t>> contour_pixels;
-  auto embedding_dim = embedding.shape(2);
+  auto embedding_dim = embedding.cols;
   std::vector<std::vector<float>> kernel_vector(kernel_region_num,
                                                 std::vector<float>(embedding_dim + 1, 0));
 

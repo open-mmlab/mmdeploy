@@ -13,7 +13,7 @@ namespace mmdeploy::mmocr {
 
 std::vector<std::vector<float>> pixel_group_cpu(const cv::Mat_<float>& score,
                                                 const cv::Mat_<uint8_t>& mask,
-                                                const Tensor& embedding,
+                                                const cv::Mat_<float>& embedding,
                                                 const cv::Mat_<int32_t>& kernel_label,
                                                 const cv::Mat_<uint8_t>& kernel_contour,
                                                 int kernel_region_num, float dis_threshold);
@@ -22,7 +22,7 @@ class PANHead : public MMOCR {
  public:
   explicit PANHead(const Value& config) : MMOCR(config) {}
 
-  Result<Value> operator()(const Value& _data, const Value& _pred) {
+  Result<Value> operator()(const Value& _data, const Value& _pred) noexcept {
     Device cpu_device{"cpu"};
     OUTCOME_TRY(auto pred,
                 MakeAvailableOnDevice(_pred["output"].get<Tensor>(), cpu_device, stream_));
@@ -36,29 +36,39 @@ class PANHead : public MMOCR {
 
     pred.Squeeze();
 
-    auto _score = pred.Slice(1);
-    cv::Mat_<float> score(_score.shape(1), _score.shape(2), _score.data<float>());
-    sigmoid(score);
+    auto _text_score = pred.Slice(0);
+    cv::Mat_<float> text_score(_text_score.shape(1), _text_score.shape(2),
+                               _text_score.data<float>());
+    sigmoid(text_score);
 
-    auto _embed = pred.Slice(2, -1);
+    cv::Mat_<uint8_t> text = text_score > min_text_confidence_;
+
+    auto _kernel_score = pred.Slice(1);
+    cv::Mat_<float> kernel_score(_kernel_score.shape(1), _kernel_score.shape(2),
+                                 _kernel_score.data<float>());
+    sigmoid(kernel_score);
+
+    cv::Mat_<uint8_t> kernel = (kernel_score > min_kernel_confidence_) & text;
+
+    auto _embed = pred.Slice(2, pred.shape(0));
     cv::Mat_<float> embed(_embed.shape(0), _embed.shape(1) * _embed.shape(2),
                           _embed.data<float>());  // C x HW
     cv::transpose(embed, embed);                  // HW x C
-    _embed.Reshape({_embed.shape(1), _embed.shape(2), _embed.shape(0)});
-
-    cv::Mat_<uint8_t> kernel = score > min_kernel_confidence_;
 
     cv::Mat_<int32_t> labels;
     auto region_num = cv::connectedComponents(kernel, labels, 4, CV_32S);
 
-    cv::Mat contours;
+    std::vector<std::vector<cv::Point>> contours;
     cv::findContours(kernel, contours, cv::RETR_LIST, cv::CHAIN_APPROX_NONE);
 
-    cv::Mat_<uchar> kernel_contours = cv::Mat_<uchar>::zeros(score.rows, score.cols);
+    cv::Mat_<uchar> kernel_contours = cv::Mat_<uchar>::zeros(text_score.rows, text_score.cols);
     cv::drawContours(kernel_contours, contours, -1, 255);
 
-    auto text_points = pixel_group_cpu(score, kernel, _embed, labels, kernel_contours, region_num,
+    auto text_points = pixel_group_cpu(text_score, text, embed, labels, kernel_contours, region_num,
                                        min_text_avg_confidence_);
+
+    auto scale_w = _data["img_metas"]["scale_factor"][0].get<float>();
+    auto scale_h = _data["img_metas"]["scale_factor"][1].get<float>();
 
     TextDetectorOutput output;
     for (int text_index = 0; text_index != text_points.size(); ++text_index) {
@@ -77,8 +87,6 @@ class PANHead : public MMOCR {
       rect.points(vertices.data());
 
       if (rescale_) {
-        auto scale_w = _data["img_metas"]["scale_factor"][0].get<float>();
-        auto scale_h = _data["img_metas"]["scale_factor"][1].get<float>();
         for (auto& p : vertices) {
           p.x /= scale_w * downsample_ratio_;
           p.y /= scale_h * downsample_ratio_;
@@ -103,11 +111,12 @@ class PANHead : public MMOCR {
     return area < min_area || confidence < min_confidence;
   }
 
+  float min_text_confidence_{.5f};
   float min_kernel_confidence_{.5f};
   float min_text_avg_confidence_{0.85};
-  float min_text_area_;
+  float min_text_area_{16};
   bool rescale_{true};
-  float downsample_ratio_{1.};
+  float downsample_ratio_{.25f};
 };
 
 REGISTER_CODEBASE_COMPONENT(MMOCR, PANHead);
