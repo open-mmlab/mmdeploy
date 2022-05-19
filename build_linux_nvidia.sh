@@ -2,8 +2,8 @@
 # build_linux_nvidia.sh
 #   Date: 08-03-2022, 24-04-2022
 #
-#   Run this script to build MMDeploy SDK and necessary prerequisites.
-#   This script will also setup python venv
+#   Run this script to build MMDeploy SDK and install necessary prerequisites.
+#   This script will also setup python venv and generate prebuild binaries if requested.
 #
 
 #####
@@ -34,6 +34,8 @@ WITH_PYTHON=1
 WITH_CLEAN=1
 # WITH_PREBUILD: Generate prebuild archives
 WITH_PREBUILD=0
+# WITH_UNATTENDED: Unattended install, skip/use default options
+WITH_UNATTENDED=0
 
 #####
 # Prefix: Set install prefix for ppl.cv, mmdeploy SDK depending on arch
@@ -45,7 +47,7 @@ fi
 PYTHON_VENV_DIR=${WORKING_DIR}/venv-mmdeploy
 
 appargument1=$1
-#appargument2=$2
+appargument2=$2
 
 echo_green() {
   if [ -n "$1" ]; then
@@ -71,18 +73,46 @@ contains_element () {
 function version {
   echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }';
 }
+prompt_yesno() {
+  if [ -n "$1" ]; then
+    echo_blue "$1"
+  fi
+  if [[ $WITH_UNATTENDED -eq 1 ]]
+  then
+    echo_green "Unattended install, selecting default option"
+    return 2
+  else
+    read -p "(y/n/q)" -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]
+    then
+      return 1
+    elif [[ $REPLY =~ ^[Nn]$ ]]
+    then
+      return 0
+    elif [[ $REPLY =~ ^[Qq]$ ]]
+    then
+      echo_green "Quitting!"
+      exit
+    else
+      echo_red "Invalid argument. Try again"
+      prompt_yesno
+    fi
+  fi
+}
 
 prereqs() {
   # spdlog
   echo_green "Checking spdlog version..."
-  read -p "Install latest spdlog from source? (y/n)" -n 1 -r
-  echo
-  if [[ $REPLY =~ ^[Yy]$ ]]
+  prompt_yesno "Install latest spdlog from source? (Default:no)"
+  local res=$?
+  if [[ $res -eq 1 ]] # || [ $res -eq 2 ]
   then
+    echo_green "Building and installing latest spdlog from source"
+
     # remove libspdlog, as it might be an old version
     sudo apt-get remove libspdlog-dev -y
 
-    echo "Building and installing latest spdlog from source"
     git clone https://github.com/gabime/spdlog.git spdlog
     cd spdlog
     git pull
@@ -98,9 +128,9 @@ prereqs() {
   echo_green "Checking your cmake version..."
   CMAKE_DETECT_VER=$(cmake --version | grep -oP '(?<=version).*')
   if [ $(version $CMAKE_DETECT_VER) -ge $(version "3.14.0") ]; then
-    echo_green "Cmake version $CMAKE_DETECT_VER is up to date"
+    echo "Cmake version $CMAKE_DETECT_VER is up to date"
   else
-    echo_green "CMake too old, purging existing cmake and installing ${CMAKE_VER}..."
+    echo "CMake too old, purging existing cmake and installing ${CMAKE_VER}..."
     # purge existing
     sudo apt-get purge cmake
     sudo snap remove cmake
@@ -114,10 +144,10 @@ prereqs() {
   echo_green "Checking your gcc version..."
   GCC_DETECT_VER=$(gcc --version | grep -oP '(?<=\)).*' -m1)
   if [ $(version $GCC_DETECT_VER) -ge $(version "7.0.0") ]; then
-    echo_green "GCC version $GCC_DETECT_VER is up to date"
+    echo "GCC version $GCC_DETECT_VER is up to date"
   else
-    echo_green "gcc version too old, installing ${CMAKE_VER}..."
-    echo_green "Purge existing cmake and install ${GCC_DETECT_VER}..."
+    echo "gcc version too old, installing ${CMAKE_VER}..."
+    echo "Purge existing cmake and install ${GCC_DETECT_VER}..."
     # Add repository if ubuntu < 18.04
     sudo add-apt-repository ppa:ubuntu-toolchain-r/test
     sudo apt-get update
@@ -130,11 +160,11 @@ prereqs() {
   echo_green "Check your TensorRT version:"
   ## Check if ${TENSORRT_DIR} env variable has been set
   if [ -d "${TENSORRT_DIR}" ]; then
-    echo_green "TENSORRT_DIR env. variable has been set ${TENSORRT_DIR}"
+    echo "TENSORRT_DIR env. variable has been set ${TENSORRT_DIR}"
   else
     echo_red "TENSORRT_DIR env. variable has NOT been set."
     if [[ "$ARCH" == aarch64 ]]; then
-      echo_green "Added TENSORRT_DIR, CUDNN_DIR to env."
+      echo "Added TENSORRT_DIR, CUDNN_DIR to env."
       echo 'export TENSORRT_DIR="/usr/include/'${ARCH}'-linux-gnu/"' >> ${HOME}/.bashrc
       echo 'export CUDNN_DIR="/usr/include/'${ARCH}'-linux-gnu/"' >> ${HOME}/.bashrc
       echo 'export LD_LIBRARY_PATH="/usr/lib/'${ARCH}'-linux-gnu/:$LD_LIBRARY_PATH"' >> ${HOME}/.bashrc
@@ -156,18 +186,21 @@ prereqs() {
   else
     cat ${TENSORRT_DIR}/include/NvInferVersion.h | grep NV_TENSORRT
   fi
-  read -p "Is TensorRT >=8.0.1.6 installed? (Always installed on Jetson) (y/n)" -n 1 -r
-  echo
-  if [[ $REPLY =~ ^[Nn]$ ]]
+  prompt_yesno "Is TensorRT >=8.0.1.6 installed? (Always installed on Jetson) (Default:yes)"
+  local res=$?
+  if [[ $res -eq 1 ]] || [ $res -eq 2 ]
   then
-      echo "Error: You must install TensorRT before installing MMDeploy!"
-      exit
+    echo "TensorRT appears to be installed..."
+  else
+    echo_red "Error: You must install TensorRT before installing MMDeploy!"
+    exit
   fi
 
-  read -p "Install OpenCV? (Always installed on Jetson) (y/n)" -n 1 -r
-  echo
-  if [[ $REPLY =~ ^[Yy]$ ]]
+  prompt_yesno "Install OpenCV? (Always installed on Jetson) (Default:no)"
+  local res=$?
+  if [[ $res -eq 1 ]] # || [ $res -eq 2 ]
   then
+    echo "Installing libopencv-dev..."
     # opencv
     sudo apt-get install libopencv-dev
   fi
@@ -194,9 +227,9 @@ py_venv() {
   pip3 install --upgrade setuptools wheel
 
   if [ -d "${PYTHON_VENV_DIR}" ]; then
-    read -p "Reinstall existing Python venv ${PYTHON_VENV_DIR}? (y/n)" -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]
+    prompt_yesno "Reinstall existing Python venv ${PYTHON_VENV_DIR}?"
+    local res=$?
+    if [[ $res -eq 1 ]]
     then
       rm -r ${PYTHON_VENV_DIR}
       python3 -m venv ${PYTHON_VENV_DIR} --system-site-packages #system site packages to keep trt from system installation
@@ -217,7 +250,7 @@ py_venv() {
   then
     # protofbuf on jetson is quite old - must be upgraded
     pip3 install --upgrade protobuf
-    # Install numpy >1.19.4 might give "Illegal instruction (core dumped)" on Jetson
+    # Install numpy >1.19.4 might give "Illegal instruction (core dumped)" on Jetson/aarch64
     # To solve it, we should set OPENBLAS_CORETYPE
     echo 'export OPENBLAS_CORETYPE=ARMV8' >> ~/.bashrc
     #source ${HOME}/.bashrc
@@ -228,9 +261,9 @@ py_venv() {
   pip3 install opencv-python
   pip3 install matplotlib
 
-  read -p "Install PyTorch, Torchvision, mmcv? (y/n)" -n 1 -r
-  echo
-  if [[ $REPLY =~ ^[Yy]$ ]]
+  prompt_yesno "Install PyTorch, Torchvision, mmcv in the active venv? (Default:no)"
+  local res=$?
+  if [[ $res -eq 1 ]]
   then
     # pytorch, torchvision, torchaudio
     if [[ "$ARCH" == aarch64 ]]
@@ -264,6 +297,9 @@ py_venv() {
       pip3 install mmcv-full==1.4.1 -f https://download.openmmlab.com/mmcv/dist/cu113/torch1.10.0/index.html
     fi
   fi
+
+  # cleanup
+  rm get-pip.py
 }
 
 pplcv() {
@@ -271,7 +307,7 @@ pplcv() {
   cd ${WORKING_DIR}
   echo_blue "checking out '${PPLCV_DIR}' pkg..."
   if [ -d "${PPLCV_DIR}" ]; then
-      echo_green "Already exists! Checking out the requested version..."
+      echo "Already exists! Checking out the requested version..."
   else
       git clone https://github.com/openppl-public/ppl.cv.git ${PPLCV_DIR}
   fi
@@ -302,7 +338,7 @@ mmdeploy(){
   ## mmdeploy SDK
   cd ${MMDEPLOY_DIR}
 
-  MMDEPLOY_DETECT_VER=$(cat MMDeploy/mmdeploy/version.py | grep -Eo '[0-9]\.[0-9].[0-9]+')
+  MMDEPLOY_DETECT_VER=$(cat mmdeploy/version.py | grep -Eo '[0-9]\.[0-9].[0-9]+')
 
   # reinit submodules
   git submodule update --init --recursive
@@ -376,6 +412,49 @@ package_list=(
   "pplcv"
   "mmdeploy"
 )
+
+#####
+# Unattended/auto install
+if [[ $appargument2 == "auto" ]]
+then
+  WITH_UNATTENDED=1
+fi
+
+#####
+# Install dependencies in venv?
+prompt_yesno "Install misc. dependencies in the active venv? (Default:${WITH_PYTHON})"
+res=$?
+if [[ $res -eq 1 ]]
+then
+  WITH_PYTHON=1
+elif [[ $res -eq 0 ]]
+then
+  WITH_PYTHON=0
+fi
+
+#####
+# Clean previous build dirs?
+prompt_yesno "Clean previous build dirs? (Default:${WITH_CLEAN})"
+res=$?
+if [[ $res -eq 1 ]]
+then
+  WITH_CLEAN=1
+elif [[ $res -eq 0 ]]
+then
+  WITH_CLEAN=0
+fi
+
+#####
+# Generate prebuild dirs?
+prompt_yesno "Generate prebuild dirs? (Default:${WITH_PREBUILD})"
+res=$?
+if [[ $res -eq 1 ]]
+then
+  WITH_PREBUILD=1
+elif [[ $res -eq 0 ]]
+then
+  WITH_PREBUILD=0
+fi
 
 #####
 # check input argument
