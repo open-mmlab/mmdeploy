@@ -87,7 +87,7 @@ namespace MMDeployJava {
       if(vm->GetEnv((void**)&env,JNI_VERSION_1_6)!= JNI_OK){
         return result;
       }
-      jclass jClassName=env->FindClass("com.openmmlab.mmdeployxdetector.MMDeployDetector");
+      jclass jClassName=env->FindClass("com/openmmlab/mmdeployxdetector/MMDeployDetector");
       jint ret = env->RegisterNatives(jClassName,method, sizeof(method)/sizeof(JNINativeMethod));
       if (ret != JNI_OK) {
           __android_log_print(ANDROID_LOG_DEBUG, "JNITag", "jni_register Error");
