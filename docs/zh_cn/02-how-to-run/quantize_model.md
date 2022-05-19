@@ -12,7 +12,7 @@
 
 ## mmdeploy 离线量化方案
 
-以 ncnn backend 为例，完整的数据流如下：
+以 ncnn backend 为例，完整的工作流如下：
 
 ```mermaid
 flowchart TD;
@@ -50,4 +50,5 @@ $ python3 tools/deploy.py  configs/mmcls/classification_ncnn-int8_static.py  ${M
 
 * 新建文件夹，放入图片即可，没有目录结构要求
 * 校准集宜使用真实场景中的数据，数据相差过远会导致精度下降
-* 强烈建议量化结束后，[验证模型精度](./profile_model.md)
+
+**强烈建议**量化结束后，[按此文档](./profile_model.md)验证模型精度。[这里](../03-benchmark/quantization.md)是一些量化模型测试结果。

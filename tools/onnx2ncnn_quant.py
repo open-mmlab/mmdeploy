@@ -34,11 +34,15 @@ def get_table(onnx_path: str,
         dataset = task_processor.build_dataset(model_cfg, dataset_type)
         dataloader = task_processor.build_dataloader(dataset, 1, 1)
 
-    if input_shape is None:
-        # get an available input shape randomly
-        for _, input_data in enumerate(dataloader):
+    # get an available input shape randomly
+    for _, input_data in enumerate(dataloader):
+        if isinstance(input_data['img'], list):
+            input_shape = input_data['img'][0].shape
+            collate_fn = lambda x: x['img'][0].to(device)  # noqa: E731
+        else:
             input_shape = input_data['img'].shape
-            break
+            collate_fn = lambda x: x['img'].to(device)  # noqa: E731
+        break
 
     from ppq import QuantizationSettingFactory, TargetPlatform
     from ppq.api import export_ppq_graph, quantize_onnx_model
@@ -52,10 +56,10 @@ def get_table(onnx_path: str,
     quantized = quantize_onnx_model(
         onnx_import_file=onnx_path,
         calib_dataloader=dataloader,
-        calib_steps=max(4, min(512, len(dataset))),
+        calib_steps=max(8, min(512, len(dataset))),
         input_shape=input_shape,
         setting=quant_setting,
-        collate_fn=lambda x: x['img'].to(device),
+        collate_fn=collate_fn,
         platform=TargetPlatform.NCNN_INT8,
         device=device,
         verbose=1)
