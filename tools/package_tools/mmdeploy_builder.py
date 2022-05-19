@@ -22,6 +22,12 @@ PACKAGING_DIR = osp.join(CUR_DIR, 'packaging')
 PLATFORM_TAG = get_platform().replace('-', '_').replace('.', '_')
 
 
+def get_version(version_file):
+    with open(version_file, 'r') as f:
+        exec(compile(f.read(), version_file, 'exec'))
+    return locals()['__version__']
+
+
 def _merge_cfg(cfg0, cfg1):
     cfg = copy.deepcopy(cfg0)
     for k, v in cfg1.items():
@@ -175,6 +181,11 @@ def create_package(cfg: Dict, mmdeploy_dir: str):
     if 'TAR_NAME' in cfg:
         cfg, sdk_tar_name = get_dir_name(cfg, 'TAR_NAME', sdk_tar_name)
 
+    # add version tag
+    version_file = osp.join(mmdeploy_dir, 'mmdeploy', 'version.py')
+    version_id = get_version(version_file)
+    build_dir = build_dir + '-' + version_id
+
     # create package directory.
     if osp.exists(build_dir):
         logging.info(f'{build_dir} existed, deleting...')
@@ -212,6 +223,10 @@ def create_package(cfg: Dict, mmdeploy_dir: str):
 
             sdk_python_package_dir = osp.join(build_dir, '.mmdeploy_python')
             _copy(PACKAGING_DIR, sdk_python_package_dir)
+            _copy(
+                osp.join(mmdeploy_dir, 'mmdeploy', 'version.py'),
+                osp.join(sdk_python_package_dir, 'mmdeploy_python',
+                         'version.py'))
             _copy(python_api_lib_path,
                   osp.join(sdk_python_package_dir, 'mmdeploy_python'))
             sdk_wheel_dir = osp.abspath(osp.join(sdk_tar_dir, 'python'))
