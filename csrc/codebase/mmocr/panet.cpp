@@ -1,7 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
 #include <algorithm>
-#include <numeric>
 #include <opencv2/opencv.hpp>
 
 #include "codebase/mmocr/mmocr.h"
@@ -55,7 +54,7 @@ class PANHead : public MMOCR {
     cv::Mat contours;
     cv::findContours(kernel, contours, cv::RETR_LIST, cv::CHAIN_APPROX_NONE);
 
-    cv::Mat_<uchar> kernel_contours;
+    cv::Mat_<uchar> kernel_contours = cv::Mat_<uchar>::zeros(score.rows, score.cols);
     cv::drawContours(kernel_contours, contours, -1, 255);
 
     auto text_points = pixel_group_cpu(score, kernel, _embed, labels, kernel_contours, region_num,
@@ -92,6 +91,7 @@ class PANHead : public MMOCR {
       }
       output.scores.push_back(text_confidence);
     }
+    return to_value(output);
   }
 
   static void sigmoid(cv::Mat_<float>& score) {
