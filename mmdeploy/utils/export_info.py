@@ -197,8 +197,12 @@ def get_preprocess(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config):
         transforms = pipeline[-1]['transforms']
         transforms.insert(0, pipeline[0])
         for transform in transforms:
-            if transform['type'] == 'Resize' and 'img_scale' not in transform:
-                transform['size'] = pipeline[-1].img_scale[::-1]
+            if transform['type'] == 'Resize':
+                if 'img_scale' in transform:
+                    transform['size'] = transform['img_scale']
+                    transform.pop('img_scale')
+                else:
+                    transform['size'] = pipeline[-1].img_scale[::-1]
     else:
         pipeline = [
             item for item in pipeline if item['type'] != 'MultiScaleFilpAug'
