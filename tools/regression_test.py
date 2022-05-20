@@ -37,10 +37,7 @@ def parse_args():
         help='test specific backend(s)',
         default=['all'])
     parser.add_argument(
-        '--models',
-        nargs='+',
-        help='test specific model(s)',
-        default=['all'])
+        '--models', nargs='+', help='test specific model(s)', default=['all'])
     parser.add_argument(
         '--work-dir',
         type=str,
