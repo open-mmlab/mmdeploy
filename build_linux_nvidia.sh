@@ -84,7 +84,8 @@ prompt_yesno() {
     echo_green "Unattended install, selecting default option"
     return 2
   else
-    read -p "(y/n/q)" -n 1 -r
+    echo_blue "(y/n/q) or press [ENTER] to select default option"
+    read -p "?" -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]]
     then
@@ -92,6 +93,10 @@ prompt_yesno() {
     elif [[ $REPLY =~ ^[Nn]$ ]]
     then
       return 0
+    elif [[ $REPLY = "" ]]
+    then
+      echo "Selecting default option..."
+      return 2
     elif [[ $REPLY =~ ^[Qq]$ ]]
     then
       echo_green "Quitting!"
@@ -127,6 +132,7 @@ prereqs() {
     sudo make install
     sudo ldconfig
   fi
+  exit
 
   # cmake check & install
   echo_green "Checking your cmake version..."
