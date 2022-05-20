@@ -414,6 +414,19 @@ package_list=(
 )
 
 #####
+# check input argument
+if contains_element "$appargument1" "${package_list[@]}"; then
+  echo_green "Build and install '$appargument1'..."
+else
+  echo_red "Unsupported argument '$appargument1'. Use one of the following:"
+  for i in ${package_list[@]}
+  do
+    echo $i
+  done
+  exit
+fi
+
+#####
 # Unattended/auto install
 if [[ $appargument2 == "auto" ]]
 then
@@ -454,19 +467,6 @@ then
 elif [[ $res -eq 0 ]]
 then
   WITH_PREBUILD=0
-fi
-
-#####
-# check input argument
-if contains_element "$appargument1" "${package_list[@]}"; then
-  echo_green "Build and install '$appargument1'..."
-else
-  echo_red "Unsupported argument '$appargument1'. Use one of the following:"
-  for i in ${package_list[@]}
-  do
-    echo $i
-  done
-  exit
 fi
 
 $appargument1
