@@ -222,7 +222,8 @@ def update_report(report_dict: dict, model_name: str, model_config: str,
         checkpoint = str(checkpoint).split(f'/{codebase_name}/')[-1]
         checkpoint = '${CHECKPOINT_DIR}' + f'/{codebase_name}/{checkpoint}'
     else:
-        if ' ' not in checkpoint:
+        if Path(checkpoint).exists():
+            # To invoice the path which is 'A.a B.b' when test sdk.
             checkpoint = Path(checkpoint).absolute().resolve()
         work_dir = report_txt_path.parent.absolute().resolve()
         checkpoint = str(checkpoint).replace(str(work_dir), '${WORK_DIR}')
