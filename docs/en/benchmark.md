@@ -1330,7 +1330,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center">0.7111</td>
     <td align="center">0.7304</td>
     <td align="center">0.7309</td>
-    <td align="center" rowspan="3">$MMOCR_DIR/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py</td>
+    <td rowspan="3">$MMOCR_DIR/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py</td>
   </tr>
   <tr>
     <td align="center">precision</td>
@@ -1353,6 +1353,80 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center">0.7821</td>
     <td align="center">0.7949</td>
     <td align="center">0.7950</td>
+  </tr>
+  <tr>
+    <td align="center" rowspan="3">PSENet</td>
+    <td align="center" rowspan="3">TextDetection</td>
+    <td align="center" rowspan="3">ICDAR2015</td>
+    <td align="center">recall</td>
+    <td align="center">0.7526</td>
+    <td align="center">0.7526</td>
+    <td align="center">0.7526</td>
+    <td align="center">0.7526</td>
+    <td align="center">0.7520</td>
+    <td align="center">0.7496</td>
+    <td align="center">-</td>
+    <td align="center">0.7526</td>
+    <td rowspan="3">$MMOCR_DIR/configs/textdet/psenet/psenet_r50_fpnf_600e_icdar2015.py</td>
+  </tr>
+  <tr>
+    <td align="center">precision</td>
+    <td align="center">0.8669</td>
+    <td align="center">0.8669</td>
+    <td align="center">0.8669</td>
+    <td align="center">0.8669</td>
+    <td align="center">0.8668</td>
+    <td align="center">0.8550</td>
+    <td align="center">-</td>
+    <td align="center">0.8669</td>
+  </tr>
+  <tr>
+    <td align="center">hmean</td>
+    <td align="center">0.8057</td>
+    <td align="center">0.8057</td>
+    <td align="center">0.8057</td>
+    <td align="center">0.8057</td>
+    <td align="center">0.8054</td>
+    <td align="center">0.7989</td>
+    <td align="center">-</td>
+    <td align="center">0.8057</td>
+  </tr>
+  <tr>
+    <td align="center" rowspan="3">PANet</td>
+    <td align="center" rowspan="3">TextDetection</td>
+    <td align="center" rowspan="3">ICDAR2015</td>
+    <td align="center">recall</td>
+    <td align="center">0.7401</td>
+    <td align="center">0.7401</td>
+    <td align="center">0.7401</td>
+    <td align="center">0.7357</td>
+    <td align="center">0.7366</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">0.7401</td>
+    <td rowspan="3">$MMOCR_DIR/configs/textdet/panet/panet_r18_fpem_ffm_600e_icdar2015.py</td>
+  </tr>
+  <tr>
+    <td align="center">precision</td>
+    <td align="center">0.8601</td>
+    <td align="center">0.8601</td>
+    <td align="center">0.8601</td>
+    <td align="center">0.8570</td>
+    <td align="center">0.8586</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">0.8601</td>
+  </tr>
+  <tr>
+    <td align="center">hmean</td>
+    <td align="center">0.7955</td>
+    <td align="center">0.7955</td>
+    <td align="center">0.7955</td>
+    <td align="center">0.7917</td>
+    <td align="center">0.7930</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">0.7955</td>
   </tr>
   <tr>
     <td align="center">CRNN</td>
@@ -1383,6 +1457,21 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center">-</td>
     <td align="center">-</td>
     <td>$MMOCR_DIR/configs/textrecog/sar/sar_r31_parallel_decoder_academic.py</td>
+  </tr>
+  <tr>
+    <td align="center">SATRN</td>
+    <td align="center">TextRecognition</td>
+    <td align="center">IIIT5K</td>
+    <td align="center">acc</td>
+    <td align="center">0.9470</td>
+    <td align="center">0.9487</td>
+    <td align="center">0.9487</td>
+    <td align="center">0.9487</td>
+    <td align="center">0.9483</td>
+    <td align="center">0.9483</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMOCR_DIR/configs/textrecog/satrn/satrn_small.py</td>
   </tr>
 </tbody>
 </table>
