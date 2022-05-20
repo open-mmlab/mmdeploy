@@ -37,6 +37,11 @@ def parse_args():
         help='test specific backend(s)',
         default=['all'])
     parser.add_argument(
+        '--models',
+        nargs='+',
+        help='test specific model(s)',
+        default=['all'])
+    parser.add_argument(
         '--work-dir',
         type=str,
         help='the dir to save logs and models',
@@ -1138,6 +1143,11 @@ def main():
                                f'skipping {models.get("name")}...')
                 continue
 
+            model_name = models.get('name')
+            if args.models != ['all'] and model_name not in args.models:
+                logger.info(f'Test specific model, skip {model_name}...')
+                continue
+
             model_metafile_info, checkpoint_save_dir, codebase_dir = \
                 get_model_metafile_info(global_info, models, logger)
             for model_config in model_metafile_info:
@@ -1161,7 +1171,7 @@ def main():
 
                 # Get pytorch from metafile.yml
                 pytorch_metric, metafile_dataset = get_pytorch_result(
-                    models.get('name'), model_metafile_info, checkpoint_path,
+                    model_name, model_metafile_info, checkpoint_path,
                     model_cfg_path, model_config, metric_info, report_dict,
                     logger, report_txt_path, global_info.get('codebase_name'))
 
@@ -1185,7 +1195,7 @@ def main():
                                        pytorch_metric, metric_info,
                                        report_dict, test_type, logger,
                                        backend_file_name, report_txt_path,
-                                       metafile_dataset, models.get('name'))
+                                       metafile_dataset, model_name)
 
         save_report(report_dict, report_save_path, logger)
 

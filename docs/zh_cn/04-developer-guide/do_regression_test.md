@@ -46,6 +46,7 @@ pip install -U numpy
 python ./tools/regression_test.py \
     --codebase "${CODEBASE_NAME}" \
     --backends "${BACKEND}" \
+    [--models "${MODELS}"] \
     --work-dir "${WORK_DIR}" \
     --device "${DEVICE}" \
     --log-level INFO \
@@ -56,6 +57,7 @@ python ./tools/regression_test.py \
 
 - `--codebase` : 需要测试的 codebase，eg.`mmdet`, 测试多个 `mmcls mmdet ...`
 - `--backends` : 筛选测试的后端, 默认 `all`: 测全部`backend`, 也可传入若干个后端，例如 `onnxruntime tesnsorrt`。如果需要一同进行 SDK 的测试，需要在 `tests/regression/${codebase}.yml` 里面的 `sdk_config` 进行配置。
+- `--models` : 指定测试的模型, 默认 `all`: 测试指定的 `yml` 中所有模型, 也可传入若干个模型名称，例如 `ResNet SE-ResNet "Mask R-CNN"`。注意的是，如果模型名称有 ` ` 则需要像例子中的`"Mask R-CNN"`使用双引号包着它。
 - `--work-dir` : 模型转换、报告生成的路径。
 - `--device` : 使用的设备，默认 `cuda`。
 - `--log-level` : 设置日记的等级，选项包括`'CRITICAL'， 'FATAL'， 'ERROR'， 'WARN'， 'WARNING'， 'INFO'， 'DEBUG'， 'NOTSET'`。默认是`INFO`。
@@ -98,6 +100,17 @@ python ./tools/regression_test.py \
 python ./tools/regression_test.py \
     --codebase mmdet mmpose \
     --backends onnxruntime tesnsorrt \
+    --work-dir "../mmdeploy_regression_working_dir" \
+    --device "cuda" \
+    --log-level INFO
+```
+
+4.测试 mmdet 和 mmcls 的某几个 models，**只测试转换**
+
+```shell
+python ./tools/regression_test.py \
+    --codebase mmdet mmpose \
+    --models ResNet SE-ResNet "Mask R-CNN" \
     --work-dir "../mmdeploy_regression_working_dir" \
     --device "cuda" \
     --log-level INFO
