@@ -49,6 +49,8 @@ PYTHON_VENV_DIR=${WORKING_DIR}/venv-mmdeploy
 appargument1=$1
 appargument2=$2
 
+#####
+# helper functions
 echo_green() {
   if [ -n "$1" ]; then
     echo "$(tput setaf 10)$1$(tput sgr 0)"
@@ -102,6 +104,8 @@ prompt_yesno() {
 }
 
 prereqs() {
+  echo_green "Installing prerequisites..."
+
   # spdlog
   echo_green "Checking spdlog version..."
   prompt_yesno "Install latest spdlog from source? (Default:no)"
@@ -207,6 +211,9 @@ prereqs() {
 }
 
 py_venv() {
+  ## python venv
+  echo_green "Installing python venv..."
+
   #check for python installed version
   pyv="$(python3 -V 2>&1)"
   pyv_old="Python 3.6"
@@ -304,6 +311,8 @@ py_venv() {
 
 pplcv() {
   ## ppl.cv
+  echo_green "Building and installing ppl.cv..."
+
   cd ${WORKING_DIR}
   echo_blue "checking out '${PPLCV_DIR}' pkg..."
   if [ -d "${PPLCV_DIR}" ]; then
@@ -336,6 +345,8 @@ pplcv() {
 
 mmdeploy(){
   ## mmdeploy SDK
+  echo_green "Building and installing mmdeploysdk..."
+
   cd ${MMDEPLOY_DIR}
 
   MMDEPLOY_DETECT_VER=$(cat mmdeploy/version.py | grep -Eo '[0-9]\.[0-9].[0-9]+')
