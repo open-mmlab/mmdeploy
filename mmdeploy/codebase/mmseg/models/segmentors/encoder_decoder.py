@@ -24,6 +24,5 @@ def encoder_decoder__simple_test(ctx, self, img, img_meta, **kwargs):
     """
     seg_logit = self.encode_decode(img, img_meta)
     seg_logit = F.softmax(seg_logit, dim=1)
-    # keep 4D output required by backends such as TensorRT
     seg_pred = seg_logit.argmax(dim=1, keepdim=True)
     return seg_pred
