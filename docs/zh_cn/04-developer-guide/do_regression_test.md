@@ -142,9 +142,12 @@ globals:
       tolerance: 0.2
       task_name: Text Recognition
       dataset: IIIT5K
-  convert_image: &convert_image # 转换会使用到的图片
-    input_img: *img_224x224
-    test_img: *img_300x300
+  convert_image_det: &convert_image_det # det转换会使用到的图片
+    input_img: *img_densetext_det
+    test_img: *img_demo_text_det
+  convert_image_rec: &convert_image_rec
+    input_img: *img_demo_text_recog
+    test_img: *img_demo_text_recog
   backend_test: &default_backend_test True # 是否对 backend 进行精度测试
   sdk: # SDK 配置文件
     sdk_detection_dynamic: &sdk_detection_dynamic configs/mmocr/text-detection/text-detection_sdk_dynamic.py
@@ -152,30 +155,30 @@ globals:
 
 onnxruntime:
   pipeline_ort_recognition_static_fp32: &pipeline_ort_recognition_static_fp32
-    convert_image: *convert_image # 转换过程中使用的图片
+    convert_image: *convert_image_rec # 转换过程中使用的图片
     backend_test: *default_backend_test # 是否进行后端测试，存在则判断，不存在则视为 False
     sdk_config: *sdk_recognition_dynamic # 是否进行SDK测试，存在则使用特定的 SDK config 进行测试，不存在则视为不进行 SDK 测试
     deploy_config: configs/mmocr/text-recognition/text-recognition_onnxruntime_static.py # 使用的 deploy cfg 路径，基于 mmdeploy 的路径
 
   pipeline_ort_recognition_dynamic_fp32: &pipeline_ort_recognition_dynamic_fp32
-    convert_image: *convert_image
+    convert_image: *convert_image_rec
     backend_test: *default_backend_test
     sdk_config: *sdk_recognition_dynamic
     deploy_config: configs/mmocr/text-recognition/text-recognition_onnxruntime_dynamic.py
 
   pipeline_ort_detection_dynamic_fp32: &pipeline_ort_detection_dynamic_fp32
-    convert_image: *convert_image
+    convert_image: *convert_image_det
     deploy_config: configs/mmocr/text-detection/text-detection_onnxruntime_dynamic.py
 
 tensorrt:
   pipeline_trt_recognition_dynamic_fp16: &pipeline_trt_recognition_dynamic_fp16
-    convert_image: *convert_image
+    convert_image: *convert_image_rec
     backend_test: *default_backend_test
     sdk_config: *sdk_recognition_dynamic
     deploy_config: configs/mmocr/text-recognition/text-recognition_tensorrt-fp16_dynamic-1x32x32-1x32x640.py
 
   pipeline_trt_detection_dynamic_fp16: &pipeline_trt_detection_dynamic_fp16
-    convert_image: *convert_image
+    convert_image: *convert_image_det
     backend_test: *default_backend_test
     sdk_config: *sdk_detection_dynamic
     deploy_config: configs/mmocr/text-detection/text-detection_tensorrt-fp16_dynamic-320x320-1024x1824.py
