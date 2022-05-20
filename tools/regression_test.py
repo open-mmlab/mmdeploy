@@ -1196,8 +1196,10 @@ def main():
                                        report_dict, test_type, logger,
                                        backend_file_name, report_txt_path,
                                        metafile_dataset, model_name)
-
-        save_report(report_dict, report_save_path, logger)
+        if len(report_dict.get('Model')) > 0:
+            save_report(report_dict, report_save_path, logger)
+        else:
+            logger.info(f'No model for {deploy_yaml}, not saving report.')
 
     # merge report
     merge_report(str(work_dir), logger)
