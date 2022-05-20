@@ -250,22 +250,21 @@ models:
 - [x] MMDeploy SDK
 
 ## 6. 支持的Codebase及其Metric
-- [x] mmdet
-  - [x] bbox
-  - [x] segm
-- [x] mmcls
-  - [x] accuracy
-- [x] mmseg
-  - [x] mIoU
-- [x] mmpose
-  - [x] AR
-  - [x] AP
-- [x] mmocr
-  - [x] hmean
-  - [x] acc
-- [x] mmedit
-  - [x] PSNR
-  - [x] SSIM
+A
+| Codebase | Metric | Support           |
+|----------| ---------- |-------------------|
+| mmdet    | bbox | :heavy_check_mark |
+|     | segm | :heavy_check_mark |
+|     | PQ | :x                |
+|  mmcls   | accuracy | :heavy_check_mark |
+|  mmseg   | mIoU | :heavy_check_mark |
+|  mmpose   | AR | :heavy_check_mark |
+|     | AP | :heavy_check_mark |
+|   mmocr  | hmean | :heavy_check_mark |
+|     | acc | :heavy_check_mark |
+|   mmedit  | PSNR | :heavy_check_mark |
+|     | SSIM | :heavy_check_mark |
+
 
 ## 7. 注意事项
 
