@@ -58,13 +58,7 @@ class PANHead : public MMOCR {
     cv::Mat_<int32_t> labels;
     auto region_num = cv::connectedComponents(kernel, labels, 4, CV_32S);
 
-    std::vector<std::vector<cv::Point>> contours;
-    cv::findContours(kernel, contours, cv::RETR_LIST, cv::CHAIN_APPROX_NONE);
-
-    cv::Mat_<uchar> kernel_contours = cv::Mat_<uchar>::zeros(text_score.rows, text_score.cols);
-    cv::drawContours(kernel_contours, contours, -1, 255);
-
-    auto text_points = pixel_group_cpu(text_score, text, embed, labels, kernel_contours, region_num,
+    auto text_points = pixel_group_cpu(text_score, text, embed, labels, kernel, region_num,
                                        min_text_avg_confidence_);
 
     auto scale_w = _data["img_metas"]["scale_factor"][0].get<float>();
