@@ -33,12 +33,12 @@ class PSEHead : public MMOCR {
       return Status(eNotSupported);
     }
 
+    // drop batch dimension
+    _preds.Squeeze();
+
     auto channels = static_cast<int>(_preds.shape(0));
     auto height = static_cast<int>(_preds.shape(1));
     auto width = static_cast<int>(_preds.shape(2));
-
-    // drop batch dimension
-    _preds.Squeeze();
 
     cv::Mat_<float> preds(_preds.shape(0), height * width, _preds.data<float>());
     sigmoid(preds);

@@ -40,8 +40,8 @@ void kernel_dilate(const uint8_t* data, int kernel_num, int height, int width, c
       if (label == 0) continue;
       text_areas[label] += 1;
       text_scores[label] += score_map[x * width + y];
-      text_points[label].push_back(x);
       text_points[label].push_back(y);
+      text_points[label].push_back(x);
     }
   }
 
@@ -84,8 +84,8 @@ void kernel_dilate(const uint8_t* data, int kernel_num, int height, int width, c
         text_labels[tmp_x][tmp_y] = label;
         text_areas[label] += 1;
         text_scores[label] += score_map[tmp_x * width + tmp_y];
-        text_points[label].push_back(tmp_x);
         text_points[label].push_back(tmp_y);
+        text_points[label].push_back(tmp_x);
         is_edge = false;
       }
       if (is_edge) {
@@ -95,7 +95,7 @@ void kernel_dilate(const uint8_t* data, int kernel_num, int height, int width, c
     swap(queue, next_queue);
   }
 
-  for (int i = 1; i <= label_num; ++i) {
+  for (int i = 1; i < label_num; ++i) {
     if (text_areas[i]) {
       text_scores[i] /= static_cast<float>(text_areas[i]);
     }
