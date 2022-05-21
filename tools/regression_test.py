@@ -32,12 +32,8 @@ def parse_args():
         action='store_true',
         help='test performance if it set')
     parser.add_argument(
-        '--backends',
-        nargs='+',
-        help='test specific backend(s)',
-        default=['all'])
-    parser.add_argument(
-        '--models', nargs='+', help='test specific model(s)', default=['all'])
+        '--backends', nargs='+', help='test specific backend(s)')
+    parser.add_argument('--models', nargs='+', help='test specific model(s)')
     parser.add_argument(
         '--work-dir',
         type=str,
@@ -1074,13 +1070,18 @@ def main():
     }
 
     backend_list = args.backends
-    if backend_list == ['all']:
+    if backend_list is None:
         backend_list = [
             'onnxruntime', 'tensorrt', 'openvino', 'ncnn', 'pplnn',
             'torchscript'
         ]
     assert isinstance(backend_list, list)
     logger.info(f'Regression test backend list = {backend_list}')
+
+    if args.models is None:
+        logger.info('Regression test for all models in test yaml.')
+    else:
+        logger.info(f'Regression test models list = {args.models}')
 
     work_dir = Path(args.work_dir)
     work_dir.mkdir(parents=True, exist_ok=True)
@@ -1141,8 +1142,8 @@ def main():
                 continue
 
             model_name = models.get('name')
-            if args.models != ['all'] and model_name not in args.models:
-                logger.info(f'Test specific model, skip {model_name}...')
+            if args.models is not None and model_name not in args.models:
+                logger.info(f'Test specific model mode, skip {model_name}...')
                 continue
 
             model_metafile_info, checkpoint_save_dir, codebase_dir = \
