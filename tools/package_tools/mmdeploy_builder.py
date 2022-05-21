@@ -81,7 +81,7 @@ def _create_tar(path, tar_name):
         tar.add(path, arcname=os.path.basename(path))
 
 
-def _create_bdist_cmd(cfg, dist_dir=None):
+def _create_bdist_cmd(cfg, c_ext=False, dist_dir=None):
 
     bdist_tags = cfg.get('bdist_tags', {})
 
@@ -92,7 +92,8 @@ def _create_bdist_cmd(cfg, dist_dir=None):
     bdist_cmd += f' --plat-name {PLATFORM_TAG} '
 
     # python tag
-    python_tag = f'cp{sys.version_info.major}{sys.version_info.minor}'
+    py_flag = 'cp' if c_ext else 'py'
+    python_tag = f'{py_flag}{sys.version_info.major}{sys.version_info.minor}'
     if 'python_tag' in bdist_tags:
         python_tag = bdist_tags['python_tag']
     bdist_cmd += f' --python-tag {python_tag} '
@@ -158,7 +159,7 @@ def build_mmdeploy(cfg, mmdeploy_dir, dist_dir=None):
         _call_command(build_cmd, build_dir)
 
     # build wheel
-    bdist_cmd = _create_bdist_cmd(cfg, dist_dir)
+    bdist_cmd = _create_bdist_cmd(cfg, c_ext=False, dist_dir=dist_dir)
     _call_command(bdist_cmd, mmdeploy_dir)
 
 
@@ -230,7 +231,8 @@ def create_package(cfg: Dict, mmdeploy_dir: str):
             _copy(python_api_lib_path,
                   osp.join(sdk_python_package_dir, 'mmdeploy_python'))
             sdk_wheel_dir = osp.abspath(osp.join(sdk_tar_dir, 'python'))
-            bdist_cmd = _create_bdist_cmd(cfg, sdk_wheel_dir)
+            bdist_cmd = _create_bdist_cmd(
+                cfg, c_ext=True, dist_dir=sdk_wheel_dir)
             _call_command(bdist_cmd, sdk_python_package_dir)
 
             # remove temp package dir
