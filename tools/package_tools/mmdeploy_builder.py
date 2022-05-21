@@ -184,7 +184,7 @@ def create_package(cfg: Dict, mmdeploy_dir: str):
     # add version tag
     version_file = osp.join(mmdeploy_dir, 'mmdeploy', 'version.py')
     version_id = get_version(version_file)
-    build_dir = build_dir + '-' + version_id
+    build_dir = build_dir.format(version=version_id)
 
     # create package directory.
     if osp.exists(build_dir):

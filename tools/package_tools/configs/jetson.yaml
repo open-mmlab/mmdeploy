@@ -10,4 +10,4 @@ global_config:
     pplcv_DIR: ${pplcv_DIR}/cuda-build/install/lib/cmake/ppl
 
 local_configs:
-  - BUILD_NAME: "mmdeploy-jetson"
+  - BUILD_NAME: "mmdeploy-{version}-jetson"
