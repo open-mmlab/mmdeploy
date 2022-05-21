@@ -92,7 +92,7 @@ def _create_bdist_cmd(cfg, dist_dir=None):
     bdist_cmd += f' --plat-name {PLATFORM_TAG} '
 
     # python tag
-    python_tag = f'py{sys.version_info.major}{sys.version_info.minor}'
+    python_tag = f'cp{sys.version_info.major}{sys.version_info.minor}'
     if 'python_tag' in bdist_tags:
         python_tag = bdist_tags['python_tag']
     bdist_cmd += f' --python-tag {python_tag} '
