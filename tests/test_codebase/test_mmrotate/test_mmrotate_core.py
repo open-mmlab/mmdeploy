@@ -218,7 +218,7 @@ def test_delta_midpointoffset_rbbox_delta2bbox(backend_type: Backend):
         model_output = original_outputs.squeeze().cpu().numpy()
         rewrite_output = rewrite_outputs[0].squeeze().cpu().numpy()
         assert np.allclose(
-            model_output, rewrite_output, rtol=1e-03, atol=1e-05)
+            model_output[:, :4], rewrite_output[:, :4], rtol=1e-03, atol=1e-05)
     else:
         assert rewrite_outputs is not None
 

@@ -148,6 +148,23 @@ def get_rpn_head_model():
     return model
 
 
+def get_reppoints_head_model():
+    """Reppoints Head Config."""
+    test_cfg = mmcv.Config(
+        dict(
+            deploy_nms_pre=0,
+            min_bbox_size=0,
+            score_thr=0.05,
+            nms=dict(type='nms', iou_threshold=0.5),
+            max_per_img=100))
+
+    from mmdet.models.dense_heads import RepPointsHead
+    model = RepPointsHead(num_classes=4, in_channels=1, test_cfg=test_cfg)
+
+    model.requires_grad_(False)
+    return model
+
+
 def get_single_roi_extractor():
     """SingleRoIExtractor Config."""
     from mmdet.models.roi_heads import SingleRoIExtractor
@@ -1462,3 +1479,101 @@ def test_ssd_head_get_bboxes__ncnn(is_dynamic: bool):
         rewrite_outputs = rewrite_outputs[0]
 
     assert rewrite_outputs.shape[-1] == 6
+
+
+@pytest.mark.parametrize('backend_type, ir_type', [(Backend.OPENVINO, 'onnx')])
+def test_reppoints_head_get_bboxes(backend_type: Backend, ir_type: str):
+    """Test get_bboxes rewrite of base dense head."""
+    check_backend(backend_type)
+    dense_head = get_reppoints_head_model()
+    dense_head.cpu().eval()
+    s = 128
+    img_metas = [{
+        'scale_factor': np.ones(4),
+        'pad_shape': (s, s, 3),
+        'img_shape': (s, s, 3)
+    }]
+
+    deploy_cfg = get_deploy_cfg(backend_type, ir_type)
+    output_names = get_ir_config(deploy_cfg).get('output_names', None)
+
+    # the cls_score's size: (1, 4, 32, 32), (1, 4, 16, 16),
+    # (1, 4, 8, 8), (1, 4, 4, 4), (1, 4, 2, 2).
+    # the bboxes's size: (1, 4, 32, 32), (1, 4, 16, 16),
+    # (1, 4, 8, 8), (1, 4, 4, 4), (1, 4, 2, 2)
+    seed_everything(1234)
+    cls_score = [
+        torch.rand(1, 4, pow(2, i), pow(2, i)) for i in range(5, 0, -1)
+    ]
+    seed_everything(5678)
+    bboxes = [torch.rand(1, 4, pow(2, i), pow(2, i)) for i in range(5, 0, -1)]
+
+    # to get outputs of pytorch model
+    model_inputs = {
+        'cls_scores': cls_score,
+        'bbox_preds': bboxes,
+        'img_metas': img_metas
+    }
+    model_outputs = get_model_outputs(dense_head, 'get_bboxes', model_inputs)
+
+    # to get outputs of onnx model after rewrite
+    img_metas[0]['img_shape'] = torch.Tensor([s, s])
+    wrapped_model = WrapModel(
+        dense_head, 'get_bboxes', img_metas=img_metas, with_nms=True)
+    rewrite_inputs = {
+        'cls_scores': cls_score,
+        'bbox_preds': bboxes,
+    }
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg)
+
+    if is_backend_output:
+        if isinstance(rewrite_outputs, dict):
+            rewrite_outputs = convert_to_list(rewrite_outputs, output_names)
+        for model_output, rewrite_output in zip(model_outputs[0],
+                                                rewrite_outputs):
+            model_output = model_output.squeeze().cpu().numpy()
+            rewrite_output = rewrite_output.squeeze()
+            # hard code to make two tensors with the same shape
+            # rewrite and original codes applied different nms strategy
+            assert np.allclose(
+                model_output[:rewrite_output.shape[0]],
+                rewrite_output,
+                rtol=1e-03,
+                atol=1e-05)
+    else:
+        assert rewrite_outputs is not None
+
+
+@pytest.mark.parametrize('backend_type, ir_type', [(Backend.OPENVINO, 'onnx')])
+def test_reppoints_head_points2bbox(backend_type: Backend, ir_type: str):
+    """Test get_bboxes rewrite of base dense head."""
+    check_backend(backend_type)
+    dense_head = get_reppoints_head_model()
+    dense_head.cpu().eval()
+    output_names = ['output']
+
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(type=backend_type.value),
+            onnx_config=dict(
+                input_shape=None,
+                input_names=['pts'],
+                output_names=output_names)))
+
+    # the cls_score's size: (1, 4, 32, 32), (1, 4, 16, 16),
+    # (1, 4, 8, 8), (1, 4, 4, 4), (1, 4, 2, 2).
+    # the bboxes's size: (1, 4, 32, 32), (1, 4, 16, 16),
+    # (1, 4, 8, 8), (1, 4, 4, 4), (1, 4, 2, 2)
+    seed_everything(1234)
+    pts = torch.rand(1, 18, 16, 16)
+
+    # to get outputs of onnx model after rewrite
+    wrapped_model = WrapModel(dense_head, 'points2bbox', y_first=True)
+    rewrite_inputs = {'pts': pts}
+    _ = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg)

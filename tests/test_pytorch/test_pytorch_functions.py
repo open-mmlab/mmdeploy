@@ -232,3 +232,29 @@ class TestTopk:
             assert np.allclose(model_output, output, rtol=1e-03, atol=1e-05)
         else:
             assert output is not None
+
+
+@backend_checker(Backend.TENSORRT)
+@pytest.mark.parametrize('shape', [[2, 2], [4, 2], [2, 4], [2, 4, 2]])
+def test_triu_trt(shape):
+
+    input = torch.rand(shape)
+
+    def triu_caller(*arg, **kwargs):
+        return torch.triu(*arg, **kwargs)
+
+    wrapped_func = WrapFunction(triu_caller, diagonal=1)
+    import tempfile
+
+    import onnx
+
+    from mmdeploy.core import RewriterContext
+    onnx_file = tempfile.NamedTemporaryFile(suffix='onnx').name
+    with RewriterContext(
+            cfg=get_trt_config('output', shape),
+            backend=Backend.TENSORRT.value,
+            opset=11), torch.no_grad():
+        torch.onnx.export(wrapped_func, input, onnx_file, opset_version=11)
+    onnx_model = onnx.load(onnx_file)
+    nodes = onnx_model.graph.node
+    assert nodes is not None

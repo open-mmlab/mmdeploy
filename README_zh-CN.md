@@ -48,12 +48,12 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 - mmocr
 - mmpose
 - mmseg
-- [支持列表](docs/zh_cn/05-benchmark/supported_models.md)
+- [支持列表](docs/zh_cn/03-benchmark/supported_models.md)
 
 ### 支持多种推理后端
 |ONNX Runtime|TensorRT|ppl.nn|ncnn|OpenVINO|more|
 |------------|--------|------|----|--------|----|
-|✔️         |✔️      |✔️   |✔️  |✔️     |[benchmark](docs/zh_cn/05-benchmark/benchmark.md)|
+|✔️         |✔️      |✔️   |✔️  |✔️     |[benchmark](docs/zh_cn/03-benchmark/benchmark.md)|
 
 ### SDK 可高度定制化
 - Transform 数据预处理
@@ -84,8 +84,8 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 * [贡献者手册](.github/CONTRIBUTING.md)
 
 ## 新人解说
-  * [01 术语解释、加载第一个模型](docs/zh_cn/04-tutorial/01_introduction_to_model_deployment.md)
-  * [02 转成 onnx](docs/zh_cn/04-tutorial/02_challenges.md)
+  * [01 术语解释、加载第一个模型](docs/zh_cn/05-tutorial/01_introduction_to_model_deployment.md)
+  * [02 转成 onnx](docs/zh_cn/05-tutorial/02_challenges.md)
 
 ## 基准与模型库
 

@@ -14,4 +14,5 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: '3.7'
-      - run: python3 .github/scripts/doc_link_checker.py --dir docs/zh_cn
+      - run: python3 .github/scripts/doc_link_checker.py --target docs/zh_cn
+      - run: python3 .github/scripts/doc_link_checker.py --target README_zh-CN.md

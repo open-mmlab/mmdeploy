@@ -1,5 +1,5 @@
 _base_ = [
-    './text-detection_dynamic.py', '../../_base_/backends/tensorrt-int8.py'
+    './text-detection_dynamic.py', '../../_base_/backends/tensorrt-fp16.py'
 ]
 backend_config = dict(
     common_config=dict(max_workspace_size=1 << 30),
@@ -9,5 +9,5 @@ backend_config = dict(
                 input=dict(
                     min_shape=[1, 3, 320, 320],
                     opt_shape=[1, 3, 600, 800],
-                    max_shape=[1, 3, 1024, 1824])))
+                    max_shape=[1, 3, 1344, 2240])))
     ])
