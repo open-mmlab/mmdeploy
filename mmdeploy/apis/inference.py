@@ -23,7 +23,7 @@ def inference_model(model_cfg: Union[str, mmcv.Config],
         >>> backend_files = ['work_dir/fcos.onnx']
         >>> img = 'demo.jpg'
         >>> device = 'cpu'
-        >>> model_output = inference_model(model_cfg, deploy_cfg, \
+        >>> model_output = inference_model(model_cfg, deploy_cfg,
                             backend_files, img, device)
 
     Args:

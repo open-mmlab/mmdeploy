@@ -32,7 +32,7 @@ def create_calib_table(calib_file: str,
                          'fcos_r50_caffe_fpn_gn-head_1x_coco.py')
         >>> model_checkpoint = ('checkpoints/'
                                 'fcos_r50_caffe_fpn_gn-head_1x_coco-821213aa.pth')
-        >>> create_calib_table(calib_file, deploy_cfg, \
+        >>> create_calib_table(calib_file, deploy_cfg,
             model_cfg, model_checkpoint, device='cuda:0')
 
     Args:

@@ -29,7 +29,7 @@ def onnx2tensorrt(work_dir: str,
         >>> deploy_cfg = ('configs/mmdet/detection/'
                           'detection_tensorrt_dynamic-320x320-1344x1344.py')
         >>> onnx_model = 'work_dir/end2end.onnx'
-        >>> onnx2tensorrt(work_dir, save_file, model_id, deploy_cfg, \
+        >>> onnx2tensorrt(work_dir, save_file, model_id, deploy_cfg,
                 onnx_model, 'cuda:0')
 
     Args:
