@@ -29,9 +29,20 @@ mmdeploy 基于静态图（onnx）生成推理框架所需的量化表，再用�
 
 ## 模型怎么转定点
 
-[mmdeploy 安装](../01-how-to-build/build_from_source.md)完成后，使用 `tools/deploy.py --quant` 选项开启量化。
+[mmdeploy 安装](../01-how-to-build/build_from_source.md)完成后，加载 ppq 并安装
 
 ```bash
+$ git clone https://github.com/openppl-public/ppq.git
+$ cd ppq
+$ git checkout edbecf4 # 需要一些特性和修复
+$ pip install -r requirements.txt
+$ python3 setup.py install
+```
+
+回到 mmdeploy, 使用 `tools/deploy.py --quant` 选项开启量化。
+
+```bash
+$ cd /path/to/mmdeploy
 $ export MODEL_PATH=/path/to/mmclassification/configs/resnet/resnet18_8xb16_cifar10.py
 $ export MODEL_CONFIG=https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_b16x8_cifar10_20210528-bd6371c8.pth
 

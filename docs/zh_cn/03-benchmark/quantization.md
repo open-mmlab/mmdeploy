@@ -9,9 +9,13 @@
 |model|dataset|fp32 top-1 (%)|int8 top-1 (%)|
 |:-:|:-:|:-:|:-:|
 |[ResNet-18](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnet/resnet18_8xb16_cifar10.py)|Cifar10|94.82|94.83|
-|[ResNeXt-32x4d-50]()|ImageNet-1k|||
+|[ResNeXt-32x4d-50](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnext/resnext50-32x4d_8xb32_in1k.py)|ImageNet-1k|77.90|(78.20)|
+|[MobileNet V2](https://github.com/open-mmlab/mmclassification/blob/master/configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py)|ImageNet-1k|71.86|(71.43)|
+|[HRNet-W18*](https://github.com/open-mmlab/mmclassification/blob/master/configs/hrnet/hrnet-w18_4xb32_in1k.py)|ImageNet-1k|76.75|(76.25)|
 
-备注：分类模型量化后轻微（1% 以内）涨点或掉点是合理的
+备注：
+* 量化后精度会有差异，分类模型涨点 1% 以内是正常情况
+* ncnn Vulkan int8 未发版，考虑到运行时间，仅用 imagenet-1k 验证集的部分（4000/50000）测试
 
 ### OCR 检测任务
 
