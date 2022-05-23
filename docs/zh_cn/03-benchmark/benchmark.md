@@ -1006,6 +1006,78 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">0.7950</td>
   </tr>
   <tr>
+    <td align="center" rowspan="3"><a href="https://github.com/open-mmlab/mmocr/tree/master/configs/textdet/psenet/psenet_r50_fpnf_600e_icdar2015.py">PSENet</a></td>
+    <td align="center" rowspan="3">TextDetection</td>
+    <td align="center" rowspan="3">ICDAR2015</td>
+    <td align="center">recall</td>
+    <td align="center">0.7526</td>
+    <td align="center">0.7526</td>
+    <td align="center">0.7526</td>
+    <td align="center">0.7526</td>
+    <td align="center">0.7520</td>
+    <td align="center">0.7496</td>
+    <td align="center">-</td>
+    <td align="center">0.7526</td>
+  </tr>
+  <tr>
+    <td align="center">precision</td>
+    <td align="center">0.8669</td>
+    <td align="center">0.8669</td>
+    <td align="center">0.8669</td>
+    <td align="center">0.8669</td>
+    <td align="center">0.8668</td>
+    <td align="center">0.8550</td>
+    <td align="center">-</td>
+    <td align="center">0.8669</td>
+  </tr>
+  <tr>
+    <td align="center">hmean</td>
+    <td align="center">0.8057</td>
+    <td align="center">0.8057</td>
+    <td align="center">0.8057</td>
+    <td align="center">0.8057</td>
+    <td align="center">0.8054</td>
+    <td align="center">0.7989</td>
+    <td align="center">-</td>
+    <td align="center">0.8057</td>
+  </tr>
+  <tr>
+    <td align="center" rowspan="3"><a href="https://github.com/open-mmlab/mmocr/tree/master/configs/textdet/panet/panet_r18_fpem_ffm_600e_icdar2015.py">PANet</a></td>
+    <td align="center" rowspan="3">TextDetection</td>
+    <td align="center" rowspan="3">ICDAR2015</td>
+    <td align="center">recall</td>
+    <td align="center">0.7401</td>
+    <td align="center">0.7401</td>
+    <td align="center">0.7401</td>
+    <td align="center">0.7357</td>
+    <td align="center">0.7366</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">0.7401</td>
+  </tr>
+  <tr>
+    <td align="center">precision</td>
+    <td align="center">0.8601</td>
+    <td align="center">0.8601</td>
+    <td align="center">0.8601</td>
+    <td align="center">0.8570</td>
+    <td align="center">0.8586</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">0.8601</td>
+  </tr>
+  <tr>
+    <td align="center">hmean</td>
+    <td align="center">0.7955</td>
+    <td align="center">0.7955</td>
+    <td align="center">0.7955</td>
+    <td align="center">0.7917</td>
+    <td align="center">0.7930</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">0.7955</td>
+  </tr>
+  <tr>
     <td align="center"><a href="https://github.com/open-mmlab/mmocr/tree/master/configs/textrecog/crnn/crnn_academic_dataset.py">CRNN</a></td>
     <td align="center">TextRecognition</td>
     <td align="center">IIIT5K</td>
@@ -1030,6 +1102,20 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/open-mmlab/mmocr/tree/master/configs/textrecog/satrn/satrn_small.py">SATRN</a></td>
+    <td align="center">TextRecognition</td>
+    <td align="center">IIIT5K</td>
+    <td align="center">acc</td>
+    <td align="center">0.9470</td>
+    <td align="center">0.9487</td>
+    <td align="center">0.9487</td>
+    <td align="center">0.9487</td>
+    <td align="center">0.9483</td>
+    <td align="center">0.9483</td>
     <td align="center">-</td>
     <td align="center">-</td>
   </tr>

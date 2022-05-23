@@ -23,3 +23,6 @@ target_include_directories(${PROJECT_NAME}
         PUBLIC ${_COMMON_INCLUDE_DIRS})
 
 add_library(mmdeploy::ncnn_ops ALIAS ${PROJECT_NAME})
+
+set(_NCNN_OPS_DIR ${CMAKE_SOURCE_DIR}/mmdeploy/lib)
+install(TARGETS ${PROJECT_NAME} DESTINATION ${_NCNN_OPS_DIR})

@@ -21,10 +21,17 @@ if lib_path:
     sys.path.append(lib_dir)
 
 if importlib.util.find_spec(module_name) is not None:
-    from .wrapper import SDKWrapper
-    __all__ = ['SDKWrapper']
     _is_available = True
 
 
 def is_available() -> bool:
     return _is_available
+
+
+if is_available():
+
+    try:
+        from .wrapper import SDKWrapper
+        __all__ = ['SDKWrapper']
+    except Exception:
+        pass
