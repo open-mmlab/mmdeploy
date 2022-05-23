@@ -594,23 +594,21 @@ class NCNNEnd2EndModel(End2EndModel):
             imgs (torch.Tensor): Input image(s) in [N x C x H x W] format.
 
         Returns:
-            list[np.ndarray]: dets of shape [N, num_det, 5] and
+            list[torch.Tensor]: dets of shape [N, num_det, 5] and
                 class labels of shape [N, num_det].
         """
         _, _, H, W = imgs.shape
         outputs = self.wrapper({self.input_name: imgs})
         for key, item in outputs.items():
             if item is None:
-                return [np.zeros((1, 0, 5)), np.zeros((1, 0))]
+                return torch.zeros(1, 0, 5), torch.zeros(1, 0)
         out = self.wrapper.output_to_list(outputs)[0]
         labels = out[:, :, 0] - 1
-        scales = torch.tensor([W, H, W, H]).reshape(1, 1, 4)
+        scales = torch.tensor([W, H, W, H]).reshape(1, 1, 4).to(out)
         scores = out[:, :, 1:2]
         boxes = out[:, :, 2:6] * scales
         dets = torch.cat([boxes, scores], dim=2)
-        dets = dets.detach().cpu().numpy()
-        labels = labels.detach().cpu().numpy()
-        return [dets, labels]
+        return dets, labels
 
 
 @__BACKEND_MODEL.register_module('sdk')
