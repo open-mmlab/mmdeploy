@@ -29,7 +29,7 @@ def generic_rnn__ncnn(ctx,
     """rewrite of _generic_rnn for ncnn.
 
     `g.op` will add some nodes for h0 and c0 in LSTM. which is not supported in
-    NCNN. So we add a custom domain to avoid it.
+    ncnn. So we add a custom domain to avoid it.
     """
     warnings.warn(
         'Exporting a model to ONNX with a batch_size other than 1, ' +

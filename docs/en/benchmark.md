@@ -1,20 +1,20 @@
-## Benchmark
+# Benchmark
 
-### Backends
+## Backends
 CPU: ncnn, ONNXRuntime, OpenVINO
 
 GPU: ncnn, TensorRT, PPLNN
 
-### Latency benchmark
-#### Platform
+## Latency benchmark
+### Platform
 - Ubuntu 18.04
 - ncnn 20211208
 - Cuda 11.3
 - TensorRT 7.2.3.4
 - Docker 20.10.8
-- NVIDIA tesla T4 tensor core GPU for TensorRT.
+- NVIDIA tesla T4 tensor core GPU for TensorRT
 
-#### Other settings
+### Other settings
 - Static graph
 - Batch size 1
 - Synchronize devices after each inference.
@@ -34,7 +34,7 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <th align="center" colspan="3">MMCls</th>
     <th align="center" colspan="12">TensorRT</th>
     <th align="center" colspan="2">PPLNN</th>
-    <th align="center" colspan="4">NCNN</th>
+    <th align="center" colspan="4">ncnn</th>
     <th></th>
   </tr>
 </thead>
@@ -344,7 +344,7 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
 <thead>
   <tr>
     <th align="center" colspan="3">MMDet</th>
-    <th align="center" colspan="4">NCNN</th>
+    <th align="center" colspan="4">ncnn</th>
     <th align="center"></th>
   </tr>
 </thead>
@@ -488,7 +488,7 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
     <th align="center" colspan="3">MMOCR</th>
     <th align="center" colspan="6">TensorRT</th>
     <th align="center" colspan="2">PPLNN</th>
-    <th align="center" colspan="4">NCNN</th>
+    <th align="center" colspan="4">ncnn</th>
     <th align="center"></th>
   </tr>
 </thead>
@@ -677,7 +677,7 @@ Users can directly test the speed through [how_to_measure_performance_of_models.
 </div>
 </details>
 
-### Performance benchmark
+## Performance benchmark
 
 Users can directly test the performance through [how_to_evaluate_a_model.md](tutorials/how_to_evaluate_a_model.md). And here is the benchmark in our environment.
 
@@ -837,7 +837,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center">71.87</td>
     <td align="center">70.91</td>
     <td align="center">71.84</td>
-    <td rowspan="2">$MMEDIT_DIR/configs/restorers/real_esrgan/realesrnet_c64b23g32_12x4_lr2e-4_1000k_df2k_ost.py</td>
+    <td rowspan="2">$MMCLS_DIR$/configs/mobilenet_v2/mobilenet_v2_b32x8_imagenet.py</td>
   </tr>
   <tr>
     <td align="center">top-5</td>
@@ -1033,7 +1033,23 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center">40.0</td>
     <td align="center">-</td>
     <td align="center">-</td>
+    <td align="center">-</td>
     <td>$MMDET_DIR/configs/gfl/gfl_r50_fpn_1x_coco.py</td>
+  </tr>
+  <tr>
+    <td align="center">RepPoints</td>
+    <td align="center">Object Detection</td>
+    <td align="center">COCO2017</td>
+    <td align="center">box AP</td>
+    <td align="center">37.0</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">36.9</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMDET_DIR/configs/reppoints/reppoints_moment_r50_fpn_1x_coco.py</td>
   </tr>
   <tr>
     <td align="center" rowspan="2">Mask R-CNN</td>
@@ -1314,7 +1330,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center">0.7111</td>
     <td align="center">0.7304</td>
     <td align="center">0.7309</td>
-    <td align="center" rowspan="3">$MMOCR_DIR/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py</td>
+    <td rowspan="3">$MMOCR_DIR/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py</td>
   </tr>
   <tr>
     <td align="center">precision</td>
@@ -1337,6 +1353,80 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center">0.7821</td>
     <td align="center">0.7949</td>
     <td align="center">0.7950</td>
+  </tr>
+  <tr>
+    <td align="center" rowspan="3">PSENet</td>
+    <td align="center" rowspan="3">TextDetection</td>
+    <td align="center" rowspan="3">ICDAR2015</td>
+    <td align="center">recall</td>
+    <td align="center">0.7526</td>
+    <td align="center">0.7526</td>
+    <td align="center">0.7526</td>
+    <td align="center">0.7526</td>
+    <td align="center">0.7520</td>
+    <td align="center">0.7496</td>
+    <td align="center">-</td>
+    <td align="center">0.7526</td>
+    <td rowspan="3">$MMOCR_DIR/configs/textdet/psenet/psenet_r50_fpnf_600e_icdar2015.py</td>
+  </tr>
+  <tr>
+    <td align="center">precision</td>
+    <td align="center">0.8669</td>
+    <td align="center">0.8669</td>
+    <td align="center">0.8669</td>
+    <td align="center">0.8669</td>
+    <td align="center">0.8668</td>
+    <td align="center">0.8550</td>
+    <td align="center">-</td>
+    <td align="center">0.8669</td>
+  </tr>
+  <tr>
+    <td align="center">hmean</td>
+    <td align="center">0.8057</td>
+    <td align="center">0.8057</td>
+    <td align="center">0.8057</td>
+    <td align="center">0.8057</td>
+    <td align="center">0.8054</td>
+    <td align="center">0.7989</td>
+    <td align="center">-</td>
+    <td align="center">0.8057</td>
+  </tr>
+  <tr>
+    <td align="center" rowspan="3">PANet</td>
+    <td align="center" rowspan="3">TextDetection</td>
+    <td align="center" rowspan="3">ICDAR2015</td>
+    <td align="center">recall</td>
+    <td align="center">0.7401</td>
+    <td align="center">0.7401</td>
+    <td align="center">0.7401</td>
+    <td align="center">0.7357</td>
+    <td align="center">0.7366</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">0.7401</td>
+    <td rowspan="3">$MMOCR_DIR/configs/textdet/panet/panet_r18_fpem_ffm_600e_icdar2015.py</td>
+  </tr>
+  <tr>
+    <td align="center">precision</td>
+    <td align="center">0.8601</td>
+    <td align="center">0.8601</td>
+    <td align="center">0.8601</td>
+    <td align="center">0.8570</td>
+    <td align="center">0.8586</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">0.8601</td>
+  </tr>
+  <tr>
+    <td align="center">hmean</td>
+    <td align="center">0.7955</td>
+    <td align="center">0.7955</td>
+    <td align="center">0.7955</td>
+    <td align="center">0.7917</td>
+    <td align="center">0.7930</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">0.7955</td>
   </tr>
   <tr>
     <td align="center">CRNN</td>
@@ -1367,6 +1457,21 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center">-</td>
     <td align="center">-</td>
     <td>$MMOCR_DIR/configs/textrecog/sar/sar_r31_parallel_decoder_academic.py</td>
+  </tr>
+  <tr>
+    <td align="center">SATRN</td>
+    <td align="center">TextRecognition</td>
+    <td align="center">IIIT5K</td>
+    <td align="center">acc</td>
+    <td align="center">0.9470</td>
+    <td align="center">0.9487</td>
+    <td align="center">0.9487</td>
+    <td align="center">0.9487</td>
+    <td align="center">0.9483</td>
+    <td align="center">0.9483</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMOCR_DIR/configs/textrecog/satrn/satrn_small.py</td>
   </tr>
 </tbody>
 </table>
@@ -1819,8 +1924,55 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
 </div>
 </details>
 
+<details>
+<summary style="margin-left: 25px;">MMRotate</summary>
+<div style="margin-left: 25px;">
+<table class="docutils">
+<thead>
+  <tr>
+    <th align="center" colspan="4">MMRotate</th>
+    <th align="center">Pytorch</th>
+    <th align="center">ONNXRuntime</th>
+    <th align="center" colspan="2">TensorRT</th>
+    <th align="center">PPLNN</th>
+    <th align="center">OpenVINO</th>
+    <th align="left">Model Config</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td align="center">Model</td>
+    <td align="center">Task</td>
+    <td align="center">Dataset</td>
+    <td align="center">Metrics</td>
+    <td align="center">fp32</td>
+    <td align="center">fp32</td>
+    <td align="center">fp32</td>
+    <td align="center">fp16</td>
+    <td align="center">fp16</td>
+    <td align="center">fp32</td>
+    <td>model config file</td>
+  </tr>
+  <tr>
+    <td align="center" rowspan="2">RotatedRetinaNet</td>
+    <td align="center" rowspan="2">Rotated Detection</td>
+    <td align="center" rowspan="2">DOTA-v1.0</td>
+    <td align="center">mAP</td>
+    <td align="center">0.698</td>
+    <td align="center">0.698</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td rowspan="2">$MMROTATE_DIR/configs/rotated_retinanet/rotated_retinanet_obb_r50_fpn_1x_dota_le135.py</td>
+  </tr>
+</tbody>
+</table>
+</div>
+</details>
 
-### Notes
+
+## Notes
 - As some datasets contain images with various resolutions in codebase like MMDet. The speed benchmark is gained through static configs in MMDeploy, while the performance benchmark is gained through dynamic ones.
 
 - Some int8 performance benchmarks of TensorRT require Nvidia cards with tensor core, or the performance would drop heavily.
@@ -1830,3 +1982,5 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
 - Mask AP of Mask R-CNN drops by 1% for the backend. The main reason is that the predicted masks are directly interpolated to original image in PyTorch, while they are at first interpolated to the preprocessed input image of the model and then to original image in other backends.
 
 - MMPose models are tested with `flip_test` explicitly set to `False` in model configs.
+
+- Some models might get low accuracy in fp16 mode. Please adjust the model to avoid value overflow.

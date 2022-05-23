@@ -26,5 +26,9 @@ def is_plugin_available():
 
 
 if is_available():
-    from .wrapper import ORTWrapper
-    __all__ = ['ORTWrapper']
+    try:
+        # import wrapper if pytorch is available
+        from .wrapper import ORTWrapper
+        __all__ = ['ORTWrapper']
+    except Exception:
+        pass
