@@ -351,4 +351,4 @@ cv2.imwrite("face_ort_3.png", ort_output)
 - 通过修改继承自 torch.autograd.Function 的算子的 symbolic 方法，可以改变该算子映射到 ONNX 算子的行为。
 
 
-至此，"部署第一个模型“的教程算是告一段落了。是不是觉得学到的知识还不够多？没关系，在接下来的几篇教程中，我们将结合 MMDeploy ，重点介绍 ONNX 中间表示和 ONNX Runtime/TensorRT 推理引擎的知识，让大家学会如何部署更复杂的模型。敬请期待！
+至此，"部署第一个模型“的教程算是告一段落了。是不是觉得学到的知识还不够多？没关系，在接下来的几篇教程中，我们将结合 MMDeploy ，重点介绍 ONNX 中间表示和 ONNX Runtime/TensorRT 推理引擎的知识，让大家学会如何部署更复杂的模型。
