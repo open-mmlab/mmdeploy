@@ -1,10 +1,10 @@
-## 快速上手
+## 操作概述
 
 MMDeploy提供了一系列工具，帮助您更轻松的将OpenMMLab下的算法部署到各种设备与平台上。您可以使用我们设计的流程一“部”到位，也可以定制您自己的转换流程。这份指引将会向您展示MMDeploy的基本使用方式，并帮助您将 MMDeploy SDK 整合进您的应用。
 
-### 准备工作
+### 编译安装
 
-首先我们需要根据[安装指南](./build.md)正确安装MMDeploy。**注意！** 不同推理后端的安装方式略有不同。可以根据下面的介绍选择最适合您的推理后端：
+首先我们需要根据[安装指南](./01-how-to-build/build_from_source.md)正确安装MMDeploy。**注意！** 不同推理后端的安装方式略有不同。可以根据下面的介绍选择最适合您的推理后端：
 
 - [ONNXRuntime](https://mmdeploy.readthedocs.io/en/latest/backends/onnxruntime.html): ONNX Runtime 是一个跨平台的机器学习训练推理加速器，通过图形优化和变换以及硬件加速器提供优秀的推理性能。<span style="color:red">拥有完善的对ONNX的支持</span>。
 - [TensorRT](https://mmdeploy.readthedocs.io/en/latest/backends/tensorrt.html): NVIDIA® TensorRT™ 是一个用于高性能深度学习推理的开发工具包（SDK）。借助Nvidia的设备特性，TensorRT可以优化模型的推理，提供更低的推理延迟以及更高的吞吐量。如果您希望将模型部署在<span style="color:red">NVIDIA硬件设备</span>上，那么TensorRT就是一个合适的选择。
@@ -32,7 +32,7 @@ python ${MMDEPLOY_DIR}/tools/deploy.py \
     --dump-info
 ```
 
-`${MMDEPLOY_DIR}/tools/deploy.py` 是一个方便模型转换的工具。可以阅读 [如何转换模型](./tutorials/how_to_convert_model.md) 了解更多细节。转换后的模型以及一些其他的信息将会被保存在 `${WORK_DIR}` 中。MMDeploy SDK 可以使用这些信息进行模型推理。
+`${MMDEPLOY_DIR}/tools/deploy.py` 是一个方便模型转换的工具。可以阅读 [如何转换模型](./02-how-to-run/convert_model.md) 了解更多细节。转换后的模型以及一些其他的信息将会被保存在 `${WORK_DIR}` 中。MMDeploy SDK 可以使用这些信息进行模型推理。
 
 `detection_tensorrt_dynamic-320x320-1344x1344.py` 是一个包含所有转换需要的可配置参数的配置文件。该文件的命名遵循如下规则：
 
@@ -71,7 +71,7 @@ python ${MMDEPLOY_DIR}/tools/test.py \
 
 ### 整合 MMDeploy SDK
 
-请参考[安装指南](./build.md)，在编译 MMDeploy 时开启`MMDEPLOY_BUILD_SDK`以安装 MMDeploy SDK。
+请参考[安装指南](./01-how-to-build/build_from_source.md)，在编译 MMDeploy 时开启`MMDEPLOY_BUILD_SDK`以安装 MMDeploy SDK。
 成功安装后，安装目录的文件结构将会如下所示：
 
 ```
@@ -119,7 +119,7 @@ pip install -v -e .
 
 #### 安装 MMDeploy 以及 ONNX Runtime
 
-请运行下面的指令在Anaconda环境中[安装MMDeploy](./build.md)。
+请运行下面的指令在Anaconda环境中[安装MMDeploy](./01-how-to-build/build_from_source.md)。
 
 ```bash
 conda activate openmmlab

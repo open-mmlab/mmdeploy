@@ -8,7 +8,7 @@ Please refer to [install.md](https://github.com/open-mmlab/mmclassification/blob
 
 ### List of MMClassification models supported by MMDeploy
 
-| Model        | ONNX Runtime | TensorRT | NCNN  | PPLNN | OpenVINO |                                        Model config                                        |
+| Model        | ONNX Runtime | TensorRT | ncnn  | PPLNN | OpenVINO |                                        Model config                                        |
 | :----------- | :----------: | :------: | :---: | :---: | :------: | :----------------------------------------------------------------------------------------: |
 | ResNet       |      Y       |    Y     |   Y   |   Y   |    Y     |    [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnet)     |
 | ResNeXt      |      Y       |    Y     |   Y   |   Y   |    Y     |    [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnext)    |

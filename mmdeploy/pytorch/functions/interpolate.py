@@ -19,9 +19,9 @@ def interpolate__ncnn(ctx,
                       mode: str = 'nearest',
                       align_corners: Optional[bool] = None,
                       recompute_scale_factor: Optional[bool] = None):
-    """Rewrite `interpolate` for NCNN backend.
+    """Rewrite `interpolate` for ncnn backend.
 
-    NCNN require `size` should be constant in ONNX Node. We use `scale_factor`
+    ncnn require `size` should be constant in ONNX Node. We use `scale_factor`
     instead of `size` to avoid dynamic size.
     """
 

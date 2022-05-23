@@ -8,7 +8,7 @@ Please refer to [get_started.md](https://github.com/open-mmlab/mmdetection/blob/
 
 ### List of MMDetection models supported by MMDeploy
 
-|       Model        |         Task         | OnnxRuntime | TensorRT | NCNN  | PPLNN | OpenVINO |                                     Model config                                     |
+|       Model        |         Task         | OnnxRuntime | TensorRT | ncnn  | PPLNN | OpenVINO |                                     Model config                                     |
 | :----------------: | :------------------: | :---------: | :------: | :---: | :---: | :------: | :----------------------------------------------------------------------------------: |
 |        ATSS        |   ObjectDetection    |      Y      |    Y     |   N   |   N   |    Y     |     [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/atss)     |
 |        FCOS        |   ObjectDetection    |      Y      |    Y     |   Y   |   N   |    Y     |     [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/fcos)     |
@@ -23,6 +23,7 @@ Please refer to [get_started.md](https://github.com/open-mmlab/mmdetection/blob/
 |    Faster R-CNN    |   ObjectDetection    |      Y      |    Y     |   Y   |   Y   |    Y     | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/faster_rcnn)  |
 | Faster R-CNN + DCN |   ObjectDetection    |      Y      |    Y     |   Y   |   Y   |    Y     | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/faster_rcnn)  |
 |       GFL          |   ObjectDetection    |      Y      |    Y     |   N   |   ?   |    Y     |      [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/gfl)     |
+|       RepPoints          |   ObjectDetection    |      N      |    Y     |   N   |   ?   |    Y     |      [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/reppoints)     |
 | Cascade Mask R-CNN | InstanceSegmentation |      Y      |    N     |   N   |   N   |    Y     | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/cascade_rcnn) |
 |     Mask R-CNN     | InstanceSegmentation |      Y      |    Y     |   N   |   N   |    Y     |  [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/mask_rcnn)   |
 
