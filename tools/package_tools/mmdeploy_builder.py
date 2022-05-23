@@ -192,13 +192,15 @@ def check_env(cfg: Dict):
     nvcc_cmd = 'nvcc' if len(CUDA_TOOLKIT_ROOT_DIR) <= 0 else osp.join(
         CUDA_TOOLKIT_ROOT_DIR, 'bin', 'nvcc')
 
-    if osp.exists(nvcc_cmd):
+    try:
         nvcc = check_output(f'"{nvcc_cmd}" -V', shell=True)
         nvcc = nvcc.decode('utf-8').strip()
         pattern = r'Cuda compilation tools, release (\d+.\d+)'
         match = re.search(pattern, nvcc)
         if match is not None:
             cuda_version = match.group(1)
+    except Exception:
+        pass
 
     env_info['cuda_v'] = cuda_version
 
@@ -231,8 +233,8 @@ def check_env(cfg: Dict):
             minor = re.search(r'#define NV_TENSORRT_MINOR (\d+)', data)
             patch = re.search(r'#define NV_TENSORRT_PATCH (\d+)', data)
             if major is not None and minor is not None and patch is not None:
-                tensorrt_version = f'{major.group(1)}' +\
-                                    f'{minor.group(1)}' +\
+                tensorrt_version = f'{major.group(1)}.' +\
+                                    f'{minor.group(1)}.' +\
                                     f'{patch.group(1)}'
 
     env_info['trt_v'] = tensorrt_version
