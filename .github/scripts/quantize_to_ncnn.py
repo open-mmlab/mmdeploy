@@ -1,11 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-import argparse
 import os
 import subprocess
 
 # list of tuple: onnx filename, download_url and model_config.
-
 
 CONFIGS = [
     (
@@ -25,14 +23,14 @@ CONFIGS = [
     }
 ]
 
+
 def prepare_dataset():
-    DATASET = ('dataset', 
-        'https://media.githubusercontent.com/media/tpoisonooo/mmdeploy-onnx2ncnn-testdata/main/dataset.tar') # noqa: E501
-    download_cmd = ['wget', DATASET[1]]
-    # show processbar
-    os.system(' '.join(download_cmd))
-    tar_cmd = ['tar', 'xvf', 'dataset.tar']
-    subprocess.run(tar_cmd, capture_output=True, check=True)
+    DATASET = (
+        'dataset',
+        'https://media.githubusercontent.com/media/tpoisonooo/mmdeploy-onnx2ncnn-testdata/main/dataset.tar'  # noqa: E501
+    )  # noqa: E501
+    os.system('wget {}'.format(DATASET[1]))
+    os.system('tar xvf dataset.tar')
     return DATASET[0]
 
 
@@ -43,24 +41,19 @@ def main():
     """
     data_dir = prepare_dataset()
 
-    import mmcv
-    mmcv.mkdir_or_exist(args.out)
     for conf in CONFIGS:
-
         model = conf[0]
-        os.system('wget {}'.format(model[1]))
-        model_config = conf[2]
-        deploy_config = 'configs/mmcls/classification_ncnn-int8_static.py'
-
-        out_onnx = 'quant.onnx'
-        out_table = 'ncnn.table'
+        os.system('wget {}'.format(conf[1]))
+        model_cfg = conf[2]
+        deploy_cfg = 'configs/mmcls/classification_ncnn-int8_static.py'
         quant_cmd = [
-            'python3', 'tools/onnx2ncnn_quant.py',
-            model, deploy_cfg, model_cfg,
-            '--image-dir', data_dir
+            'python3', 'tools/onnx2ncnn_quant.py', '--onnx', model,
+            '--deploy_cfg', deploy_cfg, '--model_cfg', model_cfg, '--out_onnx',
+            'quant.onnx', '--out_table', 'ncnn.table', '--image_dir', data_dir
         ]
         print(' '.join(quant_cmd))
         print(subprocess.call(quant_cmd))
+
 
 if __name__ == '__main__':
     main()

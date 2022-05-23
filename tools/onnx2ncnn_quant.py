@@ -74,19 +74,19 @@ def get_table(onnx_path: str,
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Convert ONNX to ncnn.')
-    parser.add_argument('onnx_path', help='ONNX model path')
-    parser.add_argument('deploy_cfg_path', help='Input deploy config path')
-    parser.add_argument('model_cfg_path', help='Input model config path')
-    parser.add_argument('quant_onnx_path', help='Output onnx path')
-    parser.add_argument('quant_table_path', help='Output quant table path')
+    parser = argparse.ArgumentParser(description='Quantize ONNX to ncnn.')
+    parser.add_argument('--onnx', help='ONNX model path')
+    parser.add_argument('--deploy_cfg', help='Input deploy config path')
+    parser.add_argument('--model_cfg', help='Input model config path')
+    parser.add_argument('--out_onnx', help='Output onnx path')
+    parser.add_argument('--out_table', help='Output quant table path')
     parser.add_argument(
         '--image_dir',
         type=str,
         default=None,
         help='Calibraion Image Directory.')
     parser.add_argument(
-        '--log-level',
+        '--log_level',
         help='set log level',
         default='INFO',
         choices=list(logging._nameToLevel.keys()))
@@ -99,11 +99,10 @@ def main():
     args = parse_args()
     logger = get_root_logger(log_level=args.log_level)
 
-    onnx_path = args.onnx_path
-    deploy_cfg, model_cfg = load_config(args.deploy_cfg_path,
-                                        args.model_cfg_path)
-    quant_table_path = args.quant_table_path
-    quant_onnx_path = args.quant_onnx_path
+    onnx_path = args.onnx
+    deploy_cfg, model_cfg = load_config(args.deploy_cfg, args.model_cfg)
+    quant_table_path = args.out_table
+    quant_onnx_path = args.out_onnx
     image_dir = args.image_dir
 
     logger.info(f'onnx2ncnn_quant: \n\tonnx_path: {onnx_path} ')
