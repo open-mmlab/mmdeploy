@@ -111,37 +111,37 @@ class End2EndModel(BaseBackendModel):
         return outputs
 
     @staticmethod
-    def postprocessing_masks(det_bboxes: np.ndarray,
-                             det_masks: np.ndarray,
+    def postprocessing_masks(det_bboxes: Union[np.ndarray, torch.Tensor],
+                             det_masks: Union[np.ndarray, torch.Tensor],
                              img_w: int,
                              img_h: int,
-                             device: str = 'cpu',
-                             mask_thr_binary: float = 0.5) -> np.ndarray:
+                             device: str = 'cpu') -> torch.Tensor:
         """Additional processing of masks. Resizes masks from [num_det, 28, 28]
         to [num_det, img_w, img_h]. Analog of the 'mmdeploy.codebase.mmdet.
         models.roi_heads.fcn_mask_head._do_paste_mask' function.
 
         Args:
-            det_bboxes (np.ndarray): Bbox of shape [num_det, 4]
-            det_masks (np.ndarray): Masks of shape [num_det, 28, 28].
+            det_bboxes (np.ndarray | Tensor): Bbox of shape [num_det, 4]
+            det_masks (np.ndarray | Tensor): Masks of shape [num_det, 28, 28].
             img_w (int): Width of the original image.
             img_h (int): Height of the original image.
-            mask_thr_binary (float): The threshold for the mask.
+            device :(str): The device type.
 
         Returns:
-            np.ndarray: masks of shape [N, num_det, img_h, img_w].
+            torch.Tensor: masks of shape [N, num_det, img_h, img_w].
         """
         masks = det_masks
         bboxes = det_bboxes
-
+        device = torch.device(device)
         num_det = bboxes.shape[0]
         # Skip postprocessing if no detections are found.
         if num_det == 0:
-            return np.zeros((0, img_h, img_w))
+            return torch.zeros(
+                0, img_h, img_w, dtype=torch.float32, device=device)
 
         if isinstance(masks, np.ndarray):
-            masks = torch.tensor(masks, device=torch.device(device))
-            bboxes = torch.tensor(bboxes, device=torch.device(device))
+            masks = torch.tensor(masks, device=device)
+            bboxes = torch.tensor(bboxes, device=device)
 
         result_masks = []
         for bbox, mask in zip(bboxes, masks):
@@ -150,15 +150,9 @@ class End2EndModel(BaseBackendModel):
             x1_int, y1_int = img_w, img_h
 
             img_y = torch.arange(
-                y0_int,
-                y1_int,
-                dtype=torch.float32,
-                device=torch.device(device)) + 0.5
+                y0_int, y1_int, dtype=torch.float32, device=device) + 0.5
             img_x = torch.arange(
-                x0_int,
-                x1_int,
-                dtype=torch.float32,
-                device=torch.device(device)) + 0.5
+                x0_int, x1_int, dtype=torch.float32, device=device) + 0.5
             x0, y0, x1, y1 = bbox
 
             img_y = (img_y - y0) / (y1 - y0) * 2 - 1
@@ -208,15 +202,13 @@ class End2EndModel(BaseBackendModel):
         rescale = kwargs.get('rescale', True)
         for i in range(batch_size):
             dets, labels = batch_dets[i], batch_labels[i]
-            dets = dets.to(device=torch.device(self.device))
             if rescale:
                 scale_factor = img_metas[i]['scale_factor']
 
                 if isinstance(scale_factor, (list, tuple, np.ndarray)):
                     assert len(scale_factor) == 4
                     scale_factor = np.array(scale_factor)[None, :]  # [1,4]
-                scale_factor = torch.from_numpy(scale_factor).to(
-                    device=torch.device(self.device))
+                scale_factor = torch.from_numpy(scale_factor).to(dets)
                 dets[:, :4] /= scale_factor
 
             if 'border' in img_metas[i]:
@@ -255,6 +247,8 @@ class End2EndModel(BaseBackendModel):
                     masks = masks.squeeze(0)
                 if masks.dtype != bool:
                     masks = masks >= 0.5
+                # aligned with mmdet to easily convert to numpy
+                masks = masks.cpu()
                 segms_results = [[] for _ in range(len(self.CLASSES))]
                 for j in range(len(dets)):
                     segms_results[labels[j]].append(masks[j])
