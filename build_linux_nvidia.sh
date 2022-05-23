@@ -111,29 +111,6 @@ prompt_yesno() {
 prereqs() {
   echo_green "Installing prerequisites..."
 
-  # spdlog
-  echo_green "Checking spdlog version..."
-  prompt_yesno "Install latest spdlog from source? (Default:no)"
-  local res=$?
-  if [[ $res -eq 1 ]] # || [ $res -eq 2 ]
-  then
-    echo_green "Building and installing latest spdlog from source"
-
-    # remove libspdlog, as it might be an old version
-    sudo apt-get remove libspdlog-dev -y
-
-    git clone https://github.com/gabime/spdlog.git spdlog
-    cd spdlog
-    git pull
-    git checkout tags/v1.8.1
-    mkdir build -p && cd build
-    # we must build spdlog with -fPIC enabled
-    cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=ON && make -j${PROC_NUM}
-    sudo make install
-    sudo ldconfig
-  fi
-  exit
-
   # cmake check & install
   echo_green "Checking your cmake version..."
   CMAKE_DETECT_VER=$(cmake --version | grep -oP '(?<=version).*')
@@ -164,6 +141,28 @@ prereqs() {
     sudo apt-get install gcc-7
     sudo apt-get install g++-7
     GCC_COMPILER="g++-7"
+  fi
+
+  # spdlog
+  echo_green "Checking spdlog version..."
+  prompt_yesno "Install latest spdlog from source? (Default:no)"
+  local res=$?
+  if [[ $res -eq 1 ]] # || [ $res -eq 2 ]
+  then
+    echo_green "Building and installing latest spdlog from source"
+
+    # remove libspdlog, as it might be an old version
+    sudo apt-get remove libspdlog-dev -y
+
+    git clone https://github.com/gabime/spdlog.git spdlog
+    cd spdlog
+    git pull
+    git checkout tags/v1.8.1
+    mkdir build -p && cd build
+    # we must build spdlog with -fPIC enabled
+    cmake .. -DCMAKE_POSITION_INDEPENDENT_CODE=ON && make -j${PROC_NUM}
+    sudo make install
+    sudo ldconfig
   fi
 
   # tensorrt check
@@ -240,7 +239,7 @@ py_venv() {
   pip3 install --upgrade setuptools wheel
 
   if [ -d "${PYTHON_VENV_DIR}" ]; then
-    prompt_yesno "Reinstall existing Python venv ${PYTHON_VENV_DIR}?"
+    prompt_yesno "Reinstall existing Python venv ${PYTHON_VENV_DIR}? (Default:no)"
     local res=$?
     if [[ $res -eq 1 ]]
     then
@@ -393,7 +392,7 @@ mmdeploy(){
     -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
     -DTENSORRT_DIR=${TENSORRT_DIR} \
     -DCUDNN_DIR=${CUDNN_DIR}
-  cmake --build . -- -j${PROC_NUM} && sudo cmake --install .
+  cmake --build . -- -j${PROC_NUM} && sudo make install
   sudo ldconfig
 
   # generate prebuild and pack into .tar.gz
