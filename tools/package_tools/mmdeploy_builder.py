@@ -4,12 +4,14 @@ import copy
 import logging
 import os
 import os.path as osp
+import platform
+import re
 import shutil
 import sys
 import tarfile
 from distutils.util import get_platform
 from glob import glob
-from subprocess import CalledProcessError, run
+from subprocess import CalledProcessError, check_output, run
 from typing import Dict
 
 import yaml
@@ -69,10 +71,10 @@ def _call_command(cmd, cwd, stdout=None, stderr=None):
         if ret.returncode != 0:
             logging.error(f'Process cmd: "{cmd}"'
                           f' failed with returncode: {ret.returncode}')
-            exit()
+            exit(-1)
     except Exception:
         logging.error(f'Process cmd: {cmd} failed.')
-        exit()
+        exit(-1)
 
 
 def _create_tar(path, tar_name):
@@ -171,6 +173,73 @@ def get_dir_name(cfg, tag, default_name):
     return cfg, default_name
 
 
+def check_env(cfg: Dict):
+    env_info = {}
+
+    cmake_envs = cfg.get('cmake_envs', dict())
+
+    # system
+    platform_system = platform.system().lower()
+    platform_machine = platform.machine().lower()
+    env_info['system'] = platform_system
+    env_info['machine'] = platform_machine
+
+    # CUDA version
+    cuda_version = 'unknown'
+
+    CUDA_TOOLKIT_ROOT_DIR = cmake_envs.get('CUDA_TOOLKIT_ROOT_DIR', '')
+    CUDA_TOOLKIT_ROOT_DIR = osp.expandvars(CUDA_TOOLKIT_ROOT_DIR)
+    nvcc_cmd = 'nvcc' if len(CUDA_TOOLKIT_ROOT_DIR) <= 0 else osp.join(
+        CUDA_TOOLKIT_ROOT_DIR, 'bin', 'nvcc')
+
+    if osp.exists(nvcc_cmd):
+        nvcc = check_output(f'"{nvcc_cmd}" -V', shell=True)
+        nvcc = nvcc.decode('utf-8').strip()
+        pattern = r'Cuda compilation tools, release (\d+.\d+)'
+        match = re.search(pattern, nvcc)
+        if match is not None:
+            cuda_version = match.group(1)
+
+    env_info['cuda_v'] = cuda_version
+
+    # ONNX Runtime version
+    onnxruntime_version = 'unknown'
+
+    ONNXRUNTIME_DIR = os.getenv('ONNXRUNTIME_DIR', '')
+    ONNXRUNTIME_DIR = cmake_envs.get('ONNXRUNTIME_DIR', ONNXRUNTIME_DIR)
+    ONNXRUNTIME_DIR = osp.expandvars(ONNXRUNTIME_DIR)
+
+    if osp.exists(ONNXRUNTIME_DIR):
+        with open(osp.join(ONNXRUNTIME_DIR, 'VERSION_NUMBER'), mode='r') as f:
+            onnxruntime_version = f.readlines()[0].strip()
+
+    env_info['ort_v'] = onnxruntime_version
+
+    # TensorRT version
+    tensorrt_version = 'unknown'
+
+    TENSORRT_DIR = os.getenv('TENSORRT_DIR', '')
+    TENSORRT_DIR = cmake_envs.get('TENSORRT_DIR', TENSORRT_DIR)
+    TENSORRT_DIR = osp.expandvars(TENSORRT_DIR)
+
+    if osp.exists(TENSORRT_DIR):
+        with open(
+                osp.join(TENSORRT_DIR, 'include', 'NvInferVersion.h'),
+                mode='r') as f:
+            data = f.read()
+            major = re.search(r'#define NV_TENSORRT_MAJOR (\d+)', data)
+            minor = re.search(r'#define NV_TENSORRT_MINOR (\d+)', data)
+            patch = re.search(r'#define NV_TENSORRT_PATCH (\d+)', data)
+            if major is not None and minor is not None and patch is not None:
+                tensorrt_version = f'{major.group(1)}' +\
+                                    f'{minor.group(1)}' +\
+                                    f'{patch.group(1)}'
+
+    env_info['trt_v'] = tensorrt_version
+
+    return env_info
+
+
 def create_package(cfg: Dict, mmdeploy_dir: str):
     build_dir = 'build'
     sdk_tar_name = 'sdk'
@@ -182,10 +251,11 @@ def create_package(cfg: Dict, mmdeploy_dir: str):
     if 'TAR_NAME' in cfg:
         cfg, sdk_tar_name = get_dir_name(cfg, 'TAR_NAME', sdk_tar_name)
 
-    # add version tag
+    # fill name
+    env_info = check_env(cfg)
     version_file = osp.join(mmdeploy_dir, 'mmdeploy', 'version.py')
-    version_id = get_version(version_file)
-    build_dir = build_dir.format(version=version_id)
+    mmdeploy_version = get_version(version_file)
+    build_dir = build_dir.format(mmdeploy_v=mmdeploy_version, **env_info)
 
     # create package directory.
     if osp.exists(build_dir):
@@ -242,7 +312,7 @@ def create_package(cfg: Dict, mmdeploy_dir: str):
 
     except CalledProcessError:
         logging.error('build failed')
-        exit()
+        exit(-1)
 
 
 def parse_args():

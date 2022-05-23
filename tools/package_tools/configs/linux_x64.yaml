@@ -5,12 +5,12 @@ global_config:
     MMDEPLOY_BUILD_SDK_PYTHON_API: "ON"
 
 local_configs:
-  - BUILD_NAME: "mmdeploy-{version}-linux-x86_64-onnxruntime"
+  - BUILD_NAME: "mmdeploy-{mmdeploy_v}-{system}-{machine}-onnxruntime{ort_v}"
     cmake_envs:
       MMDEPLOY_TARGET_DEVICES: '"cpu"'
       MMDEPLOY_TARGET_BACKENDS: "ort"
       ONNXRUNTIME_DIR: "${ONNXRUNTIME_DIR}"
-  - BUILD_NAME: "mmdeploy-{version}-linux-x86_64-cuda113-tensorrt8230"
+  - BUILD_NAME: "mmdeploy-{mmdeploy_v}-{system}-{machine}-cuda{cuda_v}-tensorrt{trt_v}"
     cmake_envs:
       MMDEPLOY_TARGET_DEVICES: '"cuda"'
       MMDEPLOY_TARGET_BACKENDS: "trt"
