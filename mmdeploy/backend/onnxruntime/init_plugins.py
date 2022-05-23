@@ -11,7 +11,7 @@ def get_ops_path() -> str:
         str: The library path to onnxruntime custom ops.
     """
     candidates = [
-        '../../../build/lib/libmmdeploy_onnxruntime_ops.so',
-        '../../../build/bin/*/mmdeploy_onnxruntime_ops.dll',
+        '../../lib/libmmdeploy_onnxruntime_ops.so',
+        '../../lib/mmdeploy_onnxruntime_ops.dll',
     ]
     return get_file_path(os.path.dirname(__file__), candidates)

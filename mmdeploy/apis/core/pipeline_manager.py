@@ -27,13 +27,11 @@ def _get_func_name(func: Callable) -> str:
 class PipelineCaller:
     """Classes to record the attribute of each pipeline function."""
 
-    def __init__(
-            self,
-            #  func: Callable,
-            module_name: str,
-            impl_name: str,
-            func_name: Optional[str] = None,
-            is_multiprocess_available: bool = True) -> None:
+    def __init__(self,
+                 module_name: str,
+                 impl_name: str,
+                 func_name: Optional[str] = None,
+                 is_multiprocess_available: bool = True) -> None:
         if func_name is not None:
             self._func_name = func_name
         else:
