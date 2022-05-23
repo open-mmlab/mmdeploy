@@ -59,18 +59,22 @@ jobs:
           python tools/check_env.py
       - name: Install mmcls
         run: |
+          cd ~
           git clone https://github.com/open-mmlab/mmclassification.git
-          pushd mmclassification
+          cd mmclassification
           git checkout 5a67bc8a1aefd5493732b8f6ab10ee8c04839773
           python3 -m pip install -e .
-          popd
+          cd -
       - name: Install ppq
         run: |
+          cd ~
           git clone https://github.com/openppl-public/ppq
           cd ppq
           git checkout edbecf44c7b203515640e4f4119c000a1b66b33a
           python3 -m pip install -r requirements.txt
           python3 setup.py install
+          cd -
       - name: Run tests
         run: |
+          cd ~/mmdeploy
           python3 ./github/scripts/quantize_to_ncnn.py
