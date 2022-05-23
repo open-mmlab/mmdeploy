@@ -279,7 +279,7 @@ def _interpolate_helper(name, dim, interpolate_mode):
 ## 总结
 在这篇教程中，我们系统地介绍了 PyTorch 转 ONNX 的原理。我们先是着重讲解了使用最频繁的 `torch.onnx.export`函数，又给出了查询 PyTorch 对 ONNX 算子支持情况的方法。通过本文，我们希望大家能够成功转换出大部分不需要添加新算子的 ONNX 模型，并在碰到算子问题时能够有效定位问题原因。具体而言，大家读完本文后应该了解以下的知识：
 - 跟踪法和脚本化在导出带控制语句的计算图时有什么区别。
-- `torch.onnx.export()`中该如何设置 i`nput_names, output_names, dynamic_axes`。
+- `torch.onnx.export()`中该如何设置 `input_names, output_names, dynamic_axes`。
 - 使用 `torch.onnx.is_in_onnx_export()`来使模型在转换到 ONNX 时有不同的行为。
 - 如何查询 [ONNX 算子文档](https://github.com/onnx/onnx/blob/main/docs/Operators.md)。
 - 如何查询 PyTorch 对某个 ONNX 版本的新特性支持情况。
