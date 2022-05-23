@@ -116,7 +116,7 @@ torch.onnx.export(model, input, 'asinh.onnx')
 
 成功导出的话，`asinh.onnx` 应该长这个样子：
 
-![]()
+![](https://user-images.githubusercontent.com/47652064/169744691-f14e4fd4-c777-4562-aaa5-a5bf888f21f8.png)
 
 ### 测试算子
 在完成了一份自定义算子后，我们一定要测试一下算子的正确性。一般我们要用 PyTorch 运行一遍原算子，再用推理引擎（比如 ONNX Runtime）运行一下 ONNX 算子，最后比对两次的运行结果。对于我们刚刚得到的 `asinh.onnx`，可以用如下代码来验证：
@@ -279,7 +279,7 @@ torch.onnx.export(model, input, 'dcn.onnx')
 代码成功运行的话，我们应该能得到如下的 ONNX 模型：
 
 
-![]()
+![](https://user-images.githubusercontent.com/47652064/169744720-51ea91bc-b67b-4911-9e43-0adc1b64d2c1.jpg)
 
 可以看到，我们自定义的 ONNX 算子 `deform_conv2d` 包含了两个输入，一个输出，和我们预想得一样。
 
@@ -400,7 +400,7 @@ assert np.allclose(torch_output, ort_output)
 
 在这份代码中，我们直接把 `MyAdd` 作为要导出的模型。我们计算了一个 PyTorch 模型的运行结果，又导出 ONNX 模型，计算了 ONNX 模型在 ONNX Runtime 上的运算结果。如果一切正常的话，这两个结果是一样的，这份代码不会报任何错误，没有任何输出。
 
-![]()
+![](https://user-images.githubusercontent.com/47652064/169744753-0fb00930-bbca-4636-8681-4ec4e7b31946.jpg)
 
 可视化一下 `my_add.onnx`，可以看出，和我们设计得一样，`my_add` 算子被翻译成了两个 ONNX 算子节点（其中常量算子被放入了 `Mul` 的参数中）。
 
