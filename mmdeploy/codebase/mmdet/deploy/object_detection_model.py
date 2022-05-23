@@ -143,6 +143,9 @@ class End2EndModel(BaseBackendModel):
             masks = torch.tensor(masks, device=device)
             bboxes = torch.tensor(bboxes, device=device)
 
+        masks = masks.to(device)
+        bboxes = bboxes.to(device)
+
         result_masks = []
         for bbox, mask in zip(bboxes, masks):
 
