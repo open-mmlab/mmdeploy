@@ -222,7 +222,7 @@ void TestFunc(const char* sched_name) {
 }
 
 struct _inlined {
-  static constexpr const char* value = "Inlined";
+  static constexpr const char* value = "Inline";
 };
 struct _single_thread {
   static constexpr const char* value = "SingleThread";

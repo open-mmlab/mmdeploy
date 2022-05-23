@@ -4,11 +4,13 @@ project(capis)
 
 include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
 
-set(TASK_LIST
+set(COMMON_LIST
         common
         model
         executor
         pipeline)
+
+set(TASK_LIST)
 
 if ("all" IN_LIST MMDEPLOY_CODEBASES)
     list(APPEND TASK_LIST
@@ -45,22 +47,28 @@ else ()
     endif ()
 endif ()
 
+foreach (TASK ${COMMON_LIST})
+    set(TARGET_NAME mmdeploy_${TASK})
+    mmdeploy_add_library(${TARGET_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/${TASK}.cpp)
+    target_link_libraries(${TARGET_NAME} PRIVATE mmdeploy::core)
+    target_include_directories(${TARGET_NAME} PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+            $<INSTALL_INTERFACE:include/c>)
+    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/${TASK}.h
+            DESTINATION include/c)
+endforeach ()
+
+target_link_libraries(mmdeploy_executor PUBLIC
+        mmdeploy_common mmdeploy_execution)
+target_link_libraries(mmdeploy_pipeline PUBLIC
+        mmdeploy_executor mmdeploy_model mmdeploy_common)
+
 foreach (TASK ${TASK_LIST})
     set(TARGET_NAME mmdeploy_${TASK})
     mmdeploy_add_library(${TARGET_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/${TASK}.cpp)
-    if (NOT TASK STREQUAL common)
-        target_link_libraries(${TARGET_NAME} PRIVATE mmdeploy_common)
-    endif ()
-    if (NOT TASK STREQUAL executor)
-        target_link_libraries(${TARGET_NAME} PRIVATE mmdeploy_executor)
-    endif ()
-    if (NOT TASK STREQUAL model)
-        target_link_libraries(${TARGET_NAME} PRIVATE mmdeploy_model)
-    endif ()
-    if (NOT TASK STREQUAL pipeline)
-        target_link_libraries(${TARGET_NAME} PRIVATE mmdeploy_pipeline)
-    endif ()
-    target_link_libraries(${TARGET_NAME} PRIVATE mmdeploy::core)
+
+    target_link_libraries(${TARGET_NAME} PRIVATE
+            mmdeploy_pipeline mmdeploy::core)
     target_include_directories(${TARGET_NAME} PUBLIC
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
             $<INSTALL_INTERFACE:include/c>)

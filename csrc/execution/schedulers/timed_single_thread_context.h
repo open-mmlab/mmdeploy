@@ -76,7 +76,7 @@ class Scheduler {
 
 }  // namespace _timed_single_thread_context
 
-class TimedSingleThreadContext {
+class MMDEPLOY_API TimedSingleThreadContext {
   using Clock = _timed_single_thread_context::Clock;
   using Scheduler = _timed_single_thread_context::Scheduler;
   using TaskBase = _timed_single_thread_context::TaskBase;

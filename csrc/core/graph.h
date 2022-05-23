@@ -23,7 +23,7 @@ using std::vector;
 template <class... Ts>
 using Sender = TypeErasedSender<Ts...>;
 
-class Node {
+class MMDEPLOY_API Node {
   friend class NodeParser;
 
  public:
@@ -39,7 +39,7 @@ class Node {
   vector<string> outputs_;
 };
 
-class NodeParser {
+class MMDEPLOY_API NodeParser {
  public:
   static Result<void> Parse(const Value& config, Node& node);
 };
