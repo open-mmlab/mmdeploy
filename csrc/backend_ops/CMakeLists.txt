@@ -25,9 +25,9 @@ if ("trt" IN_LIST MMDEPLOY_TARGET_BACKENDS)
     add_subdirectory(tensorrt)
 endif ()
 
-# build NCNN ops
+# build ncnn ops
 if ("ncnn" IN_LIST MMDEPLOY_TARGET_BACKENDS)
-    message(STATUS "Build NCNN custom ops")
+    message(STATUS "Build ncnn custom ops")
     add_subdirectory(ncnn)
 endif ()
 

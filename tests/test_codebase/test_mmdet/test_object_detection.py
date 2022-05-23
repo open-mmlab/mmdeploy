@@ -75,7 +75,8 @@ def test_init_pytorch_model(from_mmrazor: Any):
             _ = _task_processor.from_mmrazor
         return
     assert from_mmrazor == _task_processor.from_mmrazor
-
+    if from_mmrazor:
+        pytest.importorskip('mmrazor', reason='mmrazor is not installed.')
     model = _task_processor.init_pytorch_model(None)
     assert isinstance(model, BaseDetector)
 

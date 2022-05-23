@@ -2,7 +2,7 @@
 
 The table below lists the models that are guaranteed to be exportable to other backends.
 
-| Model                     | Codebase         | TorchScript | OnnxRuntime | TensorRT | NCNN  | PPLNN | OpenVINO | Model config                                                                                   |
+| Model                     | Codebase         | TorchScript | OnnxRuntime | TensorRT | ncnn  | PPLNN | OpenVINO | Model config                                                                                   |
 | :------------------------ | :--------------- | :---------: | :---------: | :------: | :---: | :---: | :------: | :--------------------------------------------------------------------------------------------: |
 | RetinaNet                 | MMDetection      |      Y      |      Y      |     Y    |   Y   |   Y   |     Y    | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/retinanet)              |
 | Faster R-CNN              | MMDetection      |      Y      |      Y      |     Y    |   Y   |   Y   |     Y    | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/faster_rcnn)            |
@@ -24,6 +24,7 @@ The table below lists the models that are guaranteed to be exportable to other b
 | MobileNetV2               | MMClassification |      Y      |      Y      |     Y    |   Y   |   Y   |     Y    | [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/mobilenet_v2)      |
 | ShuffleNetV1              | MMClassification |      Y      |      Y      |     Y    |   Y   |   Y   |     Y    | [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v1)     |
 | ShuffleNetV2              | MMClassification |      Y      |      Y      |     Y    |   Y   |   Y   |     Y    | [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v2)     |
+| VisionTransformer         | MMClassification |      Y      |      Y      |     ?    |   Y   |   ?   |     ?    | [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/vision_transformer)     |
 | FCN                       | MMSegmentation   |      Y      |      Y      |     Y    |   Y   |   Y   |     Y    | [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/fcn)                 |
 | PSPNet[*static](#note)    | MMSegmentation   |      Y      |      Y      |     Y    |   Y   |   Y   |     Y    | [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/pspnet)              |
 | DeepLabV3                 | MMSegmentation   |      Y      |      Y      |     Y    |   Y   |   Y   |     Y    | [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/deeplabv3)           |

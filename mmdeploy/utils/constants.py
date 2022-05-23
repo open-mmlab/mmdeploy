@@ -26,6 +26,7 @@ class Task(AdvancedEnum):
     INSTANCE_SEGMENTATION = 'InstanceSegmentation'
     VOXEL_DETECTION = 'VoxelDetection'
     POSE_DETECTION = 'PoseDetection'
+    ROTATED_DETECTION = 'RotatedDetection'
 
 
 class Codebase(AdvancedEnum):
@@ -37,6 +38,7 @@ class Codebase(AdvancedEnum):
     MMEDIT = 'mmedit'
     MMDET3D = 'mmdet3d'
     MMPOSE = 'mmpose'
+    MMROTATE = 'mmrotate'
 
 
 class IR(AdvancedEnum):
@@ -75,5 +77,7 @@ SDK_TASK_MAP = {
     Task.TEXT_RECOGNITION:
     dict(component='CTCConvertor', cls_name='TextRecognizer'),
     Task.POSE_DETECTION:
-    dict(component='Detector', cls_name='PoseDetector')
+    dict(component='Detector', cls_name='PoseDetector'),
+    Task.ROTATED_DETECTION:
+    dict(component='ResizeRBBox', cls_name='RotatedDetector')
 }

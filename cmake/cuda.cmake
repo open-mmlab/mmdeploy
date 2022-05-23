@@ -6,6 +6,11 @@ if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.18.0")
     cmake_policy(SET CMP0104 OLD)
 endif ()
 
+if (MSVC)
+    # use shared, on windows, python api can't build with static lib.
+    set(CMAKE_CUDA_RUNTIME_LIBRARY Shared)
+endif ()
+
 # nvcc compiler settings
 find_package(CUDA REQUIRED)
 #message(STATUS "CUDA VERSION: ${CUDA_VERSION_STRING}")

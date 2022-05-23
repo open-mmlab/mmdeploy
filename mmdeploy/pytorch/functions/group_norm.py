@@ -16,7 +16,7 @@ def group_norm__ncnn(
     bias: Union[torch.Tensor, torch.NoneType] = None,
     eps: float = 1e-05,
 ) -> torch.Tensor:
-    """Rewrite `group_norm` for NCNN backend.
+    """Rewrite `group_norm` for ncnn backend.
 
     InstanceNorm in ncnn require input with shape [C, H, W]. So we have to
     reshape the input tensor before it.

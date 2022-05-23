@@ -1,7 +1,6 @@
 # Linux-x86_64 下构建方式
 
 - [Linux-x86_64 下构建方式](#linux-x86_64-下构建方式)
-  - [Dockerfile 方式 (推荐)](#dockerfile-方式-推荐)
   - [源码安装](#源码安装)
     - [安装构建和编译工具链](#安装构建和编译工具链)
     - [安装依赖包](#安装依赖包)
@@ -16,10 +15,6 @@
       - [编译SDK](#编译sdk)
       - [编译 Demo](#编译-demo)
 ---
-MMDeploy 为 Linux-x86_64 平台提供 2 种编译安装方式，分别是 Dockerfile 方式和源码方式
-
-## Dockerfile 方式 (推荐)
-请参考[how to use docker](../tutorials/how_to_use_docker.md)
 
 ## 源码安装
 

@@ -2,7 +2,7 @@
 
 <!-- TOC -->
 
-- [NCNN Ops](#ncnn-ops)
+- [ncnn Ops](#ncnn-ops)
   - [Expand](#expand)
     - [Description](#description)
     - [Parameters](#parameters)
