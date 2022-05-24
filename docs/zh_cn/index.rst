@@ -27,6 +27,7 @@
    :caption: Benchmark
 
    03-benchmark/benchmark.md
+   03-benchmark/quantization.md
    03-benchmark/supported_models.md
 
 .. toctree::
