@@ -210,8 +210,7 @@ def main():
         import mmdeploy.apis.ncnn as ncnn_api
         from mmdeploy.apis.ncnn import get_output_model_file
 
-        ncnn_pipeline_funcs = ['mmdeploy.apis.ncnn.from_onnx']
-        PIPELINE_MANAGER.set_log_level(logging.INFO, ncnn_pipeline_funcs)
+        PIPELINE_MANAGER.set_log_level(logging.INFO, [ncnn_api.from_onnx])
 
         backend_files = []
         for onnx_path in ir_files:
@@ -232,8 +231,7 @@ def main():
                                             get_mo_options_from_cfg,
                                             get_output_model_file)
 
-        openvino_pipeline_funcs = ['mmdeploy.apis.openvino.from_onnx']
-        PIPELINE_MANAGER.set_log_level(logging.INFO, openvino_pipeline_funcs)
+        PIPELINE_MANAGER.set_log_level(logging.INFO, [openvino_api.from_onnx])
 
         openvino_files = []
         for onnx_path in ir_files:

@@ -8,9 +8,7 @@ if is_available():
     from mmdeploy.backend.openvino.onnx2openvino import get_output_model_file
     from ..core import PIPELINE_MANAGER
 
-    from_onnx = PIPELINE_MANAGER.register_pipeline(
-        'mmdeploy.apis.openvino.from_onnx')(
-            _from_onnx)
+    from_onnx = PIPELINE_MANAGER.register_pipeline()(_from_onnx)
 
     from .utils import get_input_info_from_cfg, get_mo_options_from_cfg
     __all__ += [

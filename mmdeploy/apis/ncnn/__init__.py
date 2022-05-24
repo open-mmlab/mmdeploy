@@ -3,9 +3,7 @@ from mmdeploy.backend.ncnn import from_onnx as _from_onnx
 from mmdeploy.backend.ncnn import is_available, is_plugin_available
 from ..core import PIPELINE_MANAGER
 
-from_onnx = PIPELINE_MANAGER.register_pipeline(
-    func_name='mmdeploy.apis.ncnn.from_onnx')(
-        _from_onnx)
+from_onnx = PIPELINE_MANAGER.register_pipeline()(_from_onnx)
 
 __all__ = ['is_available', 'is_plugin_available', 'from_onnx']
 
