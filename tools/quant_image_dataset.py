@@ -21,16 +21,25 @@ class QuantizationImageDataset(Dataset):
     ):
         super().__init__()
         codebase_type = get_codebase(deploy_cfg)
+        self.exclude_pipe = ['LoadImageFromFile']
         if codebase_type == Codebase.MMCLS:
             from mmcls.datasets.pipelines import Compose
         elif codebase_type == Codebase.MMDET:
             from mmdet.datasets.pipelines import Compose
         elif codebase_type == Codebase.MMDET3D:
             from mmdet3d.datasets.pipelines import Compose
+            self.exclude_pipe.extend([
+                'LoadMultiViewImageFromFiles', 'LoadImageFromFileMono3D',
+                'LoadPointsFromMultiSweeps', 'LoadPointsFromDict'
+            ])
         elif codebase_type == Codebase.MMEDIT:
             from mmedit.datasets.pipelines import Compose
+            self.exclude_pipe.extend(
+                ['LoadImageFromFileList', 'LoadPairedImageFromFile'])
         elif codebase_type == Codebase.MMOCR:
             from mmocr.datasets.pipelines import Compose
+            self.exclude_pipe.extend(
+                ['LoadImageFromNdarray', 'LoadImageFromLMDB'])
         elif codebase_type == Codebase.MMPOSE:
             from mmpose.datasets.pipelines import Compose
         elif codebase_type == Codebase.MMROTATE:
@@ -40,7 +49,10 @@ class QuantizationImageDataset(Dataset):
         else:
             raise Exception(
                 'Not supported codebase_type {}'.format(codebase_type))
-        self.preprocess = Compose(model_cfg.data.test.pipeline)
+        pipeline = filter(lambda val: val['type'] not in self.exclude_pipe,
+                          model_cfg.data.test.pipeline)
+
+        self.preprocess = Compose(list(pipeline))
         self.samples = []
         self.extensions = tuple(set([i.lower() for i in extensions]))
         self.file_client = FileClient.infer_client(file_client_args, path)
