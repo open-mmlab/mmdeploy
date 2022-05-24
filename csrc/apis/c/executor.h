@@ -1,6 +1,4 @@
-//
-// Created by zhangli on 4/26/22.
-//
+// Copyright (c) OpenMMLab. All rights reserved.
 
 #ifndef MMDEPLOY_CSRC_APIS_C_EXECUTOR_H_
 #define MMDEPLOY_CSRC_APIS_C_EXECUTOR_H_
