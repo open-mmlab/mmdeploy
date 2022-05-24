@@ -182,9 +182,8 @@ def main():
             + ' please install TensorRT and build TensorRT custom ops first.'
 
         from mmdeploy.apis.tensorrt import onnx2tensorrt
-        trt_pipeline_funcs = ['mmdeploy.apis.tensorrt.onnx2tensorrt']
-        PIPELINE_MANAGER.enable_multiprocess(True, trt_pipeline_funcs)
-        PIPELINE_MANAGER.set_log_level(logging.INFO, trt_pipeline_funcs)
+        PIPELINE_MANAGER.enable_multiprocess(True, [onnx2tensorrt])
+        PIPELINE_MANAGER.set_log_level(logging.INFO, [onnx2tensorrt])
 
         backend_files = []
         for model_id, model_param, onnx_path in zip(
