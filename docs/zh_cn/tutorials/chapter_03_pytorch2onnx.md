@@ -285,7 +285,7 @@ def _interpolate_helper(name, dim, interpolate_mode):
 - 如何查询 PyTorch 对某个 ONNX 版本的新特性支持情况。
 - 如何判断 PyTorch 对某个 ONNX 算子是否支持，支持的方法是怎样的。
 
-这期介绍的知识比较抽象，大家会不会觉得有点“水”？没关系，下一期教程中，我们将以给出代码实例的形式，介绍多种为 PyTorch 转 ONNX 添加算子支持的方法，为大家在 PyTorch 转 ONNX 这条路上扫除更多的障碍。敬请期待哦！
+这期介绍的知识比较抽象，大家会不会觉得有点“水”？没关系，下一篇教程中，我们将以给出代码实例的形式，介绍多种为 PyTorch 转 ONNX 添加算子支持的方法，为大家在 PyTorch 转 ONNX 这条路上扫除更多的障碍。
 ## 练习
 1. Asinh 算子出现于第 9 个 ONNX 算子集。PyTorch 在 9 号版本的符号表文件中是怎样支持这个算子的？
 2. BitShift 算子出现于第11个 ONNX 算子集。PyTorch 在 11 号版本的符号表文件中是怎样支持这个算子的？
