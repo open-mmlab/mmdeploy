@@ -10,7 +10,7 @@ from mmdeploy.utils import IR, Backend, get_root_logger
 from ..core import PIPELINE_MANAGER
 
 
-@PIPELINE_MANAGER.register_pipeline(func_name='mmdeploy.apis.torch_jit.trace')
+@PIPELINE_MANAGER.register_pipeline()
 def trace(func: torch.nn.Module,
           inputs: Union[torch.Tensor, Tuple],
           output_path_prefix: Optional[str] = None,

@@ -11,8 +11,7 @@ from .core import PIPELINE_MANAGER, no_mp
 from .utils import create_calib_table as create_calib_table_impl
 
 
-@PIPELINE_MANAGER.register_pipeline(
-    func_name='mmdeploy.apis.create_calib_table')
+@PIPELINE_MANAGER.register_pipeline()
 def create_calib_table(calib_file: str,
                        deploy_cfg: Union[str, mmcv.Config],
                        model_cfg: Union[str, mmcv.Config],

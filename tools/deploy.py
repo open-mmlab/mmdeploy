@@ -90,8 +90,7 @@ def main():
     logger.setLevel(args.log_level)
 
     pipeline_funcs = [
-        'mmdeploy.apis.torch2onnx', 'mmdeploy.apis.torch2torchscript',
-        'mmdeploy.apis.extract_model', 'mmdeploy.apis.create_calib_table'
+        torch2onnx, torch2torchscript, extract_model, create_calib_table
     ]
     PIPELINE_MANAGER.enable_multiprocess(True, pipeline_funcs)
     PIPELINE_MANAGER.set_log_level(logging.INFO, pipeline_funcs)
