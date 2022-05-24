@@ -69,12 +69,12 @@ def torch2onnx(img: Any,
         >>> img = 'demo.jpg'
         >>> work_dir = 'work_dir'
         >>> save_file = 'fcos.onnx'
-        >>> deploy_cfg = 'configs/mmdet/detection/' \
-            'detection_onnxruntime_dynamic.py'
-        >>> model_cfg = 'mmdetection/configs/fcos/' \
-            'fcos_r50_caffe_fpn_gn-head_1x_coco.py'
-        >>> model_checkpoint = 'checkpoints/' \
-            'fcos_r50_caffe_fpn_gn-head_1x_coco-821213aa.pth'
+        >>> deploy_cfg = ('configs/mmdet/detection/'
+                          'detection_onnxruntime_dynamic.py')
+        >>> model_cfg = ('mmdetection/configs/fcos/'
+                         'fcos_r50_caffe_fpn_gn-head_1x_coco.py')
+        >>> model_checkpoint = ('checkpoints/'
+                                'fcos_r50_caffe_fpn_gn-head_1x_coco-821213aa.pth')
         >>> device = 'cpu'
         >>> torch2onnx(img, work_dir, save_file, deploy_cfg, \
             model_cfg, model_checkpoint, device)

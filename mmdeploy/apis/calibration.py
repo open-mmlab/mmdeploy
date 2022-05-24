@@ -24,15 +24,15 @@ def create_calib_table(calib_file: str,
     Examples:
         >>> from mmdeploy.apis import create_calib_table
         >>> from mmdeploy.utils import get_calib_filename, load_config
-        >>> deploy_cfg = 'configs/mmdet/detection/' \
-            'detection_tensorrt-int8_dynamic-320x320-1344x1344.py'
+        >>> deploy_cfg = ('configs/mmdet/detection/'
+                          'detection_tensorrt-int8_dynamic-320x320-1344x1344.py')
         >>> deploy_cfg = load_config(deploy_cfg)[0]
         >>> calib_file = get_calib_filename(deploy_cfg)
-        >>> model_cfg = 'mmdetection/configs/fcos/' \
-            'fcos_r50_caffe_fpn_gn-head_1x_coco.py'
-        >>> model_checkpoint = 'checkpoints/' \
-            'fcos_r50_caffe_fpn_gn-head_1x_coco-821213aa.pth'
-        >>> create_calib_table(calib_file, deploy_cfg, \
+        >>> model_cfg = ('mmdetection/configs/fcos/'
+                         'fcos_r50_caffe_fpn_gn-head_1x_coco.py')
+        >>> model_checkpoint = ('checkpoints/'
+                                'fcos_r50_caffe_fpn_gn-head_1x_coco-821213aa.pth')
+        >>> create_calib_table(calib_file, deploy_cfg,
             model_cfg, model_checkpoint, device='cuda:0')
 
     Args:

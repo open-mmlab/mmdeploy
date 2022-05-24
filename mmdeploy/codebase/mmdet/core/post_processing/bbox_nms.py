@@ -202,7 +202,7 @@ def multiclass_nms__default(ctx,
     """
     deploy_cfg = ctx.cfg
     batch_size = boxes.size(0)
-    if not is_dynamic_batch(deploy_cfg) and batch_size != 1:
+    if not is_dynamic_batch(deploy_cfg) and batch_size == 1:
         return _multiclass_nms_single(
             boxes,
             scores,
