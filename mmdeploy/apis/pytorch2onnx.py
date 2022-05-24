@@ -12,7 +12,7 @@ from .core import PIPELINE_MANAGER
 from .onnx import export
 
 
-@PIPELINE_MANAGER.register_pipeline(func_name='mmdeploy.apis.torch2onnx')
+@PIPELINE_MANAGER.register_pipeline()
 def torch2onnx(img: Any,
                work_dir: str,
                save_file: str,
