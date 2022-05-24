@@ -26,7 +26,7 @@ jobs:
       matrix:
         python-version: [3.7]
         torch: [1.8.0+cu111]
-        mmcv: [1.4.2]
+        mmcv: [1.5.1]
         include:
           - torch: 1.8.0+cu111
             torch_version: torch1.8
@@ -62,7 +62,7 @@ jobs:
           cd ~
           git clone https://github.com/open-mmlab/mmclassification.git
           cd mmclassification
-          git checkout 5a67bc8a1aefd5493732b8f6ab10ee8c04839773
+          git checkout v0.23.0
           python3 -m pip install -e .
           cd -
       - name: Install ppq
@@ -74,9 +74,7 @@ jobs:
           python3 -m pip install -r requirements.txt
           python3 setup.py install
           cd -
-      - name: Setup Debug Session
-        uses: csexton/debugger-action@master
       - name: Run tests
         run: |
-          cd ~/mmdeploy
+          echo $(pwd)
           python3 ./github/scripts/quantize_to_ncnn.py
