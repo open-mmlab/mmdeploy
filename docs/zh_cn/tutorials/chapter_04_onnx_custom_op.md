@@ -4,27 +4,28 @@
 
 而要使 PyTorch 算子顺利转换到 ONNX ，我们需要保证以下三个环节都不出错：
 
-* 算子在 PyTorch 中有实现
-* 有把该 PyTorch 算子映射成一个或多个 ONNX 算子的方法
-* ONNX 有相应的算子
+- 算子在 PyTorch 中有实现
+- 有把该 PyTorch 算子映射成一个或多个 ONNX 算子的方法
+- ONNX 有相应的算子
 
 可在实际部署中，这三部分的内容都可能有所缺失。其中最坏的情况是：我们定义了一个全新的算子，它不仅缺少 PyTorch 实现，还缺少 PyTorch 到 ONNX 的映射关系。但所谓车到山前必有路，对于这三个环节，我们也分别都有以下的添加支持的方法：
 
-* PyTorch 算子
-    * 组合现有算子
-    * 添加 TorchScript 算子
-    * 添加普通 C++ 拓展算子
-* 映射方法
-    * 为 ATen 算子添加符号函数
-    * 为 TorchScript 算子添加符号函数
-    * 封装成 torch.autograd.Function 并添加符号函数
-* ONNX 算子
-    * 使用现有 ONNX 算子
-    * 定义新 ONNX 算子
+- PyTorch 算子
+  - 组合现有算子
+  - 添加 TorchScript 算子
+  - 添加普通 C++ 拓展算子
+- 映射方法
+  - 为 ATen 算子添加符号函数
+  - 为 TorchScript 算子添加符号函数
+  - 封装成 torch.autograd.Function 并添加符号函数
+- ONNX 算子
+  - 使用现有 ONNX 算子
+  - 定义新 ONNX 算子
 
 那么，面对不同的情况时，就需要我们灵活地选用和组合这些方法。听起来是不是很复杂？别担心，本篇文章中，我们将围绕着三种算子映射方法，学习三个添加算子支持的实例，来理清如何为 PyTorch 算子转 ONNX 算子的三个环节添加支持。
 
 ## 支持 ATen 算子
+
 实际的部署过程中，我们都有可能会碰到一个最简单的算子缺失问题： 算子在 ATen 中已经实现了，ONNX 中也有相关算子的定义，但是相关算子映射成 ONNX 的规则没有写。在这种情况下，我们只需要**为 ATen 算子补充描述映射规则的符号函数**就行了。
 
 > [ATen](https://pytorch.org/cppdocs/#aten) 是 PyTorch 内置的 C++ 张量计算库，PyTorch 算子在底层绝大多数计算都是用 ATen 实现的。
@@ -32,6 +33,7 @@
 上期习题中，我们曾经提到了 ONNX 的 `Asinh` 算子。这个算子在 ATen 中有实现，却缺少了映射到 ONNX 算子的符号函数。在这里，我们来尝试为它补充符号函数，并导出一个包含这个算子的 ONNX 模型。
 
 ### 获取 ATen 中算子接口定义
+
 为了编写符号函数，我们需要获得 `asinh` 推理接口的输入参数定义。这时，我们要去 `torch/_C/_VariableFunctions.pyi` 和 `torch/nn/functional.pyi` 这两个文件中搜索我们刚刚得到的这个算子名。这两个文件是编译 PyTorch 时本地自动生成的文件，里面包含了 ATen 算子的 PyTorch 调用接口。通过搜索，我们可以知道 `asinh` 在文件 `torch/_C/_VariableFunctions.pyi` 中，其接口定义为:
 
 ```python
@@ -41,6 +43,7 @@ def asinh(input: Tensor, *, out: Optional[Tensor]=None) -> Tensor: ...
 经过这些步骤，我们确认了缺失的算子名为 `asinh`，它是一个有实现的 ATen 算子。我们还记下了 `asinh` 的调用接口。接下来，我们要为它补充符号函数，使它在转换成 ONNX 模型时不再报错。
 
 ### 添加符号函数
+
 到目前为止，我们已经多次接触了定义 PyTorch 到 ONNX 映射规则的符号函数了。现在，我们向大家正式介绍一下符号函数。
 
 符号函数，可以看成是 PyTorch 算子类的一个静态方法。在把 PyTorch 模型转换成 ONNX 模型时，各个 PyTorch 算子的符号函数会被依次调用，以完成 PyTorch 算子到 ONNX 算子的转换。符号函数的定义一般如下：
@@ -119,6 +122,7 @@ torch.onnx.export(model, input, 'asinh.onnx')
 ![](https://user-images.githubusercontent.com/47652064/169744691-f14e4fd4-c777-4562-aaa5-a5bf888f21f8.png)
 
 ### 测试算子
+
 在完成了一份自定义算子后，我们一定要测试一下算子的正确性。一般我们要用 PyTorch 运行一遍原算子，再用推理引擎（比如 ONNX Runtime）运行一下 ONNX 算子，最后比对两次的运行结果。对于我们刚刚得到的 `asinh.onnx`，可以用如下代码来验证：
 
 ```python
@@ -146,6 +150,7 @@ assert np.allclose(torch_output, ort_output)
 在这份代码里，我们用 PyTorch 做了一遍推理，并把结果转成了 numpy 格式。之后，我们又用 ONNX Runtime 对 onnx 文件做了一次推理。最后，我们使用 `np.allclose` 来保证两个结果张量的误差在一个可以允许的范围内。一切正常的话，运行这段代码后，`assert` 所在行不会报错，程序应该没有任何输出。
 
 ## 支持 TorchScript 算子
+
 对于一些比较复杂的运算，仅使用 PyTorch 原生算子是无法实现的。这个时候，就要考虑自定义一个 PyTorch 算子，再把它转换到 ONNX 中了。新增 PyTorch 算子的方法有很多，PyTorch 官方比较推荐的一种做法是[添加 TorchScript 算子](https://pytorch.org/tutorials/advanced/torch_script_custom_ops.html) 。
 
 由于添加算子的方法较繁琐，我们今天跳过新增 TorchScript 算子的内容，以可变形卷积（Deformable Convolution）算子为例，介绍为现有 TorchScript 算子添加 ONNX 支持的方法。
@@ -161,6 +166,7 @@ assert np.allclose(torch_output, ort_output)
 在为可变形卷积添加符号函数时，我们也可以尝试走一遍这个流程。
 
 ### 使用 TorchScript 算子
+
 和之前一样，我们首先定义一个包含了算子的模型，为之后转换 ONNX 模型做准备。
 
 ```python
@@ -193,6 +199,7 @@ m.def(TORCH_SELECTIVE_SCHEMA(
 那么接下来，根据之前的经验，我们就是要去 ONNX 官方文档中查找算子的定义了。
 
 ### 自定义 ONNX 算子
+
 很遗憾的是，如果我们去 ONNX 的官方算子页面搜索 "deform"，将搜不出任何内容。目前，ONNX 还没有提供可变形卷积的算子，我们要自己定义一个 ONNX 算子了。
 
 我们在前面讲过，`g.op()` 是用来定义 ONNX 算子的函数。对于 ONNX 官方定义的算子，`g.op()` 的第一个参数就是该算子的名称。而对于一个自定义算子，`g.op()` 的第一个参数是一个带命名空间的算子名，比如：
@@ -278,17 +285,18 @@ torch.onnx.export(model, input, 'dcn.onnx')
 
 代码成功运行的话，我们应该能得到如下的 ONNX 模型：
 
-
 ![](https://user-images.githubusercontent.com/47652064/169744720-51ea91bc-b67b-4911-9e43-0adc1b64d2c1.jpg)
 
 可以看到，我们自定义的 ONNX 算子 `deform_conv2d` 包含了两个输入，一个输出，和我们预想得一样。
 
 ## 使用 torch.autograd.Function
+
 最后，我们来学习一种简单的为 PyTorch 添加 C++ 算子实现的方法，来代替较为复杂的新增 TorchScript 算子。同时，我们会用 torch.autograd.Function 封装这个新算子。torch.autograd.Function 能完成算子实现和算子调用的隔离。不管算子是怎么实现的，它封装后的使用体验以及 ONNX 导出方法会和原生的 PyTorch 算子一样。这是我们比较推荐的为算子添加 ONNX 支持的方法。
 
 为了应对更复杂的情况，我们来自定义一个奇怪的 `my_add` 算子。这个算子的输入张量 a, b ，输出 `2a + b` 的值。我们会先把它在 PyTorch 中实现，再把它导出到 ONNX 中。
 
 ### 为 PyTorch 添加 C++ 拓展
+
 为 PyTorch 添加简单的 C++ 拓展还是很方便的。对于我们定义的 my_add 算子，可以用以下的 C++ 源文件来实现。我们把该文件命名为 "my_add.cpp"：
 
 ```C++
@@ -382,6 +390,7 @@ class MyAdd(torch.nn.Module):
 有了访问新算子的接口后，我们可以进一步把算子封装成一个神经网络中的计算层。我们定义一个叫做的 `MyAdd` 的 `torch.nn.Module`，它封装了`my_add`，就和封装了`conv2d` 的 `torch.nn.Conv2d` 一样。
 
 ### 测试算子
+
 费了好大的功夫来“包装”我们的新算子后，我们终于可以来使用它了。和之前的测试流程一样，让我们用下面的代码来导出一个包含新算子的 ONNX 模型，并验证一下它是否正确。
 
 ```python
@@ -447,13 +456,13 @@ assert np.allclose(torch_output, ort_output)
 
 在这篇教程中，我们围绕“为 ATen 算子添加符号函数”、“为 TorchScript 算子添加符号函数”、“封装成 `torch.autograd.Function` 并添加符号函数”这三种添加映射关系的方法，讲解了 3 个为 PyTorch 和 ONNX 添加支持的实例。在这个过程中，我们学到了很多零散的知识，来总结一下吧。
 
-* ATen 是 PyTorch 的 C++ 张量运算库。通过查询 torch/_C/_VariableFunctions.pyi 和 torch/nn/functional.pyi，我们可以知道 ATen 算子的 Python 接口定义。
-* 用 register_op 可以为 ATen 算子补充注册符号函数
-* 用 register_custom_op_symbolic 可以为 TorchScript 算子补充注册符号函数
-* 如何在 PyTorch 里添加 C++ 拓展
-* 如何用 torch.autograd.Function 封装一个自定义 PyTorch 算子
-* 如何编写符号函数 symbolic(g, ...)。
-* 如何用 g.op() 把一个 PyTorch 算子映射成一个或多个 ONNX 算子，或者是自定义的 ONNX 算子。
+- ATen 是 PyTorch 的 C++ 张量运算库。通过查询 torch/\_C/\_VariableFunctions.pyi 和 torch/nn/functional.pyi，我们可以知道 ATen 算子的 Python 接口定义。
+- 用 register_op 可以为 ATen 算子补充注册符号函数
+- 用 register_custom_op_symbolic 可以为 TorchScript 算子补充注册符号函数
+- 如何在 PyTorch 里添加 C++ 拓展
+- 如何用 torch.autograd.Function 封装一个自定义 PyTorch 算子
+- 如何编写符号函数 symbolic(g, ...)。
+- 如何用 g.op() 把一个 PyTorch 算子映射成一个或多个 ONNX 算子，或者是自定义的 ONNX 算子。
 
 这篇教程涉及的代码比较多。如果大家在阅读时碰到了问题，最好去跑一跑代码，改一改代码里的内容，实际感受一下每行代码的意义。
 
