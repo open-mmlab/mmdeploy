@@ -57,4 +57,5 @@ def from_onnx(onnx_model: str,
     assert runtime_builder is not None, 'Failed to create '\
         'OnnxRuntimeBuilder.'
     import shutil
-    shutil.copy2(onnx_model, onnx_output_path)
+    if onnx_output_path != onnx_model:
+        shutil.copy2(onnx_model, onnx_output_path)

@@ -254,7 +254,7 @@ def main():
 
         from mmdeploy.apis.pplnn import from_onnx
 
-        pplnn_pipeline_funcs = ['mmdeploy.apis.pplnn.from_onnx']
+        pplnn_pipeline_funcs = [from_onnx]
         PIPELINE_MANAGER.set_log_level(logging.INFO, pplnn_pipeline_funcs)
 
         pplnn_files = []
