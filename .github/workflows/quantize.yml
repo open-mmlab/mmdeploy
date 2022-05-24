@@ -74,6 +74,8 @@ jobs:
           python3 -m pip install -r requirements.txt
           python3 setup.py install
           cd -
+      - name: Setup Debug Session
+        uses: csexton/debugger-action@master
       - name: Run tests
         run: |
           cd ~/mmdeploy
