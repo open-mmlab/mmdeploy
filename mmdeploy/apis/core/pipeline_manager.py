@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import importlib
+import inspect
 import logging
 from functools import wraps
 from typing import Any, Callable, Dict, List, Optional, Sequence, Union
@@ -95,8 +97,10 @@ class PipelineCaller:
         module_name = self._module_name
         impl_name = self._impl_name
         # TODO: find another way to load function
-        exec(f'from {module_name} import {impl_name}')
-        func = eval(f'{impl_name}')
+        mod = importlib.import_module(module_name)
+        func = getattr(mod, impl_name, None)
+        assert func is not None, \
+            f'Can not find implementation of {self._func_name}'
         ret = func(*args, **kwargs)
         for output_hook in self.output_hooks:
             ret = output_hook(ret)
@@ -315,13 +319,16 @@ class PipelineManager:
             func_name_ = func_name if func_name is not None \
                 else _get_func_name(func)
 
-            # create global function to save the implementation
+            # save the implementation into the registry module
             impl_name = f'_pipe_{func.__name__}__impl_'
-            func.__globals__[impl_name] = func
+            frame = inspect.stack()[1]
+            outer_mod = inspect.getmodule(frame[0])
+            mod_name = outer_mod.__name__
+            setattr(outer_mod, impl_name, func)
 
             # create caller
             pipe_caller = PipelineCaller(
-                func.__module__,
+                mod_name,
                 impl_name,
                 func_name=func_name_,
                 is_multiprocess_available=is_multiprocess_available)
