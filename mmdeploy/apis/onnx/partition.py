@@ -12,8 +12,7 @@ from mmdeploy.core.optimizers import (attribute_to_dict, create_extractor,
 from mmdeploy.utils import get_root_logger
 
 
-@PIPELINE_MANAGER.register_pipeline(
-    func_name='mmdeploy.apis.onnx.extract_partition')
+@PIPELINE_MANAGER.register_pipeline()
 def extract_partition(model: Union[str, onnx.ModelProto],
                       start_marker: Union[str, Iterable[str]],
                       end_marker: Union[str, Iterable[str]],

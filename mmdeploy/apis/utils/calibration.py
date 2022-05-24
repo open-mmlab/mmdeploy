@@ -11,8 +11,7 @@ from mmdeploy.core import RewriterContext, reset_mark_function_count
 from ..core import PIPELINE_MANAGER
 
 
-@PIPELINE_MANAGER.register_pipeline(
-    func_name='mmdeploy.apis.utils.create_calib_table')
+@PIPELINE_MANAGER.register_pipeline()
 def create_calib_table(calib_file: str,
                        model: torch.nn.Module,
                        dataloader: DataLoader,

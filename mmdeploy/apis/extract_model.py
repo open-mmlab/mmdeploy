@@ -8,7 +8,7 @@ from .core import PIPELINE_MANAGER
 from .onnx import extract_partition
 
 
-@PIPELINE_MANAGER.register_pipeline(func_name='mmdeploy.apis.extract_model')
+@PIPELINE_MANAGER.register_pipeline()
 def extract_model(model: Union[str, onnx.ModelProto],
                   start_marker: Union[str, Iterable[str]],
                   end_marker: Union[str, Iterable[str]],

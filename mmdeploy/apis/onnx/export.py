@@ -10,7 +10,7 @@ from mmdeploy.core import RewriterContext, patch_model
 from mmdeploy.utils import Backend, get_root_logger
 
 
-@PIPELINE_MANAGER.register_pipeline(func_name='mmdeploy.apis.onnx.export')
+@PIPELINE_MANAGER.register_pipeline()
 def export(model: torch.nn.Module,
            args: Union[torch.Tensor, Tuple, Dict],
            output_path_prefix: str,
