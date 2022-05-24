@@ -84,6 +84,14 @@ mmdeploy_sender_t mmdeploy_executor_schedule(mmdeploy_scheduler_t scheduler) {
   return Guard([&] { return Take(Then(Schedule(*Cast(scheduler)), [] { return Value(); })); });
 }
 
+mmdeploy_sender_t mmdeploy_executor_transfer_just(mmdeploy_scheduler_t scheduler,
+                                                  mmdeploy_value_t value) {
+  if (!scheduler || !value) {
+    return nullptr;
+  }
+  return Guard([&] { return Take(TransferJust(*Cast(scheduler), *Cast(value))); });
+}
+
 mmdeploy_sender_t mmdeploy_executor_transfer(mmdeploy_sender_t input,
                                              mmdeploy_scheduler_t scheduler) {
   if (!input || !scheduler) {
@@ -191,4 +199,8 @@ int mmdeploy_executor_sync_wait_v2(mmdeploy_sender_t sender, mmdeploy_value_t* v
     mmdeploy_value_destroy(result);
   }
   return MM_SUCCESS;
+}
+
+void mmdeploy_executor_execute(mmdeploy_scheduler_t scheduler, void (*fn)(void*), void* context) {
+  Execute(*Cast(scheduler), [fn, context] { fn(context); });
 }

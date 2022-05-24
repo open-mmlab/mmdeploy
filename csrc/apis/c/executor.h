@@ -136,7 +136,7 @@ MMDEPLOY_API mmdeploy_value_t mmdeploy_executor_sync_wait(mmdeploy_sender_t inpu
 
 MMDEPLOY_API int mmdeploy_executor_sync_wait_v2(mmdeploy_sender_t input, mmdeploy_value_t* output);
 
-MMDEPLOY_API void mmdeploy_executor_execute(mmdeploy_scheduler_t scheduler, mmdeploy_then_fn_t fn,
+MMDEPLOY_API void mmdeploy_executor_execute(mmdeploy_scheduler_t scheduler, void (*fn)(void*),
                                             void* context);
 
 #if __cplusplus
