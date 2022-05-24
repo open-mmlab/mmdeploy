@@ -222,7 +222,7 @@ def main():
                 ret_value=ret_value)
 
             if quant:
-                from onnx2ncnn_quant import get_table
+                from onnx2ncnn_quant_table import get_table
 
                 from mmdeploy.apis.ncnn import get_quant_model_file, ncnn2int8
 

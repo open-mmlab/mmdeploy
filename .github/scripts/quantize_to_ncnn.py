@@ -35,7 +35,7 @@ def prepare_dataset():
 
 
 def main():
-    """test `tools/onnx2ncnn_quant.py`
+    """test `tools/onnx2ncnn_quant_table.py`
 
     First quantize onnx model to ncnn with ppq.
     """
@@ -47,7 +47,7 @@ def main():
         model_cfg = conf[2]
         deploy_cfg = 'configs/mmcls/classification_ncnn-int8_static.py'
         quant_cmd = [
-            'python3', 'tools/onnx2ncnn_quant.py', '--onnx', model,
+            'python3', 'tools/onnx2ncnn_quant_table.py', '--onnx', model,
             '--deploy_cfg', deploy_cfg, '--model_cfg', model_cfg, '--out_onnx',
             'quant.onnx', '--out_table', 'ncnn.table', '--image_dir', data_dir
         ]
