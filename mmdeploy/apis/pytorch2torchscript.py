@@ -11,8 +11,7 @@ from .core import PIPELINE_MANAGER
 from .torch_jit import trace
 
 
-@PIPELINE_MANAGER.register_pipeline(func_name='mmdeploy.apis.torch2torchscript'
-                                    )
+@PIPELINE_MANAGER.register_pipeline()
 def torch2torchscript(img: Any,
                       work_dir: str,
                       save_file: str,
