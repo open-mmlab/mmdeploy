@@ -3,7 +3,7 @@
 // https://github.com/NVIDIA/TensorRT/tree/master/plugin/batchedNMSPlugin
 #include <vector>
 
-#include "kernel.h"
+#include "nms/kernel.h"
 
 template <typename Dtype, unsigned nthds_per_cta>
 __launch_bounds__(nthds_per_cta) __global__

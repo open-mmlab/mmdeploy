@@ -1,7 +1,6 @@
-// Copyright (c) 2021, NVIDIA CORPORATION. All rights reserved.
-// modify from
-// https://github.com/NVIDIA/TensorRT/tree/master/plugin/batchedNMSPlugin
-#include "trt_batched_nms.hpp"
+// Copyright (c) OpenMMLab. All rights reserved
+
+#include "trt_batched_rotated_nms.hpp"
 
 #include <cstring>
 
@@ -15,13 +14,13 @@ using nvinfer1::plugin::NMSParameters;
 
 namespace {
 static const char* NMS_PLUGIN_VERSION{"1"};
-static const char* NMS_PLUGIN_NAME{"TRTBatchedNMS"};
+static const char* NMS_PLUGIN_NAME{"TRTBatchedRotatedNMS"};
 }  // namespace
 
-TRTBatchedNMS::TRTBatchedNMS(const std::string& name, NMSParameters params)
+TRTBatchedRotatedNMS::TRTBatchedRotatedNMS(const std::string& name, NMSParameters params)
     : TRTPluginBase(name), param(params) {}
 
-TRTBatchedNMS::TRTBatchedNMS(const std::string& name, const void* data, size_t length)
+TRTBatchedRotatedNMS::TRTBatchedRotatedNMS(const std::string& name, const void* data, size_t length)
     : TRTPluginBase(name) {
   deserialize_value(&data, &length, &param);
   deserialize_value(&data, &length, &boxesSize);
@@ -30,9 +29,9 @@ TRTBatchedNMS::TRTBatchedNMS(const std::string& name, const void* data, size_t l
   deserialize_value(&data, &length, &mClipBoxes);
 }
 
-int TRTBatchedNMS::getNbOutputs() const TRT_NOEXCEPT { return 2; }
+int TRTBatchedRotatedNMS::getNbOutputs() const TRT_NOEXCEPT { return 2; }
 
-nvinfer1::DimsExprs TRTBatchedNMS::getOutputDimensions(
+nvinfer1::DimsExprs TRTBatchedRotatedNMS::getOutputDimensions(
     int outputIndex, const nvinfer1::DimsExprs* inputs, int nbInputs,
     nvinfer1::IExprBuilder& exprBuilder) TRT_NOEXCEPT {
   ASSERT(nbInputs == 2);
@@ -46,7 +45,7 @@ nvinfer1::DimsExprs TRTBatchedNMS::getOutputDimensions(
   switch (outputIndex) {
     case 0:
       ret.nbDims = 3;
-      ret.d[2] = exprBuilder.constant(5);
+      ret.d[2] = exprBuilder.constant(6);
       break;
     case 1:
       ret.nbDims = 2;
@@ -58,9 +57,10 @@ nvinfer1::DimsExprs TRTBatchedNMS::getOutputDimensions(
   return ret;
 }
 
-size_t TRTBatchedNMS::getWorkspaceSize(const nvinfer1::PluginTensorDesc* inputs, int nbInputs,
-                                       const nvinfer1::PluginTensorDesc* outputs,
-                                       int nbOutputs) const TRT_NOEXCEPT {
+size_t TRTBatchedRotatedNMS::getWorkspaceSize(const nvinfer1::PluginTensorDesc* inputs,
+                                              int nbInputs,
+                                              const nvinfer1::PluginTensorDesc* outputs,
+                                              int nbOutputs) const TRT_NOEXCEPT {
   size_t batch_size = inputs[0].dims.d[0];
   size_t boxes_size = inputs[0].dims.d[1] * inputs[0].dims.d[2] * inputs[0].dims.d[3];
   size_t score_size = inputs[1].dims.d[1] * inputs[1].dims.d[2];
@@ -72,10 +72,10 @@ size_t TRTBatchedNMS::getWorkspaceSize(const nvinfer1::PluginTensorDesc* inputs,
                                          DataType::kFLOAT);
 }
 
-int TRTBatchedNMS::enqueue(const nvinfer1::PluginTensorDesc* inputDesc,
-                           const nvinfer1::PluginTensorDesc* outputDesc, const void* const* inputs,
-                           void* const* outputs, void* workSpace,
-                           cudaStream_t stream) TRT_NOEXCEPT {
+int TRTBatchedRotatedNMS::enqueue(const nvinfer1::PluginTensorDesc* inputDesc,
+                                  const nvinfer1::PluginTensorDesc* outputDesc,
+                                  const void* const* inputs, void* const* outputs, void* workSpace,
+                                  cudaStream_t stream) TRT_NOEXCEPT {
   const void* const locData = inputs[0];
   const void* const confData = inputs[1];
 
@@ -90,7 +90,7 @@ int TRTBatchedNMS::enqueue(const nvinfer1::PluginTensorDesc* inputDesc,
 
   int topk =
       param.topK > 0 && param.topK <= inputDesc[1].dims.d[1] ? param.topK : inputDesc[1].dims.d[1];
-  bool rotated = false;
+  bool rotated = true;
   pluginStatus_t status = nmsInference(
       stream, batch_size, boxes_size, score_size, shareLocation, param.backgroundLabelId,
       num_priors, param.numClasses, topk, param.keepTopK, param.scoreThreshold, param.iouThreshold,
@@ -101,12 +101,12 @@ int TRTBatchedNMS::enqueue(const nvinfer1::PluginTensorDesc* inputDesc,
   return 0;
 }
 
-size_t TRTBatchedNMS::getSerializationSize() const TRT_NOEXCEPT {
+size_t TRTBatchedRotatedNMS::getSerializationSize() const TRT_NOEXCEPT {
   // NMSParameters, boxesSize,scoresSize,numPriors
   return sizeof(NMSParameters) + sizeof(int) * 3 + sizeof(bool);
 }
 
-void TRTBatchedNMS::serialize(void* buffer) const TRT_NOEXCEPT {
+void TRTBatchedRotatedNMS::serialize(void* buffer) const TRT_NOEXCEPT {
   serialize_value(&buffer, param);
   serialize_value(&buffer, boxesSize);
   serialize_value(&buffer, scoresSize);
@@ -114,14 +114,16 @@ void TRTBatchedNMS::serialize(void* buffer) const TRT_NOEXCEPT {
   serialize_value(&buffer, mClipBoxes);
 }
 
-void TRTBatchedNMS::configurePlugin(const nvinfer1::DynamicPluginTensorDesc* inputs, int nbInputs,
-                                    const nvinfer1::DynamicPluginTensorDesc* outputs,
-                                    int nbOutputs) TRT_NOEXCEPT {
+void TRTBatchedRotatedNMS::configurePlugin(const nvinfer1::DynamicPluginTensorDesc* inputs,
+                                           int nbInputs,
+                                           const nvinfer1::DynamicPluginTensorDesc* outputs,
+                                           int nbOutputs) TRT_NOEXCEPT {
   // Validate input arguments
 }
 
-bool TRTBatchedNMS::supportsFormatCombination(int pos, const nvinfer1::PluginTensorDesc* ioDesc,
-                                              int nbInputs, int nbOutputs) TRT_NOEXCEPT {
+bool TRTBatchedRotatedNMS::supportsFormatCombination(int pos,
+                                                     const nvinfer1::PluginTensorDesc* ioDesc,
+                                                     int nbInputs, int nbOutputs) TRT_NOEXCEPT {
   if (pos == 3) {
     return ioDesc[pos].type == nvinfer1::DataType::kINT32 &&
            ioDesc[pos].format == nvinfer1::TensorFormat::kLINEAR;
@@ -130,12 +132,14 @@ bool TRTBatchedNMS::supportsFormatCombination(int pos, const nvinfer1::PluginTen
          ioDesc[pos].format == nvinfer1::TensorFormat::kLINEAR;
 }
 
-const char* TRTBatchedNMS::getPluginType() const TRT_NOEXCEPT { return NMS_PLUGIN_NAME; }
+const char* TRTBatchedRotatedNMS::getPluginType() const TRT_NOEXCEPT { return NMS_PLUGIN_NAME; }
 
-const char* TRTBatchedNMS::getPluginVersion() const TRT_NOEXCEPT { return NMS_PLUGIN_VERSION; }
+const char* TRTBatchedRotatedNMS::getPluginVersion() const TRT_NOEXCEPT {
+  return NMS_PLUGIN_VERSION;
+}
 
-IPluginV2DynamicExt* TRTBatchedNMS::clone() const TRT_NOEXCEPT {
-  auto* plugin = new TRTBatchedNMS(mLayerName, param);
+IPluginV2DynamicExt* TRTBatchedRotatedNMS::clone() const TRT_NOEXCEPT {
+  auto* plugin = new TRTBatchedRotatedNMS(mLayerName, param);
   plugin->boxesSize = boxesSize;
   plugin->scoresSize = scoresSize;
   plugin->numPriors = numPriors;
@@ -144,8 +148,9 @@ IPluginV2DynamicExt* TRTBatchedNMS::clone() const TRT_NOEXCEPT {
   return plugin;
 }
 
-nvinfer1::DataType TRTBatchedNMS::getOutputDataType(int index, const nvinfer1::DataType* inputTypes,
-                                                    int nbInputs) const TRT_NOEXCEPT {
+nvinfer1::DataType TRTBatchedRotatedNMS::getOutputDataType(int index,
+                                                           const nvinfer1::DataType* inputTypes,
+                                                           int nbInputs) const TRT_NOEXCEPT {
   ASSERT(index >= 0 && index < this->getNbOutputs());
   if (index == 1) {
     return nvinfer1::DataType::kINT32;
@@ -153,9 +158,9 @@ nvinfer1::DataType TRTBatchedNMS::getOutputDataType(int index, const nvinfer1::D
   return inputTypes[0];
 }
 
-void TRTBatchedNMS::setClipParam(bool clip) { mClipBoxes = clip; }
+void TRTBatchedRotatedNMS::setClipParam(bool clip) { mClipBoxes = clip; }
 
-TRTBatchedNMSCreator::TRTBatchedNMSCreator() {
+TRTBatchedRotatedNMSCreator::TRTBatchedRotatedNMSCreator() {
   mPluginAttributes.emplace_back(
       PluginField("background_label_id", nullptr, PluginFieldType::kINT32, 1));
   mPluginAttributes.emplace_back(PluginField("num_classes", nullptr, PluginFieldType::kINT32, 1));
@@ -172,14 +177,16 @@ TRTBatchedNMSCreator::TRTBatchedNMSCreator() {
   mFC.fields = mPluginAttributes.data();
 }
 
-const char* TRTBatchedNMSCreator::getPluginName() const TRT_NOEXCEPT { return NMS_PLUGIN_NAME; }
+const char* TRTBatchedRotatedNMSCreator::getPluginName() const TRT_NOEXCEPT {
+  return NMS_PLUGIN_NAME;
+}
 
-const char* TRTBatchedNMSCreator::getPluginVersion() const TRT_NOEXCEPT {
+const char* TRTBatchedRotatedNMSCreator::getPluginVersion() const TRT_NOEXCEPT {
   return NMS_PLUGIN_VERSION;
 }
 
-IPluginV2Ext* TRTBatchedNMSCreator::createPlugin(const char* name,
-                                                 const PluginFieldCollection* fc) TRT_NOEXCEPT {
+IPluginV2Ext* TRTBatchedRotatedNMSCreator::createPlugin(
+    const char* name, const PluginFieldCollection* fc) TRT_NOEXCEPT {
   const PluginField* fields = fc->fields;
   bool clipBoxes = true;
   nvinfer1::plugin::NMSParameters params{};
@@ -211,20 +218,21 @@ IPluginV2Ext* TRTBatchedNMSCreator::createPlugin(const char* name,
     }
   }
 
-  TRTBatchedNMS* plugin = new TRTBatchedNMS(name, params);
+  TRTBatchedRotatedNMS* plugin = new TRTBatchedRotatedNMS(name, params);
   plugin->setClipParam(clipBoxes);
   plugin->setPluginNamespace(mNamespace.c_str());
   return plugin;
 }
 
-IPluginV2Ext* TRTBatchedNMSCreator::deserializePlugin(const char* name, const void* serialData,
-                                                      size_t serialLength) TRT_NOEXCEPT {
+IPluginV2Ext* TRTBatchedRotatedNMSCreator::deserializePlugin(const char* name,
+                                                             const void* serialData,
+                                                             size_t serialLength) TRT_NOEXCEPT {
   // This object will be deleted when the network is destroyed, which will
   // call NMS::destroy()
-  TRTBatchedNMS* plugin = new TRTBatchedNMS(name, serialData, serialLength);
+  TRTBatchedRotatedNMS* plugin = new TRTBatchedRotatedNMS(name, serialData, serialLength);
   plugin->setPluginNamespace(mNamespace.c_str());
   return plugin;
 }
 
-REGISTER_TENSORRT_PLUGIN(TRTBatchedNMSCreator);
+REGISTER_TENSORRT_PLUGIN(TRTBatchedRotatedNMSCreator);
 }  // namespace mmdeploy

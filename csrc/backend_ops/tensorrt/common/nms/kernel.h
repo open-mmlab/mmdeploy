@@ -22,17 +22,6 @@ struct Bbox {
   Bbox() = default;
 };
 
-template <typename T>
-struct BboxInfo {
-  T conf_score;
-  int label;
-  int bbox_idx;
-  bool kept;
-  BboxInfo(T conf_score, int label, int bbox_idx, bool kept)
-      : conf_score(conf_score), label(label), bbox_idx(bbox_idx), kept(kept) {}
-  BboxInfo() = default;
-};
-
 size_t get_cuda_arch(int devID);
 
 int8_t* alignPtr(int8_t* ptr, uintptr_t to);
@@ -46,6 +35,13 @@ pluginStatus_t allClassNMS(cudaStream_t stream, int num, int num_classes, int nu
                            DataType DT_SCORE, DataType DT_BBOX, void* bbox_data,
                            void* beforeNMS_scores, void* beforeNMS_index_array,
                            void* afterNMS_scores, void* afterNMS_index_array, bool flipXY = false);
+
+pluginStatus_t allClassRotatedNMS(cudaStream_t stream, int num, int num_classes,
+                                  int num_preds_per_class, int top_k, float nms_threshold,
+                                  bool share_location, bool isNormalized, DataType DT_SCORE,
+                                  DataType DT_BBOX, void* bbox_data, void* beforeNMS_scores,
+                                  void* beforeNMS_index_array, void* afterNMS_scores,
+                                  void* afterNMS_index_array, bool flipXY = false);
 
 size_t detectionForwardBBoxDataSize(int N, int C1, DataType DT_BBOX);
 
@@ -80,18 +76,10 @@ pluginStatus_t gatherNMSOutputs(cudaStream_t stream, bool shareLocation, int num
                                 int numPredsPerClass, int numClasses, int topK, int keepTopK,
                                 DataType DT_BBOX, DataType DT_SCORE, const void* indices,
                                 const void* scores, const void* bboxData, void* nmsedDets,
-                                void* nmsedLabels, bool clipBoxes = true);
+                                void* nmsedLabels, bool clipBoxes = true, bool rotated = false);
 
 size_t detectionInferenceWorkspaceSize(bool shareLocation, int N, int C1, int C2, int numClasses,
                                        int numPredsPerClass, int topK, DataType DT_BBOX,
                                        DataType DT_SCORE);
-
-pluginStatus_t nmsInference(cudaStream_t stream, int N, int boxesSize, int scoresSize,
-                            bool shareLocation, int backgroundLabelId, int numPredsPerClass,
-                            int numClasses, int topK, int keepTopK, float scoreThreshold,
-                            float iouThreshold, DataType DT_BBOX, const void* locData,
-                            DataType DT_SCORE, const void* confData, void* nmsedDets,
-                            void* nmsedLabels, void* workspace, bool isNormalized = true,
-                            bool confSigmoid = false, bool clipBoxes = true);
 
 #endif

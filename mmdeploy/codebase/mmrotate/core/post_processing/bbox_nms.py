@@ -2,7 +2,9 @@
 import torch
 from torch import Tensor
 
-from mmdeploy.mmcv.ops import ONNXNMSRotatedOp
+import mmdeploy
+from mmdeploy.core import FUNCTION_REWRITER, mark
+from mmdeploy.mmcv.ops import ONNXNMSRotatedOp, TRTBatchedRotatedNMSop
 
 
 def select_nms_index(scores: torch.Tensor,
@@ -63,7 +65,7 @@ def select_nms_index(scores: torch.Tensor,
         _, topk_inds = batched_dets[:, :, -1].sort(dim=1, descending=True)
     topk_batch_inds = torch.arange(
         batch_size, dtype=topk_inds.dtype,
-        device=topk_inds.device).view(-1, 1).expand_as(topk_inds)
+        device=topk_inds.device).unsqueeze(1)
     batched_dets = batched_dets[topk_batch_inds, topk_inds, ...]
     batched_labels = batched_labels[topk_batch_inds, topk_inds, ...]
 
@@ -71,19 +73,18 @@ def select_nms_index(scores: torch.Tensor,
     return batched_dets, batched_labels
 
 
-def multiclass_nms_rotated(boxes: Tensor,
-                           scores: Tensor,
-                           iou_threshold: float = 0.1,
-                           score_threshold: float = 0.05,
-                           pre_top_k: int = -1,
-                           keep_top_k: int = -1):
+def _multiclass_nms_rotated(boxes: Tensor,
+                            scores: Tensor,
+                            iou_threshold: float = 0.1,
+                            score_threshold: float = 0.05,
+                            pre_top_k: int = -1,
+                            keep_top_k: int = -1):
     """NMSRotated for multi-class bboxes.
 
     This function helps exporting to onnx with batch and multiclass NMSRotated
     op. It only supports class-agnostic detection results. That is, the scores
     is of shape (N, num_bboxes, num_classes) and the boxes is of shape
     (N, num_boxes, 5).
-
     Args:
         boxes (Tensor): The bounding boxes of shape [N, num_boxes, 5].
         scores (Tensor): The detection scores of shape
@@ -105,8 +106,7 @@ def multiclass_nms_rotated(boxes: Tensor,
     if pre_top_k > 0:
         max_scores, _ = scores.max(-1)
         _, topk_inds = max_scores.topk(pre_top_k)
-        batch_inds = torch.arange(batch_size).view(
-            -1, 1).expand_as(topk_inds).long()
+        batch_inds = torch.arange(batch_size).unsqueeze(1).long()
         boxes = boxes[batch_inds, topk_inds, :]
         scores = scores[batch_inds, topk_inds, :]
 
@@ -118,3 +118,58 @@ def multiclass_nms_rotated(boxes: Tensor,
         scores, boxes, selected_indices, batch_size, keep_top_k=keep_top_k)
 
     return dets, labels
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    func_name='mmdeploy.codebase.mmrotate.core.post_processing.bbox_nms.'
+    '_multiclass_nms_rotated',
+    backend='tensorrt')
+def multiclass_nms_rotated_static(ctx,
+                                  boxes: Tensor,
+                                  scores: Tensor,
+                                  max_output_boxes_per_class: int = 1000,
+                                  iou_threshold: float = 0.5,
+                                  score_threshold: float = 0.05,
+                                  pre_top_k: int = -1,
+                                  keep_top_k: int = -1):
+    """Wrapper for `multiclass_nms` with TensorRT.
+
+    Args:
+        ctx (ContextCaller): The context with additional information.
+        boxes (Tensor): The bounding boxes of shape [N, num_boxes, 5].
+        scores (Tensor): The detection scores of shape
+            [N, num_boxes, num_classes].
+        max_output_boxes_per_class (int): Maximum number of output
+            boxes per class of nms. Defaults to 1000.
+        iou_threshold (float): IOU threshold of nms. Defaults to 0.5.
+        score_threshold (float): score threshold of nms.
+            Defaults to 0.05.
+        pre_top_k (int): Number of top K boxes to keep before nms.
+            Defaults to -1.
+        keep_top_k (int): Number of top K boxes to keep after nms.
+            Defaults to -1.
+
+    Returns:
+        tuple[Tensor, Tensor]: (dets, labels), `dets` of shape [N, num_det, 6]
+            and `labels` of shape [N, num_det].
+    """
+    boxes = boxes if boxes.dim() == 4 else boxes.unsqueeze(2)
+    keep_top_k = max_output_boxes_per_class if keep_top_k < 0 else min(
+        max_output_boxes_per_class, keep_top_k)
+    dets, labels = TRTBatchedRotatedNMSop.apply(boxes, scores,
+                                                int(scores.shape[-1]),
+                                                pre_top_k, keep_top_k,
+                                                iou_threshold, score_threshold,
+                                                -1)
+
+    return dets, labels
+
+
+@mark(
+    'multiclass_nms_rotated',
+    inputs=['boxes', 'scores'],
+    outputs=['dets', 'labels'])
+def multiclass_nms_rotated(*args, **kwargs):
+    """Wrapper function for `_multiclass_nms`."""
+    return mmdeploy.codebase.mmrotate.core.post_processing.bbox_nms.\
+        _multiclass_nms_rotated(*args, **kwargs)

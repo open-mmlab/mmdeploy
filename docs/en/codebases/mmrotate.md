@@ -10,7 +10,7 @@ Please refer to [official installation guide](https://mmrotate.readthedocs.io/en
 
 | Model     | Task          | ONNX Runtime | TensorRT | NCNN | PPLNN | OpenVINO |                                        Model config                                         |
 |:----------------------|:--------------|:------------:|:--------:|:----:|:-----:|:--------:|:-------------------------------------------------------------------------------------------:|
-| RotatedRetinaNet  | RotatedDetection |      Y       |    N     |  N   |   N   |    N     |   [config](https://github.com/open-mmlab/mmrotate/blob/main/configs/rotated_retinanet/README.md)   |
+| RotatedRetinaNet  | RotatedDetection |      Y       |    Y     |  N   |   N   |    N     |   [config](https://github.com/open-mmlab/mmrotate/blob/main/configs/rotated_retinanet/README.md)   |
 
 ### Example
 

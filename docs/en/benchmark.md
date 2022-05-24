@@ -1960,8 +1960,8 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center">mAP</td>
     <td align="center">0.698</td>
     <td align="center">0.698</td>
-    <td align="center">-</td>
-    <td align="center">-</td>
+    <td align="center">0.698</td>
+    <td align="center">0.697</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td rowspan="2">$MMROTATE_DIR/configs/rotated_retinanet/rotated_retinanet_obb_r50_fpn_1x_dota_le135.py</td>

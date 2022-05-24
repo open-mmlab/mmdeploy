@@ -1,7 +1,7 @@
 // Copyright (c) 2021, NVIDIA CORPORATION. All rights reserved.
 // modify from
 // https://github.com/NVIDIA/TensorRT/tree/master/plugin/batchedNMSPlugin
-#include "trt_batched_nms_kernel.hpp"
+#include "nms/batched_nms_kernel.hpp"
 
 pluginStatus_t nmsInference(cudaStream_t stream, const int N, const int perBatchBoxesSize,
                             const int perBatchScoresSize, const bool shareLocation,
@@ -10,7 +10,8 @@ pluginStatus_t nmsInference(cudaStream_t stream, const int N, const int perBatch
                             const float scoreThreshold, const float iouThreshold,
                             const DataType DT_BBOX, const void* locData, const DataType DT_SCORE,
                             const void* confData, void* nmsedDets, void* nmsedLabels,
-                            void* workspace, bool isNormalized, bool confSigmoid, bool clipBoxes) {
+                            void* workspace, bool isNormalized, bool confSigmoid, bool clipBoxes,
+                            bool rotated) {
   const int topKVal = topK < 0 ? numPredsPerClass : topK;
   const int keepTopKVal = keepTopK < 0 ? numPredsPerClass : keepTopK;
   // locCount = batch_size * number_boxes_per_sample * 4
@@ -45,8 +46,8 @@ pluginStatus_t nmsInference(cudaStream_t stream, const int N, const int perBatch
    * This is equivalent to swapping axis
    */
   if (!shareLocation) {
-    status = permuteData(stream, locCount, numLocClasses, numPredsPerClass, 4, DataType::kFLOAT,
-                         false, bboxDataRaw, bboxPermute);
+    status = permuteData(stream, locCount, numLocClasses, numPredsPerClass, rotated ? 5 : 4,
+                         DataType::kFLOAT, false, bboxDataRaw, bboxPermute);
     ASSERT_FAILURE(status == STATUS_SUCCESS);
     bboxData = bboxPermute;
   }
@@ -95,9 +96,16 @@ pluginStatus_t nmsInference(cudaStream_t stream, const int N, const int perBatch
   // ymax]
   bool flipXY = false;
   // NMS
-  status = allClassNMS(stream, N, numClasses, numPredsPerClass, topKVal, iouThreshold,
-                       shareLocation, isNormalized, DataType::kFLOAT, DataType::kFLOAT, bboxData,
-                       scores, indices, postNMSScores, postNMSIndices, flipXY);
+  if (rotated) {
+    status = allClassRotatedNMS(stream, N, numClasses, numPredsPerClass, topKVal, iouThreshold,
+                                shareLocation, isNormalized, DataType::kFLOAT, DataType::kFLOAT,
+                                bboxData, scores, indices, postNMSScores, postNMSIndices, flipXY);
+  } else {
+    status = allClassNMS(stream, N, numClasses, numPredsPerClass, topKVal, iouThreshold,
+                         shareLocation, isNormalized, DataType::kFLOAT, DataType::kFLOAT, bboxData,
+                         scores, indices, postNMSScores, postNMSIndices, flipXY);
+  }
+
   ASSERT_FAILURE(status == STATUS_SUCCESS);
 
   // Sort the bounding boxes after NMS using scores
@@ -109,7 +117,7 @@ pluginStatus_t nmsInference(cudaStream_t stream, const int N, const int perBatch
   // Gather data from the sorted bounding boxes after NMS
   status = gatherNMSOutputs(stream, shareLocation, N, numPredsPerClass, numClasses, topKVal,
                             keepTopKVal, DataType::kFLOAT, DataType::kFLOAT, indices, scores,
-                            bboxData, nmsedDets, nmsedLabels, clipBoxes);
+                            bboxData, nmsedDets, nmsedLabels, clipBoxes, rotated);
 
   ASSERT_FAILURE(status == STATUS_SUCCESS);
 
