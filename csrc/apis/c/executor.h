@@ -115,6 +115,12 @@ MMDEPLOY_API mmdeploy_sender_t mmdeploy_executor_let_value(mmdeploy_sender_t inp
                                                            mmdeploy_let_value_fn_t fn,
                                                            void* context);
 
+/**
+ * Convert the input sender into a sender that is copyable via \ref mmdeploy_sender_copy. Notice
+ * that this function doesn't make the sender multi-shot, it just return a sender that is copyable.
+ * @param[in] input
+ * @return the sender that is copyable
+ */
 MMDEPLOY_API mmdeploy_sender_t mmdeploy_executor_split(mmdeploy_sender_t input);
 
 MMDEPLOY_API mmdeploy_sender_t mmdeploy_executor_when_all(mmdeploy_sender_t inputs[], int32_t n);
