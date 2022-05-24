@@ -35,7 +35,7 @@ class QuantizationImageDataset(Dataset):
             from mmpose.datasets.pipelines import Compose
         elif codebase_type == Codebase.MMROTATE:
             from mmrotate.datasets.pipelines import Compose
-        elif codebase_type == Codebase.MMSET:
+        elif codebase_type == Codebase.MMSEG:
             from mmseg.datasets.pipelines import Compose
         else:
             raise Exception(

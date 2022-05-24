@@ -74,7 +74,8 @@ def get_table(onnx_path: str,
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Quantize ONNX to ncnn.')
+    parser = argparse.ArgumentParser(
+        description='Generate ncnn quant table from ONNX.')
     parser.add_argument('--onnx', help='ONNX model path')
     parser.add_argument('--deploy_cfg', help='Input deploy config path')
     parser.add_argument('--model_cfg', help='Input model config path')
@@ -84,7 +85,7 @@ def parse_args():
         '--image_dir',
         type=str,
         default=None,
-        help='Calibraion Image Directory.')
+        help='Calibration Image Directory.')
     parser.add_argument(
         '--log_level',
         help='set log level',
@@ -105,7 +106,6 @@ def main():
     quant_onnx_path = args.out_onnx
     image_dir = args.image_dir
 
-    logger.info(f'onnx2ncnn_quant: \n\tonnx_path: {onnx_path} ')
     try:
         get_table(onnx_path, deploy_cfg, model_cfg, quant_onnx_path,
                   quant_table_path, image_dir)

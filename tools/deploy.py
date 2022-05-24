@@ -155,26 +155,26 @@ def main():
 
             ir_files.append(save_path)
 
+    # calib data
+    calib_filename = get_calib_filename(deploy_cfg)
+    if calib_filename is not None:
+        calib_path = osp.join(args.work_dir, calib_filename)
+
+        create_process(
+            'calibration',
+            create_calib_table,
+            args=(calib_path, deploy_cfg_path, model_cfg_path,
+                  checkpoint_path),
+            kwargs=dict(
+                dataset_cfg=args.calib_dataset_cfg,
+                dataset_type='val',
+                device=args.device),
+            ret_value=ret_value)
+
     backend_files = ir_files
     # convert backend
     backend = get_backend(deploy_cfg)
     if backend == Backend.TENSORRT:
-        # calib data
-        calib_filename = get_calib_filename(deploy_cfg)
-        if calib_filename is not None:
-            calib_path = osp.join(args.work_dir, calib_filename)
-
-            create_process(
-                'trt_calibration',
-                create_calib_table,
-                args=(calib_path, deploy_cfg_path, model_cfg_path,
-                      checkpoint_path),
-                kwargs=dict(
-                    dataset_cfg=args.calib_dataset_cfg,
-                    dataset_type='val',
-                    device=args.device),
-                ret_value=ret_value)
-
         model_params = get_model_inputs(deploy_cfg)
         assert len(model_params) == len(ir_files)
 

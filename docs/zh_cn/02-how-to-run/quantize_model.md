@@ -23,7 +23,7 @@ flowchart TD;
      ncnn-fp32-->ncnn-int8;
 ```
 
-mmdeploy 基于静态图（onnx）生成推理框架所需的量化表，再用后端工具把浮点模型转换为定点。
+mmdeploy 基于静态图（onnx）生成推理框架所需的量化表，再用后端工具把浮点模型转为定点。
 
 目前 mmdeploy 支持 ncnn PTQ。
 
