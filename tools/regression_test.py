@@ -6,7 +6,6 @@ from collections import OrderedDict
 from pathlib import Path
 
 import mmcv
-import onnxruntime as ort
 import openpyxl
 import pandas as pd
 import yaml
@@ -643,13 +642,8 @@ def get_backend_fps_metric(deploy_cfg_path: str, model_cfg_path: Path,
               f'{str(model_cfg_path.absolute())} ' \
               f'--model "{convert_checkpoint_path}" ' \
               f'--log2file "{log_path}" ' \
-              f'--speed-test '
-
-    if backend_name == 'openvino' or \
-            (backend_name == 'onnxruntime' and ort.get_device() != 'GPU'):
-        cmd_str += '--device cpu '
-    else:
-        cmd_str += f'--device {device_type} '
+              f'--speed-test ' \
+              f'--device {device_type} '
 
     codebase_name = get_codebase(str(deploy_cfg_path)).value
     if codebase_name != 'mmedit':
@@ -837,6 +831,17 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
 
     deploy_cfg_path = Path(pipeline_info.get('deploy_config'))
     backend_name = str(get_backend(str(deploy_cfg_path)).name).lower()
+
+    # change device_type for special case
+    if backend_name in ['ncnn', 'openvino']:
+        device_type = 'cpu'
+    elif backend_name == 'onnxruntime' and device_type != 'cpu':
+        import onnxruntime as ort
+        if ort.get_device() != 'GPU':
+            device_type = 'cpu'
+            logger.warning('Device type is forced to cpu '
+                           'since onnxruntime-gpu is not installed')
+
     infer_type = \
         'dynamic' if is_dynamic_shape(str(deploy_cfg_path)) else 'static'
 
