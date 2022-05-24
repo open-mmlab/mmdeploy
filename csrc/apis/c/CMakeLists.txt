@@ -59,7 +59,7 @@ foreach (TASK ${COMMON_LIST})
 endforeach ()
 
 target_link_libraries(mmdeploy_executor PUBLIC
-        mmdeploy_common mmdeploy_execution)
+        mmdeploy_common)
 target_link_libraries(mmdeploy_pipeline PUBLIC
         mmdeploy_executor mmdeploy_model mmdeploy_common)
 
