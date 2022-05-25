@@ -11,8 +11,7 @@ def get_ops_path() -> str:
         str: The library path of ncnn custom ops.
     """
     candidates = [
-        '../../../build/lib/libmmdeploy_ncnn_ops.so',
-        '../../../build/bin/*/mmdeploy_ncnn_ops.dll'
+        '../../lib/libmmdeploy_ncnn_ops.so', '../../lib/mmdeploy_ncnn_ops.dll'
     ]
     return get_file_path(os.path.dirname(__file__), candidates)
 
@@ -23,7 +22,5 @@ def get_onnx2ncnn_path() -> str:
     Returns:
         str: A path of onnx2ncnn tool.
     """
-    candidates = [
-        '../../../build/bin/onnx2ncnn', '../../../build/bin/*/onnx2ncnn.exe'
-    ]
+    candidates = ['./onnx2ncnn', './onnx2ncnn.exe']
     return get_file_path(os.path.dirname(__file__), candidates)
