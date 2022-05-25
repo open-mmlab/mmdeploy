@@ -5,7 +5,8 @@ from torch import Tensor
 
 import mmdeploy
 from mmdeploy.core import FUNCTION_REWRITER, mark
-from mmdeploy.mmcv.ops import ONNXNMSop, ONNXNMSRotatedOp, TRTBatchedRotatedNMSop
+from mmdeploy.mmcv.ops import (ONNXNMSop, ONNXNMSRotatedOp,
+                               TRTBatchedRotatedNMSop)
 
 
 def select_rnms_index(scores: torch.Tensor,
