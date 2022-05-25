@@ -3,6 +3,7 @@
 #include "graph/pipeline.h"
 
 #include "archive/value_archive.h"
+#include "core/profiler.h"
 #include "execution/schedulers/inlined_scheduler.h"
 #include "graph/common.h"
 
@@ -100,7 +101,15 @@ Sender<Value> Pipeline::Process(Sender<Value> args) {
   State state(use_count_, std::move(args));
   for (size_t i = 0; i < nodes_.size(); ++i) {
     auto input = state.Collect(input_coords_[i]);
+    input = Then(input, [name = nodes_[i]->name()](Value&& input) {
+      MMDEPLOY_RECORD_BEGIN(name, "pipeline");
+      return std::move(input);
+    });
     auto output = nodes_[i]->Process(std::move(input));
+    output = Then(output, [name = nodes_[i]->name()](Value&& input) {
+      MMDEPLOY_RECORD_END(name, "pipeline");
+      return std::move(input);
+    });
     state.Write(static_cast<int>(i), std::move(output));
   }
   return state.Collect(ret_coords_);

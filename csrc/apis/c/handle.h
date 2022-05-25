@@ -7,6 +7,7 @@
 
 #include "core/device.h"
 #include "core/graph.h"
+#include "core/profiler.h"
 #include "core/value.h"
 #include "graph/pipeline.h"
 
@@ -25,7 +26,9 @@ class AsyncHandle {
       MMDEPLOY_ERROR("failed to find Pipeline creator");
       throw_exception(eEntryNotFound);
     }
+    MMDEPLOY_RECORD_BEGIN("init handle", "pipeline");
     pipeline_ = creator->Create(config);
+    MMDEPLOY_RECORD_END("init handle", "pipeline");
     if (!pipeline_) {
       MMDEPLOY_ERROR("create pipeline failed");
       throw_exception(eFail);
