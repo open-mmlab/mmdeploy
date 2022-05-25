@@ -84,5 +84,4 @@ def test_torch2torchscript(input_name, output_name):
         model_cfg=get_model_cfg(),
         device='cpu')
 
-    print(ts_file)
     assert osp.exists(ts_file)
