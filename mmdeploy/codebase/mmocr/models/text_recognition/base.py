@@ -34,7 +34,13 @@ def base_recognizer__forward(ctx, self, img, img_metas=None, *args, **kwargs):
     """
     if img_metas is None:
         img_metas = [{}]
+    if isinstance(img_metas, dict):
+        img_metas = [img_metas]
+    if utils.is_type_list(img_metas, list):
+        img_metas = img_metas[0]
     assert utils.is_type_list(img_metas, dict)
+    if utils.is_type_list(img, torch.Tensor):
+        img = img[0]
     assert isinstance(img, torch.Tensor)
 
     deploy_cfg = ctx.cfg

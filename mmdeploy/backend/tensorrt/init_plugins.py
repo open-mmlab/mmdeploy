@@ -12,8 +12,8 @@ def get_ops_path() -> str:
         str: A path of the TensorRT plugin library.
     """
     candidates = [
-        '../../../build/lib/libmmdeploy_tensorrt_ops.so',
-        '../../../build/bin/*/mmdeploy_tensorrt_ops.dll'
+        '../../lib/libmmdeploy_tensorrt_ops.so',
+        '../../lib/mmdeploy_tensorrt_ops.dll'
     ]
     return get_file_path(os.path.dirname(__file__), candidates)
 
