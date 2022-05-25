@@ -1,0 +1,13 @@
+global_config:
+  cmake_envs:
+    CMAKE_CXX_COMPILER: "g++-7"
+    MMDEPLOY_BUILD_SDK: "ON"
+    MMDEPLOY_BUILD_SDK_PYTHON_API: "ON"
+    MMDEPLOY_TARGET_DEVICES: '"cpu;cuda"'
+    MMDEPLOY_TARGET_BACKENDS: "trt"
+    TENSORRT_DIR: "/usr/include/aarch64-linux-gnu"
+    CUDA_TOOLKIT_ROOT_DIR: "/usr/local/cuda"
+    pplcv_DIR: ${pplcv_DIR}/cuda-build/install/lib/cmake/ppl
+
+local_configs:
+  - BUILD_NAME: "mmdeploy-{mmdeploy_v}-jetson-cuda{cuda_v}"

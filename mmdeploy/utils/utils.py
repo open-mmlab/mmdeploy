@@ -6,8 +6,9 @@ import sys
 import traceback
 from typing import Callable, Optional, Union
 
-import torch.multiprocessing as mp
-from mmcv.utils import get_logger
+import multiprocess as mp
+
+from mmdeploy.utils.logging import get_logger
 
 
 def target_wrapper(target: Callable,
@@ -27,8 +28,7 @@ def target_wrapper(target: Callable,
     """
     logger = logging.getLogger()
     logging.basicConfig(
-        format='%(asctime)s,%(name)s %(levelname)-8s'
-        ' [%(filename)s:%(lineno)d] %(message)s',
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         datefmt='%Y-%m-%d:%H:%M:%S')
     logger.level
     logger.setLevel(log_level)

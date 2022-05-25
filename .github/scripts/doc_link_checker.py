@@ -11,7 +11,10 @@ def make_parser():
     parser.add_argument(
         '--http', default=False, type=bool, help='check http or not ')
     parser.add_argument(
-        '--dir', default='./docs', type=str, help='the directory to be check')
+        '--target',
+        default='./docs',
+        type=str,
+        help='the directory or file to check')
     return parser
 
 
@@ -19,6 +22,7 @@ pattern = re.compile(r'\[.*?\]\(.*?\)')
 
 
 def analyze_doc(home, path):
+    print('analyze {}'.format(path))
     problem_list = []
     with open(path) as f:
         lines = f.readlines()
@@ -44,12 +48,14 @@ def analyze_doc(home, path):
         for item in problem_list:
             print(f'\t {item}')
         print('\n')
+        raise Exception('found link error')
 
 
-def traverse(_dir):
-    for home, dirs, files in os.walk(_dir):
-        if './target' in home or './.github' in home:
-            continue
+def traverse(target):
+    if os.path.isfile(target):
+        analyze_doc('./', target)
+        return
+    for home, dirs, files in os.walk(target):
         for filename in files:
             if filename.endswith('.md'):
                 path = os.path.join(home, filename)
@@ -59,4 +65,4 @@ def traverse(_dir):
 
 if __name__ == '__main__':
     args = make_parser().parse_args()
-    traverse(args.dir)
+    traverse(args.target)

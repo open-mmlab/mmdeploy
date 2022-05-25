@@ -262,8 +262,8 @@ def test_rotated_single_roi_extractor(backend_type: Backend):
             model_output, backend_output, rtol=1e-03, atol=1e-05)
 
 
-def get_rpn_head_model():
-    """RPN Head Config."""
+def get_oriented_rpn_head_model():
+    """Oriented RPN Head Config."""
     test_cfg = mmcv.Config(
         dict(
             nms_pre=2000,
@@ -271,10 +271,11 @@ def get_rpn_head_model():
             score_thr=0.05,
             nms=dict(iou_thr=0.1),
             max_per_img=2000))
-    from mmrotate.models.dense_heads import RotatedRPNHead
-    model = RotatedRPNHead(
+    from mmrotate.models.dense_heads import OrientedRPNHead
+    model = OrientedRPNHead(
         in_channels=1,
-        bbox_coder=dict(type='MidpointOffsetCoder'),
+        version='le90',
+        bbox_coder=dict(type='MidpointOffsetCoder', angle_range='le90'),
         test_cfg=test_cfg)
 
     model.requires_grad_(False)
@@ -282,9 +283,9 @@ def get_rpn_head_model():
 
 
 @pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
-def test_get_bboxes_of_rpn_head(backend_type: Backend):
+def test_get_bboxes_of_oriented_rpn_head(backend_type: Backend):
     check_backend(backend_type)
-    head = get_rpn_head_model()
+    head = get_oriented_rpn_head_model()
     head.cpu().eval()
     s = 128
     img_metas = [{

@@ -25,7 +25,8 @@ empty_path = './a.py'
 
 @pytest.fixture(autouse=True, scope='module')
 def create_empty_file():
-    os.mknod(empty_file_path)
+    with open(empty_file_path, mode='w'):
+        pass
 
 
 class TestLoadConfigError:
@@ -390,7 +391,7 @@ class TestParseDeviceID:
 
     def test_incorrect_cuda_device(self):
         device = 'cuda_5'
-        with pytest.raises(RuntimeError):
+        with pytest.raises(AssertionError):
             util.parse_device_id(device)
 
     def test_incorrect_device(self):
@@ -423,16 +424,17 @@ def test_export_info():
         assert os.path.exists(deploy_json)
 
 
-def test_target_wrapper():
+def wrap_target():
+    return 0
 
-    def target():
-        return 0
+
+def test_target_wrapper():
 
     log_level = logging.INFO
 
     ret_value = mp.Value('d', 0, lock=False)
     ret_value.value = -1
-    wrap_func = partial(target_wrapper, target, log_level, ret_value)
+    wrap_func = partial(target_wrapper, wrap_target, log_level, ret_value)
 
     process = mp.Process(target=wrap_func)
     process.start()

@@ -161,6 +161,36 @@ class End2EndModel(BaseBackendModel):
             out_file=out_file)
 
 
+@__BACKEND_MODEL.register_module('sdk')
+class SDKEnd2EndModel(End2EndModel):
+    """SDK inference class, converts SDK output to mmrotate format."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def forward(self, img: List[torch.Tensor], *args, **kwargs) -> list:
+        """Run forward inference.
+
+        Args:
+            img (List[torch.Tensor]): A list contains input image(s)
+                in [N x C x H x W] format.
+            img_metas (Sequence[Sequence[dict]]): A list of meta info for
+                image(s).
+            *args: Other arguments.
+            **kwargs: Other key-pair arguments.
+
+        Returns:
+            list: A list contains predictions.
+        """
+        results = []
+        dets, labels = self.wrapper.invoke(
+            [img[0].contiguous().detach().cpu().numpy()])[0]
+        dets_results = [dets[labels == i, :] for i in range(len(self.CLASSES))]
+        results.append(dets_results)
+
+        return results
+
+
 def build_rotated_detection_model(model_files: Sequence[str],
                                   model_cfg: Union[str, mmcv.Config],
                                   deploy_cfg: Union[str, mmcv.Config],

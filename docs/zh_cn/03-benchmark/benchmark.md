@@ -420,7 +420,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">model</td>
     <td align="center">metric</td>
     <td align="center">fp32</td>
-    <td align="center">seresnet</td>
+    <td align="center">fp32</td>
     <td align="center">fp32</td>
     <td align="center">fp32</td>
     <td align="center">fp16</td>
@@ -713,6 +713,19 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
   </tr>
   <tr>
+    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/reppoints/reppoints_moment_r50_fpn_1x_coco.py">RepPoints</a></td>
+    <td align="center">Object Detection</td>
+    <td align="center">COCO2017</td>
+    <td align="center">box AP</td>
+    <td align="center">37.0</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">36.9</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
     <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/mask_rcnn/mask_rcnn_r50_fpn_1x_coco.py">Mask R-CNN</a></td>
     <td align="center" rowspan="2">Instance Segmentation</td>
     <td align="center" rowspan="2">COCO2017</td>
@@ -993,6 +1006,78 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">0.7950</td>
   </tr>
   <tr>
+    <td align="center" rowspan="3"><a href="https://github.com/open-mmlab/mmocr/tree/master/configs/textdet/psenet/psenet_r50_fpnf_600e_icdar2015.py">PSENet</a></td>
+    <td align="center" rowspan="3">TextDetection</td>
+    <td align="center" rowspan="3">ICDAR2015</td>
+    <td align="center">recall</td>
+    <td align="center">0.7526</td>
+    <td align="center">0.7526</td>
+    <td align="center">0.7526</td>
+    <td align="center">0.7526</td>
+    <td align="center">0.7520</td>
+    <td align="center">0.7496</td>
+    <td align="center">-</td>
+    <td align="center">0.7526</td>
+  </tr>
+  <tr>
+    <td align="center">precision</td>
+    <td align="center">0.8669</td>
+    <td align="center">0.8669</td>
+    <td align="center">0.8669</td>
+    <td align="center">0.8669</td>
+    <td align="center">0.8668</td>
+    <td align="center">0.8550</td>
+    <td align="center">-</td>
+    <td align="center">0.8669</td>
+  </tr>
+  <tr>
+    <td align="center">hmean</td>
+    <td align="center">0.8057</td>
+    <td align="center">0.8057</td>
+    <td align="center">0.8057</td>
+    <td align="center">0.8057</td>
+    <td align="center">0.8054</td>
+    <td align="center">0.7989</td>
+    <td align="center">-</td>
+    <td align="center">0.8057</td>
+  </tr>
+  <tr>
+    <td align="center" rowspan="3"><a href="https://github.com/open-mmlab/mmocr/tree/master/configs/textdet/panet/panet_r18_fpem_ffm_600e_icdar2015.py">PANet</a></td>
+    <td align="center" rowspan="3">TextDetection</td>
+    <td align="center" rowspan="3">ICDAR2015</td>
+    <td align="center">recall</td>
+    <td align="center">0.7401</td>
+    <td align="center">0.7401</td>
+    <td align="center">0.7401</td>
+    <td align="center">0.7357</td>
+    <td align="center">0.7366</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">0.7401</td>
+  </tr>
+  <tr>
+    <td align="center">precision</td>
+    <td align="center">0.8601</td>
+    <td align="center">0.8601</td>
+    <td align="center">0.8601</td>
+    <td align="center">0.8570</td>
+    <td align="center">0.8586</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">0.8601</td>
+  </tr>
+  <tr>
+    <td align="center">hmean</td>
+    <td align="center">0.7955</td>
+    <td align="center">0.7955</td>
+    <td align="center">0.7955</td>
+    <td align="center">0.7917</td>
+    <td align="center">0.7930</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">0.7955</td>
+  </tr>
+  <tr>
     <td align="center"><a href="https://github.com/open-mmlab/mmocr/tree/master/configs/textrecog/crnn/crnn_academic_dataset.py">CRNN</a></td>
     <td align="center">TextRecognition</td>
     <td align="center">IIIT5K</td>
@@ -1017,6 +1102,20 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/open-mmlab/mmocr/tree/master/configs/textrecog/satrn/satrn_small.py">SATRN</a></td>
+    <td align="center">TextRecognition</td>
+    <td align="center">IIIT5K</td>
+    <td align="center">acc</td>
+    <td align="center">0.9470</td>
+    <td align="center">0.9487</td>
+    <td align="center">0.9487</td>
+    <td align="center">0.9487</td>
+    <td align="center">0.9483</td>
+    <td align="center">0.9483</td>
     <td align="center">-</td>
     <td align="center">-</td>
   </tr>
@@ -1464,6 +1563,18 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">mAP</td>
     <td align="center">0.698</td>
     <td align="center">0.698</td>
+    <td align="center">0.698</td>
+    <td align="center">0.697</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/open-mmlab/mmrotate/tree/main/configs/oriented_rcnn/oriented_rcnn_r50_fpn_1x_dota_le90.py">Oriented RCNN</a></td>
+    <td align="center">Rotated Detection</td>
+    <td align="center">DOTA-v1.0</td>
+    <td align="center">mAP</td>
+    <td align="center">0.756</td>
+    <td align="center">0.756</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
@@ -1490,4 +1601,5 @@ GPU: ncnn, TensorRT, PPLNN
 - 由于某些数据集在代码库中包含各种分辨率的图像，例如 MMDet，速度基准是通过 MMDeploy 中的静态配置获得的，而性能基准是通过动态配置获得的
 - TensorRT 的一些 int8 性能基准测试需要有 tensor core 的 Nvidia 卡，否则性能会大幅下降
 - DBNet 在模型 `neck` 使用了`nearest` 插值，TensorRT-7 用了与 Pytorch 完全不同的策略。为了使与 TensorRT-7 兼容，我们重写了`neck`以使用`bilinear`插值，这提高了检测性能。为了获得与 Pytorch 匹配的性能，推荐使用 TensorRT-8+，其插值方法与 Pytorch 相同。
-- 对于 mmpose 模型，是在模型配置文件中 `flip_test` 需设置为 `False`
+- 对于 mmpose 模型，在模型配置文件中 `flip_test` 需设置为 `False`
+- 部分模型在 fp16 模式下可能存在较大的精度损失，请根据具体情况对模型进行调整。

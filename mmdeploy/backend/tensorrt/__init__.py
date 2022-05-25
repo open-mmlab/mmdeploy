@@ -3,8 +3,6 @@
 import importlib
 import os.path as osp
 
-import torch
-
 from .init_plugins import get_ops_path, load_tensorrt_plugin
 
 
@@ -15,8 +13,7 @@ def is_available():
         bool: True if TensorRT package is installed and cuda is available.
     """
 
-    return importlib.util.find_spec('tensorrt') is not None and \
-        torch.cuda.is_available()
+    return importlib.util.find_spec('tensorrt') is not None
 
 
 def is_plugin_available():
@@ -31,9 +28,15 @@ def is_plugin_available():
 
 if is_available():
     from .utils import create_trt_engine, load_trt_engine, save_trt_engine
-    from .wrapper import TRTWrapper
 
     __all__ = [
         'create_trt_engine', 'save_trt_engine', 'load_trt_engine',
-        'TRTWrapper', 'load_tensorrt_plugin'
+        'load_tensorrt_plugin'
     ]
+
+    try:
+        # import wrapper if pytorch is available
+        from .wrapper import TRTWrapper
+        __all__ += ['TRTWrapper']
+    except Exception:
+        pass

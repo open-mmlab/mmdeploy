@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import numpy as np
 import torch
-from mmrotate.core import norm_angle
+from mmrotate.core import poly2obb
 
 from mmdeploy.core import FUNCTION_REWRITER
 
@@ -92,33 +92,12 @@ def delta2bbox(ctx,
                           center_polys[..., 1::2] * center_polys[..., 1::2])
     max_diag_len, _ = torch.max(diag_len, dim=-1, keepdim=True)
     diag_scale_factor = max_diag_len / diag_len
-    center_polys = center_polys * diag_scale_factor.transpose(3, 4).repeat(
-        1, 1, 1, 1, 2).view(*center_polys.shape[:3], -1, 1).transpose(3, 4)
+    center_polys_shape = center_polys.shape
+    center_polys = center_polys.view(*center_polys_shape[:3], 4,
+                                     -1) * diag_scale_factor.view(
+                                         *center_polys_shape[:3], 4, 1)
+    center_polys = center_polys.view(center_polys_shape)
     rectpolys = center_polys + center
+    obboxes = poly2obb(rectpolys, version).view(delta_shape[:-1] + (5, ))
 
-    # poly2obb
-    polys = torch.reshape(rectpolys, [-1, 8])
-    pt1, pt2, pt3, pt4 = polys[..., :8].chunk(4, 1)
-    edge1 = torch.sqrt(
-        torch.pow(pt1[..., 0] - pt2[..., 0], 2) +
-        torch.pow(pt1[..., 1] - pt2[..., 1], 2))
-    edge2 = torch.sqrt(
-        torch.pow(pt2[..., 0] - pt3[..., 0], 2) +
-        torch.pow(pt2[..., 1] - pt3[..., 1], 2))
-    angles1 = torch.atan(
-        (pt2[..., 1] - pt1[..., 1]) / (pt2[..., 0] - pt1[..., 0] + 1e-6))
-    angles2 = torch.atan(
-        (pt4[..., 1] - pt1[..., 1]) / (pt4[..., 0] - pt1[..., 0] + 1e-6))
-    angles = polys.new_zeros(polys.shape[0])
-    angles[edge1 > edge2] = angles1[edge1 > edge2]
-    angles[edge1 <= edge2] = angles2[edge1 <= edge2]
-    angles = norm_angle(angles, version)
-    angles[angles > 1.57] = -angles[angles > 1.57]
-    x_ctr = (pt1[..., 0] + pt3[..., 0]) / 2.0
-    y_ctr = (pt1[..., 1] + pt3[..., 1]) / 2.0
-    edges = torch.stack([edge1, edge2], dim=1)
-    width, _ = torch.max(edges, 1)
-    height, _ = torch.min(edges, 1)
-    obboxes = torch.stack([x_ctr, y_ctr, width, height, angles], 1)
-
-    return obboxes.view(delta_shape[:-1] + (5, ))
+    return obboxes

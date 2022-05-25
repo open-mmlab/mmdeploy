@@ -18,6 +18,7 @@
 | Cascade R-CNN             | MMDetection      |      N      |      Y      |     Y    |   N   |   Y   |     Y    | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/cascade_rcnn)           |
 | Cascade Mask R-CNN        | MMDetection      |      N      |      Y      |     Y    |   N   |   N   |     Y    | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/cascade_rcnn)           |
 | VFNet                     | MMDetection      |      N      |      N      |     N    |   N   |   N   |     Y    | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/vfnet)                  |
+| RepPoints                 | MMDetection      |      N      |      N      |     Y    |   N   |   ?   |    Y     | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/reppoints)     |
 | ResNet                    | MMClassification |      Y      |      Y      |     Y    |   Y   |   Y   |     Y    | [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnet)            |
 | ResNeXt                   | MMClassification |      Y      |      Y      |     Y    |   Y   |   Y   |     Y    | [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnext)           |
 | SE-ResNet                 | MMClassification |      Y      |      Y      |     Y    |   Y   |   Y   |     Y    | [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/seresnet)          |
@@ -67,6 +68,7 @@
 | LiteHRNet                 | MMPose           |      N      |      Y      |     Y    |   N   |   N   |     Y    |  [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#litehrnet-cvpr-2021)   |
 | PointPillars              | MMDetection3d    |      ?      |      Y      |     Y    |   N   |   N   |     Y    | [config](https://github.com/open-mmlab/mmdetection3d/blob/master/configs/pointpillars)         |
 | CenterPoint (pillar)      | MMDetection3d    |      ?      |      Y      |     Y    |   N   |   N   |     Y    | [config](https://github.com/open-mmlab/mmdetection3d/blob/master/configs/centerpoint)          |
+| RotatedRetinaNet          | RotatedDetection |      N      |      Y      |    Y     |   N   |   N   |     N    | [config](https://github.com/open-mmlab/mmrotate/blob/main/configs/rotated_retinanet/README.md) |
 
 ### Note
 
