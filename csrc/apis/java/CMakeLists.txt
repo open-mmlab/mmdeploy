@@ -16,6 +16,7 @@ macro(mmdeploy_java_add_module name)
     list(APPEND MMDEPLOY_JAVA_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/${name}.cpp)
 endmacro()
 
+mmdeploy_java_add_module(classifier)
 mmdeploy_java_add_module(detector)
 add_library(${PROJECT_NAME} SHARED ${MMDEPLOY_JAVA_SRCS})
 
