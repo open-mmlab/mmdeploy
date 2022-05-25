@@ -16,8 +16,8 @@ GCC_COMPILER="g++"
 
 #####
 # Directories
-# WORKING_DIR must correspond to script dir, i.e. MMDeploy root
-WORKING_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+# WORKING_DIR must correspond to MMDeploy root dir
+WORKING_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd )"
 PPLCV_DIR=${WORKING_DIR}/ppl.cv
 MMDEPLOY_DIR=${WORKING_DIR}
 
