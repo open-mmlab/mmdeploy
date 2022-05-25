@@ -1954,9 +1954,9 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td>model config file</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2">RotatedRetinaNet</td>
-    <td align="center" rowspan="2">Rotated Detection</td>
-    <td align="center" rowspan="2">DOTA-v1.0</td>
+    <td align="center">RotatedRetinaNet</td>
+    <td align="center">Rotated Detection</td>
+    <td align="center">DOTA-v1.0</td>
     <td align="center">mAP</td>
     <td align="center">0.698</td>
     <td align="center">0.698</td>
@@ -1964,7 +1964,20 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center">0.697</td>
     <td align="center">-</td>
     <td align="center">-</td>
-    <td rowspan="2">$MMROTATE_DIR/configs/rotated_retinanet/rotated_retinanet_obb_r50_fpn_1x_dota_le135.py</td>
+    <td>$MMROTATE_DIR/configs/rotated_retinanet/rotated_retinanet_obb_r50_fpn_1x_dota_le135.py</td>
+  </tr>
+  <tr>
+    <td align="center">Oriented RCNN</td>
+    <td align="center">Rotated Detection</td>
+    <td align="center">DOTA-v1.0</td>
+    <td align="center">mAP</td>
+    <td align="center">0.756</td>
+    <td align="center">0.756</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td>$MMROTATE_DIR/configs/oriented_rcnn/oriented_rcnn_r50_fpn_1x_dota_le90.py</td>
   </tr>
 </tbody>
 </table>

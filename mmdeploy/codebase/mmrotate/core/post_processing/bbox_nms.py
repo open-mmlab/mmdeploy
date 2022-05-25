@@ -1,17 +1,19 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
+from mmrotate.core import obb2xyxy
 from torch import Tensor
 
 import mmdeploy
 from mmdeploy.core import FUNCTION_REWRITER, mark
-from mmdeploy.mmcv.ops import ONNXNMSRotatedOp, TRTBatchedRotatedNMSop
+from mmdeploy.mmcv.ops import (ONNXNMSop, ONNXNMSRotatedOp,
+                               TRTBatchedRotatedNMSop)
 
 
-def select_nms_index(scores: torch.Tensor,
-                     boxes: torch.Tensor,
-                     nms_index: torch.Tensor,
-                     batch_size: int,
-                     keep_top_k: int = -1):
+def select_rnms_index(scores: torch.Tensor,
+                      boxes: torch.Tensor,
+                      nms_index: torch.Tensor,
+                      batch_size: int,
+                      keep_top_k: int = -1):
     """Transform NMSRotated output.
 
     Args:
@@ -85,6 +87,7 @@ def _multiclass_nms_rotated(boxes: Tensor,
     op. It only supports class-agnostic detection results. That is, the scores
     is of shape (N, num_bboxes, num_classes) and the boxes is of shape
     (N, num_boxes, 5).
+
     Args:
         boxes (Tensor): The bounding boxes of shape [N, num_boxes, 5].
         scores (Tensor): The detection scores of shape
@@ -114,7 +117,7 @@ def _multiclass_nms_rotated(boxes: Tensor,
     selected_indices = ONNXNMSRotatedOp.apply(boxes, scores, iou_threshold,
                                               score_threshold)
 
-    dets, labels = select_nms_index(
+    dets, labels = select_rnms_index(
         scores, boxes, selected_indices, batch_size, keep_top_k=keep_top_k)
 
     return dets, labels
@@ -173,3 +176,47 @@ def multiclass_nms_rotated(*args, **kwargs):
     """Wrapper function for `_multiclass_nms`."""
     return mmdeploy.codebase.mmrotate.core.post_processing.bbox_nms.\
         _multiclass_nms_rotated(*args, **kwargs)
+
+
+@mark(
+    'fake_multiclass_nms_rotated',
+    inputs=['boxes', 'scores'],
+    outputs=['dets', 'labels'])
+def fake_multiclass_nms_rotated(boxes: Tensor,
+                                scores: Tensor,
+                                max_output_boxes_per_class: int = 1000,
+                                iou_threshold: float = 0.5,
+                                score_threshold: float = 0.0,
+                                pre_top_k: int = -1,
+                                keep_top_k: int = -1,
+                                version: str = 'le90'):
+    """Fake NMSRotated for multi-class bboxes which use horizontal bboxes for
+    NMS, but return the rotated bboxes result.
+
+    This function helps exporting to onnx with batch and multiclass NMS op. It
+    only supports class-agnostic detection results. That is, the scores is of
+    shape (N, num_bboxes, num_classes) and the boxes is of shape (N, num_boxes,
+    5).
+    """
+    max_output_boxes_per_class = torch.LongTensor([max_output_boxes_per_class])
+    iou_threshold = torch.tensor([iou_threshold], dtype=torch.float32)
+    score_threshold = torch.tensor([score_threshold], dtype=torch.float32)
+    batch_size = scores.shape[0]
+
+    if pre_top_k > 0:
+        max_scores, _ = scores.max(-1)
+        _, topk_inds = max_scores.topk(pre_top_k)
+        batch_inds = torch.arange(batch_size).view(-1, 1).long()
+        boxes = boxes[batch_inds, topk_inds, :]
+        scores = scores[batch_inds, topk_inds, :]
+
+    scores = scores.permute(0, 2, 1)
+    hboxes = obb2xyxy(boxes, version)
+    selected_indices = ONNXNMSop.apply(hboxes, scores,
+                                       max_output_boxes_per_class,
+                                       iou_threshold, score_threshold)
+
+    dets, labels = select_rnms_index(
+        scores, boxes, selected_indices, batch_size, keep_top_k=keep_top_k)
+
+    return dets, labels
