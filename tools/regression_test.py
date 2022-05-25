@@ -885,7 +885,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
         cwd=str(Path(__file__).absolute().parent.parent),
         shell=True,
         stdout=subprocess.PIPE,
-        bufsize=20)
+        bufsize=50)
     process_res.wait()
     logger.info(f'Got shell_res = {process_res.returncode}')
 
