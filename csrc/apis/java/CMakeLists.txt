@@ -18,6 +18,7 @@ endmacro()
 
 mmdeploy_java_add_module(classifier)
 mmdeploy_java_add_module(detector)
+mmdeploy_java_add_module(segmentor)
 add_library(${PROJECT_NAME} SHARED ${MMDEPLOY_JAVA_SRCS})
 
 mmdeploy_load_static(${PROJECT_NAME} MMDeployStaticModules)
