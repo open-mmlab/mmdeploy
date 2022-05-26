@@ -35,7 +35,7 @@ __global__ void output_add_bias_kernel(scalar_t* output, const scalar_t* bias, s
   CUDA_1D_KERNEL_LOOP(index, n) { output[index] += bias[(index % step_batch) / step_channel]; }
 }
 
-#if __CUDA_ARCH__ >= 530
+#if defined(__CUDA_ARCH__) && (__CUDA_ARCH__ >= 530)
 template <>
 __global__ void output_add_bias_kernel<__half>(__half* output, const __half* bias,
                                                size_t step_batch, size_t step_channel, size_t n) {
