@@ -879,28 +879,33 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
             cmd_str += f' --calib-dataset-cfg {calib_dataset_cfg}'
 
     logger.info(f'Process cmd = {cmd_str}')
-
-    # Convert the model to specific backend
-    process_res = subprocess.Popen(
-        cmd_str,
-        cwd=str(Path(__file__).absolute().parent.parent),
-        shell=True,
-        stdout=subprocess.PIPE,
-        bufsize=50)
-    process_res.wait()
-    logger.info(f'Got shell_res = {process_res.returncode}')
-
+    
+    convert_log_path = backend_output_path.joinpath('convert_log.log')
+    file_handler = open(convert_log_path, 'w', encoding='urf-8')
+    try:
+        # Convert the model to specific backend
+        process_res = subprocess.Popen(
+            cmd_str,
+            cwd=str(Path(__file__).absolute().parent.parent),
+            shell=True,
+            stdout=file_handler)
+        process_res.wait()
+        logger.info(f'Got shell_res = {process_res.returncode}')
+    except Exception as e:
+        print('process convert error')
+    finally:
+        file_handler.close()
+      
     # check if converted successes or not.
     if process_res.returncode == 0:
         convert_result = True
     else:
         convert_result = False
-        error_log_path = backend_output_path.joinpath('error.log')
-        logger.info(f'Logging error msg to {error_log_path} ...')
-        with open(error_log_path, 'w', encoding='utf-8') as f_log:
-            for line in process_res.stdout.readlines():
-                line = line.decode('utf-8')
-                f_log.write(line)
+#         logger.info(f'Logging error msg to {convert_log_path} ...')
+#         with open(error_log_path, 'w', encoding='utf-8') as f_log:
+#             for line in process_res.stdout.readlines():
+#                 line = line.decode('utf-8')
+#                 f_log.write(line)
 
     logger.info(f'Got convert_result = {convert_result}')
 
