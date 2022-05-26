@@ -14,6 +14,8 @@ namespace panet {
 void SigmoidAndThreshold(const float* d_logit, int n, float thr, uint8_t* d_mask, float* d_score,
                          cudaStream_t stream);
 
+void Transpose(const float* d_input, int h, int w, float* d_output, cudaStream_t stream);
+
 }
 
 namespace dbnet {

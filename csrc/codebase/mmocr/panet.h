@@ -16,7 +16,7 @@ class PaHeadImpl {
  public:
   virtual ~PaHeadImpl() = default;
 
-  void Init(const Stream& stream) { stream_ = stream; }
+  virtual void Init(const Stream& stream) { stream_ = stream; }
 
   virtual Result<void> Process(Tensor text_pred,             //
                                Tensor kernel_pred,           //

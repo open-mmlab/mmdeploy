@@ -1,5 +1,8 @@
 // Copyright (c) OpenMMLab. All rights reserved
 
+// implementation based on "A new Direct Connected Component Labeling and Analysis Algorithms for
+// GPUs"
+// https://ieeexplore.ieee.org/document/8596835
 #include <vector>
 
 #include "connected_component.h"
@@ -142,6 +145,20 @@ __global__ void DiscretizeKernel(int* label, int h, int w, int* n_comp) {
         auto comp = atomicAdd(n_comp, 1);
         label[index] = encode(comp);
       }
+    }
+  }
+}
+
+__global__ void DecodeLabelKernel(const int* label, int h, int w, int* output) {
+  const auto x0 = static_cast<int>(threadIdx.x + blockIdx.x * blockDim.x);
+  const auto y0 = static_cast<int>(threadIdx.y + blockIdx.y * blockDim.y);
+  const auto stride_x = static_cast<int>(blockDim.x * gridDim.x);
+  const auto stride_y = static_cast<int>(blockDim.y * gridDim.y);
+  for (auto y = y0; y < h; y += stride_y) {
+    for (auto x = x0; x < w; x += stride_x) {
+      auto index = y * w + x;
+      auto comp = label[index];
+      output[index] = comp < -1 ? decode(comp) + 1 : 0;
     }
   }
 }
@@ -313,7 +330,11 @@ int ConnectedComponents::Impl::GetComponents(const uint8_t* d_mask, int* h_label
   }
   cudaMemcpyAsync(&n_comp_, d_n_comp_, sizeof(int), cudaMemcpyDefault, stream_);
   if (h_label) {
-    cudaMemcpyAsync(h_label, d_label_, sizeof(int) * size_, cudaMemcpyDefault, stream_);
+    dim3 threads(32, 4);
+    dim3 blocks(div_up(width_, (int)threads.x), div_up(height_, (int)threads.y));
+    // reuse d_comp_area_, which is also an int buffer
+    DecodeLabelKernel<<<blocks, threads, 0, stream_>>>(d_label_, height_, width_, d_comp_area_);
+    cudaMemcpyAsync(h_label, d_comp_area_, sizeof(int) * size_, cudaMemcpyDefault, stream_);
   }
   cudaStreamSynchronize(stream_);
   return n_comp_;

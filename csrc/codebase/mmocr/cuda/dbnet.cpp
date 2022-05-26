@@ -16,7 +16,10 @@ class DbHeadCudaImpl : public DbHeadImpl {
   void Init(const DbHeadParams& params, const Stream& stream) override {
     DbHeadImpl::Init(params, stream);
     device_ = stream_.GetDevice();
-    cc_.emplace(GetNative<cudaStream_t>(stream_));
+    {
+      CudaDeviceGuard device_guard(device_);
+      cc_.emplace(GetNative<cudaStream_t>(stream_));
+    }
   }
 
   Result<void> Process(Tensor score, std::vector<std::vector<cv::Point>>& contours,
