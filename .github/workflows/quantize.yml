@@ -26,7 +26,7 @@ jobs:
       matrix:
         python-version: [3.7]
         torch: [1.8.0+cu111]
-        mmcv: [1.5.1]
+        mmcv: [1.4.2]
         include:
           - torch: 1.8.0+cu111
             torch_version: torch1.8
