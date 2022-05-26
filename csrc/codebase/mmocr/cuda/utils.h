@@ -9,6 +9,13 @@
 
 namespace mmdeploy::mmocr {
 
+namespace panet {
+
+void SigmoidAndThreshold(const float* d_logit, int n, float thr, uint8_t* d_mask, float* d_score,
+                         cudaStream_t stream);
+
+}
+
 namespace dbnet {
 
 void Threshold(const float* d_score, int n, float thr, uint8_t* d_mask, cudaStream_t stream);

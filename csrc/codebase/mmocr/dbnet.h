@@ -6,10 +6,8 @@
 #include "codebase/mmocr/mmocr.h"
 #include "core/device.h"
 #include "core/registry.h"
-#include "core/serialization.h"
-#include "core/value.h"
+#include "core/tensor.h"
 #include "opencv2/core.hpp"
-#include "opencv2/imgproc.hpp"
 
 namespace mmdeploy {
 namespace mmocr {

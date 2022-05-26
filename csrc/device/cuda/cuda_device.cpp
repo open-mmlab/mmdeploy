@@ -16,28 +16,6 @@ inline const void* OffsetPtr(const void* ptr, size_t offset) {
   return static_cast<const void*>(static_cast<const uint8_t*>(ptr) + offset);
 }
 
-class CudaDeviceGuard {
- public:
-  explicit CudaDeviceGuard(Device device) : CudaDeviceGuard(device.device_id()) {}
-  explicit CudaDeviceGuard(int device_id) : device_id_(device_id), prev_device_id_(-1) {
-    CUcontext ctx{};
-    cuCtxGetCurrent(&ctx);
-    if (ctx) {
-      cudaGetDevice(&prev_device_id_);
-    }
-    if (prev_device_id_ != device_id_) cudaSetDevice(device_id_);
-  }
-  ~CudaDeviceGuard() {
-    if (prev_device_id_ >= 0 && prev_device_id_ != device_id_) {
-      cudaSetDevice(prev_device_id_);
-    }
-  }
-
- private:
-  int device_id_;
-  int prev_device_id_;
-};
-
 cudaMemcpyKind MapMemcpyKindToCuda(MemcpyKind kind) {
   switch (kind) {
     case MemcpyKind::HtoD:

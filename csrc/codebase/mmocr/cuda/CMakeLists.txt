@@ -10,7 +10,7 @@ if ("cuda" IN_LIST MMDEPLOY_TARGET_DEVICES)
     add_library(${PROJECT_NAME} OBJECT
             connected_component.cu
             utils.cu
-            dbhead.cpp)
+            dbnet.cpp)
     set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE 1)
     target_include_directories(${PROJECT_NAME} PRIVATE
             ${CUDA_INCLUDE_DIRS})

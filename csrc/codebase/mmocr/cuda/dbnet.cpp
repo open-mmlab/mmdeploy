@@ -4,9 +4,10 @@
 #include "codebase/mmocr/cuda/utils.h"
 #include "codebase/mmocr/dbnet.h"
 #include "core/utils/device_utils.h"
-#include "core/utils/formatter.h"
 #include "cuda_runtime.h"
+#include "device/cuda/cuda_device.h"
 #include "opencv2/imgcodecs.hpp"
+#include "opencv2/imgproc.hpp"
 
 namespace mmdeploy::mmocr {
 
@@ -20,6 +21,7 @@ class DbHeadCudaImpl : public DbHeadImpl {
 
   Result<void> Process(Tensor score, std::vector<std::vector<cv::Point>>& contours,
                        std::vector<float>& scores) override {
+    CudaDeviceGuard device_guard(device_);
     // MMDEPLOY_ERROR("score shape {}", score.shape());
     int height = score.shape(1);
     int width = score.shape(2);
