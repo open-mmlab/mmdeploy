@@ -39,6 +39,8 @@ class PaHeadCpuImpl : public PaHeadImpl {
     cv::transpose(embed, embed);
 
     region_num = cv::connectedComponents(kernel, label, 4, CV_32S);
+
+    return success();
   }
 
   static void sigmoid(cv::Mat_<float>& score) {
