@@ -3,7 +3,7 @@ import importlib
 import os.path as osp
 
 from .init_plugins import get_onnx2ncnn_path, get_ops_path
-from .utils import from_onnx
+from .onnx2ncnn import from_onnx
 
 
 def is_available():
