@@ -4,7 +4,9 @@
 #include "codebase/mmocr/cuda/utils.h"
 #include "codebase/mmocr/dbnet.h"
 #include "core/utils/device_utils.h"
+#include "core/utils/formatter.h"
 #include "cuda_runtime.h"
+#include "opencv2/imgcodecs.hpp"
 
 namespace mmdeploy::mmocr {
 
@@ -16,19 +18,33 @@ class DbHeadCudaImpl : public DbHeadImpl {
     cc_.emplace(GetNative<cudaStream_t>(stream_));
   }
 
-  Result<void> Process(Tensor logit, std::vector<std::vector<cv::Point>>& contours,
+  Result<void> Process(Tensor score, std::vector<std::vector<cv::Point>>& contours,
                        std::vector<float>& scores) override {
-    Buffer mask(device_, logit.size() * sizeof(uint8_t));
-    Buffer score(device_, logit.size() * sizeof(float));
+    // MMDEPLOY_ERROR("score shape {}", score.shape());
+    int height = score.shape(1);
+    int width = score.shape(2);
 
-    auto logit_data = logit.data<float>();
+    // Buffer cpu_score(Device(0), score.byte_size());
+    // OUTCOME_TRY(stream_.Copy(score.buffer(), cpu_score));
+    // OUTCOME_TRY(stream_.Wait());
+    // cv::Mat_<float> score_mat(height, width, GetNative<float*>(cpu_score));
+    // cv::imwrite("score.png", score_mat * 255);
+
+    Buffer mask(device_, score.size() * sizeof(uint8_t));
+
+    auto score_data = score.data<float>();
     auto mask_data = GetNative<uint8_t*>(mask);
-    auto prob_data = GetNative<float*>(score);
 
-    dbnet::SigmoidAndThreshold(logit_data, (int)logit.size(), params_->mask_thr, prob_data,
-                               mask_data);
+    dbnet::Threshold(score_data, height * width, params_.mask_thr, mask_data,
+                     GetNative<cudaStream_t>(stream_));
 
-    cc_->Resize((int)logit.shape(2), (int)logit.shape(3));
+    // Buffer cpu_mask(Device(0), mask.GetSize());
+    // OUTCOME_TRY(stream_.Copy(mask, cpu_mask));
+    // OUTCOME_TRY(stream_.Wait());
+    // cv::Mat_<uint8_t> mask_mat(height, width, GetNative<uint8_t*>(cpu_mask));
+    // cv::imwrite("mask.png", mask_mat * 255);
+
+    cc_->Resize(height, width);
     cc_->GetComponents(mask_data, nullptr);
 
     std::vector<std::vector<cv::Point>> points;
@@ -36,10 +52,10 @@ class DbHeadCudaImpl : public DbHeadImpl {
 
     std::vector<float> _scores;
     std::vector<int> _areas;
-    cc_->GetStats(mask_data, prob_data, _scores, _areas);
+    cc_->GetStats(mask_data, score_data, _scores, _areas);
 
-    if (points.size() > params_->max_candidates) {
-      points.resize(params_->max_candidates);
+    if (points.size() > params_.max_candidates) {
+      points.resize(params_.max_candidates);
     }
 
     for (int i = 0; i < points.size(); ++i) {
@@ -63,7 +79,7 @@ class DbHeadCudaImplCreator : public ::mmdeploy::Creator<DbHeadImpl> {
  public:
   const char* GetName() const override { return "cuda"; }
   int GetVersion() const override { return 0; }
-  std::unique_ptr<DbHeadImpl> Create(const Value& value) override {
+  std::unique_ptr<DbHeadImpl> Create(const Value&) override {
     return std::make_unique<DbHeadCudaImpl>();
   }
 };

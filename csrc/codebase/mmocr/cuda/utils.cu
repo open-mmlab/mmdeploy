@@ -9,21 +9,12 @@ namespace mmdeploy::mmocr {
 namespace dbnet {
 
 struct _op {
-  const float* data;
-  float* score;
-  uint8_t* mask;
   float thr;
-  __device__ void operator()(int idx) const {
-    float v = 1.f / (1.f + expf(-data[idx]));
-    score[idx] = v;
-    mask[idx] = v >= thr;
-  }
+  __device__ bool operator()(float score) const { return score >= thr; }
 };
 
-void SigmoidAndThreshold(const float* d_data, int n, float thr, float* d_score, uint8_t* d_mask) {
-  thrust::counting_iterator<int> index;
-
-  thrust::for_each_n(index, n, _op{d_data, d_score, d_mask, thr});
+void Threshold(const float* d_score, int n, float thr, uint8_t* d_mask, cudaStream_t stream) {
+  thrust::transform(thrust::cuda::par.on(stream), d_score, d_score + n, d_mask, _op{thr});
 }
 
 }  // namespace dbnet

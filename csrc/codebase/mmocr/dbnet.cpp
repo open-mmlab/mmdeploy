@@ -32,10 +32,10 @@ class DBHead : public MMOCR {
       params_.rescale = params.value("rescale", params_.rescale);
       params_.downsample_ratio = params.value("downsample_ratio", params_.downsample_ratio);
     }
-    auto platform_name = Platform(device_.platform_id()).GetPlatformName();
-    auto creator = Registry<DbHeadImpl>::Get().GetCreator(platform_name);
+    auto platform = Platform(device_.platform_id()).GetPlatformName();
+    auto creator = Registry<DbHeadImpl>::Get().GetCreator(platform);
     if (!creator) {
-      MMDEPLOY_ERROR("DBHead: implementation for platform {} not found", platform_name);
+      MMDEPLOY_ERROR("DBHead: implementation for platform \"{}\" not found", platform);
       throw_exception(eEntryNotFound);
     }
     impl_ = creator->Create(nullptr);
@@ -50,6 +50,9 @@ class DBHead : public MMOCR {
       return Status(eNotSupported);
     }
 
+    conf.Squeeze();
+    conf = conf.Slice(0);
+
     std::vector<std::vector<cv::Point>> contours;
     std::vector<float> scores;
     OUTCOME_TRY(impl_->Process(conf, contours, scores));
@@ -63,6 +66,9 @@ class DBHead : public MMOCR {
 
     TextDetectorOutput output;
     for (int idx = 0; idx < contours.size(); ++idx) {
+      if (scores[idx] < params_.min_text_score) {
+        continue;
+      }
       auto expanded = unclip(contours[idx], params_.unclip_ratio);
       if (expanded.empty()) {
         continue;
@@ -112,8 +118,8 @@ class DBHead : public MMOCR {
     return ret;
   }
 
-  std::unique_ptr<DbHeadImpl> impl_;
   DbHeadParams params_;
+  std::unique_ptr<DbHeadImpl> impl_;
 };
 
 REGISTER_CODEBASE_COMPONENT(MMOCR, DBHead);

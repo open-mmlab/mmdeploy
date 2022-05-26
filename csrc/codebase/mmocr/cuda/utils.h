@@ -5,11 +5,13 @@
 
 #include <cstdint>
 
+#include "cuda_runtime.h"
+
 namespace mmdeploy::mmocr {
 
 namespace dbnet {
 
-void SigmoidAndThreshold(const float* d_data, int n, float thr, float* d_score, uint8_t* d_mask);
+void Threshold(const float* d_score, int n, float thr, uint8_t* d_mask, cudaStream_t stream);
 
 }
 

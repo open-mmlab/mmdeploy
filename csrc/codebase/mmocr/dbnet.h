@@ -27,8 +27,10 @@ struct DbHeadParams {
 
 class DbHeadImpl {
  public:
+  virtual ~DbHeadImpl() = default;
+
   virtual void Init(const DbHeadParams& params, const Stream& stream) {
-    params_ = &params;
+    params_ = params;
     stream_ = stream;
   }
 
@@ -36,7 +38,7 @@ class DbHeadImpl {
                                std::vector<float>& scores) = 0;
 
  protected:
-  const DbHeadParams* params_{};
+  DbHeadParams params_{};
   Stream stream_;
 };
 

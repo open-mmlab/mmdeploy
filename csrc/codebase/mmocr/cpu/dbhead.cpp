@@ -2,6 +2,7 @@
 
 #include "codebase/mmocr/dbnet.h"
 #include "core/utils/device_utils.h"
+#include "opencv2/imgcodecs.hpp"
 
 namespace mmdeploy::mmocr {
 
@@ -9,7 +10,7 @@ class DbHeadCpuImpl : public DbHeadImpl {
  public:
   void Init(const DbHeadParams& params, const Stream& stream) override {
     DbHeadImpl::Init(params, stream);
-    device_ = stream.GetDevice();
+    device_ = Device("cpu");
   }
 
   Result<void> Process(Tensor prob, std::vector<std::vector<cv::Point>>& points,
@@ -17,25 +18,22 @@ class DbHeadCpuImpl : public DbHeadImpl {
     OUTCOME_TRY(auto conf, MakeAvailableOnDevice(prob, device_, stream_));
     OUTCOME_TRY(stream_.Wait());
 
-    auto h = conf.shape(2);
-    auto w = conf.shape(3);
-    auto data = conf.buffer().GetNative();
+    auto h = conf.shape(1);
+    auto w = conf.shape(2);
+    auto data = conf.data<float>();
 
     cv::Mat score_map((int)h, (int)w, CV_32F, data);
 
-    //    cv::imwrite("conf.png", score_map * 255.);
+    // cv::imwrite("conf.png", score_map * 255.);
 
-    cv::Mat text_mask;
-    cv::threshold(score_map, text_mask, params_->mask_thr, 1.f, cv::THRESH_BINARY);
-
-    text_mask.convertTo(text_mask, CV_8U, 255);
-    //    cv::imwrite("text_mask.png", text_mask);
+    cv::Mat text_mask = score_map >= params_.mask_thr;
+    // cv::imwrite("text_mask.png", text_mask);
 
     std::vector<std::vector<cv::Point>> contours;
     cv::findContours(text_mask, contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
 
-    if (contours.size() > params_->max_candidates) {
-      contours.resize(params_->max_candidates);
+    if (contours.size() > params_.max_candidates) {
+      contours.resize(params_.max_candidates);
     }
 
     for (auto& poly : contours) {
@@ -71,7 +69,7 @@ class DbHeadCpuImplCreator : public ::mmdeploy::Creator<DbHeadImpl> {
  public:
   const char* GetName() const override { return "cpu"; }
   int GetVersion() const override { return 0; }
-  std::unique_ptr<DbHeadImpl> Create(const Value& value) override {
+  std::unique_ptr<DbHeadImpl> Create(const Value&) override {
     return std::make_unique<DbHeadCpuImpl>();
   }
 };
