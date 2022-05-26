@@ -54,7 +54,7 @@ python3 tools/deploy.py  configs/mmcls/classification_ncnn-int8_static.py  ${MOD
 | 参数 | 含义 |
 |:-:|:-:|
 |--quant|是否开启量化，默认为 False|
-|--quant-image-dir|校准数据集，若不指定则使用 MODEL_CONFIG 中的验证集，默认为 None|
+|--quant-image-dir|校准数据集，若不指定则使用 MODEL_CONFIG 中的 val 集，默认为 None|
 
 
 ## 自建校准数据集
