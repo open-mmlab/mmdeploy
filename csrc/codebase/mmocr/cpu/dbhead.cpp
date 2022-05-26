@@ -27,7 +27,6 @@ class DbHeadCpuImpl : public DbHeadImpl {
     // cv::imwrite("conf.png", score_map * 255.);
 
     cv::Mat text_mask = score_map >= params_.mask_thr;
-    // cv::imwrite("text_mask.png", text_mask);
 
     std::vector<std::vector<cv::Point>> contours;
     cv::findContours(text_mask, contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);

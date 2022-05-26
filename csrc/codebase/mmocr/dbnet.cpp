@@ -60,8 +60,8 @@ class DBHead : public MMOCR {
     auto scale_w = 1.f;
     auto scale_h = 1.f;
     if (params_.rescale) {
-      scale_w = params_.downsample_ratio / _data["img_metas"]["scale_factor"][0].get<float>();
-      scale_h = params_.downsample_ratio / _data["img_metas"]["scale_factor"][1].get<float>();
+      scale_w /= params_.downsample_ratio * _data["img_metas"]["scale_factor"][0].get<float>();
+      scale_h /= params_.downsample_ratio * _data["img_metas"]["scale_factor"][1].get<float>();
     }
 
     TextDetectorOutput output;
@@ -81,8 +81,8 @@ class DBHead : public MMOCR {
       rect.points(box_points.data());
       auto& bbox = output.boxes.emplace_back();
       for (int i = 0; i < 4; ++i) {
-        bbox[i * 2] = box_points[i].x * scale_w;
-        bbox[i * 2 + 1] = box_points[i].y * scale_h;
+        bbox[i * 2] = cvRound(box_points[i].x * scale_w);
+        bbox[i * 2 + 1] = cvRound(box_points[i].y * scale_h);
       }
       output.scores.push_back(scores[idx]);
     }
