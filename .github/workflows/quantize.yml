@@ -49,7 +49,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -V
-          python -m pip install protobuf=3.12.0
+          python -m pip install protobuf==3.12.0
           python -m pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cu111/${{matrix.torch_version}}/index.html
           python -m pip install -r requirements.txt
           python -m pip install -U numpy
