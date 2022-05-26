@@ -881,7 +881,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
     logger.info(f'Process cmd = {cmd_str}')
 
     convert_log_path = backend_output_path.joinpath('convert_log.log')
-    file_handler = open(convert_log_path, 'w', encoding='urf-8')
+    file_handler = open(convert_log_path, 'w', encoding='utf-8')
     try:
         # Convert the model to specific backend
         process_res = subprocess.Popen(
