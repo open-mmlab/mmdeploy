@@ -166,7 +166,7 @@ TRTBatchedNMSCreator::TRTBatchedNMSCreator() {
       PluginField("iou_threshold", nullptr, PluginFieldType::kFLOAT32, 1));
   mPluginAttributes.emplace_back(PluginField("is_normalized", nullptr, PluginFieldType::kINT32, 1));
   mPluginAttributes.emplace_back(PluginField("clip_boxes", nullptr, PluginFieldType::kINT32, 1));
-  mPluginAttributes.emplace_back(PluginField("return_type", nullptr, PluginFieldType::kINT32, 1));
+  mPluginAttributes.emplace_back(PluginField("return_index", nullptr, PluginFieldType::kINT32, 1));
 
   mFC.nbFields = mPluginAttributes.size();
   mFC.fields = mPluginAttributes.data();

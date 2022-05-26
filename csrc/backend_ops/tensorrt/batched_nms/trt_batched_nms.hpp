@@ -58,7 +58,6 @@ class TRTBatchedNMS : public TRTPluginBase {
 
  private:
   nvinfer1::plugin::NMSParameters param{};
-  int numPriors{};
   bool mClipBoxes{};
   bool mReturnIndex{};
 };

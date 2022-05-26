@@ -180,8 +180,8 @@ class TRTBatchedNMSop(torch.autograd.Function):
                torch.randint(0, num_classes,
                              (batch_size, out_boxes)).to(scores.device))
         if return_index:
-            ret = ret + (torch.rand(batch_size, out_boxes, 2).to(
-                scores.device), )
+            ret = ret + (torch.randint(
+                0, out_boxes, (batch_size, out_boxes)).to(scores.device), )
         return ret
 
     @staticmethod

@@ -263,15 +263,23 @@ def _fake_multiclass_nms_rotated__tensorrt(
         tuple[Tensor, Tensor]: (dets, labels), `dets` of shape [N, num_det, 6]
             and `labels` of shape [N, num_det].
     """
+    batch_size = boxes.size(0)
+    device = boxes.device
     hboxes = obb2xyxy(boxes, version)
-    hboxes = boxes if boxes.dim() == 4 else boxes.unsqueeze(2)
+    hboxes = hboxes if hboxes.dim() == 4 else hboxes.unsqueeze(2)
     keep_top_k = max_output_boxes_per_class if keep_top_k < 0 else min(
         max_output_boxes_per_class, keep_top_k)
     if pre_top_k > 512 * 10 or pre_top_k < 0:
         pre_top_k = 512 * 10
 
-    dets, labels = TRTBatchedNMSop.apply(hboxes, scores, int(scores.shape[-1]),
-                                         pre_top_k, keep_top_k, iou_threshold,
-                                         score_threshold, -1)
+    dets, labels, index = TRTBatchedNMSop.apply(hboxes, scores,
+                                                int(scores.shape[-1]),
+                                                pre_top_k, keep_top_k,
+                                                iou_threshold, score_threshold,
+                                                -1, True)
+
+    dets = torch.cat([boxes, scores], dim=-1)
+    batch_inds = torch.arange(batch_size, device=device).view(-1, 1)
+    dets = dets[batch_inds, index, :]
 
     return dets, labels
