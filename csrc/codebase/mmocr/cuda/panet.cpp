@@ -19,6 +19,11 @@ class PaHeadCudaImpl : public PaHeadImpl {
     }
   }
 
+  ~PaHeadCudaImpl() override {
+    CudaDeviceGuard device_guard(device_);
+    cc_.reset();
+  }
+
   Result<void> Process(Tensor text_pred,             //
                        Tensor kernel_pred,           //
                        Tensor embed_pred,            //

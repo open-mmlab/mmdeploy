@@ -11,7 +11,8 @@ if ("cuda" IN_LIST MMDEPLOY_TARGET_DEVICES)
             connected_component.cu
             utils.cu
             dbnet.cpp
-            panet.cpp)
+            panet.cpp
+            psenet.cpp)
     set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE 1)
     target_include_directories(${PROJECT_NAME} PRIVATE
             ${CUDA_INCLUDE_DIRS})

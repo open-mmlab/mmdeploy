@@ -1,8 +1,9 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
+#include "codebase/mmocr/dbnet.h"
+
 #include "codebase/mmocr/cuda/connected_component.h"
 #include "codebase/mmocr/cuda/utils.h"
-#include "codebase/mmocr/dbnet.h"
 #include "core/utils/device_utils.h"
 #include "cuda_runtime.h"
 #include "device/cuda/cuda_device.h"
@@ -20,6 +21,11 @@ class DbHeadCudaImpl : public DbHeadImpl {
       CudaDeviceGuard device_guard(device_);
       cc_.emplace(GetNative<cudaStream_t>(stream_));
     }
+  }
+
+  ~DbHeadCudaImpl() override {
+    CudaDeviceGuard device_guard(device_);
+    cc_.reset();
   }
 
   Result<void> Process(Tensor score, std::vector<std::vector<cv::Point>>& contours,

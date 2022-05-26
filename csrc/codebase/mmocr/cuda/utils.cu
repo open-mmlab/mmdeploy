@@ -6,9 +6,9 @@
 
 namespace mmdeploy::mmocr {
 
-namespace panet {
-
 __device__ float sigmoid(float x) { return 1.f / (1.f + expf(-x)); }
+
+namespace panet {
 
 struct _process_masks_op {
   const float* text_pred;
@@ -31,10 +31,9 @@ struct _process_masks_op {
 void ProcessMasks(const float* d_text_pred, const float* d_kernel_pred, float text_thr,
                   float kernel_thr, int n, uint8_t* d_text_mask, uint8_t* d_kernel_mask,
                   float* d_text_score, cudaStream_t stream) {
-  thrust::counting_iterator<int> index{0};
-  _process_masks_op op{d_text_pred, d_kernel_pred, text_thr,    kernel_thr,
-                       d_text_mask, d_kernel_mask, d_text_score};
-  thrust::for_each_n(thrust::cuda::par.on(stream), index, n, op);
+  thrust::for_each_n(thrust::cuda::par.on(stream), thrust::counting_iterator<int>(0), n,
+                     _process_masks_op{d_text_pred, d_kernel_pred, text_thr, kernel_thr,
+                                       d_text_mask, d_kernel_mask, d_text_score});
 }
 
 struct _transpose_op {
@@ -50,9 +49,8 @@ struct _transpose_op {
 };
 
 void Transpose(const float* d_input, int h, int w, float* d_output, cudaStream_t stream) {
-  thrust::counting_iterator<int> index{0};
-  _transpose_op op{d_input, d_output, h, w};
-  thrust::for_each_n(thrust::cuda::par.on(stream), index, h * w, op);
+  thrust::for_each_n(thrust::cuda::par.on(stream), thrust::counting_iterator<int>(0), h * w,
+                     _transpose_op{d_input, d_output, h, w});
 }
 
 }  // namespace panet
@@ -65,10 +63,39 @@ struct _threshold_op {
 };
 
 void Threshold(const float* d_score, int n, float thr, uint8_t* d_mask, cudaStream_t stream) {
-  _threshold_op op{thr};
-  thrust::transform(thrust::cuda::par.on(stream), d_score, d_score + n, d_mask, op);
+  thrust::transform(thrust::cuda::par.on(stream), d_score, d_score + n, d_mask, _threshold_op{thr});
 }
 
 }  // namespace dbnet
+
+namespace psenet {
+
+struct _process_masks_op {
+  const float* preds;
+  int c;
+  int n;
+  float thr;
+  uint8_t* masks;
+  float* score;
+  __device__ void operator()(int index) const {
+    bool m0 = false;
+    for (int i = 0; i < c; ++i) {
+      auto v = sigmoid(preds[i * n + index]);
+      if (i == 0) {
+        score[index] = v;
+        m0 = v > thr;
+      }
+      masks[i * n + index] = (m0 && v > thr) ? 255 : 0;
+    }
+  }
+};
+
+void ProcessMasks(const float* d_preds, int c, int n, float thr, uint8_t* d_masks, float* d_score,
+                  cudaStream_t stream) {
+  thrust::for_each_n(thrust::cuda::par.on(stream), thrust::counting_iterator<int>(0), n,
+                     _process_masks_op{d_preds, c, n, thr, d_masks, d_score});
+}
+
+}  // namespace psenet
 
 }  // namespace mmdeploy::mmocr

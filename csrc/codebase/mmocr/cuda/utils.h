@@ -25,6 +25,13 @@ void Threshold(const float* d_score, int n, float thr, uint8_t* d_mask, cudaStre
 
 }
 
+namespace psenet {
+
+void ProcessMasks(const float* d_preds, int c, int n, float thr, uint8_t* d_masks, float* d_score,
+                  cudaStream_t stream);
+
+}
+
 }  // namespace mmdeploy::mmocr
 
 #endif  // MMDEPLOY_CSRC_CODEBASE_MMOCR_CUDA_UTILS_H_
