@@ -29,8 +29,7 @@ int ConstantOfShape::forward(const Mat& bottom_blob, Mat& top_blob, const Option
     if (top_blob.empty()) return -100;
     top_blob.fill(val);
     return 0;
-  }
-  if (dims == 2) {
+  } else if (dims == 2) {
     int h = (int)(shape_ptr[0] + 0.5);
     int w = (int)(shape_ptr[1] + 0.5);
     size_t elemsize = sizeof(val);
@@ -38,8 +37,7 @@ int ConstantOfShape::forward(const Mat& bottom_blob, Mat& top_blob, const Option
     if (top_blob.empty()) return -100;
     top_blob.fill(val);
     return 0;
-  }
-  if (dims == 3) {
+  } else if (dims == 3) {
     int channels = (int)(shape_ptr[0] + 0.5);
     int h = (int)(shape_ptr[1] + 0.5);
     int w = (int)(shape_ptr[2] + 0.5);
@@ -49,6 +47,7 @@ int ConstantOfShape::forward(const Mat& bottom_blob, Mat& top_blob, const Option
     top_blob.fill(val);
     return 0;
   }
+  return -1;
 }
 
 }  // namespace mmdeploy

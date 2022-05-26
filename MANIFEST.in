@@ -1,1 +1,7 @@
 include requirements/*.txt
+include mmdeploy/backend/ncnn/*.so
+include mmdeploy/backend/ncnn/*.dll
+include mmdeploy/backend/ncnn/*.pyd
+include mmdeploy/lib/*.so
+include mmdeploy/lib/*.dll
+include mmdeploy/lib/*.pyd

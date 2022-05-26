@@ -42,7 +42,7 @@ You should ensure your gcc satisfies `gcc >= 6`.
 
     - Install pyncnn module
         ```bash
-        cd ${NCNN_DIR} # To NCNN root directory
+        cd ${NCNN_DIR} # To ncnn root directory
         cd python
         pip install -e .
         ```
@@ -58,7 +58,7 @@ cmake -DMMDEPLOY_TARGET_BACKENDS=ncnn ..
 make -j$(nproc)
 ```
 
-If you haven't installed NCNN in the default path, please add `-Dncnn_DIR` flag in cmake.
+If you haven't installed ncnn in the default path, please add `-Dncnn_DIR` flag in cmake.
 
 ```bash
  cmake -DMMDEPLOY_TARGET_BACKENDS=ncnn -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn ..

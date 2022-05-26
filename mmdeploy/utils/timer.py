@@ -5,7 +5,8 @@ from contextlib import contextmanager
 from typing import Optional
 
 import torch
-from mmcv.utils import get_logger
+
+from mmdeploy.utils.logging import get_logger
 
 
 class TimeCounter:
