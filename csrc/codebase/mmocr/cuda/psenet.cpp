@@ -54,7 +54,8 @@ class PseHeadCudaImpl : public PseHeadImpl {
 
     label = cv::Mat_<int>(height, width);
 
-    cc_->GetComponents(masks_data + height * width * (channels - 1), label.ptr<int>());
+    auto kernel_mask_data = masks_data + height * width * (channels - 1);
+    region_num = cc_->GetComponents(kernel_mask_data, label.ptr<int>()) + 1;
 
     score = cv::Mat_<float>(label.size());
     OUTCOME_TRY(stream_.Copy(score_buf, score.ptr<float>()));
