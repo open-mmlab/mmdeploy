@@ -25,6 +25,15 @@ std::vector<std::vector<float>> pixel_group_cpu(const cv::Mat_<float>& score,
 class PANHead : public MMOCR {
  public:
   explicit PANHead(const Value& config) : MMOCR(config) {
+    if (config.contains("params")) {
+      auto& params = config["params"];
+      min_text_avg_confidence_ = params.value("min_text_avg_confidence", min_text_avg_confidence_);
+      min_kernel_confidence_ = params.value("min_kernel_confidence", min_kernel_confidence_);
+      min_text_avg_confidence_ = params.value("min_text_avg_confidence", min_text_avg_confidence_);
+      min_text_area_ = params.value("min_text_area", min_text_area_);
+      rescale_ = params.value("rescale", rescale_);
+      downsample_ratio_ = params.value("downsample_ratio", downsample_ratio_);
+    }
     auto platform = Platform(device_.platform_id()).GetPlatformName();
     auto creator = Registry<PaHeadImpl>::Get().GetCreator(platform);
     if (!creator) {

@@ -22,6 +22,15 @@ void contour_expand(const cv::Mat_<uint8_t>& kernel_masks, const cv::Mat_<int32_
 class PSEHead : public MMOCR {
  public:
   explicit PSEHead(const Value& config) : MMOCR(config) {
+    if (config.contains("params")) {
+      auto& params = config["params"];
+      min_kernel_confidence_ = params.value("min_kernel_confidence", min_kernel_confidence_);
+      min_text_avg_confidence_ = params.value("min_text_avg_confidence", min_text_avg_confidence_);
+      min_kernel_area_ = params.value("min_kernel_area", min_kernel_area_);
+      min_text_area_ = params.value("min_text_area", min_text_area_);
+      rescale_ = params.value("rescale", rescale_);
+      downsample_ratio_ = params.value("downsample_ratio", downsample_ratio_);
+    }
     auto platform = Platform(device_.platform_id()).GetPlatformName();
     auto creator = Registry<PseHeadImpl>::Get().GetCreator(platform);
     if (!creator) {
