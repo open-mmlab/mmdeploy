@@ -853,6 +853,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
                  Path(checkpoint_path).parent.name,
                  backend_name,
                  infer_type,
+                 precision_type,
                  Path(checkpoint_path).stem)
     backend_output_path.mkdir(parents=True, exist_ok=True)
 
