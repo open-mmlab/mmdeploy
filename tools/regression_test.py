@@ -242,7 +242,7 @@ def update_report(report_dict: dict, model_name: str, model_config: str,
     report_dict.get('Static or Dynamic').append(static_or_dynamic)
     report_dict.get('Precision Type').append(precision_type)
     report_dict.get('Conversion Result').append(conversion_result)
-    report_dict.get('FPS').append(fps)
+    # report_dict.get('FPS').append(fps)
 
     for metric in metric_info:
         for metric_name, metric_value in metric.items():
@@ -562,7 +562,7 @@ def get_fps_metric(shell_res: int, pytorch_metric: dict, metric_key: str,
     else:
         # Got fps from log file
         fps = get_info_from_log_file('FPS', log_path, metric_key, logger)
-        logger.info(f'Got fps = {fps}')
+        # logger.info(f'Got fps = {fps}')
 
         # Got metric from log file
         metric_value = get_info_from_log_file('metric', log_path, metric_key,
@@ -1130,7 +1130,7 @@ def main():
             'Static or Dynamic': [],
             'Precision Type': [],
             'Conversion Result': [],
-            'FPS': []
+            # 'FPS': []
         }
 
         global_info = yaml_info.get('globals')
