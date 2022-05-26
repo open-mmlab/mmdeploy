@@ -64,7 +64,7 @@ jobs:
       - name: Install ppq
         run: |
           cd ~
-          python -m pip install protobuf==3.12.0
+          python -m pip install protobuf==3.20.0
           git clone https://github.com/openppl-public/ppq
           cd ppq
           git checkout edbecf44c7b203515640e4f4119c000a1b66b33a
