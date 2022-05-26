@@ -879,7 +879,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
             cmd_str += f' --calib-dataset-cfg {calib_dataset_cfg}'
 
     logger.info(f'Process cmd = {cmd_str}')
-    
+
     convert_log_path = backend_output_path.joinpath('convert_log.log')
     file_handler = open(convert_log_path, 'w', encoding='urf-8')
     try:
@@ -892,10 +892,10 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
         process_res.wait()
         logger.info(f'Got shell_res = {process_res.returncode}')
     except Exception as e:
-        print('process convert error')
+        print(f'process convert error: {e}')
     finally:
         file_handler.close()
-      
+
     # check if converted successes or not.
     if process_res.returncode == 0:
         convert_result = True
