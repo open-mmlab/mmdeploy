@@ -880,6 +880,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
 
     logger.info(f'Process cmd = {cmd_str}')
 
+    convert_result = False
     convert_log_path = backend_output_path.joinpath('convert_log.log')
     file_handler = open(convert_log_path, 'w', encoding='utf-8')
     try:
@@ -888,24 +889,24 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
             cmd_str,
             cwd=str(Path(__file__).absolute().parent.parent),
             shell=True,
-            stdout=file_handler)
+            stdout=file_handler,
+            stderr=file_handler)
         process_res.wait()
         logger.info(f'Got shell_res = {process_res.returncode}')
+        # check if converted successes or not.
+        if process_res.returncode == 0:
+            convert_result = True
+        else:
+            convert_result = False
+            # logger.info(f'Logging error msg to {convert_log_path} ...')
+            # with open(error_log_path, 'w', encoding='utf-8') as f_log:
+            #     for line in process_res.stdout.readlines():
+            #         line = line.decode('utf-8')
+            #         f_log.write(line)
     except Exception as e:
         print(f'process convert error: {e}')
     finally:
         file_handler.close()
-
-    # check if converted successes or not.
-    if process_res.returncode == 0:
-        convert_result = True
-    else:
-        convert_result = False
-#         logger.info(f'Logging error msg to {convert_log_path} ...')
-#         with open(error_log_path, 'w', encoding='utf-8') as f_log:
-#             for line in process_res.stdout.readlines():
-#                 line = line.decode('utf-8')
-#                 f_log.write(line)
 
     logger.info(f'Got convert_result = {convert_result}')
 
