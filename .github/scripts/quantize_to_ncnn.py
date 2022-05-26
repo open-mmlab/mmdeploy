@@ -48,8 +48,8 @@ def main():
         deploy_cfg = 'configs/mmcls/classification_ncnn-int8_static.py'
         quant_cmd = [
             'python3', 'tools/onnx2ncnn_quant_table.py', '--onnx', model,
-            '--deploy_cfg', deploy_cfg, '--model_cfg', model_cfg, '--out_onnx',
-            'quant.onnx', '--out_table', 'ncnn.table', '--image_dir', data_dir
+            '--deploy-cfg', deploy_cfg, '--model-cfg', model_cfg, '--out-onnx',
+            'quant.onnx', '--out-table', 'ncnn.table', '--image-dir', data_dir
         ]
         print(' '.join(quant_cmd))
         print(subprocess.call(quant_cmd))

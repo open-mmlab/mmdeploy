@@ -16,10 +16,10 @@
 
 ```mermaid
 flowchart TD;
-     torch模型-->rewrite_onnx;
-     rewrite_onnx-->ncnn-fp32;
-     rewrite_onnx-->quant_table;
-     quant_table-->ncnn-int8;
+     torch模型-->非标准onnx;
+     非标准onnx-->ncnn-fp32;
+     非标准onnx-->量化表;
+     量化表-->ncnn-int8;
      ncnn-fp32-->ncnn-int8;
 ```
 
@@ -54,12 +54,19 @@ python3 tools/deploy.py  configs/mmcls/classification_ncnn-int8_static.py  ${MOD
 | 参数 | 含义 |
 |:-:|:-:|
 |--quant|是否开启量化，默认为 False|
-|--quant-image-dir|校准数据集，若不指定则使用 MODEL_CONFIG 中的 val 集，默认为 None|
+|--quant-image-dir|校准数据集，默认使用 MODEL_CONFIG 中的**验证集**|
 
 
 ## 自建校准数据集
 
-* 新建文件夹，放入图片即可，没有目录结构要求
-* 校准集宜使用真实场景中的数据，数据相差过远会导致精度下降
+校准集是用来计算量化层参数的，某些 DFQ（Data Free Quantization）方法甚至不需要校准集
+
+* 新建文件夹，直接放入图片即可（不需要目录结构、不要负例、没有命名要求）
+* 图片需为真实业务场景中的数据，相差过远会导致精度下降
+* 不能直接拿测试集做量化，否则是过拟合
+     |类型|训练集|验证集|测试集|校准集|
+     |-|-|-|-|-|
+     |用法|QAT|PTQ|测试精度|PTQ|
+
 
 **强烈建议**量化结束后，[按此文档](./profile_model.md)验证模型精度。[这里](../03-benchmark/quantization.md)是一些量化模型测试结果。

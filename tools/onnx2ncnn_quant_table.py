@@ -77,17 +77,17 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description='Generate ncnn quant table from ONNX.')
     parser.add_argument('--onnx', help='ONNX model path')
-    parser.add_argument('--deploy_cfg', help='Input deploy config path')
-    parser.add_argument('--model_cfg', help='Input model config path')
-    parser.add_argument('--out_onnx', help='Output onnx path')
-    parser.add_argument('--out_table', help='Output quant table path')
+    parser.add_argument('--deploy-cfg', help='Input deploy config path')
+    parser.add_argument('--model-cfg', help='Input model config path')
+    parser.add_argument('--out-onnx', help='Output onnx path')
+    parser.add_argument('--out-table', help='Output quant table path')
     parser.add_argument(
-        '--image_dir',
+        '--image-dir',
         type=str,
         default=None,
         help='Calibration Image Directory.')
     parser.add_argument(
-        '--log_level',
+        '--log-level',
         help='set log level',
         default='INFO',
         choices=list(logging._nameToLevel.keys()))
