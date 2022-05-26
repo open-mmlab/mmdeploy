@@ -8,7 +8,7 @@ import mmcv
 import torch.multiprocessing as mp
 from torch.multiprocessing import Process, set_start_method
 
-from mmdeploy.apis import (create_calib_table, extract_model,
+from mmdeploy.apis import (create_calib_input_data, extract_model,
                            get_predefined_partition_cfg, torch2onnx,
                            torch2torchscript, visualize_model)
 from mmdeploy.apis.core import PIPELINE_MANAGER
@@ -90,7 +90,7 @@ def main():
     logger.setLevel(args.log_level)
 
     pipeline_funcs = [
-        torch2onnx, torch2torchscript, extract_model, create_calib_table
+        torch2onnx, torch2torchscript, extract_model, create_calib_input_data
     ]
     PIPELINE_MANAGER.enable_multiprocess(True, pipeline_funcs)
     PIPELINE_MANAGER.set_log_level(logging.INFO, pipeline_funcs)
@@ -160,7 +160,7 @@ def main():
     calib_filename = get_calib_filename(deploy_cfg)
     if calib_filename is not None:
         calib_path = osp.join(args.work_dir, calib_filename)
-        create_calib_table(
+        create_calib_input_data(
             calib_path,
             deploy_cfg_path,
             model_cfg_path,

@@ -5,9 +5,8 @@ from typing import Any, Optional, Union
 import mmcv
 import torch
 
-from mmdeploy.apis.core.pipeline_manager import no_mp
+from mmdeploy.apis.core.pipeline_manager import PIPELINE_MANAGER, no_mp
 from mmdeploy.utils import get_backend, get_input_shape, load_config
-from .core import PIPELINE_MANAGER
 from .torch_jit import trace
 
 

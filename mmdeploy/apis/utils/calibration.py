@@ -12,18 +12,18 @@ from ..core import PIPELINE_MANAGER
 
 
 @PIPELINE_MANAGER.register_pipeline()
-def create_calib_table(calib_file: str,
-                       model: torch.nn.Module,
-                       dataloader: DataLoader,
-                       get_tensor_func: Optional[Callable] = None,
-                       inference_func: Optional[Callable] = None,
-                       model_partition: bool = False,
-                       context_info: Dict = dict(),
-                       device: str = 'cpu') -> None:
+def create_calib_input_data(calib_file: str,
+                            model: torch.nn.Module,
+                            dataloader: DataLoader,
+                            get_tensor_func: Optional[Callable] = None,
+                            inference_func: Optional[Callable] = None,
+                            model_partition: bool = False,
+                            context_info: Dict = dict(),
+                            device: str = 'cpu') -> None:
     """Create calibration table.
 
     Examples:
-        >>> from mmdeploy.apis import create_calib_table
+        >>> from mmdeploy.apis import create_calib_input_data
         >>> from mmdeploy.utils import get_calib_filename, load_config
         >>> deploy_cfg = 'configs/mmdet/detection/' \
             'detection_tensorrt-int8_dynamic-320x320-1344x1344.py'
@@ -33,7 +33,7 @@ def create_calib_table(calib_file: str,
             'fcos_r50_caffe_fpn_gn-head_1x_coco.py'
         >>> model_checkpoint = 'checkpoints/' \
             'fcos_r50_caffe_fpn_gn-head_1x_coco-821213aa.pth'
-        >>> create_calib_table(calib_file, deploy_cfg, \
+        >>> create_calib_input_data(calib_file, deploy_cfg, \
             model_cfg, model_checkpoint, device='cuda:0')
 
     Args:

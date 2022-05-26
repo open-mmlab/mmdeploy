@@ -8,17 +8,18 @@ from mmcv.parallel import MMDataParallel
 from mmdeploy.core import patch_model
 from mmdeploy.utils import cfg_apply_marks, load_config
 from .core import PIPELINE_MANAGER, no_mp
-from .utils import create_calib_table as create_calib_table_impl
+from .utils import create_calib_input_data as create_calib_input_data_impl
 
 
 @PIPELINE_MANAGER.register_pipeline()
-def create_calib_table(calib_file: str,
-                       deploy_cfg: Union[str, mmcv.Config],
-                       model_cfg: Union[str, mmcv.Config],
-                       model_checkpoint: Optional[str] = None,
-                       dataset_cfg: Optional[Union[str, mmcv.Config]] = None,
-                       dataset_type: str = 'val',
-                       device: str = 'cpu') -> None:
+def create_calib_input_data(calib_file: str,
+                            deploy_cfg: Union[str, mmcv.Config],
+                            model_cfg: Union[str, mmcv.Config],
+                            model_checkpoint: Optional[str] = None,
+                            dataset_cfg: Optional[Union[str,
+                                                        mmcv.Config]] = None,
+                            dataset_type: str = 'val',
+                            device: str = 'cpu') -> None:
     with no_mp():
         if dataset_cfg is None:
             dataset_cfg = model_cfg
@@ -39,20 +40,19 @@ def create_calib_table(calib_file: str,
         from mmdeploy.apis.utils import build_task_processor
         task_processor = build_task_processor(model_cfg, deploy_cfg, device)
 
-        backend = 'default'
         apply_marks = cfg_apply_marks(deploy_cfg)
 
         model = task_processor.init_pytorch_model(model_checkpoint)
         dataset = task_processor.build_dataset(dataset_cfg, dataset_type)
 
         # patch model
-        patched_model = patch_model(model, cfg=deploy_cfg, backend=backend)
+        patched_model = patch_model(model, cfg=deploy_cfg)
 
         dataloader = task_processor.build_dataloader(
             dataset, 1, 1, dist=False, shuffle=False)
         patched_model = MMDataParallel(patched_model, device_ids=[device_id])
 
-        create_calib_table_impl(
+        create_calib_input_data_impl(
             calib_file,
             patched_model,
             dataloader,

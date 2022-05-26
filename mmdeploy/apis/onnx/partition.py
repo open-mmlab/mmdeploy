@@ -64,7 +64,7 @@ def extract_partition(model: Union[str, onnx.ModelProto],
             `None`.
 
     Returns:
-        onnx.ModelProto: The extracted sub-model.
+        onnx.ModelProto: The extracted model.
     """
     if isinstance(model, str):
         model = onnx.load(model)

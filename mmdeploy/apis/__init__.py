@@ -2,7 +2,7 @@
 
 # mmcv dependency
 try:
-    from .calibration import create_calib_table
+    from .calibration import create_calib_input_data
     from .extract_model import extract_model
     from .inference import inference_model
     from .pytorch2onnx import torch2onnx
@@ -11,8 +11,8 @@ try:
     from .visualize import visualize_model
 
     __all__ = [
-        'create_calib_table', 'extract_model', 'inference_model', 'torch2onnx',
-        'torch2torchscript', 'build_task_processor',
+        'create_calib_input_data', 'extract_model', 'inference_model',
+        'torch2onnx', 'torch2torchscript', 'build_task_processor',
         'get_predefined_partition_cfg', 'visualize_model'
     ]
 except Exception:
