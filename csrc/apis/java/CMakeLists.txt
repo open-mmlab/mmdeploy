@@ -22,6 +22,7 @@ mmdeploy_java_add_module(segmentor)
 mmdeploy_java_add_module(restorer)
 mmdeploy_java_add_module(text_detector)
 mmdeploy_java_add_module(text_recognizer)
+mmdeploy_java_add_module(pose_detector)
 add_library(${PROJECT_NAME} SHARED ${MMDEPLOY_JAVA_SRCS})
 
 mmdeploy_load_static(${PROJECT_NAME} MMDeployStaticModules)
