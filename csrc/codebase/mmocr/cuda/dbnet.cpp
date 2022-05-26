@@ -14,8 +14,8 @@ namespace mmdeploy::mmocr {
 
 class DbHeadCudaImpl : public DbHeadImpl {
  public:
-  void Init(const DbHeadParams& params, const Stream& stream) override {
-    DbHeadImpl::Init(params, stream);
+  void Init(const Stream& stream) override {
+    DbHeadImpl::Init(stream);
     device_ = stream_.GetDevice();
     {
       CudaDeviceGuard device_guard(device_);
@@ -28,12 +28,13 @@ class DbHeadCudaImpl : public DbHeadImpl {
     cc_.reset();
   }
 
-  Result<void> Process(Tensor score, std::vector<std::vector<cv::Point>>& contours,
+  Result<void> Process(Tensor score, float mask_thr, int max_candidates,
+                       std::vector<std::vector<cv::Point>>& contours,
                        std::vector<float>& scores) override {
     CudaDeviceGuard device_guard(device_);
     // MMDEPLOY_ERROR("score shape {}", score.shape());
-    int height = score.shape(1);
-    int width = score.shape(2);
+    auto height = static_cast<int>(score.shape(1));
+    auto width = static_cast<int>(score.shape(2));
 
     // Buffer cpu_score(Device(0), score.byte_size());
     // OUTCOME_TRY(stream_.Copy(score.buffer(), cpu_score));
@@ -46,7 +47,7 @@ class DbHeadCudaImpl : public DbHeadImpl {
     auto score_data = score.data<float>();
     auto mask_data = GetNative<uint8_t*>(mask);
 
-    dbnet::Threshold(score_data, height * width, params_.mask_thr, mask_data,
+    dbnet::Threshold(score_data, height * width, mask_thr, mask_data,
                      GetNative<cudaStream_t>(stream_));
 
     // Buffer cpu_mask(Device(0), mask.GetSize());
@@ -65,8 +66,8 @@ class DbHeadCudaImpl : public DbHeadImpl {
     std::vector<int> _areas;
     cc_->GetStats(mask_data, score_data, _scores, _areas);
 
-    if (points.size() > params_.max_candidates) {
-      points.resize(params_.max_candidates);
+    if (points.size() > max_candidates) {
+      points.resize(max_candidates);
     }
 
     for (int i = 0; i < points.size(); ++i) {

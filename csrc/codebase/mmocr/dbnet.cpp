@@ -23,14 +23,14 @@ class DBHead : public MMOCR {
   explicit DBHead(const Value& config) : MMOCR(config) {
     if (config.contains("params")) {
       auto& params = config["params"];
-      params_.text_repr_type = params.value("text_repr_type", params_.text_repr_type);
-      params_.mask_thr = params.value("mask_thr", params_.mask_thr);
-      params_.min_text_score = params.value("min_text_score", params_.min_text_score);
-      params_.min_text_width = params.value("min_text_width", params_.min_text_width);
-      params_.unclip_ratio = params.value("unclip_ratio", params_.unclip_ratio);
-      params_.max_candidates = params.value("max_candidate", params_.max_candidates);
-      params_.rescale = params.value("rescale", params_.rescale);
-      params_.downsample_ratio = params.value("downsample_ratio", params_.downsample_ratio);
+      text_repr_type_ = params.value("text_repr_type", text_repr_type_);
+      mask_thr_ = params.value("mask_thr", mask_thr_);
+      min_text_score_ = params.value("min_text_score", min_text_score_);
+      min_text_width_ = params.value("min_text_width", min_text_width_);
+      unclip_ratio_ = params.value("unclip_ratio", unclip_ratio_);
+      max_candidates_ = params.value("max_candidate", max_candidates_);
+      rescale_ = params.value("rescale", rescale_);
+      downsample_ratio_ = params.value("downsample_ratio", downsample_ratio_);
     }
     auto platform = Platform(device_.platform_id()).GetPlatformName();
     auto creator = Registry<DbHeadImpl>::Get().GetCreator(platform);
@@ -39,7 +39,7 @@ class DBHead : public MMOCR {
       throw_exception(eEntryNotFound);
     }
     impl_ = creator->Create(nullptr);
-    impl_->Init(params_, stream_);
+    impl_->Init(stream_);
   }
 
   Result<Value> operator()(const Value& _data, const Value& _prob) const {
@@ -55,32 +55,33 @@ class DBHead : public MMOCR {
 
     std::vector<std::vector<cv::Point>> contours;
     std::vector<float> scores;
-    OUTCOME_TRY(impl_->Process(conf, contours, scores));
+    OUTCOME_TRY(impl_->Process(conf, mask_thr_, max_candidates_, contours, scores));
 
     auto scale_w = 1.f;
     auto scale_h = 1.f;
-    if (params_.rescale) {
-      scale_w /= params_.downsample_ratio * _data["img_metas"]["scale_factor"][0].get<float>();
-      scale_h /= params_.downsample_ratio * _data["img_metas"]["scale_factor"][1].get<float>();
+    if (rescale_) {
+      scale_w /= downsample_ratio_ * _data["img_metas"]["scale_factor"][0].get<float>();
+      scale_h /= downsample_ratio_ * _data["img_metas"]["scale_factor"][1].get<float>();
     }
 
     TextDetectorOutput output;
     for (int idx = 0; idx < contours.size(); ++idx) {
-      if (scores[idx] < params_.min_text_score) {
+      if (scores[idx] < min_text_score_) {
         continue;
       }
-      auto expanded = unclip(contours[idx], params_.unclip_ratio);
+      auto expanded = unclip(contours[idx], unclip_ratio_);
       if (expanded.empty()) {
         continue;
       }
       auto rect = cv::minAreaRect(expanded);
-      if ((int)rect.size.width <= params_.min_text_width) {
+      if ((int)rect.size.width <= min_text_width_) {
         continue;
       }
       std::array<cv::Point2f, 4> box_points;
       rect.points(box_points.data());
       auto& bbox = output.boxes.emplace_back();
       for (int i = 0; i < 4; ++i) {
+        // ! performance metrics drops without rounding here
         bbox[i * 2] = cvRound(box_points[i].x * scale_w);
         bbox[i * 2 + 1] = cvRound(box_points[i].y * scale_h);
       }
@@ -118,7 +119,15 @@ class DBHead : public MMOCR {
     return ret;
   }
 
-  DbHeadParams params_;
+  std::string text_repr_type_{"quad"};
+  float mask_thr_{.3};
+  float min_text_score_{.3};
+  int min_text_width_{5};
+  float unclip_ratio_{1.5};
+  int max_candidates_{3000};
+  bool rescale_{true};
+  float downsample_ratio_{1.};
+
   std::unique_ptr<DbHeadImpl> impl_;
 };
 

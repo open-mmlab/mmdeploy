@@ -12,31 +12,17 @@
 namespace mmdeploy {
 namespace mmocr {
 
-struct DbHeadParams {
-  std::string text_repr_type{"quad"};
-  float mask_thr{.3};
-  float min_text_score{.3};
-  int min_text_width{5};
-  float unclip_ratio{1.5};
-  int max_candidates{3000};
-  bool rescale{true};
-  float downsample_ratio{1.};
-};
-
 class DbHeadImpl {
  public:
   virtual ~DbHeadImpl() = default;
 
-  virtual void Init(const DbHeadParams& params, const Stream& stream) {
-    params_ = params;
-    stream_ = stream;
-  }
+  virtual void Init(const Stream& stream) { stream_ = stream; }
 
-  virtual Result<void> Process(Tensor prob, std::vector<std::vector<cv::Point>>& points,
+  virtual Result<void> Process(Tensor prob, float mask_thr, int max_candidates,
+                               std::vector<std::vector<cv::Point>>& points,
                                std::vector<float>& scores) = 0;
 
  protected:
-  DbHeadParams params_{};
   Stream stream_;
 };
 

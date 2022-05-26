@@ -9,12 +9,13 @@ namespace mmdeploy::mmocr {
 
 class DbHeadCpuImpl : public DbHeadImpl {
  public:
-  void Init(const DbHeadParams& params, const Stream& stream) override {
-    DbHeadImpl::Init(params, stream);
+  void Init(const Stream& stream) override {
+    DbHeadImpl::Init(stream);
     device_ = Device("cpu");
   }
 
-  Result<void> Process(Tensor prob, std::vector<std::vector<cv::Point>>& points,
+  Result<void> Process(Tensor prob, float mask_thr, int max_candidates,
+                       std::vector<std::vector<cv::Point>>& points,
                        std::vector<float>& scores) override {
     OUTCOME_TRY(auto conf, MakeAvailableOnDevice(prob, device_, stream_));
     OUTCOME_TRY(stream_.Wait());
@@ -27,13 +28,13 @@ class DbHeadCpuImpl : public DbHeadImpl {
 
     // cv::imwrite("conf.png", score_map * 255.);
 
-    cv::Mat text_mask = score_map >= params_.mask_thr;
+    cv::Mat text_mask = score_map >= mask_thr;
 
     std::vector<std::vector<cv::Point>> contours;
     cv::findContours(text_mask, contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
 
-    if (contours.size() > params_.max_candidates) {
-      contours.resize(params_.max_candidates);
+    if (contours.size() > max_candidates) {
+      contours.resize(max_candidates);
     }
 
     for (auto& poly : contours) {
