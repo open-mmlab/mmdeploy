@@ -5,8 +5,8 @@ from torch import Tensor
 
 import mmdeploy
 from mmdeploy.core import FUNCTION_REWRITER, mark
-from mmdeploy.mmcv.ops import (ONNXNMSop, ONNXNMSRotatedOp,
-                               TRTBatchedRotatedNMSop, TRTBatchedNMSop)
+from mmdeploy.mmcv.ops import (ONNXNMSop, ONNXNMSRotatedOp, TRTBatchedNMSop,
+                               TRTBatchedRotatedNMSop)
 
 
 def select_rnms_index(scores: torch.Tensor,
@@ -263,11 +263,14 @@ def _fake_multiclass_nms_rotated__tensorrt(
         tuple[Tensor, Tensor]: (dets, labels), `dets` of shape [N, num_det, 6]
             and `labels` of shape [N, num_det].
     """
-    boxes = obb2xyxy(boxes, version)
-    boxes = boxes if boxes.dim() == 4 else boxes.unsqueeze(2)
+    hboxes = obb2xyxy(boxes, version)
+    hboxes = boxes if boxes.dim() == 4 else boxes.unsqueeze(2)
     keep_top_k = max_output_boxes_per_class if keep_top_k < 0 else min(
         max_output_boxes_per_class, keep_top_k)
-    dets, labels = TRTBatchedNMSop.apply(boxes, scores, int(scores.shape[-1]),
+    if pre_top_k > 512 * 10 or pre_top_k < 0:
+        pre_top_k = 512 * 10
+
+    dets, labels = TRTBatchedNMSop.apply(hboxes, scores, int(scores.shape[-1]),
                                          pre_top_k, keep_top_k, iou_threshold,
                                          score_threshold, -1)
 

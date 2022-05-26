@@ -9,7 +9,7 @@ from mmdeploy.core import FUNCTION_REWRITER
     func_name='mmrotate.core.bbox.transforms.poly2obb_le90',
     backend='tensorrt')
 def poly2obb_le90__tensorrt(ctx, polys: torch.Tensor) -> torch.Tensor:
-    """ This is a rewrite for poly2obb to remove NonZero ops.
+    """This is a rewrite for poly2obb to remove NonZero ops.
 
     Args:
         ctx : context of the rewriter.
