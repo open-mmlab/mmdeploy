@@ -17,14 +17,14 @@ class PseHeadCpuImpl : public PseHeadImpl {
                        cv::Mat_<uint8_t>& masks,     //
                        cv::Mat_<int>& label,         //
                        int& region_num) override {
-    OUTCOME_TRY(auto conf, MakeAvailableOnDevice(preds, device_, stream_));
+    OUTCOME_TRY(preds, MakeAvailableOnDevice(preds, device_, stream_));
     OUTCOME_TRY(stream_.Wait());
 
     auto channels = static_cast<int>(preds.shape(0));
     auto height = static_cast<int>(preds.shape(1));
     auto width = static_cast<int>(preds.shape(2));
 
-    cv::Mat_<float> probs(preds.shape(0), height * width, preds.data<float>());
+    cv::Mat_<float> probs(channels, height * width, preds.data<float>());
     sigmoid(probs);
 
     probs.row(0).reshape(1, height).copyTo(score);
@@ -50,7 +50,7 @@ class PseHeadCpuImpl : public PseHeadImpl {
   Device device_;
 };
 
-class PaHeadCpuImplCreator : public ::mmdeploy::Creator<PseHeadImpl> {
+class PseHeadCpuImplCreator : public ::mmdeploy::Creator<PseHeadImpl> {
  public:
   const char* GetName() const override { return "cpu"; }
   int GetVersion() const override { return 0; }
@@ -59,6 +59,6 @@ class PaHeadCpuImplCreator : public ::mmdeploy::Creator<PseHeadImpl> {
   }
 };
 
-REGISTER_MODULE(PseHeadImpl, PaHeadCpuImplCreator);
+REGISTER_MODULE(PseHeadImpl, PseHeadCpuImplCreator);
 
 }  // namespace mmdeploy::mmocr
