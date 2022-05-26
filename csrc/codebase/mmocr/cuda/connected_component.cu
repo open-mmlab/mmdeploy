@@ -134,22 +134,6 @@ __device__ int encode(int label) { return -2 - label; }
 
 __device__ int decode(int label) { return -2 - label; }
 
-__global__ void DiscretizeLabelKernel(int* label, int h, int w, int* n_comp) {
-  const auto x0 = static_cast<int>(threadIdx.x + blockIdx.x * blockDim.x);
-  const auto y0 = static_cast<int>(threadIdx.y + blockIdx.y * blockDim.y);
-  const auto stride_x = static_cast<int>(blockDim.x * gridDim.x);
-  const auto stride_y = static_cast<int>(blockDim.y * gridDim.y);
-  for (auto y = y0; y < h; y += stride_y) {
-    for (auto x = x0; x < w; x += stride_x) {
-      auto index = y * w + x;
-      if (label[index] == index) {
-        auto comp = atomicAdd(n_comp, 1);
-        label[index] = encode(comp);
-      }
-    }
-  }
-}
-
 struct _discretize_label_op {
   int* label;
   int* n_comp;
@@ -160,20 +144,6 @@ struct _discretize_label_op {
     }
   }
 };
-
-__global__ void DecodeLabelKernel(const int* label, int h, int w, int* output) {
-  const auto x0 = static_cast<int>(threadIdx.x + blockIdx.x * blockDim.x);
-  const auto y0 = static_cast<int>(threadIdx.y + blockIdx.y * blockDim.y);
-  const auto stride_x = static_cast<int>(blockDim.x * gridDim.x);
-  const auto stride_y = static_cast<int>(blockDim.y * gridDim.y);
-  for (auto y = y0; y < h; y += stride_y) {
-    for (auto x = x0; x < w; x += stride_x) {
-      auto index = y * w + x;
-      auto comp = label[index];
-      output[index] = comp < -1 ? decode(comp) + 1 : 0;
-    }
-  }
-}
 
 struct _decode_label_op {
   const int* label;
@@ -211,27 +181,6 @@ __global__ void RelabelStripsKernel(const uint8_t* mask, int h, int w, int* labe
         if (p) {
           label[k] = idx;
         }
-      }
-    }
-  }
-}
-
-__global__ void ComputeStatsKernel(const int* label, const float* score, int h, int w,
-                                   float* comp_score, int* comp_area) {
-  auto tx = threadIdx.x;
-  auto ty = threadIdx.y;
-  auto x0 = tx + blockIdx.x * blockDim.x;
-  auto y0 = ty + blockIdx.y * blockDim.y;
-  const auto stride_x = static_cast<int>(blockDim.x * gridDim.x);
-  const auto stride_y = static_cast<int>(blockDim.y * gridDim.y);
-  for (auto y = y0; y < h; y += stride_y) {
-    for (auto x = x0; x < w; x += stride_x) {
-      auto key = y * w + x;
-      auto idx = label[key];
-      if (idx < -1) {
-        idx = decode(idx);
-        atomicAdd(comp_score + idx, score[key]);
-        atomicAdd(comp_area + idx, 1);
       }
     }
   }
@@ -411,7 +360,7 @@ void ConnectedComponents::Impl::GetContours(std::vector<std::vector<cv::Point>>&
 }
 
 void ConnectedComponents::Impl::Resize(int height, int width) {
-  int size = height * width;
+  size_t size = height * width;
   if (size > capacity_) {
     if (!capacity_) {
       capacity_ = size;

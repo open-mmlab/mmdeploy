@@ -1,6 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
 #include "codebase/mmocr/dbnet.h"
+
 #include "core/utils/device_utils.h"
 #include "opencv2/imgcodecs.hpp"
 #include "opencv2/imgproc.hpp"
@@ -25,8 +26,6 @@ class DbHeadCpuImpl : public DbHeadImpl {
     auto data = conf.data<float>();
 
     cv::Mat score_map((int)h, (int)w, CV_32F, data);
-
-    // cv::imwrite("conf.png", score_map * 255.);
 
     cv::Mat text_mask = score_map >= mask_thr;
 

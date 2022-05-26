@@ -32,15 +32,9 @@ class DbHeadCudaImpl : public DbHeadImpl {
                        std::vector<std::vector<cv::Point>>& contours,
                        std::vector<float>& scores) override {
     CudaDeviceGuard device_guard(device_);
-    // MMDEPLOY_ERROR("score shape {}", score.shape());
+
     auto height = static_cast<int>(score.shape(1));
     auto width = static_cast<int>(score.shape(2));
-
-    // Buffer cpu_score(Device(0), score.byte_size());
-    // OUTCOME_TRY(stream_.Copy(score.buffer(), cpu_score));
-    // OUTCOME_TRY(stream_.Wait());
-    // cv::Mat_<float> score_mat(height, width, GetNative<float*>(cpu_score));
-    // cv::imwrite("score.png", score_mat * 255);
 
     Buffer mask(device_, score.size() * sizeof(uint8_t));
 
@@ -49,12 +43,6 @@ class DbHeadCudaImpl : public DbHeadImpl {
 
     dbnet::Threshold(score_data, height * width, mask_thr, mask_data,
                      GetNative<cudaStream_t>(stream_));
-
-    // Buffer cpu_mask(Device(0), mask.GetSize());
-    // OUTCOME_TRY(stream_.Copy(mask, cpu_mask));
-    // OUTCOME_TRY(stream_.Wait());
-    // cv::Mat_<uint8_t> mask_mat(height, width, GetNative<uint8_t*>(cpu_mask));
-    // cv::imwrite("mask.png", mask_mat * 255);
 
     cc_->Resize(height, width);
     cc_->GetComponents(mask_data, nullptr);
