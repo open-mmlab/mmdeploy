@@ -11,12 +11,13 @@ namespace mmdeploy::mmocr {
 
 namespace panet {
 
-void SigmoidAndThreshold(const float* d_logit, int n, float thr, uint8_t* d_mask, float* d_score,
-                         cudaStream_t stream);
+void ProcessMasks(const float* d_text_pred, const float* d_kernel_pred, float text_thr,
+                  float kernel_thr, int n, uint8_t* d_text_mask, uint8_t* d_kernel_mask,
+                  float* d_text_score, cudaStream_t stream);
 
 void Transpose(const float* d_input, int h, int w, float* d_output, cudaStream_t stream);
 
-}
+}  // namespace panet
 
 namespace dbnet {
 

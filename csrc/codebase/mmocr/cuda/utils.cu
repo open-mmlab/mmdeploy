@@ -8,41 +8,50 @@ namespace mmdeploy::mmocr {
 
 namespace panet {
 
-struct _sigmoid_and_threshold_op {
-  const float* logit;
-  float* score;
-  uint8_t* mask;
-  float thr;
+__device__ float sigmoid(float x) { return 1.f / (1.f + expf(-x)); }
+
+struct _process_masks_op {
+  const float* text_pred;
+  const float* kernel_pred;
+  float text_thr;
+  float kernel_thr;
+  uint8_t* text_mask;
+  uint8_t* kernel_mask;
+  float* text_score;
   __device__ void operator()(int index) const {
-    float sigmoid = 1.f / (1.f + expf(-logit[index]));
-    if (score) {
-      score[index] = sigmoid;
-    }
-    mask[index] = sigmoid >= thr;
+    auto text_sigmoid = sigmoid(text_pred[index]);
+    auto kernel_sigmoid = sigmoid(kernel_pred[index]);
+    text_score[index] = text_sigmoid;
+    auto text_valid = text_sigmoid > text_thr;
+    text_mask[index] = text_valid ? 255 : 0;
+    kernel_mask[index] = (text_valid && kernel_sigmoid > kernel_thr) ? 255 : 0;
   }
 };
 
-void SigmoidAndThreshold(const float* d_logit, int n, float thr, uint8_t* d_mask, float* d_score,
-                         cudaStream_t stream) {
+void ProcessMasks(const float* d_text_pred, const float* d_kernel_pred, float text_thr,
+                  float kernel_thr, int n, uint8_t* d_text_mask, uint8_t* d_kernel_mask,
+                  float* d_text_score, cudaStream_t stream) {
   thrust::counting_iterator<int> index{0};
-  _sigmoid_and_threshold_op op{d_logit, d_score, d_mask, thr};
+  _process_masks_op op{d_text_pred, d_kernel_pred, text_thr,    kernel_thr,
+                       d_text_mask, d_kernel_mask, d_text_score};
   thrust::for_each_n(thrust::cuda::par.on(stream), index, n, op);
 }
 
 struct _transpose_op {
   const float* input;
   float* output;
+  int h;
   int w;
   __device__ void operator()(int index) const {
     int i = index / w;
     int j = index % w;
-    output[j * w + i] = input[index];
+    output[j * h + i] = input[index];
   }
 };
 
 void Transpose(const float* d_input, int h, int w, float* d_output, cudaStream_t stream) {
   thrust::counting_iterator<int> index{0};
-  _transpose_op op{d_input, d_output, w};
+  _transpose_op op{d_input, d_output, h, w};
   thrust::for_each_n(thrust::cuda::par.on(stream), index, h * w, op);
 }
 
