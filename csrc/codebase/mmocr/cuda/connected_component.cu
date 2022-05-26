@@ -6,7 +6,8 @@
 #include <vector>
 
 #include "connected_component.h"
-#include "cub/cub.cuh"
+#include "thrust/for_each.h"
+#include "thrust/iterator/counting_iterator.h"
 
 namespace mmdeploy {
 
@@ -133,7 +134,7 @@ __device__ int encode(int label) { return -2 - label; }
 
 __device__ int decode(int label) { return -2 - label; }
 
-__global__ void DiscretizeKernel(int* label, int h, int w, int* n_comp) {
+__global__ void DiscretizeLabelKernel(int* label, int h, int w, int* n_comp) {
   const auto x0 = static_cast<int>(threadIdx.x + blockIdx.x * blockDim.x);
   const auto y0 = static_cast<int>(threadIdx.y + blockIdx.y * blockDim.y);
   const auto stride_x = static_cast<int>(blockDim.x * gridDim.x);
@@ -149,6 +150,17 @@ __global__ void DiscretizeKernel(int* label, int h, int w, int* n_comp) {
   }
 }
 
+struct _discretize_label_op {
+  int* label;
+  int* n_comp;
+  __device__ void operator()(int index) const {
+    if (label[index] == index) {
+      auto comp = atomicAdd(n_comp, 1);
+      label[index] = encode(comp);
+    }
+  }
+};
+
 __global__ void DecodeLabelKernel(const int* label, int h, int w, int* output) {
   const auto x0 = static_cast<int>(threadIdx.x + blockIdx.x * blockDim.x);
   const auto y0 = static_cast<int>(threadIdx.y + blockIdx.y * blockDim.y);
@@ -162,6 +174,15 @@ __global__ void DecodeLabelKernel(const int* label, int h, int w, int* output) {
     }
   }
 }
+
+struct _decode_label_op {
+  const int* label;
+  int* output;
+  __device__ void operator()(int index) const {
+    auto comp = label[index];
+    output[index] = comp < -1 ? decode(comp) + 1 : 0;
+  }
+};
 
 __global__ void RelabelStripsKernel(const uint8_t* mask, int h, int w, int* label) {
   auto tx = threadIdx.x;
@@ -325,7 +346,8 @@ int ConnectedComponents::Impl::GetComponents(const uint8_t* d_mask, int* h_label
     MergeStripsKernel<<<blocks, threads, 0, stream_>>>(d_mask, height_, width_, d_label_);
 
     cudaMemsetAsync(d_n_comp_, 0, sizeof(int), stream_);
-    DiscretizeKernel<<<blocks, threads, 0, stream_>>>(d_label_, height_, width_, d_n_comp_);
+    thrust::for_each_n(thrust::cuda::par.on(stream_), thrust::counting_iterator<int>(0),
+                       height_ * width_, _discretize_label_op{d_label_, d_n_comp_});
     RelabelStripsKernel<<<blocks, threads, 0, stream_>>>(d_mask, height_, width_, d_label_);
   }
   cudaMemcpyAsync(&n_comp_, d_n_comp_, sizeof(int), cudaMemcpyDefault, stream_);
@@ -333,7 +355,8 @@ int ConnectedComponents::Impl::GetComponents(const uint8_t* d_mask, int* h_label
     dim3 threads(32, 4);
     dim3 blocks(div_up(width_, (int)threads.x), div_up(height_, (int)threads.y));
     // reuse d_comp_area_, which is also an int buffer
-    DecodeLabelKernel<<<blocks, threads, 0, stream_>>>(d_label_, height_, width_, d_comp_area_);
+    thrust::for_each_n(thrust::cuda::par.on(stream_), thrust::counting_iterator<int>(0),
+                       height_ * width_, _decode_label_op{d_label_, d_comp_area_});
     cudaMemcpyAsync(h_label, d_comp_area_, sizeof(int) * size_, cudaMemcpyDefault, stream_);
   }
   cudaStreamSynchronize(stream_);
