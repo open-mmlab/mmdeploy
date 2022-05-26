@@ -37,23 +37,32 @@ class PaHeadCudaImpl : public PaHeadImpl {
 
     Buffer text_buf(device_, height * width);
     Buffer text_score_buf(device_, height * width * sizeof(float));
+    Buffer kernel_buf(device_, height * width);
 
     auto text_buf_data = GetNative<uint8_t*>(text_buf);
     auto text_score_buf_data = GetNative<float*>(text_score_buf);
+    auto kernel_buf_data = GetNative<uint8_t*>(kernel_buf);
 
     auto stream = GetNative<cudaStream_t>(stream_);
 
-    Buffer kernel_buf(device_, height * width);
-    auto kernel_buf_data = GetNative<uint8_t*>(kernel_buf);
-
-    panet::ProcessMasks(text_pred.data<float>(), kernel_pred.data<float>(), min_text_confidence,
-                        min_kernel_confidence, height * width, text_buf_data, kernel_buf_data,
-                        text_score_buf_data, stream);
+    panet::ProcessMasks(text_pred.data<float>(),    //
+                        kernel_pred.data<float>(),  //
+                        min_text_confidence,        //
+                        min_kernel_confidence,      //
+                        height * width,             //
+                        text_buf_data,              //
+                        kernel_buf_data,            //
+                        text_score_buf_data,        //
+                        stream);
 
     auto n_embed_channels = embed_pred.shape(0);
     Buffer embed_buf(device_, embed_pred.byte_size());
-    panet::Transpose(embed_pred.data<float>(), n_embed_channels, height * width,
-                     GetNative<float*>(embed_buf), stream);
+
+    panet::Transpose(embed_pred.data<float>(),      //
+                     n_embed_channels,              //
+                     height * width,                //
+                     GetNative<float*>(embed_buf),  //
+                     stream);
 
     label = cv::Mat_<int>(height, width);
 
