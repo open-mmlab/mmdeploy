@@ -75,6 +75,7 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 * 使用
   * [把模型转换到推理 Backend](docs/zh_cn/02-how-to-run/convert_model.md)
   * [配置转换参数](docs/zh_cn/02-how-to-run/write_config.md)
+  * [量化](docs/zh_cn/02-how-to-run/quantize_model.md)
   * [测试转换完成的模型](docs/zh_cn/02-how-to-run/profile_model.md)
 * 开发指南
   * [支持新模型](docs/zh_cn/04-developer-guide/support_new_model.md)

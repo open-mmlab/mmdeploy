@@ -32,6 +32,9 @@ def is_plugin_available():
 
 
 if is_available():
-    from .wrapper import NCNNWrapper
+    try:
+        from .wrapper import NCNNWrapper
 
-    __all__ = ['NCNNWrapper']
+        __all__ = ['NCNNWrapper']
+    except Exception:
+        pass

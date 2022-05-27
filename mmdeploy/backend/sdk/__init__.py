@@ -18,13 +18,20 @@ lib_path = get_file_path(os.path.dirname(__file__), candidates)
 
 if lib_path:
     lib_dir = os.path.dirname(lib_path)
-    sys.path.insert(0, lib_dir)
+    sys.path.append(lib_dir)
 
 if importlib.util.find_spec(module_name) is not None:
-    from .wrapper import SDKWrapper
-    __all__ = ['SDKWrapper']
     _is_available = True
 
 
 def is_available() -> bool:
     return _is_available
+
+
+if is_available():
+
+    try:
+        from .wrapper import SDKWrapper
+        __all__ = ['SDKWrapper']
+    except Exception:
+        pass
