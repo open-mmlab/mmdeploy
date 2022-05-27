@@ -129,6 +129,11 @@ work_dirs/
 /cmake-build-debug*
 /cmake-build-release*
 
+# c#
+.vs/
+obj/
+bin/
+
 # install directory
 /install
 

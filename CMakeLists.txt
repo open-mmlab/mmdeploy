@@ -28,6 +28,7 @@ set(MMDEPLOY_TARGET_DEVICES
         "cpu" CACHE STRING "MMDeploy's target devices")
 set(MMDEPLOY_TARGET_BACKENDS "" CACHE STRING "MMDeploy's target inference engines")
 set(MMDEPLOY_CODEBASES "all"  CACHE STRING "select OpenMMLab's codebases")
+set(MMDEPLOY_BUILD_SDK_CSHARP_API "build MMDeployExtern.dll for C# API" OFF)
 
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "choose 'Release' as default build type" FORCE)
