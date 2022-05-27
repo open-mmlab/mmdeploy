@@ -4,8 +4,8 @@
 #include <vector>
 
 #include "cub/cub.cuh"
-#include "cub_helper.h"
-#include "kernel.h"
+#include "nms/cub_helper.h"
+#include "nms/kernel.h"
 
 template <typename T_SCORE>
 pluginStatus_t sortScoresPerImage_gpu(cudaStream_t stream, const int num_images,

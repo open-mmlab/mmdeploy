@@ -60,7 +60,7 @@ def extract_model(model: Union[str, onnx.ModelProto],
             `None`.
 
     Returns:
-        onnx.ModelProto: The extracted sub-model.
+        onnx.ModelProto: The extracted model.
     """
 
     return extract_partition(model, start_marker, end_marker, start_name_map,
