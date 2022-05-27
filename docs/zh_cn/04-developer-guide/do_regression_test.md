@@ -75,7 +75,6 @@ python ./tools/regression_test.py \
 ```shell
 python ./tools/regression_test.py \
     --codebase mmdet mmpose \
-    --backends all \
     --work-dir "../mmdeploy_regression_working_dir" \
     --device "cuda" \
     --log-level INFO \
