@@ -23,12 +23,12 @@
 [![badge](https://github.com/open-mmlab/mmdeploy/workflows/build/badge.svg)](https://github.com/open-mmlab/mmdeploy/actions)
 [![codecov](https://codecov.io/gh/open-mmlab/mmdeploy/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmdeploy)
 [![license](https://img.shields.io/github/license/open-mmlab/mmdeploy.svg)](https://github.com/open-mmlab/mmdeploy/blob/master/LICENSE)
-[![issue resolution](https://isitmaintained.com/badge/resolution/open-mmlab/mmdeploy.svg)](https://github.com/open-mmlab/mmdeploy/issues)
-[![open issues](https://isitmaintained.com/badge/open/open-mmlab/mmdeploy.svg)](https://github.com/open-mmlab/mmdeploy/issues)
-
-## 介绍
+[![issue resolution](https://img.shields.io/github/issues-closed-raw/open-mmlab/mmdeploy)](https://github.com/open-mmlab/mmdeploy/issues)
+[![open issues](https://img.shields.io/github/issues-raw/open-mmlab/mmdeploy)](https://github.com/open-mmlab/mmdeploy/issues)
 
 [English](README.md) | 简体中文
+
+## 介绍
 
 MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为各算法库提供统一的部署体验**。基于 MMDeploy，开发者可以轻松从训练 repo 生成指定硬件所需 SDK，省去大量适配时间。
 
@@ -51,18 +51,14 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 - [支持列表](docs/zh_cn/03-benchmark/supported_models.md)
 
 ### 支持多种推理后端
-|ONNX Runtime|TensorRT|ppl.nn|ncnn|OpenVINO|more|
-|------------|--------|------|----|--------|----|
-|✔️         |✔️      |✔️   |✔️  |✔️     |[benchmark](docs/zh_cn/03-benchmark/benchmark.md)|
+| ONNX Runtime | TensorRT | ppl.nn | ncnn | OpenVINO | more                                              |
+| ------------ | -------- | ------ | ---- | -------- | ------------------------------------------------- |
+| ✔️            | ✔️        | ✔️      | ✔️    | ✔️        | [benchmark](docs/zh_cn/03-benchmark/benchmark.md) |
 
 ### SDK 可高度定制化
 - Transform 数据预处理
 - Net 推理
 - Module 后处理
-
-## 开源许可证
-
-该项目采用 [Apache 2.0 开源许可证](LICENSE)。
 
 ## [快速上手](docs/zh_cn/get_started.md)
 
@@ -114,6 +110,10 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 }
 ```
 
+## 开源许可证
+
+该项目采用 [Apache 2.0 开源许可证](LICENSE)。
+
 ## OpenMMLab 的其他项目
 
 - [MMCV](https://github.com/open-mmlab/mmcv): OpenMMLab 计算机视觉基础库
@@ -138,11 +138,12 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 
 ## 欢迎加入 OpenMMLab 社区
 
-扫描下方的二维码可关注 OpenMMLab 团队的 [知乎官方账号](https://www.zhihu.com/people/openmmlab)，加入 OpenMMLab 团队的 [官方交流 QQ 群](https://jq.qq.com/?_wv=1027&k=aCvMxdr3)
+扫描下方的二维码可关注 OpenMMLab 团队的 [知乎官方账号](https://www.zhihu.com/people/openmmlab)，加入 OpenMMLab 团队的 [官方交流 QQ 群](https://jq.qq.com/?_wv=1027&k=MSMAfWOe)，或添加微信小助手”OpenMMLabwx“加入官方交流微信群。
 
 <div align="center">
   <img src="https://raw.githubusercontent.com/open-mmlab/mmcv/master/docs/en/_static/zhihu_qrcode.jpg" height="400" />
-  <img src="https://raw.githubusercontent.com/open-mmlab/mmcv/master/docs/en/_static/qq_group_qrcode.jpg" height="400" />
+  <img src="resources/qq_group_qrcode.jpg" height="400" />
+  <img src="https://raw.githubusercontent.com/open-mmlab/mmcv/master/docs/en/_static/wechat_qrcode.jpg" height="400" />
 </div>
 
 我们会在 OpenMMLab 社区为大家
