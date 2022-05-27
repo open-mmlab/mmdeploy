@@ -24,7 +24,7 @@ option(MMDEPLOY_BUILD_MODEL_OPTIMIZER "build MMDeploy's model optimizer" ON)
 option(MMDEPLOY_BUILD_SDK "build MMDeploy's SDK" OFF)
 option(MMDEPLOY_ZIP_MODEL "support sdk model in zip format" OFF)
 option(MMDEPLOY_BUILD_TEST "build MMDeploy's csrc's unittest" OFF)
-option(MMDEPLOY_SUBMODULE_SPDLOG "Use submodule spdlog repo instead of external" OFF)
+option(MMDEPLOY_SUBMODULE_SPDLOG "Use submodule spdlog repo instead of external" ON)
 
 set(MMDEPLOY_TARGET_DEVICES
         "cpu" CACHE STRING "MMDeploy's target devices")
