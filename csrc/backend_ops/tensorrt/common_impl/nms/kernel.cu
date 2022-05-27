@@ -6,7 +6,7 @@
 #include <cub/cub.cuh>
 
 #include "cublas_v2.h"
-#include "kernel.h"
+#include "nms/kernel.h"
 #include "trt_plugin_helper.hpp"
 
 #define CUDA_MEM_ALIGN 256
