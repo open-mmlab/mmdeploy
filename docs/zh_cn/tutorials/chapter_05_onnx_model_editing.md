@@ -21,7 +21,7 @@ message Person {
 
 这段定义表示在 `Person` 这种数据类型中，必须包含 `name`、`id` 这两个字段，选择性包含 `email` 字段。根据这份定义文件，用户就可以选择一种编程语言，定义一个含有成员变量 `name`、`id`、`email` 的 `Person` 类，把这个类的某个实例用 Protobuf 存储成二进制文件；反之，用户也可以用二进制文件和对应的数据定义文件，读取出一个 `Person` 类的实例。
 
-而对于 ONNX ，它的 Protobuf 数据定义文件在其[开源库](https://github.com/onnx/onnx/tree/main/onnx)中，这些文件定义了神经网络中模型、节点、张量的数据类型规范；而数据定义文件对应的二进制文件就是我们熟悉的“.onnx"文件，每一个 onnx 文件按照数据定义规范，存储了一个神经网络的所有相关数据。直接用 Protobuf 生成 ONNX 模型还是比较麻烦的。幸运的是，ONNX 提供了很多实用 API，我们可以在完全不了解 Protobuf 的前提下，构造和读取 ONNX 模型。
+而对于 ONNX ，它的 Protobuf 数据定义文件在其[开源库](https://github.com/onnx/onnx/tree/main/onnx)中，这些文件定义了神经网络中模型、节点、张量的数据类型规范；而数据定义文件对应的二进制文件就是我们熟悉的“.onnx"文件，每一个 ".onnx" 文件按照数据定义规范，存储了一个神经网络的所有相关数据。直接用 Protobuf 生成 ONNX 模型还是比较麻烦的。幸运的是，ONNX 提供了很多实用 API，我们可以在完全不了解 Protobuf 的前提下，构造和读取 ONNX 模型。
 
 
 ### ONNX 的结构定义
