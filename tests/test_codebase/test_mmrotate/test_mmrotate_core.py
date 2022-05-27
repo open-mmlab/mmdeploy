@@ -134,8 +134,10 @@ def test_multiclass_nms_rotated_with_keep_top_k(pre_top_k):
 @pytest.mark.parametrize('max_shape,proj_xy,edge_swap',
                          [(None, False, False),
                           (torch.tensor([100, 200]), True, True)])
-def test_delta2bbox(backend_type: Backend, add_ctr_clamp: bool,
-                    max_shape: tuple, proj_xy: bool, edge_swap: bool):
+def test_delta_xywha_rbbox_coder_delta2bbox(backend_type: Backend,
+                                            add_ctr_clamp: bool,
+                                            max_shape: tuple, proj_xy: bool,
+                                            edge_swap: bool):
     check_backend(backend_type)
     deploy_cfg = mmcv.Config(
         dict(
@@ -181,3 +183,90 @@ def test_delta2bbox(backend_type: Backend, add_ctr_clamp: bool,
             model_output, rewrite_output, rtol=1e-03, atol=1e-05)
     else:
         assert rewrite_outputs is not None
+
+
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
+def test_delta_midpointoffset_rbbox_delta2bbox(backend_type: Backend):
+    check_backend(backend_type)
+    deploy_cfg = mmcv.Config(
+        dict(
+            onnx_config=dict(output_names=None, input_shape=None),
+            backend_config=dict(type=backend_type.value, model_inputs=None),
+            codebase_config=dict(type='mmrotate', task='RotatedDetection')))
+
+    # wrap function to enable rewrite
+    def delta2bbox(*args, **kwargs):
+        import mmrotate
+        return mmrotate.core.bbox.coder.delta_midpointoffset_rbbox_coder\
+            .delta2bbox(*args, **kwargs)
+
+    rois = torch.rand(5, 4)
+    deltas = torch.rand(5, 6)
+    original_outputs = delta2bbox(rois, deltas, version='le90')
+
+    # wrap function to nn.Module, enable torch.onnx.export
+    wrapped_func = WrapFunction(delta2bbox)
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_func,
+        model_inputs={
+            'rois': rois.unsqueeze(0),
+            'deltas': deltas.unsqueeze(0)
+        },
+        deploy_cfg=deploy_cfg)
+
+    if is_backend_output:
+        model_output = original_outputs.squeeze().cpu().numpy()
+        rewrite_output = rewrite_outputs[0].squeeze().cpu().numpy()
+        assert np.allclose(
+            model_output[:, :4], rewrite_output[:, :4], rtol=1e-03, atol=1e-05)
+    else:
+        assert rewrite_outputs is not None
+
+
+@backend_checker(Backend.ONNXRUNTIME)
+def test_fake_multiclass_nms_rotated():
+    from mmdeploy.codebase.mmrotate.core import fake_multiclass_nms_rotated
+    deploy_cfg = mmcv.Config(
+        dict(
+            onnx_config=dict(output_names=None, input_shape=None),
+            backend_config=dict(
+                type='onnxruntime',
+                common_config=dict(
+                    fp16_mode=False, max_workspace_size=1 << 20),
+                model_inputs=[
+                    dict(
+                        input_shapes=dict(
+                            boxes=dict(
+                                min_shape=[1, 5, 5],
+                                opt_shape=[1, 5, 5],
+                                max_shape=[1, 5, 5]),
+                            scores=dict(
+                                min_shape=[1, 5, 8],
+                                opt_shape=[1, 5, 8],
+                                max_shape=[1, 5, 8])))
+                ]),
+            codebase_config=dict(
+                type='mmrotate',
+                task='RotatedDetection',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    iou_threshold=0.5,
+                    pre_top_k=-1,
+                    keep_top_k=10,
+                ))))
+
+    boxes = torch.rand(1, 5, 5)
+    scores = torch.rand(1, 5, 8)
+    keep_top_k = 10
+    wrapped_func = WrapFunction(
+        fake_multiclass_nms_rotated, keep_top_k=keep_top_k)
+    rewrite_outputs, _ = get_rewrite_outputs(
+        wrapped_func,
+        model_inputs={
+            'boxes': boxes,
+            'scores': scores
+        },
+        deploy_cfg=deploy_cfg)
+
+    assert rewrite_outputs is not None, 'Got unexpected rewrite '\
+        'outputs: {}'.format(rewrite_outputs)

@@ -3,7 +3,7 @@
 // https://github.com/NVIDIA/TensorRT/tree/master/plugin/batchedNMSPlugin
 #include <vector>
 
-#include "kernel.h"
+#include "nms/kernel.h"
 
 template <typename T_BBOX>
 __device__ T_BBOX bboxSize(const Bbox<T_BBOX> &bbox, const bool normalized, T_BBOX offset) {
@@ -63,13 +63,6 @@ __device__ float jaccardOverlap(const Bbox<T_BBOX> &bbox1, const Bbox<T_BBOX> &b
   }
 }
 
-template <typename T_BBOX>
-__device__ void emptyBboxInfo(BboxInfo<T_BBOX> *bbox_info) {
-  bbox_info->conf_score = T_BBOX(0);
-  bbox_info->label = -2;  // -1 is used for all labels when shared_location is true
-  bbox_info->bbox_idx = -1;
-  bbox_info->kept = false;
-}
 /********** new NMS for only score and index array **********/
 
 template <typename T_SCORE, typename T_BBOX, int TSIZE>
@@ -255,7 +248,8 @@ pluginStatus_t allClassNMS(cudaStream_t stream, const int num, const int num_cla
     printf("Warning: pre_top_k need to be reduced for devices with arch 7.2, got pre_top_k=%d\n",
            top_k);
   }
-  nmsLaunchConfigSSD lc = nmsLaunchConfigSSD(DT_SCORE, DT_BBOX, allClassNMS_gpu<float, float>);
+  nmsLaunchConfigSSD lc(DT_SCORE, DT_BBOX);
+
   for (unsigned i = 0; i < nmsFuncVec.size(); ++i) {
     if (lc == nmsFuncVec[i]) {
       DEBUG_PRINTF("all class nms kernel %d\n", i);

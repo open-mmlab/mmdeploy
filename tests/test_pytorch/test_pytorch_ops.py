@@ -103,7 +103,7 @@ def test_adaptive_pool_2d_ncnn():
     model = OpModel(torch.nn.functional.adaptive_avg_pool2d,
                     torch.tensor([2, 2], dtype=torch.int64)).eval()
     nodes = get_model_onnx_nodes(model, x)
-    assert nodes[1].op_type == 'adaptive_avg_pool2d'
+    assert nodes[1].op_type == 'AdaptiveAvgPool2d'
     assert nodes[1].domain == 'mmdeploy'
 
 
