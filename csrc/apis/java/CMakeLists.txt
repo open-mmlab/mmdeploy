@@ -41,8 +41,7 @@ else ()
 endif ()
 foreach (TASK ${TASK_LIST})
     set(TARGET_NAME mmdeploy_${TASK}_javaapis)
-    mmdeploy_load_dynamic(mmdeploy_${TASK} MMDeployDynamicModules)
     add_library(${TARGET_NAME} SHARED ${TASK}.cpp)
-    target_link_libraries(${TARGET_NAME} PRIVATE MMDeployLibs PUBLIC ncnn
+    target_link_libraries(${TARGET_NAME} PRIVATE mmdeploy::core mmdeploy_${TASK} PUBLIC ncnn
         ${OpenCV_LIBS} spdlog)
 endforeach()
