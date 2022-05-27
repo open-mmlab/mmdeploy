@@ -181,8 +181,8 @@ struct _Operation<Sender, Scheduler, Receiver, Func>::type {
   using Assembler = typename Scheduler::Assembler;
   using _context_t = Context<Sender, Scheduler, Receiver, Func>;
   using _receiver_t = receiver_t<Sender, Scheduler, Receiver, Func>;
-  using _result_t = decltype(std::apply(std::declval<Func>(),
-                                        std::declval<completion_signatures_of_t<Sender>>()));
+  using _result_t = decltype(
+      std::apply(std::declval<Func>(), std::declval<completion_signatures_of_t<Sender>>()));
 
   _context_t* context_;
   connect_result_t<Sender, _receiver_t> op_state_;
@@ -236,8 +236,8 @@ struct _Operation<Sender, Scheduler, Receiver, Func>::type {
 template <typename Sender, typename Scheduler, typename Func>
 struct _Sender {
   struct type {
-    using _result_t = decltype(std::apply(std::declval<Func>(),
-                                          std::declval<completion_signatures_of_t<Sender>>()));
+    using _result_t = decltype(
+        std::apply(std::declval<Func>(), std::declval<completion_signatures_of_t<Sender>>()));
 
     using value_types = std::tuple<_result_t>;
 
