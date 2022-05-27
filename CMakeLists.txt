@@ -24,6 +24,8 @@ option(MMDEPLOY_BUILD_MODEL_OPTIMIZER "build MMDeploy's model optimizer" ON)
 option(MMDEPLOY_BUILD_SDK "build MMDeploy's SDK" OFF)
 option(MMDEPLOY_ZIP_MODEL "support sdk model in zip format" OFF)
 option(MMDEPLOY_BUILD_TEST "build MMDeploy's csrc's unittest" OFF)
+option(MMDEPLOY_SUBMODULE_SPDLOG "Use submodule spdlog repo instead of external" OFF)
+
 set(MMDEPLOY_TARGET_DEVICES
         "cpu" CACHE STRING "MMDeploy's target devices")
 set(MMDEPLOY_TARGET_BACKENDS "" CACHE STRING "MMDeploy's target inference engines")
@@ -31,6 +33,12 @@ set(MMDEPLOY_CODEBASES "all"  CACHE STRING "select OpenMMLab's codebases")
 
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "choose 'Release' as default build type" FORCE)
+endif ()
+
+
+if (MMDEPLOY_SUBMODULE_SPDLOG)
+    set(SPDLOG_INSTALL ON CACHE BOOL "Enables install of spdlog" FORCE)
+    set(SPDLOG_BUILD_SHARED ON CACHE BOOL "Enables build of shared libraries" FORCE)
 endif ()
 
 # when CUDA devices are enabled, the environment variable ASAN_OPTIONS=protect_shadow_gap=0

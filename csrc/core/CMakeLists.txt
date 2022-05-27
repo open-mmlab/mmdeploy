@@ -33,11 +33,21 @@ set(SRCS
 mmdeploy_add_library(${PROJECT_NAME} ${SRCS})
 target_compile_definitions(${PROJECT_NAME} PUBLIC -DMMDEPLOY_STATUS_USE_SOURCE_LOCATION=1)
 
+if (MMDEPLOY_SUBMODULE_SPDLOG)
+    message(STATUS "build spdlog")
+    add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/spdlog  ${CMAKE_CURRENT_BINARY_DIR}/mmdeploy_spdlog)
+else()
+    find_package(spdlog REQUIRED)
+    if (spdlog_FOUND)
+        message(STATUS "spdlog is found")
+    endif ()
+endif()
+target_link_libraries(${PROJECT_NAME} PUBLIC spdlog::spdlog)
+
 target_include_directories(${PROJECT_NAME}
         PUBLIC
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/csrc>
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/third_party/outcome>
-        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/third_party/spdlog/include>
         # TODO: remove dependency of `json`
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/third_party/json>
         $<INSTALL_INTERFACE:include/cpp>

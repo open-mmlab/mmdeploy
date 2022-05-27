@@ -2,9 +2,9 @@
 
 #ifndef CORE_LOG_H
 #define CORE_LOG_H
+#include <spdlog/spdlog.h>
 
 #include "core/macro.h"
-#include "spdlog/spdlog.h"
 
 namespace mmdeploy {
 
