@@ -23,6 +23,9 @@ __launch_bounds__(nthds_per_cta) __global__
     const T_SCORE score = scores[offset + detId];
     if (index == -1) {
       nmsedLabels[i] = -1;
+      if (nmsedIndex != nullptr) {
+        nmsedIndex[i] = -1;
+      }
       if (rotated) {
         nmsedDets[i * 6] = 0;
         nmsedDets[i * 6 + 1] = 0;
@@ -47,7 +50,7 @@ __launch_bounds__(nthds_per_cta) __global__
                             bboxOffset) *
                            5;
         if (nmsedIndex != nullptr) {
-          nmsedIndex[i] = bboxId;
+          nmsedIndex[i] = bboxId / 5;
         }
         // clipped bbox xmin
         nmsedDets[i * 6] =
@@ -71,7 +74,7 @@ __launch_bounds__(nthds_per_cta) __global__
                             bboxOffset) *
                            4;
         if (nmsedIndex != nullptr) {
-          nmsedIndex[i] = bboxId;
+          nmsedIndex[i] = bboxId / 4;
         }
         // clipped bbox xmin
         nmsedDets[i * 5] =

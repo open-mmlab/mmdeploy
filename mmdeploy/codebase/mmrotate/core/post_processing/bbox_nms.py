@@ -277,8 +277,8 @@ def _fake_multiclass_nms_rotated__tensorrt(
                                                 pre_top_k, keep_top_k,
                                                 iou_threshold, score_threshold,
                                                 -1, True)
-
     dets = torch.cat([boxes, scores], dim=-1)
+    dets = torch.cat([dets, dets[:, :1, :] * 0], dim=1)
     batch_inds = torch.arange(batch_size, device=device).view(-1, 1)
     dets = dets[batch_inds, index, :]
 
