@@ -886,7 +886,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
 
     convert_result = False
     convert_log_path = backend_output_path.joinpath('convert_log.log')
-    logger.info(f'Logging convertion log to {convert_log_path} ...')
+    logger.info(f'Logging conversion log to {convert_log_path} ...')
     file_handler = open(convert_log_path, 'w', encoding='utf-8')
     try:
         # Convert the model to specific backend
