@@ -4,6 +4,7 @@
 
 #include "common_cuda_helper.hpp"
 #include "modulated_deform_conv/modulated_deform_conv_cuda.cuh"
+#include "trt_modulated_deform_conv_kernel.hpp"
 #include "trt_plugin_helper.hpp"
 
 template <typename T>
@@ -33,6 +34,28 @@ __global__ void output_add_bias_kernel(scalar_t* output, const scalar_t* bias, s
                                        size_t step_channel, size_t n) {
   CUDA_1D_KERNEL_LOOP(index, n) { output[index] += bias[(index % step_batch) / step_channel]; }
 }
+
+#if defined(__CUDA_ARCH__) && (__CUDA_ARCH__ >= 530)
+template <>
+__global__ void output_add_bias_kernel<__half>(__half* output, const __half* bias,
+                                               size_t step_batch, size_t step_channel, size_t n) {
+  CUDA_1D_KERNEL_LOOP(index, n) {
+    const __half b = bias[(index % step_batch) / step_channel];
+    const __half o = output[index];
+    output[index] = __hadd(o, b);
+  }
+}
+#else
+template <>
+__global__ void output_add_bias_kernel<__half>(__half* output, const __half* bias,
+                                               size_t step_batch, size_t step_channel, size_t n) {
+  CUDA_1D_KERNEL_LOOP(index, n) {
+    const __half b = bias[(index % step_batch) / step_channel];
+    const __half o = output[index];
+    output[index] = __float2half(__half2float(o) + __half2float(b));
+  }
+}
+#endif
 
 template <typename scalar_t>
 static void output_add_bias(scalar_t* output, const scalar_t* bias, size_t batch, size_t channel,
@@ -100,14 +123,16 @@ void ModulatedDeformConvForwardCUDAKernelLauncher(
   }
 }
 
-void ModulatedDeformConvForwardCUDAKernelLauncher_float(
+template void ModulatedDeformConvForwardCUDAKernelLauncher<float>(
     const float* input, const float* weight, const float* bias, const float* offset,
     const float* mask, float* output, void* workspace, int batch, int channels, int height,
     int width, int channels_out, int kernel_w, int kernel_h, int stride_w, int stride_h, int pad_w,
     int pad_h, int dilation_w, int dilation_h, int group, int deformable_group, int im2col_step,
-    cublasHandle_t cublas_handle, cudaStream_t stream) {
-  ModulatedDeformConvForwardCUDAKernelLauncher<float>(
-      input, weight, bias, offset, mask, output, workspace, batch, channels, height, width,
-      channels_out, kernel_w, kernel_h, stride_w, stride_h, pad_w, pad_h, dilation_w, dilation_h,
-      group, deformable_group, im2col_step, cublas_handle, stream);
-}
+    cublasHandle_t cublas_handle, cudaStream_t stream);
+
+template void ModulatedDeformConvForwardCUDAKernelLauncher<__half>(
+    const __half* input, const __half* weight, const __half* bias, const __half* offset,
+    const __half* mask, __half* output, void* workspace, int batch, int channels, int height,
+    int width, int channels_out, int kernel_w, int kernel_h, int stride_w, int stride_h, int pad_w,
+    int pad_h, int dilation_w, int dilation_h, int group, int deformable_group, int im2col_step,
+    cublasHandle_t cublas_handle, cudaStream_t stream);
