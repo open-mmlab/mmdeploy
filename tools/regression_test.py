@@ -222,6 +222,9 @@ def update_report(report_dict: dict, model_name: str, model_config: str,
         if Path(checkpoint).exists():
             # To invoice the path which is 'A.a B.b' when test sdk.
             checkpoint = Path(checkpoint).absolute().resolve()
+        elif backend_name == 'ncnn':
+            # ncnn have 2 backend file but only need xxx.param
+            checkpoint = checkpoint.split('.param')[0] + '.param'
         work_dir = report_txt_path.parent.absolute().resolve()
         checkpoint = str(checkpoint).replace(str(work_dir), '${WORK_DIR}')
 
