@@ -18,7 +18,7 @@ class PseHeadImpl {
 
   virtual void Init(const Stream& stream) { stream_ = stream; }
 
-  virtual Result<void> Process(Tensor preds,                  //
+  virtual Result<void> Process(Tensor preds,                 //
                                float min_kernel_confidence,  //
                                cv::Mat_<float>& score,       //
                                cv::Mat_<uint8_t>& masks,     //
