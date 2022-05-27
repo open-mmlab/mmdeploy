@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
+import os.path as osp
 import random
 import string
 import tempfile
@@ -409,14 +410,18 @@ def get_ts_model(wrapped_model: nn.Module,
     """
     ir_file_path = tempfile.NamedTemporaryFile(suffix='.pt').name
     backend = get_backend(deploy_cfg)
-    patched_model = patch_model(
-        wrapped_model, cfg=deploy_cfg, backend=backend.value)
 
-    from mmdeploy.apis.pytorch2torchscript import torch2torchscript_impl
-    torch2torchscript_impl(
-        patched_model, [v for _, v in model_inputs.items()],
-        deploy_cfg=deploy_cfg,
-        output_file=ir_file_path)
+    from mmdeploy.apis.torch_jit import trace
+    context_info = dict(deploy_cfg=deploy_cfg)
+    output_prefix = osp.splitext(ir_file_path)[0]
+
+    example_inputs = [v for _, v in model_inputs.items()]
+    trace(
+        wrapped_model,
+        example_inputs,
+        output_path_prefix=output_prefix,
+        backend=backend,
+        context_info=context_info)
     return ir_file_path
 
 

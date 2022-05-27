@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import os.path as osp
 import subprocess
 import tempfile
 
@@ -49,12 +50,20 @@ def generate_onnx_file():
 def generate_torchscript_file():
     import mmcv
 
-    from mmdeploy.apis import torch2torchscript_impl
-    deploy_cfg = mmcv.Config(
-        {'backend_config': dict(type=Backend.TORCHSCRIPT.value)})
-    with torch.no_grad():
-        torch2torchscript_impl(model, torch.rand(1, 3, 8, 8), deploy_cfg,
-                               ts_file)
+    backend = Backend.TORCHSCRIPT.value
+    deploy_cfg = mmcv.Config({'backend_config': dict(type=backend)})
+
+    from mmdeploy.apis.torch_jit import trace
+    context_info = dict(deploy_cfg=deploy_cfg)
+    output_prefix = osp.splitext(ts_file)[0]
+
+    example_inputs = torch.rand(1, 3, 8, 8)
+    trace(
+        model,
+        example_inputs,
+        output_path_prefix=output_prefix,
+        backend=backend,
+        context_info=context_info)
 
 
 def onnx2backend(backend, onnx_file):
