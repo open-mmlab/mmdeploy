@@ -1,8 +1,6 @@
 globals:
-  codebase_name: mmseg
   codebase_dir: ../mmsegmentation
   checkpoint_force_download: False
-  checkpoint_dir: ../mmdeploy_checkpoints
   images:
     img_leftImg8bit: &img_leftImg8bit ../mmsegmentation/tests/data/pseudo_cityscapes_dataset/leftImg8bit/frankfurt_000000_000294_leftImg8bit.png
     img_loveda_0: &img_loveda_0 ../mmsegmentation/tests/data/pseudo_loveda_dataset/img_dir/0.png
@@ -16,7 +14,7 @@ globals:
       metric_key: mIoU # eval OrderedDict key name
       tolerance: 5 # metric ±n%
       task_name: Semantic Segmentation # metafile.Results.Task
-      dataset: Cityscapes # metafile.Results.Dataset
+      dataset: [Cityscapes, ADE20K] # metafile.Results.Dataset
   convert_image: &convert_image
     input_img: *img_leftImg8bit
     test_img: *img_loveda_0

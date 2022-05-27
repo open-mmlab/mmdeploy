@@ -1,8 +1,6 @@
 globals:
-  codebase_name: mmocr
   codebase_dir: ../mmocr
   checkpoint_force_download: False
-  checkpoint_dir: ../mmdeploy_checkpoints
   images:
     img_densetext_det: &img_densetext_det ../mmocr/demo/demo_densetext_det.jpg
     img_demo_text_det: &img_demo_text_det ../mmocr/demo/demo_text_det.jpg
