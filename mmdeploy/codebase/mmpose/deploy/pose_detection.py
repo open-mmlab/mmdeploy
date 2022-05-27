@@ -62,6 +62,8 @@ def process_model_config(
                 channel_order = trans['channel_order']
         if trans.type == 'TopDownAffine':
             trans['image_size'] = input_shape
+        if trans.type == 'TopDownGetBboxCenterScale':
+            trans['image_size'] = input_shape
 
         sdk_pipeline.append(trans)
         idx = idx + 1
