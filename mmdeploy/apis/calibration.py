@@ -1,107 +1,63 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Optional, Union
 
-import h5py
 import mmcv
 import torch
 from mmcv.parallel import MMDataParallel
 
-from mmdeploy.core import (RewriterContext, patch_model,
-                           reset_mark_function_count)
+from mmdeploy.core import patch_model
 from mmdeploy.utils import cfg_apply_marks, load_config
+from .core import PIPELINE_MANAGER, no_mp
+from .utils import create_calib_input_data as create_calib_input_data_impl
 
 
-def create_calib_table(calib_file: str,
-                       deploy_cfg: Union[str, mmcv.Config],
-                       model_cfg: Union[str, mmcv.Config],
-                       model_checkpoint: Optional[str] = None,
-                       dataset_cfg: Optional[Union[str, mmcv.Config]] = None,
-                       dataset_type: str = 'val',
-                       device: str = 'cuda:0',
-                       **kwargs) -> None:
-    """Create calibration table.
+@PIPELINE_MANAGER.register_pipeline()
+def create_calib_input_data(calib_file: str,
+                            deploy_cfg: Union[str, mmcv.Config],
+                            model_cfg: Union[str, mmcv.Config],
+                            model_checkpoint: Optional[str] = None,
+                            dataset_cfg: Optional[Union[str,
+                                                        mmcv.Config]] = None,
+                            dataset_type: str = 'val',
+                            device: str = 'cpu') -> None:
+    with no_mp():
+        if dataset_cfg is None:
+            dataset_cfg = model_cfg
 
-    Examples:
-        >>> from mmdeploy.apis import create_calib_table
-        >>> from mmdeploy.utils import get_calib_filename, load_config
-        >>> deploy_cfg = 'configs/mmdet/detection/' \
-            'detection_tensorrt-int8_dynamic-320x320-1344x1344.py'
-        >>> deploy_cfg = load_config(deploy_cfg)[0]
-        >>> calib_file = get_calib_filename(deploy_cfg)
-        >>> model_cfg = 'mmdetection/configs/fcos/' \
-            'fcos_r50_caffe_fpn_gn-head_1x_coco.py'
-        >>> model_checkpoint = 'checkpoints/' \
-            'fcos_r50_caffe_fpn_gn-head_1x_coco-821213aa.pth'
-        >>> create_calib_table(calib_file, deploy_cfg, \
-            model_cfg, model_checkpoint, device='cuda:0')
+        device_id = torch.device(device).index
+        if device_id is None:
+            device_id = 0
 
-    Args:
-        calib_file (str): Input calibration file.
-        deploy_cfg (str | mmcv.Config): Deployment config.
-        model_cfg (str | mmcv.Config): The model config.
-        model_checkpoint (str): PyTorch model checkpoint, defaults to `None`.
-        dataset_cfg (str | mmcv.Config): Dataset config, defaults to `None`
-        dataset_type (str): A string specifying dataset type, e.g.: 'test',
-            'val', defaults to 'val'.
-        device (str): Specifying the device to run on, defaults to 'cuda:0'.
-    """
-    if dataset_cfg is None:
-        dataset_cfg = model_cfg
+        # load cfg if necessary
+        deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
 
-    # load cfg if necessary
-    deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
-    device_id = torch.device(device).index
-    if device_id is None:
-        device_id = 0
+        if dataset_cfg is None:
+            dataset_cfg = model_cfg
 
-    if dataset_cfg is None:
-        dataset_cfg = model_cfg
-    # load dataset_cfg if necessary
-    dataset_cfg = load_config(dataset_cfg)[0]
+        # load dataset_cfg if necessary
+        dataset_cfg = load_config(dataset_cfg)[0]
 
-    from mmdeploy.apis.utils import build_task_processor
-    task_processor = build_task_processor(model_cfg, deploy_cfg, device)
+        from mmdeploy.apis.utils import build_task_processor
+        task_processor = build_task_processor(model_cfg, deploy_cfg, device)
 
-    apply_marks = cfg_apply_marks(deploy_cfg)
-    backend = 'default'
-    model = task_processor.init_pytorch_model(model_checkpoint)
-    dataset = task_processor.build_dataset(dataset_cfg, dataset_type)
+        apply_marks = cfg_apply_marks(deploy_cfg)
 
-    # patch model
-    patched_model = patch_model(model, cfg=deploy_cfg, backend=backend)
+        model = task_processor.init_pytorch_model(model_checkpoint)
+        dataset = task_processor.build_dataset(dataset_cfg, dataset_type)
 
-    with h5py.File(calib_file, mode='w') as file:
-        calib_data_group = file.create_group('calib_data')
+        # patch model
+        patched_model = patch_model(model, cfg=deploy_cfg)
 
-        if not apply_marks:
-            # create end2end group
-            input_data_group = calib_data_group.create_group('end2end')
-            input_group = input_data_group.create_group('input')
         dataloader = task_processor.build_dataloader(
             dataset, 1, 1, dist=False, shuffle=False)
         patched_model = MMDataParallel(patched_model, device_ids=[device_id])
-        prog_bar = mmcv.ProgressBar(len(dataset))
-        for data_id, input_data in enumerate(dataloader):
 
-            if not apply_marks:
-                # save end2end data
-                input_tensor = task_processor.get_tensor_from_input(input_data)
-                input_ndarray = input_tensor.detach().cpu().numpy()
-                input_group.create_dataset(
-                    str(data_id),
-                    shape=input_ndarray.shape,
-                    compression='gzip',
-                    compression_opts=4,
-                    data=input_ndarray)
-
-            with torch.no_grad(), RewriterContext(
-                    cfg=deploy_cfg,
-                    backend=backend,
-                    create_calib=True,
-                    calib_file=file,
-                    data_id=data_id):
-                reset_mark_function_count()
-                _ = task_processor.run_inference(patched_model, input_data)
-            file.flush()
-
-            prog_bar.update()
+        create_calib_input_data_impl(
+            calib_file,
+            patched_model,
+            dataloader,
+            get_tensor_func=task_processor.get_tensor_from_input,
+            inference_func=task_processor.run_inference,
+            model_partition=apply_marks,
+            context_info=dict(cfg=deploy_cfg),
+            device=device)
