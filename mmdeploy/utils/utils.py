@@ -6,7 +6,10 @@ import sys
 import traceback
 from typing import Callable, Optional, Union
 
-import multiprocess as mp
+try:
+    from torch import multiprocessing as mp
+except ImportError:
+    import multiprocess as mp
 
 from mmdeploy.utils.logging import get_logger
 
