@@ -131,7 +131,7 @@ b = helper.make_tensor_value_info('b', TensorProto.FLOAT, [10, 10])
 output = helper.make_tensor_value_info('output', TensorProto.FLOAT, [10, 10])
 ```
 
-之后，我们要构造算子节点信息 `NodeProto`，这可以通过在 `helper.make_node` 中传入算子类型、输入算子名、输出算子名这三个信息来实现。我们这里先构造了描述 `c=a*x` 的乘法节点，再构造了 `output=c+b` 的加法节点。如下面的代码所示：
+之后，我们要构造算子节点信息 `NodeProto`，这可以通过在 `helper.make_node` 中传入算子类型、输入张量名、输出张量名这三个信息来实现。我们这里先构造了描述 `c=a*x` 的乘法节点，再构造了 `output=c+b` 的加法节点。如下面的代码所示：
 
 ```python
 mul = helper.make_node('Mul', ['a', 'x'], ['c'])
@@ -156,7 +156,7 @@ graph = helper.make_graph([mul, add], 'linear_func', [a, x, b], [output])
 
 如果对这个概念不熟也没有关系，我们以刚刚构造出来的这个计算图为研究对象，通过下图展示的两个例子来直观理解拓扑序。
 
-![](https://user-images.githubusercontent.com/47652064/170020644-768005e2-928e-4f9d-86f3-cccc9b5b8fe1.png)
+![](https://user-images.githubusercontent.com/47652064/170644483-160313b4-b000-4ad1-85b5-816278c7df80.png)
 
 这里我们只关注 `Mul` 和 `Add` 节点以及它们之间的边 `c`。在情况 1 中：如果我们的节点以 `[Mul, Add]` 顺序给出，那么遍历到 `Add` 时，它的输入 `c` 可以在之前的 `Mul` 的输出中找到。但是，如情况 2 所示：如果我们的节点以 `[Add, Mul]` 的顺序给出，那么 `Add` 就找不到输入边，计算图也无法成功构造出来了。这里的 `[Mul, Add]` 就是符合有向图的拓扑序的，而 `[Add, Mul]` 则不满足。
 
@@ -346,7 +346,7 @@ torch.onnx.export(model, input, 'whole_model.onnx')
 
 这个模型的可视化结果如下图所示（提取子模型需要输入边的序号，为了大家方面阅读，这幅图标出了之后要用到的边的序号）：
 
-![](https://user-images.githubusercontent.com/47652064/170020742-2064c75e-ee73-40f3-927e-fa892c67b8ae.png)
+![](https://user-images.githubusercontent.com/47652064/170644578-bcaaa2aa-bdd4-4cb3-856b-c6d621273357.png)
 
 
 > 在前面的章节中，我们学过，ONNX 的边用同名张量表示的。也就是说，这里的边序号，实际上是前一个节点的输出张量序号和后一个节点的输入张量序号。由于这个模型是用 PyTorch 导出的，这些张量序号都是 PyTorch 自动生成的。
@@ -361,7 +361,7 @@ onnx.utils.extract_model('whole_model.onnx', 'partial_model.onnx', ['22'], ['28'
 
 子模型的可视化结果如下图所示：
 
-![](https://user-images.githubusercontent.com/47652064/170020760-a0ac69ad-6004-4a2e-8791-b069a499aa60.png)
+![](https://user-images.githubusercontent.com/47652064/170644616-42cd9d11-1525-49b2-b302-b96e985c5e79.png)
 
 通过观察代码和输出图，应该不难猜出这段代码的作用是把原计算图从边 22 到边 28 的子图提取出来，并组成一个子模型。`onnx.utils.extract_model` 就是完成子模型提取的函数，它的参数分别是原模型路径、输出模型路径、子模型的输入边（输入张量）、子模型的输出边（输出张量）。
 
@@ -377,7 +377,7 @@ onnx.utils.extract_model('whole_model.onnx', 'submodel_1.onnx', ['22'], ['27', '
 
 我们可以看到子模型会添加一条把张量输出的新边，如下图所示：
 
-![](https://user-images.githubusercontent.com/47652064/170020786-c10ff2ed-ff09-42dc-b8b2-9c610e8e3440.png)
+![](https://user-images.githubusercontent.com/47652064/170644722-d63156e5-cd74-4faa-ac0a-ce408be949eb.png)
 
 #### 添加冗余输入
 
@@ -389,7 +389,7 @@ onnx.utils.extract_model('whole_model.onnx', 'submodel_2.onnx', ['22', 'input.1'
 
 从下图中可以看出：无论给这个输入传入什么值，都不会影响子模型的输出。可以认为如果只用子模型的部分输入就能得到输出，那么那些”较早“的多出来的输入就是冗余的。
 
-![](https://user-images.githubusercontent.com/47652064/170020815-79e5f6f2-adeb-46b5-a679-5ef78110167a.png)
+![](https://user-images.githubusercontent.com/47652064/170644751-c8100d04-585b-4f93-9ed0-7a77dca88c16.png)
 
 #### 输入信息不足
 
@@ -400,7 +400,7 @@ onnx.utils.extract_model('whole_model.onnx', 'submodel_2.onnx', ['22', 'input.1'
 onnx.utils.extract_model('whole_model.onnx', 'submodel_3.onnx', ['24'], ['28'])
 ```
 
-![](https://user-images.githubusercontent.com/47652064/170020835-b9eab816-7e00-46f0-a530-5cb44e3775b4.png)
+![](https://user-images.githubusercontent.com/47652064/170644773-627af9d0-8c3f-447c-9fbf-dc63a31c40ab.png)
 
 从图中可以看出，想通过边 24 计算边 28 的结果，至少还需要输入边 26，或者更上面的边。仅凭借边 24 是无法计算出边 28 的结果的，因此这样提取子模型会报错。
 
