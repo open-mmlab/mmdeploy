@@ -231,8 +231,8 @@ Although the backend engines are usually implemented in C/C++, it is convenient 
 5. Add docstring and unit tests for new code :).
 
 
-### Support new backends using MMDeploy as a third package
-Previous parts teach users how to add a new backend in MMDeploy, which have to change the source codes of it. However, for users that use MMDeploy as a third package, adding a new backend has to pre-install another package named `aenum`. Users can install it directly through `pip install aenum`.
+### Support new backends using MMDeploy as a third party
+Previous parts show how to add a new backend in MMDeploy, which requires changing its source codes. However, if we treat MMDeploy as a third party, the methods above are no longer efficient. To this end, adding a new backend requires us pre-install another package named `aenum`. We can install it directly through `pip install aenum`.
 
 After installing `aenum` successfully, we can use it to add a new backend through:
 ```python
