@@ -92,11 +92,12 @@ def main():
     args = parse_args()
     set_start_method('spawn')
     logger = get_root_logger()
-    logger.setLevel(args.log_level)
+    log_level = logging.getLevelName(args.log_level)
+    logger.setLevel(log_level)
 
     pipeline_funcs = [torch2onnx, torch2torchscript]
     PIPELINE_MANAGER.enable_multiprocess(True, pipeline_funcs)
-    PIPELINE_MANAGER.set_log_level(logging.INFO, pipeline_funcs)
+    PIPELINE_MANAGER.set_log_level(log_level, pipeline_funcs)
 
     deploy_cfg_path = args.deploy_cfg
     model_cfg_path = args.model_cfg
@@ -217,7 +218,7 @@ def main():
         import mmdeploy.apis.ncnn as ncnn_api
         from mmdeploy.apis.ncnn import get_output_model_file
 
-        PIPELINE_MANAGER.set_log_level(logging.INFO, [ncnn_api.from_onnx])
+        PIPELINE_MANAGER.set_log_level(log_level, [ncnn_api.from_onnx])
 
         backend_files = []
         for onnx_path in ir_files:
@@ -266,7 +267,7 @@ def main():
                                             get_mo_options_from_cfg,
                                             get_output_model_file)
 
-        PIPELINE_MANAGER.set_log_level(logging.INFO, [openvino_api.from_onnx])
+        PIPELINE_MANAGER.set_log_level(log_level, [openvino_api.from_onnx])
 
         openvino_files = []
         for onnx_path in ir_files:

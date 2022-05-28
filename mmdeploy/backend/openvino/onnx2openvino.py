@@ -68,8 +68,8 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
         >>> input_info = {'input': [1,3,800,1344]}
         >>> output_names = ['dets', 'labels']
         >>> onnx_path = 'work_dir/end2end.onnx'
-        >>> work_dir = 'work_dir'
-        >>> from_onnx( onnx_path, work_dir, input_info, output_names)
+        >>> output_dir = 'work_dir'
+        >>> from_onnx( onnx_path, output_dir, input_info, output_names)
 
     Args:
         onnx_model (str|ModelProto): The onnx model or its path.

@@ -46,9 +46,8 @@ def from_onnx(onnx_model: Union[onnx.ModelProto, str],
     Example:
         >>> from mmdeploy.apis.ncnn import from_onnx
         >>> onnx_path = 'work_dir/end2end.onnx'
-        >>> save_param = 'work_dir/end2end.param'
-        >>> save_bin = 'work_dir/end2end.bin'
-        >>> from_onnx(onnx_path, save_param, save_bin)
+        >>> output_file_prefix = 'work_dir/end2end'
+        >>> from_onnx(onnx_path, output_file_prefix)
 
     Args:
         onnx_path (ModelProto|str): The path of the onnx model.
