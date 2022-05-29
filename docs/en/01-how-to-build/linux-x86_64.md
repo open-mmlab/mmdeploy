@@ -1,30 +1,22 @@
 # Build for Linux-x86_64
 
 - [Build for Linux-x86_64](#build-for-linux-x86_64)
-  - [Dockerfile (RECOMMENDED)](#dockerfile-recommended)
-  - [Build From Source](#build-from-source)
-    - [Install Toolchains](#install-toolchains)
-    - [Install Dependencies](#install-dependencies)
-      - [Install Dependencies for Model Converter](#install-dependencies-for-model-converter)
-      - [Install Dependencies for SDK](#install-dependencies-for-sdk)
-      - [Install Inference Engines for MMDeploy](#install-inference-engines-for-mmdeploy)
-    - [Build MMDeploy](#build-mmdeploy)
-      - [Build Options Spec](#build-options-spec)
-      - [Build Model Converter](#build-model-converter)
-        - [Build Custom Ops](#build-custom-ops)
-        - [Install Model Converter](#install-model-converter)
-      - [Build SDK](#build-sdk)
-      - [Build Demo](#build-demo)
+  - [Install Toolchains](#install-toolchains)
+  - [Install Dependencies](#install-dependencies)
+    - [Install Dependencies for Model Converter](#install-dependencies-for-model-converter)
+    - [Install Dependencies for SDK](#install-dependencies-for-sdk)
+    - [Install Inference Engines for MMDeploy](#install-inference-engines-for-mmdeploy)
+  - [Build MMDeploy](#build-mmdeploy)
+    - [Build Options Spec](#build-options-spec)
+    - [Build Model Converter](#build-model-converter)
+      - [Build Custom Ops](#build-custom-ops)
+      - [Install Model Converter](#install-model-converter)
+    - [Build SDK](#build-sdk)
+    - [Build Demo](#build-demo)
 
 ---
-MMDeploy provides two build ways for linux-x86_64 platform, including dockerfile and build from source.
 
-## Dockerfile (RECOMMENDED)
-please refer to [how to use docker](../tutorials/how_to_use_docker.md).
-
-## Build From Source
-
-### Install Toolchains
+## Install Toolchains
 
 - cmake
 
@@ -47,8 +39,8 @@ please refer to [how to use docker](../tutorials/how_to_use_docker.md).
     sudo apt-get install g++-7
     ```
 
-### Install Dependencies
-#### Install Dependencies for Model Converter
+## Install Dependencies
+### Install Dependencies for Model Converter
 
 <table class="docutils">
 <thead>
@@ -90,7 +82,7 @@ pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/${cu_ve
 </tbody>
 </table>
 
-#### Install Dependencies for SDK
+### Install Dependencies for SDK
 
 You can skip this chapter if you are only interested in the model converter.
 <table class="docutils">
@@ -129,7 +121,7 @@ git checkout tags/v0.6.2 -b v0.6.2
 </tbody>
 </table>
 
-#### Install Inference Engines for MMDeploy
+### Install Inference Engines for MMDeploy
 
 Both MMDeploy's model converter and SDK share the same inference engines.
 
@@ -258,13 +250,13 @@ echo 'export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH' >> ~/.bashrc
 source ~/.bashrc
 ```
 
-### Build MMDeploy
+## Build MMDeploy
 ```bash
 cd /the/root/path/of/MMDeploy
 export MMDEPLOY_DIR=$(pwd)
 ```
 
-#### Build Options Spec
+### Build Options Spec
 <table class="docutils">
 <thead>
   <tr>
@@ -339,9 +331,9 @@ Currently, <b>The Model Converter supports torchscript, but SDK doesn't</b>.
 </tbody>
 </table>
 
-#### Build Model Converter
+### Build Model Converter
 
-##### Build Custom Ops
+#### Build Custom Ops
 If one of inference engines among ONNXRuntime, TensorRT, ncnn and libtorch is selected, you have to build the corresponding custom ops.
 
 - **ONNXRuntime** Custom Ops
@@ -380,7 +372,7 @@ If one of inference engines among ONNXRuntime, TensorRT, ncnn and libtorch is se
   make -j$(nproc)
   ```
 
-##### Install Model Converter
+#### Install Model Converter
 
 ```bash
 cd ${MMDEPLOY_DIR}
@@ -391,7 +383,7 @@ pip install -e .
 - Some dependencies are optional. Simply running `pip install -e .` will only install the minimum runtime requirements.
   To use optional dependencies, install them manually with `pip install -r requirements/optional.txt` or specify desired extras when calling `pip` (e.g. `pip install -e .[optional]`).
   Valid keys for the extras field are: `all`, `tests`, `build`, `optional`.
-#### Build SDK
+### Build SDK
 
 MMDeploy provides two recipes as shown below for building SDK with ONNXRuntime and TensorRT as inference engines respectively.
 You can also activate other engines after the model.
@@ -430,7 +422,7 @@ You can also activate other engines after the model.
   make -j$(nproc) && make install
   ```
 
-#### Build Demo
+### Build Demo
 
 ```Bash
 cd ${MMDEPLOY_DIR}/build/install/example

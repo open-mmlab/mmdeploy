@@ -1,19 +1,19 @@
-# Build MMDeploy
-
-## Download MMDeploy
+# Build From Source
 
 
-  ```bash
-  git clone -b master git@github.com:open-mmlab/mmdeploy.git MMDeploy
-  cd MMDeploy
-  git submodule update --init --recursive
+## Download
+
+
+  ```shell
+  git clone -b master git@github.com:open-mmlab/mmdeploy.git --recursive
   ```
 
 Note:
 
   - If fetching submodule fails, you could get submodule manually by following instructions:
 
-      ```bash
+      ```shell
+      cd mmdeploy
       git clone git@github.com:NVIDIA/cub.git third_party/cub
       cd third_party/cub
       git checkout c3cceac115
@@ -26,15 +26,13 @@ Note:
       ```
   - If it fails when `git clone` via `SSH`, you can try the `HTTPS` protocol like this:
 
-    ```bash
-    git clone -b master https://github.com/open-mmlab/mmdeploy.git MMDeploy
-    cd MMDeploy
-    git submodule update --init --recursive
+    ```shell
+    git clone -b master https://github.com/open-mmlab/mmdeploy.git --recursive
     ```
 
-## Build MMDeploy
+## Build
 Please visit the following links to find out how to build MMDeploy according to the target platform.
-- [Linux-x86_64](build/linux.md)
-- [Windows](build/windows.md)
-- [Android-aarch64](build/android.md)
-- [NVIDIA Jetson](tutorials/how_to_install_mmdeploy_on_jetsons.md)
+- [Linux-x86_64](linux-x86_64.md)
+- [Windows](windows.md)
+- [Android-aarch64](android.md)
+- [NVIDIA Jetson](jetsons.md)
