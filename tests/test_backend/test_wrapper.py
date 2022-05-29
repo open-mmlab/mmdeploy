@@ -96,13 +96,13 @@ def onnx2backend(backend, onnx_file):
         subprocess.call([onnx2ncnn_path, onnx_file, param_file, bin_file])
         return param_file, bin_file
     elif backend == Backend.OPENVINO:
-        from mmdeploy.apis.openvino import get_output_model_file, onnx2openvino
+        from mmdeploy.apis.openvino import from_onnx, get_output_model_file
         backend_dir = tempfile.TemporaryDirectory().name
         backend_file = get_output_model_file(onnx_file, backend_dir)
         input_info = {'input': test_img.shape}
         output_names = ['output']
         work_dir = backend_dir
-        onnx2openvino(input_info, output_names, onnx_file, work_dir)
+        from_onnx(onnx_file, work_dir, input_info, output_names)
         return backend_file
 
 

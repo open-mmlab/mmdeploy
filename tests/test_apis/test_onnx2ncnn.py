@@ -55,13 +55,14 @@ def generate_onnx_file(model):
 
 @backend_checker(Backend.NCNN)
 def test_onnx2ncnn():
-    from mmdeploy.apis.ncnn import onnx2ncnn
+    from mmdeploy.apis.ncnn import from_onnx
     model = test_model
     generate_onnx_file(model)
 
     work_dir, _ = osp.split(onnx_file)
     save_param, save_bin = get_output_model_file(onnx_file, work_dir=work_dir)
-    onnx2ncnn(onnx_file, save_param, save_bin)
+    file_name = osp.splitext(onnx_file)[0]
+    from_onnx(onnx_file, osp.join(work_dir, file_name))
     assert osp.exists(work_dir)
     assert osp.exists(save_param)
     assert osp.exists(save_bin)
