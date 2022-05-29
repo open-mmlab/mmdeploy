@@ -7,7 +7,6 @@ You can switch between Chinese and English documents in the lower-left corner of
    :maxdepth: 1
    :caption: Get Started
 
-   supported_models.md
    get_started.md
 
 .. toctree::
@@ -21,41 +20,42 @@ You can switch between Chinese and English documents in the lower-left corner of
    01-how-to-build/android.md
    01-how-to-build/jetsons.md
 
-.. toctree::
+-- toctree::
    :maxdepth: 1
-   :caption: Tutorials
+   :caption: Run & Test
 
-   tutorials/how_to_convert_model.md
-   tutorials/how_to_write_config.md
-   tutorials/how_to_evaluate_a_model.md
-   tutorials/how_to_measure_performance_of_models.md
-   tutorials/how_to_support_new_models.md
-   tutorials/how_to_support_new_backends.md
-   tutorials/how_to_add_test_units_for_backend_ops.md
-   tutorials/how_to_test_rewritten_models.md
-   tutorials/how_to_use_docker.md
-   tutorials/how_to_install_mmdeploy_on_jetsons.md
+   02-how-to-run/how_to_convert_model.md
+   02-how-to-run/how_to_evaluate_a_model.md
+   02-how-to-run/how_to_measure_performance_of_models.md
+   02-how-to-run/how_to_write_config.md
 
 .. toctree::
    :maxdepth: 1
-   :caption: OpenMMLab Support
+   :caption: Benchmark
 
-   codebases/mmcls.md
-   codebases/mmdet.md
-   codebases/mmseg.md
-   codebases/mmedit.md
-   codebases/mmocr.md
+   03-benchmark/supported_models.md
+   03-benchmark/benchmark.md
+
+.. toctree::
+   :maxdepth: 1
+   :caption: OpenMMLab Codebase Support
+
+   04-supported-codebases/mmcls.md
+   04-supported-codebases/mmdet.md
+   04-supported-codebases/mmseg.md
+   04-supported-codebases/mmedit.md
+   04-supported-codebases/mmocr.md
 
 .. toctree::
    :maxdepth: 1
    :caption: Backend Support
 
-   backends/onnxruntime.md
-   backends/tensorrt.md
-   backends/openvino.md
-   backends/ncnn.md
-   backends/pplnn.md
-   backends/torchscript.md
+   05-supported-backends/onnxruntime.md
+   05-supported-backends/tensorrt.md
+   05-supported-backends/openvino.md
+   05-supported-backends/ncnn.md
+   05-supported-backends/pplnn.md
+   05-supported-backends/torchscript.md
 
 .. toctree::
    :maxdepth: 1
@@ -65,11 +65,19 @@ You can switch between Chinese and English documents in the lower-left corner of
    ops/tensorrt.md
    ops/ncnn.md
 
+-- toctree::
+   :maxdepth: 1
+   :caption: Developer Guide
+
+   06-developer-guide/how_to_support_new_models.md
+   06-developer-guide/how_to_support_new_backends.md
+   06-developer-guide/how_to_add_test_units_for_backend_ops.md
+   06-developer-guide/how_to_test_rewritten_models.md
+
 .. toctree::
    :maxdepth: 1
-   :caption: Benchmark
+   :caption: Tutorials on Model Deployment
 
-   benchmark.md
 
 .. toctree::
    :maxdepth: 1
