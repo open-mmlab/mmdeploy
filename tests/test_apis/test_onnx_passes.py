@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import tempfile
-from typing import List, Tuple, Any
+from typing import Any, List, Tuple
 
 import onnx
 import pytest
