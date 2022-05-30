@@ -1973,8 +1973,8 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](tut
     <td align="center">mAP</td>
     <td align="center">0.756</td>
     <td align="center">0.756</td>
-    <td align="center">-</td>
-    <td align="center">-</td>
+    <td align="center">0.758</td>
+    <td align="center">0.730</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td>$MMROTATE_DIR/configs/oriented_rcnn/oriented_rcnn_r50_fpn_1x_dota_le90.py</td>

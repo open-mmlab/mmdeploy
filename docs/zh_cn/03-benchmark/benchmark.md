@@ -1575,20 +1575,8 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">mAP</td>
     <td align="center">0.756</td>
     <td align="center">0.756</td>
-    <td align="center">-</td>
-    <td align="center">-</td>
-    <td align="center">-</td>
-    <td align="center">-</td>
-  </tr>
-  <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmrotate/tree/main/configs/oriented_rcnn/oriented_rcnn_r50_fpn_1x_dota_le90.py">Oriented RCNN</a></td>
-    <td align="center">Rotated Detection</td>
-    <td align="center">DOTA-v1.0</td>
-    <td align="center">mAP</td>
-    <td align="center">0.756</td>
-    <td align="center">0.756</td>
-    <td align="center">-</td>
-    <td align="center">-</td>
+    <td align="center">0.758</td>
+    <td align="center">0.730</td>
     <td align="center">-</td>
     <td align="center">-</td>
   </tr>
