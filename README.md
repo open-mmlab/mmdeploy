@@ -38,53 +38,58 @@ MMDeploy is an open-source deep learning model deployment toolset. It is a part 
 </div>
 
 
-### Main features
+## Main features
 
-- **Fully support OpenMMLab models**
+### Fully support OpenMMLab models
 
-  We provide a unified model deployment toolbox for the codebases in OpenMMLab. The currently supported codebases are as follows, and more will be included in the future
-  - [x] MMClassification
-  - [x] MMDetection
-  - [x] MMSegmentation
-  - [x] MMEditing
-  - [x] MMOCR
-  - [x] MMPose
-  - [x] MMDetection3D
-  - [x] MMRotate
+The currently supported codebases and models are as follows, and more will be included in the future
+  - [mmcls](docs/en/04-supported-codebases/mmcls.md)
+  - [mmdet](docs/en/04-supported-codebases/mmdet.md)
+  - [mmseg](docs/en/04-supported-codebases/mmseg.md)
+  - [mmedit](docs/en/04-supported-codebases/mmedit.md)
+  - [mmocr](docs/en/04-supported-codebases/mmocr.md)
+  - [mmpose](docs/en/04-supported-codebases/mmpose.md)
+  - [mmdet3d](docs/en/04-supported-codebases/mmdet3d.md)
+  - [mmrotate](docs/en/04-supported-codebases/mmrotate.md)
 
-- **Multiple inference backends are available**
+### Multiple inference backends are available
 
-  Models can be exported and run in the following backends, and more will be compatible
-  - [x] ONNX Runtime
-  - [x] TensorRT
-  - [x] PPLNN
-  - [x] ncnn
-  - [x] OpenVINO
-  - [x] LibTorch
+Models can be exported and run in the following backends, and more will be compatible
 
-- **Efficient and scalable C/C++ SDK Framework**
-
-    All kinds of modules in the SDK can be extended, such as `Transform` for image processing, `Net` for Neural Network inference, `Module` for postprocessing and so on
+| ONNX Runtime | TensorRT | ppl.nn | ncnn | OpenVINO | LibTorch | more                                           |
+| ------------ | -------- | ------ | ---- | -------- | -------- | ---------------------------------------------- |
+| ✔️            | ✔️        | ✔️      | ✔️    | ✔️        | ✔️        | [benchmark](docs/en/03-benchmark/benchmark.md) |
 
 
-## Installation
 
-Please refer to [build.md](https://mmdeploy.readthedocs.io/en/latest/build.html) for installation instructions.
+### Efficient and scalable C/C++ SDK Framework
 
-## Getting Started
+All kinds of modules in the SDK can be extended, such as `Transform` for image processing, `Net` for Neural Network inference, `Module` for postprocessing and so on
 
-Please read [getting_started.md](https://mmdeploy.readthedocs.io/en/latest/get_started.html) for the basic usage of MMDeploy. We also provide tutorials about:
+## Get Started
 
-- [how to convert model](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_convert_model.html)
-- [how to write config](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_write_config.html)
-- [how to support new models](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_support_new_models.html)
-- [how to measure performance of models](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_measure_performance_of_models.html)
+Please read [getting_started.md](docs/en/get_started.md) for the basic usage of MMDeploy. We also provide tutoials about:
 
-Please refer to [FAQ](https://mmdeploy.readthedocs.io/en/latest/faq.html) for frequently asked questions.
+* [Build](docs/en/01-how-to-build/build_from_source.md)
+  * [Build from Docker](docs/en/01-how-to-build/build_from_docker.md)
+  * [Build for Linux](docs/en/01-how-to-build/linux-x86_64.md)
+  * [Build for Win10](docs/en/01-how-to-build/windows.md)
+  * [Build for Android](docs/en/01-how-to-build/android.md)
+  * [Build for Jetson](docs/en/01-how-to-build/jetsons.md)
+* User Guide
+  * [how to convert model](docs/en/02-how-to-run/how_to_convert_model.md)
+  * [how to write config](docs/en/02-how-to-run/how_to_write_config.md)
+  * [how to evaluate deployed models](docs/en/02-how-to-run/how_to_evaluate_a_model.md)
+  * [how to measure performance of deployed models](docs/end/../en/02-how-to-run/how_to_measure_performance_of_models.md)
+* Developer Guide
+  * [how to support new models](docs/en/06-developer-guide/how_to_support_new_models.md)
+  * [how to support new backends](docs/en/06-developer-guide/how_to_support_new_backends.md)
+* [FAQ](docs/en/faq.md)
+* [Contributing](.github/CONTRIBUTING.md)
 
 ## Benchmark and Model zoo
 
-You can find the supported models from [here](https://mmdeploy.readthedocs.io/en/latest/supported_models.html) and their performance in the [benchmark](https://mmdeploy.readthedocs.io/en/latest/benchmark.html)
+You can find the supported models from [here](docs/en/03-benchmark/supported_models.md) and their performance in the [benchmark](docs/en/03-benchmark/benchmark.md).
 
 ## Contributing
 
