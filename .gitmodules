@@ -7,4 +7,4 @@
 [submodule "third_party/spdlog"]
 	path = third_party/spdlog
 	url = https://github.com/gabime/spdlog
-	branch = v1.8.1
+	branch = v1.9.2

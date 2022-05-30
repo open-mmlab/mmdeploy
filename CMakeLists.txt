@@ -16,6 +16,7 @@ if (MSVC)
 else ()
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 endif ()
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # options
@@ -25,6 +26,10 @@ option(MMDEPLOY_BUILD_SDK "build MMDeploy's SDK" OFF)
 option(MMDEPLOY_ZIP_MODEL "support sdk model in zip format" OFF)
 option(MMDEPLOY_BUILD_TEST "build MMDeploy's csrc's unittest" OFF)
 option(MMDEPLOY_SUBMODULE_SPDLOG "Use submodule spdlog repo instead of external" ON)
+
+# windows has nvcc build error, see
+# https://answers.ros.org/question/251156/unable-to-solve-nvcc-fatal-a-single-input-file-is-required-for-a-non-link-phase-when-an-outputfile-is-specified-error/
+set_directory_properties(PROPERTIES COMPILE_DEFINITIONS "")
 
 set(MMDEPLOY_TARGET_DEVICES
         "cpu" CACHE STRING "MMDeploy's target devices")
