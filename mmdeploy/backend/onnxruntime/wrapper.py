@@ -51,8 +51,8 @@ class ORTWrapper(BaseWrapper):
             not exist: {ort_custom_op_path}')
         device_id = parse_device_id(device)
         is_cuda_available = ort.get_device() == 'GPU'
-        providers = [('CUDAExecutionProvider', {'device_id': device_id})] \
-            if is_cuda_available else ['CPUExecutionProvider']
+        providers = ['CPUExecutionProvider'] \
+            if device=='cpu' else [('CUDAExecutionProvider', {'device_id': device_id})]
         sess = ort.InferenceSession(
             onnx_file, session_options, providers=providers)
         if output_names is None:
@@ -61,7 +61,7 @@ class ORTWrapper(BaseWrapper):
         self.io_binding = sess.io_binding()
         self.device_id = device_id
         self.is_cuda_available = is_cuda_available
-        self.device_type = 'cuda' if is_cuda_available else 'cpu'
+        self.device_type = 'cpu' if device=='cpu' else 'cuda'
         super().__init__(output_names)
 
     def forward(self, inputs: Dict[str,
@@ -77,7 +77,7 @@ class ORTWrapper(BaseWrapper):
         for name, input_tensor in inputs.items():
             # set io binding for inputs/outputs
             input_tensor = input_tensor.contiguous()
-            if not self.is_cuda_available:
+            if self.device_type=='cpu':
                 input_tensor = input_tensor.cpu()
             # Avoid unnecessary data transfer between host and device
             element_type = input_tensor.new_zeros(
