@@ -1,4 +1,4 @@
-## How to install mmdeploy on Jetsons
+## Build for Jetson
 
 This tutorial introduces how to install mmdeploy on Nvidia Jetson systems. It mainly introduces the installation of mmdeploy on three Jetson series boards:
 - Jetson Nano
