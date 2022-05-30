@@ -68,18 +68,17 @@ def generate_torchscript_file():
 
 def onnx2backend(backend, onnx_file):
     if backend == Backend.TENSORRT:
-        from mmdeploy.backend.tensorrt import (create_trt_engine,
-                                               save_trt_engine)
+        from mmdeploy.backend.tensorrt import from_onnx
         backend_file = tempfile.NamedTemporaryFile(suffix='.engine').name
-        engine = create_trt_engine(
-            onnx_file, {
+        from_onnx(
+            onnx_file,
+            osp.splitext(backend_file)[0], {
                 'input': {
                     'min_shape': [1, 3, 8, 8],
                     'opt_shape': [1, 3, 8, 8],
                     'max_shape': [1, 3, 8, 8]
                 }
             })
-        save_trt_engine(engine, backend_file)
         return backend_file
     elif backend == Backend.ONNXRUNTIME:
         return onnx_file
@@ -96,13 +95,13 @@ def onnx2backend(backend, onnx_file):
         subprocess.call([onnx2ncnn_path, onnx_file, param_file, bin_file])
         return param_file, bin_file
     elif backend == Backend.OPENVINO:
-        from mmdeploy.apis.openvino import get_output_model_file, onnx2openvino
+        from mmdeploy.apis.openvino import from_onnx, get_output_model_file
         backend_dir = tempfile.TemporaryDirectory().name
         backend_file = get_output_model_file(onnx_file, backend_dir)
         input_info = {'input': test_img.shape}
         output_names = ['output']
         work_dir = backend_dir
-        onnx2openvino(input_info, output_names, onnx_file, work_dir)
+        from_onnx(onnx_file, work_dir, input_info, output_names)
         return backend_file
 
 

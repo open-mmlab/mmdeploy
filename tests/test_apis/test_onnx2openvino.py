@@ -80,8 +80,8 @@ def get_deploy_cfg_with_mo_args():
                          [get_base_deploy_cfg, get_deploy_cfg_with_mo_args])
 @backend_checker(Backend.OPENVINO)
 def test_onnx2openvino(get_deploy_cfg):
-    from mmdeploy.apis.openvino import (get_mo_options_from_cfg,
-                                        get_output_model_file, onnx2openvino)
+    from mmdeploy.apis.openvino import (from_onnx, get_mo_options_from_cfg,
+                                        get_output_model_file)
     pytorch_model = TestModel().eval()
     export_img = torch.rand([1, 3, 8, 8])
     onnx_file = tempfile.NamedTemporaryFile(suffix='.onnx').name
@@ -95,8 +95,7 @@ def test_onnx2openvino(get_deploy_cfg):
     openvino_dir = tempfile.TemporaryDirectory().name
     deploy_cfg = get_deploy_cfg()
     mo_options = get_mo_options_from_cfg(deploy_cfg)
-    onnx2openvino(input_info, output_names, onnx_file, openvino_dir,
-                  mo_options)
+    from_onnx(onnx_file, openvino_dir, input_info, output_names, mo_options)
     openvino_model_path = get_output_model_file(onnx_file, openvino_dir)
     assert osp.exists(openvino_model_path), \
         'The file (.xml) for OpenVINO IR has not been created.'
@@ -117,8 +116,8 @@ def test_can_not_run_onnx2openvino_without_mo():
 
     is_error = False
     try:
-        from mmdeploy.apis.openvino import onnx2openvino
-        onnx2openvino({}, ['output'], 'tmp.onnx', '/tmp')
+        from mmdeploy.apis.openvino import from_onnx
+        from_onnx('tmp.onnx', '/tmp', {}, ['output'])
     except RuntimeError:
         is_error = True
 

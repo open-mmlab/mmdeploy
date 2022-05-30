@@ -38,11 +38,11 @@ The backends in MMDeploy must support the ONNX. The backend loads the ".onnx" fi
 
 
     if is_available():
-        from .utils import create_trt_engine, load_trt_engine, save_trt_engine
+        from .utils import from_onnx, load, save
         from .wrapper import TRTWrapper
 
         __all__ = [
-            'create_trt_engine', 'save_trt_engine', 'load_trt_engine', 'TRTWrapper'
+            'from_onnx', 'save', 'load', 'TRTWrapper'
         ]
     ```
 
