@@ -179,7 +179,7 @@ void TestFunc(const char* sched_name) {
     REQUIRE(value.get<int>() == 10000);
   }
   SECTION("Bulk") {
-    auto sender = Just(Value(Value::Array(100))) | Transfer(sched) | TypeErase() |
+    auto sender = Just(Value(Value::Array(100))) | Transfer(sched) |
                   Bulk(100, [](size_t index, Value& v) { v[index] = index; });
     auto [value] = SyncWait(std::move(sender));
     std::vector<int> a;
@@ -432,7 +432,7 @@ TEST_CASE("test dynamic batch for Value", "[execution]") {
   for (int i = 0; i < N; ++i) {
     // FIXME:            GCC    MSVC
     //  Value{Value{i}}  [[i]]   [i]
-    auto begin = TransferJust(scheduler, Value{Value::Array{i}}) | TypeErase();
+    auto begin = TransferJust(scheduler, Value{Value::Array{i}});
     senders.emplace_back(EnsureStarted(DynamicBatch(std::move(begin), context, [](Value x) {
       MMDEPLOY_INFO("batch_size: {}", x.front().size());
       std::this_thread::sleep_for(std::chrono::milliseconds(100));

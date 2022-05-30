@@ -123,6 +123,26 @@ class _TypeErasedSenderAdapter {
 template <typename SenderType>
 _TypeErasedSenderAdapter(SenderType &&)->_TypeErasedSenderAdapter<remove_cvref_t<SenderType>>;
 
+namespace _expose {
+
+template <typename ValueTypes>
+struct _Sender {
+  using value_types = ValueTypes;
+
+  _TypeErasedSender<ValueTypes> sender_;
+
+  template <typename Self, typename Receiver, _decays_to<Self, _Sender, int> = 0>
+  friend auto tag_invoke(connect_t, Self&& self, Receiver&& receiver) {
+    return Connect(((Self &&) self).sender_, (Receiver &&) receiver);
+  }
+
+  friend auto tag_invoke(get_completion_scheduler_t, const _Sender& self) noexcept {
+    return self.sender_._GetCompletionScheduler();
+  }
+};
+
+}  // namespace _expose
+
 template <typename ValueTypes>
 class _TypeErasedSender {
  public:
@@ -147,6 +167,8 @@ class _TypeErasedSender {
     return *this;
   }
 
+  _Scheduler _GetCompletionScheduler() const { return impl_->_GetCompletionScheduler(); }
+
   template <typename Self, typename Receiver,
             std::enable_if_t<std::is_same_v<_TypeErasedSender, remove_cvref_t<Self>>, int> = 0>
   friend _Operation tag_invoke(connect_t, Self&& self, Receiver&& receiver) {
@@ -155,25 +177,12 @@ class _TypeErasedSender {
 
   using SenderType = _TypeErasedSender;
 
-  friend SenderType tag_invoke(transfer_t, SenderType input, _Scheduler scheduler) {
+  friend _expose::_Sender<ValueTypes> tag_invoke(transfer_t, SenderType input,
+                                                 _Scheduler scheduler) {
     auto sched = input.impl_->_GetCompletionScheduler();
-    return tag_invoke(transfer_t{}, sched, std::move(input), std::move(scheduler));
+    return _expose::_Sender<ValueTypes>{
+        tag_invoke(transfer_t{}, sched, std::move(input), std::move(scheduler))};
   }
-
-  friend SenderType tag_invoke(bulk_t, SenderType input, size_t shape, _bulk_fn_t<ValueTypes> fn) {
-    auto sched = input.impl_->_GetCompletionScheduler();
-    return tag_invoke(bulk_t{}, sched, std::move(input), shape, std::move(fn));
-  }
-
-  friend SenderType tag_invoke(dynamic_batch_t, SenderType input,
-                               dynamic_batch_t::context_t& context, _then_fn_t<ValueTypes> fn) {
-    auto sched = input.impl_->_GetCompletionScheduler();
-    return tag_invoke(dynamic_batch_t{}, sched, std::move(input), context, std::move(fn));
-  }
-
-  //  friend _Scheduler tag_invoke(get_completion_scheduler_t, const _TypeErasedSender& self) {
-  //    return self.impl_->_GetCompletionScheduler();
-  //  }
 
   template <
       typename Sender,
@@ -347,17 +356,21 @@ class _TypeErasedScheduler {
     return self.impl_->_Schedule();
   }
 
-  friend SenderType tag_invoke(transfer_t, _TypeErasedScheduler& self, SenderType input,
+  friend SenderType tag_invoke(transfer_t, const _TypeErasedScheduler& self, SenderType input,
                                _TypeErasedScheduler other) {
-    return self.impl_->_Transfer(SenderAdapterType{std::move(input)}, std::move(other));
+    if (self.impl_ == other.impl_) {
+      return std::move(input);
+    } else {
+      return self.impl_->_Transfer(SenderAdapterType{std::move(input)}, std::move(other));
+    }
   }
 
-  friend SenderType tag_invoke(bulk_t, _TypeErasedScheduler& self, SenderType input, size_t shape,
-                               BulkFun fun) {
+  friend SenderType tag_invoke(bulk_t, const _TypeErasedScheduler& self, SenderType input,
+                               size_t shape, BulkFun fun) {
     return self.impl_->_Bulk(SenderAdapterType{std::move(input)}, shape, std::move(fun));
   }
 
-  friend SenderType tag_invoke(dynamic_batch_t, _TypeErasedScheduler& self, SenderType input,
+  friend SenderType tag_invoke(dynamic_batch_t, const _TypeErasedScheduler& self, SenderType input,
                                dynamic_batch_t::context_t& context, ThenFun fun) {
     return self.impl_->_DynamicBatch(SenderAdapterType{std::move(input)}, context, std::move(fun));
   }

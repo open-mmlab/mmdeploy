@@ -23,7 +23,6 @@ Sender<Value> Task::Process(Sender<Value> input) {
             auto input = graph::DistribAA(v).value();
             return Value{std::move(input), std::move(output)};
           })
-          | TypeErase()  // TODO: capture bulk without type erasure
           | Bulk(batch_size, [&](size_t index, Value& in_out) {
             const auto& input = in_out[0];
             auto& output = in_out[1];
@@ -34,7 +33,7 @@ Sender<Value> Task::Process(Sender<Value> input) {
           });
       // clang-format on
     } else {
-      return DynamicBatch(TypeErase(TransferJust(*sched_, std::move(v))), batch_context_,
+      return DynamicBatch(TransferJust(*sched_, std::move(v)), batch_context_,
                           [&](const Value& u) { return module_->Process(u).value(); });
     }
   });
