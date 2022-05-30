@@ -20,6 +20,21 @@ def create_calib_input_data(calib_file: str,
                                                         mmcv.Config]] = None,
                             dataset_type: str = 'val',
                             device: str = 'cpu') -> None:
+    """Create dataset for post-training quantization.
+
+    Args:
+        calib_file (str): The output calibration data file.
+        deploy_cfg (str | mmcv.Config): Deployment config file or
+            Config object.
+        model_cfg (str | mmcv.Config): Model config file or Config object.
+        model_checkpoint (str): A checkpoint path of PyTorch model,
+            defaults to `None`.
+        dataset_cfg (Optional[Union[str, mmcv.Config]], optional): Model
+            config to provide calibration dataset. If none, use `model_cfg`
+            as the dataset config. Defaults to None.
+        dataset_type (str, optional): The dataset type. Defaults to 'val'.
+        device (str, optional): Device to create dataset. Defaults to 'cpu'.
+    """
     with no_mp():
         if dataset_cfg is None:
             dataset_cfg = model_cfg

@@ -185,10 +185,14 @@ def main():
         assert len(model_params) == len(ir_files)
 
         from mmdeploy.apis.tensorrt import is_available as trt_is_available
-        from mmdeploy.apis.tensorrt import onnx2tensorrt
         assert trt_is_available(
         ), 'TensorRT is not available,' \
             + ' please install TensorRT and build TensorRT custom ops first.'
+
+        from mmdeploy.apis.tensorrt import onnx2tensorrt
+        PIPELINE_MANAGER.enable_multiprocess(True, [onnx2tensorrt])
+        PIPELINE_MANAGER.set_log_level(logging.INFO, [onnx2tensorrt])
+
         backend_files = []
         for model_id, model_param, onnx_path in zip(
                 range(len(ir_files)), model_params, ir_files):
@@ -197,13 +201,14 @@ def main():
 
             partition_type = 'end2end' if partition_cfgs is None \
                 else onnx_name
-            create_process(
-                f'onnx2tensorrt of {onnx_path}',
-                target=onnx2tensorrt,
-                args=(args.work_dir, save_file, model_id, deploy_cfg_path,
-                      onnx_path),
-                kwargs=dict(device=args.device, partition_type=partition_type),
-                ret_value=ret_value)
+            onnx2tensorrt(
+                args.work_dir,
+                save_file,
+                model_id,
+                deploy_cfg_path,
+                onnx_path,
+                device=args.device,
+                partition_type=partition_type)
 
             backend_files.append(osp.join(args.work_dir, save_file))
 

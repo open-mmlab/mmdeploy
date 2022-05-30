@@ -68,18 +68,17 @@ def generate_torchscript_file():
 
 def onnx2backend(backend, onnx_file):
     if backend == Backend.TENSORRT:
-        from mmdeploy.backend.tensorrt import (create_trt_engine,
-                                               save_trt_engine)
+        from mmdeploy.backend.tensorrt import from_onnx
         backend_file = tempfile.NamedTemporaryFile(suffix='.engine').name
-        engine = create_trt_engine(
-            onnx_file, {
+        from_onnx(
+            onnx_file,
+            osp.splitext(backend_file)[0], {
                 'input': {
                     'min_shape': [1, 3, 8, 8],
                     'opt_shape': [1, 3, 8, 8],
                     'max_shape': [1, 3, 8, 8]
                 }
             })
-        save_trt_engine(engine, backend_file)
         return backend_file
     elif backend == Backend.ONNXRUNTIME:
         return onnx_file
