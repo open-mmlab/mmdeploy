@@ -29,21 +29,21 @@ def backend_checker(backend: Backend, require_plugin: bool = False):
             will also check if the backend plugin has been compiled. Default
             to `False`.
     """
-    is_customops_available = None
+    is_custom_ops_available = None
     if backend == Backend.ONNXRUNTIME:
         from mmdeploy.apis.onnxruntime import is_available
         if require_plugin:
-            from mmdeploy.apis.onnxruntime import is_customops_available
+            from mmdeploy.apis.onnxruntime import is_custom_ops_available
     elif backend == Backend.TENSORRT:
         from mmdeploy.apis.tensorrt import is_available
         if require_plugin:
-            from mmdeploy.apis.tensorrt import is_customops_available
+            from mmdeploy.apis.tensorrt import is_custom_ops_available
     elif backend == Backend.PPLNN:
         from mmdeploy.apis.pplnn import is_available
     elif backend == Backend.NCNN:
         from mmdeploy.apis.ncnn import is_available
         if require_plugin:
-            from mmdeploy.apis.ncnn import is_customops_available
+            from mmdeploy.apis.ncnn import is_custom_ops_available
     elif backend == Backend.OPENVINO:
         from mmdeploy.apis.openvino import is_available
     else:
@@ -52,9 +52,9 @@ def backend_checker(backend: Backend, require_plugin: bool = False):
 
     checker = pytest.mark.skipif(
         not is_available(), reason=f'{backend.value} package is not available')
-    if require_plugin and is_customops_available is not None:
+    if require_plugin and is_custom_ops_available is not None:
         plugin_checker = pytest.mark.skipif(
-            not is_customops_available(),
+            not is_custom_ops_available(),
             reason=f'{backend.value} plugin is not available')
 
         def double_checker(func):
@@ -77,21 +77,21 @@ def check_backend(backend: Backend, require_plugin: bool = False):
             will also check if the backend plugin has been compiled. Default
             to `False`.
     """
-    is_customops_available = None
+    is_custom_ops_available = None
     if backend == Backend.ONNXRUNTIME:
         from mmdeploy.apis.onnxruntime import is_available
         if require_plugin:
-            from mmdeploy.apis.onnxruntime import is_customops_available
+            from mmdeploy.apis.onnxruntime import is_custom_ops_available
     elif backend == Backend.TENSORRT:
         from mmdeploy.apis.tensorrt import is_available
         if require_plugin:
-            from mmdeploy.apis.tensorrt import is_customops_available
+            from mmdeploy.apis.tensorrt import is_custom_ops_available
     elif backend == Backend.PPLNN:
         from mmdeploy.apis.pplnn import is_available
     elif backend == Backend.NCNN:
         from mmdeploy.apis.ncnn import is_available
         if require_plugin:
-            from mmdeploy.apis.ncnn import is_customops_available
+            from mmdeploy.apis.ncnn import is_custom_ops_available
     elif backend == Backend.OPENVINO:
         from mmdeploy.apis.openvino import is_available
     elif backend == Backend.TORCHSCRIPT:
@@ -102,8 +102,8 @@ def check_backend(backend: Backend, require_plugin: bool = False):
 
     if not is_available():
         pytest.skip(f'{backend.value} package is not available')
-    if require_plugin and is_customops_available is not None:
-        if not is_customops_available():
+    if require_plugin and is_custom_ops_available is not None:
+        if not is_custom_ops_available():
             pytest.skip(f'{backend.value} plugin is not available')
 
 
@@ -455,7 +455,8 @@ def get_backend_outputs(ir_file_path: str,
     if backend == Backend.TENSORRT:
         # convert to engine
         import mmdeploy.apis.tensorrt as trt_apis
-        if not (trt_apis.is_available() and trt_apis.is_customops_available()):
+        if not (trt_apis.is_available()
+                and trt_apis.is_custom_ops_available()):
             return None
         trt_file_path = tempfile.NamedTemporaryFile(suffix='.engine').name
         trt_apis.onnx2tensorrt(
@@ -472,7 +473,8 @@ def get_backend_outputs(ir_file_path: str,
         device = 'cuda:0'
     elif backend == Backend.ONNXRUNTIME:
         import mmdeploy.apis.onnxruntime as ort_apis
-        if not (ort_apis.is_available() and ort_apis.is_customops_available()):
+        if not (ort_apis.is_available()
+                and ort_apis.is_custom_ops_available()):
             return None
         feature_list = []
         backend_feats = {}
@@ -501,7 +503,7 @@ def get_backend_outputs(ir_file_path: str,
     elif backend == Backend.NCNN:
         import mmdeploy.apis.ncnn as ncnn_apis
         if not (ncnn_apis.is_available()
-                and ncnn_apis.is_customops_available()):
+                and ncnn_apis.is_custom_ops_available()):
             return None
         work_dir = tempfile.TemporaryDirectory().name
         param_path, bin_path = ncnn_apis.get_output_model_file(
