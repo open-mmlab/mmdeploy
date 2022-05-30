@@ -35,14 +35,18 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC -DMMDEPLOY_STATUS_USE_SOURCE_L
 
 if (MMDEPLOY_SUBMODULE_SPDLOG)
     message(STATUS "build spdlog")
-    add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/spdlog  ${CMAKE_CURRENT_BINARY_DIR}/mmdeploy_spdlog)
+    target_include_directories(${PROJECT_NAME}
+        PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/third_party/spdlog/include>)
+
+#     add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/spdlog  ${CMAKE_CURRENT_BINARY_DIR}/mmdeploy_spdlog)
 else()
     find_package(spdlog REQUIRED)
     if (spdlog_FOUND)
         message(STATUS "spdlog is found")
     endif ()
+    target_link_libraries(${PROJECT_NAME} PUBLIC spdlog::spdlog)
 endif()
-target_link_libraries(${PROJECT_NAME} PUBLIC spdlog::spdlog)
 
 target_include_directories(${PROJECT_NAME}
         PUBLIC

@@ -40,10 +40,9 @@ if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "choose 'Release' as default build type" FORCE)
 endif ()
 
-
 if (MMDEPLOY_SUBMODULE_SPDLOG)
-    set(SPDLOG_INSTALL ON CACHE BOOL "Enables install of spdlog" FORCE)
-    set(SPDLOG_BUILD_SHARED ON CACHE BOOL "Enables build of shared libraries" FORCE)
+    set(SPDLOG_INSTALL OFF CACHE BOOL "Enables install of spdlog" FORCE)
+    set(SPDLOG_BUILD_SHARED OFF CACHE BOOL "Enables build of shared libraries" FORCE)
 endif ()
 
 # when CUDA devices are enabled, the environment variable ASAN_OPTIONS=protect_shadow_gap=0
