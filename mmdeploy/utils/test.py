@@ -505,7 +505,8 @@ def get_backend_outputs(ir_file_path: str,
         work_dir = tempfile.TemporaryDirectory().name
         param_path, bin_path = ncnn_apis.get_output_model_file(
             ir_file_path, work_dir)
-        ncnn_apis.onnx2ncnn(ir_file_path, param_path, bin_path)
+        ir_file_name = osp.splitext(ir_file_path)[0]
+        ncnn_apis.from_onnx(ir_file_path, osp.join(work_dir, ir_file_name))
         backend_files = [param_path, bin_path]
         backend_feats = flatten_model_inputs
         device = 'cpu'
@@ -523,8 +524,8 @@ def get_backend_outputs(ir_file_path: str,
             for name, value in flatten_model_inputs.items()
         }
         mo_options = get_mo_options_from_cfg(deploy_cfg)
-        openvino_apis.onnx2openvino(input_info, output_names, ir_file_path,
-                                    openvino_work_dir, mo_options)
+        openvino_apis.from_onnx(ir_file_path, openvino_work_dir, input_info,
+                                output_names, mo_options)
         backend_files = [openvino_file_path]
         backend_feats = flatten_model_inputs
         device = 'cpu'
