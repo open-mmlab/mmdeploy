@@ -137,7 +137,7 @@ class TestLinear:
         model = OpModel(torch.nn.functional.linear, w, bias).eval()
         nodes = get_model_onnx_nodes(model, x)
         print(nodes)
-        assert nodes[0].op_type == 'Matmal'
+        assert nodes[0].op_type == 'MatMul'
 
     def test_no_bias(self):
         x = torch.rand(1, 2, 3)
@@ -145,7 +145,7 @@ class TestLinear:
         model = OpModel(torch.nn.functional.linear, w).eval()
         nodes = get_model_onnx_nodes(model, x)
         print(nodes)
-        assert nodes[0].op_type == 'Matmal'
+        assert nodes[0].op_type == 'MatMul'
 
 
 @pytest.mark.usefixtures('prepare_symbolics')
