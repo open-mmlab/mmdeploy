@@ -52,7 +52,8 @@ def test_merge_shape_concate():
             onnx_file,
             input_names=['input'],
             output_names=['output'],
-            dynamic_axes=dict(input=[2, 3]))
+            dynamic_axes=dict(input=[2, 3]),
+            opset_version=11)
 
     onnx_model = onnx.load(onnx_file)
     graph = onnx_model.graph
@@ -109,7 +110,8 @@ def test_peephole():
             onnx_file,
             input_names=['input'],
             output_names=['output1', 'output2'],
-            dynamic_axes=dict(input=[0, 1, 2]))
+            dynamic_axes=dict(input=[0, 1, 2]),
+            opset_version=11)
 
     onnx_model = onnx.load(onnx_file)
     graph = onnx_model.graph
@@ -164,7 +166,8 @@ def test_flatten_cls_head():
             onnx_file,
             input_names=['input'],
             output_names=['output'],
-            dynamic_axes=dict(input=[2, 3]))
+            dynamic_axes=dict(input=[2, 3]),
+            opset_version=11)
 
     onnx_model = onnx.load(onnx_file)
     graph = onnx_model.graph
