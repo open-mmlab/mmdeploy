@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 if (NOT DEFINED CMAKE_INSTALL_PREFIX)
-    set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install" CACHE PATH "MMDeploy's installation directory")
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install" CACHE PATH "installation directory")
 endif ()
 message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
 
@@ -20,15 +20,16 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # options
 option(BUILD_SHARED_LIBS "build shared lib" ON)
-option(MMDEPLOY_BUILD_MODEL_OPTIMIZER "build MMDeploy's model optimizer" ON)
-option(MMDEPLOY_BUILD_SDK "build MMDeploy's SDK" OFF)
-option(MMDEPLOY_ZIP_MODEL "support sdk model in zip format" OFF)
-option(MMDEPLOY_BUILD_SDK_CSHARP_API "build MMDeployExtern.dll for C# API" OFF)
-option(MMDEPLOY_BUILD_TEST "build MMDeploy's csrc's unittest" OFF)
-set(MMDEPLOY_TARGET_DEVICES
-        "cpu" CACHE STRING "MMDeploy's target devices")
-set(MMDEPLOY_TARGET_BACKENDS "" CACHE STRING "MMDeploy's target inference engines")
-set(MMDEPLOY_CODEBASES "all"  CACHE STRING "select OpenMMLab's codebases")
+option(MMDEPLOY_BUILD_SDK "build MMDeploy SDK" OFF)
+option(MMDEPLOY_BUILD_TEST "build unittests" OFF)
+option(MMDEPLOY_BUILD_SDK_PYTHON_API "build SDK Python API" OFF)
+option(MMDEPLOY_BUILD_SDK_CPP_API "build SDK C++ API" OFF)
+option(MMDEPLOY_BUILD_SDK_CSHARP_API "build SDK C# API support" OFF)
+option(MMDEPLOY_SPDLOG_EXTERNAL "use external spdlog" OFF)
+option(MMDEPLOY_ZIP_MODEL "support SDK model in zip format" OFF)
+set(MMDEPLOY_TARGET_DEVICES "cpu" CACHE STRING "target devices to support")
+set(MMDEPLOY_TARGET_BACKENDS "" CACHE STRING "target inference engines to support")
+set(MMDEPLOY_CODEBASES "all" CACHE STRING "select OpenMMLab codebases")
 
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "choose 'Release' as default build type" FORCE)
@@ -52,8 +53,6 @@ if (MSVC)
     add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/diagnostics:classic>)
     add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/Zc:preprocessor>) # /experimental:preprocessor on VS2017
     add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/wd4251>)
-else ()
-    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-fvisibility=hidden>)
 endif ()
 
 include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
@@ -109,9 +108,16 @@ if (MMDEPLOY_BUILD_SDK)
             ${CMAKE_CURRENT_BINARY_DIR}/MMDeployConfig.cmake
             ${CMAKE_CURRENT_BINARY_DIR}/MMDeployConfigVersion.cmake
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/MMDeploy.cmake
-            ${CMAKE_CURRENT_SOURCE_DIR}/cmake/loader.cpp.in
             DESTINATION lib/cmake/MMDeploy
             )
+
+    if (MSVC)
+        install(FILES
+                ${CMAKE_CURRENT_SOURCE_DIR}/cmake/loader.cpp.in
+                DESTINATION lib/cmake/MMDeploy
+                )
+    endif ()
+
     install(DIRECTORY
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules
             DESTINATION lib/cmake/MMDeploy
