@@ -4,7 +4,9 @@
 #include "thrust/iterator/counting_iterator.h"
 #include "thrust/transform.h"
 
-namespace mmdeploy::mmocr {
+namespace mmdeploy {
+
+namespace mmocr {
 
 __device__ float sigmoid(float x) { return 1.f / (1.f + expf(-x)); }
 
@@ -98,4 +100,6 @@ void ProcessMasks(const float* d_preds, int c, int n, float thr, uint8_t* d_mask
 
 }  // namespace psenet
 
-}  // namespace mmdeploy::mmocr
+}  // namespace mmocr
+
+}  // namespace mmdeploy
