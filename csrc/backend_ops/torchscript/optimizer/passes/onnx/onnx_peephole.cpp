@@ -1,9 +1,9 @@
 // Copyright (c) OpenMMLab. All rights reserved.
+#include "onnx_peephole.h"
+
 #include <torch/csrc/jit/passes/dead_code_elimination.h>
 
 #include <vector>
-
-#include "merge_shape_concate.h"
 
 namespace mmdeploy {
 namespace torch_jit {
