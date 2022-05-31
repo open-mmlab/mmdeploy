@@ -2,15 +2,14 @@
 import argparse
 import logging
 
-from mmdeploy.apis.ncnn import onnx2ncnn
+from mmdeploy.apis.ncnn import from_onnx
 from mmdeploy.utils import get_root_logger
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Convert ONNX to ncnn.')
     parser.add_argument('onnx_path', help='ONNX model path')
-    parser.add_argument('output_param', help='output ncnn param path')
-    parser.add_argument('output_bin', help='output bin path')
+    parser.add_argument('output_prefix', help='output ncnn model path')
     parser.add_argument(
         '--log-level',
         help='set log level',
@@ -26,12 +25,11 @@ def main():
     logger = get_root_logger(log_level=args.log_level)
 
     onnx_path = args.onnx_path
-    output_param = args.output_param
-    output_bin = args.output_bin
+    output_prefix = args.output_prefix
 
     logger.info(f'onnx2ncnn: \n\tonnx_path: {onnx_path} ')
     try:
-        onnx2ncnn(onnx_path, output_param, output_bin)
+        from_onnx(onnx_path, output_prefix)
         logger.info('onnx2ncnn success.')
     except Exception as e:
         logger.error(e)

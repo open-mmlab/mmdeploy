@@ -6,7 +6,7 @@ from multiprocessing import Process
 import h5py
 import mmcv
 
-from mmdeploy.apis import create_calib_table
+from mmdeploy.apis import create_calib_input_data
 
 calib_file = tempfile.NamedTemporaryFile(suffix='.h5').name
 ann_file = 'tests/data/annotation.json'
@@ -173,7 +173,7 @@ def get_model_cfg():
 def run_test_create_calib_end2end():
     model_cfg = get_model_cfg()
     deploy_cfg = get_end2end_deploy_cfg()
-    create_calib_table(
+    create_calib_input_data(
         calib_file,
         deploy_cfg,
         model_cfg,
@@ -205,7 +205,7 @@ def test_create_calib_end2end():
 def run_test_create_calib_parittion():
     model_cfg = get_model_cfg()
     deploy_cfg = get_partition_deploy_cfg()
-    create_calib_table(
+    create_calib_input_data(
         calib_file,
         deploy_cfg,
         model_cfg,

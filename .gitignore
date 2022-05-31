@@ -143,3 +143,6 @@ bin/
 #
 !docs/zh_cn/build
 !docs/en/build
+
+# ncnn
+mmdeploy/backend/ncnn/onnx2ncnn
