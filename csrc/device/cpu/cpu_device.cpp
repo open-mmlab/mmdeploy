@@ -68,7 +68,7 @@ shared_ptr<StreamImpl> CpuPlatformImpl::CreateStream(Device device) {
   return std::make_shared<CpuStreamImpl>(device);
 }
 
-shared_ptr<EventImpl> CpuPlatformImpl::CreateEvent(Device device) {
+shared_ptr<EventImpl> CpuPlatformImpl::CreateEvent_(Device device) {
   return std::make_shared<CpuEventImpl>(device);
 }
 

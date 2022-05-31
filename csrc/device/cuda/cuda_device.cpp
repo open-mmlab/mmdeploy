@@ -146,7 +146,7 @@ shared_ptr<StreamImpl> CudaPlatformImpl::CreateStream(Device device) {
   return std::make_shared<CudaStreamImpl>(device);
 }
 
-shared_ptr<EventImpl> CudaPlatformImpl::CreateEvent(Device device) {
+shared_ptr<EventImpl> CudaPlatformImpl::CreateEvent_(Device device) {
   return std::make_shared<CudaEventImpl>(device);
 }
 

@@ -29,7 +29,7 @@ shared_ptr<StreamImpl> OclPlatformImpl::CreateStream(Device device) {
   return std::make_shared<OclStreamImpl>(device);
 }
 
-shared_ptr<EventImpl> OclPlatformImpl::CreateEvent(Device device) {
+shared_ptr<EventImpl> OclPlatformImpl::CreateEvent_(Device device) {
   return std::make_shared<OclEventImpl>(device);
 }
 

@@ -254,7 +254,7 @@ Stream Stream::GetDefault(Device device) {
 
 Event::Event(Device device, uint64_t flags) {
   if (auto p = GetPlatformImpl(device)) {
-    auto impl = p->CreateEvent(device);
+    auto impl = p->CreateEvent_(device);
     if (auto r = impl->Init(flags)) {
       impl_ = std::move(impl);
     } else {
@@ -270,7 +270,7 @@ Event::Event(Device device, void* native, uint64_t flags)
 
 Event::Event(Device device, std::shared_ptr<void> native, uint64_t flags) {
   if (auto p = GetPlatformImpl(device)) {
-    auto impl = p->CreateEvent(device);
+    auto impl = p->CreateEvent_(device);
     if (auto r = impl->Init(std::move(native), flags)) {
       impl_ = std::move(impl);
     } else {

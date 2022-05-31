@@ -20,7 +20,7 @@ class VulkanPlatform : public PlatformImpl {
 
   int CreateStream(int32_t device_id, Stream* stream) override;
 
-  int CreateEvent(int32_t device_id, Event* event) override;
+  int CreateEvent_(int32_t device_id, Event* event) override;
 
   int Copy(const void* host_ptr, Buffer dst, size_t size, size_t dst_offset,
            Stream stream) override;

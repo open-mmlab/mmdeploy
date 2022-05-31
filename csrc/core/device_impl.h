@@ -33,7 +33,7 @@ class PlatformImpl {
 
   virtual shared_ptr<StreamImpl> CreateStream(Device device) = 0;
 
-  virtual shared_ptr<EventImpl> CreateEvent(Device device) = 0;
+  virtual shared_ptr<EventImpl> CreateEvent_(Device device) = 0;
 
   virtual Result<void> Copy(const void* host_ptr, Buffer dst, size_t size, size_t dst_offset,
                             Stream stream) = 0;

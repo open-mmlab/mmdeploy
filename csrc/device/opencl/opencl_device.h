@@ -45,7 +45,7 @@ class OclPlatformImpl : public PlatformImpl {
 
   shared_ptr<StreamImpl> CreateStream(Device device) override;
 
-  shared_ptr<EventImpl> CreateEvent(Device device) override;
+  shared_ptr<EventImpl> CreateEvent_(Device device) override;
 
   Result<void> Copy(const void* host_ptr, Buffer dst, size_t size, size_t dst_offset,
                     Stream stream) override;

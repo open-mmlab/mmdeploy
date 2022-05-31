@@ -61,7 +61,7 @@
 //  return 0;
 //}
 //
-// int VulkanPlatform::CreateEvent(int32_t device_id, Event* event) { return 0; }
+// int VulkanPlatform::CreateEvent_(int32_t device_id, Event* event) { return 0; }
 //
 // int VulkanPlatform::Copy(const void* host_ptr, Buffer dst, size_t size,
 //                         size_t dst_offset, Stream stream) {
