@@ -16,7 +16,9 @@ endfunction ()
 function (mmdeploy_add_library NAME)
     cmake_parse_arguments(_MMDEPLOY "EXCLUDE" "" "" ${ARGN})
     add_library(${NAME} ${_MMDEPLOY_UNPARSED_ARGUMENTS})
-    target_compile_options(${NAME} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-fvisibility=hidden>)
+    if (NOT MSVC)
+        target_compile_options(${NAME} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-fvisibility=hidden>)
+    endif ()
     target_compile_definitions(${NAME} PRIVATE -DMMDEPLOY_API_EXPORTS=1)
     get_target_property(_TYPE ${NAME} TYPE)
     if (_TYPE STREQUAL STATIC_LIBRARY)
@@ -50,7 +52,10 @@ function (mmdeploy_add_module NAME)
     endif ()
 
     add_library(${NAME} ${_MAYBE_MODULE} ${_MMDEPLOY_UNPARSED_ARGUMENTS})
-    target_compile_options(${NAME} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-fvisibility=hidden>)
+
+    if (NOT MSVC)
+        target_compile_options(${NAME} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-fvisibility=hidden>)
+    endif ()
 
     # automatically link mmdeploy::core if exists
     if (TARGET mmdeploy::core)
