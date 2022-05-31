@@ -15,7 +15,7 @@ else ()
     set_target_properties(spdlog PROPERTIES POSITION_INDEPENDENT_CODE ON)
     set(SPDLOG_LIB spdlog::spdlog)
     mmdeploy_export(spdlog)
-    if (MMDEPLOY_BUILD_SDK_CPP_API)
+    if (MMDEPLOY_BUILD_SDK_CXX_API)
         install(DIRECTORY ${CMAKE_SOURCE_DIR}/third_party/spdlog DESTINATION include/cpp)
     endif ()
 endif ()
@@ -49,7 +49,7 @@ target_include_directories(${PROJECT_NAME}
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/third_party/json>
         )
 
-if (MMDEPLOY_BUILD_SDK_CPP_API)
+if (MMDEPLOY_BUILD_SDK_CXX_API)
     target_include_directories(${PROJECT_NAME} PUBLIC
             $<INSTALL_INTERFACE:include/cpp>)
 endif ()
@@ -60,7 +60,7 @@ if (NOT (MSVC OR ANDROID))
 endif ()
 add_library(mmdeploy::core ALIAS ${PROJECT_NAME})
 
-if (MMDEPLOY_BUILD_SDK_CPP_API)
+if (MMDEPLOY_BUILD_SDK_CXX_API)
     install(DIRECTORY ${CMAKE_SOURCE_DIR}/csrc/core
             DESTINATION include/cpp
             FILES_MATCHING PATTERN "*.h")

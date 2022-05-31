@@ -6,7 +6,7 @@ add_library(${PROJECT_NAME} INTERFACE)
 target_link_libraries(${PROJECT_NAME} INTERFACE mmdeploy::core)
 add_library(mmdeploy::archive ALIAS mmdeploy_archive)
 
-if (MMDEPLOY_BUILD_SDK_CPP_API)
+if (MMDEPLOY_BUILD_SDK_CXX_API)
     install(DIRECTORY ${CMAKE_SOURCE_DIR}/csrc/archive
             DESTINATION include/cpp
             FILES_MATCHING PATTERN "*.h")
