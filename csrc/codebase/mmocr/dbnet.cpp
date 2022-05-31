@@ -1,21 +1,19 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include <opencv2/imgcodecs.hpp>
+#include "codebase/mmocr/dbnet.h"
+
 #include <opencv2/imgproc.hpp>
 
 #include "clipper.hpp"
 #include "core/device.h"
-#include "core/registry.h"
-#include "core/serialization.h"
 #include "core/tensor.h"
-#include "core/utils/device_utils.h"
 #include "core/utils/formatter.h"
-#include "core/value.h"
 #include "experimental/module_adapter.h"
 #include "mmocr.h"
-#include "opencv_utils.h"
 
-namespace mmdeploy::mmocr {
+namespace mmdeploy {
+
+namespace mmocr {
 
 using std::string;
 using std::vector;
@@ -25,117 +23,72 @@ class DBHead : public MMOCR {
   explicit DBHead(const Value& config) : MMOCR(config) {
     if (config.contains("params")) {
       auto& params = config["params"];
-      text_repr_type_ = params.value("text_repr_type", string{"quad"});
-      mask_thr_ = params.value("mask_thr", 0.3f);
-      min_text_score_ = params.value("min_text_score", 0.3f);
-      min_text_width_ = params.value("min_text_width", 5);
-      unclip_ratio_ = params.value("unclip_ratio", 1.5f);
-      max_candidates_ = params.value("max_candidate", 3000);
-      rescale_ = params.value("rescale", true);
-      downsample_ratio_ = params.value("downsample_ratio", 1.0f);
+      text_repr_type_ = params.value("text_repr_type", text_repr_type_);
+      mask_thr_ = params.value("mask_thr", mask_thr_);
+      min_text_score_ = params.value("min_text_score", min_text_score_);
+      min_text_width_ = params.value("min_text_width", min_text_width_);
+      unclip_ratio_ = params.value("unclip_ratio", unclip_ratio_);
+      max_candidates_ = params.value("max_candidate", max_candidates_);
+      rescale_ = params.value("rescale", rescale_);
+      downsample_ratio_ = params.value("downsample_ratio", downsample_ratio_);
     }
+    auto platform = Platform(device_.platform_id()).GetPlatformName();
+    auto creator = Registry<DbHeadImpl>::Get().GetCreator(platform);
+    if (!creator) {
+      MMDEPLOY_ERROR("DBHead: implementation for platform \"{}\" not found", platform);
+      throw_exception(eEntryNotFound);
+    }
+    impl_ = creator->Create(nullptr);
+    impl_->Init(stream_);
   }
 
-  Result<Value> operator()(const Value& _data, const Value& _prob) {
-    MMDEPLOY_DEBUG("preprocess_result: {}", _data);
-    MMDEPLOY_DEBUG("inference_result: {}", _prob);
-
-    auto img = _data["img"].get<Tensor>();
-    MMDEPLOY_DEBUG("img shape: {}", img.shape());
-
-    Device cpu_device{"cpu"};
-    OUTCOME_TRY(auto conf,
-                MakeAvailableOnDevice(_prob["output"].get<Tensor>(), cpu_device, stream_));
-    OUTCOME_TRY(stream_.Wait());
-    MMDEPLOY_DEBUG("shape: {}", conf.shape());
-
+  Result<Value> operator()(const Value& _data, const Value& _prob) const {
+    auto conf = _prob["output"].get<Tensor>();
     if (!(conf.shape().size() == 4 && conf.data_type() == DataType::kFLOAT)) {
       MMDEPLOY_ERROR("unsupported `output` tensor, shape: {}, dtype: {}", conf.shape(),
                      (int)conf.data_type());
       return Status(eNotSupported);
     }
 
-    auto h = conf.shape(2);
-    auto w = conf.shape(3);
-    auto data = conf.buffer().GetNative();
-
-    cv::Mat score_map((int)h, (int)w, CV_32F, data);
-
-    //    cv::imwrite("conf.png", score_map * 255.);
-
-    cv::Mat text_mask;
-    cv::threshold(score_map, text_mask, mask_thr_, 1.f, cv::THRESH_BINARY);
-
-    text_mask.convertTo(text_mask, CV_8U, 255);
-    //    cv::imwrite("text_mask.png", text_mask);
+    conf.Squeeze();
+    conf = conf.Slice(0);
 
     std::vector<std::vector<cv::Point>> contours;
-    cv::findContours(text_mask, contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
+    std::vector<float> scores;
+    OUTCOME_TRY(impl_->Process(conf, mask_thr_, max_candidates_, contours, scores));
 
-    if (contours.size() > max_candidates_) {
-      contours.resize(max_candidates_);
+    auto scale_w = 1.f;
+    auto scale_h = 1.f;
+    if (rescale_) {
+      scale_w /= downsample_ratio_ * _data["img_metas"]["scale_factor"][0].get<float>();
+      scale_h /= downsample_ratio_ * _data["img_metas"]["scale_factor"][1].get<float>();
     }
 
     TextDetectorOutput output;
-    for (auto& poly : contours) {
-      auto epsilon = 0.01 * cv::arcLength(poly, true);
-      std::vector<cv::Point> approx;
-      cv::approxPolyDP(poly, approx, epsilon, true);
-      if (approx.size() < 4) {
+    for (int idx = 0; idx < contours.size(); ++idx) {
+      if (scores[idx] < min_text_score_) {
         continue;
       }
-      auto score = box_score_fast(score_map, approx);
-      if (score < min_text_score_) {
+      auto expanded = unclip(contours[idx], unclip_ratio_);
+      if (expanded.empty()) {
         continue;
       }
-      approx = unclip(approx, unclip_ratio_);
-      if (approx.empty()) {
+      auto rect = cv::minAreaRect(expanded);
+      if ((int)rect.size.width <= min_text_width_) {
         continue;
       }
-
-      if (text_repr_type_ == "quad") {
-        auto rect = cv::minAreaRect(approx);
-        if ((int)rect.size.width <= min_text_width_) continue;
-        std::vector<cv::Point2f> box_points(4);
-        rect.points(box_points.data());
-        approx.assign(begin(box_points), end(box_points));
-      } else if (text_repr_type_ == "poly") {
-      } else {
-        assert(0);
-      }
-      MMDEPLOY_DEBUG("score: {}", score);
-      //      cv::drawContours(score_map, vector<vector<cv::Point>>{approx}, -1, 1);
-
-      vector<cv::Point2f> scaled(begin(approx), end(approx));
-
-      if (rescale_) {
-        auto scale_w = _data["img_metas"]["scale_factor"][0].get<float>();
-        auto scale_h = _data["img_metas"]["scale_factor"][1].get<float>();
-        for (auto& p : scaled) {
-          p.x /= scale_w * downsample_ratio_;
-          p.y /= scale_h * downsample_ratio_;
-        }
-      }
-
+      std::array<cv::Point2f, 4> box_points;
+      rect.points(box_points.data());
       auto& bbox = output.boxes.emplace_back();
       for (int i = 0; i < 4; ++i) {
-        bbox[i * 2] = scaled[i].x;
-        bbox[i * 2 + 1] = scaled[i].y;
+        // ! performance metrics drops without rounding here
+        bbox[i * 2] = cvRound(box_points[i].x * scale_w);
+        bbox[i * 2 + 1] = cvRound(box_points[i].y * scale_h);
       }
-      output.scores.push_back(score);
+      output.scores.push_back(scores[idx]);
     }
 
     return to_value(output);
-  }
-
-  static float box_score_fast(const cv::Mat& bitmap, const std::vector<cv::Point>& box) noexcept {
-    auto rect = cv::boundingRect(box) & cv::Rect({}, bitmap.size());
-
-    cv::Mat mask(rect.size(), CV_8U, cv::Scalar(0));
-
-    cv::fillPoly(mask, std::vector<std::vector<cv::Point>>{box}, 1, cv::LINE_8, 0, -rect.tl());
-    auto mean = cv::mean(bitmap(rect), mask)[0];
-    return static_cast<float>(mean);
   }
 
   static std::vector<cv::Point> unclip(std::vector<cv::Point>& box, float unclip_ratio) {
@@ -166,7 +119,6 @@ class DBHead : public MMOCR {
     return ret;
   }
 
- private:
   std::string text_repr_type_{"quad"};
   float mask_thr_{.3};
   float min_text_score_{.3};
@@ -175,8 +127,14 @@ class DBHead : public MMOCR {
   int max_candidates_{3000};
   bool rescale_{true};
   float downsample_ratio_{1.};
+
+  std::unique_ptr<DbHeadImpl> impl_;
 };
 
 REGISTER_CODEBASE_COMPONENT(MMOCR, DBHead);
 
-}  // namespace mmdeploy::mmocr
+}  // namespace mmocr
+
+MMDEPLOY_DEFINE_REGISTRY(mmocr::DbHeadImpl);
+
+}  // namespace mmdeploy

@@ -169,4 +169,26 @@ class CudaKernelImpl : public KernelImpl {
   CudaTask task_;
 };
 
+class CudaDeviceGuard {
+ public:
+  explicit CudaDeviceGuard(Device device) : CudaDeviceGuard(device.device_id()) {}
+  explicit CudaDeviceGuard(int device_id) : device_id_(device_id), prev_device_id_(-1) {
+    CUcontext ctx{};
+    cuCtxGetCurrent(&ctx);
+    if (ctx) {
+      cudaGetDevice(&prev_device_id_);
+    }
+    if (prev_device_id_ != device_id_) cudaSetDevice(device_id_);
+  }
+  ~CudaDeviceGuard() {
+    if (prev_device_id_ >= 0 && prev_device_id_ != device_id_) {
+      cudaSetDevice(prev_device_id_);
+    }
+  }
+
+ private:
+  int device_id_;
+  int prev_device_id_;
+};
+
 }  // namespace mmdeploy
