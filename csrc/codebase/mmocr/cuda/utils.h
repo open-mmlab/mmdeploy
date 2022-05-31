@@ -7,7 +7,9 @@
 
 #include "cuda_runtime.h"
 
-namespace mmdeploy::mmocr {
+namespace mmdeploy {
+
+namespace mmocr {
 
 namespace panet {
 
@@ -32,6 +34,8 @@ void ProcessMasks(const float* d_preds, int c, int n, float thr, uint8_t* d_mask
 
 }
 
-}  // namespace mmdeploy::mmocr
+}  // namespace mmocr
+
+}  // namespace mmdeploy
 
 #endif  // MMDEPLOY_CSRC_CODEBASE_MMOCR_CUDA_UTILS_H_
