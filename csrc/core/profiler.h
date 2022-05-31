@@ -35,7 +35,8 @@ class MMDEPLOY_API Profiler {
 
   static Profiler& Get();
 
-  static void AddRecord(const std::string& name, const std::string& cat, const std::string& ph);
+  static void AddRecord(const std::string& name, const std::string& cat, const std::string& ph,
+                        size_t pid);
 
   static bool Enabled();
 
@@ -49,14 +50,14 @@ class MMDEPLOY_API Profiler {
 
 }  // namespace mmdeploy
 
-#define MMDEPLOY_RECORD_BEGIN(name, cat)           \
-  if (mmdeploy::Profiler::Enabled()) {             \
-    mmdeploy::Profiler::AddRecord(name, cat, "B"); \
+#define MMDEPLOY_RECORD_BEGIN(name, cat, pid)           \
+  if (mmdeploy::Profiler::Enabled()) {                  \
+    mmdeploy::Profiler::AddRecord(name, cat, "B", pid); \
   }
 
-#define MMDEPLOY_RECORD_END(name, cat)             \
-  if (mmdeploy::Profiler::Enabled()) {             \
-    mmdeploy::Profiler::AddRecord(name, cat, "E"); \
+#define MMDEPLOY_RECORD_END(name, cat, pid)             \
+  if (mmdeploy::Profiler::Enabled()) {                  \
+    mmdeploy::Profiler::AddRecord(name, cat, "E", pid); \
   }
 
 #endif  // MMDEPLOY_CSRC_CORE_PROFILER_H

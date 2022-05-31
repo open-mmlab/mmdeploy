@@ -2,10 +2,12 @@
 
 #include "graph/pipeline.h"
 
+#include "archive/json_archive.h"
 #include "archive/value_archive.h"
 #include "core/profiler.h"
 #include "execution/schedulers/inlined_scheduler.h"
 #include "graph/common.h"
+#include "graph/inference.h"
 
 namespace mmdeploy::graph {
 
@@ -28,6 +30,13 @@ class Pipeline::State {
   vector<int> use_count_;
   std::vector<std::optional<Sender<Value>>> values_;
 };
+
+int Pipeline::NextId() {
+  std::lock_guard<std::mutex> lk(mutex_);
+  static int id;
+  id++;
+  return id - 1;
+}
 
 Sender<Value> Pipeline::State::CollectN(const vector<Coords>& coords) {
   vector<Sender<Value>> predecessors;
@@ -101,13 +110,13 @@ Sender<Value> Pipeline::Process(Sender<Value> args) {
   State state(use_count_, std::move(args));
   for (size_t i = 0; i < nodes_.size(); ++i) {
     auto input = state.Collect(input_coords_[i]);
-    input = Then(input, [name = nodes_[i]->name()](Value&& input) {
-      MMDEPLOY_RECORD_BEGIN(name, "pipeline");
+    input = Then(std::move(input), [name = nodes_[i]->name(), id = id_](Value&& input) {
+      MMDEPLOY_RECORD_BEGIN(name, fmt::format("pipeline.{}", id), id);
       return std::move(input);
     });
     auto output = nodes_[i]->Process(std::move(input));
-    output = Then(output, [name = nodes_[i]->name()](Value&& input) {
-      MMDEPLOY_RECORD_END(name, "pipeline");
+    output = Then(std::move(output), [name = nodes_[i]->name(), id = id_](Value&& input) {
+      MMDEPLOY_RECORD_END(name, fmt::format("pipeline.{}", id), id);
       return std::move(input);
     });
     state.Write(static_cast<int>(i), std::move(output));
@@ -136,6 +145,7 @@ Result<unique_ptr<Pipeline>> PipelineParser::Parse(const Value& config) {
 
     // MMDEPLOY_INFO("pipeline->inputs: {}", pipeline->inputs());
     OUTCOME_TRY(UpdateOutputCoords(static_cast<int>(size), pipeline->inputs()));
+    int id = -1;
     for (auto task_config : task_configs) {
       auto index = static_cast<int>(nodes.size());
 
@@ -146,6 +156,11 @@ Result<unique_ptr<Pipeline>> PipelineParser::Parse(const Value& config) {
         task_config["context"].update(config["context"]);
       }
       OUTCOME_TRY(auto node, CreateFromRegistry<Node>(task_config));
+      // pipeline id
+      if (type == "Inference") {
+        auto p = dynamic_cast<Inference*>(node.get());
+        id = p->pipeline_->GetId();
+      }
       if (node) {
         OUTCOME_TRY(auto coords, GetInputCoords(node->inputs()));
         input_coords.push_back(std::move(coords));
@@ -158,6 +173,7 @@ Result<unique_ptr<Pipeline>> PipelineParser::Parse(const Value& config) {
     }
     OUTCOME_TRY(auto coords, GetInputCoords(pipeline->outputs()));
 
+    pipeline->id_ = (id != -1) ? id : pipeline->NextId();
     pipeline->nodes_ = std::move(nodes);
     pipeline->use_count_ = std::move(use_count_);
     pipeline->input_coords_ = std::move(input_coords);

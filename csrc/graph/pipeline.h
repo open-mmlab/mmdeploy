@@ -20,6 +20,10 @@ class Pipeline : public Node {
  public:
   Sender<Value> Process(Sender<Value> args) override;
 
+  int NextId();
+
+  int GetId() const { return id_; }
+
   struct Coords {
     // source node index
     int index;
@@ -30,6 +34,8 @@ class Pipeline : public Node {
   class State;
 
  private:
+  std::mutex mutex_;
+  int id_;
   vector<unique_ptr<Node>> nodes_;
   vector<int> use_count_;
   vector<vector<Coords>> input_coords_;
