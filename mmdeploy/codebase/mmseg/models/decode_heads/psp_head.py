@@ -4,7 +4,7 @@ import torch.nn as nn
 from mmseg.ops import resize
 
 from mmdeploy.core import FUNCTION_REWRITER
-from mmdeploy.utils import is_dynamic_shape
+from mmdeploy.utils import get_root_logger, is_dynamic_shape
 
 
 @FUNCTION_REWRITER.register_rewriter(
@@ -25,6 +25,12 @@ def ppm__forward(ctx, self, x):
     """
     deploy_cfg = ctx.cfg
     is_dynamic_flag = is_dynamic_shape(deploy_cfg)
+    if is_dynamic_flag:
+        logger = get_root_logger()
+        logger.warning('Most backends do not support `AdaptiveAvgPool2d`. '
+                       'Suggest to check if use the right deployment config')
+        return ctx.origin_func(x)
+
     # get origin input shape as tensor to support onnx dynamic shape
     size = x.shape[2:]
     if not is_dynamic_flag:
@@ -34,9 +40,6 @@ def ppm__forward(ctx, self, x):
     for ppm in self:
         if isinstance(ppm[0], nn.AdaptiveAvgPool2d) and \
                 ppm[0].output_size != 1:
-            assert not is_dynamic_flag, 'AdaptiveAvgPool2d is not \
-                supported with dynamic shape in backends'
-
             # replace AdaptiveAvgPool2d with AvgPool2d explicitly
             output_size = 2 * [ppm[0].output_size]
             k = [int(size[i] / output_size[i]) for i in range(0, len(size))]
