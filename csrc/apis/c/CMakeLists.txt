@@ -48,6 +48,9 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/common.h
         DESTINATION include/c)
 
 if (MMDEPLOY_BUILD_SDK_CSHARP_API)
+    if ("cuda" IN_LIST MMDEPLOY_TARGET_DEVICES)
+        include(${CMAKE_SOURCE_DIR}/cmake/cuda.cmake NO_POLICY_SCOPE)
+    endif()
     # build MMDeployExtern.dll just for csharp nuget package.
     # no Installation for c/c++ package.
     file(GLOB SRCS "*.c" "*.cpp")
