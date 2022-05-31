@@ -5,16 +5,10 @@
 
 #include <chrono>
 
+#include "trt_modulated_deform_conv_kernel.hpp"
 #include "trt_serialize.hpp"
 
 using namespace nvinfer1;
-
-void ModulatedDeformConvForwardCUDAKernelLauncher_float(
-    const float *input, const float *weight, const float *bias, const float *offset,
-    const float *mask, float *output, void *workspace, int batch, int channels, int height,
-    int width, int channels_out, int kernel_w, int kernel_h, int stride_w, int stride_h, int pad_w,
-    int pad_h, int dilation_w, int dilation_h, int group, int deformable_group, int im2col_step,
-    cublasHandle_t cublas_handle, cudaStream_t stream);
 
 namespace mmdeploy {
 namespace {
@@ -72,9 +66,9 @@ nvinfer1::DimsExprs ModulatedDeformableConvPluginDynamic::getOutputDimensions(
 bool ModulatedDeformableConvPluginDynamic::supportsFormatCombination(
     int pos, const nvinfer1::PluginTensorDesc *ioDesc, int nbInputs, int nbOutputs) TRT_NOEXCEPT {
   if (pos == 0) {
-    return (ioDesc[pos].type == nvinfer1::DataType::kFLOAT &&
+    return ((ioDesc[pos].type == nvinfer1::DataType::kFLOAT ||
+             ioDesc[pos].type == nvinfer1::DataType::kHALF) &&
             ioDesc[pos].format == nvinfer1::TensorFormat::kLINEAR);
-
   } else {
     return ioDesc[pos].type == ioDesc[0].type && ioDesc[pos].format == ioDesc[0].format;
   }
@@ -137,11 +131,18 @@ int ModulatedDeformableConvPluginDynamic::enqueue(const nvinfer1::PluginTensorDe
   auto data_type = inputDesc[0].type;
   switch (data_type) {
     case nvinfer1::DataType::kFLOAT:
-      ModulatedDeformConvForwardCUDAKernelLauncher_float(
+      ModulatedDeformConvForwardCUDAKernelLauncher<float>(
           (float *)x, (float *)weight, (float *)bias, (float *)offset, (float *)mask,
           (float *)output, workSpace, batch, channels, height, width, channels_out, kernel_w,
           kernel_h, mStride.d[0], mStride.d[1], mPadding.d[0], mPadding.d[1], mDilation.d[0],
           mDilation.d[1], mGroup, mDeformableGroup, im2col_step, m_cublas_handle, stream);
+      break;
+    case nvinfer1::DataType::kHALF:
+      ModulatedDeformConvForwardCUDAKernelLauncher<half>(
+          (half *)x, (half *)weight, (half *)bias, (half *)offset, (half *)mask, (half *)output,
+          workSpace, batch, channels, height, width, channels_out, kernel_w, kernel_h, mStride.d[0],
+          mStride.d[1], mPadding.d[0], mPadding.d[1], mDilation.d[0], mDilation.d[1], mGroup,
+          mDeformableGroup, im2col_step, m_cublas_handle, stream);
       break;
     default:
       return 1;

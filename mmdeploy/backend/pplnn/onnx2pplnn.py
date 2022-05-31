@@ -4,14 +4,14 @@ from typing import Optional, Sequence
 from pyppl import nn as pplnn
 
 from mmdeploy.utils.device import parse_cuda_device_id
-from .wrapper import register_engines
+from .utils import register_engines
 
 
-def onnx2pplnn(algo_file: str,
-               onnx_model: str,
-               device: str = 'cuda:0',
-               input_shapes: Optional[Sequence[Sequence[int]]] = None,
-               **kwargs):
+def from_onnx(onnx_model: str,
+              output_file_prefix: str,
+              device: str = 'cuda:0',
+              input_shapes: Optional[Sequence[Sequence[int]]] = None,
+              **kwargs):
     """Convert ONNX to PPLNN.
 
     PPLNN is capable of optimizing onnx model. The optimized algorithm is saved
@@ -21,16 +21,18 @@ def onnx2pplnn(algo_file: str,
     own preferences.
 
     Args:
-        algo_file (str): File path to save PPLNN optimization algorithm.
+        output_file_prefix (str): File path to save PPLNN optimization
+            algorithm and ONNX file
         onnx_model (str): Input onnx model.
         device (str): A string specifying device, defaults to 'cuda:0'.
         input_shapes (Sequence[Sequence[int]] | None): Shapes for PPLNN
             optimization, default to None.
 
     Examples:
-        >>> from mmdeploy.apis.pplnn import onnx2pplnn
+        >>> from mmdeploy.apis.pplnn import from_onnx
         >>>
-        >>> onnx2pplnn(algo_file = 'example.json', onnx_model = 'example.onnx')
+        >>> from_onnx(onnx_model = 'example.onnx',
+                      output_file_prefix = 'example')
     """
     if device == 'cpu':
         device_id = -1
@@ -42,6 +44,8 @@ def onnx2pplnn(algo_file: str,
         input_shapes = [[1, 3, 224,
                          224]]  # PPLNN default shape for optimization
 
+    algo_file = output_file_prefix + '.json'
+    onnx_output_path = output_file_prefix + '.onnx'
     engines = register_engines(
         device_id,
         disable_avx512=False,
@@ -52,3 +56,6 @@ def onnx2pplnn(algo_file: str,
         onnx_model, engines)
     assert runtime_builder is not None, 'Failed to create '\
         'OnnxRuntimeBuilder.'
+    import shutil
+    if onnx_output_path != onnx_model:
+        shutil.copy2(onnx_model, onnx_output_path)

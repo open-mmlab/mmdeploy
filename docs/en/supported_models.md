@@ -2,7 +2,7 @@
 
 The table below lists the models that are guaranteed to be exportable to other backends.
 
-| Model                     | Codebase         | TorchScript | OnnxRuntime | TensorRT | NCNN  | PPLNN | OpenVINO | Model config                                                                                   |
+| Model                     | Codebase         | TorchScript | OnnxRuntime | TensorRT | ncnn  | PPLNN | OpenVINO | Model config                                                                                   |
 | :------------------------ | :--------------- | :---------: | :---------: | :------: | :---: | :---: | :------: | :--------------------------------------------------------------------------------------------: |
 | RetinaNet                 | MMDetection      |      Y      |      Y      |     Y    |   Y   |   Y   |     Y    | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/retinanet)              |
 | Faster R-CNN              | MMDetection      |      Y      |      Y      |     Y    |   Y   |   Y   |     Y    | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/faster_rcnn)            |
@@ -24,6 +24,7 @@ The table below lists the models that are guaranteed to be exportable to other b
 | MobileNetV2               | MMClassification |      Y      |      Y      |     Y    |   Y   |   Y   |     Y    | [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/mobilenet_v2)      |
 | ShuffleNetV1              | MMClassification |      Y      |      Y      |     Y    |   Y   |   Y   |     Y    | [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v1)     |
 | ShuffleNetV2              | MMClassification |      Y      |      Y      |     Y    |   Y   |   Y   |     Y    | [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v2)     |
+| VisionTransformer         | MMClassification |      Y      |      Y      |     ?    |   Y   |   ?   |     ?    | [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/vision_transformer)     |
 | FCN                       | MMSegmentation   |      Y      |      Y      |     Y    |   Y   |   Y   |     Y    | [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/fcn)                 |
 | PSPNet[*static](#note)    | MMSegmentation   |      Y      |      Y      |     Y    |   Y   |   Y   |     Y    | [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/pspnet)              |
 | DeepLabV3                 | MMSegmentation   |      Y      |      Y      |     Y    |   Y   |   Y   |     Y    | [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/deeplabv3)           |
@@ -59,13 +60,17 @@ The table below lists the models that are guaranteed to be exportable to other b
 | EDSR                      | MMEditing        |      Y      |      Y      |     Y    |   Y   |   N   |     Y    | [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/edsr)           |
 | RDN                       | MMEditing        |      Y      |      Y      |     Y    |   Y   |   Y   |     Y    | [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/rdn)            |
 | DBNet                     | MMOCR            |      Y      |      Y      |     Y    |   Y   |   Y   |     Y    | [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/dbnet)                  |
+| PANet                     | MMOCR            |      Y      |      Y      |     Y    |   Y   |   ?   |     Y    | [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/panet)                  |
+| DBNet                     | MMOCR            |      Y      |      Y      |     Y    |   Y   |   ?   |     Y    | [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/psenet)                 |
 | CRNN                      | MMOCR            |      Y      |      Y      |     Y    |   Y   |   Y   |     N    | [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/crnn)                 |
 | SAR                       | MMOCR            |      N      |      Y      |     N    |   N   |   N   |     N    | [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/sar)                  |
-| HRNet                     | MMPose           |      N      |      Y      |     Y    |   Y   |   N   |     Y    |    [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#hrnet-cvpr-2019)     |
-| MSPN                      | MMPose           |      N      |      Y      |     Y    |   Y   |   N   |     Y    |    [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#mspn-arxiv-2019)     |
-| LiteHRNet                 | MMPose           |      N      |      Y      |     Y    |   Y   |   N   |     Y    |  [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#litehrnet-cvpr-2021)   |
+| SATRN                     | MMOCR            |      Y      |      Y      |     Y    |   N   |   N   |     N    | [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/satrn)                |
+| HRNet                     | MMPose           |      N      |      Y      |     Y    |   Y   |   N   |     Y    | [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#hrnet-cvpr-2019)        |
+| MSPN                      | MMPose           |      N      |      Y      |     Y    |   Y   |   N   |     Y    | [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#mspn-arxiv-2019)        |
+| LiteHRNet                 | MMPose           |      N      |      Y      |     Y    |   N   |   N   |     Y    | [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#litehrnet-cvpr-2021)    |
 | PointPillars              | MMDetection3d    |      ?      |      Y      |     Y    |   N   |   N   |     Y    | [config](https://github.com/open-mmlab/mmdetection3d/blob/master/configs/pointpillars)         |
 | CenterPoint (pillar)      | MMDetection3d    |      ?      |      Y      |     Y    |   N   |   N   |     Y    | [config](https://github.com/open-mmlab/mmdetection3d/blob/master/configs/centerpoint)          |
+| RotatedRetinaNet          | RotatedDetection |      N      |      Y      |    Y     |   N   |   N   |     N    | [config](https://github.com/open-mmlab/mmrotate/blob/main/configs/rotated_retinanet/README.md) |
 
 ### Note
 

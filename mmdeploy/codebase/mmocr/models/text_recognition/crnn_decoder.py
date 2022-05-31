@@ -6,7 +6,7 @@ from mmdeploy.core import FUNCTION_REWRITER
     func_name='mmocr.models.textrecog.decoders.CRNNDecoder.forward_train',
     backend='ncnn')
 def crnndecoder__forward_train__ncnn(ctx, self, feat, *args, **kwargs):
-    """Rewrite `forward_train` of CRNNDecoder for NCNN backend.
+    """Rewrite `forward_train` of CRNNDecoder for ncnn backend.
 
     Rewrite this function to skip permuting dims of outputs from `[W, N, C]` to
     `[N, W, C]`

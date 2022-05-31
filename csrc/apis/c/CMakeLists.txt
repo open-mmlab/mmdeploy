@@ -5,7 +5,8 @@ project(capis)
 include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
 
 if ("all" IN_LIST MMDEPLOY_CODEBASES)
-    set(TASK_LIST "classifier;detector;segmentor;text_detector;text_recognizer;pose_detector;restorer;model")
+    set(TASK_LIST "classifier;detector;segmentor;text_detector;text_recognizer;"
+        "pose_detector;restorer;model;rotated_detector")
 else ()
     set(TASK_LIST "model")
     if ("mmcls" IN_LIST MMDEPLOY_CODEBASES)
@@ -27,6 +28,9 @@ else ()
     if ("mmpose" IN_LIST MMDEPLOY_CODEBASES)
         list(APPEND TASK_LIST "pose_detector")
     endif ()
+    if ("mmrotate" IN_LIST MMDEPLOY_CODEBASES)
+        list(APPEND TASK_LIST "rotated_detector")
+    endif()
 endif ()
 
 foreach (TASK ${TASK_LIST})
@@ -42,3 +46,14 @@ endforeach ()
 
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/common.h
         DESTINATION include/c)
+
+if (MMDEPLOY_BUILD_SDK_CSHARP_API)
+    # build MMDeployExtern.dll just for csharp nuget package.
+    # no Installation for c/c++ package.
+    file(GLOB SRCS "*.c" "*.cpp")
+    add_library(MMDeployExtern SHARED ${SRCS})
+    target_compile_definitions(MMDeployExtern PRIVATE -DMMDEPLOY_API_EXPORTS=1)
+    mmdeploy_load_static(MMDeployExtern MMDeployStaticModules)
+    mmdeploy_load_dynamic(MMDeployExtern MMDeployDynamicModules)
+    target_link_libraries(MMDeployExtern PRIVATE MMDeployLibs)
+endif()

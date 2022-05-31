@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
 import logging
-import os
+import subprocess
 from collections import OrderedDict
 from pathlib import Path
 
@@ -20,32 +20,29 @@ from mmdeploy.utils import (get_backend, get_codebase, get_root_logger,
 def parse_args():
     parser = argparse.ArgumentParser(description='Regression Test')
     parser.add_argument(
-        '--deploy-yml',
+        '--codebase',
         nargs='+',
         help='regression test yaml path.',
-        default=[
-            './configs/mmcls/mmcls_regression_test.yaml',
-            './configs/mmdet/mmdet_regression_test.yaml',
-            './configs/mmseg/mmseg_regression_test.yaml',
-            './configs/mmpose/mmpose_regression_test.yaml',
-            './configs/mmocr/mmocr_regression_test.yaml',
-            './configs/mmedit/mmedit_regression_test.yaml'
-        ])
+        default=['mmcls', 'mmdet', 'mmseg', 'mmpose', 'mmocr', 'mmedit'])
     parser.add_argument(
+        '-p',
         '--performance',
         default=False,
         action='store_true',
         help='test performance if it set')
     parser.add_argument(
-        '--backends',
-        nargs='+',
-        help='test specific backend(s)',
-        default=['all'])
+        '--backends', nargs='+', help='test specific backend(s)')
+    parser.add_argument('--models', nargs='+', help='test specific model(s)')
     parser.add_argument(
         '--work-dir',
         type=str,
         help='the dir to save logs and models',
         default='../mmdeploy_regression_working_dir')
+    parser.add_argument(
+        '--checkpoint-dir',
+        type=str,
+        help='the dir to save checkpoint for all model',
+        default='../mmdeploy_checkpoints')
     parser.add_argument(
         '--device', type=str, help='Device type, cuda or cpu', default='cuda')
     parser.add_argument(
@@ -101,7 +98,7 @@ def merge_report(work_dir: str, logger: logging.Logger):
 
         # delete if sheet already exist
         if sheet_name in wb.sheetnames:
-            wb.remove_sheet(wb[sheet_name])
+            wb.remove(wb[sheet_name])
         # create sheet
         wb.create_sheet(title=sheet_name, index=0)
         # write in row
@@ -112,9 +109,11 @@ def merge_report(work_dir: str, logger: logging.Logger):
         for name in wb.sheetnames:
             ws = wb[name]
             if ws.cell(1, 1).value is None:
-                wb.remove_sheet(ws)
+                wb.remove(ws)
         # save to file
         wb.save(str(res_file))
+
+    logger.info('Report merge successful.')
 
 
 def get_model_metafile_info(global_info: dict, model_info: dict,
@@ -147,6 +146,7 @@ def get_model_metafile_info(global_info: dict, model_info: dict,
     checkpoint_save_dir = Path(checkpoint_dir).joinpath(
         codebase_name, model_info.get('name'))
     checkpoint_save_dir.mkdir(parents=True, exist_ok=True)
+    logger.info(f'Saving checkpoint in {checkpoint_save_dir}')
 
     # get model metafile info
     metafile_path = Path(codebase_dir).joinpath(model_info.get('metafile'))
@@ -188,11 +188,11 @@ def get_model_metafile_info(global_info: dict, model_info: dict,
 
 
 def update_report(report_dict: dict, model_name: str, model_config: str,
-                  task_name: str, model_checkpoint_name: str, dataset: str,
+                  task_name: str, checkpoint: str, dataset: str,
                   backend_name: str, deploy_config: str,
                   static_or_dynamic: str, precision_type: str,
                   conversion_result: str, fps: str, metric_info: list,
-                  test_pass: str, report_txt_path: Path):
+                  test_pass: str, report_txt_path: Path, codebase_name: str):
     """Update report information.
 
     Args:
@@ -200,7 +200,7 @@ def update_report(report_dict: dict, model_name: str, model_config: str,
         model_name (str): Model name.
         model_config (str): Model config name.
         task_name (str): Task name.
-        model_checkpoint_name (str): Model checkpoint name.
+        checkpoint (str): Model checkpoint name.
         dataset (str): Dataset name.
         backend_name (str): Backend name.
         deploy_config (str): Deploy config name.
@@ -211,44 +211,48 @@ def update_report(report_dict: dict, model_name: str, model_config: str,
         metric_info (list): Metric info list of the ${modelName}.yml.
         test_pass (str): Test result: Pass or Fail.
         report_txt_path (Path): Report txt path.
+        codebase_name (str): Codebase name.
     """
-    if '.pth' not in model_checkpoint_name:
-        # make model path shorter by cutting the work_dir_root
-        work_dir_root = report_txt_path.parent.absolute().resolve()
-
-        if ' ' not in model_checkpoint_name:
-            model_checkpoint_name = \
-                Path(model_checkpoint_name).absolute().resolve()
-
-        model_checkpoint_name = \
-            str(model_checkpoint_name).replace(str(work_dir_root),
-                                               '${WORK_DIR}')
+    # make model path shorter
+    if '.pth' in checkpoint:
+        checkpoint = Path(checkpoint).absolute().resolve()
+        checkpoint = str(checkpoint).split(f'/{codebase_name}/')[-1]
+        checkpoint = '${CHECKPOINT_DIR}' + f'/{codebase_name}/{checkpoint}'
+    else:
+        if Path(checkpoint).exists():
+            # To invoice the path which is 'A.a B.b' when test sdk.
+            checkpoint = Path(checkpoint).absolute().resolve()
+        elif backend_name == 'ncnn':
+            # ncnn have 2 backend file but only need xxx.param
+            checkpoint = checkpoint.split('.param')[0] + '.param'
+        work_dir = report_txt_path.parent.absolute().resolve()
+        checkpoint = str(checkpoint).replace(str(work_dir), '${WORK_DIR}')
 
     # save to tmp file
-    tmp_str = f'{model_name},{model_config},{task_name},' \
-              f'{model_checkpoint_name},{dataset},{backend_name},' \
-              f'{deploy_config},{static_or_dynamic},{precision_type},' \
-              f'{conversion_result},{fps},'
+    tmp_str = f'{model_name},{model_config},{task_name},{checkpoint},' \
+              f'{dataset},{backend_name},{deploy_config},' \
+              f'{static_or_dynamic},{precision_type},{conversion_result},' \
+              f'{fps},'
 
     # save to report
-    report_dict.get('model_name').append(model_name)
-    report_dict.get('model_config').append(model_config)
-    report_dict.get('task_name').append(task_name)
-    report_dict.get('model_checkpoint_name').append(model_checkpoint_name)
-    report_dict.get('dataset').append(dataset)
-    report_dict.get('backend_name').append(backend_name)
-    report_dict.get('deploy_config').append(deploy_config)
-    report_dict.get('static_or_dynamic').append(static_or_dynamic)
-    report_dict.get('precision_type').append(precision_type)
-    report_dict.get('conversion_result').append(conversion_result)
-    report_dict.get('fps').append(fps)
+    report_dict.get('Model').append(model_name)
+    report_dict.get('Model Config').append(model_config)
+    report_dict.get('Task').append(task_name)
+    report_dict.get('Checkpoint').append(checkpoint)
+    report_dict.get('Dataset').append(dataset)
+    report_dict.get('Backend').append(backend_name)
+    report_dict.get('Deploy Config').append(deploy_config)
+    report_dict.get('Static or Dynamic').append(static_or_dynamic)
+    report_dict.get('Precision Type').append(precision_type)
+    report_dict.get('Conversion Result').append(conversion_result)
+    # report_dict.get('FPS').append(fps)
 
     for metric in metric_info:
         for metric_name, metric_value in metric.items():
             metric_name = str(metric_name)
             report_dict.get(metric_name).append(metric_value)
             tmp_str += f'{metric_value},'
-    report_dict.get('test_pass').append(test_pass)
+    report_dict.get('Test Pass').append(test_pass)
 
     tmp_str += f'{test_pass}\n'
 
@@ -259,7 +263,8 @@ def update_report(report_dict: dict, model_name: str, model_config: str,
 def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
                        model_config_path: Path, model_config_name: str,
                        test_yaml_metric_info: dict, report_dict: dict,
-                       logger: logging.Logger, report_txt_path: Path):
+                       logger: logging.Logger, report_txt_path: Path,
+                       codebase_name: str):
     """Get metric from metafile info of the model.
 
     Args:
@@ -272,6 +277,7 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
         report_dict (dict): Report info dict.
         logger (logging.Logger): Logger.
         report_txt_path (Path): Report txt path.
+        codebase_name (str): Codebase name.
 
     Returns:
         Dict: metric info of the model
@@ -296,10 +302,14 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
     for _, v in test_yaml_metric_info.items():
         if v.get('dataset') is None:
             continue
-        dataset_tmp = using_dataset.get(v.get('dataset'), [])
-        if v.get('task_name') not in dataset_tmp:
-            dataset_tmp.append(v.get('task_name'))
-        using_dataset.update({v.get('dataset'): dataset_tmp})
+        dataset_list = v.get('dataset', [])
+        if not isinstance(dataset_list, list):
+            dataset_list = [dataset_list]
+        for metric_dataset in dataset_list:
+            dataset_tmp = using_dataset.get(metric_dataset, [])
+            if v.get('task_name') not in dataset_tmp:
+                dataset_tmp.append(v.get('task_name'))
+            using_dataset.update({metric_dataset: dataset_tmp})
 
     # Get metrics info from metafile
     for metafile_metric in metafile_metric_info:
@@ -317,10 +327,10 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
             continue
         dataset_type += f'{dataset} | '
 
-        if task_name not in using_dataset.get(dataset):
+        if task_name not in using_dataset.get(dataset, []):
             # only add the metric with the correct dataset
             logger.info(f'task_name ({task_name}) is not in'
-                        f'{using_dataset.get(dataset)}, skip it...')
+                        f'{using_dataset.get(dataset, [])}, skip it...')
             continue
         task_type += f'{task_name} | '
 
@@ -374,7 +384,7 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
         model_name=model_name,
         model_config=str(model_config_path),
         task_name=task_type,
-        model_checkpoint_name=str(checkpoint_path),
+        checkpoint=str(checkpoint_path),
         dataset=dataset_type,
         backend_name='Pytorch',
         deploy_config='-',
@@ -384,7 +394,8 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
         fps=fps,
         metric_info=metric_list,
         test_pass='-',
-        report_txt_path=report_txt_path)
+        report_txt_path=report_txt_path,
+        codebase_name=codebase_name)
 
     logger.info(f'Got {model_config_path} metric: {pytorch_metric}')
     return pytorch_metric, dataset_type
@@ -554,7 +565,7 @@ def get_fps_metric(shell_res: int, pytorch_metric: dict, metric_key: str,
     else:
         # Got fps from log file
         fps = get_info_from_log_file('FPS', log_path, metric_key, logger)
-        logger.info(f'Got fps = {fps}')
+        # logger.info(f'Got fps = {fps}')
 
         # Got metric from log file
         metric_value = get_info_from_log_file('metric', log_path, metric_key,
@@ -633,14 +644,13 @@ def get_backend_fps_metric(deploy_cfg_path: str, model_cfg_path: Path,
         report_txt_path (Path): report txt save path.
         model_name (str): Name of model in test yaml.
     """
-    cmd_str = f'cd {str(Path(__file__).absolute().parent.parent)} && ' \
-              'python3 tools/test.py ' \
+    cmd_str = 'python3 tools/test.py ' \
               f'{deploy_cfg_path} ' \
               f'{str(model_cfg_path.absolute())} ' \
               f'--model "{convert_checkpoint_path}" ' \
-              f'--device {device_type} ' \
               f'--log2file "{log_path}" ' \
-              f'--speed-test '
+              f'--speed-test ' \
+              f'--device {device_type} '
 
     codebase_name = get_codebase(str(deploy_cfg_path)).value
     if codebase_name != 'mmedit':
@@ -650,7 +660,9 @@ def get_backend_fps_metric(deploy_cfg_path: str, model_cfg_path: Path,
     logger.info(f'Process cmd = {cmd_str}')
 
     # Test backend
-    shell_res = os.system(cmd_str)
+    shell_res = subprocess.run(
+        cmd_str, cwd=str(Path(__file__).absolute().parent.parent),
+        shell=True).returncode
     logger.info(f'Got shell_res = {shell_res}')
 
     metric_key = ''
@@ -687,7 +699,7 @@ def get_backend_fps_metric(deploy_cfg_path: str, model_cfg_path: Path,
         model_name=model_name,
         model_config=str(model_cfg_path),
         task_name=task_name,
-        model_checkpoint_name=convert_checkpoint_path,
+        checkpoint=convert_checkpoint_path,
         dataset=dataset_type,
         backend_name=backend_name,
         deploy_config=str(deploy_cfg_path),
@@ -697,7 +709,8 @@ def get_backend_fps_metric(deploy_cfg_path: str, model_cfg_path: Path,
         fps=fps,
         metric_info=metric_list,
         test_pass=str(test_pass),
-        report_txt_path=report_txt_path)
+        report_txt_path=report_txt_path,
+        codebase_name=codebase_name)
 
 
 def get_precision_type(deploy_cfg_name: str):
@@ -825,6 +838,17 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
 
     deploy_cfg_path = Path(pipeline_info.get('deploy_config'))
     backend_name = str(get_backend(str(deploy_cfg_path)).name).lower()
+
+    # change device_type for special case
+    if backend_name in ['ncnn', 'openvino']:
+        device_type = 'cpu'
+    elif backend_name == 'onnxruntime' and device_type != 'cpu':
+        import onnxruntime as ort
+        if ort.get_device() != 'GPU':
+            device_type = 'cpu'
+            logger.warning('Device type is forced to cpu '
+                           'since onnxruntime-gpu is not installed')
+
     infer_type = \
         'dynamic' if is_dynamic_shape(str(deploy_cfg_path)) else 'static'
 
@@ -836,12 +860,12 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
                  Path(checkpoint_path).parent.name,
                  backend_name,
                  infer_type,
+                 precision_type,
                  Path(checkpoint_path).stem)
     backend_output_path.mkdir(parents=True, exist_ok=True)
 
     # convert cmd string
-    cmd_str = f'cd {str(str(Path(__file__).absolute().parent.parent))} && ' \
-              'python3 ./tools/deploy.py ' \
+    cmd_str = 'python3 ./tools/deploy.py ' \
               f'{str(deploy_cfg_path.absolute().resolve())} ' \
               f'{str(model_cfg_path.absolute().resolve())} ' \
               f'"{str(checkpoint_path.absolute().resolve())}" ' \
@@ -863,15 +887,32 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
 
     logger.info(f'Process cmd = {cmd_str}')
 
-    # Convert the model to specific backend
-    shell_res = os.system(cmd_str)
-    logger.info(f'Got shell_res = {shell_res}')
+    convert_result = False
+    convert_log_path = backend_output_path.joinpath('convert_log.log')
+    logger.info(f'Logging conversion log to {convert_log_path} ...')
+    file_handler = open(convert_log_path, 'w', encoding='utf-8')
+    try:
+        # Convert the model to specific backend
+        process_res = subprocess.Popen(
+            cmd_str,
+            cwd=str(Path(__file__).absolute().parent.parent),
+            shell=True,
+            stdout=file_handler,
+            stderr=file_handler)
+        process_res.wait()
+        logger.info(f'Got shell_res = {process_res.returncode}')
 
-    # check if converted successes or not.
-    if shell_res == 0:
-        convert_result = True
-    else:
-        convert_result = False
+        # check if converted successes or not.
+        if process_res.returncode == 0:
+            convert_result = True
+        else:
+            convert_result = False
+
+    except Exception as e:
+        print(f'process convert error: {e}')
+    finally:
+        file_handler.close()
+
     logger.info(f'Got convert_result = {convert_result}')
 
     if isinstance(backend_file_name, list):
@@ -993,7 +1034,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
             model_name=model_name,
             model_config=str(model_cfg_path),
             task_name=task_name,
-            model_checkpoint_name=report_checkpoint,
+            checkpoint=report_checkpoint,
             dataset=dataset_type,
             backend_name=backend_name,
             deploy_config=str(deploy_cfg_path),
@@ -1003,7 +1044,8 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
             fps=fps,
             metric_info=metric_list,
             test_pass=str(test_pass),
-            report_txt_path=report_txt_path)
+            report_txt_path=report_txt_path,
+            codebase_name=codebase_name)
 
 
 def save_report(report_info: dict, report_save_path: Path,
@@ -1045,7 +1087,7 @@ def main():
     }
 
     backend_list = args.backends
-    if backend_list == ['all']:
+    if backend_list is None:
         backend_list = [
             'onnxruntime', 'tensorrt', 'openvino', 'ncnn', 'pplnn',
             'torchscript'
@@ -1053,10 +1095,19 @@ def main():
     assert isinstance(backend_list, list)
     logger.info(f'Regression test backend list = {backend_list}')
 
+    if args.models is None:
+        logger.info('Regression test for all models in test yaml.')
+    else:
+        logger.info(f'Regression test models list = {args.models}')
+
     work_dir = Path(args.work_dir)
     work_dir.mkdir(parents=True, exist_ok=True)
 
-    for deploy_yaml in args.deploy_yml:
+    deploy_yaml_list = [
+        f'./tests/regression/{codebase}.yml' for codebase in args.codebase
+    ]
+
+    for deploy_yaml in deploy_yaml_list:
 
         if not Path(deploy_yaml).exists():
             raise FileNotFoundError(f'deploy_yaml {deploy_yaml} not found, '
@@ -1070,24 +1121,28 @@ def main():
         report_txt_path = report_save_path.with_suffix('.txt')
 
         report_dict = {
-            'model_name': [],
-            'model_config': [],
-            'task_name': [],
-            'model_checkpoint_name': [],
-            'dataset': [],
-            'backend_name': [],
-            'deploy_config': [],
-            'static_or_dynamic': [],
-            'precision_type': [],
-            'conversion_result': [],
-            'fps': []
+            'Model': [],
+            'Model Config': [],
+            'Task': [],
+            'Checkpoint': [],
+            'Dataset': [],
+            'Backend': [],
+            'Deploy Config': [],
+            'Static or Dynamic': [],
+            'Precision Type': [],
+            'Conversion Result': [],
+            # 'FPS': []
         }
 
         global_info = yaml_info.get('globals')
-        for metric_name in global_info.get('metric_info', {}):
-            report_dict.update({metric_name: []})
         metric_info = global_info.get('metric_info', {})
-        report_dict.update({'test_pass': []})
+        for metric_name in metric_info:
+            report_dict.update({metric_name: []})
+        report_dict.update({'Test Pass': []})
+
+        global_info.update({'checkpoint_dir': args.checkpoint_dir})
+        global_info.update(
+            {'codebase_name': Path(deploy_yaml).stem.split('_')[0]})
 
         with open(report_txt_path, 'w') as f_report:
             title_str = ''
@@ -1101,6 +1156,11 @@ def main():
             if 'model_configs' not in models:
                 logger.warning('Can not find field "model_configs", '
                                f'skipping {models.get("name")}...')
+                continue
+
+            model_name = models.get('name')
+            if args.models is not None and model_name not in args.models:
+                logger.info(f'Test specific model mode, skip {model_name}...')
                 continue
 
             model_metafile_info, checkpoint_save_dir, codebase_dir = \
@@ -1126,9 +1186,9 @@ def main():
 
                 # Get pytorch from metafile.yml
                 pytorch_metric, metafile_dataset = get_pytorch_result(
-                    models.get('name'), model_metafile_info, checkpoint_path,
+                    model_name, model_metafile_info, checkpoint_path,
                     model_cfg_path, model_config, metric_info, report_dict,
-                    logger, report_txt_path)
+                    logger, report_txt_path, global_info.get('codebase_name'))
 
                 for pipeline in pipelines_info:
                     deploy_config = pipeline.get('deploy_config')
@@ -1150,12 +1210,16 @@ def main():
                                        pytorch_metric, metric_info,
                                        report_dict, test_type, logger,
                                        backend_file_name, report_txt_path,
-                                       metafile_dataset, models.get('name'))
-
-        save_report(report_dict, report_save_path, logger)
+                                       metafile_dataset, model_name)
+        if len(report_dict.get('Model')) > 0:
+            save_report(report_dict, report_save_path, logger)
+        else:
+            logger.info(f'No model for {deploy_yaml}, not saving report.')
 
     # merge report
     merge_report(str(work_dir), logger)
+
+    logger.info('All done.')
 
 
 if __name__ == '__main__':

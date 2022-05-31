@@ -5,8 +5,8 @@
 
 #include <cstring>
 
-#include "kernel.h"
-#include "trt_batched_nms_kernel.hpp"
+#include "nms/batched_nms_kernel.hpp"
+#include "nms/kernel.h"
 #include "trt_serialize.hpp"
 
 namespace mmdeploy {
@@ -90,11 +90,12 @@ int TRTBatchedNMS::enqueue(const nvinfer1::PluginTensorDesc* inputDesc,
 
   int topk =
       param.topK > 0 && param.topK <= inputDesc[1].dims.d[1] ? param.topK : inputDesc[1].dims.d[1];
+  bool rotated = false;
   pluginStatus_t status = nmsInference(
       stream, batch_size, boxes_size, score_size, shareLocation, param.backgroundLabelId,
       num_priors, param.numClasses, topk, param.keepTopK, param.scoreThreshold, param.iouThreshold,
       DataType::kFLOAT, locData, DataType::kFLOAT, confData, nmsedDets, nmsedLabels, workSpace,
-      param.isNormalized, false, mClipBoxes);
+      param.isNormalized, false, mClipBoxes, rotated);
   ASSERT(status == STATUS_SUCCESS);
 
   return 0;

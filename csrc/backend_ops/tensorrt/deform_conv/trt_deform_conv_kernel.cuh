@@ -63,13 +63,15 @@
 // modified from
 // https://github.com/chengdazhi/Deformable-Convolution-V2-PyTorch/blob/mmdetection/mmdet/ops/dcn/src/deform_conv_cuda_kernel.cu
 
+#include <cuda_fp16.h>
+
 #include "common_cuda_helper.hpp"
 
 template <typename scalar_t>
 __device__ __forceinline__ scalar_t deformable_im2col_bilinear(const scalar_t* __restrict__ input,
                                                                const int height, const int width,
-                                                               scalar_t h, scalar_t w) {
-  if (h <= -1.f || height <= h || w <= -1.f || width <= w) {
+                                                               float h, float w) {
+  if (h <= -1 || height <= h || w <= -1 || width <= w) {
     return 0;
   }
 
@@ -92,6 +94,33 @@ __device__ __forceinline__ scalar_t deformable_im2col_bilinear(const scalar_t* _
   const scalar_t lh = h - h_low;
   const scalar_t val = fmaf(v_high - v_low, lh, v_low);
   return val;
+}
+
+template <>
+__device__ __forceinline__ __half deformable_im2col_bilinear(const __half* __restrict__ input,
+                                                             const int height, const int width,
+                                                             float h, float w) {
+  if (h <= -1 || height <= h || w <= -1 || width <= w) {
+    return 0;
+  }
+
+  const int h_low = floorf(h);
+  const int w_low = floorf(w);
+
+  input += h_low * width;
+  const float v1 = (h_low >= 0 && w_low >= 0) ? __half2float(input[w_low]) : 0.0f;
+  const int w_high = w_low + 1;
+  const float v2 = (h_low >= 0 && w_high <= width - 1) ? __half2float(input[w_high]) : 0.0f;
+  const float lw = w - w_low;
+  const float v_low = fmaf(v2 - v1, lw, v1);
+  input += width;
+  const float v3 = (h_low <= height - 2 && w_low >= 0) ? __half2float(input[w_low]) : 0.0f;
+  const float v4 =
+      (h_low <= height - 2 && w_high <= width - 1) ? __half2float(input[w_high]) : 0.0f;
+  const float v_high = fmaf(v4 - v3, lw, v3);
+  const float lh = h - h_low;
+  const float val = fmaf(v_high - v_low, lh, v_low);
+  return __float2half(val);
 }
 
 template <typename scalar_t>
@@ -134,8 +163,8 @@ __global__ void deformable_im2col_gpu_kernel(
         const scalar_t offset_h = data_offset_ptr[data_offset_h];
         const int data_offset_w = data_offset_h + hw_col;
         const scalar_t offset_w = data_offset_ptr[data_offset_w];
-        const scalar_t h_im = h_in + i * dilation_h + offset_h;
-        const scalar_t w_im = w_in + j * dilation_w + offset_w;
+        const scalar_t h_im = h_in + i * dilation_h + (float)offset_h;
+        const scalar_t w_im = w_in + j * dilation_w + (float)offset_w;
         const scalar_t val = deformable_im2col_bilinear(data_im_ptr, height, width, h_im, w_im);
         *data_col_ptr = val;
         data_col_ptr += data_col_step;

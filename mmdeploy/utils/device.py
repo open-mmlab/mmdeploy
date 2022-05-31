@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import re
 from typing import Optional
-
-import torch
 
 
 def parse_device_id(device: str) -> Optional[int]:
@@ -34,9 +33,11 @@ def parse_cuda_device_id(device: str) -> int:
     Returns:
         int: The parsed device id, defaults to `0`.
     """
-    device = torch.device(device)
-    assert device.type == 'cuda', 'Not cuda device.'
+    match_result = re.match('([^:]+)(:[0-9]+)?$', device)
+    assert match_result is not None, f'Can not parse device {device}.'
+    assert match_result.group(1).lower() == 'cuda', 'Not cuda device.'
 
-    device_id = 0 if device.index is None else device.index
+    device_id = 0 if match_result.lastindex == 1 else int(
+        match_result.group(2)[1:])
 
     return device_id

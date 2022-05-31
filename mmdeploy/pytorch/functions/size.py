@@ -7,7 +7,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 @FUNCTION_REWRITER.register_rewriter(
     func_name='torch.Tensor.size', backend='ncnn')
 def tensor__size__ncnn(ctx, self, *args):
-    """Rewrite `size` for NCNN backend.
+    """Rewrite `size` for ncnn backend.
 
     ONNX Shape node is not supported in ncnn. This function return integer
     instead of Torch.Size to avoid ONNX Shape node.
