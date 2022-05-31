@@ -8,7 +8,9 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mmdeploy.apis import torch2onnx_impl
+from mmdeploy.apis.onnx import export
+from mmdeploy.utils.config_utils import (get_backend, get_dynamic_axes,
+                                         get_onnx_config)
 from mmdeploy.utils.test import get_random_name
 
 onnx_file = tempfile.NamedTemporaryFile(suffix='.onnx').name
@@ -63,7 +65,33 @@ def get_deploy_cfg(input_name, output_name, dynamic_axes):
                          [dynamic_axes_dict, dynamic_axes_list])
 def test_torch2onnx(input_name, output_name, dynamic_axes):
     deploy_cfg = get_deploy_cfg(input_name, output_name, dynamic_axes)
-    torch2onnx_impl(test_model, test_img, deploy_cfg, onnx_file)
+
+    output_prefix = osp.splitext(onnx_file)[0]
+    context_info = dict(cfg=deploy_cfg)
+    backend = get_backend(deploy_cfg).value
+    onnx_cfg = get_onnx_config(deploy_cfg)
+    opset_version = onnx_cfg.get('opset_version', 11)
+
+    input_names = onnx_cfg['input_names']
+    output_names = onnx_cfg['output_names']
+    axis_names = input_names + output_names
+    dynamic_axes = get_dynamic_axes(deploy_cfg, axis_names)
+    verbose = not onnx_cfg.get('strip_doc_string', True) or onnx_cfg.get(
+        'verbose', False)
+    keep_initializers_as_inputs = onnx_cfg.get('keep_initializers_as_inputs',
+                                               True)
+    export(
+        test_model,
+        test_img,
+        context_info=context_info,
+        output_path_prefix=output_prefix,
+        backend=backend,
+        input_names=input_names,
+        output_names=output_names,
+        opset_version=opset_version,
+        dynamic_axes=dynamic_axes,
+        verbose=verbose,
+        keep_initializers_as_inputs=keep_initializers_as_inputs)
 
     assert osp.exists(onnx_file)
 

@@ -350,8 +350,8 @@ def get_detail(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
         calib_config=calib_config)
 
 
-def dump_info(deploy_cfg: Union[str, mmcv.Config],
-              model_cfg: Union[str, mmcv.Config], work_dir: str, pth: str):
+def export2SDK(deploy_cfg: Union[str, mmcv.Config],
+               model_cfg: Union[str, mmcv.Config], work_dir: str, pth: str):
     """Export information to SDK. This function dump `deploy.json`,
     `pipeline.json` and `detail.json` to work dir.
 

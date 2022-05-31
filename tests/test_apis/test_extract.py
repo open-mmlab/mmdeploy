@@ -4,7 +4,7 @@ import tempfile
 import onnx
 import torch
 
-from mmdeploy.apis import extract_model
+from mmdeploy.apis.onnx import extract_partition
 from mmdeploy.core import mark
 
 output_file = tempfile.NamedTemporaryFile(suffix='.onnx').name
@@ -33,7 +33,7 @@ def test_extract():
     torch.onnx.export(model, (x, y), output_file)
     onnx_model = onnx.load(output_file)
 
-    extracted = extract_model(onnx_model, 'add:input', 'add:output')
+    extracted = extract_partition(onnx_model, 'add:input', 'add:output')
 
     assert extracted.graph.input[0].name == 'x'
     assert extracted.graph.input[1].name == 'y'

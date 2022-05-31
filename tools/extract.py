@@ -6,7 +6,7 @@ import os.path as osp
 import onnx
 import onnx.helper
 
-from mmdeploy.apis import extract_model
+from mmdeploy.apis.onnx import extract_partition
 from mmdeploy.utils import get_root_logger
 
 
@@ -53,7 +53,7 @@ def main():
     marks = collect_avaiable_marks(model)
     logger.info('Available marks:\n    {}'.format('\n    '.join(marks)))
 
-    extracted_model = extract_model(model, args.start, args.end)
+    extracted_model = extract_partition(model, args.start, args.end)
 
     if osp.splitext(args.output_model)[-1] != '.onnx':
         args.output_model += '.onnx'
