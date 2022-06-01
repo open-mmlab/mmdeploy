@@ -1,6 +1,6 @@
 # Win10 下构建方式
 
-- [Windows 下构建方式](#windows-下构建方式)
+- [Win10 下构建方式](#win10-下构建方式)
   - [源码安装](#源码安装)
     - [安装构建和编译工具链](#安装构建和编译工具链)
     - [安装依赖包](#安装依赖包)
@@ -153,13 +153,14 @@ $env:path = "$env:ONNXRUNTIME_DIR\lib;" + $env:path
     <td>TensorRT <br> </td>
     <td>
     1. 登录 <a href="https://www.nvidia.com/">NVIDIA 官网</a>，从<a href="https://developer.nvidia.com/nvidia-tensorrt-download">这里</a>选取并下载 TensorRT tar 包。要保证它和您机器的 CPU 架构以及 CUDA 版本是匹配的。您可以参考这份 <a href="https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing-tar">指南</a> 安装 TensorRT。<br>
-    2. 这里也有一份 TensorRT 8.2 GA Update 2 在 Windows x86_64 和 CUDA 11.x 下的安装示例，供您参考。首先，点击<a href="https://developer.nvidia.com/compute/machine-learning/tensorrt/secure/8.2.3.0/zip/TensorRT-8.2.3.0.Windows10.x86_64.cuda-11.4.cudnn8.2.zip">此处</a>下载 CUDA 11.x TensorRT 8.2.3.0。然后，根据如下命令，安装并配置 TensorRT。
+    2. 这里也有一份 TensorRT 8.2 GA Update 2 在 Windows x86_64 和 CUDA 11.x 下的安装示例，供您参考。首先，点击<a href="https://developer.nvidia.com/compute/machine-learning/tensorrt/secure/8.2.3.0/zip/TensorRT-8.2.3.0.Windows10.x86_64.cuda-11.4.cudnn8.2.zip">此处</a>下载 CUDA 11.x TensorRT 8.2.3.0。然后，根据如下命令，安装并配置 TensorRT 以及相关依赖。
 <pre><code>
 cd \the\path\of\tensorrt\zip\file
 Expand-Archive TensorRT-8.2.3.0.Windows10.x86_64.cuda-11.4.cudnn8.2.zip .
 pip install $env:TENSORRT_DIR\python\tensorrt-8.2.3.0-cp37-none-win_amd64.whl
 $env:TENSORRT_DIR = "$pwd\TensorRT-8.2.3.0"
 $env:path = "$env:TENSORRT_DIR\lib;" + $env:path
+pip install pycuda
 </code></pre>
    </td>
   </tr>

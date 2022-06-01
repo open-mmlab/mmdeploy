@@ -163,13 +163,14 @@ $env:path = "$env:ONNXRUNTIME_DIR\lib;" + $env:path
     <td>TensorRT <br> </td>
     <td>
    1. Login <a href="https://www.nvidia.com/">NVIDIA</a> and download the TensorRT tar file that matches the CPU architecture and CUDA version you are using from <a href="https://developer.nvidia.com/nvidia-tensorrt-download">here</a>. Follow the <a href="https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing-tar">guide</a> to install TensorRT. <br>
-   2. Here is an example of installing TensorRT 8.2 GA Update 2 for Windows x86_64 and CUDA 11.x that you can refer to. <br> First of all, click <a href="https://developer.nvidia.com/compute/machine-learning/tensorrt/secure/8.2.3.0/zip/TensorRT-8.2.3.0.Windows10.x86_64.cuda-11.4.cudnn8.2.zip">here</a> to download CUDA 11.x TensorRT 8.2.3.0 and then install it like below:
+   2. Here is an example of installing TensorRT 8.2 GA Update 2 for Windows x86_64 and CUDA 11.x that you can refer to. <br> First of all, click <a href="https://developer.nvidia.com/compute/machine-learning/tensorrt/secure/8.2.3.0/zip/TensorRT-8.2.3.0.Windows10.x86_64.cuda-11.4.cudnn8.2.zip">here</a> to download CUDA 11.x TensorRT 8.2.3.0 and then install it and other dependency like below:
 <pre><code>
 cd \the\path\of\tensorrt\zip\file
 Expand-Archive TensorRT-8.2.3.0.Windows10.x86_64.cuda-11.4.cudnn8.2.zip .
 pip install $env:TENSORRT_DIR\python\tensorrt-8.2.3.0-cp37-none-win_amd64.whl
 $env:TENSORRT_DIR = "$pwd\TensorRT-8.2.3.0"
 $env:path = "$env:TENSORRT_DIR\lib;" + $env:path
+pip install pycuda
 </code></pre>
    </td>
   </tr>

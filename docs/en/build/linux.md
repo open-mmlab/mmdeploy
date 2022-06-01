@@ -180,13 +180,14 @@ export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
     <td>TensorRT <br> </td>
     <td>
    1. Login <a href="https://www.nvidia.com/">NVIDIA</a> and download the TensorRT tar file that matches the CPU architecture and CUDA version you are using from <a href="https://developer.nvidia.com/nvidia-tensorrt-download">here</a>. Follow the <a href="https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing-tar">guide</a> to install TensorRT. <br>
-   2. Here is an example of installing TensorRT 8.2 GA Update 2 for Linux x86_64 and CUDA 11.x that you can refer to. First of all, click <a href="https://developer.nvidia.com/compute/machine-learning/tensorrt/secure/8.2.3.0/tars/tensorrt-8.2.3.0.linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz">here</a> to download CUDA 11.x TensorRT 8.2.3.0 and then install it like below:
+   2. Here is an example of installing TensorRT 8.2 GA Update 2 for Linux x86_64 and CUDA 11.x that you can refer to. First of all, click <a href="https://developer.nvidia.com/compute/machine-learning/tensorrt/secure/8.2.3.0/tars/tensorrt-8.2.3.0.linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz">here</a> to download CUDA 11.x TensorRT 8.2.3.0 and then install it and other dependency like below:
 <pre><code>
 cd /the/path/of/tensorrt/tar/gz/file
 tar -zxvf TensorRT-8.2.3.0.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz
 pip install TensorRT-8.2.3.0/python/tensorrt-8.2.3.0-cp37-none-linux_x86_64.whl
 export TENSORRT_DIR=$(pwd)/TensorRT-8.2.3.0
 export LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
+pip install pycuda
 </code></pre>
    </td>
   </tr>
