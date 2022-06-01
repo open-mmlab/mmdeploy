@@ -4,11 +4,11 @@ import torch.nn as nn
 from mmseg.ops import resize
 
 from mmdeploy.core import FUNCTION_REWRITER
-from mmdeploy.utils import Backend, get_backend, is_dynamic_shape
+from mmdeploy.utils import IR, get_root_logger, is_dynamic_shape
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmseg.models.decode_heads.psp_head.PPM.forward')
+    func_name='mmseg.models.decode_heads.psp_head.PPM.forward', ir=IR.ONNX)
 def ppm__forward(ctx, self, x):
     """Rewrite `forward` for default backend.
 
@@ -25,14 +25,6 @@ def ppm__forward(ctx, self, x):
     """
     deploy_cfg = ctx.cfg
     is_dynamic_flag = is_dynamic_shape(deploy_cfg)
-    # backends that support adaptive pooling
-    support_backends = [Backend.TORCHSCRIPT]
-    backend = get_backend(deploy_cfg)
-    if is_dynamic_flag:
-        assert backend in support_backends, \
-            f'{backend} does not support dynamic shape'
-        return ctx.origin_func(x)
-
     # get origin input shape as tensor to support onnx dynamic shape
     size = x.shape[2:]
     if not is_dynamic_flag:
@@ -42,6 +34,10 @@ def ppm__forward(ctx, self, x):
     for ppm in self:
         if isinstance(ppm[0], nn.AdaptiveAvgPool2d) and \
                 ppm[0].output_size != 1:
+            if is_dynamic_flag:
+                logger = get_root_logger()
+                logger.warning('`AdaptiveAvgPool2d` would be '
+                               'replaced to `AvgPool2d` explicitly')
             # replace AdaptiveAvgPool2d with AvgPool2d explicitly
             output_size = 2 * [ppm[0].output_size]
             k = [int(size[i] / output_size[i]) for i in range(0, len(size))]
