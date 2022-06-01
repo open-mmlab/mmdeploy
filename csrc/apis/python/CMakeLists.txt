@@ -2,13 +2,17 @@
 cmake_minimum_required(VERSION 3.14)
 project(mmdeploy_python)
 
-if (NOT TARGET pybind11)
+set(MMDEPLOY_PYTHON_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/common.cpp)
+
+set(CMAKE_CXX_STANDARD 17)
+
+if (${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
+    add_subdirectory(${CMAKE_SOURCE_DIR}/../../../third_party/pybind11
+            ${CMAKE_CURRENT_BINARY_DIR}/pybind11)
+    find_package(MMDeploy REQUIRED)
+elseif (NOT TARGET pybind11)
     add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/pybind11 pybind11)
 endif ()
-
-set(MMDEPLOY_PYTHON_SRCS
-        ${CMAKE_CURRENT_SOURCE_DIR}/common.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/executor.cpp)
 
 macro(mmdeploy_python_add_module name)
     if (TARGET mmdeploy_${name})
@@ -32,5 +36,5 @@ mmdeploy_load_dynamic(${PROJECT_NAME} MMDeployDynamicModules)
 target_link_libraries(${PROJECT_NAME} PRIVATE MMDeployLibs)
 
 target_include_directories(${PROJECT_NAME} PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${CMAKE_CURRENT_SOURCE_DIR}/../..)
+        ${CMAKE_CURRENT_SOURCE_DIR}/..
+        ${CMAKE_CURRENT_SOURCE_DIR})

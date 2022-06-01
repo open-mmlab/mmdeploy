@@ -5,7 +5,7 @@
 
 #include <stdexcept>
 
-#include "apis/c/common.h"
+#include "c/common.h"
 #include "pybind11/numpy.h"
 #include "pybind11/pybind11.h"
 #include "pybind11/stl.h"
