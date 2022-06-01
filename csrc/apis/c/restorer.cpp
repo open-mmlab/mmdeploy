@@ -2,18 +2,20 @@
 
 #include "restorer.h"
 
+#include "apis/c/common_internal.h"
+#include "apis/c/executor_internal.h"
+#include "apis/c/handle.h"
+#include "apis/c/pipeline.h"
 #include "codebase/mmedit/mmedit.h"
 #include "core/device.h"
 #include "core/graph.h"
-#include "core/mat.h"
 #include "core/utils/formatter.h"
-#include "handle.h"
 
 using namespace mmdeploy;
 
 namespace {
 
-const Value &config_template() {
+const Value& config_template() {
   // clang-format off
   static Value v {
     {
@@ -38,62 +40,96 @@ const Value &config_template() {
   return v;
 }
 
-template <class ModelType>
-int mmdeploy_restorer_create_impl(ModelType &&m, const char *device_name, int device_id,
-                                  mm_handle_t *handle) {
-  try {
-    auto config = config_template();
-    config["pipeline"]["tasks"][0]["params"]["model"] = std::forward<ModelType>(m);
+int mmdeploy_restorer_create_impl(mm_model_t model, const char* device_name, int device_id,
+                                  mmdeploy_exec_info_t exec_info, mm_handle_t* handle) {
+  auto config = config_template();
+  config["pipeline"]["tasks"][0]["params"]["model"] = *static_cast<Model*>(model);
 
-    auto restorer = std::make_unique<Handle>(device_name, device_id, std::move(config));
-
-    *handle = restorer.release();
-    return MM_SUCCESS;
-
-  } catch (const std::exception &e) {
-    MMDEPLOY_ERROR("exception caught: {}", e.what());
-  } catch (...) {
-    MMDEPLOY_ERROR("unknown exception caught");
-  }
-  return MM_E_FAIL;
+  return mmdeploy_pipeline_create(Cast(&config), device_name, device_id, exec_info, handle);
 }
 
 }  // namespace
 
-int mmdeploy_restorer_create(mm_model_t model, const char *device_name, int device_id,
-                             mm_handle_t *handle) {
-  return mmdeploy_restorer_create_impl(*static_cast<Model *>(model), device_name, device_id,
-                                       handle);
+int mmdeploy_restorer_create(mm_model_t model, const char* device_name, int device_id,
+                             mm_handle_t* handle) {
+  return mmdeploy_restorer_create_impl(model, device_name, device_id, nullptr, handle);
 }
 
-int mmdeploy_restorer_create_by_path(const char *model_path, const char *device_name, int device_id,
-                                     mm_handle_t *handle) {
-  return mmdeploy_restorer_create_impl(model_path, device_name, device_id, handle);
+int mmdeploy_restorer_create_by_path(const char* model_path, const char* device_name, int device_id,
+                                     mm_handle_t* handle) {
+  mm_model_t model{};
+  if (auto ec = mmdeploy_model_create_by_path(model_path, &model)) {
+    return ec;
+  }
+  auto ec = mmdeploy_restorer_create_impl(model, device_name, device_id, nullptr, handle);
+  mmdeploy_model_destroy(model);
+  return ec;
 }
 
-int mmdeploy_restorer_apply(mm_handle_t handle, const mm_mat_t *images, int count,
-                            mm_mat_t **results) {
-  if (handle == nullptr || images == nullptr || count == 0 || results == nullptr) {
+int mmdeploy_restorer_apply(mm_handle_t handle, const mm_mat_t* images, int count,
+                            mm_mat_t** results) {
+  wrapped<mmdeploy_value_t> input;
+  if (auto ec = mmdeploy_restorer_create_input(images, count, input.ptr())) {
+    return ec;
+  }
+  wrapped<mmdeploy_value_t> output;
+  if (auto ec = mmdeploy_restorer_apply_v2(handle, input, output.ptr())) {
+    return ec;
+  }
+  if (auto ec = mmdeploy_restorer_get_result(output, results)) {
+    return ec;
+  }
+  return MM_SUCCESS;
+}
+
+void mmdeploy_restorer_release_result(mm_mat_t* results, int count) {
+  for (int i = 0; i < count; ++i) {
+    delete[] results[i].data;
+  }
+  delete[] results;
+}
+
+void mmdeploy_restorer_destroy(mm_handle_t handle) { delete static_cast<AsyncHandle*>(handle); }
+
+int mmdeploy_restorer_create_v2(mm_model_t model, const char* device_name, int device_id,
+                                mmdeploy_exec_info_t exec_info, mm_handle_t* handle) {
+  return mmdeploy_restorer_create_impl(model, device_name, device_id, exec_info, handle);
+}
+
+int mmdeploy_restorer_create_input(const mm_mat_t* mats, int mat_count, mmdeploy_value_t* value) {
+  return mmdeploy_common_create_input(mats, mat_count, value);
+}
+
+int mmdeploy_restorer_apply_v2(mm_handle_t handle, mmdeploy_value_t input,
+                               mmdeploy_value_t* output) {
+  return mmdeploy_pipeline_apply(handle, input, output);
+}
+
+int mmdeploy_restorer_apply_async(mm_handle_t handle, mmdeploy_sender_t input,
+                                  mmdeploy_sender_t* output) {
+  return mmdeploy_pipeline_apply_async(handle, input, output);
+}
+
+int mmdeploy_restorer_get_result(mmdeploy_value_t output, mm_mat_t** results) {
+  if (!output || !results) {
     return MM_E_INVALID_ARG;
   }
   try {
-    auto restorer = static_cast<Handle *>(handle);
-    Value input{Value::kArray};
-    for (int i = 0; i < count; ++i) {
-      Mat _mat{images[i].height,         images[i].width, PixelFormat(images[i].format),
-               DataType(images[i].type), images[i].data,  Device{"cpu"}};
-      input.front().push_back({{"ori_img", _mat}});
-    }
-    auto output = restorer->Run(std::move(input)).value().front();
-    auto restorer_output = from_value<std::vector<mmedit::RestorerOutput>>(output);
+    const Value& value = Cast(output)->front();
 
-    auto deleter = [&](mm_mat_t *p) { mmdeploy_restorer_release_result(p, count); };
+    auto restorer_output = from_value<std::vector<mmedit::RestorerOutput>>(value);
+
+    auto count = restorer_output.size();
+
+    auto deleter = [&](mm_mat_t* p) {
+      mmdeploy_restorer_release_result(p, static_cast<int>(count));
+    };
 
     std::unique_ptr<mm_mat_t[], decltype(deleter)> _results(new mm_mat_t[count]{}, deleter);
 
     for (int i = 0; i < count; ++i) {
       auto upscale = restorer_output[i];
-      auto &res = _results[i];
+      auto& res = _results[i];
       res.data = new uint8_t[upscale.byte_size()];
       memcpy(res.data, upscale.data<uint8_t>(), upscale.byte_size());
       res.format = (mm_pixel_format_t)upscale.pixel_format();
@@ -104,19 +140,10 @@ int mmdeploy_restorer_apply(mm_handle_t handle, const mm_mat_t *images, int coun
     }
     *results = _results.release();
     return MM_SUCCESS;
-  } catch (const std::exception &e) {
-    MMDEPLOY_ERROR("exception caught: {}", e.what());
+  } catch (const std::exception& e) {
+    MMDEPLOY_ERROR("unhandled exception: {}", e.what());
   } catch (...) {
     MMDEPLOY_ERROR("unknown exception caught");
   }
   return MM_E_FAIL;
 }
-
-void mmdeploy_restorer_release_result(mm_mat_t *results, int count) {
-  for (int i = 0; i < count; ++i) {
-    delete[] results[i].data;
-  }
-  delete[] results;
-}
-
-void mmdeploy_restorer_destroy(mm_handle_t handle) { delete static_cast<Handle *>(handle); }

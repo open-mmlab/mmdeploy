@@ -9,22 +9,24 @@ endif()
 
 find_path(
     TENSORRT_INCLUDE_DIR NvInfer.h
-    HINTS ${TENSORRT_DIR}
+    HINTS ${TENSORRT_DIR} ${CUDA_TOOLKIT_ROOT_DIR}
     PATH_SUFFIXES include)
 
 if (NOT TENSORRT_INCLUDE_DIR)
-    message(FATAL_ERROR "Cannot find TensorRT header NvInfer.h, "
-        "please check if the path is correct")
+    message(FATAL_ERROR "Cannot find TensorRT header NvInfer.h "
+        "in TENSORRT_DIR: ${TENSORRT_DIR} or in CUDA_TOOLKIT_ROOT_DIR: "
+        "${CUDA_TOOLKIT_ROOT_DIR}, please check if the path is correct.")
 endif ()
 
 set(__TENSORRT_LIB_COMPONENTS nvinfer;nvinfer_plugin)
 foreach(__component ${__TENSORRT_LIB_COMPONENTS})
     find_library(
         __component_path ${__component}
-        HINTS ${TENSORRT_DIR}
+        HINTS ${TENSORRT_DIR} ${CUDA_TOOLKIT_ROOT_DIR}
         PATH_SUFFIXES lib lib64 lib/x64)
     if (NOT __component_path)
-        message(FATAL_ERROR "Cannot find TensorRT lib ${__component}, "
+        message(FATAL_ERROR "Cannot find TensorRT lib ${__component} in "
+            "TENSORRT_DIR: ${TENSORRT_DIR} or CUDA_TOOLKIT_ROOT_DIR: ${CUDA_TOOLKIT_ROOT_DIR}, "
             "please check if the path is correct")
     endif()
 

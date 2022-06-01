@@ -84,4 +84,18 @@ typedef struct mm_pointf_t {
   float y;
 } mm_pointf_t;
 
+typedef struct mmdeploy_value* mmdeploy_value_t;
+
+#if __cplusplus
+extern "C" {
+#endif
+
+MMDEPLOY_API mmdeploy_value_t mmdeploy_value_copy(mmdeploy_value_t input);
+
+MMDEPLOY_API int mmdeploy_value_destroy(mmdeploy_value_t value);
+
+#if __cplusplus
+}
+#endif
+
 #endif  // MMDEPLOY_COMMON_H

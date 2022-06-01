@@ -9,6 +9,7 @@
 #define MMDEPLOY_SRC_APIS_C_RESTORER_H_
 
 #include "common.h"
+#include "executor.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -62,6 +63,21 @@ MMDEPLOY_API void mmdeploy_restorer_release_result(mm_mat_t* results, int count)
  * @param[in] handle handle of restorer created by \ref mmdeploy_restorer_create_by_path
  */
 MMDEPLOY_API void mmdeploy_restorer_destroy(mm_handle_t handle);
+
+MMDEPLOY_API int mmdeploy_restorer_create_v2(mm_model_t model, const char* device_name,
+                                             int device_id, mmdeploy_exec_info_t exec_info,
+                                             mm_handle_t* handle);
+
+MMDEPLOY_API int mmdeploy_restorer_create_input(const mm_mat_t* mats, int mat_count,
+                                                mmdeploy_value_t* value);
+
+MMDEPLOY_API int mmdeploy_restorer_apply_v2(mm_handle_t handle, mmdeploy_value_t input,
+                                            mmdeploy_value_t* output);
+
+MMDEPLOY_API int mmdeploy_restorer_apply_async(mm_handle_t handle, mmdeploy_sender_t input,
+                                               mmdeploy_sender_t* output);
+
+MMDEPLOY_API int mmdeploy_restorer_get_result(mmdeploy_value_t output, mm_mat_t** results);
 
 #ifdef __cplusplus
 }

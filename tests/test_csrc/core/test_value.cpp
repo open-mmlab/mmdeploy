@@ -349,3 +349,18 @@ TEST_CASE("test ctor of value", "[value]") {
   static_assert(!std::is_constructible<Value, void (*)(int)>::value, "");
   static_assert(!std::is_constructible<Value, int*>::value, "");
 }
+
+//
+//TEST_CASE("test logger", "[logger]") {
+//  MMDEPLOY_INFO("{}", DataType::kFLOAT);
+//  MMDEPLOY_INFO("{}", DataType::kHALF);
+//  MMDEPLOY_INFO("{}", DataType::kINT8);
+//  MMDEPLOY_INFO("{}", DataType::kINT32);
+//  MMDEPLOY_INFO("{}", DataType::kINT64);
+//  MMDEPLOY_INFO("{}", PixelFormat::kBGR);
+//  MMDEPLOY_INFO("{}", PixelFormat::kRGB);
+//  MMDEPLOY_INFO("{}", PixelFormat::kGRAYSCALE);
+//  MMDEPLOY_INFO("{}", PixelFormat::kNV12);
+//  MMDEPLOY_INFO("{}", PixelFormat::kNV21);
+//  MMDEPLOY_INFO("{}", PixelFormat::kBGRA);
+//}

@@ -20,6 +20,12 @@ std::map<std::string, void (*)(py::module &)> &gPythonBindings();
 
 mm_mat_t GetMat(const PyImage &img);
 
+class Value;
+
+py::object ConvertToPyObject(const Value &value);
+
+Value ConvertToValue(const py::object &obj);
+
 }  // namespace mmdeploy
 
 #endif  // MMDEPLOY_CSRC_APIS_PYTHON_COMMON_H_

@@ -4,13 +4,16 @@
 
 #include <numeric>
 
+#include "apis/c/common_internal.h"
+#include "apis/c/executor_internal.h"
+#include "apis/c/model.h"
+#include "apis/c/pipeline.h"
 #include "archive/value_archive.h"
 #include "codebase/mmdet/mmdet.h"
 #include "core/device.h"
-#include "core/graph.h"
-#include "core/mat.h"
+#include "core/model.h"
 #include "core/utils/formatter.h"
-#include "handle.h"
+#include "core/value.h"
 
 using namespace std;
 using namespace mmdeploy;
@@ -42,65 +45,82 @@ Value& config_template() {
   return v;
 }
 
-template <class ModelType>
-int mmdeploy_detector_create_impl(ModelType&& m, const char* device_name, int device_id,
-                                  mm_handle_t* handle) {
-  try {
-    auto value = config_template();
-    value["pipeline"]["tasks"][0]["params"]["model"] = std::forward<ModelType>(m);
+int mmdeploy_detector_create_impl(mm_model_t model, const char* device_name, int device_id,
+                                  mmdeploy_exec_info_t exec_info, mm_handle_t* handle) {
+  auto config = config_template();
+  config["pipeline"]["tasks"][0]["params"]["model"] = *static_cast<Model*>(model);
 
-    auto detector = std::make_unique<Handle>(device_name, device_id, std::move(value));
-
-    *handle = detector.release();
-    return MM_SUCCESS;
-
-  } catch (const std::exception& e) {
-    MMDEPLOY_ERROR("exception caught: {}", e.what());
-  } catch (...) {
-    MMDEPLOY_ERROR("unknown exception caught");
-  }
-  return MM_E_FAIL;
+  return mmdeploy_pipeline_create(Cast(&config), device_name, device_id, exec_info, handle);
 }
 
 }  // namespace
 
 int mmdeploy_detector_create(mm_model_t model, const char* device_name, int device_id,
                              mm_handle_t* handle) {
-  return mmdeploy_detector_create_impl(*static_cast<Model*>(model), device_name, device_id, handle);
+  return mmdeploy_detector_create_impl(model, device_name, device_id, nullptr, handle);
+}
+
+int mmdeploy_detector_create_v2(mm_model_t model, const char* device_name, int device_id,
+                                mmdeploy_exec_info_t exec_info, mm_handle_t* handle) {
+  return mmdeploy_detector_create_impl(model, device_name, device_id, exec_info, handle);
 }
 
 int mmdeploy_detector_create_by_path(const char* model_path, const char* device_name, int device_id,
                                      mm_handle_t* handle) {
-  return mmdeploy_detector_create_impl(model_path, device_name, device_id, handle);
+  mm_model_t model{};
+
+  if (auto ec = mmdeploy_model_create_by_path(model_path, &model)) {
+    return ec;
+  }
+  auto ec = mmdeploy_detector_create_impl(model, device_name, device_id, nullptr, handle);
+  mmdeploy_model_destroy(model);
+  return ec;
+}
+
+int mmdeploy_detector_create_input(const mm_mat_t* mats, int mat_count, mmdeploy_value_t* input) {
+  return mmdeploy_common_create_input(mats, mat_count, input);
 }
 
 int mmdeploy_detector_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
                             mm_detect_t** results, int** result_count) {
-  if (handle == nullptr || mats == nullptr || mat_count == 0) {
+  wrapped<mmdeploy_value_t> input;
+  if (auto ec = mmdeploy_detector_create_input(mats, mat_count, input.ptr())) {
+    return ec;
+  }
+  wrapped<mmdeploy_value_t> output;
+  if (auto ec = mmdeploy_detector_apply_v2(handle, input, output.ptr())) {
+    return ec;
+  }
+  if (auto ec = mmdeploy_detector_get_result(output, results, result_count)) {
+    return ec;
+  }
+  return MM_SUCCESS;
+}
+
+int mmdeploy_detector_apply_v2(mm_handle_t handle, mmdeploy_value_t input,
+                               mmdeploy_value_t* output) {
+  return mmdeploy_pipeline_apply(handle, input, output);
+}
+
+int mmdeploy_detector_apply_async(mm_handle_t handle, mmdeploy_sender_t input,
+                                  mmdeploy_sender_t* output) {
+  return mmdeploy_pipeline_apply_async(handle, input, output);
+}
+
+int mmdeploy_detector_get_result(mmdeploy_value_t output, mm_detect_t** results,
+                                 int** result_count) {
+  if (!output || !results || !result_count) {
     return MM_E_INVALID_ARG;
   }
-
   try {
-    auto detector = static_cast<Handle*>(handle);
-
-    Value input{Value::kArray};
-    for (int i = 0; i < mat_count; ++i) {
-      mmdeploy::Mat _mat{mats[i].height,         mats[i].width, PixelFormat(mats[i].format),
-                         DataType(mats[i].type), mats[i].data,  Device{"cpu"}};
-      input.front().push_back({{"ori_img", _mat}});
-    }
-
-    auto output = detector->Run(std::move(input)).value().front();
-    MMDEPLOY_DEBUG("output: {}", output);
-
-    auto detector_outputs = from_value<vector<mmdet::DetectorOutput>>(output);
+    Value& value = Cast(output)->front();
+    auto detector_outputs = from_value<vector<mmdet::DetectorOutput>>(value);
 
     vector<int> _result_count;
-    _result_count.reserve(mat_count);
+    _result_count.reserve(detector_outputs.size());
     for (const auto& det_output : detector_outputs) {
       _result_count.push_back((int)det_output.detections.size());
     }
-
     auto total = std::accumulate(_result_count.begin(), _result_count.end(), 0);
 
     std::unique_ptr<int[]> result_count_data(new int[_result_count.size()]{});
@@ -108,7 +128,7 @@ int mmdeploy_detector_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_co
     std::copy(_result_count.begin(), _result_count.end(), result_count_data.get());
 
     auto deleter = [&](mm_detect_t* p) {
-      mmdeploy_detector_release_result(p, result_count_ptr, mat_count);
+      mmdeploy_detector_release_result(p, result_count_ptr, (int)detector_outputs.size());
     };
     std::unique_ptr<mm_detect_t[], decltype(deleter)> result_data(new mm_detect_t[total]{},
                                                                   deleter);
@@ -140,9 +160,8 @@ int mmdeploy_detector_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_co
     *results = result_data.release();
 
     return MM_SUCCESS;
-
   } catch (const std::exception& e) {
-    MMDEPLOY_ERROR("exception caught: {}", e.what());
+    MMDEPLOY_ERROR("unhandled exception: {}", e.what());
   } catch (...) {
     MMDEPLOY_ERROR("unknown exception caught");
   }
@@ -163,9 +182,4 @@ void mmdeploy_detector_release_result(mm_detect_t* results, const int* result_co
   delete[] result_count;
 }
 
-void mmdeploy_detector_destroy(mm_handle_t handle) {
-  if (handle != nullptr) {
-    auto detector = static_cast<Handle*>(handle);
-    delete detector;
-  }
-}
+void mmdeploy_detector_destroy(mm_handle_t handle) { mmdeploy_pipeline_destroy(handle); }

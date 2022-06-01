@@ -9,6 +9,7 @@
 #define MMDEPLOY_SRC_APIS_C_POSE_DETECTOR_H_
 
 #include "common.h"
+#include "executor.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -89,6 +90,23 @@ MMDEPLOY_API void mmdeploy_pose_detector_release_result(mm_pose_detect_t* result
  * mmdeploy_pose_detector_create_by_path or \ref mmdeploy_pose_detector_create
  */
 MMDEPLOY_API void mmdeploy_pose_detector_destroy(mm_handle_t handle);
+
+MMDEPLOY_API int mmdeploy_pose_detector_create_v2(mm_model_t model, const char* device_name,
+                                                  int device_id, mmdeploy_exec_info_t exec_info,
+                                                  mm_handle_t* handle);
+
+MMDEPLOY_API int mmdeploy_pose_detector_create_input(const mm_mat_t* mats, int mat_count,
+                                                     const mm_rect_t* bboxes, const int* bbox_count,
+                                                     mmdeploy_value_t* value);
+
+MMDEPLOY_API int mmdeploy_pose_detector_apply_v2(mm_handle_t handle, mmdeploy_value_t input,
+                                                 mmdeploy_value_t* output);
+
+MMDEPLOY_API int mmdeploy_pose_detector_apply_async(mm_handle_t handle, mmdeploy_sender_t input,
+                                                    mmdeploy_sender_t* output);
+
+MMDEPLOY_API int mmdeploy_pose_detector_get_result(mmdeploy_value_t output,
+                                                   mm_pose_detect_t** results);
 
 #ifdef __cplusplus
 }

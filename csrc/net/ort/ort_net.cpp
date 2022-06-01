@@ -23,6 +23,7 @@ static Result<DataType> ConvertElementType(ONNXTensorElementDataType type) {
     case ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT16:
       return DataType::kHALF;
     case ONNX_TENSOR_ELEMENT_DATA_TYPE_INT8:
+    case ONNX_TENSOR_ELEMENT_DATA_TYPE_BOOL:
       return DataType::kINT8;
     case ONNX_TENSOR_ELEMENT_DATA_TYPE_INT32:
       return DataType::kINT32;
