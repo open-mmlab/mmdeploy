@@ -1,62 +1,252 @@
-## 操作概述
+# 操作概述
 
-MMDeploy提供了一系列工具，帮助您更轻松的将OpenMMLab下的算法部署到各种设备与平台上。您可以使用我们设计的流程一“部”到位，也可以定制您自己的转换流程。这份指引将会向您展示MMDeploy的基本使用方式，并帮助您将 MMDeploy SDK 整合进您的应用。
+MMDeploy提供了一系列工具，帮助您更轻松的将OpenMMLab下的算法部署到各种设备与平台上。您可以使用我们设计的流程一“部”到位，也可以定制您自己的转换流程。这份指引将会向您展示MMDeploy的基本使用方式。
 
-### 编译安装
+## 简介
 
-首先我们需要根据[安装指南](./01-how-to-build/build_from_source.md)正确安装MMDeploy。**注意！** 不同推理后端的安装方式略有不同。可以根据下面的介绍选择最适合您的推理后端：
+MMDeploy 定义的模型部署流程，如下图所示：
+![deploy-pipeline](https://user-images.githubusercontent.com/4560679/171348377-3a5c774a-1096-49b0-b8f0-7fdddef4f8b7.png)
 
-- [ONNXRuntime](https://mmdeploy.readthedocs.io/en/latest/backends/onnxruntime.html): ONNX Runtime 是一个跨平台的机器学习训练推理加速器，通过图形优化和变换以及硬件加速器提供优秀的推理性能。<span style="color:red">拥有完善的对ONNX的支持</span>。
-- [TensorRT](https://mmdeploy.readthedocs.io/en/latest/backends/tensorrt.html): NVIDIA® TensorRT™ 是一个用于高性能深度学习推理的开发工具包（SDK）。借助Nvidia的设备特性，TensorRT可以优化模型的推理，提供更低的推理延迟以及更高的吞吐量。如果您希望将模型部署在<span style="color:red">NVIDIA硬件设备</span>上，那么TensorRT就是一个合适的选择。
-- [ncnn](https://mmdeploy.readthedocs.io/en/latest/backends/ncnn.html): ncnn 是一个<span style="color:red">为手机端极致优化</span>的高性能神经网络前向计算框架。ncnn 从设计之初深刻考虑手机端的部署和使用。无第三方依赖，跨平台。基于 ncnn，开发者能够将深度学习算法轻松移植到手机端高效执行，开发出人工智能 APP，将 AI 带到您的指尖。
-- [PPLNN](https://mmdeploy.readthedocs.io/en/latest/backends/pplnn.html): PPLNN是一个为高效AI推理所开发的高性能深度学习推理引擎。可以用于各种ONNX模型的推理。并且<span style="color:red">对OpenMMLab有非常强的支持</span>。
-- [OpenVINO](https://mmdeploy.readthedocs.io/en/latest/backends/openvino.html): OpenVINO™ 是一个为优化与部署AI推理开发的开源工具集。该工具集<span style="color:red">可无缝集成到 Intel 硬件平台</span>，包括最新的神经网络加速芯片，Intel计算棒，边缘设备等。
 
-选择最适合您的推理后端，点击对应的连接查看具体安装细节
+### 模型转换（Model Converter）
 
-### 模型转换
+模型转换的主要功能是把输入的模型格式，转换为目标设备的推理引擎所要求的模型格式。
+目前，MMDeploy 可以把 PyTorch 模型转换为 ONNX、TorchScript 等和设备无关的 IR 模型。也可以将 ONNX 模型转换为推理后端模型。两者相结合，可实现端到端的模型转换，也就是从训练端到生产端。
 
-一旦您完成了MMDeploy的安装，就可以用一条指令轻松的将OpenMMLab的PyTorch模型转换成推理后端支持的格式！以 [MMDetection](https://github.com/open-mmlab/mmdetection) 中的 `Faster-RCNN` 到 `TensorRT` 的转换为例：
+### MMDeploy 模型（MMDeploy Model）
 
-```bash
-# 本例假设 MMDeploy 所在目录为 ${MMDEPLOY_DIR}， MMDetection 所在目录为 ${MMDET_DIR}
-# 如果您不知道具体的安装位置，可以在终端通过命令 `pip show mmdeploy` 和 `pip show mmdet` 查看
+模型转换结果的集合。它不仅包括后端模型，还包括模型的元信息。这些信息将用于推理 SDK 中。
 
+### 推理 SDK（Inference SDK）
+
+封装了模型的前处理、网络推理和后处理过程。对外提供多语言的模型推理接口。
+
+## 准备工作
+
+对于端到端的模型转换和推理，需要按照如下步骤配置环境：
+
+1. 创建 conda 环境，并安装 PyTorch。因为 Model Converter 的 torch2onnx 功能依赖它
+2. 安装 mmcv-full
+3. 安装 mmdeploy。有以下两种方式：
+   - 方式 1：安装预编译包。根据目标软硬件平台，从[这里]()下载并安装 MMDeploy 预编译包
+   - 方式 2：[源码安装](01-how-to-build/build_from_source.md)
+4. 安装预编译包要求的推理后端
+
+    以 Ubuntu 20.04 NVIDIA GPU（CUDA Toolkit 11.1）为例，我们可以通过以下脚本完成准备工作。
+
+    ```shell
+    PYTHON_VERSION=3.7
+    PYTORCH_VERSION=1.8.0
+    TORCHVISION_VERSION=0.9.0
+    CUDA_VERSION=11.1
+    MMCV_VERSION=1.5.0
+    MMDEPLOY_VERSION=0.5.0
+    TENSORRT_VERSION=8.2.3
+
+    PYTHON_STRING="${PYTHON_VERSION/./""}"
+    CUDA_STRING="${CUDA_VERSION/./""}"
+
+    # 1. 创建 conda 环境
+    conda create -n mmdeploy python=${PYTHON_VERSION} -y
+    conda activate mmdeploy
+
+    # 2. 安装 PyTorch
+    conda install pytorch==${PYTORCH_VERSION} torchvision==${TORCHVISION_VERSION} cudatoolkit=${CUDA_VERSION} -c pytorch -c conda-forge
+
+    # 3. 安装 mmcv-full
+    python -m pip install mmcv-full==${MMCV_VERSION} -f https://download.openmmlab.com/mmcv/dist/cu${CUDA_STRING}/torch${PYTORCH_VERSION}/index.html
+
+    # 4. 安装 mmdeploy 预编译包
+    # wget ****
+    tar -zxvf mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-cuda${CUDA_VERSION}-tensorrt${TENSORRT_VERSION}.tar.gz
+    cd mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-cuda${CUDA_VERSION}-tensorrt${TENSORRT_VERSION}
+    python -m pip install dist/mmdeploy-*-py${PYTHON_STRING}*.whl
+    python -m pip install sdk/python/mmdeploy_python-*-cp${PYTHON_STRING}*.whl
+    export LD_LIBRARY_PATH=$(pwd)/sdk/lib:$LD_LIBRARY_PATH
+    cd ..
+
+    # 5. 安装预编译包要求的推理后端，以及其他依赖包
+    # !!! 从 NVIDIA 官网下载 tensorrt
+    # cd /the/path/of/tensorrt/tar/gz/file
+    tar -zxvf TensorRT-${TENSORRT_VERSION}*.tar.gz
+    python -m pip install TensorRT-${TENSORRT_VERSION}*/python/tensorrt-*-cp${PYTHON_STRING}*.whl
+    export TENSORRT_DIR=$(pwd)/TensorRT-${TENSORRT_VERSION}*
+
+    # !!! 从 NVIDIA 官网下载与 cuda toolkit，tensorrt 匹配的 cudnn
+    # cd /the/path/of/cudnn/tgz/file
+    tar -zxvf cudnn-11.3-linux-x64-v8.2.1.32.tgz
+    export CUDNN_DIR=$(pwd)/cuda
+    export LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
+    ```
+
+在接下来的章节中，我们均以此环境为基础，演示 MMDeploy 的功能。
+
+**如果 MMDeploy 没有您所需要的目标软硬件平台的预编译包，请参考[源码安装文档](01-how-to-build/build_from_source.md)正确安装和配置**
+
+## 模型转换
+
+在准备工作就绪后，我们可以使用 MMDeploy 中的工具 `deploy.py`，将 OpenMMLab 的 PyTorch 模型转换成推理后端支持的格式。
+以 [MMDetection](https://github.com/open-mmlab/mmdetection) 中的 `Faster-RCNN` 为例，我们可以使用如下命令，将 PyTorch 模型转换成可部署在 NVIDIA GPU 上的 TenorRT 模型：
+
+```shell
+# 克隆 mmdeploy 仓库。转换时，需要使用 mmdeploy 仓库中的配置文件，建立转换流水线
+git clone --recursive https://github.com/open-mmlab/mmdeploy.git
+python -m pip install mmdeploy/requirements/runtime.txt
+export MMDEPLOY_DIR=$(pwd)/mmdeploy
+
+# 克隆 mmdetection 仓库。转换时，需要使用 mmdetection 仓库中的模型配置文件，构建 PyTorch nn module
+python -m pip install mmdet==2.24.0
+git clone https://github.com/open-mmlab/mmdetection.git
+export MMDET_DIR=$(pwd)/mmdetection
+
+# 下载 Faster R-CNN 模型权重
+export CHECKPOINT_DIR=$(pwd)/checkpoints
+wget -P ${CHECKPOINT_DIR} https://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/faster_rcnn_r50_fpn_1x_coco/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth
+
+# 执行转换命令，实现端到端的转换
 python ${MMDEPLOY_DIR}/tools/deploy.py \
     ${MMDEPLOY_DIR}/configs/mmdet/detection/detection_tensorrt_dynamic-320x320-1344x1344.py \
     ${MMDET_DIR}/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py \
     ${CHECKPOINT_DIR}/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth \
-    ${INPUT_IMG} \
-    --work-dir ${WORK_DIR} \
+    ${MMDET_DIR}/demo/demo.jpg \
+    --work-dir ${MMDEPLOY_DIR}/mmdeploy_model/faster-rcnn \
     --device cuda:0 \
     --dump-info
 ```
 
-`${MMDEPLOY_DIR}/tools/deploy.py` 是一个方便模型转换的工具。可以阅读 [如何转换模型](./02-how-to-run/convert_model.md) 了解更多细节。转换后的模型以及一些其他的信息将会被保存在 `${WORK_DIR}` 中。MMDeploy SDK 可以使用这些信息进行模型推理。
-
-`detection_tensorrt_dynamic-320x320-1344x1344.py` 是一个包含所有转换需要的可配置参数的配置文件。该文件的命名遵循如下规则：
+`${MMDEPLOY_DIR}/tools/deploy.py` 是一个方便模型转换的工具。可以阅读 [如何转换模型](./02-how-to-run/convert_model.md) 了解更多细节。
+`detection_tensorrt_dynamic-320x320-1344x1344.py` 是一个参数配置文件。该文件的命名遵循如下规则：
 
 ```bash
 <任务名>_<推理后端>-[后端特性]_<动态模型支持>.py
 ```
 
-可以很容易的通过文件名来确定最适合的那个配置文件。如果您希望定制自己的转换配置，可以修改配置文件中的具体条目。我们提供了 [如何编写配置文件](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_write_config.html) 来指导您如何进行编辑。
+可以很容易的通过文件名来确定最适合的那个配置文件。如果您希望定制自己的转换配置，可以参考[如何编写配置文件](./02-how-to-run/write_config.md)修改参数。
 
-### 模型推理
+## 模型推理
 
-得到了转换后的模型之后，就可以使用推理后端提供的API来进行推理。也许您想绕过API的学习与开发，确认下转换后的模型效果。我们提供了对这些API的统一封装：
+### 使用推理后端 API
 
+因为 MMDeploy 拥有自定义算子，所以在使用后端 API 推理前，需要先加载 MMDeploy 自定义算子库：
+
+```shell
+```
+
+### 使用 Model Converter 的推理 API
+
+Model Converter 对推理后端的 API 进行了统一封装：
 ```python
 from mmdeploy.apis import inference_model
 
 result = inference_model(model_cfg, deploy_cfg, backend_files, img=img, device=device)
 ```
 
-`inference_model`会创建一个对后端模型的封装，通过该封装进行推理。推理的结果会保持与OpenMMLab中原模型同样的格式。
+`inference_model`会创建一个对后端模型的封装，通过该封装进行推理。推理的结果会保持与 OpenMMLab 中原模型同样的格式。
 
-### 模型评估
+### 使用 MMDeploy SDK API
 
-转换后的模型是否会带来一些精度损失？推理后端是否为模型带来效率提升？我们提供了工具来帮助完成验证与评估工作。以TensorRT的Faster-RCNN模型为例：
+以上文中转出的 Faster R-CNN TensorRT 模型为例，接下来的章节将介绍如何使用 SDK 的 FFI 进行模型推理。
+
+#### C API
+
+使用 C API 进行模型推理的流程符合下面的模式：
+
+创建推理句柄 -> 读取图像 -> 应用句柄进行推理 -> 处理推理结果 -> 销毁结果 -> 销毁推理句柄
+
+我们以检测器（mmdeploy/demo/csrc/object_detection.cpp）为例，来说明这个流程是如何实现的：
+
+```C++
+
+#include <opencv2/imgcodecs/imgcodecs.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include "detector.h"
+
+int main() {
+  const char* device_name = "cuda";
+  int device_id = 0;
+   // MMDeploy Model directory
+  const char* model_path = "mmdeploy/mmdeploy_model/faster-rcnn";
+  const char* image_path = "mmdetection/demo/demo.jpg";
+
+  // create detector handle
+  mm_handle_t detector{};
+  int status{};
+  status = mmdeploy_detector_create_by_path(model_path, device_name, device_id, &detector);
+  assert(status == MM_SUCCESS);
+
+  cv::Mat img = cv::imread(image_path);
+  assert(img.data);
+
+  // model inference
+  mm_mat_t mat{img.data, img.rows, img.cols, 3, MM_BGR, MM_INT8};
+  mm_detect_t *bboxes{};
+  int *res_count{};
+  status = mmdeploy_detector_apply(detector, &mat, 1, &bboxes, &res_count);
+  assert (status == MM_SUCCESS);
+
+  // visualize result
+  for (int i = 0; i < *res_count; ++i) {
+    const auto &box = bboxes[i].bbox;
+     // skip detections less than specified score threshold
+    if (bboxes[i].score < 0.3) {
+      continue;
+    }
+    cv::rectangle(img, cv::Point{(int)box.left, (int)box.top},
+                  cv::Point{(int)box.right, (int)box.bottom}, cv::Scalar{0, 255, 0});
+  }
+
+  cv::imshow("faster-rcnn", img);
+  cv::waitKey(0);
+
+  // destroy result buffer and handle
+  mmdeploy_detector_release_result(bboxes, res_count, 1);
+  mmdeploy_detector_destroy(detector);
+  return 0;
+}
+```
+
+在您的项目CMakeLists中，增加：
+
+```Makefile
+find_package(MMDeploy REQUIRED)
+mmdeploy_load_static(${YOUR_AWESOME_TARGET} MMDeployStaticModules)
+mmdeploy_load_dynamic(${YOUR_AWESOME_TARGET} MMDeployDynamicModules)
+target_link_libraries(${YOUR_AWESOME_TARGET} PRIVATE MMDeployLibs)
+```
+
+编译时，使用 -DMMDeploy_DIR，传入MMDeloyConfig.cmake所在的路径。它在预编译包中的sdk/lib/cmake/MMDeloy下。
+更多模型的 SDK C API 应用样例，请查阅 mmdeploy/demo/csrc。
+
+#### Python API
+
+```python
+import mmdeploy_python
+import sys
+import cv2
+
+device_name = "cuda";
+device_id = 0;
+model_path = "mmdeploy/mmdeploy_model/faster-rcnn";
+image_path = "mmdetection/demo/demo.jpg";
+
+img = cv2.imread(image_path)
+detector = mmdeploy_python.Detector(model_path, device_name, device_id)
+result = detector([img])
+```
+
+更多模型的 SDK Python API 应用样例，请查阅 mmdeploy/demo/python。
+
+#### C# API
+
+请参考 mmdeploy/demo/csharp/* 下的例子，了解 SDK C# API 的用法。
+
+#### Java API
+
+请参考 mmdeploy/demo/java/* 下的例子，了解 SDK Java API 的用法。
+
+## 模型精度评估
+
+为了测试部署模型的精度，推理效率，我们提供了 `tools/test.py` 来帮助完成相关工作。以上文中 Faster-RCNN 的 TensorRT 模型为例：
 
 ```bash
 python ${MMDEPLOY_DIR}/tools/test.py \
@@ -68,147 +258,3 @@ python ${MMDEPLOY_DIR}/tools/test.py \
 ```
 
 请阅读 [如何进行模型评估](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_evaluate_a_model.html) 了解关于 `tools/test.py` 的使用细节。
-
-### 整合 MMDeploy SDK
-
-请参考[安装指南](./01-how-to-build/build_from_source.md)，在编译 MMDeploy 时开启`MMDEPLOY_BUILD_SDK`以安装 MMDeploy SDK。
-成功安装后，安装目录的文件结构将会如下所示：
-
-```
-install
-├── example
-├── include
-│   ├── c
-│   └── cpp
-└── lib
-```
-
-其中 `include/c` 和 `include/cpp` 分别对应 C 与 C++ API。
-
-**注意：C++的API尚处于不稳定阶段，可能会在未来发生变动，暂时不推荐使用**
-
-在 example 目录下有包含分类，目标检测，图像分割等数个范例。可以通过他们学习如何使用 MMDeploy SDK 以及如何将 ${MMDeploy_LIBS} 链接到应用程序。
-
-### 从零开始进行模型部署
-
-这章节将会展示如何从零开始进行 MMDetection 中 Faster-RCNN 的模型部署与推理。
-
-#### 创建虚拟环境并安装 MMDetection
-
-请运行下面的指令在Anaconda环境中[安装MMDetection](https://mmdetection.readthedocs.io/zh_CN/latest/get_started.html#a-from-scratch-setup-script)。
-
-```bash
-conda create -n openmmlab python=3.7 -y
-conda activate openmmlab
-
-conda install pytorch==1.8.0 torchvision==0.9.0 cudatoolkit=10.2 -c pytorch -y
-
-# 安装 mmcv
-pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.8/index.html
-
-# 安装mmdetection
-git clone https://github.com/open-mmlab/mmdetection.git
-cd mmdetection
-pip install -r requirements/build.txt
-pip install -v -e .
-```
-
-#### 下载 Faster R-CNN 的模型文件
-
-请从[本链接](https://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/faster_rcnn_r50_fpn_1x_coco/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth)下载模型文件，放在`{MMDET_ROOT}/checkpoints`目录下。其中`{MMDET_ROOT}`为您的MMDetection的根目录。
-
-#### 安装 MMDeploy 以及 ONNX Runtime
-
-请运行下面的指令在Anaconda环境中[安装MMDeploy](./01-how-to-build/build_from_source.md)。
-
-```bash
-conda activate openmmlab
-
-git clone https://github.com/open-mmlab/mmdeploy.git
-cd mmdeploy
-git submodule update --init --recursive
-pip install -e .
-```
-
-一旦我们完成MMDeploy的安装，我们需要选择一个模型的推理引擎。这里我们以ONNX Runtime为例。运行下面命令来[安装ONNX Runtime](https://mmdeploy.readthedocs.io/en/latest/backends/onnxruntime.html)：
-
-```bash
-pip install onnxruntime==1.8.1
-```
-
-然后下载 ONNX Runtime Library来编译 MMDeploy 中的算子插件：
-
-```bash
-wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
-
-tar -zxvf onnxruntime-linux-x64-1.8.1.tgz
-cd onnxruntime-linux-x64-1.8.1
-export ONNXRUNTIME_DIR=$(pwd)
-export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
-
-cd ${MMDEPLOY_DIR} # 到 MMDeploy 根目录下
-mkdir -p build && cd build
-
-# 编译自定义算子
-cmake -DMMDEPLOY_TARGET_BACKENDS=ort -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
-make -j$(nproc)
-
-# 编译 MMDeploy SDK
-cmake -DMMDEPLOY_BUILD_SDK=ON \
-      -DCMAKE_CXX_COMPILER=g++-7 \
-      -DOpenCV_DIR=/path/to/OpenCV/lib/cmake/OpenCV \
-      -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} \
-      -DMMDEPLOY_TARGET_BACKENDS=ort \
-      -DMMDEPLOY_CODEBASES=mmdet ..
-make -j$(nproc) && make install
-```
-
-#### 模型转换
-
-当我们成功安装 MMDetection, MMDeploy, ONNX Runtime 以及编译ONNX Runtime的插件之后，我们就可以将 Faster-RCNN 转换成 ONNX 格式，以支持 ONNX Runtime 下的模型推理。运行下面指令来使用我们的部署工具：
-
-```bash
-# 本例假设 MMDeploy 所在目录为 ${MMDEPLOY_DIR}， MMDetection 所在目录为 ${MMDET_DIR}
-# 如果您不知道具体的安装位置，可以在终端通过命令 `pip show mmdeploy` 和 `pip show mmdet` 查看
-
-python ${MMDEPLOY_DIR}/tools/deploy.py \
-    ${MMDEPLOY_DIR}/configs/mmdet/detection/detection_onnxruntime_dynamic.py \
-    ${MMDET_DIR}/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py \
-    ${MMDET_DIR}/checkpoints/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth \
-    ${MMDET_DIR}/demo/demo.jpg \
-    --work-dir work_dirs \
-    --device cpu \
-    --show \
-    --dump-info
-```
-
-如果脚本运行成功，屏幕上将先后显示两张图片。首先是ONNX Runtime推理结果的可视化，然后是PyTorch推理结果的可视化。同时，ONNX文件 `end2end.onnx` 以及数个json文件（供SDK使用）将会被生成在`work_dirs`目录下。
-
-#### 运行 MMDeploy SDK demo
-
-进行模型转换后，SDK模型将被保存在`work_dirs`目录下。
-可以用如下方法编译并运行 MMDeploy SDK demo。
-
-```bash
-cd build/install/example
-
-# 配置ONNX Runtime库目录
-export LD_LIBRARY_PATH=/path/to/onnxruntime/lib
-mkdir -p build && cd build
-cmake -DOpenCV_DIR=path/to/OpenCV/lib/cmake/OpenCV \
-      -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy ..
-make object_detection
-# 设置log等级
-export SPDLOG_LEVEL=warn
-# 运行目标检测范例程序
-./object_detection cpu ${work_dirs} ${path/to/an/image}
-```
-
-如果demo运行成功，将会生成一张名为"output_detection.png"的图片，展示模型输出的可视化效果。
-
-### 新模型的支持？
-
-如果您希望使用的模型尚未被 MMDeploy 所支持，您可以尝试自己添加对应的支持。我们准备了如下的文档：
-- 请阅读[如何支持新模型](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_support_new_models.html)了解我们的模型重写机制。
-
-最后，欢迎大家踊跃提PR。
