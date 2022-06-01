@@ -124,4 +124,8 @@ if (MMDEPLOY_BUILD_SDK)
             )
 
     install(DIRECTORY ${CMAKE_SOURCE_DIR}/demo/csrc/ DESTINATION example)
+
+    if (${CMAKE_VERSION} VERSION_LESS "3.17.0")
+        install(SCRIPT cmake/post-install.cmake)
+    endif ()
 endif ()
