@@ -7,9 +7,13 @@ namespace mmdeploy {
 namespace torch_jit {
 using c10::Symbol;
 using torch::jit::Node;
-bool is_kind(const Node* node, const Symbol& symbol) {
-  return strcmp(node->kind().toQualString(), symbol.toQualString()) == 0;
+
+inline bool is_kind(const Node* node, const Symbol& symbol) { return node->kind() == symbol; }
+
+inline bool is_kind(const Node* node, const char* symbol_name) {
+  return is_kind(node, Symbol::fromQualString(symbol_name));
 }
+
 }  // namespace torch_jit
 }  // namespace mmdeploy
 

@@ -7,20 +7,12 @@
 
 #include <vector>
 
+#include "utils.h"
+
 namespace mmdeploy {
 namespace torch_jit {
 
-namespace prim {
-using namespace ::c10::prim;
-}
-namespace attr {
-using namespace ::c10::attr;
-}
-
-namespace onnx {
-using namespace ::c10::onnx;
-}
-
+using c10::Symbol;
 using torch::jit::IValue;
 using torch::jit::Match;
 using torch::jit::TensorType;
@@ -47,8 +39,8 @@ static bool matchClsHead(const Match& match, const std::unordered_map<std::strin
   auto cat_v0 = match.values_map.at(map.at("cat0"));
   auto unsqueeze_node = cat_v0->node();
   {
-    if (unsqueeze_node->kind() != onnx::Unsqueeze) return false;
-    auto unsqueeze_axes = unsqueeze_node->is(attr::axes);
+    if (!is_kind(unsqueeze_node, "onnx::Unsqueeze")) return false;
+    auto unsqueeze_axes = unsqueeze_node->is(Symbol::attr("axes"));
     if (unsqueeze_axes.size() != 1 || unsqueeze_axes[0] != 0) return false;
   }
 
@@ -56,8 +48,8 @@ static bool matchClsHead(const Match& match, const std::unordered_map<std::strin
   auto gather_node = unsqueeze_node->input()->node();
   auto gather_inputs = gather_node->inputs();
   {
-    if (gather_node->kind() != onnx::Gather) return false;
-    auto gather_axis = gather_node->i(attr::axis);
+    if (!is_kind(gather_node, "onnx::Gather")) return false;
+    auto gather_axis = gather_node->i(Symbol::attr("axis"));
     if (gather_axis != 0) return false;
   }
 
@@ -65,15 +57,15 @@ static bool matchClsHead(const Match& match, const std::unordered_map<std::strin
   // check shape
   auto shape_node = gather_inputs[0]->node();
   {
-    if (shape_node->kind() != onnx::Shape) return false;
+    if (!is_kind(shape_node, "onnx::Shape")) return false;
     if (shape_node->input() != x) return false;
   }
 
   // check constant
   auto const_node = gather_inputs[1]->node();
   {
-    if (const_node->kind() != onnx::Constant) return false;
-    auto ival = const_node->t(attr::value);
+    if (!is_kind(const_node, "onnx::Constant")) return false;
+    auto ival = const_node->t(Symbol::attr("value"));
     if (ival.dim() != 0) return false;
     auto ival_dataptr = ival.data_ptr<long>();
     if (ival_dataptr[0] != 0) return false;
@@ -85,7 +77,7 @@ static bool matchClsHead(const Match& match, const std::unordered_map<std::strin
   auto uses = reshape_node->uses();
   for (auto use : uses) {
     auto user = use.user;
-    if (user->kind() == prim::Return) return false;
+    if (is_kind(user, "prim::Return")) return false;
   }
 
   return true;

@@ -3,22 +3,17 @@
 
 #include <vector>
 
+#include "utils.h"
+
 namespace mmdeploy {
 namespace torch_jit {
 
+using c10::Symbol;
 using torch::jit::Block;
 using torch::jit::IValue;
 using torch::jit::Node;
 using torch::jit::TensorType;
 using torch::jit::Value;
-
-namespace attr {
-using namespace ::c10::attr;
-}
-
-namespace onnx {
-using namespace ::c10::onnx;
-}
 
 void MergeShapeConcate(Node* node) {
   auto inputs = node->inputs();
@@ -31,14 +26,14 @@ void MergeShapeConcate(Node* node) {
   // check pattern shape->gather->unsqueeze->concate
   for (auto input : inputs) {
     auto unsqueeze_node = input->node();
-    if (unsqueeze_node->kind() != onnx::Unsqueeze || unsqueeze_node->output()->uses().size() != 1)
+    if (!is_kind(unsqueeze_node, "onnx::Unsqueeze") || unsqueeze_node->output()->uses().size() != 1)
       return;
 
-    auto axes = unsqueeze_node->is(attr::axes);
+    auto axes = unsqueeze_node->is(Symbol::attr("axes"));
     if (axes.size() != 1 && axes[0] != 0) return;
 
     auto gather_node = unsqueeze_node->input()->node();
-    if (gather_node->kind() != onnx::Gather || gather_node->i(attr::axis) != 0 ||
+    if (!is_kind(gather_node, "onnx::Gather") || gather_node->i(Symbol::attr("axis")) != 0 ||
         gather_node->output()->uses().size() != 1)
       return;
 
@@ -46,7 +41,7 @@ void MergeShapeConcate(Node* node) {
     auto gather_data = gather_inputs[0];
     auto gather_indices = gather_inputs[1];
     auto shape_node = gather_data->node();
-    if (shape_node->kind() != onnx::Shape || shape_node->output()->uses().size() != 1) return;
+    if (!is_kind(shape_node, "onnx::Shape") || shape_node->output()->uses().size() != 1) return;
 
     auto current_shape_from = shape_node->input();
     if (!shape_from) {
@@ -56,9 +51,9 @@ void MergeShapeConcate(Node* node) {
     }
 
     auto constant_node = gather_indices->node();
-    if (constant_node->kind() != onnx::Constant) return;
+    if (!is_kind(constant_node, "onnx::Constant")) return;
 
-    auto gather_indices_val = constant_node->t(attr::value);
+    auto gather_indices_val = constant_node->t(Symbol::attr("value"));
     long* data_ptr = gather_indices_val.data_ptr<long>();
     if (gather_indices_val.dim() == 0) {
       gather_value.push_back(data_ptr[0]);
@@ -74,17 +69,18 @@ void MergeShapeConcate(Node* node) {
 
   // create constant value
   auto graph = node->owningGraph();
-  auto const_node = graph->create(onnx::Constant);
-  const_node->t_(attr::value, at::tensor(gather_value));
+  auto const_node = graph->create(Symbol::onnx("Constant"));
+  const_node->t_(Symbol::attr("value"), at::tensor(gather_value));
   auto first_node = node->owningGraph()->block()->nodes().front();
   if (const_node != first_node) const_node->insertBefore(first_node);
 
   // recreate shape node
-  auto shape_node = graph->create(onnx::Shape, {shape_from});
+  auto shape_node = graph->create(Symbol::onnx("Shape"), {shape_from});
   shape_node->insertBefore(node);
 
   // create gather node
-  auto gather_node = graph->create(onnx::Gather, {shape_node->output(), const_node->output()});
+  auto gather_node =
+      graph->create(Symbol::onnx("Gather"), {shape_node->output(), const_node->output()});
 
   // insert into graph
   gather_node->insertAfter(node);
@@ -105,7 +101,7 @@ void MergeShapeConcate(Block* block) {
       MergeShapeConcate(block);
     }
 
-    if (node->kind() == onnx::Concat) {
+    if (is_kind(node, "onnx::Concat")) {
       MergeShapeConcate(node);
     }
   }

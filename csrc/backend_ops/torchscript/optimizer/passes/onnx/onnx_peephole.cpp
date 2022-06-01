@@ -10,19 +10,12 @@
 namespace mmdeploy {
 namespace torch_jit {
 
+using c10::Symbol;
 using torch::jit::Block;
 using torch::jit::IValue;
 using torch::jit::Node;
 using torch::jit::TensorType;
 using torch::jit::Value;
-
-namespace attr {
-using namespace ::c10::attr;
-}
-
-namespace onnx {
-using namespace ::c10::onnx;
-}
 
 void RemoveReshapeChain(Node* node) {
   // reshape->reshape => reshape
@@ -33,7 +26,7 @@ void RemoveReshapeChain(Node* node) {
   auto uses = output->uses();
 
   for (auto use : uses) {
-    if (is_kind(use.user, onnx::Reshape) || use.offset != 0) {
+    if (is_kind(use.user, "onnx::Reshape") || use.offset != 0) {
       return;
     }
   }
@@ -47,11 +40,11 @@ void RemoveReshapeChain(Node* node) {
 void RemoveRedundantCast(Node* node) {
   // Cast(type n)->Cast(type n) => Cast(type n)
 
-  auto to_type = node->i(attr::to);
+  auto to_type = node->i(Symbol::attr("to"));
   auto input = node->input();
 
   auto input_node = input->node();
-  if (is_kind(input_node, onnx::Cast) && input_node->i(attr::to) == to_type) {
+  if (is_kind(input_node, "onnx::Cast") && input_node->i(Symbol::attr("to")) == to_type) {
     auto output = node->output();
 
     output->replaceAllUsesWith(input);
@@ -69,9 +62,9 @@ void ONNXPeephole(Block* block) {
       ONNXPeephole(block);
     }
 
-    if (is_kind(node, onnx::Reshape)) {
+    if (is_kind(node, "onnx::Reshape")) {
       RemoveReshapeChain(node);
-    } else if (is_kind(node, onnx::Cast)) {
+    } else if (is_kind(node, "onnx::Cast")) {
       RemoveRedundantCast(node);
     }
   }
