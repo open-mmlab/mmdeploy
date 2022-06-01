@@ -61,6 +61,10 @@ add_library(MMDeployStaticModules INTERFACE)
 add_library(MMDeployDynamicModules INTERFACE)
 add_library(MMDeployLibs INTERFACE)
 
+if ("cuda" IN_LIST MMDEPLOY_TARGET_DEVICES)
+    include(cmake/cuda.cmake)
+endif ()
+
 add_subdirectory(csrc)
 
 if (MMDEPLOY_BUILD_SDK)

@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 cmake_minimum_required(VERSION 3.14)
-include(${CMAKE_SOURCE_DIR}/cmake/cuda.cmake NO_POLICY_SCOPE)
 project(mmdeploy_cuda_transform_impl CUDA CXX)
 
 find_package(pplcv REQUIRED)

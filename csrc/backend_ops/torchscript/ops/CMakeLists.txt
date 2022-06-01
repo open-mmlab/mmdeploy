@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.14)
 
 if("cuda" IN_LIST MMDEPLOY_TARGET_DEVICES)
     project(mmdeploy_torchscript_ops CUDA CXX)
-    include(${CMAKE_SOURCE_DIR}/cmake/cuda.cmake NO_POLICY_SCOPE)
     file(GLOB_RECURSE BACKEND_OPS_SRCS *.cpp *.cu)
 else()
     project(mmdeploy_torchscript_ops CXX)
