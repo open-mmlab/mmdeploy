@@ -77,7 +77,7 @@ Result<tuple<Value, vector<int> > > Flatten(V&& input) {
       idxs.push_back(i);
     }
   }
-  idxs.push_back(input.size());
+  idxs.push_back(static_cast<int>(input.size()));
   return {output, idxs};
 }
 

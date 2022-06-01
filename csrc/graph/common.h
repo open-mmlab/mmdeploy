@@ -10,6 +10,20 @@
 
 namespace mmdeploy::graph {
 
+namespace {
+
+template <typename T>
+inline auto Check(const T& v) -> decltype(!!v) {
+  return !!v;
+}
+
+template <typename T>
+inline std::true_type Check(T&&) {
+  return {};
+}
+
+}  // namespace
+
 template <typename EntryType, typename RetType = typename Creator<EntryType>::ReturnType>
 inline Result<RetType> CreateFromRegistry(const Value& config, const char* key = "type") {
   MMDEPLOY_INFO("config: {}", config);
@@ -20,7 +34,7 @@ inline Result<RetType> CreateFromRegistry(const Value& config, const char* key =
     return Status(eEntryNotFound);
   }
   auto inst = creator->Create(config);
-  if (!inst) {
+  if (!Check(inst)) {
     MMDEPLOY_ERROR("failed to create module: {}", type);
     return Status(eFail);
   }
