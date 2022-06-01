@@ -12,8 +12,9 @@ namespace mmdeploy {
 class NetModule {
  public:
   ~NetModule();
+  NetModule(NetModule&&) noexcept;
+
   explicit NetModule(const Value& args);
-  NetModule(NetModule&&) = default;
   Result<Value> operator()(const Value& input);
 
  private:

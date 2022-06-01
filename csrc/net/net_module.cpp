@@ -192,6 +192,8 @@ struct NetModule::Impl {
 
 NetModule::~NetModule() = default;
 
+NetModule::NetModule(NetModule&&) noexcept = default;
+
 NetModule::NetModule(const Value& args) : impl_(std::make_unique<Impl>(args)) {}
 
 Result<Value> NetModule::operator()(const Value& input) {

@@ -56,7 +56,7 @@ Result<void> Model::Init(const void* buffer, size_t size) {
     }
     OUTCOME_TRY(auto meta, impl->ReadMeta());
 
-    MMDEPLOY_INFO("{} successfully load sdk model {}", entry.name);
+    MMDEPLOY_INFO("successfully load sdk model {}", entry.name);
     impl_ = std::move(impl);
     meta_ = std::move(meta);
     return success();
