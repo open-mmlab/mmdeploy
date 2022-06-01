@@ -232,10 +232,12 @@ def check_env(cfg: Dict):
             major = re.search(r'#define NV_TENSORRT_MAJOR (\d+)', data)
             minor = re.search(r'#define NV_TENSORRT_MINOR (\d+)', data)
             patch = re.search(r'#define NV_TENSORRT_PATCH (\d+)', data)
+            build = re.search(r'#define NV_TENSORRT_BUILD (\d+)', data)
             if major is not None and minor is not None and patch is not None:
                 tensorrt_version = f'{major.group(1)}.' +\
                                     f'{minor.group(1)}.' +\
-                                    f'{patch.group(1)}'
+                                    f'{patch.group(1)}.' +\
+                                    f'{build.group(1)}'
 
     env_info['trt_v'] = tensorrt_version
 
