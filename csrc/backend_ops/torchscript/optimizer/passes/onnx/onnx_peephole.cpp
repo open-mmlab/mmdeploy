@@ -5,6 +5,8 @@
 
 #include <vector>
 
+#include "utils.h"
+
 namespace mmdeploy {
 namespace torch_jit {
 
@@ -31,7 +33,7 @@ void RemoveReshapeChain(Node* node) {
   auto uses = output->uses();
 
   for (auto use : uses) {
-    if (use.user->kind() != onnx::Reshape || use.offset != 0) {
+    if (is_kind(use.user, onnx::Reshape) || use.offset != 0) {
       return;
     }
   }
@@ -49,7 +51,7 @@ void RemoveRedundantCast(Node* node) {
   auto input = node->input();
 
   auto input_node = input->node();
-  if (input_node->kind() == onnx::Cast && input_node->i(attr::to) == to_type) {
+  if (is_kind(input_node, onnx::Cast) && input_node->i(attr::to) == to_type) {
     auto output = node->output();
 
     output->replaceAllUsesWith(input);
@@ -67,9 +69,9 @@ void ONNXPeephole(Block* block) {
       ONNXPeephole(block);
     }
 
-    if (node->kind() == onnx::Reshape) {
+    if (is_kind(node, onnx::Reshape)) {
       RemoveReshapeChain(node);
-    } else if (node->kind() == onnx::Cast) {
+    } else if (is_kind(node, onnx::Cast)) {
       RemoveRedundantCast(node);
     }
   }
