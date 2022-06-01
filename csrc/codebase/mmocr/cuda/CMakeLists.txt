@@ -6,7 +6,6 @@ project(mmdeploy_mmocr_cuda_impl)
 if ("cuda" IN_LIST MMDEPLOY_TARGET_DEVICES)
     include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
     include(${CMAKE_SOURCE_DIR}/cmake/cuda.cmake NO_POLICY_SCOPE)
-    enable_language(CUDA)
     add_library(${PROJECT_NAME} OBJECT
             connected_component.cu
             utils.cu

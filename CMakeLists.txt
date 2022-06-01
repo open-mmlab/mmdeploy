@@ -82,6 +82,9 @@ if (MMDEPLOY_BUILD_SDK)
             FILE MMDeployTargets.cmake
             DESTINATION lib/cmake/MMDeploy)
 
+    if (MMDEPLOY_SPDLOG_EXTERNAL)
+        set(SPDLOG_DEPENDENCY "find_package(spdlog QUIET)")
+    endif ()
     # append backend deps
     mmdeploy_add_deps(trt BACKENDS ${MMDEPLOY_TARGET_BACKENDS} DEPS TENSORRT CUDNN)
     mmdeploy_add_deps(ort BACKENDS ${MMDEPLOY_TARGET_BACKENDS} DEPS ONNXRUNTIME)
