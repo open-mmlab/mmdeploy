@@ -5,8 +5,7 @@ MMDeploy提供了一系列工具，帮助您更轻松的将OpenMMLab下的算法
 ## 简介
 
 MMDeploy 定义的模型部署流程，如下图所示：
-![deploy-pipeline](https://user-images.githubusercontent.com/4560679/171348377-3a5c774a-1096-49b0-b8f0-7fdddef4f8b7.png)
-
+![deploy-pipeline](https://user-images.githubusercontent.com/4560679/171416470-8020f967-39de-4c19-ad46-a4197c970874.png)
 
 ### 模型转换（Model Converter）
 
@@ -41,7 +40,7 @@ MMDeploy 定义的模型部署流程，如下图所示：
     CUDA_VERSION=11.1
     MMCV_VERSION=1.5.0
     MMDEPLOY_VERSION=0.5.0
-    TENSORRT_VERSION=8.2.3
+    TENSORRT_VERSION=8.2.3.0
 
     PYTHON_STRING="${PYTHON_VERSION/./""}"
     CUDA_STRING="${CUDA_VERSION/./""}"
@@ -69,8 +68,8 @@ MMDeploy 定义的模型部署流程，如下图所示：
     # !!! 从 NVIDIA 官网下载 tensorrt
     # cd /the/path/of/tensorrt/tar/gz/file
     tar -zxvf TensorRT-${TENSORRT_VERSION}*.tar.gz
-    python -m pip install TensorRT-${TENSORRT_VERSION}*/python/tensorrt-*-cp${PYTHON_STRING}*.whl
-    export TENSORRT_DIR=$(pwd)/TensorRT-${TENSORRT_VERSION}*
+    python -m pip install TensorRT-${TENSORRT_VERSION}/python/tensorrt-*-cp${PYTHON_STRING}*.whl
+    export TENSORRT_DIR=$(pwd)/TensorRT-${TENSORRT_VERSION}
 
     # !!! 从 NVIDIA 官网下载与 cuda toolkit，tensorrt 匹配的 cudnn
     # cd /the/path/of/cudnn/tgz/file
@@ -147,6 +146,25 @@ result = inference_model(model_cfg, deploy_cfg, backend_files, img=img, device=d
 
 以上文中转出的 Faster R-CNN TensorRT 模型为例，接下来的章节将介绍如何使用 SDK 的 FFI 进行模型推理。
 
+#### Python API
+
+```python
+import mmdeploy_python
+import sys
+import cv2
+
+device_name = "cuda";
+device_id = 0;
+model_path = "mmdeploy/mmdeploy_model/faster-rcnn";
+image_path = "mmdetection/demo/demo.jpg";
+
+img = cv2.imread(image_path)
+detector = mmdeploy_python.Detector(model_path, device_name, device_id)
+result = detector([img])
+```
+
+更多模型的 SDK Python API 应用样例，请查阅 mmdeploy/demo/python。
+
 #### C API
 
 使用 C API 进行模型推理的流程符合下面的模式：
@@ -216,25 +234,6 @@ target_link_libraries(${YOUR_AWESOME_TARGET} PRIVATE MMDeployLibs)
 
 编译时，使用 -DMMDeploy_DIR，传入MMDeloyConfig.cmake所在的路径。它在预编译包中的sdk/lib/cmake/MMDeloy下。
 更多模型的 SDK C API 应用样例，请查阅 mmdeploy/demo/csrc。
-
-#### Python API
-
-```python
-import mmdeploy_python
-import sys
-import cv2
-
-device_name = "cuda";
-device_id = 0;
-model_path = "mmdeploy/mmdeploy_model/faster-rcnn";
-image_path = "mmdetection/demo/demo.jpg";
-
-img = cv2.imread(image_path)
-detector = mmdeploy_python.Detector(model_path, device_name, device_id)
-result = detector([img])
-```
-
-更多模型的 SDK Python API 应用样例，请查阅 mmdeploy/demo/python。
 
 #### C# API
 
