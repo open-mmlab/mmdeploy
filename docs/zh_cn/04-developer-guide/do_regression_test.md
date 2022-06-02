@@ -180,7 +180,7 @@ tensorrt:
     convert_image: *convert_image_det
     backend_test: *default_backend_test
     sdk_config: *sdk_detection_dynamic
-    deploy_config: configs/mmocr/text-detection/text-detection_tensorrt-fp16_dynamic-320x320-1024x1824.py
+    deploy_config: configs/mmocr/text-detection/text-detection_tensorrt-fp16_dynamic-320x320-2240x2240.py
 
 openvino:
   # 此处省略，内容同上
@@ -236,7 +236,7 @@ models:
 | 2   | crnn | ../mmocr/configs/textrecog/crnn/crnn_academic_dataset.py     | Text Recognition | ${WORK_DIR}/mmocr/crnn/onnxruntime/static/crnn_academic-a723a1c5 | x| SDK-onnxruntime | configs/mmocr/text-recognition/text-recognition_sdk_dynamic.py | static   | fp32  | True     |  -         | x         | False     |
 | 3   | dbnet| ../mmocr/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py | Text Detection   | ../mmdeploy_checkpoints/mmocr/dbnet/dbnet_r18_fpnc_sbn_1200e_icdar2015_20210329-ba3ab597.pth | ICDAR2015 | Pytorch| -| -  | -     | -  |  0.795     | -         | -|
 | 4   | dbnet| ../mmocr/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py | Text Detection   | ../mmdeploy_checkpoints/mmocr/dbnet/dbnet_r18_fpnc_sbn_1200e_icdar2015_20210329-ba3ab597.pth | ICDAR     | onnxruntime     | configs/mmocr/text-detection/text-detection_onnxruntime_dynamic.py | dynamic  | fp32  | True     |  -         | -         | True|
-| 5   | dbnet| ../mmocr/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py | Text Detection   | ${WORK_DIR}/mmocr/dbnet/tensorrt/dynamic/dbnet_r18_fpnc_sbn_1200e_icdar2015_20210329-ba3ab597/end2end.engine | ICDAR     | tensorrt  | configs/mmocr/text-detection/text-detection_tensorrt-fp16_dynamic-320x320-1024x1824.py | dynamic  | fp16  | True     |  0.793302  | -  | True|
+| 5   | dbnet| ../mmocr/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py | Text Detection   | ${WORK_DIR}/mmocr/dbnet/tensorrt/dynamic/dbnet_r18_fpnc_sbn_1200e_icdar2015_20210329-ba3ab597/end2end.engine | ICDAR     | tensorrt  | configs/mmocr/text-detection/text-detection_tensorrt-fp16_dynamic-320x320-2240x2240.py | dynamic  | fp16  | True     |  0.793302  | -  | True|
 | 6   | dbnet| ../mmocr/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py | Text Detection   | ${WORK_DIR}/mmocr/dbnet/tensorrt/dynamic/dbnet_r18_fpnc_sbn_1200e_icdar2015_20210329-ba3ab597 | ICDAR     | SDK-tensorrt    | configs/mmocr/text-detection/text-detection_sdk_dynamic.py   | dynamic  | fp16  | True     |  0.795073  | -         | True|
 
 
