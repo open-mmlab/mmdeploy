@@ -130,34 +130,36 @@ def test_instance_norm():
 @pytest.mark.usefixtures('prepare_symbolics_ncnn')
 class TestLinear:
 
+    def check(self, nodes):
+        print(nodes)
+
+        from packaging.version import parse as version_parse
+        version = version_parse(torch.__version__)
+        target = 'Gemm'
+        if version.major <= 1 and version.minor <= 8:
+            target = 'MatMul'
+        exist = False
+        for node in nodes:
+            if node.op_type == target:
+                exist = True
+                break
+
+        assert exist is True
+
     def test_normal(self):
         x = torch.rand(1, 2, 3)
         w = torch.rand(2, 3)
         bias = torch.rand(2)
         model = OpModel(torch.nn.functional.linear, w, bias).eval()
         nodes = get_model_onnx_nodes(model, x)
-        print(nodes)
-        gemm_exist = False
-        for node in nodes:
-            if node.op_type == 'Gemm':
-                gemm_exist = True
-                break
-
-        assert gemm_exist is True
+        self.check(nodes)
 
     def test_no_bias(self):
         x = torch.rand(1, 2, 3)
         w = torch.rand(2, 3)
         model = OpModel(torch.nn.functional.linear, w).eval()
         nodes = get_model_onnx_nodes(model, x)
-        print(nodes)
-        gemm_exist = False
-        for node in nodes:
-            if node.op_type == 'Gemm':
-                gemm_exist = True
-                break
-
-        assert gemm_exist is True
+        self.check(nodes)
 
 
 @pytest.mark.usefixtures('prepare_symbolics')
