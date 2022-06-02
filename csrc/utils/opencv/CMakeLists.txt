@@ -1,9 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-cmake_minimum_required(VERSION 3.14)
-project(mmdeploy_opencv_utils)
 
-include(${CMAKE_SOURCE_DIR}/cmake/opencv.cmake)
-include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
+project(mmdeploy_opencv_utils)
 
 mmdeploy_add_library(${PROJECT_NAME} opencv_utils.cpp)
 

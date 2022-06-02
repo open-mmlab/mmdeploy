@@ -1,8 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-cmake_minimum_required(VERSION 3.14)
+
 project(mmdeploy_onnxruntime_ops)
 
-include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/modules/FindONNXRUNTIME.cmake)
 
 # add plugin source

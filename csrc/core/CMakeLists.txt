@@ -1,7 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-cmake_minimum_required(VERSION 3.14)
+
 project(mmdeploy_core)
 
+# this is used to keep compatibility with legacy spdlog where CMake package is not available
 set(SPDLOG_LIB)
 
 if (MMDEPLOY_SPDLOG_EXTERNAL)
@@ -19,8 +20,6 @@ else ()
         install(DIRECTORY ${MMDEPLOY_SPDLOG_DIR}/include/spdlog DESTINATION include/cpp)
     endif ()
 endif ()
-
-include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
 
 set(SRCS
         device_impl.cpp

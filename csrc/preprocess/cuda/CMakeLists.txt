@@ -1,10 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-cmake_minimum_required(VERSION 3.14)
+
 project(mmdeploy_cuda_transform_impl CUDA CXX)
 
 find_package(pplcv REQUIRED)
-
-include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
 
 set(SRCS
         crop_impl.cpp

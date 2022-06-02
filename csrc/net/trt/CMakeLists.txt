@@ -1,8 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-cmake_minimum_required(VERSION 3.14)
+
 project(mmdeploy_trt_net)
 
-include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/tensorrt.cmake)
 
 mmdeploy_add_module(${PROJECT_NAME} trt_net.cpp)

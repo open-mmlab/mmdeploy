@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-cmake_minimum_required(VERSION 3.14)
+
 project(mmdeploy_codebase)
 
 set(CODEBASES "")

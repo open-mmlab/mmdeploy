@@ -56,15 +56,17 @@ if (MSVC)
     add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/wd4251>)
 endif ()
 
-include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
-
 add_library(MMDeployStaticModules INTERFACE)
 add_library(MMDeployDynamicModules INTERFACE)
 add_library(MMDeployLibs INTERFACE)
 
 if ((cuda IN_LIST MMDEPLOY_TARGET_DEVICES) OR (trt IN_LIST MMDEPLOY_TARGET_BACKENDS))
-    include(cmake/cuda.cmake)
+    include(cmake/cuda.cmake NO_POLICY_SCOPE)
 endif ()
+
+# this must come after including cuda.cmake because policies in function scope is captured
+# at function definition
+include(cmake/MMDeploy.cmake)
 
 add_subdirectory(csrc)
 

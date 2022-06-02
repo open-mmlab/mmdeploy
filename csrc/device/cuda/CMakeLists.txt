@@ -1,9 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-cmake_minimum_required(VERSION 3.14)
 
-project(mmdeploy_cuda_device CUDA CXX)
-
-include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
+project(mmdeploy_cuda_device)
 
 set(SRCS
         cuda_device.cpp

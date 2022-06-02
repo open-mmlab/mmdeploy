@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-#message(STATUS "CMAKE_VERSION: ${CMAKE_VERSION}")
 
 if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.18.0")
     # suppress 'CMAKE_CUDA_ARCHITECTURES' warning
