@@ -15,5 +15,6 @@ try:
         'torch2onnx', 'torch2torchscript', 'build_task_processor',
         'get_predefined_partition_cfg', 'visualize_model'
     ]
-except Exception:
+except Exception as e:
+    print("Skip import apis, {}".format(e))
     pass
