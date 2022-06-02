@@ -6,21 +6,22 @@
 <!-- TOC -->
 
 - [如何进行回归测试](#如何进行回归测试)
-    - [1. 环境搭建](#1-环境搭建)
-        - [MMDeploy的安装及配置](#MMDeploy的安装及配置)
-        - [Python环境依赖](#Python环境依赖)
-    - [2. 用法](#2-用法)
-        - [参数解析](#参数解析)
-        - [示例](#示例)
-    - [3. 回归测试配置文件](#3-回归测试配置文件)
-        - [示例及参数解析](#示例及参数解析)
-    - [4. 生成的报告](#4-生成的报告)
-        - [模板](#模板)
-        - [示例](#示例)
-    - [5. 支持的后端](#4-支持的后端)
-    - [6. 支持的Codebase及其Metric](#5-支持的Codebase及其Metric)
-    - [7. 注意事项](#7-注意事项)
-    - [8. 常见问题](#8-常见问题)
+  - [1. 环境搭建](#1-环境搭建)
+    - [MMDeploy的安装及配置](#mmdeploy的安装及配置)
+    - [Python环境依赖](#python环境依赖)
+  - [2. 用法](#2-用法)
+    - [参数解析](#参数解析)
+    - [注意事项](#注意事项)
+  - [例子](#例子)
+  - [3. 回归测试配置文件](#3-回归测试配置文件)
+    - [示例及参数解析](#示例及参数解析)
+  - [4. 生成的报告](#4-生成的报告)
+    - [模板](#模板)
+    - [示例](#示例)
+  - [5. 支持的后端](#5-支持的后端)
+  - [6. 支持的Codebase及其Metric](#6-支持的codebase及其metric)
+  - [7. 注意事项](#7-注意事项)
+  - [8. 常见问题](#8-常见问题)
 
 <!-- TOC -->
 
@@ -88,7 +89,7 @@ python ./tools/regression_test.py \
 ```shell
 python ./tools/regression_test.py \
     --codebase mmdet mmpose \
-    --backends onnxruntime tesnsorrt \
+    --backends onnxruntime tensorrt \
     --work-dir "../mmdeploy_regression_working_dir" \
     --device "cuda" \
     --log-level INFO \
@@ -100,13 +101,13 @@ python ./tools/regression_test.py \
 ```shell
 python ./tools/regression_test.py \
     --codebase mmdet mmpose \
-    --backends onnxruntime tesnsorrt \
+    --backends onnxruntime tensorrt \
     --work-dir "../mmdeploy_regression_working_dir" \
     --device "cuda" \
     --log-level INFO
 ```
 
-4.测试 mmdet 和 mmcls 的某几个 models，**只测试转换**
+4. 测试 mmdet 和 mmcls 的某几个 models，**只测试转换**
 
 ```shell
 python ./tools/regression_test.py \
@@ -182,7 +183,7 @@ tensorrt:
     convert_image: *convert_image_det
     backend_test: *default_backend_test
     sdk_config: *sdk_detection_dynamic
-    deploy_config: configs/mmocr/text-detection/text-detection_tensorrt-fp16_dynamic-320x320-1024x1824.py
+    deploy_config: configs/mmocr/text-detection/text-detection_tensorrt-fp16_dynamic-320x320-2240x2240.py
 
 openvino:
   # 此处省略，内容同上
@@ -238,7 +239,7 @@ models:
 | 2   | crnn | ../mmocr/configs/textrecog/crnn/crnn_academic_dataset.py     | Text Recognition | ${WORK_DIR}/mmocr/crnn/onnxruntime/static/crnn_academic-a723a1c5 | x| SDK-onnxruntime | configs/mmocr/text-recognition/text-recognition_sdk_dynamic.py | static   | fp32  | True     |  -         | x         | False     |
 | 3   | dbnet| ../mmocr/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py | Text Detection   | ../mmdeploy_checkpoints/mmocr/dbnet/dbnet_r18_fpnc_sbn_1200e_icdar2015_20210329-ba3ab597.pth | ICDAR2015 | Pytorch| -| -  | -     | -  |  0.795     | -         | -|
 | 4   | dbnet| ../mmocr/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py | Text Detection   | ../mmdeploy_checkpoints/mmocr/dbnet/dbnet_r18_fpnc_sbn_1200e_icdar2015_20210329-ba3ab597.pth | ICDAR     | onnxruntime     | configs/mmocr/text-detection/text-detection_onnxruntime_dynamic.py | dynamic  | fp32  | True     |  -         | -         | True|
-| 5   | dbnet| ../mmocr/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py | Text Detection   | ${WORK_DIR}/mmocr/dbnet/tensorrt/dynamic/dbnet_r18_fpnc_sbn_1200e_icdar2015_20210329-ba3ab597/end2end.engine | ICDAR     | tensorrt  | configs/mmocr/text-detection/text-detection_tensorrt-fp16_dynamic-320x320-1024x1824.py | dynamic  | fp16  | True     |  0.793302  | -  | True|
+| 5   | dbnet| ../mmocr/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py | Text Detection   | ${WORK_DIR}/mmocr/dbnet/tensorrt/dynamic/dbnet_r18_fpnc_sbn_1200e_icdar2015_20210329-ba3ab597/end2end.engine | ICDAR     | tensorrt  | configs/mmocr/text-detection/text-detection_tensorrt-fp16_dynamic-320x320-2240x2240.py | dynamic  | fp16  | True     |  0.793302  | -  | True|
 | 6   | dbnet| ../mmocr/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py | Text Detection   | ${WORK_DIR}/mmocr/dbnet/tensorrt/dynamic/dbnet_r18_fpnc_sbn_1200e_icdar2015_20210329-ba3ab597 | ICDAR     | SDK-tensorrt    | configs/mmocr/text-detection/text-detection_sdk_dynamic.py   | dynamic  | fp16  | True     |  0.795073  | -         | True|
 
 

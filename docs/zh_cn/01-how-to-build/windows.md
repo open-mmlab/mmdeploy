@@ -19,7 +19,7 @@
 目前，MMDeploy 在 Windows 平台下仅提供源码编译安装方式。未来会提供预编译包方式。
 
 ## 源码安装
-下述安装方式，均是在 **Windows 10** 下进行
+下述安装方式，均是在 **Windows 10** 下进行，使用 **PowerShell Preview** 版本。
 
 ### 安装构建和编译工具链
 1. 下载并安装 [Visual Studio 2019](https://visualstudio.microsoft.com) 。安装时请勾选 "使用C++的桌面开发, "Windows 10 SDK <br>
