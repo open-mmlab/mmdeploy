@@ -16,5 +16,5 @@ try:
         'get_predefined_partition_cfg', 'visualize_model'
     ]
 except Exception as e:
-    print("Skip import apis, {}".format(e))
+    print('Skip import apis, {}'.format(e))
     pass
