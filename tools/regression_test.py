@@ -1079,7 +1079,7 @@ def _filter_string(inputs):
         inputs(str): Input string.
 
     Returns:
-        str|Sequence[str]: Output of only alpha&number string.
+        str: Output of only alpha&number string.
     """
     outputs = ''.join([i.lower() for i in inputs if i.isalnum()])
     return outputs
