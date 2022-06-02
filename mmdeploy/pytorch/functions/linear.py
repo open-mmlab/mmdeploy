@@ -40,8 +40,9 @@ def linear__ncnn(
         out = out.reshape([batch_size, broad_cast_size, -1, 1])
 
         # add bias
-        bias = bias.view([1, -1, 1, 1])
-        out = out + bias
+        if bias is not None:
+            bias = bias.view([1, -1, 1, 1])
+            out = out + bias
 
         # permute back
         # the last dim should be -1 to support dynamic shape
