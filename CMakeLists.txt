@@ -19,7 +19,7 @@ endif ()
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # options
-option(BUILD_SHARED_LIBS "build shared lib" ON)
+option(MMDEPLOY_SHARED_LIBS "build shared libs" ON)
 option(MMDEPLOY_BUILD_SDK "build MMDeploy SDK" OFF)
 option(MMDEPLOY_BUILD_TEST "build unittests" OFF)
 option(MMDEPLOY_BUILD_SDK_PYTHON_API "build SDK Python API" OFF)
@@ -33,6 +33,12 @@ set(MMDEPLOY_CODEBASES "all" CACHE STRING "select OpenMMLab codebases")
 
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "choose 'Release' as default build type" FORCE)
+endif ()
+
+if (MMDEPLOY_SHARED_LIBS)
+    set(MMDEPLOY_LIB_TYPE SHARED)
+else ()
+    set(MMDEPLOY_LIB_TYPE STATIC)
 endif ()
 
 # when CUDA devices are enabled, the environment variable ASAN_OPTIONS=protect_shadow_gap=0
