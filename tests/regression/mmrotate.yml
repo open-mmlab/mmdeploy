@@ -1,0 +1,50 @@
+globals:
+  codebase_dir: ../mmrotate
+  checkpoint_force_download: False
+  images:
+    img_demo: &img_demo ../mmrotate/demo/demo.jpg
+    img_dota_demo: &img_dota_demo ../mmrotate/demo/dota_demo.jpg
+  metric_info: &metric_info
+    mAP: # named after metafile.Results.Metrics
+      eval_name: mAP # test.py --metrics args
+      metric_key: AP # eval key name
+      tolerance: 0.10 # metric ±n%
+      task_name: Oriented Object Detection # metafile.Results.Task
+      dataset: DOTAv1.0 # metafile.Results.Dataset
+  convert_image_det: &convert_image_det
+    input_img: *img_demo
+    test_img: *img_dota_demo
+  backend_test: &default_backend_test True
+
+onnxruntime:
+  # ======= detection =======
+  pipeline_ort_detection_static_fp32: &pipeline_ort_detection_static_fp32
+    convert_image: *convert_image_det
+    backend_test: *default_backend_test
+    deploy_config: configs/mmrotate/rotated-detection_onnxruntime_static.py
+
+  pipeline_ort_detection_dynamic_fp32: &pipeline_ort_detection_dynamic_fp32
+    convert_image: *convert_image_det
+    deploy_config: configs/mmrotate/rotated-detection_onnxruntime_dynamic.py
+
+tensorrt:
+  # ======= detection =======
+  pipeline_trt_detection_dynamic_fp32: &pipeline_trt_detection_dynamic_fp32
+    convert_image: *convert_image_det
+    backend_test: *default_backend_test
+    deploy_config: configs/mmrotate/rotated-detection_tensorrt_dynamic-320x320-1024x1024.py
+
+  pipeline_trt_detection_dynamic_fp16: &pipeline_trt_detection_dynamic_fp16
+    convert_image: *convert_image_det
+    backend_test: *default_backend_test
+    deploy_config: configs/mmrotate/rotated-detection_tensorrt-fp16_dynamic-320x320-1024x1024.py
+
+models:
+  - name: RotatedRetinanet
+    metafile: configs/rotated_retinanet/metafile.yml
+    model_configs:
+      - configs/rotated_retinanet/rotated_retinanet_obb_r50_fpn_1x_dota_le135.py
+    pipelines:
+      - *pipeline_ort_detection_dynamic_fp32
+      - *pipeline_trt_detection_dynamic_fp32
+      - *pipeline_trt_detection_dynamic_fp16
