@@ -15,7 +15,8 @@ if ("cuda" IN_LIST MMDEPLOY_TARGET_DEVICES)
     target_link_libraries(${PROJECT_NAME} PRIVATE
             mmdeploy_opencv_utils
             mmdeploy::core
-            ${CUDA_LIBRARIES})
+            ${CUDA_LIBRARIES}
+            cuda)
     target_link_libraries(mmdeploy_mmocr PRIVATE
             ${PROJECT_NAME})
     mmdeploy_export(${PROJECT_NAME})
