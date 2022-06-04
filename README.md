@@ -80,7 +80,7 @@ Please read [getting_started.md](docs/en/get_started.md) for the basic usage of 
   * [how to convert model](docs/en/02-how-to-run/how_to_convert_model.md)
   * [how to write config](docs/en/02-how-to-run/how_to_write_config.md)
   * [how to evaluate deployed models](docs/en/02-how-to-run/how_to_evaluate_a_model.md)
-  * [how to measure performance of deployed models](docs/end/../en/02-how-to-run/how_to_measure_performance_of_models.md)
+  * [how to measure performance of deployed models](docs/en/02-how-to-run/how_to_measure_performance_of_models.md)
 * Developer Guide
   * [how to support new models](docs/en/06-developer-guide/how_to_support_new_models.md)
   * [how to support new backends](docs/en/06-developer-guide/how_to_support_new_backends.md)
