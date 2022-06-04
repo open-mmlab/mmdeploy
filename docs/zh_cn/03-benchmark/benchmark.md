@@ -179,7 +179,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">30.41</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py">Faster-RCNN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py">Faster R-CNN</a></td>
     <td align="center">800x1344</td>
     <td align="center">88.08</td>
     <td align="center">26.52</td>
@@ -188,7 +188,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">65.40</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/mask_rcnn/mask_rcnn_r50_fpn_1x_coco.py">Mask-RCNN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/mask_rcnn/mask_rcnn_r50_fpn_1x_coco.py">Mask R-CNN</a></td>
     <td align="center">800x1344</td>
     <td align="center">104.83</td>
     <td align="center">58.27</td>
