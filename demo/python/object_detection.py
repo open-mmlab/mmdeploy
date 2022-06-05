@@ -26,10 +26,7 @@ def main():
 
     indices = [i for i in range(len(bboxes))]
     for index, bbox, label_id in zip(indices, bboxes, labels):
-        left, top, right, bottom, score = \
-            max(0, int(bbox[0] + 0.5)), max(0, int(bbox[1] + 0.5)), \
-            min(int(bbox[2] + 0.5), img.shape[1] - 1), \
-            min(int(bbox[3] + 0.5), img.shape[0] - 1),  bbox[4]
+        [left, top, right, bottom], score = bbox[0:4].astype(int), bbox[4]
         if score < 0.3:
             continue
 
