@@ -14,17 +14,20 @@ In MMDeploy, the deployment pipeline can be illustrated by a sequential modules,
 
 ### Model Converter
 
-模型转换的主要功能是把输入的模型格式，转换为目标设备的推理引擎所要求的模型格式。
+Model Converter aims at converting training models from OpenMMLab into backend models that can be run on target devices.
 
-目前，MMDeploy 可以把 PyTorch 模型转换为 ONNX、TorchScript 等和设备无关的 IR 模型。也可以将 ONNX 模型转换为推理后端模型。两者相结合，可实现端到端的模型转换，也就是从训练端到生产端的一键式部署。
+Currently, MMDeploy is able to transform PyTorch model into IR model, i.e., ONNX, TorchScript, as well as convert IR model to backend model.
+By combining them together, we can achieve one-click **end-to-end** model deployment.
 
 ### MMDeploy Model
 
-模型转换结果的集合。它不仅包括后端模型，还包括模型的元信息。这些信息将用于推理 SDK 中。
+MMDeploy Model is the result set exported by Model Converter.
+Beside the backend models, it also includes the model meta info, which will be performed by Inference SDK.
 
 ### Inference SDK
 
-封装了模型的前处理、网络推理和后处理过程。对外提供多语言的模型推理接口。
+Inference SDK is developed by C/C++, wrapping the preprocessing, model forward and postprocessing modules in model inference.
+It supports FFI such as C, C++, Python, C#, Java and so on.
 
 ## prerequisites
 
@@ -63,7 +66,7 @@ conda install pytorch==${PYTORCH_VERSION} torchvision==${TORCHVISION_VERSION} cp
 
 We recommend that users follow our best practices installing MMDeploy.
 
-***Step 0.** Install [MMCV](https://github.com/open-mmlab/mmcv).
+**Step 0.** Install [MMCV](https://github.com/open-mmlab/mmcv).
 ```shell
   export MMCV_VERSION=1.5.0
   export CUDA_STRING="${CUDA_VERSION/./""}"
@@ -71,6 +74,7 @@ We recommend that users follow our best practices installing MMDeploy.
   ```
 
 **Step 1.** Install MMDeploy.
+
 Since v0.5.0, MMDeploy provides prebuilt packages, which can be found from [here](https://github.com/open-mmlab/mmdeploy/releases).
 You can download them according to your target platform and device.
 
@@ -93,11 +97,11 @@ Take the MMDeploy-TensorRT package on NVIDIA for example:
   If MMDeploy prebuilt package doesn meet your target platforms or devices, please build MMDeploy from its source by following the build documents
   ```
 
-**step 2**： Install the inference backend
+**step 2.** Install the inference backend
 
 Based on the above MMDeploy-TensorRT package, we need to download and install [TensorRT](https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing-tar) (including [cuDNN](https://developer.nvidia.com/cudnn)).
 
-Take TensorRT 8.2.3.0 for example:
+The following shows an example of installing TensorRT 8.2.3.0:
 
   ```shell
   export TENSORRT_VERSION=8.2.3.0
@@ -126,15 +130,89 @@ For the installation of all inference backends supported by MMDeploy right now, 
 
 ## Convert Model
 
+After the installation, you can enjoy the model deployment journey starting from converting PyTorch model to backend model.
+
+Based on the above settings, we provide an example to convert the Faster R-CNN in [MMDetection](https://github.com/open-mmlab/mmdetection) to TensorRT as below:
+
+```shell
+# clone mmdeploy repo. We are going to use the pre-defined pipeline config from the source code
+git clone --recursive https://github.com/open-mmlab/mmdeploy.git
+python -m pip install mmdeploy/requirements/runtime.txt
+export MMDEPLOY_DIR=$(pwd)/mmdeploy
+
+# clone mmdetection repo. We have to use the config file to build PyTorch nn module
+python -m pip install mmdet==2.24.0
+git clone https://github.com/open-mmlab/mmdetection.git
+export MMDET_DIR=$(pwd)/mmdetection
+
+# download Faster R-CNN checkpoint
+export CHECKPOINT_DIR=$(pwd)/checkpoints
+wget -P ${CHECKPOINT_DIR} https://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/faster_rcnn_r50_fpn_1x_coco/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth
+
+# set working directory, where the mmdeploy model is saved
+export WORK_DIR=$(pwd)/mmdeploy_models
+
+# run the command to start model conversion
+python ${MMDEPLOY_DIR}/tools/deploy.py \
+    ${MMDEPLOY_DIR}/configs/mmdet/detection/detection_tensorrt_dynamic-320x320-1344x1344.py \
+    ${MMDET_DIR}/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py \
+    ${CHECKPOINT_DIR}/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth \
+    ${MMDET_DIR}/demo/demo.jpg \
+    --work-dir ${WORK_DIR}/faster-rcnn \
+    --device cuda:0 \
+    --dump-info
+```
+
+`${MMDEPLOY_DIR}/tools/deploy.py` does everything you need to convert a model. Read [how_to_convert_model](./02-how-to-run/how_to_convert_model.md) for more details.
+The converted model and its meta info will be found in the path specified by `--work-dir`.
+And they make up of MMDeploy Model that can be fed to MMDeploy SDK to do model inference.
+
+`detection_tensorrt_dynamic-320x320-1344x1344.py` is a config file that contains all arguments you need to customize the conversion pipeline. The name is formed as:
+
+```bash
+<task name>_<backend>-[backend options]_<dynamic support>.py
+```
+
+If you want to customize the conversion pipeline, you can edit the config file by following [this](./02-how-to-run/how_to_write_config.md) tutorial.
 
 ## Inference Model
 
 ### Inference by Model Converter
 
 
+
 ### Inference by SDK
 
+You can use SDK API to do model inference with the generated mmdeploy model by Model Converter.
+
+In the following section, we will provide examples of deploying the converted Faster R-CNN model in different FFI.
+
 #### Python API
+
+```python
+from mmdeploy_python import Detector
+import os
+import cv2
+
+# get mmdeploy model path of faster r-cnn
+model_path = '/'.join((os.getenv('WORK_DIR'), '/faster-rcnn'));
+# use mmdetection demo image as an input image
+image_path = '/'.join((os.getenv('MMDET_DIR'), 'demo/demo.jpg'));
+
+img = cv2.imread(image_path)
+detector = Detector(model_path, 'cuda', 0)
+bboxes, labels, _ = detector([img])[0]
+
+indices = [i for i in range(len(bboxes))]
+for index, bbox, label_id in zip(indices, bboxes, labels):
+  [left, top, right, bottom], score = bbox[0:4].astype(int),  bbox[4]
+  if score < 0.3:
+      continue
+  cv2.rectangle(img, (left, top), (right, bottom), (0, 255, 0))
+
+cv2.imwrite('output_detection.png', img)
+```
+You can find more examples from [here](https://github.com/open-mmlab/mmdeploy/demo/python).
 
 #### C API
 
