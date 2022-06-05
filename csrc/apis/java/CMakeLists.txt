@@ -13,7 +13,8 @@ message(STATUS "spdlog lib dir: ${spdlog_DIR}/../../")
 link_directories(${spdlog_DIR}/../../)
 
 if ("all" IN_LIST MMDEPLOY_CODEBASES)
-    set(TASK_LIST "classifier")
+    set(TASK_LIST "classifier;detector;segmentor;text_detector;text_recognizer;"
+        "pose_detector;restorer;rotated_detector")
 else ()
     if ("mmcls" IN_LIST MMDEPLOY_CODEBASES)
         list(APPEND TASK_LIST "classifier")
