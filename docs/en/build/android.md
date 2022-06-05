@@ -62,20 +62,6 @@ You can skip this chapter if only interested in model converter.
 </thead>
 <tbody>
   <tr>
-    <td>spdlog </td>
-    <td>
-<pre><code>
-git clone -b v1.9.2 https://github.com/gabime/spdlog.git
-cd spdlog
-export SPDLOG_DIR=${PWD}
-mkdir -p build
-cd build
-cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_INSTALL_PREFIX=${SPDLOG_DIR} -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake -DANDROID_ABI="arm64-v8a" -DANDROID_PLATFORM=android-30 ..
-make install
-</code></pre>
-   </td>
-  </tr>
-  <tr>
     <td>OpenCV<br>(>=3.0) </td>
     <td>
 <pre><code>
@@ -159,7 +145,7 @@ make install
     <td>Enable codebase's postprocess modules. It MUST be set by a semicolon separated list of codebase names. The currently supported codebases are 'mmcls', 'mmdet', 'mmedit', 'mmseg', 'mmocr'. Instead of listing them one by one, you can also pass <code>all</code> to enable them all, i.e., <code>-DMMDEPLOY_CODEBASES=all</code></td>
   </tr>
   <tr>
-    <td>BUILD_SHARED_LIBS</td>
+    <td>MMDEPLOY_SHARED_LIBS</td>
     <td>{ON, OFF}</td>
     <td>ON</td>
     <td>Switch to build shared library or static library of MMDeploy SDK. Now you should build static library for android. Bug will be fixed soon.</td>
@@ -177,11 +163,10 @@ MMDeploy provides a recipe as shown below for building SDK with ncnn as inferenc
   cmake .. \
       -DMMDEPLOY_BUILD_SDK=ON \
       -DOpenCV_DIR=${OPENCV_ANDROID_SDK_DIR}/sdk/native/jni/abi-arm64-v8a \
-      -Dspdlog_DIR=${SPDLOG_DIR}/lib/cmake/spdlog \
       -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn \
       -DMMDEPLOY_TARGET_BACKENDS=ncnn \
       -DMMDEPLOY_CODEBASES=all \
-      -DBUILD_SHARED_LIBS=OFF \
+      -DMMDEPLOY_SHARED_LIBS=OFF \
       -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake \
       -DANDROID_ABI=arm64-v8a \
       -DANDROID_PLATFORM=android-30 \
@@ -197,7 +182,6 @@ cd ${MMDEPLOY_DIR}/build/install/example
 mkdir -p build && cd build
 cmake .. \
       -DOpenCV_DIR=${OPENCV_ANDROID_SDK_DIR}/sdk/native/jni/abi-arm64-v8a \
-      -Dspdlog_DIR=${SPDLOG_DIR}/lib/cmake/spdlog \
       -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn \
       -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy \
       -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake \

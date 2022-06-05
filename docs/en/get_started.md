@@ -154,7 +154,6 @@ make -j$(nproc)
 cmake -DMMDEPLOY_BUILD_SDK=ON \
       -DCMAKE_CXX_COMPILER=g++-7 \
       -DOpenCV_DIR=/path/to/OpenCV/lib/cmake/OpenCV \
-      -Dspdlog_DIR=/path/to/spdlog/lib/cmake/spdlog \
       -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} \
       -DMMDEPLOY_TARGET_BACKENDS=ort \
       -DMMDEPLOY_CODEBASES=mmdet ..
