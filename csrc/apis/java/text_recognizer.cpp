@@ -2,21 +2,18 @@
 
 #include "text_recognizer.h"
 
-#include <benchmark.h>
-#include <platform.h>
+#include <android/log.h>
+#include <jni.h>
+#include <stdio.h>
 #include <unistd.h>
-
-#include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 
 #include "common.h"
 
-namespace MMDeployJava {
+namespace MMDeploy {
 
 extern "C" {
-JNIEXPORT jobject JNICALL mmdeployTextRecognizerCreateByPath(JNIEnv* env, jobject thiz,
-                                                             jstring modelPath, jstring deviceName,
-                                                             jint deviceID, jobject handlePointer) {
+JNIEXPORT jobject JNICALL CreateByPath(JNIEnv* env, jobject thiz, jstring modelPath,
+                                       jstring deviceName, jint deviceID, jobject handlePointer) {
   // handlePointer saves the value of mm_handle_t, because mm_handle_t is already a handle pointer.
   int status{};
   const char* model_path = env->GetStringUTFChars(modelPath, 0);
@@ -25,21 +22,21 @@ JNIEXPORT jobject JNICALL mmdeployTextRecognizerCreateByPath(JNIEnv* env, jobjec
   jclass clazz = env->GetObjectClass(handlePointer);
   jmethodID initMethod = env->GetMethodID(clazz, "<init>", "(Ljava/lang/String;J)V");
   jfieldID id_address = env->GetFieldID(clazz, "address", "J");
-  mm_handle_t text_recognizer = new mm_handle_t;
+  mm_handle_t text_recognizer{};
   int device_id = (int)deviceID;
   status =
       mmdeploy_text_recognizer_create_by_path(model_path, device_name, device_id, &text_recognizer);
   if (status != MM_SUCCESS) {
-    fprintf(stderr, "failed to create text_recognizer, code: %d\n", (int)status);
+    __android_log_print(ANDROID_LOG_ERROR, "jni", "failed to create text recognizer, code: %d\n",
+                        (int)status);
     return env->NewObject(clazz, initMethod, env->NewStringUTF("mm_handle_t"), (long)0);
   }
   jobject result =
       env->NewObject(clazz, initMethod, env->NewStringUTF("mm_handle_t"), (long)text_recognizer);
   return result;
 }
-JNIEXPORT jboolean JNICALL mmdeployTextRecognizerApply(JNIEnv* env, jobject thiz,
-                                                       jobject handlePointer, jobject matsPointer,
-                                                       jint matCount, jobject resultsPointer) {
+JNIEXPORT jboolean JNICALL Apply(JNIEnv* env, jobject thiz, jobject handlePointer,
+                                 jobject matsPointer, jint matCount, jobject resultsPointer) {
   int status{};
   jclass handle_clazz = env->GetObjectClass(handlePointer);
   jfieldID id_handle_address = env->GetFieldID(handle_clazz, "address", "J");
@@ -57,15 +54,15 @@ JNIEXPORT jboolean JNICALL mmdeployTextRecognizerApply(JNIEnv* env, jobject thiz
   status = mmdeploy_text_recognizer_apply(text_recognizer, (const mm_mat_t*)pmats, mat_count,
                                           &result_apply);
   if (status != MM_SUCCESS) {
-    fprintf(stderr, "failed to apply text_recognizer, code: %d\n", (int)status);
+    __android_log_print(ANDROID_LOG_ERROR, "jni", "failed to apply text recognizer, code: %d\n",
+                        (int)status);
     return JNI_FALSE;
   }
   env->SetLongField(resultsPointer, id_results_address, (jlong)result_apply);
   return JNI_TRUE;
 }
-JNIEXPORT void JNICALL mmdeployTextRecognizerReleaseResult(JNIEnv* env, jobject thiz,
-                                                           jobject resultsPointer,
-                                                           jobject resultCountPointer, jint count) {
+JNIEXPORT void JNICALL ReleaseResult(JNIEnv* env, jobject thiz, jobject resultsPointer,
+                                     jobject resultCountPointer, jint count) {
   jclass results_clazz = env->GetObjectClass(resultsPointer);
   jfieldID id_results_address = env->GetFieldID(results_clazz, "address", "J");
   jlong presults = env->GetLongField(resultsPointer, id_results_address);
@@ -76,8 +73,7 @@ JNIEXPORT void JNICALL mmdeployTextRecognizerReleaseResult(JNIEnv* env, jobject 
   mmdeploy_text_recognizer_release_result(bbox, (int)count);
 }
 
-JNIEXPORT void JNICALL mmdeployTextRecognizerDestroy(JNIEnv* env, jobject thiz,
-                                                     jobject handlePointer) {
+JNIEXPORT void JNICALL Destroy(JNIEnv* env, jobject thiz, jobject handlePointer) {
   jclass handle_clazz = env->GetObjectClass(handlePointer);
   jfieldID id_handle_address = env->GetFieldID(handle_clazz, "address", "J");
   long phandle = (long)env->GetLongField(handlePointer, id_handle_address);
@@ -86,34 +82,29 @@ JNIEXPORT void JNICALL mmdeployTextRecognizerDestroy(JNIEnv* env, jobject thiz,
 }
 
 static JNINativeMethod method[] = {
-    {"mmdeployTextRecognizerCreateByPath",
-     "(Ljava/lang/String;Ljava/lang/String;ILcom/openmmlab/mmdeployxtextrecognizer/"
-     "PointerWrapper;)Lcom/openmmlab/mmdeployxtextrecognizer/PointerWrapper;",
-     (bool*)mmdeployTextRecognizerCreateByPath},
-    {"mmdeployTextRecognizerApply",
-     "(Lcom/openmmlab/mmdeployxtextrecognizer/PointerWrapper;Lcom/openmmlab/"
-     "mmdeployxtextrecognizer/PointerWrapper;ILcom/openmmlab/mmdeployxtextrecognizer/"
+    {"CreateByPath",
+     "(Ljava/lang/String;Ljava/lang/String;ILcn/org/openmmlab/mmdeploy/"
+     "PointerWrapper;)Lcn/org/openmmlab/mmdeploy/PointerWrapper;",
+     (bool*)CreateByPath},
+    {"Apply",
+     "(Lcn/org/openmmlab/mmdeploy/PointerWrapper;Lcn/org/openmmlab/"
+     "mmdeploy/PointerWrapper;ILcn/org/openmmlab/mmdeploy/"
      "PointerWrapper;)Z",
-     (bool*)mmdeployTextRecognizerApply},
-    {"mmdeployTextRecognizerReleaseResult",
-     "(Lcom/openmmlab/mmdeployxtextrecognizer/PointerWrapper;I)V",
-     (void*)mmdeployTextRecognizerReleaseResult},
-    {"mmdeployTextRecognizerDestroy", "(Lcom/openmmlab/mmdeployxtextrecognizer/PointerWrapper;)V",
-     (void*)mmdeployTextRecognizerDestroy}};
+     (bool*)Apply},
+    {"ReleaseResult", "(Lcn/org/openmmlab/mmdeploy/PointerWrapper;I)V", (void*)ReleaseResult},
+    {"Destroy", "(Lcn/org/openmmlab/mmdeploy/PointerWrapper;)V", (void*)Destroy}};
 JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
   JNIEnv* env = NULL;
   jint result = -1;
   if (vm->GetEnv((void**)&env, JNI_VERSION_1_6) != JNI_OK) {
     return result;
   }
-  jclass jClassName =
-      env->FindClass("com/openmmlab/mmdeployxtextrecognizer/MMDeployTextRecognizer");
+  jclass jClassName = env->FindClass("cn/org/openmmlab/mmdeploy/");
   jint ret = env->RegisterNatives(jClassName, method, sizeof(method) / sizeof(JNINativeMethod));
   if (ret != JNI_OK) {
-    __android_log_print(ANDROID_LOG_DEBUG, "JNITag", "jni_register Error");
     return -1;
   }
   return JNI_VERSION_1_6;
 }
 }
-}  // namespace MMDeployJava
+}  // namespace MMDeploy

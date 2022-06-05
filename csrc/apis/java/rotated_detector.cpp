@@ -2,22 +2,18 @@
 
 #include "rotated_detector.h"
 
-#include <benchmark.h>
-#include <platform.h>
+#include <android/log.h>
+#include <jni.h>
+#include <stdio.h>
 #include <unistd.h>
-
-#include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 
 #include "common.h"
 
-namespace MMDeployJava {
+namespace MMDeploy {
 
 extern "C" {
-JNIEXPORT jobject JNICALL mmdeployRotatedDetectorCreateByPath(JNIEnv* env, jobject thiz,
-                                                              jstring modelPath, jstring deviceName,
-                                                              jint deviceID,
-                                                              jobject handlePointer) {
+JNIEXPORT jobject JNICALL CreateByPath(JNIEnv* env, jobject thiz, jstring modelPath,
+                                       jstring deviceName, jint deviceID, jobject handlePointer) {
   // handlePointer saves the value of mm_handle_t, because mm_handle_t is already a handle pointer.
   int status{};
   const char* model_path = env->GetStringUTFChars(modelPath, 0);
@@ -26,22 +22,22 @@ JNIEXPORT jobject JNICALL mmdeployRotatedDetectorCreateByPath(JNIEnv* env, jobje
   jclass clazz = env->GetObjectClass(handlePointer);
   jmethodID initMethod = env->GetMethodID(clazz, "<init>", "(Ljava/lang/String;J)V");
   jfieldID id_address = env->GetFieldID(clazz, "address", "J");
-  mm_handle_t rotated_detector = new mm_handle_t;
+  mm_handle_t rotated_detector{};
   int device_id = (int)deviceID;
   status = mmdeploy_rotated_detector_create_by_path(model_path, device_name, device_id,
                                                     &rotated_detector);
   if (status != MM_SUCCESS) {
-    fprintf(stderr, "failed to create rotated detector, code: %d\n", (int)status);
+    __android_log_print(ANDROID_LOG_ERROR, "jni", "failed to create rotated detector, code: %d\n",
+                        (int)status);
     return env->NewObject(clazz, initMethod, env->NewStringUTF("mm_handle_t"), (long)0);
   }
   jobject result =
       env->NewObject(clazz, initMethod, env->NewStringUTF("mm_handle_t"), (long)rotated_detector);
   return result;
 }
-JNIEXPORT jboolean JNICALL mmdeployRotatedDetectorApply(JNIEnv* env, jobject thiz,
-                                                        jobject handlePointer, jobject matsPointer,
-                                                        jint matCount, jobject resultsPointer,
-                                                        jobject resultCountPointer) {
+JNIEXPORT jboolean JNICALL Apply(JNIEnv* env, jobject thiz, jobject handlePointer,
+                                 jobject matsPointer, jint matCount, jobject resultsPointer,
+                                 jobject resultCountPointer) {
   int status{};
   jclass handle_clazz = env->GetObjectClass(handlePointer);
   jfieldID id_handle_address = env->GetFieldID(handle_clazz, "address", "J");
@@ -63,16 +59,16 @@ JNIEXPORT jboolean JNICALL mmdeployRotatedDetectorApply(JNIEnv* env, jobject thi
   status = mmdeploy_rotated_detector_apply(rotated_detector, (const mm_mat_t*)pmats, mat_count,
                                            &result_apply, &count_apply);
   if (status != MM_SUCCESS) {
-    fprintf(stderr, "failed to apply rotated detector, code: %d\n", (int)status);
+    __android_log_print(ANDROID_LOG_ERROR, "jni", "failed to apply classifier, code: %d\n",
+                        (int)status);
     return JNI_FALSE;
   }
   env->SetLongField(resultsPointer, id_results_address, (jlong)result_apply);
   env->SetLongField(resultCountPointer, id_result_count_address, (jlong)count_apply);
   return JNI_TRUE;
 }
-JNIEXPORT void JNICALL mmdeployRotatedDetectorReleaseResult(JNIEnv* env, jobject thiz,
-                                                            jobject resultsPointer,
-                                                            jobject resultCountPointer) {
+JNIEXPORT void JNICALL ReleaseResult(JNIEnv* env, jobject thiz, jobject resultsPointer,
+                                     jobject resultCountPointer) {
   jclass results_clazz = env->GetObjectClass(resultsPointer);
   jfieldID id_results_address = env->GetFieldID(results_clazz, "address", "J");
   jlong presults = env->GetLongField(resultsPointer, id_results_address);
@@ -84,8 +80,7 @@ JNIEXPORT void JNICALL mmdeployRotatedDetectorReleaseResult(JNIEnv* env, jobject
   mmdeploy_rotated_detector_release_result(result, resultcount);
 }
 
-JNIEXPORT void JNICALL mmdeployRotatedDetectorDestroy(JNIEnv* env, jobject thiz,
-                                                      jobject handlePointer) {
+JNIEXPORT void JNICALL Destroy(JNIEnv* env, jobject thiz, jobject handlePointer) {
   jclass handle_clazz = env->GetObjectClass(handlePointer);
   jfieldID id_handle_address = env->GetFieldID(handle_clazz, "address", "J");
   long phandle = (long)env->GetLongField(handlePointer, id_handle_address);
@@ -94,35 +89,32 @@ JNIEXPORT void JNICALL mmdeployRotatedDetectorDestroy(JNIEnv* env, jobject thiz,
 }
 
 static JNINativeMethod method[] = {
-    {"mmdeployRotatedDetectorCreateByPath",
-     "(Ljava/lang/String;Ljava/lang/String;ILcom/openmmlab/mmdeployxrotateddetector/"
-     "PointerWrapper;)Lcom/openmmlab/mmdeployxrotateddetector/PointerWrapper;",
-     (bool*)mmdeployRotatedDetectorCreateByPath},
-    {"mmdeployRotatedDetectorApply",
-     "(Lcom/openmmlab/mmdeployxrotateddetector/PointerWrapper;Lcom/openmmlab/"
-     "mmdeployxrotateddetector/PointerWrapper;ILcom/openmmlab/mmdeployxrotateddetector/"
-     "PointerWrapper;Lcom/openmmlab/mmdeployxrotateddetector/PointerWrapper;)Z",
-     (bool*)mmdeployRotatedDetectorApply},
-    {"mmdeployRotatedDetectorReleaseResult",
-     "(Lcom/openmmlab/mmdeployxrotateddetector/PointerWrapper;Lcom/openmmlab/"
-     "mmdeployxrotateddetector/PointerWrapper;)V",
-     (void*)mmdeployRotatedDetectorReleaseResult},
-    {"mmdeployRotatedDetectorDestroy", "(Lcom/openmmlab/mmdeployxrotateddetector/PointerWrapper;)V",
-     (void*)mmdeployRotatedDetectorDestroy}};
+    {"CreateByPath",
+     "(Ljava/lang/String;Ljava/lang/String;ILcn/org/openmmlab/mmdeploy/"
+     "PointerWrapper;)Lcn/org/openmmlab/mmdeploy/PointerWrapper;",
+     (bool*)CreateByPath},
+    {"Apply",
+     "(Lcn/org/openmmlab/mmdeploy/PointerWrapper;Lcn/org/openmmlab/"
+     "mmdeploy/PointerWrapper;ILcn/org/openmmlab/mmdeploy/"
+     "PointerWrapper;Lcn/org/openmmlab/mmdeploy/PointerWrapper;)Z",
+     (bool*)Apply},
+    {"ReleaseResult",
+     "(Lcn/org/openmmlab/mmdeploy/PointerWrapper;Lcn/org/openmmlab/"
+     "mmdeploy/PointerWrapper;)V",
+     (void*)ReleaseResult},
+    {"Destroy", "(Lcn/org/openmmlab/mmdeploy/PointerWrapper;)V", (void*)Destroy}};
 JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
   JNIEnv* env = NULL;
   jint result = -1;
   if (vm->GetEnv((void**)&env, JNI_VERSION_1_6) != JNI_OK) {
     return result;
   }
-  jclass jClassName =
-      env->FindClass("com/openmmlab/mmdeployxrotateddetector/MMDeployRotatedDetector");
+  jclass jClassName = env->FindClass("cn/org/openmmlab/mmdeploy/");
   jint ret = env->RegisterNatives(jClassName, method, sizeof(method) / sizeof(JNINativeMethod));
   if (ret != JNI_OK) {
-    __android_log_print(ANDROID_LOG_DEBUG, "JNITag", "jni_register Error");
     return -1;
   }
   return JNI_VERSION_1_6;
 }
 }
-}  // namespace MMDeployJava
+}  // namespace MMDeploy

@@ -58,7 +58,8 @@ JNIEXPORT jboolean JNICALL Apply(JNIEnv* env, jobject thiz, jobject handlePointe
   status = mmdeploy_detector_apply(detector, (const mm_mat_t*)pmats, mat_count, &bboxes_apply,
                                    &count_apply);
   if (status != MM_SUCCESS) {
-    fprintf(stderr, "failed to apply detector, code: %d\n", (int)status);
+    __android_log_print(ANDROID_LOG_ERROR, "jni", "failed to create detector, code: %d\n",
+                        (int)status);
     return JNI_FALSE;
   }
   env->SetLongField(resultsPointer, id_results_address, (jlong)bboxes_apply);
@@ -88,13 +89,13 @@ JNIEXPORT void JNICALL Destroy(JNIEnv* env, jobject thiz, jobject handlePointer)
 
 static JNINativeMethod method[] = {
     {"CreateByPath",
-     "(Ljava/lang/String;Ljava/lang/String;ILcn/org/openmmlab/mmdeploy/PointerWrapper;)Lcom/"
-     "openmmlab/mmdeployxdetector/PointerWrapper;",
+     "(Ljava/lang/String;Ljava/lang/String;ILcn/org/openmmlab/mmdeploy/PointerWrapper;)Lcn/"
+     "org/openmmlab/mmdeploy/PointerWrapper;",
      (bool*)CreateByPath},
     {"Apply",
      "(Lcn/org/openmmlab/mmdeploy/PointerWrapper;Lcn/org/openmmlab/mmdeploy/"
-     "PointerWrapper;ILcn/org/openmmlab/mmdeploy/PointerWrapper;Lcom/openmmlab/"
-     "mmdeployxdetector/PointerWrapper;)Z",
+     "PointerWrapper;ILcn/org/openmmlab/mmdeploy/PointerWrapper;Lcn/org/"
+     "openmmlab/mmdeploy/PointerWrapper;)Z",
      (bool*)Apply},
     {"ReleaseResult",
      "(Lcn/org/openmmlab/mmdeploy/PointerWrapper;Lcn/org/openmmlab/mmdeploy/"

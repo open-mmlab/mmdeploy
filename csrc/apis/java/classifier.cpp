@@ -58,7 +58,8 @@ JNIEXPORT jboolean JNICALL Apply(JNIEnv* env, jobject thiz, jobject handlePointe
   status = mmdeploy_classifier_apply(classifier, (const mm_mat_t*)pmats, mat_count, &res_apply,
                                      &count_apply);
   if (status != MM_SUCCESS) {
-    fprintf(stderr, "failed to apply classifier, code: %d\n", (int)status);
+    __android_log_print(ANDROID_LOG_ERROR, "jni", "failed to apply classifier, code: %d\n",
+                        (int)status);
     return JNI_FALSE;
   }
   env->SetLongField(resultsPointer, id_results_address, (jlong)res_apply);
