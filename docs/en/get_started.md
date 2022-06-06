@@ -190,6 +190,7 @@ Take the previous converted Faster R-CNN tensorrt model for example,
 
 ```python
 from mmdeploy.apis import inference_model
+import os
 
 model_cfg = os.getenv('MMDET_DIR') + '/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py'
 deploy_cfg = os.getenv('MMDEPLOY_DIR') + '/configs/mmdet/detection/detection_tensorrt_dynamic-320x320-1344x1344.py'
@@ -235,7 +236,13 @@ for index, bbox, label_id in zip(indices, bboxes, labels):
 
 cv2.imwrite('output_detection.png', img)
 ```
+
 You can find more examples from [here](https://github.com/open-mmlab/mmdeploy/demo/python).
+
+```{note}
+如果您使用源码安装方式, 请把 ${MMDEPLOY_DIR}/build/lib 加入到环境变量 PYTHONPATH 中。
+否则会遇到错误’ModuleNotFoundError: No module named 'mmdeploy_python‘
+```
 
 #### C API
 

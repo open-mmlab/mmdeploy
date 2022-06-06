@@ -189,6 +189,7 @@ Model Converter 屏蔽了推理后端接口的差异，对其推理 API 进行�
 
 ```python
 from mmdeploy.apis import inference_model
+import os
 
 model_cfg = os.getenv('MMDET_DIR') + '/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py'
 deploy_cfg = os.getenv('MMDEPLOY_DIR') + '/configs/mmdet/detection/detection_tensorrt_dynamic-320x320-1344x1344.py'
@@ -236,6 +237,11 @@ cv2.imwrite('output_detection.png', img)
 ```
 
 更多模型的 SDK Python API 应用样例，请查阅[这里](https://github.com/open-mmlab/mmdeploy/demo/python)。
+
+```{note}
+If you build MMDeploy from the source, please add ${MMDEPLOY_DIR}/build/lib to the environment variable PYTHONPATH.
+Otherwise, you will run into an error like ’ModuleNotFoundError: No module named 'mmdeploy_python‘
+```
 
 #### C API
 
