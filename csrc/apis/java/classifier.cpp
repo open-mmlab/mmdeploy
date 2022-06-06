@@ -22,7 +22,7 @@ JNIEXPORT jobject JNICALL CreateByPath(JNIEnv* env, jobject thiz, jstring modelP
   jclass clazz = env->GetObjectClass(handlePointer);
   jmethodID initMethod = env->GetMethodID(clazz, "<init>", "(Ljava/lang/String;J)V");
   jfieldID id_address = env->GetFieldID(clazz, "address", "J");
-  mm_handle_t classifier = new mm_handle_t;
+  mm_handle_t classifier{};
   int device_id = (int)deviceID;
   status = mmdeploy_classifier_create_by_path(model_path, device_name, device_id, &classifier);
   if (status != MM_SUCCESS) {
