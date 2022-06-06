@@ -135,7 +135,6 @@ class PoseDetection(BaseTask):
         Returns:
             tuple: (data, img), meta information for the input image and input.
         """
-        from mmpose.apis.inference import _box2cs
         from mmpose.datasets.dataset_info import DatasetInfo
         from mmpose.datasets.pipelines import Compose
 
@@ -161,16 +160,10 @@ class PoseDetection(BaseTask):
         else:
             image_size = np.array(cfg.data_cfg['image_size'])
         for bbox in bboxes:
-            center, scale = _box2cs(cfg, bbox)
-
             # prepare data
             data = {
                 'img':
                 imgs,
-                'center':
-                center,
-                'scale':
-                scale,
                 'bbox_score':
                 bbox[4] if len(bbox) == 5 else 1,
                 'bbox_id':
@@ -189,6 +182,15 @@ class PoseDetection(BaseTask):
                     'flip_pairs': flip_pairs
                 }
             }
+
+            try:
+                from mmpose.apis.inference import _box2cs
+                center, scale = _box2cs(cfg, bbox)
+                data['center'] = center
+                data['scale'] = scale
+            except Exception:
+                # mmpose >= 0.26 does not have _box2cs
+                data['bbox'] = bbox
 
             data = test_pipeline(data)
             batch_data.append(data)
