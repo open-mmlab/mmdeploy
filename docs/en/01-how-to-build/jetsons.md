@@ -102,7 +102,7 @@ cmake --version
 ```
 
 ### Install mmdeploy
-Just follow the instruction [here](../build.md). If it throws `failed building wheel for numpy...ERROR: Failed to build one or more wheels` when installing `h5py`, try install `h5py` manually.
+Just follow the instruction [here](../01-how-to-build/build_from_source.md). If it throws `failed building wheel for numpy...ERROR: Failed to build one or more wheels` when installing `h5py`, try install `h5py` manually.
 ```
 sudo apt-get install pkg-config libhdf5-100 libhdf5-dev
 pip install versioned-hdf5 --no-cache-dir

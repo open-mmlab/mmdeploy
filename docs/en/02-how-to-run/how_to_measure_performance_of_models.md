@@ -1,12 +1,13 @@
-# How to measure the performance of a model
+# How to profile model
 
-After we convert a PyTorch model to a backend model, we may need to test the speed of the model before using it. In MMDeploy, we provide a tool to test the speed of backend models in `tools/test.py`
+After converting a PyTorch model to a backend model, you can profile inference speed using `tools/test.py`.
 
 ## Prerequisite
 
-Before test the speed of a model of a specific backend, you should [install the plugins](../build.md) of the backend and convert the model to the backend with our [deploy tools](how_to_convert_model.md).
+Install MMDeploy according to [get-started](../get_started.md) instructions.
+And convert the PyTorch model or ONNX model to the backend model by following the [guide](how_to_convert_model.md).
 
-## Usage
+## Profile
 
 ```shell
 python tools/test.py \
@@ -16,10 +17,12 @@ ${MODEL_CFG} \
 [--speed-test] \
 [--warmup ${WARM_UP}] \
 [--log-interval ${LOG_INTERVERL}] \
-[--log2file ${LOG_RESULT_TO_FILE}] \
+[--log2file ${LOG_RESULT_TO_FILE}]
 ```
 
 ## Description of all arguments
+
+
 
 * `deploy_cfg`: The config for deployment.
 * `model_cfg`: The config of the model in OpenMMLab codebases.
@@ -39,5 +42,5 @@ python tools/test.py \
     {MMCLS_DIR}/configs/resnet/resnet50_b32x8_imagenet.py \
     --model model.onnx \
     --speed-test \
-    --device cpu \
+    --device cpu
 ```

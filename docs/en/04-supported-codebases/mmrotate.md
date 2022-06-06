@@ -44,11 +44,3 @@ python tools/test.py \
 Note
 
 - Usually, mmrotate models need some extra information for the input image, but we can't get it directly. So, when exporting the model, you can use `$MMROTATE_DIR/demo/demo.jpg` as input.
-
-## Reminder
-
-None
-
-## FAQs
-
-None

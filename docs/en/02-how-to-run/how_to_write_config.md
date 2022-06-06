@@ -96,7 +96,7 @@ codebase_config = dict(type='mmcls', task='Classification')
 
 ### 3. How to write backend config
 
-The backend config is mainly used to specify the backend on which model runs and provide the information needed when the model runs on the backend , referring to [ONNX Runtime](../backends/onnxruntime.md), [TensorRT](../backends/tensorrt.md), [ncnn](../backends/ncnn.md), [PPLNN](../backends/pplnn.md).
+The backend config is mainly used to specify the backend on which model runs and provide the information needed when the model runs on the backend , referring to [ONNX Runtime](../05-supported-backends/onnxruntime.md), [TensorRT](../05-supported-backends/tensorrt.md), [ncnn](../05-supported-backends/ncnn.md), [PPLNN](../05-supported-backends/pplnn.md).
 
 - `type`: Model's backend, including `onnxruntime`, `ncnn`, `pplnn`, `tensorrt`, `openvino`.
 

@@ -1,7 +1,7 @@
-## OpenVINO Support
+# OpenVINO Support
 
 This tutorial is based on Linux systems like Ubuntu-18.04.
-### Installation
+## Installation
 It is recommended to create a virtual environment for the project.
 1. Install [OpenVINO](https://docs.openvino.ai/2021.4/get_started.html). It is recommended to use the installer or install using pip.
 Installation example using [pip](https://pypi.org/project/openvino-dev/):
@@ -10,19 +10,11 @@ pip install openvino-dev
 ```
 2. *`Optional` If you want to use OpenVINO in SDK, you need install OpenVINO with [install_guides](https://docs.openvino.ai/2021.4/openvino_docs_install_guides_installing_openvino_linux.html#install-openvino).
 
-3. Install MMDeploy following the [instructions](../build.md).
+3. Install MMDeploy following the [instructions](../01-how-to-build/build_from_source.md).
 
 To work with models from [MMDetection](https://github.com/open-mmlab/mmdetection/blob/master/docs/get_started.md), you may need to install it additionally.
 
-### Troubleshooting
-
-#### ImportError: libpython3.7m.so.1.0: cannot open shared object file: No such file or directory
-To resolve missing external dependency on Ubuntu*, execute the following command:
-```bash
-sudo apt-get install libpython3.7
-```
-
-### Usage
+## Usage
 
 Example:
 ```bash
@@ -36,7 +28,7 @@ python tools/deploy.py \
     --log-level INFO
 ```
 
-### List of supported models exportable to OpenVINO from MMDetection
+## List of supported models exportable to OpenVINO from MMDetection
 
 The table below lists the models that are guaranteed to be exportable to OpenVINO from MMDetection.
 |     Model name     |                                  Config                                   | Dynamic Shape |
@@ -63,7 +55,7 @@ Notes:
 the RoiAlign operation is replaced with the [ExperimentalDetectronROIFeatureExtractor](https://docs.openvinotoolkit.org/latest/openvino_docs_ops_detection_ExperimentalDetectronROIFeatureExtractor_6.html) operation in the ONNX graph.
 - Models "VFNet" and "Faster R-CNN + DCN" use the custom "DeformableConv2D" operation.
 
-### Deployment config
+## Deployment config
 
 With the deployment config, you can specify additional options for the Model Optimizer.
 To do this, add the necessary parameters to the `backend_config.mo_options` in the fields `args` (for parameters with values) and `flags` (for flags).
@@ -84,7 +76,12 @@ backend_config = dict(
 
 Information about the possible parameters for the Model Optimizer can be found in the [documentation](https://docs.openvino.ai/latest/openvino_docs_MO_DG_prepare_model_convert_model_Converting_Model.html).
 
+## Troubleshooting
 
-### FAQs
+- ImportError: libpython3.7m.so.1.0: cannot open shared object file: No such file or directory
 
-- None
+  To resolve missing external dependency on Ubuntu*, execute the following command:
+
+  ```bash
+  sudo apt-get install libpython3.7
+  ```

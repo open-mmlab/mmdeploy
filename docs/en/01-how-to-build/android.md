@@ -17,7 +17,7 @@ Model converter is executed on linux platform, and SDK is executed on android pl
 
 Here are two steps for android build.
 
-1. Build model converter on linux, please refer to [How to build linux](./linux.md)
+1. Build model converter on linux, please refer to [How to build linux](./linux-x86_64.md)
 
 2. Build SDK using android toolchain on linux.
 

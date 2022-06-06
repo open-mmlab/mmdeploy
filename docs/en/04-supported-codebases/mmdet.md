@@ -1,12 +1,12 @@
-## MMDetection Support
+# MMDetection Support
 
 MMDetection is an open source object detection toolbox based on PyTorch. It is a part of the [OpenMMLab](https://openmmlab.com/) project.
 
-### MMDetection installation tutorial
+## MMDetection installation tutorial
 
 Please refer to [get_started.md](https://github.com/open-mmlab/mmdetection/blob/master/docs/en/get_started.md) for installation.
 
-### List of MMDetection models supported by MMDeploy
+## List of MMDetection models supported by MMDeploy
 
 |       Model        |         Task         | OnnxRuntime | TensorRT | ncnn  | PPLNN | OpenVINO |                                     Model config                                     |
 | :----------------: | :------------------: | :---------: | :------: | :---: | :---: | :------: | :----------------------------------------------------------------------------------: |
@@ -26,11 +26,3 @@ Please refer to [get_started.md](https://github.com/open-mmlab/mmdetection/blob/
 |       RepPoints          |   ObjectDetection    |      N      |    Y     |   N   |   ?   |    Y     |      [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/reppoints)     |
 | Cascade Mask R-CNN | InstanceSegmentation |      Y      |    N     |   N   |   N   |    Y     | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/cascade_rcnn) |
 |     Mask R-CNN     | InstanceSegmentation |      Y      |    Y     |   N   |   N   |    Y     |  [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/mask_rcnn)   |
-
-### Reminder
-
-None
-
-### FAQs
-
-None

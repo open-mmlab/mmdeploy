@@ -4,7 +4,7 @@ This tutorial introduces how to add unit test for backend ops. When you add a cu
 
 ### Prerequisite
 
-- `Compile new ops`: After adding a new custom op, needs to recompile the relevant backend, referring to [build.md](../build.md).
+- `Compile new ops`: After adding a new custom op, needs to recompile the relevant backend, referring to [build.md](../01-how-to-build/build_from_source.md).
 
 ### 1. Add the test program test_XXXX()
 
@@ -106,11 +106,3 @@ Use pytest to call the test function to test ops.
 ```bash
 pytest tests/test_ops/test_ops.py::test_XXXX
 ```
-
-### 3. Reminder
-
-None
-
-### 4. FAQs
-
-None

@@ -18,11 +18,3 @@ Please refer to [official installation guide](https://mmediting.readthedocs.io/e
 | Real-ESRGAN | super-resolution |      Y       |    Y     |   Y   |   Y   |    Y     |  [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/real_esrgan)   |
 | EDSR        | super-resolution |      Y       |    Y     |   Y   |   N   |    Y     |      [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/edsr)      |
 | RDN         | super-resolution |      Y       |    Y     |   Y   |   Y   |    Y     |      [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/rdn)       |
-
-## Reminder
-
-None
-
-## FAQs
-
-None

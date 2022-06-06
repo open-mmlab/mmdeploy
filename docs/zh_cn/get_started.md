@@ -125,12 +125,12 @@ conda install pytorch==${PYTORCH_VERSION} torchvision==${TORCHVISION_VERSION} cp
 
 目前，对于 MMDeploy 支持各种推理后端的安装方法，您可以查阅以下文档：
 
-- [ONNX Runtime](05-supported-backends/onnxruntime.md)
-- [TensorRT](05-supported-backends/tensorrt.md)
-- [PPL.NN](05-supported-backends/pplnn.md)
-- [ncnn](05-supported-backends/ncnn.md)
-- [OpenVINO](05-supported-backends/openvino.md)
-- [LibTorch](05-supported-backends/torchscript.md)
+- [ONNX Runtime](../en/05-supported-backends/onnxruntime.md)
+- [TensorRT](../en/05-supported-backends/tensorrt.md)
+- [PPL.NN](../en/05-supported-backends/pplnn.md)
+- [ncnn](../en/05-supported-backends/ncnn.md)
+- [OpenVINO](../en/05-supported-backends/openvino.md)
+- [LibTorch](../en/05-supported-backends/torchscript.md)
 
 ## 模型转换
 

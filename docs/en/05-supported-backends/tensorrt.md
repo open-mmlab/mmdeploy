@@ -1,8 +1,8 @@
-## TensorRT Support
+# TensorRT Support
 
-### Installation
+## Installation
 
-#### Install TensorRT
+### Install TensorRT
 
 Please install TensorRT 8 follow [install-guide](https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing).
 
@@ -20,7 +20,7 @@ Please install TensorRT 8 follow [install-guide](https://docs.nvidia.com/deeplea
     source ~/.bashrc
     ```
 
-#### Build custom ops
+### Build custom ops
 
 Some custom ops are created to support models in OpenMMLab, and the custom ops can be built as follow:
 
@@ -38,11 +38,11 @@ If you haven't installed TensorRT in the default path, Please add `-DTENSORRT_DI
  make -j$(nproc)
 ```
 
-### Convert model
+## Convert model
 
-Please follow the tutorial in [How to convert model](../tutorials/how_to_convert_model.md). **Note** that the device must be `cuda` device.
+Please follow the tutorial in [How to convert model](../02-how-to-run/how_to_convert_model.md). **Note** that the device must be `cuda` device.
 
-#### Int8 Support
+### Int8 Support
 
 Since TensorRT supports INT8 mode, a custom dataset config can be given to calibrate the model. Following is an example for MMDetection:
 
@@ -93,7 +93,7 @@ python tools/deploy.py \
 
 If the calibration dataset is not given, the data will be calibrated with the dataset in model config.
 
-### FAQs
+## FAQs
 
 - Error `Cannot found TensorRT headers` or `Cannot found TensorRT libs`
 
@@ -132,6 +132,6 @@ If the calibration dataset is not given, the data will be calibrated with the da
 
   Read [this](https://forums.developer.nvidia.com/t/matrixmultiply-failed-on-tensorrt-7-2-1/158187/4) for detail.
 
-- Install mmdeploy on Jetsons
+- Install mmdeploy on Jetson
 
-  We provide a tutorial to get start on Jetsons [here](../tutorials/how_to_install_mmdeploy_on_jetsons.md).
+  We provide a tutorial to get start on Jetsons [here](../01-how-to-build/jetsons.md).

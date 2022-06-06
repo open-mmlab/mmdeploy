@@ -1,10 +1,10 @@
-## ncnn Support
+# ncnn Support
 
 MMDeploy now supports ncnn version == 1.0.20211208
 
-### Installation
+## Installation
 
-#### Install ncnn
+### Install ncnn
 
 - Download VulkanTools for the compilation of ncnn.
 
@@ -47,7 +47,7 @@ You should ensure your gcc satisfies `gcc >= 6`.
         pip install -e .
         ```
 
-#### Build custom ops
+### Build custom ops
 
 Some custom ops are created to support models in OpenMMLab, the custom ops can be built as follows:
 
@@ -65,26 +65,16 @@ If you haven't installed ncnn in the default path, please add `-Dncnn_DIR` flag 
  make -j$(nproc)
 ```
 
-### Convert model
+## Convert model
 
-- This follows the tutorial on [How to convert model](../tutorials/how_to_convert_model.md).
+- This follows the tutorial on [How to convert model](../02-how-to-run/how_to_convert_model.md).
 - The converted model has two files: `.param` and `.bin`, as model structure file and weight file respectively.
 
-
-### List of supported custom ops
-
-| Operator                        | CPU | MMDeploy Releases |
-|:--------------------------------|:---:|:------------------|
-| [Expand](../ops/ncnn.md#expand) |  Y  | master            |
-| [Gather](../ops/ncnn.md#gather) |  Y  | master            |
-| [Shape](../ops/ncnn.md#shape)   |  Y  | master            |
-| [TopK](../ops/ncnn.md#topk)     |  Y  | master            |
-
-#### Reminder
+## Reminder
 
 - In ncnn version >= 1.0.20201208, the dimension of ncnn.Mat should be no more than 4.
 
-### FAQs
+## FAQs
 
 1. When running ncnn models for inference with custom ops, it fails and shows the error message like:
 

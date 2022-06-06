@@ -1,10 +1,10 @@
-## ONNX Runtime Support
+# ONNX Runtime Support
 
-### Introduction of ONNX Runtime
+## Introduction of ONNX Runtime
 
-**ONNX Runtime** is a cross-platform inferencing and training accelerator compatible with many popular ML/DNN frameworks. Check its [github](https://github.com/microsoft/onnxruntime) for more information.
+**ONNX Runtime** is a cross-platform inference and training accelerator compatible with many popular ML/DNN frameworks. Check its [github](https://github.com/microsoft/onnxruntime) for more information.
 
-### Installation
+## Installation
 
 *Please note that only **onnxruntime>=1.8.1** of CPU version on Linux platform is supported by now.*
 
@@ -14,9 +14,9 @@
 pip install onnxruntime==1.8.1
 ```
 
-### Build custom ops
+## Build custom ops
 
-#### Prerequisite
+### Prerequisite
 
 - Download `onnxruntime-linux` from ONNX Runtime [releases](https://github.com/microsoft/onnxruntime/releases/tag/v1.8.1), extract it, expose `ONNXRUNTIME_DIR` and finally add the lib path to `LD_LIBRARY_PATH` as below:
 
@@ -40,7 +40,7 @@ Note:
     source ~/.bashrc
     ```
 
-#### Build on Linux
+### Build on Linux
 
 ```bash
 cd ${MMDEPLOY_DIR} # To MMDeploy root directory
@@ -49,22 +49,13 @@ cmake -DMMDEPLOY_TARGET_BACKENDS=ort -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
 make -j$(nproc)
 ```
 
-### How to convert a model
+## How to convert a model
 
-- You could follow the instructions of tutorial [How to convert model](../tutorials/how_to_convert_model.md)
+- You could follow the instructions of tutorial [How to convert model](../02-how-to-run/how_to_convert_model.md)
 
-### List of supported custom ops
+## How to add a new custom op
 
-| Operator                                                                     |  CPU  |  GPU  | MMDeploy Releases |
-| :--------------------------------------------------------------------------- | :---: | :---: | :---------------- |
-| [grid_sampler](../ops/onnxruntime.md#grid_sampler)                           |   Y   |   N   | master            |
-| [MMCVModulatedDeformConv2d](../ops/onnxruntime.md#mmcvmodulateddeformconv2d) |   Y   |   N   | master            |
-| [NMSRotated](../ops/onnxruntime.md#nmsrotated)                               |   Y   |   N   | master            |
-| [RoIAlignRotated](../ops/onnxruntime.md#roialignrotated)                     |   Y   |   N   | master            |
-
-### How to add a new custom op
-
-#### Reminder
+## Reminder
 
 - The custom operator is not included in [supported operator list](https://github.com/microsoft/onnxruntime/blob/master/docs/OperatorKernels.md) in ONNX Runtime.
 - The custom operator should be able to be exported to ONNX.
@@ -80,11 +71,7 @@ Take custom operator `roi_align` for example.
 
 **Finally, welcome to send us PR of adding custom operators for ONNX Runtime in MMDeploy.** :nerd_face:
 
-### FAQs
-
-- None
-
-### References
+## References
 
 - [How to export Pytorch model with custom op to ONNX and run it in ONNX Runtime](https://github.com/onnx/tutorials/blob/master/PyTorchCustomOperator/README.md)
 - [How to add a custom operator/kernel in ONNX Runtime](https://github.com/microsoft/onnxruntime/blob/master/docs/AddingCustomOp.md)

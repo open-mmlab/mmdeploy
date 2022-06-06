@@ -66,7 +66,7 @@ The backends in MMDeploy must support the ONNX. The backend loads the ".onnx" fi
             fp16_mode=False, max_workspace_size=0))
     ```
 
-    After possessing a base backend config file, you can easily construct a complete deploy config through inheritance. Please refer to our [config tutorial](how_to_write_config.md) for more details. Here is an example:
+    After possessing a base backend config file, you can easily construct a complete deploy config through inheritance. Please refer to our [config tutorial](../02-how-to-run/how_to_write_config.md) for more details. Here is an example:
 
     ```Python
     _base_ = ['../_base_/backends/onnxruntime.py']

@@ -1,14 +1,14 @@
-## PPLNN Support
+# PPLNN Support
 
 This tutorial is based on Linux systems like Ubuntu-18.04.
 
-### Installation
+## Installation
 
 1. Please install [pyppl](https://github.com/openppl-public/ppl.nn) following [install-guide](https://github.com/openppl-public/ppl.nn/blob/master/docs/en/building-from-source.md).
 
-2. Install MMdeploy following the [instructions](../build.md).
+2. Install MMDeploy following the [instructions](../01-how-to-build/build_from_source.md).
 
-### Usage
+## Usage
 
 Example:
 ```bash
@@ -19,5 +19,5 @@ python tools/deploy.py \
     tests/data/tiger.jpeg \
     --work-dir ../deploy_result \
     --device cuda \
-    --log-level INFO \
+    --log-level INFO
 ```

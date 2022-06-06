@@ -29,11 +29,3 @@ $MMDEPLOY_DIR/demo/resources/human-pose.jpg \
 Note
 
 - Usually, mmpose models need some extra information for the input image, but we can't get it directly. So, when exporting the model, you can use `$MMDEPLOY_DIR/demo/resources/human-pose.jpg` as input.
-
-## Reminder
-
-None
-
-## FAQs
-
-None

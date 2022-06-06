@@ -1,10 +1,11 @@
-# How to evaluate a model
+# How to evaluate model
 
-After we convert a PyTorch model to a backend model, we may need to evaluate the performance of the model before using it. In MMDeploy, we provide a tool to evaluate backend models in `tools/test.py`
+After converting a PyTorch model to a backend model, you may evaluate backend models with `tools/test.py`
 
 ## Prerequisite
 
-Before evaluating a model of a specific backend, you should [install the plugins](../build.md) of the backend and convert the model to the backend with our [deploy tools](how_to_convert_model.md).
+Install MMDeploy according to [get-started](../get_started.md) instructions.
+And convert the PyTorch model or ONNX model to the backend model by following the [guide](how_to_convert_model.md).
 
 ## Usage
 
@@ -52,7 +53,7 @@ python tools/test.py \
     {MMCLS_DIR}/configs/resnet/resnet50_b32x8_imagenet.py \
     --model model.onnx \
     --out out.pkl \
-    --device cuda:0 \
+    --device cuda:0
 ```
 
 ## Note

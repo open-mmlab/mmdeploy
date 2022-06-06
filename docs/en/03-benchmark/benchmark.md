@@ -23,7 +23,7 @@ GPU: ncnn, TensorRT, PPLNN
 - Input resolution varies for different datasets of different codebases. All inputs are real images except for `mmediting` because the dataset is not large enough.
 
 
-Users can directly test the speed through [model profiling](../02-how-to-run/how_to_measure_performance_of_models.mdhow_to_measure_performance_of_models.md). And here is the benchmark in our environment.
+Users can directly test the speed through [model profiling](../02-how-to-run/how_to_measure_performance_of_models.md). And here is the benchmark in our environment.
 
 <div style="margin-left: 25px;">
 <table class="docutils">

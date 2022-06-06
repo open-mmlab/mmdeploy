@@ -4,7 +4,7 @@ Welcome to MMDeploy's documentation!
 You can switch between Chinese and English documents in the lower-left corner of the layout.
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Get Started
 
    get_started.md
@@ -16,7 +16,7 @@ You can switch between Chinese and English documents in the lower-left corner of
    01-how-to-build/build_from_source.md
    01-how-to-build/build_from_docker.md
 
--- toctree::
+.. toctree::
    :maxdepth: 1
    :caption: Run & Test
 
@@ -61,7 +61,7 @@ You can switch between Chinese and English documents in the lower-left corner of
    ops/tensorrt.md
    ops/ncnn.md
 
--- toctree::
+.. toctree::
    :maxdepth: 1
    :caption: Developer Guide
 

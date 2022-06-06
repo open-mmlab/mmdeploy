@@ -1,12 +1,12 @@
-## TorchScript support
+# TorchScript support
 
-### Introduction of TorchScript
+## Introduction of TorchScript
 
 **TorchScript** a way to create serializable and optimizable models from PyTorch code. Any TorchScript program can be saved from a Python process and loaded in a process where there is no Python dependency. Check the [Introduction to TorchScript](https://pytorch.org/tutorials/beginner/Intro_to_TorchScript_tutorial.html) for more details.
 
-### Build custom ops
+## Build custom ops
 
-#### Prerequisite
+### Prerequisite
 
 - Download libtorch from the official website [here](https://pytorch.org/get-started/locally/).
 
@@ -34,7 +34,7 @@ Note:
     source ~/.bashrc
     ```
 
-#### Build on Linux
+### Build on Linux
 
 ```bash
 cd ${MMDEPLOY_DIR} # To MMDeploy root directory
@@ -43,11 +43,11 @@ cmake -DMMDEPLOY_TARGET_BACKENDS=torchscript -DTorch_DIR=${Torch_DIR} ..
 make -j$(nproc)
 ```
 
-### How to convert a model
+## How to convert a model
 
-- You could follow the instructions of tutorial [How to convert model](../tutorials/how_to_convert_model.md)
+- You could follow the instructions of tutorial [How to convert model](../02-how-to-run/how_to_convert_model.md)
 
-### FAQs
+## FAQs
 
 - Error: `projects/thirdparty/libtorch/share/cmake/Caffe2/Caffe2Config.cmake:96 (message):Your installed Caffe2 version uses cuDNN but I cannot find the cuDNN libraries.  Please set the proper cuDNN prefixes and / or install cuDNN.`
 
