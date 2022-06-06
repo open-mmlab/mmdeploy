@@ -80,22 +80,6 @@ You can skip this chapter if you are only interested in the model converter.
 </thead>
 <tbody>
   <tr>
-    <td>spdlog </td>
-    <td>
-    spdlog is a very fast, header-only/compiled, C++ logging library. You can install it like this,
-<pre><code>
-Invoke-WebRequest -Uri https://github.com/gabime/spdlog/archive/refs/tags/v1.9.2.zip -OutFile spdlog-1.9.2.zip
-Expand-Archive spdlog-1.9.2.zip .
-cd spdlog-1.9.2
-mkdir build
-cd build
-cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release
-cmake --build . --target install  --config Release -- /m
-cd ../..
-</code></pre>
-   </td>
-  </tr>
-  <tr>
     <td>OpenCV<br>(>=3.0) </td>
     <td>
     1. Find and download OpenCV 3+ for windows from <a href="https://github.com/opencv/opencv/releases">here</a>.<br>
@@ -274,7 +258,7 @@ $env:MMDEPLOY_DIR="$pwd"
     <td>Enable codebase's postprocess modules. You can provide a semicolon separated list of codebase names to enable them. Or you can pass <code>all</code> to enable them all, i.e., <code>-DMMDEPLOY_CODEBASES=all</code></td>
   </tr>
   <tr>
-    <td>BUILD_SHARED_LIBS</td>
+    <td>MMDEPLOY_SHARED_LIBS</td>
     <td>{ON, OFF}</td>
     <td>ON</td>
     <td>Switch to build shared library or static library of MMDeploy SDK</td>

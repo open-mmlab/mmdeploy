@@ -94,21 +94,6 @@ pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/${cu_ve
 </thead>
 <tbody>
   <tr>
-    <td>spdlog </td>
-    <td>
-    在 Ubuntu 18.04 及以上版本
-<pre><code>
-sudo apt-get install libspdlog-dev
-</code></pre>
-    在 Ubuntu 16.04,
-<pre><code>
-wget http://archive.ubuntu.com/ubuntu/pool/universe/s/spdlog/libspdlog-dev_0.16.3-1_amd64.deb
-sudo dpkg -i libspdlog-dev_0.16.3-1_amd64.deb
-</code></pre>
-    您也可以使用spdlog的源码进行编译，激活它更多的特性。但是，请务必打开 <code>-DCMAKE_POSITION_INDEPENDENT_CODE=ON</code>.
-   </td>
-  </tr>
-  <tr>
     <td>OpenCV<br>(>=3.0) </td>
     <td>
     在 Ubuntu 18.04 及以上版本
@@ -331,7 +316,7 @@ export MMDEPLOY_DIR=$(pwd)
     <td>用来设置 SDK 后处理组件，加载 OpenMMLab 算法仓库的后处理功能。如果选择多个 codebase，中间使用分号隔开。比如，<code>-DMMDEPLOY_CODEBASES="mmcls;mmdet"</code>。也可以通过 <code>-DMMDEPLOY_CODEBASES=all</code> 方式，加载所有 codebase。</td>
   </tr>
   <tr>
-    <td>BUILD_SHARED_LIBS</td>
+    <td>MMDEPLOY_SHARED_LIBS</td>
     <td>{ON, OFF}</td>
     <td>ON</td>
     <td>MMDeploy SDK 的动态库的编译开关。设置 OFF 时，编译静态库</td>

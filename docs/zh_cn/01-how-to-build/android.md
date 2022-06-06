@@ -62,20 +62,6 @@ MMDeploy 的交叉编译分为两步:
 </thead>
 <tbody>
   <tr>
-    <td>spdlog </td>
-    <td>
-<pre><code>
-git clone -b v1.9.2 https://github.com/gabime/spdlog.git
-cd spdlog
-export SPDLOG_DIR=${PWD}
-mkdir -p build
-cd build
-cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_INSTALL_PREFIX=${SPDLOG_DIR} -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake -DANDROID_ABI="arm64-v8a" -DANDROID_PLATFORM=android-30 ..
-make install
-</code></pre>
-   </td>
-  </tr>
-  <tr>
     <td>OpenCV<br>(>=3.0) </td>
     <td>
 <pre><code>
@@ -153,7 +139,7 @@ make install
     <td>用来设置 SDK 后处理组件,加载 OpenMMLab 算法仓库的后处理功能. 已支持的算法仓库有'mmcls','mmdet','mmedit','mmseg'和'mmocr'. 如果选择多个codebase,中间使用分号隔开. 比如, 'mmcls', 'mmdet', 'mmedit', 'mmseg', 'mmocr'. 也可以通过 <code>all</code> 的方式, 加载所有codebase, 即 <code>-DMMDEPLOY_CODEBASES=all.</code></td>
   </tr>
   <tr>
-    <td>BUILD_SHARED_LIBS</td>
+    <td>MMDEPLOY_SHARED_LIBS</td>
     <td>{ON, OFF}</td>
     <td>ON</td>
     <td>MMDeploy SDK 的动态库的编译开关.设置 OFF 时, 编译静态库. 目前 android 端 SDK 仅支持静态库加载, 后续会进行对动态库加载的支持.</td>
@@ -172,11 +158,10 @@ make install
   cmake .. \
       -DMMDEPLOY_BUILD_SDK=ON \
       -DOpenCV_DIR=${OPENCV_ANDROID_SDK_DIR}/sdk/native/jni/abi-arm64-v8a \
-      -Dspdlog_DIR=${SPDLOG_DIR}/lib/cmake/spdlog \
       -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn \
       -DMMDEPLOY_TARGET_BACKENDS=ncnn \
       -DMMDEPLOY_CODEBASES=all \
-      -DBUILD_SHARED_LIBS=OFF \
+      -DMMDEPLOY_SHARED_LIBS=OFF \
       -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake \
       -DANDROID_ABI=arm64-v8a \
       -DANDROID_PLATFORM=android-30 \
@@ -192,7 +177,6 @@ cd ${MMDEPLOY_DIR}/build/install/example
 mkdir -p build && cd build
 cmake .. \
       -DOpenCV_DIR=${OPENCV_ANDROID_SDK_DIR}/sdk/native/jni/abi-arm64-v8a \
-      -Dspdlog_DIR=${SPDLOG_DIR}/lib/cmake/spdlog \
       -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn \
       -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy \
       -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake \

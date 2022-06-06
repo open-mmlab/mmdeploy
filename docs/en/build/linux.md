@@ -102,21 +102,6 @@ You can skip this chapter if you are only interested in the model converter.
 </thead>
 <tbody>
   <tr>
-    <td>spdlog </td>
-    <td>
-    On Ubuntu >=18.04,
-<pre><code>
-sudo apt-get install libspdlog-dev
-</code></pre>
-    On Ubuntu 16.04,
-<pre><code>
-wget http://archive.ubuntu.com/ubuntu/pool/universe/s/spdlog/libspdlog-dev_0.16.3-1_amd64.deb
-sudo dpkg -i libspdlog-dev_0.16.3-1_amd64.deb
-</code></pre>
-    You can also build spdlog from its source to enjoy its latest features. But be sure to open cmake option <code>-DCMAKE_POSITION_INDEPENDENT_CODE=ON</code>.
-   </td>
-  </tr>
-  <tr>
     <td>OpenCV<br>(>=3.0) </td>
     <td>
     On Ubuntu >=18.04,
@@ -346,7 +331,7 @@ Currently, <b>The Model Converter supports torchscript, but SDK doesn't</b>.
     <td>Enable codebase's postprocess modules. You can provide a semicolon separated list of codebase names to enable them, e.g., <code>-DMMDEPLOY_CODEBASES="mmcls;mmdet"</code>. Or you can pass <code>all</code> to enable them all, i.e., <code>-DMMDEPLOY_CODEBASES=all</code></td>
   </tr>
   <tr>
-    <td>BUILD_SHARED_LIBS</td>
+    <td>MMDEPLOY_SHARED_LIBS</td>
     <td>{ON, OFF}</td>
     <td>ON</td>
     <td>Switch to build shared library or static library of MMDeploy SDK</td>

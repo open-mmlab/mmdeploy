@@ -3,9 +3,9 @@
 #include "pose_detector.h"
 
 #include <array>
+#include <sstream>
 
 #include "common.h"
-#include "core/logger.h"
 
 namespace mmdeploy {
 
@@ -14,7 +14,6 @@ using Rect = std::array<float, 4>;
 class PyPoseDedector {
  public:
   PyPoseDedector(const char *model_path, const char *device_name, int device_id) {
-    MMDEPLOY_INFO("{}, {}, {}", model_path, device_name, device_id);
     auto status =
         mmdeploy_pose_detector_create_by_path(model_path, device_name, device_id, &handle_);
     if (status != MM_SUCCESS) {
@@ -26,9 +25,9 @@ class PyPoseDedector {
       return py::list{};
     }
     if (vboxes.size() != 0 && vboxes.size() != imgs.size()) {
-      std::string error =
-          fmt::format("imgs length not equal with vboxes [{} vs {}]", imgs.size(), vboxes.size());
-      throw std::invalid_argument(error);
+      std::ostringstream os;
+      os << "imgs length not equal with vboxes [" << imgs.size() << " vs " << vboxes.size() << "]";
+      throw std::invalid_argument(os.str());
     }
 
     std::vector<mm_mat_t> mats;
@@ -51,7 +50,7 @@ class PyPoseDedector {
     // full image
     if (vboxes.size() == 0) {
       for (int i = 0; i < mats.size(); i++) {
-        mm_rect_t box = {0.f, 0.f, mats[i].width - 1, mats[i].height - 1};
+        mm_rect_t box = {0.f, 0.f, mats[i].width - 1.f, mats[i].height - 1.f};
         boxes.push_back(box);
         bbox_count.push_back(1);
       }

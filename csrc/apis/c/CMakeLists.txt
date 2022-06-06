@@ -1,8 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-cmake_minimum_required(VERSION 3.14)
-project(capis)
 
-include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
+project(capis)
 
 set(COMMON_LIST
         common
