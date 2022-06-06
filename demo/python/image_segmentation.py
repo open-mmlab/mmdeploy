@@ -18,7 +18,7 @@ def parse_args():
     return args
 
 
-def get_palette(num_classes):
+def get_palette(num_classes=256):
     state = np.random.get_state()
     # random color
     np.random.seed(42)
@@ -33,11 +33,9 @@ def main():
     img = cv2.imread(args.image_path)
 
     segmentor = Segmentor(args.model_path, args.device_name, 0)
-    result = segmentor([img])[0]
+    seg = segmentor([img])[0]
 
-    class_num, seg = result
-
-    palette = get_palette(class_num)
+    palette = get_palette()
     color_seg = np.zeros((seg.shape[0], seg.shape[1], 3), dtype=np.uint8)
     for label, color in enumerate(palette):
         color_seg[seg == label, :] = color

@@ -106,7 +106,7 @@ class End2EndModel(BaseBackendModel):
         """
         outputs = self.wrapper({self.input_name: imgs})
         outputs = self.wrapper.output_to_list(outputs)
-        outputs = [out.detach().cpu().numpy() for _, out in outputs]
+        outputs = [out.detach().cpu().numpy() for out in outputs]
         return outputs
 
     def show_result(self,

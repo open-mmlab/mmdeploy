@@ -19,7 +19,7 @@ class PySegmentor {
     handle_ = {};
   }
 
-  std::vector<std::tuple<int, py::array_t<int>>> Apply(const std::vector<PyImage> &imgs) {
+  std::vector<py::array_t<int>> Apply(const std::vector<PyImage> &imgs) {
     std::vector<mm_mat_t> mats;
     mats.reserve(imgs.size());
     for (const auto &img : imgs) {
@@ -31,12 +31,12 @@ class PySegmentor {
     if (status != MM_SUCCESS) {
       throw std::runtime_error("failed to apply segmentor, code: " + std::to_string(status));
     }
-    auto output = std::vector<std::tuple<int, py::array_t<int>>>{};
+    auto output = std::vector<py::array_t<int>>{};
     output.reserve(mats.size());
     for (int i = 0; i < mats.size(); ++i) {
       auto mask = py::array_t<int>({segm[i].height, segm[i].width});
       memcpy(mask.mutable_data(), segm[i].mask, mask.nbytes());
-      output.emplace_back(segm[i].classes, std::move(mask));
+      output.push_back(std::move(mask));
     }
     mmdeploy_segmentor_release_result(segm, (int)mats.size());
     return output;
