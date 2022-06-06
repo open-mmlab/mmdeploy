@@ -6,21 +6,22 @@
 <!-- TOC -->
 
 - [如何进行回归测试](#如何进行回归测试)
-    - [1. 环境搭建](#1-环境搭建)
-        - [MMDeploy的安装及配置](#MMDeploy的安装及配置)
-        - [Python环境依赖](#Python环境依赖)
-    - [2. 用法](#2-用法)
-        - [参数解析](#参数解析)
-        - [示例](#示例)
-    - [3. 回归测试配置文件](#3-回归测试配置文件)
-        - [示例及参数解析](#示例及参数解析)
-    - [4. 生成的报告](#4-生成的报告)
-        - [模板](#模板)
-        - [示例](#示例)
-    - [5. 支持的后端](#4-支持的后端)
-    - [6. 支持的Codebase及其Metric](#5-支持的Codebase及其Metric)
-    - [7. 注意事项](#7-注意事项)
-    - [8. 常见问题](#8-常见问题)
+  - [1. 环境搭建](#1-环境搭建)
+    - [MMDeploy的安装及配置](#mmdeploy的安装及配置)
+    - [Python环境依赖](#python环境依赖)
+  - [2. 用法](#2-用法)
+    - [参数解析](#参数解析)
+    - [注意事项](#注意事项)
+  - [例子](#例子)
+  - [3. 回归测试配置文件](#3-回归测试配置文件)
+    - [示例及参数解析](#示例及参数解析)
+  - [4. 生成的报告](#4-生成的报告)
+    - [模板](#模板)
+    - [示例](#示例)
+  - [5. 支持的后端](#5-支持的后端)
+  - [6. 支持的Codebase及其Metric](#6-支持的codebase及其metric)
+  - [7. 注意事项](#7-注意事项)
+  - [8. 常见问题](#8-常见问题)
 
 <!-- TOC -->
 
@@ -50,15 +51,17 @@ python ./tools/regression_test.py \
     --work-dir "${WORK_DIR}" \
     --device "${DEVICE}" \
     --log-level INFO \
-    [--performance 或 -p]
+    [--performance 或 -p] \
+    [--checkpoint-dir "$CHECKPOINT_DIR"]
 ```
 
 ### 参数解析
 
 - `--codebase` : 需要测试的 codebase，eg.`mmdet`, 测试多个 `mmcls mmdet ...`
-- `--backends` : 筛选测试的后端, 默认测全部`backend`, 也可传入若干个后端，例如 `onnxruntime tensorrt`。如果需要一同进行 SDK 的测试，需要在 `tests/regression/${codebase}.yml` 里面的 `sdk_config` 进行配置。
-- `--models` : 指定测试的模型, 默认测试 `yml` 中所有模型, 也可传入若干个模型名称，例如 `ResNet SE-ResNet "Mask R-CNN"`。注意的是，如果模型名称有 ` ` 则需要像例子中的`"Mask R-CNN"`使用双引号包着它。
-- `--work-dir` : 模型转换、报告生成的路径。
+- `--backends` : 筛选测试的后端, 默认测全部`backend`, 也可传入若干个后端，例如 `onnxruntime tesnsorrt`。如果需要一同进行 SDK 的测试，需要在 `tests/regression/${codebase}.yml` 里面的 `sdk_config` 进行配置。
+- `--models` : 指定测试的模型, 默认测试 `yml` 中所有模型, 也可传入若干个模型名称，模型名称可参考相关yml配置文件。例如 `ResNet SE-ResNet "Mask R-CNN"`。注意的是，可传入只有字母和数字组成模型名称，例如 `resnet seresnet maskrcnn`。
+- `--work-dir` : 模型转换、报告生成的路径，默认是`../mmdeploy_regression_working_dir`，注意路径中不要不含空格等特殊字符。
+- `--checkpoint-dir`: PyTorch 模型文件下载保存路径，默认是`../mmdeploy_checkpoints`，注意路径中不要不含空格等特殊字符。
 - `--device` : 使用的设备，默认 `cuda`。
 - `--log-level` : 设置日记的等级，选项包括`'CRITICAL'， 'FATAL'， 'ERROR'， 'WARN'， 'WARNING'， 'INFO'， 'DEBUG'， 'NOTSET'`。默认是`INFO`。
 - `-p` 或 `--performance` : 是否测试精度，加上则测试转换+精度，不加上则只测试转换

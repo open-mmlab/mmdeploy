@@ -201,9 +201,10 @@ models:
       - *pipeline_ort_static_fp32
       - deploy_config: configs/mmdet/detection/detection_tensorrt-fp16_dynamic-300x300-512x512.py
         convert_image: *convert_image
+        backend_test: *default_backend_test
       - deploy_config: configs/mmdet/detection/single-stage_ncnn_static-300x300.py
         convert_image: *convert_image
-#      - *pipeline_openvino_static_fp32
+        backend_test: False
 
   - name: RetinaNet
     metafile: configs/retinanet/metafile.yml

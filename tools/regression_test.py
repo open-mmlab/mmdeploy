@@ -145,8 +145,9 @@ def get_model_metafile_info(global_info: dict, model_info: dict,
     assert len(model_config_files) > 0
 
     # make checkpoint save directory
+    model_name = _filter_string(model_info.get('name', 'model'))
     checkpoint_save_dir = Path(checkpoint_dir).joinpath(
-        codebase_name, model_info.get('name'))
+        codebase_name, model_name)
     checkpoint_save_dir.mkdir(parents=True, exist_ok=True)
     logger.info(f'Saving checkpoint in {checkpoint_save_dir}')
 
@@ -649,7 +650,7 @@ def get_backend_fps_metric(deploy_cfg_path: str, model_cfg_path: Path,
     cmd_str = 'python3 tools/test.py ' \
               f'{deploy_cfg_path} ' \
               f'{str(model_cfg_path.absolute())} ' \
-              f'--model "{convert_checkpoint_path}" ' \
+              f'--model {convert_checkpoint_path} ' \
               f'--log2file "{log_path}" ' \
               f'--speed-test ' \
               f'--device {device_type} '
@@ -921,7 +922,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
         convert_checkpoint_path = ''
         for backend_file in backend_file_name:
             backend_path = backend_output_path.joinpath(backend_file)
-            backend_path = backend_path.absolute().resolve()
+            backend_path = str(backend_path.absolute().resolve())
             convert_checkpoint_path += f'{str(backend_path)} '
     else:
         convert_checkpoint_path = \
@@ -1071,6 +1072,19 @@ def save_report(report_info: dict, report_save_path: Path,
                 f'{report_save_path.absolute().resolve()}.')
 
 
+def _filter_string(inputs):
+    """Remove non alpha&number character from input string.
+
+    Args:
+        inputs(str): Input string.
+
+    Returns:
+        str: Output of only alpha&number string.
+    """
+    outputs = ''.join([i.lower() for i in inputs if i.isalnum()])
+    return outputs
+
+
 def main():
     args = parse_args()
     set_start_method('spawn')
@@ -1100,7 +1114,13 @@ def main():
     if args.models is None:
         logger.info('Regression test for all models in test yaml.')
     else:
+        args.models = tuple([_filter_string(s) for s in args.models])
         logger.info(f'Regression test models list = {args.models}')
+
+    assert ' ' not in args.work_dir, \
+        f'No empty space included in {args.work_dir}'
+    assert ' ' not in args.checkpoint_dir, \
+        f'No empty space included in {args.checkpoint_dir}'
 
     work_dir = Path(args.work_dir)
     work_dir.mkdir(parents=True, exist_ok=True)
@@ -1155,14 +1175,16 @@ def main():
 
         models_info = yaml_info.get('models')
         for models in models_info:
+            model_name_origin = models.get('name', 'model')
+            model_name_new = _filter_string(model_name_origin)
             if 'model_configs' not in models:
                 logger.warning('Can not find field "model_configs", '
-                               f'skipping {models.get("name")}...')
+                               f'skipping {model_name_origin}...')
                 continue
 
-            model_name = models.get('name')
-            if args.models is not None and model_name not in args.models:
-                logger.info(f'Test specific model mode, skip {model_name}...')
+            if args.models is not None and model_name_new not in args.models:
+                logger.info(
+                    f'Test specific model mode, skip {model_name_origin}...')
                 continue
 
             model_metafile_info, checkpoint_save_dir, codebase_dir = \
@@ -1183,12 +1205,13 @@ def main():
                 # Get checkpoint path
                 checkpoint_name = Path(
                     model_metafile_info.get(model_config).get('Weights')).name
+
                 checkpoint_path = Path(checkpoint_save_dir, checkpoint_name)
                 assert checkpoint_path.exists()
 
                 # Get pytorch from metafile.yml
                 pytorch_metric, metafile_dataset = get_pytorch_result(
-                    model_name, model_metafile_info, checkpoint_path,
+                    model_name_origin, model_metafile_info, checkpoint_path,
                     model_cfg_path, model_config, metric_info, report_dict,
                     logger, report_txt_path, global_info.get('codebase_name'))
 
@@ -1212,7 +1235,7 @@ def main():
                                        pytorch_metric, metric_info,
                                        report_dict, test_type, logger,
                                        backend_file_name, report_txt_path,
-                                       metafile_dataset, model_name)
+                                       metafile_dataset, model_name_origin)
         if len(report_dict.get('Model')) > 0:
             save_report(report_dict, report_save_path, logger)
         else:
