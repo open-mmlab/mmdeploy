@@ -2,6 +2,7 @@
 import argparse
 
 import cv2
+import numpy as np
 from mmdeploy_python import Detector
 
 
@@ -23,6 +24,9 @@ def main():
     img = cv2.imread(args.image_path)
     detector = Detector(args.model_path, args.device_name, 0)
     bboxes, labels, masks = detector([img])[0]
+    assert (isinstance(bboxes, np.ndarray))
+    assert (isinstance(labels, np.ndarray))
+    assert (isinstance(masks, list))
 
     indices = [i for i in range(len(bboxes))]
     for index, bbox, label_id in zip(indices, bboxes, labels):
@@ -32,7 +36,7 @@ def main():
 
         cv2.rectangle(img, (left, top), (right, bottom), (0, 255, 0))
 
-        if masks:
+        if masks[index].size:
             mask = masks[index]
             blue, green, red = cv2.split(img)
             mask_img = blue[top:top + mask.shape[0], left:left + mask.shape[1]]
