@@ -9,7 +9,7 @@ MMDeploy 提供了一系列工具，帮助您更轻松的将 OpenMMLab 下的算
 ## 简介
 
 MMDeploy 定义的模型部署流程，如下图所示：
-![deploy-pipeline](https://user-images.githubusercontent.com/4560679/171416470-8020f967-39de-4c19-ad46-a4197c970874.png)
+![deploy-pipeline](https://user-images.githubusercontent.com/4560679/172306700-31b4c922-2f04-42ed-a1d6-c360f2f3048c.png)
 
 ### 模型转换（Model Converter）
 
