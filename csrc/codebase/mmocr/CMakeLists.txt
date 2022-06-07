@@ -1,9 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-cmake_minimum_required(VERSION 3.14)
-project(mmdeploy_mmocr)
 
-include(${CMAKE_SOURCE_DIR}/cmake/opencv.cmake)
-include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
+project(mmdeploy_mmocr)
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} OCR_SRCS)
 aux_source_directory(${CMAKE_SOURCE_DIR}/third_party/clipper CLIPPER_SRCS)

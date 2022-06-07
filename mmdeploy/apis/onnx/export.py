@@ -8,6 +8,8 @@ import torch
 from mmdeploy.apis.core import PIPELINE_MANAGER
 from mmdeploy.core import RewriterContext, patch_model
 from mmdeploy.utils import Backend, get_root_logger
+from .optimizer import *  # noqa
+from .passes import optimize_onnx
 
 
 @PIPELINE_MANAGER.register_pipeline()
@@ -23,6 +25,7 @@ def export(model: torch.nn.Module,
            dynamic_axes: Optional[Dict] = None,
            verbose: bool = False,
            keep_initializers_as_inputs: Optional[bool] = None,
+           optimize: bool = True,
            **kwargs):
     """Export a PyTorch model into ONNX format. This is a wrap of
     `torch.onnx.export` with some enhancement.
@@ -64,6 +67,7 @@ def export(model: torch.nn.Module,
         verbose (bool): Enable verbose model on `torch.onnx.export`.
         keep_initializers_as_inputs (bool): Whether we should add inputs for
             each initializer.
+        optimize (bool): Perform optimize on model.
     """
     output_path = output_path_prefix + '.onnx'
 
@@ -102,6 +106,9 @@ def export(model: torch.nn.Module,
     # patch model
     patched_model = patch_model(model, cfg=deploy_cfg, backend=backend)
 
+    if 'onnx_custom_passes' not in context_info:
+        onnx_custom_passes = optimize_onnx if optimize else None
+        context_info['onnx_custom_passes'] = onnx_custom_passes
     with RewriterContext(**context_info), torch.no_grad():
         # patch input_metas
         if input_metas is not None:

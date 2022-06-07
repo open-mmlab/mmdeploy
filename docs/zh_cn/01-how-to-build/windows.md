@@ -19,7 +19,7 @@
 目前，MMDeploy 在 Windows 平台下仅提供源码编译安装方式。未来会提供预编译包方式。
 
 ## 源码安装
-下述安装方式，均是在 **Windows 10** 下进行
+下述安装方式，均是在 **Windows 10** 下进行，使用 **PowerShell Preview** 版本。
 
 ### 安装构建和编译工具链
 1. 下载并安装 [Visual Studio 2019](https://visualstudio.microsoft.com) 。安装时请勾选 "使用C++的桌面开发, "Windows 10 SDK <br>
@@ -76,21 +76,6 @@ pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/$env:cu
   </tr>
 </thead>
 <tbody>
-  <tr>
-    <td>spdlog </td>
-    <td>spdlog是一个精巧的日志管理库。请参考如下命令安装： <br>
-<pre><code>
-Invoke-WebRequest -Uri https://github.com/gabime/spdlog/archive/refs/tags/v1.9.2.zip -OutFile spdlog-1.9.2.zip
-Expand-Archive spdlog-1.9.2.zip .
-cd spdlog-1.9.2
-mkdir build
-cd build
-cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release
-cmake --build . --target install --config Release  -- /m
-cd ../..
-</code></pre>
-    </td>
-  </tr>
   <tr>
     <td>OpenCV </td>
     <td>
@@ -261,7 +246,7 @@ $env:MMDEPLOY_DIR="$pwd"
     <td>用来设置SDK后处理组件，加载 OpenMMLab 算法仓库的后处理功能。如果选择多个 codebase，中间使用分号隔开。比如，<code>-DMMDEPLOY_CODEBASES="mmcls;mmdet"</code>。也可以通过 <code>-DMMDEPLOY_CODEBASES=all</code> 方式，加载所有 codebase。</td>
   </tr>
   <tr>
-    <td>BUILD_SHARED_LIBS</td>
+    <td>MMDEPLOY_SHARED_LIBS</td>
     <td>{ON, OFF}</td>
     <td>ON</td>
     <td>动态库的编译开关。设置OFF时，编译静态库</td>

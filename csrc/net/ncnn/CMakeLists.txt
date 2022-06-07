@@ -1,9 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-cmake_minimum_required(VERSION 3.14)
+
 project(mmdeploy_ncnn_net)
 
 if ("cpu" IN_LIST MMDEPLOY_TARGET_DEVICES)
-    include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
 
     find_package(ncnn REQUIRED)
 

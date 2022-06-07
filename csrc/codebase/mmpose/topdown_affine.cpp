@@ -48,11 +48,20 @@ class TopDownAffineImpl : public Module {
     auto src = cpu::Tensor2CVMat(img);
 
     // prepare data
-    vector<float> box;
-    from_value(input["box"], box);
+    vector<float> bbox;
     vector<float> c;  // center
     vector<float> s;  // scale
-    Box2cs(box, c, s);
+    if (input.contains("center") && input.contains("scale")) {
+      // after mmpose v0.26.0
+      from_value(input["center"], c);
+      from_value(input["scale"], s);
+    } else {
+      // before mmpose v0.26.0
+      from_value(input["bbox"], bbox);
+      Box2cs(bbox, c, s);
+    }
+    // end prepare data
+
     auto r = input["rotation"].get<float>();
 
     cv::Mat dst;
@@ -78,6 +87,7 @@ class TopDownAffineImpl : public Module {
   }
 
   void Box2cs(vector<float>& box, vector<float>& center, vector<float>& scale) {
+    // bbox_xywh2cs
     float x = box[0];
     float y = box[1];
     float w = box[2];

@@ -1,6 +1,44 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 #include "fuse_pass.h"
 
+void fuse_rewrite_gather(onnx::GraphProto* mutable_graph,
+                         std::map<std::string, onnx::TensorProto>& weights,
+                         std::map<std::string, int>& node_reference,
+                         std::set<std::string>& blob_names, int& reduced_node_count) {
+  const int node_count = mutable_graph->node_size();
+  for (int i = 0; i < node_count; ++i) {
+    onnx::NodeProto* gather = mutable_graph->mutable_node(i);
+    if (gather->op_type() != "Gather") {
+      continue;
+    }
+    auto indices = get_node_attr_from_input_ai(weights[gather->input(1)]);
+    if (indices.size() != 1) {
+      continue;
+    }
+
+    {
+      // reconstruct node connections
+      node_reference[gather->input(1)] -= 1;
+      std::string origin_inp = gather->input(0);
+      gather->clear_input();
+      gather->add_input(origin_inp);
+    }
+
+    {
+      // update axis, starts and ends
+      int axis = get_node_attr_i(*gather, "axis", 1) - 1;
+
+      gather->set_op_type("Crop");
+      gather->clear_attribute();
+
+      int indice = indices[0];
+      set_node_attr_ai(*gather, "starts", std::vector<int>{indice});
+      set_node_attr_ai(*gather, "ends", std::vector<int>{indice + 1});
+      set_node_attr_ai(*gather, "axis", std::vector<int>{axis});
+    }
+  }
+}
+
 void fuse_weight_reshape(onnx::GraphProto* mutable_graph,
                          std::map<std::string, onnx::TensorProto>& weights,
                          std::map<std::string, int>& node_reference,

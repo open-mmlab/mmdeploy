@@ -1,12 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-cmake_minimum_required(VERSION 3.14)
 project(mmdeploy_mmocr_cuda_impl)
 
 if ("cuda" IN_LIST MMDEPLOY_TARGET_DEVICES)
-    include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
-    include(${CMAKE_SOURCE_DIR}/cmake/cuda.cmake NO_POLICY_SCOPE)
-    enable_language(CUDA)
     add_library(${PROJECT_NAME} OBJECT
             connected_component.cu
             utils.cu
@@ -19,7 +15,8 @@ if ("cuda" IN_LIST MMDEPLOY_TARGET_DEVICES)
     target_link_libraries(${PROJECT_NAME} PRIVATE
             mmdeploy_opencv_utils
             mmdeploy::core
-            ${CUDA_LIBRARIES})
+            ${CUDA_LIBRARIES}
+            cuda)
     target_link_libraries(mmdeploy_mmocr PRIVATE
             ${PROJECT_NAME})
     mmdeploy_export(${PROJECT_NAME})

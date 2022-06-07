@@ -6,7 +6,7 @@ You should build csharp api first, it will generate a nuget package, or you can 
 
 **step 1.** Add runtime dll to the system path
 
-If you built csharp api from source and didn't build static lib, you should add the built dll to your system path. The same is to opencv, spdlog, etc.
+If you built csharp api from source and didn't build static lib, you should add the built dll to your system path. The same is to opencv, etc.
 
 And don't forget to install backend dependencies. Take tensorrt backend as example, you have to install cudatoolkit, cudnn and tensorrt. The version of backend dependencies that our prebuit nuget package used will be offered in release note.
 

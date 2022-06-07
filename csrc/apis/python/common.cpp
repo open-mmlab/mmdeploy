@@ -1,8 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "apis/python/common.h"
-
-#include "core/value.h"
+#include "common.h"
 
 namespace mmdeploy {
 
@@ -33,6 +31,8 @@ mm_mat_t GetMat(const PyImage& img) {
   mat.data = (uint8_t*)info.ptr;
   return mat;
 }
+
+#if 0
 
 py::object ConvertToPyObject(const Value& value) {
   switch (value.type()) {
@@ -101,6 +101,8 @@ Value ConvertToValue(const py::object& obj) {
     return nullptr;
   }
 }
+
+#endif
 
 }  // namespace mmdeploy
 

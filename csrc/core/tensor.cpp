@@ -2,11 +2,13 @@
 
 #include "tensor.h"
 
+#include <algorithm>
 #include <numeric>
 #include <sstream>
 
 #include "core/utils/formatter.h"
 #include "logger.h"
+
 using std::stringstream;
 
 namespace mmdeploy {

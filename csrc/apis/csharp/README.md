@@ -23,7 +23,7 @@ To use the nuget package, you also need to download the backend dependencies. Fo
 
 **Step 0.** Build sdk.
 
-Before building the c# api, you need to build sdk first. Please follow this [tutorial](../../../docs/en/build/windows.md)/[教程](../../../docs/zh_cn/build/windows.md) to build sdk. Remember to set the MMDEPLOY_BUILD_CSHARP_EXTERN option to ON. We recommend setting `BUILD_SHARED_LIBS` to OFF and use the static third party libraries(spdlog, pplcv, opencv, etc.). If so, you only need add the backend dependencies to your system path, or you need to add all dependencies.
+Before building the c# api, you need to build sdk first. Please follow this [tutorial](../../../docs/en/build/windows.md)/[教程](../../../docs/zh_cn/build/windows.md) to build sdk. Remember to set the MMDEPLOY_BUILD_SDK_CSHARP_API option to ON. We recommend setting `MMDEPLOY_SHARED_LIBS` to OFF and use the static third party libraries(pplcv, opencv, etc.). If so, you only need add the backend dependencies to your system path, or you need to add all dependencies.
 
 If you follow the tutorial, the MMDeployExtern.dll will be built in `build\bin\release`. Make sure the expected dll is in that path or the next step will throw a file-not-exist error.
 
@@ -42,4 +42,4 @@ dotnet build --configuration Release -p:Version=1.0.0
 
 You can set the package-version through `Properties -> Package Version`. The default version is 1.0.0 if you don't set it.
 
-If you meets some missing dependencies error, follow the vs instructions.
+If you encounter missing dependencies, follow the instructions for MSVC.
