@@ -35,8 +35,10 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "failed to apply classifier, code: %d\n", (int)status);
     return 1;
   }
-
-  fprintf(stderr, "label: %d, score: %.4f\n", res->label_id, res->score);
+  for (int i = 0; i < res_count[0]; ++i) {
+    fprintf(stderr, "label: %d, score: %.4f\n", res->label_id, res->score);
+    ++res;
+  }
 
   mmdeploy_classifier_release_result(res, res_count, 1);
 
