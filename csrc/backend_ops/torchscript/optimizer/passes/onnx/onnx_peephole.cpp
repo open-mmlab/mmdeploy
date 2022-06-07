@@ -26,7 +26,7 @@ void RemoveReshapeChain(Node* node) {
   auto uses = output->uses();
 
   for (auto use : uses) {
-    if (is_kind(use.user, "onnx::Reshape") || use.offset != 0) {
+    if (!is_kind(use.user, "onnx::Reshape") || use.offset != 0) {
       return;
     }
   }
