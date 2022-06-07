@@ -168,7 +168,7 @@ python ${MMDEPLOY_DIR}/tools/deploy.py \
     --dump-info
 ```
 
-`${MMDEPLOY_DIR}/tools/deploy.py` does everything you need to convert a model. Read [how_to_convert_model](./02-how-to-run/how_to_convert_model.md) for more details.
+`${MMDEPLOY_DIR}/tools/deploy.py` does everything you need to convert a model. Read [how_to_convert_model](./02-how-to-run/convert_model.md) for more details.
 The converted model and its meta info will be found in the path specified by `--work-dir`.
 And they make up of MMDeploy Model that can be fed to MMDeploy SDK to do model inference.
 
@@ -178,7 +178,7 @@ And they make up of MMDeploy Model that can be fed to MMDeploy SDK to do model i
 <task name>_<backend>-[backend options]_<dynamic support>.py
 ```
 
-If you want to customize the conversion pipeline, you can edit the config file by following [this](./02-how-to-run/how_to_write_config.md) tutorial.
+If you want to customize the conversion pipeline, you can edit the config file by following [this](./02-how-to-run/write_config.md) tutorial.
 
 ## Inference Model
 

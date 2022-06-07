@@ -51,7 +51,7 @@ make -j$(nproc)
 
 ## How to convert a model
 
-- You could follow the instructions of tutorial [How to convert model](../02-how-to-run/how_to_convert_model.md)
+- You could follow the instructions of tutorial [How to convert model](../02-how-to-run/convert_model.md)
 
 ## How to add a new custom op
 

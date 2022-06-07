@@ -40,7 +40,7 @@ If you haven't installed TensorRT in the default path, Please add `-DTENSORRT_DI
 
 ## Convert model
 
-Please follow the tutorial in [How to convert model](../02-how-to-run/how_to_convert_model.md). **Note** that the device must be `cuda` device.
+Please follow the tutorial in [How to convert model](../02-how-to-run/convert_model.md). **Note** that the device must be `cuda` device.
 
 ### Int8 Support
 

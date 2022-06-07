@@ -66,7 +66,7 @@ The backends in MMDeploy must support the ONNX. The backend loads the ".onnx" fi
             fp16_mode=False, max_workspace_size=0))
     ```
 
-    After possessing a base backend config file, you can easily construct a complete deploy config through inheritance. Please refer to our [config tutorial](../02-how-to-run/how_to_write_config.md) for more details. Here is an example:
+    After possessing a base backend config file, you can easily construct a complete deploy config through inheritance. Please refer to our [config tutorial](../02-how-to-run/write_config.md) for more details. Here is an example:
 
     ```Python
     _base_ = ['../_base_/backends/onnxruntime.py']
@@ -151,7 +151,7 @@ The backends in MMDeploy must support the ONNX. The backend loads the ".onnx" fi
     # ...
     ```
 
-6. Convert the models of OpenMMLab to backends (if necessary) and inference on backend engine. If you find some incompatible operators when testing, you can try to rewrite the original model for the backend following the [rewriter tutorial](how_to_support_new_models.md) or add custom operators.
+6. Convert the models of OpenMMLab to backends (if necessary) and inference on backend engine. If you find some incompatible operators when testing, you can try to rewrite the original model for the backend following the [rewriter tutorial](support_new_model.md) or add custom operators.
 
 7. Add docstring and unit tests for new code :).
 

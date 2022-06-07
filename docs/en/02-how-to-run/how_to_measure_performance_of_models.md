@@ -5,7 +5,7 @@ After converting a PyTorch model to a backend model, you can profile inference s
 ## Prerequisite
 
 Install MMDeploy according to [get-started](../get_started.md) instructions.
-And convert the PyTorch model or ONNX model to the backend model by following the [guide](how_to_convert_model.md).
+And convert the PyTorch model or ONNX model to the backend model by following the [guide](convert_model.md).
 
 ## Profile
 

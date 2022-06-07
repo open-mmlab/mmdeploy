@@ -1,6 +1,6 @@
 # How to test rewritten models
 
-After you create a rewritten model using our [rewriter](how_to_support_new_models.md), it's better to write a unit test for the model to validate if the model rewrite would come into effect. Generally, we need to get outputs of the original model and rewritten model, then compare them. The outputs of the original model can be acquired directly by calling the forward function of the model, whereas the way to generate the outputs of the rewritten model depends on the complexity of the rewritten model.
+After you create a rewritten model using our [rewriter](support_new_model.md), it's better to write a unit test for the model to validate if the model rewrite would come into effect. Generally, we need to get outputs of the original model and rewritten model, then compare them. The outputs of the original model can be acquired directly by calling the forward function of the model, whereas the way to generate the outputs of the rewritten model depends on the complexity of the rewritten model.
 
 ## Test rewritten model with small changes
 

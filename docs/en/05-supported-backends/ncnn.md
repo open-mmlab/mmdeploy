@@ -67,7 +67,7 @@ If you haven't installed ncnn in the default path, please add `-Dncnn_DIR` flag 
 
 ## Convert model
 
-- This follows the tutorial on [How to convert model](../02-how-to-run/how_to_convert_model.md).
+- This follows the tutorial on [How to convert model](../02-how-to-run/convert_model.md).
 - The converted model has two files: `.param` and `.bin`, as model structure file and weight file respectively.
 
 ## Reminder
