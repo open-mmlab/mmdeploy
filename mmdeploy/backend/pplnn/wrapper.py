@@ -10,7 +10,7 @@ import torch
 from mmdeploy.utils import Backend, parse_device_id
 from mmdeploy.utils.timer import TimeCounter
 from ..base import BACKEND_WRAPPER, BaseWrapper
-from .utils import register_engines
+from .utils import register_engines, create_runtime
 
 
 @BACKEND_WRAPPER.register_module(Backend.PPLNN.value)
@@ -53,15 +53,10 @@ class PPLNNWrapper(BaseWrapper):
             disable_avx512=False,
             quick_select=False,
             import_algo_file=algo_file)
-        runtime_builder = pplnn.OnnxRuntimeBuilderFactory.CreateFromFile(
-            onnx_file, engines)
-        assert runtime_builder is not None, 'Failed to create '\
-            'OnnxRuntimeBuilder.'
 
-        runtime = runtime_builder.CreateRuntime()
-        assert runtime is not None, 'Failed to create the instance of Runtime.'
-
+        runtime = create_runtime(onnx_file, engines)
         self.runtime = runtime
+
         self.inputs = {
             runtime.GetInputTensor(i).GetName(): runtime.GetInputTensor(i)
             for i in range(runtime.GetInputCount())
