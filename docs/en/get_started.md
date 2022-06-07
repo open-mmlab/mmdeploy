@@ -243,8 +243,8 @@ cv2.imwrite('output_detection.png', img)
 You can find more examples from [here](https://github.com/open-mmlab/mmdeploy/demo/python).
 
 ```{note}
-如果您使用源码安装方式, 请把 ${MMDEPLOY_DIR}/build/lib 加入到环境变量 PYTHONPATH 中。
-否则会遇到错误’ModuleNotFoundError: No module named 'mmdeploy_python‘
+If you build MMDeploy from the source, please add ${MMDEPLOY_DIR}/build/lib to the environment variable PYTHONPATH.
+Otherwise, you will run into an error like ’ModuleNotFoundError: No module named 'mmdeploy_python'
 ```
 
 #### C API

@@ -34,7 +34,7 @@ English | [简体中文](README_zh-CN.md)
 MMDeploy is an open-source deep learning model deployment toolset. It is a part of the [OpenMMLab](https://openmmlab.com/) project.
 
 <div align="center">
-  <img src="resources/introduction.png" width="800"/>
+  <img src="resources/introduction.png">
 </div>
 
 
@@ -77,13 +77,13 @@ Please read [getting_started.md](docs/en/get_started.md) for the basic usage of 
   * [Build for Android](docs/en/01-how-to-build/android.md)
   * [Build for Jetson](docs/en/01-how-to-build/jetsons.md)
 * User Guide
-  * [how to convert model](docs/en/02-how-to-run/convert_model.md)
-  * [how to write config](docs/en/02-how-to-run/write_config.md)
-  * [how to evaluate deployed models](docs/en/02-how-to-run/how_to_evaluate_a_model.md)
-  * [how to measure performance of deployed models](docs/en/02-how-to-run/how_to_measure_performance_of_models.md)
+  * [How to convert model](docs/en/02-how-to-run/convert_model.md)
+  * [How to write config](docs/en/02-how-to-run/write_config.md)
+  * [How to evaluate deployed models](docs/en/02-how-to-run/how_to_evaluate_a_model.md)
+  * [How to measure performance of deployed models](docs/en/02-how-to-run/how_to_measure_performance_of_models.md)
 * Developer Guide
-  * [how to support new models](docs/en/06-developer-guide/support_new_model.md)
-  * [how to support new backends](docs/en/06-developer-guide/support_new_backend.md)
+  * [How to support new models](docs/en/06-developer-guide/support_new_model.md)
+  * [How to support new backends](docs/en/06-developer-guide/support_new_backend.md)
 * [FAQ](docs/en/faq.md)
 * [Contributing](.github/CONTRIBUTING.md)
 
