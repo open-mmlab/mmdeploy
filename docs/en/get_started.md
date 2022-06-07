@@ -81,8 +81,10 @@ Take the MMDeploy-TensorRT package on NVIDIA for example:
   ```shell
   export MMDEPLOY_VERSION=0.5.0
   export TENSORRT_VERSION=8.2.3.0
+  export PYTHON_VERSION=3.7
+  export PYTHON_STRING="${PYTHON_VERSION/./""}"
 
-  wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.5.0/mmdeploy-v0.5.0-linux-x86_64-cuda${CUDA_VERSION}-tensorrt${TENSORRT_VERSION}.tar.gz
+  wget https://github.com/open-mmlab/mmdeploy/releases/download/v${MMDEPLOY_VERSION}/mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-cuda${CUDA_VERSION}-tensorrt${TENSORRT_VERSION}.tar.gz
   tar -zxvf mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-cuda${CUDA_VERSION}-tensorrt${TENSORRT_VERSION}.tar.gz
   cd mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-cuda${CUDA_VERSION}-tensorrt${TENSORRT_VERSION}
   python -m pip install dist/mmdeploy-*-py${PYTHON_STRING}*.whl
@@ -101,7 +103,7 @@ Based on the above MMDeploy-TensorRT package, we need to download and install [T
 
 **Be aware that TensorRT version and cuDNN version must matches your CUDA Toolkit version**
 
-The following shows an example of installing TensorRT 8.2.3.0:
+The following shows an example of installing TensorRT 8.2.3.0 and cuDNN 8.2:
 
   ```shell
   export TENSORRT_VERSION=8.2.3.0
@@ -110,11 +112,12 @@ The following shows an example of installing TensorRT 8.2.3.0:
   # !!! Download tensorrt package from NVIDIA that matches your CUDA Toolkit version to the current working directory
   tar -zxvf TensorRT-${TENSORRT_VERSION}*cuda-${CUDA_MAJOR}*.tar.gz
   python -m pip install TensorRT-${TENSORRT_VERSION}/python/tensorrt-*-cp${PYTHON_STRING}*.whl
+  python -m pip install pycuda
   export TENSORRT_DIR=$(pwd)/TensorRT-${TENSORRT_VERSION}
-  export CUDNN_VERSION=`ls TensorRT-${TENSORRT_VERSION}*cuda-${CUDA_MAJOR}*.tar.gz | sed "s/.*cudnn/v/g" | sed "s/\.tar\.gz//g"`
+  export LD_LIBRARY_PATH=${TENSORRT_DIR}/lib:$LD_LIBRARY_PATH
 
   # !!! Download cuDNN package from NVIDIA that matches your CUDA Toolkit and TensorRT version to the current working directory
-  tar -zxvf cudnn-${CUDA_MAJOR}.*-linux-x64-${CUDNN_VERSION}*.tgz
+  tar -zxvf cudnn-${CUDA_MAJOR}.*-linux-x64*.tgz
   export CUDNN_DIR=$(pwd)/cuda
   export LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
   ```
@@ -139,7 +142,7 @@ Based on the above settings, we provide an example to convert the Faster R-CNN i
 ```shell
 # clone mmdeploy repo. We are going to use the pre-defined pipeline config from the source code
 git clone --recursive https://github.com/open-mmlab/mmdeploy.git
-python -m pip install mmdeploy/requirements/runtime.txt
+python -m pip install -r mmdeploy/requirements/runtime.txt
 export MMDEPLOY_DIR=$(pwd)/mmdeploy
 
 # clone mmdetection repo. We have to use the config file to build PyTorch nn module

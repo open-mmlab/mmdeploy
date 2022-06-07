@@ -85,8 +85,10 @@ conda install pytorch==${PYTORCH_VERSION} torchvision==${TORCHVISION_VERSION} cp
   ```shell
   export MMDEPLOY_VERSION=0.5.0
   export TENSORRT_VERSION=8.2.3.0
+  export PYTHON_VERSION=3.7
+  export PYTHON_STRING="${PYTHON_VERSION/./""}"
 
-  wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.5.0/mmdeploy-v0.5.0-linux-x86_64-cuda${CUDA_VERSION}-tensorrt${TENSORRT_VERSION}.tar.gz
+  wget https://github.com/open-mmlab/mmdeploy/releases/download/v${MMDEPLOY_VERSION}/mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-cuda${CUDA_VERSION}-tensorrt${TENSORRT_VERSION}.tar.gz
   tar -zxvf mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-cuda${CUDA_VERSION}-tensorrt${TENSORRT_VERSION}.tar.gz
   cd mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-cuda${CUDA_VERSION}-tensorrt${TENSORRT_VERSION}
   python -m pip install dist/mmdeploy-*-py${PYTHON_STRING}*.whl
@@ -103,7 +105,7 @@ conda install pytorch==${PYTORCH_VERSION} torchvision==${TORCHVISION_VERSION} cp
 
 在本例中，我们需要安装 TensorRT（含 cuDNN）推理引擎。因在 NVIDIA 官网下载软件包，必须要登录认证，所以请预先登录并下载所需的 [TensorRT](https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing-tar) 和 [cuDNN](https://developer.nvidia.com/cudnn)。**请注意： TensorRT 版本、cuDNN 版本要和 CUDA 版本匹配**
 
-下载完毕后，您可以参考如下方法安装。这里，我们以 TensorRT 8.2.3.0 为例：
+下载完毕后，您可以参考如下方法安装。这里，我们以 TensorRT 8.2.3.0、cuDNN 8.2 为例：
 
   ```shell
   export TENSORRT_VERSION=8.2.3.0
@@ -112,11 +114,13 @@ conda install pytorch==${PYTORCH_VERSION} torchvision==${TORCHVISION_VERSION} cp
   # !!! 从 NVIDIA 官网下载 与 cuda toolkit 匹配的 tensorrt 到当前的工作目录
   tar -zxvf TensorRT-${TENSORRT_VERSION}*cuda-${CUDA_MAJOR}*.tar.gz
   python -m pip install TensorRT-${TENSORRT_VERSION}/python/tensorrt-*-cp${PYTHON_STRING}*.whl
+  python -m pip install pycuda
   export TENSORRT_DIR=$(pwd)/TensorRT-${TENSORRT_VERSION}
-  export CUDNN_VERSION=`ls TensorRT-${TENSORRT_VERSION}*cuda-${CUDA_MAJOR}*.tar.gz | sed "s/.*cudnn/v/g" | sed "s/\.tar\.gz//g"`
+  export LD_LIBRARY_PATH=${TENSORRT_DIR}/lib:$LD_LIBRARY_PATH
+
 
   # !!! 从 NVIDIA 官网下载与 cuda toolkit，tensorrt 匹配的 cudnn 到当前的工作目录
-  tar -zxvf cudnn-${CUDA_MAJOR}.*-linux-x64-${CUDNN_VERSION}*.tgz
+  tar -zxvf cudnn-${CUDA_MAJOR}.*-linux-x64*.tgz
   export CUDNN_DIR=$(pwd)/cuda
   export LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
   ```
@@ -141,7 +145,7 @@ conda install pytorch==${PYTORCH_VERSION} torchvision==${TORCHVISION_VERSION} cp
 ```shell
 # 克隆 mmdeploy 仓库。转换时，需要使用 mmdeploy 仓库中的配置文件，建立转换流水线
 git clone --recursive https://github.com/open-mmlab/mmdeploy.git
-python -m pip install mmdeploy/requirements/runtime.txt
+python -m pip install -r mmdeploy/requirements/runtime.txt
 export MMDEPLOY_DIR=$(pwd)/mmdeploy
 
 # 克隆 mmdetection 仓库。转换时，需要使用 mmdetection 仓库中的模型配置文件，构建 PyTorch nn module
