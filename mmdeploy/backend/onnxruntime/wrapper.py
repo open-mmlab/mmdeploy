@@ -50,7 +50,6 @@ class ORTWrapper(BaseWrapper):
             logger.warning(f'The library of onnxruntime custom ops does \
             not exist: {ort_custom_op_path}')
         device_id = parse_device_id(device)
-        is_cuda_available = ort.get_device() == 'GPU'
         providers = ['CPUExecutionProvider'] \
             if device == 'cpu' else \
             [('CUDAExecutionProvider', {'device_id': device_id})]
@@ -61,7 +60,6 @@ class ORTWrapper(BaseWrapper):
         self.sess = sess
         self.io_binding = sess.io_binding()
         self.device_id = device_id
-        self.is_cuda_available = is_cuda_available
         self.device_type = 'cpu' if device == 'cpu' else 'cuda'
         super().__init__(output_names)
 
