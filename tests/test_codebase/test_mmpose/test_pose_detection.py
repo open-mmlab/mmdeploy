@@ -46,7 +46,6 @@ num_output_channels = model_cfg['data_cfg']['num_output_channels']
 
 
 def test_create_input():
-    model_cfg = load_config(model_cfg_path)[0]
     deploy_cfg = mmcv.Config(
         dict(
             backend_config=dict(type=Backend.ONNXRUNTIME.value),

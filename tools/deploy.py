@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
 import logging
+import os
 import os.path as osp
 from functools import partial
 
@@ -27,7 +28,10 @@ def parse_args():
     parser.add_argument('img', help='image used to convert model model')
     parser.add_argument(
         '--test-img', default=None, help='image used to test model')
-    parser.add_argument('--work-dir', help='the dir to save logs and models')
+    parser.add_argument(
+        '--work-dir',
+        default=os.getcwd(),
+        help='the dir to save logs and models')
     parser.add_argument(
         '--calib-dataset-cfg',
         help='dataset config path used to calibrate in int8 mode. If not \
@@ -314,10 +318,17 @@ def main():
 
     if args.test_img is None:
         args.test_img = args.img
-    import os
-    is_display = os.getenv('DISPLAY')
+
+    headless = False
+    # check headless or not for all platforms.
+    import tkinter
+    try:
+        tkinter.Tk()
+    except Exception:
+        headless = True
+
     # for headless installation.
-    if is_display is not None:
+    if not headless:
         # visualize model of the backend
         create_process(
             f'visualize {backend.value} model',

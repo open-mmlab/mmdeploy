@@ -42,6 +42,9 @@
    get_started.md
    05-tutorial/01_introduction_to_model_deployment.md
    05-tutorial/02_challenges.md
+   05-tutorial/03_pytorch2onnx.md
+   05-tutorial/04_onnx_custom_op.md
+   05-tutorial/05_onnx_model_editing.md
 
 .. toctree::
    :maxdepth: 1
