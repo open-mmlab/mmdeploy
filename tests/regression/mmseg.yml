@@ -45,6 +45,11 @@ tensorrt:
     sdk_config: *sdk_dynamic
     deploy_config: configs/mmseg/segmentation_tensorrt_static-1024x2048.py
 
+  pipeline_trt_static_fp32_512x512: &pipeline_trt_static_fp32_512x512
+    convert_image: *convert_image
+    backend_test: False
+    deploy_config: configs/mmseg/segmentation_tensorrt_static-512x512.py
+
   pipeline_trt_static_fp16: &pipeline_trt_static_fp16
     convert_image: *convert_image
     backend_test: *default_backend_test
@@ -359,6 +364,7 @@ models:
       - configs/segmenter/segmenter_vit-s_linear_8x1_512x512_160k_ade20k.py
     pipelines:
       - *pipeline_ort_static_fp32_512x512
-      - *pipeline_trt_static_fp16_512x512
+      - *pipeline_trt_static_fp32_512x512
       - *pipeline_openvino_static_fp32_512x512
       - *pipeline_ncnn_static_fp32
+      - *pipeline_ts_fp32
