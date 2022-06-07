@@ -143,7 +143,7 @@ int mmdeploy_pose_detector_create_input(const mm_mat_t* mats, int mat_count,
           obj["ori_img"] = _mat;
           float width = bboxes[j].right - bboxes[j].left + 1;
           float height = bboxes[j].bottom - bboxes[j].top + 1;
-          obj["box"] = {bboxes[j].left, bboxes[j].top, width, height, 1.0};
+          obj["bbox"] = {bboxes[j].left, bboxes[j].top, width, height, 1.0};
           obj["rotation"] = 0.f;
           img_with_boxes.push_back(obj);
         }
@@ -153,7 +153,7 @@ int mmdeploy_pose_detector_create_input(const mm_mat_t* mats, int mat_count,
         // inference whole image
         Value obj;
         obj["ori_img"] = _mat;
-        obj["box"] = {0, 0, _mat.width(), _mat.height(), 1.0};
+        obj["bbox"] = {0, 0, _mat.width(), _mat.height(), 1.0};
         obj["rotation"] = 0.f;
         img_with_boxes.push_back(obj);
         result_count += 1;
