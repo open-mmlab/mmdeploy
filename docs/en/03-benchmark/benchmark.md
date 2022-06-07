@@ -5,8 +5,8 @@ CPU: ncnn, ONNXRuntime, OpenVINO
 
 GPU: ncnn, TensorRT, PPLNN
 
-
-## 软硬件环境
+## Latency benchmark
+### Platform
 - Ubuntu 18.04
 - ncnn 20211208
 - Cuda 11.3
@@ -14,14 +14,17 @@ GPU: ncnn, TensorRT, PPLNN
 - Docker 20.10.8
 - NVIDIA tesla T4 tensor core GPU for TensorRT
 
-### 配置
-- 静态图导出
-- batch 大小为 1
-- 测试时，计算各个数据集中 100 张图片的平均耗时
+### Other settings
+- Static graph
+- Batch size 1
+- Synchronize devices after each inference.
+- We count the average inference performance of 100 images of the dataset.
+- Warm up. For ncnn, we warm up 30 iters for all codebases. As for other backends: for classification, we warm up 1010 iters; for other codebases, we warm up 10 iters.
+- Input resolution varies for different datasets of different codebases. All inputs are real images except for `mmediting` because the dataset is not large enough.
 
-用户可以直接通过[model profiling](../02-how-to-run/profile_model.md)获得想要的速度测试结果。下面是我们环境中的测试结果：
 
-## 速度测试
+Users can directly test the speed through [model profiling](../02-how-to-run/how_to_measure_performance_of_models.md). And here is the benchmark in our environment.
+
 <div style="margin-left: 25px;">
 <table class="docutils">
 <thead>
@@ -108,7 +111,6 @@ GPU: ncnn, TensorRT, PPLNN
   </tr>
 </tbody>
 </table>
-
 <table class="docutils">
 <thead>
   <tr>
@@ -132,7 +134,6 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center" colspan="1">fp32</td>
     <td align="center" colspan="1">fp16</td>
   </tr>
-
   <tr>
     <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/yolo/yolov3_d53_320_273e_coco.py">YOLOv3</a></td>
     <td align="center">320x320</td>
@@ -401,7 +402,9 @@ GPU: ncnn, TensorRT, PPLNN
 </table>
 </div>
 
-## 精度测试
+## Performance benchmark
+
+Users can directly test the performance through [how_to_evaluate_a_model.md](../02-how-to-run/how_to_evaluate_a_model.md). And here is the benchmark in our environment.
 
 <div style="margin-left: 25px;">
 <table class="docutils">
@@ -1584,10 +1587,17 @@ GPU: ncnn, TensorRT, PPLNN
 </table>
 </div>
 
-## 备注
 
-- 由于某些数据集在代码库中包含各种分辨率的图像，例如 MMDet，速度基准是通过 MMDeploy 中的静态配置获得的，而性能基准是通过动态配置获得的
-- TensorRT 的一些 int8 性能基准测试需要有 tensor core 的 Nvidia 卡，否则性能会大幅下降
-- DBNet 在模型 `neck` 使用了`nearest` 插值，TensorRT-7 用了与 Pytorch 完全不同的策略。为了使与 TensorRT-7 兼容，我们重写了`neck`以使用`bilinear`插值，这提高了检测性能。为了获得与 Pytorch 匹配的性能，推荐使用 TensorRT-8+，其插值方法与 Pytorch 相同。
-- 对于 mmpose 模型，在模型配置文件中 `flip_test` 需设置为 `False`
-- 部分模型在 fp16 模式下可能存在较大的精度损失，请根据具体情况对模型进行调整。
+
+## Notes
+- As some datasets contain images with various resolutions in codebase like MMDet. The speed benchmark is gained through static configs in MMDeploy, while the performance benchmark is gained through dynamic ones.
+
+- Some int8 performance benchmarks of TensorRT require Nvidia cards with tensor core, or the performance would drop heavily.
+
+- DBNet uses the interpolate mode `nearest` in the neck of the model, which TensorRT-7 applies a quite different strategy from Pytorch. To make the repository compatible with TensorRT-7, we rewrite the neck to use the interpolate mode `bilinear` which improves final detection performance. To get the matched performance with Pytorch, TensorRT-8+ is recommended, which the interpolate methods are all the same as Pytorch.
+
+- Mask AP of Mask R-CNN drops by 1% for the backend. The main reason is that the predicted masks are directly interpolated to original image in PyTorch, while they are at first interpolated to the preprocessed input image of the model and then to original image in other backends.
+
+- MMPose models are tested with `flip_test` explicitly set to `False` in model configs.
+
+- Some models might get low accuracy in fp16 mode. Please adjust the model to avoid value overflow.

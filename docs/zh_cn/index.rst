@@ -8,9 +8,6 @@
    :caption: 编译
 
    01-how-to-build/build_from_source.md
-   01-how-to-build/android.md
-   01-how-to-build/linux-x86_64.md
-   01-how-to-build/windows.md
    01-how-to-build/build_from_docker.md
 
 .. toctree::

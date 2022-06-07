@@ -24,9 +24,18 @@ pattern = re.compile(r'\[.*?\]\(.*?\)')
 def analyze_doc(home, path):
     print('analyze {}'.format(path))
     problem_list = []
+    code_block = False
     with open(path) as f:
         lines = f.readlines()
         for line in lines:
+            line = line.strip()
+            if line.startswith('```'):
+                code_block = not code_block
+                continue
+
+            if code_block is True:
+                continue
+
             if '[' in line and ']' in line and '(' in line and ')' in line:
                 all = pattern.findall(line)
                 for item in all:
