@@ -76,6 +76,9 @@ MMDEPLOY_API void mmdeploy_classifier_release_result(mm_class_t* results, const 
  */
 MMDEPLOY_API void mmdeploy_classifier_destroy(mm_handle_t handle);
 
+/******************************************************************************
+ * Experimental asynchronous APIs */
+
 /**
  * @brief Same as \ref mmdeploy_classifier_create, but allows to control execution context of tasks
  * via exec_info
