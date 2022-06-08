@@ -76,9 +76,6 @@ MMDEPLOY_API void mmdeploy_rotated_detector_release_result(mm_rotated_detect_t* 
  */
 MMDEPLOY_API void mmdeploy_rotated_detector_destroy(mm_handle_t handle);
 
-/******************************************************************************
- * Experimental asynchronous APIs */
-
 /**
  * @brief Same as \ref mmdeploy_detector_create, but allows to control execution context of tasks
  * via exec_info

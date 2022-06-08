@@ -6,12 +6,11 @@
 #include "common.h"
 #include "executor.h"
 
+// experimental pipeline API
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/******************************************************************************
- * Experimental pipeline APIs */
 
 /**
  * @brief Create pipeline
