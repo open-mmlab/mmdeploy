@@ -113,18 +113,11 @@ def pad_with_value(x: Tensor,
     Returns:
         Tensor: Padded tensor.
     """
-    num_dims = len(x.shape)
-    pad_slice = (slice(None, None, None), ) * num_dims
-    pad_slice = pad_slice[:pad_dim] + (slice(0, 1,
-                                             1), ) + pad_slice[pad_dim + 1:]
-    repeat_size = [1] * num_dims
-    repeat_size[pad_dim] = pad_size
-
-    x_pad = x.__getitem__(pad_slice)
+    x_shape = list(x.shape)
+    pad_shape = x_shape[:pad_dim] + [pad_size] + x_shape[pad_dim + 1:]
+    x_pad = x.new_zeros(pad_shape)
     if pad_value is not None:
-        x_pad = x_pad * 0 + pad_value
-
-    x_pad = x_pad.repeat(*repeat_size)
+        x_pad = x_pad + pad_value
     x = torch.cat([x, x_pad], dim=pad_dim)
     return x
 

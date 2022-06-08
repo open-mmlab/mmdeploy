@@ -66,7 +66,7 @@ Result<Value> ResizeImpl::Process(const Value& input) {
       dst_h = int(h * scale_factor + 0.5);
       dst_w = int(w * scale_factor + 0.5);
     } else if (!arg_.img_scale.empty()) {
-      MMDEPLOY_WARN(
+      MMDEPLOY_DEBUG(
           "neither 'scale' or 'scale_factor' is provided in input value. "
           "'img_scale' will be used");
       if (-1 == arg_.img_scale[1]) {

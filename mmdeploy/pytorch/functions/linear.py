@@ -14,7 +14,7 @@ def linear__ncnn(
     weight: torch.Tensor,
     bias: Optional[Union[torch.Tensor, torch.NoneType]] = None,
 ):
-    """Rewrite `linear` for NCNN backend.
+    """Rewrite `linear` for ncnn backend.
 
     The broadcast rules are different between ncnn and PyTorch. This function
     add extra reshape and transpose to support linear operation of different
@@ -25,7 +25,7 @@ def linear__ncnn(
 
     dim = input.dim()
 
-    if dim == 2:
+    if dim == 2 or dim == 3 and input.shape[0] == 1:
         return origin_func(input, weight, bias)
     else:
         out = origin_func(input, weight)

@@ -1,49 +1,77 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import logging
-from typing import Dict, Sequence, Union
+from typing import Dict, Optional, Sequence, Union
 
 import onnx
 import tensorrt as trt
-import torch
 from packaging import version
 
 from mmdeploy.utils import get_root_logger
-from .calib_utils import HDF5Calibrator
 from .init_plugins import load_tensorrt_plugin
 
 
-def create_trt_engine(onnx_model: Union[str, onnx.ModelProto],
-                      input_shapes: Dict[str, Sequence[int]],
-                      log_level: trt.Logger.Severity = trt.Logger.ERROR,
-                      fp16_mode: bool = False,
-                      int8_mode: bool = False,
-                      int8_param: dict = None,
-                      max_workspace_size: int = 0,
-                      device_id: int = 0,
-                      **kwargs) -> trt.ICudaEngine:
+def save(engine: trt.ICudaEngine, path: str) -> None:
+    """Serialize TensorRT engine to disk.
+
+    Args:
+        engine (tensorrt.ICudaEngine): TensorRT engine to be serialized.
+        path (str): The absolute disk path to write the engine.
+    """
+    with open(path, mode='wb') as f:
+        f.write(bytearray(engine.serialize()))
+
+
+def load(path: str) -> trt.ICudaEngine:
+    """Deserialize TensorRT engine from disk.
+
+    Args:
+        path (str): The disk path to read the engine.
+
+    Returns:
+        tensorrt.ICudaEngine: The TensorRT engine loaded from disk.
+    """
+    load_tensorrt_plugin()
+    with trt.Logger() as logger, trt.Runtime(logger) as runtime:
+        with open(path, mode='rb') as f:
+            engine_bytes = f.read()
+        engine = runtime.deserialize_cuda_engine(engine_bytes)
+        return engine
+
+
+def from_onnx(onnx_model: Union[str, onnx.ModelProto],
+              output_file_prefix: str,
+              input_shapes: Dict[str, Sequence[int]],
+              max_workspace_size: int = 0,
+              fp16_mode: bool = False,
+              int8_mode: bool = False,
+              int8_param: Optional[dict] = None,
+              device_id: int = 0,
+              log_level: trt.Logger.Severity = trt.Logger.ERROR,
+              **kwargs) -> trt.ICudaEngine:
     """Create a tensorrt engine from ONNX.
 
     Args:
         onnx_model (str or onnx.ModelProto): Input onnx model to convert from.
+        output_file_prefix (str): The path to save the output ncnn file.
         input_shapes (Dict[str, Sequence[int]]): The min/opt/max shape of
             each input.
-        log_level (trt.Logger.Severity): The log level of TensorRT. Defaults to
-            `trt.Logger.ERROR`.
+        max_workspace_size (int): To set max workspace size of TensorRT engine.
+            some tactics and layers need large workspace. Defaults to `0`.
         fp16_mode (bool): Specifying whether to enable fp16 mode.
             Defaults to `False`.
         int8_mode (bool): Specifying whether to enable int8 mode.
             Defaults to `False`.
         int8_param (dict): A dict of parameter  int8 mode. Defaults to `None`.
-        max_workspace_size (int): To set max workspace size of TensorRT engine.
-            some tactics and layers need large workspace. Defaults to `0`.
         device_id (int): Choice the device to create engine. Defaults to `0`.
+        log_level (trt.Logger.Severity): The log level of TensorRT. Defaults to
+            `trt.Logger.ERROR`.
 
     Returns:
         tensorrt.ICudaEngine: The TensorRT engine created from onnx_model.
 
     Example:
-        >>> from mmdeploy.apis.tensorrt import create_trt_engine
-        >>> engine = create_trt_engine(
+        >>> from mmdeploy.apis.tensorrt import from_onnx
+        >>> engine = from_onnx(
         >>>             "onnx_model.onnx",
         >>>             {'input': {"min_shape" : [1, 3, 160, 160],
         >>>                        "opt_shape" : [1, 3, 320, 320],
@@ -54,8 +82,17 @@ def create_trt_engine(onnx_model: Union[str, onnx.ModelProto],
         >>>             device_id=0)
         >>>             })
     """
+
+    import os
+    old_cuda_device = os.environ.get('CUDA_DEVICE', None)
+    os.environ['CUDA_DEVICE'] = str(device_id)
+    import pycuda.autoinit  # noqa:F401
+    if old_cuda_device is not None:
+        os.environ['CUDA_DEVICE'] = old_cuda_device
+    else:
+        os.environ.pop('CUDA_DEVICE')
+
     load_tensorrt_plugin()
-    device = torch.device('cuda:{}'.format(device_id))
     # create builder and network
     logger = trt.Logger(log_level)
     builder = trt.Builder(logger)
@@ -96,6 +133,7 @@ def create_trt_engine(onnx_model: Union[str, onnx.ModelProto],
         config.set_flag(trt.BuilderFlag.FP16)
 
     if int8_mode:
+        from .calib_utils import HDF5Calibrator
         config.set_flag(trt.BuilderFlag.INT8)
         assert int8_param is not None
         config.int8_calibrator = HDF5Calibrator(
@@ -110,79 +148,12 @@ def create_trt_engine(onnx_model: Union[str, onnx.ModelProto],
             builder.int8_calibrator = config.int8_calibrator
 
     # create engine
-    with torch.cuda.device(device):
-        engine = builder.build_engine(network, config)
+    engine = builder.build_engine(network, config)
 
     assert engine is not None, 'Failed to create TensorRT engine'
+
+    save(engine, output_file_prefix + '.engine')
     return engine
-
-
-def save_trt_engine(engine: trt.ICudaEngine, path: str) -> None:
-    """Serialize TensorRT engine to disk.
-
-    Args:
-        engine (tensorrt.ICudaEngine): TensorRT engine to be serialized.
-        path (str): The absolute disk path to write the engine.
-    """
-    with open(path, mode='wb') as f:
-        f.write(bytearray(engine.serialize()))
-
-
-def load_trt_engine(path: str) -> trt.ICudaEngine:
-    """Deserialize TensorRT engine from disk.
-
-    Args:
-        path (str): The disk path to read the engine.
-
-    Returns:
-        tensorrt.ICudaEngine: The TensorRT engine loaded from disk.
-    """
-    load_tensorrt_plugin()
-    with trt.Logger() as logger, trt.Runtime(logger) as runtime:
-        with open(path, mode='rb') as f:
-            engine_bytes = f.read()
-        engine = runtime.deserialize_cuda_engine(engine_bytes)
-        return engine
-
-
-def torch_dtype_from_trt(dtype: trt.DataType) -> torch.dtype:
-    """Convert pytorch dtype to TensorRT dtype.
-
-    Args:
-        dtype (str.DataType): The data type in tensorrt.
-
-    Returns:
-        torch.dtype: The corresponding data type in torch.
-    """
-
-    if dtype == trt.bool:
-        return torch.bool
-    elif dtype == trt.int8:
-        return torch.int8
-    elif dtype == trt.int32:
-        return torch.int32
-    elif dtype == trt.float16:
-        return torch.float16
-    elif dtype == trt.float32:
-        return torch.float32
-    else:
-        raise TypeError(f'{dtype} is not supported by torch')
-
-
-def torch_device_from_trt(device: trt.TensorLocation):
-    """Convert pytorch device to TensorRT device.
-
-    Args:
-        device (trt.TensorLocation): The device in tensorrt.
-    Returns:
-        torch.device: The corresponding device in torch.
-    """
-    if device == trt.TensorLocation.DEVICE:
-        return torch.device('cuda')
-    elif device == trt.TensorLocation.HOST:
-        return torch.device('cpu')
-    else:
-        return TypeError(f'{device} is not supported by torch')
 
 
 def get_trt_log_level() -> trt.Logger.Severity:

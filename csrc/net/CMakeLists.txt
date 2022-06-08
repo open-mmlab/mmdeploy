@@ -1,8 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-cmake_minimum_required(VERSION 3.14)
-project(mmdeploy_net_module)
 
-include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
+project(mmdeploy_net_module)
 
 if ("trt" IN_LIST MMDEPLOY_TARGET_BACKENDS)
     add_subdirectory(trt)

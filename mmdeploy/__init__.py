@@ -4,7 +4,11 @@ import importlib
 from mmdeploy.utils import get_root_logger
 from .version import __version__  # noqa F401
 
-importlib.import_module('mmdeploy.pytorch')
+if importlib.util.find_spec('torch'):
+    importlib.import_module('mmdeploy.pytorch')
+else:
+    logger = get_root_logger()
+    logger.debug('torch is not installed.')
 
 if importlib.util.find_spec('mmcv'):
     importlib.import_module('mmdeploy.mmcv')

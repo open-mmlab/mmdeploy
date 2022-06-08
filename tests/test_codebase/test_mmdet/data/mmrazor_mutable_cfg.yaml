@@ -1,0 +1,60 @@
+stage_0_block_0:
+  chosen:
+  - shuffle_7x7
+stage_0_block_1:
+  chosen:
+  - shuffle_5x5
+stage_0_block_2:
+  chosen:
+  - shuffle_7x7
+stage_0_block_3:
+  chosen:
+  - shuffle_3x3
+stage_1_block_0:
+  chosen:
+  - shuffle_7x7
+stage_1_block_1:
+  chosen:
+  - shuffle_5x5
+stage_1_block_2:
+  chosen:
+  - shuffle_5x5
+stage_1_block_3:
+  chosen:
+  - shuffle_7x7
+stage_2_block_0:
+  chosen:
+  - shuffle_xception
+stage_2_block_1:
+  chosen:
+  - shuffle_xception
+stage_2_block_2:
+  chosen:
+  - shuffle_5x5
+stage_2_block_3:
+  chosen:
+  - shuffle_xception
+stage_2_block_4:
+  chosen:
+  - shuffle_3x3
+stage_2_block_5:
+  chosen:
+  - shuffle_3x3
+stage_2_block_6:
+  chosen:
+  - shuffle_xception
+stage_2_block_7:
+  chosen:
+  - shuffle_5x5
+stage_3_block_0:
+  chosen:
+  - shuffle_xception
+stage_3_block_1:
+  chosen:
+  - shuffle_5x5
+stage_3_block_2:
+  chosen:
+  - shuffle_xception
+stage_3_block_3:
+  chosen:
+  - shuffle_7x7

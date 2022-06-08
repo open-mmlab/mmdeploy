@@ -1,10 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-cmake_minimum_required(VERSION 3.14)
-include(${CMAKE_SOURCE_DIR}/cmake/cuda.cmake NO_POLICY_SCOPE)
-project(mmdeploy_tensorrt_ops CUDA CXX)
+project(mmdeploy_tensorrt_ops)
 
-include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
-include(${CMAKE_SOURCE_DIR}/cmake/tensorrt.cmake NO_POLICY_SCOPE)
+include(${CMAKE_SOURCE_DIR}/cmake/tensorrt.cmake)
 
 # cub
 if (NOT DEFINED CUB_ROOT_DIR)
@@ -35,3 +32,6 @@ mmdeploy_export(${PROJECT_NAME}_obj)
 mmdeploy_add_module(${PROJECT_NAME} MODULE EXCLUDE "")
 target_link_libraries(${PROJECT_NAME} PRIVATE ${PROJECT_NAME}_obj)
 add_library(mmdeploy::tensorrt_ops ALIAS ${PROJECT_NAME})
+
+set(_TRT_OPS_DIR ${CMAKE_SOURCE_DIR}/mmdeploy/lib)
+install(TARGETS ${PROJECT_NAME} DESTINATION ${_TRT_OPS_DIR})

@@ -9,6 +9,7 @@
 #define MMDEPLOY_SRC_APIS_C_TEXT_RECOGNIZER_H_
 
 #include "common.h"
+#include "executor.h"
 #include "text_detector.h"
 
 #ifdef __cplusplus
@@ -91,6 +92,62 @@ MMDEPLOY_API void mmdeploy_text_recognizer_release_result(mm_text_recognize_t* r
  * mmdeploy_text_recognizer_create_by_path or \ref mmdeploy_text_recognizer_create
  */
 MMDEPLOY_API void mmdeploy_text_recognizer_destroy(mm_handle_t handle);
+
+/******************************************************************************
+ * Experimental asynchronous APIs */
+
+/**
+ * @brief Same as \ref mmdeploy_text_recognizer_create, but allows to control execution context of
+ * tasks via exec_info
+ */
+MMDEPLOY_API int mmdeploy_text_recognizer_create_v2(mm_model_t model, const char* device_name,
+                                                    int device_id, mmdeploy_exec_info_t exec_info,
+                                                    mm_handle_t* handle);
+
+/**
+ * @brief Pack text-recognizer inputs into mmdeploy_value_t
+ * @param[in] images a batch of images
+ * @param[in] image_count number of images in the batch
+ * @param[in] bboxes bounding boxes detected by text detector
+ * @param[in] bbox_count number of bboxes of each \p images, must be same length as \p images
+ * @return value created
+ */
+MMDEPLOY_API int mmdeploy_text_recognizer_create_input(const mm_mat_t* images, int image_count,
+                                                       const mm_text_detect_t* bboxes,
+                                                       const int* bbox_count,
+                                                       mmdeploy_value_t* output);
+
+MMDEPLOY_API int mmdeploy_text_recognizer_apply_v2(mm_handle_t handle, mmdeploy_value_t input,
+                                                   mmdeploy_value_t* output);
+
+/**
+ * @brief Same as \ref mmdeploy_text_recognizer_apply_bbox, but input and output are packed in \ref
+ * mmdeploy_value_t.
+ */
+MMDEPLOY_API int mmdeploy_text_recognizer_apply_async(mm_handle_t handle, mmdeploy_sender_t input,
+                                                      mmdeploy_sender_t* output);
+
+typedef int (*mmdeploy_text_recognizer_continue_t)(mm_text_recognize_t* results, void* context,
+                                                   mmdeploy_sender_t* output);
+
+MMDEPLOY_API int mmdeploy_text_recognizer_apply_async_v3(mm_handle_t handle, const mm_mat_t* imgs,
+                                                         int img_count,
+                                                         const mm_text_detect_t* bboxes,
+                                                         const int* bbox_count,
+                                                         mmdeploy_sender_t* output);
+
+MMDEPLOY_API int mmdeploy_text_recognizer_continue_async(mmdeploy_sender_t input,
+                                                         mmdeploy_text_recognizer_continue_t cont,
+                                                         void* context, mmdeploy_sender_t* output);
+
+/**
+ * @brief Unpack text-recognizer output from a mmdeploy_value_t
+ * @param[in] output
+ * @param[out] results
+ * @return status of the operation
+ */
+MMDEPLOY_API int mmdeploy_text_recognizer_get_result(mmdeploy_value_t output,
+                                                     mm_text_recognize_t** results);
 
 #ifdef __cplusplus
 }

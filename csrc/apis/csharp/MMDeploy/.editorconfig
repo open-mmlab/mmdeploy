@@ -1,0 +1,110 @@
+[*.cs]
+csharp_style_var_for_built_in_types=true:silent
+csharp_style_var_when_type_is_apparent=true:silent
+csharp_style_var_elsewhere=true:silent
+
+##
+## StyleCop.Analyzers
+##
+
+# Using directive should appear within a namespace declaration
+dotnet_diagnostic.SA1200.severity = None
+
+# XML comment analysis is disabled due to project configuration
+dotnet_diagnostic.SA0001.severity = None
+
+# The file header is missing or not located at the Top of the file
+dotnet_diagnostic.SA1633.severity = None
+
+# Use string.Empty for empty strings
+dotnet_diagnostic.SA1122.severity = None
+
+# Variable '_' should begin with lower-case letter
+dotnet_diagnostic.SA1312.severity = None
+
+# Parameter '_' should begin with lower-case letter
+dotnet_diagnostic.SA1313.severity = None
+
+# Elements should be documented
+dotnet_diagnostic.SA1600.severity = None
+
+# Prefix local calls with this
+dotnet_diagnostic.SA1101.severity = None
+
+# 'public' members should come before 'private' members
+dotnet_diagnostic.SA1202.severity = None
+
+# Comments should contain text
+dotnet_diagnostic.SA1120.severity = None
+
+# Constant fields should appear before non-constant fields
+dotnet_diagnostic.SA1203.severity = None
+
+# Field '_blah' should not begin with an underscore
+dotnet_diagnostic.SA1309.severity = None
+
+# Use trailing comma in multi-line initializers
+dotnet_diagnostic.SA1413.severity = None
+
+# A method should not follow a class
+dotnet_diagnostic.SA1201.severity = None
+
+# Elements should be separated by blank line
+dotnet_diagnostic.SA1516.severity = None
+
+# The parameter spans multiple lines
+dotnet_diagnostic.SA1118.severity = None
+
+# Static members should appear before non-static members
+dotnet_diagnostic.SA1204.severity = None
+
+# Put constructor initializers on their own line
+dotnet_diagnostic.SA1128.severity = None
+
+# Opening braces should not be preceded by blank line
+dotnet_diagnostic.SA1509.severity = None
+
+# The parameter should begin on the line after the previous parameter
+dotnet_diagnostic.SA1115.severity = None
+
+# File name should match first type name
+dotnet_diagnostic.SA1649.severity = None
+
+# File may only contain a single type
+dotnet_diagnostic.SA1402.severity = None
+
+# Enumeration items should be documented
+dotnet_diagnostic.SA1602.severity = None
+
+# Element should not be on a single line
+dotnet_diagnostic.SA1502.severity = None
+
+# Closing parenthesis should not be preceded by a space
+dotnet_diagnostic.SA1009.severity = None
+
+# Closing parenthesis should be on line of last parameter
+dotnet_diagnostic.SA1111.severity = None
+
+# Braces should not be ommitted
+dotnet_diagnostic.SA1503.severity = None
+
+# The name of a C# element does not begin with an upper-case letter
+# dotnet_diagnostic.SA1300.severity = None
+
+# The name of a public or internal field in C# does not begin with an upper-case letter
+# dotnet_diagnostic.SA1307.severity = None
+
+# The code uses one of the basic C# types, but does not use the built-in alias for the type
+# dotnet_diagnostic.SA1121.severity = None
+
+# Two or more attributes appeared within the same set of square brackets.
+dotnet_diagnostic.SA1133.severity = None
+
+# The C# code contains a region.
+dotnet_diagnostic.SA1124.severity = None
+
+# The parameters to a C# method or indexer call or declaration span across multiple lines, but the first parameter does not start on the line after the opening bracket.
+dotnet_diagnostic.SA1116.severity = None
+
+# The parameters to a C# method or indexer call or declaration are not all on the same line or each on a separate line.
+dotnet_diagnostic.SA1117.severity = None

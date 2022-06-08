@@ -12,8 +12,9 @@ class Transform;
 class TransformModule {
  public:
   ~TransformModule();
+  TransformModule(TransformModule&&) noexcept;
+
   explicit TransformModule(const Value& args);
-  TransformModule(TransformModule&&) = default;
   Result<Value> operator()(const Value& input);
 
  private:

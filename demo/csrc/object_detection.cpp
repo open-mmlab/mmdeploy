@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
     }
 
     // skip detections less than specified score threshold
-    if (bboxes[i].score < 0.1) {
+    if (bboxes[i].score < 0.3) {
       continue;
     }
 

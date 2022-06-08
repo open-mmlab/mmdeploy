@@ -83,8 +83,7 @@ def yolov3_head__get_bboxes(ctx,
         # use static anchor if input shape is static
         if not is_dynamic_flag:
             multi_lvl_anchor = multi_lvl_anchor.data
-        multi_lvl_anchor = multi_lvl_anchor.unsqueeze(0).expand_as(
-            pred_map_boxes)
+        multi_lvl_anchor = multi_lvl_anchor.unsqueeze(0)
         bbox_pred = self.bbox_coder.decode(multi_lvl_anchor, pred_map_boxes,
                                            stride)
         # conf and cls
@@ -100,8 +99,7 @@ def yolov3_head__get_bboxes(ctx,
         if pre_topk > 0:
             _, topk_inds = conf_pred.topk(pre_topk)
             batch_inds = torch.arange(
-                batch_size, device=device).view(-1,
-                                                1).expand_as(topk_inds).long()
+                batch_size, device=device).unsqueeze(-1).long()
             # Avoid onnx2tensorrt issue in https://github.com/NVIDIA/TensorRT/issues/1134 # noqa: E501
             transformed_inds = (bbox_pred.shape[1] * batch_inds + topk_inds)
             bbox_pred = bbox_pred.reshape(-1, 4)[transformed_inds, :].reshape(
@@ -129,14 +127,15 @@ def yolov3_head__get_bboxes(ctx,
 
     # follow original pipeline of YOLOv3
     if confidence_threshold > 0:
-        mask = (batch_mlvl_conf_scores >= confidence_threshold).float()
-        batch_mlvl_conf_scores *= mask
+        mask = batch_mlvl_conf_scores >= confidence_threshold
+        batch_mlvl_conf_scores = batch_mlvl_conf_scores.where(
+            mask, batch_mlvl_conf_scores.new_zeros(1))
     if score_threshold > 0:
-        mask = (batch_mlvl_scores > score_threshold).float()
-        batch_mlvl_scores *= mask
+        mask = batch_mlvl_scores > score_threshold
+        batch_mlvl_scores = batch_mlvl_scores.where(
+            mask, batch_mlvl_scores.new_zeros(1))
 
-    batch_mlvl_conf_scores = batch_mlvl_conf_scores.unsqueeze(2).expand_as(
-        batch_mlvl_scores)
+    batch_mlvl_conf_scores = batch_mlvl_conf_scores.unsqueeze(2)
     batch_mlvl_scores = batch_mlvl_scores * batch_mlvl_conf_scores
 
     if with_nms:
