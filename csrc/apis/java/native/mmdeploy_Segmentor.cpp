@@ -7,12 +7,11 @@
 #include "core/logger.h"
 
 jlong Java_mmdeploy_Segmentor_create(JNIEnv *env, jobject, jstring modelPath, jstring deviceName,
-                                      jint device_id) {
+                                     jint device_id) {
   auto model_path = env->GetStringUTFChars(modelPath, nullptr);
   auto device_name = env->GetStringUTFChars(deviceName, nullptr);
   mm_handle_t segmentor{};
-  auto ec =
-      mmdeploy_segmentor_create_by_path(model_path, device_name, (int)device_id, &segmentor);
+  auto ec = mmdeploy_segmentor_create_by_path(model_path, device_name, (int)device_id, &segmentor);
   env->ReleaseStringUTFChars(modelPath, model_path);
   env->ReleaseStringUTFChars(deviceName, device_name);
   if (ec) {
@@ -27,7 +26,7 @@ void Java_mmdeploy_Segmentor_destroy(JNIEnv *, jobject, jlong handle) {
 }
 
 jobjectArray Java_mmdeploy_Segmentor_apply(JNIEnv *env, jobject thiz, jlong handle,
-                                            jobjectArray images, jintArray counts) {
+                                           jobjectArray images, jintArray counts) {
   return With(env, images, [&](const mm_mat_t imgs[], int size) {
     mm_segment_t *results{};
     auto ec = mmdeploy_segmentor_apply((mm_handle_t)handle, imgs, size, &results);
@@ -40,11 +39,11 @@ jobjectArray Java_mmdeploy_Segmentor_apply(JNIEnv *env, jobject thiz, jlong hand
     auto array = env->NewObjectArray(size, result_cls, nullptr);
 
     for (int i = 0; i < size; ++i) {
-      int * mask = results[i].mask;
+      int *mask = results[i].mask;
       jintArray jmask = env->NewIntArray(results[i].height * results[i].width);
       env->SetIntArrayRegion(jmask, 0, results[i].width * results[i].height, (const jint *)mask);
-      auto res = env->NewObject(result_cls, result_ctor, (jint)results[i].height, (jint)results[i].width, (jint)results[i].classes,
-                                jmask);
+      auto res = env->NewObject(result_cls, result_ctor, (jint)results[i].height,
+                                (jint)results[i].width, (jint)results[i].classes, jmask);
       env->SetObjectArrayElement(array, i, res);
     }
     mmdeploy_segmentor_release_result(results, size);
