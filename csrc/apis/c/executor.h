@@ -9,6 +9,9 @@
 extern "C" {
 #endif
 
+/******************************************************************************
+ * Experimental asynchronous APIs */
+
 typedef mmdeploy_value_t (*mmdeploy_then_fn_t)(mmdeploy_value_t, void*);
 
 typedef mmdeploy_value_t (*mmdeploy_then_fn_v2_t)(mmdeploy_value_t*, void*);

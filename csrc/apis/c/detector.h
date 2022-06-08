@@ -80,6 +80,9 @@ MMDEPLOY_API void mmdeploy_detector_release_result(mm_detect_t* results, const i
  */
 MMDEPLOY_API void mmdeploy_detector_destroy(mm_handle_t handle);
 
+/******************************************************************************
+ * Experimental asynchronous APIs */
+
 /**
  * @brief Same as \ref mmdeploy_detector_create, but allows to control execution context of tasks
  * via exec_info

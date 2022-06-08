@@ -74,6 +74,9 @@ MMDEPLOY_API void mmdeploy_segmentor_release_result(mm_segment_t* results, int c
  */
 MMDEPLOY_API void mmdeploy_segmentor_destroy(mm_handle_t handle);
 
+/******************************************************************************
+ * Experimental asynchronous APIs */
+
 MMDEPLOY_API int mmdeploy_segmentor_create_v2(mm_model_t model, const char* device_name,
                                               int device_id, mmdeploy_exec_info_t exec_info,
                                               mm_handle_t* handle);

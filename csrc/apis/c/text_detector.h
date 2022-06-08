@@ -76,6 +76,9 @@ MMDEPLOY_API void mmdeploy_text_detector_release_result(mm_text_detect_t* result
  */
 MMDEPLOY_API void mmdeploy_text_detector_destroy(mm_handle_t handle);
 
+/******************************************************************************
+ * Experimental asynchronous APIs */
+
 /**
  * @brief Same as \ref mmdeploy_text_detector_create, but allows to control execution context of
  * tasks via exec_info
