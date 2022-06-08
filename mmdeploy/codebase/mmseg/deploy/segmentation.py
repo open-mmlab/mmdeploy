@@ -272,10 +272,5 @@ class Segmentation(BaseTask):
         """
         assert 'decode_head' in self.model_cfg.model, 'model config contains'
         ' no decode_head'
-        if isinstance(self.model_cfg.model.decode_head, list):
-            name = self.model_cfg.model.decode_head[-1].type[:-4].lower()
-        elif 'type' in self.model_cfg.model.decode_head:
-            name = self.model_cfg.model.decode_head.type[:-4].lower()
-        else:
-            name = 'mmseg_model'
+        name = self.model_cfg.model.decode_head.type[:-4].lower()
         return name

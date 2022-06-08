@@ -50,9 +50,9 @@ class ORTWrapper(BaseWrapper):
             logger.warning(f'The library of onnxruntime custom ops does \
             not exist: {ort_custom_op_path}')
         device_id = parse_device_id(device)
-        providers = ['CPUExecutionProvider'] \
-            if device == 'cpu' else \
-            [('CUDAExecutionProvider', {'device_id': device_id})]
+        is_cuda_available = ort.get_device() == 'GPU'
+        providers = [('CUDAExecutionProvider', {'device_id': device_id})] \
+            if is_cuda_available else ['CPUExecutionProvider']
         sess = ort.InferenceSession(
             onnx_file, session_options, providers=providers)
         if output_names is None:
@@ -60,7 +60,8 @@ class ORTWrapper(BaseWrapper):
         self.sess = sess
         self.io_binding = sess.io_binding()
         self.device_id = device_id
-        self.device_type = 'cpu' if device == 'cpu' else 'cuda'
+        self.is_cuda_available = is_cuda_available
+        self.device_type = 'cuda' if is_cuda_available else 'cpu'
         super().__init__(output_names)
 
     def forward(self, inputs: Dict[str,
@@ -76,7 +77,7 @@ class ORTWrapper(BaseWrapper):
         for name, input_tensor in inputs.items():
             # set io binding for inputs/outputs
             input_tensor = input_tensor.contiguous()
-            if self.device_type == 'cpu':
+            if not self.is_cuda_available:
                 input_tensor = input_tensor.cpu()
             # Avoid unnecessary data transfer between host and device
             element_type = input_tensor.new_zeros(
