@@ -157,7 +157,7 @@ class SDKEnd2EndModel(End2EndModel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.ext_info = self.deploy_cfg.ext_info
-    
+
     def _xywh2cs(self, x, y, w, h, padding=1.25):
         """This encodes bbox(x,y,w,h) into (center, scale)
         Args:
@@ -182,7 +182,7 @@ class SDKEnd2EndModel(End2EndModel):
         scale = scale * padding
 
         return center, scale
-    
+
     def _xywh2xyxy(self, x, y, w, h):
         """ convert xywh to x1 y1 x2 y2
         """

@@ -13,4 +13,4 @@ backend_config = dict(pipeline=[
         ])
 ])
 
-ext_info=dict(image_size=[192, 256], padding=1.25)
+ext_info = dict(image_size=[192, 256], padding=1.25)
