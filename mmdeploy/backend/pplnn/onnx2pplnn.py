@@ -1,10 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Optional, Sequence
 
-from pyppl import nn as pplnn
-
 from mmdeploy.utils.device import parse_cuda_device_id
-from .utils import register_engines, create_runtime
+from .utils import create_runtime, register_engines
 
 
 def from_onnx(onnx_model: str,
@@ -52,7 +50,7 @@ def from_onnx(onnx_model: str,
         quick_select=False,
         export_algo_file=algo_file,
         input_shapes=input_shapes)
-    _ = create_runtime(onnx_model, engines) # side effect: export algorithms
+    _ = create_runtime(onnx_model, engines)  # side effect: export algorithms
     import shutil
     if onnx_output_path != onnx_model:
         shutil.copy2(onnx_model, onnx_output_path)

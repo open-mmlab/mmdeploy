@@ -10,6 +10,16 @@ from mmdeploy.utils import get_root_logger
 
 def create_runtime(onnx_file: str,
                    engines: List[pplnn.Engine]) -> pplnn.Runtime:
+    """Create runtime object for pplnn.
+
+    Args:
+        onnx_file (str): path to onnx model
+        engines (List[pplnn.Engine]): engines used to create the runtime
+            object
+
+    Returns:
+        pplnn.Runtime: created runtime object
+    """
     runtime_builder = pplnn.onnx.RuntimeBuilderFactory.Create()
     assert runtime_builder is not None, 'Failed to create '\
         'onnx.RuntimeBuilder.'
@@ -21,10 +31,12 @@ def create_runtime(onnx_file: str,
     resources.engines = engines
 
     status = runtime_builder.SetResources(resources)
-    assert status == pplcommon.RC_SUCCESS, 'runtime_builder.SetResources() Failed.'
+    assert status == pplcommon.RC_SUCCESS, 'runtime_builder.SetResources() ' \
+        'Failed.'
 
     status = runtime_builder.Preprocess()
-    assert status == pplcommon.RC_SUCCESS, 'runtime_builder.Preprocess() Failed.'
+    assert status == pplcommon.RC_SUCCESS, 'runtime_builder.Preprocess() ' \
+        'Failed.'
 
     runtime = runtime_builder.CreateRuntime()
     assert runtime is not None, 'Failed to create onnx.Runtime'
@@ -93,8 +105,8 @@ def register_engines(device_id: int,
                 pplnn.cuda.ENGINE_CONF_SET_INPUT_DIMS, input_shapes)
             if status != pplcommon.RC_SUCCESS:
                 logger.error(
-                    'cuda engine Configure(ENGINE_CONF_SET_INPUT_DIMS) failed: '
-                    + pplcommon.GetRetCodeStr(status))
+                    'cuda engine Configure(ENGINE_CONF_SET_INPUT_DIMS) '
+                    'failed: ' + pplcommon.GetRetCodeStr(status))
                 sys.exit(-1)
 
         if export_algo_file is not None:

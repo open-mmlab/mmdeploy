@@ -4,13 +4,12 @@ from typing import Dict, Optional, Sequence
 import numpy as np
 import onnx
 import pyppl.common as pplcommon
-import pyppl.nn as pplnn
 import torch
 
 from mmdeploy.utils import Backend, parse_device_id
 from mmdeploy.utils.timer import TimeCounter
 from ..base import BACKEND_WRAPPER, BaseWrapper
-from .utils import register_engines, create_runtime
+from .utils import create_runtime, register_engines
 
 
 @BACKEND_WRAPPER.register_module(Backend.PPLNN.value)
