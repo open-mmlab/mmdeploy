@@ -27,7 +27,7 @@ Beside the backend models, it also includes the model meta info, which will be u
 Inference SDK is developed by C/C++, wrapping the preprocessing, model forward and postprocessing modules in model inference.
 It supports FFI such as C, C++, Python, C#, Java and so on.
 
-## prerequisites
+## Prerequisites
 
 In order to do an end-to-end model deployment, MMDeploy requires Python 3.6+ and PyTorch 1.5+.
 

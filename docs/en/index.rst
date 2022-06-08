@@ -20,10 +20,10 @@ You can switch between Chinese and English documents in the lower-left corner of
    :maxdepth: 1
    :caption: Run & Test
 
-   02-how-to-run/how_to_convert_model.md
+   02-how-to-run/convert_model.md
+   02-how-to-run/write_config.md
    02-how-to-run/how_to_evaluate_a_model.md
    02-how-to-run/how_to_measure_performance_of_models.md
-   02-how-to-run/how_to_write_config.md
 
 .. toctree::
    :maxdepth: 1

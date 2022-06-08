@@ -1,4 +1,4 @@
-## 如何转换模型
+# 如何转换模型
 
 <!-- TOC -->
 
@@ -86,4 +86,4 @@ python ./tools/deploy.py \
 
 ## 各后端已支持导出的模型列表
 
-参考[已支持的模型列表](https://mmdeploy.readthedocs.io/en/latest/supported_models.html)。
+参考[已支持的模型列表](../03-benchmark/supported_models.md)。

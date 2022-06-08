@@ -1,3 +1,5 @@
+# 第三章：PyTorch 转 ONNX 详解
+
 ONNX 是目前模型部署中最重要的中间表示之一。学懂了 ONNX 的技术细节，就能规避大量的模型部署问题。从这篇文章开始，在接下来的三篇文章里，我们将由浅入深地介绍 ONNX 相关的知识。在第一篇文章里，我们会介绍更多 PyTorch 转 ONNX 的细节，让大家完全掌握把简单的 PyTorch 模型转成 ONNX 模型的方法；在第二篇文章里，我们将介绍如何在 PyTorch 中支持更多的 ONNX 算子，让大家能彻底走通 PyTorch 到 ONNX 这条部署路线；第三篇文章里，我们讲介绍 ONNX 本身的知识，以及修改、调试 ONNX 模型的常用方法，使大家能自行解决大部分和 ONNX 有关的部署问题。
 
 在把 PyTorch 模型转换成 ONNX 模型时，我们往往只需要轻松地调用一句`torch.onnx.export`就行了。这个函数的接口看上去简单，但它在使用上还有着诸多的“潜规则”。在这篇教程中，我们会详细介绍 PyTorch 模型转 ONNX 模型的原理及注意事项。除此之外，我们还会介绍 PyTorch 与 ONNX 的算子对应关系，以教会大家如何处理 PyTorch 模型转换时可能会遇到的算子支持问题。
@@ -25,6 +27,7 @@ class Model(torch.nn.Module):
         for i in range(self.n):
             x = self.conv(x)
         return x
+
 
 
 models = [Model(2), Model(3)]
