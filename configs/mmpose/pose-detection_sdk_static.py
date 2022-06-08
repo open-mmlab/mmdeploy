@@ -8,7 +8,6 @@ backend_config = dict(pipeline=[
         type='Collect',
         keys=['img'],
         meta_keys=[
-            'image_file', 'bbox', 'rotation', 'bbox_score',
-            'flip_pairs'
+            'image_file', 'bbox', 'rotation', 'bbox_score', 'flip_pairs'
         ])
 ])

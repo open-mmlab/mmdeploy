@@ -184,8 +184,7 @@ class SDKEnd2EndModel(End2EndModel):
         return center, scale
 
     def _xywh2xyxy(self, x, y, w, h):
-        """ convert xywh to x1 y1 x2 y2
-        """
+        """convert xywh to x1 y1 x2 y2."""
         return x, y, x + w - 1, y + h - 1
 
     def forward(self, img: List[torch.Tensor], *args, **kwargs) -> list:
