@@ -3,12 +3,16 @@ name: build
 on:
   push:
     paths-ignore:
+      - ".github/scripts/**"
       - "demo/**"
+      - "docker/**"
       - "tools/**"
 
   pull_request:
     paths-ignore:
+      - ".github/scripts/**"
       - "demo/**"
+      - "docker/**"
       - "tools/**"
       - "docs/**"
 
