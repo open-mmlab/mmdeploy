@@ -156,34 +156,36 @@ class SDKEnd2EndModel(End2EndModel):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.ext_info = self.deploy_cfg.ext_info
 
-    def _cs2xyxy(self,
-                 _center: np.ndarray,
-                 _scale: np.ndarray,
-                 padding: float = 1.25):
-        """This encodes (center, scale) to fake bbox(x,y,x,y) The dataloader in
-        mmpose convert the bbox of image to (center, scale) and use these
-        information in the pre/post process of model. Some setting of
-        dataloader will not collect bbox key. While in practice, we receive
-        image and bbox as input. Therefore this method try to convert the
-        (center, scale) back to bbox. It can not restore the real box with just
-        (center, scale) information, but sdk can handle the fake bbox normally.
-
+    def _xywh2cs(self, x, y, w, h, padding=1.25):
+        """This encodes bbox(x,y,w,h) into (center, scale)
         Args:
-            _center: (np.ndarray[float32](2,)) Center of the bbox (x, y)
-            _scale: (np.ndarray[float32](2,)) Scale of the bbox w & h
-
+            x, y, w, h (float): left, top, width and height
+            padding (float): bounding box padding factor
         Returns:
-            - np.ndarray[float32](4,): fake box if keypoint, the process in
-                topdown_affine will calculate original center, scale.
+            center (np.ndarray[float32](2,)): center of the bbox (x, y).
+            scale (np.ndarray[float32](2,)): scale of the bbox w & h.
         """
-        scale = _scale.copy()
-        scale = scale / padding * 200
-        center = _center.copy()
-        # fake box
-        box = np.array([center - 0.5 * scale,
-                        center + 0.5 * scale - 1]).flatten()
-        return box
+        anno_size = self.ext_info.image_size
+        aspect_ratio = anno_size[0] / anno_size[1]
+        center = np.array([x + w * 0.5, y + h * 0.5], dtype=np.float32)
+
+        if w > aspect_ratio * h:
+            h = w * 1.0 / aspect_ratio
+        elif w < aspect_ratio * h:
+            w = h * aspect_ratio
+
+        # pixel std is 200.0
+        scale = np.array([w / 200.0, h / 200.0], dtype=np.float32)
+        # padding to include proper amount of context
+        scale = scale * padding
+
+        return center, scale
+
+    def _xywh2xyxy(self, x, y, w, h):
+        """convert xywh to x1 y1 x2 y2."""
+        return x, y, x + w - 1, y + h - 1
 
     def forward(self, img: List[torch.Tensor], *args, **kwargs) -> list:
         """Run forward inference.
@@ -202,14 +204,13 @@ class SDKEnd2EndModel(End2EndModel):
         bbox_ids = []
         sdk_boxes = []
         for i, img_meta in enumerate(kwargs['img_metas']):
-            center = img_meta['center']
-            scale = img_meta['scale']
+            center, scale = self._xywh2cs(*img_meta['bbox'])
             boxes[i, :2] = center
             boxes[i, 2:4] = scale
             boxes[i, 4] = np.prod(scale * 200.0)
             boxes[i, 5] = img_meta[
                 'bbox_score'] if 'bbox_score' in img_meta else 1.0
-            sdk_boxes.append(self._cs2xyxy(center, scale))
+            sdk_boxes.append(self._xywh2xyxy(*img_meta['bbox']))
             image_paths.append(img_meta['image_file'])
             bbox_ids.append(img_meta['bbox_id'])
 
