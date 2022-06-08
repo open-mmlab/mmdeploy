@@ -12,3 +12,5 @@ backend_config = dict(pipeline=[
             'flip_pairs'
         ])
 ])
+
+ext_info=dict(image_size=[192, 256], padding=1.25)

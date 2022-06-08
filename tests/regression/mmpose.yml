@@ -23,7 +23,7 @@ globals:
     test_img: *img_human_pose_256x192
   backend_test: &default_backend_test True
   sdk:
-    sdk_static: &sdk_static configs/mmpose/pose-detection_sdk_static.py
+    sdk_static: &sdk_static configs/mmpose/pose-detection_sdk_static-256x192.py
 
 onnxruntime:
   pipeline_ort_static_fp32: &pipeline_ort_static_fp32
