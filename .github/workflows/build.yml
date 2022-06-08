@@ -93,6 +93,7 @@ jobs:
           python -V
           python -m pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cu102/${{matrix.torch_version}}/index.html
           python -m pip install -r requirements.txt
+          pip install -U pycuda
           python -m pip install -U numpy
       - name: Build and install
         run: |
@@ -138,6 +139,7 @@ jobs:
           python -V
           python -m pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cu111/${{matrix.torch_version}}/index.html
           python -m pip install -r requirements.txt
+          pip install -U pycuda
           python -m pip install -U numpy
       - name: Build and install
         run: |
