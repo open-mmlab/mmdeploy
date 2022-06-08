@@ -25,6 +25,10 @@ class ResizeMask : public MMSegmentation {
     MMDEPLOY_DEBUG("preprocess: {}\ninference: {}", preprocess_result, inference_result);
 
     auto mask = inference_result["output"].get<Tensor>();
+    auto mask_src = cpu::Tensor2CVMat(mask);
+    cv::Mat mask_dst;
+    mask_src.convertTo(mask_dst, CV_32S);
+    mask = cpu::CVMat2Tensor(mask_dst);
     MMDEPLOY_DEBUG("tensor.name: {}, tensor.shape: {}, tensor.data_type: {}", mask.name(),
                    mask.shape(), mask.data_type());
     if (!(mask.shape().size() == 4 && mask.shape(0) == 1 && mask.shape(1) == 1)) {
