@@ -1438,6 +1438,18 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
     <td align="center">-</td>
   </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/blob/master/configs/segmenter/segmenter_vit-s_linear_8x1_512x512_160k_ade20k.py">Segmenter</a></td>
+    <td align="center">ADE20K</td>
+    <td align="center">mIoU</td>
+    <td align="center">44.32</td>
+    <td align="center">44.29</td>
+    <td align="center">44.29</td>
+    <td align="center">44.29</td>
+    <td align="center">43.34</td>
+    <td align="center">43.35</td>
+    <td align="center">-</td>
+  </tr>
 </tbody>
 </table>
 </div>
