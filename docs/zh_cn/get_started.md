@@ -6,7 +6,7 @@ MMDeploy 提供了一系列工具，帮助您更轻松的将 OpenMMLab 下的算
 
 在接下来的章节中，我们将会向您展示 MMDeploy 的模型部署方式。并在 NVIDIA 设备上，以 [MMDetection](https://github.com/open-mmlab/mmdetection) Faster R-CNN 模型为例，演示 MMDeploy 的基本使用方法。
 
-## 简介
+## 流程简介
 
 MMDeploy 定义的模型部署流程，如下图所示：
 ![deploy-pipeline](https://user-images.githubusercontent.com/4560679/172306700-31b4c922-2f04-42ed-a1d6-c360f2f3048c.png)
