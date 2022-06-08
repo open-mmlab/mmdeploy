@@ -36,14 +36,6 @@ MMDEPLOY_API int mmdeploy_text_recognizer_create(mm_model_t model, const char* d
                                                  int device_id, mm_handle_t* handle);
 
 /**
- * @brief Same as \ref mmdeploy_text_recognizer_create, but allows to control execution context of
- * tasks via exec_info
- */
-MMDEPLOY_API int mmdeploy_text_recognizer_create_v2(mm_model_t model, const char* device_name,
-                                                    int device_id, mmdeploy_exec_info_t exec_info,
-                                                    mm_handle_t* handle);
-
-/**
  * @brief Create a text recognizer instance
  * @param[in] model_path path to text recognition model
  * @param[in] device_name name of device, such as "cpu", "cuda", etc.
@@ -57,19 +49,6 @@ MMDEPLOY_API int mmdeploy_text_recognizer_create_by_path(const char* model_path,
                                                          mm_handle_t* handle);
 
 /**
- * @brief Pack text-recognizer inputs into mmdeploy_value_t
- * @param[in] images a batch of images
- * @param[in] image_count number of images in the batch
- * @param[in] bboxes bounding boxes detected by text detector
- * @param[in] bbox_count number of bboxes of each \p images, must be same length as \p images
- * @return value created
- */
-MMDEPLOY_API int mmdeploy_text_recognizer_create_input(const mm_mat_t* images, int image_count,
-                                                       const mm_text_detect_t* bboxes,
-                                                       const int* bbox_count,
-                                                       mmdeploy_value_t* output);
-
-/**
  * @brief Apply text recognizer to a batch of text images
  * @param[in] handle text recognizer's handle created by \ref
  * mmdeploy_text_recognizer_create_by_path
@@ -81,6 +60,62 @@ MMDEPLOY_API int mmdeploy_text_recognizer_create_input(const mm_mat_t* images, i
  */
 MMDEPLOY_API int mmdeploy_text_recognizer_apply(mm_handle_t handle, const mm_mat_t* images,
                                                 int count, mm_text_recognize_t** results);
+
+/**
+ * @brief Apply text recognizer to a batch of images supplied with text bboxes
+ * @param[in] handle text recognizer's handle created by \ref
+ * mmdeploy_text_recognizer_create_by_path
+ * @param[in] images a batch of text images
+ * @param[in] image_count number of images in the batch
+ * @param[in] bboxes bounding boxes detected by text detector
+ * @param[in] bbox_count number of bboxes of each \p images, must be same length as \p images
+ * @param[out] results a linear buffer contains the recognized text, which has the same length as \p
+ * bboxes, must be release by \ref mmdeploy_text_recognizer_release_result
+ * @return status code of the operation
+ */
+MMDEPLOY_API int mmdeploy_text_recognizer_apply_bbox(mm_handle_t handle, const mm_mat_t* images,
+                                                     int image_count,
+                                                     const mm_text_detect_t* bboxes,
+                                                     const int* bbox_count,
+                                                     mm_text_recognize_t** results);
+
+/** @brief Release result buffer returned by \ref mmdeploy_text_recognizer_apply or \ref
+ * mmdeploy_text_recognizer_apply_bbox
+ * @param[in] results result buffer by text recognizer
+ * @param[in] count length of \p result
+ */
+MMDEPLOY_API void mmdeploy_text_recognizer_release_result(mm_text_recognize_t* results, int count);
+
+/**
+ * @brief destroy text recognizer
+ * @param[in] handle handle of text recognizer created by \ref
+ * mmdeploy_text_recognizer_create_by_path or \ref mmdeploy_text_recognizer_create
+ */
+MMDEPLOY_API void mmdeploy_text_recognizer_destroy(mm_handle_t handle);
+
+/******************************************************************************
+ * Experimental asynchronous APIs */
+
+/**
+ * @brief Same as \ref mmdeploy_text_recognizer_create, but allows to control execution context of
+ * tasks via exec_info
+ */
+MMDEPLOY_API int mmdeploy_text_recognizer_create_v2(mm_model_t model, const char* device_name,
+                                                    int device_id, mmdeploy_exec_info_t exec_info,
+                                                    mm_handle_t* handle);
+
+/**
+ * @brief Pack text-recognizer inputs into mmdeploy_value_t
+ * @param[in] images a batch of images
+ * @param[in] image_count number of images in the batch
+ * @param[in] bboxes bounding boxes detected by text detector
+ * @param[in] bbox_count number of bboxes of each \p images, must be same length as \p images
+ * @return value created
+ */
+MMDEPLOY_API int mmdeploy_text_recognizer_create_input(const mm_mat_t* images, int image_count,
+                                                       const mm_text_detect_t* bboxes,
+                                                       const int* bbox_count,
+                                                       mmdeploy_value_t* output);
 
 MMDEPLOY_API int mmdeploy_text_recognizer_apply_v2(mm_handle_t handle, mmdeploy_value_t input,
                                                    mmdeploy_value_t* output);
@@ -106,24 +141,6 @@ MMDEPLOY_API int mmdeploy_text_recognizer_continue_async(mmdeploy_sender_t input
                                                          void* context, mmdeploy_sender_t* output);
 
 /**
- * @brief Apply text recognizer to a batch of images supplied with text bboxes
- * @param[in] handle text recognizer's handle created by \ref
- * mmdeploy_text_recognizer_create_by_path
- * @param[in] images a batch of text images
- * @param[in] image_count number of images in the batch
- * @param[in] bboxes bounding boxes detected by text detector
- * @param[in] bbox_count number of bboxes of each \p images, must be same length as \p images
- * @param[out] results a linear buffer contains the recognized text, which has the same length as \p
- * bboxes, must be release by \ref mmdeploy_text_recognizer_release_result
- * @return status code of the operation
- */
-MMDEPLOY_API int mmdeploy_text_recognizer_apply_bbox(mm_handle_t handle, const mm_mat_t* images,
-                                                     int image_count,
-                                                     const mm_text_detect_t* bboxes,
-                                                     const int* bbox_count,
-                                                     mm_text_recognize_t** results);
-
-/**
  * @brief Unpack text-recognizer output from a mmdeploy_value_t
  * @param[in] output
  * @param[out] results
@@ -131,20 +148,6 @@ MMDEPLOY_API int mmdeploy_text_recognizer_apply_bbox(mm_handle_t handle, const m
  */
 MMDEPLOY_API int mmdeploy_text_recognizer_get_result(mmdeploy_value_t output,
                                                      mm_text_recognize_t** results);
-
-/** @brief Release result buffer returned by \ref mmdeploy_text_recognizer_apply or \ref
- * mmdeploy_text_recognizer_apply_bbox
- * @param[in] results result buffer by text recognizer
- * @param[in] count length of \p result
- */
-MMDEPLOY_API void mmdeploy_text_recognizer_release_result(mm_text_recognize_t* results, int count);
-
-/**
- * @brief destroy text recognizer
- * @param[in] handle handle of text recognizer created by \ref
- * mmdeploy_text_recognizer_create_by_path or \ref mmdeploy_text_recognizer_create
- */
-MMDEPLOY_API void mmdeploy_text_recognizer_destroy(mm_handle_t handle);
 
 #ifdef __cplusplus
 }

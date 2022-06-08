@@ -37,4 +37,4 @@ git clone -b master git@github.com:open-mmlab/mmdeploy.git --recursive
 - [Linux-x86_64](linux-x86_64.md)
 - [Windows](windows.md)
 - [Android-aarch64](android.md)
-- [NVIDIA Jetson](https://mmdeploy.readthedocs.io/en/latest/01-how-to-build/jetsons.html)
+- [NVIDIA Jetson](jetsons.md)
