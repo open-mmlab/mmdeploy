@@ -213,7 +213,7 @@ def test_multiclass_nms_with_keep_top_k(pre_top_k):
     model_inputs = {'boxes': test_boxes, 'scores': test_scores}
 
     import mmdeploy.backend.onnxruntime as ort_apis
-    backend_model = ort_apis.ORTWrapper(onnx_model_path, 'cuda:0', None)
+    backend_model = ort_apis.ORTWrapper(onnx_model_path, 'cpu', None)
     output = backend_model.forward(model_inputs)
     output = backend_model.output_to_list(output)
     dets = output[0]
