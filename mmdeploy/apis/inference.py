@@ -16,15 +16,15 @@ def inference_model(model_cfg: Union[str, mmcv.Config],
 
     Examples:
         >>> from mmdeploy.apis import inference_model
-        >>> model_cfg = 'mmdetection/configs/fcos/' \
-            'fcos_r50_caffe_fpn_gn-head_1x_coco.py'
-        >>> deploy_cfg = 'configs/mmdet/detection/' \
-            'detection_onnxruntime_dynamic.py'
+        >>> model_cfg = ('mmdetection/configs/fcos/'
+                         'fcos_r50_caffe_fpn_gn-head_1x_coco.py')
+        >>> deploy_cfg = ('configs/mmdet/detection/'
+                          'detection_onnxruntime_dynamic.py')
         >>> backend_files = ['work_dir/fcos.onnx']
         >>> img = 'demo.jpg'
         >>> device = 'cpu'
-        >>> model_output = inference_model(model_cfg, deploy_cfg, \
-            backend_files, img, device)
+        >>> model_output = inference_model(model_cfg, deploy_cfg,
+                            backend_files, img, device)
 
     Args:
         model_cfg (str | mmcv.Config): Model config file or Config object.

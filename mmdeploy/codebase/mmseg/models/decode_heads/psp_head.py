@@ -4,11 +4,11 @@ import torch.nn as nn
 from mmseg.ops import resize
 
 from mmdeploy.core import FUNCTION_REWRITER
-from mmdeploy.utils import is_dynamic_shape
+from mmdeploy.utils import IR, get_root_logger, is_dynamic_shape
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmseg.models.decode_heads.psp_head.PPM.forward')
+    func_name='mmseg.models.decode_heads.psp_head.PPM.forward', ir=IR.ONNX)
 def ppm__forward(ctx, self, x):
     """Rewrite `forward` for default backend.
 
@@ -34,9 +34,10 @@ def ppm__forward(ctx, self, x):
     for ppm in self:
         if isinstance(ppm[0], nn.AdaptiveAvgPool2d) and \
                 ppm[0].output_size != 1:
-            assert not is_dynamic_flag, 'AdaptiveAvgPool2d is not \
-                supported with dynamic shape in backends'
-
+            if is_dynamic_flag:
+                logger = get_root_logger()
+                logger.warning('`AdaptiveAvgPool2d` would be '
+                               'replaced to `AvgPool2d` explicitly')
             # replace AdaptiveAvgPool2d with AvgPool2d explicitly
             output_size = 2 * [ppm[0].output_size]
             k = [int(size[i] / output_size[i]) for i in range(0, len(size))]
