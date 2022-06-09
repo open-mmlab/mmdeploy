@@ -36,8 +36,7 @@ int main(int argc, char *argv[]) {
     return 1;
   }
   for (int i = 0; i < res_count[0]; ++i) {
-    fprintf(stderr, "label: %d, score: %.4f\n", res->label_id, res->score);
-    ++res;
+    fprintf(stderr, "label: %d, score: %.4f\n", res[i].label_id, res[i].score);
   }
 
   mmdeploy_classifier_release_result(res, res_count, 1);
