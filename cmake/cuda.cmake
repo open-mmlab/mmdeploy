@@ -1,14 +1,18 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-#message(STATUS "CMAKE_VERSION: ${CMAKE_VERSION}")
 
 if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.18.0")
     # suppress 'CMAKE_CUDA_ARCHITECTURES' warning
     cmake_policy(SET CMP0104 OLD)
 endif ()
 
+if (MSVC OR (NOT DEFINED CMAKE_CUDA_RUNTIME_LIBRARY))
+    # use shared, on windows, python api can't build with static lib.
+    set(CMAKE_CUDA_RUNTIME_LIBRARY Shared)
+    set(CUDA_USE_STATIC_CUDA_RUNTIME OFF)
+endif ()
+
 # nvcc compiler settings
 find_package(CUDA REQUIRED)
-#message(STATUS "CUDA VERSION: ${CUDA_VERSION_STRING}")
 
 if (MSVC)
     set(CMAKE_CUDA_COMPILER ${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc.exe)

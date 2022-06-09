@@ -2,7 +2,7 @@
 import argparse
 import logging
 
-from mmdeploy.backend.tensorrt import create_trt_engine, save_trt_engine
+from mmdeploy.backend.tensorrt import from_onnx
 from mmdeploy.backend.tensorrt.utils import get_trt_log_level
 from mmdeploy.utils import (get_common_config, get_model_inputs,
                             get_root_logger, load_config)
@@ -12,7 +12,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Convert ONNX to TensorRT.')
     parser.add_argument('deploy_cfg', help='deploy config path')
     parser.add_argument('onnx_path', help='ONNX model path')
-    parser.add_argument('output', help='output TensorRT engine path')
+    parser.add_argument('output_prefix', help='output TensorRT engine prefix')
     parser.add_argument('--device-id', help='`the CUDA device id', default=0)
     parser.add_argument(
         '--calib-file',
@@ -35,7 +35,7 @@ def main():
     deploy_cfg_path = args.deploy_cfg
     deploy_cfg = load_config(deploy_cfg_path)[0]
     onnx_path = args.onnx_path
-    output_path = args.output
+    output_prefix = args.output_prefix
     device_id = args.device_id
     calib_file = args.calib_file
 
@@ -56,8 +56,9 @@ def main():
     logger.info(f'onnx2tensorrt: \n\tonnx_path: {onnx_path} '
                 f'\n\tdeploy_cfg: {deploy_cfg_path}')
     try:
-        engine = create_trt_engine(
+        from_onnx(
             onnx_path,
+            output_prefix,
             input_shapes=final_params['input_shapes'],
             log_level=get_trt_log_level(),
             fp16_mode=final_params.get('fp16_mode', False),
@@ -66,7 +67,6 @@ def main():
             max_workspace_size=final_params.get('max_workspace_size', 0),
             device_id=device_id)
 
-        save_trt_engine(engine, output_path)
         logger.info('onnx2tensorrt success.')
     except Exception as e:
         logger.error(e)

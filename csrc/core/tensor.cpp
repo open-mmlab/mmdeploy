@@ -2,11 +2,13 @@
 
 #include "tensor.h"
 
+#include <algorithm>
 #include <numeric>
 #include <sstream>
 
 #include "core/utils/formatter.h"
 #include "logger.h"
+
 using std::stringstream;
 
 namespace mmdeploy {
@@ -83,6 +85,14 @@ void Tensor::Reshape(const TensorShape& shape) {
     buffer_ = {};
     Allocate();
   }
+}
+
+void Tensor::Squeeze() {
+  TensorShape new_shape;
+  new_shape.reserve(shape().size());
+  std::copy_if(begin(shape()), end(shape()), std::back_inserter(new_shape),
+               [](int64_t dim) { return dim != 1; });
+  Reshape(new_shape);
 }
 
 Result<void> Tensor::CopyFrom(const Tensor& tensor, Stream stream) {
@@ -175,11 +185,12 @@ void Tensor::Allocate() {
   }
 }
 
-Tensor Tensor::Slice(int index) {
+Tensor Tensor::Slice(int start, int end) {
   Tensor slice = *this;
   slice.desc_.shape[0] = 1;
   auto bytes = element_size(desc_.data_type) * get_size(slice.desc_.shape);
-  slice.buffer_ = Buffer(buffer(), index * bytes, bytes);
+  slice.desc_.shape[0] = end - start;
+  slice.buffer_ = Buffer(buffer(), start * bytes, (end - start) * bytes);
   return slice;
 }
 

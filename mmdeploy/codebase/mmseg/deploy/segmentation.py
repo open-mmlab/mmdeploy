@@ -89,7 +89,11 @@ class Segmentation(BaseTask):
                 codebases.
         """
         from mmcv.cnn.utils import revert_sync_batchnorm
-        from mmseg.apis import init_segmentor
+        if self.from_mmrazor:
+            from mmrazor.apis import init_mmseg_model as init_segmentor
+        else:
+            from mmseg.apis import init_segmentor
+
         model = init_segmentor(self.model_cfg, model_checkpoint, self.device)
         model = revert_sync_batchnorm(model)
         return model.eval()

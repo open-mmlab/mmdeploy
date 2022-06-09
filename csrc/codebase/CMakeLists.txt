@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-cmake_minimum_required(VERSION 3.14)
+
 project(mmdeploy_codebase)
 
 set(CODEBASES "")
@@ -10,6 +10,7 @@ if ("all" IN_LIST MMDEPLOY_CODEBASES)
     list(APPEND CODEBASES "mmocr")
     list(APPEND CODEBASES "mmedit")
     list(APPEND CODEBASES "mmpose")
+    list(APPEND CODEBASES "mmrotate")
 else ()
     set(CODEBASES ${MMDEPLOY_CODEBASES})
 endif ()

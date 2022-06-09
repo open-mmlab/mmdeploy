@@ -66,7 +66,7 @@ def select_nms_index(scores: torch.Tensor,
         _, topk_inds = batched_dets[:, :, -1].sort(dim=1, descending=True)
     topk_batch_inds = torch.arange(
         batch_size, dtype=topk_inds.dtype,
-        device=topk_inds.device).view(-1, 1).expand_as(topk_inds)
+        device=topk_inds.device).view(-1, 1)
     batched_dets = batched_dets[topk_batch_inds, topk_inds, ...]
     batched_labels = batched_labels[topk_batch_inds, topk_inds, ...]
 
@@ -96,8 +96,7 @@ def _multiclass_nms(boxes: Tensor,
     if pre_top_k > 0:
         max_scores, _ = scores.max(-1)
         _, topk_inds = max_scores.topk(pre_top_k)
-        batch_inds = torch.arange(batch_size).view(
-            -1, 1).expand_as(topk_inds).long()
+        batch_inds = torch.arange(batch_size).view(-1, 1).long()
         boxes = boxes[batch_inds, topk_inds, :]
         scores = scores[batch_inds, topk_inds, :]
 
@@ -298,8 +297,7 @@ def multiclass_nms__torchscript(ctx,
     if pre_top_k > 0:
         max_scores, _ = scores.max(-1)
         _, topk_inds = max_scores.topk(pre_top_k)
-        batch_inds = torch.arange(batch_size).view(
-            -1, 1).expand_as(topk_inds).long()
+        batch_inds = torch.arange(batch_size).view(-1, 1).long()
         boxes = boxes[batch_inds, topk_inds, ...]
         scores = scores[batch_inds, topk_inds, :]
         num_boxes = scores.shape[1]

@@ -66,6 +66,7 @@ def base_dense_head__get_bbox(ctx,
     featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
     mlvl_priors = self.prior_generator.grid_priors(
         featmap_sizes, dtype=bbox_preds[0].dtype, device=bbox_preds[0].device)
+    mlvl_priors = [priors.unsqueeze(0) for priors in mlvl_priors]
 
     mlvl_cls_scores = [cls_scores[i].detach() for i in range(num_levels)]
     mlvl_bbox_preds = [bbox_preds[i].detach() for i in range(num_levels)]
@@ -108,7 +109,6 @@ def base_dense_head__get_bbox(ctx,
         bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, 4)
         if not is_dynamic_flag:
             priors = priors.data
-        priors = priors.expand(batch_size, -1, priors.size(-1))
         if pre_topk > 0:
             priors = pad_with_value_if_necessary(priors, 1, pre_topk)
             bbox_pred = pad_with_value_if_necessary(bbox_pred, 1, pre_topk)
@@ -128,9 +128,9 @@ def base_dense_head__get_bbox(ctx,
                 max_scores, _ = nms_pre_score[..., :-1].max(-1)
             _, topk_inds = max_scores.topk(pre_topk)
             batch_inds = torch.arange(
-                batch_size,
-                device=bbox_pred.device).view(-1, 1).expand_as(topk_inds)
-            priors = priors[batch_inds, topk_inds, :]
+                batch_size, device=bbox_pred.device).unsqueeze(-1)
+            prior_inds = batch_inds.new_zeros((1, 1))
+            priors = priors[prior_inds, topk_inds, :]
             bbox_pred = bbox_pred[batch_inds, topk_inds, :]
             scores = scores[batch_inds, topk_inds, :]
             if with_score_factors:
@@ -189,7 +189,7 @@ def base_dense_head__get_bboxes__ncnn(ctx,
                                       rescale=False,
                                       with_nms=True,
                                       **kwargs):
-    """Rewrite `get_bboxes` of AnchorHead for NCNN backend.
+    """Rewrite `get_bboxes` of AnchorHead for ncnn backend.
 
     Shape node and batch inference is not supported by ncnn. This function
     transform dynamic shape to constant shape and remove batch inference.
@@ -291,7 +291,7 @@ def base_dense_head__get_bboxes__ncnn(ctx,
             enumerate(zip(cls_scores, bbox_preds,
                       score_factor_list, batch_mlvl_priors)):
         assert cls_score.size()[-2:] == bbox_pred.size()[-2:]
-        # NCNN needs 3 dimensions to reshape when including -1 parameter in
+        # ncnn needs 3 dimensions to reshape when including -1 parameter in
         # width or height dimension.
         bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, 4)
         if with_score_factors:
@@ -299,7 +299,7 @@ def base_dense_head__get_bboxes__ncnn(ctx,
                 reshape(batch_size, -1, 1).sigmoid()
         cls_score = cls_score.permute(0, 2, 3, 1).\
             reshape(batch_size, -1, self.cls_out_channels)
-        # NCNN DetectionOutput op needs num_class + 1 classes. So if sigmoid
+        # ncnn DetectionOutput op needs num_class + 1 classes. So if sigmoid
         # score, we should padding background class according to mmdetection
         # num_class definition.
         if self.use_sigmoid_cls:
@@ -370,7 +370,7 @@ def _tblr_pred_to_delta_xywh_pred(bbox_pred: torch.Tensor,
     """Transform tblr format bbox prediction to delta_xywh format for ncnn.
 
     An internal function for transforming tblr format bbox prediction to
-    delta_xywh format. NCNN DetectionOutput layer needs delta_xywh format
+    delta_xywh format. ncnn DetectionOutput layer needs delta_xywh format
     bbox_pred as input.
 
     Args:

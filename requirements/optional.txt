@@ -1,8 +1,9 @@
-mmcls>=0.15.0,<=0.19.0
+mmcls>=0.21.0,<=0.22.1
 mmdet>=2.19.0,<=2.20.0
 mmedit
 mmocr>=0.3.0,<=0.4.1
 mmpose>=0.24.0,<=0.25.1
+mmrazor>=0.3.0
 mmsegmentation
 onnxruntime>=1.8.0
 openvino-dev

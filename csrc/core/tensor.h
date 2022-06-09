@@ -46,7 +46,10 @@ class MMDEPLOY_API Tensor {
 
   void Reshape(const TensorShape& shape);
 
-  Tensor Slice(int index);
+  void Squeeze();
+
+  Tensor Slice(int start, int end);
+  Tensor Slice(int index) { return Slice(index, index + 1); }
 
   Result<void> CopyFrom(const Tensor& tensor, Stream stream = {});
   Result<void> CopyTo(Tensor& tensor, Stream stream = {}) const;

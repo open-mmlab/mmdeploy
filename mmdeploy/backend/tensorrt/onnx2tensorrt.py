@@ -8,7 +8,7 @@ import onnx
 from mmdeploy.utils import (get_calib_filename, get_common_config,
                             get_model_inputs, load_config, parse_device_id)
 from mmdeploy.utils.config_utils import get_ir_config
-from .utils import create_trt_engine, get_trt_log_level, save_trt_engine
+from .utils import from_onnx, get_trt_log_level
 
 
 def onnx2tensorrt(work_dir: str,
@@ -72,8 +72,13 @@ def onnx2tensorrt(work_dir: str,
         but given: {device}'
 
     device_id = parse_device_id(device)
-    engine = create_trt_engine(
+    assert save_file.endswith(
+        '.engine'
+    ), 'Expect save file ends with `.engine`.' f' but get {save_file}'
+    save_path = osp.join(work_dir, save_file)
+    from_onnx(
         onnx_model,
+        osp.splitext(save_path)[0],
         input_shapes=input_shapes,
         log_level=get_trt_log_level(),
         fp16_mode=final_params.get('fp16_mode', False),
@@ -81,5 +86,3 @@ def onnx2tensorrt(work_dir: str,
         int8_param=int8_param,
         max_workspace_size=final_params.get('max_workspace_size', 0),
         device_id=device_id)
-
-    save_trt_engine(engine, osp.join(work_dir, save_file))

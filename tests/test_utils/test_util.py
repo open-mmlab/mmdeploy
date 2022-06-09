@@ -10,9 +10,9 @@ import pytest
 import torch.multiprocessing as mp
 
 import mmdeploy.utils as util
+from mmdeploy.backend.sdk.export_info import export2SDK
 from mmdeploy.utils import target_wrapper
 from mmdeploy.utils.constants import Backend, Codebase, Task
-from mmdeploy.utils.export_info import dump_info
 from mmdeploy.utils.test import get_random_name
 
 correct_model_path = 'tests/data/srgan.py'
@@ -25,7 +25,8 @@ empty_path = './a.py'
 
 @pytest.fixture(autouse=True, scope='module')
 def create_empty_file():
-    os.mknod(empty_file_path)
+    with open(empty_file_path, mode='w'):
+        pass
 
 
 class TestLoadConfigError:
@@ -390,7 +391,7 @@ class TestParseDeviceID:
 
     def test_incorrect_cuda_device(self):
         device = 'cuda_5'
-        with pytest.raises(RuntimeError):
+        with pytest.raises(AssertionError):
             util.parse_device_id(device)
 
     def test_incorrect_device(self):
@@ -412,9 +413,11 @@ def test_AdvancedEnum():
         assert k.value == v
 
 
+@pytest.mark.skipif(
+    not importlib.util.find_spec('mmedit'), reason='requires mmedit')
 def test_export_info():
     with tempfile.TemporaryDirectory() as dir:
-        dump_info(correct_deploy_cfg, correct_model_cfg, dir, '')
+        export2SDK(correct_deploy_cfg, correct_model_cfg, dir, '')
         deploy_json = os.path.join(dir, 'deploy.json')
         pipeline_json = os.path.join(dir, 'pipeline.json')
         detail_json = os.path.join(dir, 'detail.json')
@@ -423,16 +426,17 @@ def test_export_info():
         assert os.path.exists(deploy_json)
 
 
-def test_target_wrapper():
+def wrap_target():
+    return 0
 
-    def target():
-        return 0
+
+def test_target_wrapper():
 
     log_level = logging.INFO
 
     ret_value = mp.Value('d', 0, lock=False)
     ret_value.value = -1
-    wrap_func = partial(target_wrapper, target, log_level, ret_value)
+    wrap_func = partial(target_wrapper, wrap_target, log_level, ret_value)
 
     process = mp.Process(target=wrap_func)
     process.start()

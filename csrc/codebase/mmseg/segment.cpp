@@ -1,6 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
 #include "codebase/mmseg/mmseg.h"
+#include "core/logger.h"
 #include "core/tensor.h"
 #include "core/utils/device_utils.h"
 #include "core/utils/formatter.h"
@@ -9,6 +10,9 @@
 
 namespace mmdeploy::mmseg {
 
+// TODO: resize masks on device
+// TODO: when network output is on device, cast it to a smaller type (e.g. int16_t or int8_t
+//  according to num classes) to reduce DtoH footprint
 class ResizeMask : public MMSegmentation {
  public:
   explicit ResizeMask(const Value &cfg) : MMSegmentation(cfg) {
@@ -39,45 +43,38 @@ class ResizeMask : public MMSegmentation {
     Device host{"cpu"};
     OUTCOME_TRY(auto host_tensor, MakeAvailableOnDevice(mask, host, stream_));
     OUTCOME_TRY(stream_.Wait());
-    if (mask.data_type() == DataType::kINT64) {
-      // change kINT64 to 2 INT32
-      TensorDesc desc{
-          host_tensor.device(), DataType::kINT32, {1, 2, height, width}, host_tensor.name()};
-      Tensor _host_tensor(desc, host_tensor.buffer());
-      return MaskResize(_host_tensor, input_height, input_width);
-    } else if (mask.data_type() == DataType::kINT32) {
-      return MaskResize(host_tensor, input_height, input_width);
-    } else {
-      MMDEPLOY_ERROR("unsupported `output` tensor, dtype: {}", (int)mask.data_type());
-      return Status(eNotSupported);
+
+    OUTCOME_TRY(auto cv_type, GetCvType(mask.data_type()));
+    cv::Mat mask_mat(height, width, cv_type, host_tensor.data());
+
+    if (mask_mat.channels() > 1) {
+      cv::extractChannel(mask_mat, mask_mat, little_endian_ ? 0 : mask_mat.channels() - 1);
     }
+    if (mask_mat.type() != CV_32S) {
+      mask_mat.convertTo(mask_mat, CV_32S);
+    }
+
+    cv::Mat resized_mask = cpu::Resize(mask_mat, input_height, input_width, "nearest");
+
+    SegmentorOutput output{cpu::CVMat2Tensor(resized_mask), input_height, input_width, classes_};
+    return to_value(output);
   }
 
  private:
-  Result<Value> MaskResize(Tensor &tensor, int dst_height, int dst_width) {
-    auto channel = tensor.shape(1);
-    auto height = tensor.shape(2);
-    auto width = tensor.shape(3);
-
-    // reshape tensor to convert it to cv::Mat
-    tensor.Reshape({1, height, width, channel});
-    auto mat = cpu::Tensor2CVMat(tensor);
-    auto dst = cpu::Resize(mat, dst_height, dst_width, "nearest");
-    if (channel == 1) {
-      auto output_tensor = cpu::CVMat2Tensor(dst);
-      SegmentorOutput output{output_tensor, dst_height, dst_width, classes_};
-      return to_value(output);
-    } else {
-      cv::Mat _dst;
-      int channel = little_endian_ ? 0 : dst.dims - 1;
-      cv::extractChannel(dst, _dst, channel);
-      auto output_tensor = cpu::CVMat2Tensor(_dst);
-      SegmentorOutput output{output_tensor, dst_height, dst_width, classes_};
-      return to_value(output);
+  static Result<int> GetCvType(DataType type) {
+    switch (type) {
+      case DataType::kFLOAT:
+        return CV_32F;
+      case DataType::kINT64:
+        return CV_32SC2;
+      case DataType::kINT32:
+        return CV_32S;
+      default:
+        return Status(eNotSupported);
     }
   }
 
-  bool IsLittleEndian() {
+  static bool IsLittleEndian() {
     union Un {
       char a;
       int b;

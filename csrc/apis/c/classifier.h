@@ -9,6 +9,7 @@
 #define MMDEPLOY_CLASSIFIER_H
 
 #include "common.h"
+#include "executor.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -74,6 +75,56 @@ MMDEPLOY_API void mmdeploy_classifier_release_result(mm_class_t* results, const 
  * @param[in] handle classifier's handle created by \ref mmdeploy_classifier_create_by_path
  */
 MMDEPLOY_API void mmdeploy_classifier_destroy(mm_handle_t handle);
+
+/******************************************************************************
+ * Experimental asynchronous APIs */
+
+/**
+ * @brief Same as \ref mmdeploy_classifier_create, but allows to control execution context of tasks
+ * via exec_info
+ */
+MMDEPLOY_API int mmdeploy_classifier_create_v2(mm_model_t model, const char* device_name,
+                                               int device_id, mmdeploy_exec_info_t exec_info,
+                                               mm_handle_t* handle);
+
+/**
+ * @brief Pack classifier inputs into mmdeploy_value_t
+ * @param[in] mats a batch of images
+ * @param[in] mat_count number of images in the batch
+ * @param[out] value the packed value
+ * @return status of the operation
+ */
+MMDEPLOY_API int mmdeploy_classifier_create_input(const mm_mat_t* mats, int mat_count,
+                                                  mmdeploy_value_t* value);
+
+/**
+ * @brief Same as \ref mmdeploy_classifier_apply, but input and output are packed in \ref
+ * mmdeploy_value_t.
+ */
+MMDEPLOY_API int mmdeploy_classifier_apply_v2(mm_handle_t handle, mmdeploy_value_t input,
+                                              mmdeploy_value_t* output);
+
+/**
+ * @brief Apply classifier asynchronously
+ * @param[in] handle handle of the classifier
+ * @param[in] input input sender that will be consumed by the operation
+ * @param[out] output output sender
+ * @return status of the operation
+ */
+MMDEPLOY_API int mmdeploy_classifier_apply_async(mm_handle_t handle, mmdeploy_sender_t input,
+                                                 mmdeploy_sender_t* output);
+
+/**
+ *
+ * @param[in] output output obtained by applying a classifier
+ * @param[out] results a linear buffer containing classification results of each image, released by
+ * \ref mmdeploy_classifier_release_result
+ * @param[out] result_count a linear buffer containing the number of results for each input image,
+ * released by \ref mmdeploy_classifier_release_result
+ * @return status of the operation
+ */
+MMDEPLOY_API int mmdeploy_classifier_get_result(mmdeploy_value_t output, mm_class_t** results,
+                                                int** result_count);
 
 #ifdef __cplusplus
 }

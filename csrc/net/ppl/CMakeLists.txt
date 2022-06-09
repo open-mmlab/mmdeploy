@@ -1,8 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-cmake_minimum_required(VERSION 3.14)
+
 project(mmdeploy_pplnn_net)
 
-include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
 find_package(pplnn REQUIRED)
 
 mmdeploy_add_module(${PROJECT_NAME} ppl_net.cpp)

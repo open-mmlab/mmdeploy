@@ -18,7 +18,7 @@ def ssd_head__get_bboxes__ncnn(ctx,
                                with_nms=True,
                                cfg=None,
                                **kwargs):
-    """Rewrite `get_bboxes` of SSDHead for NCNN backend.
+    """Rewrite `get_bboxes` of SSDHead for ncnn backend.
 
     This rewriter using ncnn PriorBox and DetectionOutput layer to
     support dynamic deployment, and has higher speed.
@@ -90,7 +90,7 @@ def ssd_head__get_bboxes__ncnn(ctx,
         mlvl_valid_bboxes.append(bbox_pred)
         mlvl_scores.append(cls_score)
 
-    # NCNN DetectionOutput layer uses background class at 0 position, but
+    # ncnn DetectionOutput layer uses background class at 0 position, but
     # in mmdetection, background class is at self.num_classes position.
     # We should adapt for ncnn.
     batch_mlvl_valid_bboxes = torch.cat(mlvl_valid_bboxes, dim=1)

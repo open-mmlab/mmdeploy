@@ -67,7 +67,8 @@ nvinfer1::DimsExprs DeformableConvPluginDynamic::getOutputDimensions(
 bool DeformableConvPluginDynamic::supportsFormatCombination(
     int pos, const nvinfer1::PluginTensorDesc *ioDesc, int nbInputs, int nbOutputs) TRT_NOEXCEPT {
   if (pos == 0) {
-    return (ioDesc[pos].type == nvinfer1::DataType::kFLOAT &&
+    return ((ioDesc[pos].type == nvinfer1::DataType::kFLOAT ||
+             ioDesc[pos].type == nvinfer1::DataType::kHALF) &&
             ioDesc[pos].format == nvinfer1::TensorFormat::kLINEAR);
   } else {
     return ioDesc[pos].type == ioDesc[0].type && ioDesc[pos].format == ioDesc[0].format;
@@ -136,9 +137,14 @@ int DeformableConvPluginDynamic::enqueue(const nvinfer1::PluginTensorDesc *input
                          mDilation.d[1], mGroup, mDeformableGroup, im2col_step, m_cublas_handle,
                          stream);
       break;
+    case nvinfer1::DataType::kHALF:
+      deform_conv<half>((half *)x, (half *)weight, (half *)offset, (half *)output, workSpace, batch,
+                        channels, height, width, channels_out, kernel_w, kernel_h, mStride.d[0],
+                        mStride.d[1], mPadding.d[0], mPadding.d[1], mDilation.d[0], mDilation.d[1],
+                        mGroup, mDeformableGroup, im2col_step, m_cublas_handle, stream);
+      break;
     default:
       return 1;
-      break;
   }
 
   return 0;

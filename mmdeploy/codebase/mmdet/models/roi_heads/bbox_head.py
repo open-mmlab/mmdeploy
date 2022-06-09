@@ -98,8 +98,7 @@ def bbox_head__get_bboxes(ctx,
         # only keep boxes with the max scores
         max_inds = scores.reshape(-1, self.num_classes).argmax(1, keepdim=True)
         bboxes = bboxes.reshape(-1, self.num_classes, 4)
-        dim0_inds = torch.arange(
-            bboxes.shape[0], device=device).view(-1, 1).expand_as(max_inds)
+        dim0_inds = torch.arange(bboxes.shape[0], device=device).unsqueeze(-1)
         bboxes = bboxes[dim0_inds, max_inds].reshape(batch_size, -1, 4)
 
     # get nms params
