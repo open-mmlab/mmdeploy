@@ -273,7 +273,7 @@ It takes about 9 minutes to build SDK libraries on a Jetson Nano. So, please be 
 ```shell
 cd ${MMDEPLOY_DIR}/build/install/example
 mkdir -p build && cd build
-cmake .. -DMMDeploy_DIR=${MMDEPLOY_DIR}/buildinstall/lib/cmake/MMDeploy
+cmake .. -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy
 make -j$(nproc)
 ```
 
