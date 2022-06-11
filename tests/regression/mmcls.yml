@@ -1,0 +1,188 @@
+globals:
+  codebase_dir: ../mmclassification
+  checkpoint_force_download: False
+  images:
+    img_snake: &img_snake ../mmclassification/demo/demo.JPEG
+    img_bird: &img_bird ../mmclassification/demo/bird.JPEG
+    img_cat_dog: &img_cat_dog ../mmclassification/demo/cat-dog.png
+    img_dog: &img_dog ../mmclassification/demo/dog.jpg
+    img_color_cat: &img_color_cat ../mmclassification/tests/data/color.jpg
+    img_gray_cat: &img_gray_cat ../mmclassification/tests/data/gray.jpg
+
+  metric_info: &metric_info
+    Top 1 Accuracy: # named after metafile.Results.Metrics
+      eval_name: accuracy # test.py --metrics args
+      metric_key: accuracy_top-1 # eval Dict key name
+      tolerance: 1 # metric ±n%
+      task_name: Image Classification # metafile.Results.Task
+      dataset: ImageNet-1k # metafile.Results.Dataset
+    Top 5 Accuracy:
+      eval_name: accuracy
+      metric_key: accuracy_top-5
+      tolerance: 1 # metric ±n%
+      task_name: Image Classification
+      dataset: ImageNet-1k
+  convert_image: &convert_image
+    input_img: *img_snake
+    test_img: *img_color_cat
+  backend_test: &default_backend_test True
+  sdk:
+    sdk_dynamic: &sdk_dynamic configs/mmcls/classification_sdk_dynamic.py
+
+
+onnxruntime:
+  pipeline_ort_static_fp32: &pipeline_ort_static_fp32
+    convert_image: *convert_image
+    backend_test: *default_backend_test
+    sdk_config: *sdk_dynamic
+    deploy_config: configs/mmcls/classification_onnxruntime_static.py
+
+  pipeline_ort_dynamic_fp32: &pipeline_ort_dynamic_fp32
+    convert_image: *convert_image
+    backend_test: False
+    deploy_config: configs/mmcls/classification_onnxruntime_dynamic.py
+
+
+tensorrt:
+  pipeline_trt_static_fp32: &pipeline_trt_static_fp32
+    convert_image: *convert_image
+    backend_test: *default_backend_test
+    deploy_config: configs/mmcls/classification_tensorrt_static-224x224.py
+
+  pipeline_trt_static_fp16: &pipeline_trt_static_fp16
+    convert_image: *convert_image
+    backend_test: *default_backend_test
+    deploy_config: configs/mmcls/classification_tensorrt-fp16_static-224x224.py
+
+  pipeline_trt_static_int8: &pipeline_trt_static_int8
+    convert_image: *convert_image
+    backend_test: *default_backend_test
+    deploy_config: configs/mmcls/classification_tensorrt-int8_static-224x224.py
+
+  pipeline_trt_dynamic_fp32: &pipeline_trt_dynamic_fp32
+    convert_image: *convert_image
+    backend_test: *default_backend_test
+    sdk_config: *sdk_dynamic
+    deploy_config: configs/mmcls/classification_tensorrt_dynamic-224x224-224x224.py
+
+  pipeline_trt_dynamic_fp16: &pipeline_trt_dynamic_fp16
+    convert_image: *convert_image
+    backend_test: *default_backend_test
+    sdk_config: *sdk_dynamic
+    deploy_config: configs/mmcls/classification_tensorrt-fp16_dynamic-224x224-224x224.py
+
+  pipeline_trt_dynamic_int8: &pipeline_trt_dynamic_int8
+    convert_image: *convert_image
+    calib_dataset_cfg:
+    backend_test: *default_backend_test
+    sdk_config: *sdk_dynamic
+    deploy_config: configs/mmcls/classification_tensorrt-int8_dynamic-224x224-224x224.py
+
+
+openvino:
+  pipeline_openvino_dynamic_fp32: &pipeline_openvino_dynamic_fp32
+    convert_image: *convert_image
+    backend_test: False
+    deploy_config: configs/mmcls/classification_openvino_dynamic-224x224.py
+
+
+ncnn:
+  pipeline_ncnn_static_fp32: &pipeline_ncnn_static_fp32
+    convert_image: *convert_image
+    backend_test: False
+    deploy_config: configs/mmcls/classification_ncnn_static.py
+
+  pipeline_ncnn_dynamic_fp32: &pipeline_ncnn_dynamic_fp32
+    convert_image: *convert_image
+    backend_test: False
+    deploy_config: configs/mmcls/classification_ncnn_dynamic.py
+
+
+pplnn:
+  pipeline_pplnn_dynamic_fp32: &pipeline_pplnn_dynamic_fp32
+    convert_image: *convert_image
+    backend_test: False
+    deploy_config: configs/mmcls/classification_pplnn_dynamic-224x224.py
+
+
+torchscript:
+  pipeline_ts_fp32: &pipeline_ts_fp32
+    convert_image: *convert_image
+    backend_test: False
+    deploy_config: configs/mmcls/classification_torchscript.py
+
+
+models:
+  - name: ResNet
+    metafile: configs/resnet/metafile.yml
+    model_configs:
+      - configs/resnet/resnet18_8xb32_in1k.py # TODO Not benchmark config
+    pipelines:
+      - *pipeline_ts_fp32
+      - *pipeline_ort_dynamic_fp32
+#      - *pipeline_trt_dynamic_fp32
+      - *pipeline_trt_dynamic_fp16
+#      - *pipeline_trt_dynamic_int8
+      - *pipeline_ncnn_static_fp32
+      - *pipeline_pplnn_dynamic_fp32
+      - *pipeline_openvino_dynamic_fp32
+
+  - name: ResNeXt
+    metafile: configs/resnext/metafile.yml
+    model_configs:
+      - configs/resnext/resnext50-32x4d_8xb32_in1k.py # TODO Not benchmark config
+    pipelines:
+      - *pipeline_ts_fp32
+      - *pipeline_ort_dynamic_fp32
+      - *pipeline_trt_dynamic_fp16
+      - *pipeline_ncnn_static_fp32
+      - *pipeline_pplnn_dynamic_fp32
+      - *pipeline_openvino_dynamic_fp32
+
+  - name: SE-ResNet
+    metafile: configs/seresnet/metafile.yml
+    model_configs:
+      - configs/seresnet/seresnet50_8xb32_in1k.py # TODO Not benchmark config
+    pipelines:
+      - *pipeline_ts_fp32
+      - *pipeline_ort_dynamic_fp32
+      - *pipeline_trt_dynamic_fp16
+      - *pipeline_ncnn_static_fp32
+      - *pipeline_pplnn_dynamic_fp32
+      - *pipeline_openvino_dynamic_fp32
+
+  - name: MobileNetV2
+    metafile: configs/mobilenet_v2/metafile.yml
+    model_configs:
+      - configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py
+    pipelines:
+      - *pipeline_ts_fp32
+      - *pipeline_ort_dynamic_fp32
+      - *pipeline_trt_dynamic_fp16
+      - *pipeline_ncnn_static_fp32
+      - *pipeline_pplnn_dynamic_fp32
+      - *pipeline_openvino_dynamic_fp32
+
+  - name: ShuffleNetV1
+    metafile: configs/shufflenet_v1/metafile.yml
+    model_configs:
+      - configs/shufflenet_v1/shufflenet-v1-1x_16xb64_in1k.py
+    pipelines:
+      - *pipeline_ts_fp32
+#      - *pipeline_ort_static_fp32
+      - *pipeline_trt_static_fp16
+      - *pipeline_ncnn_static_fp32
+#      - *pipeline_pplnn_dynamic_fp32
+#      - *pipeline_openvino_dynamic_fp32
+
+  - name: ShuffleNetV2
+    metafile: configs/shufflenet_v2/metafile.yml
+    model_configs:
+      - configs/shufflenet_v2/shufflenet-v2-1x_16xb64_in1k.py
+    pipelines:
+      - *pipeline_ts_fp32
+#      - *pipeline_ort_static_fp32
+      - *pipeline_trt_static_fp16
+      - *pipeline_ncnn_static_fp32
+#      - *pipeline_pplnn_dynamic_fp32
+#      - *pipeline_openvino_dynamic_fp32

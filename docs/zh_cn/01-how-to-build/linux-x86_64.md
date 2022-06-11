@@ -94,21 +94,6 @@ pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/${cu_ve
 </thead>
 <tbody>
   <tr>
-    <td>spdlog </td>
-    <td>
-    在 Ubuntu 18.04 及以上版本
-<pre><code>
-sudo apt-get install libspdlog-dev
-</code></pre>
-    在 Ubuntu 16.04,
-<pre><code>
-wget http://archive.ubuntu.com/ubuntu/pool/universe/s/spdlog/libspdlog-dev_0.16.3-1_amd64.deb
-sudo dpkg -i libspdlog-dev_0.16.3-1_amd64.deb
-</code></pre>
-    您也可以使用spdlog的源码进行编译，激活它更多的特性。但是，请务必打开 <code>-DCMAKE_POSITION_INDEPENDENT_CODE=ON</code>.
-   </td>
-  </tr>
-  <tr>
     <td>OpenCV<br>(>=3.0) </td>
     <td>
     在 Ubuntu 18.04 及以上版本
@@ -169,13 +154,14 @@ export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
     <td>
    1. 登录 <a href="https://www.nvidia.com/">NVIDIA 官网</a>，从<a href="https://developer.nvidia.com/nvidia-tensorrt-download">这里</a>选取并下载 TensorRT tar 包。要保证它和您机器的 CPU 架构以及 CUDA 版本是匹配的。<br>
    您可以参考这份<a href="https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing-tar">指南</a>安装 TensorRT。<br>
-   2. 这里也有一份 TensorRT 8.2 GA Update 2 在 Linux x86_64 和 CUDA 11.x 下的安装示例，供您参考。首先，点击<a href="https://developer.nvidia.com/compute/machine-learning/tensorrt/secure/8.2.3.0/tars/tensorrt-8.2.3.0.linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz">此处</a>下载 CUDA 11.x TensorRT 8.2.3.0。然后，根据如下命令，安装并配置 TensorRT。
+   1. 这里也有一份 TensorRT 8.2 GA Update 2 在 Linux x86_64 和 CUDA 11.x 下的安装示例，供您参考。首先，点击<a href="https://developer.nvidia.com/compute/machine-learning/tensorrt/secure/8.2.3.0/tars/tensorrt-8.2.3.0.linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz">此处</a>下载 CUDA 11.x TensorRT 8.2.3.0。然后，根据如下命令，安装并配置 TensorRT 以及相关依赖。
 <pre><code>
 cd /the/path/of/tensorrt/tar/gz/file
 tar -zxvf TensorRT-8.2.3.0.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz
 pip install TensorRT-8.2.3.0/python/tensorrt-8.2.3.0-cp37-none-linux_x86_64.whl
 export TENSORRT_DIR=$(pwd)/TensorRT-8.2.3.0
 export LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
+pip install pycuda
 </code></pre>
    </td>
   </tr>
@@ -315,7 +301,7 @@ export MMDEPLOY_DIR=$(pwd)
     3. <b>pplnn</b>: 表示 PPL.NN。需要设置 <code>pplnn_DIR</code>
 <pre><code>-Dpplnn_DIR=${PPLNN_DIR}</code></pre>
     4. <b>ncnn</b>: 表示 ncnn。需要设置 <code>ncnn_DIR</code>
-<pre><code>-Dncnn_DIR=${NCNN_DIR}</code></pre>
+<pre><code>-Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn</code></pre>
     5. <b>openvino</b>: 表示 OpenVINO。需要设置 <code>InferenceEngine_DIR</code>
 <pre><code>-DInferenceEngine_DIR=${INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/share</code></pre>
     6. <b>torchscript</b>: TorchScript. 需要设置<code>Torch_DIR</code>
@@ -330,7 +316,7 @@ export MMDEPLOY_DIR=$(pwd)
     <td>用来设置 SDK 后处理组件，加载 OpenMMLab 算法仓库的后处理功能。如果选择多个 codebase，中间使用分号隔开。比如，<code>-DMMDEPLOY_CODEBASES="mmcls;mmdet"</code>。也可以通过 <code>-DMMDEPLOY_CODEBASES=all</code> 方式，加载所有 codebase。</td>
   </tr>
   <tr>
-    <td>BUILD_SHARED_LIBS</td>
+    <td>MMDEPLOY_SHARED_LIBS</td>
     <td>{ON, OFF}</td>
     <td>ON</td>
     <td>MMDeploy SDK 的动态库的编译开关。设置 OFF 时，编译静态库</td>

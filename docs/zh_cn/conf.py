@@ -58,6 +58,8 @@ extensions = [
     'sphinx_copybutton',
 ]  # yapf: disable
 
+autodoc_mock_imports = ['tensorrt']
+
 autosectionlabel_prefix_document = True
 
 # Add any paths that contain templates here, relative to this directory.

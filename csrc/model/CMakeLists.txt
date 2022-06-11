@@ -1,8 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-cmake_minimum_required(VERSION 3.14)
-project(model)
 
-include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
+project(model)
 
 set(MODEL_NAMES "directory_model")
 if (${MMDEPLOY_ZIP_MODEL})

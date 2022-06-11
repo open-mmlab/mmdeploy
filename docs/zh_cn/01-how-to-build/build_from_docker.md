@@ -1,4 +1,4 @@
-# Docker 安装
+# 使用 Docker 镜像
 
 我们分别为 CPU 和 GPU 提供了两个 dockerfile。对于 CPU 用户，我们对接 ONNXRuntime、ncnn 和 OpenVINO 后端安装 MMDeploy。对于 GPU 用户，我们安装带有 TensorRT 后端的 MMDeploy。此外，用户可以在构建 docker 镜像时安装不同版本的 mmdeploy。
 

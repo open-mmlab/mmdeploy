@@ -3,7 +3,7 @@ import argparse
 import collections
 import logging
 
-from mmdeploy.apis.pplnn import onnx2pplnn
+from mmdeploy.apis.pplnn import from_onnx
 from mmdeploy.utils import get_root_logger
 
 
@@ -11,7 +11,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Convert ONNX to PPLNN.')
     parser.add_argument('onnx_path', help='ONNX model path')
     parser.add_argument(
-        'output_path', help='output PPLNN algorithm path in json format')
+        'output_prefix', help='output PPLNN algorithm prefix in json format')
     parser.add_argument(
         '--device',
         help='`the device of model during conversion',
@@ -36,7 +36,7 @@ def main():
     logger = get_root_logger(log_level=args.log_level)
 
     onnx_path = args.onnx_path
-    output_path = args.output_path
+    output_prefix = args.output_prefix
     device = args.device
 
     input_shapes = eval(args.opt_shapes)
@@ -50,10 +50,10 @@ def main():
         input_shapes = [input_shapes]
 
     logger.info(f'onnx2ppl: \n\tonnx_path: {onnx_path} '
-                f'\n\toutput_path: {output_path}'
+                f'\n\toutput_prefix: {output_prefix}'
                 f'\n\topt_shapes: {input_shapes}')
     try:
-        onnx2pplnn(output_path, onnx_path, device, input_shapes)
+        from_onnx(onnx_path, output_prefix, device, input_shapes)
         logger.info('onnx2tpplnn success.')
     except Exception as e:
         logger.error(e)

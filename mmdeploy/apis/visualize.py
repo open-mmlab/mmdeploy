@@ -21,10 +21,10 @@ def visualize_model(model_cfg: Union[str, mmcv.Config],
 
     Examples:
         >>> from mmdeploy.apis import visualize_model
-        >>> model_cfg = 'mmdetection/configs/fcos/' \
-            'fcos_r50_caffe_fpn_gn-head_1x_coco.py'
-        >>> deploy_cfg = 'configs/mmdet/detection/' \
-            'detection_onnxruntime_dynamic.py'
+        >>> model_cfg = ('mmdetection/configs/fcos/'
+                         'fcos_r50_caffe_fpn_gn-head_1x_coco.py')
+        >>> deploy_cfg = ('configs/mmdet/detection/'
+                          'detection_onnxruntime_dynamic.py')
         >>> model = 'work_dir/fcos.onnx'
         >>> img = 'demo.jpg'
         >>> device = 'cpu'

@@ -16,7 +16,7 @@ def is_available():
     return importlib.util.find_spec('tensorrt') is not None
 
 
-def is_plugin_available():
+def is_custom_ops_available():
     """Check whether TensorRT custom ops are installed.
 
     Returns:
@@ -27,12 +27,9 @@ def is_plugin_available():
 
 
 if is_available():
-    from .utils import create_trt_engine, load_trt_engine, save_trt_engine
+    from .utils import from_onnx, load, save
 
-    __all__ = [
-        'create_trt_engine', 'save_trt_engine', 'load_trt_engine',
-        'load_tensorrt_plugin'
-    ]
+    __all__ = ['from_onnx', 'save', 'load', 'load_tensorrt_plugin']
 
     try:
         # import wrapper if pytorch is available

@@ -229,6 +229,7 @@ int main(int argc, char** argv) {
     fuse_multiheadattention(mutable_graph, weights, node_reference, blob_names, reduced_node_count);
     fuse_binaryop_with_scalar(mutable_graph, weights, node_reference, blob_names,
                               reduced_node_count);
+    fuse_rewrite_gather(mutable_graph, weights, node_reference, blob_names, reduced_node_count);
   }
 
   // reduce common const weight node_reference
@@ -374,7 +375,8 @@ int main(int argc, char** argv) {
       if (node.input_size() >= 2) {
         node_reference[node.input(1)] -= 1;
       }
-    } else if (op == "adaptive_avg_pool2d" || op == "adaptive_max_pool2d") {
+    } else if (op == "AdaptiveAvgPool2d" || op == "adaptive_avg_pool2d" ||
+               op == "adaptive_max_pool2d") {
       if (node.input_size() >= 2) {
         node_reference[node.input(1)] -= 1;
       }
@@ -622,6 +624,8 @@ int main(int argc, char** argv) {
       }
     } else if (op == "Cos") {
       fprintf(pp, "%-16s", "UnaryOp");
+    } else if (op == "Crop") {
+      fprintf(pp, "%-16s", "Crop");
     } else if (op == "DepthToSpace") {
       fprintf(pp, "%-16s", "PixelShuffle");
     } else if (op == "DetectionOutput") {
@@ -665,7 +669,8 @@ int main(int argc, char** argv) {
       fprintf(pp, "%-16s", "Pooling");
     } else if (op == "GlobalMaxPool") {
       fprintf(pp, "%-16s", "Pooling");
-    } else if (op == "adaptive_avg_pool2d" || op == "adaptive_max_pool2d") {
+    } else if (op == "AdaptiveAvgPool2d" || op == "adaptive_avg_pool2d" ||
+               op == "adaptive_max_pool2d") {
       fprintf(pp, "%-16s", "Pooling");
     } else if (op == "GroupNorm") {
       fprintf(pp, "%-16s", "GroupNorm");
@@ -1194,6 +1199,22 @@ int main(int argc, char** argv) {
     } else if (op == "Cos") {
       int op_type = 10;
       fprintf(pp, " 0=%d", op_type);
+    } else if (op == "Crop") {
+      auto starts = get_node_attr_ai(node, "starts");
+      fprintf(pp, " -23309=%zu", starts.size());
+      for (size_t j = 0; j < starts.size(); ++j) {
+        fprintf(pp, ",%i", starts[j]);
+      }
+      auto ends = get_node_attr_ai(node, "ends");
+      fprintf(pp, " -23310=%zu", ends.size());
+      for (size_t j = 0; j < ends.size(); ++j) {
+        fprintf(pp, ",%i", ends[j]);
+      }
+      auto axis = get_node_attr_ai(node, "axis");
+      fprintf(pp, " -23311=%zu", axis.size());
+      for (size_t j = 0; j < axis.size(); ++j) {
+        fprintf(pp, ",%i", axis[j]);
+      }
     } else if (op == "DepthToSpace") {
       // pixelshuffle
       int scale_factor = get_node_attr_i(node, "blocksize", 1);
@@ -1285,7 +1306,7 @@ int main(int argc, char** argv) {
       }
       fprintf(pp, " 0=%d", axis);
     } else if (op == "Gelu") {
-      fprintf(pp, " 0=0");
+      fprintf(pp, " 0=1");
     } else if (op == "Gemm") {
       float alpha = get_node_attr_f(node, "alpha", 1.f);
       float beta = get_node_attr_f(node, "beta", 1.f);
@@ -1325,9 +1346,10 @@ int main(int argc, char** argv) {
 
       fprintf(pp, " 0=%d", pool);
       fprintf(pp, " 4=%d", global_pool);
-    } else if (op == "adaptive_avg_pool2d" || op == "adaptive_max_pool2d") {
+    } else if (op == "AdaptiveAvgPool2d" || op == "adaptive_avg_pool2d" ||
+               op == "adaptive_max_pool2d") {
       int pool = 0;
-      if (op == "adaptive_avg_pool2d") {
+      if (op == "AdaptiveAvgPool2d" || op == "adaptive_avg_pool2d") {
         pool = 1;
       }
       int adaptive_pooling = 1;

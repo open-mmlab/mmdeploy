@@ -3,14 +3,12 @@
 #include "rotated_detector.h"
 
 #include "common.h"
-#include "core/logger.h"
 
 namespace mmdeploy {
 
 class PyRotatedDetector {
  public:
   PyRotatedDetector(const char *model_path, const char *device_name, int device_id) {
-    MMDEPLOY_INFO("{}, {}, {}", model_path, device_name, device_id);
     auto status =
         mmdeploy_rotated_detector_create_by_path(model_path, device_name, device_id, &handle_);
     if (status != MM_SUCCESS) {

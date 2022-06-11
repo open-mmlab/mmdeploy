@@ -15,7 +15,7 @@ def is_available():
     return importlib.util.find_spec('onnxruntime') is not None
 
 
-def is_plugin_available():
+def is_custom_ops_available():
     """Check whether ONNX Runtime custom ops are installed.
 
     Returns:

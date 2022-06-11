@@ -1,6 +1,6 @@
 # Win10 下构建方式
 
-- [Windows 下构建方式](#windows-下构建方式)
+- [Win10 下构建方式](#win10-下构建方式)
   - [源码安装](#源码安装)
     - [安装构建和编译工具链](#安装构建和编译工具链)
     - [安装依赖包](#安装依赖包)
@@ -19,7 +19,7 @@
 目前，MMDeploy 在 Windows 平台下仅提供源码编译安装方式。未来会提供预编译包方式。
 
 ## 源码安装
-下述安装方式，均是在 **Windows 10** 下进行
+下述安装方式，均是在 **Windows 10** 下进行，使用 **PowerShell Preview** 版本。
 
 ### 安装构建和编译工具链
 1. 下载并安装 [Visual Studio 2019](https://visualstudio.microsoft.com) 。安装时请勾选 "使用C++的桌面开发, "Windows 10 SDK <br>
@@ -76,21 +76,6 @@ pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/$env:cu
   </tr>
 </thead>
 <tbody>
-  <tr>
-    <td>spdlog </td>
-    <td>spdlog是一个精巧的日志管理库。请参考如下命令安装： <br>
-<pre><code>
-Invoke-WebRequest -Uri https://github.com/gabime/spdlog/archive/refs/tags/v1.9.2.zip -OutFile spdlog-1.9.2.zip
-Expand-Archive spdlog-1.9.2.zip .
-cd spdlog-1.9.2
-mkdir build
-cd build
-cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release
-cmake --build . --target install --config Release  -- /m
-cd ../..
-</code></pre>
-    </td>
-  </tr>
   <tr>
     <td>OpenCV </td>
     <td>
@@ -153,13 +138,14 @@ $env:path = "$env:ONNXRUNTIME_DIR\lib;" + $env:path
     <td>TensorRT <br> </td>
     <td>
     1. 登录 <a href="https://www.nvidia.com/">NVIDIA 官网</a>，从<a href="https://developer.nvidia.com/nvidia-tensorrt-download">这里</a>选取并下载 TensorRT tar 包。要保证它和您机器的 CPU 架构以及 CUDA 版本是匹配的。您可以参考这份 <a href="https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing-tar">指南</a> 安装 TensorRT。<br>
-    2. 这里也有一份 TensorRT 8.2 GA Update 2 在 Windows x86_64 和 CUDA 11.x 下的安装示例，供您参考。首先，点击<a href="https://developer.nvidia.com/compute/machine-learning/tensorrt/secure/8.2.3.0/zip/TensorRT-8.2.3.0.Windows10.x86_64.cuda-11.4.cudnn8.2.zip">此处</a>下载 CUDA 11.x TensorRT 8.2.3.0。然后，根据如下命令，安装并配置 TensorRT。
+    2. 这里也有一份 TensorRT 8.2 GA Update 2 在 Windows x86_64 和 CUDA 11.x 下的安装示例，供您参考。首先，点击<a href="https://developer.nvidia.com/compute/machine-learning/tensorrt/secure/8.2.3.0/zip/TensorRT-8.2.3.0.Windows10.x86_64.cuda-11.4.cudnn8.2.zip">此处</a>下载 CUDA 11.x TensorRT 8.2.3.0。然后，根据如下命令，安装并配置 TensorRT 以及相关依赖。
 <pre><code>
 cd \the\path\of\tensorrt\zip\file
 Expand-Archive TensorRT-8.2.3.0.Windows10.x86_64.cuda-11.4.cudnn8.2.zip .
 pip install $env:TENSORRT_DIR\python\tensorrt-8.2.3.0-cp37-none-win_amd64.whl
 $env:TENSORRT_DIR = "$pwd\TensorRT-8.2.3.0"
 $env:path = "$env:TENSORRT_DIR\lib;" + $env:path
+pip install pycuda
 </code></pre>
    </td>
   </tr>
@@ -260,7 +246,7 @@ $env:MMDEPLOY_DIR="$pwd"
     <td>用来设置SDK后处理组件，加载 OpenMMLab 算法仓库的后处理功能。如果选择多个 codebase，中间使用分号隔开。比如，<code>-DMMDEPLOY_CODEBASES="mmcls;mmdet"</code>。也可以通过 <code>-DMMDEPLOY_CODEBASES=all</code> 方式，加载所有 codebase。</td>
   </tr>
   <tr>
-    <td>BUILD_SHARED_LIBS</td>
+    <td>MMDEPLOY_SHARED_LIBS</td>
     <td>{ON, OFF}</td>
     <td>ON</td>
     <td>动态库的编译开关。设置OFF时，编译静态库</td>

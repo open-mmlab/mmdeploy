@@ -38,11 +38,11 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
 
 
     if is_available():
-        from .utils import create_trt_engine, load_trt_engine, save_trt_engine
+        from .utils import from_onnx, load, save
         from .wrapper import TRTWrapper
 
         __all__ = [
-            'create_trt_engine', 'save_trt_engine', 'load_trt_engine', 'TRTWrapper'
+            'from_onnx', 'save', 'load', 'TRTWrapper'
         ]
     ```
 
@@ -229,3 +229,19 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
     ```
 
 5. 为新后端引擎代码添加相关注释和单元测试 :).
+
+
+### 将MMDeploy作为第三方库时添加新后端
+前面的部分展示了如何在 MMDeploy 中添加新的后端，这需要更改其源代码。但是，如果我们将 MMDeploy 视为第三方，则上述方法不再有效。为此，添加一个新的后端需要我们预先安装另一个名为 `aenum` 的包。我们可以直接通过`pip install aenum`进行安装。
+
+成功安装 `aenum` 后，我们可以通过以下方式使用它来添加新的后端：
+```python
+from mmdeploy.utils.constants import Backend
+from aenum import extend_enum
+
+try:
+    Backend.get('backend_name')
+except Exception:
+    extend_enum(Backend, 'BACKEND', 'backend_name')
+```
+我们可以在使用 MMDeploy 的重写逻辑之前运行上面的代码，这就完成了新后端的添加。

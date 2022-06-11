@@ -1,9 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-cmake_minimum_required(VERSION 3.14)
-project(mmdeploy_mmrotate)
 
-include(${CMAKE_SOURCE_DIR}/cmake/opencv.cmake)
-include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
+project(mmdeploy_mmrotate)
 
 file(GLOB_RECURSE SRCS ${CMAKE_CURRENT_SOURCE_DIR} "*.cpp")
 mmdeploy_add_module(${PROJECT_NAME} "${SRCS}")

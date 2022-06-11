@@ -1,8 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-cmake_minimum_required(VERSION 3.14)
-project(mmdeploy_cpu_device)
 
-include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
+project(mmdeploy_cpu_device)
 
 file(GLOB_RECURSE SRCS "*.cpp")
 

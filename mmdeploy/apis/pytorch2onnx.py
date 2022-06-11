@@ -1,60 +1,18 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
-from typing import Any, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 import mmcv
 import torch
 
-from mmdeploy.core import RewriterContext, patch_model
+from mmdeploy.apis.core.pipeline_manager import no_mp
 from mmdeploy.utils import (get_backend, get_dynamic_axes, get_input_shape,
                             get_onnx_config, load_config)
+from .core import PIPELINE_MANAGER
+from .onnx import export
 
 
-def torch2onnx_impl(model: torch.nn.Module, input: Union[torch.Tensor, Tuple],
-                    deploy_cfg: Union[str, mmcv.Config], output_file: str):
-    """Converting torch model to ONNX.
-
-    Args:
-        model (torch.nn.Module): Input pytorch model.
-        input (torch.Tensor | Tuple): Input tensor used to convert model.
-        deploy_cfg (str | mmcv.Config): Deployment config file or
-            Config object.
-        output_file (str): Output file to save ONNX model.
-    """
-    # load deploy_cfg if needed
-    deploy_cfg = load_config(deploy_cfg)[0]
-
-    onnx_cfg = get_onnx_config(deploy_cfg)
-    backend = get_backend(deploy_cfg).value
-    opset_version = onnx_cfg.get('opset_version', 11)
-
-    input_names = onnx_cfg['input_names']
-    output_names = onnx_cfg['output_names']
-    axis_names = input_names + output_names
-    dynamic_axes = get_dynamic_axes(deploy_cfg, axis_names)
-    verbose = not onnx_cfg.get('strip_doc_string', True) or onnx_cfg.get(
-        'verbose', False)
-
-    # patch model
-    patched_model = patch_model(model, cfg=deploy_cfg, backend=backend)
-
-    with RewriterContext(
-            cfg=deploy_cfg, backend=backend,
-            opset=opset_version), torch.no_grad():
-        torch.onnx.export(
-            patched_model,
-            input,
-            output_file,
-            export_params=onnx_cfg['export_params'],
-            input_names=input_names,
-            output_names=output_names,
-            opset_version=opset_version,
-            dynamic_axes=dynamic_axes,
-            keep_initializers_as_inputs=onnx_cfg[
-                'keep_initializers_as_inputs'],
-            verbose=verbose)
-
-
+@PIPELINE_MANAGER.register_pipeline()
 def torch2onnx(img: Any,
                work_dir: str,
                save_file: str,
@@ -69,12 +27,12 @@ def torch2onnx(img: Any,
         >>> img = 'demo.jpg'
         >>> work_dir = 'work_dir'
         >>> save_file = 'fcos.onnx'
-        >>> deploy_cfg = 'configs/mmdet/detection/' \
-            'detection_onnxruntime_dynamic.py'
-        >>> model_cfg = 'mmdetection/configs/fcos/' \
-            'fcos_r50_caffe_fpn_gn-head_1x_coco.py'
-        >>> model_checkpoint = 'checkpoints/' \
-            'fcos_r50_caffe_fpn_gn-head_1x_coco-821213aa.pth'
+        >>> deploy_cfg = ('configs/mmdet/detection/'
+                          'detection_onnxruntime_dynamic.py')
+        >>> model_cfg = ('mmdetection/configs/fcos/'
+                         'fcos_r50_caffe_fpn_gn-head_1x_coco.py')
+        >>> model_checkpoint = ('checkpoints/'
+                                'fcos_r50_caffe_fpn_gn-head_1x_coco-821213aa.pth')
         >>> device = 'cpu'
         >>> torch2onnx(img, work_dir, save_file, deploy_cfg, \
             model_cfg, model_checkpoint, device)
@@ -94,10 +52,10 @@ def torch2onnx(img: Any,
     # load deploy_cfg if necessary
     deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
     mmcv.mkdir_or_exist(osp.abspath(work_dir))
-    output_file = osp.join(work_dir, save_file)
 
     input_shape = get_input_shape(deploy_cfg)
 
+    # create model an inputs
     from mmdeploy.apis import build_task_processor
     task_processor = build_task_processor(model_cfg, deploy_cfg, device)
 
@@ -106,8 +64,34 @@ def torch2onnx(img: Any,
     if not isinstance(model_inputs, torch.Tensor) and len(model_inputs) == 1:
         model_inputs = model_inputs[0]
 
-    torch2onnx_impl(
-        torch_model,
-        model_inputs,
-        deploy_cfg=deploy_cfg,
-        output_file=output_file)
+    # export to onnx
+    context_info = dict()
+    context_info['deploy_cfg'] = deploy_cfg
+    output_prefix = osp.join(work_dir,
+                             osp.splitext(osp.basename(save_file))[0])
+    backend = get_backend(deploy_cfg).value
+
+    onnx_cfg = get_onnx_config(deploy_cfg)
+    opset_version = onnx_cfg.get('opset_version', 11)
+
+    input_names = onnx_cfg['input_names']
+    output_names = onnx_cfg['output_names']
+    axis_names = input_names + output_names
+    dynamic_axes = get_dynamic_axes(deploy_cfg, axis_names)
+    verbose = not onnx_cfg.get('strip_doc_string', True) or onnx_cfg.get(
+        'verbose', False)
+    keep_initializers_as_inputs = onnx_cfg.get('keep_initializers_as_inputs',
+                                               True)
+    with no_mp():
+        export(
+            torch_model,
+            model_inputs,
+            output_path_prefix=output_prefix,
+            backend=backend,
+            input_names=input_names,
+            output_names=output_names,
+            context_info=context_info,
+            opset_version=opset_version,
+            dynamic_axes=dynamic_axes,
+            verbose=verbose,
+            keep_initializers_as_inputs=keep_initializers_as_inputs)

@@ -75,7 +75,7 @@ def generate_onnx_file(model):
 @backend_checker(Backend.TENSORRT)
 def test_onnx2tensorrt():
     from mmdeploy.apis.tensorrt import onnx2tensorrt
-    from mmdeploy.backend.tensorrt import load_trt_engine
+    from mmdeploy.backend.tensorrt import load
     model = test_model
     generate_onnx_file(model)
     deploy_cfg = get_deploy_cfg()
@@ -85,5 +85,5 @@ def test_onnx2tensorrt():
     onnx2tensorrt(work_dir, save_file, 0, deploy_cfg, onnx_file)
     assert osp.exists(work_dir)
     assert osp.exists(engine_file)
-    engine = load_trt_engine(engine_file)
+    engine = load(engine_file)
     assert engine is not None
