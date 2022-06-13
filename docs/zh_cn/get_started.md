@@ -240,7 +240,7 @@ cv2.imwrite('output_detection.png', img)
 
 ```
 
-更多模型的 SDK Python API 应用样例，请查阅[这里](https://github.com/open-mmlab/mmdeploy/demo/python)。
+更多模型的 SDK Python API 应用样例，请查阅[这里](https://github.com/open-mmlab/mmdeploy/tree/master/demo/python)。
 
 ```{note}
 如果您使用源码安装方式, 请把 ${MMDEPLOY_DIR}/build/lib 加入到环境变量 PYTHONPATH 中。
@@ -323,11 +323,11 @@ target_link_libraries(${YOUR_AWESOME_TARGET} PRIVATE MMDeployLibs)
 ```
 
 编译时，使用 -DMMDeploy_DIR，传入MMDeloyConfig.cmake所在的路径。它在预编译包中的sdk/lib/cmake/MMDeloy下。
-更多模型的 SDK C API 应用样例，请查阅[此处](https://github.com/open-mmlab/mmdeploy/demo/csrc)。
+更多模型的 SDK C API 应用样例，请查阅[此处](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csrc)。
 
 #### C# API
 
-因篇幅所限，本文不展示具体案例。请参考[这里](https://github.com/open-mmlab/mmdeploy/demo/csharp)，了解 SDK C# API 的用法。
+因篇幅所限，本文不展示具体案例。请参考[这里](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csharp)，了解 SDK C# API 的用法。
 
 ## 模型精度评估
 

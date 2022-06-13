@@ -240,7 +240,7 @@ for index, bbox, label_id in zip(indices, bboxes, labels):
 cv2.imwrite('output_detection.png', img)
 ```
 
-You can find more examples from [here](https://github.com/open-mmlab/mmdeploy/demo/python).
+You can find more examples from [here](https://github.com/open-mmlab/mmdeploy/tree/master/demo/python).
 
 ```{note}
 If you build MMDeploy from the source, please add ${MMDEPLOY_DIR}/build/lib to the environment variable PYTHONPATH.
@@ -322,11 +322,11 @@ mmdeploy_load_dynamic(${YOUR_AWESOME_TARGET} MMDeployDynamicModules)
 target_link_libraries(${YOUR_AWESOME_TARGET} PRIVATE MMDeployLibs)
 ```
 
-For more SDK C API usages, please read these [samples](https://github.com/open-mmlab/mmdeploy/demo/csrc).
+For more SDK C API usages, please read these [samples](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csrc).
 
 #### C# API
 
-Due to limitations on space, we will not present a specific example. But you can find all of them [here](https://github.com/open-mmlab/mmdeploy/demo/csharp).
+Due to limitations on space, we will not present a specific example. But you can find all of them [here](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csharp).
 
 ## Evaluate Model
 
