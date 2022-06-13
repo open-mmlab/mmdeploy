@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "archive/value_archive.h"
-#include "core/operator.h"
+#include "mmdeploy/archive/value_archive.h"
+#include "mmdeploy/core/operator.h"
 #include "pipeline.h"
 
 namespace mmdeploy::graph {

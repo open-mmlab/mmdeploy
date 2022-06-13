@@ -2,9 +2,9 @@
 
 #include <cuda_runtime.h>
 
-#include "core/utils/device_utils.h"
-#include "core/utils/formatter.h"
-#include "preprocess/transform/normalize.h"
+#include "mmdeploy/core/utils/device_utils.h"
+#include "mmdeploy/core/utils/formatter.h"
+#include "mmdeploy/preprocess/transform/normalize.h"
 
 using namespace std;
 

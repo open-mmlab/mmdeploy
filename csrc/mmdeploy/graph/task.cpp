@@ -1,9 +1,9 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "graph/task.h"
+#include "mmdeploy/graph/task.h"
 
-#include "core/operator.h"
-#include "graph/common.h"
+#include "mmdeploy/core/operator.h"
+#include "mmdeploy/graph/common.h"
 
 namespace mmdeploy::graph {
 

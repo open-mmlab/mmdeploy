@@ -2,9 +2,9 @@
 
 #include "model.h"
 
-#include "core/logger.h"
-#include "core/model_impl.h"
-#include "core/utils/filesystem.h"
+#include "mmdeploy/core/logger.h"
+#include "mmdeploy/core/model_impl.h"
+#include "mmdeploy/core/utils/filesystem.h"
 
 using namespace std;
 

@@ -2,8 +2,8 @@
 
 #include "transform.h"
 
-#include "core/registry.h"
-#include "core/utils/formatter.h"
+#include "mmdeploy/core/registry.h"
+#include "mmdeploy/core/utils/formatter.h"
 
 namespace mmdeploy {
 

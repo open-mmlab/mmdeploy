@@ -12,11 +12,11 @@
 #include <variant>
 #include <vector>
 
-#include "core/logger.h"
-#include "core/status_code.h"
-#include "mpl/priority_tag.h"
-#include "mpl/static_any.h"
-#include "mpl/type_traits.h"
+#include "mmdeploy/core/logger.h"
+#include "mmdeploy/core/mpl/priority_tag.h"
+#include "mmdeploy/core/mpl/static_any.h"
+#include "mmdeploy/core/mpl/type_traits.h"
+#include "mmdeploy/core/status_code.h"
 
 namespace mmdeploy {
 

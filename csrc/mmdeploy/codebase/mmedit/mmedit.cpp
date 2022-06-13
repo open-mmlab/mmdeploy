@@ -1,8 +1,8 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "codebase/mmedit/mmedit.h"
+#include "mmdeploy/codebase/mmedit/mmedit.h"
 
-#include "core/registry.h"
+#include "mmdeploy/core/registry.h"
 
 namespace mmdeploy {
 namespace mmedit {

@@ -5,12 +5,12 @@
 
 #include <map>
 
-#include "core/graph.h"
-#include "core/module.h"
-#include "core/operator.h"
-#include "core/value.h"
-#include "execution/schedulers/registry.h"
-#include "execution/when_all_value.h"
+#include "mmdeploy/core/graph.h"
+#include "mmdeploy/core/module.h"
+#include "mmdeploy/core/operator.h"
+#include "mmdeploy/core/value.h"
+#include "mmdeploy/execution/schedulers/registry.h"
+#include "mmdeploy/execution/when_all_value.h"
 
 namespace mmdeploy::graph {
 

@@ -3,7 +3,7 @@
 #ifndef MMDEPLOY_SRC_NET_NCNN_NCNN_NET_H_
 #define MMDEPLOY_SRC_NET_NCNN_NCNN_NET_H_
 
-#include "core/net.h"
+#include "mmdeploy/core/net.h"
 // It's ncnn's net.h
 #include "net.h"
 

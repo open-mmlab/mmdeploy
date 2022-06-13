@@ -3,7 +3,7 @@
 #ifndef MMDEPLOY_SRC_EXPERIMENTAL_PIPELINE_OPERATOR_H_
 #define MMDEPLOY_SRC_EXPERIMENTAL_PIPELINE_OPERATOR_H_
 
-#include "core/value.h"
+#include "mmdeploy/core/value.h"
 
 namespace mmdeploy::graph {
 

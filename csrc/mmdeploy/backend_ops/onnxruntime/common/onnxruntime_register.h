@@ -3,7 +3,7 @@
 #define ONNXRUNTIME_REGISTER_H
 #include <onnxruntime_c_api.h>
 
-#include "core/macro.h"
+#include "mmdeploy/core/macro.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -8,7 +8,7 @@
 #include <atomic>
 #include <chrono>
 
-#include "core/logger.h"
+#include "mmdeploy/core/logger.h"
 
 namespace mmdeploy::cuda {
 

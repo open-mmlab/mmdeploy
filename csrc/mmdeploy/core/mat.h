@@ -6,8 +6,8 @@
 #include <memory>
 #include <vector>
 
-#include "core/device.h"
-#include "core/types.h"
+#include "mmdeploy/core/device.h"
+#include "mmdeploy/core/types.h"
 
 namespace mmdeploy {
 

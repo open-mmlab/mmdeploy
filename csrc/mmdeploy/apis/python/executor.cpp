@@ -1,12 +1,12 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
 #include "common.h"
-#include "core/utils/formatter.h"
-#include "execution/execution.h"
-#include "execution/schedulers/inlined_scheduler.h"
-#include "execution/schedulers/registry.h"
-#include "execution/schedulers/single_thread_context.h"
-#include "execution/schedulers/static_thread_pool.h"
+#include "mmdeploy/core/utils/formatter.h"
+#include "mmdeploy/execution/execution.h"
+#include "mmdeploy/execution/schedulers/inlined_scheduler.h"
+#include "mmdeploy/execution/schedulers/registry.h"
+#include "mmdeploy/execution/schedulers/single_thread_context.h"
+#include "mmdeploy/execution/schedulers/static_thread_pool.h"
 
 namespace mmdeploy {
 

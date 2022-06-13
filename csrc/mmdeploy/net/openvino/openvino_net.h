@@ -3,8 +3,8 @@
 #ifndef MMDEPLOY_SRC_NET_OPENVINO_OPENVINO_NET_H_
 #define MMDEPLOY_SRC_NET_OPENVINO_OPENVINO_NET_H_
 
-#include "core/net.h"
 #include "inference_engine.hpp"
+#include "mmdeploy/core/net.h"
 
 namespace mmdeploy {
 

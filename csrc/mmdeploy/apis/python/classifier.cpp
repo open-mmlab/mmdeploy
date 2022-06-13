@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "classifier.h"
+#include "mmdeploy/apis/c/classifier.h"
 
 #include "common.h"
 

@@ -2,12 +2,12 @@
 
 #include <numeric>
 
-#include "archive/value_archive.h"
-#include "core/module.h"
-#include "core/registry.h"
-#include "core/utils/formatter.h"
-#include "core/value.h"
-#include "experimental/module_adapter.h"
+#include "mmdeploy/archive/value_archive.h"
+#include "mmdeploy/core/module.h"
+#include "mmdeploy/core/registry.h"
+#include "mmdeploy/core/utils/formatter.h"
+#include "mmdeploy/core/value.h"
+#include "mmdeploy/experimental/module_adapter.h"
 #include "opencv_utils.h"
 
 namespace mmdeploy {

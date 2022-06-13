@@ -5,7 +5,7 @@
 
 #include <array>
 
-#include "core/tensor.h"
+#include "mmdeploy/core/tensor.h"
 #include "transform.h"
 
 namespace mmdeploy {

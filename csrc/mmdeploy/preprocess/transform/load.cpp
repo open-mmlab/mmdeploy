@@ -2,7 +2,7 @@
 
 #include "load.h"
 
-#include "archive/json_archive.h"
+#include "mmdeploy/archive/json_archive.h"
 
 namespace mmdeploy {
 

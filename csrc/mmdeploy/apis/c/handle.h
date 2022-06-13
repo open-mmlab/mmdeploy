@@ -5,10 +5,10 @@
 
 #include <memory>
 
-#include "core/device.h"
-#include "core/graph.h"
-#include "core/value.h"
-#include "graph/pipeline.h"
+#include "mmdeploy/core/device.h"
+#include "mmdeploy/core/graph.h"
+#include "mmdeploy/core/value.h"
+#include "mmdeploy/graph/pipeline.h"
 
 namespace mmdeploy {
 

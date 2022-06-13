@@ -3,10 +3,10 @@
 #ifndef MMDEPLOY_MMSEG_H
 #define MMDEPLOY_MMSEG_H
 
-#include "codebase/common.h"
-#include "core/device.h"
-#include "core/module.h"
-#include "core/tensor.h"
+#include "mmdeploy/codebase/common.h"
+#include "mmdeploy/core/device.h"
+#include "mmdeploy/core/module.h"
+#include "mmdeploy/core/tensor.h"
 
 namespace mmdeploy {
 namespace mmseg {

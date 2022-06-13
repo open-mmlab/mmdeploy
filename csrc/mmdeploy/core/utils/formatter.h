@@ -6,8 +6,8 @@
 #include <ostream>
 #include <utility>
 
-#include "core/logger.h"
-#include "core/types.h"
+#include "mmdeploy/core/logger.h"
+#include "mmdeploy/core/types.h"
 #include "spdlog/fmt/ostr.h"
 
 #if FMT_VERSION >= 50000

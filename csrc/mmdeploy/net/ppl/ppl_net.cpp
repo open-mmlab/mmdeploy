@@ -1,10 +1,10 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 #include "ppl_net.h"
 
-#include "archive/value_archive.h"
-#include "core/logger.h"
-#include "core/model.h"
-#include "core/utils/formatter.h"
+#include "mmdeploy/archive/value_archive.h"
+#include "mmdeploy/core/logger.h"
+#include "mmdeploy/core/model.h"
+#include "mmdeploy/core/utils/formatter.h"
 #include "ppl/nn/common/logger.h"
 #include "ppl/nn/models/onnx/onnx_runtime_builder_factory.h"
 #if PPL_NN_HAS_X86

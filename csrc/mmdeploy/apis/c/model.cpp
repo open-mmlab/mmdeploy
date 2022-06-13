@@ -5,8 +5,8 @@
 
 #include <memory>
 
-#include "core/logger.h"
-#include "core/model.h"
+#include "mmdeploy/core/logger.h"
+#include "mmdeploy/core/model.h"
 // clang-format on
 
 using namespace mmdeploy;

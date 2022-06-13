@@ -10,8 +10,8 @@
 #include <numeric>
 #include <stack>
 
-#include "core/device_impl.h"
-#include "core/logger.h"
+#include "mmdeploy/core/device_impl.h"
+#include "mmdeploy/core/logger.h"
 
 namespace mmdeploy::device_allocator {
 

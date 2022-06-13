@@ -3,8 +3,8 @@
 #ifndef MMDEPLOY_LOAD_H
 #define MMDEPLOY_LOAD_H
 
-#include "core/mat.h"
-#include "core/tensor.h"
+#include "mmdeploy/core/mat.h"
+#include "mmdeploy/core/tensor.h"
 #include "transform.h"
 
 namespace mmdeploy {

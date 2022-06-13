@@ -3,7 +3,7 @@
 #ifndef MMDEPLOY_SRC_NET_ORT_ORT_NET_H_
 #define MMDEPLOY_SRC_NET_ORT_ORT_NET_H_
 
-#include "core/net.h"
+#include "mmdeploy/core/net.h"
 #include "onnxruntime_c_api.h"
 #include "onnxruntime_cxx_api.h"
 

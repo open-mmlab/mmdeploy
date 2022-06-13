@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "rotated_detector.h"
+#include "mmdeploy/apis/c/rotated_detector.h"
 
 #include "common.h"
 

@@ -4,7 +4,7 @@
 
 #include <cuda.h>
 
-#include "device/device_allocator.h"
+#include "mmdeploy/device/device_allocator.h"
 
 namespace mmdeploy {
 

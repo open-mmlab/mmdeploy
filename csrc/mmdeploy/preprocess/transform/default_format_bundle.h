@@ -3,7 +3,7 @@
 #ifndef MMDEPLOY_DEFAULT_FORMAT_BUNDLE_H
 #define MMDEPLOY_DEFAULT_FORMAT_BUNDLE_H
 
-#include "core/tensor.h"
+#include "mmdeploy/core/tensor.h"
 #include "transform.h"
 
 namespace mmdeploy {

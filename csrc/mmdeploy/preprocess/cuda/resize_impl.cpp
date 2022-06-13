@@ -1,9 +1,9 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "core/utils/device_utils.h"
-#include "core/utils/formatter.h"
+#include "mmdeploy/core/utils/device_utils.h"
+#include "mmdeploy/core/utils/formatter.h"
+#include "mmdeploy/preprocess/transform/resize.h"
 #include "ppl/cv/cuda/resize.h"
-#include "preprocess/transform/resize.h"
 
 using namespace std;
 

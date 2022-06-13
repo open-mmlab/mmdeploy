@@ -2,8 +2,8 @@
 
 #include "inference.h"
 
-#include "archive/json_archive.h"
-#include "core/model.h"
+#include "mmdeploy/archive/json_archive.h"
+#include "mmdeploy/core/model.h"
 
 namespace mmdeploy::graph {
 

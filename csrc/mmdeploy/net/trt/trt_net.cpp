@@ -4,10 +4,10 @@
 
 #include <sstream>
 
-#include "core/logger.h"
-#include "core/model.h"
-#include "core/module.h"
-#include "core/utils/formatter.h"
+#include "mmdeploy/core/logger.h"
+#include "mmdeploy/core/model.h"
+#include "mmdeploy/core/module.h"
+#include "mmdeploy/core/utils/formatter.h"
 
 namespace mmdeploy {
 

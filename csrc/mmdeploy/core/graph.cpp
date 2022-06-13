@@ -1,9 +1,9 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "core/graph.h"
+#include "mmdeploy/core/graph.h"
 
-#include "archive/value_archive.h"
-#include "core/registry.h"
+#include "mmdeploy/archive/value_archive.h"
+#include "mmdeploy/core/registry.h"
 
 namespace mmdeploy {
 namespace graph {

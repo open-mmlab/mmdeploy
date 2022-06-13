@@ -11,8 +11,8 @@
 #include <mutex>
 #include <vector>
 
-#include "core/logger.h"
-#include "device/cuda/default_allocator.h"
+#include "mmdeploy/core/logger.h"
+#include "mmdeploy/device/cuda/default_allocator.h"
 
 namespace mmdeploy::cuda {
 

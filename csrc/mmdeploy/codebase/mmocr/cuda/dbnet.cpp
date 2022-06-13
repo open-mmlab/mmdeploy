@@ -1,12 +1,11 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "codebase/mmocr/dbnet.h"
+#include "mmdeploy/codebase/mmocr/dbnet.h"
 
-#include "codebase/mmocr/cuda/connected_component.h"
-#include "codebase/mmocr/cuda/utils.h"
-#include "core/utils/device_utils.h"
-#include "cuda_runtime.h"
-#include "device/cuda/cuda_device.h"
+#include "mmdeploy/codebase/mmocr/cuda/connected_component.h"
+#include "mmdeploy/codebase/mmocr/cuda/utils.h"
+#include "mmdeploy/core/utils/device_utils.h"
+#include "mmdeploy/device/cuda/cuda_device.h"
 #include "opencv2/imgcodecs.hpp"
 #include "opencv2/imgproc.hpp"
 

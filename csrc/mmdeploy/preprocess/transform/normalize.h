@@ -3,7 +3,7 @@
 #ifndef MMDEPLOY_NORMALIZE_H
 #define MMDEPLOY_NORMALIZE_H
 
-#include "core/tensor.h"
+#include "mmdeploy/core/tensor.h"
 #include "transform.h"
 
 namespace mmdeploy {

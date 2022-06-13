@@ -3,9 +3,9 @@
 #ifndef MMDEPLOY_TRANSFORM_H
 #define MMDEPLOY_TRANSFORM_H
 
-#include "core/device.h"
-#include "core/module.h"
-#include "core/registry.h"
+#include "mmdeploy/core/device.h"
+#include "mmdeploy/core/module.h"
+#include "mmdeploy/core/registry.h"
 
 namespace mmdeploy {
 

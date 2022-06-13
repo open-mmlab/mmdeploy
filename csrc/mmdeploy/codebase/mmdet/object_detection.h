@@ -3,9 +3,9 @@
 #ifndef MMDEPLOY_SRC_CODEBASE_MMDET_OBJECT_DETECTION_H_
 #define MMDEPLOY_SRC_CODEBASE_MMDET_OBJECT_DETECTION_H_
 
-#include "codebase/mmdet/mmdet.h"
-#include "core/tensor.h"
-#include "core/utils/formatter.h"
+#include "mmdeploy/codebase/mmdet/mmdet.h"
+#include "mmdeploy/core/tensor.h"
+#include "mmdeploy/core/utils/formatter.h"
 
 namespace mmdeploy::mmdet {
 

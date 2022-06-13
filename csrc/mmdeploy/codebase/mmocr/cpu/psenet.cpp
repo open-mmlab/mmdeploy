@@ -1,8 +1,8 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "codebase/mmocr/psenet.h"
+#include "mmdeploy/codebase/mmocr/psenet.h"
 
-#include "core/utils/device_utils.h"
+#include "mmdeploy/core/utils/device_utils.h"
 #include "opencv2/imgproc.hpp"
 
 namespace mmdeploy::mmocr {

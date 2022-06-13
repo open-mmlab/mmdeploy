@@ -8,7 +8,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "core/mpl/detected.h"
+#include "mmdeploy/core/mpl/detected.h"
 #include "tag_invoke.h"
 
 #define MMDEPLOY_REQUIRES(...) std::enable_if_t<__VA_ARGS__, int> = 0
@@ -32,7 +32,7 @@ struct __conv {
 };
 
 template <typename F>
-__conv(F)->__conv<F>;
+__conv(F) -> __conv<F>;
 
 template <typename T, typename = std::enable_if_t<std::is_destructible_v<T>>>
 struct __conv_proxy {

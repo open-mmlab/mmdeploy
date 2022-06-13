@@ -2,9 +2,9 @@
 
 #include "object_detection.h"
 
-#include "core/registry.h"
-#include "core/utils/device_utils.h"
-#include "experimental/module_adapter.h"
+#include "mmdeploy/core/registry.h"
+#include "mmdeploy/core/utils/device_utils.h"
+#include "mmdeploy/experimental/module_adapter.h"
 
 using namespace std;
 

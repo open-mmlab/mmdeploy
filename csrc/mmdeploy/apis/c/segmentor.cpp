@@ -1,16 +1,16 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "apis/c/segmentor.h"
+#include "mmdeploy/apis/c/segmentor.h"
 
-#include "apis/c/common_internal.h"
-#include "apis/c/handle.h"
-#include "apis/c/pipeline.h"
-#include "codebase/mmseg/mmseg.h"
-#include "core/device.h"
-#include "core/graph.h"
-#include "core/mat.h"
-#include "core/tensor.h"
-#include "core/utils/formatter.h"
+#include "mmdeploy/apis/c/common_internal.h"
+#include "mmdeploy/apis/c/handle.h"
+#include "mmdeploy/apis/c/pipeline.h"
+#include "mmdeploy/codebase/mmseg/mmseg.h"
+#include "mmdeploy/core/device.h"
+#include "mmdeploy/core/graph.h"
+#include "mmdeploy/core/mat.h"
+#include "mmdeploy/core/tensor.h"
+#include "mmdeploy/core/utils/formatter.h"
 
 using namespace std;
 using namespace mmdeploy;

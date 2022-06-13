@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
+#include "mmdeploy/preprocess/transform/load.h"
 #include "opencv_utils.h"
-#include "preprocess/transform/load.h"
 
 using namespace std;
 

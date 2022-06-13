@@ -1,11 +1,11 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "device_impl.h"
+#include "mmdeploy/core/device_impl.h"
 
 #include <cassert>
 
-#include "core/device.h"
-#include "core/logger.h"
+#include "mmdeploy/core/device.h"
+#include "mmdeploy/core/logger.h"
 
 namespace mmdeploy {
 

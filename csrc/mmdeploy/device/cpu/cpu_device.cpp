@@ -5,7 +5,6 @@
 #include <cstdlib>
 #include <cstring>
 
-#include "core/logger.h"
 namespace mmdeploy {
 
 class CpuHostMemory : public NonCopyable {

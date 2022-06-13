@@ -1,8 +1,8 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "core/status_code.h"
+#include "mmdeploy/core/status_code.h"
 
-#include "core/logger.h"
+#include "mmdeploy/core/logger.h"
 
 namespace mmdeploy {
 

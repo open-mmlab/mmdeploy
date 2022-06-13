@@ -3,11 +3,11 @@
 #include <fstream>
 #include <map>
 
-#include "archive/json_archive.h"
-#include "core/logger.h"
-#include "core/model.h"
-#include "core/model_impl.h"
-#include "core/utils/filesystem.h"
+#include "mmdeploy/archive/json_archive.h"
+#include "mmdeploy/core/logger.h"
+#include "mmdeploy/core/model.h"
+#include "mmdeploy/core/model_impl.h"
+#include "mmdeploy/core/utils/filesystem.h"
 #include "zip.h"
 
 using nlohmann::json;

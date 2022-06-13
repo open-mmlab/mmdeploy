@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "codebase/mmcls/mmcls.h"
+#include "mmdeploy/codebase/mmcls/mmcls.h"
 
 namespace mmdeploy {
 namespace mmcls {

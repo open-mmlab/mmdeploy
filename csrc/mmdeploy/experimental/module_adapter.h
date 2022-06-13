@@ -3,9 +3,9 @@
 #ifndef MMDEPLOY_SRC_EXPERIMENTAL_MODULE_ADAPTER_H_
 #define MMDEPLOY_SRC_EXPERIMENTAL_MODULE_ADAPTER_H_
 
-#include "archive/value_archive.h"
-#include "core/module.h"
-#include "core/mpl/type_traits.h"
+#include "mmdeploy/archive/value_archive.h"
+#include "mmdeploy/core/module.h"
+#include "mmdeploy/core/mpl/type_traits.h"
 
 namespace mmdeploy {
 

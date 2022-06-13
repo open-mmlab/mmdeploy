@@ -6,8 +6,8 @@
 #include <queue>
 #include <thread>
 
-#include "core/device_impl.h"
-#include "core/types.h"
+#include "mmdeploy/core/device_impl.h"
+#include "mmdeploy/core/types.h"
 
 namespace mmdeploy {
 

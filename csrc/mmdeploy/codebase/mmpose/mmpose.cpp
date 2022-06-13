@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "codebase/mmpose/mmpose.h"
+#include "mmdeploy/codebase/mmpose/mmpose.h"
 
 using namespace std;
 

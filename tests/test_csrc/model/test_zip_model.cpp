@@ -5,9 +5,9 @@
 // clang-format on
 #include <fstream>
 
-#include "core/logger.h"
-#include "core/model.h"
-#include "core/model_impl.h"
+#include "mmdeploy/core/logger.h"
+#include "mmdeploy/core/model.h"
+#include "mmdeploy/core/model_impl.h"
 #include "test_resource.h"
 
 using namespace std;

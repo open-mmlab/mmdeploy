@@ -1,10 +1,10 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "apis/c/pipeline.h"
+#include "pipeline.h"
 
-#include "apis/c/common_internal.h"
-#include "apis/c/executor_internal.h"
-#include "apis/c/handle.h"
+#include "mmdeploy/apis/c/common_internal.h"
+#include "mmdeploy/apis/c/executor_internal.h"
+#include "mmdeploy/apis/c/handle.h"
 
 int mmdeploy_pipeline_create(mmdeploy_value_t config, const char* device_name, int device_id,
                              mmdeploy_exec_info_t exec_info, mm_handle_t* handle) {

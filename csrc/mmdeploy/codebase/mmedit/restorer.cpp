@@ -2,9 +2,9 @@
 
 #include <opencv2/core.hpp>
 
-#include "codebase/mmedit/mmedit.h"
-#include "core/tensor.h"
-#include "core/utils/device_utils.h"
+#include "mmdeploy/codebase/mmedit/mmedit.h"
+#include "mmdeploy/core/tensor.h"
+#include "mmdeploy/core/utils/device_utils.h"
 
 namespace mmdeploy::mmedit {
 

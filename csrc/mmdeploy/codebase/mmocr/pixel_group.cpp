@@ -7,7 +7,7 @@
 #include <queue>
 #include <vector>
 
-#include "core/tensor.h"
+#include "mmdeploy/core/tensor.h"
 #include "opencv2/opencv.hpp"
 
 namespace mmdeploy::mmocr {

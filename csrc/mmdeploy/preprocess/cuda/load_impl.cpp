@@ -2,10 +2,10 @@
 
 #include <cuda_runtime.h>
 
-#include "core/utils/device_utils.h"
-#include "core/utils/formatter.h"
+#include "mmdeploy/core/utils/device_utils.h"
+#include "mmdeploy/core/utils/formatter.h"
+#include "mmdeploy/preprocess/transform/load.h"
 #include "ppl/cv/cuda/cvtcolor.h"
-#include "preprocess/transform/load.h"
 
 using namespace std;
 using namespace ppl::cv::cuda;

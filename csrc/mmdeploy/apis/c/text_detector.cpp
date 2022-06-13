@@ -4,14 +4,14 @@
 
 #include <numeric>
 
-#include "apis/c/common_internal.h"
-#include "apis/c/executor_internal.h"
-#include "apis/c/model.h"
-#include "apis/c/pipeline.h"
-#include "codebase/mmocr/mmocr.h"
-#include "core/model.h"
-#include "core/status_code.h"
-#include "core/utils/formatter.h"
+#include "mmdeploy/apis/c/common_internal.h"
+#include "mmdeploy/apis/c/executor_internal.h"
+#include "mmdeploy/apis/c/model.h"
+#include "mmdeploy/apis/c/pipeline.h"
+#include "mmdeploy/codebase/mmocr/mmocr.h"
+#include "mmdeploy/core/model.h"
+#include "mmdeploy/core/status_code.h"
+#include "mmdeploy/core/utils/formatter.h"
 
 using namespace std;
 using namespace mmdeploy;

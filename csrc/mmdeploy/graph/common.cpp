@@ -2,7 +2,7 @@
 
 #include "common.h"
 
-#include "archive/value_archive.h"
+#include "mmdeploy/archive/value_archive.h"
 
 mmdeploy::graph::BaseNode::BaseNode(const mmdeploy::Value& cfg) {
   try {

@@ -4,8 +4,8 @@
 
 #include <map>
 
-#include "core/logger.h"
-#include "core/utils/formatter.h"
+#include "mmdeploy/core/logger.h"
+#include "mmdeploy/core/utils/formatter.h"
 
 namespace mmdeploy {
 namespace cpu {

@@ -4,14 +4,14 @@
 
 #include <numeric>
 
-#include "apis/c/common_internal.h"
-#include "apis/c/handle.h"
-#include "apis/c/pipeline.h"
-#include "archive/value_archive.h"
-#include "codebase/mmcls/mmcls.h"
-#include "core/device.h"
-#include "core/graph.h"
-#include "core/utils/formatter.h"
+#include "mmdeploy/apis/c/common_internal.h"
+#include "mmdeploy/apis/c/handle.h"
+#include "mmdeploy/apis/c/pipeline.h"
+#include "mmdeploy/archive/value_archive.h"
+#include "mmdeploy/codebase/mmcls/mmcls.h"
+#include "mmdeploy/core/device.h"
+#include "mmdeploy/core/graph.h"
+#include "mmdeploy/core/utils/formatter.h"
 
 using namespace mmdeploy;
 using namespace std;

@@ -3,7 +3,7 @@
 #ifndef MMDEPLOY_CSRC_GRAPH_TASK_H_
 #define MMDEPLOY_CSRC_GRAPH_TASK_H_
 
-#include "core/graph.h"
+#include "mmdeploy/core/graph.h"
 
 namespace mmdeploy::graph {
 

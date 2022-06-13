@@ -10,8 +10,8 @@
 #include <string>
 #include <vector>
 
-#include "core/macro.h"
-#include "core/status_code.h"
+#include "mmdeploy/core/macro.h"
+#include "mmdeploy/core/status_code.h"
 
 namespace mmdeploy {
 

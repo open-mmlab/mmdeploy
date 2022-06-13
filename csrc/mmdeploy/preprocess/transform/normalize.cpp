@@ -2,9 +2,9 @@
 
 #include "normalize.h"
 
-#include "archive/json_archive.h"
-#include "core/registry.h"
-#include "core/tensor.h"
+#include "mmdeploy/archive/json_archive.h"
+#include "mmdeploy/core/registry.h"
+#include "mmdeploy/core/tensor.h"
 
 using namespace std;
 

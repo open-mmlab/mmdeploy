@@ -13,11 +13,14 @@ if (MMDEPLOY_SPDLOG_EXTERNAL)
 else ()
     set(MMDEPLOY_SPDLOG_DIR ${CMAKE_SOURCE_DIR}/third_party/spdlog)
     add_subdirectory(${MMDEPLOY_SPDLOG_DIR} ${CMAKE_CURRENT_BINARY_DIR}/spdlog EXCLUDE_FROM_ALL)
+    target_include_directories(spdlog INTERFACE
+            $<INSTALL_INTERFACE:include/mmdeploy/third_party>)
     set_target_properties(spdlog PROPERTIES POSITION_INDEPENDENT_CODE ON)
     set(SPDLOG_LIB spdlog::spdlog)
     mmdeploy_export(spdlog)
     if (MMDEPLOY_BUILD_SDK_CXX_API)
-        install(DIRECTORY ${MMDEPLOY_SPDLOG_DIR}/include/spdlog DESTINATION include/cpp)
+        install(DIRECTORY ${MMDEPLOY_SPDLOG_DIR}/include/spdlog
+                DESTINATION include/mmdeploy/third_party)
     endif ()
 endif ()
 
@@ -45,13 +48,20 @@ target_include_directories(${PROJECT_NAME}
         PUBLIC
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/csrc>
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/third_party/outcome>
+        $<INSTALL_INTERFACE:include/mmdeploy/third_party/outcome>
         # TODO: remove dependency of `json`
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/third_party/json>
+        $<INSTALL_INTERFACE:include/mmdeploy/third_party/json>
         )
+
+if (NOT MMDEPLOY_SPDLOG_EXTERNAL)
+    target_include_directories(${PROJECT_NAME}
+            PUBLIC)
+endif ()
 
 if (MMDEPLOY_BUILD_SDK_CXX_API)
     target_include_directories(${PROJECT_NAME} PUBLIC
-            $<INSTALL_INTERFACE:include/cpp>)
+            $<INSTALL_INTERFACE:include>)
 endif ()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC ${SPDLOG_LIB})
@@ -61,13 +71,13 @@ endif ()
 add_library(mmdeploy::core ALIAS ${PROJECT_NAME})
 
 if (MMDEPLOY_BUILD_SDK_CXX_API)
-    install(DIRECTORY ${CMAKE_SOURCE_DIR}/csrc/core
-            DESTINATION include/cpp
+    install(DIRECTORY ${CMAKE_SOURCE_DIR}/csrc/mmdeploy/core
+            DESTINATION include/mmdeploy
             FILES_MATCHING PATTERN "*.h")
     install(FILES ${CMAKE_SOURCE_DIR}/third_party/outcome/outcome-experimental.hpp
-            DESTINATION include/cpp/core)
+            DESTINATION include/mmdeploy/third_party/outcome)
 
-    install(DIRECTORY ${CMAKE_SOURCE_DIR}/csrc/experimental
-            DESTINATION include/cpp
+    install(DIRECTORY ${CMAKE_SOURCE_DIR}/csrc/mmdeploy/experimental
+            DESTINATION include/mmdeploy
             FILES_MATCHING PATTERN "*.h")
 endif ()

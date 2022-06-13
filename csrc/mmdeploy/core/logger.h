@@ -5,7 +5,7 @@
 
 #include <spdlog/spdlog.h>
 
-#include "core/macro.h"
+#include "mmdeploy/core/macro.h"
 
 namespace mmdeploy {
 

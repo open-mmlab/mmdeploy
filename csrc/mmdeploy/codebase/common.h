@@ -3,11 +3,11 @@
 #ifndef MMDEPLOY_SRC_CODEBASE_COMMON_H_
 #define MMDEPLOY_SRC_CODEBASE_COMMON_H_
 
-#include "core/device.h"
-#include "core/module.h"
-#include "core/registry.h"
-#include "core/utils/formatter.h"
-#include "experimental/module_adapter.h"
+#include "mmdeploy/core/device.h"
+#include "mmdeploy/core/module.h"
+#include "mmdeploy/core/registry.h"
+#include "mmdeploy/core/utils/formatter.h"
+#include "mmdeploy/experimental/module_adapter.h"
 
 namespace mmdeploy {
 

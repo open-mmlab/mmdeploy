@@ -4,8 +4,8 @@
 
 #include <algorithm>
 
-#include "archive/json_archive.h"
-#include "core/tensor.h"
+#include "mmdeploy/archive/json_archive.h"
+#include "mmdeploy/core/tensor.h"
 
 using namespace std;
 

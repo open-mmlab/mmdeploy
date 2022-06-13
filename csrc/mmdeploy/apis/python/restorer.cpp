@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "restorer.h"
+#include "mmdeploy/apis/c/restorer.h"
 
 #include "common.h"
 

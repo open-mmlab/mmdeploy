@@ -3,9 +3,9 @@
 #ifndef MMDEPLOY_SRC_MODULE_NET_MODULE_H_
 #define MMDEPLOY_SRC_MODULE_NET_MODULE_H_
 
-#include "core/status_code.h"
-#include "core/tensor.h"
-#include "core/value.h"
+#include "mmdeploy/core/status_code.h"
+#include "mmdeploy/core/tensor.h"
+#include "mmdeploy/core/value.h"
 
 namespace mmdeploy {
 

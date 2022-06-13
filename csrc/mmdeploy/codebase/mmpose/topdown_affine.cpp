@@ -2,16 +2,16 @@
 
 #include <set>
 
-#include "archive/json_archive.h"
-#include "archive/value_archive.h"
-#include "core/registry.h"
-#include "core/tensor.h"
-#include "core/utils/device_utils.h"
-#include "core/utils/formatter.h"
+#include "mmdeploy/archive/json_archive.h"
+#include "mmdeploy/archive/value_archive.h"
+#include "mmdeploy/core/registry.h"
+#include "mmdeploy/core/tensor.h"
+#include "mmdeploy/core/utils/device_utils.h"
+#include "mmdeploy/core/utils/formatter.h"
+#include "mmdeploy/preprocess/transform/resize.h"
+#include "mmdeploy/preprocess/transform/transform.h"
 #include "opencv2/imgproc.hpp"
 #include "opencv_utils.h"
-#include "preprocess/transform/resize.h"
-#include "preprocess/transform/transform.h"
 
 using namespace std;
 

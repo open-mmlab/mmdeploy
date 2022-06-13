@@ -4,9 +4,9 @@
 
 #include <algorithm>
 
-#include "core/logger.h"
-#include "core/model.h"
-#include "core/utils/formatter.h"
+#include "mmdeploy/core/logger.h"
+#include "mmdeploy/core/model.h"
+#include "mmdeploy/core/utils/formatter.h"
 #include "onnxruntime_register.h"
 
 namespace mmdeploy {

@@ -4,7 +4,7 @@
 #include "catch.hpp"
 // clang-format on
 
-#include "apis/c/restorer.h"
+#include "mmdeploy/apis/c/restorer.h"
 #include "opencv2/opencv.hpp"
 #include "test_resource.h"
 

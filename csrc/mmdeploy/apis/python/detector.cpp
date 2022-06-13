@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "detector.h"
+#include "mmdeploy/apis/c/detector.h"
 
 #include "common.h"
 

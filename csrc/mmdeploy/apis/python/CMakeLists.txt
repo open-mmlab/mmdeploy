@@ -8,7 +8,7 @@ set(MMDEPLOY_PYTHON_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/common.cpp)
 set(CMAKE_CXX_STANDARD 17)
 
 if (${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
-    add_subdirectory(${CMAKE_SOURCE_DIR}/../../../third_party/pybind11
+    add_subdirectory(${CMAKE_SOURCE_DIR}/../../../../third_party/pybind11
             ${CMAKE_CURRENT_BINARY_DIR}/pybind11)
     find_package(MMDeploy REQUIRED)
 elseif (NOT TARGET pybind11)

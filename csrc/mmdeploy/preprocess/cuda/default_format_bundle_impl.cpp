@@ -2,8 +2,8 @@
 
 #include <cuda_runtime.h>
 
-#include "core/utils/device_utils.h"
-#include "preprocess/transform/default_format_bundle.h"
+#include "mmdeploy/core/utils/device_utils.h"
+#include "mmdeploy/preprocess/transform/default_format_bundle.h"
 
 namespace mmdeploy {
 namespace cuda {

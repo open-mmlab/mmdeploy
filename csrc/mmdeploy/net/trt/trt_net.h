@@ -3,10 +3,9 @@
 #ifndef MMDEPLOY_SRC_NET_TRT_TRT_NET_H_
 #define MMDEPLOY_SRC_NET_TRT_TRT_NET_H_
 
-#include <core/mpl/span.h>
-
 #include "NvInferRuntime.h"
-#include "core/net.h"
+#include "mmdeploy/core/mpl/span.h"
+#include "mmdeploy/core/net.h"
 
 namespace mmdeploy {
 

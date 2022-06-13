@@ -50,10 +50,9 @@ foreach (TASK ${COMMON_LIST})
     mmdeploy_add_library(${TARGET_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/${TASK}.cpp)
     target_link_libraries(${TARGET_NAME} PRIVATE mmdeploy::core)
     target_include_directories(${TARGET_NAME} PUBLIC
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-            $<INSTALL_INTERFACE:include/c>)
+            $<INSTALL_INTERFACE:include/mmdeploy/apis/c>)
     install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/${TASK}.h
-            DESTINATION include/c)
+            DESTINATION include/mmdeploy/apis/c)
 endforeach ()
 
 target_link_libraries(mmdeploy_executor PUBLIC
@@ -68,14 +67,13 @@ foreach (TASK ${TASK_LIST})
     target_link_libraries(${TARGET_NAME} PRIVATE
             mmdeploy_pipeline mmdeploy::core)
     target_include_directories(${TARGET_NAME} PUBLIC
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-            $<INSTALL_INTERFACE:include/c>)
+            $<INSTALL_INTERFACE:include/mmdeploy/apis/c>)
     install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/${TASK}.h
-            DESTINATION include/c)
+            DESTINATION include/mmdeploy/apis/c)
 endforeach ()
 
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/common.h
-        DESTINATION include/c)
+#install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/common.h
+#        DESTINATION include/c)
 
 if (MMDEPLOY_BUILD_SDK_CSHARP_API)
     # build MMDeployExtern.dll just for csharp nuget package.
@@ -86,4 +84,4 @@ if (MMDEPLOY_BUILD_SDK_CSHARP_API)
     mmdeploy_load_static(MMDeployExtern MMDeployStaticModules)
     mmdeploy_load_dynamic(MMDeployExtern MMDeployDynamicModules)
     target_link_libraries(MMDeployExtern PRIVATE MMDeployLibs)
-endif()
+endif ()

@@ -1,8 +1,8 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "core/utils/device_utils.h"
+#include "mmdeploy/core/utils/device_utils.h"
+#include "mmdeploy/preprocess/transform/image2tensor.h"
 #include "opencv_utils.h"
-#include "preprocess/transform/image2tensor.h"
 
 namespace mmdeploy {
 namespace cpu {

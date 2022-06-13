@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "text_recognizer.h"
+#include "mmdeploy/apis/c/text_recognizer.h"
 
 #include "common.h"
 

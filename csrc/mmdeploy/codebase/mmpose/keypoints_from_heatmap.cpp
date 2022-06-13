@@ -4,14 +4,14 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
 
-#include "core/device.h"
-#include "core/registry.h"
-#include "core/serialization.h"
-#include "core/tensor.h"
-#include "core/utils/device_utils.h"
-#include "core/utils/formatter.h"
-#include "core/value.h"
-#include "experimental/module_adapter.h"
+#include "mmdeploy/core/device.h"
+#include "mmdeploy/core/registry.h"
+#include "mmdeploy/core/serialization.h"
+#include "mmdeploy/core/tensor.h"
+#include "mmdeploy/core/utils/device_utils.h"
+#include "mmdeploy/core/utils/formatter.h"
+#include "mmdeploy/core/value.h"
+#include "mmdeploy/experimental/module_adapter.h"
 #include "mmpose.h"
 #include "opencv_utils.h"
 

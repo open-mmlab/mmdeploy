@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "text_detector.h"
+#include "mmdeploy/apis/c/text_detector.h"
 
 #include "common.h"
 

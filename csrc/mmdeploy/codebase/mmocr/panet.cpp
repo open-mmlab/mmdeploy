@@ -1,15 +1,15 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "codebase/mmocr/panet.h"
+#include "mmdeploy/codebase/mmocr/panet.h"
 
 #include <algorithm>
 #include <opencv2/opencv.hpp>
 
-#include "codebase/mmocr/mmocr.h"
-#include "core/device.h"
-#include "core/registry.h"
-#include "core/serialization.h"
-#include "core/utils/device_utils.h"
+#include "mmdeploy/codebase/mmocr/mmocr.h"
+#include "mmdeploy/core/device.h"
+#include "mmdeploy/core/registry.h"
+#include "mmdeploy/core/serialization.h"
+#include "mmdeploy/core/utils/device_utils.h"
 
 namespace mmdeploy {
 

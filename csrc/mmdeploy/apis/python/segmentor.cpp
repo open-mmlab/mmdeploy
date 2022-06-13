@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "segmentor.h"
+#include "mmdeploy/apis/c/segmentor.h"
 
 #include "common.h"
 

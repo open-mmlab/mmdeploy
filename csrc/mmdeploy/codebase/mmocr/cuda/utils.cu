@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "codebase/mmocr/cuda/utils.h"
+#include "mmdeploy/codebase/mmocr/cuda/utils.h"
 #include "thrust/iterator/counting_iterator.h"
 #include "thrust/transform.h"
 

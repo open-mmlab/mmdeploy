@@ -3,8 +3,8 @@
 #ifndef MMDEPLOY_CSRC_EXECUTION_SCHEDULERS_REGISTRY_H_
 #define MMDEPLOY_CSRC_EXECUTION_SCHEDULERS_REGISTRY_H_
 
-#include "core/registry.h"
-#include "execution/type_erased.h"
+#include "mmdeploy/core/registry.h"
+#include "mmdeploy/execution/type_erased.h"
 
 namespace mmdeploy {
 

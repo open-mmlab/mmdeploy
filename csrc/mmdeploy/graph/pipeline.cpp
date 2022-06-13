@@ -1,10 +1,10 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "graph/pipeline.h"
+#include "mmdeploy/graph/pipeline.h"
 
-#include "archive/value_archive.h"
-#include "execution/schedulers/inlined_scheduler.h"
-#include "graph/common.h"
+#include "mmdeploy/archive/value_archive.h"
+#include "mmdeploy/execution/schedulers/inlined_scheduler.h"
+#include "mmdeploy/graph/common.h"
 
 namespace mmdeploy::graph {
 

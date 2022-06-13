@@ -3,10 +3,10 @@
 #ifndef MMDEPLOY_SRC_CODEBASE_MMCLS_MMCLS_H_
 #define MMDEPLOY_SRC_CODEBASE_MMCLS_MMCLS_H_
 
-#include "codebase/common.h"
-#include "core/device.h"
-#include "core/module.h"
-#include "core/serialization.h"
+#include "mmdeploy/codebase/common.h"
+#include "mmdeploy/core/device.h"
+#include "mmdeploy/core/module.h"
+#include "mmdeploy/core/serialization.h"
 
 namespace mmdeploy {
 namespace mmcls {

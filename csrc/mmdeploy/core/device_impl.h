@@ -3,7 +3,7 @@
 #ifndef MMDEPLOY_SRC_CORE_DEVICE_IMPL_H_
 #define MMDEPLOY_SRC_CORE_DEVICE_IMPL_H_
 
-#include "device.h"
+#include "mmdeploy/core/device.h"
 
 namespace mmdeploy {
 

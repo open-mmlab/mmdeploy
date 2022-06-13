@@ -3,11 +3,11 @@
 #include <algorithm>
 #include <numeric>
 
-#include "codebase/mmcls/mmcls.h"
-#include "core/tensor.h"
-#include "core/utils/device_utils.h"
-#include "core/utils/formatter.h"
-#include "experimental/module_adapter.h"
+#include "mmdeploy/codebase/mmcls/mmcls.h"
+#include "mmdeploy/core/tensor.h"
+#include "mmdeploy/core/utils/device_utils.h"
+#include "mmdeploy/core/utils/formatter.h"
+#include "mmdeploy/experimental/module_adapter.h"
 
 using std::vector;
 

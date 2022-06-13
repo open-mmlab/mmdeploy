@@ -3,10 +3,10 @@
 #ifndef MMDEPLOY_SRC_GRAPH_COMMON_H_
 #define MMDEPLOY_SRC_GRAPH_COMMON_H_
 
-#include "core/graph.h"
-#include "core/module.h"
-#include "core/registry.h"
-#include "core/value.h"
+#include "mmdeploy/core/graph.h"
+#include "mmdeploy/core/module.h"
+#include "mmdeploy/core/registry.h"
+#include "mmdeploy/core/value.h"
 
 namespace mmdeploy::graph {
 

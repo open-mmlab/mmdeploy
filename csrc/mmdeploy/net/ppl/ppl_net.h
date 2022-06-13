@@ -3,8 +3,8 @@
 #ifndef MMDEPLOY_SRC_NET_PPL_PPL_NET_H_
 #define MMDEPLOY_SRC_NET_PPL_PPL_NET_H_
 
-#include "core/mpl/span.h"
-#include "core/net.h"
+#include "mmdeploy/core/mpl/span.h"
+#include "mmdeploy/core/net.h"
 #include "ppl/nn/engines/engine.h"
 #include "ppl/nn/runtime/runtime.h"
 

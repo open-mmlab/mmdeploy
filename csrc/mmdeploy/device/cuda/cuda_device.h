@@ -3,10 +3,10 @@
 #include <any>
 #include <mutex>
 
-#include "core/device_impl.h"
-#include "core/types.h"
 #include "cuda.h"
 #include "cuda_runtime.h"
+#include "mmdeploy/core/device_impl.h"
+#include "mmdeploy/core/types.h"
 
 namespace mmdeploy {
 

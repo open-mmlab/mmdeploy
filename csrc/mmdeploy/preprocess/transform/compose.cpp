@@ -2,9 +2,9 @@
 
 #include "compose.h"
 
-#include "archive/json_archive.h"
-#include "archive/value_archive.h"
-#include "core/utils/formatter.h"
+#include "mmdeploy/archive/json_archive.h"
+#include "mmdeploy/archive/value_archive.h"
+#include "mmdeploy/core/utils/formatter.h"
 
 namespace mmdeploy {
 

@@ -3,7 +3,7 @@
 #ifndef MMDEPLOY_IMAGE2TENSOR_H
 #define MMDEPLOY_IMAGE2TENSOR_H
 
-#include "core/tensor.h"
+#include "mmdeploy/core/tensor.h"
 #include "transform.h"
 
 namespace mmdeploy {

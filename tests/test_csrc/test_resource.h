@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "core/utils/filesystem.h"
+#include "mmdeploy/core/utils/filesystem.h"
 #include "test_define.h"
 
 using namespace std;

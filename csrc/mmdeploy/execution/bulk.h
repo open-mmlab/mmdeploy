@@ -7,7 +7,7 @@
 
 #include "closure.h"
 #include "concepts.h"
-#include "core/logger.h"
+#include "mmdeploy/core/logger.h"
 #include "utility.h"
 
 namespace mmdeploy {

@@ -2,8 +2,8 @@
 
 #include "collect.h"
 
-#include "archive/json_archive.h"
-#include "core/logger.h"
+#include "mmdeploy/archive/json_archive.h"
+#include "mmdeploy/core/logger.h"
 
 namespace mmdeploy {
 

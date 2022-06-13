@@ -1,8 +1,8 @@
 #include "common.h"
 
-#include "apis/c/common_internal.h"
-#include "apis/c/handle.h"
-#include "core/mat.h"
+#include "mmdeploy/apis/c/common_internal.h"
+#include "mmdeploy/apis/c/handle.h"
+#include "mmdeploy/core/mat.h"
 
 mmdeploy_value_t mmdeploy_value_copy(mmdeploy_value_t input) {
   if (!input) {

@@ -2,10 +2,10 @@
 
 #include <fstream>
 
-#include "archive/json_archive.h"
-#include "core/model.h"
-#include "core/model_impl.h"
-#include "core/utils/filesystem.h"
+#include "mmdeploy/archive/json_archive.h"
+#include "mmdeploy/core/model.h"
+#include "mmdeploy/core/model_impl.h"
+#include "mmdeploy/core/utils/filesystem.h"
 
 using nlohmann::json;
 

@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "codebase/mmseg/mmseg.h"
+#include "mmdeploy/codebase/mmseg/mmseg.h"
 
 using namespace std;
 

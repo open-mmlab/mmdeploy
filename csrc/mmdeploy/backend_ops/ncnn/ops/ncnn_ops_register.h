@@ -5,7 +5,7 @@
 #include <map>
 #include <string>
 
-#include "core/macro.h"
+#include "mmdeploy/core/macro.h"
 #include "net.h"
 
 MMDEPLOY_API std::map<const char*, ncnn::layer_creator_func>& get_mmdeploy_layer_creator();

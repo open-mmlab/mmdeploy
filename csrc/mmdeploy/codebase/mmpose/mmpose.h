@@ -5,9 +5,9 @@
 
 #include <array>
 
-#include "codebase/common.h"
-#include "core/device.h"
-#include "core/module.h"
+#include "mmdeploy/codebase/common.h"
+#include "mmdeploy/core/device.h"
+#include "mmdeploy/core/module.h"
 
 namespace mmdeploy {
 namespace mmpose {

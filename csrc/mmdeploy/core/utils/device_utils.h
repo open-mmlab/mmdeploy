@@ -5,8 +5,8 @@
 
 #include <utility>
 
-#include "core/mat.h"
-#include "core/tensor.h"
+#include "mmdeploy/core/mat.h"
+#include "mmdeploy/core/tensor.h"
 
 namespace mmdeploy {
 /**

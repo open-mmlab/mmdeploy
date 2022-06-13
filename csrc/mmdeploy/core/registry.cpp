@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "core/registry.h"
+#include "mmdeploy/core/registry.h"
 
 namespace mmdeploy {
 

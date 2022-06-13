@@ -3,10 +3,10 @@
 #ifndef MMDEPLOY_CSRC_UTILS_OPENCV_OPENCV_UTILS_H_
 #define MMDEPLOY_CSRC_UTILS_OPENCV_OPENCV_UTILS_H_
 
-#include "core/mat.h"
-#include "core/mpl/type_traits.h"
-#include "core/serialization.h"
-#include "core/tensor.h"
+#include "mmdeploy/core/mat.h"
+#include "mmdeploy/core/mpl/type_traits.h"
+#include "mmdeploy/core/serialization.h"
+#include "mmdeploy/core/tensor.h"
 #include "opencv2/opencv.hpp"
 
 namespace mmdeploy {

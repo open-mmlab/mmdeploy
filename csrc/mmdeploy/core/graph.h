@@ -3,13 +3,13 @@
 #ifndef MMDEPLOY_SRC_EXPERIMENTAL_PIPELINE_IR_H_
 #define MMDEPLOY_SRC_EXPERIMENTAL_PIPELINE_IR_H_
 
-#include "core/model.h"
-#include "core/module.h"
-#include "core/registry.h"
-#include "core/status_code.h"
-#include "execution/schedulers/registry.h"
-#include "mpl/span.h"
-#include "utils/formatter.h"
+#include "mmdeploy/core/model.h"
+#include "mmdeploy/core/module.h"
+#include "mmdeploy/core/mpl/span.h"
+#include "mmdeploy/core/registry.h"
+#include "mmdeploy/core/status_code.h"
+#include "mmdeploy/core/utils/formatter.h"
+#include "mmdeploy/execution/schedulers/registry.h"
 
 namespace mmdeploy {
 

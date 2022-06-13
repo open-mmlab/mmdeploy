@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "core/utils/stacktrace.h"
+#include "mmdeploy/core/utils/stacktrace.h"
 
 #if USE_BOOST_STACKTRACE
 

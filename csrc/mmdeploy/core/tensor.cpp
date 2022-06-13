@@ -6,8 +6,8 @@
 #include <numeric>
 #include <sstream>
 
-#include "core/utils/formatter.h"
-#include "logger.h"
+#include "mmdeploy/core/logger.h"
+#include "mmdeploy/core/utils/formatter.h"
 
 using std::stringstream;
 

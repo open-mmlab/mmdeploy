@@ -1,8 +1,8 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "core/utils/device_utils.h"
+#include "mmdeploy/core/utils/device_utils.h"
+#include "mmdeploy/preprocess/transform/pad.h"
 #include "opencv_utils.h"
-#include "preprocess/transform/pad.h"
 
 using namespace std;
 

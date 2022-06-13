@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "codebase/mmocr/panet.h"
+#include "mmdeploy/codebase/mmocr/panet.h"
 
 #include "opencv2/imgproc.hpp"
 

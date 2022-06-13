@@ -1,8 +1,8 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "device_utils.h"
+#include "mmdeploy/core/utils/device_utils.h"
 
-#include "core/logger.h"
+#include "mmdeploy/core/logger.h"
 
 namespace mmdeploy {
 

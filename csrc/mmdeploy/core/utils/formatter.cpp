@@ -1,9 +1,9 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "core/utils/formatter.h"
+#include "mmdeploy/core/utils/formatter.h"
 
-#include "archive/json_archive.h"
-#include "core/value.h"
+#include "mmdeploy/archive/json_archive.h"
+#include "mmdeploy/core/value.h"
 
 namespace mmdeploy {
 

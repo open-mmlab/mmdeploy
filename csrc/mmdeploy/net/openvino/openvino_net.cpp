@@ -5,10 +5,10 @@
 
 #include <fstream>
 
-#include "core/logger.h"
-#include "core/model.h"
-#include "core/utils/filesystem.h"
-#include "core/utils/formatter.h"
+#include "mmdeploy/core/logger.h"
+#include "mmdeploy/core/model.h"
+#include "mmdeploy/core/utils/filesystem.h"
+#include "mmdeploy/core/utils/formatter.h"
 
 namespace mmdeploy {
 

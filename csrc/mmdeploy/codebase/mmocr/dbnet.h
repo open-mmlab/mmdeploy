@@ -3,10 +3,10 @@
 #ifndef MMDEPLOY_CSRC_CODEBASE_MMOCR_DBNET_H_
 #define MMDEPLOY_CSRC_CODEBASE_MMOCR_DBNET_H_
 
-#include "codebase/mmocr/mmocr.h"
-#include "core/device.h"
-#include "core/registry.h"
-#include "core/tensor.h"
+#include "mmdeploy/codebase/mmocr/mmocr.h"
+#include "mmdeploy/core/device.h"
+#include "mmdeploy/core/registry.h"
+#include "mmdeploy/core/tensor.h"
 #include "opencv2/core.hpp"
 
 namespace mmdeploy {

@@ -1,10 +1,10 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "codebase/mmocr/panet.h"
+#include "mmdeploy/codebase/mmocr/panet.h"
 
-#include "codebase/mmocr/cuda/connected_component.h"
-#include "codebase/mmocr/cuda/utils.h"
-#include "device/cuda/cuda_device.h"
+#include "mmdeploy/codebase/mmocr/cuda/connected_component.h"
+#include "mmdeploy/codebase/mmocr/cuda/utils.h"
+#include "mmdeploy/device/cuda/cuda_device.h"
 
 namespace mmdeploy::mmocr {
 

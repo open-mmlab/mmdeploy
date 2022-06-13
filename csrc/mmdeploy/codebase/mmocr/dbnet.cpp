@@ -1,14 +1,14 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "codebase/mmocr/dbnet.h"
+#include "mmdeploy/codebase/mmocr/dbnet.h"
 
 #include <opencv2/imgproc.hpp>
 
 #include "clipper.hpp"
-#include "core/device.h"
-#include "core/tensor.h"
-#include "core/utils/formatter.h"
-#include "experimental/module_adapter.h"
+#include "mmdeploy/core/device.h"
+#include "mmdeploy/core/tensor.h"
+#include "mmdeploy/core/utils/formatter.h"
+#include "mmdeploy/experimental/module_adapter.h"
 #include "mmocr.h"
 
 namespace mmdeploy {

@@ -3,8 +3,8 @@
 #ifndef MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_WHEN_ALL_VALUE_H_
 #define MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_WHEN_ALL_VALUE_H_
 
-#include "core/value.h"
-#include "execution/schedulers/registry.h"
+#include "mmdeploy/core/value.h"
+#include "mmdeploy/execution/schedulers/registry.h"
 
 namespace mmdeploy {
 

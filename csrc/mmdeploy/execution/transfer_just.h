@@ -5,9 +5,9 @@
 #ifndef MMDEPLOY_CSRC_EXECUTION_TRANSFER_JUST_H_
 #define MMDEPLOY_CSRC_EXECUTION_TRANSFER_JUST_H_
 
-#include "execution/just.h"
-#include "execution/transfer.h"
-#include "execution/utility.h"
+#include "mmdeploy/execution/just.h"
+#include "mmdeploy/execution/transfer.h"
+#include "mmdeploy/execution/utility.h"
 
 namespace mmdeploy {
 

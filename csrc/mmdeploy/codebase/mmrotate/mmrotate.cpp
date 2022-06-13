@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "codebase/mmrotate/mmrotate.h"
+#include "mmdeploy/codebase/mmrotate/mmrotate.h"
 
 using namespace std;
 

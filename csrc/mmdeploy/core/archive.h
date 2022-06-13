@@ -3,8 +3,8 @@
 #ifndef MMDEPLOY_SRC_CORE_ARCHIVE_H_
 #define MMDEPLOY_SRC_CORE_ARCHIVE_H_
 
-#include "core/logger.h"
-#include "core/serialization.h"
+#include "mmdeploy/core/logger.h"
+#include "mmdeploy/core/serialization.h"
 
 namespace mmdeploy {
 

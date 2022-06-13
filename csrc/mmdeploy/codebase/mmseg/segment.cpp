@@ -1,12 +1,12 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "codebase/mmseg/mmseg.h"
-#include "core/logger.h"
-#include "core/tensor.h"
-#include "core/utils/device_utils.h"
-#include "core/utils/formatter.h"
+#include "mmdeploy/codebase/mmseg/mmseg.h"
+#include "mmdeploy/core/logger.h"
+#include "mmdeploy/core/tensor.h"
+#include "mmdeploy/core/utils/device_utils.h"
+#include "mmdeploy/core/utils/formatter.h"
+#include "mmdeploy/preprocess/transform/transform.h"
 #include "opencv_utils.h"
-#include "preprocess/transform/transform.h"
 
 namespace mmdeploy::mmseg {
 

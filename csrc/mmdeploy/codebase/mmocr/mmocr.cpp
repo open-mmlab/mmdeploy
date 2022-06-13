@@ -1,9 +1,9 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "codebase/mmocr/mmocr.h"
+#include "mmdeploy/codebase/mmocr/mmocr.h"
 
-#include "core/registry.h"
-#include "core/utils/formatter.h"
+#include "mmdeploy/core/registry.h"
+#include "mmdeploy/core/utils/formatter.h"
 
 namespace mmdeploy {
 namespace mmocr {
