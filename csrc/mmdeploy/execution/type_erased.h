@@ -121,7 +121,7 @@ class _TypeErasedSenderAdapter {
 };
 
 template <typename SenderType>
-_TypeErasedSenderAdapter(SenderType&&) -> _TypeErasedSenderAdapter<remove_cvref_t<SenderType>>;
+_TypeErasedSenderAdapter(SenderType &&)->_TypeErasedSenderAdapter<remove_cvref_t<SenderType>>;
 
 namespace _expose {
 
@@ -199,7 +199,7 @@ template <typename... Ts>
 using TypeErasedSender = _TypeErasedSender<std::tuple<Ts...>>;
 
 template <typename Sender>
-_TypeErasedSender(Sender&&) -> _TypeErasedSender<completion_signatures_of_t<Sender>>;
+_TypeErasedSender(Sender &&)->_TypeErasedSender<completion_signatures_of_t<Sender>>;
 
 template <typename Sender, typename ValueTypes = completion_signatures_of_t<Sender>>
 struct _TypeErasedSenderImpl : _TypeErasedSender<ValueTypes>::Impl {

@@ -32,7 +32,7 @@ struct __conv {
 };
 
 template <typename F>
-__conv(F) -> __conv<F>;
+__conv(F)->__conv<F>;
 
 template <typename T, typename = std::enable_if_t<std::is_destructible_v<T>>>
 struct __conv_proxy {
