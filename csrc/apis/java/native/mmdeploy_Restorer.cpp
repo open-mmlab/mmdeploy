@@ -26,7 +26,7 @@ void Java_mmdeploy_Restorer_destroy(JNIEnv *, jobject, jlong handle) {
 }
 
 jobjectArray Java_mmdeploy_Restorer_apply(JNIEnv *env, jobject thiz, jlong handle,
-                                          jobjectArray images, jintArray counts) {
+                                          jobjectArray images) {
   return With(env, images, [&](const mm_mat_t imgs[], int size) {
     mm_mat_t *results{};
     auto ec = mmdeploy_restorer_apply((mm_handle_t)handle, imgs, size, &results);

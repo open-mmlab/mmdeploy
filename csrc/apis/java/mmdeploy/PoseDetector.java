@@ -1,6 +1,6 @@
 package mmdeploy;
 
-public class Restorer {
+public class PoseDetector {
     static {
         System.loadLibrary("mmdeploy_java");
     }
@@ -8,10 +8,10 @@ public class Restorer {
     private final long handle;
 
 
-    public record Result(Mat res) {
+    public record Result(PointF[] point, float[] score) {
     }
 
-    public Restorer(String modelPath, String deviceName, int deviceId) {
+    public PoseDetector(String modelPath, String deviceName, int deviceId) {
         handle = create(modelPath, deviceName, deviceId);
     }
 

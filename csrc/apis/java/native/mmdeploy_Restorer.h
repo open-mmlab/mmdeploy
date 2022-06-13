@@ -24,10 +24,9 @@ JNIEXPORT void JNICALL Java_mmdeploy_Restorer_destroy(JNIEnv *, jobject, jlong);
 /*
  * Class:     mmdeploy_Restorer
  * Method:    apply
- * Signature: (J[Lmmdeploy/Mat;[I)[Lmmdeploy/Restorer/Result;
+ * Signature: (J[Lmmdeploy/Mat;)[Lmmdeploy/Restorer/Result;
  */
-JNIEXPORT jobjectArray JNICALL Java_mmdeploy_Restorer_apply(JNIEnv *, jobject, jlong, jobjectArray,
-                                                            jintArray);
+JNIEXPORT jobjectArray JNICALL Java_mmdeploy_Restorer_apply(JNIEnv *, jobject, jlong, jobjectArray);
 
 #ifdef __cplusplus
 }

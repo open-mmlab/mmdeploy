@@ -24,10 +24,10 @@ JNIEXPORT void JNICALL Java_mmdeploy_Segmentor_destroy(JNIEnv *, jobject, jlong)
 /*
  * Class:     mmdeploy_Segmentor
  * Method:    apply
- * Signature: (J[Lmmdeploy/Mat;[I)[Lmmdeploy/Segmentor/Result;
+ * Signature: (J[Lmmdeploy/Mat;)[Lmmdeploy/Segmentor/Result;
  */
-JNIEXPORT jobjectArray JNICALL Java_mmdeploy_Segmentor_apply(JNIEnv *, jobject, jlong, jobjectArray,
-                                                             jintArray);
+JNIEXPORT jobjectArray JNICALL Java_mmdeploy_Segmentor_apply(JNIEnv *, jobject, jlong,
+                                                             jobjectArray);
 
 #ifdef __cplusplus
 }

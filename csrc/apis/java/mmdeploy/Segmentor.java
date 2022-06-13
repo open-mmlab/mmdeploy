@@ -16,25 +16,21 @@ public class Segmentor {
     }
 
     public Result[][] apply(Mat[] images) {
-        int[] counts = new int[images.length];
-        Result[] results = apply(handle, images, counts);
+        Result[] results = apply(handle, images);
         Result[][] rets = new Result[images.length][];
         int offset = 0;
         for (int i = 0; i < images.length; ++i) {
-            Result[] row = new Result[counts[i]];
-            if (counts[i] >= 0) {
-                System.arraycopy(results, offset, row, 0, counts[i]);
-            }
-            offset += counts[i];
+            Result[] row = new Result[1];
+            System.arraycopy(results, offset, row, 0, 1);
+            offset += 1;
             rets[i] = row;
         }
         return rets;
     }
 
     public Result[] apply(Mat image) {
-        int[] counts = new int[1];
         Mat[] images = new Mat[]{image};
-        return apply(handle, images, counts);
+        return apply(handle, images);
     }
 
     public void release() {
@@ -45,5 +41,5 @@ public class Segmentor {
 
     private native void destroy(long handle);
 
-    private native Result[] apply(long handle, Mat[] images, int[] count);
+    private native Result[] apply(long handle, Mat[] images);
 }
