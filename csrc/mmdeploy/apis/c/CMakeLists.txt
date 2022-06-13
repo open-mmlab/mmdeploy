@@ -72,9 +72,6 @@ foreach (TASK ${TASK_LIST})
             DESTINATION include/mmdeploy/apis/c)
 endforeach ()
 
-#install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/common.h
-#        DESTINATION include/c)
-
 if (MMDEPLOY_BUILD_SDK_CSHARP_API)
     # build MMDeployExtern.dll just for csharp nuget package.
     # no Installation for c/c++ package.
