@@ -22,17 +22,16 @@ def normalize__ncnn(ctx,
         dim += input.ndim
     assert dim != 0, 'Should not normalize on batch index'
     origin_func = ctx.origin_func
-    if p != 2:
-        return origin_func(input, p, dim=dim, eps=eps)
+    assert p == 2, 'only support L2 norm'
     assert input.ndim in [3, 4]
+    assert input.shape[0] == 1, \
+        f'only support batch size 1, but given {input.shape[0]}'
     if input.ndim == 3:
         output = origin_func(
             input.transpose(1, dim).unsqueeze(2), p=p, dim=1,
             eps=eps).squeeze(2).transpose(1, dim)
     else:
         # input.ndim == 4:
-        assert input.shape[
-            0] == 1, f'only support batch size 1, but given {input.shape[0]}'
         if dim == 1:
             output = origin_func(input, p=p, dim=dim, eps=eps)
         else:
