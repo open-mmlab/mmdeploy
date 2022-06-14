@@ -1,0 +1,43 @@
+// Copyright (c) OpenMMLab. All rights reserved.
+
+#include "preprocess/transform/crop.h"
+
+using namespace std;
+
+namespace mmdeploy {
+namespace elena {
+
+class CenterCropImpl : public ::mmdeploy::CenterCropImpl {
+ public:
+  explicit CenterCropImpl(const Value& args) : ::mmdeploy::CenterCropImpl(args) {}
+
+ protected:
+  Result<Tensor> CropImage(const Tensor& tensor, int top, int left, int bottom,
+                           int right) override {
+    TensorDesc src_desc = tensor.desc();
+    DataType data_type = src_desc.data_type;
+    TensorShape shape = src_desc.shape;
+    shape[1] = bottom - top + 1;  // h
+    shape[2] = right - left + 1;  // w
+
+    TensorDesc dummy_desc = {Device{"cpu"}, data_type, shape};
+    Tensor dummy(dummy_desc);
+
+    return dummy;
+  }
+};
+
+class CenterCropImplCreator : public Creator<::mmdeploy::CenterCropImpl> {
+ public:
+  const char* GetName() const override { return "elena"; }
+  int GetVersion() const override { return 1; }
+  ReturnType Create(const Value& args) override { return make_unique<CenterCropImpl>(args); }
+};
+
+}  // namespace elena
+}  // namespace mmdeploy
+
+using ::mmdeploy::CenterCropImpl;
+using ::mmdeploy::elena::CenterCropImplCreator;
+
+REGISTER_MODULE(CenterCropImpl, CenterCropImplCreator);

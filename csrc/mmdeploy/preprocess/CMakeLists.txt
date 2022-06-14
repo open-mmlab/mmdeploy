@@ -4,6 +4,7 @@ project(mmdeploy_transform_module)
 
 add_subdirectory(transform)
 add_subdirectory(cpu)
+add_subdirectory(elena)
 if ("cuda" IN_LIST MMDEPLOY_TARGET_DEVICES)
     add_subdirectory(cuda)
 endif ()
