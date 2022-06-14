@@ -4,9 +4,9 @@
 #include "catch.hpp"
 // clang-format on
 
-#include "apis/c/text_recognizer.h"
-#include "core/logger.h"
-#include "core/utils/formatter.h"
+#include "mmdeploy/apis/c/text_recognizer.h"
+#include "mmdeploy/core/logger.h"
+#include "mmdeploy/core/utils/formatter.h"
 #include "opencv2/opencv.hpp"
 #include "test_resource.h"
 

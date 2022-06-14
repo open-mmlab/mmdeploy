@@ -1,12 +1,12 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
 #include "catch.hpp"
-#include "core/logger.h"
-#include "core/operator.h"
-#include "core/serialization.h"
-#include "core/utils/formatter.h"
-#include "core/value.h"
 #include "json.hpp"
+#include "mmdeploy/core/logger.h"
+#include "mmdeploy/core/operator.h"
+#include "mmdeploy/core/serialization.h"
+#include "mmdeploy/core/utils/formatter.h"
+#include "mmdeploy/core/value.h"
 
 using namespace mmdeploy;
 
@@ -351,7 +351,7 @@ TEST_CASE("test ctor of value", "[value]") {
 }
 
 //
-//TEST_CASE("test logger", "[logger]") {
+// TEST_CASE("test logger", "[logger]") {
 //  MMDEPLOY_INFO("{}", DataType::kFLOAT);
 //  MMDEPLOY_INFO("{}", DataType::kHALF);
 //  MMDEPLOY_INFO("{}", DataType::kINT8);
