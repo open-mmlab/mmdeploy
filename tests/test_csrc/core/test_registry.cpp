@@ -3,8 +3,8 @@
 #include <iostream>
 
 #include "catch.hpp"
-#include "core/module.h"
-#include "core/registry.h"
+#include "mmdeploy/core/module.h"
+#include "mmdeploy/core/registry.h"
 
 using namespace mmdeploy;
 

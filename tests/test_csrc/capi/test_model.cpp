@@ -4,7 +4,7 @@
 #include "catch.hpp"
 // clang-format on
 
-#include "apis/c/model.h"
+#include "mmdeploy/apis/c/model.h"
 #include "test_resource.h"
 
 TEST_CASE("test model c capi", "[model]") {

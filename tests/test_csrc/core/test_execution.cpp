@@ -3,19 +3,19 @@
 #include <chrono>
 #include <numeric>
 
-#include "apis/c/executor.h"
 #include "catch.hpp"
-#include "core/utils/formatter.h"
-#include "core/value.h"
-#include "execution/expand.h"
-#include "execution/schedulers/dynamic_batch_scheduler.h"
-#include "execution/schedulers/inlined_scheduler.h"
-#include "execution/schedulers/registry.h"
-#include "execution/schedulers/single_thread_context.h"
-#include "execution/schedulers/static_thread_pool.h"
-#include "execution/schedulers/timed_single_thread_context.h"
-#include "execution/type_erased.h"
-#include "execution/when_all_value.h"
+#include "mmdeploy/apis/c/executor.h"
+#include "mmdeploy/core/utils/formatter.h"
+#include "mmdeploy/core/value.h"
+#include "mmdeploy/execution/expand.h"
+#include "mmdeploy/execution/schedulers/dynamic_batch_scheduler.h"
+#include "mmdeploy/execution/schedulers/inlined_scheduler.h"
+#include "mmdeploy/execution/schedulers/registry.h"
+#include "mmdeploy/execution/schedulers/single_thread_context.h"
+#include "mmdeploy/execution/schedulers/static_thread_pool.h"
+#include "mmdeploy/execution/schedulers/timed_single_thread_context.h"
+#include "mmdeploy/execution/type_erased.h"
+#include "mmdeploy/execution/when_all_value.h"
 
 using namespace mmdeploy;
 

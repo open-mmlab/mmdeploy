@@ -9,8 +9,8 @@
 #include <unordered_set>
 #include <vector>
 
-#include "archive/json_archive.h"
 #include "catch.hpp"
+#include "mmdeploy/archive/json_archive.h"
 
 using ArrayLikeTypes = std::tuple<std::vector<int>, std::deque<int>, std::array<int, 15>,
                                   std::list<int>, std::set<int>, std::unordered_set<int>,

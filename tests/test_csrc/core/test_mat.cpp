@@ -5,8 +5,8 @@
 #include <numeric>
 
 #include "catch.hpp"
-#include "core/logger.h"
-#include "core/mat.h"
+#include "mmdeploy/core/logger.h"
+#include "mmdeploy/core/mat.h"
 #include "test_resource.h"
 
 using namespace mmdeploy;
