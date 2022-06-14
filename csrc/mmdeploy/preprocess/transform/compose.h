@@ -14,7 +14,20 @@ class MMDEPLOY_API Compose : public Transform {
 
   Result<Value> Process(const Value& input) override;
 
+  Result<Value> ProcessHelper(const Value& input);
+
+  void InitTransormModule(const Value& args, int version, bool try_fuse);
+
  private:
+  struct compose_arg_t {
+    Value args;
+    int version;
+    bool try_fuse{false};
+    int can_fuse{-1};
+  };
+  using ArgType = compose_arg_t;
+
+  ArgType args_;
   std::vector<std::unique_ptr<Transform>> transforms_;
   Stream stream_;
 };
