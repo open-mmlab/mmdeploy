@@ -16,8 +16,8 @@
 #include <unordered_set>
 #include <vector>
 
-#include "archive/value_archive.h"
-#include "core/utils/formatter.h"
+#include "mmdeploy/archive/value_archive.h"
+#include "mmdeploy/core/utils/formatter.h"
 
 // clang-format off
 

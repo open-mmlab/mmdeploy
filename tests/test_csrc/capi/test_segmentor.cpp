@@ -4,7 +4,7 @@
 #include "catch.hpp"
 // clang-format on
 
-#include "apis/c/segmentor.h"
+#include "mmdeploy/apis/c/segmentor.h"
 #include "opencv2/opencv.hpp"
 #include "test_resource.h"
 

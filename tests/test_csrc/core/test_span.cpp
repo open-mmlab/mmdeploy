@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "catch.hpp"
-#include "core/mpl/span.h"
+#include "mmdeploy/core/mpl/span.h"
 
 using mmdeploy::Span;
 

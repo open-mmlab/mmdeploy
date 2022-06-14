@@ -74,7 +74,7 @@ endif ()
 # at function definition
 include(cmake/MMDeploy.cmake)
 
-add_subdirectory(csrc)
+add_subdirectory(csrc/mmdeploy)
 
 if (MMDEPLOY_BUILD_SDK)
     install(TARGETS MMDeployStaticModules
@@ -87,7 +87,7 @@ if (MMDEPLOY_BUILD_SDK)
     endif ()
 
     if (MMDEPLOY_BUILD_SDK_PYTHON_API)
-        add_subdirectory(csrc/apis/python)
+        add_subdirectory(csrc/mmdeploy/apis/python)
     endif ()
 
     # export MMDeploy package
