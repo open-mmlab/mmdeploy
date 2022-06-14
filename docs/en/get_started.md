@@ -244,7 +244,7 @@ cv2.imwrite('output_detection.png', img)
 You can find more examples from [here](https://github.com/open-mmlab/mmdeploy/tree/master/demo/python).
 
 ```{note}
-If you build MMDeploy from the source, please add ${MMDEPLOY_DIR}/build/lib to the environment variable PYTHONPATH.
+If you build MMDeploy from source, please add ${MMDEPLOY_DIR}/build/lib to the environment variable PYTHONPATH.
 Otherwise, you will run into an error like ’ModuleNotFoundError: No module named 'mmdeploy_python'
 ```
 
@@ -252,7 +252,7 @@ Otherwise, you will run into an error like ’ModuleNotFoundError: No module nam
 
 Using SDK C API should follow next pattern,
 
-```mermaid
+```{mermaid}
 graph LR
   A[create inference handle] --> B(read image)
   B --> C(apply handle)
