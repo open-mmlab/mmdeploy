@@ -58,7 +58,12 @@ Result<Value> CollectImpl::Process(const Value &input) {
 }
 
 Collect::Collect(const Value &args, int version) : Transform(args) {
-  impl_ = Registry<CollectImpl>::Get().GetCreator("cpu", version)->Create(args);
+  auto impl_creator = Registry<CollectImpl>::Get().GetCreator(specified_platform_, version);
+  if (nullptr == impl_creator) {
+    MMDEPLOY_ERROR("'Collect' is not supported on '{}' platform", specified_platform_);
+    throw std::domain_error("'Collect' is not supported on specified platform");
+  }
+  impl_ = impl_creator->Create(args);
 }
 
 Result<Value> Collect::Process(const Value &input) { return impl_->Process(input); }
