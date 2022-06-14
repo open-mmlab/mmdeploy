@@ -26,10 +26,7 @@ def get_onnx2ncnn_path() -> str:
     candidates = ['./onnx2ncnn', './onnx2ncnn.exe']
     onnx2ncnn = get_file_path(os.path.dirname(__file__), candidates)
     if not os.path.exists(onnx2ncnn):
-        onnx2ncnn = shutil.which('ncnn2int8')
-    if not os.path.exists(onnx2ncnn):
-        raise Exception(
-            'Cannot find onnx2ncnn, try `export PATH=/path/to/onnx2ncnn`')
+        onnx2ncnn = shutil.which('onnx2ncnn')
     return onnx2ncnn
 
 
