@@ -3,7 +3,7 @@ import os
 import os.path as osp
 import tempfile
 from subprocess import call
-from typing import List, Union
+from typing import List, Optional, Union
 
 import onnx
 
@@ -17,17 +17,21 @@ def mkdir_or_exist(dir_name, mode=0o777):
     os.makedirs(dir_name, mode=mode, exist_ok=True)
 
 
-def get_output_model_file(onnx_path: str, work_dir: str) -> List[str]:
+def get_output_model_file(onnx_path: str,
+                          work_dir: Optional[str] = None) -> List[str]:
     """Returns the path to the .param, .bin file with export result.
 
     Args:
         onnx_path (str): The path to the onnx model.
-        work_dir (str): The path to the directory for saving the results.
+        work_dir (str|None): The path to the directory for saving the results.
+            Defaults to `None`, which means use the directory of onnx_path.
 
     Returns:
         List[str]: The path to the files where the export result will be
             located.
     """
+    if work_dir is None:
+        work_dir = osp.dirname(onnx_path)
     mkdir_or_exist(osp.abspath(work_dir))
     file_name = osp.splitext(osp.split(onnx_path)[1])[0]
     save_param = osp.join(work_dir, file_name + '.param')
@@ -64,4 +68,5 @@ def from_onnx(onnx_model: Union[onnx.ModelProto, str],
     save_bin = output_file_prefix + '.bin'
 
     onnx2ncnn_path = get_onnx2ncnn_path()
-    call([onnx2ncnn_path, onnx_path, save_param, save_bin])
+    ret_code = call([onnx2ncnn_path, onnx_path, save_param, save_bin])
+    assert ret_code == 0, 'onnx2ncnn failed'
