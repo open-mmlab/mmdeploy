@@ -93,3 +93,24 @@ def test_deform_conv_openvino():
     model = onnx.load(onnx_file_path)
     assert model.graph.node[1].op_type == 'DeformableConv2D'
     assert model.graph.node[1].domain == 'org.openvinotoolkit'
+
+
+def test_patch_embed_ncnn():
+    check_backend(Backend.NCNN)
+
+    from mmcv.cnn.bricks.transformer import PatchEmbed
+
+    input = torch.ones((1, 3, 384, 384))
+    patch_cfg = {
+        'in_channels': 3,
+        'input_size': 384,
+        'embed_dims': 768,
+        'conv_type': 'Conv2d',
+        'kernel_size': 32,
+        'stride': 32
+    }
+    wrapped_model = PatchEmbed(**patch_cfg)
+    wrapped_model.eval()
+    with RewriterContext({}, backend='ncnn'), torch.no_grad():
+        _, shape = wrapped_model(input)
+        assert shape[0] == patch_cfg['input_size'] / patch_cfg['stride']
