@@ -4,7 +4,7 @@ project(mmdeploy_java)
 find_package(JNI)
 
 mmdeploy_add_library(${PROJECT_NAME} SHARED EXCLUDE
-        mmdeploy_Classifier.cpp mmdeploy_Detector.cpp mmdeploy_Segmentor.cpp mmdeploy_Restorer.cpp mmdeploy_PoseDetector.cpp mmdeploy_RotatedDetector.cpp)
+        mmdeploy_Classifier.cpp mmdeploy_Detector.cpp mmdeploy_Segmentor.cpp mmdeploy_Restorer.cpp mmdeploy_PoseDetector.cpp mmdeploy_TextDetector.cpp mmdeploy_TextRecognizer.cpp)
 
 target_include_directories(${PROJECT_NAME} PRIVATE
         ${JNI_INCLUDE_DIRS})
