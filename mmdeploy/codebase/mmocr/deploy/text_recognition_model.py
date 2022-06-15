@@ -164,7 +164,6 @@ class End2EndModel(BaseBackendModel):
                 out_file=out_file)
 
 
-
 @__BACKEND_MODEL.register_module('sdk')
 class SDKEnd2EndModel(End2EndModel):
     """SDK inference class, converts SDK output to mmocr format."""
