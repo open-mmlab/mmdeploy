@@ -47,6 +47,7 @@ class MMDEPLOY_API Tensor {
   void Reshape(const TensorShape& shape);
 
   void Squeeze();
+  void Squeeze(int dim);
 
   Tensor Slice(int start, int end);
   Tensor Slice(int index) { return Slice(index, index + 1); }

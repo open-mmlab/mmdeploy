@@ -53,7 +53,9 @@ class PANHead : public MMOCR {
                      (int)pred.data_type());
       return Status(eNotSupported);
     }
-    pred.Squeeze();
+
+    // drop batch dimension
+    pred.Squeeze(0);
 
     auto text_pred = pred.Slice(0);
     auto kernel_pred = pred.Slice(1);
