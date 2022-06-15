@@ -274,6 +274,12 @@ export MMDEPLOY_DIR=$(pwd)
     <td>MMDeploy SDK python package的编译开关</td>
   </tr>
   <tr>
+    <td>MMDEPLOY_BUILD_SDK_JAVA_API</td>
+    <td>{ON, OFF}</td>
+    <td>OFF</td>
+    <td>MMDeploy SDK java api的编译开关</td>
+  </tr>
+  <tr>
     <td>MMDEPLOY_BUILD_TEST</td>
     <td>{ON, OFF}</td>
     <td>OFF</td>

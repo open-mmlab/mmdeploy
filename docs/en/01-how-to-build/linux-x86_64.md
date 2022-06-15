@@ -280,6 +280,11 @@ export MMDEPLOY_DIR=$(pwd)
     <td>switch to build MMDeploy SDK python package</td>
   </tr>
   <tr>
+    <td>MMDEPLOY_BUILD_SDK_JAVA_API</td>
+    <td>{ON, OFF}</td>
+    <td>switch to build MMDeploy SDK java api</td>
+  </tr>
+  <tr>
     <td>MMDEPLOY_BUILD_TEST</td>
     <td>{ON, OFF}</td>
     <td>OFF</td>
