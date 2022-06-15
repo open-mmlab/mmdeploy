@@ -143,14 +143,26 @@ class End2EndModel(BaseBackendModel):
         Returns:
             np.ndarray: Drawn image, only if not `show` or `out_file`.
         """
-        return BaseRecognizer.show_result(
-            self,
-            img,
-            result,
-            score_thr=score_thr,
-            show=show,
-            win_name=win_name,
-            out_file=out_file)
+        import mmocr
+        if mmocr.__version__ >= '0.5.0':
+            # Method show_result is a static method when mmocr >= '0.5.0'
+            return BaseRecognizer.show_result(
+                img,
+                result,
+                score_thr=score_thr,
+                show=show,
+                win_name=win_name,
+                out_file=out_file)
+        else:
+            return BaseRecognizer.show_result(
+                self,
+                img,
+                result,
+                score_thr=score_thr,
+                show=show,
+                win_name=win_name,
+                out_file=out_file)
+
 
 
 @__BACKEND_MODEL.register_module('sdk')
