@@ -8,42 +8,7 @@ set(COMMON_LIST
         executor
         pipeline)
 
-set(TASK_LIST)
-
-if ("all" IN_LIST MMDEPLOY_CODEBASES)
-    list(APPEND TASK_LIST
-            classifier
-            detector
-            segmentor
-            text_detector
-            text_recognizer
-            pose_detector
-            restorer
-            rotated_detector)
-else ()
-    if ("mmcls" IN_LIST MMDEPLOY_CODEBASES)
-        list(APPEND TASK_LIST classifier)
-    endif ()
-    if ("mmdet" IN_LIST MMDEPLOY_CODEBASES)
-        list(APPEND TASK_LIST detector)
-    endif ()
-    if ("mmseg" IN_LIST MMDEPLOY_CODEBASES)
-        list(APPEND TASK_LIST segmentor)
-    endif ()
-    if ("mmedit" IN_LIST MMDEPLOY_CODEBASES)
-        list(APPEND TASK_LIST restorer)
-    endif ()
-    if ("mmocr" IN_LIST MMDEPLOY_CODEBASES)
-        list(APPEND TASK_LIST text_detector)
-        list(APPEND TASK_LIST text_recognizer)
-    endif ()
-    if ("mmpose" IN_LIST MMDEPLOY_CODEBASES)
-        list(APPEND TASK_LIST pose_detector)
-    endif ()
-    if ("mmrotate" IN_LIST MMDEPLOY_CODEBASES)
-        list(APPEND TASK_LIST "rotated_detector")
-    endif ()
-endif ()
+set(TASK_LIST ${MMDEPLOY_TASKS})
 
 foreach (TASK ${COMMON_LIST})
     set(TARGET_NAME mmdeploy_${TASK})
