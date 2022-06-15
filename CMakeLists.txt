@@ -78,8 +78,6 @@ include(cmake/MMDeploy.cmake)
 
 add_subdirectory(csrc/mmdeploy)
 
-message(STATUS "tasks ${MMDEPLOY_TASKS}")
-
 if (MMDEPLOY_BUILD_SDK)
     install(TARGETS MMDeployStaticModules
             MMDeployDynamicModules
