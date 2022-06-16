@@ -14,7 +14,8 @@
         - [安装 Model Converter](#安装-model-converter)
       - [编译SDK](#编译sdk)
       - [编译 Demo](#编译-demo)
----
+
+______________________________________________________________________
 
 ## 源码安装
 
@@ -22,27 +23,29 @@
 
 - cmake
 
-    **保证 cmake的版本 >= 3.14.0**。如果不是，可以参考以下命令安装 3.20.0 版本。如需获取其他版本，请参考[这里](https://cmake.org/install)。
+  **保证 cmake的版本 >= 3.14.0**。如果不是，可以参考以下命令安装 3.20.0 版本。如需获取其他版本，请参考[这里](https://cmake.org/install)。
 
-    ```bash
-    wget https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0-linux-x86_64.tar.gz
-    tar -xzvf cmake-3.20.0-linux-x86_64.tar.gz
-    sudo ln -sf $(pwd)/cmake-3.20.0-linux-x86_64/bin/* /usr/bin/
-    ```
+  ```bash
+  wget https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0-linux-x86_64.tar.gz
+  tar -xzvf cmake-3.20.0-linux-x86_64.tar.gz
+  sudo ln -sf $(pwd)/cmake-3.20.0-linux-x86_64/bin/* /usr/bin/
+  ```
 
 - GCC 7+
 
-    MMDeploy SDK 使用了 C++17 特性，因此需要安装gcc 7+以上的版本。
-    ```bash
-    # 如果 Ubuntu 版本 < 18.04，需要加入仓库
-    sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-    sudo apt-get update
-    sudo apt-get install gcc-7
-    sudo apt-get install g++-7
-    ```
+  MMDeploy SDK 使用了 C++17 特性，因此需要安装gcc 7+以上的版本。
+
+  ```bash
+  # 如果 Ubuntu 版本 < 18.04，需要加入仓库
+  sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+  sudo apt-get update
+  sudo apt-get install gcc-7
+  sudo apt-get install g++-7
+  ```
 
 ### 安装依赖包
-####  安装 MMDeploy Converter 依赖
+
+#### 安装 MMDeploy Converter 依赖
 
 <table class="docutils">
 <thead>
@@ -85,6 +88,7 @@ pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/${cu_ve
 #### 安装 MMDeploy SDK 依赖
 
 如果您只对模型转换感兴趣，那么可以跳过本章节。
+
 <table class="docutils">
 <thead>
   <tr>
@@ -103,7 +107,7 @@ sudo apt-get install libopencv-dev
     在 Ubuntu 16.04 中，需要源码安装 OpenCV。您可以参考<a href="https://docs.opencv.org/3.4/d7/d9f/tutorial_linux_install.html">此处</a>.
     </td>
 
-  </tr>
+</tr>
   <tr>
     <td>pplcv </td>
     <td>pplcv 是 openPPL 开发的高性能图像处理库。 <b>此依赖项为可选项，只有在 cuda 平台下，才需安装。而且，目前必须使用 v0.6.2，且需要使用 git clone 的方式下载源码并编译安装</b><br>
@@ -237,12 +241,14 @@ export LD_LIBRARY_PATH=$Torch_DIR/lib:$LD_LIBRARY_PATH
 
 注意: <br>
 如果您想使上述环境变量永久有效，可以把它们加入<code>~/.bashrc</code>。以 ONNXRuntime 的环境变量为例，
+
 ```bash
 echo '# set env for onnxruntime' >> ~/.bashrc
 echo "export ONNXRUNTIME_DIR=${ONNXRUNTIME_DIR}" >> ~/.bashrc
 echo 'export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH' >> ~/.bashrc
 source ~/.bashrc
 ```
+
 ### 编译 MMDeploy
 
 ```bash
@@ -251,6 +257,7 @@ export MMDEPLOY_DIR=$(pwd)
 ```
 
 #### 编译选项说明
+
 <table class="docutils">
 <thead>
   <tr>
@@ -327,6 +334,7 @@ export MMDEPLOY_DIR=$(pwd)
 #### 编译安装 Model Converter
 
 ##### 编译自定义算子
+
 如果您选择了ONNXRuntime，TensorRT，ncnn 和 torchscript 任一种推理后端，您需要编译对应的自定义算子库。
 
 - **ONNXRuntime** 自定义算子
@@ -371,15 +379,18 @@ export MMDEPLOY_DIR=$(pwd)
 cd ${MMDEPLOY_DIR}
 pip install -e .
 ```
+
 **注意**
 
 - 有些依赖项是可选的。运行 `pip install -e .` 将进行最小化依赖安装。 如果需安装其他可选依赖项，请执行`pip install -r requirements/optional.txt`，
-或者 `pip install -e .[optional]`。其中，`[optional]`可以替换为：`all`、`tests`、`build` 或 `optional`。
+  或者 `pip install -e .[optional]`。其中，`[optional]`可以替换为：`all`、`tests`、`build` 或 `optional`。
+
 #### 编译SDK
 
 下文展示2个构建SDK的样例，分别用 ONNXRuntime 和 TensorRT 作为推理引擎。您可以参考它们，激活其他的推理引擎。
 
 - cpu + ONNXRuntime
+
   ```Bash
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
@@ -396,6 +407,7 @@ pip install -e .
   ```
 
 - cuda + TensorRT
+
   ```Bash
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build

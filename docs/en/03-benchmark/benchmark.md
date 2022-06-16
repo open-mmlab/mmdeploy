@@ -1,12 +1,15 @@
 # Benchmark
 
 ## Backends
+
 CPU: ncnn, ONNXRuntime, OpenVINO
 
 GPU: ncnn, TensorRT, PPLNN
 
 ## Latency benchmark
+
 ### Platform
+
 - Ubuntu 18.04
 - ncnn 20211208
 - Cuda 11.3
@@ -15,13 +18,13 @@ GPU: ncnn, TensorRT, PPLNN
 - NVIDIA tesla T4 tensor core GPU for TensorRT
 
 ### Other settings
+
 - Static graph
 - Batch size 1
 - Synchronize devices after each inference.
 - We count the average inference performance of 100 images of the dataset.
 - Warm up. For ncnn, we warm up 30 iters for all codebases. As for other backends: for classification, we warm up 1010 iters; for other codebases, we warm up 10 iters.
 - Input resolution varies for different datasets of different codebases. All inputs are real images except for `mmediting` because the dataset is not large enough.
-
 
 Users can directly test the speed through [model profiling](../02-how-to-run/how_to_measure_performance_of_models.md). And here is the benchmark in our environment.
 
@@ -1533,7 +1536,6 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
 </table>
 </div>
 
-
 <div style="margin-left: 25px;">
 <table class="docutils">
 <thead>
@@ -1587,9 +1589,8 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
 </table>
 </div>
 
-
-
 ## Notes
+
 - As some datasets contain images with various resolutions in codebase like MMDet. The speed benchmark is gained through static configs in MMDeploy, while the performance benchmark is gained through dynamic ones.
 
 - Some int8 performance benchmarks of TensorRT require Nvidia cards with tensor core, or the performance would drop heavily.
