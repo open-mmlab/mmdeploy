@@ -7,7 +7,7 @@
 
 namespace mmdeploy {
 
-CollectImpl::CollectImpl(const Value &args) {
+CollectImpl::CollectImpl(const Value &args) : TransformImpl(args) {
   if (!args.contains("keys") || !args["keys"].is_array()) {
     throw std::invalid_argument("'keys' is missed in arguments, or it is not an array as expected");
   }

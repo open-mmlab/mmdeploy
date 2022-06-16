@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "preprocess/transform/collect.h"
+#include "mmdeploy/preprocess/transform/collect.h"
 
 namespace mmdeploy {
 namespace cuda {

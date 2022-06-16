@@ -6,7 +6,7 @@
 #include "transform.h"
 namespace mmdeploy {
 
-class MMDEPLOY_API CollectImpl : public Module {
+class MMDEPLOY_API CollectImpl : public TransformImpl {
  public:
   explicit CollectImpl(const Value& args);
   ~CollectImpl() override = default;

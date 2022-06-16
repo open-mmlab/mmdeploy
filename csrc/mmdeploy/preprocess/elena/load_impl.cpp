@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "preprocess/transform/load.h"
+#include "mmdeploy/preprocess/transform/load.h"
 
 using namespace std;
 
@@ -9,7 +9,9 @@ namespace elena {
 
 class PrepareImageImpl : public ::mmdeploy::PrepareImageImpl {
  public:
-  explicit PrepareImageImpl(const Value& args) : ::mmdeploy::PrepareImageImpl(args){};
+  explicit PrepareImageImpl(const Value& args) : ::mmdeploy::PrepareImageImpl(args) {
+    fuse_transform_ = true;
+  };
   ~PrepareImageImpl() override = default;
 
  protected:

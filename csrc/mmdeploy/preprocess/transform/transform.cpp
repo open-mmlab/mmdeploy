@@ -35,12 +35,12 @@ std::vector<std::string> TransformImpl::GetImageFields(const Value &input) {
 Transform::Transform(const Value &args) {
   Device device{"cpu"};
   if (args.contains("context")) {
+    device = args["context"].value("device", device);
     bool fuse_transform = args["context"].value("fuse_transform", false);
     if (fuse_transform) {
       specified_platform_ = "elena";
       return;
     }
-    device = args["context"].value("device", device);
   }
 
   Platform platform(device.platform_id());

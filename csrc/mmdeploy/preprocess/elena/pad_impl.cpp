@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "preprocess/transform/pad.h"
+#include "mmdeploy/preprocess/transform/pad.h"
 
 using namespace std;
 
@@ -9,7 +9,7 @@ namespace elena {
 
 class PadImpl : public ::mmdeploy::PadImpl {
  public:
-  PadImpl(const Value& args) : ::mmdeploy::PadImpl(args) {}
+  PadImpl(const Value& args) : ::mmdeploy::PadImpl(args) { fuse_transform_ = true; }
 
  protected:
   Result<Tensor> PadImage(const Tensor& img, const std::array<int, 4>& padding) override {

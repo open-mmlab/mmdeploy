@@ -3,6 +3,7 @@
 #include "crop.h"
 
 #include "mmdeploy/archive/json_archive.h"
+#include "utils.h"
 
 using namespace std;
 
@@ -45,7 +46,7 @@ Result<Value> CenterCropImpl::Process(const Value& input) {
 
     OUTCOME_TRY(auto dst_tensor, CropImage(tensor, y1, x1, y2, x2));
 
-    auto& shape = dst_tensor.desc().shape;
+    auto shape = dst_tensor.desc().shape;
 
     output["img_shape"] = {shape[0], shape[1], shape[2], shape[3]};
     if (input.contains("scale_factor")) {
@@ -62,6 +63,30 @@ Result<Value> CenterCropImpl::Process(const Value& input) {
     }
 
     SetTransformData(output, key, std::move(dst_tensor));
+
+    // trace static info & runtime args
+    if (fuse_transform_ == true) {
+      bool img_shape_fixed = output.value("img_shape_fixed", false);
+      Value trans_info;
+      if (img_shape_fixed) {
+        trans_info["static"].push_back({{"type", "CenterCrop"},
+                                        {"tlbr", {y1, x1, h - shape[1] - y1, w - shape[2] - x1}},
+                                        {"size_hw", {shape[1], shape[2]}},
+                                        {"dynamic", false}});
+        trans_info["runtime_args"].push_back(
+            {{"src_date_type", DataTypeToString(tensor.data_type())}});
+      } else {
+        trans_info["static"].push_back(
+            {{"type", "CenterCrop"}, {"size_hw", {shape[1], shape[2]}}, {"dynamic", true}});
+        trans_info["runtime_args"].push_back(
+            {{"tlbr", {y1, x1, h - shape[1] - y1, w - shape[2] - x1}},
+             {"src_date_type", DataTypeToString(tensor.data_type())}});
+      }
+      output["img_shape_fixed"] = true;
+
+      AddTransInfo(trans_info, output);
+      assert(CheckTraceInfoLengthEqual(output) == true);
+    }
   }
 
   MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));

@@ -6,6 +6,7 @@
 
 #include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/core/tensor.h"
+#include "utils.h"
 
 using namespace std;
 
@@ -55,11 +56,13 @@ Result<Value> ResizeImpl::Process(const Value& input) {
     int dst_h = 0;
     int dst_w = 0;
     float scale_factor = 0.f;
+    bool fixed_scale = false;
 
     if (input.contains("scale")) {
       assert(input["scale"].is_array() && input["scale"].size() == 2);
       dst_h = input["scale"][0].get<int>();
       dst_w = input["scale"][1].get<int>();
+      fixed_scale = true;
     } else if (input.contains("scale_factor")) {
       assert(input["scale_factor"].is_number());
       scale_factor = input["scale_factor"].get<float>();
@@ -80,6 +83,7 @@ Result<Value> ResizeImpl::Process(const Value& input) {
       } else {
         dst_h = arg_.img_scale[0];
         dst_w = arg_.img_scale[1];
+        fixed_scale = true;
       }
     } else {
       MMDEPLOY_ERROR("no resize related parameter is provided");
@@ -109,6 +113,27 @@ Result<Value> ResizeImpl::Process(const Value& input) {
     output["keep_ratio"] = arg_.keep_ratio;
 
     SetTransformData(output, key, std::move(dst_img));
+
+    // trace static info & runtime args
+    if (fuse_transform_ == true) {
+      Value trans_info;
+      bool img_shape_fixed = arg_.keep_ratio == false && fixed_scale;
+      output["img_shape_fixed"] = img_shape_fixed;
+      trans_info["static"].push_back({{"type", "Resize"},
+                                      {"interpolation", arg_.interpolation},
+                                      {"dynamic", !img_shape_fixed}});
+      if (img_shape_fixed) {
+        trans_info["static"].back()["size_hw"] = {dst_h, dst_w};
+        trans_info["runtime_args"].push_back(
+            {{"src_data_type", DataTypeToString(src_img.data_type())}});
+      } else {
+        trans_info["runtime_args"].push_back(
+            {{"size_hw", {dst_h, dst_w}},
+             {"src_data_type", DataTypeToString(src_img.data_type())}});
+      }
+      AddTransInfo(trans_info, output);
+      assert(CheckTraceInfoLengthEqual(output) == true);
+    }
   }
 
   MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));

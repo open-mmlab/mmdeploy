@@ -1,13 +1,15 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "preprocess/transform/image2tensor.h"
+#include "mmdeploy/preprocess/transform/image2tensor.h"
 
 namespace mmdeploy {
 namespace elena {
 
 class ImageToTensorImpl : public ::mmdeploy::ImageToTensorImpl {
  public:
-  explicit ImageToTensorImpl(const Value& args) : ::mmdeploy::ImageToTensorImpl(args) {}
+  explicit ImageToTensorImpl(const Value& args) : ::mmdeploy::ImageToTensorImpl(args) {
+    fuse_transform_ = true;
+  }
 
  protected:
   Result<Tensor> HWC2CHW(const Tensor& tensor) override {

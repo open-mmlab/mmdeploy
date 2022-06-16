@@ -6,6 +6,7 @@
 
 #include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/core/tensor.h"
+#include "utils.h"
 
 namespace mmdeploy {
 
@@ -28,6 +29,15 @@ Result<Value> ImageToTensorImpl::Process(const Value& input) {
 
     OUTCOME_TRY(auto dst, HWC2CHW(src_tensor));
     SetTransformData(output, key, std::move(dst));
+
+    if (fuse_transform_ == true) {
+      Value trans_info;
+      trans_info["static"].push_back({{"type", "HWC2CHW"}});
+      trans_info["runtime_args"].push_back(
+          {{"src_data_type", DataTypeToString(src_tensor.data_type())}});
+      AddTransInfo(trans_info, output);
+      assert(CheckTraceInfoLengthEqual(output) == true);
+    }
   }  // for key
   MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));
   return output;
