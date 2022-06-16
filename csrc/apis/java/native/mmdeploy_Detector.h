@@ -12,24 +12,22 @@ extern "C" {
  * Method:    create
  * Signature: (Ljava/lang/String;Ljava/lang/String;I)J
  */
-JNIEXPORT jlong JNICALL Java_mmdeploy_Detector_create
-  (JNIEnv *, jobject, jstring, jstring, jint);
+JNIEXPORT jlong JNICALL Java_mmdeploy_Detector_create(JNIEnv *, jobject, jstring, jstring, jint);
 
 /*
  * Class:     mmdeploy_Detector
  * Method:    destroy
  * Signature: (J)V
  */
-JNIEXPORT void JNICALL Java_mmdeploy_Detector_destroy
-  (JNIEnv *, jobject, jlong);
+JNIEXPORT void JNICALL Java_mmdeploy_Detector_destroy(JNIEnv *, jobject, jlong);
 
 /*
  * Class:     mmdeploy_Detector
  * Method:    apply
  * Signature: (J[Lmmdeploy/Mat;[I)[Lmmdeploy/Detector/Result;
  */
-JNIEXPORT jobjectArray JNICALL Java_mmdeploy_Detector_apply
-  (JNIEnv *, jobject, jlong, jobjectArray, jintArray);
+JNIEXPORT jobjectArray JNICALL Java_mmdeploy_Detector_apply(JNIEnv *, jobject, jlong, jobjectArray,
+                                                            jintArray);
 
 #ifdef __cplusplus
 }
