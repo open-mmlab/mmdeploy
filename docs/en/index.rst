@@ -72,6 +72,7 @@ You can switch between Chinese and English documents in the lower-left corner of
    06-developer-guide/how_to_support_new_backends.md
    06-developer-guide/how_to_add_test_units_for_backend_ops.md
    06-developer-guide/how_to_test_rewritten_models.md
+   06-developer-guide/partition_model.md
 
 .. toctree::
    :maxdepth: 1
