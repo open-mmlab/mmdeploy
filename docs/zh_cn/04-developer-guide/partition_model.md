@@ -4,9 +4,9 @@ MMDeploy 支持将PyTorch模型导出到onnx模型并进行拆分得到多个onn
 
 ### 步骤 1: 添加模型标记点
 
-为了进行图拆分，我们需要在onnx模型中添加自定义的`Mark`类型op结点来标记子图的起始位置，那么如何在onnx模型中插入`Mark`标记结点呢？为此，mmdeploy 提供了`mark`装饰器，通过这个装饰器，我们可以通过在代码中添加标记函数对某个函数的输入、输出Tensor进行标记得到`Mark`结点。需要注意的是，我们的标记函数需要在某个重写函数中执行才能生效。
+为了进行图拆分，我们需要在onnx模型中添加自定义的`Mark`类型op结点来标记子图的起始位置，那么如何在onnx模型中插入`Mark`标记结点呢？为此，mmdeploy 提供了`mark`装饰器，通过该装饰器，我们可以在代码中添加标记函数对某个函数的输入、输出`Tensor`进行标记得到`Mark`结点。需要注意的是，我们的标记函数需要在某个重写函数中执行才能生效。
 
-为了对YOLOV3进行拆分，首先我们需要标记模型的输入。这里为了通用性，我们标记检测器父类`BaseDetector`的`forward`方法中的`img` Tensor，同时为了支持其他拆分方案，也对`forward`函数的输出进行了标记，分别是`dets`, `labels`和`masks`。下面的代码是截图[mmdeploy/codebase/mmdet/models/detectors/base.py](https://github.com/open-mmlab/mmdeploy/blob/86a50e343a3a45d7bc2ba3256100accc4973e71d/mmdeploy/codebase/mmdet/models/detectors/base.py)中的一部分，可以看出我们使用`mark`装饰器标记了`__forward_impl`函数的输入输出，并在重写函数`base_detector__forward`进行了调用，从而完成了对检测器输入的标记。
+为了对YOLOV3进行拆分，首先我们需要标记模型的输入。这里为了通用性，我们标记检测器父类`BaseDetector`的`forward`方法中的`img` `Tensor`，同时为了支持其他拆分方案，也对`forward`函数的输出进行了标记，分别是`dets`, `labels`和`masks`。下面的代码是截图[mmdeploy/codebase/mmdet/models/detectors/base.py](https://github.com/open-mmlab/mmdeploy/blob/86a50e343a3a45d7bc2ba3256100accc4973e71d/mmdeploy/codebase/mmdet/models/detectors/base.py)中的一部分，可以看出我们使用`mark`装饰器标记了`__forward_impl`函数的输入输出，并在重写函数`base_detector__forward`进行了调用，从而完成了对检测器输入的标记。
 
 ```python
 from mmdeploy.core import FUNCTION_REWRITER, mark
@@ -71,7 +71,7 @@ partition_config = dict(
 
 ### 步骤 3: 拆分onnx模型
 
-添加好结点标记和部署配置文件，我们可以使用`tools/torch2onnx.py`工具导出带有`Mark`标记的完成onnx模型并根据分段策略提取分段的onnx模型文件。我们可以执行如下脚本，得到不带后处理的`YOLOV3`onnx模型文件`yolov3.onnx`，同时输出文件中也包含了添加`Mark`标记的完整模型文件`end2end.onnx`。此外，用户可以使用网页版模型可视化工具[netron](https://netron.app/)来查看和严重输出onnx模型结构是否正确。
+添加好结点标记和部署配置文件，我们可以使用`tools/torch2onnx.py`工具导出带有`Mark`标记的完成onnx模型并根据分段策略提取分段的onnx模型文件。我们可以执行如下脚本，得到不带后处理的`YOLOV3`onnx模型文件`yolov3.onnx`，同时输出文件中也包含了添加`Mark`标记的完整模型文件`end2end.onnx`。此外，用户可以使用网页版模型可视化工具[netron](https://netron.app/)来查看和验证输出onnx模型的结构是否正确。
 
 ``` shell
 python tools/torch2onnx.py \

@@ -6,7 +6,7 @@ MMDeploy supports exporting PyTorch models to partitioned onnx models. With this
 
 To support the model partition, we need to add `Mark` nodes in the ONNX model. This could be done with mmdeploy's `@mark` decorator. Note that to make the `mark` work, the marking operation should be included in a rewriting function.
 
-At first, we would mark the model input, which could be done by marking the input tensor `img` in the `forward` methold of `BaseDetector` class, which is the parent class of all detector classes. Thus we name this marking point as `detector_forward` and mark the inputs as `input`. Since the outputs of detectors could be three outputs such as `Mask RCNN`, they are marked as  `dets`, `labels`, and `masks`. Following shows the idea of adding mark function and call the mark function in the rewrite. For source code, you could refer to [mmdeploy/codebase/mmdet/models/detectors/base.py](https://github.com/open-mmlab/mmdeploy/blob/86a50e343a3a45d7bc2ba3256100accc4973e71d/mmdeploy/codebase/mmdet/models/detectors/base.py)
+At first, we would mark the model input, which could be done by marking the input tensor `img` in the `forward` method of `BaseDetector` class, which is the parent class of all detector classes. Thus we name this marking point as `detector_forward` and mark the inputs as `input`. Since there could be three outputs for detectors such as `Mask RCNN`, the outputs are marked as  `dets`, `labels`, and `masks`. The following code shows the idea of adding mark functions and calling the mark functions in the rewrite. For source code, you could refer to [mmdeploy/codebase/mmdet/models/detectors/base.py](https://github.com/open-mmlab/mmdeploy/blob/86a50e343a3a45d7bc2ba3256100accc4973e71d/mmdeploy/codebase/mmdet/models/detectors/base.py)
 
 ```python
 from mmdeploy.core import FUNCTION_REWRITER, mark
@@ -47,7 +47,7 @@ def yolov3_head__get_bboxes(ctx,
     ...
 ```
 
-Note that `pred_maps` is a list of Tensor and has three elements. Thus, three `Mark` nodes with op name as `pred_maps.0`, `pred_maps.1`, `pred_maps.2` would be added in the onnx model.
+Note that `pred_maps` is a list of `Tensor` and it has three elements. Thus, three `Mark` nodes with op name as `pred_maps.0`, `pred_maps.1`, `pred_maps.2` would be added in the onnx model.
 
 ### Step 2: Add partition config
 
@@ -86,4 +86,4 @@ https://download.openmmlab.com/mmdetection/v2.0/yolo/yolov3_d53_mstrain-608_273e
 
 After run the script above, we would have the partitioned onnx file `yolov3.onnx` in the `work-dir`. You can use the visualization tool [netron](https://netron.app/) to check the model structure.
 
-With the partitioned onnx file, you could refer to [useful_tools.md](../useful_tools.md) to do the following procedures such `onnx2ncnn`, `onnx2tensorrt`.
+With the partitioned onnx file, you could refer to [useful_tools.md](../useful_tools.md) to do the following procedures such as `onnx2ncnn`, `onnx2tensorrt`.
