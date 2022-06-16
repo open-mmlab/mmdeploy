@@ -7,8 +7,17 @@ public class Segmentor {
 
     private final long handle;
 
-
-    public record Result(int height, int width, int classes, int[] mask) {
+    public static class Result {
+        public int height;
+        public int width;
+        public int classes;
+        public int[] mask;
+        public Result(int height, int width, int classes, int [] mask) {
+            this.height = height;
+            this.width = width;
+            this.classes = classes;
+            this.mask = mask;
+        }
     }
 
     public Segmentor(String modelPath, String deviceName, int deviceId) {

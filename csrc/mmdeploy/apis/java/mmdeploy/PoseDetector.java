@@ -7,8 +7,13 @@ public class PoseDetector {
 
     private final long handle;
 
-
-    public record Result(PointF[] point, float[] score) {
+    public static class Result {
+        public PointF[] point;
+        public float[] score;
+        public Result(PointF[] point, float [] score) {
+            this.point = point;
+            this.score = score;
+        }
     }
 
     public PoseDetector(String modelPath, String deviceName, int deviceId) {

@@ -7,7 +7,13 @@ public class TextRecognizer {
 
     private final long handle;
 
-    public record Result(char [] text, float [] score) {
+    public static class Result {
+        public char [] text;
+        public float [] score;
+        public Result(char [] text, float [] score) {
+            this.text = text;
+            this.score = score;
+        }
     }
 
     public TextRecognizer(String modelPath, String deviceName, int deviceId) {

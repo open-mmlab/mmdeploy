@@ -7,8 +7,13 @@ public class Classifier {
 
     private final long handle;
 
-
-    public record Result(int label_id, float score) {
+    public static class Result {
+        public int label_id;
+        public float score;
+        public Result(int label_id, float score) {
+            this.label_id = label_id;
+            this.score = score;
+        }
     }
 
     public Classifier(String modelPath, String deviceName, int deviceId) {

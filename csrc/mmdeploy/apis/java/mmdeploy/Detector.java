@@ -7,8 +7,17 @@ public class Detector {
 
     private final long handle;
 
-
-    public record Result(int label_id, float score, Rect bbox, InstanceMask mask) {
+    public static class Result {
+        public int label_id;
+        public float score;
+        public Rect bbox;
+        public InstanceMask mask;
+        public Result(int label_id, float score, Rect bbox, InstanceMask mask) {
+            this.label_id = label_id;
+            this.score = score;
+            this.bbox = bbox;
+            this.mask = mask;
+        }
     }
 
     public Detector(String modelPath, String deviceName, int deviceId) {

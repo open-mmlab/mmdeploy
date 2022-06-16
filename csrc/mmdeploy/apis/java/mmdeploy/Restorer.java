@@ -7,8 +7,11 @@ public class Restorer {
 
     private final long handle;
 
-
-    public record Result(Mat res) {
+    public static class Result {
+        public Mat res;
+        public Result(Mat res) {
+            this.res = res;
+        }
     }
 
     public Restorer(String modelPath, String deviceName, int deviceId) {

@@ -7,8 +7,13 @@ public class TextDetector {
 
     private final long handle;
 
-
-    public record Result(PointF [] bbox, float score) {
+    public static class Result {
+        public PointF[] bbox;
+        public float score;
+        public Result(PointF[] bbox, float score) {
+            this.bbox = bbox;
+            this.score = score;
+        }
     }
 
     public TextDetector(String modelPath, String deviceName, int deviceId) {
