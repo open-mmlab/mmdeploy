@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "preprocess/transform/resize.h"
+#include "mmdeploy/preprocess/transform/resize.h"
 
 using namespace std;
 
@@ -9,7 +9,7 @@ namespace elena {
 
 class ResizeImpl final : public ::mmdeploy::ResizeImpl {
  public:
-  ResizeImpl(const Value& args) : ::mmdeploy::ResizeImpl(args) {}
+  ResizeImpl(const Value& args) : ::mmdeploy::ResizeImpl(args) { fuse_transform_ = true; }
   ~ResizeImpl() = default;
 
  protected:

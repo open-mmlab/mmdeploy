@@ -10,7 +10,9 @@ set(SRCS
         load_impl.cpp
         normalize_impl.cpp
         pad_impl.cpp
-        resize_impl.cpp)
+        resize_impl.cpp
+        dynamic_library.cpp
+        library_compiler.cpp)
 mmdeploy_add_module(${PROJECT_NAME} "${SRCS}")
 target_link_libraries(${PROJECT_NAME}
         PRIVATE mmdeploy::transform)

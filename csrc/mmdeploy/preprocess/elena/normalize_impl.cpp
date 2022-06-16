@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "preprocess/transform/normalize.h"
+#include "mmdeploy/preprocess/transform/normalize.h"
 
 using namespace std;
 
@@ -9,7 +9,7 @@ namespace elena {
 
 class NormalizeImpl : public ::mmdeploy::NormalizeImpl {
  public:
-  NormalizeImpl(const Value& value) : ::mmdeploy::NormalizeImpl(value){};
+  NormalizeImpl(const Value& value) : ::mmdeploy::NormalizeImpl(value) { fuse_transform_ = true; };
   ~NormalizeImpl() = default;
 
  protected:

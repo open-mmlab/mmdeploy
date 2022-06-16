@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "preprocess/transform/crop.h"
+#include "mmdeploy/preprocess/transform/crop.h"
 
 using namespace std;
 
@@ -9,7 +9,9 @@ namespace elena {
 
 class CenterCropImpl : public ::mmdeploy::CenterCropImpl {
  public:
-  explicit CenterCropImpl(const Value& args) : ::mmdeploy::CenterCropImpl(args) {}
+  explicit CenterCropImpl(const Value& args) : ::mmdeploy::CenterCropImpl(args) {
+    fuse_transform_ = true;
+  }
 
  protected:
   Result<Tensor> CropImage(const Tensor& tensor, int top, int left, int bottom,
