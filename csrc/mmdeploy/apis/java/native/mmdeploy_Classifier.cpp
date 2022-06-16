@@ -2,9 +2,9 @@
 
 #include <numeric>
 
-#include "apis/c/classifier.h"
-#include "apis/java/native/common.h"
-#include "core/logger.h"
+#include "mmdeploy/apis/c/classifier.h"
+#include "mmdeploy/apis/java/native/common.h"
+#include "mmdeploy/core/logger.h"
 
 jlong Java_mmdeploy_Classifier_create(JNIEnv *env, jobject, jstring modelPath, jstring deviceName,
                                       jint device_id) {

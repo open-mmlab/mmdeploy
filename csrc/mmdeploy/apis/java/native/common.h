@@ -6,9 +6,9 @@
 
 #include <vector>
 
-#include "apis/c/common.h"
-#include "core/logger.h"
-#include "core/utils/formatter.h"
+#include "mmdeploy/apis/c/common.h"
+#include "mmdeploy/core/logger.h"
+#include "mmdeploy/core/utils/formatter.h"
 
 template <typename F>
 static auto With(JNIEnv *env, jobjectArray imgs, F f) noexcept {
