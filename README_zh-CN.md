@@ -41,7 +41,6 @@ MMDeploy 是一个开源深度学习模型部署工具箱，它是 [OpenMMLab](h
 - **全面支持 OpenMMLab 模型的部署**
 
   我们为 OpenMMLab 各算法库提供了统一的模型部署工具箱。已支持的算法库如下所示，未来将支持更多的算法库
-
   - [x] MMClassification
   - [x] MMDetection
   - [x] MMSegmentation
@@ -52,7 +51,6 @@ MMDeploy 是一个开源深度学习模型部署工具箱，它是 [OpenMMLab](h
 - **支持多种推理后端**
 
   模型可以导出为多种推理引擎文件，并在对应的后端上进行推理。 如下后端已经支持，后续将支持更多的后端。
-
   - [x] ONNX Runtime
   - [x] TensorRT
   - [x] PPLNN

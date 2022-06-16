@@ -210,7 +210,6 @@ export SPDLOG_LEVEL=warn
 ### 新模型的支持？
 
 如果您希望使用的模型尚未被 MMDeploy 所支持，您可以尝试自己添加对应的支持。我们准备了如下的文档：
-
 - 请阅读[如何支持新模型](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_support_new_models.html)了解我们的模型重写机制。
 
 最后，欢迎大家踊跃提PR。

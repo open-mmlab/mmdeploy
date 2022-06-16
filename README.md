@@ -37,12 +37,12 @@ a part of the [OpenMMLab](https://openmmlab.com/) project.
   <img src="resources/introduction.png" width="800"/>
 </div>
 
+
 ### Major features
 
 - **Fully support OpenMMLab models**
 
   We provide a unified model deployment toolbox for the codebases in OpenMMLab. The supported codebases are listed as below, and more will be added in the future
-
   - [x] MMClassification
   - [x] MMDetection
   - [x] MMSegmentation
@@ -53,7 +53,6 @@ a part of the [OpenMMLab](https://openmmlab.com/) project.
 - **Multiple inference backends are available**
 
   Models can be exported and run in different backends. The following ones are supported, and more will be taken into consideration
-
   - [x] ONNX Runtime
   - [x] TensorRT
   - [x] PPLNN
@@ -62,7 +61,7 @@ a part of the [OpenMMLab](https://openmmlab.com/) project.
 
 - **Efficient and highly scalable SDK Framework by C/C++**
 
-  All kinds of modules in SDK can be extensible, such as `Transform` for image processing, `Net` for Neural Network inference, `Module` for postprocessing and so on
+    All kinds of modules in SDK can be extensible, such as `Transform` for image processing, `Net` for Neural Network inference, `Module` for postprocessing and so on
 
 ## License
 
@@ -94,7 +93,6 @@ We appreciate all contributions to improve MMDeploy. Please refer to [CONTRIBUTI
 ## Acknowledgement
 
 We would like to sincerely thank the following teams for their contributions to [MMDeploy](https://github.com/open-mmlab/mmdeploy):
-
 - [OpenPPL](https://github.com/openppl-public)
 - [OpenVINO](https://github.com/openvinotoolkit/openvino)
 

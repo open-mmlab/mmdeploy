@@ -4,6 +4,7 @@ about: Suggest an idea for this project
 title: ''
 labels: ''
 assignees: ''
+
 ---
 
 **Describe the feature**
@@ -11,7 +12,7 @@ assignees: ''
 **Motivation**
 
 A clear and concise description of the motivation of the feature.
-Ex1. It is inconvenient when \[....\].
+Ex1. It is inconvenient when [....].
 
 **Related resources**
 
