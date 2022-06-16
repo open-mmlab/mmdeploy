@@ -4,6 +4,12 @@
 点击页面左下角切换中英文。
 
 .. toctree::
+   :maxdepth: 2
+   :caption: 快速上手
+
+   get_started.md
+
+.. toctree::
    :maxdepth: 1
    :caption: 编译
 
@@ -39,9 +45,11 @@
    :maxdepth: 1
    :caption: 新人解说
 
-   get_started.md
    05-tutorial/01_introduction_to_model_deployment.md
    05-tutorial/02_challenges.md
+   05-tutorial/03_pytorch2onnx.md
+   05-tutorial/04_onnx_custom_op.md
+   05-tutorial/05_onnx_model_editing.md
 
 .. toctree::
    :maxdepth: 1

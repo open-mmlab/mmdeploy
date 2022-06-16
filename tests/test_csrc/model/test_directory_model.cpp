@@ -3,8 +3,8 @@
 // clang-format off
 #include "catch.hpp"
 // clang-format on
-#include "core/model.h"
-#include "core/model_impl.h"
+#include "mmdeploy/core/model.h"
+#include "mmdeploy/core/model_impl.h"
 #include "test_resource.h"
 
 using namespace mmdeploy;

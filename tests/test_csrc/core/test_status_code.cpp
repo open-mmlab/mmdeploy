@@ -3,8 +3,8 @@
 #include <sstream>
 
 #include "catch.hpp"
-#include "core/logger.h"
-#include "core/status_code.h"
+#include "mmdeploy/core/logger.h"
+#include "mmdeploy/core/status_code.h"
 
 namespace mmdeploy {
 
