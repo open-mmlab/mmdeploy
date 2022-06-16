@@ -1,13 +1,15 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "preprocess/transform/default_format_bundle.h"
+#include "mmdeploy/preprocess/transform/default_format_bundle.h"
 
 namespace mmdeploy {
 namespace elena {
 
 class DefaultFormatBundleImpl : public ::mmdeploy::DefaultFormatBundleImpl {
  public:
-  explicit DefaultFormatBundleImpl(const Value& args) : ::mmdeploy::DefaultFormatBundleImpl(args) {}
+  explicit DefaultFormatBundleImpl(const Value& args) : ::mmdeploy::DefaultFormatBundleImpl(args) {
+    fuse_transform_ = true;
+  }
 
  protected:
   Result<Tensor> ToFloat32(const Tensor& tensor, const bool& img_to_float) override {

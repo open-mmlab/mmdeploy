@@ -3,6 +3,7 @@
 #include "pad.h"
 
 #include "mmdeploy/archive/json_archive.h"
+#include "utils.h"
 
 using namespace std;
 
@@ -82,6 +83,31 @@ Result<Value> PadImpl::Process(const Value& input) {
 
     for (auto& v : output_tensor.shape()) {
       output["pad_shape"].push_back(v);
+    }
+
+    // trace static info & runtime args
+    if (fuse_transform_ == true) {
+      Value trans_info;
+      bool img_shape_fixed = output.value("img_shape_fixed", false);
+      if (img_shape_fixed) {
+        trans_info["static"].push_back(
+            {{"type", "Pad"},
+             {"dynamic", false},
+             {"pad_val", arg_.pad_val},
+             {"tlbr", {padding[1], padding[0], padding[3], padding[2]}},
+             {"size_hw", {output["pad_shape"][1], output["pad_shape"][2]}}});
+        trans_info["runtime_args"].push_back({DataTypeToString(output_tensor.data_type())});
+      } else {
+        trans_info["static"].push_back(
+            {{"type", "Pad"}, {"dynamic", true}, {"pad_val", arg_.pad_val}});
+        trans_info["runtime_args"].push_back(
+            {{"tlbr", {padding[1], padding[0], padding[3], padding[2]}},
+             {"size_hw", {output["pad_shape"][1], output["pad_shape"][2]}},
+             {"src_data_type", DataTypeToString(output_tensor.data_type())}});
+      }
+
+      AddTransInfo(trans_info, output);
+      assert(CheckTraceInfoLengthEqual(output) == true);
     }
 
     SetTransformData(output, key, std::move(output_tensor));
