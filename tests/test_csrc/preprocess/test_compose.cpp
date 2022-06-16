@@ -6,11 +6,11 @@
 #include "catch.hpp"
 // clang-format on
 
-#include "archive/json_archive.h"
-#include "core/mat.h"
-#include "core/registry.h"
-#include "core/utils/formatter.h"
 #include "json.hpp"
+#include "mmdeploy/archive/json_archive.h"
+#include "mmdeploy/core/mat.h"
+#include "mmdeploy/core/registry.h"
+#include "mmdeploy/core/utils/formatter.h"
 #include "opencv_utils.h"
 #include "test_resource.h"
 #include "test_utils.h"

@@ -6,8 +6,12 @@ import sys
 import traceback
 from typing import Callable, Optional, Union
 
-import torch.multiprocessing as mp
-from mmcv.utils import get_logger
+try:
+    from torch import multiprocessing as mp
+except ImportError:
+    import multiprocess as mp
+
+from mmdeploy.utils.logging import get_logger
 
 
 def target_wrapper(target: Callable,
@@ -27,8 +31,7 @@ def target_wrapper(target: Callable,
     """
     logger = logging.getLogger()
     logging.basicConfig(
-        format='%(asctime)s,%(name)s %(levelname)-8s'
-        ' [%(filename)s:%(lineno)d] %(message)s',
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
         datefmt='%Y-%m-%d:%H:%M:%S')
     logger.level
     logger.setLevel(log_level)
@@ -112,7 +115,7 @@ def get_file_path(prefix, candidates) -> str:
 
     Args:
         prefix (str): Prefix of the paths.
-        cancidates (str): Candidate paths
+        candidates (str): Candidate paths
     Returns:
         str: file path or '' if not found
     """

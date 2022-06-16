@@ -3,6 +3,7 @@ import importlib
 import os.path as osp
 
 from .init_plugins import get_onnx2ncnn_path, get_ops_path
+from .onnx2ncnn import from_onnx
 
 
 def is_available():
@@ -19,7 +20,7 @@ def is_available():
     return has_pyncnn and osp.exists(onnx2ncnn)
 
 
-def is_plugin_available():
+def is_custom_ops_available():
     """Check whether ncnn extension and custom ops are installed.
 
     Returns:
@@ -31,7 +32,12 @@ def is_plugin_available():
     return has_pyncnn_ext and osp.exists(ncnn_ops_path)
 
 
-if is_available():
-    from .wrapper import NCNNWrapper
+__all__ = ['from_onnx']
 
-    __all__ = ['NCNNWrapper']
+if is_available():
+    try:
+        from .wrapper import NCNNWrapper
+
+        __all__ += ['NCNNWrapper']
+    except Exception:
+        pass

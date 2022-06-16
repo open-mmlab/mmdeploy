@@ -1,6 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import copy
 import os
 from tempfile import NamedTemporaryFile, TemporaryDirectory
+from typing import Any
 
 import mmcv
 import numpy as np
@@ -37,9 +39,33 @@ img_shape = (32, 32)
 img = np.random.rand(*img_shape, 3)
 
 
-def test_init_pytorch_model():
+@pytest.mark.parametrize('from_mmrazor', [True, False, '123', 0])
+def test_init_pytorch_model(from_mmrazor: Any):
     from mmseg.models.segmentors.base import BaseSegmentor
-    model = task_processor.init_pytorch_model(None)
+    if from_mmrazor is False:
+        _task_processor = task_processor
+    else:
+        _model_cfg_path = 'tests/test_codebase/test_mmseg/data/' \
+            'mmrazor_model.py'
+        _model_cfg = load_config(_model_cfg_path)[0]
+        _model_cfg.algorithm.architecture.model.type = 'mmseg.EncoderDecoder'
+        _model_cfg.algorithm.distiller.teacher.type = 'mmseg.EncoderDecoder'
+        _deploy_cfg = copy.deepcopy(deploy_cfg)
+        _deploy_cfg.codebase_config['from_mmrazor'] = from_mmrazor
+        _task_processor = build_task_processor(_model_cfg, _deploy_cfg, 'cpu')
+
+    if not isinstance(from_mmrazor, bool):
+        with pytest.raises(
+                TypeError,
+                match='`from_mmrazor` attribute must be '
+                'boolean type! '
+                f'but got: {from_mmrazor}'):
+            _ = _task_processor.from_mmrazor
+        return
+    assert from_mmrazor == _task_processor.from_mmrazor
+    if from_mmrazor:
+        pytest.importorskip('mmrazor', reason='mmrazor is not installed.')
+    model = _task_processor.init_pytorch_model(None)
     assert isinstance(model, BaseSegmentor)
 
 

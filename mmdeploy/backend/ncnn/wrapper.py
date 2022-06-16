@@ -13,7 +13,7 @@ from ..base import BACKEND_WRAPPER, BaseWrapper
 
 @BACKEND_WRAPPER.register_module(Backend.NCNN.value)
 class NCNNWrapper(BaseWrapper):
-    """NCNN wrapper class for inference.
+    """ncnn wrapper class for inference.
 
     Args:
         param_file (str): Path of a parameter file.
@@ -38,12 +38,14 @@ class NCNNWrapper(BaseWrapper):
                  param_file: str,
                  bin_file: str,
                  output_names: Optional[Sequence[str]] = None,
+                 use_vulkan: bool = False,
                  **kwargs):
 
         net = ncnn.Net()
         if importlib.util.find_spec('mmdeploy.backend.ncnn.ncnn_ext'):
             from mmdeploy.backend.ncnn import ncnn_ext
             ncnn_ext.register_mmdeploy_custom_layers(net)
+        net.opt.use_vulkan_compute = use_vulkan
         net.load_param(param_file)
         net.load_model(bin_file)
 
@@ -85,7 +87,7 @@ class NCNNWrapper(BaseWrapper):
             assert input_tensor.size(
                 0) == batch_size, 'All tensors should have same batch size'
             assert input_tensor.device.type == 'cpu', \
-                'NCNN only supports cpu device'
+                'ncnn only supports cpu device'
         # set output names
         output_names = self._output_names
         # create output dict
@@ -126,15 +128,15 @@ class NCNNWrapper(BaseWrapper):
     @TimeCounter.count_time()
     def __ncnn_execute(self, extractor: ncnn.Extractor,
                        output_names: Sequence[str]) -> Dict[str, ncnn.Mat]:
-        """Run inference with NCNN.
+        """Run inference with ncnn.
 
         Args:
-            extractor (ncnn.Extractor): NCNN extractor to extract output.
+            extractor (ncnn.Extractor): ncnn extractor to extract output.
             output_names (Iterable[str]): A list of string specifying
                 output names.
 
         Returns:
-            dict[str, ncnn.Mat]: Inference results of NCNN model.
+            dict[str, ncnn.Mat]: Inference results of ncnn model.
         """
         result = {}
         for name in output_names:

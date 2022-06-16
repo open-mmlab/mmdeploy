@@ -3,9 +3,9 @@
 #ifndef MMDEPLOY_TEST_TRANSFORM_UTILS_H
 #define MMDEPLOY_TEST_TRANSFORM_UTILS_H
 
-#include "core/tensor.h"
-#include "core/value.h"
-#include "preprocess/transform/transform.h"
+#include "mmdeploy/core/tensor.h"
+#include "mmdeploy/core/value.h"
+#include "mmdeploy/preprocess/transform/transform.h"
 
 namespace mmdeploy::test {
 std::unique_ptr<Transform> CreateTransform(const Value& cfg, Device device, Stream stream);

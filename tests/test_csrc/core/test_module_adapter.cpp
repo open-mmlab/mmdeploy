@@ -4,8 +4,8 @@
 #include "catch.hpp"
 // clang-format on
 
-#include "core/utils/formatter.h"
-#include "experimental/module_adapter.h"
+#include "mmdeploy/core/utils/formatter.h"
+#include "mmdeploy/experimental/module_adapter.h"
 
 namespace test_module_adapter {
 

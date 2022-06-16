@@ -1,8 +1,8 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
 #include "catch.hpp"
-#include "core/tensor.h"
-#include "preprocess/transform/transform.h"
+#include "mmdeploy/core/tensor.h"
+#include "mmdeploy/preprocess/transform/transform.h"
 
 using namespace mmdeploy;
 using namespace std;

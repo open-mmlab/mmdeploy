@@ -5,6 +5,7 @@ __pycache__/
 
 # C extensions
 *.so
+onnx2ncnn
 
 # Distribution / packaging
 .Python
@@ -91,6 +92,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+venv*
 
 # Spyder project settings
 .spyderproject
@@ -127,6 +129,11 @@ work_dirs/
 /cmake-build-debug*
 /cmake-build-release*
 
+# c#
+.vs/
+obj/
+bin/
+
 # install directory
 /install
 
@@ -136,3 +143,8 @@ work_dirs/
 #
 !docs/zh_cn/build
 !docs/en/build
+
+# ncnn
+mmdeploy/backend/ncnn/onnx2ncnn
+
+/mmdeploy-*

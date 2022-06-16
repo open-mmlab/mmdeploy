@@ -5,7 +5,8 @@ from typing import Optional, Sequence, Union
 import mmcv
 import torch
 
-from mmdeploy.utils import SDK_TASK_MAP, Backend, get_ir_config, get_task_type
+from mmdeploy.utils import (SDK_TASK_MAP, Backend, get_backend_config,
+                            get_ir_config, get_task_type)
 
 
 class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
@@ -73,10 +74,19 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
                 output_names=output_names)
         elif backend == Backend.NCNN:
             from mmdeploy.backend.ncnn import NCNNWrapper
+
+            # For unittest deploy_config will not pass into _build_wrapper
+            # function.
+            if deploy_cfg:
+                backend_config = get_backend_config(deploy_cfg)
+                use_vulkan = backend_config.get('use_vulkan', False)
+            else:
+                use_vulkan = False
             return NCNNWrapper(
                 param_file=backend_files[0],
                 bin_file=backend_files[1],
-                output_names=output_names)
+                output_names=output_names,
+                use_vulkan=use_vulkan)
         elif backend == Backend.OPENVINO:
             from mmdeploy.backend.openvino import OpenVINOWrapper
             return OpenVINOWrapper(

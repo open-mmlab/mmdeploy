@@ -5,7 +5,7 @@
 #include <thread>
 
 #include "catch.hpp"
-#include "core/device.h"
+#include "mmdeploy/core/device.h"
 
 using namespace mmdeploy;
 using namespace std::string_literals;

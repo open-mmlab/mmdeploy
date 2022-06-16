@@ -4,9 +4,9 @@
 #include "catch.hpp"
 // clang-format on
 
-#include "apis/c/detector.h"
-#include "core/logger.h"
-#include "core/utils/formatter.h"
+#include "mmdeploy/apis/c/detector.h"
+#include "mmdeploy/core/logger.h"
+#include "mmdeploy/core/utils/formatter.h"
 #include "opencv2/opencv.hpp"
 #include "test_resource.h"
 using namespace std;
@@ -64,3 +64,32 @@ TEST_CASE("test detector's c api", "[detector]") {
     }
   }
 }
+
+#if 0
+TEST_CASE("test detector's c api", "[detector]") {
+  mm_model_t model{};
+  // pretend the model is loaded
+  mm_handle_t handle{};
+  mmdeploy_async_detector_create(model, "cuda", 0, &handle);
+
+  std::vector<mm_mat_t> imgs;
+  std::vector<mmdeploy_sender_t> sndrs;
+  for (const auto &img : imgs) {
+    mmdeploy_value_t value = mmdeploy_async_detector_create_input(&img, 1);
+    mmdeploy_sender_t input = mmdeploy_executor_just(value);
+    mmdeploy_sender_t detect = mmdeploy_async_detector_apply(handle, input);
+    mmdeploy_sender_t started = mmdeploy_executor_ensure_started(detect);
+    sndrs.push_back(started);
+  }
+
+  for (int i = 0; i < imgs.size(); ++i) {
+    mmdeploy_value_t output = mmdeploy_executor_sync_wait(sndrs[i]);
+    mm_detect_t *dets{};
+    int *count{};
+    mmdeploy_async_detector_get_result(output, &dets, &count);
+    mmdeploy_detector_release_result(dets, count, 1);
+  }
+
+  mmdeploy_async_detector_destroy(handle);
+}
+#endif

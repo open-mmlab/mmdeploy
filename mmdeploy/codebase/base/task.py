@@ -7,7 +7,8 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader, Dataset
 
-from mmdeploy.utils import get_backend_config, get_codebase, get_root_logger
+from mmdeploy.utils import (get_backend_config, get_codebase,
+                            get_codebase_config, get_root_logger)
 from mmdeploy.utils.dataset import is_can_sort_dataset, sort_dataset
 
 
@@ -284,3 +285,21 @@ class BaseTask(metaclass=ABCMeta):
             str: the name of the model.
         """
         pass
+
+    @property
+    def from_mmrazor(self) -> bool:
+        """Whether the codebase from mmrazor.
+
+        Returns:
+            bool: From mmrazor or not.
+
+        Raises:
+            TypeError: An error when type of `from_mmrazor` is not boolean.
+        """
+        codebase_config = get_codebase_config(self.deploy_cfg)
+        from_mmrazor = codebase_config.get('from_mmrazor', False)
+        if not isinstance(from_mmrazor, bool):
+            raise TypeError('`from_mmrazor` attribute must be boolean type! '
+                            f'but got: {from_mmrazor}')
+
+        return from_mmrazor

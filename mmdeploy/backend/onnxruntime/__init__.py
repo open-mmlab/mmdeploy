@@ -15,7 +15,7 @@ def is_available():
     return importlib.util.find_spec('onnxruntime') is not None
 
 
-def is_plugin_available():
+def is_custom_ops_available():
     """Check whether ONNX Runtime custom ops are installed.
 
     Returns:
@@ -26,5 +26,9 @@ def is_plugin_available():
 
 
 if is_available():
-    from .wrapper import ORTWrapper
-    __all__ = ['ORTWrapper']
+    try:
+        # import wrapper if pytorch is available
+        from .wrapper import ORTWrapper
+        __all__ = ['ORTWrapper']
+    except Exception:
+        pass
