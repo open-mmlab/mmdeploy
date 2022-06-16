@@ -1,6 +1,7 @@
 # 如何进行回归测试
 
 <!-- -->
+
 这篇教程介绍了如何进行回归测试。部署配置文件由`每个codebase的回归配置文件`，`推理框架配置信息`组成。
 
 <!-- TOC -->
@@ -25,18 +26,22 @@
 
 <!-- TOC -->
 
-
 ## 1. 环境搭建
 
 ### MMDeploy的安装及配置
+
 本章节的内容，需要提前根据[build 文档](../01-how-to-build/build_from_source.md)将 MMDeploy 安装配置好之后，才能进行。
 
 ### Python环境依赖
+
 需要安装 test 的环境
+
 ```shell
 pip install -r requirements/tests.txt
 ```
+
 如果在使用过程是 numpy 报错，则更新一下 numpy
+
 ```shell
 pip install -U numpy
 ```
@@ -67,7 +72,9 @@ python ./tools/regression_test.py \
 - `-p` 或 `--performance` : 是否测试精度，加上则测试转换+精度，不加上则只测试转换
 
 ### 注意事项
+
 对于 Windows 用户：
+
 1. 要在 shell 命令中使用 `&&` 连接符，需要下载并使用 `PowerShell 7 Preview 5+`。
 2. 如果您使用 conda env，可能需要在 regression_test.py 中将 `python3` 更改为 `python`，因为 `%USERPROFILE%\AppData\Local\Microsoft\WindowsApps` 目录中有 `python3.exe`。
 
@@ -224,26 +231,26 @@ models:
 
 ### 模板
 
-|| Model | Model Config | Task       | Checkpoint | Dataset  | Backend | Deploy Config | Static or Dynamic | Precision Type | Conversion Result |  metric_1 | metric_2 | metric_n | Test Pass |
-|------------|--------------|-----------------|-----------------------|----------|--------------|---------------|-------------------|----------------|-------------------|---|----------|----------|-----------|-----------|
-| 序号         | 模型名称         | model config 路径 | 执行的 task name      | `.pth`模型路径 | 数据集名称        | 后端名称    |  deploy cfg 路径    | 动态 or 静态          | 测试精度           | 模型转换结果       |  指标 1 数值 | 指标 2 数值        | 指标 n 数值         |  后端测试结果  |
+|      | Model    | Model Config      | Task             | Checkpoint     | Dataset    | Backend  | Deploy Config   | Static or Dynamic | Precision Type | Conversion Result | metric_1    | metric_2    | metric_n    | Test Pass    |
+| ---- | -------- | ----------------- | ---------------- | -------------- | ---------- | -------- | --------------- | ----------------- | -------------- | ----------------- | ----------- | ----------- | ----------- | ------------ |
+| 序号 | 模型名称 | model config 路径 | 执行的 task name | `.pth`模型路径 | 数据集名称 | 后端名称 | deploy cfg 路径 | 动态 or 静态      | 测试精度       | 模型转换结果      | 指标 1 数值 | 指标 2 数值 | 指标 n 数值 | 后端测试结果 |
 
 ### 示例
 
 这是 MMOCR 生成的报告
 
-|     | Model | Model Config | Task       | Checkpoint | Dataset  | Backend | Deploy Config | Static or Dynamic | Precision Type | Conversion Result |  hmean-iou | word_acc | Test Pass |
-|-----| ---------- | ------------------------------------------------------------ | ---------------- | ------------------------------------------------------------ | --------- | --------------- | ------------------------------------------------------------ | ----------------- | -------------- | ----------------- |------------| ---------- | --------- |
-| 0   | crnn | ../mmocr/configs/textrecog/crnn/crnn_academic_dataset.py     | Text Recognition | ../mmdeploy_checkpoints/mmocr/crnn/crnn_academic-a723a1c5.pth | IIIT5K    | Pytorch| -| -  | -     | -  |  -         | 80.5      | -|
-| 1   | crnn | ../mmocr/configs/textrecog/crnn/crnn_academic_dataset.py     | Text Recognition | ${WORK_DIR}/mmocr/crnn/onnxruntime/static/crnn_academic-a723a1c5/end2end.onnx | x| onnxruntime     | configs/mmocr/text-recognition/text-recognition_onnxruntime_dynamic.py | static   | fp32  | True     |  -         | 80.67     | True|
-| 2   | crnn | ../mmocr/configs/textrecog/crnn/crnn_academic_dataset.py     | Text Recognition | ${WORK_DIR}/mmocr/crnn/onnxruntime/static/crnn_academic-a723a1c5 | x| SDK-onnxruntime | configs/mmocr/text-recognition/text-recognition_sdk_dynamic.py | static   | fp32  | True     |  -         | x         | False     |
-| 3   | dbnet| ../mmocr/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py | Text Detection   | ../mmdeploy_checkpoints/mmocr/dbnet/dbnet_r18_fpnc_sbn_1200e_icdar2015_20210329-ba3ab597.pth | ICDAR2015 | Pytorch| -| -  | -     | -  |  0.795     | -         | -|
-| 4   | dbnet| ../mmocr/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py | Text Detection   | ../mmdeploy_checkpoints/mmocr/dbnet/dbnet_r18_fpnc_sbn_1200e_icdar2015_20210329-ba3ab597.pth | ICDAR     | onnxruntime     | configs/mmocr/text-detection/text-detection_onnxruntime_dynamic.py | dynamic  | fp32  | True     |  -         | -         | True|
-| 5   | dbnet| ../mmocr/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py | Text Detection   | ${WORK_DIR}/mmocr/dbnet/tensorrt/dynamic/dbnet_r18_fpnc_sbn_1200e_icdar2015_20210329-ba3ab597/end2end.engine | ICDAR     | tensorrt  | configs/mmocr/text-detection/text-detection_tensorrt-fp16_dynamic-320x320-2240x2240.py | dynamic  | fp16  | True     |  0.793302  | -  | True|
-| 6   | dbnet| ../mmocr/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py | Text Detection   | ${WORK_DIR}/mmocr/dbnet/tensorrt/dynamic/dbnet_r18_fpnc_sbn_1200e_icdar2015_20210329-ba3ab597 | ICDAR     | SDK-tensorrt    | configs/mmocr/text-detection/text-detection_sdk_dynamic.py   | dynamic  | fp16  | True     |  0.795073  | -         | True|
-
+|     | Model | Model Config                                                     | Task             | Checkpoint                                                                                                   | Dataset   | Backend         | Deploy Config                                                                          | Static or Dynamic | Precision Type | Conversion Result | hmean-iou | word_acc | Test Pass |
+| --- | ----- | ---------------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------ | --------- | --------------- | -------------------------------------------------------------------------------------- | ----------------- | -------------- | ----------------- | --------- | -------- | --------- |
+| 0   | crnn  | ../mmocr/configs/textrecog/crnn/crnn_academic_dataset.py         | Text Recognition | ../mmdeploy_checkpoints/mmocr/crnn/crnn_academic-a723a1c5.pth                                                | IIIT5K    | Pytorch         | -                                                                                      | -                 | -              | -                 | -         | 80.5     | -         |
+| 1   | crnn  | ../mmocr/configs/textrecog/crnn/crnn_academic_dataset.py         | Text Recognition | ${WORK_DIR}/mmocr/crnn/onnxruntime/static/crnn_academic-a723a1c5/end2end.onnx                                | x         | onnxruntime     | configs/mmocr/text-recognition/text-recognition_onnxruntime_dynamic.py                 | static            | fp32           | True              | -         | 80.67    | True      |
+| 2   | crnn  | ../mmocr/configs/textrecog/crnn/crnn_academic_dataset.py         | Text Recognition | ${WORK_DIR}/mmocr/crnn/onnxruntime/static/crnn_academic-a723a1c5                                             | x         | SDK-onnxruntime | configs/mmocr/text-recognition/text-recognition_sdk_dynamic.py                         | static            | fp32           | True              | -         | x        | False     |
+| 3   | dbnet | ../mmocr/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py | Text Detection   | ../mmdeploy_checkpoints/mmocr/dbnet/dbnet_r18_fpnc_sbn_1200e_icdar2015_20210329-ba3ab597.pth                 | ICDAR2015 | Pytorch         | -                                                                                      | -                 | -              | -                 | 0.795     | -        | -         |
+| 4   | dbnet | ../mmocr/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py | Text Detection   | ../mmdeploy_checkpoints/mmocr/dbnet/dbnet_r18_fpnc_sbn_1200e_icdar2015_20210329-ba3ab597.pth                 | ICDAR     | onnxruntime     | configs/mmocr/text-detection/text-detection_onnxruntime_dynamic.py                     | dynamic           | fp32           | True              | -         | -        | True      |
+| 5   | dbnet | ../mmocr/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py | Text Detection   | ${WORK_DIR}/mmocr/dbnet/tensorrt/dynamic/dbnet_r18_fpnc_sbn_1200e_icdar2015_20210329-ba3ab597/end2end.engine | ICDAR     | tensorrt        | configs/mmocr/text-detection/text-detection_tensorrt-fp16_dynamic-320x320-2240x2240.py | dynamic           | fp16           | True              | 0.793302  | -        | True      |
+| 6   | dbnet | ../mmocr/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py | Text Detection   | ${WORK_DIR}/mmocr/dbnet/tensorrt/dynamic/dbnet_r18_fpnc_sbn_1200e_icdar2015_20210329-ba3ab597                | ICDAR     | SDK-tensorrt    | configs/mmocr/text-detection/text-detection_sdk_dynamic.py                             | dynamic           | fp16           | True              | 0.795073  | -        | True      |
 
 ## 5. 支持的后端
+
 - [x] ONNX Runtime
 - [x] TensorRT
 - [x] PPLNN
@@ -254,20 +261,19 @@ models:
 
 ## 6. 支持的Codebase及其Metric
 
-| Codebase | Metric | Support           |
-|----------| ---------- |-------------------|
-| mmdet    | bbox | :heavy_check_mark: |
-|     | segm | :heavy_check_mark: |
-|     | PQ | :x:                |
-|  mmcls   | accuracy | :heavy_check_mark: |
-|  mmseg   | mIoU | :heavy_check_mark: |
-|  mmpose   | AR | :heavy_check_mark: |
-|     | AP | :heavy_check_mark: |
-|   mmocr  | hmean | :heavy_check_mark: |
-|     | acc | :heavy_check_mark: |
-|   mmedit  | PSNR | :heavy_check_mark: |
-|     | SSIM | :heavy_check_mark: |
-
+| Codebase | Metric   | Support            |
+| -------- | -------- | ------------------ |
+| mmdet    | bbox     | :heavy_check_mark: |
+|          | segm     | :heavy_check_mark: |
+|          | PQ       | :x:                |
+| mmcls    | accuracy | :heavy_check_mark: |
+| mmseg    | mIoU     | :heavy_check_mark: |
+| mmpose   | AR       | :heavy_check_mark: |
+|          | AP       | :heavy_check_mark: |
+| mmocr    | hmean    | :heavy_check_mark: |
+|          | acc      | :heavy_check_mark: |
+| mmedit   | PSNR     | :heavy_check_mark: |
+|          | SSIM     | :heavy_check_mark: |
 
 ## 7. 注意事项
 

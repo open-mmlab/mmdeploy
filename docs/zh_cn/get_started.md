@@ -32,11 +32,12 @@ MMDeploy 定义的模型部署流程，如下图所示：
 **第一步**：从[官网](https://docs.conda.io/en/latest/miniconda.html)下载并安装 Miniconda
 
 **第二步**：创建并激活 conda 环境
-  ```shell
-  export PYTHON_VERSION=3.7
-  conda create --name mmdeploy python=${PYTHON_VERSION} -y
-  conda activate mmdeploy
-  ```
+
+```shell
+export PYTHON_VERSION=3.7
+conda create --name mmdeploy python=${PYTHON_VERSION} -y
+conda activate mmdeploy
+```
 
 **第三步**: 参考[官方文档](https://pytorch.org/get-started/locally/)并安装 PyTorch
 
@@ -44,17 +45,17 @@ Model Converter 的 torch2onnx 功能依赖它。
 
 在 GPU 环境下（这里我们以 Ubuntu 18.04 CUDA 11.1 为基础），您可以使用如下方式安装 PyTorch 1.8：
 
-  ```shell
-  export PYTHON_VERSION=3.7
-  export PYTORCH_VERSION=1.8.0
-  export TORCHVISION_VERSION=0.9.0
-  export CUDA_VERSION=11.1
+```shell
+export PYTHON_VERSION=3.7
+export PYTORCH_VERSION=1.8.0
+export TORCHVISION_VERSION=0.9.0
+export CUDA_VERSION=11.1
 
-  conda create -n mmdeploy python=${PYTHON_VERSION} -y
-  conda activate mmdeploy
+conda create -n mmdeploy python=${PYTHON_VERSION} -y
+conda activate mmdeploy
 
-  conda install pytorch==${PYTORCH_VERSION} torchvision==${TORCHVISION_VERSION} cudatoolkit=${CUDA_VERSION} -c pytorch -c conda-forge
-  ```
+conda install pytorch==${PYTORCH_VERSION} torchvision==${TORCHVISION_VERSION} cudatoolkit=${CUDA_VERSION} -c pytorch -c conda-forge
+```
 
 在 CPU 环境下，您可以执行：
 
@@ -66,15 +67,14 @@ conda install pytorch==${PYTORCH_VERSION} torchvision==${TORCHVISION_VERSION} cp
 
 ## 安装 MMDeploy
 
-
 **第一步**: 安装 mmcv-full
 
-  ```shell
-  export MMCV_VERSION=1.5.0
-  export CUDA_STRING="${CUDA_VERSION/./""}"
+```shell
+export MMCV_VERSION=1.5.0
+export CUDA_STRING="${CUDA_VERSION/./""}"
 
-  python -m pip install mmcv-full==${MMCV_VERSION} -f https://download.openmmlab.com/mmcv/dist/cu${CUDA_STRING}/torch${PYTORCH_VERSION}/index.html
-  ```
+python -m pip install mmcv-full==${MMCV_VERSION} -f https://download.openmmlab.com/mmcv/dist/cu${CUDA_STRING}/torch${PYTORCH_VERSION}/index.html
+```
 
 **第二步**: 安装 MMDeploy
 
@@ -82,24 +82,24 @@ conda install pytorch==${PYTORCH_VERSION} torchvision==${TORCHVISION_VERSION} cp
 
 在 NVIDIA 设备上，我们推荐使用 MMDeploy-TensoRT 预编译包：
 
-  ```shell
-  export MMDEPLOY_VERSION=0.5.0
-  export TENSORRT_VERSION=8.2.3.0
-  export PYTHON_VERSION=3.7
-  export PYTHON_STRING="${PYTHON_VERSION/./""}"
+```shell
+export MMDEPLOY_VERSION=0.5.0
+export TENSORRT_VERSION=8.2.3.0
+export PYTHON_VERSION=3.7
+export PYTHON_STRING="${PYTHON_VERSION/./""}"
 
-  wget https://github.com/open-mmlab/mmdeploy/releases/download/v${MMDEPLOY_VERSION}/mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-cuda${CUDA_VERSION}-tensorrt${TENSORRT_VERSION}.tar.gz
-  tar -zxvf mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-cuda${CUDA_VERSION}-tensorrt${TENSORRT_VERSION}.tar.gz
-  cd mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-cuda${CUDA_VERSION}-tensorrt${TENSORRT_VERSION}
-  python -m pip install dist/mmdeploy-*-py${PYTHON_STRING}*.whl
-  python -m pip install sdk/python/mmdeploy_python-*-cp${PYTHON_STRING}*.whl
-  export LD_LIBRARY_PATH=$(pwd)/sdk/lib:$LD_LIBRARY_PATH
-  cd ..
-  ```
+wget https://github.com/open-mmlab/mmdeploy/releases/download/v${MMDEPLOY_VERSION}/mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-cuda${CUDA_VERSION}-tensorrt${TENSORRT_VERSION}.tar.gz
+tar -zxvf mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-cuda${CUDA_VERSION}-tensorrt${TENSORRT_VERSION}.tar.gz
+cd mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-cuda${CUDA_VERSION}-tensorrt${TENSORRT_VERSION}
+python -m pip install dist/mmdeploy-*-py${PYTHON_STRING}*.whl
+python -m pip install sdk/python/mmdeploy_python-*-cp${PYTHON_STRING}*.whl
+export LD_LIBRARY_PATH=$(pwd)/sdk/lib:$LD_LIBRARY_PATH
+cd ..
+```
 
-  ```{note}
-  如果 MMDeploy 没有您所需要的目标软硬件平台的预编译包，请参考源码安装文档，正确安装和配置
-  ```
+```{note}
+如果 MMDeploy 没有您所需要的目标软硬件平台的预编译包，请参考源码安装文档，正确安装和配置
+```
 
 **第三步**： 安装预编译包要求的推理后端
 
@@ -107,23 +107,23 @@ conda install pytorch==${PYTORCH_VERSION} torchvision==${TORCHVISION_VERSION} cp
 
 下载完毕后，您可以参考如下方法安装。这里，我们以 TensorRT 8.2.3.0、cuDNN 8.2 为例：
 
-  ```shell
-  export TENSORRT_VERSION=8.2.3.0
-  CUDA_MAJOR="${CUDA_VERSION/\.*/""}"
+```shell
+export TENSORRT_VERSION=8.2.3.0
+CUDA_MAJOR="${CUDA_VERSION/\.*/""}"
 
-  # !!! 从 NVIDIA 官网下载 与 cuda toolkit 匹配的 tensorrt 到当前的工作目录
-  tar -zxvf TensorRT-${TENSORRT_VERSION}*cuda-${CUDA_MAJOR}*.tar.gz
-  python -m pip install TensorRT-${TENSORRT_VERSION}/python/tensorrt-*-cp${PYTHON_STRING}*.whl
-  python -m pip install pycuda
-  export TENSORRT_DIR=$(pwd)/TensorRT-${TENSORRT_VERSION}
-  export LD_LIBRARY_PATH=${TENSORRT_DIR}/lib:$LD_LIBRARY_PATH
+# !!! 从 NVIDIA 官网下载 与 cuda toolkit 匹配的 tensorrt 到当前的工作目录
+tar -zxvf TensorRT-${TENSORRT_VERSION}*cuda-${CUDA_MAJOR}*.tar.gz
+python -m pip install TensorRT-${TENSORRT_VERSION}/python/tensorrt-*-cp${PYTHON_STRING}*.whl
+python -m pip install pycuda
+export TENSORRT_DIR=$(pwd)/TensorRT-${TENSORRT_VERSION}
+export LD_LIBRARY_PATH=${TENSORRT_DIR}/lib:$LD_LIBRARY_PATH
 
 
-  # !!! 从 NVIDIA 官网下载与 cuda toolkit，tensorrt 匹配的 cudnn 到当前的工作目录
-  tar -zxvf cudnn-${CUDA_MAJOR}.*-linux-x64*.tgz
-  export CUDNN_DIR=$(pwd)/cuda
-  export LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
-  ```
+# !!! 从 NVIDIA 官网下载与 cuda toolkit，tensorrt 匹配的 cudnn 到当前的工作目录
+tar -zxvf cudnn-${CUDA_MAJOR}.*-linux-x64*.tgz
+export CUDNN_DIR=$(pwd)/cuda
+export LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
+```
 
 在接下来的章节中，我们均以此环境为基础，演示 MMDeploy 的功能。
 
