@@ -220,7 +220,9 @@ def main():
         from mmdeploy.apis.ncnn import is_available as is_available_ncnn
 
         if not is_available_ncnn():
-            logger.error('ncnn support is not available.')
+            logger.error('ncnn support is not available, please make sure \
+                1) `onnx2ncnn` existed in `PATH` 2) python import ncnn success'
+                         )
             exit(1)
 
         import mmdeploy.apis.ncnn as ncnn_api

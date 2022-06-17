@@ -16,19 +16,24 @@
       - [Build Demo](#build-demo)
     - [Note](#note)
 
----
+______________________________________________________________________
+
 Currently, MMDeploy only provides build-from-source method for windows platform. Prebuilt package will be released in the future.
 
 ## Build From Source
+
 All the commands listed in the following chapters are verified on **Windows 10**.
 
 ### Install Toolchains
+
 1. Download and install [Visual Studio 2019](https://visualstudio.microsoft.com)
-2. Add the path of `cmake` to the environment variable `PATH`, i.e., "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin"
+2. Add the path of `cmake` to the environment variable `PATH`, i.e., "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin"
 3. Install cuda toolkit if NVIDIA gpu is available. You can refer to the official [guide](https://developer.nvidia.com/cuda-downloads).
 
 ### Install Dependencies
+
 #### Install Dependencies for Model Converter
+
 <table class="docutils">
 <thead>
   <tr>
@@ -71,6 +76,7 @@ pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/${cu_ve
 #### Install Dependencies for SDK
 
 You can skip this chapter if you are only interested in the model converter.
+
 <table class="docutils">
 <thead>
   <tr>
@@ -198,6 +204,7 @@ $env:MMDEPLOY_DIR="$pwd"
 ```
 
 #### Build Options Spec
+
 <table class="docutils">
 <thead>
   <tr>
@@ -266,10 +273,10 @@ $env:MMDEPLOY_DIR="$pwd"
 </tbody>
 </table>
 
-
 #### Build Model Converter
 
 ##### Build Custom Ops
+
 If one of inference engines among ONNXRuntime, TensorRT and ncnn is selected, you have to build the corresponding custom ops.
 
 - **ONNXRuntime** Custom Ops
@@ -363,4 +370,5 @@ $env:path = "$env:MMDEPLOY_DIR/build/install/bin;" + $env:path
 ```
 
 ### Note
-  1. Release / Debug libraries can not be mixed. If MMDeploy is built with Release mode, all its dependent thirdparty libraries have to be built in Release mode too and vice versa.
+
+1. Release / Debug libraries can not be mixed. If MMDeploy is built with Release mode, all its dependent thirdparty libraries have to be built in Release mode too and vice versa.

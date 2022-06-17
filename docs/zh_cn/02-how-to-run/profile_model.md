@@ -31,10 +31,10 @@ ${MODEL_CFG} \
 | warm-up      | 执行前是否 warm-up        |
 | log-interval | 日志打印间隔              |
 
-
 ## 使用样例
 
 执行模型推理
+
 ```shell
 python tools/test.py \
     configs/mmcls/classification_onnxruntime_static.py \
@@ -45,6 +45,7 @@ python tools/test.py \
 ```
 
 profile 速度测试
+
 ```shell
 python tools/test.py \
     configs/mmcls/classification_onnxruntime_static.py \

@@ -115,7 +115,7 @@ def get_file_path(prefix, candidates) -> str:
 
     Args:
         prefix (str): Prefix of the paths.
-        cancidates (str): Candidate paths
+        candidates (str): Candidate paths
     Returns:
         str: file path or '' if not found
     """

@@ -8,15 +8,14 @@ Please refer to [install.md](https://mmocr.readthedocs.io/en/latest/install.html
 
 ## List of MMOCR models supported by MMDeploy
 
-| Model | Task             | TorchScript | OnnxRuntime | TensorRT | ncnn  | PPLNN | OpenVINO |                                  Model config                                  |
-| :---- | :--------------- | :---------: | :---------: | :------: | :---: | :---: | :------: | :----------------------------------------------------------------------------: |
-| DBNet | text-detection   |      Y      |      Y      |    Y     |   Y   |   Y   |    Y     | [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/dbnet)  |
-| PSENet| text-detection   |      Y      |      Y      |    Y     |   Y   |   N   |    Y     | [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/psenet) |
-| PANet | text-detection   |      Y      |      Y      |    Y     |   Y   |   N   |    Y     | [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/panet)  |
-| CRNN  | text-recognition |      Y      |      Y      |    Y     |   Y   |   Y   |    N     | [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/crnn) |
-| SAR   | text-recognition |      N      |      Y      |    N     |   N   |   N   |    N     | [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/sar)  |
-| SATRN | text-recognition |      Y      |      Y      |    Y     |   N   |   N   |    N     | [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/satrn)|
-
+| Model  | Task             | TorchScript | OnnxRuntime | TensorRT | ncnn | PPLNN | OpenVINO |                                  Model config                                   |
+| :----- | :--------------- | :---------: | :---------: | :------: | :--: | :---: | :------: | :-----------------------------------------------------------------------------: |
+| DBNet  | text-detection   |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |  [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/dbnet)  |
+| PSENet | text-detection   |      Y      |      Y      |    Y     |  Y   |   N   |    Y     | [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/psenet)  |
+| PANet  | text-detection   |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |  [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/panet)  |
+| CRNN   | text-recognition |      Y      |      Y      |    Y     |  Y   |   Y   |    N     | [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/crnn)  |
+| SAR    | text-recognition |      N      |      Y      |    N     |  N   |   N   |    N     |  [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/sar)  |
+| SATRN  | text-recognition |      Y      |      Y      |    Y     |  N   |   N   |    N     | [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/satrn) |
 
 ## Reminder
 
