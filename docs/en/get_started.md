@@ -50,7 +50,7 @@ On GPU platforms:
   export TORCHVISION_VERSION=0.9.0
   export CUDA_VERSION=11.1
   conda install pytorch==${PYTORCH_VERSION} torchvision==${TORCHVISION_VERSION} cudatoolkit=${CUDA_VERSION} -c pytorch -c conda-forge
-  ```
+```
 
 On CPU platforms:
 
@@ -65,11 +65,12 @@ conda install pytorch==${PYTORCH_VERSION} torchvision==${TORCHVISION_VERSION} cp
 We recommend that users follow our best practices installing MMDeploy.
 
 **Step 0.** Install [MMCV](https://github.com/open-mmlab/mmcv).
+
 ```shell
   export MMCV_VERSION=1.5.0
   export CUDA_STRING="${CUDA_VERSION/./""}"
   python -m pip install mmcv-full==${MMCV_VERSION} -f https://download.openmmlab.com/mmcv/dist/cu${CUDA_STRING}/torch${PYTORCH_VERSION}/index.html
-  ```
+```
 
 **Step 1.** Install MMDeploy.
 
@@ -78,24 +79,24 @@ You can download them according to your target platform and device.
 
 Take the MMDeploy-TensorRT package on NVIDIA for example:
 
-  ```shell
-  export MMDEPLOY_VERSION=0.5.0
-  export TENSORRT_VERSION=8.2.3.0
-  export PYTHON_VERSION=3.7
-  export PYTHON_STRING="${PYTHON_VERSION/./""}"
+```shell
+export MMDEPLOY_VERSION=0.5.0
+export TENSORRT_VERSION=8.2.3.0
+export PYTHON_VERSION=3.7
+export PYTHON_STRING="${PYTHON_VERSION/./""}"
 
-  wget https://github.com/open-mmlab/mmdeploy/releases/download/v${MMDEPLOY_VERSION}/mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-cuda${CUDA_VERSION}-tensorrt${TENSORRT_VERSION}.tar.gz
-  tar -zxvf mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-cuda${CUDA_VERSION}-tensorrt${TENSORRT_VERSION}.tar.gz
-  cd mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-cuda${CUDA_VERSION}-tensorrt${TENSORRT_VERSION}
-  python -m pip install dist/mmdeploy-*-py${PYTHON_STRING}*.whl
-  python -m pip install sdk/python/mmdeploy_python-*-cp${PYTHON_STRING}*.whl
-  export LD_LIBRARY_PATH=$(pwd)/sdk/lib:$LD_LIBRARY_PATH
-  cd ..
-  ```
+wget https://github.com/open-mmlab/mmdeploy/releases/download/v${MMDEPLOY_VERSION}/mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-cuda${CUDA_VERSION}-tensorrt${TENSORRT_VERSION}.tar.gz
+tar -zxvf mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-cuda${CUDA_VERSION}-tensorrt${TENSORRT_VERSION}.tar.gz
+cd mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-cuda${CUDA_VERSION}-tensorrt${TENSORRT_VERSION}
+python -m pip install dist/mmdeploy-*-py${PYTHON_STRING}*.whl
+python -m pip install sdk/python/mmdeploy_python-*-cp${PYTHON_STRING}*.whl
+export LD_LIBRARY_PATH=$(pwd)/sdk/lib:$LD_LIBRARY_PATH
+cd ..
+```
 
-  ```{note}
-  If MMDeploy prebuilt package doesn meet your target platforms or devices, please build MMDeploy from its source by following the build documents
-  ```
+```{note}
+If MMDeploy prebuilt package doesn meet your target platforms or devices, please build MMDeploy from its source by following the build documents
+```
 
 **step 2.** Install the inference backend
 
@@ -105,22 +106,22 @@ Based on the above MMDeploy-TensorRT package, we need to download and install [T
 
 The following shows an example of installing TensorRT 8.2.3.0 and cuDNN 8.2:
 
-  ```shell
-  export TENSORRT_VERSION=8.2.3.0
-  CUDA_MAJOR="${CUDA_VERSION/\.*/""}"
+```shell
+export TENSORRT_VERSION=8.2.3.0
+CUDA_MAJOR="${CUDA_VERSION/\.*/""}"
 
-  # !!! Download tensorrt package from NVIDIA that matches your CUDA Toolkit version to the current working directory
-  tar -zxvf TensorRT-${TENSORRT_VERSION}*cuda-${CUDA_MAJOR}*.tar.gz
-  python -m pip install TensorRT-${TENSORRT_VERSION}/python/tensorrt-*-cp${PYTHON_STRING}*.whl
-  python -m pip install pycuda
-  export TENSORRT_DIR=$(pwd)/TensorRT-${TENSORRT_VERSION}
-  export LD_LIBRARY_PATH=${TENSORRT_DIR}/lib:$LD_LIBRARY_PATH
+# !!! Download tensorrt package from NVIDIA that matches your CUDA Toolkit version to the current working directory
+tar -zxvf TensorRT-${TENSORRT_VERSION}*cuda-${CUDA_MAJOR}*.tar.gz
+python -m pip install TensorRT-${TENSORRT_VERSION}/python/tensorrt-*-cp${PYTHON_STRING}*.whl
+python -m pip install pycuda
+export TENSORRT_DIR=$(pwd)/TensorRT-${TENSORRT_VERSION}
+export LD_LIBRARY_PATH=${TENSORRT_DIR}/lib:$LD_LIBRARY_PATH
 
-  # !!! Download cuDNN package from NVIDIA that matches your CUDA Toolkit and TensorRT version to the current working directory
-  tar -zxvf cudnn-${CUDA_MAJOR}.*-linux-x64*.tgz
-  export CUDNN_DIR=$(pwd)/cuda
-  export LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
-  ```
+# !!! Download cuDNN package from NVIDIA that matches your CUDA Toolkit and TensorRT version to the current working directory
+tar -zxvf cudnn-${CUDA_MAJOR}.*-linux-x64*.tgz
+export CUDNN_DIR=$(pwd)/cuda
+export LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
+```
 
 In the next chapters, we are going to present our 'Hello, world' example based on the above settings.
 

@@ -15,19 +15,25 @@
       - [编译 SDK](#编译-sdk)
       - [编译 Demo](#编译-demo)
     - [注意事项](#注意事项)
----
+
+______________________________________________________________________
+
 目前，MMDeploy 在 Windows 平台下仅提供源码编译安装方式。未来会提供预编译包方式。
 
 ## 源码安装
+
 下述安装方式，均是在 **Windows 10** 下进行，使用 **PowerShell Preview** 版本。
 
 ### 安装构建和编译工具链
+
 1. 下载并安装 [Visual Studio 2019](https://visualstudio.microsoft.com) 。安装时请勾选 "使用C++的桌面开发, "Windows 10 SDK <br>
-2. 把 cmake 路径加入到环境变量 PATH 中, "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin" <br>
+2. 把 cmake 路径加入到环境变量 PATH 中, "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\Common7\\IDE\\CommonExtensions\\Microsoft\\CMake\\CMake\\bin" <br>
 3. 如果系统中配置了 NVIDIA 显卡，根据[官网教程](https://developer.nvidia.com\/cuda-downloads)，下载并安装 cuda toolkit。<br>
 
 ### 安装依赖包
+
 #### 安装 MMDeploy Converter 依赖
+
 <table class="docutils">
 <thead>
   <tr>
@@ -65,9 +71,10 @@ pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/$env:cu
 </tbody>
 </table>
 
-
 #### 安装 MMDeploy SDK 依赖
+
 如果您只对模型转换感兴趣，那么可以跳过本章节。
+
 <table class="docutils">
 <thead>
   <tr>
@@ -106,9 +113,11 @@ cd ../..
 </table>
 
 #### 安装推理引擎
+
 MMDeploy 的 Model Converter 和 SDK 共享推理引擎。您可以参考下文，选择自己感兴趣的推理引擎安装。
 
 **目前，在 Windows 平台下，MMDeploy 支持 ONNXRuntime 和 TensorRT 两种推理引擎**。其他推理引擎尚未进行验证，或者验证未通过。后续将陆续予以支持
+
 <table class="docutils">
 <thead>
   <tr>
@@ -181,12 +190,14 @@ $env:path = "$env:CUDNN_DIR\bin;" + $env:path
 </table>
 
 ### 编译 MMDeploy
+
 ```powershell
 cd \the\root\path\of\MMDeploy
 $env:MMDEPLOY_DIR="$pwd"
 ```
 
 #### 编译选项说明
+
 <table class="docutils">
 <thead>
   <tr>
@@ -254,11 +265,14 @@ $env:MMDEPLOY_DIR="$pwd"
 </tbody>
 </table>
 
-
 #### 编译安装 Model Converter
+
 ##### 编译自定义算子
+
 如果您选择了ONNXRuntime，TensorRT 和 ncnn 任一种推理后端，您需要编译对应的自定义算子库。
+
 - **ONNXRuntime** 自定义算子
+
 ```powershell
 mkdir build -ErrorAction SilentlyContinue
 cd build
@@ -280,13 +294,17 @@ cmake --build . --config Release -- /m
   TODO
 
 ##### 安装 Model Converter
+
 ```powershell
 cd $env:MMDEPLOY_DIR
 pip install -e .
 ```
+
 **注意**
+
 - 有些依赖项是可选的。运行 `pip install -e .` 将进行最小化依赖安装。 如果需安装其他可选依赖项，请执行`pip install -r requirements/optional.txt`，
   或者 `pip install -e .[optional]`。其中，`[optional]`可以替换为：`all`、`tests`、`build` 或 `optional`。
+
 #### 编译 SDK
 
 下文展示2个构建SDK的样例，分别用 ONNXRuntime 和 TensorRT 作为推理引擎。您可以参考它们，并结合前文 SDK 的编译选项说明，激活其他的推理引擎。
@@ -342,4 +360,5 @@ $env:path = "$env:MMDEPLOY_DIR/build/install/bin;" + $env:path
 ```
 
 ### 注意事项
-  1. Release / Debug 库不能混用。MMDeploy 要是编译 Release 版本，所有第三方依赖都要是 Release 版本。反之亦然。
+
+1. Release / Debug 库不能混用。MMDeploy 要是编译 Release 版本，所有第三方依赖都要是 Release 版本。反之亦然。

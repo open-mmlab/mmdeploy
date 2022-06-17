@@ -6,18 +6,18 @@ We provide nuget package on our [release page](https://github.com/open-mmlab/mmd
 
 To use the nuget package, you also need to download the backend dependencies. For example, if you want to use the tensorrt backend, you should install cudatoolkit, cudnn and tensorrt, remember to add the dll directories to your system path. The version of backend dependencies that our prebuit nuget package used will be offered in release note.
 
-| backend  | dependencies |
-| ------------- | ------------- |
-| tensorrt  | cudatoolkit, cudnn, tensorrt   |
-| onnxruntime | onnxruntime / onnxruntime-gpu  |
+| backend     | dependencies                  |
+| ----------- | ----------------------------- |
+| tensorrt    | cudatoolkit, cudnn, tensorrt  |
+| onnxruntime | onnxruntime / onnxruntime-gpu |
 
 ## From Source
 
 ### Requirements
 
-* Environment required by building sdk
-* .NET Framework 4.8 / .NET core 3.1
-* Visual Studio 2019+
+- Environment required by building sdk
+- .NET Framework 4.8 / .NET core 3.1
+- Visual Studio 2019+
 
 ### Installation
 
@@ -34,6 +34,7 @@ There are two methods to build the nuget package.
 (*option 1*) Use the command.
 
 If your environment is well prepared, you can just go to the `csrc\apis\csharp` folder, open a terminal and type the following command, the nupkg will be built in `csrc\apis\csharp\MMDeploy\bin\Release\MMDeploy.1.0.0.nupkg`.
+
 ```shell
 dotnet build --configuration Release -p:Version=1.0.0
 ```

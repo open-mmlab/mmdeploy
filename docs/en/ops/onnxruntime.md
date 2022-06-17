@@ -16,11 +16,11 @@
     - [Outputs](#outputs-1)
     - [Type Constraints](#type-constraints-1)
 - [NMSRotated](#nmsrotated)
-    - [Description](#description-2)
-    - [Parameters](#parameters-2)
-    - [Inputs](#inputs-2)
-    - [Outputs](#outputs-2)
-    - [Type Constraints](#type-constraints-2)
+  - [Description](#description-2)
+  - [Parameters](#parameters-2)
+  - [Inputs](#inputs-2)
+  - [Outputs](#outputs-2)
+  - [Type Constraints](#type-constraints-2)
   - [RoIAlignRotated](#roialignrotated)
     - [Description](#description-3)
     - [Parameters](#parameters-3)
@@ -114,10 +114,9 @@ Non Max Suppression for rotated bboxes.
 
 #### Parameters
 
-| Type           | Parameter           | Description                                                                           |
-| -------------- | ------------------- | ------------------------------------------------------------------------------------- |
-| `float`         | `iou_threshold`     | The IoU threshold for NMS.                                                            |
-
+| Type    | Parameter       | Description                |
+| ------- | --------------- | -------------------------- |
+| `float` | `iou_threshold` | The IoU threshold for NMS. |
 
 #### Inputs
 
@@ -139,7 +138,6 @@ Non Max Suppression for rotated bboxes.
 
 - T:tensor(float32, Linear)
 
-
 ### RoIAlignRotated
 
 #### Description
@@ -148,14 +146,14 @@ Perform RoIAlignRotated on output feature, used in bbox_head of most two-stage r
 
 #### Parameters
 
-| Type    | Parameter        | Description                                                                                                   |
-| ------- | ---------------- | ------------------------------------------------------------------------------------------------------------- |
-| `int`   | `output_height`  | height of output roi                                                                                          |
-| `int`   | `output_width`   | width of output roi                                                                                           |
-| `float` | `spatial_scale`  | used to scale the input boxes                                                                                 |
-| `int`   | `sampling_ratio` | number of input samples to take for each output sample. `0` means to take samples densely for current models. |
-| `int`   | `aligned`        | If `aligned=0`, use the legacy implementation in MMDetection. Else, align the results more perfectly.         |
-| `int`   | `clockwise`           | If True, the angle in each proposal follows a clockwise fashion in image space, otherwise, the angle is counterclockwise. Default: False. |
+| Type    | Parameter        | Description                                                                                                                               |
+| ------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `int`   | `output_height`  | height of output roi                                                                                                                      |
+| `int`   | `output_width`   | width of output roi                                                                                                                       |
+| `float` | `spatial_scale`  | used to scale the input boxes                                                                                                             |
+| `int`   | `sampling_ratio` | number of input samples to take for each output sample. `0` means to take samples densely for current models.                             |
+| `int`   | `aligned`        | If `aligned=0`, use the legacy implementation in MMDetection. Else, align the results more perfectly.                                     |
+| `int`   | `clockwise`      | If True, the angle in each proposal follows a clockwise fashion in image space, otherwise, the angle is counterclockwise. Default: False. |
 
 #### Inputs
 

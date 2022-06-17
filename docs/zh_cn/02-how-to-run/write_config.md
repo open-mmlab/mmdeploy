@@ -1,6 +1,7 @@
 # 如何写模型转换配置
 
 <!-- This tutorial describes how to write a config for model conversion and deployment. A deployment config includes `onnx config`, `codebase config`, `backend config`. -->
+
 这篇教程介绍了如何编写模型转换和部署的配置文件。部署配置文件由`ONNX配置`， `代码库配置`， `推理框架配置`组成。
 
 <!-- TOC -->
@@ -32,14 +33,20 @@ ONNX 配置描述了如何将PyTorch模型转换为ONNX模型。
 ### ONNX配置参数说明
 
 - `type`: 配置类型。 默认为 `onnx`。
+
 - `export_params`: 如果指定，将导出模型所有参数。如果您只想导出未训练模型将此项设置为 False。
+
 - `keep_initializers_as_inputs`:
-如果为 True，则所有初始化器（通常对应为参数）也将作为输入导出，添加到计算图中。 如果为 False，则初始化器不会作为输入导出，不添加到计算图中，仅将非参数输入添加到计算图中。
+  如果为 True，则所有初始化器（通常对应为参数）也将作为输入导出，添加到计算图中。 如果为 False，则初始化器不会作为输入导出，不添加到计算图中，仅将非参数输入添加到计算图中。
 
 - `opset_version`: ONNX的算子集版本，默认为11。
+
 - `save_file`: 输出ONNX模型文件。
+
 - `input_names`: 模型计算图中输入节点的名称。
+
 - `output_names`: 模型计算图中输出节点的名称。
+
 - `input_shape`: 模型输入张量的高度和宽度。
 
 #### 示例

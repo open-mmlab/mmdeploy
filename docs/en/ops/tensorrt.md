@@ -83,6 +83,7 @@ Batched NMS with a fixed number of output bounding boxes.
 </dl>
 
 #### Outputs
+
 <dl>
 <dt><tt>outputs[0]</tt>: T</dt>
 <dd>dets; 3-D tensor of shape (N, valid_num_boxes, 5), `valid_num_boxes` is the number of boxes after NMS. For each row `dets[i,j,:] = [x0, y0, x1, y1, score]`</dd>
@@ -163,7 +164,6 @@ y = scale * (x - mean) / sqrt(variance + epsilon) + B, where mean and variance a
 #### Type Constraints
 
 - T:tensor(float32, Linear)
-
 
 ### MMCVModulatedDeformConv2d
 
@@ -284,7 +284,7 @@ Perform RoIAlign on output feature, used in bbox_head of most two-stage detector
 
 #### Description
 
-ScatterND takes three inputs `data` tensor of rank r >= 1, `indices` tensor of rank q >= 1, and `updates` tensor of rank q + r - indices.shape[-1] - 1. The output of the operation is produced by creating a copy of the input `data`, and then updating its value to values specified by updates at specific index positions specified by `indices`. Its output shape is the same as the shape of `data`. Note that `indices` should not have duplicate entries. That is, two or more updates for the same index-location is not supported.
+ScatterND takes three inputs `data` tensor of rank r >= 1, `indices` tensor of rank q >= 1, and `updates` tensor of rank q + r - indices.shape\[-1\] - 1. The output of the operation is produced by creating a copy of the input `data`, and then updating its value to values specified by updates at specific index positions specified by `indices`. Its output shape is the same as the shape of `data`. Note that `indices` should not have duplicate entries. That is, two or more updates for the same index-location is not supported.
 
 The `output` is calculated via the following equation:
 
@@ -352,6 +352,7 @@ Batched rotated NMS with a fixed number of output bounding boxes.
 </dl>
 
 #### Outputs
+
 <dl>
 <dt><tt>outputs[0]</tt>: T</dt>
 <dd>dets; 3-D tensor of shape (N, valid_num_boxes, 6), `valid_num_boxes` is the number of boxes after NMS. For each row `dets[i,j,:] = [x0, y0, width, height, theta, score]`</dd>
