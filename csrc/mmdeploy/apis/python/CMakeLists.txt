@@ -15,20 +15,9 @@ elseif (NOT TARGET pybind11)
     add_subdirectory(${CMAKE_SOURCE_DIR}/third_party/pybind11 pybind11)
 endif ()
 
-macro(mmdeploy_python_add_module name)
-    if (TARGET mmdeploy_${name})
-        list(APPEND MMDEPLOY_PYTHON_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/${name}.cpp)
-    endif ()
-endmacro()
-
-mmdeploy_python_add_module(classifier)
-mmdeploy_python_add_module(detector)
-mmdeploy_python_add_module(segmentor)
-mmdeploy_python_add_module(text_detector)
-mmdeploy_python_add_module(text_recognizer)
-mmdeploy_python_add_module(restorer)
-mmdeploy_python_add_module(pose_detector)
-mmdeploy_python_add_module(rotated_detector)
+foreach (task_name ${MMDEPLOY_TASKS})
+    list(APPEND MMDEPLOY_PYTHON_SRCS ${task_name}.cpp)
+endforeach ()
 
 pybind11_add_module(${PROJECT_NAME} ${MMDEPLOY_PYTHON_SRCS})
 
