@@ -7,4 +7,4 @@ protobuf<=3.20.1
 six
 terminaltables
 tqdm
-pycuda
+pycuda==2021.1
