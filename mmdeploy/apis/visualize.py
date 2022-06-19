@@ -68,7 +68,7 @@ def visualize_model(model_cfg: Union[str, mmcv.Config],
 
     model_inputs, _ = task_processor.create_input(img, input_shape)
     with torch.no_grad():
-        result = task_processor.run_inference(model, model_inputs)[0]
+        result = model.test_step([model_inputs])[0]
 
     task_processor.visualize(
         image=img,

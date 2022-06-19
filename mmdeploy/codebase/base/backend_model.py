@@ -1,26 +1,26 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta
 from typing import Optional, Sequence, Union
 
-import mmcv
-import torch
+import mmengine
+from mmengine.model import BaseModel
 
 from mmdeploy.utils import (SDK_TASK_MAP, Backend, get_backend_config,
                             get_ir_config, get_task_type)
 
 
-class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
+class BaseBackendModel(BaseModel, metaclass=ABCMeta):
     """A backend model wraps the details to initialize and run a backend
     engine."""
 
     def __init__(self,
-                 deploy_cfg: Optional[Union[str, mmcv.Config]] = None,
+                 deploy_cfg: Optional[Union[str, mmengine.Config]] = None,
                  *args,
                  **kwargs):
         """The default for building the base class.
 
         Args:
-            deploy_cfg (str | mmcv.Config | None): The deploy config.
+            deploy_cfg (str | mmengine.Config | None): The deploy config.
         """
         input_names = output_names = None
         if deploy_cfg is not None:
@@ -38,7 +38,7 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
                        device: str,
                        input_names: Optional[Sequence[str]] = None,
                        output_names: Optional[Sequence[str]] = None,
-                       deploy_cfg: Optional[mmcv.Config] = None,
+                       deploy_cfg: Optional[mmengine.Config] = None,
                        *args,
                        **kwargs):
         """The default methods to build backend wrappers.
@@ -108,21 +108,3 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
                 output_names=output_names)
         else:
             raise NotImplementedError(f'Unknown backend type: {backend.value}')
-
-    @abstractmethod
-    def forward(self, *args, **kwargs):
-        """The forward interface that must be implemented.
-
-        The arguments should align to forward() of the corresponding model of
-        OpenMMLab codebases
-        """
-        pass
-
-    @abstractmethod
-    def show_result(self, *args, **kwargs):
-        """The visualize interface that must be implemented.
-
-        The arguments should align to show_result() of the corresponding model
-        of OpenMMLab codebases
-        """
-        pass

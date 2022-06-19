@@ -1,4 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .base import base_classifier__forward
+from .base import ImageClassifier__default
 
-__all__ = ['base_classifier__forward']
+__all__ = ['ImageClassifier__default']

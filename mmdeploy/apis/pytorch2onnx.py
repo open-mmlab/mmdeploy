@@ -60,9 +60,14 @@ def torch2onnx(img: Any,
     task_processor = build_task_processor(model_cfg, deploy_cfg, device)
 
     torch_model = task_processor.init_pytorch_model(model_checkpoint)
-    data, model_inputs = task_processor.create_input(img, input_shape)
+    data, model_inputs = task_processor.create_input(
+        img,
+        input_shape,
+        data_preprocessor=getattr(torch_model, 'data_preprocessor', None))
     if not isinstance(model_inputs, torch.Tensor) and len(model_inputs) == 1:
         model_inputs = model_inputs[0]
+    data_samples = data[1]
+    patch_metas = {'data_samples': data_samples}
 
     # export to onnx
     context_info = dict()
@@ -94,4 +99,5 @@ def torch2onnx(img: Any,
             opset_version=opset_version,
             dynamic_axes=dynamic_axes,
             verbose=verbose,
-            keep_initializers_as_inputs=keep_initializers_as_inputs)
+            keep_initializers_as_inputs=keep_initializers_as_inputs,
+            patch_metas=patch_metas)

@@ -1,13 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from abc import ABCMeta, abstractmethod
-from typing import Optional, Union
+from typing import Optional
 
-import mmcv
 import torch
-from mmcv.utils.registry import Registry
-from torch.utils.data import DataLoader, Dataset
+from mmengine import Config
+from mmengine.registry import Registry
+from torch.utils.data import DataLoader
 
-from mmdeploy.utils import Codebase, Task
+from mmdeploy.utils import Codebase, Task, get_task_type
 from .task import BaseTask
 
 
@@ -31,57 +31,26 @@ class MMCodebase(metaclass=ABCMeta):
         """
         return cls.task_registry.module_dict[task.value]
 
-    @staticmethod
-    @abstractmethod
-    def build_task_processor(model_cfg: mmcv.Config, deploy_cfg: mmcv.Config,
+    @classmethod
+    def build_task_processor(cls, model_cfg: Config, deploy_cfg: Config,
                              device: str):
         """The interface to build the task processors of the codebase.
 
         Args:
-            model_cfg (str | mmcv.Config): Model config file.
-            deploy_cfg (str | mmcv.Config): Deployment config file.
+            model_cfg (str | Config): Model config file.
+            deploy_cfg (str | Config): Deployment config file.
             device (str): A string specifying device type.
 
         Returns:
             BaseTask: A task processor.
         """
-        pass
-
-    @staticmethod
-    @abstractmethod
-    def build_dataset(dataset_cfg: Union[str, mmcv.Config],
-                      dataset_type: str = 'val',
-                      **kwargs) -> Dataset:
-        """Build dataset for different codebase.
-
-        Args:
-            dataset_cfg (str | mmcv.Config): Dataset config file or Config
-                object.
-            dataset_type (str): Specifying dataset type, e.g.: 'train', 'test',
-                'val', defaults to 'val'.
-
-        Returns:
-            Dataset: The built dataset.
-        """
-        pass
-
-    @staticmethod
-    @abstractmethod
-    def build_dataloader(dataset: Dataset, samples_per_gpu: int,
-                         workers_per_gpu: int, **kwargs) -> DataLoader:
-        """Build PyTorch dataloader.
-
-        Args:
-            dataset (Dataset): A PyTorch dataset.
-            samples_per_gpu (int): Number of training samples on each GPU,
-                i.e., batch size of each GPU.
-            workers_per_gpu (int): How many subprocesses to use for data
-                loading for each GPU.
-
-        Returns:
-            DataLoader: A PyTorch dataloader.
-        """
-        pass
+        task = get_task_type(deploy_cfg)
+        return cls.task_registry.build(
+            dict(
+                type=task.value,
+                model_cfg=model_cfg,
+                deploy_cfg=deploy_cfg,
+                device=device))
 
     @staticmethod
     @abstractmethod
@@ -107,12 +76,7 @@ class MMCodebase(metaclass=ABCMeta):
 
 # Note that the build function returns the class instead of its instance.
 
-
-def __build_codebase_class(codebase: Codebase, registry: Registry):
-    return registry.module_dict[codebase.value]
-
-
-CODEBASE = Registry('Codebases', build_func=__build_codebase_class)
+CODEBASE = Registry('Codebases')
 
 
 def get_codebase_class(codebase: Codebase) -> MMCodebase:
@@ -124,4 +88,4 @@ def get_codebase_class(codebase: Codebase) -> MMCodebase:
     Returns:
         type: The codebase class
     """
-    return CODEBASE.build(codebase)
+    return CODEBASE.build({'type': codebase.value})

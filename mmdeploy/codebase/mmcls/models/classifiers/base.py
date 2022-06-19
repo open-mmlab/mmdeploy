@@ -1,27 +1,25 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from mmdeploy.core import FUNCTION_REWRITER
+from torch import nn
+
+from mmdeploy.core import MODULE_REWRITER
 
 
-@FUNCTION_REWRITER.register_rewriter(
-    'mmcls.models.classifiers.ImageClassifier.forward', backend='default')
-@FUNCTION_REWRITER.register_rewriter(
-    'mmcls.models.classifiers.BaseClassifier.forward', backend='default')
-def base_classifier__forward(ctx, self, img, *args, **kwargs):
-    """Rewrite `forward` of BaseClassifier for default backend.
+@MODULE_REWRITER.register_rewrite_module(
+    'mmcls.models.classifiers.ImageClassifier', backend='default')
+class ImageClassifier__default(nn.Module):
+    """A patch model for Image classifier.
 
-    Rewrite this function to call simple_test function,
-    ignore the return_loss parameter.
-
-    Args:
-        ctx (ContextCaller): The context with additional information.
-        self: The instance of the original class.
-        img (List[Tensor]): The outer list indicates test-time
-            augmentations and inner Tensor should have a shape NxCxHxW,
-            which contains all images in the batch.
-
-    Returns:
-        result(Tensor): The result of classifier.The tensor
-            shape (batch_size,num_classes).
+    `forward` of ImageClassifier would output a DataElement, which can not be
+    export to ONNX.
     """
-    result = self.simple_test(img, {})
-    return result
+
+    def __init__(self, module, deploy_cfg, data_samples, **kwargs) -> None:
+        super().__init__()
+        self._module = module
+        self._deploy_cfg = deploy_cfg
+        self._data_samples = data_samples
+
+    def forward(self, batch_inputs):
+        feats = self._module.extract_feat(batch_inputs)
+        output = self._module.head(feats)
+        return output

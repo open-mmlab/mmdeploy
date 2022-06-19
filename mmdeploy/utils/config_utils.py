@@ -2,6 +2,7 @@
 from typing import Dict, List, Optional, Union
 
 import mmcv
+import mmengine
 
 from .constants import Backend, Codebase, Task
 from .utils import deprecate
@@ -19,8 +20,8 @@ def load_config(*args) -> List[mmcv.Config]:
 
     def _load_config(cfg):
         if isinstance(cfg, str):
-            cfg = mmcv.Config.fromfile(cfg)
-        if not isinstance(cfg, (mmcv.Config, mmcv.ConfigDict)):
+            cfg = mmengine.Config.fromfile(cfg)
+        if not isinstance(cfg, (dict, mmengine.Config)):
             raise TypeError('deploy_cfg must be a filename or Config object, '
                             f'but got {type(cfg)}')
         return cfg

@@ -1,11 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import List, Sequence, Union
+from typing import Any, List, Optional, Sequence, Union
 
 import mmcv
 import numpy as np
 import torch
 from mmcls.models.classifiers.base import BaseClassifier
 from mmcv.utils import Registry
+from mmengine import BaseDataElement, Config
 
 from mmdeploy.codebase.base import BaseBackendModel
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
@@ -30,7 +31,7 @@ class End2EndModel(BaseBackendModel):
             '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
         device (str): A string represents device type.
         class_names (Sequence[str]): A list of string specifying class names.
-        deploy_cfg (str | mmcv.Config): Deployment config file or loaded Config
+        deploy_cfg (str | Config): Deployment config file or loaded Config
             object.
     """
 
@@ -39,11 +40,9 @@ class End2EndModel(BaseBackendModel):
         backend: Backend,
         backend_files: Sequence[str],
         device: str,
-        class_names: Sequence[str],
-        deploy_cfg: Union[str, mmcv.Config] = None,
+        deploy_cfg: Union[str, Config] = None,
     ):
         super(End2EndModel, self).__init__(deploy_cfg=deploy_cfg)
-        self.CLASSES = class_names
         self.deploy_cfg = deploy_cfg
         self._init_wrapper(
             backend=backend, backend_files=backend_files, device=device)
@@ -59,7 +58,10 @@ class End2EndModel(BaseBackendModel):
             output_names=output_names,
             deploy_cfg=self.deploy_cfg)
 
-    def forward(self, img: List[torch.Tensor], *args, **kwargs) -> list:
+    def forward(self,
+                batch_inputs: torch.Tensor,
+                data_samples: Optional[List[BaseDataElement]] = None,
+                mode: str = 'predict') -> Any:
         """Run forward inference.
 
         Args:
@@ -71,29 +73,15 @@ class End2EndModel(BaseBackendModel):
         Returns:
             list: A list contains predictions.
         """
+        assert mode == 'predict', \
+            'Backend model only support mode==predict,' f' but get {mode}'
+        cls_score = self.wrapper({self.input_name: batch_inputs})['output']
 
-        if isinstance(img, list):
-            input_img = img[0].contiguous()
-        else:
-            input_img = img.contiguous()
-        outputs = self.forward_test(input_img, *args, **kwargs)
+        from mmcls.models.heads.cls_head import ClsHead
+        predict = ClsHead._get_predictions(
+            None, cls_score, data_samples=data_samples)
 
-        return list(outputs)
-
-    def forward_test(self, imgs: torch.Tensor, *args, **kwargs) -> \
-            List[np.ndarray]:
-        """The interface for forward test.
-
-        Args:
-            imgs (torch.Tensor): Input image(s) in [N x C x H x W] format.
-
-        Returns:
-            List[np.ndarray]: A list of classification prediction.
-        """
-        outputs = self.wrapper({self.input_name: imgs})
-        outputs = self.wrapper.output_to_list(outputs)
-        outputs = [out.detach().cpu().numpy() for out in outputs]
-        return outputs
+        return predict
 
     def show_result(self,
                     img: np.ndarray,
@@ -140,11 +128,11 @@ class SDKEnd2EndModel(End2EndModel):
         return pred[np.argsort(pred[:, 0])][np.newaxis, :, 1]
 
 
-def get_classes_from_config(model_cfg: Union[str, mmcv.Config]):
+def get_classes_from_config(model_cfg: Union[str, Config]):
     """Get class name from config.
 
     Args:
-        model_cfg (str | mmcv.Config): Input model config file or
+        model_cfg (str | Config): Input model config file or
             Config object.
 
     Returns:
@@ -182,16 +170,16 @@ def get_classes_from_config(model_cfg: Union[str, mmcv.Config]):
 
 
 def build_classification_model(model_files: Sequence[str],
-                               model_cfg: Union[str, mmcv.Config],
-                               deploy_cfg: Union[str, mmcv.Config],
-                               device: str, **kwargs):
+                               model_cfg: Union[str, Config],
+                               deploy_cfg: Union[str, Config], device: str,
+                               **kwargs):
     """Build classification model for different backend.
 
     Args:
         model_files (Sequence[str]): Input model file(s).
-        model_cfg (str | mmcv.Config): Input model config file or Config
+        model_cfg (str | Config): Input model config file or Config
             object.
-        deploy_cfg (str | mmcv.Config): Input deployment config file or
+        deploy_cfg (str | Config): Input deployment config file or
             Config object.
         device (str):  Device to input model.
 
@@ -203,14 +191,13 @@ def build_classification_model(model_files: Sequence[str],
 
     backend = get_backend(deploy_cfg)
     model_type = get_codebase_config(deploy_cfg).get('model_type', 'end2end')
-    class_names = get_classes_from_config(model_cfg)
+    # class_names = get_classes_from_config(model_cfg)
 
     backend_classifier = __BACKEND_MODEL.build(
         model_type,
         backend=backend,
         backend_files=model_files,
         device=device,
-        class_names=class_names,
         deploy_cfg=deploy_cfg,
         **kwargs)
 
