@@ -6,6 +6,27 @@ import torch
 from mmdeploy.core import FUNCTION_REWRITER
 
 
+class GemmOp(torch.autograd.Function):
+    """Create onnx::Gemm op."""
+
+    @staticmethod
+    def forward(ctx, input, weight, bias=None):
+        out = input @ weight.transpose(0, 1)
+        if bias is not None:
+            out += bias
+        return out
+
+    @staticmethod
+    def symbolic(g, input, weight, bias=None):
+        input.setDebugName('A')
+        weight.setDebugName('B')
+        args = ['Gemm', input, weight]
+        if bias is not None:
+            bias.setDebugName('C')
+            args.append(bias)
+        return g.op(*args, alpha_f=1.0, beta_f=1.0, transA_i=0, transB_i=1)
+
+
 @FUNCTION_REWRITER.register_rewriter(
     func_name='torch.nn.functional.linear', backend='ncnn')
 def linear__ncnn(
@@ -20,13 +41,12 @@ def linear__ncnn(
     add extra reshape and transpose to support linear operation of different
     input shape.
     """
-
     origin_func = ctx.origin_func
-
     dim = input.dim()
 
-    if dim == 2:
-        return origin_func(input, weight, bias)
+    if dim == 2 or dim == 3 and input.shape[0] == 1:
+        # export nn.linear to Gemm op in onnx
+        return GemmOp.apply(input, weight, bias)
     else:
         out = origin_func(input, weight)
 
@@ -48,5 +68,4 @@ def linear__ncnn(
         # the last dim should be -1 to support dynamic shape
         out = out.reshape(out_shape[:-1] + (-1, ))
         out = out.transpose(1, dim - 1)
-
         return out
