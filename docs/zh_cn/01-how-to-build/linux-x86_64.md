@@ -422,7 +422,7 @@ pip install -e .
       -DTENSORRT_DIR=${TENSORRT_DIR} \
       -DCUDNN_DIR=${CUDNN_DIR}
 
-  make -j$(nproc) && make -install
+  make -j$(nproc) && make install
   ```
 
 #### 编译 Demo
