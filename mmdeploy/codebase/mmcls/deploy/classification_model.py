@@ -4,9 +4,9 @@ from typing import Any, List, Optional, Sequence, Union
 import mmcv
 import numpy as np
 import torch
-from mmcls.models.classifiers.base import BaseClassifier
 from mmcv.utils import Registry
 from mmengine import BaseDataElement, Config
+from torch import nn
 
 from mmdeploy.codebase.base import BaseBackendModel
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
@@ -35,17 +35,18 @@ class End2EndModel(BaseBackendModel):
             object.
     """
 
-    def __init__(
-        self,
-        backend: Backend,
-        backend_files: Sequence[str],
-        device: str,
-        deploy_cfg: Union[str, Config] = None,
-    ):
-        super(End2EndModel, self).__init__(deploy_cfg=deploy_cfg)
+    def __init__(self,
+                 backend: Backend,
+                 backend_files: Sequence[str],
+                 device: str,
+                 deploy_cfg: Union[str, Config] = None,
+                 data_preprocessor: Optional[Union[dict, nn.Module]] = None):
+        super(End2EndModel, self).__init__(
+            deploy_cfg=deploy_cfg, data_preprocessor=data_preprocessor)
         self.deploy_cfg = deploy_cfg
         self._init_wrapper(
             backend=backend, backend_files=backend_files, device=device)
+        self.device = device
 
     def _init_wrapper(self, backend: Backend, backend_files: Sequence[str],
                       device: str):
@@ -75,6 +76,10 @@ class End2EndModel(BaseBackendModel):
         """
         assert mode == 'predict', \
             'Backend model only support mode==predict,' f' but get {mode}'
+        if batch_inputs.device != torch.device(self.device):
+            get_root_logger().warning(f'expect input device {self.device}'
+                                      f' but get {batch_inputs.device}.')
+        batch_inputs = batch_inputs.to(self.device)
         cls_score = self.wrapper({self.input_name: batch_inputs})['output']
 
         from mmcls.models.heads.cls_head import ClsHead
@@ -82,27 +87,6 @@ class End2EndModel(BaseBackendModel):
             None, cls_score, data_samples=data_samples)
 
         return predict
-
-    def show_result(self,
-                    img: np.ndarray,
-                    result: list,
-                    win_name: str = '',
-                    show: bool = True,
-                    out_file: str = None):
-        """Show predictions of classification.
-        Args:
-            img: (np.ndarray): Input image to draw predictions.
-            result (list): A list of predictions.
-            win_name (str): The name of visualization window.
-            show (bool): Whether to show plotted image in windows. Defaults to
-                `True`.
-            out_file (str): Output image file to save drawn predictions.
-
-        Returns:
-            np.ndarray: Drawn image, only if not `show` or `out_file`.
-        """
-        return BaseClassifier.show_result(
-            self, img, result, show=show, win_name=win_name, out_file=out_file)
 
 
 @__BACKEND_MODEL.register_module('sdk')

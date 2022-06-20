@@ -1,12 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
+import os.path as osp
+from copy import deepcopy
 
 from mmcv import DictAction
-from mmcv.parallel import MMDataParallel
 
 from mmdeploy.apis import build_task_processor
 from mmdeploy.utils.config_utils import load_config
-from mmdeploy.utils.device import parse_device_id
 from mmdeploy.utils.timer import TimeCounter
 
 
@@ -17,27 +17,12 @@ def parse_args():
     parser.add_argument('model_cfg', help='Model config path')
     parser.add_argument(
         '--model', type=str, nargs='+', help='Input model files.')
-    parser.add_argument('--out', help='output result file in pickle format')
-    parser.add_argument(
-        '--format-only',
-        action='store_true',
-        help='Format the output results without perform evaluation. It is'
-        'useful when you want to format the result to a specific format and '
-        'submit it to the test server')
-    parser.add_argument(
-        '--metrics',
-        type=str,
-        nargs='+',
-        help='evaluation metrics, which depends on the codebase and the '
-        'dataset, e.g., "bbox", "segm", "proposal" for COCO, and "mAP", '
-        '"recall" for PASCAL VOC in mmdet; "accuracy", "precision", "recall", '
-        '"f1_score", "support" for single label dataset, and "mAP", "CP", "CR"'
-        ', "CF1", "OP", "OR", "OF1" for multi-label dataset in mmcls')
-    parser.add_argument('--show', action='store_true', help='show results')
-    parser.add_argument(
-        '--show-dir', help='directory where painted images will be saved')
     parser.add_argument(
         '--device', help='device used for conversion', default='cpu')
+    parser.add_argument(
+        '--work-dir',
+        default='./work_dir',
+        help='the directory to save the file containing evaluation metrics')
     parser.add_argument(
         '--cfg-options',
         nargs='+',
@@ -48,12 +33,19 @@ def parse_args():
         'It also allows nested list/tuple values, e.g. key="[(a,b),(c,d)]" '
         'Note that the quotation marks are necessary and that no white space '
         'is allowed.')
+    parser.add_argument('--show', action='store_true', help='show results')
     parser.add_argument(
-        '--metric-options',
-        nargs='+',
-        action=DictAction,
-        help='custom options for evaluation, the key-value pair in xxx=yyy '
-        'format will be kwargs for dataset.evaluate() function')
+        '--show-dir', help='directory where painted images will be saved')
+    parser.add_argument(
+        '--interval',
+        type=int,
+        default=1,
+        help='visualize per interval samples.')
+    parser.add_argument(
+        '--wait-time',
+        type=float,
+        default=2,
+        help='display time of every window. (second)')
     parser.add_argument(
         '--log2file',
         type=str,
@@ -80,13 +72,20 @@ def parse_args():
 
 def main():
     args = parse_args()
-    if args.out is not None and not args.out.endswith(('.pkl', '.pickle')):
-        raise ValueError('The output file must be a pkl file.')
     deploy_cfg_path = args.deploy_cfg
     model_cfg_path = args.model_cfg
 
     # load deploy_cfg
     deploy_cfg, model_cfg = load_config(deploy_cfg_path, model_cfg_path)
+
+    # work_dir is determined in this priority: CLI > segment in file > filename
+    if args.work_dir is not None:
+        # update configs according to CLI args if args.work_dir is not None
+        work_dir = args.work_dir
+    elif model_cfg.get('work_dir', None) is None:
+        # use config filename as default work_dir if cfg.work_dir is None
+        work_dir = osp.join('./work_dirs',
+                            osp.splitext(osp.basename(args.config))[0])
 
     # merge options for model cfg
     if args.cfg_options is not None:
@@ -95,26 +94,26 @@ def main():
     task_processor = build_task_processor(model_cfg, deploy_cfg, args.device)
 
     # prepare the dataset loader
-    dataset_type = 'test'
-    dataset = task_processor.build_dataset(model_cfg, dataset_type)
-    data_loader = task_processor.build_dataloader(
-        dataset,
-        samples_per_gpu=1,
-        workers_per_gpu=model_cfg.data.workers_per_gpu)
+    test_dataloader = deepcopy(model_cfg['test_dataloader'])
+    dataset = task_processor.build_dataset(test_dataloader['dataset'])
+    test_dataloader['dataset'] = dataset
+    dataloader = task_processor.build_dataloader(test_dataloader)
 
     # load the model of the backend
     model = task_processor.init_backend_model(args.model)
 
     is_device_cpu = (args.device == 'cpu')
-    device_id = None if is_device_cpu else parse_device_id(args.device)
 
-    model = MMDataParallel(model, device_ids=[device_id])
-    # The whole dataset test wrapped a MMDataParallel class outside the module.
-    # As mmcls.apis.test.py single_gpu_test defined, the MMDataParallel needs
-    # a 'CLASSES' attribute. So we ensure the MMDataParallel class has the same
-    # CLASSES attribute as the inside module.
-    if hasattr(model.module, 'CLASSES'):
-        model.CLASSES = model.module.CLASSES
+    runner = task_processor.build_test_runner(
+        model,
+        work_dir,
+        log_file=args.log2file,
+        show=args.show,
+        show_dir=args.show_dir,
+        wait_time=args.wait_time,
+        interval=args.interval,
+        dataloader=dataloader)
+
     if args.speed_test:
         with_sync = not is_device_cpu
 
@@ -122,15 +121,11 @@ def main():
                 warmup=args.warmup,
                 log_interval=args.log_interval,
                 with_sync=with_sync,
-                file=args.log2file):
-            outputs = task_processor.single_gpu_test(model, data_loader,
-                                                     args.show, args.show_dir)
+                file=args.log2file,
+                logger=runner.logger):
+            runner.test()
     else:
-        outputs = task_processor.single_gpu_test(model, data_loader, args.show,
-                                                 args.show_dir)
-    task_processor.evaluate_outputs(model_cfg, outputs, dataset, args.metrics,
-                                    args.out, args.metric_options,
-                                    args.format_only, args.log2file)
+        runner.test()
 
 
 if __name__ == '__main__':

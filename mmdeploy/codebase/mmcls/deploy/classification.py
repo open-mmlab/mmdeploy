@@ -1,13 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import logging
+from copy import deepcopy
 from typing import Dict, Optional, Sequence, Tuple, Union
 
-import mmcv
 import numpy as np
 import torch
 from mmengine import Config
 from mmengine.model import BaseDataPreprocessor
-from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
 from mmdeploy.utils import Task, get_root_logger
@@ -90,9 +88,16 @@ class Classification(BaseTask):
         """
         from .classification_model import build_classification_model
 
-        model = build_classification_model(
-            model_files, self.model_cfg, self.deploy_cfg, device=self.device)
+        data_preprocessor = deepcopy(self.model_cfg.get('preprocess_cfg', {}))
+        data_preprocessor.setdefault('type', 'mmcls.ClsDataPreprocessor')
 
+        model = build_classification_model(
+            model_files,
+            self.model_cfg,
+            self.deploy_cfg,
+            device=self.device,
+            data_preprocessor=data_preprocessor)
+        model = model.to(self.device)
         return model.eval()
 
     def create_input(
@@ -134,63 +139,6 @@ class Classification(BaseTask):
             dict: A dictionary of partition config.
         """
         raise NotImplementedError('Not supported yet.')
-
-    @staticmethod
-    def evaluate_outputs(model_cfg: Config,
-                         outputs: list,
-                         dataset: Dataset,
-                         metrics: Optional[str] = None,
-                         out: Optional[str] = None,
-                         metric_options: Optional[dict] = None,
-                         format_only: bool = False,
-                         log_file: Optional[str] = None) -> None:
-        """Perform post-processing to predictions of model.
-
-        Args:
-            model_cfg (Config): The model config.
-            outputs (list): A list of predictions of model inference.
-            dataset (Dataset): Input dataset to run test.
-            metrics (str): Evaluation metrics, which depends on
-                the codebase and the dataset, e.g., "mAP" in mmcls.
-            out (str): Output result file in pickle format, Default: None.
-            metric_options (dict): Custom options for evaluation, will be
-                kwargs for dataset.evaluate() function. Default: None.
-            format_only (bool): Format the output results without perform
-                evaluation. It is useful when you want to format the result
-                to a specific format and submit it to the test server.
-                Default: False.
-            log_file (str | None): The file to write the evaluation results.
-                Defaults to `None` and the results will only print on stdout.
-        """
-        import warnings
-
-        from mmcv.utils import get_logger
-        logger = get_logger('test', log_file=log_file, log_level=logging.INFO)
-
-        if metrics:
-            results = dataset.evaluate(outputs, metrics, metric_options)
-            for k, v in results.items():
-                logger.info(f'{k} : {v:.2f}')
-        else:
-            warnings.warn('Evaluation metrics are not specified.')
-            scores = np.vstack(outputs)
-            pred_score = np.max(scores, axis=1)
-            pred_label = np.argmax(scores, axis=1)
-            pred_class = [dataset.CLASSES[lb] for lb in pred_label]
-            results = {
-                'pred_score': pred_score,
-                'pred_label': pred_label,
-                'pred_class': pred_class
-            }
-            if not out:
-                logger.info('the predicted result for the first element is '
-                            f'pred_score = {pred_score[0]:.2f}, '
-                            f'pred_label = {pred_label[0]} '
-                            f'and pred_class = {pred_class[0]}. '
-                            'Specify --out to save all results to files.')
-        if out:
-            logger.debug(f'writing results to {out}')
-            mmcv.dump(results, out)
 
     def get_preprocess(self) -> Dict:
         """Get the preprocess information for SDK.

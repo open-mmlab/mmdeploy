@@ -4,6 +4,7 @@ from typing import Optional, Sequence, Union
 
 import mmengine
 from mmengine.model import BaseModel
+from torch import nn
 
 from mmdeploy.utils import (SDK_TASK_MAP, Backend, get_backend_config,
                             get_ir_config, get_task_type)
@@ -15,6 +16,7 @@ class BaseBackendModel(BaseModel, metaclass=ABCMeta):
 
     def __init__(self,
                  deploy_cfg: Optional[Union[str, mmengine.Config]] = None,
+                 data_preprocessor: Optional[Union[dict, nn.Module]] = None,
                  *args,
                  **kwargs):
         """The default for building the base class.
@@ -30,7 +32,7 @@ class BaseBackendModel(BaseModel, metaclass=ABCMeta):
         # TODO use input_names instead in the future for multiple inputs
         self.input_name = input_names[0] if input_names else 'input'
         self.output_names = output_names if output_names else ['output']
-        super().__init__()
+        super().__init__(data_preprocessor=data_preprocessor)
 
     @staticmethod
     def _build_wrapper(backend: Backend,

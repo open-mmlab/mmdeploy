@@ -1,11 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from abc import ABCMeta, abstractmethod
-from typing import Optional
+from abc import ABCMeta
 
-import torch
 from mmengine import Config
 from mmengine.registry import Registry
-from torch.utils.data import DataLoader
 
 from mmdeploy.utils import Codebase, Task, get_task_type
 from .task import BaseTask
@@ -51,27 +48,6 @@ class MMCodebase(metaclass=ABCMeta):
                 model_cfg=model_cfg,
                 deploy_cfg=deploy_cfg,
                 device=device))
-
-    @staticmethod
-    @abstractmethod
-    def single_gpu_test(model: torch.nn.Module,
-                        data_loader: DataLoader,
-                        show: bool = False,
-                        out_dir: Optional[str] = None,
-                        **kwargs):
-        """Run test with single gpu.
-
-        Args:
-            model (torch.nn.Module): Input model from nn.Module.
-            data_loader (DataLoader): PyTorch data loader.
-            show (bool): Specifying whether to show plotted results. Defaults
-                to `False`.
-            out_dir (str): A directory to save results, defaults to `None`.
-
-        Returns:
-            list: The prediction results.
-        """
-        pass
 
 
 # Note that the build function returns the class instead of its instance.

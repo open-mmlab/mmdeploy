@@ -25,6 +25,22 @@ def get_logger(name: str,
     Returns:
         logging.Logger: The expected logger.
     """
+    # use logger in mmengine if exist.
+    try:
+        from mmengine.logging import MMLogger
+        if MMLogger.check_instance_created(name):
+            logger = MMLogger.get_instance(name)
+        else:
+            logger = MMLogger.get_instance(
+                name,
+                log_file=log_file,
+                log_level=log_level,
+                file_mode=file_mode)
+        return logger
+
+    except Exception:
+        pass
+
     logger = logging.getLogger(name)
     if name in logger_initialized:
         return logger

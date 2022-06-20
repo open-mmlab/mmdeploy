@@ -2,6 +2,7 @@
 import time
 import warnings
 from contextlib import contextmanager
+from logging import Logger
 from typing import Optional
 
 import torch
@@ -90,7 +91,8 @@ class TimeCounter:
                  warmup: int = 1,
                  log_interval: int = 1,
                  with_sync: bool = False,
-                 file: Optional[str] = None):
+                 file: Optional[str] = None,
+                 logger: Optional[Logger] = None):
         """Activate the time counter.
 
         Args:
@@ -104,7 +106,8 @@ class TimeCounter:
                 is `None`.
         """
         assert warmup >= 1
-        logger = get_logger('test', log_file=file)
+        if logger is None:
+            logger = get_logger('test', log_file=file)
         cls.logger = logger
         if func_name is not None:
             warnings.warn('func_name must be globally unique if you call '

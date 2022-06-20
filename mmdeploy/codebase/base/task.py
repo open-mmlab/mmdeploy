@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
 from abc import ABCMeta, abstractmethod
+from copy import deepcopy
 from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
 import mmcv
@@ -82,7 +83,10 @@ class BaseTask(metaclass=ABCMeta):
                 codebases.
         """
         from mmengine.registry import MODELS
-        model = MODELS.build(self.model_cfg.model)
+        model = deepcopy(self.model_cfg.model)
+        preprocess_cfg = deepcopy(self.model_cfg.get('preprocess_cfg', {}))
+        model.setdefault('data_preprocessor', preprocess_cfg)
+        model = MODELS.build(model)
         if model_checkpoint is not None:
             from mmengine.runner.checkpoint import load_checkpoint
             load_checkpoint(model, model_checkpoint)
@@ -141,26 +145,59 @@ class BaseTask(metaclass=ABCMeta):
         from mmengine.runner import Runner
         return Runner.build_dataloader(dataloader, seed)
 
-    def single_gpu_test(self,
-                        model: torch.nn.Module,
-                        data_loader: DataLoader,
-                        show: bool = False,
-                        out_dir: Optional[str] = None,
-                        **kwargs):
-        """Run test with single gpu.
+    def build_test_runner(self,
+                          model: torch.nn.Module,
+                          work_dir: str,
+                          log_file: Optional[str] = None,
+                          show: bool = False,
+                          show_dir: Optional[str] = None,
+                          wait_time: int = 0,
+                          interval: int = 1,
+                          dataloader: Optional[Union[DataLoader,
+                                                     Dict]] = None):
 
-        Args:
-            model (torch.nn.Module): Input model from nn.Module.
-            data_loader (DataLoader): PyTorch data loader.
-            show (bool): Specifying whether to show plotted results. Defaults
-                to `False`.
-            out_dir (str): A directory to save results, defaults to `None`.
+        def _merge_cfg(cfg):
+            """Merge CLI arguments to config."""
+            # -------------------- visualization --------------------
+            if show or (show_dir is not None):
+                assert 'visualization' in cfg.default_hooks, \
+                    'VisualizationHook is not set in the `default_hooks`'\
+                    ' field of config. Please set '\
+                    '`visualization=dict(type="VisualizationHook")`'
 
-        Returns:
-            list: The prediction results.
-        """
-        return self.codebase_class.single_gpu_test(model, data_loader, show,
-                                                   out_dir, **kwargs)
+                cfg.default_hooks.visualization.enable = True
+                cfg.default_hooks.visualization.show = show
+                cfg.default_hooks.visualization.wait_time = wait_time
+                cfg.default_hooks.visualization.out_dir = show_dir
+                cfg.default_hooks.visualization.interval = interval
+
+            return cfg
+
+        model_cfg = deepcopy(self.model_cfg)
+        if not isinstance(dataloader, DataLoader):
+            dataloader = self.build_dataloader(dataloader)
+
+        model_cfg = _merge_cfg(model_cfg)
+
+        visualizer = self.get_visualizer(work_dir, work_dir)
+
+        from .runner import DeployTestRunner
+        runner = DeployTestRunner(
+            model=model,
+            work_dir=work_dir,
+            log_file=log_file,
+            device=self.device,
+            visualizer=visualizer,
+            default_hooks=model_cfg.default_hooks,
+            test_dataloader=dataloader,
+            test_cfg=model_cfg.test_cfg,
+            test_evaluator=model_cfg.test_evaluator,
+            default_scope=model_cfg.default_scope)
+        # if log2file is not None:
+        #     logger = runner.logger
+        #     runner.logger = runner.build_logger(
+        #         logger.level, log2file, name=logger.name + '_mmdeploy')
+        return runner
 
     @abstractmethod
     def create_input(
@@ -183,22 +220,24 @@ class BaseTask(metaclass=ABCMeta):
         """
         pass
 
-    def get_visualizer(self, save_dir: str):
+    def get_visualizer(self, name: str, save_dir: str):
         """Get the visualizer instance.
 
         Args:
+            name (str): The name of the visualizer.
             save_dir (str): The save directory of visualizer.
         """
         from mmengine.visualization import Visualizer
-        if not isinstance(self.visualizer, Visualizer):
-            if Visualizer.check_instance_created(self.experiment_name):
-                self.visualizer = Visualizer.get_instance(self.experiment_name)
-            else:
-                visualizer = self.visualizer
-                visualizer.setdefault('name', self.experiment_name)
-                visualizer.setdefault('save_dir', save_dir)
-                from mmengine.registry import VISUALIZERS
-                self.visualizer = VISUALIZERS.build(visualizer)
+        if Visualizer.check_instance_created(name):
+            visualizer = Visualizer.get_instance(name)
+        else:
+            visualizer = self.visualizer
+            visualizer.setdefault('name', name)
+            visualizer.setdefault('save_dir', save_dir)
+            from mmengine.registry import VISUALIZERS
+            visualizer = VISUALIZERS.build(visualizer)
+
+        return visualizer
 
     def visualize(self,
                   image: Union[str, np.ndarray],
@@ -220,11 +259,10 @@ class BaseTask(metaclass=ABCMeta):
                 to `False`.
         """
         save_dir, save_name = osp.split(output_file)
-        self.get_visualizer(save_dir)
+        visualizer = self.get_visualizer(self.experiment_name, save_dir)
 
         image = mmcv.imread(image, channel_order='rgb')
-        self.visualizer.add_datasample(
-            save_name, image, result, show=show_result)
+        visualizer.add_datasample(save_name, image, result, show=show_result)
 
     @staticmethod
     @abstractmethod
@@ -251,43 +289,6 @@ class BaseTask(metaclass=ABCMeta):
             torch.Tensor: An image in `Tensor`.
         """
         return input_data['inputs']
-
-    @staticmethod
-    @abstractmethod
-    def evaluate_outputs(model_cfg,
-                         outputs: Sequence,
-                         dataset: Dataset,
-                         metrics: Optional[str] = None,
-                         out: Optional[str] = None,
-                         metric_options: Optional[dict] = None,
-                         format_only: bool = False,
-                         log_file: Optional[str] = None,
-                         **kwargs):
-        """Perform post-processing to predictions of model.
-
-        Args:
-            outputs (list): A list of predictions of model inference.
-            dataset (Dataset): Input dataset to run test.
-            model_cfg (Config): The model config.
-            metrics (str): Evaluation metrics, which depends on
-                the codebase and the dataset, e.g., "bbox", "segm", "proposal"
-                for COCO, and "mAP", "recall" for PASCAL VOC in mmdet;
-                "accuracy", "precision", "recall", "f1_score", "support"
-                for single label dataset, and "mAP", "CP", "CR", "CF1",
-                "OP", "OR", "OF1" for multi-label dataset in mmcls.
-                Defaults is `None`.
-            out (str): Output inference results in pickle format, defaults to
-                `None`.
-            metric_options (dict): Custom options for evaluation, will be
-                kwargs for dataset.evaluate() function. Defaults to `None`.
-            format_only (bool): Format the output results without perform
-                evaluation. It is useful when you want to format the result
-                to a specific format and submit it to the test server. Defaults
-                to `False`.
-            log_file (str | None): The file to write the evaluation results.
-                Defaults to `None` and the results will only print on stdout.
-        """
-        pass
 
     @abstractmethod
     def get_preprocess(self) -> Dict:
