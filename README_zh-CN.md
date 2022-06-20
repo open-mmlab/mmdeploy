@@ -41,6 +41,7 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 ## 特性简介
 
 ### 支持超多 OpenMMLab 算法库
+
 - [mmcls](docs/en/04-supported-codebases/mmcls.md)
 - [mmdet](docs/en/04-supported-codebases/mmdet.md)
 - [mmseg](docs/en/04-supported-codebases/mmseg.md)
@@ -51,38 +52,41 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 - [mmrotate](docs/en/04-supported-codebases/mmrotate.md)
 
 ### 支持多种推理后端
+
 | ONNX Runtime | TensorRT | ppl.nn | ncnn | OpenVINO | more                                              |
 | ------------ | -------- | ------ | ---- | -------- | ------------------------------------------------- |
-| ✔️            | ✔️        | ✔️      | ✔️    | ✔️        | [benchmark](docs/zh_cn/03-benchmark/benchmark.md) |
+| ✔️           | ✔️       | ✔️     | ✔️   | ✔️       | [benchmark](docs/zh_cn/03-benchmark/benchmark.md) |
 
 ### SDK 可高度定制化
+
 - Transform 数据预处理
 - Net 推理
 - Module 后处理
 
 ## [快速上手](docs/zh_cn/get_started.md)
 
-* [编译](docs/zh_cn/01-how-to-build/build_from_source.md)
-  * [Build from Docker](docs/zh_cn/01-how-to-build/build_from_docker.md)
-  * [Build for Linux](docs/zh_cn/01-how-to-build/linux-x86_64.md)
-  * [Build for Win10](docs/zh_cn/01-how-to-build/windows.md)
-  * [Build for Android](docs/zh_cn/01-how-to-build/android.md)
-  * [Build for Jetson](docs/en/01-how-to-build/jetsons.md)
-* 使用
-  * [把模型转换到推理 Backend](docs/zh_cn/02-how-to-run/convert_model.md)
-  * [配置转换参数](docs/zh_cn/02-how-to-run/write_config.md)
-  * [量化](docs/zh_cn/02-how-to-run/quantize_model.md)
-  * [测试转换完成的模型](docs/zh_cn/02-how-to-run/profile_model.md)
-* 开发指南
-  * [支持新模型](docs/zh_cn/04-developer-guide/support_new_model.md)
-  * [增加推理 Backend](docs/zh_cn/04-developer-guide/support_new_backend.md)
-  * [回归测试](docs/zh_cn/04-developer-guide/do_regression_test.md)
-* [FAQ](docs/zh_cn/faq.md)
-* [贡献者手册](.github/CONTRIBUTING.md)
+- [编译](docs/zh_cn/01-how-to-build/build_from_source.md)
+  - [Build from Docker](docs/zh_cn/01-how-to-build/build_from_docker.md)
+  - [Build for Linux](docs/zh_cn/01-how-to-build/linux-x86_64.md)
+  - [Build for Win10](docs/zh_cn/01-how-to-build/windows.md)
+  - [Build for Android](docs/zh_cn/01-how-to-build/android.md)
+  - [Build for Jetson](docs/en/01-how-to-build/jetsons.md)
+- 使用
+  - [把模型转换到推理 Backend](docs/zh_cn/02-how-to-run/convert_model.md)
+  - [配置转换参数](docs/zh_cn/02-how-to-run/write_config.md)
+  - [量化](docs/zh_cn/02-how-to-run/quantize_model.md)
+  - [测试转换完成的模型](docs/zh_cn/02-how-to-run/profile_model.md)
+- 开发指南
+  - [支持新模型](docs/zh_cn/04-developer-guide/support_new_model.md)
+  - [增加推理 Backend](docs/zh_cn/04-developer-guide/support_new_backend.md)
+  - [回归测试](docs/zh_cn/04-developer-guide/do_regression_test.md)
+- [FAQ](docs/zh_cn/faq.md)
+- [贡献者手册](.github/CONTRIBUTING.md)
 
 ## 新人解说
-  * [01 术语解释、加载第一个模型](docs/zh_cn/05-tutorial/01_introduction_to_model_deployment.md)
-  * [02 转成 onnx](docs/zh_cn/05-tutorial/02_challenges.md)
+
+- [01 术语解释、加载第一个模型](docs/zh_cn/05-tutorial/01_introduction_to_model_deployment.md)
+- [02 转成 onnx](docs/zh_cn/05-tutorial/02_challenges.md)
 
 ## 基准与模型库
 
@@ -93,6 +97,7 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 我们感谢所有的贡献者为改进和提升 MMDeploy 所作出的努力。请参考[贡献指南](.github/CONTRIBUTING.md)来了解参与项目贡献的相关指引。
 
 ## 致谢
+
 - [OpenPPL](https://github.com/openppl-public/ppl.nn): 高性能推理框架底层库
 - [OpenVINO](https://github.com/openvinotoolkit/openvino): AI 推理优化和部署框架
 - [ncnn](https://github.com/tencent/ncnn): 为手机端极致优化的高性能神经网络前向计算框架

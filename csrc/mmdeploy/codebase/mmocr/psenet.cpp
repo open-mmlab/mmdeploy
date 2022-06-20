@@ -51,7 +51,7 @@ class PSEHead : public MMOCR {
     }
 
     // drop batch dimension
-    _preds.Squeeze();
+    _preds.Squeeze(0);
 
     cv::Mat_<uint8_t> masks;
     cv::Mat_<int> kernel_labels;

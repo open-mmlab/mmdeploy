@@ -27,12 +27,12 @@ Note:
 
 - If you want to save libtorch env variables to bashrc, you could run
 
-    ```bash
-    echo '# set env for libtorch' >> ~/.bashrc
-    echo "export Torch_DIR=${Torch_DIR}" >> ~/.bashrc
-    echo 'export LD_LIBRARY_PATH=$Torch_DIR/lib:$LD_LIBRARY_PATH' >> ~/.bashrc
-    source ~/.bashrc
-    ```
+  ```bash
+  echo '# set env for libtorch' >> ~/.bashrc
+  echo "export Torch_DIR=${Torch_DIR}" >> ~/.bashrc
+  echo 'export LD_LIBRARY_PATH=$Torch_DIR/lib:$LD_LIBRARY_PATH' >> ~/.bashrc
+  source ~/.bashrc
+  ```
 
 ### Build on Linux
 

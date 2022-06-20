@@ -1,6 +1,7 @@
 # 如何在 Jetson 模组上安装 MMDeploy
 
 本教程将介绍如何在 NVIDIA Jetson 平台上安装 MMDeploy。该方法已经在以下 3 种 Jetson 模组上进行了验证：
+
 - Jetson Nano
 - Jetson TX2
 - Jetson AGX Xavier
@@ -17,6 +18,7 @@ JetPack SDK 为构建硬件加速的边缘 AI 应用提供了一个全面的开�
 其支持所有的 Jetson 模组及开发套件。
 
 主要有两种安装 JetPack SDK 的方式：
+
 1. 使用 SD 卡镜像方式，直接将镜像刻录到 SD 卡上
 2. 使用 NVIDIA SDK Manager 进行安装
 
@@ -57,6 +59,7 @@ JetPack SDK 4+ 自带 python 3.6。我们强烈建议使用默认的 python 版�
 
 如果必须安装更高版本的 python， 可以选择安装 JetPack 5+，其提供 python 3.8。
 ```
+
 ### PyTorch
 
 从[这里](https://forums.developer.nvidia.com/t/pytorch-for-jetson-version-1-10-now-available/72048)下载 Jetson 的 PyTorch wheel 文件并保存在本地目录 `/opt` 中。
@@ -226,33 +229,34 @@ pip install -v -e .
 
 1. 编译 SDK Libraries
 
-    ```shell
-    mkdir -p build && cd build
-    cmake .. \
-        -DMMDEPLOY_BUILD_SDK=ON \
-        -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
-        -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
-        -DMMDEPLOY_TARGET_BACKENDS="trt" \
-        -DMMDEPLOY_CODEBASES=all \
-        -Dpplcv_DIR=${PPLCV_DIR}/cuda-build/install/lib/cmake/ppl
-    make -j$(nproc) && make install
-    ```
+   ```shell
+   mkdir -p build && cd build
+   cmake .. \
+       -DMMDEPLOY_BUILD_SDK=ON \
+       -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
+       -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
+       -DMMDEPLOY_TARGET_BACKENDS="trt" \
+       -DMMDEPLOY_CODEBASES=all \
+       -Dpplcv_DIR=${PPLCV_DIR}/cuda-build/install/lib/cmake/ppl
+   make -j$(nproc) && make install
+   ```
 
 2. 编译 SDK demos
 
-    ```shell
-    cd ${MMDEPLOY_DIR}/build/install/example
-    mkdir -p build && cd build
-    cmake .. -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy
-    make -j$(nproc)
-    ```
+   ```shell
+   cd ${MMDEPLOY_DIR}/build/install/example
+   mkdir -p build && cd build
+   cmake .. -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy
+   make -j$(nproc)
+   ```
 
 3. 运行 demo
 
-    以目标检测为例:
-    ```shell
-    ./object_detection cuda ${directory/to/the/converted/models} ${path/to/an/image}
-    ```
+   以目标检测为例:
+
+   ```shell
+   ./object_detection cuda ${directory/to/the/converted/models} ${path/to/an/image}
+   ```
 
 ## Troubleshooting
 
@@ -260,13 +264,14 @@ pip install -v -e .
 
 - `pip install` 报错 `Illegal instruction (core dumped)`
 
-   ```shell
+  ```shell
   echo '# set env for pip' >> ~/.bashrc
   echo 'export OPENBLAS_CORETYPE=ARMV8' >> ~/.bashrc
   source ~/.bashrc
   ```
 
   如果上述方法仍无法解决问题，检查是否正在使用镜像文件。如果是的，可尝试：
+
   ```shell
   rm .condarc
   conda clean -i
