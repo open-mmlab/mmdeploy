@@ -7,6 +7,7 @@
 - OpenJDK >= 10
 
 ### Installation
+
 **Step 1.** Generate java class and jni headers.
 
 You should Generate java `.class` files and jni headers before build them with sdk.
