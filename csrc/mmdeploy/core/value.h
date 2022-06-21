@@ -179,7 +179,7 @@ MMDEPLOY_REGISTER_TYPE_ID(Event, 4);
 MMDEPLOY_REGISTER_TYPE_ID(Model, 5);
 MMDEPLOY_REGISTER_TYPE_ID(Tensor, 6);
 MMDEPLOY_REGISTER_TYPE_ID(Mat, 7);
-MMDEPLOY_REGISTER_TYPE_ID(Tracer, 8);
+MMDEPLOY_REGISTER_TYPE_ID(Tracer, 9);
 
 template <typename T>
 struct is_value : std::is_same<T, Value> {};
