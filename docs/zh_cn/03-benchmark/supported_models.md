@@ -25,7 +25,7 @@
 | MobileNetV2                | MMClassification |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |    [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/mobilenet_v2)    |
 | ShuffleNetV1               | MMClassification |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v1)    |
 | ShuffleNetV2               | MMClassification |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v2)    |
-| VisionTransformer          | MMClassification |      Y      |      Y      |    ?     |  Y   |   ?   |    ?     | [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/vision_transformer) |
+| VisionTransformer          | MMClassification |      Y      |      Y      |    Y     |  Y   |   ?   |    Y     | [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/vision_transformer) |
 | FCN                        | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |         [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/fcn)          |
 | PSPNet[\*static](#note)    | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |        [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/pspnet)        |
 | DeepLabV3                  | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |      [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/deeplabv3)       |

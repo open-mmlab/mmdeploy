@@ -556,6 +556,27 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">89.85</td>
     <td align="center">90.41</td>
   </tr>
+  <tr>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmclassification/blob/master/configs/vision_transformer/vit-base-p16_ft-64xb64_in1k-384.py">Vision Transformer</a></td>
+    <td align="center">top-1</td>
+    <td align="center">85.43</td>
+    <td align="center">85.43</td>
+    <td align="center">-</td>
+    <td align="center">85.43</td>
+    <td align="center">85.42</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <td align="center">top-5</td>
+    <td align="center">97.77</td>
+    <td align="center">97.77</td>
+    <td align="center">-</td>
+    <td align="center">97.77</td>
+    <td align="center">97.76</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
 </tbody>
 </table>
 </div>
