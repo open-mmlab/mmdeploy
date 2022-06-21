@@ -59,7 +59,7 @@ Result<Value> PrepareImageImpl::Process(const Value& input) {
     tracer.TraceLoad(arg_.color_type, arg_.to_float32,
                      {1, src_mat.height(), src_mat.width(), src_mat.channel()},
                      src_mat.pixel_format(), src_mat.type());
-    output["tracer"] = std::move(tracer);
+    output["__tracer__"] = std::move(tracer);
   }
 
   MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));

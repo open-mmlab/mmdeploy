@@ -43,9 +43,9 @@ Result<Value> DefaultFormatBundleImpl::Process(const Value& input) {
 
     // trace static info & runtime args
     if (fuse_transform_ == true) {
-      auto tracer = output["tracer"].get<Tracer>();
+      auto tracer = output["__tracer__"].get<Tracer>();
       tracer.TraceDFB(arg_.img_to_float, in_tensor.data_type());
-      output["tracer"] = std::move(tracer);
+      output["__tracer__"] = std::move(tracer);
     }
 
     // transpose

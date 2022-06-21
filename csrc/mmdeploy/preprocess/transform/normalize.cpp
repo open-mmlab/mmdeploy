@@ -79,9 +79,9 @@ Result<Value> NormalizeImpl::Process(const Value& input) {
 
     // trace static info & runtime args
     if (fuse_transform_ == true) {
-      auto tracer = output["tracer"].get<Tracer>();
+      auto tracer = output["__tracer__"].get<Tracer>();
       tracer.TraceNorm(arg_.mean, arg_.std, arg_.to_rgb, desc.data_type);
-      output["tracer"] = std::move(tracer);
+      output["__tracer__"] = std::move(tracer);
     }
   }
   MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));
