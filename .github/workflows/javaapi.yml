@@ -54,7 +54,7 @@ jobs:
           popd && popd
       - name: Install opencv
         run: |
-          apt-get install libopencv-dev
+          sudo apt-get install libopencv-dev
       - name: Build java class
         run: |
           pushd csrc/mmdeploy/apis/java
