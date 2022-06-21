@@ -1,9 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional, Dict, Union
-from mmengine.runner import Runner
+from typing import Dict, Optional, Union
+
 from mmengine.device import get_device
-from mmengine.model import BaseModel
 from mmengine.logging import MMLogger
+from mmengine.model import BaseModel
+from mmengine.runner import Runner
 
 
 class DeployTestRunner(Runner):

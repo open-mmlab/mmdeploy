@@ -1,24 +1,17 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Any, List, Optional, Sequence, Union
 
-import mmcv
 import numpy as np
 import torch
-from mmcv.utils import Registry
 from mmengine import BaseDataElement, Config
+from mmengine.registry import Registry
 from torch import nn
 
 from mmdeploy.codebase.base import BaseBackendModel
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
                             get_root_logger, load_config)
 
-
-def __build_backend_model(cls_name: str, registry: Registry, *args, **kwargs):
-    return registry.module_dict[cls_name](*args, **kwargs)
-
-
-__BACKEND_MODEL = mmcv.utils.Registry(
-    'backend_classifiers', build_func=__build_backend_model)
+__BACKEND_MODEL = Registry('backend_classifiers')
 
 
 @__BACKEND_MODEL.register_module('end2end')
@@ -178,11 +171,12 @@ def build_classification_model(model_files: Sequence[str],
     # class_names = get_classes_from_config(model_cfg)
 
     backend_classifier = __BACKEND_MODEL.build(
-        model_type,
-        backend=backend,
-        backend_files=model_files,
-        device=device,
-        deploy_cfg=deploy_cfg,
-        **kwargs)
+        dict(
+            type=model_type,
+            backend=backend,
+            backend_files=model_files,
+            device=device,
+            deploy_cfg=deploy_cfg,
+            **kwargs))
 
     return backend_classifier

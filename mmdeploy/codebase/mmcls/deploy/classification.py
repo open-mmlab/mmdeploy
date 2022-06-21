@@ -6,11 +6,20 @@ import numpy as np
 import torch
 from mmengine import Config
 from mmengine.model import BaseDataPreprocessor
+from mmengine.registry import Registry
 
-from mmdeploy.codebase.base import BaseTask
-from mmdeploy.utils import Task, get_root_logger
+from mmdeploy.codebase.base import CODEBASE, BaseTask, MMCodebase
+from mmdeploy.utils import Codebase, Task, get_root_logger
 from mmdeploy.utils.config_utils import get_input_shape
-from .mmclassification import MMCLS_TASK
+
+MMCLS_TASK = Registry('mmcls_tasks')
+
+
+@CODEBASE.register_module(Codebase.MMCLS.value)
+class MMClassification(MMCodebase):
+    """mmclassification codebase class."""
+
+    task_registry = MMCLS_TASK
 
 
 def process_model_config(model_cfg: Config,
