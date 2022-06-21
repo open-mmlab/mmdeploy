@@ -11,9 +11,11 @@ set(SRCS
         normalize_impl.cpp
         pad_impl.cpp
         resize_impl.cpp
-        dynamic_library.cpp
-        library_compiler.cpp)
-mmdeploy_add_module(${PROJECT_NAME} "${SRCS}")
+        elena_registry.cpp)
+
+file(GLOB KERNEL_SRCS "prebuilt_kernel/*.c" "prebuilt_kernel/*.cpp")
+mmdeploy_add_module(${PROJECT_NAME} "${SRCS}" "${KERNEL_SRCS}")
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(${PROJECT_NAME}
         PRIVATE mmdeploy::transform)
 add_library(mmdeploy::transform_impl::elena ALIAS ${PROJECT_NAME})
