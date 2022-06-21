@@ -153,6 +153,7 @@ class Event;
 class Model;
 class Tensor;
 class Mat;
+class Tracer;
 
 template <>
 struct is_cast_by_erasure<Device> : std::true_type {};
@@ -168,6 +169,8 @@ template <>
 struct is_cast_by_erasure<Tensor> : std::true_type {};
 template <>
 struct is_cast_by_erasure<Mat> : std::true_type {};
+template <>
+struct is_cast_by_erasure<Tracer> : std::true_type {};
 
 MMDEPLOY_REGISTER_TYPE_ID(Device, 1);
 MMDEPLOY_REGISTER_TYPE_ID(Buffer, 2);
@@ -176,6 +179,7 @@ MMDEPLOY_REGISTER_TYPE_ID(Event, 4);
 MMDEPLOY_REGISTER_TYPE_ID(Model, 5);
 MMDEPLOY_REGISTER_TYPE_ID(Tensor, 6);
 MMDEPLOY_REGISTER_TYPE_ID(Mat, 7);
+MMDEPLOY_REGISTER_TYPE_ID(Tracer, 8);
 
 template <typename T>
 struct is_value : std::is_same<T, Value> {};

@@ -5,7 +5,7 @@
 #include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/core/registry.h"
 #include "mmdeploy/core/tensor.h"
-#include "utils.h"
+#include "mmdeploy/core/tracer.h"
 
 using namespace std;
 
@@ -79,25 +79,9 @@ Result<Value> NormalizeImpl::Process(const Value& input) {
 
     // trace static info & runtime args
     if (fuse_transform_ == true) {
-      // 1. cast
-      Value trans_info;
-      trans_info["static"].push_back({{"type", "CastFloat"}});
-      trans_info["runtime_args"].push_back({{"src_date_type", DataTypeToString(desc.data_type)}});
-      // 2. to_rgb
-      if (arg_.to_rgb) {
-        trans_info["static"].push_back({{"type", "cvtColorRGB"}});
-        std::string src_pixel_format = (desc.shape[3] == 3) ? "BGR" : "Gray";
-        // If current image is gray, shouldn't do cvtColorRGB
-        trans_info["runtime_args"].push_back({{"src_pixel_format", src_pixel_format}});
-        trans_info["runtime_args"].back()["src_data_type"] = "Float";
-      }
-      // 3.normalize
-      trans_info["static"].push_back({{"type", "Normalize"},
-                                      {"mean", output["img_norm_cfg"]["mean"]},
-                                      {"std", output["img_norm_cfg"]["std"]}});
-      trans_info["runtime_args"].push_back({{"src_data_type", "Float"}});
-      AddTransInfo(trans_info, output);
-      assert(CheckTraceInfoLengthEqual(output) == true);
+      auto tracer = output["tracer"].get<Tracer>();
+      tracer.TraceNorm(arg_.mean, arg_.std, arg_.to_rgb, desc.data_type);
+      output["tracer"] = std::move(tracer);
     }
   }
   MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));
