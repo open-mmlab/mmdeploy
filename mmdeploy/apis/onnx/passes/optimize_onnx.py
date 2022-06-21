@@ -12,6 +12,10 @@ def optimize_onnx(graph, params_dict, torch_out):
         ts_optimizer.onnx._jit_pass_flatten_cls_head(graph)
         ts_optimizer.onnx._jit_pass_fuse_select_assign(graph, params_dict)
     except Exception:
-        pass
+        logger.warning(
+            'Can not optimize model, please build torchscipt extension.\n'
+            'More details: '
+            'https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/experimental/onnx_optimizer.md'  # noqa
+        )
 
     return graph, params_dict, torch_out

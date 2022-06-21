@@ -82,6 +82,7 @@ def torch2onnx(img: Any,
         'verbose', False)
     keep_initializers_as_inputs = onnx_cfg.get('keep_initializers_as_inputs',
                                                True)
+    optimize = onnx_cfg.get('optimize', False)
     with no_mp():
         export(
             torch_model,
@@ -94,4 +95,5 @@ def torch2onnx(img: Any,
             opset_version=opset_version,
             dynamic_axes=dynamic_axes,
             verbose=verbose,
-            keep_initializers_as_inputs=keep_initializers_as_inputs)
+            keep_initializers_as_inputs=keep_initializers_as_inputs,
+            optimize=optimize)
