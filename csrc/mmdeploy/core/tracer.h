@@ -1,3 +1,5 @@
+// Copyright (c) OpenMMLab. All rights reserved.
+
 #ifndef MMDEPLOY_SRC_CORE_TRACER_H_
 #define MMDEPLOY_SRC_CORE_TRACER_H_
 
