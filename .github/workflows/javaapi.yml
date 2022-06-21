@@ -21,7 +21,7 @@ jobs:
       matrix:
         python-version: [3.7]
         torch: [1.9.0]
-        mmcv: [1.4.2]
+        mmcv: [1.4.5]
         include:
           - torch: 1.9.0
             torch_version: torch1.9
@@ -52,6 +52,51 @@ jobs:
           cmake --build . -j2
           make install
           popd && popd
+      - name: Install mmcv
+        run: |
+          python -m pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cu111/${{matrix.torch_version}}/index.html
+      - name: Install mmcls
+        run: |
+          cd ~
+          git clone https://github.com/open-mmlab/mmclassification.git
+          cd mmclassification
+          python3 -m pip install -e .
+          cd -
+      - name: Install mmdet
+        run: |
+          cd ~
+          git clone https://github.com/open-mmlab/mmdetection.git
+          cd mmdetection
+          python3 -m pip install -e .
+          cd -
+      - name: Install mmseg
+        run: |
+          cd ~
+          git clone https://github.com/open-mmlab/mmsegmentation.git
+          cd mmsegmentation
+          python3 -m pip install -e .
+          cd -
+      - name: Install mmedit
+        run: |
+          cd ~
+          git clone https://github.com/open-mmlab/mmediting.git
+          cd mmediting
+          python3 -m pip install -e .
+          cd -
+      - name: Install mmocr
+        run: |
+          cd ~
+          git clone https://github.com/open-mmlab/mmocr.git
+          cd mmocr
+          python3 -m pip install -e .
+          cd -
+      - name: Install mmpose
+        run: |
+          cd ~
+          git clone https://github.com/open-mmlab/mmpose.git
+          cd mmpose
+          python3 -m pip install -e .
+          cd -
       - name: Install opencv
         run: |
           sudo apt-get install libopencv-dev
