@@ -1,61 +1,143 @@
 // Copyright (c) OpenMMLab. All rights reserved.
-#include <map>
+#include <iostream>
+#include <set>
 #include <string>
 
-#include "dynamic_library.h"
-#include "library_compiler.h"
+#include "elena_registry.h"
 #include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/core/mat.h"
 #include "mmdeploy/core/tensor.h"
-#include "mmdeploy/core/utils/filesystem.h"
+#include "mmdeploy/core/tracer.h"
+#include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/preprocess/transform/collect.h"
 
 namespace mmdeploy {
 namespace elena {
 
-const char* fuse_func_name = "fuse_func";
-using fuse_func = void (*)(void* host_data_in, const char* platform_name, const char* info,
-                           void* data_out);
+using namespace trace;
+
+struct ExtractTransParamVisitor {
+  bool valid{true};
+  std::set<std::string> st;
+
+  std::array<float, 3> mean;
+  std::array<float, 3> std;
+  std::array<int, 2> resize_hw;
+  std::string resize_mode;
+  float pad_val;
+  std::array<int, 4> pad_tlbr;
+  std::array<int, 2> pad_hw;
+  std::array<int, 4> crop_tlbr;
+  std::array<int, 2> crop_hw;
+
+  void CheckValid(const std::string& name) {
+    if (st.count(name)) {
+      valid = false;
+      return;
+    }
+    st.insert(name);
+  }
+
+  void operator()(CvtColorParam&) {}
+  void operator()(CastParam&) {}
+  void operator()(HWC2CHWParam&) {}
+
+  void operator()(ResizeParam& param) {
+    CheckValid("Resize");
+    resize_hw = {param.size[0], param.size[1]};
+    resize_mode = param.mode;
+  }
+  void operator()(PadParam& param) {
+    CheckValid("Pad");
+    pad_val = param.pad_val;
+    std::copy_n(param.tlbr.begin(), 4, pad_tlbr.begin());
+    std::copy_n(param.size.begin(), 2, pad_hw.begin());
+  }
+  void operator()(NormParam& param) {
+    CheckValid("Normalize");
+    std::copy(param.mean.begin(), param.mean.end(), mean.begin());
+    std::copy(param.std.begin(), param.std.end(), std.begin());
+  }
+  void operator()(CropParam& param) {
+    CheckValid("CenterCrop");
+    std::copy_n(param.tlbr.begin(), 4, crop_tlbr.begin());
+    std::copy_n(param.size.begin(), 2, crop_hw.begin());
+  }
+};
+
+template <typename T, size_t N>
+void print(std::string name, std::array<T, N>& arr) {
+  std::cout << name << "\n";
+  for (int i = 0; i < N; i++) {
+    std::cout << arr[i] << " ";
+  }
+  std::cout << "\n";
+}
 
 class CollectImpl : public ::mmdeploy::CollectImpl {
  public:
-  CollectImpl(const Value& args) : ::mmdeploy::CollectImpl(args) {}
+  CollectImpl(const Value& args) : ::mmdeploy::CollectImpl(args) {
+    Platform platform(device_.platform_id());
+    device_name_ = platform.GetPlatformName();
+    sha256_ = args["context"].value("sha256", std::string(""));
+  }
+
   ~CollectImpl() = default;
+
   Result<Value> Process(const Value& input) override {
-    // compile library
-    std::string platform_name = Platform(device_.platform_id()).GetPlatformName();
-    std::string lib_name;
-    if (!Compiler::Instance().Compile(input, platform_name, lib_name)) {
-      throw std::runtime_error("compile code failed");
+    auto tracer = input["tracer"].get<Tracer>();
+    Mat src_mat = input["ori_img"].get<Mat>();
+
+    ExtractTransParamVisitor visitor{};
+    for (auto&& trans : tracer.trans_) {
+      std::visit(visitor, trans);
     }
-    if (!libs_.count(lib_name)) {
-      libs_.emplace(lib_name, lib_name.c_str());
+    std::string tag =
+        sha256_ + "_" + device_name_ + "_" + to_string(src_mat.pixel_format()) + "_Kernel";
+    FuseFunc func = FuseKernel::Get().GetFunc(tag);
+
+    if (!visitor.valid) {
+      MMDEPLOY_ERROR("unsupported fuse transform");
+      throw std::invalid_argument("");
+    }
+    if (src_mat.type() != DataType::kINT8) {
+      MMDEPLOY_ERROR("unsupported data type in fuse transform");
+      throw std::invalid_argument("");
+    }
+    if (!func) {
+      MMDEPLOY_ERROR("can't find fuse function with tag: {}", tag);
+      throw std::invalid_argument("");
     }
 
-    // kernel
+    // print("resize_hw", visitor.resize_hw);
+    // print("mean", visitor.mean);
+    // print("std", visitor.std);
+    // print("pad_tlbr", visitor.pad_tlbr);
+    // print("pad_hw", visitor.pad_hw);
+    // print("crop_tlbr", visitor.crop_tlbr);
+    // print("crop_hw", visitor.crop_hw);
+
     Value output = input;
     auto img_fields = GetImageFields(input);
     for (auto& key : img_fields) {
       assert(input.contains(key));
-      Mat src_mat = output["ori_img"].get<Mat>();
       Tensor src_tensor = input[key].get<Tensor>();
       auto desc = src_tensor.desc();
       desc.device = device_;
       Tensor dst_tensor{desc};
 
-      void* input_data_ptr = src_mat.data<void>();
-      void* output_data_ptr = dst_tensor.data<void>();
-      std::string info = to_json(input["trans_info"]).dump();
-
-      fuse_func func = (fuse_func)libs_.at(lib_name).Sym(fuse_func_name);
-      func(input_data_ptr, platform_name.c_str(), info.c_str(), output_data_ptr);
+      func(src_mat.data<uint8_t>(), visitor.resize_hw[0], visitor.resize_hw[1],
+           visitor.resize_mode.c_str(), visitor.crop_tlbr[0], visitor.crop_tlbr[1],
+           visitor.crop_hw[0], visitor.crop_hw[1], visitor.pad_tlbr[0], visitor.pad_tlbr[1],
+           visitor.pad_tlbr[2], visitor.pad_tlbr[3], visitor.pad_hw[0], visitor.pad_hw[1],
+           visitor.mean.data(), visitor.std.data(), dst_tensor.data<float>());
+      output[key] = std::move(dst_tensor);
     }
-    // end kernel
-
     return ::mmdeploy::CollectImpl::Process(output);
   }
 
-  std::map<std::string, DynamicLibrary> libs_;
+  std::string sha256_;
+  std::string device_name_;
 };
 
 class CollectImplCreator : public Creator<::mmdeploy::CollectImpl> {
