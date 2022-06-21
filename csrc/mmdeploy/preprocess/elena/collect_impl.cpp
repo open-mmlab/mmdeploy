@@ -85,7 +85,7 @@ class CollectImpl : public ::mmdeploy::CollectImpl {
   ~CollectImpl() = default;
 
   Result<Value> Process(const Value& input) override {
-    auto tracer = input["tracer"].get<Tracer>();
+    auto tracer = input["__tracer__"].get<Tracer>();
     Mat src_mat = input["ori_img"].get<Mat>();
 
     ExtractTransParamVisitor visitor{};
