@@ -3,7 +3,7 @@
 #include "crop.h"
 
 #include "mmdeploy/archive/json_archive.h"
-#include "utils.h"
+#include "mmdeploy/core/tracer.h"
 
 using namespace std;
 
@@ -66,26 +66,10 @@ Result<Value> CenterCropImpl::Process(const Value& input) {
 
     // trace static info & runtime args
     if (fuse_transform_ == true) {
-      bool img_shape_fixed = output.value("img_shape_fixed", false);
-      Value trans_info;
-      if (img_shape_fixed) {
-        trans_info["static"].push_back({{"type", "CenterCrop"},
-                                        {"tlbr", {y1, x1, h - shape[1] - y1, w - shape[2] - x1}},
-                                        {"size_hw", {shape[1], shape[2]}},
-                                        {"dynamic", false}});
-        trans_info["runtime_args"].push_back(
-            {{"src_date_type", DataTypeToString(tensor.data_type())}});
-      } else {
-        trans_info["static"].push_back(
-            {{"type", "CenterCrop"}, {"size_hw", {shape[1], shape[2]}}, {"dynamic", true}});
-        trans_info["runtime_args"].push_back(
-            {{"tlbr", {y1, x1, h - shape[1] - y1, w - shape[2] - x1}},
-             {"src_date_type", DataTypeToString(tensor.data_type())}});
-      }
-      output["img_shape_fixed"] = true;
-
-      AddTransInfo(trans_info, output);
-      assert(CheckTraceInfoLengthEqual(output) == true);
+      auto tracer = output["tracer"].get<Tracer>();
+      tracer.TraceCrop({y1, x1, h - (int)shape[1] - y1, w - (int)shape[2] - x1},
+                       {(int)shape[1], (int)shape[2]}, tensor.data_type());
+      output["tracer"] = std::move(tracer);
     }
   }
 

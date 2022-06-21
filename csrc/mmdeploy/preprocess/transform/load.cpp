@@ -3,7 +3,7 @@
 #include "load.h"
 
 #include "mmdeploy/archive/json_archive.h"
-#include "utils.h"
+#include "mmdeploy/core/tracer.h"
 
 namespace mmdeploy {
 
@@ -55,25 +55,11 @@ Result<Value> PrepareImageImpl::Process(const Value& input) {
 
   // trace static info & runtime args
   if (fuse_transform_ == true) {
-    Value trans_info;
-    if (arg_.color_type == "color" || arg_.color_type == "color_ignore_orientation") {
-      trans_info["static"].push_back({{"type", "cvtColorBGR"}});
-      output["img_pixel_format"] = "BGR";
-    } else {
-      trans_info["static"].push_back({{"type", "cvtColorGray"}});
-      output["img_pixel_format"] = "Gray";
-    }
-    trans_info["runtime_args"].push_back(
-        {{"src_pixel_format", PixelFormatToString(src_mat.pixel_format())},
-         {"src_data_type", DataTypeToString(src_mat.type())}});
-
-    if (arg_.to_float32) {
-      trans_info["static"].push_back({{"type", "CastFloat"}});
-      trans_info["runtime_args"].push_back({{"src_data_type", DataTypeToString(src_mat.type())}});
-    }
-
-    AddTransInfo(trans_info, output);
-    assert(CheckTraceInfoLengthEqual(output) == true);
+    Tracer tracer;
+    tracer.TraceLoad(arg_.color_type, arg_.to_float32,
+                     {1, src_mat.height(), src_mat.width(), src_mat.channel()},
+                     src_mat.pixel_format(), src_mat.type());
+    output["tracer"] = std::move(tracer);
   }
 
   MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));

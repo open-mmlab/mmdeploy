@@ -3,7 +3,7 @@
 #include "pad.h"
 
 #include "mmdeploy/archive/json_archive.h"
-#include "utils.h"
+#include "mmdeploy/core/tracer.h"
 
 using namespace std;
 
@@ -87,27 +87,11 @@ Result<Value> PadImpl::Process(const Value& input) {
 
     // trace static info & runtime args
     if (fuse_transform_ == true) {
-      Value trans_info;
-      bool img_shape_fixed = output.value("img_shape_fixed", false);
-      if (img_shape_fixed) {
-        trans_info["static"].push_back(
-            {{"type", "Pad"},
-             {"dynamic", false},
-             {"pad_val", arg_.pad_val},
-             {"tlbr", {padding[1], padding[0], padding[3], padding[2]}},
-             {"size_hw", {output["pad_shape"][1], output["pad_shape"][2]}}});
-        trans_info["runtime_args"].push_back({DataTypeToString(output_tensor.data_type())});
-      } else {
-        trans_info["static"].push_back(
-            {{"type", "Pad"}, {"dynamic", true}, {"pad_val", arg_.pad_val}});
-        trans_info["runtime_args"].push_back(
-            {{"tlbr", {padding[1], padding[0], padding[3], padding[2]}},
-             {"size_hw", {output["pad_shape"][1], output["pad_shape"][2]}},
-             {"src_data_type", DataTypeToString(output_tensor.data_type())}});
-      }
-
-      AddTransInfo(trans_info, output);
-      assert(CheckTraceInfoLengthEqual(output) == true);
+      auto tracer = output["tracer"].get<Tracer>();
+      tracer.TracePad(arg_.pad_val, {padding[1], padding[0], padding[3], padding[2]},
+                      {(int)output_tensor.shape(1), (int)output_tensor.shape(2)},
+                      output_tensor.data_type());
+      output["tracer"] = std::move(tracer);
     }
 
     SetTransformData(output, key, std::move(output_tensor));

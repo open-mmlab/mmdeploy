@@ -6,7 +6,7 @@
 
 #include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/core/tensor.h"
-#include "utils.h"
+#include "mmdeploy/core/tracer.h"
 
 namespace mmdeploy {
 
@@ -43,18 +43,9 @@ Result<Value> DefaultFormatBundleImpl::Process(const Value& input) {
 
     // trace static info & runtime args
     if (fuse_transform_ == true) {
-      Value trans_info;
-      if (arg_.img_to_float) {
-        trans_info["static"].push_back({{"type", "CastFloat"}});
-        trans_info["runtime_args"].push_back(
-            {{"src_date_type", DataTypeToString(in_tensor.data_type())}});
-      }
-
-      trans_info["static"].push_back({{"type", "HWC2CHW"}});
-      trans_info["runtime_args"].push_back(
-          {{"src_date_type", DataTypeToString(tensor.data_type())}});
-      AddTransInfo(trans_info, output);
-      assert(CheckTraceInfoLengthEqual(output) == true);
+      auto tracer = output["tracer"].get<Tracer>();
+      tracer.TraceDFB(arg_.img_to_float, in_tensor.data_type());
+      output["tracer"] = std::move(tracer);
     }
 
     // transpose
