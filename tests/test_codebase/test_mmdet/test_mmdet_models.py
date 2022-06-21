@@ -201,8 +201,8 @@ def get_gfl_head_model():
     return model
 
 
-def test_focus_forward_ncnn():
-    backend_type = Backend.NCNN
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME, Backend.NCNN])
+def test_focus_forward(backend_type):
     check_backend(backend_type)
     focus_model = get_focus_backbone_model()
     focus_model.cpu().eval()
