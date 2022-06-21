@@ -55,7 +55,7 @@ jobs:
       - name: Build java class
         run: |
           pushd csrc/mmdeploy/apis/java
-          javac -h native/ mmdeploy/Classifier.java mmdeploy/Detector.java mmdeploy/Segmentor.java mmdeploy/Restorer.java mmdeploy/PoseDetector.java mmdeploy/TextDetector.java mmdeploy/TextRestorer.java
+          javac -h native/ mmdeploy/*.java
           popd
       - name: Install mmdeploy with ncnn backend and java api
         run: |
