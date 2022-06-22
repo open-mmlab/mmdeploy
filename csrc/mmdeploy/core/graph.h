@@ -24,29 +24,44 @@ template <class... Ts>
 using Sender = TypeErasedSender<Ts...>;
 
 class MMDEPLOY_API Node {
-  friend class NodeParser;
-
  public:
   virtual ~Node() = default;
   virtual Sender<Value> Process(Sender<Value> input) = 0;
+
+  struct process_t {
+    Sender<Value> operator()(Sender<Value> sender, Node* node) const {
+      return node->Process(std::move(sender));
+    }
+  };
+  __closure::_BinderBack<process_t, Node*> Process() { return {{}, {}, {this}}; }
+};
+
+class Builder {
+ public:
+  virtual ~Builder() = default;
+
+  virtual Result<void> SetInputs();
+  virtual Result<void> SetOutputs();
+  virtual Result<unique_ptr<Node>> Build() = 0;
+
   const vector<string>& inputs() const noexcept { return inputs_; }
   const vector<string>& outputs() const noexcept { return outputs_; }
   const string& name() const noexcept { return name_; }
 
  protected:
-  string name_;
+  explicit Builder(Value config);
+
+ protected:
+  Value config_;
   vector<string> inputs_;
   vector<string> outputs_;
-};
-
-class MMDEPLOY_API NodeParser {
- public:
-  static Result<void> Parse(const Value& config, Node& node);
+  string name_;
 };
 
 }  // namespace graph
 
 MMDEPLOY_DECLARE_REGISTRY(graph::Node);
+MMDEPLOY_DECLARE_REGISTRY(graph::Builder);
 
 }  // namespace mmdeploy
 

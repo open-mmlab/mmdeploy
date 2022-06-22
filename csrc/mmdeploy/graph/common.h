@@ -42,10 +42,17 @@ inline Result<RetType> CreateFromRegistry(const Value& config, const char* key =
   return std::move(inst);
 }
 
-class BaseNode : public Node {
- protected:
-  explicit BaseNode(const Value& cfg);
-};
+
+
+Result<std::vector<std::string>> ParseStringArray(const Value& value);
+
+template <typename BuilderType>
+inline Result<std::unique_ptr<Node>> BuildFromConfig(Value config) {
+  BuilderType builder(std::move(config));
+  OUTCOME_TRY(builder.SetInputs());
+  OUTCOME_TRY(builder.SetOutputs());
+  return builder.Build();
+}
 
 }  // namespace mmdeploy::graph
 

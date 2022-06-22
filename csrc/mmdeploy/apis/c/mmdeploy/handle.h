@@ -8,7 +8,7 @@
 #include "mmdeploy/core/device.h"
 #include "mmdeploy/core/graph.h"
 #include "mmdeploy/core/value.h"
-#include "mmdeploy/graph/pipeline.h"
+#include "mmdeploy/graph/static_router.h"
 
 namespace mmdeploy {
 
@@ -20,7 +20,7 @@ class AsyncHandle {
     device_ = Device(device_name, device_id);
     stream_ = Stream(device_);
     config["context"].update({{"device", device_}, {"stream", stream_}});
-    auto creator = Registry<graph::Node>::Get().GetCreator("Pipeline");
+    auto creator = Registry<graph::GraphNode>::Get().GetCreator("Pipeline");
     if (!creator) {
       MMDEPLOY_ERROR("Failed to find Pipeline creator. Available nodes: {}",
                      Registry<graph::Node>::Get().List());
@@ -43,7 +43,7 @@ class AsyncHandle {
  private:
   Device device_;
   Stream stream_;
-  std::unique_ptr<graph::Node> pipeline_;
+  std::unique_ptr<graph::GraphNode> pipeline_;
 };
 
 }  // namespace

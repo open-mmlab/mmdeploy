@@ -39,14 +39,15 @@ Sender<Value> Task::Process(Sender<Value> input) {
   });
 }
 
-Result<unique_ptr<Task>> TaskParser::Parse(const Value& config) {
+TaskBuilder::TaskBuilder(Value config) : Builder(std::move(config)) {}
+
+Result<std::unique_ptr<Node>> TaskBuilder::Build() {
   try {
-    auto task = std::make_unique<Task>();
-    OUTCOME_TRY(NodeParser::Parse(config, *task));
-    OUTCOME_TRY(task->module_, CreateFromRegistry<Module>(config, "module"));
+    auto task = static_cast<Task*>(node_.get());  // NOLINT
+    OUTCOME_TRY(task->module_, CreateFromRegistry<Module>(config_, "module"));
     bool sched_set = false;
-    if (config["context"].contains("executor")) {
-      auto& exec_info = config["context"]["executor"];
+    if (config_["context"].contains("executor")) {
+      auto& exec_info = config_["context"]["executor"];
       for (auto it = exec_info.begin(); it != exec_info.end(); ++it) {
         if (it.key() == task->name()) {
           task->sched_ = it->get<TypeErasedScheduler<Value>>();
@@ -60,27 +61,31 @@ Result<unique_ptr<Task>> TaskParser::Parse(const Value& config) {
       task->sched_ =
           TypeErasedScheduler<Value>{std::make_shared<TypeErasedScheduler<Value>::Impl>()};
     }
-    task->is_batched_ = config.value("is_batched", false);
-    task->is_thread_safe_ = config.value("is_thread_safe", false);
-    return std::move(task);
+    task->is_batched_ = config_.value("is_batched", false);
+    task->is_thread_safe_ = config_.value("is_thread_safe", false);
+    return std::move(node_);
   } catch (const std::exception& e) {
-    MMDEPLOY_ERROR("error parsing config: {}", config);
+    MMDEPLOY_ERROR("error parsing config: {}", config_);
     return nullptr;
   }
 }
 
-class TaskCreator : public Creator<Node> {
+// class TaskCreator : public Creator<Node> {
+//  public:
+//   const char* GetName() const override { return "Task"; }
+//   unique_ptr<Node> Create(const Value& config) override {
+//     return BuildFromConfig<TaskBuilder>(config).value();
+//   }
+// };
+// REGISTER_MODULE(Node, TaskCreator);
+
+class TaskCreator : public Creator<Builder> {
  public:
   const char* GetName() const override { return "Task"; }
-  std::unique_ptr<Node> Create(const Value& value) override {
-    try {
-      return TaskParser::Parse(value).value();
-    } catch (...) {
-    }
-    return nullptr;
+  unique_ptr<Builder> Create(const Value& config) override {
+    return std::make_unique<TaskBuilder>(config);
   }
 };
-
-REGISTER_MODULE(Node, TaskCreator);
+REGISTER_MODULE(Builder, TaskCreator);
 
 }  // namespace mmdeploy::graph

@@ -220,7 +220,7 @@ struct _TypeErasedSenderImpl : _TypeErasedSender<ValueTypes>::Impl {
     //        (_capture_completion_scheduler_v<ValueTypes> && _has_completion_scheduler_v<Sender>));
     if constexpr (_capture_completion_scheduler_v<ValueTypes> &&
                   _has_completion_scheduler_v<Sender>) {
-      return GetCompletionScheduler(sender_);
+      return _TypeErasedScheduler<ValueTypes>{GetCompletionScheduler(sender_)};
     } else {
       return _TypeErasedScheduler<ValueTypes>{
           std::make_shared<typename _TypeErasedScheduler<ValueTypes>::Impl>()};

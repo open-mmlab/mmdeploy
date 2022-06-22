@@ -1,56 +1,37 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#ifndef MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_PIPELINE2_H_
-#define MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_PIPELINE2_H_
-
-#include <map>
+#ifndef MMDEPLOY_CSRC_MMDEPLOY_GRAPH_PIPELINE_H_
+#define MMDEPLOY_CSRC_MMDEPLOY_GRAPH_PIPELINE_H_
 
 #include "mmdeploy/core/graph.h"
-#include "mmdeploy/core/module.h"
-#include "mmdeploy/core/operator.h"
-#include "mmdeploy/core/value.h"
-#include "mmdeploy/execution/schedulers/registry.h"
-#include "mmdeploy/execution/when_all_value.h"
 
 namespace mmdeploy::graph {
 
 class Pipeline : public Node {
-  friend class PipelineParser;
+  friend class PipelineBuilder;
 
  public:
-  Sender<Value> Process(Sender<Value> args) override;
-
-  struct Coords {
-    // source node index
-    int index;
-    // source output port -> destination input port mapping
-    vector<pair<int, int>> mapping;
-  };
-
-  class State;
+  Sender<Value> Process(Sender<Value> input) override;
 
  private:
-  vector<unique_ptr<Node>> nodes_;
-  vector<int> use_count_;
-  vector<vector<Coords>> input_coords_;
-  vector<Coords> ret_coords_;
+  unique_ptr<Node> child_;
 };
 
-class PipelineParser {
+class PipelineBuilder : public Builder {
  public:
-  Result<unique_ptr<Pipeline>> Parse(const Value& config);
+  explicit PipelineBuilder(Value config);
+  Result<void> SetInputs() override;
+  Result<void> SetOutputs() override;
+  Result<unique_ptr<Node>> Build() override;
 
- private:
-  Result<vector<Pipeline::Coords>> GetInputCoords(const vector<string>& names);
-
-  Result<void> UpdateOutputCoords(int index, const vector<string>& names);
-
-  // use count for each node's output
-  vector<int> use_count_;
-  // name -> (node_id, port_id)
-  std::map<string, pair<int, int>> output_name_to_coords_;
+ protected:
+  vector<bool> flatten_;
+  vector<bool> broadcast_;
+  vector<bool> unflatten_;
+  vector<string> inputs_internal_;
+  vector<string> outputs_internal_;
 };
 
 }  // namespace mmdeploy::graph
 
-#endif  // MMDEPLOY_CSRC_EXPERIMENTAL_EXECUTION_PIPELINE2_H_
+#endif  // MMDEPLOY_CSRC_MMDEPLOY_GRAPH_PIPELINE_H_

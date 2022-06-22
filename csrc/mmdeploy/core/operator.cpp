@@ -155,4 +155,52 @@ Result<Value> DistribAA(const Value& a) {
   return ta;
 }
 
+std::tuple<Value::Array, std::vector<int>> FlattenArray(Value::Array values,
+                                                        const vector<bool>& predicate) {
+  assert(values.size() == predicate.size());
+  std::vector<int> indices;
+  for (int i = 0; i < values.size(); ++i) {
+    if (predicate[i]) {
+      std::vector<int> idx;
+      std::tie(values[i], idx) = Flatten(values[i]).value();
+      if (indices.empty()) {
+        indices.swap(idx);
+      } else {
+        assert(idx == indices);
+      }
+    }
+  }
+  return {std::move(values), std::move(indices)};
+}
+
+Value::Array UnflattenArray(Value::Array values, const vector<int>& index,
+                            const vector<bool>& predicate) {
+  assert(values.size() == predicate.size());
+  for (int i = 0; i < values.size(); ++i) {
+    if (predicate[i]) {
+      values[i] = Unflatten(std::move(values[i]), index).value();
+    }
+  }
+  return values;
+}
+
+Value::Array BroadcastArray(Value::Array values, const vector<int>& index,
+                            const vector<bool>& predicate) {
+  assert(values.size() == predicate.size());
+  auto is_array_of_size_one = [](const Value& v) { return v.is_array() && v.size() == 1; };
+  for (int i = 0; i < values.size(); ++i) {
+    if (predicate[i]) {
+      auto& val = values[i].array();
+      assert(std::all_of(val.begin(), val.end(), is_array_of_size_one));
+      Value::Array ret;
+      ret.reserve(index.size());
+      for (const auto& idx : index) {
+        ret.push_back(val[idx][0]);
+      }
+      values[i] = std::move(ret);
+    }
+  }
+  return values;
+}
+
 }  // namespace mmdeploy::graph

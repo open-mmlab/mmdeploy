@@ -2,27 +2,29 @@
 
 #include "mmdeploy/core/graph.h"
 
-#include "mmdeploy/archive/value_archive.h"
 #include "mmdeploy/core/registry.h"
+#include "mmdeploy/graph/common.h"
 
 namespace mmdeploy {
 namespace graph {
 
-Result<void> NodeParser::Parse(const Value& config, Node& node) {
-  try {
-    from_value(config["input"], node.inputs_);
-    from_value(config["output"], node.outputs_);
-    node.name_ = config.value<std::string>("name", "");
-    return success();
-  } catch (const Exception& e) {
-    MMDEPLOY_ERROR("error parsing config: {}", config);
-    return failure(e.code());
-  }
+Result<void> Builder::SetInputs() {
+  OUTCOME_TRY(inputs_, ParseStringArray(config_["input"]));
+  return success();
+}
+
+Result<void> Builder::SetOutputs() {
+  OUTCOME_TRY(outputs_, ParseStringArray(config_["output"]));
+  return success();
+}
+
+Builder::Builder(Value config) : config_(std::move(config)) {
+  name_ = config_.value<std::string>("name", "");
 }
 
 }  // namespace graph
 
-MMDEPLOY_DEFINE_REGISTRY(graph::Node);
+MMDEPLOY_DEFINE_REGISTRY(graph::Builder);
 
 MMDEPLOY_DEFINE_REGISTRY(TypeErasedScheduler<Value>);
 

@@ -1,16 +1,18 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "common.h"
+#include "mmdeploy/graph/common.h"
 
 #include "mmdeploy/archive/value_archive.h"
 
-mmdeploy::graph::BaseNode::BaseNode(const mmdeploy::Value& cfg) {
-  try {
-    from_value(cfg["input"], inputs_);
-    from_value(cfg["output"], outputs_);
-    name_ = cfg.value<std::string>("name", "");
-  } catch (...) {
-    MMDEPLOY_ERROR("error parsing config: {}", cfg);
-    throw;
+namespace mmdeploy::graph {
+
+Result<std::vector<std::string>> ParseStringArray(const Value& value) {
+  if (value.is_string()) {
+    return std::vector{value.get<std::string>()};
+  } else if (value.is_array()) {
+    return from_value<std::vector<std::string>>(value);
   }
+  return Status(eInvalidArgument);
 }
+
+}  // namespace mmdeploy::graph
