@@ -48,7 +48,7 @@ jobs:
           tar xf 20220420.tar.gz
           pushd ncnn-20220420
           mkdir build && pushd build
-          cmake -DCMAKE_INSTALL_PREFIX=$(pwd)/../install -DNCNN_BUILD_TESTS=OFF -DNCNN_BUILD_TOOLS=OFF -DNCNN_BUILD_EXAMPLES=OFF ..
+          cmake -DCMAKE_INSTALL_PREFIX=$(pwd)/../install -DNCNN_PYTHON=ON -DNCNN_BUILD_TESTS=OFF -DNCNN_BUILD_TOOLS=OFF -DNCNN_BUILD_EXAMPLES=OFF ..
           cmake --build . -j2
           make install
           popd && popd
@@ -120,5 +120,4 @@ jobs:
       - name: Test javademo
         run: |
           echo $(pwd)
-          ln -s build/bin/onnx2ncnn ./
           python3 .github/scripts/test_javademo.py
