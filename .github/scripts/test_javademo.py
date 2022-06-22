@@ -14,7 +14,7 @@ PARAMS = [
             'configs/mmcls/classification_ncnn_static.py',
             '~/mmclassification/configs/resnet/resnet18_8xb32_in1k.py',
             'https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth',  # noqa: E501
-            'demo/resources/human-pose.png'
+            'demo/resources/human-pose.jpg'
         ]]
     },
     {
