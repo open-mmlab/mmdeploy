@@ -18,7 +18,7 @@ namespace mmdeploy {
 
 std::map<std::string, void (*)(py::module &)> &gPythonBindings();
 
-mm_mat_t GetMat(const PyImage &img);
+mmdeploy_mat_t GetMat(const PyImage &img);
 
 class Value;
 

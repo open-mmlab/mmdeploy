@@ -9,25 +9,25 @@ std::map<std::string, void (*)(py::module&)>& gPythonBindings() {
   return v;
 }
 
-mm_mat_t GetMat(const PyImage& img) {
+mmdeploy_mat_t GetMat(const PyImage& img) {
   auto info = img.request();
   if (info.ndim != 3) {
     fprintf(stderr, "info.ndim = %d\n", (int)info.ndim);
     throw std::runtime_error("continuous uint8 HWC array expected");
   }
   auto channels = (int)info.shape[2];
-  mm_mat_t mat{};
+  mmdeploy_mat_t mat{};
   if (channels == 1) {
-    mat.format = MM_GRAYSCALE;
+    mat.format = MMDEPLOY_PIXEL_FORMAT_GRAYSCALE;
   } else if (channels == 3) {
-    mat.format = MM_BGR;
+    mat.format = MMDEPLOY_PIXEL_FORMAT_BGR;
   } else {
     throw std::runtime_error("images of 1 or 3 channels are supported");
   }
   mat.height = (int)info.shape[0];
   mat.width = (int)info.shape[1];
   mat.channel = channels;
-  mat.type = MM_INT8;
+  mat.type = MMDEPLOY_DATA_TYPE_UINT8;
   mat.data = (uint8_t*)info.ptr;
   return mat;
 }
