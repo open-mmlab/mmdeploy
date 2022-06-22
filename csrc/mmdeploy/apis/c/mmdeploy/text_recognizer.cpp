@@ -167,7 +167,8 @@ int mmdeploy_text_recognizer_create_input(const mmdeploy_mat_t* images, int imag
 
 int mmdeploy_text_recognizer_apply_bbox(mmdeploy_text_recognizer_t recognizer,
                                         const mmdeploy_mat_t* images, int image_count,
-                                        const mmdeploy_text_detection_t* bboxes, const int* bbox_count,
+                                        const mmdeploy_text_detection_t* bboxes,
+                                        const int* bbox_count,
                                         mmdeploy_text_recognition_t** results) {
   wrapped<mmdeploy_value_t> input;
   if (auto ec = mmdeploy_text_recognizer_create_input(images, image_count, bboxes, bbox_count,

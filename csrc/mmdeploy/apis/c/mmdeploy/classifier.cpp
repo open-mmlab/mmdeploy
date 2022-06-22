@@ -84,7 +84,8 @@ int mmdeploy_classifier_create_input(const mmdeploy_mat_t* mats, int mat_count,
 }
 
 int mmdeploy_classifier_apply(mmdeploy_classifier_t classifier, const mmdeploy_mat_t* mats,
-                              int mat_count, mmdeploy_classification_t** results, int** result_count) {
+                              int mat_count, mmdeploy_classification_t** results,
+                              int** result_count) {
   wrapped<mmdeploy_value_t> input;
   if (auto ec = mmdeploy_classifier_create_input(mats, mat_count, input.ptr())) {
     return ec;
@@ -131,7 +132,8 @@ int mmdeploy_classifier_get_result(mmdeploy_value_t output, mmdeploy_classificat
     std::unique_ptr<int[]> result_count_data(new int[_result_count.size()]{});
     std::copy(_result_count.begin(), _result_count.end(), result_count_data.get());
 
-    std::unique_ptr<mmdeploy_classification_t[]> result_data(new mmdeploy_classification_t[total]{});
+    std::unique_ptr<mmdeploy_classification_t[]> result_data(
+        new mmdeploy_classification_t[total]{});
     auto result_ptr = result_data.get();
     for (const auto& cls_output : classify_outputs) {
       for (const auto& label : cls_output.labels) {
@@ -153,7 +155,8 @@ int mmdeploy_classifier_get_result(mmdeploy_value_t output, mmdeploy_classificat
   return MMDEPLOY_E_FAIL;
 }
 
-void mmdeploy_classifier_release_result(mmdeploy_classification_t* results, const int* result_count, int count) {
+void mmdeploy_classifier_release_result(mmdeploy_classification_t* results, const int* result_count,
+                                        int count) {
   delete[] results;
   delete[] result_count;
 }
