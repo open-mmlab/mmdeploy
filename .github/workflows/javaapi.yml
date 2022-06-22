@@ -47,6 +47,7 @@ jobs:
           wget https://github.com/Tencent/ncnn/archive/refs/tags/20220420.tar.gz
           tar xf 20220420.tar.gz
           pushd ncnn-20220420
+          git submodule update --init
           mkdir build && pushd build
           cmake -DCMAKE_INSTALL_PREFIX=$(pwd)/../install -DNCNN_PYTHON=ON -DNCNN_BUILD_TESTS=OFF -DNCNN_BUILD_TOOLS=OFF -DNCNN_BUILD_EXAMPLES=OFF ..
           cmake --build . -j2
