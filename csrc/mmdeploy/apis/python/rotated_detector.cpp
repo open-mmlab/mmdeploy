@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "mmdeploy/apis/c/rotated_detector.h"
+#include "mmdeploy/rotated_detector.h"
 
 #include "common.h"
 
@@ -25,8 +25,8 @@ class PyRotatedDetector {
 
     mmdeploy_rotated_detection_t *rbboxes{};
     int *res_count{};
-    auto status = mmdeploy_rotated_detector_apply(detector_, mats.data(), (int)mats.size(), &rbboxes,
-                                                  &res_count);
+    auto status = mmdeploy_rotated_detector_apply(detector_, mats.data(), (int)mats.size(),
+                                                  &rbboxes, &res_count);
     if (status != MMDEPLOY_SUCCESS) {
       throw std::runtime_error("failed to apply rotated detector, code: " + std::to_string(status));
     }

@@ -4,10 +4,8 @@
 
 #include <numeric>
 
-#include "mmdeploy/apis/c/common_internal.h"
-#include "mmdeploy/apis/c/executor_internal.h"
-#include "mmdeploy/apis/c/model.h"
-#include "mmdeploy/apis/c/pipeline.h"
+#include "common_internal.h"
+#include "executor_internal.h"
 #include "mmdeploy/archive/value_archive.h"
 #include "mmdeploy/codebase/mmocr/mmocr.h"
 #include "mmdeploy/core/device.h"
@@ -16,6 +14,8 @@
 #include "mmdeploy/core/status_code.h"
 #include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/core/value.h"
+#include "model.h"
+#include "pipeline.h"
 
 using namespace mmdeploy;
 

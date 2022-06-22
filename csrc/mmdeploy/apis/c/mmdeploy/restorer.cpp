@@ -2,14 +2,14 @@
 
 #include "restorer.h"
 
-#include "mmdeploy/apis/c/common_internal.h"
-#include "mmdeploy/apis/c/executor_internal.h"
-#include "mmdeploy/apis/c/handle.h"
-#include "mmdeploy/apis/c/pipeline.h"
+#include "common_internal.h"
+#include "executor_internal.h"
+#include "handle.h"
 #include "mmdeploy/codebase/mmedit/mmedit.h"
 #include "mmdeploy/core/device.h"
 #include "mmdeploy/core/graph.h"
 #include "mmdeploy/core/utils/formatter.h"
+#include "pipeline.h"
 
 using namespace mmdeploy;
 

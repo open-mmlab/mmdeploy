@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "mmdeploy/apis/c/pose_detector.h"
+#include "mmdeploy/pose_detector.h"
 
 #include <array>
 #include <sstream>

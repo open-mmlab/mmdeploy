@@ -2,9 +2,9 @@
 
 #include "pipeline.h"
 
-#include "mmdeploy/apis/c/common_internal.h"
-#include "mmdeploy/apis/c/executor_internal.h"
-#include "mmdeploy/apis/c/handle.h"
+#include "common_internal.h"
+#include "executor_internal.h"
+#include "handle.h"
 
 int mmdeploy_pipeline_create(mmdeploy_value_t config, const char* device_name, int device_id,
                              mmdeploy_exec_info_t exec_info, mmdeploy_pipeline_t* pipeline) {

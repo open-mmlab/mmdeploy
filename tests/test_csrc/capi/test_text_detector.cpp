@@ -3,7 +3,7 @@
 #include "catch.hpp"
 // clang-format on
 
-#include "mmdeploy/apis/c/text_detector.h"
+#include "mmdeploy/apis/c/mmdeploy/text_detector.h"
 #include "mmdeploy/core/logger.h"
 #include "opencv2/opencv.hpp"
 #include "test_resource.h"

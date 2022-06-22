@@ -1,7 +1,7 @@
 #include "common.h"
 
-#include "mmdeploy/apis/c/common_internal.h"
-#include "mmdeploy/apis/c/handle.h"
+#include "common_internal.h"
+#include "handle.h"
 #include "mmdeploy/core/mat.h"
 
 mmdeploy_value_t mmdeploy_value_copy(mmdeploy_value_t value) {

@@ -4,7 +4,7 @@
 #include "catch.hpp"
 // clang-format on
 
-#include "mmdeploy/apis/c/text_recognizer.h"
+#include "mmdeploy/apis/c/mmdeploy/text_recognizer.h"
 #include "mmdeploy/core/logger.h"
 #include "mmdeploy/core/utils/formatter.h"
 #include "opencv2/opencv.hpp"

@@ -4,13 +4,13 @@
 
 #include <numeric>
 
-#include "mmdeploy/apis/c/common_internal.h"
-#include "mmdeploy/apis/c/handle.h"
-#include "mmdeploy/apis/c/pipeline.h"
+#include "common_internal.h"
+#include "handle.h"
 #include "mmdeploy/codebase/mmrotate/mmrotate.h"
 #include "mmdeploy/core/graph.h"
 #include "mmdeploy/core/mat.h"
 #include "mmdeploy/core/utils/formatter.h"
+#include "pipeline.h"
 
 using namespace std;
 using namespace mmdeploy;

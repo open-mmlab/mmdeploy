@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "mmdeploy/apis/c/executor.h"
+#include "executor.h"
 
 #include "common.h"
 #include "common_internal.h"

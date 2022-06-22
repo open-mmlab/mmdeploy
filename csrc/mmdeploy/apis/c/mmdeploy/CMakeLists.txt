@@ -15,9 +15,9 @@ foreach (TASK ${COMMON_LIST})
     mmdeploy_add_library(${TARGET_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/${TASK}.cpp)
     target_link_libraries(${TARGET_NAME} PRIVATE mmdeploy::core)
     target_include_directories(${TARGET_NAME} PUBLIC
-            $<INSTALL_INTERFACE:include/mmdeploy/apis/c>)
+            $<INSTALL_INTERFACE:include>)
     install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/${TASK}.h
-            DESTINATION include/mmdeploy/apis/c)
+            DESTINATION include/mmdeploy)
 endforeach ()
 
 target_link_libraries(mmdeploy_executor PUBLIC
@@ -32,9 +32,10 @@ foreach (TASK ${TASK_LIST})
     target_link_libraries(${TARGET_NAME} PRIVATE
             mmdeploy_pipeline mmdeploy::core)
     target_include_directories(${TARGET_NAME} PUBLIC
-            $<INSTALL_INTERFACE:include/mmdeploy/apis/c>)
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+            $<INSTALL_INTERFACE:include>)
     install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/${TASK}.h
-            DESTINATION include/mmdeploy/apis/c)
+            DESTINATION include/mmdeploy)
 endforeach ()
 
 if (MMDEPLOY_BUILD_SDK_CSHARP_API)

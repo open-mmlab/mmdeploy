@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "segmentor.h"
+#include "mmdeploy/segmentor.h"
 
 using namespace std;
 
@@ -23,7 +23,7 @@ vector<cv::Vec3b> gen_palette(int num_classes) {
   return palette;
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   if (argc != 4) {
     fprintf(stderr, "usage:\n  image_segmentation device_name model_path image_path\n");
     return 1;
@@ -37,19 +37,20 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  mm_handle_t segmentor{};
+  mmdeploy_segmentor_t segmentor{};
   int status{};
   status = mmdeploy_segmentor_create_by_path(model_path, device_name, 0, &segmentor);
-  if (status != MM_SUCCESS) {
+  if (status != MMDEPLOY_SUCCESS) {
     fprintf(stderr, "failed to create segmentor, code: %d\n", (int)status);
     return 1;
   }
 
-  mm_mat_t mat{img.data, img.rows, img.cols, 3, MM_BGR, MM_INT8};
+  mmdeploy_mat_t mat{
+      img.data, img.rows, img.cols, 3, MMDEPLOY_PIXEL_FORMAT_BGR, MMDEPLOY_DATA_TYPE_UINT8};
 
-  mm_segment_t *result{};
+  mmdeploy_segmentation_t* result{};
   status = mmdeploy_segmentor_apply(segmentor, &mat, 1, &result);
-  if (status != MM_SUCCESS) {
+  if (status != MMDEPLOY_SUCCESS) {
     fprintf(stderr, "failed to apply segmentor, code: %d\n", (int)status);
     return 1;
   }

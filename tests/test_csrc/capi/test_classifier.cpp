@@ -4,7 +4,7 @@
 #include "catch.hpp"
 // clang-format on
 
-#include "mmdeploy/apis/c/classifier.h"
+#include "mmdeploy/apis/c/mmdeploy/classifier.h"
 #include "mmdeploy/core/logger.h"
 #include "opencv2/opencv.hpp"
 #include "test_resource.h"

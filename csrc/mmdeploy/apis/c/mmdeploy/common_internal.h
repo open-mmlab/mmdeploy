@@ -3,11 +3,11 @@
 #ifndef MMDEPLOY_CSRC_APIS_C_COMMON_INTERNAL_H_
 #define MMDEPLOY_CSRC_APIS_C_COMMON_INTERNAL_H_
 
-#include "mmdeploy/apis/c/common.h"
-#include "mmdeploy/apis/c/handle.h"
-#include "mmdeploy/apis/c/model.h"
-#include "mmdeploy/apis/c/pipeline.h"
+#include "common.h"
+#include "handle.h"
 #include "mmdeploy/core/value.h"
+#include "model.h"
+#include "pipeline.h"
 
 using namespace mmdeploy;
 

@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "mmdeploy/apis/c/text_recognizer.h"
+#include "mmdeploy/text_recognizer.h"
 
 #include "common.h"
 
@@ -23,7 +23,8 @@ class PyTextRecognizer {
       mats.push_back(mat);
     }
     mmdeploy_text_recognition_t *results{};
-    auto status = mmdeploy_text_recognizer_apply(recognizer_, mats.data(), (int)mats.size(), &results);
+    auto status =
+        mmdeploy_text_recognizer_apply(recognizer_, mats.data(), (int)mats.size(), &results);
     if (status != MMDEPLOY_SUCCESS) {
       throw std::runtime_error("failed to apply text_recognizer, code: " + std::to_string(status));
     }
