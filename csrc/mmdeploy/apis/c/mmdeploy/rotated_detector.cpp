@@ -120,7 +120,8 @@ int mmdeploy_rotated_detector_apply_async(mmdeploy_rotated_detector_t detector,
 }
 
 int mmdeploy_rotated_detector_get_result(mmdeploy_value_t output,
-                                         mmdeploy_rotated_detection_t** results, int** result_count) {
+                                         mmdeploy_rotated_detection_t** results,
+                                         int** result_count) {
   if (!output || !results || !result_count) {
     return MMDEPLOY_E_INVALID_ARG;
   }

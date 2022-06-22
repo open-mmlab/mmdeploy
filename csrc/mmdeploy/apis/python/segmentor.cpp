@@ -9,7 +9,8 @@ namespace mmdeploy {
 class PySegmentor {
  public:
   PySegmentor(const char *model_path, const char *device_name, int device_id) {
-    auto status = mmdeploy_segmentor_create_by_path(model_path, device_name, device_id, &segmentor_);
+    auto status =
+        mmdeploy_segmentor_create_by_path(model_path, device_name, device_id, &segmentor_);
     if (status != MMDEPLOY_SUCCESS) {
       throw std::runtime_error("failed to create segmentor");
     }

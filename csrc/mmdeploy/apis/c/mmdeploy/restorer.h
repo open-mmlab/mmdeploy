@@ -80,8 +80,8 @@ MMDEPLOY_API int mmdeploy_restorer_create_input(const mmdeploy_mat_t* mats, int 
 MMDEPLOY_API int mmdeploy_restorer_apply_v2(mmdeploy_restorer_t restorer, mmdeploy_value_t input,
                                             mmdeploy_value_t* output);
 
-MMDEPLOY_API int mmdeploy_restorer_apply_async(mmdeploy_restorer_t restorer, mmdeploy_sender_t input,
-                                               mmdeploy_sender_t* output);
+MMDEPLOY_API int mmdeploy_restorer_apply_async(mmdeploy_restorer_t restorer,
+                                               mmdeploy_sender_t input, mmdeploy_sender_t* output);
 
 MMDEPLOY_API int mmdeploy_restorer_get_result(mmdeploy_value_t output, mmdeploy_mat_t** results);
 
