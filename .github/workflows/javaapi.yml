@@ -120,4 +120,5 @@ jobs:
       - name: Test javademo
         run: |
           echo $(pwd)
+          ln -s build/bin/onnx2ncnn ./
           python3 .github/scripts/test_javademo.py
