@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "mmdeploy/apis/c/classifier.h"
+#include "mmdeploy/classifier.h"
 
 #include "common.h"
 
@@ -9,7 +9,8 @@ namespace mmdeploy {
 class PyClassifier {
  public:
   PyClassifier(const char *model_path, const char *device_name, int device_id) {
-    auto status = mmdeploy_classifier_create_by_path(model_path, device_name, device_id, &classifier_);
+    auto status =
+        mmdeploy_classifier_create_by_path(model_path, device_name, device_id, &classifier_);
     if (status != MMDEPLOY_SUCCESS) {
       throw std::runtime_error("failed to create classifier");
     }
@@ -29,8 +30,8 @@ class PyClassifier {
     }
     mmdeploy_classification_t *results{};
     int *result_count{};
-    auto status =
-        mmdeploy_classifier_apply(classifier_, mats.data(), (int)mats.size(), &results, &result_count);
+    auto status = mmdeploy_classifier_apply(classifier_, mats.data(), (int)mats.size(), &results,
+                                            &result_count);
     if (status != MMDEPLOY_SUCCESS) {
       throw std::runtime_error("failed to apply classifier, code: " + std::to_string(status));
     }
