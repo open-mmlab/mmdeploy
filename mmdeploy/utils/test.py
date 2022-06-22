@@ -7,10 +7,11 @@ import tempfile
 import warnings
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
-import mmcv
 import numpy as np
 import pytest
 import torch
+from mmengine import Config
+from mmengine.model import BaseModel
 from torch import nn
 
 import mmdeploy.codebase  # noqa: F401,F403
@@ -170,7 +171,7 @@ class WrapModel(nn.Module):
         return func(*args, **kwargs)
 
 
-class DummyModel(torch.nn.Module):
+class DummyModel(BaseModel):
     """A dummy model for unit tests.
 
     Args:
@@ -178,16 +179,12 @@ class DummyModel(torch.nn.Module):
     """
 
     def __init__(self, outputs=None, *args, **kwargs):
-        torch.nn.Module.__init__(self)
+        super().__init__()
         self.outputs = outputs
 
     def forward(self, *args, **kwargs):
         """Run forward."""
         return self.outputs
-
-    def __call__(self, *args, **kwds):
-        """Call the forward method."""
-        return self.forward(*args, **kwds)
 
 
 class SwitchBackendWrapper:
@@ -345,13 +342,13 @@ def get_flatten_inputs(
 
 def get_onnx_model(wrapped_model: nn.Module,
                    model_inputs: Dict[str, Union[Tuple, List, torch.Tensor]],
-                   deploy_cfg: mmcv.Config) -> str:
+                   deploy_cfg: Config) -> str:
     """To get path to onnx model after export.
 
     Args:
         wrapped_model (nn.Module): The input model.
         model_inputs (dict): Inputs for model.
-        deploy_cfg (mmcv.Config): Deployment config.
+        deploy_cfg (Config): Deployment config.
 
     Returns:
         str: The path to the ONNX model file.
@@ -397,13 +394,13 @@ def get_onnx_model(wrapped_model: nn.Module,
 
 def get_ts_model(wrapped_model: nn.Module,
                  model_inputs: Dict[str, Union[Tuple, List, torch.Tensor]],
-                 deploy_cfg: mmcv.Config) -> str:
+                 deploy_cfg: Config) -> str:
     """To get path to onnx model after export.
 
     Args:
         wrapped_model (nn.Module): The input model.
         model_inputs (dict): Inputs for model.
-        deploy_cfg (mmcv.Config): Deployment config.
+        deploy_cfg (Config): Deployment config.
 
     Returns:
         str: The path to the TorchScript model file.
@@ -428,13 +425,13 @@ def get_ts_model(wrapped_model: nn.Module,
 def get_backend_outputs(ir_file_path: str,
                         model_inputs: Dict[str, Union[Tuple, List,
                                                       torch.Tensor]],
-                        deploy_cfg: mmcv.Config) -> Union[Any, None]:
+                        deploy_cfg: Config) -> Union[Any, None]:
     """To get backend outputs of model.
 
     Args:
         ir_file_path (str): The path to the IR file.
         model_inputs (dict): Inputs for model.
-        deploy_cfg (mmcv.Config): Deployment config.
+        deploy_cfg (Config): Deployment config.
 
     Returns:
         Union[Any, None]: The outputs of model, decided by the backend wrapper.
@@ -508,7 +505,7 @@ def get_backend_outputs(ir_file_path: str,
         work_dir = tempfile.TemporaryDirectory().name
         param_path, bin_path = ncnn_apis.get_output_model_file(
             ir_file_path, work_dir)
-        ir_file_name = osp.splitext(ir_file_path)[0]
+        ir_file_name = osp.splitext(osp.split(ir_file_path)[1])[0]
         ncnn_apis.from_onnx(ir_file_path, osp.join(work_dir, ir_file_name))
         backend_files = [param_path, bin_path]
         backend_feats = flatten_model_inputs
@@ -559,14 +556,14 @@ def get_backend_outputs(ir_file_path: str,
 def get_rewrite_outputs(wrapped_model: nn.Module,
                         model_inputs: Dict[str, Union[Tuple, List,
                                                       torch.Tensor]],
-                        deploy_cfg: mmcv.Config,
+                        deploy_cfg: Config,
                         run_with_backend: bool = True) -> Tuple[Any, bool]:
     """To get outputs of generated onnx model after rewrite.
 
     Args:
         wrapped_model (nn.Module): The input model.
         model_inputs (dict): Inputs for model.
-        deploy_cfg (mmcv.Config): Deployment config.
+        deploy_cfg (Config): Deployment config.
         run_with_backend (bool): Whether to run inference with backend.
             Default is True.
 

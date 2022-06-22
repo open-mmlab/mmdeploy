@@ -2,10 +2,10 @@
 import os.path as osp
 import tempfile
 
-import mmcv
 import pytest
 import torch
 import torch.nn as nn
+from mmengine import Config
 
 from mmdeploy.utils import Backend
 from mmdeploy.utils.test import backend_checker
@@ -29,7 +29,7 @@ test_model = TestModel().eval().cuda()
 
 
 def get_deploy_cfg():
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = Config(
         dict(
             backend_config=dict(
                 type='tensorrt',

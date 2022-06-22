@@ -174,6 +174,8 @@ class BaseTask(metaclass=ABCMeta):
             return cfg
 
         model_cfg = deepcopy(self.model_cfg)
+        if dataloader is None:
+            dataloader = model_cfg.test_dataloader
         if not isinstance(dataloader, DataLoader):
             dataloader = self.build_dataloader(dataloader)
 
@@ -193,10 +195,6 @@ class BaseTask(metaclass=ABCMeta):
             test_cfg=model_cfg.test_cfg,
             test_evaluator=model_cfg.test_evaluator,
             default_scope=model_cfg.default_scope)
-        # if log2file is not None:
-        #     logger = runner.logger
-        #     runner.logger = runner.build_logger(
-        #         logger.level, log2file, name=logger.name + '_mmdeploy')
         return runner
 
     @abstractmethod
@@ -227,17 +225,27 @@ class BaseTask(metaclass=ABCMeta):
             name (str): The name of the visualizer.
             save_dir (str): The save directory of visualizer.
         """
-        from mmengine.visualization import Visualizer
-        if Visualizer.check_instance_created(name):
-            visualizer = Visualizer.get_instance(name)
-        else:
-            visualizer = self.visualizer
-            visualizer.setdefault('name', name)
-            visualizer.setdefault('save_dir', save_dir)
-            from mmengine.registry import VISUALIZERS
-            visualizer = VISUALIZERS.build(visualizer)
+        cfg = deepcopy(self.visualizer)
+        cfg.name = name
+        cfg.save_dir = save_dir
+        from mmengine.registry import VISUALIZERS, DefaultScope
+        with DefaultScope.overwrite_default_scope(cfg.pop('_scope_', None)):
+            # get the global default scope
+            default_scope = DefaultScope.get_current_instance()
+            if default_scope is not None:
+                scope_name = default_scope.scope_name
+                root = VISUALIZERS._get_root_registry()
+                registry = root._search_child(scope_name)
+                if registry is None:
+                    registry = VISUALIZERS
+            else:
+                registry = VISUALIZERS
 
-        return visualizer
+            VisualizerClass = registry.get(cfg.type)
+            if VisualizerClass.check_instance_created(cfg.name):
+                return VisualizerClass.get_instance(cfg.name)
+            else:
+                return registry.build_func(cfg, registry=registry)
 
     def visualize(self,
                   image: Union[str, np.ndarray],
@@ -261,8 +269,10 @@ class BaseTask(metaclass=ABCMeta):
         save_dir, save_name = osp.split(output_file)
         visualizer = self.get_visualizer(self.experiment_name, save_dir)
 
+        name = osp.splitext(save_name)[0]
         image = mmcv.imread(image, channel_order='rgb')
-        visualizer.add_datasample(save_name, image, result, show=show_result)
+        visualizer.add_datasample(
+            name, image, result, show=show_result, out_file=output_file)
 
     @staticmethod
     @abstractmethod

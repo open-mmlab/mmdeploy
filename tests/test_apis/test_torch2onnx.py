@@ -2,11 +2,11 @@
 import os.path as osp
 import tempfile
 
-import mmcv
 import onnx
 import pytest
 import torch
 import torch.nn as nn
+from mmengine import Config
 
 from mmdeploy.apis.onnx import export
 from mmdeploy.utils.config_utils import (get_backend, get_dynamic_axes,
@@ -44,7 +44,7 @@ dynamic_axes_list = [[0, 2, 3], [0]]
 
 
 def get_deploy_cfg(input_name, output_name, dynamic_axes):
-    return mmcv.Config(
+    return Config(
         dict(
             onnx_config=dict(
                 dynamic_axes=dynamic_axes,

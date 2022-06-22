@@ -1,11 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import mmcv
 import numpy as np
 import pytest
 import torch
+from mmengine import Config
 
 from mmdeploy.codebase import import_codebase
-from mmdeploy.core import RewriterContext
 from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import WrapModel, check_backend, get_rewrite_outputs
 
@@ -60,53 +59,39 @@ def get_vit_model():
 
 
 def test_baseclassifier_forward():
-    from mmcls.models.classifiers import BaseClassifier
+    from mmcls.models.classifiers import ImageClassifier
 
-    class DummyClassifier(BaseClassifier):
+    from mmdeploy.codebase.mmcls import models  # noqa
+    from mmdeploy.core.rewriters import patch_model
 
-        def __init__(self, init_cfg=None):
-            super().__init__(init_cfg=init_cfg)
+    class DummyClassifier(ImageClassifier):
 
-        def extract_feat(self, imgs):
-            pass
+        def __init__(self, backbone):
+            super().__init__(backbone=backbone)
 
-        def forward_train(self, imgs):
-            return 'train'
+        def extract_feat(self, batch_inputs: torch.Tensor):
+            return batch_inputs
 
-        def simple_test(self, img, tmp, **kwargs):
-            return 'simple_test'
+        def head(self, x):
+            return x
 
-    model = DummyClassifier().eval()
+        def forward(self, batch_inputs, data_samples, mode):
+            return batch_inputs + 1
 
-    model_output = model(input)
-    with RewriterContext(
-            cfg=mmcv.Config(dict()), backend='onnxruntime'), torch.no_grad():
-        backend_output = model(input)
+    backbone_cfg = dict(
+        type='ResNet',
+        depth=18,
+        num_stages=4,
+        out_indices=(3, ),
+        style='pytorch')
+    model = DummyClassifier(backbone_cfg).eval()
 
-    assert model_output == 'train'
-    assert backend_output == 'simple_test'
+    model_output = model(input, None, None)
+    model = patch_model(model, {}, bachend='onnxruntime', data_samples=None)
+    backend_output = model(input)
 
-
-def test_cls_head():
-    from mmcls.models.heads.cls_head import ClsHead
-    model = WrapModel(ClsHead(), 'post_process').eval()
-    model_output = model(input)
-    with RewriterContext(
-            cfg=mmcv.Config(dict()), backend='onnxruntime'), torch.no_grad():
-        backend_output = model(input)
-
-    assert list(backend_output.detach().cpu().numpy()) == model_output
-
-
-def test_multilabel_cls_head():
-    from mmcls.models.heads.multi_label_head import MultiLabelClsHead
-    model = WrapModel(MultiLabelClsHead(), 'post_process').eval()
-    model_output = model(input)
-    with RewriterContext(
-            cfg=mmcv.Config(dict()), backend='onnxruntime'), torch.no_grad():
-        backend_output = model(input)
-
-    assert list(backend_output.detach().cpu().numpy()) == model_output
+    assert model_output == input + 1
+    assert backend_output == input
 
 
 @pytest.mark.parametrize(
@@ -118,7 +103,7 @@ def test_shufflenetv2_backbone__forward(backend_type: Backend):
     model = get_invertedresidual_model()
     model.cpu().eval()
     if backend_type.value == 'tensorrt':
-        deploy_cfg = mmcv.Config(
+        deploy_cfg = Config(
             dict(
                 backend_config=dict(
                     type=backend_type.value,
@@ -134,7 +119,7 @@ def test_shufflenetv2_backbone__forward(backend_type: Backend):
                     input_shape=[28, 28], output_names=['output']),
                 codebase_config=dict(type='mmcls', task='Classification')))
     else:
-        deploy_cfg = mmcv.Config(
+        deploy_cfg = Config(
             dict(
                 backend_config=dict(type=backend_type.value),
                 onnx_config=dict(input_shape=None, output_names=['output']),
@@ -162,20 +147,31 @@ def test_shufflenetv2_backbone__forward(backend_type: Backend):
 @pytest.mark.parametrize('backend_type', [Backend.NCNN])
 def test_vision_transformer_backbone__forward(backend_type: Backend):
 
+    from mmcls.core import ClsDataSample
+
+    from mmdeploy.core import patch_model
+    import_codebase(Codebase.MMCLS)
     check_backend(backend_type, True)
     model = get_vit_model()
     model.eval()
 
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = Config(
         dict(
             backend_config=dict(type=backend_type.value),
             onnx_config=dict(input_shape=None, output_names=['output']),
             codebase_config=dict(type='mmcls', task='Classification')))
 
     imgs = torch.rand((1, 3, 384, 384))
-    model_outputs = model.forward(imgs, return_loss=False)
+    data_sample = ClsDataSample(
+        metainfo=dict(
+            scale_factor=(1, 1),
+            ori_shape=imgs.shape[2:],
+            img_shape=imgs.shape[2:]))
+    model = patch_model(
+        model, {}, backend=backend_type.value, data_samples=[data_sample])
+    model_outputs = model.forward(imgs)
     wrapped_model = WrapModel(model, 'forward')
-    rewrite_inputs = {'img': imgs}
+    rewrite_inputs = {'batch_inputs': imgs}
     rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
@@ -190,7 +186,7 @@ def test_vision_transformer_backbone__forward(backend_type: Backend):
             model_output.reshape(-1),
             rewrite_output.reshape(-1),
             rtol=1e-03,
-            atol=1e-05)
+            atol=1e-03)
 
 
 @pytest.mark.parametrize(
@@ -210,7 +206,7 @@ def test_gap__forward(backend_type: Backend, inputs: list):
 
     model.cpu().eval()
     if backend_type.value == 'tensorrt':
-        deploy_cfg = mmcv.Config(
+        deploy_cfg = Config(
             dict(
                 backend_config=dict(
                     type=backend_type.value,
@@ -225,7 +221,7 @@ def test_gap__forward(backend_type: Backend, inputs: list):
                 onnx_config=dict(output_names=['output']),
                 codebase_config=dict(type='mmcls', task='Classification')))
     else:
-        deploy_cfg = mmcv.Config(
+        deploy_cfg = Config(
             dict(
                 backend_config=dict(type=backend_type.value),
                 onnx_config=dict(input_shape=None, output_names=['output']),

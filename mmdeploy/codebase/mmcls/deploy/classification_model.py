@@ -73,7 +73,8 @@ class End2EndModel(BaseBackendModel):
             get_root_logger().warning(f'expect input device {self.device}'
                                       f' but get {batch_inputs.device}.')
         batch_inputs = batch_inputs.to(self.device)
-        cls_score = self.wrapper({self.input_name: batch_inputs})['output']
+        cls_score = self.wrapper({self.input_name:
+                                  batch_inputs})[self.output_names[0]]
 
         from mmcls.models.heads.cls_head import ClsHead
         predict = ClsHead._get_predictions(
@@ -105,47 +106,6 @@ class SDKEnd2EndModel(End2EndModel):
         return pred[np.argsort(pred[:, 0])][np.newaxis, :, 1]
 
 
-def get_classes_from_config(model_cfg: Union[str, Config]):
-    """Get class name from config.
-
-    Args:
-        model_cfg (str | Config): Input model config file or
-            Config object.
-
-    Returns:
-        list[str]: A list of string specifying names of different class.
-    """
-    from mmcls.datasets import DATASETS
-
-    module_dict = DATASETS.module_dict
-    model_cfg = load_config(model_cfg)[0]
-    data_cfg = model_cfg.data
-
-    def _get_class_names(dataset_type: str):
-        dataset = data_cfg.get(dataset_type, None)
-        if (not dataset) or (dataset.type not in module_dict):
-            return None
-
-        module = module_dict[dataset.type]
-        if module.CLASSES is not None:
-            return module.CLASSES
-        return module.get_classes(dataset.get('classes', None))
-
-    class_names = None
-    for dataset_type in ['val', 'test', 'train']:
-        class_names = _get_class_names(dataset_type)
-        if class_names is not None:
-            break
-
-    if class_names is None:
-        logger = get_root_logger()
-        logger.warning(f'Use generated class names, because \
-            it failed to parse CLASSES from config: {data_cfg}')
-        num_classes = model_cfg.model.head.num_classes
-        class_names = [str(i) for i in range(num_classes)]
-    return class_names
-
-
 def build_classification_model(model_files: Sequence[str],
                                model_cfg: Union[str, Config],
                                deploy_cfg: Union[str, Config], device: str,
@@ -168,7 +128,6 @@ def build_classification_model(model_files: Sequence[str],
 
     backend = get_backend(deploy_cfg)
     model_type = get_codebase_config(deploy_cfg).get('model_type', 'end2end')
-    # class_names = get_classes_from_config(model_cfg)
 
     backend_classifier = __BACKEND_MODEL.build(
         dict(

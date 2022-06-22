@@ -4,10 +4,10 @@ import os
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 from typing import Any
 
-import mmcv
 import numpy as np
 import pytest
 import torch
+from mmengine import Config
 
 import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.apis import build_task_processor
@@ -19,7 +19,7 @@ import_codebase(Codebase.MMCLS)
 
 model_cfg_path = 'tests/test_codebase/test_mmcls/data/model.py'
 model_cfg = load_config(model_cfg_path)[0]
-deploy_cfg = mmcv.Config(
+deploy_cfg = Config(
     dict(
         backend_config=dict(type='onnxruntime'),
         codebase_config=dict(type='mmcls', task='Classification'),
@@ -93,23 +93,17 @@ def test_create_input():
     assert isinstance(inputs, tuple) and len(inputs) == 2
 
 
-def test_run_inference(backend_model):
-    input_dict, _ = task_processor.create_input(img, input_shape=img_shape)
-    results = task_processor.run_inference(backend_model, input_dict)
-    assert results is not None
-
-
 def test_visualize(backend_model):
     input_dict, _ = task_processor.create_input(img, input_shape=img_shape)
-    results = task_processor.run_inference(backend_model, input_dict)
+    results = backend_model.test_step([input_dict])
     with TemporaryDirectory() as dir:
-        filename = dir + 'tmp.jpg'
-        task_processor.visualize(backend_model, img, results[0], filename, '')
+        filename = dir + '/tmp.jpg'
+        task_processor.visualize(img, results[0], filename, '')
         assert os.path.exists(filename)
 
 
 def test_get_tensor_from_input():
-    input_data = {'img': torch.ones(3, 4, 5)}
+    input_data = {'inputs': torch.ones(3, 4, 5)}
     inputs = task_processor.get_tensor_from_input(input_data)
     assert torch.equal(inputs, torch.ones(3, 4, 5))
 
@@ -124,23 +118,34 @@ def test_get_partition_cfg():
 def test_build_dataset_and_dataloader():
     from torch.utils.data import DataLoader, Dataset
     dataset = task_processor.build_dataset(
-        dataset_cfg=model_cfg, dataset_type='test')
+        dataset_cfg=model_cfg.test_dataloader.dataset)
     assert isinstance(dataset, Dataset), 'Failed to build dataset'
-    dataloader = task_processor.build_dataloader(dataset, 1, 1)
+    dataloader_cfg = task_processor.model_cfg.test_dataloader
+    dataloader = task_processor.build_dataloader(dataloader_cfg)
     assert isinstance(dataloader, DataLoader), 'Failed to build dataloader'
 
 
-def test_single_gpu_test_and_evaluate():
-    from mmcv.parallel import MMDataParallel
-    dataset = task_processor.build_dataset(
-        dataset_cfg=model_cfg, dataset_type='test')
-    dataloader = task_processor.build_dataloader(dataset, 1, 1)
-
+def test_build_test_runner():
     # Prepare dummy model
-    model = DummyModel(outputs=[torch.rand([1, 1000])])
-    model = MMDataParallel(model, device_ids=[0])
+    from mmcls.core import ClsDataSample
+    from mmengine.data import LabelData
+    label = LabelData(
+        label=torch.tensor([0]),
+        score=torch.rand(10),
+        metainfo=dict(num_classes=10))
+    outputs = [
+        ClsDataSample(
+            pred_label=label,
+            _pred_label=label,
+            metainfo=dict(
+                img_shape=(224, 224),
+                img_path='',
+                ori_shape=(300, 400),
+                scale_factor=(0.8525, 0.8533333333333334)))
+    ]
+    model = DummyModel(outputs=outputs)
     assert model is not None
     # Run test
-    outputs = task_processor.single_gpu_test(model, dataloader)
-    assert outputs is not None
-    task_processor.evaluate_outputs(model_cfg, outputs, dataset)
+    with TemporaryDirectory() as dir:
+        runner = task_processor.build_test_runner(model, dir)
+        runner.test()

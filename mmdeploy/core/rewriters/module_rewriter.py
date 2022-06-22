@@ -81,9 +81,25 @@ class ModuleRewriter:
 
     def _replace_one_module(self, module, cfg, **kwargs):
         """Build a rewritten model."""
-        object_dict = self._records.get(type(module), None)
-        if object_dict is None:
+        # module could be instance of multiple classes
+        object_dict_candidate = dict()
+        for k, v in self._records.items():
+            if isinstance(module, k):
+                object_dict_candidate[k] = v
+        if len(object_dict_candidate) == 0:
             return module
+
+        type_sequence = [type(module)]
+        while len(type_sequence) > 0:
+            # pop if type is object
+            module_type = type_sequence.pop(0)
+            if module_type == object:
+                continue
+            object_dict = object_dict_candidate.get(module_type, None)
+            if object_dict is not None:
+                break
+            else:
+                type_sequence.extend(module_type.__bases__)
 
         module_class = object_dict['_object']
 
@@ -104,6 +120,11 @@ class ModuleRewriter:
         """DFS and replace target models."""
 
         def _replace_module_impl(model, cfg, **kwargs):
+
+            # disable patching if model is already patched.
+            if type(model) in self._cls_set:
+                return model
+
             if recursive and hasattr(model, 'named_children'):
                 for name, module in model.named_children():
                     model._modules[name] = _replace_module_impl(
@@ -115,6 +136,8 @@ class ModuleRewriter:
     def _collect_record(self, env: Dict):
         """Collect models in registry."""
         self._records = {}
+        self._cls_set = set()
         records = self._registry.get_records(env)
         for name, kwargs in records:
+            self._cls_set.add(kwargs['_object'])
             self._records[eval_with_import(name)] = kwargs

@@ -56,6 +56,36 @@ def process_model_config(model_cfg: Config,
     return cfg
 
 
+def _get_dataset_metainfo(model_cfg: Config):
+    """Get metainfo of dataset.
+
+    Args:
+        model_cfg Config: Input model Config object.
+
+    Returns:
+        list[str]: A list of string specifying names of different class.
+    """
+    from mmcls import datasets  # noqa
+    from mmcls.registry import DATASETS
+
+    module_dict = DATASETS.module_dict
+
+    for dataloader_name in [
+            'test_dataloader', 'val_dataloader', 'train_dataloader'
+    ]:
+        if dataloader_name not in model_cfg:
+            continue
+        dataloader_cfg = model_cfg[dataloader_name]
+        dataset_cfg = dataloader_cfg.dataset
+        dataset_cls = module_dict.get(dataset_cfg.type, None)
+        if dataset_cls is None:
+            continue
+        if hasattr(dataset_cls, 'METAINFO'):
+            return dataset_cls.METAINFO
+
+    return None
+
+
 @MMCLS_TASK.register_module(Task.CLASSIFICATION.value)
 class Classification(BaseTask):
     """Classification task class.
@@ -74,15 +104,6 @@ class Classification(BaseTask):
                  experiment_name: str = 'Classification'):
         super(Classification, self).__init__(model_cfg, deploy_cfg, device,
                                              experiment_name)
-
-        if 'test_pipeline' in model_cfg:
-            from mmcls.datasets.pipelines import Compose
-            pipeline = model_cfg.test_pipeline
-            if pipeline[0]['type'] != 'LoadImageFromFile':
-                pipeline.insert(0, dict(type='LoadImageFromFile'))
-            self.test_pipeline = Compose(pipeline)
-        else:
-            self.test_pipeline = None
 
     def init_backend_model(self,
                            model_files: Sequence[str] = None,
@@ -126,11 +147,26 @@ class Classification(BaseTask):
         Returns:
             tuple: (data, img), meta information for the input image and input.
         """
+
+        model_cfg = self.model_cfg
+        assert 'test_pipeline' in model_cfg, \
+            f'test_pipeline not found in {model_cfg}.'
+        from mmcls.datasets.pipelines import Compose
+        pipeline = deepcopy(model_cfg.test_pipeline)
+
+        if isinstance(imgs, str):
+            if pipeline[0]['type'] != 'LoadImageFromFile':
+                pipeline.insert(0, dict(type='LoadImageFromFile'))
+        else:
+            if pipeline[0]['type'] == 'LoadImageFromFile':
+                pipeline.pop(0)
+        pipeline = Compose(pipeline)
+
         if isinstance(imgs, str):
             data = {'img_path': imgs}
         else:
             data = {'img': imgs}
-        data = self.test_pipeline(data)
+        data = pipeline(data)
         if data_preprocessor is not None:
             data = data_preprocessor([data], False)
             return data, data[0]
@@ -183,3 +219,10 @@ class Classification(BaseTask):
         'no type'
         name = self.model_cfg.model.backbone.type.lower()
         return name
+
+    def get_visualizer(self, name: str, save_dir: str):
+        visualizer = super().get_visualizer(name, save_dir)
+        metainfo = _get_dataset_metainfo(self.model_cfg)
+        if metainfo is not None:
+            visualizer.dataset_meta = metainfo
+        return visualizer
