@@ -4,13 +4,13 @@
 
 #include <numeric>
 
-#include "common_internal.h"
-#include "handle.h"
+#include "mmdeploy/apis/c/common_internal.h"
+#include "mmdeploy/apis/c/handle.h"
+#include "mmdeploy/apis/c/pipeline.h"
 #include "mmdeploy/codebase/mmrotate/mmrotate.h"
 #include "mmdeploy/core/graph.h"
 #include "mmdeploy/core/mat.h"
 #include "mmdeploy/core/utils/formatter.h"
-#include "pipeline.h"
 
 using namespace std;
 using namespace mmdeploy;
@@ -120,8 +120,7 @@ int mmdeploy_rotated_detector_apply_async(mmdeploy_rotated_detector_t detector,
 }
 
 int mmdeploy_rotated_detector_get_result(mmdeploy_value_t output,
-                                         mmdeploy_rotated_detection_t** results,
-                                         int** result_count) {
+                                         mmdeploy_rotated_detection_t** results, int** result_count) {
   if (!output || !results || !result_count) {
     return MMDEPLOY_E_INVALID_ARG;
   }

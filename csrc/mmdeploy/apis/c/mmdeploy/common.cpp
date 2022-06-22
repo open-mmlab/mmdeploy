@@ -1,7 +1,7 @@
 #include "common.h"
 
-#include "common_internal.h"
-#include "handle.h"
+#include "mmdeploy/apis/c/common_internal.h"
+#include "mmdeploy/apis/c/handle.h"
 #include "mmdeploy/core/mat.h"
 
 mmdeploy_value_t mmdeploy_value_copy(mmdeploy_value_t value) {
@@ -16,8 +16,7 @@ int mmdeploy_value_destroy(mmdeploy_value_t value) {
   return 0;
 }
 
-int mmdeploy_common_create_input(const mmdeploy_mat_t* mats, int mat_count,
-                                 mmdeploy_value_t* value) {
+int mmdeploy_common_create_input(const mmdeploy_mat_t* mats, int mat_count, mmdeploy_value_t* value) {
   if (mat_count && mats == nullptr) {
     return MMDEPLOY_E_INVALID_ARG;
   }

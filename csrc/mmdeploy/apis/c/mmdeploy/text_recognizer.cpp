@@ -4,8 +4,10 @@
 
 #include <numeric>
 
-#include "common_internal.h"
-#include "executor_internal.h"
+#include "mmdeploy/apis/c/common_internal.h"
+#include "mmdeploy/apis/c/executor_internal.h"
+#include "mmdeploy/apis/c/model.h"
+#include "mmdeploy/apis/c/pipeline.h"
 #include "mmdeploy/archive/value_archive.h"
 #include "mmdeploy/codebase/mmocr/mmocr.h"
 #include "mmdeploy/core/device.h"
@@ -14,8 +16,6 @@
 #include "mmdeploy/core/status_code.h"
 #include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/core/value.h"
-#include "model.h"
-#include "pipeline.h"
 
 using namespace mmdeploy;
 
@@ -167,8 +167,7 @@ int mmdeploy_text_recognizer_create_input(const mmdeploy_mat_t* images, int imag
 
 int mmdeploy_text_recognizer_apply_bbox(mmdeploy_text_recognizer_t recognizer,
                                         const mmdeploy_mat_t* images, int image_count,
-                                        const mmdeploy_text_detection_t* bboxes,
-                                        const int* bbox_count,
+                                        const mmdeploy_text_detection_t* bboxes, const int* bbox_count,
                                         mmdeploy_text_recognition_t** results) {
   wrapped<mmdeploy_value_t> input;
   if (auto ec = mmdeploy_text_recognizer_create_input(images, image_count, bboxes, bbox_count,

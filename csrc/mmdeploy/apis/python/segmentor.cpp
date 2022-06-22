@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "mmdeploy/segmentor.h"
+#include "mmdeploy/apis/c/segmentor.h"
 
 #include "common.h"
 
@@ -9,8 +9,7 @@ namespace mmdeploy {
 class PySegmentor {
  public:
   PySegmentor(const char *model_path, const char *device_name, int device_id) {
-    auto status =
-        mmdeploy_segmentor_create_by_path(model_path, device_name, device_id, &segmentor_);
+    auto status = mmdeploy_segmentor_create_by_path(model_path, device_name, device_id, &segmentor_);
     if (status != MMDEPLOY_SUCCESS) {
       throw std::runtime_error("failed to create segmentor");
     }
@@ -50,14 +49,9 @@ class PySegmentor {
 static void register_python_segmentor(py::module &m) {
   py::class_<PySegmentor>(m, "Segmentor")
       .def(py::init([](const char *model_path, const char *device_name, int device_id) {
-             return std::make_unique<PySegmentor>(model_path, device_name, device_id);
-           }),
-           py::arg("model_path"), py::arg("device_name"), py::arg("device_id") = 0)
-      .def("__call__",
-           [](PySegmentor *self, const PyImage &img) -> py::array {
-             return self->Apply(std::vector{img})[0];
-           })
-      .def("batch", &PySegmentor::Apply);
+        return std::make_unique<PySegmentor>(model_path, device_name, device_id);
+      }))
+      .def("__call__", &PySegmentor::Apply);
 }
 
 class PythonSegmentorRegisterer {

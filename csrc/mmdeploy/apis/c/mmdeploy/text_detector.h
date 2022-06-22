@@ -60,8 +60,8 @@ MMDEPLOY_API int mmdeploy_text_detector_create_by_path(const char* model_path,
  * results of each image. It must be released by \ref mmdeploy_detector_release_result
  * @return status of inference
  */
-MMDEPLOY_API int mmdeploy_text_detector_apply(mmdeploy_text_detector_t detector,
-                                              const mmdeploy_mat_t* mats, int mat_count,
+MMDEPLOY_API int mmdeploy_text_detector_apply(mmdeploy_text_detector_t detector, const mmdeploy_mat_t* mats,
+                                              int mat_count,
                                               mmdeploy_text_detection_t** results,
                                               int** result_count);
 
@@ -75,8 +75,8 @@ MMDEPLOY_API void mmdeploy_text_detector_release_result(mmdeploy_text_detection_
 
 /**
  * @brief Destroy text-detector's handle
- * @param[in] detector text-detector's handle created by \ref mmdeploy_text_detector_create_by_path
- * or \ref mmdeploy_text_detector_create
+ * @param[in] detector text-detector's handle created by \ref mmdeploy_text_detector_create_by_path or
+ * \ref mmdeploy_text_detector_create
  */
 MMDEPLOY_API void mmdeploy_text_detector_destroy(mmdeploy_text_detector_t detector);
 
@@ -104,8 +104,8 @@ MMDEPLOY_API int mmdeploy_text_detector_create_input(const mmdeploy_mat_t* mats,
  * @brief Same as \ref mmdeploy_text_detector_apply, but input and output are packed in \ref
  * mmdeploy_value_t.
  */
-MMDEPLOY_API int mmdeploy_text_detector_apply_v2(mmdeploy_text_detector_t detector,
-                                                 mmdeploy_value_t input, mmdeploy_value_t* output);
+MMDEPLOY_API int mmdeploy_text_detector_apply_v2(mmdeploy_text_detector_t detector, mmdeploy_value_t input,
+                                                 mmdeploy_value_t* output);
 
 /**
  * @brief Apply text-detector asynchronously
@@ -131,9 +131,8 @@ MMDEPLOY_API
 int mmdeploy_text_detector_get_result(mmdeploy_value_t output, mmdeploy_text_detection_t** results,
                                       int** result_count);
 
-typedef int (*mmdeploy_text_detector_continue_t)(mmdeploy_text_detection_t* results,
-                                                 int* result_count, void* context,
-                                                 mmdeploy_sender_t* output);
+typedef int (*mmdeploy_text_detector_continue_t)(mmdeploy_text_detection_t* results, int* result_count,
+                                                 void* context, mmdeploy_sender_t* output);
 
 // MMDEPLOY_API int mmdeploy_text_detector_apply_async_v2(mm_handle_t handle, const mm_mat_t* imgs,
 //                                                        int img_count,

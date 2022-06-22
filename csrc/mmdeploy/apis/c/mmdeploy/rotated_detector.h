@@ -64,8 +64,7 @@ MMDEPLOY_API int mmdeploy_rotated_detector_create_by_path(const char* model_path
  */
 MMDEPLOY_API int mmdeploy_rotated_detector_apply(mmdeploy_rotated_detector_t detector,
                                                  const mmdeploy_mat_t* mats, int mat_count,
-                                                 mmdeploy_rotated_detection_t** results,
-                                                 int** result_count);
+                                                 mmdeploy_rotated_detection_t** results, int** result_count);
 
 /** @brief Release the inference result buffer created by \ref mmdeploy_rotated_detector_apply
  * @param[in] results rotated detection results buffer

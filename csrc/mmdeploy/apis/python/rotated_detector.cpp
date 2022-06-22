@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "mmdeploy/rotated_detector.h"
+#include "mmdeploy/apis/c/rotated_detector.h"
 
 #include "common.h"
 
@@ -25,8 +25,8 @@ class PyRotatedDetector {
 
     mmdeploy_rotated_detection_t *rbboxes{};
     int *res_count{};
-    auto status = mmdeploy_rotated_detector_apply(detector_, mats.data(), (int)mats.size(),
-                                                  &rbboxes, &res_count);
+    auto status = mmdeploy_rotated_detector_apply(detector_, mats.data(), (int)mats.size(), &rbboxes,
+                                                  &res_count);
     if (status != MMDEPLOY_SUCCESS) {
       throw std::runtime_error("failed to apply rotated detector, code: " + std::to_string(status));
     }
@@ -64,14 +64,9 @@ class PyRotatedDetector {
 static void register_python_rotated_detector(py::module &m) {
   py::class_<PyRotatedDetector>(m, "RotatedDetector")
       .def(py::init([](const char *model_path, const char *device_name, int device_id) {
-             return std::make_unique<PyRotatedDetector>(model_path, device_name, device_id);
-           }),
-           py::arg("model_path"), py::arg("device_name"), py::arg("device_id") = 0)
-      .def("__call__",
-           [](PyRotatedDetector *self, const PyImage &img) -> py::tuple {
-             return self->Apply(std::vector{img})[0];
-           })
-      .def("batch", &PyRotatedDetector::Apply);
+        return std::make_unique<PyRotatedDetector>(model_path, device_name, device_id);
+      }))
+      .def("__call__", &PyRotatedDetector::Apply);
 }
 
 class PythonRotatedDetectorRegisterer {

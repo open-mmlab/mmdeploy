@@ -4,14 +4,14 @@
 
 #include <numeric>
 
-#include "common_internal.h"
-#include "executor_internal.h"
+#include "mmdeploy/apis/c/common_internal.h"
+#include "mmdeploy/apis/c/executor_internal.h"
+#include "mmdeploy/apis/c/model.h"
+#include "mmdeploy/apis/c/pipeline.h"
 #include "mmdeploy/codebase/mmocr/mmocr.h"
 #include "mmdeploy/core/model.h"
 #include "mmdeploy/core/status_code.h"
 #include "mmdeploy/core/utils/formatter.h"
-#include "model.h"
-#include "pipeline.h"
 
 using namespace std;
 using namespace mmdeploy;
@@ -129,8 +129,7 @@ int mmdeploy_text_detector_get_result(mmdeploy_value_t output, mmdeploy_text_det
     std::unique_ptr<int[]> result_count_data(new int[_result_count.size()]{});
     std::copy(_result_count.begin(), _result_count.end(), result_count_data.get());
 
-    std::unique_ptr<mmdeploy_text_detection_t[]> result_data(
-        new mmdeploy_text_detection_t[total]{});
+    std::unique_ptr<mmdeploy_text_detection_t[]> result_data(new mmdeploy_text_detection_t[total]{});
     auto result_ptr = result_data.get();
 
     for (const auto& det_output : detector_outputs) {
@@ -157,8 +156,8 @@ int mmdeploy_text_detector_get_result(mmdeploy_value_t output, mmdeploy_text_det
   return 0;
 }
 
-void mmdeploy_text_detector_release_result(mmdeploy_text_detection_t* results,
-                                           const int* result_count, int count) {
+void mmdeploy_text_detector_release_result(mmdeploy_text_detection_t* results, const int* result_count,
+                                           int count) {
   delete[] results;
   delete[] result_count;
 }
@@ -167,10 +166,9 @@ void mmdeploy_text_detector_destroy(mmdeploy_text_detector_t detector) {
   mmdeploy_pipeline_destroy((mmdeploy_pipeline_t)detector);
 }
 
-int mmdeploy_text_detector_apply_async_v2(mmdeploy_text_detector_t detector,
-                                          const mmdeploy_mat_t* imgs, int img_count,
-                                          mmdeploy_text_detector_continue_t cont, void* context,
-                                          mmdeploy_sender_t* output) {
+int mmdeploy_text_detector_apply_async_v2(mmdeploy_text_detector_t detector, const mmdeploy_mat_t* imgs,
+                                          int img_count, mmdeploy_text_detector_continue_t cont,
+                                          void* context, mmdeploy_sender_t* output) {
   mmdeploy_sender_t result_sender{};
   if (auto ec = mmdeploy_text_detector_apply_async_v3(detector, imgs, img_count, &result_sender)) {
     return ec;
@@ -181,9 +179,8 @@ int mmdeploy_text_detector_apply_async_v2(mmdeploy_text_detector_t detector,
   return MMDEPLOY_SUCCESS;
 }
 
-int mmdeploy_text_detector_apply_async_v3(mmdeploy_text_detector_t detector,
-                                          const mmdeploy_mat_t* imgs, int img_count,
-                                          mmdeploy_sender_t* output) {
+int mmdeploy_text_detector_apply_async_v3(mmdeploy_text_detector_t detector, const mmdeploy_mat_t* imgs,
+                                          int img_count, mmdeploy_sender_t* output) {
   wrapped<mmdeploy_value_t> input_val;
   if (auto ec = mmdeploy_text_detector_create_input(imgs, img_count, input_val.ptr())) {
     return ec;
