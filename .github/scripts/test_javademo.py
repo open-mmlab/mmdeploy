@@ -74,11 +74,12 @@ def main():
         java_demo_cmd.append('cpu')
         java_demo_cmd.append('demo/resources/human-pose.png')
         print(' '.join(java_demo_cmd))
-        export_library_cmd = 'export LD_LIBRARY_PATH=build/lib\
-            :${LD_LIBRARY_PATH}'
+        export_library_cmd = 'export LD_LIBRARY_PATH=build/lib' + \
+            ':${LD_LIBRARY_PATH}'
 
-        print(subprocess.call(export_library_cmd + '&& ' +
-                              ' '.join(java_demo_cmd)))
+        print(
+            subprocess.call(export_library_cmd + '&& ' +
+                            ' '.join(java_demo_cmd)))
 
 
 if __name__ == '__main__':
