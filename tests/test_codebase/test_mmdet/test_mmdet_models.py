@@ -222,8 +222,7 @@ def test_focus_forward(backend_type):
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg)
-    for model_output, rewrite_output in zip(model_outputs[0],
-                                            rewrite_outputs[0]):
+    for model_output, rewrite_output in zip(model_outputs[0], rewrite_outputs):
         model_output = model_output.squeeze()
         rewrite_output = rewrite_output.squeeze()
         torch.testing.assert_allclose(
