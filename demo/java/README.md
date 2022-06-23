@@ -8,7 +8,7 @@ First, you should set your model path and image path to `${MODEL_PATH}` and `${I
 
 ```bash
 export TASK=ImageClassification
-export LD_LIBRARY_PATH=${PWD}/build/install/lib:${LD_LIBRARY_PATH}
+export LD_LIBRARY_PATH=${PWD}/build/lib:${LD_LIBRARY_PATH}
 cd demo/java
-java -cp ../../csrc/mmdeploy/apis/java/mmdeploy ${TASK}.java cpu ${MODEL_PATH} ${IMAGE_PATH}
+java -cp ../../csrc/mmdeploy/apis/java ${TASK}.java ${MODEL_PATH} cpu ${IMAGE_PATH}
 ```
