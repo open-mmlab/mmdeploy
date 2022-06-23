@@ -124,7 +124,7 @@ make install
     <td>MMDEPLOY_BUILD_SDK_JAVA_API</td>
     <td>{ON, OFF}</td>
     <td>OFF</td>
-    <td>switch to build MMDeploy SDK Java api</td>
+    <td>switch to build MMDeploy SDK Java API</td>
   </tr>
   <tr>
     <td>MMDEPLOY_BUILD_TEST</td>
