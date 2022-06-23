@@ -117,7 +117,7 @@ def test_multiclass_nms_rotated_with_keep_top_k(pre_top_k):
     model_inputs = {'boxes': test_boxes, 'scores': test_scores}
 
     import mmdeploy.backend.onnxruntime as ort_apis
-    backend_model = ort_apis.ORTWrapper(onnx_model_path, 'cuda:0', None)
+    backend_model = ort_apis.ORTWrapper(onnx_model_path, 'cpu', None)
     output = backend_model.forward(model_inputs)
     output = backend_model.output_to_list(output)
     dets = output[0]
@@ -205,7 +205,7 @@ def test_delta_midpointoffset_rbbox_delta2bbox(backend_type: Backend):
     original_outputs = delta2bbox(rois, deltas, version='le90')
 
     # wrap function to nn.Module, enable torch.onnx.export
-    wrapped_func = WrapFunction(delta2bbox)
+    wrapped_func = WrapFunction(delta2bbox, version='le90')
     rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_func,
         model_inputs={
@@ -270,3 +270,42 @@ def test_fake_multiclass_nms_rotated():
 
     assert rewrite_outputs is not None, 'Got unexpected rewrite '\
         'outputs: {}'.format(rewrite_outputs)
+
+
+@pytest.mark.parametrize('backend_type', [Backend.TENSORRT])
+def test_poly2obb_le90(backend_type: Backend):
+    check_backend(backend_type)
+    polys = torch.rand(1, 10, 8)
+    deploy_cfg = mmcv.Config(
+        dict(
+            onnx_config=dict(output_names=None, input_shape=None),
+            backend_config=dict(
+                type=backend_type.value,
+                model_inputs=[
+                    dict(
+                        input_shapes=dict(
+                            polys=dict(
+                                min_shape=polys.shape,
+                                opt_shape=polys.shape,
+                                max_shape=polys.shape)))
+                ]),
+            codebase_config=dict(type='mmrotate', task='RotatedDetection')))
+
+    # import rewriter
+    from mmdeploy.codebase import Codebase, import_codebase
+    import_codebase(Codebase.MMROTATE)
+
+    # wrap function to enable rewrite
+    def poly2obb_le90(*args, **kwargs):
+        import mmrotate
+        return mmrotate.core.bbox.transforms.poly2obb_le90(*args, **kwargs)
+
+    # wrap function to nn.Module, enable torch.onnx.export
+    wrapped_func = WrapFunction(poly2obb_le90)
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_func,
+        model_inputs={'polys': polys},
+        deploy_cfg=deploy_cfg,
+        run_with_backend=False)
+
+    assert rewrite_outputs is not None

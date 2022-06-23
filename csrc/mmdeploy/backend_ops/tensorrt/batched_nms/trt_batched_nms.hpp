@@ -9,9 +9,12 @@
 #include "NvInferPluginUtils.h"
 #include "trt_plugin_base.hpp"
 namespace mmdeploy {
+
+enum NMSReturnType { RETURN_DETS = 1, RETURN_INDEX = 1 << 1 };
+
 class TRTBatchedNMS : public TRTPluginBase {
  public:
-  TRTBatchedNMS(const std::string& name, nvinfer1::plugin::NMSParameters param);
+  TRTBatchedNMS(const std::string& name, nvinfer1::plugin::NMSParameters param, bool returnIndex);
 
   TRTBatchedNMS(const std::string& name, const void* data, size_t length);
 
@@ -55,10 +58,8 @@ class TRTBatchedNMS : public TRTPluginBase {
 
  private:
   nvinfer1::plugin::NMSParameters param{};
-  int boxesSize{};
-  int scoresSize{};
-  int numPriors{};
   bool mClipBoxes{};
+  bool mReturnIndex{};
 };
 
 class TRTBatchedNMSCreator : public TRTPluginCreatorBase {
