@@ -44,9 +44,8 @@ jobs:
         run: sudo apt install gcc-multilib g++-multilib wget libprotobuf-dev protobuf-compiler
       - name: Install ncnn
         run: |
-          wget https://github.com/Tencent/ncnn/archive/refs/tags/20220420.tar.gz
-          tar xf 20220420.tar.gz
-          pushd ncnn-20220420
+          git clone -b 20220420 https://github.com/Tencent/ncnn.git
+          pushd ncnn
           mkdir build && pushd build
           git submodule update --init --recursive
           cmake -DCMAKE_INSTALL_PREFIX=$(pwd)/../install -DNCNN_PYTHON=ON -DNCNN_BUILD_TESTS=OFF -DNCNN_BUILD_TOOLS=OFF -DNCNN_BUILD_EXAMPLES=OFF ..
