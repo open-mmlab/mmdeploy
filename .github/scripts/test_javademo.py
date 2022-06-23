@@ -17,22 +17,22 @@ PARAMS = [
         'task':
         'ObjectDetection',
         'configs': [
-            'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/mobilessd.tar'
-        ]  # noqa: E501
+            'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/mobilessd.tar'  # noqa: E501
+        ]
     },
     {
         'task':
         'ImageSegmentation',
         'configs': [
-            'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/fcn.tar'
-        ]  # noqa: E501
+            'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/fcn.tar'  # noqa: E501
+        ]
     },
     {
         'task':
         'ImageRestorer',
         'configs': [
-            'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/srcnn.tar'
-        ]  # noqa: E501
+            'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/srcnn.tar'  # noqa: E501
+        ]
     },
     {
         'task':
@@ -46,8 +46,8 @@ PARAMS = [
         'task':
         'PoseDetection',
         'configs': [
-            'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/litehrnet.tar'
-        ]  # noqa: E501
+            'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/litehrnet.tar'  # noqa: E501
+        ]
     }
 ]
 
@@ -77,7 +77,8 @@ def main():
         export_library_cmd = 'export LD_LIBRARY_PATH=build/lib\
             :${LD_LIBRARY_PATH}'
 
-        print(subprocess.call(export_library_cmd + '&&' + java_demo_cmd))
+        print(subprocess.call(export_library_cmd + '&& ' +
+                              ' '.join(java_demo_cmd)))
 
 
 if __name__ == '__main__':
