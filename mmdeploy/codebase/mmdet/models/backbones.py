@@ -13,11 +13,12 @@ def focus__forward__default(ctx, self, x):
     """
     # shape of x (b,c,w,h) -> y(b,4c,w/2,h/2)
     B, C, H, W = x.shape
-    half_H = torch.div(H, 2, rounding_mode='floor')
-    half_W = torch.div(W, 2, rounding_mode='floor')
-    x = x.reshape(B, C, half_H, 2, half_W, 2)
+    x = x.reshape(B, C, -1, 2, W)
+    x = x.reshape(B, C, x.shape[2], 2, -1, 2)
+    half_H = x.shape[2]
+    half_W = x.shape[4]
     x = x.permute(0, 5, 3, 1, 2, 4)
-    x = x.reshape(B, -1, half_H, half_W)
+    x = x.reshape(B, C * 4, half_H, half_W)
 
     return self.conv(x)
 
