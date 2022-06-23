@@ -224,9 +224,9 @@ def test_focus_forward(backend_type):
         deploy_cfg=deploy_cfg)
     for model_output, rewrite_output in zip(model_outputs[0],
                                             rewrite_outputs[0]):
-        model_output = model_output.squeeze().cpu().numpy()
+        model_output = model_output.squeeze()
         rewrite_output = rewrite_output.squeeze()
-        assert np.allclose(
+        torch.testing.assert_allclose(
             model_output, rewrite_output, rtol=1e-03, atol=1e-05)
 
 
