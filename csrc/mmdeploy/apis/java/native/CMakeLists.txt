@@ -19,3 +19,5 @@ mmdeploy_load_static(${PROJECT_NAME} MMDeployStaticModules)
 mmdeploy_load_dynamic(${PROJECT_NAME} MMDeployDynamicModules)
 target_link_libraries(${PROJECT_NAME} PRIVATE
         ${JNI_LIBRARIES} MMDeployLibs)
+install(TARGETS ${PROJECT_NAME}
+            DESTINATION lib)
