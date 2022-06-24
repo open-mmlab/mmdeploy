@@ -94,7 +94,7 @@ if (MMDEPLOY_BUILD_SDK)
     endif ()
 
     if (MMDEPLOY_BUILD_SDK_JAVA_API)
-        add_subdirectory(csrc/mmdeploy/apis/java/native)
+        add_subdirectory(csrc/mmdeploy/apis/java)
     endif ()
 
     # export MMDeploy package
