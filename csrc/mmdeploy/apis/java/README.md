@@ -38,8 +38,8 @@ For using Java apis, you should build Java class and C++ SDK.
 Build Java `.class` files.
 
 ```bash
-cd csrc/mmdeploy/apis/Java
-Javac mmdeploy/*.Java
+cd csrc/mmdeploy/apis/java
+Javac mmdeploy/*.java
 cd ../../../..
 ```
 
