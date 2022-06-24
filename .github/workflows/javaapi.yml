@@ -40,6 +40,13 @@ jobs:
           pip install cmake onnx
       - name: update
         run: sudo apt update
+      - name: Install OpenJDK
+        run: |
+          wget https://download.java.net/java/GA/jdk18/43f95e8614114aeaa8e8a5fcf20a682d/36/GPL/openjdk-18_linux-x64_bin.tar.gz
+          tar xvf openjdk-18_linux-x64_bin.tar.gz
+          export JAVA_HOME=${PWD}/jdk-18
+          export PATH=${JAVA_HOME}/bin:${PATH}
+          java --version
       - name: gcc-multilib
         run: sudo apt install gcc-multilib g++-multilib wget libprotobuf-dev protobuf-compiler
       - name: Install onnxruntime
