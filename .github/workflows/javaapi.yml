@@ -71,7 +71,6 @@ jobs:
           popd
       - name: Test javademo
         run: |
-          echo $(pwd)
           export JAVA_HOME=${PWD}/jdk-18
           export PATH=${JAVA_HOME}/bin:${PATH}
           export LD_LIBRARY_PATH=/build/lib:${LD_LIBRARY_PATH}
