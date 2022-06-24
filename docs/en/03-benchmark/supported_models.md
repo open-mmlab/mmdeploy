@@ -17,6 +17,7 @@ The table below lists the models that are guaranteed to be exportable to other b
 | GFL                        | MMDetection      |      N      |      Y      |    Y     |  N   |   ?   |    Y     |           [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/gfl)           |
 | Cascade R-CNN              | MMDetection      |      N      |      Y      |    Y     |  N   |   Y   |    Y     |      [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/cascade_rcnn)       |
 | Cascade Mask R-CNN         | MMDetection      |      N      |      Y      |    Y     |  N   |   N   |    Y     |      [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/cascade_rcnn)       |
+| Swin Transformer          | MMDetection      |      N      |      Y      |     Y    |   N   |   N   |     N    | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/swin)                    |
 | VFNet                      | MMDetection      |      N      |      N      |    N     |  N   |   N   |    Y     |          [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/vfnet)          |
 | ResNet                     | MMClassification |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |       [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnet)       |
 | ResNeXt                    | MMClassification |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |      [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnext)       |
