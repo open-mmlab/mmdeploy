@@ -73,16 +73,9 @@ def main():
             java_demo_cmd.append(model_dir)
         java_demo_cmd.append('cpu')
         java_demo_cmd.append('demo/resources/human-pose.png')
-        os.system('export JAVA_HOME=/home/runner/work/mmdeploy/mmdeploy/jdk-18 && export PATH=${JAVA_HOME}/bin:${PATH} && java --version')
-        export_library_cmd = 'export LD_LIBRARY_PATH=build/lib' + \
-            ':${LD_LIBRARY_PATH}'
-        # print(subprocess.call('export JAVA_HOME=/home/runner/work/mmdeploy/mmdeploy/jdk-18 && export PATH=${JAVA_HOME}/bin:${PATH} && java --version'))
-        print(subprocess.call(' '.join(java_demo_cmd)))
-        '''
-        print(
-            subprocess.call(export_library_cmd + ' && ' +
-                            ' '.join(java_demo_cmd)))
-        '''
+        java_demo_cmd_str =  ' '.join(java_demo_cmd)
+        os.system('export JAVA_HOME=/home/runner/work/mmdeploy/mmdeploy/jdk-18 && export PATH=${JAVA_HOME}/bin:${PATH} && java --version && export LD_LIBRARY_PATH=/home/runner/work/mmdeploy/mmdeploy/build/lib:${LD_LIBRARY_PATH} && ' + java_demo_cmd_str)
+
 
 if __name__ == '__main__':
     main()
