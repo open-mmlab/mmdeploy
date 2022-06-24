@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
 import os
-import subprocess
 
 # list of dict: task name and deploy configs.
 
@@ -73,8 +72,12 @@ def main():
             java_demo_cmd.append(model_dir)
         java_demo_cmd.append('cpu')
         java_demo_cmd.append('demo/resources/human-pose.png')
-        java_demo_cmd_str =  ' '.join(java_demo_cmd)
-        os.system('export JAVA_HOME=/home/runner/work/mmdeploy/mmdeploy/jdk-18 && export PATH=${JAVA_HOME}/bin:${PATH} && java --version && export LD_LIBRARY_PATH=/home/runner/work/mmdeploy/mmdeploy/build/lib:${LD_LIBRARY_PATH} && ' + java_demo_cmd_str)
+        java_demo_cmd_str = ' '.join(java_demo_cmd)
+        os.system('export JAVA_HOME=/home/runner/work/mmdeploy/mmdeploy/' +
+                  'jdk-18 && export PATH=${JAVA_HOME}/bin:${PATH} && java' +
+                  ' --version && export LD_LIBRARY_PATH=/home/runner/work/' +
+                  'mmdeploy/mmdeploy/build/lib:${LD_LIBRARY_PATH} && ' +
+                  java_demo_cmd_str)
 
 
 if __name__ == '__main__':
