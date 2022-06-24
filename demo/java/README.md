@@ -10,5 +10,5 @@ First, you should set your model path and image path to `${MODEL_PATH}` and `${I
 export TASK=ImageClassification
 export LD_LIBRARY_PATH=${PWD}/build/lib:${LD_LIBRARY_PATH}
 cd demo/java
-java -cp ../../csrc/mmdeploy/apis/java ${TASK}.java ${MODEL_PATH} cpu ${IMAGE_PATH}
+java -cp ../../csrc/mmdeploy/apis/java ${TASK}.java cpu ${MODEL_PATH} ${IMAGE_PATH}
 ```
