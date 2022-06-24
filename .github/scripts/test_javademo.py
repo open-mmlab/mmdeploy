@@ -76,6 +76,7 @@ def main():
         print(' '.join(java_demo_cmd))
         export_library_cmd = 'export LD_LIBRARY_PATH=build/lib' + \
             ':${LD_LIBRARY_PATH}'
+        print(subprocess.call('java --version'))
         print(subprocess.call(' '.join(java_demo_cmd)))
         '''
         print(
