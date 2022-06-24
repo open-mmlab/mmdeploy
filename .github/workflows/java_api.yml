@@ -1,4 +1,4 @@
-name: javaapi
+name: java_api
 
 on:
   push:
@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test_javaapi:
+  test_java_api:
     runs-on: ubuntu-18.04
     steps:
       - name: Checkout repository
