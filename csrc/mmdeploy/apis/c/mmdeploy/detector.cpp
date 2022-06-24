@@ -4,8 +4,8 @@
 
 #include <numeric>
 
-#include "common_internal.h"
-#include "executor_internal.h"
+#include "mmdeploy/apis/c/common_internal.h"
+#include "mmdeploy/apis/c/executor_internal.h"
 #include "mmdeploy/archive/value_archive.h"
 #include "mmdeploy/codebase/mmdet/mmdet.h"
 #include "mmdeploy/core/device.h"
@@ -20,26 +20,14 @@ using namespace mmdeploy;
 
 namespace {
 
-Value& config_template() {
+Value config_template(Model model) {
   // clang-format off
-  static Value v{
-    {
-      "pipeline", {
-        {"input", {"image"}},
-        {"output", {"det"}},
-        {
-          "tasks",{
-            {
-              {"name", "mmdetection"},
-              {"type", "Inference"},
-              {"params", {{"model", "TBD"}}},
-              {"input", {"image"}},
-              {"output", {"det"}}
-            }
-          }
-        }
-      }
-    }
+ Value v{
+    {"name", "mmdetection"},
+    {"type", "Inference"},
+    {"params", {{"model", std::move(model)}}},
+    {"input", {"image"}},
+    {"output", {"det"}}
   };
   // clang-format on
   return v;
@@ -47,9 +35,7 @@ Value& config_template() {
 
 int mmdeploy_detector_create_impl(mmdeploy_model_t model, const char* device_name, int device_id,
                                   mmdeploy_exec_info_t exec_info, mmdeploy_detector_t* detector) {
-  auto config = config_template();
-  config["pipeline"]["tasks"][0]["params"]["model"] = *Cast(model);
-
+  auto config = config_template(*Cast(model));
   return mmdeploy_pipeline_create(Cast(&config), device_name, device_id, exec_info,
                                   (mmdeploy_pipeline_t*)detector);
 }

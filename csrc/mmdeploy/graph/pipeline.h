@@ -7,24 +7,15 @@
 
 namespace mmdeploy::graph {
 
-class Pipeline : public Node {
-  friend class PipelineBuilder;
-
- public:
-  Sender<Value> Process(Sender<Value> input) override;
-
- private:
-  unique_ptr<Node> child_;
-};
-
 class PipelineBuilder : public Builder {
  public:
   explicit PipelineBuilder(Value config);
-  Result<void> SetInputs() override;
-  Result<void> SetOutputs() override;
-  Result<unique_ptr<Node>> Build() override;
 
  protected:
+  Result<void> SetInputs() override;
+  Result<void> SetOutputs() override;
+  Result<unique_ptr<Node>> BuildImpl() override;
+
   vector<bool> flatten_;
   vector<bool> broadcast_;
   vector<bool> unflatten_;

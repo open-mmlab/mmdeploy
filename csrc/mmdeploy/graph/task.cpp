@@ -39,20 +39,42 @@ Sender<Value> Task::Process(Sender<Value> input) {
   });
 }
 
-TaskBuilder::TaskBuilder(Value config) : Builder(std::move(config)) {}
+TaskBuilder::TaskBuilder(Value config) : Builder(std::move(config)) {
+  MMDEPLOY_CRITICAL("{}", config_);
+}
 
-Result<std::unique_ptr<Node>> TaskBuilder::Build() {
+namespace {
+
+inline Result<unique_ptr<Module>> CreateModule(const Value& config) {
+  MMDEPLOY_INFO("config: {}", config);
+  auto type = config["module"].get<std::string>();
+  auto creator = Registry<Module>::Get().GetCreator(type);
+  if (!creator) {
+    MMDEPLOY_ERROR("failed to find module creator: {}", type);
+    return Status(eEntryNotFound);
+  }
+  auto inst = creator->Create(config);
+  if (!Check(inst)) {
+    MMDEPLOY_ERROR("failed to create module: {}", type);
+    return Status(eFail);
+  }
+  return std::move(inst);
+}
+
+}  // namespace
+
+Result<unique_ptr<Node>> TaskBuilder::BuildImpl() {
   try {
-    auto task = static_cast<Task*>(node_.get());  // NOLINT
-    OUTCOME_TRY(task->module_, CreateFromRegistry<Module>(config_, "module"));
+    auto task = std::make_unique<Task>();
+    OUTCOME_TRY(task->module_, CreateModule(config_));
     bool sched_set = false;
     if (config_["context"].contains("executor")) {
       auto& exec_info = config_["context"]["executor"];
       for (auto it = exec_info.begin(); it != exec_info.end(); ++it) {
-        if (it.key() == task->name()) {
+        if (it.key() == name()) {
           task->sched_ = it->get<TypeErasedScheduler<Value>>();
           sched_set = true;
-          MMDEPLOY_INFO("scheduler configured for task {}", task->name());
+          MMDEPLOY_INFO("scheduler configured for task {}", name());
           break;
         }
       }
@@ -63,21 +85,12 @@ Result<std::unique_ptr<Node>> TaskBuilder::Build() {
     }
     task->is_batched_ = config_.value("is_batched", false);
     task->is_thread_safe_ = config_.value("is_thread_safe", false);
-    return std::move(node_);
+    return std::move(task);
   } catch (const std::exception& e) {
     MMDEPLOY_ERROR("error parsing config: {}", config_);
     return nullptr;
   }
 }
-
-// class TaskCreator : public Creator<Node> {
-//  public:
-//   const char* GetName() const override { return "Task"; }
-//   unique_ptr<Node> Create(const Value& config) override {
-//     return BuildFromConfig<TaskBuilder>(config).value();
-//   }
-// };
-// REGISTER_MODULE(Node, TaskCreator);
 
 class TaskCreator : public Creator<Builder> {
  public:

@@ -25,7 +25,8 @@ class TaskBuilder : public Builder {
  public:
   explicit TaskBuilder(Value config);
 
-  Result<std::unique_ptr<Node>> Build() override;
+ protected:
+  Result<unique_ptr<Node>> BuildImpl() override;
 };
 
 }  // namespace mmdeploy::graph

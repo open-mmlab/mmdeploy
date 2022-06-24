@@ -4,20 +4,18 @@
 
 #include "mmdeploy/archive/value_archive.h"
 #include "mmdeploy/graph/common.h"
-#include "mmdeploy/graph/flatten_scope.h"
+#include "mmdeploy/graph/flattened.h"
 #include "mmdeploy/graph/static_router.h"
 
 namespace mmdeploy::graph {
-
-Sender<Value> Pipeline::Process(Sender<Value> input) { return child_->Process(std::move(input)); }
 
 PipelineBuilder::PipelineBuilder(Value config) : Builder(std::move(config)) {}
 
 namespace {
 
 struct Expr {
-  std::string name1;
-  std::string name2;
+  string lhs;
+  string rhs;
   char operation{0};
 };
 
@@ -34,11 +32,11 @@ Expr ParseExpr(const string& str) {
         expr.operation = c;
         break;
       default:
-        (split ? &expr.name2 : &expr.name1)->push_back(c);
+        (split ? &expr.rhs : &expr.lhs)->push_back(c);
     }
   }
   if (!split) {
-    expr.name2 = expr.name1;
+    expr.rhs = expr.lhs;
   }
   return std::move(expr);
 }
@@ -49,8 +47,8 @@ Result<void> PipelineBuilder::SetInputs() {
   OUTCOME_TRY(auto inputs, ParseStringArray(config_["input"]));
   for (const auto& input : inputs) {
     auto expr = ParseExpr(input);
-    inputs_.push_back(expr.name2);
-    inputs_internal_.push_back(expr.name1);
+    inputs_.push_back(expr.rhs);
+    inputs_internal_.push_back(expr.lhs);
     flatten_.push_back(expr.operation == '*');
     broadcast_.push_back(expr.operation == '+');
   }
@@ -61,21 +59,20 @@ Result<void> PipelineBuilder::SetOutputs() {
   OUTCOME_TRY(auto outputs, ParseStringArray(config_["output"]));
   for (const auto& output : outputs) {
     auto expr = ParseExpr(output);
-    outputs_.push_back(expr.name1);
-    outputs_internal_.push_back(expr.name2);
+    outputs_.push_back(expr.lhs);
+    outputs_internal_.push_back(expr.rhs);
     unflatten_.push_back(expr.operation == '*');
   }
   return success();
 }
 
-Result<std::unique_ptr<Node>> PipelineBuilder::Build() {
-  auto node = std::make_unique<Pipeline>();
-
+Result<unique_ptr<Node>> PipelineBuilder::BuildImpl() {
+  unique_ptr<Node> node;
   // create static router
   {
     config_["input"] = to_value(inputs_internal_);
     config_["output"] = to_value(outputs_internal_);
-    OUTCOME_TRY(node->child_, StaticRouterBuilder{}.Build(config_));
+    OUTCOME_TRY(node, StaticRouterBuilder{}.Build(config_));
   }
 
   // use Throttle to constraint resource usage
@@ -86,20 +83,10 @@ Result<std::unique_ptr<Node>> PipelineBuilder::Build() {
 
   // create a FlattenedScope to flatten inputs and unflatten outputs
   if (!flatten_.empty()) {
-    node->child_ =
-        std::make_unique<FlattenedScope>(std::move(node->child_), flatten_, broadcast_, unflatten_);
+    node = std::make_unique<Flattened>(std::move(node), flatten_, broadcast_, unflatten_);
   }
   return std::move(node);
 }
-
-// class PipelineCreator : public Creator<Node> {
-//  public:
-//   const char* GetName() const override { return "Pipeline"; }
-//   std::unique_ptr<Node> Create(const Value& config) override {
-//     return BuildFromConfig<PipelineBuilder>(config).value();
-//   }
-// };
-// REGISTER_MODULE(Node, PipelineCreator);
 
 class PipelineCreator : public Creator<Builder> {
  public:

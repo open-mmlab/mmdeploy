@@ -40,16 +40,20 @@ class Builder {
  public:
   virtual ~Builder() = default;
 
-  virtual Result<void> SetInputs();
-  virtual Result<void> SetOutputs();
-  virtual Result<unique_ptr<Node>> Build() = 0;
-
   const vector<string>& inputs() const noexcept { return inputs_; }
   const vector<string>& outputs() const noexcept { return outputs_; }
   const string& name() const noexcept { return name_; }
 
+  Result<unique_ptr<Node>> Build();
+
+  static Result<unique_ptr<Builder>> CreateFromConfig(const Value& config);
+
  protected:
   explicit Builder(Value config);
+
+  virtual Result<void> SetInputs();
+  virtual Result<void> SetOutputs();
+  virtual Result<unique_ptr<Node>> BuildImpl() = 0;
 
  protected:
   Value config_;
@@ -60,7 +64,6 @@ class Builder {
 
 }  // namespace graph
 
-MMDEPLOY_DECLARE_REGISTRY(graph::Node);
 MMDEPLOY_DECLARE_REGISTRY(graph::Builder);
 
 }  // namespace mmdeploy

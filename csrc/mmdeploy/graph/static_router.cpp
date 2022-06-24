@@ -25,7 +25,7 @@ class StaticRouter::State {
 
  private:
   vector<int> use_count_;
-  std::vector<std::optional<Sender<Value>>> values_;
+  vector<std::optional<Sender<Value>>> values_;
 };
 
 Sender<Value> StaticRouter::State::CollectN(const vector<Coords>& coords) {
@@ -112,9 +112,8 @@ Sender<Value> StaticRouter::Process(Sender<Value> args) {
 Result<unique_ptr<StaticRouter>> StaticRouterBuilder::Build(const Value& config) {
   try {
     auto pipeline = std::make_unique<StaticRouter>();
-    // OUTCOME_TRY(NodeParser::Parse(config["pipeline"], *pipeline));
 
-    const auto& task_configs = config["pipeline"]["tasks"];
+    const auto& task_configs = config["tasks"];
     auto size = task_configs.size();
 
     vector<unique_ptr<Node>> nodes;
@@ -128,7 +127,6 @@ Result<unique_ptr<StaticRouter>> StaticRouterBuilder::Build(const Value& config)
     OUTCOME_TRY(auto inputs, ParseStringArray(config["input"]));
     OUTCOME_TRY(auto outputs, ParseStringArray(config["output"]));
 
-    // MMDEPLOY_INFO("pipeline->inputs: {}", pipeline->inputs());
     OUTCOME_TRY(UpdateOutputCoords(static_cast<int>(size), inputs));
     for (auto task_config : task_configs) {
       auto index = static_cast<int>(nodes.size());
@@ -139,12 +137,13 @@ Result<unique_ptr<StaticRouter>> StaticRouterBuilder::Build(const Value& config)
       if (config.contains("context")) {
         task_config["context"].update(config["context"]);
       }
-      OUTCOME_TRY(auto builder, CreateFromRegistry<Builder>(task_config));
+      OUTCOME_TRY(auto builder, Builder::CreateFromConfig(task_config));
       if (builder) {
+        auto node = builder->Build().value();
         OUTCOME_TRY(auto coords, GetInputCoords(builder->inputs()));
         input_coords.push_back(std::move(coords));
         OUTCOME_TRY(UpdateOutputCoords(index, builder->outputs()));
-        nodes.push_back(builder->Build().value());
+        nodes.push_back(std::move(node));
       } else {
         MMDEPLOY_ERROR("could not create {}: {}", name, type);
         return Status(eFail);
@@ -195,7 +194,6 @@ Result<void> StaticRouterBuilder::UpdateOutputCoords(int index, const vector<str
       MMDEPLOY_ERROR("duplicate output: ", output);
       return Status(eNotSupported);
     } else {
-      // MMDEPLOY_ERROR("insert: {}", output);
       output_name_to_coords_.insert({output, {index, i}});
     }
   }

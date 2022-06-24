@@ -43,7 +43,7 @@ set(SRCS
         )
 
 mmdeploy_add_library(${PROJECT_NAME} ${SRCS})
-target_compile_definitions(${PROJECT_NAME} PUBLIC -DMMDEPLOY_STATUS_USE_SOURCE_LOCATION=1)
+
 
 target_include_directories(${PROJECT_NAME}
         PUBLIC
@@ -52,6 +52,12 @@ target_include_directories(${PROJECT_NAME}
         # TODO: remove dependency of `json`
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/third_party/json>
         )
+
+if (MMDEPLOY_STATUS_USE_STACKTRACE)
+    include(${CMAKE_SOURCE_DIR}/cmake/stacktrace.cmake)
+else ()
+    target_compile_definitions(${PROJECT_NAME} PUBLIC -DMMDEPLOY_STATUS_USE_SOURCE_LOCATION=1)
+endif ()
 
 if (MMDEPLOY_BUILD_SDK_CXX_API)
     target_include_directories(${PROJECT_NAME} PUBLIC

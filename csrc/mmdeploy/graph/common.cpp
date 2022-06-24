@@ -12,6 +12,8 @@ Result<std::vector<std::string>> ParseStringArray(const Value& value) {
   } else if (value.is_array()) {
     return from_value<std::vector<std::string>>(value);
   }
+  MMDEPLOY_ERROR("{}", value);
+  __builtin_trap();
   return Status(eInvalidArgument);
 }
 
