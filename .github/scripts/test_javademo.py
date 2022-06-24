@@ -35,7 +35,7 @@ PARAMS = [
     },
     {
         'task':
-        'OCR',
+        'Ocr',
         'configs': [
             'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/dbnet.tar',  # noqa: E501
             'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/crnn.tar'  # noqa: E501
@@ -71,7 +71,8 @@ def main():
             model_dir = model_url.split('/')[-1].split('.')[0]
             java_demo_cmd.append(model_dir)
         java_demo_cmd.append('cpu')
-        java_demo_cmd.append('demo/resources/human-pose.png')
+        java_demo_cmd.append('/home/runner/work/mmdeploy/mmdeploy/demo' +
+                             '/resources/human-pose.png')
         java_demo_cmd_str = ' '.join(java_demo_cmd)
         os.system('export JAVA_HOME=/home/runner/work/mmdeploy/mmdeploy/' +
                   'jdk-18 && export PATH=${JAVA_HOME}/bin:${PATH} && java' +
