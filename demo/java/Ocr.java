@@ -22,12 +22,12 @@ public class Ocr {
     public static void main(String[] args) {
         // Parse arguments
         if (args.length != 4) {
-            System.out.println("usage:\njava TextDetection detModelPath recModelPath deviceName imagePath");
+            System.out.println("usage:\njava TextDetection deviceName detModelPath recModelPath imagePath");
             return;
         }
-        String detModelPath = args[0];
-        String recModelPath = args[1];
-        String deviceName = args[2];
+        String deviceName = args[0];
+        String detModelPath = args[1];
+        String recModelPath = args[2];
         String imagePath = args[3];
 
         // create text detector and recognizer

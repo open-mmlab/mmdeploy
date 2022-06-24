@@ -62,7 +62,7 @@ def main():
         configs = params['configs']
         java_demo_cmd = [
             'java', '-cp', 'csrc/mmdeploy/apis/java',
-            'demo/java/' + task + '.java'
+            'demo/java/' + task + '.java', 'cpu'
         ]
         for config in configs:
             model_url = config
@@ -70,7 +70,6 @@ def main():
                                                      model_url.split('/')[-1]))
             model_dir = model_url.split('/')[-1].split('.')[0]
             java_demo_cmd.append(model_dir)
-        java_demo_cmd.append('cpu')
         java_demo_cmd.append('/home/runner/work/mmdeploy/mmdeploy/demo' +
                              '/resources/human-pose.jpg')
         java_demo_cmd_str = ' '.join(java_demo_cmd)

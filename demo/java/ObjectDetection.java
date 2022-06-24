@@ -21,11 +21,11 @@ public class ObjectDetection {
     public static void main(String[] args) {
         // Parse arguments
         if (args.length != 3) {
-            System.out.println("usage:\njava ObjectDetection modelPath deviceName imagePath");
+            System.out.println("usage:\njava ObjectDetection deviceName modelPath imagePath");
             return;
         }
-        String modelPath = args[0];
-        String deviceName = args[1];
+        String deviceName = args[0];
+        String modelPath = args[1];
         String imagePath = args[2];
 
         // create detector
