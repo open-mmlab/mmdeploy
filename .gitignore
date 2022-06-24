@@ -7,6 +7,9 @@ __pycache__/
 *.so
 onnx2ncnn
 
+# Java classes
+*.class
+
 # Distribution / packaging
 .Python
 build/
