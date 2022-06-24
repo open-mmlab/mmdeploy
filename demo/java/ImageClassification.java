@@ -45,7 +45,7 @@ public class ImageClassification {
 
             // print results
             for (Classifier.Result value : result) {
-                System.out.println(value);
+                System.out.printf("label: %d, score: %.4f\n", value.label_id, value.score);
             }
         } catch (Exception e) {
             System.out.println("exception: " + e.getMessage());
