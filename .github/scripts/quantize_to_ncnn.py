@@ -4,6 +4,7 @@ import os
 import subprocess
 
 # list of tuple: onnx filename, download_url and model_config.
+
 CONFIGS = [
     [
         'hrnet.onnx',
