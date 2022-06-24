@@ -78,7 +78,7 @@ def main():
             ':${LD_LIBRARY_PATH}'
 
         print(
-            subprocess.call(export_library_cmd + '&& ' +
+            subprocess.call(export_library_cmd + ' && ' +
                             ' '.join(java_demo_cmd)))
 
 
