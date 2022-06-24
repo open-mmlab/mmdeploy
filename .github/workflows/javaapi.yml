@@ -47,7 +47,7 @@ jobs:
           wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
           tar -zxvf onnxruntime-linux-x64-1.8.1.tgz
           pushd onnxruntime-linux-x64-1.8.1
-          export ONNXRUNTIME_DIR=$(pwd)
+          export ONNXRUNTIME_DIR=${PWD}
           export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
           popd
       - name: Install opencv
