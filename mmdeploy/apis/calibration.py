@@ -6,7 +6,8 @@ import torch
 from mmcv.parallel import MMDataParallel
 
 from mmdeploy.core import patch_model
-from mmdeploy.utils import cfg_apply_marks, load_config
+from mmdeploy.utils import (IR, cfg_apply_marks, get_backend, get_ir_config,
+                            load_config)
 from .core import PIPELINE_MANAGER, no_mp
 from .utils import create_calib_input_data as create_calib_input_data_impl
 
@@ -61,7 +62,10 @@ def create_calib_input_data(calib_file: str,
         dataset = task_processor.build_dataset(dataset_cfg, dataset_type)
 
         # patch model
-        patched_model = patch_model(model, cfg=deploy_cfg)
+        backend = get_backend(deploy_cfg)
+        ir = IR.get(get_ir_config(deploy_cfg)['type'])
+        patched_model = patch_model(
+            model, cfg=deploy_cfg, backend=backend, ir=ir)
 
         dataloader = task_processor.build_dataloader(
             dataset, 1, 1, dist=False, shuffle=False)
