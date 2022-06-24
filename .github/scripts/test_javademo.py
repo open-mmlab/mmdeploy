@@ -72,7 +72,7 @@ def main():
             java_demo_cmd.append(model_dir)
         java_demo_cmd.append('cpu')
         java_demo_cmd.append('/home/runner/work/mmdeploy/mmdeploy/demo' +
-                             '/resources/human-pose.png')
+                             '/resources/human-pose.jpg')
         java_demo_cmd_str = ' '.join(java_demo_cmd)
         os.system('export JAVA_HOME=/home/runner/work/mmdeploy/mmdeploy/' +
                   'jdk-18 && export PATH=${JAVA_HOME}/bin:${PATH} && java' +
