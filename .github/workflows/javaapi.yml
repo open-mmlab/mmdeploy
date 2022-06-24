@@ -42,66 +42,14 @@ jobs:
         run: sudo apt update
       - name: gcc-multilib
         run: sudo apt install gcc-multilib g++-multilib wget libprotobuf-dev protobuf-compiler
-      - name: Install ncnn
+      - name: Install onnxruntime
         run: |
-          git clone -b 20220420 https://github.com/Tencent/ncnn.git
-          pushd ncnn
-          mkdir build && pushd build
-          git submodule update --init --recursive
-          cmake -DCMAKE_INSTALL_PREFIX=$(pwd)/../install -DNCNN_PYTHON=ON -DNCNN_BUILD_TESTS=OFF -DNCNN_BUILD_TOOLS=OFF -DNCNN_BUILD_EXAMPLES=OFF ..
-          cmake --build . -j2
-          make install
-          popd && popd
-      - name: Install PyTorch
-        run: python -m pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
-      - name: Install mmcv
-        run: |
-          python -m pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cu111/${{matrix.torch_version}}/index.html
-      - name: Build and install mmdeploy
-        run: |
-          rm -rf .eggs && python -m pip install -e .
-      - name: Install mmcls
-        run: |
-          cd ~
-          git clone https://github.com/open-mmlab/mmclassification.git
-          cd mmclassification
-          python3 -m pip install -e .
-          cd -
-      - name: Install mmdet
-        run: |
-          cd ~
-          git clone https://github.com/open-mmlab/mmdetection.git
-          cd mmdetection
-          python3 -m pip install -e .
-          cd -
-      - name: Install mmseg
-        run: |
-          cd ~
-          git clone https://github.com/open-mmlab/mmsegmentation.git
-          cd mmsegmentation
-          python3 -m pip install -e .
-          cd -
-      - name: Install mmedit
-        run: |
-          cd ~
-          git clone https://github.com/open-mmlab/mmediting.git
-          cd mmediting
-          python3 -m pip install -e .
-          cd -
-      - name: Install mmocr
-        run: |
-          cd ~
-          git clone https://github.com/open-mmlab/mmocr.git
-          cd mmocr
-          python3 -m pip install -e .
-          cd -
-      - name: Install mmpose
-        run: |
-          cd ~
-          git clone https://github.com/open-mmlab/mmpose.git
-          cd mmpose
-          python3 -m pip install -e .
-          cd -
+          wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
+          tar -zxvf onnxruntime-linux-x64-1.8.1.tgz
+          pushd onnxruntime-linux-x64-1.8.1
+          export ONNXRUNTIME_DIR=$(pwd)
+          export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
+          popd
       - name: Install opencv
         run: |
           sudo apt-get install libopencv-dev
@@ -110,11 +58,11 @@ jobs:
           pushd csrc/mmdeploy/apis/java
           javac mmdeploy/*.java
           popd
-      - name: Install mmdeploy with ncnn backend and java api
+      - name: Install mmdeploy with onnxruntime backend and java api
         run: |
           mkdir -p build && pushd build
           export LD_LIBRARY_PATH=/home/runner/work/mmdeploy/mmdeploy/ncnn/install/lib/:$LD_LIBRARY_PATH
-          cmake -DMMDEPLOY_BUILD_SDK=ON -DMMDEPLOY_BUILD_SDK_JAVA_API=ON -DMMDEPLOY_TARGET_BACKENDS=ncnn -DMMDEPLOY_CODEBASES=all -Dncnn_DIR=/home/runner/work/mmdeploy/mmdeploy/ncnn/install/lib/cmake/ncnn/  ..
+          cmake -DMMDEPLOY_BUILD_SDK=ON -DMMDEPLOY_BUILD_SDK_JAVA_API=ON -DMMDEPLOY_TARGET_BACKENDS=ort -DMMDEPLOY_CODEBASES=all -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR}  ..
           make install
           popd
       - name: Test javademo
