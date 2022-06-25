@@ -52,8 +52,7 @@ nvinfer1::DimsExprs GridPriorsTRT::getOutputDimensions(
 bool GridPriorsTRT::supportsFormatCombination(int pos, const nvinfer1::PluginTensorDesc *ioDesc,
                                               int nbInputs, int nbOutputs) TRT_NOEXCEPT {
   if (pos == 0) {
-    return ((ioDesc[pos].type == nvinfer1::DataType::kFLOAT ||
-             ioDesc[pos].type == nvinfer1::DataType::kHALF) &&
+    return (ioDesc[pos].type == nvinfer1::DataType::kFLOAT &&
             ioDesc[pos].format == nvinfer1::TensorFormat::kLINEAR);
   } else if (pos - nbInputs == 0) {
     return ioDesc[pos].type == ioDesc[0].type && ioDesc[pos].format == ioDesc[0].format;
@@ -78,10 +77,6 @@ int GridPriorsTRT::enqueue(const nvinfer1::PluginTensorDesc *inputDesc,
     case nvinfer1::DataType::kFLOAT:
       trt_grid_priors_impl<float>((float *)base_anchor, (float *)output, num_base_anchors, feat_w,
                                   feat_h, mStride.d[0], mStride.d[1], stream);
-      break;
-    case nvinfer1::DataType::kHALF:
-      trt_grid_priors_impl<half>((half *)base_anchor, (half *)output, num_base_anchors, feat_w,
-                                 feat_h, mStride.d[0], mStride.d[1], stream);
       break;
     default:
       return 1;

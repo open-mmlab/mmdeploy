@@ -92,10 +92,11 @@ class TestTensorRTExporter:
                          save_dir=None):
         if save_dir is None:
             onnx_file_path = tempfile.NamedTemporaryFile().name
-            trt_file_path = tempfile.NamedTemporaryFile().name
+            trt_file_path = tempfile.NamedTemporaryFile(suffix='.engine').name
         else:
             onnx_file_path = os.path.join(save_dir, model_name + '.onnx')
-            trt_file_path = os.path.join(save_dir, model_name + '.trt')
+            trt_file_path = os.path.join(save_dir, model_name + '.engine')
+        input_list = [data.cuda() for data in input_list]
         if isinstance(model, onnx.onnx_ml_pb2.ModelProto):
             onnx.save(model, onnx_file_path)
         else:
@@ -150,7 +151,6 @@ class TestTensorRTExporter:
 
         from mmdeploy.backend.tensorrt import TRTWrapper
         trt_model = TRTWrapper(trt_file_path, output_names)
-        input_list = [data.cuda() for data in input_list]
         trt_outputs = trt_model(dict(zip(input_names, input_list)))
         trt_outputs = [trt_outputs[i].float().cpu() for i in output_names]
         assert_allclose(model_outputs, trt_outputs, tolerate_small_mismatch)
