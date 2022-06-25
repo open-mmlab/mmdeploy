@@ -116,7 +116,7 @@ Result<void> NCNNNet::Forward() {
     } else if (outputs[i].dims == 2) {
       tensor.Reshape({1, shape.h, shape.w});
     } else if (outputs[i].dims == 3) {
-      tensor.Reshape({1, shape.d, shape.h, shape.w});
+      tensor.Reshape({1, shape.c, shape.h, shape.w});
     } else {
       // for dim==4 case and blank image.
       tensor.Reshape({1, shape.c, shape.d, shape.h, shape.w});

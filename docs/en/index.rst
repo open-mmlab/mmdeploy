@@ -68,10 +68,10 @@ You can switch between Chinese and English documents in the lower-left corner of
    :maxdepth: 1
    :caption: Developer Guide
 
-   06-developer-guide/how_to_support_new_models.md
-   06-developer-guide/how_to_support_new_backends.md
-   06-developer-guide/how_to_add_test_units_for_backend_ops.md
-   06-developer-guide/how_to_test_rewritten_models.md
+   06-developer-guide/support_new_model.md
+   06-developer-guide/support_new_backend.md
+   06-developer-guide/add_test_units_for_backend_ops.md
+   06-developer-guide/test_rewritten_models.md
 
 .. toctree::
    :maxdepth: 1

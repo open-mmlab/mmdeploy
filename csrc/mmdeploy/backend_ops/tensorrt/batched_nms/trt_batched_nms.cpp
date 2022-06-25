@@ -18,19 +18,20 @@ static const char* NMS_PLUGIN_VERSION{"1"};
 static const char* NMS_PLUGIN_NAME{"TRTBatchedNMS"};
 }  // namespace
 
-TRTBatchedNMS::TRTBatchedNMS(const std::string& name, NMSParameters params)
-    : TRTPluginBase(name), param(params) {}
+TRTBatchedNMS::TRTBatchedNMS(const std::string& name, NMSParameters params, bool returnIndex)
+    : TRTPluginBase(name), param(params), mReturnIndex(returnIndex) {}
 
 TRTBatchedNMS::TRTBatchedNMS(const std::string& name, const void* data, size_t length)
     : TRTPluginBase(name) {
   deserialize_value(&data, &length, &param);
-  deserialize_value(&data, &length, &boxesSize);
-  deserialize_value(&data, &length, &scoresSize);
-  deserialize_value(&data, &length, &numPriors);
   deserialize_value(&data, &length, &mClipBoxes);
+  deserialize_value(&data, &length, &mReturnIndex);
 }
 
-int TRTBatchedNMS::getNbOutputs() const TRT_NOEXCEPT { return 2; }
+int TRTBatchedNMS::getNbOutputs() const TRT_NOEXCEPT {
+  int num = mReturnIndex ? 3 : 2;
+  return num;
+}
 
 nvinfer1::DimsExprs TRTBatchedNMS::getOutputDimensions(
     int outputIndex, const nvinfer1::DimsExprs* inputs, int nbInputs,
@@ -51,6 +52,8 @@ nvinfer1::DimsExprs TRTBatchedNMS::getOutputDimensions(
     case 1:
       ret.nbDims = 2;
       break;
+    case 2:
+      ret.nbDims = 2;
     default:
       break;
   }
@@ -81,6 +84,7 @@ int TRTBatchedNMS::enqueue(const nvinfer1::PluginTensorDesc* inputDesc,
 
   void* nmsedDets = outputs[0];
   void* nmsedLabels = outputs[1];
+  void* nmsedIndex = mReturnIndex ? outputs[2] : nullptr;
 
   size_t batch_size = inputDesc[0].dims.d[0];
   size_t boxes_size = inputDesc[0].dims.d[1] * inputDesc[0].dims.d[2] * inputDesc[0].dims.d[3];
@@ -94,24 +98,22 @@ int TRTBatchedNMS::enqueue(const nvinfer1::PluginTensorDesc* inputDesc,
   pluginStatus_t status = nmsInference(
       stream, batch_size, boxes_size, score_size, shareLocation, param.backgroundLabelId,
       num_priors, param.numClasses, topk, param.keepTopK, param.scoreThreshold, param.iouThreshold,
-      DataType::kFLOAT, locData, DataType::kFLOAT, confData, nmsedDets, nmsedLabels, workSpace,
-      param.isNormalized, false, mClipBoxes, rotated);
+      DataType::kFLOAT, locData, DataType::kFLOAT, confData, nmsedDets, nmsedLabels, nmsedIndex,
+      workSpace, param.isNormalized, false, mClipBoxes, rotated);
   ASSERT(status == STATUS_SUCCESS);
 
   return 0;
 }
 
 size_t TRTBatchedNMS::getSerializationSize() const TRT_NOEXCEPT {
-  // NMSParameters, boxesSize,scoresSize,numPriors
-  return sizeof(NMSParameters) + sizeof(int) * 3 + sizeof(bool);
+  // NMSParameters
+  return sizeof(NMSParameters) + sizeof(mClipBoxes) + sizeof(mReturnIndex);
 }
 
 void TRTBatchedNMS::serialize(void* buffer) const TRT_NOEXCEPT {
   serialize_value(&buffer, param);
-  serialize_value(&buffer, boxesSize);
-  serialize_value(&buffer, scoresSize);
-  serialize_value(&buffer, numPriors);
   serialize_value(&buffer, mClipBoxes);
+  serialize_value(&buffer, mReturnIndex);
 }
 
 void TRTBatchedNMS::configurePlugin(const nvinfer1::DynamicPluginTensorDesc* inputs, int nbInputs,
@@ -122,7 +124,7 @@ void TRTBatchedNMS::configurePlugin(const nvinfer1::DynamicPluginTensorDesc* inp
 
 bool TRTBatchedNMS::supportsFormatCombination(int pos, const nvinfer1::PluginTensorDesc* ioDesc,
                                               int nbInputs, int nbOutputs) TRT_NOEXCEPT {
-  if (pos == 3) {
+  if (pos == 3 || pos == 4) {
     return ioDesc[pos].type == nvinfer1::DataType::kINT32 &&
            ioDesc[pos].format == nvinfer1::TensorFormat::kLINEAR;
   }
@@ -135,10 +137,7 @@ const char* TRTBatchedNMS::getPluginType() const TRT_NOEXCEPT { return NMS_PLUGI
 const char* TRTBatchedNMS::getPluginVersion() const TRT_NOEXCEPT { return NMS_PLUGIN_VERSION; }
 
 IPluginV2DynamicExt* TRTBatchedNMS::clone() const TRT_NOEXCEPT {
-  auto* plugin = new TRTBatchedNMS(mLayerName, param);
-  plugin->boxesSize = boxesSize;
-  plugin->scoresSize = scoresSize;
-  plugin->numPriors = numPriors;
+  auto* plugin = new TRTBatchedNMS(mLayerName, param, mReturnIndex);
   plugin->setPluginNamespace(mNamespace.c_str());
   plugin->setClipParam(mClipBoxes);
   return plugin;
@@ -147,7 +146,7 @@ IPluginV2DynamicExt* TRTBatchedNMS::clone() const TRT_NOEXCEPT {
 nvinfer1::DataType TRTBatchedNMS::getOutputDataType(int index, const nvinfer1::DataType* inputTypes,
                                                     int nbInputs) const TRT_NOEXCEPT {
   ASSERT(index >= 0 && index < this->getNbOutputs());
-  if (index == 1) {
+  if (index == 1 || index == 2) {
     return nvinfer1::DataType::kINT32;
   }
   return inputTypes[0];
@@ -167,6 +166,7 @@ TRTBatchedNMSCreator::TRTBatchedNMSCreator() {
       PluginField("iou_threshold", nullptr, PluginFieldType::kFLOAT32, 1));
   mPluginAttributes.emplace_back(PluginField("is_normalized", nullptr, PluginFieldType::kINT32, 1));
   mPluginAttributes.emplace_back(PluginField("clip_boxes", nullptr, PluginFieldType::kINT32, 1));
+  mPluginAttributes.emplace_back(PluginField("return_index", nullptr, PluginFieldType::kINT32, 1));
 
   mFC.nbFields = mPluginAttributes.size();
   mFC.fields = mPluginAttributes.data();
@@ -182,6 +182,7 @@ IPluginV2Ext* TRTBatchedNMSCreator::createPlugin(const char* name,
                                                  const PluginFieldCollection* fc) TRT_NOEXCEPT {
   const PluginField* fields = fc->fields;
   bool clipBoxes = true;
+  bool returnIndex = false;
   nvinfer1::plugin::NMSParameters params{};
 
   for (int i = 0; i < fc->nbFields; ++i) {
@@ -208,10 +209,12 @@ IPluginV2Ext* TRTBatchedNMSCreator::createPlugin(const char* name,
       params.isNormalized = *(static_cast<const bool*>(fields[i].data));
     } else if (!strcmp(attrName, "clip_boxes")) {
       clipBoxes = *(static_cast<const bool*>(fields[i].data));
+    } else if (!strcmp(attrName, "return_index")) {
+      returnIndex = *(static_cast<const bool*>(fields[i].data));
     }
   }
 
-  TRTBatchedNMS* plugin = new TRTBatchedNMS(name, params);
+  TRTBatchedNMS* plugin = new TRTBatchedNMS(name, params, returnIndex);
   plugin->setClipParam(clipBoxes);
   plugin->setPluginNamespace(mNamespace.c_str());
   return plugin;

@@ -10,7 +10,8 @@
       - [Build SDK](#build-sdk)
       - [Build Demo](#build-demo)
 
----
+______________________________________________________________________
+
 MMDeploy provides cross compile for android platform.
 
 Model converter is executed on linux platform, and SDK is executed on android platform.
@@ -29,30 +30,31 @@ This doc is only for how to build SDK using android toolchain on linux.
 
 - cmake
 
-    **Make sure cmake version >= 3.14.0**. If not, you can follow instructions below to install cmake 3.20.0. For more versions of cmake, please refer to [cmake website](https://cmake.org/install).
+  **Make sure cmake version >= 3.14.0**. If not, you can follow instructions below to install cmake 3.20.0. For more versions of cmake, please refer to [cmake website](https://cmake.org/install).
 
-    ```bash
-    wget https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0-linux-x86_64.tar.gz
-    tar -xzvf cmake-3.20.0-linux-x86_64.tar.gz
-    sudo ln -sf $(pwd)/cmake-3.20.0-linux-x86_64/bin/* /usr/bin/
-    ```
+  ```bash
+  wget https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0-linux-x86_64.tar.gz
+  tar -xzvf cmake-3.20.0-linux-x86_64.tar.gz
+  sudo ln -sf $(pwd)/cmake-3.20.0-linux-x86_64/bin/* /usr/bin/
+  ```
 
 - ANDROID NDK 19+
 
-    **Make sure android ndk version >= 19.0**. If not, you can follow instructions below to install android ndk r23b. For more versions of android ndk, please refer to [android ndk website](https://developer.android.com/ndk/downloads).
+  **Make sure android ndk version >= 19.0**. If not, you can follow instructions below to install android ndk r23b. For more versions of android ndk, please refer to [android ndk website](https://developer.android.com/ndk/downloads).
 
-    ```bash
-    wget https://dl.google.com/android/repository/android-ndk-r23b-linux.zip
-    unzip android-ndk-r23b-linux.zip
-    cd android-ndk-r23b
-    export NDK_PATH=${PWD}
-    ```
+  ```bash
+  wget https://dl.google.com/android/repository/android-ndk-r23b-linux.zip
+  unzip android-ndk-r23b-linux.zip
+  cd android-ndk-r23b
+  export NDK_PATH=${PWD}
+  ```
 
 ### Install Dependencies
 
 #### Install Dependencies for SDK
 
 You can skip this chapter if only interested in model converter.
+
 <table>
 <thead>
   <tr>
@@ -72,7 +74,7 @@ export OPENCV_ANDROID_SDK_DIR=${PWD}/OpenCV-android-sdk
 </code></pre>
     </td>
 
-  </tr>
+</tr>
   <tr>
     <td>ncnn </td>
     <td>A high-performance neural network inference computing framework supporting for android.</br>
@@ -93,7 +95,9 @@ make install
 </table>
 
 ### Build MMDeploy
+
 #### Build Options Spec
+
 <table>
 <thead>
   <tr>
@@ -154,6 +158,7 @@ make install
 </table>
 
 #### Build SDK
+
 MMDeploy provides a recipe as shown below for building SDK with ncnn as inference engine for android.
 
 - cpu + ncnn
