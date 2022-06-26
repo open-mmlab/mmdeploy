@@ -5,8 +5,10 @@ from mmdeploy.core import FUNCTION_REWRITER, mark
 from mmdeploy.utils import is_dynamic_shape
 
 
-@mark('detector_forward',
-      inputs=['input'], outputs=['dets', 'labels', 'masks', 'semseg'])
+@mark(
+    'detector_forward',
+    inputs=['input'],
+    outputs=['dets', 'labels', 'masks', 'semseg'])
 def __forward_impl(ctx, self, img, img_metas=None, **kwargs):
     """Rewrite and adding mark for `forward`.
 

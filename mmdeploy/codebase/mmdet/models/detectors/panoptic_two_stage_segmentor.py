@@ -3,7 +3,8 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    'mmdet.models.detectors.panoptic_two_stage_segmentor.TwoStagePanopticSegmentor.simple_test')
+    'mmdet.models.detectors.panoptic_two_stage_segmentor'
+    '.TwoStagePanopticSegmentor.simple_test')
 def two_stage_panoptic_segmentor__simple_test(ctx,
                                               self,
                                               img,
