@@ -45,7 +45,7 @@ public class ImageRestorer {
 
             // print results
             for (Restorer.Result value : result) {
-                System.out.println(value);
+                System.out.printf("Restore image height=%d, width=%d\n", value.res.shape[0], value.res.shape[1]);
             }
         } catch (Exception e) {
             System.out.println("exception: " + e.getMessage());
