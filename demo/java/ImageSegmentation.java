@@ -45,7 +45,7 @@ public class ImageSegmentation {
 
             // print results
             for (Segmentor.Result value : result) {
-                System.out.println(value);
+                System.out.printf("mask height=%d, width=%d\n", value.height, value.width);
             }
         } catch (Exception e) {
             System.out.println("exception: " + e.getMessage());
