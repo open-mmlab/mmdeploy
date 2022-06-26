@@ -45,7 +45,9 @@ public class PoseDetection {
 
             // print results
             for (PoseDetector.Result value : result) {
-                System.out.println(value);
+                for (int i = 0; i < value.point.length; i++) {
+                    System.out.printf("point %d, x: %d, y: %d\n", i, (int)value.point[i].x, (int)value.point[i].y);
+                }
             }
         } catch (Exception e) {
             System.out.println("exception: " + e.getMessage());
