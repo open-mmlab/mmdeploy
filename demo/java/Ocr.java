@@ -50,8 +50,12 @@ public class Ocr {
             TextRecognizer.Result[] recResult = text_recognizer.apply_bbox(img, detResult, detResultCount);
 
             // print results
-            for (TextRecognizer.Result value : recResult) {
-                System.out.println(value);
+            for (int i = 0; i < detResultCount[0]; ++i) {
+                System.out.printf("box[%d]: %s\n", i, recResult[i].text);
+                for (int j = 0; j < 4; ++j) {
+                    System.out.printf("x: %.2f, y: %.2f, ", detResult[i].bbox[j].x, detResult[i].bbox[j].y);
+                }
+                System.out.printf("\n");
             }
         } catch (Exception e) {
             System.out.println("exception: " + e.getMessage());
