@@ -10,17 +10,17 @@ from mmdeploy.utils import is_dynamic_shape
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    'mmrotate.models.dense_heads.RotatedRPNHead.get_bboxes')
-def rotated_rpn_head__get_bboxes(ctx,
-                                 self,
-                                 cls_scores,
-                                 bbox_preds,
-                                 score_factors=None,
-                                 img_metas=None,
-                                 cfg=None,
-                                 rescale=False,
-                                 with_nms=True,
-                                 **kwargs):
+    'mmrotate.models.dense_heads.OrientedRPNHead.get_bboxes')
+def oriented_rpn_head__get_bboxes(ctx,
+                                  self,
+                                  cls_scores,
+                                  bbox_preds,
+                                  score_factors=None,
+                                  img_metas=None,
+                                  cfg=None,
+                                  rescale=False,
+                                  with_nms=True,
+                                  **kwargs):
     """Rewrite `get_bboxes` of `RPNHead` for default backend.
 
     Rewrite this function to deploy model, transform network output for a

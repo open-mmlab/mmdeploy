@@ -5,10 +5,10 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    'mmrotate.models.roi_heads.oriented_standard_roi_head'
-    '.OrientedStandardRoIHead.simple_test')
-def oriented_standard_roi_head__simple_test(ctx, self, x, proposals, img_metas,
-                                            **kwargs):
+    'mmrotate.models.roi_heads.rotate_standard_roi_head'
+    '.RotatedStandardRoIHead.simple_test')
+def rotate_standard_roi_head__simple_test(ctx, self, x, proposals, img_metas,
+                                          **kwargs):
     """Rewrite `simple_test` of `StandardRoIHead` for default backend.
 
     This function returns detection result as Tensor instead of numpy
