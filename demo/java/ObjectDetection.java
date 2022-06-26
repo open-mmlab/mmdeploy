@@ -34,7 +34,6 @@ public class ObjectDetection {
 
         // create detector
         Detector detector = null;
-
         try {
             detector = new Detector(modelPath, deviceName, 0);
             // load image
@@ -42,10 +41,22 @@ public class ObjectDetection {
 
             // apply detector
             Detector.Result[] result = detector.apply(img);
-
             // print results
-            for (Detector.Result value : result) {
-                System.out.println(value);
+            for (int i = 0; i < result.length; i++) {
+                Detector.Result value = result[i];
+                System.out.printf("box %d, left=%.2f, top=%.2f, right=%.2f, bottom=%.2f, label=%d, score=%.4f\n",
+                                  i, value.bbox.left, value.bbox.top, value.bbox.right, value.bbox.bottom, value.label_id, value.score);
+                if ((value.bbox.right - value.bbox.left) < 1 || (value.bbox.bottom - value.bbox.top) < 1) {
+                    continue;
+                }
+
+                // skip detections less than specified score threshold
+                if (value.score < 0.3) {
+                    continue;
+                }
+                if (value.mask != null) {
+                    System.out.printf("mask %d, height=%d, width=%d\n", i, value.mask.shape[0], value.mask.shape[1]);
+                }
             }
         } catch (Exception e) {
             System.out.println("exception: " + e.getMessage());
