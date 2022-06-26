@@ -1,7 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import torch
 import torch.nn.functional as F
-from mmrotate.core import hbb2obb
 
 from mmdeploy.codebase.mmdet import get_post_processing_params
 from mmdeploy.codebase.mmrotate.core.post_processing import \
@@ -65,8 +63,13 @@ def gv_bbox_head__get_bboxes(ctx,
 
     bboxes = bboxes.view(*ratio_pred.size(), 4)
     rbboxes = rbboxes.view(*ratio_pred.size(), 5)
-    rbboxes = torch.where(ratio_pred > self.ratio_thr,
-                          hbb2obb(bboxes, self.version), rbboxes)
+
+    # TODO: Find a way to fix the usage of ratio_pred
+    # from mmrotate.core import hbb2obb
+    # rbboxes = rbboxes.where(
+    #     ratio_pred.unsqueeze(-1).expand_as(rbboxes) > self.ratio_thr,
+    #     hbb2obb(bboxes, self.version))
+
     # ignore background class
     scores = scores[..., :self.num_classes]
 
