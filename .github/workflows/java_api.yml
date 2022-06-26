@@ -66,4 +66,4 @@ jobs:
           export PATH=${JAVA_HOME}/bin:${PATH}
           export LD_LIBRARY_PATH=/build/lib:${LD_LIBRARY_PATH}
           java --version
-          python3 .github/scripts/test_javademo.py
+          python3 .github/scripts/test_java_demo.py
