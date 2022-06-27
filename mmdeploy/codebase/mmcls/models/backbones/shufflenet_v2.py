@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
-from mmcls.models.utils import channel_shuffle
 
 from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.utils import Backend
@@ -29,6 +28,7 @@ def shufflenetv2_backbone__forward__ncnn(ctx, self, x):
         out (Tensor): A feature map output from InvertedResidual. The tensor
         shape (N, Cout, H, W).
     """
+    from mmcls.models.utils import channel_shuffle
     if self.stride > 1:
         out = torch.cat((self.branch1(x), self.branch2(x)), dim=1)
     else:
