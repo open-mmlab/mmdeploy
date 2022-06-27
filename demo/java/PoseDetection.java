@@ -2,7 +2,6 @@ import mmdeploy.PoseDetector;
 import mmdeploy.PixelFormat;
 import mmdeploy.DataType;
 import mmdeploy.Mat;
-import mmdeploy.Utils;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -11,16 +10,6 @@ import java.io.File;
 import java.io.IOException;
 
 public class PoseDetection {
-
-    private static Mat loadImage(String path) {
-        try {
-            return Utils.loadImage(path);
-        }
-        catch (Exception e) {
-            System.out.println("exception: " + e.getMessage());
-        }
-        return null;
-    }
 
     public static void main(String[] args) {
         // Parse arguments
@@ -38,7 +27,7 @@ public class PoseDetection {
         try {
             pose_estimator = new PoseDetector(modelPath, deviceName, 0);
             // load image
-            Mat img = loadImage(imagePath);
+            Mat img = Utils.loadImage(imagePath);
 
             // apply pose estimator
             PoseDetector.Result[] result = pose_estimator.apply(img);

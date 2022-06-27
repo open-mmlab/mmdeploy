@@ -2,7 +2,6 @@ import mmdeploy.Detector;
 import mmdeploy.PixelFormat;
 import mmdeploy.DataType;
 import mmdeploy.Mat;
-import mmdeploy.Utils;
 
 import javax.imageio.ImageIO;
 
@@ -31,7 +30,7 @@ public class ObjectDetection {
             detector = new Detector(modelPath, deviceName, 0);
             // load image
             BufferedImage srcImg = ImageIO.read(new File(imagePath));
-            Mat img = Utils.bufferedImg2Mat(srcImg);
+            Mat img = Utils.bufferedImage2Mat(srcImg);
 
             // apply detector
             Detector.Result[] result = detector.apply(img);

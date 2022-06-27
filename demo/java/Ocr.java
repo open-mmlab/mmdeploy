@@ -3,7 +3,6 @@ import mmdeploy.TextRecognizer;
 import mmdeploy.PixelFormat;
 import mmdeploy.DataType;
 import mmdeploy.Mat;
-import mmdeploy.Utils;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -12,16 +11,6 @@ import java.io.File;
 import java.io.IOException;
 
 public class Ocr {
-
-    private static Mat loadImage(String path) {
-        try {
-            return Utils.loadImage(path);
-        }
-        catch (Exception e) {
-            System.out.println("exception: " + e.getMessage());
-        }
-        return null;
-    }
 
     public static void main(String[] args) {
         // Parse arguments
@@ -42,7 +31,7 @@ public class Ocr {
             text_detector = new TextDetector(detModelPath, deviceName, 0);
             text_recognizer = new TextRecognizer(recModelPath, deviceName, 0);
             // load image
-            Mat img = loadImage(imagePath);
+            Mat img = Utils.loadImage(imagePath);
 
             // apply text detector
             TextDetector.Result[] detResult = text_detector.apply(img);

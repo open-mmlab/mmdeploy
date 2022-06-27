@@ -2,7 +2,6 @@ import mmdeploy.Segmentor;
 import mmdeploy.PixelFormat;
 import mmdeploy.DataType;
 import mmdeploy.Mat;
-import mmdeploy.Utils;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -11,16 +10,6 @@ import java.io.File;
 import java.io.IOException;
 
 public class ImageSegmentation {
-
-    private static Mat loadImage(String path) {
-        try {
-            return Utils.loadImage(path);
-        }
-        catch (Exception e) {
-            System.out.println("exception: " + e.getMessage());
-        }
-        return null;
-    }
 
     public static void main(String[] args) {
         // Parse arguments
@@ -38,7 +27,7 @@ public class ImageSegmentation {
         try {
             segmentor = new Segmentor(modelPath, deviceName, 0);
             // load image
-            Mat img = loadImage(imagePath);
+            Mat img = Utils.loadImage(imagePath);
 
             // apply segmentor
             Segmentor.Result[] result = segmentor.apply(img);

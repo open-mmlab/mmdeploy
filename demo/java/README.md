@@ -1,6 +1,12 @@
 # Usage
+**step 1.** Compile Utils with Java APIs.
+```
+cd demo/java
+javac --class-path ../../csrc/mmdeploy/apis/java/ Utils.java
+cd ../..
+```
 
-**step 1.** Run the demo in the console.
+**step 2.** Run the demo in the console.
 
 Use **ImageClassification** as example.
 
@@ -10,5 +16,5 @@ First, you should set your model path and image path to `${MODEL_PATH}` and `${I
 export TASK=ImageClassification
 export LD_LIBRARY_PATH=${PWD}/build/lib:${LD_LIBRARY_PATH}
 cd demo/java
-java -cp ../../csrc/mmdeploy/apis/java ${TASK}.java cpu ${MODEL_PATH} ${IMAGE_PATH}
+java -cp ../../csrc/mmdeploy/apis/java:./ ${TASK}.java cpu ${MODEL_PATH} ${IMAGE_PATH}
 ```
