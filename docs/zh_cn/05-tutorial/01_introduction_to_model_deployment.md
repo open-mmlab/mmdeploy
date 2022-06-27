@@ -16,10 +16,12 @@ OpenMMLab 的算法如何部署？这是很多社区用户的困惑。而[模型
 在第一篇文章中，我们将部署一个简单的超分辨率模型，认识中间表示、推理引擎等模型部署中的概念。
 
 ## 初识模型部署
+
 在软件工程中，部署指把开发完毕的软件投入使用的过程，包括环境配置、软件安装等步骤。类似地，对于深度学习模型来说，模型部署指让训练好的模型在特定环境中运行的过程。相比于软件部署，模型部署会面临更多的难题：
+
 1. 运行模型所需的环境难以配置。深度学习模型通常是由一些框架编写，比如 PyTorch、TensorFlow。由于框架规模、依赖环境的限制，这些框架不适合在手机、开发板等生产环境中安装。
 2. 深度学习模型的结构通常比较庞大，需要大量的算力才能满足实时运行的需求。模型的运行效率需要优化。
-因为这些难题的存在，模型部署不能靠简单的环境配置与安装完成。经过工业界和学术界数年的探索，模型部署有了一条流行的流水线：
+   因为这些难题的存在，模型部署不能靠简单的环境配置与安装完成。经过工业界和学术界数年的探索，模型部署有了一条流行的流水线：
 
 ![pipeline](https://user-images.githubusercontent.com/4560679/156556619-3da7a572-876b-4909-b26f-04e81190c546.png)
 
@@ -32,8 +34,10 @@ OpenMMLab 的算法如何部署？这是很多社区用户的困惑。而[模型
 ## 部署第一个模型
 
 ### 创建 PyTorch 模型
+
 仿照 PyTorch 的官方[部署教程](https://pytorch.org/tutorials/advanced/super_resolution_with_onnxruntime.html)，让我们用 PyTorch 实现一个超分辨率模型，并把模型部署到 ONNX Runtime 这个推理引擎上。
 首先，我们需要创建一个有 PyTorch 库的 Python 编程环境。如果你的 PyTorch 环境还没有装好，可以参考官方的[入门教程](https://pytorch.org/get-started/locally/)。我们强烈推荐使用 conda 来管理 Python 库。使用 conda 可以靠如下的命令初始化一个 PyTorch 环境：
+
 ```bash
 # 创建预安装 Python 3.7 的名叫 deploy 虚拟环境
 conda create -n deploy python=3.7 -y
@@ -44,18 +48,22 @@ conda install pytorch torchvision cpuonly -c pytorch
 ```
 
 如果你的设备支持 cuda 编程，我们建议你在配置 cuda 环境后使用 gpu 上的 PyTorch。比如将上面安装 PyTorch 的命令改成：
+
 ```bash
 # 安装 cuda 11.3 的 PyTorch
 # 如果你用的是其他版本的 cuda，请参考上面 PyTorch 的官方安装教程选择安装命令
 conda install pytorch torchvision cudatoolkit=11.3 -c pytorch
 ```
+
 本教程会用到其他一些第三方库。你可以用以下命令来安装这些库：
+
 ```bash
 # 安装 ONNX Runtime, ONNX, OpenCV
 pip install onnxruntime onnx opencv-python
 ```
 
 在一切都配置完毕后，用下面的代码来创建一个超分辨率模型。
+
 ```python
 import os
 
@@ -128,6 +136,7 @@ torch_output = np.transpose(torch_output, [1, 2, 0]).astype(np.uint8)
 # Show image
 cv2.imwrite("face_torch.png", torch_output)
 ```
+
 在这份代码中，我们创建了一个经典的超分辨率网络 [SRCNN](https://arxiv.org/abs/1501.00092)。SRCNN 先把图像上采样到对应分辨率，再用 3 个卷积层处理图像。为了方便起见，我们跳过训练网络的步骤，直接下载模型权重（由于 MMEditing 中 SRCNN 的权重结构和我们定义的模型不太一样，我们修改了权重字典的 key 来适配我们定义的模型），同时下载好输入图片。为了让模型输出成正确的图片格式，我们把模型的输出转换成 HWC 格式，并保证每一通道的颜色值都在 0~255 之间。如果脚本正常运行的话，一幅超分辨率的人脸照片会保存在“face_torch.png”中。
 
 在 PyTorch 模型测试正确后，我们来正式开始部署这个模型。我们下一步的任务是把 PyTorch 模型转换成用中间表示 ONNX 描述的模型。
@@ -147,6 +156,7 @@ cv2.imwrite("face_torch.png", torch_output)
 ONNX （Open Neural Network Exchange）是 Facebook 和微软在2017年共同发布的，用于标准描述计算图的一种格式。目前，在数家机构的共同维护下，ONNX 已经对接了多种深度学习框架和多种推理引擎。因此，ONNX 被当成了深度学习框架到推理引擎的桥梁，就像编译器的中间语言一样。由于各框架兼容性不一，我们通常只用 ONNX 表示更容易部署的静态图。
 
 让我们用下面的代码来把 PyTorch 的模型转换成 ONNX 格式的模型：
+
 ```python
 x = torch.randn(1, 3, 256, 256)
 
@@ -165,6 +175,7 @@ with torch.no_grad():
 剩下的参数中，opset_version 表示 ONNX 算子集的版本。深度学习的发展会不断诞生新算子，为了支持这些新增的算子，ONNX会经常发布新的算子集，目前已经更新15个版本。 我们令 opset_version = 11，即使用第11个 ONNX 算子集，是因为 SRCNN 中的 bicubic （双三次插值）在 opset11 中才得到支持。剩下的两个参数 input_names, output_names 是输入、输出 tensor 的名称，我们稍后会用到这些名称。
 
 如果上述代码运行成功，目录下会新增一个"srcnn.onnx"的 ONNX 模型文件。我们可以用下面的脚本来验证一下模型文件是否正确。
+
 ```python
 import onnx
 
@@ -182,7 +193,6 @@ else:
 
 ![model](https://user-images.githubusercontent.com/4560679/156558675-df96e7f8-0c90-4b52-81db-f80e21e522a1.png)
 
-
 点击 input 或者 output，可以查看 ONNX 模型的基本信息，包括模型的版本信息，以及模型输入、输出的名称和数据类型。
 
 ![model_property](https://user-images.githubusercontent.com/4560679/156558624-0d77bf2c-bd01-40e3-a89c-1b0f69329576.png)
@@ -190,8 +200,8 @@ else:
 点击某一个算子节点，可以看到算子的具体信息。比如点击第一个 Conv 可以看到：
 ![node_property](https://user-images.githubusercontent.com/4560679/156558668-867ea202-9ac2-4a04-b836-91ced4f2e5ea.png)
 
-
 每个算子记录了算子属性、图结构、权重三类信息。
+
 - 算子属性信息即图中 attributes 里的信息，对于卷积来说，算子属性包括了卷积核大小(kernel_shape)、卷积步长(strides)等内容。这些算子属性最终会用来生成一个具体的算子。
 - 图结构信息指算子节点在计算图中的名称、邻边的信息。对于图中的卷积来说，该算子节点叫做 Conv_2，输入数据叫做 11，输出数据叫做 12。根据每个算子节点的图结构信息，就能完整地复原出网络的计算图。
 - 权重信息指的是网络经过训练后，算子存储的权重信息。对于卷积来说，权重信息包括卷积核的权重值和卷积后的偏差值。点击图中 conv1.weight, conv1.bias 后面的加号即可看到权重信息的具体内容。
@@ -199,6 +209,7 @@ else:
 现在，我们有了 SRCNN 的 ONNX 模型。让我们看看最后该如何把这个模型运行起来。
 
 ### 推理引擎——ONNX Runtime
+
 **ONNX Runtime** 是由微软维护的一个跨平台机器学习推理加速器，也就是我们前面提到的”推理引擎“。ONNX Runtime 是直接对接 ONNX 的，即 ONNX Runtime 可以直接读取并运行 .onnx 文件, 而不需要再把 .onnx 格式的文件转换成其他格式的文件。也就是说，对于 PyTorch - ONNX - ONNX Runtime 这条部署流水线，只要在目标设备中得到 .onnx 文件，并在 ONNX Runtime 上运行模型，模型部署就算大功告成了。
 
 通过刚刚的操作，我们把 PyTorch 编写的模型转换成了 ONNX 模型，并通过可视化检查了模型的正确性。最后，让我们用 ONNX Runtime 运行一下模型，完成模型部署的最后一步。
@@ -223,9 +234,11 @@ cv2.imwrite("face_ort.png", ort_output)
 如果代码正常运行的话，另一幅超分辨率照片会保存在"face_ort.png"中。这幅图片和刚刚得到的"face_torch.png"是一模一样的。这说明 ONNX Runtime 成功运行了 SRCNN 模型，模型部署完成了！以后有用户想实现超分辨率的操作，我们只需要提供一个 "srcnn.onnx" 文件，并帮助用户配置好 ONNX Runtime 的 Python 环境，用几行代码就可以运行模型了。或者还有更简便的方法，我们可以利用 ONNX Runtime 编译出一个可以直接执行模型的应用程序。我们只需要给用户提供 ONNX 模型文件，并让用户在应用程序选择要执行的 ONNX 模型文件名就可以运行模型了。
 
 ## 总结
+
 在这篇教程里，我们利用成熟的模型部署工具，轻松部署了一个初始版本的超分辨率模型 SRCNN。但在实际应用场景中，随着模型结构的复杂度不断加深，碰到的困难的也会越来越多。在下一篇教程里，我们将“升级”一下这个超分辨率模型，让它支持动态的输入。
 
 看完这篇教程，是不是感觉知识太多一下消化不过来？没关系，模型部署本身有非常多的东西要学。为了举例的方便，这篇教程包含了许多未来才会讲到的知识点。事实上，读完这篇教程后，记下以下知识点就够了：
+
 - 模型部署，指把训练好的模型在特定环境中运行的过程。模型部署要解决模型框架兼容性差和模型运行速度慢这两大问题。
 - 模型部署的常见流水线是“深度学习框架-中间表示-推理引擎”。其中比较常用的一个中间表示是 ONNX。
 - 深度学习模型实际上就是一个计算图。模型部署时通常把模型转换成静态的计算图，即没有控制流（分支语句、循环语句）的计算图。

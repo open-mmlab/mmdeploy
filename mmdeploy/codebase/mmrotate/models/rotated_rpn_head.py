@@ -95,8 +95,7 @@ def rotated_rpn_head__get_bboxes(ctx,
         if not is_dynamic_flag:
             anchors = anchors.data
 
-        # anchors = anchors.expand_as(bbox_pred)
-        anchors = anchors.expand(batch_size, -1, anchors.size(-1))
+        anchors = anchors.unsqueeze(0)
 
         # topk in tensorrt does not support shape<k
         # concate zero to enable topk,
@@ -106,9 +105,9 @@ def rotated_rpn_head__get_bboxes(ctx,
 
         if pre_topk > 0:
             _, topk_inds = scores.squeeze(2).topk(pre_topk)
-            batch_inds = torch.arange(
-                batch_size, device=device).view(-1, 1).expand_as(topk_inds)
-            anchors = anchors[batch_inds, topk_inds, :]
+            batch_inds = torch.arange(batch_size, device=device).unsqueeze(-1)
+            prior_inds = topk_inds.new_zeros((1, 1))
+            anchors = anchors[prior_inds, topk_inds, :]
             bbox_pred = bbox_pred[batch_inds, topk_inds, :]
             scores = scores[batch_inds, topk_inds, :]
         mlvl_valid_bboxes.append(bbox_pred)

@@ -88,11 +88,13 @@ void Tensor::Reshape(const TensorShape& shape) {
 }
 
 void Tensor::Squeeze() {
-  TensorShape new_shape;
-  new_shape.reserve(shape().size());
-  std::copy_if(begin(shape()), end(shape()), std::back_inserter(new_shape),
-               [](int64_t dim) { return dim != 1; });
-  Reshape(new_shape);
+  desc_.shape.erase(std::remove(desc_.shape.begin(), desc_.shape.end(), 1), desc_.shape.end());
+}
+
+void Tensor::Squeeze(int dim) {
+  if (shape(dim) == 1) {
+    desc_.shape.erase(desc_.shape.begin() + dim);
+  }
 }
 
 Result<void> Tensor::CopyFrom(const Tensor& tensor, Stream stream) {

@@ -81,7 +81,7 @@ python tools/onnx2pplnn.py \
 - `onnx_path`: The path of the `ONNX` model to convert.
 - `output_path`: The converted `PPLNN` algorithm path in json format.
 - `device`: The device of the model during conversion.
-- `opt-shapes`: Optimal shapes for PPLNN optimization. The shape of each tensor should be wrap with "[]" or "()" and the shapes of tensors should be separated by ",".
+- `opt-shapes`: Optimal shapes for PPLNN optimization. The shape of each tensor should be wrap with "\[\]" or "()" and the shapes of tensors should be separated by ",".
 - `--log-level`: To set log level which in `'CRITICAL', 'FATAL', 'ERROR', 'WARN', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'`. If not specified, it will be set to `INFO`.
 
 ## onnx2tensorrt

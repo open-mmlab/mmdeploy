@@ -41,6 +41,8 @@ else ()
     set(MMDEPLOY_LIB_TYPE STATIC)
 endif ()
 
+set(MMDEPLOY_TASKS "" CACHE INTERNAL "")
+
 # when CUDA devices are enabled, the environment variable ASAN_OPTIONS=protect_shadow_gap=0
 # must be set at runtime
 if (MMDEPLOY_ASAN_ENABLE)

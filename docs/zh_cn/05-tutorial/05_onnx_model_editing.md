@@ -7,7 +7,9 @@
 在这期教程里，我们将围绕 ONNX 这一套神经网络定义标准本身，探究 ONNX 模型的构造、读取、子模型提取、调试。首先，我们会学习 ONNX 的底层表示方式。之后，我们会用 ONNX API 构造和读取模型。最后，我们会利用 ONNX 提供的子模型提取功能，学习如何调试 ONNX 模型。
 
 ## ONNX 的底层实现
+
 ### ONNX 的存储格式
+
 ONNX 在底层是用 **Protobuf** 定义的。Protobuf，全称 Protocol Buffer，是 Google 提出的一套表示和序列化数据的机制。使用 Protobuf 时，用户需要先写一份数据定义文件，再根据这份定义文件把数据存储进一份二进制文件。可以说，数据定义文件就是数据类，二进制文件就是数据类的实例。
 这里给出一个 Protobuf 数据定义文件的例子：
 
@@ -22,7 +24,6 @@ message Person {
 这段定义表示在 `Person` 这种数据类型中，必须包含 `name`、`id` 这两个字段，选择性包含 `email` 字段。根据这份定义文件，用户就可以选择一种编程语言，定义一个含有成员变量 `name`、`id`、`email` 的 `Person` 类，把这个类的某个实例用 Protobuf 存储成二进制文件；反之，用户也可以用二进制文件和对应的数据定义文件，读取出一个 `Person` 类的实例。
 
 而对于 ONNX ，它的 Protobuf 数据定义文件在其[开源库](https://github.com/onnx/onnx/tree/main/onnx)中，这些文件定义了神经网络中模型、节点、张量的数据类型规范；而数据定义文件对应的二进制文件就是我们熟悉的“.onnx"文件，每一个 ".onnx" 文件按照数据定义规范，存储了一个神经网络的所有相关数据。直接用 Protobuf 生成 ONNX 模型还是比较麻烦的。幸运的是，ONNX 提供了很多实用 API，我们可以在完全不了解 Protobuf 的前提下，构造和读取 ONNX 模型。
-
 
 ### ONNX 的结构定义
 
@@ -111,10 +112,10 @@ opset_import {version: 15}
 
 在上一小节中，我们知道了 ONNX 模型是按以下的结构组织起来的：
 
-* ModelProto
-    * GraphProto
-        * NodeProto
-        * ValueInfoProto
+- ModelProto
+  - GraphProto
+    - NodeProto
+    - ValueInfoProto
 
 现在，让我们抛开 PyTorch，尝试完全用 ONNX 的 Python API 构造一个描述线性函数 `output=a*x+b` 的 ONNX 模型。我们将根据上面的结构，自底向上地构造这个模型。
 
@@ -223,8 +224,8 @@ assert np.allclose(output, a * x + b)
 
 一切顺利的话，这段代码不会有任何报错信息。这说明我们的模型等价于执行 a * x + b 这个计算。
 
-
 ### 读取并修改 ONNX 模型
+
 通过用 API 构造 ONNX 模型，我们已经彻底搞懂了 ONNX 由哪些模块组成。现在，让我们看看该如何读取现有的".onnx"文件并从中提取模型信息。
 
 首先，我们可以用下面的代码读取一个 ONNX 模型：
@@ -307,10 +308,12 @@ onnx.save(model, 'linear_func_2.onnx')
 在读入之前的 `linear_func.onnx` 模型后，我们可以直接修改第二个节点的类型 `node[1].op_type`，把加法变成减法。这样，我们的模型描述的是 `a * x - b` 这个线性函数。大家感兴趣的话，可以用 ONNX Runtime 运行新模型 `linear_func_2.onnx`，来验证一下它和 `a * x - b` 是否等价。
 
 ## 调试 ONNX 模型
+
 在实际部署中，如果用深度学习框架导出的 ONNX 模型出了问题，一般要通过修改框架的代码来解决，而不会从 ONNX 入手，我们把 ONNX 模型当成一个不可修改的黑盒看待。
 现在，我们已经深入学习了 ONNX 的原理，可以尝试对 ONNX 模型本身进行调试了。在这一节里，让我们看看该如何巧妙利用 ONNX 提供的子模型提取功能，对 ONNX 模型进行调试。
 
 ### 子模型提取
+
 ONNX 官方为开发者提供了子模型提取（extract）的功能。子模型提取，顾名思义，就是从一个给定的 ONNX 模型中，拿出一个子模型。这个子模型的节点集、边集都是原模型中对应集合的子集。让我们来用 PyTorch 导出一个复杂一点的 ONNX 模型，并在它的基础上执行提取操作：
 
 ```python
@@ -347,7 +350,6 @@ torch.onnx.export(model, input, 'whole_model.onnx')
 这个模型的可视化结果如下图所示（提取子模型需要输入边的序号，为了大家方面阅读，这幅图标出了之后要用到的边的序号）：
 
 ![](https://user-images.githubusercontent.com/47652064/170644578-bcaaa2aa-bdd4-4cb3-856b-c6d621273357.png)
-
 
 > 在前面的章节中，我们学过，ONNX 的边用同名张量表示的。也就是说，这里的边序号，实际上是前一个节点的输出张量序号和后一个节点的输入张量序号。由于这个模型是用 PyTorch 导出的，这些张量序号都是 PyTorch 自动生成的。
 
@@ -438,7 +440,7 @@ onnx.utils.extract_model('whole_model.onnx', 'debug_model_4.onnx', ['25', '27'],
 
 ![](https://user-images.githubusercontent.com/47652064/170020865-e4d59a4f-7c57-4a12-b300-b7f5da0e1b80.png)
 
----
+______________________________________________________________________
 
 子模型提取固然是一个便利的 ONNX 调试工具。但是，在实际的情况中，我们一般是用 PyTorch 等框架导出 ONNX 模型。这里有两个问题：
 
@@ -451,12 +453,12 @@ MMDeploy 为 PyTorch 模型添加了模型分块功能。使用这个功能，�
 
 在这篇教程中，我们抛开了 PyTorch，学习了 ONNX 模型本身的知识。老规矩，我们来总结一下这篇教程的知识点：
 
-* ONNX 使用 Protobuf 定义规范和序列化模型。
-* 一个 ONNX 模型主要由 `ModelProto`,`GraphProto`,`NodeProto`,`ValueInfoProto` 这几个数据类的对象组成。
-* 使用 `onnx.helper.make_xxx`，我们可以构造 ONNX 模型的数据对象。
-* `onnx.save()` 可以保存模型，`onnx.load()` 可以读取模型，`onnx.checker.check_model()` 可以检查模型是否符合规范。
-* `onnx.utils.extract_model()` 可以从原模型中取出部分节点，和新定义的输入、输出边构成一个新的子模型。
-* 利用子模型提取功能，我们可以输出原 ONNX 模型的中间结果，实现对 ONNX 模型的调试。
+- ONNX 使用 Protobuf 定义规范和序列化模型。
+- 一个 ONNX 模型主要由 `ModelProto`,`GraphProto`,`NodeProto`,`ValueInfoProto` 这几个数据类的对象组成。
+- 使用 `onnx.helper.make_xxx`，我们可以构造 ONNX 模型的数据对象。
+- `onnx.save()` 可以保存模型，`onnx.load()` 可以读取模型，`onnx.checker.check_model()` 可以检查模型是否符合规范。
+- `onnx.utils.extract_model()` 可以从原模型中取出部分节点，和新定义的输入、输出边构成一个新的子模型。
+- 利用子模型提取功能，我们可以输出原 ONNX 模型的中间结果，实现对 ONNX 模型的调试。
 
 至此，我们对 ONNX 相关知识的学习就告一段落了。回顾一下，我们先学习了 PyTorch 转 ONNX 有关 API 的用法；接着，我们学习了如何用自定义算子解决 PyTorch 和 ONNX 表达能力不足的问题；最后我们单独学习了 ONNX 模型的调试方法。通过对 ONNX 由浅入深的学习，我们基本可以应对模型部署中和 ONNX 有关的绝大多数问题了。
 
