@@ -46,7 +46,7 @@ void TestLoad(const Value& cfg, const cv::Mat& mat, PixelFormat src_format,
   }
 }
 
-TEST_CASE("prepare image, that is LoadImageFromFile transform", "[load]") {
+TEST_CASE("prepare image, that is LoadImageFromFile transform", "[.load]") {
   auto gResource = MMDeployTestResources::Get();
   auto img_list = gResource.LocateImageResources("transform");
   REQUIRE(!img_list.empty());

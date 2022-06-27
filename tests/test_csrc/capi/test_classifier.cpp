@@ -11,7 +11,7 @@
 
 using namespace std;
 
-TEST_CASE("test classifier's c api", "[classifier]") {
+TEST_CASE("test classifier's c api", "[.classifier][resource]") {
   auto test = [](const std::string& device_name, const std::string& model_path,
                  const std::vector<std::string>& img_list) {
     mm_handle_t handle{nullptr};
