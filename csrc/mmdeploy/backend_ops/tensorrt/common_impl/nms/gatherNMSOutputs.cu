@@ -12,7 +12,7 @@ __launch_bounds__(nthds_per_cta) __global__
                                  const int numPredsPerClass, const int numClasses, const int topK,
                                  const int keepTopK, const int *indices, const T_SCORE *scores,
                                  const T_BBOX *bboxData, T_BBOX *nmsedDets, int *nmsedLabels,
-                                 bool clipBoxes) {
+                                 int *nmsedIndex, bool clipBoxes) {
   if (keepTopK > topK) return;
   for (int i = blockIdx.x * nthds_per_cta + threadIdx.x; i < numImages * keepTopK;
        i += gridDim.x * nthds_per_cta) {
@@ -23,6 +23,9 @@ __launch_bounds__(nthds_per_cta) __global__
     const T_SCORE score = scores[offset + detId];
     if (index == -1) {
       nmsedLabels[i] = -1;
+      if (nmsedIndex != nullptr) {
+        nmsedIndex[i] = -1;
+      }
       if (rotated) {
         nmsedDets[i * 6] = 0;
         nmsedDets[i * 6 + 1] = 0;
@@ -46,6 +49,9 @@ __launch_bounds__(nthds_per_cta) __global__
                                            : index % (numClasses * numPredsPerClass)) +
                             bboxOffset) *
                            5;
+        if (nmsedIndex != nullptr) {
+          nmsedIndex[i] = bboxId / 5;
+        }
         // clipped bbox xmin
         nmsedDets[i * 6] =
             clipBoxes ? max(min(bboxData[bboxId], T_BBOX(1.)), T_BBOX(0.)) : bboxData[bboxId];
@@ -67,6 +73,9 @@ __launch_bounds__(nthds_per_cta) __global__
                                            : index % (numClasses * numPredsPerClass)) +
                             bboxOffset) *
                            4;
+        if (nmsedIndex != nullptr) {
+          nmsedIndex[i] = bboxId / 4;
+        }
         // clipped bbox xmin
         nmsedDets[i * 5] =
             clipBoxes ? max(min(bboxData[bboxId], T_BBOX(1.)), T_BBOX(0.)) : bboxData[bboxId];
@@ -90,12 +99,14 @@ pluginStatus_t gatherNMSOutputs_gpu(cudaStream_t stream, const bool shareLocatio
                                     const int numImages, const int numPredsPerClass,
                                     const int numClasses, const int topK, const int keepTopK,
                                     const void *indices, const void *scores, const void *bboxData,
-                                    void *nmsedDets, void *nmsedLabels, bool clipBoxes) {
+                                    void *nmsedDets, void *nmsedLabels, void *nmsedIndex,
+                                    bool clipBoxes) {
   const int BS = 32;
   const int GS = 32;
   gatherNMSOutputs_kernel<T_BBOX, T_SCORE, rotated, BS><<<GS, BS, 0, stream>>>(
       shareLocation, numImages, numPredsPerClass, numClasses, topK, keepTopK, (int *)indices,
-      (T_SCORE *)scores, (T_BBOX *)bboxData, (T_BBOX *)nmsedDets, (int *)nmsedLabels, clipBoxes);
+      (T_SCORE *)scores, (T_BBOX *)bboxData, (T_BBOX *)nmsedDets, (int *)nmsedLabels,
+      (int *)nmsedIndex, clipBoxes);
 
   CSC(cudaGetLastError(), STATUS_FAILURE);
   return STATUS_SUCCESS;
@@ -104,7 +115,7 @@ pluginStatus_t gatherNMSOutputs_gpu(cudaStream_t stream, const bool shareLocatio
 // gatherNMSOutputs LAUNCH CONFIG {{{
 typedef pluginStatus_t (*nmsOutFunc)(cudaStream_t, const bool, const int, const int, const int,
                                      const int, const int, const void *, const void *, const void *,
-                                     void *, void *, bool);
+                                     void *, void *, void *, bool);
 struct nmsOutLaunchConfig {
   DataType t_bbox;
   DataType t_score;
@@ -138,14 +149,15 @@ pluginStatus_t gatherNMSOutputs(cudaStream_t stream, const bool shareLocation, c
                                 const int numPredsPerClass, const int numClasses, const int topK,
                                 const int keepTopK, const DataType DT_BBOX, const DataType DT_SCORE,
                                 const void *indices, const void *scores, const void *bboxData,
-                                void *nmsedDets, void *nmsedLabels, bool clipBoxes, bool rotated) {
+                                void *nmsedDets, void *nmsedLabels, void *nmsedIndex,
+                                bool clipBoxes, bool rotated) {
   nmsOutLaunchConfig lc = nmsOutLaunchConfig(DT_BBOX, DT_SCORE, rotated);
   for (unsigned i = 0; i < nmsOutFuncVec.size(); ++i) {
     if (lc == nmsOutFuncVec[i]) {
       DEBUG_PRINTF("gatherNMSOutputs kernel %d\n", i);
       return nmsOutFuncVec[i].function(stream, shareLocation, numImages, numPredsPerClass,
                                        numClasses, topK, keepTopK, indices, scores, bboxData,
-                                       nmsedDets, nmsedLabels, clipBoxes);
+                                       nmsedDets, nmsedLabels, nmsedIndex, clipBoxes);
     }
   }
   return STATUS_BAD_PARAM;

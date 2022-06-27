@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
-from mmcls.models.utils import resize_pos_embed
 
 from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.utils import Backend
@@ -25,6 +24,7 @@ def visiontransformer__forward__ncnn(ctx, self, x):
         out (Tensor): A feature map output from InvertedResidual. The tensor
         shape (N, Cout, H, W).
     """
+    from mmcls.models.utils import resize_pos_embed
     B = x.shape[0]
     x, patch_resolution = self.patch_embed(x)
 

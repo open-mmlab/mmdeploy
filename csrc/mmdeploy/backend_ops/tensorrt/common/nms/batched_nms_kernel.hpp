@@ -13,7 +13,7 @@ pluginStatus_t nmsInference(cudaStream_t stream, const int N, const int perBatch
                             const float scoreThreshold, const float iouThreshold,
                             const DataType DT_BBOX, const void* locData, const DataType DT_SCORE,
                             const void* confData, void* nmsedDets, void* nmsedLabels,
-                            void* workspace, bool isNormalized, bool confSigmoid, bool clipBoxes,
-                            bool rotated = false);
+                            void* nmsedIndex, void* workspace, bool isNormalized, bool confSigmoid,
+                            bool clipBoxes, bool rotated = false);
 
 #endif
