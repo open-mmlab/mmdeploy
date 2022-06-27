@@ -75,7 +75,7 @@ partition_config = dict(
 
 Once we have marks of nodes and the deployment config with `parition_config` being set properly, we could use the [tool](../useful_tools.md) `torch2onnx` to export the model to onnx and get the partition onnx files.
 
-``` shell
+```shell
 python tools/torch2onnx.py \
 configs/mmdet/detection/yolov3_partition_onnxruntime_static.py \
 ../mmdetection/configs/yolo/yolov3_d53_mstrain-608_273e_coco.py \

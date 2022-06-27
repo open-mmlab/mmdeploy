@@ -73,7 +73,7 @@ partition_config = dict(
 
 添加好节点标记和部署配置文件，我们可以使用`tools/torch2onnx.py`工具导出带有`Mark`标记的完成onnx模型并根据分段策略提取分段的onnx模型文件。我们可以执行如下脚本，得到不带后处理的`YOLOV3`onnx模型文件`yolov3.onnx`，同时输出文件中也包含了添加`Mark`标记的完整模型文件`end2end.onnx`。此外，用户可以使用网页版模型可视化工具[netron](https://netron.app/)来查看和验证输出onnx模型的结构是否正确。
 
-``` shell
+```shell
 python tools/torch2onnx.py \
 configs/mmdet/detection/yolov3_partition_onnxruntime_static.py \
 ../mmdetection/configs/yolo/yolov3_d53_mstrain-608_273e_coco.py \
