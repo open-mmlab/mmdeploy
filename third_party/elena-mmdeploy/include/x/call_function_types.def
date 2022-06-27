@@ -1,0 +1,16 @@
+/**
+ * @brief #include-style X macros
+ * @author guanzhichao
+ */
+
+TYPE_CALL_FUNCTIONS(Sync)
+TYPE_CALL_FUNCTIONS(wmma_fill_fragment)
+TYPE_CALL_FUNCTIONS(wmma_load_matrix_sync)
+TYPE_CALL_FUNCTIONS(wmma_store_matrix_sync)
+TYPE_CALL_FUNCTIONS(wmma_mma_sync)
+TYPE_CALL_FUNCTIONS(wmma_fragment)
+TYPE_CALL_FUNCTIONS(atomic_add)
+TYPE_CALL_FUNCTIONS(atomic_max)
+TYPE_CALL_FUNCTIONS(atomic_min)
+
+#undef TYPE_CALL_FUNCTIONS

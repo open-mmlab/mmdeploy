@@ -1,0 +1,91 @@
+/**
+ * @brief #include-style X macros
+ * @author xieruifeng
+ */
+
+#ifndef END_ABSTRACT
+#define END_ABSTRACT
+#endif
+
+#ifndef IR_NODE_TYPE
+#define IR_NODE_TYPE(name)
+#endif
+
+#ifndef IR_NODE_TYPE_PLAIN
+#define IR_NODE_TYPE_PLAIN(name) IR_NODE_TYPE(name)
+#endif
+
+#ifndef IR_NODE_TYPE_ABSTRACT
+#define IR_NODE_TYPE_ABSTRACT(name) IR_NODE_TYPE(name)
+#endif
+
+#ifndef IR_NODE_TYPE_NESTED
+#define IR_NODE_TYPE_NESTED(name) IR_NODE_TYPE(name)
+#endif
+/**
+ * @brief X macro for types that does not need template parameters.  Elements
+ * here are valid candidates for T in Array<T>.
+ * @author xupengcheng
+ */
+IR_NODE_TYPE_ABSTRACT(Expr)
+IR_NODE_TYPE_PLAIN(Label)
+IR_NODE_TYPE_PLAIN(Reduce)
+IR_NODE_TYPE_PLAIN(Select)
+IR_NODE_TYPE_PLAIN(Call)
+IR_NODE_TYPE_PLAIN(Binary)
+IR_NODE_TYPE_PLAIN(ScalarAssign)
+IR_NODE_TYPE_PLAIN(Unary)
+IR_NODE_TYPE_PLAIN(Logical)
+IR_NODE_TYPE_PLAIN(Cast)
+IR_NODE_TYPE_PLAIN(BroadcastSymbol)
+IR_NODE_TYPE_PLAIN(VectorSymbol)
+IR_NODE_TYPE_PLAIN(Ramp)
+END_ABSTRACT
+
+IR_NODE_TYPE_ABSTRACT(Var)
+IR_NODE_TYPE_PLAIN(ScalarVar)
+IR_NODE_TYPE_PLAIN(TensorVar)
+IR_NODE_TYPE_PLAIN(IterVar)
+END_ABSTRACT
+
+IR_NODE_TYPE_ABSTRACT(Stmt)
+IR_NODE_TYPE_PLAIN(For)
+IR_NODE_TYPE_PLAIN(Range)
+IR_NODE_TYPE_PLAIN(Block)
+IR_NODE_TYPE_PLAIN(Let)
+IR_NODE_TYPE_PLAIN(IfThenElse)
+IR_NODE_TYPE_PLAIN(Evaluate)
+IR_NODE_TYPE_PLAIN(Attr)
+IR_NODE_TYPE_PLAIN(Realize)
+IR_NODE_TYPE_PLAIN(Allocate)
+IR_NODE_TYPE_PLAIN(Provide)
+IR_NODE_TYPE_PLAIN(Store)
+END_ABSTRACT
+
+IR_NODE_TYPE_ABSTRACT(Op)
+IR_NODE_TYPE_PLAIN(ComputeOp)
+IR_NODE_TYPE_PLAIN(PlaceholderOp)
+IR_NODE_TYPE_PLAIN(Schedule)
+IR_NODE_TYPE_PLAIN(Stage)
+IR_NODE_TYPE_PLAIN(IterAttr)
+END_ABSTRACT
+
+IR_NODE_TYPE_ABSTRACT(IterVarRelation)
+IR_NODE_TYPE_PLAIN(SplitRelation)
+IR_NODE_TYPE_PLAIN(FuseRelation)
+IR_NODE_TYPE_PLAIN(SingletonRelation)
+IR_NODE_TYPE_PLAIN(RebaseRelation)
+END_ABSTRACT
+
+/**
+ * @brief X macro for generating Nested IR, i.e. Array and Const
+ * @author lixiuhong
+ */
+IR_NODE_TYPE_NESTED(Array)
+IR_NODE_TYPE_NESTED(Const)
+
+#undef IR_NODE_TYPE_PLAIN
+#undef IR_NODE_TYPE_ABSTRACT
+#undef IR_NODE_TYPE_NESTED
+#undef IR_NODE_TYPE
+#undef END_ABSTRACT

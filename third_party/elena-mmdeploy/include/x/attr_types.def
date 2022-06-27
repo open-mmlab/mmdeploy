@@ -1,0 +1,12 @@
+/**
+ * @brief #include-style X macros
+ * @author guanzhichao
+ */
+
+TYPE_ATTR(RealizeScope)
+TYPE_ATTR(StorageScope)
+TYPE_ATTR(ThreadExtent)
+TYPE_ATTR(VirtualThread)
+TYPE_ATTR(IsProducer)
+
+#undef TYPE_ATTR
