@@ -245,7 +245,7 @@ export LD_LIBRARY_PATH=$Torch_DIR/lib:$LD_LIBRARY_PATH
 ```bash
 echo '# set env for onnxruntime' >> ~/.bashrc
 echo "export ONNXRUNTIME_DIR=${ONNXRUNTIME_DIR}" >> ~/.bashrc
-echo 'export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH' >> ~/.bashrc
+echo "export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH" >> ~/.bashrc
 source ~/.bashrc
 ```
 
