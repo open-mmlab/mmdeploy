@@ -1,0 +1,36 @@
+# CUDA Module
+find_cuda(${ELENA_USE_CUDA})
+
+if(ELENA_USE_CUDA)
+  if(NOT CUDA_FOUND)
+    message(FATAL_ERROR "Cannot find CUDA, ELENA_USE_CUDA=" ${ELENA_USE_CUDA})
+  endif()
+  message(STATUS "Build with CUDA support")
+  file(GLOB ELENA_RUNTIME_CUDA_SRC src/Runtime/Cuda/*.cpp)
+  list(APPEND ELENA_RUNTIME_SRC ${ELENA_RUNTIME_CUDA_SRC})
+
+  list(APPEND ELENA_RUNTIME_LINKER_LIBS ${CUDA_NVRTC_LIBRARY})
+  list(APPEND ELENA_RUNTIME_LINKER_LIBS ${CUDA_CUDART_LIBRARY})
+  list(APPEND ELENA_RUNTIME_LINKER_LIBS ${CUDA_CUDA_LIBRARY})
+  list(APPEND ELENA_RUNTIME_LINKER_LIBS ${CUDA_NVRTC_LIBRARY})
+
+  if(USE_CUDNN)
+    message(STATUS "Build with cuDNN support")
+    list(APPEND ELENA_RUNTIME_LINKER_LIBS ${CUDA_CUDNN_LIBRARY})
+  endif(USE_CUDNN)
+
+  if(USE_CUBLAS)
+    message(STATUS "Build with cuBLAS support")
+    list(APPEND ELENA_RUNTIME_LINKER_LIBS ${CUDA_CUBLAS_LIBRARY})
+    if(NOT CUDA_CUBLASLT_LIBRARY STREQUAL "CUDA_CUBLASLT_LIBRARY-NOTFOUND")
+      list(APPEND ELENA_RUNTIME_LINKER_LIBS ${CUDA_CUBLASLT_LIBRARY})
+    endif()
+  endif(USE_CUBLAS)
+
+  if(USE_THRUST)
+    message(STATUS "Build with Thrust support")
+    cmake_minimum_required(VERSION 3.13) # to compile CUDA code
+    enable_language(CUDA)
+  endif(USE_THRUST)
+
+endif(ELENA_USE_CUDA)

@@ -1,0 +1,286 @@
+template <typename Derived>
+template <typename T>
+RETURN_TYPE VISITOR::visit(ir::Array<T> *array_ptr) {
+  // recursively visit all elements in the array.
+  for (auto &a : array_ptr->element) derived().VISIT(a);
+  VISIT_RETURN(array_ptr);
+}
+
+template <typename Derived>
+template <typename T>
+RETURN_TYPE VISITOR::visit(ir::Const<T> *node) {
+  // do nothing
+  VISIT_RETURN(node);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::Label *node) {
+  // do nothing
+  VISIT_RETURN(node);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::Reduce *reduce_ptr) {
+  // visit all properties.
+  derived().VISIT(reduce_ptr->reduce_axis);
+  derived().VISIT(reduce_ptr->init);
+  derived().VISIT(reduce_ptr->accumulate);
+  derived().VISIT(reduce_ptr->combiner);
+  VISIT_RETURN(reduce_ptr);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::Select *select_ptr) {
+  derived().VISIT(select_ptr->cond);
+  derived().VISIT(select_ptr->tBranch);
+  derived().VISIT(select_ptr->fBranch);
+  VISIT_RETURN(select_ptr);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::Call *call_ptr) {
+  // visit the arguments.
+  if (call_ptr->args) derived().VISIT(call_ptr->args);
+  VISIT_RETURN(call_ptr);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::Binary *binary_ptr) {
+  // visit both arms of the Binary node.
+  derived().VISIT(binary_ptr->lhs);
+  derived().VISIT(binary_ptr->rhs);
+  VISIT_RETURN(binary_ptr);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::Unary *unary_ptr) {
+  // visit the only operand.
+  derived().VISIT(unary_ptr->operand);
+  VISIT_RETURN(unary_ptr);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::Logical *logical_ptr) {
+  // visit both arms of the Logical node.
+  derived().VISIT(logical_ptr->lhs);
+  derived().VISIT(logical_ptr->rhs);
+  VISIT_RETURN(logical_ptr);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::ScalarVar *scalar_ptr) {
+  if (!scalar_ptr->is_placeholder()) {
+    // visit tensor and indices fields if scalar_ptr is not from api::var.
+    derived().VISIT(scalar_ptr->tensor);
+    derived().VISIT(scalar_ptr->indices);
+  }
+  VISIT_RETURN(scalar_ptr);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::TensorVar *tensor_ptr) {
+  derived().VISIT(tensor_ptr->shape);
+  //   derived().VISIT(tensor_ptr->op);
+  VISIT_RETURN(tensor_ptr);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::Range *range_ptr) {
+  derived().VISIT(range_ptr->init);
+  derived().VISIT(range_ptr->extent);
+  VISIT_RETURN(range_ptr);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::IterVar *iter_ptr) {
+  // derived().VISIT(iter_ptr->range);
+  VISIT_RETURN(iter_ptr);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::ScalarAssign *scalar_assign_ptr) {
+  derived().VISIT(scalar_assign_ptr->var);
+  derived().VISIT(scalar_assign_ptr->value);
+  VISIT_RETURN(scalar_assign_ptr);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::For *for_stmt_ptr) {
+  derived().VISIT(for_stmt_ptr->it);
+  derived().VISIT(for_stmt_ptr->init);
+  derived().VISIT(for_stmt_ptr->extent);
+  derived().VISIT(for_stmt_ptr->body);
+  VISIT_RETURN(for_stmt_ptr);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::Block *block_ptr) {
+  derived().VISIT(block_ptr->head);
+  if (block_ptr->tail) derived().VISIT(block_ptr->tail);
+  VISIT_RETURN(block_ptr);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::IfThenElse *if_then_else_ptr) {
+  derived().VISIT(if_then_else_ptr->condition);
+  derived().VISIT(if_then_else_ptr->then_case);
+  if (if_then_else_ptr->else_case) derived().VISIT(if_then_else_ptr->else_case);
+  VISIT_RETURN(if_then_else_ptr);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::Evaluate *evaluate_ptr) {
+  derived().VISIT(evaluate_ptr->value);
+  VISIT_RETURN(evaluate_ptr);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::Let *let_ptr) {
+  derived().VISIT(let_ptr->var);
+  derived().VISIT(let_ptr->value);
+  derived().VISIT(let_ptr->body);
+  VISIT_RETURN(let_ptr);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::Provide *provide_ptr) {
+  derived().VISIT(provide_ptr->var);
+  derived().VISIT(provide_ptr->value);
+  derived().VISIT(provide_ptr->index);
+  VISIT_RETURN(provide_ptr);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::Store *store_ptr) {
+  derived().VISIT(store_ptr->var);
+  derived().VISIT(store_ptr->value);
+  derived().VISIT(store_ptr->index);
+  VISIT_RETURN(store_ptr);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::Realize *realize_ptr) {
+  derived().VISIT(realize_ptr->var);
+  derived().VISIT(realize_ptr->bound);
+  derived().VISIT(realize_ptr->body);
+  VISIT_RETURN(realize_ptr);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::Allocate *allocate_ptr) {
+  derived().VISIT(allocate_ptr->var);
+  derived().VISIT(allocate_ptr->bound);
+  derived().VISIT(allocate_ptr->body);
+  VISIT_RETURN(allocate_ptr);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::Attr *attr_ptr) {
+  derived().VISIT(attr_ptr->node);
+  derived().VISIT(attr_ptr->value);
+  derived().VISIT(attr_ptr->body);
+  VISIT_RETURN(attr_ptr);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::ComputeOp *compute_op_ptr) {
+  derived().VISIT(compute_op_ptr->iter_vars);
+  derived().VISIT(compute_op_ptr->fcompute);
+  VISIT_RETURN(compute_op_ptr);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::PlaceholderOp *node) {
+  // do nothing
+  VISIT_RETURN(node);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::Stage *stage_ptr) {
+  derived().VISIT(stage_ptr->op);
+  derived().VISIT(stage_ptr->origin_op);
+  derived().VISIT(stage_ptr->all_itervars);
+  derived().VISIT(stage_ptr->leaf_itervars);
+  derived().VISIT(stage_ptr->relations);
+  if (stage_ptr->attach_stage != nullptr)
+    derived().VISIT(stage_ptr->attach_stage);
+  if (stage_ptr->attach_var != nullptr) derived().VISIT(stage_ptr->attach_var);
+  if (stage_ptr->group != nullptr) derived().VISIT(stage_ptr->group);
+  VISIT_RETURN(stage_ptr);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::Schedule *schedule_ptr) {
+  derived().VISIT(schedule_ptr->groups);
+  derived().VISIT(schedule_ptr->outputs);
+  derived().VISIT(schedule_ptr->stages);
+  VISIT_RETURN(schedule_ptr);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::IterAttr *iterattr_ptr) {
+  derived().VISIT(iterattr_ptr->bind_thread);
+  derived().VISIT(iterattr_ptr->prefetch_data);
+  derived().VISIT(iterattr_ptr->prefetch_offset);
+  VISIT_RETURN(iterattr_ptr);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::FuseRelation *fuse_relation_ptr) {
+  derived().VISIT(fuse_relation_ptr->inner);
+  derived().VISIT(fuse_relation_ptr->outer);
+  derived().VISIT(fuse_relation_ptr->fused);
+  VISIT_RETURN(fuse_relation_ptr);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::SplitRelation *split_relation_ptr) {
+  derived().VISIT(split_relation_ptr->parent);
+  derived().VISIT(split_relation_ptr->inner);
+  derived().VISIT(split_relation_ptr->outer);
+  derived().VISIT(split_relation_ptr->factor);
+  derived().VISIT(split_relation_ptr->nparts);
+  VISIT_RETURN(split_relation_ptr);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::SingletonRelation *singleton_relation_ptr) {
+  derived().VISIT(singleton_relation_ptr->iter);
+  VISIT_RETURN(singleton_relation_ptr);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::RebaseRelation *rebase_relation_ptr) {
+  derived().VISIT(rebase_relation_ptr->parent);
+  derived().VISIT(rebase_relation_ptr->rebased);
+  VISIT_RETURN(rebase_relation_ptr);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::Cast *cast_ptr) {
+  derived().VISIT(cast_ptr->expr_);
+  VISIT_RETURN(cast_ptr);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::BroadcastSymbol *broadcast_symbol_ptr) {
+  derived().VISIT(broadcast_symbol_ptr->base_);
+  VISIT_RETURN(broadcast_symbol_ptr);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::VectorSymbol *vector_symbol_ptr) {
+  derived().VISIT(vector_symbol_ptr->base_);
+  VISIT_RETURN(vector_symbol_ptr);
+}
+
+template <typename Derived>
+RETURN_TYPE VISITOR::visit(ir::Ramp *ramp_ptr) {
+  derived().VISIT(ramp_ptr->base);
+  VISIT_RETURN(ramp_ptr);
+}
+
+#undef VISITOR
+#undef VISIT
+#undef VISIT_RETURN
+#undef RETURN_TYPE
