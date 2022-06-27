@@ -11,6 +11,10 @@ from mmdeploy.core import FUNCTION_REWRITER
 def _prepare_onnx_paddings__tensorrt(ctx, g, input, pad):
     """Rewrite `_prepare_onnx_paddings` for TensorRT backend.
 
+    For codes like `x = torch.nn.ZeroPad2d((0, a, 0, b))(x)`, where a and b are
+    variables of torch.tensor, onnx2tensorrt raises errors like
+    `INVALID_NODE: Invalid Node - Pad_`.
+
     Generate paddings in ONNX order based on pad in pytorch.
     Args:
         input: the input tensor.
@@ -54,6 +58,8 @@ def _prepare_onnx_paddings__tensorrt(ctx, g, input, pad):
     #               [..., 0, dim_n-1_end, dim_n_end]]
     # Reshape back to 1-D paddings = [..., 0, dim_n - 1_begin, dim_n_begin,
     # ..., 0, dim_n - 1_end, dim_n_end]
+
+    # replace original Constant-Transpose-Constant with Slices and Concat.
     paddings = torch.onnx.symbolic_opset10.flip(g, paddings, [0])
     begins = sym_help._slice_helper(
         g, paddings, axes=[0], starts=[1], ends=[0xffff], steps=[2])
