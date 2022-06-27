@@ -1,9 +1,5 @@
 # Elena
 
-[![pipeline status](http://gitlab.bj.sensetime.com/platform/dlcompiler/elena/badges/master/pipeline.svg)](http://gitlab.bj.sensetime.com/platform/dlcompiler/elena/commits/master)
-
-[![coverage report](http://gitlab.bj.sensetime.com/platform/dlcompiler/elena/badges/master/coverage.svg)](http://platform.pages.gitlab.bj.sensetime.com/dlcompiler/elena/coverage/)
-
 Elena is a deep learning compiler to bridge the gap between high-level tensor algorithm with varieties of devices, such as GPUs and emerging ASIPs.
 Elena is famous for her versatile in languages, who earns the title of Oraculum Septilingue ("Seven-language Oracle").
 
