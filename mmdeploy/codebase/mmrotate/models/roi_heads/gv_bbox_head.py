@@ -64,11 +64,10 @@ def gv_bbox_head__get_bboxes(ctx,
     bboxes = bboxes.view(*ratio_pred.size(), 4)
     rbboxes = rbboxes.view(*ratio_pred.size(), 5)
 
-    # TODO: Find a way to fix the usage of ratio_pred
-    # from mmrotate.core import hbb2obb
-    # rbboxes = rbboxes.where(
-    #     ratio_pred.unsqueeze(-1).expand_as(rbboxes) > self.ratio_thr,
-    #     hbb2obb(bboxes, self.version))
+    from mmrotate.core import hbb2obb
+    rbboxes = rbboxes.where(
+        ratio_pred.unsqueeze(-1) < self.ratio_thr,
+        hbb2obb(bboxes, self.version))
 
     # ignore background class
     scores = scores[..., :self.num_classes]
