@@ -53,6 +53,7 @@
 | STDC                       | MMSegmentation   |      ?      |      Y      |    Y     |  Y   |   N   |    Y     |         [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/stdc)         |
 | UPerNet[\*](#note)         | MMSegmentation   |      ?      |      Y      |    Y     |  N   |   N   |    N     |       [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/upernet)        |
 | DANet                      | MMSegmentation   |      ?      |      Y      |    Y     |  N   |   N   |    N     |        [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/danet)         |
+| Segmenter                  | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |      [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/segmenter)       |
 | SRCNN                      | MMEditing        |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |      [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/srcnn)      |
 | ESRGAN                     | MMEditing        |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |     [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/esrgan)      |
 | SRGAN                      | MMEditing        |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     | [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/srresnet_srgan)  |
