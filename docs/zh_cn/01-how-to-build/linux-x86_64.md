@@ -343,7 +343,7 @@ export MMDEPLOY_DIR=$(pwd)
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
   cmake -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_TARGET_BACKENDS=ort -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
-  make -j$(nproc)
+  make -j$(nproc) && make install
   ```
 
 - **TensorRT** 自定义算子
@@ -352,7 +352,7 @@ export MMDEPLOY_DIR=$(pwd)
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
   cmake -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_TARGET_BACKENDS=trt -DTENSORRT_DIR=${TENSORRT_DIR} -DCUDNN_DIR=${CUDNN_DIR} ..
-  make -j$(nproc)
+  make -j$(nproc) && make install
   ```
 
 - **ncnn** 自定义算子
@@ -361,7 +361,7 @@ export MMDEPLOY_DIR=$(pwd)
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
   cmake -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_TARGET_BACKENDS=ncnn -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn ..
-  make -j$(nproc)
+  make -j$(nproc) && make install
   ```
 
 - **torchscript** 自定义算子
@@ -370,7 +370,7 @@ export MMDEPLOY_DIR=$(pwd)
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
   cmake -DMMDEPLOY_TARGET_BACKENDS=torchscript -DTorch_DIR=${Torch_DIR} ..
-  make -j$(nproc)
+  make -j$(nproc) && make install
   ```
 
 ##### 安装 Model Converter
