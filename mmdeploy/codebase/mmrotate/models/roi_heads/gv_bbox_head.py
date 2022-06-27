@@ -68,6 +68,7 @@ def gv_bbox_head__get_bboxes(ctx,
     rbboxes = rbboxes.where(
         ratio_pred.unsqueeze(-1) < self.ratio_thr,
         hbb2obb(bboxes, self.version))
+    rbboxes = rbboxes.squeeze(2)
 
     # ignore background class
     scores = scores[..., :self.num_classes]
