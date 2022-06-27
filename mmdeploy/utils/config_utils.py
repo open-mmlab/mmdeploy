@@ -18,7 +18,6 @@ def load_config(*args) -> List[mmcv.Config]:
     """
 
     def _load_config(cfg):
-        print(type(cfg))
         if isinstance(cfg, str):
             cfg = mmcv.Config.fromfile(cfg)
         if not isinstance(cfg, (mmcv.Config, mmcv.ConfigDict, dict)):
