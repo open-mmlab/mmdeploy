@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Tuple
+
 import torch
 from torch.onnx import symbolic_helper
 
@@ -65,17 +67,32 @@ grid_priors_trt = GridPriorsTRTOp.apply
     func_name='mmdet.core.anchor.anchor_generator.'
     'AnchorGenerator.single_level_grid_priors',
     backend='tensorrt')
-def anchorgenerator__single_level_grid_priors__trt(ctx,
-                                                   self,
-                                                   featmap_size,
-                                                   level_idx,
-                                                   dtype=torch.float32,
-                                                   device='cuda'):
-    # generate origin func for forward
+def anchorgenerator__single_level_grid_priors__trt(
+        ctx,
+        self,
+        featmap_size: Tuple[int],
+        level_idx: int,
+        dtype: torch.dtype = torch.float32,
+        device: str = 'cuda') -> torch.Tensor:
+    """This is a rewrite to replace ONNX anchor generator to TensorRT custom
+    op.
 
+    Args:
+        ctx : The rewriter context
+        featmap_size (tuple[int]): Size of the feature maps.
+        level_idx (int): The index of corresponding feature map level.
+        dtype (obj:`torch.dtype`): Date type of points.Defaults to
+            ``torch.float32``.
+        device (str, optional): The device the tensor will be put on.
+            Defaults to 'cuda'.
+
+        Returns:
+            torch.Tensor: Anchors in the overall feature maps.
+    """
     feat_h, feat_w = featmap_size
     if isinstance(feat_h, int) and isinstance(feat_w, int):
-        return ctx.origin_func(self, featmap_size, level_idx, dtype, device)
+        return ctx.origin_func(self, featmap_size, level_idx, dtype,
+                               device).data
     base_anchors = self.base_anchors[level_idx].to(device).to(dtype)
     stride_w, stride_h = self.strides[level_idx]
     return grid_priors_trt(base_anchors, feat_h, feat_w, stride_h, stride_w)
