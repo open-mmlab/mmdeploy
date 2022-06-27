@@ -1,9 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
 import os.path as osp
-import subprocess
 
-import cpuinfo
 import torch
 from mmcv import DictAction
 from prettytable import PrettyTable
@@ -68,20 +66,11 @@ class TorchWrapper(torch.nn.Module):
         return self.model(*args, return_loss=False, **kwargs)
 
 
-def get_gpu_info():
-    cmd_str = 'nvidia-smi --query-gpu=name,memory.total --format=csv'
-    p = subprocess.run(
-        cmd_str, shell=True, stdout=None, stderr=None, capture_output=True)
-    if p.returncode == 0:
-        output = p.stdout.decode('utf-8')
-        output = output.splitlines()[1]
-        return output
-
-
 def main():
     args = parse_args()
     deploy_cfg_path = args.deploy_cfg
     model_cfg_path = args.model_cfg
+
     # load deploy_cfg
     deploy_cfg, model_cfg = load_config(deploy_cfg_path, model_cfg_path)
 
@@ -121,17 +110,6 @@ def main():
         for _ in range(args.num_iter + args.warmup):
             model(**data)
 
-    print('----- Environments')
-    cpu_info = cpuinfo.get_cpu_info()
-    gpu_info = get_gpu_info()
-    envs = PrettyTable()
-    envs.header = False
-    envs.add_row(['CPU', cpu_info['brand_raw']])
-    if gpu_info:
-        envs.add_row(['GPU', gpu_info])
-    envs.add_row(['backend', backend])
-
-    print(envs)
     print('----- Settings:')
     settings = PrettyTable()
     settings.header = False
