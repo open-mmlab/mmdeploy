@@ -22,15 +22,14 @@ namespace {
 
 Value config_template(Model model) {
   // clang-format off
- Value v{
-    {"name", "mmdetection"},
+  return {
+    {"name", "detector"},
     {"type", "Inference"},
     {"params", {{"model", std::move(model)}}},
     {"input", {"image"}},
-    {"output", {"det"}}
+    {"output", {"dets"}}
   };
   // clang-format on
-  return v;
 }
 
 int mmdeploy_detector_create_impl(mmdeploy_model_t model, const char* device_name, int device_id,
@@ -102,12 +101,12 @@ int mmdeploy_detector_get_result(mmdeploy_value_t output, mmdeploy_detection_t**
   }
   try {
     Value& value = Cast(output)->front();
-    auto detector_outputs = from_value<vector<mmdet::DetectorOutput>>(value);
+    auto detector_outputs = from_value<vector<mmdet::Detections>>(value);
 
     vector<int> _result_count;
     _result_count.reserve(detector_outputs.size());
     for (const auto& det_output : detector_outputs) {
-      _result_count.push_back((int)det_output.detections.size());
+      _result_count.push_back((int)det_output.size());
     }
     auto total = std::accumulate(_result_count.begin(), _result_count.end(), 0);
 
@@ -126,7 +125,7 @@ int mmdeploy_detector_get_result(mmdeploy_value_t output, mmdeploy_detection_t**
     auto result_ptr = result_data.get();
 
     for (const auto& det_output : detector_outputs) {
-      for (const auto& detection : det_output.detections) {
+      for (const auto& detection : det_output) {
         result_ptr->label_id = detection.label_id;
         result_ptr->score = detection.score;
         const auto& bbox = detection.bbox;

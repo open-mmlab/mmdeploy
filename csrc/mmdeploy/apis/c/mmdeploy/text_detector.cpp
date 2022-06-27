@@ -18,37 +18,22 @@ using namespace mmdeploy;
 
 namespace {
 
-const Value& config_template() {
+Value config_template(Model model) {
   // clang-format off
-  static Value v{
-    {
-      "pipeline", {
-        {"input", {"img"}},
-        {"output", {"dets"}},
-        {
-          "tasks", {
-            {
-              {"name", "text-detector"},
-              {"type", "Inference"},
-              {"params", {{"model", "TBD"}}},
-              {"input", {"img"}},
-              {"output", {"dets"}}
-            }
-          }
-        }
-      }
-    }
+  return {
+    {"name", "detector"},
+    {"type", "Inference"},
+    {"params", {{"model", std::move(model)}}},
+    {"input", {"img"}},
+    {"output", {"dets"}}
   };
-  return v;
   // clang-format on
 }
 
 int mmdeploy_text_detector_create_impl(mmdeploy_model_t model, const char* device_name,
                                        int device_id, mmdeploy_exec_info_t exec_info,
                                        mmdeploy_text_detector_t* detector) {
-  auto config = config_template();
-  config["pipeline"]["tasks"][0]["params"]["model"] = *Cast(model);
-
+  auto config = config_template(*Cast(model));
   return mmdeploy_pipeline_create(Cast(&config), device_name, device_id, exec_info,
                                   (mmdeploy_pipeline_t*)detector);
 }

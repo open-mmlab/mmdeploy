@@ -4,6 +4,8 @@
 
 #include <algorithm>
 
+#include "mmdeploy/core/utils/formatter.h"
+
 namespace mmdeploy::graph {
 
 Result<void> Gather(const Value::Array& array, const vector<int>& idxs, Value::Array& output) {
@@ -187,15 +189,13 @@ Value::Array UnflattenArray(Value::Array values, const vector<int>& index,
 Value::Array BroadcastArray(Value::Array values, const vector<int>& index,
                             const vector<bool>& predicate) {
   assert(values.size() == predicate.size());
-  auto is_array_of_size_one = [](const Value& v) { return v.is_array() && v.size() == 1; };
   for (int i = 0; i < values.size(); ++i) {
     if (predicate[i]) {
+      assert(values[i].is_array());
       auto& val = values[i].array();
-      assert(std::all_of(val.begin(), val.end(), is_array_of_size_one));
-      Value::Array ret;
-      ret.reserve(index.size());
-      for (const auto& idx : index) {
-        ret.push_back(val[idx][0]);
+      Value::Array ret(index.size() - 1);
+      for (int j = 0; j < ret.size(); ++j) {
+        ret[j] = val[index[j]];
       }
       values[i] = std::move(ret);
     }

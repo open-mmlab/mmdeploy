@@ -5,13 +5,14 @@
 #include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/core/graph.h"
 #include "mmdeploy/core/model.h"
-#include "mmdeploy/graph/pipeline.h"
+#include "mmdeploy/graph/common.h"
 
 namespace mmdeploy::graph {
 
-unique_ptr<Builder> CreateInferenceBuilder(const Value& config) {
-  MMDEPLOY_INFO("{}", config);
-  auto& model_config = config["params"]["model"];
+InferenceBuilder::InferenceBuilder(Value config) : Builder(std::move(config)) {}
+
+Result<unique_ptr<Node>> InferenceBuilder::BuildImpl() {
+  auto& model_config = config_["params"]["model"];
   Model model;
   if (model_config.is_any<Model>()) {
     model = model_config.get<Model>();
@@ -21,7 +22,7 @@ unique_ptr<Builder> CreateInferenceBuilder(const Value& config) {
   auto pipeline_json = model.ReadFile("pipeline.json").value();
   auto json = nlohmann::json::parse(pipeline_json);
 
-  auto context = config.value("context", Value(ValueType::kObject));
+  auto context = config_.value("context", Value(ValueType::kObject));
   context["model"] = std::move(model);
 
   auto pipeline_config = from_json<Value>(json);
@@ -29,26 +30,43 @@ unique_ptr<Builder> CreateInferenceBuilder(const Value& config) {
 
   MMDEPLOY_INFO("{}", pipeline_config);
 
-  return Builder::CreateFromConfig(pipeline_config).value();
-  // return std::make_unique<PipelineBuilder>(pipeline_config);
+  OUTCOME_TRY(auto pipeline_builder, Builder::CreateFromConfig(pipeline_config));
+  OUTCOME_TRY(auto node, pipeline_builder->Build());
+
+  OUTCOME_TRY(CheckInputs(*pipeline_builder));
+  OUTCOME_TRY(CheckOutputs(*pipeline_builder));
+
+  return std::move(node);
+}
+Result<void> InferenceBuilder::CheckInputs(Builder& builder) {
+  OUTCOME_TRY(auto inputs_internal, ParseStringArray(config_["input"]));
+  MMDEPLOY_INFO("{} <- {}", builder.inputs(), inputs_internal);
+  if (builder.inputs().size() != inputs_internal.size()) {
+    MMDEPLOY_ERROR("mis-matched number of inputs: {} vs {}", builder.inputs().size(),
+                   inputs_internal.size());
+    return Status(eInvalidArgument);
+  }
+  return success();
+}
+
+Result<void> InferenceBuilder::CheckOutputs(Builder& builder) {
+  OUTCOME_TRY(auto outputs_internal, ParseStringArray(config_["output"]));
+  MMDEPLOY_INFO("{} -> {}", builder.outputs(), outputs_internal);
+  if (builder.outputs().size() != outputs_internal.size()) {
+    MMDEPLOY_ERROR("mis-matched number of outputs: {} vs {}", builder.outputs().size(),
+                   outputs_internal.size());
+    return Status(eInvalidArgument);
+  }
 }
 
 class InferenceCreator : public Creator<Builder> {
  public:
   const char* GetName() const override { return "Inference"; }
   unique_ptr<Builder> Create(const Value& config) override {
-    return CreateInferenceBuilder(config);
+    return std::make_unique<InferenceBuilder>(config);
   }
 };
 
 REGISTER_MODULE(Builder, InferenceCreator);
-
-// InferenceBuilder::InferenceBuilder(Value config) : Builder(std::move(config)) {}
-//
-// Result<void> InferenceBuilder::SetInputs() { return success(); }
-//
-// Result<void> InferenceBuilder::SetOutputs() { return success(); }
-//
-// Result<unique_ptr<Node>> InferenceBuilder::BuildImpl() { return nullptr; }
 
 }  // namespace mmdeploy::graph

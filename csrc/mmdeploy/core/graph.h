@@ -51,15 +51,21 @@ class Builder {
  protected:
   explicit Builder(Value config);
 
-  virtual Result<void> SetInputs();
-  virtual Result<void> SetOutputs();
+  Result<void> SetInputs();
+  Result<void> SetOutputs();
+
   virtual Result<unique_ptr<Node>> BuildImpl() = 0;
 
  protected:
   Value config_;
+  string name_;
   vector<string> inputs_;
   vector<string> outputs_;
-  string name_;
+  // vector<string> inputs_internal_;
+  // vector<string> outputs_internal_;
+  vector<bool> flatten_;
+  vector<bool> broadcast_;
+  vector<bool> unflatten_;
 };
 
 }  // namespace graph

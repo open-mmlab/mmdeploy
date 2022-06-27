@@ -181,6 +181,9 @@ Result<vector<StaticRouter::Coords>> StaticRouterBuilder::GetInputCoords(
       ct->mapping.emplace_back(port_id, i);
     } else {
       MMDEPLOY_ERROR("missing input: {}", input);
+      for (const auto& [k, v] : output_name_to_coords_) {
+        MMDEPLOY_ERROR("local var: {}", k);
+      }
       return Status(eEntryNotFound);
     }
   }

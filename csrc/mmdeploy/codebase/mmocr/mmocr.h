@@ -18,7 +18,7 @@ struct TextDetectorOutput {
   MMDEPLOY_ARCHIVE_MEMBERS(boxes, scores);
 };
 
-struct TextRecognizerOutput {
+struct TextRecognition {
   std::string text;
   std::vector<float> score;
   MMDEPLOY_ARCHIVE_MEMBERS(text, score);

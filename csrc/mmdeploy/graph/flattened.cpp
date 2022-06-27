@@ -12,12 +12,19 @@ Flattened::Flattened(unique_ptr<Node> child, vector<bool> flatten, vector<bool> 
     : flatten_(std::move(flatten)),
       broadcast_(std::move(broadcast)),
       unflatten_(std::move(unflatten)),
-      body_(std::move(child)) {}
+      body_(std::move(child)) {
+  MMDEPLOY_ERROR("flatten: {}", flatten_);
+  MMDEPLOY_ERROR("broadcast: {}", broadcast_);
+  MMDEPLOY_ERROR("unflatten_: {}", unflatten_);
+}
 
 Sender<Value> Flattened::Process(Sender<Value> input) {
   auto flatten = Then([this](Value input) -> std::tuple<Value::Array, vector<int>> {
+    MMDEPLOY_ERROR("{}", input);
     auto [output, index] = FlattenArray(std::move(input).array(), flatten_);
+    MMDEPLOY_ERROR("HERE");
     output = BroadcastArray(std::move(output), index, broadcast_);
+    MMDEPLOY_ERROR("HERE");
     return {std::move(output), std::move(index)};
   });
 

@@ -2,21 +2,75 @@
 
 #include "mmdeploy/core/graph.h"
 
+#include "mmdeploy/archive/value_archive.h"
 #include "mmdeploy/core/registry.h"
 #include "mmdeploy/graph/common.h"
+#include "mmdeploy/graph/flattened.h"
 
 namespace mmdeploy {
 namespace graph {
 
+namespace {
+
+struct Expr {
+  string lhs;
+  string rhs;
+  char operation{0};
+};
+
+// parse expressions like "x", "x=y", "x=*y" or "x=+y"
+Expr ParseExpr(const string& str) {
+  Expr expr;
+  bool split{};
+  for (const auto& c : str) {
+    switch (c) {
+      case '=':
+        split = true;
+        break;
+      case '*':
+      case '+':
+        expr.operation = c;
+        break;
+      default:
+        (split ? &expr.rhs : &expr.lhs)->push_back(c);
+    }
+  }
+  if (!split) {
+    expr.rhs = expr.lhs;
+  }
+  return std::move(expr);
+}
+
+}  // namespace
+
 Result<void> Builder::SetInputs() {
-  MMDEPLOY_INFO("{}", config_);
-  OUTCOME_TRY(inputs_, ParseStringArray(config_["input"]));
+  OUTCOME_TRY(auto inputs, ParseStringArray(config_["input"]));
+  vector<string> inputs_internal;
+  for (const auto& input : inputs) {
+    auto expr = ParseExpr(input);
+    inputs_.push_back(expr.rhs);
+    inputs_internal.push_back(expr.lhs);
+    flatten_.push_back(expr.operation == '*');
+    broadcast_.push_back(expr.operation == '+');
+  }
+  // MMDEPLOY_ERROR("external inputs: {}", inputs_);
+  // MMDEPLOY_ERROR("internal inputs: {}", inputs_internal);
+  config_["input"] = to_value(inputs_internal);
   return success();
 }
 
 Result<void> Builder::SetOutputs() {
-  MMDEPLOY_INFO("{}", config_);
-  OUTCOME_TRY(outputs_, ParseStringArray(config_["output"]));
+  OUTCOME_TRY(auto outputs, ParseStringArray(config_["output"]));
+  vector<string> outputs_internal;
+  for (const auto& output : outputs) {
+    auto expr = ParseExpr(output);
+    outputs_.push_back(expr.lhs);
+    outputs_internal.push_back(expr.rhs);
+    unflatten_.push_back(expr.operation == '*');
+  }
+  // MMDEPLOY_ERROR("external outputs: {}", outputs_);
+  // MMDEPLOY_ERROR("internal outputs: {}", outputs_internal);
+  config_["output"] = to_value(outputs_internal);
   return success();
 }
 
@@ -27,11 +81,23 @@ Builder::Builder(Value config) : config_(std::move(config)) {
 Result<unique_ptr<Node>> Builder::Build() {
   OUTCOME_TRY(SetInputs());
   OUTCOME_TRY(SetOutputs());
-  return BuildImpl();
+  OUTCOME_TRY(auto node, BuildImpl());
+
+  // use Throttle to constraint resource usage
+  if (auto throttle = config_.value("throttle", 0)) {
+    MMDEPLOY_ERROR("Throttle is not implemented yet");
+    return Status(eNotSupported);
+  }
+
+  // create a FlattenedScope to flatten inputs and unflatten outputs
+  if (std::count(std::begin(flatten_), std::end(flatten_), true)) {
+    node = std::make_unique<Flattened>(std::move(node), flatten_, broadcast_, unflatten_);
+  }
+  return std::move(node);
 }
 
 Result<unique_ptr<Builder>> Builder::CreateFromConfig(const Value& config) {
-  MMDEPLOY_WARN("config: {}", config);
+  // MMDEPLOY_WARN("config: {}", config);
   auto type = config.value<string>("type", "");
   auto cfg = config;
   // backward compatibility
@@ -56,7 +122,6 @@ Result<unique_ptr<Builder>> Builder::CreateFromConfig(const Value& config) {
   }
   return std::move(builder);
 }
-
 
 }  // namespace graph
 

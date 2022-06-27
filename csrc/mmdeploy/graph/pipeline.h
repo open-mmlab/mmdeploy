@@ -12,15 +12,7 @@ class PipelineBuilder : public Builder {
   explicit PipelineBuilder(Value config);
 
  protected:
-  Result<void> SetInputs() override;
-  Result<void> SetOutputs() override;
   Result<unique_ptr<Node>> BuildImpl() override;
-
-  vector<bool> flatten_;
-  vector<bool> broadcast_;
-  vector<bool> unflatten_;
-  vector<string> inputs_internal_;
-  vector<string> outputs_internal_;
 };
 
 }  // namespace mmdeploy::graph

@@ -17,37 +17,22 @@ using namespace mmdeploy;
 
 namespace {
 
-Value& config_template() {
+Value config_template(Model model) {
   // clang-format off
-  static Value v{
-    {
-      "pipeline", {
-        {"input", {"img"}},
-        {"output", {"mask"}},
-        {
-          "tasks", {
-            {
-              {"name", "segmentation"},
-              {"type", "Inference"},
-              {"params", {{"model", "TBD"}}},
-              {"input", {"img"}},
-              {"output", {"mask"}}
-            }
-          }
-        }
-      }
-    }
+  return {
+    {"name", "segmentor"},
+    {"type", "Inference"},
+    {"params", {{"model", std::move(model)}}},
+    {"input", {"img"}},
+    {"output", {"mask"}}
   };
   // clang-format on
-  return v;
 }
 
 int mmdeploy_segmentor_create_impl(mmdeploy_model_t model, const char* device_name, int device_id,
                                    mmdeploy_exec_info_t exec_info,
                                    mmdeploy_segmentor_t* segmentor) {
-  auto config = config_template();
-  config["pipeline"]["tasks"][0]["params"]["model"] = *Cast(model);
-
+  auto config = config_template(*Cast(model));
   return mmdeploy_pipeline_create(Cast(&config), device_name, device_id, exec_info,
                                   (mmdeploy_pipeline_t*)segmentor);
 }

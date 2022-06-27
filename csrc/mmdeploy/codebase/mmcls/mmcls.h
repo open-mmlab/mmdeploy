@@ -11,15 +11,13 @@
 namespace mmdeploy {
 namespace mmcls {
 
-struct ClassifyOutput {
-  struct Label {
-    int label_id;
-    float score;
-    MMDEPLOY_ARCHIVE_MEMBERS(label_id, score);
-  };
-  std::vector<Label> labels;
-  MMDEPLOY_ARCHIVE_MEMBERS(labels);
+struct Label {
+  int label_id;
+  float score;
+  MMDEPLOY_ARCHIVE_MEMBERS(label_id, score);
 };
+
+using Labels = std::vector<Label>;
 
 DECLARE_CODEBASE(MMClassification, mmcls);
 }  // namespace mmcls

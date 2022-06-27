@@ -46,16 +46,16 @@ class LinearClsHead : public MMClassification {
  private:
   Value GetLabels(const Tensor& scores, int class_num) const {
     auto scores_data = scores.data<float>();
-    ClassifyOutput output;
-    output.labels.reserve(topk_);
+    Labels output;
+    output.reserve(topk_);
     std::vector<int> idx(class_num);
     iota(begin(idx), end(idx), 0);
     partial_sort(begin(idx), begin(idx) + topk_, end(idx),
                  [&](int i, int j) { return scores_data[i] > scores_data[j]; });
     for (int i = 0; i < topk_; ++i) {
-      auto label = ClassifyOutput::Label{idx[i], scores_data[idx[i]]};
+      auto label = Label{idx[i], scores_data[idx[i]]};
       MMDEPLOY_DEBUG("label_id: {}, score: {}", label.label_id, label.score);
-      output.labels.push_back(label);
+      output.push_back(label);
     }
     return to_value(std::move(output));
   }

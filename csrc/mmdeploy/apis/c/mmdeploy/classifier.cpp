@@ -118,13 +118,13 @@ int mmdeploy_classifier_get_result(mmdeploy_value_t output, mmdeploy_classificat
   try {
     Value& value = Cast(output)->front();
 
-    auto classify_outputs = from_value<vector<mmcls::ClassifyOutput>>(value);
+    auto classify_outputs = from_value<vector<mmcls::Labels>>(value);
 
     vector<int> _result_count;
     _result_count.reserve(classify_outputs.size());
 
     for (const auto& cls_output : classify_outputs) {
-      _result_count.push_back((int)cls_output.labels.size());
+      _result_count.push_back((int)cls_output.size());
     }
 
     auto total = std::accumulate(begin(_result_count), end(_result_count), 0);
@@ -136,7 +136,7 @@ int mmdeploy_classifier_get_result(mmdeploy_value_t output, mmdeploy_classificat
         new mmdeploy_classification_t[total]{});
     auto result_ptr = result_data.get();
     for (const auto& cls_output : classify_outputs) {
-      for (const auto& label : cls_output.labels) {
+      for (const auto& label : cls_output) {
         result_ptr->label_id = label.label_id;
         result_ptr->score = label.score;
         ++result_ptr;
