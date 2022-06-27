@@ -51,8 +51,10 @@ def focus__forward__ncnn(ctx, self, x):
     backend='tensorrt')
 def windowmsa__forward__tensorrt(ctx, self, x, mask=None):
     """Rewrite forward function of WindowMSA class for TensorRT.
+
     1. replace Gather operation of qkv with split.
     2. replace SoftMax operation with a workaround done by PyTorch.
+
     Args:
         x (tensor): input features with shape of (num_windows*B, N, C)
         mask (tensor | None, Optional): mask with shape of (num_windows,
@@ -84,7 +86,7 @@ def windowmsa__forward__tensorrt(ctx, self, x, mask=None):
         attn = attn.view(-1, self.num_heads, N, N)
 
     # replace softmax with a workaround
-    attn = self.softmax(attn)
+    attn = torch.exp(torch.log_softmax(attn, dim=self.softmax.dim))
 
     attn = self.attn_drop(attn)
 
@@ -101,6 +103,7 @@ def shift_window_msa__window_reverse__tensorrt(ctx, self, windows, H, W):
     """Rewrite window_reverse function of ShiftWindowMSA class for TensorRT.
     For TensorRT, seems radical shape transformations are not allowed. Replace
     them with soft ones.
+
     Args:
         windows: (num_windows*B, window_size, window_size, C)
         H (int): Height of image
@@ -126,6 +129,7 @@ def shift_window_msa__window_partition__tensorrt(ctx, self, x):
     """Rewrite window_partition function of ShiftWindowMSA class for TensorRT.
     For TensorRT, seems radical shape transformations are not allowed. Replace
     them with soft ones.
+
     Args:
         x: (B, H, W, C)
     Returns:
@@ -145,6 +149,7 @@ def shift_window_msa__window_partition__tensorrt(ctx, self, x):
     backend='tensorrt')
 def shift_window_msa__forward__tensorrt(ctx, self, query, hw_shape):
     """Rewrite forward function of ShiftWindowMSA class for TensorRT.
+
     1. replace dynamic padding with static padding and dynamic slice.
     2. always do slice `x = x[:, :H, :W, :].contiguous()` for stability.
     """

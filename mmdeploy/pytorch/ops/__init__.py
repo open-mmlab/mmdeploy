@@ -10,8 +10,8 @@ from .instance_norm import instance_norm__tensorrt
 from .layer_norm import layer_norm__ncnn
 from .linear import linear__ncnn
 from .lstm import generic_rnn__ncnn
-from .squeeze import squeeze__default
 from .pad import _prepare_onnx_paddings__tensorrt
+from .squeeze import squeeze__default
 
 __all__ = [
     'adaptive_avg_pool1d__default', 'adaptive_avg_pool2d__default',
