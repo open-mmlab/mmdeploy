@@ -214,6 +214,8 @@ jobs:
              -DMMDEPLOY_BUILD_SDK=ON `
              -DMMDEPLOY_BUILD_TEST=ON `
              -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON `
+             -DMMDEPLOY_BUILD_SDK_CXX_API=ON `
+             -DMMDEPLOY_BUILD_SDK_CSHARP_API=ON `
              -DMMDEPLOY_TARGET_BACKENDS="ort" `
              -DOpenCV_DIR="$env:OPENCV_PACKAGE_DIR"
             cmake --build . --config Release -- /m
@@ -233,10 +235,9 @@ jobs:
           command: |
             $env:path = "$(pwd)\onnxruntime\lib;" + $env:path
             $env:path = "$(pwd)\opencv\x64\vc16\bin;" + $env:path
-            cd mmdeploy
             mkdir mmdeploy_test_resources\transform
             cp .\mmdeploy\demo\resources\human-pose.jpg mmdeploy_test_resources\transform
-            .\build\bin\Release\mmdeploy_tests.exe
+            .\mmdeploy\build\bin\Release\mmdeploy_tests.exe
 
   test_linux_onnxruntime:
     parameters:
