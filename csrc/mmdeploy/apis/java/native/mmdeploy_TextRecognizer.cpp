@@ -83,13 +83,13 @@ jobjectArray Java_mmdeploy_TextRecognizer_applyBbox(JNIEnv *env, jobject thiz, j
       MMDEPLOY_ERROR("failed to apply bbox for text recognizer, code = {}", ec);
     }
     auto result_cls = env->FindClass("mmdeploy/TextRecognizer$Result");
-    auto result_ctor = env->GetMethodID(result_cls, "<init>", "([C[F)V");
+    auto result_ctor = env->GetMethodID(result_cls, "<init>", "([B[F)V");
     auto array = env->NewObjectArray(total_bboxes, result_cls, nullptr);
 
     for (int i = 0; i < total_bboxes; ++i) {
-      auto text = env->NewCharArray(recog_results[i].length);
+      auto text = env->NewByteArray(recog_results[i].length);
       auto score = env->NewFloatArray(recog_results[i].length);
-      env->SetCharArrayRegion(text, 0, recog_results[i].length, (jchar *)recog_results[i].text);
+      env->SetByteArrayRegion(text, 0, recog_results[i].length, (jbyte *)recog_results[i].text);
       env->SetFloatArrayRegion(score, 0, recog_results[i].length, (jfloat *)recog_results[i].score);
 
       auto res = env->NewObject(result_cls, result_ctor, text, score);

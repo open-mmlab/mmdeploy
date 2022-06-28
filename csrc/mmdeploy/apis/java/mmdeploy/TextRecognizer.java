@@ -8,9 +8,9 @@ public class TextRecognizer {
     private final long handle;
 
     public static class Result {
-        public char [] text;
+        public byte [] text;
         public float [] score;
-        public Result(char [] text, float [] score) {
+        public Result(byte [] text, float [] score) {
             this.text = text;
             this.score = score;
         }
