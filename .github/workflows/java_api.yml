@@ -64,7 +64,7 @@ jobs:
         run: |
           pushd demo/java
           javac -classpath ../../csrc/mmdeploy/apis/java/ Utils.java
-          popd && popd
+          popd
           export JAVA_HOME=${PWD}/jdk-18
           export PATH=${JAVA_HOME}/bin:${PATH}
           export LD_LIBRARY_PATH=/build/lib:${LD_LIBRARY_PATH}
