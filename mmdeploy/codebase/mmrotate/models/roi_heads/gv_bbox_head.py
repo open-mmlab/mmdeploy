@@ -74,6 +74,7 @@ def gv_bbox_head__get_bboxes(ctx,
     scores = scores[..., :self.num_classes]
 
     post_params = get_post_processing_params(ctx.cfg)
+    max_output_boxes_per_class = post_params.max_output_boxes_per_class
     iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)
     score_threshold = cfg.get('score_thr', post_params.score_threshold)
     pre_top_k = post_params.pre_top_k
@@ -82,6 +83,7 @@ def gv_bbox_head__get_bboxes(ctx,
     return multiclass_nms_rotated(
         rbboxes,
         scores,
+        max_output_boxes_per_class,
         iou_threshold=iou_threshold,
         score_threshold=score_threshold,
         pre_top_k=pre_top_k,
