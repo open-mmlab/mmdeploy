@@ -5,6 +5,8 @@ import torch.onnx.symbolic_helper as sym_help
 from mmdeploy.core import FUNCTION_REWRITER
 
 
+# modified from
+# https://github.com/pytorch/pytorch/blob/65a37923f9b14c7c9e80535d771ef9e4e92d0502/torch/onnx/symbolic_opset11.py
 @FUNCTION_REWRITER.register_rewriter(
     func_name='torch.onnx.symbolic_opset11._prepare_onnx_paddings',
     backend='tensorrt')

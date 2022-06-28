@@ -1592,6 +1592,7 @@ def test_windows_msa(backend_type: Backend):
         dict(
             backend_config=dict(
                 type=backend_type.value,
+                common_config=dict(fp16_mode=True, max_workspace_size=1 << 20),
                 model_inputs=[
                     dict(
                         input_shapes=dict(

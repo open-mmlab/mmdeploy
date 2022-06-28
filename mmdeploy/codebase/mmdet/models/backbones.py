@@ -2,6 +2,7 @@
 import torch
 
 from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.utils import get_common_config
 
 
 @FUNCTION_REWRITER.register_rewriter(
@@ -86,7 +87,17 @@ def windowmsa__forward__tensorrt(ctx, self, x, mask=None):
         attn = attn.view(-1, self.num_heads, N, N)
 
     # replace softmax with a workaround
-    attn = torch.exp(torch.log_softmax(attn, dim=self.softmax.dim))
+    # weird bug from TensorRT. softmax cannot be used here for fp32 and it
+    # can be used in fp16, but softmax fp16 performance is not as good as
+    # exp and log_softmax. Besides, only the UT of exp and log_softmax passed.
+    fp16_mode = get_common_config(ctx.cfg).get('fp16_mode', False)
+    if fp16_mode:
+        attn = torch.exp(torch.log_softmax(attn, dim=self.softmax.dim))
+    else:
+        means = torch.mean(attn, self.softmax.dim, keepdim=True)[0]
+        attn_exp = torch.exp(attn - means)
+        attn_exp_sum = torch.sum(attn_exp, self.softmax.dim, keepdim=True)
+        attn = attn_exp / attn_exp_sum
 
     attn = self.attn_drop(attn)
 
@@ -160,8 +171,14 @@ def shift_window_msa__forward__tensorrt(ctx, self, query, hw_shape):
 
     # pad feature maps to multiples of window size
     query = query.permute(0, 3, 1, 2).contiguous()
-    query = torch.nn.ZeroPad2d([0, self.window_size, 0, self.window_size])(
-        query)
+    # query = torch.nn.ZeroPad2d([0, self.window_size, 0, self.window_size])(
+    #     query)
+    query = torch.cat(
+        [query, query.new_zeros(B, C, H, self.window_size)], dim=-1)
+    query = torch.cat(
+        [query,
+         query.new_zeros(B, C, self.window_size, query.shape[-1])],
+        dim=-2)
     slice_h = (H + self.window_size - 1) // self.window_size * self.window_size
     slice_w = (W + self.window_size - 1) // self.window_size * self.window_size
     query = query[:, :, :slice_h, :slice_w]
