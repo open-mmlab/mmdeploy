@@ -1005,3 +1005,94 @@ def test_multi_level_rotated_roi_align(backend,
         output_names=['bbox_feats'],
         expected_result=expected_result,
         save_dir=save_dir)
+
+
+@pytest.mark.parametrize('backend', [TEST_TENSORRT])
+@pytest.mark.parametrize('strides', [(4, 4)])
+def test_trt_grid_priors(backend, strides, input_list=None, save_dir=None):
+    backend.check_env()
+
+    if input_list is None:
+        input = torch.rand(1, 3, 2, 2)
+        base_anchors = torch.tensor([[-22.6274, -11.3137, 22.6274, 11.3137],
+                                     [-16.0000, -16.0000, 16.0000, 16.0000],
+                                     [-11.3137, -22.6274, 11.3137, 22.6274]])
+
+        expected_result = torch.tensor([[-22.6274, -11.3137, 22.6274, 11.3137],
+                                        [-16.0000, -16.0000, 16.0000, 16.0000],
+                                        [-11.3137, -22.6274, 11.3137, 22.6274],
+                                        [-18.6274, -11.3137, 26.6274, 11.3137],
+                                        [-12.0000, -16.0000, 20.0000, 16.0000],
+                                        [-7.3137, -22.6274, 15.3137, 22.6274],
+                                        [-22.6274, -7.3137, 22.6274, 15.3137],
+                                        [-16.0000, -12.0000, 16.0000, 20.0000],
+                                        [-11.3137, -18.6274, 11.3137, 26.6274],
+                                        [-18.6274, -7.3137, 26.6274, 15.3137],
+                                        [-12.0000, -12.0000, 20.0000, 20.0000],
+                                        [-7.3137, -18.6274, 15.3137, 26.6274]])
+    else:
+        input = input_list[0]
+        base_anchors = input_list[1]
+        expected_result = input_list[2]
+    input_name = ['input']
+    output_name = ['output']
+
+    class GridPriorsTestOps(torch.autograd.Function):
+
+        @staticmethod
+        def forward(ctx, base_anchor, feat_h, feat_w, stride_h: int,
+                    stride_w: int):
+            a = base_anchor.shape[0]
+            return base_anchor.new_empty(feat_h * feat_w * a, 4)
+
+        @staticmethod
+        def symbolic(g, base_anchor, feat_h, feat_w, stride_h: int,
+                     stride_w: int):
+            from torch.onnx import symbolic_helper
+            feat_h = symbolic_helper._unsqueeze_helper(g, feat_h, [0])
+            feat_w = symbolic_helper._unsqueeze_helper(g, feat_w, [0])
+            zero_h = g.op(
+                'ConstantOfShape',
+                feat_h,
+                value_t=torch.tensor([0], dtype=torch.long),
+            )
+            zero_w = g.op(
+                'ConstantOfShape',
+                feat_w,
+                value_t=torch.tensor([0], dtype=torch.long),
+            )
+            return g.op(
+                'mmdeploy::GridPriorsTRT',
+                base_anchor,
+                zero_h,
+                zero_w,
+                stride_h_i=stride_h,
+                stride_w_i=stride_w)
+
+    class GridPriorsTestModel(torch.nn.Module):
+
+        def __init__(self, strides, base_anchors=base_anchors) -> None:
+            super().__init__()
+            self.strides = strides
+            self.base_anchors = base_anchors
+
+        def forward(self, x):
+            base_anchors = self.base_anchors
+            h, w = x.shape[2:]
+            strides = self.strides
+            return GridPriorsTestOps.apply(base_anchors, h, w, strides[0],
+                                           strides[1])
+
+    model = GridPriorsTestModel(strides=strides)
+
+    backend.run_and_validate(
+        model, [input],
+        'trt_grid_priors',
+        input_names=input_name,
+        output_names=output_name,
+        expected_result=expected_result,
+        dynamic_axes=dict(input={
+            2: 'h',
+            3: 'w'
+        }),
+        save_dir=save_dir)
