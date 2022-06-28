@@ -191,18 +191,20 @@ def shift_window_msa__forward__tensorrt(ctx, self, query, hw_shape):
             query, shifts=(-self.shift_size, -self.shift_size), dims=(1, 2))
 
         # calculate attention mask for SW-MSA
-        img_mask = torch.zeros((1, H_pad, W_pad, 1), device=query.device)
-        h_slices = (slice(0, -self.window_size),
-                    slice(-self.window_size,
-                          -self.shift_size), slice(-self.shift_size, None))
-        w_slices = (slice(0, -self.window_size),
-                    slice(-self.window_size,
-                          -self.shift_size), slice(-self.shift_size, None))
-        cnt = 0
-        for h in h_slices:
-            for w in w_slices:
-                img_mask[:, h, w, :] = cnt
-                cnt += 1
+        w_mask = torch.cat([
+            shifted_query.new_zeros(W_pad - self.window_size),
+            shifted_query.new_full((self.window_size - self.shift_size, ), 1),
+            shifted_query.new_full((self.shift_size, ), 2)
+        ])
+        h_mask = torch.cat([
+            shifted_query.new_zeros(H_pad - self.window_size),
+            shifted_query.new_full((self.window_size - self.shift_size, ), 3),
+            shifted_query.new_full((self.shift_size, ), 6)
+        ])
+
+        img_mask = w_mask.unsqueeze(0) + h_mask.unsqueeze(1)
+        img_mask = img_mask.unsqueeze(0)
+        img_mask = img_mask.unsqueeze(-1)
 
         # nW, window_size, window_size, 1
         mask_windows = self.window_partition(img_mask)
