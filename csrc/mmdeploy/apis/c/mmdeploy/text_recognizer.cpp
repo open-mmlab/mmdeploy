@@ -30,7 +30,7 @@ Value config_template(Model model) {
       "tasks", {
         {
           {"type", "Task"},
-          {"module", "WarpBoxes"},
+          {"module", "WarpBbox"},
           {"input", {"imgs", "bboxes"}},
           {"output", "patches"},
         },

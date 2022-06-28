@@ -101,12 +101,12 @@ int mmdeploy_text_detector_get_result(mmdeploy_value_t output, mmdeploy_text_det
   }
   try {
     Value& value = reinterpret_cast<Value*>(output)->front();
-    auto detector_outputs = from_value<std::vector<mmocr::TextDetectorOutput>>(value);
+    auto detector_outputs = from_value<std::vector<mmocr::TextDetections>>(value);
 
     vector<int> _result_count;
     _result_count.reserve(detector_outputs.size());
     for (const auto& det_output : detector_outputs) {
-      _result_count.push_back((int)det_output.scores.size());
+      _result_count.push_back((int)det_output.size());
     }
 
     auto total = std::accumulate(_result_count.begin(), _result_count.end(), 0);
@@ -119,9 +119,9 @@ int mmdeploy_text_detector_get_result(mmdeploy_value_t output, mmdeploy_text_det
     auto result_ptr = result_data.get();
 
     for (const auto& det_output : detector_outputs) {
-      for (auto i = 0; i < det_output.scores.size(); ++i, ++result_ptr) {
-        result_ptr->score = det_output.scores[i];
-        auto& bbox = det_output.boxes[i];
+      for (auto i = 0; i < det_output.size(); ++i, ++result_ptr) {
+        result_ptr->score = det_output[i].score;
+        auto& bbox = det_output[i].bbox;
         for (auto j = 0; j < bbox.size(); j += 2) {
           result_ptr->bbox[j / 2].x = bbox[j];
           result_ptr->bbox[j / 2].y = bbox[j + 1];

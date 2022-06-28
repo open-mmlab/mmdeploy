@@ -1,6 +1,3 @@
-// Copyright (c) OpenMMLab. All rights reserved.
-
-#include "mmdeploy/pipeline.h"
 
 #include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/core/logger.h"
@@ -11,6 +8,7 @@
 #include "mmdeploy/core/value.h"
 #include "mmdeploy/experimental/module_adapter.h"
 #include "opencv2/imgcodecs.hpp"
+#include "pipeline.h"
 
 const auto config_json = R"(
 {

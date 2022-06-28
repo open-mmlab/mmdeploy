@@ -57,6 +57,7 @@ Result<void> InferenceBuilder::CheckOutputs(Builder& builder) {
                    outputs_internal.size());
     return Status(eInvalidArgument);
   }
+  return success();
 }
 
 class InferenceCreator : public Creator<Builder> {
