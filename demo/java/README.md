@@ -1,5 +1,7 @@
 # Usage
+
 **step 1.** Compile Utils with Java APIs.
+
 ```
 cd demo/java
 javac --class-path ../../csrc/mmdeploy/apis/java/ Utils.java

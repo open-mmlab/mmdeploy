@@ -39,7 +39,7 @@ Build Java `.class` files.
 
 ```bash
 cd csrc/mmdeploy/apis/java
-Javac mmdeploy/*.java
+javac mmdeploy/*.java
 cd ../../../..
 ```
 
