@@ -931,3 +931,77 @@ def test_roi_align_rotated(backend,
             input_names=['input', 'rois'],
             output_names=['roi_feat'],
             save_dir=save_dir)
+
+
+@pytest.mark.parametrize('backend', [TEST_TENSORRT])
+@pytest.mark.parametrize(
+    'out_size, clockwise, sampling_ratio, roi_scale_factor,'
+    ' finest_scale, featmap_strides, aligned',
+    [(tuple([2, 2]), False, 2, 1.0, 2, list([1.0]), 1)])
+def test_multi_level_rotated_roi_align(backend,
+                                       out_size,
+                                       clockwise,
+                                       sampling_ratio,
+                                       roi_scale_factor,
+                                       finest_scale,
+                                       featmap_strides,
+                                       aligned,
+                                       input_list=None,
+                                       save_dir=None):
+    backend.check_env()
+
+    if input_list is None:
+        import numpy as np
+        input = [
+            torch.tensor([[[[1., 2., 5., 6.], [3., 4., 7., 8.],
+                            [9., 10., 13., 14.], [11., 12., 15., 16.]]]])
+        ]
+        rois = torch.tensor([[0., 1.5, 1.5, 3., 3., np.pi / 2]])
+        expected_result = torch.tensor([[[[7.5625, 1.9375], [10.375, 4.75]]]])
+    else:
+        input = input_list[0]
+        rois = input_list[1]
+        expected_result = input_list[2]
+    input_name = [('input_' + str(i)) for i in range(len(featmap_strides))]
+    input_name.insert(0, 'rois')
+
+    inputs = [
+        onnx.helper.make_tensor_value_info(
+            input_name[i + 1], onnx.TensorProto.FLOAT, shape=input[i].shape)
+        for i in range(len(input_name) - 1)
+    ]
+    inputs.append(
+        onnx.helper.make_tensor_value_info(
+            'rois', onnx.TensorProto.FLOAT, shape=rois.shape))
+    outputs = [
+        onnx.helper.make_tensor_value_info(
+            'bbox_feats', onnx.TensorProto.FLOAT, shape=expected_result.shape)
+    ]
+    node = onnx.helper.make_node(
+        'MMCVMultiLevelRotatedRoiAlign',
+        input_name, ['bbox_feats'],
+        'MMCVMultiLevelRotatedRoiAlign_0',
+        None,
+        'mmdeploy',
+        featmap_strides=featmap_strides,
+        finest_scale=finest_scale,
+        output_height=out_size[0],
+        output_width=out_size[1],
+        clockwise=clockwise,
+        roi_scale_factor=roi_scale_factor,
+        sampling_ratio=sampling_ratio,
+        aligned=aligned)
+    graph = onnx.helper.make_graph([node], 'torch-jit-export', inputs, outputs)
+    onnx_model = onnx.helper.make_model(
+        graph, producer_name='pytorch', producer_version='1.8')
+    onnx_model.opset_import[0].version = 11
+    onnx_model.opset_import.append(
+        onnx.onnx_ml_pb2.OperatorSetIdProto(domain='mmdeploy', version=1))
+
+    backend.run_and_validate(
+        onnx_model, [rois, *input],
+        'multi_level_rotated_roi_align',
+        input_names=input_name,
+        output_names=['bbox_feats'],
+        expected_result=expected_result,
+        save_dir=save_dir)

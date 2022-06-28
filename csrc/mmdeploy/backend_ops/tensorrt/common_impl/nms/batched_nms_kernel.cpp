@@ -10,8 +10,8 @@ pluginStatus_t nmsInference(cudaStream_t stream, const int N, const int perBatch
                             const float scoreThreshold, const float iouThreshold,
                             const DataType DT_BBOX, const void* locData, const DataType DT_SCORE,
                             const void* confData, void* nmsedDets, void* nmsedLabels,
-                            void* workspace, bool isNormalized, bool confSigmoid, bool clipBoxes,
-                            bool rotated) {
+                            void* nmsedIndex, void* workspace, bool isNormalized, bool confSigmoid,
+                            bool clipBoxes, bool rotated) {
   const int topKVal = topK < 0 ? numPredsPerClass : topK;
   const int keepTopKVal = keepTopK < 0 ? numPredsPerClass : keepTopK;
   // locCount = batch_size * number_boxes_per_sample * 4
@@ -117,7 +117,7 @@ pluginStatus_t nmsInference(cudaStream_t stream, const int N, const int perBatch
   // Gather data from the sorted bounding boxes after NMS
   status = gatherNMSOutputs(stream, shareLocation, N, numPredsPerClass, numClasses, topKVal,
                             keepTopKVal, DataType::kFLOAT, DataType::kFLOAT, indices, scores,
-                            bboxData, nmsedDets, nmsedLabels, clipBoxes, rotated);
+                            bboxData, nmsedDets, nmsedLabels, nmsedIndex, clipBoxes, rotated);
 
   ASSERT_FAILURE(status == STATUS_SUCCESS);
 
