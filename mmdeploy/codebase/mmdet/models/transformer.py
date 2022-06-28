@@ -36,8 +36,7 @@ def patch_merging__forward__tensorrt(ctx, self, x, input_size):
     x = torch.cat([x0, x1, x2, x3], -1)  # B H/2 W/2 4*C
     x = x.view(B, -1, 4 * C)  # B H/2*W/2 4*C
     x = x.view(x.shape[0], x.shape[1], 4,
-               -1).permute(0, 1, 3,
-                           2).contiguous().view(x.shape[0], x.shape[1], -1)
+               -1).permute(0, 1, 3, 2).reshape(x.shape[0], x.shape[1], -1)
     x = self.norm(x) if self.norm else x
     x = self.reduction(x)
     out_h = (H + 2 * self.sampler.padding[0] - self.sampler.dilation[0] *
