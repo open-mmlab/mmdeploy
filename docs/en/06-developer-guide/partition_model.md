@@ -1,8 +1,8 @@
-## How to get partitioned ONNX models
+# How to get partitioned ONNX models
 
 MMDeploy supports exporting PyTorch models to partitioned onnx models. With this feature, users can define their partition policy and get partitioned onnx models at ease. In this tutorial, we will briefly introduce how to support partition a model step by step. In the example, we would break YOLOV3 model into two parts and extract the first part without the post-processing (such as anchor generating and NMS) in the onnx model.
 
-### Step 1: Mark inputs/outpupts
+## Step 1: Mark inputs/outpupts
 
 To support the model partition, we need to add `Mark` nodes in the ONNX model. This could be done with mmdeploy's `@mark` decorator. Note that to make the `mark` work, the marking operation should be included in a rewriting function.
 
@@ -49,7 +49,7 @@ def yolov3_head__get_bboxes(ctx,
 
 Note that `pred_maps` is a list of `Tensor` and it has three elements. Thus, three `Mark` nodes with op name as `pred_maps.0`, `pred_maps.1`, `pred_maps.2` would be added in the onnx model.
 
-### Step 2: Add partition config
+## Step 2: Add partition config
 
 After marking necessary nodes that would be used to split the model, we could add a deployment config file `configs/mmdet/detection/yolov3_partition_onnxruntime_static.py`. If you are not familiar with how to write config, you could check [write_config.md](../02-how-to-run/write_config.md).
 
@@ -71,7 +71,7 @@ partition_config = dict(
 
 ```
 
-### Step 3: Get partitioned onnx models
+## Step 3: Get partitioned onnx models
 
 Once we have marks of nodes and the deployment config with `parition_config` being set properly, we could use the [tool](../useful_tools.md) `torch2onnx` to export the model to onnx and get the partition onnx files.
 
