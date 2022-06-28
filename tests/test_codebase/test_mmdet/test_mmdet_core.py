@@ -1,10 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import tempfile
+
 import mmcv
 import numpy as np
 import pytest
 import torch
 
 from mmdeploy.codebase import import_codebase
+from mmdeploy.core.rewriters.rewriter_manager import RewriterContext
 from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import (WrapFunction, backend_checker, check_backend,
                                  get_onnx_model, get_rewrite_outputs)
@@ -223,3 +226,52 @@ def test_multiclass_nms_with_keep_top_k(pre_top_k):
         'multiclass_nms returned more values than "keep_top_k"\n' \
         f'dets.shape: {dets.shape}\n' \
         f'keep_top_k: {keep_top_k}'
+
+
+@backend_checker(Backend.TENSORRT)
+def test__anchorgenerator__single_level_grid_priors():
+    backend_type = 'tensorrt'
+    import onnx
+    from mmdet.core.anchor import AnchorGenerator
+
+    from mmdeploy.apis.onnx import export
+    from mmdeploy.codebase.mmdet.core import anchor  # noqa
+
+    generator = AnchorGenerator(
+        scales=[8], ratios=[0.5, 1.0, 2.0], strides=[4])
+
+    def single_level_grid_priors(input):
+        return generator.single_level_grid_priors(input.shape[2:], 0,
+                                                  input.dtype, input.device)
+
+    x = torch.rand(1, 3, 4, 4)
+    wrapped_func = WrapFunction(single_level_grid_priors)
+    output = wrapped_func(x)
+
+    # test forward
+    with RewriterContext({}, backend_type):
+        wrap_output = wrapped_func(x)
+        torch.testing.assert_allclose(output, wrap_output)
+
+    onnx_prefix = tempfile.NamedTemporaryFile().name
+
+    export(
+        wrapped_func,
+        x,
+        onnx_prefix,
+        backend=backend_type,
+        input_names=['input'],
+        output_names=['output'],
+        dynamic_axes=dict(input={
+            2: 'h',
+            3: 'w'
+        }))
+
+    onnx_model = onnx.load(onnx_prefix + '.onnx')
+
+    find_trt_grid_priors = False
+    for n in onnx_model.graph.node:
+        if n.op_type == 'GridPriorsTRT':
+            find_trt_grid_priors = True
+
+    assert find_trt_grid_priors
