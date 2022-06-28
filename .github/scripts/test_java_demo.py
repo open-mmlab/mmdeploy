@@ -61,7 +61,7 @@ def main():
         task = params['task']
         configs = params['configs']
         java_demo_cmd = [
-            'java', '-cp', 'csrc/mmdeploy/apis/java',
+            'java', '-cp', 'csrc/mmdeploy/apis/java:./',
             'demo/java/' + task + '.java', 'cpu'
         ]
         for config in configs:
