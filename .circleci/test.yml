@@ -179,7 +179,9 @@ jobs:
       - run:
           name: Run SDK unittests
           command: |
-            docker exec mmdeploy mkdir -p mmdeploy_test_resources/transform && cp -rf ./mmdeploy/demo/resources/human-pose.jpg mmdeploy_test_resources/transform && ./mmdeploy/build/bin/mmdeploy_tests
+            docker exec mmdeploy mkdir -p mmdeploy_test_resources/transform
+            docker exec mmdeploy cp mmdeploy/demo/resources/human-pose.jpg mmdeploy_test_resources/transform
+            docker exec mmdeploy ./mmdeploy/build/bin/mmdeploy_tests
 
   test_windows_onnxruntime:
     parameters:
