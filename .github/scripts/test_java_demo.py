@@ -77,7 +77,9 @@ def main():
                   'jdk-18 && export PATH=${JAVA_HOME}/bin:${PATH} && java' +
                   ' --version && export LD_LIBRARY_PATH=/home/runner/work/' +
                   'mmdeploy/mmdeploy/build/lib:${LD_LIBRARY_PATH} && ' +
-                  java_demo_cmd_str)
+                  'javac -classpath /home/runner/work/mmdeploy/mmdeploy/csrc' +
+                  '/mmdeploy/apis/java/ home/runner/work/mmdeploy/mmdeploy' +
+                  '/demo/java/Utils.java && ' + java_demo_cmd_str)
 
 
 if __name__ == '__main__':
