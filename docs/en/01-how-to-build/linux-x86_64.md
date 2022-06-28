@@ -249,7 +249,7 @@ If you want to make the above environment variables permanent, you could add the
 ```bash
 echo '# set env for onnxruntime' >> ~/.bashrc
 echo "export ONNXRUNTIME_DIR=${ONNXRUNTIME_DIR}" >> ~/.bashrc
-echo 'export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH' >> ~/.bashrc
+echo "export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH" >> ~/.bashrc
 source ~/.bashrc
 ```
 
@@ -348,7 +348,7 @@ If one of inference engines among ONNXRuntime, TensorRT, ncnn and libtorch is se
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
   cmake -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_TARGET_BACKENDS=ort -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
-  make -j$(nproc)
+  make -j$(nproc) && make install
   ```
 
 - **TensorRT** Custom Ops
@@ -357,7 +357,7 @@ If one of inference engines among ONNXRuntime, TensorRT, ncnn and libtorch is se
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
   cmake -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_TARGET_BACKENDS=trt -DTENSORRT_DIR=${TENSORRT_DIR} -DCUDNN_DIR=${CUDNN_DIR} ..
-  make -j$(nproc)
+  make -j$(nproc) && make install
   ```
 
 - **ncnn** Custom Ops
@@ -366,7 +366,7 @@ If one of inference engines among ONNXRuntime, TensorRT, ncnn and libtorch is se
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
   cmake -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_TARGET_BACKENDS=ncnn -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn ..
-  make -j$(nproc)
+  make -j$(nproc) && make install
   ```
 
 - **TorchScript** Custom Ops
@@ -375,7 +375,7 @@ If one of inference engines among ONNXRuntime, TensorRT, ncnn and libtorch is se
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
   cmake -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_TARGET_BACKENDS=torchscript -DTorch_DIR=${Torch_DIR} ..
-  make -j$(nproc)
+  make -j$(nproc) && make install
   ```
 
 #### Install Model Converter

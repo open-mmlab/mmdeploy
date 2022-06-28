@@ -14,13 +14,13 @@ def load_config(*args) -> List[mmcv.Config]:
         args (str | Sequence[str]): The path to the config file(s).
 
     Returns:
-        List[mmcv.Config]: The content of config.
+        List[mmcv.Config | dict]: The content of config.
     """
 
     def _load_config(cfg):
         if isinstance(cfg, str):
             cfg = mmcv.Config.fromfile(cfg)
-        if not isinstance(cfg, (mmcv.Config, mmcv.ConfigDict)):
+        if not isinstance(cfg, (mmcv.Config, mmcv.ConfigDict, dict)):
             raise TypeError('deploy_cfg must be a filename or Config object, '
                             f'but got {type(cfg)}')
         return cfg

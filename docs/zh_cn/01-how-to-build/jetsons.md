@@ -213,7 +213,7 @@ export MMDEPLOY_DIR=$(pwd)
 # 编译 TensorRT 自定义算子
 mkdir -p build && cd build
 cmake .. -DMMDEPLOY_TARGET_BACKENDS="trt"
-make -j$(nproc)
+make -j$(nproc) && make install
 
 # 安装 model converter
 cd ${MMDEPLOY_DIR}

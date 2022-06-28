@@ -91,9 +91,10 @@ class TestTensorRTExporter:
                          expected_result=None,
                          save_dir=None):
         if save_dir is None:
-            onnx_file_path = tempfile.NamedTemporaryFile().name
+            onnx_file_path = tempfile.NamedTemporaryFile(suffix='.onnx').name
             trt_file_path = tempfile.NamedTemporaryFile(suffix='.engine').name
         else:
+            os.makedirs(save_dir, exist_ok=True)
             onnx_file_path = os.path.join(save_dir, model_name + '.onnx')
             trt_file_path = os.path.join(save_dir, model_name + '.engine')
         input_list = [data.cuda() for data in input_list]
@@ -132,9 +133,10 @@ class TestTensorRTExporter:
                     ])))
 
         onnx_model = onnx.load(onnx_file_path)
+        work_dir, filename = os.path.split(trt_file_path)
         trt_apis.onnx2tensorrt(
-            os.path.dirname(trt_file_path),
-            trt_file_path,
+            work_dir,
+            filename,
             0,
             deploy_cfg=deploy_cfg,
             onnx_model=onnx_model)
