@@ -53,6 +53,9 @@ jobs:
           pushd csrc/mmdeploy/apis/java
           javac mmdeploy/*.java
           popd
+          pushd demo/java
+          javac --class-path ../../csrc/mmdeploy/apis/java/ Utils.java
+          popd
       - name: Install mmdeploy with onnxruntime backend and java api
         run: |
           mkdir -p build && pushd build
@@ -62,9 +65,6 @@ jobs:
           popd
       - name: Test javademo
         run: |
-          pushd demo/java
-          javac -classpath ../../csrc/mmdeploy/apis/java/ Utils.java
-          popd
           export JAVA_HOME=${PWD}/jdk-18
           export PATH=${JAVA_HOME}/bin:${PATH}
           export LD_LIBRARY_PATH=/build/lib:${LD_LIBRARY_PATH}
