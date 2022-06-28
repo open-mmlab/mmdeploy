@@ -203,7 +203,7 @@ Although the backend engines are usually implemented in C/C++, it is convenient 
    		# Postprocess data
            # ...
 
-       @TimeCounter.count_time()
+       @TimeCounter.count_time('onnxruntime')
        def __ort_execute(self, io_binding: ort.IOBinding):
    		# Only do the inference
            self.sess.run_with_iobinding(io_binding)
