@@ -38,9 +38,9 @@ public class TextRecognizer {
         return apply(handle, images);
     }
 
-    public Result[] apply_bbox(Mat image, TextDetector.Result[] bbox, int[] bbox_count) {
+    public Result[] applyBbox(Mat image, TextDetector.Result[] bbox, int[] bbox_count) {
         Mat[] images = new Mat[]{image};
-        return apply_bbox(handle, images, bbox, bbox_count);
+        return applyBbox(handle, images, bbox, bbox_count);
     }
 
     public void release() {
@@ -53,5 +53,5 @@ public class TextRecognizer {
 
     private native Result[] apply(long handle, Mat[] images);
 
-    private native Result[] apply_bbox(long handle, Mat[] images, TextDetector.Result[] bbox, int[] bbox_count);
+    private native Result[] applyBbox(long handle, Mat[] images, TextDetector.Result[] bbox, int[] bbox_count);
 }

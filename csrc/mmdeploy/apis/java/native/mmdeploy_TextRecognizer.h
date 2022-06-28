@@ -32,12 +32,12 @@ JNIEXPORT jobjectArray JNICALL Java_mmdeploy_TextRecognizer_apply(JNIEnv *, jobj
 
 /*
  * Class:     mmdeploy_TextRecognizer
- * Method:    apply_bbox
+ * Method:    applyBbox
  * Signature: (J[Lmmdeploy/Mat;[Lmmdeploy/TextDetector/Result;[I)[Lmmdeploy/TextRecognizer/Result;
  */
-JNIEXPORT jobjectArray JNICALL Java_mmdeploy_TextRecognizer_apply_1bbox(JNIEnv *, jobject, jlong,
-                                                                        jobjectArray, jobjectArray,
-                                                                        jintArray);
+JNIEXPORT jobjectArray JNICALL Java_mmdeploy_TextRecognizer_applyBbox(JNIEnv *, jobject, jlong,
+                                                                      jobjectArray, jobjectArray,
+                                                                      jintArray);
 
 #ifdef __cplusplus
 }

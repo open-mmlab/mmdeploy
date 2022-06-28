@@ -51,13 +51,13 @@ jobjectArray Java_mmdeploy_TextRecognizer_apply(JNIEnv *env, jobject thiz, jlong
     return array;
   });
 }
-jobjectArray Java_mmdeploy_TextRecognizer_apply_bbox(JNIEnv *env, jobject thiz, jlong handle,
-                                                     jobjectArray images, jobjectArray bboxes,
-                                                     jintArray bbox_count) {
+jobjectArray Java_mmdeploy_TextRecognizer_applyBbox(JNIEnv *env, jobject thiz, jlong handle,
+                                                    jobjectArray images, jobjectArray bboxes,
+                                                    jintArray bbox_count) {
   return With(env, images, [&](const mm_mat_t imgs[], int size) {
     mm_text_recognize_t *recog_results{};
-    mm_text_detect_t *det_results{};
-    int *det_result_count{};
+    mm_text_detect_t *det_results = new mm_text_detect_t[env->GetArrayLength(bboxes)];
+    int *det_result_count = new int[env->GetArrayLength(bbox_count)];
     auto bbox_cls = env->FindClass("mmdeploy/TextDetector$Result");
     auto pointf_cls = env->FindClass("mmdeploy/PointF");
     auto bbox_id = env->GetFieldID(bbox_cls, "bbox", "[Lmmdeploy/PointF;");
@@ -84,9 +84,9 @@ jobjectArray Java_mmdeploy_TextRecognizer_apply_bbox(JNIEnv *env, jobject thiz, 
     }
     auto result_cls = env->FindClass("mmdeploy/TextRecognizer$Result");
     auto result_ctor = env->GetMethodID(result_cls, "<init>", "([C[F)V");
-    auto array = env->NewObjectArray(size, result_cls, nullptr);
+    auto array = env->NewObjectArray(total_bboxes, result_cls, nullptr);
 
-    for (int i = 0; i < size; ++i) {
+    for (int i = 0; i < total_bboxes; ++i) {
       auto text = env->NewCharArray(recog_results[i].length);
       auto score = env->NewFloatArray(recog_results[i].length);
       env->SetCharArrayRegion(text, 0, recog_results[i].length, (jchar *)recog_results[i].text);
@@ -95,8 +95,8 @@ jobjectArray Java_mmdeploy_TextRecognizer_apply_bbox(JNIEnv *env, jobject thiz, 
       auto res = env->NewObject(result_cls, result_ctor, text, score);
       env->SetObjectArrayElement(array, i, res);
     }
-    mmdeploy_text_detector_release_result(det_results, det_result_count, 1);
     mmdeploy_text_recognizer_release_result(recog_results, size);
+    mmdeploy_text_detector_release_result(det_results, det_result_count, 1);
     return array;
   });
 }

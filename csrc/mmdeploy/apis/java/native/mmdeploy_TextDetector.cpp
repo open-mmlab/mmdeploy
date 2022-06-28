@@ -22,7 +22,7 @@ jlong Java_mmdeploy_TextDetector_create(JNIEnv *env, jobject, jstring modelPath,
 }
 
 void Java_mmdeploy_TextDetector_destroy(JNIEnv *, jobject, jlong handle) {
-  MMDEPLOY_INFO("Java_mmdeploy_TextDetector_destroy");  // maybe use info?
+  MMDEPLOY_INFO("Java_mmdeploy_TextDetector_destroy");
   mmdeploy_text_detector_destroy((mm_handle_t)handle);
 }
 
@@ -46,8 +46,8 @@ jobjectArray Java_mmdeploy_TextDetector_apply(JNIEnv *env, jobject thiz, jlong h
     for (int i = 0; i < total; ++i) {
       jobjectArray bbox = env->NewObjectArray(4, point_cls, nullptr);
       for (int j = 0; j < 4; ++j) {
-        auto point = env->NewObject(point_cls, point_ctor, (jfloat)results[i].bbox[0].x,
-                                    (jfloat)results[i].bbox[0].y);
+        auto point = env->NewObject(point_cls, point_ctor, (jfloat)results[i].bbox[j].x,
+                                    (jfloat)results[i].bbox[j].y);
         env->SetObjectArrayElement(bbox, j, point);
       }
       auto res = env->NewObject(result_cls, result_ctor, bbox, (jfloat)results[i].score);

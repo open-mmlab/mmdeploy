@@ -35,12 +35,11 @@ public class Ocr {
 
             // apply text detector
             TextDetector.Result[] detResult = text_detector.apply(img);
-            int [] detResultCount = new int[] {detResult.length};
-            TextRecognizer.Result[] recResult = text_recognizer.apply_bbox(img, detResult, detResultCount);
-
+            int [] detResultCount = {detResult.length};
+            TextRecognizer.Result[] recResult = text_recognizer.applyBbox(img, detResult, detResultCount);
             // print results
             for (int i = 0; i < detResultCount[0]; ++i) {
-                System.out.printf("box[%d]: %s\n", i, recResult[i].text);
+                System.out.printf("box[%d]: %s\n", i, new String(recResult[i].text));
                 for (int j = 0; j < 4; ++j) {
                     System.out.printf("x: %.2f, y: %.2f, ", detResult[i].bbox[j].x, detResult[i].bbox[j].y);
                 }
@@ -50,11 +49,11 @@ public class Ocr {
             System.out.println("exception: " + e.getMessage());
         } finally {
             // release text detector and recognizer
-            if (text_detector != null) {
-                text_detector.release();
-            }
             if (text_recognizer != null) {
                 text_recognizer.release();
+            }
+            if (text_detector != null) {
+                text_detector.release();
             }
         }
     }
