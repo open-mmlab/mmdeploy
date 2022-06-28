@@ -1,4 +1,4 @@
-## How to write config
+# How to write config
 
 This tutorial describes how to write a config for model conversion and deployment. A deployment config includes `onnx config`, `codebase config`, `backend config`.
 
@@ -24,11 +24,11 @@ This tutorial describes how to write a config for model conversion and deploymen
 
 <!-- TOC -->
 
-### 1. How to write onnx config
+## 1. How to write onnx config
 
 Onnx config to describe how to export a model from pytorch to onnx.
 
-#### Description of onnx config arguments
+### Description of onnx config arguments
 
 - `type`: Type of config dict. Default is `onnx`.
 - `export_params`: If specified, all parameters will be exported. Set this to False if you want to export an untrained model.
@@ -39,7 +39,7 @@ Onnx config to describe how to export a model from pytorch to onnx.
 - `output_names`: Names to assign to the output nodes of the graph.
 - `input_shape`: The height and width of input tensor to the model.
 
-##### Example
+### Example
 
 ```python
 onnx_config = dict(
@@ -53,13 +53,13 @@ onnx_config = dict(
     input_shape=None)
 ```
 
-#### If you need to use dynamic axes
+### If you need to use dynamic axes
 
 If the dynamic shape of inputs and outputs is required, you need to add dynamic_axes dict in onnx config.
 
 - `dynamic_axes`: Describe the dimensional information about input and output.
 
-##### Example
+#### Example
 
 ```python
     dynamic_axes={
@@ -79,28 +79,28 @@ If the dynamic shape of inputs and outputs is required, you need to add dynamic_
     }
 ```
 
-### 2. How to write codebase config
+## 2. How to write codebase config
 
 Codebase config part contains information like codebase type and task type.
 
-#### Description of codebase config arguments
+### Description of codebase config arguments
 
 - `type`: Model's codebase, including `mmcls`, `mmdet`, `mmseg`, `mmocr`, `mmedit`.
 - `task`: Model's task type, referring to [List of tasks in all codebases](#list-of-tasks-in-all-codebases).
 
-##### Example
+#### Example
 
 ```python
 codebase_config = dict(type='mmcls', task='Classification')
 ```
 
-### 3. How to write backend config
+## 3. How to write backend config
 
 The backend config is mainly used to specify the backend on which model runs and provide the information needed when the model runs on the backend , referring to [ONNX Runtime](../05-supported-backends/onnxruntime.md), [TensorRT](../05-supported-backends/tensorrt.md), [ncnn](../05-supported-backends/ncnn.md), [PPLNN](../05-supported-backends/pplnn.md).
 
 - `type`: Model's backend, including `onnxruntime`, `ncnn`, `pplnn`, `tensorrt`, `openvino`.
 
-#### Example
+### Example
 
 ```python
 backend_config = dict(
@@ -117,7 +117,7 @@ backend_config = dict(
     ])
 ```
 
-### 4. A complete example of mmcls on TensorRT
+## 4. A complete example of mmcls on TensorRT
 
 Here we provide a complete deployment config from mmcls on TensorRT.
 
@@ -159,7 +159,7 @@ onnx_config = dict(
     input_shape=[224, 224])
 ```
 
-### 5. The name rules of our deployment config
+## 5. The name rules of our deployment config
 
 There is a specific naming convention for the filename of deployment config files.
 
@@ -171,20 +171,12 @@ There is a specific naming convention for the filename of deployment config file
 - `backend name`: Backend's name. Note if you use the quantization function, you need to indicate the quantization type. Just like `tensorrt-int8`.
 - `dynamic or static`: Dynamic or static export. Note if the backend needs explicit shape information, you need to add a description of input size with `height x width` format. Just like `dynamic-512x1024-2048x2048`, it means that the min input shape is `512x1024` and the max input shape is `2048x2048`.
 
-#### Example
+### Example
 
 ```bash
 detection_tensorrt-int8_dynamic-320x320-1344x1344.py
 ```
 
-### 6. How to write model config
+## 6. How to write model config
 
 According to model's codebase, write the model config file. Model's config file is used to initialize the model, referring to [MMClassification](https://github.com/open-mmlab/mmclassification/blob/master/docs/tutorials/config.md), [MMDetection](https://github.com/open-mmlab/mmdetection/blob/master/docs_zh-CN/tutorials/config.md), [MMSegmentation](https://github.com/open-mmlab/mmsegmentation/blob/master/docs_zh-CN/tutorials/config.md), [MMOCR](https://github.com/open-mmlab/mmocr/tree/main/configs), [MMEditing](https://github.com/open-mmlab/mmediting/blob/master/docs_zh-CN/config.md).
-
-### 7. Reminder
-
-None
-
-### 8. FAQs
-
-None
