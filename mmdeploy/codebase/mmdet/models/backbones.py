@@ -129,7 +129,7 @@ def shift_window_msa__window_reverse__tensorrt(ctx, self, windows, H, W):
     #     window_size, -1)
     x = windows.view(B, -1, W, window_size, windows.shape[-1])
     x = x.view(B, x.shape[1], -1, window_size, window_size, x.shape[-1])
-    x = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(B, H, W, x.shape[-1])
+    x = x.permute(0, 1, 3, 2, 4, 5).reshape(B, H, W, x.shape[-1])
     return x
 
 
