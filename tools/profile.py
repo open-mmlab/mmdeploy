@@ -26,8 +26,18 @@ def parse_args():
     parser.add_argument(
         '--shape',
         type=str,
-        help='Input shape to test in HxW format, eg: 800x1344',
+        help='Input shape to test in `HxW` format, e.g., `800x1344`',
         default=None)
+    parser.add_argument(
+        '--warmup',
+        type=int,
+        help='warmup iterations before counting inference latency.',
+        default=10)
+    parser.add_argument(
+        '--num-iter',
+        type=int,
+        help='Number of iterations to run the inference.',
+        default=100)
     parser.add_argument(
         '--cfg-options',
         nargs='+',
@@ -38,17 +48,6 @@ def parse_args():
         'It also allows nested list/tuple values, e.g. key="[(a,b),(c,d)]" '
         'Note that the quotation marks are necessary and that no white space '
         'is allowed.')
-    parser.add_argument(
-        '--warmup',
-        type=int,
-        help='warmup before counting inference elapse, require setting '
-        'speed-test first',
-        default=10)
-    parser.add_argument(
-        '--num-iter',
-        type=int,
-        help='Number of iterations to run the inference.',
-        default=100)
 
     args = parser.parse_args()
     return args
