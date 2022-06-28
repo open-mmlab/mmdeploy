@@ -54,9 +54,6 @@ class TRTBatchedRotatedNMS : public TRTPluginBase {
 
  private:
   nvinfer1::plugin::NMSParameters param{};
-  int boxesSize{};
-  int scoresSize{};
-  int numPriors{};
   bool mClipBoxes{};
 };
 

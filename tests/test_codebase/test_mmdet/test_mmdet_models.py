@@ -201,8 +201,8 @@ def get_gfl_head_model():
     return model
 
 
-def test_focus_forward_ncnn():
-    backend_type = Backend.NCNN
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME, Backend.NCNN])
+def test_focus_forward(backend_type):
     check_backend(backend_type)
     focus_model = get_focus_backbone_model()
     focus_model.cpu().eval()
@@ -222,11 +222,10 @@ def test_focus_forward_ncnn():
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg)
-    for model_output, rewrite_output in zip(model_outputs[0],
-                                            rewrite_outputs[0]):
-        model_output = model_output.squeeze().cpu().numpy()
+    for model_output, rewrite_output in zip(model_outputs[0], rewrite_outputs):
+        model_output = model_output.squeeze()
         rewrite_output = rewrite_output.squeeze()
-        assert np.allclose(
+        torch.testing.assert_allclose(
             model_output, rewrite_output, rtol=1e-03, atol=1e-05)
 
 

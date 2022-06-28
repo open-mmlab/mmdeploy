@@ -53,6 +53,7 @@
 | STDC                       | MMSegmentation   |      ?      |      Y      |    Y     |  Y   |   N   |    Y     |         [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/stdc)         |
 | UPerNet[\*](#note)         | MMSegmentation   |      ?      |      Y      |    Y     |  N   |   N   |    N     |       [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/upernet)        |
 | DANet                      | MMSegmentation   |      ?      |      Y      |    Y     |  N   |   N   |    N     |        [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/danet)         |
+| Segmenter                  | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |      [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/segmenter)       |
 | SRCNN                      | MMEditing        |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |      [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/srcnn)      |
 | ESRGAN                     | MMEditing        |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |     [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/esrgan)      |
 | SRGAN                      | MMEditing        |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     | [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/srresnet_srgan)  |
@@ -69,6 +70,7 @@
 | PointPillars               | MMDetection3d    |      ?      |      Y      |    Y     |  N   |   N   |    Y     |     [config](https://github.com/open-mmlab/mmdetection3d/blob/master/configs/pointpillars)      |
 | CenterPoint (pillar)       | MMDetection3d    |      ?      |      Y      |    Y     |  N   |   N   |    Y     |      [config](https://github.com/open-mmlab/mmdetection3d/blob/master/configs/centerpoint)      |
 | RotatedRetinaNet           | RotatedDetection |      N      |      Y      |    Y     |  N   |   N   |    N     | [config](https://github.com/open-mmlab/mmrotate/blob/main/configs/rotated_retinanet/README.md)  |
+| Oriented RCNN              | RotatedDetection |      N      |      Y      |    Y     |  N   |   N   |    N     |   [config](https://github.com/open-mmlab/mmrotate/blob/main/configs/oriented_rcnn/README.md)    |
 
 ## Note
 
