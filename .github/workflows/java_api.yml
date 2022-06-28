@@ -63,7 +63,7 @@ jobs:
       - name: Test javademo
         run: |
           pushd demo/java
-          javac --class-path ../../csrc/mmdeploy/apis/java/ Utils.java
+          javac -classpath ../../csrc/mmdeploy/apis/java/ Utils.java
           popd && popd
           export JAVA_HOME=${PWD}/jdk-18
           export PATH=${JAVA_HOME}/bin:${PATH}
