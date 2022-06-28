@@ -104,9 +104,11 @@ def main():
     model = model.eval().to(args.device)
     is_device_cpu = args.device == 'cpu'
     with_sync = not is_device_cpu
+    if not is_device_cpu:
+        torch.backends.cudnn.benchmark = True
 
     with TimeCounter.activate(
-            warmup=args.warmup, log_interval=10, with_sync=with_sync):
+            warmup=args.warmup, log_interval=20, with_sync=with_sync):
         for _ in range(args.num_iter + args.warmup):
             model(**data)
 
