@@ -1,8 +1,8 @@
-## How to support new models
+# How to support new models
 
 We provide several tools to support model conversion.
 
-### Function Rewriter
+## Function Rewriter
 
 The PyTorch neural network is written in python that eases the development of the algorithm. But the use of Python control flow and third-party libraries make it difficult to export the network to an intermediate representation. We provide a 'monkey patch' tool to rewrite the unsupported function to another one that can be exported. Here is an example:
 
@@ -26,7 +26,7 @@ It is easy to use the function rewriter. Just add a decorator with arguments:
 
 The arguments are the same as the original function, except a context `ctx` as the first argument. The context provides some useful information such as the deployment config `ctx.cfg` and the original function (which has been overridden) `ctx.origin_func`.
 
-### Module Rewriter
+## Module Rewriter
 
 If you want to replace a whole module with another one, we have another rewriter as follows:
 
@@ -66,7 +66,7 @@ Just like function rewriter, add a decorator with arguments:
 
 All instances of the module in the network will be replaced with instances of this new class. The original module and the deployment config will be passed as the first two arguments.
 
-### Custom Symbolic
+## Custom Symbolic
 
 The mappings between PyTorch and ONNX are defined in PyTorch with symbolic functions. The custom symbolic function can help us to bypass some ONNX nodes which are unsupported by inference engine.
 

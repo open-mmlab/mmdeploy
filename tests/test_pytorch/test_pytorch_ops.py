@@ -132,15 +132,9 @@ class TestLinear:
 
     def check(self, nodes):
         print(nodes)
-
-        from packaging.version import parse as version_parse
-        version = version_parse(torch.__version__)
-        target = 'Gemm'
-        if version.major <= 1 and version.minor <= 8:
-            target = 'MatMul'
         exist = False
         for node in nodes:
-            if node.op_type == target:
+            if node.op_type in ['Gemm', 'MatMul']:
                 exist = True
                 break
 

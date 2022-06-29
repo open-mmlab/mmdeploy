@@ -12,7 +12,7 @@
 
 using namespace std;
 
-TEST_CASE("test text recognizer's c api", "[text-recognizer]") {
+TEST_CASE("test text recognizer's c api", "[.text-recognizer][resource]") {
   auto test = [](const string& device, const string& model_path, const vector<string>& img_list) {
     mm_handle_t handle{nullptr};
     auto ret =
@@ -59,7 +59,7 @@ TEST_CASE("test text recognizer's c api", "[text-recognizer]") {
   }
 }
 
-TEST_CASE("test text detector-recognizer combo", "[text-detector-recognizer]") {
+TEST_CASE("test text detector-recognizer combo", "[.text-detector-recognizer]") {
   auto test = [](const std::string& device, const string& det_model_path,
                  const string& reg_model_path, std::vector<string>& img_list) {
     mm_handle_t detector{};

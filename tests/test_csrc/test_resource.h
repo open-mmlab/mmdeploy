@@ -129,7 +129,11 @@ class MMDeployTestResources {
     }
     // Didn't find 'mmdeploy_test_resources' in current directory.
     // Move to its parent directory and keep looking for it
-    return LocateResourceRootPath(cur_path.parent_path(), max_depth - 1);
+    if (cur_path.has_parent_path()) {
+      return LocateResourceRootPath(cur_path.parent_path(), max_depth - 1);
+    } else {
+      return "";
+    }
   }
 
  private:

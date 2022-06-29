@@ -115,6 +115,12 @@ make install
     <td>MMDeploy SDK 编译开关</td>
   </tr>
   <tr>
+    <td>MMDEPLOY_BUILD_SDK_JAVA_API</td>
+    <td>{ON, OFF}</td>
+    <td>OFF</td>
+    <td>MMDeploy SDK Java API的编译开关</td>
+  </tr>
+  <tr>
     <td>MMDEPLOY_BUILD_TEST</td>
     <td>{ON, OFF}</td>
     <td>OFF</td>
@@ -161,6 +167,7 @@ make install
   mkdir -p build && cd build
   cmake .. \
       -DMMDEPLOY_BUILD_SDK=ON \
+      -DMMDEPLOY_BUILD_SDK_JAVA_API=ON \
       -DOpenCV_DIR=${OPENCV_ANDROID_SDK_DIR}/sdk/native/jni/abi-arm64-v8a \
       -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn \
       -DMMDEPLOY_TARGET_BACKENDS=ncnn \

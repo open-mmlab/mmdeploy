@@ -19,5 +19,4 @@ def optimize_onnx(graph, params_dict, torch_out):
             'More details: '
             'https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/experimental/onnx_optimizer.md'  # noqa
         )
-
     return graph, params_dict, torch_out
