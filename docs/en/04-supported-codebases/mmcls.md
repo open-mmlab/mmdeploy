@@ -8,11 +8,12 @@ Please refer to [install.md](https://github.com/open-mmlab/mmclassification/blob
 
 ## List of MMClassification models supported by MMDeploy
 
-| Model        | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |                                        Model config                                        |
-| :----------- | :----------: | :------: | :--: | :---: | :------: | :----------------------------------------------------------------------------------------: |
-| ResNet       |      Y       |    Y     |  Y   |   Y   |    Y     |    [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnet)     |
-| ResNeXt      |      Y       |    Y     |  Y   |   Y   |    Y     |    [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnext)    |
-| SE-ResNet    |      Y       |    Y     |  Y   |   Y   |    Y     |   [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/seresnet)    |
-| MobileNetV2  |      Y       |    Y     |  Y   |   Y   |    Y     | [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/mobilenet_v2)  |
-| ShuffleNetV1 |      Y       |    Y     |  Y   |   Y   |    Y     | [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v1) |
-| ShuffleNetV2 |      Y       |    Y     |  Y   |   Y   |    Y     | [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v2) |
+| Model             | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |                                          Model config                                           |
+| :---------------- | :----------: | :------: | :--: | :---: | :------: | :---------------------------------------------------------------------------------------------: |
+| ResNet            |      Y       |    Y     |  Y   |   Y   |    Y     |       [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnet)       |
+| ResNeXt           |      Y       |    Y     |  Y   |   Y   |    Y     |      [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnext)       |
+| SE-ResNet         |      Y       |    Y     |  Y   |   Y   |    Y     |      [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/seresnet)      |
+| MobileNetV2       |      Y       |    Y     |  Y   |   Y   |    Y     |    [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/mobilenet_v2)    |
+| ShuffleNetV1      |      Y       |    Y     |  Y   |   Y   |    Y     |   [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v1)    |
+| ShuffleNetV2      |      Y       |    Y     |  Y   |   Y   |    Y     |   [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v2)    |
+| VisionTransformer |      Y       |    Y     |  Y   |   ?   |    Y     | [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/vision_transformer) |
