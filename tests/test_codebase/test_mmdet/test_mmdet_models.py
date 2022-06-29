@@ -1582,6 +1582,7 @@ def test_reppoints_head_points2bbox(backend_type: Backend, ir_type: str):
     reason='Only support GPU test', condition=not torch.cuda.is_available())
 @pytest.mark.parametrize('backend_type', [(Backend.TENSORRT)])
 def test_windows_msa(backend_type: Backend):
+    check_backend(backend_type)
     from mmdet.models.backbones.swin import WindowMSA
     model = WindowMSA(96, 3, (7, 7))
     model.cuda().eval()
@@ -1623,6 +1624,7 @@ def test_windows_msa(backend_type: Backend):
     reason='Only support GPU test', condition=not torch.cuda.is_available())
 @pytest.mark.parametrize('backend_type', [(Backend.TENSORRT)])
 def test_shift_windows_msa(backend_type: Backend):
+    check_backend(backend_type)
     from mmdet.models.backbones.swin import ShiftWindowMSA
     model = ShiftWindowMSA(96, 3, 7)
     model.cuda().eval()
