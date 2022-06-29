@@ -9,7 +9,7 @@
 
 using namespace mmdeploy;
 
-TEST_CASE("test directory model", "[model]") {
+TEST_CASE("test directory model", "[.model][resource]") {
   std::unique_ptr<ModelImpl> model_impl;
   for (auto& entry : ModelRegistry::Get().ListEntries()) {
     if (entry.name == "DirectoryModel") {

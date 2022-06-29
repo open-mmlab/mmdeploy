@@ -10,7 +10,7 @@
 
 using namespace std;
 
-TEST_CASE("test restorer's c api", "[restorer]") {
+TEST_CASE("test restorer's c api", "[.restorer][resource]") {
   auto test = [](const string &device, const string &backend, const string &model_path,
                  const vector<string> &img_list) {
     mm_handle_t handle{nullptr};

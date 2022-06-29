@@ -40,6 +40,7 @@
    04-developer-guide/support_new_model.md
    04-developer-guide/support_new_backend.md
    04-developer-guide/do_regression_test.md
+   04-developer-guide/partition_model.md
 
 .. toctree::
    :maxdepth: 1

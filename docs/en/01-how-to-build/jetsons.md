@@ -235,7 +235,7 @@ You can find a full list of custom plugins from [here](../ops/tensorrt.md).
 # build TensorRT custom operators
 mkdir -p build && cd build
 cmake .. -DMMDEPLOY_TARGET_BACKENDS="trt"
-make -j$(nproc)
+make -j$(nproc) && make install
 
 # install model converter
 cd ${MMDEPLOY_DIR}

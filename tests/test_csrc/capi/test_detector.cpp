@@ -11,7 +11,7 @@
 #include "test_resource.h"
 using namespace std;
 
-TEST_CASE("test detector's c api", "[detector]") {
+TEST_CASE("test detector's c api", "[.detector][resource]") {
   MMDEPLOY_INFO("test detector");
   auto test = [](const string &device, const string &model_path, const vector<string> &img_list) {
     mm_handle_t handle{nullptr};
