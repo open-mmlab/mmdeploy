@@ -8,6 +8,7 @@
 #include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/core/value.h"
 #include "mmdeploy/experimental/module_adapter.h"
+#include "opencv2/imgproc/imgproc.hpp"
 #include "opencv_utils.h"
 
 namespace mmdeploy {
@@ -40,9 +41,9 @@ class WarpBoxes {
     auto w = static_cast<float>(std::max(e0, e1));
     auto h = static_cast<float>(std::min(e0, e1));
     std::vector<cv::Point2f> dst{{0, 0}, {w, 0}, {w, h}, {0, h}};
-    auto m = getAffineTransform(src.data(), dst.data());
+    auto m = cv::getAffineTransform(src.data(), dst.data());
     cv::Mat warped;
-    warpAffine(img, warped, m, {static_cast<int>(w), static_cast<int>(h)});
+    cv::warpAffine(img, warped, m, {static_cast<int>(w), static_cast<int>(h)});
     return warped;
   }
 
