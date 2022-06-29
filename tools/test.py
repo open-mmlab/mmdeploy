@@ -100,7 +100,7 @@ def main():
     dataloader = task_processor.build_dataloader(test_dataloader)
 
     # load the model of the backend
-    model = task_processor.init_backend_model(args.model)
+    model = task_processor.build_backend_model(args.model)
 
     is_device_cpu = (args.device == 'cpu')
 

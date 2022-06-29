@@ -48,9 +48,9 @@ img_shape = (32, 32)
 img = np.random.rand(*img_shape, 3)
 
 
-def test_init_pytorch_model():
+def test_build_pytorch_model():
     from mmrotate.models import RotatedBaseDetector
-    model = task_processor.init_pytorch_model(None)
+    model = task_processor.build_pytorch_model(None)
     assert isinstance(model, RotatedBaseDetector)
 
 
@@ -64,12 +64,12 @@ def backend_model():
         'labels': torch.rand(1, 10)
     })
 
-    yield task_processor.init_backend_model([''])
+    yield task_processor.build_backend_model([''])
 
     wrapper.recover()
 
 
-def test_init_backend_model(backend_model):
+def test_build_backend_model(backend_model):
     from mmdeploy.codebase.mmrotate.deploy.rotated_detection_model import \
         End2EndModel
     assert isinstance(backend_model, End2EndModel)
@@ -85,7 +85,7 @@ def test_create_input(device):
 
 
 def test_run_inference(backend_model):
-    torch_model = task_processor.init_pytorch_model(None)
+    torch_model = task_processor.build_pytorch_model(None)
     input_dict, _ = task_processor.create_input(img, input_shape=img_shape)
     torch_results = task_processor.run_inference(torch_model, input_dict)
     backend_results = task_processor.run_inference(backend_model, input_dict)

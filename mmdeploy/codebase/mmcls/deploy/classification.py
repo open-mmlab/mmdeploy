@@ -105,9 +105,9 @@ class Classification(BaseTask):
         super(Classification, self).__init__(model_cfg, deploy_cfg, device,
                                              experiment_name)
 
-    def init_backend_model(self,
-                           model_files: Sequence[str] = None,
-                           **kwargs) -> torch.nn.Module:
+    def build_backend_model(self,
+                            model_files: Sequence[str] = None,
+                            **kwargs) -> torch.nn.Module:
         """Initialize backend model.
 
         Args:

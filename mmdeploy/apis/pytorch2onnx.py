@@ -59,7 +59,7 @@ def torch2onnx(img: Any,
     from mmdeploy.apis import build_task_processor
     task_processor = build_task_processor(model_cfg, deploy_cfg, device)
 
-    torch_model = task_processor.init_pytorch_model(model_checkpoint)
+    torch_model = task_processor.build_pytorch_model(model_checkpoint)
     data, model_inputs = task_processor.create_input(
         img,
         input_shape,

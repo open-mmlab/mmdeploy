@@ -58,9 +58,9 @@ class ObjectDetection(BaseTask):
                  device: str) -> None:
         super().__init__(model_cfg, deploy_cfg, device)
 
-    def init_backend_model(self,
-                           model_files: Optional[str] = None,
-                           **kwargs) -> torch.nn.Module:
+    def build_backend_model(self,
+                            model_files: Optional[str] = None,
+                            **kwargs) -> torch.nn.Module:
         """Initialize backend model.
 
         Args:
@@ -74,10 +74,10 @@ class ObjectDetection(BaseTask):
             model_files, self.model_cfg, self.deploy_cfg, device=self.device)
         return model.eval()
 
-    def init_pytorch_model(self,
-                           model_checkpoint: Optional[str] = None,
-                           cfg_options: Optional[Dict] = None,
-                           **kwargs) -> torch.nn.Module:
+    def build_pytorch_model(self,
+                            model_checkpoint: Optional[str] = None,
+                            cfg_options: Optional[Dict] = None,
+                            **kwargs) -> torch.nn.Module:
         """Initialize torch model.
 
         Args:

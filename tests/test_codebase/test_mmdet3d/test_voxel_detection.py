@@ -39,9 +39,9 @@ onnx_file = NamedTemporaryFile(suffix='.onnx').name
 task_processor = build_task_processor(model_cfg, deploy_cfg, 'cpu')
 
 
-def test_init_pytorch_model():
+def test_build_pytorch_model():
     from mmdet3d.models import Base3DDetector
-    model = task_processor.init_pytorch_model(None)
+    model = task_processor.build_pytorch_model(None)
     assert isinstance(model, Base3DDetector)
 
 
@@ -57,12 +57,12 @@ def backend_model():
             'dir_scores': torch.rand(1, 12, 32, 32)
         })
 
-    yield task_processor.init_backend_model([''])
+    yield task_processor.build_backend_model([''])
 
     wrapper.recover()
 
 
-def test_init_backend_model(backend_model):
+def test_build_backend_model(backend_model):
     from mmdeploy.codebase.mmdet3d.deploy.voxel_detection_model import \
         VoxelDetectionModel
     assert isinstance(backend_model, VoxelDetectionModel)
@@ -83,7 +83,7 @@ def test_create_input(device):
     reason='Only support GPU test', condition=not torch.cuda.is_available())
 def test_run_inference(backend_model):
     task_processor.device = 'cuda:0'
-    torch_model = task_processor.init_pytorch_model(None)
+    torch_model = task_processor.build_pytorch_model(None)
     input_dict, _ = task_processor.create_input(pcd_path)
     torch_results = task_processor.run_inference(torch_model, input_dict)
     backend_results = task_processor.run_inference(backend_model, input_dict)
@@ -98,7 +98,7 @@ def test_run_inference(backend_model):
 def test_visualize():
     task_processor.device = 'cuda:0'
     input_dict, _ = task_processor.create_input(pcd_path)
-    torch_model = task_processor.init_pytorch_model(None)
+    torch_model = task_processor.build_pytorch_model(None)
     results = task_processor.run_inference(torch_model, input_dict)
     with TemporaryDirectory() as dir:
         filename = dir + 'tmp.bin'

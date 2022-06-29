@@ -37,8 +37,8 @@ onnx_file = NamedTemporaryFile(suffix='.onnx').name
 task_processor = build_task_processor(model_cfg, deploy_cfg, 'cpu')
 
 
-def test_init_pytorch_model():
-    torch_model = task_processor.init_pytorch_model(None)
+def test_build_pytorch_model():
+    torch_model = task_processor.build_pytorch_model(None)
     assert torch_model is not None
 
 
@@ -51,12 +51,12 @@ def backend_model():
         'output': torch.rand(3, 50, 50),
     })
 
-    yield task_processor.init_backend_model([''])
+    yield task_processor.build_backend_model([''])
 
     wrapper.recover()
 
 
-def test_init_backend_model(backend_model):
+def test_build_backend_model(backend_model):
     assert backend_model is not None
 
 

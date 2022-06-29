@@ -40,7 +40,7 @@ img = np.random.rand(*img_shape, 3)
 
 
 @pytest.mark.parametrize('from_mmrazor', [True, False, '123', 0])
-def test_init_pytorch_model(from_mmrazor: Any):
+def test_build_pytorch_model(from_mmrazor: Any):
     from mmseg.models.segmentors.base import BaseSegmentor
     if from_mmrazor is False:
         _task_processor = task_processor
@@ -65,7 +65,7 @@ def test_init_pytorch_model(from_mmrazor: Any):
     assert from_mmrazor == _task_processor.from_mmrazor
     if from_mmrazor:
         pytest.importorskip('mmrazor', reason='mmrazor is not installed.')
-    model = _task_processor.init_pytorch_model(None)
+    model = _task_processor.build_pytorch_model(None)
     assert isinstance(model, BaseSegmentor)
 
 
@@ -78,12 +78,12 @@ def backend_model():
         'output': torch.rand(1, 1, *img_shape),
     })
 
-    yield task_processor.init_backend_model([''])
+    yield task_processor.build_backend_model([''])
 
     wrapper.recover()
 
 
-def test_init_backend_model(backend_model):
+def test_build_backend_model(backend_model):
     assert isinstance(backend_model, torch.nn.Module)
 
 

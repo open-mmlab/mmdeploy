@@ -62,9 +62,9 @@ def visualize_model(model_cfg: Union[str, mmcv.Config],
             list should be str'
 
         if backend == Backend.PYTORCH:
-            model = task_processor.init_pytorch_model(model[0])
+            model = task_processor.build_pytorch_model(model[0])
         else:
-            model = task_processor.init_backend_model(model)
+            model = task_processor.build_backend_model(model)
 
     model_inputs, _ = task_processor.create_input(img, input_shape)
     with torch.no_grad():

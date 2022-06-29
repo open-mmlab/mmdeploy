@@ -42,7 +42,7 @@ def inference_model(model_cfg: Union[str, mmcv.Config],
     from mmdeploy.apis.utils import build_task_processor
     task_processor = build_task_processor(model_cfg, deploy_cfg, device)
 
-    model = task_processor.init_backend_model(backend_files)
+    model = task_processor.build_backend_model(backend_files)
 
     input_shape = get_input_shape(deploy_cfg)
     model_inputs, _ = task_processor.create_input(img, input_shape)

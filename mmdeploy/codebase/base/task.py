@@ -54,9 +54,9 @@ class BaseTask(metaclass=ABCMeta):
         self.visualizer = self.model_cfg.visualizer
 
     @abstractmethod
-    def init_backend_model(self,
-                           model_files: Sequence[str] = None,
-                           **kwargs) -> torch.nn.Module:
+    def build_backend_model(self,
+                            model_files: Sequence[str] = None,
+                            **kwargs) -> torch.nn.Module:
         """Initialize backend model.
 
         Args:
@@ -67,10 +67,10 @@ class BaseTask(metaclass=ABCMeta):
         """
         pass
 
-    def init_pytorch_model(self,
-                           model_checkpoint: Optional[str] = None,
-                           cfg_options: Optional[Dict] = None,
-                           **kwargs) -> torch.nn.Module:
+    def build_pytorch_model(self,
+                            model_checkpoint: Optional[str] = None,
+                            cfg_options: Optional[Dict] = None,
+                            **kwargs) -> torch.nn.Module:
         """Initialize torch model.
 
         Args:

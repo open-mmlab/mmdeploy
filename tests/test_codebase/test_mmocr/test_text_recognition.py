@@ -37,9 +37,9 @@ img_shape = (32, 32)
 img = np.random.rand(*img_shape, 3).astype(np.uint8)
 
 
-def test_init_pytorch_model():
+def test_build_pytorch_model():
     from mmocr.models.textrecog.recognizer import BaseRecognizer
-    model = task_processor.init_pytorch_model(None)
+    model = task_processor.build_pytorch_model(None)
     assert isinstance(model, BaseRecognizer)
 
 
@@ -52,12 +52,12 @@ def backend_model():
         'output': torch.rand(1, 9, 37),
     })
 
-    yield task_processor.init_backend_model([''])
+    yield task_processor.build_backend_model([''])
 
     wrapper.recover()
 
 
-def test_init_backend_model(backend_model):
+def test_build_backend_model(backend_model):
     assert isinstance(backend_model, torch.nn.Module)
 
 

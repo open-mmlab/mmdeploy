@@ -51,7 +51,7 @@ img = np.random.rand(*img_shape, 3)
 
 
 @pytest.mark.parametrize('from_mmrazor', [True, False, '123', 0])
-def test_init_pytorch_model(from_mmrazor: Any):
+def test_build_pytorch_model(from_mmrazor: Any):
     from mmdet.models import BaseDetector
     if from_mmrazor is False:
         _task_processor = task_processor
@@ -77,7 +77,7 @@ def test_init_pytorch_model(from_mmrazor: Any):
     assert from_mmrazor == _task_processor.from_mmrazor
     if from_mmrazor:
         pytest.importorskip('mmrazor', reason='mmrazor is not installed.')
-    model = _task_processor.init_pytorch_model(None)
+    model = _task_processor.build_pytorch_model(None)
     assert isinstance(model, BaseDetector)
 
 
@@ -91,12 +91,12 @@ def backend_model():
         'labels': torch.rand(1, 10)
     })
 
-    yield task_processor.init_backend_model([''])
+    yield task_processor.build_backend_model([''])
 
     wrapper.recover()
 
 
-def test_init_backend_model(backend_model):
+def test_build_backend_model(backend_model):
     from mmdeploy.codebase.mmdet.deploy.object_detection_model import \
         End2EndModel
     assert isinstance(backend_model, End2EndModel)
@@ -131,7 +131,7 @@ def test_create_input(device):
 
 
 def test_run_inference(backend_model):
-    torch_model = task_processor.init_pytorch_model(None)
+    torch_model = task_processor.build_pytorch_model(None)
     input_dict, _ = task_processor.create_input(img, input_shape=img_shape)
     torch_results = task_processor.run_inference(torch_model, input_dict)
     backend_results = task_processor.run_inference(backend_model, input_dict)

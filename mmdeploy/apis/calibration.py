@@ -57,7 +57,7 @@ def create_calib_input_data(calib_file: str,
 
         apply_marks = cfg_apply_marks(deploy_cfg)
 
-        model = task_processor.init_pytorch_model(model_checkpoint)
+        model = task_processor.build_pytorch_model(model_checkpoint)
         dataset = task_processor.build_dataset(dataset_cfg, dataset_type)
 
         # patch model
