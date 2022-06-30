@@ -52,12 +52,8 @@ def main():
     logger.info(f'onnx2ppl: \n\tonnx_path: {onnx_path} '
                 f'\n\toutput_prefix: {output_prefix}'
                 f'\n\topt_shapes: {input_shapes}')
-    try:
-        from_onnx(onnx_path, output_prefix, device, input_shapes)
-        logger.info('onnx2tpplnn success.')
-    except Exception as e:
-        logger.error(e)
-        logger.error('onnx2tpplnn failed.')
+    from_onnx(onnx_path, output_prefix, device, input_shapes)
+    logger.info('onnx2tpplnn success.')
 
 
 if __name__ == '__main__':
