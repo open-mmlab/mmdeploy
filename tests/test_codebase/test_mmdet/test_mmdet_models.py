@@ -1576,3 +1576,84 @@ def test_reppoints_head_points2bbox(backend_type: Backend, ir_type: str):
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg)
+
+
+@pytest.mark.skipif(
+    reason='Only support GPU test', condition=not torch.cuda.is_available())
+@pytest.mark.parametrize('backend_type', [(Backend.TENSORRT)])
+def test_windows_msa(backend_type: Backend):
+    check_backend(backend_type)
+    from mmdet.models.backbones.swin import WindowMSA
+    model = WindowMSA(96, 3, (7, 7))
+    model.cuda().eval()
+    output_names = ['output']
+
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(
+                type=backend_type.value,
+                common_config=dict(fp16_mode=True, max_workspace_size=1 << 20),
+                model_inputs=[
+                    dict(
+                        input_shapes=dict(
+                            x=dict(
+                                min_shape=[12, 49, 96],
+                                opt_shape=[12, 49, 96],
+                                max_shape=[12, 49, 96]),
+                            mask=dict(
+                                min_shape=[12, 49, 49],
+                                opt_shape=[12, 49, 49],
+                                max_shape=[12, 49, 49])))
+                ]),
+            onnx_config=dict(
+                input_shape=None,
+                input_names=['x', 'mask'],
+                output_names=output_names)))
+
+    x = torch.randn([12, 49, 96]).cuda()
+    mask = torch.randn([12, 49, 49]).cuda()
+    wrapped_model = WrapModel(model, 'forward')
+    rewrite_inputs = {'x': x, 'mask': mask}
+    _ = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg)
+
+
+@pytest.mark.skipif(
+    reason='Only support GPU test', condition=not torch.cuda.is_available())
+@pytest.mark.parametrize('backend_type', [(Backend.TENSORRT)])
+def test_shift_windows_msa(backend_type: Backend):
+    check_backend(backend_type)
+    from mmdet.models.backbones.swin import ShiftWindowMSA
+    model = ShiftWindowMSA(96, 3, 7)
+    model.cuda().eval()
+    output_names = ['output']
+
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(
+                type=backend_type.value,
+                model_inputs=[
+                    dict(
+                        input_shapes=dict(
+                            query=dict(
+                                min_shape=[1, 60800, 96],
+                                opt_shape=[1, 60800, 96],
+                                max_shape=[1, 60800, 96])))
+                ]),
+            onnx_config=dict(
+                input_shape=None,
+                input_names=['query'],
+                output_names=output_names)))
+
+    query = torch.randn([1, 60800, 96]).cuda()
+    hw_shape = (torch.tensor(200), torch.tensor(304))
+
+    wrapped_model = WrapModel(model, 'forward')
+    rewrite_inputs = {'query': query, 'hw_shape': hw_shape}
+    _ = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg,
+        run_with_backend=False)
