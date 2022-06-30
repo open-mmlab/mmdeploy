@@ -92,6 +92,5 @@ else()
 
     # cmake module 
     include(cmake/modules/CUDA.cmake)
-    include(cmake/modules/ROCM.cmake)
 
 endif()
