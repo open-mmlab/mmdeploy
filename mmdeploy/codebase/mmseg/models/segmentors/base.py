@@ -23,12 +23,12 @@ def base_segmentor__forward(ctx, self, img, img_metas=None, **kwargs):
         torch.Tensor: Output segmentation map pf shape [N, 1, H, W].
     """
     if img_metas is None:
-        img_metas = {}
-    while isinstance(img_metas, list):
+        img_metas = [{}]
+    else:
+        assert len(img_metas) == 1, 'do not support aug_test'
         img_metas = img_metas[0]
-
     if isinstance(img, list):
-        img = torch.cat(img, 0)
+        img = img[0]
     assert isinstance(img, torch.Tensor)
 
     deploy_cfg = ctx.cfg
@@ -37,5 +37,5 @@ def base_segmentor__forward(ctx, self, img, img_metas=None, **kwargs):
     img_shape = img.shape[2:]
     if not is_dynamic_flag:
         img_shape = [int(val) for val in img_shape]
-    img_metas['img_shape'] = img_shape
+    img_metas[0]['img_shape'] = img_shape
     return self.simple_test(img, img_metas, **kwargs)

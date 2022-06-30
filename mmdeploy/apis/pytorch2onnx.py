@@ -61,6 +61,7 @@ def torch2onnx(img: Any,
 
     torch_model = task_processor.init_pytorch_model(model_checkpoint)
     data, model_inputs = task_processor.create_input(img, input_shape)
+    input_metas = dict(img_metas=data.get('img_metas', None))
     if not isinstance(model_inputs, torch.Tensor) and len(model_inputs) == 1:
         model_inputs = model_inputs[0]
 
@@ -87,6 +88,7 @@ def torch2onnx(img: Any,
         export(
             torch_model,
             model_inputs,
+            input_metas=input_metas,
             output_path_prefix=output_prefix,
             backend=backend,
             input_names=input_names,
