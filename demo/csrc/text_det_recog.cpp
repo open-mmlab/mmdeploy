@@ -57,13 +57,10 @@ int main() {
 
   cv::Mat mat = cv::imread("../demo_text_ocr.jpg");
   mmdeploy::Mat img(mat.rows, mat.cols, PixelFormat::kBGR, DataType::kINT8, mat.data, Device(0));
-  mmdeploy_mat_t
 
-  //  Value input = Value::Array{Value::Array{Value::Object{{"ori_img", img}}}};
-  mmdeploy_value_t input{};
-  mmdeploy_text_detector_create_input(&mat, 1, &input);
+  Value input = Value::Array{Value::Array{Value::Object{{"ori_img", img}}}};
 
-      mmdeploy_value_t tmp{};
+  mmdeploy_value_t tmp{};
   mmdeploy_pipeline_apply(pipeline, (mmdeploy_value_t)&input, &tmp);
 
   auto output = std::move(*(Value*)tmp);

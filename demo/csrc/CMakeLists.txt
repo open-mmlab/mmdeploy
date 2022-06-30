@@ -6,8 +6,8 @@ if (NOT (${CMAKE_PROJECT_NAME} STREQUAL "MMDeploy"))
     find_package(MMDeploy REQUIRED)
 endif ()
 
-function(add_example task name)
-    if (TARGET mmdeploy_${task})
+function(add_example dep name)
+    if (NOT dep OR TARGET mmdeploy_${dep})
         # Search for c/cpp sources
         file(GLOB _SRCS ${name}.c*)
         add_executable(${name} ${_SRCS})
@@ -17,14 +17,12 @@ function(add_example task name)
         endif ()
         if (MMDEPLOY_BUILD_SDK_MONOLITHIC)
             target_link_libraries(${name} PRIVATE mmdeploy ${OpenCV_LIBS})
-        else ()
-            # Load MMDeploy modules
-            mmdeploy_load_static(${name} MMDeployStaticModules)
-            mmdeploy_load_dynamic(${name} MMDeployDynamicModules)
-            # Link to MMDeploy libraries
-            target_link_libraries(${name} PRIVATE MMDeployLibs ${OpenCV_LIBS})
-        endif ()
-        install(TARGETS ${name} RUNTIME DESTINATION bin)
+        else ()# Load MMDeploy modules
+        mmdeploy_load_static(${name} MMDeployStaticModules)
+        mmdeploy_load_dynamic(${name} MMDeployDynamicModules)
+        # Link to MMDeploy libraries
+        target_link_libraries(${name} PRIVATE MMDeployLibs ${OpenCV_LIBS})
+    endif ()install(TARGETS ${name} RUNTIME DESTINATION bin)
     endif ()
 endfunction()
 

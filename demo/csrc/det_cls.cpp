@@ -8,7 +8,7 @@
 #include "mmdeploy/core/value.h"
 #include "mmdeploy/experimental/module_adapter.h"
 #include "opencv2/imgcodecs.hpp"
-#include "pipeline.h"
+#include "mmdeploy/pipeline.h"
 
 const auto config_json = R"(
 {

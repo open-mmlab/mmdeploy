@@ -1,5 +1,4 @@
 
-#include "detector.h"
 #include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/core/logger.h"
 #include "mmdeploy/core/mat.h"
@@ -7,11 +6,12 @@
 #include "mmdeploy/core/registry.h"
 #include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/core/value.h"
+#include "mmdeploy/detector.h"
 #include "mmdeploy/experimental/module_adapter.h"
+#include "mmdeploy/pipeline.h"
+#include "mmdeploy/pose_detector.h"
 #include "opencv2/imgcodecs.hpp"
 #include "opencv2/imgproc.hpp"
-#include "pipeline.h"
-#include "pose_detector.h"
 
 const auto config_json = R"(
 {
@@ -106,7 +106,7 @@ static std::vector<std::pair<int, int>> skeleton{
 int main() {
   auto config = from_json<Value>(config_json);
 
-  mm_handle_t pipeline{};
+  mmdeploy_pipeline_t pipeline{};
   if (auto ec =
           mmdeploy_pipeline_create((mmdeploy_value_t)&config, "cuda", 0, nullptr, &pipeline)) {
     MMDEPLOY_ERROR("failed to create pipeline: {}", ec);
@@ -121,13 +121,13 @@ int main() {
   mmdeploy_value_t tmp{};
   mmdeploy_pipeline_apply(pipeline, (mmdeploy_value_t)&input, &tmp);
 
-  mm_detect_t* dets{};
+  mmdeploy_detection_t* dets{};
   int* det_count{};
   mmdeploy_detector_get_result(tmp, &dets, &det_count);
 
   auto output = std::move(*(Value*)tmp);
 
-  mm_pose_detect_t* kps{};
+  mmdeploy_pose_detection_t* kps{};
   Value pose;
   pose.push_back(output[1]);
   mmdeploy_pose_detector_get_result((mmdeploy_value_t)&pose, &kps);
