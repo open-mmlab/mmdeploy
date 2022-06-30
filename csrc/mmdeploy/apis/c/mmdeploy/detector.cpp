@@ -4,16 +4,15 @@
 
 #include <numeric>
 
-#include "mmdeploy/apis/c/common_internal.h"
-#include "mmdeploy/apis/c/executor_internal.h"
+#include "mmdeploy/apis/c/mmdeploy/common_internal.h"
+#include "mmdeploy/apis/c/mmdeploy/model.h"
+#include "mmdeploy/apis/c/mmdeploy/pipeline.h"
 #include "mmdeploy/archive/value_archive.h"
 #include "mmdeploy/codebase/mmdet/mmdet.h"
 #include "mmdeploy/core/device.h"
 #include "mmdeploy/core/model.h"
 #include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/core/value.h"
-#include "model.h"
-#include "pipeline.h"
 
 using namespace std;
 using namespace mmdeploy;

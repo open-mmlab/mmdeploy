@@ -97,7 +97,7 @@ int mmdeploy_text_recognizer_create_input(const mmdeploy_mat_t* images, int imag
     Value::Array input_bboxes;
     auto _bboxes = bboxes;
 
-    auto add_bbox = [&](Mat img, const mm_text_detect_t* det) {
+    auto add_bbox = [&](Mat img, const mmdeploy_text_detection_t* det) {
       if (det) {
         const auto& b = det->bbox;
         Value::Array bbox{b[0].x, b[0].y, b[1].x, b[1].y, b[2].x, b[2].y, b[3].x, b[3].y};
