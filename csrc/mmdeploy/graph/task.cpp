@@ -67,22 +67,22 @@ Result<unique_ptr<Node>> TaskBuilder::BuildImpl() {
   try {
     auto task = std::make_unique<Task>();
     OUTCOME_TRY(task->module_, CreateModule(config_));
-    bool sched_set = false;
-    if (config_["context"].contains("executor")) {
-      auto& exec_info = config_["context"]["executor"];
-      for (auto it = exec_info.begin(); it != exec_info.end(); ++it) {
-        if (it.key() == name()) {
-          task->sched_ = it->get<TypeErasedScheduler<Value>>();
-          sched_set = true;
-          MMDEPLOY_INFO("scheduler configured for task {}", name());
-          break;
-        }
+
+    if (config_.contains("scheduler") && config_["context"].contains("schedulers")) {
+      const auto& schedulers = config_["context"]["schedulers"];
+      auto name = config_["scheduler"].get<string>();
+      if (schedulers.contains(name)) {
+        task->sched_ = schedulers[name].get<TypeErasedScheduler<Value>>();
+      } else {
+        MMDEPLOY_WARN("scheduler {} not found in the environment", name);
       }
     }
-    if (!sched_set) {
+
+    if (!task->sched_) {
       task->sched_ =
           TypeErasedScheduler<Value>{std::make_shared<TypeErasedScheduler<Value>::Impl>()};
     }
+
     task->is_batched_ = config_.value("is_batched", false);
     task->is_thread_safe_ = config_.value("is_thread_safe", false);
     return std::move(task);

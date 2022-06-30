@@ -77,6 +77,8 @@ typedef struct mmdeploy_point_t {
 
 typedef struct mmdeploy_value* mmdeploy_value_t;
 
+typedef struct mmdeploy_environment* mmdeploy_environment_t;
+
 #if __cplusplus
 extern "C" {
 #endif
@@ -84,6 +86,10 @@ extern "C" {
 MMDEPLOY_API mmdeploy_value_t mmdeploy_value_copy(mmdeploy_value_t value);
 
 MMDEPLOY_API int mmdeploy_value_destroy(mmdeploy_value_t value);
+
+MMDEPLOY_API int mmdeploy_environment_create(mmdeploy_environment_t* env);
+
+MMDEPLOY_API void mmdeploy_environment_destroy(mmdeploy_environment_t env);
 
 #if __cplusplus
 }

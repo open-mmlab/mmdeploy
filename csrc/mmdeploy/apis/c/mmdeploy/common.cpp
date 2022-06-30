@@ -16,6 +16,13 @@ int mmdeploy_value_destroy(mmdeploy_value_t value) {
   return 0;
 }
 
+int mmdeploy_environment_create(mmdeploy_environment_t* env) {
+  *env = (mmdeploy_environment_t) new Environment;
+  return 0;
+}
+
+void mmdeploy_environment_destroy(mmdeploy_environment_t env) { delete (Environment*)env; }
+
 int mmdeploy_common_create_input(const mmdeploy_mat_t* mats, int mat_count,
                                  mmdeploy_value_t* value) {
   if (mat_count && mats == nullptr) {

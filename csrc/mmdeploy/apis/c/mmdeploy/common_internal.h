@@ -53,7 +53,7 @@ template <typename T, typename SFINAE = void>
 class wrapped {};
 
 template <typename T>
-class wrapped<T, std::void_t<decltype(Cast(T{}))> > {
+class wrapped<T, std::void_t<decltype(Cast(T{}))>> {
  public:
   wrapped() noexcept : v_(nullptr) {}
   explicit wrapped(T v) noexcept : v_(v) {}
@@ -80,7 +80,7 @@ class wrapped<T, std::void_t<decltype(Cast(T{}))> > {
   T release() noexcept { return std::exchange(v_, nullptr); }
 
   auto operator*() { return Cast(v_); }
-  auto operator-> () { return Cast(v_); }
+  auto operator->() { return Cast(v_); }
 
   T* ptr() noexcept { return &v_; }
 
@@ -94,5 +94,13 @@ class wrapped<T, std::void_t<decltype(Cast(T{}))> > {
 
 MMDEPLOY_API int mmdeploy_common_create_input(const mmdeploy_mat_t* mats, int mat_count,
                                               mmdeploy_value_t* value);
+
+namespace mmdeploy {
+
+struct Environment {
+  std::vector<std::pair<std::string, mmdeploy_scheduler_t>> schedulers_;
+};
+
+}  // namespace mmdeploy
 
 #endif  // MMDEPLOY_CSRC_APIS_C_COMMON_INTERNAL_H_

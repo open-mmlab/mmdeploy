@@ -31,6 +31,29 @@ int mmdeploy_pipeline_create(mmdeploy_value_t config, const char* device_name, i
   return MMDEPLOY_E_FAIL;
 }
 
+int mmdeploy_pipeline_create_v2(mmdeploy_value_t config, const char* device_name, int device_id,
+                                mmdeploy_environment_t env, mmdeploy_pipeline_t* pipeline) {
+  try {
+    auto _config = *Cast(config);
+    if (env) {
+      auto e = reinterpret_cast<Environment*>(env);
+      auto& info = (_config["context"]["schedulers"] = Value::kObject);
+      for (const auto& [k, v]: e->schedulers_) {
+        info[k] = *Cast(v);
+      }
+    }
+    auto _handle = std::make_unique<AsyncHandle>(device_name, device_id, std::move(_config));
+    *pipeline = Cast(_handle.release());
+    return MMDEPLOY_SUCCESS;
+  } catch (const std::exception& e) {
+    MMDEPLOY_ERROR("exception caught: {}", e.what());
+  } catch (...) {
+    MMDEPLOY_ERROR("unknown exception caught");
+  }
+  return MMDEPLOY_E_FAIL;
+}
+
+
 int mmdeploy_pipeline_apply_async(mmdeploy_pipeline_t pipeline, mmdeploy_sender_t input,
                                   mmdeploy_sender_t* output) {
   if (!pipeline || !input || !output) {
