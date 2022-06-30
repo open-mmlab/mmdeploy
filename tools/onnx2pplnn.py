@@ -49,11 +49,11 @@ def main():
     if isinstance(input_shapes[0], int):
         input_shapes = [input_shapes]
 
-    logger.info(f'onnx2ppl: \n\tonnx_path: {onnx_path} '
+    logger.info(f'onnx2pplnn: \n\tonnx_path: {onnx_path} '
                 f'\n\toutput_prefix: {output_prefix}'
                 f'\n\topt_shapes: {input_shapes}')
     from_onnx(onnx_path, output_prefix, device, input_shapes)
-    logger.info('onnx2tpplnn success.')
+    logger.info('onnx2pplnn success.')
 
 
 if __name__ == '__main__':
