@@ -80,7 +80,7 @@ def base_dense_head__get_bbox(ctx,
         ]
         mlvl_score_factors = []
     assert img_metas is not None
-    img_shape = img_metas[0]['img_shape']
+    img_shape = torch.Tensor(img_metas[0]['img_shape'])
 
     assert len(cls_scores) == len(bbox_preds) == len(mlvl_priors)
     batch_size = cls_scores[0].shape[0]
