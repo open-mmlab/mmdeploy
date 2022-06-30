@@ -1,28 +1,47 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from mmdeploy.core import FUNCTION_REWRITER
+import copy
+
+import torch
+from torch import nn
+
+from mmdeploy.core import MODULE_REWRITER
+from mmdeploy.utils import is_dynamic_shape
 
 
-@FUNCTION_REWRITER.register_rewriter(
-    'mmdet.models.detectors.single_stage.SingleStageDetector.simple_test')
-def single_stage_detector__simple_test(ctx, self, img, img_metas, **kwargs):
-    """Rewrite `simple_test` for default backend.
+@MODULE_REWRITER.register_rewrite_module(
+    'mmdet.models.detectors.single_stage.SingleStageDetector',
+    backend='default')
+class SingleStageDetector__default(nn.Module):
+    """A patch model for SingleStageDetector.
 
-    Support configured dynamic/static shape for model input and return
-    detection result as Tensor instead of numpy array.
-
-    Args:
-        ctx (ContextCaller): The context with additional information.
-        self: The instance of the original class.
-        img (Tensor | List[Tensor]): Input image tensor(s).
-        img_meta (list[dict]): Dict containing image's meta information
-            such as `img_shape`.
-
-    Returns:
-        list[tuple[Tensor, Tensor]]: Each item in result_list is 2-tuple.
-                The first item is ``bboxes`` with shape (n, 5),
-                where 5 represent (tl_x, tl_y, br_x, br_y, score).
-                The shape of the second tensor in the tuple is ``labels``
-                with shape (n,)
+    `forward` of this class would output a DataElement, which can not be export
+    to ONNX.
     """
-    feat = self.extract_feat(img)
-    return self.bbox_head.simple_test(feat, img_metas, **kwargs)
+
+    def __init__(self, module, deploy_cfg, data_samples, **kwargs) -> None:
+        super().__init__()
+        self._module = module
+        self._deploy_cfg = deploy_cfg
+        self._data_samples = data_samples
+
+    def forward(self, batch_inputs):
+        data_samples = copy.deepcopy(self._data_samples)
+        deploy_cfg = self._deploy_cfg
+
+        # get origin input shape as tensor to support onnx dynamic shape
+        is_dynamic_flag = is_dynamic_shape(deploy_cfg)
+        img_shape = torch._shape_as_tensor(batch_inputs)[2:]
+        if not is_dynamic_flag:
+            img_shape = [int(val) for val in img_shape]
+
+        # set the metainfo
+        # note that we can not use `set_metainfo`, deepcopy would crash the
+        # onnx trace.
+        for data_sample in data_samples:
+            data_sample.set_field(
+                name='img_shape', value=img_shape, field_type='metainfo')
+
+        x = self._module.extract_feat(batch_inputs)
+
+        output = self._module.bbox_head.predict(x, data_samples, rescale=False)
+        return output

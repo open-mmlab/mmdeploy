@@ -4,6 +4,7 @@ from typing import Any, List, Optional, Sequence, Union
 import numpy as np
 import torch
 from mmengine import BaseDataElement, Config
+from mmengine.model import BaseDataPreprocessor
 from mmengine.registry import Registry
 from torch import nn
 
@@ -106,10 +107,14 @@ class SDKEnd2EndModel(End2EndModel):
         return pred[np.argsort(pred[:, 0])][np.newaxis, :, 1]
 
 
-def build_classification_model(model_files: Sequence[str],
-                               model_cfg: Union[str, Config],
-                               deploy_cfg: Union[str, Config], device: str,
-                               **kwargs):
+def build_classification_model(
+        model_files: Sequence[str],
+        model_cfg: Union[str, Config],
+        deploy_cfg: Union[str, Config],
+        device: str,
+        data_preprocessor: Optional[Union[Config,
+                                          BaseDataPreprocessor]] = None,
+        **kwargs):
     """Build classification model for different backend.
 
     Args:
@@ -119,6 +124,8 @@ def build_classification_model(model_files: Sequence[str],
         deploy_cfg (str | Config): Input deployment config file or
             Config object.
         device (str):  Device to input model.
+        data_preprocessor (BaseDataPreprocessor | Config): The data
+            preprocessor of the model.
 
     Returns:
         BaseBackendModel: Classifier for a configured backend.
@@ -136,6 +143,7 @@ def build_classification_model(model_files: Sequence[str],
             backend_files=model_files,
             device=device,
             deploy_cfg=deploy_cfg,
+            data_preprocessor=data_preprocessor,
             **kwargs))
 
     return backend_classifier

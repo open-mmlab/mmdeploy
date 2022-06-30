@@ -1,8 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import List, Optional
+
 import torch
 from mmdet.core.bbox.coder import (DeltaXYWHBBoxCoder, DistancePointBBoxCoder,
                                    TBLRBBoxCoder)
 from mmdet.core.bbox.transforms import distance2bbox
+from mmengine import ConfigDict
+from torch import Tensor
 
 from mmdeploy.codebase.mmdet import (get_post_processing_params,
                                      multiclass_nms,
@@ -14,41 +18,43 @@ from mmdeploy.utils import Backend, is_dynamic_shape
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.dense_heads.base_dense_head.'
-    'BaseDenseHead.get_bboxes')
-def base_dense_head__get_bbox(ctx,
-                              self,
-                              cls_scores,
-                              bbox_preds,
-                              score_factors=None,
-                              img_metas=None,
-                              cfg=None,
-                              rescale=False,
-                              with_nms=True,
-                              **kwargs):
-    """Rewrite `get_bboxes` of `BaseDenseHead` for default backend.
+    'BaseDenseHead.predict_by_feat')
+def base_dense_head__predict_by_feat(
+        ctx,
+        self,
+        cls_scores: List[Tensor],
+        bbox_preds: List[Tensor],
+        score_factors: Optional[List[Tensor]] = None,
+        batch_img_metas: Optional[List[dict]] = None,
+        cfg: Optional[ConfigDict] = None,
+        rescale: bool = False,
+        with_nms: bool = True,
+        **kwargs):
+    """Rewrite `predict_by_feat` of `BaseDenseHead` for default backend.
 
     Rewrite this function to deploy model, transform network output for a
     batch into bbox predictions.
 
     Args:
         ctx (ContextCaller): The context with additional information.
-        self: The instance of the original class.
         cls_scores (list[Tensor]): Classification scores for all
             scale levels, each is a 4D-tensor, has shape
             (batch_size, num_priors * num_classes, H, W).
         bbox_preds (list[Tensor]): Box energies / deltas for all
             scale levels, each is a 4D-tensor, has shape
             (batch_size, num_priors * 4, H, W).
-        score_factors (list[Tensor], Optional): Score factor for
+        score_factors (list[Tensor], optional): Score factor for
             all scale level, each is a 4D-tensor, has shape
-            (batch_size, num_priors * 1, H, W). Default None.
-        img_metas (list[dict], Optional): Image meta info. Default None.
-        cfg (mmcv.Config, Optional): Test / postprocessing configuration,
-            if None, test_cfg would be used.  Default None.
+            (batch_size, num_priors * 1, H, W). Defaults to None.
+        batch_img_metas (list[dict], Optional): Batch image meta info.
+            Defaults to None.
+        cfg (ConfigDict, optional): Test / postprocessing
+            configuration, if None, test_cfg would be used.
+            Defaults to None.
         rescale (bool): If True, return boxes in original image space.
-            Default False.
+            Defaults to False.
         with_nms (bool): If True, do nms before return boxes.
-            Default True.
+            Defaults to True.
 
     Returns:
         If with_nms == True:
@@ -79,8 +85,8 @@ def base_dense_head__get_bbox(ctx,
             score_factors[i].detach() for i in range(num_levels)
         ]
         mlvl_score_factors = []
-    assert img_metas is not None
-    img_shape = img_metas[0]['img_shape']
+    assert batch_img_metas is not None
+    img_shape = batch_img_metas[0]['img_shape']
 
     assert len(cls_scores) == len(bbox_preds) == len(mlvl_priors)
     batch_size = cls_scores[0].shape[0]
@@ -100,7 +106,7 @@ def base_dense_head__get_bbox(ctx,
         if self.use_sigmoid_cls:
             scores = scores.sigmoid()
         else:
-            scores = scores.softmax(-1)
+            scores = scores.softmax(-1)[:, :, :-1]
         if with_score_factors:
             score_factors = score_factors.permute(0, 2, 3,
                                                   1).reshape(batch_size,

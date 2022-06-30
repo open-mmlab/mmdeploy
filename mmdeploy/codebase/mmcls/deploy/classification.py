@@ -1,7 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import os.path as osp
 from copy import deepcopy
-from typing import Dict, Optional, Sequence, Tuple, Union
+from typing import Callable, Dict, Optional, Sequence, Tuple, Union
 
+import mmcv
 import numpy as np
 import torch
 from mmengine import Config
@@ -80,6 +82,12 @@ def _get_dataset_metainfo(model_cfg: Config):
         dataset_cls = module_dict.get(dataset_cfg.type, None)
         if dataset_cls is None:
             continue
+        if hasattr(dataset_cls, '_load_metainfo') and isinstance(
+                dataset_cls._load_metainfo, Callable):
+            meta = dataset_cls._load_metainfo(
+                dataset_cfg.get('metainfo', None))
+            if meta is not None:
+                return meta
         if hasattr(dataset_cls, 'METAINFO'):
             return dataset_cls.METAINFO
 
@@ -173,6 +181,40 @@ class Classification(BaseTask):
         else:
             return data, BaseTask.get_tensor_from_input(data)
 
+    def get_visualizer(self, name: str, save_dir: str):
+        visualizer = super().get_visualizer(name, save_dir)
+        metainfo = _get_dataset_metainfo(self.model_cfg)
+        if metainfo is not None:
+            visualizer.dataset_meta = metainfo
+        return visualizer
+
+    def visualize(self,
+                  image: Union[str, np.ndarray],
+                  result: list,
+                  output_file: str,
+                  window_name: str = '',
+                  show_result: bool = False,
+                  **kwargs):
+        """Visualize predictions of a model.
+
+        Args:
+            model (nn.Module): Input model.
+            image (str | np.ndarray): Input image to draw predictions on.
+            result (list): A list of predictions.
+            output_file (str): Output file to save drawn image.
+            window_name (str): The name of visualization window. Defaults to
+                an empty string.
+            show_result (bool): Whether to show result in windows, defaults
+                to `False`.
+        """
+        save_dir, save_name = osp.split(output_file)
+        visualizer = self.get_visualizer(window_name, save_dir)
+
+        name = osp.splitext(save_name)[0]
+        image = mmcv.imread(image, channel_order='rgb')
+        visualizer.add_datasample(
+            name, image, result, show=show_result, out_file=output_file)
+
     @staticmethod
     def get_partition_cfg(partition_type: str) -> Dict:
         """Get a certain partition config.
@@ -219,10 +261,3 @@ class Classification(BaseTask):
         'no type'
         name = self.model_cfg.model.backbone.type.lower()
         return name
-
-    def get_visualizer(self, name: str, save_dir: str):
-        visualizer = super().get_visualizer(name, save_dir)
-        metainfo = _get_dataset_metainfo(self.model_cfg)
-        if metainfo is not None:
-            visualizer.dataset_meta = metainfo
-        return visualizer

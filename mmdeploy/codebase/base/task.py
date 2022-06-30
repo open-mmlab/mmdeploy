@@ -267,12 +267,16 @@ class BaseTask(metaclass=ABCMeta):
                 to `False`.
         """
         save_dir, save_name = osp.split(output_file)
-        visualizer = self.get_visualizer(self.experiment_name, save_dir)
+        visualizer = self.get_visualizer(window_name, save_dir)
 
         name = osp.splitext(save_name)[0]
         image = mmcv.imread(image, channel_order='rgb')
         visualizer.add_datasample(
-            name, image, result, show=show_result, out_file=output_file)
+            name,
+            image,
+            pred_sample=result,
+            show=show_result,
+            out_file=output_file)
 
     @staticmethod
     @abstractmethod
