@@ -15,7 +15,7 @@ def model_to_graph__custom_optimizer(ctx, *args, **kwargs):
         assert isinstance(
             custom_passes, Callable
         ), f'Expect a callable onnx_custom_passes, get {type(custom_passes)}.'
-        graph, params_dict, torch_out = custom_passes(graph, params_dict,
+        graph, params_dict, torch_out = custom_passes(ctx, graph, params_dict,
                                                       torch_out)
 
     return graph, params_dict, torch_out

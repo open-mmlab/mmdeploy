@@ -30,7 +30,7 @@ def test_merge_shape_concate():
     except ImportError:
         pytest.skip('pass not found.')
 
-    def _optimize_onnx(graph, params_dict, torch_out):
+    def _optimize_onnx(ctx, graph, params_dict, torch_out):
         opt_pass(graph)
         return graph, params_dict, torch_out
 
@@ -82,7 +82,7 @@ def test_peephole():
     except ImportError:
         pytest.skip('pass not found.')
 
-    def _optimize_onnx(graph, params_dict, torch_out):
+    def _optimize_onnx(ctx, graph, params_dict, torch_out):
         opt_pass(graph)
         return graph, params_dict, torch_out
 
@@ -148,7 +148,7 @@ def test_flatten_cls_head():
     except ImportError:
         pytest.skip('pass not found.')
 
-    def _optimize_onnx(graph, params_dict, torch_out):
+    def _optimize_onnx(ctx, graph, params_dict, torch_out):
         opt_pass(graph)
         return graph, params_dict, torch_out
 
@@ -199,7 +199,7 @@ def test_fuse_select_assign():
     except ImportError:
         pytest.skip('pass not found.')
 
-    def _optimize_onnx(graph, params_dict, torch_out):
+    def _optimize_onnx(ctx, graph, params_dict, torch_out):
         opt_pass(graph, params_dict)
         return graph, params_dict, torch_out
 
@@ -247,7 +247,7 @@ def test_common_subgraph_elimination():
     except ImportError:
         pytest.skip('pass not found.')
 
-    def _optimize_onnx(graph, params_dict, torch_out):
+    def _optimize_onnx(ctx, graph, params_dict, torch_out):
         opt_pass(graph, params_dict)
         return graph, params_dict, torch_out
 
