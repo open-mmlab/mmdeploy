@@ -24,17 +24,17 @@ def get_onnx2ncnn_path() -> str:
         str: A path of mmdeploy_onnx2ncnn tool.
     """
     candidates = ['./mmdeploy_onnx2ncnn', './mmdeploy_onnx2ncnn.exe']
-    onnx2ncnn_path =  get_file_path(os.path.dirname(__file__), candidates)
+    onnx2ncnn_path = get_file_path(os.path.dirname(__file__), candidates)
 
     if not os.path.exists(onnx2ncnn_path):
         onnx2ncnn_path = get_file_path('', candidates)
-        
+
     if not os.path.exists(onnx2ncnn_path):
         onnx2ncnn_path = shutil.which('mmdeploy_onnx2ncnn.exe')
-    
+
     if not os.path.exists(onnx2ncnn_path):
         onnx2ncnn_path = shutil.which('mmdeploy_onnx2ncnn')
-        
+
     return onnx2ncnn_path
 
 

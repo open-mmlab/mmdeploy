@@ -77,7 +77,9 @@ def run(args):
         # show processbar
         os.system(' '.join(download_cmd))
 
-        convert_cmd = ['./mmdeploy_onnx2ncnn', filename, 'onnx.param', 'onnx.bin']
+        convert_cmd = [
+            './mmdeploy_onnx2ncnn', filename, 'onnx.param', 'onnx.bin'
+        ]
         subprocess.run(convert_cmd, capture_output=True, check=True)
 
 
