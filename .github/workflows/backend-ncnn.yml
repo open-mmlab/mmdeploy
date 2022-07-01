@@ -59,7 +59,7 @@ jobs:
           mkdir -p build && pushd build
           export LD_LIBRARY_PATH=/home/runner/work/mmdeploy/mmdeploy/ncnn-20220420/install/lib/:$LD_LIBRARY_PATH
           cmake -DMMDEPLOY_TARGET_BACKENDS=ncnn -Dncnn_DIR=/home/runner/work/mmdeploy/mmdeploy/ncnn-20220420/install/lib/cmake/ncnn/ ..
-          make onnx2ncnn -j2
+          make mmdeploy_onnx2ncnn -j2
           popd
       - name: Test onnx2ncnn
         run: |
