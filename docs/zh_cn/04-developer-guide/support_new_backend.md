@@ -142,7 +142,7 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
            backend_files = []
            for onnx_path in onnx_files:
                create_process(
-                   f'onnx2ncnn with {onnx_path}',
+                   f'mmdeploy_onnx2ncnn with {onnx_path}',
                    target=onnx2ncnn,
                    args=(onnx_path, args.work_dir),
                    kwargs=dict(),

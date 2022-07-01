@@ -64,5 +64,5 @@ jobs:
       - name: Test onnx2ncnn
         run: |
           echo $(pwd)
-          ln -s build/bin/onnx2ncnn ./
+          ln -s build/bin/mmdeploy_onnx2ncnn ./
           python3 .github/scripts/test_onnx2ncnn.py --run 1

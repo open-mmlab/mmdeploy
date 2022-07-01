@@ -82,4 +82,4 @@ https://download.openmmlab.com/mmdetection/v2.0/yolo/yolov3_d53_mstrain-608_273e
 --work-dir ./work-dirs/mmdet/yolov3/ort/partition
 ```
 
-当得到分段onnx模型之后，我们可以使用mmdeploy提供的其他工具如`onnx2ncnn`, `onnx2tensorrt`来进行后续的模型部署工作。
+当得到分段onnx模型之后，我们可以使用mmdeploy提供的其他工具如`mmdeploy_onnx2ncnn`, `onnx2tensorrt`来进行后续的模型部署工作。
