@@ -73,7 +73,7 @@ def test_baseclassifier_forward():
         def forward_train(self, imgs):
             return 'train'
 
-        def simple_test(self, img, tmp, **kwargs):
+        def simple_test(self, img, tmp=None, **kwargs):
             return 'simple_test'
 
     model = DummyClassifier().eval()

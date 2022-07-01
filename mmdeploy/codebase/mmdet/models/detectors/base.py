@@ -7,14 +7,13 @@ from mmdeploy.utils import is_dynamic_shape
 
 @mark(
     'detector_forward', inputs=['input'], outputs=['dets', 'labels', 'masks'])
-def __forward_impl(ctx, self, img, img_metas=None, **kwargs):
+def __forward_impl(ctx, self, img, img_metas, **kwargs):
     """Rewrite and adding mark for `forward`.
 
     Encapsulate this function for rewriting `forward` of BaseDetector.
     1. Add mark for BaseDetector.
     2. Support both dynamic and static export to onnx.
     """
-    assert isinstance(img_metas, dict)
     assert isinstance(img, torch.Tensor)
 
     deploy_cfg = ctx.cfg
@@ -23,14 +22,18 @@ def __forward_impl(ctx, self, img, img_metas=None, **kwargs):
     img_shape = torch._shape_as_tensor(img)[2:]
     if not is_dynamic_flag:
         img_shape = [int(val) for val in img_shape]
-    img_metas['img_shape'] = img_shape
-    img_metas = [img_metas]
+    img_metas[0]['img_shape'] = img_shape
     return self.simple_test(img, img_metas, **kwargs)
 
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet.models.detectors.base.BaseDetector.forward')
-def base_detector__forward(ctx, self, img, img_metas=None, **kwargs):
+def base_detector__forward(ctx,
+                           self,
+                           img,
+                           img_metas=None,
+                           return_loss=False,
+                           **kwargs):
     """Rewrite `forward` of BaseDetector for default backend.
 
     Rewrite this function to:
@@ -56,14 +59,12 @@ def base_detector__forward(ctx, self, img, img_metas=None, **kwargs):
                 corresponds to each class.
     """
     if img_metas is None:
-        img_metas = {}
-
-    while isinstance(img_metas, list):
+        img_metas = [{}]
+    else:
+        assert len(img_metas) == 1, 'do not support aug_test'
         img_metas = img_metas[0]
 
     if isinstance(img, list):
-        img = torch.cat(img, 0)
+        img = img[0]
 
-    if 'return_loss' in kwargs:
-        kwargs.pop('return_loss')
     return __forward_impl(ctx, self, img, img_metas=img_metas, **kwargs)
