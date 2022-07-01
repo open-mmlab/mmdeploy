@@ -33,7 +33,8 @@ CONFIGS = [
 def parse_args():
     parser = argparse.ArgumentParser(
         description='MMDeploy onnx2ncnn test tool.')
-    parser.add_argument('--run', type=bool, help='Execute onnx2ncnn bin.')
+    parser.add_argument(
+        '--run', type=bool, help='Execute mmdeploy_onnx2ncnn bin.')
     parser.add_argument(
         '--repo-dir', type=str, default='~/', help='mmcls directory.')
     parser.add_argument(
