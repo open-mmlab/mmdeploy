@@ -24,7 +24,14 @@ make -j8
 cd build/examples/MMDeploy
 ./OpFuse <path/of/OpList/json/file> <cpu or cuda> <path/of/generate/code>
 ```
-### Fuse function interface
+### Fuse function interface(cpu)
 ```
-void FuseKernel(uint64_t resize_h, uint64_t resize_w, uint64_t crop_size, int32_t crop_top, int32_t crop_left, float norm_mean_0, float norm_mean_1, float norm_mean_2, float norm_std_0, float norm_std_1, float norm_std_2, uint64_t pad_h, uint64_t pad_w, int32_t pad_top, int32_t pad_left, int32_t pad_bottom, int32_t pad_right, float pad_value, uint8_t* __restrict__ src_raw_data, float* __restrict__ dst_raw_data, uint64_t src_h, uint64_t src_w, const char *format, const char *interpolation = "nearest");  // if no ResizeOp, use default "nearest" to replace 
+void FuseKernel(uint64_t resize_h, uint64_t resize_w, uint64_t crop_size, int32_t crop_top, int32_t crop_left, float norm_mean_0, float norm_mean_1, float norm_mean_2, float norm_std_0, float norm_std_1, float norm_std_2, uint64_t pad_h, uint64_t pad_w, int32_t pad_top, int32_t pad_left, int32_t pad_bottom, int32_t pad_right, float pad_value, uint8_t* __restrict__ src_raw_data, float* __restrict__ dst_raw_data, uint64_t src_h, uint64_t src_w, const char *format, const char *interpolation = "nearest");  
+// if no ResizeOp, use default "nearest" to replace 
+```
+
+### Fuse function interface(cuda)
+```
+void FuseKernelCU(cudaStream_t stream, uint64_t resize_h, uint64_t resize_w, uint64_t crop_size, int32_t crop_top, int32_t crop_left, float norm_mean_0, float norm_mean_1, float norm_mean_2, float norm_std_0, float norm_std_1, float norm_std_2, uint64_t pad_h, uint64_t pad_w, int32_t pad_top, int32_t pad_left, int32_t pad_bottom, int32_t pad_right, float pad_value, uint8_t* __restrict__ src_raw_data, float* __restrict__ dst_raw_data, uint64_t dst_element_num, uint64_t src_h, uint64_t src_w, const char *format, const char *interpolation = "nearest"); 
+// Note that there are two additional parameters: stream and dst_element_num
 ```

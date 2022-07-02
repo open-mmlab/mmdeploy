@@ -1,44 +1,40 @@
 
-#include <string>  
-#include <iostream>  
-#include <fstream>
 #include <json/json.h>
+
+#include <fstream>
+#include <iostream>
+#include <string>
 
 #include "Common.hpp"
 
 using namespace std;
 
-struct ResizeArgs
-{
-    Interpolation interpolation;
-    std::vector<int> shape;
-    bool dynamic = true;
+struct ResizeArgs {
+  Interpolation interpolation;
+  std::vector<int> shape;
+  bool dynamic = true;
 };
 
-struct CropArgs
-{
-    std::vector<int> shape;
-    std::vector<int> tlbr;
-    bool dynamic = true;
+struct CropArgs {
+  std::vector<int> shape;
+  std::vector<int> tlbr;
+  bool dynamic = true;
 };
 
-struct NormArgs
-{
-    std::vector<float> mean;
-    std::vector<float> std;
+struct NormArgs {
+  std::vector<float> mean;
+  std::vector<float> std;
 };
 
-struct PadArgs
-{
-    std::vector<int> paddings;
-    std::vector<int> shape;
-    float pad_val;
-    bool dynamic = true;
+struct PadArgs {
+  std::vector<int> paddings;
+  std::vector<int> shape;
+  float pad_val;
+  bool dynamic = true;
 };
 
-
-
-void readOpList(const std::string &filepath, std::vector<std::string> &OpList, Format &CvtFormat) {
+void readOpList(const std::string &filepath, std::vector<std::string> &OpList,
+                Format &CvtFormat) {
   Json::Reader reader;
   Json::Value root;
 
@@ -50,21 +46,20 @@ void readOpList(const std::string &filepath, std::vector<std::string> &OpList, F
   }
 
   if (reader.parse(in, root)) {
-    if (!root.size()) 
-      ELENA_ABORT("json file not have OpList type");
+    if (!root.size()) ELENA_ABORT("json file not have OpList type");
     for (unsigned int i = 0; i < root.size(); i++) {
       string type = root[i]["type"].asString();
       OpList.push_back(type);
 
       auto mem = root[i];
 
-      if(type == "cvtColorBGR")
+      if (type == "cvtColorBGR")
         CvtFormat = BGR;
-      else if(type == "cvtColorGray")
+      else if (type == "cvtColorGray")
         CvtFormat = GRAY;
       else if (type != "Resize" && type != "CenterCrop" &&
                type != "Normalize" && type != "Pad" && type != "CastFloat" &&
-               type != "cvtColorRGB" && type != "HWC2CHW") 
+               type != "cvtColorRGB" && type != "HWC2CHW")
         ELENA_ABORT("unrecognized op type");
     }
   } else {
@@ -74,11 +69,11 @@ void readOpList(const std::string &filepath, std::vector<std::string> &OpList, F
   in.close();
 }
 
-
 // static info with ["trans_info"]["static"]
-// void readJsonFile(const std::string &filepath, std::vector<std::string> &OpList,
-//                   Format &CvtFormat, ResizeArgs &resize_arg, CropArgs &crop_arg, 
-//                   NormArgs &norm_arg, PadArgs &pad_arg) {
+// void readJsonFile(const std::string &filepath, std::vector<std::string>
+// &OpList,
+//                   Format &CvtFormat, ResizeArgs &resize_arg, CropArgs
+//                   &crop_arg, NormArgs &norm_arg, PadArgs &pad_arg) {
 //   Json::Reader reader;
 //   Json::Value root;
 
@@ -91,7 +86,7 @@ void readOpList(const std::string &filepath, std::vector<std::string> &OpList, F
 
 //   if (reader.parse(in, root)) {
 //     //读取static信息
-//     if (!root["trans_info"]["static"].size()) 
+//     if (!root["trans_info"]["static"].size())
 //       ELENA_ABORT("json file not have static info");
 //     for (unsigned int i = 0; i < root["trans_info"]["static"].size(); i++) {
 //       string type = root["trans_info"]["static"][i]["type"].asString();
@@ -108,37 +103,39 @@ void readOpList(const std::string &filepath, std::vector<std::string> &OpList, F
 //             resize_arg.interpolation = Bilinear;
 //           else if(mem["interpolation"].asString() == "nearest")
 //             resize_arg.interpolation = Nearest;
-//           else 
+//           else
 //             ELENA_ABORT("not give interpolation argument");
 
-//           if(mem["dynamic"] == true) 
+//           if(mem["dynamic"] == true)
 //             resize_arg.dynamic = true;
 //           else{
-//               ELENA_ASSERT(mem["size_hw"].size() == 2, "resize hw shape not equal to 2");
-//               for (auto& v : mem["size_hw"]) {
+//               ELENA_ASSERT(mem["size_hw"].size() == 2, "resize hw shape not
+//               equal to 2"); for (auto& v : mem["size_hw"]) {
 //                 resize_arg.shape.push_back(v.asInt());
 //               }
 //           }
 //       }
 //       else if (type == "CenterCrop") {
-//           ELENA_ASSERT(mem["size_hw"].size() == 2, "centercrop hw shape not equal to 2");
-//           for (auto& v : mem["size_hw"]) {
+//           ELENA_ASSERT(mem["size_hw"].size() == 2, "centercrop hw shape not
+//           equal to 2"); for (auto& v : mem["size_hw"]) {
 //                 crop_arg.shape.push_back(v.asInt());
 //           }
 
-//           if(mem["dynamic"] == true) 
+//           if(mem["dynamic"] == true)
 //             crop_arg.dynamic = true;
 //           else{
-//               ELENA_ASSERT(mem["tlbr"].size() == 4, "centercrop tlbr size not equal to 4");
-//               for (auto& v : mem["tlbr"]) {
+//               ELENA_ASSERT(mem["tlbr"].size() == 4, "centercrop tlbr size not
+//               equal to 4"); for (auto& v : mem["tlbr"]) {
 //                 crop_arg.tlbr.push_back(v.asInt());
 //               }
 //           }
 //       } else if (type == "Normalize") {
 //         if (CvtFormat == BGR) {
-//           ELENA_ASSERT(mem["mean"].size() == 3 && mem["std"].size() == 3, " ");
+//           ELENA_ASSERT(mem["mean"].size() == 3 && mem["std"].size() == 3, "
+//           ");
 //         } else if (CvtFormat == GRAY) {
-//           ELENA_ASSERT(mem["mean"].size() == 1 && mem["std"].size() == 1, " ");
+//           ELENA_ASSERT(mem["mean"].size() == 1 && mem["std"].size() == 1, "
+//           ");
 //         }
 
 //         for (auto& v : mem["mean"]) {

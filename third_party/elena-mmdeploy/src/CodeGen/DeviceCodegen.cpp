@@ -981,7 +981,7 @@ static inline void genSrcStream(const NodePtr &node,
     visitor << CudaBF16Util;
   }
 
-  visitor << Prelude;
+  // visitor << Prelude;
   if (std::is_same<DeviceType, TangCode>::value) {
     visitor << PreludeTang;
   }
@@ -1066,11 +1066,11 @@ static inline void genSrcStream(const NodePtr &node,
     visitor << CudaBF16Util;
   }
 
-  visitor << Prelude;
+  // visitor << Prelude;
   if (std::is_same<DeviceType, CCode>::value) {
-    visitor << R"(extern "C" void )";
+    visitor << "\n" << R"(extern "C" void )";
   } else {
-    visitor << R"(extern "C" __global__ void )";
+    visitor << "\n" << R"(extern "C" __global__ void )";
   }
   visitor << kernel_name << "(";
 
