@@ -7,7 +7,7 @@
 #include "mmdeploy/apis/c/model.h"
 #include "test_resource.h"
 
-TEST_CASE("test model c capi", "[model]") {
+TEST_CASE("test model c capi", "[.model][resource]") {
   auto &gResource = MMDeployTestResources::Get();
   std::string model_path;
   for (auto const &codebase : gResource.codebases()) {

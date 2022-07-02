@@ -286,6 +286,7 @@ mkdir build -ErrorAction SilentlyContinue
 cd build
 cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DMMDEPLOY_TARGET_BACKENDS="ort" -DONNXRUNTIME_DIR="$env:ONNXRUNTIME_DIR"
 cmake --build . --config Release -- /m
+cmake --install . --config Release
 ```
 
 - **TensorRT** Custom Ops
@@ -295,6 +296,7 @@ mkdir build -ErrorAction SilentlyContinue
 cd build
 cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DMMDEPLOY_TARGET_BACKENDS="trt" -DTENSORRT_DIR="$env:TENSORRT_DIR" -DCUDNN_DIR="$env:CUDNN_DIR"
 cmake --build . --config Release -- /m
+cmake --install . --config Release
 ```
 
 - **ncnn** Custom Ops

@@ -188,3 +188,51 @@ def test_flatten_cls_head():
 
     node, idx = _find_next_node(idx + 1, nodes, 'Flatten')
     assert node is not None
+
+
+def test_fuse_select_assign():
+    pytest.importorskip('mmdeploy.backend.torchscript.ts_optimizer.onnx')
+
+    try:
+        from mmdeploy.backend.torchscript import ts_optimizer
+        opt_pass = ts_optimizer.onnx._jit_pass_fuse_select_assign
+    except ImportError:
+        pytest.skip('pass not found.')
+
+    def _optimize_onnx(graph, params_dict, torch_out):
+        opt_pass(graph, params_dict)
+        return graph, params_dict, torch_out
+
+    class TestModel(torch.nn.Module):
+
+        def __init__(self) -> None:
+            super().__init__()
+
+        def forward(self, x):
+            z = x / 2
+            y = torch.zeros_like(x)
+            y[x < 0.5] = z[x < 0.5]
+            return y
+
+    model = TestModel()
+    x = torch.rand(1, 4, 8, 8)
+
+    with RewriterContext({}, onnx_custom_passes=_optimize_onnx):
+        torch.onnx.export(
+            model,
+            x,
+            onnx_file,
+            input_names=['input'],
+            output_names=['output'],
+            dynamic_axes=dict(input={
+                2: 'h',
+                3: 'w'
+            }),
+            opset_version=11)
+
+    onnx_model = onnx.load(onnx_file)
+    graph = onnx_model.graph
+    nodes = graph.node
+
+    node, _ = _find_next_node(0, nodes, 'Where')
+    assert node is not None

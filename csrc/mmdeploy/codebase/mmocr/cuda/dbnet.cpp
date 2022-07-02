@@ -6,7 +6,6 @@
 #include "mmdeploy/codebase/mmocr/cuda/utils.h"
 #include "mmdeploy/core/utils/device_utils.h"
 #include "mmdeploy/device/cuda/cuda_device.h"
-#include "opencv2/imgcodecs.hpp"
 #include "opencv2/imgproc.hpp"
 
 namespace mmdeploy::mmocr {

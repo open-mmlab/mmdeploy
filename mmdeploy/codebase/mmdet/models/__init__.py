@@ -5,3 +5,4 @@ from .detectors import *  # noqa: F401,F403
 from .necks import *  # noqa: F401,F403
 from .roi_heads import *  # noqa: F401,F403
 from .seg_heads import *  # noqa: F401,F403
+from .transformer import *  # noqa: F401,F403
