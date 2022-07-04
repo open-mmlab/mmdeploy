@@ -1,7 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 project(mmdeploy_java)
 
-find_package(JNI REQUIRED)
+if (NOT ANDROID)
+        find_package(JNI REQUIRED)
+endif()
 
 mmdeploy_add_library(${PROJECT_NAME} SHARED EXCLUDE
         mmdeploy_Classifier.cpp
@@ -17,7 +19,12 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 
 mmdeploy_load_static(${PROJECT_NAME} MMDeployStaticModules)
 mmdeploy_load_dynamic(${PROJECT_NAME} MMDeployDynamicModules)
-target_link_libraries(${PROJECT_NAME} PRIVATE
-        ${JNI_LIBRARIES} MMDeployLibs)
+if (ANDROID)
+        target_link_libraries(${PROJECT_NAME} PRIVATE
+                MMDeployLibs)
+else()
+        target_link_libraries(${PROJECT_NAME} PRIVATE
+                ${JNI_LIBRARIES} MMDeployLibs)
+endif()
 install(TARGETS ${PROJECT_NAME}
             DESTINATION lib)
