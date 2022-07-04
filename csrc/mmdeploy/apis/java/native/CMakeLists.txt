@@ -3,6 +3,8 @@ project(mmdeploy_java)
 
 if (NOT ANDROID)
         find_package(JNI REQUIRED)
+else ()
+        set(JNI_LIBRARIES)
 endif()
 
 mmdeploy_add_library(${PROJECT_NAME} SHARED EXCLUDE
@@ -19,12 +21,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 
 mmdeploy_load_static(${PROJECT_NAME} MMDeployStaticModules)
 mmdeploy_load_dynamic(${PROJECT_NAME} MMDeployDynamicModules)
-if (ANDROID)
-        target_link_libraries(${PROJECT_NAME} PRIVATE
-                MMDeployLibs)
-else()
-        target_link_libraries(${PROJECT_NAME} PRIVATE
-                ${JNI_LIBRARIES} MMDeployLibs)
-endif()
+
+target_link_libraries(${PROJECT_NAME} PRIVATE
+        ${JNI_LIBRARIES} MMDeployLibs)
 install(TARGETS ${PROJECT_NAME}
             DESTINATION lib)
