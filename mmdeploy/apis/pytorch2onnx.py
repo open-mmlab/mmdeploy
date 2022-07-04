@@ -68,6 +68,7 @@ def torch2onnx(img: Any,
         model_inputs = model_inputs[0]
     data_samples = data[1]
     patch_metas = {'data_samples': data_samples}
+    input_metas = {'data_samples': data_samples, 'mode': 'predict'}
 
     # export to onnx
     context_info = dict()
@@ -91,6 +92,7 @@ def torch2onnx(img: Any,
         export(
             torch_model,
             model_inputs,
+            input_metas=input_metas,
             output_path_prefix=output_prefix,
             backend=backend,
             input_names=input_names,

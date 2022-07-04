@@ -1,25 +1,35 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from torch import nn
+from typing import List, Optional
 
-from mmdeploy.core import MODULE_REWRITER
+from mmengine import BaseDataElement
+from torch import Tensor
+
+from mmdeploy.core import FUNCTION_REWRITER
 
 
-@MODULE_REWRITER.register_rewrite_module(
-    'mmcls.models.classifiers.ImageClassifier', backend='default')
-class ImageClassifier__default(nn.Module):
-    """A patch model for Image classifier.
+@FUNCTION_REWRITER.register_rewriter(
+    'mmcls.models.classifiers.ImageClassifier.forward', backend='default')
+@FUNCTION_REWRITER.register_rewriter(
+    'mmcls.models.classifiers.BaseClassifier.forward', backend='default')
+def base_classifier__forward(
+        ctx,
+        self,
+        batch_inputs: Tensor,
+        data_samples: Optional[List[BaseDataElement]] = None,
+        mode: str = 'predict'):
+    """Rewrite `forward` of BaseClassifier for default backend.
 
-    `forward` of ImageClassifier would output a DataElement, which can not be
-    export to ONNX.
+    Args:
+        batch_inputs (torch.Tensor): The input tensor with shape
+            (N, C, ...) in general.
+        data_samples (List[BaseDataElement], optional): The annotation
+            data of every samples. It's required if ``mode="loss"``.
+            Defaults to None.
+        mode (str): Return what kind of value. Defaults to 'predict'.
+
+    Returns:
+        return a list of :obj:`mmengine.BaseDataElement`.
     """
-
-    def __init__(self, module, deploy_cfg, data_samples, **kwargs) -> None:
-        super().__init__()
-        self._module = module
-        self._deploy_cfg = deploy_cfg
-        self._data_samples = data_samples
-
-    def forward(self, batch_inputs):
-        feats = self._module.extract_feat(batch_inputs)
-        output = self._module.head(feats)
-        return output
+    feats = self.extract_feat(batch_inputs)
+    output = self.head(feats)
+    return output

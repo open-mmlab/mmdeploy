@@ -1,6 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import List, Optional, Tuple
+
 import torch
 import torch.nn.functional as F
+from mmengine import ConfigDict
+from torch import Tensor
 
 from mmdeploy.codebase.mmdet import get_post_processing_params, multiclass_nms
 from mmdeploy.core import FUNCTION_REWRITER, mark
@@ -35,52 +39,54 @@ def bbox_head__forward(ctx, self, x):
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    'mmdet.models.roi_heads.bbox_heads.bbox_head.BBoxHead.get_bboxes')
-def bbox_head__get_bboxes(ctx,
-                          self,
-                          rois,
-                          cls_score,
-                          bbox_pred,
-                          img_shape,
-                          scale_factor,
-                          rescale=False,
-                          cfg=None):
-    """Rewrite `get_bboxes` of `bbox_head` for default backend.
+    'mmdet.models.roi_heads.bbox_heads.bbox_head.BBoxHead.predict_by_feat')
+def bbox_head__predict_by_feat(ctx,
+                               self,
+                               rois: Tuple[Tensor],
+                               cls_scores: Tuple[Tensor],
+                               bbox_preds: Tuple[Tensor],
+                               batch_img_metas: List[dict],
+                               rcnn_test_cfg: Optional[ConfigDict] = None,
+                               rescale: bool = False) -> Tuple[Tensor]:
+    """Rewrite `predict_by_feat` of `BBoxHead` for default backend.
 
     Transform network output for a batch into bbox predictions. Support
     `reg_class_agnostic == False` case.
 
     Args:
-        ctx (ContextCaller): The context with additional information.
-        self (ATSSHead): The instance of the class ATSSHead.
-        rois (Tensor): Boxes to be transformed. Has shape (num_boxes, 5).
-            last dimension 5 arrange as (batch_index, x1, y1, x2, y2).
-        cls_score (Tensor): Box scores, has shape
+        rois (tuple[Tensor]): Tuple of boxes to be transformed.
+            Each has shape  (num_boxes, 5). last dimension 5 arrange as
+            (batch_index, x1, y1, x2, y2).
+        cls_scores (tuple[Tensor]): Tuple of box scores, each has shape
             (num_boxes, num_classes + 1).
-        bbox_pred (Tensor, optional): Box energies / deltas.
+        bbox_preds (tuple[Tensor]): Tuple of box energies / deltas, each
             has shape (num_boxes, num_classes * 4).
-        img_shape (Sequence[int], optional): Maximum bounds for boxes,
-            specifies (H, W, C) or (H, W).
-        cfg (obj:`ConfigDict`): `test_cfg` of Bbox Head. Default: None
-
+        batch_img_metas (list[dict]): List of image information.
+        rcnn_test_cfg (obj:`ConfigDict`, optional): `test_cfg` of R-CNN.
+            Defaults to None.
+        rescale (bool): If True, return boxes in original image space.
+            Defaults to False.
 
     Returns:
-        tuple[Tensor, Tensor]: tuple[Tensor, Tensor]: (dets, labels),
-        `dets` of shape [N, num_det, 5] and `labels` of shape
-        [N, num_det].
+            - dets (Tensor): Classification bboxes and scores, has a shape
+                (num_instance, 5)
+            - labels (Tensor): Labels of bboxes, has a shape
+                (num_instances, ).
     """
     assert rois.ndim == 3, 'Only support export two stage ' \
                            'model to ONNX ' \
                            'with batch dimension. '
+
+    img_shape = batch_img_metas[0]['img_shape']
     if self.custom_cls_channels:
-        scores = self.loss_cls.get_activation(cls_score)
+        scores = self.loss_cls.get_activation(cls_scores)
     else:
         scores = F.softmax(
-            cls_score, dim=-1) if cls_score is not None else None
+            cls_scores, dim=-1) if cls_scores is not None else None
 
-    if bbox_pred is not None:
+    if bbox_preds is not None:
         bboxes = self.bbox_coder.decode(
-            rois[..., 1:], bbox_pred, max_shape=img_shape)
+            rois[..., 1:], bbox_preds, max_shape=img_shape)
     else:
         bboxes = rois[..., 1:].clone()
         if img_shape is not None:
@@ -104,15 +110,17 @@ def bbox_head__get_bboxes(ctx,
     # get nms params
     post_params = get_post_processing_params(ctx.cfg)
     max_output_boxes_per_class = post_params.max_output_boxes_per_class
-    iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)
-    score_threshold = cfg.get('score_thr', post_params.score_threshold)
+    iou_threshold = rcnn_test_cfg.nms.get('iou_threshold',
+                                          post_params.iou_threshold)
+    score_threshold = rcnn_test_cfg.get('score_thr',
+                                        post_params.score_threshold)
     if torch.onnx.is_in_onnx_export():
         pre_top_k = post_params.pre_top_k
     else:
         # For two stage partition post processing
         pre_top_k = -1 if post_params.pre_top_k >= bboxes.shape[1] \
             else post_params.pre_top_k
-    keep_top_k = cfg.get('max_per_img', post_params.keep_top_k)
+    keep_top_k = rcnn_test_cfg.get('max_per_img', post_params.keep_top_k)
     dets, labels = multiclass_nms(
         bboxes,
         scores,

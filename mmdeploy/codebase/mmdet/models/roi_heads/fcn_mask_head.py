@@ -1,6 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import List, Tuple
+
 import torch
 import torch.nn.functional as F
+from mmengine import ConfigDict
+from torch import Tensor
 
 from mmdeploy.codebase.mmdet import get_post_processing_params
 from mmdeploy.core import FUNCTION_REWRITER
@@ -9,31 +13,53 @@ from mmdeploy.utils import Backend, get_backend
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet.models.roi_heads.'
-    'mask_heads.fcn_mask_head.FCNMaskHead.get_seg_masks')
-def fcn_mask_head__get_seg_masks(ctx, self, mask_pred, det_bboxes, det_labels,
-                                 rcnn_test_cfg, ori_shape, **kwargs):
-    """Rewrite `get_seg_masks` of `FCNMaskHead` for default backend.
-
-    Rewrite the get_seg_masks for only fcn_mask_head inference.
+    'mask_heads.fcn_mask_head.FCNMaskHead.predict_by_feat')
+def fcn_mask_head__predict_by_feat(ctx,
+                                   self,
+                                   mask_preds: Tuple[Tensor],
+                                   results_list: List[Tensor],
+                                   batch_img_metas: List[dict],
+                                   rcnn_test_cfg: ConfigDict,
+                                   rescale: bool = False,
+                                   activate_map: bool = False) -> List[Tensor]:
+    """Transform a batch of output features extracted from the head into mask
+    results.
 
     Args:
-        mask_pred (Tensor): shape (n, #class, h, w).
-        det_bboxes (Tensor): shape (n, 4/5)
-        det_labels (Tensor): shape (n, )
-        rcnn_test_cfg (dict): rcnn testing config
-        ori_shape (Tuple): original image height and width, shape (2,)
+        mask_preds (tuple[Tensor]): Tuple of predicted foreground masks,
+            each has shape (n, num_classes, h, w).
+        results_list (list[Tensor]): Detection results of
+            each image.
+        batch_img_metas (list[dict]): List of image information.
+        rcnn_test_cfg (obj:`ConfigDict`): `test_cfg` of Bbox Head.
+        rescale (bool): If True, return boxes in original image space.
+            Defaults to False.
+        activate_map (book): Whether get results with augmentations test.
+            If True, the `mask_preds` will not process with sigmoid.
+            Defaults to False.
 
     Returns:
-        Tensor: a mask of shape (N, img_h, img_w).
+        list[Tensor]: Detection results of each image
+        after the post process. Each item usually contains following keys.
+
+            - dets (Tensor): Classification scores, has a shape
+                (num_instance, 5)
+            - labels (Tensor): Labels of bboxes, has a shape
+                (num_instances, ).
+            - masks (Tensor): Has a shape (num_instances, H, W).
     """
+    ori_shape = batch_img_metas[0]['img_shape']
+    dets, det_labels = results_list
+    dets = dets.view(-1, 5)
+    det_labels = det_labels.view(-1)
     backend = get_backend(ctx.cfg)
-    mask_pred = mask_pred.sigmoid()
-    bboxes = det_bboxes[:, :4]
+    mask_preds = mask_preds.sigmoid()
+    bboxes = dets[:, :4]
     labels = det_labels
     threshold = rcnn_test_cfg.mask_thr_binary
     if not self.class_agnostic:
-        box_inds = torch.arange(mask_pred.shape[0], device=bboxes.device)
-        mask_pred = mask_pred[box_inds, labels][:, None]
+        box_inds = torch.arange(mask_preds.shape[0], device=bboxes.device)
+        mask_pred = mask_preds[box_inds, labels][:, None]
 
     # grid sample is not supported by most engine
     # so we add a flag to disable it.

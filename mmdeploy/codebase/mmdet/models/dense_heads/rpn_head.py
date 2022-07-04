@@ -1,5 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import List, Optional
+
 import torch
+from mmengine import ConfigDict
+from torch import Tensor
 
 from mmdeploy.codebase.mmdet import (get_post_processing_params,
                                      multiclass_nms,
@@ -9,48 +13,54 @@ from mmdeploy.utils import Backend, is_dynamic_shape
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    'mmdet.models.dense_heads.RPNHead.get_bboxes')
-def rpn_head__get_bboxes(ctx,
-                         self,
-                         cls_scores,
-                         bbox_preds,
-                         score_factors=None,
-                         img_metas=None,
-                         cfg=None,
-                         rescale=False,
-                         with_nms=True,
-                         **kwargs):
-    """Rewrite `get_bboxes` of `RPNHead` for default backend.
+    func_name='mmdet.models.dense_heads.rpn_head.'
+    'RPNHead.predict_by_feat')
+def rpn_head__predict_by_feat(ctx,
+                              self,
+                              cls_scores: List[Tensor],
+                              bbox_preds: List[Tensor],
+                              score_factors: Optional[List[Tensor]] = None,
+                              batch_img_metas: Optional[List[dict]] = None,
+                              cfg: Optional[ConfigDict] = None,
+                              rescale: bool = False,
+                              with_nms: bool = True,
+                              **kwargs):
+    """Rewrite `predict_by_feat` of `RPNHead` for default backend.
 
     Rewrite this function to deploy model, transform network output for a
     batch into bbox predictions.
 
     Args:
         ctx (ContextCaller): The context with additional information.
-        self (FoveaHead): The instance of the class FoveaHead.
-        cls_scores (list[Tensor]): Box scores for each scale level
-            with shape (N, num_anchors * num_classes, H, W).
-        bbox_preds (list[Tensor]): Box energies / deltas for each scale
-            level with shape (N, num_anchors * 4, H, W).
-        score_factors (list[Tensor], Optional): Score factor for
+        cls_scores (list[Tensor]): Classification scores for all
+            scale levels, each is a 4D-tensor, has shape
+            (batch_size, num_priors * num_classes, H, W).
+        bbox_preds (list[Tensor]): Box energies / deltas for all
+            scale levels, each is a 4D-tensor, has shape
+            (batch_size, num_priors * 4, H, W).
+        score_factors (list[Tensor], optional): Score factor for
             all scale level, each is a 4D-tensor, has shape
-            (batch_size, num_priors * 1, H, W). Default None.
-        img_metas (list[dict]):  Meta information of the image, e.g.,
-            image size, scaling factor, etc.
-        cfg (mmcv.Config | None): Test / postprocessing configuration,
-            if None, test_cfg would be used. Default: None.
+            (batch_size, num_priors * 1, H, W). Defaults to None.
+        batch_img_metas (list[dict], Optional): Batch image meta info.
+            Defaults to None.
+        cfg (ConfigDict, optional): Test / postprocessing
+            configuration, if None, test_cfg would be used.
+            Defaults to None.
         rescale (bool): If True, return boxes in original image space.
-            Default False.
+            Defaults to False.
         with_nms (bool): If True, do nms before return boxes.
-            Default: True.
+            Defaults to True.
+
     Returns:
         If with_nms == True:
             tuple[Tensor, Tensor]: tuple[Tensor, Tensor]: (dets, labels),
             `dets` of shape [N, num_det, 5] and `labels` of shape
             [N, num_det].
         Else:
-            tuple[Tensor, Tensor, Tensor]: batch_mlvl_bboxes, batch_mlvl_scores
+            tuple[Tensor, Tensor, Tensor]: batch_mlvl_bboxes,
+                batch_mlvl_scores, batch_mlvl_centerness
     """
+    img_metas = batch_img_metas
     assert len(cls_scores) == len(bbox_preds)
     deploy_cfg = ctx.cfg
     is_dynamic_flag = is_dynamic_shape(deploy_cfg)

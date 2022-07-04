@@ -178,7 +178,7 @@ class End2EndModel(BaseBackendModel):
         outputs = self.predict(batch_inputs)
         outputs = End2EndModel.__clear_outputs(outputs)
         batch_dets, batch_labels = outputs[:2]
-        # batch_masks = outputs[2] if len(outputs) == 3 else None
+        batch_masks = outputs[2] if len(outputs) == 3 else None
         batch_size = batch_inputs.shape[0]
         img_metas = [data_sample.metainfo for data_sample in data_samples]
 
@@ -217,38 +217,33 @@ class End2EndModel(BaseBackendModel):
             result.bboxes = bboxes
             result.labels = labels
 
-            # if batch_masks is not None:
-            #     masks = batch_masks[i]
-            #     img_h, img_w = img_metas[i]['img_shape'][:2]
-            #     ori_h, ori_w = img_metas[i]['ori_shape'][:2]
-            #     export_postprocess_mask = True
-            #     if self.deploy_cfg is not None:
+            if batch_masks is not None:
+                masks = batch_masks[i]
+                img_h, img_w = img_metas[i]['img_shape'][:2]
+                ori_h, ori_w = img_metas[i]['ori_shape'][:2]
+                export_postprocess_mask = True
+                if self.deploy_cfg is not None:
 
-            #         mmdet_deploy_cfg = get_post_processing_params(
-            #             self.deploy_cfg)
-            #         # this flag enable postprocess when export.
-            #         export_postprocess_mask = mmdet_deploy_cfg.get(
-            #             'export_postprocess_mask', True)
-            #     if not export_postprocess_mask:
-            #         masks = End2EndModel.postprocessing_masks(
-            #             dets[:, :4], masks, ori_w, ori_h, self.device)
-            #     else:
-            #         masks = masks[:, :img_h, :img_w]
-            #     # avoid to resize masks with zero dim
-            #     if rescale and masks.shape[0] != 0:
-            #         masks = torch.nn.functional.interpolate(
-            #             masks.unsqueeze(0), size=(ori_h, ori_w))
-            #         masks = masks.squeeze(0)
-            #     if masks.dtype != bool:
-            #         masks = masks >= 0.5
-            #     # aligned with mmdet to easily convert to numpy
-            #     masks = masks.cpu()
-            #     segms_results = [[] for _ in range(len(self.CLASSES))]
-            #     for j in range(len(dets)):
-            #         segms_results[labels[j]].append(masks[j])
-            #     results.append((dets_results, segms_results))
-            # else:
-            #     results.append(dets_results)
+                    mmdet_deploy_cfg = get_post_processing_params(
+                        self.deploy_cfg)
+                    # this flag enable postprocess when export.
+                    export_postprocess_mask = mmdet_deploy_cfg.get(
+                        'export_postprocess_mask', True)
+                if not export_postprocess_mask:
+                    masks = End2EndModel.postprocessing_masks(
+                        dets[:, :4], masks, ori_w, ori_h, self.device)
+                else:
+                    masks = masks[:, :img_h, :img_w]
+                # avoid to resize masks with zero dim
+                if rescale and masks.shape[0] != 0:
+                    masks = torch.nn.functional.interpolate(
+                        masks.unsqueeze(0), size=(ori_h, ori_w))
+                    masks = masks.squeeze(0)
+                if masks.dtype != bool:
+                    masks = masks >= 0.5
+                # aligned with mmdet to easily convert to numpy
+                masks = masks.cpu()
+                result.masks = masks
 
         results = BaseDetector.convert_to_datasample(None, results)
         return results
