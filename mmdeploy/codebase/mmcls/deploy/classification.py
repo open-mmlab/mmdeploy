@@ -5,6 +5,7 @@ from typing import Any, Dict, Optional, Sequence, Tuple, Union
 import mmcv
 import numpy as np
 import torch
+from importlib_metadata import warnings
 from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
@@ -18,7 +19,10 @@ def process_model_config(model_cfg: mmcv.Config,
                          input_shape: Optional[Sequence[int]] = None):
     """Process the model config.
 
-    Args:
+    Args:postprocess = self.model_cfg.model.head
+        assert 'topk' in postprocess, 'model config lack topk'
+        postprocess.topk = max(postprocess.topk)
+        return postprocess
         model_cfg (mmcv.Config): The model config.
         imgs (str | np.ndarray): Input image(s), accepted data type are `str`,
             `np.ndarray`.
@@ -281,8 +285,13 @@ class Classification(BaseTask):
             dict: Composed of the postprocess information.
         """
         postprocess = self.model_cfg.model.head
-        assert 'topk' in postprocess, 'model config lack topk'
-        postprocess.topk = max(postprocess.topk)
+        if 'topk' not in postprocess:
+            topk = (1, )
+            warnings.warn('no topk in postprocess config, using default \
+                 topk value.')
+        else:
+            topk = postprocess.topk
+        postprocess.topk = max(topk)
         return postprocess
 
     def get_model_name(self) -> str:
