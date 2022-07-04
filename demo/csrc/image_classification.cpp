@@ -6,7 +6,7 @@
 
 int main(int argc, char* argv[]) {
   if (argc != 4) {
-    fprintf(stderr, "usage:\n  image_classification device_name model_path image_path\n");
+    fprintf(stderr, "usage:\n  image_classification device_name dump_model_directory image_path\n");
     return 1;
   }
   auto device_name = argv[1];

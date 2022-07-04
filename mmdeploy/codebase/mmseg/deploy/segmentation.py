@@ -70,7 +70,11 @@ class Segmentation(BaseTask):
         """
         from .segmentation_model import build_segmentation_model
         model = build_segmentation_model(
-            model_files, self.model_cfg, self.deploy_cfg, device=self.device)
+            model_files,
+            self.model_cfg,
+            self.deploy_cfg,
+            device=self.device,
+            **kwargs)
         return model.eval()
 
     def init_pytorch_model(self,

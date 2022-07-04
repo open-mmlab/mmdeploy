@@ -76,7 +76,11 @@ class Classification(BaseTask):
         from .classification_model import build_classification_model
 
         model = build_classification_model(
-            model_files, self.model_cfg, self.deploy_cfg, device=self.device)
+            model_files,
+            self.model_cfg,
+            self.deploy_cfg,
+            device=self.device,
+            **kwargs)
 
         return model.eval()
 
