@@ -26,6 +26,33 @@ inline std::true_type Check(T&&) {
 
 Result<std::vector<std::string>> ParseStringArray(const Value& value);
 
+namespace _maybe {
+
+struct Maybe {
+  std::optional<std::reference_wrapper<const Value>> val_;
+  explicit operator bool() const noexcept { return val_.has_value(); }
+  const Value& operator*() const noexcept { return val_->get(); }
+  const Value* operator->() const noexcept { return &val_->get(); }
+};
+
+inline Maybe operator/(const Maybe& maybe, const string& p) {
+  if (maybe && maybe->contains(p)) {
+    return {(*maybe)[p]};
+  }
+  return {std::nullopt};
+}
+
+template <typename T>
+inline std::optional<T> operator/(const Maybe& maybe, identity<T>) {
+  if (maybe) {
+    return maybe->get<T>();
+  }
+  return std::nullopt;
+}
+}  // namespace _get_path
+
+using _maybe::Maybe;
+
 }  // namespace mmdeploy::graph
 
 #endif  // MMDEPLOY_SRC_GRAPH_COMMON_H_

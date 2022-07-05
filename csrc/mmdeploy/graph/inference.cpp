@@ -17,7 +17,12 @@ Result<unique_ptr<Node>> InferenceBuilder::BuildImpl() {
   if (model_config.is_any<Model>()) {
     model = model_config.get<Model>();
   } else {
-    model = Model(model_config.get<string>());
+    auto model_name = model_config.get<string>();
+    if (auto m = Maybe{config_} / "context" / "env" / "models" / model_name / identity<Model>{}) {
+      model = *m;
+    } else {
+      model = Model(model_name);
+    }
   }
   auto pipeline_json = model.ReadFile("pipeline.json").value();
   auto json = nlohmann::json::parse(pipeline_json);

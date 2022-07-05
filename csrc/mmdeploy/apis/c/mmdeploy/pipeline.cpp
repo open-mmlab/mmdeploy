@@ -37,9 +37,17 @@ int mmdeploy_pipeline_create_v2(mmdeploy_value_t config, const char* device_name
     auto _config = *Cast(config);
     if (env) {
       auto e = reinterpret_cast<Environment*>(env);
-      auto& info = (_config["context"]["schedulers"] = Value::kObject);
-      for (const auto& [k, v]: e->schedulers_) {
-        info[k] = *Cast(v);
+      {
+        auto& info = (_config["context"]["env"]["schedulers"] = Value::kObject);
+        for (const auto& [k, v] : e->schedulers_) {
+          info[k] = v;
+        }
+      }
+      {
+        auto& info = (_config["context"]["env"]["models"] = Value::kObject);
+        for (const auto& [k, v] : e->models_) {
+          info[k] = v;
+        }
       }
     }
     auto _handle = std::make_unique<AsyncHandle>(device_name, device_id, std::move(_config));
@@ -52,7 +60,6 @@ int mmdeploy_pipeline_create_v2(mmdeploy_value_t config, const char* device_name
   }
   return MMDEPLOY_E_FAIL;
 }
-
 
 int mmdeploy_pipeline_apply_async(mmdeploy_pipeline_t pipeline, mmdeploy_sender_t input,
                                   mmdeploy_sender_t* output) {

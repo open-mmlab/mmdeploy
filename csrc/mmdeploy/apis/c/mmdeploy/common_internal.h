@@ -98,7 +98,8 @@ MMDEPLOY_API int mmdeploy_common_create_input(const mmdeploy_mat_t* mats, int ma
 namespace mmdeploy {
 
 struct Environment {
-  std::vector<std::pair<std::string, mmdeploy_scheduler_t>> schedulers_;
+  std::vector<std::pair<std::string, TypeErasedScheduler<Value>>> schedulers_;
+  std::vector<std::pair<std::string, Model>> models_;
 };
 
 }  // namespace mmdeploy

@@ -214,6 +214,6 @@ int mmdeploy_environment_add_scheduler(mmdeploy_environment_t env, const char* n
     MMDEPLOY_ERROR("{} already exists", name);
     return MMDEPLOY_E_INVALID_ARG;
   }
-  e->schedulers_.emplace_back(name, sched);
+  e->schedulers_.emplace_back(name, *Cast(sched));
   return MMDEPLOY_SUCCESS;
 }

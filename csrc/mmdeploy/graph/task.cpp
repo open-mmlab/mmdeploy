@@ -68,13 +68,10 @@ Result<unique_ptr<Node>> TaskBuilder::BuildImpl() {
     auto task = std::make_unique<Task>();
     OUTCOME_TRY(task->module_, CreateModule(config_));
 
-    if (config_.contains("scheduler") && config_["context"].contains("schedulers")) {
-      const auto& schedulers = config_["context"]["schedulers"];
-      auto name = config_["scheduler"].get<string>();
-      if (schedulers.contains(name)) {
-        task->sched_ = schedulers[name].get<TypeErasedScheduler<Value>>();
-      } else {
-        MMDEPLOY_WARN("scheduler {} not found in the environment", name);
+    if (auto name = Maybe{config_} / "scheduler" / identity<string>{}) {
+      if (auto sched = Maybe{config_} / "context" / "env" / "schedulers" / *name /
+                       identity<TypeErasedScheduler<Value>>{}) {
+        task->sched_ = std::move(*sched);
       }
     }
 
