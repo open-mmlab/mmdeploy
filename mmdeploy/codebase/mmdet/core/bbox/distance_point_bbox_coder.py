@@ -7,7 +7,11 @@ from mmdeploy.core import FUNCTION_REWRITER
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.core.bbox.coder.DistancePointBBoxCoder.decode',
     backend='default')
-def decode__default(ctx, self, points, pred_bboxes, max_shape=None):
+def distancepointbboxcoder__decode(ctx,
+                                   self,
+                                   points,
+                                   pred_bboxes,
+                                   max_shape=None):
     """Rewrite `mmdet.core.bbox.coder.DistancePointBBoxCoder.decode`
 
     Decode distance prediction to bounding box.
