@@ -283,3 +283,32 @@ def test_normalize_ncnn(input, dim):
     param_path, bin_path = ncnn_apis.get_output_model_file(ir_file_path)
     assert osp.exists(param_path)
     assert osp.exists(bin_path)
+
+
+@backend_checker(Backend.ONNXRUNTIME)
+@pytest.mark.parametrize('x', [torch.rand(1, 3, 16, 16)])
+@pytest.mark.parametrize('y', [torch.rand(1, 3, 4, 4)])
+def test_tensor_setitem(x, y):
+    import onnx
+
+    from mmdeploy.utils.test import get_onnx_model
+
+    def setitem_slice(x, y):
+        H, W = y.shape[2:]
+        x[:, :, 2:H + 2, 2:W + 2] = y
+        return x
+
+    wrapped_func = WrapFunction(setitem_slice)
+    model_inputs = {'x': x, 'y': y}
+
+    deploy_cfg = mmcv.Config(
+        dict(
+            onnx_config=dict(input_shape=None),
+            backend_config=dict(type='onnxruntime'),
+            codebase_config=dict(type='mmdet', task='ObjectDetection')))
+    ir_file_path = get_onnx_model(wrapped_func, model_inputs, deploy_cfg)
+
+    onnx_model = onnx.load(ir_file_path)
+    nodes = onnx_model.graph.node
+    for node in nodes:
+        assert node.op_type != 'ScatterND'
