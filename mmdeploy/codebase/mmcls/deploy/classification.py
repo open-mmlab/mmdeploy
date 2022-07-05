@@ -19,10 +19,7 @@ def process_model_config(model_cfg: mmcv.Config,
                          input_shape: Optional[Sequence[int]] = None):
     """Process the model config.
 
-    Args:postprocess = self.model_cfg.model.head
-        assert 'topk' in postprocess, 'model config lack topk'
-        postprocess.topk = max(postprocess.topk)
-        return postprocess
+    Args:
         model_cfg (mmcv.Config): The model config.
         imgs (str | np.ndarray): Input image(s), accepted data type are `str`,
             `np.ndarray`.
