@@ -1,11 +1,11 @@
-FROM nvcr.io/nvidia/tensorrt:21.04-py3
+FROM nvcr.io/nvidia/tensorrt:22.04-py3
 
-ARG CUDA=10.2
+ARG CUDA=11.3
 ARG PYTHON_VERSION=3.8
-ARG TORCH_VERSION=1.8.0
-ARG TORCHVISION_VERSION=0.9.0
+ARG TORCH_VERSION=1.10.0
+ARG TORCHVISION_VERSION=0.11.0
 ARG ONNXRUNTIME_VERSION=1.8.1
-ARG MMCV_VERSION=1.4.0
+ARG MMCV_VERSION=1.5.3
 ARG PPLCV_VERSION=0.6.2
 ENV FORCE_CUDA="1"
 
@@ -72,7 +72,7 @@ RUN git clone https://github.com/openppl-public/ppl.cv.git &&\
     ./build.sh cuda
 
 ENV BACKUP_LD_LIBRARY_PATH=$LD_LIBRARY_PATH
-ENV LD_LIBRARY_PATH=/usr/local/cuda-11.3/compat/lib.real/:$LD_LIBRARY_PATH
+ENV LD_LIBRARY_PATH=/usr/local/cuda/compat/lib.real/:$LD_LIBRARY_PATH
 
 RUN cd /root/workspace/mmdeploy &&\
     rm -rf build/CM* build/cmake-install.cmake build/Makefile build/csrc &&\
