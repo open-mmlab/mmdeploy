@@ -18,7 +18,7 @@ const auto config_json = R"(
       "type": "Inference",
       "input": "img",
       "output": "dets",
-      "params": { "model": "../textdet_tmp_model" }
+      "params": { "model": "text-detection" }
     },
     {
       "type": "Pipeline",
@@ -27,6 +27,7 @@ const auto config_json = R"(
         {
           "type": "Task",
           "module": "WarpBbox",
+          "scheduler": "crop",
           "input": ["imgs", "bboxes"],
           "output": "patches"
         },
@@ -34,7 +35,7 @@ const auto config_json = R"(
           "type": "Inference",
           "input": "patches",
           "output": "texts",
-          "params": { "model": "../textrecog_tmp_model" }
+          "params": { "model": "text-recognition" }
         }
       ],
       "output": "*texts"
@@ -48,9 +49,26 @@ using namespace mmdeploy;
 int main() {
   auto config = from_json<Value>(config_json);
 
+  mmdeploy_environment_t env{};
+  mmdeploy_environment_create(&env);
+
+  auto thread_pool = mmdeploy_executor_create_thread_pool(4);
+  auto single_thread = mmdeploy_executor_create_thread();
+  mmdeploy_environment_add_scheduler(env, "preprocess", thread_pool);
+  mmdeploy_environment_add_scheduler(env, "crop", thread_pool);
+  mmdeploy_environment_add_scheduler(env, "net", single_thread);
+  mmdeploy_environment_add_scheduler(env, "postprocess", thread_pool);
+
+  mmdeploy_model_t text_det_model{};
+  mmdeploy_model_create_by_path("../textdet_tmp_model", &text_det_model);
+  mmdeploy_environment_add_model(env, "text-detection", text_det_model);
+
+  mmdeploy_model_t text_recog_model{};
+  mmdeploy_model_create_by_path("../textrecog_tmp_model", &text_recog_model);
+  mmdeploy_environment_add_model(env, "text-recognition", text_recog_model);
+
   mmdeploy_pipeline_t pipeline{};
-  if (auto ec =
-          mmdeploy_pipeline_create((mmdeploy_value_t)&config, "cuda", 0, nullptr, &pipeline)) {
+  if (auto ec = mmdeploy_pipeline_create_v2((mmdeploy_value_t)&config, "cuda", 0, env, &pipeline)) {
     MMDEPLOY_ERROR("failed to create pipeline: {}", ec);
     return -1;
   }
@@ -69,4 +87,13 @@ int main() {
   MMDEPLOY_INFO("{}", output);
 
   mmdeploy_pipeline_destroy(pipeline);
+
+  mmdeploy_model_destroy(text_recog_model);
+  mmdeploy_model_destroy(text_det_model);
+
+  mmdeploy_environment_destroy(env);
+  mmdeploy_scheduler_destroy(single_thread);
+  mmdeploy_scheduler_destroy(thread_pool);
+
+  return 0;
 }

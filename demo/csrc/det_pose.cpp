@@ -106,9 +106,17 @@ static std::vector<std::pair<int, int>> skeleton{
 int main() {
   auto config = from_json<Value>(config_json);
 
+  mmdeploy_environment_t env{};
+  mmdeploy_environment_create(&env);
+
+  auto thread_pool = mmdeploy_executor_create_thread_pool(4);
+  auto single_thread = mmdeploy_executor_create_thread();
+  mmdeploy_environment_add_scheduler(env, "preprocess", thread_pool);
+  mmdeploy_environment_add_scheduler(env, "net", single_thread);
+  mmdeploy_environment_add_scheduler(env, "postprocess", thread_pool);
+
   mmdeploy_pipeline_t pipeline{};
-  if (auto ec =
-          mmdeploy_pipeline_create((mmdeploy_value_t)&config, "cuda", 0, nullptr, &pipeline)) {
+  if (auto ec = mmdeploy_pipeline_create_v2((mmdeploy_value_t)&config, "cpu", 0, nullptr, &pipeline)) {
     MMDEPLOY_ERROR("failed to create pipeline: {}", ec);
     return -1;
   }
@@ -160,4 +168,10 @@ int main() {
   cv::imwrite("output_det_pose.jpg", mat);
 
   mmdeploy_pipeline_destroy(pipeline);
+
+  mmdeploy_environment_destroy(env);
+  mmdeploy_scheduler_destroy(single_thread);
+  mmdeploy_scheduler_destroy(thread_pool);
+
+  return 0;
 }
