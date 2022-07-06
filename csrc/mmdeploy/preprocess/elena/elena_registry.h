@@ -11,12 +11,14 @@
 namespace mmdeploy {
 namespace elena {
 
-using FuseFunc = void (*)(uint8_t* data_in, int resize_h, int resize_w, const char* resize_mode,
-                          int crop_top, int crop_left, int crop_h, int crop_w, int pad_top,
+using FuseFunc = void (*)(void* stream, uint8_t* data_in, int src_h, int src_w, const char* format,
+                          int resize_h, int resize_w, const char* interpolation, int crop_top,
+                          int crop_left, int crop_h, int crop_w, float mean0, float mean1,
+                          float mean2, float std0, float std1, float std2, int pad_top,
                           int pad_left, int pad_bottom, int pad_right, int pad_h, int pad_w,
-                          float* mean, float* std, float* data_out);
+                          float pad_value, float* data_out, int data_out_num);
 
-class FuseKernel {
+class MMDEPLOY_API FuseKernel {
  public:
   static FuseKernel& Get();
   int Register(const std::string& name, FuseFunc func);
@@ -27,7 +29,7 @@ class FuseKernel {
   std::map<std::string, FuseFunc> entries_;
 };
 
-class FuseKernelRegister {
+class MMDEPLOY_API FuseKernelRegister {
  public:
   FuseKernelRegister(const std::string& name, FuseFunc func) {
     FuseKernel::Get().Register(name, func);

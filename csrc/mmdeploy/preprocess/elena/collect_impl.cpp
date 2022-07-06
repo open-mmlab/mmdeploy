@@ -92,8 +92,7 @@ class CollectImpl : public ::mmdeploy::CollectImpl {
     for (auto&& trans : tracer.trans_) {
       std::visit(visitor, trans);
     }
-    std::string tag =
-        sha256_ + "_" + device_name_ + "_" + to_string(src_mat.pixel_format()) + "_Kernel";
+    std::string tag = sha256_ + "_" + device_name_;
     FuseFunc func = FuseKernel::Get().GetFunc(tag);
 
     if (!visitor.valid) {
@@ -126,11 +125,14 @@ class CollectImpl : public ::mmdeploy::CollectImpl {
       desc.device = device_;
       Tensor dst_tensor{desc};
 
-      func(src_mat.data<uint8_t>(), visitor.resize_hw[0], visitor.resize_hw[1],
+      func(stream_.GetNative(), src_mat.data<uint8_t>(), src_mat.height(), src_mat.width(),
+           to_string(src_mat.pixel_format()).c_str(), visitor.resize_hw[0], visitor.resize_hw[1],
            visitor.resize_mode.c_str(), visitor.crop_tlbr[0], visitor.crop_tlbr[1],
-           visitor.crop_hw[0], visitor.crop_hw[1], visitor.pad_tlbr[0], visitor.pad_tlbr[1],
-           visitor.pad_tlbr[2], visitor.pad_tlbr[3], visitor.pad_hw[0], visitor.pad_hw[1],
-           visitor.mean.data(), visitor.std.data(), dst_tensor.data<float>());
+           visitor.crop_hw[0], visitor.crop_hw[1], visitor.mean[0], visitor.mean[1],
+           visitor.mean[2], visitor.std[0], visitor.std[1], visitor.std[2], visitor.pad_tlbr[0],
+           visitor.pad_tlbr[1], visitor.pad_tlbr[2], visitor.pad_tlbr[3], visitor.pad_hw[0],
+           visitor.pad_hw[1], visitor.pad_val, dst_tensor.data<float>(),
+           dst_tensor.shape(2) * dst_tensor.shape(3));
       output[key] = std::move(dst_tensor);
     }
     return ::mmdeploy::CollectImpl::Process(output);

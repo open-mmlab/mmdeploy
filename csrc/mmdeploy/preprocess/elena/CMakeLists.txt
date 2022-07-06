@@ -13,9 +13,19 @@ set(SRCS
         resize_impl.cpp
         elena_registry.cpp)
 
-file(GLOB KERNEL_SRCS "prebuilt_kernel/*.c" "prebuilt_kernel/*.cpp")
-mmdeploy_add_module(${PROJECT_NAME} "${SRCS}" "${KERNEL_SRCS}")
+file(GLOB CPU_KERNEL_SRCS "cpu_kernel/*.cpp")
+
+set(ALL_SRCS ${SRCS} ${CPU_KERNEL_SRCS})
+if ("cuda" IN_LIST MMDEPLOY_TARGET_DEVICES)
+        file(GLOB CUDA_KERNEL_SRCS "cuda_kernel/*.cu")
+        set(ALL_SRCS ${ALL_SRCS} ${CUDA_KERNEL_SRCS})
+endif ()
+
+mmdeploy_add_module(${PROJECT_NAME} "${ALL_SRCS}")
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(${PROJECT_NAME}
         PRIVATE mmdeploy::transform)
+if ("cuda" IN_LIST MMDEPLOY_TARGET_DEVICES)
+        target_link_libraries(${PROJECT_NAME} PRIVATE cuda)
+endif ()
 add_library(mmdeploy::transform_impl::elena ALIAS ${PROJECT_NAME})
