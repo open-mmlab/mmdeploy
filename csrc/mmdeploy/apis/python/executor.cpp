@@ -32,7 +32,7 @@ struct PySender {
       StartDetached(std::move(sender_) |
                     Then([future = object_ptr{new py::object(future)}](const Value& value) mutable {
                       py::gil_scoped_acquire _;
-                      future->attr("set_result")(ConvertToPyObject(value));
+                      future->attr("set_result")(ToPyObject(value));
                       delete future.release();
                     }));
     }

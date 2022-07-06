@@ -3,7 +3,10 @@
 cmake_minimum_required(VERSION 3.14)
 project(mmdeploy_python)
 
-set(MMDEPLOY_PYTHON_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/common.cpp)
+set(MMDEPLOY_PYTHON_SRCS
+        common.cpp
+        executor.cpp
+        pipeline.cpp)
 
 set(CMAKE_CXX_STANDARD 17)
 

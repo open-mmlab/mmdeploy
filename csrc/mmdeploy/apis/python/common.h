@@ -6,6 +6,7 @@
 #include <stdexcept>
 
 #include "mmdeploy/common.h"
+#include "mmdeploy/core/value.h"
 #include "pybind11/numpy.h"
 #include "pybind11/pybind11.h"
 #include "pybind11/stl.h"
@@ -22,9 +23,9 @@ mmdeploy_mat_t GetMat(const PyImage &img);
 
 class Value;
 
-py::object ConvertToPyObject(const Value &value);
+py::object ToPyObject(const Value &value);
 
-Value ConvertToValue(const py::object &obj);
+Value FromPyObject(const py::object &obj);
 
 }  // namespace mmdeploy
 

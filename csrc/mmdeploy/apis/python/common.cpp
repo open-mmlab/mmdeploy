@@ -32,9 +32,7 @@ mmdeploy_mat_t GetMat(const PyImage& img) {
   return mat;
 }
 
-#if 0
-
-py::object ConvertToPyObject(const Value& value) {
+py::object ToPyObject(const Value& value) {
   switch (value.type()) {
     case ValueType::kNull:
       return py::none();
@@ -51,14 +49,14 @@ py::object ConvertToPyObject(const Value& value) {
     case ValueType::kArray: {
       py::list list;
       for (const auto& x : value) {
-        list.append(ConvertToPyObject(x));
+        list.append(ToPyObject(x));
       }
       return list;
     }
     case ValueType::kObject: {
       py::dict dict;
       for (auto it = value.begin(); it != value.end(); ++it) {
-        dict[it.key().c_str()] = ConvertToPyObject(*it);
+        dict[it.key().c_str()] = ToPyObject(*it);
       }
       return dict;
     }
@@ -69,7 +67,7 @@ py::object ConvertToPyObject(const Value& value) {
   }
 }
 
-Value ConvertToValue(const py::object& obj) {
+Value FromPyObject(const py::object& obj) {
   if (py::isinstance<py::none>(obj)) {
     return nullptr;
   } else if (py::isinstance<py::bool_>(obj)) {
@@ -85,7 +83,7 @@ Value ConvertToValue(const py::object& obj) {
     Value::Array dst;
     dst.reserve(src.size());
     for (const auto& item : src) {
-      dst.push_back(ConvertToValue(py::reinterpret_borrow<py::object>(item)));
+      dst.push_back(FromPyObject(py::reinterpret_borrow<py::object>(item)));
     }
     return dst;
   } else if (py::isinstance<py::dict>(obj)) {
@@ -93,7 +91,7 @@ Value ConvertToValue(const py::object& obj) {
     Value::Object dst;
     for (const auto& item : src) {
       dst.insert({item.first.cast<std::string>(),
-                  ConvertToValue(py::reinterpret_borrow<py::object>(item.second))});
+                  FromPyObject(py::reinterpret_borrow<py::object>(item.second))});
     }
     return dst;
   } else {
@@ -101,8 +99,6 @@ Value ConvertToValue(const py::object& obj) {
     return nullptr;
   }
 }
-
-#endif
 
 }  // namespace mmdeploy
 
