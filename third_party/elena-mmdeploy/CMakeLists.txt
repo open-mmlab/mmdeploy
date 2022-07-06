@@ -81,7 +81,7 @@ else()
     set(ELENA_LIB elena)
     add_library(${ELENA_LIB} SHARED ${ELENA_SRC})
     target_link_libraries(${ELENA_LIB} ${ELENA_JSON_LIB} ${Python3_LIBRARIES})
-    
+
     if (ELENA_EXAMPLE)
         add_subdirectory(examples/MMDeploy)
     endif()
@@ -90,7 +90,7 @@ else()
         include(cmake/coverage.cmake)
     endif()
 
-    # cmake module 
+    # cmake module
     include(cmake/modules/CUDA.cmake)
 
 endif()

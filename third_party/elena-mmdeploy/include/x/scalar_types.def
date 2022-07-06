@@ -1,7 +1,7 @@
 /**
  * @brief #include-style X macros
  *
- * Attention: Read the notes in generate_cast_x.cpp when you would like to 
+ * Attention: Read the notes in generate_cast_x.cpp when you would like to
  * change this file.
  *
  * @author guanzhichao
@@ -13,7 +13,7 @@
 
 #ifndef TYPE_MAP_INT
 #define TYPE_MAP_INT(native_type, scalar_type) \
-  TYPE_MAP_NATIVE_TO_SCALARTYPE(native_type, scalar_type) 
+  TYPE_MAP_NATIVE_TO_SCALARTYPE(native_type, scalar_type)
 #endif
 
 #ifndef TYPE_MAP_NATIVE_TO_SCALARTYPE_FP

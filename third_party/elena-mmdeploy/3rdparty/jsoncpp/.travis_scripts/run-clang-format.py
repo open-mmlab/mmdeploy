@@ -1,16 +1,14 @@
 #!/usr/bin/env python
 """A wrapper script around clang-format, suitable for linting multiple files
-and to use for continuous integration.
-This is an alternative API for the clang-format command line.
-It runs over multiple files and directories in parallel.
-A diff output is produced and a sensible exit code is returned.
+and to use for continuous integration. This is an alternative API for the
+clang-format command line. It runs over multiple files and directories in
+parallel. A diff output is produced and a sensible exit code is returned.
 
 NOTE: pulled from https://github.com/Sarcasm/run-clang-format, which is
 licensed under the MIT license.
 """
 
 from __future__ import print_function, unicode_literals
-
 import argparse
 import codecs
 import difflib
@@ -22,14 +20,12 @@ import signal
 import subprocess
 import sys
 import traceback
-
 from functools import partial
 
 try:
     from subprocess import DEVNULL  # py3k
 except ImportError:
-    DEVNULL = open(os.devnull, "wb")
-
+    DEVNULL = open(os.devnull, 'wb')
 
 DEFAULT_EXTENSIONS = 'c,h,C,H,cpp,hpp,cc,hh,c++,h++,cxx,hxx'
 
@@ -56,8 +52,7 @@ def list_files(files, recursive=False, extensions=None, exclude=None):
                     # by modifying it in-place,
                     # to avoid unnecessary directory listings.
                     dnames[:] = [
-                        x for x in dnames
-                        if
+                        x for x in dnames if
                         not fnmatch.fnmatch(os.path.join(dirpath, x), pattern)
                     ]
                     fpaths = [
@@ -83,12 +78,14 @@ def make_diff(file, original, reformatted):
 
 
 class DiffError(Exception):
+
     def __init__(self, message, errs=None):
         super(DiffError, self).__init__(message)
         self.errs = errs or []
 
 
 class UnexpectedError(Exception):
+
     def __init__(self, message, exc=None):
         super(UnexpectedError, self).__init__(message)
         self.formatted_traceback = traceback.format_exc()
@@ -102,8 +99,8 @@ def run_clang_format_diff_wrapper(args, file):
     except DiffError:
         raise
     except Exception as e:
-        raise UnexpectedError('{}: {}: {}'.format(file, e.__class__.__name__,
-                                                  e), e)
+        raise UnexpectedError(
+            '{}: {}: {}'.format(file, e.__class__.__name__, e), e)
 
 
 def run_clang_format_diff(args, file):
@@ -144,11 +141,8 @@ def run_clang_format_diff(args, file):
             universal_newlines=True,
             **encoding_py3)
     except OSError as exc:
-        raise DiffError(
-            "Command '{}' failed to start: {}".format(
-                subprocess.list2cmdline(invocation), exc
-            )
-        )
+        raise DiffError("Command '{}' failed to start: {}".format(
+            subprocess.list2cmdline(invocation), exc))
     proc_stdout = proc.stdout
     proc_stderr = proc.stderr
     if sys.version_info[0] < 3:
@@ -164,8 +158,7 @@ def run_clang_format_diff(args, file):
     if proc.returncode:
         raise DiffError(
             "Command '{}' returned non-zero exit status {}".format(
-                subprocess.list2cmdline(invocation), proc.returncode
-            ),
+                subprocess.list2cmdline(invocation), proc.returncode),
             errs,
         )
     return make_diff(file, original, outs), errs
@@ -176,6 +169,7 @@ def bold_red(s):
 
 
 def colorize(diff_lines):
+
     def bold(s):
         return '\x1b[1m' + s + '\x1b[0m'
 
@@ -214,7 +208,7 @@ def print_trouble(prog, message, use_colors):
     error_text = 'error:'
     if use_colors:
         error_text = bold_red(error_text)
-    print("{}: {} {}".format(prog, error_text, message), file=sys.stderr)
+    print('{}: {} {}'.format(prog, error_text, message), file=sys.stderr)
 
 
 def main():
@@ -235,10 +229,7 @@ def main():
         action='store_true',
         help='run recursively over directories')
     parser.add_argument('files', metavar='file', nargs='+')
-    parser.add_argument(
-        '-q',
-        '--quiet',
-        action='store_true')
+    parser.add_argument('-q', '--quiet', action='store_true')
     parser.add_argument(
         '-j',
         metavar='N',
@@ -282,7 +273,7 @@ def main():
         colored_stdout = sys.stdout.isatty()
         colored_stderr = sys.stderr.isatty()
 
-    version_invocation = [args.clang_format_executable, str("--version")]
+    version_invocation = [args.clang_format_executable, str('--version')]
     try:
         subprocess.check_call(version_invocation, stdout=DEVNULL)
     except subprocess.CalledProcessError as e:
@@ -292,8 +283,7 @@ def main():
         print_trouble(
             parser.prog,
             "Command '{}' failed to start: {}".format(
-                subprocess.list2cmdline(version_invocation), e
-            ),
+                subprocess.list2cmdline(version_invocation), e),
             use_colors=colored_stderr,
         )
         return ExitStatus.TROUBLE

@@ -341,7 +341,7 @@ int main(int argc, char *argv[]) {
                << Common::call_func_end;
     else
       gen_code << Common::cuda_call_func_begin << Common::call_func_end;
-    api::dump_code(gen_code.str(), cc);  
+    api::dump_code(gen_code.str(), cc);
   } else {
     if (ResizeOp)
       gen_code << Common::cpu_bilinear_preprocess_func
