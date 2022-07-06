@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # flake8: noqa
 import argparse
+import os
 import os.path as osp
 import shutil
 import subprocess
@@ -150,11 +151,14 @@ def generate_source_code(preprocess, transform_static, tag, args):
     if res.returncode == 0:
         append_info('cpu', tag)
         shutil.copyfile('source.c', dst_cpu_kernel_file)
+    os.remove('source.c')
     gen_cuda_cmd = f'{ELENA_BIN} {static_json_path} cuda'
     res = subprocess.run(gen_cuda_cmd, shell=True)
     if res.returncode == 0:
         append_info('cuda', tag)
         shutil.copyfile('source.cu', dst_cuda_kernel_file)
+    os.remove('source.cu')
+    os.remove('elena_int.h')
 
 
 def extract_one_model(deploy_cfg_, model_cfg_, args):
