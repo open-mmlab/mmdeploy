@@ -3,7 +3,7 @@
 #include "pad.h"
 
 #include "mmdeploy/archive/json_archive.h"
-#include "mmdeploy/core/tracer.h"
+#include "mmdeploy/preprocess/transform/tracer.h"
 
 using namespace std;
 
@@ -88,9 +88,9 @@ Result<Value> PadImpl::Process(const Value& input) {
     // trace static info & runtime args
     if (fuse_transform_ == true) {
       auto tracer = output["__tracer__"].get<Tracer>();
-      tracer.TracePad(arg_.pad_val, {padding[1], padding[0], padding[3], padding[2]},
-                      {(int)output_tensor.shape(1), (int)output_tensor.shape(2)},
-                      output_tensor.data_type());
+      tracer.Pad(arg_.pad_val, {padding[1], padding[0], padding[3], padding[2]},
+                 {(int)output_tensor.shape(1), (int)output_tensor.shape(2)},
+                 output_tensor.data_type());
       output["__tracer__"] = std::move(tracer);
     }
 

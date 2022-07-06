@@ -3,7 +3,7 @@
 #include "load.h"
 
 #include "mmdeploy/archive/json_archive.h"
-#include "mmdeploy/core/tracer.h"
+#include "mmdeploy/preprocess/transform/tracer.h"
 
 namespace mmdeploy {
 
@@ -56,9 +56,9 @@ Result<Value> PrepareImageImpl::Process(const Value& input) {
   // trace static info & runtime args
   if (fuse_transform_ == true) {
     Tracer tracer;
-    tracer.TraceLoad(arg_.color_type, arg_.to_float32,
-                     {1, src_mat.height(), src_mat.width(), src_mat.channel()},
-                     src_mat.pixel_format(), src_mat.type());
+    tracer.PrepareImage(arg_.color_type, arg_.to_float32,
+                        {1, src_mat.height(), src_mat.width(), src_mat.channel()},
+                        src_mat.pixel_format(), src_mat.type());
     output["__tracer__"] = std::move(tracer);
   }
 

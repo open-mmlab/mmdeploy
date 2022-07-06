@@ -12,7 +12,8 @@ set(SRCS
         normalize.cpp
         pad.cpp
         resize.cpp
-        transform.cpp)
+        transform.cpp
+        tracer.cpp)
 mmdeploy_add_module(${PROJECT_NAME} LIBRARY "${SRCS}")
 target_include_directories(
         ${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/preprocess>)

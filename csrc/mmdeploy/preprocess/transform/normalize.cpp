@@ -5,7 +5,7 @@
 #include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/core/registry.h"
 #include "mmdeploy/core/tensor.h"
-#include "mmdeploy/core/tracer.h"
+#include "mmdeploy/preprocess/transform/tracer.h"
 
 using namespace std;
 
@@ -80,7 +80,7 @@ Result<Value> NormalizeImpl::Process(const Value& input) {
     // trace static info & runtime args
     if (fuse_transform_ == true) {
       auto tracer = output["__tracer__"].get<Tracer>();
-      tracer.TraceNorm(arg_.mean, arg_.std, arg_.to_rgb, desc.data_type);
+      tracer.Normalize(arg_.mean, arg_.std, arg_.to_rgb, desc.data_type);
       output["__tracer__"] = std::move(tracer);
     }
   }

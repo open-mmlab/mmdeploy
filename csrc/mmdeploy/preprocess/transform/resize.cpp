@@ -6,7 +6,7 @@
 
 #include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/core/tensor.h"
-#include "mmdeploy/core/tracer.h"
+#include "mmdeploy/preprocess/transform/tracer.h"
 
 using namespace std;
 
@@ -114,7 +114,7 @@ Result<Value> ResizeImpl::Process(const Value& input) {
     // trace static info & runtime args
     if (fuse_transform_ == true) {
       auto tracer = output["__tracer__"].get<Tracer>();
-      tracer.TraceResize(arg_.interpolation, {dst_h, dst_w}, src_img.data_type());
+      tracer.Resize(arg_.interpolation, {dst_h, dst_w}, src_img.data_type());
       output["__tracer__"] = std::move(tracer);
     }
   }
