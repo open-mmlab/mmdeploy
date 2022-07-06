@@ -499,7 +499,8 @@ def test_gv_ratio_roi_head__simple_test(backend_type: Backend):
                     score_threshold=0.05,
                     iou_threshold=0.1,
                     pre_top_k=2000,
-                    keep_top_k=2000))))
+                    keep_top_k=2000,
+                    max_output_boxes_per_class=1000))))
     angle_version = 'le90'
     test_cfg = mmcv.Config(
         dict(
