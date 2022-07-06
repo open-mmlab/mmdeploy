@@ -544,12 +544,12 @@ static constexpr const char *cuda_bilinear_func = R"(
            ABORT("This format is not supported");
         }
 
-        if (cubfh) cuErrCheck(cudaFreeAsync(cubfh, stream));
-        if (cubfw) cuErrCheck(cudaFreeAsync(cubfw, stream));
-        if (inth) cuErrCheck(cudaFreeAsync(inth, stream));
-        if (intw) cuErrCheck(cudaFreeAsync(intw, stream));
+        cudaStreamSynchronize(stream); 
 
-        cudaStreamSynchronize(stream); // The memory for ptr is freed at this point 
+        if (cubfh) cuErrCheck(cudaFree(cubfh));
+        if (cubfw) cuErrCheck(cudaFree(cubfw));
+        if (inth) cuErrCheck(cudaFree(inth));
+        if (intw) cuErrCheck(cudaFree(intw));
     })";
 
 static constexpr const char *call_func_end = R"(
