@@ -2,6 +2,10 @@
 
 #include "common.h"
 
+#include "mmdeploy/core/mat.h"
+#include "mmdeploy/core/utils/formatter.h"
+#include "pybind11/numpy.h"
+
 namespace mmdeploy {
 
 std::map<std::string, void (*)(py::module&)>& gPythonBindings() {
@@ -30,6 +34,32 @@ mmdeploy_mat_t GetMat(const PyImage& img) {
   mat.type = MMDEPLOY_DATA_TYPE_UINT8;
   mat.data = (uint8_t*)info.ptr;
   return mat;
+}
+
+Mat _GetMat(const PyImage& img) {
+  auto info = img.request();
+  if (info.ndim != 3) {
+    fprintf(stderr, "info.ndim = %d\n", (int)info.ndim);
+    throw std::runtime_error("continuous uint8 HWC array expected");
+  }
+  auto channels = (int)info.shape[2];
+  PixelFormat format;
+  if (channels == 1) {
+    format = PixelFormat::kGRAYSCALE;
+  } else if (channels == 3) {
+    format = PixelFormat::kBGR;
+  } else {
+    throw std::runtime_error("images of 1 or 3 channels are supported");
+  }
+
+  return {
+      (int)info.shape[0],                             // height
+      (int)info.shape[1],                             // width
+      format,                                         // format
+      DataType::kINT8,                                // type
+      std::shared_ptr<void>(info.ptr, [](void*) {}),  // data
+      Device(0),                                      // device
+  };
 }
 
 py::object ToPyObject(const Value& value) {
@@ -90,14 +120,19 @@ Value FromPyObject(const py::object& obj) {
     py::dict src(obj);
     Value::Object dst;
     for (const auto& item : src) {
-      dst.insert({item.first.cast<std::string>(),
-                  FromPyObject(py::reinterpret_borrow<py::object>(item.second))});
+      dst.emplace(item.first.cast<std::string>(),
+                  FromPyObject(py::reinterpret_borrow<py::object>(item.second)));
     }
     return dst;
+  } else if (py::isinstance<py::array>(obj)) {
+    return _GetMat(obj.cast<py::array>());
   } else {
-    MMDEPLOY_ERROR("unsupported Python object type: {}", obj.get_type().cast<std::string>());
+    std::stringstream ss;
+    ss << obj.get_type();
+    MMDEPLOY_ERROR("unsupported Python object type: {}", ss.str());
     return nullptr;
   }
+  return nullptr;
 }
 
 }  // namespace mmdeploy
