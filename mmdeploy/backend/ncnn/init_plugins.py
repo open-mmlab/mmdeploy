@@ -30,9 +30,6 @@ def get_onnx2ncnn_path() -> str:
         onnx2ncnn_path = get_file_path('', candidates)
 
     if onnx2ncnn_path is None or not os.path.exists(onnx2ncnn_path):
-        onnx2ncnn_path = shutil.which('mmdeploy_onnx2ncnn.exe')
-
-    if onnx2ncnn_path is None or not os.path.exists(onnx2ncnn_path):
         onnx2ncnn_path = shutil.which('mmdeploy_onnx2ncnn')
 
     return onnx2ncnn_path
