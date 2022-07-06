@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "mmdeploy/core/macro.h"
+#include "mmdeploy/core/registry.h"
 #include "mmdeploy/core/tensor.h"
 #include "mmdeploy/core/types.h"
 
@@ -62,22 +63,22 @@ using TransParamType = std::variant<CvtColorParam, CastParam, ResizeParam, PadPa
 
 class MMDEPLOY_API Tracer {
  public:
-  void TraceResize(const std::string &mode, const std::vector<int> &size, DataType dtype);
+  void Resize(const std::string &mode, const std::vector<int> &size, DataType dtype);
 
-  void TraceLoad(const std::string &color_type, bool to_float32, TensorShape shape,
-                 PixelFormat pfmt, DataType dtype);
+  void PrepareImage(const std::string &color_type, bool to_float32, TensorShape shape,
+                    PixelFormat pfmt, DataType dtype);
 
-  void TracePad(float pad_val, const std::vector<int> &tlbr, const std::vector<int> &size,
-                DataType dtype);
+  void Pad(float pad_val, const std::vector<int> &tlbr, const std::vector<int> &size,
+           DataType dtype);
 
-  void TraceNorm(const std::vector<float> &mean, const std::vector<float> &std, bool to_rgb,
+  void Normalize(const std::vector<float> &mean, const std::vector<float> &std, bool to_rgb,
                  DataType dtype);
 
-  void TraceCrop(const std::vector<int> &tlbr, const std::vector<int> &size, DataType dtype);
+  void CenterCrop(const std::vector<int> &tlbr, const std::vector<int> &size, DataType dtype);
 
-  void TraceDFB(bool to_float, DataType dtype);
+  void DefaultFormatBundle(bool to_float, DataType dtype);
 
-  void TraceIm2Tensor(DataType dtype);
+  void ImageToTensor(DataType dtype);
 
  public:
   struct state_t {
@@ -90,6 +91,11 @@ class MMDEPLOY_API Tracer {
   std::optional<DataType> common_dtype_;
   std::vector<trace::TransParamType> trans_;
 };
+
+template <>
+struct is_cast_by_erasure<Tracer> : std::true_type {};
+
+MMDEPLOY_REGISTER_TYPE_ID(Tracer, 9);
 
 }  // namespace mmdeploy
 

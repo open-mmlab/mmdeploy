@@ -7,9 +7,9 @@
 #include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/core/mat.h"
 #include "mmdeploy/core/tensor.h"
-#include "mmdeploy/core/tracer.h"
 #include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/preprocess/transform/collect.h"
+#include "mmdeploy/preprocess/transform/tracer.h"
 
 namespace mmdeploy {
 namespace elena {

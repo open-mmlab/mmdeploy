@@ -36,7 +36,6 @@ set(SRCS
         operator.cpp
         status_code.cpp
         tensor.cpp
-        tracer.cpp
         registry.cpp
         utils/device_utils.cpp
         utils/formatter.cpp
