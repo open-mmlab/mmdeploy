@@ -2,10 +2,12 @@
 from typing import Optional, Sequence
 
 from pyppl import nn as pplnn
+from pyppl import common as pplcommon
+import sys
 
 from mmdeploy.utils.device import parse_cuda_device_id
 from .utils import register_engines
-
+from mmdeploy.utils import get_root_logger
 
 def from_onnx(onnx_model: str,
               output_file_prefix: str,
@@ -34,6 +36,7 @@ def from_onnx(onnx_model: str,
         >>> from_onnx(onnx_model = 'example.onnx',
                       output_file_prefix = 'example')
     """
+    logger = get_root_logger()
     if device == 'cpu':
         device_id = -1
     else:
@@ -52,8 +55,34 @@ def from_onnx(onnx_model: str,
         quick_select=False,
         export_algo_file=algo_file,
         input_shapes=input_shapes)
-    runtime_builder = pplnn.OnnxRuntimeBuilderFactory.CreateFromFile(
-        onnx_model, engines)
+
+    runtime_builder = pplnn.onnx.RuntimeBuilderFactory.Create()
+    if not runtime_builder:
+        logger.error("create onnx RuntimeBuilder failed.")
+        sys.exit(-1)
+    
+    status = runtime_builder.LoadModelFromFile(onnx_model)
+    if status != pplcommon.RC_SUCCESS:
+        logger.error("init onnx RuntimeBuilder failed: " + pplcommon.GetRetCodeStr(status))
+        sys.exit(-1)
+
+    resources = pplnn.onnx.RuntimeBuilderResources()
+    resources.engines = engines
+    status = runtime_builder.SetResources(resources)
+    if status != pplcommon.RC_SUCCESS:
+        logger.error("onnx RuntimeBuilder set resources failed: " + pplcommon.GetRetCodeStr(status))
+        sys.exit(-1)
+    
+    status = runtime_builder.Preprocess()
+    if status != pplcommon.RC_SUCCESS:
+        logger.error("onnx RuntimeBuilder preprocess failed: " + pplcommon.GetRetCodeStr(status))
+        sys.exit(-1)
+
+    runtime = runtime_builder.CreateRuntime()
+    if not runtime:
+        logger.error("create Runtime instance failed.")
+        sys.exit(-1)
+
     assert runtime_builder is not None, 'Failed to create '\
         'OnnxRuntimeBuilder.'
     import shutil
