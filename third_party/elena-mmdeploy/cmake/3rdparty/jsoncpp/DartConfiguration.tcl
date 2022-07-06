@@ -8,7 +8,7 @@ SourceDirectory: /home/zhuqianchao/elena/3rdparty/jsoncpp
 BuildDirectory: /home/zhuqianchao/elena/cmake/3rdparty/jsoncpp
 
 # Where to place the cost data store
-CostDataFile: 
+CostDataFile:
 
 # Site is something like machine.domain, i.e. pragmatic.crd
 Site: zhuqch
@@ -17,7 +17,7 @@ Site: zhuqch
 BuildName: Linux-g++
 
 # Subprojects
-LabelsForSubprojects: 
+LabelsForSubprojects:
 
 # Submission information
 SubmitURL: https://my.cdash.org/submit.php?project=jsoncpp
@@ -31,7 +31,7 @@ MakeCommand: /usr/local/cmake-3.14.3-Linux-x86_64/bin/cmake --build . --config "
 DefaultCTestConfigurationType: Release
 
 # version control
-UpdateVersionOnly: 
+UpdateVersionOnly:
 
 # CVS options
 # Default is "-d -P -A"
@@ -40,40 +40,40 @@ CVSUpdateOptions: -d -A -P
 
 # Subversion options
 SVNCommand: SVNCOMMAND-NOTFOUND
-SVNOptions: 
-SVNUpdateOptions: 
+SVNOptions:
+SVNUpdateOptions:
 
 # Git options
 GITCommand: /devmachine/bin/git
-GITInitSubmodules: 
-GITUpdateOptions: 
-GITUpdateCustom: 
+GITInitSubmodules:
+GITUpdateOptions:
+GITUpdateCustom:
 
 # Perforce options
 P4Command: P4COMMAND-NOTFOUND
-P4Client: 
-P4Options: 
-P4UpdateOptions: 
-P4UpdateCustom: 
+P4Client:
+P4Options:
+P4UpdateOptions:
+P4UpdateCustom:
 
 # Generic update command
-UpdateCommand: 
-UpdateOptions: 
-UpdateType: 
+UpdateCommand:
+UpdateOptions:
+UpdateType:
 
 # Compiler info
 Compiler: /usr/bin/g++
 CompilerVersion: 5.4.0
 
 # Dynamic analysis (MemCheck)
-PurifyCommand: 
-ValgrindCommand: 
-ValgrindCommandOptions: 
-MemoryCheckType: 
-MemoryCheckSanitizerOptions: 
+PurifyCommand:
+ValgrindCommand:
+ValgrindCommandOptions:
+MemoryCheckType:
+MemoryCheckSanitizerOptions:
 MemoryCheckCommand: MEMORYCHECK_COMMAND-NOTFOUND
-MemoryCheckCommandOptions: 
-MemoryCheckSuppressionFile: 
+MemoryCheckCommandOptions:
+MemoryCheckSuppressionFile:
 
 # Coverage
 CoverageCommand: /usr/bin/gcov
@@ -92,10 +92,10 @@ TimeOut: 1500
 
 # During parallel testing CTest will not start a new test if doing
 # so would cause the system load to exceed this value.
-TestLoad: 
+TestLoad:
 
-UseLaunchers: 
-CurlOptions: 
+UseLaunchers:
+CurlOptions:
 # warning, if you add new options here that have to do with submit,
 # you have to update cmCTestSubmitCommand.cxx
 

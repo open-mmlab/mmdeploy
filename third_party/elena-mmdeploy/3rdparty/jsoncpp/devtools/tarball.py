@@ -3,11 +3,12 @@
 # recognized in your jurisdiction.
 # See file LICENSE for detail or copy at http://jsoncpp.sourceforge.net/LICENSE
 
-from contextlib import closing
 import os
 import tarfile
+from contextlib import closing
 
 TARGZ_DEFAULT_COMPRESSION_LEVEL = 9
+
 
 def make_tarball(tarball_path, sources, base_dir, prefix_dir=''):
     """Parameters:
@@ -19,6 +20,7 @@ def make_tarball(tarball_path, sources, base_dir, prefix_dir=''):
         to make them child of root.
     """
     base_dir = os.path.normpath(os.path.abspath(base_dir))
+
     def archive_name(path):
         """Makes path relative to base_dir."""
         path = os.path.normpath(os.path.abspath(path))
@@ -27,15 +29,18 @@ def make_tarball(tarball_path, sources, base_dir, prefix_dir=''):
         if os.path.isabs(archive_name):
             archive_name = archive_name[1:]
         return os.path.join(prefix_dir, archive_name)
+
     def visit(tar, dirname, names):
         for name in names:
             path = os.path.join(dirname, name)
             if os.path.isfile(path):
                 path_in_tar = archive_name(path)
                 tar.add(path, path_in_tar)
+
     compression = TARGZ_DEFAULT_COMPRESSION_LEVEL
-    with closing(tarfile.TarFile.open(tarball_path, 'w:gz',
-            compresslevel=compression)) as tar:
+    with closing(
+            tarfile.TarFile.open(
+                tarball_path, 'w:gz', compresslevel=compression)) as tar:
         for source in sources:
             source_path = source
             if os.path.isdir(source):
@@ -43,10 +48,10 @@ def make_tarball(tarball_path, sources, base_dir, prefix_dir=''):
                     visit(tar, dirpath, filenames)
             else:
                 path_in_tar = archive_name(source_path)
-                tar.add(source_path, path_in_tar)      # filename, arcname
+                tar.add(source_path, path_in_tar)  # filename, arcname
+
 
 def decompress(tarball_path, base_dir):
-    """Decompress the gzipped tarball into directory base_dir.
-    """
+    """Decompress the gzipped tarball into directory base_dir."""
     with closing(tarfile.TarFile.open(tarball_path)) as tar:
         tar.extractall(base_dir)

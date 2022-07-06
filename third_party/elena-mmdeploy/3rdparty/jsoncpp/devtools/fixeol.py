@@ -7,14 +7,18 @@ from __future__ import print_function
 import os.path
 import sys
 
-def fix_source_eol(path, is_dry_run = True, verbose = True, eol = '\n'):
-    """Makes sure that all sources have the specified eol sequence (default: unix)."""
+
+def fix_source_eol(path, is_dry_run=True, verbose=True, eol='\n'):
+    """Makes sure that all sources have the specified eol sequence (default:
+
+    unix).
+    """
     if not os.path.isfile(path):
         raise ValueError('Path "%s" is not a file' % path)
     try:
         f = open(path, 'rb')
     except IOError as msg:
-        print("%s: I/O Error: %s" % (file, str(msg)), file=sys.stderr)
+        print('%s: I/O Error: %s' % (file, str(msg)), file=sys.stderr)
         return False
     try:
         raw_lines = f.readlines()
@@ -24,7 +28,7 @@ def fix_source_eol(path, is_dry_run = True, verbose = True, eol = '\n'):
     if raw_lines != fixed_lines:
         print('%s =>' % path, end=' ')
         if not is_dry_run:
-            f = open(path, "wb")
+            f = open(path, 'wb')
             try:
                 f.writelines(fixed_lines)
             finally:
@@ -32,8 +36,10 @@ def fix_source_eol(path, is_dry_run = True, verbose = True, eol = '\n'):
         if verbose:
             print(is_dry_run and ' NEED FIX' or ' FIXED')
     return True
-##    
-##    
+
+
+##
+##
 ##
 ##def _do_fix(is_dry_run = True):
 ##    from waftools import antglob

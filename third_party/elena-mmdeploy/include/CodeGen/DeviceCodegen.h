@@ -319,7 +319,7 @@ struct uint3 {
     unsigned z;
     __Thost__ __Tdevice__ uint3(unsigned x, unsigned y = 1, unsigned z = 1) : x(x), y(y), z(z) {}
 };
-//#define __syncthreads() 
+//#define __syncthreads()
 // #include <vector_types.h>
 )";
 

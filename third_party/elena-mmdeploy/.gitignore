@@ -252,5 +252,5 @@ _deps
 # clion
 cmake-build-debug
 
-# tmp 
+# tmp
 python/elena/ssa_converter/schema/ops_copy

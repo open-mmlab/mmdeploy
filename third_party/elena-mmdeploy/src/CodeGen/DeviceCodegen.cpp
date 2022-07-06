@@ -1411,5 +1411,3 @@ std::string api::genX86Src(
     const std::vector<ir::ScalarVarPtr> &varlist) {
   return genDeviceSrc<CCode>(node, arg_list, kernel_name, varlist);
 }
-
-

@@ -339,7 +339,7 @@ static constexpr const char *cuda_bilinear_preprocess_func = R"(
 
 #define INCREASE(x, l) ((x + 1) >= (l) ? (x) : ((x) + 1))
 
-extern "C" __global__ void bilinear_resize_preprocess_h(uint64_t src_h, uint64_t dst_h, 
+extern "C" __global__ void bilinear_resize_preprocess_h(uint64_t src_h, uint64_t dst_h,
     int16_t* __restrict__ cubfh, int32_t* __restrict__ inth) {
 
     int element_x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -371,7 +371,7 @@ extern "C" __global__ void bilinear_resize_preprocess_h(uint64_t src_h, uint64_t
     inth[dst_h + element_x] = int_h1;
 }
 
-extern "C" __global__ void bilinear_resize_preprocess_w(uint64_t src_w, uint64_t dst_w, 
+extern "C" __global__ void bilinear_resize_preprocess_w(uint64_t src_w, uint64_t dst_w,
     int16_t* __restrict__ cubfw, int32_t* __restrict__ intw) {
 
     int element_x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -456,11 +456,11 @@ extern "C" void FuseKernel(uint64_t resize_h, uint64_t resize_w, uint64_t crop_s
 
 static constexpr const char *cpu_bilinear_func = R"(
     else if(resize_h && resize_w && EQUAL(interpolation, "bilinear")){
-        short* cubfh; 
+        short* cubfh;
         short* cubfw;
         int* inth;
         int* intw;
-        
+
         cubfh = new short[resize_h*2];
         cubfw = new short[resize_w*2];
         inth = new int[resize_h*2];
@@ -493,7 +493,7 @@ static constexpr const char *cpu_bilinear_func = R"(
 static constexpr const char *cuda_call_func_begin = R"(
 
 extern "C" void FuseKernelCU(cudaStream_t stream, uint64_t resize_h, uint64_t resize_w, uint64_t crop_size, int32_t crop_top, int32_t crop_left, float norm_mean_0, float norm_mean_1, float norm_mean_2, float norm_std_0, float norm_std_1, float norm_std_2, uint64_t pad_h, uint64_t pad_w, int32_t pad_top, int32_t pad_left, int32_t pad_bottom, int32_t pad_right, float pad_value, uint8_t* __restrict__ src_raw_data, float* __restrict__ dst_raw_data, uint64_t dst_element_num, uint64_t src_h, uint64_t src_w, const char *format, const char *interpolation = "nearest"){
-    
+
     if (resize_h && resize_w && EQUAL(interpolation, "nearest")) {
         if(EQUAL(format, "BGR")){
           BGR_Nearest_Kernel<<<(dst_element_num + BLOCK_SIZE -1) / BLOCK_SIZE, BLOCK_SIZE, 0, stream>>>(resize_h, resize_w, crop_size, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, src_raw_data, dst_raw_data, src_h, src_w);
@@ -514,11 +514,11 @@ extern "C" void FuseKernelCU(cudaStream_t stream, uint64_t resize_h, uint64_t re
 
 static constexpr const char *cuda_bilinear_func = R"(
     else if(resize_h && resize_w && EQUAL(interpolation, "bilinear")){
-        short* cubfh; 
+        short* cubfh;
         short* cubfw;
         int* inth;
         int* intw;
-        
+
         cuErrCheck(cudaMalloc(&cubfh, resize_h*2 * sizeof(short)));
         cuErrCheck(cudaMalloc(&cubfw, resize_w*2 * sizeof(short)));
         cuErrCheck(cudaMalloc(&inth, resize_h*2 * sizeof(int)));
@@ -544,7 +544,7 @@ static constexpr const char *cuda_bilinear_func = R"(
            ABORT("This format is not supported");
         }
 
-        cudaStreamSynchronize(stream); 
+        cudaStreamSynchronize(stream);
 
         if (cubfh) cuErrCheck(cudaFree(cubfh));
         if (cubfw) cuErrCheck(cudaFree(cubfw));
