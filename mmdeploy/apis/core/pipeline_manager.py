@@ -79,7 +79,7 @@ class PipelineCaller:
         if call_id not in self._mp_dict:
             get_root_logger().error(
                 f'`{self._func_name}` with Call id: {call_id} failed. exit.')
-            exit()
+            exit(1)
         ret = self._mp_dict[call_id]
         self._mp_dict.pop(call_id)
         return ret
