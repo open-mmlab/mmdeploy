@@ -44,7 +44,6 @@ message Empty {}
 message Tensor {
   // name
   string name = 1;
-
   // datatype
   optional string dtype = 2;
 
