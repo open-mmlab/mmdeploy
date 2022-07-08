@@ -54,6 +54,11 @@ def parse_args():
         help='Image directory for quantize model.')
     parser.add_argument(
         '--quant', action='store_true', help='Quantize model to low bit.')
+    parser.add_argument(
+        '--uri',
+        action='store_true',
+        default='10.1.80.67:50051',
+        help='Remote ipv4:port or ipv6:port for inference on edge device.')
     args = parser.parse_args()
     return args
 
@@ -265,6 +270,27 @@ def main():
                 backend_files += [quant_param, quant_bin]
             else:
                 backend_files += [model_param_path, model_bin_path]
+
+    elif backend == Backend.SNPE:
+        from mmdeploy.apis.snpe import is_available as is_available
+
+        if not is_available():
+            logger.error('snpe support is not available, please check \
+                1) `snpe-onnx-to-dlc` existed in `PATH` 2) snpe only support ubuntu18.04'
+                         )
+            exit(1)
+
+        import mmdeploy.apis.snpe as snpe_api
+        from mmdeploy.apis.snpe import get_output_model_file
+
+        PIPELINE_MANAGER.set_log_level(log_level, [snpe_api.from_onnx])
+
+        backend_files = []
+        for onnx_path in ir_files:
+            dlc_path = get_output_model_file(onnx_path, args.work_dir)
+            onnx_name = osp.splitext(osp.split(onnx_path)[1])[0]
+            snpe_api.from_onnx(onnx_path, osp.join(args.work_dir, onnx_name))
+            backend_files += [dlc_path]
 
     elif backend == Backend.OPENVINO:
         from mmdeploy.apis.openvino import \

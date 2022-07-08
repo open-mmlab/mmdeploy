@@ -19,7 +19,7 @@ def mkdir_or_exist(dir_name, mode=0o777):
 
 def get_output_model_file(onnx_path: str,
                           work_dir: Optional[str] = None) -> List[str]:
-    """Returns the path to the .param, .bin file with export result.
+    """Returns the path to the .dlc file with export result.
 
     Args:
         onnx_path (str): The path to the onnx model.
@@ -34,16 +34,15 @@ def get_output_model_file(onnx_path: str,
         work_dir = osp.dirname(onnx_path)
     mkdir_or_exist(osp.abspath(work_dir))
     file_name = osp.splitext(osp.split(onnx_path)[1])[0]
-    save_param = osp.join(work_dir, file_name + '.param')
-    save_bin = osp.join(work_dir, file_name + '.bin')
-    return [save_param, save_bin]
+    save_dlc = osp.join(work_dir, file_name + '.dlc')
+    return [save_dlc]
 
 
 def from_onnx(onnx_model: Union[onnx.ModelProto, str],
               output_file_prefix: str):
     """Convert ONNX to dlc.
 
-    We need to use a executable program to convert the `.onnx` file to a `.dlc` 
+    We need to use a executable program to convert the `.onnx` file to a `.dlc`
     file. The output file will save to work_dir.
 
     Example:
@@ -66,5 +65,6 @@ def from_onnx(onnx_model: Union[onnx.ModelProto, str],
     save_dlc = output_file_prefix + '.dlc'
 
     onnx2dlc = get_onnx2dlc_path()
-    ret_code = call([onnx2dlc, '--input_network', onnx_path, '--output', save_dlc])
+    ret_code = call(
+        [onnx2dlc, '--input_network', onnx_path, '--output', save_dlc])
     assert ret_code == 0, 'onnx2dlc failed'

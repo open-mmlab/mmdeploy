@@ -3,7 +3,7 @@ syntax = "proto3";
 option java_multiple_files = true;
 option java_package = "mmdeploy.snpe";
 option java_outer_classname = "SNPEWrapper";
-option objc_class_prefix = "NPEW";
+option objc_class_prefix = "SNPE";
 
 package mmdeploy;
 
@@ -18,11 +18,11 @@ service Inference {
   // Get output names
   rpc OutputNames(Empty) returns (Names) {}
 
-  // Inference with inputs 
+  // Inference with inputs
   rpc Inference(TensorList) returns (Reply) {}
 
-  // Destory handle
-  rpc Destory(Empty) returns (Reply) {}
+  // Destroy handle
+  rpc Destroy(Empty) returns (Reply) {}
 }
 
 message Model {
@@ -44,7 +44,7 @@ message Empty {}
 message Tensor {
   // name
   string name = 1;
-  
+
   // datatype
   optional string dtype = 2;
 
