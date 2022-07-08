@@ -1,13 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import importlib
+import os
 from typing import Dict, Optional, Sequence
 
-import numpy as np
-import torch
 import grpc
 import inference_pb2
 import inference_pb2_grpc
-import os
+import numpy as np
+import torch
 
 from mmdeploy.utils import Backend, get_root_logger
 from mmdeploy.utils.timer import TimeCounter
@@ -40,40 +40,39 @@ class SNPEWrapper(BaseWrapper):
                  uri: str,
                  output_names: Optional[Sequence[str]] = None,
                  **kwargs):
-        
+
         logger = get_root_logger()
-        
+
         # The maximum model file size is 512MB
         MAX_SIZE = 2 << 29
-        self.channel = grpc.insecure_channel(uri, 
-                               options=(
-                                   ('grpc.GRPC_ARG_KEEPALIVE_TIME_MS', 2000),
-                                   ('grpc.max_send_message_length', MAX_SIZE),
-                                   ('grpc.keepalive_permit_without_calls', 1)))
-        
+        self.channel = grpc.insecure_channel(
+            uri,
+            options=(('grpc.GRPC_ARG_KEEPALIVE_TIME_MS',
+                      2000), ('grpc.max_send_message_length', MAX_SIZE),
+                     ('grpc.keepalive_permit_without_calls', 1)))
+
         weights = bytes()
         filesize = os.stat(dlc_file).st_size
-        
+
         logger.info(f'reading local model file {dlc_file}')
         with open(dlc_file, 'rb') as f:
             weights = f.read(filesize)
-        
+
         stub = inference_pb2_grpc.InferenceStub(self.channel)
         logger.info(f'init remote SNPE engine with RPC, please wait...')
-        model = inference_pb2.Model(name= dlc_file, weights=weights, device=1)
+        model = inference_pb2.Model(name=dlc_file, weights=weights, device=1)
         resp = stub.Init(model)
-        
+
         if resp.status != 0:
             logger.error(f'init SNPE model failed {resp.info}')
             return
-        
+
         output_names = stub.OutputNames(inference_pb2.Empty())
         super().__init__(output_names)
-    
+
     def __del__(self):
         stub = inference_pb2_grpc.InferenceStub(self.channel)
-        stub.Destory()
-
+        stub.Destroy()
 
     def forward(self, inputs: Dict[str,
                                    torch.Tensor]) -> Dict[str, torch.Tensor]:
@@ -87,9 +86,9 @@ class SNPEWrapper(BaseWrapper):
         """
         input_list = list(inputs.values())
         device_type = input_list[0].device.type
-        
+
         logger = get_root_logger()
-        
+
         # build `list` inputs for remote snpe engine
         snpe_inputs = []
         for name, input_tensor in inputs.items():
@@ -98,15 +97,16 @@ class SNPEWrapper(BaseWrapper):
             if data.dtype != np.float32:
                 logger.error('SNPE now only support fp32 input')
                 data = data.astype(dtype=np.float32)
-            tensor = inference_pb2.Tensor(data=data.tobytes(), name=name, dtype='float32')
-            
+            tensor = inference_pb2.Tensor(
+                data=data.tobytes(), name=name, dtype='float32')
+
             snpe_inputs.append(tensor)
-    
+
         return self.__snpe_execute(snpe_inputs, device_type)
 
-
     @TimeCounter.count_time()
-    def __snpe_execute(self, inputs: inference_pb2.TensorList, device: str) -> Dict[str, torch.tensor]:
+    def __snpe_execute(self, inputs: inference_pb2.TensorList,
+                       device: str) -> Dict[str, torch.tensor]:
         """Run inference with snpe remote inference engine.
 
         Args:
@@ -115,10 +115,10 @@ class SNPEWrapper(BaseWrapper):
         Returns:
             dict[str, torch.tensor]: Inference results of snpe model.
         """
-        
+
         stub = inference_pb2_grpc.InferenceStub(self.channel)
         resp = stub.Inference(inputs)
-        
+
         result = dict()
         if resp.status == 0:
             for tensor in resp.datas:
@@ -127,5 +127,5 @@ class SNPEWrapper(BaseWrapper):
         else:
             logger = get_root_logger()
             logger.error(f'snpe inference failed {resp.info}')
-            
+
         return result
