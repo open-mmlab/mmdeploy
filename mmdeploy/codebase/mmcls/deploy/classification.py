@@ -234,8 +234,6 @@ class Classification(BaseTask):
             log_file (str | None): The file to write the evaluation results.
                 Defaults to `None` and the results will only print on stdout.
         """
-        import warnings
-
         from mmcv.utils import get_logger
         logger = get_logger('test', log_file=log_file, log_level=logging.INFO)
 
@@ -284,7 +282,8 @@ class Classification(BaseTask):
         postprocess = self.model_cfg.model.head
         if 'topk' not in postprocess:
             topk = (1, )
-            warnings.warn('no topk in postprocess config, using default \
+            logger = get_root_logger()
+            logger.warning('no topk in postprocess config, using default \
                  topk value.')
         else:
             topk = postprocess.topk
