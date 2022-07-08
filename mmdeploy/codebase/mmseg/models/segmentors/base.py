@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import torch
+from mmseg.core import SegDataSample
 
 from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.utils import is_dynamic_shape
@@ -7,7 +7,12 @@ from mmdeploy.utils import is_dynamic_shape
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmseg.models.segmentors.BaseSegmentor.forward')
-def base_segmentor__forward(ctx, self, img, img_metas=None, **kwargs):
+def base_segmentor__forward(ctx,
+                            self,
+                            batch_inputs,
+                            batch_data_samples=None,
+                            mode='predict',
+                            **kwargs):
     """Rewrite `forward` for default backend.
 
     Support configured dynamic/static shape for model input.
@@ -22,20 +27,16 @@ def base_segmentor__forward(ctx, self, img, img_metas=None, **kwargs):
     Returns:
         torch.Tensor: Output segmentation map pf shape [N, 1, H, W].
     """
-    if img_metas is None:
-        img_metas = {}
-    while isinstance(img_metas, list):
-        img_metas = img_metas[0]
-
-    if isinstance(img, list):
-        img = torch.cat(img, 0)
-    assert isinstance(img, torch.Tensor)
+    if batch_data_samples is None:
+        batch_data_samples = [SegDataSample()]
 
     deploy_cfg = ctx.cfg
     is_dynamic_flag = is_dynamic_shape(deploy_cfg)
     # get origin input shape as tensor to support onnx dynamic shape
-    img_shape = img.shape[2:]
+    img_shape = batch_inputs.shape[2:]
     if not is_dynamic_flag:
         img_shape = [int(val) for val in img_shape]
-    img_metas['img_shape'] = img_shape
-    return self.simple_test(img, img_metas, **kwargs)
+    for data_sample in batch_data_samples:
+        data_sample.set_field(
+            name='img_shape', value=img_shape, field_type='metainfo')
+    return self.predict(batch_inputs, batch_data_samples)

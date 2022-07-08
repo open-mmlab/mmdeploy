@@ -1,45 +1,106 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Any, Dict, Optional, Sequence, Tuple, Union
+import os.path as osp
+from copy import deepcopy
+from typing import Callable, Dict, Optional, Sequence, Tuple, Union
 
 import mmcv
 import numpy as np
 import torch
-from torch.utils.data import Dataset
+from mmengine import Config
+from mmengine.model import BaseDataPreprocessor
+from mmengine.registry import Registry
 
-from mmdeploy.codebase.base import BaseTask
-from mmdeploy.utils import Task, get_input_shape
-from .mmsegmentation import MMSEG_TASK
+from mmdeploy.codebase.base import CODEBASE, BaseTask, MMCodebase
+from mmdeploy.utils import Codebase, Task, get_input_shape, get_root_logger
 
 
-def process_model_config(model_cfg: mmcv.Config,
+def process_model_config(model_cfg: Config,
                          imgs: Union[Sequence[str], Sequence[np.ndarray]],
                          input_shape: Optional[Sequence[int]] = None):
     """Process the model config.
 
     Args:
-        model_cfg (mmcv.Config): The model config.
+        model_cfg (Config): The model config.
         imgs (Sequence[str] | Sequence[np.ndarray]): Input image(s), accepted
             data type are List[str], List[np.ndarray].
         input_shape (list[int]): A list of two integer in (width, height)
             format specifying input shape. Default: None.
 
     Returns:
-        mmcv.Config: the model config after processing.
+        Config: the model config after processing.
     """
-    from mmseg.apis.inference import LoadImage
-    cfg = model_cfg.copy()
+    cfg = deepcopy(model_cfg)
 
     if isinstance(imgs[0], np.ndarray):
         cfg = cfg.copy()
         # set loading pipeline type
-        cfg.data.test.pipeline[0].type = 'LoadImageFromWebcam'
+        cfg.test_pipeline[0].type = 'LoadImageFromWebcam'
+
+    # remove some training related pipeline
+    removed_indices = []
+    for i in range(len(cfg.test_pipeline)):
+        if cfg.test_pipeline[i]['type'] in ['LoadAnnotations']:
+            removed_indices.append(i)
+    for i in reversed(removed_indices):
+        cfg.test_pipeline.pop(i)
+
     # for static exporting
     if input_shape is not None:
-        cfg.data.test.pipeline[1]['img_scale'] = tuple(input_shape)
-        cfg.data.test.pipeline[1]['transforms'][0]['keep_ratio'] = False
-    cfg.data.test.pipeline = [LoadImage()] + cfg.data.test.pipeline[1:]
+        found_resize = False
+        for i in range(len(cfg.test_pipeline)):
+            if 'Resize' == cfg.test_pipeline[i]['type']:
+                cfg.test_pipeline[i]['scale'] = tuple(input_shape)
+                cfg.test_pipeline[i]['keep_ratio'] = False
+        if not found_resize:
+            logger = get_root_logger()
+            logger.warning(
+                f'Not found Resize in test_pipeline: {cfg.test_pipeline}')
 
     return cfg
+
+
+def _get_dataset_metainfo(model_cfg: Config):
+    """Get metainfo of dataset.
+
+    Args:
+        model_cfg Config: Input model Config object.
+    Returns:
+        (list[str], list[np.ndarray]): Class names and palette
+    """
+    from mmseg import datasets  # noqa
+    from mmseg.registry import DATASETS
+
+    module_dict = DATASETS.module_dict
+
+    for dataloader_name in [
+            'test_dataloader', 'val_dataloader', 'train_dataloader'
+    ]:
+        if dataloader_name not in model_cfg:
+            continue
+        dataloader_cfg = model_cfg[dataloader_name]
+        dataset_cfg = dataloader_cfg.dataset
+        dataset_cls = module_dict.get(dataset_cfg.type, None)
+        if dataset_cls is None:
+            continue
+        if hasattr(dataset_cls, '_load_metainfo') and isinstance(
+                dataset_cls._load_metainfo, Callable):
+            meta = dataset_cls._load_metainfo(
+                dataset_cfg.get('metainfo', None))
+            if meta is not None:
+                return meta
+        if hasattr(dataset_cls, 'METAINFO'):
+            return dataset_cls.METAINFO
+
+    return None
+
+
+MMSEG_TASK = Registry('mmseg_tasks')
+
+
+@CODEBASE.register_module(Codebase.MMSEG.value)
+class MMSegmentation(MMCodebase):
+    """mmsegmentation codebase class."""
+    task_registry = MMSEG_TASK
 
 
 @MMSEG_TASK.register_module(Task.SEGMENTATION.value)
@@ -47,14 +108,13 @@ class Segmentation(BaseTask):
     """Segmentation task class.
 
     Args:
-        model_cfg (mmcv.Config): Original PyTorch model config file.
-        deploy_cfg (mmcv.Config): Deployment config file or loaded Config
+        model_cfg (Config): Original PyTorch model config file.
+        deploy_cfg (Config): Deployment config file or loaded Config
             object.
         device (str): A string represents device type.
     """
 
-    def __init__(self, model_cfg: mmcv.Config, deploy_cfg: mmcv.Config,
-                 device: str):
+    def __init__(self, model_cfg: Config, deploy_cfg: Config, device: str):
         super(Segmentation, self).__init__(model_cfg, deploy_cfg, device)
 
     def build_backend_model(self,
@@ -69,39 +129,34 @@ class Segmentation(BaseTask):
             nn.Module: An initialized backend model.
         """
         from .segmentation_model import build_segmentation_model
+
+        data_preprocessor = self.model_cfg.model.data_preprocessor
         model = build_segmentation_model(
-            model_files, self.model_cfg, self.deploy_cfg, device=self.device)
-        return model.eval()
+            model_files,
+            self.model_cfg,
+            self.deploy_cfg,
+            device=self.device,
+            data_preprocessor=data_preprocessor)
+        model = model.to(self.device).eval()
+        return model
 
     def build_pytorch_model(self,
                             model_checkpoint: Optional[str] = None,
                             cfg_options: Optional[Dict] = None,
                             **kwargs) -> torch.nn.Module:
-        """Initialize torch model.
+        input_shape = get_input_shape(self.deploy_cfg)
+        if input_shape is not None:
+            self.model_cfg.model.data_preprocessor.size = tuple(
+                reversed(input_shape))
+        return super().build_pytorch_model(model_checkpoint, cfg_options,
+                                           **kwargs)
 
-        Args:
-            model_checkpoint (str): The checkpoint file of torch model,
-                defaults to `None`.
-            cfg_options (dict): Optional config key-pair parameters.
-
-        Returns:
-            nn.Module: An initialized torch model generated by OpenMMLab
-                codebases.
-        """
-        from mmcv.cnn.utils import revert_sync_batchnorm
-        if self.from_mmrazor:
-            from mmrazor.apis import init_mmseg_model as init_segmentor
-        else:
-            from mmseg.apis import init_segmentor
-
-        model = init_segmentor(self.model_cfg, model_checkpoint, self.device)
-        model = revert_sync_batchnorm(model)
-        return model.eval()
-
-    def create_input(self,
-                     imgs: Union[str, np.ndarray],
-                     input_shape: Sequence[int] = None) \
-            -> Tuple[Dict, torch.Tensor]:
+    def create_input(
+        self,
+        imgs: Union[str, np.ndarray],
+        input_shape: Sequence[int] = None,
+        data_preprocessor: Optional[BaseDataPreprocessor] = None
+    ) -> Tuple[Dict, torch.Tensor]:
         """Create input for segmentor.
 
         Args:
@@ -113,30 +168,37 @@ class Segmentation(BaseTask):
         Returns:
             tuple: (data, img), meta information for the input image and input.
         """
-        from mmcv.parallel import collate, scatter
         from mmseg.datasets.pipelines import Compose
-        if not isinstance(imgs, (list, tuple)):
-            imgs = [imgs]
+        if isinstance(imgs, str):
+            data = dict(img_path=imgs)
+        else:
+            data = dict(img=imgs)
         cfg = process_model_config(self.model_cfg, imgs, input_shape)
-        test_pipeline = Compose(cfg.data.test.pipeline)
-        data_list = []
-        for img in imgs:
-            # prepare data
-            data = dict(img=img)
-            # build the data pipeline
-            data = test_pipeline(data)
-            data_list.append(data)
+        test_pipeline = Compose(cfg.test_pipeline)
+        data = test_pipeline(data)
+        if data_preprocessor is not None:
+            data = data_preprocessor([data], False)
+            input_tensor = data[0]
+        else:
+            input_tensor = BaseTask.get_tensor_from_input(data)
+        return data, input_tensor
 
-        data = collate(data_list, samples_per_gpu=len(imgs))
+    def get_visualizer(self, name: str, save_dir: str):
+        """
 
-        data['img_metas'] = [
-            img_metas.data[0] for img_metas in data['img_metas']
-        ]
-        data['img'] = [img.data[0][None, :] for img in data['img']]
-        if self.device != 'cpu':
-            data = scatter(data, [self.device])[0]
+        Args:
+            name:
+            save_dir:
 
-        return data, data['img']
+        Returns:
+
+        """
+        from mmseg.core.visualization import SegLocalVisualizer
+        visualizer = SegLocalVisualizer(name, save_dir=save_dir)
+        metainfo = _get_dataset_metainfo(self.model_cfg)
+        if metainfo is not None:
+            visualizer.dataset_meta = metainfo
+        return visualizer
 
     def visualize(self,
                   model,
@@ -145,7 +207,8 @@ class Segmentation(BaseTask):
                   output_file: str,
                   window_name: str = '',
                   show_result: bool = False,
-                  opacity: float = 0.5):
+                  opacity: float = 0.5,
+                  **kwargs):
         """Visualize predictions of a model.
 
         Args:
@@ -160,87 +223,21 @@ class Segmentation(BaseTask):
             opacity: (float): Opacity of painted segmentation map.
                     Defaults to `0.5`.
         """
-        show_img = mmcv.imread(image) if isinstance(image, str) else image
-        output_file = None if show_result else output_file
-        # Need to wrapper the result with list for mmseg
-        result = [result]
-        model.show_result(
-            show_img,
-            result,
-            out_file=output_file,
-            win_name=window_name,
-            show=show_result,
-            opacity=opacity)
-
-    @staticmethod
-    def run_inference(model, model_inputs: Dict[str, torch.Tensor]):
-        """Run inference once for a segmentation model of mmseg.
-
-        Args:
-            model (nn.Module): Input model.
-            model_inputs (dict): A dict containing model inputs tensor and
-                meta info.
-
-        Returns:
-            list: The predictions of model inference.
-        """
-        return model(**model_inputs, return_loss=False, rescale=True)
+        save_dir, filename = osp.split(output_file)
+        visualizer = self.get_visualizer(window_name, save_dir)
+        name = osp.splitext(filename)[0]
+        image = mmcv.imread(image, channel_order='rgb')
+        h, w = result.pred_sem_seg.data.shape[-2:]
+        h, w = int(h), int(w)
+        # resize image to seg pred shape
+        if h != image.shape[2] and w != image.shape[1]:
+            image = mmcv.imresize(image, (w, h))
+        visualizer.add_datasample(
+            name, image, pred_sample=result, show=show_result)
 
     @staticmethod
     def get_partition_cfg(partition_type: str) -> Dict:
         raise NotImplementedError('Not supported yet.')
-
-    @staticmethod
-    def get_tensor_from_input(input_data: Dict[str, Any]) -> torch.Tensor:
-        """Get input tensor from input data.
-
-        Args:
-            input_data (dict): Input data containing meta info and image
-                tensor.
-        Returns:
-            torch.Tensor: An image in `Tensor`.
-        """
-        return input_data['img'][0]
-
-    @staticmethod
-    def evaluate_outputs(model_cfg,
-                         outputs: Sequence,
-                         dataset: Dataset,
-                         metrics: Optional[str] = None,
-                         out: Optional[str] = None,
-                         metric_options: Optional[dict] = None,
-                         format_only: bool = False,
-                         log_file: Optional[str] = None):
-        """Perform post-processing to predictions of model.
-
-        Args:
-            outputs (list): A list of predictions of model inference.
-            dataset (Dataset): Input dataset to run test.
-            model_cfg (mmcv.Config): The model config.
-            metrics (str): Evaluation metrics, which depends on
-                the codebase and the dataset, e.g., e.g., "mIoU" for generic
-                datasets, and "cityscapes" for Cityscapes in mmseg.
-            out (str): Output result file in pickle format, defaults to `None`.
-            metric_options (dict): Custom options for evaluation, will be
-                kwargs for dataset.evaluate() function. Defaults to `None`.
-            format_only (bool): Format the output results without perform
-                evaluation. It is useful when you want to format the result
-                to a specific format and submit it to the test server. Defaults
-                to `False`.
-            log_file (str | None): The file to write the evaluation results.
-                Defaults to `None` and the results will only print on stdout.
-        """
-        from mmcv.utils import get_logger
-        logger = get_logger('test', log_file=log_file)
-
-        if out:
-            logger.debug(f'writing results to {out}')
-            mmcv.dump(outputs, out)
-        kwargs = {} if metric_options is None else metric_options
-        if format_only:
-            dataset.format_results(outputs, **kwargs)
-        if metrics:
-            dataset.evaluate(outputs, metrics, logger=logger, **kwargs)
 
     def get_preprocess(self) -> Dict:
         """Get the preprocess information for SDK.
@@ -249,9 +246,9 @@ class Segmentation(BaseTask):
             dict: Composed of the preprocess information.
         """
         input_shape = get_input_shape(self.deploy_cfg)
-        load_from_file = self.model_cfg.data.test.pipeline[0]
+        load_from_file = self.model_cfg.test_pipeline[0]
         model_cfg = process_model_config(self.model_cfg, [''], input_shape)
-        preprocess = model_cfg.data.test.pipeline
+        preprocess = model_cfg.test_pipeline
         preprocess[0] = load_from_file
         return preprocess
 

@@ -5,9 +5,10 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmseg.models.segmentors.EncoderDecoder.simple_test')
-def encoder_decoder__simple_test(ctx, self, img, img_meta, **kwargs):
-    """Rewrite `simple_test` for default backend.
+    func_name='mmseg.models.segmentors.EncoderDecoder.predict')
+def encoder_decoder__simple_test(ctx, self, batch_inputs, batch_data_samples,
+                                 **kwargs):
+    """Rewrite `predict` for default backend.
 
     Support configured dynamic/static shape for model input and return
     segmentation map as Tensor instead of numpy array.
@@ -22,7 +23,10 @@ def encoder_decoder__simple_test(ctx, self, img, img_meta, **kwargs):
     Returns:
         torch.Tensor: Output segmentation map pf shape [N, 1, H, W].
     """
-    seg_logit = self.encode_decode(img, img_meta)
+    batch_img_metas = []
+    for data_sample in batch_data_samples:
+        batch_img_metas.append(data_sample.metainfo)
+    seg_logit = self.encode_decode(batch_inputs, batch_img_metas)
     seg_logit = F.softmax(seg_logit, dim=1)
     seg_pred = seg_logit.argmax(dim=1, keepdim=True)
     return seg_pred

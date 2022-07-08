@@ -1,25 +1,23 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import List, Optional, Sequence, Union
 
-import mmcv
-import numpy as np
 import torch
-from mmcv.utils import Registry
-from mmseg.datasets import DATASETS
-from mmseg.models.segmentors.base import BaseSegmentor
-from mmseg.ops import resize
+from mmengine import BaseDataElement, Config
+from mmengine.data import PixelData
+from mmengine.model import BaseDataPreprocessor
+from mmengine.registry import Registry
+from torch import nn
 
 from mmdeploy.codebase.base import BaseBackendModel
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
-                            load_config)
+                            get_root_logger, load_config)
 
 
 def __build_backend_model(cls_name: str, registry: Registry, *args, **kwargs):
     return registry.module_dict[cls_name](*args, **kwargs)
 
 
-__BACKEND_MODEL = mmcv.utils.Registry(
-    'backend_segmentors', build_func=__build_backend_model)
+__BACKEND_MODEL = Registry('backend_segmentors')
 
 
 @__BACKEND_MODEL.register_module('end2end')
@@ -33,23 +31,22 @@ class End2EndModel(BaseBackendModel):
         device (str): A string represents device type.
         class_names (Sequence[str]): A list of string specifying class names.
         palette (np.ndarray): The palette of segmentation map.
-        deploy_cfg (str | mmcv.Config): Deployment config file or loaded Config
+        deploy_cfg (str | Config): Deployment config file or loaded Config
             object.
     """
 
-    def __init__(
-        self,
-        backend: Backend,
-        backend_files: Sequence[str],
-        device: str,
-        class_names: Sequence[str],
-        palette: np.ndarray,
-        deploy_cfg: Union[str, mmcv.Config] = None,
-    ):
-        super(End2EndModel, self).__init__(deploy_cfg=deploy_cfg)
-        self.CLASSES = class_names
-        self.PALETTE = palette
+    def __init__(self,
+                 backend: Backend,
+                 backend_files: Sequence[str],
+                 device: str,
+                 deploy_cfg: Union[str, Config] = None,
+                 model_cfg: Union[str, Config] = None,
+                 data_preprocessor: Optional[Union[dict, nn.Module]] = None):
+        super(End2EndModel, self).__init__(
+            deploy_cfg=deploy_cfg, data_preprocessor=data_preprocessor)
         self.deploy_cfg = deploy_cfg
+        self.model_cfg = model_cfg
+        self.device = device
         self._init_wrapper(
             backend=backend, backend_files=backend_files, device=device)
 
@@ -63,8 +60,10 @@ class End2EndModel(BaseBackendModel):
             output_names=output_names,
             deploy_cfg=self.deploy_cfg)
 
-    def forward(self, img: Sequence[torch.Tensor],
-                img_metas: Sequence[Sequence[dict]], *args, **kwargs):
+    def forward(self,
+                batch_inputs: torch.Tensor,
+                data_samples: Optional[List[BaseDataElement]] = None,
+                mode: str = 'predict'):
         """Run forward inference.
 
         Args:
@@ -78,70 +77,22 @@ class End2EndModel(BaseBackendModel):
         Returns:
             list: A list contains predictions.
         """
-        input_img = img[0].contiguous()
-        outputs = self.forward_test(input_img, img_metas, *args, **kwargs)
-        seg_pred = outputs[0]
-        # whole mode supports dynamic shape
-        ori_shape = img_metas[0][0]['ori_shape']
-        if not (ori_shape[0] == seg_pred.shape[-2]
-                and ori_shape[1] == seg_pred.shape[-1]):
-            seg_pred = torch.from_numpy(seg_pred).float()
-            seg_pred = resize(
-                seg_pred, size=tuple(ori_shape[:2]), mode='nearest')
-            seg_pred = seg_pred.long().detach().cpu().numpy()
-        # remove unnecessary dim
-        seg_pred = seg_pred.squeeze(1)
-        seg_pred = list(seg_pred)
-        return seg_pred
+        assert mode == 'predict', \
+            'Backend model only support mode==predict,' f' but get {mode}'
+        if batch_inputs.device != torch.device(self.device):
+            get_root_logger().warning(f'expect input device {self.device}'
+                                      f' but get {batch_inputs.device}.')
+        batch_inputs = batch_inputs.to(self.device)
+        batch_outputs = self.wrapper({self.input_name:
+                                      batch_inputs})[self.output_names[0]]
 
-    def forward_test(self, imgs: torch.Tensor, *args, **kwargs) -> \
-            List[np.ndarray]:
-        """The interface for forward test.
+        predictions = []
+        for seg_pred, data_sample in zip(batch_outputs, data_samples):
+            data_sample.set_data(
+                dict(pred_sem_seg=PixelData(**dict(data=seg_pred))))
+            predictions.append(data_sample)
 
-        Args:
-            imgs (torch.Tensor): Input image(s) in [N x C x H x W] format.
-
-        Returns:
-            List[np.ndarray]: A list of segmentation map.
-        """
-        outputs = self.wrapper({self.input_name: imgs})
-        outputs = self.wrapper.output_to_list(outputs)
-        outputs = [out.detach().cpu().numpy() for out in outputs]
-        return outputs
-
-    def show_result(self,
-                    img: np.ndarray,
-                    result: list,
-                    win_name: str = '',
-                    palette: Optional[np.ndarray] = None,
-                    show: bool = True,
-                    opacity: float = 0.5,
-                    out_file: str = None):
-        """Show predictions of segmentation.
-        Args:
-            img: (np.ndarray): Input image to draw predictions.
-            result (list): A list of predictions.
-            win_name (str): The name of visualization window. Default is ''.
-            palette (np.ndarray): The palette of segmentation map.
-            show (bool): Whether to show plotted image in windows. Defaults to
-                `True`.
-            opacity: (float): Opacity of painted segmentation map.
-                    Defaults to `0.5`.
-            out_file (str): Output image file to save drawn predictions.
-
-        Returns:
-            np.ndarray: Drawn image, only if not `show` or `out_file`.
-        """
-        palette = self.PALETTE if palette is None else palette
-        return BaseSegmentor.show_result(
-            self,
-            img,
-            result,
-            palette=palette,
-            opacity=opacity,
-            show=show,
-            win_name=win_name,
-            out_file=out_file)
+        return predictions
 
 
 @__BACKEND_MODEL.register_module('sdk')
@@ -168,66 +119,43 @@ class SDKEnd2EndModel(End2EndModel):
         return masks
 
 
-def get_classes_palette_from_config(model_cfg: Union[str, mmcv.Config]):
-    """Get class name and palette from config.
-
-    Args:
-        model_cfg (str | mmcv.Config): Input model config file or
-            Config object.
-    Returns:
-        tuple(Sequence[str], np.ndarray): A list of string specifying names of
-            different class and the palette of segmentation map.
-    """
-    # load cfg if necessary
-    model_cfg = load_config(model_cfg)[0]
-
-    module_dict = DATASETS.module_dict
-    data_cfg = model_cfg.data
-
-    if 'val' in data_cfg:
-        module = module_dict[data_cfg.val.type]
-    elif 'test' in data_cfg:
-        module = module_dict[data_cfg.test.type]
-    elif 'train' in data_cfg:
-        module = module_dict[data_cfg.train.type]
-    else:
-        raise RuntimeError(f'No dataset config found in: {model_cfg}')
-
-    return module.CLASSES, module.PALETTE
-
-
-def build_segmentation_model(model_files: Sequence[str],
-                             model_cfg: Union[str, mmcv.Config],
-                             deploy_cfg: Union[str, mmcv.Config], device: str,
-                             **kwargs):
+def build_segmentation_model(
+        model_files: Sequence[str],
+        model_cfg: Union[str, Config],
+        deploy_cfg: Union[str, Config],
+        device: str,
+        data_preprocessor: Optional[Union[Config,
+                                          BaseDataPreprocessor]] = None,
+        **kwargs):
     """Build object segmentation model for different backends.
 
     Args:
         model_files (Sequence[str]): Input model file(s).
-        model_cfg (str | mmcv.Config): Input model config file or Config
+        model_cfg (str | Config): Input model config file or Config
             object.
-        deploy_cfg (str | mmcv.Config): Input deployment config file or
+        deploy_cfg (str | Config): Input deployment config file or
             Config object.
         device (str):  Device to input model.
+        data_preprocessor (BaseDataPreprocessor | Config): The data
+            preprocessor of the model.
 
     Returns:
         BaseBackendModel: Segmentor for a configured backend.
     """
     # load cfg if necessary
     deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
-
     backend = get_backend(deploy_cfg)
     model_type = get_codebase_config(deploy_cfg).get('model_type', 'end2end')
-    class_names, palette = get_classes_palette_from_config(model_cfg)
 
     backend_segmentor = __BACKEND_MODEL.build(
-        model_type,
-        backend=backend,
-        backend_files=model_files,
-        device=device,
-        class_names=class_names,
-        palette=palette,
-        deploy_cfg=deploy_cfg,
-        **kwargs)
+        dict(
+            type=model_type,
+            backend=backend,
+            backend_files=model_files,
+            device=device,
+            deploy_cfg=deploy_cfg,
+            model_cfg=model_cfg,
+            data_preprocessor=data_preprocessor,
+            **kwargs))
 
     return backend_segmentor
