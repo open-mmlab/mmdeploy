@@ -8,7 +8,7 @@
 #include "mmdeploy/core/utils/device_utils.h"
 #include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/experimental/module_adapter.h"
-#include "opencv2/core.hpp"
+#include "opencv2/core/core.hpp"
 
 using std::vector;
 
@@ -75,7 +75,7 @@ class CropBox {
     auto patch = img["ori_img"].get<Mat>();
     if (dets.is_object() && dets.contains("bbox")) {
       auto _box = from_value<std::vector<float>>(dets["bbox"]);
-      cv::Rect rect(cv::Rect2f(cv::Point2f(_box[0], _box[1]), cv::Point2f(_box[2], _box[3])));
+      cv::Rect rect(cv::Rect_<float>(cv::Point2f(_box[0], _box[1]), cv::Point2f(_box[2], _box[3])));
       patch = crop(patch, rect);
     }
     return Value{{"ori_img", patch}};
