@@ -1,12 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-cmake_minimum_required(VERSION 3.14)
+
 project(tests)
-
-if ("cuda" IN_LIST MMDEPLOY_TARGET_DEVICES)
-    include(${CMAKE_SOURCE_DIR}/cmake/cuda.cmake)
-endif()
-include(${CMAKE_SOURCE_DIR}/cmake/opencv.cmake)
-
 
 set(TC_SRCS test_main.cpp)
 

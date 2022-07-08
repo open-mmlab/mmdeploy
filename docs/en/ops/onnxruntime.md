@@ -15,6 +15,18 @@
     - [Inputs](#inputs-1)
     - [Outputs](#outputs-1)
     - [Type Constraints](#type-constraints-1)
+- [NMSRotated](#nmsrotated)
+  - [Description](#description-2)
+  - [Parameters](#parameters-2)
+  - [Inputs](#inputs-2)
+  - [Outputs](#outputs-2)
+  - [Type Constraints](#type-constraints-2)
+  - [RoIAlignRotated](#roialignrotated)
+    - [Description](#description-3)
+    - [Parameters](#parameters-3)
+    - [Inputs](#inputs-3)
+    - [Outputs](#outputs-3)
+    - [Type Constraints](#type-constraints-3)
 
 <!-- TOC -->
 
@@ -93,3 +105,72 @@ Perform Modulated Deformable Convolution on input feature, read [Deformable Conv
 #### Type Constraints
 
 - T:tensor(float32, Linear)
+
+### NMSRotated
+
+#### Description
+
+Non Max Suppression for rotated bboxes.
+
+#### Parameters
+
+| Type    | Parameter       | Description                |
+| ------- | --------------- | -------------------------- |
+| `float` | `iou_threshold` | The IoU threshold for NMS. |
+
+#### Inputs
+
+<dl>
+<dt><tt>inputs[0]</tt>: T</dt>
+<dd>Input feature; 2-D tensor of shape (N, 5), where N is the number of rotated bboxes, .</dd>
+<dt><tt>inputs[1]</tt>: T</dt>
+<dd>Input offset; 1-D tensor of shape (N, ), where N is the number of rotated bboxes.</dd>
+</dl>
+
+#### Outputs
+
+<dl>
+<dt><tt>outputs[0]</tt>: T</dt>
+<dd>Output feature; 1-D tensor of shape (K, ), where K is the number of keep bboxes.</dd>
+</dl>
+
+#### Type Constraints
+
+- T:tensor(float32, Linear)
+
+### RoIAlignRotated
+
+#### Description
+
+Perform RoIAlignRotated on output feature, used in bbox_head of most two-stage rotated object detectors.
+
+#### Parameters
+
+| Type    | Parameter        | Description                                                                                                                               |
+| ------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `int`   | `output_height`  | height of output roi                                                                                                                      |
+| `int`   | `output_width`   | width of output roi                                                                                                                       |
+| `float` | `spatial_scale`  | used to scale the input boxes                                                                                                             |
+| `int`   | `sampling_ratio` | number of input samples to take for each output sample. `0` means to take samples densely for current models.                             |
+| `int`   | `aligned`        | If `aligned=0`, use the legacy implementation in MMDetection. Else, align the results more perfectly.                                     |
+| `int`   | `clockwise`      | If True, the angle in each proposal follows a clockwise fashion in image space, otherwise, the angle is counterclockwise. Default: False. |
+
+#### Inputs
+
+<dl>
+<dt><tt>input</tt>: T</dt>
+<dd>Input feature map; 4D tensor of shape (N, C, H, W), where N is the batch size, C is the numbers of channels, H and W are the height and width of the data.</dd>
+<dt><tt>rois</tt>: T</dt>
+<dd>RoIs (Regions of Interest) to pool over; 2-D tensor of shape (num_rois, 6) given as [[batch_index, cx, cy, w, h, theta], ...]. The RoIs' coordinates are the coordinate system of input.</dd>
+</dl>
+
+#### Outputs
+
+<dl>
+<dt><tt>feat</tt>: T</dt>
+<dd>RoI pooled output, 4-D tensor of shape (num_rois, C, output_height, output_width). The r-th batch element feat[r-1] is a pooled feature map corresponding to the r-th RoI RoIs[r-1].<dd>
+</dl>
+
+#### Type Constraints
+
+- T:tensor(float32)

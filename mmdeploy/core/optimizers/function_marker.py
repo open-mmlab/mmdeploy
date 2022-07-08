@@ -154,7 +154,7 @@ def mark_tensors(xs: Any, func: str, func_id: int, io_type: str, ctx: Any,
             if ys not in visit:
                 visit.add(ys)
                 root = ctx.names[ctx.index]
-                name = '/'.join(str(x) for x in (root, *prefix))
+                name = '.'.join(str(x) for x in (root, *prefix))
                 ys_shape = tuple(int(s) for s in ys.shape)
                 ret = Mark.apply(ys, ys.dtype, ys_shape, func, func_id,
                                  io_type, name, index, attrs)

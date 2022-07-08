@@ -89,7 +89,11 @@ class Segmentation(BaseTask):
                 codebases.
         """
         from mmcv.cnn.utils import revert_sync_batchnorm
-        from mmseg.apis import init_segmentor
+        if self.from_mmrazor:
+            from mmrazor.apis import init_mmseg_model as init_segmentor
+        else:
+            from mmseg.apis import init_segmentor
+
         model = init_segmentor(self.model_cfg, model_checkpoint, self.device)
         model = revert_sync_batchnorm(model)
         return model.eval()
@@ -268,5 +272,10 @@ class Segmentation(BaseTask):
         """
         assert 'decode_head' in self.model_cfg.model, 'model config contains'
         ' no decode_head'
-        name = self.model_cfg.model.decode_head.type[:-4].lower()
+        if isinstance(self.model_cfg.model.decode_head, list):
+            name = self.model_cfg.model.decode_head[-1].type[:-4].lower()
+        elif 'type' in self.model_cfg.model.decode_head:
+            name = self.model_cfg.model.decode_head.type[:-4].lower()
+        else:
+            name = 'mmseg_model'
         return name

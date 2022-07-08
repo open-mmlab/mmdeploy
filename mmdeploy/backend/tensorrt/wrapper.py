@@ -8,7 +8,47 @@ from mmdeploy.utils import Backend
 from mmdeploy.utils.timer import TimeCounter
 from ..base import BACKEND_WRAPPER, BaseWrapper
 from .init_plugins import load_tensorrt_plugin
-from .utils import load_trt_engine, torch_device_from_trt, torch_dtype_from_trt
+from .utils import load
+
+
+def torch_dtype_from_trt(dtype: trt.DataType) -> torch.dtype:
+    """Convert pytorch dtype to TensorRT dtype.
+
+    Args:
+        dtype (str.DataType): The data type in tensorrt.
+
+    Returns:
+        torch.dtype: The corresponding data type in torch.
+    """
+
+    if dtype == trt.bool:
+        return torch.bool
+    elif dtype == trt.int8:
+        return torch.int8
+    elif dtype == trt.int32:
+        return torch.int32
+    elif dtype == trt.float16:
+        return torch.float16
+    elif dtype == trt.float32:
+        return torch.float32
+    else:
+        raise TypeError(f'{dtype} is not supported by torch')
+
+
+def torch_device_from_trt(device: trt.TensorLocation):
+    """Convert pytorch device to TensorRT device.
+
+    Args:
+        device (trt.TensorLocation): The device in tensorrt.
+    Returns:
+        torch.device: The corresponding device in torch.
+    """
+    if device == trt.TensorLocation.DEVICE:
+        return torch.device('cuda')
+    elif device == trt.TensorLocation.HOST:
+        return torch.device('cpu')
+    else:
+        return TypeError(f'{device} is not supported by torch')
 
 
 @BACKEND_WRAPPER.register_module(Backend.TENSORRT.value)
@@ -41,7 +81,7 @@ class TRTWrapper(BaseWrapper):
         load_tensorrt_plugin()
         self.engine = engine
         if isinstance(self.engine, str):
-            self.engine = load_trt_engine(engine)
+            self.engine = load(engine)
 
         if not isinstance(self.engine, trt.ICudaEngine):
             raise TypeError(f'`engine` should be str or trt.ICudaEngine, \

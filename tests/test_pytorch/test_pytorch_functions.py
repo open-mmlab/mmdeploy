@@ -1,9 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import os.path as osp
+
 import mmcv
 import numpy as np
 import pytest
 import torch
-import torch.nn.functional as func
+import torch.nn.functional as F
 
 from mmdeploy.utils import Backend
 from mmdeploy.utils.test import (WrapFunction, backend_checker,
@@ -12,7 +14,7 @@ from mmdeploy.utils.test import (WrapFunction, backend_checker,
 deploy_cfg_ncnn = mmcv.Config(
     dict(
         onnx_config=dict(input_shape=None),
-        backend_config=dict(type='ncnn', model_inputs=None),
+        backend_config=dict(type='ncnn', model_inputs=None, use_vulkan=False),
         codebase_config=dict(type='mmdet', task='ObjectDetection')))
 
 
@@ -61,10 +63,10 @@ def test_group_norm_ncnn():
     input = torch.rand([1, 2, 2, 2])
     weight = torch.rand([2])
     bias = torch.rand([2])
-    model_output = func.group_norm(input, 1, weight, bias, 1e-05)
+    model_output = F.group_norm(input, 1, weight, bias, 1e-05)
 
     def group_norm_caller(input):
-        return func.group_norm(input, 1, weight, bias)
+        return F.group_norm(input, 1, weight, bias)
 
     wrapped_func = WrapFunction(group_norm_caller)
     rewrite_output, _ = get_rewrite_outputs(
@@ -77,12 +79,34 @@ def test_group_norm_ncnn():
 
 
 @backend_checker(Backend.NCNN)
+def test_chunk_ncnn():
+    input = torch.rand(1, 16, 16, 16)
+
+    model_output = input.chunk(2, dim=1)
+
+    def chunk_caller(input):
+        return input.chunk(2, dim=1)
+
+    wrapped_func = WrapFunction(chunk_caller)
+    rewrite_output, _ = get_rewrite_outputs(
+        wrapped_func,
+        model_inputs={'input': input},
+        deploy_cfg=deploy_cfg_ncnn,
+        run_with_backend=True)
+
+    assert len(model_output) == len(rewrite_output)
+    for i in range(len(model_output)):
+        assert np.allclose(
+            model_output[i], rewrite_output[i], rtol=1e-03, atol=1e-05)
+
+
+@backend_checker(Backend.NCNN)
 def test_interpolate_static():
     input = torch.rand([1, 2, 2, 2])
-    model_output = func.interpolate(input, scale_factor=[2, 2])
+    model_output = F.interpolate(input, scale_factor=[2, 2])
 
     def interpolate_caller(*arg, **kwargs):
-        return func.interpolate(*arg, **kwargs)
+        return F.interpolate(*arg, **kwargs)
 
     wrapped_func = WrapFunction(interpolate_caller, size=[4, 4])
     rewrite_output, _ = get_rewrite_outputs(
@@ -99,10 +123,10 @@ def test_linear_ncnn():
     input = torch.rand([1, 2, 2])
     weight = torch.rand([2, 2])
     bias = torch.rand([2])
-    model_output = func.linear(input, weight=weight, bias=bias)
+    model_output = F.linear(input, weight=weight, bias=bias)
 
     def linear_caller(*arg, **kwargs):
-        return func.linear(*arg, **kwargs)
+        return F.linear(*arg, **kwargs)
 
     wrapped_func = WrapFunction(linear_caller, weight=weight, bias=bias)
     rewrite_output, _ = get_rewrite_outputs(
@@ -210,3 +234,52 @@ class TestTopk:
             assert np.allclose(model_output, output, rtol=1e-03, atol=1e-05)
         else:
             assert output is not None
+
+
+@backend_checker(Backend.TENSORRT)
+@pytest.mark.parametrize('shape', [[2, 2], [4, 2], [2, 4], [2, 4, 2]])
+def test_triu_trt(shape):
+
+    input = torch.rand(shape)
+
+    def triu_caller(*arg, **kwargs):
+        return torch.triu(*arg, **kwargs)
+
+    wrapped_func = WrapFunction(triu_caller, diagonal=1)
+    import tempfile
+
+    import onnx
+
+    from mmdeploy.core import RewriterContext
+    onnx_file = tempfile.NamedTemporaryFile(suffix='onnx').name
+    with RewriterContext(
+            cfg=get_trt_config('output', shape),
+            backend=Backend.TENSORRT.value,
+            opset=11), torch.no_grad():
+        torch.onnx.export(wrapped_func, input, onnx_file, opset_version=11)
+    onnx_model = onnx.load(onnx_file)
+    nodes = onnx_model.graph.node
+    assert nodes is not None
+
+
+@backend_checker(Backend.NCNN)
+@pytest.mark.parametrize(
+    'input',
+    [torch.rand(1, 16, 16), torch.rand(1, 3, 16, 16)])
+@pytest.mark.parametrize('dim', [1, 2])
+def test_normalize_ncnn(input, dim):
+    import mmdeploy.apis.ncnn as ncnn_apis
+    from mmdeploy.utils.test import get_onnx_model
+
+    def norm_func(input, dim):
+        return F.normalize(input, p=2, dim=dim)
+
+    wrapped_func = WrapFunction(norm_func, dim=dim)
+    model_inputs = {'input': input}
+    ir_file_path = get_onnx_model(wrapped_func, model_inputs, deploy_cfg_ncnn)
+    assert osp.exists(ir_file_path)
+    ncnn_files_prefix = osp.splitext(ir_file_path)[0]
+    ncnn_apis.from_onnx(ir_file_path, ncnn_files_prefix)
+    param_path, bin_path = ncnn_apis.get_output_model_file(ir_file_path)
+    assert osp.exists(param_path)
+    assert osp.exists(bin_path)

@@ -11,12 +11,25 @@ from mmdeploy.core import RewriterContext
 onnx_file = tempfile.NamedTemporaryFile(suffix='onnx').name
 
 
-@pytest.fixture(autouse=True, scope='module')
+@pytest.fixture(autouse=False, scope='function')
 def prepare_symbolics():
     context = RewriterContext(
         Config({'backend_config': {
             'type': 'tensorrt'
         }}), 'tensorrt', opset=11)
+    context.enter()
+
+    yield
+
+    context.exit()
+
+
+@pytest.fixture(autouse=False, scope='function')
+def prepare_symbolics_ncnn():
+    context = RewriterContext(
+        Config({'backend_config': {
+            'type': 'ncnn'
+        }}), 'ncnn', opset=11)
     context.enter()
 
     yield
@@ -42,6 +55,7 @@ def get_model_onnx_nodes(model, x, onnx_file=onnx_file):
     return nodes
 
 
+@pytest.mark.usefixtures('prepare_symbolics')
 class TestAdaptivePool:
 
     def test_adaptive_pool_1d_global(self):
@@ -83,6 +97,17 @@ class TestAdaptivePool:
         assert nodes[0].op_type == 'AveragePool'
 
 
+@pytest.mark.usefixtures('prepare_symbolics_ncnn')
+def test_adaptive_pool_2d_ncnn():
+    x = torch.rand(2, 2, 2)
+    model = OpModel(torch.nn.functional.adaptive_avg_pool2d,
+                    torch.tensor([2, 2], dtype=torch.int64)).eval()
+    nodes = get_model_onnx_nodes(model, x)
+    assert nodes[1].op_type == 'AdaptiveAvgPool2d'
+    assert nodes[1].domain == 'mmdeploy'
+
+
+@pytest.mark.usefixtures('prepare_symbolics')
 def test_grid_sampler():
     x = torch.rand(1, 1, 2, 2)
     flow = torch.zeros([1, 2, 2, 2])
@@ -92,6 +117,7 @@ def test_grid_sampler():
     assert nodes[1].domain == 'mmdeploy'
 
 
+@pytest.mark.usefixtures('prepare_symbolics')
 def test_instance_norm():
     x = torch.rand(1, 2, 2, 2)
     model = OpModel(torch.group_norm, 1, torch.rand([2]), torch.rand([2]),
@@ -101,6 +127,36 @@ def test_instance_norm():
     assert nodes[4].domain == 'mmdeploy'
 
 
+@pytest.mark.usefixtures('prepare_symbolics_ncnn')
+class TestLinear:
+
+    def check(self, nodes):
+        print(nodes)
+        exist = False
+        for node in nodes:
+            if node.op_type in ['Gemm', 'MatMul']:
+                exist = True
+                break
+
+        assert exist is True
+
+    def test_normal(self):
+        x = torch.rand(1, 2, 3)
+        w = torch.rand(2, 3)
+        bias = torch.rand(2)
+        model = OpModel(torch.nn.functional.linear, w, bias).eval()
+        nodes = get_model_onnx_nodes(model, x)
+        self.check(nodes)
+
+    def test_no_bias(self):
+        x = torch.rand(1, 2, 3)
+        w = torch.rand(2, 3)
+        model = OpModel(torch.nn.functional.linear, w).eval()
+        nodes = get_model_onnx_nodes(model, x)
+        self.check(nodes)
+
+
+@pytest.mark.usefixtures('prepare_symbolics')
 class TestSqueeze:
 
     def test_squeeze_default(self):
@@ -118,6 +174,7 @@ class TestSqueeze:
         assert nodes[0].op_type == 'Squeeze'
 
 
+@pytest.mark.usefixtures('prepare_symbolics')
 def test_hardsigmoid():
     x = torch.rand(1, 2, 3, 4)
     model = torch.nn.Hardsigmoid().eval()

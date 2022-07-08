@@ -1,0 +1,313 @@
+# Use the latest 2.1 version of CircleCI pipeline process engine.
+# See: https://circleci.com/docs/2.0/configuration-reference
+version: 2.1
+
+orbs:
+  win: circleci/windows@4.1
+
+# the default pipeline parameters, which will be updated according to
+# the results of the path-filtering orb
+parameters:
+  lint_only:
+    type: boolean
+    default: true
+
+executors:
+  ubuntu-2004-cpu:
+    machine:
+      image: ubuntu-2004:202010-01
+    resource_class: large
+    working_directory: ~
+  ubuntu-2004-cu114:
+    machine:
+      image: ubuntu-2004-cuda-11.4:202110-01
+      docker_layer_caching: true
+    resource_class: gpu.nvidia.medium
+    working_directory: ~
+
+# MMDeploy Rules
+# - In the command section, each command is requested to be os platform independent. Any command related to OS platform should be put in `scripts` folder
+# - Use `python` instead of `python3` since there is no `python3` on Windows platform
+# - DO NOT use `\` to break the line, as it is not identified correctly on Windows platform. So just don't break the line :)
+commands:
+  checkout_full:
+    description: "Checkout mmdeploy"
+    steps:
+      - checkout:
+          path: mmdeploy # relative to `working_directory`
+      - run:
+          name: Checkout submodule
+          command: |
+            cd mmdeploy
+            git submodule sync
+            git submodule update --init
+  upgrade_pip:
+    steps:
+      - run:
+          name: Upgrade pip
+          command: python -m pip install --upgrade pip
+  install_pytorch:
+    parameters:
+      platform:
+        type: string
+        default: cpu
+      torch:
+        type: string
+        default: 1.8.0
+      torchvision:
+        type: string
+        default: 0.9.0
+    steps:
+      - run:
+          name: Install PyTorch
+          command: |
+            python -m pip install torch==<< parameters.torch >>+<< parameters.platform >> torchvision==<< parameters.torchvision >>+<< parameters.platform >> -f https://download.pytorch.org/whl/torch_stable.html
+  install_mmcv_cpu:
+    parameters:
+      version:
+        type: string
+        default: 1.5.0
+      torch:
+        type: string
+        default: 1.8.0
+    steps:
+      - run:
+          name: Install mmcv-full
+          command: |
+            python -m pip install opencv-python==4.5.4.60
+            python -m pip install mmcv-full==<< parameters.version >> -f https://download.openmmlab.com/mmcv/dist/cpu/torch<< parameters.torch >>/index.html
+  install_mmcv_cuda:
+    parameters:
+      version:
+        type: string
+        default: 1.5.0
+      cuda:
+        type: string
+        default: cu111
+      torch:
+        type: string
+        default: 1.8.0
+    steps:
+      - run:
+          name: Install mmcv-full
+          command: |
+            python -m pip install opencv-python==4.5.4.60
+            python -m pip install mmcv-full==<< parameters.version >> -f https://download.openmmlab.com/mmcv/dist/<< parameters.cuda >>/torch<< parameters.torch >>/index.html
+  install_mmdeploy:
+    description: "Install MMDeploy"
+    steps:
+      - run:
+          name: Install MMDeploy
+          command: |
+            cd mmdeploy
+            python -m pip install -v -e .
+  install_model_converter_req:
+    steps:
+      - run:
+          name: Install requirements
+          command: |
+            cd mmdeploy
+            python -m pip install -r requirements/codebases.txt
+            python -m pip install -r requirements/tests.txt
+            python -m pip install -r requirements/runtime.txt
+            python -m pip install -U numpy
+            cd ..
+  perform_model_converter_ut:
+    steps:
+      - run:
+          name: Perform Model Converter unittests
+          command: |
+            cd mmdeploy
+            coverage run --branch --source mmdeploy -m pytest -rsE tests
+            coverage xml
+            coverage report -m
+            cd ..
+jobs:
+  lint:
+    # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
+    # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
+    docker:
+      - image: cimg/python:3.7.4
+    # Add steps to the job
+    # See: https://circleci.com/docs/2.0/configuration-reference/#steps
+    steps:
+      - checkout
+      - run:
+          name: Install pre-commit hook
+          command: |
+            pip install pre-commit
+            pre-commit install
+      - run:
+          name: Linting
+          command: pre-commit run --all-files
+      - run:
+          name: Check docstring coverage
+          command: |
+            pip install interrogate
+            interrogate -v --ignore-init-method --ignore-module --ignore-nested-functions --ignore-regex "__repr__" --fail-under 80 mmdeploy
+
+  test_linux_tensorrt:
+    executor: ubuntu-2004-cu114
+    steps:
+      - checkout_full
+      - run:
+          name: Build docker
+          command: |
+            docker build mmdeploy/.circleci/docker/ -t mmdeploy:gpu
+      - run:
+          name: Build MMDeploy
+          command: |
+            docker run --gpus all -t -d -v /home/circleci/project/:/project -w /project --name mmdeploy mmdeploy:gpu
+            docker exec mmdeploy bash mmdeploy/.circleci/scripts/linux/build.sh cuda trt -Dpplcv_DIR=/workspace/ppl.cv/cuda-build/install/lib/cmake/ppl
+      - run:
+          name: Install MMDeploy
+          # https://stackoverflow.com/questions/28037802/docker-exec-failed-cd-executable-file-not-found-in-path
+          command: |
+            docker exec -i mmdeploy bash -c "cd mmdeploy && pip install -v -e ."
+      - run:
+          name: Install requirements
+          command: |
+            docker exec mmdeploy pip install onnxruntime==1.8.1
+            docker exec mmdeploy pip install -r mmdeploy/requirements/codebases.txt
+            docker exec mmdeploy pip install -r mmdeploy/requirements/tests.txt
+            docker exec mmdeploy pip install -r mmdeploy/requirements/runtime.txt
+            docker exec mmdeploy pip install -U numpy
+      - run:
+          name: Perform Model Converter unittests
+          command: |
+            docker exec -i mmdeploy bash -c "cd mmdeploy && coverage run --branch --source mmdeploy -m pytest -rsE tests && coverage xml && coverage report -m"
+      - run:
+          name: Run SDK unittests
+          command: |
+            docker exec mmdeploy mkdir -p mmdeploy_test_resources/transform
+            docker exec mmdeploy cp mmdeploy/demo/resources/human-pose.jpg mmdeploy_test_resources/transform
+            docker exec mmdeploy ./mmdeploy/build/bin/mmdeploy_tests
+
+  test_windows_onnxruntime:
+    parameters:
+      version:
+        type: string
+        default: 1.8.1
+    executor:
+      name: win/default
+    steps:
+      - checkout_full
+      - upgrade_pip
+      - install_pytorch
+      - install_mmcv_cpu
+      - run:
+          name: Install ONNX Runtime
+          command: mmdeploy/.circleci/scripts/windows/install_onnxruntime.ps1 cpu << parameters.version >>
+      - run:
+          name: Install OpenCV
+          command: mmdeploy/.circleci/scripts/windows/install_opencv.ps1
+      - run:
+          name: Build MMDeploy
+          command: |
+            $env:path = "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin;" + $env:path
+            $env:ONNXRUNTIME_DIR = "$pwd\onnxruntime"
+            $env:OPENCV_PACKAGE_DIR = "$(pwd)\opencv"
+            $env:MMDEPLOY_DIR = "$(pwd)\mmdeploy"
+            cd mmdeploy
+            mkdir build -ErrorAction SilentlyContinue
+            cd build
+            cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
+             -DCMAKE_SYSTEM_VERSION="10.0.18362.0" `
+             -DMMDEPLOY_BUILD_SDK=ON `
+             -DMMDEPLOY_BUILD_TEST=ON `
+             -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON `
+             -DMMDEPLOY_BUILD_SDK_CXX_API=ON `
+             -DMMDEPLOY_BUILD_SDK_CSHARP_API=ON `
+             -DMMDEPLOY_TARGET_BACKENDS="ort" `
+             -DOpenCV_DIR="$env:OPENCV_PACKAGE_DIR"
+            cmake --build . --config Release -- /m
+            cmake --install . --config Release
+            cd install/example
+            mkdir build -ErrorAction SilentlyContinue
+            cd build
+            cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
+             -DMMDeploy_DIR="$env:MMDEPLOY_DIR/build/install/lib/cmake/MMDeploy" `
+             -DOpenCV_DIR="$env:OPENCV_PACKAGE_DIR"
+            cmake --build . --config Release -- /m
+      - install_mmdeploy
+      - install_model_converter_req
+      - perform_model_converter_ut
+      - run:
+          name: Perform SDK Unittests
+          command: |
+            $env:path = "$(pwd)\onnxruntime\lib;" + $env:path
+            $env:path = "$(pwd)\opencv\x64\vc16\bin;" + $env:path
+            mkdir mmdeploy_test_resources\transform
+            cp .\mmdeploy\demo\resources\human-pose.jpg mmdeploy_test_resources\transform
+            .\mmdeploy\build\bin\Release\mmdeploy_tests.exe
+
+  test_linux_onnxruntime:
+    parameters:
+      version:
+        type: string
+        default: 1.8.1
+    executor: ubuntu-2004-cpu
+    steps:
+      - checkout_full
+      - run:
+          name: Re-install Python
+          command: bash mmdeploy/.circleci/scripts/linux/install_python.sh
+      - upgrade_pip
+      - install_pytorch
+      - install_mmcv_cpu
+      - run:
+          name: Install ONNX Runtime
+          command: bash mmdeploy/.circleci/scripts/linux/install_onnxruntime.sh cpu << parameters.version >>
+      - run:
+          name: Build MMDeploy
+          command: |
+            sudo apt-get update
+            sudo apt-get install libopencv-dev libpython3.8 python3.8-dev
+            bash mmdeploy/.circleci/scripts/linux/build.sh cpu ort
+      - install_mmdeploy
+      - install_model_converter_req
+      - perform_model_converter_ut
+      - run:
+          name: Perform SDK unittests
+          command: |
+            mkdir -p mmdeploy_test_resources/transform
+            cp -rf ./mmdeploy/demo/resources/human-pose.jpg mmdeploy_test_resources/transform
+            ./mmdeploy/build/bin/mmdeploy_tests
+      - run:
+          name: Convert model
+          command: |
+            bash mmdeploy/.circleci/scripts/linux/convert_onnxruntime.sh mmcls mmdeploy-models/mmcls/onnxruntime
+      - run:
+          name: Inference model by SDK
+          command: |
+            mmdeploy/build/install/example/build/image_classification cpu mmdeploy-models/mmcls/onnxruntime mmclassification/demo/demo.JPEG
+
+
+# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
+workflows:
+  pr_stage_lint:
+    when: << pipeline.parameters.lint_only >>
+    jobs:
+      - lint
+  pr_stage_test:
+    when:
+      not:
+        << pipeline.parameters.lint_only >>
+    jobs:
+      - lint
+      - test_linux_onnxruntime:
+          version: 1.8.1
+          requires:
+            - lint
+      - test_windows_onnxruntime:
+          version: 1.8.1
+          requires:
+            - lint
+      - hold:
+          type: approval
+          requires:
+            - test_linux_onnxruntime
+            - test_windows_onnxruntime
+      - test_linux_tensorrt:
+          requires:
+            - hold

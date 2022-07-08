@@ -1,0 +1,21 @@
+# Copyright (c) OpenMMLab. All rights reserved.
+from typing import Callable
+
+from mmdeploy.core import FUNCTION_REWRITER
+
+
+@FUNCTION_REWRITER.register_rewriter('torch.onnx.utils._model_to_graph')
+def model_to_graph__custom_optimizer(ctx, *args, **kwargs):
+    """Rewriter of _model_to_graph, add custom passes."""
+    graph, params_dict, torch_out = ctx.origin_func(*args, **kwargs)
+
+    custom_passes = getattr(ctx, 'onnx_custom_passes', None)
+
+    if custom_passes is not None:
+        assert isinstance(
+            custom_passes, Callable
+        ), f'Expect a callable onnx_custom_passes, get {type(custom_passes)}.'
+        graph, params_dict, torch_out = custom_passes(graph, params_dict,
+                                                      torch_out)
+
+    return graph, params_dict, torch_out

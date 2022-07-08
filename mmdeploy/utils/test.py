@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
+import os.path as osp
 import random
 import string
 import tempfile
@@ -28,21 +29,21 @@ def backend_checker(backend: Backend, require_plugin: bool = False):
             will also check if the backend plugin has been compiled. Default
             to `False`.
     """
-    is_plugin_available = None
+    is_custom_ops_available = None
     if backend == Backend.ONNXRUNTIME:
         from mmdeploy.apis.onnxruntime import is_available
         if require_plugin:
-            from mmdeploy.apis.onnxruntime import is_plugin_available
+            from mmdeploy.apis.onnxruntime import is_custom_ops_available
     elif backend == Backend.TENSORRT:
         from mmdeploy.apis.tensorrt import is_available
         if require_plugin:
-            from mmdeploy.apis.tensorrt import is_plugin_available
+            from mmdeploy.apis.tensorrt import is_custom_ops_available
     elif backend == Backend.PPLNN:
         from mmdeploy.apis.pplnn import is_available
     elif backend == Backend.NCNN:
         from mmdeploy.apis.ncnn import is_available
         if require_plugin:
-            from mmdeploy.apis.ncnn import is_plugin_available
+            from mmdeploy.apis.ncnn import is_custom_ops_available
     elif backend == Backend.OPENVINO:
         from mmdeploy.apis.openvino import is_available
     else:
@@ -51,9 +52,9 @@ def backend_checker(backend: Backend, require_plugin: bool = False):
 
     checker = pytest.mark.skipif(
         not is_available(), reason=f'{backend.value} package is not available')
-    if require_plugin and is_plugin_available is not None:
+    if require_plugin and is_custom_ops_available is not None:
         plugin_checker = pytest.mark.skipif(
-            not is_plugin_available(),
+            not is_custom_ops_available(),
             reason=f'{backend.value} plugin is not available')
 
         def double_checker(func):
@@ -76,21 +77,21 @@ def check_backend(backend: Backend, require_plugin: bool = False):
             will also check if the backend plugin has been compiled. Default
             to `False`.
     """
-    is_plugin_available = None
+    is_custom_ops_available = None
     if backend == Backend.ONNXRUNTIME:
         from mmdeploy.apis.onnxruntime import is_available
         if require_plugin:
-            from mmdeploy.apis.onnxruntime import is_plugin_available
+            from mmdeploy.apis.onnxruntime import is_custom_ops_available
     elif backend == Backend.TENSORRT:
         from mmdeploy.apis.tensorrt import is_available
         if require_plugin:
-            from mmdeploy.apis.tensorrt import is_plugin_available
+            from mmdeploy.apis.tensorrt import is_custom_ops_available
     elif backend == Backend.PPLNN:
         from mmdeploy.apis.pplnn import is_available
     elif backend == Backend.NCNN:
         from mmdeploy.apis.ncnn import is_available
         if require_plugin:
-            from mmdeploy.apis.ncnn import is_plugin_available
+            from mmdeploy.apis.ncnn import is_custom_ops_available
     elif backend == Backend.OPENVINO:
         from mmdeploy.apis.openvino import is_available
     elif backend == Backend.TORCHSCRIPT:
@@ -101,8 +102,8 @@ def check_backend(backend: Backend, require_plugin: bool = False):
 
     if not is_available():
         pytest.skip(f'{backend.value} package is not available')
-    if require_plugin and is_plugin_available is not None:
-        if not is_plugin_available():
+    if require_plugin and is_custom_ops_available is not None:
+        if not is_custom_ops_available():
             pytest.skip(f'{backend.value} plugin is not available')
 
 
@@ -409,14 +410,18 @@ def get_ts_model(wrapped_model: nn.Module,
     """
     ir_file_path = tempfile.NamedTemporaryFile(suffix='.pt').name
     backend = get_backend(deploy_cfg)
-    patched_model = patch_model(
-        wrapped_model, cfg=deploy_cfg, backend=backend.value)
 
-    from mmdeploy.apis.pytorch2torchscript import torch2torchscript_impl
-    torch2torchscript_impl(
-        patched_model, [v for _, v in model_inputs.items()],
-        deploy_cfg=deploy_cfg,
-        output_file=ir_file_path)
+    from mmdeploy.apis.torch_jit import trace
+    context_info = dict(deploy_cfg=deploy_cfg)
+    output_prefix = osp.splitext(ir_file_path)[0]
+
+    example_inputs = [v for _, v in model_inputs.items()]
+    trace(
+        wrapped_model,
+        example_inputs,
+        output_path_prefix=output_prefix,
+        backend=backend,
+        context_info=context_info)
     return ir_file_path
 
 
@@ -450,7 +455,8 @@ def get_backend_outputs(ir_file_path: str,
     if backend == Backend.TENSORRT:
         # convert to engine
         import mmdeploy.apis.tensorrt as trt_apis
-        if not (trt_apis.is_available() and trt_apis.is_plugin_available()):
+        if not (trt_apis.is_available()
+                and trt_apis.is_custom_ops_available()):
             return None
         trt_file_path = tempfile.NamedTemporaryFile(suffix='.engine').name
         trt_apis.onnx2tensorrt(
@@ -467,7 +473,8 @@ def get_backend_outputs(ir_file_path: str,
         device = 'cuda:0'
     elif backend == Backend.ONNXRUNTIME:
         import mmdeploy.apis.onnxruntime as ort_apis
-        if not (ort_apis.is_available() and ort_apis.is_plugin_available()):
+        if not (ort_apis.is_available()
+                and ort_apis.is_custom_ops_available()):
             return None
         feature_list = []
         backend_feats = {}
@@ -495,12 +502,12 @@ def get_backend_outputs(ir_file_path: str,
         device = 'cpu'
     elif backend == Backend.NCNN:
         import mmdeploy.apis.ncnn as ncnn_apis
-        if not (ncnn_apis.is_available() and ncnn_apis.is_plugin_available()):
+        if not (ncnn_apis.is_available()
+                and ncnn_apis.is_custom_ops_available()):
             return None
-        work_dir = tempfile.TemporaryDirectory().name
-        param_path, bin_path = ncnn_apis.get_output_model_file(
-            ir_file_path, work_dir)
-        ncnn_apis.onnx2ncnn(ir_file_path, param_path, bin_path)
+        param_path, bin_path = ncnn_apis.get_output_model_file(ir_file_path)
+        ncnn_files_prefix = osp.splitext(ir_file_path)[0]
+        ncnn_apis.from_onnx(ir_file_path, ncnn_files_prefix)
         backend_files = [param_path, bin_path]
         backend_feats = flatten_model_inputs
         device = 'cpu'
@@ -518,8 +525,8 @@ def get_backend_outputs(ir_file_path: str,
             for name, value in flatten_model_inputs.items()
         }
         mo_options = get_mo_options_from_cfg(deploy_cfg)
-        openvino_apis.onnx2openvino(input_info, output_names, ir_file_path,
-                                    openvino_work_dir, mo_options)
+        openvino_apis.from_onnx(ir_file_path, openvino_work_dir, input_info,
+                                output_names, mo_options)
         backend_files = [openvino_file_path]
         backend_feats = flatten_model_inputs
         device = 'cpu'

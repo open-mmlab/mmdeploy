@@ -23,82 +23,86 @@
 [![badge](https://github.com/open-mmlab/mmdeploy/workflows/build/badge.svg)](https://github.com/open-mmlab/mmdeploy/actions)
 [![codecov](https://codecov.io/gh/open-mmlab/mmdeploy/branch/master/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmdeploy)
 [![license](https://img.shields.io/github/license/open-mmlab/mmdeploy.svg)](https://github.com/open-mmlab/mmdeploy/blob/master/LICENSE)
-[![issue resolution](https://isitmaintained.com/badge/resolution/open-mmlab/mmdeploy.svg)](https://github.com/open-mmlab/mmdeploy/issues)
-[![open issues](https://isitmaintained.com/badge/open/open-mmlab/mmdeploy.svg)](https://github.com/open-mmlab/mmdeploy/issues)
-
-## Introduction
+[![issue resolution](https://img.shields.io/github/issues-closed-raw/open-mmlab/mmdeploy)](https://github.com/open-mmlab/mmdeploy/issues)
+[![open issues](https://img.shields.io/github/issues-raw/open-mmlab/mmdeploy)](https://github.com/open-mmlab/mmdeploy/issues)
 
 English | [简体中文](README_zh-CN.md)
 
-MMDeploy is an open-source deep learning model deployment toolset. It is
-a part of the [OpenMMLab](https://openmmlab.com/) project.
+## Introduction
+
+MMDeploy is an open-source deep learning model deployment toolset. It is a part of the [OpenMMLab](https://openmmlab.com/) project.
 
 <div align="center">
-  <img src="resources/introduction.png" width="800"/>
+  <img src="resources/introduction.png">
 </div>
 
+## Main features
 
-### Major features
+### Fully support OpenMMLab models
 
-- **Fully support OpenMMLab models**
+The currently supported codebases and models are as follows, and more will be included in the future
 
-  We provide a unified model deployment toolbox for the codebases in OpenMMLab. The supported codebases are listed as below, and more will be added in the future
-  - [x] MMClassification
-  - [x] MMDetection
-  - [x] MMSegmentation
-  - [x] MMEditing
-  - [x] MMOCR
-  - [x] MMPose
+- [mmcls](docs/en/04-supported-codebases/mmcls.md)
+- [mmdet](docs/en/04-supported-codebases/mmdet.md)
+- [mmseg](docs/en/04-supported-codebases/mmseg.md)
+- [mmedit](docs/en/04-supported-codebases/mmedit.md)
+- [mmocr](docs/en/04-supported-codebases/mmocr.md)
+- [mmpose](docs/en/04-supported-codebases/mmpose.md)
+- [mmdet3d](docs/en/04-supported-codebases/mmdet3d.md)
+- [mmrotate](docs/en/04-supported-codebases/mmrotate.md)
 
-- **Multiple inference backends are available**
+### Multiple inference backends are available
 
-  Models can be exported and run in different backends. The following ones are supported, and more will be taken into consideration
-  - [x] ONNX Runtime
-  - [x] TensorRT
-  - [x] PPLNN
-  - [x] ncnn
-  - [x] OpenVINO
+Models can be exported and run in the following backends, and more will be compatible
 
-- **Efficient and highly scalable SDK Framework by C/C++**
+| ONNX Runtime | TensorRT | ppl.nn | ncnn | OpenVINO | LibTorch | more                                           |
+| ------------ | -------- | ------ | ---- | -------- | -------- | ---------------------------------------------- |
+| ✔️           | ✔️       | ✔️     | ✔️   | ✔️       | ✔️       | [benchmark](docs/en/03-benchmark/benchmark.md) |
 
-    All kinds of modules in SDK can be extensible, such as `Transform` for image processing, `Net` for Neural Network inference, `Module` for postprocessing and so on
+### Efficient and scalable C/C++ SDK Framework
 
-## License
+All kinds of modules in the SDK can be extended, such as `Transform` for image processing, `Net` for Neural Network inference, `Module` for postprocessing and so on
 
-This project is released under the [Apache 2.0 license](LICENSE).
+## Get Started
 
-## Installation
+Please read [getting_started.md](docs/en/get_started.md) for the basic usage of MMDeploy. We also provide tutoials about:
 
-Please refer to [build.md](https://mmdeploy.readthedocs.io/en/latest/build.html) for installation.
+- [Build](docs/en/01-how-to-build/build_from_source.md)
+  - [Build from Docker](docs/en/01-how-to-build/build_from_docker.md)
+  - [Build for Linux](docs/en/01-how-to-build/linux-x86_64.md)
+  - [Build for Win10](docs/en/01-how-to-build/windows.md)
+  - [Build for Android](docs/en/01-how-to-build/android.md)
+  - [Build for Jetson](docs/en/01-how-to-build/jetsons.md)
+- User Guide
+  - [How to convert model](docs/en/02-how-to-run/convert_model.md)
+  - [How to write config](docs/en/02-how-to-run/write_config.md)
+  - [How to evaluate deployed models](docs/en/02-how-to-run/how_to_evaluate_a_model.md)
+  - [How to measure performance of deployed models](docs/en/02-how-to-run/how_to_measure_performance_of_models.md)
+- Developer Guide
+  - [How to support new models](docs/en/06-developer-guide/support_new_model.md)
+  - [How to support new backends](docs/en/06-developer-guide/support_new_backend.md)
+- [FAQ](docs/en/faq.md)
+- [Contributing](.github/CONTRIBUTING.md)
 
-## Getting Started
+## Benchmark and Model zoo
 
-Please see [getting_started.md](https://mmdeploy.readthedocs.io/en/latest/get_started.html) for the basic usage of MMDeploy. We also provide other tutorials for:
-
-- [how to convert model](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_convert_model.html)
-- [how to write config](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_write_config.html)
-- [how to support new models](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_support_new_models.html)
-- [how to measure performance of models](https://mmdeploy.readthedocs.io/en/latest/tutorials/how_to_measure_performance_of_models.html)
-
-Please refer to [FAQ](https://mmdeploy.readthedocs.io/en/latest/faq.html) for frequently asked questions.
-
-## Benchmark and model zoo
-
-Results and supported model list are available in the [benchmark](https://mmdeploy.readthedocs.io/en/latest/benchmark.html) and [model list](https://mmdeploy.readthedocs.io/en/latest/supported_models.html).
+You can find the supported models from [here](docs/en/03-benchmark/supported_models.md) and their performance in the [benchmark](docs/en/03-benchmark/benchmark.md).
 
 ## Contributing
 
-We appreciate all contributions to improve MMDeploy. Please refer to [CONTRIBUTING.md](.github/CONTRIBUTING.md) for the contributing guideline.
+We appreciate all contributions to MMDeploy. Please refer to [CONTRIBUTING.md](.github/CONTRIBUTING.md) for the contributing guideline.
 
 ## Acknowledgement
 
 We would like to sincerely thank the following teams for their contributions to [MMDeploy](https://github.com/open-mmlab/mmdeploy):
+
 - [OpenPPL](https://github.com/openppl-public)
 - [OpenVINO](https://github.com/openvinotoolkit/openvino)
+- [ncnn](https://github.com/Tencent/ncnn)
 
 ## Citation
 
-If you find this project useful in your research, please consider cite:
+If you find this project useful in your research, please consider citing:
 
 ```BibTeX
 @misc{=mmdeploy,
@@ -108,6 +112,10 @@ If you find this project useful in your research, please consider cite:
     year={2021}
 }
 ```
+
+## License
+
+This project is released under the [Apache 2.0 license](LICENSE).
 
 ## Projects in OpenMMLab
 

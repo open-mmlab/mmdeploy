@@ -148,6 +148,23 @@ def get_rpn_head_model():
     return model
 
 
+def get_reppoints_head_model():
+    """Reppoints Head Config."""
+    test_cfg = mmcv.Config(
+        dict(
+            deploy_nms_pre=0,
+            min_bbox_size=0,
+            score_thr=0.05,
+            nms=dict(type='nms', iou_threshold=0.5),
+            max_per_img=100))
+
+    from mmdet.models.dense_heads import RepPointsHead
+    model = RepPointsHead(num_classes=4, in_channels=1, test_cfg=test_cfg)
+
+    model.requires_grad_(False)
+    return model
+
+
 def get_single_roi_extractor():
     """SingleRoIExtractor Config."""
     from mmdet.models.roi_heads import SingleRoIExtractor
@@ -184,8 +201,8 @@ def get_gfl_head_model():
     return model
 
 
-def test_focus_forward_ncnn():
-    backend_type = Backend.NCNN
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME, Backend.NCNN])
+def test_focus_forward(backend_type):
     check_backend(backend_type)
     focus_model = get_focus_backbone_model()
     focus_model.cpu().eval()
@@ -205,11 +222,10 @@ def test_focus_forward_ncnn():
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg)
-    for model_output, rewrite_output in zip(model_outputs[0],
-                                            rewrite_outputs[0]):
-        model_output = model_output.squeeze().cpu().numpy()
+    for model_output, rewrite_output in zip(model_outputs[0], rewrite_outputs):
+        model_output = model_output.squeeze()
         rewrite_output = rewrite_output.squeeze()
-        assert np.allclose(
+        torch.testing.assert_allclose(
             model_output, rewrite_output, rtol=1e-03, atol=1e-05)
 
 
@@ -1393,18 +1409,19 @@ def test_ssd_head_get_bboxes__ncnn(is_dynamic: bool):
         'img_shape': (s, s, 3)
     }]
     output_names = ['output']
-    input_names = ['input']
+    input_names = []
+    for i in range(6):
+        input_names.append('cls_scores_' + str(i))
+        input_names.append('bbox_preds_' + str(i))
     dynamic_axes = None
     if is_dynamic:
         dynamic_axes = {
-            input_names[0]: {
-                2: 'height',
-                3: 'width'
-            },
             output_names[0]: {
                 1: 'num_dets',
             }
         }
+        for input_name in input_names:
+            dynamic_axes[input_name] = {2: 'height', 3: 'width'}
     deploy_cfg = mmcv.Config(
         dict(
             backend_config=dict(type=Backend.NCNN.value),
@@ -1462,3 +1479,182 @@ def test_ssd_head_get_bboxes__ncnn(is_dynamic: bool):
         rewrite_outputs = rewrite_outputs[0]
 
     assert rewrite_outputs.shape[-1] == 6
+
+
+@pytest.mark.parametrize('backend_type, ir_type', [(Backend.OPENVINO, 'onnx')])
+def test_reppoints_head_get_bboxes(backend_type: Backend, ir_type: str):
+    """Test get_bboxes rewrite of base dense head."""
+    check_backend(backend_type)
+    dense_head = get_reppoints_head_model()
+    dense_head.cpu().eval()
+    s = 128
+    img_metas = [{
+        'scale_factor': np.ones(4),
+        'pad_shape': (s, s, 3),
+        'img_shape': (s, s, 3)
+    }]
+
+    deploy_cfg = get_deploy_cfg(backend_type, ir_type)
+    output_names = get_ir_config(deploy_cfg).get('output_names', None)
+
+    # the cls_score's size: (1, 4, 32, 32), (1, 4, 16, 16),
+    # (1, 4, 8, 8), (1, 4, 4, 4), (1, 4, 2, 2).
+    # the bboxes's size: (1, 4, 32, 32), (1, 4, 16, 16),
+    # (1, 4, 8, 8), (1, 4, 4, 4), (1, 4, 2, 2)
+    seed_everything(1234)
+    cls_score = [
+        torch.rand(1, 4, pow(2, i), pow(2, i)) for i in range(5, 0, -1)
+    ]
+    seed_everything(5678)
+    bboxes = [torch.rand(1, 4, pow(2, i), pow(2, i)) for i in range(5, 0, -1)]
+
+    # to get outputs of pytorch model
+    model_inputs = {
+        'cls_scores': cls_score,
+        'bbox_preds': bboxes,
+        'img_metas': img_metas
+    }
+    model_outputs = get_model_outputs(dense_head, 'get_bboxes', model_inputs)
+
+    # to get outputs of onnx model after rewrite
+    img_metas[0]['img_shape'] = torch.Tensor([s, s])
+    wrapped_model = WrapModel(
+        dense_head, 'get_bboxes', img_metas=img_metas, with_nms=True)
+    rewrite_inputs = {
+        'cls_scores': cls_score,
+        'bbox_preds': bboxes,
+    }
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg)
+
+    if is_backend_output:
+        if isinstance(rewrite_outputs, dict):
+            rewrite_outputs = convert_to_list(rewrite_outputs, output_names)
+        for model_output, rewrite_output in zip(model_outputs[0],
+                                                rewrite_outputs):
+            model_output = model_output.squeeze().cpu().numpy()
+            rewrite_output = rewrite_output.squeeze()
+            # hard code to make two tensors with the same shape
+            # rewrite and original codes applied different nms strategy
+            assert np.allclose(
+                model_output[:rewrite_output.shape[0]],
+                rewrite_output,
+                rtol=1e-03,
+                atol=1e-05)
+    else:
+        assert rewrite_outputs is not None
+
+
+@pytest.mark.parametrize('backend_type, ir_type', [(Backend.OPENVINO, 'onnx')])
+def test_reppoints_head_points2bbox(backend_type: Backend, ir_type: str):
+    """Test get_bboxes rewrite of base dense head."""
+    check_backend(backend_type)
+    dense_head = get_reppoints_head_model()
+    dense_head.cpu().eval()
+    output_names = ['output']
+
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(type=backend_type.value),
+            onnx_config=dict(
+                input_shape=None,
+                input_names=['pts'],
+                output_names=output_names)))
+
+    # the cls_score's size: (1, 4, 32, 32), (1, 4, 16, 16),
+    # (1, 4, 8, 8), (1, 4, 4, 4), (1, 4, 2, 2).
+    # the bboxes's size: (1, 4, 32, 32), (1, 4, 16, 16),
+    # (1, 4, 8, 8), (1, 4, 4, 4), (1, 4, 2, 2)
+    seed_everything(1234)
+    pts = torch.rand(1, 18, 16, 16)
+
+    # to get outputs of onnx model after rewrite
+    wrapped_model = WrapModel(dense_head, 'points2bbox', y_first=True)
+    rewrite_inputs = {'pts': pts}
+    _ = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg)
+
+
+@pytest.mark.skipif(
+    reason='Only support GPU test', condition=not torch.cuda.is_available())
+@pytest.mark.parametrize('backend_type', [(Backend.TENSORRT)])
+def test_windows_msa(backend_type: Backend):
+    check_backend(backend_type)
+    from mmdet.models.backbones.swin import WindowMSA
+    model = WindowMSA(96, 3, (7, 7))
+    model.cuda().eval()
+    output_names = ['output']
+
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(
+                type=backend_type.value,
+                common_config=dict(fp16_mode=True, max_workspace_size=1 << 20),
+                model_inputs=[
+                    dict(
+                        input_shapes=dict(
+                            x=dict(
+                                min_shape=[12, 49, 96],
+                                opt_shape=[12, 49, 96],
+                                max_shape=[12, 49, 96]),
+                            mask=dict(
+                                min_shape=[12, 49, 49],
+                                opt_shape=[12, 49, 49],
+                                max_shape=[12, 49, 49])))
+                ]),
+            onnx_config=dict(
+                input_shape=None,
+                input_names=['x', 'mask'],
+                output_names=output_names)))
+
+    x = torch.randn([12, 49, 96]).cuda()
+    mask = torch.randn([12, 49, 49]).cuda()
+    wrapped_model = WrapModel(model, 'forward')
+    rewrite_inputs = {'x': x, 'mask': mask}
+    _ = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg)
+
+
+@pytest.mark.skipif(
+    reason='Only support GPU test', condition=not torch.cuda.is_available())
+@pytest.mark.parametrize('backend_type', [(Backend.TENSORRT)])
+def test_shift_windows_msa(backend_type: Backend):
+    check_backend(backend_type)
+    from mmdet.models.backbones.swin import ShiftWindowMSA
+    model = ShiftWindowMSA(96, 3, 7)
+    model.cuda().eval()
+    output_names = ['output']
+
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(
+                type=backend_type.value,
+                model_inputs=[
+                    dict(
+                        input_shapes=dict(
+                            query=dict(
+                                min_shape=[1, 60800, 96],
+                                opt_shape=[1, 60800, 96],
+                                max_shape=[1, 60800, 96])))
+                ]),
+            onnx_config=dict(
+                input_shape=None,
+                input_names=['query'],
+                output_names=output_names)))
+
+    query = torch.randn([1, 60800, 96]).cuda()
+    hw_shape = (torch.tensor(200), torch.tensor(304))
+
+    wrapped_model = WrapModel(model, 'forward')
+    rewrite_inputs = {'query': query, 'hw_shape': hw_shape}
+    _ = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg,
+        run_with_backend=False)

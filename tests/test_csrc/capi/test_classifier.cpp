@@ -4,14 +4,14 @@
 #include "catch.hpp"
 // clang-format on
 
-#include "apis/c/classifier.h"
-#include "core/logger.h"
+#include "mmdeploy/apis/c/classifier.h"
+#include "mmdeploy/core/logger.h"
 #include "opencv2/opencv.hpp"
 #include "test_resource.h"
 
 using namespace std;
 
-TEST_CASE("test classifier's c api", "[classifier]") {
+TEST_CASE("test classifier's c api", "[.classifier][resource]") {
   auto test = [](const std::string& device_name, const std::string& model_path,
                  const std::vector<std::string>& img_list) {
     mm_handle_t handle{nullptr};

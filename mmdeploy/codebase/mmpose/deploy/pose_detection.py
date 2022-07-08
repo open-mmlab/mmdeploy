@@ -38,6 +38,8 @@ def process_model_config(
     sdk_pipeline = []
     color_type = 'color'
     channel_order = 'rgb'
+    if input_shape is None:
+        input_shape = np.array(cfg.data_cfg['image_size'])
 
     idx = 0
     while idx < len(test_pipeline):
@@ -61,6 +63,8 @@ def process_model_config(
             if 'channel_order' in trans:
                 channel_order = trans['channel_order']
         if trans.type == 'TopDownAffine':
+            trans['image_size'] = input_shape
+        if trans.type == 'TopDownGetBboxCenterScale':
             trans['image_size'] = input_shape
 
         sdk_pipeline.append(trans)
@@ -135,7 +139,6 @@ class PoseDetection(BaseTask):
         Returns:
             tuple: (data, img), meta information for the input image and input.
         """
-        from mmpose.apis.inference import _box2cs
         from mmpose.datasets.dataset_info import DatasetInfo
         from mmpose.datasets.pipelines import Compose
 
@@ -160,17 +163,12 @@ class PoseDetection(BaseTask):
             image_size = input_shape
         else:
             image_size = np.array(cfg.data_cfg['image_size'])
-        for bbox in bboxes:
-            center, scale = _box2cs(cfg, bbox)
 
+        for bbox in bboxes:
             # prepare data
             data = {
                 'img':
                 imgs,
-                'center':
-                center,
-                'scale':
-                scale,
                 'bbox_score':
                 bbox[4] if len(bbox) == 5 else 1,
                 'bbox_id':
@@ -189,6 +187,17 @@ class PoseDetection(BaseTask):
                     'flip_pairs': flip_pairs
                 }
             }
+
+            # for compatibility of mmpose
+            try:
+                # for mmpose<=v0.25.1
+                from mmpose.apis.inference import _box2cs
+                center, scale = _box2cs(cfg, bbox)
+                data['center'] = center
+                data['scale'] = scale
+            except ImportError:
+                # for mmpose>=v0.26.0
+                data['bbox'] = bbox
 
             data = test_pipeline(data)
             batch_data.append(data)

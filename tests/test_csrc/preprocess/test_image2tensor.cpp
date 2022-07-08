@@ -1,9 +1,10 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 #include "catch.hpp"
-#include "core/tensor.h"
-#include "core/utils/device_utils.h"
+#include "mmdeploy/core/tensor.h"
+#include "mmdeploy/core/utils/device_utils.h"
+#include "mmdeploy/preprocess/transform/transform.h"
+#include "opencv2/imgcodecs/imgcodecs.hpp"
 #include "opencv_utils.h"
-#include "preprocess/transform/transform.h"
 #include "test_resource.h"
 #include "test_utils.h"
 

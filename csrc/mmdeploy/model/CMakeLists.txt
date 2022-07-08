@@ -1,0 +1,25 @@
+# Copyright (c) OpenMMLab. All rights reserved.
+
+project(model)
+
+set(MODEL_NAMES "directory_model")
+if (${MMDEPLOY_ZIP_MODEL})
+    set(MODEL_NAMES ${MODEL_NAMES} "zip_model")
+endif ()
+
+foreach (MODEL_NAME ${MODEL_NAMES})
+    set(TARGET_MODEL_NAME mmdeploy_${MODEL_NAME})
+    mmdeploy_add_module(${TARGET_MODEL_NAME} ${MODEL_NAME}_impl.cpp)
+    if (NOT (MSVC OR ANDROID))
+        target_link_libraries(${TARGET_MODEL_NAME} PUBLIC stdc++fs)
+    endif ()
+    if (${MODEL_NAME} STREQUAL "zip_model")
+        find_package(libzip QUIET)
+        if (libzip_FOUND)
+            target_link_libraries(${TARGET_MODEL_NAME} PUBLIC libzip::zip)
+        else ()
+            target_link_libraries(${TARGET_MODEL_NAME} PUBLIC zip)
+        endif ()
+    endif ()
+    add_library(mmdeploy::${MODEL_NAME} ALIAS ${TARGET_MODEL_NAME})
+endforeach ()

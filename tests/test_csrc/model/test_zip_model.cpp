@@ -5,14 +5,15 @@
 // clang-format on
 #include <fstream>
 
-#include "core/logger.h"
-#include "core/model.h"
-#include "core/model_impl.h"
+#include "mmdeploy/core/logger.h"
+#include "mmdeploy/core/model.h"
+#include "mmdeploy/core/model_impl.h"
 #include "test_resource.h"
 
 using namespace std;
 using namespace mmdeploy;
 
+#if MMDEPLOY_ZIP_MODEL
 TEST_CASE("test zip model", "[zip_model]") {
   std::unique_ptr<ModelImpl> model_impl;
   for (auto& entry : ModelRegistry::Get().ListEntries()) {
@@ -50,3 +51,4 @@ TEST_CASE("test zip model", "[zip_model]") {
     REQUIRE(!model_impl->Init(buffer.data(), buffer.size()).has_error());
   }
 }
+#endif

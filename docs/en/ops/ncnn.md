@@ -2,7 +2,7 @@
 
 <!-- TOC -->
 
-- [NCNN Ops](#ncnn-ops)
+- [ncnn Ops](#ncnn-ops)
   - [Expand](#expand)
     - [Description](#description)
     - [Parameters](#parameters)
@@ -50,6 +50,7 @@ Expand has no parameters.
 </dl>
 
 #### Outputs
+
 <dl>
 <dt><tt>outputs[0]</tt>: T</dt>
 <dd>top_blob; The blob of ncnn.Mat which expanded by given shape and broadcast rule of ncnn.</dd>
@@ -67,9 +68,9 @@ Given the data and indice blob, gather entries of the axis dimension of data ind
 
 #### Parameters
 
-| Type    | Parameter             | Description                                                                                                                             |
-| ------- | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `int`   | `axis` | Which axis to gather on. Default is 0.
+| Type  | Parameter | Description                            |
+| ----- | --------- | -------------------------------------- |
+| `int` | `axis`    | Which axis to gather on. Default is 0. |
 
 #### Inputs
 
@@ -81,6 +82,7 @@ Given the data and indice blob, gather entries of the axis dimension of data ind
 </dl>
 
 #### Outputs
+
 <dl>
 <dt><tt>outputs[0]</tt>: T</dt>
 <dd>top_blob; The blob of ncnn.Mat which gathered by given data and indice blob.</dd>
@@ -108,6 +110,7 @@ Shape has no parameters.
 </dl>
 
 #### Outputs
+
 <dl>
 <dt><tt>outputs[0]</tt>: T</dt>
 <dd>top_blob; 1-D ncnn.Mat of shape (bottom_blob.dims,), `bottom_blob.dims` is the input blob dimensions.</dd>
@@ -126,7 +129,7 @@ Get the indices and value(optional) of largest or smallest k data among the axis
 #### Parameters
 
 | Type  | Parameter   | Description                                                                                                                                                                |
-|-------|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ----- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `int` | `axis`      | The axis of data which topk calculate on. Default is -1, indicates the last dimension.                                                                                     |
 | `int` | `largest`   | The binary value which indicates the TopK operator selects the largest or smallest K values. Default is 1, the TopK selects the largest K values.                          |
 | `int` | `sorted`    | The binary value of whether returning sorted topk value or not. If not, the topk returns topk values in any order. Default is 1, this operator returns sorted topk values. |
@@ -142,6 +145,7 @@ Get the indices and value(optional) of largest or smallest k data among the axis
 </dl>
 
 #### Outputs
+
 <dl>
 <dt><tt>outputs[0]</tt>: T</dt>
 <dd>top_blob[0]; If outputs has only 1 blob, outputs[0] is the indice blob of topk, if outputs has 2 blobs, outputs[0] is the value blob of topk. This blob is ncnn.Mat format with the shape of bottom_blob[0] or reduced shape of bottom_blob[0].</dd>

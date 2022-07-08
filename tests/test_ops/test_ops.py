@@ -380,6 +380,83 @@ def test_batched_nms(backend,
 
 
 @pytest.mark.parametrize('backend', [TEST_TENSORRT])
+@pytest.mark.parametrize('num_classes,pre_topk,after_topk,iou_threshold,'
+                         'score_threshold,background_label_id',
+                         [(5, 6, 3, 0.7, 0.1, -1)])
+def test_batched_rotated_nms(backend,
+                             num_classes,
+                             pre_topk,
+                             after_topk,
+                             iou_threshold,
+                             score_threshold,
+                             background_label_id,
+                             input_list=None,
+                             save_dir=None):
+    backend.check_env()
+    pytest.importorskip('mmrotate', reason='mmrorate is not installed.')
+
+    if input_list is None:
+        nms_boxes = torch.tensor(
+            [[[291.1746, 316.2263, 343.5029, 347.7312, 1.],
+              [288.4846, 315.0447, 343.7267, 346.5630, 2.],
+              [288.5307, 318.1989, 341.6425, 349.7222, 3.],
+              [918.9102, 83.7463, 933.3920, 164.9041, 4.],
+              [895.5786, 78.2361, 907.8049, 172.0883, 5.],
+              [292.5816, 316.5563, 340.3462, 352.9989, 6.],
+              [609.4592, 83.5447, 631.2532, 144.0749, 7.],
+              [917.7308, 85.5870, 933.2839, 168.4530, 8.],
+              [895.5138, 79.3596, 908.2865, 171.0418, 9.],
+              [291.4747, 318.6987, 347.1208, 349.5754, 10.]]])
+        scores = torch.tensor([[[0.9577, 0.9745, 0.3030, 0.6589, 0.2742],
+                                [0.1618, 0.7963, 0.5124, 0.6964, 0.6850],
+                                [0.8425, 0.4843, 0.9489, 0.8068, 0.7340],
+                                [0.7337, 0.4340, 0.9923, 0.0704, 0.4506],
+                                [0.3090, 0.5606, 0.6939, 0.3764, 0.6920],
+                                [0.0044, 0.7986, 0.2221, 0.2782, 0.4378],
+                                [0.7293, 0.2735, 0.8381, 0.0264, 0.6278],
+                                [0.7144, 0.1066, 0.4125, 0.4041, 0.8819],
+                                [0.4963, 0.7891, 0.6908, 0.1499, 0.5584],
+                                [0.4385, 0.6035, 0.0508, 0.0662, 0.5938]]])
+    else:
+        nms_boxes = torch.tensor(input_list[0], dtype=torch.float32)
+        scores = torch.tensor(input_list[1], dtype=torch.float32)
+
+    from mmdeploy.codebase.mmrotate.core.post_processing.bbox_nms import \
+        _multiclass_nms_rotated
+    expected_result = _multiclass_nms_rotated(
+        nms_boxes,
+        scores,
+        iou_threshold=iou_threshold,
+        score_threshold=score_threshold,
+        pre_top_k=pre_topk + 1,
+        keep_top_k=after_topk + 1)
+    expected_result = (expected_result[0][:,
+                                          0:-1, :], expected_result[1][:,
+                                                                       0:-1])
+
+    boxes = nms_boxes.unsqueeze(2).tile(num_classes, 1)
+
+    from mmdeploy.mmcv.ops.nms_rotated import TRTBatchedRotatedNMSop
+    batched_rotated_nms = TRTBatchedRotatedNMSop.apply
+
+    def wrapped_function(boxes, scores):
+        return batched_rotated_nms(boxes, scores, num_classes, pre_topk,
+                                   after_topk, iou_threshold, score_threshold,
+                                   background_label_id)
+
+    wrapped_model = WrapFunction(wrapped_function)
+
+    with RewriterContext(cfg={}, backend=backend.backend_name, opset=11):
+        backend.run_and_validate(
+            wrapped_model, [boxes, scores],
+            'batched_rotated_nms',
+            input_names=['boxes', 'scores'],
+            output_names=['batched_rotated_nms_bboxes', 'inds'],
+            expected_result=expected_result,
+            save_dir=save_dir)
+
+
+@pytest.mark.parametrize('backend', [TEST_TENSORRT])
 @pytest.mark.parametrize(
     'out_size, pool_mode, sampling_ratio,roi_scale_factor,'
     ' finest_scale,featmap_strides, aligned',
@@ -774,3 +851,248 @@ def test_expand(backend,
             input_names=['input', 'shape'],
             output_names=['output'],
             save_dir=save_dir)
+
+
+@pytest.mark.parametrize('backend', [TEST_ONNXRT])
+@pytest.mark.parametrize('iou_threshold', [0.1, 0.3])
+@pytest.mark.parametrize('score_threshold', [0., 0.1])
+def test_nms_rotated(backend, iou_threshold, score_threshold, save_dir=None):
+    backend.check_env()
+
+    boxes = torch.tensor(
+        [[[60, 75, 20, 50, 0], [65, 80, 10, 40, 0], [30, 30, 40, 40, 0]],
+         [[60, 75, 20, 50, 0], [65, 80, 10, 40, 0], [30, 30, 40, 40, 0]]],
+        dtype=torch.float32)
+    scores = torch.tensor(
+        [[[0.5, 0.1, 0.1], [0.1, 0.6, 0.1], [0.1, 0.1, 0.7], [0.1, 0.1, 0.1]],
+         [[0.1, 0.1, 0.1], [0.7, 0.1, 0.1], [0.1, 0.6, 0.1], [0.1, 0.1, 0.5]]],
+        dtype=torch.float32)
+
+    from mmdeploy.mmcv.ops import ONNXNMSRotatedOp
+
+    def wrapped_function(torch_boxes, torch_scores):
+        return ONNXNMSRotatedOp.apply(torch_boxes, torch_scores, iou_threshold,
+                                      score_threshold)
+
+    wrapped_model = WrapFunction(wrapped_function).eval()
+
+    with RewriterContext(
+            Config({'backend_config': {
+                'type': backend.backend_name
+            }}),
+            backend=backend.backend_name,
+            opset=11):
+        backend.run_and_validate(
+            wrapped_model, [boxes, scores],
+            'nms_rotated',
+            input_names=['boxes', 'scores'],
+            output_names=['keep_inds'],
+            save_dir=save_dir)
+
+
+@pytest.mark.parametrize('backend', [TEST_ONNXRT])
+@pytest.mark.parametrize('pool_h,pool_w,spatial_scale,sampling_ratio',
+                         [(2, 2, 1.0, 2), (4, 4, 2.0, 4)])
+def test_roi_align_rotated(backend,
+                           pool_h,
+                           pool_w,
+                           spatial_scale,
+                           sampling_ratio,
+                           input_list=None,
+                           save_dir=None):
+    backend.check_env()
+
+    if input_list is None:
+        # input = torch.rand(1, 1, 16, 16, dtype=torch.float32)
+        input = torch.tensor([[[[1., 2.], [3., 4.]]]], dtype=torch.float32)
+        single_roi = torch.tensor([[0., 0.5, 0.5, 1., 1., 0]],
+                                  dtype=torch.float32)
+    else:
+        input = torch.tensor(input_list[0], dtype=torch.float32)
+        single_roi = torch.tensor(input_list[1], dtype=torch.float32)
+
+    from mmcv.ops import roi_align_rotated
+
+    def wrapped_function(torch_input, torch_rois):
+        return roi_align_rotated(torch_input, torch_rois, (pool_w, pool_h),
+                                 spatial_scale, sampling_ratio, True, False)
+
+    wrapped_model = WrapFunction(wrapped_function).eval()
+
+    with RewriterContext(
+            Config({'backend_config': {
+                'type': backend.backend_name
+            }}),
+            backend=backend.backend_name,
+            opset=11):
+        backend.run_and_validate(
+            wrapped_model, [input, single_roi],
+            'roi_align_rotated',
+            input_names=['input', 'rois'],
+            output_names=['roi_feat'],
+            save_dir=save_dir)
+
+
+@pytest.mark.parametrize('backend', [TEST_TENSORRT])
+@pytest.mark.parametrize(
+    'out_size, clockwise, sampling_ratio, roi_scale_factor,'
+    ' finest_scale, featmap_strides, aligned',
+    [(tuple([2, 2]), False, 2, 1.0, 2, list([1.0]), 1)])
+def test_multi_level_rotated_roi_align(backend,
+                                       out_size,
+                                       clockwise,
+                                       sampling_ratio,
+                                       roi_scale_factor,
+                                       finest_scale,
+                                       featmap_strides,
+                                       aligned,
+                                       input_list=None,
+                                       save_dir=None):
+    backend.check_env()
+
+    if input_list is None:
+        import numpy as np
+        input = [
+            torch.tensor([[[[1., 2., 5., 6.], [3., 4., 7., 8.],
+                            [9., 10., 13., 14.], [11., 12., 15., 16.]]]])
+        ]
+        rois = torch.tensor([[0., 1.5, 1.5, 3., 3., np.pi / 2]])
+        expected_result = torch.tensor([[[[7.5625, 1.9375], [10.375, 4.75]]]])
+    else:
+        input = input_list[0]
+        rois = input_list[1]
+        expected_result = input_list[2]
+    input_name = [('input_' + str(i)) for i in range(len(featmap_strides))]
+    input_name.insert(0, 'rois')
+
+    inputs = [
+        onnx.helper.make_tensor_value_info(
+            input_name[i + 1], onnx.TensorProto.FLOAT, shape=input[i].shape)
+        for i in range(len(input_name) - 1)
+    ]
+    inputs.append(
+        onnx.helper.make_tensor_value_info(
+            'rois', onnx.TensorProto.FLOAT, shape=rois.shape))
+    outputs = [
+        onnx.helper.make_tensor_value_info(
+            'bbox_feats', onnx.TensorProto.FLOAT, shape=expected_result.shape)
+    ]
+    node = onnx.helper.make_node(
+        'MMCVMultiLevelRotatedRoiAlign',
+        input_name, ['bbox_feats'],
+        'MMCVMultiLevelRotatedRoiAlign_0',
+        None,
+        'mmdeploy',
+        featmap_strides=featmap_strides,
+        finest_scale=finest_scale,
+        output_height=out_size[0],
+        output_width=out_size[1],
+        clockwise=clockwise,
+        roi_scale_factor=roi_scale_factor,
+        sampling_ratio=sampling_ratio,
+        aligned=aligned)
+    graph = onnx.helper.make_graph([node], 'torch-jit-export', inputs, outputs)
+    onnx_model = onnx.helper.make_model(
+        graph, producer_name='pytorch', producer_version='1.8')
+    onnx_model.opset_import[0].version = 11
+    onnx_model.opset_import.append(
+        onnx.onnx_ml_pb2.OperatorSetIdProto(domain='mmdeploy', version=1))
+
+    backend.run_and_validate(
+        onnx_model, [rois, *input],
+        'multi_level_rotated_roi_align',
+        input_names=input_name,
+        output_names=['bbox_feats'],
+        expected_result=expected_result,
+        save_dir=save_dir)
+
+
+@pytest.mark.parametrize('backend', [TEST_TENSORRT])
+@pytest.mark.parametrize('strides', [(4, 4)])
+def test_trt_grid_priors(backend, strides, input_list=None, save_dir=None):
+    backend.check_env()
+
+    if input_list is None:
+        input = torch.rand(1, 3, 2, 2)
+        base_anchors = torch.tensor([[-22.6274, -11.3137, 22.6274, 11.3137],
+                                     [-16.0000, -16.0000, 16.0000, 16.0000],
+                                     [-11.3137, -22.6274, 11.3137, 22.6274]])
+
+        expected_result = torch.tensor([[-22.6274, -11.3137, 22.6274, 11.3137],
+                                        [-16.0000, -16.0000, 16.0000, 16.0000],
+                                        [-11.3137, -22.6274, 11.3137, 22.6274],
+                                        [-18.6274, -11.3137, 26.6274, 11.3137],
+                                        [-12.0000, -16.0000, 20.0000, 16.0000],
+                                        [-7.3137, -22.6274, 15.3137, 22.6274],
+                                        [-22.6274, -7.3137, 22.6274, 15.3137],
+                                        [-16.0000, -12.0000, 16.0000, 20.0000],
+                                        [-11.3137, -18.6274, 11.3137, 26.6274],
+                                        [-18.6274, -7.3137, 26.6274, 15.3137],
+                                        [-12.0000, -12.0000, 20.0000, 20.0000],
+                                        [-7.3137, -18.6274, 15.3137, 26.6274]])
+    else:
+        input = input_list[0]
+        base_anchors = input_list[1]
+        expected_result = input_list[2]
+    input_name = ['input']
+    output_name = ['output']
+
+    class GridPriorsTestOps(torch.autograd.Function):
+
+        @staticmethod
+        def forward(ctx, base_anchor, feat_h, feat_w, stride_h: int,
+                    stride_w: int):
+            a = base_anchor.shape[0]
+            return base_anchor.new_empty(feat_h * feat_w * a, 4)
+
+        @staticmethod
+        def symbolic(g, base_anchor, feat_h, feat_w, stride_h: int,
+                     stride_w: int):
+            from torch.onnx import symbolic_helper
+            feat_h = symbolic_helper._unsqueeze_helper(g, feat_h, [0])
+            feat_w = symbolic_helper._unsqueeze_helper(g, feat_w, [0])
+            zero_h = g.op(
+                'ConstantOfShape',
+                feat_h,
+                value_t=torch.tensor([0], dtype=torch.long),
+            )
+            zero_w = g.op(
+                'ConstantOfShape',
+                feat_w,
+                value_t=torch.tensor([0], dtype=torch.long),
+            )
+            return g.op(
+                'mmdeploy::GridPriorsTRT',
+                base_anchor,
+                zero_h,
+                zero_w,
+                stride_h_i=stride_h,
+                stride_w_i=stride_w)
+
+    class GridPriorsTestModel(torch.nn.Module):
+
+        def __init__(self, strides, base_anchors=base_anchors) -> None:
+            super().__init__()
+            self.strides = strides
+            self.base_anchors = base_anchors
+
+        def forward(self, x):
+            base_anchors = self.base_anchors
+            h, w = x.shape[2:]
+            strides = self.strides
+            return GridPriorsTestOps.apply(base_anchors, h, w, strides[0],
+                                           strides[1])
+
+    model = GridPriorsTestModel(strides=strides)
+
+    backend.run_and_validate(
+        model, [input],
+        'trt_grid_priors',
+        input_names=input_name,
+        output_names=output_name,
+        expected_result=expected_result,
+        dynamic_axes=dict(input={
+            2: 'h',
+            3: 'w'
+        }),
+        save_dir=save_dir)

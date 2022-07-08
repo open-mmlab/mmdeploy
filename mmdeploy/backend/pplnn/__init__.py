@@ -11,6 +11,9 @@ def is_available():
     return importlib.util.find_spec('pyppl') is not None
 
 
+__all__ = []
+
 if is_available():
-    from .wrapper import PPLNNWrapper, register_engines
-    __all__ = ['register_engines', 'PPLNNWrapper']
+    from .utils import register_engines
+    from .wrapper import PPLNNWrapper
+    __all__ += ['PPLNNWrapper', 'register_engines']
