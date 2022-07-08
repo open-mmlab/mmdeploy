@@ -60,7 +60,6 @@ class Backend(AdvancedEnum):
     SDK = 'sdk'
     TORCHSCRIPT = 'torchscript'
     DEFAULT = 'default'
-    SNPE = 'snpe'
 
 
 SDK_TASK_MAP = {

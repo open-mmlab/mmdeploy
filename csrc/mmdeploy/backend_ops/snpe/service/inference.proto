@@ -44,6 +44,10 @@ message Empty {}
 message Tensor {
   // name
   string name = 1;
+<<<<<<< HEAD:csrc/mmdeploy/backend_ops/snpe/inference.proto
+=======
+
+>>>>>>> feat(csrc/mmdeploy/backend_ops): support snpe:csrc/mmdeploy/backend_ops/snpe/service/inference.proto
   // datatype
   optional string dtype = 2;
 

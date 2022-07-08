@@ -18,12 +18,8 @@
 # that automatically builds all the dependencies before building helloworld.
 
 cmake_minimum_required(VERSION 3.5.1)
-
 project(SNPEServer C CXX)
-set( CMAKE_CXX_STANDARD 11 )
-set( CMAKE_CXX_STANDARD_REQUIRED ON )
-
-include(../cmake/common.cmake)
+include(./common.cmake)
 
 # Proto file
 get_filename_component(hw_proto "inference.proto" ABSOLUTE)
@@ -34,9 +30,6 @@ set(hw_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/inference.pb.cc")
 set(hw_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/inference.pb.h")
 set(hw_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/inference.grpc.pb.cc")
 set(hw_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/inference.grpc.pb.h")
-
-file(GLOB snpe_srcs ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
-file(GLOB snpe_hdrs ${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp)
 
 add_custom_command(
       OUTPUT "${hw_proto_srcs}" "${hw_proto_hdrs}" "${hw_grpc_srcs}" "${hw_grpc_hdrs}"
@@ -66,11 +59,11 @@ target_link_libraries(hw_grpc_proto
 add_library(snpe SHARED IMPORTED)
 
 if (NOT EXISTS $ENV{SNPE_ROOT}/lib/aarch64-android-clang6.0/)
-  message(FATAL_ERROR "snpe lib directory not exist: "$ENV{SNPE_ROOT}/lib/aarch64-android-clang6.0/)
+  message(FATAL_ERROR "snpe directory not exist: "$ENV{SNPE_ROOT}/lib/aarch64-android-clang6.0/)
 endif()
 
 set_target_properties(snpe PROPERTIES
-  IMPORTED_LOCATION "$ENV{SNPE_ROOT}/lib/aarch64-android-clang6.0/libSNPE.so" 
+  IMPORTED_LOCATION "$ENV{SNPE_ROOT}/lib/aarch64-android-clang6.0/libSNPE.so"
   INTERFACE_INCLUDE_DIRECTORIES "$ENV{SNPE_ROOT}/include/zdl"
 )
 target_link_directories(
@@ -78,9 +71,9 @@ target_link_directories(
   INTERFACE
 )
 
-add_executable(inference_server  ${snpe_srcs} inference_server.cc service_impl.cpp)
+add_executable(inference_server  inference_server.cc service_impl.cpp)
 
-target_link_libraries(inference_server 
+target_link_libraries(inference_server
   hw_grpc_proto
   ${_REFLECTION}
   ${_GRPC_GRPCPP}
