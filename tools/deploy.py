@@ -290,7 +290,7 @@ def main():
             dlc_path = get_output_model_file(onnx_path, args.work_dir)
             onnx_name = osp.splitext(osp.split(onnx_path)[1])[0]
             snpe_api.from_onnx(onnx_path, osp.join(args.work_dir, onnx_name))
-            backend_files += [dlc_path]
+            backend_files = [dlc_path]
 
     elif backend == Backend.OPENVINO:
         from mmdeploy.apis.openvino import \
