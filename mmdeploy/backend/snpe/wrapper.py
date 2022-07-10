@@ -22,7 +22,7 @@ class SNPEWrapper(BaseWrapper):
         dlc_file (str): Path of a weight file.
         output_names (Sequence[str] | None): Names of model outputs in order.
             Defaults to `None` and the wrapper will load the output names from
-            ncnn model.
+            snpe model.
 
     Examples:
         >>> from mmdeploy.backend.snpe import SNPEWrapper

@@ -35,7 +35,7 @@ def get_output_model_file(onnx_path: str,
     mkdir_or_exist(osp.abspath(work_dir))
     file_name = osp.splitext(osp.split(onnx_path)[1])[0]
     save_dlc = osp.join(work_dir, file_name + '.dlc')
-    return [save_dlc]
+    return save_dlc
 
 
 def from_onnx(onnx_model: Union[onnx.ModelProto, str],
@@ -43,7 +43,6 @@ def from_onnx(onnx_model: Union[onnx.ModelProto, str],
     """Convert ONNX to dlc.
 
     We need to use a executable program to convert the `.onnx` file to a `.dlc`
-    file. The output file will save to work_dir.
 
     Example:
         >>> from mmdeploy.apis.snpe import from_onnx
