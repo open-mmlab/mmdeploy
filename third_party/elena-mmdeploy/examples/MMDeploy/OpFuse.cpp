@@ -72,8 +72,10 @@ int main(int argc, char *argv[]) {
           std::make_shared<ir::ScalarVar>("resize_h", ir::ScalarType::UInt64);
       auto resize_w =
           std::make_shared<ir::ScalarVar>("resize_w", ir::ScalarType::UInt64);
-      auto crop_size =
-          std::make_shared<ir::ScalarVar>("crop_size", ir::ScalarType::UInt64);
+      auto crop_h =
+          std::make_shared<ir::ScalarVar>("crop_h", ir::ScalarType::UInt64);
+      auto crop_w =
+          std::make_shared<ir::ScalarVar>("crop_w", ir::ScalarType::UInt64);
       auto crop_top =
           std::make_shared<ir::ScalarVar>("crop_top", ir::ScalarType::Int32);
       auto crop_left =
@@ -107,7 +109,8 @@ int main(int argc, char *argv[]) {
 
       arg_list.push_back(resize_h);
       arg_list.push_back(resize_w);
-      arg_list.push_back(crop_size);
+      arg_list.push_back(crop_h);
+      arg_list.push_back(crop_w);
       arg_list.push_back(crop_top);
       arg_list.push_back(crop_left);
       arg_list.push_back(norm_mean_0);
@@ -210,7 +213,7 @@ int main(int argc, char *argv[]) {
             ELENA_ABORT("not support temporarily in Resize");
           }
         } else if (op == "CenterCrop") {
-          std::vector<ir::ExprPtr> crop_shape{crop_size, crop_size,
+          std::vector<ir::ExprPtr> crop_shape{crop_h, crop_w,
                                               intermediate->shape->element[2]};
           iter_vars = api::construct_indices(crop_shape);
           cur_stage = Crop::Crop(crop_shape, iter_vars, intermediate, crop_top,

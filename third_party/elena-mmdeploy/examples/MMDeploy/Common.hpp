@@ -435,20 +435,20 @@ static constexpr const char *cuda_prelude = R"(
 
 static constexpr const char *cpu_call_func_begin = R"(
 
-extern "C" void FuseKernel(uint64_t resize_h, uint64_t resize_w, uint64_t crop_size, int32_t crop_top, int32_t crop_left, float norm_mean_0, float norm_mean_1, float norm_mean_2, float norm_std_0, float norm_std_1, float norm_std_2, uint64_t pad_h, uint64_t pad_w, int32_t pad_top, int32_t pad_left, int32_t pad_bottom, int32_t pad_right, float pad_value, uint8_t* __restrict__ src_raw_data, float* __restrict__ dst_raw_data, uint64_t src_h, uint64_t src_w, const char *format, const char *interpolation = "nearest"){
+extern "C" void FuseKernel(uint64_t resize_h, uint64_t resize_w, uint64_t crop_h, uint64_t crop_w, int32_t crop_top, int32_t crop_left, float norm_mean_0, float norm_mean_1, float norm_mean_2, float norm_std_0, float norm_std_1, float norm_std_2, uint64_t pad_h, uint64_t pad_w, int32_t pad_top, int32_t pad_left, int32_t pad_bottom, int32_t pad_right, float pad_value, uint8_t* __restrict__ src_raw_data, float* __restrict__ dst_raw_data, uint64_t src_h, uint64_t src_w, const char *format, const char *interpolation = "nearest"){
     if (resize_h && resize_w && EQUAL(interpolation, "nearest")) {
         if(EQUAL(format, "BGR")){
-          BGR_Nearest_Kernel(resize_h, resize_w, crop_size, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, src_raw_data, dst_raw_data, src_h, src_w);
+          BGR_Nearest_Kernel(resize_h, resize_w, crop_h, crop_w, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, src_raw_data, dst_raw_data, src_h, src_w);
         } else if(EQUAL(format, "RGB")){
-          RGB_Nearest_Kernel(resize_h, resize_w, crop_size, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, src_raw_data, dst_raw_data, src_h, src_w);
+          RGB_Nearest_Kernel(resize_h, resize_w, crop_h, crop_w, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, src_raw_data, dst_raw_data, src_h, src_w);
         } else if(EQUAL(format, "GRAY")){
-          GRAY_Nearest_Kernel(resize_h, resize_w, crop_size, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, src_raw_data, dst_raw_data, src_h, src_w);
+          GRAY_Nearest_Kernel(resize_h, resize_w, crop_h, crop_w, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, src_raw_data, dst_raw_data, src_h, src_w);
         } else if(EQUAL(format, "BGRA")){
-          BGRA_Nearest_Kernel(resize_h, resize_w, crop_size, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, src_raw_data, dst_raw_data, src_h, src_w);
+          BGRA_Nearest_Kernel(resize_h, resize_w, crop_h, crop_w, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, src_raw_data, dst_raw_data, src_h, src_w);
         } else if(EQUAL(format, "NV12")){
-          NV12_Nearest_Kernel(resize_h, resize_w, crop_size, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, src_raw_data, dst_raw_data, src_h, src_w);
+          NV12_Nearest_Kernel(resize_h, resize_w, crop_h, crop_w, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, src_raw_data, dst_raw_data, src_h, src_w);
         } else if(EQUAL(format, "NV21")){
-          NV21_Nearest_Kernel(resize_h, resize_w, crop_size, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, src_raw_data, dst_raw_data, src_h, src_w);
+          NV21_Nearest_Kernel(resize_h, resize_w, crop_h, crop_w, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, src_raw_data, dst_raw_data, src_h, src_w);
         } else {
            ABORT("This format is not supported");
         }
@@ -469,17 +469,17 @@ static constexpr const char *cpu_bilinear_func = R"(
         bilinear_resize_preprocess(src_h, src_w, resize_h, resize_w, cubfh, cubfw, inth, intw);
 
         if(EQUAL(format, "BGR")){
-          BGR_Bilinear_Kernel(resize_h, resize_w, crop_size, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, cubfh, cubfw, inth, intw, src_raw_data, dst_raw_data, src_h, src_w);
+          BGR_Bilinear_Kernel(resize_h, resize_w, crop_h, crop_w, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, cubfh, cubfw, inth, intw, src_raw_data, dst_raw_data, src_h, src_w);
         } else if(EQUAL(format, "RGB")){
-          RGB_Bilinear_Kernel(resize_h, resize_w, crop_size, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, cubfh, cubfw, inth, intw, src_raw_data, dst_raw_data, src_h, src_w);
+          RGB_Bilinear_Kernel(resize_h, resize_w, crop_h, crop_w, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, cubfh, cubfw, inth, intw, src_raw_data, dst_raw_data, src_h, src_w);
         } else if(EQUAL(format, "GRAY")){
-          GRAY_Bilinear_Kernel(resize_h, resize_w, crop_size, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, cubfh, cubfw, inth, intw, src_raw_data, dst_raw_data, src_h, src_w);
+          GRAY_Bilinear_Kernel(resize_h, resize_w, crop_h, crop_w, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, cubfh, cubfw, inth, intw, src_raw_data, dst_raw_data, src_h, src_w);
         } else if(EQUAL(format, "BGRA")){
-          BGRA_Bilinear_Kernel(resize_h, resize_w, crop_size, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, cubfh, cubfw, inth, intw, src_raw_data, dst_raw_data, src_h, src_w);
+          BGRA_Bilinear_Kernel(resize_h, resize_w, crop_h, crop_w, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, cubfh, cubfw, inth, intw, src_raw_data, dst_raw_data, src_h, src_w);
         } else if(EQUAL(format, "NV12")){
-          NV12_Bilinear_Kernel(resize_h, resize_w, crop_size, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, cubfh, cubfw, inth, intw, src_raw_data, dst_raw_data, src_h, src_w);
+          NV12_Bilinear_Kernel(resize_h, resize_w, crop_h, crop_w, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, cubfh, cubfw, inth, intw, src_raw_data, dst_raw_data, src_h, src_w);
         } else if(EQUAL(format, "NV21")){
-          NV21_Bilinear_Kernel(resize_h, resize_w, crop_size, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, cubfh, cubfw, inth, intw, src_raw_data, dst_raw_data, src_h, src_w);
+          NV21_Bilinear_Kernel(resize_h, resize_w, crop_h, crop_w, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, cubfh, cubfw, inth, intw, src_raw_data, dst_raw_data, src_h, src_w);
         } else {
            ABORT("This format is not supported");
         }
@@ -492,21 +492,21 @@ static constexpr const char *cpu_bilinear_func = R"(
 
 static constexpr const char *cuda_call_func_begin = R"(
 
-extern "C" void FuseKernelCU(cudaStream_t stream, uint64_t resize_h, uint64_t resize_w, uint64_t crop_size, int32_t crop_top, int32_t crop_left, float norm_mean_0, float norm_mean_1, float norm_mean_2, float norm_std_0, float norm_std_1, float norm_std_2, uint64_t pad_h, uint64_t pad_w, int32_t pad_top, int32_t pad_left, int32_t pad_bottom, int32_t pad_right, float pad_value, uint8_t* __restrict__ src_raw_data, float* __restrict__ dst_raw_data, uint64_t dst_element_num, uint64_t src_h, uint64_t src_w, const char *format, const char *interpolation = "nearest"){
+extern "C" void FuseKernelCU(cudaStream_t stream, uint64_t resize_h, uint64_t resize_w, uint64_t crop_h, uint64_t crop_w, int32_t crop_top, int32_t crop_left, float norm_mean_0, float norm_mean_1, float norm_mean_2, float norm_std_0, float norm_std_1, float norm_std_2, uint64_t pad_h, uint64_t pad_w, int32_t pad_top, int32_t pad_left, int32_t pad_bottom, int32_t pad_right, float pad_value, uint8_t* __restrict__ src_raw_data, float* __restrict__ dst_raw_data, uint64_t dst_element_num, uint64_t src_h, uint64_t src_w, const char *format, const char *interpolation = "nearest"){
 
     if (resize_h && resize_w && EQUAL(interpolation, "nearest")) {
         if(EQUAL(format, "BGR")){
-          BGR_Nearest_Kernel<<<(dst_element_num + BLOCK_SIZE -1) / BLOCK_SIZE, BLOCK_SIZE, 0, stream>>>(resize_h, resize_w, crop_size, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, src_raw_data, dst_raw_data, src_h, src_w);
+          BGR_Nearest_Kernel<<<(dst_element_num + BLOCK_SIZE -1) / BLOCK_SIZE, BLOCK_SIZE, 0, stream>>>(resize_h, resize_w, crop_h, crop_w, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, src_raw_data, dst_raw_data, src_h, src_w);
         } else if(EQUAL(format, "RGB")){
-          RGB_Nearest_Kernel<<<(dst_element_num + BLOCK_SIZE -1) / BLOCK_SIZE, BLOCK_SIZE, 0, stream>>>(resize_h, resize_w, crop_size, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, src_raw_data, dst_raw_data, src_h, src_w);
+          RGB_Nearest_Kernel<<<(dst_element_num + BLOCK_SIZE -1) / BLOCK_SIZE, BLOCK_SIZE, 0, stream>>>(resize_h, resize_w, crop_h, crop_w, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, src_raw_data, dst_raw_data, src_h, src_w);
         } else if(EQUAL(format, "GRAY")){
-          GRAY_Nearest_Kernel<<<(dst_element_num + BLOCK_SIZE -1) / BLOCK_SIZE, BLOCK_SIZE, 0, stream>>>(resize_h, resize_w, crop_size, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, src_raw_data, dst_raw_data, src_h, src_w);
+          GRAY_Nearest_Kernel<<<(dst_element_num + BLOCK_SIZE -1) / BLOCK_SIZE, BLOCK_SIZE, 0, stream>>>(resize_h, resize_w, crop_h, crop_w, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, src_raw_data, dst_raw_data, src_h, src_w);
         } else if(EQUAL(format, "BGRA")){
-          BGRA_Nearest_Kernel<<<(dst_element_num + BLOCK_SIZE -1) / BLOCK_SIZE, BLOCK_SIZE, 0, stream>>>(resize_h, resize_w, crop_size, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, src_raw_data, dst_raw_data, src_h, src_w);
+          BGRA_Nearest_Kernel<<<(dst_element_num + BLOCK_SIZE -1) / BLOCK_SIZE, BLOCK_SIZE, 0, stream>>>(resize_h, resize_w, crop_h, crop_w, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, src_raw_data, dst_raw_data, src_h, src_w);
         } else if(EQUAL(format, "NV12")){
-          NV12_Nearest_Kernel<<<(dst_element_num + BLOCK_SIZE -1) / BLOCK_SIZE, BLOCK_SIZE, 0, stream>>>(resize_h, resize_w, crop_size, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, src_raw_data, dst_raw_data, src_h, src_w);
+          NV12_Nearest_Kernel<<<(dst_element_num + BLOCK_SIZE -1) / BLOCK_SIZE, BLOCK_SIZE, 0, stream>>>(resize_h, resize_w, crop_h, crop_w, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, src_raw_data, dst_raw_data, src_h, src_w);
         } else if(EQUAL(format, "NV21")){
-          NV21_Nearest_Kernel<<<(dst_element_num + BLOCK_SIZE -1) / BLOCK_SIZE, BLOCK_SIZE, 0, stream>>>(resize_h, resize_w, crop_size, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, src_raw_data, dst_raw_data, src_h, src_w);
+          NV21_Nearest_Kernel<<<(dst_element_num + BLOCK_SIZE -1) / BLOCK_SIZE, BLOCK_SIZE, 0, stream>>>(resize_h, resize_w, crop_h, crop_w, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, src_raw_data, dst_raw_data, src_h, src_w);
         } else {
            ABORT("This format is not supported");
         }
@@ -529,17 +529,17 @@ static constexpr const char *cuda_bilinear_func = R"(
         bilinear_resize_preprocess_w<<<(resize_w + block -1) / block, block, 0, stream>>>(src_w, resize_w, cubfw, intw);
 
         if(EQUAL(format, "BGR")){
-          BGR_Bilinear_Kernel<<<(dst_element_num + BLOCK_SIZE -1) / BLOCK_SIZE, BLOCK_SIZE, 0, stream>>>(resize_h, resize_w, crop_size, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, cubfh, cubfw, inth, intw, src_raw_data, dst_raw_data, src_h, src_w);
+          BGR_Bilinear_Kernel<<<(dst_element_num + BLOCK_SIZE -1) / BLOCK_SIZE, BLOCK_SIZE, 0, stream>>>(resize_h, resize_w, crop_h, crop_w, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, cubfh, cubfw, inth, intw, src_raw_data, dst_raw_data, src_h, src_w);
         } else if(EQUAL(format, "RGB")){
-          RGB_Bilinear_Kernel<<<(dst_element_num + BLOCK_SIZE -1) / BLOCK_SIZE, BLOCK_SIZE, 0, stream>>>(resize_h, resize_w, crop_size, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, cubfh, cubfw, inth, intw, src_raw_data, dst_raw_data, src_h, src_w);
+          RGB_Bilinear_Kernel<<<(dst_element_num + BLOCK_SIZE -1) / BLOCK_SIZE, BLOCK_SIZE, 0, stream>>>(resize_h, resize_w, crop_h, crop_w, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, cubfh, cubfw, inth, intw, src_raw_data, dst_raw_data, src_h, src_w);
         } else if(EQUAL(format, "GRAY")){
-          GRAY_Bilinear_Kernel<<<(dst_element_num + BLOCK_SIZE -1) / BLOCK_SIZE, BLOCK_SIZE, 0, stream>>>(resize_h, resize_w, crop_size, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, cubfh, cubfw, inth, intw, src_raw_data, dst_raw_data, src_h, src_w);
+          GRAY_Bilinear_Kernel<<<(dst_element_num + BLOCK_SIZE -1) / BLOCK_SIZE, BLOCK_SIZE, 0, stream>>>(resize_h, resize_w, crop_h, crop_w, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, cubfh, cubfw, inth, intw, src_raw_data, dst_raw_data, src_h, src_w);
         } else if(EQUAL(format, "BGRA")){
-          BGRA_Bilinear_Kernel<<<(dst_element_num + BLOCK_SIZE -1) / BLOCK_SIZE, BLOCK_SIZE, 0, stream>>>(resize_h, resize_w, crop_size, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, cubfh, cubfw, inth, intw, src_raw_data, dst_raw_data, src_h, src_w);
+          BGRA_Bilinear_Kernel<<<(dst_element_num + BLOCK_SIZE -1) / BLOCK_SIZE, BLOCK_SIZE, 0, stream>>>(resize_h, resize_w, crop_h, crop_w, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, cubfh, cubfw, inth, intw, src_raw_data, dst_raw_data, src_h, src_w);
         } else if(EQUAL(format, "NV12")){
-          NV12_Bilinear_Kernel<<<(dst_element_num + BLOCK_SIZE -1) / BLOCK_SIZE, BLOCK_SIZE, 0, stream>>>(resize_h, resize_w, crop_size, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, cubfh, cubfw, inth, intw, src_raw_data, dst_raw_data, src_h, src_w);
+          NV12_Bilinear_Kernel<<<(dst_element_num + BLOCK_SIZE -1) / BLOCK_SIZE, BLOCK_SIZE, 0, stream>>>(resize_h, resize_w, crop_h, crop_w, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, cubfh, cubfw, inth, intw, src_raw_data, dst_raw_data, src_h, src_w);
         } else if(EQUAL(format, "NV21")){
-          NV21_Bilinear_Kernel<<<(dst_element_num + BLOCK_SIZE -1) / BLOCK_SIZE, BLOCK_SIZE, 0, stream>>>(resize_h, resize_w, crop_size, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, cubfh, cubfw, inth, intw, src_raw_data, dst_raw_data, src_h, src_w);
+          NV21_Bilinear_Kernel<<<(dst_element_num + BLOCK_SIZE -1) / BLOCK_SIZE, BLOCK_SIZE, 0, stream>>>(resize_h, resize_w, crop_h, crop_w, crop_top, crop_left, norm_mean_0, norm_mean_1, norm_mean_2, norm_std_0, norm_std_1, norm_std_2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, cubfh, cubfw, inth, intw, src_raw_data, dst_raw_data, src_h, src_w);
         } else {
            ABORT("This format is not supported");
         }
