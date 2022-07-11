@@ -99,7 +99,7 @@ void InferenceServiceImpl::LoadFloatData(const std::string& data,
                                           ::mmdeploy::Reply* response) {
   fprintf(stdout, "Stage Init: recv command\n");
   // std::string filename = SaveDLC(request);
-  std::string filename = "alexnet.dlc";
+  std::string filename = "end2end.dlc";
 
   if (snpe != nullptr) {
     snpe.reset();
