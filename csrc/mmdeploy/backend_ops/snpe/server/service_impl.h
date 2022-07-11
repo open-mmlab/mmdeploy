@@ -55,7 +55,7 @@ class InferenceServiceImpl final : public Inference::Service {
   ::grpc::Status Inference(::grpc::ServerContext* context,
                            const ::mmdeploy::TensorList* request,
                            ::mmdeploy::Reply* response) override;
-  // Destroy handle
+  // Destory handle
   ::grpc::Status Destroy(::grpc::ServerContext* context,
                          const ::mmdeploy::Empty* request,
                          ::mmdeploy::Reply* response) override;

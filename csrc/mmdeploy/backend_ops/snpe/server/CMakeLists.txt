@@ -22,7 +22,7 @@ project(SNPEServer C CXX)
 include(./common.cmake)
 
 # Proto file
-get_filename_component(hw_proto "inference.proto" ABSOLUTE)
+get_filename_component(hw_proto "../inference.proto" ABSOLUTE)
 get_filename_component(hw_proto_path "${hw_proto}" PATH)
 
 # Generated sources
