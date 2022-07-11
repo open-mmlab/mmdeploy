@@ -98,7 +98,7 @@ def test_visualize(backend_model):
     results = backend_model.test_step([input_dict])
     with TemporaryDirectory() as dir:
         filename = dir + '/tmp.jpg'
-        task_processor.visualize(img, results[0], filename, '')
+        task_processor.visualize(img, results[0], filename, 'window')
         assert os.path.exists(filename)
 
 
