@@ -73,6 +73,11 @@ def parse_args():
         help='the interval between each log, require setting '
         'speed-test first',
         default=100)
+    parser.add_argument(
+        '--uri',
+        action='store_true',
+        default='10.1.80.138:50051',
+        help='Remote ipv4:port or ipv6:port for inference on edge device.')
 
     args = parser.parse_args()
     return args
