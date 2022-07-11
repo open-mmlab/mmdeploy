@@ -4,7 +4,6 @@ import sys
 from typing import Dict, Optional, Sequence
 
 import grpc
-
 # import mmdeploy.backend.snpe.inference_pb2
 # import mmdeploy.backend.snpe.inference_pb2_grpc
 import inference_pb2
@@ -109,7 +108,8 @@ class SNPEWrapper(BaseWrapper):
 
             snpe_inputs.append(tensor)
 
-        return self.__snpe_execute(inference_pb2.TensorList(datas=snpe_inputs), device_type)
+        return self.__snpe_execute(
+            inference_pb2.TensorList(datas=snpe_inputs), device_type)
 
     @TimeCounter.count_time()
     def __snpe_execute(self, tensorList: inference_pb2.TensorList,
@@ -131,7 +131,8 @@ class SNPEWrapper(BaseWrapper):
                 ndarray = np.frombuffer(tensor.data, dtype=np.float32)
                 import pdb
                 pdb.set_trace()
-                result[tensor.name] = torch.from_numpy(ndarray.copy()).to(device)
+                result[tensor.name] = torch.from_numpy(
+                    ndarray.copy()).to(device)
         else:
             logger = get_root_logger()
             logger.error(f'snpe inference failed {resp.info}')
