@@ -4,6 +4,7 @@
 
 #include "mmdeploy/core/mat.h"
 #include "mmdeploy/core/utils/formatter.h"
+#include "mmdeploy/core/model.h"
 #include "pybind11/numpy.h"
 
 namespace mmdeploy {
@@ -126,6 +127,8 @@ Value FromPyObject(const py::object& obj) {
     return dst;
   } else if (py::isinstance<py::array>(obj)) {
     return _GetMat(obj.cast<py::array>());
+  } else if (py::isinstance<Model>(obj)) {
+    return obj.cast<Model>();
   } else {
     std::stringstream ss;
     ss << obj.get_type();

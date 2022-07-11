@@ -24,8 +24,6 @@ inline std::true_type Check(T&&) {
 
 }  // namespace
 
-Result<std::vector<std::string>> ParseStringArray(const Value& value);
-
 namespace _maybe {
 
 struct Maybe {

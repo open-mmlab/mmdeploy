@@ -3,7 +3,6 @@
 project(mmdeploy_graph)
 
 set(SRCS
-        common.cpp
         task.cpp
         static_router.cpp
         inference.cpp

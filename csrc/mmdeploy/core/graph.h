@@ -68,6 +68,8 @@ class Builder {
   vector<bool> unflatten_;
 };
 
+Result<std::vector<std::string>> ParseStringArray(const Value& value);
+
 }  // namespace graph
 
 MMDEPLOY_DECLARE_REGISTRY(graph::Builder);

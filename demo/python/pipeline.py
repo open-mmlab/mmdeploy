@@ -3,7 +3,10 @@ import argparse
 import json
 
 import cv2
-from mmdeploy_python import Pipeline
+from mmdeploy_python import Pipeline, Model
+
+det_model = Model('/workspace/deploy_prototype/benchmark/_detection_tmp_model')
+reg_model = Model('/workspace/deploy_prototype/benchmark/_mmcls_tmp_model')
 
 config = dict(
     type='Pipeline',
@@ -13,9 +16,7 @@ config = dict(
             type='Inference',
             input='img',
             output='dets',
-            params=dict(
-                model=
-                '/workspace/deploy_prototype/benchmark/_detection_tmp_model')),
+            params=dict(model=det_model)),
         dict(
             type='Pipeline',
             input=['boxes=*dets', 'imgs=+img'],
@@ -29,10 +30,7 @@ config = dict(
                     type='Inference',
                     input='patches',
                     output='labels',
-                    params=dict(
-                        model=
-                        '/workspace/deploy_prototype/benchmark/_mmcls_tmp_model'
-                    ))
+                    params=dict(model=reg_model))
             ],
             output='*labels')
     ],
@@ -42,6 +40,7 @@ pipeline = Pipeline(config, 'cuda', 0)
 
 img = cv2.imread('/workspace/mmdetection/demo/demo.jpg')
 
-output = pipeline([[dict(ori_img=img)]])
+output = pipeline(dict(ori_img=img))
 
-print(json.dumps(output, indent=2))
+print(output)
+# print(json.dumps(output, indent=2))

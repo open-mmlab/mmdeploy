@@ -23,17 +23,7 @@ class PyPipeline {
     }
   }
 
-  // py::object Apply(const py::object& input) {
-  //   auto input_value = FromPyObject(input);
-  //   mmdeploy_value_t output_value{};
-  //   auto status = mmdeploy_pipeline_apply(pipeline_, (mmdeploy_value_t)&input_value,
-  //   &output_value); if (status != MMDEPLOY_SUCCESS) {
-  //     throw std::runtime_error("failed to apply pipeline, code = "s + std::to_string(status));
-  //   }
-  //   return ToPyObject(*(Value*)output_value);
-  // }
-
-  py::object Apply2(const py::tuple& args, bool is_batch) {
+  py::tuple Apply2(const py::tuple& args, bool is_batch) {
     auto inputs = FromPyObject(args);
     if (!is_batch) {
       for (auto& input : inputs) {

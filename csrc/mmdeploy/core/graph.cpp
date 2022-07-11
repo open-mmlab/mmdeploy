@@ -123,6 +123,17 @@ Result<unique_ptr<Builder>> Builder::CreateFromConfig(const Value& config) {
   return std::move(builder);
 }
 
+Result<std::vector<std::string>> ParseStringArray(const Value& value) {
+  if (value.is_string()) {
+    return std::vector{value.get<std::string>()};
+  } else if (value.is_array()) {
+    return from_value<std::vector<std::string>>(value);
+  }
+  MMDEPLOY_ERROR("{}", value);
+  __builtin_trap();
+  return Status(eInvalidArgument);
+}
+
 }  // namespace graph
 
 MMDEPLOY_DEFINE_REGISTRY(graph::Builder);
