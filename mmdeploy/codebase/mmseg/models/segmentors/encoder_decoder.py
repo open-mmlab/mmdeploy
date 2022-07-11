@@ -1,6 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import torch.nn.functional as F
-
 from mmdeploy.core import FUNCTION_REWRITER
 
 
@@ -26,7 +24,7 @@ def encoder_decoder__simple_test(ctx, self, batch_inputs, batch_data_samples,
     batch_img_metas = []
     for data_sample in batch_data_samples:
         batch_img_metas.append(data_sample.metainfo)
-    seg_logit = self.encode_decode(batch_inputs, batch_img_metas)
-    seg_logit = F.softmax(seg_logit, dim=1)
+    x = self.extract_feat(batch_inputs)
+    seg_logit = self.decode_head.predict(x, batch_img_metas, self.test_cfg)
     seg_pred = seg_logit.argmax(dim=1, keepdim=True)
     return seg_pred

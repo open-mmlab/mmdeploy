@@ -51,6 +51,7 @@ def process_model_config(model_cfg: Config,
             if 'Resize' == cfg.test_pipeline[i]['type']:
                 cfg.test_pipeline[i]['scale'] = tuple(input_shape)
                 cfg.test_pipeline[i]['keep_ratio'] = False
+                found_resize = True
         if not found_resize:
             logger = get_root_logger()
             logger.warning(
@@ -234,6 +235,9 @@ class Segmentation(BaseTask):
             image = mmcv.imresize(image, (w, h))
         visualizer.add_datasample(
             name, image, pred_sample=result, show=show_result)
+        drawn_image = visualizer.get_image()
+        import matplotlib.pyplot as plt
+        plt.imsave(output_file, drawn_image)
 
     @staticmethod
     def get_partition_cfg(partition_type: str) -> Dict:

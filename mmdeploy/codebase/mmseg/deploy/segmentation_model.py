@@ -85,6 +85,7 @@ class End2EndModel(BaseBackendModel):
         batch_inputs = batch_inputs.to(self.device)
         batch_outputs = self.wrapper({self.input_name:
                                       batch_inputs})[self.output_names[0]]
+        print(batch_outputs.shape)
 
         predictions = []
         for seg_pred, data_sample in zip(batch_outputs, data_samples):
