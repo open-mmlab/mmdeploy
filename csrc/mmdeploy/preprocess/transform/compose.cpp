@@ -8,16 +8,18 @@
 
 namespace mmdeploy {
 
-void Compose::InitTransormModule(const Value& args, int version, bool try_fuse) {
+Compose::Compose(const Value& args, int version) : Transform(args) {
+  assert(args.contains("context"));
+
   Value context;
   context = args["context"];
   context["stream"].get_to(stream_);
-  if (try_fuse) {
+  bool fuse_transform = args.value("fuse_transform", false);
+  if (fuse_transform) {
     std::string sha256 = args.value("sha256", std::string(""));
     context["fuse_transform"] = true;
     context["sha256"] = sha256;
   }
-  transforms_.clear();
   for (auto cfg : args["transforms"]) {
     cfg["context"] = context;
     auto type = cfg.value("type", std::string{});
@@ -37,15 +39,7 @@ void Compose::InitTransormModule(const Value& args, int version, bool try_fuse) 
   }
 }
 
-Compose::Compose(const Value& args, int version) : Transform(args) {
-  assert(args.contains("context"));
-  args_.args = args;
-  args_.version = version;
-  args_.try_fuse = args.value("fuse_transform", false);
-  InitTransormModule(args_.args, args_.version, args_.try_fuse);
-}
-
-Result<Value> Compose::ProcessHelper(const Value& input) {
+Result<Value> Compose::Process(const Value& input) {
   Value output = input;
   Value::Array intermediates;
   for (auto& transform : transforms_) {
@@ -58,25 +52,6 @@ Result<Value> Compose::ProcessHelper(const Value& input) {
   }
   OUTCOME_TRY(stream_.Wait());
   return std::move(output);
-}
-
-Result<Value> Compose::Process(const Value& input) {
-  // normal transform
-  if (!args_.try_fuse || args_.can_fuse == 0) {
-    return ProcessHelper(input);
-  }
-
-  // fuse transform
-  try {
-    auto output = ProcessHelper(input);
-    args_.can_fuse = 1;
-    return output;
-  } catch (...) {
-    args_.can_fuse = 0;
-    MMDEPLOY_INFO("Can't do fuse transform, fallback to default");
-    InitTransormModule(args_.args, args_.version, false);
-    return ProcessHelper(input);
-  }
 }
 
 class ComposeCreator : public Creator<Transform> {
