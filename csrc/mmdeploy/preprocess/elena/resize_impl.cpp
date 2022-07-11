@@ -19,10 +19,11 @@ class ResizeImpl final : public ::mmdeploy::ResizeImpl {
     TensorShape shape = {1, dst_h, dst_w, img.shape().back()};
 
     TensorDesc dummy_desc = {Device{"cpu"}, data_type, shape};
-    Tensor dummy(dummy_desc);
+    Tensor dummy(dummy_desc, dummy_buffer_);
 
     return dummy;
   }
+  Buffer dummy_buffer_{Device{"cpu"}, 0, nullptr};
 };
 
 class ResizeImplCreator : public Creator<mmdeploy::ResizeImpl> {

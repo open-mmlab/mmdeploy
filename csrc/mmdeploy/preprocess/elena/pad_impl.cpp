@@ -20,10 +20,11 @@ class PadImpl : public ::mmdeploy::PadImpl {
     shape[2] += padding[0] + padding[2];
 
     TensorDesc dummy_desc = {Device{"cpu"}, data_type, shape};
-    Tensor dummy(dummy_desc);
+    Tensor dummy(dummy_desc, dummy_buffer_);
 
     return dummy;
   }
+  Buffer dummy_buffer_{Device{"cpu"}, 0, nullptr};
 };
 
 class PadImplCreator : public Creator<::mmdeploy::PadImpl> {
