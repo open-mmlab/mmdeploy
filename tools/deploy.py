@@ -272,6 +272,7 @@ def main():
                 backend_files += [model_param_path, model_bin_path]
 
     elif backend == Backend.SNPE:
+        os.environ['__MMDEPLOY_GRPC_URI'] = args.uri
         from mmdeploy.apis.snpe import is_available as is_available
 
         if not is_available():
@@ -290,7 +291,7 @@ def main():
             dlc_path = get_output_model_file(onnx_path, args.work_dir)
             onnx_name = osp.splitext(osp.split(onnx_path)[1])[0]
             snpe_api.from_onnx(onnx_path, osp.join(args.work_dir, onnx_name))
-            backend_files += [dlc_path]
+            backend_files += dlc_path
 
     elif backend == Backend.OPENVINO:
         from mmdeploy.apis.openvino import \
@@ -358,17 +359,18 @@ def main():
     # for headless installation.
     if not headless:
         # visualize model of the backend
-        create_process(
-            f'visualize {backend.value} model',
-            target=visualize_model,
-            args=(model_cfg_path, deploy_cfg_path, backend_files,
-                  args.test_img, args.device),
-            kwargs=dict(
-                backend=backend,
-                output_file=osp.join(args.work_dir,
-                                     f'output_{backend.value}.jpg'),
-                show_result=args.show),
-            ret_value=ret_value)
+        visualize_model(model_cfg_path, deploy_cfg_path, backend_files,args.test_img, args.device)
+        # create_process(
+        #     f'visualize {backend.value} model',
+        #     target=visualize_model,
+        #     args=(model_cfg_path, deploy_cfg_path, backend_files,
+        #           args.test_img, args.device),
+        #     kwargs=dict(
+        #         backend=backend,
+        #         output_file=osp.join(args.work_dir,
+        #                              f'output_{backend.value}.jpg'),
+        #         show_result=args.show),
+        #     ret_value=ret_value)
 
         # visualize pytorch model
         create_process(

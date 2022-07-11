@@ -1,9 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import importlib
 import os
+import sys
 from typing import Dict, Optional, Sequence
 
 import grpc
+
+# import mmdeploy.backend.snpe.inference_pb2
+# import mmdeploy.backend.snpe.inference_pb2_grpc
 import inference_pb2
 import inference_pb2_grpc
 import numpy as np
@@ -37,7 +40,6 @@ class SNPEWrapper(BaseWrapper):
 
     def __init__(self,
                  dlc_file: str,
-                 uri: str,
                  output_names: Optional[Sequence[str]] = None,
                  **kwargs):
 
@@ -45,6 +47,8 @@ class SNPEWrapper(BaseWrapper):
 
         # The maximum model file size is 512MB
         MAX_SIZE = 2 << 29
+        uri = os.environ['__MMDEPLOY_GRPC_URI']
+        logger.info(f'fetch uri: {uri}')
         self.channel = grpc.insecure_channel(
             uri,
             options=(('grpc.GRPC_ARG_KEEPALIVE_TIME_MS',
@@ -55,8 +59,8 @@ class SNPEWrapper(BaseWrapper):
         filesize = os.stat(dlc_file).st_size
 
         logger.info(f'reading local model file {dlc_file}')
-        with open(dlc_file, 'rb') as f:
-            weights = f.read(filesize)
+        # with open(dlc_file, 'rb') as f:
+        #     weights = f.read(filesize)
 
         stub = inference_pb2_grpc.InferenceStub(self.channel)
         logger.info(f'init remote SNPE engine with RPC, please wait...')
@@ -67,12 +71,15 @@ class SNPEWrapper(BaseWrapper):
             logger.error(f'init SNPE model failed {resp.info}')
             return
 
-        output_names = stub.OutputNames(inference_pb2.Empty())
-        super().__init__(output_names)
+        output = stub.OutputNames(inference_pb2.Empty())
+        output_names = output.names
 
-    def __del__(self):
-        stub = inference_pb2_grpc.InferenceStub(self.channel)
-        stub.Destroy()
+        super().__init__(output_names)
+        logger.info(f'init success, outputs {output_names}')
+
+    # def __del__(self):
+    #     stub = inference_pb2_grpc.InferenceStub(self.channel)
+    #     stub.Destroy()
 
     def forward(self, inputs: Dict[str,
                                    torch.Tensor]) -> Dict[str, torch.Tensor]:
@@ -102,28 +109,29 @@ class SNPEWrapper(BaseWrapper):
 
             snpe_inputs.append(tensor)
 
-        return self.__snpe_execute(snpe_inputs, device_type)
+        return self.__snpe_execute(inference_pb2.TensorList(datas=snpe_inputs), device_type)
 
     @TimeCounter.count_time()
-    def __snpe_execute(self, inputs: inference_pb2.TensorList,
+    def __snpe_execute(self, tensorList: inference_pb2.TensorList,
                        device: str) -> Dict[str, torch.tensor]:
         """Run inference with snpe remote inference engine.
 
         Args:
-            inputs (inference_pb2.TensorList): snpe input tensor.
+            tensorList (inference_pb2.TensorList): snpe input tensor.
 
         Returns:
             dict[str, torch.tensor]: Inference results of snpe model.
         """
-
         stub = inference_pb2_grpc.InferenceStub(self.channel)
-        resp = stub.Inference(inputs)
+        resp = stub.Inference(tensorList)
 
         result = dict()
         if resp.status == 0:
             for tensor in resp.datas:
-                ndarray = np.frombuffer(tensor.data)
-                result[tensor.name] = torch.from_numpy(ndarray).to(device)
+                ndarray = np.frombuffer(tensor.data, dtype=np.float32)
+                import pdb
+                pdb.set_trace()
+                result[tensor.name] = torch.from_numpy(ndarray.copy()).to(device)
         else:
             logger = get_root_logger()
             logger.error(f'snpe inference failed {resp.info}')

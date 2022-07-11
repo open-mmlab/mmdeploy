@@ -18,7 +18,7 @@ service Inference {
   // Get output names
   rpc OutputNames(Empty) returns (Names) {}
 
-  // Inference with inputs
+  // Inference with inputs 
   rpc Inference(TensorList) returns (Reply) {}
 
   // Destroy handle
@@ -44,12 +44,15 @@ message Empty {}
 message Tensor {
   // name
   string name = 1;
-
+  
   // datatype
   optional string dtype = 2;
 
   // data
   bytes data = 3;
+
+  // shape
+  repeated int32 shape = 4;
 }
 
 message TensorList {
