@@ -196,11 +196,11 @@ void InferenceServiceImpl::LoadFloatData(const std::string& data,
     LoadFloatData(tensor.data(), float_input);
 
     const auto& inputShape_opt =
-        snpe->getInputDimensions(tensor.name().c_str());
+        snpe->getInputDimensions(inputTensorNames.at(i));
     const auto& inputShape = *inputShape_opt;
 
-    fprintf(stdout, "Stage Inference: tensor name: %s  input data len %lu, [",
-            inputTensorNames.at(i), float_input.size());
+    fprintf(stdout, "Stage Inference: tensor name: %s  input data len %lu  input rank %lu, [",
+            inputTensorNames.at(i), float_input.size(), inputShape.rank());
     for (int j = 0; j < inputShape.rank(); ++j) {
       fprintf(stdout, " %ld,", inputShape[j]);
     }
@@ -210,7 +210,7 @@ void InferenceServiceImpl::LoadFloatData(const std::string& data,
         zdl::SNPE::SNPEFactory::getTensorFactory().createTensor(inputShape);
     std::copy(float_input.begin(), float_input.end(), inputTensors[i]->begin());
 
-    inputTensorMap.add(tensor.name().c_str(), inputTensors[i].get());
+    inputTensorMap.add(inputTensorNames.at(i), inputTensors[i].get());
   }
 
   // A tensor map for SNPE execution outputs
