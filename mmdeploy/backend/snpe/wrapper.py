@@ -6,7 +6,6 @@ from random import randint
 from typing import Dict, Optional, Sequence, Tuple
 
 import grpc
-
 # import mmdeploy.backend.snpe.inference_pb2
 # import mmdeploy.backend.snpe.inference_pb2_grpc
 import inference_pb2
