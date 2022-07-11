@@ -147,9 +147,57 @@ void InferenceServiceImpl::LoadFloatData(const std::string& data,
     response->set_info(zdl::DlSystem::getLastErrorString());
   }
 
+
+  const auto& inputTensorNamesRef = snpe->getInputTensorNames();
+  const auto& inputTensorNames = *inputTensorNamesRef;
+
+  inputTensors.resize(inputTensorNames.size());
+  for (int i = 0; i < inputTensorNames.size(); ++i) {
+
+    const char* pname = inputTensorNames.at(i);
+    const auto& shape_opt = snpe->getInputDimensions(pname);
+    const auto& shape = *shape_opt;
+
+    fprintf(stdout, "Stage Init: input tensor info:\n");
+    switch(shape.rank()) {
+      case 1:
+        fprintf(stdout, "name: %s, shape: [%ld]\n", pname, shape[0]);
+      break;
+      case 2:
+        fprintf(stdout, "name: %s, shape: [%ld,%ld]\n", pname, shape[0], shape[1]);
+      break;
+      case 3:
+        fprintf(stdout, "name: %s, shape: [%ld,%ld,%ld]\n", pname, shape[0], shape[1],shape[2]);
+      break;
+      case 4:
+        fprintf(stdout, "name: %s, shape: [%ld,%ld,%ld,%ld]\n", pname, shape[0], shape[1],shape[2],shape[3]);
+      break;
+    }
+    inputTensors[i] = zdl::SNPE::SNPEFactory::getTensorFactory().createTensor(shape);
+    inputTensorMap.add(pname, inputTensors[i].get());
+  }
+
   response->set_status(0);
   response->set_info("Stage Init: success");
   return Status::OK;
+}
+
+void InferenceServiceImpl::PrintTensorInfo(const char* pname, zdl::DlSystem::ITensor* pTensor) {
+  auto shape = pTensor->getShape();
+    switch(shape.rank()) {
+      case 1:
+        fprintf(stdout, "name: %s, shape: [%ld]\n", pname, shape[0]);
+      break;
+      case 2:
+        fprintf(stdout, "name: %s, shape: [%ld,%ld]\n", pname, shape[0], shape[1]);
+      break;
+      case 3:
+        fprintf(stdout, "name: %s, shape: [%ld,%ld,%ld]\n", pname, shape[0], shape[1],shape[2]);
+      break;
+      case 4:
+        fprintf(stdout, "name: %s, shape: [%ld,%ld,%ld,%ld]\n", pname, shape[0], shape[1],shape[2],shape[3]);
+      break;
+    }
 }
 
 ::grpc::Status InferenceServiceImpl::OutputNames(
@@ -186,31 +234,24 @@ void InferenceServiceImpl::LoadFloatData(const std::string& data,
     return Status::OK;
   }
 
-  std::vector<std::unique_ptr<zdl::DlSystem::ITensor>> inputTensors(
-      inputTensorNames.size());
-  zdl::DlSystem::TensorMap inputTensorMap;
   // Load input/output buffers with TensorMap
   for (int i = 0; i < request->datas_size(); ++i) {
     auto tensor = request->datas(i);
     std::vector<float> float_input;
     LoadFloatData(tensor.data(), float_input);
 
-    const auto& inputShape_opt =
-        snpe->getInputDimensions(inputTensorNames.at(i));
-    const auto& inputShape = *inputShape_opt;
+    fprintf(stdout, "Stage Inference: tensor name: %s  input data len %lu\n",
+            inputTensorNames.at(i), float_input.size());
 
-    fprintf(stdout, "Stage Inference: tensor name: %s  input data len %lu  input rank %lu, [",
-            inputTensorNames.at(i), float_input.size(), inputShape.rank());
-    for (int j = 0; j < inputShape.rank(); ++j) {
-      fprintf(stdout, " %ld,", inputShape[j]);
-    }
-    fprintf(stdout, "]\n");
+      zdl::DlSystem::ITensor* ptensor = inputTensorMap.getTensor(tensor.name().c_str());
+      if (ptensor == nullptr) {
+        fprintf(stderr, "Stage Inference: cannot find name: %s in input tensor map\n", tensor.name().c_str());
+        response->set_status(-3);
+        response->set_info("cannot find name in input tensor map.");
+        return Status::OK;
+      }
 
-    inputTensors[i] =
-        zdl::SNPE::SNPEFactory::getTensorFactory().createTensor(inputShape);
-    std::copy(float_input.begin(), float_input.end(), inputTensors[i]->begin());
-
-    inputTensorMap.add(inputTensorNames.at(i), inputTensors[i].get());
+    std::copy(float_input.begin(), float_input.end(), ptensor->begin());
   }
 
   // A tensor map for SNPE execution outputs
@@ -230,6 +271,7 @@ void InferenceServiceImpl::LoadFloatData(const std::string& data,
     for (size_t i = 0; i < out_names.size(); ++i) {
       const char* name = out_names.at(i);
       zdl::DlSystem::ITensor* pTensor = outputTensorMap.getTensor(name);
+      PrintTensorInfo(name, pTensor);
 
       size_t data_length = pTensor->getSize();
 
@@ -242,10 +284,15 @@ void InferenceServiceImpl::LoadFloatData(const std::string& data,
         memcpy(&result[0] + j, reinterpret_cast<char*>(&f), sizeof(float));
       }
 
+      auto shape = pTensor->getShape();
+
       ::mmdeploy::Tensor* pData = response->add_datas();
       pData->set_dtype("float32");
       pData->set_name(name);
       pData->set_data(result);
+      for (int j = 0; j < shape.rank(); ++j) {
+        pData->add_shape(shape[j]);
+      }
     }
   }
 
@@ -260,6 +307,7 @@ void InferenceServiceImpl::LoadFloatData(const std::string& data,
                                              ::mmdeploy::Reply* response) {
   snpe.reset();
   container.reset();
+  inputTensors.clear();
   response->set_status(0);
   return Status::OK;
 }

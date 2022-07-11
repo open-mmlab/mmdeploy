@@ -73,8 +73,12 @@ class InferenceServiceImpl final : public Inference::Service {
       bool useUserSuppliedBuffers, zdl::DlSystem::PlatformConfig platformConfig,
       bool useCaching);
 
+    void PrintTensorInfo(const char* name, zdl::DlSystem::ITensor* pTensor);
+
   std::unique_ptr<zdl::SNPE::SNPE> snpe;
   std::unique_ptr<zdl::DlContainer::IDlContainer> container;
+  std::vector<std::unique_ptr<zdl::DlSystem::ITensor>> inputTensors;
+  zdl::DlSystem::TensorMap inputTensorMap;
 };
 
 #endif
