@@ -117,6 +117,7 @@ class SNPEWrapper(BaseWrapper):
 
     def __init__(self,
                  dlc_file: str,
+                 uri: str,
                  output_names: Optional[Sequence[str]] = None,
                  **kwargs):
 
