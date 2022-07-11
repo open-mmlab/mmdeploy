@@ -19,10 +19,11 @@ class ImageToTensorImpl : public ::mmdeploy::ImageToTensorImpl {
     shape = {shape[0], shape[3], shape[1], shape[2]};
 
     TensorDesc dummy_desc = {Device{"cpu"}, data_type, shape};
-    Tensor dummy(dummy_desc);
+    Tensor dummy(dummy_desc, dummy_buffer_);
 
     return dummy;
   }
+  Buffer dummy_buffer_{Device{"cpu"}, 0, nullptr};
 };
 
 class ImageToTensorImplCreator : public Creator<::mmdeploy::ImageToTensorImpl> {

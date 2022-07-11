@@ -23,10 +23,11 @@ class CenterCropImpl : public ::mmdeploy::CenterCropImpl {
     shape[2] = right - left + 1;  // w
 
     TensorDesc dummy_desc = {Device{"cpu"}, data_type, shape};
-    Tensor dummy(dummy_desc);
+    Tensor dummy(dummy_desc, dummy_buffer_);
 
     return dummy;
   }
+  Buffer dummy_buffer_{Device{"cpu"}, 0, nullptr};
 };
 
 class CenterCropImplCreator : public Creator<::mmdeploy::CenterCropImpl> {
