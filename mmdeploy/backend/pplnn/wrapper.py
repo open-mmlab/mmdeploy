@@ -50,7 +50,7 @@ class PPLNNWrapper(BaseWrapper):
         engines = register_engines(
             device_id,
             disable_avx512=False,
-            quick_select=False,
+            quick_select=algo_file is None,
             import_algo_file=algo_file)
 
         runtime = create_runtime(onnx_file, engines)

@@ -86,6 +86,7 @@ def register_engines(device_id: int,
     else:
         cuda_options = pplnn.cuda.EngineOptions()
         cuda_options.device_id = device_id
+        cuda_options.mm_policy = pplnn.cuda.MM_BEST_FIT
 
         cuda_engine = pplnn.cuda.EngineFactory.Create(cuda_options)
         if not cuda_engine:

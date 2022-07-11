@@ -59,7 +59,10 @@ Result<void> PPLNet::Init(const Value& args) {
 #if PPL_NN_HAS_CUDA
   if (device_.is_device()) {
     ppl::nn::cuda::RegisterBuiltinOpImpls();
-    engines_.emplace_back(ppl::nn::cuda::EngineFactory::Create({}));
+    ppl::nn::cuda::EngineOptions options{};
+    options.device_id = device_.device_id();
+    options.mm_policy = ppl::nn::cuda::MM_BEST_FIT;
+    engines_.emplace_back(ppl::nn::cuda::EngineFactory::Create(options));
     // Use default algorithms until PPL can set algorithms from a memory buffer
     //  since the optimization process is really slow
     engines_.back()->Configure(ppl::nn::cuda::ENGINE_CONF_USE_DEFAULT_ALGORITHMS, true);
