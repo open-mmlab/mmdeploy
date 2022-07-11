@@ -113,6 +113,16 @@ class Classification(BaseTask):
         super(Classification, self).__init__(model_cfg, deploy_cfg, device,
                                              experiment_name)
 
+    def build_data_preprocessor(self):
+        model_cfg = deepcopy(self.model_cfg)
+        data_preprocessor = deepcopy(model_cfg.get('preprocess_cfg', {}))
+        data_preprocessor.setdefault('type', 'mmcls.ClsDataPreprocessor')
+
+        from mmengine.registry import MODELS
+        data_preprocessor = MODELS.build(data_preprocessor)
+
+        return data_preprocessor
+
     def build_backend_model(self,
                             model_files: Sequence[str] = None,
                             **kwargs) -> torch.nn.Module:

@@ -1,9 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
 import logging
+from copy import deepcopy
 
-from mmcv import Config
+from mmengine import Config
 
+from mmdeploy.apis.utils import build_task_processor
 from mmdeploy.utils import get_root_logger, load_config
 
 
@@ -21,27 +23,36 @@ def get_table(onnx_path: str,
     if 'onnx_config' in deploy_cfg and 'input_shape' in deploy_cfg.onnx_config:
         input_shape = deploy_cfg.onnx_config.input_shape
 
+    task_processor = build_task_processor(model_cfg, deploy_cfg, device)
+    calib_dataloader = deepcopy(model_cfg[f'{dataset_type}_dataloader'])
+    calib_dataloader['batch_size'] = 1
     # build calibration dataloader. If img dir not specified, use val dataset.
     if image_dir is not None:
         from quant_image_dataset import QuantizationImageDataset
-        from torch.utils.data import DataLoader
         dataset = QuantizationImageDataset(
             path=image_dir, deploy_cfg=deploy_cfg, model_cfg=model_cfg)
-        dataloader = DataLoader(dataset, batch_size=1)
+        calib_dataloader['dataset'] = dataset
+        dataloader = task_processor.build_dataloader(calib_dataloader)
+        # dataloader = DataLoader(dataset, batch_size=1)
     else:
-        from mmdeploy.apis.utils import build_task_processor
-        task_processor = build_task_processor(model_cfg, deploy_cfg, device)
-        dataset = task_processor.build_dataset(model_cfg, dataset_type)
-        dataloader = task_processor.build_dataloader(dataset, 1, 1)
+        dataset = task_processor.build_dataset(calib_dataloader['dataset'])
+        calib_dataloader['dataset'] = dataset
+        dataloader = task_processor.build_dataloader(calib_dataloader)
+
+    data_preprocessor = task_processor.build_data_preprocessor()
 
     # get an available input shape randomly
     for _, input_data in enumerate(dataloader):
-        if isinstance(input_data['img'], list):
-            input_shape = input_data['img'][0].shape
-            collate_fn = lambda x: x['img'][0].to(device)  # noqa: E731
+        input_data = data_preprocessor(input_data)
+        input_tensor = input_data[0]
+        if isinstance(input_tensor, list):
+            input_shape = input_tensor[0].shape
+            collate_fn = lambda x: data_preprocessor(x[0])[0].to(  # noqa: E731
+                device)
         else:
-            input_shape = input_data['img'].shape
-            collate_fn = lambda x: x['img'].to(device)  # noqa: E731
+            input_shape = input_tensor.shape
+            collate_fn = lambda x: data_preprocessor(x)[0].to(  # noqa: E731
+                device)
         break
 
     from ppq import QuantizationSettingFactory, TargetPlatform
@@ -106,13 +117,9 @@ def main():
     quant_onnx_path = args.out_onnx
     image_dir = args.image_dir
 
-    try:
-        get_table(onnx_path, deploy_cfg, model_cfg, quant_onnx_path,
-                  quant_table_path, image_dir)
-        logger.info('onnx2ncnn_quant_table success.')
-    except Exception as e:
-        logger.error(e)
-        logger.error('onnx2ncnn_quant_table failed.')
+    get_table(onnx_path, deploy_cfg, model_cfg, quant_onnx_path,
+              quant_table_path, image_dir)
+    logger.info('onnx2ncnn_quant_table success.')
 
 
 if __name__ == '__main__':

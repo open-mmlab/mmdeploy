@@ -67,6 +67,15 @@ class BaseTask(metaclass=ABCMeta):
         """
         pass
 
+    def build_data_preprocessor(self):
+        model = deepcopy(self.model_cfg.model)
+        preprocess_cfg = model['data_preprocessor']
+
+        from mmengine.registry import MODELS
+        data_preprocessor = MODELS.build(preprocess_cfg)
+
+        return data_preprocessor
+
     def build_pytorch_model(self,
                             model_checkpoint: Optional[str] = None,
                             cfg_options: Optional[Dict] = None,
