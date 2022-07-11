@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from .adaptive_avg_pool import adaptive_avg_pool2d__default
 from .atan2 import atan2__default
 from .chunk import chunk__ncnn
 from .getattribute import tensor__getattribute__ncnn
@@ -14,5 +15,5 @@ __all__ = [
     'tensor__getattribute__ncnn', 'group_norm__ncnn', 'interpolate__ncnn',
     'interpolate__tensorrt', 'linear__ncnn', 'tensor__repeat__tensorrt',
     'tensor__size__ncnn', 'topk__dynamic', 'topk__tensorrt', 'chunk__ncnn',
-    'triu', 'atan2__default'
+    'triu', 'atan2__default', 'adaptive_avg_pool2d__default'
 ]
