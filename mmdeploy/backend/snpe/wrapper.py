@@ -6,6 +6,9 @@ from random import randint
 from typing import Dict, Optional, Sequence, Tuple
 
 import grpc
+
+# import mmdeploy.backend.snpe.inference_pb2
+# import mmdeploy.backend.snpe.inference_pb2_grpc
 import inference_pb2
 import inference_pb2_grpc
 import numpy as np
@@ -115,7 +118,6 @@ class SNPEWrapper(BaseWrapper):
 
     def __init__(self,
                  dlc_file: str,
-                 uri: str,
                  output_names: Optional[Sequence[str]] = None,
                  **kwargs):
 
@@ -140,8 +142,8 @@ class SNPEWrapper(BaseWrapper):
         filesize = os.stat(dlc_file).st_size
 
         logger.info(f'reading local model file {dlc_file}')
-        with open(dlc_file, 'rb') as f:
-            weights = f.read(filesize)
+        # with open(dlc_file, 'rb') as f:
+        #     weights = f.read(filesize)
 
         self.stub = inference_pb2_grpc.InferenceStub(
             grpc.intercept_channel(grpc.insecure_channel(uri), *interceptors))

@@ -28,44 +28,34 @@
 #include <iostream>
 
 #include "service_impl.h"
-#include "text_table.h"
 
-void PrintIP() {
+void PrintIPv4() {
   struct ifaddrs* ifAddrStruct = NULL;
   void* tmpAddrPtr = NULL;
 
-  int retval = getifaddrs(&ifAddrStruct);
-  if (retval == -1) {
-    return;
-  }
+  getifaddrs(&ifAddrStruct);
 
-  helper::TextTable table("Device");
-  table.padding(1);
-  table.add("port").add("ip").eor();
-  while (ifAddrStruct != nullptr) {
-    if (ifAddrStruct->ifa_addr == nullptr) {
-      break;
-    }
-
+  while (ifAddrStruct != NULL) {
     if (ifAddrStruct->ifa_addr->sa_family == AF_INET) {
       tmpAddrPtr = &((struct sockaddr_in*)ifAddrStruct->ifa_addr)->sin_addr;
       char addressBuffer[INET_ADDRSTRLEN];
       inet_ntop(AF_INET, tmpAddrPtr, addressBuffer, INET_ADDRSTRLEN);
-      table.add(std::string(ifAddrStruct->ifa_name)).add(std::string(addressBuffer)).eor();
+      fprintf(stdout, "%s IP Address %s\n", ifAddrStruct->ifa_name,
+              addressBuffer);
     } else if (ifAddrStruct->ifa_addr->sa_family == AF_INET6) {
       tmpAddrPtr = &((struct sockaddr_in*)ifAddrStruct->ifa_addr)->sin_addr;
       char addressBuffer[INET6_ADDRSTRLEN];
       inet_ntop(AF_INET6, tmpAddrPtr, addressBuffer, INET6_ADDRSTRLEN);
-      table.add(std::string(ifAddrStruct->ifa_name)).add(std::string(addressBuffer)).eor();
+      fprintf(stdout, "%s IP Address %s\n", ifAddrStruct->ifa_name,
+              addressBuffer);
     }
     ifAddrStruct = ifAddrStruct->ifa_next;
   }
-  std::cout << table << std::endl << std::endl;
 }
 
 void RunServer() {
   // listen IPv4 and IPv6
-  std::string server_address("[::]:50052");
+  std::string server_address("[::]:50051");
   InferenceServiceImpl service;
 
   grpc::EnableDefaultHealthCheckService(true);
@@ -84,7 +74,7 @@ void RunServer() {
   builder.RegisterService(&service);
   // Finally assemble the server.
   std::unique_ptr<Server> server(builder.BuildAndStart());
-  fprintf(stdout, "Server listening on %s\n", server_address.c_str());
+  std::cout << "Server listening on " << server_address << std::endl;
 
   // Wait for the server to shutdown. Note that some other thread must be
   // responsible for shutting down the server for this call to ever return.
@@ -92,7 +82,7 @@ void RunServer() {
 }
 
 int main(int argc, char** argv) {
-  PrintIP();
+  PrintIPv4();
   RunServer();
 
   return 0;

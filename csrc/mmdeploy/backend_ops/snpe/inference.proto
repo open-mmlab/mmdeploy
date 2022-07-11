@@ -18,7 +18,7 @@ service Inference {
   // Get output names
   rpc OutputNames(Empty) returns (Names) {}
 
-  // Inference with inputs
+  // Inference with inputs 
   rpc Inference(TensorList) returns (Reply) {}
 
   // Destroy handle
@@ -44,6 +44,10 @@ message Empty {}
 message Tensor {
   // name
   string name = 1;
+<<<<<<< HEAD:csrc/mmdeploy/backend_ops/snpe/service/inference.proto
+=======
+  
+>>>>>>> fix(tools/deploy.py): support snpe:csrc/mmdeploy/backend_ops/snpe/inference.proto
   // datatype
   optional string dtype = 2;
 

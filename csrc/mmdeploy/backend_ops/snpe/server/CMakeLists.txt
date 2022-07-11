@@ -59,7 +59,7 @@ target_link_libraries(hw_grpc_proto
 add_library(snpe SHARED IMPORTED)
 
 if (NOT EXISTS $ENV{SNPE_ROOT}/lib/aarch64-android-clang6.0/)
-  message(FATAL_ERROR "SNPE_ROOT directory not exist: "$ENV{SNPE_ROOT}/lib/aarch64-android-clang6.0/)
+  message(FATAL_ERROR "snpe directory not exist: "$ENV{SNPE_ROOT}/lib/aarch64-android-clang6.0/)
 endif()
 
 set_target_properties(snpe PROPERTIES

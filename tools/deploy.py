@@ -271,6 +271,7 @@ def main():
                 backend_files += [model_param_path, model_bin_path]
 
     elif backend == Backend.SNPE:
+        os.environ['__MMDEPLOY_GRPC_URI'] = args.uri
         from mmdeploy.apis.snpe import is_available as is_available
 
         if not is_available():
