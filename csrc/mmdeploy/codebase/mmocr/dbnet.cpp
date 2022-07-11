@@ -50,7 +50,9 @@ class DBHead : public MMOCR {
       return Status(eNotSupported);
     }
 
-    conf.Squeeze();
+    // drop batch dimension
+    conf.Squeeze(0);
+
     conf = conf.Slice(0);
 
     std::vector<std::vector<cv::Point>> contours;

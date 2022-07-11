@@ -2,6 +2,7 @@
 import torch
 
 from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.utils import IR
 
 
 @FUNCTION_REWRITER.register_rewriter(
@@ -30,4 +31,20 @@ def chunk__ncnn(ctx, self, num_chunks: int, dim: int = 0) -> torch.Tensor:
         for i in range(len(index_list) - 1)
     ]
 
+    return output
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    func_name='torch.Tensor.chunk', ir=IR.TORCHSCRIPT)
+def chunk__torchscript(ctx,
+                       self,
+                       num_chunks: int,
+                       dim: int = 0) -> torch.Tensor:
+    """Rewrite `chunk` for Torchscript.
+
+    Replace chunk op with split op
+    """
+    dim_size = self.shape[dim]
+    assert dim_size % num_chunks == 0, 'cannot split to equal sizes'
+    output = self.split(dim_size // num_chunks, dim=dim)
     return output

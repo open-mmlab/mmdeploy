@@ -3,13 +3,13 @@
 #include "mmdeploy/codebase/mmocr/panet.h"
 
 #include <algorithm>
-#include <opencv2/opencv.hpp>
 
 #include "mmdeploy/codebase/mmocr/mmocr.h"
 #include "mmdeploy/core/device.h"
 #include "mmdeploy/core/registry.h"
 #include "mmdeploy/core/serialization.h"
 #include "mmdeploy/core/utils/device_utils.h"
+#include "opencv2/imgproc/imgproc.hpp"
 
 namespace mmdeploy {
 
@@ -53,7 +53,9 @@ class PANHead : public MMOCR {
                      (int)pred.data_type());
       return Status(eNotSupported);
     }
-    pred.Squeeze();
+
+    // drop batch dimension
+    pred.Squeeze(0);
 
     auto text_pred = pred.Slice(0);
     auto kernel_pred = pred.Slice(1);

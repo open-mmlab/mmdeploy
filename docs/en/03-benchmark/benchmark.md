@@ -1,12 +1,15 @@
 # Benchmark
 
 ## Backends
+
 CPU: ncnn, ONNXRuntime, OpenVINO
 
 GPU: ncnn, TensorRT, PPLNN
 
 ## Latency benchmark
+
 ### Platform
+
 - Ubuntu 18.04
 - ncnn 20211208
 - Cuda 11.3
@@ -15,13 +18,13 @@ GPU: ncnn, TensorRT, PPLNN
 - NVIDIA tesla T4 tensor core GPU for TensorRT
 
 ### Other settings
+
 - Static graph
 - Batch size 1
 - Synchronize devices after each inference.
 - We count the average inference performance of 100 images of the dataset.
 - Warm up. For ncnn, we warm up 30 iters for all codebases. As for other backends: for classification, we warm up 1010 iters; for other codebases, we warm up 10 iters.
 - Input resolution varies for different datasets of different codebases. All inputs are real images except for `mmediting` because the dataset is not large enough.
-
 
 Users can directly test the speed through [model profiling](../02-how-to-run/how_to_measure_performance_of_models.md). And here is the benchmark in our environment.
 
@@ -556,6 +559,27 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">89.85</td>
     <td align="center">90.41</td>
   </tr>
+  <tr>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmclassification/blob/master/configs/vision_transformer/vit-base-p16_ft-64xb64_in1k-384.py">Vision Transformer</a></td>
+    <td align="center">top-1</td>
+    <td align="center">85.43</td>
+    <td align="center">85.43</td>
+    <td align="center">-</td>
+    <td align="center">85.43</td>
+    <td align="center">85.42</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <td align="center">top-5</td>
+    <td align="center">97.77</td>
+    <td align="center">97.77</td>
+    <td align="center">-</td>
+    <td align="center">97.77</td>
+    <td align="center">97.76</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
 </tbody>
 </table>
 </div>
@@ -748,6 +772,29 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
     <td align="center">33.7</td>
     <td align="center">33.7</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmdetection/blob/master/configs/swin/mask_rcnn_swin-t-p4-w7_fpn_1x_coco.py">Swin-Transformer</a></td>
+    <td align="center" rowspan="2">Instance Segmentation</td>
+    <td align="center" rowspan="2">COCO2017</td>
+    <td align="center">box AP</td>
+    <td align="center">42.7</td>
+    <td align="center">-</td>
+    <td align="center">42.7</td>
+    <td align="center">42.5</td>
+    <td align="center">37.7</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <td align="center">mask AP</td>
+    <td align="center">39.3</td>
+    <td align="center">-</td>
+    <td align="center">39.3</td>
+    <td align="center">39.3</td>
+    <td align="center">35.4</td>
     <td align="center">-</td>
     <td align="center">-</td>
   </tr>
@@ -1438,6 +1485,18 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
     <td align="center">-</td>
   </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/blob/master/configs/segmenter/segmenter_vit-s_linear_8x1_512x512_160k_ade20k.py">Segmenter</a></td>
+    <td align="center">ADE20K</td>
+    <td align="center">mIoU</td>
+    <td align="center">44.32</td>
+    <td align="center">44.29</td>
+    <td align="center">44.29</td>
+    <td align="center">44.29</td>
+    <td align="center">43.34</td>
+    <td align="center">43.35</td>
+    <td align="center">-</td>
+  </tr>
 </tbody>
 </table>
 </div>
@@ -1533,7 +1592,6 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
 </table>
 </div>
 
-
 <div style="margin-left: 25px;">
 <table class="docutils">
 <thead>
@@ -1578,8 +1636,8 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">mAP</td>
     <td align="center">0.756</td>
     <td align="center">0.756</td>
-    <td align="center">-</td>
-    <td align="center">-</td>
+    <td align="center">0.758</td>
+    <td align="center">0.730</td>
     <td align="center">-</td>
     <td align="center">-</td>
   </tr>
@@ -1587,9 +1645,8 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
 </table>
 </div>
 
-
-
 ## Notes
+
 - As some datasets contain images with various resolutions in codebase like MMDet. The speed benchmark is gained through static configs in MMDeploy, while the performance benchmark is gained through dynamic ones.
 
 - Some int8 performance benchmarks of TensorRT require Nvidia cards with tensor core, or the performance would drop heavily.

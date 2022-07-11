@@ -295,6 +295,8 @@ bool SubgraphMatcher::SubgraphMatcherImpl::matchesSubgraphFromAnchorNode(Node* a
 SubgraphMatcher::SubgraphMatcher(const Graph& pattern, MatchAttribute match_attribute)
     : impl_(new SubgraphMatcher::SubgraphMatcherImpl(pattern, match_attribute)) {}
 
+SubgraphMatcher::~SubgraphMatcher() = default;
+
 bool SubgraphMatcher::matchesSubgraphFromAnchorNode(Node* anchor) {
   return impl_->matchesSubgraphFromAnchorNode(anchor);
 }

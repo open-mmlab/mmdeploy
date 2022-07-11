@@ -11,6 +11,7 @@ This tutorial is based on Linux systems like Ubuntu-18.04.
 ## Usage
 
 Example:
+
 ```bash
 python tools/deploy.py \
     configs/mmdet/detection/detection_pplnn_dynamic-800x1344.py \

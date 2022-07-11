@@ -6,7 +6,7 @@ from mmdeploy.core import FUNCTION_REWRITER
     'mmcls.models.classifiers.ImageClassifier.forward', backend='default')
 @FUNCTION_REWRITER.register_rewriter(
     'mmcls.models.classifiers.BaseClassifier.forward', backend='default')
-def base_classifier__forward(ctx, self, img, *args, **kwargs):
+def base_classifier__forward(ctx, self, img, return_loss=False, **kwargs):
     """Rewrite `forward` of BaseClassifier for default backend.
 
     Rewrite this function to call simple_test function,
@@ -23,5 +23,5 @@ def base_classifier__forward(ctx, self, img, *args, **kwargs):
         result(Tensor): The result of classifier.The tensor
             shape (batch_size,num_classes).
     """
-    result = self.simple_test(img, {})
+    result = self.simple_test(img, **kwargs)
     return result

@@ -56,6 +56,9 @@ if (NOT CMAKE_CUDA_ARCHITECTURES)
             # cuda doesn't support `sm_86` until version 11.1
             set(_NVCC_FLAGS "${_NVCC_FLAGS} -gencode arch=compute_86,code=sm_86")
         endif ()
+        if (CUDA_VERSION_MINOR VERSION_GREATER_EQUAL "4")
+            set(_NVCC_FLAGS "${_NVCC_FLAGS} -gencode arch=compute_87,code=sm_87")
+        endif ()
     endif ()
 endif ()
 

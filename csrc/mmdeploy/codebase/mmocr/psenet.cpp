@@ -3,13 +3,13 @@
 #include "mmdeploy/codebase/mmocr/psenet.h"
 
 #include <algorithm>
-#include <opencv2/opencv.hpp>
 
 #include "mmdeploy/codebase/mmocr/mmocr.h"
 #include "mmdeploy/core/device.h"
 #include "mmdeploy/core/registry.h"
 #include "mmdeploy/core/serialization.h"
 #include "mmdeploy/core/utils/device_utils.h"
+#include "opencv2/imgproc/imgproc.hpp"
 
 namespace mmdeploy {
 namespace mmocr {
@@ -51,7 +51,7 @@ class PSEHead : public MMOCR {
     }
 
     // drop batch dimension
-    _preds.Squeeze();
+    _preds.Squeeze(0);
 
     cv::Mat_<uint8_t> masks;
     cv::Mat_<int> kernel_labels;

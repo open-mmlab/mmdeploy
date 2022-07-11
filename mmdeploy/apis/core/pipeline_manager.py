@@ -76,8 +76,10 @@ class PipelineCaller:
         """pop multiprocess output."""
         assert self._mp_dict is not None, 'mp_dict is None.'
         call_id = self._call_id if call_id is None else call_id
-        assert call_id in self._mp_dict, \
-            f'`{self._func_name}` with Call id: {call_id} failed.'
+        if call_id not in self._mp_dict:
+            get_root_logger().error(
+                f'`{self._func_name}` with Call id: {call_id} failed. exit.')
+            exit(1)
         ret = self._mp_dict[call_id]
         self._mp_dict.pop(call_id)
         return ret

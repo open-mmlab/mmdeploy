@@ -76,7 +76,8 @@ pluginStatus_t gatherNMSOutputs(cudaStream_t stream, bool shareLocation, int num
                                 int numPredsPerClass, int numClasses, int topK, int keepTopK,
                                 DataType DT_BBOX, DataType DT_SCORE, const void* indices,
                                 const void* scores, const void* bboxData, void* nmsedDets,
-                                void* nmsedLabels, bool clipBoxes = true, bool rotated = false);
+                                void* nmsedLabels, void* nmsedIndex = nullptr,
+                                bool clipBoxes = true, bool rotated = false);
 
 size_t detectionInferenceWorkspaceSize(bool shareLocation, int N, int C1, int C2, int numClasses,
                                        int numPredsPerClass, int topK, DataType DT_BBOX,

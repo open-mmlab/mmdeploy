@@ -1,12 +1,13 @@
 # Benchmark
 
 ## Backends
+
 CPU: ncnn, ONNXRuntime, OpenVINO
 
 GPU: ncnn, TensorRT, PPLNN
 
-
 ## 软硬件环境
+
 - Ubuntu 18.04
 - ncnn 20211208
 - Cuda 11.3
@@ -15,6 +16,7 @@ GPU: ncnn, TensorRT, PPLNN
 - NVIDIA tesla T4 tensor core GPU for TensorRT
 
 ### 配置
+
 - 静态图导出
 - batch 大小为 1
 - 测试时，计算各个数据集中 100 张图片的平均耗时
@@ -22,6 +24,7 @@ GPU: ncnn, TensorRT, PPLNN
 用户可以直接通过[model profiling](../02-how-to-run/profile_model.md)获得想要的速度测试结果。下面是我们环境中的测试结果：
 
 ## 速度测试
+
 <div style="margin-left: 25px;">
 <table class="docutils">
 <thead>
@@ -133,7 +136,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center" colspan="1">fp16</td>
   </tr>
 
-  <tr>
+<tr>
     <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/yolo/yolov3_d53_320_273e_coco.py">YOLOv3</a></td>
     <td align="center">320x320</td>
     <td align="center">14.76</td>
@@ -553,6 +556,27 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">89.85</td>
     <td align="center">90.41</td>
   </tr>
+  <tr>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmclassification/blob/master/configs/vision_transformer/vit-base-p16_ft-64xb64_in1k-384.py">Vision Transformer</a></td>
+    <td align="center">top-1</td>
+    <td align="center">85.43</td>
+    <td align="center">85.43</td>
+    <td align="center">-</td>
+    <td align="center">85.43</td>
+    <td align="center">85.42</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <td align="center">top-5</td>
+    <td align="center">97.77</td>
+    <td align="center">97.77</td>
+    <td align="center">-</td>
+    <td align="center">97.77</td>
+    <td align="center">97.76</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
 </tbody>
 </table>
 </div>
@@ -745,6 +769,29 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
     <td align="center">33.7</td>
     <td align="center">33.7</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmdetection/blob/master/configs/swin/mask_rcnn_swin-t-p4-w7_fpn_1x_coco.py">Swin-Transformer</a></td>
+    <td align="center" rowspan="2">Instance Segmentation</td>
+    <td align="center" rowspan="2">COCO2017</td>
+    <td align="center">box AP</td>
+    <td align="center">42.7</td>
+    <td align="center">-</td>
+    <td align="center">42.7</td>
+    <td align="center">42.5</td>
+    <td align="center">37.7</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <td align="center">mask AP</td>
+    <td align="center">39.3</td>
+    <td align="center">-</td>
+    <td align="center">39.3</td>
+    <td align="center">39.3</td>
+    <td align="center">35.4</td>
     <td align="center">-</td>
     <td align="center">-</td>
   </tr>
@@ -1435,6 +1482,18 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
     <td align="center">-</td>
   </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/blob/master/configs/segmenter/segmenter_vit-s_linear_8x1_512x512_160k_ade20k.py">Segmenter</a></td>
+    <td align="center">ADE20K</td>
+    <td align="center">mIoU</td>
+    <td align="center">44.32</td>
+    <td align="center">44.29</td>
+    <td align="center">44.29</td>
+    <td align="center">44.29</td>
+    <td align="center">43.34</td>
+    <td align="center">43.35</td>
+    <td align="center">-</td>
+  </tr>
 </tbody>
 </table>
 </div>
@@ -1530,7 +1589,6 @@ GPU: ncnn, TensorRT, PPLNN
 </table>
 </div>
 
-
 <div style="margin-left: 25px;">
 <table class="docutils">
 <thead>
@@ -1575,8 +1633,8 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">mAP</td>
     <td align="center">0.756</td>
     <td align="center">0.756</td>
-    <td align="center">-</td>
-    <td align="center">-</td>
+    <td align="center">0.758</td>
+    <td align="center">0.730</td>
     <td align="center">-</td>
     <td align="center">-</td>
   </tr>

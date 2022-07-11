@@ -38,6 +38,8 @@ def process_model_config(
     sdk_pipeline = []
     color_type = 'color'
     channel_order = 'rgb'
+    if input_shape is None:
+        input_shape = np.array(cfg.data_cfg['image_size'])
 
     idx = 0
     while idx < len(test_pipeline):

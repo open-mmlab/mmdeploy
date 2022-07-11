@@ -14,32 +14,34 @@
     - [Build SDK](#build-sdk)
     - [Build Demo](#build-demo)
 
----
+______________________________________________________________________
 
 ## Install Toolchains
 
 - cmake
 
-    **Make sure cmake version >= 3.14.0**. The below script shows how to install cmake 3.20.0. You can find more versions [here](https://cmake.org/install).
+  **Make sure cmake version >= 3.14.0**. The below script shows how to install cmake 3.20.0. You can find more versions [here](https://cmake.org/install).
 
-    ```bash
-    wget https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0-linux-x86_64.tar.gz
-    tar -xzvf cmake-3.20.0-linux-x86_64.tar.gz
-    sudo ln -sf $(pwd)/cmake-3.20.0-linux-x86_64/bin/* /usr/bin/
-    ```
+  ```bash
+  wget https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0-linux-x86_64.tar.gz
+  tar -xzvf cmake-3.20.0-linux-x86_64.tar.gz
+  sudo ln -sf $(pwd)/cmake-3.20.0-linux-x86_64/bin/* /usr/bin/
+  ```
 
 - GCC 7+
 
-    MMDeploy requires compilers that support C++17.
-    ```bash
-    # Add repository if ubuntu < 18.04
-    sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-    sudo apt-get update
-    sudo apt-get install gcc-7
-    sudo apt-get install g++-7
-    ```
+  MMDeploy requires compilers that support C++17.
+
+  ```bash
+  # Add repository if ubuntu < 18.04
+  sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+  sudo apt-get update
+  sudo apt-get install gcc-7
+  sudo apt-get install g++-7
+  ```
 
 ## Install Dependencies
+
 ### Install Dependencies for Model Converter
 
 <table class="docutils">
@@ -85,6 +87,7 @@ pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/${cu_ve
 ### Install Dependencies for SDK
 
 You can skip this chapter if you are only interested in the model converter.
+
 <table class="docutils">
 <thead>
   <tr>
@@ -103,7 +106,7 @@ sudo apt-get install libopencv-dev
     On Ubuntu 16.04, OpenCV has to be built from the source code. Please refer to the <a href="https://docs.opencv.org/3.4/d7/d9f/tutorial_linux_install.html">guide</a>.
     </td>
 
-  </tr>
+</tr>
   <tr>
     <td>pplcv </td>
     <td>A high-performance image processing library of openPPL.<br>
@@ -246,17 +249,19 @@ If you want to make the above environment variables permanent, you could add the
 ```bash
 echo '# set env for onnxruntime' >> ~/.bashrc
 echo "export ONNXRUNTIME_DIR=${ONNXRUNTIME_DIR}" >> ~/.bashrc
-echo 'export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH' >> ~/.bashrc
+echo "export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH" >> ~/.bashrc
 source ~/.bashrc
 ```
 
 ## Build MMDeploy
+
 ```bash
 cd /the/root/path/of/MMDeploy
 export MMDEPLOY_DIR=$(pwd)
 ```
 
 ### Build Options Spec
+
 <table class="docutils">
 <thead>
   <tr>
@@ -278,6 +283,11 @@ export MMDEPLOY_DIR=$(pwd)
     <td>{ON, OFF}</td>
     <td>OFF</td>
     <td>switch to build MMDeploy SDK python package</td>
+  </tr>
+  <tr>
+    <td>MMDEPLOY_BUILD_SDK_JAVA_API</td>
+    <td>{ON, OFF}</td>
+    <td>switch to build MMDeploy SDK Java API</td>
   </tr>
   <tr>
     <td>MMDEPLOY_BUILD_TEST</td>
@@ -334,6 +344,7 @@ Currently, <b>The Model Converter supports torchscript, but SDK doesn't</b>.
 ### Build Model Converter
 
 #### Build Custom Ops
+
 If one of inference engines among ONNXRuntime, TensorRT, ncnn and libtorch is selected, you have to build the corresponding custom ops.
 
 - **ONNXRuntime** Custom Ops
@@ -342,7 +353,7 @@ If one of inference engines among ONNXRuntime, TensorRT, ncnn and libtorch is se
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
   cmake -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_TARGET_BACKENDS=ort -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
-  make -j$(nproc)
+  make -j$(nproc) && make install
   ```
 
 - **TensorRT** Custom Ops
@@ -351,7 +362,7 @@ If one of inference engines among ONNXRuntime, TensorRT, ncnn and libtorch is se
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
   cmake -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_TARGET_BACKENDS=trt -DTENSORRT_DIR=${TENSORRT_DIR} -DCUDNN_DIR=${CUDNN_DIR} ..
-  make -j$(nproc)
+  make -j$(nproc) && make install
   ```
 
 - **ncnn** Custom Ops
@@ -360,7 +371,7 @@ If one of inference engines among ONNXRuntime, TensorRT, ncnn and libtorch is se
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
   cmake -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_TARGET_BACKENDS=ncnn -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn ..
-  make -j$(nproc)
+  make -j$(nproc) && make install
   ```
 
 - **TorchScript** Custom Ops
@@ -369,7 +380,7 @@ If one of inference engines among ONNXRuntime, TensorRT, ncnn and libtorch is se
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
   cmake -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_TARGET_BACKENDS=torchscript -DTorch_DIR=${Torch_DIR} ..
-  make -j$(nproc)
+  make -j$(nproc) && make install
   ```
 
 #### Install Model Converter
@@ -378,17 +389,20 @@ If one of inference engines among ONNXRuntime, TensorRT, ncnn and libtorch is se
 cd ${MMDEPLOY_DIR}
 pip install -e .
 ```
+
 **Note**
 
 - Some dependencies are optional. Simply running `pip install -e .` will only install the minimum runtime requirements.
   To use optional dependencies, install them manually with `pip install -r requirements/optional.txt` or specify desired extras when calling `pip` (e.g. `pip install -e .[optional]`).
   Valid keys for the extras field are: `all`, `tests`, `build`, `optional`.
+
 ### Build SDK
 
 MMDeploy provides two recipes as shown below for building SDK with ONNXRuntime and TensorRT as inference engines respectively.
 You can also activate other engines after the model.
 
 - cpu + ONNXRuntime
+
   ```Bash
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
@@ -405,6 +419,7 @@ You can also activate other engines after the model.
   ```
 
 - cuda + TensorRT
+
   ```Bash
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build

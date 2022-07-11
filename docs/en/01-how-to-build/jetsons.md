@@ -24,6 +24,7 @@ JetPack SDK provides a full development environment for hardware-accelerated AI-
 All Jetson modules and developer kits are supported by JetPack SDK.
 
 There are two major installation methods including,
+
 1. SD Card Image Method
 2. NVIDIA SDK Manager Method
 
@@ -234,7 +235,7 @@ You can find a full list of custom plugins from [here](../ops/tensorrt.md).
 # build TensorRT custom operators
 mkdir -p build && cd build
 cmake .. -DMMDEPLOY_TARGET_BACKENDS="trt"
-make -j$(nproc)
+make -j$(nproc) && make install
 
 # install model converter
 cd ${MMDEPLOY_DIR}

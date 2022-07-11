@@ -12,7 +12,7 @@ python tools/torch2onnx.py \
     ${MODEL_CFG} \
     ${CHECKPOINT} \
     ${INPUT_IMG} \
-    ${OUTPUT} \
+    --work-dir ${WORK_DIR} \
     --device cpu \
     --log-level INFO
 ```
@@ -23,7 +23,7 @@ python tools/torch2onnx.py \
 - `model_cfg` : The path of model config file in OpenMMLab codebase.
 - `checkpoint` : The path of the model checkpoint file.
 - `img` : The path of the image file used to convert the model.
-- `output` : The path of the output ONNX model.
+- `--work-dir` : Directory to save output ONNX models Default is `./work-dir`.
 - `--device` : The device used for conversion. If not specified, it will be set to `cpu`.
 - `--log-level` : To set log level which in `'CRITICAL', 'FATAL', 'ERROR', 'WARN', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'`. If not specified, it will be set to `INFO`.
 
@@ -81,7 +81,7 @@ python tools/onnx2pplnn.py \
 - `onnx_path`: The path of the `ONNX` model to convert.
 - `output_path`: The converted `PPLNN` algorithm path in json format.
 - `device`: The device of the model during conversion.
-- `opt-shapes`: Optimal shapes for PPLNN optimization. The shape of each tensor should be wrap with "[]" or "()" and the shapes of tensors should be separated by ",".
+- `opt-shapes`: Optimal shapes for PPLNN optimization. The shape of each tensor should be wrap with "\[\]" or "()" and the shapes of tensors should be separated by ",".
 - `--log-level`: To set log level which in `'CRITICAL', 'FATAL', 'ERROR', 'WARN', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'`. If not specified, it will be set to `INFO`.
 
 ## onnx2tensorrt

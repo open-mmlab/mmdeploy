@@ -61,6 +61,11 @@ def torch2onnx(img: Any,
 
     torch_model = task_processor.init_pytorch_model(model_checkpoint)
     data, model_inputs = task_processor.create_input(img, input_shape)
+    if 'img_metas' in data:
+        input_metas = dict(img_metas=data['img_metas'])
+    else:
+        # codebases like mmedit do not have img_metas argument
+        input_metas = None
     if not isinstance(model_inputs, torch.Tensor) and len(model_inputs) == 1:
         model_inputs = model_inputs[0]
 
@@ -82,10 +87,12 @@ def torch2onnx(img: Any,
         'verbose', False)
     keep_initializers_as_inputs = onnx_cfg.get('keep_initializers_as_inputs',
                                                True)
+    optimize = onnx_cfg.get('optimize', False)
     with no_mp():
         export(
             torch_model,
             model_inputs,
+            input_metas=input_metas,
             output_path_prefix=output_prefix,
             backend=backend,
             input_names=input_names,
@@ -94,4 +101,5 @@ def torch2onnx(img: Any,
             opset_version=opset_version,
             dynamic_axes=dynamic_axes,
             verbose=verbose,
-            keep_initializers_as_inputs=keep_initializers_as_inputs)
+            keep_initializers_as_inputs=keep_initializers_as_inputs,
+            optimize=optimize)

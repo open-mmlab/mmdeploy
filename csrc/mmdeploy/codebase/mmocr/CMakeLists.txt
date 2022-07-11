@@ -18,3 +18,5 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         mmdeploy::transform
         mmdeploy::core)
 add_library(mmdeploy::mmocr ALIAS ${PROJECT_NAME})
+
+set(MMDEPLOY_TASKS ${MMDEPLOY_TASKS} text_detector text_recognizer CACHE INTERNAL "")
