@@ -272,7 +272,6 @@ def main():
                 backend_files += [model_param_path, model_bin_path]
 
     elif backend == Backend.SNPE:
-        os.environ['__MMDEPLOY_GRPC_URI'] = args.uri
         from mmdeploy.apis.snpe import is_available as is_available
 
         if not is_available():
@@ -370,7 +369,8 @@ def main():
                 backend=backend,
                 output_file=osp.join(args.work_dir,
                                      f'output_{backend.value}.jpg'),
-                show_result=args.show),
+                show_result=args.show,
+                uri=args.uri),
             ret_value=ret_value)
 
         # visualize pytorch model

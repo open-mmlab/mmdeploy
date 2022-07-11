@@ -39,6 +39,7 @@ class SNPEWrapper(BaseWrapper):
 
     def __init__(self,
                  dlc_file: str,
+                 uri: str,
                  output_names: Optional[Sequence[str]] = None,
                  **kwargs):
 
@@ -46,7 +47,6 @@ class SNPEWrapper(BaseWrapper):
 
         # The maximum model file size is 512MB
         MAX_SIZE = 2 << 29
-        uri = os.environ['__MMDEPLOY_GRPC_URI']
         logger.info(f'fetch uri: {uri}')
         self.channel = grpc.insecure_channel(
             uri,
