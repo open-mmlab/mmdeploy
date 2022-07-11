@@ -35,7 +35,12 @@ void PrintIPv4() {
 
   getifaddrs(&ifAddrStruct);
 
-  while (ifAddrStruct != NULL) {
+  while (ifAddrStruct != nullptr) {
+
+    if(ifAddrStruct->ifa_addr == nullptr) {
+      break;
+    }
+
     if (ifAddrStruct->ifa_addr->sa_family == AF_INET) {
       tmpAddrPtr = &((struct sockaddr_in*)ifAddrStruct->ifa_addr)->sin_addr;
       char addressBuffer[INET_ADDRSTRLEN];
@@ -55,6 +60,7 @@ void PrintIPv4() {
 
 void RunServer() {
   // listen IPv4 and IPv6
+  fprintf(stdout, "Start bind port:\n");
   std::string server_address("[::]:50051");
   InferenceServiceImpl service;
 
