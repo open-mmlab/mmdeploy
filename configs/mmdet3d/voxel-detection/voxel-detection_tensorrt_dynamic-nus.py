@@ -5,9 +5,9 @@ backend_config = dict(
         dict(
             input_shapes=dict(
                 voxels=dict(
-                    min_shape=[5000, 20, 5],
-                    opt_shape=[20000, 20, 5],
-                    max_shape=[30000, 20, 5]),
+                    min_shape=[5000, 64, 4],
+                    opt_shape=[20000, 64, 4],
+                    max_shape=[30000, 64, 4]),
                 num_points=dict(
                     min_shape=[5000], opt_shape=[20000], max_shape=[30000]),
                 coors=dict(
