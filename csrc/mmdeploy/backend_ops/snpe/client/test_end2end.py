@@ -29,7 +29,7 @@ def build_dummy_tensor():
     m = cv2.resize(img, (600, 400))
     data = (m.astype(np.float32) - 127.5) / 127.5
     print(data.shape)
-    tensor = inference_pb2.Tensor(data=data.tobytes(), shape=list(data.shape), name='data_0', dtype='float32')
+    tensor = inference_pb2.Tensor(data=data.tobytes(), shape=list(data.shape), name='input', dtype='float32')
     return tensor
 
 def run():
