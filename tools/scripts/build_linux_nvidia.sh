@@ -23,7 +23,6 @@ MMDEPLOY_DIR=${WORKING_DIR}
 
 #####
 # Versions
-PPLCV_VER="0.6.2"
 CMAKE_VER="3.23.0"
 
 #####
@@ -327,7 +326,7 @@ pplcv() {
   fi
   cd ${PPLCV_DIR}
   git pull
-  git checkout tags/v${PPLCV_VER}
+  git checkout 58ed74ec61f84f3dc7327f8b983b5e2bc4000fed
 
   # remove all build files
   if [[ $WITH_CLEAN -eq 1 ]]
@@ -337,14 +336,14 @@ pplcv() {
 
   # build
   mkdir build -p && cd build
-  cmake -DHPCC_USE_CUDA=ON -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} .. && make -j${processor_num} && sudo make install
+  cmake -DPPLCV_USE_CUDA=ON -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} .. && make -j${processor_num} && sudo make install
   sudo ldconfig
 
   # generate prebuild and pack into .tar.gz
   if [[ $WITH_PREBUILD -eq 1 ]]
   then
     sudo make DESTDIR=./prebuild install
-    tar -zcvf ${WORKING_DIR}/pplcv_${PPLCV_VER}_cuda-${ARCH}-build.tar.gz -C ./prebuild/ .
+    tar -zcvf ${WORKING_DIR}/pplcv_58ed74ec61f84f3dc7327f8b983b5e2bc4000fed_cuda-${ARCH}-build.tar.gz -C ./prebuild/ .
   fi
 }
 

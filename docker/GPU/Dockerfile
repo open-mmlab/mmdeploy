@@ -6,7 +6,6 @@ ARG TORCH_VERSION=1.8.0
 ARG TORCHVISION_VERSION=0.9.0
 ARG ONNXRUNTIME_VERSION=1.8.1
 ARG MMCV_VERSION=1.4.0
-ARG PPLCV_VERSION=0.6.2
 ENV FORCE_CUDA="1"
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -68,7 +67,7 @@ RUN git clone https://github.com/open-mmlab/mmdeploy &&\
 ### build sdk
 RUN git clone https://github.com/openppl-public/ppl.cv.git &&\
     cd ppl.cv &&\
-    git checkout tags/v${PPLCV_VERSION} -b v${PPLCV_VERSION} &&\
+    git checkout 58ed74ec61f84f3dc7327f8b983b5e2bc4000fed &&\
     ./build.sh cuda
 
 ENV BACKUP_LD_LIBRARY_PATH=$LD_LIBRARY_PATH
