@@ -5,7 +5,6 @@ from typing import Any, Dict, Optional, Sequence, Tuple, Union
 import mmcv
 import numpy as np
 import torch
-from importlib_metadata import warnings
 from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
@@ -242,7 +241,7 @@ class Classification(BaseTask):
             for k, v in results.items():
                 logger.info(f'{k} : {v:.2f}')
         else:
-            warnings.warn('Evaluation metrics are not specified.')
+            logger.warning('Evaluation metrics are not specified.')
             scores = np.vstack(outputs)
             pred_score = np.max(scores, axis=1)
             pred_label = np.argmax(scores, axis=1)
