@@ -51,7 +51,7 @@ void FuseFunc(void* stream, uint8_t* data_in, int src_h, int src_w, const char* 
     if (strcmp(interpolation, "bilinear") == 0) {
         interpolation_ = "bilinear";
     }
-    FuseKernel(resize_h, resize_w, crop_h, crop_top, crop_left, mean0, mean1, mean2, std0, std1, std2,
+    FuseKernel(resize_h, resize_w, crop_h, crop_w, crop_top, crop_left, mean0, mean1, mean2, std0, std1, std2,
                 pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, data_in, data_out,
                 src_h, src_w, format, interpolation_);
 }
@@ -88,7 +88,7 @@ void FuseFunc(void* stream, uint8_t* data_in, int src_h, int src_w, const char* 
   cuErrCheck(cudaMalloc(&d_in, sz * sizeof(uint8_t)));
   cuErrCheck(cudaMemcpyAsync(d_in, data_in, sz * sizeof(uint8_t), cudaMemcpyHostToDevice, stream_));
 
-  FuseKernelCU(stream_, resize_h, resize_w, crop_h, crop_top, crop_left, mean0, mean1, mean2, std0,
+  FuseKernelCU(stream_, resize_h, resize_w, crop_h, crop_w, crop_top, crop_left, mean0, mean1, mean2, std0,
                std1, std2, pad_top, pad_left, pad_bottom, pad_right, pad_h, pad_w, pad_value, d_in,
                data_out, data_out_num_, src_h, src_w, format, interpolation_);
 
