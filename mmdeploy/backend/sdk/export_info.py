@@ -468,7 +468,7 @@ def export2SDK(deploy_cfg: Union[str, mmcv.Config],
     pipeline_info = get_pipeline(deploy_cfg, model_cfg, work_dir=work_dir)
     detail_info = get_detail(deploy_cfg, model_cfg, pth=pth)
     transform_static, tag = get_transform_static(
-        pipeline_info['pipeline']['tasks'][0])
+        pipeline_info['pipeline']['tasks'][0]['transforms'])
     pipeline_info = add_transform_tag(pipeline_info, tag)
     mmcv.dump(
         deploy_info,
