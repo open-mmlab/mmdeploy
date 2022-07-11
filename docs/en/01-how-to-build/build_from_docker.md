@@ -1,8 +1,8 @@
-## Use Docker Image
+# Use Docker Image
 
 We provide two dockerfiles for CPU and GPU respectively. For CPU users, we install MMDeploy with ONNXRuntime, ncnn and OpenVINO backends. For GPU users, we install MMDeploy with TensorRT backend. Besides, users can install mmdeploy with different versions when building the docker image.
 
-### Build docker image
+## Build docker image
 
 For CPU users, we can build the docker image with the latest MMDeploy through:
 
@@ -37,7 +37,7 @@ cd mmdeploy
 docker build docker/CPU/ -t mmdeploy:inside --build-arg  USE_SRC_INSIDE=true
 ```
 
-### Run docker container
+## Run docker container
 
 After building the docker image succeed, we can use `docker run` to launch the docker service. GPU docker image for example:
 
@@ -45,7 +45,7 @@ After building the docker image succeed, we can use `docker run` to launch the d
 docker run --gpus all -it -p 8080:8081 mmdeploy:master-gpu
 ```
 
-### FAQs
+## FAQs
 
 1. CUDA error: the provided PTX was compiled with an unsupported toolchain:
 

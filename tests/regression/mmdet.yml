@@ -301,3 +301,11 @@ models:
       - *pipeline_seg_ort_dynamic_fp32
       - *pipeline_seg_trt_dynamic_fp32
       - *pipeline_seg_openvino_dynamic_fp32
+
+  - name: Swin Transformer
+    metafile: configs/swin/metafile.yml
+    model_configs:
+      - configs/swin/mask_rcnn_swin-t-p4-w7_fpn_1x_coco.py
+    pipelines:
+      - *pipeline_seg_ort_dynamic_fp32
+      - *pipeline_seg_trt_dynamic_fp32

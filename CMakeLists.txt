@@ -5,7 +5,7 @@ endif ()
 message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
 
 cmake_minimum_required(VERSION 3.14)
-project(MMDeploy VERSION 0.5.0)
+project(MMDeploy VERSION 0.6.0)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -25,6 +25,7 @@ option(MMDEPLOY_BUILD_TEST "build unittests" OFF)
 option(MMDEPLOY_BUILD_SDK_PYTHON_API "build SDK Python API" OFF)
 option(MMDEPLOY_BUILD_SDK_CXX_API "build SDK C++ API" OFF)
 option(MMDEPLOY_BUILD_SDK_CSHARP_API "build SDK C# API support" OFF)
+option(MMDEPLOY_BUILD_SDK_JAVA_API "build SDK JAVA API" OFF)
 option(MMDEPLOY_SPDLOG_EXTERNAL "use external spdlog" OFF)
 option(MMDEPLOY_ZIP_MODEL "support SDK model in zip format" OFF)
 set(MMDEPLOY_TARGET_DEVICES "cpu" CACHE STRING "target devices to support")
@@ -90,6 +91,10 @@ if (MMDEPLOY_BUILD_SDK)
 
     if (MMDEPLOY_BUILD_SDK_PYTHON_API)
         add_subdirectory(csrc/mmdeploy/apis/python)
+    endif ()
+
+    if (MMDEPLOY_BUILD_SDK_JAVA_API)
+        add_subdirectory(csrc/mmdeploy/apis/java)
     endif ()
 
     # export MMDeploy package

@@ -1,8 +1,8 @@
-## How to support new backends
+# How to support new backends
 
 MMDeploy supports a number of backend engines. We welcome the contribution of new backends. In this tutorial, we will introduce the general procedures to support a new backend in MMDeploy.
 
-### Prerequisites
+## Prerequisites
 
 Before contributing the codes, there are some requirements for the new backend that need to be checked:
 
@@ -10,7 +10,7 @@ Before contributing the codes, there are some requirements for the new backend t
 - If the backend requires model files or weight files other than a ".onnx" file, a conversion tool that converts the ".onnx" file to model files and weight files is required. The tool can be a Python API, a script, or an executable program.
 - It is highly recommended that the backend provides a Python interface to load the backend files and inference for validation.
 
-### Support backend conversion
+## Support backend conversion
 
 The backends in MMDeploy must support the ONNX. The backend loads the ".onnx" file directly, or converts the ".onnx" to its own format using the conversion tool. In this section, we will introduce the steps to support backend conversion.
 
@@ -155,7 +155,7 @@ The backends in MMDeploy must support the ONNX. The backend loads the ".onnx" fi
 
 7. Add docstring and unit tests for new code :).
 
-### Support backend inference
+## Support backend inference
 
 Although the backend engines are usually implemented in C/C++, it is convenient for testing and debugging if the backend provides Python inference interface. We encourage the contributors to support backend inference in the Python interface of MMDeploy. In this section we will introduce the steps to support backend inference.
 
@@ -230,7 +230,7 @@ Although the backend engines are usually implemented in C/C++, it is convenient 
 
 5. Add docstring and unit tests for new code :).
 
-### Support new backends using MMDeploy as a third party
+## Support new backends using MMDeploy as a third party
 
 Previous parts show how to add a new backend in MMDeploy, which requires changing its source codes. However, if we treat MMDeploy as a third party, the methods above are no longer efficient. To this end, adding a new backend requires us pre-install another package named `aenum`. We can install it directly through `pip install aenum`.
 

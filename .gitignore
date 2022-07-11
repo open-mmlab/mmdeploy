@@ -6,6 +6,10 @@ __pycache__/
 # C extensions
 *.so
 onnx2ncnn
+mmdeploy_onnx2ncnn
+
+# Java classes
+*.class
 
 # Distribution / packaging
 .Python

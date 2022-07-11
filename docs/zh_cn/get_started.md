@@ -197,7 +197,7 @@ import os
 
 model_cfg = os.getenv('MMDET_DIR') + '/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py'
 deploy_cfg = os.getenv('MMDEPLOY_DIR') + '/configs/mmdet/detection/detection_tensorrt_dynamic-320x320-1344x1344.py'
-backend_files = os.getenv('WORK_DIR') + '/end2end.engine'
+backend_files = [os.getenv('WORK_DIR') + '/end2end.engine']
 
 result = inference_model(model_cfg, deploy_cfg, backend_files, img=img, device=device)
 ```

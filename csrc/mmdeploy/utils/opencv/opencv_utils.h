@@ -7,7 +7,7 @@
 #include "mmdeploy/core/mpl/type_traits.h"
 #include "mmdeploy/core/serialization.h"
 #include "mmdeploy/core/tensor.h"
-#include "opencv2/opencv.hpp"
+#include "opencv2/core/core.hpp"
 
 namespace mmdeploy {
 namespace cpu {

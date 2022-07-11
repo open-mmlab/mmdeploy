@@ -91,6 +91,12 @@ make install
 </code></pre>
    </td>
   </tr>
+    <tr>
+  <td>OpenJDK </td>
+  <td>编译Java API之前需要先准备OpenJDK开发环境</br>
+  请参考 <a href='https://github.com/open-mmlab/mmdeploy/blob/master/csrc/mmdeploy/apis/java/README.md'> Java API 编译 </a> 进行构建.
+  </td>
+  </tr>
 </tbody>
 </table>
 
@@ -113,6 +119,12 @@ make install
     <td>{ON, OFF}</td>
     <td>OFF</td>
     <td>MMDeploy SDK 编译开关</td>
+  </tr>
+  <tr>
+    <td>MMDEPLOY_BUILD_SDK_JAVA_API</td>
+    <td>{ON, OFF}</td>
+    <td>OFF</td>
+    <td>MMDeploy SDK Java API的编译开关</td>
   </tr>
   <tr>
     <td>MMDEPLOY_BUILD_TEST</td>
@@ -161,6 +173,7 @@ make install
   mkdir -p build && cd build
   cmake .. \
       -DMMDEPLOY_BUILD_SDK=ON \
+      -DMMDEPLOY_BUILD_SDK_JAVA_API=ON \
       -DOpenCV_DIR=${OPENCV_ANDROID_SDK_DIR}/sdk/native/jni/abi-arm64-v8a \
       -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn \
       -DMMDEPLOY_TARGET_BACKENDS=ncnn \
