@@ -129,10 +129,9 @@ class SNPEWrapper(BaseWrapper):
         if resp.status == 0:
             for tensor in resp.datas:
                 ndarray = np.frombuffer(tensor.data, dtype=np.float32)
-                import pdb
-                pdb.set_trace()
-                result[tensor.name] = torch.from_numpy(
-                    ndarray.copy()).to(device)
+                
+                shape = tuple(tensor.shape)
+                result[tensor.name] = torch.from_numpy(ndarray.reshape(shape).copy()).to(device)
         else:
             logger = get_root_logger()
             logger.error(f'snpe inference failed {resp.info}')
