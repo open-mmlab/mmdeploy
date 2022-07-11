@@ -1,35 +1,34 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from copy import deepcopy
 from typing import Optional, Union
 
-import mmcv
-import torch
-from mmcv.parallel import MMDataParallel
+from mmengine import Config
 
 from mmdeploy.core import patch_model
 from mmdeploy.utils import cfg_apply_marks, load_config
+from mmdeploy.utils.config_utils import get_backend
 from .core import PIPELINE_MANAGER, no_mp
 from .utils import create_calib_input_data as create_calib_input_data_impl
 
 
 @PIPELINE_MANAGER.register_pipeline()
 def create_calib_input_data(calib_file: str,
-                            deploy_cfg: Union[str, mmcv.Config],
-                            model_cfg: Union[str, mmcv.Config],
+                            deploy_cfg: Union[str, Config],
+                            model_cfg: Union[str, Config],
                             model_checkpoint: Optional[str] = None,
-                            dataset_cfg: Optional[Union[str,
-                                                        mmcv.Config]] = None,
+                            dataset_cfg: Optional[Union[str, Config]] = None,
                             dataset_type: str = 'val',
                             device: str = 'cpu') -> None:
     """Create dataset for post-training quantization.
 
     Args:
         calib_file (str): The output calibration data file.
-        deploy_cfg (str | mmcv.Config): Deployment config file or
+        deploy_cfg (str | Config): Deployment config file or
             Config object.
-        model_cfg (str | mmcv.Config): Model config file or Config object.
+        model_cfg (str | Config): Model config file or Config object.
         model_checkpoint (str): A checkpoint path of PyTorch model,
             defaults to `None`.
-        dataset_cfg (Optional[Union[str, mmcv.Config]], optional): Model
+        dataset_cfg (Optional[Union[str, Config]], optional): Model
             config to provide calibration dataset. If none, use `model_cfg`
             as the dataset config. Defaults to None.
         dataset_type (str, optional): The dataset type. Defaults to 'val'.
@@ -39,10 +38,6 @@ def create_calib_input_data(calib_file: str,
         if dataset_cfg is None:
             dataset_cfg = model_cfg
 
-        device_id = torch.device(device).index
-        if device_id is None:
-            device_id = 0
-
         # load cfg if necessary
         deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
 
@@ -51,6 +46,8 @@ def create_calib_input_data(calib_file: str,
 
         # load dataset_cfg if necessary
         dataset_cfg = load_config(dataset_cfg)[0]
+        calib_dataloader = deepcopy(dataset_cfg[f'{dataset_type}_dataloader'])
+        calib_dataloader['batch_size'] = 1
 
         from mmdeploy.apis.utils import build_task_processor
         task_processor = build_task_processor(model_cfg, deploy_cfg, device)
@@ -58,21 +55,24 @@ def create_calib_input_data(calib_file: str,
         apply_marks = cfg_apply_marks(deploy_cfg)
 
         model = task_processor.build_pytorch_model(model_checkpoint)
-        dataset = task_processor.build_dataset(dataset_cfg, dataset_type)
+        dataset = task_processor.build_dataset(calib_dataloader['dataset'])
+        calib_dataloader['dataset'] = dataset
+        dataloader = task_processor.build_dataloader(calib_dataloader)
 
         # patch model
-        patched_model = patch_model(model, cfg=deploy_cfg)
+        patched_model = patch_model(
+            model, cfg=deploy_cfg, backend=get_backend(deploy_cfg).value)
 
-        dataloader = task_processor.build_dataloader(
-            dataset, 1, 1, dist=False, shuffle=False)
-        patched_model = MMDataParallel(patched_model, device_ids=[device_id])
+        def get_tensor_func(input_data):
+            input_data = model.data_preprocessor(input_data)
+            return input_data[0]
 
         create_calib_input_data_impl(
             calib_file,
             patched_model,
             dataloader,
-            get_tensor_func=task_processor.get_tensor_from_input,
-            inference_func=task_processor.run_inference,
+            get_tensor_func=get_tensor_func,
+            inference_func=model.forward,
             model_partition=apply_marks,
             context_info=dict(cfg=deploy_cfg),
             device=device)
