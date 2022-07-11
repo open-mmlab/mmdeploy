@@ -81,15 +81,15 @@ REGISTER_MODULE(Module, CropBoxCreator);
 int main() {
   auto config = from_json<Value>(config_json);
 
-  mmdeploy_environment_t env{};
-  mmdeploy_environment_create(&env);
+  mmdeploy_context_t env{};
+  mmdeploy_context_create(&env);
 
   auto thread_pool = mmdeploy_executor_create_thread_pool(4);
   auto single_thread = mmdeploy_executor_create_thread();
-  mmdeploy_environment_add_scheduler(env, "preprocess", thread_pool);
-  mmdeploy_environment_add_scheduler(env, "crop", thread_pool);
-  mmdeploy_environment_add_scheduler(env, "net", single_thread);
-  mmdeploy_environment_add_scheduler(env, "postprocess", thread_pool);
+  mmdeploy_context_add_scheduler(env, "preprocess", thread_pool);
+  mmdeploy_context_add_scheduler(env, "crop", thread_pool);
+  mmdeploy_context_add_scheduler(env, "net", single_thread);
+  mmdeploy_context_add_scheduler(env, "postprocess", thread_pool);
 
   mmdeploy_pipeline_t pipeline{};
   if (auto ec =
@@ -113,7 +113,7 @@ int main() {
 
   mmdeploy_pipeline_destroy(pipeline);
 
-  mmdeploy_environment_destroy(env);
+  mmdeploy_context_destroy(env);
   mmdeploy_scheduler_destroy(single_thread);
   mmdeploy_scheduler_destroy(thread_pool);
 

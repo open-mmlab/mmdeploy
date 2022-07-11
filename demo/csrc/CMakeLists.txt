@@ -34,6 +34,12 @@ add_example(text_detector ocr)
 add_example(pose_detector pose_detection)
 add_example(rotated_detector rotated_object_detection)
 
+add_example("" async_ocr)
+add_example("" async_ocr_v2)
+add_example("" det_cls)
+add_example("" det_pose)
+add_example("" text_det_recog)
+
 if (MMDEPLOY_BUILD_SDK_CXX_API)
     add_example(classifier classifier)
     add_example(detector detector)

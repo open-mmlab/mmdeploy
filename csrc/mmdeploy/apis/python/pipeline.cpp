@@ -23,14 +23,40 @@ class PyPipeline {
     }
   }
 
-  py::object Apply(const py::object& input) {
-    auto input_value = FromPyObject(input);
-    mmdeploy_value_t output_value{};
-    auto status = mmdeploy_pipeline_apply(pipeline_, (mmdeploy_value_t)&input_value, &output_value);
+  // py::object Apply(const py::object& input) {
+  //   auto input_value = FromPyObject(input);
+  //   mmdeploy_value_t output_value{};
+  //   auto status = mmdeploy_pipeline_apply(pipeline_, (mmdeploy_value_t)&input_value,
+  //   &output_value); if (status != MMDEPLOY_SUCCESS) {
+  //     throw std::runtime_error("failed to apply pipeline, code = "s + std::to_string(status));
+  //   }
+  //   return ToPyObject(*(Value*)output_value);
+  // }
+
+  py::object Apply2(const py::tuple& args, bool is_batch) {
+    auto inputs = FromPyObject(args);
+    if (!is_batch) {
+      for (auto& input : inputs) {
+        input = Value::Array{std::move(input)};
+      }
+    }
+    mmdeploy_value_t outputs_ptr{};
+    auto status = mmdeploy_pipeline_apply(pipeline_, (mmdeploy_value_t)&inputs, &outputs_ptr);
     if (status != MMDEPLOY_SUCCESS) {
       throw std::runtime_error("failed to apply pipeline, code = "s + std::to_string(status));
     }
-    return ToPyObject(*(Value*)output_value);
+    auto& outputs = *(Value*)outputs_ptr;
+    if (!is_batch) {
+      for (auto& output : outputs) {
+        output = std::move(output[0]);
+      }
+    }
+    py::tuple rets(outputs.size());
+    for (int i = 0; i < outputs.size(); ++i) {
+      rets[i] = ToPyObject(outputs[i]);
+    }
+    mmdeploy_value_destroy(outputs_ptr);
+    return rets;
   }
 
   ~PyPipeline() {
@@ -47,7 +73,10 @@ static void register_python_pipeline(py::module& m) {
       .def(py::init([](const py::object& config, const char* device_name, int device_id) {
         return std::make_unique<PyPipeline>(config, device_name, device_id);
       }))
-      .def("__call__", &PyPipeline::Apply);
+      .def("__call__",
+           [](PyPipeline* pipeline, const py::args& args) { return pipeline->Apply2(args, false); })
+      .def("batch",
+           [](PyPipeline* pipeline, const py::args& args) { return pipeline->Apply2(args, true); });
 }
 
 class PythonPipelineRegisterer {

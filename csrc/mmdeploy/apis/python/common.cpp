@@ -108,7 +108,7 @@ Value FromPyObject(const py::object& obj) {
     return obj.cast<double>();
   } else if (py::isinstance<py::str>(obj)) {
     return obj.cast<std::string>();
-  } else if (py::isinstance<py::list>(obj)) {
+  } else if (py::isinstance<py::list>(obj) || py::isinstance<py::tuple>(obj)) {
     py::list src(obj);
     Value::Array dst;
     dst.reserve(src.size());

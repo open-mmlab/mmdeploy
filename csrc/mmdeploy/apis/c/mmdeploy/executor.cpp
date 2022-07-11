@@ -206,8 +206,8 @@ void mmdeploy_executor_execute(mmdeploy_scheduler_t scheduler, void (*fn)(void*)
   Execute(*Cast(scheduler), [fn, context] { fn(context); });
 }
 
-int mmdeploy_environment_add_scheduler(mmdeploy_environment_t env, const char* name,
-                                       mmdeploy_scheduler_t sched) {
+int mmdeploy_context_add_scheduler(mmdeploy_context_t env, const char* name,
+                                   mmdeploy_scheduler_t sched) {
   auto e = (mmdeploy::Environment*)env;
   if (std::count_if(e->schedulers_.begin(), e->schedulers_.end(),
                     [name](const auto& x) { return x.first == name; })) {

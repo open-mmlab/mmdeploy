@@ -40,8 +40,8 @@ MMDEPLOY_API int mmdeploy_model_create(const void* buffer, int size, mmdeploy_mo
  */
 MMDEPLOY_API void mmdeploy_model_destroy(mmdeploy_model_t model);
 
-MMDEPLOY_API int mmdeploy_environment_add_model(mmdeploy_environment_t env, const char* name,
-                                                mmdeploy_model_t model);
+MMDEPLOY_API int mmdeploy_context_add_model(mmdeploy_context_t context, const char* name,
+                                            mmdeploy_model_t model);
 
 #ifdef __cplusplus
 }

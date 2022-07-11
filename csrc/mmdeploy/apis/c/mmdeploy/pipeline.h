@@ -29,7 +29,7 @@ MMDEPLOY_API int mmdeploy_pipeline_create(mmdeploy_value_t config, const char* d
                                           mmdeploy_pipeline_t* pipeline);
 
 MMDEPLOY_API int mmdeploy_pipeline_create_v2(mmdeploy_value_t config, const char* device_name,
-                                             int device_id, mmdeploy_environment_t env,
+                                             int device_id, mmdeploy_context_t env,
                                              mmdeploy_pipeline_t* pipeline);
 
 /**

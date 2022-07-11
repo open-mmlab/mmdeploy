@@ -32,7 +32,7 @@ int mmdeploy_pipeline_create(mmdeploy_value_t config, const char* device_name, i
 }
 
 int mmdeploy_pipeline_create_v2(mmdeploy_value_t config, const char* device_name, int device_id,
-                                mmdeploy_environment_t env, mmdeploy_pipeline_t* pipeline) {
+                                mmdeploy_context_t env, mmdeploy_pipeline_t* pipeline) {
   try {
     auto _config = *Cast(config);
     if (env) {

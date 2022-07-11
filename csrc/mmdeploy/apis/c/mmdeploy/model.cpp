@@ -40,9 +40,9 @@ int mmdeploy_model_create(const void* buffer, int size, mmdeploy_model_t* model)
 
 void mmdeploy_model_destroy(mmdeploy_model_t model) { delete reinterpret_cast<Model*>(model); }
 
-int mmdeploy_environment_add_model(mmdeploy_environment_t env, const char* name,
+int mmdeploy_context_add_model(mmdeploy_context_t context, const char* name,
                                    mmdeploy_model_t model) {
-  auto e = (mmdeploy::Environment*)env;
+  auto e = (mmdeploy::Environment*)context;
   if (std::count_if(e->models_.begin(), e->models_.end(),
                     [name](const auto& x) { return x.first == name; })) {
     MMDEPLOY_ERROR("{} already exists", name);

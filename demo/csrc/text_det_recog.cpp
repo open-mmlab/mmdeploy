@@ -49,26 +49,26 @@ using namespace mmdeploy;
 int main() {
   auto config = from_json<Value>(config_json);
 
-  mmdeploy_environment_t env{};
-  mmdeploy_environment_create(&env);
+  mmdeploy_context_t ctx{};
+  mmdeploy_context_create(&ctx);
 
   auto thread_pool = mmdeploy_executor_create_thread_pool(4);
   auto single_thread = mmdeploy_executor_create_thread();
-  mmdeploy_environment_add_scheduler(env, "preprocess", thread_pool);
-  mmdeploy_environment_add_scheduler(env, "crop", thread_pool);
-  mmdeploy_environment_add_scheduler(env, "net", single_thread);
-  mmdeploy_environment_add_scheduler(env, "postprocess", thread_pool);
+  mmdeploy_context_add_scheduler(ctx, "preprocess", thread_pool);
+  mmdeploy_context_add_scheduler(ctx, "crop", thread_pool);
+  mmdeploy_context_add_scheduler(ctx, "net", single_thread);
+  mmdeploy_context_add_scheduler(ctx, "postprocess", thread_pool);
 
   mmdeploy_model_t text_det_model{};
   mmdeploy_model_create_by_path("../textdet_tmp_model", &text_det_model);
-  mmdeploy_environment_add_model(env, "text-detection", text_det_model);
+  mmdeploy_context_add_model(ctx, "text-detection", text_det_model);
 
   mmdeploy_model_t text_recog_model{};
   mmdeploy_model_create_by_path("../textrecog_tmp_model", &text_recog_model);
-  mmdeploy_environment_add_model(env, "text-recognition", text_recog_model);
+  mmdeploy_context_add_model(ctx, "text-recognition", text_recog_model);
 
   mmdeploy_pipeline_t pipeline{};
-  if (auto ec = mmdeploy_pipeline_create_v2((mmdeploy_value_t)&config, "cuda", 0, env, &pipeline)) {
+  if (auto ec = mmdeploy_pipeline_create_v2((mmdeploy_value_t)&config, "cuda", 0, ctx, &pipeline)) {
     MMDEPLOY_ERROR("failed to create pipeline: {}", ec);
     return -1;
   }
@@ -91,7 +91,7 @@ int main() {
   mmdeploy_model_destroy(text_recog_model);
   mmdeploy_model_destroy(text_det_model);
 
-  mmdeploy_environment_destroy(env);
+  mmdeploy_context_destroy(ctx);
   mmdeploy_scheduler_destroy(single_thread);
   mmdeploy_scheduler_destroy(thread_pool);
 
