@@ -189,6 +189,13 @@ def extract_one_metafile(metafile, codebase, args):
 
 def main():
     args = parse_args()
+    global ELENA_BIN
+    elena_path = osp.abspath(
+        os.path.join(args.mmmdeploy_path, 'third_party', 'elena-mmdeploy',
+                     'build', 'examples', 'MMDeploy', 'OpFuse'))
+    if osp.exists(elena_path):
+        ELENA_BIN = elena_path
+
     for cb in CODEBASE:
         metafile_pattern = osp.join(args.root_path, cb, 'configs', '**/*.yml')
         metafiles = glob(metafile_pattern, recursive=True)
