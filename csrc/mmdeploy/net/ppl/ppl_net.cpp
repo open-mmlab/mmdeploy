@@ -16,6 +16,7 @@
 #include "ppl/nn/engines/cuda/engine_factory.h"
 #include "ppl/nn/engines/cuda/engine_options.h"
 #include "ppl/nn/engines/cuda/ops.h"
+#define PPL_CUDA_IMPORT_FROM_BUFFER 0
 #endif
 
 namespace mmdeploy {
@@ -63,9 +64,26 @@ Result<void> PPLNet::Init(const Value& args) {
     options.device_id = device_.device_id();
     options.mm_policy = ppl::nn::cuda::MM_BEST_FIT;
     engines_.emplace_back(ppl::nn::cuda::EngineFactory::Create(options));
-    // Use default algorithms until PPL can set algorithms from a memory buffer
-    //  since the optimization process is really slow
-    engines_.back()->Configure(ppl::nn::cuda::ENGINE_CONF_USE_DEFAULT_ALGORITHMS, true);
+
+    bool import_algo = false;
+
+#if PPL_CUDA_IMPORT_FROM_BUFFER
+    auto algo = model.ReadFile(config.weights);
+    if (algo) {
+      auto ret =
+          engines_.back()->Configure(ppl::nn::cuda::ENGINE_CONF_IMPORT_ALGORITHMS_FROM_BUFFER,
+                                     algo.value().c_str(), algo.value().size());
+      if (ret == ppl::common::RC_SUCCESS) {
+        import_algo = true;
+      } else {
+        MMDEPLOY_ERROR("failed to import algorithms ({}), default algorithms will be used", ret);
+      }
+    }
+#endif
+
+    if (!import_algo) {
+      engines_.back()->Configure(ppl::nn::cuda::ENGINE_CONF_USE_DEFAULT_ALGORITHMS, true);
+    }
   }
 #endif
 #if PPL_NN_HAS_X86
