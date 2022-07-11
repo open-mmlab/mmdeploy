@@ -108,7 +108,8 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
                 output_names=output_names)
         elif backend == Backend.SNPE:
             from mmdeploy.backend.snpe import SNPEWrapper
-            return SNPEWrapper(dlc_file=backend_files[0], output_names=output_names)
+            return SNPEWrapper(
+                dlc_file=backend_files[0], output_names=output_names)
         else:
             raise NotImplementedError(f'Unknown backend type: {backend.value}')
 

@@ -359,7 +359,8 @@ def main():
     # for headless installation.
     if not headless:
         # visualize model of the backend
-        visualize_model(model_cfg_path, deploy_cfg_path, backend_files,args.test_img, args.device)
+        visualize_model(model_cfg_path, deploy_cfg_path, backend_files,
+                        args.test_img, args.device)
         # create_process(
         #     f'visualize {backend.value} model',
         #     target=visualize_model,
