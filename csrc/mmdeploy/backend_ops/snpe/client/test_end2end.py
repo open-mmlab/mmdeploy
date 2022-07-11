@@ -47,7 +47,7 @@ def run():
         
     # https://github.com/grpc/grpc/blob/v1.46.x/include/grpc/impl/codegen/grpc_types.h
     # https://grpc.io/docs/guides/performance/
-    with grpc.insecure_channel('10.1.80.67:50051', 
+    with grpc.insecure_channel('10.1.80.138:50051', 
                                options=(
                                    ('grpc.GRPC_ARG_KEEPALIVE_TIME_MS', 2000),
                                    ('grpc.max_send_message_length', 2<<29),

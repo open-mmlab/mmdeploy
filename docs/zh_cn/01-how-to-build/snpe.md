@@ -31,9 +31,11 @@ $ adb push snpe-inference-server-1.59  /data/local/tmp/
 
 | 事项    | 版本               | 备注              |
 | ------- | ------------------ | ----------------- |
-| host OS | ubuntu18.04 x86_64 | snpe 工具指定版本 |
-| Python  | 3.6.0              | snpe 工具指定版本 |
+| host OS | ubuntu18.04 x86_64 | snpe 指定版本 |
+| Python  | 3.6.0              | snpe 指定版本 |
 
 ## 三、测试模型
+
+
 
 ## 四、编译 SDK
