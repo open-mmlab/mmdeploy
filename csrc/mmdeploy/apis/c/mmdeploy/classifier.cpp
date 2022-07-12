@@ -4,14 +4,14 @@
 
 #include <numeric>
 
-#include "mmdeploy/apis/c/common_internal.h"
-#include "mmdeploy/apis/c/handle.h"
-#include "mmdeploy/apis/c/pipeline.h"
+#include "common_internal.h"
+#include "handle.h"
 #include "mmdeploy/archive/value_archive.h"
 #include "mmdeploy/codebase/mmcls/mmcls.h"
 #include "mmdeploy/core/device.h"
 #include "mmdeploy/core/graph.h"
 #include "mmdeploy/core/utils/formatter.h"
+#include "pipeline.h"
 
 using namespace mmdeploy;
 using namespace std;
@@ -43,72 +43,77 @@ Value& config_template() {
   return v;
 }
 
-int mmdeploy_classifier_create_impl(mm_model_t model, const char* device_name, int device_id,
-                                    mmdeploy_exec_info_t exec_info, mm_handle_t* handle) {
+int mmdeploy_classifier_create_impl(mmdeploy_model_t model, const char* device_name, int device_id,
+                                    mmdeploy_exec_info_t exec_info,
+                                    mmdeploy_classifier_t* classifier) {
   auto config = config_template();
-  config["pipeline"]["tasks"][0]["params"]["model"] = *static_cast<Model*>(model);
+  config["pipeline"]["tasks"][0]["params"]["model"] = *Cast(model);
 
-  return mmdeploy_pipeline_create(Cast(&config), device_name, device_id, exec_info, handle);
+  return mmdeploy_pipeline_create(Cast(&config), device_name, device_id, exec_info,
+                                  (mmdeploy_pipeline_t*)classifier);
 }
 
 }  // namespace
 
-int mmdeploy_classifier_create(mm_model_t model, const char* device_name, int device_id,
-                               mm_handle_t* handle) {
-  return mmdeploy_classifier_create_impl(model, device_name, device_id, nullptr, handle);
+int mmdeploy_classifier_create(mmdeploy_model_t model, const char* device_name, int device_id,
+                               mmdeploy_classifier_t* classifier) {
+  return mmdeploy_classifier_create_impl(model, device_name, device_id, nullptr, classifier);
 }
 
-int mmdeploy_classifier_create_v2(mm_model_t model, const char* device_name, int device_id,
-                                  mmdeploy_exec_info_t exec_info, mm_handle_t* handle) {
-  return mmdeploy_classifier_create_impl(model, device_name, device_id, exec_info, handle);
+int mmdeploy_classifier_create_v2(mmdeploy_model_t model, const char* device_name, int device_id,
+                                  mmdeploy_exec_info_t exec_info,
+                                  mmdeploy_classifier_t* classifier) {
+  return mmdeploy_classifier_create_impl(model, device_name, device_id, exec_info, classifier);
 }
 
 int mmdeploy_classifier_create_by_path(const char* model_path, const char* device_name,
-                                       int device_id, mm_handle_t* handle) {
-  mm_model_t model{};
+                                       int device_id, mmdeploy_classifier_t* classifier) {
+  mmdeploy_model_t model{};
 
   if (auto ec = mmdeploy_model_create_by_path(model_path, &model)) {
     return ec;
   }
-  auto ec = mmdeploy_classifier_create_impl(model, device_name, device_id, nullptr, handle);
+  auto ec = mmdeploy_classifier_create_impl(model, device_name, device_id, nullptr, classifier);
   mmdeploy_model_destroy(model);
   return ec;
 }
 
-int mmdeploy_classifier_create_input(const mm_mat_t* mats, int mat_count, mmdeploy_value_t* value) {
+int mmdeploy_classifier_create_input(const mmdeploy_mat_t* mats, int mat_count,
+                                     mmdeploy_value_t* value) {
   return mmdeploy_common_create_input(mats, mat_count, value);
 }
 
-int mmdeploy_classifier_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
-                              mm_class_t** results, int** result_count) {
+int mmdeploy_classifier_apply(mmdeploy_classifier_t classifier, const mmdeploy_mat_t* mats,
+                              int mat_count, mmdeploy_classification_t** results,
+                              int** result_count) {
   wrapped<mmdeploy_value_t> input;
   if (auto ec = mmdeploy_classifier_create_input(mats, mat_count, input.ptr())) {
     return ec;
   }
   wrapped<mmdeploy_value_t> output;
-  if (auto ec = mmdeploy_classifier_apply_v2(handle, input, output.ptr())) {
+  if (auto ec = mmdeploy_classifier_apply_v2(classifier, input, output.ptr())) {
     return ec;
   }
   if (auto ec = mmdeploy_classifier_get_result(output, results, result_count)) {
     return ec;
   }
-  return MM_SUCCESS;
+  return MMDEPLOY_SUCCESS;
 }
 
-int mmdeploy_classifier_apply_v2(mm_handle_t handle, mmdeploy_value_t input,
+int mmdeploy_classifier_apply_v2(mmdeploy_classifier_t classifier, mmdeploy_value_t input,
                                  mmdeploy_value_t* output) {
-  return mmdeploy_pipeline_apply(handle, input, output);
+  return mmdeploy_pipeline_apply((mmdeploy_pipeline_t)classifier, input, output);
 }
 
-int mmdeploy_classifier_apply_async(mm_handle_t handle, mmdeploy_sender_t input,
+int mmdeploy_classifier_apply_async(mmdeploy_classifier_t classifier, mmdeploy_sender_t input,
                                     mmdeploy_sender_t* output) {
-  return mmdeploy_pipeline_apply_async(handle, input, output);
+  return mmdeploy_pipeline_apply_async((mmdeploy_pipeline_t)classifier, input, output);
 }
 
-int mmdeploy_classifier_get_result(mmdeploy_value_t output, mm_class_t** results,
+int mmdeploy_classifier_get_result(mmdeploy_value_t output, mmdeploy_classification_t** results,
                                    int** result_count) {
   if (!output || !results || !result_count) {
-    return MM_E_INVALID_ARG;
+    return MMDEPLOY_E_INVALID_ARG;
   }
   try {
     Value& value = Cast(output)->front();
@@ -127,7 +132,8 @@ int mmdeploy_classifier_get_result(mmdeploy_value_t output, mm_class_t** results
     std::unique_ptr<int[]> result_count_data(new int[_result_count.size()]{});
     std::copy(_result_count.begin(), _result_count.end(), result_count_data.get());
 
-    std::unique_ptr<mm_class_t[]> result_data(new mm_class_t[total]{});
+    std::unique_ptr<mmdeploy_classification_t[]> result_data(
+        new mmdeploy_classification_t[total]{});
     auto result_ptr = result_data.get();
     for (const auto& cls_output : classify_outputs) {
       for (const auto& label : cls_output.labels) {
@@ -140,23 +146,21 @@ int mmdeploy_classifier_get_result(mmdeploy_value_t output, mm_class_t** results
     *result_count = result_count_data.release();
     *results = result_data.release();
 
-    return MM_SUCCESS;
+    return MMDEPLOY_SUCCESS;
   } catch (const std::exception& e) {
     MMDEPLOY_ERROR("unhandled exception: {}", e.what());
   } catch (...) {
     MMDEPLOY_ERROR("unknown exception caught");
   }
-  return MM_E_FAIL;
+  return MMDEPLOY_E_FAIL;
 }
 
-void mmdeploy_classifier_release_result(mm_class_t* results, const int* result_count, int count) {
+void mmdeploy_classifier_release_result(mmdeploy_classification_t* results, const int* result_count,
+                                        int count) {
   delete[] results;
   delete[] result_count;
 }
 
-void mmdeploy_classifier_destroy(mm_handle_t handle) {
-  if (handle != nullptr) {
-    auto classifier = static_cast<AsyncHandle*>(handle);
-    delete classifier;
-  }
+void mmdeploy_classifier_destroy(mmdeploy_classifier_t classifier) {
+  mmdeploy_pipeline_destroy((mmdeploy_pipeline_t)classifier);
 }

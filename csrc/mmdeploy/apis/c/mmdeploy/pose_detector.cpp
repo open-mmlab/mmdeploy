@@ -4,14 +4,14 @@
 
 #include <numeric>
 
-#include "mmdeploy/apis/c/common_internal.h"
-#include "mmdeploy/apis/c/handle.h"
-#include "mmdeploy/apis/c/pipeline.h"
+#include "common_internal.h"
+#include "handle.h"
 #include "mmdeploy/codebase/mmpose/mmpose.h"
 #include "mmdeploy/core/device.h"
 #include "mmdeploy/core/graph.h"
 #include "mmdeploy/core/mat.h"
 #include "mmdeploy/core/utils/formatter.h"
+#include "pipeline.h"
 
 using namespace std;
 using namespace mmdeploy;
@@ -55,56 +55,58 @@ const Value& config_template() {
   return v;
 }
 
-int mmdeploy_pose_detector_create_impl(mm_model_t model, const char* device_name, int device_id,
-                                       mmdeploy_exec_info_t exec_info, mm_handle_t* handle) {
+int mmdeploy_pose_detector_create_impl(mmdeploy_model_t model, const char* device_name,
+                                       int device_id, mmdeploy_exec_info_t exec_info,
+                                       mmdeploy_pose_detector_t* detector) {
   auto config = config_template();
-  config["pipeline"]["tasks"][1]["params"]["model"] = *static_cast<Model*>(model);
+  config["pipeline"]["tasks"][1]["params"]["model"] = *Cast(model);
 
-  return mmdeploy_pipeline_create(Cast(&config), device_name, device_id, exec_info, handle);
+  return mmdeploy_pipeline_create(Cast(&config), device_name, device_id, exec_info,
+                                  (mmdeploy_pipeline_t*)detector);
 }
 
 }  // namespace
 
-int mmdeploy_pose_detector_create(mm_model_t model, const char* device_name, int device_id,
-                                  mm_handle_t* handle) {
-  return mmdeploy_pose_detector_create_impl(model, device_name, device_id, nullptr, handle);
+int mmdeploy_pose_detector_create(mmdeploy_model_t model, const char* device_name, int device_id,
+                                  mmdeploy_pose_detector_t* detector) {
+  return mmdeploy_pose_detector_create_impl(model, device_name, device_id, nullptr, detector);
 }
 
 int mmdeploy_pose_detector_create_by_path(const char* model_path, const char* device_name,
-                                          int device_id, mm_handle_t* handle) {
-  mm_model_t model{};
+                                          int device_id, mmdeploy_pose_detector_t* detector) {
+  mmdeploy_model_t model{};
   if (auto ec = mmdeploy_model_create_by_path(model_path, &model)) {
     return ec;
   }
-  auto ec = mmdeploy_pose_detector_create_impl(model, device_name, device_id, nullptr, handle);
+  auto ec = mmdeploy_pose_detector_create_impl(model, device_name, device_id, nullptr, detector);
   mmdeploy_model_destroy(model);
   return ec;
 }
 
-int mmdeploy_pose_detector_apply(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
-                                 mm_pose_detect_t** results) {
-  return mmdeploy_pose_detector_apply_bbox(handle, mats, mat_count, nullptr, nullptr, results);
+int mmdeploy_pose_detector_apply(mmdeploy_pose_detector_t detector, const mmdeploy_mat_t* mats,
+                                 int mat_count, mmdeploy_pose_detection_t** results) {
+  return mmdeploy_pose_detector_apply_bbox(detector, mats, mat_count, nullptr, nullptr, results);
 }
 
-int mmdeploy_pose_detector_apply_bbox(mm_handle_t handle, const mm_mat_t* mats, int mat_count,
-                                      const mm_rect_t* bboxes, const int* bbox_count,
-                                      mm_pose_detect_t** results) {
+int mmdeploy_pose_detector_apply_bbox(mmdeploy_pose_detector_t detector, const mmdeploy_mat_t* mats,
+                                      int mat_count, const mmdeploy_rect_t* bboxes,
+                                      const int* bbox_count, mmdeploy_pose_detection_t** results) {
   wrapped<mmdeploy_value_t> input;
   if (auto ec =
           mmdeploy_pose_detector_create_input(mats, mat_count, bboxes, bbox_count, input.ptr())) {
     return ec;
   }
   wrapped<mmdeploy_value_t> output;
-  if (auto ec = mmdeploy_pose_detector_apply_v2(handle, input, output.ptr())) {
+  if (auto ec = mmdeploy_pose_detector_apply_v2(detector, input, output.ptr())) {
     return ec;
   }
   if (auto ec = mmdeploy_pose_detector_get_result(output, results)) {
     return ec;
   }
-  return MM_SUCCESS;
+  return MMDEPLOY_SUCCESS;
 }
 
-void mmdeploy_pose_detector_release_result(mm_pose_detect_t* results, int count) {
+void mmdeploy_pose_detector_release_result(mmdeploy_pose_detection_t* results, int count) {
   if (results == nullptr) {
     return;
   }
@@ -115,17 +117,18 @@ void mmdeploy_pose_detector_release_result(mm_pose_detect_t* results, int count)
   delete[] results;
 }
 
-void mmdeploy_pose_detector_destroy(mm_handle_t handle) {
-  delete static_cast<AsyncHandle*>(handle);
+void mmdeploy_pose_detector_destroy(mmdeploy_pose_detector_t detector) {
+  mmdeploy_pipeline_destroy((mmdeploy_pipeline_t)detector);
 }
 
-int mmdeploy_pose_detector_create_v2(mm_model_t model, const char* device_name, int device_id,
-                                     mmdeploy_exec_info_t exec_info, mm_handle_t* handle) {
-  return mmdeploy_pose_detector_create_impl(model, device_name, device_id, exec_info, handle);
+int mmdeploy_pose_detector_create_v2(mmdeploy_model_t model, const char* device_name, int device_id,
+                                     mmdeploy_exec_info_t exec_info,
+                                     mmdeploy_pose_detector_t* detector) {
+  return mmdeploy_pose_detector_create_impl(model, device_name, device_id, exec_info, detector);
 }
 
-int mmdeploy_pose_detector_create_input(const mm_mat_t* mats, int mat_count,
-                                        const mm_rect_t* bboxes, const int* bbox_count,
+int mmdeploy_pose_detector_create_input(const mmdeploy_mat_t* mats, int mat_count,
+                                        const mmdeploy_rect_t* bboxes, const int* bbox_count,
                                         mmdeploy_value_t* value) {
   try {
     Value input{Value::kArray};
@@ -161,28 +164,29 @@ int mmdeploy_pose_detector_create_input(const mm_mat_t* mats, int mat_count,
       input.front().push_back(img_with_boxes);
     }
     *value = Take(std::move(input));
-    return MM_SUCCESS;
+    return MMDEPLOY_SUCCESS;
   } catch (const std::exception& e) {
     MMDEPLOY_ERROR("unhandled exception: {}", e.what());
   } catch (...) {
     MMDEPLOY_ERROR("unknown exception caught");
   }
-  return MM_E_FAIL;
+  return MMDEPLOY_E_FAIL;
 }
 
-int mmdeploy_pose_detector_apply_v2(mm_handle_t handle, mmdeploy_value_t input,
+int mmdeploy_pose_detector_apply_v2(mmdeploy_pose_detector_t detector, mmdeploy_value_t input,
                                     mmdeploy_value_t* output) {
-  return mmdeploy_pipeline_apply(handle, input, output);
+  return mmdeploy_pipeline_apply((mmdeploy_pipeline_t)detector, input, output);
 }
 
-int mmdeploy_pose_detector_apply_async(mm_handle_t handle, mmdeploy_sender_t input,
+int mmdeploy_pose_detector_apply_async(mmdeploy_pose_detector_t detector, mmdeploy_sender_t input,
                                        mmdeploy_sender_t* output) {
-  return mmdeploy_pipeline_apply_async(handle, input, output);
+  return mmdeploy_pipeline_apply_async((mmdeploy_pipeline_t)detector, input, output);
 }
 
-int mmdeploy_pose_detector_get_result(mmdeploy_value_t output, mm_pose_detect_t** results) {
+int mmdeploy_pose_detector_get_result(mmdeploy_value_t output,
+                                      mmdeploy_pose_detection_t** results) {
   if (!output || !results) {
-    return MM_E_INVALID_ARG;
+    return MMDEPLOY_E_INVALID_ARG;
   }
   try {
     Value& value = Cast(output)->front();
@@ -195,12 +199,12 @@ int mmdeploy_pose_detector_get_result(mmdeploy_value_t output, mm_pose_detect_t*
       result_count += v.size();
     }
 
-    auto deleter = [&](mm_pose_detect_t* p) {
+    auto deleter = [&](mmdeploy_pose_detection_t* p) {
       mmdeploy_pose_detector_release_result(p, static_cast<int>(result_count));
     };
 
-    std::unique_ptr<mm_pose_detect_t[], decltype(deleter)> _results(
-        new mm_pose_detect_t[result_count]{}, deleter);
+    std::unique_ptr<mmdeploy_pose_detection_t[], decltype(deleter)> _results(
+        new mmdeploy_pose_detection_t[result_count]{}, deleter);
 
     size_t result_idx = 0;
     for (const auto& img_result : pose_outputs) {
@@ -208,7 +212,7 @@ int mmdeploy_pose_detector_get_result(mmdeploy_value_t output, mm_pose_detect_t*
         auto& res = _results[result_idx++];
         auto size = box_result.key_points.size();
 
-        res.point = new mm_pointf_t[size];
+        res.point = new mmdeploy_point_t[size];
         res.score = new float[size];
         res.length = static_cast<int>(size);
 
@@ -220,11 +224,11 @@ int mmdeploy_pose_detector_get_result(mmdeploy_value_t output, mm_pose_detect_t*
       }
     }
     *results = _results.release();
-    return MM_SUCCESS;
+    return MMDEPLOY_SUCCESS;
   } catch (const std::exception& e) {
     MMDEPLOY_ERROR("unhandled exception: {}", e.what());
   } catch (...) {
     MMDEPLOY_ERROR("unknown exception caught");
   }
-  return MM_E_FAIL;
+  return MMDEPLOY_E_FAIL;
 }

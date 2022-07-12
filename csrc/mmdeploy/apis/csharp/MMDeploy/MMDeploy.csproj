@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <MMDeployExternalNativeDlls>$(MSBuildThisFileDirectory)\..\..\..\..</MMDeployExternalNativeDlls>
+    <MMDeployExternalNativeDlls>$(MSBuildThisFileDirectory)\..\..\..\..\..</MMDeployExternalNativeDlls>
   </PropertyGroup>
   <ItemGroup>
     <Content CopyToOutputDirectory="PreserveNewest" Include="$(MMDeployExternalNativeDlls)\build\bin\Release\MMDeployExtern.dll" Pack="true" PackagePath="runtimes\win-x64\native\MMDeployExtern.dll" />

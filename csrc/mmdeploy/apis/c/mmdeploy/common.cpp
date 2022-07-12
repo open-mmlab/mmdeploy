@@ -1,14 +1,14 @@
 #include "common.h"
 
-#include "mmdeploy/apis/c/common_internal.h"
-#include "mmdeploy/apis/c/handle.h"
+#include "common_internal.h"
+#include "handle.h"
 #include "mmdeploy/core/mat.h"
 
-mmdeploy_value_t mmdeploy_value_copy(mmdeploy_value_t input) {
-  if (!input) {
+mmdeploy_value_t mmdeploy_value_copy(mmdeploy_value_t value) {
+  if (!value) {
     return nullptr;
   }
-  return Guard([&] { return Take(Value(*Cast(input))); });
+  return Guard([&] { return Take(Value(*Cast(value))); });
 }
 
 int mmdeploy_value_destroy(mmdeploy_value_t value) {
@@ -16,9 +16,10 @@ int mmdeploy_value_destroy(mmdeploy_value_t value) {
   return 0;
 }
 
-int mmdeploy_common_create_input(const mm_mat_t* mats, int mat_count, mmdeploy_value_t* value) {
+int mmdeploy_common_create_input(const mmdeploy_mat_t* mats, int mat_count,
+                                 mmdeploy_value_t* value) {
   if (mat_count && mats == nullptr) {
-    return MM_E_INVALID_ARG;
+    return MMDEPLOY_E_INVALID_ARG;
   }
   try {
     auto input = std::make_unique<Value>(Value{Value::kArray});
@@ -33,5 +34,5 @@ int mmdeploy_common_create_input(const mm_mat_t* mats, int mat_count, mmdeploy_v
   } catch (...) {
     MMDEPLOY_ERROR("unknown exception caught");
   }
-  return MM_SUCCESS;
+  return MMDEPLOY_SUCCESS;
 }

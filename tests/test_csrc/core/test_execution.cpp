@@ -4,7 +4,7 @@
 #include <numeric>
 
 #include "catch.hpp"
-#include "mmdeploy/apis/c/executor.h"
+#include "mmdeploy/apis/c/mmdeploy/executor.h"
 #include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/core/value.h"
 #include "mmdeploy/execution/expand.h"

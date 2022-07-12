@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "mmdeploy/apis/c/executor.h"
+#include "executor.h"
 
 #include "common.h"
 #include "common_internal.h"
@@ -168,14 +168,14 @@ mmdeploy_sender_t mmdeploy_executor_ensure_started(mmdeploy_sender_t input) {
 
 int mmdeploy_executor_start_detached(mmdeploy_sender_t input) {
   if (!input) {
-    return MM_E_INVALID_ARG;
+    return MMDEPLOY_E_INVALID_ARG;
   }
   try {
     StartDetached(Take(input));
     return 0;
   } catch (...) {
   }
-  return MM_E_FAIL;
+  return MMDEPLOY_E_FAIL;
 }
 
 mmdeploy_value_t mmdeploy_executor_sync_wait(mmdeploy_sender_t input) {
@@ -187,18 +187,18 @@ mmdeploy_value_t mmdeploy_executor_sync_wait(mmdeploy_sender_t input) {
 
 int mmdeploy_executor_sync_wait_v2(mmdeploy_sender_t sender, mmdeploy_value_t* value) {
   if (!sender) {
-    return MM_E_INVALID_ARG;
+    return MMDEPLOY_E_INVALID_ARG;
   }
   auto result = mmdeploy_executor_sync_wait(sender);
   if (!result) {
-    return MM_E_FAIL;
+    return MMDEPLOY_E_FAIL;
   }
   if (value) {
     *value = result;
   } else {
     mmdeploy_value_destroy(result);
   }
-  return MM_SUCCESS;
+  return MMDEPLOY_SUCCESS;
 }
 
 void mmdeploy_executor_execute(mmdeploy_scheduler_t scheduler, void (*fn)(void*), void* context) {

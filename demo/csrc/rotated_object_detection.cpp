@@ -4,7 +4,7 @@
 #include <opencv2/imgproc.hpp>
 #include <string>
 
-#include "rotated_detector.h"
+#include "mmdeploy/rotated_detector.h"
 
 int main(int argc, char *argv[]) {
   if (argc != 4) {
@@ -20,20 +20,21 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  mm_handle_t detector{};
+  mmdeploy_rotated_detector_t detector{};
   int status{};
   status = mmdeploy_rotated_detector_create_by_path(model_path, device_name, 0, &detector);
-  if (status != MM_SUCCESS) {
+  if (status != MMDEPLOY_SUCCESS) {
     fprintf(stderr, "failed to create rotated detector, code: %d\n", (int)status);
     return 1;
   }
 
-  mm_mat_t mat{img.data, img.rows, img.cols, 3, MM_BGR, MM_INT8};
+  mmdeploy_mat_t mat{
+      img.data, img.rows, img.cols, 3, MMDEPLOY_PIXEL_FORMAT_BGR, MMDEPLOY_DATA_TYPE_UINT8};
 
-  mm_rotated_detect_t *rbboxes{};
+  mmdeploy_rotated_detection_t *rbboxes{};
   int *res_count{};
   status = mmdeploy_rotated_detector_apply(detector, &mat, 1, &rbboxes, &res_count);
-  if (status != MM_SUCCESS) {
+  if (status != MMDEPLOY_SUCCESS) {
     fprintf(stderr, "failed to apply rotated detector, code: %d\n", (int)status);
     return 1;
   }

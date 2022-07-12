@@ -277,21 +277,21 @@ int main() {
   std::string image_path = std::getenv("MMDET_DIR") + "/demo/demo.jpg";
 
   // 创建推理句柄
-  mm_handle_t detector{};
+  mmdeploy_detector_t detector{};
   int status{};
   status = mmdeploy_detector_create_by_path(model_path, device_name, device_id, &detector);
-  assert(status == MM_SUCCESS);
+  assert(status == MMDEPLOY_SUCCESS);
 
   // 读取图像
   cv::Mat img = cv::imread(image_path);
   assert(img.data);
 
   // 应用句柄进行推理
-  mm_mat_t mat{img.data, img.rows, img.cols, 3, MM_BGR, MM_INT8};
-  mm_detect_t *bboxes{};
+  mmdeploy_mat_t mat{img.data, img.rows, img.cols, 3, MMDEPLOY_PIXEL_FORMAT_BGR, MMDEPLOY_DATA_TYPE_UINT8};
+  mmdeploy_detection_t *bboxes{};
   int *res_count{};
   status = mmdeploy_detector_apply(detector, &mat, 1, &bboxes, &res_count);
-  assert (status == MM_SUCCESS);
+  assert (status == MMDEPLOY_SUCCESS);
 
   // 处理推理结果: 此处我们选择可视化推理结果
   for (int i = 0; i < *res_count; ++i) {
