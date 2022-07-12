@@ -152,8 +152,8 @@ python tools/profile.py \
 
 - `deploy_cfg` : The path of the deploy config file in MMDeploy codebase.
 - `model_cfg` : The path of model config file in OpenMMLab codebase.
-- `model` : The path of the model to be tested.
 - `image_dir` : The directory to image files that used to test the model.
+- `--model` : The path of the model to be tested.
 - `--shape` : Input shape of the model by `HxW`, e.g., `800x1344`. If not specified, it would use `input_shape` from deploy config.
 - `--num-iter` : Number of iteration to run inference. Default is `100`.
 - `--warmup` : Number of iteration to warm-up the machine. Default is `10`.
