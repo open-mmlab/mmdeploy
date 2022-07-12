@@ -1,6 +1,6 @@
-# Ubuntu18.04 交叉编译 NDK snpe service
+# Ubuntu18.04 交叉编译 NDK snpe 推理服务
 
-mmdeploy 已提供 prebuilt snpe inference server，如果你想自己编译、或需要对 .proto 接口做修改，可参考此文档。
+mmdeploy 已提供预编译包，如果你想自己编译、或需要对 .proto 接口做修改，可参考此文档。
 
 注意 gRPC 官方文档并没有对 NDK 的完整支持。
 
@@ -115,11 +115,11 @@ $ adb push greeter* /data/local/tmp
 Greeter received: Hello world
 ```
 
-## 四、交叉编译 snpe service
+## 四、交叉编译 snpe 推理服务
 
 1. 打开 [snpe tools 官网](https://developer.qualcomm.com/software/qualcomm-neural-processing-sdk/tools)，下载 1.59 版本。 解压并设置环境变量
 
-**注意 snpe 1.60 开始使用 `clang-8.0`，可能导致旧设备与 `libc++_shared.so` 不兼容。**
+**注意 snpe >= 1.60 开始使用 `clang-8.0`，可能导致旧设备与 `libc++_shared.so` 不兼容。**
 
 ```bash
 $ export SNPE_ROOT=/path/to/snpe-1.59.0.3230
