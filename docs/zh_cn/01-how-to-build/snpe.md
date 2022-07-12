@@ -32,8 +32,7 @@ venus:/ $ cd /data/local/tmp
 130|venus:/data/local/tmp $ source export1.59.sh
 130|venus:/data/local/tmp $ ./inference_server
 ...
-listening 
-...
+  Server listening on [::]:50051
 ```
 此时推理服务应打印设备所有 ipv6 和 ipv4 地址，并监听 `50051` 端口。
 

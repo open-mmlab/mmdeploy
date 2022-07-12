@@ -1,17 +1,22 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-project(mmdeploy_ncnn_net)
+project(mmdeploy_snpe_net)
 
-if ("cpu" IN_LIST MMDEPLOY_TARGET_DEVICES)
+add_library(snpe SHARED IMPORTED)
 
-    find_package(ncnn REQUIRED)
+if (NOT EXISTS $ENV{SNPE_ROOT}/lib/aarch64-android-clang6.0/)
+  message(ERROR "SNPE_ROOT directory not exist:  $ENV{SNPE_ROOT}/lib/aarch64-android-clang6.0/")
+endif()
 
-    mmdeploy_add_module(${PROJECT_NAME} snpe_net.cpp)
-    target_link_libraries(${PROJECT_NAME} PRIVATE mmdeploy_ncnn_ops_obj)
-    target_link_libraries(${PROJECT_NAME} PRIVATE ncnn)
-    add_library(mmdeploy::ncnn_net ALIAS ${PROJECT_NAME})
-else ()
-    message(
-            ERROR
-            "'snpe_net' is NOT supported in target devices: ${MMDEPLOY_TARGET_DEVICES}")
-endif ()
+set_target_properties(snpe PROPERTIES
+  IMPORTED_LOCATION "$ENV{SNPE_ROOT}/lib/aarch64-android-clang6.0/libSNPE.so"
+  INTERFACE_INCLUDE_DIRECTORIES "$ENV{SNPE_ROOT}/include/zdl"
+)
+target_link_directories(
+  snpe
+  INTERFACE
+)
+
+mmdeploy_add_module(${PROJECT_NAME} snpe_net.cpp)
+target_link_libraries(${PROJECT_NAME} PRIVATE snpe)
+add_library(mmdeploy::snpe_net ALIAS ${PROJECT_NAME})

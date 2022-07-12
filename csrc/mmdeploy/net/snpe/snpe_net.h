@@ -1,11 +1,26 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#ifndef MMDEPLOY_SRC_NET_NCNN_NCNN_NET_H_
-#define MMDEPLOY_SRC_NET_NCNN_NCNN_NET_H_
+#ifndef MMDEPLOY_SRC_NET_SNPE_SNPE_NET_H_
+#define MMDEPLOY_SRC_NET_SNPE_SNPE_NET_H_
 
 #include "mmdeploy/core/net.h"
-#include "SNPE/SNPE.hpp"
+
+#include <iostream>
+#include <memory>
+#include <string>
+
+#include "DiagLog/IDiagLog.hpp"
 #include "DlContainer/IDlContainer.hpp"
+#include "DlSystem/DlEnums.hpp"
+#include "DlSystem/DlError.hpp"
+#include "DlSystem/ITensorFactory.hpp"
+#include "DlSystem/IUserBuffer.hpp"
+#include "DlSystem/PlatformConfig.hpp"
+#include "DlSystem/RuntimeList.hpp"
+#include "DlSystem/UserBufferMap.hpp"
+#include "SNPE/SNPE.hpp"
+#include "SNPE/SNPEBuilder.hpp"
+#include "SNPE/SNPEFactory.hpp"
 
 namespace mmdeploy {
 
@@ -21,6 +36,10 @@ class SNPENet : public Net {
   Result<void> ForwardAsync(Event* event) override { return Status(eNotSupported); };
 
  private:
+   void Build(std::unique_ptr<zdl::DlContainer::IDlContainer>& container,
+             zdl::DlSystem::Runtime_t runtime, zdl::DlSystem::RuntimeList runtimeList,
+             bool useUserSuppliedBuffers, zdl::DlSystem::PlatformConfig platformConfig);
+
   Device device_;
   Stream stream_;
   std::vector<Tensor> input_tensors_;
