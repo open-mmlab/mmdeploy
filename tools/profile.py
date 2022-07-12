@@ -1,12 +1,15 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
+import glob
 import os.path as osp
 
+import numpy as np
 import torch
 from mmcv import DictAction
 from prettytable import PrettyTable
 
 from mmdeploy.apis import build_task_processor
+from mmdeploy.utils import get_root_logger
 from mmdeploy.utils.config_utils import (Backend, get_backend, get_input_shape,
                                          load_config)
 from mmdeploy.utils.timer import TimeCounter
@@ -17,8 +20,7 @@ def parse_args():
         description='MMDeploy Model Latency Test Tool.')
     parser.add_argument('deploy_cfg', help='Deploy config path')
     parser.add_argument('model_cfg', help='Model config path')
-    parser.add_argument(
-        '--img', type=str, help='Test image files.', required=True)
+    parser.add_argument('image_dir', help='Input directory to image files')
     parser.add_argument(
         '--model', type=str, nargs='+', help='Input model files.')
     parser.add_argument(
@@ -53,6 +55,16 @@ def parse_args():
     return args
 
 
+def get_images(image_dir, extensions=['.jpg', '.jpeg', '.png']):
+    images = []
+    files = glob.glob(osp.join(image_dir, '**', '*'), recursive=True)
+    for f in files:
+        _, ext = osp.splitext(f)
+        if ext.lower() in extensions:
+            images.append(f)
+    return images
+
+
 class TorchWrapper(torch.nn.Module):
 
     def __init__(self, model):
@@ -69,7 +81,7 @@ def main():
     args = parse_args()
     deploy_cfg_path = args.deploy_cfg
     model_cfg_path = args.model_cfg
-
+    logger = get_root_logger()
     # load deploy_cfg
     deploy_cfg, model_cfg = load_config(deploy_cfg_path, model_cfg_path)
 
@@ -87,7 +99,7 @@ def main():
 
     # create model an inputs
     task_processor = build_task_processor(model_cfg, deploy_cfg, args.device)
-    data, _ = task_processor.create_input(args.img, input_shape)
+
     model_ext = osp.splitext(args.model[0])[1]
     is_pytorch = model_ext in ['.pth', '.pt']
     if is_pytorch:
@@ -106,9 +118,22 @@ def main():
     if not is_device_cpu:
         torch.backends.cudnn.benchmark = True
 
+    image_files = get_images(args.image_dir)
+    nrof_image = len(image_files)
+    assert nrof_image > 0, f'No image files found in {args.image_dir}'
+    logger.info(f'Found totally {nrof_image} image files in {args.image_dir}')
+    total_iters = args.num_iter + args.warmup
+    if nrof_image < total_iters:
+        np.random.seed(1234)
+        image_files += [
+            image_files[i]
+            for i in np.random.choice(nrof_image, total_iters - nrof_image)
+        ]
+    image_files = image_files[:total_iters]
     with TimeCounter.activate(
             warmup=args.warmup, log_interval=20, with_sync=with_sync):
-        for _ in range(args.num_iter + args.warmup):
+        for image in image_files:
+            data, _ = task_processor.create_input(image, input_shape)
             model(**data)
 
     print('----- Settings:')

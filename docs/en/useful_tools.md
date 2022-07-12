@@ -139,7 +139,7 @@ This tool helps to test latency of models with PyTorch, TensorRT and other backe
 python tools/profile.py \
     ${DEPLOY_CFG} \
     ${MODEL_CFG} \
-    --img ${IMG} \
+    ${IMAGE_DIR} \
     --model ${MODEL} \
     --device ${DEVICE} \
     --shape ${SHAPE} \
@@ -153,7 +153,7 @@ python tools/profile.py \
 - `deploy_cfg` : The path of the deploy config file in MMDeploy codebase.
 - `model_cfg` : The path of model config file in OpenMMLab codebase.
 - `model` : The path of the model to be tested.
-- `--img` : The path of the image file used to test the model.
+- `image_dir` : The directory to image files that used to test the model.
 - `--shape` : Input shape of the model by `HxW`, e.g., `800x1344`. If not specified, it would use `input_shape` from deploy config.
 - `--num-iter` : Number of iteration to run inference. Default is `100`.
 - `--warmup` : Number of iteration to warm-up the machine. Default is `10`.
@@ -166,7 +166,7 @@ python tools/profile.py \
 python tools/profile.py \
     configs/mmcls/classification_tensorrt_dynamic-224x224-224x224.py \
     ../mmclassification/configs/resnet/resnet18_8xb32_in1k.py \
-    --img ../mmdetection/demo/demo.jpg \
+    ../mmdetection/demo \
     --model work-dirs/mmcls/resnet/trt/end2end.engine \
     --device cuda \
     --shape 224x224 \
