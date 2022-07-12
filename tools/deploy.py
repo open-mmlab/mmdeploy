@@ -56,12 +56,7 @@ def parse_args():
         '--quant', action='store_true', help='Quantize model to low bit.')
     parser.add_argument(
         '--uri',
-<<<<<<< HEAD
         default='192.168.77.141:50052',
-=======
-        action='store_true',
-        default='10.1.82.63:50051',
->>>>>>> improvement(backend/snpe): add grpc interceptor for resend request
         help='Remote ipv4:port or ipv6:port for inference on edge device.')
     args = parser.parse_args()
     return args

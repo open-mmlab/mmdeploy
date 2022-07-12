@@ -34,6 +34,7 @@ venus:/ $ cd /data/local/tmp
 ...
   Server listening on [::]:50052
 ```
+此时推理服务应打印设备所有 ipv6 和 ipv4 地址，并监听 `50051` 端口。
 
 此时推理服务应打印设备所有 ipv6 和 ipv4 地址，并监听端口。
 
