@@ -7,6 +7,7 @@
 #include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/core/mat.h"
 #include "mmdeploy/core/tensor.h"
+#include "mmdeploy/core/utils/device_utils.h"
 #include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/preprocess/transform/collect.h"
 #include "mmdeploy/preprocess/transform/tracer.h"
@@ -65,15 +66,6 @@ struct ExtractTransParamVisitor {
   }
 };
 
-template <typename T, size_t N>
-void print(std::string name, std::array<T, N>& arr) {
-  std::cout << name << "\n";
-  for (int i = 0; i < N; i++) {
-    std::cout << arr[i] << " ";
-  }
-  std::cout << "\n";
-}
-
 class CollectImpl : public ::mmdeploy::CollectImpl {
  public:
   CollectImpl(const Value& args) : ::mmdeploy::CollectImpl(args) {
@@ -86,7 +78,9 @@ class CollectImpl : public ::mmdeploy::CollectImpl {
 
   Result<Value> Process(const Value& input) override {
     auto tracer = input["__tracer__"].get<Tracer>();
-    Mat src_mat = input["ori_img"].get<Mat>();
+    Mat _src_mat = input["ori_img"].get<Mat>();
+    OUTCOME_TRY(auto src_mat, MakeAvailableOnDevice(_src_mat, device_, stream_));
+    OUTCOME_TRY(stream_.Wait());
 
     ExtractTransParamVisitor visitor{};
     for (auto&& trans : tracer.trans_) {
@@ -108,14 +102,6 @@ class CollectImpl : public ::mmdeploy::CollectImpl {
       throw std::invalid_argument("");
     }
 
-    // print("resize_hw", visitor.resize_hw);
-    // print("mean", visitor.mean);
-    // print("std", visitor.std);
-    // print("pad_tlbr", visitor.pad_tlbr);
-    // print("pad_hw", visitor.pad_hw);
-    // print("crop_tlbr", visitor.crop_tlbr);
-    // print("crop_hw", visitor.crop_hw);
-
     Value output = input;
     auto img_fields = GetImageFields(input);
     for (auto& key : img_fields) {
@@ -131,8 +117,7 @@ class CollectImpl : public ::mmdeploy::CollectImpl {
            visitor.crop_hw[0], visitor.crop_hw[1], visitor.mean[0], visitor.mean[1],
            visitor.mean[2], visitor.std[0], visitor.std[1], visitor.std[2], visitor.pad_tlbr[0],
            visitor.pad_tlbr[1], visitor.pad_tlbr[2], visitor.pad_tlbr[3], visitor.pad_hw[0],
-           visitor.pad_hw[1], visitor.pad_val, dst_tensor.data<float>(),
-           dst_tensor.shape(2) * dst_tensor.shape(3));
+           visitor.pad_hw[1], visitor.pad_val, dst_tensor.data<float>(), dst_tensor.size());
       output[key] = std::move(dst_tensor);
     }
     return ::mmdeploy::CollectImpl::Process(output);
