@@ -7,4 +7,5 @@ cmake .. \
  -DCMAKE_BUILD_TYPE=Release \
  -Dabsl_DIR=/tmp/android_grpc_install_shared/lib/cmake/absl \
  -DProtobuf_DIR=/tmp/android_grpc_install_shared/lib/cmake/protobuf \
- -DgRPC_DIR=/tmp/android_grpc_install_shared/lib/cmake/grpc
+ -DgRPC_DIR=/tmp/android_grpc_install_shared/lib/cmake/grpc \
+ -DCMAKE_BUILD_TYPE=Release

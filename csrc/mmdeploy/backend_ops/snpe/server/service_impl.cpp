@@ -3,6 +3,7 @@
 #include "service_impl.h"
 
 #include <getopt.h>
+#include <sys/time.h>
 
 #include <algorithm>
 #include <cstdlib>
@@ -14,10 +15,9 @@
 #include <unordered_map>
 #include <vector>
 
-zdl::DlSystem::Runtime_t InferenceServiceImpl::CheckRuntime(
-    zdl::DlSystem::Runtime_t runtime, bool& staticQuantization) {
-  static zdl::DlSystem::Version_t Version =
-      zdl::SNPE::SNPEFactory::getLibraryVersion();
+zdl::DlSystem::Runtime_t InferenceServiceImpl::CheckRuntime(zdl::DlSystem::Runtime_t runtime,
+                                                            bool& staticQuantization) {
+  static zdl::DlSystem::Version_t Version = zdl::SNPE::SNPEFactory::getLibraryVersion();
 
   fprintf(stdout, "SNPE Version: %s\n", Version.asString().c_str());
 
@@ -38,33 +38,28 @@ zdl::DlSystem::Runtime_t InferenceServiceImpl::CheckRuntime(
   return runtime;
 }
 
-std::unique_ptr<zdl::SNPE::SNPE> InferenceServiceImpl::SetBuilderOptions(
-    std::unique_ptr<zdl::DlContainer::IDlContainer>& container,
-    zdl::DlSystem::Runtime_t runtime, zdl::DlSystem::RuntimeList runtimeList,
-    bool useUserSuppliedBuffers, zdl::DlSystem::PlatformConfig platformConfig,
-    bool useCaching) {
-  std::unique_ptr<zdl::SNPE::SNPE> psnpe;
-
+void InferenceServiceImpl::Build(std::unique_ptr<zdl::DlContainer::IDlContainer>& container,
+                                 zdl::DlSystem::Runtime_t runtime,
+                                 zdl::DlSystem::RuntimeList runtimeList,
+                                 bool useUserSuppliedBuffers,
+                                 zdl::DlSystem::PlatformConfig platformConfig) {
   zdl::SNPE::SNPEBuilder snpeBuilder(container.get());
 
   if (runtimeList.empty()) {
     runtimeList.add(runtime);
   }
 
-  psnpe = snpeBuilder.setOutputLayers({})
-              .setRuntimeProcessorOrder(runtimeList)
-              .setUseUserSuppliedBuffers(useUserSuppliedBuffers)
-              .setPlatformConfig(platformConfig)
-              .setInitCacheMode(useCaching)
-              .build();
-  return psnpe;
+  snpe = snpeBuilder.setOutputLayers({})
+             .setRuntimeProcessorOrder(runtimeList)
+             .setUseUserSuppliedBuffers(useUserSuppliedBuffers)
+             .setPlatformConfig(platformConfig)
+             .setExecutionPriorityHint(zdl::DlSystem::ExecutionPriorityHint_t::HIGH)
+             .setPerformanceProfile(zdl::DlSystem::PerformanceProfile_t::SUSTAINED_HIGH_PERFORMANCE)
+             .build();
+  return;
 }
 
-std::string InferenceServiceImpl::SaveDLC(const ::mmdeploy::Model* request) {
-  std::string filename = "tmp.dlc";
-  if (request->has_name()) {
-    filename = request->name();
-  }
+void InferenceServiceImpl::SaveDLC(const ::mmdeploy::Model* request, const std::string& filename) {
   auto model = request->weights();
   fprintf(stdout, "saving file to %s\n", filename.c_str());
   std::ofstream fout;
@@ -72,11 +67,9 @@ std::string InferenceServiceImpl::SaveDLC(const ::mmdeploy::Model* request) {
   fout.write(model.data(), model.size());
   fout.flush();
   fout.close();
-  return filename;
 }
 
-void InferenceServiceImpl::LoadFloatData(const std::string& data,
-                                         std::vector<float>& vec) {
+void InferenceServiceImpl::LoadFloatData(const std::string& data, std::vector<float>& vec) {
   size_t len = data.size();
   assert(len % sizeof(float) == 0);
   const char* ptr = data.data();
@@ -97,9 +90,13 @@ void InferenceServiceImpl::LoadFloatData(const std::string& data,
 ::grpc::Status InferenceServiceImpl::Init(::grpc::ServerContext* context,
                                           const ::mmdeploy::Model* request,
                                           ::mmdeploy::Reply* response) {
+  zdl::SNPE::SNPEFactory::initializeLogging(zdl::DlSystem::LogLevel_t::LOG_ERROR);
+  zdl::SNPE::SNPEFactory::setLogLevel(zdl::DlSystem::LogLevel_t::LOG_ERROR);
+
   fprintf(stdout, "Stage Init: recv command\n");
-  // std::string filename = SaveDLC(request);
-  std::string filename = "end2end.dlc";
+
+  const std::string filename = "end2end.dlc";
+  SaveDLC(request, filename);
 
   if (snpe != nullptr) {
     snpe.reset();
@@ -108,8 +105,7 @@ void InferenceServiceImpl::LoadFloatData(const std::string& data,
     container.reset();
   }
 
-  container =
-      zdl::DlContainer::IDlContainer::open(zdl::DlSystem::String(filename));
+  container = zdl::DlContainer::IDlContainer::open(zdl::DlSystem::String(filename));
   if (container == nullptr) {
     fprintf(stdout, "Stage Init: load dlc failed.\n");
 
@@ -118,7 +114,7 @@ void InferenceServiceImpl::LoadFloatData(const std::string& data,
     return Status::OK;
   }
 
-  zdl::DlSystem::Runtime_t runtime = zdl::DlSystem::Runtime_t::CPU;
+  zdl::DlSystem::Runtime_t runtime = zdl::DlSystem::Runtime_t::GPU;
   if (request->has_device()) {
     switch (request->device()) {
       case mmdeploy::Model_Device_GPU:
@@ -139,39 +135,58 @@ void InferenceServiceImpl::LoadFloatData(const std::string& data,
   zdl::DlSystem::RuntimeList runtimeList;
   runtimeList.add(runtime);
   zdl::DlSystem::PlatformConfig platformConfig;
-  snpe = SetBuilderOptions(container, runtime, runtimeList, false,
-                           platformConfig, false);
+
+  {
+    ScopeTimer timer("build snpe");
+    Build(container, runtime, runtimeList, false, platformConfig);
+  }
 
   if (snpe == nullptr) {
     response->set_status(-2);
     response->set_info(zdl::DlSystem::getLastErrorString());
   }
 
+  // setup logger
+  auto logger_opt = snpe->getDiagLogInterface();
+  if (!logger_opt) throw std::runtime_error("SNPE failed to obtain logging interface");
+  auto logger = *logger_opt;
+  auto opts = logger->getOptions();
+  static std::string OutputDir = "./output/";
+
+  opts.LogFileDirectory = OutputDir;
+  if (!logger->setOptions(opts)) {
+    std::cerr << "Failed to set options" << std::endl;
+    return Status::OK;
+  }
+  if (!logger->start()) {
+    std::cerr << "Failed to start logger" << std::endl;
+    return Status::OK;
+  }
 
   const auto& inputTensorNamesRef = snpe->getInputTensorNames();
   const auto& inputTensorNames = *inputTensorNamesRef;
 
   inputTensors.resize(inputTensorNames.size());
   for (int i = 0; i < inputTensorNames.size(); ++i) {
-
     const char* pname = inputTensorNames.at(i);
     const auto& shape_opt = snpe->getInputDimensions(pname);
     const auto& shape = *shape_opt;
 
     fprintf(stdout, "Stage Init: input tensor info:\n");
-    switch(shape.rank()) {
+    switch (shape.rank()) {
       case 1:
         fprintf(stdout, "name: %s, shape: [%ld]\n", pname, shape[0]);
-      break;
+        break;
       case 2:
         fprintf(stdout, "name: %s, shape: [%ld,%ld]\n", pname, shape[0], shape[1]);
-      break;
+        break;
       case 3:
-        fprintf(stdout, "name: %s, shape: [%ld,%ld,%ld]\n", pname, shape[0], shape[1],shape[2]);
-      break;
+        fprintf(stdout, "name: %s, shape: [%ld,%ld,%ld]\n", pname, shape[0], shape[1], shape[2]);
+        break;
       case 4:
-        fprintf(stdout, "name: %s, shape: [%ld,%ld,%ld,%ld]\n", pname, shape[0], shape[1],shape[2],shape[3]);
-      break;
+        fprintf(stdout, "name: %s, shape: [%ld,%ld,%ld,%ld]\n", pname, shape[0], shape[1], shape[2],
+                shape[3]);
+        break;
     }
     inputTensors[i] = zdl::SNPE::SNPEFactory::getTensorFactory().createTensor(shape);
     inputTensorMap.add(pname, inputTensors[i].get());
@@ -184,25 +199,34 @@ void InferenceServiceImpl::LoadFloatData(const std::string& data,
 
 void InferenceServiceImpl::PrintTensorInfo(const char* pname, zdl::DlSystem::ITensor* pTensor) {
   auto shape = pTensor->getShape();
-    switch(shape.rank()) {
-      case 1:
-        fprintf(stdout, "name: %s, shape: [%ld]\n", pname, shape[0]);
+  switch (shape.rank()) {
+    case 1:
+      fprintf(stdout, "name: %s, shape: [%ld]\n", pname, shape[0]);
       break;
-      case 2:
-        fprintf(stdout, "name: %s, shape: [%ld,%ld]\n", pname, shape[0], shape[1]);
+    case 2:
+      fprintf(stdout, "name: %s, shape: [%ld,%ld]\n", pname, shape[0], shape[1]);
       break;
-      case 3:
-        fprintf(stdout, "name: %s, shape: [%ld,%ld,%ld]\n", pname, shape[0], shape[1],shape[2]);
+    case 3:
+      fprintf(stdout, "name: %s, shape: [%ld,%ld,%ld]\n", pname, shape[0], shape[1], shape[2]);
       break;
-      case 4:
-        fprintf(stdout, "name: %s, shape: [%ld,%ld,%ld,%ld]\n", pname, shape[0], shape[1],shape[2],shape[3]);
+    case 4:
+      fprintf(stdout, "name: %s, shape: [%ld,%ld,%ld,%ld]\n", pname, shape[0], shape[1], shape[2],
+              shape[3]);
       break;
-    }
+  }
+
+  const size_t N = std::min(10UL, pTensor->getSize());
+  fprintf(stdout, "\tfirst %ld value: ", N);
+  auto it = pTensor->cbegin();
+  for (int i = 0; i < N; ++i) {
+    fprintf(stdout, "%f ", *(it + i));
+  }
+  fprintf(stdout, "..%f\n", *(it + pTensor->getSize() - 1));
 }
 
-::grpc::Status InferenceServiceImpl::OutputNames(
-    ::grpc::ServerContext* context, const ::mmdeploy::Empty* request,
-    ::mmdeploy::Names* response) {
+::grpc::Status InferenceServiceImpl::OutputNames(::grpc::ServerContext* context,
+                                                 const ::mmdeploy::Empty* request,
+                                                 ::mmdeploy::Names* response) {
   const auto& outputTensorNamesRef = snpe->getOutputTensorNames();
   const auto& outputTensorNames = *outputTensorNamesRef;
 
@@ -213,9 +237,9 @@ void InferenceServiceImpl::PrintTensorInfo(const char* pname, zdl::DlSystem::ITe
   return Status::OK;
 }
 
-::grpc::Status InferenceServiceImpl::Inference(
-    ::grpc::ServerContext* context, const ::mmdeploy::TensorList* request,
-    ::mmdeploy::Reply* response) {
+::grpc::Status InferenceServiceImpl::Inference(::grpc::ServerContext* context,
+                                               const ::mmdeploy::TensorList* request,
+                                               ::mmdeploy::Reply* response) {
   // Get input names and number
   fprintf(stdout, "Stage Inference: command\n");
 
@@ -235,38 +259,49 @@ void InferenceServiceImpl::PrintTensorInfo(const char* pname, zdl::DlSystem::ITe
   }
 
   // Load input/output buffers with TensorMap
-  for (int i = 0; i < request->datas_size(); ++i) {
-    auto tensor = request->datas(i);
-    std::vector<float> float_input;
-    LoadFloatData(tensor.data(), float_input);
+  {
+    ScopeTimer timer("convert input");
 
-    fprintf(stdout, "Stage Inference: tensor name: %s  input data len %lu\n",
-            inputTensorNames.at(i), float_input.size());
+    for (int i = 0; i < request->datas_size(); ++i) {
+      auto tensor = request->datas(i);
+      std::vector<float> float_input;
+      LoadFloatData(tensor.data(), float_input);
+
+      fprintf(stdout, "Stage Inference: tensor name: %s  input data len %lu\n",
+              inputTensorNames.at(i), float_input.size());
 
       zdl::DlSystem::ITensor* ptensor = inputTensorMap.getTensor(tensor.name().c_str());
       if (ptensor == nullptr) {
-        fprintf(stderr, "Stage Inference: cannot find name: %s in input tensor map\n", tensor.name().c_str());
+        fprintf(stderr, "Stage Inference: cannot find name: %s in input tensor map\n",
+                tensor.name().c_str());
         response->set_status(-3);
         response->set_info("cannot find name in input tensor map.");
         return Status::OK;
       }
 
-    std::copy(float_input.begin(), float_input.end(), ptensor->begin());
+      std::copy(float_input.begin(), float_input.end(), ptensor->begin());
+
+      PrintTensorInfo(tensor.name().c_str(), ptensor);
+    }
   }
 
   // A tensor map for SNPE execution outputs
   zdl::DlSystem::TensorMap outputTensorMap;
   // Execute the multiple input tensorMap on the model with SNPE
-  bool success = snpe->execute(inputTensorMap, outputTensorMap);
-  if (!success) {
-    // build output status
-    response->set_status(-3);
-    response->set_info(zdl::DlSystem::getLastErrorString());
-    return Status::OK;
+  bool success = false;
+  {
+    ScopeTimer timer("execute");
+    success = snpe->execute(inputTensorMap, outputTensorMap);
+
+    if (!success) {
+      response->set_status(-3);
+      response->set_info(zdl::DlSystem::getLastErrorString());
+      return Status::OK;
+    }
   }
 
-  // build output tensor list
   {
+    ScopeTimer timer("convert output");
     auto out_names = outputTensorMap.getTensorNames();
     for (size_t i = 0; i < out_names.size(); ++i) {
       const char* name = out_names.at(i);
@@ -278,8 +313,7 @@ void InferenceServiceImpl::PrintTensorInfo(const char* pname, zdl::DlSystem::ITe
       std::string result;
       result.resize(sizeof(float) * data_length);
       int j = 0;
-      for (auto it = pTensor->cbegin(); it != pTensor->cend();
-           ++it, j += sizeof(float)) {
+      for (auto it = pTensor->cbegin(); it != pTensor->cend(); ++it, j += sizeof(float)) {
         float f = *it;
         memcpy(&result[0] + j, reinterpret_cast<char*>(&f), sizeof(float));
       }
@@ -305,6 +339,7 @@ void InferenceServiceImpl::PrintTensorInfo(const char* pname, zdl::DlSystem::ITe
 ::grpc::Status InferenceServiceImpl::Destroy(::grpc::ServerContext* context,
                                              const ::mmdeploy::Empty* request,
                                              ::mmdeploy::Reply* response) {
+  // zdl::SNPE::SNPEFactory::terminateLogging();
   snpe.reset();
   container.reset();
   inputTensors.clear();
