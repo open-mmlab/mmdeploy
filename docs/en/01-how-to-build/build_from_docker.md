@@ -42,7 +42,7 @@ docker build docker/CPU/ -t mmdeploy:inside --build-arg  USE_SRC_INSIDE=true
 After building the docker image succeed, we can use `docker run` to launch the docker service. GPU docker image for example:
 
 ```
-docker run --gpus all -it -p 8080:8081 mmdeploy:master-gpu
+docker run --gpus all -it mmdeploy:master-gpu
 ```
 
 ## FAQs
