@@ -47,13 +47,13 @@ void FuseFunc(void* stream, uint8_t* data_in, int src_h, int src_w, const char* 
               int crop_h, int crop_w, float mean0, float mean1, float mean2, float std0, float std1,
               float std2, int pad_top, int pad_left, int pad_bottom, int pad_right, int pad_h,
               int pad_w, float pad_value, float* data_out, int data_out_num) {
-    const char* interpolation_ = "nearest";
-    if (strcmp(interpolation, "bilinear") == 0) {
-        interpolation_ = "bilinear";
-    }
-    FuseKernel(resize_h, resize_w, crop_h, crop_w, crop_top, crop_left, mean0, mean1, mean2, std0, std1, std2,
-                pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, data_in, data_out,
-                src_h, src_w, format, interpolation_);
+  const char* interpolation_ = "nearest";
+  if (strcmp(interpolation, "bilinear") == 0) {
+      interpolation_ = "bilinear";
+  }
+  FuseKernel(resize_h, resize_w, crop_h, crop_w, crop_top, crop_left, mean0, mean1, mean2, std0, std1, std2,
+              pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, data_in, data_out,
+              src_h, src_w, format, interpolation_);
 }
 
 REGISTER_FUSE_KERNEL(#TAG#_cpu, "#TAG#_cpu",
@@ -72,28 +72,9 @@ void FuseFunc(void* stream, uint8_t* data_in, int src_h, int src_w, const char* 
     interpolation_ = "bilinear";
   }
 
-  uint8_t* d_in;
-  size_t sz = src_h * src_w;
-  int data_out_num_ = data_out_num;
-  if (strcmp(format, "RGB") == 0 || strcmp(format, "BGR") == 0) {
-    sz *= 3;
-    data_out_num_ *= 3;
-  } else if (strcmp(format, "RGBA") == 0) {
-    sz *= 4;
-    data_out_num_ *= 4;
-  } else if (strcmp(format, "NV12") == 0 || strcmp(format, "NV21") == 0) {
-    sz = sz * 3 / 2;
-    data_out_num_ = data_out_num_ * 3 / 2;
-  }
-  cuErrCheck(cudaMalloc(&d_in, sz * sizeof(uint8_t)));
-  cuErrCheck(cudaMemcpyAsync(d_in, data_in, sz * sizeof(uint8_t), cudaMemcpyHostToDevice, stream_));
-
   FuseKernelCU(stream_, resize_h, resize_w, crop_h, crop_w, crop_top, crop_left, mean0, mean1, mean2, std0,
-               std1, std2, pad_top, pad_left, pad_bottom, pad_right, pad_h, pad_w, pad_value, d_in,
-               data_out, data_out_num_, src_h, src_w, format, interpolation_);
-
-  cuErrCheck(cudaStreamSynchronize(stream_));
-  cuErrCheck(cudaFree(d_in));
+               std1, std2, pad_top, pad_left, pad_bottom, pad_right, pad_h, pad_w, pad_value, data_in,
+               data_out, data_out_num, src_h, src_w, format, interpolation_);
 }
 
 REGISTER_FUSE_KERNEL(#TAG#_cuda, "#TAG#_cuda",
