@@ -74,12 +74,12 @@ def run():
         print('Response outputnames {}'.format(response))
 
         tensor = build_dummy_tensor()
-        tensorList = inference_pb2.TensorList(datas=[tensor])
+        tensorList = inference_pb2.TensorList(data=[tensor])
 
         for x in range(1):
             response = stub.Inference(tensorList)
             if response.status == 0:
-                prob = np.frombuffer(response.datas[0].data, dtype=np.float32)
+                prob = np.frombuffer(response.data[0].data, dtype=np.float32)
                 print('prob argmax: {} max: {}'.format(prob.argmax(),
                                                        prob.max()))
             else:
