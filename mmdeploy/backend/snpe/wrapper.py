@@ -258,7 +258,6 @@ class SNPEWrapper(BaseWrapper):
         Returns:
             Dict[str, torch.Tensor]: Key-value pairs of model outputs.
         """
-
         def get_shape(shape):
             if len(shape) == 4:
                 return (0, 2, 3, 1)
@@ -267,7 +266,6 @@ class SNPEWrapper(BaseWrapper):
             elif len(shape) == 2:
                 return (0, 1)
             return (0)
-
         input_list = list(inputs.values())
         device_type = input_list[0].device.type
 
@@ -307,6 +305,15 @@ class SNPEWrapper(BaseWrapper):
             dict[str, torch.tensor]: Inference results of snpe model.
         """
         resp = self.stub.Inference(tensorList)
+        
+        def get_shape(rank):
+            if rank == 4:
+                return (0, 3, 1, 2)
+            elif rank == 3:
+                return (0, 1, 2)
+            elif rank == 2:
+                return (0, 1)
+            return (0)
 
         def get_shape(shape):
             if len(shape) == 4:

@@ -191,3 +191,42 @@ venus:/data/local/tmp $ ./image_classification cpu ./resnet18/  demo.JPEG
 ..
 label: 2, score: 0.4355
 ```
+
+选项说明
+
+| 选项    | 说明 |
+| ------- | ------------- |
+| DMMDEPLOY_CODEBASES=all | 编译所有算法后处理 |
+| CMAKE_TOOLCHAIN_FILE | 加载 NDK 参数，主要用于选择编译器版本 |
+| MMDEPLOY_TARGET_BACKENDS=snpe | 使用 snpe 推理 |
+| ANDROID_STL=c++_shared | 使用 [LLVM's libc++](https://libcxx.llvm.org/)，和 snpe 依赖对齐 |
+| MMDEPLOY_SHARED_LIBS=ON | 官方 snpe 没有提供静态库 |
+
+### 3. 编译 demo
+
+```bash
+$ cd /path/to/install/example
+$ mkdir build && cd build
+
+$ cmake .. \
+  -DMMDEPLOY_BUILD_SDK=ON   -DMMDEPLOY_CODEBASES=all \
+  -DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK_ROOT}/build/cmake/android.toolchain.cmake \
+  -DMMDEPLOY_CODEBASES=all  -DMMDEPLOY_TARGET_BACKENDS=snpe \
+  -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-26  \
+  -DANDROID_STL=c++_shared  \
+  -DOpenCV_DIR=${ANDROID_OCV_ROOT}/sdk/native/jni/abi-arm64-v8a \
+  -DMMDEPLOY_SHARED_LIBS=ON \
+  -D-DMMDeploy_DIR=${PWD}/../../lib/cmake/MMDeploy
+
+$ make
+$ tree -L 1
+...
+├── image_restorer
+├── image_segmentation
+├── object_detection
+├── ocr
+├── pose_detection
+└── rotated_object_detection
+```
+
+把可执行文件和 .so `adb push` 到设备上执行即可。
