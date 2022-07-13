@@ -1638,6 +1638,18 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
     <td align="center">-</td>
   </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/open-mmlab/mmrotate/blob/main/configs/gliding_vertex/gliding_vertex_r50_fpn_1x_dota_le90.py">GlidingVertex</a></td>
+    <td align="center">Rotated Detection</td>
+    <td align="center">DOTA-v1.0</td>
+    <td align="center">mAP</td>
+    <td align="center">0.732</td>
+    <td align="center">-</td>
+    <td align="center">0.733</td>
+    <td align="center">0.731</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
 </tbody>
 </table>
 </div>
