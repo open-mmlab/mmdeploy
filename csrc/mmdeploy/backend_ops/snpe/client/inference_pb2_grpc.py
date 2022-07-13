@@ -67,7 +67,7 @@ class InferenceServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def Inference(self, request, context):
-        """Inference with inputs 
+        """Inference with inputs
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
