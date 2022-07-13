@@ -4,6 +4,7 @@ import os.path as osp
 from .init_plugins import get_onnx2dlc_path
 from .onnx2dlc import from_onnx
 
+
 def is_available():
     """Check whether ncnn and snpe-onnx-to-dlc tool are installed.
 
