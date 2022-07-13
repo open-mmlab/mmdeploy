@@ -203,7 +203,7 @@ class SNPEWrapper(BaseWrapper):
             snpe_inputs.append(tensor)
 
         return self.__snpe_execute(
-            inference_pb2.TensorList(datas=snpe_inputs), device_type)
+            inference_pb2.TensorList(data=snpe_inputs), device_type)
 
     @TimeCounter.count_time()
     def __snpe_execute(self, tensorList: inference_pb2.TensorList,
@@ -220,7 +220,7 @@ class SNPEWrapper(BaseWrapper):
 
         result = dict()
         if resp.status == 0:
-            for tensor in resp.datas:
+            for tensor in resp.data:
                 ndarray = np.frombuffer(tensor.data, dtype=np.float32)
 
                 shape = tuple(tensor.shape)

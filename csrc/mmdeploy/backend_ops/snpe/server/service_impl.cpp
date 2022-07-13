@@ -252,7 +252,7 @@ void InferenceServiceImpl::PrintTensorInfo(const char* pname, zdl::DlSystem::ITe
   }
 
   const auto& inputTensorNames = *inputTensorNamesRef;
-  if (inputTensorNames.size() != request->datas_size()) {
+  if (inputTensorNames.size() != request->data_size()) {
     response->set_status(-2);
     response->set_info("Stage Inference: input names count not match !");
     return Status::OK;
@@ -262,8 +262,8 @@ void InferenceServiceImpl::PrintTensorInfo(const char* pname, zdl::DlSystem::ITe
   {
     ScopeTimer timer("convert input");
 
-    for (int i = 0; i < request->datas_size(); ++i) {
-      auto tensor = request->datas(i);
+    for (int i = 0; i < request->data_size(); ++i) {
+      auto tensor = request->data(i);
       std::vector<float> float_input;
       LoadFloatData(tensor.data(), float_input);
 
@@ -320,7 +320,7 @@ void InferenceServiceImpl::PrintTensorInfo(const char* pname, zdl::DlSystem::ITe
 
       auto shape = pTensor->getShape();
 
-      ::mmdeploy::Tensor* pData = response->add_datas();
+      ::mmdeploy::Tensor* pData = response->add_data();
       pData->set_dtype("float32");
       pData->set_name(name);
       pData->set_data(result);
