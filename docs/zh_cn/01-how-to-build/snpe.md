@@ -34,27 +34,29 @@ venus:/ $ cd /data/local/tmp
 ...
   Server listening on [::]:50051
 ```
+
 此时推理服务应打印设备所有 ipv6 和 ipv4 地址，并监听 `50051` 端口。
 
 tips:
 
-* 如果 `adb devices` 找不到设备，可能因为：
-  * 有些廉价线只能充电、不能传输数据
-  * 或者没有打开手机的“开发者模式”
-* 如果需要自己编译，可参照 [NDK 交叉编译 snpe 推理服务](../06-appendix/cross-build-ndk-gRPC.md) 
+- 如果 `adb devices` 找不到设备，可能因为：
+  - 有些廉价线只能充电、不能传输数据
+  - 或者没有打开手机的“开发者模式”
+- 如果需要自己编译，可参照 [NDK 交叉编译 snpe 推理服务](../06-appendix/cross-build-ndk-gRPC.md)
 
 ## 二、安装 mmdeploy
 
 1. 环境要求
 
-| 事项    | 版本               | 备注              |
-| ------- | ------------------ | ----------------- |
+| 事项    | 版本               | 备注          |
+| ------- | ------------------ | ------------- |
 | host OS | ubuntu18.04 x86_64 | snpe 指定版本 |
-| Python  | **3.6.0**              | snpe 指定版本 |
+| Python  | **3.6.0**          | snpe 指定版本 |
 
 2. 安装
 
 如果只需要做模型转换和精度测试，`pip` 安装即可。
+
 ```bash
 $ cd /path/to/mmdeploy
 $ python3 -m pip install -e .
@@ -104,6 +106,5 @@ $ export ANDROID_NDK_ROOT=`realpath android-ndk-r17c`
 ```bash
 $ cd /path/to/mmdeploy
 $ mkdir build && cd build
-$ cmake 
+$ cmake
 ```
-

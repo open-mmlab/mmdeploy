@@ -8,16 +8,21 @@
 - backend SNPE-1.59
 - device Mi11 (qcom 888)
 
-## 测试结果
+## mmcls 任务
 
-| model     |   dataset | spatial  | fp32 top-1 (%) | snpe gpu fp16-fp32 hybrid | latency (ms) |
-| :--------------------------------------------------------------------------------------------------------------------------: | :---------: |  :---------: | :------------: | :------------: | :------------: |
-| [ShuffleNetV2](https://github.com/open-mmlab/mmclassification/blob/master/configs/shufflenet_v2/shufflenet-v2-1x_16xb64_in1k.py) | ImageNet-1k | 224x224 | 69.55 | 69.83\* | 20±7 |
-| [Resnet-18](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnet/resnet18_8xb16_cifar10.py) | Cifar10 | 600x400 | 94.82 | \* | 1020±10 |
+|                                                              model                                                               |   dataset   | spatial | fp32 top-1 (%) | snpe gpu fp16-fp32 hybrid | latency (ms) |
+| :------------------------------------------------------------------------------------------------------------------------------: | :---------: | :-----: | :------------: | :-----------------------: | :----------: |
+| [ShuffleNetV2](https://github.com/open-mmlab/mmclassification/blob/master/configs/shufflenet_v2/shufflenet-v2-1x_16xb64_in1k.py) | ImageNet-1k | 224x224 |     69.55      |          69.83\*          |     20±7     |
+|    [MobilenetV2](https://github.com/open-mmlab/mmclassification/blob/master/configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py)     | ImageNet-1k | 224x224 |     71.86      |          72.14\*          |     15±6     |
 
+## mmocr 任务
+
+|                                                              model                                                               |  dataset  | fp32 top-1 (%) | snpe gpu fp16-fp32 hybrid | latency (ms) |
+| :------------------------------------------------------------------------------------------------------------------------------: | :-------: | :------------: | :-----------------------: | :----------: |
+| [ShuffleNetV2](https://github.com/open-mmlab/mmclassification/blob/master/configs/shufflenet_v2/shufflenet-v2-1x_16xb64_in1k.py) | ICDAR2015 |     69.55      |          69.83\*          |     20±7     |
 
 ## 说明
 
-1. 数据集较大，仅使用 ImageNet-1k 的一部分测试（8000/50000）
+1. ImageNet-1k 数据集较大，仅使用一部分测试（8000/50000）
 
 2. 边、端设备发热会降频，因此耗时实际上会波动。这里给出运行一段时间后、稳定的数值。这个结果更贴近实际需求。

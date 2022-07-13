@@ -1,50 +1,54 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import abc
 import os
-from typing import Dict, Optional, Sequence
 import time
+from random import randint
+from typing import Dict, Optional, Sequence, Tuple
 
 import grpc
 import inference_pb2
 import inference_pb2_grpc
 import numpy as np
 import torch
-import abc
 
-from typing import Tuple
-from random import randint
 from mmdeploy.utils import Backend, get_root_logger
 from mmdeploy.utils.timer import TimeCounter
 from ..base import BACKEND_WRAPPER, BaseWrapper
 
+
 # add interceptor to sleep and retry request
 # https://github.com/grpc/grpc/issues/19514
 class SleepingPolicy(abc.ABC):
+
     @abc.abstractmethod
     def sleep(self, try_i: int):
-        """
-        How long to sleep in milliseconds.
+        """How long to sleep in milliseconds.
+
         :param try_i: the number of retry (starting from zero)
         """
         assert try_i >= 0
 
+
 class ExponentialBackoff(SleepingPolicy):
-    def __init__(self, *, init_backoff_ms: int, max_backoff_ms: int, multiplier: int):
+
+    def __init__(self, *, init_backoff_ms: int, max_backoff_ms: int,
+                 multiplier: int):
         self.init_backoff = randint(0, init_backoff_ms)
         self.max_backoff = max_backoff_ms
         self.multiplier = multiplier
 
     def sleep(self, try_i: int):
-        sleep_range = min(
-            self.init_backoff * self.multiplier ** try_i, self.max_backoff
-        )
+        sleep_range = min(self.init_backoff * self.multiplier**try_i,
+                          self.max_backoff)
         sleep_ms = randint(0, sleep_range)
         logger = get_root_logger()
-        logger.debug(f"Sleeping for {sleep_ms}")
+        logger.debug(f'Sleeping for {sleep_ms}')
         time.sleep(sleep_ms / 1000)
 
-class RetryOnRpcErrorClientInterceptor(
-    grpc.UnaryUnaryClientInterceptor, grpc.StreamUnaryClientInterceptor
-):
+
+class RetryOnRpcErrorClientInterceptor(grpc.UnaryUnaryClientInterceptor,
+                                       grpc.StreamUnaryClientInterceptor):
+
     def __init__(
         self,
         *,
@@ -56,7 +60,8 @@ class RetryOnRpcErrorClientInterceptor(
         self.sleeping_policy = sleeping_policy
         self.status_for_retry = status_for_retry
 
-    def _intercept_call(self, continuation, client_call_details, request_or_iterator):
+    def _intercept_call(self, continuation, client_call_details,
+                        request_or_iterator):
 
         for try_i in range(self.max_attempts):
             response = continuation(client_call_details, request_or_iterator)
@@ -68,24 +73,23 @@ class RetryOnRpcErrorClientInterceptor(
                     return response
 
                 # If status code is not in retryable status codes
-                if (
-                    self.status_for_retry
-                    and response.code() not in self.status_for_retry
-                ):
+                if (self.status_for_retry
+                        and response.code() not in self.status_for_retry):
                     return response
 
                 self.sleeping_policy.sleep(try_i)
             else:
                 return response
 
-    def intercept_unary_unary(self, continuation, client_call_details, request):
+    def intercept_unary_unary(self, continuation, client_call_details,
+                              request):
         return self._intercept_call(continuation, client_call_details, request)
 
-    def intercept_stream_unary(
-        self, continuation, client_call_details, request_iterator
-    ):
-        return self._intercept_call(continuation, client_call_details, request_iterator)
-    
+    def intercept_stream_unary(self, continuation, client_call_details,
+                               request_iterator):
+        return self._intercept_call(continuation, client_call_details,
+                                    request_iterator)
+
 
 @BACKEND_WRAPPER.register_module(Backend.SNPE.value)
 class SNPEWrapper(BaseWrapper):
@@ -115,8 +119,13 @@ class SNPEWrapper(BaseWrapper):
                  **kwargs):
 
         logger = get_root_logger()
-        
-        interceptors = (RetryOnRpcErrorClientInterceptor(max_attempts=4,sleeping_policy=ExponentialBackoff(init_backoff_ms=100, max_backoff_ms=1600, multiplier=2),status_for_retry=(grpc.StatusCode.UNAVAILABLE,),),)
+
+        interceptors = (RetryOnRpcErrorClientInterceptor(
+            max_attempts=4,
+            sleeping_policy=ExponentialBackoff(
+                init_backoff_ms=100, max_backoff_ms=1600, multiplier=2),
+            status_for_retry=(grpc.StatusCode.UNAVAILABLE, ),
+        ), )
 
         # The maximum model file size is 512MB
         MAX_SIZE = 2 << 29
@@ -127,7 +136,7 @@ class SNPEWrapper(BaseWrapper):
         #     options=(('grpc.GRPC_ARG_KEEPALIVE_TIME_MS',
         #               2000), ('grpc.max_send_message_length', MAX_SIZE),
         #              ('grpc.keepalive_permit_without_calls', 1)))
-        
+
         weights = bytes()
         filesize = os.stat(dlc_file).st_size
 
@@ -136,8 +145,9 @@ class SNPEWrapper(BaseWrapper):
             weights = f.read(filesize)
 
         # self.stub = inference_pb2_grpc.InferenceStub(self.channel)
-        self.stub = inference_pb2_grpc.InferenceStub(grpc.intercept_channel(grpc.insecure_channel(uri), *interceptors))
-        
+        self.stub = inference_pb2_grpc.InferenceStub(
+            grpc.intercept_channel(grpc.insecure_channel(uri), *interceptors))
+
         logger.info(f'init remote SNPE engine with RPC, please wait...')
         model = inference_pb2.Model(name=dlc_file, weights=weights, device=1)
         resp = self.stub.Init(model)
@@ -154,13 +164,13 @@ class SNPEWrapper(BaseWrapper):
 
     def get_shape(self, shape):
         if len(shape) == 4:
-            return (0,2,3,1)
+            return (0, 2, 3, 1)
         elif len(shape) == 3:
-            return (1,2,0)
+            return (1, 2, 0)
         elif len(shape) == 2:
-            return (0,1)
+            return (0, 1)
         return (0)
-            
+
     def forward(self, inputs: Dict[str,
                                    torch.Tensor]) -> Dict[str, torch.Tensor]:
         """Run forward inference.
@@ -183,7 +193,7 @@ class SNPEWrapper(BaseWrapper):
             # snpe input layout is  NHWC
             data = data.permute(self.get_shape(data.shape))
             data = data.cpu().numpy()
-            
+
             if data.dtype != np.float32:
                 logger.error('SNPE now only support fp32 input')
                 data = data.astype(dtype=np.float32)
@@ -212,9 +222,10 @@ class SNPEWrapper(BaseWrapper):
         if resp.status == 0:
             for tensor in resp.datas:
                 ndarray = np.frombuffer(tensor.data, dtype=np.float32)
-                
+
                 shape = tuple(tensor.shape)
-                result[tensor.name] = torch.from_numpy(ndarray.reshape(shape).copy()).to(device)
+                result[tensor.name] = torch.from_numpy(
+                    ndarray.reshape(shape).copy()).to(device)
         else:
             logger = get_root_logger()
             logger.error(f'snpe inference failed {resp.info}')
