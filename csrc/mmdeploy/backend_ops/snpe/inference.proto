@@ -56,13 +56,13 @@ message Tensor {
 }
 
 message TensorList {
-  repeated Tensor datas = 1;
+  repeated Tensor data = 1;
 }
 
 message Reply {
   int32 status = 1;
   string info = 2;
-  repeated Tensor datas =  3;
+  repeated Tensor data =  3;
 }
 
 message Names {
