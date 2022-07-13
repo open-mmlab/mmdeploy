@@ -12,11 +12,8 @@ set_target_properties(snpe PROPERTIES
   IMPORTED_LOCATION "$ENV{SNPE_ROOT}/lib/aarch64-android-clang6.0/libSNPE.so"
   INTERFACE_INCLUDE_DIRECTORIES "$ENV{SNPE_ROOT}/include/zdl"
 )
-target_link_directories(
-  snpe
-  INTERFACE
-)
 
+message(STATUS ">> project name ${PROJECT_NAME}")
 mmdeploy_add_module(${PROJECT_NAME} snpe_net.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE snpe)
 add_library(mmdeploy::snpe_net ALIAS ${PROJECT_NAME})

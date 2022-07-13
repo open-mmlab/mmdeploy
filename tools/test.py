@@ -76,7 +76,7 @@ def parse_args():
     parser.add_argument(
         '--uri',
         action='store_true',
-        default='192.168.247.237:50051',
+        default='192.168.23.160:50051',
         help='Remote ipv4:port or ipv6:port for inference on edge device.')
 
     args = parser.parse_args()

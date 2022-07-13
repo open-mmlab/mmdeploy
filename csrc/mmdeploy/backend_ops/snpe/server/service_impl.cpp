@@ -113,6 +113,7 @@ void InferenceServiceImpl::LoadFloatData(const std::string& data, std::vector<fl
     response->set_info(zdl::DlSystem::getLastErrorString());
     return Status::OK;
   }
+  fprintf(stdout, "Stage Init: load dlc success.\n");
 
   zdl::DlSystem::Runtime_t runtime = zdl::DlSystem::Runtime_t::GPU;
   if (request->has_device()) {
@@ -133,6 +134,7 @@ void InferenceServiceImpl::LoadFloatData(const std::string& data, std::vector<fl
   }
 
   zdl::DlSystem::RuntimeList runtimeList;
+  runtimeList.add(zdl::DlSystem::Runtime_t::CPU);
   runtimeList.add(runtime);
   zdl::DlSystem::PlatformConfig platformConfig;
 
