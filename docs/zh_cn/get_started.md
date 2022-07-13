@@ -303,7 +303,7 @@ int main() {
                   cv::Point{(int)box.right, (int)box.bottom}, cv::Scalar{0, 255, 0});
   }
 
-  cv::imwrite('output_detection.png', img);
+  cv::imwrite("output_detection.png", img);
 
   // 销毁结果
   mmdeploy_detector_release_result(bboxes, res_count, 1);
