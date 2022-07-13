@@ -21,11 +21,19 @@ class AclNet : public Net {
   Result<void> ForwardAsync(Event* event) override;
 
  private:
+  enum ModelInputType { kStatic, kDynamicBatchSize, kDynamicImageSize, kDynamicDims };
+
   Stream cpu_stream_;
   int32_t device_id_{0};
-  uint32_t model_id_;
+  uint32_t model_id_{(uint32_t)-1};
+  aclmdlDesc* model_desc_{nullptr};
+  ModelInputType model_input_type_{kStatic};
+  int dynamic_tensor_index_{-1};
+  size_t dynamic_gear_count_{0};
   aclmdlDataset* input_dataset_{nullptr};
   aclmdlDataset* output_dataset_{nullptr};
+  std::vector<aclmdlIODims> input_dims_;
+  std::vector<aclmdlIODims> output_dims_;
   std::vector<Tensor> input_tensor_;
   std::vector<Tensor> output_tensor_;
 };
