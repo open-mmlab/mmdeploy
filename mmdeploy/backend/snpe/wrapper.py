@@ -162,15 +162,6 @@ class SNPEWrapper(BaseWrapper):
         super().__init__(output_names)
         logger.info(f'init success, outputs {output_names}')
 
-    def get_shape(self, shape):
-        if len(shape) == 4:
-            return (0, 2, 3, 1)
-        elif len(shape) == 3:
-            return (1, 2, 0)
-        elif len(shape) == 2:
-            return (0, 1)
-        return (0)
-
     def forward(self, inputs: Dict[str,
                                    torch.Tensor]) -> Dict[str, torch.Tensor]:
         """Run forward inference.
@@ -181,6 +172,15 @@ class SNPEWrapper(BaseWrapper):
         Returns:
             Dict[str, torch.Tensor]: Key-value pairs of model outputs.
         """
+        def get_shape(shape):
+            if len(shape) == 4:
+                return (0, 2, 3, 1)
+            elif len(shape) == 3:
+                return (0, 1, 2)
+            elif len(shape) == 2:
+                return (0, 1)
+            return (0)
+        
         input_list = list(inputs.values())
         device_type = input_list[0].device.type
 
@@ -191,7 +191,7 @@ class SNPEWrapper(BaseWrapper):
         for name, input_tensor in inputs.items():
             data = input_tensor.contiguous().detach()
             # snpe input layout is  NHWC
-            data = data.permute(self.get_shape(data.shape))
+            data = data.permute(get_shape(data.shape))
             data = data.cpu().numpy()
 
             if data.dtype != np.float32:
@@ -217,15 +217,24 @@ class SNPEWrapper(BaseWrapper):
             dict[str, torch.tensor]: Inference results of snpe model.
         """
         resp = self.stub.Inference(tensorList)
+        
+        def get_shape(rank):
+            if rank == 4:
+                return (0, 3, 1, 2)
+            elif rank == 3:
+                return (0, 1, 2)
+            elif rank == 2:
+                return (0, 1)
+            return (0)
 
         result = dict()
         if resp.status == 0:
             for tensor in resp.data:
                 ndarray = np.frombuffer(tensor.data, dtype=np.float32)
-
                 shape = tuple(tensor.shape)
-                result[tensor.name] = torch.from_numpy(
-                    ndarray.reshape(shape).copy()).to(device)
+                data =  torch.from_numpy(ndarray.reshape(shape).copy()).to(device)
+                data = data.permute(get_shape(len(data.shape)))
+                result[tensor.name] = data
         else:
             logger = get_root_logger()
             logger.error(f'snpe inference failed {resp.info}')
