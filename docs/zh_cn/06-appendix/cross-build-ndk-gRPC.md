@@ -12,7 +12,7 @@ mmdeploy 已提供预编译包，如果你想自己编译、或需要对 .proto 
 | host OS  | ubuntu18.04    | snpe1.59 指定版本                     |
 | NDK      | r17c           | snpe1.59 指定版本                     |
 | gRPC     | commit 6f698b5 | -                                     |
-| 硬件设备 | 红米 note9  | 需要 qcom 芯片                        |
+| 硬件设备 | 红米 note9     | 需要 qcom 芯片                        |
 
 ## 二、NDK 交叉编译 gRPC
 

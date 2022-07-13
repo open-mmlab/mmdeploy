@@ -11,22 +11,21 @@ namespace mmdeploy {
 SNPENet::~SNPENet() {}
 
 void SNPENet::Build(std::unique_ptr<zdl::DlContainer::IDlContainer>& container,
-                                 zdl::DlSystem::Runtime_t runtime,
-                                 zdl::DlSystem::RuntimeList runtimeList,
-                                 bool useUserSuppliedBuffers,
-                                 zdl::DlSystem::PlatformConfig platformConfig) {
+                    zdl::DlSystem::Runtime_t runtime, zdl::DlSystem::RuntimeList runtimeList,
+                    bool useUserSuppliedBuffers, zdl::DlSystem::PlatformConfig platformConfig) {
   zdl::SNPE::SNPEBuilder snpeBuilder(container.get());
 
   if (runtimeList.empty()) {
     runtimeList.add(runtime);
   }
 
-  snpe_ = snpeBuilder.setOutputLayers({})
-             .setRuntimeProcessorOrder(runtimeList)
-             .setUseUserSuppliedBuffers(useUserSuppliedBuffers)
-             .setPlatformConfig(platformConfig)
-             .setPerformanceProfile(zdl::DlSystem::PerformanceProfile_t::SUSTAINED_HIGH_PERFORMANCE)
-             .build();
+  snpe_ =
+      snpeBuilder.setOutputLayers({})
+          .setRuntimeProcessorOrder(runtimeList)
+          .setUseUserSuppliedBuffers(useUserSuppliedBuffers)
+          .setPlatformConfig(platformConfig)
+          .setPerformanceProfile(zdl::DlSystem::PerformanceProfile_t::SUSTAINED_HIGH_PERFORMANCE)
+          .build();
   return;
 }
 
@@ -44,7 +43,7 @@ Result<void> SNPENet::Init(const Value& args) {
 
   container_ = zdl::DlContainer::IDlContainer::open(zdl::DlSystem::String(config.net));
   if (container_ == nullptr) {
-      MMDEPLOY_ERROR("Load .dlc failed: {}", config.net);
+    MMDEPLOY_ERROR("Load .dlc failed: {}", config.net);
   }
 
   zdl::DlSystem::Runtime_t runtime = zdl::DlSystem::Runtime_t::GPU;
@@ -59,16 +58,16 @@ Result<void> SNPENet::Init(const Value& args) {
   Build(container_, runtime, runtimeList, false, platformConfig);
 
   // init internal input tensor list
-  const auto& inputTensorNamesRef = snpe->getInputTensorNames();
+  const auto& inputTensorNamesRef = snpe_->getInputTensorNames();
   const auto& inputTensorNames = *inputTensorNamesRef;
   inputs_internal_.resize(inputTensorNames.size());
 
   for (int i = 0; i < inputTensorNames.size(); ++i) {
-    const auto& inputShape_opt = snpe->getInputDimensions(inputTensorNames.at(i));
+    const auto& inputShape_opt = snpe_->getInputDimensions(inputTensorNames.at(i));
     const auto& inputShape = *inputShape_opt;
 
     inputs_internal_[i] = zdl::SNPE::SNPEFactory::getTensorFactory().createTensor(inputShape);
-    input_tensor_map_.add(tensor.name().c_str(), inputTensors[i].get());
+    input_tensor_map_.add(inputTensorNames.at(i), inputs_internal_[i].get());
   }
 
   return success();
@@ -98,13 +97,13 @@ Result<void> SNPENet::Forward() {
 
   {
     // copy input to itensor buffer
-    for (auto ptensor: input_tensors_) {
-      const auto& name = ptensor->desc().name;
+    for (auto& tensor : input_tensors_) {
+      const auto& name = tensor.desc().name;
 
       auto pbuffer = input_tensor_map_.getTensor(name.c_str());
 
-      float* from = ptensor->data<float>();
-      std::vector<float> vec = {from, from + ptensor->size()};
+      float* from = tensor.data<float>();
+      std::vector<float> vec = {from, from + tensor.size()};
       std::copy(vec.begin(), vec.end(), pbuffer->begin());
     }
   }
@@ -114,44 +113,35 @@ Result<void> SNPENet::Forward() {
   {
     // real inference
     bool success = snpe_->execute(input_tensor_map_, output_map);
-    if (! success) {
+    if (!success) {
       MMDEPLOY_ERROR("snpe Inference error: {}", std::string(zdl::DlSystem::getLastErrorString()));
     }
   }
 
   {
     // extract output buffer to tensor
-    auto& names = output_map.getTensorNames();
+    auto names = output_map.getTensorNames();
     for (size_t i = 0; i < names.size(); ++i) {
       zdl::DlSystem::ITensor* pbuffer = output_map.getTensor(names.at(i));
 
       auto& tensor = output_tensors_[i];
-      auto& shape = pbuffer->getShape();
+      auto out_shape = pbuffer->getShape();
 
-      switch (shape.rank())
-      {
-      case 1:
-        tensor.Reshape({shape[0]}):
-        break;
-      case 2:
-        tensor.Reshape({shape[0], shape[1]}):
-        break;
-      case 3:
-        tensor.Reshape({shape[0], shape[1], shape[2]}):
-        break;
-      case 4:
-        tensor.Reshape({shape[0], shape[1], shape[2], shape[3]}):
-      default:
-        break;
+      TensorShape tensor_shape;
+      for (int j = 0; j < out_shape.rank(); ++j) {
+        tensor_shape.push_back(out_shape[i]);
       }
+      tensor.Reshape(tensor_shape);
 
       float* to = tensor.data<float>();
-      
+
       for (auto it = pbuffer->cbegin(); it != pbuffer->cend(); ++it) {
         *to = *it;
         ++to;
       }
     }
+  }
+  return success();
 }
 
 class SNPENetCreator : public Creator<Net> {

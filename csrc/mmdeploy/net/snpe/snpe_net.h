@@ -3,8 +3,6 @@
 #ifndef MMDEPLOY_SRC_NET_SNPE_SNPE_NET_H_
 #define MMDEPLOY_SRC_NET_SNPE_SNPE_NET_H_
 
-#include "mmdeploy/core/net.h"
-
 #include <iostream>
 #include <memory>
 #include <string>
@@ -21,6 +19,7 @@
 #include "SNPE/SNPE.hpp"
 #include "SNPE/SNPEBuilder.hpp"
 #include "SNPE/SNPEFactory.hpp"
+#include "mmdeploy/core/net.h"
 
 namespace mmdeploy {
 
@@ -36,7 +35,7 @@ class SNPENet : public Net {
   Result<void> ForwardAsync(Event* event) override { return Status(eNotSupported); };
 
  private:
-   void Build(std::unique_ptr<zdl::DlContainer::IDlContainer>& container,
+  void Build(std::unique_ptr<zdl::DlContainer::IDlContainer>& container,
              zdl::DlSystem::Runtime_t runtime, zdl::DlSystem::RuntimeList runtimeList,
              bool useUserSuppliedBuffers, zdl::DlSystem::PlatformConfig platformConfig);
 
