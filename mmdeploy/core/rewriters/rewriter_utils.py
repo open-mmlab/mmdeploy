@@ -2,6 +2,7 @@
 import inspect
 import warnings
 from abc import ABCMeta, abstractmethod
+from functools import wraps
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import mmdeploy
@@ -352,6 +353,11 @@ class ContextCaller:
         self.func = func
         self.origin_func = origin_func
         self.cfg = cfg
+        if origin_func is not None:
+            wraps(origin_func)(self)
+        else:
+            self.__annotations__ = getattr(func, '__annotations__', {})
+
         for k, v in kwargs.items():
             setattr(self, k, v)
 
