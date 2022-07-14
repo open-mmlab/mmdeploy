@@ -251,7 +251,7 @@ cv2.imwrite('output_detection.png', img)
 
 使用 C API 进行模型推理的流程符合下面的模式：
 
-```mermaid
+```{mermaid}
 graph LR
   A[创建推理句柄] --> B(读取图像)
   B --> C(应用句柄进行推理)
@@ -303,7 +303,7 @@ int main() {
                   cv::Point{(int)box.right, (int)box.bottom}, cv::Scalar{0, 255, 0});
   }
 
-  cv::imwrite('output_detection.png', img);
+  cv::imwrite("output_detection.png", img);
 
   // 销毁结果
   mmdeploy_detector_release_result(bboxes, res_count, 1);
