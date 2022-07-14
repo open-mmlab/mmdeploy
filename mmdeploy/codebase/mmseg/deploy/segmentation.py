@@ -141,17 +141,6 @@ class Segmentation(BaseTask):
         model = model.to(self.device).eval()
         return model
 
-    def build_pytorch_model(self,
-                            model_checkpoint: Optional[str] = None,
-                            cfg_options: Optional[Dict] = None,
-                            **kwargs) -> torch.nn.Module:
-        input_shape = get_input_shape(self.deploy_cfg)
-        if input_shape is not None:
-            self.model_cfg.model.data_preprocessor.size = tuple(
-                reversed(input_shape))
-        return super().build_pytorch_model(model_checkpoint, cfg_options,
-                                           **kwargs)
-
     def create_input(
         self,
         imgs: Union[str, np.ndarray],
@@ -194,8 +183,10 @@ class Segmentation(BaseTask):
         Returns:
 
         """
-        from mmseg.core.visualization import SegLocalVisualizer
-        visualizer = SegLocalVisualizer(name, save_dir=save_dir)
+        # import to make SegLocalVisualizer could be built
+        from mmseg.core.visualization import \
+            SegLocalVisualizer  # noqa: F401,F403
+        visualizer = super().get_visualizer(name, save_dir)
         metainfo = _get_dataset_metainfo(self.model_cfg)
         if metainfo is not None:
             visualizer.dataset_meta = metainfo
@@ -228,16 +219,8 @@ class Segmentation(BaseTask):
         visualizer = self.get_visualizer(window_name, save_dir)
         name = osp.splitext(filename)[0]
         image = mmcv.imread(image, channel_order='rgb')
-        h, w = result.pred_sem_seg.data.shape[-2:]
-        h, w = int(h), int(w)
-        # resize image to seg pred shape
-        if h != image.shape[2] and w != image.shape[1]:
-            image = mmcv.imresize(image, (w, h))
         visualizer.add_datasample(
             name, image, pred_sample=result, show=show_result)
-        drawn_image = visualizer.get_image()
-        import matplotlib.pyplot as plt
-        plt.imsave(output_file, drawn_image)
 
     @staticmethod
     def get_partition_cfg(partition_type: str) -> Dict:
