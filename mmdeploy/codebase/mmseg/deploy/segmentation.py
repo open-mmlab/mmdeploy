@@ -220,7 +220,7 @@ class Segmentation(BaseTask):
         name = osp.splitext(filename)[0]
         image = mmcv.imread(image, channel_order='rgb')
         visualizer.add_datasample(
-            name, image, pred_sample=result, show=show_result)
+            name, image, pred_sample=result.cpu(), show=show_result)
 
     @staticmethod
     def get_partition_cfg(partition_type: str) -> Dict:
