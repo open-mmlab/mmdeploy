@@ -77,6 +77,7 @@ def select_rnms_index(scores: torch.Tensor,
 
 def _multiclass_nms_rotated(boxes: Tensor,
                             scores: Tensor,
+                            max_output_boxes_per_class: int = 1000,
                             iou_threshold: float = 0.1,
                             score_threshold: float = 0.05,
                             pre_top_k: int = -1,

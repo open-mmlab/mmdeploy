@@ -10,16 +10,19 @@
 
 #include "common.h"
 #include "executor.h"
+#include "model.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct mm_pose_detect_t {
-  mm_pointf_t* point;  ///< keypoint
-  float* score;        ///< keypoint score
-  int length;          ///< number of keypoint
-} mm_pose_detect_t;
+typedef struct mmdeploy_pose_detection_t {
+  mmdeploy_point_t* point;  ///< keypoint
+  float* score;             ///< keypoint score
+  int length;               ///< number of keypoint
+} mmdeploy_pose_detection_t;
+
+typedef struct mmdeploy_pose_detector* mmdeploy_pose_detector_t;
 
 /**
  * @brief Create a pose detector instance
@@ -27,29 +30,29 @@ typedef struct mm_pose_detect_t {
  * \ref mmdeploy_model_create_by_path or \ref mmdeploy_model_create in \ref model.h
  * @param[in] device_name name of device, such as "cpu", "cuda", etc.
  * @param[in] device_id id of device.
- * @param[out] handle handle of the created pose detector, which must be destroyed
+ * @param[out] detector handle of the created pose detector, which must be destroyed
  * by \ref mmdeploy_pose_detector_destroy
  * @return status code of the operation
  */
-MMDEPLOY_API int mmdeploy_pose_detector_create(mm_model_t model, const char* device_name,
-                                               int device_id, mm_handle_t* handle);
+MMDEPLOY_API int mmdeploy_pose_detector_create(mmdeploy_model_t model, const char* device_name,
+                                               int device_id, mmdeploy_pose_detector_t* detector);
 
 /**
  * @brief Create a pose detector instance
  * @param[in] model_path path to pose detection model
  * @param[in] device_name name of device, such as "cpu", "cuda", etc.
  * @param[in] device_id id of device.
- * @param[out] handle handle of the created pose detector, which must be destroyed
+ * @param[out] detector handle of the created pose detector, which must be destroyed
  * by \ref mmdeploy_pose_detector_destroy
  * @return status code of the operation
  */
 MMDEPLOY_API int mmdeploy_pose_detector_create_by_path(const char* model_path,
                                                        const char* device_name, int device_id,
-                                                       mm_handle_t* handle);
+                                                       mmdeploy_pose_detector_t* detector);
 
 /**
  * @brief Apply pose detector to a batch of images with full image roi
- * @param[in] handle pose detector's handle created by \ref
+ * @param[in] detector pose detector's handle created by \ref
  * mmdeploy_pose_detector_create_by_path
  * @param[in] images a batch of images
  * @param[in] count number of images in the batch
@@ -57,12 +60,13 @@ MMDEPLOY_API int mmdeploy_pose_detector_create_by_path(const char* model_path,
  * by \ref mmdeploy_pose_detector_release_result
  * @return status code of the operation
  */
-MMDEPLOY_API int mmdeploy_pose_detector_apply(mm_handle_t handle, const mm_mat_t* mats,
-                                              int mat_count, mm_pose_detect_t** results);
+MMDEPLOY_API int mmdeploy_pose_detector_apply(mmdeploy_pose_detector_t detector,
+                                              const mmdeploy_mat_t* mats, int mat_count,
+                                              mmdeploy_pose_detection_t** results);
 
 /**
  * @brief Apply pose detector to a batch of images supplied with bboxes(roi)
- * @param[in] handle pose detector's handle created by \ref
+ * @param[in] detector pose detector's handle created by \ref
  * mmdeploy_pose_detector_create_by_path
  * @param[in] images a batch of images
  * @param[in] image_count number of images in the batch
@@ -72,44 +76,48 @@ MMDEPLOY_API int mmdeploy_pose_detector_apply(mm_handle_t handle, const mm_mat_t
  * bboxes, must be release by \ref mmdeploy_pose_detector_release_result
  * @return status code of the operation
  */
-MMDEPLOY_API int mmdeploy_pose_detector_apply_bbox(mm_handle_t handle, const mm_mat_t* mats,
-                                                   int mat_count, const mm_rect_t* bboxes,
+MMDEPLOY_API int mmdeploy_pose_detector_apply_bbox(mmdeploy_pose_detector_t detector,
+                                                   const mmdeploy_mat_t* mats, int mat_count,
+                                                   const mmdeploy_rect_t* bboxes,
                                                    const int* bbox_count,
-                                                   mm_pose_detect_t** results);
+                                                   mmdeploy_pose_detection_t** results);
 
 /** @brief Release result buffer returned by \ref mmdeploy_pose_detector_apply or \ref
  * mmdeploy_pose_detector_apply_bbox
  * @param[in] results result buffer by pose detector
  * @param[in] count length of \p result
  */
-MMDEPLOY_API void mmdeploy_pose_detector_release_result(mm_pose_detect_t* results, int count);
+MMDEPLOY_API void mmdeploy_pose_detector_release_result(mmdeploy_pose_detection_t* results,
+                                                        int count);
 
 /**
  * @brief destroy pose_detector
- * @param[in] handle handle of pose_detector created by \ref
+ * @param[in] detector handle of pose_detector created by \ref
  * mmdeploy_pose_detector_create_by_path or \ref mmdeploy_pose_detector_create
  */
-MMDEPLOY_API void mmdeploy_pose_detector_destroy(mm_handle_t handle);
+MMDEPLOY_API void mmdeploy_pose_detector_destroy(mmdeploy_pose_detector_t detector);
 
 /******************************************************************************
  * Experimental asynchronous APIs */
 
-MMDEPLOY_API int mmdeploy_pose_detector_create_v2(mm_model_t model, const char* device_name,
+MMDEPLOY_API int mmdeploy_pose_detector_create_v2(mmdeploy_model_t model, const char* device_name,
                                                   int device_id, mmdeploy_exec_info_t exec_info,
-                                                  mm_handle_t* handle);
+                                                  mmdeploy_pose_detector_t* detector);
 
-MMDEPLOY_API int mmdeploy_pose_detector_create_input(const mm_mat_t* mats, int mat_count,
-                                                     const mm_rect_t* bboxes, const int* bbox_count,
+MMDEPLOY_API int mmdeploy_pose_detector_create_input(const mmdeploy_mat_t* mats, int mat_count,
+                                                     const mmdeploy_rect_t* bboxes,
+                                                     const int* bbox_count,
                                                      mmdeploy_value_t* value);
 
-MMDEPLOY_API int mmdeploy_pose_detector_apply_v2(mm_handle_t handle, mmdeploy_value_t input,
-                                                 mmdeploy_value_t* output);
+MMDEPLOY_API int mmdeploy_pose_detector_apply_v2(mmdeploy_pose_detector_t detector,
+                                                 mmdeploy_value_t input, mmdeploy_value_t* output);
 
-MMDEPLOY_API int mmdeploy_pose_detector_apply_async(mm_handle_t handle, mmdeploy_sender_t input,
+MMDEPLOY_API int mmdeploy_pose_detector_apply_async(mmdeploy_pose_detector_t detector,
+                                                    mmdeploy_sender_t input,
                                                     mmdeploy_sender_t* output);
 
 MMDEPLOY_API int mmdeploy_pose_detector_get_result(mmdeploy_value_t output,
-                                                   mm_pose_detect_t** results);
+                                                   mmdeploy_pose_detection_t** results);
 
 #ifdef __cplusplus
 }

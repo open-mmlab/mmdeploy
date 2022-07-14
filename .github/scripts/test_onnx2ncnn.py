@@ -33,7 +33,8 @@ CONFIGS = [
 def parse_args():
     parser = argparse.ArgumentParser(
         description='MMDeploy onnx2ncnn test tool.')
-    parser.add_argument('--run', type=bool, help='Execute onnx2ncnn bin.')
+    parser.add_argument(
+        '--run', type=bool, help='Execute mmdeploy_onnx2ncnn bin.')
     parser.add_argument(
         '--repo-dir', type=str, default='~/', help='mmcls directory.')
     parser.add_argument(
@@ -77,14 +78,16 @@ def run(args):
         # show processbar
         os.system(' '.join(download_cmd))
 
-        convert_cmd = ['./onnx2ncnn', filename, 'onnx.param', 'onnx.bin']
+        convert_cmd = [
+            './mmdeploy_onnx2ncnn', filename, 'onnx.param', 'onnx.bin'
+        ]
         subprocess.run(convert_cmd, capture_output=True, check=True)
 
 
 def main():
     """test `onnx2ncnn.cpp`
 
-    First generate onnx model then convert it with `onnx2ncnn`.
+    First generate onnx model then convert it with `mmdeploy_onnx2ncnn`.
     """
     args = parse_args()
     if args.generate_onnx:

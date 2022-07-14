@@ -3,9 +3,11 @@
 #ifndef MMDEPLOY_CSRC_APIS_C_COMMON_INTERNAL_H_
 #define MMDEPLOY_CSRC_APIS_C_COMMON_INTERNAL_H_
 
-#include "mmdeploy/apis/c/common.h"
-#include "mmdeploy/apis/c/model.h"
+#include "common.h"
+#include "handle.h"
 #include "mmdeploy/core/value.h"
+#include "model.h"
+#include "pipeline.h"
 
 using namespace mmdeploy;
 
@@ -24,6 +26,16 @@ inline Value Take(mmdeploy_value_t v) {
 mmdeploy_value_t Take(Value v) {
   return Cast(new Value(std::move(v)));  // NOLINT
 }
+
+mmdeploy_pipeline_t Cast(AsyncHandle* pipeline) {
+  return reinterpret_cast<mmdeploy_pipeline_t>(pipeline);
+}
+
+AsyncHandle* Cast(mmdeploy_pipeline_t pipeline) { return reinterpret_cast<AsyncHandle*>(pipeline); }
+
+mmdeploy_model_t Cast(Model* model) { return reinterpret_cast<mmdeploy_model_t>(model); }
+
+Model* Cast(mmdeploy_model_t model) { return reinterpret_cast<Model*>(model); }
 
 template <typename F>
 std::invoke_result_t<F> Guard(F f) {
@@ -80,7 +92,7 @@ class wrapped<T, std::void_t<decltype(Cast(T{}))> > {
 
 }  // namespace
 
-MMDEPLOY_API int mmdeploy_common_create_input(const mm_mat_t* mats, int mat_count,
+MMDEPLOY_API int mmdeploy_common_create_input(const mmdeploy_mat_t* mats, int mat_count,
                                               mmdeploy_value_t* value);
 
 #endif  // MMDEPLOY_CSRC_APIS_C_COMMON_INTERNAL_H_
