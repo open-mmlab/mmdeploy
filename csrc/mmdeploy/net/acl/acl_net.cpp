@@ -32,6 +32,26 @@ std::ostream& operator<<(std::ostream& os, const aclmdlHW& hw) {
 
 namespace mmdeploy {
 
+namespace {
+
+struct AclInit {
+  AclInit() {
+    auto ret = aclInit(nullptr);
+    assert(ret == 0);
+  }
+  ~AclInit() {
+    auto ret = aclFinalize();
+    assert(ret == 0);
+  }
+};
+
+void InitACL() {
+  static AclInit init;
+}
+
+}
+
+
 AclNet::~AclNet() {
   auto n_inputs = aclmdlGetDatasetNumBuffers(input_dataset_);
   for (int i = 0; i < n_inputs; ++i) {
@@ -40,6 +60,7 @@ AclNet::~AclNet() {
     aclrtFree(data);
   }
   input_tensor_.clear();
+  aclmdlDestroyDataset(input_dataset_);
 
   auto n_outputs = aclmdlGetDatasetNumBuffers(output_dataset_);
   for (int i = 0; i < n_outputs; ++i) {
@@ -48,6 +69,7 @@ AclNet::~AclNet() {
     aclrtFree(data);
   }
   output_tensor_.clear();
+  aclmdlDestroyDataset(output_dataset_);
 
   aclmdlDestroyDesc(model_desc_);
   aclmdlUnload(model_id_);
@@ -133,8 +155,8 @@ Result<void> AclNet::Init(const Value& args) {
   OUTCOME_TRY(auto config, model.GetModelConfig(name));
   OUTCOME_TRY(auto binary, model.ReadFile(config.net));
 
-  aclError ret = aclInit(nullptr);
-  ret = aclrtSetDevice(0);
+  InitACL();
+  auto ret = aclrtSetDevice(0);
 
   aclmdlLoadFromMem(binary.data(), binary.size(), &model_id_);
 
@@ -370,7 +392,7 @@ Result<void> AclNet::ForwardAsync(Event* event) { return Status(eNotSupported); 
 
 class AclNetCreator : public Creator<Net> {
  public:
-  const char* GetName() const override { return "acl"; }
+  const char* GetName() const override { return "ascend"; }
   int GetVersion() const override { return 0; }
   std::unique_ptr<Net> Create(const Value& args) override {
     try {

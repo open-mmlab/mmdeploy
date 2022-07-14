@@ -8,7 +8,8 @@ if ("acl" IN_LIST MMDEPLOY_TARGET_BACKENDS)
     target_include_directories(${PROJECT_NAME} PRIVATE 
         $<BUILD_INTERFACE:${ASCEND_TOOLKIT_HOME}/acllib/include>)
     target_link_directories(${PROJECT_NAME} PUBLIC 
-        ${ASCEND_TOOLKIT_HOME}/runtime/lib64/stub
-        ${ASCEND_TOOLKIT_HOME}/driver)
+        # ${ASCEND_TOOLKIT_HOME}/runtime/lib64/stub
+        ${ASCEND_TOOLKIT_HOME}/lib64
+        ${ASCEND_TOOLKIT_HOME}/../../driver/lib64)
     target_link_libraries(${PROJECT_NAME} PRIVATE ascendcl)
 endif ()

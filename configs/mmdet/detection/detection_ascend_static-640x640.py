@@ -1,0 +1,6 @@
+_base_ = ['../_base_/base_static.py', '../../_base_/backends/ascend.py']
+
+onnx_config = dict(input_shape=[640, 640])
+backend_config = dict(model_inputs=[
+    dict(type='Static', input_shapes=dict(input=[1, 3, 640, 640]))
+])

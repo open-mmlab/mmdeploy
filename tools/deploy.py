@@ -318,6 +318,17 @@ def main():
             pplnn_files += [onnx_path, algo_file]
         backend_files = pplnn_files
 
+    elif backend == Backend.ASCEND:
+        from mmdeploy.apis.ascend import from_onnx
+
+        ascend_pipeline_funcs = [from_onnx]
+        PIPELINE_MANAGER.set_log_level(logging.INFO, ascend_pipeline_funcs)
+
+        model_inputs = get_model_inputs(deploy_cfg)
+
+        for model_id, onnx_path in enumerate(ir_files):
+            from_onnx(onnx_path, args.work_dir, model_inputs[model_id])
+
     if args.test_img is None:
         args.test_img = args.img
 
