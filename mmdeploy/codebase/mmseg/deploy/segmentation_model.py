@@ -93,6 +93,7 @@ class End2EndModel(BaseBackendModel):
                 seg_pred, size=tuple(ori_shape[:2]), mode='nearest')
             seg_pred = seg_pred.long().detach().cpu().numpy()
         # remove unnecessary dim
+        print("---- {}".format(seg_pred.shape))
         seg_pred = seg_pred.squeeze(1)
         seg_pred = list(seg_pred)
         return seg_pred

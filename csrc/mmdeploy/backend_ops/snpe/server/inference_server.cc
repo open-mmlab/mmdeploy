@@ -25,17 +25,25 @@
 #include <string.h>
 #include <sys/types.h>
 
-#include "service_impl.h"
+#include <iostream>
 
-void PrintIPv4() {
+#include "service_impl.h"
+#include "text_table.h"
+
+void PrintIP() {
   struct ifaddrs* ifAddrStruct = NULL;
   void* tmpAddrPtr = NULL;
 
-  getifaddrs(&ifAddrStruct);
+  int retval = getifaddrs(&ifAddrStruct);
+  if (retval == -1) {
+    return;
+  }
 
+  helper::TextTable table("Device");
+  table.padding(1);
+  table.add("port").add("ip").eor();
   while (ifAddrStruct != nullptr) {
-
-    if(ifAddrStruct->ifa_addr == nullptr) {
+    if (ifAddrStruct->ifa_addr == nullptr) {
       break;
     }
 
@@ -43,23 +51,21 @@ void PrintIPv4() {
       tmpAddrPtr = &((struct sockaddr_in*)ifAddrStruct->ifa_addr)->sin_addr;
       char addressBuffer[INET_ADDRSTRLEN];
       inet_ntop(AF_INET, tmpAddrPtr, addressBuffer, INET_ADDRSTRLEN);
-      fprintf(stdout, "%s IP Address %s\n", ifAddrStruct->ifa_name,
-              addressBuffer);
+      table.add(std::string(ifAddrStruct->ifa_name)).add(std::string(addressBuffer)).eor();
     } else if (ifAddrStruct->ifa_addr->sa_family == AF_INET6) {
       tmpAddrPtr = &((struct sockaddr_in*)ifAddrStruct->ifa_addr)->sin_addr;
       char addressBuffer[INET6_ADDRSTRLEN];
       inet_ntop(AF_INET6, tmpAddrPtr, addressBuffer, INET6_ADDRSTRLEN);
-      fprintf(stdout, "%s IP Address %s\n", ifAddrStruct->ifa_name,
-              addressBuffer);
+      table.add(std::string(ifAddrStruct->ifa_name)).add(std::string(addressBuffer)).eor();
     }
     ifAddrStruct = ifAddrStruct->ifa_next;
   }
+  std::cout << table << std::endl << std::endl;
 }
 
 void RunServer() {
   // listen IPv4 and IPv6
-  fprintf(stdout, "Start bind port:\n");
-  std::string server_address("[::]:50051");
+  std::string server_address("[::]:50052");
   InferenceServiceImpl service;
 
   grpc::EnableDefaultHealthCheckService(true);
@@ -78,15 +84,16 @@ void RunServer() {
   builder.RegisterService(&service);
   // Finally assemble the server.
   std::unique_ptr<Server> server(builder.BuildAndStart());
-  fprintf(stdout, "\tServer listening on %s\n", server_address.c_str());
+  fprintf(stdout, "Server listening on %s\n", server_address.c_str());
 
   // Wait for the server to shutdown. Note that some other thread must be
   // responsible for shutting down the server for this call to ever return.
   server->Wait();
+
 }
 
 int main(int argc, char** argv) {
-  PrintIPv4();
+  PrintIP();
   RunServer();
 
   return 0;
