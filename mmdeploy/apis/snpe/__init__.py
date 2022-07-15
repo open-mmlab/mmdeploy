@@ -9,7 +9,8 @@ __all__ = ['is_available', 'from_onnx']
 
 if is_available():
     try:
-        from mmdeploy.backend.snpe.onnx2dlc import get_output_model_file, get_env_key
+        from mmdeploy.backend.snpe.onnx2dlc import (get_env_key,
+                                                    get_output_model_file)
         __all__ += ['get_output_model_file', 'get_env_key']
     except Exception:
         pass

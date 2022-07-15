@@ -41,13 +41,16 @@ class End2EndModel(BaseBackendModel):
                  device: str,
                  model_cfg: mmcv.Config,
                  deploy_cfg: Union[str, mmcv.Config] = None,
-                  **kwargs):
+                 **kwargs):
         super().__init__(deploy_cfg=deploy_cfg)
         self.deploy_cfg = deploy_cfg
         self.test_cfg = model_cfg.test_cfg
         self.allowed_metrics = {'PSNR': psnr, 'SSIM': ssim}
         self._init_wrapper(
-            backend=backend, backend_files=backend_files, device=device, **kwargs)
+            backend=backend,
+            backend_files=backend_files,
+            device=device,
+            **kwargs)
 
     def _init_wrapper(self, backend: Backend, backend_files: Sequence[str],
                       device: str, **kwargs):
@@ -233,8 +236,8 @@ class SDKEnd2EndModel(End2EndModel):
 
 def build_super_resolution_model(model_files: Sequence[str],
                                  model_cfg: Union[str, mmcv.Config],
-                                 deploy_cfg: Union[str,
-                                                   mmcv.Config], device: str, **kwargs):
+                                 deploy_cfg: Union[str, mmcv.Config],
+                                 device: str, **kwargs):
     model_cfg = load_config(model_cfg)[0]
     deploy_cfg = load_config(deploy_cfg)[0]
 
@@ -247,6 +250,7 @@ def build_super_resolution_model(model_files: Sequence[str],
         backend_files=model_files,
         device=device,
         model_cfg=model_cfg,
-        deploy_cfg=deploy_cfg, **kwargs)
+        deploy_cfg=deploy_cfg,
+        **kwargs)
 
     return backend_model

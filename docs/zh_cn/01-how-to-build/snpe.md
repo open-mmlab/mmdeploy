@@ -120,13 +120,13 @@ $ cmake .. \
 
 选项说明
 
-| 选项    | 说明 |
-| ------- | ------------- |
-| DMMDEPLOY_CODEBASES=all | 编译所有算法后处理 |
-| CMAKE_TOOLCHAIN_FILE | 加载 NDK 参数，主要用于选择编译器版本 |
-| MMDEPLOY_TARGET_BACKENDS=snpe | 使用 snpe 推理 |
-| ANDROID_STL=c++_shared | 使用 [LLVM's libc++](https://libcxx.llvm.org/)，和 snpe 依赖对齐 |
-| MMDEPLOY_SHARED_LIBS=ON | 官方 snpe 没有提供静态库 |
+| 选项                          | 说明                                                             |
+| ----------------------------- | ---------------------------------------------------------------- |
+| DMMDEPLOY_CODEBASES=all       | 编译所有算法后处理                                               |
+| CMAKE_TOOLCHAIN_FILE          | 加载 NDK 参数，主要用于选择编译器版本                            |
+| MMDEPLOY_TARGET_BACKENDS=snpe | 使用 snpe 推理                                                   |
+| ANDROID_STL=c++\_shared       | 使用 [LLVM's libc++](https://libcxx.llvm.org/)，和 snpe 依赖对齐 |
+| MMDEPLOY_SHARED_LIBS=ON       | 官方 snpe 没有提供静态库                                         |
 
 ### 3. 编译 demo
 
