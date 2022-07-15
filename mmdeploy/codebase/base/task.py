@@ -51,7 +51,7 @@ class BaseTask(metaclass=ABCMeta):
             self.scope = DefaultScope.get_instance(self.experiment_name)
 
         # lazy build visualizer
-        self.visualizer = self.model_cfg.get('visualizer', None)
+        self.visualizer = self.model_cfg.visualizer
 
     @abstractmethod
     def build_backend_model(self,
