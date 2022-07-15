@@ -276,16 +276,16 @@ def main():
 
         if not is_available():
             logger.error('snpe support is not available, please check \
-                1) `snpe-onnx-to-dlc` existed in `PATH` 2) snpe only support ubuntu18.04'
-                         )
+                1) `snpe-onnx-to-dlc` existed in `PATH` 2) snpe only support \
+                    ubuntu18.04')
             exit(1)
 
         import mmdeploy.apis.snpe as snpe_api
-        from mmdeploy.apis.snpe import get_output_model_file, get_env_key
+        from mmdeploy.apis.snpe import get_env_key, get_output_model_file
 
         if get_env_key() not in os.environ:
             os.environ[get_env_key()] = args.uri
-            
+
         PIPELINE_MANAGER.set_log_level(log_level, [snpe_api.from_onnx])
 
         backend_files = []
@@ -361,10 +361,9 @@ def main():
     # for headless installation.
     if not headless:
         extra = dict(
-                backend=backend,
-                output_file=osp.join(args.work_dir,
-                                     f'output_{backend.value}.jpg'),
-                show_result=args.show)
+            backend=backend,
+            output_file=osp.join(args.work_dir, f'output_{backend.value}.jpg'),
+            show_result=args.show)
         if backend == Backend.SNPE:
             extra['uri'] = args.uri
 

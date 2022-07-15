@@ -8,10 +8,10 @@ from typing import Dict, Optional, Sequence, Tuple
 import grpc
 import inference_pb2
 import inference_pb2_grpc
-from mmdeploy.backend.snpe.onnx2dlc import get_env_key
 import numpy as np
 import torch
 
+from mmdeploy.backend.snpe.onnx2dlc import get_env_key
 from mmdeploy.utils import Backend, get_root_logger
 from mmdeploy.utils.timer import TimeCounter
 from ..base import BACKEND_WRAPPER, BaseWrapper
@@ -119,9 +119,9 @@ class SNPEWrapper(BaseWrapper):
                  output_names: Optional[Sequence[str]] = None,
                  **kwargs):
 
-        print("*** extra")
+        print('*** extra')
         print(**kwargs)
-        
+
         logger = get_root_logger()
 
         interceptors = (RetryOnRpcErrorClientInterceptor(
@@ -133,9 +133,10 @@ class SNPEWrapper(BaseWrapper):
 
         # The maximum model file size is 512MB
         if uri is None and get_env_key() in os.environ:
-            logger.warn(f'snpe remote service URI not set, search from environment')
+            logger.warn(
+                'snpe remote service URI not set, search from environment')
             uri = os.environ[get_env_key()]
-        
+
         if uri is None:
             logger.error('URI not set')
 
@@ -150,7 +151,7 @@ class SNPEWrapper(BaseWrapper):
         self.stub = inference_pb2_grpc.InferenceStub(
             grpc.intercept_channel(grpc.insecure_channel(uri), *interceptors))
 
-        logger.info(f'init remote SNPE engine with RPC, please wait...')
+        logger.info('init remote SNPE engine with RPC, please wait...')
         model = inference_pb2.Model(name=dlc_file, weights=weights, device=1)
         resp = self.stub.Init(model)
 
@@ -174,6 +175,7 @@ class SNPEWrapper(BaseWrapper):
         Returns:
             Dict[str, torch.Tensor]: Key-value pairs of model outputs.
         """
+
         def get_shape(shape):
             if len(shape) == 4:
                 return (0, 2, 3, 1)
@@ -182,7 +184,7 @@ class SNPEWrapper(BaseWrapper):
             elif len(shape) == 2:
                 return (0, 1)
             return (0)
-        
+
         input_list = list(inputs.values())
         device_type = input_list[0].device.type
 
@@ -219,10 +221,11 @@ class SNPEWrapper(BaseWrapper):
             dict[str, torch.tensor]: Inference results of snpe model.
         """
         resp = self.stub.Inference(tensorList)
-        
+
         def get_shape(shape):
             if len(shape) == 4:
-                if shape[0] == 1 and shape[1] == 1 and shape[2] > 1 and shape[3] > 1:
+                if shape[0] == 1 and shape[
+                        1] == 1 and shape[2] > 1 and shape[3] > 1:
                     # snpe NHWC layout works except for segmentation task
                     return (0, 1, 2, 3)
                 return (0, 3, 1, 2)
@@ -237,7 +240,8 @@ class SNPEWrapper(BaseWrapper):
             for tensor in resp.data:
                 ndarray = np.frombuffer(tensor.data, dtype=np.float32)
                 shape = tuple(tensor.shape)
-                data =  torch.from_numpy(ndarray.reshape(shape).copy()).to(device)
+                data = torch.from_numpy(
+                    ndarray.reshape(shape).copy()).to(device)
                 data = data.permute(get_shape(data.shape))
                 result[tensor.name] = data
         else:

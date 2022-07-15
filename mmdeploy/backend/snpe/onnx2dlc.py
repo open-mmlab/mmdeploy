@@ -16,13 +16,15 @@ def mkdir_or_exist(dir_name, mode=0o777):
     dir_name = osp.expanduser(dir_name)
     os.makedirs(dir_name, mode=mode, exist_ok=True)
 
+
 def get_env_key() -> str:
-    """Return environment key str
+    """Return environment key str.
 
     Returns:
         str: The string to find SNPE service URI
     """
     return '__MMDEPLOY_SNPE_URI'
+
 
 def get_output_model_file(onnx_path: str,
                           work_dir: Optional[str] = None) -> List[str]:
