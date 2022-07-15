@@ -20,7 +20,7 @@ mmdeploy_scheduler_t CreateScheduler(const char* type, const Value& config = Val
     }
     return Cast(new SchedulerType(creator->Create(config)));
   } catch (const std::exception& e) {
-    MMDEPLOY_ERROR("failed to create {}, error: {}", type, e.what());
+    MMDEPLOY_ERROR("failed to create Scheduler: {} ({}), config: {}", type, e.what(), config);
     return nullptr;
   }
 }

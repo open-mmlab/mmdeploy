@@ -21,12 +21,12 @@ Compose::Compose(const Value& args, int version) : Transform(args) {
     auto creator = Registry<Transform>::Get().GetCreator(type, version);
     if (!creator) {
       MMDEPLOY_ERROR("unable to find creator: {}", type);
-      throw std::invalid_argument("unable to find creator");
+      throw_exception(eEntryNotFound);
     }
     auto transform = creator->Create(cfg);
     if (!transform) {
-      MMDEPLOY_ERROR("failed to create transform: {}", type);
-      throw std::invalid_argument("failed to create transform");
+      MMDEPLOY_ERROR("failed to create transform: {}, config: {}", type, cfg);
+      throw_exception(eFail);
     }
     transforms_.push_back(std::move(transform));
   }

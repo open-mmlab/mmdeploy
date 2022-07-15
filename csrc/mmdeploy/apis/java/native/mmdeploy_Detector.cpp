@@ -21,7 +21,7 @@ jlong Java_mmdeploy_Detector_create(JNIEnv *env, jobject, jstring modelPath, jst
 }
 
 void Java_mmdeploy_Detector_destroy(JNIEnv *, jobject, jlong handle) {
-  MMDEPLOY_INFO("Java_mmdeploy_Detector_destroy");  // maybe use info?
+  MMDEPLOY_DEBUG("Java_mmdeploy_Detector_destroy");  // maybe use info?
   mmdeploy_detector_destroy((mmdeploy_detector_t)handle);
 }
 

@@ -22,7 +22,7 @@ jlong Java_mmdeploy_PoseDetector_create(JNIEnv *env, jobject, jstring modelPath,
 }
 
 void Java_mmdeploy_PoseDetector_destroy(JNIEnv *, jobject, jlong handle) {
-  MMDEPLOY_INFO("Java_mmdeploy_PoseDetector_destroy");
+  MMDEPLOY_DEBUG("Java_mmdeploy_PoseDetector_destroy");
   mmdeploy_pose_detector_destroy((mmdeploy_pose_detector_t)handle);
 }
 

@@ -41,6 +41,7 @@ struct NetModule::Impl {
       net_cfg["context"].update({{"device", device_}, {"stream", stream_}});
       net_ = creator->Create(net_cfg);
       if (!net_) {
+        MMDEPLOY_ERROR("Failed to create Net backend: {}, config: {}", config.backend, net_cfg);
         return Status(eFail);
       }
       OUTCOME_TRY(InitializeInputTensors(args));

@@ -21,7 +21,7 @@ jlong Java_mmdeploy_Segmentor_create(JNIEnv *env, jobject, jstring modelPath, js
 }
 
 void Java_mmdeploy_Segmentor_destroy(JNIEnv *, jobject, jlong handle) {
-  MMDEPLOY_INFO("Java_mmdeploy_Segmentor_destroy");
+  MMDEPLOY_DEBUG("Java_mmdeploy_Segmentor_destroy");
   mmdeploy_segmentor_destroy((mmdeploy_segmentor_t)handle);
 }
 
