@@ -30,7 +30,8 @@ inline Result<RetType> CreateFromRegistry(const Value& config, const char* key =
   auto type = config[key].get<std::string>();
   auto creator = Registry<EntryType>::Get().GetCreator(type);
   if (!creator) {
-    MMDEPLOY_ERROR("Failed to find module creator: {}", type);
+    MMDEPLOY_ERROR("Failed to find creator: {}. Available: {}", type,
+                   Registry<EntryType>::Get().List());
     return Status(eEntryNotFound);
   }
   auto inst = creator->Create(config);

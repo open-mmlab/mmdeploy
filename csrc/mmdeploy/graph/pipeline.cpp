@@ -142,7 +142,7 @@ Result<unique_ptr<Pipeline>> PipelineParser::Parse(const Value& config) {
         OUTCOME_TRY(UpdateOutputCoords(index, node->outputs()));
         nodes.push_back(std::move(node));
       } else {
-        MMDEPLOY_ERROR("could not create {}: {}", name, type);
+        MMDEPLOY_ERROR("Could not create {}: {}", type, name);
         return Status(eFail);
       }
     }
@@ -199,9 +199,12 @@ Result<void> PipelineParser::UpdateOutputCoords(int index, const vector<string>&
 class PipelineCreator : public Creator<Node> {
  public:
   const char* GetName() const override { return "Pipeline"; }
-  int GetVersion() const override { return 0; }
   std::unique_ptr<Node> Create(const Value& value) override {
-    return PipelineParser{}.Parse(value).value();
+    try {
+      return PipelineParser{}.Parse(value).value();
+    } catch (...) {
+    }
+    return nullptr;
   }
 };
 

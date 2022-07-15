@@ -22,7 +22,8 @@ class AsyncHandle {
     config["context"].update({{"device", device_}, {"stream", stream_}});
     auto creator = Registry<graph::Node>::Get().GetCreator("Pipeline");
     if (!creator) {
-      MMDEPLOY_ERROR("Failed to find Pipeline creator");
+      MMDEPLOY_ERROR("Failed to find Pipeline creator. Available nodes: {}",
+                     Registry<graph::Node>::Get().List());
       throw_exception(eEntryNotFound);
     }
     pipeline_ = creator->Create(config);

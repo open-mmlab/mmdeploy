@@ -15,7 +15,8 @@ mmdeploy_scheduler_t CreateScheduler(const char* type, const Value& config = Val
   try {
     auto creator = Registry<SchedulerType>::Get().GetCreator(type);
     if (!creator) {
-      MMDEPLOY_ERROR("creator for {} not found.", type);
+      MMDEPLOY_ERROR("Creator for {} not found. Available schedulers: {}", type,
+                     Registry<SchedulerType>::Get().List());
       return nullptr;
     }
     return Cast(new SchedulerType(creator->Create(config)));
