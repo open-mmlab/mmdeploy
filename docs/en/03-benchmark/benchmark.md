@@ -1660,7 +1660,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">mAP</td>
     <td align="center">0.761</td>
     <td align="center">-</td>
-    <td align="center">0.757</td>
+    <td align="center">0.758</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>

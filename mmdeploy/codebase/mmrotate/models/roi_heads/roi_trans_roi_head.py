@@ -47,8 +47,6 @@ def roi_trans_roi_head__simple_test(ctx, self, x, proposal_list, img_metas,
     max_shape = img_metas[0]['img_shape']
     ms_scores = []
     rcnn_test_cfg = self.test_cfg
-    num_classes = self.bbox_head[0].num_classes
-    device = rois.device
 
     for i in range(self.num_stages):
         bbox_results = self._bbox_forward(i, x, rois)
@@ -61,18 +59,8 @@ def roi_trans_roi_head__simple_test(ctx, self, x, proposal_list, img_metas,
         rois = rois.reshape(batch_size, num_proposals_per_img, rois.size(-1))
         cls_score = cls_score.reshape(batch_size, num_proposals_per_img,
                                       cls_score.size(-1))
-        if self.bbox_head[i].reg_class_agnostic:
-            bbox_pred = bbox_pred.reshape(batch_size, num_proposals_per_img, 5)
-        else:
-            # ignore background class
-            scores = cls_score[..., :num_classes]
-            # only keep boxes with the max scores
-            max_inds = scores.reshape(-1, num_classes).argmax(1, keepdim=True)
-            bbox_pred = bbox_pred.reshape(-1, num_classes, 5)
-            dim0_inds = torch.arange(
-                bbox_pred.shape[0], device=device).unsqueeze(-1)
-            bbox_pred = bbox_pred[dim0_inds,
-                                  max_inds].reshape(batch_size, -1, 5)
+        bbox_pred = bbox_pred.reshape(batch_size, num_proposals_per_img,
+                                      bbox_pred.size(-1))
 
         ms_scores.append(cls_score)
 

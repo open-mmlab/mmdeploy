@@ -1657,7 +1657,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">mAP</td>
     <td align="center">0.761</td>
     <td align="center">-</td>
-    <td align="center">0.757</td>
+    <td align="center">0.758</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
