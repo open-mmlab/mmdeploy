@@ -66,4 +66,31 @@ ir::TensorVarPtr Bilinear(const std::vector<ir::ExprPtr> &shape,
       name);
 }
 
+ir::TensorVarPtr BilinearFloat(const std::vector<ir::ExprPtr> &shape,
+                               ir::Array<ir::IterVar> iter_vars,
+                               ir::TensorVarPtr input, ir::TensorVarPtr cubfh,
+                               ir::TensorVarPtr cubfw, ir::TensorVarPtr inth,
+                               ir::TensorVarPtr intw,
+                               const std::string &name = "ResizeBilinear") {
+  ELENA_ASSERT(shape.size() == input->shape->size(), "ResizeBilinear");
+
+  auto zero = api::constant<uint64_t>(0);
+  auto one = api::constant<uint64_t>(1);
+  return api::compute(
+      shape, iter_vars,
+      ((*cubfh)(zero, iter_vars[0]) * (*cubfw)(zero, iter_vars[1]) *
+           (*input)((*inth)(zero, iter_vars[0]), (*intw)(zero, iter_vars[1]),
+                    iter_vars[2]) +
+       (*cubfh)(one, iter_vars[0]) * (*cubfw)(zero, iter_vars[1]) *
+           (*input)((*inth)(one, iter_vars[0]), (*intw)(zero, iter_vars[1]),
+                    iter_vars[2]) +
+       (*cubfh)(zero, iter_vars[0]) * (*cubfw)(one, iter_vars[1]) *
+           (*input)((*inth)(zero, iter_vars[0]), (*intw)(one, iter_vars[1]),
+                    iter_vars[2]) +
+       (*cubfh)(one, iter_vars[0]) * (*cubfw)(one, iter_vars[1]) *
+           (*input)((*inth)(one, iter_vars[0]), (*intw)(one, iter_vars[1]),
+                    iter_vars[2])),
+      name);
+}
+
 }  // namespace Resize

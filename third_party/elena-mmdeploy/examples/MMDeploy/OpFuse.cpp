@@ -8,6 +8,7 @@
 #include "Norm.hpp"
 #include "Pad.hpp"
 #include "Resize.hpp"
+#include "Runtime.hpp"
 
 #define BLOCK_SIZE 128  // for cuda device
 
@@ -36,13 +37,14 @@ int main(int argc, char *argv[]) {
   bool ResizeOp =
       std::find(OpList.begin(), OpList.end(), "Resize") != OpList.end() ? true
                                                                         : false;
+  bool ResizeFloat = false;
 
   Target target = device == "cpu" ? CPU : CUDA;
   Dtype dtype = Uint8;  // also support float32
   std::ostringstream gen_code;
-  gen_code << Common::prelude;
+  gen_code << Runtime::prelude;
   if (device == "cuda")
-    gen_code << Common::cuda_prelude << BLOCK_SIZE << std::endl;
+    gen_code << Runtime::cuda_prelude << BLOCK_SIZE << std::endl;
 
   /* 2. Traverse diff Format generate different kernel */
   for (int cur_format = 1; cur_format <= 6; cur_format++) {
@@ -128,8 +130,12 @@ int main(int argc, char *argv[]) {
       arg_list.push_back(pad_value);
 
       auto two = api::constant<uint64_t>(2);
-      auto cubfh = api::placeholder<int16_t>({two, resize_h}, "cubfh");
-      auto cubfw = api::placeholder<int16_t>({two, resize_w}, "cubfw");
+      // for uint8_t
+      auto cubh = api::placeholder<int16_t>({two, resize_h}, "cubh");
+      auto cubw = api::placeholder<int16_t>({two, resize_w}, "cubw");
+      // for float32
+      auto cubfh = api::placeholder<float>({two, resize_h}, "cubfh");
+      auto cubfw = api::placeholder<float>({two, resize_w}, "cubfw");
       auto inth = api::placeholder<int32_t>({two, resize_h}, "inth");
       auto intw = api::placeholder<int32_t>({two, resize_w}, "intw");
 
@@ -203,12 +209,27 @@ int main(int argc, char *argv[]) {
             cur_stage = Resize::Nearest(resize_shape, iter_vars, intermediate);
           } else if (ResizeInterpolation == Bilinear) {
             /* aim to uint8 condition */
-            arg_list.push_back(cubfh);
-            arg_list.push_back(cubfw);
             arg_list.push_back(inth);
             arg_list.push_back(intw);
-            cur_stage = Resize::Bilinear(resize_shape, iter_vars, intermediate,
-                                         cubfh, cubfw, inth, intw);
+            // std::cout << SCALARTYPE_SYMBOL((intermediate)->get_dtype())<<
+            // std::endl;
+            if (intermediate->get_dtype() == ir::ScalarType::Float32) {
+              arg_list.push_back(cubfh);
+              arg_list.push_back(cubfw);
+              cur_stage =
+                  Resize::BilinearFloat(resize_shape, iter_vars, intermediate,
+                                        cubfh, cubfw, inth, intw);
+              if (cur_format <= 4)
+                ResizeFloat = true;  // NV12 & NV21 is float dtype
+            } else if (intermediate->get_dtype() == ir::ScalarType::UInt8) {
+              arg_list.push_back(cubh);
+              arg_list.push_back(cubw);
+              cur_stage =
+                  Resize::Bilinear(resize_shape, iter_vars, intermediate, cubh,
+                                   cubw, inth, intw);
+            } else {
+              ELENA_ABORT("Resize only receive uint8_t and float32 dtypes");
+            }
           } else {
             ELENA_ABORT("not support temporarily in Resize");
           }
@@ -339,19 +360,25 @@ int main(int argc, char *argv[]) {
 
   if (target == CUDA) {
     if (ResizeOp)
-      gen_code << Common::cuda_bilinear_preprocess_func
-               << Common::cuda_call_func_begin << Common::cuda_bilinear_func
-               << Common::call_func_end;
+      gen_code << (ResizeFloat ? "" : Runtime::cuda_bilinear_preprocess_func)
+               << Runtime::cuda_float_bilinear_preprocess_func
+               << Runtime::cuda_call_func_begin
+               << (ResizeFloat ? Runtime::cuda_bilinear_float_func
+                               : Runtime::cuda_bilinear_func)
+               << Runtime::call_func_end;
     else
-      gen_code << Common::cuda_call_func_begin << Common::call_func_end;
+      gen_code << Runtime::cuda_call_func_begin << Runtime::call_func_end;
     api::dump_code(gen_code.str(), cc);
   } else {
     if (ResizeOp)
-      gen_code << Common::cpu_bilinear_preprocess_func
-               << Common::cpu_call_func_begin << Common::cpu_bilinear_func
-               << Common::call_func_end;
+      gen_code << (ResizeFloat ? "" : Runtime::cpu_bilinear_preprocess_func)
+               << Runtime::cpu_float_bilinear_preprocess_func
+               << Runtime::cpu_call_func_begin
+               << (ResizeFloat ? Runtime::cpu_bilinear_float_func
+                               : Runtime::cpu_bilinear_func)
+               << Runtime::call_func_end;
     else
-      gen_code << Common::cpu_call_func_begin << Common::call_func_end;
+      gen_code << Runtime::cpu_call_func_begin << Runtime::call_func_end;
     api::dump_code(gen_code.str(), cc);
   }
 
