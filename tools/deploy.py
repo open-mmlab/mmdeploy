@@ -287,7 +287,7 @@ def main():
 
         if get_env_key() not in os.environ:
             os.environ[get_env_key()] = args.uri
-            
+
         PIPELINE_MANAGER.set_log_level(log_level, [snpe_api.from_onnx])
 
         backend_files = []

@@ -8,7 +8,6 @@ from typing import Dict, Optional, Sequence, Tuple
 import grpc
 import inference_pb2
 import inference_pb2_grpc
-from mmdeploy.backend.snpe.onnx2dlc import get_env_key
 import numpy as np
 import torch
 
@@ -195,9 +194,9 @@ class SNPEWrapper(BaseWrapper):
                  output_names: Optional[Sequence[str]] = None,
                  **kwargs):
 
-        print("*** extra")
+        print('*** extra')
         print(**kwargs)
-        
+
         logger = get_root_logger()
 
         interceptors = (RetryOnRpcErrorClientInterceptor(
@@ -262,6 +261,7 @@ class SNPEWrapper(BaseWrapper):
         Returns:
             Dict[str, torch.Tensor]: Key-value pairs of model outputs.
         """
+
         def get_shape(shape):
             if len(shape) == 4:
                 return (0, 2, 3, 1)
@@ -309,10 +309,11 @@ class SNPEWrapper(BaseWrapper):
             dict[str, torch.tensor]: Inference results of snpe model.
         """
         resp = self.stub.Inference(tensorList)
-        
+
         def get_shape(shape):
             if len(shape) == 4:
-                if shape[0] == 1 and shape[1] == 1 and shape[2] > 1 and shape[3] > 1:
+                if shape[0] == 1 and shape[
+                        1] == 1 and shape[2] > 1 and shape[3] > 1:
                     # snpe NHWC layout works except for segmentation task
                     return (0, 1, 2, 3)
                 return (0, 3, 1, 2)

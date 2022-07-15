@@ -198,7 +198,7 @@ void InferenceServiceImpl::LoadFloatData(const std::string& data, std::vector<fl
 
 std::string InferenceServiceImpl::ContentStr(zdl::DlSystem::ITensor* pTensor) {
   std::string str;
-  
+
   const size_t N = std::min(5UL, pTensor->getSize());
   auto it = pTensor->cbegin();
   for (int i = 0; i < N; ++i) {
