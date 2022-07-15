@@ -32,10 +32,10 @@ venus:/ $ cd /data/local/tmp
 130|venus:/data/local/tmp $ source export1.59.sh
 130|venus:/data/local/tmp $ ./inference_server
 ...
-  Server listening on [::]:50051
+  Server listening on [::]:50052
 ```
 
-此时推理服务应打印设备所有 ipv6 和 ipv4 地址，并监听 `50051` 端口。
+此时推理服务应打印设备所有 ipv6 和 ipv4 地址，并监听端口。
 
 tips:
 
@@ -75,7 +75,7 @@ $ cd /path/to/mmdeploy
 $ python3 tools/deploy.py  configs/mmcls/classification_snpe_dynamic.py $MODEL_CONFIG  $MODEL_PATH   /path/to/test.png   --work-dir resnet18   --device cpu  --uri 10.1.82.63\:50051
 
 # 精度测试
-$ python3 tools/test.py configs/mmcls/classification_snpe_dynamic.py   $MODEL_CONFIG    --model reset18/end2end.dlc   --metrics accuracy precision f1_score recall  --uri 10.1.82.63\:50051
+$ python3 tools/test.py configs/mmcls/classification_snpe_static.py   $MODEL_CONFIG    --model reset18/end2end.dlc   --metrics accuracy precision f1_score recall  --uri 10.1.82.63\:50051
 ```
 
 注意需要 `--uri` 指明 snpe 推理服务的 ip 和端口号，可以使用 ipv4 和 ipv6 地址。
