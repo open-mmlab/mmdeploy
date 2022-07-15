@@ -11,11 +11,11 @@ class ScopeTimer {
  public:
   ScopeTimer(std::string _name, bool _print=false) : name(_name), print(_print) { begin = now(); }
 
-  ~ScopeTimer() { 
+  ~ScopeTimer() {
     if (!print) {
       return;
     }
-    fprintf(stdout, "%s: %ldms\n", name.c_str(), (now() - begin)); 
+    fprintf(stdout, "%s: %ldms\n", name.c_str(), (now() - begin));
   }
 
   long now() const {

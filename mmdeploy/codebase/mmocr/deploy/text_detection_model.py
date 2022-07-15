@@ -52,7 +52,10 @@ class End2EndModel(BaseBackendModel):
         self.show_score = False
         self.bbox_head = build_head(model_cfg.model.bbox_head)
         self._init_wrapper(
-            backend=backend, backend_files=backend_files, device=device, **kwargs)
+            backend=backend,
+            backend_files=backend_files,
+            device=device,
+            **kwargs)
 
     def _init_wrapper(self, backend: Backend, backend_files: Sequence[str],
                       device: str, **kwargs):
@@ -71,7 +74,8 @@ class End2EndModel(BaseBackendModel):
             device=device,
             input_names=[self.input_name],
             output_names=output_names,
-            deploy_cfg=self.deploy_cfg, **kwargs)
+            deploy_cfg=self.deploy_cfg,
+            **kwargs)
 
     def forward(self, img: Sequence[torch.Tensor],
                 img_metas: Sequence[Sequence[dict]], *args, **kwargs) -> list:
