@@ -656,7 +656,6 @@ def test_simple_test_of_roi_trans_roi_head(backend_type: Backend):
 
     model_inputs = {
         'x': x,
-        'proposals': [proposals, labels],
     }
 
     output_names = ['det_bboxes', 'det_labels']
@@ -673,7 +672,11 @@ def test_simple_test_of_roi_trans_roi_head(backend_type: Backend):
                     pre_top_k=2000,
                     keep_top_k=2000))))
 
-    wrapped_model = WrapModel(roi_head, 'simple_test', img_metas=img_metas)
+    wrapped_model = WrapModel(
+        roi_head,
+        'simple_test',
+        proposal_list=[proposals, labels],
+        img_metas=img_metas)
     rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=model_inputs,
