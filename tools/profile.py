@@ -24,7 +24,7 @@ def parse_args():
     parser.add_argument(
         '--model', type=str, nargs='+', help='Input model files.')
     parser.add_argument(
-        '--device', help='device used for conversion', default='cuda:0')
+        '--device', help='device type for inference', default='cuda:0')
     parser.add_argument(
         '--shape',
         type=str,
@@ -55,7 +55,9 @@ def parse_args():
     return args
 
 
-def get_images(image_dir, extensions=['.jpg', '.jpeg', '.png']):
+def get_images(
+        image_dir,
+        extensions=['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif']):
     images = []
     files = glob.glob(osp.join(image_dir, '**', '*'), recursive=True)
     for f in files:
