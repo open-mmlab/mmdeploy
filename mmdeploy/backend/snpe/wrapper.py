@@ -8,6 +8,7 @@ from typing import Dict, Optional, Sequence, Tuple
 import grpc
 import inference_pb2
 import inference_pb2_grpc
+from mmdeploy.backend.snpe.onnx2dlc import get_env_key
 import numpy as np
 import torch
 
@@ -118,6 +119,9 @@ class SNPEWrapper(BaseWrapper):
                  output_names: Optional[Sequence[str]] = None,
                  **kwargs):
 
+        print("*** extra")
+        print(**kwargs)
+        
         logger = get_root_logger()
 
         interceptors = (RetryOnRpcErrorClientInterceptor(
@@ -128,14 +132,12 @@ class SNPEWrapper(BaseWrapper):
         ), )
 
         # The maximum model file size is 512MB
-        MAX_SIZE = 2 << 29
-        logger.info(f'fetch uri: {uri}')
-
-        # self.channel = grpc.insecure_channel(
-        #     uri,
-        #     options=(('grpc.GRPC_ARG_KEEPALIVE_TIME_MS',
-        #               2000), ('grpc.max_send_message_length', MAX_SIZE),
-        #              ('grpc.keepalive_permit_without_calls', 1)))
+        if uri is None and get_env_key() in os.environ:
+            logger.warn(f'snpe remote service URI not set, search from environment')
+            uri = os.environ[get_env_key()]
+        
+        if uri is None:
+            logger.error('URI not set')
 
         weights = bytes()
         filesize = os.stat(dlc_file).st_size
@@ -218,12 +220,15 @@ class SNPEWrapper(BaseWrapper):
         """
         resp = self.stub.Inference(tensorList)
         
-        def get_shape(rank):
-            if rank == 4:
+        def get_shape(shape):
+            if len(shape) == 4:
+                if shape[0] == 1 and shape[1] == 1 and shape[2] > 1 and shape[3] > 1:
+                    # snpe NHWC layout works except for segmentation task
+                    return (0, 1, 2, 3)
                 return (0, 3, 1, 2)
-            elif rank == 3:
+            elif len(shape) == 3:
                 return (0, 1, 2)
-            elif rank == 2:
+            elif len(shape) == 2:
                 return (0, 1)
             return (0)
 
@@ -233,7 +238,7 @@ class SNPEWrapper(BaseWrapper):
                 ndarray = np.frombuffer(tensor.data, dtype=np.float32)
                 shape = tuple(tensor.shape)
                 data =  torch.from_numpy(ndarray.reshape(shape).copy()).to(device)
-                data = data.permute(get_shape(len(data.shape)))
+                data = data.permute(get_shape(data.shape))
                 result[tensor.name] = data
         else:
             logger = get_root_logger()

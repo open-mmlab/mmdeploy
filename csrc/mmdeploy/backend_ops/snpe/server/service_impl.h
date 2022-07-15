@@ -37,23 +37,6 @@ using mmdeploy::Reply;
 using mmdeploy::Tensor;
 using mmdeploy::TensorList;
 
-class ScopeTimer {
- public:
-  ScopeTimer(std::string _name) : name(_name) { begin = now(); }
-
-  ~ScopeTimer() { fprintf(stdout, "%s: %ldms\n", name.c_str(), (now() - begin)); }
-
-  long now() {
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    return tv.tv_sec * 1000 + (tv.tv_usec / 1000);
-  }
-
- private:
-  std::string name;
-  long begin;
-};
-
 // Logic and data behind the server's behavior.
 class InferenceServiceImpl final : public Inference::Service {
   ::grpc::Status Echo(::grpc::ServerContext* context, const ::mmdeploy::Empty* request,
@@ -82,7 +65,9 @@ class InferenceServiceImpl final : public Inference::Service {
              zdl::DlSystem::Runtime_t runtime, zdl::DlSystem::RuntimeList runtimeList,
              bool useUserSuppliedBuffers, zdl::DlSystem::PlatformConfig platformConfig);
 
-  void PrintTensorInfo(const char* name, zdl::DlSystem::ITensor* pTensor);
+  std::string ShapeStr(zdl::DlSystem::ITensor* pTensor);
+
+  std::string ContentStr(zdl::DlSystem::ITensor* pTensor);
 
   std::unique_ptr<zdl::SNPE::SNPE> snpe;
   std::unique_ptr<zdl::DlContainer::IDlContainer> container;

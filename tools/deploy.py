@@ -57,7 +57,7 @@ def parse_args():
     parser.add_argument(
         '--uri',
         action='store_true',
-        default='192.168.23.160:50051',
+        default='192.168.77.141:50052',
         help='Remote ipv4:port or ipv6:port for inference on edge device.')
     args = parser.parse_args()
     return args
@@ -281,8 +281,11 @@ def main():
             exit(1)
 
         import mmdeploy.apis.snpe as snpe_api
-        from mmdeploy.apis.snpe import get_output_model_file
+        from mmdeploy.apis.snpe import get_output_model_file, get_env_key
 
+        if get_env_key() not in os.environ:
+            os.environ[get_env_key()] = args.uri
+            
         PIPELINE_MANAGER.set_log_level(log_level, [snpe_api.from_onnx])
 
         backend_files = []
@@ -357,20 +360,20 @@ def main():
 
     # for headless installation.
     if not headless:
-        # visualize model of the backend
-        # visualize_model(model_cfg_path, deploy_cfg_path, backend_files,
-        #                 args.test_img, args.device)
+        extra = dict(
+                backend=backend,
+                output_file=osp.join(args.work_dir,
+                                     f'output_{backend.value}.jpg'),
+                show_result=args.show)
+        if backend == Backend.SNPE:
+            extra['uri'] = args.uri
+
         create_process(
             f'visualize {backend.value} model',
             target=visualize_model,
             args=(model_cfg_path, deploy_cfg_path, backend_files,
                   args.test_img, args.device),
-            kwargs=dict(
-                backend=backend,
-                output_file=osp.join(args.work_dir,
-                                     f'output_{backend.value}.jpg'),
-                show_result=args.show,
-                uri=args.uri),
+            kwargs=extra,
             ret_value=ret_value)
 
         # visualize pytorch model
