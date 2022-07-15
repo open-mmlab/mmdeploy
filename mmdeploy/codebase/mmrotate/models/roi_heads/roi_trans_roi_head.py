@@ -7,7 +7,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 @FUNCTION_REWRITER.register_rewriter(
     'mmrotate.models.roi_heads.roi_trans_roi_head'
     '.RoITransRoIHead.simple_test')
-def roi_trans_roi_head__simple_test(ctx, self, x, proposals, img_metas,
+def roi_trans_roi_head__simple_test(ctx, self, x, proposal_list, img_metas,
                                     **kwargs):
     """Rewrite `simple_test` of `RoITransRoIHead` for default backend.
 
@@ -30,7 +30,7 @@ def roi_trans_roi_head__simple_test(ctx, self, x, proposals, img_metas,
     """
     assert self.with_bbox, 'Bbox head must be implemented.'
 
-    rois, labels = proposals
+    rois, labels = proposal_list
     assert rois.shape[0] == 1, ('Only support one input image '
                                 'while in exporting to ONNX')
     # Remove the scores
