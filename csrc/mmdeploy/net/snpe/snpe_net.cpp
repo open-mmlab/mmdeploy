@@ -8,7 +8,8 @@
 
 namespace mmdeploy {
 
-SNPENet::~SNPENet() {}
+SNPENet::~SNPENet() {
+}
 
 std::string SNPENet::ShapeStr(zdl::DlSystem::ITensor* pTensor) {
   std::string str;
@@ -136,7 +137,7 @@ Result<void> SNPENet::Init(const Value& args) {
     return Status(eInvalidArgument);
   }
 
-  zdl::DlSystem::Runtime_t runtime = zdl::DlSystem::Runtime_t::GPU;
+  zdl::DlSystem::Runtime_t runtime = zdl::DlSystem::Runtime_t::CPU;
   if (!zdl::SNPE::SNPEFactory::isRuntimeAvailable(runtime)) {
     MMDEPLOY_WARN("Selected runtime not present. Falling back to CPU.\n");
     runtime = zdl::DlSystem::Runtime_t::CPU;
