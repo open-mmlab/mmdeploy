@@ -18,7 +18,7 @@ def mlvl_point_generator__single_level_grid_priors__tensorrt(
         with_stride=False):
     """Rewrite `single_level_grid_priors` of `MlvlPointGenerator` as
     onnx2tensorrt raise the error of shape inference for YOLOX with some
-    versions ofTensorRT.
+    versions of TensorRT.
 
     Args:
         featmap_size (tuple[int]): Size of the feature maps, arrange as
@@ -57,10 +57,8 @@ def mlvl_point_generator__single_level_grid_priors__tensorrt(
     else:
         # use `shift_x.shape[0] * shift_y.shape[0]` instead of
         # `shift_xx.shape[0]` for TensorRT
-        stride_w = shift_xx.new_full((shift_x.shape[0] * shift_y.shape[0], ),
-                                     stride_w).to(dtype)
-        stride_h = shift_xx.new_full((shift_x.shape[0] * shift_y.shape[0], ),
-                                     stride_h).to(dtype)
+        stride_w = shift_xx.new_full((feat_w * feat_h, ), stride_w).to(dtype)
+        stride_h = shift_xx.new_full((feat_w * feat_h, ), stride_h).to(dtype)
         shifts = torch.stack([shift_xx, shift_yy, stride_w, stride_h], dim=-1)
     all_points = shifts.to(device)
     return all_points
