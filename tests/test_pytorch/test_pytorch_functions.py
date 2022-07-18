@@ -283,3 +283,29 @@ def test_normalize_ncnn(input, dim):
     param_path, bin_path = ncnn_apis.get_output_model_file(ir_file_path)
     assert osp.exists(param_path)
     assert osp.exists(bin_path)
+
+
+@backend_checker(Backend.ONNXRUNTIME)
+@pytest.mark.parametrize(
+    'input',
+    [torch.rand(1, 16, 16), torch.rand(1, 3, 16, 16)])
+def test_masked_fill_onnxruntime(input):
+    mask = input > 0
+    value = float('-inf')
+
+    def masked_fill_caller(*arg, **kwargs):
+        return torch.masked_fill(*arg, **kwargs)
+
+    deploy_cfg_ort = mmcv.Config(
+        dict(
+            onnx_config=dict(input_shape=None),
+            backend_config=dict(type='onnxruntime'),
+            codebase_config=dict(type='mmdet', task='ObjectDetection')))
+
+    wrapped_func = WrapFunction(masked_fill_caller, mask=mask, value=value)
+    rewrite_output, _ = get_rewrite_outputs(
+        wrapped_func,
+        model_inputs={'input': input},
+        deploy_cfg=deploy_cfg_ort,
+        run_with_backend=True)
+    assert rewrite_output is not None

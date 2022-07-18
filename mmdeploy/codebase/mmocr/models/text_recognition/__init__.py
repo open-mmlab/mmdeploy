@@ -6,11 +6,9 @@ from .lstm_layer import bidirectionallstm__forward__ncnn
 from .sar import SARNet
 from .sar_decoder import *  # noqa: F401,F403
 from .sar_encoder import sar_encoder__forward
-from .satrn_decoder import scaled_dot_product_attention__forward
 
 __all__ = [
     'base_recognizer__forward', 'crnndecoder__forward_train__ncnn',
     'encode_decode_recognizer__simple_test',
-    'bidirectionallstm__forward__ncnn', 'sar_encoder__forward', 'SARNet',
-    'scaled_dot_product_attention__forward'
+    'bidirectionallstm__forward__ncnn', 'sar_encoder__forward', 'SARNet'
 ]
