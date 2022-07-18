@@ -37,20 +37,22 @@ namespace {
 struct AclInit {
   AclInit() {
     auto ret = aclInit(nullptr);
+    if (ret != ACL_SUCCESS) {
+      MMDEPLOY_ERROR("aclInit() failed: {}", ret);
+    }
     assert(ret == 0);
   }
   ~AclInit() {
     auto ret = aclFinalize();
-    assert(ret == 0);
+    if (ret != ACL_SUCCESS) {
+      MMDEPLOY_ERROR("aclFinalize() failed: {}", ret);
+    }
   }
 };
 
-void InitACL() {
-  static AclInit init;
-}
+void InitACL() { static AclInit init; }
 
-}
-
+}  // namespace
 
 AclNet::~AclNet() {
   auto n_inputs = aclmdlGetDatasetNumBuffers(input_dataset_);
@@ -73,19 +75,6 @@ AclNet::~AclNet() {
 
   aclmdlDestroyDesc(model_desc_);
   aclmdlUnload(model_id_);
-  aclFinalize();
-}
-
-static TensorDesc ToTensorDesc(const aclmdlIODims& dims) {
-  auto extract_name = [](const std::string& name) {
-    if (auto pos = name.find_last_of(':'); pos != std::string::npos) {
-      return name.substr(pos + 1);
-    } else {
-      return name;
-    }
-  };
-  return {Device(0), DataType::kFLOAT, TensorShape(&dims.dims[0], &dims.dims[0] + dims.dimCount),
-          extract_name(dims.name)};
 }
 
 namespace {
@@ -95,9 +84,57 @@ struct BufferPair {
   Tensor host_tensor;
 };
 
+Result<DataType> FromAclDataType(aclDataType data_type) {
+  switch (data_type) {
+    case ACL_FLOAT:
+      return DataType::kFLOAT;
+    case ACL_FLOAT16:
+      return DataType::kHALF;
+    case ACL_INT8:
+      return DataType::kINT8;
+    case ACL_INT32:
+      return DataType::kINT32;
+    case ACL_INT64:
+      return DataType::kINT64;
+    default:
+      return Status(eNotSupported);
+  }
+}
+
+Result<aclDataType> ToAclDataType(DataType data_type) {
+  switch (data_type) {
+    case DataType::kFLOAT:
+      return ACL_FLOAT;
+    case DataType::kHALF:
+      return ACL_FLOAT16;
+    case DataType::kINT8:
+      return ACL_INT8;
+    case DataType::kINT32:
+      return ACL_INT32;
+    case DataType::kINT64:
+      return ACL_INT64;
+    default:
+      return Status(eNotSupported);
+  }
+}
+
+Result<TensorDesc> ToTensorDesc(const aclmdlIODims& dims, aclDataType data_type) {
+  auto extract_name = [](const std::string& name) {
+    if (auto pos = name.find_last_of(':'); pos != std::string::npos) {
+      return name.substr(pos + 1);
+    } else {
+      return name;
+    }
+  };
+  OUTCOME_TRY(auto _data_type, FromAclDataType(data_type));
+  return TensorDesc{Device(0), _data_type,
+                    TensorShape(&dims.dims[0], &dims.dims[0] + dims.dimCount),
+                    extract_name(dims.name)};
+}
+
 // all dims must be fixed
-Result<BufferPair> CreateBuffers(const aclmdlIODims& dims) {
-  size_t byte_size = sizeof(float);
+Result<BufferPair> CreateBuffers(const aclmdlIODims& dims, aclDataType data_type) {
+  size_t byte_size = aclDataTypeSize(data_type);
   for (int i = 0; i < dims.dimCount; ++i) {
     if (dims.dims[i] < 0) {
       return Status(eInvalidArgument);
@@ -108,7 +145,7 @@ Result<BufferPair> CreateBuffers(const aclmdlIODims& dims) {
   void* dev_ptr{};
   aclrtMalloc(&dev_ptr, byte_size, ACL_MEM_MALLOC_HUGE_FIRST);
   pair.device_buffer = aclCreateDataBuffer(dev_ptr, byte_size);
-  auto desc = ToTensorDesc(dims);
+  OUTCOME_TRY(auto desc, ToTensorDesc(dims, data_type));
   void* host_ptr{};
   aclrtMallocHost(&host_ptr, byte_size);
   pair.host_tensor =
@@ -116,16 +153,18 @@ Result<BufferPair> CreateBuffers(const aclmdlIODims& dims) {
   return pair;
 }
 
-Result<BufferPair> CreateBuffersDynamicBatchSize(aclmdlIODims dims, int batch_size) {
+Result<BufferPair> CreateBuffersDynamicBatchSize(aclmdlIODims dims, aclDataType data_type,
+                                                 int batch_size) {
   for (int i = 0; i < dims.dimCount; ++i) {
     if (dims.dims[i] == -1) {
       dims.dims[i] = batch_size;
     }
   }
-  return CreateBuffers(dims);
+  return CreateBuffers(dims, data_type);
 }
 
-Result<BufferPair> CreateBuffersDynamicImageSize(aclmdlIODims dims, const aclmdlHW& hw) {
+Result<BufferPair> CreateBuffersDynamicImageSize(aclmdlIODims dims, aclDataType data_type,
+                                                 const aclmdlHW& hw) {
   auto& val = *std::max_element(hw.hw, hw.hw + hw.hwCount,
                                 [](auto u, auto v) { return u[0] * u[1] < v[0] * v[1]; });
   int ptr = 0;
@@ -140,7 +179,7 @@ Result<BufferPair> CreateBuffersDynamicImageSize(aclmdlIODims dims, const aclmdl
   if (ptr != 2) {
     return Status(eInvalidArgument);
   }
-  return CreateBuffers(dims);
+  return CreateBuffers(dims, data_type);
 }
 
 }  // namespace
@@ -193,8 +232,8 @@ Result<void> AclNet::Init(const Value& args) {
       status = aclmdlGetInputDynamicGearCount(model_desc_, -1, &dynamic_gear_count_);
       if (status == ACL_SUCCESS && dynamic_gear_count_ > 0) {
         model_input_type_ = kDynamicDims;
-        std::vector<aclmdlIODims> dims(dynamic_gear_count_);
-        status = aclmdlGetInputDynamicDims(model_desc_, -1, dims.data(), dynamic_gear_count_);
+        // std::vector<aclmdlIODims> dims(dynamic_gear_count_);
+        // status = aclmdlGetInputDynamicDims(model_desc_, -1, dims.data(), dynamic_gear_count_);
         MMDEPLOY_ERROR("dynamic dims are not supported yet.");
         return Status(eNotSupported);
       } else {
@@ -215,20 +254,21 @@ Result<void> AclNet::Init(const Value& args) {
       aclmdlIODims dims{};
       aclmdlGetInputDims(model_desc_, i, &dims);
       input_dims_.push_back(dims);
-
+      auto data_type = aclmdlGetInputDataType(model_desc_, i);
+      input_data_type_.push_back(data_type);
       MMDEPLOY_INFO("{}", dims);
       if (model_input_type_ == kStatic) {
-        OUTCOME_TRY(buffers, CreateBuffers(dims));
+        OUTCOME_TRY(buffers, CreateBuffers(dims, data_type));
       } else if (model_input_type_ == kDynamicBatchSize) {
-        OUTCOME_TRY(buffers, CreateBuffersDynamicBatchSize(dims, max_batch_size));
+        OUTCOME_TRY(buffers, CreateBuffersDynamicBatchSize(dims, data_type, max_batch_size));
       } else if (model_input_type_ == kDynamicImageSize) {
         aclmdlHW hw_desc{};
         status = aclmdlGetDynamicHW(model_desc_, i, &hw_desc);
         MMDEPLOY_INFO("{}, status = {}", hw_desc, status);
         if (status == ACL_SUCCESS && hw_desc.hwCount > 0) {
-          OUTCOME_TRY(buffers, CreateBuffersDynamicImageSize(dims, hw_desc));
+          OUTCOME_TRY(buffers, CreateBuffersDynamicImageSize(dims, data_type, hw_desc));
         } else {
-          OUTCOME_TRY(buffers, CreateBuffers(dims));
+          OUTCOME_TRY(buffers, CreateBuffers(dims, data_type));
         }
       }
       aclmdlAddDatasetBuffer(input_dataset_, buffers.device_buffer);
@@ -244,7 +284,9 @@ Result<void> AclNet::Init(const Value& args) {
     aclmdlGetOutputDims(model_desc_, i, &dims);  // return max dims
     output_dims_.push_back(dims);
     MMDEPLOY_INFO("{}", dims);
-    OUTCOME_TRY(auto buffers, CreateBuffers(dims));
+    auto data_type = aclmdlGetOutputDataType(model_desc_, i);
+    output_data_type_.push_back(data_type);
+    OUTCOME_TRY(auto buffers, CreateBuffers(dims, data_type));
     aclmdlAddDatasetBuffer(output_dataset_, buffers.device_buffer);
     output_tensor_.push_back(std::move(buffers.host_tensor));
   }
@@ -273,6 +315,14 @@ Result<void> AclNet::Reshape(Span<TensorShape> input_shapes) {
 
   if (model_input_type_ == kStatic) {
     // TODO: Check shapes
+    for (int i = 0; i < input_dims_.size(); ++i) {
+      Span src(input_shapes[i]);
+      Span ref(input_dims_[i].dims, input_dims_[i].dimCount);
+      if (src != ref) {
+        MMDEPLOY_ERROR("Shape mis-match {} vs {}", src, ref);
+        return Status(eInvalidArgument);
+      }
+    }
   } else if (model_input_type_ == kDynamicBatchSize) {
     int batch_size = -1;
     for (int i = 0; i < input_dims_.size(); ++i) {

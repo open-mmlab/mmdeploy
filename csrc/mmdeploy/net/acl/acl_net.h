@@ -34,6 +34,8 @@ class AclNet : public Net {
   aclmdlDataset* output_dataset_{nullptr};
   std::vector<aclmdlIODims> input_dims_;
   std::vector<aclmdlIODims> output_dims_;
+  std::vector<aclDataType> input_data_type_;
+  std::vector<aclDataType> output_data_type_;
   std::vector<Tensor> input_tensor_;
   std::vector<Tensor> output_tensor_;
 };

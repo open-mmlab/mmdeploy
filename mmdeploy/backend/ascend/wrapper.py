@@ -131,6 +131,5 @@ class AscendWrapper(BaseWrapper):
             acl.destroy_data_buffer(buffer)
         acl.mdl.destroy_dataset(self._input_dataset)
         acl.mdl.destroy_dataset(self._output_dataset)
-
         acl.mdl.destroy_desc(self._model_desc)
         acl.mdl.unload(self._model_id)
