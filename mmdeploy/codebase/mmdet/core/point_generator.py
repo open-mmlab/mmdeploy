@@ -55,8 +55,7 @@ def mlvl_point_generator__single_level_grid_priors__tensorrt(
     if not with_stride:
         shifts = torch.stack([shift_xx, shift_yy], dim=-1)
     else:
-        # use `shift_x.shape[0] * shift_y.shape[0]` instead of
-        # `shift_xx.shape[0]` for TensorRT
+        # use `feat_w * feat_h` instead of `shift_xx.shape[0]` for TensorRT
         stride_w = shift_xx.new_full((feat_w * feat_h, ), stride_w).to(dtype)
         stride_h = shift_xx.new_full((feat_w * feat_h, ), stride_h).to(dtype)
         shifts = torch.stack([shift_xx, shift_yy, stride_w, stride_h], dim=-1)
