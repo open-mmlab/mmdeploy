@@ -151,6 +151,18 @@ inference_server: ELF 64-bit LSB shared object, ARM aarch64, version 1 (SYSV), d
 
 最终可得到 `infernece_server`，`adb push` 到设备上即可执行。
 
+## 五、重新生成 proto 接口
+
+如果改过 `inference.proto`，需要重新生成 .cpp 和 .py 通信接口
+
+```Shell
+$ python3 -m pip install grpc_tools --user
+$ python3 -m  grpc_tools.protoc -I./ --python_out=./client/ --grpc_python_out=./client/ inference.proto
+
+$ ln -s `which protoc-gen-grpc`
+$ protoc --cpp_out=./ --grpc_out=./  --plugin=protoc-gen-grpc=grpc_cpp_plugin  inference.proto
+```
+
 ## 参考文档
 
 - snpe tutorial https://developer.qualcomm.com/sites/default/files/docs/snpe/cplus_plus_tutorial.html

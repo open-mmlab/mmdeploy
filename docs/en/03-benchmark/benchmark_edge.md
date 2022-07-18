@@ -1,14 +1,14 @@
-# 边、端设备测试结果
+# Test on embed device
 
-这里给出我们边、端设备的测试结论，用户可以直接通过 [model profiling](../02-how-to-run/profile_model.md) 获得自己环境的结果。
+Here are the test conclusions of our edge devices. You can directly obtain the results of your own environment with [model profiling](../02-how-to-run/profile_model.md).
 
-## 软硬件环境
+## Software and hardware environment
 
 - host OS ubuntu 18.04
 - backend SNPE-1.59
 - device Mi11 (qcom 888)
 
-## mmcls 模型
+## mmcls
 
 |                                                              model                                                               |   dataset   | spatial | fp32 top-1 (%) | snpe gpu hybrid fp32 top-1 (%) | latency (ms) |
 | :------------------------------------------------------------------------------------------------------------------------------: | :---------: | :-----: | :------------: | :----------------------------: | :----------: |
@@ -17,35 +17,35 @@
 
 tips:
 
-1. ImageNet-1k 数据集较大，仅使用一部分测试（8000/50000）
-2. 边、端设备发热会降频，因此耗时实际上会波动。这里给出运行一段时间后、稳定的数值。这个结果更贴近实际需求
+1. The ImageNet-1k dataset is too large to test, only part of the dataset is used (8000/50000)
+2. The heating of device will downgrade the frequency, so the time consumption will actually fluctuate. Here are the stable values after running for a period of time. This result is closer to the actual demand.
 
-## mmocr 检测
+## mmocr detection
 
 |                                                       model                                                       |  dataset  | spatial  | fp32 hmean | snpe gpu hybrid hmean | latency(ms) |
 | :---------------------------------------------------------------------------------------------------------------: | :-------: | :------: | :--------: | :-------------------: | :---------: |
 | [PANet](https://github.com/open-mmlab/mmocr/blob/main/configs/textdet/panet/panet_r18_fpem_ffm_600e_icdar2015.py) | ICDAR2015 | 1312x736 |   0.795    |    0.785 @thr=0.9     |  3100±100   |
 
-## mmpose 模型
+## mmpose
 
 |                                                                               model                                                                               |  dataset   | spatial | snpe hybrid AR@IoU=0.50 | snpe hybrid AP@IoU=0.50 | latency(ms) |
 | :---------------------------------------------------------------------------------------------------------------------------------------------------------------: | :--------: | :-----: | :---------------------: | :---------------------: | :---------: |
 | [pose_hrnet_w32](https://github.com/open-mmlab/mmpose/blob/master/configs/animal/2d_kpt_sview_rgb_img/topdown_heatmap/animalpose/hrnet_w32_animalpose_256x256.py) | Animalpose | 256x256 |          0.997          |          0.989          |   630±50    |
 
-tips: 测试 pose_hrnet 用的是 AnimalPose 的 test dataset，而非 val dataset
+tips: Test `pose_hrnet` using AnimalPose's test dataset instead of val dataset.
 
-## mmseg 模型
+## mmseg
 
 |                                                       model                                                       |  dataset   | spatial  | mIoU  | snpe hybrid mIoU | latency(ms) |
 | :---------------------------------------------------------------------------------------------------------------: | :--------: | :------: | :---: | :--------------: | :---------: |
 | [fcn](https://github.com/open-mmlab/mmsegmentation/blob/master/configs/fcn/fcn_r18-d8_512x1024_80k_cityscapes.py) | Cityscapes | 512x1024 | 71.11 |      0.989       |  4915±500   |
 
-## 其他模型
+## Notes
 
-- mmdet 需要手动把模型拆成两部分。因为
-  - snpe 源码中 `onnx_to_ir.py` 仅能解析输入，`ir_to_dlc.py` 还不支持 topk
-  - UDO （用户自定义算子）无法和 `snpe-onnx-to-dlc` 配合使用
-- mmedit 模型
-  - srcnn 需要 cubic resize，snpe 不支持
-  - esrgan 可正常转换，但加载模型会导致设备重启
-- mmrotate 依赖 [e2cnn](https://pypi.org/project/e2cnn/) ，需要手动安装 [其 Python3.6 兼容分支](https://github.com/QUVA-Lab/e2cnn)
+- We needs to manually split the mmdet model into two parts. Because
+  - In snpe source code, `onnx_to_ir.py` can only parse onnx input while `ir_to_dlc.py` does not support `topk` operator
+  - UDO (User Defined Operator) does not work with `snpe-onnx-to-dlc`
+- mmedit model
+  - `srcnn` requires cubic resize which snpe does not support
+  - `esrgan` converts fine, but loading the model causes the device to reboot
+- mmrotate depends on [e2cnn](https://pypi.org/project/e2cnn/) and needs to be installed manually [its Python3.6 compatible branch](https://github.com/QUVA-Lab/e2cnn)
