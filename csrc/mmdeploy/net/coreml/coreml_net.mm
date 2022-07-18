@@ -85,7 +85,7 @@ namespace coreml {
 
 static Result<void> CheckInputOutputFeatureType(MLFeatureType type) {
   if (type != MLFeatureTypeMultiArray) {
-    MMDEPLOY_ERROR("unsupport feature type: {}", type);
+    MMDEPLOY_ERROR("unsupported feature type: {}", type);
     return Status(eInvalidArgument);
   }
   return success();
