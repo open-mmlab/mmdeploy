@@ -216,7 +216,7 @@ $ cmake .. \
   -DANDROID_STL=c++_shared  \
   -DOpenCV_DIR=${ANDROID_OCV_ROOT}/sdk/native/jni/abi-arm64-v8a \
   -DMMDEPLOY_SHARED_LIBS=ON \
-  -D-DMMDeploy_DIR=${PWD}/../../lib/cmake/MMDeploy
+  -DMMDeploy_DIR=${PWD}/../../lib/cmake/MMDeploy
 
 $ make
 $ tree -L 1

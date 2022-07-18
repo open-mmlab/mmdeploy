@@ -32,7 +32,6 @@ tips:
 | :---------------------------------------------------------------------------------------------------------------------------------------------------------------: | :--------: | :-----: | :---------------------: | :---------------------: | :---------: |
 | [pose_hrnet_w32](https://github.com/open-mmlab/mmpose/blob/master/configs/animal/2d_kpt_sview_rgb_img/topdown_heatmap/animalpose/hrnet_w32_animalpose_256x256.py) | Animalpose | 256x256 |          0.997          |          0.989          |   630±50    |
 
-tips:
 
 - Test `pose_hrnet` using AnimalPose's test dataset instead of val dataset.
 
@@ -46,7 +45,6 @@ tips:
 
 - `fcn` works fine with 512x1024 size. Cityscapes dataset uses 1024x2048 resolution which causes device to reboot.
 
-## Notes
 
 - We needs to manually split the mmdet model into two parts. Because
   - In snpe source code, `onnx_to_ir.py` can only parse onnx input while `ir_to_dlc.py` does not support `topk` operator
@@ -54,4 +52,3 @@ tips:
 - mmedit model
   - `srcnn` requires cubic resize which snpe does not support
   - `esrgan` converts fine, but loading the model causes the device to reboot
-- mmrotate depends on [e2cnn](https://pypi.org/project/e2cnn/) and needs to be installed manually [its Python3.6 compatible branch](https://github.com/QUVA-Lab/e2cnn)
