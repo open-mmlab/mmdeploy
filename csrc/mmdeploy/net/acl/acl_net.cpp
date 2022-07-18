@@ -242,7 +242,7 @@ Result<void> AclNet::ConfigDynamicShapes() {
       if (status == ACL_SUCCESS && dynamic_gear_count > 0) {
         status = aclmdlGetInputDynamicDims(model_desc_, -1, dynamic_input_dims_.data(),
                                            dynamic_gear_count);
-        for (const auto& dims: dynamic_input_dims_) {
+        for (const auto& dims : dynamic_input_dims_) {
           MMDEPLOY_INFO("dynamic input dims: {}", dims);
         }
         input_shape_type_ = kDynamicDims;
@@ -452,9 +452,15 @@ Result<void> AclNet::ReshapeDynamicBatchSize(Span<TensorShape> input_shapes) {
     return Status(eFail);
   }
   MMDEPLOY_ERROR("batch size {} {}", batch_size, dynamic_tensor_index_);
-  // if (aclmdlGetDynamicBatch)
-  auto status =
-      aclmdlSetDynamicBatchSize(model_id_, input_dataset_, dynamic_tensor_index_, batch_size);
+  auto index =
+      std::lower_bound(dynamic_batch_size_.begin(), dynamic_batch_size_.end(), batch_size) -
+      dynamic_batch_size_.begin();
+  if (index == dynamic_batch_size_.size()) {
+    MMDEPLOY_ERROR("Unsupported batch size: {}", batch_size);
+  }
+  // TODO: memset padding memory to avoid potential extra computation
+  auto status = aclmdlSetDynamicBatchSize(model_id_, input_dataset_, dynamic_tensor_index_,
+                                          dynamic_batch_size_[index]);
   if (status != ACL_SUCCESS) {
     MMDEPLOY_ERROR("Failed to set batch size, code = {}", status);
     return Status(eFail);
@@ -518,7 +524,9 @@ Result<void> AclNet::ReshapeDynamicDims(Span<TensorShape> input_shapes) {
       if (input_dims_[i].dims[j] == -1) {
         for (int k = 0; k < dynamic_input_dims_.size(); ++k) {
           // disable profile when dims mismatch, except for the first dim (batch size)
-          if (dynamic_input_dims_[k].dims[dims.dimCount] != shape[j] && j != 0) {
+          if (j == 0 && shape[j] < dynamic_input_dims_[k].dims[dims.dimCount]) {
+            // pass
+          } else if (shape[j] != dynamic_input_dims_[k].dims[dims.dimCount]) {
             match[k] = 0;
           }
         }
@@ -535,7 +543,7 @@ Result<void> AclNet::ReshapeDynamicDims(Span<TensorShape> input_shapes) {
     MMDEPLOY_ERROR("Shape not supported: {}", dims);
     return Status(eNotSupported);
   }
-  MMDEPLOY_ERROR("Match dynamic dims: {}", dynamic_input_dims_[dims_index]);
+  // TODO: memset padding memory to avoid potential extra computation
   auto status = aclmdlSetInputDynamicDims(model_id_, input_dataset_, dynamic_tensor_index_,
                                           &dynamic_input_dims_[dims_index]);
   if (status != ACL_SUCCESS) {
