@@ -645,7 +645,7 @@ def test_simple_test_of_roi_trans_roi_head(backend_type: Backend):
         torch.rand((1, 64, 8, 8)),
         torch.rand((1, 64, 4, 4)),
     ]
-    proposals = torch.tensor([[[58.78285, 52.1405, 88.62484, 67.15644, 0.5]]])
+    proposals = torch.tensor([[[58.8285, 52.1405, 188.2484, 141.5644, 0.5]]])
     labels = torch.tensor([[[0.]]])
     s = 128
     img_metas = [{
