@@ -141,7 +141,7 @@ void InferenceServiceImpl::LoadFloatData(const std::string& data, std::vector<fl
   }
 
   if (snpe == nullptr) {
-    response->set_status(-2);
+    response->set_status(-1);
     response->set_info(zdl::DlSystem::getLastErrorString());
   }
 
@@ -250,7 +250,7 @@ std::string InferenceServiceImpl::ShapeStr(zdl::DlSystem::ITensor* pTensor) {
 
   const auto& inputTensorNames = *inputTensorNamesRef;
   if (inputTensorNames.size() != request->data_size()) {
-    response->set_status(-2);
+    response->set_status(-1);
     response->set_info("Stage Inference: input names count not match !");
     return Status::OK;
   }
@@ -272,8 +272,15 @@ std::string InferenceServiceImpl::ShapeStr(zdl::DlSystem::ITensor* pTensor) {
       if (ptensor == nullptr) {
         fprintf(stderr, "Stage Inference: name: %s not existed in input tensor map\n",
                 tensor.name().c_str());
-        response->set_status(-3);
+        response->set_status(-1);
         response->set_info("cannot find name in input tensor map.");
+        return Status::OK;
+      }
+
+      if (float_input.size() != ptensor->getSize()) {
+        fprintf(stderr, "Stage Inference: input size not match, get %ld, expect %ld.\n", float_input.size(), ptensor->getSize());
+        response->set_status(-1);
+        response->set_info(zdl::DlSystem::getLastErrorString());
         return Status::OK;
       }
 
@@ -292,7 +299,7 @@ std::string InferenceServiceImpl::ShapeStr(zdl::DlSystem::ITensor* pTensor) {
     success = snpe->execute(inputTensorMap, outputTensorMap);
 
     if (!success) {
-      response->set_status(-3);
+      response->set_status(-1);
       response->set_info(zdl::DlSystem::getLastErrorString());
       return Status::OK;
     }

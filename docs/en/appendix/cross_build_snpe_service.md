@@ -12,7 +12,7 @@ Note that the official gRPC documentation does not have complete support for the
 | host OS            | ubuntu18.04    | snpe1.59 specified version                                |
 | NDK                | r17c           | snpe1.59 specified version                                |
 | gRPC               | commit 6f698b5 | -                                                         |
-| Hardware equipment | redmi note9    | qcom chip required                                        |
+| Hardware equipment | qcom888        | qcom chip required                                        |
 
 ## 2. Cross compile gRPC with NDK
 
