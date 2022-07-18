@@ -153,4 +153,4 @@ $ tree -L 1
 └── rotated_object_detection
 ```
 
-Just `adb push` the executable file and .so to the device and execute.
+Just `adb push` the binary file and .so to the device and execute.
