@@ -1,8 +1,8 @@
 globals:
-  codebase_dir: ../workspace/mmdetection3d
+  codebase_dir: ../mmdetection3d
   checkpoint_force_download: False
   images:
-    kitti_input: &kitti_input ../workspace/mmdetection3d/demo/data/kitti/kitti_000008.bin
+    kitti_input: &kitti_input ../mmdetection3d/demo/data/kitti/kitti_000008.bin
     nus_input: &nus_input ./tests/data/n008-2018-08-01-15-16-36-0400__LIDAR_TOP__1533151612397179.pcd.bin
 
   metric_info: &metric_info
