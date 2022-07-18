@@ -115,7 +115,7 @@ sudo apt-get install libopencv-dev
 git clone https://github.com/openppl-public/ppl.cv.git
 cd ppl.cv
 export PPLCV_DIR=$(pwd)
-git checkout 58ed74ec61f84f3dc7327f8b983b5e2bc4000fed
+git checkout tags/v0.7.0 -b v0.7.0
 ./build.sh cuda
 </code></pre>
    </td>

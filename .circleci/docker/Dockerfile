@@ -5,6 +5,7 @@ ARG PYTHON_VERSION=3.8
 ARG TORCH_VERSION=1.10.0
 ARG TORCHVISION_VERSION=0.11.0
 ARG MMCV_VERSION=1.5.0
+ARG PPLCV_VERSION=0.7.0
 ENV FORCE_CUDA="1"
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -33,7 +34,7 @@ WORKDIR /workspace
 ### build ppl.cv
 RUN git clone https://github.com/openppl-public/ppl.cv.git &&\
     cd ppl.cv &&\
-    git checkout 58ed74ec61f84f3dc7327f8b983b5e2bc4000fed &&\
+    git checkout tags/v${PPLCV_VERSION} -b v${PPLCV_VERSION} &&\
     ./build.sh cuda
 
 # RUN ln -sf /opt/conda /home/circleci/project/conda

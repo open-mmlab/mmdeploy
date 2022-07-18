@@ -101,7 +101,7 @@ You can skip this chapter if you are only interested in the model converter.
 <pre><code>
 git clone https://github.com/openppl-public/ppl.cv.git
 cd ppl.cv
-git checkout 58ed74ec61f84f3dc7327f8b983b5e2bc4000fed
+git checkout tags/v0.7.0 -b v0.7.0
 $env:PPLCV_DIR = "$pwd"
 mkdir pplcv-build
 cd pplcv-build
