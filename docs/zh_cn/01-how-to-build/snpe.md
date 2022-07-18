@@ -42,7 +42,7 @@ tips:
 - 如果 `adb devices` 找不到设备，可能因为：
   - 有些廉价线只能充电、不能传输数据
   - 或者没有打开手机的“开发者模式”
-- 如果需要自己编译，可参照 [NDK 交叉编译 snpe 推理服务](../06-appendix/cross-build-ndk-gRPC.md)
+- 如果需要自己编译，可参照 [NDK 交叉编译 snpe 推理服务](../appendix/cross-build-snpe-service.md)
 
 ## 二、安装 mmdeploy
 
@@ -142,7 +142,7 @@ $ cmake .. \
   -DANDROID_STL=c++_shared  \
   -DOpenCV_DIR=${ANDROID_OCV_ROOT}/sdk/native/jni/abi-arm64-v8a \
   -DMMDEPLOY_SHARED_LIBS=ON \
-  -D-DMMDeploy_DIR=${PWD}/../../lib/cmake/MMDeploy
+  -DMMDeploy_DIR=${PWD}/../../lib/cmake/MMDeploy
 
 $ make
 $ tree -L 1
