@@ -647,7 +647,7 @@ def test_simple_test_of_roi_trans_roi_head(backend_type: Backend):
     ]
     proposals = torch.tensor([[[58.8285, 52.1405, 188.2484, 141.5644, 0.5]]])
     labels = torch.tensor([[[0.]]])
-    s = 128
+    s = 256
     img_metas = [{
         'img_shape': torch.tensor([s, s]),
         'ori_shape': torch.tensor([s, s]),
