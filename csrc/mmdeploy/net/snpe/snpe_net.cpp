@@ -8,7 +8,8 @@
 
 namespace mmdeploy {
 
-SNPENet::~SNPENet() {}
+SNPENet::~SNPENet() {
+}
 
 void SNPENet::Build(std::unique_ptr<zdl::DlContainer::IDlContainer>& container,
                     zdl::DlSystem::Runtime_t runtime, zdl::DlSystem::RuntimeList runtimeList,
@@ -44,15 +45,18 @@ Result<void> SNPENet::Init(const Value& args) {
   container_ = zdl::DlContainer::IDlContainer::open(zdl::DlSystem::String(config.net));
   if (container_ == nullptr) {
     MMDEPLOY_ERROR("Load .dlc failed: {}", config.net);
+    return Status(eInvalidArgument);
   }
 
-  zdl::DlSystem::Runtime_t runtime = zdl::DlSystem::Runtime_t::GPU;
+  zdl::DlSystem::Runtime_t runtime = zdl::DlSystem::Runtime_t::CPU;
   if (!zdl::SNPE::SNPEFactory::isRuntimeAvailable(runtime)) {
     MMDEPLOY_WARN("Selected runtime not present. Falling back to CPU.\n");
     runtime = zdl::DlSystem::Runtime_t::CPU;
   }
 
   zdl::DlSystem::RuntimeList runtimeList;
+  // Add CPU backend to support fallback
+  runtimeList.add(zdl::DlSystem::Runtime_t::CPU);
   runtimeList.add(runtime);
   zdl::DlSystem::PlatformConfig platformConfig;
   Build(container_, runtime, runtimeList, false, platformConfig);
@@ -68,16 +72,30 @@ Result<void> SNPENet::Init(const Value& args) {
 
     inputs_internal_[i] = zdl::SNPE::SNPEFactory::getTensorFactory().createTensor(inputShape);
     input_tensor_map_.add(inputTensorNames.at(i), inputs_internal_[i].get());
+
+    input_tensors_.emplace_back(TensorDesc{
+        Device("cpu"),
+        DataType::kFLOAT,
+        {},
+        std::string(inputTensorNames.at(i)),
+    });
+  }
+
+  const auto& outputTensorNamesRef = snpe_ ->getOutputTensorNames();
+  const auto& outputTensorNames = *outputTensorNamesRef;
+  for (int i = 0; i < outputTensorNames.size(); ++i) {
+    output_tensors_.emplace_back(TensorDesc{
+        Device("cpu"),
+        DataType::kFLOAT,
+        {},
+        std::string(outputTensorNames.at(i)),
+    });
   }
 
   return success();
 }
 
 Result<void> SNPENet::Deinit() {
-  input_tensor_map_.clear();
-  inputs_internal_.clear();
-  container_.reset();
-  snpe_.reset();
   return success();
 }
 

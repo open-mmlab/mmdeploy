@@ -257,6 +257,7 @@ models:
 - [x] ncnn
 - [x] OpenVINO
 - [x] TorchScript
+- [x] SNPE
 - [x] MMDeploy SDK
 
 ## 6. 支持的Codebase及其Metric
