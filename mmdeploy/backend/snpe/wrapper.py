@@ -202,7 +202,10 @@ class SNPEWrapper(BaseWrapper):
                 logger.error('SNPE now only support fp32 input')
                 data = data.astype(dtype=np.float32)
             tensor = inference_pb2.Tensor(
-                data=data.tobytes(), name=name, dtype='float32')
+                data=data.tobytes(),
+                name=name,
+                dtype='float32',
+                shape=list(data.shape))
 
             snpe_inputs.append(tensor)
 
