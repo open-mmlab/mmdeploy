@@ -4,12 +4,15 @@ project(mmdeploy_snpe_net)
 
 add_library(snpe SHARED IMPORTED)
 
-if (NOT EXISTS $ENV{SNPE_ROOT}/lib/aarch64-android-clang6.0/)
-  message(ERROR "SNPE_ROOT directory not exist:  $ENV{SNPE_ROOT}/lib/aarch64-android-clang6.0/")
+set(sub_dir "x86_64-linux-clang")
+# aarch64-android-clang6.0
+
+if (NOT EXISTS $ENV{SNPE_ROOT}/lib/${sub_dir}/)
+  message(ERROR "SNPE_ROOT directory not exist:  $ENV{SNPE_ROOT}/lib/${sub_dir}/")
 endif()
 
 set_target_properties(snpe PROPERTIES
-  IMPORTED_LOCATION "$ENV{SNPE_ROOT}/lib/aarch64-android-clang6.0/libSNPE.so"
+  IMPORTED_LOCATION "$ENV{SNPE_ROOT}/lib/${sub_dir}/libSNPE.so"
   INTERFACE_INCLUDE_DIRECTORIES "$ENV{SNPE_ROOT}/include/zdl"
 )
 

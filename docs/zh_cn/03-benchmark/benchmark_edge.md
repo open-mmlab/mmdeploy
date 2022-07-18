@@ -32,13 +32,19 @@ tips:
 | :---------------------------------------------------------------------------------------------------------------------------------------------------------------: | :--------: | :-----: | :---------------------: | :---------------------: | :---------: |
 | [pose_hrnet_w32](https://github.com/open-mmlab/mmpose/blob/master/configs/animal/2d_kpt_sview_rgb_img/topdown_heatmap/animalpose/hrnet_w32_animalpose_256x256.py) | Animalpose | 256x256 |          0.997          |          0.989          |   630±50    |
 
-tips: 测试 pose_hrnet 用的是 AnimalPose 的 test dataset，而非 val dataset
+tips:
 
-## mmseg 模型
+- 测试 pose_hrnet 用的是 AnimalPose 的 test dataset，而非 val dataset
 
-|                                                       model                                                       |  dataset   | spatial  | mIoU  | snpe hybrid mIoU | latency(ms) |
-| :---------------------------------------------------------------------------------------------------------------: | :--------: | :------: | :---: | :--------------: | :---------: |
-| [fcn](https://github.com/open-mmlab/mmsegmentation/blob/master/configs/fcn/fcn_r18-d8_512x1024_80k_cityscapes.py) | Cityscapes | 512x1024 | 71.11 |      0.989       |  4915±500   |
+## mmseg
+
+|                                                       model                                                       |  dataset   | spatial  | mIoU  | latency(ms) |
+| :---------------------------------------------------------------------------------------------------------------: | :--------: | :------: | :---: | :---------: |
+| [fcn](https://github.com/open-mmlab/mmsegmentation/blob/master/configs/fcn/fcn_r18-d8_512x1024_80k_cityscapes.py) | Cityscapes | 512x1024 | 71.11 |  4915±500   |
+
+tips:
+
+- fcn 用 512x1024 尺寸运行正常。cityscapes 数据集 1024x2048 分辨率会导致设备重启
 
 ## 其他模型
 
@@ -48,4 +54,5 @@ tips: 测试 pose_hrnet 用的是 AnimalPose 的 test dataset，而非 val datas
 - mmedit 模型
   - srcnn 需要 cubic resize，snpe 不支持
   - esrgan 可正常转换，但加载模型会导致设备重启
-- mmrotate 依赖 [e2cnn](https://pypi.org/project/e2cnn/) ，需要手动安装 [其 Python3.6 兼容分支](https://github.com/QUVA-Lab/e2cnn)
+- mmrotate 依赖 [e2cnn](https://pypi.org/project/e2cnn/) ，需要手动安装 [其 Python3.6
+  兼容分支](https://github.com/QUVA-Lab/e2cnn)

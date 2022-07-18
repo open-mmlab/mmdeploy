@@ -32,13 +32,19 @@ tips:
 | :---------------------------------------------------------------------------------------------------------------------------------------------------------------: | :--------: | :-----: | :---------------------: | :---------------------: | :---------: |
 | [pose_hrnet_w32](https://github.com/open-mmlab/mmpose/blob/master/configs/animal/2d_kpt_sview_rgb_img/topdown_heatmap/animalpose/hrnet_w32_animalpose_256x256.py) | Animalpose | 256x256 |          0.997          |          0.989          |   630±50    |
 
-tips: Test `pose_hrnet` using AnimalPose's test dataset instead of val dataset.
+tips:
+
+- Test `pose_hrnet` using AnimalPose's test dataset instead of val dataset.
 
 ## mmseg
 
-|                                                       model                                                       |  dataset   | spatial  | mIoU  | snpe hybrid mIoU | latency(ms) |
-| :---------------------------------------------------------------------------------------------------------------: | :--------: | :------: | :---: | :--------------: | :---------: |
-| [fcn](https://github.com/open-mmlab/mmsegmentation/blob/master/configs/fcn/fcn_r18-d8_512x1024_80k_cityscapes.py) | Cityscapes | 512x1024 | 71.11 |      0.989       |  4915±500   |
+|                                                       model                                                       |  dataset   | spatial  | mIoU  | latency(ms) |
+| :---------------------------------------------------------------------------------------------------------------: | :--------: | :------: | :---: | :---------: |
+| [fcn](https://github.com/open-mmlab/mmsegmentation/blob/master/configs/fcn/fcn_r18-d8_512x1024_80k_cityscapes.py) | Cityscapes | 512x1024 | 71.11 |  4915±500   |
+
+tips:
+
+- `fcn` works fine with 512x1024 size. Cityscapes dataset uses 1024x2048 resolution which causes device to reboot.
 
 ## Notes
 
