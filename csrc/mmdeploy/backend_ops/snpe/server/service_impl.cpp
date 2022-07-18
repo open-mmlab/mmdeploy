@@ -203,6 +203,7 @@ std::string InferenceServiceImpl::ContentStr(zdl::DlSystem::ITensor* pTensor) {
   auto it = pTensor->cbegin();
   for (int i = 0; i < N; ++i) {
     str += std::to_string(*(it + i));
+    str += " ";
   }
   str += "..";
   str += std::to_string(*(it + pTensor->getSize() - 1));
