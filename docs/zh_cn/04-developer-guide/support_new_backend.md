@@ -204,7 +204,7 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
    		# Postprocess data
            # ...
 
-       @TimeCounter.count_time()
+       @TimeCounter.count_time('onnxruntime')
        def __ort_execute(self, io_binding: ort.IOBinding):
    		# Only do the inference
            self.sess.run_with_iobinding(io_binding)

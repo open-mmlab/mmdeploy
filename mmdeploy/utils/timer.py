@@ -4,6 +4,7 @@ import warnings
 from contextlib import contextmanager
 from typing import Optional
 
+import numpy as np
 import torch
 
 from mmdeploy.utils.logging import get_logger
@@ -16,12 +17,14 @@ class TimeCounter:
     # Avoid instantiating every time
     @classmethod
     def count_time(cls,
+                   name: str,
                    warmup: int = 1,
                    log_interval: int = 1,
                    with_sync: bool = False):
         """Proceed time counting.
 
         Args:
+            name (str): Name of this timer.
             warmup (int): The warm up steps, default 1.
             log_interval (int): Interval between each log, default 1.
             with_sync (bool): Whether use cuda synchronize for time counting,
@@ -30,28 +33,28 @@ class TimeCounter:
 
         def _register(func):
             assert warmup >= 1
-            assert func.__name__ not in cls.names,\
+            assert name not in cls.names,\
                 'The registered function name cannot be repeated!'
             # When adding on multiple functions, we need to ensure that the
             # data does not interfere with each other
-            cls.names[func.__name__] = dict(
+            cls.names[name] = dict(
                 count=0,
-                execute_time=0,
+                execute_time=[],
                 log_interval=log_interval,
                 warmup=warmup,
                 with_sync=with_sync,
                 enable=False)
 
             def fun(*args, **kwargs):
-                count = cls.names[func.__name__]['count']
-                execute_time = cls.names[func.__name__]['execute_time']
-                log_interval = cls.names[func.__name__]['log_interval']
-                warmup = cls.names[func.__name__]['warmup']
-                with_sync = cls.names[func.__name__]['with_sync']
-                enable = cls.names[func.__name__]['enable']
+                count = cls.names[name]['count']
+                execute_time = cls.names[name]['execute_time']
+                log_interval = cls.names[name]['log_interval']
+                warmup = cls.names[name]['warmup']
+                with_sync = cls.names[name]['with_sync']
+                enable = cls.names[name]['enable']
 
                 count += 1
-                cls.names[func.__name__]['count'] = count
+                cls.names[name]['count'] = count
 
                 if enable:
                     if with_sync and torch.cuda.is_available():
@@ -66,15 +69,14 @@ class TimeCounter:
                     elapsed = time.perf_counter() - start_time
 
                 if enable and count > warmup:
-                    execute_time += elapsed
-                    cls.names[func.__name__]['execute_time'] = execute_time
+                    execute_time.append(elapsed)
 
                     if (count - warmup) % log_interval == 0:
-                        times_per_count = 1000 * execute_time / (
-                            count - warmup)
-                        msg = f'[{func.__name__}]-{count} times per count: '\
+                        times_per_count = 1000 * float(np.mean(execute_time))
+                        fps = 1000 / times_per_count
+                        msg = f'[{name}]-{count} times per count: '\
                               f'{times_per_count:.2f} ms, '\
-                              f'{1000/times_per_count:.2f} FPS'
+                              f'{fps:.2f} FPS'
                         cls.logger.info(msg)
 
                 return result
@@ -127,3 +129,32 @@ class TimeCounter:
         else:
             for name in cls.names:
                 cls.names[name]['enable'] = False
+
+    @classmethod
+    def print_stats(cls, name: str):
+        """print statistics results of timer.
+
+        Args:
+            name (str): The name registered with `count_time`.
+        """
+        from prettytable import PrettyTable
+
+        assert name in cls.names
+        stats = cls.names[name]
+        execute_time = stats['execute_time']
+        latency_mean = 1000 * float(np.mean(execute_time))
+        latency_median = 1000 * float(np.median(execute_time))
+        latency_min = 1000 * float(np.min(execute_time))
+        latency_max = 1000 * float(np.max(execute_time))
+        fps_mean, fps_median = 1000 / latency_mean, 1000 / latency_median
+        fps_min, fps_max = 1000 / latency_min, 1000 / latency_max
+        results = PrettyTable()
+        results.field_names = ['Stats', 'Latency/ms', 'FPS']
+        results.add_rows([
+            ['Mean', latency_mean, fps_mean],
+            ['Median', latency_median, fps_median],
+            ['Min', latency_min, fps_min],
+            ['Max', latency_max, fps_max],
+        ])
+        results.float_format = '.3'
+        print(results)

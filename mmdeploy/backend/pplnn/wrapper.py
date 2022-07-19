@@ -100,7 +100,7 @@ class PPLNNWrapper(BaseWrapper):
             outputs[name] = torch.from_numpy(outputs[name])
         return outputs
 
-    @TimeCounter.count_time()
+    @TimeCounter.count_time(Backend.PPLNN.value)
     def __pplnn_execute(self):
         """Run inference with PPLNN."""
         status = self.runtime.Run()
