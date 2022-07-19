@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 import torch
 import torch.nn.functional as F
+from packaging.version import parse
 
 from mmdeploy.utils import Backend
 from mmdeploy.utils.test import (WrapFunction, backend_checker,
@@ -312,6 +313,8 @@ def test_masked_fill_onnxruntime(input):
 
 
 @backend_checker(Backend.ONNXRUNTIME)
+@pytest.mark.skipif(
+    parse(torch.__version__) < parse('1.9.0'), reason='requires torch>1.8.0')
 @pytest.mark.parametrize('x', [torch.rand(1, 3, 16, 16)])
 @pytest.mark.parametrize('y', [torch.rand(1, 3, 4, 4)])
 def test_tensor_setitem(x, y):

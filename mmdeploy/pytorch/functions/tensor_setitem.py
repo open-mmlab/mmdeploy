@@ -2,6 +2,7 @@
 from typing import Sequence
 
 import torch
+from packaging.version import parse
 
 from mmdeploy.core import FUNCTION_REWRITER
 
@@ -9,6 +10,11 @@ from mmdeploy.core import FUNCTION_REWRITER
 @FUNCTION_REWRITER.register_rewriter(func_name='torch.Tensor.__setitem__')
 def tensor__setitem__default(ctx, self, key, value):
     """Rewrite `setitem` to ease the index put."""
+
+    # only support torch>=1.9.0
+    if parse(torch.__version__) < parse('1.9.0'):
+        return ctx.origin_func(self, key, value)
+
     if isinstance(key, slice):
         key = (key, )
 
