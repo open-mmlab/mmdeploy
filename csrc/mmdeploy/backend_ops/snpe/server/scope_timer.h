@@ -2,14 +2,15 @@
 
 #pragma once
 
-#include <cstdio>
 #include <sys/time.h>
-#include <string>
+
+#include <cstdio>
 #include <memory>
+#include <string>
 
 class ScopeTimer {
  public:
-  ScopeTimer(std::string _name, bool _print=false) : name(_name), print(_print) { begin = now(); }
+  ScopeTimer(std::string _name, bool _print = false) : name(_name), print(_print) { begin = now(); }
 
   ~ScopeTimer() {
     if (!print) {
@@ -24,9 +25,7 @@ class ScopeTimer {
     return tv.tv_sec * 1000 + (tv.tv_usec / 1000);
   }
 
-  long cost() const {
-    return now() - begin;
-  }
+  long cost() const { return now() - begin; }
 
  private:
   std::string name;
