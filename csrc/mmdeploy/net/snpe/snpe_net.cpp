@@ -8,8 +8,7 @@
 
 namespace mmdeploy {
 
-SNPENet::~SNPENet() {
-}
+SNPENet::~SNPENet() {}
 
 std::string SNPENet::ShapeStr(zdl::DlSystem::ITensor* pTensor) {
   std::string str;
@@ -43,83 +42,80 @@ void SNPENet::Build(std::unique_ptr<zdl::DlContainer::IDlContainer>& container,
   return;
 }
 
-
 void SNPENet::copy_output(const zdl::DlSystem::ITensor* from, Tensor& to) {
+  auto hwc_to_chw = [](const zdl::DlSystem::TensorShape& shape) -> bool {
+    if (shape.rank() != 4 || (shape[1] == 1 && shape[2] > 1 && shape[3] > 1)) {
+      return false;
+    }
+    return true;
+  };
 
-      auto hwc_to_chw = [](const zdl::DlSystem::TensorShape& shape) -> bool {
-        if (shape.rank() !=4 || (shape[1] == 1 && shape[2] > 1 && shape[3] > 1)) {
-          return false;
-        }
-        return true;
-      };
+  auto output_shape = from->getShape();
 
-      auto output_shape = from->getShape();
+  if (to.size() != from->getSize()) {
+    TensorShape tensor_shape;
+    for (int j = 0; j < output_shape.rank(); ++j) {
+      tensor_shape.push_back(output_shape[j]);
+    }
 
-      if (to.size() != from->getSize()) {
+    if (hwc_to_chw(output_shape)) {
+      auto tmp = output_shape[3];
+      output_shape[3] = output_shape[1];
+      output_shape[1] = tmp;
+    }
+    to.Reshape(tensor_shape);
+  }
 
-        TensorShape tensor_shape;
-        for (int j = 0; j < output_shape.rank(); ++j) {
-          tensor_shape.push_back(output_shape[j]);
-        }
+  float* pto = to.data<float>();
 
-        if (hwc_to_chw(output_shape)) {
-          auto tmp = output_shape[3];
-          output_shape[3] = output_shape[1];
-          output_shape[1] = tmp;
-        }
-        to.Reshape(tensor_shape);
-      }
+  if (output_shape.rank() != 4 ||
+      (output_shape[1] == 1 && output_shape[2] > 1 && output_shape[3] > 1)) {
+    // skip [1,1,w>1,h>1] for segmentation task
+    for (auto it = from->cbegin(); it != from->cend(); ++it, ++pto) {
+      *pto = *it;
+    }
+  } else {
+    const int channel = output_shape[1];
+    const int panel = output_shape[2] * output_shape[3];
 
-      float *pto = to.data<float>();
-
-      if (output_shape.rank() !=4 || (output_shape[1] == 1 && output_shape[2] > 1 && output_shape[3] > 1)) {
-        // skip [1,1,w>1,h>1] for segmentation task
-        for (auto it = from->cbegin(); it != from->cend(); ++it, ++pto) {
-          *pto = *it;
-        }
-      } else {
-        const int channel = output_shape[1];
-        const int panel = output_shape[2] * output_shape[3];
-
-        int i = 0;
-        // HWC to CHW
-        for (auto it = from->cbegin(); it != from->cend(); ++it, ++i) {
-          int channel_idx = i % channel;
-          int panel_idx = i / channel;
-          pto[channel_idx * panel + panel_idx] = *it;
-        }
-      }
-      return;
+    int i = 0;
+    // HWC to CHW
+    for (auto it = from->cbegin(); it != from->cend(); ++it, ++i) {
+      int channel_idx = i % channel;
+      int panel_idx = i / channel;
+      pto[channel_idx * panel + panel_idx] = *it;
+    }
+  }
+  return;
 }
 
-
 void SNPENet::copy_input(const Tensor& from, zdl::DlSystem::ITensor* to) {
-      if (from.size() != to->getSize()) {
-        MMDEPLOY_ERROR("input tensor size not match");
-        return;
-      }
+  if (from.size() != to->getSize()) {
+    MMDEPLOY_ERROR("input tensor size not match");
+    return;
+  }
 
-      const float *pfrom = from.data<float>();
+  const float* pfrom = from.data<float>();
 
-      auto input_shape = to->getShape();
-      if (input_shape.rank() == 4) {
-        const int channel = input_shape[3];
-        const int panel = input_shape[1] * input_shape[2];
+  auto input_shape = to->getShape();
+  if (input_shape.rank() == 4) {
+    const int channel = input_shape[3];
+    const int panel = input_shape[1] * input_shape[2];
 
-        int i = 0;
-        // CHW to HWC
-        for (auto it = to->begin(); it != to->end(); ++it, ++i) {
-            int channel_index = i % channel;
-            int panel_index = (i / channel) % panel;
+    int i = 0;
+    // CHW to HWC
+    for (auto it = to->begin(); it != to->end(); ++it, ++i) {
+      int channel_index = i % channel;
+      int panel_index = (i / channel) % panel;
 
-            *it = pfrom[channel_index * panel + panel_index];
-        }
+      *it = pfrom[channel_index * panel + panel_index];
+    }
 
-      } else {
-        for (auto it = to->begin(); it != to->end(); ++it, ++pfrom) {
-          *it = *pfrom;
-        }
-      }
+  } else {
+    for (auto it = to->begin(); it != to->end(); ++it, ++pfrom) {
+      *it = *pfrom;
+    }
+  }
 }
 
 Result<void> SNPENet::Init(const Value& args) {
@@ -164,7 +160,8 @@ Result<void> SNPENet::Init(const Value& args) {
 
     inputs_internal_[i] = zdl::SNPE::SNPEFactory::getTensorFactory().createTensor(inputShape);
 
-    std::string info = std::string(inputTensorNames.at(i)) + " shape: " + ShapeStr(inputs_internal_[i].get());
+    std::string info =
+        std::string(inputTensorNames.at(i)) + " shape: " + ShapeStr(inputs_internal_[i].get());
     MMDEPLOY_INFO(info);
 
     input_tensor_map_.add(inputTensorNames.at(i), inputs_internal_[i].get());
@@ -177,7 +174,7 @@ Result<void> SNPENet::Init(const Value& args) {
     });
   }
 
-  const auto& outputTensorNamesRef = snpe_ ->getOutputTensorNames();
+  const auto& outputTensorNamesRef = snpe_->getOutputTensorNames();
   const auto& outputTensorNames = *outputTensorNamesRef;
   for (int i = 0; i < outputTensorNames.size(); ++i) {
     output_tensors_.emplace_back(TensorDesc{
@@ -191,9 +188,7 @@ Result<void> SNPENet::Init(const Value& args) {
   return success();
 }
 
-Result<void> SNPENet::Deinit() {
-  return success();
-}
+Result<void> SNPENet::Deinit() { return success(); }
 
 Result<void> SNPENet::Reshape(Span<TensorShape> input_shapes) {
   for (size_t i = 0; i < input_shapes.size(); ++i) {
