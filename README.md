@@ -4,7 +4,6 @@
   <div align="center">
     <b><font size="5">OpenMMLab website</font></b>
     <sup>
-      <a href="https://openmmlab.com">
         <i><font size="4">HOT</font></i>
       </a>
     </sup>
