@@ -13,6 +13,8 @@ def is_available():
     """
 
     onnx2dlc = get_onnx2dlc_path()
+    if onnx2dlc is None:
+        return False
     return osp.exists(onnx2dlc)
 
 
