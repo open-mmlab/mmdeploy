@@ -6,6 +6,7 @@ from .getattribute import tensor__getattribute__ncnn
 from .group_norm import group_norm__ncnn
 from .interpolate import interpolate__ncnn, interpolate__tensorrt
 from .linear import linear__ncnn
+from .masked_fill import masked_fill__onnxruntime
 from .normalize import normalize__ncnn
 from .repeat import tensor__repeat__tensorrt
 from .size import tensor__size__ncnn
@@ -18,5 +19,6 @@ __all__ = [
     'interpolate__tensorrt', 'linear__ncnn', 'tensor__repeat__tensorrt',
     'tensor__size__ncnn', 'topk__dynamic', 'topk__tensorrt', 'chunk__ncnn',
     'triu', 'atan2__default', 'normalize__ncnn', 'expand__ncnn',
-    'chunk__torchscript', 'tensor__setitem__default'
+    'chunk__torchscript', 'masked_fill__onnxruntime',
+    'tensor__setitem__default'
 ]

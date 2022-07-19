@@ -86,4 +86,4 @@ https://download.openmmlab.com/mmdetection/v2.0/yolo/yolov3_d53_mstrain-608_273e
 
 After run the script above, we would have the partitioned onnx file `yolov3.onnx` in the `work-dir`. You can use the visualization tool [netron](https://netron.app/) to check the model structure.
 
-With the partitioned onnx file, you could refer to [useful_tools.md](../useful_tools.md) to do the following procedures such as `onnx2ncnn`, `onnx2tensorrt`.
+With the partitioned onnx file, you could refer to [useful_tools.md](../useful_tools.md) to do the following procedures such as `mmdeploy_onnx2ncnn`, `onnx2tensorrt`.

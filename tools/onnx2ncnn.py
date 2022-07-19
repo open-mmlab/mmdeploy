@@ -27,9 +27,9 @@ def main():
     onnx_path = args.onnx_path
     output_prefix = args.output_prefix
 
-    logger.info(f'onnx2ncnn: \n\tonnx_path: {onnx_path} ')
+    logger.info(f'mmdeploy_onnx2ncnn: \n\tonnx_path: {onnx_path} ')
     from_onnx(onnx_path, output_prefix)
-    logger.info('onnx2ncnn success.')
+    logger.info('mmdeploy_onnx2ncnn success.')
 
 
 if __name__ == '__main__':

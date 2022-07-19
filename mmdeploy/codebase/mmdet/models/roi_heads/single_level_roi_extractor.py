@@ -127,6 +127,8 @@ def single_roi_extractor__forward(ctx,
     roi_feats = feats[0].new_zeros(rois.shape[0], self.out_channels, *out_size)
     if num_levels == 1:
         assert len(rois) > 0, 'The number of rois should be positive'
+        if backend == Backend.TORCHSCRIPT:
+            self.roi_layers[0].use_torchvision = True
         return self.roi_layers[0](feats[0], rois)
 
     target_lvls = self.map_roi_levels(rois, num_levels)

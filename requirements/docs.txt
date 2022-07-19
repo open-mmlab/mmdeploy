@@ -7,3 +7,4 @@ recommonmark
 sphinx==4.0.2
 sphinx-copybutton
 sphinx_markdown_tables
+sphinxcontrib-mermaid

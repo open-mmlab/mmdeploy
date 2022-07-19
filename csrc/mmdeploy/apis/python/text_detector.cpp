@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "mmdeploy/apis/c/text_detector.h"
+#include "mmdeploy/text_detector.h"
 
 #include "common.h"
 
@@ -10,23 +10,23 @@ class PyTextDetector {
  public:
   PyTextDetector(const char *model_path, const char *device_name, int device_id) {
     auto status =
-        mmdeploy_text_detector_create_by_path(model_path, device_name, device_id, &handle_);
-    if (status != MM_SUCCESS) {
+        mmdeploy_text_detector_create_by_path(model_path, device_name, device_id, &detector_);
+    if (status != MMDEPLOY_SUCCESS) {
       throw std::runtime_error("failed to create text_detector");
     }
   }
   std::vector<py::array_t<float>> Apply(const std::vector<PyImage> &imgs) {
-    std::vector<mm_mat_t> mats;
+    std::vector<mmdeploy_mat_t> mats;
     mats.reserve(imgs.size());
     for (const auto &img : imgs) {
       auto mat = GetMat(img);
       mats.push_back(mat);
     }
-    mm_text_detect_t *detection{};
+    mmdeploy_text_detection_t *detection{};
     int *result_count{};
-    auto status = mmdeploy_text_detector_apply(handle_, mats.data(), (int)mats.size(), &detection,
+    auto status = mmdeploy_text_detector_apply(detector_, mats.data(), (int)mats.size(), &detection,
                                                &result_count);
-    if (status != MM_SUCCESS) {
+    if (status != MMDEPLOY_SUCCESS) {
       throw std::runtime_error("failed to apply text_detector, code: " + std::to_string(status));
     }
     auto output = std::vector<py::array_t<float>>{};
@@ -47,12 +47,12 @@ class PyTextDetector {
     return output;
   }
   ~PyTextDetector() {
-    mmdeploy_text_detector_destroy(handle_);
-    handle_ = {};
+    mmdeploy_text_detector_destroy(detector_);
+    detector_ = {};
   }
 
  private:
-  mm_handle_t handle_{};
+  mmdeploy_text_detector_t detector_{};
 };
 
 static void register_python_text_detector(py::module &m) {

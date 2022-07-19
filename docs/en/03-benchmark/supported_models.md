@@ -73,6 +73,8 @@ The table below lists the models that are guaranteed to be exportable to other b
 | PointPillars                | MMDetection3d    |      ?      |      Y      |    Y     |  N   |   N   |    Y     |     [config](https://github.com/open-mmlab/mmdetection3d/blob/master/configs/pointpillars)      |
 | CenterPoint (pillar)        | MMDetection3d    |      ?      |      Y      |    Y     |  N   |   N   |    Y     |      [config](https://github.com/open-mmlab/mmdetection3d/blob/master/configs/centerpoint)      |
 | RotatedRetinaNet            | RotatedDetection |      N      |      Y      |    Y     |  N   |   N   |    N     | [config](https://github.com/open-mmlab/mmrotate/blob/main/configs/rotated_retinanet/README.md)  |
+| Oriented RCNN               | RotatedDetection |      N      |      Y      |    Y     |  N   |   N   |    N     |   [config](https://github.com/open-mmlab/mmrotate/blob/main/configs/oriented_rcnn/README.md)    |
+| Gliding Vertex              | RotatedDetection |      N      |      N      |    Y     |  N   |   N   |    N     |   [config](https://github.com/open-mmlab/mmrotate/blob/main/configs/gliding_vertex/README.md)   |
 
 ### Note
 

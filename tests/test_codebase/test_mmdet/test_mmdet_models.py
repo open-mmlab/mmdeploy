@@ -1409,18 +1409,19 @@ def test_ssd_head_get_bboxes__ncnn(is_dynamic: bool):
         'img_shape': (s, s, 3)
     }]
     output_names = ['output']
-    input_names = ['input']
+    input_names = []
+    for i in range(6):
+        input_names.append('cls_scores_' + str(i))
+        input_names.append('bbox_preds_' + str(i))
     dynamic_axes = None
     if is_dynamic:
         dynamic_axes = {
-            input_names[0]: {
-                2: 'height',
-                3: 'width'
-            },
             output_names[0]: {
                 1: 'num_dets',
             }
         }
+        for input_name in input_names:
+            dynamic_axes[input_name] = {2: 'height', 3: 'width'}
     deploy_cfg = mmcv.Config(
         dict(
             backend_config=dict(type=Backend.NCNN.value),
