@@ -9,6 +9,7 @@ from mmdeploy_python import PoseDetector
 def parse_args():
     parser = argparse.ArgumentParser(
         description='show how to use sdk python api')
+    parser.add_argument('device_name', help='the name of device, cuda or cpu')
     parser.add_argument(
         'model_path', help='the directory path of mmdeploy model')
     parser.add_argument('image_path', help='the path of an image')
@@ -17,8 +18,6 @@ def parse_args():
         default=None,
         nargs='+',
         help='bounding box of an object in format (x, y, w, h)')
-    parser.add_argument(
-        '--device-name', default='cpu', help='the name of device, cuda or cpu')
     args = parser.parse_args()
     return args
 
@@ -37,7 +36,8 @@ def main():
         bbox[2:] += bbox[:2]
     bboxes.append(bbox)
 
-    detector = PoseDetector(args.model_path, args.device_name, 0)
+    detector = PoseDetector(
+        model_path=args.model_path, device_name=args.device_name, device_id=0)
     result = detector([img], [bboxes])[0]
 
     _, point_num, _ = result.shape

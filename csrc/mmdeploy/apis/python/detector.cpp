@@ -69,7 +69,7 @@ static void register_python_detector(py::module &m) {
   py::class_<PyDetector>(m, "Detector")
       .def(py::init([](const char *model_path, const char *device_name, int device_id) {
         return std::make_unique<PyDetector>(model_path, device_name, device_id);
-      }))
+      }), py::arg("model_path"), py::arg("device_name"), py::arg("device_id")=0)
       .def("__call__", &PyDetector::Apply);
 }
 

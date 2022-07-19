@@ -65,7 +65,7 @@ static void register_python_rotated_detector(py::module &m) {
   py::class_<PyRotatedDetector>(m, "RotatedDetector")
       .def(py::init([](const char *model_path, const char *device_name, int device_id) {
         return std::make_unique<PyRotatedDetector>(model_path, device_name, device_id);
-      }))
+      }), py::arg("model_path"), py::arg("device_name"), py::arg("device_id")=0)
       .def("__call__", &PyRotatedDetector::Apply);
 }
 

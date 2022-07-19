@@ -49,7 +49,7 @@ static void register_python_text_recognizer(py::module &m) {
   py::class_<PyTextRecognizer>(m, "TextRecognizer")
       .def(py::init([](const char *model_path, const char *device_name, int device_id) {
         return std::make_unique<PyTextRecognizer>(model_path, device_name, device_id);
-      }))
+      }), py::arg("model_path"), py::arg("device_name"), py::arg("device_id")=0)
       .def("__call__", &PyTextRecognizer::Apply);
 }
 

@@ -8,6 +8,8 @@ from mmdeploy_python import TextDetector
 def parse_args():
     parser = argparse.ArgumentParser(
         description='show how to use sdk python api')
+    parser.add_argument('device_name', help='the name of device, cuda or cpu')
+    parser.add_argument('image_path', help='the path of an image')
     parser.add_argument(
         '--textdet',
         default='',
@@ -16,9 +18,6 @@ def parse_args():
         '--textrecog',
         default='',
         help='the directory path of mmdeploy text-recognizer sdk model')
-    parser.add_argument('image_path', help='the path of an image')
-    parser.add_argument(
-        '--device-name', default='cpu', help='the name of device, cuda or cpu')
     args = parser.parse_args()
     return args
 
@@ -29,7 +28,8 @@ def main():
     img = cv2.imread(args.image_path)
 
     if args.textdet:
-        detector = TextDetector(args.textdet, args.device_name, 0)
+        detector = TextDetector(
+            model_path=args.textdet, device_name=args.device_name, device_id=0)
         bboxes = detector([img])[0]
 
         pts = (bboxes[:, 0:8] + 0.5).reshape(len(bboxes), -1, 2).astype(int)

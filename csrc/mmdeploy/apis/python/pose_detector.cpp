@@ -102,7 +102,7 @@ static void register_python_pose_detector(py::module &m) {
   py::class_<PyPoseDedector>(m, "PoseDetector")
       .def(py::init([](const char *model_path, const char *device_name, int device_id) {
         return std::make_unique<PyPoseDedector>(model_path, device_name, device_id);
-      }))
+      }), py::arg("model_path"), py::arg("device_name"), py::arg("device_id")=0)
       .def("__call__", &PyPoseDedector::Apply, py::arg("imgs"),
            py::arg("vboxes") = std::vector<std::vector<Rect>>());
 }
