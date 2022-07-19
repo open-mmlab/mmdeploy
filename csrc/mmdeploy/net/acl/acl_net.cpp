@@ -270,7 +270,6 @@ Result<void> AclNet::ConfigDynamicShapes() {
 }
 
 Result<void> AclNet::CreateInputBuffers() {
-  MMDEPLOY_ERROR("CreateInputBuffers()");
   input_dataset_ = aclmdlCreateDataset();
   auto n_inputs = aclmdlGetNumInputs(model_desc_);
   MMDEPLOY_ERROR("n_inputs = {}, dynamic_tensor_index_ = {}", n_inputs, dynamic_tensor_index_);
@@ -321,7 +320,6 @@ Result<void> AclNet::CreateInputBuffers() {
 }
 
 Result<void> AclNet::CreateOutputBuffers() {
-  MMDEPLOY_ERROR("CreateOutputBuffers()");
   output_dataset_ = aclmdlCreateDataset();
   auto n_outputs = aclmdlGetNumOutputs(model_desc_);
   std::vector<aclmdlIODims> output_dims;
