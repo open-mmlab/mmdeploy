@@ -111,20 +111,20 @@ $ cmake .. \
   -DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK_ROOT}/build/cmake/android.toolchain.cmake \
   -DMMDEPLOY_CODEBASES=all  -DMMDEPLOY_TARGET_BACKENDS=snpe \
   -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-26  \
-  -DANDROID_STL=c++_shared  \
+  -DANDROID_STL=c++_static  \
   -DOpenCV_DIR=${ANDROID_OCV_ROOT}/sdk/native/jni/abi-arm64-v8a \
   -DMMDEPLOY_SHARED_LIBS=ON
 
   $ make && make install
 ```
 
-| Options                       | Description                                                 |
-| ----------------------------- | ----------------------------------------------------------- |
-| DMMDEPLOY_CODEBASES=all       | Compile all algorithms' post-process                        |
-| CMAKE_TOOLCHAIN_FILE          | Load NDK parameters, mainly used to select compiler         |
-| MMDEPLOY_TARGET_BACKENDS=snpe | Inference backend                                           |
-| ANDROID_STL=c++\_shared       | Use [LLVM's libc++](https://libcxx.llvm.org/), snpe need it |
-| MMDEPLOY_SHARED_LIBS=ON       | snpe does not provide static library                        |
+| Options                       | Description                                                  |
+| ----------------------------- | ------------------------------------------------------------ |
+| DMMDEPLOY_CODEBASES=all       | Compile all algorithms' post-process                         |
+| CMAKE_TOOLCHAIN_FILE          | Load NDK parameters, mainly used to select compiler          |
+| MMDEPLOY_TARGET_BACKENDS=snpe | Inference backend                                            |
+| ANDROID_STL=c++\_static       | In case of NDK environment can not find suitable c++ library |
+| MMDEPLOY_SHARED_LIBS=ON       | snpe does not provide static library                         |
 
 ### 3) Compile demo
 
@@ -136,8 +136,8 @@ $ cmake .. \
   -DMMDEPLOY_BUILD_SDK=ON   -DMMDEPLOY_CODEBASES=all \
   -DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK_ROOT}/build/cmake/android.toolchain.cmake \
   -DMMDEPLOY_CODEBASES=all  -DMMDEPLOY_TARGET_BACKENDS=snpe \
-  -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-26  \
-  -DANDROID_STL=c++_shared  \
+  -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-30  \
+  -DANDROID_STL=c++_static  \
   -DOpenCV_DIR=${ANDROID_OCV_ROOT}/sdk/native/jni/abi-arm64-v8a \
   -DMMDEPLOY_SHARED_LIBS=ON \
   -DMMDeploy_DIR=${PWD}/../../lib/cmake/MMDeploy
@@ -154,3 +154,32 @@ $ tree -L 1
 ```
 
 Just `adb push` the binary file and .so to the device and execute.
+
+### 4) Run the demo
+
+First make sure that`--dump-info`is used during convert model, so that the `resnet18` directory has the files required by the SDK such as `pipeline.json`.
+
+`adb push` the model directory, executable file and .so to the device.
+
+```bash
+$ cd /path/to/mmdeploy
+$ adb push resnet18  /data/local/tmp
+
+$ cd /path/to/install/
+$ adb push lib /data/local/tmp
+
+$ cd /path/to/install/example/build
+$ adb push image_classification /data/local/tmp
+```
+
+Set up environment variable and execute the sample.
+
+```bash
+$ adb shell
+venus:/ $ cd /data/local/tmp
+venus:/data/local/tmp $ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/data/local/tmp/lib
+
+venus:/data/local/tmp $ ./image_classification cpu ./resnet18/  demo.JPEG
+..
+label: 2, score: 0.4355
+```
