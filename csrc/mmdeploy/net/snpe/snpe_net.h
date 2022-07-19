@@ -39,6 +39,11 @@ class SNPENet : public Net {
              zdl::DlSystem::Runtime_t runtime, zdl::DlSystem::RuntimeList runtimeList,
              bool useUserSuppliedBuffers, zdl::DlSystem::PlatformConfig platformConfig);
 
+  std::string ShapeStr(zdl::DlSystem::ITensor* pTensor);
+
+  void copy_output(const zdl::DlSystem::ITensor* from, Tensor& to);
+  void copy_input(const Tensor& from, zdl::DlSystem::ITensor* to);
+
   Device device_;
   Stream stream_;
   std::vector<Tensor> input_tensors_;
