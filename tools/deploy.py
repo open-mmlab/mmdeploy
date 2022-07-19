@@ -319,7 +319,7 @@ def main():
         backend_files = pplnn_files
 
     elif backend == Backend.COREML:
-        from mmdeploy.apis.coreml import (from_torchscript, get_model_suffix)
+        from mmdeploy.apis.coreml import from_torchscript, get_model_suffix
         coreml_pipeline_funcs = [from_torchscript]
         PIPELINE_MANAGER.set_log_level(logging.INFO, coreml_pipeline_funcs)
         model_inputs = get_model_inputs(deploy_cfg)
@@ -328,12 +328,9 @@ def main():
             torchscript_name = osp.splitext(osp.split(torchscript_path)[1])[0]
             output_file_prefix = osp.join(args.work_dir, torchscript_name)
             convert_to = deploy_cfg.backend_config.convert_to
-            from_torchscript(torchscript_path,
-                             output_file_prefix,
-                             ir_config.input_names,
-                             ir_config.output_names,
-                             model_inputs[model_id].input_shapes,
-                             convert_to)
+            from_torchscript(torchscript_path, output_file_prefix,
+                             ir_config.input_names, ir_config.output_names,
+                             model_inputs[model_id].input_shapes, convert_to)
             suffix = get_model_suffix(convert_to)
             coreml_files.append(output_file_prefix + suffix)
         backend_files = coreml_files

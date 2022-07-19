@@ -5,6 +5,7 @@ import importlib
 
 def is_available():
     """Check whether coremltools is installed.
+
     Returns:
         bool: True if coremltools package is installed.
     """
@@ -14,6 +15,6 @@ def is_available():
 __all__ = []
 
 if is_available():
-    from .wrapper import CoreMLWrapper
     from .torchscript2coreml import get_model_suffix
+    from .wrapper import CoreMLWrapper
     __all__ += ['CoreMLWrapper', 'get_model_suffix']
