@@ -145,11 +145,26 @@ auto AclNet::CreateBuffers(const aclmdlIODims& dims, aclDataType data_type) -> R
   OUTCOME_TRY(auto byte_size, GetByteSize(dims, data_type));
   Buffers pair{};
   void* dev_ptr{};
-  aclrtMalloc(&dev_ptr, byte_size, ACL_MEM_MALLOC_HUGE_FIRST);
+  auto status = ACL_SUCCESS;
+  status = aclrtMalloc(&dev_ptr, byte_size, ACL_MEM_MALLOC_HUGE_FIRST);
+  if (status != ACL_SUCCESS) {
+    MMDEPLOY_ERROR("aclrtMalloc failed: {}", status);
+    return Status(eFail);
+  }
+  status = aclrtMemset(dev_ptr, byte_size, 0, byte_size);
+  if (status != ACL_SUCCESS) {
+    MMDEPLOY_ERROR("aclrtMemset failed: {}", status);
+    return Status(eFail);
+  }
   pair.device_buffer = aclCreateDataBuffer(dev_ptr, byte_size);
   OUTCOME_TRY(auto desc, ToTensorDesc(dims, data_type));
   void* host_ptr{};
-  aclrtMallocHost(&host_ptr, byte_size);
+  status = aclrtMallocHost(&host_ptr, byte_size);
+  if (status != ACL_SUCCESS) {
+    MMDEPLOY_ERROR("aclrtMallocHost failed: {}", status);
+    return Status(eFail);
+  }
+  memset(host_ptr, 0, byte_size);
   pair.host_tensor =
       Tensor(desc, std::shared_ptr<void>(host_ptr, [](void* p) { aclrtFreeHost(p); }));
   return pair;
@@ -335,30 +350,51 @@ Result<void> AclNet::Init(const Value& args) {
   OUTCOME_TRY(auto binary, model.ReadFile(config.net));
 
   InitACL();
-  auto ret = aclrtSetDevice(0);
+  auto status = aclrtSetDevice(0);
+  if (status != ACL_SUCCESS) {
+    MMDEPLOY_ERROR("aclrtSetDevice failed: {}", status);
+    return Status(eFail);
+  }
 
-  aclmdlLoadFromMem(binary.data(), binary.size(), &model_id_);
+  status = aclmdlLoadFromMem(binary.data(), binary.size(), &model_id_);
+  if (status != ACL_SUCCESS) {
+    MMDEPLOY_ERROR("aclmdlLoadFromMem failed: {}", status);
+    return Status(eFail);
+  }
 
   model_desc_ = aclmdlCreateDesc();
-  aclmdlGetDesc(model_desc_, model_id_);
+  status = aclmdlGetDesc(model_desc_, model_id_);
+  if (status != ACL_SUCCESS) {
+    MMDEPLOY_ERROR("aclmdlGetDesc failed: {}", status);
+    return Status(eFail);
+  }
 
   // dynamic_tensor_index_
   // input_shape_type_
   // dynamic_batch_size_
   // dynamic_input_dims_
-  OUTCOME_TRY(ConfigDynamicShapes());
+  if (auto r = ConfigDynamicShapes(); !r) {
+    MMDEPLOY_ERROR("Failed to config dynamic shapes");
+    return r.as_failure();
+  }
 
   // input_dataset_
   // input_data_type_
   // input_dims_
   // input_tensor_
-  OUTCOME_TRY(CreateInputBuffers());
+  if (auto r = CreateInputBuffers(); !r) {
+    MMDEPLOY_ERROR("Failed to create input buffers");
+    return r.as_failure();
+  }
 
   // output_dataset_
   // output_data_type_
   // output_dims_
   // output_tensor_
-  OUTCOME_TRY(CreateOutputBuffers());
+  if (auto r = CreateOutputBuffers(); !r) {
+    MMDEPLOY_ERROR("Failed to create output buffers");
+    return r.as_failure();
+  }
 
   return success();
 }
@@ -372,12 +408,12 @@ Result<Span<Tensor>> AclNet::GetOutputTensors() { return output_tensor_; }
 Result<void> AclNet::Reshape(Span<TensorShape> input_shapes) {
   // Sanity checks
   if (input_shapes.size() != input_dims_.size()) {
-    // inconsistent num inputs
+    MMDEPLOY_ERROR("inconsistent num inputs");
     return Status(eInvalidArgument);
   }
   for (int i = 0; i < input_dims_.size(); ++i) {
     if (input_shapes[i].size() != input_dims_[i].dimCount) {
-      // inconsistent num of dims
+      MMDEPLOY_ERROR("inconsistent num of dims");
       return Status(eInvalidArgument);
     }
   }
@@ -412,7 +448,11 @@ Result<void> AclNet::Reshape(Span<TensorShape> input_shapes) {
 
   for (int i = 0; i < output_dims_.size(); ++i) {
     aclmdlIODims dims{};
-    aclmdlGetCurOutputDims(model_desc_, i, &dims);
+    auto status = aclmdlGetCurOutputDims(model_desc_, i, &dims);
+    if (status != ACL_SUCCESS) {
+      MMDEPLOY_ERROR("aclmdlGetCurOutputDims failed: {}", status);
+      return Status(eFail);
+    }
     auto buffer = output_tensor_[i].buffer();
     auto desc = output_tensor_[i].desc();
     desc.shape = TensorShape(&dims.dims[0], &dims.dims[0] + dims.dimCount);
@@ -560,18 +600,32 @@ Result<void> AclNet::Forward() {
     auto buffer_size = aclGetDataBufferSizeV2(buffer);
     auto buffer_data = aclGetDataBufferAddr(buffer);
     auto host_ptr = input_tensor_[i].data();
-    aclrtMemcpy(buffer_data, buffer_size, host_ptr, input_tensor_[i].byte_size(),
-                ACL_MEMCPY_HOST_TO_DEVICE);
+    auto status = aclrtMemcpy(buffer_data, buffer_size, host_ptr, input_tensor_[i].byte_size(),
+                              ACL_MEMCPY_HOST_TO_DEVICE);
+    if (status != ACL_SUCCESS) {
+      MMDEPLOY_ERROR("aclrtMemcpy failed: {}", status);
+      return Status(eFail);
+    }
   }
 
-  aclmdlExecute(model_id_, input_dataset_, output_dataset_);
+  {
+    auto status = aclmdlExecute(model_id_, input_dataset_, output_dataset_);
+    if (status != ACL_SUCCESS) {
+      MMDEPLOY_ERROR("aclmdlExecute failed: {}", status);
+      return Status(eFail);
+    }
+  }
 
   for (int i = 0; i < output_tensor_.size(); ++i) {
     auto buffer = aclmdlGetDatasetBuffer(output_dataset_, i);
     auto buffer_data = aclGetDataBufferAddr(buffer);
     auto host_ptr = output_tensor_[i].data();
-    aclrtMemcpy(host_ptr, output_tensor_[i].byte_size(), buffer_data, output_tensor_[i].byte_size(),
-                ACL_MEMCPY_DEVICE_TO_HOST);
+    auto status = aclrtMemcpy(host_ptr, output_tensor_[i].byte_size(), buffer_data,
+                              output_tensor_[i].byte_size(), ACL_MEMCPY_DEVICE_TO_HOST);
+    if (status != ACL_SUCCESS) {
+      MMDEPLOY_ERROR("aclrtMemcpy failed: {}", status);
+      return Status(eFail);
+    }
   }
   return success();
 }
