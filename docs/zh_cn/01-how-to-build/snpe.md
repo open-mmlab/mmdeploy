@@ -209,18 +209,18 @@ $ cd /path/to/install/example
 $ mkdir build && cd build
 
 $ cmake .. \
-  -DMMDEPLOY_BUILD_SDK=ON   -DMMDEPLOY_CODEBASES=all \
+  -DMMDEPLOY_CODEBASES=all \
   -DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK_ROOT}/build/cmake/android.toolchain.cmake \
   -DMMDEPLOY_CODEBASES=all  -DMMDEPLOY_TARGET_BACKENDS=snpe \
-  -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-26  \
-  -DANDROID_STL=c++_shared  \
+  -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-30  \
+  -DANDROID_STL=c++_static  \
   -DOpenCV_DIR=${ANDROID_OCV_ROOT}/sdk/native/jni/abi-arm64-v8a \
-  -DMMDEPLOY_SHARED_LIBS=ON \
   -DMMDeploy_DIR=${PWD}/../../lib/cmake/MMDeploy
 
 $ make
 $ tree -L 1
-...
+.
+├── image_classification
 ├── image_restorer
 ├── image_segmentation
 ├── object_detection
@@ -229,4 +229,31 @@ $ tree -L 1
 └── rotated_object_detection
 ```
 
-把可执行文件和 .so `adb push` 到设备上执行即可。
+## 4. 运行 demo
+
+先确认测试模型用了 `--dump-info`，这样 `resnet18` 目录才有 `pipeline.json` 等 SDK 所需文件。
+
+把 dump 好的模型目录、可执行文件和 lib 都 `adb push` 到设备里
+
+```bash
+$ cd /path/to/mmdeploy
+$ adb push resnet18  /data/local/tmp
+
+$ cd /path/to/install/
+$ adb push lib /data/local/tmp
+
+$ cd /path/to/install/example/build
+$ adb push image_classification /data/local/tmp
+```
+
+设置环境变量，执行样例
+
+```bash
+$ adb shell
+venus:/ $ cd /data/local/tmp
+venus:/data/local/tmp $ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/data/local/tmp/lib
+
+venus:/data/local/tmp $ ./image_classification cpu ./resnet18/  demo.JPEG
+..
+label: 2, score: 0.4355
+```
