@@ -1,9 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
 #include "service_impl.h"
-#include "text_table.h"
-
-#include "scope_timer.h"
 
 #include <algorithm>
 #include <cstdlib>
@@ -14,6 +11,9 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+
+#include "scope_timer.h"
+#include "text_table.h"
 
 zdl::DlSystem::Runtime_t InferenceServiceImpl::CheckRuntime(zdl::DlSystem::Runtime_t runtime,
                                                             bool& staticQuantization) {
@@ -278,7 +278,8 @@ std::string InferenceServiceImpl::ShapeStr(zdl::DlSystem::ITensor* pTensor) {
       }
 
       if (float_input.size() != ptensor->getSize()) {
-        fprintf(stderr, "Stage Inference: input size not match, get %ld, expect %ld.\n", float_input.size(), ptensor->getSize());
+        fprintf(stderr, "Stage Inference: input size not match, get %ld, expect %ld.\n",
+                float_input.size(), ptensor->getSize());
         response->set_status(-1);
         response->set_info(zdl::DlSystem::getLastErrorString());
         return Status::OK;

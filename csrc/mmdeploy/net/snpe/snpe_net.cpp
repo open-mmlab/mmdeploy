@@ -8,8 +8,7 @@
 
 namespace mmdeploy {
 
-SNPENet::~SNPENet() {
-}
+SNPENet::~SNPENet() {}
 
 std::string SNPENet::ShapeStr(zdl::DlSystem::ITensor* pTensor) {
   std::string str;
