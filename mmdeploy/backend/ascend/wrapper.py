@@ -242,16 +242,13 @@ class AscendWrapper(BaseWrapper):
     def _reshape_dynamic_batch_size(self, input_shapes):
         batch_size = None
         for src, ref in zip(input_shapes, self._model_desc.inputs):
-            tmp_batch_size = None
-            for src_dim, ref_dim in zip(src, ref.dims):
-                if ref_dim == -1:
-                    tmp_batch_size = src_dim
-            if tmp_batch_size and batch_size is None:
-                batch_size = tmp_batch_size
-            elif tmp_batch_size and batch_size != tmp_batch_size:
-                raise RuntimeError(
-                    f'Inconsistent batch size {batch_size} vs {tmp_batch_size}'
-                )
+            if ref.dims[0] == -1:
+                if batch_size is None: 
+                    batch_size = src[0]
+                elif batch_size != src[0]:
+                    raise RuntimeError(
+                        f'Inconsistent batch size {batch_size} vs {src[0]}')
+
         if batch_size is None:
             raise RuntimeError('Can\'t determine batch size')
 
@@ -267,31 +264,23 @@ class AscendWrapper(BaseWrapper):
             self._model_desc.dynamic_tensor.index, candidates[0])
         _check(ret, 'acl.mdl.set_dynamic_batch_size')
 
-    def _get_hw(self, src: Sequence[int], ref: Sequence[int]) -> Tuple[int]:
-        hw = []
-        for src_dim, ref_dim in zip(src, ref):
-            if ref_dim == -1:
-                hw.append(src_dim)
-        if not hw:
-            return ()
-        if len(hw) != 2:
-            raise RuntimeError('Can\'t determine HW')
-        return tuple(*hw)
-
     def _reshape_dynamic_image_size(self, input_shapes):
-        hw = None
+        size = None
         for src, ref in zip(input_shapes, self._model_desc.inputs):
-            tmp_hw = self._get_hw(src, ref.dims)
-            if tmp_hw and hw is None:
-                hw = tmp_hw
-            elif tmp_hw and tmp_hw != hw:
-                raise RuntimeError(f'Inconsistent image size {hw} vs {tmp_hw}')
-        if hw is None:
+            if -1 in ref.dims:
+                tmp_size = src[-2], src[-1]
+                if size is None: 
+                    size = tmp_size
+                elif size != tmp_size:
+                    raise RuntimeError(
+                        f'Inconsistent image size {size} vs {tmp_size}')
+
+        if size is None:
             raise RuntimeError('Can\'t determine dynamic HW')
-        if not hw in self._dynamic_hw:
+        if not list(size) in self._dynamic_hw:
             raise RuntimeError(
-                f'HW {hw} is not supported. ({self._dynamic_hw})')
-        height, width = hw
+                f'size {size} is not supported. ({self._dynamic_hw})')
+        height, width = size
         ret = acl.mdl.set_dynamic_hw_size(
             self._model_id, self._input.handle,
             self._model_desc.dynamic_tensor.index, height, width)
@@ -322,26 +311,22 @@ class AscendWrapper(BaseWrapper):
     def _config_dynamic_shapes(self):
 
         if self._model_desc.dynamic_tensor is None:
-            self._input_shape_type = 'static'
             self._reshape_fn = self._reshape_static
             return
 
         self._dynamic_batch_size = self._model_desc.get_dynamic_batch()
         if self._dynamic_batch_size:
-            self._input_shape_type = 'dynamic_batch_size'
             self._reshape_fn = self._reshape_dynamic_batch_size
             return
 
         self._dynamic_dims = self._model_desc.get_input_dynamic_dims()
         if self._dynamic_dims:
-            self._input_shape_type = 'dynamic_dims'
-            self._reshape_fn = self._reshape_dynamic_image_size
+            self._reshape_fn = self._reshape_dynamic_dims
             return
 
         self._dynamic_hw = self._model_desc.get_dynamic_hw()
         if self._dynamic_hw:
-            self._input_shape_type = 'dynamic_image_size'
-            self._reshape_fn = self._reshape_dynamic_dims
+            self._reshape_fn = self._reshape_dynamic_image_size
             return
 
         raise RuntimeError('Can\'t infer input shape type')

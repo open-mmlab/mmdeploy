@@ -40,6 +40,9 @@ def from_onnx(onnx_model, work_dir, model_inputs):
         args.append(
             f'--dynamic_batch_size={",".join(map(str, model_inputs.batch_sizes))}'
         )
+    elif model_inputs.type == 'DynamicImageSize':
+        sizes = [','.join(map(str, x)) for x in model_inputs.image_sizes]
+        args.append(f'--dynamic_image_size={";".join(sizes)}')
 
     print(' '.join(('atc', *args)))
 
