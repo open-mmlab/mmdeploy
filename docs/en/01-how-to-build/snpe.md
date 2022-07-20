@@ -19,15 +19,15 @@ Download the prebuilt snpe inference service package, `adb push` it to the phone
 Note that **the phone must have a qcom chip**.
 
 ```bash
-$ wget https://media.githubusercontent.com/media/tpoisonooo/mmdeploy-onnx2ncnn-testdata/main/snpe-inference-server-1.59.tar
+$ wget https://media.githubusercontent.com/media/tpoisonooo/mmdeploy_snpe_testdata/main/snpe-inference-server-1.59.tar.gz
 ...
 $ sudo apt install adb
-$ adb push snpe-inference-server-1.59.tar  /data/local/tmp/
+$ adb push snpe-inference-server-1.59.tar.gz  /data/local/tmp/
 
 # decompress and execute
 $ adb shell
 venus:/ $ cd /data/local/tmp
-130|venus:/data/local/tmp $ tar xvf snpe-inference-server-1.59.tar
+130|venus:/data/local/tmp $ tar xvf snpe-inference-server-1.59.tar.gz
 ...
 130|venus:/data/local/tmp $ source export1.59.sh
 130|venus:/data/local/tmp $ ./inference_server
