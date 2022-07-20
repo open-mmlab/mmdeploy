@@ -13,9 +13,9 @@ this mode
 
 3. Can simplify mmdeploy installation steps. If you only want to convert snpe model and test, you don't need to compile the .whl package.
 
-## 1. Execute inference service
+## 1. Run inference server
 
-Download the prebuilt snpe inference service package, `adb push` it to the phone and execute.
+Download the prebuilt snpe inference server package, `adb push` it to the phone and execute.
 Note that **the phone must have a qcom chip**.
 
 ```bash
@@ -46,18 +46,20 @@ tips:
 
 ## 2. Build mmdeploy
 
-1. Environment
+### 1) Environment
 
 | Matters | Version            | Remarks                |
 | ------- | ------------------ | ---------------------- |
 | host OS | ubuntu18.04 x86_64 | snpe specified version |
 | Python  | **3.6.0**          | snpe specified version |
 
-2. Installation
+### 2) Installation
 
-If you only need to do model convert and test,  just `pip install` it.
+Download [snpe-1.59 from the official website](https://developer.qualcomm.com/qfile/69652/snpe-1.59.0.zip)
 
 ```bash
+$ unzip snpe-1.59.0.zip
+$ export SNPE_ROOT=/path/to/snpe-1.59.0.3230
 $ cd /path/to/mmdeploy
 $ python3 -m pip install -e .
 ```
