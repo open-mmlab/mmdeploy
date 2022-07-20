@@ -236,7 +236,7 @@ Result<void> PPLNet::Reshape(Span<TensorShape> input_shapes) {
   if (can_infer_output_shapes_) {
     OUTCOME_TRY(auto output_shapes,
                 InferOutputShapes(input_shapes, prev_in_shapes, prev_out_shapes));
-    //    MMDEPLOY_ERROR("inferred output shapes: {}", output_shapes);
+    MMDEPLOY_DEBUG("inferred output shapes: {}", output_shapes);
     for (int i = 0; i < outputs_external_.size(); ++i) {
       auto& output = outputs_external_[i];
       output.Reshape(output_shapes[i]);

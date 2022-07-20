@@ -22,7 +22,7 @@ jlong Java_mmdeploy_TextRecognizer_create(JNIEnv *env, jobject, jstring modelPat
 }
 
 void Java_mmdeploy_TextRecognizer_destroy(JNIEnv *, jobject, jlong handle) {
-  MMDEPLOY_INFO("Java_mmdeploy_TextRecognizer_destroy");  // maybe use info?
+  MMDEPLOY_DEBUG("Java_mmdeploy_TextRecognizer_destroy");  // maybe use info?
   mmdeploy_text_recognizer_destroy((mmdeploy_text_recognizer_t)handle);
 }
 

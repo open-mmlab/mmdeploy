@@ -34,7 +34,9 @@ class PSEHead : public MMOCR {
     auto platform = Platform(device_.platform_id()).GetPlatformName();
     auto creator = Registry<PseHeadImpl>::Get().GetCreator(platform);
     if (!creator) {
-      MMDEPLOY_ERROR("PSEHead: implementation for platform \"{}\" not found", platform);
+      MMDEPLOY_ERROR(
+          "PSEHead: implementation for platform \"{}\" not found. Available platforms: {}",
+          platform, Registry<PseHeadImpl>::Get().List());
       throw_exception(eEntryNotFound);
     }
     impl_ = creator->Create(nullptr);
