@@ -1,19 +1,15 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-from typing import Any, Dict, List, Optional, Sequence, Union, Tuple
+from typing import Dict, List, NamedTuple, Sequence, Tuple
 
 import acl
+import numpy as np
 import torch
 
 from mmdeploy.utils import Backend
 from ..base import BACKEND_WRAPPER, BaseWrapper
-from operator import mul
-from functools import reduce
-import numpy as np
-from itertools import chain
-from typing import NamedTuple
 
-_from_acl_data_type = {0: np.float32, 3: np.int32}
+_from_acl_data_type = {0: np.float32, 3: np.int32, 9: np.int64}
 
 _to_acl_data_type = {np.float32: 0}
 
@@ -92,7 +88,7 @@ class ModelDesc:
             dims = self._get_output_dims(index)
             data_type = acl.mdl.get_output_data_type(self._desc, index)
             data_type = _from_acl_data_type[data_type]
-            size = acl.mdl.get_input_size_by_index(self._desc, index)
+            size = acl.mdl.get_output_size_by_index(self._desc, index)
             self.outputs.append(
                 Binding(index, dims['name'], dims['dims'], data_type, size))
 
@@ -255,9 +251,8 @@ class AscendWrapper(BaseWrapper):
         candidates = list(
             filter(lambda x: x >= batch_size, self._dynamic_batch_size))
         if not candidates:
-            raise RuntimeError(
-                f'Batch size {batch_size} is not supported. ({self._dynamic_batch_size})'
-            )
+            raise RuntimeError(f'Batch size {batch_size} is not supported.'
+                               f' ({self._dynamic_batch_size})')
 
         ret = acl.mdl.set_dynamic_batch_size(
             self._model_id, self._input.handle,
@@ -277,7 +272,11 @@ class AscendWrapper(BaseWrapper):
 
         if size is None:
             raise RuntimeError('Can\'t determine dynamic HW')
+<<<<<<< HEAD
         if not list(size) in self._dynamic_hw:
+=======
+        if hw not in self._dynamic_hw:
+>>>>>>> 30955f2341a959f462f4166a2aa4610f3927a854
             raise RuntimeError(
                 f'size {size} is not supported. ({self._dynamic_hw})')
         height, width = size
