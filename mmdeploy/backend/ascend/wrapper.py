@@ -114,13 +114,13 @@ class ModelDesc:
         return dims
 
     def _get_current_output_dims(self, index):
-        dims, ret = acl.mdl.get_current_output_dims(self._desc, index)
-        _check(ret, 'acl.mdl.get_current_output_dims')
+        dims, ret = acl.mdl.get_cur_output_dims(self._desc, index)
+        _check(ret, 'acl.mdl.get_cur_output_dims')
         return dims
 
     def get_current_ouptut_dims(self):
         dimses = []
-        for output in range(self.outputs):
+        for output in self.outputs:
             dims = self._get_current_output_dims(output.index)
             dimses.append(dims['dims'])
         return dimses
