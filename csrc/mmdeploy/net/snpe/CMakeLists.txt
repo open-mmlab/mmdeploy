@@ -20,7 +20,6 @@ set_target_properties(snpe PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "$ENV{SNPE_ROOT}/include/zdl"
 )
 
-message(STATUS ">> project name ${PROJECT_NAME}")
 mmdeploy_add_module(${PROJECT_NAME} snpe_net.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE snpe)
 add_library(mmdeploy::snpe_net ALIAS ${PROJECT_NAME})
