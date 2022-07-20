@@ -11,8 +11,6 @@ from ..base import BACKEND_WRAPPER, BaseWrapper
 
 _from_acl_data_type = {0: np.float32, 3: np.int32, 9: np.int64}
 
-_to_acl_data_type = {np.float32: 0}
-
 
 class AclError(Exception):
     pass
@@ -239,7 +237,7 @@ class AscendWrapper(BaseWrapper):
         batch_size = None
         for src, ref in zip(input_shapes, self._model_desc.inputs):
             if ref.dims[0] == -1:
-                if batch_size is None: 
+                if batch_size is None:
                     batch_size = src[0]
                 elif batch_size != src[0]:
                     raise RuntimeError(
@@ -264,7 +262,7 @@ class AscendWrapper(BaseWrapper):
         for src, ref in zip(input_shapes, self._model_desc.inputs):
             if -1 in ref.dims:
                 tmp_size = src[-2], src[-1]
-                if size is None: 
+                if size is None:
                     size = tmp_size
                 elif size != tmp_size:
                     raise RuntimeError(
@@ -287,11 +285,12 @@ class AscendWrapper(BaseWrapper):
         for src in input_shapes:
             for axis, src_dim in enumerate(src):
                 for index, dims in enumerate(self._dynamic_dims):
-                    if axis == 0 and src_dim < dims['dims'][
-                            ptr]:  # allow batch dimension to vary
+                    ref_dim = dims['dims'][ptr]
+                    if axis == 0 and src_dim < ref_dim:  # allow batch dimension to vary
                         pass
-                    elif src_dim != dims[ptr]:
+                    elif src_dim != ref_dim:
                         match[index] = False
+                ptr += 1
 
         indices = [i for i, v in enumerate(match) if v]
         if not indices:
