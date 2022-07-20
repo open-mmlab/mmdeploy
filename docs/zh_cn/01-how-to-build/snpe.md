@@ -19,15 +19,15 @@ mmdeploy 集成 snpe 的方式简单且有效： Client/Server 模式。
 注意**手机要有 qcom 芯片**。
 
 ```bash
-$ wget https://media.githubusercontent.com/media/tpoisonooo/mmdeploy-onnx2ncnn-testdata/main/snpe-inference-server-1.59.tar
+$ wget https://media.githubusercontent.com/media/tpoisonooo/mmdeploy_snpe_testdata/main/snpe-inference-server-1.59.tar.gz
 ...
 $ sudo apt install adb
-$ adb push snpe-inference-server-1.59.tar  /data/local/tmp/
+$ adb push snpe-inference-server-1.59.tar.gz  /data/local/tmp/
 
 # 解压运行
 $ adb shell
 venus:/ $ cd /data/local/tmp
-130|venus:/data/local/tmp $ tar xvf snpe-inference-server-1.59.tar
+130|venus:/data/local/tmp $ tar xvf snpe-inference-server-1.59.tar.gz
 ...
 130|venus:/data/local/tmp $ source export1.59.sh
 130|venus:/data/local/tmp $ ./inference_server
