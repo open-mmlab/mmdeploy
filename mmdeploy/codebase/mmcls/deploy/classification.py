@@ -74,6 +74,7 @@ class Classification(BaseTask):
             nn.Module: An initialized backend model.
         """
         from .classification_model import build_classification_model
+
         model = build_classification_model(
             model_files,
             self.model_cfg,
