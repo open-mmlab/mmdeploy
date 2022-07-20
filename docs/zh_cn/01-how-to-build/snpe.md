@@ -66,10 +66,6 @@ $ cd /path/to/mmdeploy
 $ python3 -m pip install -e .
 ```
 
-tips:
-
-- 如果网络不好，[这个 .tar.gz](https://github.com/tpoisonooo/mmdeploy_snpe_testdata/blob/main/snpe-1.59.tar.gz) 仅减小官方包体积，没有修改原始内容。
-
 ## 三、测试模型
 
 以 Resnet-18 为例。先参照[文档安装 mmcls](https://github.com/open-mmlab/mmclassification)，然后使用 `tools/deploy.py` 转换模型。

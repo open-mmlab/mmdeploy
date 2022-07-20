@@ -136,7 +136,7 @@ Result<void> SNPENet::Init(const Value& args) {
     return Status(eInvalidArgument);
   }
 
-  zdl::DlSystem::Runtime_t runtime = zdl::DlSystem::Runtime_t::CPU;
+  zdl::DlSystem::Runtime_t runtime = zdl::DlSystem::Runtime_t::GPU;
   if (!zdl::SNPE::SNPEFactory::isRuntimeAvailable(runtime)) {
     MMDEPLOY_WARN("Selected runtime not present. Falling back to CPU.\n");
     runtime = zdl::DlSystem::Runtime_t::CPU;
