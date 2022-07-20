@@ -4,8 +4,11 @@ project(mmdeploy_snpe_net)
 
 add_library(snpe SHARED IMPORTED)
 
-# set(sub_dir "x86_64-linux-clang")
-set(sub_dir "aarch64-android-clang6.0")
+if (DEFINED $ENV{__MMDEPLOY_SNPE_CI})
+  set(sub_dir "x86_64-linux-clang")
+else()
+  set(sub_dir "aarch64-android-clang6.0")
+endif()
 
 if (NOT EXISTS $ENV{SNPE_ROOT}/lib/${sub_dir}/)
   message(ERROR "SNPE_ROOT directory not exist:  $ENV{SNPE_ROOT}/lib/${sub_dir}/")
