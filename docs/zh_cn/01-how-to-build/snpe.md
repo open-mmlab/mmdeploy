@@ -55,12 +55,18 @@ tips:
 
 2. 安装
 
-如果只需要做模型转换和精度测试，`pip` 安装即可。
+[官网下载 snpe-1.59](https://developer.qualcomm.com/qfile/69652/snpe-1.59.0.zip)，解压
 
 ```bash
+$ unzip snpe-1.59.0.zip
+$ export SNPE_ROOT=/path/to/snpe-1.59.0.3230
 $ cd /path/to/mmdeploy
 $ python3 -m pip install -e .
 ```
+
+tips:
+
+- 如果网络不好，[这个 .tar.gz](https://github.com/tpoisonooo/mmdeploy_snpe_testdata/blob/main/snpe-1.59.tar.gz) 没有修改内容，仅压缩打包减小体积。
 
 ## 三、测试模型
 
@@ -84,7 +90,7 @@ $ python3 tools/test.py configs/mmcls/classification_snpe_static.py   $MODEL_CON
 
 如果你还需要用 Android NDK 编译 mmdeploy SDK，请继续阅读本章节。
 
-### 1. 下载 OCV 和 NDK 包，设置环境变量
+### 1. 下载 OCV、NDK，设置环境变量
 
 ```bash
 # 下载 android OCV
