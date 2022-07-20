@@ -91,6 +91,12 @@ make install
 </code></pre>
    </td>
   </tr>
+  <tr>
+  <td>OpenJDK </td>
+  <td>It is necessary for building Java API.</br>
+  See <a href='https://github.com/open-mmlab/mmdeploy/blob/master/csrc/mmdeploy/apis/java/README.md'> Java API build </a> for building tutorials.
+  </td>
+  </tr>
 </tbody>
 </table>
 

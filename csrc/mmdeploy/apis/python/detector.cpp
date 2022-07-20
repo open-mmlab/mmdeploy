@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "mmdeploy/apis/c/detector.h"
+#include "mmdeploy/detector.h"
 
 #include "common.h"
 
@@ -9,23 +9,23 @@ namespace mmdeploy {
 class PyDetector {
  public:
   PyDetector(const char *model_path, const char *device_name, int device_id) {
-    auto status = mmdeploy_detector_create_by_path(model_path, device_name, device_id, &handle_);
-    if (status != MM_SUCCESS) {
+    auto status = mmdeploy_detector_create_by_path(model_path, device_name, device_id, &detector_);
+    if (status != MMDEPLOY_SUCCESS) {
       throw std::runtime_error("failed to create detector");
     }
   }
   py::list Apply(const std::vector<PyImage> &imgs) {
-    std::vector<mm_mat_t> mats;
+    std::vector<mmdeploy_mat_t> mats;
     mats.reserve(imgs.size());
     for (const auto &img : imgs) {
       auto mat = GetMat(img);
       mats.push_back(mat);
     }
-    mm_detect_t *detection{};
+    mmdeploy_detection_t *detection{};
     int *result_count{};
-    auto status =
-        mmdeploy_detector_apply(handle_, mats.data(), (int)mats.size(), &detection, &result_count);
-    if (status != MM_SUCCESS) {
+    auto status = mmdeploy_detector_apply(detector_, mats.data(), (int)mats.size(), &detection,
+                                          &result_count);
+    if (status != MMDEPLOY_SUCCESS) {
       throw std::runtime_error("failed to apply detector, code: " + std::to_string(status));
     }
     auto output = py::list{};
@@ -57,12 +57,12 @@ class PyDetector {
     return output;
   }
   ~PyDetector() {
-    mmdeploy_detector_destroy(handle_);
-    handle_ = {};
+    mmdeploy_detector_destroy(detector_);
+    detector_ = {};
   }
 
  private:
-  mm_handle_t handle_{};
+  mmdeploy_detector_t detector_{};
 };
 
 static void register_python_detector(py::module &m) {

@@ -126,6 +126,8 @@ def clear_mmdeploy(mmdeploy_dir: str):
     # remove onnx2ncnn and ncnn ext
     _remove_in_mmdeploy('mmdeploy/backend/ncnn/onnx2ncnn')
     _remove_in_mmdeploy('mmdeploy/backend/ncnn/onnx2ncnn.exe')
+    _remove_in_mmdeploy('mmdeploy/backend/ncnn/mmdeploy_onnx2ncnn')
+    _remove_in_mmdeploy('mmdeploy/backend/ncnn/mmdeploy_onnx2ncnn.exe')
     ncnn_ext_paths = glob(
         osp.join(mmdeploy_dir, 'mmdeploy/backend/ncnn/ncnn_ext.*'))
     for ncnn_ext_path in ncnn_ext_paths:

@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "mmdeploy/apis/c/pose_detector.h"
+#include "mmdeploy/pose_detector.h"
 
 #include <array>
 #include <sstream>
@@ -15,8 +15,8 @@ class PyPoseDedector {
  public:
   PyPoseDedector(const char *model_path, const char *device_name, int device_id) {
     auto status =
-        mmdeploy_pose_detector_create_by_path(model_path, device_name, device_id, &handle_);
-    if (status != MM_SUCCESS) {
+        mmdeploy_pose_detector_create_by_path(model_path, device_name, device_id, &detector_);
+    if (status != MMDEPLOY_SUCCESS) {
       throw std::runtime_error("failed to create pose_detector");
     }
   }
@@ -30,8 +30,8 @@ class PyPoseDedector {
       throw std::invalid_argument(os.str());
     }
 
-    std::vector<mm_mat_t> mats;
-    std::vector<mm_rect_t> boxes;
+    std::vector<mmdeploy_mat_t> mats;
+    std::vector<mmdeploy_rect_t> boxes;
     std::vector<int> bbox_count;
     mats.reserve(imgs.size());
     for (const auto &img : imgs) {
@@ -41,7 +41,7 @@ class PyPoseDedector {
 
     for (auto _boxes : vboxes) {
       for (auto _box : _boxes) {
-        mm_rect_t box = {_box[0], _box[1], _box[2], _box[3]};
+        mmdeploy_rect_t box = {_box[0], _box[1], _box[2], _box[3]};
         boxes.push_back(box);
       }
       bbox_count.push_back(_boxes.size());
@@ -50,16 +50,16 @@ class PyPoseDedector {
     // full image
     if (vboxes.size() == 0) {
       for (int i = 0; i < mats.size(); i++) {
-        mm_rect_t box = {0.f, 0.f, mats[i].width - 1.f, mats[i].height - 1.f};
+        mmdeploy_rect_t box = {0.f, 0.f, mats[i].width - 1.f, mats[i].height - 1.f};
         boxes.push_back(box);
         bbox_count.push_back(1);
       }
     }
 
-    mm_pose_detect_t *detection{};
-    auto status = mmdeploy_pose_detector_apply_bbox(handle_, mats.data(), (int)mats.size(),
+    mmdeploy_pose_detection_t *detection{};
+    auto status = mmdeploy_pose_detector_apply_bbox(detector_, mats.data(), (int)mats.size(),
                                                     boxes.data(), bbox_count.data(), &detection);
-    if (status != MM_SUCCESS) {
+    if (status != MMDEPLOY_SUCCESS) {
       throw std::runtime_error("failed to apply pose_detector, code: " + std::to_string(status));
     }
 
@@ -90,12 +90,12 @@ class PyPoseDedector {
     return output;
   }
   ~PyPoseDedector() {
-    mmdeploy_pose_detector_destroy(handle_);
-    handle_ = {};
+    mmdeploy_pose_detector_destroy(detector_);
+    detector_ = {};
   }
 
  private:
-  mm_handle_t handle_{};
+  mmdeploy_pose_detector_t detector_{};
 };
 
 static void register_python_pose_detector(py::module &m) {
