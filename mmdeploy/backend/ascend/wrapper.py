@@ -13,10 +13,7 @@ import numpy as np
 from itertools import chain
 from typing import NamedTuple
 
-_from_acl_data_type = {
-    0: np.float32,
-    3: np.int32
-}
+_from_acl_data_type = {0: np.float32, 3: np.int32}
 
 _to_acl_data_type = {np.float32: 0}
 
@@ -266,8 +263,8 @@ class AscendWrapper(BaseWrapper):
             )
 
         ret = acl.mdl.set_dynamic_batch_size(
-            self._model_id, self._input, self._model_desc.dynamic_tensor.index,
-            candidates[0])
+            self._model_id, self._input.handle,
+            self._model_desc.dynamic_tensor.index, candidates[0])
         _check(ret, 'acl.mdl.set_dynamic_batch_size')
 
     def _get_hw(self, src: Sequence[int], ref: Sequence[int]) -> Tuple[int]:
@@ -296,8 +293,8 @@ class AscendWrapper(BaseWrapper):
                 f'HW {hw} is not supported. ({self._dynamic_hw})')
         height, width = hw
         ret = acl.mdl.set_dynamic_hw_size(
-            self._model_id, self._input, self._model_desc.dynamic_tensor.index,
-            height, width)
+            self._model_id, self._input.handle,
+            self._model_desc.dynamic_tensor.index, height, width)
         _check(ret, 'acl.mdl.set_dynamic_hw_size')
 
     def _reshape_dynamic_dims(self, input_shapes):
@@ -318,8 +315,8 @@ class AscendWrapper(BaseWrapper):
         index = indices[0]
 
         ret = acl.mdl.set_input_dynamic_dims(
-            self._model_id, self._input, self._model_desc.dynamic_tensor.index,
-            self._dynamic_dims[index])
+            self._model_id, self._input.handle,
+            self._model_desc.dynamic_tensor.index, self._dynamic_dims[index])
         _check(ret, 'acl.mdl.set_input_dynamic_dims')
 
     def _config_dynamic_shapes(self):
@@ -353,6 +350,9 @@ class AscendWrapper(BaseWrapper):
         self._input = Dataset()
         for binding in self._model_desc.inputs:
             self._input.add_buffer(DataBuffer(binding.size))
+        if self._model_desc.dynamic_tensor:
+            self._input.add_buffer(
+                DataBuffer(self._model_desc.dynamic_tensor.size))
 
     def _create_output_buffers(self):
         self._output = Dataset()
