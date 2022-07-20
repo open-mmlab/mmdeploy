@@ -1,4 +1,4 @@
-name: backend
+name: backend-ncnn
 
 on:
   push:

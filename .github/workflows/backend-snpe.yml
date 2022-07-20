@@ -1,4 +1,4 @@
-name: backend
+name: backend-snpe
 
 on:
   push:
@@ -17,7 +17,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test_snpe_sdk:
+  build_sdk_demo:
     runs-on: ubuntu-18.04
     steps:
       - name: Checkout repository
