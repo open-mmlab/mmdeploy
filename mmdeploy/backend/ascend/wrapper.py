@@ -272,11 +272,7 @@ class AscendWrapper(BaseWrapper):
 
         if size is None:
             raise RuntimeError('Can\'t determine dynamic HW')
-<<<<<<< HEAD
         if not list(size) in self._dynamic_hw:
-=======
-        if hw not in self._dynamic_hw:
->>>>>>> 30955f2341a959f462f4166a2aa4610f3927a854
             raise RuntimeError(
                 f'size {size} is not supported. ({self._dynamic_hw})')
         height, width = size
