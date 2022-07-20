@@ -10,6 +10,10 @@ def make_shape_string(name, dims):
     return f'{name}:{",".join(map(str, dims))}'
 
 
+def _concat(dims):
+    return ';'.join([','.join(map(str, x)) for x in dims])
+
+
 def from_onnx(onnx_model, work_dir, model_inputs):
     if not isinstance(onnx_model, str):
         onnx_path = tempfile.NamedTemporaryFile(suffix='.onnx').name
@@ -26,21 +30,23 @@ def from_onnx(onnx_model, work_dir, model_inputs):
         input_shapes.append(make_shape_string(name, dims))
     input_shapes = ','.join(input_shapes)
 
+    input_format = 'ND' if 'dynamic_dims' in model_inputs else 'NCHW'
+
     args = [
         f'--model={onnx_path}', '--framework=5', f'--output={output_path}',
-        '--soc_version=Ascend310', '--input_format=NCHW',
+        '--soc_version=Ascend310', f'--input_format={input_format}',
         f'--input_shape={input_shapes}'
     ]
 
-    if model_inputs.type == 'Static':
-        pass
-    elif model_inputs.type == 'DynamicBatchSize':
+    if 'batch_sizes' in model_inputs:
         args.append(
             f'--dynamic_batch_size={",".join(map(str, model_inputs.batch_sizes))}'
         )
-    elif model_inputs.type == 'DynamicImageSize':
-        sizes = [','.join(map(str, x)) for x in model_inputs.image_sizes]
-        args.append(f'--dynamic_image_size={";".join(sizes)}')
+    elif 'image_sizes' in model_inputs:
+        args.append(
+            f'--dynamic_image_size={_concat(model_inputs.image_sizes)}')
+    elif 'dynamic_dims' in model_inputs:
+        args.append(f'--dynamic_dims={_concat(model_inputs.dynamic_dims)}')
 
     print(' '.join(('atc', *args)))
 
