@@ -66,7 +66,7 @@ $ python3 -m pip install -e .
 
 tips:
 
-- 如果网络不好，[这个 .tar.gz](https://github.com/tpoisonooo/mmdeploy_snpe_testdata/blob/main/snpe-1.59.tar.gz) 没有修改内容，仅压缩打包减小体积。
+- 如果网络不好，[这个 .tar.gz](https://github.com/tpoisonooo/mmdeploy_snpe_testdata/blob/main/snpe-1.59.tar.gz) 仅减小官方包体积，没有修改原始内容。
 
 ## 三、测试模型
 

@@ -94,7 +94,7 @@ class RetryOnRpcErrorClientInterceptor(grpc.UnaryUnaryClientInterceptor,
 
 @BACKEND_WRAPPER.register_module(Backend.SNPE.value)
 class SNPEWrapper(BaseWrapper):
-    """ncnn wrapper class for inference.
+    """snpe wrapper class for inference.
 
     Args:
         dlc_file (str): Path of a weight file.
@@ -119,9 +119,6 @@ class SNPEWrapper(BaseWrapper):
                  output_names: Optional[Sequence[str]] = None,
                  **kwargs):
 
-        print('*** extra')
-        print(**kwargs)
-
         logger = get_root_logger()
 
         interceptors = (RetryOnRpcErrorClientInterceptor(
@@ -131,7 +128,6 @@ class SNPEWrapper(BaseWrapper):
             status_for_retry=(grpc.StatusCode.UNAVAILABLE, ),
         ), )
 
-        # The maximum model file size is 512MB
         if uri is None and get_env_key() in os.environ:
             logger.warn(
                 'snpe remote service URI not set, search from environment')
@@ -147,7 +143,6 @@ class SNPEWrapper(BaseWrapper):
         with open(dlc_file, 'rb') as f:
             weights = f.read(filesize)
 
-        # self.stub = inference_pb2_grpc.InferenceStub(self.channel)
         self.stub = inference_pb2_grpc.InferenceStub(
             grpc.intercept_channel(grpc.insecure_channel(uri), *interceptors))
 
