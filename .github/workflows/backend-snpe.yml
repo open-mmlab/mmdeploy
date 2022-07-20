@@ -30,7 +30,10 @@ jobs:
         run: |
           sudo apt install gcc-multilib g++-multilib wget libprotobuf-dev protobuf-compiler
           sudo apt update
-          sudo apt install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev
+          sudo apt install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev libc++1-9 libc++abi1-9
+          sudo add-apt-repository ppa:ignaciovizzo/opencv3-nonfree
+          sudo apt install libopencv-dev
+          pkg-config --libs opencv
       - name: Install snpe
         run: |
           wget https://media.githubusercontent.com/media/tpoisonooo/mmdeploy_snpe_testdata/main/snpe-1.59.tar.gz
@@ -38,20 +41,19 @@ jobs:
           pushd snpe-1.59.0.3230
           pwd
           popd
-      - name: Setup Debug Session
-        uses: csexton/debugger-action@master
       - name: Build SDK Demo with SNPE backend
         run: |
           source bin/dependencies.sh
           mkdir -p build && pushd build
           export SNPE_ROOT=/home/runner/work/mmdeploy/mmdeploy/snpe-1.59.0.3230
-          export __MMDEPLOY_SNPE_CI=1
+          export LD_LIBRARY_PATH=${SNPE_ROOT}/lib/x86_64-linux-clang:${LD_LIBRARY_PATH}
+          export MMDEPLOY_SNPE_X86_CI=1
           cmake .. -DCMAKE_CXX_COMPILER=g++-7    -DMMDEPLOY_SHARED_LIBS=ON   -DMMDEPLOY_BUILD_SDK=ON       -DMMDEPLOY_BUILD_SDK_PYTHON_API=OFF  -DMMDEPLOY_TARGET_DEVICES=cpu       -DMMDEPLOY_TARGET_BACKENDS=snpe  -DMMDEPLOY_CODEBASES=all
           make -j2
           make install
           pushd install/example
           mkdir build && pushd build
-          cmake ..  -DMMDeploy_DIR=~/GitProjects/mmdeploy/build/install/lib/cmake/MMDeploy
+          cmake ..   -DMMDeploy_DIR=${PWD}/../../lib/cmake/MMDeploy
           make -j2
           ls ./*
           popd
