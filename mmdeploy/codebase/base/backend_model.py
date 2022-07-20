@@ -108,8 +108,7 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
                 output_names=output_names)
         elif backend == Backend.ASCEND:
             from mmdeploy.backend.ascend import AscendWrapper
-            return AscendWrapper(
-                model=backend_files[0])
+            return AscendWrapper(model=backend_files[0])
         else:
             raise NotImplementedError(f'Unknown backend type: {backend.value}')
 

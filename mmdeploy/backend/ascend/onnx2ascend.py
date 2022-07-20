@@ -1,9 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import os
 import os.path as osp
 import tempfile
 from subprocess import call
-from typing import List, Optional, Union
 
 import onnx
 
@@ -37,9 +35,8 @@ def from_onnx(onnx_model, work_dir, model_inputs):
     if model_inputs.type == 'Static':
         pass
     elif model_inputs.type == 'DynamicBatchSize':
-        args.append(
-            f'--dynamic_batch_size={",".join(map(str, model_inputs.batch_sizes))}'
-        )
+        args.append('--dynamic_batch_size='
+                    f'{",".join(map(str, model_inputs.batch_sizes))}')
 
     print(' '.join(('atc', *args)))
 
