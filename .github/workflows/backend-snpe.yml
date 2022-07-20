@@ -29,7 +29,6 @@ jobs:
       - name: gcc-multilib
         run: |
           sudo apt install gcc-multilib g++-multilib wget libprotobuf-dev protobuf-compiler
-          apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A4B469963BF863CC
           apt-get update && apt-get install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev
       - name: Install snpe
         run: |
