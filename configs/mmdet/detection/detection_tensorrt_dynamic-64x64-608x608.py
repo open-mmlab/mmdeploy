@@ -6,7 +6,7 @@ backend_config = dict(
         dict(
             input_shapes=dict(
                 input=dict(
-                    min_shape=[1, 3, 160, 160],
+                    min_shape=[1, 3, 64, 64],
                     opt_shape=[1, 3, 608, 608],
                     max_shape=[1, 3, 608, 608])))
     ])
