@@ -194,17 +194,7 @@ class SNPEWrapper(BaseWrapper):
                  output_names: Optional[Sequence[str]] = None,
                  **kwargs):
 
-        print('*** extra')
-        print(**kwargs)
-
         logger = get_root_logger()
-
-        interceptors = (RetryOnRpcErrorClientInterceptor(
-            max_attempts=4,
-            sleeping_policy=ExponentialBackoff(
-                init_backoff_ms=100, max_backoff_ms=1600, multiplier=2),
-            status_for_retry=(grpc.StatusCode.UNAVAILABLE, ),
-        ), )
 
         interceptors = (RetryOnRpcErrorClientInterceptor(
             max_attempts=4,
