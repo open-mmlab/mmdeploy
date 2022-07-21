@@ -19,3 +19,14 @@ def model_to_graph__custom_optimizer(ctx, *args, **kwargs):
                                                       torch_out)
 
     return graph, params_dict, torch_out
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    'torch._C._jit_pass_onnx_deduplicate_initializers', backend='tensorrt')
+def jit_pass_onnx_deduplicate_initializers__disable(ctx, graph, param_dict,
+                                                    arg2):
+    """This pass will disable TensorRT topk export.
+
+    disable for TensorRT.
+    """
+    return param_dict

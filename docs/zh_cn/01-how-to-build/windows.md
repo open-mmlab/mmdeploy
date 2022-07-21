@@ -94,15 +94,15 @@ pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/$env:cu
   </tr>
   <tr>
     <td>pplcv </td>
-    <td>pplcv 是 openPPL 开发的高性能图像处理库。 <b>此依赖项为可选项，只有在 cuda 平台下，才需安装。而且，目前必须使用 v0.6.2，且需要使用 git clone 的方式下载源码并编译安装</b><br>
+    <td>pplcv 是 openPPL 开发的高性能图像处理库。 <b>此依赖项为可选项，只有在 cuda 平台下，才需安装。</b><br>
 <pre><code>
 git clone https://github.com/openppl-public/ppl.cv.git
 cd ppl.cv
-git checkout tags/v0.6.2 -b v0.6.2
+git checkout tags/v0.7.0 -b v0.7.0
 $env:PPLCV_DIR = "$pwd"
 mkdir pplcv-build
 cd pplcv-build
-cmake .. -G "Visual Studio 16 2019" -T v142 -A x64 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install -DHPCC_USE_CUDA=ON -DHPCC_MSVC_MD=ON
+cmake .. -G "Visual Studio 16 2019" -T v142 -A x64 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install -DPPLCV_USE_CUDA=ON -DPPLCV_USE_MSVC_STATIC_RUNTIME=OFF
 cmake --build . --config Release -- /m
 cmake --install . --config Release
 cd ../..

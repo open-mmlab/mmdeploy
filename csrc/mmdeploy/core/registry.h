@@ -38,7 +38,7 @@ template <>
 class Creator<void> {
  public:
   virtual ~Creator() = default;
-  virtual const char *GetName() const = 0;
+  virtual const char* GetName() const = 0;
   virtual int GetVersion() const { return 0; }
 };
 
@@ -48,7 +48,7 @@ class Creator : public Creator<void> {
   using ReturnType = detail::get_return_type_t<EntryType>;
 
  public:
-  virtual ReturnType Create(const Value &args) = 0;
+  virtual ReturnType Create(const Value& args) = 0;
 };
 
 template <class EntryType>
@@ -61,25 +61,27 @@ class MMDEPLOY_API Registry<void> {
 
   ~Registry();
 
-  bool AddCreator(Creator<void> &creator);
+  bool AddCreator(Creator<void>& creator);
 
-  Creator<void> *GetCreator(const std::string &type, int version = 0);
+  Creator<void>* GetCreator(const std::string& type, int version = 0);
+
+  std::vector<std::string> List();
 
  private:
-  std::multimap<std::string, Creator<void> *> entries_;
+  std::multimap<std::string, Creator<void>*> entries_;
 };
 
 template <class EntryType>
 class Registry : public Registry<void> {
  public:
-  bool AddCreator(Creator<EntryType> &creator) { return Registry<void>::AddCreator(creator); }
+  bool AddCreator(Creator<EntryType>& creator) { return Registry<void>::AddCreator(creator); }
 
-  Creator<EntryType> *GetCreator(const std::string &type, int version = 0) {
+  Creator<EntryType>* GetCreator(const std::string& type, int version = 0) {
     auto creator = Registry<void>::GetCreator(type, version);
-    return static_cast<Creator<EntryType> *>(creator);
+    return static_cast<Creator<EntryType>*>(creator);
   }
 
-  static Registry &Get();
+  static Registry& Get();
 
  private:
   Registry() = default;
@@ -98,11 +100,11 @@ class Registerer {
 
 #define MMDEPLOY_DECLARE_REGISTRY(EntryType) \
   template <>                                \
-  Registry<EntryType> &Registry<EntryType>::Get();
+  Registry<EntryType>& Registry<EntryType>::Get();
 
 #define MMDEPLOY_DEFINE_REGISTRY(EntryType)                         \
   template <>                                                       \
-  MMDEPLOY_EXPORT Registry<EntryType> &Registry<EntryType>::Get() { \
+  MMDEPLOY_EXPORT Registry<EntryType>& Registry<EntryType>::Get() { \
     static Registry v;                                              \
     return v;                                                       \
   }
@@ -115,10 +117,10 @@ class Registerer {
    public:                                                             \
     module_name##Creator() = default;                                  \
     ~module_name##Creator() = default;                                 \
-    const char *GetName() const override { return #module_name; }      \
+    const char* GetName() const override { return #module_name; }      \
     int GetVersion() const override { return version; }                \
                                                                        \
-    std::unique_ptr<base_type> Create(const Value &value) override {   \
+    std::unique_ptr<base_type> Create(const Value& value) override {   \
       return std::make_unique<module_name>(value);                     \
     }                                                                  \
   };                                                                   \

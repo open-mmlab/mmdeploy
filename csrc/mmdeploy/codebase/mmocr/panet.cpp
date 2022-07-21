@@ -37,7 +37,9 @@ class PANHead : public MMOCR {
     auto platform = Platform(device_.platform_id()).GetPlatformName();
     auto creator = Registry<PaHeadImpl>::Get().GetCreator(platform);
     if (!creator) {
-      MMDEPLOY_ERROR("PANHead: implementation for platform \"{}\" not found", platform);
+      MMDEPLOY_ERROR(
+          "PANHead: implementation for platform \"{}\" not found. Available platforms: {}",
+          platform, Registry<PaHeadImpl>::Get().List());
       throw_exception(eEntryNotFound);
     }
     impl_ = creator->Create(nullptr);
