@@ -97,16 +97,15 @@ You can skip this chapter if you are only interested in the model converter.
   <tr>
     <td>pplcv </td>
     <td>A high-performance image processing library of openPPL.<br>
-  <b>It is optional which only be needed if <code>cuda</code> platform is required.
-  Now, MMDeploy supports v0.6.2 and has to use <code>git clone</code> to download it.</b><br>
+  <b>It is optional which only be needed if <code>cuda</code> platform is required.</b><br>
 <pre><code>
 git clone https://github.com/openppl-public/ppl.cv.git
 cd ppl.cv
-git checkout tags/v0.6.2 -b v0.6.2
+git checkout tags/v0.7.0 -b v0.7.0
 $env:PPLCV_DIR = "$pwd"
 mkdir pplcv-build
 cd pplcv-build
-cmake .. -G "Visual Studio 16 2019" -T v142 -A x64 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install -DHPCC_USE_CUDA=ON -DHPCC_MSVC_MD=ON
+cmake .. -G "Visual Studio 16 2019" -T v142 -A x64 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install -DHPCC_USE_CUDA=ON -DPPLCV_USE_MSVC_STATIC_RUNTIME=OFF
 cmake --build . --config Release -- /m
 cmake --install . --config Release
 cd ../..
