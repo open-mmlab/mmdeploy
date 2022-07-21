@@ -1,29 +1,35 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import List, Optional
+
 import torch
+from mmengine.config import ConfigDict
+from mmengine.data import InstanceData
+from torch import Tensor
 
 from mmdeploy.codebase.mmdet import get_post_processing_params, multiclass_nms
 from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.utils import Backend
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdet.models.YOLOXHead.get_bboxes')
-def yolox_head__get_bboxes(ctx,
-                           self,
-                           cls_scores,
-                           bbox_preds,
-                           objectnesses,
-                           img_metas=None,
-                           cfg=None,
-                           rescale=False,
-                           with_nms=True):
-    """Rewrite `get_bboxes` of `YOLOXHead` for default backend.
+    func_name='mmdet.models.dense_heads.yolox_head.'
+    'YOLOXHead.predict_by_feat')
+def yolox_head__predict_by_feat(ctx,
+                                self,
+                                cls_scores: List[Tensor],
+                                bbox_preds: List[Tensor],
+                                objectnesses: Optional[List[Tensor]],
+                                batch_img_metas: Optional[List[dict]] = None,
+                                cfg: Optional[ConfigDict] = None,
+                                rescale: bool = False,
+                                with_nms: bool = True) -> List[InstanceData]:
+    """Rewrite `predict_by_feat` of `YOLOXHead` for default backend.
 
     Rewrite this function to deploy model, transform network output for a
     batch into bbox predictions.
 
     Args:
         ctx: Context that contains original meta information.
-        self: Represent the instance of the original class.
         cls_scores (list[Tensor]): Classification scores for all
             scale levels, each is a 4D-tensor, has shape
             (batch_size, num_priors * num_classes, H, W).
@@ -33,13 +39,15 @@ def yolox_head__get_bboxes(ctx,
         objectnesses (list[Tensor], Optional): Score factor for
             all scale level, each is a 4D-tensor, has shape
             (batch_size, 1, H, W).
-        img_metas (list[dict]): Image meta info. Default None.
-        cfg (mmcv.Config, Optional): Test / postprocessing configuration,
-            if None, test_cfg would be used.  Default None.
+        batch_img_metas (list[dict], Optional): Batch image meta info.
+            Defaults to None.
+        cfg (ConfigDict, optional): Test / postprocessing
+            configuration, if None, test_cfg would be used.
+            Defaults to None.
         rescale (bool): If True, return boxes in original image space.
-            Default False.
+            Defaults to False.
         with_nms (bool): If True, do nms before return boxes.
-            Default True.
+            Defaults to True.
 
     Returns:
         tuple[Tensor, Tensor]: The first item is an (N, num_box, 5) tensor,
@@ -94,17 +102,20 @@ def yolox_head__get_bboxes(ctx,
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdet.models.dense_heads.YOLOXHead.get_bboxes', backend='ncnn')
-def yolox_head__get_bboxes__ncnn(ctx,
-                                 self,
-                                 cls_scores,
-                                 bbox_preds,
-                                 objectnesses,
-                                 img_metas=None,
-                                 cfg=None,
-                                 rescale=False,
-                                 with_nms=True):
-    """Rewrite `get_bboxes` of YOLOXHead for ncnn backend.
+    func_name='mmdet.models.dense_heads.yolox_head.'
+    'YOLOXHead.predict_by_feat',
+    backend=Backend.NCNN.value)
+def yolox_head__predict_by_feat__ncnn(
+        ctx,
+        self,
+        cls_scores: List[Tensor],
+        bbox_preds: List[Tensor],
+        objectnesses: Optional[List[Tensor]],
+        batch_img_metas: Optional[List[dict]] = None,
+        cfg: Optional[ConfigDict] = None,
+        rescale: bool = False,
+        with_nms: bool = True):
+    """Rewrite `predict_by_feat` of YOLOXHead for ncnn backend.
 
     1. Decode the prior to a box format for ncnn DetectionOutput layer to do
     the post-processing.
@@ -117,7 +128,6 @@ def yolox_head__get_bboxes__ncnn(ctx,
 
     Args:
         ctx: Context that contains original meta information.
-        self: Represent the instance of the original class.
         cls_scores (list[Tensor]): Classification scores for all
             scale levels, each is a 4D-tensor, has shape
             (batch_size, num_priors * num_classes, H, W).
@@ -127,13 +137,15 @@ def yolox_head__get_bboxes__ncnn(ctx,
         objectnesses (list[Tensor], Optional): Score factor for
             all scale level, each is a 4D-tensor, has shape
             (batch_size, 1, H, W).
-        img_metas (list[dict]): Image meta info. Default None.
-        cfg (mmcv.Config, Optional): Test / postprocessing configuration,
-            if None, test_cfg would be used.  Default None.
+        batch_img_metas (list[dict], Optional): Batch image meta info.
+            Defaults to None.
+        cfg (ConfigDict, optional): Test / postprocessing
+            configuration, if None, test_cfg would be used.
+            Defaults to None.
         rescale (bool): If True, return boxes in original image space.
-            Default False.
+            Defaults to False.
         with_nms (bool): If True, do nms before return boxes.
-            Default True.
+            Defaults to True.
 
     Returns:
         output__ncnn (Tensor): outputs, shape is [N, num_det, 6].
@@ -145,8 +157,8 @@ def yolox_head__get_bboxes__ncnn(ctx,
     if dynamic_flag:
         logger = get_root_logger()
         logger.warning('YOLOX does not support dynamic shape with ncnn.')
-    img_height = int(img_metas[0]['img_shape'][0])
-    img_width = int(img_metas[0]['img_shape'][1])
+    img_height = int(batch_img_metas[0]['img_shape'][0])
+    img_width = int(batch_img_metas[0]['img_shape'][1])
 
     assert len(cls_scores) == len(bbox_preds) == len(objectnesses)
     device = cls_scores[0].device

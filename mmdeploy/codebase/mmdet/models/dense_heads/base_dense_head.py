@@ -182,20 +182,21 @@ def base_dense_head__predict_by_feat(
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdet.models.dense_heads.base_dense_head.BaseDenseHead'
-    '.get_bboxes',
+    func_name='mmdet.models.dense_heads.base_dense_head.'
+    'BaseDenseHead.predict_by_feat',
     backend=Backend.NCNN.value)
-def base_dense_head__get_bboxes__ncnn(ctx,
-                                      self,
-                                      cls_scores,
-                                      bbox_preds,
-                                      score_factors=None,
-                                      img_metas=None,
-                                      cfg=None,
-                                      rescale=False,
-                                      with_nms=True,
-                                      **kwargs):
-    """Rewrite `get_bboxes` of AnchorHead for ncnn backend.
+def base_dense_head__predict_by_feat__ncnn(
+        ctx,
+        self,
+        cls_scores: List[Tensor],
+        bbox_preds: List[Tensor],
+        score_factors: Optional[List[Tensor]] = None,
+        batch_img_metas: Optional[List[dict]] = None,
+        cfg: Optional[ConfigDict] = None,
+        rescale: bool = False,
+        with_nms: bool = True,
+        **kwargs):
+    """Rewrite `predict_by_feat` of BaseDenseHead for ncnn backend.
 
     Shape node and batch inference is not supported by ncnn. This function
     transform dynamic shape to constant shape and remove batch inference.
@@ -208,17 +209,18 @@ def base_dense_head__get_bboxes__ncnn(ctx,
         bbox_preds (list[Tensor]): Box energies / deltas for all
             scale levels, each is a 4D-tensor, has shape
             (batch_size, num_priors * 4, H, W).
-        score_factors (list[Tensor], Optional): Score factor for
+        score_factors (list[Tensor], optional): Score factor for
             all scale level, each is a 4D-tensor, has shape
-            (batch_size, num_priors * 1, H, W). Default None.
-        img_metas (list[dict], Optional): Image meta info. Default None.
-        cfg (mmcv.Config, Optional): Test / postprocessing configuration,
-            if None, test_cfg would be used.  Default None.
+            (batch_size, num_priors * 1, H, W). Defaults to None.
+        batch_img_metas (list[dict], Optional): Batch image meta info.
+            Defaults to None.
+        cfg (ConfigDict, optional): Test / postprocessing
+            configuration, if None, test_cfg would be used.
+            Defaults to None.
         rescale (bool): If True, return boxes in original image space.
-            Default False.
+            Defaults to False.
         with_nms (bool): If True, do nms before return boxes.
-            Default True.
-
+            Defaults to True.
 
     Returns:
         output__ncnn (Tensor): outputs, shape is [N, num_det, 6].
@@ -267,13 +269,13 @@ def base_dense_head__get_bboxes__ncnn(ctx,
         vars = torch.tensor([0, 0, 0, 0], dtype=torch.float32)
     else:
         vars = torch.tensor([1, 1, 1, 1], dtype=torch.float32)
-    if isinstance(img_metas[0]['img_shape'][0], int):
-        assert isinstance(img_metas[0]['img_shape'][1], int)
-        img_height = img_metas[0]['img_shape'][0]
-        img_width = img_metas[0]['img_shape'][1]
+    if isinstance(batch_img_metas[0]['img_shape'][0], int):
+        assert isinstance(batch_img_metas[0]['img_shape'][1], int)
+        img_height = batch_img_metas[0]['img_shape'][0]
+        img_width = batch_img_metas[0]['img_shape'][1]
     else:
-        img_height = img_metas[0]['img_shape'][0].item()
-        img_width = img_metas[0]['img_shape'][1].item()
+        img_height = batch_img_metas[0]['img_shape'][0].item()
+        img_width = batch_img_metas[0]['img_shape'][1].item()
     featmap_sizes = [cls_scores[i].shape[-2:] for i in range(num_levels)]
     mlvl_priors = self.prior_generator.grid_priors(
         featmap_sizes, device=cls_scores[0].device)
