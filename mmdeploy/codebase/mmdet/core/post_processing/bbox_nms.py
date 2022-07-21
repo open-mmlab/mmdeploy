@@ -5,7 +5,7 @@ from torch import Tensor
 import mmdeploy
 from mmdeploy.core import FUNCTION_REWRITER, mark
 from mmdeploy.mmcv.ops import ONNXNMSop, TRTBatchedNMSop
-from mmdeploy.utils import Backend, is_dynamic_batch
+from mmdeploy.utils import IR, is_dynamic_batch
 
 
 def select_nms_index(scores: torch.Tensor,
@@ -272,7 +272,7 @@ def multiclass_nms(*args, **kwargs):
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdeploy.codebase.mmdet.core.post_processing._multiclass_nms',
-    backend=Backend.TORCHSCRIPT.value)
+    ir=IR.TORCHSCRIPT)
 def multiclass_nms__torchscript(ctx,
                                 boxes: Tensor,
                                 scores: Tensor,
