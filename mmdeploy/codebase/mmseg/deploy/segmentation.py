@@ -187,13 +187,16 @@ class Segmentation(BaseTask):
         from mmseg.core.visualization import \
             SegLocalVisualizer  # noqa: F401,F403
         visualizer = super().get_visualizer(name, save_dir)
+        # force to change save_dir instead of
+        # save_dir/vis_data/vis_image/xx.jpg
+        visualizer._vis_backends['LocalVisBackend']._save_dir = save_dir
+        visualizer._vis_backends['LocalVisBackend']._img_save_dir = '.'
         metainfo = _get_dataset_metainfo(self.model_cfg)
         if metainfo is not None:
             visualizer.dataset_meta = metainfo
         return visualizer
 
     def visualize(self,
-                  model,
                   image: Union[str, np.ndarray],
                   result: list,
                   output_file: str,
@@ -201,10 +204,9 @@ class Segmentation(BaseTask):
                   show_result: bool = False,
                   opacity: float = 0.5,
                   **kwargs):
-        """Visualize predictions of a model.
+        """Visualize segmentation predictions.
 
         Args:
-            model (nn.Module): Input model.
             image (str | np.ndarray): Input image to draw predictions on.
             result (list): A list of predictions.
             output_file (str): Output file to save drawn image.
@@ -218,7 +220,8 @@ class Segmentation(BaseTask):
         save_dir, filename = osp.split(output_file)
         visualizer = self.get_visualizer(window_name, save_dir)
         name = osp.splitext(filename)[0]
-        image = mmcv.imread(image, channel_order='rgb')
+        if isinstance(image, str):
+            image = mmcv.imread(image, channel_order='rgb')
         visualizer.add_datasample(
             name, image, pred_sample=result.cpu(), show=show_result)
 

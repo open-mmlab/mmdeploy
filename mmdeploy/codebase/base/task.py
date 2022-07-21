@@ -282,7 +282,10 @@ class BaseTask(metaclass=ABCMeta):
         visualizer = self.get_visualizer(window_name, save_dir)
 
         name = osp.splitext(save_name)[0]
-        image = mmcv.imread(image, channel_order='rgb')
+        if isinstance(image, str):
+            image = mmcv.imread(image, channel_order='rgb')
+        assert isinstance(image, np.ndarray)
+
         visualizer.add_datasample(
             name,
             image,

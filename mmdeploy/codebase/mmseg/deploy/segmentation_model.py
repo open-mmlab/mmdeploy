@@ -41,12 +41,10 @@ class End2EndModel(BaseBackendModel):
                  backend_files: Sequence[str],
                  device: str,
                  deploy_cfg: Union[str, Config] = None,
-                 model_cfg: Union[str, Config] = None,
                  data_preprocessor: Optional[Union[dict, nn.Module]] = None):
         super(End2EndModel, self).__init__(
             deploy_cfg=deploy_cfg, data_preprocessor=data_preprocessor)
         self.deploy_cfg = deploy_cfg
-        self.model_cfg = model_cfg
         self.device = device
         self._init_wrapper(
             backend=backend, backend_files=backend_files, device=device)
@@ -167,7 +165,6 @@ def build_segmentation_model(
             backend_files=model_files,
             device=device,
             deploy_cfg=deploy_cfg,
-            model_cfg=model_cfg,
             data_preprocessor=data_preprocessor,
             **kwargs))
 
