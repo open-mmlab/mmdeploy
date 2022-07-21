@@ -80,17 +80,17 @@ def _get_dataset_metainfo(model_cfg: Config):
             continue
         dataloader_cfg = model_cfg[dataloader_name]
         dataset_cfg = dataloader_cfg.dataset
-        dataset_cls = module_dict.get(dataset_cfg.type, None)
-        if dataset_cls is None:
+        dataset_mmseg = module_dict.get(dataset_cfg.type, None)
+        if dataset_mmseg is None:
             continue
-        if hasattr(dataset_cls, '_load_metainfo') and isinstance(
-                dataset_cls._load_metainfo, Callable):
-            meta = dataset_cls._load_metainfo(
+        if hasattr(dataset_mmseg, '_load_metainfo') and isinstance(
+                dataset_mmseg._load_metainfo, Callable):
+            meta = dataset_mmseg._load_metainfo(
                 dataset_cfg.get('metainfo', None))
             if meta is not None:
                 return meta
-        if hasattr(dataset_cls, 'METAINFO'):
-            return dataset_cls.METAINFO
+        if hasattr(dataset_mmseg, 'METAINFO'):
+            return dataset_mmseg.METAINFO
 
     return None
 
