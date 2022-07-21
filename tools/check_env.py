@@ -25,15 +25,15 @@ def check_backend():
     import mmdeploy.apis.onnxruntime as ort_apis
     logger = get_root_logger()
     logger.info(f'onnxruntime: {ort_version}\tops_is_avaliable : '
-                f'{ort_apis.is_available()}')
+                f'{ort_apis.is_custom_ops_available()}')
 
     import mmdeploy.apis.tensorrt as trt_apis
     logger.info(f'tensorrt: {trt_version}\tops_is_avaliable : '
-                f'{trt_apis.is_available()}')
+                f'{trt_apis.is_custom_ops_available()}')
 
     import mmdeploy.apis.ncnn as ncnn_apis
-    logger.info(
-        f'ncnn: {ncnn_version}\tops_is_avaliable : {ncnn_apis.is_available()}')
+    logger.info(f'ncnn: {ncnn_version}\tops_is_avaliable : '
+                f'{ncnn_apis.is_custom_ops_available()}')
 
     import mmdeploy.apis.pplnn as pplnn_apis
     logger.info(f'pplnn_is_avaliable: {pplnn_apis.is_available()}')
