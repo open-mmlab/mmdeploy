@@ -3,10 +3,10 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <string>
 
-#include "text_detector.h"
-#include "text_recognizer.h"
+#include "mmdeploy/text_detector.h"
+#include "mmdeploy/text_recognizer.h"
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   if (argc != 5) {
     fprintf(stderr, "usage:\n  ocr device_name det_model_path reg_model_path image_path\n");
     return 1;
@@ -21,36 +21,38 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  mm_handle_t text_detector{};
+  mmdeploy_text_detector_t text_detector{};
   int status{};
   status = mmdeploy_text_detector_create_by_path(det_model_path, device_name, 0, &text_detector);
-  if (status != MM_SUCCESS) {
+  if (status != MMDEPLOY_SUCCESS) {
     fprintf(stderr, "failed to create text_detector, code: %d\n", (int)status);
     return 1;
   }
 
-  mm_handle_t text_recognizer{};
-  status = mmdeploy_text_recognizer_create_by_path(reg_model_path, device_name, 0, &text_recognizer);
-  if (status != MM_SUCCESS) {
+  mmdeploy_text_recognizer_t text_recognizer{};
+  status =
+      mmdeploy_text_recognizer_create_by_path(reg_model_path, device_name, 0, &text_recognizer);
+  if (status != MMDEPLOY_SUCCESS) {
     fprintf(stderr, "failed to create text_recognizer, code: %d\n", (int)status);
     return 1;
   }
 
-  mm_mat_t mat{img.data, img.rows, img.cols, 3, MM_BGR, MM_INT8};
+  mmdeploy_mat_t mat{
+      img.data, img.rows, img.cols, 3, MMDEPLOY_PIXEL_FORMAT_BGR, MMDEPLOY_DATA_TYPE_UINT8};
 
-  mm_text_detect_t *bboxes{};
-  int *bbox_count{};
+  mmdeploy_text_detection_t* bboxes{};
+  int* bbox_count{};
   status = mmdeploy_text_detector_apply(text_detector, &mat, 1, &bboxes, &bbox_count);
-  if (status != MM_SUCCESS) {
+  if (status != MMDEPLOY_SUCCESS) {
     fprintf(stderr, "failed to apply text_detector, code: %d\n", (int)status);
     return 1;
   }
   fprintf(stdout, "bbox_count=%d\n", *bbox_count);
 
-  mm_text_recognize_t *texts{};
+  mmdeploy_text_recognition_t* texts{};
   status =
       mmdeploy_text_recognizer_apply_bbox(text_recognizer, &mat, 1, bboxes, bbox_count, &texts);
-  if (status != MM_SUCCESS) {
+  if (status != MMDEPLOY_SUCCESS) {
     fprintf(stderr, "failed to apply text_recognizer, code: %d\n", (int)status);
     return 1;
   }
@@ -59,7 +61,7 @@ int main(int argc, char *argv[]) {
     fprintf(stdout, "box[%d]: %s\n", i, texts[i].text);
     std::vector<cv::Point> poly_points;
     for (int j = 0; j < 4; ++j) {
-      auto const &pt = bboxes[i].bbox[j];
+      auto const& pt = bboxes[i].bbox[j];
       fprintf(stdout, "x: %.2f, y: %.2f, ", pt.x, pt.y);
       poly_points.push_back({(int)pt.x, (int)pt.y});
     }

@@ -4,7 +4,7 @@
 #include "catch.hpp"
 // clang-format on
 
-#include "mmdeploy/apis/c/text_recognizer.h"
+#include "mmdeploy/apis/c/mmdeploy/text_recognizer.h"
 #include "mmdeploy/core/logger.h"
 #include "mmdeploy/core/utils/formatter.h"
 #include "opencv2/opencv.hpp"
@@ -14,24 +14,25 @@ using namespace std;
 
 TEST_CASE("test text recognizer's c api", "[.text-recognizer][resource]") {
   auto test = [](const string& device, const string& model_path, const vector<string>& img_list) {
-    mm_handle_t handle{nullptr};
+    mmdeploy_text_recognizer_t recognizer{nullptr};
     auto ret =
-        mmdeploy_text_recognizer_create_by_path(model_path.c_str(), device.c_str(), 0, &handle);
-    REQUIRE(ret == MM_SUCCESS);
+        mmdeploy_text_recognizer_create_by_path(model_path.c_str(), device.c_str(), 0, &recognizer);
+    REQUIRE(ret == MMDEPLOY_SUCCESS);
 
     vector<cv::Mat> cv_mats;
-    vector<mm_mat_t> mats;
+    vector<mmdeploy_mat_t> mats;
     for (auto& img_path : img_list) {
       cv::Mat mat = cv::imread(img_path);
       REQUIRE(!mat.empty());
       cv_mats.push_back(mat);
-      mats.push_back({mat.data, mat.rows, mat.cols, mat.channels(), MM_BGR, MM_INT8});
+      mats.push_back({mat.data, mat.rows, mat.cols, mat.channels(), MMDEPLOY_PIXEL_FORMAT_BGR,
+                      MMDEPLOY_DATA_TYPE_UINT8});
     }
 
-    mm_text_recognize_t* results{};
-    ret = mmdeploy_text_recognizer_apply_bbox(handle, mats.data(), (int)mats.size(), nullptr,
+    mmdeploy_text_recognition_t* results{};
+    ret = mmdeploy_text_recognizer_apply_bbox(recognizer, mats.data(), (int)mats.size(), nullptr,
                                               nullptr, &results);
-    REQUIRE(ret == MM_SUCCESS);
+    REQUIRE(ret == MMDEPLOY_SUCCESS);
 
     for (auto i = 0; i < mats.size(); ++i) {
       std::vector<float> score(results[i].score, results[i].score + results[i].length);
@@ -39,7 +40,7 @@ TEST_CASE("test text recognizer's c api", "[.text-recognizer][resource]") {
     }
 
     mmdeploy_text_recognizer_release_result(results, (int)mats.size());
-    mmdeploy_text_recognizer_destroy(handle);
+    mmdeploy_text_recognizer_destroy(recognizer);
   };
 
   auto& gResources = MMDeployTestResources::Get();
@@ -62,31 +63,32 @@ TEST_CASE("test text recognizer's c api", "[.text-recognizer][resource]") {
 TEST_CASE("test text detector-recognizer combo", "[.text-detector-recognizer]") {
   auto test = [](const std::string& device, const string& det_model_path,
                  const string& reg_model_path, std::vector<string>& img_list) {
-    mm_handle_t detector{};
+    mmdeploy_text_detector_t detector{};
     REQUIRE(mmdeploy_text_detector_create_by_path(det_model_path.c_str(), device.c_str(), 0,
-                                                  &detector) == MM_SUCCESS);
-    mm_handle_t recognizer{};
+                                                  &detector) == MMDEPLOY_SUCCESS);
+    mmdeploy_text_recognizer_t recognizer{};
     REQUIRE(mmdeploy_text_recognizer_create_by_path(reg_model_path.c_str(), device.c_str(), 0,
-                                                    &recognizer) == MM_SUCCESS);
+                                                    &recognizer) == MMDEPLOY_SUCCESS);
 
     vector<cv::Mat> cv_mats;
-    vector<mm_mat_t> mats;
+    vector<mmdeploy_mat_t> mats;
     for (const auto& img_path : img_list) {
       cv::Mat mat = cv::imread(img_path);
       REQUIRE(!mat.empty());
       cv_mats.push_back(mat);
-      mats.push_back({mat.data, mat.rows, mat.cols, mat.channels(), MM_BGR, MM_INT8});
+      mats.push_back({mat.data, mat.rows, mat.cols, mat.channels(), MMDEPLOY_PIXEL_FORMAT_BGR,
+                      MMDEPLOY_DATA_TYPE_UINT8});
     }
 
-    mm_text_detect_t* bboxes{};
+    mmdeploy_text_detection_t* bboxes{};
     int* bbox_count{};
     REQUIRE(mmdeploy_text_detector_apply(detector, mats.data(), mats.size(), &bboxes,
-                                         &bbox_count) == MM_SUCCESS);
+                                         &bbox_count) == MMDEPLOY_SUCCESS);
 
-    mm_text_recognize_t* texts{};
+    mmdeploy_text_recognition_t* texts{};
 
     REQUIRE(mmdeploy_text_recognizer_apply_bbox(recognizer, mats.data(), (int)mats.size(), bboxes,
-                                                bbox_count, &texts) == MM_SUCCESS);
+                                                bbox_count, &texts) == MMDEPLOY_SUCCESS);
 
     int offset = 0;
     for (auto i = 0; i < mats.size(); ++i) {

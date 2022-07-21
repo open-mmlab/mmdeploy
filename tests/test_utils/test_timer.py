@@ -8,7 +8,7 @@ def test_count_time():
 
     class test:
 
-        @TimeCounter.count_time()
+        @TimeCounter.count_time('fun1')
         def fun1(self):
             time.sleep(0.01)
 
@@ -19,3 +19,5 @@ def test_count_time():
 
     for i in range(50):
         t.fun1()
+
+    TimeCounter.print_stats('fun1')

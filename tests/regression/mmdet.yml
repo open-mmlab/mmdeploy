@@ -185,8 +185,12 @@ models:
     pipelines:
       - *pipeline_ts_fp32
       - *pipeline_ort_dynamic_fp32
+      - deploy_config: configs/mmdet/detection/detection_tensorrt-fp16_dynamic-64x64-608x608.py
+        convert_image: *convert_image
+        backend_test: *default_backend_test
+        sdk_config: *sdk_dynamic
 #      - *pipeline_trt_dynamic_fp32
-      - *pipeline_trt_dynamic_fp16
+#      - *pipeline_trt_dynamic_fp16
 #      - *pipeline_trt_dynamic_int8
       - *pipeline_ncnn_static_fp32
 #      - *pipeline_pplnn_dynamic_fp32

@@ -233,8 +233,6 @@ class Classification(BaseTask):
             log_file (str | None): The file to write the evaluation results.
                 Defaults to `None` and the results will only print on stdout.
         """
-        import warnings
-
         from mmcv.utils import get_logger
         logger = get_logger('test', log_file=log_file, log_level=logging.INFO)
 
@@ -243,7 +241,7 @@ class Classification(BaseTask):
             for k, v in results.items():
                 logger.info(f'{k} : {v:.2f}')
         else:
-            warnings.warn('Evaluation metrics are not specified.')
+            logger.warning('Evaluation metrics are not specified.')
             scores = np.vstack(outputs)
             pred_score = np.max(scores, axis=1)
             pred_label = np.argmax(scores, axis=1)
@@ -281,8 +279,14 @@ class Classification(BaseTask):
             dict: Composed of the postprocess information.
         """
         postprocess = self.model_cfg.model.head
-        assert 'topk' in postprocess, 'model config lack topk'
-        postprocess.topk = max(postprocess.topk)
+        if 'topk' not in postprocess:
+            topk = (1, )
+            logger = get_root_logger()
+            logger.warning('no topk in postprocess config, using default \
+                 topk value.')
+        else:
+            topk = postprocess.topk
+        postprocess.topk = max(topk)
         return postprocess
 
     def get_model_name(self) -> str:

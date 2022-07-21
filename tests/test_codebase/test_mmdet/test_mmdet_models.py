@@ -1658,3 +1658,37 @@ def test_shift_windows_msa(backend_type: Backend):
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg,
         run_with_backend=False)
+
+
+@pytest.mark.skipif(
+    reason='Only support GPU test', condition=not torch.cuda.is_available())
+@pytest.mark.parametrize('backend_type', [(Backend.TENSORRT)])
+def test_mlvl_point_generator__single_level_grid_priors__tensorrt(
+        backend_type: Backend):
+    check_backend(backend_type)
+    from mmdet.core.anchor import MlvlPointGenerator
+    model = MlvlPointGenerator([8, 16, 32])
+    output_names = ['output']
+
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(type=backend_type.value),
+            onnx_config=dict(
+                input_shape=None,
+                input_names=['query'],
+                output_names=output_names)))
+
+    featmap_size = torch.Size([80, 80])
+    with_stride = True
+
+    wrapped_model = WrapModel(model, 'single_level_grid_priors')
+    rewrite_inputs = {
+        'featmap_size': featmap_size,
+        'with_stride': with_stride,
+        'level_idx': 0
+    }
+    _ = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg,
+        run_with_backend=False)

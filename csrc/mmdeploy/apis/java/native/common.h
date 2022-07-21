@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "mmdeploy/apis/c/common.h"
+#include "mmdeploy/apis/c/mmdeploy/common.h"
 #include "mmdeploy/core/logger.h"
 #include "mmdeploy/core/utils/formatter.h"
 
@@ -18,7 +18,7 @@ static auto With(JNIEnv *env, jobjectArray imgs, F f) noexcept {
   auto type_field = env->GetFieldID(mat_clazz, "type", "I");
   auto data_field = env->GetFieldID(mat_clazz, "data", "[B");
   auto num = env->GetArrayLength(imgs);
-  std::vector<mm_mat_t> mats;
+  std::vector<mmdeploy_mat_t> mats;
   std::vector<jbyteArray> datum;
 
   mats.reserve(num);
@@ -35,8 +35,8 @@ static auto With(JNIEnv *env, jobjectArray imgs, F f) noexcept {
     mat.width = shape[1];
     mat.channel = shape[2];
     env->ReleaseIntArrayElements((jintArray)shape_obj, shape, JNI_ABORT);
-    mat.format = (mm_pixel_format_t)format;
-    mat.type = (mm_data_type_t)type;
+    mat.format = (mmdeploy_pixel_format_t)format;
+    mat.type = (mmdeploy_data_type_t)type;
     auto data_obj = env->GetObjectField(obj, data_field);
     mat.data = (uint8_t *)env->GetByteArrayElements((jbyteArray)data_obj, nullptr);
     datum.push_back((jbyteArray)data_obj);

@@ -244,7 +244,7 @@ cv2.imwrite('output_detection.png', img)
 You can find more examples from [here](https://github.com/open-mmlab/mmdeploy/tree/master/demo/python).
 
 ```{note}
-If you build MMDeploy from the source, please add ${MMDEPLOY_DIR}/build/lib to the environment variable PYTHONPATH.
+If you build MMDeploy from source, please add ${MMDEPLOY_DIR}/build/lib to the environment variable PYTHONPATH.
 Otherwise, you will run into an error like ’ModuleNotFoundError: No module named 'mmdeploy_python'
 ```
 
@@ -252,7 +252,7 @@ Otherwise, you will run into an error like ’ModuleNotFoundError: No module nam
 
 Using SDK C API should follow next pattern,
 
-```mermaid
+```{mermaid}
 graph LR
   A[create inference handle] --> B(read image)
   B --> C(apply handle)
@@ -278,21 +278,21 @@ int main() {
   std::string image_path = std::getenv("MMDET_DIR") + "/demo/demo.jpg";
 
   // create inference handle
-  mm_handle_t detector{};
+  mmdeploy_detector_t detector{};
   int status{};
   status = mmdeploy_detector_create_by_path(model_path, device_name, device_id, &detector);
-  assert(status == MM_SUCCESS);
+  assert(status == MMDEPLOY_SUCCESS);
 
   // read image
   cv::Mat img = cv::imread(image_path);
   assert(img.data);
 
   // apply handle and get the inference result
-  mm_mat_t mat{img.data, img.rows, img.cols, 3, MM_BGR, MM_INT8};
-  mm_detect_t *bboxes{};
+  mmdeploy_mat_t mat{img.data, img.rows, img.cols, 3, MMDEPLOY_PIXEL_FORMAT_BGR, MMDEPLOY_DATA_TYPE_UINT8};
+  mmdeploy_detection_t *bboxes{};
   int *res_count{};
   status = mmdeploy_detector_apply(detector, &mat, 1, &bboxes, &res_count);
-  assert (status == MM_SUCCESS);
+  assert (status == MMDEPLOY_SUCCESS);
 
   // deal with the result. Here we choose to visualize it
   for (int i = 0; i < *res_count; ++i) {
@@ -304,7 +304,7 @@ int main() {
                   cv::Point{(int)box.right, (int)box.bottom}, cv::Scalar{0, 255, 0});
   }
 
-  cv::imwrite('output_detection.png', img);
+  cv::imwrite("output_detection.png", img);
 
   // destroy result buffer
   mmdeploy_detector_release_result(bboxes, res_count, 1);
