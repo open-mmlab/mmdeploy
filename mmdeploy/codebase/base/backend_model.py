@@ -69,7 +69,7 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
             from mmdeploy.backend.pplnn import PPLNNWrapper
             return PPLNNWrapper(
                 onnx_file=backend_files[0],
-                algo_file=backend_files[1],
+                algo_file=backend_files[1] if len(backend_files) > 1 else None,
                 device=device,
                 output_names=output_names)
         elif backend == Backend.NCNN:
