@@ -24,14 +24,3 @@ def gap__forward(ctx, self, inputs):
     else:
         raise TypeError('neck inputs should be tuple or torch.tensor')
     return outs
-
-
-@FUNCTION_REWRITER.register_rewriter(
-    'mmcls.models.necks.GlobalAveragePooling.forward',
-    backend=Backend.COREML.value)
-def gap__forward__coreml(ctx, self, inputs):
-    """Rewrite `forward` of GlobalAveragePooling for default backend.
-
-    Use origin func
-    """
-    return ctx.origin_func(self, inputs)

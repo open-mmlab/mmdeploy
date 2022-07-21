@@ -5,6 +5,12 @@ from typing import Dict, Sequence, Union
 import coremltools as ct
 import torch
 
+try:
+    # user might need ops from torchvision
+    import torchvision  # noqa
+except ImportError:
+    pass
+
 
 def get_model_suffix(convert_to: str) -> str:
     assert convert_to == 'neuralnetwork' or convert_to == 'mlprogram'

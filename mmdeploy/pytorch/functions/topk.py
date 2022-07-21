@@ -65,3 +65,26 @@ def topk__tensorrt(ctx,
         k = MAX_TOPK_K
 
     return ctx.origin_func(input, k, dim=dim, largest=largest, sorted=sorted)
+
+
+@FUNCTION_REWRITER.register_rewriter(func_name='torch.topk', backend='coreml')
+@FUNCTION_REWRITER.register_rewriter(
+    func_name='torch.Tensor.topk', backend='coreml')
+def topk__coreml(ctx,
+                 input: torch.Tensor,
+                 k: int,
+                 dim: Optional[int] = None,
+                 largest: bool = True,
+                 sorted: bool = True):
+    """Rewrite `topk` for CoreML backend.
+
+    Replace topk with sort + slice.
+    """
+    assert sorted
+    dim = -1 if dim is None else dim
+    dim = dim if dim > 0 else input.dim() + dim
+    value, index = input.sort(dim=dim, descending=largest)
+    k = min(k, input.size(dim))
+    slices = [slice(None)] * (dim + 1)
+    slices[dim] = slice(k)
+    return value[slices], index[slices]
