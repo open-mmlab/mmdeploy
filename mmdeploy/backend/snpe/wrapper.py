@@ -92,81 +92,6 @@ class RetryOnRpcErrorClientInterceptor(grpc.UnaryUnaryClientInterceptor,
                                     request_iterator)
 
 
-# add interceptor to sleep and retry request
-# https://github.com/grpc/grpc/issues/19514
-class SleepingPolicy(abc.ABC):
-
-    @abc.abstractmethod
-    def sleep(self, try_i: int):
-        """How long to sleep in milliseconds.
-
-        :param try_i: the number of retry (starting from zero)
-        """
-        assert try_i >= 0
-
-
-class ExponentialBackoff(SleepingPolicy):
-
-    def __init__(self, *, init_backoff_ms: int, max_backoff_ms: int,
-                 multiplier: int):
-        self.init_backoff = randint(0, init_backoff_ms)
-        self.max_backoff = max_backoff_ms
-        self.multiplier = multiplier
-
-    def sleep(self, try_i: int):
-        sleep_range = min(self.init_backoff * self.multiplier**try_i,
-                          self.max_backoff)
-        sleep_ms = randint(0, sleep_range)
-        logger = get_root_logger()
-        logger.debug(f'Sleeping for {sleep_ms}')
-        time.sleep(sleep_ms / 1000)
-
-
-class RetryOnRpcErrorClientInterceptor(grpc.UnaryUnaryClientInterceptor,
-                                       grpc.StreamUnaryClientInterceptor):
-
-    def __init__(
-        self,
-        *,
-        max_attempts: int,
-        sleeping_policy: SleepingPolicy,
-        status_for_retry: Optional[Tuple[grpc.StatusCode]] = None,
-    ):
-        self.max_attempts = max_attempts
-        self.sleeping_policy = sleeping_policy
-        self.status_for_retry = status_for_retry
-
-    def _intercept_call(self, continuation, client_call_details,
-                        request_or_iterator):
-
-        for try_i in range(self.max_attempts):
-            response = continuation(client_call_details, request_or_iterator)
-
-            if isinstance(response, grpc.RpcError):
-
-                # Return if it was last attempt
-                if try_i == (self.max_attempts - 1):
-                    return response
-
-                # If status code is not in retryable status codes
-                if (self.status_for_retry
-                        and response.code() not in self.status_for_retry):
-                    return response
-
-                self.sleeping_policy.sleep(try_i)
-            else:
-                return response
-
-    def intercept_unary_unary(self, continuation, client_call_details,
-                              request):
-        return self._intercept_call(continuation, client_call_details, request)
-
-    def intercept_stream_unary(self, continuation, client_call_details,
-                               request_iterator):
-        return self._intercept_call(continuation, client_call_details,
-                                    request_iterator)
-
-
 @BACKEND_WRAPPER.register_module(Backend.SNPE.value)
 class SNPEWrapper(BaseWrapper):
     """snpe wrapper class for inference.
@@ -211,12 +136,6 @@ class SNPEWrapper(BaseWrapper):
         if uri is None:
             logger.error('URI not set')
 
-        # self.channel = grpc.insecure_channel(
-        #     uri,
-        #     options=(('grpc.GRPC_ARG_KEEPALIVE_TIME_MS',
-        #               2000), ('grpc.max_send_message_length', MAX_SIZE),
-        #              ('grpc.keepalive_permit_without_calls', 1)))
-
         weights = bytes()
         filesize = os.stat(dlc_file).st_size
 
@@ -260,6 +179,7 @@ class SNPEWrapper(BaseWrapper):
             elif len(shape) == 2:
                 return (0, 1)
             return (0)
+
         input_list = list(inputs.values())
         device_type = input_list[0].device.type
 
@@ -299,19 +219,6 @@ class SNPEWrapper(BaseWrapper):
             dict[str, torch.tensor]: Inference results of snpe model.
         """
         resp = self.stub.Inference(tensorList)
-
-        def get_shape(shape):
-            if len(shape) == 4:
-                if shape[0] == 1 and shape[
-                        1] == 1 and shape[2] > 1 and shape[3] > 1:
-                    # snpe NHWC layout works except for segmentation task
-                    return (0, 1, 2, 3)
-                return (0, 3, 1, 2)
-            elif len(shape) == 3:
-                return (0, 1, 2)
-            elif len(shape) == 2:
-                return (0, 1)
-            return (0)
 
         def get_shape(shape):
             if len(shape) == 4:

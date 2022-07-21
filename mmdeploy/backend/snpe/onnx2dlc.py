@@ -25,14 +25,6 @@ def get_env_key() -> str:
     """
     return '__MMDEPLOY_SNPE_URI'
 
-def get_env_key() -> str:
-    """Return environment key str.
-
-    Returns:
-        str: The string to find SNPE service URI
-    """
-    return '__MMDEPLOY_SNPE_URI'
-
 
 def get_output_model_file(onnx_path: str,
                           work_dir: Optional[str] = None) -> List[str]:
