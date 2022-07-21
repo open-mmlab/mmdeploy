@@ -75,7 +75,6 @@ def from_torchscript(torchscript_model: Union[str,
     mlmodel = ct.convert(
         model=torchscript_model,
         inputs=inputs,
-        outputs=outputs,
         compute_precision=compute_precision,
         convert_to=convert_to,
         skip_model_load=False)

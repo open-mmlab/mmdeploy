@@ -21,7 +21,9 @@ class CoreMLWrapper(BaseWrapper):
 
     def forward(self, inputs: Dict[str,
                                    torch.Tensor]) -> Dict[str, torch.Tensor]:
-        output = self.model.predict(inputs)
+        model_inputs = dict(
+            (k, v.detach().cpu().numpy()) for k, v in inputs.items())
+        output = self.__execute(model_inputs)
         for name, tensor in output.items():
             output[name] = torch.from_numpy(tensor)
         return output
