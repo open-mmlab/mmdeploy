@@ -1,8 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import torch
 from typing import List, Tuple
-from torch import Tensor
+
+import torch
 from mmdet.core import ConfigType
+from torch import Tensor
+
 from mmdeploy.core import FUNCTION_REWRITER
 
 
@@ -15,12 +17,12 @@ def cascade_roi_head__predict_bbox(ctx,
                                    rpn_results_list: List[Tensor],
                                    rcnn_test_cfg: ConfigType,
                                    rescale: bool = False) -> List[Tensor]:
-    """Rewrite `predict_bbox` of `StandardRoIHead` for default backend.
+    """Rewrite `predict_bbox` of `CascadeRoIHead` for default backend.
 
     Args:
         x (tuple[Tensor]): Feature maps of all scale level.
         batch_img_metas (list[dict]): List of image information.
-        rpn_results_list (InstanceList): List of region
+        rpn_results_list (list[Tensor]): List of region
             proposals.
         rcnn_test_cfg (obj:`ConfigDict`): `test_cfg` of R-CNN.
         rescale (bool): If True, return boxes in original image space.
@@ -94,13 +96,13 @@ def cascade_roi_head__predict_mask(ctx,
     Args:
         x (tuple[Tensor]): Feature maps of all scale level.
         batch_img_metas (list[dict]): List of image information.
-        results_list (list[:obj:`InstanceData`]): Detection results of
+        results_list (list[Tensor]): Detection results of
             each image.
         rescale (bool): If True, return boxes in original image space.
             Defaults to False.
 
     Returns:
-        list[:obj:`InstanceData`]: Detection results of each image
+        list[Tensor]: Detection results of each image
         after the post process.
         Each item usually contains following keys.
 
