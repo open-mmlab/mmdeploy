@@ -15,5 +15,5 @@ def triu(ctx,
     height, width = input.shape[-2:]
     arange0 = torch.arange(width, device=input.device).unsqueeze(0)
     arange1 = torch.arange(height, device=input.device).unsqueeze(-1)
-    mask = arange0 >= arange1
+    mask = arange0 >= torch.add(arange1, diagonal)
     return input * mask
