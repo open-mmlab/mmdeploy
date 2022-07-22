@@ -20,13 +20,13 @@ class PyPoseDedector {
       throw std::runtime_error("failed to create pose_detector");
     }
   }
-  py::list Apply(const std::vector<PyImage> &imgs, const std::vector<std::vector<Rect>> &vboxes) {
-    if (imgs.size() == 0 && vboxes.size() == 0) {
+  py::list Apply(const std::vector<PyImage> &imgs, const std::vector<std::vector<Rect>> &bboxes) {
+    if (imgs.size() == 0 && bboxes.size() == 0) {
       return py::list{};
     }
-    if (vboxes.size() != 0 && vboxes.size() != imgs.size()) {
+    if (bboxes.size() != 0 && bboxes.size() != imgs.size()) {
       std::ostringstream os;
-      os << "imgs length not equal with vboxes [" << imgs.size() << " vs " << vboxes.size() << "]";
+      os << "imgs length not equal with vboxes [" << imgs.size() << " vs " << bboxes.size() << "]";
       throw std::invalid_argument(os.str());
     }
 
@@ -39,7 +39,7 @@ class PyPoseDedector {
       mats.push_back(mat);
     }
 
-    for (auto _boxes : vboxes) {
+    for (auto _boxes : bboxes) {
       for (auto _box : _boxes) {
         mmdeploy_rect_t box = {_box[0], _box[1], _box[2], _box[3]};
         boxes.push_back(box);
@@ -48,7 +48,7 @@ class PyPoseDedector {
     }
 
     // full image
-    if (vboxes.size() == 0) {
+    if (bboxes.size() == 0) {
       for (int i = 0; i < mats.size(); i++) {
         mmdeploy_rect_t box = {0.f, 0.f, mats[i].width - 1.f, mats[i].height - 1.f};
         boxes.push_back(box);
@@ -103,8 +103,21 @@ static void register_python_pose_detector(py::module &m) {
       .def(py::init([](const char *model_path, const char *device_name, int device_id) {
         return std::make_unique<PyPoseDedector>(model_path, device_name, device_id);
       }), py::arg("model_path"), py::arg("device_name"), py::arg("device_id")=0)
-      .def("__call__", &PyPoseDedector::Apply, py::arg("imgs"),
-           py::arg("vboxes") = std::vector<std::vector<Rect>>());
+      .def("__call__", [](PyPoseDedector *self, const PyImage &img) -> py::array {
+        return self->Apply({img}, {})[0];
+      })
+      .def("__call__", [](PyPoseDedector *self, const PyImage &img, const Rect &box) -> py::array {
+        std::vector<std::vector<Rect>> bboxes;
+        bboxes.push_back({box});
+        return self->Apply({img}, bboxes)[0];
+      }, py::arg("img"), py::arg("box"))
+      .def("__call__", [](PyPoseDedector *self, const PyImage &img, const std::vector<Rect> &bboxes){
+        std::vector<std::vector<Rect>> _bboxes;
+        _bboxes.push_back(bboxes);
+        return self->Apply({img}, _bboxes);
+      }, py::arg("img"), py::arg("bboxes"))
+      .def("batch", &PyPoseDedector::Apply, py::arg("imgs"),
+           py::arg("bboxes") = std::vector<std::vector<Rect>>());
 }
 
 class PythonPoseDetectorRegisterer {

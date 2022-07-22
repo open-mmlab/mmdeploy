@@ -9,10 +9,11 @@ from mmdeploy_python import Segmentor
 def parse_args():
     parser = argparse.ArgumentParser(
         description='show how to use sdk python api')
-    parser.add_argument('device_name', help='the name of device, cuda or cpu')
+    parser.add_argument('device_name', help='name of device, cuda or cpu')
     parser.add_argument(
-        'model_path', help='the directory path of mmdeploy model')
-    parser.add_argument('image_path', help='the path of an image')
+        'model_path',
+        help='path of mmdeploy SDK model dumped by model converter')
+    parser.add_argument('image_path', help='path of an image')
     args = parser.parse_args()
     return args
 
@@ -33,7 +34,7 @@ def main():
 
     segmentor = Segmentor(
         model_path=args.model_path, device_name=args.device_name, device_id=0)
-    seg = segmentor([img])[0]
+    seg = segmentor(img)
 
     palette = get_palette()
     color_seg = np.zeros((seg.shape[0], seg.shape[1], 3), dtype=np.uint8)
