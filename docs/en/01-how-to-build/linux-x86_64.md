@@ -110,13 +110,12 @@ sudo apt-get install libopencv-dev
   <tr>
     <td>pplcv </td>
     <td>A high-performance image processing library of openPPL.<br>
-  <b>It is optional which only be needed if <code>cuda</code> platform is required.
-  Now, MMDeploy supports v0.6.2 and has to use <code>git clone</code> to download it.</b><br>
+  <b>It is optional which only be needed if <code>cuda</code> platform is required.</b><br>
 <pre><code>
 git clone https://github.com/openppl-public/ppl.cv.git
 cd ppl.cv
 export PPLCV_DIR=$(pwd)
-git checkout tags/v0.6.2 -b v0.6.2
+git checkout tags/v0.7.0 -b v0.7.0
 ./build.sh cuda
 </code></pre>
    </td>

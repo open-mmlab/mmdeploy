@@ -42,7 +42,7 @@ docker build docker/CPU/ -t mmdeploy:inside --build-arg  USE_SRC_INSIDE=true
 构建 docker 镜像成功后，我们可以使用 `docker run` 启动 docker 服务。 GPU 镜像为例：
 
 ```
-docker run --gpus all -it -p 8080:8081 mmdeploy:master-gpu
+docker run --gpus all -it mmdeploy:master-gpu
 ```
 
 ## 常见问答

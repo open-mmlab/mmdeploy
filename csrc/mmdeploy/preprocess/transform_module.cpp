@@ -18,7 +18,8 @@ TransformModule::TransformModule(const Value& args) {
   const auto type = "Compose";
   auto creator = Registry<Transform>::Get().GetCreator(type, 1);
   if (!creator) {
-    MMDEPLOY_ERROR("unable to find creator: {}", type);
+    MMDEPLOY_ERROR("Unable to find Transform creator: {}. Available transforms: {}", type,
+                   Registry<Transform>::Get().List());
     throw_exception(eEntryNotFound);
   }
   auto cfg = args;

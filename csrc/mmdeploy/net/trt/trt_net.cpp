@@ -18,7 +18,7 @@ class TRTLogger : public nvinfer1::ILogger {
   void log(Severity severity, const char* msg) noexcept override {
     switch (severity) {
       case Severity::kINFO:
-        // MMDEPLOY_INFO("TRTNet: {}", msg);
+        MMDEPLOY_DEBUG("TRTNet: {}", msg);
         break;
       case Severity::kWARNING:
         MMDEPLOY_WARN("TRTNet: {}", msg);
@@ -169,7 +169,7 @@ Result<void> TRTNet::Reshape(Span<TensorShape> input_shapes) {
   }
   for (int i = 0; i < input_tensors_.size(); ++i) {
     auto dims = to_dims(input_shapes[i]);
-    //    MMDEPLOY_ERROR("input shape: {}", to_string(dims));
+    MMDEPLOY_DEBUG("input shape: {}", to_string(dims));
     TRT_TRY(context_->setBindingDimensions(input_ids_[i], dims));
     input_tensors_[i].Reshape(input_shapes[i]);
   }
@@ -179,7 +179,7 @@ Result<void> TRTNet::Reshape(Span<TensorShape> input_shapes) {
   }
   for (int i = 0; i < output_tensors_.size(); ++i) {
     auto dims = context_->getBindingDimensions(output_ids_[i]);
-    //    MMDEPLOY_ERROR("output shape: {}", to_string(dims));
+    MMDEPLOY_DEBUG("output shape: {}", to_string(dims));
     output_tensors_[i].Reshape(to_shape(dims));
   }
   return success();

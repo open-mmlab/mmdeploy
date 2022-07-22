@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
 import torch.onnx.symbolic_helper as sym_help
+from packaging.version import parse as version_parse
 
 from mmdeploy.core import FUNCTION_REWRITER
 
@@ -25,6 +26,9 @@ def _prepare_onnx_paddings__tensorrt(ctx, g, input, pad):
             ..., dim_m_begin, dim_m_end,
             where m is in range [0, n].
     """
+    torch_version = version_parse(torch.__version__)
+    if torch_version.minor < 10:
+        return ctx.origin_func(g, input, pad)
     # The desired order of paddings is
     # dim_0_begin, dim_1_begin, ... , dim_0_end, ..., dim_n_end.
     # n is the dimension of input.

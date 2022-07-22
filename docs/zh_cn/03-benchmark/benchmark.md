@@ -1650,6 +1650,18 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
     <td align="center">-</td>
   </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/open-mmlab/mmrotate/blob/main/configs/roi_trans/roi_trans_r50_fpn_1x_dota_le90.py">RoI Transformer</a></td>
+    <td align="center">Rotated Detection</td>
+    <td align="center">DOTA-v1.0</td>
+    <td align="center">mAP</td>
+    <td align="center">0.761</td>
+    <td align="center">-</td>
+    <td align="center">0.758</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
 </tbody>
 </table>
 </div>

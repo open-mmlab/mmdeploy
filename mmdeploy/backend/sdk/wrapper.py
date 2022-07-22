@@ -15,7 +15,7 @@ class SDKWrapper(BaseWrapper):
         # TODO: get device id somewhere
         self.handle = creator(model_file, device, 0)
 
-    @TimeCounter.count_time()
+    @TimeCounter.count_time(Backend.SDK.value)
     def invoke(self, imgs):
         return self.handle(imgs)
 
