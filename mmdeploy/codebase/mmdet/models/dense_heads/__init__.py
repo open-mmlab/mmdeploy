@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .base_dense_head import (base_dense_head__get_bboxes__ncnn,
-                              base_dense_head__predict_by_feat)
+from .base_dense_head import (base_dense_head__predict_by_feat,
+                              base_dense_head__predict_by_feat__ncnn)
 from .fovea_head import fovea_head__predict_by_feat
 from .gfl_head import gfl_head__predict_by_feat
 from .reppoints_head import reppoints_head__predict_by_feat
@@ -15,7 +15,7 @@ __all__ = [
     'rpn_head__predict_by_feat', 'rpn_head__get_bboxes__ncnn',
     'yolov3_head__predict_by_feat', 'yolov3_head__predict_by_feat__ncnn',
     'yolox_head__predict_by_feat', 'base_dense_head__predict_by_feat',
-    'fovea_head__predict_by_feat', 'base_dense_head__get_bboxes__ncnn',
+    'fovea_head__predict_by_feat', 'base_dense_head__predict_by_feat__ncnn',
     'ssd_head__get_bboxes__ncnn', 'yolox_head__predict_by_feat__ncnn',
     'gfl_head__predict_by_feat', 'reppoints_head__predict_by_feat'
 ]
