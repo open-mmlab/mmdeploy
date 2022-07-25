@@ -3,6 +3,7 @@
 #include <torch/csrc/jit/passes/dead_code_elimination.h>
 
 #include "../../ir/subgraph_matcher.h"
+#include "common_subgraph_elimination.h"
 #include "torch/csrc/jit/ir/irparser.h"
 
 namespace mmdeploy {
@@ -126,14 +127,16 @@ void FuseSelectAssign(Block* block, std::unordered_map<std::string, Tensor>& par
 
 void FuseSelectAssign(std::shared_ptr<Graph>& graph,
                       std::unordered_map<std::string, Tensor>& params) {
+  // cse before search
+  CommonSubgraphElimination(graph, params);
+
   std::string pattern_str = R"IR(
-      graph(%y, %z, %cmp_1, %cmp_2, %start, %axes):
+      graph(%y, %z, %cmp_1, %cmp_2, %start, %axes, %shape_2):
         %nz_1 = onnx::NonZero(%cmp_1)
         %trans_1 = onnx::Transpose(%nz_1)
         %gather_1 = onnx::GatherND(%z, %trans_1)
         %reshape_1_shape = onnx::Constant()
         %reshape_1 = onnx::Reshape(%gather_1, %reshape_1_shape)
-        %shape_2 = onnx::Shape(%y)
         %expand_2 = onnx::Expand(%cmp_2, %shape_2)
         %nz_2 = onnx::NonZero(%expand_2)
         %trans_2 = onnx::Transpose(%nz_2)
