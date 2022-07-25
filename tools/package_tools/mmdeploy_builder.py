@@ -173,6 +173,30 @@ def build_mmdeploy(cfg, mmdeploy_dir, dist_dir=None):
     _call_command(bdist_cmd, mmdeploy_dir)
 
 
+def build_mmdeploy_python(python_executable, cfg, mmdeploy_dir):
+    cmake_envs = cfg.get('cmake_envs', dict())
+
+    args = [f'-D{k}={v}' for k, v in cmake_envs.items()]
+    args.append(
+        f'-DMMDeploy_DIR={mmdeploy_dir}/build/install/lib/cmake/MMDeploy')
+
+    if sys.platform == 'win32':
+        build_cmd = 'cmake --build . --config Release -- /m'
+        pass
+    else:
+        args.append(f'-DPYTHON_EXECUTABLE={python_executable}')
+        build_cmd = 'cmake --build . -- -j$(nproc)'
+
+    cmake_cmd = ' '.join(['cmake ../csrc/mmdeploy/apis/python'] + args)
+
+    build_dir = osp.join(mmdeploy_dir, 'build_python')
+    _remove_if_exist(build_dir)
+    os.mkdir(build_dir)
+
+    _call_command(cmake_cmd, build_dir)
+    _call_command(build_cmd, build_dir)
+
+
 def get_dir_name(cfg, tag, default_name):
     if tag not in cfg:
         logging.warning(f'{tag} not found, use `{default_name}` as default.')
@@ -292,33 +316,52 @@ def create_package(cfg: Dict, mmdeploy_dir: str):
             _copy(install_dir, sdk_tar_dir)
             _remove_if_exist(osp.join(sdk_tar_dir, 'example', 'build'))
 
-            # create sdk python api wheel
-            # for linux
-            python_api_lib_path = glob(
-                osp.join(mmdeploy_dir, 'build/lib/mmdeploy_python.*.so'))
-            # for windows
-            python_api_lib_path += glob(
-                osp.join(mmdeploy_dir, 'build/bin/*/mmdeploy_python.*.pyd'))
-            num_libs = len(python_api_lib_path)
-            if num_libs != 1:
-                logging.info('find multiple mmdeploy_python libraries.')
-            python_api_lib_path = python_api_lib_path[0]
+            # build SDK Python API according to different python version
+            # 1. get conda env path from python's path.
+            # We assume python is managed by conda
+            python_versions = ['3.6', '3.7', '3.8', '3.9']
+            for python_version in python_versions:
+                python_executable = shutil.which(f'python{python_version}')
+                if python_executable:
+                    logging.info(python_executable)
+                    conda_env_path = osp.dirname(
+                        osp.dirname(osp.dirname(python_executable)))
+                    logging.info(conda_env_path)
+                    break
 
-            sdk_python_package_dir = osp.join(build_dir, '.mmdeploy_python')
-            _copy(PACKAGING_DIR, sdk_python_package_dir)
-            _copy(
-                osp.join(mmdeploy_dir, 'mmdeploy', 'version.py'),
-                osp.join(sdk_python_package_dir, 'mmdeploy_python',
-                         'version.py'))
-            _copy(python_api_lib_path,
-                  osp.join(sdk_python_package_dir, 'mmdeploy_python'))
-            sdk_wheel_dir = osp.abspath(osp.join(sdk_tar_dir, 'python'))
-            bdist_cmd = _create_bdist_cmd(
-                cfg, c_ext=True, dist_dir=sdk_wheel_dir)
-            _call_command(bdist_cmd, sdk_python_package_dir)
+            for python_version in python_versions:
+                python_major, _, python_minor = list(python_version)
 
-            # remove temp package dir
-            _remove_if_exist(sdk_python_package_dir)
+                # create sdk python api wheel
+                sdk_python_package_dir = osp.join(build_dir,
+                                                  '.mmdeploy_python')
+                _copy(PACKAGING_DIR, sdk_python_package_dir)
+                _copy(
+                    osp.join(mmdeploy_dir, 'mmdeploy', 'version.py'),
+                    osp.join(sdk_python_package_dir, 'mmdeploy_python',
+                             'version.py'))
+
+                # build mmdeploy sdk python api
+                build_mmdeploy_python(
+                    f'{conda_env_path}/mmdeploy-{python_version}/bin/'
+                    f'python{python_version}', cfg, mmdeploy_dir)
+
+                python_api_lib_path = glob(
+                    osp.join(mmdeploy_dir, 'build_python/mmdeploy_python*'))
+                _copy(python_api_lib_path[0],
+                      osp.join(sdk_python_package_dir, 'mmdeploy_python'))
+                _remove_if_exist(osp.join(mmdeploy_dir, 'build_python'))
+
+                sdk_wheel_dir = osp.abspath(osp.join(sdk_tar_dir, 'python'))
+
+                bdist_cmd = f'python setup.py bdist_wheel --plat-name ' \
+                            f'{PLATFORM_TAG} --python-tag ' \
+                            f'cp{python_major}{python_minor} ' \
+                            f'--dist-dir {sdk_wheel_dir}'
+                _call_command(bdist_cmd, sdk_python_package_dir)
+
+                # remove temp package dir
+                _remove_if_exist(sdk_python_package_dir)
 
         logging.info('build finish.')
 
