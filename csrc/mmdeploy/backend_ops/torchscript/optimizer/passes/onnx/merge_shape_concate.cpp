@@ -18,7 +18,7 @@ using torch::jit::Value;
 void MergeShapeConcate(Node* node) {
   auto inputs = node->inputs();
 
-  std::vector<long> gather_value;
+  std::vector<int64_t> gather_value;
   Value* shape_from = nullptr;
 
   std::vector<Node*> node_to_remove{node};

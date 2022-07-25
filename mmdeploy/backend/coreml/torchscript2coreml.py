@@ -5,6 +5,8 @@ from typing import Dict, Sequence, Union
 import coremltools as ct
 import torch
 
+from mmdeploy.utils import get_root_logger
+
 try:
     # user might need ops from torchvision
     import torchvision  # noqa
@@ -56,6 +58,14 @@ def from_torchscript(torchscript_model: Union[str,
                      skip_model_load: bool = True,
                      **kwargs):
     """Create a coreml engine from torchscript."""
+
+    try:
+        from mmdeploy.backend.torchscript import get_ops_path
+        torch.ops.load_library(get_ops_path())
+    except Exception:
+        get_root_logger().warning(
+            'Can not load custom ops. '
+            'Some model might not be able to be converted.')
 
     if isinstance(torchscript_model, str):
         torchscript_model = torch.jit.load(torchscript_model)

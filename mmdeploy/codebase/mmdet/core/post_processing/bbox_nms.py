@@ -6,6 +6,7 @@ import mmdeploy
 from mmdeploy.core import FUNCTION_REWRITER, mark
 from mmdeploy.mmcv.ops import ONNXNMSop, TRTBatchedNMSop
 from mmdeploy.utils import IR, is_dynamic_batch
+from mmdeploy.utils.constants import Backend
 
 
 def select_nms_index(scores: torch.Tensor,
@@ -268,6 +269,58 @@ def multiclass_nms(*args, **kwargs):
     """Wrapper function for `_multiclass_nms`."""
     return mmdeploy.codebase.mmdet.core.post_processing._multiclass_nms(
         *args, **kwargs)
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    func_name='mmdeploy.codebase.mmdet.core.post_processing._multiclass_nms',
+    backend=Backend.COREML.value)
+def multiclass_nms__coreml(ctx,
+                           boxes: Tensor,
+                           scores: Tensor,
+                           max_output_boxes_per_class: int = 1000,
+                           iou_threshold: float = 0.5,
+                           score_threshold: float = 0.05,
+                           pre_top_k: int = -1,
+                           keep_top_k: int = -1):
+    """rewrite for coreml batched nms.
+
+    Use coreml_nms from custom ops.
+    """
+
+    # load custom nms
+    from mmdeploy.backend.torchscript import get_ops_path, ops_available
+    assert ops_available(), 'coreml require custom torchscript ops support.'
+    torch.ops.load_library(get_ops_path())
+    try:
+        coreml_nms = torch.ops.mmdeploy.coreml_nms
+    except Exception:
+        raise Exception(
+            'Can not use coreml_nms. Please build torchscript custom ops.')
+
+    batch_size = scores.shape[0]
+    assert batch_size == 1, 'batched nms is not supported for now.'
+
+    # box_per_cls = len(boxes.shape) == 4
+
+    # pre-topk
+    if pre_top_k > 0:
+        max_scores, _ = scores.max(-1)
+        _, topk_inds = max_scores.topk(pre_top_k)
+        boxes = boxes[:, topk_inds.squeeze(), ...]
+        scores = scores[:, topk_inds.squeeze(), ...]
+
+    boxes, scores, _, _ = coreml_nms(boxes, scores, iou_threshold,
+                                     score_threshold,
+                                     max_output_boxes_per_class)
+
+    scores, labels = scores.max(-1)
+    dets = torch.cat([boxes, scores.unsqueeze(-1)], dim=-1)
+
+    if keep_top_k > 0:
+        dets = dets[:, :keep_top_k, ...]
+        labels = labels[:, :keep_top_k]
+
+    return dets, labels
 
 
 @FUNCTION_REWRITER.register_rewriter(
