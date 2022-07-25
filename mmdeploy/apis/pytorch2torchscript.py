@@ -42,7 +42,10 @@ def torch2torchscript(img: Any,
     task_processor = build_task_processor(model_cfg, deploy_cfg, device)
 
     torch_model = task_processor.build_pytorch_model(model_checkpoint)
-    _, model_inputs = task_processor.create_input(img, input_shape)
+    _, model_inputs = task_processor.create_input(
+        img,
+        input_shape,
+        data_preprocessor=getattr(torch_model, 'data_preprocessor', None))
     if not isinstance(model_inputs, torch.Tensor):
         model_inputs = model_inputs[0]
 
