@@ -116,7 +116,9 @@ void TestResizeWithScaleFactor(const Value& cfg, const std::string& device_name,
     auto transform = CreateTransform(cfg, device, stream);
     REQUIRE(transform != nullptr);
 
-    auto [dst_height, dst_width] = make_tuple(mat.rows * scale_factor, mat.cols * scale_factor);
+    // keep round policy with resize.cpp
+    const int dst_height = static_cast<int>(mat.rows * scale_factor + 0.5);
+    const int dst_width = static_cast<int>(mat.cols * scale_factor + 0.5);
     auto interpolation = cfg["interpolation"].get<string>();
     auto ref_mat = mmdeploy::cpu::Resize(mat, dst_height, dst_width, interpolation);
 
