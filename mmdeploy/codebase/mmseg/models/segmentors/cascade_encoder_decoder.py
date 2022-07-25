@@ -3,9 +3,9 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmseg.models.segmentors.EncoderDecoder.predict')
-def encoder_decoder__predict(ctx, self, batch_inputs, batch_data_samples,
-                             **kwargs):
+    func_name='mmseg.models.segmentors.CascadeEncoderDecoder.predict')
+def cascade_encoder_decoder__predict(ctx, self, batch_inputs,
+                                     batch_data_samples, **kwargs):
     """Rewrite `predict` for default backend.
 
     1. only support mode=`whole` inference
@@ -24,6 +24,10 @@ def encoder_decoder__predict(ctx, self, batch_inputs, batch_data_samples,
     for data_sample in batch_data_samples:
         batch_img_metas.append(data_sample.metainfo)
     x = self.extract_feat(batch_inputs)
-    seg_logit = self.decode_head.predict(x, batch_img_metas, self.test_cfg)
+    out = self.decode_head[0].forward(x)
+    for i in range(1, self.num_stages - 1):
+        out = self.decode_head[i].forward(x, out)
+    seg_logit = self.decode_head[-1].predict(x, out, batch_img_metas,
+                                             self.test_cfg)
     seg_pred = seg_logit.argmax(dim=1, keepdim=True)
     return seg_pred
