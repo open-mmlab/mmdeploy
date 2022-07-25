@@ -129,7 +129,7 @@ $ export SNPE_ROOT=/path/to/snpe-1.59.0.3230
 
 ```bash
 $ cd /path/to/mmdeploy
-$ cd csrc/mmdeploy/backend_ops/snpe/service
+$ cd service/snpe/server
 
 $ mkdir -p build && cd build
 $ export ANDROID_NDK=/path/to/android-ndk-r17c

@@ -155,4 +155,4 @@ mmdeploy/backend/ncnn/onnx2ncnn
 
 # snpe
 grpc-cpp-plugin
-csrc/mmdeploy/backend_ops/snpe/grpc_cpp_plugin
+service/snpe/grpc_cpp_plugin

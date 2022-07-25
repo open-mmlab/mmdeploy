@@ -1,6 +1,6 @@
 # Build for SNPE
 
-It is quit simple to support snpe backend: Client/Servcer mode.
+It is quite simple to support snpe backend: Client/Server mode.
 
 this mode
 
@@ -59,8 +59,10 @@ Download [snpe-1.59 from the official website](https://developer.qualcomm.com/qf
 
 ```bash
 $ unzip snpe-1.59.0.zip
-$ export SNPE_ROOT=/path/to/snpe-1.59.0.3230
+$ export SNPE_ROOT=${PWD}/snpe-1.59.0.3230
 $ cd /path/to/mmdeploy
+$ export PYTHONPATH=${PWD}/service/snpe/client:${SNPE_ROOT}/lib/python:${PYTHONPATH}
+$ export LD_LIBRARY_PATH=${SNPE_ROOT}/lib/x86_64-linux-clang:${LD_LIBRARY_PATH}
 $ python3 -m pip install -e .
 ```
 
@@ -74,10 +76,10 @@ $ export MODEL_PATH=https://download.openmmlab.com/mmclassification/v0/resnet/re
 
 # Convert the model
 $ cd /path/to/mmdeploy
-$ python3 tools/deploy.py  configs/mmcls/classification_snpe_dynamic.py $MODEL_CONFIG  $MODEL_PATH   /path/to/test.png   --work-dir resnet18   --device cpu  --uri 10.1.82.63\:50051
+$ python3 tools/deploy.py  configs/mmcls/classification_snpe_dynamic.py $MODEL_CONFIG  $MODEL_PATH   /path/to/test.png   --work-dir resnet18   --device cpu  --uri 10.0.0.1\:50051
 
 # Test
-$ python3 tools/test.py configs/mmcls/classification_snpe_static.py   $MODEL_CONFIG    --model reset18/end2end.dlc   --metrics accuracy precision f1_score recall  --uri 10.1.82.63\:50051
+$ python3 tools/test.py configs/mmcls/classification_snpe_static.py   $MODEL_CONFIG    --model reset18/end2end.dlc   --metrics accuracy precision f1_score recall  --uri 10.0.0.1\:50051
 ```
 
 Note that `--uri` is required to specify the ip and port of the snpe inference service, ipv4 and ipv6 addresses can be used.

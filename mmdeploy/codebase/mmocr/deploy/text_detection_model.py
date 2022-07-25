@@ -14,7 +14,6 @@ from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
 
 
 def __build_backend_model(cls_name: str, registry: Registry, *args, **kwargs):
-    print(registry.module_dict[cls_name])
     return registry.module_dict[cls_name](*args, **kwargs)
 
 

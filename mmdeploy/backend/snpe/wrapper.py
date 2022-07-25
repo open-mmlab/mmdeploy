@@ -205,7 +205,8 @@ class SNPEWrapper(BaseWrapper):
             snpe_inputs.append(tensor)
 
         return self.__snpe_execute(
-            inference_pb2.TensorList(data=snpe_inputs), device_type)
+            tensorList=inference_pb2.TensorList(data=snpe_inputs),
+            device=device_type)
 
     @TimeCounter.count_time()
     def __snpe_execute(self, tensorList: inference_pb2.TensorList,
