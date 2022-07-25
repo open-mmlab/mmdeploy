@@ -102,11 +102,11 @@ $ unzip opencv-${OPENCV_VERSION}-android-sdk.zip
 
 $ export ANDROID_OCV_ROOT=`realpath opencv-${OPENCV_VERSION}-android-sdk`
 
-# 下载 ndk r17c
-$ wget https://dl.google.com/android/repository/android-ndk-r17c-linux-x86_64.zip
-$ unzip android-ndk-r17c-linux-x86_64.zip
+# 下载 ndk r23b
+$ wget https://dl.google.com/android/repository/android-ndk-r23b-linux-x86_64.zip
+$ unzip android-ndk-r23b-linux-x86_64.zip
 
-$ export ANDROID_NDK_ROOT=`realpath android-ndk-r17c`
+$ export ANDROID_NDK_ROOT=`realpath android-ndk-r23b`
 ```
 
 ### 2. 编译 mmdeploy SDK
