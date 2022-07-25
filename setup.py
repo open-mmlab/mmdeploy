@@ -146,7 +146,6 @@ def get_extensions():
     ) + glob.glob(
         './csrc/mmdeploy/backend_ops/torchscript/optimizer/passes/onnx/*.cpp')
     extension = CppExtension
-    # include_dirs.append(os.path.abspath('./mmcv/ops/csrc/common'))
 
     # c++14 is required.
     # However, in the windows environment, some standard libraries

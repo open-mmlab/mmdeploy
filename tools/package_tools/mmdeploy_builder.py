@@ -135,7 +135,7 @@ def clear_mmdeploy(mmdeploy_dir: str):
 
     # remove ts_optmizer
     ts_optimizer_paths = glob(
-        osp.join(mmdeploy_dir, 'mmdeploy/backend/ncnn/ts_optimizer.*'))
+        osp.join(mmdeploy_dir, 'mmdeploy/backend/torchscript/ts_optimizer.*'))
     for ts_optimizer_path in ts_optimizer_paths:
         os.remove(ts_optimizer_path)
 
