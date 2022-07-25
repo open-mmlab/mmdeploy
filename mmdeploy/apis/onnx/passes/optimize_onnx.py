@@ -2,7 +2,8 @@
 from mmdeploy.utils import get_root_logger
 
 
-def optimize_onnx(graph, params_dict, torch_out):
+def optimize_onnx(ctx, graph, params_dict, torch_out):
+    """The optimize callback of the onnx model."""
     logger = get_root_logger()
     logger.info('Execute onnx optimize passes.')
     try:
