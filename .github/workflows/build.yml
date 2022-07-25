@@ -86,7 +86,8 @@ jobs:
           cp cat-dog.png mmdeploy_test_resources/transform/
           ./bin/mmdeploy_tests
           lcov --capture --directory . --output-file coverage.info
-          echo ${PWD}
+          ls -lah coverage.info
+          cp coverage.info ../
       - name: Upload cpp coverage to Codecov
         uses: codecov/codecov-action@v2
         with:
