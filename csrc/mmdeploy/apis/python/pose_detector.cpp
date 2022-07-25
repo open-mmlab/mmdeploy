@@ -103,20 +103,22 @@ static void register_python_pose_detector(py::module &m) {
       .def(py::init([](const char *model_path, const char *device_name, int device_id) {
              return std::make_unique<PyPoseDetector>(model_path, device_name, device_id);
            }),
-           py::arg("model_path"), py::arg("device_name"), py::arg("device_id")=0)
+           py::arg("model_path"), py::arg("device_name"), py::arg("device_id") = 0)
       .def("__call__",
            [](PyPoseDetector *self, const PyImage &img) -> py::array {
              return self->Apply({img}, {})[0];
            })
-      .def("__call__",
+      .def(
+          "__call__",
           [](PyPoseDetector *self, const PyImage &img, const Rect &box) -> py::array {
             std::vector<std::vector<Rect>> bboxes;
             bboxes.push_back({box});
             return self->Apply({img}, bboxes)[0];
           },
           py::arg("img"), py::arg("box"))
-      .def("__call__",
-          [](PyPoseDetector *self, const PyImage &img, const std::vector<Rect> &bboxes){
+      .def(
+          "__call__",
+          [](PyPoseDetector *self, const PyImage &img, const std::vector<Rect> &bboxes) {
             std::vector<std::vector<Rect>> _bboxes;
             _bboxes.push_back(bboxes);
             return self->Apply({img}, _bboxes);
