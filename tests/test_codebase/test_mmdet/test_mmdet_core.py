@@ -1,8 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import mmcv
 import numpy as np
 import pytest
 import torch
+from mmengine import Config
 
 from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Backend, Codebase
@@ -15,7 +15,7 @@ import_codebase(Codebase.MMDET)
 @backend_checker(Backend.TENSORRT)
 def test_multiclass_nms_static():
     from mmdeploy.codebase.mmdet.core import multiclass_nms
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = Config(
         dict(
             onnx_config=dict(output_names=None, input_shape=None),
             backend_config=dict(
@@ -73,7 +73,7 @@ def test_multiclass_nms_static():
 def test_delta2bbox(backend_type: Backend, add_ctr_clamp: bool,
                     clip_border: bool, max_shape: tuple):
     check_backend(backend_type)
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = Config(
         dict(
             onnx_config=dict(output_names=None, input_shape=None),
             backend_config=dict(type=backend_type.value, model_inputs=None),
@@ -111,7 +111,7 @@ def test_delta2bbox(backend_type: Backend, add_ctr_clamp: bool,
 @pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
 def test_tblr2bbox(backend_type: Backend):
     check_backend(backend_type)
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = Config(
         dict(
             onnx_config=dict(output_names=None, input_shape=None),
             backend_config=dict(type=backend_type.value, model_inputs=None),
@@ -162,7 +162,7 @@ def test_multiclass_nms_with_keep_top_k(pre_top_k):
     from mmdeploy.codebase.mmdet.core import multiclass_nms
     max_output_boxes_per_class = 20
     keep_top_k = 15
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = Config(
         dict(
             onnx_config=dict(
                 output_names=None,
