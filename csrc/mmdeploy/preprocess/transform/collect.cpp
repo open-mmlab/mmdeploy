@@ -45,8 +45,7 @@ Result<Value> CollectImpl::Process(const Value &input) {
   }
   for (auto &key : arg_.keys) {
     if (!input.contains(key)) {
-      MMDEPLOY_ERROR("missed key '{}' in input", key);
-      //      return Status(eInvalidArgument);
+      MMDEPLOY_INFO("missed key '{}' in input", key);
       return Status(eInvalidArgument);
     } else {
       output[key] = input[key];

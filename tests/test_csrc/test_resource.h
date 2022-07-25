@@ -103,6 +103,7 @@ class MMDeployTestResources {
     backend_devices_["ncnn"] = {"cpu"};
     backend_devices_["openvino"] = {"cpu"};
     resource_root_path_ = LocateResourceRootPath(fs::current_path(), 8);
+    fprintf(stdout, "resource root path: %s \n", resource_root_path_.c_str());
   }
 
   static std::vector<std::string> Split(const std::string &text, char delimiter = ';') {
