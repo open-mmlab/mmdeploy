@@ -331,10 +331,6 @@ def test_poly2obb_le135(backend_type: Backend):
                 ]),
             codebase_config=dict(type='mmrotate', task='RotatedDetection')))
 
-    # import rewriter
-    from mmdeploy.codebase import Codebase, import_codebase
-    import_codebase(Codebase.MMROTATE)
-
     # wrap function to enable rewrite
     def poly2obb_le135(*args, **kwargs):
         import mmrotate
@@ -369,10 +365,6 @@ def test_obb2poly_le135(backend_type: Backend):
                                 max_shape=rboxes.shape)))
                 ]),
             codebase_config=dict(type='mmrotate', task='RotatedDetection')))
-
-    # import rewriter
-    from mmdeploy.codebase import Codebase, import_codebase
-    import_codebase(Codebase.MMROTATE)
 
     # wrap function to enable rewrite
     def obb2poly_le135(*args, **kwargs):
