@@ -17,7 +17,7 @@ MMDeploy 定义的模型部署流程，如下图所示：
 
 ### MMDeploy 模型（MMDeploy Model）
 
-模型转换结果的集合。它不仅包括后端模型，还包括模型的元信息。这些信息将用于推理 SDK 中。
+也称 SDK Model。它是模型转换结果的集合。不仅包括后端模型，还包括模型的元信息。这些信息将用于推理 SDK 中。
 
 ### 推理 SDK（Inference SDK）
 
@@ -38,8 +38,6 @@ conda activate mmdeploy
 
 **第三步**: 参考[官方文档](https://pytorch.org/get-started/locally/)并安装 PyTorch
 
-Model Converter 的 torch2onnx 功能依赖它。
-
 在 GPU 环境下：
 
 ```shell
@@ -53,7 +51,7 @@ conda install pytorch=={pytorch_version} torchvision=={torchvision_version} cpuo
 ```
 
 ```{note}
-在 GPU 环境下，请务必保证 {cudatoolkit_version} 和你主机的 CUDA Toolkit 版本一致，避免在使用 TensorRT 时，可能带来的版本冲突问题。
+在 GPU 环境下，请务必保证 {cudatoolkit_version} 和主机的 CUDA Toolkit 版本一致，避免在使用 TensorRT 时，可能引起的版本冲突问题。
 ```
 
 ## 安装 MMDeploy
@@ -113,41 +111,77 @@ mim install mmcv-full
 - Linux-x86_64, CPU, ONNX Runtime 1.8.1
 
   ```shell
+  # 安装 MMDeploy
   wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.6.0/mmdeploy-0.6.0-linux-x86_64-onnxruntime1.8.1.tar.gz
   tar -zxvf mmdeploy-0.6.0-linux-x86_64-onnxruntime1.8.1.tar.gz
   pip install mmdeploy-0.6.0-linux-x86_64-onnxruntime1.8.1/dist/mmdeploy-0.6.0-py37-none-linux_x86_64.whl
   pip install mmdeploy-0.6.0-linux-x86_64-onnxruntime1.8.1/sdk/python/mmdeploy_python-0.6.0-cp37-none-linux_x86_64.whl
+
+  # 安装 ONNX Runtime
+  wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
+  tar -zxvf onnxruntime-linux-x64-1.8.1.tgz
+  export ONNXRUNTIME_DIR=$(pwd)/onnxruntime
+  export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
   ```
 
 - Linux-x86_64, CUDA 11.x, TensorRT 8.2.3.0
 
   ```shell
+  # 安装 MMDeploy
   wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.6.0/mmdeploy-0.6.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
   tar -zxvf mmdeploy-v0.6.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
   pip install mmdeploy-0.6.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0/dist/mmdeploy-0.6.0-py37-none-linux_x86_64.whl
   pip install mmdeploy-0.6.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0/sdk/python/mmdeploy_python-0.6.0-cp37-none-linux_x86_64.whl
 
-  # !!! 从 NVIDIA 官网下载 TensorRT-8.2.3.0 CUDA 11.x 安装包
-  tar -zxvf TensorRT-8.2.3.0.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz
+  # !!! 从 NVIDIA 官网下载 TensorRT-8.2.3.0 CUDA 11.x 安装包并解压到当前目录
   pip install TensorRT-8.2.3.0/python/tensorrt-8.2.3.0-cp37-none-linux_x86_64.whl
   pip install pycuda
   export TENSORRT_DIR=$(pwd)/TensorRT-8.2.3.0
   export LD_LIBRARY_PATH=${TENSORRT_DIR}/lib:$LD_LIBRARY_PATH
 
-  # !!! 从 NVIDIA 官网下载 cuDNN 8.2.1 CUDA 11.x 安装包
-  tar -zxvf cudnn-11.3-linux-x64-v8.2.1.32.tgz
+  # !!! 从 NVIDIA 官网下载 cuDNN 8.2.1 CUDA 11.x 安装包并解压到当前目录
   export CUDNN_DIR=$(pwd)/cuda
   export LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
   ```
 
 - Windows, CPU, ONNX Runtime 1.8.1
 
+  请在 Conda Prompt Shell 中执行以下命令
+
   ```shell
+  # 安装 MMDeploy
+  Invoke-WebRequest -Uri https://github.com/open-mmlab/mmdeploy/releases/download/v0.6.0/mmdeploy-0.6.0-windows-amd64-onnxruntime1.8.1.zip -OutFile mmdeploy-0.6.0-windows-amd64-onnxruntime1.8.1.zip
+  Expand-Archive mmdeploy-0.6.0-windows-amd64-onnxruntime1.8.1.zip .
+  pip install mmdeploy-0.6.0-windows-amd64-onnxruntime1.8.1/dist/mmdeploy-0.6.0-py37-none-linux_x86_64.whl
+  pip install mmdeploy-0.6.0-windows-amd64-onnxruntime1.8.1/sdk/python/mmdeploy_python-0.6.0-cp37-none-linux_x86_64.whl
+
+  # 安装 ONNX Runtime
+  Invoke-WebRequest -Uri https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-win-x64-1.8.1.zip -OutFile onnxruntime-win-x64-1.8.1.zip
+  Expand-Archive onnxruntime-win-x64-1.8.1.zip .
+  $env:ONNXRUNTIME_DIR=$(pwd)/onnxruntime-win-x64-1.8.1
+  $env:path="$env:ONNXRUNTIME_DIR"/lib:$env:path
   ```
 
 - Windows, CUDA 11.x, TensorRT 8.2.3.0
 
+  请在 Conda Prompt Shell 中执行以下命令
+
   ```shell
+  # 安装 MMDeploy
+  Invoke-WebRequest -Uri https://github.com/open-mmlab/mmdeploy/releases/download/v0.6.0/mmdeploy-0.6.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip -OutFile mmdeploy-0.6.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip
+  Expand-Archive mmdeploy-0.6.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip .
+  pip install mmdeploy-0.6.0-windows-amd64-cuda11.1-tensorrt8.2.3.0/dist/mmdeploy-0.6.0-py37-none-linux_x86_64.whl
+  pip install mmdeploy-0.6.0-windows-amd64-cuda11.1-tensorrt8.2.3.0/sdk/python/mmdeploy_python-0.6.0-cp37-none-linux_x86_64.whl
+
+   # !!! 从 NVIDIA 官网下载 TensorRT-8.2.3.0 CUDA 11.x 安装包并解压到当前目录
+  pip install TensorRT-8.2.3.0/python/tensorrt-8.2.3.0-cp37-none-linux_x86_64.whl
+  pip install pycuda
+  $env:TENSORRT_DIR=$(pwd)/TensorRT-8.2.3.0
+  $env:path="$env:TENSORRT_DIR"/lib:$env:path
+
+  # !!! 从 NVIDIA 官网下载 cuDNN 8.2.1 CUDA 11.x 安装包并解压到当前目录
+  $env:CUDNN_DIR=$(pwd)/cuda
+  $env:path="$env:CUDNN_DIR"/lib64:$env:path
   ```
 
 ## 模型转换
@@ -216,8 +250,8 @@ cd mmdeploy-0.6.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
 # 运行 python demo
 python sdk/demo/python/object_detection.py cuda mmdeploy_model/faster-rcnn mmdetection/demo/demo.jpg
 
-# 运行 C demo
-./sdk/bin/object_detection cuda mmdeploy_model/faster-rcnn mmdetection/demo/demo.jpg
+ # 运行 C demo
+ ./sdk/bin/object_detection cuda mmdeploy_model/faster-rcnn mmdetection/demo/demo.jpg
 ```
 
 ```{note}
@@ -274,7 +308,7 @@ graph LR
 ```C++
 #include <cstdlib>
 #include <opencv2/opencv.hpp>
-#include "detector.h"
+#include "mmdeploy/detector.h"
 
 int main() {
   const char* device_name = "cuda";
@@ -333,11 +367,11 @@ target_link_libraries(${YOUR_AWESOME_TARGET} PRIVATE MMDeployLibs)
 
 #### C# API
 
-因篇幅所限，本文不展示具体案例。请参考[这里](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csharp)，了解 SDK C# API 的用法。
+请参考[这里](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csharp)，了解 SDK C# API 的应用示例。
 
 #### JAVA API
 
-因篇幅所限，本文不展示具体案例。请参考[这里](https://github.com/open-mmlab/mmdeploy/tree/master/demo/java)，了解 SDK JAVA API 的用法。
+请参考[这里](https://github.com/open-mmlab/mmdeploy/tree/master/demo/java)，了解 SDK JAVA API 的应用示例。
 
 ## 模型精度评估
 
