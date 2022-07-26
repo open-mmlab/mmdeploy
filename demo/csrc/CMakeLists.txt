@@ -9,7 +9,7 @@ function(add_example task name)
     # Search for c/cpp sources
     file(GLOB _SRCS ${name}.c*)
     add_executable(${name} ${_SRCS})
-    if (NOT MSVC)
+    if (NOT (MSVC OR APPLE))
       # Disable new dtags so that executables can run even without LD_LIBRARY_PATH set
       target_link_libraries(${name} PRIVATE -Wl,--disable-new-dtags)
     endif ()
