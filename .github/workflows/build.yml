@@ -82,8 +82,7 @@ jobs:
           cmake .. -DCMAKE_CXX_COMPILER=g++-7  -DMMDEPLOY_CODEBASES=all    -DMMDEPLOY_BUILD_SDK=ON     -DMMDEPLOY_BUILD_SDK_PYTHON_API=OFF     -DMMDEPLOY_TARGET_DEVICES=cpu   -DMMDEPLOY_COVERAGE=ON  -DMMDEPLOY_BUILD_TEST=ON
           make -j2
           mkdir -p mmdeploy_test_resources/transform
-          wget https://media.githubusercontent.com/media/tpoisonooo/mmdeploy-onnx2ncnn-testdata/main/cat-dog.png
-          cp cat-dog.png mmdeploy_test_resources/transform/
+          cp ../tests/data/tiger.jpeg mmdeploy_test_resources/transform/
           ./bin/mmdeploy_tests
           lcov --capture --directory . --output-file coverage.info
           ls -lah coverage.info
