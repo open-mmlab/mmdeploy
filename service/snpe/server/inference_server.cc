@@ -63,9 +63,10 @@ void PrintIP() {
   std::cout << table << std::endl << std::endl;
 }
 
-void RunServer() {
+void RunServer(int port = 60000) {
   // listen IPv4 and IPv6
-  std::string server_address("[::]:50052");
+  char server_address[64] = {0};
+  sprintf(server_address, "[::]:%d", port);
   InferenceServiceImpl service;
 
   grpc::EnableDefaultHealthCheckService(true);
@@ -84,7 +85,7 @@ void RunServer() {
   builder.RegisterService(&service);
   // Finally assemble the server.
   std::unique_ptr<Server> server(builder.BuildAndStart());
-  fprintf(stdout, "Server listening on %s\n", server_address.c_str());
+  fprintf(stdout, "Server listening on %s\n", server_address);
 
   // Wait for the server to shutdown. Note that some other thread must be
   // responsible for shutting down the server for this call to ever return.
@@ -92,8 +93,17 @@ void RunServer() {
 }
 
 int main(int argc, char** argv) {
+  int port = 60000;
+  if (argc > 1) {
+    port = std::stoi(argv[1]);
+  }
+
+  if (port <= 9999) {
+    fprintf(stdout, "Usage: %s [port]\n", argv[0]);
+    return 0;
+  }
   PrintIP();
-  RunServer();
+  RunServer(port);
 
   return 0;
 }

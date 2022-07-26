@@ -56,7 +56,7 @@ def parse_args():
         '--quant', action='store_true', help='Quantize model to low bit.')
     parser.add_argument(
         '--uri',
-        default='192.168.77.141:50052',
+        default='192.168.1.1:60000',
         help='Remote ipv4:port or ipv6:port for inference on edge device.')
     args = parser.parse_args()
     return args

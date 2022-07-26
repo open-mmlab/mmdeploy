@@ -32,7 +32,7 @@ venus:/ $ cd /data/local/tmp
 130|venus:/data/local/tmp $ source export1.59.sh
 130|venus:/data/local/tmp $ ./inference_server
 ...
-  Server listening on [::]:50052
+  Server listening on [::]:60000
 ```
 
 At this point the inference service should print all the ipv6 and ipv4 addresses of the device and listen on the port.
@@ -43,6 +43,8 @@ tips:
   - Some cheap cables can only charge and cannot transmit data
   - or the "developer mode" of the phone is not turned on
 - If you need to compile the binary by self, please refer to [NDK Cross Compiling snpe Inference Service](../appendix/cross_build_snpe_service.md)
+- If a `segmentation fault` occurs when listening on a port, it may be because:
+  - The port number is already occupied, use another port
 
 ## 2. Build mmdeploy
 
@@ -76,10 +78,10 @@ $ export MODEL_PATH=https://download.openmmlab.com/mmclassification/v0/resnet/re
 
 # Convert the model
 $ cd /path/to/mmdeploy
-$ python3 tools/deploy.py  configs/mmcls/classification_snpe_dynamic.py $MODEL_CONFIG  $MODEL_PATH   /path/to/test.png   --work-dir resnet18   --device cpu  --uri 10.0.0.1\:50051
+$ python3 tools/deploy.py  configs/mmcls/classification_snpe_dynamic.py $MODEL_CONFIG  $MODEL_PATH   /path/to/test.png   --work-dir resnet18   --device cpu  --uri 10.0.0.1\:60000
 
 # Test
-$ python3 tools/test.py configs/mmcls/classification_snpe_static.py   $MODEL_CONFIG    --model reset18/end2end.dlc   --metrics accuracy precision f1_score recall  --uri 10.0.0.1\:50051
+$ python3 tools/test.py configs/mmcls/classification_snpe_static.py   $MODEL_CONFIG    --model reset18/end2end.dlc   --metrics accuracy precision f1_score recall  --uri 10.0.0.1\:60000
 ```
 
 Note that `--uri` is required to specify the ip and port of the snpe inference service, ipv4 and ipv6 addresses can be used.

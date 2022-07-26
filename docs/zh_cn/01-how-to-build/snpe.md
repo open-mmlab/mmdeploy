@@ -30,9 +30,9 @@ venus:/ $ cd /data/local/tmp
 130|venus:/data/local/tmp $ tar xvf snpe-inference-server-1.59.tar.gz
 ...
 130|venus:/data/local/tmp $ source export1.59.sh
-130|venus:/data/local/tmp $ ./inference_server
+130|venus:/data/local/tmp $ ./inference_server  60000
 ...
-  Server listening on [::]:50052
+  Server listening on [::]:60000
 ```
 
 此时推理服务应打印设备所有 ipv6 和 ipv4 地址，并监听端口。
@@ -43,6 +43,8 @@ tips:
   - 有些廉价线只能充电、不能传输数据
   - 或者没有打开手机的“开发者模式”
 - 如果需要自己编译，可参照 [NDK 交叉编译 snpe 推理服务](../appendix/cross_build_snpe_service.md)
+- 如果监听端口时  `segmentation fault`，可能是因为：
+  - 端口号已占用，换一个端口
 
 ## 二、安装 mmdeploy
 
@@ -80,10 +82,10 @@ $ export MODEL_PATH=https://download.openmmlab.com/mmclassification/v0/resnet/re
 
 # 模型转换
 $ cd /path/to/mmdeploy
-$ python3 tools/deploy.py  configs/mmcls/classification_snpe_dynamic.py $MODEL_CONFIG  $MODEL_PATH   /path/to/test.png   --work-dir resnet18   --device cpu  --uri 10.0.0.1\:50051  --dump-info
+$ python3 tools/deploy.py  configs/mmcls/classification_snpe_dynamic.py $MODEL_CONFIG  $MODEL_PATH   /path/to/test.png   --work-dir resnet18   --device cpu  --uri 192.168.1.1\:60000  --dump-info
 
 # 精度测试
-$ python3 tools/test.py configs/mmcls/classification_snpe_static.py   $MODEL_CONFIG    --model reset18/end2end.dlc   --metrics accuracy precision f1_score recall  --uri 10.0.0.1\:50051
+$ python3 tools/test.py configs/mmcls/classification_snpe_static.py   $MODEL_CONFIG    --model reset18/end2end.dlc   --metrics accuracy precision f1_score recall  --uri 192.168.1.1\:60000
 ```
 
 注意需要 `--uri` 指明 snpe 推理服务的 ip 和端口号，可以使用 ipv4 和 ipv6 地址。
