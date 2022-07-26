@@ -87,15 +87,6 @@ jobs:
           lcov --capture --directory . --output-file coverage.info
           ls -lah coverage.info
           cp coverage.info ../
-      - name: Upload cpp coverage to Codecov
-        uses: codecov/codecov-action@v2
-        with:
-          file: ./coverage.info
-          flags: unittests
-          env_vars: OS,CPLUS
-          name: codecov-umbrella
-          fail_ci_if_error: false
-
 
   build_cuda102:
     runs-on: ubuntu-18.04
@@ -191,8 +182,8 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
         with:
-          file: ./coverage.xml
+          file: ./coverage.xml,./coverage.info
           flags: unittests
-          env_vars: OS,PYTHON
+          env_vars: OS,PYTHON,CPLUS
           name: codecov-umbrella
           fail_ci_if_error: false
