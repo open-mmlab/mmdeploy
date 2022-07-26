@@ -66,10 +66,9 @@ Result<Value> CenterCropImpl::Process(const Value& input) {
 
     // trace static info & runtime args
     if (fuse_transform_ == true) {
-      auto tracer = output["__tracer__"].get<Tracer>();
-      tracer.CenterCrop({y1, x1, h - (int)shape[1] - y1, w - (int)shape[2] - x1},
-                        {(int)shape[1], (int)shape[2]}, tensor.data_type());
-      output["__tracer__"] = std::move(tracer);
+      output["__tracer__"].get_ref<Tracer&>().CenterCrop(
+          {y1, x1, h - (int)shape[1] - y1, w - (int)shape[2] - x1}, {(int)shape[1], (int)shape[2]},
+          tensor.data_type());
     }
   }
 
