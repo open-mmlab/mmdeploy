@@ -108,81 +108,98 @@ mim install mmcv-full
 
 以最新的预编译包为例，你可以参考以下命令安装：
 
-- Linux-x86_64, CPU, ONNX Runtime 1.8.1
+<details open>
+<summary><b>Linux-x86_64, CPU, ONNX Runtime 1.8.1</b></summary>
 
-  ```shell
+```shell
   # 安装 MMDeploy
-  wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.6.0/mmdeploy-0.6.0-linux-x86_64-onnxruntime1.8.1.tar.gz
-  tar -zxvf mmdeploy-0.6.0-linux-x86_64-onnxruntime1.8.1.tar.gz
-  pip install mmdeploy-0.6.0-linux-x86_64-onnxruntime1.8.1/dist/mmdeploy-0.6.0-py37-none-linux_x86_64.whl
-  pip install mmdeploy-0.6.0-linux-x86_64-onnxruntime1.8.1/sdk/python/mmdeploy_python-0.6.0-cp37-none-linux_x86_64.whl
+wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.6.0/mmdeploy-0.6.0-linux-x86_64-onnxruntime1.8.1.tar.gz
+tar -zxvf mmdeploy-0.6.0-linux-x86_64-onnxruntime1.8.1.tar.gz
+cd mmdeploy-0.6.0-linux-x86_64-onnxruntime1.8.1
+pip install dist/mmdeploy-0.6.0-py37-none-linux_x86_64.whl
+pip install sdk/python/mmdeploy_python-0.6.0-cp37-none-linux_x86_64.whl
+cd ..
+# 安装推理引擎 ONNX Runtime
+wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
+tar -zxvf onnxruntime-linux-x64-1.8.1.tgz
+export ONNXRUNTIME_DIR=$(pwd)/onnxruntime
+export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
+```
 
-  # 安装 ONNX Runtime
-  wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
-  tar -zxvf onnxruntime-linux-x64-1.8.1.tgz
-  export ONNXRUNTIME_DIR=$(pwd)/onnxruntime
-  export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
-  ```
+</details>
 
-- Linux-x86_64, CUDA 11.x, TensorRT 8.2.3.0
+<details open>
+<summary><b>Linux-x86_64, CUDA 11.x, TensorRT 8.2.3.0</b></summary>
 
-  ```shell
-  # 安装 MMDeploy
-  wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.6.0/mmdeploy-0.6.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
-  tar -zxvf mmdeploy-v0.6.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
-  pip install mmdeploy-0.6.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0/dist/mmdeploy-0.6.0-py37-none-linux_x86_64.whl
-  pip install mmdeploy-0.6.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0/sdk/python/mmdeploy_python-0.6.0-cp37-none-linux_x86_64.whl
+```shell
+# 安装 MMDeploy
+wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.6.0/mmdeploy-0.6.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
+tar -zxvf mmdeploy-v0.6.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
+cd mmdeploy-0.6.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
+pip install dist/mmdeploy-0.6.0-py37-none-linux_x86_64.whl
+pip install sdk/python/mmdeploy_python-0.6.0-cp37-none-linux_x86_64.whl
+cd ..
+# 安装推理引擎 TensorRT
+# !!! 从 NVIDIA 官网下载 TensorRT-8.2.3.0 CUDA 11.x 安装包并解压到当前目录
+pip install TensorRT-8.2.3.0/python/tensorrt-8.2.3.0-cp37-none-linux_x86_64.whl
+pip install pycuda
+export TENSORRT_DIR=$(pwd)/TensorRT-8.2.3.0
+export LD_LIBRARY_PATH=${TENSORRT_DIR}/lib:$LD_LIBRARY_PATH
+# !!! 从 NVIDIA 官网下载 cuDNN 8.2.1 CUDA 11.x 安装包并解压到当前目录
+export CUDNN_DIR=$(pwd)/cuda
+export LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
+```
 
-  # !!! 从 NVIDIA 官网下载 TensorRT-8.2.3.0 CUDA 11.x 安装包并解压到当前目录
-  pip install TensorRT-8.2.3.0/python/tensorrt-8.2.3.0-cp37-none-linux_x86_64.whl
-  pip install pycuda
-  export TENSORRT_DIR=$(pwd)/TensorRT-8.2.3.0
-  export LD_LIBRARY_PATH=${TENSORRT_DIR}/lib:$LD_LIBRARY_PATH
+</details>
 
-  # !!! 从 NVIDIA 官网下载 cuDNN 8.2.1 CUDA 11.x 安装包并解压到当前目录
-  export CUDNN_DIR=$(pwd)/cuda
-  export LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
-  ```
+<details>
+<summary><b>Windows, CPU, ONNX Runtime 1.8.1</b></summary>
 
-- Windows, CPU, ONNX Runtime 1.8.1
+请在 Conda Prompt Shell 中执行以下命令
 
-  请在 Conda Prompt Shell 中执行以下命令
+```shell
+# 安装 MMDeploy
+Invoke-WebRequest -Uri https://github.com/open-mmlab/mmdeploy/releases/download/v0.6.0/mmdeploy-0.6.0-windows-amd64-onnxruntime1.8.1.zip -OutFile mmdeploy-0.6.0-windows-amd64-onnxruntime1.8.1.zip
+Expand-Archive mmdeploy-0.6.0-windows-amd64-onnxruntime1.8.1.zip .
+cd  mmdeploy-0.6.0-windows-amd64-onnxruntime1.8.1
+pip install dist/mmdeploy-0.6.0-py37-none-linux_x86_64.whl
+pip install sdk/python/mmdeploy_python-0.6.0-cp37-none-linux_x86_64.whl
+cd ..
 
-  ```shell
-  # 安装 MMDeploy
-  Invoke-WebRequest -Uri https://github.com/open-mmlab/mmdeploy/releases/download/v0.6.0/mmdeploy-0.6.0-windows-amd64-onnxruntime1.8.1.zip -OutFile mmdeploy-0.6.0-windows-amd64-onnxruntime1.8.1.zip
-  Expand-Archive mmdeploy-0.6.0-windows-amd64-onnxruntime1.8.1.zip .
-  pip install mmdeploy-0.6.0-windows-amd64-onnxruntime1.8.1/dist/mmdeploy-0.6.0-py37-none-linux_x86_64.whl
-  pip install mmdeploy-0.6.0-windows-amd64-onnxruntime1.8.1/sdk/python/mmdeploy_python-0.6.0-cp37-none-linux_x86_64.whl
+# 安装 ONNX Runtime
+Invoke-WebRequest -Uri https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-win-x64-1.8.1.zip -OutFile onnxruntime-win-x64-1.8.1.zip
+Expand-Archive onnxruntime-win-x64-1.8.1.zip .
+$env:ONNXRUNTIME_DIR=$(pwd)/onnxruntime-win-x64-1.8.1
+$env:path="$env:ONNXRUNTIME_DIR"/lib:$env:path
+```
 
-  # 安装 ONNX Runtime
-  Invoke-WebRequest -Uri https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-win-x64-1.8.1.zip -OutFile onnxruntime-win-x64-1.8.1.zip
-  Expand-Archive onnxruntime-win-x64-1.8.1.zip .
-  $env:ONNXRUNTIME_DIR=$(pwd)/onnxruntime-win-x64-1.8.1
-  $env:path="$env:ONNXRUNTIME_DIR"/lib:$env:path
-  ```
+</details>
 
-- Windows, CUDA 11.x, TensorRT 8.2.3.0
+<details>
+<summary><b>Windows, CUDA 11.x, TensorRT 8.2.3.0</b></summary>
 
-  请在 Conda Prompt Shell 中执行以下命令
+请在 Conda Prompt Shell 中执行以下命令
 
-  ```shell
-  # 安装 MMDeploy
-  Invoke-WebRequest -Uri https://github.com/open-mmlab/mmdeploy/releases/download/v0.6.0/mmdeploy-0.6.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip -OutFile mmdeploy-0.6.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip
-  Expand-Archive mmdeploy-0.6.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip .
-  pip install mmdeploy-0.6.0-windows-amd64-cuda11.1-tensorrt8.2.3.0/dist/mmdeploy-0.6.0-py37-none-linux_x86_64.whl
-  pip install mmdeploy-0.6.0-windows-amd64-cuda11.1-tensorrt8.2.3.0/sdk/python/mmdeploy_python-0.6.0-cp37-none-linux_x86_64.whl
+```shell
+# 安装 MMDeploy
+Invoke-WebRequest -Uri https://github.com/open-mmlab/mmdeploy/releases/download/v0.6.0/mmdeploy-0.6.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip -OutFile mmdeploy-0.6.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip
+Expand-Archive mmdeploy-0.6.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip .
+cd mmdeploy-0.6.0-windows-amd64-cuda11.1-tensorrt8.2.3.0
+pip install dist/mmdeploy-0.6.0-py37-none-linux_x86_64.whl
+pip install sdk/python/mmdeploy_python-0.6.0-cp37-none-linux_x86_64.whl
 
-   # !!! 从 NVIDIA 官网下载 TensorRT-8.2.3.0 CUDA 11.x 安装包并解压到当前目录
-  pip install TensorRT-8.2.3.0/python/tensorrt-8.2.3.0-cp37-none-linux_x86_64.whl
-  pip install pycuda
-  $env:TENSORRT_DIR=$(pwd)/TensorRT-8.2.3.0
-  $env:path="$env:TENSORRT_DIR"/lib:$env:path
+# !!! 从 NVIDIA 官网下载 TensorRT-8.2.3.0 CUDA 11.x 安装包并解压到当前目录
+pip install TensorRT-8.2.3.0/python/tensorrt-8.2.3.0-cp37-none-linux_x86_64.whl
+pip install pycuda
+$env:TENSORRT_DIR=$(pwd)/TensorRT-8.2.3.0
+$env:path="$env:TENSORRT_DIR"/lib:$env:path
 
-  # !!! 从 NVIDIA 官网下载 cuDNN 8.2.1 CUDA 11.x 安装包并解压到当前目录
-  $env:CUDNN_DIR=$(pwd)/cuda
-  $env:path="$env:CUDNN_DIR"/lib64:$env:path
-  ```
+# !!! 从 NVIDIA 官网下载 cuDNN 8.2.1 CUDA 11.x 安装包并解压到当前目录
+$env:CUDNN_DIR=$(pwd)/cuda
+$env:path="$env:CUDNN_DIR"/lib64:$env:path
+```
+
+</details>
 
 ## 模型转换
 
@@ -243,20 +260,20 @@ result = inference_model(
 
 ### 使用推理 SDK
 
-你可以直接运行预编译包中的 demo 程序，输入 MMDeploy SDK Model 和图像，进行推理，并查看推理结果。
+你可以直接运行预编译包中的 demo 程序，输入 SDK Model 和图像，进行推理，并查看推理结果。
 
 ```shell
 cd mmdeploy-0.6.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
 # 运行 python demo
 python sdk/demo/python/object_detection.py cuda mmdeploy_model/faster-rcnn mmdetection/demo/demo.jpg
 
- # 运行 C demo
- ./sdk/bin/object_detection cuda mmdeploy_model/faster-rcnn mmdetection/demo/demo.jpg
+# 运行 C demo
+./sdk/bin/object_detection cuda mmdeploy_model/faster-rcnn mmdetection/demo/demo.jpg
 ```
 
 ```{note}
-以上述命令中，输入模型是 MMDeploy SDK Model 的路径（也就是 Model Converter 中 --work-dir 参数），而不是推理引擎文件的路径。
-因为 SDK 不仅要获取推理引擎文件，还需要推理元信息（deploy.json, pipeline.json）。它们合在一起，构成 MMDeploy SDK Model，存储在 --work-dir 下
+以上述命令中，输入模型是 SDK Model 的路径（也就是 Model Converter 中 --work-dir 参数），而不是推理引擎文件的路径。
+因为 SDK 不仅要获取推理引擎文件，还需要推理元信息（deploy.json, pipeline.json）。它们合在一起，构成 SDK Model，存储在 --work-dir 下
 ```
 
 除了 demo 程序，预编译包还提供了 SDK 多语言接口。你可以根据自己的项目需求，选择合适的语言接口，
