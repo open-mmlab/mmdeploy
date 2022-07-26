@@ -50,6 +50,31 @@ img_shape = (32, 32)
 img = np.random.rand(*img_shape, 3)
 
 
+def test_build_test_runner():
+    # Prepare dummy model
+    from mmdet.core import DetDataSample
+    from mmengine.data import InstanceData
+
+    data_sample = DetDataSample()
+    img_meta = dict(img_shape=(800, 1216, 3))
+    gt_instances = InstanceData(metainfo=img_meta)
+    gt_instances.bboxes = torch.rand((5, 4))
+    gt_instances.labels = torch.rand((5, ))
+    data_sample.gt_instances = gt_instances
+    pred_instances = InstanceData(metainfo=img_meta)
+    pred_instances.bboxes = torch.rand((5, 4))
+    pred_instances.scores = torch.rand((5, ))
+    pred_instances.labels = torch.randint(0, 10, (5, ))
+    data_sample.pred_instances = pred_instances
+    outputs = [data_sample]
+    model = DummyModel(outputs=outputs)
+    assert model is not None
+    # Run test
+    with TemporaryDirectory() as dir:
+        runner = task_processor.build_test_runner(model, dir)
+        runner.test()
+
+
 @pytest.mark.parametrize('from_mmrazor', [True, False, '123', 0])
 def test_build_pytorch_model(from_mmrazor: Any):
     from mmdet.models import BaseDetector
@@ -86,10 +111,11 @@ def backend_model():
     from mmdeploy.backend.onnxruntime import ORTWrapper
     ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
     wrapper = SwitchBackendWrapper(ORTWrapper)
-    wrapper.set(outputs={
-        'dets': torch.rand(1, 10, 5).sort(2),
-        'labels': torch.randint(0, 10, (1, 10))
-    })
+    wrapper.set(
+        outputs={
+            'dets': torch.rand(1, 10, 5).sort(2).values,
+            'labels': torch.randint(0, 10, (1, 10))
+        })
 
     yield task_processor.build_backend_model([''])
 
@@ -133,7 +159,6 @@ def test_create_input(device):
 def test_visualize(backend_model):
     input_dict, _ = task_processor.create_input(img, input_shape=img_shape)
     results = backend_model.test_step([input_dict])
-    print(f'debugging results: {results}')
     with TemporaryDirectory() as dir:
         filename = dir + 'tmp.jpg'
         task_processor.visualize(img, results, filename, 'window')
@@ -163,29 +188,3 @@ def test_build_dataset_and_dataloader():
     dataloader_cfg = task_processor.model_cfg.test_dataloader
     dataloader = task_processor.build_dataloader(dataloader_cfg)
     assert isinstance(dataloader, DataLoader), 'Failed to build dataloader'
-
-
-def test_build_test_runner():
-    # Prepare dummy model
-    from mmdet.core import DetDataSample
-    from mmengine.data import LabelData
-    label = LabelData(
-        label=torch.tensor([0]),
-        score=torch.rand(10),
-        metainfo=dict(num_classes=10))
-    outputs = [
-        DetDataSample(
-            pred_label=label,
-            _pred_label=label,
-            metainfo=dict(
-                img_shape=(224, 224),
-                img_path='',
-                ori_shape=(300, 400),
-                scale_factor=(0.8525, 0.8533333333333334)))
-    ]
-    model = DummyModel(outputs=outputs)
-    assert model is not None
-    # Run test
-    with TemporaryDirectory() as dir:
-        runner = task_processor.build_test_runner(model, dir)
-        runner.test()
