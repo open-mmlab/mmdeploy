@@ -215,7 +215,7 @@ python mmdeploy/tools/deploy.py \
     --dump-info
 ```
 
-转换结果被保存在 `--work-dir` 指向的文件夹中。**其中，不仅包含推理后端模型，还包括推理元信息。文件夹内容的整体被定位为 MMDeploy SDK Model，MMDeploy SDK 将用它进行模型推理。**
+转换结果被保存在 `--work-dir` 指向的文件夹中。**该文件夹中不仅包含推理后端模型，还包括推理元信息。这些内容的整体被定义为 SDK Model。推理 SDK 将用它进行模型推理。**
 
 ## 模型推理
 
