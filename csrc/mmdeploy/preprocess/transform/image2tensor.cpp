@@ -31,9 +31,7 @@ Result<Value> ImageToTensorImpl::Process(const Value& input) {
     SetTransformData(output, key, std::move(dst));
 
     if (fuse_transform_ == true) {
-      auto tracer = output["__tracer__"].get<Tracer>();
-      tracer.ImageToTensor(src_tensor.data_type());
-      output["__tracer__"] = std::move(tracer);
+      output["__tracer__"].get_ref<Tracer&>().ImageToTensor(src_tensor.data_type());
     }
   }  // for key
   MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));

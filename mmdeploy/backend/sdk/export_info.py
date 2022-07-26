@@ -449,6 +449,7 @@ def add_transform_tag(pipeline_info: Dict, tag: str) -> Dict:
         return pipeline_info
 
     pipeline_info['pipeline']['tasks'][0]['sha256'] = tag
+    pipeline_info['pipeline']['tasks'][0]['fuse_transform'] = False
     return pipeline_info
 
 

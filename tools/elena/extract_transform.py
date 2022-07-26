@@ -172,8 +172,8 @@ def main():
     args = parse_args()
     global ELENA_BIN
     elena_path = osp.abspath(
-        os.path.join(args.mmmdeploy_path, 'third_party', 'elena-mmdeploy',
-                     'build', 'examples', 'MMDeploy', 'OpFuse'))
+        os.path.join(args.mmmdeploy_path, 'third_party', 'CVFusion', 'build',
+                     'examples', 'MMDeploy', 'OpFuse'))
     if osp.exists(elena_path):
         ELENA_BIN = elena_path
 

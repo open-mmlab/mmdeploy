@@ -113,9 +113,8 @@ Result<Value> ResizeImpl::Process(const Value& input) {
 
     // trace static info & runtime args
     if (fuse_transform_ == true) {
-      auto tracer = output["__tracer__"].get<Tracer>();
-      tracer.Resize(arg_.interpolation, {dst_h, dst_w}, src_img.data_type());
-      output["__tracer__"] = std::move(tracer);
+      output["__tracer__"].get_ref<Tracer&>().Resize(arg_.interpolation, {dst_h, dst_w},
+                                                     src_img.data_type());
     }
   }
 
