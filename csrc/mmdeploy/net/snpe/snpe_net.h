@@ -58,4 +58,4 @@ class SNPENet : public Net {
 
 }  // namespace mmdeploy
 
-#endif  // MMDEPLOY_SRC_NET_NCNN_NCNN_NET_H_
+#endif  // MMDEPLOY_SRC_NET_SNPE_SNPE_NET_H_

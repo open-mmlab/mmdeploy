@@ -82,7 +82,7 @@ $ export MODEL_PATH=https://download.openmmlab.com/mmclassification/v0/resnet/re
 
 # 模型转换
 $ cd /path/to/mmdeploy
-$ python3 tools/deploy.py  configs/mmcls/classification_snpe_dynamic.py $MODEL_CONFIG  $MODEL_PATH   /path/to/test.png   --work-dir resnet18   --device cpu  --uri 192.168.1.1\:60000  --dump-info
+$ python3 tools/deploy.py  configs/mmcls/classification_snpe_static.py $MODEL_CONFIG  $MODEL_PATH   /path/to/test.png   --work-dir resnet18   --device cpu  --uri 192.168.1.1\:60000  --dump-info
 
 # 精度测试
 $ python3 tools/test.py configs/mmcls/classification_snpe_static.py   $MODEL_CONFIG    --model reset18/end2end.dlc   --metrics accuracy precision f1_score recall  --uri 192.168.1.1\:60000
