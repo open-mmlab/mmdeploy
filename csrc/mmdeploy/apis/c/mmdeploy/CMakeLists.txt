@@ -2,6 +2,18 @@
 
 project(capis)
 
+set(CAPI_OBJS)
+
+macro(add_object name)
+    add_library(${name} OBJECT ${ARGN})
+    set_target_properties(${name} PROPERTIES POSITION_INDEPENDENT_CODE 1)
+    target_compile_definitions(${name} PRIVATE -DMMDEPLOY_API_EXPORTS=1)
+    if (NOT MSVC)
+        target_compile_options(${name} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-fvisibility=hidden>)
+    endif ()
+    set(CAPI_OBJS ${CAPI_OBJS} ${name})
+endmacro()
+
 set(COMMON_LIST
         common
         model
@@ -12,7 +24,11 @@ set(TASK_LIST ${MMDEPLOY_TASKS})
 
 foreach (TASK ${COMMON_LIST})
     set(TARGET_NAME mmdeploy_${TASK})
-    mmdeploy_add_library(${TARGET_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/${TASK}.cpp)
+    if (MMDEPLOY_BUILD_SDK_MONOLITHIC)
+        add_object(${TARGET_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/${TASK}.cpp)
+    else ()
+        mmdeploy_add_library(${TARGET_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/${TASK}.cpp)
+    endif()
     target_link_libraries(${TARGET_NAME} PRIVATE mmdeploy::core)
     target_include_directories(${TARGET_NAME} PUBLIC
             $<INSTALL_INTERFACE:include>)
@@ -27,8 +43,11 @@ target_link_libraries(mmdeploy_pipeline PUBLIC
 
 foreach (TASK ${TASK_LIST})
     set(TARGET_NAME mmdeploy_${TASK})
-    mmdeploy_add_library(${TARGET_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/${TASK}.cpp)
-
+    if (MMDEPLOY_BUILD_SDK_MONOLITHIC)
+        add_object(${TARGET_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/${TASK}.cpp)
+    else ()
+        mmdeploy_add_library(${TARGET_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/${TASK}.cpp)
+    endif ()
     target_link_libraries(${TARGET_NAME} PRIVATE
             mmdeploy_pipeline mmdeploy::core)
     target_include_directories(${TARGET_NAME} PUBLIC
@@ -38,13 +57,20 @@ foreach (TASK ${TASK_LIST})
             DESTINATION include/mmdeploy)
 endforeach ()
 
-if (MMDEPLOY_BUILD_SDK_CSHARP_API)
-    # build MMDeployExtern.dll just for csharp nuget package.
-    # no Installation for c/c++ package.
-    file(GLOB SRCS "*.c" "*.cpp")
-    add_library(MMDeployExtern SHARED ${SRCS})
-    target_compile_definitions(MMDeployExtern PRIVATE -DMMDEPLOY_API_EXPORTS=1)
-    mmdeploy_load_static(MMDeployExtern MMDeployStaticModules)
-    mmdeploy_load_dynamic(MMDeployExtern MMDeployDynamicModules)
-    target_link_libraries(MMDeployExtern PRIVATE MMDeployLibs)
+if (MMDEPLOY_BUILD_SDK_CSHARP_API OR MMDEPLOY_BUILD_SDK_MONOLITHIC)
+    add_library(mmdeploy SHARED)
+    mmdeploy_load_static(mmdeploy MMDeployStaticModules)
+    mmdeploy_load_dynamic(mmdeploy MMDeployDynamicModules)
+    target_link_libraries(mmdeploy PRIVATE MMDeployLibs ${CAPI_OBJS})
+    target_include_directories(mmdeploy PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+        $<INSTALL_INTERFACE:include>)
+    set(MMDEPLOY_VERSION ${MMDEPLOY_VERSION_MAJOR}
+        .${MMDEPLOY_VERSION_MINOR}
+        .${MMDEPLOY_VERSION_PATCH})
+    string(REPLACE ";" "" MMDEPLOY_VERSION ${MMDEPLOY_VERSION})
+    set_target_properties(mmdeploy PROPERTIES
+        VERSION ${MMDEPLOY_VERSION}
+        SOVERSION ${MMDEPLOY_VERSION_MAJOR})
+    mmdeploy_export(mmdeploy)
 endif ()
