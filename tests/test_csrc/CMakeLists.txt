@@ -69,9 +69,10 @@ if (NOT (MMDEPLOY_SHARED_LIBS OR MSVC))
     target_compile_options(mmdeploy_tests PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-fvisibility=hidden>)
 endif ()
 
-mmdeploy_load_static(mmdeploy_tests MMDeployStaticModules)
-mmdeploy_load_dynamic(mmdeploy_tests MMDeployDynamicModules)
-target_link_libraries(mmdeploy_tests PRIVATE
-        MMDeployLibs
-        mmdeploy_transform
-        mmdeploy_opencv_utils)
+if (MMDEPLOY_BUILD_SDK_MONOLITHIC)
+    target_link_libraries(mmdeploy_tests PRIVATE mmdeploy)
+else ()
+    mmdeploy_load_static(mmdeploy_tests MMDeployStaticModules)
+    mmdeploy_load_dynamic(mmdeploy_tests MMDeployDynamicModules)
+    target_link_libraries(mmdeploy_tests PRIVATE MMDeployLibs)
+endif ()
