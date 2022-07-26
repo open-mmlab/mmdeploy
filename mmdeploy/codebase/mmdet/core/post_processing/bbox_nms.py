@@ -300,8 +300,6 @@ def multiclass_nms__coreml(ctx,
     batch_size = scores.shape[0]
     assert batch_size == 1, 'batched nms is not supported for now.'
 
-    # box_per_cls = len(boxes.shape) == 4
-
     # pre-topk
     if pre_top_k > 0:
         max_scores, _ = scores.max(-1)
@@ -309,16 +307,12 @@ def multiclass_nms__coreml(ctx,
         boxes = boxes[:, topk_inds.squeeze(), ...]
         scores = scores[:, topk_inds.squeeze(), ...]
 
-    boxes, scores, _, _ = coreml_nms(boxes, scores, iou_threshold,
-                                     score_threshold,
-                                     max_output_boxes_per_class)
+    boxes, scores, _, _ = coreml_nms(
+        boxes, scores, iou_threshold, score_threshold,
+        min(keep_top_k, max_output_boxes_per_class))
 
     scores, labels = scores.max(-1)
     dets = torch.cat([boxes, scores.unsqueeze(-1)], dim=-1)
-
-    if keep_top_k > 0:
-        dets = dets[:, :keep_top_k, ...]
-        labels = labels[:, :keep_top_k]
 
     return dets, labels
 
