@@ -47,10 +47,6 @@ else ()
     set(MMDEPLOY_LIB_TYPE STATIC)
 endif ()
 
-if (MMDEPLOY_BUILD_SDK_CSHARP_API)
-    set(MMDEPLOY_BUILD_SDK_MONOLITHIC ON)
-endif ()
-
 set(MMDEPLOY_TASKS "" CACHE INTERNAL "")
 
 # when CUDA devices are enabled, the environment variable ASAN_OPTIONS=protect_shadow_gap=0

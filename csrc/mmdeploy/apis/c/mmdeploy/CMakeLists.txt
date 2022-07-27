@@ -11,7 +11,9 @@ macro(add_object name)
     if (NOT MSVC)
         target_compile_options(${name} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-fvisibility=hidden>)
     endif ()
+    target_link_libraries(${name} PRIVATE mmdeploy::core)
     set(CAPI_OBJS ${CAPI_OBJS} ${name})
+    mmdeploy_export(${name})
 endmacro()
 
 set(COMMON_LIST
@@ -24,12 +26,10 @@ set(TASK_LIST ${MMDEPLOY_TASKS})
 
 foreach (TASK ${COMMON_LIST})
     set(TARGET_NAME mmdeploy_${TASK})
-    if (MMDEPLOY_BUILD_SDK_MONOLITHIC)
-        add_object(${TARGET_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/${TASK}.cpp)
-    else ()
-        mmdeploy_add_library(${TARGET_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/${TASK}.cpp)
-    endif()
-    target_link_libraries(${TARGET_NAME} PRIVATE mmdeploy::core)
+    set(OBJECT_NAME mmdeploy_${TASK}_obj)
+    add_object(${OBJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/${TASK}.cpp)
+    mmdeploy_add_library(${TARGET_NAME})
+    target_link_libraries(${TARGET_NAME} PRIVATE ${OBJECT_NAME})
     target_include_directories(${TARGET_NAME} PUBLIC
             $<INSTALL_INTERFACE:include>)
     install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/${TASK}.h
@@ -43,13 +43,11 @@ target_link_libraries(mmdeploy_pipeline PUBLIC
 
 foreach (TASK ${TASK_LIST})
     set(TARGET_NAME mmdeploy_${TASK})
-    if (MMDEPLOY_BUILD_SDK_MONOLITHIC)
-        add_object(${TARGET_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/${TASK}.cpp)
-    else ()
-        mmdeploy_add_library(${TARGET_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/${TASK}.cpp)
-    endif ()
-    target_link_libraries(${TARGET_NAME} PRIVATE
-            mmdeploy_pipeline mmdeploy::core)
+    set(OBJECT_NAME mmdeploy_${TASK}_obj)
+    add_object(${OBJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/${TASK}.cpp)
+    mmdeploy_add_library(${TARGET_NAME})
+    target_link_libraries(${TARGET_NAME} PRIVATE ${OBJECT_NAME}
+            mmdeploy_pipeline)
     target_include_directories(${TARGET_NAME} PUBLIC
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
             $<INSTALL_INTERFACE:include>)
@@ -61,7 +59,7 @@ if (MMDEPLOY_BUILD_SDK_CSHARP_API OR MMDEPLOY_BUILD_SDK_MONOLITHIC)
     add_library(mmdeploy SHARED)
     mmdeploy_load_static(mmdeploy MMDeployStaticModules)
     mmdeploy_load_dynamic(mmdeploy MMDeployDynamicModules)
-    target_link_libraries(mmdeploy PRIVATE MMDeployLibs ${CAPI_OBJS})
+    target_link_libraries(mmdeploy PRIVATE ${CAPI_OBJS})
     target_include_directories(mmdeploy PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
         $<INSTALL_INTERFACE:include>)

@@ -21,13 +21,9 @@ endforeach ()
 
 pybind11_add_module(${PROJECT_NAME} ${MMDEPLOY_PYTHON_SRCS})
 
-if (MMDEPLOY_BUILD_SDK_MONOLITHIC)
-    target_link_libraries(${PROJECT_NAME} PRIVATE mmdeploy)
-else ()
-    mmdeploy_load_static(${PROJECT_NAME} MMDeployStaticModules)
-    mmdeploy_load_dynamic(${PROJECT_NAME} MMDeployDynamicModules)
-    target_link_libraries(${PROJECT_NAME} PRIVATE MMDeployLibs)
-endif ()
+mmdeploy_load_static(${PROJECT_NAME} MMDeployStaticModules)
+mmdeploy_load_dynamic(${PROJECT_NAME} MMDeployDynamicModules)
+target_link_libraries(${PROJECT_NAME} PRIVATE MMDeployLibs)
 
 target_include_directories(${PROJECT_NAME} PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/..

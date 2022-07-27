@@ -7,7 +7,7 @@ if (NOT (${CMAKE_PROJECT_NAME} STREQUAL "MMDeploy"))
 endif ()
 
 function(add_example task name)
-  if (${task} IN_LIST MMDEPLOY_TASKS)
+  if (TARGET mmdeploy_${task})
     # Search for c/cpp sources
     file(GLOB _SRCS ${name}.c*)
     add_executable(${name} ${_SRCS})
