@@ -65,7 +65,7 @@ bool FuseSelectAssign(Node* node, std::unordered_map<std::string, Tensor>& param
     Node* shape = values_map[vmap["reshape_1_shape"]]->node();
     auto shape_val = shape->t(Symbol::attr("value"));
     if (shape_val.dim() != 1) return false;
-    if (shape_val.data_ptr<long>()[0] != -1) return false;
+    if (shape_val.data_ptr<int64_t>()[0] != -1) return false;
   }
 
   {
@@ -83,7 +83,7 @@ bool FuseSelectAssign(Node* node, std::unordered_map<std::string, Tensor>& param
     Node* gather_inds = values_map[vmap["gather_inds_2"]]->node();
     auto inds_val = gather_inds->t(Symbol::attr("value"));
     if (inds_val.dim() != 0) return false;
-    if (inds_val.data_ptr<long>()[0] != 0) return false;
+    if (inds_val.data_ptr<int64_t>()[0] != 0) return false;
   }
 
   {
@@ -92,7 +92,7 @@ bool FuseSelectAssign(Node* node, std::unordered_map<std::string, Tensor>& param
     auto start_name = slice->inputs()[1]->debugName();
     auto start_val = params[start_name];
     if (start_val.dim() != 1) return false;
-    if (start_val.data_ptr<long>()[0] != 0) return false;
+    if (start_val.data_ptr<int64_t>()[0] != 0) return false;
   }
 
   // create new node
