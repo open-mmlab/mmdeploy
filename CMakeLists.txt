@@ -97,6 +97,8 @@ if (MMDEPLOY_BUILD_SDK)
         add_subdirectory(csrc/mmdeploy/apis/java)
     endif ()
 
+    add_subdirectory(demo/csrc)
+
     # export MMDeploy package
     install(EXPORT MMDeployTargets
             FILE MMDeployTargets.cmake

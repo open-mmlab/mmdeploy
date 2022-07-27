@@ -1,0 +1,95 @@
+// Copyright (c) OpenMMLab. All rights reserved.
+
+#ifndef MMDEPLOY_CSRC_MMDEPLOY_APIS_CXX_TEXT_RECOGNIZER_HPP_
+#define MMDEPLOY_CSRC_MMDEPLOY_APIS_CXX_TEXT_RECOGNIZER_HPP_
+
+#include "mmdeploy/common.hpp"
+#include "mmdeploy/text_detector.hpp"
+#include "mmdeploy/text_recognizer.h"
+
+namespace mmdeploy {
+
+using TextRecognition = mmdeploy_text_recognition_t;
+
+class TextRecognizer : public NonMovable {
+ public:
+  TextRecognizer(const Model& model, const Device& device) {
+    auto ec = mmdeploy_text_recognizer_create(model, device.name(), device.index(), &recognizer_);
+    if (ec != MMDEPLOY_SUCCESS) {
+      throw_exception(static_cast<ErrorCode>(ec));
+    }
+  }
+
+  ~TextRecognizer() {
+    if (recognizer_) {
+      mmdeploy_text_recognizer_destroy(recognizer_);
+      recognizer_ = {};
+    }
+  }
+
+  class Result {
+    friend TextRecognizer;
+
+   public:
+    TextRecognition* operator[](int index) const noexcept { return data_.get() + offset_ + index; }
+    size_t size() const noexcept { return size_; }
+
+   private:
+    Result(size_t offset, size_t size, std::shared_ptr<TextRecognition> data)
+        : offset_(offset), size_(size), data_(std::move(data)) {}
+
+   private:
+    size_t offset_{};
+    size_t size_{};
+    std::shared_ptr<TextRecognition> data_;
+  };
+
+  std::vector<Result> Apply(Span<const Mat> images, Span<const TextDetection> bboxes,
+                            Span<const int> bbox_count) {
+    if (images.empty()) {
+      return {};
+    }
+    auto mats = GetMats(images);
+
+    const TextDetection* p_bboxes{};
+    const int* p_bbox_count{};
+
+    if (!bboxes.empty()) {
+      p_bboxes = bboxes.data();
+      p_bbox_count = bbox_count.data();
+    }
+
+    TextRecognition* results{};
+    auto ec = mmdeploy_text_recognizer_apply_bbox(
+        recognizer_, mats.data(), static_cast<int>(mats.size()), p_bboxes, p_bbox_count, &results);
+    if (ec != MMDEPLOY_SUCCESS) {
+      throw_exception(static_cast<ErrorCode>(ec));
+    }
+
+    std::shared_ptr<TextRecognition> data(results, [count = mats.size()](auto p) {
+      mmdeploy_text_recognizer_release_result(p, count);
+    });
+
+    std::vector<Result> rets;
+    rets.reserve(images.size());
+
+    size_t offset = 0;
+    for (size_t i = 0; i < mats.size(); ++i) {
+      rets.push_back(Result(offset, bboxes.empty() ? 1 : bbox_count[i], data));
+      offset += rets.back().size();
+    }
+
+    return rets;
+  }
+
+  Result Apply(const Mat& image, Span<const TextDetection> bboxes) {
+    return Apply(Span{image}, bboxes, {static_cast<int>(bboxes.size())})[0];
+  }
+
+ private:
+  mmdeploy_text_recognizer_t recognizer_{};
+};
+
+}  // namespace mmdeploy
+
+#endif  // MMDEPLOY_CSRC_MMDEPLOY_APIS_CXX_TEXT_RECOGNIZER_HPP_
