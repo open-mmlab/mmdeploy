@@ -92,9 +92,6 @@ void InferenceServiceImpl::LoadFloatData(const std::string& data, std::vector<fl
   zdl::SNPE::SNPEFactory::initializeLogging(zdl::DlSystem::LogLevel_t::LOG_ERROR);
   zdl::SNPE::SNPEFactory::setLogLevel(zdl::DlSystem::LogLevel_t::LOG_ERROR);
 
-  const std::string filename = "end2end.dlc";
-  SaveDLC(request, filename);
-
   if (snpe != nullptr) {
     snpe.reset();
   }
@@ -102,7 +99,9 @@ void InferenceServiceImpl::LoadFloatData(const std::string& data, std::vector<fl
     container.reset();
   }
 
-  container = zdl::DlContainer::IDlContainer::open(zdl::DlSystem::String(filename));
+  auto model = request->weights();
+  container =
+      zdl::DlContainer::IDlContainer::open(reinterpret_cast<uint8_t*>(model.data()), model.size());
   if (container == nullptr) {
     fprintf(stdout, "Stage Init: load dlc failed.\n");
 

@@ -221,6 +221,7 @@ Result<void> SNPENet::Forward() {
     bool success = snpe_->execute(input_tensor_map_, output_map);
     if (!success) {
       MMDEPLOY_ERROR("snpe Inference error: {}", std::string(zdl::DlSystem::getLastErrorString()));
+      return Status(eFail);
     }
   }
 

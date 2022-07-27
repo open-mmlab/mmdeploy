@@ -65,6 +65,7 @@ $ export SNPE_ROOT=${PWD}/snpe-1.59.0.3230
 $ cd /path/to/mmdeploy
 $ export PYTHONPATH=${PWD}/service/snpe/client:${SNPE_ROOT}/lib/python:${PYTHONPATH}
 $ export LD_LIBRARY_PATH=${SNPE_ROOT}/lib/x86_64-linux-clang:${LD_LIBRARY_PATH}
+$ export PATH=${SNPE_ROOT}/bin/x86_64-linux-clang:${PATH}
 $ python3 -m pip install -e .
 ```
 

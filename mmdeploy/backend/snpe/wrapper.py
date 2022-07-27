@@ -208,7 +208,7 @@ class SNPEWrapper(BaseWrapper):
             tensorList=inference_pb2.TensorList(data=snpe_inputs),
             device=device_type)
 
-    @TimeCounter.count_time()
+    @TimeCounter.count_time(Backend.SNPE.value)
     def __snpe_execute(self, tensorList: inference_pb2.TensorList,
                        device: str) -> Dict[str, torch.tensor]:
         """Run inference with snpe remote inference engine.
