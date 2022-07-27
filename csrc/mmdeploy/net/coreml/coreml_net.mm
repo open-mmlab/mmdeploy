@@ -275,20 +275,8 @@ Result<void> CoreMLNet::Init(const Value &cfg) {
   auto model = context["model"].get<Model>();
   OUTCOME_TRY(auto config, model.GetModelConfig(name));
 
-  // can't load model from memory
-  auto tmp_dir = fs::temp_directory_path();
-  std::string coreml_tmp_path = (tmp_dir / fs::path("coreml.mlmodel")).string();
-
-  try {
-    OUTCOME_TRY(auto coreml, model.ReadFile(config.net));
-    std::ofstream out(coreml_tmp_path, std::ios::binary);
-    out << coreml;
-    out.close();
-  } catch (const std::exception &e) {
-    MMDEPLOY_ERROR("unhandled exception when creating coreml_tmp.mlmodel: {}",
-                   e.what());
-  }
-
+  std::string coreml_tmp_path =
+      (fs::path(model.GetModelPath()) / config.net).string();
   execution_ = std::make_unique<coreml::Execution>(coreml_tmp_path, this);
   OUTCOME_TRY(execution_->Init());
 
