@@ -2,7 +2,9 @@
 cmake_minimum_required(VERSION 3.14)
 project(mmdeploy-example)
 
-find_package(MMDeploy REQUIRED)
+if (NOT (${CMAKE_PROJECT_NAME} STREQUAL "MMDeploy"))
+  find_package(MMDeploy REQUIRED)
+endif ()
 
 function(add_example task name)
   if (TARGET mmdeploy_${task})
@@ -18,6 +20,8 @@ function(add_example task name)
     mmdeploy_load_dynamic(${name} MMDeployDynamicModules)
     # Link to MMDeploy libraries
     target_link_libraries(${name} PRIVATE MMDeployLibs ${OpenCV_LIBS})
+
+    install(TARGETS ${name} RUNTIME DESTINATION bin)
   endif ()
 endfunction()
 

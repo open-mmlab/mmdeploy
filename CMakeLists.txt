@@ -26,6 +26,7 @@ option(MMDEPLOY_BUILD_SDK_PYTHON_API "build SDK Python API" OFF)
 option(MMDEPLOY_BUILD_SDK_CXX_API "build SDK C++ API" OFF)
 option(MMDEPLOY_BUILD_SDK_CSHARP_API "build SDK C# API support" OFF)
 option(MMDEPLOY_BUILD_SDK_JAVA_API "build SDK JAVA API" OFF)
+option(MMDEPLOY_BUILD_EXAMPLES "build examples" OFF)
 option(MMDEPLOY_SPDLOG_EXTERNAL "use external spdlog" OFF)
 option(MMDEPLOY_ZIP_MODEL "support SDK model in zip format" OFF)
 set(MMDEPLOY_TARGET_DEVICES "cpu" CACHE STRING "target devices to support")
@@ -95,6 +96,10 @@ if (MMDEPLOY_BUILD_SDK)
 
     if (MMDEPLOY_BUILD_SDK_JAVA_API)
         add_subdirectory(csrc/mmdeploy/apis/java)
+    endif ()
+
+    if (MMDEPLOY_BUILD_EXAMPLES)
+        add_subdirectory(demo/csrc)
     endif ()
 
     # export MMDeploy package
