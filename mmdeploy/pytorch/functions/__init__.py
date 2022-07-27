@@ -21,6 +21,6 @@ __all__ = [
     'interpolate__tensorrt', 'linear__ncnn', 'tensor__repeat__tensorrt',
     'tensor__size__ncnn', 'topk__dynamic', 'topk__tensorrt', 'chunk__ncnn',
     'triu__default', 'atan2__default', 'normalize__ncnn', 'expand__ncnn',
-    'chunk__torchscript', 'masked_fill__onnxruntime', 'tensor__setitem__default',
-    'flatten__coreml', 'clip__coreml'
+    'chunk__torchscript', 'masked_fill__onnxruntime',
+    'tensor__setitem__default', 'flatten__coreml', 'clip__coreml'
 ]
