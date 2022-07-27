@@ -307,11 +307,26 @@ def multiclass_nms__coreml(ctx,
         boxes = boxes[:, topk_inds.squeeze(), ...]
         scores = scores[:, topk_inds.squeeze(), ...]
 
+    def _xyxy2xywh(boxes):
+        xy0 = boxes[..., :2]
+        xy1 = boxes[..., 2:]
+        xy = (xy0 + xy1) / 2
+        wh = xy1 - xy0
+        return torch.cat([xy, wh], dim=-1)
+
+    def _xywh2xyxy(boxes):
+        xy = boxes[..., :2]
+        half_wh = boxes[..., 2:] / 2
+        return torch.cat([xy - half_wh, xy + half_wh], dim=-1)
+
+    boxes = _xyxy2xywh(boxes)
+    keep_top_k = keep_top_k if keep_top_k > 0 else max_output_boxes_per_class
     boxes, scores, _, _ = coreml_nms(
         boxes, scores, iou_threshold, score_threshold,
         min(keep_top_k, max_output_boxes_per_class))
 
     scores, labels = scores.max(-1)
+    boxes = _xywh2xyxy(boxes)
     dets = torch.cat([boxes, scores.unsqueeze(-1)], dim=-1)
 
     return dets, labels
