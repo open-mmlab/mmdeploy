@@ -136,7 +136,7 @@ $ cmake .. \
 ### 3) Compile demo
 
 ```bash
-$ cd /path/to/install/example
+$ cd /path/to/install/example/cpp
 $ mkdir build && cd build
 
 $ cmake .. \
@@ -176,7 +176,7 @@ $ adb push tests/data/tiger.jpeg /data/local/tmp/resnet18/
 $ cd /path/to/install/
 $ adb push lib /data/local/tmp
 
-$ cd /path/to/install/example/build
+$ cd /path/to/install/example/cpp/build
 $ adb push image_classification /data/local/tmp/resnet18/
 ```
 

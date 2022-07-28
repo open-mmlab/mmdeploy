@@ -15,6 +15,7 @@ You can switch between Chinese and English documents in the lower-left corner of
 
    01-how-to-build/build_from_source.md
    01-how-to-build/build_from_docker.md
+   01-how-to-build/cmake_option.md
 
 .. toctree::
    :maxdepth: 1

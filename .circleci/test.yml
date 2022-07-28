@@ -222,7 +222,7 @@ jobs:
              -DOpenCV_DIR="$env:OPENCV_PACKAGE_DIR"
             cmake --build . --config Release -- /m
             cmake --install . --config Release
-            cd install/example
+            cd install/example/cpp
             mkdir build -ErrorAction SilentlyContinue
             cd build
             cmake ../cpp -G "Visual Studio 16 2019" -A x64 -T v142 `
@@ -280,7 +280,7 @@ jobs:
       - run:
           name: Inference model by SDK
           command: |
-            mmdeploy/build/install/example/build/image_classification cpu mmdeploy-models/mmcls/onnxruntime mmclassification/demo/demo.JPEG
+            mmdeploy/build/install/example/cpp/build/image_classification cpu mmdeploy-models/mmcls/onnxruntime mmclassification/demo/demo.JPEG
 
 
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
