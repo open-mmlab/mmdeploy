@@ -79,7 +79,7 @@ $ export MODEL_PATH=https://download.openmmlab.com/mmclassification/v0/resnet/re
 
 # Convert the model
 $ cd /path/to/mmdeploy
-$ python3 tools/deploy.py  configs/mmcls/classification_snpe_static.py $MODEL_CONFIG  $MODEL_PATH   /path/to/test.png   --work-dir resnet18   --device cpu  --uri 10.0.0.1\:60000
+$ python3 tools/deploy.py  configs/mmcls/classification_snpe_static.py $MODEL_CONFIG  $MODEL_PATH   /path/to/test.png   --work-dir resnet18   --device cpu  --uri 10.0.0.1\:60000  --dump-info
 
 # Test
 $ python3 tools/test.py configs/mmcls/classification_snpe_static.py   $MODEL_CONFIG    --model reset18/end2end.dlc   --metrics accuracy precision f1_score recall  --uri 10.0.0.1\:60000
@@ -117,7 +117,7 @@ $ cmake .. \
   -DMMDEPLOY_BUILD_SDK=ON   -DMMDEPLOY_CODEBASES=all \
   -DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK_ROOT}/build/cmake/android.toolchain.cmake \
   -DMMDEPLOY_CODEBASES=all  -DMMDEPLOY_TARGET_BACKENDS=snpe \
-  -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-26  \
+  -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-30  \
   -DANDROID_STL=c++_static  \
   -DOpenCV_DIR=${ANDROID_OCV_ROOT}/sdk/native/jni/abi-arm64-v8a \
   -DMMDEPLOY_SHARED_LIBS=ON
@@ -182,6 +182,7 @@ $ adb push image_classification /data/local/tmp
 Set up environment variable and execute the sample.
 
 ```bash
+$ adb push /path/to/mmcls/demo/demo.JPEG /data/local/tmp
 $ adb shell
 venus:/ $ cd /data/local/tmp
 venus:/data/local/tmp $ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/data/local/tmp/lib
