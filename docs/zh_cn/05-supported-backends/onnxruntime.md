@@ -1,24 +1,22 @@
-# ONNX Runtime Support
+# onnxruntime 安装说明
 
-## Introduction of ONNX Runtime
+## 介绍 onnxruntime
 
-**ONNX Runtime** is a cross-platform inference and training accelerator compatible with many popular ML/DNN frameworks. Check its [github](https://github.com/microsoft/onnxruntime) for more information.
+**onnxruntime** 是一个跨平台推理和训练加速器，与许多流行的 ML/DNN 框架兼容。[onnx github]（https://github.com/microsoft/onnxruntime）可提供更多信息。
 
-## Installation
+## 安装
 
-*Please note that only **onnxruntime>=1.8.1** of CPU version on Linux platform is supported by now.*
-
-- Install ONNX Runtime python package
+*对于 Linux 平台，目前需要 **onnxruntime>=1.8.1** 的 CPU 版本*
 
 ```bash
 pip install onnxruntime==1.8.1
 ```
 
-## Build custom ops
+## 编译自定义算子
 
-### Prerequisite
+### 依赖
 
-- Download `onnxruntime-linux` from ONNX Runtime [releases](https://github.com/microsoft/onnxruntime/releases/tag/v1.8.1), extract it, expose `ONNXRUNTIME_DIR` and finally add the lib path to `LD_LIBRARY_PATH` as below:
+下载并设置环境变量
 
 ```bash
 wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
@@ -29,7 +27,7 @@ export ONNXRUNTIME_DIR=$(pwd)
 export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 ```
 
-### Build on Linux
+### 编译
 
 ```bash
 cd ${MMDEPLOY_DIR} # To MMDeploy root directory

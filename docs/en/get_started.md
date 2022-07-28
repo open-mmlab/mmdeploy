@@ -252,7 +252,7 @@ Otherwise, you will run into an error like ’ModuleNotFoundError: No module nam
 
 Using SDK C API should follow next pattern,
 
-```{mermaid}
+```mermaid
 graph LR
   A[create inference handle] --> B(read image)
   B --> C(apply handle)
