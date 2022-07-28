@@ -10,6 +10,10 @@ if (MMDEPLOY_BUILD_SDK_CXX_API)
             $<INSTALL_INTERFACE:include>)
     foreach (task ${MMDEPLOY_TASKS})
         target_link_libraries(mmdeploy_${task} INTERFACE ${PROJECT_NAME})
+        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/mmdeploy/${task}.hpp
+                DESTINATION include/mmdeploy)
     endforeach ()
     mmdeploy_export(${PROJECT_NAME})
+    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/mmdeploy/common.hpp
+            DESTINATION include/mmdeploy)
 endif ()
