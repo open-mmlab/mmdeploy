@@ -34,7 +34,6 @@ class TextRecognizer : public NonMovable {
     if (images.empty()) {
       return {};
     }
-    auto mats = GetMats(images);
 
     const TextDetection* p_bboxes{};
     const int* p_bbox_count{};
@@ -45,13 +44,14 @@ class TextRecognizer : public NonMovable {
     }
 
     TextRecognition* results{};
-    auto ec = mmdeploy_text_recognizer_apply_bbox(
-        recognizer_, mats.data(), static_cast<int>(mats.size()), p_bboxes, p_bbox_count, &results);
+    auto ec = mmdeploy_text_recognizer_apply_bbox(recognizer_, reinterpret(images.data()),
+                                                  static_cast<int>(images.size()), p_bboxes,
+                                                  p_bbox_count, &results);
     if (ec != MMDEPLOY_SUCCESS) {
       throw_exception(static_cast<ErrorCode>(ec));
     }
 
-    std::shared_ptr<TextRecognition> data(results, [count = mats.size()](auto p) {
+    std::shared_ptr<TextRecognition> data(results, [count = images.size()](auto p) {
       mmdeploy_text_recognizer_release_result(p, count);
     });
 
@@ -59,7 +59,7 @@ class TextRecognizer : public NonMovable {
     rets.reserve(images.size());
 
     size_t offset = 0;
-    for (size_t i = 0; i < mats.size(); ++i) {
+    for (size_t i = 0; i < images.size(); ++i) {
       offset += rets.emplace_back(offset, bboxes.empty() ? 1 : bbox_count[i], data).size();
     }
 

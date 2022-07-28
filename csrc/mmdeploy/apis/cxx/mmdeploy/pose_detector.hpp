@@ -33,7 +33,6 @@ class PoseDetector : public NonMovable {
     if (images.empty()) {
       return {};
     }
-    auto mats = GetMats(images);
 
     const mmdeploy_rect_t* p_bboxes{};
     const int* p_bbox_count{};
@@ -44,13 +43,14 @@ class PoseDetector : public NonMovable {
     }
 
     PoseDetection* results{};
-    auto ec = mmdeploy_pose_detector_apply_bbox(
-        detector_, mats.data(), static_cast<int>(mats.size()), p_bboxes, p_bbox_count, &results);
+    auto ec = mmdeploy_pose_detector_apply_bbox(detector_, reinterpret(images.data()),
+                                                static_cast<int>(images.size()), p_bboxes,
+                                                p_bbox_count, &results);
     if (ec != MMDEPLOY_SUCCESS) {
       throw_exception(static_cast<ErrorCode>(ec));
     }
 
-    std::shared_ptr<PoseDetection> data(results, [count = mats.size()](auto p) {
+    std::shared_ptr<PoseDetection> data(results, [count = images.size()](auto p) {
       mmdeploy_pose_detector_release_result(p, count);
     });
 
@@ -58,7 +58,7 @@ class PoseDetector : public NonMovable {
     rets.reserve(images.size());
 
     size_t offset = 0;
-    for (size_t i = 0; i < mats.size(); ++i) {
+    for (size_t i = 0; i < images.size(); ++i) {
       offset += rets.emplace_back(offset, bboxes.empty() ? 1 : bbox_count[i], data).size();
     }
 

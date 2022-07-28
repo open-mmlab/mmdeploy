@@ -32,11 +32,10 @@ class Segmentor : public NonMovable {
     if (images.empty()) {
       return {};
     }
-    auto mats = GetMats(images);
 
     Segmentation* results{};
-    auto ec =
-        mmdeploy_segmentor_apply(segmentor_, mats.data(), static_cast<int>(mats.size()), &results);
+    auto ec = mmdeploy_segmentor_apply(segmentor_, reinterpret(images.data()),
+                                       static_cast<int>(images.size()), &results);
     if (ec != MMDEPLOY_SUCCESS) {
       throw_exception(static_cast<ErrorCode>(ec));
     }
@@ -45,7 +44,7 @@ class Segmentor : public NonMovable {
     rets.reserve(images.size());
 
     std::shared_ptr<Segmentation> data(
-        results, [count = mats.size()](auto p) { mmdeploy_segmentor_release_result(p, count); });
+        results, [count = images.size()](auto p) { mmdeploy_segmentor_release_result(p, count); });
 
     for (size_t i = 0; i < images.size(); ++i) {
       rets.emplace_back(i, 1, data);
@@ -53,6 +52,8 @@ class Segmentor : public NonMovable {
 
     return rets;
   }
+
+  Result Apply(const Mat& image) { return Apply(Span{image})[0]; }
 
  private:
   mmdeploy_segmentor_t segmentor_{};

@@ -4,6 +4,7 @@
 #define MMDEPLOY_CSRC_MMDEPLOY_APIS_CXX_COMMON_H_
 
 #include <memory>
+#include <type_traits>
 #include <utility>
 
 #include "mmdeploy/common.h"
@@ -12,9 +13,11 @@
 #include "mmdeploy/core/types.h"
 #include "mmdeploy/model.h"
 
-#define MMDEPLOY_USE_OPENCV 1
+#ifndef MMDEPLOY_CXX_USE_OPENCV
+#define MMDEPLOY_CXX_USE_OPENCV 1
+#endif
 
-#if MMDEPLOY_USE_OPENCV
+#if MMDEPLOY_CXX_USE_OPENCV
 #include "opencv2/core/core.hpp"
 #endif
 
@@ -22,35 +25,32 @@ namespace mmdeploy {
 
 using Rect = mmdeploy_rect_t;
 
-namespace {  // avoid conflict with internal model class
+namespace {  // for now, avoid conflict with internal classes, for now
 
-class Model : public NonMovable {
+class Model {
  public:
   explicit Model(const char* path) {
-    auto ec = mmdeploy_model_create_by_path(path, &model_);
+    mmdeploy_model_t model{};
+    auto ec = mmdeploy_model_create_by_path(path, &model);
     if (ec != MMDEPLOY_SUCCESS) {
       throw_exception(static_cast<ErrorCode>(ec));
     }
+    model_.reset(model, [](auto p) { mmdeploy_model_destroy(p); });
   }
 
   Model(const void* buffer, size_t size) {
-    auto ec = mmdeploy_model_create(buffer, static_cast<int>(size), &model_);
+    mmdeploy_model_t model{};
+    auto ec = mmdeploy_model_create(buffer, static_cast<int>(size), &model);
     if (ec != MMDEPLOY_SUCCESS) {
       throw_exception(static_cast<ErrorCode>(ec));
     }
+    model_.reset(model, [](auto p) { mmdeploy_model_destroy(p); });
   }
 
-  ~Model() {
-    if (model_) {
-      mmdeploy_model_destroy(model_);
-      model_ = nullptr;
-    }
-  }
-
-  operator mmdeploy_model_t() const noexcept { return model_; }
+  operator mmdeploy_model_t() const noexcept { return model_.get(); }
 
  private:
-  mmdeploy_model_t model_{};
+  std::shared_ptr<mmdeploy_model> model_{};
 };
 
 class Device {
@@ -67,10 +67,17 @@ class Device {
 
 class Mat {
  public:
-#if MMDEPLOY_USE_OPENCV
+  Mat() : desc_{} {}
+
+  Mat(int height, int width, int channels, mmdeploy_pixel_format_t format,
+      mmdeploy_data_type_t type, uint8_t* data)
+      : desc_{data, height, width, channels, format, type} {}
+
+  const mmdeploy_mat_t& desc() const noexcept { return desc_; }
+
+#if MMDEPLOY_CXX_USE_OPENCV
   Mat(const cv::Mat& mat, mmdeploy_pixel_format_t pixel_format)
-      : desc_{mat.data, mat.rows, mat.cols, mat.channels(), pixel_format, GetCvType(mat.depth())},
-        data_(mat.data, [mat](auto p) {}) {
+      : desc_{mat.data, mat.rows, mat.cols, mat.channels(), pixel_format, GetCvType(mat.depth())} {
     if (pixel_format == MMDEPLOY_PIXEL_FORMAT_COUNT) {
       throw_exception(eNotSupported);
     }
@@ -79,12 +86,7 @@ class Mat {
     }
   }
   Mat(const cv::Mat& mat) : Mat(mat, GetCvFormat(mat.channels())) {}
-#endif
 
-  const mmdeploy_mat_t& desc() const noexcept { return desc_; }
-
- private:
-#if MMDEPLOY_USE_OPENCV
   static mmdeploy_data_type_t GetCvType(int depth) {
     switch (depth) {
       case CV_8U:
@@ -108,9 +110,8 @@ class Mat {
     }
   }
 #endif
-
+ private:
   mmdeploy_mat_t desc_;
-  std::shared_ptr<void> data_;
 };
 
 template <typename T>
@@ -133,13 +134,8 @@ class Result_ {
   std::shared_ptr<T> data_;
 };
 
-inline std::vector<mmdeploy_mat_t> GetMats(Span<const Mat> mats) {
-  std::vector<mmdeploy_mat_t> rets;
-  rets.reserve(mats.size());
-  for (const auto& mat : mats) {
-    rets.push_back(mat.desc());
-  }
-  return rets;
+inline const mmdeploy_mat_t* reinterpret(const Mat* p) {
+  return reinterpret_cast<const mmdeploy_mat_t*>(p);
 }
 
 }  // namespace

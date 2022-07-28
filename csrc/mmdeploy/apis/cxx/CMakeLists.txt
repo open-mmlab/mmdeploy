@@ -8,6 +8,7 @@ if (MMDEPLOY_BUILD_SDK_CXX_API)
     target_include_directories(${PROJECT_NAME} INTERFACE
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
             $<INSTALL_INTERFACE:include>)
+    target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
     foreach (task ${MMDEPLOY_TASKS})
         target_link_libraries(mmdeploy_${task} INTERFACE ${PROJECT_NAME})
         install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/mmdeploy/${task}.hpp

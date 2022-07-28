@@ -32,12 +32,11 @@ class Classifier : public NonMovable {
     if (images.empty()) {
       return {};
     }
-    auto mats = GetMats(images);
 
     Classification* results{};
     int* result_count{};
-    auto ec = mmdeploy_classifier_apply(classifier_, mats.data(), static_cast<int>(mats.size()),
-                                        &results, &result_count);
+    auto ec = mmdeploy_classifier_apply(classifier_, reinterpret(images.data()),
+                                        static_cast<int>(images.size()), &results, &result_count);
     if (ec != MMDEPLOY_SUCCESS) {
       throw_exception(static_cast<ErrorCode>(ec));
     }
@@ -45,7 +44,7 @@ class Classifier : public NonMovable {
     std::vector<Result> rets;
     rets.reserve(images.size());
 
-    std::shared_ptr<Classification> data(results, [result_count, count = mats.size()](auto p) {
+    std::shared_ptr<Classification> data(results, [result_count, count = images.size()](auto p) {
       mmdeploy_classifier_release_result(p, result_count, count);
     });
 

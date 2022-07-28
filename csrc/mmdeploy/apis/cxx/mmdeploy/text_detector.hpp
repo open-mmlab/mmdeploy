@@ -32,17 +32,17 @@ class TextDetector : public NonMovable {
     if (images.empty()) {
       return {};
     }
-    auto mats = GetMats(images);
 
     TextDetection* results{};
     int* result_count{};
-    auto ec = mmdeploy_text_detector_apply(detector_, mats.data(), static_cast<int>(mats.size()),
-                                           &results, &result_count);
+    auto ec =
+        mmdeploy_text_detector_apply(detector_, reinterpret(images.data()),
+                                     static_cast<int>(images.size()), &results, &result_count);
     if (ec != MMDEPLOY_SUCCESS) {
       throw_exception(static_cast<ErrorCode>(ec));
     }
 
-    std::shared_ptr<TextDetection> data(results, [result_count, count = mats.size()](auto p) {
+    std::shared_ptr<TextDetection> data(results, [result_count, count = images.size()](auto p) {
       mmdeploy_text_detector_release_result(p, result_count, count);
     });
 
@@ -50,7 +50,7 @@ class TextDetector : public NonMovable {
     rets.reserve(images.size());
 
     size_t offset = 0;
-    for (size_t i = 0; i < mats.size(); ++i) {
+    for (size_t i = 0; i < images.size(); ++i) {
       offset += rets.emplace_back(offset, result_count[i], data).size();
     }
 
