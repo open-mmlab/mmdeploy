@@ -1,4 +1,4 @@
-### Cmake Build Option Spec
+# CMake Build Option Spec
 
 <table class="docutils">
 <thead>
