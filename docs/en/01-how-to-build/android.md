@@ -40,12 +40,12 @@ This doc is only for how to build SDK using android toolchain on linux.
 
 - ANDROID NDK 19+
 
-  **Make sure android ndk version >= 19.0**. If not, you can follow instructions below to install android ndk r23b. For more versions of android ndk, please refer to [android ndk website](https://developer.android.com/ndk/downloads).
+  **Make sure android ndk version >= 19.0**. If not, you can follow instructions below to install android ndk r23c. For more versions of android ndk, please refer to [android ndk website](https://developer.android.com/ndk/downloads).
 
   ```bash
-  wget https://dl.google.com/android/repository/android-ndk-r23b-linux.zip
-  unzip android-ndk-r23b-linux.zip
-  cd android-ndk-r23b
+  wget https://dl.google.com/android/repository/android-ndk-r23c-linux.zip
+  unzip android-ndk-r23c-linux.zip
+  cd android-ndk-r23c
   export NDK_PATH=${PWD}
   ```
 
@@ -67,7 +67,7 @@ You can skip this chapter if only interested in model converter.
     <td>OpenCV<br>(>=3.0) </td>
     <td>
 <pre><code>
-export OPENCV_VERSION=4.5.4
+export OPENCV_VERSION=4.6.0
 wget https://github.com/opencv/opencv/releases/download/${OPENCV_VERSION}/opencv-${OPENCV_VERSION}-android-sdk.zip
 unzip opencv-${OPENCV_VERSION}-android-sdk.zip
 export OPENCV_ANDROID_SDK_DIR=${PWD}/OpenCV-android-sdk
@@ -78,18 +78,23 @@ export OPENCV_ANDROID_SDK_DIR=${PWD}/OpenCV-android-sdk
   <tr>
     <td>ncnn </td>
     <td>A high-performance neural network inference computing framework supporting for android.</br>
-  <b> Now, MMDeploy supports v20220216 and has to use <code>git clone</code> to download it.</b><br>
+  <b> Now, MMDeploy supports 20220721 and has to use <code>git clone</code> to download it. For supported android ABI, see <a href='https://github.com/Tencent/ncnn/releases'> here </a>. </b><br>
 <pre><code>
-git clone -b 20220216 https://github.com/Tencent/ncnn.git
+git clone -b 20220721 https://github.com/Tencent/ncnn.git
 cd ncnn
 git submodule update --init
 export NCNN_DIR=${PWD}
-mkdir -p build
-cd build
-cmake -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake -DANDROID_ABI="arm64-v8a" -DANDROID_PLATFORM=android-30 -DNCNN_VULKAN=ON -DNCNN_DISABLE_EXCEPTION=OFF -DNCNN_DISABLE_RTTI=OFF ..
-make install
+
+export ANDROID_ABI=arm64-v8a
+
+mkdir -p build\_${ANDROID_ABI}
+cd build\_${ANDROID_ABI}
+
+cmake -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake -DANDROID_ABI="${ANDROID_ABI}" -DANDROID_PLATFORM=android-30 -DNCNN_VULKAN=ON -DNCNN_DISABLE_EXCEPTION=OFF -DNCNN_DISABLE_RTTI=OFF ..
+make -j$(nproc) install
 </code></pre>
-   </td>
+
+</td>
   </tr>
   <tr>
   <td>OpenJDK </td>
@@ -151,14 +156,14 @@ make install
     <td>Enabling inference engine. <br><b>By default, no target inference engine is set, since it highly depends on the use case.</b><br> Only ncnn backend is supported for android platform now.<br>
     After specifying the inference engine, it's package path has to be passed to cmake as follows, <br>
     1. <b>ncnn</b>: ncnn. <code>ncnn_DIR</code> is needed.
-<pre><code>-Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn</code></pre>
+<pre><code>-Dncnn_DIR=${NCNN_DIR}/build_${ANDROID_ABI}/install/lib/cmake/ncnn</code></pre>
    </td>
   </tr>
   <tr>
     <td>MMDEPLOY_CODEBASES</td>
     <td>{"mmcls", "mmdet", "mmseg", "mmedit", "mmocr", "all"}</td>
     <td>N/A</td>
-    <td>Enable codebase's postprocess modules. It MUST be set by a semicolon separated list of codebase names. The currently supported codebases are 'mmcls', 'mmdet', 'mmedit', 'mmseg', 'mmocr'. Instead of listing them one by one, you can also pass <code>all</code> to enable them all, i.e., <code>-DMMDEPLOY_CODEBASES=all</code></td>
+    <td>Enable codebase's postprocess modules. It MUST be set by a semicolon separated list of codebase names. The currently supported codebases are 'mmcls', 'mmdet', 'mmedit', 'mmseg', 'mmocr'. Instead of listing them one by one, you can also pass <code>all</code> to enable them all, i.e., <code>-DMMDEPLOY_CODEBASES=all</code>Please manually edit <code>csrc/mmdeploy/apis/java/native/CMakeLists.txt</code> to avoid compilation errors.</td>
   </tr>
   <tr>
     <td>MMDEPLOY_SHARED_LIBS</td>
@@ -175,18 +180,19 @@ MMDeploy provides a recipe as shown below for building SDK with ncnn as inferenc
 
 - cpu + ncnn
   ```Bash
+  export ANDROID_ABI=arm64-v8a
   cd ${MMDEPLOY_DIR}
-  mkdir -p build && cd build
+  mkdir -p build_${ANDROID_ABI} && cd build_${ANDROID_ABI}
   cmake .. \
       -DMMDEPLOY_BUILD_SDK=ON \
       -DMMDEPLOY_BUILD_SDK_JAVA_API=ON \
-      -DOpenCV_DIR=${OPENCV_ANDROID_SDK_DIR}/sdk/native/jni/abi-arm64-v8a \
-      -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn \
+      -DOpenCV_DIR=${OPENCV_ANDROID_SDK_DIR}/sdk/native/jni/abi-${ANDROID_ABI} \
+      -Dncnn_DIR=${NCNN_DIR}/build_${ANDROID_ABI}/install/lib/cmake/ncnn \
       -DMMDEPLOY_TARGET_BACKENDS=ncnn \
       -DMMDEPLOY_CODEBASES=all \
-      -DMMDEPLOY_SHARED_LIBS=OFF \
+      -DMMDEPLOY_SHARED_LIBS=ON \
       -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake \
-      -DANDROID_ABI=arm64-v8a \
+      -DANDROID_ABI=${ANDROID_ABI} \
       -DANDROID_PLATFORM=android-30 \
       -DANDROID_CPP_FEATURES="rtti exceptions"
 
@@ -196,14 +202,16 @@ MMDeploy provides a recipe as shown below for building SDK with ncnn as inferenc
 #### Build Demo
 
 ```Bash
-cd ${MMDEPLOY_DIR}/build/install/example
+export ANDROID_ABI=arm64-v8a
+
+cd ${MMDEPLOY_DIR}/build_${ANDROID_ABI}/install/example
 mkdir -p build && cd build
 cmake .. \
-      -DOpenCV_DIR=${OPENCV_ANDROID_SDK_DIR}/sdk/native/jni/abi-arm64-v8a \
-      -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn \
-      -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy \
+      -DOpenCV_DIR=${OPENCV_ANDROID_SDK_DIR}/sdk/native/jni/abi-${ANDROID_ABI} \
+      -Dncnn_DIR=${NCNN_DIR}/build_${ANDROID_ABI}/install/lib/cmake/ncnn \
+      -DMMDeploy_DIR=${MMDEPLOY_DIR}/build_${ANDROID_ABI}/install/lib/cmake/MMDeploy \
       -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake \
-      -DANDROID_ABI=arm64-v8a \
+      -DANDROID_ABI=${ANDROID_ABI} \
       -DANDROID_PLATFORM=android-30
 make -j$(nproc)
 ```

@@ -40,12 +40,12 @@ MMDeploy 的交叉编译分为两步:
 
 - ANDROID NDK 19+
 
-  **保证 android ndk 的版本 >= 19.0**. 如果不是,可以参考以下命令安装 r23b 版本. 如要获取其他版本,请参考 [这里](https://developer.android.com/ndk/downloads)
+  **保证 android ndk 的版本 >= 19.0**. 如果不是,可以参考以下命令安装 r23c 版本. 如要获取其他版本,请参考 [这里](https://developer.android.com/ndk/downloads)
 
   ```bash
-  wget https://dl.google.com/android/repository/android-ndk-r23b-linux.zip
-  unzip android-ndk-r23b-linux.zip
-  cd android-ndk-r23b
+  wget https://dl.google.com/android/repository/android-ndk-r23c-linux.zip
+  unzip android-ndk-r23c-linux.zip
+  cd android-ndk-r23c
   export NDK_PATH=${PWD}
   ```
 
@@ -67,7 +67,7 @@ MMDeploy 的交叉编译分为两步:
     <td>OpenCV<br>(>=3.0) </td>
     <td>
 <pre><code>
-export OPENCV_VERSION=4.5.4
+export OPENCV_VERSION=4.6.0
 wget https://github.com/opencv/opencv/releases/download/${OPENCV_VERSION}/opencv-${OPENCV_VERSION}-android-sdk.zip
 unzip opencv-${OPENCV_VERSION}-android-sdk.zip
 export OPENCV_ANDROID_SDK_DIR=${PWD}/OpenCV-android-sdk
@@ -78,18 +78,24 @@ export OPENCV_ANDROID_SDK_DIR=${PWD}/OpenCV-android-sdk
   <tr>
     <td>ncnn </td>
     <td>ncnn 是支持 android 平台的高效神经网络推理计算框架</br>
-  <b> 目前, MMDeploy 支持 ncnn 的 20220216 版本, 且必须使用<code>git clone</code> 下载源码的方式安装</b><br>
+  <b> 目前, MMDeploy 支持 ncnn 的 20220721 版本, 且必须使用<code>git clone</code> 下载源码的方式安装。请到 <a href='https://github.com/Tencent/ncnn/releases'> 这里 </a> 查询 ncnn 支持的 android ABI。</b><br>
+
 <pre><code>
-git clone -b 20220216 https://github.com/Tencent/ncnn.git
+git clone -b 20220721 https://github.com/Tencent/ncnn.git
 cd ncnn
 git submodule update --init
 export NCNN_DIR=${PWD}
-mkdir -p build
-cd build
-cmake -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake -DANDROID_ABI="arm64-v8a" -DANDROID_PLATFORM=android-30 -DNCNN_VULKAN=ON -DNCNN_DISABLE_EXCEPTION=OFF -DNCNN_DISABLE_RTTI=OFF ..
-make install
+
+export ANDROID_ABI=arm64-v8a
+
+mkdir -p build_${ANDROID_ABI}
+cd build_${ANDROID_ABI}
+
+cmake -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake -DANDROID_ABI="${ANDROID_ABI}" -DANDROID_PLATFORM=android-30 -DNCNN_VULKAN=ON -DNCNN_DISABLE_EXCEPTION=OFF -DNCNN_DISABLE_RTTI=OFF ..
+make -j$(nproc) install
 </code></pre>
-   </td>
+
+</td>
   </tr>
     <tr>
   <td>OpenJDK </td>
@@ -121,6 +127,12 @@ make install
     <td>MMDeploy SDK 编译开关</td>
   </tr>
   <tr>
+    <td>MMDEPLOY_BUILD_SDK_PYTHON_API</td>
+    <td>{ON, OFF}</td>
+    <td>OFF</td>
+    <td>MMDeploy SDK Python API的编译开关</td>
+  </tr>
+  <tr>
     <td>MMDEPLOY_BUILD_SDK_JAVA_API</td>
     <td>{ON, OFF}</td>
     <td>OFF</td>
@@ -145,14 +157,14 @@ make install
     <td>设置推理后端. <br><b>默认情况下,SDK不设置任何后端, 因为它与应用场景高度相关.</b><br> Android 端目前只支持ncnn一个后端 <br>
     构建时,几乎每个后端,都需传入一些路径变量,用来查找依赖包. <br>
     1. <b>ncnn</b>: 表示 ncnn. 需要设置<code>ncnn_DIR</code>.
-<pre><code>-Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn</code></pre>
+<pre><code>-Dncnn_DIR=${NCNN_DIR}/build_${ANDROID_ABI}/install/lib/cmake/ncnn</code></pre>
    </td>
   </tr>
   <tr>
     <td>MMDEPLOY_CODEBASES</td>
     <td>{"mmcls", "mmdet", "mmseg", "mmedit", "mmocr", "all"}</td>
     <td>N/A</td>
-    <td>用来设置 SDK 后处理组件,加载 OpenMMLab 算法仓库的后处理功能. 已支持的算法仓库有'mmcls','mmdet','mmedit','mmseg'和'mmocr'. 如果选择多个codebase,中间使用分号隔开. 比如, 'mmcls', 'mmdet', 'mmedit', 'mmseg', 'mmocr'. 也可以通过 <code>all</code> 的方式, 加载所有codebase, 即 <code>-DMMDEPLOY_CODEBASES=all.</code></td>
+    <td>用来设置 SDK 后处理组件,加载 OpenMMLab 算法仓库的后处理功能. 已支持的算法仓库有'mmcls','mmdet','mmedit','mmseg'和'mmocr'. 如果选择多个codebase,中间使用分号隔开. 比如, 'mmcls', 'mmdet', 'mmedit', 'mmseg', 'mmocr'. 也可以通过 <code>all</code> 的方式, 加载所有codebase, 即 <code>-DMMDEPLOY_CODEBASES=all.</code>。请同时手动编辑 <code>csrc/mmdeploy/apis/java/native/CMakeLists.txt</code>以避免编译错误。 </td>
   </tr>
   <tr>
     <td>MMDEPLOY_SHARED_LIBS</td>
@@ -169,18 +181,19 @@ make install
 
 - cpu + ncnn
   ```Bash
+  export ANDROID_ABI=arm64-v8a
   cd ${MMDEPLOY_DIR}
-  mkdir -p build && cd build
+  mkdir -p build_${ANDROID_ABI} && cd build_${ANDROID_ABI}
   cmake .. \
       -DMMDEPLOY_BUILD_SDK=ON \
       -DMMDEPLOY_BUILD_SDK_JAVA_API=ON \
-      -DOpenCV_DIR=${OPENCV_ANDROID_SDK_DIR}/sdk/native/jni/abi-arm64-v8a \
-      -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn \
+      -DOpenCV_DIR=${OPENCV_ANDROID_SDK_DIR}/sdk/native/jni/abi-${ANDROID_ABI} \
+      -Dncnn_DIR=${NCNN_DIR}/build_${ANDROID_ABI}/install/lib/cmake/ncnn \
       -DMMDEPLOY_TARGET_BACKENDS=ncnn \
       -DMMDEPLOY_CODEBASES=all \
-      -DMMDEPLOY_SHARED_LIBS=OFF \
+      -DMMDEPLOY_SHARED_LIBS=ON \
       -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake \
-      -DANDROID_ABI=arm64-v8a \
+      -DANDROID_ABI=${ANDROID_ABI} \
       -DANDROID_PLATFORM=android-30 \
       -DANDROID_CPP_FEATURES="rtti exceptions"
 
@@ -190,14 +203,16 @@ make install
 #### 编译 Demo
 
 ```Bash
-cd ${MMDEPLOY_DIR}/build/install/example
+export ANDROID_ABI=arm64-v8a
+
+cd ${MMDEPLOY_DIR}/build_${ANDROID_ABI}/install/example
 mkdir -p build && cd build
 cmake .. \
-      -DOpenCV_DIR=${OPENCV_ANDROID_SDK_DIR}/sdk/native/jni/abi-arm64-v8a \
-      -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn \
-      -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy \
+      -DOpenCV_DIR=${OPENCV_ANDROID_SDK_DIR}/sdk/native/jni/abi-${ANDROID_ABI} \
+      -Dncnn_DIR=${NCNN_DIR}/build_${ANDROID_ABI}/install/lib/cmake/ncnn \
+      -DMMDeploy_DIR=${MMDEPLOY_DIR}/build_${ANDROID_ABI}/install/lib/cmake/MMDeploy \
       -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake \
-      -DANDROID_ABI=arm64-v8a \
+      -DANDROID_ABI=${ANDROID_ABI} \
       -DANDROID_PLATFORM=android-30
 make -j$(nproc)
 ```
