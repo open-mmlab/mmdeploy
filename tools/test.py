@@ -131,6 +131,7 @@ def main():
     task_processor.evaluate_outputs(model_cfg, outputs, dataset, args.metrics,
                                     args.out, args.metric_options,
                                     args.format_only, args.log2file)
+    del model
 
 
 if __name__ == '__main__':

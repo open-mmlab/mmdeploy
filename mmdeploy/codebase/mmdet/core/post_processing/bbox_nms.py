@@ -8,6 +8,21 @@ from mmdeploy.mmcv.ops import ONNXNMSop, TRTBatchedNMSop
 from mmdeploy.utils import Backend, is_dynamic_batch
 
 
+def _replace_minus_index_if_needed(index: Tensor, replace_val: int):
+    """Just pass by the index."""
+    return index
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    func_name='mmdeploy.codebase.mmdet.core.post_processing.bbox_nms.'
+    '_replace_minus_index_if_needed',
+    backend='ascend')
+def replace_minus_index_if_needed__ascend(ctx, index: Tensor,
+                                          replace_val: int):
+    """ascend does not support index with neigative value."""
+    return index.where(index >= 0, index.new_tensor(replace_val))
+
+
 def select_nms_index(scores: torch.Tensor,
                      boxes: torch.Tensor,
                      nms_index: torch.Tensor,
@@ -140,6 +155,10 @@ def _multiclass_nms_single(boxes: Tensor,
 
     cls_inds = selected_indices[:, 1]
     box_inds = selected_indices[:, 2]
+    cls_inds = mmdeploy.codebase.mmdet.core.post_processing.bbox_nms.\
+        _replace_minus_index_if_needed(cls_inds, 0)
+    box_inds = mmdeploy.codebase.mmdet.core.post_processing.bbox_nms.\
+        _replace_minus_index_if_needed(box_inds, boxes.size(1) - 1)
 
     scores = scores[:, cls_inds, box_inds].unsqueeze(2)
     boxes = boxes[:, box_inds, ...]

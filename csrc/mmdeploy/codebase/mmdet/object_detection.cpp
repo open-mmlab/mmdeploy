@@ -4,6 +4,7 @@
 
 #include "mmdeploy/core/registry.h"
 #include "mmdeploy/core/utils/device_utils.h"
+#include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/experimental/module_adapter.h"
 
 using namespace std;
