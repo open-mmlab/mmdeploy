@@ -94,31 +94,17 @@ def yolov3_head__predict_by_feat(ctx,
         conf_pred = torch.sigmoid(pred_map[..., 4])
         cls_pred = torch.sigmoid(pred_map[..., 5:]).view(
             batch_size, -1, self.num_classes)  # Cls pred one-hot.
+        '''
         # topk in tensorrt does not support shape<k
         # concate zero to enable topk,
         bbox_pred = pad_with_value_if_necessary(bbox_pred, 1, pre_topk)
         conf_pred = pad_with_value_if_necessary(conf_pred, 1, pre_topk, 0.)
         cls_pred = pad_with_value_if_necessary(cls_pred, 1, pre_topk, 0.)
-
-        if pre_topk > 0:
-            _, topk_inds = conf_pred.topk(pre_topk)
-            batch_inds = torch.arange(
-                batch_size, device=device).unsqueeze(-1).long()
-            # Avoid onnx2tensorrt issue in https://github.com/NVIDIA/TensorRT/issues/1134 # noqa: E501
-            transformed_inds = (bbox_pred.shape[1] * batch_inds + topk_inds)
-            bbox_pred = bbox_pred.reshape(-1, 4)[transformed_inds, :].reshape(
-                batch_size, -1, 4)
-            cls_pred = cls_pred.reshape(
-                -1, self.num_classes)[transformed_inds, :].reshape(
-                    batch_size, -1, self.num_classes)
-            conf_pred = conf_pred.reshape(-1, 1)[transformed_inds].reshape(
-                batch_size, -1)
-
+        '''
         # Save the result of current scale
         multi_lvl_bboxes.append(bbox_pred)
         multi_lvl_cls_scores.append(cls_pred)
         multi_lvl_conf_scores.append(conf_pred)
-
     # Merge the results of different scales together
     batch_mlvl_bboxes = torch.cat(multi_lvl_bboxes, dim=1)
     batch_mlvl_scores = torch.cat(multi_lvl_cls_scores, dim=1)
@@ -132,16 +118,48 @@ def yolov3_head__predict_by_feat(ctx,
     # follow original pipeline of YOLOv3
     if confidence_threshold > 0:
         mask = batch_mlvl_conf_scores >= confidence_threshold
+        print(mask.shape)
         batch_mlvl_conf_scores = batch_mlvl_conf_scores.where(
             mask, batch_mlvl_conf_scores.new_zeros(1))
+        batch_mlvl_scores = batch_mlvl_scores.where(mask.unsqueeze(-1),
+                                                    batch_mlvl_scores.
+                                                    new_zeros(1))
+        batch_mlvl_bboxes = batch_mlvl_bboxes.where(mask.unsqueeze(-1),
+                                                    batch_mlvl_bboxes.
+                                                    new_zeros(1))
+
     if score_threshold > 0:
         mask = batch_mlvl_scores > score_threshold
-        batch_mlvl_scores = batch_mlvl_scores.where(
-            mask, batch_mlvl_scores.new_zeros(1))
+        batch_mlvl_scores = batch_mlvl_scores.where(mask,
+                                                    batch_mlvl_scores.
+                                                    new_zeros(1))
+
+    if pre_topk > 0:
+        batch_mlvl_bboxes = pad_with_value_if_necessary(
+            batch_mlvl_bboxes, 1, pre_topk)
+        batch_mlvl_conf_scores = pad_with_value_if_necessary(
+            batch_mlvl_conf_scores, 1, pre_topk, 0.)
+        batch_mlvl_scores = pad_with_value_if_necessary(
+            batch_mlvl_scores, 1, pre_topk, 0.)
+        _, topk_inds = batch_mlvl_scores.reshape(batch_size, -1). \
+            topk(pre_topk, dim=1)
+        topk_inds = torch.stack([topk_inds // self.num_classes,
+                                 topk_inds % self.num_classes])
+        batch_inds = torch.arange(
+                batch_size, device=device).unsqueeze(-1).long()
+        # Avoid onnx2tensorrt issue in https://github.com/NVIDIA/TensorRT/issues/1134 # noqa: E501
+        transformed_inds = (batch_mlvl_bboxes.shape[1] * batch_inds +
+                            topk_inds)
+        batch_mlvl_bboxes = batch_mlvl_bboxes. \
+            reshape(-1, 4)[transformed_inds, :].reshape(batch_size, -1, 4)
+        batch_mlvl_scores = batch_mlvl_scores.reshape(
+            -1, self.num_classes)[transformed_inds, :].reshape(
+                batch_size, -1, self.num_classes)
+        batch_mlvl_conf_scores = batch_mlvl_conf_scores. \
+            reshape(-1, 1)[transformed_inds].reshape(batch_size, -1)
 
     batch_mlvl_conf_scores = batch_mlvl_conf_scores.unsqueeze(2)
     batch_mlvl_scores = batch_mlvl_scores * batch_mlvl_conf_scores
-
     if with_nms:
         max_output_boxes_per_class = post_params.max_output_boxes_per_class
         iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)
