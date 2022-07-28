@@ -45,6 +45,27 @@ if(NOT CMAKE_CXX_COMPILER)
     set(CMAKE_CXX_COMPILER g++-7)
 endif()
 
+# Fill backends with inference software directory
+if(DEFINED TENSORRT_DIR)
+    list(APPEND MMDEPLOY_TARGET_BACKENDS trt)
+endif()
+
+if(DEFINED ONNXRUNTIME_DIR)
+    list(APPEND MMDEPLOY_TARGET_BACKENDS ort)
+endif()
+
+if(DEFINED pplnn_DIR)
+    list(APPEND MMDEPLOY_TARGET_BACKENDS pplnn)
+endif()
+
+if(DEFINED ncnn_DIR)
+    list(APPEND MMDEPLOY_TARGET_BACKENDS ncnn)
+endif()
+
+if(DEFINED Torch_DIR)
+    list(APPEND MMDEPLOY_TARGET_BACKENDS torchscript)
+endif()
+
 if (MMDEPLOY_SHARED_LIBS)
     set(MMDEPLOY_LIB_TYPE SHARED)
 else ()
