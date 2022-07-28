@@ -45,7 +45,7 @@ Note:
 ```bash
 cd ${MMDEPLOY_DIR} # To MMDeploy root directory
 mkdir -p build && cd build
-cmake -DMMDEPLOY_TARGET_BACKENDS=ort -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
+cmake -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
 make -j$(nproc)
 ```
 

@@ -268,7 +268,7 @@ If one of inference engines among ONNXRuntime, TensorRT, ncnn and libtorch is se
   ```bash
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
-  cmake -DMMDEPLOY_TARGET_BACKENDS=ort -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
+  cmake -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
   make -j$(nproc) && make install
   ```
 
@@ -277,7 +277,7 @@ If one of inference engines among ONNXRuntime, TensorRT, ncnn and libtorch is se
   ```bash
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
-  cmake -DMMDEPLOY_TARGET_BACKENDS=trt -DTENSORRT_DIR=${TENSORRT_DIR} -DCUDNN_DIR=${CUDNN_DIR} ..
+  cmake -DTENSORRT_DIR=${TENSORRT_DIR} -DCUDNN_DIR=${CUDNN_DIR} ..
   make -j$(nproc) && make install
   ```
 
@@ -286,7 +286,7 @@ If one of inference engines among ONNXRuntime, TensorRT, ncnn and libtorch is se
   ```bash
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
-  cmake -DMMDEPLOY_TARGET_BACKENDS=ncnn -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn ..
+  cmake -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn ..
   make -j$(nproc) && make install
   ```
 
@@ -295,7 +295,7 @@ If one of inference engines among ONNXRuntime, TensorRT, ncnn and libtorch is se
   ```bash
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
-  cmake -DMMDEPLOY_TARGET_BACKENDS=torchscript -DTorch_DIR=${Torch_DIR} ..
+  cmake -DTorch_DIR=${Torch_DIR} ..
   make -j$(nproc) && make install
   ```
 
@@ -328,7 +328,6 @@ You can also activate other engines after the model.
       -DMMDEPLOY_BUILD_SDK=ON \
       -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
       -DMMDEPLOY_TARGET_DEVICES=cpu \
-      -DMMDEPLOY_TARGET_BACKENDS=ort \
       -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR}
 
   make -j$(nproc) && make install
@@ -343,7 +342,6 @@ You can also activate other engines after the model.
       -DMMDEPLOY_BUILD_SDK=ON \
       -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
       -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
-      -DMMDEPLOY_TARGET_BACKENDS=trt \
       -Dpplcv_DIR=${PPLCV_DIR}/cuda-build/install/lib/cmake/ppl \
       -DTENSORRT_DIR=${TENSORRT_DIR} \
       -DCUDNN_DIR=${CUDNN_DIR}
