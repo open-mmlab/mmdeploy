@@ -17,6 +17,7 @@ function(add_example task name)
     endif ()
     if (MMDEPLOY_BUILD_SDK_MONOLITHIC)
       target_link_libraries(${name} PRIVATE mmdeploy ${OpenCV_LIBS})
+      install(TARGETS ${name} RUNTIME DESTINATION bin)
     else ()
       # Load MMDeploy modules
       mmdeploy_load_static(${name} MMDeployStaticModules)
