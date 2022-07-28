@@ -24,19 +24,7 @@ class Restorer : public NonMovable {
     }
   }
 
-  class Result {
-    friend Restorer;
-
-   public:
-    mmdeploy_mat_t* operator->() noexcept { return get(); }
-    const mmdeploy_mat_t* operator->() const noexcept { return get(); }
-
-   private:
-    mmdeploy_mat_t* get() const noexcept { return data_.get() + index_; }
-
-    size_t index_{};
-    std::shared_ptr<mmdeploy_mat_t> data_;
-  };
+  using Result = Result_<mmdeploy_mat_t>;
 
   std::vector<Result> Apply(Span<const Mat> images) {
     if (images.empty()) {
@@ -58,9 +46,7 @@ class Restorer : public NonMovable {
         results, [count = mats.size()](auto p) { mmdeploy_restorer_release_result(p, count); });
 
     for (size_t i = 0; i < images.size(); ++i) {
-      auto& ref = rets.emplace_back();
-      ref.index_ = i;
-      ref.data_ = data;
+      rets.emplace_back(i, 1, data);
     }
 
     return rets;

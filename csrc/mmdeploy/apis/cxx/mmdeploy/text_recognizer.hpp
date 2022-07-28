@@ -27,22 +27,7 @@ class TextRecognizer : public NonMovable {
     }
   }
 
-  class Result {
-    friend TextRecognizer;
-
-   public:
-    TextRecognition* operator[](int index) const noexcept { return data_.get() + offset_ + index; }
-    size_t size() const noexcept { return size_; }
-
-   private:
-    Result(size_t offset, size_t size, std::shared_ptr<TextRecognition> data)
-        : offset_(offset), size_(size), data_(std::move(data)) {}
-
-   private:
-    size_t offset_{};
-    size_t size_{};
-    std::shared_ptr<TextRecognition> data_;
-  };
+  using Result = Result_<TextRecognition>;
 
   std::vector<Result> Apply(Span<const Mat> images, Span<const TextDetection> bboxes,
                             Span<const int> bbox_count) {
@@ -75,8 +60,7 @@ class TextRecognizer : public NonMovable {
 
     size_t offset = 0;
     for (size_t i = 0; i < mats.size(); ++i) {
-      rets.push_back(Result(offset, bboxes.empty() ? 1 : bbox_count[i], data));
-      offset += rets.back().size();
+      offset += rets.emplace_back(offset, bboxes.empty() ? 1 : bbox_count[i], data).size();
     }
 
     return rets;

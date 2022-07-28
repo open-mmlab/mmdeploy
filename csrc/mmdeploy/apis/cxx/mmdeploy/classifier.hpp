@@ -26,20 +26,7 @@ class Classifier : public NonMovable {
     }
   }
 
-  class Result {
-   public:
-    Result(size_t offset, size_t size, std::shared_ptr<Classification> data)
-        : offset_(offset), size_(size), data_(std::move(data)) {}
-
-    Classification* operator[](int index) const noexcept { return data_.get() + offset_ + index; }
-
-    size_t size() const noexcept { return size_; }
-
-   private:
-    size_t offset_{0};
-    size_t size_{0};
-    std::shared_ptr<Classification> data_;
-  };
+  using Result = Result_<Classification>;
 
   std::vector<Result> Apply(Span<const Mat> images) {
     if (images.empty()) {

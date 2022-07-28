@@ -1,11 +1,8 @@
 #include "mmdeploy/detector.hpp"
 
-#include <fstream>
 #include <opencv2/imgcodecs/imgcodecs.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <string>
-
-#include "mmdeploy/detector.h"
 
 int main(int argc, char* argv[]) {
   if (argc != 4) {
@@ -22,21 +19,18 @@ int main(int argc, char* argv[]) {
   }
 
   mmdeploy::Model model(model_path);
-  mmdeploy::Detector detector(model, {"cpu", 0});
+  mmdeploy::Detector detector(model, mmdeploy::Device{device_name, 0});
 
-
-  mmdeploy::Mat mat(img);
-
-  auto dets = detector.Apply(mat);
+  auto dets = detector.Apply(img);
 
   fprintf(stdout, "bbox_count=%d\n", (int)dets.size());
 
   for (int i = 0; i < dets.size(); ++i) {
-    const auto& box = dets[i]->bbox;
-    const auto& mask = dets[i]->mask;
+    const auto& box = dets[i].bbox;
+    const auto& mask = dets[i].mask;
 
     fprintf(stdout, "box %d, left=%.2f, top=%.2f, right=%.2f, bottom=%.2f, label=%d, score=%.4f\n",
-            i, box.left, box.top, box.right, box.bottom, dets[i]->label_id, dets[i]->score);
+            i, box.left, box.top, box.right, box.bottom, dets[i].label_id, dets[i].score);
 
     // skip detections with invalid bbox size (bbox height or width < 1)
     if ((box.right - box.left) < 1 || (box.bottom - box.top) < 1) {
@@ -44,7 +38,7 @@ int main(int argc, char* argv[]) {
     }
 
     // skip detections less than specified score threshold
-    if (dets[i]->score < 0.3) {
+    if (dets[i].score < 0.3) {
       continue;
     }
 

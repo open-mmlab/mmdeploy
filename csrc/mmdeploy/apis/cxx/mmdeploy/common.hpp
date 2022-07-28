@@ -55,7 +55,7 @@ class Model : public NonMovable {
 
 class Device {
  public:
-  Device(std::string name, int index) : name_(std::move(name)), index_(index) {}
+  explicit Device(std::string name, int index = 0) : name_(std::move(name)), index_(index) {}
 
   const char* name() const noexcept { return name_.c_str(); }
   int index() const noexcept { return index_; }
@@ -67,6 +67,7 @@ class Device {
 
 class Mat {
  public:
+#if MMDEPLOY_USE_OPENCV
   Mat(const cv::Mat& mat, mmdeploy_pixel_format_t pixel_format)
       : desc_{mat.data, mat.rows, mat.cols, mat.channels(), pixel_format, GetCvType(mat.depth())},
         data_(mat.data, [mat](auto p) {}) {
@@ -77,12 +78,13 @@ class Mat {
       throw_exception(eNotSupported);
     }
   }
-
-  explicit Mat(const cv::Mat& mat) : Mat(mat, GetCvFormat(mat.channels())) {}
+  Mat(const cv::Mat& mat) : Mat(mat, GetCvFormat(mat.channels())) {}
+#endif
 
   const mmdeploy_mat_t& desc() const noexcept { return desc_; }
 
  private:
+#if MMDEPLOY_USE_OPENCV
   static mmdeploy_data_type_t GetCvType(int depth) {
     switch (depth) {
       case CV_8U:
@@ -93,7 +95,6 @@ class Mat {
         return MMDEPLOY_DATA_TYPE_COUNT;
     }
   }
-
   static mmdeploy_pixel_format_t GetCvFormat(int channels) {
     switch (channels) {
       case 1:
@@ -106,9 +107,30 @@ class Mat {
         return MMDEPLOY_PIXEL_FORMAT_COUNT;
     }
   }
+#endif
 
   mmdeploy_mat_t desc_;
   std::shared_ptr<void> data_;
+};
+
+template <typename T>
+class Result_ {
+ public:
+  Result_(size_t offset, size_t size, std::shared_ptr<T> data)
+      : offset_(offset), size_(size), data_(std::move(data)) {}
+
+  T& operator[](size_t index) const noexcept { return *(data_.get() + offset_ + index); }
+  size_t size() const noexcept { return size_; }
+  T* begin() const noexcept { return data_.get() + offset_; }
+  T* end() const noexcept { return begin() + size_; }
+
+  T* operator->() const noexcept { return data_.get(); }
+  T& operator*() const noexcept { return *data_; }
+
+ private:
+  size_t offset_;
+  size_t size_;
+  std::shared_ptr<T> data_;
 };
 
 inline std::vector<mmdeploy_mat_t> GetMats(Span<const Mat> mats) {

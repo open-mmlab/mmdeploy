@@ -26,17 +26,7 @@ class Segmentor : public NonMovable {
     }
   }
 
-  class Result {
-   public:
-    Result(size_t index, std::shared_ptr<Segmentation> data):
-      index_(index), data_(std::move(data)) {}
-
-    Segmentation& get() const noexcept { return *(data_.get() + index_); }
-
-   private:
-    size_t index_{0};
-    std::shared_ptr<Segmentation> data_;
-  };
+  using Result = Result_<Segmentation>;
 
   std::vector<Result> Apply(Span<const Mat> images) {
     if (images.empty()) {
@@ -58,7 +48,7 @@ class Segmentor : public NonMovable {
         results, [count = mats.size()](auto p) { mmdeploy_segmentor_release_result(p, count); });
 
     for (size_t i = 0; i < images.size(); ++i) {
-      rets.emplace_back(i, data);
+      rets.emplace_back(i, 1, data);
     }
 
     return rets;

@@ -26,24 +26,7 @@ class PoseDetector : public NonMovable {
     }
   }
 
-  class Result {
-   public:
-    Result(size_t offset, size_t size, std::shared_ptr<PoseDetection> data)
-        : offset_(offset), size_(size), data_(std::move(data)) {}
-
-    PoseDetection* operator[](int index) noexcept { return data_.get() + offset_ + index; }
-
-    const PoseDetection* operator[](int index) const noexcept {
-      return data_.get() + offset_ + index;
-    }
-
-    size_t size() const noexcept { return size_; }
-
-   private:
-    size_t offset_;
-    size_t size_;
-    std::shared_ptr<PoseDetection> data_;
-  };
+  using Result = Result_<PoseDetection>;
 
   std::vector<Result> Apply(Span<const Mat> images, Span<const Rect> bboxes,
                             Span<const int> bbox_count) {
@@ -82,7 +65,7 @@ class PoseDetector : public NonMovable {
     return rets;
   }
 
-  Result Apply(const Mat& image, Span<const Rect> bboxes) {
+  Result Apply(const Mat& image, Span<const Rect> bboxes = {}) {
     return Apply(Span{image}, bboxes, {static_cast<int>(bboxes.size())})[0];
   }
 

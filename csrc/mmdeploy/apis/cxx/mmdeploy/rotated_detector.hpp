@@ -26,26 +26,7 @@ class RotatedDetector : public NonMovable {
     }
   }
 
-  class Result {
-   public:
-    Result(size_t offset, size_t size, std::shared_ptr<RotatedDetection> data)
-        : offset_(offset), size_(size), data_(std::move(data)) {}
-
-    mmdeploy_rotated_detection_t* operator[](int index) const {
-      return data_.get() + offset_ + index;
-    }
-
-    size_t size() const noexcept { return size_; }
-
-    explicit operator Span<RotatedDetection>() const noexcept {
-      return {data_.get() + offset_, size_};
-    }
-
-   private:
-    size_t offset_{};
-    size_t size_{};
-    std::shared_ptr<RotatedDetection> data_;
-  };
+  using Result = Result_<RotatedDetection>;
 
   std::vector<Result> Apply(Span<const Mat> images) {
     if (images.empty()) {

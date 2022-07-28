@@ -26,26 +26,7 @@ class Detector : public NonMovable {
     }
   }
 
-  // using Result = std::vector<Detection>;
-
-  class Result {
-   public:
-    Result(size_t offset, size_t size, std::shared_ptr<Detection> data)
-        : offset_(offset), size_(size), data_(std::move(data)) {}
-
-    Detection* operator[](int index) const noexcept { return data_.get() + offset_ + index; }
-
-    size_t size() const noexcept { return size_; }
-
-    Detection* begin() const noexcept { return data_.get() + offset_; }
-
-    Detection* end() const noexcept { return data_.get() + offset_ + size_; }
-
-   private:
-    size_t offset_;
-    size_t size_;
-    std::shared_ptr<Detection> data_;
-  };
+  using Result = Result_<Detection>;
 
   std::vector<Result> Apply(Span<const Mat> images) {
     if (images.empty()) {

@@ -26,20 +26,7 @@ class TextDetector : public NonMovable {
     }
   }
 
-  class Result {
-   public:
-    Result(size_t offset, size_t size, std::shared_ptr<TextDetection> data)
-        : offset_(offset), size_(size), data_(std::move(data)) {}
-
-    TextDetection* operator[](int index) const { return data_.get() + offset_ + index; }
-
-    size_t size() const noexcept { return size_; }
-
-   private:
-    size_t offset_{};
-    size_t size_{};
-    std::shared_ptr<TextDetection> data_;
-  };
+  using Result = Result_<TextDetection>;
 
   std::vector<Result> Apply(Span<const Mat> images) {
     if (images.empty()) {
@@ -69,6 +56,8 @@ class TextDetector : public NonMovable {
 
     return rets;
   }
+
+  Result Apply(const Mat& image) { return Apply(Span{image})[0]; }
 
  private:
   mmdeploy_text_detector_t detector_{};
