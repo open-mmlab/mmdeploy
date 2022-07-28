@@ -57,7 +57,21 @@ def from_torchscript(torchscript_model: Union[str,
                      fp16_mode: bool = False,
                      skip_model_load: bool = True,
                      **kwargs):
-    """Create a coreml engine from torchscript."""
+    """Create a coreml engine from torchscript.
+
+    Args:
+        torchscript_model (Union[str, torch.jit.RecursiveScriptModule]):
+            The torchscript model to be converted.
+        output_file_prefix (str): The output file prefix.
+        input_names (Sequence[str]): The input names of the model.
+        output_names (Sequence[str]): The output names of the model.
+        input_shapes (Dict): The input shapes include max_shape, min_shape and
+            default_shape
+        convert_to (str, optional): The converted model type, can be
+            'neuralnetwork' or 'mlprogram'. Defaults to 'neuralnetwork'.
+        fp16_mode (bool, optional): Convert to fp16 model. Defaults to False.
+        skip_model_load (bool, optional): Skip model load. Defaults to True.
+    """
 
     try:
         from mmdeploy.backend.torchscript import get_ops_path

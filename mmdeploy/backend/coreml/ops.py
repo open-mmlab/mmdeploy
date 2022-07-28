@@ -7,6 +7,7 @@ from coremltools.converters.mil.frontend.torch.torch_op_registry import \
 
 @register_torch_op
 def coreml_nms(context, node):
+    """bind CoreML NMS op."""
     inputs = _get_inputs(context, node)
     boxes = inputs[0]
     scores = inputs[1]
