@@ -133,6 +133,12 @@ def clear_mmdeploy(mmdeploy_dir: str):
     for ncnn_ext_path in ncnn_ext_paths:
         os.remove(ncnn_ext_path)
 
+    # remove ts_optmizer
+    ts_optimizer_paths = glob(
+        osp.join(mmdeploy_dir, 'mmdeploy/backend/torchscript/ts_optimizer.*'))
+    for ts_optimizer_path in ts_optimizer_paths:
+        os.remove(ts_optimizer_path)
+
 
 def build_mmdeploy(cfg, mmdeploy_dir, dist_dir=None):
     cmake_flags = cfg.get('cmake_flags', [])

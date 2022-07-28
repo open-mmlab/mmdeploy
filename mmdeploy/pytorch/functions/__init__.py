@@ -12,13 +12,13 @@ from .repeat import tensor__repeat__tensorrt
 from .size import tensor__size__ncnn
 from .tensor_setitem import tensor__setitem__default
 from .topk import topk__dynamic, topk__tensorrt
-from .triu import triu
+from .triu import triu__default
 
 __all__ = [
     'tensor__getattribute__ncnn', 'group_norm__ncnn', 'interpolate__ncnn',
     'interpolate__tensorrt', 'linear__ncnn', 'tensor__repeat__tensorrt',
     'tensor__size__ncnn', 'topk__dynamic', 'topk__tensorrt', 'chunk__ncnn',
-    'triu', 'atan2__default', 'normalize__ncnn', 'expand__ncnn',
+    'triu__default', 'atan2__default', 'normalize__ncnn', 'expand__ncnn',
     'chunk__torchscript', 'masked_fill__onnxruntime',
     'tensor__setitem__default'
 ]

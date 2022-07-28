@@ -180,7 +180,7 @@ void TestFunc(const char* sched_name) {
   }
   SECTION("Bulk") {
     auto sender = Just(Value(Value::Array(100))) | Transfer(sched) |
-                  Bulk(100, [](size_t index, Value& v) { v[index] = index; });
+                  Bulk(100, [](size_t index, Value& v) { v[index] = (uint32_t)index; });
     auto [value] = SyncWait(std::move(sender));
     std::vector<int> a;
     std::vector<int> b;

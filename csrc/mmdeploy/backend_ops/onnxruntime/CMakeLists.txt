@@ -8,6 +8,8 @@ include(${CMAKE_SOURCE_DIR}/cmake/modules/FindONNXRUNTIME.cmake)
 file(GLOB_RECURSE ORT_OPS_SRCS *.cpp)
 add_library(${PROJECT_NAME}_obj OBJECT "${ORT_OPS_SRCS}")
 target_compile_definitions(${PROJECT_NAME}_obj PRIVATE -DMMDEPLOY_API_EXPORTS=1)
+target_compile_options(${PROJECT_NAME}_obj PRIVATE
+        $<$<COMPILE_LANGUAGE:CXX>:-fvisibility=hidden>)
 set_target_properties(${PROJECT_NAME}_obj PROPERTIES POSITION_INDEPENDENT_CODE 1)
 mmdeploy_export(${PROJECT_NAME}_obj)
 

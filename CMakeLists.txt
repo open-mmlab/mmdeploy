@@ -9,6 +9,9 @@ project(MMDeploy VERSION 0.6.0)
 
 set(CMAKE_CXX_STANDARD 17)
 
+set(MMDEPLOY_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+set(MMDEPLOY_VERSION_MINOR ${PROJECT_VERSION_MINOR})
+set(MMDEPLOY_VERSION_PATCH ${PROJECT_VERSION_PATCH})
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 if (MSVC)
@@ -21,11 +24,13 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 # options
 option(MMDEPLOY_SHARED_LIBS "build shared libs" ON)
 option(MMDEPLOY_BUILD_SDK "build MMDeploy SDK" OFF)
+option(MMDEPLOY_BUILD_SDK_MONOLITHIC "build single lib for SDK API" OFF)
 option(MMDEPLOY_BUILD_TEST "build unittests" OFF)
 option(MMDEPLOY_BUILD_SDK_PYTHON_API "build SDK Python API" OFF)
 option(MMDEPLOY_BUILD_SDK_CXX_API "build SDK C++ API" OFF)
 option(MMDEPLOY_BUILD_SDK_CSHARP_API "build SDK C# API support" OFF)
 option(MMDEPLOY_BUILD_SDK_JAVA_API "build SDK JAVA API" OFF)
+option(MMDEPLOY_BUILD_EXAMPLES "build examples" OFF)
 option(MMDEPLOY_SPDLOG_EXTERNAL "use external spdlog" OFF)
 option(MMDEPLOY_ZIP_MODEL "support SDK model in zip format" OFF)
 set(MMDEPLOY_TARGET_DEVICES "cpu" CACHE STRING "target devices to support")
@@ -97,7 +102,9 @@ if (MMDEPLOY_BUILD_SDK)
         add_subdirectory(csrc/mmdeploy/apis/java)
     endif ()
 
-    add_subdirectory(demo/csrc)
+    if (MMDEPLOY_BUILD_EXAMPLES)
+        add_subdirectory(demo/csrc)
+    endif ()
 
     # export MMDeploy package
     install(EXPORT MMDeployTargets

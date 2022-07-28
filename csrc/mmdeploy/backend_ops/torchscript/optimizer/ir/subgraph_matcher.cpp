@@ -125,7 +125,7 @@ bool SubgraphMatcher::SubgraphMatcherImpl::matchAttributes(const Node* n1, Node*
                   "' did not match:\n", *n1, *n2);
       return false;
     }
-    std::vector<long int> n1is, n2is;
+    std::vector<int64_t> n1is, n2is;
     std::vector<double> n1fs, n2fs;
     switch (n1->kindOf(attr_name)) {
       case AttributeKind::s:
