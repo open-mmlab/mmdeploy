@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.14)
 project(mmdeploy-example)
 
-find_package(MMDeploy REQUIRED)
+#find_package(MMDeploy REQUIRED)
 
 function(add_example task name)
   if (TARGET mmdeploy_${task})

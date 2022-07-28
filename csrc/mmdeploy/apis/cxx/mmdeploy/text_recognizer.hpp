@@ -66,7 +66,7 @@ class TextRecognizer : public NonMovable {
     return rets;
   }
 
-  Result Apply(const Mat& image, Span<const TextDetection> bboxes) {
+  Result Apply(const Mat& image, Span<const TextDetection> bboxes = {}) {
     return Apply(Span{image}, bboxes, {static_cast<int>(bboxes.size())})[0];
   }
 
