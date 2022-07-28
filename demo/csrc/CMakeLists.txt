@@ -15,13 +15,17 @@ function(add_example task name)
       # Disable new dtags so that executables can run even without LD_LIBRARY_PATH set
       target_link_libraries(${name} PRIVATE -Wl,--disable-new-dtags)
     endif ()
-    # Load MMDeploy modules
-    mmdeploy_load_static(${name} MMDeployStaticModules)
-    mmdeploy_load_dynamic(${name} MMDeployDynamicModules)
-    # Link to MMDeploy libraries
-    target_link_libraries(${name} PRIVATE MMDeployLibs ${OpenCV_LIBS})
+    if (MMDEPLOY_BUILD_SDK_MONOLITHIC)
+      target_link_libraries(${name} PRIVATE mmdeploy ${OpenCV_LIBS})
+    else ()
+      # Load MMDeploy modules
+      mmdeploy_load_static(${name} MMDeployStaticModules)
+      mmdeploy_load_dynamic(${name} MMDeployDynamicModules)
+      # Link to MMDeploy libraries
+      target_link_libraries(${name} PRIVATE MMDeployLibs ${OpenCV_LIBS})
 
-    install(TARGETS ${name} RUNTIME DESTINATION bin)
+      install(TARGETS ${name} RUNTIME DESTINATION bin)
+    endif ()
   endif ()
 endfunction()
 
