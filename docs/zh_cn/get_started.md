@@ -113,11 +113,11 @@ mim install mmcv-full
 
 ```shell
   # 安装 MMDeploy
-wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.6.0/mmdeploy-0.6.0-linux-x86_64-onnxruntime1.8.1.tar.gz
-tar -zxvf mmdeploy-0.6.0-linux-x86_64-onnxruntime1.8.1.tar.gz
-cd mmdeploy-0.6.0-linux-x86_64-onnxruntime1.8.1
-pip install dist/mmdeploy-0.6.0-py37-none-linux_x86_64.whl
-pip install sdk/python/mmdeploy_python-0.6.0-cp37-none-linux_x86_64.whl
+wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.7.0/mmdeploy-0.7.0-linux-x86_64-onnxruntime1.8.1.tar.gz
+tar -zxvf mmdeploy-0.7.0-linux-x86_64-onnxruntime1.8.1.tar.gz
+cd mmdeploy-0.7.0-linux-x86_64-onnxruntime1.8.1
+pip install dist/mmdeploy-0.7.0-py37-none-linux_x86_64.whl
+pip install sdk/python/mmdeploy_python-0.7.0-cp37-none-linux_x86_64.whl
 cd ..
 # 安装推理引擎 ONNX Runtime
 wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
@@ -133,11 +133,11 @@ export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 
 ```shell
 # 安装 MMDeploy
-wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.6.0/mmdeploy-0.6.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
-tar -zxvf mmdeploy-v0.6.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
-cd mmdeploy-0.6.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
-pip install dist/mmdeploy-0.6.0-py37-none-linux_x86_64.whl
-pip install sdk/python/mmdeploy_python-0.6.0-cp37-none-linux_x86_64.whl
+wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.7.0/mmdeploy-0.7.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
+tar -zxvf mmdeploy-v0.7.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
+cd mmdeploy-0.7.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
+pip install dist/mmdeploy-0.7.0-py37-none-linux_x86_64.whl
+pip install sdk/python/mmdeploy_python-0.7.0-cp37-none-linux_x86_64.whl
 cd ..
 # 安装推理引擎 TensorRT
 # !!! 从 NVIDIA 官网下载 TensorRT-8.2.3.0 CUDA 11.x 安装包并解压到当前目录
@@ -159,11 +159,11 @@ export LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
 
 ```shell
 # 安装 MMDeploy
-Invoke-WebRequest -Uri https://github.com/open-mmlab/mmdeploy/releases/download/v0.6.0/mmdeploy-0.6.0-windows-amd64-onnxruntime1.8.1.zip -OutFile mmdeploy-0.6.0-windows-amd64-onnxruntime1.8.1.zip
-Expand-Archive mmdeploy-0.6.0-windows-amd64-onnxruntime1.8.1.zip .
-cd  mmdeploy-0.6.0-windows-amd64-onnxruntime1.8.1
-pip install dist/mmdeploy-0.6.0-py37-none-linux_x86_64.whl
-pip install sdk/python/mmdeploy_python-0.6.0-cp37-none-linux_x86_64.whl
+Invoke-WebRequest -Uri https://github.com/open-mmlab/mmdeploy/releases/download/v0.7.0/mmdeploy-0.7.0-windows-amd64-onnxruntime1.8.1.zip -OutFile mmdeploy-0.7.0-windows-amd64-onnxruntime1.8.1.zip
+Expand-Archive mmdeploy-0.7.0-windows-amd64-onnxruntime1.8.1.zip .
+cd  mmdeploy-0.7.0-windows-amd64-onnxruntime1.8.1
+pip install dist/mmdeploy-0.7.0-py37-none-linux_x86_64.whl
+pip install sdk/python/mmdeploy_python-0.7.0-cp37-none-linux_x86_64.whl
 cd ..
 
 # 安装 ONNX Runtime
@@ -182,11 +182,11 @@ $env:path="$env:ONNXRUNTIME_DIR"/lib:$env:path
 
 ```shell
 # 安装 MMDeploy
-Invoke-WebRequest -Uri https://github.com/open-mmlab/mmdeploy/releases/download/v0.6.0/mmdeploy-0.6.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip -OutFile mmdeploy-0.6.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip
-Expand-Archive mmdeploy-0.6.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip .
-cd mmdeploy-0.6.0-windows-amd64-cuda11.1-tensorrt8.2.3.0
-pip install dist/mmdeploy-0.6.0-py37-none-linux_x86_64.whl
-pip install sdk/python/mmdeploy_python-0.6.0-cp37-none-linux_x86_64.whl
+Invoke-WebRequest -Uri https://github.com/open-mmlab/mmdeploy/releases/download/v0.7.0/mmdeploy-0.7.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip -OutFile mmdeploy-0.7.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip
+Expand-Archive mmdeploy-0.7.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip .
+cd mmdeploy-0.7.0-windows-amd64-cuda11.1-tensorrt8.2.3.0
+pip install dist/mmdeploy-0.7.0-py37-none-linux_x86_64.whl
+pip install sdk/python/mmdeploy_python-0.7.0-cp37-none-linux_x86_64.whl
 
 # !!! 从 NVIDIA 官网下载 TensorRT-8.2.3.0 CUDA 11.x 安装包并解压到当前目录
 pip install TensorRT-8.2.3.0/python/tensorrt-8.2.3.0-cp37-none-linux_x86_64.whl
@@ -203,7 +203,7 @@ $env:path="$env:CUDNN_DIR"/lib64:$env:path
 
 ## 模型转换
 
-在准备工作就绪后，我们可以使用 MMDeploy 中的工具 `deploy.py`，将 OpenMMLab 的 PyTorch 模型转换成推理后端支持的格式。
+在准备工作就绪后，我们可以使用 MMDeploy 中的工具 `tools/deploy.py`，将 OpenMMLab 的 PyTorch 模型转换成推理后端支持的格式。
 对于`tools/deploy.py` 的使用细节，请参考 [如何转换模型](./02-how-to-run/convert_model.md)。
 
 以 [MMDetection](https://github.com/open-mmlab/mmdetection) 中的 `Faster R-CNN` 为例，我们可以使用如下命令，将 PyTorch 模型转换为 TenorRT 模型，从而部署到 NVIDIA GPU 上.
@@ -263,12 +263,13 @@ result = inference_model(
 你可以直接运行预编译包中的 demo 程序，输入 SDK Model 和图像，进行推理，并查看推理结果。
 
 ```shell
-cd mmdeploy-0.6.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
+cd mmdeploy-0.7.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
 # 运行 python demo
 python sdk/demo/python/object_detection.py cuda mmdeploy_model/faster-rcnn mmdetection/demo/demo.jpg
 
-# 运行 C demo
+# 运行 C/C++ demo
 ./sdk/bin/object_detection cuda mmdeploy_model/faster-rcnn mmdetection/demo/demo.jpg
+
 ```
 
 ```{note}
@@ -374,21 +375,23 @@ int main() {
 
 ```Makefile
 find_package(MMDeploy REQUIRED)
-mmdeploy_load_static(${YOUR_AWESOME_TARGET} MMDeployStaticModules)
-mmdeploy_load_dynamic(${YOUR_AWESOME_TARGET} MMDeployDynamicModules)
-target_link_libraries(${YOUR_AWESOME_TARGET} PRIVATE MMDeployLibs)
+target_link_libraries(${name} PRIVATE mmdeploy ${OpenCV_LIBS})
 ```
 
 编译时，使用 -DMMDeploy_DIR，传入MMDeloyConfig.cmake所在的路径。它在预编译包中的sdk/lib/cmake/MMDeloy下。
 更多示例，请查阅[此处](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csrc)。
 
+#### C++ API
+
+请参考[这里](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csrc)，了解 SDK C++ API 的应用示例。在下个版本，我们将详细说明。
+
 #### C# API
 
-请参考[这里](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csharp)，了解 SDK C# API 的应用示例。
+请参考[这里](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csharp)，了解 SDK C# API 的应用示例。在下个版本，我们将详细说明。
 
 #### JAVA API
 
-请参考[这里](https://github.com/open-mmlab/mmdeploy/tree/master/demo/java)，了解 SDK JAVA API 的应用示例。
+请参考[这里](https://github.com/open-mmlab/mmdeploy/tree/master/demo/java)，了解 SDK JAVA API 的应用示例。在下个版本，我们将详细说明。
 
 ## 模型精度评估
 
