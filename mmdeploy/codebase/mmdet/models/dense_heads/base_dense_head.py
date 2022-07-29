@@ -9,8 +9,7 @@ from mmengine import ConfigDict
 from torch import Tensor
 
 from mmdeploy.codebase.mmdet import (get_post_processing_params,
-                                     multiclass_nms,
-                                     pad_with_value_if_necessary)
+                                     multiclass_nms)
 from mmdeploy.codebase.mmdet.core.ops import ncnn_detection_output_forward
 from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.utils import Backend, is_dynamic_shape
@@ -31,10 +30,8 @@ def base_dense_head__predict_by_feat(
         with_nms: bool = True,
         **kwargs):
     """Rewrite `predict_by_feat` of `BaseDenseHead` for default backend.
-
     Rewrite this function to deploy model, transform network output for a
     batch into bbox predictions.
-
     Args:
         ctx (ContextCaller): The context with additional information.
         cls_scores (list[Tensor]): Classification scores for all
@@ -55,7 +52,6 @@ def base_dense_head__predict_by_feat(
             Defaults to False.
         with_nms (bool): If True, do nms before return boxes.
             Defaults to True.
-
     Returns:
         If with_nms == True:
             tuple[Tensor, Tensor]: tuple[Tensor, Tensor]: (dets, labels),
@@ -76,6 +72,7 @@ def base_dense_head__predict_by_feat(
 
     mlvl_cls_scores = [cls_scores[i].detach() for i in range(num_levels)]
     mlvl_bbox_preds = [bbox_preds[i].detach() for i in range(num_levels)]
+
     if score_factors is None:
         with_score_factors = False
         mlvl_score_factor = [None for _ in range(num_levels)]
@@ -113,34 +110,29 @@ def base_dense_head__predict_by_feat(
                                                              -1).sigmoid()
             score_factors = score_factors.unsqueeze(2)
         bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, 4)
+        score_thr = cfg.get('score_thr', 0)
+        mask = scores > score_thr
+        scores = scores.where(mask, scores.new_zeros(1))
         if not is_dynamic_flag:
             priors = priors.data
+        if cfg.get('nms_pre', -1) == -1:
+            # align with mmdet base_dense_head filter_scores_and_topk
+            pre_topk = scores.shape[-2] * scores.shape[-1] - 1
+
         if pre_topk > 0:
-            priors = pad_with_value_if_necessary(priors, 1, pre_topk)
-            bbox_pred = pad_with_value_if_necessary(bbox_pred, 1, pre_topk)
-            scores = pad_with_value_if_necessary(scores, 1, pre_topk, 0.)
-            if with_score_factors:
-                score_factors = pad_with_value_if_necessary(
-                    score_factors, 1, pre_topk, 0.)
-
-            nms_pre_score = scores
-            if with_score_factors:
-                nms_pre_score = nms_pre_score * score_factors
-
-            # Get maximum scores for foreground classes.
-            if self.use_sigmoid_cls:
-                max_scores, _ = nms_pre_score.max(-1)
-            else:
-                max_scores, _ = nms_pre_score[..., :-1].max(-1)
-            _, topk_inds = max_scores.topk(pre_topk)
+            _, topk_inds = scores.reshape(batch_size, -1).topk(pre_topk,
+                                                               dim=1)
+            topk_inds = torch.stack([topk_inds // self.num_classes,
+                                    topk_inds % self.num_classes], dim=-1)
             batch_inds = torch.arange(
                 batch_size, device=bbox_pred.device).unsqueeze(-1)
+
             prior_inds = batch_inds.new_zeros((1, 1))
-            priors = priors[prior_inds, topk_inds, :]
-            bbox_pred = bbox_pred[batch_inds, topk_inds, :]
-            scores = scores[batch_inds, topk_inds, :]
+            priors = priors[prior_inds, topk_inds[..., 0], :]
+            bbox_pred = bbox_pred[batch_inds, topk_inds[..., 0], :]
+            scores = scores[batch_inds, topk_inds[..., 0], :]
             if with_score_factors:
-                score_factors = score_factors[batch_inds, topk_inds, :]
+                score_factors = score_factors[batch_inds, topk_inds[..., 0], :]
 
         mlvl_valid_bboxes.append(bbox_pred)
         mlvl_valid_scores.append(scores)
@@ -155,7 +147,6 @@ def base_dense_head__predict_by_feat(
         batch_priors, batch_mlvl_bboxes_pred, max_shape=img_shape)
     if with_score_factors:
         batch_score_factors = torch.cat(mlvl_score_factors, dim=1)
-
     if not self.use_sigmoid_cls:
         batch_scores = batch_scores[..., :self.num_classes]
 
@@ -164,6 +155,13 @@ def base_dense_head__predict_by_feat(
 
     if not with_nms:
         return batch_bboxes, batch_scores
+
+    if cfg.get('min_bbox_size', -1) >= 0:
+        w = batch_bboxes[:, :, 2] - batch_bboxes[:, :, 0]
+        h = batch_bboxes[:, :, 3] - batch_bboxes[:, :, 1]
+        valid_mask = (w > cfg.min_bbox_size) & (h > cfg.min_bbox_size)
+        if not valid_mask.all():
+            batch_scores = batch_scores * valid_mask.unsqueeze(-1)
 
     post_params = get_post_processing_params(deploy_cfg)
     max_output_boxes_per_class = post_params.max_output_boxes_per_class
@@ -269,6 +267,7 @@ def base_dense_head__predict_by_feat__ncnn(
         vars = torch.tensor([0, 0, 0, 0], dtype=torch.float32)
     else:
         vars = torch.tensor([1, 1, 1, 1], dtype=torch.float32)
+
     if isinstance(batch_img_metas[0]['img_shape'][0], int):
         assert isinstance(batch_img_metas[0]['img_shape'][1], int)
         img_height = batch_img_metas[0]['img_shape'][0]

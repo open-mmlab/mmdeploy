@@ -84,8 +84,17 @@ def yolox_head__predict_by_feat(ctx,
     flatten_priors = torch.cat(mlvl_priors)
 
     bboxes = self._bbox_decode(flatten_priors, flatten_bbox_preds)
+    print(f'debugging rewriter yolox_head: what is bboxes.shape: {bboxes.shape}')
+    print(f'debugging rewriter yolox_head: what is cls_scores.shape: {cls_scores.shape}')
     # directly multiply score factor and feed to nms
     scores = cls_scores * (score_factor.unsqueeze(-1))
+    print(f'debugging rewriter yolox_head: what is scores.shape: {scores.shape}')
+    max_scores, _ = torch.max(scores, 1)
+    mask = max_scores >= cfg.score_thr
+    bboxes = bboxes.where(
+            mask, bboxes.new_zeros(1))
+    scores = scores.where(mask, scores.new_zeros(1))
+    print(f'debugging rewriter yolox_head: what is scores before nms: {scores}')
     if not with_nms:
         return bboxes, scores
 
@@ -96,6 +105,8 @@ def yolox_head__predict_by_feat(ctx,
     score_threshold = cfg.get('score_thr', post_params.score_threshold)
     pre_top_k = post_params.pre_top_k
     keep_top_k = cfg.get('max_per_img', post_params.keep_top_k)
+    keep_top_k = 20
+    print(f'debugging yoloX head max_output_bboxes_per_class: {max_output_boxes_per_class}, iou_threshold: {iou_threshold}, score_threshold: {score_threshold}, pre_topk: {pre_top_k}, keep_topk: {keep_top_k}')
     return multiclass_nms(bboxes, scores, max_output_boxes_per_class,
                           iou_threshold, score_threshold, pre_top_k,
                           keep_top_k)
