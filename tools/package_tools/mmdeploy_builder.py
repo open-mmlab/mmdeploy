@@ -15,6 +15,7 @@ from subprocess import CalledProcessError, check_output, run
 from typing import Dict
 
 import yaml
+from packaging import version
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -330,7 +331,8 @@ def create_package(cfg: Dict, mmdeploy_dir: str):
                     break
 
             for python_version in python_versions:
-                python_major, _, python_minor = list(python_version)
+                _version = version.parse(python_version)
+                python_major, python_minor = _version.major, _version.minor
 
                 # create sdk python api wheel
                 sdk_python_package_dir = osp.join(build_dir,
