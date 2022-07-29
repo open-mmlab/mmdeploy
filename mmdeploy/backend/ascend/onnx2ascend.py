@@ -21,6 +21,14 @@ def from_onnx(onnx_model, work_dir, model_inputs):
     else:
         onnx_path = onnx_model
 
+    onnx_model = onnx.load(onnx_path)
+    for n in onnx_model.graph.node:
+        if n.domain != '':
+            n.domain = ''
+    for i in range(1, len(onnx_model.opset_import)):
+        onnx_model.opset_import.pop(i)
+    onnx.save(onnx_model, onnx_path)
+
     output_path = osp.join(work_dir, osp.splitext(osp.split(onnx_path)[1])[0])
 
     print(model_inputs)
