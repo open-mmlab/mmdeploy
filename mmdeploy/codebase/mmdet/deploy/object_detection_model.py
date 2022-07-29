@@ -372,6 +372,14 @@ class PartitionSingleStageModel(End2EndModel):
         """
         outputs = self.wrapper({self.input_name: imgs})
         outputs = self.wrapper.output_to_list(outputs)
+        from mmdet.models import build_head
+        head = build_head(self.model_cfg._cfg_dict.model.bbox_head)
+        ret = head.get_bboxes(
+            outputs, [dict(scale_factor=None)],
+            cfg=self.model_cfg._cfg_dict.model.test_cfg)
+        ret = [r.unsqueeze(0).cpu() for r in ret[0]]
+        return ret
+
         scores, bboxes = outputs[:2]
         return self.partition0_postprocess(scores, bboxes)
 

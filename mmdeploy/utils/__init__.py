@@ -19,6 +19,7 @@ if importlib.util.find_spec('mmcv') is not None:
                                get_backend_config, get_calib_config,
                                get_calib_filename, get_codebase,
                                get_codebase_config, get_common_config,
+                               get_quantization_config,
                                get_dynamic_axes, get_input_shape,
                                get_ir_config, get_model_inputs,
                                get_onnx_config, get_partition_config,
@@ -30,8 +31,8 @@ if importlib.util.find_spec('mmcv') is not None:
     __all__ += [
         'cfg_apply_marks', 'get_backend', 'get_backend_config',
         'get_calib_config', 'get_calib_filename', 'get_codebase',
-        'get_codebase_config', 'get_common_config', 'get_dynamic_axes',
-        'get_input_shape', 'get_ir_config', 'get_model_inputs',
-        'get_onnx_config', 'get_partition_config', 'get_task_type',
-        'is_dynamic_batch', 'is_dynamic_shape', 'load_config'
+        'get_codebase_config', 'get_common_config', 'get_quantization_config'
+        'get_dynamic_axes', 'get_input_shape', 'get_ir_config',
+        'get_model_inputs', 'get_onnx_config', 'get_partition_config',
+        'get_task_type', 'is_dynamic_batch', 'is_dynamic_shape', 'load_config'
     ]
