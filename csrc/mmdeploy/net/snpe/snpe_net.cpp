@@ -130,7 +130,11 @@ Result<void> SNPENet::Init(const Value& args) {
   auto model = context["model"].get<Model>();
   OUTCOME_TRY(auto config, model.GetModelConfig(name));
 
-  container_ = zdl::DlContainer::IDlContainer::open(zdl::DlSystem::String(config.net));
+  std::string content;
+  OUTCOME_TRY(content, model.ReadFile(config.net));
+  char* model_ptr = const_cast<char*>(content.data());
+  container_ =
+      zdl::DlContainer::IDlContainer::open(reinterpret_cast<uint8_t*>(model_ptr), content.size());
   if (container_ == nullptr) {
     MMDEPLOY_ERROR("Load .dlc failed: {}", config.net);
     return Status(eInvalidArgument);
