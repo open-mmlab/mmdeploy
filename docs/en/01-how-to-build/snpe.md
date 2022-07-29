@@ -102,8 +102,8 @@ $ unzip opencv-${OPENCV_VERSION}-android-sdk.zip
 $ export ANDROID_OCV_ROOT=`realpath opencv-${OPENCV_VERSION}-android-sdk`
 
 # Download ndk r23b
-$ wget https://dl.google.com/android/repository/android-ndk-r23b-linux-x86_64.zip
-$ unzip android-ndk-r23b-linux-x86_64.zip
+$ wget https://dl.google.com/android/repository/android-ndk-r23b-linux.zip
+$ unzip android-ndk-r23b-linux.zip
 
 $ export ANDROID_NDK_ROOT=`realpath android-ndk-r23b`
 ```
@@ -171,22 +171,23 @@ First make sure that`--dump-info`is used during convert model, so that the `resn
 ```bash
 $ cd /path/to/mmdeploy
 $ adb push resnet18  /data/local/tmp
+$ adb push tests/data/tiger.jpeg /data/local/tmp/resnet18/
 
 $ cd /path/to/install/
 $ adb push lib /data/local/tmp
 
 $ cd /path/to/install/example/build
-$ adb push image_classification /data/local/tmp
+$ adb push image_classification /data/local/tmp/resnet18/
 ```
 
 Set up environment variable and execute the sample.
 
 ```bash
 $ adb shell
-venus:/ $ cd /data/local/tmp
-venus:/data/local/tmp $ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/data/local/tmp/lib
+venus:/ $ cd /data/local/tmp/resnet18
+venus:/data/local/tmp/resnet18 $ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/data/local/tmp/lib
 
-venus:/data/local/tmp $ ./image_classification cpu ./resnet18/  demo.JPEG
+venus:/data/local/tmp/resnet18 $ ./image_classification cpu ./  tiger.jpeg
 ..
-label: 2, score: 0.4355
+label: 3, score: 0.3214
 ```
