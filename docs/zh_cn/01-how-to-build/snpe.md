@@ -187,6 +187,7 @@ $ adb push image_classification /data/local/tmp/resnet18/
 设置环境变量，执行样例
 
 ```bash
+$ adb push /path/to/mmcls/demo/demo.JPEG /data/local/tmp
 $ adb shell
 venus:/ $ cd /data/local/tmp/resnet18
 venus:/data/local/tmp/resnet18 $ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/data/local/tmp/lib
