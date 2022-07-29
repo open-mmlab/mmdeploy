@@ -110,6 +110,7 @@ if (MMDEPLOY_BUILD_SDK)
     endif ()
 
     if (MMDEPLOY_BUILD_EXAMPLES)
+        include(${CMAKE_SOURCE_DIR}/cmake/opencv.cmake)
         add_subdirectory(demo/csrc)
     endif ()
 
