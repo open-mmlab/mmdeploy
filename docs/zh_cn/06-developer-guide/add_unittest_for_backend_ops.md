@@ -1,16 +1,10 @@
-# How to add test units for backend ops
+# 为推理 ops 添加测试单元
 
-This tutorial introduces how to add unit test for backend ops. When you add a custom op under `backend_ops`, you need to add the corresponding test unit. Test units of ops are included in `tests/test_ops/test_ops.py`.
+本教程介绍如何为后端 ops 添加单元测试。在 backend_ops 目录下添加自定义 op 时，需要添加相应的测试单元。op 的单元测试在 `test/test_ops/test_ops.py` 中。
 
-## Prerequisite
+添加新的自定义 op 后，需要重新编译，引用[build.md]（../01-how-to-build/build_from_source.md）.
 
-- `Compile new ops`: After adding a new custom op, needs to recompile the relevant backend, referring to [build.md](../01-how-to-build/build_from_source.md).
-
-## 1. Add the test program test_XXXX()
-
-You can put unit test for ops in `tests/test_ops/`. Usually, the following program template can be used for your custom op.
-
-### example of ops unit test
+## ops 单元测试样例
 
 ```python
 @pytest.mark.parametrize('backend', [TEST_TENSORRT, TEST_ONNXRT])        # 1.1 backend test class
@@ -49,28 +43,12 @@ def test_roi_align(backend,
             save_dir=save_dir)
 ```
 
-### 1.1 backend test class
+mmdeploy 支持的模型有两种格式：
 
-We provide some functions and classes for difference backends, such as `TestOnnxRTExporter`, `TestTensorRTExporter`, `TestNCNNExporter`.
+- torch 模型：参考 roi_align 单元测试，必须要求 op 相关 Python 代码
+- onnx 模型：参考 multi_level_roi_align 单元测试，需要调用 onnx api 进行构建
 
-### 1.2 set parameters of op
-
-Set some parameters of op, such as ’pool_h‘, ’pool_w‘, ’spatial_scale‘, ’sampling_ratio‘ in roi_align. You can set multiple parameters to test op.
-
-### 1.3 op input data initialization
-
-Initialization required input data.
-
-### 1.4 initialize op model to be tested
-
-The model containing custom op usually has two forms.
-
-- `torch model`: Torch model with custom operators. Python code related to op is required, refer to `roi_align` unit test.
-- `onnx model`: Onnx model with custom operators. Need to call onnx api to build, refer to `multi_level_roi_align` unit test.
-
-### 1.5 call the backend test class interface
-
-Call the backend test class `run_and_validate` to run and verify the result output by the op on the backend.
+调用 `run_and_validate` 即可运行
 
 ```python
     def run_and_validate(self,
@@ -88,20 +66,20 @@ Call the backend test class `run_and_validate` to run and verify the result outp
 
 #### Parameter Description
 
-- `model`: Input model to be tested and it can be torch model or any other backend model.
-- `input_list`: List of test data, which is mapped to the order of input_names.
-- `model_name`: The name of the model.
-- `tolerate_small_mismatch`: Whether to allow small errors in the verification of results.
-- `do_constant_folding`: Whether to use constant light folding to optimize the model.
-- `dynamic_axes`: If you need to use dynamic dimensions, enter the dimension information.
-- `output_names`: The node name of the output node.
-- `input_names`: The node name of the input node.
-- `expected_result`: Expected ground truth values for verification.
-- `save_dir`: The folder used to save the output files.
+| 参数 | 说明 |
+| :-: | :-: |
+| model | 要测试的输入模型 |
+| input_list | 测试数据列表，映射到input_names的顺序 |
+| tolerate_small_mismatch | 是否允许验证结果出现精度误差 |
+| do_constant_folding | 是否使用常量折叠 |
+| output_names | 输出节点名字 |
+| input_names | 输入节点名字 |
+| expected_result | 期望的 ground truth |
+| save_dir | 结果保存目录 |
 
-## 2. Test Methods
+## 测试模型
 
-Use pytest to call the test function to test ops.
+用 `pytest` 调用 ops 测试
 
 ```bash
 pytest tests/test_ops/test_ops.py::test_XXXX
