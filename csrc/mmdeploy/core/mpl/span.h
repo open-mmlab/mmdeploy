@@ -63,7 +63,7 @@ class Span {
   constexpr Span(const U& v) : data_(std::data(v)), size_(std::size(v)) {}
 
   template <typename U>
-  constexpr Span(std::initializer_list<U> il) noexcept: Span(il.begin(), il.size()) {}
+  constexpr Span(std::initializer_list<U> il) noexcept : Span(il.begin(), il.size()) {}
 
   template <std::size_t N>
   constexpr Span(element_type (&arr)[N]) noexcept : data_(std::data(arr)), size_(N) {}
