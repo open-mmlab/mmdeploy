@@ -129,6 +129,11 @@ def get_models(deploy_cfg: Union[str, mmcv.Config],
             precision = deploy_cfg['backend_config']['precision']
     elif backend in [Backend.ONNXRUNTIME, Backend.TORCHSCRIPT]:
         pass
+    elif backend == Backend.COREML:
+        from mmdeploy.backend.coreml import get_model_suffix
+        convert_to = deploy_cfg.backend_config.convert_to
+        suffix = get_model_suffix(convert_to)
+        net = replace_suffix(ir_name, suffix)
     else:
         raise NotImplementedError(f'Not supported backend: {backend.value}.')
 

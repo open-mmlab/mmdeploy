@@ -1,7 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from .atan2 import atan2__default
 from .chunk import chunk__ncnn, chunk__torchscript
+from .clip import clip__coreml
 from .expand import expand__ncnn
+from .flatten import flatten__coreml
 from .getattribute import tensor__getattribute__ncnn
 from .group_norm import group_norm__ncnn
 from .interpolate import interpolate__ncnn, interpolate__tensorrt
@@ -20,5 +22,5 @@ __all__ = [
     'tensor__size__ncnn', 'topk__dynamic', 'topk__tensorrt', 'chunk__ncnn',
     'triu__default', 'atan2__default', 'normalize__ncnn', 'expand__ncnn',
     'chunk__torchscript', 'masked_fill__onnxruntime',
-    'tensor__setitem__default'
+    'tensor__setitem__default', 'flatten__coreml', 'clip__coreml'
 ]
