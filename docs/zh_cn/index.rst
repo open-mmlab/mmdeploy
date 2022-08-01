@@ -5,7 +5,7 @@
 
 .. toctree::
    :maxdepth: 2
-   :caption: 预编译包快速上手
+   :caption: 快速上手
 
    get_started.md
 
