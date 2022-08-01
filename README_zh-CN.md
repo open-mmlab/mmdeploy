@@ -99,7 +99,7 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 - [02 部署常见问题](docs/zh_cn/tutorial/02_challenges.md)
 - [03 torch转onnx](docs/zh_cn/tutorial/03_pytorch2onnx.md)
 - [04 让torch支持更多onnx算子](docs/zh_cn/tutorial/04_onnx_custom_op.md)
-- [03 调试onnx模型](docs/zh_cn/tutorial/05_onnx_model_editing.md)
+- [05 调试onnx模型](docs/zh_cn/tutorial/05_onnx_model_editing.md)
 
 ## 基准与模型库
 
