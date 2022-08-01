@@ -555,7 +555,7 @@ class NCNNEnd2EndModel(End2EndModel):
         model_cfg = load_config(model_cfg)[0]
         self.model_cfg = model_cfg
 
-    def forward_test(self, imgs: Tensor, *args, **kwargs) -> List:
+    def predict(self, imgs: Tensor, *args, **kwargs) -> List:
         """Implement forward test.
 
         Args:
@@ -576,7 +576,7 @@ class NCNNEnd2EndModel(End2EndModel):
         scores = out[:, :, 1:2]
         boxes = out[:, :, 2:6] * scales
         dets = torch.cat([boxes, scores], dim=2)
-        return dets, labels
+        return dets, torch.tensor(labels, dtype=torch.int32)
 
 
 @__BACKEND_MODEL.register_module('sdk')
