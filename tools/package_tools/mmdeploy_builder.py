@@ -84,12 +84,12 @@ def _create_tar(path, tar_name):
         tar.add(path, arcname=os.path.basename(path))
 
 
-def _create_bdist_cmd(cfg, python_path, c_ext=False, dist_dir=None):
+def _create_bdist_cmd(cfg, c_ext=False, dist_dir=None):
 
     bdist_tags = cfg.get('bdist_tags', {})
 
     # base
-    bdist_cmd = f'{python_path} setup.py bdist_wheel '
+    bdist_cmd = 'python3 setup.py bdist_wheel '
 
     # platform
     bdist_cmd += f' --plat-name {PLATFORM_TAG} '
@@ -169,14 +169,9 @@ def build_mmdeploy(cfg, mmdeploy_dir, dist_dir=None):
         build_cmd = 'cmake --build . -- -j$(nproc) && cmake --install .'
         _call_command(build_cmd, build_dir)
 
-    # !!! Comment build_mmdeploy in v0.7.0 for the following reasons:
-    # 1. onnx optimizer in mmdeploy highly depends on torch, which means
-    # we have to build mmdeploy for each torch version, just like mmcv
-    # does. It's not convenient
-    # 2. It depends on python version
-    # # build wheel
-    # bdist_cmd = _create_bdist_cmd(cfg, c_ext=False, dist_dir=dist_dir)
-    # _call_command(bdist_cmd, mmdeploy_dir)
+    # build wheel
+    bdist_cmd = _create_bdist_cmd(cfg, c_ext=False, dist_dir=dist_dir)
+    _call_command(bdist_cmd, mmdeploy_dir)
 
 
 def build_mmdeploy_python(python_executable, cfg, mmdeploy_dir):
