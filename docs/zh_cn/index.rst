@@ -24,28 +24,29 @@
    02-how-to-run/write_config.md
    02-how-to-run/profile_model.md
    02-how-to-run/quantize_model.md
-   02-how-to-run/usefile_tools.md
+   02-how-to-run/useful_tools.md
 
 .. toctree::
    :maxdepth: 1
    :caption: Benchmark
 
-   03-benchmark/benchmark.md
-   03-benchmark/quantization.md
    03-benchmark/supported_models.md
+   03-benchmark/benchmark.md
+   03-benchmark/benchmark_edge.md
+   03-benchmark/quantization.md
 
 .. toctree::
    :maxdepth: 1
    :caption: 支持的算法框架
 
-   04-supported-codebase/mmcls.md
-   04-supported-codebase/mmdet.md
-   04-supported-codebase/mmdet3d.md
-   04-supported-codebase/mmedit.md
-   04-supported-codebase/mmocr.md
-   04-supported-codebase/mmpose.md
-   04-supported-codebase/mmrotate.md
-   04-supported-codebase/mmseg.md
+   04-supported-codebases/mmcls.md
+   04-supported-codebases/mmdet.md
+   04-supported-codebases/mmdet3d.md
+   04-supported-codebases/mmedit.md
+   04-supported-codebases/mmocr.md
+   04-supported-codebases/mmpose.md
+   04-supported-codebases/mmrotate.md
+   04-supported-codebases/mmseg.md
 
 .. toctree::
    :maxdepth: 1
@@ -63,9 +64,9 @@
    :maxdepth: 1
    :caption: 自定义算子
 
-   06-custome-ops/ncnn.md
-   06-custome-ops/onnxruntime.md
-   06-custome-ops/tensorrt.md
+   06-custom-ops/ncnn.md
+   06-custom-ops/onnxruntime.md
+   06-custom-ops/tensorrt.md
 
 .. toctree::
    :maxdepth: 1
