@@ -1,10 +1,12 @@
-Apart from `deploy.py`, there are other useful tools under the `tools/` directory.
+# tools 目录工具介绍
+
+除 `deploy.py` 以外， tools 目录下有很多实用工具
 
 ## torch2onnx
 
-This tool can be used to convert PyTorch model from OpenMMLab to ONNX.
+把 OpenMMLab 模型转 onnx 格式。
 
-### Usage
+### 用法
 
 ```bash
 python tools/torch2onnx.py \
@@ -17,7 +19,7 @@ python tools/torch2onnx.py \
     --log-level INFO
 ```
 
-### Description of all arguments
+### 参数说明
 
 - `deploy_cfg` : The path of the deploy config file in MMDeploy codebase.
 - `model_cfg` : The path of model config file in OpenMMLab codebase.
@@ -29,9 +31,9 @@ python tools/torch2onnx.py \
 
 ## extract
 
-ONNX model with `Mark` nodes in it can be partitioned into multiple subgraphs. This tool can be used to extract the subgraph from the ONNX model.
+有 `Mark` 节点的 onnx 模型会被分成多个子图，这个工具用来提取 onnx 模型中的子图。
 
-### Usage
+### 用法
 
 ```bash
 python tools/extract.py \
@@ -42,7 +44,7 @@ python tools/extract.py \
     --log-level INFO
 ```
 
-### Description of all arguments
+### 参数说明
 
 - `input_model` : The path of input ONNX model. The output ONNX model will be extracted from this model.
 - `output_model` : The path of output ONNX model.
@@ -50,10 +52,10 @@ python tools/extract.py \
 - `--end` : The end point of extracted model with format `<function_name>:<input/output>`. The `function_name` comes from the decorator `@mark`.
 - `--log-level` : To set log level which in `'CRITICAL', 'FATAL', 'ERROR', 'WARN', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'`. If not specified, it will be set to `INFO`.
 
-### Note
+### 注意事项
 
-To support the model partition, you need to add Mark nodes in the ONNX model. The Mark node comes from the `@mark` decorator.
-For example, if we have marked the `multiclass_nms` as below, we can set `end=multiclass_nms:input` to extract the subgraph before NMS.
+要支持模型分块，必须在 onnx 模型中添加  mark 节点，用`@mark` 修饰。
+下面这个例子里 mark 了 `multiclass_nms`，在 NMS 前设置 `end=multiclass_nms:input` 提取子图。
 
 ```python
 @mark('multiclass_nms', inputs=['boxes', 'scores'], outputs=['dets', 'labels'])
@@ -63,9 +65,9 @@ def multiclass_nms(*args, **kwargs):
 
 ## onnx2pplnn
 
-This tool helps to convert an `ONNX` model to an `PPLNN` model.
+这个工具可以把 onnx 模型转成 pplnn 格式。
 
-### Usage
+### 用法
 
 ```bash
 python tools/onnx2pplnn.py \
@@ -76,7 +78,7 @@ python tools/onnx2pplnn.py \
     --log-level INFO
 ```
 
-### Description of all arguments
+### 参数说明
 
 - `onnx_path`: The path of the `ONNX` model to convert.
 - `output_path`: The converted `PPLNN` algorithm path in json format.
@@ -86,9 +88,9 @@ python tools/onnx2pplnn.py \
 
 ## onnx2tensorrt
 
-This tool can be used to convert ONNX to TensorRT engine.
+这个工具把 onnx 转成 trt .engine 格式。
 
-### Usage
+### 用法
 
 ```bash
 python tools/onnx2tensorrt.py \
@@ -99,7 +101,7 @@ python tools/onnx2tensorrt.py \
     --log-level INFO
 ```
 
-### Description of all arguments
+### 参数说明
 
 - `deploy_cfg` : The path of the deploy config file in MMDeploy codebase.
 - `onnx_path` : The ONNX model path to convert.
@@ -110,9 +112,9 @@ python tools/onnx2tensorrt.py \
 
 ## onnx2ncnn
 
-This tool helps to convert an `ONNX` model to an `ncnn` model.
+onnx 转 ncnn
 
-### Usage
+### 用法
 
 ```bash
 python tools/onnx2ncnn.py \
@@ -122,7 +124,7 @@ python tools/onnx2ncnn.py \
     --log-level INFO
 ```
 
-### Description of all arguments
+### 参数说明
 
 - `onnx_path` : The path of the `ONNX` model to convert from.
 - `output_param` : The converted `ncnn` param path.
@@ -131,9 +133,9 @@ python tools/onnx2ncnn.py \
 
 ## profile
 
-This tool helps to test latency of models with PyTorch, TensorRT and other backends. Note that the pre- and post-processing is excluded when computing inference latency.
+这个工具用来测试 torch 和 trt 等后端的速度，注意测试不包含前后处理。
 
-### Usage
+### 用法
 
 ```bash
 python tools/profile.py \
@@ -148,7 +150,7 @@ python tools/profile.py \
     --cfg-options ${CFG_OPTIONS}
 ```
 
-### Description of all arguments
+### 参数说明
 
 - `deploy_cfg` : The path of the deploy config file in MMDeploy codebase.
 - `model_cfg` : The path of model config file in OpenMMLab codebase.
@@ -160,7 +162,7 @@ python tools/profile.py \
 - `--device` : The device type. If not specified, it will be set to `cuda:0`.
 - `--cfg-options` : Optional key-value pairs to be overrode for model config.
 
-### Example:
+### 使用举例
 
 ```shell
 python tools/profile.py \
@@ -174,7 +176,7 @@ python tools/profile.py \
     --warmup 10 \
 ```
 
-And the output look like this:
+输出：
 
 ```text
 ----- Settings:
