@@ -9,6 +9,7 @@ import numpy as np
 import pytest
 import torch
 from mmengine import Config
+from mmengine.config import ConfigDict
 
 from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Backend, Codebase
@@ -671,15 +672,16 @@ def test_cascade_roi_head(backend_type: Backend):
                     pre_top_k=-1,
                     keep_top_k=100,
                     background_label_id=-1))))
-    rcnn_test_cfg = Config(dict(
+    rcnn_test_cfg = ConfigDict(dict(
             score_thr=0.05,
             nms=dict(type='nms', iou_threshold=0.5),
             max_per_img=100))
-    model_inputs = {'x': x, 'batch_img_metas': batch_img_metas,
-                    'rpn_results_list': [proposals],
-                    'rcnn_test_cfg': rcnn_test_cfg}
+    model_inputs = {'x': x}
     wrapped_model = WrapModel(
-        cascade_roi_head, 'predict_bbox', batch_img_metas=[batch_img_metas])
+        cascade_roi_head, 'predict_bbox',
+        batch_img_metas=[batch_img_metas],
+        rpn_results_list=[proposals],
+        rcnn_test_cfg=rcnn_test_cfg)
     backend_outputs, _ = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=model_inputs,
