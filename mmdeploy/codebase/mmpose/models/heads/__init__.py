@@ -1,12 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .deeppose_regression_head import deeppose_regression_head__inference_model
-from .topdown_heatmap_multi_stage_head import \
-    topdown_heatmap_msmu_head__inference_model
-from .topdown_heatmap_simple_head import \
-    topdown_heatmap_simple_head__inference_model
+from .heatmap_head import heatmap_head__predict
+from .regression_head import regression_head__predict
 
 __all__ = [
-    'topdown_heatmap_simple_head__inference_model',
-    'topdown_heatmap_msmu_head__inference_model',
-    'deeppose_regression_head__inference_model'
+    'regression_head__predict',
+    'heatmap_head__predict',
 ]
