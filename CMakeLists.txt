@@ -130,6 +130,7 @@ if (MMDEPLOY_BUILD_SDK)
     if (NOT MMDEPLOY_SHARED_LIBS)
         mmdeploy_add_deps(pplnn BACKENDS ${MMDEPLOY_TARGET_BACKENDS} DEPS pplnn)
     endif ()
+    mmdeploy_add_deps(snpe BACKENDS ${MMDEPLOY_TARGET_BACKENDS} DEPS snpe)
 
     include(CMakePackageConfigHelpers)
     # generate the config file that is includes the exports
