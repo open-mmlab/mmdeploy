@@ -270,14 +270,12 @@ result = inference_model(
 你可以直接运行预编译包中的 demo 程序，输入 SDK Model 和图像，进行推理，并查看推理结果。
 
 ```shell
-# 运行 python demo
-python mmdeploy/demo/python/object_detection.py cuda mmdeploy_model/faster-rcnn mmdetection/demo/demo.jpg
-
-# 运行 C/C++ demo
 cd mmdeploy-0.7.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
+# 运行 python demo
+python sdk/example/python/object_detection.py cuda mmdeploy_model/faster-rcnn mmdetection/demo/demo.jpg
+# 运行 C/C++ demo
 export LD_LIBRARY_PATH=$(pwd)/sdk/lib:$LD_LIBRARY_PATH
 ./sdk/bin/object_detection cuda mmdeploy_model/faster-rcnn mmdetection/demo/demo.jpg
-
 ```
 
 ```{note}

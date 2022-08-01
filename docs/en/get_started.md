@@ -125,9 +125,10 @@ pip install dist/mmdeploy-0.7.0-py37-none-linux_x86_64.whl
 pip install sdk/python/mmdeploy_python-0.7.0-cp37-none-linux_x86_64.whl
 cd ..
 # install inference engine: ONNX Runtime
+pip install onnxruntime==1.8.1
 wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
 tar -zxvf onnxruntime-linux-x64-1.8.1.tgz
-export ONNXRUNTIME_DIR=$(pwd)/onnxruntime
+export ONNXRUNTIME_DIR=$(pwd)/onnxruntime-linux-x64-1.8.1
 export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 ```
 
@@ -172,6 +173,7 @@ pip install sdk/python/mmdeploy_python-0.7.0-cp37-none-linux_x86_64.whl
 cd ..
 
 # install inference engine: ONNX Runtime
+pip install onnxruntime==1.8.1
 Invoke-WebRequest -Uri https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-win-x64-1.8.1.zip -OutFile onnxruntime-win-x64-1.8.1.zip
 Expand-Archive onnxruntime-win-x64-1.8.1.zip .
 $env:ONNXRUNTIME_DIR=$(pwd)/onnxruntime-win-x64-1.8.1
@@ -241,6 +243,11 @@ And they make up of MMDeploy Model that can be fed to MMDeploy SDK to do model i
 
 For more details about model conversion, you can read [how_to_convert_model](./02-how-to-run/convert_model.md). If you want to customize the conversion pipeline, you can edit the config file by following [this](./02-how-to-run/write_config.md) tutorial.
 
+```{tip}
+If MMDeploy-ONNXRuntime prebuild package is installed, you can convert the above model to onnx model and perform ONNX Runtime inference
+just by 'changing detection_tensorrt_dynamic-320x320-1344x1344.py' to 'detection_onnxruntime_dynamic.py' and making '--device' as 'cpu'.
+```
+
 ## Inference Model
 
 After model conversion, we can perform inference both by Model Converter as well as Inference SDK.
@@ -271,11 +278,10 @@ You can directly run MMDeploy demo programs in the precompiled package to get in
 ```shell
 cd mmdeploy-0.7.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
 # run python demo
-python sdk/demo/python/object_detection.py cuda mmdeploy_model/faster-rcnn mmdetection/demo/demo.jpg
-
+python sdk/example/python/object_detection.py cuda mmdeploy_model/faster-rcnn mmdetection/demo/demo.jpg
 # run C/C++ demo
+export LD_LIBRARY_PATH=$(pwd)/sdk/lib:$LD_LIBRARY_PATH
 ./sdk/bin/object_detection cuda mmdeploy_model/faster-rcnn mmdetection/demo/demo.jpg
-
 ```
 
 ```{note}
