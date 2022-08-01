@@ -343,4 +343,4 @@ python ${MMDEPLOY_DIR}/tools/test.py \
 Regarding the --model option, it represents the converted engine files path when using Model Converter to do performance test. But when you try to test the metrics by Inference SDK, this option refers to the directory path of MMDeploy Model.
 ```
 
-You can read [how to evaluate a model](02-how-to-run/how_to_evaluate_a_model.md) for more details.
+You can read [how to evaluate a model](02-how-to-run/profile_model.md) for more details.

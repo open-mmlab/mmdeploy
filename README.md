@@ -63,9 +63,9 @@ Models can be exported and run in the following backends, and more will be compa
 
 All kinds of modules in the SDK can be extended, such as `Transform` for image processing, `Net` for Neural Network inference, `Module` for postprocessing and so on
 
-## Get Started
+## [Documentation](https://mmdeploy.readthedocs.io/en/latest/)
 
-Please read [getting_started.md](docs/en/get_started.md) for the basic usage of MMDeploy. We also provide tutoials about:
+Please read [getting_started](docs/en/get_started.md) for the basic usage of MMDeploy. We also provide tutoials about:
 
 - [Build](docs/en/01-how-to-build/build_from_source.md)
   - [Build from Docker](docs/en/01-how-to-build/build_from_docker.md)
@@ -77,11 +77,20 @@ Please read [getting_started.md](docs/en/get_started.md) for the basic usage of 
 - User Guide
   - [How to convert model](docs/en/02-how-to-run/convert_model.md)
   - [How to write config](docs/en/02-how-to-run/write_config.md)
-  - [How to evaluate deployed models](docs/en/02-how-to-run/how_to_evaluate_a_model.md)
-  - [How to measure performance of deployed models](docs/en/02-how-to-run/how_to_measure_performance_of_models.md)
+  - [How to profile model](docs/en/02-how-to-run/profile_model.md)
+  - [How to quantize model](docs/en/02-how-to-run/quantize_model.md)
+  - [Useful tools](docs/en/02-how-to-run/useful_tools.md)
 - Developer Guide
-  - [How to support new models](docs/en/06-developer-guide/support_new_model.md)
-  - [How to support new backends](docs/en/06-developer-guide/support_new_backend.md)
+  - [How to support new models](docs/en/07-developer-guide/support_new_model.md)
+  - [How to support new backends](docs/en/07-developer-guide/support_new_backend.md)
+  - [How to partition model](docs/en/07-developer-guide/partition_model.md)
+  - [How to test rewritten model](docs/en/07-developer-guide/test_rewritten_models.md)
+  - [How to test backend ops](docs/en/07-developer-guide/add_backend_ops_unittest.md)
+  - [How to do regression test](docs/en/07-developer-guide/regression_test.md)
+- Custom Backend Ops
+  - [ncnn](docs/en/06-custom-ops/ncnn.md)
+  - [onnxruntime](docs/en/06-custom-ops/onnxruntime.md)
+  - [tensorrt](docs/en/06-custom-ops/tensorrt.md)
 - [FAQ](docs/en/faq.md)
 - [Contributing](.github/CONTRIBUTING.md)
 
