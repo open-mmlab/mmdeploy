@@ -501,9 +501,11 @@ def test_forward_of_base_detector(model_cfg_path, backend):
     gt_instances.bboxes = torch.rand((5, 4))
     gt_instances.labels = torch.rand((5, ))
     data_sample.gt_instances = gt_instances
-    rewrite_inputs = {'batch_inputs': img, 'data_samples': [data_sample]}
+    rewrite_inputs = {'batch_inputs': img}
+    wrapped_model = WrapModel(
+        model, 'forward', data_samples=[data_sample])
     rewrite_outputs, _ = get_rewrite_outputs(
-        wrapped_model=model,
+        wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg)
 
