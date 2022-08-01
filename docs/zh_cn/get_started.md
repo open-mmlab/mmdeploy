@@ -56,7 +56,7 @@ conda install pytorch=={pytorch_version} torchvision=={torchvision_version} cpuo
 
 ## 安装 MMDeploy
 
-**第一步**: 通过 [MIM](https://github.com/open-mmlab/mim) 安装 [MMCV](https://github.com/open-mmlab/mmcv)
+**第一步**：通过 [MIM](https://github.com/open-mmlab/mim) 安装 [MMCV](https://github.com/open-mmlab/mmcv)
 
 ```shell
 pip install -U openmim
@@ -112,7 +112,7 @@ mim install mmcv-full
 <summary><b>Linux-x86_64, CPU, ONNX Runtime 1.8.1</b></summary>
 
 ```shell
-  # 安装 MMDeploy
+# 安装 MMDeploy ONNX Runtime 自定义算子库和推理 SDK
 wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.7.0/mmdeploy-0.7.0-linux-x86_64-onnxruntime1.8.1.tar.gz
 tar -zxvf mmdeploy-0.7.0-linux-x86_64-onnxruntime1.8.1.tar.gz
 cd mmdeploy-0.7.0-linux-x86_64-onnxruntime1.8.1
@@ -120,9 +120,10 @@ pip install dist/mmdeploy-0.7.0-py37-none-linux_x86_64.whl
 pip install sdk/python/mmdeploy_python-0.7.0-cp37-none-linux_x86_64.whl
 cd ..
 # 安装推理引擎 ONNX Runtime
+pip install onnxruntime==1.8.1
 wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
 tar -zxvf onnxruntime-linux-x64-1.8.1.tgz
-export ONNXRUNTIME_DIR=$(pwd)/onnxruntime
+export ONNXRUNTIME_DIR=$(pwd)/onnxruntime-linux-x64-1.8.1
 export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 ```
 
@@ -132,7 +133,7 @@ export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 <summary><b>Linux-x86_64, CUDA 11.x, TensorRT 8.2.3.0</b></summary>
 
 ```shell
-# 安装 MMDeploy
+# 安装 MMDeploy TensorRT 自定义算子库和推理 SDK
 wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.7.0/mmdeploy-0.7.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
 tar -zxvf mmdeploy-v0.7.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
 cd mmdeploy-0.7.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
@@ -158,7 +159,7 @@ export LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
 请在 Conda Prompt Shell 中执行以下命令
 
 ```shell
-# 安装 MMDeploy
+# 安装 MMDeploy ONNX Runtime 自定义算子库和推理 SDK
 Invoke-WebRequest -Uri https://github.com/open-mmlab/mmdeploy/releases/download/v0.7.0/mmdeploy-0.7.0-windows-amd64-onnxruntime1.8.1.zip -OutFile mmdeploy-0.7.0-windows-amd64-onnxruntime1.8.1.zip
 Expand-Archive mmdeploy-0.7.0-windows-amd64-onnxruntime1.8.1.zip .
 cd  mmdeploy-0.7.0-windows-amd64-onnxruntime1.8.1
@@ -167,6 +168,7 @@ pip install sdk/python/mmdeploy_python-0.7.0-cp37-none-linux_x86_64.whl
 cd ..
 
 # 安装 ONNX Runtime
+pip install onnxruntime==1.8.1
 Invoke-WebRequest -Uri https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-win-x64-1.8.1.zip -OutFile onnxruntime-win-x64-1.8.1.zip
 Expand-Archive onnxruntime-win-x64-1.8.1.zip .
 $env:ONNXRUNTIME_DIR=$(pwd)/onnxruntime-win-x64-1.8.1
@@ -181,7 +183,7 @@ $env:path="$env:ONNXRUNTIME_DIR"/lib:$env:path
 请在 Conda Prompt Shell 中执行以下命令
 
 ```shell
-# 安装 MMDeploy
+# 安装 MMDeploy TensorRT 自定义算子库和推理 SDK
 Invoke-WebRequest -Uri https://github.com/open-mmlab/mmdeploy/releases/download/v0.7.0/mmdeploy-0.7.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip -OutFile mmdeploy-0.7.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip
 Expand-Archive mmdeploy-0.7.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip .
 cd mmdeploy-0.7.0-windows-amd64-cuda11.1-tensorrt8.2.3.0
@@ -234,6 +236,11 @@ python mmdeploy/tools/deploy.py \
 
 转换结果被保存在 `--work-dir` 指向的文件夹中。**该文件夹中不仅包含推理后端模型，还包括推理元信息。这些内容的整体被定义为 SDK Model。推理 SDK 将用它进行模型推理。**
 
+```{tip}
+在安装了 MMDeploy-ONNXRuntime 预编译包后，把上述转换命令中的detection_tensorrt_dynamic-320x320-1344x1344.py 换成 detection_onnxruntime_dynamic.py，并修改 --device 为 cpu，
+即可以转出 onnx 模型，并用 ONNXRuntime 进行推理
+```
+
 ## 模型推理
 
 在转换完成后，你既可以使用 Model Converter 进行推理，也可以使用 Inference SDK。
@@ -263,11 +270,12 @@ result = inference_model(
 你可以直接运行预编译包中的 demo 程序，输入 SDK Model 和图像，进行推理，并查看推理结果。
 
 ```shell
-cd mmdeploy-0.7.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
 # 运行 python demo
-python sdk/demo/python/object_detection.py cuda mmdeploy_model/faster-rcnn mmdetection/demo/demo.jpg
+python mmdeploy/demo/python/object_detection.py cuda mmdeploy_model/faster-rcnn mmdetection/demo/demo.jpg
 
 # 运行 C/C++ demo
+cd mmdeploy-0.7.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
+export LD_LIBRARY_PATH=$(pwd)/sdk/lib:$LD_LIBRARY_PATH
 ./sdk/bin/object_detection cuda mmdeploy_model/faster-rcnn mmdetection/demo/demo.jpg
 
 ```
