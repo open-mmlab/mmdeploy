@@ -152,6 +152,13 @@ def reppoints_head__predict_by_feat(
     batch_bboxes = _bbox_post_decode(
         bboxes=batch_mlvl_bboxes_pred, max_shape=img_shape)
 
+    if cfg.get('min_bbox_size', -1) >= 0:
+        w = batch_bboxes[:, :, 2] - batch_bboxes[:, :, 0]
+        h = batch_bboxes[:, :, 3] - batch_bboxes[:, :, 1]
+        valid_mask = (w > cfg.min_bbox_size) & (h > cfg.min_bbox_size)
+        if not valid_mask.all():
+            batch_scores = batch_scores * valid_mask.unsqueeze(-1)
+
     if not self.use_sigmoid_cls:
         batch_scores = batch_scores[..., :self.num_classes]
 
