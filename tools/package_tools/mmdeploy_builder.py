@@ -84,12 +84,12 @@ def _create_tar(path, tar_name):
         tar.add(path, arcname=os.path.basename(path))
 
 
-def _create_bdist_cmd(cfg, c_ext=False, dist_dir=None):
+def _create_bdist_cmd(cfg, python_path, c_ext=False, dist_dir=None):
 
     bdist_tags = cfg.get('bdist_tags', {})
 
     # base
-    bdist_cmd = 'python setup.py bdist_wheel '
+    bdist_cmd = f'{python_path} setup.py bdist_wheel '
 
     # platform
     bdist_cmd += f' --plat-name {PLATFORM_TAG} '
@@ -169,9 +169,14 @@ def build_mmdeploy(cfg, mmdeploy_dir, dist_dir=None):
         build_cmd = 'cmake --build . -- -j$(nproc) && cmake --install .'
         _call_command(build_cmd, build_dir)
 
-    # build wheel
-    bdist_cmd = _create_bdist_cmd(cfg, c_ext=False, dist_dir=dist_dir)
-    _call_command(bdist_cmd, mmdeploy_dir)
+    # !!! Comment build_mmdeploy in v0.7.0 for the following reasons:
+    # 1. onnx optimizer in mmdeploy highly depends on torch, which means
+    # we have to build mmdeploy for each torch version, just like mmcv
+    # does. It's not convenient
+    # 2. It depends on python version
+    # # build wheel
+    # bdist_cmd = _create_bdist_cmd(cfg, c_ext=False, dist_dir=dist_dir)
+    # _call_command(bdist_cmd, mmdeploy_dir)
 
 
 def build_mmdeploy_python(python_executable, cfg, mmdeploy_dir):
@@ -196,6 +201,16 @@ def build_mmdeploy_python(python_executable, cfg, mmdeploy_dir):
 
     _call_command(cmake_cmd, build_dir)
     _call_command(build_cmd, build_dir)
+
+    python_api_lib_path = []
+    lib_patterns = ['*mmdeploy_python*.so', '*mmdeploy_python*.pyd']
+    for pattern in lib_patterns:
+        python_api_lib_path.extend(
+            glob(
+                osp.join(mmdeploy_dir, 'build_python/**', pattern),
+                recursive=True,
+            ))
+    return python_api_lib_path[0]
 
 
 def get_dir_name(cfg, tag, default_name):
@@ -222,8 +237,8 @@ def check_env(cfg: Dict):
 
     CUDA_TOOLKIT_ROOT_DIR = cmake_envs.get('CUDA_TOOLKIT_ROOT_DIR', '')
     CUDA_TOOLKIT_ROOT_DIR = osp.expandvars(CUDA_TOOLKIT_ROOT_DIR)
-    nvcc_cmd = 'nvcc' if len(CUDA_TOOLKIT_ROOT_DIR) <= 0 else osp.join(
-        CUDA_TOOLKIT_ROOT_DIR, 'bin', 'nvcc')
+    nvcc_cmd = ('nvcc' if len(CUDA_TOOLKIT_ROOT_DIR) <= 0 else osp.join(
+        CUDA_TOOLKIT_ROOT_DIR, 'bin', 'nvcc'))
 
     try:
         nvcc = check_output(f'"{nvcc_cmd}" -V', shell=True)
@@ -267,10 +282,9 @@ def check_env(cfg: Dict):
             patch = re.search(r'#define NV_TENSORRT_PATCH (\d+)', data)
             build = re.search(r'#define NV_TENSORRT_BUILD (\d+)', data)
             if major is not None and minor is not None and patch is not None:
-                tensorrt_version = f'{major.group(1)}.' +\
-                                    f'{minor.group(1)}.' +\
-                                    f'{patch.group(1)}.' +\
-                                    f'{build.group(1)}'
+                tensorrt_version = (f'{major.group(1)}.' +
+                                    f'{minor.group(1)}.' +
+                                    f'{patch.group(1)}.' + f'{build.group(1)}')
 
     env_info['trt_v'] = tensorrt_version
 
@@ -284,7 +298,7 @@ def create_package(cfg: Dict, mmdeploy_dir: str):
     # load flags
     cfg, build_dir = get_dir_name(cfg, 'BUILD_NAME', build_dir)
     cmake_envs = cfg.get('cmake_envs', dict())
-    build_sdk_flag = cmake_envs.get('MMDEPLOY_BUILD_SDK', False)
+    build_sdk_flag = cmake_envs.get('MMDEPLOY_BUILD_SDK', 'OFF')
     if 'TAR_NAME' in cfg:
         cfg, sdk_tar_name = get_dir_name(cfg, 'TAR_NAME', sdk_tar_name)
 
@@ -308,7 +322,7 @@ def create_package(cfg: Dict, mmdeploy_dir: str):
         dist_dir = osp.join(build_dir, 'dist')
         build_mmdeploy(cfg, mmdeploy_dir, dist_dir=dist_dir)
 
-        if build_sdk_flag:
+        if build_sdk_flag == 'ON':
 
             sdk_tar_dir = osp.join(build_dir, sdk_tar_name)
 
@@ -320,17 +334,12 @@ def create_package(cfg: Dict, mmdeploy_dir: str):
             # build SDK Python API according to different python version
             # 1. get conda env path from python's path.
             # We assume python is managed by conda
-            python_versions = ['3.6', '3.7', '3.8', '3.9']
-            for python_version in python_versions:
-                python_executable = shutil.which(f'python{python_version}')
-                if python_executable:
-                    logging.info(python_executable)
-                    conda_env_path = osp.dirname(
-                        osp.dirname(osp.dirname(python_executable)))
-                    logging.info(conda_env_path)
-                    break
+            python_executable = shutil.which('python3')
+            conda_env_path = osp.dirname(
+                osp.dirname(osp.dirname(python_executable)))
+            logging.info(conda_env_path)
 
-            for python_version in python_versions:
+            for python_version in ['3.6', '3.7', '3.8', '3.9']:
                 _version = version.parse(python_version)
                 python_major, python_minor = _version.major, _version.minor
 
@@ -341,25 +350,29 @@ def create_package(cfg: Dict, mmdeploy_dir: str):
                 _copy(
                     osp.join(mmdeploy_dir, 'mmdeploy', 'version.py'),
                     osp.join(sdk_python_package_dir, 'mmdeploy_python',
-                             'version.py'))
+                             'version.py'),
+                )
 
                 # build mmdeploy sdk python api
-                build_mmdeploy_python(
-                    f'{conda_env_path}/mmdeploy-{python_version}/bin/'
-                    f'python{python_version}', cfg, mmdeploy_dir)
-
-                python_api_lib_path = glob(
-                    osp.join(mmdeploy_dir, 'build_python/mmdeploy_python*'))
-                _copy(python_api_lib_path[0],
-                      osp.join(sdk_python_package_dir, 'mmdeploy_python'))
+                python_api_lib_path = build_mmdeploy_python(
+                    f'{conda_env_path}/mmdeploy-{python_version}/bin/python3',
+                    cfg,
+                    mmdeploy_dir,
+                )
+                _copy(
+                    python_api_lib_path,
+                    osp.join(sdk_python_package_dir, 'mmdeploy_python'),
+                )
                 _remove_if_exist(osp.join(mmdeploy_dir, 'build_python'))
 
                 sdk_wheel_dir = osp.abspath(osp.join(sdk_tar_dir, 'python'))
 
-                bdist_cmd = f'python setup.py bdist_wheel --plat-name ' \
-                            f'{PLATFORM_TAG} --python-tag ' \
-                            f'cp{python_major}{python_minor} ' \
-                            f'--dist-dir {sdk_wheel_dir}'
+                bdist_cmd = (
+                    f'{conda_env_path}/mmdeploy-{python_version}/bin/python3 '
+                    f'setup.py bdist_wheel --plat-name '
+                    f'{PLATFORM_TAG} --python-tag '
+                    f'cp{python_major}{python_minor} '
+                    f'--dist-dir {sdk_wheel_dir}')
                 _call_command(bdist_cmd, sdk_python_package_dir)
 
                 # remove temp package dir

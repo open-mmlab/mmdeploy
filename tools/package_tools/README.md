@@ -8,7 +8,7 @@ MMDeploy supports
 
 - Download and install Miniconda from the [official website](https://docs.conda.io/en/latest/miniconda.html).
 
-- Create conda environments for python 3.6, 3.7, 3.8 and 3.9
+- Create conda environments for python 3.6, 3.7, 3.8 and 3.9, respectively.
 
   ```shell
   for PYTHON_VERSION in 3.6 3.7 3.8 3.9
@@ -37,7 +37,7 @@ MMDeploy supports
 
   You will get the precompiled packages `mmdeploy-{version}-linux-x86_64-cuda11.1-tensorrt8.2.3.0` and `mmdeploy-{version}-linux-x86_64-onnxruntime1.8.1` in the current directory if everything's going well.
 
-- On Windows platform, open Anaconda Powershell Prompt from the start menu and execute:
+- On Windows platform, open `Anaconda Powershell Prompt` from the start menu and execute:
 
   ```shell
   conda activate mmdeploy-3.6
