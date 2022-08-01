@@ -99,7 +99,7 @@ def append_info(device, tag):
     with open(src_file, 'r', encoding='utf-8') as f:
         data = f.readlines()
     for i, line in enumerate(data):
-        if '_Kernel' in line:
+        if '_Kernel' in line or '__device__' in line:
             data.insert(i, nsp)
             data.insert(i, '#include "elena_registry.h"\n')
             break
