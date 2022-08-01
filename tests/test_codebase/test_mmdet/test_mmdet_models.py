@@ -1400,91 +1400,6 @@ def test_base_dense_head_predict_by_feat__ncnn():
     assert rewrite_outputs.shape[-1] == 6
 
 
-'''
-@pytest.mark.parametrize('is_dynamic', [True, False])
-def test_ssd_head_predict_by_feat__ncnn(is_dynamic: bool):
-    """Test predict_by_feat rewrite of ssd head for ncnn."""
-    check_backend(Backend.NCNN)
-    ssd_head = get_ssd_head_model()
-    ssd_head.cpu().eval()
-    s = 128
-    batch_img_metas = [{
-        'scale_factor': np.ones(4),
-        'pad_shape': (s, s, 3),
-        'img_shape': (s, s, 3)
-    }]
-    output_names = ['output']
-    input_names = ['input']
-    dynamic_axes = None
-    if is_dynamic:
-        dynamic_axes = {
-            input_names[0]: {
-                2: 'height',
-                3: 'width'
-            },
-            output_names[0]: {
-                1: 'num_dets',
-            }
-        }
-    deploy_cfg = Config(
-        dict(
-            backend_config=dict(type=Backend.NCNN.value),
-            onnx_config=dict(
-                input_names=input_names,
-                output_names=output_names,
-                input_shape=None,
-                dynamic_axes=dynamic_axes),
-            codebase_config=dict(
-                type='mmdet',
-                task='ObjectDetection',
-                model_type='ncnn_end2end',
-                post_processing=dict(
-                    score_threshold=0.05,
-                    iou_threshold=0.5,
-                    max_output_boxes_per_class=200,
-                    pre_top_k=5000,
-                    keep_top_k=100,
-                    background_label_id=-1,
-                ))))
-
-    # For the ssd_head:
-    # the cls_score's size: (1, 30, 20, 20), (1, 30, 10, 10),
-    # (1, 30, 5, 5), (1, 30, 3, 3), (1, 30, 2, 2), (1, 30, 1, 1)
-    # the bboxes's size: (1, 24, 20, 20), (1, 24, 10, 10),
-    # (1, 24, 5, 5), (1, 24, 3, 3), (1, 24, 2, 2), (1, 24, 1, 1)
-    feat_shape = [20, 10, 5, 3, 2, 1]
-    num_prior = 6
-    seed_everything(1234)
-    cls_score = [
-        torch.rand(1, 30, feat_shape[i], feat_shape[i])
-        for i in range(num_prior)
-    ]
-    seed_everything(5678)
-    bboxes = [
-        torch.rand(1, 24, feat_shape[i], feat_shape[i])
-        for i in range(num_prior)
-    ]
-
-    # to get outputs of onnx model after rewrite
-    batch_img_metas[0]['img_shape'] = torch.tensor([s, s]) if is_dynamic else [s, s]
-    wrapped_model = WrapModel(
-        ssd_head, 'predict_by_feat', batch_img_metas=batch_img_metas, with_nms=True)
-    rewrite_inputs = {
-        'cls_scores': cls_score,
-        'bbox_preds': bboxes,
-    }
-    rewrite_outputs, is_backend_output = get_rewrite_outputs(
-        wrapped_model=wrapped_model,
-        model_inputs=rewrite_inputs,
-        deploy_cfg=deploy_cfg)
-
-    # output should be of shape [1, N, 6]
-    if is_backend_output:
-        rewrite_outputs = rewrite_outputs[0]
-
-    assert rewrite_outputs.shape[-1] == 6
-
-
 @pytest.mark.parametrize('backend_type, ir_type', [(Backend.OPENVINO, 'onnx')])
 def test_reppoints_head_predict_by_feat(backend_type: Backend, ir_type: str):
     """Test predict_by_feat rewrite of base dense head."""
@@ -1581,4 +1496,3 @@ def test_reppoints_head_points2bbox(backend_type: Backend, ir_type: str):
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg)
-'''
