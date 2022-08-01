@@ -4,7 +4,7 @@
 
 ## 安装 mmcls
 
-请参考 [install.md]（https://github.com/open-mmlab/mmclassification/blob/master/docs/en/install.md） 进行安装。
+请参考 \[install.md\]（https://github.com/open-mmlab/mmclassification/blob/master/docs/en/install.md） 进行安装。
 
 ## 支持列表
 

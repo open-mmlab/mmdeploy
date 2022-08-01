@@ -1,6 +1,6 @@
 # mmedit 模型支持列表
 
-[mmedit]（https://github.com/open-mmlab/mmediting）是基于 PyTorch 的开源图像和视频编辑工具箱，属于 [OpenMMLab](https://openmmlab.com/)。
+\[mmedit\]（https://github.com/open-mmlab/mmediting）是基于 PyTorch 的开源图像和视频编辑工具箱，属于 [OpenMMLab](https://openmmlab.com/)。
 
 ## 安装 mmedit
 

@@ -21,7 +21,7 @@ mmocr 是一个基于 PyTorch 和 mmdetection 的开源工具箱，用于文本�
 
 请注意，ncnn、pplnn 和 OpenVINO 仅支持 DBNet 的 DBNet18 配置。
 
-对于在 ICDAR 数据集上预训 [checkpoint]（https://download.openmmlab.com/mmocr/textdet/panet/panet_r18_fpem_ffm_sbn_600e_icdar2015_20210219-42dbe46a.pth） 的 PANet，如果要将模型转为具有 fp16 TensorRT，请尝试以下脚本。
+对于在 ICDAR 数据集上预训 \[checkpoint\]（https://download.openmmlab.com/mmocr/textdet/panet/panet_r18_fpem_ffm_sbn_600e_icdar2015_20210219-42dbe46a.pth） 的 PANet，如果要将模型转为具有 fp16 TensorRT，请尝试以下脚本。
 
 ```python
 # Copyright (c) OpenMMLab. All rights reserved.

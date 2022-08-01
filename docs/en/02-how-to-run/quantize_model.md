@@ -8,7 +8,7 @@ The fixed-point model has many advantages over the fp32 model:
 - Benefit from the smaller model, the Cache hit rate is improved and inference would be faster
 - Chips tend to have corresponding fixed-point acceleration instructions which are faster and less energy consumed (int8 on a common CPU requires only about 10% of energy)
 
-The size of the installation package and the heat generation are the key indicators of the mobile terminal evaluation APP; 
+The size of the installation package and the heat generation are the key indicators of the mobile terminal evaluation APP;
 On the server side, quantization means that you can maintain the same QPS and improve model precision in exchange for improved accuracy.
 
 ## Post training quantization scheme
@@ -24,7 +24,7 @@ flowchart TD;
      ncnn-fp32-->ncnn-int8;
 ```
 
-mmdeploy generates quantization table based on static graph (onnx) and uses backend tools to convert fp32 model to fixed point. 
+mmdeploy generates quantization table based on static graph (onnx) and uses backend tools to convert fp32 model to fixed point.
 
 Currently mmdeploy support ncnn with PTQ.
 
@@ -52,9 +52,10 @@ python3 tools/deploy.py  configs/mmcls/classification_ncnn-int8_static.py  ${MOD
 ```
 
 Description
-|       Parameter |                       Meaning |
-| :---------------: | :----------------------------------------------: |
-|      --quant      |            Enable quantization, the default value is False |
+
+|     Parameter     |                             Meaning                              |
+| :---------------: | :--------------------------------------------------------------: |
+|      --quant      |         Enable quantization, the default value is False          |
 | --quant-image-dir | Calibrate dataset, use Validation Set in MODEL_CONFIG by default |
 
 ## Custom calibration dataset
@@ -64,8 +65,8 @@ Calibration set is used to calculate quantization layer parameters. Some DFQ (Da
 - Create a new folder, just put in the picture (no directory structure required, no negative example required, no filename format required)
 - The image needs to be the data comes from real scenario otherwise the accuracy would be drop
 - You can not quantize model with test dataset
-  | Type | Train dataset | Validation dataset | Test dataset | Calibration dataset |
-  | ---- | ------ | ------ | -------- | ------ |
-  | Usage | QAT    | PTQ    | Test accuracy | PTQ    |
+  | Type  | Train dataset | Validation dataset | Test dataset  | Calibration dataset |
+  | ----- | ------------- | ------------------ | ------------- | ------------------- |
+  | Usage | QAT           | PTQ                | Test accuracy | PTQ                 |
 
-It is highly recommended that [verifying model precision] (./profile_model.md) after quantization. [Here] (.. /03-benchmark/quantization.md) is some quantization model test result.
+It is highly recommended that \[verifying model precision\] (./profile_model.md) after quantization. \[Here\] (.. /03-benchmark/quantization.md) is some quantization model test result.
