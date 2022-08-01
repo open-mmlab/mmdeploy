@@ -52,11 +52,12 @@ You can switch between Chinese and English documents in the lower-left corner of
    :maxdepth: 1
    :caption: Backend Support
 
-   05-supported-backends/onnxruntime.md
-   05-supported-backends/tensorrt.md
-   05-supported-backends/openvino.md
    05-supported-backends/ncnn.md
+   05-supported-backends/onnxruntime.md
+   05-supported-backends/openvino.md
    05-supported-backends/pplnn.md
+   05-supported-backends/snpe.md
+   05-supported-backends/tensorrt.md
    05-supported-backends/torchscript.md
 
 .. toctree::
@@ -81,7 +82,7 @@ You can switch between Chinese and English documents in the lower-left corner of
 .. toctree::
    :maxdepth: 1
    :caption: Experimental feature
-   
+
    experimental/onnx_optimizer.md
 
 .. toctree::
