@@ -46,7 +46,7 @@ void FuseFunc(void* stream, uint8_t* data_in, int src_h, int src_w, const char* 
               int resize_h, int resize_w, const char* interpolation, int crop_top, int crop_left,
               int crop_h, int crop_w, float mean0, float mean1, float mean2, float std0, float std1,
               float std2, int pad_top, int pad_left, int pad_bottom, int pad_right, int pad_h,
-              int pad_w, float pad_value, float* data_out, int data_out_num) {
+              int pad_w, float pad_value, float* data_out, int dst_h, int dst_w) {
   const char* interpolation_ = "nearest";
   if (strcmp(interpolation, "bilinear") == 0) {
       interpolation_ = "bilinear";
@@ -65,7 +65,7 @@ void FuseFunc(void* stream, uint8_t* data_in, int src_h, int src_w, const char* 
               int resize_h, int resize_w, const char* interpolation, int crop_top, int crop_left,
               int crop_h, int crop_w, float mean0, float mean1, float mean2, float std0, float std1,
               float std2, int pad_top, int pad_left, int pad_bottom, int pad_right, int pad_h,
-              int pad_w, float pad_value, float* data_out, int data_out_num) {
+              int pad_w, float pad_value, float* data_out, int dst_h, int dst_w) {
   cudaStream_t stream_ = (cudaStream_t)stream;
   const char* interpolation_ = "nearest";
   if (strcmp(interpolation, "bilinear") == 0) {
@@ -73,8 +73,8 @@ void FuseFunc(void* stream, uint8_t* data_in, int src_h, int src_w, const char* 
   }
 
   FuseKernelCU(stream_, resize_h, resize_w, crop_h, crop_w, crop_top, crop_left, mean0, mean1, mean2, std0,
-               std1, std2, pad_top, pad_left, pad_bottom, pad_right, pad_h, pad_w, pad_value, data_in,
-               data_out, data_out_num, src_h, src_w, format, interpolation_);
+               std1, std2, pad_h, pad_w, pad_top, pad_left, pad_bottom, pad_right, pad_value, data_in,
+               data_out, dst_h, dst_w, src_h, src_w, format, interpolation_);
 }
 
 REGISTER_FUSE_KERNEL(#TAG#_cuda, "#TAG#_cuda",
