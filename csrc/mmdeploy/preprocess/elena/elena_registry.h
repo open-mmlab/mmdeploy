@@ -16,7 +16,7 @@ using FuseFunc = void (*)(void* stream, uint8_t* data_in, int src_h, int src_w, 
                           int crop_left, int crop_h, int crop_w, float mean0, float mean1,
                           float mean2, float std0, float std1, float std2, int pad_top,
                           int pad_left, int pad_bottom, int pad_right, int pad_h, int pad_w,
-                          float pad_value, float* data_out, int data_out_num);
+                          float pad_value, float* data_out, int dst_h, int dst_w);
 
 class MMDEPLOY_API FuseKernel {
  public:

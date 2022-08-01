@@ -117,7 +117,8 @@ class CollectImpl : public ::mmdeploy::CollectImpl {
            visitor.crop_hw[0], visitor.crop_hw[1], visitor.mean[0], visitor.mean[1],
            visitor.mean[2], visitor.std[0], visitor.std[1], visitor.std[2], visitor.pad_tlbr[0],
            visitor.pad_tlbr[1], visitor.pad_tlbr[2], visitor.pad_tlbr[3], visitor.pad_hw[0],
-           visitor.pad_hw[1], visitor.pad_val, dst_tensor.data<float>(), dst_tensor.size());
+           visitor.pad_hw[1], visitor.pad_val, dst_tensor.data<float>(), dst_tensor.shape(2),
+           dst_tensor.shape(3));
       output[key] = std::move(dst_tensor);
     }
     return ::mmdeploy::CollectImpl::Process(output);
