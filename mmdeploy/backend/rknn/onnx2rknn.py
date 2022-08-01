@@ -7,7 +7,7 @@ from rknn.api import RKNN
 
 from mmdeploy.utils import (load_config, get_common_config, get_root_logger,
                             get_onnx_config, get_quantization_config,
-                            get_model_inputs)
+                            get_partition_config)
 from mmdeploy.utils.config_utils import get_backend_config
 
 
@@ -48,6 +48,11 @@ def onnx2rknn(onnx_model: str,
     output_names = onnx_params.get('output_names', None)
     input_size_list = get_backend_config(deploy_cfg).get(
         'input_size_list', None)
+    # update output_names for partition models
+    if get_partition_config(deploy_cfg) is not None:
+        import onnx
+        _onnx_model = onnx.load(onnx_model)
+        output_names = [node.name for node in _onnx_model.graph.output]
 
     rknn = RKNN(verbose=True)
     rknn.config(**common_params)
@@ -55,7 +60,7 @@ def onnx2rknn(onnx_model: str,
         model=onnx_model,
         inputs=input_names,
         input_size_list=input_size_list,
-        outputs=['pred_maps.0', 'pred_maps.1', 'pred_maps.2'])
+        outputs=output_names)
     if ret != 0:
         logger.error('Load model failed!')
         exit(ret)

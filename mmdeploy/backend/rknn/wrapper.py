@@ -37,41 +37,30 @@ class RKNNWrapper(BaseWrapper):
         logger = get_root_logger()
         # Create RKNN object
         self.rknn = RKNN(verbose=True)
-        # common_config.update(dict(mean_values=[0, 0, 0], std_values=[1, 1, 1]))
-        # self.rknn.config(**common_config)
         self.rknn.load_rknn(model)
         ret = self.rknn.init_runtime(target=common_config['target_platform'])
         if ret != 0:
             logger.error('Init runtime environment failed!')
             exit(ret)
-        output_names = ['pred_maps.0', 'pred_maps.1', 'pred_maps.2']
         super().__init__(output_names)
 
     def forward(self, inputs: Dict[str,
-                                   torch.Tensor]) -> Dict[str, torch.Tensor]:
-        """Run forward inference.
+                                   torch.Tensor]) -> Sequence[torch.Tensor]:
+        """Run forward inference. Note that the shape of the input tensor is
+        NxCxHxW while RKNN only accepts the numpy inputs of NxHxWxC. There is a
+        permute operation outside RKNN inference.
 
         Args:
             inputs (Dict[str, torch.Tensor]): Input name and tensor pairs.
 
         Return:
-            Dict[str, torch.Tensor]: The output name and tensor pairs.
+            Sequence[torch.Tensor]: The output tensors.
         """
-        # import cv2
-        # img = cv2.imread(
-        #     '/home/PJLAB/dongchunyu/dongchunyu/codes/rknn-toolkit2/examples/onnx/resnet50v2/dog_224x224.jpg'
-        # )
-        # # img, ratio, (dw, dh) = letterbox(img, new_shape=(IMG_SIZE, IMG_SIZE))
-        # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        # img = cv2.resize(img, (224, 224))
         rknn_out = self.__rknnnn_execute(
-            [i.cpu().numpy() for i in inputs.values()])
-        outputs = {}
-        for i in range(len(self.output_names)):
-            outputs[self.output_names[i]] = torch.from_numpy(rknn_out[i])
-        return outputs
+            [i.permute(0, 2, 3, 1).cpu().numpy() for i in inputs.values()])
+        return [torch.from_numpy(out) for out in rknn_out]
 
     @TimeCounter.count_time(Backend.RKNN.value)
     def __rknnnn_execute(self, inputs: Sequence[np.array]):
-        """Run inference with PPLNN."""
+        """Run inference with RKNN."""
         return self.rknn.inference(inputs)

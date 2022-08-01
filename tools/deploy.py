@@ -334,7 +334,7 @@ def main():
             import tempfile
             dataset_file = tempfile.NamedTemporaryFile(suffix='.txt').name
             with open(dataset_file, 'w') as f:
-                f.write(osp.abspath(args.img))
+                f.writelines([osp.abspath(args.img)])
             onnx2rknn(
                 onnx_path,
                 output_path,
@@ -347,12 +347,12 @@ def main():
         args.test_img = args.img
 
     headless = False
-    # # check headless or not for all platforms.
-    # import tkinter
-    # try:
-    #     tkinter.Tk()
-    # except Exception:
-    #     headless = True
+    # check headless or not for all platforms.
+    import tkinter
+    try:
+        tkinter.Tk()
+    except Exception:
+        headless = True
 
     # for headless installation.
     if not headless:
