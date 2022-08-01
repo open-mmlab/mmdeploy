@@ -166,8 +166,7 @@ class SDKEnd2EndModel(End2EndModel):
         Returns:
             list: A list contains predictions.
         """
-        masks = self.wrapper.invoke(
-            [img[0].contiguous().detach().cpu().numpy()])[0]
+        masks = self.wrapper.invoke(img[0].contiguous().detach().cpu().numpy())
         return masks
 
 
