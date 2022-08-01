@@ -4,7 +4,7 @@ import tempfile
 import onnx
 import pytest
 import torch
-from mmcv import Config
+from mmengine import Config
 
 from mmdeploy.core import RewriterContext
 
@@ -115,6 +115,17 @@ def test_grid_sampler():
     nodes = get_model_onnx_nodes(model, x)
     assert nodes[1].op_type == 'grid_sampler'
     assert nodes[1].domain == 'mmdeploy'
+
+
+@pytest.mark.usefixtures('prepare_symbolics')
+def test_roll():
+    x = torch.rand(1, 4, 4, 4)
+    shifts = [1, 1, 1]
+    dims = [3, 3, 3]
+    model = OpModel(torch.roll, shifts, dims).eval()
+    nodes = get_model_onnx_nodes(model, x)
+    assert nodes[-2].op_type == 'Slice'
+    assert nodes[-1].op_type == 'Concat'
 
 
 @pytest.mark.usefixtures('prepare_symbolics')
