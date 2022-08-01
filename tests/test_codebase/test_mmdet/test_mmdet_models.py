@@ -13,7 +13,6 @@ from mmengine.config import ConfigDict
 
 from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Backend, Codebase
-from mmdeploy.utils.config_utils import get_ir_config
 from mmdeploy.utils.test import (WrapModel, check_backend, get_model_outputs,
                                  get_rewrite_outputs)
 
@@ -606,14 +605,14 @@ def get_cascade_roi_head(is_instance_seg=False):
             'output_size': 14,
             'sampling_ratio': 0
         },
-        'out_channels': 64,
+        'out_channels': 4,
         'featmap_strides': [4, 8, 16, 32]
     }
     mask_head = {
         'type': 'FCNMaskHead',
         'num_convs': 4,
-        'in_channels': 64,
-        'conv_out_channels': 64,
+        'in_channels': 4,
+        'conv_out_channels': 4,
         'num_classes': 80,
         'loss_mask': {
             'type': 'CrossEntropyLoss',
@@ -794,12 +793,14 @@ def test_cascade_roi_head_with_mask(backend_type: Backend):
     cascade_roi_head = get_cascade_roi_head(is_instance_seg=True)
     seed_everything(1234)
     x = [
-        torch.rand((1, 64, 200, 304)),
-        torch.rand((1, 64, 100, 152)),
-        torch.rand((1, 64, 50, 76)),
-        torch.rand((1, 64, 25, 38)),
+        torch.rand((1, 4, 200, 304)),
+        torch.rand((1, 4, 100, 152)),
+        torch.rand((1, 4, 50, 76)),
+        torch.rand((1, 4, 25, 38)),
     ]
-    proposals = torch.tensor([[587.8285, 52.1405, 886.2484, 341.5644, 0.5]])
+    proposals = [torch.tensor([[[587.8285, 52.1405,
+                              886.2484, 341.5644, 0.5]]]),
+                 torch.tensor([[[0]]], dtype=torch.long)]
     batch_img_metas = {
         'img_shape': torch.tensor([800, 1216]),
         'ori_shape': torch.tensor([800, 1216]),
@@ -821,9 +822,11 @@ def test_cascade_roi_head_with_mask(backend_type: Backend):
                     pre_top_k=-1,
                     keep_top_k=100,
                     background_label_id=-1))))
-    model_inputs = {'x': x, 'proposals': proposals.unsqueeze(0)}
+    model_inputs = {'x': x}
     wrapped_model = WrapModel(
-        cascade_roi_head, 'simple_test', batch_img_metas=[batch_img_metas])
+        cascade_roi_head, 'predict_mask',
+        batch_img_metas=[batch_img_metas],
+        results_list=proposals)
     backend_outputs, _ = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=model_inputs,
@@ -1414,7 +1417,6 @@ def test_reppoints_head_predict_by_feat(backend_type: Backend, ir_type: str):
     }]
 
     deploy_cfg = get_deploy_cfg(backend_type, ir_type)
-    output_names = get_ir_config(deploy_cfg).get('output_names', None)
 
     # the cls_score's size: (1, 4, 32, 32), (1, 4, 16, 16),
     # (1, 4, 8, 8), (1, 4, 4, 4), (1, 4, 2, 2).
@@ -1433,12 +1435,15 @@ def test_reppoints_head_predict_by_feat(backend_type: Backend, ir_type: str):
         'bbox_preds': bboxes,
         'batch_img_metas': batch_img_metas
     }
-    model_outputs = get_model_outputs(dense_head, 'predict_by_feat', model_inputs)
+    model_outputs = get_model_outputs(dense_head,
+                                      'predict_by_feat',
+                                      model_inputs)
 
     # to get outputs of onnx model after rewrite
     batch_img_metas[0]['img_shape'] = torch.Tensor([s, s])
     wrapped_model = WrapModel(
-        dense_head, 'predict_by_feat', batch_img_metas=batch_img_metas, with_nms=True)
+        dense_head, 'predict_by_feat',
+        batch_img_metas=batch_img_metas, with_nms=True)
     rewrite_inputs = {
         'cls_scores': cls_score,
         'bbox_preds': bboxes,
@@ -1449,19 +1454,21 @@ def test_reppoints_head_predict_by_feat(backend_type: Backend, ir_type: str):
         deploy_cfg=deploy_cfg)
 
     if is_backend_output:
-        if isinstance(rewrite_outputs, dict):
-            rewrite_outputs = convert_to_list(rewrite_outputs, output_names)
-        for model_output, rewrite_output in zip(model_outputs[0],
-                                                rewrite_outputs):
-            model_output = model_output.squeeze().cpu().numpy()
-            rewrite_output = rewrite_output.squeeze()
-            # hard code to make two tensors with the same shape
-            # rewrite and original codes applied different nms strategy
-            assert np.allclose(
-                model_output[:rewrite_output.shape[0]],
-                rewrite_output,
-                rtol=1e-03,
-                atol=1e-05)
+        # hard code to make two tensors with the same shape
+        # rewrite and original codes applied different topk strategy
+        # rewrite and original codes applied different nms strategy
+        min_shape = min(model_outputs[0].bboxes.shape[0],
+                        rewrite_outputs[0].shape[1], 5)
+        for i in range(len(model_outputs)):
+            assert np.allclose(model_outputs[i].bboxes[:min_shape],
+                               rewrite_outputs[0][i, :min_shape, :4],
+                               rtol=1e-03, atol=1e-05)
+            assert np.allclose(model_outputs[i].scores[:min_shape],
+                               rewrite_outputs[0][i, :min_shape, 4],
+                               rtol=1e-03, atol=1e-05)
+            assert np.allclose(model_outputs[i].labels[:min_shape],
+                               rewrite_outputs[1][i, :min_shape],
+                               rtol=1e-03, atol=1e-05)
     else:
         assert rewrite_outputs is not None
 
