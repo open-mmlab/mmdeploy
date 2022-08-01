@@ -324,6 +324,8 @@ def create_package(cfg: Dict, mmdeploy_dir: str):
             # copy lib and install into sdk dir
             install_dir = osp.join(mmdeploy_dir, 'build/install/')
             _copy(install_dir, sdk_tar_dir)
+            _copy(f'{mmdeploy_dir}/demo/python',
+                  f'{sdk_tar_dir}/example/python')
             _remove_if_exist(osp.join(sdk_tar_dir, 'example', 'build'))
 
             # build SDK Python API according to different python version
