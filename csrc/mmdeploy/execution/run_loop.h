@@ -105,11 +105,6 @@ class RunLoop {
   bool stop_ = false;
 };
 
-// RunLoop::_Scheduler tag_invoke(get_completion_scheduler_t,
-//                                const RunLoop::_Scheduler::_ScheduleTask& self) {
-//
-// }
-
 namespace __impl {
 
 template <typename Receiver>

@@ -22,7 +22,8 @@ function(add_example dep name)
         mmdeploy_load_dynamic(${name} MMDeployDynamicModules)
         # Link to MMDeploy libraries
         target_link_libraries(${name} PRIVATE MMDeployLibs ${OpenCV_LIBS})
-    endif ()install(TARGETS ${name} RUNTIME DESTINATION bin)
+    endif ()
+    install(TARGETS ${name} RUNTIME DESTINATION bin)
     endif ()
 endfunction()
 
