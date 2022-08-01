@@ -152,3 +152,7 @@ bin/
 mmdeploy/backend/ncnn/onnx2ncnn
 
 /mmdeploy-*
+
+# snpe
+grpc-cpp-plugin
+service/snpe/grpc_cpp_plugin

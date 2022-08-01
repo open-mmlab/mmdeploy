@@ -41,6 +41,9 @@ def check_backend():
     import mmdeploy.apis.openvino as openvino_apis
     logger.info(f'openvino_is_avaliable: {openvino_apis.is_available()}')
 
+    import mmdeploy.apis.snpe as snpe_apis
+    logger.info(f'snpe_is_available: {snpe_apis.is_available()}')
+
 
 def check_codebase():
     codebase_versions = get_codebase_version()

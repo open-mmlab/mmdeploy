@@ -50,9 +50,14 @@ class PySegmentor {
 static void register_python_segmentor(py::module &m) {
   py::class_<PySegmentor>(m, "Segmentor")
       .def(py::init([](const char *model_path, const char *device_name, int device_id) {
-        return std::make_unique<PySegmentor>(model_path, device_name, device_id);
-      }))
-      .def("__call__", &PySegmentor::Apply);
+             return std::make_unique<PySegmentor>(model_path, device_name, device_id);
+           }),
+           py::arg("model_path"), py::arg("device_name"), py::arg("device_id") = 0)
+      .def("__call__",
+           [](PySegmentor *self, const PyImage &img) -> py::array {
+             return self->Apply(std::vector{img})[0];
+           })
+      .def("batch", &PySegmentor::Apply);
 }
 
 class PythonSegmentorRegisterer {
