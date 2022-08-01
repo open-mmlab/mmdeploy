@@ -2,8 +2,6 @@
 
 This document is going to describe the way to build MMDeploy package.
 
-MMDeploy supports
-
 ## Prerequisites
 
 - Download and install Miniconda from the [official website](https://docs.conda.io/en/latest/miniconda.html).
@@ -19,7 +17,7 @@ MMDeploy supports
 
 - Prepare MMDeploy dependencies
 
-  Please follow the [build-on-Linux guide](../../docs/en/01-how-to-build/linux-x86_64.md) or [build-on-Windows guide](../../docs/zh_cn/01-how-to-build/linux-x86_64.md) to install dependencies of MMDeploy,
+  Please follow the [build-on-Linux guide](../../docs/en/01-how-to-build/linux-x86_64.md) or [build-on-Windows guide](../../docs/en/01-how-to-build/linux-x86_64.md) to install dependencies of MMDeploy,
   including PyTorch, MMCV, OpenCV, ppl.cv, ONNX Runtime and TensorRT.
 
   Make sure the environment variables `pplcv_DIR`, `ONNXRUNTIME_DIR`, `TENSORRT_DIR`, `CUDNN_DIR` and `CUDA_TOOLKIT_ROOT_DIR` are exported.
