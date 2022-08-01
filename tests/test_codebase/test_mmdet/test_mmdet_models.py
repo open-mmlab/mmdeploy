@@ -602,7 +602,7 @@ def get_cascade_roi_head(is_instance_seg=False):
         'type': 'SingleRoIExtractor',
         'roi_layer': {
             'type': 'RoIAlign',
-            'output_size': 14,
+            'output_size': 1,
             'sampling_ratio': 0
         },
         'out_channels': 4,
@@ -807,7 +807,7 @@ def test_cascade_roi_head_with_mask(backend_type: Backend):
         'scale_factor': torch.tensor([1, 1, 1, 1])
     }
 
-    output_names = ['bbox_results', 'segm_results']
+    output_names = ['dets', 'labels', 'masks']
     deploy_cfg = Config(
         dict(
             backend_config=dict(type=backend_type.value),
@@ -821,7 +821,8 @@ def test_cascade_roi_head_with_mask(backend_type: Backend):
                     max_output_boxes_per_class=200,
                     pre_top_k=-1,
                     keep_top_k=100,
-                    background_label_id=-1))))
+                    background_label_id=-1,
+                    export_postprocess_mask=False))))
     model_inputs = {'x': x}
     wrapped_model = WrapModel(
         cascade_roi_head, 'predict_mask',
@@ -831,10 +832,12 @@ def test_cascade_roi_head_with_mask(backend_type: Backend):
         wrapped_model=wrapped_model,
         model_inputs=model_inputs,
         deploy_cfg=deploy_cfg)
-    bbox_results = backend_outputs[0]
-    segm_results = backend_outputs[1]
-    assert bbox_results is not None
-    assert segm_results is not None
+    dets = backend_outputs[0]
+    labels = backend_outputs[1]
+    masks = backend_outputs[2]
+    assert dets is not None
+    assert labels is not None
+    assert masks is not None
 
 
 def get_yolov3_head_model():
