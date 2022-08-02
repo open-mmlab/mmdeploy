@@ -119,10 +119,10 @@ def base_dense_head__predict_by_feat(
             pre_topk = scores.shape[-2] * scores.shape[-1] - 1
 
         if pre_topk > 0:
-            _, topk_inds = scores.reshape(batch_size, -1).topk(pre_topk,
-                                                               dim=1)
-            topk_inds = torch.stack([topk_inds // self.num_classes,
-                                    topk_inds % self.num_classes], dim=-1)
+            _, topk_inds = scores.reshape(batch_size, -1).topk(pre_topk, dim=1)
+            topk_inds = torch.stack(
+                [topk_inds // self.num_classes, topk_inds % self.num_classes],
+                dim=-1)
             batch_inds = torch.arange(
                 batch_size, device=bbox_pred.device).unsqueeze(-1)
 

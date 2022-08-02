@@ -319,7 +319,9 @@ def test_predict_by_feat_of_fcos_head_ncnn():
     # to get outputs of onnx model after rewrite
     batch_img_metas[0]['img_shape'] = torch.Tensor([s, s])
     wrapped_model = WrapModel(
-        fcos_head, 'predict_by_feat', batch_img_metas=batch_img_metas,
+        fcos_head,
+        'predict_by_feat',
+        batch_img_metas=batch_img_metas,
         with_nms=True)
     rewrite_inputs = {
         'cls_scores': cls_score,
@@ -381,8 +383,10 @@ def test_predict_by_feat_of_rpn_head(backend_type: Backend):
     # to get outputs of onnx model after rewrite
     batch_img_metas[0]['img_shape'] = torch.Tensor([s, s])
     wrapped_model = WrapModel(
-        head, 'predict_by_feat',
-        batch_img_metas=batch_img_metas, with_nms=True)
+        head,
+        'predict_by_feat',
+        batch_img_metas=batch_img_metas,
+        with_nms=True)
     rewrite_inputs = {
         'cls_scores': cls_score,
         'bbox_preds': bboxes,
@@ -436,8 +440,10 @@ def test_predict_by_feat_of_gfl_head(backend_type):
     # to get outputs of onnx model after rewrite
     batch_img_metas[0]['img_shape'] = torch.Tensor([s, s])
     wrapped_model = WrapModel(
-        head, 'predict_by_feat',
-        batch_img_metas=batch_img_metas, with_nms=True)
+        head,
+        'predict_by_feat',
+        batch_img_metas=batch_img_metas,
+        with_nms=True)
     rewrite_inputs = {
         'cls_scores': cls_score,
         'bbox_preds': bboxes,
@@ -501,8 +507,7 @@ def test_forward_of_base_detector(model_cfg_path, backend):
     gt_instances.labels = torch.rand((5, ))
     data_sample.gt_instances = gt_instances
     rewrite_inputs = {'batch_inputs': img}
-    wrapped_model = WrapModel(
-        model, 'forward', data_samples=[data_sample])
+    wrapped_model = WrapModel(model, 'forward', data_samples=[data_sample])
     rewrite_outputs, _ = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
@@ -673,13 +678,15 @@ def test_cascade_roi_head(backend_type: Backend):
                     pre_top_k=-1,
                     keep_top_k=100,
                     background_label_id=-1))))
-    rcnn_test_cfg = ConfigDict(dict(
+    rcnn_test_cfg = ConfigDict(
+        dict(
             score_thr=0.05,
             nms=dict(type='nms', iou_threshold=0.5),
             max_per_img=100))
     model_inputs = {'x': x}
     wrapped_model = WrapModel(
-        cascade_roi_head, 'predict_bbox',
+        cascade_roi_head,
+        'predict_bbox',
         batch_img_metas=[batch_img_metas],
         rpn_results_list=[proposals],
         rcnn_test_cfg=rcnn_test_cfg)
@@ -760,8 +767,8 @@ def test_predict_by_feat_of_fovea_head(backend_type: Backend):
 
     # to get outputs of onnx model after rewrite
     batch_img_metas[0]['img_shape'] = torch.Tensor([s, s])
-    wrapped_model = WrapModel(fovea_head, 'predict_by_feat',
-                              batch_img_metas=batch_img_metas)
+    wrapped_model = WrapModel(
+        fovea_head, 'predict_by_feat', batch_img_metas=batch_img_metas)
     rewrite_inputs = {
         'cls_scores': cls_score,
         'bbox_preds': bboxes,
@@ -773,15 +780,21 @@ def test_predict_by_feat_of_fovea_head(backend_type: Backend):
 
     if is_backend_output:
         for i in range(len(model_outputs)):
-            assert np.allclose(model_outputs[i].bboxes,
-                               rewrite_outputs[0][i, :, :4],
-                               rtol=1e-03, atol=1e-05)
-            assert np.allclose(model_outputs[i].scores,
-                               rewrite_outputs[0][i, :, 4],
-                               rtol=1e-03, atol=1e-05)
-            assert np.allclose(model_outputs[i].labels,
-                               rewrite_outputs[1][i],
-                               rtol=1e-03, atol=1e-05)
+            assert np.allclose(
+                model_outputs[i].bboxes,
+                rewrite_outputs[0][i, :, :4],
+                rtol=1e-03,
+                atol=1e-05)
+            assert np.allclose(
+                model_outputs[i].scores,
+                rewrite_outputs[0][i, :, 4],
+                rtol=1e-03,
+                atol=1e-05)
+            assert np.allclose(
+                model_outputs[i].labels,
+                rewrite_outputs[1][i],
+                rtol=1e-03,
+                atol=1e-05)
     else:
         assert rewrite_outputs is not None
 
@@ -798,9 +811,10 @@ def test_cascade_roi_head_with_mask(backend_type: Backend):
         torch.rand((1, 4, 50, 76)),
         torch.rand((1, 4, 25, 38)),
     ]
-    proposals = [torch.tensor([[[587.8285, 52.1405,
-                              886.2484, 341.5644, 0.5]]]),
-                 torch.tensor([[[0]]], dtype=torch.long)]
+    proposals = [
+        torch.tensor([[[587.8285, 52.1405, 886.2484, 341.5644, 0.5]]]),
+        torch.tensor([[[0]]], dtype=torch.long)
+    ]
     batch_img_metas = {
         'img_shape': torch.tensor([800, 1216]),
         'ori_shape': torch.tensor([800, 1216]),
@@ -825,7 +839,8 @@ def test_cascade_roi_head_with_mask(backend_type: Backend):
                     export_postprocess_mask=False))))
     model_inputs = {'x': x}
     wrapped_model = WrapModel(
-        cascade_roi_head, 'predict_mask',
+        cascade_roi_head,
+        'predict_mask',
         batch_img_metas=[batch_img_metas],
         results_list=proposals)
     backend_outputs, _ = get_rewrite_outputs(
@@ -901,8 +916,7 @@ def test_yolov3_head_predict_by_feat(backend_type):
     ]
     # to get outputs of pytorch model
     model_inputs = {'pred_maps': pred_maps, 'batch_img_metas': batch_img_metas}
-    model_outputs = get_model_outputs(yolov3_head,
-                                      'predict_by_feat',
+    model_outputs = get_model_outputs(yolov3_head, 'predict_by_feat',
                                       model_inputs)
     # to get outputs of onnx model after rewrite
     wrapped_model = WrapModel(
@@ -916,18 +930,21 @@ def test_yolov3_head_predict_by_feat(backend_type):
         deploy_cfg=deploy_cfg)
     if is_backend_output:
         for i in range(len(model_outputs)):
-            assert np.allclose(model_outputs[i].bboxes,
-                               rewrite_outputs[0][i, :, :4],
-                               rtol=1e-03,
-                               atol=1e-05)
-            assert np.allclose(model_outputs[i].scores,
-                               rewrite_outputs[0][i, :, 4],
-                               rtol=1e-03,
-                               atol=1e-05)
-            assert np.allclose(model_outputs[i].labels,
-                               rewrite_outputs[1][i],
-                               rtol=1e-03,
-                               atol=1e-05)
+            assert np.allclose(
+                model_outputs[i].bboxes,
+                rewrite_outputs[0][i, :, :4],
+                rtol=1e-03,
+                atol=1e-05)
+            assert np.allclose(
+                model_outputs[i].scores,
+                rewrite_outputs[0][i, :, 4],
+                rtol=1e-03,
+                atol=1e-05)
+            assert np.allclose(
+                model_outputs[i].labels,
+                rewrite_outputs[1][i],
+                rtol=1e-03,
+                atol=1e-05)
     else:
         assert rewrite_outputs is not None
 
@@ -973,8 +990,10 @@ def test_yolov3_head_predict_by_feat_ncnn():
 
     # to get outputs of onnx model after rewrite
     wrapped_model = WrapModel(
-        yolov3_head, 'predict_by_feat',
-        batch_img_metas=batch_img_metas[0], with_nms=True)
+        yolov3_head,
+        'predict_by_feat',
+        batch_img_metas=batch_img_metas[0],
+        with_nms=True)
     rewrite_inputs = {
         'pred_maps': pred_maps,
     }
@@ -1042,11 +1061,13 @@ def test_yolox_head_predict_by_feat(backend_type: Backend):
     ]
     seed_everything(5678)
     bbox_preds = [
-        torch.rand(1, 4, 2 * pow(2, i), 2 * pow(2, i)) for i in range(3, 0, -1)
+        torch.rand(1, 4, 2 * pow(2, i), 2 * pow(2, i))
+        for i in range(3, 0, -1)
     ]
     seed_everything(9101)
     objectnesses = [
-        torch.rand(1, 1, 2 * pow(2, i), 2 * pow(2, i)) for i in range(3, 0, -1)
+        torch.rand(1, 1, 2 * pow(2, i), 2 * pow(2, i))
+        for i in range(3, 0, -1)
     ]
 
     # to get outputs of pytorch model
@@ -1057,14 +1078,15 @@ def test_yolox_head_predict_by_feat(backend_type: Backend):
         'batch_img_metas': batch_img_metas,
         'with_nms': True
     }
-    model_outputs = get_model_outputs(yolox_head,
-                                      'predict_by_feat',
+    model_outputs = get_model_outputs(yolox_head, 'predict_by_feat',
                                       model_inputs)
 
     # to get outputs of onnx model after rewrite
     wrapped_model = WrapModel(
-        yolox_head, 'predict_by_feat',
-        batch_img_metas=batch_img_metas, with_nms=True)
+        yolox_head,
+        'predict_by_feat',
+        batch_img_metas=batch_img_metas,
+        with_nms=True)
     rewrite_inputs = {
         'cls_scores': cls_scores,
         'bbox_preds': bbox_preds,
@@ -1081,15 +1103,21 @@ def test_yolox_head_predict_by_feat(backend_type: Backend):
         min_shape = min(model_outputs[0].bboxes.shape[0],
                         rewrite_outputs[0].shape[1], 5)
         for i in range(len(model_outputs)):
-            assert np.allclose(model_outputs[i].bboxes[:min_shape],
-                               rewrite_outputs[0][i, :min_shape, :4],
-                               rtol=1e-03, atol=1e-05)
-            assert np.allclose(model_outputs[i].scores[:min_shape],
-                               rewrite_outputs[0][i, :min_shape, 4],
-                               rtol=1e-03, atol=1e-05)
-            assert np.allclose(model_outputs[i].labels[:min_shape],
-                               rewrite_outputs[1][i, :min_shape],
-                               rtol=1e-03, atol=1e-05)
+            assert np.allclose(
+                model_outputs[i].bboxes[:min_shape],
+                rewrite_outputs[0][i, :min_shape, :4],
+                rtol=1e-03,
+                atol=1e-05)
+            assert np.allclose(
+                model_outputs[i].scores[:min_shape],
+                rewrite_outputs[0][i, :min_shape, 4],
+                rtol=1e-03,
+                atol=1e-05)
+            assert np.allclose(
+                model_outputs[i].labels[:min_shape],
+                rewrite_outputs[1][i, :min_shape],
+                rtol=1e-03,
+                atol=1e-05)
     else:
         assert rewrite_outputs is not None
 
@@ -1139,9 +1167,8 @@ def test_yolox_head_predict_by_feat_ncnn():
     ]
 
     # to get outputs of onnx model after rewrite
-    wrapped_model = WrapModel(yolox_head,
-                              'predict_by_feat',
-                              batch_img_metas=batch_img_metas)
+    wrapped_model = WrapModel(
+        yolox_head, 'predict_by_feat', batch_img_metas=batch_img_metas)
     rewrite_inputs = {
         'cls_scores': cls_scores,
         'bbox_preds': bbox_preds,
@@ -1224,7 +1251,9 @@ def test_predict_by_feat_of_vfnet_head(backend_type: Backend):
 
     batch_img_metas[0]['img_shape'] = torch.Tensor([s, s])
     wrapped_model = WrapModel(
-        vfnet_head, 'predict_by_feat', batch_img_metas=batch_img_metas,
+        vfnet_head,
+        'predict_by_feat',
+        batch_img_metas=batch_img_metas,
         with_nms=True)
     rewrite_inputs = {'cls_scores': cls_score, 'bbox_preds': bboxes}
     rewrite_outputs, is_backend_output = get_rewrite_outputs(
@@ -1238,15 +1267,21 @@ def test_predict_by_feat_of_vfnet_head(backend_type: Backend):
         min_shape = min(model_outputs[0].bboxes.shape[0],
                         rewrite_outputs[0].shape[1], 1)
         for i in range(len(model_outputs)):
-            assert np.allclose(model_outputs[i].bboxes[:min_shape],
-                               rewrite_outputs[0][i, :min_shape, :4],
-                               rtol=1e-03, atol=1e-05)
-            assert np.allclose(model_outputs[i].scores[:min_shape],
-                               rewrite_outputs[0][i, :min_shape, 4],
-                               rtol=1e-03, atol=1e-05)
-            assert np.allclose(model_outputs[i].labels[:min_shape],
-                               rewrite_outputs[1][i, :min_shape],
-                               rtol=1e-03, atol=1e-05)
+            assert np.allclose(
+                model_outputs[i].bboxes[:min_shape],
+                rewrite_outputs[0][i, :min_shape, :4],
+                rtol=1e-03,
+                atol=1e-05)
+            assert np.allclose(
+                model_outputs[i].scores[:min_shape],
+                rewrite_outputs[0][i, :min_shape, 4],
+                rtol=1e-03,
+                atol=1e-05)
+            assert np.allclose(
+                model_outputs[i].labels[:min_shape],
+                rewrite_outputs[1][i, :min_shape],
+                rtol=1e-03,
+                atol=1e-05)
     else:
         assert rewrite_outputs is not None
 
@@ -1307,8 +1342,7 @@ def test_base_dense_head_predict_by_feat(backend_type: Backend, ir_type: str):
         'bbox_preds': bboxes,
         'batch_img_metas': batch_img_metas
     }
-    model_outputs = get_model_outputs(anchor_head,
-                                      'predict_by_feat',
+    model_outputs = get_model_outputs(anchor_head, 'predict_by_feat',
                                       model_inputs)
 
     # to get outputs of onnx model after rewrite
@@ -1330,15 +1364,21 @@ def test_base_dense_head_predict_by_feat(backend_type: Backend, ir_type: str):
         min_shape = min(model_outputs[0].bboxes.shape[0],
                         rewrite_outputs[0].shape[1], 5)
         for i in range(len(model_outputs)):
-            assert np.allclose(model_outputs[i].bboxes[:min_shape],
-                               rewrite_outputs[0][i, :min_shape, :4],
-                               rtol=1e-03, atol=1e-05)
-            assert np.allclose(model_outputs[i].scores[:min_shape],
-                               rewrite_outputs[0][i, :min_shape, 4],
-                               rtol=1e-03, atol=1e-05)
-            assert np.allclose(model_outputs[i].labels[:min_shape],
-                               rewrite_outputs[1][i, :min_shape],
-                               rtol=1e-03, atol=1e-05)
+            assert np.allclose(
+                model_outputs[i].bboxes[:min_shape],
+                rewrite_outputs[0][i, :min_shape, :4],
+                rtol=1e-03,
+                atol=1e-05)
+            assert np.allclose(
+                model_outputs[i].scores[:min_shape],
+                rewrite_outputs[0][i, :min_shape, 4],
+                rtol=1e-03,
+                atol=1e-05)
+            assert np.allclose(
+                model_outputs[i].labels[:min_shape],
+                rewrite_outputs[1][i, :min_shape],
+                rtol=1e-03,
+                atol=1e-05)
     else:
         assert rewrite_outputs is not None
 
@@ -1388,7 +1428,9 @@ def test_base_dense_head_predict_by_feat__ncnn():
     # to get outputs of onnx model after rewrite
     batch_img_metas[0]['img_shape'] = torch.Tensor([s, s])
     wrapped_model = WrapModel(
-        anchor_head, 'predict_by_feat', batch_img_metas=batch_img_metas,
+        anchor_head,
+        'predict_by_feat',
+        batch_img_metas=batch_img_metas,
         with_nms=True)
     rewrite_inputs = {
         'cls_scores': cls_score,
@@ -1438,15 +1480,16 @@ def test_reppoints_head_predict_by_feat(backend_type: Backend, ir_type: str):
         'bbox_preds': bboxes,
         'batch_img_metas': batch_img_metas
     }
-    model_outputs = get_model_outputs(dense_head,
-                                      'predict_by_feat',
+    model_outputs = get_model_outputs(dense_head, 'predict_by_feat',
                                       model_inputs)
 
     # to get outputs of onnx model after rewrite
     batch_img_metas[0]['img_shape'] = torch.Tensor([s, s])
     wrapped_model = WrapModel(
-        dense_head, 'predict_by_feat',
-        batch_img_metas=batch_img_metas, with_nms=True)
+        dense_head,
+        'predict_by_feat',
+        batch_img_metas=batch_img_metas,
+        with_nms=True)
     rewrite_inputs = {
         'cls_scores': cls_score,
         'bbox_preds': bboxes,
@@ -1463,15 +1506,21 @@ def test_reppoints_head_predict_by_feat(backend_type: Backend, ir_type: str):
         min_shape = min(model_outputs[0].bboxes.shape[0],
                         rewrite_outputs[0].shape[1], 5)
         for i in range(len(model_outputs)):
-            assert np.allclose(model_outputs[i].bboxes[:min_shape],
-                               rewrite_outputs[0][i, :min_shape, :4],
-                               rtol=1e-03, atol=1e-05)
-            assert np.allclose(model_outputs[i].scores[:min_shape],
-                               rewrite_outputs[0][i, :min_shape, 4],
-                               rtol=1e-03, atol=1e-05)
-            assert np.allclose(model_outputs[i].labels[:min_shape],
-                               rewrite_outputs[1][i, :min_shape],
-                               rtol=1e-03, atol=1e-05)
+            assert np.allclose(
+                model_outputs[i].bboxes[:min_shape],
+                rewrite_outputs[0][i, :min_shape, :4],
+                rtol=1e-03,
+                atol=1e-05)
+            assert np.allclose(
+                model_outputs[i].scores[:min_shape],
+                rewrite_outputs[0][i, :min_shape, 4],
+                rtol=1e-03,
+                atol=1e-05)
+            assert np.allclose(
+                model_outputs[i].labels[:min_shape],
+                rewrite_outputs[1][i, :min_shape],
+                rtol=1e-03,
+                atol=1e-05)
     else:
         assert rewrite_outputs is not None
 

@@ -71,7 +71,9 @@ def cascade_roi_head__predict_bbox(ctx,
     cls_scores = sum(ms_scores) / float(len(ms_scores))
     bbox_preds = bbox_pred.reshape(batch_size, num_proposals_per_img, 4)
     rois = rois.reshape(batch_size, num_proposals_per_img, -1)
-
+    print(
+        f'debugging mmdeploy.codebase.mmdet.models.roi_heads.cascade_roi_head line 74 what is self.bbox_head[-1]: {self.bbox_head[-1]}'
+    )
     result_list = self.bbox_head[-1].predict_by_feat(
         rois=rois,
         cls_scores=cls_scores,

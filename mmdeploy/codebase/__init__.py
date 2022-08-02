@@ -34,7 +34,7 @@ def import_codebase(codebase: Codebase):
         importlib.import_module(f'{lib}.models')
         importlib.import_module(f'{lib}.core')
         importlib.import_module(f'{lib}.datasets')
-        # for ut metrics registeration
+        # for ut metrics registration
         importlib.import_module(f'{lib}.metrics')
 
 
