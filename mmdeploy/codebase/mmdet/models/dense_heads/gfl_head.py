@@ -3,14 +3,14 @@ from typing import List, Optional
 
 import torch
 import torch.nn.functional as F
+from mmengine.config import ConfigDict
+from mmengine.data import InstanceData
 from torch import Tensor
 
 from mmdeploy.codebase.mmdet import (get_post_processing_params,
                                      multiclass_nms, pad_with_value)
 from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.utils import Backend, get_backend, is_dynamic_shape
-from mmengine.config import ConfigDict
-from mmengine.data import InstanceData
 
 
 @FUNCTION_REWRITER.register_rewriter(

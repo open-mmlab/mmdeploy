@@ -1,12 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import List, Optional
+
 import torch
+from mmengine.config import ConfigDict
+from mmengine.data import InstanceData
 from torch import Tensor
 
 from mmdeploy.codebase.mmdet import get_post_processing_params, multiclass_nms
 from mmdeploy.core import FUNCTION_REWRITER
-from mmengine.config import ConfigDict
-from mmengine.data import InstanceData
 
 
 @FUNCTION_REWRITER.register_rewriter(

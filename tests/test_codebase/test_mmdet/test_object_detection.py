@@ -4,10 +4,10 @@ import os
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 from typing import Any
 
-from mmengine import Config
 import numpy as np
 import pytest
 import torch
+from mmengine import Config
 from torch.utils.data import DataLoader
 from torch.utils.data.dataset import Dataset
 

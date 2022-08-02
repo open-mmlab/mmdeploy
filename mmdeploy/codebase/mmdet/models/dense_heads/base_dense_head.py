@@ -8,8 +8,7 @@ from mmdet.core.bbox.transforms import distance2bbox
 from mmengine import ConfigDict
 from torch import Tensor
 
-from mmdeploy.codebase.mmdet import (get_post_processing_params,
-                                     multiclass_nms)
+from mmdeploy.codebase.mmdet import get_post_processing_params, multiclass_nms
 from mmdeploy.codebase.mmdet.core.ops import ncnn_detection_output_forward
 from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.utils import Backend, is_dynamic_shape
