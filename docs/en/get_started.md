@@ -388,10 +388,6 @@ target_link_libraries(${name} PRIVATE mmdeploy ${OpenCV_LIBS})
 
 For more SDK C API usages, please read these [samples](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csrc).
 
-#### C# API
-
-Due to limitations on space, we will not present a specific example. But you can find all of them [here](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csharp).
-
 #### C++ API
 
 You can learn the usage of MMDeploy C++ API from [demo codes](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csrc). We'll talk about them more in our next release.
@@ -402,7 +398,7 @@ You can learn the usage of MMDeploy C+ API from [demo codes](https://github.com/
 
 #### JAVA API
 
-You can learn the usage of MMDeploy C+ API from \[demo codes\]((https://github.com/open-mmlab/mmdeploy/tree/master/demo/java). We'll talk about them more in our next release.
+You can learn the usage of MMDeploy C+ API from [demo codes](https://github.com/open-mmlab/mmdeploy/tree/master/demo/java). We'll talk about them more in our next release.
 
 ## Evaluate Model
 
