@@ -32,7 +32,7 @@ MMDeploy 定义的模型部署流程，如下图所示：
 **第二步**：创建并激活 conda 环境
 
 ```shell
-conda create --name mmdeploy python=3.7 -y
+conda create --name mmdeploy python=3.8 -y
 conda activate mmdeploy
 ```
 
@@ -116,8 +116,8 @@ mim install mmcv-full
 wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.7.0/mmdeploy-0.7.0-linux-x86_64-onnxruntime1.8.1.tar.gz
 tar -zxvf mmdeploy-0.7.0-linux-x86_64-onnxruntime1.8.1.tar.gz
 cd mmdeploy-0.7.0-linux-x86_64-onnxruntime1.8.1
-pip install dist/mmdeploy-0.7.0-py37-none-linux_x86_64.whl
-pip install sdk/python/mmdeploy_python-0.7.0-cp37-none-linux_x86_64.whl
+pip install dist/mmdeploy-0.7.0-py3-none-linux_x86_64.whl
+pip install sdk/python/mmdeploy_python-0.7.0-cp38-none-linux_x86_64.whl
 cd ..
 # 安装推理引擎 ONNX Runtime
 pip install onnxruntime==1.8.1
@@ -137,12 +137,12 @@ export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.7.0/mmdeploy-0.7.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
 tar -zxvf mmdeploy-v0.7.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
 cd mmdeploy-0.7.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
-pip install dist/mmdeploy-0.7.0-py37-none-linux_x86_64.whl
-pip install sdk/python/mmdeploy_python-0.7.0-cp37-none-linux_x86_64.whl
+pip install dist/mmdeploy-0.7.0-py3-none-linux_x86_64.whl
+pip install sdk/python/mmdeploy_python-0.7.0-cp38-none-linux_x86_64.whl
 cd ..
 # 安装推理引擎 TensorRT
 # !!! 从 NVIDIA 官网下载 TensorRT-8.2.3.0 CUDA 11.x 安装包并解压到当前目录
-pip install TensorRT-8.2.3.0/python/tensorrt-8.2.3.0-cp37-none-linux_x86_64.whl
+pip install TensorRT-8.2.3.0/python/tensorrt-8.2.3.0-cp38-none-linux_x86_64.whl
 pip install pycuda
 export TENSORRT_DIR=$(pwd)/TensorRT-8.2.3.0
 export LD_LIBRARY_PATH=${TENSORRT_DIR}/lib:$LD_LIBRARY_PATH
@@ -163,8 +163,8 @@ export LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
 Invoke-WebRequest -Uri https://github.com/open-mmlab/mmdeploy/releases/download/v0.7.0/mmdeploy-0.7.0-windows-amd64-onnxruntime1.8.1.zip -OutFile mmdeploy-0.7.0-windows-amd64-onnxruntime1.8.1.zip
 Expand-Archive mmdeploy-0.7.0-windows-amd64-onnxruntime1.8.1.zip .
 cd  mmdeploy-0.7.0-windows-amd64-onnxruntime1.8.1
-pip install dist/mmdeploy-0.7.0-py37-none-linux_x86_64.whl
-pip install sdk/python/mmdeploy_python-0.7.0-cp37-none-linux_x86_64.whl
+pip install dist/mmdeploy-0.7.0-py3-none-linux_x86_64.whl
+pip install sdk/python/mmdeploy_python-0.7.0-cp38-none-linux_x86_64.whl
 cd ..
 
 # 安装 ONNX Runtime
@@ -187,11 +187,11 @@ $env:path="$env:ONNXRUNTIME_DIR"/lib:$env:path
 Invoke-WebRequest -Uri https://github.com/open-mmlab/mmdeploy/releases/download/v0.7.0/mmdeploy-0.7.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip -OutFile mmdeploy-0.7.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip
 Expand-Archive mmdeploy-0.7.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip .
 cd mmdeploy-0.7.0-windows-amd64-cuda11.1-tensorrt8.2.3.0
-pip install dist/mmdeploy-0.7.0-py37-none-linux_x86_64.whl
-pip install sdk/python/mmdeploy_python-0.7.0-cp37-none-linux_x86_64.whl
+pip install dist/mmdeploy-0.7.0-py3-none-linux_x86_64.whl
+pip install sdk/python/mmdeploy_python-0.7.0-cp38-none-linux_x86_64.whl
 
 # !!! 从 NVIDIA 官网下载 TensorRT-8.2.3.0 CUDA 11.x 安装包并解压到当前目录
-pip install TensorRT-8.2.3.0/python/tensorrt-8.2.3.0-cp37-none-linux_x86_64.whl
+pip install TensorRT-8.2.3.0/python/tensorrt-8.2.3.0-cp38-none-linux_x86_64.whl
 pip install pycuda
 $env:TENSORRT_DIR=$(pwd)/TensorRT-8.2.3.0
 $env:path="$env:TENSORRT_DIR"/lib:$env:path
@@ -272,10 +272,10 @@ result = inference_model(
 ```shell
 cd mmdeploy-0.7.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
 # 运行 python demo
-python sdk/example/python/object_detection.py cuda mmdeploy_model/faster-rcnn mmdetection/demo/demo.jpg
+python sdk/example/python/object_detection.py cuda ../mmdeploy_model/faster-rcnn ../mmdetection/demo/demo.jpg
 # 运行 C/C++ demo
 export LD_LIBRARY_PATH=$(pwd)/sdk/lib:$LD_LIBRARY_PATH
-./sdk/bin/object_detection cuda mmdeploy_model/faster-rcnn mmdetection/demo/demo.jpg
+./sdk/bin/object_detection cuda ../mmdeploy_model/faster-rcnn ../mmdetection/demo/demo.jpg
 ```
 
 ```{note}

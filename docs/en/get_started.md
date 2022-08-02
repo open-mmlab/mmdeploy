@@ -34,7 +34,7 @@ In order to do an end-to-end model deployment, MMDeploy requires Python 3.6+ and
 **Step 1.** Create a conda environment and activate it.
 
 ```shell
-conda create --name mmdeploy python=3.7 -y
+conda create --name mmdeploy python=3.8 -y
 conda activate mmdeploy
 ```
 
@@ -121,8 +121,8 @@ Take the latest precompiled package as example, you can install it as follows:
 wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.7.0/mmdeploy-0.7.0-linux-x86_64-onnxruntime1.8.1.tar.gz
 tar -zxvf mmdeploy-0.7.0-linux-x86_64-onnxruntime1.8.1.tar.gz
 cd mmdeploy-0.7.0-linux-x86_64-onnxruntime1.8.1
-pip install dist/mmdeploy-0.7.0-py37-none-linux_x86_64.whl
-pip install sdk/python/mmdeploy_python-0.7.0-cp37-none-linux_x86_64.whl
+pip install dist/mmdeploy-0.7.0-py3-none-linux_x86_64.whl
+pip install sdk/python/mmdeploy_python-0.7.0-cp38-none-linux_x86_64.whl
 cd ..
 # install inference engine: ONNX Runtime
 pip install onnxruntime==1.8.1
@@ -142,12 +142,12 @@ export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.7.0/mmdeploy-0.7.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
 tar -zxvf mmdeploy-v0.7.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
 cd mmdeploy-0.7.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
-pip install dist/mmdeploy-0.7.0-py37-none-linux_x86_64.whl
-pip install sdk/python/mmdeploy_python-0.7.0-cp37-none-linux_x86_64.whl
+pip install dist/mmdeploy-0.7.0-py3-none-linux_x86_64.whl
+pip install sdk/python/mmdeploy_python-0.7.0-cp38-none-linux_x86_64.whl
 cd ..
 # install inference engine: TensorRT
 # !!! Download TensorRT-8.2.3.0 CUDA 11.x tar package from NVIDIA, and extract it to the current directory
-pip install TensorRT-8.2.3.0/python/tensorrt-8.2.3.0-cp37-none-linux_x86_64.whl
+pip install TensorRT-8.2.3.0/python/tensorrt-8.2.3.0-cp38-none-linux_x86_64.whl
 pip install pycuda
 export TENSORRT_DIR=$(pwd)/TensorRT-8.2.3.0
 export LD_LIBRARY_PATH=${TENSORRT_DIR}/lib:$LD_LIBRARY_PATH
@@ -168,8 +168,8 @@ Please open `Anaconda Powershell Prompt` and run the following commands:
 Invoke-WebRequest -Uri https://github.com/open-mmlab/mmdeploy/releases/download/v0.7.0/mmdeploy-0.7.0-windows-amd64-onnxruntime1.8.1.zip -OutFile mmdeploy-0.7.0-windows-amd64-onnxruntime1.8.1.zip
 Expand-Archive mmdeploy-0.7.0-windows-amd64-onnxruntime1.8.1.zip .
 cd  mmdeploy-0.7.0-windows-amd64-onnxruntime1.8.1
-pip install dist/mmdeploy-0.7.0-py37-none-linux_x86_64.whl
-pip install sdk/python/mmdeploy_python-0.7.0-cp37-none-linux_x86_64.whl
+pip install dist/mmdeploy-0.7.0-py3-none-linux_x86_64.whl
+pip install sdk/python/mmdeploy_python-0.7.0-cp38-none-linux_x86_64.whl
 cd ..
 
 # install inference engine: ONNX Runtime
@@ -192,12 +192,12 @@ $env:path="$env:ONNXRUNTIME_DIR"/lib:$env:path
 Invoke-WebRequest -Uri https://github.com/open-mmlab/mmdeploy/releases/download/v0.7.0/mmdeploy-0.7.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip -OutFile mmdeploy-0.7.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip
 Expand-Archive mmdeploy-0.7.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip .
 cd mmdeploy-0.7.0-windows-amd64-cuda11.1-tensorrt8.2.3.0
-pip install dist/mmdeploy-0.7.0-py37-none-linux_x86_64.whl
-pip install sdk/python/mmdeploy_python-0.7.0-cp37-none-linux_x86_64.whl
+pip install dist/mmdeploy-0.7.0-py3-none-linux_x86_64.whl
+pip install sdk/python/mmdeploy_python-0.7.0-cp38-none-linux_x86_64.whl
 
 # install inference engine: TensorRT
 # !!! Download TensorRT-8.2.3.0 CUDA 11.x tar package from NVIDIA, and extract it to the current directory
-pip install TensorRT-8.2.3.0/python/tensorrt-8.2.3.0-cp37-none-linux_x86_64.whl
+pip install TensorRT-8.2.3.0/python/tensorrt-8.2.3.0-cp38-none-linux_x86_64.whl
 pip install pycuda
 $env:TENSORRT_DIR=$(pwd)/TensorRT-8.2.3.0
 $env:path="$env:TENSORRT_DIR"/lib:$env:path
@@ -215,8 +215,8 @@ After the installation, you can enjoy the model deployment journey starting from
 Based on the above settings, we provide an example to convert the Faster R-CNN in [MMDetection](https://github.com/open-mmlab/mmdetection) to TensorRT as below:
 
 ```shell
-# clone mmdeploy repo. We are going to use the pre-defined pipeline config from the source code
-git clone --recursive https://github.com/open-mmlab/mmdeploy.git
+# clone mmdeploy to get the deployment config. `--recursive` is not necessary
+git clone https://github.com/open-mmlab/mmdeploy.git
 
 # clone mmdetection repo. We have to use the config file to build PyTorch nn module
 git clone https://github.com/open-mmlab/mmdetection.git
@@ -250,7 +250,7 @@ just by 'changing detection_tensorrt_dynamic-320x320-1344x1344.py' to 'detection
 
 ## Inference Model
 
-After model conversion, we can perform inference both by Model Converter as well as Inference SDK.
+After model conversion, we can perform inference not only by Model Converter but also by Inference SDK.
 
 ### Inference by Model Converter
 
@@ -278,10 +278,10 @@ You can directly run MMDeploy demo programs in the precompiled package to get in
 ```shell
 cd mmdeploy-0.7.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
 # run python demo
-python sdk/example/python/object_detection.py cuda mmdeploy_model/faster-rcnn mmdetection/demo/demo.jpg
+python sdk/example/python/object_detection.py cuda ../mmdeploy_model/faster-rcnn ../mmdetection/demo/demo.jpg
 # run C/C++ demo
 export LD_LIBRARY_PATH=$(pwd)/sdk/lib:$LD_LIBRARY_PATH
-./sdk/bin/object_detection cuda mmdeploy_model/faster-rcnn mmdetection/demo/demo.jpg
+./sdk/bin/object_detection cuda ../mmdeploy_model/faster-rcnn ../mmdetection/demo/demo.jpg
 ```
 
 ```{note}
