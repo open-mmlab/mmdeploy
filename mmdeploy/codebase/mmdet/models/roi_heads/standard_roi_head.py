@@ -89,7 +89,7 @@ def standard_roi_head__predict_mask(ctx,
             Defaults to False.
 
     Returns:
-        list[:obj:`InstanceData`]: Detection results of each image
+        list[Tensor]: Detection results of each image
         after the post process.
         Each item usually contains following keys.
 

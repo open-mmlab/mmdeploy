@@ -5,7 +5,6 @@ from typing import Any, List, Optional, Sequence, Tuple, Union
 import numpy as np
 import torch
 import torch.nn.functional as F
-from mmdet.datasets import DATASETS
 from mmdet.models.detectors import BaseDetector
 from mmengine import Config
 from mmengine.data import BaseDataElement, InstanceData
@@ -545,20 +544,18 @@ class NCNNEnd2EndModel(End2EndModel):
     """
 
     def __init__(self, backend: Backend, backend_files: Sequence[str],
-                 device: str, class_names: Sequence[str],
-                 model_cfg: Union[str, Config], deploy_cfg: Union[str, Config],
-                 **kwargs):
+                 device: str, model_cfg: Union[str, Config],
+                 deploy_cfg: Union[str, Config], **kwargs):
         assert backend == Backend.NCNN, f'only supported ncnn, but give \
             {backend.value}'
 
-        super(NCNNEnd2EndModel,
-              self).__init__(backend, backend_files, device, class_names,
-                             deploy_cfg, **kwargs)
+        super(NCNNEnd2EndModel, self).__init__(backend, backend_files, device,
+                                               deploy_cfg, **kwargs)
         # load cfg if necessary
         model_cfg = load_config(model_cfg)[0]
         self.model_cfg = model_cfg
 
-    def forward_test(self, imgs: Tensor, *args, **kwargs) -> List:
+    def predict(self, imgs: Tensor, *args, **kwargs) -> List:
         """Implement forward test.
 
         Args:
@@ -579,7 +576,7 @@ class NCNNEnd2EndModel(End2EndModel):
         scores = out[:, :, 1:2]
         boxes = out[:, :, 2:6] * scales
         dets = torch.cat([boxes, scores], dim=2)
-        return dets, labels
+        return dets, torch.tensor(labels, dtype=torch.int32)
 
 
 @__BACKEND_MODEL.register_module('sdk')
@@ -622,51 +619,6 @@ class SDKEnd2EndModel(End2EndModel):
                 segm_results[label].append(img_mask)
             return [(det_results, segm_results)]
         return [det_results]
-
-
-def get_classes_from_config(model_cfg: Union[str, Config], **kwargs) -> \
-        List[str]:
-    """Get class name from config. The class name is the `classes` field if it
-    is set in the config, or the classes in `module_dict` of MMDet whose type
-    is set in the config.
-
-    Args:
-        model_cfg (str | Config): Input model config file or
-            Config object.
-
-    Returns:
-        List[str]: A list of string specifying names of different class.
-    """
-    # load cfg if necessary
-    model_cfg = load_config(model_cfg)[0]
-
-    # For custom dataset
-    if 'classes' in model_cfg:
-        return list(model_cfg['classes'])
-
-    module_dict = DATASETS.module_dict
-    data_cfg = model_cfg.data
-    classes = None
-    module = None
-
-    keys = ['test', 'val', 'train']
-
-    for key in keys:
-        if key in data_cfg:
-            if 'classes' in data_cfg[key]:
-                classes = list(data_cfg[key]['classes'])
-                break
-            elif 'type' in data_cfg[key]:
-                module = module_dict[data_cfg[key]['type']]
-                break
-
-    if classes is None and module is None:
-        raise RuntimeError(f'No dataset config found in: {model_cfg}')
-
-    if classes is not None:
-        return classes
-    else:
-        return module.CLASSES
 
 
 def build_object_detection_model(
