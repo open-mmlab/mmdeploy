@@ -158,3 +158,40 @@ def test_centerpoint(backend_type: Backend):
         rewrite_outputs = head.get_bboxes(*[[i] for i in outputs],
                                           inputs['img_metas'][0])
     assert rewrite_outputs is not None
+
+
+def get_pointpillars_nus():
+    from mmdet3d.models.detectors import MVXFasterRCNN
+
+    model = MVXFasterRCNN(**model_cfg.pointpillars_nus_model)
+    model.requires_grad_(False)
+    return model
+
+
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
+def test_pointpillars_nus(backend_type: Backend):
+    from mmdeploy.codebase.mmdet3d.deploy.voxel_detection import VoxelDetection
+    from mmdeploy.core import RewriterContext
+    check_backend(backend_type, True)
+    model = get_pointpillars_nus()
+    model.cpu().eval()
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(type=backend_type.value),
+            onnx_config=dict(
+                input_shape=None,
+                opset_version=11,
+                input_names=['voxels', 'num_points', 'coors'],
+                output_names=['outputs']),
+            codebase_config=dict(
+                type=Codebase.MMDET3D.value, task=Task.VOXEL_DETECTION.value)))
+    voxeldetection = VoxelDetection(model_cfg, deploy_cfg, 'cpu')
+    inputs, data = voxeldetection.create_input(
+        'tests/test_codebase/test_mmdet3d/data/kitti/kitti_000008.bin')
+
+    with RewriterContext(
+            cfg=deploy_cfg,
+            backend=deploy_cfg.backend_config.type,
+            opset=deploy_cfg.onnx_config.opset_version):
+        outputs = model.forward(*data)
+    assert outputs is not None

@@ -1,6 +1,6 @@
 _base_ = ['./voxel-detection_dynamic.py', '../../_base_/backends/tensorrt.py']
 backend_config = dict(
-    common_config=dict(max_workspace_size=1 << 30),
+    common_config=dict(max_workspace_size=1 << 32),
     model_inputs=[
         dict(
             input_shapes=dict(

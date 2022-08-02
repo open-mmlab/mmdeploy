@@ -90,7 +90,6 @@ def centerpoint__get_bbox(ctx,
     scores_range = [0]
     bbox_range = [0]
     dir_range = [0]
-    self.test_cfg = self.test_cfg['pts']
     for i, task_head in enumerate(self.task_heads):
         scores_range.append(scores_range[i] + self.num_classes[i])
         bbox_range.append(bbox_range[i] + 8)
@@ -135,6 +134,8 @@ def centerpoint__get_bbox(ctx,
             batch_vel,
             reg=batch_reg,
             task_id=task_id)
+        if 'pts' in self.test_cfg.keys():
+            self.test_cfg = self.test_cfg.pts
         assert self.test_cfg['nms_type'] in ['circle', 'rotate']
         batch_reg_preds = [box['bboxes'] for box in temp]
         batch_cls_preds = [box['scores'] for box in temp]
