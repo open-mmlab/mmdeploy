@@ -4,7 +4,8 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    'mmpose.models.heads.regression_heads.RegressionHead.predict')
+    'mmpose.models.heads.regression_heads.regression_head'
+    '.RegressionHead.predict')
 def regression_head__predict(ctx,
                              self,
                              feats,

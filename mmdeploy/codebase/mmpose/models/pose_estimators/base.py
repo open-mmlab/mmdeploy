@@ -28,7 +28,9 @@ def base_pose_estimator__forward(ctx,
         from mmpose.core import PoseDataSample
         _, c, h, w = [int(_) for _ in batch_inputs.shape]
         metainfo = dict(
-            img_shape=(h, w, c), crop_size=(h, w), heatmap_size=(64, 48))
+            img_shape=(h, w, c),
+            crop_size=(h, w),
+            heatmap_size=self.cfg.codec.heatmap_size)
         data_sample = PoseDataSample(metainfo=metainfo)
         batch_data_samples = [data_sample]
 
