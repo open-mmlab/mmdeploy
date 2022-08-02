@@ -52,7 +52,7 @@ jobs:
           make install
           pushd install/example
           mkdir build && pushd build
-          cmake ..   -DMMDeploy_DIR=${PWD}/../../lib/cmake/MMDeploy
+          cmake ../cpp -DMMDeploy_DIR=${PWD}/../../lib/cmake/MMDeploy
           make -j2
           ls ./*
           popd
