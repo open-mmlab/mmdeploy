@@ -1,13 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import os.path as osp
-from typing import Union, Optional
+from typing import Optional, Union
 
 import mmcv
 from rknn.api import RKNN
 
-from mmdeploy.utils import (load_config, get_common_config, get_root_logger,
-                            get_onnx_config, get_quantization_config,
-                            get_partition_config)
+from mmdeploy.utils import (get_common_config, get_onnx_config,
+                            get_partition_config, get_quantization_config,
+                            get_root_logger, load_config)
 from mmdeploy.utils.config_utils import get_backend_config
 
 

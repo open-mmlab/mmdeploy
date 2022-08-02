@@ -2,8 +2,8 @@
 from typing import Dict, Optional, Sequence
 
 import numpy as np
-from rknn.api import RKNN
 import torch
+from rknn.api import RKNN
 
 from mmdeploy.utils import Backend, get_root_logger
 from mmdeploy.utils.timer import TimeCounter

@@ -675,6 +675,25 @@ class RKNNModel(End2EndModel):
         model_cfg = load_config(model_cfg)[0]
         self.model_cfg = model_cfg
 
+    def _get_bboxes(self, outputs):
+        from mmdet.models import build_head
+        head_type = self.model_cfg._cfg_dict.model.bbox_head.type
+        head = build_head(head_type)
+        if head_type == 'YOLOXHead':
+            ret = head.get_bboxes(
+                outputs[:3],
+                outputs[3:6],
+                outputs[6:9], [dict(scale_factor=None)],
+                cfg=self.model_cfg._cfg_dict.model.test_cfg)
+        elif head_type == 'YOLOV3Head':
+            ret = head.get_bboxes(
+                outputs, [dict(scale_factor=None)],
+                cfg=self.model_cfg._cfg_dict.model.test_cfg)
+        else:
+            raise NotImplementedError(f'{head_type} not supported yet.')
+        ret = [r.unsqueeze(0).cpu() for r in ret[0]]
+        return ret
+
     def forward_test(self, imgs: torch.Tensor, *args, **kwargs):
         """Implement forward test.
 
@@ -686,12 +705,7 @@ class RKNNModel(End2EndModel):
                 class labels of shape [N, num_det].
         """
         outputs = self.wrapper({self.input_name: imgs})
-        from mmdet.models import build_head
-        head = build_head(self.model_cfg._cfg_dict.model.bbox_head)
-        ret = head.get_bboxes(
-            outputs, [dict(scale_factor=None)],
-            cfg=self.model_cfg._cfg_dict.model.test_cfg)
-        ret = [r.unsqueeze(0).cpu() for r in ret[0]]
+        ret = self._get_bboxes(outputs)
         return ret
 
 
