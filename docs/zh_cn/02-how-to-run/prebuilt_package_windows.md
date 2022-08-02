@@ -1,7 +1,6 @@
 # Win10 下预编译包的使用
 
 - [Win10 下预编译包的使用](#win10-下预编译包的使用)
-  - [- 可能遇到的问题](#--可能遇到的问题)
   - [准备工作](#准备工作)
     - [ONNX Runtime](#onnx-runtime)
     - [TensorRT](#tensorrt)
@@ -79,7 +78,6 @@ ______________________________________________________________________
 .
 |-- mmclassification
 |-- mmdeploy
-|-- opencv
 |-- resnet18_8xb32_in1k_20210831-fbbb1da6.pth
 ```
 
@@ -104,6 +102,7 @@ ______________________________________________________________________
    ```
 
 7. 下载[`onnxruntime`](https://github.com/microsoft/onnxruntime/releases/tag/v1.8.1)，添加环境变量
+
    将onnxruntime的lib目录添加到PATH里面，如图所示，具体的路径根据个人情况更改。
 
    ![sys-path](https://user-images.githubusercontent.com/16019484/181463801-1d7814a8-b256-46e9-86f2-c08de0bc150b.png)
@@ -150,7 +149,6 @@ ______________________________________________________________________
 |-- mmdeploy-0.6.0-windows-amd64-onnxruntime1.8.1
 |-- mmclassification
 |-- mmdeploy
-|-- opencv
 `-- resnet18_8xb32_in1k_20210831-fbbb1da6.pth
 ```
 
@@ -199,7 +197,6 @@ export2SDK(deploy_cfg, model_cfg, work_dir, pth=model_checkpoint)
 |-- mmdeploy-0.6.0-windows-amd64-cuda11.1-tensorrt8.2.3.0
 |-- mmclassification
 |-- mmdeploy
-|-- opencv
 `-- resnet18_8xb32_in1k_20210831-fbbb1da6.pth
 ```
 
@@ -264,7 +261,6 @@ export2SDK(deploy_cfg, model_cfg, work_dir, pth=model_checkpoint)
 |-- mmdeploy-0.6.0-windows-amd64-onnxruntime1.8.1
 |-- mmclassification
 |-- mmdeploy
-|-- opencv
 |-- resnet18_8xb32_in1k_20210831-fbbb1da6.pth
 `-- work_dir
 ```
@@ -329,7 +325,8 @@ python .\mmdeploy\demo\python\image_classification.py .\work_dir\onnx\resnet\ .\
 
 #### ONNXRuntime
 
-1. 编译Examples
+1. 编译 examples
+
    在`mmdeploy-0.6.0-windows-amd64-onnxruntime1.8.1\sdk\example`目录下
 
    ```
@@ -337,7 +334,7 @@ python .\mmdeploy\demo\python\image_classification.py .\work_dir\onnx\resnet\ .\
    mkdir build
    cd build
    cmake .. -A x64 -T v142 `
-     -DOpenCV_DIR=C:\workspace\opencv\build\x64\vc15\lib `
+     -DOpenCV_DIR=C:\Deps\opencv\build\x64\vc15\lib `
      -DMMDeploy_DIR=C:\workspace\mmdeploy-0.6.0-windows-amd64-onnxruntime1.8.1\sdk\lib\cmake\MMDeploy `
      -DONNXRUNTIME_DIR=C:\Deps\onnxruntime\onnxruntime-win-gpu-x64-1.8.1
 
@@ -364,7 +361,8 @@ python .\mmdeploy\demo\python\image_classification.py .\work_dir\onnx\resnet\ .\
 
 #### TensorRT
 
-1. 编译
+1. 编译 examples
+
    在mmdeploy-0.6.0-windows-amd64-cuda11.1-tensorrt8.2.3.0\\sdk\\example目录下
 
    ```
@@ -372,7 +370,7 @@ python .\mmdeploy\demo\python\image_classification.py .\work_dir\onnx\resnet\ .\
    mkdir build
    cd build
    cmake .. -A x64 -T v142 `
-     -DOpenCV_DIR=C:\workspace\opencv\build\x64\vc15\lib `
+     -DOpenCV_DIR=C:\Deps\opencv\build\x64\vc15\lib `
      -DMMDeploy_DIR=C:\workspace\mmdeploy-0.6.0-windows-amd64-cuda11.1-tensorrt8 2.3.0\sdk\lib\cmake\MMDeploy `
      -DTENSORRT_DIR=C:\Deps\tensorrt\TensorRT-8.2.3.0 `
      -DCUDNN_DIR=C:\Deps\cudnn\8.2.1
