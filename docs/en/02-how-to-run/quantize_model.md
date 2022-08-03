@@ -15,14 +15,9 @@ On the server side, quantization means that you can maintain the same QPS and im
 
 Taking ncnn backend as an example, the complete workflow is as follows:
 
-```{mermaid}
-flowchart TD;
-     Torch model-->non-standard onnx;
-     Non-standard onnx-->ncnn-fp32;
-     Non-standard onnx-->quantification table;
-     Quantization table-->ncnn-int8;
-     ncnn-fp32-->ncnn-int8;
-```
+<div align="center">
+  <img src="../_static/image/quant_model.png"/>
+</div>
 
 mmdeploy generates quantization table based on static graph (onnx) and uses backend tools to convert fp32 model to fixed point.
 

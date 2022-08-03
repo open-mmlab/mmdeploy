@@ -275,7 +275,7 @@ cv2.imwrite('output_detection.png', img)
 使用 C++ API 进行模型推理的流程符合下面的模式：
 ![image](https://user-images.githubusercontent.com/4560679/182554486-2bf0ff80-9e82-4a0f-bccc-5e1860444302.png)
 
-以下是这个流程的具体应用过程：
+以下是具体过程：
 
 ```C++
 #include <cstdlib>
