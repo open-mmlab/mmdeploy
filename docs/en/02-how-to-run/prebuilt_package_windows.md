@@ -95,7 +95,7 @@ In order to use `ONNX Runtime` backend, you should also do the following steps.
 
 7. Download [`onnxruntime`](https://github.com/microsoft/onnxruntime/releases/tag/v1.8.1), and add environment variable.
 
-   As shown in the figure, add the lib directory of onnxruntime to the PATH.
+   As shown in the figure, add the lib directory of onnxruntime to the `PATH`.
 
    ![sys-path](https://user-images.githubusercontent.com/16019484/181463801-1d7814a8-b256-46e9-86f2-c08de0bc150b.png)
    :exclamation: Restart powershell to make the environment variables setting take effect. You can check whether the settings are in effect by `echo $env:PATH`.
@@ -120,11 +120,11 @@ In order to use `TensorRT` backend, you should also do the following steps.
    - TensorRT 8.2.3.0
    - cuDNN 8.2.1.0
 
-   Add the runtime libraries of TensorRT and cuDNN to the PATH. You can refer to the path setting of onnxruntime. Don't forget to install python package of TensorRT.
+   Add the runtime libraries of TensorRT and cuDNN to the `PATH`. You can refer to the path setting of onnxruntime. Don't forget to install python package of TensorRT.
 
    :exclamation: Restart powershell to make the environment variables setting take effect. You can check whether the settings are in effect by echo `$env:PATH`.
 
-   :exclamation: It is recommended to add only one version of the TensorRT/cuDNN runtime libraries to the PATH. It is better not to copy the runtime libraries of TensorRT/cuDNN to the cuda directory in `C:\`.
+   :exclamation: It is recommended to add only one version of the TensorRT/cuDNN runtime libraries to the `PATH`. It is better not to copy the runtime libraries of TensorRT/cuDNN to the cuda directory in `C:\`.
 
 7. Install pycuda by `pip install pycuda`
 
@@ -134,7 +134,7 @@ In order to use `TensorRT` backend, you should also do the following steps.
 
 The following describes how to use the prebuilt package to do model conversion based on the previous downloaded pth.
 
-After the above work is done, the structure of the current working directory should be：
+After preparation work, the structure of the current working directory should be：
 
 ```
 ..
@@ -144,7 +144,7 @@ After the above work is done, the structure of the current working directory sho
 `-- resnet18_8xb32_in1k_20210831-fbbb1da6.pth
 ```
 
-The python to convert the model
+Model conversion can be performed like below:
 
 ```python
 from mmdeploy.apis import torch2onnx
@@ -180,9 +180,9 @@ The structure of the converted model directory:
 
 ### TensorRT Example
 
-The following describes how to use the prebuilt package to do model conversion based on the previous downloaded ckpt.
+The following describes how to use the prebuilt package to do model conversion based on the previous downloaded pth.
 
-After the above work is done, the structure of the current working directory should be：
+After installation of mmdeploy-tensorrt prebuilt package, the structure of the current working directory should be：
 
 ```
 ..
@@ -192,7 +192,7 @@ After the above work is done, the structure of the current working directory sho
 `-- resnet18_8xb32_in1k_20210831-fbbb1da6.pth
 ```
 
-The python to convert the model
+Model conversion can be performed like below:
 
 ```python
 from mmdeploy.apis import torch2onnx
@@ -259,11 +259,9 @@ The structure of current working directory：
 
 ### Backend Inference
 
-:exclamation: It should be emphasized that this interface is not for deployment, but shields the difference of backend inference api. The main purpose of this api is to check whether the converted model can be inferred normally.
+:exclamation: It should be emphasized that `inference_model` is not for deployment, but shields the difference of backend inference api(`TensorRT`, `ONNX Runtime` etc.). The main purpose of this api is to check whether the converted model can be inferred normally.
 
 #### ONNXRuntime
-
-The Python code to inference model
 
 ```python
 from mmdeploy.apis import inference_model
@@ -277,8 +275,6 @@ result = inference_model(model_cfg, deploy_cfg, backend_files, img, device)
 ```
 
 #### TensorRT
-
-The Python code to inference model
 
 ```python
 from mmdeploy.apis import inference_model
@@ -297,15 +293,11 @@ The following describes how to use the SDK's Python API for inference
 
 #### ONNXRuntime
 
-The inference code
-
 ```bash
 python .\mmdeploy\demo\python\image_classification.py .\work_dir\onnx\resnet\ .\mmclassification\demo\demo.JPEG
 ```
 
 #### TensorRT
-
-The inference code
 
 ```
  python .\mmdeploy\demo\python\image_classification.py .\work_dir\trt\resnet\ .\mmclassification\demo\demo.JPEG --device-name cuda
@@ -337,7 +329,7 @@ The following describes how to use the SDK's C API for inference
 
    :point_right: The purpose is to make the exe find the relevant dll
 
-   If choose to add environment variables, add the runtime libraries path of `mmdeploy` (`mmdeploy-0.6.0-windows-amd64-onnxruntime1.8.1\sdk\bin`) to the PATH.
+   If choose to add environment variables, add the runtime libraries path of `mmdeploy` (`mmdeploy-0.6.0-windows-amd64-onnxruntime1.8.1\sdk\bin`) to the `PATH`.
 
    If choose to copy the dynamic libraries, copy the dll in the bin directory to the same level directory of the just compiled exe (build/Release).
 
@@ -373,7 +365,7 @@ The following describes how to use the SDK's C API for inference
 
    :point_right: The purpose is to make the exe find the relevant dll
 
-   If choose to add environment variables, add the runtime libraries path of `mmdeploy` (`mmdeploy-0.6.0-windows-amd64-cuda11.1-tensorrt8.2.3.0\sdk\bin`) to the PATH.
+   If choose to add environment variables, add the runtime libraries path of `mmdeploy` (`mmdeploy-0.6.0-windows-amd64-cuda11.1-tensorrt8.2.3.0\sdk\bin`) to the `PATH`.
 
    If choose to copy the dynamic libraries, copy the dll in the bin directory to the same level directory of the just compiled exe (build/Release).
 
