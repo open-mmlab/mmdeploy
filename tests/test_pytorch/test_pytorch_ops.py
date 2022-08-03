@@ -62,8 +62,6 @@ class OpModel(torch.nn.Module):
 def get_model_onnx_nodes(model, x, onnx_file=onnx_file):
     torch.onnx.export(model, x, onnx_file, opset_version=11)
     onnx_model = onnx.load(onnx_file)
-    import shutil
-    shutil.copy(onnx_file, './adaptive_avg2d.onnx')
     nodes = onnx_model.graph.node
     return nodes
 
@@ -81,7 +79,6 @@ class TestAdaptivePool:
         x = torch.rand(2, 2, 2)
         model = OpModel(torch.nn.functional.adaptive_avg_pool2d, [2, 2]).eval()
         nodes = get_model_onnx_nodes(model, x)
-        print(nodes)
         assert nodes[-1].op_type == 'AveragePool'
 
 
@@ -111,7 +108,6 @@ def test_instance_norm():
     model = OpModel(torch.group_norm, 1, torch.rand([2]), torch.rand([2]),
                     1e-05).eval()
     nodes = get_model_onnx_nodes(model, x)
-    print(nodes)
     assert nodes[4].op_type == 'TRTInstanceNormalization'
     assert nodes[4].domain == 'mmdeploy'
 
