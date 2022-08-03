@@ -249,18 +249,13 @@ cv2.imwrite('output_detection.png', img)
 
 #### C API
 
-使用 C API 进行模型推理的流程符合下面的模式：
+使用 C API 进行模型推理的流程如下：
 
-```{mermaid}
-graph LR
-  A[创建推理句柄] --> B(读取图像)
-  B --> C(应用句柄进行推理)
-  C --> D[处理推理结果]
-  D -->E[销毁结果]
-  E -->F[销毁推理句柄]
-```
+<div align="center">
+  <img src="_static/image/c_api_workflow.png"/>
+</div>
 
-以下是这个流程的具体应用过程：
+以下是具体过程：
 
 ```C++
 #include <cstdlib>

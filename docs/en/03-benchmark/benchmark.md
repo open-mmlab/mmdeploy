@@ -26,7 +26,7 @@ GPU: ncnn, TensorRT, PPLNN
 - Warm up. For ncnn, we warm up 30 iters for all codebases. As for other backends: for classification, we warm up 1010 iters; for other codebases, we warm up 10 iters.
 - Input resolution varies for different datasets of different codebases. All inputs are real images except for `mmediting` because the dataset is not large enough.
 
-Users can directly test the speed through [model profiling](../02-how-to-run/how_to_measure_performance_of_models.md). And here is the benchmark in our environment.
+Users can directly test the speed through [model profiling](../02-how-to-run/profile_model.md). And here is the benchmark in our environment.
 
 <div style="margin-left: 25px;">
 <table class="docutils">
@@ -407,7 +407,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/how
 
 ## Performance benchmark
 
-Users can directly test the performance through [how_to_evaluate_a_model.md](../02-how-to-run/how_to_evaluate_a_model.md). And here is the benchmark in our environment.
+Users can directly test the performance through [how_to_evaluate_a_model.md](../02-how-to-run/profile_model.md). And here is the benchmark in our environment.
 
 <div style="margin-left: 25px;">
 <table class="docutils">

@@ -252,14 +252,9 @@ Otherwise, you will run into an error like ’ModuleNotFoundError: No module nam
 
 Using SDK C API should follow next pattern,
 
-```{mermaid}
-graph LR
-  A[create inference handle] --> B(read image)
-  B --> C(apply handle)
-  C --> D[deal with inference result]
-  D -->E[destroy result buffer]
-  E -->F[destroy handle]
-```
+<div align="center">
+  <img src="_static/image/c_api_workflow.png"/>
+</div>
 
 Now let's apply this procedure on the above Faster R-CNN model.
 
@@ -346,4 +341,4 @@ python ${MMDEPLOY_DIR}/tools/test.py \
 Regarding the --model option, it represents the converted engine files path when using Model Converter to do performance test. But when you try to test the metrics by Inference SDK, this option refers to the directory path of MMDeploy Model.
 ```
 
-You can read [how to evaluate a model](02-how-to-run/how_to_evaluate_a_model.md) for more details.
+You can read [how to evaluate a model](02-how-to-run/profile_model.md) for more details.
