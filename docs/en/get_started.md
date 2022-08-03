@@ -117,7 +117,7 @@ Take the latest precompiled package as example, you can install it as follows:
 <summary><b>Linux-x86_64, CPU, ONNX Runtime 1.8.1</b></summary>
 
 ```shell
-  # install MMDeploy
+# install MMDeploy
 wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.7.0/mmdeploy-0.7.0-linux-x86_64-onnxruntime1.8.1.tar.gz
 tar -zxvf mmdeploy-0.7.0-linux-x86_64-onnxruntime1.8.1.tar.gz
 cd mmdeploy-0.7.0-linux-x86_64-onnxruntime1.8.1
