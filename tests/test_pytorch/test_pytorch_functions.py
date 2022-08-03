@@ -341,3 +341,21 @@ def test_tensor_setitem(x, y):
     nodes = onnx_model.graph.node
     for node in nodes:
         assert node.op_type != 'ScatterND'
+
+
+@pytest.mark.parametrize('output_size', [1, 3])
+def test_adaptive_avg_pool2d(output_size):
+    input = torch.rand(1, 3, 6, 6)
+    model = WrapFunction(F.adaptive_avg_pool2d, output_size=output_size)
+    pytorch_output = model(input)
+    deploy_cfg_ort = mmcv.Config(
+        dict(
+            onnx_config=dict(input_shape=None),
+            backend_config=dict(type='onnxruntime'),
+            codebase_config=dict(type='mmdet', task='ObjectDetection')))
+    rewrite_output, _ = get_rewrite_outputs(
+        model,
+        model_inputs={'input': input},
+        deploy_cfg=deploy_cfg_ort,
+        run_with_backend=True)
+    assert torch.allclose(pytorch_output, rewrite_output[0])
