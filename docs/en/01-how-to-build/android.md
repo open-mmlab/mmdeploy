@@ -7,8 +7,7 @@
       - [Install Dependencies for SDK](#install-dependencies-for-sdk)
     - [Build MMDeploy](#build-mmdeploy)
       - [Build Options Spec](#build-options-spec)
-      - [Build SDK](#build-sdk)
-      - [Build Demo](#build-demo)
+      - [Build SDK and Demos](#build-sdk-and-demos)
 
 ______________________________________________________________________
 
@@ -174,7 +173,7 @@ make -j$(nproc) install
 </tbody>
 </table>
 
-#### Build SDK
+#### Build SDK and Demos
 
 MMDeploy provides a recipe as shown below for building SDK with ncnn as inference engine for android.
 
@@ -186,6 +185,7 @@ MMDeploy provides a recipe as shown below for building SDK with ncnn as inferenc
   cmake .. \
       -DMMDEPLOY_BUILD_SDK=ON \
       -DMMDEPLOY_BUILD_SDK_JAVA_API=ON \
+      -DMMDEPLOY_BUILD_EXAMPLES=ON \
       -DOpenCV_DIR=${OPENCV_ANDROID_SDK_DIR}/sdk/native/jni/abi-${ANDROID_ABI} \
       -Dncnn_DIR=${NCNN_DIR}/build_${ANDROID_ABI}/install/lib/cmake/ncnn \
       -DMMDEPLOY_TARGET_BACKENDS=ncnn \
@@ -198,20 +198,3 @@ MMDeploy provides a recipe as shown below for building SDK with ncnn as inferenc
 
   make -j$(nproc) && make install
   ```
-
-#### Build Demo
-
-```Bash
-export ANDROID_ABI=arm64-v8a
-
-cd ${MMDEPLOY_DIR}/build_${ANDROID_ABI}/install/example
-mkdir -p build && cd build
-cmake .. \
-      -DOpenCV_DIR=${OPENCV_ANDROID_SDK_DIR}/sdk/native/jni/abi-${ANDROID_ABI} \
-      -Dncnn_DIR=${NCNN_DIR}/build_${ANDROID_ABI}/install/lib/cmake/ncnn \
-      -DMMDeploy_DIR=${MMDEPLOY_DIR}/build_${ANDROID_ABI}/install/lib/cmake/MMDeploy \
-      -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake \
-      -DANDROID_ABI=${ANDROID_ABI} \
-      -DANDROID_PLATFORM=android-30
-make -j$(nproc)
-```

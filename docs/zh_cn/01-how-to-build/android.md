@@ -7,8 +7,7 @@
       - [安装 MMDeploy SDK 依赖](#安装-mmdeploy-sdk-依赖)
     - [编译 MMDeploy](#编译-mmdeploy)
       - [编译选项说明](#编译选项说明)
-      - [编译 SDK](#编译-sdk)
-      - [编译 Demo](#编译-demo)
+      - [编译 SDK 和 Demos](#编译-sdk-和-demos)
 
 ______________________________________________________________________
 
@@ -175,7 +174,7 @@ make -j$(nproc) install
 </tbody>
 </table>
 
-#### 编译 SDK
+#### 编译 SDK 和 Demos
 
 下文展示构建SDK的样例，用 ncnn 作为推理引擎。
 
@@ -186,6 +185,7 @@ make -j$(nproc) install
   mkdir -p build_${ANDROID_ABI} && cd build_${ANDROID_ABI}
   cmake .. \
       -DMMDEPLOY_BUILD_SDK=ON \
+      -DMMDEPLOY_BUILD_EXAMPLES=ON \
       -DMMDEPLOY_BUILD_SDK_JAVA_API=ON \
       -DOpenCV_DIR=${OPENCV_ANDROID_SDK_DIR}/sdk/native/jni/abi-${ANDROID_ABI} \
       -Dncnn_DIR=${NCNN_DIR}/build_${ANDROID_ABI}/install/lib/cmake/ncnn \
@@ -199,20 +199,3 @@ make -j$(nproc) install
 
   make -j$(nproc) && make install
   ```
-
-#### 编译 Demo
-
-```Bash
-export ANDROID_ABI=arm64-v8a
-
-cd ${MMDEPLOY_DIR}/build_${ANDROID_ABI}/install/example
-mkdir -p build && cd build
-cmake .. \
-      -DOpenCV_DIR=${OPENCV_ANDROID_SDK_DIR}/sdk/native/jni/abi-${ANDROID_ABI} \
-      -Dncnn_DIR=${NCNN_DIR}/build_${ANDROID_ABI}/install/lib/cmake/ncnn \
-      -DMMDeploy_DIR=${MMDEPLOY_DIR}/build_${ANDROID_ABI}/install/lib/cmake/MMDeploy \
-      -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake \
-      -DANDROID_ABI=${ANDROID_ABI} \
-      -DANDROID_PLATFORM=android-30
-make -j$(nproc)
-```

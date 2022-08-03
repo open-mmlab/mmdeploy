@@ -11,8 +11,7 @@
     - [Build Model Converter](#build-model-converter)
       - [Build Custom Ops](#build-custom-ops)
       - [Install Model Converter](#install-model-converter)
-    - [Build SDK](#build-sdk)
-    - [Build Demo](#build-demo)
+    - [Build SDK and Demo](#build-sdk-and-demo)
 
 ______________________________________________________________________
 
@@ -395,7 +394,7 @@ pip install -e .
   To use optional dependencies, install them manually with `pip install -r requirements/optional.txt` or specify desired extras when calling `pip` (e.g. `pip install -e .[optional]`).
   Valid keys for the extras field are: `all`, `tests`, `build`, `optional`.
 
-### Build SDK
+### Build SDK and Demo
 
 MMDeploy provides two recipes as shown below for building SDK with ONNXRuntime and TensorRT as inference engines respectively.
 You can also activate other engines after the model.
@@ -409,6 +408,7 @@ You can also activate other engines after the model.
       -DCMAKE_CXX_COMPILER=g++-7 \
       -DMMDEPLOY_BUILD_SDK=ON \
       -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
+      -DMMDEPLOY_BUILD_EXAMPLES=ON \
       -DMMDEPLOY_TARGET_DEVICES=cpu \
       -DMMDEPLOY_TARGET_BACKENDS=ort \
       -DMMDEPLOY_CODEBASES=all \
@@ -426,6 +426,7 @@ You can also activate other engines after the model.
       -DCMAKE_CXX_COMPILER=g++-7 \
       -DMMDEPLOY_BUILD_SDK=ON \
       -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
+      -DMMDEPLOY_BUILD_EXAMPLES=ON \
       -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
       -DMMDEPLOY_TARGET_BACKENDS=trt \
       -DMMDEPLOY_CODEBASES=all \
@@ -435,12 +436,3 @@ You can also activate other engines after the model.
 
   make -j$(nproc) && make install
   ```
-
-### Build Demo
-
-```Bash
-cd ${MMDEPLOY_DIR}/build/install/example
-mkdir -p build && cd build
-cmake .. -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy
-make -j$(nproc)
-```
