@@ -153,55 +153,11 @@ export LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
 
 </details>
 
-<details>
-<summary><b>Windows, CPU, ONNX Runtime 1.8.1</b></summary>
-
-请在 Conda Prompt Shell 中执行以下命令
-
-```shell
-# 安装 MMDeploy ONNX Runtime 自定义算子库和推理 SDK
-Invoke-WebRequest -Uri https://github.com/open-mmlab/mmdeploy/releases/download/v0.7.0/mmdeploy-0.7.0-windows-amd64-onnxruntime1.8.1.zip -OutFile mmdeploy-0.7.0-windows-amd64-onnxruntime1.8.1.zip
-Expand-Archive mmdeploy-0.7.0-windows-amd64-onnxruntime1.8.1.zip .
-cd  mmdeploy-0.7.0-windows-amd64-onnxruntime1.8.1
-pip install dist/mmdeploy-0.7.0-py3-none-linux_x86_64.whl
-pip install sdk/python/mmdeploy_python-0.7.0-cp38-none-linux_x86_64.whl
-cd ..
-
-# 安装 ONNX Runtime
-pip install onnxruntime==1.8.1
-Invoke-WebRequest -Uri https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-win-x64-1.8.1.zip -OutFile onnxruntime-win-x64-1.8.1.zip
-Expand-Archive onnxruntime-win-x64-1.8.1.zip .
-$env:ONNXRUNTIME_DIR=$(pwd)/onnxruntime-win-x64-1.8.1
-$env:path="$env:ONNXRUNTIME_DIR"/lib:$env:path
-```
-
+<details open>
+<summary><b>Windows-x86_64</b></summary>
 </details>
 
-<details>
-<summary><b>Windows, CUDA 11.x, TensorRT 8.2.3.0</b></summary>
-
-请在 Conda Prompt Shell 中执行以下命令
-
-```shell
-# 安装 MMDeploy TensorRT 自定义算子库和推理 SDK
-Invoke-WebRequest -Uri https://github.com/open-mmlab/mmdeploy/releases/download/v0.7.0/mmdeploy-0.7.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip -OutFile mmdeploy-0.7.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip
-Expand-Archive mmdeploy-0.7.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip .
-cd mmdeploy-0.7.0-windows-amd64-cuda11.1-tensorrt8.2.3.0
-pip install dist/mmdeploy-0.7.0-py3-none-linux_x86_64.whl
-pip install sdk/python/mmdeploy_python-0.7.0-cp38-none-linux_x86_64.whl
-
-# !!! 从 NVIDIA 官网下载 TensorRT-8.2.3.0 CUDA 11.x 安装包并解压到当前目录
-pip install TensorRT-8.2.3.0/python/tensorrt-8.2.3.0-cp38-none-linux_x86_64.whl
-pip install pycuda
-$env:TENSORRT_DIR=$(pwd)/TensorRT-8.2.3.0
-$env:path="$env:TENSORRT_DIR"/lib:$env:path
-
-# !!! 从 NVIDIA 官网下载 cuDNN 8.2.1 CUDA 11.x 安装包并解压到当前目录
-$env:CUDNN_DIR=$(pwd)/cuda
-$env:path="$env:CUDNN_DIR"/lib64:$env:path
-```
-
-</details>
+请阅读 [这里](./02-how-to-run/prebuilt_package_windows.md)，了解 MMDeploy 预编译包在 Windows 平台下的使用方法。
 
 ## 模型转换
 

@@ -158,55 +158,11 @@ export LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
 
 </details>
 
-<details>
-<summary><b>Windows, CPU, ONNX Runtime 1.8.1</b></summary>
-
-Please open `Anaconda Powershell Prompt` and run the following commands:
-
-```shell
-# install MMDeploy
-Invoke-WebRequest -Uri https://github.com/open-mmlab/mmdeploy/releases/download/v0.7.0/mmdeploy-0.7.0-windows-amd64-onnxruntime1.8.1.zip -OutFile mmdeploy-0.7.0-windows-amd64-onnxruntime1.8.1.zip
-Expand-Archive mmdeploy-0.7.0-windows-amd64-onnxruntime1.8.1.zip .
-cd  mmdeploy-0.7.0-windows-amd64-onnxruntime1.8.1
-pip install dist/mmdeploy-0.7.0-py3-none-linux_x86_64.whl
-pip install sdk/python/mmdeploy_python-0.7.0-cp38-none-linux_x86_64.whl
-cd ..
-
-# install inference engine: ONNX Runtime
-pip install onnxruntime==1.8.1
-Invoke-WebRequest -Uri https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-win-x64-1.8.1.zip -OutFile onnxruntime-win-x64-1.8.1.zip
-Expand-Archive onnxruntime-win-x64-1.8.1.zip .
-$env:ONNXRUNTIME_DIR=$(pwd)/onnxruntime-win-x64-1.8.1
-$env:path="$env:ONNXRUNTIME_DIR"/lib:$env:path
-```
-
+<details open>
+<summary><b>Windows-x86_64</b></summary>
 </details>
 
-<details>
-<summary><b>Windows, CUDA 11.x, TensorRT 8.2.3.0</b></summary>
-
-Please run the following scripts in `Anaconda Powershell Prompt`
-
-```shell
-# install MMDeploy
-Invoke-WebRequest -Uri https://github.com/open-mmlab/mmdeploy/releases/download/v0.7.0/mmdeploy-0.7.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip -OutFile mmdeploy-0.7.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip
-Expand-Archive mmdeploy-0.7.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip .
-cd mmdeploy-0.7.0-windows-amd64-cuda11.1-tensorrt8.2.3.0
-pip install dist/mmdeploy-0.7.0-py3-none-linux_x86_64.whl
-pip install sdk/python/mmdeploy_python-0.7.0-cp38-none-linux_x86_64.whl
-
-# install inference engine: TensorRT
-# !!! Download TensorRT-8.2.3.0 CUDA 11.x tar package from NVIDIA, and extract it to the current directory
-pip install TensorRT-8.2.3.0/python/tensorrt-8.2.3.0-cp38-none-linux_x86_64.whl
-pip install pycuda
-$env:TENSORRT_DIR=$(pwd)/TensorRT-8.2.3.0
-$env:path="$env:TENSORRT_DIR"/lib:$env:path
-# !!! Download cuDNN 8.2.1 CUDA 11.x tar package from NVIDIA, and extract it to the current directory
-$env:CUDNN_DIR=$(pwd)/cuda
-$env:path="$env:CUDNN_DIR"/lib64:$env:path
-```
-
-</details>
+Please learn its prebuilt package from [this](./02-how-to-run/prebuilt_package_windows.md) guide.
 
 ## Convert Model
 
