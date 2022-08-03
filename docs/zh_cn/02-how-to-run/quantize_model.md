@@ -14,14 +14,9 @@
 
 以 ncnn backend 为例，完整的工作流如下：
 
-```mermaid
-flowchart TD;
-     torch模型-->非标准onnx;
-     非标准onnx-->ncnn-fp32;
-     非标准onnx-->量化表;
-     量化表-->ncnn-int8;
-     ncnn-fp32-->ncnn-int8;
-```
+<div align="center">
+  <img src="../_static/image/quant_model.png"/>
+</div>
 
 mmdeploy 基于静态图（onnx）生成推理框架所需的量化表，再用后端工具把浮点模型转为定点。
 

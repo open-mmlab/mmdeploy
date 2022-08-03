@@ -252,14 +252,9 @@ Otherwise, you will run into an error like ’ModuleNotFoundError: No module nam
 
 Using SDK C API should follow next pattern,
 
-```mermaid
-graph LR
-  A[create inference handle] --> B(read image)
-  B --> C(apply handle)
-  C --> D[deal with inference result]
-  D -->E[destroy result buffer]
-  E -->F[destroy handle]
-```
+<div align="center">
+  <img src="_static/image/c_api_workflow.png"/>
+</div>
 
 Now let's apply this procedure on the above Faster R-CNN model.
 
