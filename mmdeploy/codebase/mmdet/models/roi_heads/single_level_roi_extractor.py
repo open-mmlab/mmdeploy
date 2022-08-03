@@ -5,8 +5,7 @@ from torch.autograd import Function
 
 from mmdeploy.core.optimizers import mark
 from mmdeploy.core.rewriters import FUNCTION_REWRITER
-from mmdeploy.utils import get_backend
-from mmdeploy.utils.constants import Backend
+from mmdeploy.utils.constants import IR
 
 
 class MultiLevelRoiAlign(Function):
@@ -121,14 +120,17 @@ def single_roi_extractor__forward(ctx,
 
     3. use the roi align in torhcvision to accelerate the inference.
     """
-    backend = get_backend(ctx.cfg)
+    from mmdeploy.utils.config_utils import get_ir_config
+    ir_config = get_ir_config(ctx.cfg)
     out_size = self.roi_layers[0].output_size
     num_levels = len(feats)
     roi_feats = feats[0].new_zeros(rois.shape[0], self.out_channels, *out_size)
+
+    if ir_config.get('type', 'onnx') == IR.TORCHSCRIPT.value:
+        for roi_layer in self.roi_layers:
+            roi_layer.use_torchvision = True
     if num_levels == 1:
         assert len(rois) > 0, 'The number of rois should be positive'
-        if backend == Backend.TORCHSCRIPT:
-            self.roi_layers[0].use_torchvision = True
         return self.roi_layers[0](feats[0], rois)
 
     target_lvls = self.map_roi_levels(rois, num_levels)
@@ -153,12 +155,60 @@ def single_roi_extractor__forward(ctx,
         inds = mask.nonzero(as_tuple=False).squeeze(1)
         rois_t = rois[inds]
         # use the roi align in torhcvision
-        if backend == Backend.TORCHSCRIPT:
-            self.roi_layers[i].use_torchvision = True
         roi_feats_t = self.roi_layers[i](feats[i], rois_t)
         roi_feats[inds] = roi_feats_t
     # slice to recover original size
     roi_feats = roi_feats[num_levels * 2:]
+    return roi_feats
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    func_name='mmdet.models.roi_heads.SingleRoIExtractor.forward',
+    backend='coreml')
+@mark('roi_extractor', inputs=['feats', 'rois'], outputs=['bbox_feats'])
+def single_roi_extractor__forward__coreml(ctx,
+                                          self,
+                                          feats,
+                                          rois,
+                                          roi_scale_factor=None):
+    """Rewrite `forward` of SingleRoIExtractor for coreml backend.
+
+    Rewrite this function to:
+    1. enable exporting to IR even though the input
+    image contains no targets. Note that, `ScatterND` of onnx may conflict with
+    `Reshape` if a tensor have a dim size of 0. Thus, we have to cat zeros to
+    the dim 0 of `roi_feats` and recover back after all roi align finished.
+
+    2. this function adds mark for roi_extractor forward and remove
+    unnecessary code of origin forward function when using ONNX as IR.
+
+    3. use the roi align in torhcvision to accelerate the inference.
+    """
+    out_size = self.roi_layers[0].output_size
+    num_levels = len(feats)
+    roi_feats = feats[0].new_zeros(rois.shape[0], self.out_channels, *out_size)
+
+    for roi_layer in self.roi_layers:
+        roi_layer.use_torchvision = True
+
+    if num_levels == 1:
+        assert len(rois) > 0, 'The number of rois should be positive'
+        return self.roi_layers[0](feats[0], rois)
+
+    target_lvls = self.map_roi_levels(rois, num_levels)
+
+    if roi_scale_factor is not None:
+        rois = self.roi_rescale(rois, roi_scale_factor)
+
+    for i in range(num_levels):
+        mask = target_lvls == i
+        rois_t = rois * mask.unsqueeze(-1)
+
+        # use the roi align in torhcvision
+        roi_feats_t = self.roi_layers[i](feats[i], rois_t)
+        # TODO: Find out why we can't use mask here.
+        out_mask = (rois_t[:, 1:].sum(1) > 0).view(-1, 1, 1, 1)
+        roi_feats = roi_feats_t * out_mask + roi_feats
     return roi_feats
 
 

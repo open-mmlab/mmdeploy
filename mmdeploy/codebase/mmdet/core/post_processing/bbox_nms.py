@@ -310,13 +310,13 @@ def multiclass_nms__coreml(ctx,
     def _xyxy2xywh(boxes):
         xy0 = boxes[..., :2]
         xy1 = boxes[..., 2:]
-        xy = (xy0 + xy1) / 2
+        xy = (xy0 + xy1) * 0.5
         wh = xy1 - xy0
         return torch.cat([xy, wh], dim=-1)
 
     def _xywh2xyxy(boxes):
         xy = boxes[..., :2]
-        half_wh = boxes[..., 2:] / 2
+        half_wh = boxes[..., 2:] * 0.5
         return torch.cat([xy - half_wh, xy + half_wh], dim=-1)
 
     boxes = _xyxy2xywh(boxes)
