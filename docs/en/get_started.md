@@ -185,7 +185,7 @@ $env:path="$env:ONNXRUNTIME_DIR"/lib:$env:path
 <details>
 <summary><b>Windows, CUDA 11.x, TensorRT 8.2.3.0</b></summary>
 
-请在 Conda Prompt Shell 中执行以下命令
+Please run the following scripts in `Anaconda Powershell Prompt`
 
 ```shell
 # install MMDeploy
@@ -315,66 +315,45 @@ cv2.imwrite('output_detection.png', img)
 
 You can find more examples from [here](https://github.com/open-mmlab/mmdeploy/tree/master/demo/python).
 
-#### C API
+#### C++ API
 
-Using SDK C API should follow next pattern,
+Using SDK C++ API should follow next pattern,
 
-```{mermaid}
-graph LR
-  A[create inference handle] --> B(read image)
-  B --> C(apply handle)
-  C --> D[deal with inference result]
-  D -->E[destroy result buffer]
-  E -->F[destroy handle]
-```
+![image](https://user-images.githubusercontent.com/4560679/182554739-7fff57fc-5c84-44ed-b139-4749fae27404.png)
 
 Now let's apply this procedure on the above Faster R-CNN model.
 
 ```C++
 #include <cstdlib>
 #include <opencv2/opencv.hpp>
-#include "detector.h"
+#include "mmdeploy/detector.hpp"
 
 int main() {
   const char* device_name = "cuda";
   int device_id = 0;
-
   std::string model_path = "mmdeploy_model/faster-rcnn";
   std::string image_path = "mmdetection/demo/demo.jpg";
 
-  // create inference handle
-  mmdeploy_detector_t detector{};
-  int status{};
-  status = mmdeploy_detector_create_by_path(model_path, device_name, device_id, &detector);
-  assert(status == MMDEPLOY_SUCCESS);
-
-  // read image
+  // 1. load model
+  mmdeploy::Model model(model_path);
+  // 2. create predictor
+  mmdeploy::Detector detector(model, mmdeploy::Device{device_name, device_id});
+  // 3. read image
   cv::Mat img = cv::imread(image_path);
-  assert(img.data);
-
-  // apply handle and get the inference result
-  mmdeploy_mat_t mat{img.data, img.rows, img.cols, 3, MMDEPLOY_PIXEL_FORMAT_BGR, MMDEPLOY_DATA_TYPE_UINT8};
-  mmdeploy_detection_t *bboxes{};
-  int *res_count{};
-  status = mmdeploy_detector_apply(detector, &mat, 1, &bboxes, &res_count);
-  assert (status == MMDEPLOY_SUCCESS);
-
-  // deal with the result. Here we choose to visualize it
-  for (int i = 0; i < *res_count; ++i) {
-    const auto &box = bboxes[i].bbox;
+  // 4. inference
+  auto dets = detector.Apply(img);
+  // 5. deal with the result. Here we choose to visualize it
+  for (int i = 0; i < dets.size(); ++i) {
+    const auto& box = dets[i].bbox;
+    fprintf(stdout, "box %d, left=%.2f, top=%.2f, right=%.2f, bottom=%.2f, label=%d, score=%.4f\n",
+            i, box.left, box.top, box.right, box.bottom, dets[i].label_id, dets[i].score);
     if (bboxes[i].score < 0.3) {
       continue;
     }
     cv::rectangle(img, cv::Point{(int)box.left, (int)box.top},
                   cv::Point{(int)box.right, (int)box.bottom}, cv::Scalar{0, 255, 0});
   }
-
   cv::imwrite("output_detection.png", img);
-
-  // destroy result buffer
-  mmdeploy_detector_release_result(bboxes, res_count, 1);
-  // destroy inference handle
-  mmdeploy_detector_destroy(detector);
   return 0;
 }
 ```
@@ -386,19 +365,10 @@ find_package(MMDeploy REQUIRED)
 target_link_libraries(${name} PRIVATE mmdeploy ${OpenCV_LIBS})
 ```
 
-For more SDK C API usages, please read these [samples](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csrc).
+For more SDK C++ API usages, please read these [samples](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csrc).
 
-#### C++ API
-
-You can learn the usage of MMDeploy C++ API from [demo codes](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csrc). We'll talk about them more in our next release.
-
-#### C# API
-
-You can learn the usage of MMDeploy C+ API from [demo codes](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csharp). We'll talk about them more in our next release.
-
-#### JAVA API
-
-You can learn the usage of MMDeploy C+ API from [demo codes](https://github.com/open-mmlab/mmdeploy/tree/master/demo/java). We'll talk about them more in our next release.
+For the rest C, C# and Java API usages, please read [C demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csrc), [C# demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csharp) and [Java demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/java) respectively.
+We'll talk about them more in our next release.
 
 ## Evaluate Model
 

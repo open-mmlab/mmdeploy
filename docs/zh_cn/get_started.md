@@ -314,25 +314,17 @@ cv2.imwrite('output_detection.png', img)
 
 更多示例，请查阅[这里](https://github.com/open-mmlab/mmdeploy/tree/master/demo/python)。
 
-#### C API
+#### C++ API
 
-使用 C API 进行模型推理的流程符合下面的模式：
-
-```{mermaid}
-graph LR
-  A[创建推理句柄] --> B(读取图像)
-  B --> C(应用句柄进行推理)
-  C --> D[处理推理结果]
-  D -->E[销毁结果]
-  E -->F[销毁推理句柄]
-```
+使用 C++ API 进行模型推理的流程符合下面的模式：
+![image](https://user-images.githubusercontent.com/4560679/182554486-2bf0ff80-9e82-4a0f-bccc-5e1860444302.png)
 
 以下是这个流程的具体应用过程：
 
 ```C++
 #include <cstdlib>
 #include <opencv2/opencv.hpp>
-#include "mmdeploy/detector.h"
+#include "mmdeploy/detector.hpp"
 
 int main() {
   const char* device_name = "cuda";
@@ -342,37 +334,26 @@ int main() {
   std::string model_path = "mmdeploy_model/faster-rcnn";
   std::string image_path = "mmdetection/demo/demo.jpg";
 
-  // 创建推理句柄
-  mmdeploy_detector_t detector{};
-  auto status = mmdeploy_detector_create_by_path(model_path, device_name, device_id, &detector);
-  assert(status == MMDEPLOY_SUCCESS);
-
-  // 读取图像
+  // 1. 读取模型
+  mmdeploy::Model model(model_path);
+  // 2. 创建预测器
+  mmdeploy::Detector detector(model, mmdeploy::Device{device_name, device_id});
+  // 3. 读取图像
   cv::Mat img = cv::imread(image_path);
-
-  // 应用句柄进行推理
-  mmdeploy_mat_t mat{img.data, img.rows, img.cols, 3, MMDEPLOY_PIXEL_FORMAT_BGR, MMDEPLOY_DATA_TYPE_UINT8};
-  mmdeploy_detection_t *bboxes{};
-  int *res_count{};
-  status = mmdeploy_detector_apply(detector, &mat, 1, &bboxes, &res_count);
-  assert (status == MMDEPLOY_SUCCESS);
-
-  // 处理推理结果: 此处我们选择可视化推理结果
-  for (int i = 0; i < *res_count; ++i) {
-    const auto &box = bboxes[i].bbox;
+  // 4. 应用预测器推理
+  auto dets = detector.Apply(img);
+  // 5. 处理推理结果: 此处我们选择可视化推理结果
+  for (int i = 0; i < dets.size(); ++i) {
+    const auto& box = dets[i].bbox;
+    fprintf(stdout, "box %d, left=%.2f, top=%.2f, right=%.2f, bottom=%.2f, label=%d, score=%.4f\n",
+            i, box.left, box.top, box.right, box.bottom, dets[i].label_id, dets[i].score);
     if (bboxes[i].score < 0.3) {
       continue;
     }
     cv::rectangle(img, cv::Point{(int)box.left, (int)box.top},
                   cv::Point{(int)box.right, (int)box.bottom}, cv::Scalar{0, 255, 0});
   }
-
   cv::imwrite("output_detection.png", img);
-
-  // 销毁结果
-  mmdeploy_detector_release_result(bboxes, res_count, 1);
-  // 销毁推理句柄
-  mmdeploy_detector_destroy(detector);
   return 0;
 }
 ```
@@ -387,17 +368,8 @@ target_link_libraries(${name} PRIVATE mmdeploy ${OpenCV_LIBS})
 编译时，使用 -DMMDeploy_DIR，传入MMDeloyConfig.cmake所在的路径。它在预编译包中的sdk/lib/cmake/MMDeloy下。
 更多示例，请查阅[此处](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csrc)。
 
-#### C++ API
-
-请参考[这里](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csrc)，了解 SDK C++ API 的应用示例。在下个版本，我们将详细说明。
-
-#### C# API
-
-请参考[这里](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csharp)，了解 SDK C# API 的应用示例。在下个版本，我们将详细说明。
-
-#### JAVA API
-
-请参考[这里](https://github.com/open-mmlab/mmdeploy/tree/master/demo/java)，了解 SDK JAVA API 的应用示例。在下个版本，我们将详细说明。
+对于 C API、C# API、Java API 的使用方法，请分别阅读代码[C demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csrc)， [C# demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csharp) 和 [Java demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/java)。
+我们将在后续版本中详细讲述它们的用法。
 
 ## 模型精度评估
 
