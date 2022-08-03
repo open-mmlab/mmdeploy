@@ -8,26 +8,40 @@ using namespace mmdeploy;
 using namespace std;
 
 TEST_CASE("test collect constructor", "[collect]") {
+  Device device{"cpu"};
+  Stream stream{device};
+  Value cfg = {{"context", {{"device", device}, {"stream", stream}}}};
+
   std::string transform_type{"Collect"};
   auto creator = Registry<Transform>::Get().GetCreator(transform_type, 1);
   REQUIRE(creator != nullptr);
 
-  REQUIRE_THROWS(creator->Create({}));
+  REQUIRE_THROWS(creator->Create(cfg));
 
   SECTION("args with 'keys' which is not an array") {
-    REQUIRE_THROWS(creator->Create({{"keys", "img"}}));
+    auto _cfg = cfg;
+    _cfg["keys"] = "img";
+    REQUIRE_THROWS(creator->Create(_cfg));
   }
 
   SECTION("args with keys in array") {
-    auto module = creator->Create({{"keys", {"img"}}});
+    auto _cfg = cfg;
+    _cfg["keys"] = {"img"};
+    auto module = creator->Create(_cfg);
     REQUIRE(module != nullptr);
   }
 
   SECTION("args with meta_keys that is not an array") {
-    REQUIRE_THROWS(creator->Create({{"keys", {"img"}}, {"meta_keys", "ori_img"}}));
+    auto _cfg = cfg;
+    _cfg["keys"] = {"img"};
+    _cfg["meta_keys"] = "ori_img";
+    REQUIRE_THROWS(creator->Create(_cfg));
   }
   SECTION("args with meta_keys in array") {
-    auto module = creator->Create({{"keys", {"img"}}, {"meta_keys", {"ori_img"}}});
+    auto _cfg = cfg;
+    _cfg["keys"] = {"img"};
+    _cfg["meta_keys"] = {"ori_img"};
+    auto module = creator->Create(_cfg);
     REQUIRE(module != nullptr);
   }
 }
@@ -38,6 +52,10 @@ TEST_CASE("test collect", "[collect]") {
   vector<std::string> meta_keys{"filename", "ori_filename",   "ori_shape",   "img_shape",
                                 "flip",     "flip_direction", "img_norm_cfg"};
   Value args;
+  Device device{"cpu"};
+  Stream stream{device};
+  args["context"]["device"] = device;
+  args["context"]["stream"] = stream;
   for (auto& key : keys) {
     args["keys"].push_back(key);
   }

@@ -19,6 +19,7 @@ class MMDEPLOY_API TransformImpl : public Module {
   std::vector<std::string> GetImageFields(const Value& input);
 
  protected:
+  bool fuse_transform_{false};
   Device device_;
   Stream stream_;
 };
