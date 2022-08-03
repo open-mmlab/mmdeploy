@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-from typing import Dict, List, NamedTuple, Sequence, Tuple
+from typing import Dict, List, NamedTuple, Sequence
 
 import acl
 import numpy as np
@@ -285,7 +285,8 @@ class AscendWrapper(BaseWrapper):
             for axis, src_dim in enumerate(src):
                 for index, dims in enumerate(self._dynamic_dims):
                     ref_dim = dims['dims'][ptr]
-                    if axis == 0 and src_dim < ref_dim:  # allow batch dimension to vary
+                    # allow batch dimension to vary
+                    if axis == 0 and src_dim < ref_dim:
                         pass
                     elif src_dim != ref_dim:
                         match[index] = False
@@ -339,8 +340,7 @@ class AscendWrapper(BaseWrapper):
 
     @TimeCounter.count_time()
     def __ascend_execute(self):
-        """Run inference with cann.
-        """
+        """Run inference with cann."""
         ret = acl.mdl.execute(self._model_id, self._input.handle,
                               self._output.handle)
         _check(ret, 'acl.mdl.execute')

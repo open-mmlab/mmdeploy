@@ -5,6 +5,8 @@ from subprocess import call
 
 import onnx
 
+from mmdeploy.utils import get_root_logger
+
 
 def make_shape_string(name, dims):
     return f'{name}:{",".join(map(str, dims))}'
@@ -15,6 +17,7 @@ def _concat(dims):
 
 
 def from_onnx(onnx_model, work_dir, model_inputs):
+    logger = get_root_logger()
     if not isinstance(onnx_model, str):
         onnx_path = tempfile.NamedTemporaryFile(suffix='.onnx').name
         onnx.save(onnx_model, onnx_path)
@@ -31,7 +34,6 @@ def from_onnx(onnx_model, work_dir, model_inputs):
 
     output_path = osp.join(work_dir, osp.splitext(osp.split(onnx_path)[1])[0])
 
-    print(model_inputs)
     input_shapes = []
 
     for name, dims in model_inputs.input_shapes.items():
@@ -46,17 +48,17 @@ def from_onnx(onnx_model, work_dir, model_inputs):
         f'--input_shape={input_shapes}'
     ]
 
-    if 'batch_sizes' in model_inputs:
+    if 'dynamic_batch_size' in model_inputs:
+        dynamic_batch_size = ",".join(
+            map(str, model_inputs.dynamic_batch_size))
+        args.append(f'--dynamic_batch_size={dynamic_batch_size}')
+    elif 'dynamic_image_size' in model_inputs:
         args.append(
-            f'--dynamic_batch_size={",".join(map(str, model_inputs.batch_sizes))}'
-        )
-    elif 'image_sizes' in model_inputs:
-        args.append(
-            f'--dynamic_image_size={_concat(model_inputs.image_sizes)}')
+            f'--dynamic_image_size={_concat(model_inputs.dynamic_image_size)}')
     elif 'dynamic_dims' in model_inputs:
         args.append(f'--dynamic_dims={_concat(model_inputs.dynamic_dims)}')
 
-    print(' '.join(('atc', *args)))
+    logger.info(' '.join(('atc', *args)))
 
     ret_code = call(['atc', *args])
     assert ret_code == 0
