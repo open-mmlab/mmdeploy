@@ -14,9 +14,20 @@ onnx_file = tempfile.NamedTemporaryFile(suffix='onnx').name
 @pytest.fixture(autouse=False, scope='function')
 def prepare_symbolics():
     context = RewriterContext(
-        Config({'backend_config': {
-            'type': 'tensorrt'
-        }}), 'tensorrt', opset=11)
+        Config(
+            dict(
+                onnx_config=dict(
+                    type='onnx',
+                    export_params=True,
+                    keep_initializers_as_inputs=False,
+                    opset_version=11,
+                    save_file='end2end.onnx',
+                    input_names=['input'],
+                    output_names=['output'],
+                    input_shape=None),
+                backend_config=dict(type='tensorrt'))),
+        'tensorrt',
+        opset=11)
     context.enter()
 
     yield
@@ -51,24 +62,14 @@ class OpModel(torch.nn.Module):
 def get_model_onnx_nodes(model, x, onnx_file=onnx_file):
     torch.onnx.export(model, x, onnx_file, opset_version=11)
     onnx_model = onnx.load(onnx_file)
+    import shutil
+    shutil.copy(onnx_file, './adaptive_avg2d.onnx')
     nodes = onnx_model.graph.node
     return nodes
 
 
 @pytest.mark.usefixtures('prepare_symbolics')
 class TestAdaptivePool:
-
-    def test_adaptive_pool_1d_global(self):
-        x = torch.rand(2, 2, 2)
-        model = OpModel(torch.nn.functional.adaptive_avg_pool1d, [1]).eval()
-        nodes = get_model_onnx_nodes(model, x)
-        assert nodes[0].op_type == 'GlobalAveragePool'
-
-    def test_adaptive_pool_1d(self):
-        x = torch.rand(2, 2, 2)
-        model = OpModel(torch.nn.functional.adaptive_avg_pool1d, [2]).eval()
-        nodes = get_model_onnx_nodes(model, x)
-        assert nodes[0].op_type == 'AveragePool'
 
     def test_adaptive_pool_2d_global(self):
         x = torch.rand(2, 2, 2)
@@ -80,21 +81,8 @@ class TestAdaptivePool:
         x = torch.rand(2, 2, 2)
         model = OpModel(torch.nn.functional.adaptive_avg_pool2d, [2, 2]).eval()
         nodes = get_model_onnx_nodes(model, x)
-        assert nodes[0].op_type == 'AveragePool'
-
-    def test_adaptive_pool_3d_global(self):
-        x = torch.rand(2, 2, 2, 2)
-        model = OpModel(torch.nn.functional.adaptive_avg_pool3d,
-                        [1, 1, 1]).eval()
-        nodes = get_model_onnx_nodes(model, x)
-        assert nodes[0].op_type == 'GlobalAveragePool'
-
-    def test_adaptive_pool_3d(self):
-        x = torch.rand(2, 2, 2, 2)
-        model = OpModel(torch.nn.functional.adaptive_avg_pool3d,
-                        [2, 2, 2]).eval()
-        nodes = get_model_onnx_nodes(model, x)
-        assert nodes[0].op_type == 'AveragePool'
+        print(nodes)
+        assert nodes[-1].op_type == 'AveragePool'
 
 
 @pytest.mark.usefixtures('prepare_symbolics_ncnn')
@@ -123,6 +111,7 @@ def test_instance_norm():
     model = OpModel(torch.group_norm, 1, torch.rand([2]), torch.rand([2]),
                     1e-05).eval()
     nodes = get_model_onnx_nodes(model, x)
+    print(nodes)
     assert nodes[4].op_type == 'TRTInstanceNormalization'
     assert nodes[4].domain == 'mmdeploy'
 
