@@ -7,6 +7,7 @@ import numpy as np
 import torch
 
 from mmdeploy.utils import Backend
+from mmdeploy.utils.timer import TimeCounter
 from ..base import BACKEND_WRAPPER, BaseWrapper
 
 _from_acl_data_type = {0: np.float32, 3: np.int32, 9: np.int64}
@@ -192,9 +193,7 @@ class AscendWrapper(BaseWrapper):
                                 1)
             _check(ret, 'acl.rt.memcpy')
 
-        ret = acl.mdl.execute(self._model_id, self._input.handle,
-                              self._output.handle)
-        _check(ret, 'acl.mdl.execute')
+        self.__ascend_execute()
 
         outputs = {}
         for binding in self._model_desc.outputs:
@@ -337,3 +336,11 @@ class AscendWrapper(BaseWrapper):
         self._output = Dataset()
         for binding in self._model_desc.outputs:
             self._output.add_buffer(DataBuffer(binding.size))
+
+    @TimeCounter.count_time()
+    def __ascend_execute(self):
+        """Run inference with cann.
+        """
+        ret = acl.mdl.execute(self._model_id, self._input.handle,
+                              self._output.handle)
+        _check(ret, 'acl.mdl.execute')
