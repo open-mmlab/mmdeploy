@@ -25,7 +25,7 @@ namespace mmdeploy {
 
 using Rect = mmdeploy_rect_t;
 
-namespace {  // for now, avoid conflict with internal classes, for now
+namespace {  // avoid conflict with internal classes, for now
 
 class Model {
  public:
