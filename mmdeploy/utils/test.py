@@ -46,6 +46,9 @@ def backend_checker(backend: Backend, require_plugin: bool = False):
             from mmdeploy.apis.ncnn import is_custom_ops_available
     elif backend == Backend.OPENVINO:
         from mmdeploy.apis.openvino import is_available
+    elif backend == Backend.RKNN:
+        # device not require as backend is not really running
+        from mmdeploy.apis.rknn import is_available
     else:
         warnings.warn('The backend checker is not available')
         return
@@ -96,6 +99,9 @@ def check_backend(backend: Backend, require_plugin: bool = False):
         from mmdeploy.apis.openvino import is_available
     elif backend == Backend.TORCHSCRIPT:
         from mmdeploy.backend.torchscript import ops_available as is_available
+    elif backend == Backend.RKNN:
+        # device required
+        from mmdeploy.backend.rknn import device_available as is_available
     else:
         warnings.warn('The backend checker is not available')
         return

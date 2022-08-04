@@ -677,20 +677,20 @@ class RKNNModel(End2EndModel):
 
     def _get_bboxes(self, outputs):
         from mmdet.models import build_head
-        head_type = self.model_cfg._cfg_dict.model.bbox_head.type
-        head = build_head(head_type)
-        if head_type == 'YOLOXHead':
+        head_cfg = self.model_cfg._cfg_dict.model.bbox_head
+        head = build_head(head_cfg)
+        if head_cfg.type == 'YOLOXHead':
             ret = head.get_bboxes(
                 outputs[:3],
                 outputs[3:6],
                 outputs[6:9], [dict(scale_factor=None)],
                 cfg=self.model_cfg._cfg_dict.model.test_cfg)
-        elif head_type == 'YOLOV3Head':
+        elif head_cfg.type == 'YOLOV3Head':
             ret = head.get_bboxes(
                 outputs, [dict(scale_factor=None)],
                 cfg=self.model_cfg._cfg_dict.model.test_cfg)
         else:
-            raise NotImplementedError(f'{head_type} not supported yet.')
+            raise NotImplementedError(f'{head_cfg.type} not supported yet.')
         ret = [r.unsqueeze(0).cpu() for r in ret[0]]
         return ret
 
