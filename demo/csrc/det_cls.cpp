@@ -7,8 +7,8 @@
 #include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/core/value.h"
 #include "mmdeploy/experimental/module_adapter.h"
-#include "opencv2/imgcodecs.hpp"
 #include "mmdeploy/pipeline.h"
+#include "opencv2/imgcodecs.hpp"
 
 const auto config_json = R"(
 {
@@ -81,19 +81,23 @@ REGISTER_MODULE(Module, CropBoxCreator);
 int main() {
   auto config = from_json<Value>(config_json);
 
-  mmdeploy_context_t env{};
-  mmdeploy_context_create(&env);
+  mmdeploy_device_t device{};
+  mmdeploy_device_create("cpu", 0, &device);
+
+  mmdeploy_context_t ctx{};
+  mmdeploy_context_create(&ctx);
+
+  mmdeploy_context_add(ctx, MMDEPLOY_TYPE_DEVICE, nullptr, device);
 
   auto thread_pool = mmdeploy_executor_create_thread_pool(4);
-  auto single_thread = mmdeploy_executor_create_thread();
-  mmdeploy_context_add_scheduler(env, "preprocess", thread_pool);
-  mmdeploy_context_add_scheduler(env, "crop", thread_pool);
-  mmdeploy_context_add_scheduler(env, "net", single_thread);
-  mmdeploy_context_add_scheduler(env, "postprocess", thread_pool);
+  auto infer_thread = mmdeploy_executor_create_thread();
+  mmdeploy_context_add(ctx, MMDEPLOY_TYPE_SCHEDULER, "preprocess", thread_pool);
+  mmdeploy_context_add(ctx, MMDEPLOY_TYPE_SCHEDULER, "crop", thread_pool);
+  mmdeploy_context_add(ctx, MMDEPLOY_TYPE_SCHEDULER, "net", infer_thread);
+  mmdeploy_context_add(ctx, MMDEPLOY_TYPE_SCHEDULER, "postprocess", thread_pool);
 
   mmdeploy_pipeline_t pipeline{};
-  if (auto ec =
-          mmdeploy_pipeline_create_v2((mmdeploy_value_t)&config, "cpu", 0, env, &pipeline)) {
+  if (auto ec = mmdeploy_pipeline_create_v3((mmdeploy_value_t)&config, ctx, &pipeline)) {
     MMDEPLOY_ERROR("failed to create pipeline: {}", ec);
     return -1;
   }
@@ -113,9 +117,11 @@ int main() {
 
   mmdeploy_pipeline_destroy(pipeline);
 
-  mmdeploy_context_destroy(env);
-  mmdeploy_scheduler_destroy(single_thread);
+  mmdeploy_context_destroy(ctx);
+  mmdeploy_scheduler_destroy(infer_thread);
   mmdeploy_scheduler_destroy(thread_pool);
+
+  mmdeploy_device_destroy(device);
 
   return 0;
 }

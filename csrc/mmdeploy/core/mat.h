@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "mmdeploy/core/device.h"
+#include "mmdeploy/core/mpl/type_traits.h"
 #include "mmdeploy/core/types.h"
 
 namespace mmdeploy {
@@ -86,6 +87,11 @@ class MMDEPLOY_API Mat final {
   int size_{0};  // size of elements in mat
   int bytes_{0};
 };
+
+template <>
+struct is_cast_by_erasure<Mat> : std::true_type {};
+
+MMDEPLOY_REGISTER_TYPE_ID(Mat, 7);
 
 }  // namespace mmdeploy
 

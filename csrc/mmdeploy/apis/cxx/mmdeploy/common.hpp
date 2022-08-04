@@ -55,14 +55,21 @@ class Model {
 
 class Device {
  public:
-  explicit Device(std::string name, int index = 0) : name_(std::move(name)), index_(index) {}
+  explicit Device(std::string name, int index = 0) : name_(std::move(name)), index_(index) {
+    mmdeploy_device_t device{};
+    mmdeploy_device_create(name.c_str(), index, &device);
+    device_.reset(device, [](auto p) { mmdeploy_device_destroy(p); });
+  }
 
   const char* name() const noexcept { return name_.c_str(); }
   int index() const noexcept { return index_; }
 
+  operator mmdeploy_device_t() const noexcept { return device_.get(); }
+
  private:
   std::string name_;
   int index_;
+  std::shared_ptr<mmdeploy_device> device_;
 };
 
 class Mat {

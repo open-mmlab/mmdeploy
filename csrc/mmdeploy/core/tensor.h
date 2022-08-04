@@ -80,6 +80,11 @@ class MMDEPLOY_API Tensor {
 
 // static_assert(sizeof(Tensor) == 80);
 
+template <>
+struct is_cast_by_erasure<Tensor> : std::true_type {};
+
+MMDEPLOY_REGISTER_TYPE_ID(Tensor, 6);
+
 }  // namespace mmdeploy
 
 #endif  // !CORE_TENSOR_H

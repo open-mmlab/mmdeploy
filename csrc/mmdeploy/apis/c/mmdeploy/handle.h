@@ -17,11 +17,10 @@ namespace {
 
 class AsyncHandle {
  public:
-  AsyncHandle(const char* device_name, int device_id, Value config) {
-    device_ = Device(device_name, device_id);
-    stream_ = Stream(device_);
-    config["context"].update({{"device", device_}, {"stream", stream_}});
+  AsyncHandle(const char* device_name, int device_id, Value config)
+      : AsyncHandle(SetContext(std::move(config), device_name, device_id)) {}
 
+  explicit AsyncHandle(const Value& config) {
     if (auto builder = graph::Builder::CreateFromConfig(config).value()) {
       node_ = builder->Build().value();
     } else {
@@ -34,12 +33,14 @@ class AsyncHandle {
     return node_->Process(std::move(input));
   }
 
-  Device& device() { return device_; }
-  Stream& stream() { return stream_; }
-
  private:
-  Device device_;
-  Stream stream_;
+  static Value SetContext(Value config, const char* device_name, int device_id) {
+    Device device(device_name, device_id);
+    Stream stream(device);
+    config["context"].update({{"device", device}, {"stream", stream}});
+    return config;
+  }
+
   std::unique_ptr<graph::Node> node_;
 };
 

@@ -106,17 +106,17 @@ static std::vector<std::pair<int, int>> skeleton{
 int main() {
   auto config = from_json<Value>(config_json);
 
-  mmdeploy_context_t env{};
-  mmdeploy_context_create(&env);
+  mmdeploy_context_t context{};
+  mmdeploy_context_create(&context);
 
   auto thread_pool = mmdeploy_executor_create_thread_pool(4);
   auto single_thread = mmdeploy_executor_create_thread();
-  mmdeploy_context_add_scheduler(env, "preprocess", thread_pool);
-  mmdeploy_context_add_scheduler(env, "net", single_thread);
-  mmdeploy_context_add_scheduler(env, "postprocess", thread_pool);
+  mmdeploy_context_add(context, MMDEPLOY_TYPE_SCHEDULER, "preprocess", thread_pool);
+  mmdeploy_context_add(context, MMDEPLOY_TYPE_SCHEDULER, "net", single_thread);
+  mmdeploy_context_add(context, MMDEPLOY_TYPE_SCHEDULER, "postprocess", thread_pool);
 
   mmdeploy_pipeline_t pipeline{};
-  if (auto ec = mmdeploy_pipeline_create_v2((mmdeploy_value_t)&config, "cpu", 0, nullptr, &pipeline)) {
+  if (auto ec = mmdeploy_pipeline_create_v3((mmdeploy_value_t)&config, context, &pipeline)) {
     MMDEPLOY_ERROR("failed to create pipeline: {}", ec);
     return -1;
   }
@@ -169,7 +169,7 @@ int main() {
 
   mmdeploy_pipeline_destroy(pipeline);
 
-  mmdeploy_context_destroy(env);
+  mmdeploy_context_destroy(context);
   mmdeploy_scheduler_destroy(single_thread);
   mmdeploy_scheduler_destroy(thread_pool);
 

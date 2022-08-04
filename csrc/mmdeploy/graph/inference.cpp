@@ -18,7 +18,7 @@ Result<unique_ptr<Node>> InferenceBuilder::BuildImpl() {
     model = model_config.get<Model>();
   } else {
     auto model_name = model_config.get<string>();
-    if (auto m = Maybe{config_} / "context" / "env" / "models" / model_name / identity<Model>{}) {
+    if (auto m = Maybe{config_} / "context" / "model" / model_name / identity<Model>{}) {
       model = *m;
     } else {
       model = Model(model_name);

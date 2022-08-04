@@ -92,16 +92,4 @@ class wrapped<T, std::void_t<decltype(Cast(T{}))>> {
 
 }  // namespace
 
-MMDEPLOY_API int mmdeploy_common_create_input(const mmdeploy_mat_t* mats, int mat_count,
-                                              mmdeploy_value_t* value);
-
-namespace mmdeploy {
-
-struct Environment {
-  std::vector<std::pair<std::string, TypeErasedScheduler<Value>>> schedulers_;
-  std::vector<std::pair<std::string, Model>> models_;
-};
-
-}  // namespace mmdeploy
-
 #endif  // MMDEPLOY_CSRC_APIS_C_COMMON_INTERNAL_H_

@@ -1,11 +1,9 @@
 
 #include "mmdeploy/archive/json_archive.h"
-#include "mmdeploy/core/logger.h"
-#include "mmdeploy/core/mat.h"
 #include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/core/value.h"
 #include "mmdeploy/pipeline.h"
-#include "mmdeploy/text_detector.h"
+#include "mmdeploy/pipeline.hpp"
 #include "opencv2/imgcodecs.hpp"
 
 const auto config_json = R"(
@@ -18,7 +16,7 @@ const auto config_json = R"(
       "type": "Inference",
       "input": "img",
       "output": "dets",
-      "params": { "model": "text-detection" }
+      "params": { "model": "text_detection" }
     },
     {
       "type": "Pipeline",
@@ -27,7 +25,7 @@ const auto config_json = R"(
         {
           "type": "Task",
           "module": "WarpBbox",
-          "scheduler": "crop",
+          "scheduler": "thread_pool",
           "input": ["imgs", "bboxes"],
           "output": "patches"
         },
@@ -35,7 +33,7 @@ const auto config_json = R"(
           "type": "Inference",
           "input": "patches",
           "output": "texts",
-          "params": { "model": "text-recognition" }
+          "params": { "model": "text_recognition" }
         }
       ],
       "output": "*texts"
@@ -46,54 +44,40 @@ const auto config_json = R"(
 
 using namespace mmdeploy;
 
-int main() {
-  auto config = from_json<Value>(config_json);
-
-  mmdeploy_context_t ctx{};
-  mmdeploy_context_create(&ctx);
-
-  auto thread_pool = mmdeploy_executor_create_thread_pool(4);
-  auto single_thread = mmdeploy_executor_create_thread();
-  mmdeploy_context_add_scheduler(ctx, "preprocess", thread_pool);
-  mmdeploy_context_add_scheduler(ctx, "crop", thread_pool);
-  mmdeploy_context_add_scheduler(ctx, "net", single_thread);
-  mmdeploy_context_add_scheduler(ctx, "postprocess", thread_pool);
-
-  mmdeploy_model_t text_det_model{};
-  mmdeploy_model_create_by_path("../textdet_tmp_model", &text_det_model);
-  mmdeploy_context_add_model(ctx, "text-detection", text_det_model);
-
-  mmdeploy_model_t text_recog_model{};
-  mmdeploy_model_create_by_path("../textrecog_tmp_model", &text_recog_model);
-  mmdeploy_context_add_model(ctx, "text-recognition", text_recog_model);
-
-  mmdeploy_pipeline_t pipeline{};
-  if (auto ec = mmdeploy_pipeline_create_v2((mmdeploy_value_t)&config, "cuda", 0, ctx, &pipeline)) {
-    MMDEPLOY_ERROR("failed to create pipeline: {}", ec);
+int main(int argc, char* argv[]) {
+  if (argc != 5) {
+    fprintf(stderr,
+            "usage:\n\ttext_det_recog device_name det_model_path reg_model_path image_path\n");
     return -1;
   }
 
-  cv::Mat mat = cv::imread("../demo_text_ocr.jpg");
-  mmdeploy::Mat img(mat.rows, mat.cols, PixelFormat::kBGR, DataType::kINT8, mat.data, Device(0));
+  auto device_name = argv[1];
+  auto det_model_path = argv[2];
+  auto reg_model_path = argv[3];
+  auto image_path = argv[4];
 
-  Value input = Value::Array{Value::Array{Value::Object{{"ori_img", img}}}};
+  cv::Mat mat = cv::imread(image_path);
+  if (!mat.data) {
+    fprintf(stderr, "failed to open image %s\n,", image_path);
+    return -1;
+  }
 
-  mmdeploy_value_t tmp{};
-  mmdeploy_pipeline_apply(pipeline, (mmdeploy_value_t)&input, &tmp);
+  auto config = from_json<Value>(config_json);
 
-  auto output = std::move(*(Value*)tmp);
-  mmdeploy_value_destroy(tmp);
+  Context context(Device(device_name, 0));
 
-  MMDEPLOY_INFO("{}", output);
+  auto thread_pool = Scheduler::CreateThreadPool(4);
+  auto infer_thread = Scheduler::CreateThread();
+  context.Add(thread_pool, "thread_pool");
+  context.Add(infer_thread, "infer_thread");
+  context.Add(Model(det_model_path), "text_detection");
+  context.Add(Model(reg_model_path), "text_recognition");
 
-  mmdeploy_pipeline_destroy(pipeline);
+  Pipeline pipeline(config, context);
 
-  mmdeploy_model_destroy(text_recog_model);
-  mmdeploy_model_destroy(text_det_model);
+  auto output = pipeline.Apply(mat);
 
-  mmdeploy_context_destroy(ctx);
-  mmdeploy_scheduler_destroy(single_thread);
-  mmdeploy_scheduler_destroy(thread_pool);
+  MMDEPLOY_INFO("output:\n{}", output);
 
   return 0;
 }

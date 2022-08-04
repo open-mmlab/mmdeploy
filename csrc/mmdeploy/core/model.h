@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "mmdeploy/core/mpl/type_traits.h"
 #include "serialization.h"
 #include "types.h"
 
@@ -147,6 +148,11 @@ class MMDEPLOY_API ModelRegistry {
  private:
   std::vector<Entry> entries_;
 };
+
+template <>
+struct is_cast_by_erasure<Model> : std::true_type {};
+
+MMDEPLOY_REGISTER_TYPE_ID(Model, 5);
 
 }  // namespace mmdeploy
 

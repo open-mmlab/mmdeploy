@@ -205,15 +205,3 @@ int mmdeploy_executor_sync_wait_v2(mmdeploy_sender_t sender, mmdeploy_value_t* v
 void mmdeploy_executor_execute(mmdeploy_scheduler_t scheduler, void (*fn)(void*), void* context) {
   Execute(*Cast(scheduler), [fn, context] { fn(context); });
 }
-
-int mmdeploy_context_add_scheduler(mmdeploy_context_t env, const char* name,
-                                   mmdeploy_scheduler_t sched) {
-  auto e = (mmdeploy::Environment*)env;
-  if (std::count_if(e->schedulers_.begin(), e->schedulers_.end(),
-                    [name](const auto& x) { return x.first == name; })) {
-    MMDEPLOY_ERROR("{} already exists", name);
-    return MMDEPLOY_E_INVALID_ARG;
-  }
-  e->schedulers_.emplace_back(name, *Cast(sched));
-  return MMDEPLOY_SUCCESS;
-}

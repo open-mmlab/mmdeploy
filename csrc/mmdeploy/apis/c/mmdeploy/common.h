@@ -79,17 +79,37 @@ typedef struct mmdeploy_value* mmdeploy_value_t;
 
 typedef struct mmdeploy_context* mmdeploy_context_t;
 
+typedef struct mmdeploy_device* mmdeploy_device_t;
+
+typedef enum mmdeploy_context_type_t {
+  MMDEPLOY_TYPE_DEVICE = 0,
+  MMDEPLOY_TYPE_STREAM = 1,
+  MMDEPLOY_TYPE_MODEL = 2,
+  MMDEPLOY_TYPE_SCHEDULER = 3,
+} mmdeploy_context_type_t;
+
 #if __cplusplus
 extern "C" {
 #endif
 
 MMDEPLOY_API mmdeploy_value_t mmdeploy_value_copy(mmdeploy_value_t value);
 
-MMDEPLOY_API int mmdeploy_value_destroy(mmdeploy_value_t value);
+MMDEPLOY_API void mmdeploy_value_destroy(mmdeploy_value_t value);
 
-MMDEPLOY_API int mmdeploy_context_create(mmdeploy_context_t* env);
+MMDEPLOY_API int mmdeploy_context_create(mmdeploy_context_t* context);
 
-MMDEPLOY_API void mmdeploy_context_destroy(mmdeploy_context_t env);
+MMDEPLOY_API void mmdeploy_context_destroy(mmdeploy_context_t context);
+
+MMDEPLOY_API int mmdeploy_context_add(mmdeploy_context_t context, mmdeploy_context_type_t type,
+                                      const char* name, const void* object);
+
+MMDEPLOY_API int mmdeploy_device_create(const char* device_name, int device_id,
+                                        mmdeploy_device_t* device);
+
+MMDEPLOY_API void mmdeploy_device_destroy(mmdeploy_device_t device);
+
+MMDEPLOY_API int mmdeploy_common_create_input(const mmdeploy_mat_t* mats, int mat_count,
+                                              mmdeploy_value_t* value);
 
 #if __cplusplus
 }

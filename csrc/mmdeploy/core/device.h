@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "mmdeploy/core/macro.h"
+#include "mmdeploy/core/mpl/type_traits.h"
 #include "mmdeploy/core/status_code.h"
 
 namespace mmdeploy {
@@ -338,5 +339,19 @@ class MMDEPLOY_API PlatformRegistry {
 };
 
 MMDEPLOY_API PlatformRegistry &gPlatformRegistry();
+
+template <>
+struct is_cast_by_erasure<Device> : std::true_type {};
+template <>
+struct is_cast_by_erasure<Buffer> : std::true_type {};
+template <>
+struct is_cast_by_erasure<Stream> : std::true_type {};
+template <>
+struct is_cast_by_erasure<Event> : std::true_type {};
+
+MMDEPLOY_REGISTER_TYPE_ID(Device, 1);
+MMDEPLOY_REGISTER_TYPE_ID(Buffer, 2);
+MMDEPLOY_REGISTER_TYPE_ID(Stream, 3);
+MMDEPLOY_REGISTER_TYPE_ID(Event, 4);
 
 }  // namespace mmdeploy

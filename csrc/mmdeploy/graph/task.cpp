@@ -69,7 +69,7 @@ Result<unique_ptr<Node>> TaskBuilder::BuildImpl() {
     OUTCOME_TRY(task->module_, CreateModule(config_));
 
     if (auto name = Maybe{config_} / "scheduler" / identity<string>{}) {
-      if (auto sched = Maybe{config_} / "context" / "env" / "schedulers" / *name /
+      if (auto sched = Maybe{config_} / "context" / "scheduler" / *name /
                        identity<TypeErasedScheduler<Value>>{}) {
         task->sched_ = std::move(*sched);
       }

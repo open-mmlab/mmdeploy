@@ -31,26 +31,11 @@ int mmdeploy_pipeline_create(mmdeploy_value_t config, const char* device_name, i
   return MMDEPLOY_E_FAIL;
 }
 
-int mmdeploy_pipeline_create_v2(mmdeploy_value_t config, const char* device_name, int device_id,
-                                mmdeploy_context_t env, mmdeploy_pipeline_t* pipeline) {
+int mmdeploy_pipeline_create_v3(mmdeploy_value_t config, mmdeploy_context_t context,
+                                mmdeploy_pipeline_t* pipeline) {
   try {
     auto _config = *Cast(config);
-    if (env) {
-      auto e = reinterpret_cast<Environment*>(env);
-      {
-        auto& info = (_config["context"]["env"]["schedulers"] = Value::kObject);
-        for (const auto& [k, v] : e->schedulers_) {
-          info[k] = v;
-        }
-      }
-      {
-        auto& info = (_config["context"]["env"]["models"] = Value::kObject);
-        for (const auto& [k, v] : e->models_) {
-          info[k] = v;
-        }
-      }
-    }
-    auto _handle = std::make_unique<AsyncHandle>(device_name, device_id, std::move(_config));
+    auto _handle = std::make_unique<AsyncHandle>(std::move(_config));
     *pipeline = Cast(_handle.release());
     return MMDEPLOY_SUCCESS;
   } catch (const std::exception& e) {

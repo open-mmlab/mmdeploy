@@ -34,9 +34,6 @@ struct mmdeploy_exec_info {
   mmdeploy_scheduler_t scheduler;
 };
 
-MMDEPLOY_API int mmdeploy_context_add_scheduler(mmdeploy_context_t env, const char* name,
-                                                    mmdeploy_scheduler_t sched);
-
 ///////////////////////////////////////////////////////////////////////////////
 // Scheduler
 ///////////////////////////////////////////////////////////////////////////////
