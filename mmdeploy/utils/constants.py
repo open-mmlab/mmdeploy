@@ -55,6 +55,7 @@ class Backend(AdvancedEnum):
     ONNXRUNTIME = 'onnxruntime'
     PPLNN = 'pplnn'
     NCNN = 'ncnn'
+    SNPE = 'snpe'
     OPENVINO = 'openvino'
     SDK = 'sdk'
     TORCHSCRIPT = 'torchscript'

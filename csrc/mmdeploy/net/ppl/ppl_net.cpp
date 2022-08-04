@@ -16,7 +16,7 @@
 #include "ppl/nn/engines/cuda/engine_factory.h"
 #include "ppl/nn/engines/cuda/engine_options.h"
 #include "ppl/nn/engines/cuda/ops.h"
-#define PPL_CUDA_IMPORT_FROM_BUFFER 0
+#define PPL_CUDA_IMPORT_FROM_BUFFER 1
 #endif
 
 namespace mmdeploy {

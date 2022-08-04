@@ -49,9 +49,14 @@ class PyRestorer {
 static void register_python_restorer(py::module &m) {
   py::class_<PyRestorer>(m, "Restorer")
       .def(py::init([](const char *model_path, const char *device_name, int device_id) {
-        return std::make_unique<PyRestorer>(model_path, device_name, device_id);
-      }))
-      .def("__call__", &PyRestorer::Apply);
+             return std::make_unique<PyRestorer>(model_path, device_name, device_id);
+           }),
+           py::arg("model_path"), py::arg("device_name"), py::arg("device_id") = 0)
+      .def("__call__",
+           [](PyRestorer *self, const PyImage &img) -> py::array {
+             return self->Apply(std::vector{img})[0];
+           })
+      .def("batch", &PyRestorer::Apply);
 }
 
 class PythonRestorerRegisterer {

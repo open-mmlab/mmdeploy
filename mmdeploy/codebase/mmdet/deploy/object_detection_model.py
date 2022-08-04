@@ -637,7 +637,7 @@ class SDKEnd2EndModel(End2EndModel):
             list: A list contains predictions.
         """
         dets, labels, masks = self.wrapper.invoke(
-            [img[0].contiguous().detach().cpu().numpy()])[0]
+            img[0].contiguous().detach().cpu().numpy())
         det_results = bbox2result(dets[np.newaxis, ...], labels[np.newaxis,
                                                                 ...],
                                   len(self.CLASSES))

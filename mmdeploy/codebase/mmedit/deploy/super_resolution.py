@@ -89,7 +89,11 @@ class SuperResolution(BaseTask):
         """
         from .super_resolution_model import build_super_resolution_model
         model = build_super_resolution_model(
-            model_files, self.model_cfg, self.deploy_cfg, device=self.device)
+            model_files,
+            self.model_cfg,
+            self.deploy_cfg,
+            device=self.device,
+            **kwargs)
         return model
 
     def init_pytorch_model(self,

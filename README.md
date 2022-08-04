@@ -55,9 +55,9 @@ The currently supported codebases and models are as follows, and more will be in
 
 Models can be exported and run in the following backends, and more will be compatible
 
-| ONNX Runtime | TensorRT | ppl.nn | ncnn | OpenVINO | LibTorch | more                                           |
-| ------------ | -------- | ------ | ---- | -------- | -------- | ---------------------------------------------- |
-| ✔️           | ✔️       | ✔️     | ✔️   | ✔️       | ✔️       | [benchmark](docs/en/03-benchmark/benchmark.md) |
+| ONNX Runtime | TensorRT | ppl.nn | ncnn | OpenVINO | LibTorch | snpe | more                                           |
+| ------------ | -------- | ------ | ---- | -------- | -------- | ---- | ---------------------------------------------- |
+| ✔️           | ✔️       | ✔️     | ✔️   | ✔️       | ✔️       | ✔️   | [benchmark](docs/en/03-benchmark/benchmark.md) |
 
 ### Efficient and scalable C/C++ SDK Framework
 
@@ -73,6 +73,7 @@ Please read [getting_started.md](docs/en/get_started.md) for the basic usage of 
   - [Build for Win10](docs/en/01-how-to-build/windows.md)
   - [Build for Android](docs/en/01-how-to-build/android.md)
   - [Build for Jetson](docs/en/01-how-to-build/jetsons.md)
+  - [Build for SNPE](docs/en/01-how-to-build/snpe.md)
 - User Guide
   - [How to convert model](docs/en/02-how-to-run/convert_model.md)
   - [How to write config](docs/en/02-how-to-run/write_config.md)
