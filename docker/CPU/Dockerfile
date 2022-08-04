@@ -73,6 +73,8 @@ RUN git clone https://github.com/Tencent/ncnn.git &&\
     cd /root/workspace/ncnn/python &&\
     pip install -e .
 
+ENV PATH="/root/workspace/ncnn/build/tools/quantize/:${PATH}"
+
 ### install mmdeploy
 WORKDIR /root/workspace
 ARG VERSION
