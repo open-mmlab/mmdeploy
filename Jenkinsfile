@@ -44,18 +44,6 @@ Feature-Added: ',
     )
   }
 
-  environment {
-    script {
-        codebase_str = "error"
-        def codebase_list = ["mmdet", "mmcls", "mmocr"]
-        for ( codebase in codebase_list ) {
-            if (${params.codebase} == true ) {
-                codebase_str = codebase_str + " " + codebase
-            }
-        }
-    }
-  }
-
   stages {
         stage('Build') { 
             steps {
