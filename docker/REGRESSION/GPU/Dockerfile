@@ -63,7 +63,7 @@ RUN /opt/conda/bin/pip install openvino-dev
 RUN git clone https://github.com/Tencent/ncnn.git \
     && cd ncnn \
     && git submodule update --init \
-    && sudo apt install build-essential git cmake libprotobuf-dev protobuf-compiler libvulkan-dev vulkan-utils libopencv-dev \
+    && apt install build-essential git cmake libprotobuf-dev protobuf-compiler libvulkan-dev vulkan-utils libopencv-dev \
     && export PPLNN_DIR=$(pwd)
 
 ### get libtorch
