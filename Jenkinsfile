@@ -25,13 +25,11 @@ Feature-Added: ',
     booleanParam(
         name: 'mmdet', 
         defaultValue: true, 
-        description: '你需要在部署之前执行自动化测试么 ?'
     )
 
     booleanParam(
         name: 'mmcls', 
         defaultValue: true, 
-        description: '你需要在部署之前执行自动化测试么 ?'
     )
 
     password(
@@ -46,9 +44,21 @@ Feature-Added: ',
     )
   }
 
+  environment {
+    script {
+        def codebase_list = ["mmdet", "mmcls", "mmocr"]
+        for ( codebase in codebase_list ) {
+            if (${params.codebase} == true ) {
+                codebase_str = codebase_str + " " + codebase
+            }
+        }
+    }
+  }
+
   stages {
         stage('Build') { 
             steps {
+                echo codebase_str
                 script {
                     if ( {params.mmdet} == true ) {
                         echo "mmdet"
