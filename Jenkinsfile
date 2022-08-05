@@ -19,7 +19,13 @@ properties([
                     classpath: [],  
                     sandbox: false,  
                     script:  
-                        'return["Dev","QA","Stage","Prod"]' 
+                        "
+                            return [
+                                "qa",
+                                "test",
+                                "dev"
+                            ]
+                        "
                 ] 
             ] 
         ],  
