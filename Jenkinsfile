@@ -49,7 +49,9 @@ Feature-Added: ',
   stages {
         stage('Build') { 
             steps { 
-                if ( ${params.mmdet} == true )
+                if ( ${params.mmdet} == true ) {
+                    echo "mmdet"
+                }
                 echo "Build stage: 选中的构建Module为 : ${params.modulename} ..." 
             }
         }
