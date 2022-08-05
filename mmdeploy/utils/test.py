@@ -100,6 +100,10 @@ def check_backend(backend: Backend, require_plugin: bool = False):
     elif backend == Backend.TORCHSCRIPT:
         from mmdeploy.backend.torchscript import ops_available as is_available
     elif backend == Backend.RKNN:
+        from mmdeploy.backend.rknn import is_available
+        if not is_available():
+            # skip CI in github
+            pytest.skip(f'{backend.value} package is not available')
         # device required
         from mmdeploy.backend.rknn import device_available as is_available
     else:
