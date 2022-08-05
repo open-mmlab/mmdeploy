@@ -60,11 +60,16 @@ RUN git clone https://github.com/openppl-public/ppl.nn.git \
 RUN /opt/conda/bin/pip install openvino-dev
 
 ### get ncnn
-RUN git clone https://github.com/Tencent/ncnn.git \
-    && cd ncnn \
-    && git submodule update --init \
-    && apt install build-essential git cmake libprotobuf-dev protobuf-compiler libvulkan-dev vulkan-utils libopencv-dev \
-    && export PPLNN_DIR=$(pwd)
+RUN git clone https://github.com/Tencent/ncnn.git &&\
+    cd ncnn &&\
+    export NCNN_DIR=$(pwd) &&\
+    git submodule update --init &&\
+    mkdir -p build && cd build &&\
+    cmake -DNCNN_VULKAN=OFF -DNCNN_SYSTEM_GLSLANG=ON -DNCNN_BUILD_EXAMPLES=ON -DNCNN_PYTHON=ON -DNCNN_BUILD_TOOLS=ON -DNCNN_BUILD_BENCHMARK=ON -DNCNN_BUILD_TESTS=ON .. &&\
+    make -j$(nproc) &&\
+    make install &&\
+    cd /root/workspace/ncnn/python &&\
+    pip install -e .
 
 ### get libtorch
 RUN wget https://download.pytorch.org/libtorch/cu111/libtorch-shared-with-deps-1.8.1%2Bcu111.zip \
