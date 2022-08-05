@@ -1,5 +1,5 @@
 pipeline {
-  agent { label 'deploy_linux'}
+  agent { label 'deploy_linux' }
 
   parameters {
     choice(
@@ -47,12 +47,13 @@ Feature-Added: ',
   }
 
   stages {
-        stage('Build') {
-            if ( ${parameters.mmdet} == true ) {
-                echo "mmdet"
-            }
+        stage('Build') { 
             steps { 
-
+                if ( ${params.mmdet} == true ) {
+                    echo "mmdet"
+                } else {
+                    echo "no mmdet"
+                }
                 echo "Build stage: 选中的构建Module为 : ${params.modulename} ..." 
             }
         }
