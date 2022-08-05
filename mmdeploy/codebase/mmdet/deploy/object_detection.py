@@ -146,14 +146,12 @@ class ObjectDetection(BaseTask):
 
         data = collate(data_list, samples_per_gpu=len(imgs))
 
+        if self.device != 'cpu':
+            data = scatter(data, [self.device])[0]
         for k, v in data.items():
             # batch_size > 1
             if isinstance(v[0], DataContainer):
                 data[k] = [_.data[0] for _ in v]
-
-        if self.device != 'cpu':
-            data = scatter(data, [self.device])[0]
-
         return data, data['img']
 
     def visualize(self,

@@ -8,6 +8,7 @@ from typing import Any, Dict, Optional, Sequence, Tuple, Union
 import mmcv
 import numpy as np
 import torch
+from mmcv.parallel import DataContainer
 from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
@@ -211,6 +212,10 @@ class PoseDetection(BaseTask):
         batch_data = collate(batch_data, samples_per_gpu=len(imgs))
         if self.device != 'cpu':
             batch_data = scatter(batch_data, [self.device])[0]
+        for k, v in batch_data.items():
+            # batch_size > 1
+            if isinstance(v, DataContainer):
+                batch_data[k] = v.data[0]
         return batch_data, batch_data['img']
 
     def visualize(self,

@@ -4,6 +4,7 @@ from typing import Any, Dict, Optional, Sequence, Tuple, Union
 import mmcv
 import numpy as np
 import torch
+from mmcv.parallel import DataContainer
 from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
@@ -34,11 +35,11 @@ def process_model_config(model_cfg: mmcv.Config,
         cfg.data.test.pipeline[0] = LoadImage()
     # for static exporting
     if input_shape is not None:
-        for i, pipeline in enumerate(cfg.data.test.pipeline):
+        for pipeline in cfg.data.test.pipeline[1:]:
             if 'img_scale' in pipeline:
                 pipeline['img_scale'] = tuple(input_shape)
             if 'transforms' in pipeline:
-                for j, trans in enumerate(pipeline['transforms']):
+                for trans in pipeline['transforms']:
                     if 'keep_ratio' in trans:
                         trans['keep_ratio'] = False
     return cfg
@@ -136,10 +137,15 @@ class Segmentation(BaseTask):
             data = test_pipeline(data)
             data_list.append(data)
 
-        data = collate(data_list, samples_per_gpu=len(imgs))
+        batch_data = collate(data_list, samples_per_gpu=len(imgs))
         if self.device != 'cpu':
-            data = scatter(data, [self.device])[0]
-        return data, data['img']
+            batch_data = scatter(batch_data, [self.device])[0]
+
+        for k, v in batch_data.items():
+            # batch_size > 1
+            if isinstance(v[0], DataContainer):
+                batch_data[k] = [_.data[0] for _ in v]
+        return batch_data, batch_data['img']
 
     def visualize(self,
                   model,
