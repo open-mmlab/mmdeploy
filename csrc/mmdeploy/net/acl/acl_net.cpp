@@ -235,7 +235,7 @@ Result<void> AclNet::ConfigDynamicShapes() {
     status = aclmdlGetInputIndexByName(model_desc_, ACL_DYNAMIC_TENSOR_NAME, &dynamic_tensor_index);
     if (status == ACL_SUCCESS) {
       dynamic_tensor_index_ = static_cast<int>(dynamic_tensor_index);
-      MMDEPLOY_ERROR("dynamic tensor index: {}", dynamic_tensor_index);
+      MMDEPLOY_INFO("dynamic tensor index: {}", dynamic_tensor_index);
     }
   }
 
@@ -272,7 +272,7 @@ Result<void> AclNet::ConfigDynamicShapes() {
 Result<void> AclNet::CreateInputBuffers() {
   input_dataset_ = aclmdlCreateDataset();
   auto n_inputs = aclmdlGetNumInputs(model_desc_);
-  MMDEPLOY_ERROR("n_inputs = {}, dynamic_tensor_index_ = {}", n_inputs, dynamic_tensor_index_);
+  MMDEPLOY_INFO("n_inputs = {}, dynamic_tensor_index_ = {}", n_inputs, dynamic_tensor_index_);
   int dim_count = 0;
   for (int i = 0; i < n_inputs; ++i) {
     if (i == dynamic_tensor_index_) {
@@ -489,7 +489,7 @@ Result<void> AclNet::ReshapeDynamicBatchSize(Span<TensorShape> input_shapes) {
     MMDEPLOY_ERROR("unable to determine batch size");
     return Status(eFail);
   }
-  MMDEPLOY_ERROR("batch size {} {}", batch_size, dynamic_tensor_index_);
+  MMDEPLOY_INFO("batch size {} {}", batch_size, dynamic_tensor_index_);
   auto index =
       std::lower_bound(dynamic_batch_size_.begin(), dynamic_batch_size_.end(), batch_size) -
       dynamic_batch_size_.begin();

@@ -2,6 +2,7 @@
 import os.path as osp
 import tempfile
 from subprocess import call
+from typing import Dict, Sequence, Union
 
 import onnx
 
@@ -12,11 +13,27 @@ def make_shape_string(name, dims):
     return f'{name}:{",".join(map(str, dims))}'
 
 
-def _concat(dims):
+def _concat(dims: Sequence) -> str:
     return ';'.join([','.join(map(str, x)) for x in dims])
 
 
-def from_onnx(onnx_model, work_dir, model_inputs):
+def from_onnx(onnx_model: Union[onnx.ModelProto, str], work_dir: str,
+              model_inputs: Dict):
+    """Convert ONNX to Ascend model.
+
+    Example:
+        >>> from mmdeploy.apis.ascend import from_onnx
+        >>> onnx_path = 'work_dir/end2end.onnx'
+        >>> output_file_prefix = 'work_dir/end2end'
+        >>> model_inputs = mmcv.Config.from_dict(
+        >>>     dict(input_shapes=dict(input=[1, 3, 224, 224])))
+        >>> from_onnx(onnx_path, work_dir, output_file_prefix)
+
+    Args:
+        onnx_path (ModelProto|str): The path of the onnx model.
+        work_dir (str): Path to load onnx and save model.
+        model_inputs (Dict): The input args to the atc tools.
+    """
     logger = get_root_logger()
     if not isinstance(onnx_model, str):
         onnx_path = tempfile.NamedTemporaryFile(suffix='.onnx').name
@@ -36,7 +53,7 @@ def from_onnx(onnx_model, work_dir, model_inputs):
 
     input_shapes = []
 
-    for name, dims in model_inputs.input_shapes.items():
+    for name, dims in model_inputs['input_shapes'].items():
         input_shapes.append(make_shape_string(name, dims))
     input_shapes = ','.join(input_shapes)
 
@@ -49,14 +66,15 @@ def from_onnx(onnx_model, work_dir, model_inputs):
     ]
 
     if 'dynamic_batch_size' in model_inputs:
-        dynamic_batch_size = ",".join(
-            map(str, model_inputs.dynamic_batch_size))
+        dynamic_batch_size = ','.join(
+            map(str, model_inputs['dynamic_batch_size']))
         args.append(f'--dynamic_batch_size={dynamic_batch_size}')
     elif 'dynamic_image_size' in model_inputs:
-        args.append(
-            f'--dynamic_image_size={_concat(model_inputs.dynamic_image_size)}')
+        dynamic_image_size = _concat(model_inputs['dynamic_image_size'])
+        args.append(f'--dynamic_image_size={dynamic_image_size}')
     elif 'dynamic_dims' in model_inputs:
-        args.append(f'--dynamic_dims={_concat(model_inputs.dynamic_dims)}')
+        dynamic_dims = _concat(model_inputs['dynamic_dims'])
+        args.append(f'--dynamic_dims={dynamic_dims}')
 
     logger.info(' '.join(('atc', *args)))
 

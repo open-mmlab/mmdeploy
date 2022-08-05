@@ -333,6 +333,10 @@ def main():
             om_files.append(om_path)
         backend_files = om_files
 
+        if args.dump_info:
+            from mmdeploy.backend.ascend import update_sdk_pipeline
+            update_sdk_pipeline(args.work_dir)
+
     if args.test_img is None:
         args.test_img = args.img
 

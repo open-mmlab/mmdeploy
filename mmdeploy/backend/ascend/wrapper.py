@@ -14,17 +14,29 @@ _from_acl_data_type = {0: np.float32, 3: np.int32, 9: np.int64}
 
 
 class AclError(Exception):
+    """Acl Exception."""
     pass
 
 
 def _check(code: int, msg: str):
+    """check the error code.
+
+    Args:
+        code (int): The error code.
+        msg (str): Error message.
+    """
     if code != 0:
         raise AclError(msg, code)
 
 
 class DataBuffer:
+    """The acl data buffer.
 
-    def __init__(self, size):
+    Args:
+        size (int): Buffer size.
+    """
+
+    def __init__(self, size: int):
         data, ret = acl.rt.malloc(size, 0)
         _check(ret, 'acl.rt.malloc')
         self.data = data
@@ -37,6 +49,7 @@ class DataBuffer:
 
 
 class Dataset:
+    """The acl dataset."""
 
     def __init__(self):
         self.handle = acl.mdl.create_dataset()
@@ -46,6 +59,11 @@ class Dataset:
         acl.mdl.destroy_dataset(self.handle)
 
     def add_buffer(self, buffer: DataBuffer):
+        """Add data buffer into the dataset.
+
+        Args:
+            buffer (DataBuffer): The DataBuffer instance.
+        """
         self.buffers.append(buffer)
         _, ret = acl.mdl.add_dataset_buffer(self.handle, buffer.handle)
         _check(ret, 'acl.mdl.add_dataset_buffer')
@@ -60,6 +78,11 @@ class Binding(NamedTuple):
 
 
 class ModelDesc:
+    """The model description wrapper.
+
+    Args:
+        model_id (int): The id of the model, created by acl tools.
+    """
 
     def __init__(self, model_id):
         self._desc = acl.mdl.create_desc()
@@ -94,45 +117,84 @@ class ModelDesc:
     def __del__(self):
         acl.mdl.destroy_desc(self._desc)
 
-    def _get_input_dims(self, index):
+    def _get_input_dims(self, index: int):
+        """Get the dimension of the input by index.
+
+        Args:
+            index (int): The index of the input.
+        """
         dims, ret = acl.mdl.get_input_dims(self._desc, index)
         _check(ret, 'acl.mdl.get_input_dims')
         return dims
 
-    def _get_output_dims(self, index):
+    def _get_output_dims(self, index: int):
+        """Get the dimension of the output by index.
+
+        Args:
+            index (int): The index of the output.
+        """
         dims, ret = acl.mdl.get_output_dims(self._desc, index)
         _check(ret, 'acl.mdl.get_output_dims')
         dims['name'] = dims['name'].split(':')[-1]
         return dims
 
-    def _get_current_output_dims(self, index):
+    def _get_current_output_dims(self, index: int):
+        """Get the dimension of current output implementation.
+
+        Args:
+            index (int): The index of the output.
+        """
         dims, ret = acl.mdl.get_cur_output_dims(self._desc, index)
         _check(ret, 'acl.mdl.get_cur_output_dims')
         return dims
 
     def get_current_ouptut_dims(self):
+        """Get the dimension of current output."""
         dimses = []
         for output in self.outputs:
             dims = self._get_current_output_dims(output.index)
             dimses.append(dims['dims'])
         return dimses
 
-    def _get_input_index(self, name):
+    def _get_input_index(self, name: str) -> int:
+        """Get input index by name.
+
+        Args:
+            name (str): The name of the input.
+
+        Returns:
+            (int): The input index.
+        """
         index, ret = acl.mdl.get_input_index_by_name(self._desc, name)
         return index if ret == 0 else -1
 
-    def get_dynamic_batch(self):
+    def get_dynamic_batch(self) -> Sequence:
+        """Get dynamic batch size list.
+
+        Returns:
+            (Sequence): The dynamic batch list.
+        """
         batch, ret = acl.mdl.get_dynamic_batch(self._desc)
         _check(ret, 'acl.mdl.get_dynamic_batch')
         batch = batch['batch']
         return sorted(batch)
 
-    def get_dynamic_hw(self):
+    def get_dynamic_hw(self) -> Sequence:
+        """Get dynamic height and width size list.
+
+        Returns:
+            (Sequence): The dynamic height and width
+        """
         hw_info, ret = acl.mdl.get_dynamic_hw(self._desc, -1)
         _check(ret, 'acl.mdl.get_dynamic_hw')
         return hw_info['hw']
 
-    def get_input_dynamic_dims(self):
+    def get_input_dynamic_dims(self) -> Sequence:
+        """Get dynamic dims.
+
+        Returns:
+            (Sequence): The dynamic dims
+        """
         count, ret = acl.mdl.get_input_dynamic_gear_count(self._desc, -1)
         _check(ret, 'acl.mdl.get_input_dynamic_gear_count')
         dims, ret = acl.mdl.get_input_dynamic_dims(self._desc, -1, count)
@@ -142,6 +204,20 @@ class ModelDesc:
 
 @BACKEND_WRAPPER.register_module(Backend.ASCEND.value)
 class AscendWrapper(BaseWrapper):
+    """Ascend wrapper class for inference.
+
+    Args:
+        model (str): Path of the model file.
+
+    Examples:
+        >>> from mmdeploy.backend.ascend import AscendWrapper
+        >>> import torch
+        >>>
+        >>> model_file = 'model.om'
+        >>> model = AscendWrapper(model_file)
+        >>> inputs = dict(input=torch.randn(1, 3, 224, 224))
+        >>> outputs = model(inputs)
+    """
 
     def __init__(self, model: str):
 
@@ -178,6 +254,14 @@ class AscendWrapper(BaseWrapper):
 
     def forward(self, inputs: Dict[str,
                                    torch.Tensor]) -> Dict[str, torch.Tensor]:
+        """Run forward inference.
+
+        Args:
+            inputs (Dict[str, torch.Tensor]): Key-value pairs of model inputs.
+
+        Returns:
+            Dict[str, torch.Tensor]: Key-value pairs of model outputs.
+        """
         input_shapes = [inputs[x.name].shape for x in self._model_desc.inputs]
 
         output_shapes = self._reshape(input_shapes)
@@ -210,13 +294,20 @@ class AscendWrapper(BaseWrapper):
         return outputs
 
     def _verify_dims(self, src: Sequence[int], ref: Sequence[int]):
+        """Check if src match ref."""
         if len(src) != len(ref):
             raise RuntimeError(f'Shape mismatch {src} vs {ref}')
         for src_dim, ref_dim in zip(src, ref):
             if ref_dim != -1 and src_dim != ref_dim:
                 raise RuntimeError(f'Shape mismatch {src} vs {ref}')
 
-    def _reshape(self, input_shapes):
+    def _reshape(self, input_shapes: Sequence[Sequence[int]]):
+        """Reshape the inputs.
+
+        Args:
+            input_shapes (Sequence[Sequence[int]]): The shapes used to
+                do reshape
+        """
 
         if len(input_shapes) != len(self._model_desc.inputs):
             raise RuntimeError('#inputs mismatch')
@@ -230,9 +321,21 @@ class AscendWrapper(BaseWrapper):
         return dimses
 
     def _reshape_static(self, input_shapes):
+        """Do nothing.
+
+        Args:
+            input_shapes (Sequence[Sequence[int]]): Not used.
+        """
         pass
 
-    def _reshape_dynamic_batch_size(self, input_shapes):
+    def _reshape_dynamic_batch_size(self,
+                                    input_shapes: Sequence[Sequence[int]]):
+        """Reshape for dynamic batch size.
+
+        Args:
+            input_shapes (Sequence[Sequence[int]]): The shapes used to
+                do reshape
+        """
         batch_size = None
         for src, ref in zip(input_shapes, self._model_desc.inputs):
             if ref.dims[0] == -1:
@@ -256,7 +359,14 @@ class AscendWrapper(BaseWrapper):
             self._model_desc.dynamic_tensor.index, candidates[0])
         _check(ret, 'acl.mdl.set_dynamic_batch_size')
 
-    def _reshape_dynamic_image_size(self, input_shapes):
+    def _reshape_dynamic_image_size(self,
+                                    input_shapes: Sequence[Sequence[int]]):
+        """Reshape for dynamic image size.
+
+        Args:
+            input_shapes (Sequence[Sequence[int]]): The shapes used to
+                do reshape
+        """
         size = None
         for src, ref in zip(input_shapes, self._model_desc.inputs):
             if -1 in ref.dims:
@@ -278,7 +388,13 @@ class AscendWrapper(BaseWrapper):
             self._model_desc.dynamic_tensor.index, height, width)
         _check(ret, 'acl.mdl.set_dynamic_hw_size')
 
-    def _reshape_dynamic_dims(self, input_shapes):
+    def _reshape_dynamic_dims(self, input_shapes: Sequence[Sequence[int]]):
+        """Reshape for dynamic dims.
+
+        Args:
+            input_shapes (Sequence[Sequence[int]]): The shapes used to
+                do reshape
+        """
         match = [True] * len(self._dynamic_dims)
         ptr = 0
         for src in input_shapes:
@@ -303,7 +419,7 @@ class AscendWrapper(BaseWrapper):
         _check(ret, 'acl.mdl.set_input_dynamic_dims')
 
     def _config_dynamic_shapes(self):
-
+        """Set the reshape function."""
         if self._model_desc.dynamic_tensor is None:
             self._reshape_fn = self._reshape_static
             return
@@ -326,6 +442,7 @@ class AscendWrapper(BaseWrapper):
         raise RuntimeError('Can\'t infer input shape type')
 
     def _create_input_buffers(self):
+        """Create buffers for inputs."""
         self._input = Dataset()
         for binding in self._model_desc.inputs:
             self._input.add_buffer(DataBuffer(binding.size))
@@ -334,6 +451,7 @@ class AscendWrapper(BaseWrapper):
                 DataBuffer(self._model_desc.dynamic_tensor.size))
 
     def _create_output_buffers(self):
+        """Create buffers for outputs."""
         self._output = Dataset()
         for binding in self._model_desc.outputs:
             self._output.add_buffer(DataBuffer(binding.size))

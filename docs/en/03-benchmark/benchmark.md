@@ -616,6 +616,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <th align="center">ONNXRuntime</th>
     <th align="center" colspan="3">TensorRT</th>
     <th align="center">PPLNN</th>
+    <th align="center">Ascend</th>
   </tr>
 </thead>
 <tbody>
@@ -631,6 +632,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">fp16</td>
     <td align="center">int8</td>
     <td align="center">fp16</td>
+    <td align="center">fp32</td>
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/yolo/yolov3_d53_320_273e_coco.py">YOLOV3</a></td>
@@ -644,6 +646,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">33.5</td>
     <td align="center">33.5</td>
     <td align="center">-</td>
+    <td align="center">-</td>
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/ssd/ssd300_coco.py">SSD</a></td>
@@ -655,6 +658,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
     <td align="center">25.5</td>
     <td align="center">25.5</td>
+    <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
   </tr>
@@ -670,6 +674,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">36.4</td>
     <td align="center">36.3</td>
     <td align="center">36.5</td>
+    <td align="center">36.4</td>
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/fcos/fcos_r50_caffe_fpn_gn-head_1x_coco.py">FCOS</a></td>
@@ -681,6 +686,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
     <td align="center">36.6</td>
     <td align="center">36.5</td>
+    <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
   </tr>
@@ -696,6 +702,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">37.4</td>
     <td align="center">37.2</td>
     <td align="center">37.4</td>
+    <td align="center">-</td>
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/yolox/yolox_s_8x8_300e_coco.py">YOLOX</a></td>
@@ -708,6 +715,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">40.3</td>
     <td align="center">40.3</td>
     <td align="center">29.3</td>
+    <td align="center">-</td>
     <td align="center">-</td>
   </tr>
   <tr>
@@ -722,6 +730,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">37.3</td>
     <td align="center">37.1</td>
     <td align="center">37.3</td>
+    <td align="center">37.2</td>
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/atss/atss_r50_fpn_1x_coco.py">ATSS</a></td>
@@ -733,6 +742,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
     <td align="center">39.4</td>
     <td align="center">39.4</td>
+    <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
   </tr>
@@ -748,6 +758,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">40.4</td>
     <td align="center">-</td>
     <td align="center">40.4</td>
+    <td align="center">-</td>
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/gfl/gfl_r50_fpn_1x_coco.py">GFL</a></td>
@@ -761,6 +772,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">40.0</td>
     <td align="center">-</td>
     <td align="center">-</td>
+    <td align="center">-</td>
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/reppoints/reppoints_moment_r50_fpn_1x_coco.py">RepPoints</a></td>
@@ -771,6 +783,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">36.9</td>
+    <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
@@ -787,6 +800,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">38.1</td>
     <td align="center">-</td>
     <td align="center">38.0</td>
+    <td align="center">-</td>
   </tr>
   <tr>
     <td align="center">mask AP</td>
@@ -795,6 +809,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
     <td align="center">33.7</td>
     <td align="center">33.7</td>
+    <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
   </tr>
@@ -810,6 +825,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">37.7</td>
     <td align="center">-</td>
     <td align="center">-</td>
+    <td align="center">-</td>
   </tr>
   <tr>
     <td align="center">mask AP</td>
@@ -818,6 +834,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">39.3</td>
     <td align="center">39.3</td>
     <td align="center">35.4</td>
+    <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
   </tr>
