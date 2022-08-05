@@ -65,7 +65,17 @@ Feature-Added: ',
                         echo "mmdet"
                     }
                 } 
-
+                script {
+                    codebase_str = "error"
+                    def codebase_list = ["mmdet", "mmcls", "mmocr"]
+                    for ( codebase in codebase_list ) {
+                        if (${params.codebase} == true ) {
+                            codebase_str = codebase_str + " " + codebase
+                        }
+                    }
+                    echo codebase_str
+                }
+                echo ${codebase_str}
                 echo "Build stage: 选中的构建Module为 : ${params.modulename} ..." 
             }
         }
