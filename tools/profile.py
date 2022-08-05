@@ -52,13 +52,17 @@ def parse_args():
         'is allowed.')
     parser.add_argument(
         '--batch-size', type=int, default=1, help='the batch size for test.')
+    parser.add_argument(
+        '--img-ext',
+        type=str,
+        nargs='+',
+        help='the file extensions for input images from `image_dir`.',
+        default=['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif'])
     args = parser.parse_args()
     return args
 
 
-def get_images(
-        image_dir,
-        extensions=['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif']):
+def get_images(image_dir, extensions):
     images = []
     files = glob.glob(osp.join(image_dir, '**', '*'), recursive=True)
     for f in files:
@@ -85,6 +89,7 @@ def main():
     deploy_cfg_path = args.deploy_cfg
     model_cfg_path = args.model_cfg
     logger = get_root_logger()
+
     # load deploy_cfg
     deploy_cfg, model_cfg = load_config(deploy_cfg_path, model_cfg_path)
 
@@ -121,7 +126,7 @@ def main():
     if not is_device_cpu:
         torch.backends.cudnn.benchmark = True
 
-    image_files = get_images(args.image_dir)
+    image_files = get_images(args.image_dir, args.img_ext)
     nrof_image = len(image_files)
     assert nrof_image > 0, f'No image files found in {args.image_dir}'
     logger.info(f'Found totally {nrof_image} image files in {args.image_dir}')

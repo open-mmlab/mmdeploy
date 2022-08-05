@@ -146,7 +146,8 @@ python tools/profile.py \
     --num-iter {NUM_ITER} \
     --warmup {WARMUP} \
     --cfg-options ${CFG_OPTIONS} \
-    --batch-size ${BATCH_SIZE}
+    --batch-size ${BATCH_SIZE} \
+    --img-ext ${IMG_EXT}
 ```
 
 ### Description of all arguments
@@ -161,6 +162,7 @@ python tools/profile.py \
 - `--device` : The device type. If not specified, it will be set to `cuda:0`.
 - `--cfg-options` : Optional key-value pairs to be overrode for model config.
 - `--batch-size`: the batch size for test inference. Default is `1`. Note that not all models support `batch_size>1`.
+- `--img-ext`: the file extensions for input images from `image_dir`. Defaults to `['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif']`.
 
 ### Example:
 
