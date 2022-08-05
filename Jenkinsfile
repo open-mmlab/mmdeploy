@@ -19,13 +19,11 @@ properties([
                     classpath: [],  
                     sandbox: false,  
                     script:  
-                        "
                             return [
                                 "qa",
                                 "test",
                                 "dev"
                             ]
-                        "
                 ] 
             ] 
         ],  
