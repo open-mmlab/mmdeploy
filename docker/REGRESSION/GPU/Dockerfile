@@ -57,7 +57,7 @@ RUN git clone https://github.com/openppl-public/ppl.nn.git \
     && export PPLNN_DIR=$(pwd)
 
 ### get openvino
-RUN pip install openvino-dev
+RUN /opt/conda/bin/pip install openvino-dev
 
 ### get ncnn
 RUN git clone https://github.com/Tencent/ncnn.git \
