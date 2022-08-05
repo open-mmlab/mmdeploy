@@ -1,5 +1,5 @@
 pipeline {
-  agent any
+  agent { label 'deploy_linux'}
 
   parameters {
     choice(
@@ -23,11 +23,16 @@ Feature-Added: ',
     )
 
     booleanParam(
-        name: 'test_skip_flag', 
+        name: 'mmdet', 
         defaultValue: true, 
         description: '你需要在部署之前执行自动化测试么 ?'
     )
 
+    booleanParam(
+        name: 'mmcls', 
+        defaultValue: true, 
+        description: '你需要在部署之前执行自动化测试么 ?'
+    )
 
     password(
         name: 'deploy_password', 
@@ -44,6 +49,7 @@ Feature-Added: ',
   stages {
         stage('Build') { 
             steps { 
+                if ( ${params.mmdet} == true )
                 echo "Build stage: 选中的构建Module为 : ${params.modulename} ..." 
             }
         }
