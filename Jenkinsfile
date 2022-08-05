@@ -47,11 +47,12 @@ Feature-Added: ',
   }
 
   stages {
-        stage('Build') { 
+        stage('Build') {
+            if ( ${parameters.mmdet} == true ) {
+                echo "mmdet"
+            }
             steps { 
-                if ( ${params.mmdet} == true ) {
-                    echo "mmdet"
-                }
+
                 echo "Build stage: 选中的构建Module为 : ${params.modulename} ..." 
             }
         }
