@@ -30,15 +30,17 @@ def process_model_config(model_cfg: mmcv.Config,
     cfg = model_cfg.copy()
 
     if isinstance(imgs[0], np.ndarray):
-        cfg = cfg.copy()
         # set loading pipeline type
-        cfg.data.test.pipeline[0].type = 'LoadImageFromWebcam'
+        cfg.data.test.pipeline[0] = LoadImage()
     # for static exporting
     if input_shape is not None:
-        cfg.data.test.pipeline[1]['img_scale'] = tuple(input_shape)
-        cfg.data.test.pipeline[1]['transforms'][0]['keep_ratio'] = False
-    cfg.data.test.pipeline = [LoadImage()] + cfg.data.test.pipeline[1:]
-
+        for i, pipeline in enumerate(cfg.data.test.pipeline):
+            if 'img_scale' in pipeline:
+                pipeline['img_scale'] = tuple(input_shape)
+            if 'transforms' in pipeline:
+                for j, trans in enumerate(pipeline['transforms']):
+                    if 'keep_ratio' in trans:
+                        trans['keep_ratio'] = False
     return cfg
 
 
@@ -103,7 +105,7 @@ class Segmentation(BaseTask):
         return model.eval()
 
     def create_input(self,
-                     imgs: Union[str, np.ndarray],
+                     imgs: Union[str, np.ndarray, Sequence],
                      input_shape: Sequence[int] = None) \
             -> Tuple[Dict, torch.Tensor]:
         """Create input for segmentor.
@@ -119,27 +121,24 @@ class Segmentation(BaseTask):
         """
         from mmcv.parallel import collate, scatter
         from mmseg.datasets.pipelines import Compose
-        if not isinstance(imgs, (list, tuple)):
+        if isinstance(imgs, (str, np.ndarray)):
             imgs = [imgs]
         cfg = process_model_config(self.model_cfg, imgs, input_shape)
         test_pipeline = Compose(cfg.data.test.pipeline)
         data_list = []
         for img in imgs:
             # prepare data
-            data = dict(img=img)
+            if isinstance(img, str):
+                data = dict(img_info=dict(filename=img), img_prefix=None)
+            else:
+                data = dict(img=img)
             # build the data pipeline
             data = test_pipeline(data)
             data_list.append(data)
 
         data = collate(data_list, samples_per_gpu=len(imgs))
-
-        data['img_metas'] = [
-            img_metas.data[0] for img_metas in data['img_metas']
-        ]
-        data['img'] = [img.data[0][None, :] for img in data['img']]
         if self.device != 'cpu':
             data = scatter(data, [self.device])[0]
-
         return data, data['img']
 
     def visualize(self,

@@ -50,7 +50,8 @@ def parse_args():
         'It also allows nested list/tuple values, e.g. key="[(a,b),(c,d)]" '
         'Note that the quotation marks are necessary and that no white space '
         'is allowed.')
-
+    parser.add_argument(
+        '--batch-size', type=int, default=1, help='the batch size for test.')
     args = parser.parse_args()
     return args
 
@@ -76,7 +77,7 @@ class TorchWrapper(torch.nn.Module):
 
     @TimeCounter.count_time(Backend.PYTORCH.value)
     def forward(self, *args, **kwargs):
-        return self.model(*args, return_loss=False, **kwargs)
+        return self.model(*args, **kwargs)
 
 
 def main():
@@ -124,7 +125,7 @@ def main():
     nrof_image = len(image_files)
     assert nrof_image > 0, f'No image files found in {args.image_dir}'
     logger.info(f'Found totally {nrof_image} image files in {args.image_dir}')
-    total_iters = args.num_iter + args.warmup
+    total_iters = (args.num_iter + args.warmup) * args.batch_size
     if nrof_image < total_iters:
         np.random.seed(1234)
         image_files += [
@@ -134,15 +135,15 @@ def main():
     image_files = image_files[:total_iters]
     with TimeCounter.activate(
             warmup=args.warmup, log_interval=20, with_sync=with_sync):
-        for image in image_files:
-            data, _ = task_processor.create_input(image, input_shape)
-            model(**data)
+        for i in range(0, total_iters, args.batch_size):
+            batch_files = image_files[i:(i + args.batch_size)]
+            data, _ = task_processor.create_input(batch_files, input_shape)
+            task_processor.run_inference(model, data)
 
     print('----- Settings:')
     settings = PrettyTable()
     settings.header = False
-    batch_size = 1
-    settings.add_row(['batch size', batch_size])
+    settings.add_row(['batch size', args.batch_size])
     settings.add_row(['shape', f'{input_shape[1]}x{input_shape[0]}'])
     settings.add_row(['iterations', args.num_iter])
     settings.add_row(['warmup', args.warmup])
