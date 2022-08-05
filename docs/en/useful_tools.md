@@ -144,8 +144,9 @@ python tools/profile.py \
     --device ${DEVICE} \
     --shape ${SHAPE} \
     --num-iter {NUM_ITER} \
-    --warmup {WARMUP}
-    --cfg-options ${CFG_OPTIONS}
+    --warmup {WARMUP} \
+    --cfg-options ${CFG_OPTIONS} \
+    --batch-size ${BATCH_SIZE}
 ```
 
 ### Description of all arguments
@@ -159,6 +160,7 @@ python tools/profile.py \
 - `--warmup` : Number of iteration to warm-up the machine. Default is `10`.
 - `--device` : The device type. If not specified, it will be set to `cuda:0`.
 - `--cfg-options` : Optional key-value pairs to be overrode for model config.
+- `--batch-size`: the batch size for test inference. Default is `1`. Note that not all models support `batch_size>1`.
 
 ### Example:
 
@@ -172,6 +174,7 @@ python tools/profile.py \
     --shape 224x224 \
     --num-iter 100 \
     --warmup 10 \
+    --batch-size 1
 ```
 
 And the output look like this:
