@@ -54,7 +54,7 @@ Feature-Added: ',
                     }
                 } 
                 script {
-                    String codebase_str = "error"
+                    def codebase_str = "error"
                     def codebase_list = ["mmdet", "mmcls", "mmocr"]
                     for ( codebase in codebase_list ) {
                         if (${params.codebase} == true ) {
