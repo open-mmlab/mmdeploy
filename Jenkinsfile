@@ -54,14 +54,14 @@ Feature-Added: ',
                     }
                 } 
                 script {
-                    def codebase_str = "error"
-                    def codebase_list = ["mmdet", "mmcls", "mmocr"]
+                    String codebase_str = "error"
+                    String[] codebase_list = ["mmdet", "mmcls", "mmocr"]
                     for ( codebase in codebase_list ) {
                         if (${params.codebase} == true ) {
                             codebase_str = codebase_str + " " + codebase
                         }
                     }
-                    echo codebase_str
+                    println(codebase_str)
                 }
                 echo "${codebase_str}"
                 echo "Build stage: 选中的构建Module为 : ${params.modulename} ..." 
