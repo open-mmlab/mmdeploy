@@ -1,86 +1,63 @@
-properties([
-    parameters([
-        [$class: 'ChoiceParameter', 
-            choiceType: 'PT_SINGLE_SELECT', 
-            description: 'Select the Env Name from the Dropdown List', 
-            filterLength: 1, 
-            filterable: true, 
-            name: 'Env', 
-            randomName: 'choice-parameter-5631314439613978', 
-            script: [
-                $class: 'GroovyScript', 
-                fallbackScript: [
-                    classpath: [], 
-                    sandbox: false, 
-                    script: 
-                        'return[\'Could not get Env\']'
-                ], 
-                script: [
-                    classpath: [], 
-                    sandbox: false, 
-                    script: 
-                        'return["Dev","QA","Stage","Prod"]'
-                ]
-            ]
-        ], 
-        [$class: 'CascadeChoiceParameter', 
-            choiceType: 'PT_SINGLE_SELECT', 
-            description: 'Select the Server from the Dropdown List', 
-            filterLength: 1, 
-            filterable: true, 
-            name: 'Server', 
-            randomName: 'choice-parameter-5631314456178619', 
-            referencedParameters: 'Env', 
-            script: [
-                $class: 'GroovyScript', 
-                fallbackScript: [
-                    classpath: [], 
-                    sandbox: false, 
-                    script: 
-                        'return[\'Could not get Environment from Env Param\']'
-                ], 
-                script: [
-                    classpath: [], 
-                    sandbox: false, 
-                    script: 
-                        ''' if (Env.equals("Dev")){
-                                return["devaaa001","devaaa002","devbbb001","devbbb002","devccc001","devccc002"]
-                            }
-                            else if(Env.equals("QA")){
-                                return["qaaaa001","qabbb002","qaccc003"]
-                            }
-                            else if(Env.equals("Stage")){
-                                return["staaa001","stbbb002","stccc003"]
-                            }
-                            else if(Env.equals("Prod")){
-                                return["praaa001","prbbb002","prccc003"]
-                            }
-                        '''
-                ]
-            ]
-        ]
-    ])
-])
-
 pipeline {
-  environment {
-         vari = ""
-  }
   agent any
-  stages {
-      stage ("Example") {
-        steps {
-         script{
-          echo 'Hello'
-          echo "${params.Env}"
-          echo "${params.Server}"
-          if (params.Server.equals("Could not get Environment from Env Param")) {
-              echo "Must be the first build after Pipeline deployment.  Aborting the build"
-              currentBuild.result = 'ABORTED'
-              return
-          }
-          echo "Crossed param validation"
-        } }
-      }
+
+  parameters {
+    choice(
+      description: '你需要选择哪个模块进行构建 ?',
+      name: 'modulename',
+      choices: ['Module1', 'Module2', 'Module3']
+    )
+    
+    string(
+        description: '你需要在哪台机器上进行部署 ?',
+        name: 'deploy_hostname', 
+        defaultValue: 'host131', 
+    )
+
+    text(
+        name: 'release_note', 
+        defaultValue: 'Release Note 信息如下所示: \n \
+Bug-Fixed: \n \
+Feature-Added: ', 
+        description: 'Release Note的详细信息是什么 ?'
+    )
+
+    booleanParam(
+        name: 'test_skip_flag', 
+        defaultValue: true, 
+        description: '你需要在部署之前执行自动化测试么 ?'
+    )
+
+
+    password(
+        name: 'deploy_password', 
+        defaultValue: 'liumiaocn', 
+        description: '部署机器连接时需要用到的密码信息是什么 '
+    )
+
+    file(
+        name: "deploy_property_file", 
+        description: "你需要输入的部署环境的设定文件是什么 ?"
+    )
   }
-}
+
+  stages {
+        stage('Build') { 
+            steps { 
+                echo "Build stage: 选中的构建Module为 : ${params.modulename} ..." 
+            }
+        }
+        stage('Test'){
+            steps {
+                echo "Test stage: 是否执行自动化测试: ${params.test_skip_flag} ..."
+            }
+        }
+        stage('Deploy') {
+            steps {
+                echo "Deploy stage: 部署机器的名称 : ${params.deploy_hostname} ..." 
+                echo "Deploy stage: 部署连接的密码 : ${params.deploy_password} ..." 
+                echo "Deploy stage: Release Note的信息为 : ${params.release_note} ..." 
+            }
+        }
+    }
+  }
