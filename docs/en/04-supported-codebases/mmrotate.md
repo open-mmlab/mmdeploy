@@ -12,6 +12,8 @@ Please refer to [official installation guide](https://mmrotate.readthedocs.io/en
 | :--------------- | :--------------- | :----------: | :------: | :--: | :---: | :------: | :--------------------------------------------------------------------------------------------: |
 | RotatedRetinaNet | RotatedDetection |      Y       |    Y     |  N   |   N   |    N     | [config](https://github.com/open-mmlab/mmrotate/blob/main/configs/rotated_retinanet/README.md) |
 | Oriented RCNN    | RotatedDetection |      Y       |    Y     |  N   |   N   |    N     |   [config](https://github.com/open-mmlab/mmrotate/blob/main/configs/oriented_rcnn/README.md)   |
+| Gliding Vertex   | RotatedDetection |      N       |    Y     |  N   |   N   |    N     |  [config](https://github.com/open-mmlab/mmrotate/blob/main/configs/gliding_vertex/README.md)   |
+| RoI Transformer  | RotatedDetection |      Y       |    Y     |  N   |   N   |    N     |     [config](https://github.com/open-mmlab/mmrotate/blob/main/configs/roi_trans/README.md)     |
 
 ### Example
 

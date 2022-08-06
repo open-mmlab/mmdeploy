@@ -2,14 +2,19 @@
 import torch
 
 from mmdeploy.codebase.mmdet.deploy import clip_bboxes
+from mmdeploy.core import FUNCTION_REWRITER
 
 
-def distance2bbox(points, distance, max_shape=None):
+@FUNCTION_REWRITER.register_rewriter(
+    func_name='mmdet.core.bbox.transforms.distance2bbox'  # noqa
+)
+def distance2bbox__default(ctx, points, distance, max_shape=None):
     """Rewrite `mmdet.core.bbox.transforms.distance2bbox`
 
     Decode distance prediction to bounding box.
 
     Args:
+        ctx (ContextCaller): The context with additional information.
         points (Tensor): Shape (B, N, 2) or (N, 2).
         distance (Tensor): Distance from the given point to 4
             boundaries (left, top, right, bottom). Shape (B, N, 4) or (N, 4)

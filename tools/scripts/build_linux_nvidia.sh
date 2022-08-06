@@ -23,7 +23,7 @@ MMDEPLOY_DIR=${WORKING_DIR}
 
 #####
 # Versions
-PPLCV_VER="0.6.2"
+PPLCV_VER="0.7.0"
 CMAKE_VER="3.23.0"
 
 #####
@@ -337,7 +337,7 @@ pplcv() {
 
   # build
   mkdir build -p && cd build
-  cmake -DHPCC_USE_CUDA=ON -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} .. && make -j${processor_num} && sudo make install
+  cmake -DPPLCV_USE_CUDA=ON -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} .. && make -j${processor_num} && sudo make install
   sudo ldconfig
 
   # generate prebuild and pack into .tar.gz

@@ -45,7 +45,8 @@ class CodebaseCreator : public Creator<Module> {
     auto postprocess_type = cfg[key].get<std::string>();
     auto creator = Registry<Tag>::Get().GetCreator(postprocess_type);
     if (creator == nullptr) {
-      MMDEPLOY_ERROR("could not found entry '{}' in {}", postprocess_type, Tag::name);
+      MMDEPLOY_ERROR("Could not found entry '{}' in {}. Available components: {}", postprocess_type,
+                     Tag::name, Registry<Tag>::Get().List());
       throw_exception(eEntryNotFound);
     }
     return creator->Create(cfg);

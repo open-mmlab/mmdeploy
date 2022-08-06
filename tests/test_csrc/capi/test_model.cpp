@@ -4,7 +4,7 @@
 #include "catch.hpp"
 // clang-format on
 
-#include "mmdeploy/apis/c/model.h"
+#include "mmdeploy/apis/c/mmdeploy/model.h"
 #include "test_resource.h"
 
 TEST_CASE("test model c capi", "[.model][resource]") {
@@ -21,11 +21,11 @@ TEST_CASE("test model c capi", "[.model][resource]") {
   }
 
   REQUIRE(!model_path.empty());
-  mm_model_t model{};
-  REQUIRE(mmdeploy_model_create_by_path(model_path.c_str(), &model) == MM_SUCCESS);
+  mmdeploy_model_t model{};
+  REQUIRE(mmdeploy_model_create_by_path(model_path.c_str(), &model) == MMDEPLOY_SUCCESS);
   mmdeploy_model_destroy(model);
   model = nullptr;
 
-  REQUIRE(mmdeploy_model_create(nullptr, 0, &model) == MM_E_FAIL);
+  REQUIRE(mmdeploy_model_create(nullptr, 0, &model) == MMDEPLOY_E_FAIL);
   mmdeploy_model_destroy(model);
 }

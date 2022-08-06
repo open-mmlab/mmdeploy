@@ -58,7 +58,7 @@ Allocator CreateDefaultAllocator() {
   AllocatorImplPtr allocator = std::make_shared<Mallocator>();
   allocator = std::make_shared<Tree>(allocator, -1, .5);
   allocator = std::make_shared<Locked>(allocator);
-  MMDEPLOY_INFO("Default CUDA allocator initialized");
+  MMDEPLOY_DEBUG("Default CUDA allocator initialized");
   return Access::create<Allocator>(allocator);
 }
 

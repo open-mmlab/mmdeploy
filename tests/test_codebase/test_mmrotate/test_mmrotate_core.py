@@ -6,8 +6,9 @@ import torch
 
 from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Backend, Codebase
-from mmdeploy.utils.test import (WrapFunction, backend_checker, check_backend,
-                                 get_onnx_model, get_rewrite_outputs)
+from mmdeploy.utils.test import (WrapFunction, WrapModel, backend_checker,
+                                 check_backend, get_onnx_model,
+                                 get_rewrite_outputs)
 
 try:
     import_codebase(Codebase.MMROTATE)
@@ -305,6 +306,105 @@ def test_poly2obb_le90(backend_type: Backend):
     rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_func,
         model_inputs={'polys': polys},
+        deploy_cfg=deploy_cfg,
+        run_with_backend=False)
+
+    assert rewrite_outputs is not None
+
+
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
+def test_poly2obb_le135(backend_type: Backend):
+    check_backend(backend_type)
+    polys = torch.rand(1, 10, 8)
+    deploy_cfg = mmcv.Config(
+        dict(
+            onnx_config=dict(output_names=None, input_shape=None),
+            backend_config=dict(
+                type=backend_type.value,
+                model_inputs=[
+                    dict(
+                        input_shapes=dict(
+                            polys=dict(
+                                min_shape=polys.shape,
+                                opt_shape=polys.shape,
+                                max_shape=polys.shape)))
+                ]),
+            codebase_config=dict(type='mmrotate', task='RotatedDetection')))
+
+    # wrap function to enable rewrite
+    def poly2obb_le135(*args, **kwargs):
+        import mmrotate
+        return mmrotate.core.bbox.transforms.poly2obb_le135(*args, **kwargs)
+
+    # wrap function to nn.Module, enable torch.onnx.export
+    wrapped_func = WrapFunction(poly2obb_le135)
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_func,
+        model_inputs={'polys': polys},
+        deploy_cfg=deploy_cfg,
+        run_with_backend=False)
+
+    assert rewrite_outputs is not None
+
+
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
+def test_obb2poly_le135(backend_type: Backend):
+    check_backend(backend_type)
+    rboxes = torch.rand(1, 10, 5)
+    deploy_cfg = mmcv.Config(
+        dict(
+            onnx_config=dict(output_names=None, input_shape=None),
+            backend_config=dict(
+                type=backend_type.value,
+                model_inputs=[
+                    dict(
+                        input_shapes=dict(
+                            rboxes=dict(
+                                min_shape=rboxes.shape,
+                                opt_shape=rboxes.shape,
+                                max_shape=rboxes.shape)))
+                ]),
+            codebase_config=dict(type='mmrotate', task='RotatedDetection')))
+
+    # wrap function to enable rewrite
+    def obb2poly_le135(*args, **kwargs):
+        import mmrotate
+        return mmrotate.core.bbox.transforms.obb2poly_le135(*args, **kwargs)
+
+    # wrap function to nn.Module, enable torch.onnx.export
+    wrapped_func = WrapFunction(obb2poly_le135)
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_func,
+        model_inputs={'rboxes': rboxes},
+        deploy_cfg=deploy_cfg,
+        run_with_backend=False)
+
+    assert rewrite_outputs is not None
+
+
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
+def test_gvfixcoder__decode(backend_type: Backend):
+    check_backend(backend_type)
+
+    deploy_cfg = mmcv.Config(
+        dict(
+            onnx_config=dict(output_names=['output'], input_shape=None),
+            backend_config=dict(type=backend_type.value),
+            codebase_config=dict(type='mmrotate', task='RotatedDetection')))
+
+    from mmrotate.core.bbox import GVFixCoder
+    coder = GVFixCoder(angle_range='le90')
+
+    hbboxes = torch.rand(1, 10, 4)
+    fix_deltas = torch.rand(1, 10, 4)
+
+    wrapped_model = WrapModel(coder, 'decode')
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_model,
+        model_inputs={
+            'hbboxes': hbboxes,
+            'fix_deltas': fix_deltas
+        },
         deploy_cfg=deploy_cfg,
         run_with_backend=False)
 

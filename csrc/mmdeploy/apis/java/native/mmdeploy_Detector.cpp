@@ -2,7 +2,7 @@
 
 #include <numeric>
 
-#include "mmdeploy/apis/c/detector.h"
+#include "mmdeploy/apis/c/mmdeploy/detector.h"
 #include "mmdeploy/apis/java/native/common.h"
 #include "mmdeploy/core/logger.h"
 
@@ -10,7 +10,7 @@ jlong Java_mmdeploy_Detector_create(JNIEnv *env, jobject, jstring modelPath, jst
                                     jint device_id) {
   auto model_path = env->GetStringUTFChars(modelPath, nullptr);
   auto device_name = env->GetStringUTFChars(deviceName, nullptr);
-  mm_handle_t detector{};
+  mmdeploy_detector_t detector{};
   auto ec = mmdeploy_detector_create_by_path(model_path, device_name, (int)device_id, &detector);
   env->ReleaseStringUTFChars(modelPath, model_path);
   env->ReleaseStringUTFChars(deviceName, device_name);
@@ -21,16 +21,17 @@ jlong Java_mmdeploy_Detector_create(JNIEnv *env, jobject, jstring modelPath, jst
 }
 
 void Java_mmdeploy_Detector_destroy(JNIEnv *, jobject, jlong handle) {
-  MMDEPLOY_INFO("Java_mmdeploy_Detector_destroy");  // maybe use info?
-  mmdeploy_detector_destroy((mm_handle_t)handle);
+  MMDEPLOY_DEBUG("Java_mmdeploy_Detector_destroy");  // maybe use info?
+  mmdeploy_detector_destroy((mmdeploy_detector_t)handle);
 }
 
 jobjectArray Java_mmdeploy_Detector_apply(JNIEnv *env, jobject thiz, jlong handle,
                                           jobjectArray images, jintArray counts) {
-  return With(env, images, [&](const mm_mat_t imgs[], int size) {
-    mm_detect_t *results{};
+  return With(env, images, [&](const mmdeploy_mat_t imgs[], int size) {
+    mmdeploy_detection_t *results{};
     int *result_count{};
-    auto ec = mmdeploy_detector_apply((mm_handle_t)handle, imgs, size, &results, &result_count);
+    auto ec =
+        mmdeploy_detector_apply((mmdeploy_detector_t)handle, imgs, size, &results, &result_count);
     if (ec) {
       MMDEPLOY_ERROR("failed to apply detector, code = {}", ec);
     }

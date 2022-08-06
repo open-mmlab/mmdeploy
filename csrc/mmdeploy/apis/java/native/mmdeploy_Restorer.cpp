@@ -2,7 +2,7 @@
 
 #include <numeric>
 
-#include "mmdeploy/apis/c/restorer.h"
+#include "mmdeploy/apis/c/mmdeploy/restorer.h"
 #include "mmdeploy/apis/java/native/common.h"
 #include "mmdeploy/core/logger.h"
 
@@ -10,7 +10,7 @@ jlong Java_mmdeploy_Restorer_create(JNIEnv *env, jobject, jstring modelPath, jst
                                     jint device_id) {
   auto model_path = env->GetStringUTFChars(modelPath, nullptr);
   auto device_name = env->GetStringUTFChars(deviceName, nullptr);
-  mm_handle_t restorer{};
+  mmdeploy_restorer_t restorer{};
   auto ec = mmdeploy_restorer_create_by_path(model_path, device_name, (int)device_id, &restorer);
   env->ReleaseStringUTFChars(modelPath, model_path);
   env->ReleaseStringUTFChars(deviceName, device_name);
@@ -21,15 +21,15 @@ jlong Java_mmdeploy_Restorer_create(JNIEnv *env, jobject, jstring modelPath, jst
 }
 
 void Java_mmdeploy_Restorer_destroy(JNIEnv *, jobject, jlong handle) {
-  MMDEPLOY_INFO("Java_mmdeploy_Restorer_destroy");
-  mmdeploy_restorer_destroy((mm_handle_t)handle);
+  MMDEPLOY_DEBUG("Java_mmdeploy_Restorer_destroy");
+  mmdeploy_restorer_destroy((mmdeploy_restorer_t)handle);
 }
 
 jobjectArray Java_mmdeploy_Restorer_apply(JNIEnv *env, jobject thiz, jlong handle,
                                           jobjectArray images) {
-  return With(env, images, [&](const mm_mat_t imgs[], int size) {
-    mm_mat_t *results{};
-    auto ec = mmdeploy_restorer_apply((mm_handle_t)handle, imgs, size, &results);
+  return With(env, images, [&](const mmdeploy_mat_t imgs[], int size) {
+    mmdeploy_mat_t *results{};
+    auto ec = mmdeploy_restorer_apply((mmdeploy_restorer_t)handle, imgs, size, &results);
     if (ec) {
       MMDEPLOY_ERROR("failed to apply restorer, code = {}", ec);
     }
@@ -44,7 +44,7 @@ jobjectArray Java_mmdeploy_Restorer_apply(JNIEnv *env, jobject thiz, jlong handl
     auto format_cls = env->FindClass("mmdeploy/PixelFormat");
     auto type_cls = env->FindClass("mmdeploy/DataType");
 
-    mm_mat_t *current_result = results;
+    mmdeploy_mat_t *current_result = results;
     for (int i = 0; i < size; ++i) {
       auto test_format = current_result->format;
       auto jdata = env->NewByteArray(current_result->width * current_result->height *

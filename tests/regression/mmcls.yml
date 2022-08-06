@@ -144,6 +144,18 @@ models:
       - *pipeline_pplnn_dynamic_fp32
       - *pipeline_openvino_dynamic_fp32
 
+  - name: DenseNet
+    metafile: configs/densenet/metafile.yml
+    model_configs:
+      - configs/densenet/densenet121_4xb256_in1k.py
+    pipelines:
+      - *pipeline_ts_fp32
+      - *pipeline_ort_dynamic_fp32
+      - *pipeline_trt_dynamic_fp16
+      - *pipeline_ncnn_static_fp32
+      - *pipeline_pplnn_dynamic_fp32
+      - *pipeline_openvino_dynamic_fp32
+
   - name: SE-ResNet
     metafile: configs/seresnet/metafile.yml
     model_configs:

@@ -61,7 +61,11 @@ def torch2onnx(img: Any,
 
     torch_model = task_processor.init_pytorch_model(model_checkpoint)
     data, model_inputs = task_processor.create_input(img, input_shape)
-    input_metas = dict(img_metas=data.get('img_metas', None))
+    if 'img_metas' in data:
+        input_metas = dict(img_metas=data['img_metas'])
+    else:
+        # codebases like mmedit do not have img_metas argument
+        input_metas = None
     if not isinstance(model_inputs, torch.Tensor) and len(model_inputs) == 1:
         model_inputs = model_inputs[0]
 

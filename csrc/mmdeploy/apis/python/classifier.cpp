@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "mmdeploy/apis/c/classifier.h"
+#include "mmdeploy/classifier.h"
 
 #include "common.h"
 
@@ -9,29 +9,30 @@ namespace mmdeploy {
 class PyClassifier {
  public:
   PyClassifier(const char *model_path, const char *device_name, int device_id) {
-    auto status = mmdeploy_classifier_create_by_path(model_path, device_name, device_id, &handle_);
-    if (status != MM_SUCCESS) {
+    auto status =
+        mmdeploy_classifier_create_by_path(model_path, device_name, device_id, &classifier_);
+    if (status != MMDEPLOY_SUCCESS) {
       throw std::runtime_error("failed to create classifier");
     }
   }
   ~PyClassifier() {
-    mmdeploy_classifier_destroy(handle_);
-    handle_ = {};
+    mmdeploy_classifier_destroy(classifier_);
+    classifier_ = {};
   }
 
   // std::vector<py::array_t<float>>
   std::vector<std::vector<std::tuple<int, float>>> Apply(const std::vector<PyImage> &imgs) {
-    std::vector<mm_mat_t> mats;
+    std::vector<mmdeploy_mat_t> mats;
     mats.reserve(imgs.size());
     for (const auto &img : imgs) {
       auto mat = GetMat(img);
       mats.push_back(mat);
     }
-    mm_class_t *results{};
+    mmdeploy_classification_t *results{};
     int *result_count{};
-    auto status =
-        mmdeploy_classifier_apply(handle_, mats.data(), (int)mats.size(), &results, &result_count);
-    if (status != MM_SUCCESS) {
+    auto status = mmdeploy_classifier_apply(classifier_, mats.data(), (int)mats.size(), &results,
+                                            &result_count);
+    if (status != MMDEPLOY_SUCCESS) {
       throw std::runtime_error("failed to apply classifier, code: " + std::to_string(status));
     }
     auto output = std::vector<std::vector<std::tuple<int, float>>>{};
@@ -50,15 +51,18 @@ class PyClassifier {
   }
 
  private:
-  mm_handle_t handle_{};
+  mmdeploy_classifier_t classifier_{};
 };
 
 static void register_python_classifier(py::module &m) {
   py::class_<PyClassifier>(m, "Classifier")
       .def(py::init([](const char *model_path, const char *device_name, int device_id) {
-        return std::make_unique<PyClassifier>(model_path, device_name, device_id);
-      }))
-      .def("__call__", &PyClassifier::Apply);
+             return std::make_unique<PyClassifier>(model_path, device_name, device_id);
+           }),
+           py::arg("model_path"), py::arg("device_name"), py::arg("device_id") = 0)
+      .def("__call__",
+           [](PyClassifier *self, const PyImage &img) { return self->Apply(std::vector{img})[0]; })
+      .def("batch", &PyClassifier::Apply);
 }
 
 class PythonClassifierRegisterer {

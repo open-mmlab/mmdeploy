@@ -100,7 +100,7 @@ class ORTWrapper(BaseWrapper):
 
         return outputs
 
-    @TimeCounter.count_time()
+    @TimeCounter.count_time(Backend.ONNXRUNTIME.value)
     def __ort_execute(self, io_binding: ort.IOBinding):
         """Run inference with ONNXRuntime session.
 

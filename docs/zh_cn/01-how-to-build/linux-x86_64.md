@@ -12,8 +12,7 @@
       - [编译安装 Model Converter](#编译安装-model-converter)
         - [编译自定义算子](#编译自定义算子)
         - [安装 Model Converter](#安装-model-converter)
-      - [编译SDK](#编译sdk)
-      - [编译 Demo](#编译-demo)
+      - [编译 SDK 和 Demos](#编译-sdk-和-demos)
 
 ______________________________________________________________________
 
@@ -110,12 +109,12 @@ sudo apt-get install libopencv-dev
 </tr>
   <tr>
     <td>pplcv </td>
-    <td>pplcv 是 openPPL 开发的高性能图像处理库。 <b>此依赖项为可选项，只有在 cuda 平台下，才需安装。而且，目前必须使用 v0.6.2，且需要使用 git clone 的方式下载源码并编译安装</b><br>
+    <td>pplcv 是 openPPL 开发的高性能图像处理库。 <b>此依赖项为可选项，只有在 cuda 平台下，才需安装。</b><br>
 <pre><code>
 git clone https://github.com/openppl-public/ppl.cv.git
 cd ppl.cv
 export PPLCV_DIR=$(pwd)
-git checkout tags/v0.6.2 -b v0.6.2
+git checkout tags/v0.7.0 -b v0.7.0
 ./build.sh cuda
 </code></pre>
    </td>
@@ -391,7 +390,7 @@ pip install -e .
 - 有些依赖项是可选的。运行 `pip install -e .` 将进行最小化依赖安装。 如果需安装其他可选依赖项，请执行`pip install -r requirements/optional.txt`，
   或者 `pip install -e .[optional]`。其中，`[optional]`可以替换为：`all`、`tests`、`build` 或 `optional`。
 
-#### 编译SDK
+#### 编译 SDK 和 Demos
 
 下文展示2个构建SDK的样例，分别用 ONNXRuntime 和 TensorRT 作为推理引擎。您可以参考它们，激活其他的推理引擎。
 
@@ -403,6 +402,7 @@ pip install -e .
   cmake .. \
       -DCMAKE_CXX_COMPILER=g++-7 \
       -DMMDEPLOY_BUILD_SDK=ON \
+      -DMMDEPLOY_BUILD_EXAMPLES=ON \
       -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
       -DMMDEPLOY_TARGET_DEVICES=cpu \
       -DMMDEPLOY_TARGET_BACKENDS=ort \
@@ -420,6 +420,7 @@ pip install -e .
   cmake .. \
       -DCMAKE_CXX_COMPILER=g++-7 \
       -DMMDEPLOY_BUILD_SDK=ON \
+      -DMMDEPLOY_BUILD_EXAMPLES=ON \
       -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
       -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
       -DMMDEPLOY_TARGET_BACKENDS=trt \
@@ -430,12 +431,3 @@ pip install -e .
 
   make -j$(nproc) && make install
   ```
-
-#### 编译 Demo
-
-```Bash
-cd ${MMDEPLOY_DIR}/build/install/example
-mkdir -p build && cd build
-cmake .. -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy
-make -j$(nproc)
-```

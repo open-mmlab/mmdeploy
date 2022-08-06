@@ -1,12 +1,12 @@
-FROM nvcr.io/nvidia/tensorrt:21.04-py3
+FROM nvcr.io/nvidia/tensorrt:22.04-py3
 
-ARG CUDA=10.2
+ARG CUDA=11.3
 ARG PYTHON_VERSION=3.8
-ARG TORCH_VERSION=1.8.0
-ARG TORCHVISION_VERSION=0.9.0
+ARG TORCH_VERSION=1.10.0
+ARG TORCHVISION_VERSION=0.11.0
 ARG ONNXRUNTIME_VERSION=1.8.1
-ARG MMCV_VERSION=1.4.0
-ARG PPLCV_VERSION=0.6.2
+ARG MMCV_VERSION=1.5.3
+ARG PPLCV_VERSION=0.7.0
 ENV FORCE_CUDA="1"
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -72,13 +72,14 @@ RUN git clone https://github.com/openppl-public/ppl.cv.git &&\
     ./build.sh cuda
 
 ENV BACKUP_LD_LIBRARY_PATH=$LD_LIBRARY_PATH
-ENV LD_LIBRARY_PATH=/usr/local/cuda-11.3/compat/lib.real/:$LD_LIBRARY_PATH
+ENV LD_LIBRARY_PATH=/usr/local/cuda/compat/lib.real/:$LD_LIBRARY_PATH
 
 RUN cd /root/workspace/mmdeploy &&\
     rm -rf build/CM* build/cmake-install.cmake build/Makefile build/csrc &&\
     mkdir -p build && cd build &&\
     cmake .. \
         -DMMDEPLOY_BUILD_SDK=ON \
+        -DMMDEPLOY_BUILD_EXAMPLES=ON \
         -DCMAKE_CXX_COMPILER=g++ \
         -Dpplcv_DIR=/root/workspace/ppl.cv/cuda-build/install/lib/cmake/ppl \
         -DTENSORRT_DIR=${TENSORRT_DIR} \
@@ -88,9 +89,7 @@ RUN cd /root/workspace/mmdeploy &&\
         -DMMDEPLOY_TARGET_BACKENDS="ort;trt" \
         -DMMDEPLOY_CODEBASES=all &&\
     make -j$(nproc) && make install &&\
-    cd install/example  && mkdir -p build && cd build &&\
-    cmake -DMMDeploy_DIR=/root/workspace/mmdeploy/build/install/lib/cmake/MMDeploy .. &&\
-    make -j$(nproc) && export SPDLOG_LEVEL=warn &&\
+    export SPDLOG_LEVEL=warn &&\
     if [ -z ${VERSION} ] ; then echo "Built MMDeploy master for GPU devices successfully!" ; else echo "Built MMDeploy version v${VERSION} for GPU devices successfully!" ; fi
 
 ENV LD_LIBRARY_PATH="/root/workspace/mmdeploy/build/lib:${BACKUP_LD_LIBRARY_PATH}"

@@ -59,22 +59,12 @@ class MMDetection(MMCodebase):
         from mmdet.datasets import build_dataset as build_dataset_mmdet
         from mmdet.datasets import replace_ImageToTensor
         assert dataset_type in dataset_cfg.data
+
         data_cfg = dataset_cfg.data[dataset_type]
-        # in case the dataset is concatenated
-        if isinstance(data_cfg, dict):
-            data_cfg.test_mode = True
-            samples_per_gpu = data_cfg.get('samples_per_gpu', 1)
-            if samples_per_gpu > 1:
-                # Replace 'ImageToTensor' to 'DefaultFormatBundle'
-                data_cfg.pipeline = replace_ImageToTensor(data_cfg.pipeline)
-        elif isinstance(data_cfg, list):
-            for ds_cfg in data_cfg:
-                ds_cfg.test_mode = True
-            samples_per_gpu = max(
-                [ds_cfg.get('samples_per_gpu', 1) for ds_cfg in data_cfg])
-            if samples_per_gpu > 1:
-                for ds_cfg in data_cfg:
-                    ds_cfg.pipeline = replace_ImageToTensor(ds_cfg.pipeline)
+        samples_per_gpu = dataset_cfg.data.get('samples_per_gpu', 1)
+        if samples_per_gpu > 1:
+            # Replace 'ImageToTensor' to 'DefaultFormatBundle'
+            data_cfg.pipeline = replace_ImageToTensor(data_cfg.pipeline)
         dataset = build_dataset_mmdet(data_cfg)
 
         return dataset

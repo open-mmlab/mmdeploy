@@ -295,7 +295,7 @@ __host__ __device__ __forceinline__ T single_box_iou_rotated(T const *const box1
   const T area1 = box1.w * box1.h;
   const T area2 = box2.w * box2.h;
   if (area1 < 1e-14 || area2 < 1e-14) {
-    return 0.f;
+    return 1.0f;
   }
 
   const T intersection = rotated_boxes_intersection<T>(box1, box2);

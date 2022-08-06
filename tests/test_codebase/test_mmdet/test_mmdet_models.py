@@ -1409,18 +1409,19 @@ def test_ssd_head_get_bboxes__ncnn(is_dynamic: bool):
         'img_shape': (s, s, 3)
     }]
     output_names = ['output']
-    input_names = ['input']
+    input_names = []
+    for i in range(6):
+        input_names.append('cls_scores_' + str(i))
+        input_names.append('bbox_preds_' + str(i))
     dynamic_axes = None
     if is_dynamic:
         dynamic_axes = {
-            input_names[0]: {
-                2: 'height',
-                3: 'width'
-            },
             output_names[0]: {
                 1: 'num_dets',
             }
         }
+        for input_name in input_names:
+            dynamic_axes[input_name] = {2: 'height', 3: 'width'}
     deploy_cfg = mmcv.Config(
         dict(
             backend_config=dict(type=Backend.NCNN.value),
@@ -1652,6 +1653,40 @@ def test_shift_windows_msa(backend_type: Backend):
 
     wrapped_model = WrapModel(model, 'forward')
     rewrite_inputs = {'query': query, 'hw_shape': hw_shape}
+    _ = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg,
+        run_with_backend=False)
+
+
+@pytest.mark.skipif(
+    reason='Only support GPU test', condition=not torch.cuda.is_available())
+@pytest.mark.parametrize('backend_type', [(Backend.TENSORRT)])
+def test_mlvl_point_generator__single_level_grid_priors__tensorrt(
+        backend_type: Backend):
+    check_backend(backend_type)
+    from mmdet.core.anchor import MlvlPointGenerator
+    model = MlvlPointGenerator([8, 16, 32])
+    output_names = ['output']
+
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(type=backend_type.value),
+            onnx_config=dict(
+                input_shape=None,
+                input_names=['query'],
+                output_names=output_names)))
+
+    featmap_size = torch.Size([80, 80])
+    with_stride = True
+
+    wrapped_model = WrapModel(model, 'single_level_grid_priors')
+    rewrite_inputs = {
+        'featmap_size': featmap_size,
+        'with_stride': with_stride,
+        'level_idx': 0
+    }
     _ = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,

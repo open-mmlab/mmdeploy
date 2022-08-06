@@ -2,7 +2,7 @@
 
 #include <numeric>
 
-#include "mmdeploy/apis/c/classifier.h"
+#include "mmdeploy/apis/c/mmdeploy/classifier.h"
 #include "mmdeploy/apis/java/native/common.h"
 #include "mmdeploy/core/logger.h"
 
@@ -10,7 +10,7 @@ jlong Java_mmdeploy_Classifier_create(JNIEnv *env, jobject, jstring modelPath, j
                                       jint device_id) {
   auto model_path = env->GetStringUTFChars(modelPath, nullptr);
   auto device_name = env->GetStringUTFChars(deviceName, nullptr);
-  mm_handle_t classifier{};
+  mmdeploy_classifier_t classifier{};
   auto ec =
       mmdeploy_classifier_create_by_path(model_path, device_name, (int)device_id, &classifier);
   env->ReleaseStringUTFChars(modelPath, model_path);
@@ -22,16 +22,17 @@ jlong Java_mmdeploy_Classifier_create(JNIEnv *env, jobject, jstring modelPath, j
 }
 
 void Java_mmdeploy_Classifier_destroy(JNIEnv *, jobject, jlong handle) {
-  MMDEPLOY_INFO("Java_mmdeploy_Classifier_destroy");
-  mmdeploy_classifier_destroy((mm_handle_t)handle);
+  MMDEPLOY_DEBUG("Java_mmdeploy_Classifier_destroy");
+  mmdeploy_classifier_destroy((mmdeploy_classifier_t)handle);
 }
 
 jobjectArray Java_mmdeploy_Classifier_apply(JNIEnv *env, jobject thiz, jlong handle,
                                             jobjectArray images, jintArray counts) {
-  return With(env, images, [&](const mm_mat_t imgs[], int size) {
-    mm_class_t *results{};
+  return With(env, images, [&](const mmdeploy_mat_t imgs[], int size) {
+    mmdeploy_classification_t *results{};
     int *result_count{};
-    auto ec = mmdeploy_classifier_apply((mm_handle_t)handle, imgs, size, &results, &result_count);
+    auto ec = mmdeploy_classifier_apply((mmdeploy_classifier_t)handle, imgs, size, &results,
+                                        &result_count);
     if (ec) {
       MMDEPLOY_ERROR("failed to apply classifier, code = {}", ec);
     }
