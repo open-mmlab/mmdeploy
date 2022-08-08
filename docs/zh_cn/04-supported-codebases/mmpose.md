@@ -1,6 +1,6 @@
 # mmpose 模型支持列表
 
-\[mmpose\]（https://github.com/open-mmlab/mmpose）是一个基于 PyTorch 的姿态估计的开源工具箱，也是\[OpenMMLab\]（https://openmmlab.com/）项目的一部分。
+\[mmpose\](https://github.com/open-mmlab/mmpose) 是一个基于 PyTorch 的姿态估计的开源工具箱，也是\[OpenMMLab\](https://openmmlab.com/) 项目的一部分。
 
 ## 安装 mmpose
 

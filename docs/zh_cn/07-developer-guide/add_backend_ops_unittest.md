@@ -2,7 +2,7 @@
 
 本教程介绍如何为后端 ops 添加单元测试。在 backend_ops 目录下添加自定义 op 时，需要添加相应的测试单元。op 的单元测试在 `test/test_ops/test_ops.py` 中。
 
-添加新的自定义 op 后，需要重新编译，引用\[build.md\]（../01-how-to-build/build_from_source.md）.
+添加新的自定义 op 后，需要重新编译，引用\[build.md\](../01-how-to-build/build_from_source.md) .
 
 ## ops 单元测试样例
 

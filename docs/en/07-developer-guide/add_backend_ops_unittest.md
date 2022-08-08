@@ -15,7 +15,7 @@ You can put unit test for ops in `tests/test_ops/`. Usually, the following progr
 ```python
 @pytest.mark.parametrize('backend', [TEST_TENSORRT, TEST_ONNXRT])        # 1.1 backend test class
 @pytest.mark.parametrize('pool_h,pool_w,spatial_scale,sampling_ratio',   # 1.2 set parameters of op
-                         [(2, 2, 1.0, 2), (4, 4, 2.0, 4)])               # [（# Examples of op test parameters）,...]
+                         [(2, 2, 1.0, 2), (4, 4, 2.0, 4)])               # [(# Examples of op test parameters),...]
 def test_roi_align(backend,
                    pool_h,                                               # set parameters of op
                    pool_w,
