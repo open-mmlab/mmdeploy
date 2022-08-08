@@ -1,4 +1,4 @@
-# SNPE 特性支持情况
+# SNPE 支持情况
 
 目前 mmdeploy 集成了 onnx2dlc 模型转换的 SDK 推理，但以下特性还不支持：
 

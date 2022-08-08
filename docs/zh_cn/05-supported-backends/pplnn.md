@@ -1,4 +1,4 @@
-# PPLNN Support
+# PPLNN 支持情况
 
 MMDeploy supports ppl.nn v0.8.1 and later. This tutorial is based on Linux systems like Ubuntu-18.04.
 
