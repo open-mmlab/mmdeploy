@@ -28,15 +28,17 @@ Feature-Added: ',
             steps {
                 echo "start build"
                 script {
-                    String a = "12"
-                    println(a)
-                    String[] b = ["mmdet", "mmcls"]
-                    for (i in b) {
-                        println(i)
+                    String[] codebase_list = ["mmdet", "mmcls"]
+                    String codebase_str = ""
+                    for (codebase in codebase_list) {
+                        if (params.codebase) {
+                            codebase_str = codebase_str + "" + codebase
+                        }
                     }
                 }
-
+                echo "${codebase_str}"
             }
         }
+
     }
   }
