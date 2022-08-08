@@ -2,18 +2,6 @@ pipeline {
   agent { label 'deploy_linux' }
 
   parameters {
-    choice(
-      description: '你需要选择哪个模块进行构建 ?',
-      name: 'modulename',
-      choices: ['Module1', 'Module2', 'Module3']
-    )
-    
-    string(
-        description: '你需要在哪台机器上进行部署 ?',
-        name: 'deploy_hostname', 
-        defaultValue: 'mmdet mmcls mm', 
-    )
-
     text(
         name: 'release_note', 
         defaultValue: 'Release Note 信息如下所示: \n \
@@ -32,12 +20,6 @@ Feature-Added: ',
         defaultValue: true, 
     )
 
-    password(
-        name: 'deploy_password', 
-        defaultValue: 'liumiaocn', 
-        description: '部署机器连接时需要用到的密码信息是什么 '
-    )
-
     file(
         name: "deploy_property_file", 
         description: "你需要输入的部署环境的设定文件是什么 ?"
@@ -50,8 +32,13 @@ Feature-Added: ',
             steps {
                 echo "start build"
                 script {
-                    codebase_str = params.deploy_hostname
-                    println{codebase_str}
+                    String[] codebase_list = ["mmdet", "mmcls", "mmocr"]
+                    String codebase_str = ""
+                    for (codebase in codebase_list) {
+                        if (params.codebase) {
+                            codebase_str = codebase_str + "" + codebase
+                        }
+                    }
                 }
                 echo "${codebase_str}"
 
