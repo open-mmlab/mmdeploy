@@ -49,10 +49,10 @@ Feature-Added: ',
         stage('Build') { 
             steps {
                 echo "start build"
-                codebase_yes=(${params.mmdet} ${params.mmcls})
-                codebase_list=(mmdet mmcls)
-                echo "${codebase_yes}"
-                echo "${codebase_list}"
+                sh """
+                    echo "${params.mdmet}"
+                """
+
                 echo "Build stage: 选中的构建Module为 : ${params.modulename} ..." 
             }
         }
