@@ -48,17 +48,9 @@ Feature-Added: ',
         stage('Build') { 
             steps {
                 echo "start build"
-                sh """
-                    codebase_str=""
-                    for codebase in mmdet mmcls mmocr
-                    do
-                        if ${param.${codebase}}; then
-                            $codebase_str="${codebase_str} ${codebase}"
-                        fi
-                    done
-                    echo $codebase_str
-                """
-
+                if ${param.mmdet}; then
+                    echo mmdet
+                fi
                 echo "${codebase_str}"
                 echo "Build stage: 选中的构建Module为 : ${params.modulename} ..." 
             }
