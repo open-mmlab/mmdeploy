@@ -47,11 +47,7 @@ Feature-Added: ',
   stages {
         stage('Build') { 
             steps {
-                script {
-                    if ( {params.mmdet} == true ) {
-                        echo "mmdet"
-                    }
-                } 
+
                 script {
                     String codebase_str = "error"
                     String[] codebase_list = ["mmdet", "mmcls", "mmocr"]
