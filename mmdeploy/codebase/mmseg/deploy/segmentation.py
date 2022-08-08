@@ -124,6 +124,7 @@ class Segmentation(BaseTask):
         from mmseg.datasets.pipelines import Compose
         if isinstance(imgs, (str, np.ndarray)):
             imgs = [imgs]
+        imgs = [mmcv.imread(_) for _ in imgs]
         cfg = process_model_config(self.model_cfg, imgs, input_shape)
         test_pipeline = Compose(cfg.data.test.pipeline)
         data_list = []
@@ -144,7 +145,7 @@ class Segmentation(BaseTask):
         for k, v in batch_data.items():
             # batch_size > 1
             if isinstance(v[0], DataContainer):
-                batch_data[k] = [_.data[0] for _ in v]
+                batch_data[k] = v[0].data
         return batch_data, batch_data['img']
 
     def visualize(self,

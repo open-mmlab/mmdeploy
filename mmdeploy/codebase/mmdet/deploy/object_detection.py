@@ -149,7 +149,7 @@ class ObjectDetection(BaseTask):
         for k, v in data.items():
             # batch_size > 1
             if isinstance(v[0], DataContainer):
-                data[k] = [_.data[0] for _ in v]
+                data[k] = v[0].data
 
         if self.device != 'cpu':
             data = scatter(data, [self.device])[0]
