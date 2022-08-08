@@ -48,6 +48,18 @@ Feature-Added: ',
         stage('Build') { 
             steps {
                 echo "start build"
+                sh """
+                    codebase_list=(mmdet mmcls mmocr)
+                    codebase_str=""
+                    for codebase in ${codebase_list[@]}
+                    do
+                        if ${param}.${codebase}; then
+                            $codebase_str="${codebase_str} ${codebase}"
+                        fi
+                    done
+                    echo $codebase_str
+                """
+
                 script {
                     println(param.deploy_hostname)
                     String codebase_str = "error"
