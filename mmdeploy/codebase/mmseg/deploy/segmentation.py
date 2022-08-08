@@ -158,7 +158,7 @@ class Segmentation(BaseTask):
         Returns:
             tuple: (data, img), meta information for the input image and input.
         """
-        from mmseg.datasets.pipelines import Compose
+        from mmengine.dataset import Compose
         if isinstance(imgs, str):
             data = dict(img_path=imgs)
         else:
@@ -184,8 +184,7 @@ class Segmentation(BaseTask):
 
         """
         # import to make SegLocalVisualizer could be built
-        from mmseg.core.visualization import \
-            SegLocalVisualizer  # noqa: F401,F403
+        from mmseg.visualization import SegLocalVisualizer  # noqa: F401,F403
         visualizer = super().get_visualizer(name, save_dir)
         # force to change save_dir instead of
         # save_dir/vis_data/vis_image/xx.jpg

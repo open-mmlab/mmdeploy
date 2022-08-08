@@ -34,8 +34,6 @@ def import_codebase(codebase: Codebase):
         importlib.import_module(f'{lib}.models')
         importlib.import_module(f'{lib}.core')
         importlib.import_module(f'{lib}.datasets')
-        importlib.import_module(f'{lib}.metrics')
-        importlib.import_module(f'{lib}.datasets.pipelines')
 
 
 __all__ = ['MMCodebase', 'BaseTask', 'get_codebase_class']
