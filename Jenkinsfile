@@ -49,7 +49,7 @@ Feature-Added: ',
             steps {
                 echo "start build"
                 script {
-                    println(${param.deploy_hostname})
+                    println(param.deploy_hostname)
                     String codebase_str = "error"
                     String[] codebase_list = ["mmdet", "mmcls", "mmocr"]
                     for ( codebase in codebase_list ) {
