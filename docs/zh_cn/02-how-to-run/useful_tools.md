@@ -98,7 +98,8 @@ python tools/onnx2tensorrt.py \
     ${ONNX_PATH} \
     ${OUTPUT} \
     --device-id 0 \
-    --log-level INFO
+    --log-level INFO \
+    --calib-file  /path/to/file
 ```
 
 ### 参数说明

@@ -61,7 +61,7 @@ python tools/test.py \
     {MMCLS_DIR}/configs/resnet/resnet50_b32x8_imagenet.py \
     --model model.onnx \
     --out out.pkl \
-    --device cuda:0 \
+    --device cpu \
     --speed-test
 ```
 
