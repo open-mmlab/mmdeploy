@@ -48,9 +48,11 @@ Feature-Added: ',
         stage('Build') { 
             steps {
                 echo "start build"
-                if (${param.mmdet}); then
-                    echo mmdet
-                fi
+                script {
+                    if ( $param.mmdet ) {
+                        println("mmdet")
+                    }
+                }
                 echo "${codebase_str}"
                 echo "Build stage: 选中的构建Module为 : ${params.modulename} ..." 
             }
