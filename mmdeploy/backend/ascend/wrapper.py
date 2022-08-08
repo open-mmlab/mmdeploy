@@ -456,7 +456,7 @@ class AscendWrapper(BaseWrapper):
         for binding in self._model_desc.outputs:
             self._output.add_buffer(DataBuffer(binding.size))
 
-    @TimeCounter.count_time()
+    @TimeCounter.count_time('ascend')
     def __ascend_execute(self):
         """Run inference on Ascend."""
         ret = acl.mdl.execute(self._model_id, self._input.handle,
