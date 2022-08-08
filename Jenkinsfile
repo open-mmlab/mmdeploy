@@ -29,11 +29,8 @@ Feature-Added: ',
                 echo "start build"
                 script {
                     String[] codebase_list = ["mmdet", "mmcls"]
-                    String codebase_str = ""
-                    for (codebase in codebase_list) {
-
-                            codebase_str = codebase_str + "" + codebase
-
+                    for (i in codebase_list) {
+                        println(i)
                     }
                 }
                 echo "${codebase_str}"
