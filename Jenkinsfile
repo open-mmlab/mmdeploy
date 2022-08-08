@@ -47,7 +47,6 @@ Feature-Added: ',
   stages {
         stage('Build') { 
             steps {
-                echo codebase_str
                 script {
                     if ( {params.mmdet} == true ) {
                         echo "mmdet"
