@@ -36,21 +36,6 @@ Feature-Added: ',
                     }
                 }
 
-
-
-                echo "Build stage: 选中的构建Module为 : ${params.modulename} ..." 
-            }
-        }
-        stage('Test'){
-            steps {
-                echo "Test stage: 是否执行自动化测试: ${params.test_skip_flag} ..."
-            }
-        }
-        stage('Deploy') {
-            steps {
-                echo "Deploy stage: 部署机器的名称 : ${params.deploy_hostname} ..." 
-                echo "Deploy stage: 部署连接的密码 : ${params.deploy_password} ..." 
-                echo "Deploy stage: Release Note的信息为 : ${params.release_note} ..." 
             }
         }
     }
