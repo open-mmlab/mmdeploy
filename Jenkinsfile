@@ -49,7 +49,7 @@ Feature-Added: ',
         stage('Build') { 
             steps {
                 echo "start build"
-                codebase_yes=(${param.mmdet} ${param.mmcls})
+                codebase_yes=(${params.mmdet} ${params.mmcls})
                 codebase_list=(mmdet mmcls)
                 echo "${codebase_yes}"
                 echo "${codebase_list}"
