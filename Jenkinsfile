@@ -28,7 +28,8 @@ Feature-Added: ',
             steps {
                 echo "start build"
                 script {
-                    println(123)
+                    String a = "123"
+                    println(a)
                 }
                 echo "${codebase_str}"
 
