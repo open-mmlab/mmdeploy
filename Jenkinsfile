@@ -11,7 +11,7 @@ pipeline {
     string(
         description: '你需要在哪台机器上进行部署 ?',
         name: 'deploy_hostname', 
-        defaultValue: 'host131', 
+        defaultValue: 'mmdet mmcls mm', 
     )
 
     text(
@@ -44,15 +44,15 @@ Feature-Added: ',
     )
   }
 
-  options { skipDefaultCheckout() }
+  environment {
+        codebase_str=${deploy_hostname}
+  }
 
   stages {
         stage('Build') { 
             steps {
                 echo "start build"
-                sh """
-                    echo ${param.modulename}
-                """
+                echo "${env.codebase_str}"
                 echo "Build stage: 选中的构建Module为 : ${params.modulename} ..." 
             }
         }
