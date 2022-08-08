@@ -317,7 +317,7 @@ The following describes how to use the SDK's C API for inference
    // Path should be modified according to the actual location
    mkdir build
    cd build
-   cmake .. -A x64 -T v142 `
+   cmake ..\cpp -A x64 -T v142 `
      -DOpenCV_DIR=C:\Deps\opencv\build\x64\vc15\lib `
      -DMMDeploy_DIR=C:\workspace\mmdeploy-0.7.0-windows-amd64-onnxruntime1.8.1\sdk\lib\cmake\MMDeploy `
      -DONNXRUNTIME_DIR=C:\Deps\onnxruntime\onnxruntime-win-gpu-x64-1.8.1
@@ -353,7 +353,7 @@ The following describes how to use the SDK's C API for inference
    // Path should be modified according to the actual location
    mkdir build
    cd build
-   cmake .. -A x64 -T v142 `
+   cmake ..\cpp -A x64 -T v142 `
      -DOpenCV_DIR=C:\Deps\opencv\build\x64\vc15\lib `
      -DMMDeploy_DIR=C:\workspace\mmdeploy-0.7.0-windows-amd64-cuda11.1-tensorrt8 2.3.0\sdk\lib\cmake\MMDeploy `
      -DTENSORRT_DIR=C:\Deps\tensorrt\TensorRT-8.2.3.0 `
