@@ -276,7 +276,7 @@ class Classification(BaseTask):
             dict: Composed of the preprocess information.
         """
         input_shape = get_input_shape(self.deploy_cfg)
-        cfg = process_model_config(self.model_cfg, '', input_shape)
+        cfg = process_model_config(self.model_cfg, [''], input_shape)
         preprocess = cfg.data.test.pipeline
         return preprocess
 
