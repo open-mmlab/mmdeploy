@@ -45,7 +45,7 @@ Feature-Added: ',
   }
 
   environment {
-        codebase_str='${deploy_hostname}'
+        codebase_str=${param.deploy_hostname}
   }
 
   stages {
