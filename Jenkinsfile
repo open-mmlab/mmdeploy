@@ -60,17 +60,6 @@ Feature-Added: ',
                     echo $codebase_str
                 """
 
-                script {
-                    println(param.deploy_hostname)
-                    String codebase_str = "error"
-                    String[] codebase_list = ["mmdet", "mmcls", "mmocr"]
-                    for ( codebase in codebase_list ) {
-                        if (${params.codebase} == true ) {
-                            codebase_str = codebase_str + " " + codebase
-                        }
-                    }
-                    println(codebase_str)
-                }
                 echo "${codebase_str}"
                 echo "Build stage: 选中的构建Module为 : ${params.modulename} ..." 
             }
