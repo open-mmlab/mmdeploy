@@ -47,7 +47,7 @@ Feature-Added: ',
   stages {
         stage('Build') { 
             steps {
-
+                eho "start build"
                 script {
                     String codebase_str = "error"
                     String[] codebase_list = ["mmdet", "mmcls", "mmocr"]
