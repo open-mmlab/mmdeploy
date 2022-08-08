@@ -31,8 +31,9 @@ Feature-Added: ',
                     String[] codebase_list = ["mmdet", "mmcls"]
                     String codebase_str = ""
                     for (int i = 0; i <= codebase_list.size(); i++) {
+                        println(codebase_str)
                         if (params.codebase_list[i] == true) {
-                            codebase_str = codebase_str + " " + codebase_list[i]
+                            codebase_str = codebase_str + codebase_list[i] + " "
                         }
                     }
                     echo "${codebase_str}"
