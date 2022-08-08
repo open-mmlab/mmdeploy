@@ -93,6 +93,11 @@ RUN git clone https://github.com/open-mmlab/mmdeploy &&\
     cd .. &&\
     pip install -e .
 
+### install requirement
+    RUN cd mmdeploy &&\
+    /opt/conda/bin/pip install -r requirements/tests.txt &&\
+    /opt/conda/bin/pip install pycuda
+
 ### build sdk
 RUN git clone https://github.com/openppl-public/ppl.cv.git &&\
     cd ppl.cv &&\
