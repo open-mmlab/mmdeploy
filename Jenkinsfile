@@ -20,10 +20,6 @@ Feature-Added: ',
         defaultValue: true, 
     )
 
-    file(
-        name: "deploy_property_file", 
-        description: "你需要输入的部署环境的设定文件是什么 ?"
-    )
   }
 
 
@@ -32,13 +28,7 @@ Feature-Added: ',
             steps {
                 echo "start build"
                 script {
-                    String[] codebase_list = ["mmdet", "mmcls"]
-                    String codebase_str = ""
-                    for (codebase in codebase_list) {
-
-                            codebase_str = codebase_str + "" + codebase
-
-                    }
+                    println(123)
                 }
                 echo "${codebase_str}"
 
