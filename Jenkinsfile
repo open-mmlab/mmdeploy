@@ -50,9 +50,11 @@ Feature-Added: ',
             steps {
                 echo "start build"
                 sh """
-                    if ${params.mmdet}; then
-                        echo mmdet
-                    fi 
+                    codebase_list=(mmdet mmcls mmocr)
+                    for codebase in ${codebase_list[@]}
+                    do
+                        echo $codebase
+                    done
                 """
 
                 echo "Build stage: 选中的构建Module为 : ${params.modulename} ..." 
