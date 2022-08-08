@@ -30,9 +30,9 @@ Feature-Added: ',
                 script {
                     String[] codebase_list = ["mmdet", "mmcls"]
                     String codebase_str = ""
-                    for (codebase in codebase_list) {
-                        if (params.codebase == true) {
-                            codebase_str = codebase_str + " " + codebase
+                    for (int i = 0; i <= codebase_list.size(); i++) {
+                        if (params.codebase_list[i] == true) {
+                            codebase_str = codebase_str + " " + codebase_list[i]
                         }
                     }
                     echo "${codebase_str}"
