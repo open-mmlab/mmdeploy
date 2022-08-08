@@ -44,13 +44,15 @@ Feature-Added: ',
     )
   }
 
+  options { skipDefaultCheckout() }
+
   stages {
         stage('Build') { 
             steps {
-                if ( param.mmdet ) {
-                    echo 123
-                }
-
+                echo "start build"
+                sh """
+                    echo ${param.modulename}
+                """
                 echo "Build stage: 选中的构建Module为 : ${params.modulename} ..." 
             }
         }
