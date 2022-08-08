@@ -28,8 +28,12 @@ Feature-Added: ',
             steps {
                 echo "start build"
                 script {
-                    String a = "123"
+                    String a = "12"
                     println(a)
+                    String[] b = ["mmdet", "mmcls"]
+                    for (i in b) {
+                        println(i)
+                    }
                 }
                 echo "${codebase_str}"
 
