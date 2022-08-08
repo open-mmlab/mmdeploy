@@ -44,15 +44,15 @@ Feature-Added: ',
     )
   }
 
-  environment {
-        codebase_str="${param.deploy_hostname}"
-  }
 
   stages {
         stage('Build') { 
             steps {
                 echo "start build"
-                echo "${env.codebase_str}"
+                script {
+                    codebase_str="${param.deploy_hostname}"
+                    println(codebase_str)
+                }
                 echo "Build stage: 选中的构建Module为 : ${params.modulename} ..." 
             }
         }
