@@ -49,7 +49,7 @@ Feature-Added: ',
             steps {
                 echo "start build"
                 script {
-                    if ( $param.mmdet ) {
+                    if ( ${param.mmdet} ) {
                         println("mmdet")
                     }
                 }
