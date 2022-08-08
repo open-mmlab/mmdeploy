@@ -32,7 +32,7 @@ Feature-Added: ',
             steps {
                 echo "start build"
                 script {
-                    String[] codebase_list = ["mmdet", "mmcls", "mmocr"]
+                    String[] codebase_list = ["mmdet", "mmcls"]
                     String codebase_str = ""
                     for (codebase in codebase_list) {
                         if (params.codebase) {
