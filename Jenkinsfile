@@ -49,13 +49,11 @@ Feature-Added: ',
         stage('Build') { 
             steps {
                 echo "start build"
-                sh """
-                    codebase_list=(mmdet mmcls mmocr)
-                    for codebase in ${codebase_list[@]}
-                    do
-                        echo $codebase
-                    done
-                """
+                script {
+                    codebase_str = ${params.deploy_hostname}
+                    println{codebase_str}
+                }
+                echo ${codebase_str}
 
                 echo "Build stage: 选中的构建Module为 : ${params.modulename} ..." 
             }
