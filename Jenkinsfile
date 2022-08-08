@@ -52,7 +52,7 @@ Feature-Added: ',
                     codebase_str=""
                     for codebase in mmdet mmcls mmocr
                     do
-                        if ${param}.${codebase}; then
+                        if ${param.${codebase}}; then
                             $codebase_str="${codebase_str} ${codebase}"
                         fi
                     done
