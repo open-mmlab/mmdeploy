@@ -49,10 +49,10 @@ Feature-Added: ',
         stage('Build') { 
             steps {
                 echo "start build"
-                script {
-                    codebase_str="${param.deploy_hostname}"
-                    println(codebase_str)
-                }
+                codebase_yes=(${param.mmdet} ${param.mmcls})
+                codebase_list=(mmdet mmcls)
+                echo "${codebase_yes}"
+                echo "${codebase_list}"
                 echo "Build stage: 选中的构建Module为 : ${params.modulename} ..." 
             }
         }
