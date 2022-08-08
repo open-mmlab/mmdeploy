@@ -172,7 +172,7 @@ def single_roi_extractor__forward__ascend(ctx,
     for roi_layer in self.roi_layers:
         assert isinstance(
             roi_layer,
-            RoIAlign), f'{type(roi_layer)} is not supported in CANN.'
+            RoIAlign), f'{type(roi_layer)} is not supported in Ascend.'
 
     roi_layer = self.roi_layers[0]
     out_size = roi_layer.output_size

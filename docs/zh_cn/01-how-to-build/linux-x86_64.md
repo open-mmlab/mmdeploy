@@ -236,6 +236,17 @@ export LD_LIBRARY_PATH=$Torch_DIR/lib:$LD_LIBRARY_PATH
   </code></pre>
   </td>
   </tr>
+  <tr>
+    <td>Ascend</td>
+    <td>CANN</td>
+    <td>
+    1. 按照 <a href="https://support.huawei.com/enterprise/zh/ascend-computing/cann-pid-251168373?category=installation-upgrade">官方指引</a> 安装 CANN 工具集.<br>
+    2. 配置环境
+   <pre><code>
+export ASCEND_TOOLKIT_HOME="/usr/local/Ascend/ascend-toolkit/latest"
+   </code></pre>
+    </td>
+  </tr>
 </tbody>
 </table>
 

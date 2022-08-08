@@ -458,7 +458,7 @@ class AscendWrapper(BaseWrapper):
 
     @TimeCounter.count_time()
     def __ascend_execute(self):
-        """Run inference with cann."""
+        """Run inference on Ascend."""
         ret = acl.mdl.execute(self._model_id, self._input.handle,
                               self._output.handle)
         _check(ret, 'acl.mdl.execute')

@@ -465,7 +465,7 @@ Result<void> AclNet::ReshapeStatic(Span<TensorShape> input_shapes) {
     Span src(input_shapes[i]);
     Span ref(input_dims_[i].dims, input_dims_[i].dimCount);
     if (src != ref) {
-      MMDEPLOY_ERROR("Shape mis-match {} vs {}", src, ref);
+      MMDEPLOY_ERROR("Shape mismatch {} vs {}", src, ref);
       return Status(eInvalidArgument);
     }
   }

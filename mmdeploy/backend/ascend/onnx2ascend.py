@@ -24,10 +24,9 @@ def from_onnx(onnx_model: Union[onnx.ModelProto, str], work_dir: str,
     Example:
         >>> from mmdeploy.apis.ascend import from_onnx
         >>> onnx_path = 'work_dir/end2end.onnx'
-        >>> output_file_prefix = 'work_dir/end2end'
-        >>> model_inputs = mmcv.Config.from_dict(
+        >>> model_inputs = mmcv.Config(
         >>>     dict(input_shapes=dict(input=[1, 3, 224, 224])))
-        >>> from_onnx(onnx_path, work_dir, output_file_prefix)
+        >>> from_onnx(onnx_path, work_dir, model_inputs)
 
     Args:
         onnx_path (ModelProto|str): The path of the onnx model.
@@ -55,7 +54,7 @@ def from_onnx(onnx_model: Union[onnx.ModelProto, str], work_dir: str,
 
     for name, dims in model_inputs['input_shapes'].items():
         input_shapes.append(make_shape_string(name, dims))
-    input_shapes = ','.join(input_shapes)
+    input_shapes = ';'.join(input_shapes)
 
     input_format = 'ND' if 'dynamic_dims' in model_inputs else 'NCHW'
 
