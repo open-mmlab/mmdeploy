@@ -29,8 +29,10 @@ Feature-Added: ',
                 echo "start build"
                 script {
                     String[] codebase_list = ["mmdet", "mmcls"]
-                    for (i in codebase_list) {
-                        println(i)
+                    for (codebase in codebase_list) {
+                        if (params.codebase == true) {
+                            println(codebase)
+                        }
                     }
                 }
             }
