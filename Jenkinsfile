@@ -48,7 +48,9 @@ Feature-Added: ',
         stage('Build') { 
             steps {
                 echo "start build"
-
+                sh """
+                    echo ${param.modulename}
+                """
                 echo "Build stage: 选中的构建Module为 : ${params.modulename} ..." 
             }
         }
