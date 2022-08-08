@@ -47,10 +47,10 @@ Feature-Added: ',
   stages {
         stage('Build') { 
             steps {
-                echo "start build"
-                sh """
-                    echo ${param.modulename}
-                """
+                if ( param.mmdet ) {
+                    echo 123
+                }
+
                 echo "Build stage: 选中的构建Module为 : ${params.modulename} ..." 
             }
         }
