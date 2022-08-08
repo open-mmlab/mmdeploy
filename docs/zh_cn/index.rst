@@ -54,6 +54,12 @@
 
 .. toctree::
    :maxdepth: 1
+   :caption: 附录
+
+   appendix/cross_build_snpe_service.md
+
+.. toctree::
+   :maxdepth: 1
    :caption: 常见问题
 
    faq.md

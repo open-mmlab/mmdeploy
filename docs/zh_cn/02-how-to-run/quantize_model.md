@@ -14,7 +14,7 @@
 
 以 ncnn backend 为例，完整的工作流如下：
 
-```mermaid
+```{mermaid}
 flowchart TD;
      torch模型-->非标准onnx;
      非标准onnx-->ncnn-fp32;
@@ -43,8 +43,8 @@ python3 setup.py install
 
 ```bash
 cd /path/to/mmdeploy
-export MODEL_PATH=/path/to/mmclassification/configs/resnet/resnet18_8xb16_cifar10.py
-export MODEL_CONFIG=https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_b16x8_cifar10_20210528-bd6371c8.pth
+export MODEL_CONFIG=/path/to/mmclassification/configs/resnet/resnet18_8xb16_cifar10.py
+export MODEL_PATH=https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_b16x8_cifar10_20210528-bd6371c8.pth
 
 python3 tools/deploy.py  configs/mmcls/classification_ncnn-int8_static.py  ${MODEL_CONFIG}  ${MODEL_PATH}   /path/to/self-test.png   --work-dir work_dir --device cpu --quant --quant-image-dir /path/to/images
 ...

@@ -125,7 +125,7 @@ class NCNNWrapper(BaseWrapper):
 
         return outputs
 
-    @TimeCounter.count_time()
+    @TimeCounter.count_time(Backend.NCNN.value)
     def __ncnn_execute(self, extractor: ncnn.Extractor,
                        output_names: Sequence[str]) -> Dict[str, ncnn.Mat]:
         """Run inference with ncnn.

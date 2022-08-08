@@ -129,6 +129,8 @@ def get_models(deploy_cfg: Union[str, mmcv.Config],
             precision = deploy_cfg['backend_config']['precision']
     elif backend == Backend.ASCEND:
         net = replace_suffix(ir_name, '.om')
+    elif backend == Backend.SNPE:
+        net = replace_suffix(ir_name, '.dlc')
     elif backend in [Backend.ONNXRUNTIME, Backend.TORCHSCRIPT]:
         pass
     else:

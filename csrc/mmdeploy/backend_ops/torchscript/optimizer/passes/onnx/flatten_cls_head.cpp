@@ -67,7 +67,7 @@ static bool matchClsHead(const Match& match, const std::unordered_map<std::strin
     if (!is_kind(const_node, "onnx::Constant")) return false;
     auto ival = const_node->t(Symbol::attr("value"));
     if (ival.dim() != 0) return false;
-    auto ival_dataptr = ival.data_ptr<long>();
+    auto ival_dataptr = ival.data_ptr<int64_t>();
     if (ival_dataptr[0] != 0) return false;
   }
 

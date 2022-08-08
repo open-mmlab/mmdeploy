@@ -22,6 +22,10 @@ if ("openvino" IN_LIST MMDEPLOY_TARGET_BACKENDS)
     add_subdirectory(openvino)
 endif ()
 
+if ("snpe" IN_LIST MMDEPLOY_TARGET_BACKENDS)
+    add_subdirectory(snpe)
+endif ()
+
 add_subdirectory(acl)
 
 mmdeploy_add_module(${PROJECT_NAME} net_module.cpp)

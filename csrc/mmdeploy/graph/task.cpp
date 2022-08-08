@@ -72,9 +72,12 @@ Result<unique_ptr<Task>> TaskParser::Parse(const Value& config) {
 class TaskCreator : public Creator<Node> {
  public:
   const char* GetName() const override { return "Task"; }
-  int GetVersion() const override { return 0; }
   std::unique_ptr<Node> Create(const Value& value) override {
-    return TaskParser::Parse(value).value();
+    try {
+      return TaskParser::Parse(value).value();
+    } catch (...) {
+    }
+    return nullptr;
   }
 };
 

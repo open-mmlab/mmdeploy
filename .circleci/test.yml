@@ -225,7 +225,7 @@ jobs:
             cd install/example
             mkdir build -ErrorAction SilentlyContinue
             cd build
-            cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
+            cmake ../cpp -G "Visual Studio 16 2019" -A x64 -T v142 `
              -DMMDeploy_DIR="$env:MMDEPLOY_DIR/build/install/lib/cmake/MMDeploy" `
              -DOpenCV_DIR="$env:OPENCV_PACKAGE_DIR"
             cmake --build . --config Release -- /m

@@ -2,7 +2,7 @@
 
 #include <numeric>
 
-#include "mmdeploy/apis/c/text_recognizer.h"
+#include "mmdeploy/apis/c/mmdeploy/text_recognizer.h"
 #include "mmdeploy/apis/java/native/common.h"
 #include "mmdeploy/core/logger.h"
 
@@ -10,7 +10,7 @@ jlong Java_mmdeploy_TextRecognizer_create(JNIEnv *env, jobject, jstring modelPat
                                           jstring deviceName, jint device_id) {
   auto model_path = env->GetStringUTFChars(modelPath, nullptr);
   auto device_name = env->GetStringUTFChars(deviceName, nullptr);
-  mm_handle_t text_recognizer{};
+  mmdeploy_text_recognizer_t text_recognizer{};
   auto ec = mmdeploy_text_recognizer_create_by_path(model_path, device_name, (int)device_id,
                                                     &text_recognizer);
   env->ReleaseStringUTFChars(modelPath, model_path);
@@ -22,15 +22,16 @@ jlong Java_mmdeploy_TextRecognizer_create(JNIEnv *env, jobject, jstring modelPat
 }
 
 void Java_mmdeploy_TextRecognizer_destroy(JNIEnv *, jobject, jlong handle) {
-  MMDEPLOY_INFO("Java_mmdeploy_TextRecognizer_destroy");  // maybe use info?
-  mmdeploy_text_recognizer_destroy((mm_handle_t)handle);
+  MMDEPLOY_DEBUG("Java_mmdeploy_TextRecognizer_destroy");  // maybe use info?
+  mmdeploy_text_recognizer_destroy((mmdeploy_text_recognizer_t)handle);
 }
 
 jobjectArray Java_mmdeploy_TextRecognizer_apply(JNIEnv *env, jobject thiz, jlong handle,
                                                 jobjectArray images) {
-  return With(env, images, [&](const mm_mat_t imgs[], int size) {
-    mm_text_recognize_t *results{};
-    auto ec = mmdeploy_text_recognizer_apply((mm_handle_t)handle, imgs, size, &results);
+  return With(env, images, [&](const mmdeploy_mat_t imgs[], int size) {
+    mmdeploy_text_recognition_t *results{};
+    auto ec =
+        mmdeploy_text_recognizer_apply((mmdeploy_text_recognizer_t)handle, imgs, size, &results);
     if (ec) {
       MMDEPLOY_ERROR("failed to apply text recognizer, code = {}", ec);
     }
@@ -54,9 +55,9 @@ jobjectArray Java_mmdeploy_TextRecognizer_apply(JNIEnv *env, jobject thiz, jlong
 jobjectArray Java_mmdeploy_TextRecognizer_applyBbox(JNIEnv *env, jobject thiz, jlong handle,
                                                     jobjectArray images, jobjectArray bboxes,
                                                     jintArray bbox_count) {
-  return With(env, images, [&](const mm_mat_t imgs[], int size) {
-    mm_text_recognize_t *recog_results{};
-    mm_text_detect_t *det_results = new mm_text_detect_t[env->GetArrayLength(bboxes)];
+  return With(env, images, [&](const mmdeploy_mat_t imgs[], int size) {
+    mmdeploy_text_recognition_t *recog_results{};
+    auto *det_results = new mmdeploy_text_detection_t[env->GetArrayLength(bboxes)];
     int *det_result_count = new int[env->GetArrayLength(bbox_count)];
     auto bbox_cls = env->FindClass("mmdeploy/TextDetector$Result");
     auto pointf_cls = env->FindClass("mmdeploy/PointF");
@@ -76,8 +77,8 @@ jobjectArray Java_mmdeploy_TextRecognizer_applyBbox(JNIEnv *env, jobject thiz, j
         det_results[i].score = (float)env->GetFloatField(bboxi, score_id);
       }
     }
-    auto ec = mmdeploy_text_recognizer_apply_bbox((mm_handle_t)handle, imgs, size,
-                                                  (const mm_text_detect_t *)det_results,
+    auto ec = mmdeploy_text_recognizer_apply_bbox((mmdeploy_text_recognizer_t)handle, imgs, size,
+                                                  (const mmdeploy_text_detection_t *)det_results,
                                                   det_result_count, &recog_results);
     if (ec) {
       MMDEPLOY_ERROR("failed to apply bbox for text recognizer, code = {}", ec);

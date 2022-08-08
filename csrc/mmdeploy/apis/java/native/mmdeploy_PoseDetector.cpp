@@ -2,7 +2,7 @@
 
 #include <numeric>
 
-#include "mmdeploy/apis/c/pose_detector.h"
+#include "mmdeploy/apis/c/mmdeploy/pose_detector.h"
 #include "mmdeploy/apis/java/native/common.h"
 #include "mmdeploy/core/logger.h"
 
@@ -10,7 +10,7 @@ jlong Java_mmdeploy_PoseDetector_create(JNIEnv *env, jobject, jstring modelPath,
                                         jint device_id) {
   auto model_path = env->GetStringUTFChars(modelPath, nullptr);
   auto device_name = env->GetStringUTFChars(deviceName, nullptr);
-  mm_handle_t pose_estimator{};
+  mmdeploy_pose_detector_t pose_estimator{};
   auto ec = mmdeploy_pose_detector_create_by_path(model_path, device_name, (int)device_id,
                                                   &pose_estimator);
   env->ReleaseStringUTFChars(modelPath, model_path);
@@ -22,15 +22,15 @@ jlong Java_mmdeploy_PoseDetector_create(JNIEnv *env, jobject, jstring modelPath,
 }
 
 void Java_mmdeploy_PoseDetector_destroy(JNIEnv *, jobject, jlong handle) {
-  MMDEPLOY_INFO("Java_mmdeploy_PoseDetector_destroy");
-  mmdeploy_pose_detector_destroy((mm_handle_t)handle);
+  MMDEPLOY_DEBUG("Java_mmdeploy_PoseDetector_destroy");
+  mmdeploy_pose_detector_destroy((mmdeploy_pose_detector_t)handle);
 }
 
 jobjectArray Java_mmdeploy_PoseDetector_apply(JNIEnv *env, jobject thiz, jlong handle,
                                               jobjectArray images) {
-  return With(env, images, [&](const mm_mat_t imgs[], int size) {
-    mm_pose_detect_t *results{};
-    auto ec = mmdeploy_pose_detector_apply((mm_handle_t)handle, imgs, size, &results);
+  return With(env, images, [&](const mmdeploy_mat_t imgs[], int size) {
+    mmdeploy_pose_detection_t *results{};
+    auto ec = mmdeploy_pose_detector_apply((mmdeploy_pose_detector_t)handle, imgs, size, &results);
     if (ec) {
       MMDEPLOY_ERROR("failed to apply pose estimator, code = {}", ec);
     }

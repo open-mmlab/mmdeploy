@@ -101,7 +101,11 @@ class PoseDetection(BaseTask):
         """
         from .pose_detection_model import build_pose_detection_model
         model = build_pose_detection_model(
-            model_files, self.model_cfg, self.deploy_cfg, device=self.device)
+            model_files,
+            self.model_cfg,
+            self.deploy_cfg,
+            device=self.device,
+            **kwargs)
         return model.eval()
 
     def init_pytorch_model(self,

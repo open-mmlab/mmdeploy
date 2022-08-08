@@ -24,6 +24,7 @@ ${MODEL_CFG} \
 [--cfg-options ${CFG_OPTIONS}] \
 [--metric-options ${METRIC_OPTIONS}]
 [--log2file work_dirs/output.txt]
+[--batch-size ${BATCH_SIZE}]
 ```
 
 ## Description of all arguments
@@ -42,6 +43,7 @@ ${MODEL_CFG} \
 - `--metric-options`: Custom options for evaluation. The key-value pair in xxx=yyy
   format will be kwargs for dataset.evaluate() function.
 - `--log2file`: log evaluation results (and speed) to file.
+- `--batch-size`: the batch size for inference, which would override `samples_per_gpu` in data config. Default is `1`. Note that not all models support `batch_size>1`.
 
 \* Other arguments in `tools/test.py` are used for speed test. They have no concern with evaluation.
 

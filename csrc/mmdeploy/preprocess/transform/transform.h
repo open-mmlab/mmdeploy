@@ -41,12 +41,12 @@ class MMDEPLOY_API Transform : public Module {
     std::unique_ptr<T> impl(nullptr);
     auto impl_creator = Registry<T>::Get().GetCreator(specified_platform_, version);
     if (nullptr == impl_creator) {
-      MMDEPLOY_WARN("cannot find {} implementation on specific platform {} ", transform_type,
+      MMDEPLOY_WARN("Cannot find {} implementation on platform {}", transform_type,
                     specified_platform_);
       for (auto& name : candidate_platforms_) {
         impl_creator = Registry<T>::Get().GetCreator(name);
         if (impl_creator) {
-          MMDEPLOY_INFO("fallback {} implementation to platform {}", transform_type, name);
+          MMDEPLOY_INFO("Fallback {} implementation to platform {}", transform_type, name);
           break;
         }
       }
