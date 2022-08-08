@@ -50,10 +50,11 @@ Feature-Added: ',
             steps {
                 echo "start build"
                 script {
-                    codebase_str = ${params.deploy_hostname}
+                    codebase_str = params.deploy_hostname
                     println{codebase_str}
                 }
                 echo "${codebase_str}"
+
 
                 echo "Build stage: 选中的构建Module为 : ${params.modulename} ..." 
             }
