@@ -50,7 +50,9 @@ Feature-Added: ',
             steps {
                 echo "start build"
                 sh """
-                    echo "${params.mdmet}"
+                    if ${params.mmdet}; then
+                        echo mmdet
+                    fi 
                 """
 
                 echo "Build stage: 选中的构建Module为 : ${params.modulename} ..." 
