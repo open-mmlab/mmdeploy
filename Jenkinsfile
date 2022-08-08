@@ -49,9 +49,8 @@ Feature-Added: ',
             steps {
                 echo "start build"
                 sh """
-                    codebase_list=(mmdet mmcls mmocr)
                     codebase_str=""
-                    for codebase in ${codebase_list[@]}
+                    for codebase in mmdet mmcls mmocr
                     do
                         if ${param}.${codebase}; then
                             $codebase_str="${codebase_str} ${codebase}"
