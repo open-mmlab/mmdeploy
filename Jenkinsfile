@@ -33,7 +33,6 @@ Feature-Added: ',
                         println(i)
                     }
                 }
-                echo "${codebase_str}"
             }
         }
 
