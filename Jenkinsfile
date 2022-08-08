@@ -48,7 +48,7 @@ Feature-Added: ',
         stage('Build') { 
             steps {
                 echo "start build"
-                if ${param.mmdet}; then
+                if (${param.mmdet}); then
                     echo mmdet
                 fi
                 echo "${codebase_str}"
