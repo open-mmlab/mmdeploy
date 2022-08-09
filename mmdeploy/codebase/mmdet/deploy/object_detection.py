@@ -48,7 +48,9 @@ def process_model_config(model_cfg: Config,
     # for static exporting
     if input_shape is not None:
         pipeline = cfg.test_dataloader.dataset.pipeline
-        pipeline[1]['img_scale'] = tuple(input_shape)
+        print(f'debugging pipeline: {pipeline}')
+        pipeline[1]['scale'] = tuple(input_shape)
+        '''
         transforms = pipeline[1]['transforms']
         for trans in transforms:
             trans_type = trans['type']
@@ -56,6 +58,7 @@ def process_model_config(model_cfg: Config,
                 trans['keep_ratio'] = False
             elif trans_type == 'Pad':
                 trans['size_divisor'] = 1
+        '''
 
     return cfg
 
@@ -149,6 +152,7 @@ class ObjectDetection(BaseTask):
         Returns:
             tuple: (data, img), meta information for the input image and input.
         """
+
         from mmcv.transforms import Compose
         if not isinstance(imgs, (list, tuple)):
             imgs = [imgs]
@@ -211,7 +215,7 @@ class ObjectDetection(BaseTask):
         """
         input_shape = get_input_shape(self.deploy_cfg)
         model_cfg = process_model_config(self.model_cfg, [''], input_shape)
-        preprocess = model_cfg.data.test.pipeline
+        preprocess = model_cfg.test_pipeline
         return preprocess
 
     def get_postprocess(self) -> Dict:
