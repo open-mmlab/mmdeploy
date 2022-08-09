@@ -4,6 +4,7 @@ import logging
 import subprocess
 from collections import OrderedDict
 from pathlib import Path
+from typing import Union
 
 import mmcv
 import openpyxl
@@ -68,12 +69,13 @@ def merge_report(work_dir: str, logger: logging.Logger):
     res_file = work_dir.joinpath(
         f'mmdeploy_regression_test_{mmdeploy.version.__version__}.xlsx')
     logger.info(f'Whole result report saving in {res_file}')
-
     if res_file.exists():
         # delete if it existed
         res_file.unlink()
-
     for report_file in work_dir.iterdir():
+        if report_file.name.startswith('.~'):
+            # skip unclosed temp file
+            continue
         if '_report.xlsx' not in report_file.name or \
                 report_file.name == res_file.name or \
                 not report_file.is_file():
@@ -779,7 +781,8 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
                        checkpoint_path: Path, work_dir: Path, device_type: str,
                        pytorch_metric: dict, metric_info: dict,
                        report_dict: dict, test_type: str,
-                       logger: logging.Logger, backend_file_name: [str, list],
+                       logger: logging.Logger,
+                       backend_file_name: Union[str, list],
                        report_txt_path: Path, metafile_dataset: str,
                        model_name: str):
     """Convert model to onnx and then get metric.
