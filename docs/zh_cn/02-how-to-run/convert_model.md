@@ -82,7 +82,7 @@ python ./tools/deploy.py \
 
 ## 如何评测模型
 
-您可以尝试去评测转换出来的模型 ，参考 [profile 模型](./profile_model.md)。
+您可以尝试去评测转换出来的模型 ，参考 [profile 模型](profile_model.md)。
 
 ## 各后端已支持导出的模型列表
 

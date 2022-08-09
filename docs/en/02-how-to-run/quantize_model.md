@@ -64,4 +64,4 @@ Calibration set is used to calculate quantization layer parameters. Some DFQ (Da
   | ----- | ------------- | ------------------ | ------------- | ------------------- |
   | Usage | QAT           | PTQ                | Test accuracy | PTQ                 |
 
-It is highly recommended that \[verifying model precision\](./profile_model.md) after quantization. \[Here\](../03-benchmark/quantization.md) is some quantization model test result.
+It is highly recommended that \[verifying model precision\](profile_model.md) after quantization. \[Here\](../03-benchmark/quantization.md) is some quantization model test result.

@@ -63,4 +63,4 @@ python3 tools/deploy.py  configs/mmcls/classification_ncnn-int8_static.py  ${MOD
   | ---- | ------ | ------ | -------- | ------ |
   | 用法 | QAT    | PTQ    | 测试精度 | PTQ    |
 
-**强烈建议**量化结束后，[按此文档](./profile_model.md)验证模型精度。[这里](../03-benchmark/quantization.md)是一些量化模型测试结果。
+**强烈建议**量化结束后，[按此文档](profile_model.md) 验证模型精度。[这里](../03-benchmark/quantization.md) 是一些量化模型测试结果。
