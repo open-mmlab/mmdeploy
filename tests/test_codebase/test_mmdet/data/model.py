@@ -49,13 +49,6 @@ model = dict(
             loss_weight=2.0,
             reduction='sum'),
         loss_wh=dict(type='MSELoss', loss_weight=2.0, reduction='sum')),
-    # training and testing settings
-    train_cfg=dict(
-        assigner=dict(
-            type='GridAssigner',
-            pos_iou_thr=0.5,
-            neg_iou_thr=0.5,
-            min_pos_iou=0)),
     test_cfg=dict(
         nms_pre=1000,
         min_bbox_size=0,
@@ -67,31 +60,8 @@ model = dict(
 dataset_type = 'CocoDataset'
 data_root = 'data/coco/'
 
-# file_client_args = dict(
-#     backend='petrel',
-#     path_mapping=dict({
-#         './data/': 's3://openmmlab/datasets/detection/',
-#         'data/': 's3://openmmlab/datasets/detection/'
-#     }))
 file_client_args = dict(backend='disk')
 
-train_pipeline = [
-    dict(type='LoadImageFromFile', file_client_args=file_client_args),
-    dict(type='LoadAnnotations', with_bbox=True),
-    dict(
-        type='Expand',
-        mean=data_preprocessor['mean'],
-        to_rgb=data_preprocessor['bgr_to_rgb'],
-        ratio_range=(1, 2)),
-    dict(
-        type='MinIoURandomCrop',
-        min_ious=(0.4, 0.5, 0.6, 0.7, 0.8, 0.9),
-        min_crop_size=0.3),
-    dict(type='RandomResize', scale=[(320, 320), (416, 416)], keep_ratio=True),
-    dict(type='RandomFlip', prob=0.5),
-    dict(type='PhotoMetricDistortion'),
-    dict(type='PackDetInputs')
-]
 test_pipeline = [
     dict(type='LoadImageFromFile', file_client_args=file_client_args),
     dict(type='Resize', scale=(416, 416), keep_ratio=False),
@@ -101,22 +71,6 @@ test_pipeline = [
                    'scale_factor'))
 ]
 
-train_dataloader = dict(
-    batch_size=24,
-    num_workers=4,
-    persistent_workers=True,
-    sampler=dict(type='DefaultSampler', shuffle=True),
-    batch_sampler=dict(type='AspectRatioBatchSampler'),
-    dataset=dict(
-        type='RepeatDataset',  # use RepeatDataset to speed up training
-        times=10,
-        dataset=dict(
-            type=dataset_type,
-            data_root=data_root,
-            ann_file='annotations/instances_train2017.json',
-            data_prefix=dict(img='train2017/'),
-            filter_cfg=dict(filter_empty_gt=True, min_size=32),
-            pipeline=train_pipeline)))
 val_dataloader = dict(
     batch_size=24,
     num_workers=4,
@@ -138,34 +92,6 @@ val_evaluator = dict(
     metric='bbox')
 test_evaluator = val_evaluator
 
-train_cfg = dict(max_epochs=30)
-
-# optimizer
-optim_wrapper = dict(
-    type='OptimWrapper',
-    optimizer=dict(type='SGD', lr=0.003, momentum=0.9, weight_decay=0.0005),
-    clip_grad=dict(max_norm=35, norm_type=2))
-
-# learning policy
-param_scheduler = [
-    dict(
-        type='LinearLR',
-        start_factor=0.0001,
-        by_epoch=False,
-        begin=0,
-        end=4000),
-    dict(type='MultiStepLR', by_epoch=True, milestones=[24, 28], gamma=0.1)
-]
-
-find_unused_parameters = True
-
-# NOTE: `auto_scale_lr` is for automatically scaling LR,
-# USER SHOULD NOT CHANGE ITS VALUES.
-# base_batch_size = (8 GPUs) x (24 samples per GPU)
-auto_scale_lr = dict(base_batch_size=192)
-
-# training schedule for 1x
-train_cfg = dict(type='EpochBasedTrainLoop', max_epochs=12, val_interval=1)
 val_cfg = dict(type='ValLoop')
 test_cfg = dict(type='TestLoop')
 

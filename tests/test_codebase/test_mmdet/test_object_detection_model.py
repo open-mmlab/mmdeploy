@@ -157,64 +157,6 @@ def get_test_cfg_and_post_processing():
     return test_cfg, post_processing
 
 
-''' PartitionSingleStageModel is not in use in mmdet2.0 now.
-@backend_checker(Backend.ONNXRUNTIME)
-class TestPartitionSingleStageModel:
-
-    @classmethod
-    def setup_class(cls):
-        # force add backend wrapper regardless of plugins
-        # make sure ONNXRuntimeDetector can use ORTWrapper inside itself
-        from mmdeploy.backend.onnxruntime import ORTWrapper
-        ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
-
-        # simplify backend inference
-        cls.wrapper = SwitchBackendWrapper(ORTWrapper)
-        cls.outputs = {
-            'scores': torch.rand(1, 10, 80),
-            'boxes': torch.rand(1, 10, 4)
-        }
-        cls.wrapper.set(outputs=cls.outputs)
-
-        test_cfg, post_processing = get_test_cfg_and_post_processing()
-        model_cfg = Config(dict(model=dict(test_cfg=test_cfg)))
-        deploy_cfg = Config(
-            dict(codebase_config=dict(post_processing=post_processing)))
-
-        from mmdeploy.codebase.mmdet.deploy.object_detection_model import \
-            PartitionSingleStageModel
-        cls.model = PartitionSingleStageModel(
-            Backend.ONNXRUNTIME, [''],
-            'cpu',
-            model_cfg=model_cfg,
-            deploy_cfg=deploy_cfg)
-
-    @classmethod
-    def teardown_class(cls):
-        cls.wrapper.recover()
-
-    def test_forward_test(self):
-        imgs = [torch.rand(1, 3, 64, 64)]
-        img_metas = [[{
-            'ori_shape': [64, 64, 3],
-            'img_shape': [64, 64, 3],
-            'scale_factor': [1, 1, 1, 1],
-        }]]
-        results = self.model.forward_test(imgs, img_metas)
-        assert_det_results(results, 'PartitionSingleStageModel')
-
-    def test_postprocess(self):
-        scores = torch.rand(1, 120, 80)
-        bboxes = torch.rand(1, 120, 4)
-
-        results = self.model.partition0_postprocess(
-            scores=scores, bboxes=bboxes)
-        assert_det_results(
-            results, '.partition0_postprocess of'
-            'PartitionSingleStageModel')
-'''
-
-
 def prepare_model_deploy_cfgs():
     test_cfg, post_processing = get_test_cfg_and_post_processing()
     bbox_roi_extractor = {
@@ -273,119 +215,6 @@ class DummyWrapper(torch.nn.Module):
         return self.outputs
 
 
-''' PartitionTwoStageModel is not in use in mmdet2.0 now.
-@backend_checker(Backend.ONNXRUNTIME)
-class TestPartitionTwoStageModel:
-
-    @classmethod
-    def setup_class(cls):
-        # force add backend wrapper regardless of plugins
-        # make sure ONNXRuntimeDetector can use ORTWrapper inside itself
-        from mmdeploy.backend.onnxruntime import ORTWrapper
-        ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
-
-        # simplify backend inference
-        cls.wrapper = SwitchBackendWrapper(ORTWrapper)
-        outputs = [
-            np.random.rand(1, 12, 80).astype(np.float32),
-            np.random.rand(1, 12, 4).astype(np.float32),
-        ] * 2
-
-        model_cfg, deploy_cfg = prepare_model_deploy_cfgs()
-
-        cls.wrapper.set(
-            outputs=outputs, model_cfg=model_cfg, deploy_cfg=deploy_cfg)
-
-        # replace original function in PartitionTwoStageModel
-        from mmdeploy.codebase.mmdet.deploy.object_detection_model import \
-            PartitionTwoStageModel
-
-        cls.model = PartitionTwoStageModel(
-            Backend.ONNXRUNTIME, ['', ''],
-            'cpu',
-            model_cfg=model_cfg,
-            deploy_cfg=deploy_cfg)
-        feats = [torch.randn(1, 8, 14, 14) for i in range(5)]
-        scores = torch.rand(1, 10, 1)
-        bboxes = torch.rand(1, 10, 4)
-        bboxes[..., 2:4] = 2 * bboxes[..., :2]
-
-        cls_score = torch.rand(10, 81)
-        bbox_pred = torch.rand(10, 320)
-
-        cls.model.device = 'cpu'
-        cls.model.CLASSES = ['' for i in range(80)]
-        cls.model.first_wrapper = DummyWrapper([*feats, scores, bboxes])
-        cls.model.second_wrapper = DummyWrapper([cls_score, bbox_pred])
-
-    @classmethod
-    def teardown_class(cls):
-        cls.wrapper.recover()
-
-    def test_postprocess(self):
-        feats = [torch.randn(1, 8, 14, 14) for i in range(5)]
-        scores = torch.rand(1, 50, 1)
-        bboxes = torch.rand(1, 50, 4)
-        bboxes[..., 2:4] = 2 * bboxes[..., :2]
-
-        results = self.model.partition0_postprocess(
-            x=feats, scores=scores, bboxes=bboxes)
-        assert results is not None, 'failed to get output using '\
-            'partition0_postprocess of PartitionTwoStageDetector'
-        assert isinstance(results, tuple)
-        assert len(results) == 2
-
-        rois = torch.rand(1, 10, 5)
-        cls_score = torch.rand(10, 81)
-        bbox_pred = torch.rand(10, 320)
-        img_metas = [[{
-            'ori_shape': [32, 32, 3],
-            'img_shape': [32, 32, 3],
-            'scale_factor': [1, 1, 1, 1],
-        }]]
-        results = self.model.partition1_postprocess(
-            rois=rois,
-            cls_score=cls_score,
-            bbox_pred=bbox_pred,
-            img_metas=img_metas)
-        assert results is not None, 'failed to get output using '\
-            'partition1_postprocess of PartitionTwoStageDetector'
-        assert isinstance(results, tuple)
-        assert len(results) == 2
-
-    def test_forward(self):
-
-        class DummyPTSDetector(torch.nn.Module):
-            """A dummy wrapper for unit tests."""
-
-            def __init__(self, *args, **kwargs):
-                self.output_names = ['dets', 'labels']
-
-            def partition0_postprocess(self, *args, **kwargs):
-                return self.outputs0
-
-            def partition1_postprocess(self, *args, **kwargs):
-                return self.outputs1
-
-        import types
-        self.model.partition0_postprocess = types.MethodType(
-            DummyPTSDetector.partition0_postprocess, self.model)
-        self.model.partition1_postprocess = types.MethodType(
-            DummyPTSDetector.partition1_postprocess, self.model)
-        self.model.outputs0 = [torch.rand(2, 3)] * 2
-        self.model.outputs1 = [torch.rand(1, 9, 5), torch.rand(1, 9)]
-
-        imgs = [torch.rand(1, 3, 32, 32)]
-        img_metas = [[{
-            'ori_shape': [32, 32, 3],
-            'img_shape': [32, 32, 3],
-            'scale_factor': [1, 1, 1, 1],
-        }]]
-        results = self.model.forward(imgs, img_metas)
-        assert_forward_results(results, 'PartitionTwoStageModel')
-'''
-
-
 @backend_checker(Backend.ONNXRUNTIME)
 @pytest.mark.parametrize('partition_type', [None, 'end2end'])
 def test_build_object_detection_model(partition_type):
@@ -442,10 +271,10 @@ class TestNCNNEnd2EndModel:
         cls.wrapper.recover()
 
     @pytest.mark.parametrize('num_det', [10, 0])
-    def test_forward_test(self, num_det):
+    def test_predict(self, num_det):
         self.outputs = {
             'output': torch.rand(1, num_det, 6),
         }
         imgs = torch.rand(1, 3, 64, 64)
-        results = self.ncnn_end2end_model.forward_test(imgs)
+        results = self.ncnn_end2end_model.predict(imgs)
         assert_det_results(results, 'NCNNEnd2EndModel')
