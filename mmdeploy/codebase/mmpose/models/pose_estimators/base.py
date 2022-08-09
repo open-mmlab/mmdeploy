@@ -25,7 +25,7 @@ def base_pose_estimator__forward(ctx,
         torch.Tensor: The predicted heatmaps.
     """
     if batch_data_samples is None:
-        from mmpose.core import PoseDataSample
+        from mmpose.structures import PoseDataSample
         _, c, h, w = [int(_) for _ in batch_inputs.shape]
         metainfo = dict(
             img_shape=(h, w, c),

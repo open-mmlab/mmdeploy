@@ -134,6 +134,8 @@ class PoseDetection(BaseTask):
         from mmpose.apis import init_model
         from mmpose.utils import register_all_modules
         register_all_modules()
+        self.model_cfg.model.test_cfg['flip_test'] = False
+
         model = init_model(
             self.model_cfg,
             model_checkpoint,
@@ -241,13 +243,15 @@ class PoseDetection(BaseTask):
                 to `False`.
         """
         from mmpose.apis.inference import dataset_meta_from_config
-        from mmpose.registry import VISUALIZERS
-        dataset_meta = dataset_meta_from_config(
-            self.model_cfg, dataset_mode='test')
-        visualizer = VISUALIZERS.build(self.model_cfg.visualizer)
-        visualizer.set_dataset_meta(dataset_meta)
+        from mmpose.visualization import PoseLocalVisualizer
+
         save_dir, filename = os.path.split(output_file)
         name = os.path.splitext(filename)[0]
+        dataset_meta = dataset_meta_from_config(
+            self.model_cfg, dataset_mode='test')
+        visualizer = PoseLocalVisualizer(name=name, save_dir=save_dir)
+        visualizer.set_dataset_meta(dataset_meta)
+
         if isinstance(image, str):
             image = mmcv.imread(image, channel_order='rgb')
         visualizer.add_datasample(
