@@ -1,6 +1,6 @@
 # mmrotate 模型支持列表
 
-\[mmrotate\](https://github.com/open-mmlab/mmrotate) 是一个基于 PyTorch 的旋转物体检测的开源工具箱，也是\[OpenMMLab\](https://openmmlab.com/) 项目的一部分。
+[mmrotate](https://github.com/open-mmlab/mmrotate) 是一个基于 PyTorch 的旋转物体检测的开源工具箱，也是 [OpenMMLab](https://openmmlab.com/)  项目的一部分。
 
 ## 安装 mmrotate
 

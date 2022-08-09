@@ -1,6 +1,6 @@
 # mmseg 模型支持列表
 
-mmseg 是一个基于 PyTorch 的开源对象分割工具箱，也是\[OpenMMLab\](https://openmmlab.com/) 项目的一部分。
+mmseg 是一个基于 PyTorch 的开源对象分割工具箱，也是 [OpenMMLab](https://openmmlab.com/) 项目的一部分。
 
 ## 安装 mmseg
 
