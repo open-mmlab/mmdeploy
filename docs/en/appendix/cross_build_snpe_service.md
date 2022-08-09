@@ -73,7 +73,7 @@ $ tree -L 1
 └── share
 ```
 
-## 3. \[Skipable\] Self-test whether NDK gRPC is available
+## 3. (Skipable) Self-test whether NDK gRPC is available
 
 1. Compile the helloworld that comes with gRPC
 
