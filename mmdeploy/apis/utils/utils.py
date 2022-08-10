@@ -18,8 +18,7 @@ def check_backend_device(deploy_cfg: mmcv.Config, device: str):
     mismatch = dict(
         tensorrt=lambda id: id == -1,
         openvino=lambda id: id > -1,
-        rknn=lambda id: id > -1,
-        ncnn=lambda id: id > -1)
+    )
     if backend in mismatch and mismatch[backend](device_id):
         raise ValueError(f'{device} is invalid for the backend {backend}')
 
