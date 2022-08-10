@@ -143,8 +143,8 @@ python tools/profile.py \
     --model ${MODEL} \
     --device ${DEVICE} \
     --shape ${SHAPE} \
-    --num-iter {NUM_ITER} \
-    --warmup {WARMUP} \
+    --num-iter ${NUM_ITER} \
+    --warmup ${WARMUP} \
     --cfg-options ${CFG_OPTIONS} \
     --batch-size ${BATCH_SIZE} \
     --img-ext ${IMG_EXT}

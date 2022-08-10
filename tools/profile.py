@@ -130,17 +130,18 @@ def main():
     nrof_image = len(image_files)
     assert nrof_image > 0, f'No image files found in {args.image_dir}'
     logger.info(f'Found totally {nrof_image} image files in {args.image_dir}')
-    total_iters = (args.num_iter + args.warmup) * args.batch_size
-    if nrof_image < total_iters:
+    total_nrof_image = (args.num_iter + args.warmup) * args.batch_size
+    if nrof_image < total_nrof_image:
         np.random.seed(1234)
         image_files += [
             image_files[i]
-            for i in np.random.choice(nrof_image, total_iters - nrof_image)
+            for i in np.random.choice(nrof_image, total_nrof_image -
+                                      nrof_image)
         ]
-    image_files = image_files[:total_iters]
+    image_files = image_files[:total_nrof_image]
     with TimeCounter.activate(
             warmup=args.warmup, log_interval=20, with_sync=with_sync):
-        for i in range(0, total_iters, args.batch_size):
+        for i in range(0, total_nrof_image, args.batch_size):
             batch_files = image_files[i:(i + args.batch_size)]
             data, _ = task_processor.create_input(batch_files, input_shape)
             task_processor.run_inference(model, data)
