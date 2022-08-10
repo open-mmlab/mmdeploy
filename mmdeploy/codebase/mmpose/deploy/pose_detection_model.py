@@ -208,9 +208,10 @@ def build_pose_detection_model(
     backend = get_backend(deploy_cfg)
     model_type = get_codebase_config(deploy_cfg).get('model_type', 'end2end')
     if isinstance(data_preprocessor, dict):
-        dp_type = data_preprocessor.pop('type')
+        dp = data_preprocessor.copy()
+        dp_type = dp.pop('type')
         assert dp_type == 'PoseDataPreprocessor'
-        data_preprocessor = PoseDataPreprocessor(**data_preprocessor)
+        data_preprocessor = PoseDataPreprocessor(**dp)
     backend_pose_model = __BACKEND_MODEL.build(
         dict(
             type=model_type,

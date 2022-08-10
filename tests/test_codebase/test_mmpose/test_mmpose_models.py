@@ -15,13 +15,14 @@ except ImportError:
         f'{Codebase.MMPOSE} is not installed.', allow_module_level=True)
 
 
-def get_top_down_heatmap_simple_head_model():
-    from mmpose.models.heads import TopdownHeatmapSimpleHead
-    model = TopdownHeatmapSimpleHead(
+def get_top_down_heatmap_head():
+    from mmpose.models.heads import HeatmapHead
+
+    model = HeatmapHead(
         2,
         4,
-        num_deconv_filters=(16, 16, 16),
-        loss_keypoint=dict(type='JointsMSELoss', use_target_weight=False))
+        deconv_out_channels=(16, 16, 16),
+        loss_keypoint=dict(type='KeypointMSELoss', use_target_weight=False))
     model.requires_grad_(False)
     return model
 
@@ -30,7 +31,7 @@ def get_top_down_heatmap_simple_head_model():
                          [Backend.ONNXRUNTIME, Backend.TENSORRT])
 def test_top_down_heatmap_simple_head_inference_model(backend_type: Backend):
     check_backend(backend_type, True)
-    model = get_top_down_heatmap_simple_head_model()
+    model = get_top_down_heatmap_head()
     model.cpu().eval()
     if backend_type == Backend.TENSORRT:
         deploy_cfg = mmcv.Config(
