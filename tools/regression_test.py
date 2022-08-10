@@ -2,7 +2,6 @@
 import argparse
 import logging
 import subprocess
-from collections import OrderedDict
 from pathlib import Path
 from typing import Union
 
@@ -935,7 +934,6 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
             str(model_cfg.dataset_type).upper().replace('DATASET', '')
     else:
         dataset_type = metafile_dataset
-    print(f'debugging line 938 what is test_type: {test_type}, what is convert_result: {convert_result}')
     # Test the model
     if convert_result and test_type == 'precision':
         # Get evaluation metric from model config
@@ -1211,7 +1209,6 @@ def main():
                     model_name_origin, model_metafile_info, checkpoint_path,
                     model_cfg_path, model_config, metric_info, report_dict,
                     logger, report_txt_path, global_info.get('codebase_name'))
-                print(f'debugging line 1219 what is pipelines_info: {pipelines_info}')
                 for pipeline in pipelines_info:
                     deploy_config = pipeline.get('deploy_config')
                     backend_name = get_backend(deploy_config).name.lower()
