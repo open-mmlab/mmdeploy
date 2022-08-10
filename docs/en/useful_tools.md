@@ -129,14 +129,14 @@ python tools/onnx2ncnn.py \
 - `output_bin` : The converted `ncnn` bin path.
 - `--log-level` : To set log level which in `'CRITICAL', 'FATAL', 'ERROR', 'WARN', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'`. If not specified, it will be set to `INFO`.
 
-## profile
+## profiler
 
 This tool helps to test latency of models with PyTorch, TensorRT and other backends. Note that the pre- and post-processing is excluded when computing inference latency.
 
 ### Usage
 
 ```bash
-python tools/profile.py \
+python tools/profiler.py \
     ${DEPLOY_CFG} \
     ${MODEL_CFG} \
     ${IMAGE_DIR} \
@@ -167,7 +167,7 @@ python tools/profile.py \
 ### Example:
 
 ```shell
-python tools/profile.py \
+python tools/profiler.py \
     configs/mmcls/classification_tensorrt_dynamic-224x224-224x224.py \
     ../mmclassification/configs/resnet/resnet18_8xb32_in1k.py \
     ../mmdetection/demo \
