@@ -20,7 +20,7 @@ class TorchNet : public Net {
   Result<void> ForwardAsync(Event* event) override;
 
  private:
-  Result<Tensor> FromTorchTensor(const torch::Tensor& tensor, std::string name);
+  Result<Tensor> FromTorchTensor(const torch::Tensor& tensor, const std::string& name);
 
   torch::jit::script::Module module_;
   std::vector<Tensor> input_tensor_;
