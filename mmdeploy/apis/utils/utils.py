@@ -20,7 +20,7 @@ def check_backend_device(deploy_cfg: mmcv.Config, device: str):
         openvino=lambda id: id > -1,
         rknn=lambda id: id > -1,
         ncnn=lambda id: id > -1)
-    if mismatch[backend](device_id):
+    if backend in mismatch and mismatch[backend](device_id):
         raise ValueError(f'{device} is invalid for the backend {backend}')
 
 
