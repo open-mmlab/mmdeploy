@@ -255,7 +255,7 @@ def main():
                     'ncnn quant table',
                     target=get_table,
                     args=(onnx_path, deploy_cfg, model_cfg, quant_onnx,
-                          quant_table, quant_image_dir),
+                          quant_table, quant_image_dir, args.device),
                     kwargs=dict(),
                     ret_value=ret_value)
 
