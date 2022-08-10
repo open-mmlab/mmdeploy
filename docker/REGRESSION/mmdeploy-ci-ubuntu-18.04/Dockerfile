@@ -44,7 +44,7 @@ RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Mini
     /opt/conda/bin/conda clean -ya
 
 ### install open-mim
-RUN opt/conda/bin/pip install openmim
+RUN /opt/conda/bin/pip install openmim
 
 WORKDIR /root/workspace
 
