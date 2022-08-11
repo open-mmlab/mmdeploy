@@ -139,8 +139,7 @@ class SDKEnd2EndModel(End2EndModel):
             list: A list contains predictions.
         """
 
-        pred = self.wrapper.invoke(
-            [img[0].contiguous().detach().cpu().numpy()])[0]
+        pred = self.wrapper.invoke(img[0].contiguous().detach().cpu().numpy())
         pred = np.array(pred, dtype=np.float32)
         return pred[np.argsort(pred[:, 0])][np.newaxis, :, 1]
 

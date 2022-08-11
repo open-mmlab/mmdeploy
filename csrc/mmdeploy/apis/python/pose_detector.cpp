@@ -66,10 +66,6 @@ class PyPoseDetector {
     auto output = py::list{};
     auto result = detection;
     for (int i = 0; i < mats.size(); i++) {
-      if (bbox_count[i] == 0) {
-        output.append(py::none());
-        continue;
-      }
       int n_point = result->length;
       auto pred = py::array_t<float>({bbox_count[i], n_point, 3});
       auto dst = pred.mutable_data();
@@ -118,10 +114,11 @@ static void register_python_pose_detector(py::module &m) {
           py::arg("img"), py::arg("box"))
       .def(
           "__call__",
-          [](PyPoseDetector *self, const PyImage &img, const std::vector<Rect> &bboxes) {
+          [](PyPoseDetector *self, const PyImage &img,
+             const std::vector<Rect> &bboxes) -> py::array {
             std::vector<std::vector<Rect>> _bboxes;
             _bboxes.push_back(bboxes);
-            return self->Apply({img}, _bboxes);
+            return self->Apply({img}, _bboxes)[0];
           },
           py::arg("img"), py::arg("bboxes"))
       .def("batch", &PyPoseDetector::Apply, py::arg("imgs"),

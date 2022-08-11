@@ -12,13 +12,10 @@
       - [编译安装 Model Converter](#编译安装-model-converter)
         - [编译自定义算子](#编译自定义算子)
         - [安装 Model Converter](#安装-model-converter)
-      - [编译 SDK](#编译-sdk)
-      - [编译 Demo](#编译-demo)
+      - [编译 SDK 和 Demos](#编译-sdk-和-demos)
     - [注意事项](#注意事项)
 
 ______________________________________________________________________
-
-目前，MMDeploy 在 Windows 平台下仅提供源码编译安装方式。未来会提供预编译包方式。
 
 ## 源码安装
 
@@ -307,7 +304,7 @@ pip install -e .
 - 有些依赖项是可选的。运行 `pip install -e .` 将进行最小化依赖安装。 如果需安装其他可选依赖项，请执行`pip install -r requirements/optional.txt`，
   或者 `pip install -e .[optional]`。其中，`[optional]`可以替换为：`all`、`tests`、`build` 或 `optional`。
 
-#### 编译 SDK
+#### 编译 SDK 和 Demos
 
 下文展示2个构建SDK的样例，分别用 ONNXRuntime 和 TensorRT 作为推理引擎。您可以参考它们，并结合前文 SDK 的编译选项说明，激活其他的推理引擎。
 
@@ -319,6 +316,8 @@ pip install -e .
   cd build
   cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
       -DMMDEPLOY_BUILD_SDK=ON `
+      -DMMDEPLOY_BUILD_EXAMPLES=ON `
+      -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON `
       -DMMDEPLOY_TARGET_DEVICES="cpu" `
       -DMMDEPLOY_TARGET_BACKENDS="ort" `
       -DMMDEPLOY_CODEBASES="all" `
@@ -336,6 +335,8 @@ pip install -e .
   cd build
   cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
     -DMMDEPLOY_BUILD_SDK=ON `
+    -DMMDEPLOY_BUILD_EXAMPLES=ON `
+    -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON `
     -DMMDEPLOY_TARGET_DEVICES="cuda" `
     -DMMDEPLOY_TARGET_BACKENDS="trt" `
     -DMMDEPLOY_CODEBASES="all" `
@@ -346,20 +347,6 @@ pip install -e .
   cmake --build . --config Release -- /m
   cmake --install . --config Release
   ```
-
-#### 编译 Demo
-
-```PowerShell
-cd $env:MMDEPLOY_DIR\build\install\example
-mkdir build -ErrorAction SilentlyContinue
-cd build
-cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
-  -DMMDeploy_DIR="$env:MMDEPLOY_DIR/build/install/lib/cmake/MMDeploy"
-
-cmake --build . --config Release -- /m
-
-$env:path = "$env:MMDEPLOY_DIR/build/install/bin;" + $env:path
-```
 
 ### 注意事项
 

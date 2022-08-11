@@ -74,6 +74,12 @@ def parse_args():
         'speed-test first',
         default=100)
     parser.add_argument(
+        '--batch-size',
+        type=int,
+        default=1,
+        help='the batch size for test, would override `samples_per_gpu`'
+        'in  data config.')
+    parser.add_argument(
         '--uri',
         action='store_true',
         default='192.168.1.1:60000',
@@ -102,9 +108,11 @@ def main():
     # prepare the dataset loader
     dataset_type = 'test'
     dataset = task_processor.build_dataset(model_cfg, dataset_type)
+    # override samples_per_gpu that used for training
+    model_cfg.data['samples_per_gpu'] = args.batch_size
     data_loader = task_processor.build_dataloader(
         dataset,
-        samples_per_gpu=1,
+        samples_per_gpu=model_cfg.data.samples_per_gpu,
         workers_per_gpu=model_cfg.data.workers_per_gpu)
 
     # load the model of the backend

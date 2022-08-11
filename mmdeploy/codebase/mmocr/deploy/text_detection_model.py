@@ -169,7 +169,7 @@ class SDKEnd2EndModel(End2EndModel):
             list: A list contains predictions.
         """
         boundaries = self.wrapper.invoke(
-            [img[0].contiguous().detach().cpu().numpy()])[0]
+            img[0].contiguous().detach().cpu().numpy())
         boundaries = [list(x) for x in boundaries]
         return [
             dict(
