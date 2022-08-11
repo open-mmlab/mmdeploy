@@ -72,7 +72,7 @@ RUN git clone https://github.com/Tencent/ncnn.git &&\
 ### create conda env && install pytorch
 RUN /opt/conda/bin/conda init bash && \
     TORCH_VERSION_LIST=(1.8.0 1.9.0 1.10.0 1.11.0 1.12.0) && \
-    TORCHVISION_VERSION_LIST=(0.9.0 1.10.0 0.11.0 0.12.0 0.12) && \
+    TORCHVISION_VERSION_LIST=(0.9.0 1.10.0 0.11.0 0.12.0 0.13.0) && \
     for i in `seq 0 4`; \
     do \
         /opt/conda/bin/conda create --name torch{TORCH_VERSION_LIST[$i]} python=3.8 -y; \
