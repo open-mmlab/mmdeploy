@@ -40,7 +40,7 @@ RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Mini
     chmod +x ~/miniconda.sh && \
     ~/miniconda.sh -b -p /opt/conda && \
     rm ~/miniconda.sh && \
-    /opt/conda/bin/conda install -y python=${PYTHON_VERSION} conda-build pyyaml numpy ipython cython typing typing_extensions mkl mkl-include ninja && \
+    conda install -y python=${PYTHON_VERSION} conda-build pyyaml numpy ipython cython typing typing_extensions mkl mkl-include ninja && \
     /opt/conda/bin/conda clean -ya
 
 ### install open-mim
@@ -74,14 +74,14 @@ RUN TORCH_VERSION_LIST=(1.8.0 1.9.0 1.10.0 1.11.0 1.12.0) && \
     TORCHVISION_VERSION_LIST=(0.9.0 0.10.0 0.11.0 0.12.0 0.12) && \
     for i in `seq 0 4`; \
     do \
-        conda create --name torch{TORCH_VERSION_LIST[$i]} python=3.8 -y; \
-        conda activate torch{TORCH_VERSION_LIST[$i]}; \
+        /opt/conda/bin/conda create --name torch{TORCH_VERSION_LIST[$i]} python=3.8 -y; \
+        /opt/conda/bin/conda activate torch{TORCH_VERSION_LIST[$i]}; \
         /opt/conda/bin/pip install torch==${TORCH_VERSION_LIST[$i]}+cpu torchvision==${TORCHVISION_VERSION_LIST[$i]}+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html; \
     done && \ 
     PYTHON_VERSION=(3.6 3.7 3.8 3.9) && \
     for i in `seq 0 3`; \
     do \
-        conda create --name mmdeploy-${PYTHON_VERSION[i]} python=${PYTHON_VERSION[i]} -y; \
-        conda activate mmdeploy-${PYTHON_VERSION[i]} python=${PYTHON_VERSION[i]}; \
+        /opt/conda/bin/conda create --name mmdeploy-${PYTHON_VERSION[i]} python=${PYTHON_VERSION[i]} -y; \
+        /opt/conda/bin/conda activate mmdeploy-${PYTHON_VERSION[i]} python=${PYTHON_VERSION[i]}; \
     done
 
