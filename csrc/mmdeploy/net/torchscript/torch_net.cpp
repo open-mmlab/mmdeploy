@@ -1,11 +1,13 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "torch_net.h"
+#include "mmdeploy/net/torchscript/torch_net.h"
 
 #include "mmdeploy/core/model.h"
 #include "mmdeploy/core/utils/formatter.h"
 
+#if MMDEPLOY_USE_TORCHVISION
 #include "torchvision/vision.h"
+#endif
 
 namespace mmdeploy {
 
@@ -77,31 +79,19 @@ Result<void> TorchNet::Init(const Value& cfg) {
     std::istringstream iss(bytes);
     InferenceMode guard;
     module_ = torch::jit::load(iss);
+    module_.eval();
     module_.to(*torch_device_);
     auto forward = module_.get_method("forward");
-    auto arguments = forward.function().getSchema().arguments();
-    for (const auto& arg : arguments) {
-      MMDEPLOY_INFO("arg: {}", arg.name());
-    }
-    auto returns = forward.function().getSchema().returns();
-    for (const auto& ret : returns) {
-      MMDEPLOY_INFO("ret: {}", ret.name());
-    }
 
-    auto ToDesc = [&](torch::jit::Value* v) {
-      MMDEPLOY_ERROR("{}", v->debugNameBase());
-      // torch::jit::Tensor
-      // torch::jit::NamedValue
-      // MMDEPLOY_ERROR("{}", v->node()->cast<torch::jit::TensorType>());
-      return TensorDesc{device_, DataType::kFLOAT, {}, v->debugNameBase()};
+    auto ToDesc = [&](torch::jit::Value* value, const char* type) {
+      MMDEPLOY_INFO("Found {}: {}", type, value->debugNameBase());
+      return TensorDesc{device_, DataType::kFLOAT, {}, value->debugNameBase()};
     };
 
     auto inputs = forward.graph()->inputs();
-
     for (int i = 1; i < inputs.size(); ++i) {
-      MMDEPLOY_ERROR("{}", inputs[i]->type()->annotation_str());
       if (inputs[i]->type()->kind() == c10::TypeKind::TensorType) {
-        input_tensor_.emplace_back(ToDesc(inputs[i]));
+        input_tensor_.emplace_back(ToDesc(inputs[i], "input"));
       } else {
         MMDEPLOY_ERROR("Unsupported input type: {}", typeKindToString(inputs[i]->type()->kind()));
         return Status(eNotSupported);
@@ -110,15 +100,13 @@ Result<void> TorchNet::Init(const Value& cfg) {
 
     auto outputs = forward.graph()->outputs();
     for (const auto& output : outputs) {
-      // MMDEPLOY_ERROR("{}", typeKindToString(output->type()->kind()));
-      MMDEPLOY_ERROR("{}", output->type()->annotation_str());
       auto kind = output->type()->kind();
       if (kind == c10::TypeKind::TensorType) {
-        output_tensor_.emplace_back(ToDesc(output));
+        output_tensor_.emplace_back(ToDesc(output, "output"));
       } else if (output->type()->kind() == c10::TypeKind::TupleType) {
         for (const auto& v : output->node()->inputs()) {
           if (v->type()->kind() == c10::TypeKind::TensorType) {
-            output_tensor_.emplace_back(ToDesc(v));
+            output_tensor_.emplace_back(ToDesc(v, "output"));
           } else {
             MMDEPLOY_ERROR("Unsupported output type: {}", typeKindToString(v->type()->kind()));
             return Status(eNotSupported);
@@ -163,17 +151,10 @@ Result<void> TorchNet::Forward() {
     auto outputs = module_.forward(inputs);
     if (outputs.isTensor()) {
       OUTCOME_TRY(output_tensor_[0], FromTorchTensor(outputs.toTensor(), output_tensor_[0].name()));
-    } else if (outputs.isTensorList()) {
-      auto tensor_vector = outputs.toTensorVector();
-      for (size_t i = 0; i < tensor_vector.size(); ++i) {
-        OUTCOME_TRY(output_tensor_[i],
-                    FromTorchTensor(outputs.toTensor(), output_tensor_[i].name()));
-      }
     } else if (outputs.isTuple()) {
       auto tuple = outputs.toTuple();
       size_t index = 0;
       for (const auto& x : tuple->elements()) {
-        MMDEPLOY_ERROR(toString(x.toTensor().device()));
         OUTCOME_TRY(output_tensor_[index],
                     FromTorchTensor(x.toTensor(), output_tensor_[index].name()));
         ++index;
