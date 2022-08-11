@@ -4,18 +4,13 @@ import torch.nn.functional as F
 from torch.nn.modules.utils import _pair
 
 from mmdeploy.core import FUNCTION_REWRITER
-from mmdeploy.utils import (Backend, get_backend, get_root_logger,
-                            is_dynamic_shape)
+from mmdeploy.utils import Backend, get_root_logger, is_dynamic_shape
 
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='torch.nn.functional.adaptive_avg_pool2d')
 def adaptive_avg_pool2d__default(ctx, input, output_size):
     """Rewrite `adaptive_avg_pool2d` for default backend."""
-    supported_backends = [Backend.TORCHSCRIPT, Backend.NCNN]
-    if get_backend(ctx.cfg) in supported_backends:
-        return ctx.origin_func(input, output_size)
-
     output_size = _pair(output_size)
     if int(output_size[0]) == int(output_size[1]) == 1:
         out = ctx.origin_func(input, output_size)
@@ -36,3 +31,14 @@ def adaptive_avg_pool2d__default(ctx, input, output_size):
             ceil_mode=False,
             count_include_pad=False)
     return out
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    func_name='torch.nn.functional.adaptive_avg_pool2d',
+    backend=Backend.NCNN.value)
+@FUNCTION_REWRITER.register_rewriter(
+    func_name='torch.nn.functional.adaptive_avg_pool2d',
+    backend=Backend.TORCHSCRIPT.value)
+def adaptive_avg_pool2d__ncnn(ctx, input, output_size):
+    """Rewrite `adaptive_avg_pool2d` for ncnn and torchscript backend."""
+    return ctx.origin_func(input, output_size)
