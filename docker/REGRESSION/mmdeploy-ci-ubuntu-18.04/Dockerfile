@@ -40,7 +40,7 @@ RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Mini
     chmod +x ~/miniconda.sh && \
     ~/miniconda.sh -b -p /opt/conda && \
     rm ~/miniconda.sh && \
-    conda install -y python=${PYTHON_VERSION} conda-build pyyaml numpy ipython cython typing typing_extensions mkl mkl-include ninja && \
+    /opt/conda/bin/conda install -y python=${PYTHON_VERSION} conda-build pyyaml numpy ipython cython typing typing_extensions mkl mkl-include ninja && \
     /opt/conda/bin/conda clean -ya
 
 ### install open-mim
@@ -71,7 +71,7 @@ RUN git clone https://github.com/Tencent/ncnn.git &&\
 
 ### create conda env && install pytorch
 RUN TORCH_VERSION_LIST=(1.8.0 1.9.0 1.10.0 1.11.0 1.12.0) && \ 
-    TORCHVISION_VERSION_LIST=(0.9.0 0.10.0 0.11.0 0.12.0 0.12) && \
+    TORCHVISION_VERSION_LIST=(0.9.0 1.10.0 0.11.0 0.12.0 0.12) && \
     for i in `seq 0 4`; \
     do \
         /opt/conda/bin/conda create --name torch{TORCH_VERSION_LIST[$i]} python=3.8 -y; \
