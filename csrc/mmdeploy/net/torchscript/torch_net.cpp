@@ -4,6 +4,7 @@
 
 #include "mmdeploy/core/model.h"
 #include "mmdeploy/core/utils/formatter.h"
+#include "torch/torch.h"
 
 #if MMDEPLOY_USE_TORCHVISION
 #include "torchvision/vision.h"
@@ -15,7 +16,11 @@ namespace mmdeploy {
 TorchNet::~TorchNet() = default;
 
 class InferenceMode {
+#if TORCH_VERSION_MAJOR == 1 && TORCH_VERSION_MINOR >= 10
+  c10::InferenceMode guard_;
+#else
   at::AutoNonVariableTypeMode guard_;
+#endif
 };
 
 static Result<torch::ScalarType> FromDataType(DataType data_type) {
