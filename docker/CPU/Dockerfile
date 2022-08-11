@@ -61,6 +61,12 @@ ENV ONNXRUNTIME_DIR=/root/workspace/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}
 ### install onnxruntme and openvino
 RUN /opt/conda/bin/pip install onnxruntime==${ONNXRUNTIME_VERSION} openvino-dev
 
+### get ppl.nn
+RUN git clone https://github.com/openppl-public/ppl.nn.git \
+    && cd ppl.nn \
+    && ./build.sh -DPPLNN_USE_X86_64=ON \
+    && export PPLNN_DIR=$(pwd)
+
 ### build ncnn
 RUN git clone https://github.com/Tencent/ncnn.git &&\
     cd ncnn &&\
@@ -73,38 +79,3 @@ RUN git clone https://github.com/Tencent/ncnn.git &&\
     cd /root/workspace/ncnn/python &&\
     pip install -e .
 
-ENV PATH="/root/workspace/ncnn/build/tools/quantize/:${PATH}"
-
-### install mmdeploy
-WORKDIR /root/workspace
-ARG VERSION
-RUN git clone https://github.com/open-mmlab/mmdeploy.git &&\
-    cd mmdeploy &&\
-    if [ -z ${VERSION} ] ; then echo "No MMDeploy version passed in, building on master" ; else git checkout tags/v${VERSION} -b tag_v${VERSION} ; fi &&\
-    git submodule update --init --recursive &&\
-    rm -rf build &&\
-    mkdir build &&\
-    cd build &&\
-    cmake -DMMDEPLOY_TARGET_BACKENDS=ncnn -Dncnn_DIR=/root/workspace/ncnn/build/install/lib/cmake/ncnn .. &&\
-    make -j$(nproc) &&\
-    cmake -DMMDEPLOY_TARGET_BACKENDS=ort .. &&\
-    make -j$(nproc) &&\
-    cd .. &&\
-    pip install -e .
-
-### build SDK
-ENV LD_LIBRARY_PATH="/root/workspace/mmdeploy/build/lib:/opt/intel/openvino/deployment_tools/ngraph/lib:/opt/intel/openvino/deployment_tools/inference_engine/lib/intel64:${LD_LIBRARY_PATH}"
-RUN cd mmdeploy && rm -rf build/CM* && mkdir -p build && cd build && cmake .. \
-    -DMMDEPLOY_BUILD_SDK=ON \
-    -DMMDEPLOY_BUILD_EXAMPLES=ON \
-    -DCMAKE_CXX_COMPILER=g++-7 \
-    -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} \
-    -Dncnn_DIR=/root/workspace/ncnn/build/install/lib/cmake/ncnn \
-    -DInferenceEngine_DIR=/opt/intel/openvino/deployment_tools/inference_engine/share \
-    -DMMDEPLOY_TARGET_DEVICES=cpu \
-    -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
-    -DMMDEPLOY_TARGET_BACKENDS="ort;ncnn;openvino" \
-    -DMMDEPLOY_CODEBASES=all &&\
-    cmake --build . -- -j$(nproc) && cmake --install . &&\
-    export SPDLOG_LEVEL=warn &&\
-    if [ -z ${VERSION} ] ; then echo "Built MMDeploy master for CPU devices successfully!" ; else echo "Built MMDeploy version v${VERSION} for CPU devices successfully!" ; fi
