@@ -7,6 +7,7 @@
 
 #if MMDEPLOY_USE_TORCHVISION
 #include "torchvision/vision.h"
+MMDEPLOY_API void _mmdeploy_force_link_torchvision() { vision::detail::_register_ops(); }
 #endif
 
 namespace mmdeploy {

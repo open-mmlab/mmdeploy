@@ -10,11 +10,14 @@ mmdeploy_add_module(${PROJECT_NAME} torch_net.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE
         ${TORCH_LIBRARIES})
 
+target_link_directories(${PROJECT_NAME} INTERFACE
+        $<BUILD_INTERFACE:${Torch_DIR}/../../../lib>)
+
 target_link_libraries(${PROJECT_NAME} PRIVATE
         mmdeploy_torchscript_ops_obj)
 
 if (TorchVision_FOUND)
-    mmdeploy_load_dynamic(${PROJECT_NAME} TorchVision::TorchVision)
+    target_link_libraries(${PROJECT_NAME} PRIVATE TorchVision::TorchVision)
     target_compile_definitions(${PROJECT_NAME} PRIVATE -DMMDEPLOY_USE_TORCHVISION=1)
 endif ()
 
