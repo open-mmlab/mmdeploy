@@ -76,6 +76,7 @@ RUN /opt/conda/bin/conda init bash && \
     for i in `seq 0 4`; \
     do \
         /opt/conda/bin/conda create --name torch{TORCH_VERSION_LIST[$i]} python=3.8 -y; \
+        source activate torch{TORCH_VERSION_LIST[$i]}; \
         /opt/conda/bin/conda activate torch{TORCH_VERSION_LIST[$i]}; \
         /opt/conda/bin/pip install torch==${TORCH_VERSION_LIST[$i]}+cpu torchvision==${TORCHVISION_VERSION_LIST[$i]}+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html; \
     done && \ 
