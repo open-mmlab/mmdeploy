@@ -46,7 +46,7 @@ RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Mini
 RUN /opt/conda/bin/pip install openmim
 
 ### install opencv
-RUN /opt/conda/bin/pip install opencv-python==${OPENCV_VERSION}}
+RUN /opt/conda/bin/pip install opencv-python==${OPENCV_VERSION}
 
 WORKDIR /root/workspace
 
