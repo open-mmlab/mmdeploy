@@ -24,4 +24,4 @@ Note:
 | :---------------------------------------------------------------------------------------------------------------: | :-------: | :--------: | :------------: |
 | [PANet](https://github.com/open-mmlab/mmocr/blob/main/configs/textdet/panet/panet_r18_fpem_ffm_600e_icdar2015.py) | ICDAR2015 |   0.795    | 0.792 @thr=0.9 |
 
-Note:  \[mmocr\](https://github.com/open-mmlab/mmocr)  Uses 'shapely' to compute IoU, which results in a slight difference in accuracy
+Note:  [mmocr](https://github.com/open-mmlab/mmocr)  Uses 'shapely' to compute IoU, which results in a slight difference in accuracy
