@@ -3,10 +3,8 @@ pipeline {
 
   parameters {
     text(
-        name: 'release_note', 
-        defaultValue: 'Release Note 信息如下所示: \n \
-Bug-Fixed: \n \
-Feature-Added: ', 
+        name: 'codebase_list', 
+        defaultValue: 'select codebase', 
         description: 'Release Note的详细信息是什么 ?'
     )
 
@@ -27,17 +25,8 @@ Feature-Added: ',
         stage('Build') { 
             steps {
                 echo "start build"
-                script {
-                    String[] codebase_list = ["mmdet", "mmcls"]
-                    String codebase_str = ""
-                    for (int i = 0; i <= codebase_list.size(); i++) {
-                        println(codebase_str)
-                        if (params.codebase_list[i] == true) {
-                            codebase_str = codebase_str + codebase_list[i] + " "
-                        }
-                    }
-                    echo "${codebase_str}"
-                }
+                params.mmdet ? echo "yes" : echo "no"
+
             }
         }
 
