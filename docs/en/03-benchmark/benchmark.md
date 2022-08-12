@@ -590,7 +590,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">85.42</td>
     <td align="center">-</td>
     <td align="center">-</td>
-    <td align="center">-</td>
+    <td align="center">85.43</td>
   </tr>
   <tr>
     <td align="center">top-5</td>
@@ -601,7 +601,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">97.76</td>
     <td align="center">-</td>
     <td align="center">-</td>
-    <td align="center">-</td>
+    <td align="center">97.77</td>
   </tr>
 </tbody>
 </table>

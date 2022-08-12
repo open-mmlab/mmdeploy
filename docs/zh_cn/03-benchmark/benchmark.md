@@ -587,7 +587,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">85.42</td>
     <td align="center">-</td>
     <td align="center">-</td>
-    <td align="center">-</td>
+    <td align="center">85.43</td>
   </tr>
   <tr>
     <td align="center">top-5</td>
@@ -598,7 +598,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">97.76</td>
     <td align="center">-</td>
     <td align="center">-</td>
-    <td align="center">-</td>
+    <td align="center">97.77</td>
   </tr>
 </tbody>
 </table>

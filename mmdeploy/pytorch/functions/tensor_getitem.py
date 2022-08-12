@@ -14,7 +14,9 @@ def tensor__getitem__ascend(ctx, self, key) -> torch.Tensor:
     Ascend does not support negative select
     """
     if not isinstance(key, (tuple, list)):
-        key = (key, )
+        if isinstance(key, int) and key < 0:
+            key = self.dim() + key
+        return ctx.origin_func(self, key)
 
     def _num_slice_types(slices):
         num_slice = 0
