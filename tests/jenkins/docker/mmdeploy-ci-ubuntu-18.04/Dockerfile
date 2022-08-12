@@ -68,7 +68,7 @@ RUN pip install onnxruntime==${ONNXRUNTIME_VERSION} openvino-dev
 ### build ncnn
 RUN git clone --recursive https://github.com/Tencent/ncnn.git &&\
     cd ncnn &&\
-    git checkout tags/${NCNN_VERSION} -b ${NCNN_VERSION}
+    git checkout tags/${NCNN_VERSION} -b ${NCNN_VERSION} && \
     export NCNN_DIR=$(pwd) &&\
     mkdir -p build && cd build &&\
     cmake -DNCNN_VULKAN=OFF -DNCNN_PYTHON=ON -DNCNN_BUILD_TOOLS=ON -DCMAKE_INSTALL_PREFIX=$NCNN_DIR/install .. &&\
