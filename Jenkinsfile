@@ -25,7 +25,7 @@ pipeline {
         stage('Build') { 
             steps {
                 echo "start build"
-                params.mmdet ? echo "yes" : echo "no"
+                params.mmdet ? echo yes : echo no
 
             }
         }
