@@ -1,9 +1,7 @@
 FROM openvino/ubuntu18_dev:2021.4.2
 ARG PYTHON_VERSION=3.7
-ARG TORCH_VERSION=1.10.0
-ARG TORCHVISION_VERSION=0.11.0
 ARG ONNXRUNTIME_VERSION=1.8.1
-ARG MMCV_VERSION=1.5.3
+ARG OPENCV_VERSION=4.5.5.62 
 USER root
 
 ### change the system source for installing libs
@@ -46,6 +44,9 @@ RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Mini
 ### install open-mim
 RUN /opt/conda/bin/pip install openmim
 
+### install opencv
+RUN /opt/conda/bin/pip install opencv-python==${OPENCV_VERSION}
+
 WORKDIR /root/workspace
 
 ### get onnxruntime
@@ -68,6 +69,12 @@ RUN git clone https://github.com/Tencent/ncnn.git &&\
     make install &&\
     cd /root/workspace/ncnn/python &&\
     pip install -e .
+
+### get ppl.nn
+RUN git clone https://github.com/openppl-public/ppl.nn.git \
+    && cd ppl.nn \
+    && ./build.sh -DPPLNN_USE_X86_64=ON \
+    && export PPLNN_DIR=$(pwd)
 
 ### create conda env && install pytorch
 RUN /opt/conda/bin/conda init bash && \
