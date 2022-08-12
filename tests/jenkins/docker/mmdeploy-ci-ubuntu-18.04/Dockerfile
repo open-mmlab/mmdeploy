@@ -41,11 +41,12 @@ RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Mini
     /opt/conda/bin/conda install -y python=${PYTHON_VERSION} conda-build pyyaml numpy ipython cython typing typing_extensions mkl mkl-include ninja && \
     /opt/conda/bin/conda clean -ya
 
+
 ### install open-mim
 RUN /opt/conda/bin/pip install openmim
 
 ### install opencv
-RUN /opt/conda/bin/pip install opencv-python==${OPENCV_VERSION}
+RUN /opt/conda/bin/pip install opencv-python==${OPENCV_VERSION}}
 
 WORKDIR /root/workspace
 
