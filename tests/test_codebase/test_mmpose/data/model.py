@@ -17,7 +17,7 @@ model = dict(
     backbone=dict(type='ResNet', depth=18),
     head=dict(
         type='HeatmapHead',
-        in_channels=32,
+        in_channels=512,
         out_channels=17,
         deconv_out_channels=None,
         loss=dict(type='KeypointMSELoss', use_target_weight=True),
@@ -32,7 +32,7 @@ file_client_args = dict(backend='disk')
 
 test_pipeline = [
     dict(type='LoadImage', file_client_args=file_client_args),
-    dict(type='GetBboxCenterScale'),
+    dict(type='GetBBoxCenterScale'),
     dict(type='TopdownAffine', input_size=codec['input_size']),
     dict(type='PackPoseInputs')
 ]
