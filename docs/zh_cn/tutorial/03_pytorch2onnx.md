@@ -143,7 +143,8 @@ dynamic_axes_0 = {
     'in' : [0],
     'out' : [0]
 }
-``
+```
+
 由于 ONNX 要求每个动态维度都有一个名字，这样写的话会引出一条 UserWarning，警告我们通过列表的方式设置动态维度的话系统会自动为它们分配名字。一种显式添加动态维度名字的方法如下：
 ```python
 dynamic_axes_0 = {
@@ -341,6 +342,6 @@ def _interpolate_helper(name, dim, interpolate_mode):
 
 1. Asinh 算子出现于第 9 个 ONNX 算子集。PyTorch 在 9 号版本的符号表文件中是怎样支持这个算子的？
 2. BitShift 算子出现于第11个 ONNX 算子集。PyTorch 在 11 号版本的符号表文件中是怎样支持这个算子的？
-3. 在 [第一篇教程](chapter_01_introduction_to_model_deployment.md) 中，我们讲过 PyTorch （截至第 11 号算子集）不支持在插值中设置动态的放缩系数。这个系数对应 `torch.onnx.symbolic_helper._interpolate_helper`的symbolic_fn的Resize算子映射关系中的哪个参数？我们是如何修改这一参数的？
+3. 在 [第一篇教程](01_introduction_to_model_deployment.md) 中，我们讲过 PyTorch （截至第 11 号算子集）不支持在插值中设置动态的放缩系数。这个系数对应 `torch.onnx.symbolic_helper._interpolate_helper`的symbolic_fn的Resize算子映射关系中的哪个参数？我们是如何修改这一参数的？
 
 练习的答案会在下期教程中揭晓。
