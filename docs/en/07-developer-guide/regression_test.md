@@ -1,4 +1,4 @@
-# How to do Regression Test
+# How to do regression test
 
 This tutorial describes how to do regression test. The deployment configuration file contains  codebase config and inference config.
 
