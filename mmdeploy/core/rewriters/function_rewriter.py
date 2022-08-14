@@ -59,12 +59,19 @@ def _set_func(origin_func_path: str,
             break
         except Exception:
             continue
+    origin_func = eval(origin_func_path)
+    method_class = False
+    if len(split_path) > 1:
+        module_or_class = eval('.'.join(split_path[:-1]))
+        if isinstance(module_or_class, type):
+            method_class = True
     # Assign function
-    _replace_all_obj(
-        eval(origin_func_path),
-        rewrite_func,
-        ignore_refs=ignore_refs,
-        ignore_keys=ignore_keys)
+    if not method_class:
+        _replace_all_obj(
+            origin_func,
+            rewrite_func,
+            ignore_refs=ignore_refs,
+            ignore_keys=ignore_keys)
     exec(f'{origin_func_path} = rewrite_func')
 
 
@@ -79,11 +86,10 @@ def _del_func(path: str):
     for i in range(len(split_path), 0, -1):
         try:
             exec('import {}'.format('.'.join(split_path[:i])))
+            exec(f'del {path}')
             break
         except Exception:
             continue
-
-    exec(f'del {path}')
 
 
 class FunctionRewriter:
@@ -168,10 +174,10 @@ class FunctionRewriter:
 
                 if is_addition_function:
                     self._additional_functions.append(function_path)
-                else:
-                    # Save origin function
-                    self._origin_functions.append(
-                        dict(func_path=function_path, origin_func=origin_func))
+
+                # Save origin function
+                self._origin_functions.append(
+                    dict(func_path=function_path, origin_func=origin_func))
 
                 # Create context_caller
                 rewrite_function = record_dict['_object']
