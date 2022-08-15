@@ -132,23 +132,25 @@ python tools/onnx2ncnn.py \
 - `output_bin` : The converted `ncnn` bin path.
 - `--log-level` : To set log level which in `'CRITICAL', 'FATAL', 'ERROR', 'WARN', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'`. If not specified, it will be set to `INFO`.
 
-## profile
+## profiler
 
 这个工具用来测试 torch 和 trt 等后端的速度，注意测试不包含前后处理。
 
 ### 用法
 
 ```bash
-python tools/profile.py \
+python tools/profiler.py \
     ${DEPLOY_CFG} \
     ${MODEL_CFG} \
     ${IMAGE_DIR} \
     --model ${MODEL} \
     --device ${DEVICE} \
     --shape ${SHAPE} \
-    --num-iter {NUM_ITER} \
-    --warmup {WARMUP}
-    --cfg-options ${CFG_OPTIONS}
+    --num-iter ${NUM_ITER} \
+    --warmup ${WARMUP} \
+    --cfg-options ${CFG_OPTIONS} \
+    --batch-size ${BATCH_SIZE} \
+    --img-ext ${IMG_EXT}
 ```
 
 ### 参数说明
@@ -162,11 +164,13 @@ python tools/profile.py \
 - `--warmup` : Number of iteration to warm-up the machine. Default is `10`.
 - `--device` : The device type. If not specified, it will be set to `cuda:0`.
 - `--cfg-options` : Optional key-value pairs to be overrode for model config.
+- `--batch-size`: the batch size for test inference. Default is `1`. Note that not all models support `batch_size>1`.
+- `--img-ext`: the file extensions for input images from `image_dir`. Defaults to `['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.tif']`.
 
 ### 使用举例
 
 ```shell
-python tools/profile.py \
+python tools/profiler.py \
     configs/mmcls/classification_tensorrt_dynamic-224x224-224x224.py \
     ../mmclassification/configs/resnet/resnet18_8xb32_in1k.py \
     ../mmdetection/demo \
@@ -175,6 +179,7 @@ python tools/profile.py \
     --shape 224x224 \
     --num-iter 100 \
     --warmup 10 \
+    --batch-size 1
 ```
 
 输出：
