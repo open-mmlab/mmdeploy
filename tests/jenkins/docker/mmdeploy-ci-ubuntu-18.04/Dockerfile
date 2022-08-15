@@ -76,7 +76,6 @@ RUN git clone --recursive https://github.com/Tencent/ncnn.git &&\
     make -j$(nproc) && make install &&\
     cd $NCNN_DIR/python &&\
     pip install -e . &&\
-    rm -rf $NCNN_DIR/build
 
 ENV ncnn_DIR=$NCNN_DIR/install/lib/cmake/ncnn
 ENV PYTHONPATH=$NCNN_DIR/python:$PYTHONPATH
