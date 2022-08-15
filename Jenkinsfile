@@ -27,7 +27,7 @@ pipeline {
             steps {
                 echo "start build"
                 sh """
-                    if [ $params.mmdet == true ]; then
+                    if (( $params.mmdet==true )); then
                         echo mmdet
                     fi
                 """
