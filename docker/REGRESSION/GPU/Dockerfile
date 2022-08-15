@@ -94,7 +94,7 @@ RUN git clone https://github.com/open-mmlab/mmdeploy &&\
     pip install -e .
 
 ### install requirement
-    RUN cd mmdeploy &&\
+RUN cd mmdeploy &&\
     /opt/conda/bin/pip install -r requirements/tests.txt &&\
     /opt/conda/bin/pip install pycuda
 

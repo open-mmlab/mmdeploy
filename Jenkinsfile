@@ -21,12 +21,16 @@ pipeline {
   }
 
 
+
   stages {
         stage('Build') { 
             steps {
                 echo "start build"
-                params.mmdet ? echo yes : echo no
-
+                sh """
+                    if ['${param.mmdet}']; then
+                        echo "mmdet
+                    fi
+                """
             }
         }
 
