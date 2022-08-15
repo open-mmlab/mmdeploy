@@ -1,6 +1,6 @@
-# Supported ncnn feature
+# ncnn 支持情况
 
-The current use of the ncnn feature is as follows:
+目前对 ncnn 特性使用情况如下：
 
 |      feature       | windows | linux | mac | android |
 | :----------------: | :-----: | :---: | :-: | :-----: |
@@ -9,10 +9,10 @@ The current use of the ncnn feature is as follows:
 |    nchw layout     |   ✔️    |  ✔️   | ✔️  |   ✔️    |
 |   Vulkan support   |    -    |  ✔️   | ✔️  |   ✔️    |
 
-The following features cannot be automatically enabled by mmdeploy and you need to manually modify the ncnn build options or adjust the running parameters in the SDK
+以下特性还不能由 mmdeploy 自动开启，需要手动修改 ncnn 编译参数、或在 SDK 中调整运行参数
 
 - bf16 inference
 - nc4hw4 layout
-- Profiling per layer
-- Turn off NCNN_STRING to reduce .so file size
-- Set thread number and CPU affinity
+- profiling per layer
+- 关闭 NCNN_STRING 以减小 so 体积
+- 设置线程数和 CPU 亲和力

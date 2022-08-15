@@ -1,4 +1,4 @@
-# How to get partitioned ONNX models
+# 如何拆分 onnx 模型
 
 MMDeploy 支持将PyTorch模型导出到onnx模型并进行拆分得到多个onnx模型文件，用户可以自由的对模型图节点进行标记并根据这些标记的节点定制任意的onnx模型拆分策略。在这个教程中，我们将通过具体例子来展示如何进行onnx模型拆分。在这个例子中，我们的目标是将YOLOV3模型拆分成两个部分，保留不带后处理的onnx模型，丢弃包含Anchor生成，NMS的后处理部分。
 

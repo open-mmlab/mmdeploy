@@ -65,8 +65,8 @@ python ./tools/regression_test.py \
 - `--codebase` : 需要测试的 codebase，eg.`mmdet`, 测试多个 `mmcls mmdet ...`
 - `--backends` : 筛选测试的后端, 默认测全部`backend`, 也可传入若干个后端，例如 `onnxruntime tesnsorrt`。如果需要一同进行 SDK 的测试，需要在 `tests/regression/${codebase}.yml` 里面的 `sdk_config` 进行配置。
 - `--models` : 指定测试的模型, 默认测试 `yml` 中所有模型, 也可传入若干个模型名称，模型名称可参考相关yml配置文件。例如 `ResNet SE-ResNet "Mask R-CNN"`。注意的是，可传入只有字母和数字组成模型名称，例如 `resnet seresnet maskrcnn`。
-- `--work-dir` : 模型转换、报告生成的路径，默认是`../mmdeploy_regression_working_dir`，注意路径中不要不含空格等特殊字符。
-- `--checkpoint-dir`: PyTorch 模型文件下载保存路径，默认是`../mmdeploy_checkpoints`，注意路径中不要不含空格等特殊字符。
+- `--work-dir` : 模型转换、报告生成的路径，默认是`../mmdeploy_regression_working_dir`，注意路径中不要含空格等特殊字符。
+- `--checkpoint-dir`: PyTorch 模型文件下载保存路径，默认是`../mmdeploy_checkpoints`，注意路径中不要含空格等特殊字符。
 - `--device` : 使用的设备，默认 `cuda`。
 - `--log-level` : 设置日记的等级，选项包括`'CRITICAL'， 'FATAL'， 'ERROR'， 'WARN'， 'WARNING'， 'INFO'， 'DEBUG'， 'NOTSET'`。默认是`INFO`。
 - `-p` 或 `--performance` : 是否测试精度，加上则测试转换+精度，不加上则只测试转换
@@ -257,7 +257,6 @@ models:
 - [x] ncnn
 - [x] OpenVINO
 - [x] TorchScript
-- [x] SNPE
 - [x] MMDeploy SDK
 
 ## 6. 支持的Codebase及其Metric
