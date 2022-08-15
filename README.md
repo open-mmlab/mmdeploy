@@ -81,6 +81,7 @@ Please read [getting_started](docs/en/get_started.md) for the basic usage of MMD
   - [How to quantize model](docs/en/02-how-to-run/quantize_model.md)
   - [Useful tools](docs/en/02-how-to-run/useful_tools.md)
 - Developer Guide
+  - [Architecture](docs/en/07-developer-guide/architecture.md)
   - [How to support new models](docs/en/07-developer-guide/support_new_model.md)
   - [How to support new backends](docs/en/07-developer-guide/support_new_backend.md)
   - [How to partition model](docs/en/07-developer-guide/partition_model.md)

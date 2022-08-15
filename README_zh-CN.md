@@ -80,6 +80,7 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
   - [测试转换完成的模型](docs/zh_cn/02-how-to-run/profile_model.md)
   - [工具集介绍](docs/zh_cn/02-how-to-run/useful_tools.md)
 - 开发指南
+  - [软件架构](docs/zh_cn/07-developer-guide/architecture.md)
   - [支持新模型](docs/zh_cn/07-developer-guide/support_new_model.md)
   - [增加推理 backend](docs/zh_cn/07-developer-guide/support_new_backend.md)
   - [模型分块](docs/zh_cn/07-developer-guide/partition_model.md)
