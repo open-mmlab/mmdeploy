@@ -97,14 +97,11 @@ ENV LD_LIBRARY_PATH="/root/workspace/mmdeploy/build/lib:/opt/intel/openvino/depl
 RUN cd mmdeploy && rm -rf build/CM* && mkdir -p build && cd build && cmake .. \
     -DMMDEPLOY_BUILD_SDK=ON \
     -DMMDEPLOY_BUILD_EXAMPLES=ON \
-    -DCMAKE_CXX_COMPILER=g++-7 \
     -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} \
     -Dncnn_DIR=/root/workspace/ncnn/build/install/lib/cmake/ncnn \
     -DInferenceEngine_DIR=/opt/intel/openvino/deployment_tools/inference_engine/share \
     -DMMDEPLOY_TARGET_DEVICES=cpu \
-    -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
-    -DMMDEPLOY_TARGET_BACKENDS="ort;ncnn;openvino" \
-    -DMMDEPLOY_CODEBASES=all &&\
+    -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON && \
     cmake --build . -- -j$(nproc) && cmake --install . &&\
     export SPDLOG_LEVEL=warn &&\
     if [ -z ${VERSION} ] ; then echo "Built MMDeploy master for CPU devices successfully!" ; else echo "Built MMDeploy version v${VERSION} for CPU devices successfully!" ; fi
