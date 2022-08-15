@@ -4,7 +4,13 @@ ARG ONNXRUNTIME_VERSION=1.8.1
 ARG PPLNN_VERSION=0.8.2
 ARG NCNN_VERSION=20220721
 ARG OPENCV_VERSION==4.5.5.62 
+ARG TORCH_VERSION=1.10.0
+ARG TORCHVISION_VERSION=0.11.0
+
 USER root
+
+
+WORKDIR /root/workspace
 
 ### change the system source for installing libs
 ARG USE_SRC_INSIDE=false
@@ -47,7 +53,7 @@ ENV PATH=/opt/conda/bin:$PATH
 
 RUN wget https://download.java.net/java/GA/jdk18/43f95e8614114aeaa8e8a5fcf20a682d/36/GPL/openjdk-18_linux-x64_bin.tar.gz &&\
 tar xvf openjdk-18_linux-x64_bin.tar.gz && rm -rf openjdk-18_linux-x64_bin.tar.gz
-ENV JAVA_HOME=${pwd}/jdk-18
+ENV JAVA_HOME=$(pwd)/jdk-18
 ENV PATH=$JAVA_HOME/bin:$PATH
 
 ### install opencv
@@ -55,7 +61,6 @@ RUN /opt/conda/bin/pip install opencv-python==${OPENCV_VERSION}
 ### install open-mim
 RUN pip install openmim
 
-WORKDIR /root/workspace
 
 ### get onnxruntime
 RUN wget https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTIME_VERSION}/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz \
@@ -84,8 +89,7 @@ ENV PYTHONPATH=$NCNN_DIR/python:$PYTHONPATH
 RUN git clone --recursive https://github.com/openppl-public/ppl.nn.git &&\
     cd ppl.nn &&\
     git checkout tags/v${PPLNN_VERSION} -b ${PPLNN_VERSION} &&\
-    bash build.sh -DPPLNN_USE_X86_64=ON -DPPLNN_ENABLE_PYTHON_API=ON -DCMAKE_INSTALL_PREFIX=$(pwd)/install &&\
-    rm -rf pplnn-build
+    bash build.sh -DPPLNN_USE_X86_64=ON -DPPLNN_ENABLE_PYTHON_API=ON -DCMAKE_INSTALL_PREFIX=$(pwd)/install 
 
 ENV pplnn_DIR=/root/workspace/ppl.nn/install/lib/cmake/ppl
 ENV PYTHONPATH=/root/workspace/ppl.nn/install/lib:$PYTHONPATH
@@ -103,4 +107,5 @@ RUN /opt/conda/bin/conda init bash && \
     for i in `seq 0 3`; \
     do \
         /opt/conda/bin/conda create --name mmdeploy-${PYTHON_VERSION[i]} python=${PYTHON_VERSION[i]} -y; \
+        /opt/conda/bin/conda run -n mmdeploy-${PYTHON_VERSION[i]} /opt/conda/bin/pip install torch==${TORCH_VERSION}+cpu torchvision==${TORCHVISION_VERSION}}+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html; \
     done
