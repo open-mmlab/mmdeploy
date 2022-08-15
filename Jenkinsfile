@@ -63,9 +63,9 @@ pipeline {
                 """
 
                 sh """
-                    for code in ${codebase[@]};
+                    for i in {0..6};
                     do
-                        echo $code;
+                        echo ${codebase}[i];
                     done
                 """ 
             }
