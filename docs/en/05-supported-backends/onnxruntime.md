@@ -29,17 +29,6 @@ export ONNXRUNTIME_DIR=$(pwd)
 export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 ```
 
-Note:
-
-- If you want to save onnxruntime env variables to bashrc, you could run
-
-  ```bash
-  echo '# set env for onnxruntime' >> ~/.bashrc
-  echo "export ONNXRUNTIME_DIR=${ONNXRUNTIME_DIR}" >> ~/.bashrc
-  echo 'export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH' >> ~/.bashrc
-  source ~/.bashrc
-  ```
-
 ### Build on Linux
 
 ```bash

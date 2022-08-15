@@ -17,7 +17,7 @@ MMDeploy converter 部分在 linux 平台上执行,SDK 部分在 android 平台�
 
 MMDeploy 的交叉编译分为两步:
 
-1. 在 linux 平台上构建 MMDeploy converter. 请根据 [How to build linux](./linux-x86_64.md) 进行构建.
+1. 在 linux 平台上构建 MMDeploy converter. 请根据 [How to build linux](linux-x86_64.md) 进行构建.
 
 2. 使用 android 工具链构建 MMDeploy SDK.
 

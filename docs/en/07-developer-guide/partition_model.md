@@ -73,7 +73,7 @@ partition_config = dict(
 
 ## Step 3: Get partitioned onnx models
 
-Once we have marks of nodes and the deployment config with `parition_config` being set properly, we could use the [tool](../useful_tools.md) `torch2onnx` to export the model to onnx and get the partition onnx files.
+Once we have marks of nodes and the deployment config with `parition_config` being set properly, we could use the [tool](../02-how-to-run/useful_tools.md) `torch2onnx` to export the model to onnx and get the partition onnx files.
 
 ```shell
 python tools/torch2onnx.py \
@@ -86,4 +86,4 @@ https://download.openmmlab.com/mmdetection/v2.0/yolo/yolov3_d53_mstrain-608_273e
 
 After run the script above, we would have the partitioned onnx file `yolov3.onnx` in the `work-dir`. You can use the visualization tool [netron](https://netron.app/) to check the model structure.
 
-With the partitioned onnx file, you could refer to [useful_tools.md](../useful_tools.md) to do the following procedures such as `mmdeploy_onnx2ncnn`, `onnx2tensorrt`.
+With the partitioned onnx file, you could refer to [useful_tools.md](../02-how-to-run/useful_tools.md) to do the following procedures such as `mmdeploy_onnx2ncnn`, `onnx2tensorrt`.

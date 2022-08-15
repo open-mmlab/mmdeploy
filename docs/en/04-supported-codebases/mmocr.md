@@ -21,7 +21,7 @@ Please refer to [install.md](https://mmocr.readthedocs.io/en/latest/install.html
 
 Note that ncnn, pplnn, and OpenVINO only support the configs of DBNet18 for DBNet.
 
-For the PANet with the [checkpoint](https://download.openmmlab.com/mmocr/textdet/panet/panet_r18_fpem_ffm_sbn_600e_icdar2015_20210219-42dbe46a.pth) pretrained on ICDAR dateset, if you want to convert the model to TensorRT with 16 bits float point, please try the following script.
+For the PANet with the [checkpoint](https://download.openmmlab.com/mmocr/textdet/panet/panet_r18_fpem_ffm_sbn_600e_icdar2015_20210219-42dbe46a.pth) pretrained on ICDAR dataset, if you want to convert the model to TensorRT with 16 bits float point, please try the following script.
 
 ```python
 # Copyright (c) OpenMMLab. All rights reserved.
