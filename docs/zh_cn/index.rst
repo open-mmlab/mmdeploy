@@ -72,6 +72,7 @@
    :maxdepth: 1
    :caption: 开发者指南
 
+   07-developer-guide/architecture.md
    07-developer-guide/support_new_model.md
    07-developer-guide/support_new_backend.md
    07-developer-guide/add_backend_ops_unittest.md
