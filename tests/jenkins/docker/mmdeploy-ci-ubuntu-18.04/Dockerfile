@@ -106,6 +106,6 @@ RUN /opt/conda/bin/conda init bash && \
     PYTHON_VERSION=(3.6 3.7 3.8 3.9) && \
     for i in `seq 0 3`; \
     do \
-        /opt/conda/bin/conda create --name mmdeploy-${PYTHON_VERSION[i]} python=${PYTHON_VERSION[i]} -y; \
-        /opt/conda/bin/conda run -n mmdeploy-${PYTHON_VERSION[i]} /opt/conda/bin/pip install torch==${TORCH_VERSION}+cpu torchvision==${TORCHVISION_VERSION}}+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html; \
+        /opt/conda/bin/conda create --name mmdeploy-${PYTHON_VERSION[$i]} python=${PYTHON_VERSION[$i]} -y; \
+        /opt/conda/bin/conda run -n mmdeploy-${PYTHON_VERSION[$i]} /opt/conda/bin/pip install torch==${TORCH_VERSION}+cpu torchvision==${TORCHVISION_VERSION}+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html; \
     done
