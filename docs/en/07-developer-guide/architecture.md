@@ -81,15 +81,15 @@ When typing `tools/deploy.py` to convert ViT, these are 3 things:
 
 ### 1. Rewrite `forward`
 
-Because onnx generates too much useless operators, and ncnn does not support onnx perfectly, mmdeploy's solution is to hijack the forward code and change it. The output onnx is suitable for ncnn.
+Because when exporting ViT to onnx, it generates some operators that ncnn doesn't support perfectly, mmdeploy's solution is to hijack the forward code and change it. The output onnx is suitable for ncnn.
 
 For example, rewrite the process of `conv -> shape -> concat_const -> reshape` to `conv -> reshape` to trim off the redundant `shape` and `concat` operator.
 
-All mmcls algorithm overrides are in the `mmdeploy/codebase/mmcls/models` directory.
+All mmcls algorithm rewriters are in the `mmdeploy/codebase/mmcls/models` directory.
 
 ### 2. Custom Operator
 
-Operators customized for ncnn are in the `csrc/mmdeploy/backend_ops/ncnn/` directory, and are loaded together with `libncnn.so` after compilation. The essence is in hotfix ncnn, which is currently implemented these operators:
+Operators customized for ncnn are in the `csrc/mmdeploy/backend_ops/ncnn/` directory, and are loaded together with `libncnn.so` after compilation. The essence is in hotfix ncnn, which currently implements these operators:
 
 - topk
 - tensorslice
