@@ -32,7 +32,7 @@ Please refer to [get_started.md](https://github.com/open-mmlab/mmsegmentation/bl
 | ISANet                       |      Y      |    Y     |  N   |   N   |    Y     |    [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/isanet)     |
 | NonLocal Net                 |      Y      |    Y     |  Y   |   N   |    Y     | [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/nonlocal_net)  |
 | OCRNet                       |      Y      |    Y     |  Y   |   N   |    Y     |    [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/ocrnet)     |
-| PointRend                    |      Y      |    Y     |  N   |   N   |    Y     |  [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/point_rend)   |
+| PointRend[\*](#static_shape) |      Y      |    Y     |  N   |   N   |    N     |  [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/point_rend)   |
 | Semantic FPN                 |      Y      |    Y     |  Y   |   N   |    Y     |    [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/sem_fpn)    |
 | STDC                         |      Y      |    Y     |  Y   |   N   |    Y     |     [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/stdc)      |
 | UPerNet[\*](#static_shape)   |      Y      |    Y     |  N   |   N   |    N     |    [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/upernet)    |

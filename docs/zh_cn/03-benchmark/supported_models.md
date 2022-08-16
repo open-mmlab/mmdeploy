@@ -49,7 +49,7 @@
 | ISANet                      | MMSegmentation   |      ?      |      Y      |    Y     |  N   |   N   |    Y     |        [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/isanet)        |
 | NonLocal Net                | MMSegmentation   |      ?      |      Y      |    Y     |  Y   |   N   |    Y     |     [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/nonlocal_net)     |
 | OCRNet                      | MMSegmentation   |      ?      |      Y      |    Y     |  Y   |   N   |    Y     |        [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/ocrnet)        |
-| PointRend                   | MMSegmentation   |      ?      |      Y      |    Y     |  N   |   N   |    Y     |      [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/point_rend)      |
+| PointRend[\*static](#note)  | MMSegmentation   |      Y      |      Y      |    Y     |  N   |   N   |    N     |      [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/point_rend)      |
 | Semantic FPN                | MMSegmentation   |      ?      |      Y      |    Y     |  Y   |   N   |    Y     |       [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/sem_fpn)        |
 | STDC                        | MMSegmentation   |      ?      |      Y      |    Y     |  Y   |   N   |    Y     |         [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/stdc)         |
 | UPerNet[\*](#note)          | MMSegmentation   |      ?      |      Y      |    Y     |  N   |   N   |    N     |       [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/upernet)        |
