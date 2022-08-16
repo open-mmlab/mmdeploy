@@ -101,11 +101,11 @@ RUN /opt/conda/bin/conda init bash && \
     for i in `seq 0 4`; \
     do \
         /opt/conda/bin/conda create --name torch${TORCH_VERSION_LIST[$i]} python=3.8 -y; \
-        /opt/conda/bin/conda run -n torch${TORCH_VERSION_LIST[$i]} /opt/conda/bin/pip install torch==${TORCH_VERSION_LIST[$i]}+cpu torchvision==${TORCHVISION_VERSION_LIST[$i]}+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html; \
+        /opt/conda/bin/conda run -n torch${TORCH_VERSION_LIST[$i]} /opt/conda/envs/torch${TORCH_VERSION_LIST[$i]}/bin/pip install torch==${TORCH_VERSION_LIST[$i]}+cpu torchvision==${TORCHVISION_VERSION_LIST[$i]}+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html; \
     done && \
     PYTHON_VERSION=(3.6 3.7 3.8 3.9) && \
     for i in `seq 0 3`; \
     do \
         /opt/conda/bin/conda create --name mmdeploy-${PYTHON_VERSION[$i]} python=${PYTHON_VERSION[$i]} -y; \
-        /opt/conda/bin/conda run -n mmdeploy-${PYTHON_VERSION[$i]} /opt/conda/bin/pip install torch==${TORCH_VERSION}+cpu torchvision==${TORCHVISION_VERSION}+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html; \
+        /opt/conda/bin/conda run -n mmdeploy-${PYTHON_VERSION[$i]} /opt/conda/envs/mmdeploy-${PYTHON_VERSION[$i]}/bin/pip install torch==${TORCH_VERSION}+cpu torchvision==${TORCHVISION_VERSION}+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html; \
     done
