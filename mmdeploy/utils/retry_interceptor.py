@@ -1,11 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
 import abc
-from random import randint
-import grpc
 import time
-from mmdeploy.utils import get_root_logger
+from random import randint
 from typing import Optional, Tuple
+
+import grpc
+
+from mmdeploy.utils import get_root_logger
 
 
 class SleepingPolicy(abc.ABC):

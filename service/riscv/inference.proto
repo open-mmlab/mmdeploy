@@ -34,7 +34,7 @@ message PPLModel {
 message NCNNModel {
   // name
   optional string name = 1;
-  
+
   // params
   bytes params = 2;
 

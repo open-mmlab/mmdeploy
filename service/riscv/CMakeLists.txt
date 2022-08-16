@@ -29,7 +29,7 @@ find_package(ncnn REQUIRED)
 # Include generated *.pb.h files
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
-add_executable(inference_server 
+add_executable(inference_server
     server_impl.cpp
     inference_server.cpp
     backend.cpp
@@ -47,11 +47,10 @@ target_link_libraries(inference_server
     ${_PROTOBUF_LIBPROTOBUF}
     -static)
 
-set_target_properties(inference_server 
-  PROPERTIES RUNTIME_OUTPUT_DIRECTORY 
+set_target_properties(inference_server
+  PROPERTIES RUNTIME_OUTPUT_DIRECTORY
   ${CMAKE_BINARY_DIR}/riscv-server)
 
 # generate pb file
 # GRPC_BIN_PATH=/opt/grpc/build/install/bin
 # ${GRPC_BIN_PATH}/protoc -I . --python_out client --grpc_out client inference.proto --plugin=protoc-gen-grpc=${GRPC_BIN_PATH}/grpc_python_plugin
-

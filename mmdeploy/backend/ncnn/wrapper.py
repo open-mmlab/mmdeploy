@@ -12,7 +12,7 @@ from ..base import BACKEND_WRAPPER, BaseWrapper
 
 
 class NCNNLocal:
-    """ncnn local wrapper class for inference
+    """ncnn local wrapper class for inference.
 
     Args:
         param_file (str): Path of a parameter file.
@@ -43,9 +43,7 @@ class NCNNLocal:
             output_names = self._net.output_names()
         self.output_names = output_names
 
-    def forward(self,
-                inputs: Dict[str, torch.Tensor],
-                batch_id: int):
+    def forward(self, inputs: Dict[str, torch.Tensor], batch_id: int):
 
         # create extractor
         ex = self._net.create_extractor()
@@ -85,7 +83,7 @@ class NCNNLocal:
 
 
 class NCNNRemote:
-    """ncnn remote wrapper class for inference
+    """ncnn remote wrapper class for inference.
 
     Args:
         param_file (str): Path of a parameter file.
@@ -102,10 +100,11 @@ class NCNNRemote:
                  output_names: Optional[Sequence[str]] = None,
                  uri=None,
                  **kwargs):
-        from mmdeploy.utils.retry_interceptor import RetryOnRpcErrorClientInterceptor, ExponentialBackoff
         import grpc
-        from .client import inference_pb2_grpc
-        from .client import inference_pb2
+
+        from mmdeploy.utils.retry_interceptor import (
+            ExponentialBackoff, RetryOnRpcErrorClientInterceptor)
+        from .client import inference_pb2, inference_pb2_grpc
 
         self._Tensor = inference_pb2.Tensor
         self._TensorList = inference_pb2.TensorList
@@ -141,9 +140,7 @@ class NCNNRemote:
         output_names = output.names
         self.output_names = output_names
 
-    def forward(self,
-                inputs: Dict[str, torch.Tensor],
-                batch_id: int):
+    def forward(self, inputs: Dict[str, torch.Tensor], batch_id: int):
         ncnn_inputs = []
         for name, input_tensor in inputs.items():
             data = input_tensor[batch_id].contiguous()
@@ -159,8 +156,7 @@ class NCNNRemote:
         tensorList = self._TensorList(data=ncnn_inputs)
         return self.__ncnn_execute(tensorList)
 
-    def __ncnn_execute(self,
-                       tensorList):
+    def __ncnn_execute(self, tensorList):
         resp = self.stub.Inference(tensorList)
         result = dict()
         if resp.status == 0:
@@ -206,8 +202,8 @@ class NCNNWrapper(BaseWrapper):
                  uri=None,
                  **kwargs):
         if uri is None:
-            self._net = NCNNLocal(
-                param_file, bin_file, output_names, use_vulkan)
+            self._net = NCNNLocal(param_file, bin_file, output_names,
+                                  use_vulkan)
         else:
             self._net = NCNNRemote(param_file, bin_file, output_names, uri)
 

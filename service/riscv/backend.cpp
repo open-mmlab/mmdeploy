@@ -51,14 +51,14 @@ Status NCNNNet::Inference(ServerContext* context, const TensorList* request, Rep
   }
 
   // output
-  auto ts = std::chrono::high_resolution_clock::now();
+  auto t0 = std::chrono::high_resolution_clock::now();
   const std::vector<const char*>& output_names = net_.output_names();
   std::vector<ncnn::Mat> outputs(output_names.size());
   for (size_t i = 0; i < output_names.size(); i++) {
     extractor.extract(output_names[i], outputs[i]);
   }
-  auto te = std::chrono::high_resolution_clock::now();
-  auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(te - ts).count();
+  auto t1 = std::chrono::high_resolution_clock::now();
+  auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
   MMDEPLOY_INFO("inference time: {} ms", dur);
 
   // response
