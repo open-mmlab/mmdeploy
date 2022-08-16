@@ -11,6 +11,170 @@ from mmdeploy.utils.timer import TimeCounter
 from ..base import BACKEND_WRAPPER, BaseWrapper
 
 
+class NCNNLocal:
+    """ncnn local wrapper class for inference
+
+    Args:
+        param_file (str): Path of a parameter file.
+        bin_file (str): Path of a binary file.
+        output_names (Sequence[str] | None): Names of model outputs in order.
+            Defaults to `None` and the wrapper will load the output names from
+            ncnn model.
+    """
+
+    def __init__(self,
+                 param_file: str,
+                 bin_file: str,
+                 output_names: Optional[Sequence[str]] = None,
+                 use_vulkan: bool = False,
+                 **kwargs):
+
+        net = ncnn.Net()
+        if importlib.util.find_spec('mmdeploy.backend.ncnn.ncnn_ext'):
+            from mmdeploy.backend.ncnn import ncnn_ext
+            ncnn_ext.register_mmdeploy_custom_layers(net)
+        net.opt.use_vulkan_compute = use_vulkan
+        net.load_param(param_file)
+        net.load_model(bin_file)
+
+        self._net = net
+        if output_names is None:
+            assert hasattr(self._net, 'output_names')
+            output_names = self._net.output_names()
+        self.output_names = output_names
+
+    def forward(self,
+                inputs: Dict[str, torch.Tensor],
+                batch_id: int):
+
+        # create extractor
+        ex = self._net.create_extractor()
+
+        # set inputs
+        for name, input_tensor in inputs.items():
+            data = input_tensor[batch_id].contiguous()
+            data = data.detach().cpu().numpy()
+            input_mat = ncnn.Mat(data)
+            ex.input(name, input_mat)
+
+        # get outputs
+        result = self.__ncnn_execute(
+            extractor=ex, output_names=self.output_names)
+
+        return result
+
+    @TimeCounter.count_time(Backend.NCNN.value)
+    def __ncnn_execute(self, extractor: ncnn.Extractor,
+                       output_names: Sequence[str]) -> Dict[str, ncnn.Mat]:
+        """Run inference with ncnn.
+
+        Args:
+            extractor (ncnn.Extractor): ncnn extractor to extract output.
+            output_names (Iterable[str]): A list of string specifying
+                output names.
+
+        Returns:
+            dict[str, ncnn.Mat]: Inference results of ncnn model.
+        """
+        result = {}
+        for name in output_names:
+            out_ret, out = extractor.extract(name)
+            assert out_ret == 0, f'Failed to extract output : {out}.'
+            result[name] = out
+        return result
+
+
+class NCNNRemote:
+    """ncnn remote wrapper class for inference
+
+    Args:
+        param_file (str): Path of a parameter file.
+        bin_file (str): Path of a binary file.
+        output_names (Sequence[str] | None): Names of model outputs in order.
+            Defaults to `None` and the wrapper will load the output names from
+            ncnn model.
+        uri (str): uri for the server.
+    """
+
+    def __init__(self,
+                 param_file: str,
+                 bin_file: str,
+                 output_names: Optional[Sequence[str]] = None,
+                 uri=None,
+                 **kwargs):
+        from mmdeploy.utils.retry_interceptor import RetryOnRpcErrorClientInterceptor, ExponentialBackoff
+        import grpc
+        from .client import inference_pb2_grpc
+        from .client import inference_pb2
+
+        self._Tensor = inference_pb2.Tensor
+        self._TensorList = inference_pb2.TensorList
+
+        logger = get_root_logger()
+
+        if uri is None:
+            logger.error('URI not set')
+
+        interceptors = (RetryOnRpcErrorClientInterceptor(
+            max_attempts=4,
+            sleeping_policy=ExponentialBackoff(
+                init_backoff_ms=100, max_backoff_ms=1600, multiplier=2),
+            status_for_retry=(grpc.StatusCode.UNAVAILABLE, ),
+        ), )
+        self.stub = inference_pb2_grpc.InferenceStub(
+            grpc.intercept_channel(grpc.insecure_channel(uri), *interceptors))
+
+        with open(param_file, 'rb') as f:
+            params = f.read()
+        with open(bin_file, 'rb') as f:
+            weights = f.read()
+
+        ncnn_model = inference_pb2.NCNNModel(params=params, weights=weights)
+        model = inference_pb2.Model(type=inference_pb2.NCNN, ncnn=ncnn_model)
+        resp = self.stub.Init(model)
+
+        if resp.status != 0:
+            logger.error(f'init NCNN model failed {resp.info}')
+            return
+
+        output = self.stub.OutputNames(inference_pb2.Empty())
+        output_names = output.names
+        self.output_names = output_names
+
+    def forward(self,
+                inputs: Dict[str, torch.Tensor],
+                batch_id: int):
+        ncnn_inputs = []
+        for name, input_tensor in inputs.items():
+            data = input_tensor[batch_id].contiguous()
+            data = data.detach().cpu().numpy()
+            data = data.astype(dtype=np.float32)
+            tensor = self._Tensor(
+                data=data.tobytes(),
+                name=name,
+                dtype='float32',
+                shape=list(data.shape))
+            ncnn_inputs.append(tensor)
+
+        tensorList = self._TensorList(data=ncnn_inputs)
+        return self.__ncnn_execute(tensorList)
+
+    def __ncnn_execute(self,
+                       tensorList):
+        resp = self.stub.Inference(tensorList)
+        result = dict()
+        if resp.status == 0:
+            for tensor in resp.data:
+                ndarray = np.frombuffer(tensor.data, dtype=np.float32)
+                ndarray = ndarray.reshape(tuple(tensor.shape))
+                result[tensor.name] = ncnn.Mat(ndarray)
+        else:
+            logger = get_root_logger()
+            logger.error(f'onnx inference failed {resp.info}')
+
+        return result
+
+
 @BACKEND_WRAPPER.register_module(Backend.NCNN.value)
 class NCNNWrapper(BaseWrapper):
     """ncnn wrapper class for inference.
@@ -39,21 +203,15 @@ class NCNNWrapper(BaseWrapper):
                  bin_file: str,
                  output_names: Optional[Sequence[str]] = None,
                  use_vulkan: bool = False,
+                 uri=None,
                  **kwargs):
+        if uri is None:
+            self._net = NCNNLocal(
+                param_file, bin_file, output_names, use_vulkan)
+        else:
+            self._net = NCNNRemote(param_file, bin_file, output_names, uri)
 
-        net = ncnn.Net()
-        if importlib.util.find_spec('mmdeploy.backend.ncnn.ncnn_ext'):
-            from mmdeploy.backend.ncnn import ncnn_ext
-            ncnn_ext.register_mmdeploy_custom_layers(net)
-        net.opt.use_vulkan_compute = use_vulkan
-        net.load_param(param_file)
-        net.load_model(bin_file)
-
-        self._net = net
-        if output_names is None:
-            assert hasattr(self._net, 'output_names')
-            output_names = self._net.output_names()
-
+        output_names = self._net.output_names
         super().__init__(output_names)
 
     @staticmethod
@@ -94,19 +252,7 @@ class NCNNWrapper(BaseWrapper):
         outputs = dict([name, [None] * batch_size] for name in output_names)
         # run inference
         for batch_id in range(batch_size):
-            # create extractor
-            ex = self._net.create_extractor()
-
-            # set inputs
-            for name, input_tensor in inputs.items():
-                data = input_tensor[batch_id].contiguous()
-                data = data.detach().cpu().numpy()
-                input_mat = ncnn.Mat(data)
-                ex.input(name, input_mat)
-
-            # get outputs
-            result = self.__ncnn_execute(
-                extractor=ex, output_names=output_names)
+            result = self._net.forward(inputs, batch_id)
             for name in output_names:
                 mat = result[name]
                 # deal with special case
@@ -124,23 +270,3 @@ class NCNNWrapper(BaseWrapper):
                 outputs[name] = torch.stack(output_tensor)
 
         return outputs
-
-    @TimeCounter.count_time(Backend.NCNN.value)
-    def __ncnn_execute(self, extractor: ncnn.Extractor,
-                       output_names: Sequence[str]) -> Dict[str, ncnn.Mat]:
-        """Run inference with ncnn.
-
-        Args:
-            extractor (ncnn.Extractor): ncnn extractor to extract output.
-            output_names (Iterable[str]): A list of string specifying
-                output names.
-
-        Returns:
-            dict[str, ncnn.Mat]: Inference results of ncnn model.
-        """
-        result = {}
-        for name in output_names:
-            out_ret, out = extractor.extract(name)
-            assert out_ret == 0, f'Failed to extract output : {out}.'
-            result[name] = out
-        return result
