@@ -49,7 +49,7 @@ def topk__tensorrt(ctx,
     constant integer.
     """
     # https://docs.nvidia.com/deeplearning/tensorrt/developer-guide/index.html#topKsetup
-    MAX_TOPK_K = 3840
+    from mmdeploy.apis.tensorrt import MAX_TOPK_K
     if dim is None:
         dim = int(input.ndim - 1)
     size = input.shape[dim]

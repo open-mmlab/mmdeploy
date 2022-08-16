@@ -25,8 +25,7 @@ globals:
 onnxruntime:
   pipeline_ort_static_fp32: &pipeline_ort_static_fp32
     convert_image: *convert_image
-    backend_test: *default_backend_test
-    sdk_config: *sdk_dynamic
+    backend_test: False
     deploy_config: configs/mmseg/segmentation_onnxruntime_static-1024x2048.py
 
   pipeline_ort_static_fp32_512x512: &pipeline_ort_static_fp32_512x512
@@ -36,6 +35,7 @@ onnxruntime:
 
   pipeline_ort_dynamic_fp32: &pipeline_ort_dynamic_fp32
     convert_image: *convert_image
+    backend_test: False
     deploy_config: configs/mmseg/segmentation_onnxruntime_dynamic.py
 
 tensorrt:
@@ -121,7 +121,7 @@ pplnn:
 torchscript:
   pipeline_ts_fp32: &pipeline_ts_fp32
     convert_image: *convert_image
-    backend_test: False
+    backend_test: True
     deploy_config: configs/mmseg/segmentation_torchscript.py
 
 
@@ -325,9 +325,9 @@ models:
     model_configs:
       - configs/point_rend/pointrend_r50_512x1024_80k_cityscapes.py
     pipelines:
-      - *pipeline_ort_dynamic_fp32
-      - *pipeline_trt_dynamic_fp16
-      - *pipeline_openvino_dynamic_fp32
+      - *pipeline_ort_static_fp32_512x512
+      - *pipeline_trt_static_fp16
+      - *pipeline_ts_fp32
 
   - name: Semantic FPN
     metafile: configs/sem_fpn/sem_fpn.yml
