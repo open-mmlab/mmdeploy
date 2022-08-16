@@ -333,7 +333,7 @@ python .\mmdeploy\demo\python\image_classification.py cpu .\work_dir\onnx\resnet
    // 部分路径根据实际位置进行修改
    mkdir build
    cd build
-   cmake .. -A x64 -T v142 `
+   cmake ..\cpp -A x64 -T v142 `
      -DOpenCV_DIR=C:\Deps\opencv\build\x64\vc15\lib `
      -DMMDeploy_DIR=C:\workspace\mmdeploy-0.7.0-windows-amd64-onnxruntime1.8.1\sdk\lib\cmake\MMDeploy `
      -DONNXRUNTIME_DIR=C:\Deps\onnxruntime\onnxruntime-win-gpu-x64-1.8.1
@@ -369,7 +369,7 @@ python .\mmdeploy\demo\python\image_classification.py cpu .\work_dir\onnx\resnet
    // 部分路径根据所在硬盘的位置进行修改
    mkdir build
    cd build
-   cmake .. -A x64 -T v142 `
+   cmake ..\cpp -A x64 -T v142 `
      -DOpenCV_DIR=C:\Deps\opencv\build\x64\vc15\lib `
      -DMMDeploy_DIR=C:\workspace\mmdeploy-0.7.0-windows-amd64-cuda11.1-tensorrt8 2.3.0\sdk\lib\cmake\MMDeploy `
      -DTENSORRT_DIR=C:\Deps\tensorrt\TensorRT-8.2.3.0 `
