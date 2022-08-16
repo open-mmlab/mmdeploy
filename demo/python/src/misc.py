@@ -14,7 +14,7 @@ def is_image(s: str):
 
 
 def is_video(s: str):
-    a = ['mp4', 'flv']
+    a = ['avi', 'mp4', 'f4v', 'flv', 'mpg', 'mpeg', 'wmv']
 
     for t in a:
         if s.endswith('.' + t):

@@ -2,7 +2,7 @@
 import logging
 from argparse import ArgumentParser
 
-import webcam_demo
+import src
 
 # from webcam_demo.misc import is_image, is_video
 
@@ -10,11 +10,13 @@ import webcam_demo
 def parse_args():
     parser = ArgumentParser('')
 
-    parser.add_argument('model_path')
+    parser.add_argument('pose_model_path')
 
-    parser.add_argument('--device', type=str, default='cuda')
+    parser.add_argument('--detect', type=str, default='')
 
     parser.add_argument('--camera', type=str, default='0')
+
+    parser.add_argument('--device', type=str, default='cuda')
 
     parser.add_argument('--debug', action='store_true')
 
@@ -24,17 +26,24 @@ def parse_args():
 
     parser.add_argument('--output', type=str, default='')
 
+    parser.add_argument('--code', type=str, default='XVID')
+
     return parser.parse_args()
 
 
-def main():
+def main(args=None):
+    if args is None:
+        args = parse_args()
 
-    args = parse_args()
+    setattr(args, 'detect_model_path', args.detect)
 
     if args.debug:
         logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.ERROR)
 
     file = ''
+    # frames = []
 
     try:
         camera_id = int(args.camera)
@@ -43,15 +52,18 @@ def main():
         file = args.camera.lower()
 
     if camera_id != -1:
-        demo = webcam_demo.WebcamDemo(camera_id, args.model_path,
-                                      args.device, 0.5, int(args.fps),
-                                      int(args.skip), args.output)
-    elif webcam_demo.misc.is_image(file):
-        demo = webcam_demo.ImageDemo(file, args.model_path, args.device,
-                                     args.output)
-    elif webcam_demo.misc.is_video(file):
-        demo = webcam_demo.VideoDemo(file, args.model_path, args.device,
-                                     args.output)
+        # print('test')
+
+        demo = src.WebcamDemo(camera_id, args.detect_model_path,
+                              args.pose_model_path, args.device, 0.5,
+                              int(args.fps), int(args.skip), args.output)
+    elif src.misc.is_image(file):
+        demo = src.ImageDemo(file, args.detect_model_path,
+                             args.pose_model_path, args.device, args.output)
+    elif src.misc.is_video(file):
+        demo = src.VideoDemo(file, args.detect_model_path,
+                             args.pose_model_path, args.device, args.output,
+                             args.code)
     else:
         raise NotImplementedError('File type not supported')
 
