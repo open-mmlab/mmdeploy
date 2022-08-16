@@ -12,14 +12,14 @@ from ..base import BACKEND_WRAPPER, BaseWrapper
 
 @BACKEND_WRAPPER.register_module(Backend.RKNN.value)
 class RKNNWrapper(BaseWrapper):
-    """PPLNN wrapper for inference.
+    """RKNN wrapper for inference.
 
     Args:
         model (str): Path of input RKNN model file.
         target_platform (str): Device to put model.
 
     Examples:
-        >>> from mmdeploy.backend.pplnn import PPLNNWrapper
+        >>> from mmdeploy.backend.rknn import RKNNWrapper
         >>> import torch
         >>>
         >>> model = 'model.rknn'
@@ -31,12 +31,13 @@ class RKNNWrapper(BaseWrapper):
 
     def __init__(self,
                  model: str,
-                 common_config: Dict,
+                 common_config: Dict = dict(target_platform=None),
                  output_names: Optional[Sequence[str]] = None,
+                 verbose=True,
                  **kwargs):
         logger = get_root_logger()
         # Create RKNN object
-        self.rknn = RKNN(verbose=True)
+        self.rknn = RKNN(verbose=verbose)
         self.rknn.load_rknn(model)
         ret = self.rknn.init_runtime(target=common_config['target_platform'])
         if ret != 0:

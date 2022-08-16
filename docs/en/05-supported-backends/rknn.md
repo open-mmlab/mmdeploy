@@ -42,7 +42,7 @@ python tools/deploy.py \
 
 ## Deployment config
 
-With the deployment config, you can modify the `backend_config` for your preference. A example `backend_config` of mmclassification is shown as below:
+With the deployment config, you can modify the `backend_config` for your preference. An example `backend_config` of mmclassification is shown as below:
 
 ```python
 backend_config = dict(

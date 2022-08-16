@@ -24,15 +24,9 @@ def onnx2rknn(onnx_model: str,
     Args:
         onnx_model (str): Input onnx model.
         output_path (str): File path to save RKNN model.
-        device (str): A string specifying device, defaults to 'cuda:0'.
-        input_shapes (Sequence[Sequence[int]] | None): Shapes for PPLNN
-            optimization, default to None.
-
-    Examples:
-        >>> from mmdeploy.apis.rknn import from_onnx
-        >>>
-        >>> from_onnx(onnx_model = 'example.onnx',
-                      output_file_prefix = 'example')
+        deploy_cfg (str | mmcv.Config): The path or content of config.
+        dataset_file (str | None): The dataset file for quatization. Default to
+            None.
     """
     logger = get_root_logger()
     # load deploy_cfg if necessary
