@@ -15,7 +15,6 @@ def register_engines(device_id: int,
                      export_algo_file: str = None,
                      import_algo_file: str = None) -> List[pplnn.Engine]:
     """Register engines for pplnn runtime.
-
     Args:
         device_id (int): Specifying device index. `-1` for cpu.
         disable_avx512 (bool): Whether to disable avx512 for x86.
@@ -26,7 +25,6 @@ def register_engines(device_id: int,
         export_algo_file (str): File path for exporting PPLNN optimization
             file.
         import_algo_file (str): File path for loading PPLNN optimization file.
-
     Returns:
         list[pplnn.Engine]: A list of registered pplnn engines.
     """
@@ -46,7 +44,7 @@ def register_engines(device_id: int,
                              pplcommon.GetRetCodeStr(status))
                 sys.exit(-1)
 
-        engines.append(pplnn.Engine(x86_engine))
+        engines.append(x86_engine)
 
     else:
         cuda_options = pplnn.CudaEngineOptions()
@@ -91,7 +89,6 @@ def register_engines(device_id: int,
                     'cuda engine Configure(CUDA_CONF_IMPORT_ALGORITHMS) '
                     'failed: ' + pplcommon.GetRetCodeStr(status))
                 sys.exit(-1)
-
-        engines.append(pplnn.Engine(cuda_engine))
+        engines.append(cuda_engine)
 
     return engines
