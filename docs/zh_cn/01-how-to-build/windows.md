@@ -266,7 +266,7 @@ $env:MMDEPLOY_DIR="$pwd"
 
 ##### 编译自定义算子
 
-如果您选择了ONNXRuntime，TensorRT 和 ncnn 任一种推理后端，您需要编译对应的自定义算子库。
+如果您选择了 ONNXRuntime，TensorRT 和 ncnn 任一种推理后端，您需要编译对应的自定义算子库。
 
 - **ONNXRuntime** 自定义算子
 

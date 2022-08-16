@@ -1,3 +1,5 @@
+# Useful Tools
+
 Apart from `deploy.py`, there are other useful tools under the `tools/` directory.
 
 ## torch2onnx
@@ -96,7 +98,8 @@ python tools/onnx2tensorrt.py \
     ${ONNX_PATH} \
     ${OUTPUT} \
     --device-id 0 \
-    --log-level INFO
+    --log-level INFO \
+    --calib-file /path/to/file
 ```
 
 ### Description of all arguments
