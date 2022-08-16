@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
 import glob
+import logging
 import os.path as osp
 
 import numpy as np
@@ -10,6 +11,7 @@ from prettytable import PrettyTable
 
 from mmdeploy.apis.utils import build_task_processor
 from mmdeploy.utils import get_root_logger
+from mmdeploy.apis.core import PIPELINE_MANAGER
 from mmdeploy.utils.config_utils import (Backend, get_backend, get_input_shape,
                                          load_config)
 from mmdeploy.utils.timer import TimeCounter
@@ -83,10 +85,9 @@ def main():
     args = parse_args()
     deploy_cfg_path = args.deploy_cfg
     model_cfg_path = args.model_cfg
-    logger = get_root_logger()
+    logger = get_root_logger(log_level=logging.ERROR)
     # load deploy_cfg
     deploy_cfg, model_cfg = load_config(deploy_cfg_path, model_cfg_path)
-
     # merge options for model cfg
     if args.cfg_options is not None:
         model_cfg.merge_from_dict(args.cfg_options)
@@ -104,13 +105,11 @@ def main():
 
     model = task_processor.build_backend_model(args.model)
     backend = get_backend(deploy_cfg).value
-
     model = model.eval().to(args.device)
     is_device_cpu = args.device == 'cpu'
     with_sync = not is_device_cpu
     if not is_device_cpu:
         torch.backends.cudnn.benchmark = True
-
     image_files = get_images(args.image_dir)
     nrof_image = len(image_files)
     assert nrof_image > 0, f'No image files found in {args.image_dir}'
@@ -130,7 +129,7 @@ def main():
             model(data['inputs'].unsqueeze(0).to(args.device),
                   [data['data_sample']])
 
-    print('----- Settings:')
+    print('----- Settings:', file=open('report.txt', 'a'))
     settings = PrettyTable()
     settings.header = False
     batch_size = 1
@@ -138,8 +137,8 @@ def main():
     settings.add_row(['shape', f'{input_shape[1]}x{input_shape[0]}'])
     settings.add_row(['iterations', args.num_iter])
     settings.add_row(['warmup', args.warmup])
-    print(settings)
-    print('----- Results:')
+    print(settings, file=open('report.txt', 'a'))
+    print('----- Results:', file=open('report.txt', 'a'))
     TimeCounter.print_stats(backend)
 
 
