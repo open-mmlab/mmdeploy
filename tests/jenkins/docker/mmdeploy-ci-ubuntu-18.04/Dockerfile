@@ -53,7 +53,7 @@ ENV PATH=/opt/conda/bin:$PATH
 
 RUN wget https://download.java.net/java/GA/jdk18/43f95e8614114aeaa8e8a5fcf20a682d/36/GPL/openjdk-18_linux-x64_bin.tar.gz &&\
 tar xvf openjdk-18_linux-x64_bin.tar.gz && rm -rf openjdk-18_linux-x64_bin.tar.gz
-ENV JAVA_HOME=$(pwd)/jdk-18
+ENV JAVA_HOME=/root/workspace/jdk-18
 ENV PATH=$JAVA_HOME/bin:$PATH
 
 ### install opencv
@@ -78,12 +78,12 @@ RUN git clone --recursive https://github.com/Tencent/ncnn.git &&\
     export NCNN_DIR=$(pwd) &&\
     mkdir -p build && cd build &&\
     cmake -DNCNN_VULKAN=OFF -DNCNN_PYTHON=ON -DNCNN_BUILD_TOOLS=ON -DCMAKE_INSTALL_PREFIX=$NCNN_DIR/install .. &&\
-    make -j$(nproc) && make install &&\
+    make -j $(nproc) && make install &&\
     cd $NCNN_DIR/python &&\
     pip install -e . 
 
-ENV ncnn_DIR=$NCNN_DIR/install/lib/cmake/ncnn
-ENV PYTHONPATH=$NCNN_DIR/python:$PYTHONPATH
+ENV ncnn_DIR=/root/workspace/ncnn/install/lib/cmake/ncnn
+ENV PYTHONPATH=/root/workspace/ncnn/python:$PYTHONPATH
 
 ### install ppl.nn
 RUN git clone --recursive https://github.com/openppl-public/ppl.nn.git &&\
