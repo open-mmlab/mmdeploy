@@ -2,7 +2,7 @@
 import mmcv
 
 from mmdeploy.codebase import BaseTask, get_codebase_class, import_codebase
-from mmdeploy.utils import (get_backend_config, get_codebase, get_task_type,
+from mmdeploy.utils import (get_backend, get_codebase, get_task_type,
                             parse_device_id)
 
 
@@ -13,7 +13,7 @@ def check_backend_device(deploy_cfg: mmcv.Config, device: str):
         deploy_cfg (str | mmcv.Config): Deployment config file.
         device (str): A string specifying device type.
     """
-    backend = get_backend_config(deploy_cfg)['type']
+    backend = get_backend(deploy_cfg).value
     device_id = parse_device_id(device)
     mismatch = dict(
         tensorrt=lambda id: id == -1,
