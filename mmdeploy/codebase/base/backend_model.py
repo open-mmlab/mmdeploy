@@ -96,7 +96,7 @@ class BaseBackendModel(BaseModel, metaclass=ABCMeta):
         elif backend == Backend.SDK:
             assert deploy_cfg is not None, \
                 'Building SDKWrapper requires deploy_cfg'
-            from mmdeploy.backend.sdk import SDKWrapper
+            from mmdeploy.backend.sdk.wrapper import SDKWrapper
             task_name = SDK_TASK_MAP[get_task_type(deploy_cfg)]['cls_name']
             return SDKWrapper(
                 model_file=backend_files[0],
