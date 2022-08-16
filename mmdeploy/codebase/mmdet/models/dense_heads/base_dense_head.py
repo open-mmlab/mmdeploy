@@ -2,9 +2,9 @@
 from typing import List, Optional
 
 import torch
-from mmdet.core.bbox.coder import (DeltaXYWHBBoxCoder, DistancePointBBoxCoder,
-                                   TBLRBBoxCoder)
-from mmdet.core.bbox.transforms import distance2bbox
+from mmdet.models.task_modules import (DeltaXYWHBBoxCoder,
+                                       DistancePointBBoxCoder, TBLRBBoxCoder)
+from mmdet.structures.bbox import distance2bbox
 from mmengine import ConfigDict
 from torch import Tensor
 

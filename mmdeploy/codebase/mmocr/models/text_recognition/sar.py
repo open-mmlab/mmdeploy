@@ -10,7 +10,7 @@ from ..utils import get_resize_ocr
 
 
 @MODULE_REWRITER.register_rewrite_module(
-    'mmocr.models.textrecog.recognizer.SARNet', backend='default')
+    'mmocr.models.textrecog.recognizers.SARNet', backend='default')
 class SARNet(nn.Module):
     """SARNet network structure for OCR image recognition.
 

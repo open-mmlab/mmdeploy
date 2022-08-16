@@ -262,6 +262,7 @@ class BaseTask(metaclass=ABCMeta):
                   output_file: str,
                   window_name: str = '',
                   show_result: bool = False,
+                  draw_gt: bool = False,
                   **kwargs):
         """Visualize predictions of a model.
 
@@ -274,6 +275,8 @@ class BaseTask(metaclass=ABCMeta):
                 an empty string.
             show_result (bool): Whether to show result in windows, defaults
                 to `False`.
+            draw_gt (bool): Whether to show ground truth in windows, defaults
+                to `False`.
         """
         save_dir, save_name = osp.split(output_file)
         visualizer = self.get_visualizer(window_name, save_dir)
@@ -283,7 +286,8 @@ class BaseTask(metaclass=ABCMeta):
         visualizer.add_datasample(
             name,
             image,
-            pred_sample=result,
+            data_sample=result,
+            draw_gt=draw_gt,
             show=show_result,
             out_file=output_file)
 
