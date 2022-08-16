@@ -82,11 +82,15 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
                 use_vulkan = backend_config.get('use_vulkan', False)
             else:
                 use_vulkan = False
+            uri = None
+            if 'uri' in kwargs:
+                uri = kwargs['uri']
             return NCNNWrapper(
                 param_file=backend_files[0],
                 bin_file=backend_files[1],
                 output_names=output_names,
-                use_vulkan=use_vulkan)
+                use_vulkan=use_vulkan,
+                uri=uri)
         elif backend == Backend.OPENVINO:
             from mmdeploy.backend.openvino import OpenVINOWrapper
             return OpenVINOWrapper(
