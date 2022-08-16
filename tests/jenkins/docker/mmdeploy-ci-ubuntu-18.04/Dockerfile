@@ -58,9 +58,9 @@ ENV PATH=$JAVA_HOME/bin:$PATH
 
 ### install opencv
 RUN /opt/conda/bin/pip install opencv-python==${OPENCV_VERSION}
-### install open-mim
-RUN pip install openmim
 
+### install openmim
+RUN /opt/conda/bin/pip install openmim
 
 ### get onnxruntime
 RUN wget https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTIME_VERSION}/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz \
@@ -69,7 +69,7 @@ RUN wget https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTI
 ENV ONNXRUNTIME_DIR=/root/workspace/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}
 
 ### install onnxruntme and openvino
-RUN pip install onnxruntime==${ONNXRUNTIME_VERSION} openvino-dev
+RUN /opt/conda/bin/pip install onnxruntime==${ONNXRUNTIME_VERSION} openvino-dev
 
 ### build ncnn
 RUN git clone --recursive https://github.com/Tencent/ncnn.git &&\
@@ -80,7 +80,7 @@ RUN git clone --recursive https://github.com/Tencent/ncnn.git &&\
     cmake -DNCNN_VULKAN=OFF -DNCNN_PYTHON=ON -DNCNN_BUILD_TOOLS=ON -DCMAKE_INSTALL_PREFIX=$NCNN_DIR/install .. &&\
     make -j $(nproc) && make install &&\
     cd $NCNN_DIR/python &&\
-    pip install -e . 
+    /opt/conda/bin/pip install -e . 
 
 ENV ncnn_DIR=/root/workspace/ncnn/install/lib/cmake/ncnn
 ENV PYTHONPATH=/root/workspace/ncnn/python:$PYTHONPATH
@@ -96,21 +96,16 @@ ENV PYTHONPATH=/root/workspace/ppl.nn/install/lib:$PYTHONPATH
 
 ### create conda env && install pytorch
 RUN /opt/conda/bin/conda init bash && \
-    TORCH_VERSION_LIST=(1.10.0) &&\
-    TORCHVISION_VERSION_LIST=(0.11.0) && \
-    # TORCH_VERSION_LIST=(1.8.0 1.9.0 1.10.0 1.11.0 1.12.0) && \
-    # TORCHVISION_VERSION_LIST=(0.9.0 0.10.0 0.11.0 0.12.0 0.13.0) && \
-    # for i in `seq 0 4`; \
-    for i in 0 ;\
+    TORCH_VERSION_LIST=(1.8.0 1.9.0 1.10.0 1.11.0 1.12.0) && \
+    TORCHVISION_VERSION_LIST=(0.9.0 0.10.0 0.11.0 0.12.0 0.13.0) && \
+    for i in `seq 0 4`; \
     do \
-        /opt/conda/bin/conda create --name torch${TORCH_VERSION_LIST[$i]} python=3.8 -y; \
+        /opt/conda/bin/conda create --name torch${TORCH_VERSION_LIST[$i]} --clone base -y; \
         /opt/conda/bin/conda run -n torch${TORCH_VERSION_LIST[$i]} /opt/conda/envs/torch${TORCH_VERSION_LIST[$i]}/bin/pip install torch==${TORCH_VERSION_LIST[$i]}+cpu torchvision==${TORCHVISION_VERSION_LIST[$i]}+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html; \
-    done && \
-    PYTHON_VERSION_LIST=(3.6) && \
+    done 
     # PYTHON_VERSION=(3.6 3.7 3.8 3.9) && \
     # for i in `seq 0 3`; \
-    for i in 0; \
-    do \
-        /opt/conda/bin/conda create --name mmdeploy-${PYTHON_VERSION[$i]} python=${PYTHON_VERSION[$i]} -y; \
-        /opt/conda/bin/conda run -n mmdeploy-${PYTHON_VERSION[$i]} /opt/conda/envs/mmdeploy-${PYTHON_VERSION[$i]}/bin/pip install torch==${TORCH_VERSION}+cpu torchvision==${TORCHVISION_VERSION}+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html; \
-    done
+    # do \
+    #     /opt/conda/bin/conda create --name mmdeploy-${PYTHON_VERSION[$i]} python=${PYTHON_VERSION[$i]} -y; \
+    #     /opt/conda/bin/conda run -n mmdeploy-${PYTHON_VERSION[$i]} /opt/conda/envs/mmdeploy-${PYTHON_VERSION[$i]}/bin/pip install torch==${TORCH_VERSION}+cpu torchvision==${TORCHVISION_VERSION}+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html; \
+    # done
