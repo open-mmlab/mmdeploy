@@ -132,20 +132,3 @@ make -j$(nproc) install
   ```
 
 参考 [cmake 选项说明](cmake_option.md)
-
-#### 编译 Demo
-
-```Bash
-export ANDROID_ABI=arm64-v8a
-
-cd ${MMDEPLOY_DIR}/build_${ANDROID_ABI}/install/example/cpp
-mkdir -p build && cd build
-cmake .. \
-      -DOpenCV_DIR=${OPENCV_ANDROID_SDK_DIR}/sdk/native/jni/abi-${ANDROID_ABI} \
-      -Dncnn_DIR=${NCNN_DIR}/build_${ANDROID_ABI}/install/lib/cmake/ncnn \
-      -DMMDeploy_DIR=${MMDEPLOY_DIR}/build_${ANDROID_ABI}/install/lib/cmake/MMDeploy \
-      -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake \
-      -DANDROID_ABI=${ANDROID_ABI} \
-      -DANDROID_PLATFORM=android-30
-make -j$(nproc)
-```

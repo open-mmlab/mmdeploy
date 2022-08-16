@@ -68,7 +68,7 @@ if(DEFINED Torch_DIR)
     list(APPEND MMDEPLOY_TARGET_BACKENDS torchscript)
 endif()
 
-if(DEFINED DInferenceEngine_DIR)
+if(DEFINED InferenceEngine_DIR)
     list(APPEND MMDEPLOY_TARGET_BACKENDS openvino)
 endif()
 

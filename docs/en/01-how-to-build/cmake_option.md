@@ -11,21 +11,57 @@
 </thead>
 <tbody>
   <tr>
+    <td>MMDEPLOY_SHARED_LIBS</td>
+    <td>{ON, OFF}</td>
+    <td>ON</td>
+    <td>Switch to build shared libs</td>
+  </tr>
+  <tr>
     <td>MMDEPLOY_BUILD_SDK</td>
     <td>{ON, OFF}</td>
     <td>OFF</td>
     <td>Switch to build MMDeploy SDK</td>
   </tr>
-  <tr>
+
+<tr>
+  <td>MMDEPLOY_BUILD_SDK_MONOLITHIC</td>
+  <td>{ON, OFF}</td>
+  <td>OFF</td>
+  <td>Build single lib</td>
+  </tr>
+
+<tr>
+  <td>MMDEPLOY_BUILD_TEST</td>
+  <td>{ON, OFF}</td>
+  <td>OFF</td>
+  <td>Build unittest</td>
+  </tr>
+
+<tr>
     <td>MMDEPLOY_BUILD_SDK_PYTHON_API</td>
     <td>{ON, OFF}</td>
     <td>OFF</td>
-    <td>switch to build MMDeploy SDK python package</td>
+    <td>Switch to build MMDeploy SDK python package</td>
   </tr>
   <tr>
+    <td>MMDEPLOY_BUILD_SDK_CXX_API</td>
+    <td>{ON, OFF}</td>
+    <td>OFF</td>
+    <td>Build C++ SDK API</td>
+  </tr>
+
+<tr>
+    <td>MMDEPLOY_BUILD_SDK_CSHARP_API</td>
+    <td>{ON, OFF}</td>
+    <td>OFF</td>
+    <td>Build C# SDK API</td>
+  </tr>
+
+<tr>
     <td>MMDEPLOY_BUILD_SDK_JAVA_API</td>
     <td>{ON, OFF}</td>
-    <td>switch to build MMDeploy SDK Java API</td>
+    <td>OFF</td>
+    <td>Build Java SDK API</td>
   </tr>
   <tr>
     <td>MMDEPLOY_BUILD_TEST</td>
@@ -33,7 +69,29 @@
     <td>OFF</td>
     <td>Switch to build MMDeploy SDK unittest cases</td>
   </tr>
-  <tr>
+
+<tr>
+    <td>MMDEPLOY_SPDLOG_EXTERNAL</td>
+    <td>{ON, OFF}</td>
+    <td>OFF</td>
+    <td>Build with spdlog installation package that comes with the system</td>
+  </tr>
+
+<tr>
+    <td>MMDEPLOY_ZIP_MODEL</td>
+    <td>{ON, OFF}</td>
+    <td>OFF</td>
+    <td>Enable SDK with zip format</td>
+  </tr>
+
+<tr>
+    <td>MMDEPLOY_COVERAGE</td>
+    <td>{ON, OFF}</td>
+    <td>OFF</td>
+    <td>Build for cplus code coverage report</td>
+  </tr>
+
+<tr>
     <td>MMDEPLOY_TARGET_DEVICES</td>
     <td>{"cpu", "cuda"}</td>
     <td>cpu</td>
@@ -42,7 +100,7 @@
   </tr>
   <tr>
     <td>MMDEPLOY_TARGET_BACKENDS</td>
-    <td>{"trt", "ort", "pplnn", "ncnn", "openvino", "torchscript"}</td>
+    <td>{"trt", "ort", "pplnn", "ncnn", "openvino", "torchscript", "snpe"}</td>
     <td>N/A</td>
     <td>Enabling inference engine. <b>By default, no target inference engine is set, since it highly depends on the use case.</b> When more than one engine are specified, it has to be set with a semicolon separated list of inference backend names, e.g. <pre><code>-DMMDEPLOY_TARGET_BACKENDS="trt;ort;pplnn;ncnn;openvino"</code></pre>
     After specifying the inference engine, it's package path has to be passed to cmake as follows, <br>
@@ -61,7 +119,8 @@
 <pre><code>-DInferenceEngine_DIR=${INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/share</code></pre>
     6. <b>torchscript</b>: TorchScript. <code>Torch_DIR</code> is needed.
 <pre><code>-DTorch_DIR=${Torch_DIR}</code></pre>
-Currently, <b>The Model Converter supports torchscript, but SDK doesn't</b>.
+Currently, <b>The Model Converter supports torchscript, but SDK doesn't</b>.<br>
+    7. <b>snpe</b>: qcom snpe. <code>SNPE_ROOT</code> must existed in the environment variable because of C/S mode.
    </td>
   </tr>
   <tr>
@@ -70,11 +129,6 @@ Currently, <b>The Model Converter supports torchscript, but SDK doesn't</b>.
     <td>all</td>
     <td>Enable codebase's postprocess modules. You can provide a semicolon separated list of codebase names to enable them, e.g., <code>-DMMDEPLOY_CODEBASES="mmcls;mmdet"</code>. Or you can pass <code>all</code> to enable them all, i.e., <code>-DMMDEPLOY_CODEBASES=all</code></td>
   </tr>
-  <tr>
-    <td>MMDEPLOY_SHARED_LIBS</td>
-    <td>{ON, OFF}</td>
-    <td>ON</td>
-    <td>Switch to build shared library or static library of MMDeploy SDK</td>
-  </tr>
+
 </tbody>
 </table>
