@@ -239,8 +239,6 @@ def install_pyncnn(dep_dir):
     pb_lib = os.path.join(pb_install, 'lib', 'libprotobuf.so')
     pb_include = os.path.join(pb_install, 'include')
 
-    import pdb
-    pdb.set_trace()
     cmd = 'cmake .. '
     cmd += ' -DNCNN_PYTHON=ON '
     cmd += ' -DProtobuf_LIBRARIES={} '.format(pb_lib)
@@ -294,6 +292,14 @@ def install_mmdeploy(work_dir, dep_dir, ncnn_cmake_dir):
 
 
 def main():
+    """auto install mmdeploy with ncnn To verify this script,
+
+    1) use `sudo docker run -v /path/to/mmdeploy:/root/mmdeploy -v /path/to/Miniconda3-latest-Linux-x86_64.sh:/root/miniconda.sh -it ubuntu:18.04 /bin/bash` # noqa: E501
+    2) install conda and setup python environment
+
+    Returns:
+        _type_: _description_
+    """
     work_dir = os.path.abspath(os.path.join(__file__, '..', '..', '..'))
     dep_dir = os.path.abspath(os.path.join(work_dir, '..', 'mmdeploy-dep'))
     if not os.path.exists(dep_dir):
