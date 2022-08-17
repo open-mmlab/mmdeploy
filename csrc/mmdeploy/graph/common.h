@@ -26,16 +26,17 @@ inline std::true_type Check(T&&) {
 
 template <typename EntryType, typename RetType = typename Creator<EntryType>::ReturnType>
 inline Result<RetType> CreateFromRegistry(const Value& config, const char* key = "type") {
-  MMDEPLOY_INFO("config: {}", config);
+  MMDEPLOY_DEBUG("config: {}", config);
   auto type = config[key].get<std::string>();
   auto creator = Registry<EntryType>::Get().GetCreator(type);
   if (!creator) {
-    MMDEPLOY_ERROR("failed to find module creator: {}", type);
+    MMDEPLOY_ERROR("Failed to find creator: {}. Available: {}", type,
+                   Registry<EntryType>::Get().List());
     return Status(eEntryNotFound);
   }
   auto inst = creator->Create(config);
   if (!Check(inst)) {
-    MMDEPLOY_ERROR("failed to create module: {}", type);
+    MMDEPLOY_ERROR("Failed to create module: {}, config: {}", type, config);
     return Status(eFail);
   }
   return std::move(inst);

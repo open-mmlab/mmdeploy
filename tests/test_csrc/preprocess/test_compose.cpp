@@ -11,6 +11,7 @@
 #include "mmdeploy/core/mat.h"
 #include "mmdeploy/core/registry.h"
 #include "mmdeploy/core/utils/formatter.h"
+#include "opencv2/imgcodecs/imgcodecs.hpp"
 #include "opencv_utils.h"
 #include "test_resource.h"
 #include "test_utils.h"

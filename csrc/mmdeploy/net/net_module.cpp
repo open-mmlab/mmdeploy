@@ -34,13 +34,15 @@ struct NetModule::Impl {
       stream_ = context.value("stream", Stream::GetDefault(device_));
       auto creator = Registry<Net>::Get().GetCreator(config.backend);
       if (!creator) {
-        MMDEPLOY_ERROR("Net backend not found: {}", config.backend);
+        MMDEPLOY_ERROR("Net backend not found: {}, available backends: {}", config.backend,
+                       Registry<Net>::Get().List());
         return Status(eEntryNotFound);
       }
       auto net_cfg = args;
       net_cfg["context"].update({{"device", device_}, {"stream", stream_}});
       net_ = creator->Create(net_cfg);
       if (!net_) {
+        MMDEPLOY_ERROR("Failed to create Net backend: {}, config: {}", config.backend, net_cfg);
         return Status(eFail);
       }
       OUTCOME_TRY(InitializeInputTensors(args));

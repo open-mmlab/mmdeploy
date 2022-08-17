@@ -10,7 +10,7 @@
 
 using namespace mmdeploy;
 
-TEST_CASE("test ort net", "[ort_net]") {
+TEST_CASE("test ort net", "[.ort_net][resource]") {
   auto& gResource = MMDeployTestResources::Get();
   auto model_list = gResource.LocateModelResources(fs::path{"mmcls"} / "ort");
   REQUIRE(!model_list.empty());

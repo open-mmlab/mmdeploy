@@ -8,7 +8,7 @@ Registry<void>::Registry() = default;
 
 Registry<void>::~Registry() = default;
 
-bool Registry<void>::AddCreator(Creator<void> &creator) {
+bool Registry<void>::AddCreator(Creator<void>& creator) {
   MMDEPLOY_DEBUG("Adding creator: {}", creator.GetName());
   auto key = creator.GetName();
   if (entries_.find(key) == entries_.end()) {
@@ -26,7 +26,7 @@ bool Registry<void>::AddCreator(Creator<void> &creator) {
   return true;
 }
 
-Creator<void> *Registry<void>::GetCreator(const std::string &type, int version) {
+Creator<void>* Registry<void>::GetCreator(const std::string& type, int version) {
   auto iter = entries_.find(type);
   if (iter == entries_.end()) {
     return nullptr;
@@ -41,6 +41,14 @@ Creator<void> *Registry<void>::GetCreator(const std::string &type, int version) 
     }
   }
   return nullptr;
+}
+
+std::vector<std::string> Registry<void>::List() {
+  std::vector<std::string> list;
+  for (const auto& [name, _] : entries_) {
+    list.push_back(name);
+  }
+  return list;
 }
 
 }  // namespace mmdeploy

@@ -43,7 +43,7 @@ class End2EndModel(BaseBackendModel):
         self.device = device
 
     def _init_wrapper(self, backend: Backend, backend_files: Sequence[str],
-                      device: str):
+                      device: str, **kwargs):
         output_names = self.output_names
         self.wrapper = BaseBackendModel._build_wrapper(
             backend=backend,
@@ -51,7 +51,8 @@ class End2EndModel(BaseBackendModel):
             device=device,
             input_names=[self.input_name],
             output_names=output_names,
-            deploy_cfg=self.deploy_cfg)
+            deploy_cfg=self.deploy_cfg,
+            **kwargs)
 
     def forward(self,
                 batch_inputs: torch.Tensor,
@@ -101,8 +102,7 @@ class SDKEnd2EndModel(End2EndModel):
             list: A list contains predictions.
         """
 
-        pred = self.wrapper.invoke(
-            [img[0].contiguous().detach().cpu().numpy()])[0]
+        pred = self.wrapper.invoke(img[0].contiguous().detach().cpu().numpy())
         pred = np.array(pred, dtype=np.float32)
         return pred[np.argsort(pred[:, 0])][np.newaxis, :, 1]
 

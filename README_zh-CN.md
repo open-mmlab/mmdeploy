@@ -53,9 +53,9 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 
 ### 支持多种推理后端
 
-| ONNX Runtime | TensorRT | ppl.nn | ncnn | OpenVINO | more                                              |
-| ------------ | -------- | ------ | ---- | -------- | ------------------------------------------------- |
-| ✔️           | ✔️       | ✔️     | ✔️   | ✔️       | [benchmark](docs/zh_cn/03-benchmark/benchmark.md) |
+| ONNX Runtime | TensorRT | ppl.nn | ncnn | OpenVINO | LibTorch | snpe | more                                              |
+| ------------ | -------- | ------ | ---- | -------- | -------- | ---- | ------------------------------------------------- |
+| ✔️           | ✔️       | ✔️     | ✔️   | ✔️       | ✔️       | ✔️   | [benchmark](docs/zh_cn/03-benchmark/benchmark.md) |
 
 ### SDK 可高度定制化
 
@@ -71,6 +71,7 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
   - [Build for Win10](docs/zh_cn/01-how-to-build/windows.md)
   - [Build for Android](docs/zh_cn/01-how-to-build/android.md)
   - [Build for Jetson](docs/en/01-how-to-build/jetsons.md)
+  - [Build for SNPE](docs/zh_cn/01-how-to-build/snpe.md)
 - 使用
   - [把模型转换到推理 Backend](docs/zh_cn/02-how-to-run/convert_model.md)
   - [配置转换参数](docs/zh_cn/02-how-to-run/write_config.md)

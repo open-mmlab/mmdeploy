@@ -5,8 +5,8 @@ from typing import Optional, Union
 from mmengine import Config
 
 from mmdeploy.core import patch_model
-from mmdeploy.utils import cfg_apply_marks, load_config
-from mmdeploy.utils.config_utils import get_backend
+from mmdeploy.utils import (IR, cfg_apply_marks, get_backend, get_ir_config,
+                            load_config)
 from .core import PIPELINE_MANAGER, no_mp
 from .utils import create_calib_input_data as create_calib_input_data_impl
 
@@ -60,8 +60,10 @@ def create_calib_input_data(calib_file: str,
         dataloader = task_processor.build_dataloader(calib_dataloader)
 
         # patch model
+        backend = get_backend(deploy_cfg).value
+        ir = IR.get(get_ir_config(deploy_cfg)['type'])
         patched_model = patch_model(
-            model, cfg=deploy_cfg, backend=get_backend(deploy_cfg).value)
+            model, cfg=deploy_cfg, backend=backend, ir=ir)
 
         def get_tensor_func(input_data):
             input_data = model.data_preprocessor(input_data)

@@ -27,13 +27,9 @@ def main():
     onnx_path = args.onnx_path
     output_prefix = args.output_prefix
 
-    logger.info(f'onnx2ncnn: \n\tonnx_path: {onnx_path} ')
-    try:
-        from_onnx(onnx_path, output_prefix)
-        logger.info('onnx2ncnn success.')
-    except Exception as e:
-        logger.error(e)
-        logger.error('onnx2ncnn failed.')
+    logger.info(f'mmdeploy_onnx2ncnn: \n\tonnx_path: {onnx_path} ')
+    from_onnx(onnx_path, output_prefix)
+    logger.info('mmdeploy_onnx2ncnn success.')
 
 
 if __name__ == '__main__':

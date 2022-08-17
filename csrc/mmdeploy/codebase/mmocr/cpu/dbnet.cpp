@@ -3,7 +3,6 @@
 #include "mmdeploy/codebase/mmocr/dbnet.h"
 
 #include "mmdeploy/core/utils/device_utils.h"
-#include "opencv2/imgcodecs.hpp"
 #include "opencv2/imgproc.hpp"
 
 namespace mmdeploy::mmocr {

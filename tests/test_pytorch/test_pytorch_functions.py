@@ -1,9 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import os.path as osp
+
 import mmcv
 import numpy as np
 import pytest
 import torch
-import torch.nn.functional as func
+import torch.nn.functional as F
+from packaging.version import parse
 
 from mmdeploy.utils import Backend
 from mmdeploy.utils.test import (WrapFunction, backend_checker,
@@ -61,10 +64,10 @@ def test_group_norm_ncnn():
     input = torch.rand([1, 2, 2, 2])
     weight = torch.rand([2])
     bias = torch.rand([2])
-    model_output = func.group_norm(input, 1, weight, bias, 1e-05)
+    model_output = F.group_norm(input, 1, weight, bias, 1e-05)
 
     def group_norm_caller(input):
-        return func.group_norm(input, 1, weight, bias)
+        return F.group_norm(input, 1, weight, bias)
 
     wrapped_func = WrapFunction(group_norm_caller)
     rewrite_output, _ = get_rewrite_outputs(
@@ -101,10 +104,10 @@ def test_chunk_ncnn():
 @backend_checker(Backend.NCNN)
 def test_interpolate_static():
     input = torch.rand([1, 2, 2, 2])
-    model_output = func.interpolate(input, scale_factor=[2, 2])
+    model_output = F.interpolate(input, scale_factor=[2, 2])
 
     def interpolate_caller(*arg, **kwargs):
-        return func.interpolate(*arg, **kwargs)
+        return F.interpolate(*arg, **kwargs)
 
     wrapped_func = WrapFunction(interpolate_caller, size=[4, 4])
     rewrite_output, _ = get_rewrite_outputs(
@@ -121,10 +124,10 @@ def test_linear_ncnn():
     input = torch.rand([1, 2, 2])
     weight = torch.rand([2, 2])
     bias = torch.rand([2])
-    model_output = func.linear(input, weight=weight, bias=bias)
+    model_output = F.linear(input, weight=weight, bias=bias)
 
     def linear_caller(*arg, **kwargs):
-        return func.linear(*arg, **kwargs)
+        return F.linear(*arg, **kwargs)
 
     wrapped_func = WrapFunction(linear_caller, weight=weight, bias=bias)
     rewrite_output, _ = get_rewrite_outputs(
@@ -236,25 +239,105 @@ class TestTopk:
 
 @backend_checker(Backend.TENSORRT)
 @pytest.mark.parametrize('shape', [[2, 2], [4, 2], [2, 4], [2, 4, 2]])
-def test_triu_trt(shape):
+@pytest.mark.parametrize('diagonal', [0, 1, -1])
+def test_triu_trt(shape, diagonal):
 
     input = torch.rand(shape)
+    model_output = torch.triu(input=input, diagonal=diagonal)
 
     def triu_caller(*arg, **kwargs):
         return torch.triu(*arg, **kwargs)
 
-    wrapped_func = WrapFunction(triu_caller, diagonal=1)
-    import tempfile
+    wrapped_func = WrapFunction(triu_caller, diagonal=diagonal)
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_func,
+        model_inputs={'input': input},
+        deploy_cfg=get_trt_config(['output'], shape=shape),
+        run_with_backend=True)
+    if is_backend_output:
+        rewrite_outputs = rewrite_outputs[0].detach().cpu()
 
+        assert np.allclose(
+            model_output, rewrite_outputs, rtol=1e-03, atol=1e-05)
+    else:
+        assert rewrite_outputs is not None
+
+
+@backend_checker(Backend.NCNN)
+@pytest.mark.parametrize(
+    'input',
+    [torch.rand(1, 16, 16), torch.rand(1, 3, 16, 16)])
+@pytest.mark.parametrize('dim', [1, 2])
+def test_normalize_ncnn(input, dim):
+    import mmdeploy.apis.ncnn as ncnn_apis
+    from mmdeploy.utils.test import get_onnx_model
+
+    def norm_func(input, dim):
+        return F.normalize(input, p=2, dim=dim)
+
+    wrapped_func = WrapFunction(norm_func, dim=dim)
+    model_inputs = {'input': input}
+    ir_file_path = get_onnx_model(wrapped_func, model_inputs, deploy_cfg_ncnn)
+    assert osp.exists(ir_file_path)
+    ncnn_files_prefix = osp.splitext(ir_file_path)[0]
+    ncnn_apis.from_onnx(ir_file_path, ncnn_files_prefix)
+    param_path, bin_path = ncnn_apis.get_output_model_file(ir_file_path)
+    assert osp.exists(param_path)
+    assert osp.exists(bin_path)
+
+
+@backend_checker(Backend.ONNXRUNTIME)
+@pytest.mark.parametrize(
+    'input',
+    [torch.rand(1, 16, 16), torch.rand(1, 3, 16, 16)])
+def test_masked_fill_onnxruntime(input):
+    mask = input > 0
+    value = float('-inf')
+
+    def masked_fill_caller(*arg, **kwargs):
+        return torch.masked_fill(*arg, **kwargs)
+
+    deploy_cfg_ort = mmcv.Config(
+        dict(
+            onnx_config=dict(input_shape=None),
+            backend_config=dict(type='onnxruntime'),
+            codebase_config=dict(type='mmdet', task='ObjectDetection')))
+
+    wrapped_func = WrapFunction(masked_fill_caller, mask=mask, value=value)
+    rewrite_output, _ = get_rewrite_outputs(
+        wrapped_func,
+        model_inputs={'input': input},
+        deploy_cfg=deploy_cfg_ort,
+        run_with_backend=True)
+    assert rewrite_output is not None
+
+
+@backend_checker(Backend.ONNXRUNTIME)
+@pytest.mark.skipif(
+    parse(torch.__version__) < parse('1.9.0'), reason='requires torch>1.8.0')
+@pytest.mark.parametrize('x', [torch.rand(1, 3, 16, 16)])
+@pytest.mark.parametrize('y', [torch.rand(1, 3, 4, 4)])
+def test_tensor_setitem(x, y):
     import onnx
 
-    from mmdeploy.core import RewriterContext
-    onnx_file = tempfile.NamedTemporaryFile(suffix='onnx').name
-    with RewriterContext(
-            cfg=get_trt_config('output', shape),
-            backend=Backend.TENSORRT.value,
-            opset=11), torch.no_grad():
-        torch.onnx.export(wrapped_func, input, onnx_file, opset_version=11)
-    onnx_model = onnx.load(onnx_file)
+    from mmdeploy.utils.test import get_onnx_model
+
+    def setitem_slice(x, y):
+        H, W = y.shape[2:]
+        x[:, :, 2:H + 2, 2:W + 2] = y
+        return x
+
+    wrapped_func = WrapFunction(setitem_slice)
+    model_inputs = {'x': x, 'y': y}
+
+    deploy_cfg = mmcv.Config(
+        dict(
+            onnx_config=dict(input_shape=None),
+            backend_config=dict(type='onnxruntime'),
+            codebase_config=dict(type='mmdet', task='ObjectDetection')))
+    ir_file_path = get_onnx_model(wrapped_func, model_inputs, deploy_cfg)
+
+    onnx_model = onnx.load(ir_file_path)
     nodes = onnx_model.graph.node
-    assert nodes is not None
+    for node in nodes:
+        assert node.op_type != 'ScatterND'
