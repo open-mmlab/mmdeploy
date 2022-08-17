@@ -140,14 +140,14 @@ class BaseTask(metaclass=ABCMeta):
 
     @abstractmethod
     def create_input(self,
-                     imgs: Union[str, np.ndarray],
+                     imgs: Union[str, np.ndarray, Sequence],
                      input_shape: Sequence[int] = None,
                      **kwargs) -> Tuple[Dict, torch.Tensor]:
         """Create input for model.
 
         Args:
-            imgs (str | np.ndarray): Input image(s), accepted data types are
-                `str`, `np.ndarray`.
+            imgs (str | np.ndarray | Sequence): Input image(s),
+                accepted data types are `str`, `np.ndarray`.
             input_shape (list[int]): Input shape of image in (width, height)
                 format, defaults to `None`.
 

@@ -99,7 +99,7 @@ class ObjectDetection(BaseTask):
         return model.eval()
 
     def create_input(self,
-                     imgs: Union[str, np.ndarray],
+                     imgs: Union[str, np.ndarray, Sequence],
                      input_shape: Sequence[int] = None) \
             -> Tuple[Dict, torch.Tensor]:
         """Create input for detector.
@@ -115,7 +115,7 @@ class ObjectDetection(BaseTask):
         """
         from mmcv.parallel import collate, scatter
         from mmdet.datasets.pipelines import Compose
-        if not isinstance(imgs, (list, tuple)):
+        if isinstance(imgs, (str, np.ndarray)):
             imgs = [imgs]
         dynamic_flag = is_dynamic_shape(self.deploy_cfg)
         cfg = process_model_config(self.model_cfg, imgs, input_shape)
@@ -146,10 +146,11 @@ class ObjectDetection(BaseTask):
 
         data = collate(data_list, samples_per_gpu=len(imgs))
 
-        data['img_metas'] = [
-            img_metas.data[0] for img_metas in data['img_metas']
-        ]
-        data['img'] = [img.data[0] for img in data['img']]
+        for k, v in data.items():
+            # batch_size > 1
+            if isinstance(v[0], DataContainer):
+                data[k] = v[0].data
+
         if self.device != 'cpu':
             data = scatter(data, [self.device])[0]
 
