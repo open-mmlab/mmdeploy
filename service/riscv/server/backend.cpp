@@ -34,7 +34,6 @@ Status NCNNNet::Inference(ServerContext* context, const TensorList* request, Rep
   auto extractor = net_.create_extractor();
 
   const std::vector<const char*>& input_names = net_.input_names();
-  std::vector<std::vector<float>> input_data(input_names.size());
   std::vector<ncnn::Mat> inputs(input_names.size());
   if (input_names.size() != request->data_size()) {
     MMDEPLOY_ERROR("Inference: input names count not match !");
@@ -45,13 +44,10 @@ Status NCNNNet::Inference(ServerContext* context, const TensorList* request, Rep
 
   // input
   for (size_t i = 0; i < input_names.size(); ++i) {
-    auto tensor = request->data(i);
-    auto shape = tensor.shape();
+    auto& tensor = request->data(i);
+    auto& shape = tensor.shape();
     size_t total = shape[2] * shape[1] * shape[0];
-    std::vector<float> tmp(total);
-    memcpy(tmp.data(), tensor.data().data(), sizeof(float) * total);
-    input_data[i] = std::move(tmp);
-    inputs[i] = ncnn::Mat(shape[2], shape[1], shape[0], (void*)input_data[i].data());
+    inputs[i] = ncnn::Mat(shape[2], shape[1], shape[0], (void*)tensor.data().data());
     extractor.input(input_names[i], inputs[i]);
   }
 
