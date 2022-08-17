@@ -4,8 +4,8 @@ pipeline {
     stages {
         stage('Build') { 
             steps {
-                docker_image=mmdeploy-ci-ubuntu-18.04
-                sh """
+                sh """#/bin/bash
+                    docker_image=mmdeploy-ci-ubuntu-18.04
                     echo $(pwd)
                     docker build tests/jenkins/docker/${docker_image}/ -t ${docker_image}
                     docker run -v tests/jenkins/scripts:/root/workspace/scripts -t ${docker_image}
