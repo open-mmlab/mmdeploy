@@ -169,7 +169,7 @@ class Classification(BaseTask):
         model_cfg = self.model_cfg
         assert 'test_pipeline' in model_cfg, \
             f'test_pipeline not found in {model_cfg}.'
-        from mmcls.datasets.pipelines import Compose
+        from mmengine.dataset import Compose
         pipeline = deepcopy(model_cfg.test_pipeline)
 
         if isinstance(imgs, str):
