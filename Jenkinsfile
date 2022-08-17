@@ -4,8 +4,7 @@ pipeline {
     stages {
         stage('Build') { 
             steps {
-                cd ./mmdeploy/tests/jenkins/scripts
-                sh docker_run_for_build.sh
+                sh ./mmdeploy/tests/jenkins/scripts/docker_run_for_build.sh
             }
         }
 
