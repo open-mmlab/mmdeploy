@@ -1,72 +1,20 @@
 pipeline {
-  agent { label 'deploy_linux' }
+    agent { label 'deploy_linux' }
 
-  parameters {
-    text(
-        name: 'codebase_list', 
-        defaultValue: 'select codebase', 
-        description: '选择codebase'
-    )
-
-    booleanParam(
-        name: 'mmcls', 
-        defaultValue: true, 
-    )
-
-    booleanParam(
-        name: 'mmdet', 
-        defaultValue: true, 
-    )
-
-    booleanParam(
-        name: 'mmedit', 
-        defaultValue: true, 
-    )
-
-    booleanParam(
-        name: 'mmocr', 
-        defaultValue: true, 
-    )
-
-    booleanParam(
-        name: 'mmpose', 
-        defaultValue: true, 
-    )
-
-    booleanParam(
-        name: 'rotate', 
-        defaultValue: true, 
-    )
-
-    booleanParam(
-        name: 'mmseg', 
-        defaultValue: true, 
-    )
-  }
+    environment {
+        docker_image="mmdeploy-ci-ubuntu-18.04"
+    }
 
 
-
-  stages {
+    stages {
         stage('Build') { 
             steps {
-                echo "start build"
                 sh """
-                    codebase=()
-                    if (( $params.mmcls==true )); then codebase+=(mmcls);fi
-                    if (( $params.mmdet==true )); then codebase+=(mmdet);fi
-                    if (( $params.mmedit==true )); then codebase+=(mmedit);fi
-                    if (( $params.mmocr==true )); then codebase+=(mmocr);fi
-                    if (( $params.mmpose==true )); then codebase+=(mmpose);fi
-                    if (( $params.mmrotate==true )); then codebase+=(rotate);fi
-                    if (( $params.mmseg==true )); then codebase+=(mmseg);fi
+                    docker build tests/jenkins/docker/${docker_image}/ -t ${docker_image}
+                    docker run /v tests/jenkins/scripts:/root/workspace/scripts -t ${docker_image}
+                    container_id=${docker ps | grep ${docker_image} | awk -F ' ' '{print $1}'}
+                    docker exec ${container_id} "sh /root/workspace/scripts/docker_exec_for_build.sh"
                 """
-
-                sh """
-                    for i in {0..6};
-                    do
-                        echo ${codebase}[i];
-                    done
-                """ 
             }
         }
 
