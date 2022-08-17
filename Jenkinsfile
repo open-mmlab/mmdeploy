@@ -42,7 +42,6 @@ pipeline {
         name: 'mmseg', 
         defaultValue: true, 
     )
-
   }
 
 
@@ -53,13 +52,13 @@ pipeline {
                 echo "start build"
                 sh """
                     codebase=();
-                    if (( $params.mmcls==true )); then codebase+=(mmcls);fi
-                    if (( $params.mmdet==true )); then codebase+=(mmdet);fi
-                    if (( $params.mmedit==true )); then codebase+=(mmedit);fi
-                    if (( $params.mmocr==true )); then codebase+=(mmocr);fi
-                    if (( $params.mmpose==true )); then codebase+=(mmpose);fi
-                    if (( $params.mmrotate==true )); then codebase+=(rotate);fi
-                    if (( $params.mmseg==true )); then codebase+=(mmseg);fi
+                    if (( $params.mmcls==true )) then codebase+=(mmcls);fi
+                    if (( $params.mmdet==true )) then codebase+=(mmdet);fi
+                    if (( $params.mmedit==true )) then codebase+=(mmedit);fi
+                    if (( $params.mmocr==true )) then codebase+=(mmocr);fi
+                    if (( $params.mmpose==true )) then codebase+=(mmpose);fi
+                    if (( $params.mmrotate==true )) then codebase+=(rotate);fi
+                    if (( $params.mmseg==true )) then codebase+=(mmseg);fi
                 """
 
                 sh """
