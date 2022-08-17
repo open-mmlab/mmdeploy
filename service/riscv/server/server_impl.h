@@ -10,20 +10,6 @@
 #include <memory>
 
 #include "backend.h"
-#include "inference.grpc.pb.h"
-
-// using grpc::Server;
-// using grpc::ServerBuilder;
-// using grpc::ServerContext;
-// using grpc::Status;
-
-// using mmdeploy::Empty;
-// using mmdeploy::Inference;
-// using mmdeploy::Model;
-// using mmdeploy::ModelType;
-// using mmdeploy::Reply;
-// using mmdeploy::Tensor;
-// using mmdeploy::TensorList;
 
 class InferenceServiceImpl final : public Inference::Service {
   // Init Model with model file

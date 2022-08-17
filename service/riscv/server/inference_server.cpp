@@ -8,7 +8,7 @@
 #include <iostream>
 #include <string>
 
-#include "../snpe/server/text_table.h"
+#include "../../snpe/server/text_table.h"
 #include "server_impl.h"
 
 void PrintIP() {

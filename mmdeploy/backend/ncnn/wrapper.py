@@ -101,10 +101,11 @@ class NCNNRemote:
                  uri=None,
                  **kwargs):
         import grpc
+        import inference_pb2
+        import inference_pb2_grpc
 
         from mmdeploy.utils.retry_interceptor import (
             ExponentialBackoff, RetryOnRpcErrorClientInterceptor)
-        from .client import inference_pb2, inference_pb2_grpc
 
         self._Tensor = inference_pb2.Tensor
         self._TensorList = inference_pb2.TensorList

@@ -9,9 +9,9 @@
 
 Status NCNNNet::Init(ServerContext* context, const Model* request, Reply* response) {
   MMDEPLOY_INFO("Init ncnn net ...");
-  net_.opt.use_fp16_packed = true;
-  net_.opt.use_fp16_storage = true;
-  net_.opt.use_fp16_arithmetic = true;
+  net_.opt.use_fp16_packed = false;
+  net_.opt.use_fp16_storage = false;
+  net_.opt.use_fp16_arithmetic = false;
   register_mmdeploy_custom_layers(net_);
   // copy params & weights
   params_ = request->ncnn().params();
@@ -34,6 +34,7 @@ Status NCNNNet::Inference(ServerContext* context, const TensorList* request, Rep
   auto extractor = net_.create_extractor();
 
   const std::vector<const char*>& input_names = net_.input_names();
+  std::vector<std::vector<float>> input_data(input_names.size());
   std::vector<ncnn::Mat> inputs(input_names.size());
   if (input_names.size() != request->data_size()) {
     MMDEPLOY_ERROR("Inference: input names count not match !");
@@ -46,7 +47,11 @@ Status NCNNNet::Inference(ServerContext* context, const TensorList* request, Rep
   for (size_t i = 0; i < input_names.size(); ++i) {
     auto tensor = request->data(i);
     auto shape = tensor.shape();
-    inputs[i] = ncnn::Mat(shape[2], shape[1], shape[0], (void*)tensor.data().c_str());
+    size_t total = shape[2] * shape[1] * shape[0];
+    std::vector<float> tmp(total);
+    memcpy(tmp.data(), tensor.data().data(), sizeof(float) * total);
+    input_data[i] = std::move(tmp);
+    inputs[i] = ncnn::Mat(shape[2], shape[1], shape[0], (void*)input_data[i].data());
     extractor.input(input_names[i], inputs[i]);
   }
 

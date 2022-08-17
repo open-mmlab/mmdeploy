@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.14)
 project(RISCVServer C CXX)
 include(./common.cmake)
-include(../../cmake/MMDeploy.cmake)
+include(../../../cmake/MMDeploy.cmake)
 
 # Proto file
-get_filename_component(rv_proto "inference.proto" ABSOLUTE)
+get_filename_component(rv_proto "../inference.proto" ABSOLUTE)
 get_filename_component(rv_proto_path "${rv_proto}" PATH)
 
 # Generated sources

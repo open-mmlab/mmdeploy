@@ -100,7 +100,7 @@ if (MMDEPLOY_BUILD_SDK)
 
     if (MMDEPLOY_BUILD_RISCV_SERVER)
         set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
-        add_subdirectory(service/riscv)
+        add_subdirectory(service/riscv/server)
     endif ()
 
     if (MMDEPLOY_BUILD_TEST)
