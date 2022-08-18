@@ -267,7 +267,7 @@ If one of inference engines among ONNXRuntime, TensorRT, ncnn and libtorch is se
   ```bash
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
-  cmake -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
+  cmake -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_TARGET_BACKENDS=ort -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
   make -j$(nproc) && make install
   ```
 
@@ -276,7 +276,7 @@ If one of inference engines among ONNXRuntime, TensorRT, ncnn and libtorch is se
   ```bash
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
-  cmake -DTENSORRT_DIR=${TENSORRT_DIR} -DCUDNN_DIR=${CUDNN_DIR} ..
+  cmake -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_TARGET_BACKENDS=trt -DTENSORRT_DIR=${TENSORRT_DIR} -DCUDNN_DIR=${CUDNN_DIR} ..
   make -j$(nproc) && make install
   ```
 
@@ -285,7 +285,7 @@ If one of inference engines among ONNXRuntime, TensorRT, ncnn and libtorch is se
   ```bash
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
-  cmake -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn ..
+  cmake -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_TARGET_BACKENDS=ncnn -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn ..
   make -j$(nproc) && make install
   ```
 
@@ -294,7 +294,7 @@ If one of inference engines among ONNXRuntime, TensorRT, ncnn and libtorch is se
   ```bash
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
-  cmake -DTorch_DIR=${Torch_DIR} ..
+  cmake -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_TARGET_BACKENDS=torchscript -DTorch_DIR=${Torch_DIR} ..
   make -j$(nproc) && make install
   ```
 
@@ -324,10 +324,12 @@ You can also activate other engines after the model.
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
   cmake .. \
+      -DCMAKE_CXX_COMPILER=g++-7 \
       -DMMDEPLOY_BUILD_SDK=ON \
       -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
       -DMMDEPLOY_BUILD_EXAMPLES=ON \
       -DMMDEPLOY_TARGET_DEVICES=cpu \
+      -DMMDEPLOY_TARGET_BACKENDS=ort \
       -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR}
 
   make -j$(nproc) && make install
@@ -339,12 +341,14 @@ You can also activate other engines after the model.
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
   cmake .. \
+      -DCMAKE_CXX_COMPILER=g++-7 \
       -DMMDEPLOY_BUILD_SDK=ON \
       -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
       -DMMDEPLOY_BUILD_EXAMPLES=ON \
       -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
       -Dpplcv_DIR=${PPLCV_DIR}/cuda-build/install/lib/cmake/ppl \
       -DTENSORRT_DIR=${TENSORRT_DIR} \
+      -DMMDEPLOY_TARGET_BACKENDS=trt \
       -DCUDNN_DIR=${CUDNN_DIR}
 
   make -j$(nproc) && make install

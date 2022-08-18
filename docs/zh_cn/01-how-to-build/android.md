@@ -121,6 +121,7 @@ make -j$(nproc) install
       -DMMDEPLOY_BUILD_EXAMPLES=ON \
       -DMMDEPLOY_BUILD_SDK_JAVA_API=ON \
       -DOpenCV_DIR=${OPENCV_ANDROID_SDK_DIR}/sdk/native/jni/abi-${ANDROID_ABI} \
+      -DMMDEPLOY_TARGET_BACKENDS=ncnn \
       -Dncnn_DIR=${NCNN_DIR}/build_${ANDROID_ABI}/install/lib/cmake/ncnn \
       -DMMDEPLOY_SHARED_LIBS=ON \
       -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake \

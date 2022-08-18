@@ -117,10 +117,11 @@ MMDeploy provides a recipe as shown below for building SDK with ncnn as inferenc
   mkdir -p build_${ANDROID_ABI} && cd build_${ANDROID_ABI}
   cmake .. \
       -DMMDEPLOY_BUILD_SDK=ON \
-      -DMMDEPLOY_BUILD_EXAMPLES=ON \
       -DMMDEPLOY_BUILD_SDK_JAVA_API=ON \
+      -DMMDEPLOY_BUILD_EXAMPLES=ON \
       -DOpenCV_DIR=${OPENCV_ANDROID_SDK_DIR}/sdk/native/jni/abi-${ANDROID_ABI} \
       -Dncnn_DIR=${NCNN_DIR}/build_${ANDROID_ABI}/install/lib/cmake/ncnn \
+      -DMMDEPLOY_TARGET_BACKENDS=ncnn \
       -DMMDEPLOY_SHARED_LIBS=ON \
       -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake \
       -DANDROID_ABI=${ANDROID_ABI} \

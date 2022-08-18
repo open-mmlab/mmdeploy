@@ -39,7 +39,7 @@ Note:
 ```bash
 cd ${MMDEPLOY_DIR} # To MMDeploy root directory
 mkdir -p build && cd build
-cmake -DTorch_DIR=${Torch_DIR} ..
+cmake -DMMDEPLOY_TARGET_BACKENDS=torchscript -DTorch_DIR=${Torch_DIR} ..
 make -j$(nproc)
 ```
 

@@ -264,7 +264,7 @@ export MMDEPLOY_DIR=$(pwd)
   ```bash
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
-  cmake -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
+  cmake -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_TARGET_BACKENDS=ort -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
   make -j$(nproc) && make install
   ```
 
@@ -273,7 +273,7 @@ export MMDEPLOY_DIR=$(pwd)
   ```bash
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
-  cmake -DTENSORRT_DIR=${TENSORRT_DIR} -DCUDNN_DIR=${CUDNN_DIR} ..
+  cmake -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_TARGET_BACKENDS=trt -DTENSORRT_DIR=${TENSORRT_DIR} -DCUDNN_DIR=${CUDNN_DIR} ..
   make -j$(nproc) && make install
   ```
 
@@ -282,7 +282,7 @@ export MMDEPLOY_DIR=$(pwd)
   ```bash
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
-  cmake -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn ..
+  cmake -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_TARGET_BACKENDS=ncnn -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn ..
   make -j$(nproc) && make install
   ```
 
@@ -291,7 +291,7 @@ export MMDEPLOY_DIR=$(pwd)
   ```bash
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
-  cmake -DTorch_DIR=${Torch_DIR} ..
+  cmake -DMMDEPLOY_TARGET_BACKENDS=torchscript -DTorch_DIR=${Torch_DIR} ..
   make -j$(nproc) && make install
   ```
 
@@ -319,10 +319,12 @@ pip install -e .
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
   cmake .. \
+      -DCMAKE_CXX_COMPILER=g++-7 \
       -DMMDEPLOY_BUILD_SDK=ON \
       -DMMDEPLOY_BUILD_EXAMPLES=ON \
       -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
       -DMMDEPLOY_TARGET_DEVICES=cpu \
+      -DMMDEPLOY_TARGET_BACKENDS=ort \
       -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR}
 
   make -j$(nproc) && make install
@@ -334,10 +336,12 @@ pip install -e .
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
   cmake .. \
+      -DCMAKE_CXX_COMPILER=g++-7 \
       -DMMDEPLOY_BUILD_SDK=ON \
       -DMMDEPLOY_BUILD_EXAMPLES=ON \
       -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
       -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
+      -DMMDEPLOY_TARGET_BACKENDS=trt \
       -Dpplcv_DIR=${PPLCV_DIR}/cuda-build/install/lib/cmake/ppl \
       -DTENSORRT_DIR=${TENSORRT_DIR} \
       -DCUDNN_DIR=${CUDNN_DIR}

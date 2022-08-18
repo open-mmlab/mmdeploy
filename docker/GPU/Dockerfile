@@ -85,7 +85,9 @@ RUN cd /root/workspace/mmdeploy &&\
         -DTENSORRT_DIR=${TENSORRT_DIR} \
         -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} \
         -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
-        -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" &&\
+        -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
+        -DMMDEPLOY_TARGET_BACKENDS="ort;trt" \
+        -DMMDEPLOY_CODEBASES=all &&\
     make -j$(nproc) && make install &&\
     export SPDLOG_LEVEL=warn &&\
     if [ -z ${VERSION} ] ; then echo "Built MMDeploy master for GPU devices successfully!" ; else echo "Built MMDeploy version v${VERSION} for GPU devices successfully!" ; fi

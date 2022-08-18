@@ -34,7 +34,7 @@ export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 ```bash
 cd ${MMDEPLOY_DIR} # To MMDeploy root directory
 mkdir -p build && cd build
-cmake -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
+cmake -DMMDEPLOY_TARGET_BACKENDS=ort -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
 make -j$(nproc)
 ```
 

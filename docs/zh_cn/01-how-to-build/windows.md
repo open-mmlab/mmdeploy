@@ -202,7 +202,7 @@ $env:MMDEPLOY_DIR="$pwd"
 ```powershell
 mkdir build -ErrorAction SilentlyContinue
 cd build
-cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DONNXRUNTIME_DIR="$env:ONNXRUNTIME_DIR"
+cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DMMDEPLOY_TARGET_BACKENDS="ort" -DONNXRUNTIME_DIR="$env:ONNXRUNTIME_DIR"
 cmake --build . --config Release -- /m
 cmake --install . --config Release
 ```
@@ -212,7 +212,7 @@ cmake --install . --config Release
 ```powershell
 mkdir build -ErrorAction SilentlyContinue
 cd build
-cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DTENSORRT_DIR="$env:TENSORRT_DIR" -DCUDNN_DIR="$env:CUDNN_DIR"
+cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DMMDEPLOY_TARGET_BACKENDS="trt" -DTENSORRT_DIR="$env:TENSORRT_DIR" -DCUDNN_DIR="$env:CUDNN_DIR"
 cmake --build . --config Release -- /m
 cmake --install . --config Release
 ```
@@ -250,6 +250,7 @@ pip install -e .
       -DMMDEPLOY_BUILD_EXAMPLES=ON `
       -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON `
       -DMMDEPLOY_TARGET_DEVICES="cpu" `
+      -DMMDEPLOY_TARGET_BACKENDS="ort" `
       -DONNXRUNTIME_DIR="$env:ONNXRUNTIME_DIR"
 
   cmake --build . --config Release -- /m
@@ -267,6 +268,7 @@ pip install -e .
     -DMMDEPLOY_BUILD_EXAMPLES=ON `
     -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON `
     -DMMDEPLOY_TARGET_DEVICES="cuda" `
+    -DMMDEPLOY_TARGET_BACKENDS="trt" `
     -Dpplcv_DIR="$env:PPLCV_DIR/pplcv-build/install/lib/cmake/ppl" `
     -DTENSORRT_DIR="$env:TENSORRT_DIR" `
     -DCUDNN_DIR="$env:CUDNN_DIR"

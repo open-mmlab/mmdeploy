@@ -36,7 +36,7 @@ make -j$(nproc)
 If you haven't installed TensorRT in the default path, Please add `-DTENSORRT_DIR` flag in CMake.
 
 ```bash
- cmake -DTENSORRT_DIR=${TENSORRT_DIR} ..
+ cmake -DMMDEPLOY_TARGET_BACKENDS=trt -DTENSORRT_DIR=${TENSORRT_DIR} ..
  make -j$(nproc)
 ```
 
