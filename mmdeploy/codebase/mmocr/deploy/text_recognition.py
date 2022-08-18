@@ -161,27 +161,17 @@ class TextRecognition(BaseTask):
                             f'inference with batch size '
                             f'{len(data_list)}')
 
-        data = collate(data_list, samples_per_gpu=len(imgs))
+        batch_data = collate(data_list, samples_per_gpu=len(imgs))
 
-        # process img_metas
-        if isinstance(data['img_metas'], list):
-            data['img_metas'] = [
-                img_metas.data[0] for img_metas in data['img_metas']
-            ]
-        else:
-            data['img_metas'] = data['img_metas'].data
-
-        if isinstance(data['img'], list):
-            data['img'] = [img.data for img in data['img']]
-            if isinstance(data['img'][0], list):
-                data['img'] = [img[0] for img in data['img']]
-        else:
-            data['img'] = data['img'].data
+        for k, v in batch_data.items():
+            # batch_size > 1
+            if isinstance(v, DataContainer):
+                batch_data[k] = v.data[0]
 
         if self.device != 'cpu':
-            data = scatter(data, [self.device])[0]
+            batch_data = scatter(batch_data, [self.device])[0]
 
-        return data, data['img']
+        return batch_data, batch_data['img']
 
     def visualize(self,
                   model: nn.Module,
