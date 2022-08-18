@@ -22,5 +22,5 @@ do
             ${docker_image} /bin/bash
     )
     docker exec ${container_id} git clone --recursive https://github.com/open-mmlab/mmdeploy.git
-    docker exec ${container_id} bash -c "/root/workspace/mmdeploy/tests/jenkins/scripts/docker_exec_for_build.sh ${codebase}"
+    docker exec ${container_id} bash -c "/root/workspace/mmdeploy/tests/jenkins/scripts/docker_exec_for_convert.sh ${codebase}"
 done
