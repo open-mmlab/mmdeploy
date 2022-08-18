@@ -7,7 +7,12 @@ function getFullName() {
     codebase_fullname=""
     if [ "$codebase" = "mmdet" ]; then codebase_fullname="mmdetection"; fi 
     if [ "$codebase" = "mmcls" ]; then codebase_fullname="mmclassification"; fi 
-    ## 待补充codebase
+    if [ "$codebase" = "mmdet3d" ]; then codebase_fullname="mmdetection3d"; fi 
+    if [ "$codebase" = "mmedit" ]; then codebase_fullname="mmediting"; fi 
+    if [ "$codebase" = "mmocr" ]; then codebase_fullname="mmocr"; fi 
+    if [ "$codebase" = "mmpose" ]; then codebase_fullname="mmpose"; fi 
+    if [ "$codebase" = "mmrotate" ]; then codebase_fullname="mmrotate"; fi 
+    if [ "$codebase" = "mmseg" ]; then codebase_fullname="mmsegmentation"; fi 
 }
 
 ## parameters

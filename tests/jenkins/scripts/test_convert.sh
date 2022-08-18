@@ -21,6 +21,6 @@ do
             -v /data2/benchmark:/root/workspace/mmdeploy_benchmark \
             ${docker_image} /bin/bash
     )
-    docker exec ${container_id} git clone --recursive https://github.com/open-mmlab/mmdeploy.git
+    docker exec ${container_id} git clone --recursive https://github.com/kumailf/mmdeploy.git
     docker exec ${container_id} bash -c "/root/workspace/mmdeploy/tests/jenkins/scripts/docker_exec_for_convert.sh ${codebase}"
 done
