@@ -346,9 +346,9 @@ You can also activate other engines after the model.
       -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
       -DMMDEPLOY_BUILD_EXAMPLES=ON \
       -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
+      -DMMDEPLOY_TARGET_BACKENDS=trt \
       -Dpplcv_DIR=${PPLCV_DIR}/cuda-build/install/lib/cmake/ppl \
       -DTENSORRT_DIR=${TENSORRT_DIR} \
-      -DMMDEPLOY_TARGET_BACKENDS=trt \
       -DCUDNN_DIR=${CUDNN_DIR}
 
   make -j$(nproc) && make install

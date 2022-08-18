@@ -43,7 +43,6 @@ if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "choose 'Release' as default build type" FORCE)
 endif ()
 
-
 if (MMDEPLOY_SHARED_LIBS)
     set(MMDEPLOY_LIB_TYPE SHARED)
 else ()
