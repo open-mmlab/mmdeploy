@@ -1,0 +1,52 @@
+#!/bin/bash
+
+function getFullName() {
+    codebase=$1
+    codebase_fullname=""
+    if [ "$codebase" = "mmdet" ]; then codebase_fullname="mmdetection"; fi 
+    if [ "$codebase" = "mmcls" ]; then codebase_fullname="mmclassification"; fi 
+    ## 待补充codebase
+}
+
+
+## params
+export codebase=mmdet
+export backend=(onnxruntime )
+getFullName $codebase
+
+
+cd /root/workspace
+
+for TORCH_VERSION in (1.8.0 1.9.0 1.10.0 1.11.0 1.12.0)
+do
+
+    conda activate torch${TORCH_VERSION}
+
+    ## build ${codebase}
+    git clone https://github.com/open-mmlab/${codebase_fullname}.git
+    /opt/conda/envs/torch${TORCH_VERSION}/bin/mim install ${codebase}
+
+    ## build mmdeploy
+    git clone --recursive https://github.com/open-mmlab/mmdeploy.git 
+    cd mmdeploy
+    mkdir -p build
+    cd build 
+    cmake .. -DMMDEPLOY_BUILD_SDK=ON -DMMDEPLOY_BUILD_EXAMPLES=ON \
+            -DMMDEPLOY_BUILD_SDK_MONOLITHIC=ON -DMMDEPLOY_BUILD_TEST=ON \
+            -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON -DMMDEPLOY_BUILD_SDK_JAVA_API=ON \
+            -DMMDEPLOY_BUILD_EXAMPLES=ON -DMMDEPLOY_ZIP_MODEL=ON \
+            -DMMDEPLOY_TARGET_BACKENDS="ort;pplnn;openvino;ncnn" 
+            -DMMDEPLOY_SHARED_LIBS=OFF
+            -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR}
+    make -j $(nproc) && make install
+    cd ../
+    pip install -v -e .
+
+    ## start regression   
+    pip install -r requirements/tests.txt 
+    python ./tools/regression_test.py \
+        --codebase ${codebase} \
+        # --backend ${backend} \
+        --work-dir "../mmdeploy_regression_working_dir/torch${TORCH_VERSION}"
+    # todo 校验转换是否成功
+done
