@@ -14,6 +14,15 @@ def version_major(txt: str) -> int:
     return int(txt.split('.')[0])
 
 
+def version_minor(txt: str) -> int:
+    return int(txt.split('.')[1])
+
+
+def cu_version_name(version: str) -> str:
+    versions = version.split('.')
+    return 'cu' + versions[0] + versions[1]
+
+
 def install_protobuf(dep_dir) -> int:
     """build and install protobuf.
 
@@ -37,14 +46,16 @@ def install_protobuf(dep_dir) -> int:
     os.system('make -j {} && make install'.format(g_jobs))
 
 
-def fix_env(work_dir, dep_dir) -> int:
+def ensure_env(work_dir, dep_dir) -> int:
     """check python, cmake and torch environment.
 
     Returns:
         int: _description_
     """
     envs = []
-    print('-' * 10 + 'check env' + '-' * 10)
+    print('-' * 10 + 'ensure env' + '-' * 10)
+
+    os.system('python3 -m ensurepip')
 
     sudo = 'sudo'
     if 'root' in cmd_result('whoami'):
@@ -114,21 +125,6 @@ def fix_env(work_dir, dep_dir) -> int:
             return -1, envs
         print('success')
 
-    # check torch and mmcv, they are not compulsory
-    mmcv_version = None
-    try:
-        import mmcv
-        mmcv_version = mmcv.__version__
-    except Exception:
-        pass
-
-    torch_version = None
-    try:
-        import torch
-        torch_version = torch.__version__
-    except Exception:
-        pass
-
     # wget
     wget = cmd_result('which wget')
     if wget is None or len(wget) < 1:
@@ -139,6 +135,37 @@ def fix_env(work_dir, dep_dir) -> int:
             print('Check wget failed.')
             return -1, envs
         print('success')
+
+    # check torch and mmcv, we try to install mmcv, it is not compulsory
+    mmcv_version = None
+    torch_version = None
+    try:
+        import torch
+        torch_version = torch.__version__
+
+        try:
+            import mmcv
+            mmcv_version = mmcv.__version__
+        except Exception:
+            # install mmcv
+            print('mmcv not found, try install mmcv ..', end='')
+            cuda_version = cmd_result(
+                " nvidia-smi  | grep CUDA | awk '{print $9}' ")
+            if cuda_version is not None and len(cuda_version) > 2:
+
+                format_version = str(version_major(torch_version)) + '.' + str(
+                    version_minor(torch_version)) + '.0'
+                mmcv_url = 'https://download.openmmlab.com/mmcv/dist/{}/torch{}/index.html'.format(  # noqa: E501
+                    cu_version_name(cuda_version), format_version)
+                http_ret = cmd_result('wget {}'.format(mmcv_url))
+                if '404' not in http_ret:
+                    mmcv_version = '1.5.0'
+                    cmd = 'python3 -m pip install mmcv-full={} -f {}'.format(
+                        mmcv_version, mmcv_url)
+                    os.system(cmd)
+                print('success')
+    except Exception:
+        pass
 
     # git
     git = cmd_result('which git')
@@ -295,10 +322,11 @@ def install_mmdeploy(work_dir, dep_dir, ncnn_cmake_dir):
 
 
 def main():
-    """auto install mmdeploy with ncnn To verify this script,
+    """Auto install mmdeploy with ncnn. To verify this script:
 
     1) use `sudo docker run -v /path/to/mmdeploy:/root/mmdeploy -v /path/to/Miniconda3-latest-Linux-x86_64.sh:/root/miniconda.sh -it ubuntu:18.04 /bin/bash` # noqa: E501
     2) install conda and setup python environment
+    3) run `python3 tools/scripts/build_ubuntu_x64_ncnn.py`
 
     Returns:
         _type_: _description_
@@ -311,7 +339,7 @@ def main():
             return -1
         os.mkdir(dep_dir)
 
-    success, envs = fix_env(work_dir, dep_dir)
+    success, envs = ensure_env(work_dir, dep_dir)
     if success != 0:
         return -1
 
@@ -321,7 +349,8 @@ def main():
         return -1
 
     if len(envs) > 0:
-        print('This script auto setup these environment:\n')
+        print(
+            'We recommend that you set the following environment variables:\n')
         for env in envs:
             print(env)
             print('\n')
