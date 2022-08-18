@@ -50,7 +50,7 @@ do
     ## start regression   
     python ./tools/regression_test.py \
         --codebase ${codebase} \
-        --backend ${backend} \
+
         --work-dir "../mmdeploy_regression_working_dir/torch${TORCH_VERSION}"
     # todo 校验转换是否成功
 done
