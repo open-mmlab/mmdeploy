@@ -2,8 +2,8 @@
 
 ## parameters
 
-export docker_image=$1
-export codebase_list=($2)
+docker_image=$1
+codebase_list=($2)
 
 ## build
 

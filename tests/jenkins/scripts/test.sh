@@ -1,8 +1,8 @@
 #!/bin/bash
+docker_image=$1
+codebase_list=($2)
 
-arr=($1)
-
-for i in ${arr[@]}
-do 
-    echo $i 
+for codebase in ${codebase_list[@]}
+do
+    echo $codebase 
 done

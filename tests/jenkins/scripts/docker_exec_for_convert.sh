@@ -11,7 +11,7 @@ function getFullName() {
 }
 
 ## parameters
-export codebase=$1
+codebase=$1
 # export backend=(onnxruntime )
 getFullName $codebase
 
