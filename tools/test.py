@@ -107,7 +107,9 @@ def main():
 
     # prepare the dataset loader
     dataset_type = 'test'
-    dataset = task_processor.build_dataset(model_cfg, dataset_type)
+
+    dataset = task_processor.build_dataset(
+        model_cfg, dataset_type, is_sort_dataset=False)
     # override samples_per_gpu that used for training
     model_cfg.data['samples_per_gpu'] = args.batch_size
     data_loader = task_processor.build_dataloader(
