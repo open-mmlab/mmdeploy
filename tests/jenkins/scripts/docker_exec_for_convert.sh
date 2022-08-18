@@ -40,8 +40,8 @@ do
             -DMMDEPLOY_BUILD_SDK_MONOLITHIC=ON -DMMDEPLOY_BUILD_TEST=ON \
             -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON -DMMDEPLOY_BUILD_SDK_JAVA_API=ON \
             -DMMDEPLOY_BUILD_EXAMPLES=ON -DMMDEPLOY_ZIP_MODEL=ON \
-            -DMMDEPLOY_TARGET_BACKENDS="ort;pplnn;openvino;ncnn" 
-            -DMMDEPLOY_SHARED_LIBS=OFF
+            -DMMDEPLOY_TARGET_BACKENDS="ort;pplnn;openvino;ncnn" \
+            -DMMDEPLOY_SHARED_LIBS=OFF \
             -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR}
     make -j $(nproc) && make install
     cd ../
