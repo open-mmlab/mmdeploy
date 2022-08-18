@@ -1,5 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
+import os
+from contextlib import contextmanager
 from typing import Dict, List, NamedTuple, Sequence
 
 import acl
@@ -10,10 +12,15 @@ from mmdeploy.utils import Backend
 from mmdeploy.utils.timer import TimeCounter
 from ..base import BACKEND_WRAPPER, BaseWrapper
 
-_from_acl_data_type = {0: np.float32, 3: np.int32, 9: np.int64}
+_from_acl_data_type = {0: torch.float32, 3: torch.int32, 9: torch.int64}
+
+ACL_MEMCPY_HOST_TO_HOST = 0
+ACL_MEMCPY_HOST_TO_DEVICE = 1
+ACL_MEMCPY_DEVICE_TO_HOST = 2
+ACL_MEMCPY_DEVICE_TO_DEVICE = 3
 
 
-class AclError(Exception):
+class Error(Exception):
     """Acl Exception."""
     pass
 
@@ -26,7 +33,7 @@ def _check(code: int, msg: str):
         msg (str): Error message.
     """
     if code != 0:
-        raise AclError(msg, code)
+        raise Error(msg, code)
 
 
 class DataBuffer:
@@ -43,9 +50,15 @@ class DataBuffer:
         self.size = size
         self.handle = acl.create_data_buffer(data, size)
 
+    def destroy(self):
+        if self.handle is not None:
+            print('acl.destroy_data_buffer(self.handle)')
+            acl.destroy_data_buffer(self.handle)
+            acl.rt.free(self.data)
+            self.handle = None
+
     def __del__(self):
-        acl.destroy_data_buffer(self.handle)
-        acl.rt.free(self.data)
+        self.destroy()
 
 
 class Dataset:
@@ -55,8 +68,16 @@ class Dataset:
         self.handle = acl.mdl.create_dataset()
         self.buffers = []
 
+    def destroy(self):
+        if self.handle is not None:
+            for buffer in self.buffers:
+                buffer.destroy()
+            print('acl.mdl.destroy_dataset(self.handle)')
+            acl.mdl.destroy_dataset(self.handle)
+            self.handle = None
+
     def __del__(self):
-        acl.mdl.destroy_dataset(self.handle)
+        self.destroy()
 
     def add_buffer(self, buffer: DataBuffer):
         """Add data buffer into the dataset.
@@ -114,8 +135,14 @@ class ModelDesc:
             self.outputs.append(
                 Binding(index, dims['name'], dims['dims'], data_type, size))
 
+    def destroy(self):
+        if self._desc is not None:
+            print('acl.mdl.destroy_desc(self._desc)')
+            acl.mdl.destroy_desc(self._desc)
+            self._desc = None
+
     def __del__(self):
-        acl.mdl.destroy_desc(self._desc)
+        self.destroy()
 
     def _get_input_dims(self, index: int):
         """Get the dimension of the input by index.
@@ -202,6 +229,80 @@ class ModelDesc:
         return dims
 
 
+class Context:
+
+    ref_count = 0
+    owned_acl = False
+
+    def __init__(self):
+        if not _is_torch_npu_available:
+            self._active = True
+            if Context.ref_count == 0:
+                print('acl.init()')
+                ret = acl.init()
+                if ret == 0:
+                    Context.owned_acl = True
+                elif ret == 100002:  # ACL_ERROR_REPEAT_INITIALIZE
+                    pass
+                else:
+                    _check(ret, 'acl.init')
+            Context.ref_count += 1
+        else:
+            self._active = False
+
+    def __del__(self):
+        self.destroy()
+
+    def destroy(self):
+        if not self._active:
+            return
+        Context.ref_count -= 1
+        if Context.ref_count == 0 and Context.owned_acl:
+            print('acl.finalize()')
+            ret = acl.finalize()
+            if ret == 0:
+                Context.owned_acl = False
+            elif ret == 100037:  # ACL_ERROR_REPEAT_FINALIZE
+                pass
+            else:
+                _check(ret, 'acl.finalize')
+        self._active = False
+
+
+_is_torch_npu_available = False
+
+if os.environ.get('MMDEPLOY_USE_TORCH_NPU'):
+    try:
+        import torch_npu
+        _is_torch_npu_available = True
+    except Exception:
+        print('import torch_npu failed, torch_npu is disabled')
+
+
+class Device:
+
+    def __init__(self, device: str):
+        if _is_torch_npu_available:
+            self._torch_device = torch.device(device)
+            self.index = self._torch_device.index
+            # force torch_npu to initialize
+            with torch_npu.npu.device(self.index):
+                pass
+        else:
+            self._torch_device = torch.device('cpu')
+            name_idx = device.split(':')
+            self.index = 0 if len(name_idx) == 1 else int(name_idx[-1])
+
+    @contextmanager
+    def __call__(self):
+        # torch_npu.npu.device() leads to segfault when index > 0
+        _check(acl.rt.set_device(self.index), 'acl.rt.set_device')
+        try:
+            yield
+        finally:
+            pass
+
+
 @BACKEND_WRAPPER.register_module(Backend.ASCEND.value)
 class AscendWrapper(BaseWrapper):
     """Ascend wrapper class for inference.
@@ -219,38 +320,40 @@ class AscendWrapper(BaseWrapper):
         >>> outputs = model(inputs)
     """
 
-    def __init__(self, model: str):
+    def __init__(self, model: str, device: str = 'npu'):
 
-        self.context = AscendWrapper._init_context(0)
+        self._context = Context()
+        self._device = Device(device)
 
-        self._model_id, ret = acl.mdl.load_from_file(model)
-        _check(ret, 'acl.mdl.load_from_file')
+        with self._device():
 
-        self._model_desc = ModelDesc(self._model_id)
+            self._model_id, ret = acl.mdl.load_from_file(model)
+            _check(ret, 'acl.mdl.load_from_file')
 
-        self._config_dynamic_shapes()
-        self._create_input_buffers()
-        self._create_output_buffers()
+            self._model_desc = ModelDesc(self._model_id)
 
-        output_names = [output.name for output in self._model_desc.outputs]
+            self._config_dynamic_shapes()
+            self._create_input_buffers()
+            self._create_output_buffers()
+
+            output_names = [output.name for output in self._model_desc.outputs]
 
         super().__init__(output_names)
 
+    def destroy(self):
+        if self._model_id is None:
+            return
+        with self._device():
+            self._input.destroy()
+            self._output.destroy()
+            self._model_desc.destroy()
+            print('acl.mdl.unload(self._model_id)')
+            acl.mdl.unload(self._model_id)
+            self._model_id = None
+        self._context.destroy()
+
     def __del__(self):
-        acl.mdl.unload(self._model_id)
-
-    @classmethod
-    def _init_context(cls, device_id):
-        if hasattr(cls, 'context'):
-            return cls.context
-
-        _check(acl.init(), 'acl.init')
-        _check(acl.rt.set_device(device_id), 'acl.rt.set_device')
-
-        cls.context, ret = acl.rt.create_context(device_id)
-        _check(ret, 'acl.rt.create_context')
-
-        return cls.context
+        self.destroy()
 
     def forward(self, inputs: Dict[str,
                                    torch.Tensor]) -> Dict[str, torch.Tensor]:
@@ -262,36 +365,64 @@ class AscendWrapper(BaseWrapper):
         Returns:
             Dict[str, torch.Tensor]: Key-value pairs of model outputs.
         """
-        input_shapes = [inputs[x.name].shape for x in self._model_desc.inputs]
 
-        output_shapes = self._reshape(input_shapes)
+        with self._device():
+            input_shapes = [
+                inputs[x.name].shape for x in self._model_desc.inputs
+            ]
 
-        for binding in self._model_desc.inputs:
-            buffer_data = self._input.buffers[binding.index].data
-            buffer_size = self._input.buffers[binding.index].size
-            tensor = inputs[binding.name].contiguous().cpu().numpy()
-            if tensor.dtype != binding.data_type:
-                tensor = tensor.astype(binding.data_type)
-            ptr, _ = tensor.__array_interface__['data']
-            ret = acl.rt.memcpy(buffer_data, buffer_size, ptr, tensor.nbytes,
-                                1)
+            output_shapes = self._reshape(input_shapes)
+
+            self._synchronize_torch_stream()
+
+            torch_device = self._device._torch_device
+
+            for binding in self._model_desc.inputs:
+                tensor = inputs[binding.name].to(
+                    torch_device, dtype=binding.data_type).contiguous()
+                self._copy_tensor_to_buffer(tensor,
+                                            self._input.buffers[binding.index])
+
+            outputs = {}
+            for binding in self._model_desc.outputs:
+                shape = output_shapes[binding.index]
+                tensor = torch.empty(
+                    shape, dtype=binding.data_type, device=torch_device)
+                if torch_device.type == 'npu':
+                    ret = acl.update_data_buffer(
+                        self._output.buffers[binding.index].handle,
+                        tensor.data_ptr(),
+                        tensor.element_size() * tensor.numel())
+                    _check(ret, 'acl.update_data_buffer')
+                outputs[binding.name] = tensor
+
+            self.__ascend_execute()
+
+            for binding in self._model_desc.outputs:
+                self._copy_buffer_to_tensor(
+                    self._output.buffers[binding.index], tensor)
+
+            return outputs
+
+    def _copy_tensor_to_buffer(self, tensor: torch.Tensor, buffer: DataBuffer):
+        if tensor.device.type == 'cpu':
+            kind = ACL_MEMCPY_HOST_TO_DEVICE
+            ret = acl.rt.memcpy(buffer.data, buffer.size, tensor.data_ptr(),
+                                tensor.element_size() * tensor.numel(), kind)
             _check(ret, 'acl.rt.memcpy')
+        else:
+            ret = acl.update_data_buffer(
+                buffer.handle, tensor.data_ptr(),
+                tensor.element_size() * tensor.numel())
+            _check(ret, 'acl.update_data_buffer')
 
-        self.__ascend_execute()
-
-        outputs = {}
-        for binding in self._model_desc.outputs:
-            buffer_data = self._output.buffers[binding.index].data
-            buffer_size = self._output.buffers[binding.index].size
-            tensor = np.empty(
-                output_shapes[binding.index], dtype=binding.data_type)
-            ptr, _ = tensor.__array_interface__['data']
-            ret = acl.rt.memcpy(ptr, tensor.nbytes, buffer_data, tensor.nbytes,
-                                2)
+    def _copy_buffer_to_tensor(self, buffer: DataBuffer, tensor: torch.Tensor):
+        if tensor.device.type == 'cpu':
+            kind = ACL_MEMCPY_DEVICE_TO_HOST
+            size = tensor.element_size() * tensor.numel()
+            ret = acl.rt.memcpy(tensor.data_ptr(), size, buffer.data, size,
+                                kind)
             _check(ret, 'acl.rt.memcpy')
-            outputs[binding.name] = torch.from_numpy(tensor)
-
-        return outputs
 
     def _verify_dims(self, src: Sequence[int], ref: Sequence[int]):
         """Check if src match ref."""
@@ -455,6 +586,10 @@ class AscendWrapper(BaseWrapper):
         self._output = Dataset()
         for binding in self._model_desc.outputs:
             self._output.add_buffer(DataBuffer(binding.size))
+
+    def _synchronize_torch_stream(self):
+        if _is_torch_npu_available:
+            torch.npu.current_stream(self._device._torch_device).synchronize()
 
     @TimeCounter.count_time('ascend')
     def __ascend_execute(self):

@@ -51,12 +51,49 @@ inline Result<T*> _p(T* ptr, SourceLocation loc = SourceLocation::current()) {
   }
 }
 
-struct AclInit {
-  AclInit() { _m(aclInit(nullptr)).value(); }
-  ~AclInit() { _m(aclFinalize()).value(); }
+struct Context {
+  Context() {
+    std::lock_guard lock{mutex_};
+    if (ref_count_++ != 0) {
+      return;
+    }
+    auto ret = aclInit(nullptr);
+    if (ret == ACL_SUCCESS) {
+      MMDEPLOY_INFO("ACL initialized.");
+      owned_acl_ = true;
+    } else if (ret == ACL_ERROR_REPEAT_INITIALIZE) {
+      MMDEPLOY_INFO("ACL has already been initialized.");
+    } else {
+      MMDEPLOY_ERROR("aclInit() failed: {}", ret);
+      assert(ret == 0);
+    }
+  }
+  ~Context() {
+    std::lock_guard lock{mutex_};
+    if (--ref_count_ != 0) {
+      return;
+    }
+    // skip aclFinalize if aclInit is not successfully called by us.
+    if (owned_acl_) {
+      auto ret = aclFinalize();
+      if (ret == ACL_SUCCESS) {
+        MMDEPLOY_INFO("ACL finalized.");
+        owned_acl_ = false;
+      } else if (ret == ACL_ERROR_REPEAT_FINALIZE) {
+        MMDEPLOY_INFO("ACL has already been finalized.");
+      } else {
+        MMDEPLOY_ERROR("aclFinalize() failed: {}", ret);
+      }
+    }
+  }
+  static bool owned_acl_;
+  static int ref_count_;
+  static std::mutex mutex_;
 };
 
-void InitACL() { static AclInit init; }
+bool Context::owned_acl_ = false;
+int Context::ref_count_ = 0;
+std::mutex Context::mutex_{};
 
 }  // namespace
 
@@ -78,10 +115,11 @@ AclNet::~AclNet() {
       OUTCOME_TRY(_m(aclrtFree(data)));
     }
     output_tensor_.clear();
-    aclmdlDestroyDataset(output_dataset_);
+    OUTCOME_TRY(_m(aclmdlDestroyDataset(output_dataset_)));
 
-    aclmdlDestroyDesc(model_desc_);
-    aclmdlUnload(model_id_);
+    OUTCOME_TRY(_m(aclmdlDestroyDesc(model_desc_)));
+    OUTCOME_TRY(_m(aclmdlUnload(model_id_)));
+    return success();
   };
   if (auto r = dtor(); !r) {
     MMDEPLOY_ERROR("uninit failed: {}", r.error().message().c_str());
@@ -342,13 +380,13 @@ Result<void> AclNet::Init(const Value& args) {
   auto name = args["name"].get<std::string>();
   auto model = context["model"].get<Model>();
 
+  device_id_ = context["device"].get<Device>().device_id();
+  acl_context_ = std::make_shared<Context>();
+
   OUTCOME_TRY(auto config, model.GetModelConfig(name));
   OUTCOME_TRY(auto binary, model.ReadFile(config.net));
 
-  InitACL();
-
-  // TODO: set device id
-  OUTCOME_TRY(_m(aclrtSetDevice(0)));
+  OUTCOME_TRY(_m(aclrtSetDevice(device_id_)));
 
   OUTCOME_TRY(_m(aclmdlLoadFromMem(binary.data(), binary.size(), &model_id_)));
 
@@ -392,6 +430,7 @@ Result<Span<Tensor>> AclNet::GetInputTensors() { return input_tensor_; }
 Result<Span<Tensor>> AclNet::GetOutputTensors() { return output_tensor_; }
 
 Result<void> AclNet::Reshape(Span<TensorShape> input_shapes) {
+  OUTCOME_TRY(_m(aclrtSetDevice(device_id_)));
   // Sanity checks
   if (input_shapes.size() != input_dims_.size()) {
     MMDEPLOY_ERROR("inconsistent num inputs");
@@ -566,6 +605,8 @@ Result<void> AclNet::ReshapeDynamicDims(Span<TensorShape> input_shapes) {
 
 Result<void> AclNet::Forward() {
   OUTCOME_TRY(cpu_stream_.Wait());
+
+  OUTCOME_TRY(_m(aclrtSetDevice(device_id_)));
 
   for (int i = 0; i < input_tensor_.size(); ++i) {
     auto buffer = aclmdlGetDatasetBuffer(input_dataset_, i);

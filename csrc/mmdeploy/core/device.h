@@ -315,6 +315,8 @@ class MMDEPLOY_API PlatformRegistry {
 
   int Register(Creator creator);
 
+  int AddAlias(const char* name, const char* target);
+
   int GetPlatform(const char *name, Platform *platform);
 
   int GetPlatform(int id, Platform *platform);
@@ -335,6 +337,7 @@ class MMDEPLOY_API PlatformRegistry {
     Platform platform;
   };
   std::vector<Entry> entries_;
+  std::vector<std::pair<std::string, std::string>> aliases_;
 };
 
 MMDEPLOY_API PlatformRegistry &gPlatformRegistry();

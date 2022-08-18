@@ -46,6 +46,7 @@ class AclNet : public Net {
   Result<void> CreateInputBuffers();
   Result<void> CreateOutputBuffers();
 
+  std::shared_ptr<void> acl_context_;
   Stream cpu_stream_;
   int32_t device_id_{0};
   uint32_t model_id_{(uint32_t)-1};
