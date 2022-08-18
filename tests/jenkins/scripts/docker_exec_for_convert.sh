@@ -20,11 +20,11 @@ codebase=$1
 # export backend=(onnxruntime )
 getFullName $codebase
 
-cd /root/workspace
+
 
 for TORCH_VERSION in 1.8.0 1.9.0 1.10.0 1.11.0 1.12.0
 do
-
+    cd /root/workspace
     conda activate torch${TORCH_VERSION}
 
     ## build ${codebase}
@@ -48,7 +48,7 @@ do
     pip install -v -e .
 
     ## start regression   
-    pip install -r requirements/tests.txt 
+    pip install -r requirements/tests.txt
     python ./tools/regression_test.py \
         --codebase ${codebase} \
         --backend ${backend} \
