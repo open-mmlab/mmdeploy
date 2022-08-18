@@ -32,7 +32,7 @@ do
     /opt/conda/envs/torch${TORCH_VERSION}/bin/mim install ${codebase}
 
     ## build mmdeploy
-    git clone --recursive https://github.com/open-mmlab/mmdeploy.git 
+
     cd mmdeploy
     mkdir -p build
     cd build 

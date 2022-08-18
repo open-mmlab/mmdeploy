@@ -2,7 +2,6 @@
 cd /root/workspace
 
 conda activate torch1.8.0
-git clone --recursive https://github.com/open-mmlab/mmdeploy.git 
 cd mmdeploy
 
 ## 校验动态库构建
