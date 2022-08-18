@@ -20,35 +20,34 @@ codebase=$1
 # export backend=(onnxruntime )
 getFullName $codebase
 
+## clone ${codebase}
+cd /root/workspace
+git clone https://github.com/open-mmlab/${codebase_fullname}.git
 
+## build mmdeploy
+cd mmdeploy
+mkdir -p build
+cd build 
+cmake .. -DMMDEPLOY_BUILD_SDK=ON -DMMDEPLOY_BUILD_EXAMPLES=ON \
+        -DMMDEPLOY_BUILD_SDK_MONOLITHIC=ON -DMMDEPLOY_BUILD_TEST=ON \
+        -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON -DMMDEPLOY_BUILD_SDK_JAVA_API=ON \
+        -DMMDEPLOY_BUILD_EXAMPLES=ON -DMMDEPLOY_ZIP_MODEL=ON \
+        -DMMDEPLOY_TARGET_BACKENDS="ort;pplnn;openvino;ncnn" \
+        -DMMDEPLOY_SHARED_LIBS=OFF \
+        -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR}
+make -j $(nproc) && make install
+cd ../
+pip install -v -e .
+pip install -r requirements/tests.txt
 
+## start convert
 for TORCH_VERSION in 1.8.0 1.9.0 1.10.0 1.11.0 1.12.0
 do
-    cd /root/workspace
     conda activate torch${TORCH_VERSION}
-
     ## build ${codebase}
-    git clone https://github.com/open-mmlab/${codebase_fullname}.git
     /opt/conda/envs/torch${TORCH_VERSION}/bin/mim install ${codebase}
 
-    ## build mmdeploy
-
-    cd mmdeploy
-    mkdir -p build
-    cd build 
-    cmake .. -DMMDEPLOY_BUILD_SDK=ON -DMMDEPLOY_BUILD_EXAMPLES=ON \
-            -DMMDEPLOY_BUILD_SDK_MONOLITHIC=ON -DMMDEPLOY_BUILD_TEST=ON \
-            -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON -DMMDEPLOY_BUILD_SDK_JAVA_API=ON \
-            -DMMDEPLOY_BUILD_EXAMPLES=ON -DMMDEPLOY_ZIP_MODEL=ON \
-            -DMMDEPLOY_TARGET_BACKENDS="ort;pplnn;openvino;ncnn" \
-            -DMMDEPLOY_SHARED_LIBS=OFF \
-            -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR}
-    make -j $(nproc) && make install
-    cd ../
-    pip install -v -e .
-
     ## start regression   
-    pip install -r requirements/tests.txt
     python ./tools/regression_test.py \
         --codebase ${codebase} \
         --backend ${backend} \
