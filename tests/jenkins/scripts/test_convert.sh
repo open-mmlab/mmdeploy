@@ -20,7 +20,7 @@ do
             -v ${log_dir}:/root/workspace/mmdeploy_regression_working_dir \
             -v /data2/benchmark:/root/workspace/mmdeploy_benchmark \
             --name ${codebase}-${docker_image} \
-            ${docker_image} "/bin/bash -c git clone https://github.com/kumailf/mmdeploy.git"
+            ${docker_image} "/bin/bash -c git clone --recursive https://github.com/open-mmlab/mmdeploy.git"
     )
     docker exec -d ${container_id} bash -c "/root/workspace/mmdeploy/tests/jenkins/scripts/docker_exec_for_build.sh ${codebase}"
 done
