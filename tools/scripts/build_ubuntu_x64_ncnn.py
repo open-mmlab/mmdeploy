@@ -2,7 +2,7 @@
 import os
 import time
 
-g_jobs = 14
+g_jobs = 2
 
 
 def cmd_result(txt: str):
@@ -46,7 +46,7 @@ def install_protobuf(dep_dir) -> int:
     os.system('make -j {} && make install'.format(g_jobs))
 
 
-def ensure_env(work_dir, dep_dir) -> int:
+def ensure_env(work_dir, dep_dir):
     """check python, cmake and torch environment.
 
     Returns:
@@ -67,10 +67,12 @@ def ensure_env(work_dir, dep_dir) -> int:
     )
 
     # check cmake version
+    import pdb
+    pdb.set_trace()
     cmake = cmd_result('which cmake')
     if cmake is None or len(cmake) < 1:
         print('cmake not found, try install cmake ..', end='')
-        os.system('python3 -m pip install cmake >=3.14.0')
+        os.system('python3 -m pip install cmake ==3.14.0')
 
         cmake = cmd_result('which cmake')
         if cmake is None or len(cmake) < 1:
@@ -107,22 +109,23 @@ def ensure_env(work_dir, dep_dir) -> int:
         os.system(
             '{} DEBIAN_FRONTEND="noninteractive" apt install software-properties-common -y'  # noqa: E501
             .format(sudo))  # noqa: E501
+        os.system('{} apt update'.format(sudo))
         if ubuntu is None or len(ubuntu) < 1 or version_major(ubuntu) <= 18:
             os.system(
                 '{} add-apt-repository ppa:ubuntu-toolchain-r/test -y'.format(
                     sudo))
         os.system('{} apt install gcc-7 g++-7 -y'.format(sudo))
+
+        gplus = cmd_result('which g++-7')
+        if gplus is None or len(gplus) < 1:
+            print('Check g++-7 failed.')
+            return -1, envs
         os.system(
             '{} update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 200'  # noqa: E501
             .format(sudo))
         os.system(
             '{} update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 200'  # noqa: E501
             .format(sudo))
-
-        gplus = cmd_result('which g++-7')
-        if gplus is None or len(gplus) < 1:
-            print('Check g++-7 failed.')
-            return -1, envs
         print('success')
 
     # wget
@@ -175,7 +178,7 @@ def ensure_env(work_dir, dep_dir) -> int:
         git = cmd_result('which git')
         if git is None or len(git) < 1:
             print('Check wget failed.')
-            return -1
+            return -1, envs
         print('success')
 
     # protoc
@@ -187,13 +190,17 @@ def ensure_env(work_dir, dep_dir) -> int:
     if ocv is None or len(ocv) < 1:
         print('ocv not found, try install git ..', end='')
         os.system(
+            '{} add-apt-repository ppa:ignaciovizzo/opencv3-nonfree -y'.format(
+                sudo))
+        os.system('{} apt update'.format(sudo))
+        os.system(
             '{} DEBIAN_FRONTEND="noninteractive"  apt install libopencv-dev -y'
             .format(sudo))
 
         ocv = cmd_result('which opencv_version')
         if ocv is None or len(ocv) < 1:
             print('Check ocv failed.')
-            return -1
+            return -1, envs
         print('success')
 
     # print all
