@@ -3,7 +3,7 @@
 ## func
 
 function getFullName() {
-    codebase=$1
+    local codebase=$1
     codebase_fullname=""
     if [ "$codebase" = "mmdet" ]; then codebase_fullname="mmdetection"; fi 
     if [ "$codebase" = "mmcls" ]; then codebase_fullname="mmclassification"; fi 
@@ -46,7 +46,7 @@ do
     pip install -r requirements/tests.txt 
     python ./tools/regression_test.py \
         --codebase ${codebase} \
-#        --backend ${backend} \
+        --backend ${backend} \
         --work-dir "../mmdeploy_regression_working_dir/torch${TORCH_VERSION}"
     # todo 校验转换是否成功
 done
