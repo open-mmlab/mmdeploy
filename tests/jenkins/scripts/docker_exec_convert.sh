@@ -17,8 +17,8 @@ function getFullName() {
 
 ## parameters
 codebase=$1
-getFullName $codebase
-# backends=$2
+getFullName $codebas
+# backends=$d2
 
 ## clone ${codebase}
 cd /root/workspace
@@ -27,7 +27,7 @@ git clone https://github.com/open-mmlab/${codebase_fullname}.git
 ## build mmdeploy
 cd mmdeploy
 mkdir -p build
-cd build 
+cd build
 cmake .. -DMMDEPLOY_BUILD_SDK=ON -DMMDEPLOY_BUILD_EXAMPLES=ON \
         -DMMDEPLOY_BUILD_SDK_MONOLITHIC=ON -DMMDEPLOY_BUILD_TEST=ON \
         -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON -DMMDEPLOY_BUILD_SDK_JAVA_API=ON \
@@ -37,7 +37,6 @@ cmake .. -DMMDEPLOY_BUILD_SDK=ON -DMMDEPLOY_BUILD_EXAMPLES=ON \
         -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR}
 make -j $(nproc) && make install
 cd ../
-
 
 ## start convert
 for TORCH_VERSION in 1.8.0 1.9.0 1.10.0 1.11.0 1.12.0
