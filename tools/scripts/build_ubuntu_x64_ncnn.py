@@ -45,7 +45,6 @@ def fix_env(work_dir, dep_dir) -> int:
     """
     envs = []
     print('-' * 10 + 'check env' + '-' * 10)
-    time.sleep(2)
 
     sudo = 'sudo'
     if 'root' in cmd_result('whoami'):
@@ -80,7 +79,9 @@ def fix_env(work_dir, dep_dir) -> int:
         print('make not found, try install make ..', end='')
         os.system('{} apt update --fix-missing'.format(sudo))
 
-        os.system('{} apt install make'.format(sudo))
+        os.system(
+            '{} DEBIAN_FRONTEND="noninteractive"  apt install make'.format(
+                sudo))
         make = cmd_result('which make')
         if make is None or len(make) < 1:
             print('Check make failed.')
@@ -92,7 +93,9 @@ def fix_env(work_dir, dep_dir) -> int:
     if gplus is None or len(gplus) < 1:
         # install g++
         print('g++-7 not found, try install g++-7 ..', end='')
-        os.system('{} apt install software-properties-common -y'.format(sudo))
+        os.system(
+            '{} DEBIAN_FRONTEND="noninteractive" apt install software-properties-common -y'  # noqa: E501
+            .format(sudo))  # noqa: E501
         if ubuntu is None or len(ubuntu) < 1 or version_major(ubuntu) <= 18:
             os.system(
                 '{} add-apt-repository ppa:ubuntu-toolchain-r/test -y'.format(
