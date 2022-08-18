@@ -11,7 +11,8 @@ pipeline {
             name: 'DOCKER_IMAGE', 
             choices: [
                 'mmdeploy-ci-ubuntu-18.04', 
-                'mmdeploy-ci-ubuntu-18.04-cu102', 
+                'mmdeploy-ci-ubuntu-18.04-cu102',
+                'mmdeploy-ci-ubuntu-18.04-cu111',
                 'mmdeploy-ci-ubuntu-20.04',
                 'mmdeploy-ci-ubuntu-20.04-cu113'
             ], 

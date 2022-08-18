@@ -37,20 +37,20 @@ cmake .. -DMMDEPLOY_BUILD_SDK=ON -DMMDEPLOY_BUILD_EXAMPLES=ON \
         -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR}
 make -j $(nproc) && make install
 cd ../
-pip install -v -e .
-pip install -r requirements/tests.txt
+
 
 ## start convert
 for TORCH_VERSION in 1.8.0 1.9.0 1.10.0 1.11.0 1.12.0
 do
+    /opt/conda/envs/torch${TORCH_VERSION}/bin/pip install -v -e .
+    /opt/conda/envs/torch${TORCH_VERSION}/bin/pip install -r requirements/tests.txt
     ## build ${codebase}
     /opt/conda/envs/torch${TORCH_VERSION}/bin/mim install ${codebase}
 
     ## start regression  
-    conda run --name torch${TORCH_VERSION} ""
-        python ./tools/regression_test.py \
-            --codebase ${codebase} \
-            --work-dir "../mmdeploy_regression_working_dir/torch${TORCH_VERSION}"
-        # todo 校验转换是否成功 
-    ""
+    conda activate torch${TORCH_VERSION}
+    python ./tools/regression_test.py \
+        --codebase ${codebase} \
+        --work-dir "../mmdeploy_regression_working_dir/torch${TORCH_VERSION}"
+
 done
