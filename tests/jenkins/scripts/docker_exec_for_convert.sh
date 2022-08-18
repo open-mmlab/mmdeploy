@@ -1,5 +1,7 @@
 #!/bin/bash
 
+## func
+
 function getFullName() {
     codebase=$1
     codebase_fullname=""
@@ -8,12 +10,10 @@ function getFullName() {
     ## 待补充codebase
 }
 
-
-## params
-export codebase=mmdet
-export backend=(onnxruntime )
+## parameters
+export codebase=$1
+# export backend=(onnxruntime )
 getFullName $codebase
-
 
 cd /root/workspace
 
@@ -46,7 +46,7 @@ do
     pip install -r requirements/tests.txt 
     python ./tools/regression_test.py \
         --codebase ${codebase} \
-        # --backend ${backend} \
+#        --backend ${backend} \
         --work-dir "../mmdeploy_regression_working_dir/torch${TORCH_VERSION}"
     # todo 校验转换是否成功
 done
