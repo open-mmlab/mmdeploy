@@ -8,11 +8,13 @@ ARG CUDNN=8.2.1
 ARG OPENCV_VERSION==4.5.5.62 
 ARG TORCH_VERSION=1.10.0
 ARG TORCHVISION_VERSION=0.11.0
-
+ARG MMCV_VERSION=1.5.3
 USER root
 
 
 WORKDIR /root/workspace
+ENV DEBIAN_FRONTEND=nointeractive
+
 
 ### change the system source for installing libs
 ARG USE_SRC_INSIDE=false
@@ -27,7 +29,7 @@ RUN if [ ${USE_SRC_INSIDE} == true ] ; \
 
 ### update apt and install libs
 RUN apt-get update &&\
-    apt-get install -y vim libsm6 libxext6 libxrender-dev libgl1-mesa-glx git wget libssl-dev libopencv-dev libspdlog-dev --no-install-recommends &&\
+    apt-get install -y vim curl cmake libsm6 libxext6 libxrender-dev libgl1-mesa-glx git wget libssl-dev libopencv-dev libspdlog-dev --no-install-recommends &&\
     rm -rf /var/lib/apt/lists/*
 
 RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh  && \
@@ -41,8 +43,17 @@ RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Mini
 RUN /opt/conda/bin/conda install pytorch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION} cudatoolkit=${CUDA} -c pytorch
 ENV PATH /opt/conda/bin:$PATH
 
-### install mmcv-full
-RUN /opt/conda/bin/pip install mmcv-full==${MMCV_VERSION} -f https://download.openmmlab.com/mmcv/dist/cu${CUDA//./}/torch${TORCH_VERSION}/index.html
+
+### install tensorrt
+ENV TENSORRT_DIR=/workspace/tensorrt
+RUN git clone -b release/8.2  https://github.com/nvidia/TensorRT tensorrt && \
+    cd tensorrt && \
+    git submodule update --init --recursive && \
+    mkdir -p build && cd build && \
+    cmake ..  cmake .. -DTRT_LIB_DIR=$TRT_LIBPATH -DTRT_OUT_DIR=`pwd`/out -DCMAKE_TOOLCHAIN_FILE=$TRT_OSSPATH/cmake/toolchains/cmake_aarch64.toolchain -DCUDA_VERSION=10.2 -DCUDNN_LIB=/pdk_files/cudnn/usr/lib/aarch64-linux-gnu/libcudnn.so -DCUBLAS_LIB=/usr/local/cuda-10.2/targets/aarch64-linux/lib/stubs/libcublas.so -DCUBLASLT_LIB=/usr/local/cuda-10.2/targets/aarch64-linux/lib/stubs/libcublasLt.so && \
+    make -j$(nproc)
+
+
 
 WORKDIR /root/workspace
 ### get onnxruntime
@@ -50,12 +61,9 @@ RUN wget https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTI
     && tar -zxvf onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz &&\
     pip install onnxruntime-gpu==${ONNXRUNTIME_VERSION}
 
-### cp trt from pip to conda
-RUN cp -r /usr/local/lib/python${PYTHON_VERSION}/dist-packages/tensorrt* /opt/conda/lib/python${PYTHON_VERSION}/site-packages/
 
 ### install mmdeploy
 ENV ONNXRUNTIME_DIR=/root/workspace/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}
-ENV TENSORRT_DIR=/workspace/tensorrt
 ARG VERSION
 RUN git clone https://github.com/open-mmlab/mmdeploy &&\
     cd mmdeploy &&\
