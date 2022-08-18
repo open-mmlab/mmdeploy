@@ -17,8 +17,8 @@ function getFullName() {
 
 ## parameters
 codebase=$1
-# export backend=(onnxruntime )
 getFullName $codebase
+# backends=$2
 
 ## clone ${codebase}
 cd /root/workspace
@@ -43,14 +43,14 @@ pip install -r requirements/tests.txt
 ## start convert
 for TORCH_VERSION in 1.8.0 1.9.0 1.10.0 1.11.0 1.12.0
 do
-    conda activate torch${TORCH_VERSION}
     ## build ${codebase}
     /opt/conda/envs/torch${TORCH_VERSION}/bin/mim install ${codebase}
 
-    ## start regression   
-    python ./tools/regression_test.py \
-        --codebase ${codebase} \
-
-        --work-dir "../mmdeploy_regression_working_dir/torch${TORCH_VERSION}"
-    # todo 校验转换是否成功
+    ## start regression  
+    conda run --name torch${TORCH_VERSION} ""
+        python ./tools/regression_test.py \
+            --codebase ${codebase} \
+            --work-dir "../mmdeploy_regression_working_dir/torch${TORCH_VERSION}"
+        # todo 校验转换是否成功 
+    ""
 done
