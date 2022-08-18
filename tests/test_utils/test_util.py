@@ -417,7 +417,7 @@ def test_AdvancedEnum():
     not importlib.util.find_spec('mmedit'), reason='requires mmedit')
 def test_export_info():
     with tempfile.TemporaryDirectory() as dir:
-        export2SDK(correct_deploy_cfg, correct_model_cfg, dir, '')
+        export2SDK(correct_deploy_cfg, correct_model_cfg, dir, '', 'cpu')
         deploy_json = os.path.join(dir, 'deploy.json')
         pipeline_json = os.path.join(dir, 'pipeline.json')
         detail_json = os.path.join(dir, 'detail.json')
