@@ -23,7 +23,8 @@ $ python3 tools/scripts/build_ubuntu_x64_ncnn.py
 
 这是已验证的安装脚本：
 
-|          script          | OS version  |
-| :----------------------: | :---------: |
-| build_ubuntu_x64_ncnn.py | 18.04/20.04 |
-| build_ubuntu_x64_ort.py  | 18.04/20.04 |
+|          script           | OS version  |
+| :-----------------------: | :---------: |
+| build_ubuntu_x64_ncnn.py  | 18.04/20.04 |
+|  build_ubuntu_x64_ort.py  | 18.04/20.04 |
+| build_ubuntu_x64_pplnn.py | 18.04/20.04 |

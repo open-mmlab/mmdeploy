@@ -286,11 +286,11 @@ def install_mmdeploy(work_dir, pplnn_cmake_dir):
 
 
 def main():
-    """Auto install mmdeploy with ort. To verify this script:
+    """Auto install mmdeploy with pplnn. To verify this script:
 
     1) use `sudo docker run -v /path/to/mmdeploy:/root/mmdeploy -v /path/to/Miniconda3-latest-Linux-x86_64.sh:/root/miniconda.sh -it ubuntu:18.04 /bin/bash` # noqa: E501
     2) install conda and setup python environment
-    3) run `python3 tools/scripts/build_ubuntu_x64_ort.py`
+    3) run `python3 tools/scripts/build_ubuntu_x64_pplnn.py`
 
     Returns:
         _type_: _description_
