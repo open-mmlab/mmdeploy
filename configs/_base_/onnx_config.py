@@ -6,4 +6,5 @@ onnx_config = dict(
     save_file='end2end.onnx',
     input_names=['input'],
     output_names=['output'],
-    input_shape=None)
+    input_shape=None,
+    optimize=True)

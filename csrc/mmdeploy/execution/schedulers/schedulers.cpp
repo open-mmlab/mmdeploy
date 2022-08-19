@@ -30,7 +30,7 @@ Scheduler CreateFromContext(std::unique_ptr<Context> context) {
   using EraseType = _type_erased::TypeErasedSchedulerImpl<SchedType, Value>;
   auto sched = new EraseType(context->GetScheduler());
   return Scheduler{std::shared_ptr<Scheduler::Impl>(
-      sched, [context = std::move(context)](EraseType* p) { delete p; })};
+      sched, [context = std::shared_ptr<Context>(std::move(context))](EraseType* p) { delete p; })};
 }
 
 }  // namespace

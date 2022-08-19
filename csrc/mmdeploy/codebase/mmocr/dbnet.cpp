@@ -35,7 +35,9 @@ class DBHead : public MMOCR {
     auto platform = Platform(device_.platform_id()).GetPlatformName();
     auto creator = Registry<DbHeadImpl>::Get().GetCreator(platform);
     if (!creator) {
-      MMDEPLOY_ERROR("DBHead: implementation for platform \"{}\" not found", platform);
+      MMDEPLOY_ERROR(
+          "DBHead: implementation for platform \"{}\" not found. Available platforms: {}", platform,
+          Registry<DbHeadImpl>::Get().List());
       throw_exception(eEntryNotFound);
     }
     impl_ = creator->Create(nullptr);

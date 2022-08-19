@@ -5,6 +5,8 @@
 #include "mmdeploy/core/tensor.h"
 #include "mmdeploy/core/utils/device_utils.h"
 #include "mmdeploy/preprocess/transform/transform.h"
+#include "opencv2/imgcodecs/imgcodecs.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
 #include "opencv_utils.h"
 #include "test_resource.h"
 #include "test_utils.h"
@@ -46,7 +48,7 @@ void TestLoad(const Value& cfg, const cv::Mat& mat, PixelFormat src_format,
   }
 }
 
-TEST_CASE("prepare image, that is LoadImageFromFile transform", "[load]") {
+TEST_CASE("prepare image, that is LoadImageFromFile transform", "[.load]") {
   auto gResource = MMDeployTestResources::Get();
   auto img_list = gResource.LocateImageResources("transform");
   REQUIRE(!img_list.empty());

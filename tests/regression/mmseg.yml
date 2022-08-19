@@ -29,6 +29,11 @@ onnxruntime:
     sdk_config: *sdk_dynamic
     deploy_config: configs/mmseg/segmentation_onnxruntime_static-1024x2048.py
 
+  pipeline_ort_static_fp32_512x512: &pipeline_ort_static_fp32_512x512
+    convert_image: *convert_image
+    backend_test: False
+    deploy_config: configs/mmseg/segmentation_onnxruntime_static-512x512.py
+
   pipeline_ort_dynamic_fp32: &pipeline_ort_dynamic_fp32
     convert_image: *convert_image
     deploy_config: configs/mmseg/segmentation_onnxruntime_dynamic.py
@@ -39,6 +44,11 @@ tensorrt:
     backend_test: *default_backend_test
     sdk_config: *sdk_dynamic
     deploy_config: configs/mmseg/segmentation_tensorrt_static-1024x2048.py
+
+  pipeline_trt_static_fp32_512x512: &pipeline_trt_static_fp32_512x512
+    convert_image: *convert_image
+    backend_test: False
+    deploy_config: configs/mmseg/segmentation_tensorrt_static-512x512.py
 
   pipeline_trt_static_fp16: &pipeline_trt_static_fp16
     convert_image: *convert_image
@@ -52,6 +62,10 @@ tensorrt:
     sdk_config: *sdk_dynamic
     deploy_config: configs/mmseg/segmentation_tensorrt-int8_static-1024x2048.py
 
+  pipeline_trt_static_fp16_512x512: &pipeline_trt_static_fp16_512x512
+    convert_image: *convert_image
+    backend_test: False
+    deploy_config: configs/mmseg/segmentation_tensorrt-fp16_static-512x512.py
 
   pipeline_trt_dynamic_fp32: &pipeline_trt_dynamic_fp32
     convert_image: *convert_image
@@ -81,6 +95,11 @@ openvino:
     convert_image: *convert_image
     backend_test: False
     deploy_config: configs/mmseg/segmentation_openvino_static-1024x2048.py
+
+  pipeline_openvino_static_fp32_512x512: &pipeline_openvino_static_fp32_512x512
+    convert_image: *convert_image
+    backend_test: False
+    deploy_config: configs/mmseg/segmentation_openvino_static-512x512.py
 
 ncnn:
   pipeline_ncnn_static_fp32: &pipeline_ncnn_static_fp32
@@ -338,3 +357,14 @@ models:
     pipelines:
       - *pipeline_ort_static_fp32
       - *pipeline_trt_static_fp16
+  - name: Segmenter
+    metafile: configs/segmenter/segmenter.yml
+    model_configs:
+      - configs/segmenter/segmenter_vit-s_mask_8x1_512x512_160k_ade20k.py
+      - configs/segmenter/segmenter_vit-s_linear_8x1_512x512_160k_ade20k.py
+    pipelines:
+      - *pipeline_ort_static_fp32_512x512
+      - *pipeline_trt_static_fp32_512x512
+      - *pipeline_openvino_static_fp32_512x512
+      - *pipeline_ncnn_static_fp32
+      - *pipeline_ts_fp32

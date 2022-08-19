@@ -55,22 +55,18 @@ def main():
 
     logger.info(f'onnx2tensorrt: \n\tonnx_path: {onnx_path} '
                 f'\n\tdeploy_cfg: {deploy_cfg_path}')
-    try:
-        from_onnx(
-            onnx_path,
-            output_prefix,
-            input_shapes=final_params['input_shapes'],
-            log_level=get_trt_log_level(),
-            fp16_mode=final_params.get('fp16_mode', False),
-            int8_mode=final_params.get('int8_mode', False),
-            int8_param=int8_param,
-            max_workspace_size=final_params.get('max_workspace_size', 0),
-            device_id=device_id)
+    from_onnx(
+        onnx_path,
+        output_prefix,
+        input_shapes=final_params['input_shapes'],
+        log_level=get_trt_log_level(),
+        fp16_mode=final_params.get('fp16_mode', False),
+        int8_mode=final_params.get('int8_mode', False),
+        int8_param=int8_param,
+        max_workspace_size=final_params.get('max_workspace_size', 0),
+        device_id=device_id)
 
-        logger.info('onnx2tensorrt success.')
-    except Exception as e:
-        logger.error(e)
-        logger.error('onnx2tensorrt failed.')
+    logger.info('onnx2tensorrt success.')
 
 
 if __name__ == '__main__':

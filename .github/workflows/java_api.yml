@@ -1,0 +1,72 @@
+name: java_api
+
+on:
+  push:
+    paths-ignore:
+      - "tools/**"
+
+  pull_request:
+    paths-ignore:
+      - "tools/**"
+      - "docs/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test_java_api:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - name: Install unittest dependencies
+        run: |
+          pip install cmake onnx
+      - name: update
+        run: sudo apt update
+      - name: Install OpenJDK
+        run: |
+          wget https://download.java.net/java/GA/jdk18/43f95e8614114aeaa8e8a5fcf20a682d/36/GPL/openjdk-18_linux-x64_bin.tar.gz
+          tar xvf openjdk-18_linux-x64_bin.tar.gz
+      - name: gcc-multilib
+        run: sudo apt install gcc-multilib g++-multilib wget libprotobuf-dev protobuf-compiler
+      - name: Install onnxruntime
+        run: |
+          wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
+          tar -zxvf onnxruntime-linux-x64-1.8.1.tgz
+          pushd onnxruntime-linux-x64-1.8.1
+          export ONNXRUNTIME_DIR=${PWD}
+          export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
+          popd
+      - name: Install opencv
+        run: |
+          sudo apt-get install libopencv-dev
+      - name: Build java class
+        run: |
+          pushd csrc/mmdeploy/apis/java
+          javac mmdeploy/*.java
+          popd
+          pushd demo/java
+          javac -classpath ../../csrc/mmdeploy/apis/java/ Utils.java
+          popd
+      - name: Install mmdeploy with onnxruntime backend and java api
+        run: |
+          mkdir -p build && pushd build
+          export LD_LIBRARY_PATH=/home/runner/work/mmdeploy/mmdeploy/ncnn/install/lib/:$LD_LIBRARY_PATH
+          cmake -DMMDEPLOY_BUILD_SDK=ON -DMMDEPLOY_BUILD_SDK_JAVA_API=ON -DMMDEPLOY_TARGET_BACKENDS=ort -DMMDEPLOY_CODEBASES=all -DONNXRUNTIME_DIR=~/work/mmdeploy/mmdeploy/onnxruntime-linux-x64-1.8.1  ..
+          make install
+          popd
+      - name: Test javademo
+        run: |
+          export JAVA_HOME=${PWD}/jdk-18
+          export PATH=${JAVA_HOME}/bin:${PATH}
+          export LD_LIBRARY_PATH=/build/lib:${LD_LIBRARY_PATH}
+          java --version
+          python3 .github/scripts/test_java_demo.py

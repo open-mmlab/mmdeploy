@@ -45,7 +45,6 @@ class ResizeImpl final : public ::mmdeploy::ResizeImpl {
  private:
   template <class T, int C, class... Args>
   ppl::common::RetCode DispatchImpl(Args&&... args) {
-#if PPLCV_VERSION_MAJOR >= 0 && PPLCV_VERSION_MINOR >= 6 && PPLCV_VERSION_PATCH >= 2
     if (arg_.interpolation == "bilinear") {
       return ppl::cv::cuda::Resize<T, C>(std::forward<Args>(args)...,
                                          ppl::cv::INTERPOLATION_LINEAR);
@@ -54,16 +53,6 @@ class ResizeImpl final : public ::mmdeploy::ResizeImpl {
       return ppl::cv::cuda::Resize<T, C>(std::forward<Args>(args)...,
                                          ppl::cv::INTERPOLATION_NEAREST_POINT);
     }
-#else
-    if (arg_.interpolation == "bilinear") {
-      return ppl::cv::cuda::Resize<T, C>(std::forward<Args>(args)...,
-                                         ppl::cv::INTERPOLATION_TYPE_LINEAR);
-    }
-    if (arg_.interpolation == "nearest") {
-      return ppl::cv::cuda::Resize<T, C>(std::forward<Args>(args)...,
-                                         ppl::cv::INTERPOLATION_TYPE_NEAREST_POINT);
-    }
-#endif
     return ppl::common::RC_UNSUPPORTED;
   }
 

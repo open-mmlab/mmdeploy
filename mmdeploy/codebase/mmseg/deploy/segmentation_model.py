@@ -37,23 +37,25 @@ class End2EndModel(BaseBackendModel):
             object.
     """
 
-    def __init__(
-        self,
-        backend: Backend,
-        backend_files: Sequence[str],
-        device: str,
-        class_names: Sequence[str],
-        palette: np.ndarray,
-        deploy_cfg: Union[str, mmcv.Config] = None,
-    ):
+    def __init__(self,
+                 backend: Backend,
+                 backend_files: Sequence[str],
+                 device: str,
+                 class_names: Sequence[str],
+                 palette: np.ndarray,
+                 deploy_cfg: Union[str, mmcv.Config] = None,
+                 **kwargs):
         super(End2EndModel, self).__init__(deploy_cfg=deploy_cfg)
         self.CLASSES = class_names
         self.PALETTE = palette
         self.deploy_cfg = deploy_cfg
         self._init_wrapper(
-            backend=backend, backend_files=backend_files, device=device)
+            backend=backend,
+            backend_files=backend_files,
+            device=device,
+            **kwargs)
 
-    def _init_wrapper(self, backend, backend_files, device):
+    def _init_wrapper(self, backend, backend_files, device, **kwargs):
         output_names = self.output_names
         self.wrapper = BaseBackendModel._build_wrapper(
             backend=backend,
@@ -61,7 +63,8 @@ class End2EndModel(BaseBackendModel):
             device=device,
             input_names=[self.input_name],
             output_names=output_names,
-            deploy_cfg=self.deploy_cfg)
+            deploy_cfg=self.deploy_cfg,
+            **kwargs)
 
     def forward(self, img: Sequence[torch.Tensor],
                 img_metas: Sequence[Sequence[dict]], *args, **kwargs):
@@ -163,8 +166,7 @@ class SDKEnd2EndModel(End2EndModel):
         Returns:
             list: A list contains predictions.
         """
-        masks = self.wrapper.invoke(
-            [img[0].contiguous().detach().cpu().numpy()])[0]
+        masks = self.wrapper.invoke(img[0].contiguous().detach().cpu().numpy())
         return masks
 
 

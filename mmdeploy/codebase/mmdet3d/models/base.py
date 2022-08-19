@@ -18,6 +18,6 @@ def base3ddetector__forward_test(ctx,
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet3d.models.detectors.base.Base3DDetector.forward')
-def base3ddetector__forward(ctx, self, *args):
+def base3ddetector__forward(ctx, self, *args, **kwargs):
     """Rewrite this function to run the model directly."""
     return self.forward_test(*args)

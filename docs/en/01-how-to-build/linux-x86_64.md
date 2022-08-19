@@ -11,8 +11,7 @@
     - [Build Model Converter](#build-model-converter)
       - [Build Custom Ops](#build-custom-ops)
       - [Install Model Converter](#install-model-converter)
-    - [Build SDK](#build-sdk)
-    - [Build Demo](#build-demo)
+    - [Build SDK and Demo](#build-sdk-and-demo)
 
 ______________________________________________________________________
 
@@ -110,13 +109,12 @@ sudo apt-get install libopencv-dev
   <tr>
     <td>pplcv </td>
     <td>A high-performance image processing library of openPPL.<br>
-  <b>It is optional which only be needed if <code>cuda</code> platform is required.
-  Now, MMDeploy supports v0.6.2 and has to use <code>git clone</code> to download it.</b><br>
+  <b>It is optional which only be needed if <code>cuda</code> platform is required.</b><br>
 <pre><code>
 git clone https://github.com/openppl-public/ppl.cv.git
 cd ppl.cv
 export PPLCV_DIR=$(pwd)
-git checkout tags/v0.6.2 -b v0.6.2
+git checkout tags/v0.7.0 -b v0.7.0
 ./build.sh cuda
 </code></pre>
    </td>
@@ -249,7 +247,7 @@ If you want to make the above environment variables permanent, you could add the
 ```bash
 echo '# set env for onnxruntime' >> ~/.bashrc
 echo "export ONNXRUNTIME_DIR=${ONNXRUNTIME_DIR}" >> ~/.bashrc
-echo 'export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH' >> ~/.bashrc
+echo "export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH" >> ~/.bashrc
 source ~/.bashrc
 ```
 
@@ -283,6 +281,11 @@ export MMDEPLOY_DIR=$(pwd)
     <td>{ON, OFF}</td>
     <td>OFF</td>
     <td>switch to build MMDeploy SDK python package</td>
+  </tr>
+  <tr>
+    <td>MMDEPLOY_BUILD_SDK_JAVA_API</td>
+    <td>{ON, OFF}</td>
+    <td>switch to build MMDeploy SDK Java API</td>
   </tr>
   <tr>
     <td>MMDEPLOY_BUILD_TEST</td>
@@ -348,7 +351,7 @@ If one of inference engines among ONNXRuntime, TensorRT, ncnn and libtorch is se
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
   cmake -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_TARGET_BACKENDS=ort -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
-  make -j$(nproc)
+  make -j$(nproc) && make install
   ```
 
 - **TensorRT** Custom Ops
@@ -357,7 +360,7 @@ If one of inference engines among ONNXRuntime, TensorRT, ncnn and libtorch is se
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
   cmake -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_TARGET_BACKENDS=trt -DTENSORRT_DIR=${TENSORRT_DIR} -DCUDNN_DIR=${CUDNN_DIR} ..
-  make -j$(nproc)
+  make -j$(nproc) && make install
   ```
 
 - **ncnn** Custom Ops
@@ -366,7 +369,7 @@ If one of inference engines among ONNXRuntime, TensorRT, ncnn and libtorch is se
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
   cmake -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_TARGET_BACKENDS=ncnn -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn ..
-  make -j$(nproc)
+  make -j$(nproc) && make install
   ```
 
 - **TorchScript** Custom Ops
@@ -375,7 +378,7 @@ If one of inference engines among ONNXRuntime, TensorRT, ncnn and libtorch is se
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
   cmake -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_TARGET_BACKENDS=torchscript -DTorch_DIR=${Torch_DIR} ..
-  make -j$(nproc)
+  make -j$(nproc) && make install
   ```
 
 #### Install Model Converter
@@ -391,7 +394,7 @@ pip install -e .
   To use optional dependencies, install them manually with `pip install -r requirements/optional.txt` or specify desired extras when calling `pip` (e.g. `pip install -e .[optional]`).
   Valid keys for the extras field are: `all`, `tests`, `build`, `optional`.
 
-### Build SDK
+### Build SDK and Demo
 
 MMDeploy provides two recipes as shown below for building SDK with ONNXRuntime and TensorRT as inference engines respectively.
 You can also activate other engines after the model.
@@ -405,6 +408,7 @@ You can also activate other engines after the model.
       -DCMAKE_CXX_COMPILER=g++-7 \
       -DMMDEPLOY_BUILD_SDK=ON \
       -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
+      -DMMDEPLOY_BUILD_EXAMPLES=ON \
       -DMMDEPLOY_TARGET_DEVICES=cpu \
       -DMMDEPLOY_TARGET_BACKENDS=ort \
       -DMMDEPLOY_CODEBASES=all \
@@ -422,6 +426,7 @@ You can also activate other engines after the model.
       -DCMAKE_CXX_COMPILER=g++-7 \
       -DMMDEPLOY_BUILD_SDK=ON \
       -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
+      -DMMDEPLOY_BUILD_EXAMPLES=ON \
       -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
       -DMMDEPLOY_TARGET_BACKENDS=trt \
       -DMMDEPLOY_CODEBASES=all \
@@ -431,12 +436,3 @@ You can also activate other engines after the model.
 
   make -j$(nproc) && make install
   ```
-
-### Build Demo
-
-```Bash
-cd ${MMDEPLOY_DIR}/build/install/example
-mkdir -p build && cd build
-cmake .. -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy
-make -j$(nproc)
-```
