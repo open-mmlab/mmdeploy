@@ -48,7 +48,6 @@ do
     /opt/conda/envs/torch${TORCH_VERSION}/bin/mim install ${codebase}
 
     ## start regression  
-    conda activate torch${TORCH_VERSION}
     conda run --name torch${TORCH_VERSION} "
         python ./tools/regression_test.py \
             --codebase ${codebase} \
