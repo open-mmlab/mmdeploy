@@ -12,7 +12,7 @@ docker build tests/jenkins/docker/${docker_image}/ -t ${docker_image}
 # docker run cmd for convert
 for codebase in ${codebase_list[@]}
 do
-    log_dir=/data2/regression_log/$(date +%Y%m%d)/$(date +%Y%m%d%H%M)/${codebase}
+    log_dir=/data2/regression_log/$(date +%Y%m%d)/$(date +%Y%m%d%H%M)
     mkdir -p ${log_dir}
     container_id=$(
         docker run -itd \
