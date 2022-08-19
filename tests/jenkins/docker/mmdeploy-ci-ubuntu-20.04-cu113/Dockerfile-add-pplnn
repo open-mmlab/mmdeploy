@@ -1,4 +1,4 @@
-ROM nvcr.io/nvidia/tensorrt:22.03-py3
+FROM nvcr.io/nvidia/tensorrt:22.03-py3
 ARG PYTHON_VERSION=3.8
 ARG CUDA=11.3
 ARG ONNXRUNTIME_VERSION=1.8.1
@@ -79,26 +79,4 @@ RUN git clone https://github.com/open-mmlab/mmdeploy &&\
 RUN git clone --recursive https://github.com/openppl-public/ppl.nn.git &&\
     cd ppl.nn &&\
     git checkout tags/v${PPLNN_VERSION} -b ${PPLNN_VERSION} &&\
-
-ENV pplnn_DIR=/root/workspace/ppl.nn/install/lib/cmake/ppl
-ENV PYTHONPATH=/root/workspace/ppl.nn/install/lib:$PYTHONPATH
-
-
-### build ncnn
-RUN git clone --recursive https://github.com/Tencent/ncnn.git &&\
-    cd ncnn &&\
-    git checkout tags/${NCNN_VERSION} -b ${NCNN_VERSION} && \
-    export NCNN_DIR=$(pwd) &&\
-    mkdir -p build && cd build &&\
-    cmake -DNCNN_VULKAN=OFF -DNCNN_PYTHON=ON -DNCNN_BUILD_TOOLS=ON -DCMAKE_INSTALL_PREFIX=$NCNN_DIR/install .. &&\
-    make -j $(nproc) && make install &&\
-    cd $NCNN_DIR/python &&\
-    /opt/conda/bin/pip install -e . 
-
-
-ARG PPLCV_VERSION=0.7.0
-### build sdk
-RUN git clone https://github.com/openppl-public/ppl.cv.git &&\
-    cd ppl.cv &&\
-    git checkout tags/v${PPLCV_VERSION} -b v${PPLCV_VERSION} &&\
-    ./build.sh cuda
+    bash build.sh -DPPLNN_USE_X86_64=ON -DPPLNN_ENABLE_PYTHON_API=ON -DCMAKE_INSTALL_PREFIX=$(pwd)/install 
