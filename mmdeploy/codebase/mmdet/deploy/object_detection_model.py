@@ -60,6 +60,7 @@ class End2EndModel(BaseBackendModel):
         super().__init__(deploy_cfg=deploy_cfg)
         self.CLASSES = class_names
         self.deploy_cfg = deploy_cfg
+        self.device = device
         self._init_wrapper(
             backend=backend, backend_files=backend_files, device=device)
 
@@ -78,6 +79,7 @@ class End2EndModel(BaseBackendModel):
             backend=backend,
             backend_files=backend_files,
             device=device,
+            input_names=[self.input_name],
             output_names=output_names,
             deploy_cfg=self.deploy_cfg)
 
@@ -109,36 +111,40 @@ class End2EndModel(BaseBackendModel):
         return outputs
 
     @staticmethod
-    def postprocessing_masks(det_bboxes: np.ndarray,
-                             det_masks: np.ndarray,
+    def postprocessing_masks(det_bboxes: Union[np.ndarray, torch.Tensor],
+                             det_masks: Union[np.ndarray, torch.Tensor],
                              img_w: int,
                              img_h: int,
-                             mask_thr_binary: float = 0.5) -> np.ndarray:
+                             device: str = 'cpu') -> torch.Tensor:
         """Additional processing of masks. Resizes masks from [num_det, 28, 28]
         to [num_det, img_w, img_h]. Analog of the 'mmdeploy.codebase.mmdet.
         models.roi_heads.fcn_mask_head._do_paste_mask' function.
 
         Args:
-            det_bboxes (np.ndarray): Bbox of shape [num_det, 4]
-            det_masks (np.ndarray): Masks of shape [num_det, 28, 28].
+            det_bboxes (np.ndarray | Tensor): Bbox of shape [num_det, 4]
+            det_masks (np.ndarray | Tensor): Masks of shape [num_det, 28, 28].
             img_w (int): Width of the original image.
             img_h (int): Height of the original image.
-            mask_thr_binary (float): The threshold for the mask.
+            device :(str): The device type.
 
         Returns:
-            np.ndarray: masks of shape [N, num_det, img_h, img_w].
+            torch.Tensor: masks of shape [N, num_det, img_h, img_w].
         """
         masks = det_masks
         bboxes = det_bboxes
-
+        device = torch.device(device)
         num_det = bboxes.shape[0]
         # Skip postprocessing if no detections are found.
         if num_det == 0:
-            return np.zeros((0, img_h, img_w))
+            return torch.zeros(
+                0, img_h, img_w, dtype=torch.float32, device=device)
 
         if isinstance(masks, np.ndarray):
-            masks = torch.tensor(masks)
-            bboxes = torch.tensor(bboxes)
+            masks = torch.tensor(masks, device=device)
+            bboxes = torch.tensor(bboxes, device=device)
+
+        masks = masks.to(device)
+        bboxes = bboxes.to(device)
 
         result_masks = []
         for bbox, mask in zip(bboxes, masks):
@@ -146,8 +152,10 @@ class End2EndModel(BaseBackendModel):
             x0_int, y0_int = 0, 0
             x1_int, y1_int = img_w, img_h
 
-            img_y = torch.arange(y0_int, y1_int, dtype=torch.float32) + 0.5
-            img_x = torch.arange(x0_int, x1_int, dtype=torch.float32) + 0.5
+            img_y = torch.arange(
+                y0_int, y1_int, dtype=torch.float32, device=device) + 0.5
+            img_x = torch.arange(
+                x0_int, x1_int, dtype=torch.float32, device=device) + 0.5
             x0, y0, x1, y1 = bbox
 
             img_y = (img_y - y0) / (y1 - y0) * 2 - 1
@@ -168,10 +176,8 @@ class End2EndModel(BaseBackendModel):
                 grid[None, :, :, :],
                 align_corners=False)
 
-            mask = img_masks
-            mask = (mask >= mask_thr_binary).to(dtype=torch.bool)
-            result_masks.append(mask.numpy())
-        result_masks = np.concatenate(result_masks, axis=1)
+            result_masks.append(img_masks)
+        result_masks = torch.cat(result_masks, 1)
         return result_masks.squeeze(0)
 
     def forward(self, img: Sequence[torch.Tensor], img_metas: Sequence[dict],
@@ -205,6 +211,7 @@ class End2EndModel(BaseBackendModel):
                 if isinstance(scale_factor, (list, tuple, np.ndarray)):
                     assert len(scale_factor) == 4
                     scale_factor = np.array(scale_factor)[None, :]  # [1,4]
+                scale_factor = torch.from_numpy(scale_factor).to(dets)
                 dets[:, :4] /= scale_factor
 
             if 'border' in img_metas[i]:
@@ -215,7 +222,7 @@ class End2EndModel(BaseBackendModel):
                 y_off = img_metas[i]['border'][0]
                 dets[:, [0, 2]] -= x_off
                 dets[:, [1, 3]] -= y_off
-                dets[:, :4] *= (dets[:, :4] > 0).astype(dets.dtype)
+                dets[:, :4] *= (dets[:, :4] > 0)
 
             dets_results = bbox2result(dets, labels, len(self.CLASSES))
 
@@ -233,18 +240,18 @@ class End2EndModel(BaseBackendModel):
                         'export_postprocess_mask', True)
                 if not export_postprocess_mask:
                     masks = End2EndModel.postprocessing_masks(
-                        dets[:, :4], masks, ori_w, ori_h)
+                        dets[:, :4], masks, ori_w, ori_h, self.device)
                 else:
                     masks = masks[:, :img_h, :img_w]
                 # avoid to resize masks with zero dim
                 if rescale and masks.shape[0] != 0:
-                    masks = masks.astype(np.float32)
-                    masks = torch.from_numpy(masks)
                     masks = torch.nn.functional.interpolate(
                         masks.unsqueeze(0), size=(ori_h, ori_w))
-                    masks = masks.squeeze(0).detach().numpy()
+                    masks = masks.squeeze(0)
                 if masks.dtype != bool:
                     masks = masks >= 0.5
+                # aligned with mmdet to easily convert to numpy
+                masks = masks.cpu()
                 segms_results = [[] for _ in range(len(self.CLASSES))]
                 for j in range(len(dets)):
                     segms_results[labels[j]].append(masks[j])
@@ -266,7 +273,6 @@ class End2EndModel(BaseBackendModel):
         """
         outputs = self.wrapper({self.input_name: imgs})
         outputs = self.wrapper.output_to_list(outputs)
-        outputs = [out.detach().cpu().numpy() for out in outputs]
         return outputs
 
     def show_result(self,
@@ -424,13 +430,14 @@ class PartitionTwoStageModel(End2EndModel):
             backend,
             backend_files[0:n],
             device,
-            partition0_output_names,
+            output_names=partition0_output_names,
             deploy_cfg=self.deploy_cfg)
 
         self.second_wrapper = BaseBackendModel._build_wrapper(
             backend,
             backend_files[n:2 * n],
-            device, ['cls_score', 'bbox_pred'],
+            device,
+            output_names=['cls_score', 'bbox_pred'],
             deploy_cfg=self.deploy_cfg)
 
     def partition0_postprocess(self, x: Sequence[torch.Tensor],
@@ -590,23 +597,21 @@ class NCNNEnd2EndModel(End2EndModel):
             imgs (torch.Tensor): Input image(s) in [N x C x H x W] format.
 
         Returns:
-            list[np.ndarray]: dets of shape [N, num_det, 5] and
+            list[torch.Tensor]: dets of shape [N, num_det, 5] and
                 class labels of shape [N, num_det].
         """
         _, _, H, W = imgs.shape
         outputs = self.wrapper({self.input_name: imgs})
         for key, item in outputs.items():
             if item is None:
-                return [np.zeros((1, 0, 5)), np.zeros((1, 0))]
+                return torch.zeros(1, 0, 5), torch.zeros(1, 0)
         out = self.wrapper.output_to_list(outputs)[0]
         labels = out[:, :, 0] - 1
-        scales = torch.tensor([W, H, W, H]).reshape(1, 1, 4)
+        scales = torch.tensor([W, H, W, H]).reshape(1, 1, 4).to(out)
         scores = out[:, :, 1:2]
         boxes = out[:, :, 2:6] * scales
         dets = torch.cat([boxes, scores], dim=2)
-        dets = dets.detach().cpu().numpy()
-        labels = labels.detach().cpu().numpy()
-        return [dets, labels]
+        return dets, labels
 
 
 @__BACKEND_MODEL.register_module('sdk')
@@ -632,7 +637,7 @@ class SDKEnd2EndModel(End2EndModel):
             list: A list contains predictions.
         """
         dets, labels, masks = self.wrapper.invoke(
-            [img[0].contiguous().detach().cpu().numpy()])[0]
+            img[0].contiguous().detach().cpu().numpy())
         det_results = bbox2result(dets[np.newaxis, ...], labels[np.newaxis,
                                                                 ...],
                                   len(self.CLASSES))

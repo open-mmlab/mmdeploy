@@ -1,0 +1,24 @@
+global_config:
+  cmake_flags: ['-A x64 -T v142']
+  cmake_envs:
+    MMDEPLOY_BUILD_SDK: "ON"
+    MMDEPLOY_BUILD_SDK_MONOLITHIC: "ON"
+    MMDEPLOY_BUILD_SDK_CXX_API: "ON"
+    MMDEPLOY_BUILD_EXAMPLES: "ON"
+    MMDEPLOY_SHARED_LIBS: "OFF"
+    MMDEPLOY_CODEBASES: "all"
+    OpenCV_DIR: "%OpenCV_DIR%"
+
+local_configs:
+  - BUILD_NAME: "mmdeploy-{mmdeploy_v}-{system}-{machine}-onnxruntime{ort_v}"
+    cmake_envs:
+      MMDEPLOY_TARGET_DEVICES: '"cpu"'
+      MMDEPLOY_TARGET_BACKENDS: "ort"
+      ONNXRUNTIME_DIR: "%ONNXRUNTIME_DIR%"
+  - BUILD_NAME: "mmdeploy-{mmdeploy_v}-{system}-{machine}-cuda{cuda_v}-tensorrt{trt_v}"
+    cmake_envs:
+      MMDEPLOY_TARGET_DEVICES: '"cuda"'
+      MMDEPLOY_TARGET_BACKENDS: "trt"
+      pplcv_DIR: "%PPLCV_DIR%\\pplcv-build\\install\\lib\\cmake\\ppl"
+      TENSORRT_DIR: "%TENSORRT_DIR%"
+      CUDNN_DIR: "%CUDNN_DIR%"

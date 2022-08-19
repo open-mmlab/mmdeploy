@@ -1,5 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # model settings
+import mmpose
+from packaging import version
+
 channel_cfg = dict(
     num_output_channels=17,
     dataset_joints=17,
@@ -47,6 +50,7 @@ data_cfg = dict(
 
 test_pipeline = [
     dict(type='LoadImageFromFile'),
+    # dict(type='TopDownGetBboxCenterScale'),
     dict(type='TopDownAffine'),
     dict(type='ToTensor'),
     dict(
@@ -61,6 +65,9 @@ test_pipeline = [
             'flip_pairs'
         ]),
 ]
+# compatible with mmpose >=v0.26.0
+if version.parse(mmpose.__version__) >= version.parse('0.26.0'):
+    test_pipeline.insert(1, dict(type='TopDownGetBboxCenterScale'))
 
 dataset_info = dict(
     dataset_name='coco',

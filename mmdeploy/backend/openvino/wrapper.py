@@ -42,7 +42,11 @@ class OpenVINOWrapper(BaseWrapper):
         self.net = self.ie.read_network(ir_model_file, bin_path)
         for input in self.net.input_info.values():
             batch_size = input.input_data.shape[0]
-            assert batch_size == 1, 'Only batch 1 is supported.'
+            dims = len(input.input_data.shape)
+            # if input is a image, it has (B,C,H,W) channels,
+            # need batch_size==1
+            assert not dims == 4 or batch_size == 1, \
+                'Only batch 1 is supported.'
         self.device = 'cpu'
         self.sess = self.ie.load_network(
             network=self.net, device_name=self.device.upper(), num_requests=1)
@@ -132,7 +136,7 @@ class OpenVINOWrapper(BaseWrapper):
         outputs = self.__process_outputs(outputs)
         return outputs
 
-    @TimeCounter.count_time()
+    @TimeCounter.count_time(Backend.OPENVINO.value)
     def __openvino_execute(
             self, inputs: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
         """Run inference with OpenVINO IE.

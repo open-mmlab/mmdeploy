@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import importlib
 import logging
 import os
 import tempfile
@@ -9,9 +10,9 @@ import pytest
 import torch.multiprocessing as mp
 
 import mmdeploy.utils as util
+from mmdeploy.backend.sdk.export_info import export2SDK
 from mmdeploy.utils import target_wrapper
 from mmdeploy.utils.constants import Backend, Codebase, Task
-from mmdeploy.utils.export_info import dump_info
 from mmdeploy.utils.test import get_random_name
 
 correct_model_path = 'tests/data/srgan.py'
@@ -24,7 +25,8 @@ empty_path = './a.py'
 
 @pytest.fixture(autouse=True, scope='module')
 def create_empty_file():
-    os.mknod(empty_file_path)
+    with open(empty_file_path, mode='w'):
+        pass
 
 
 class TestLoadConfigError:
@@ -144,7 +146,8 @@ class TestGetOnnxConfig:
 
 class TestIsDynamic:
 
-    config_with_onnx_config = mmcv.Config(dict(onnx_config=dict()))
+    config_with_onnx_config = mmcv.Config(
+        dict(onnx_config=dict(), backend_config=dict(type='default')))
 
     config_with_dynamic_axes = mmcv.Config(
         dict(
@@ -154,7 +157,8 @@ class TestIsDynamic:
                     0: 'batch',
                     2: 'height',
                     3: 'width'
-                }})))
+                }}),
+            backend_config=dict(type='default')))
 
     config_with_dynamic_axes_and_input_names = mmcv.Config(
         dict(
@@ -165,12 +169,14 @@ class TestIsDynamic:
                     0: 'batch',
                     2: 'height',
                     3: 'width'
-                }})))
+                }}),
+            backend_config=dict(type='default')))
 
     config_with_dynamic_axes_list = mmcv.Config(
         dict(
             onnx_config=dict(
-                type='onnx', input_names=['image'], dynamic_axes=[[0, 2, 3]])))
+                type='onnx', input_names=['image'], dynamic_axes=[[0, 2, 3]]),
+            backend_config=dict(type='default')))
 
     def test_is_dynamic_batch_none(self):
         assert util.is_dynamic_batch(
@@ -385,7 +391,7 @@ class TestParseDeviceID:
 
     def test_incorrect_cuda_device(self):
         device = 'cuda_5'
-        with pytest.raises(RuntimeError):
+        with pytest.raises(AssertionError):
             util.parse_device_id(device)
 
     def test_incorrect_device(self):
@@ -407,9 +413,11 @@ def test_AdvancedEnum():
         assert k.value == v
 
 
+@pytest.mark.skipif(
+    not importlib.util.find_spec('mmedit'), reason='requires mmedit')
 def test_export_info():
     with tempfile.TemporaryDirectory() as dir:
-        dump_info(correct_deploy_cfg, correct_model_cfg, dir, '')
+        export2SDK(correct_deploy_cfg, correct_model_cfg, dir, '')
         deploy_json = os.path.join(dir, 'deploy.json')
         pipeline_json = os.path.join(dir, 'pipeline.json')
         detail_json = os.path.join(dir, 'detail.json')
@@ -418,16 +426,17 @@ def test_export_info():
         assert os.path.exists(deploy_json)
 
 
-def test_target_wrapper():
+def wrap_target():
+    return 0
 
-    def target():
-        return 0
+
+def test_target_wrapper():
 
     log_level = logging.INFO
 
     ret_value = mp.Value('d', 0, lock=False)
     ret_value.value = -1
-    wrap_func = partial(target_wrapper, target, log_level, ret_value)
+    wrap_func = partial(target_wrapper, wrap_target, log_level, ret_value)
 
     process = mp.Process(target=wrap_func)
     process.start()
@@ -440,3 +449,25 @@ def test_get_root_logger():
     from mmdeploy.utils import get_root_logger
     logger = get_root_logger()
     logger.info('This is a test message')
+
+
+def test_get_library_version():
+    assert util.get_library_version('abcdefg') is None
+    try:
+        lib = importlib.import_module('setuptools')
+    except ImportError:
+        pass
+    else:
+        assert util.get_library_version('setuptools') == lib.__version__
+
+
+def test_get_codebase_version():
+    versions = util.get_codebase_version()
+    for k, v in versions.items():
+        assert v == util.get_library_version(k)
+
+
+def test_get_backend_version():
+    versions = util.get_backend_version()
+    for k, v in versions.items():
+        assert v == util.get_library_version(k)

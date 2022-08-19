@@ -1,64 +1,336 @@
-## Get Started
+# Get Started
 
-MMDeploy provides some useful tools. It is easy to deploy models in OpenMMLab to various platforms. You can convert models in our pre-defined pipeline or build a custom conversion pipeline by yourself. This guide will show you how to convert a model with MMDeploy and integrate MMDeploy's SDK to your application!
+MMDeploy provides useful tools for deploying OpenMMLab models to various platforms and devices.
 
-### Prerequisites
+With the help of them, you can not only do model deployment using our pre-defined pipelines but also customize your own deployment pipeline.
 
-First we should install MMDeploy following [build.md](./build.md). Note that the build steps are slightly different among the supported backends. Here are some brief introductions to these backends:
+## Introduction
 
-- [ONNXRuntime](./backends/onnxruntime.md): ONNX Runtime is a cross-platform inference and training machine-learning accelerator. It has best support for <span style="color:red">ONNX IR</span>.
-- [TensorRT](./backends/tensorrt.md): NVIDIA® TensorRT™ is an SDK for high-performance deep learning inference. It includes a deep learning inference optimizer and runtime that delivers low latency and high throughput for deep learning inference applications. It is a good choice if you want to deploy your model on <span style="color:red">NVIDIA devices</span>.
-- [ncnn](./backends/ncnn.md): ncnn is a high-performance neural network inference computing framework optimized for <span style="color:red">mobile platforms</span>. ncnn is deeply considerate about deployment and uses on <span style="color:red">mobile phones</span> from the beginning of design.
-- [PPLNN](./backends/pplnn.md): PPLNN, which is short for "PPLNN is a Primitive Library for Neural Network", is a high-performance deep-learning inference engine for efficient AI inferencing. It can run various ONNX models and has <span style="color:red">better support for OpenMMLab</span>.
-- [OpenVINO](./backends/openvino.md): OpenVINO™ is an open-source toolkit for optimizing and deploying AI inference. The open-source toolkit allows to seamlessly integrate with <span style="color:red">Intel AI hardware</span>, the latest neural network accelerator chips, the Intel AI stick, and embedded computers or edge devices.
+In MMDeploy, the deployment pipeline can be illustrated by a sequential modules, i.e., Model Converter, MMDeploy Model and Inference SDK.
 
-Choose the backend which can meet your demand and install it following the link provided above.
+![deploy-pipeline](https://user-images.githubusercontent.com/4560679/172306700-31b4c922-2f04-42ed-a1d6-c360f2f3048c.png)
 
-### Convert Model
+### Model Converter
 
-Once you have installed MMDeploy, you can convert the PyTorch model in the OpenMMLab model zoo to the backend model with one magic spell! For example, if you want to convert the Faster-RCNN in [MMDetection](https://github.com/open-mmlab/mmdetection) to TensorRT:
+Model Converter aims at converting training models from OpenMMLab into backend models that can be run on target devices.
+It is able to transform PyTorch model into IR model, i.e., ONNX, TorchScript, as well as convert IR model to backend model. By combining them together, we can achieve one-click **end-to-end** model deployment.
 
-```bash
-# Assume you have installed MMDeploy in ${MMDEPLOY_DIR} and MMDetection in ${MMDET_DIR}
-# If you do not know where to find the path. Just type `pip show mmdeploy` and `pip show mmdet` in your console.
+### MMDeploy Model
 
-python ${MMDEPLOY_DIR}/tools/deploy.py \
-    ${MMDEPLOY_DIR}/configs/mmdet/detection/detection_tensorrt_dynamic-320x320-1344x1344.py \
-    ${MMDET_DIR}/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py \
-    ${CHECKPOINT_DIR}/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth \
-    ${INPUT_IMG} \
-    --work-dir ${WORK_DIR} \
-    --device cuda:0 \
+MMDeploy Model is the result package exported by Model Converter.
+Beside the backend models, it also includes the model meta info, which will be used by Inference SDK.
+
+### Inference SDK
+
+Inference SDK is developed by C/C++, wrapping the preprocessing, model forward and postprocessing modules in model inference.
+It supports FFI such as C, C++, Python, C#, Java and so on.
+
+## Prerequisites
+
+In order to do an end-to-end model deployment, MMDeploy requires Python 3.6+ and PyTorch 1.5+.
+
+**Step 0.** Download and install Miniconda from the [official website](https://docs.conda.io/en/latest/miniconda.html).
+
+**Step 1.** Create a conda environment and activate it.
+
+```shell
+conda create --name mmdeploy python=3.8 -y
+conda activate mmdeploy
+```
+
+**Step 2.** Install PyTorch following [official instructions](https://pytorch.org/get-started/locally/), e.g.
+
+On GPU platforms:
+
+```shell
+conda install pytorch=={pytorch_version} torchvision=={torchvision_version} cudatoolkit={cudatoolkit_version} -c pytorch -c conda-forge
+```
+
+On CPU platforms:
+
+```shell
+conda install pytorch=={pytorch_version} torchvision=={torchvision_version} cpuonly -c pytorch
+```
+
+```{note}
+On GPU platform, please ensure that {cudatoolkit_version} matches your host CUDA toolkit version. Otherwise, it probably brings in conflicts when deploying model with TensorRT.
+```
+
+## Installation
+
+We recommend that users follow our best practices installing MMDeploy.
+
+**Step 0.** Install [MMCV](https://github.com/open-mmlab/mmcv).
+
+```shell
+pip install -U openmim
+mim install mmcv-full
+```
+
+**Step 1.** Install MMDeploy and inference engine
+
+We recommend using MMDeploy precompiled package as our best practice.
+You can download them from [here](https://github.com/open-mmlab/mmdeploy/releases) according to your target platform and device.
+
+The supported platform and device matrix is presented as following:
+
+<table>
+<thead>
+  <tr>
+    <th>OS-Arch</th>
+    <th>Device</th>
+    <th>ONNX Runtime</th>
+    <th>TensorRT</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td rowspan="2">Linux-x86_64</td>
+    <td>CPU</td>
+    <td>Y</td>
+    <td>N/A</td>
+  </tr>
+  <tr>
+    <td>CUDA</td>
+    <td>N</td>
+    <td>Y</td>
+  </tr>
+  <tr>
+    <td rowspan="2">Windows-x86_64</td>
+    <td>CPU</td>
+    <td>Y</td>
+    <td>N/A</td>
+  </tr>
+  <tr>
+    <td>CUDA</td>
+    <td>N</td>
+    <td>Y</td>
+  </tr>
+</tbody>
+</table>
+
+**Note: if MMDeploy prebuilt package doesn't meet your target platforms or devices, please [build MMDeploy from source](01-how-to-build/build_from_source.md)**
+
+Take the latest precompiled package as example, you can install it as follows:
+
+<details open>
+<summary><b>Linux-x86_64, CPU, ONNX Runtime 1.8.1</b></summary>
+
+```shell
+# install MMDeploy
+wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.7.0/mmdeploy-0.7.0-linux-x86_64-onnxruntime1.8.1.tar.gz
+tar -zxvf mmdeploy-0.7.0-linux-x86_64-onnxruntime1.8.1.tar.gz
+cd mmdeploy-0.7.0-linux-x86_64-onnxruntime1.8.1
+pip install dist/mmdeploy-0.7.0-py3-none-linux_x86_64.whl
+pip install sdk/python/mmdeploy_python-0.7.0-cp38-none-linux_x86_64.whl
+cd ..
+# install inference engine: ONNX Runtime
+pip install onnxruntime==1.8.1
+wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
+tar -zxvf onnxruntime-linux-x64-1.8.1.tgz
+export ONNXRUNTIME_DIR=$(pwd)/onnxruntime-linux-x64-1.8.1
+export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
+```
+
+</details>
+
+<details open>
+<summary><b>Linux-x86_64, CUDA 11.x, TensorRT 8.2.3.0</b></summary>
+
+```shell
+# install MMDeploy
+wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.7.0/mmdeploy-0.7.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
+tar -zxvf mmdeploy-v0.7.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
+cd mmdeploy-0.7.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
+pip install dist/mmdeploy-0.7.0-py3-none-linux_x86_64.whl
+pip install sdk/python/mmdeploy_python-0.7.0-cp38-none-linux_x86_64.whl
+cd ..
+# install inference engine: TensorRT
+# !!! Download TensorRT-8.2.3.0 CUDA 11.x tar package from NVIDIA, and extract it to the current directory
+pip install TensorRT-8.2.3.0/python/tensorrt-8.2.3.0-cp38-none-linux_x86_64.whl
+pip install pycuda
+export TENSORRT_DIR=$(pwd)/TensorRT-8.2.3.0
+export LD_LIBRARY_PATH=${TENSORRT_DIR}/lib:$LD_LIBRARY_PATH
+# !!! Download cuDNN 8.2.1 CUDA 11.x tar package from NVIDIA, and extract it to the current directory
+export CUDNN_DIR=$(pwd)/cuda
+export LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
+```
+
+</details>
+
+<details open>
+<summary><b>Windows-x86_64</b></summary>
+</details>
+
+Please learn its prebuilt package from [this](02-how-to-run/prebuilt_package_windows.md) guide.
+
+## Convert Model
+
+After the installation, you can enjoy the model deployment journey starting from converting PyTorch model to backend model by running `tools/deploy.py`.
+
+Based on the above settings, we provide an example to convert the Faster R-CNN in [MMDetection](https://github.com/open-mmlab/mmdetection) to TensorRT as below:
+
+```shell
+# clone mmdeploy to get the deployment config. `--recursive` is not necessary
+git clone https://github.com/open-mmlab/mmdeploy.git
+
+# clone mmdetection repo. We have to use the config file to build PyTorch nn module
+git clone https://github.com/open-mmlab/mmdetection.git
+cd mmdetection
+pip install -v -e .
+cd ..
+
+# download Faster R-CNN checkpoint
+wget -P checkpoints https://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/faster_rcnn_r50_fpn_1x_coco/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth
+
+# run the command to start model conversion
+python mmdeploy/tools/deploy.py \
+    mmdeploy/configs/mmdet/detection/detection_tensorrt_dynamic-320x320-1344x1344.py \
+    mmdetection/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py \
+    checkpoints/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth \
+    mmdetection/demo/demo.jpg \
+    --work-dir mmdeploy_model/faster-rcnn \
+    --device cuda \
     --dump-info
 ```
 
-`${MMDEPLOY_DIR}/tools/deploy.py` is a tool that does everything you need to convert a model. Read [how_to_convert_model](./tutorials/how_to_convert_model.md) for more details. The converted model and other meta-info will be found in `${WORK_DIR}`. And they make up of MMDeploy SDK Model that can be fed to MMDeploy SDK to do model inference.
+The converted model and its meta info will be found in the path specified by `--work-dir`.
+And they make up of MMDeploy Model that can be fed to MMDeploy SDK to do model inference.
 
-`detection_tensorrt_dynamic-320x320-1344x1344.py` is a config file that contains all arguments you need to customize the conversion pipeline. The name is formed as
+For more details about model conversion, you can read [how_to_convert_model](02-how-to-run/convert_model.md). If you want to customize the conversion pipeline, you can edit the config file by following [this](02-how-to-run/write_config.md) tutorial.
 
-```bash
-<task name>_<backend>-[backend options]_<dynamic support>.py
+```{tip}
+If MMDeploy-ONNXRuntime prebuild package is installed, you can convert the above model to onnx model and perform ONNX Runtime inference
+just by 'changing detection_tensorrt_dynamic-320x320-1344x1344.py' to 'detection_onnxruntime_dynamic.py' and making '--device' as 'cpu'.
 ```
 
-It is easy to find the deployment config you need by name. If you want to customize the conversion, you can edit the config file by yourself. Here is a tutorial about [how to write config](./tutorials/how_to_write_config.md).
+## Inference Model
 
-### Inference Model
+After model conversion, we can perform inference not only by Model Converter but also by Inference SDK.
 
-Now you can do model inference with the APIs provided by the backend. But what if you want to test the model instantly? We have some backend wrappers for you.
+### Inference by Model Converter
+
+Model Converter provides a unified API named as `inference_model` to do the job, making all inference backends API transparent to users.
+Take the previous converted Faster R-CNN tensorrt model for example,
 
 ```python
 from mmdeploy.apis import inference_model
-
-result = inference_model(model_cfg, deploy_cfg, backend_files, img=img, device=device)
+result = inference_model(
+  model_cfg='mmdetection/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py',
+  deploy_cfg='mmdeploy/configs/mmdet/detection/detection_tensorrt_dynamic-320x320-1344x1344.py',
+  backend_files=['mmdeploy_model/faster-rcnn/end2end.engine'],
+  img='mmdetection/demo/demo.jpg',
+  device='cuda:0')
 ```
 
-The `inference_model` will create a wrapper module and do the inference for you. The result has the same format as the original OpenMMLab repo.
+```{note}
+'backend_files' in this API refers to backend engine file path, which MUST be put in a list, since some inference engines like OpenVINO and ncnn separate the network structure and its weights into two files.
+```
 
-### Evaluate Model
+### Inference by SDK
 
-You might wonder that does the backend model have the same precision as the original one? How fast can the model run? MMDeploy provides tools to test the model. Take the converted TensorRT Faster-RCNN as an example:
+You can directly run MMDeploy demo programs in the precompiled package to get inference results.
 
-```bash
+```shell
+cd mmdeploy-0.7.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
+# run python demo
+python sdk/example/python/object_detection.py cuda ../mmdeploy_model/faster-rcnn ../mmdetection/demo/demo.jpg
+# run C/C++ demo
+export LD_LIBRARY_PATH=$(pwd)/sdk/lib:$LD_LIBRARY_PATH
+./sdk/bin/object_detection cuda ../mmdeploy_model/faster-rcnn ../mmdetection/demo/demo.jpg
+```
+
+```{note}
+In the above command, the input model is SDK Model path. It is NOT engine file path but actually the path passed to --work-dir. It not only includes engine files but also meta information like 'deploy.json' and 'pipeline.json'.
+```
+
+In the next section, we will provide examples of deploying the converted Faster R-CNN model talked above with SDK different FFI (Foreign Function Interface).
+
+#### Python API
+
+```python
+from mmdeploy_python import Detector
+import cv2
+
+img = cv2.imread('mmdetection/demo/demo.jpg')
+
+# create a detector
+detector = Detector(model_path='mmdeploy_models/faster-rcnn', device_name='cuda', device_id=0)
+# run the inference
+bboxes, labels, _ = detector(img)
+# Filter the result according to threshold
+indices = [i for i in range(len(bboxes))]
+for index, bbox, label_id in zip(indices, bboxes, labels):
+  [left, top, right, bottom], score = bbox[0:4].astype(int),  bbox[4]
+  if score < 0.3:
+      continue
+  cv2.rectangle(img, (left, top), (right, bottom), (0, 255, 0))
+
+cv2.imwrite('output_detection.png', img)
+```
+
+You can find more examples from [here](https://github.com/open-mmlab/mmdeploy/tree/master/demo/python).
+
+#### C++ API
+
+Using SDK C++ API should follow next pattern,
+
+![image](https://user-images.githubusercontent.com/4560679/182554739-7fff57fc-5c84-44ed-b139-4749fae27404.png)
+
+Now let's apply this procedure on the above Faster R-CNN model.
+
+```C++
+#include <cstdlib>
+#include <opencv2/opencv.hpp>
+#include "mmdeploy/detector.hpp"
+
+int main() {
+  const char* device_name = "cuda";
+  int device_id = 0;
+  std::string model_path = "mmdeploy_model/faster-rcnn";
+  std::string image_path = "mmdetection/demo/demo.jpg";
+
+  // 1. load model
+  mmdeploy::Model model(model_path);
+  // 2. create predictor
+  mmdeploy::Detector detector(model, mmdeploy::Device{device_name, device_id});
+  // 3. read image
+  cv::Mat img = cv::imread(image_path);
+  // 4. inference
+  auto dets = detector.Apply(img);
+  // 5. deal with the result. Here we choose to visualize it
+  for (int i = 0; i < dets.size(); ++i) {
+    const auto& box = dets[i].bbox;
+    fprintf(stdout, "box %d, left=%.2f, top=%.2f, right=%.2f, bottom=%.2f, label=%d, score=%.4f\n",
+            i, box.left, box.top, box.right, box.bottom, dets[i].label_id, dets[i].score);
+    if (bboxes[i].score < 0.3) {
+      continue;
+    }
+    cv::rectangle(img, cv::Point{(int)box.left, (int)box.top},
+                  cv::Point{(int)box.right, (int)box.bottom}, cv::Scalar{0, 255, 0});
+  }
+  cv::imwrite("output_detection.png", img);
+  return 0;
+}
+```
+
+When you build this example, try to add MMDeploy package in your CMake project as following. Then pass `-DMMDeploy_DIR` to cmake, which indicates the path where `MMDeployConfig.cmake` locates. You can find it in the prebuilt package.
+
+```Makefile
+find_package(MMDeploy REQUIRED)
+target_link_libraries(${name} PRIVATE mmdeploy ${OpenCV_LIBS})
+```
+
+For more SDK C++ API usages, please read these [samples](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csrc).
+
+For the rest C, C# and Java API usages, please read [C demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csrc), [C# demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csharp) and [Java demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/java) respectively.
+We'll talk about them more in our next release.
+
+## Evaluate Model
+
+You can test the performance of deployed model using `tool/test.py`. For example,
+
+```shell
 python ${MMDEPLOY_DIR}/tools/test.py \
     ${MMDEPLOY_DIR}/configs/detection/detection_tensorrt_dynamic-320x320-1344x1344.py \
     ${MMDET_DIR}/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py \
@@ -67,151 +339,8 @@ python ${MMDEPLOY_DIR}/tools/test.py \
     --device cuda:0
 ```
 
-Read [how to evaluate a model](./tutorials/how_to_evaluate_a_model.md) for more details about how to use `tools/test.py`
-
-### Integrate MMDeploy SDK
-
-Make sure to turn on `MMDEPLOY_BUILD_SDK` to build and install SDK by following [build.md](./build.md).
-After that, the structure in the installation folder will show as follows,
-
-```
-install
-├── example
-├── include
-│   ├── c
-│   └── cpp
-└── lib
-```
-where `include/c` and `include/cpp` correspond to C and C++ API respectively.
-
-**Caution: The C++ API is highly volatile and not recommended at the moment.**
-
-In the example directory, there are several examples involving classification, object detection, image segmentation and so on.
-You can refer to these examples to learn how to use MMDeploy SDK's C API and how to link ${MMDeploy_LIBS} to your application.
-
-### A From-scratch Example
-
-Here is an example of how to deploy and inference Faster R-CNN model of MMDetection from scratch.
-
-#### Create Virtual Environment and Install MMDetection.
-
-Please run the following command in Anaconda environment to [install MMDetection](https://mmdetection.readthedocs.io/en/latest/get_started.html#a-from-scratch-setup-script).
-
-```bash
-conda create -n openmmlab python=3.7 -y
-conda activate openmmlab
-
-conda install pytorch==1.8.0 torchvision==0.9.0 cudatoolkit=10.2 -c pytorch -y
-
-# install mmcv
-pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/cu102/torch1.8/index.html
-
-# install mmdetection
-git clone https://github.com/open-mmlab/mmdetection.git
-cd mmdetection
-pip install -r requirements/build.txt
-pip install -v -e .
+```{note}
+Regarding the --model option, it represents the converted engine files path when using Model Converter to do performance test. But when you try to test the metrics by Inference SDK, this option refers to the directory path of MMDeploy Model.
 ```
 
-#### Download the Checkpoint of Faster R-CNN
-
-Download the checkpoint from this [link](https://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/faster_rcnn_r50_fpn_1x_coco/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth) and put it in the `{MMDET_ROOT}/checkpoints` where `{MMDET_ROOT}` is the root directory of your MMDetection codebase.
-
-#### Install MMDeploy and ONNX Runtime
-
-Please run the following command in Anaconda environment to [install MMDeploy](./build.md).
-```bash
-conda activate openmmlab
-
-git clone https://github.com/open-mmlab/mmdeploy.git
-cd mmdeploy
-git submodule update --init --recursive
-pip install -e .
-```
-
-Once we have installed the MMDeploy, we should select an inference engine for model inference. Here we take ONNX Runtime as an example. Run the following command to [install ONNX Runtime](./backends/onnxruntime.md):
-```bash
-pip install onnxruntime==1.8.1
-```
-
-Then download the ONNX Runtime library to build the mmdeploy plugin for ONNX Runtime:
-```bash
-wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
-
-tar -zxvf onnxruntime-linux-x64-1.8.1.tgz
-cd onnxruntime-linux-x64-1.8.1
-export ONNXRUNTIME_DIR=$(pwd)
-export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
-
-cd ${MMDEPLOY_DIR} # To MMDeploy root directory
-mkdir -p build && cd build
-
-# build ONNXRuntime custom ops
-cmake -DMMDEPLOY_TARGET_BACKENDS=ort -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
-make -j$(nproc)
-
-# build MMDeploy SDK
-cmake -DMMDEPLOY_BUILD_SDK=ON \
-      -DCMAKE_CXX_COMPILER=g++-7 \
-      -DOpenCV_DIR=/path/to/OpenCV/lib/cmake/OpenCV \
-      -Dspdlog_DIR=/path/to/spdlog/lib/cmake/spdlog \
-      -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} \
-      -DMMDEPLOY_TARGET_BACKENDS=ort \
-      -DMMDEPLOY_CODEBASES=mmdet ..
-make -j$(nproc) && make install
-```
-
-#### Model Conversion
-
-Once we have installed MMDetection, MMDeploy, ONNX Runtime and built plugin for ONNX Runtime, we can convert the Faster R-CNN to a `.onnx` model file which can be received by ONNX Runtime. Run following commands to use our deploy tools:
-
-```bash
-# Assume you have installed MMDeploy in ${MMDEPLOY_DIR} and MMDetection in ${MMDET_DIR}
-# If you do not know where to find the path. Just type `pip show mmdeploy` and `pip show mmdet` in your console.
-
-python ${MMDEPLOY_DIR}/tools/deploy.py \
-    ${MMDEPLOY_DIR}/configs/mmdet/detection/detection_onnxruntime_dynamic.py \
-    ${MMDET_DIR}/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py \
-    ${MMDET_DIR}/checkpoints/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth \
-    ${MMDET_DIR}/demo/demo.jpg \
-    --work-dir work_dirs \
-    --device cpu \
-    --show \
-    --dump-info
-```
-
-If the script runs successfully, two images will display on the screen one by one. The first image is the infernce result of ONNX Runtime and the second image is the result of PyTorch. At the same time, an onnx model file `end2end.onnx` and three json files (SDK config files) will generate on the work directory `work_dirs`.
-
-#### Run MMDeploy SDK demo
-
-After model conversion, SDK Model is saved in directory ${work_dir}.
-Here is a recipe for building & running object detection demo.
-```Bash
-cd build/install/example
-
-# path to onnxruntime ** libraries **
-export LD_LIBRARY_PATH=/path/to/onnxruntime/lib
-
-mkdir -p build && cd build
-cmake -DOpenCV_DIR=path/to/OpenCV/lib/cmake/OpenCV \
-      -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy ..
-make object_detection
-
-# suppress verbose logs
-export SPDLOG_LEVEL=warn
-
-# running the object detection example
-./object_detection cpu ${work_dirs} ${path/to/an/image}
-
-```
-If the demo runs successfully, an image named "output_detection.png" is supposed to be found showing detection objects.
-
-### Add New Model Support?
-
-If the models you want to deploy have not been supported yet in MMDeploy, you can try to support them by yourself. Here are some documents that may help you:
-- Read [how_to_support_new_models](./tutorials/how_to_support_new_models.md) to learn more about the rewriter.
-
-
-
-
-Finally, we welcome your PR!
+You can read [how to evaluate a model](02-how-to-run/profile_model.md) for more details.

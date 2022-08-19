@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import os.path as osp
 import subprocess
 import tempfile
 
@@ -10,6 +11,7 @@ from mmdeploy.utils.constants import Backend
 from mmdeploy.utils.test import check_backend
 
 onnx_file = tempfile.NamedTemporaryFile(suffix='.onnx').name
+ts_file = tempfile.NamedTemporaryFile(suffix='.pt').name
 test_img = torch.rand(1, 3, 8, 8)
 output_names = ['output']
 input_names = ['input']
@@ -44,20 +46,39 @@ def generate_onnx_file():
             dynamic_axes=None)
 
 
+@pytest.fixture(autouse=True, scope='module')
+def generate_torchscript_file():
+    import mmcv
+
+    backend = Backend.TORCHSCRIPT.value
+    deploy_cfg = mmcv.Config({'backend_config': dict(type=backend)})
+
+    from mmdeploy.apis.torch_jit import trace
+    context_info = dict(deploy_cfg=deploy_cfg)
+    output_prefix = osp.splitext(ts_file)[0]
+
+    example_inputs = torch.rand(1, 3, 8, 8)
+    trace(
+        model,
+        example_inputs,
+        output_path_prefix=output_prefix,
+        backend=backend,
+        context_info=context_info)
+
+
 def onnx2backend(backend, onnx_file):
     if backend == Backend.TENSORRT:
-        from mmdeploy.backend.tensorrt import (create_trt_engine,
-                                               save_trt_engine)
+        from mmdeploy.backend.tensorrt import from_onnx
         backend_file = tempfile.NamedTemporaryFile(suffix='.engine').name
-        engine = create_trt_engine(
-            onnx_file, {
+        from_onnx(
+            onnx_file,
+            osp.splitext(backend_file)[0], {
                 'input': {
                     'min_shape': [1, 3, 8, 8],
                     'opt_shape': [1, 3, 8, 8],
                     'max_shape': [1, 3, 8, 8]
                 }
             })
-        save_trt_engine(engine, backend_file)
         return backend_file
     elif backend == Backend.ONNXRUNTIME:
         return onnx_file
@@ -74,13 +95,13 @@ def onnx2backend(backend, onnx_file):
         subprocess.call([onnx2ncnn_path, onnx_file, param_file, bin_file])
         return param_file, bin_file
     elif backend == Backend.OPENVINO:
-        from mmdeploy.apis.openvino import get_output_model_file, onnx2openvino
+        from mmdeploy.apis.openvino import from_onnx, get_output_model_file
         backend_dir = tempfile.TemporaryDirectory().name
         backend_file = get_output_model_file(onnx_file, backend_dir)
         input_info = {'input': test_img.shape}
         output_names = ['output']
         work_dir = backend_dir
-        onnx2openvino(input_info, output_names, onnx_file, work_dir)
+        from_onnx(onnx_file, work_dir, input_info, output_names)
         return backend_file
 
 
@@ -107,6 +128,11 @@ def create_wrapper(backend, model_files):
         from mmdeploy.backend.openvino import OpenVINOWrapper
         openvino_model = OpenVINOWrapper(model_files, output_names)
         return openvino_model
+    elif backend == Backend.TORCHSCRIPT:
+        from mmdeploy.backend.torchscript import TorchscriptWrapper
+        torchscript_model = TorchscriptWrapper(
+            model_files, input_names=input_names, output_names=output_names)
+        return torchscript_model
     else:
         raise NotImplementedError(f'Unknown backend type: {backend.value}')
 
@@ -134,20 +160,26 @@ def run_wrapper(backend, wrapper, input):
         results = wrapper({'input': input})['output']
         results = results.detach().cpu()
         return results
+    elif backend == Backend.TORCHSCRIPT:
+        results = wrapper({'input': input})['output']
+        return results
     else:
         raise NotImplementedError(f'Unknown backend type: {backend.value}')
 
 
 ALL_BACKEND = [
     Backend.TENSORRT, Backend.ONNXRUNTIME, Backend.PPLNN, Backend.NCNN,
-    Backend.OPENVINO
+    Backend.OPENVINO, Backend.TORCHSCRIPT
 ]
 
 
 @pytest.mark.parametrize('backend', ALL_BACKEND)
 def test_wrapper(backend):
     check_backend(backend, True)
-    model_files = onnx2backend(backend, onnx_file)
+    if backend == Backend.TORCHSCRIPT:
+        model_files = ts_file
+    else:
+        model_files = onnx2backend(backend, onnx_file)
     assert model_files is not None
     wrapper = create_wrapper(backend, model_files)
     assert wrapper is not None

@@ -16,15 +16,16 @@ def visualize_model(model_cfg: Union[str, mmcv.Config],
                     device: str,
                     backend: Optional[Backend] = None,
                     output_file: Optional[str] = None,
-                    show_result: bool = False):
+                    show_result: bool = False,
+                    **kwargs):
     """Run inference with PyTorch or backend model and show results.
 
     Examples:
         >>> from mmdeploy.apis import visualize_model
-        >>> model_cfg = 'mmdetection/configs/fcos/' \
-            'fcos_r50_caffe_fpn_gn-head_1x_coco.py'
-        >>> deploy_cfg = 'configs/mmdet/detection/' \
-            'detection_onnxruntime_dynamic.py'
+        >>> model_cfg = ('mmdetection/configs/fcos/'
+                         'fcos_r50_caffe_fpn_gn-head_1x_coco.py')
+        >>> deploy_cfg = ('configs/mmdet/detection/'
+                          'detection_onnxruntime_dynamic.py')
         >>> model = 'work_dir/fcos.onnx'
         >>> img = 'demo.jpg'
         >>> device = 'cpu'
@@ -64,10 +65,9 @@ def visualize_model(model_cfg: Union[str, mmcv.Config],
         if backend == Backend.PYTORCH:
             model = task_processor.init_pytorch_model(model[0])
         else:
-            model = task_processor.init_backend_model(model)
+            model = task_processor.init_backend_model(model, **kwargs)
 
     model_inputs, _ = task_processor.create_input(img, input_shape)
-
     with torch.no_grad():
         result = task_processor.run_inference(model, model_inputs)[0]
 

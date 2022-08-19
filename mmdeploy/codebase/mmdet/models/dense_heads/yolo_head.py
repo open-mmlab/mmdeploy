@@ -3,9 +3,10 @@ import numpy as np
 import torch
 
 from mmdeploy.codebase.mmdet import (get_post_processing_params,
-                                     multiclass_nms, pad_with_value)
-from mmdeploy.core import FUNCTION_REWRITER
-from mmdeploy.utils import Backend, get_backend, is_dynamic_shape
+                                     multiclass_nms,
+                                     pad_with_value_if_necessary)
+from mmdeploy.core import FUNCTION_REWRITER, mark
+from mmdeploy.utils import Backend, is_dynamic_shape
 
 
 @FUNCTION_REWRITER.register_rewriter(
@@ -44,6 +45,13 @@ def yolov3_head__get_bboxes(ctx,
         Else:
             tuple[Tensor, Tensor, Tensor]: batch_mlvl_bboxes, batch_mlvl_scores
     """
+    # mark pred_maps
+    @mark('yolo_head', inputs=['pred_maps'])
+    def __mark_pred_maps(pred_maps):
+        return pred_maps
+
+    pred_maps = __mark_pred_maps(pred_maps)
+
     is_dynamic_flag = is_dynamic_shape(ctx.cfg)
     num_levels = len(pred_maps)
     pred_maps_list = [pred_maps[i].detach() for i in range(num_levels)]
@@ -82,27 +90,23 @@ def yolov3_head__get_bboxes(ctx,
         # use static anchor if input shape is static
         if not is_dynamic_flag:
             multi_lvl_anchor = multi_lvl_anchor.data
-        multi_lvl_anchor = multi_lvl_anchor.unsqueeze(0).expand_as(
-            pred_map_boxes)
+        multi_lvl_anchor = multi_lvl_anchor.unsqueeze(0)
         bbox_pred = self.bbox_coder.decode(multi_lvl_anchor, pred_map_boxes,
                                            stride)
         # conf and cls
         conf_pred = torch.sigmoid(pred_map[..., 4])
         cls_pred = torch.sigmoid(pred_map[..., 5:]).view(
             batch_size, -1, self.num_classes)  # Cls pred one-hot.
-        backend = get_backend(ctx.cfg)
         # topk in tensorrt does not support shape<k
         # concate zero to enable topk,
-        if backend == Backend.TENSORRT:
-            bbox_pred = pad_with_value(bbox_pred, 1, pre_topk)
-            conf_pred = pad_with_value(conf_pred, 1, pre_topk, 0.)
-            cls_pred = pad_with_value(cls_pred, 1, pre_topk, 0.)
+        bbox_pred = pad_with_value_if_necessary(bbox_pred, 1, pre_topk)
+        conf_pred = pad_with_value_if_necessary(conf_pred, 1, pre_topk, 0.)
+        cls_pred = pad_with_value_if_necessary(cls_pred, 1, pre_topk, 0.)
 
         if pre_topk > 0:
             _, topk_inds = conf_pred.topk(pre_topk)
             batch_inds = torch.arange(
-                batch_size, device=device).view(-1,
-                                                1).expand_as(topk_inds).long()
+                batch_size, device=device).unsqueeze(-1).long()
             # Avoid onnx2tensorrt issue in https://github.com/NVIDIA/TensorRT/issues/1134 # noqa: E501
             transformed_inds = (bbox_pred.shape[1] * batch_inds + topk_inds)
             bbox_pred = bbox_pred.reshape(-1, 4)[transformed_inds, :].reshape(
@@ -130,14 +134,15 @@ def yolov3_head__get_bboxes(ctx,
 
     # follow original pipeline of YOLOv3
     if confidence_threshold > 0:
-        mask = (batch_mlvl_conf_scores >= confidence_threshold).float()
-        batch_mlvl_conf_scores *= mask
+        mask = batch_mlvl_conf_scores >= confidence_threshold
+        batch_mlvl_conf_scores = batch_mlvl_conf_scores.where(
+            mask, batch_mlvl_conf_scores.new_zeros(1))
     if score_threshold > 0:
-        mask = (batch_mlvl_scores > score_threshold).float()
-        batch_mlvl_scores *= mask
+        mask = batch_mlvl_scores > score_threshold
+        batch_mlvl_scores = batch_mlvl_scores.where(
+            mask, batch_mlvl_scores.new_zeros(1))
 
-    batch_mlvl_conf_scores = batch_mlvl_conf_scores.unsqueeze(2).expand_as(
-        batch_mlvl_scores)
+    batch_mlvl_conf_scores = batch_mlvl_conf_scores.unsqueeze(2)
     batch_mlvl_scores = batch_mlvl_scores * batch_mlvl_conf_scores
 
     if with_nms:
@@ -161,7 +166,8 @@ def yolov3_head__get_bboxes(ctx,
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdet.models.dense_heads.YOLOV3Head.get_bboxes', backend='ncnn')
+    func_name='mmdet.models.dense_heads.YOLOV3Head.get_bboxes',
+    backend=Backend.NCNN.value)
 def yolov3_head__get_bboxes__ncnn(ctx,
                                   self,
                                   pred_maps,

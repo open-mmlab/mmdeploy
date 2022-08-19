@@ -3,27 +3,31 @@ name: build
 on:
   push:
     paths-ignore:
-      - 'demo/**'
-      - 'tools/**'
+      - ".github/scripts/**"
+      - "demo/**"
+      - "docker/**"
+      - "tools/**"
 
   pull_request:
     paths-ignore:
-      - 'demo/**'
-      - 'tools/**'
-      - 'docs/**'
+      - ".github/scripts/**"
+      - "demo/**"
+      - "docker/**"
+      - "tools/**"
+      - "docs/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build_cpu:
+  build_cpu_model_convert:
     runs-on: ubuntu-18.04
     strategy:
       matrix:
         python-version: [3.7]
         torch: [1.8.0, 1.9.0]
-        mmcv: [1.4.0]
+        mmcv: [1.4.2]
         include:
           - torch: 1.8.0
             torch_version: torch1.8
@@ -49,11 +53,40 @@ jobs:
           pip install -U numpy
       - name: Build and install
         run: rm -rf .eggs && pip install -e .
-      - name: Run unittests and generate coverage report
+      - name: Run python unittests and generate coverage report
         run: |
           coverage run --branch --source mmdeploy -m pytest -rsE tests
           coverage xml
           coverage report -m
+
+  build_cpu_sdk:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: update
+        run: sudo apt update
+      - name: gcc-multilib
+        run: |
+          sudo apt install gcc-multilib g++-multilib wget libprotobuf-dev protobuf-compiler
+          sudo apt update
+          sudo apt install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev libc++1-9 libc++abi1-9
+          sudo add-apt-repository ppa:ignaciovizzo/opencv3-nonfree
+          sudo apt install libopencv-dev lcov wget
+          pkg-config --libs opencv
+      - name: Build and run SDK unit test without backend
+        run: |
+          mkdir -p build && pushd build
+          cmake .. -DCMAKE_CXX_COMPILER=g++-7  -DMMDEPLOY_CODEBASES=all    -DMMDEPLOY_BUILD_SDK=ON     -DMMDEPLOY_BUILD_SDK_PYTHON_API=OFF     -DMMDEPLOY_TARGET_DEVICES=cpu   -DMMDEPLOY_COVERAGE=ON  -DMMDEPLOY_BUILD_TEST=ON
+          make -j2
+          mkdir -p mmdeploy_test_resources/transform
+          cp ../tests/data/tiger.jpeg mmdeploy_test_resources/transform/
+          ./bin/mmdeploy_tests
+          lcov --capture --directory . --output-file coverage.info
+          ls -lah coverage.info
+          cp coverage.info ../
 
   build_cuda102:
     runs-on: ubuntu-18.04
@@ -65,7 +98,7 @@ jobs:
       matrix:
         python-version: [3.7]
         torch: [1.9.0+cu102]
-        mmcv: [1.4.0]
+        mmcv: [1.4.2]
         include:
           - torch: 1.9.0+cu102
             torch_version: torch1.9
@@ -78,6 +111,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install system dependencies
         run: |
+          apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A4B469963BF863CC
           apt-get update && apt-get install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev python${{matrix.python-version}}-dev
           apt-get clean
           rm -rf /var/lib/apt/lists/*
@@ -88,6 +122,7 @@ jobs:
           python -V
           python -m pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cu102/${{matrix.torch_version}}/index.html
           python -m pip install -r requirements.txt
+          pip install -U pycuda
           python -m pip install -U numpy
       - name: Build and install
         run: |
@@ -108,7 +143,7 @@ jobs:
       matrix:
         python-version: [3.7]
         torch: [1.8.0+cu111]
-        mmcv: [1.4.0]
+        mmcv: [1.4.2]
         include:
           - torch: 1.8.0+cu111
             torch_version: torch1.8
@@ -122,6 +157,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install system dependencies
         run: |
+          apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A4B469963BF863CC
           apt-get update && apt-get install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev python${{matrix.python-version}}-dev
           apt-get clean
           rm -rf /var/lib/apt/lists/*
@@ -132,6 +168,7 @@ jobs:
           python -V
           python -m pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cu111/${{matrix.torch_version}}/index.html
           python -m pip install -r requirements.txt
+          pip install -U pycuda
           python -m pip install -U numpy
       - name: Build and install
         run: |
@@ -145,8 +182,8 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
         with:
-          file: ./coverage.xml
+          file: ./coverage.xml,./coverage.info
           flags: unittests
-          env_vars: OS,PYTHON
+          env_vars: OS,PYTHON,CPLUS
           name: codecov-umbrella
           fail_ci_if_error: false

@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import List, Optional, Sequence, Union
+import os.path as osp
+from typing import Dict, List, Optional, Sequence, Union
 
 import mmcv
 import numpy as np
@@ -39,23 +40,29 @@ class End2EndModel(BaseBackendModel):
                  backend_files: Sequence[str],
                  device: str,
                  model_cfg: mmcv.Config,
-                 deploy_cfg: Union[str, mmcv.Config] = None):
+                 deploy_cfg: Union[str, mmcv.Config] = None,
+                 **kwargs):
         super().__init__(deploy_cfg=deploy_cfg)
         self.deploy_cfg = deploy_cfg
         self.test_cfg = model_cfg.test_cfg
         self.allowed_metrics = {'PSNR': psnr, 'SSIM': ssim}
         self._init_wrapper(
-            backend=backend, backend_files=backend_files, device=device)
+            backend=backend,
+            backend_files=backend_files,
+            device=device,
+            **kwargs)
 
     def _init_wrapper(self, backend: Backend, backend_files: Sequence[str],
-                      device: str):
+                      device: str, **kwargs):
         output_names = self.output_names
         self.wrapper = BaseBackendModel._build_wrapper(
             backend=backend,
             backend_files=backend_files,
             device=device,
+            input_names=[self.input_name],
             output_names=output_names,
-            deploy_cfg=self.deploy_cfg)
+            deploy_cfg=self.deploy_cfg,
+            **kwargs)
 
     def forward(self,
                 lq: torch.Tensor,
@@ -87,6 +94,8 @@ class End2EndModel(BaseBackendModel):
     def forward_test(self,
                      lq: torch.Tensor,
                      gt: Optional[torch.Tensor] = None,
+                     meta: List[Dict] = None,
+                     save_path=None,
                      *args,
                      **kwargs):
         """Run inference for restorer to generate evaluation result.
@@ -95,6 +104,8 @@ class End2EndModel(BaseBackendModel):
             lq (torch.Tensor): The input low-quality image of the model.
             gt (torch.Tensor): The ground truth of input image. Defaults to
                 `None`.
+            meta (List[Dict]): The meta infomations of MMEditing.
+            save_path (str): Path to save image. Default: None.
             *args: Other arguments.
             **kwargs: Other key-pair arguments.
 
@@ -103,6 +114,17 @@ class End2EndModel(BaseBackendModel):
         """
         outputs = self.forward_dummy(lq)
         result = self.test_post_process(outputs, lq, gt)
+
+        # Align to mmediting BasicRestorer
+        if save_path:
+            outputs = [torch.from_numpy(i) for i in outputs]
+
+            lq_path = meta[0]['lq_path']
+            folder_name = osp.splitext(osp.basename(lq_path))[0]
+            save_path = osp.join(save_path, f'{folder_name}.png')
+
+            mmcv.imwrite(tensor2img(outputs), save_path)
+
         return result
 
     def forward_dummy(self, lq: torch.Tensor, *args, **kwargs):
@@ -201,7 +223,7 @@ class SDKEnd2EndModel(End2EndModel):
             list | dict: High resolution image or a evaluation results.
         """
         img = tensor2img(lq)
-        output = self.wrapper.invoke([img])[0]
+        output = self.wrapper.invoke(img)
         if test_mode:
             output = torch.from_numpy(output)
             output = output.permute(2, 0, 1)
@@ -214,8 +236,8 @@ class SDKEnd2EndModel(End2EndModel):
 
 def build_super_resolution_model(model_files: Sequence[str],
                                  model_cfg: Union[str, mmcv.Config],
-                                 deploy_cfg: Union[str,
-                                                   mmcv.Config], device: str):
+                                 deploy_cfg: Union[str, mmcv.Config],
+                                 device: str, **kwargs):
     model_cfg = load_config(model_cfg)[0]
     deploy_cfg = load_config(deploy_cfg)[0]
 
@@ -228,6 +250,7 @@ def build_super_resolution_model(model_files: Sequence[str],
         backend_files=model_files,
         device=device,
         model_cfg=model_cfg,
-        deploy_cfg=deploy_cfg)
+        deploy_cfg=deploy_cfg,
+        **kwargs)
 
     return backend_model

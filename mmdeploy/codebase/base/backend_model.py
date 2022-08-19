@@ -5,7 +5,8 @@ from typing import Optional, Sequence, Union
 import mmcv
 import torch
 
-from mmdeploy.utils import SDK_TASK_MAP, Backend, get_ir_config, get_task_type
+from mmdeploy.utils import (SDK_TASK_MAP, Backend, get_backend_config,
+                            get_ir_config, get_task_type)
 
 
 class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
@@ -35,8 +36,11 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
     def _build_wrapper(backend: Backend,
                        backend_files: Sequence[str],
                        device: str,
+                       input_names: Optional[Sequence[str]] = None,
                        output_names: Optional[Sequence[str]] = None,
-                       deploy_cfg: Optional[mmcv.Config] = None):
+                       deploy_cfg: Optional[mmcv.Config] = None,
+                       *args,
+                       **kwargs):
         """The default methods to build backend wrappers.
 
         Args:
@@ -44,6 +48,8 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
             beckend_files (Sequence[str]): Paths to all required backend files(
                 e.g. '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
             device (str): A string specifying device type.
+            input_names (Sequence[str] | None): Names of model inputs in
+                order. Defaults to `None`.
             output_names (Sequence[str] | None): Names of model outputs in
                 order. Defaults to `None` and the wrapper will load the output
                 names from the model.
@@ -63,15 +69,24 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
             from mmdeploy.backend.pplnn import PPLNNWrapper
             return PPLNNWrapper(
                 onnx_file=backend_files[0],
-                algo_file=backend_files[1],
+                algo_file=backend_files[1] if len(backend_files) > 1 else None,
                 device=device,
                 output_names=output_names)
         elif backend == Backend.NCNN:
             from mmdeploy.backend.ncnn import NCNNWrapper
+
+            # For unittest deploy_config will not pass into _build_wrapper
+            # function.
+            if deploy_cfg:
+                backend_config = get_backend_config(deploy_cfg)
+                use_vulkan = backend_config.get('use_vulkan', False)
+            else:
+                use_vulkan = False
             return NCNNWrapper(
                 param_file=backend_files[0],
                 bin_file=backend_files[1],
-                output_names=output_names)
+                output_names=output_names,
+                use_vulkan=use_vulkan)
         elif backend == Backend.OPENVINO:
             from mmdeploy.backend.openvino import OpenVINOWrapper
             return OpenVINOWrapper(
@@ -85,6 +100,19 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
                 model_file=backend_files[0],
                 task_name=task_name,
                 device=device)
+        elif backend == Backend.TORCHSCRIPT:
+            from mmdeploy.backend.torchscript import TorchscriptWrapper
+            return TorchscriptWrapper(
+                model=backend_files[0],
+                input_names=input_names,
+                output_names=output_names)
+        elif backend == Backend.SNPE:
+            from mmdeploy.backend.snpe import SNPEWrapper
+            uri = None
+            if 'uri' in kwargs:
+                uri = kwargs['uri']
+            return SNPEWrapper(
+                dlc_file=backend_files[0], uri=uri, output_names=output_names)
         else:
             raise NotImplementedError(f'Unknown backend type: {backend.value}')
 

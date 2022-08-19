@@ -19,7 +19,7 @@ from m2r import MdInclude
 from recommonmark.transform import AutoStructify
 from sphinx.builders.html import StandaloneHTMLBuilder
 
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('../..'))
 
 version_file = '../../mmdeploy/version.py'
 with open(version_file, 'r') as f:
@@ -49,13 +49,17 @@ release = __version__
 
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.doctest',
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
     'sphinx.ext.autosectionlabel',
     'sphinx_markdown_tables',
     'myst_parser',
     'sphinx_copybutton',
+    'sphinxcontrib.mermaid'
 ]  # yapf: disable
+
+autodoc_mock_imports = ['tensorrt']
 
 autosectionlabel_prefix_document = True
 
@@ -115,6 +119,10 @@ html_theme_options = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 html_css_files = ['css/readthedocs.css']
+
+# Enable ::: for my_st
+myst_enable_extensions = ['colon_fence']
+myst_heading_anchors = 5
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.

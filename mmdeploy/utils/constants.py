@@ -24,7 +24,9 @@ class Task(AdvancedEnum):
     CLASSIFICATION = 'Classification'
     OBJECT_DETECTION = 'ObjectDetection'
     INSTANCE_SEGMENTATION = 'InstanceSegmentation'
+    VOXEL_DETECTION = 'VoxelDetection'
     POSE_DETECTION = 'PoseDetection'
+    ROTATED_DETECTION = 'RotatedDetection'
 
 
 class Codebase(AdvancedEnum):
@@ -34,7 +36,16 @@ class Codebase(AdvancedEnum):
     MMCLS = 'mmcls'
     MMOCR = 'mmocr'
     MMEDIT = 'mmedit'
+    MMDET3D = 'mmdet3d'
     MMPOSE = 'mmpose'
+    MMROTATE = 'mmrotate'
+
+
+class IR(AdvancedEnum):
+    """Define intermediate representation enumerations."""
+    ONNX = 'onnx'
+    TORCHSCRIPT = 'torchscript'
+    DEFAULT = 'default'
 
 
 class Backend(AdvancedEnum):
@@ -44,8 +55,10 @@ class Backend(AdvancedEnum):
     ONNXRUNTIME = 'onnxruntime'
     PPLNN = 'pplnn'
     NCNN = 'ncnn'
+    SNPE = 'snpe'
     OPENVINO = 'openvino'
     SDK = 'sdk'
+    TORCHSCRIPT = 'torchscript'
     DEFAULT = 'default'
 
 
@@ -63,5 +76,9 @@ SDK_TASK_MAP = {
     Task.TEXT_DETECTION:
     dict(component='TextDetHead', cls_name='TextDetector'),
     Task.TEXT_RECOGNITION:
-    dict(component='CTCConvertor', cls_name='TextRecognizer')
+    dict(component='CTCConvertor', cls_name='TextRecognizer'),
+    Task.POSE_DETECTION:
+    dict(component='Detector', cls_name='PoseDetector'),
+    Task.ROTATED_DETECTION:
+    dict(component='ResizeRBBox', cls_name='RotatedDetector')
 }

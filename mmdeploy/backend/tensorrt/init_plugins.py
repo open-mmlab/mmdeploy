@@ -12,6 +12,8 @@ def get_ops_path() -> str:
         str: A path of the TensorRT plugin library.
     """
     candidates = [
+        '../../lib/libmmdeploy_tensorrt_ops.so',
+        '../../lib/mmdeploy_tensorrt_ops.dll',
         '../../../build/lib/libmmdeploy_tensorrt_ops.so',
         '../../../build/bin/*/mmdeploy_tensorrt_ops.dll'
     ]

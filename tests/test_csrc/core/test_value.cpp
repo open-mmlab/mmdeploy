@@ -1,12 +1,12 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
 #include "catch.hpp"
-#include "core/logger.h"
-#include "core/operator.h"
-#include "core/serialization.h"
-#include "core/utils/formatter.h"
-#include "core/value.h"
 #include "json.hpp"
+#include "mmdeploy/core/logger.h"
+#include "mmdeploy/core/operator.h"
+#include "mmdeploy/core/serialization.h"
+#include "mmdeploy/core/utils/formatter.h"
+#include "mmdeploy/core/value.h"
 
 using namespace mmdeploy;
 
@@ -283,12 +283,22 @@ struct Doge {
   int value;
 };
 
+namespace mmdeploy {
+
+MMDEPLOY_REGISTER_TYPE_ID(Meow, 1234);
+MMDEPLOY_REGISTER_TYPE_ID(Doge, 3456);
+
+}  // namespace mmdeploy
+
 template <>
 struct mmdeploy::is_cast_by_erasure<Meow> : std::true_type {};
 
 TEST_CASE("test dynamic interface for value", "[value]") {
   Value meow(Meow{100});
   REQUIRE(meow.is_any());
+  REQUIRE(meow.is_any<Meow>());
+  REQUIRE_FALSE(meow.is_any<int>());
+  REQUIRE_FALSE(meow.is_any<Doge>());
   REQUIRE(meow.get<Meow>().value == 100);
   REQUIRE(meow.get_ref<Meow&>().value == 100);
   REQUIRE(meow.get_ptr<Meow*>() == &meow.get_ref<Meow&>());
@@ -339,3 +349,18 @@ TEST_CASE("test ctor of value", "[value]") {
   static_assert(!std::is_constructible<Value, void (*)(int)>::value, "");
   static_assert(!std::is_constructible<Value, int*>::value, "");
 }
+
+//
+// TEST_CASE("test logger", "[logger]") {
+//  MMDEPLOY_INFO("{}", DataType::kFLOAT);
+//  MMDEPLOY_INFO("{}", DataType::kHALF);
+//  MMDEPLOY_INFO("{}", DataType::kINT8);
+//  MMDEPLOY_INFO("{}", DataType::kINT32);
+//  MMDEPLOY_INFO("{}", DataType::kINT64);
+//  MMDEPLOY_INFO("{}", PixelFormat::kBGR);
+//  MMDEPLOY_INFO("{}", PixelFormat::kRGB);
+//  MMDEPLOY_INFO("{}", PixelFormat::kGRAYSCALE);
+//  MMDEPLOY_INFO("{}", PixelFormat::kNV12);
+//  MMDEPLOY_INFO("{}", PixelFormat::kNV21);
+//  MMDEPLOY_INFO("{}", PixelFormat::kBGRA);
+//}

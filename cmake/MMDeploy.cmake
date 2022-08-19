@@ -14,8 +14,18 @@ endfunction ()
 
 
 function (mmdeploy_add_library NAME)
+    # EXCLUDE: exclude from registering & exporting
     cmake_parse_arguments(_MMDEPLOY "EXCLUDE" "" "" ${ARGN})
-    add_library(${NAME} ${_MMDEPLOY_UNPARSED_ARGUMENTS})
+    # search for add_library keywords
+    cmake_parse_arguments(_TYPE "STATIC;SHARED;MODULE" "" "" ${_MMDEPLOY_UNPARSED_ARGUMENTS})
+    set(_MAYBE_TYPE)
+    if (NOT (_TYPE_STATIC OR _TYPE_SHARED OR _TYPE_MODULE))
+        set(_MAYBE_TYPE ${MMDEPLOY_LIB_TYPE})
+    endif ()
+    add_library(${NAME} ${_MAYBE_TYPE} ${_MMDEPLOY_UNPARSED_ARGUMENTS})
+    if (NOT MSVC)
+        target_compile_options(${NAME} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-fvisibility=hidden>)
+    endif ()
     target_compile_definitions(${NAME} PRIVATE -DMMDEPLOY_API_EXPORTS=1)
     get_target_property(_TYPE ${NAME} TYPE)
     if (_TYPE STREQUAL STATIC_LIBRARY)
@@ -36,19 +46,25 @@ function (mmdeploy_add_module NAME)
     # LIBRARY: the module is also a library (add_libray with SHARED instead of MODULE)
     cmake_parse_arguments(_MMDEPLOY "EXCLUDE;LIBRARY" "" "" ${ARGN})
     # search for add_library keywords
-    cmake_parse_arguments(_KW "STATIC;SHARED;MODULE" "" "" ${_MMDEPLOY_UNPARSED_ARGUMENTS})
+    cmake_parse_arguments(_TYPE "STATIC;SHARED;MODULE" "" "" ${_MMDEPLOY_UNPARSED_ARGUMENTS})
 
-    set(_MAYBE_MODULE)
+    set(_MAYBE_TYPE)
     # no library type specified
-    if (NOT (_KW_STATIC OR  _KW_SHARED OR _KW_MODULE))
+    if (NOT (_TYPE_STATIC OR _TYPE_SHARED OR _TYPE_MODULE))
         # shared but not marked as a library, build module library so that no .lib dependency
         # will be generated for MSVC
-        if (MSVC AND BUILD_SHARED_LIBS AND NOT _MMDEPLOY_LIBRARY)
-            set(_MAYBE_MODULE MODULE)
+        if (MSVC AND MMDEPLOY_SHARED_LIBS AND NOT _MMDEPLOY_LIBRARY)
+            set(_MAYBE_TYPE MODULE)
+        else ()
+            set(_MAYBE_TYPE ${MMDEPLOY_LIB_TYPE})
         endif ()
     endif ()
 
-    add_library(${NAME} ${_MAYBE_MODULE} ${_MMDEPLOY_UNPARSED_ARGUMENTS})
+    add_library(${NAME} ${_MAYBE_TYPE} ${_MMDEPLOY_UNPARSED_ARGUMENTS})
+
+    if (NOT MSVC)
+        target_compile_options(${NAME} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-fvisibility=hidden>)
+    endif ()
 
     # automatically link mmdeploy::core if exists
     if (TARGET mmdeploy::core)
@@ -110,10 +126,16 @@ function (mmdeploy_load_static NAME)
         target_link_libraries(${NAME} PRIVATE ${ARGN})
     else ()
         _mmdeploy_flatten_modules(_MODULE_LIST ${ARGN})
-        target_link_libraries(${NAME} PRIVATE
-                -Wl,--whole-archive
-                ${_MODULE_LIST}
-                -Wl,--no-whole-archive)
+        if (APPLE)
+            foreach (module IN LISTS _MODULE_LIST)
+                target_link_libraries(${NAME} PRIVATE -force_load ${module})
+            endforeach ()
+        else ()
+            target_link_libraries(${NAME} PRIVATE
+                    -Wl,--whole-archive
+                    ${_MODULE_LIST}
+                    -Wl,--no-whole-archive)
+        endif ()
     endif ()
 endfunction ()
 
@@ -142,6 +164,8 @@ function (mmdeploy_load_dynamic NAME)
 
         mmdeploy_add_module(${_LOADER_NAME} STATIC EXCLUDE ${_LOADER_PATH})
         mmdeploy_load_static(${NAME} ${_LOADER_NAME})
+    elseif (APPLE)
+        target_link_libraries(${NAME} PRIVATE ${_MODULE_LIST})
     else ()
         target_link_libraries(${NAME} PRIVATE
                 -Wl,--no-as-needed
@@ -149,3 +173,14 @@ function (mmdeploy_load_dynamic NAME)
                 -Wl,--as-needed)
     endif ()
 endfunction ()
+
+macro(mmdeploy_add_deps backend)
+    set(multiValueArgs BACKENDS DEPS)
+    cmake_parse_arguments(INFO "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    set(has_backend OFF)
+    if (${backend} IN_LIST INFO_BACKENDS)
+        foreach(pkg IN LISTS INFO_DEPS)
+            set(${pkg}_DEPENDENCY "find_package(${pkg} REQUIRED)")
+        endforeach()
+    endif()
+endmacro()

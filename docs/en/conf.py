@@ -19,7 +19,7 @@ from m2r import MdInclude
 from recommonmark.transform import AutoStructify
 from sphinx.builders.html import StandaloneHTMLBuilder
 
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('../..'))
 
 version_file = '../../mmdeploy/version.py'
 with open(version_file, 'r') as f:
@@ -55,7 +55,10 @@ extensions = [
     'sphinx_markdown_tables',
     'myst_parser',
     'sphinx_copybutton',
+    'sphinxcontrib.mermaid'
 ]  # yapf: disable
+
+autodoc_mock_imports = ['tensorrt']
 
 autosectionlabel_prefix_document = True
 
@@ -78,7 +81,7 @@ master_doc = 'index'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'en'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -102,8 +105,7 @@ html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
 # documentation.
 #
 html_theme_options = {
-    # TODO: Add log_url
-    # 'logo_url': 'https://mmocr.readthedocs.io/en/latest/',
+    'logo_url': 'https://mmdeploy.readthedocs.io/en/latest/',
     'menu': [{
         'name': 'GitHub',
         'url': 'https://github.com/open-mmlab/mmdeploy'
@@ -116,6 +118,10 @@ html_theme_options = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 html_css_files = ['css/readthedocs.css']
+
+# Enable ::: for my_st
+myst_enable_extensions = ['colon_fence']
+myst_heading_anchors = 5
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.

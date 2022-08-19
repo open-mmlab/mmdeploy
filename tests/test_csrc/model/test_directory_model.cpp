@@ -3,13 +3,13 @@
 // clang-format off
 #include "catch.hpp"
 // clang-format on
-#include "core/model.h"
-#include "core/model_impl.h"
+#include "mmdeploy/core/model.h"
+#include "mmdeploy/core/model_impl.h"
 #include "test_resource.h"
 
 using namespace mmdeploy;
 
-TEST_CASE("test directory model", "[model]") {
+TEST_CASE("test directory model", "[.model][resource]") {
   std::unique_ptr<ModelImpl> model_impl;
   for (auto& entry : ModelRegistry::Get().ListEntries()) {
     if (entry.name == "DirectoryModel") {

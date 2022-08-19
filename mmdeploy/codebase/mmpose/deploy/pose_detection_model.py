@@ -4,11 +4,22 @@ from typing import List, Optional, Sequence, Union
 import mmcv
 import numpy as np
 import torch
+from mmcv.utils import Registry
 
 from mmdeploy.codebase.base import BaseBackendModel
-from mmdeploy.utils import Backend, get_backend, load_config
+from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
+                            load_config)
 
 
+def __build_backend_model(cls_name: str, registry: Registry, *args, **kwargs):
+    return registry.module_dict[cls_name](*args, **kwargs)
+
+
+__BACKEND_MODEL = mmcv.utils.Registry(
+    'backend_pose_detectors', build_func=__build_backend_model)
+
+
+@__BACKEND_MODEL.register_module('end2end')
 class End2EndModel(BaseBackendModel):
     """End to end model for inference of pose detection.
 
@@ -31,19 +42,21 @@ class End2EndModel(BaseBackendModel):
                  model_cfg: Union[str, mmcv.Config] = None,
                  **kwargs):
         super(End2EndModel, self).__init__(deploy_cfg=deploy_cfg)
-        from mmpose.models.heads.topdown_heatmap_base_head import \
-            TopdownHeatmapBaseHead
+        from mmpose.models import builder
 
         self.deploy_cfg = deploy_cfg
         self.model_cfg = model_cfg
         self._init_wrapper(
-            backend=backend, backend_files=backend_files, device=device)
+            backend=backend,
+            backend_files=backend_files,
+            device=device,
+            **kwargs)
         # create base_head for decoding heatmap
-        base_head = TopdownHeatmapBaseHead()
+        base_head = builder.build_head(model_cfg.model.keypoint_head)
         base_head.test_cfg = model_cfg.model.test_cfg
         self.base_head = base_head
 
-    def _init_wrapper(self, backend, backend_files, device):
+    def _init_wrapper(self, backend, backend_files, device, **kwargs):
         """Initialize backend wrapper.
 
         Args:
@@ -57,7 +70,10 @@ class End2EndModel(BaseBackendModel):
             backend=backend,
             backend_files=backend_files,
             device=device,
-            output_names=output_names)
+            input_names=[self.input_name],
+            output_names=output_names,
+            deploy_cfg=self.deploy_cfg,
+            **kwargs)
 
     def forward(self, img: torch.Tensor, img_metas: Sequence[Sequence[dict]],
                 *args, **kwargs):
@@ -73,10 +89,12 @@ class End2EndModel(BaseBackendModel):
         Returns:
             list: A list contains predictions.
         """
+        batch_size, _, img_height, img_width = img.shape
         input_img = img.contiguous()
         outputs = self.forward_test(input_img, img_metas, *args, **kwargs)
         heatmaps = outputs[0]
-        key_points = self.base_head.decode(img_metas, heatmaps)
+        key_points = self.base_head.decode(
+            img_metas, heatmaps, img_size=[img_width, img_height])
         return key_points
 
     def forward_test(self, imgs: torch.Tensor, *args, **kwargs) -> \
@@ -136,6 +154,81 @@ class End2EndModel(BaseBackendModel):
             win_name=win_name)
 
 
+@__BACKEND_MODEL.register_module('sdk')
+class SDKEnd2EndModel(End2EndModel):
+    """SDK inference class, converts SDK output to mmcls format."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ext_info = self.deploy_cfg.ext_info
+
+    def _xywh2cs(self, x, y, w, h, padding=1.25):
+        """This encodes bbox(x,y,w,h) into (center, scale)
+        Args:
+            x, y, w, h (float): left, top, width and height
+            padding (float): bounding box padding factor
+        Returns:
+            center (np.ndarray[float32](2,)): center of the bbox (x, y).
+            scale (np.ndarray[float32](2,)): scale of the bbox w & h.
+        """
+        anno_size = self.ext_info.image_size
+        aspect_ratio = anno_size[0] / anno_size[1]
+        center = np.array([x + w * 0.5, y + h * 0.5], dtype=np.float32)
+
+        if w > aspect_ratio * h:
+            h = w * 1.0 / aspect_ratio
+        elif w < aspect_ratio * h:
+            w = h * aspect_ratio
+
+        # pixel std is 200.0
+        scale = np.array([w / 200.0, h / 200.0], dtype=np.float32)
+        # padding to include proper amount of context
+        scale = scale * padding
+
+        return center, scale
+
+    def _xywh2xyxy(self, x, y, w, h):
+        """convert xywh to x1 y1 x2 y2."""
+        return x, y, x + w - 1, y + h - 1
+
+    def forward(self, img: List[torch.Tensor], *args, **kwargs) -> list:
+        """Run forward inference.
+
+        Args:
+            img (List[torch.Tensor]): A list contains input image(s)
+                in [N x C x H x W] format.
+            *args: Other arguments.
+            **kwargs: Other key-pair arguments.
+
+        Returns:
+            list: A list contains predictions.
+        """
+        image_paths = []
+        boxes = np.zeros(shape=(img.shape[0], 6))
+        bbox_ids = []
+        sdk_boxes = []
+        for i, img_meta in enumerate(kwargs['img_metas']):
+            center, scale = self._xywh2cs(*img_meta['bbox'])
+            boxes[i, :2] = center
+            boxes[i, 2:4] = scale
+            boxes[i, 4] = np.prod(scale * 200.0)
+            boxes[i, 5] = img_meta[
+                'bbox_score'] if 'bbox_score' in img_meta else 1.0
+            sdk_boxes.append(self._xywh2xyxy(*img_meta['bbox']))
+            image_paths.append(img_meta['image_file'])
+            bbox_ids.append(img_meta['bbox_id'])
+
+        pred = self.wrapper.handle(img[0].contiguous().detach().cpu().numpy(),
+                                   sdk_boxes)
+
+        result = dict(
+            preds=pred,
+            boxes=boxes,
+            image_paths=image_paths,
+            bbox_ids=bbox_ids)
+        return result
+
+
 def build_pose_detection_model(model_files: Sequence[str],
                                model_cfg: Union[str, mmcv.Config],
                                deploy_cfg: Union[str, mmcv.Config],
@@ -157,12 +250,15 @@ def build_pose_detection_model(model_files: Sequence[str],
     deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
 
     backend = get_backend(deploy_cfg)
-    backend_pose_model = End2EndModel(
-        backend,
-        model_files,
-        device,
-        deploy_cfg=deploy_cfg,
+    model_type = get_codebase_config(deploy_cfg).get('model_type', 'end2end')
+
+    backend_pose_model = __BACKEND_MODEL.build(
+        model_type,
+        backend=backend,
+        backend_files=model_files,
+        device=device,
         model_cfg=model_cfg,
+        deploy_cfg=deploy_cfg,
         **kwargs)
 
     return backend_pose_model

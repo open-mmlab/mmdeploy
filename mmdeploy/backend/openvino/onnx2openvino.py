@@ -1,13 +1,15 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
 import subprocess
+import tempfile
 from subprocess import PIPE, CalledProcessError, run
-from typing import Dict, List, Union
+from typing import Dict, Optional, Sequence, Union
 
 import mmcv
-import torch
+import onnx
 
 from mmdeploy.utils import get_root_logger
+from .utils import ModelOptimizerOptions
 
 
 def get_mo_command() -> str:
@@ -54,26 +56,33 @@ def get_output_model_file(onnx_path: str, work_dir: str) -> str:
     return model_xml
 
 
-def onnx2openvino(input_info: Dict[str, Union[List[int], torch.Size]],
-                  output_names: List[str], onnx_path: str, work_dir: str):
+def from_onnx(onnx_model: Union[str, onnx.ModelProto],
+              output_file_prefix: str,
+              input_info: Dict[str, Sequence[int]],
+              output_names: Sequence[str],
+              mo_options: Optional[ModelOptimizerOptions] = None):
     """Convert ONNX to OpenVINO.
 
     Examples:
-        >>> from mmdeploy.backend.openvino.onnx2openvino import onnx2openvino
+        >>> from mmdeploy.apis.openvino import from_onnx
         >>> input_info = {'input': [1,3,800,1344]}
         >>> output_names = ['dets', 'labels']
         >>> onnx_path = 'work_dir/end2end.onnx'
-        >>> work_dir = 'work_dir'
-        >>> onnx2openvino(input_info, output_names, onnx_path, work_dir)
+        >>> output_dir = 'work_dir'
+        >>> from_onnx( onnx_path, output_dir, input_info, output_names)
 
     Args:
-        input_info (Dict[str, Union[List[int], torch.Size]]):
+        onnx_model (str|ModelProto): The onnx model or its path.
+        output_file_prefix (str): The path to the directory for saving
+            the results.
+        input_info (Dict[str, Sequence[int]]):
             The shape of each input.
-        output_names (List[str]): Output names. Example: ['dets', 'labels'].
-        onnx_path (str): The path to the onnx model.
-        work_dir (str): The path to the directory for saving the results.
+        output_names (Sequence[str]): Output names. Example:
+            ['dets', 'labels'].
+        mo_options (None | ModelOptimizerOptions): The class with
+            additional arguments for the Model Optimizer.
     """
-
+    work_dir = output_file_prefix
     input_names = ','.join(input_info.keys())
     input_shapes = ','.join(str(list(elem)) for elem in input_info.values())
     output = ','.join(output_names)
@@ -84,12 +93,20 @@ def onnx2openvino(input_info: Dict[str, Union[List[int], torch.Size]],
         raise RuntimeError(
             'OpenVINO Model Optimizer is not found or configured improperly')
 
+    if isinstance(onnx_model, str):
+        onnx_path = onnx_model
+    else:
+        onnx_path = tempfile.NamedTemporaryFile(suffix='.onnx').name
+        onnx.save(onnx_model, onnx_path)
+
     mo_args = f'--input_model="{onnx_path}" '\
               f'--output_dir="{work_dir}" ' \
               f'--output="{output}" ' \
               f'--input="{input_names}" ' \
-              f'--input_shape="{input_shapes}" ' \
-              f'--disable_fusing '
+              f'--input_shape="{input_shapes}" '
+    if mo_options is not None:
+        mo_args += mo_options.get_options()
+
     command = f'{mo_command} {mo_args}'
 
     logger = get_root_logger()

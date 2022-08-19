@@ -4,62 +4,93 @@ Welcome to MMDeploy's documentation!
 You can switch between Chinese and English documents in the lower-left corner of the layout.
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Get Started
 
-   build.md
-   supported_models.md
    get_started.md
 
 .. toctree::
    :maxdepth: 1
-   :caption: Tutorials
+   :caption: Build
 
-   tutorials/how_to_convert_model.md
-   tutorials/how_to_write_config.md
-   tutorials/how_to_evaluate_a_model.md
-   tutorials/how_to_measure_performance_of_models.md
-   tutorials/how_to_support_new_models.md
-   tutorials/how_to_support_new_backends.md
-   tutorials/how_to_add_test_units_for_backend_ops.md
-   tutorials/how_to_test_rewritten_models.md
-   tutorials/how_to_use_docker.md
-   tutorials/how_to_write_config.md
-   tutorials/how_to_install_mmdeploy_on_jetsons.md
+   01-how-to-build/build_from_source.md
+   01-how-to-build/build_from_docker.md
 
 .. toctree::
    :maxdepth: 1
-   :caption: OpenMMLab Support
+   :caption: Run & Test
 
-   codebases/mmcls.md
-   codebases/mmdet.md
-   codebases/mmseg.md
-   codebases/mmedit.md
-   codebases/mmocr.md
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Backend Support
-
-   backends/onnxruntime.md
-   backends/tensorrt.md
-   backends/openvino.md
-   backends/ncnn.md
-   backends/pplnn.md
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Custom Ops
-
-   ops/onnxruntime.md
-   ops/tensorrt.md
-   ops/ncnn.md
+   02-how-to-run/convert_model.md
+   02-how-to-run/write_config.md
+   02-how-to-run/profile_model.md
+   02-how-to-run/quantize_model.md
+   02-how-to-run/useful_tools.md
 
 .. toctree::
    :maxdepth: 1
    :caption: Benchmark
 
-   benchmark.md
+   03-benchmark/supported_models.md
+   03-benchmark/benchmark.md
+   03-benchmark/benchmark_edge.md
+   03-benchmark/quantization.md
+
+.. toctree::
+   :maxdepth: 1
+   :caption: OpenMMLab Codebase Support
+
+   04-supported-codebases/mmcls.md
+   04-supported-codebases/mmdet.md
+   04-supported-codebases/mmseg.md
+   04-supported-codebases/mmedit.md
+   04-supported-codebases/mmocr.md
+   04-supported-codebases/mmpose.md
+   04-supported-codebases/mmdet3d.md
+   04-supported-codebases/mmrotate.md
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Backend Support
+
+   05-supported-backends/ncnn.md
+   05-supported-backends/onnxruntime.md
+   05-supported-backends/openvino.md
+   05-supported-backends/pplnn.md
+   05-supported-backends/snpe.md
+   05-supported-backends/tensorrt.md
+   05-supported-backends/torchscript.md
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Custom Ops
+
+   06-custom-ops/onnxruntime.md
+   06-custom-ops/tensorrt.md
+   06-custom-ops/ncnn.md
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Developer Guide
+
+   07-developer-guide/architecture.md
+   07-developer-guide/support_new_model.md
+   07-developer-guide/support_new_backend.md
+   07-developer-guide/add_backend_ops_unittest.md
+   07-developer-guide/test_rewritten_models.md
+   07-developer-guide/partition_model.md
+   07-developer-guide/regression_test.md
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Experimental feature
+
+   experimental/onnx_optimizer.md
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Appendix
+
+   appendix/cross_build_snpe_service.md
 
 .. toctree::
    :maxdepth: 1

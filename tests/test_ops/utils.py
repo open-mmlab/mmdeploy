@@ -91,11 +91,13 @@ class TestTensorRTExporter:
                          expected_result=None,
                          save_dir=None):
         if save_dir is None:
-            onnx_file_path = tempfile.NamedTemporaryFile().name
-            trt_file_path = tempfile.NamedTemporaryFile().name
+            onnx_file_path = tempfile.NamedTemporaryFile(suffix='.onnx').name
+            trt_file_path = tempfile.NamedTemporaryFile(suffix='.engine').name
         else:
+            os.makedirs(save_dir, exist_ok=True)
             onnx_file_path = os.path.join(save_dir, model_name + '.onnx')
-            trt_file_path = os.path.join(save_dir, model_name + '.trt')
+            trt_file_path = os.path.join(save_dir, model_name + '.engine')
+        input_list = [data.cuda() for data in input_list]
         if isinstance(model, onnx.onnx_ml_pb2.ModelProto):
             onnx.save(model, onnx_file_path)
         else:
@@ -131,9 +133,10 @@ class TestTensorRTExporter:
                     ])))
 
         onnx_model = onnx.load(onnx_file_path)
+        work_dir, filename = os.path.split(trt_file_path)
         trt_apis.onnx2tensorrt(
-            os.path.dirname(trt_file_path),
-            trt_file_path,
+            work_dir,
+            filename,
             0,
             deploy_cfg=deploy_cfg,
             onnx_model=onnx_model)
@@ -150,7 +153,6 @@ class TestTensorRTExporter:
 
         from mmdeploy.backend.tensorrt import TRTWrapper
         trt_model = TRTWrapper(trt_file_path, output_names)
-        input_list = [data.cuda() for data in input_list]
         trt_outputs = trt_model(dict(zip(input_names, input_list)))
         trt_outputs = [trt_outputs[i].float().cpu() for i in output_names]
         assert_allclose(model_outputs, trt_outputs, tolerate_small_mismatch)
@@ -230,21 +232,27 @@ class TestNCNNExporter:
                             tolerate_small_mismatch)
 
     def onnx2ncnn(self, model, model_name, output_names, save_dir=None):
-        if save_dir is None:
-            onnx_file_path = tempfile.NamedTemporaryFile(suffix='.onnx').name
-            ncnn_param_path = tempfile.NamedTemporaryFile(suffix='.param').name
-            ncnn_bin_path = tempfile.NamedTemporaryFile(suffix='.bin').name
-        else:
+
+        def _from_onnx(self, model, model_name, output_names, save_dir=None):
             onnx_file_path = os.path.join(save_dir, model_name + '.onnx')
             ncnn_param_path = os.path.join(save_dir, model_name + '.param')
             ncnn_bin_path = os.path.join(save_dir, model_name + '.bin')
 
-        onnx.save_model(model, onnx_file_path)
+            onnx.save_model(model, onnx_file_path)
 
-        from mmdeploy.backend.ncnn.onnx2ncnn import onnx2ncnn
-        onnx2ncnn(onnx_file_path, ncnn_param_path, ncnn_bin_path)
+            from mmdeploy.backend.ncnn import from_onnx
+            from_onnx(onnx_file_path, os.path.join(save_dir, model_name))
 
-        from mmdeploy.backend.ncnn import NCNNWrapper
-        ncnn_model = NCNNWrapper(ncnn_param_path, ncnn_bin_path, output_names)
+            from mmdeploy.backend.ncnn import NCNNWrapper
+            ncnn_model = NCNNWrapper(ncnn_param_path, ncnn_bin_path,
+                                     output_names)
 
-        return ncnn_model
+            return ncnn_model
+
+        if save_dir is None:
+            with tempfile.TemporaryDirectory() as save_dir:
+                return _from_onnx(
+                    self, model, model_name, output_names, save_dir=save_dir)
+        else:
+            return _from_onnx(
+                self, model, model_name, output_names, save_dir=save_dir)

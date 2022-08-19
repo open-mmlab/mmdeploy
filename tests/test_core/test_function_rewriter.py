@@ -3,7 +3,8 @@ import torch
 
 from mmdeploy.core import FUNCTION_REWRITER, RewriterContext
 from mmdeploy.core.rewriters.function_rewriter import FunctionRewriter
-from mmdeploy.utils.constants import Backend
+from mmdeploy.core.rewriters.rewriter_utils import collect_env
+from mmdeploy.utils.constants import IR, Backend
 
 
 def test_function_rewriter():
@@ -97,7 +98,6 @@ class TestHomonymicRewriter:
         assert package.module.func() == 1
 
         function_rewriter = FunctionRewriter()
-        function_rewriter.add_backend(Backend.NCNN.value)
 
         @function_rewriter.register_rewriter(func_name=path1)
         def func_2(ctx):
@@ -108,7 +108,7 @@ class TestHomonymicRewriter:
         def func_3(ctx):
             return 3
 
-        function_rewriter.enter(backend=Backend.NCNN.value)
+        function_rewriter.enter(env=collect_env(Backend.NCNN, ir=IR.DEFAULT))
         # This is a feature
         assert package.func() == 2
         assert package.module.func() == 3
@@ -118,7 +118,6 @@ class TestHomonymicRewriter:
         assert package.module.func() == 1
 
         function_rewriter2 = FunctionRewriter()
-        function_rewriter2.add_backend(Backend.NCNN.value)
 
         @function_rewriter2.register_rewriter(
             func_name=path1, backend=Backend.NCNN.value)
@@ -129,7 +128,7 @@ class TestHomonymicRewriter:
         def func_5(ctx):
             return 5
 
-        function_rewriter2.enter(backend=Backend.NCNN.value)
+        function_rewriter2.enter(env=collect_env(Backend.NCNN, ir=IR.DEFAULT))
         # This is a feature
         assert package.func() == 4
         assert package.module.func() == 5
@@ -146,7 +145,6 @@ class TestHomonymicRewriter:
         c = package.C()
 
         function_rewriter = FunctionRewriter()
-        function_rewriter.add_backend(Backend.NCNN.value)
 
         assert c.method() == 1
 
@@ -159,14 +157,13 @@ class TestHomonymicRewriter:
         def func_3(ctx, self):
             return 3
 
-        function_rewriter.enter(backend=Backend.NCNN.value)
+        function_rewriter.enter(env=collect_env(Backend.NCNN, ir=IR.DEFAULT))
         assert c.method() == 3
         function_rewriter.exit()
 
         assert c.method() == 1
 
         function_rewriter2 = FunctionRewriter()
-        function_rewriter2.add_backend(Backend.NCNN.value)
 
         @function_rewriter2.register_rewriter(
             func_name=path1, backend=Backend.NCNN.value)
@@ -177,7 +174,7 @@ class TestHomonymicRewriter:
         def func_5(ctx, self):
             return 5
 
-        function_rewriter2.enter(backend=Backend.NCNN.value)
+        function_rewriter2.enter(env=collect_env(Backend.NCNN, ir=IR.DEFAULT))
         assert c.method() == 4
         function_rewriter2.exit()
 
@@ -196,7 +193,6 @@ def test_rewrite_derived_methods():
     assert derived_obj.method() == 1
 
     function_rewriter = FunctionRewriter()
-    function_rewriter.add_backend(Backend.NCNN.value)
 
     @function_rewriter.register_rewriter(func_name=path1)
     def func_2(ctx, self):
@@ -207,12 +203,12 @@ def test_rewrite_derived_methods():
     def func_3(ctx, self):
         return 3
 
-    function_rewriter.enter()
+    function_rewriter.enter(env=collect_env(Backend.DEFAULT, ir=IR.DEFAULT))
     assert base_obj.method() == 2
     assert derived_obj.method() == 2
     function_rewriter.exit()
 
-    function_rewriter.enter(backend=Backend.NCNN.value)
+    function_rewriter.enter(env=collect_env(Backend.NCNN, ir=IR.DEFAULT))
     assert base_obj.method() == 2
     assert derived_obj.method() == 3
     function_rewriter.exit()
@@ -221,7 +217,7 @@ def test_rewrite_derived_methods():
     assert derived_obj.method() == 1
 
     # Check if the recovery is correct
-    function_rewriter.enter()
+    function_rewriter.enter(env=collect_env(Backend.DEFAULT, ir=IR.DEFAULT))
     assert base_obj.method() == 2
     assert derived_obj.method() == 2
     function_rewriter.exit()
