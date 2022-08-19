@@ -16,7 +16,7 @@ function getFullName() {
 }
 
 ## parameters
-codebase=$1
+export codebase=$1
 getFullName $codebas
 # backends=$d2
 
@@ -37,6 +37,7 @@ cmake .. -DMMDEPLOY_BUILD_SDK=ON -DMMDEPLOY_BUILD_EXAMPLES=ON \
         -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR}
 make -j $(nproc) && make install
 cd ../
+conda init bash
 
 ## start convert
 for TORCH_VERSION in 1.8.0 1.9.0 1.10.0 1.11.0 1.12.0
