@@ -760,8 +760,8 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">40.1</td>
     <td align="center">40.1</td>
     <td align="center">-</td>
-    <td align="center">39.1</td>
-    <td align="center">-</td>
+    <td align="center">40.1</td>
+    <td align="center">40.1</td>
     <td align="center">-</td>
     <td align="center">-</td>
   </tr>

@@ -4,7 +4,6 @@ from typing import Optional, Tuple
 
 import torch
 from torch import Tensor
-from torch.nn.functional import linear
 
 from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.utils.constants import Backend
@@ -40,10 +39,14 @@ def _scaled_dot_product_attention__default(
         attn_max = attn.max(-1, keepdim=True)[0]
 
     attn = attn - attn_max
-    Ns = attn.size(-1)
     attn_exp = attn.exp()
-    ones = attn.new_ones(1, Ns)
-    attn_sum = linear(attn_exp, ones) + 1e-7
+    if attn_exp.size(-1) > step:
+        attn_sum = attn_exp[..., :step].sum(-1, keepdim=True)
+        for i in range(step, attn_exp.size(-1), step):
+            attn_sum_new = attn_exp[..., i:i + step].sum(-1, keepdim=True)
+            attn_sum += attn_sum_new
+    else:
+        attn_sum = attn_exp.sum(-1, keepdim=True)
     attn = attn_exp / attn_sum
 
     # (B, Nt, Ns) x (B, Ns, E) -> (B, Nt, E)
