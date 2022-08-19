@@ -15,6 +15,7 @@ USER root
 
 WORKDIR /root/workspace
 ENV DEBIAN_FRONTEND=nointeractive
+ENV FORCE_CUDA="1"
 
 ### change the system source for installing libs
 ARG USE_SRC_INSIDE=false
