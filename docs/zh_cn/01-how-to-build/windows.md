@@ -12,13 +12,10 @@
       - [编译安装 Model Converter](#编译安装-model-converter)
         - [编译自定义算子](#编译自定义算子)
         - [安装 Model Converter](#安装-model-converter)
-      - [编译 SDK](#编译-sdk)
-      - [编译 Demo](#编译-demo)
+      - [编译 SDK 和 Demos](#编译-sdk-和-demos)
     - [注意事项](#注意事项)
 
 ______________________________________________________________________
-
-目前，MMDeploy 在 Windows 平台下仅提供源码编译安装方式。未来会提供预编译包方式。
 
 ## 源码安装
 
@@ -94,15 +91,15 @@ pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/$env:cu
   </tr>
   <tr>
     <td>pplcv </td>
-    <td>pplcv 是 openPPL 开发的高性能图像处理库。 <b>此依赖项为可选项，只有在 cuda 平台下，才需安装。而且，目前必须使用 v0.6.2，且需要使用 git clone 的方式下载源码并编译安装</b><br>
+    <td>pplcv 是 openPPL 开发的高性能图像处理库。 <b>此依赖项为可选项，只有在 cuda 平台下，才需安装。</b><br>
 <pre><code>
 git clone https://github.com/openppl-public/ppl.cv.git
 cd ppl.cv
-git checkout tags/v0.6.2 -b v0.6.2
+git checkout tags/v0.7.0 -b v0.7.0
 $env:PPLCV_DIR = "$pwd"
 mkdir pplcv-build
 cd pplcv-build
-cmake .. -G "Visual Studio 16 2019" -T v142 -A x64 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install -DHPCC_USE_CUDA=ON -DHPCC_MSVC_MD=ON
+cmake .. -G "Visual Studio 16 2019" -T v142 -A x64 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install -DPPLCV_USE_CUDA=ON -DPPLCV_USE_MSVC_STATIC_RUNTIME=OFF
 cmake --build . --config Release -- /m
 cmake --install . --config Release
 cd ../..
@@ -278,6 +275,7 @@ mkdir build -ErrorAction SilentlyContinue
 cd build
 cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DMMDEPLOY_TARGET_BACKENDS="ort" -DONNXRUNTIME_DIR="$env:ONNXRUNTIME_DIR"
 cmake --build . --config Release -- /m
+cmake --install . --config Release
 ```
 
 - **TensorRT** 自定义算子
@@ -287,6 +285,7 @@ mkdir build -ErrorAction SilentlyContinue
 cd build
 cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 -DMMDEPLOY_TARGET_BACKENDS="trt" -DTENSORRT_DIR="$env:TENSORRT_DIR" -DCUDNN_DIR="$env:CUDNN_DIR"
 cmake --build . --config Release -- /m
+cmake --install . --config Release
 ```
 
 - **ncnn** 自定义算子
@@ -305,7 +304,7 @@ pip install -e .
 - 有些依赖项是可选的。运行 `pip install -e .` 将进行最小化依赖安装。 如果需安装其他可选依赖项，请执行`pip install -r requirements/optional.txt`，
   或者 `pip install -e .[optional]`。其中，`[optional]`可以替换为：`all`、`tests`、`build` 或 `optional`。
 
-#### 编译 SDK
+#### 编译 SDK 和 Demos
 
 下文展示2个构建SDK的样例，分别用 ONNXRuntime 和 TensorRT 作为推理引擎。您可以参考它们，并结合前文 SDK 的编译选项说明，激活其他的推理引擎。
 
@@ -317,6 +316,8 @@ pip install -e .
   cd build
   cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
       -DMMDEPLOY_BUILD_SDK=ON `
+      -DMMDEPLOY_BUILD_EXAMPLES=ON `
+      -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON `
       -DMMDEPLOY_TARGET_DEVICES="cpu" `
       -DMMDEPLOY_TARGET_BACKENDS="ort" `
       -DMMDEPLOY_CODEBASES="all" `
@@ -334,6 +335,8 @@ pip install -e .
   cd build
   cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
     -DMMDEPLOY_BUILD_SDK=ON `
+    -DMMDEPLOY_BUILD_EXAMPLES=ON `
+    -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON `
     -DMMDEPLOY_TARGET_DEVICES="cuda" `
     -DMMDEPLOY_TARGET_BACKENDS="trt" `
     -DMMDEPLOY_CODEBASES="all" `
@@ -344,20 +347,6 @@ pip install -e .
   cmake --build . --config Release -- /m
   cmake --install . --config Release
   ```
-
-#### 编译 Demo
-
-```PowerShell
-cd $env:MMDEPLOY_DIR\build\install\example
-mkdir build -ErrorAction SilentlyContinue
-cd build
-cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
-  -DMMDeploy_DIR="$env:MMDEPLOY_DIR/build/install/lib/cmake/MMDeploy"
-
-cmake --build . --config Release -- /m
-
-$env:path = "$env:MMDEPLOY_DIR/build/install/bin;" + $env:path
-```
 
 ### 注意事项
 

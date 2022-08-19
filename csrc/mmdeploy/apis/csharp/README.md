@@ -25,7 +25,7 @@ To use the nuget package, you also need to download the backend dependencies. Fo
 
 Before building the c# api, you need to build sdk first. Please follow this [tutorial](../../../docs/en/build/windows.md)/[教程](../../../docs/zh_cn/build/windows.md) to build sdk. Remember to set the MMDEPLOY_BUILD_SDK_CSHARP_API option to ON. We recommend setting `MMDEPLOY_SHARED_LIBS` to OFF and use the static third party libraries(pplcv, opencv, etc.). If so, you only need add the backend dependencies to your system path, or you need to add all dependencies.
 
-If you follow the tutorial, the MMDeployExtern.dll will be built in `build\bin\release`. Make sure the expected dll is in that path or the next step will throw a file-not-exist error.
+If you follow the tutorial, the mmdeploy.dll will be built in `build\bin\release`. Make sure the expected dll is in that path or the next step will throw a file-not-exist error.
 
 **Step 1.** Build MMDeploy nuget package.
 

@@ -5,9 +5,9 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <string>
 
-#include "restorer.h"
+#include "mmdeploy/restorer.h"
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   if (argc != 4) {
     fprintf(stderr, "usage:\n  image_restorer device_name model_path image_path\n");
     return 1;
@@ -21,19 +21,20 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  mm_handle_t restorer{};
+  mmdeploy_restorer_t restorer{};
   int status{};
   status = mmdeploy_restorer_create_by_path(model_path, device_name, 0, &restorer);
-  if (status != MM_SUCCESS) {
+  if (status != MMDEPLOY_SUCCESS) {
     fprintf(stderr, "failed to create restorer, code: %d\n", (int)status);
     return 1;
   }
 
-  mm_mat_t mat{img.data, img.rows, img.cols, 3, MM_BGR, MM_INT8};
+  mmdeploy_mat_t mat{
+      img.data, img.rows, img.cols, 3, MMDEPLOY_PIXEL_FORMAT_BGR, MMDEPLOY_DATA_TYPE_UINT8};
 
-  mm_mat_t *result{};
+  mmdeploy_mat_t* result{};
   status = mmdeploy_restorer_apply(restorer, &mat, 1, &result);
-  if (status != MM_SUCCESS) {
+  if (status != MMDEPLOY_SUCCESS) {
     fprintf(stderr, "failed to apply restorer, code: %d\n", (int)status);
     return 1;
   }

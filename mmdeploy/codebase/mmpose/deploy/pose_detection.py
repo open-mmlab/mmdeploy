@@ -38,6 +38,8 @@ def process_model_config(
     sdk_pipeline = []
     color_type = 'color'
     channel_order = 'rgb'
+    if input_shape is None:
+        input_shape = np.array(cfg.data_cfg['image_size'])
 
     idx = 0
     while idx < len(test_pipeline):
@@ -99,7 +101,11 @@ class PoseDetection(BaseTask):
         """
         from .pose_detection_model import build_pose_detection_model
         model = build_pose_detection_model(
-            model_files, self.model_cfg, self.deploy_cfg, device=self.device)
+            model_files,
+            self.model_cfg,
+            self.deploy_cfg,
+            device=self.device,
+            **kwargs)
         return model.eval()
 
     def build_pytorch_model(self,

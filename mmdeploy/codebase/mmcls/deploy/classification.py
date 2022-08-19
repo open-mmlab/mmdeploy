@@ -169,7 +169,7 @@ class Classification(BaseTask):
         model_cfg = self.model_cfg
         assert 'test_pipeline' in model_cfg, \
             f'test_pipeline not found in {model_cfg}.'
-        from mmcls.datasets.pipelines import Compose
+        from mmengine.dataset import Compose
         pipeline = deepcopy(model_cfg.test_pipeline)
 
         if isinstance(imgs, str):
@@ -255,8 +255,14 @@ class Classification(BaseTask):
             dict: Composed of the postprocess information.
         """
         postprocess = self.model_cfg.model.head
-        assert 'topk' in postprocess, 'model config lack topk'
-        postprocess.topk = max(postprocess.topk)
+        if 'topk' not in postprocess:
+            topk = (1, )
+            logger = get_root_logger()
+            logger.warning('no topk in postprocess config, using default \
+                 topk value.')
+        else:
+            topk = postprocess.topk
+        postprocess.topk = max(topk)
         return postprocess
 
     def get_model_name(self) -> str:

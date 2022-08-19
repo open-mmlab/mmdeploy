@@ -125,7 +125,6 @@ Result<unique_ptr<Pipeline>> PipelineParser::Parse(const Value& config) {
 
     use_count_.resize(size + 1);
 
-    // MMDEPLOY_INFO("pipeline->inputs: {}", pipeline->inputs());
     OUTCOME_TRY(UpdateOutputCoords(static_cast<int>(size), pipeline->inputs()));
     for (auto task_config : task_configs) {
       auto index = static_cast<int>(nodes.size());
@@ -143,7 +142,7 @@ Result<unique_ptr<Pipeline>> PipelineParser::Parse(const Value& config) {
         OUTCOME_TRY(UpdateOutputCoords(index, node->outputs()));
         nodes.push_back(std::move(node));
       } else {
-        MMDEPLOY_ERROR("could not create {}: {}", name, type);
+        MMDEPLOY_ERROR("Could not create {}: {}", type, name);
         return Status(eFail);
       }
     }
@@ -163,7 +162,6 @@ Result<unique_ptr<Pipeline>> PipelineParser::Parse(const Value& config) {
 }
 
 Result<vector<Pipeline::Coords>> PipelineParser::GetInputCoords(const vector<string>& names) {
-  // MMDEPLOY_INFO("GetInputCoords: {}", names);
   vector<Pipeline::Coords> ret;
   ret.reserve(names.size());
   for (int i = 0; i < names.size(); ++i) {
@@ -192,7 +190,6 @@ Result<void> PipelineParser::UpdateOutputCoords(int index, const vector<string>&
       MMDEPLOY_ERROR("duplicate output: ", output);
       return Status(eNotSupported);
     } else {
-      // MMDEPLOY_ERROR("insert: {}", output);
       output_name_to_coords_.insert({output, {index, i}});
     }
   }
@@ -202,9 +199,12 @@ Result<void> PipelineParser::UpdateOutputCoords(int index, const vector<string>&
 class PipelineCreator : public Creator<Node> {
  public:
   const char* GetName() const override { return "Pipeline"; }
-  int GetVersion() const override { return 0; }
   std::unique_ptr<Node> Create(const Value& value) override {
-    return PipelineParser{}.Parse(value).value();
+    try {
+      return PipelineParser{}.Parse(value).value();
+    } catch (...) {
+    }
+    return nullptr;
   }
 };
 

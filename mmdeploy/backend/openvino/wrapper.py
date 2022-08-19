@@ -136,7 +136,7 @@ class OpenVINOWrapper(BaseWrapper):
         outputs = self.__process_outputs(outputs)
         return outputs
 
-    @TimeCounter.count_time()
+    @TimeCounter.count_time(Backend.OPENVINO.value)
     def __openvino_execute(
             self, inputs: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
         """Run inference with OpenVINO IE.

@@ -14,7 +14,7 @@
 
 以 ncnn backend 为例，完整的工作流如下：
 
-```mermaid
+```{mermaid}
 flowchart TD;
      torch模型-->非标准onnx;
      非标准onnx-->ncnn-fp32;

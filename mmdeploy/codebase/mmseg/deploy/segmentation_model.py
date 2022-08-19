@@ -41,15 +41,19 @@ class End2EndModel(BaseBackendModel):
                  backend_files: Sequence[str],
                  device: str,
                  deploy_cfg: Union[str, Config] = None,
-                 data_preprocessor: Optional[Union[dict, nn.Module]] = None):
+                 data_preprocessor: Optional[Union[dict, nn.Module]] = None,
+                 **kwargs):
         super(End2EndModel, self).__init__(
             deploy_cfg=deploy_cfg, data_preprocessor=data_preprocessor)
         self.deploy_cfg = deploy_cfg
         self.device = device
         self._init_wrapper(
-            backend=backend, backend_files=backend_files, device=device)
+            backend=backend,
+            backend_files=backend_files,
+            device=device,
+            **kwargs)
 
-    def _init_wrapper(self, backend, backend_files, device):
+    def _init_wrapper(self, backend, backend_files, device, **kwargs):
         output_names = self.output_names
         self.wrapper = BaseBackendModel._build_wrapper(
             backend=backend,
@@ -57,7 +61,8 @@ class End2EndModel(BaseBackendModel):
             device=device,
             input_names=[self.input_name],
             output_names=output_names,
-            deploy_cfg=self.deploy_cfg)
+            deploy_cfg=self.deploy_cfg,
+            **kwargs)
 
     def forward(self,
                 batch_inputs: torch.Tensor,
@@ -125,8 +130,7 @@ class SDKEnd2EndModel(End2EndModel):
         Returns:
             list: A list contains predictions.
         """
-        masks = self.wrapper.invoke(
-            [img[0].contiguous().detach().cpu().numpy()])[0]
+        masks = self.wrapper.invoke(img[0].contiguous().detach().cpu().numpy())
         return masks
 
 

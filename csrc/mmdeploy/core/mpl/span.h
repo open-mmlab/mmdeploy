@@ -58,6 +58,13 @@ class Span {
             typename = std::void_t<decltype(std::size(std::declval<U>()))>>
   constexpr Span(U& v) : data_(std::data(v)), size_(std::size(v)) {}
 
+  template <typename U, typename = std::void_t<decltype(std::data(std::declval<U>()))>,
+            typename = std::void_t<decltype(std::size(std::declval<U>()))>>
+  constexpr Span(const U& v) : data_(std::data(v)), size_(std::size(v)) {}
+
+  template <typename U>
+  constexpr Span(std::initializer_list<U> il) noexcept : Span(il.begin(), il.size()) {}
+
   template <std::size_t N>
   constexpr Span(element_type (&arr)[N]) noexcept : data_(std::data(arr)), size_(N) {}
 
@@ -79,9 +86,9 @@ class Span {
   constexpr Span<element_type> last(size_type count) const { return {end() - count, count}; }
   constexpr Span<element_type> subspan(size_type offset, size_type count = -1) const {
     if (count == -1) {
-      return {begin() + offset, end()};
+      return Span(begin() + offset, end());
     } else {
-      return {begin() + offset, begin() + offset + count};
+      return Span(begin() + offset, begin() + offset + count);
     }
   }
 
@@ -113,6 +120,9 @@ Span(T (&)[N]) -> Span<T>;
 template <typename U, typename = std::void_t<decltype(std::declval<U>().data())>,
           typename = std::void_t<decltype(std::declval<U>().size())>>
 Span(U& v) -> Span<typename uncvref_t<U>::value_type>;
+
+template <typename T>
+Span(std::initializer_list<T>) -> Span<const T>;
 // clang-format on
 }  // namespace mmdeploy
 

@@ -31,6 +31,7 @@ You can switch between Chinese and English documents in the lower-left corner of
 
    03-benchmark/supported_models.md
    03-benchmark/benchmark.md
+   03-benchmark/benchmark_edge.md
 
 .. toctree::
    :maxdepth: 1
@@ -72,11 +73,17 @@ You can switch between Chinese and English documents in the lower-left corner of
    06-developer-guide/support_new_backend.md
    06-developer-guide/add_test_units_for_backend_ops.md
    06-developer-guide/test_rewritten_models.md
+   06-developer-guide/partition_model.md
 
 .. toctree::
    :maxdepth: 1
    :caption: Tutorials on Model Deployment
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Appendix
+
+   appendix/cross_build_snpe_service.md
 
 .. toctree::
    :maxdepth: 1

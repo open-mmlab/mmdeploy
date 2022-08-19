@@ -559,6 +559,27 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">89.85</td>
     <td align="center">90.41</td>
   </tr>
+  <tr>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmclassification/blob/master/configs/vision_transformer/vit-base-p16_ft-64xb64_in1k-384.py">Vision Transformer</a></td>
+    <td align="center">top-1</td>
+    <td align="center">85.43</td>
+    <td align="center">85.43</td>
+    <td align="center">-</td>
+    <td align="center">85.43</td>
+    <td align="center">85.42</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <td align="center">top-5</td>
+    <td align="center">97.77</td>
+    <td align="center">97.77</td>
+    <td align="center">-</td>
+    <td align="center">97.77</td>
+    <td align="center">97.76</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
 </tbody>
 </table>
 </div>
@@ -751,6 +772,29 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
     <td align="center">33.7</td>
     <td align="center">33.7</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmdetection/blob/master/configs/swin/mask_rcnn_swin-t-p4-w7_fpn_1x_coco.py">Swin-Transformer</a></td>
+    <td align="center" rowspan="2">Instance Segmentation</td>
+    <td align="center" rowspan="2">COCO2017</td>
+    <td align="center">box AP</td>
+    <td align="center">42.7</td>
+    <td align="center">-</td>
+    <td align="center">42.7</td>
+    <td align="center">42.5</td>
+    <td align="center">37.7</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <td align="center">mask AP</td>
+    <td align="center">39.3</td>
+    <td align="center">-</td>
+    <td align="center">39.3</td>
+    <td align="center">39.3</td>
+    <td align="center">35.4</td>
     <td align="center">-</td>
     <td align="center">-</td>
   </tr>
@@ -1441,6 +1485,18 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
     <td align="center">-</td>
   </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/blob/master/configs/segmenter/segmenter_vit-s_linear_8x1_512x512_160k_ade20k.py">Segmenter</a></td>
+    <td align="center">ADE20K</td>
+    <td align="center">mIoU</td>
+    <td align="center">44.32</td>
+    <td align="center">44.29</td>
+    <td align="center">44.29</td>
+    <td align="center">44.29</td>
+    <td align="center">43.34</td>
+    <td align="center">43.35</td>
+    <td align="center">-</td>
+  </tr>
 </tbody>
 </table>
 </div>
@@ -1580,7 +1636,31 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">mAP</td>
     <td align="center">0.756</td>
     <td align="center">0.756</td>
+    <td align="center">0.758</td>
+    <td align="center">0.730</td>
     <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/open-mmlab/mmrotate/blob/main/configs/gliding_vertex/gliding_vertex_r50_fpn_1x_dota_le90.py">GlidingVertex</a></td>
+    <td align="center">Rotated Detection</td>
+    <td align="center">DOTA-v1.0</td>
+    <td align="center">mAP</td>
+    <td align="center">0.732</td>
+    <td align="center">-</td>
+    <td align="center">0.733</td>
+    <td align="center">0.731</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/open-mmlab/mmrotate/blob/main/configs/roi_trans/roi_trans_r50_fpn_1x_dota_le90.py">RoI Transformer</a></td>
+    <td align="center">Rotated Detection</td>
+    <td align="center">DOTA-v1.0</td>
+    <td align="center">mAP</td>
+    <td align="center">0.761</td>
+    <td align="center">-</td>
+    <td align="center">0.758</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
