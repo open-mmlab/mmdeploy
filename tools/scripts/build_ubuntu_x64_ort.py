@@ -47,7 +47,7 @@ def ensure_env(work_dir, dep_dir):
     cmake = cmd_result('which cmake')
     if cmake is None or len(cmake) < 1:
         print('cmake not found, try install cmake ..', end='')
-        os.system('python3 -m pip install cmake ==3.14.0')
+        os.system('python3 -m pip install cmake>=3.14.0')
 
         cmake = cmd_result('which cmake')
         if cmake is None or len(cmake) < 1:
@@ -230,14 +230,18 @@ def install_ort(dep_dir):
     # generate unzip and build dir
     os.chdir(dep_dir)
 
+    # install python onnxruntime
+    os.system('python3 -m pip install onnxruntime==1.8.1')
     # git clone
     if not os.path.exists('onnxruntime-linux-x64-1.8.1'):
         os.system(
-            'wget wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz && tar xf onnxruntime-linux-x64-1.8.1.tgz'  # noqa: E501
+            'wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz'  # noqa: E501
         )
+        os.system('tar xvf  onnxruntime-linux-x64-1.8.1.tgz')
 
     ort_dir = os.path.join(dep_dir, 'onnxruntime-linux-x64-1.8.1')
-
+    print('onnxruntime dir \t:{}'.format(ort_dir))
+    print('\n')
     return ort_dir
 
 
@@ -257,8 +261,7 @@ def install_mmdeploy(work_dir, dep_dir, ort_dir):
     cmd += ' -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON '
     cmd += ' -DMMDEPLOY_TARGET_DEVICES=cpu '
     cmd += ' -DMMDEPLOY_TARGET_BACKENDS=ort '
-    cmd += ' -DMMDEPLOY_CODEBASES=all '
-    cmd += ' -Dort_DIR={} '.format(ort_dir)
+    cmd += ' -DONNXRUNTIME_DIR={} '.format(ort_dir)
     os.system(cmd)
 
     os.system('cd build && make -j {} && make install'.format(g_jobs))

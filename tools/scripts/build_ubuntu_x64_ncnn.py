@@ -70,7 +70,7 @@ def ensure_env(work_dir, dep_dir):
     cmake = cmd_result('which cmake')
     if cmake is None or len(cmake) < 1:
         print('cmake not found, try install cmake ..', end='')
-        os.system('python3 -m pip install cmake ==3.14.0')
+        os.system('python3 -m pip install cmake>=3.14.0')
 
         cmake = cmd_result('which cmake')
         if cmake is None or len(cmake) < 1:
@@ -289,6 +289,7 @@ def install_pyncnn(dep_dir):
     ncnn_cmake_dir = os.path.join(ncnn_dir, 'build', 'install', 'lib', 'cmake',
                                   'ncnn')
     assert (os.path.exists(ncnn_cmake_dir))
+    print('ncnn cmake dir \t:{}'.format(ncnn_cmake_dir))
     print('\n')
     return ncnn_cmake_dir
 
@@ -314,7 +315,6 @@ def install_mmdeploy(work_dir, dep_dir, ncnn_cmake_dir):
     cmd += ' -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON '
     cmd += ' -DMMDEPLOY_TARGET_DEVICES=cpu '
     cmd += ' -DMMDEPLOY_TARGET_BACKENDS=ncnn '
-    cmd += ' -DMMDEPLOY_CODEBASES=all '
     cmd += ' -DProtobuf_PROTOC_EXECUTABLE={} '.format(pb_bin)
     cmd += ' -DProtobuf_LIBRARIES={} '.format(pb_lib)
     cmd += ' -DProtobuf_INCLUDE_DIR={} '.format(pb_include)
