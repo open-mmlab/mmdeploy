@@ -223,19 +223,19 @@ def ensure_env(work_dir, dep_dir):
     return 0, envs
 
 
-def install_ort(dep_dir):
-    print('-' * 10 + 'install ort' + '-' * 10)
+def install_pplnn(dep_dir):
+    print('-' * 10 + 'install pplnn' + '-' * 10)
     time.sleep(2)
 
     # generate unzip and build dir
     os.chdir(dep_dir)
 
     # install python onnxruntime
-    os.system('python3 -m pip install onnxruntime==1.8.1')
+    os.system('python3 -m pip install openvino-dev')
     # git clone
     if not os.path.exists('onnxruntime-linux-x64-1.8.1'):
         os.system(
-            'wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz'  # noqa: E501
+            'wget https://registrationcenter-download.intel.com/akdlm/irc_nas/18617/l_openvino_toolkit_p_2022.1.0.643_offline.sh'  # noqa: E501
         )
         os.system('tar xvf  onnxruntime-linux-x64-1.8.1.tgz')
 
@@ -245,7 +245,7 @@ def install_ort(dep_dir):
     return ort_dir
 
 
-def install_mmdeploy(work_dir, ort_dir):
+def install_mmdeploy(work_dir, dep_dir, ort_dir):
     print('-' * 10 + 'build and install mmdeploy' + '-' * 10)
     time.sleep(3)
 
@@ -291,9 +291,9 @@ def main():
     if success != 0:
         return -1
 
-    ort_dir = install_ort(dep_dir)
+    pplnn_dir = install_pplnn(dep_dir)
 
-    if install_mmdeploy(work_dir, ort_dir) != 0:
+    if install_mmdeploy(work_dir, dep_dir, pplnn_dir) != 0:
         return -1
 
     if len(envs) > 0:

@@ -26,3 +26,4 @@ $ python3 tools/scripts/build_ubuntu_x64_ncnn.py
 |          script          | OS version  |
 | :----------------------: | :---------: |
 | build_ubuntu_x64_ncnn.py | 18.04/20.04 |
+| build_ubuntu_x64_ort.py  | 18.04/20.04 |
