@@ -108,61 +108,43 @@ $ unzip android-ndk-r23b-linux.zip
 $ export ANDROID_NDK_ROOT=`realpath android-ndk-r23b`
 ```
 
-### 2) Compile mmdeploy SDK
+### 2) Compile mmdeploy SDK and demo
 
 ```bash
 $ cd /path/to/mmdeploy
 $ mkdir build && cd build
 $ cmake .. \
-  -DMMDEPLOY_BUILD_SDK=ON   -DMMDEPLOY_CODEBASES=all \
+  -DMMDEPLOY_BUILD_SDK=ON \
   -DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK_ROOT}/build/cmake/android.toolchain.cmake \
-  -DMMDEPLOY_CODEBASES=all  -DMMDEPLOY_TARGET_BACKENDS=snpe \
+  -DMMDEPLOY_TARGET_BACKENDS=snpe \
   -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-30  \
   -DANDROID_STL=c++_static  \
   -DOpenCV_DIR=${ANDROID_OCV_ROOT}/sdk/native/jni/abi-arm64-v8a \
-  -DMMDEPLOY_SHARED_LIBS=ON
+  -DMMDEPLOY_BUILD_EXAMPLES=ON
 
   $ make && make install
-```
-
-| Options                       | Description                                                  |
-| ----------------------------- | ------------------------------------------------------------ |
-| DMMDEPLOY_CODEBASES=all       | Compile all algorithms' post-process                         |
-| CMAKE_TOOLCHAIN_FILE          | Load NDK parameters, mainly used to select compiler          |
-| MMDEPLOY_TARGET_BACKENDS=snpe | Inference backend                                            |
-| ANDROID_STL=c++\_static       | In case of NDK environment can not find suitable c++ library |
-| MMDEPLOY_SHARED_LIBS=ON       | snpe does not provide static library                         |
-
-### 3) Compile demo
-
-```bash
-$ cd /path/to/install/example
-$ mkdir build && cd build
-
-$ cmake .. \
-  -DMMDEPLOY_BUILD_SDK=ON   -DMMDEPLOY_CODEBASES=all \
-  -DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK_ROOT}/build/cmake/android.toolchain.cmake \
-  -DMMDEPLOY_CODEBASES=all  -DMMDEPLOY_TARGET_BACKENDS=snpe \
-  -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-30  \
-  -DANDROID_STL=c++_static  \
-  -DOpenCV_DIR=${ANDROID_OCV_ROOT}/sdk/native/jni/abi-arm64-v8a \
-  -DMMDEPLOY_SHARED_LIBS=ON \
-  -DMMDeploy_DIR=${PWD}/../../lib/cmake/MMDeploy
-
-$ make
-$ tree -L 1
-...
+  $ tree ./bin
+./bin
+├── image_classification
 ├── image_restorer
 ├── image_segmentation
+├── mmdeploy_onnx2ncnn
 ├── object_detection
 ├── ocr
 ├── pose_detection
 └── rotated_object_detection
 ```
 
-Just `adb push` the binary file and .so to the device and execute.
+| Options                       | Description                                                  |
+| ----------------------------- | ------------------------------------------------------------ |
+| CMAKE_TOOLCHAIN_FILE          | Load NDK parameters, mainly used to select compiler          |
+| MMDEPLOY_TARGET_BACKENDS=snpe | Inference backend                                            |
+| ANDROID_STL=c++\_static       | In case of NDK environment can not find suitable c++ library |
+| MMDEPLOY_SHARED_LIBS=ON       | snpe does not provide static library                         |
 
-### 4) Run the demo
+[Here](../01-how-to-build/cmake_option.md) is all cmake build option description.
+
+### 3) Run the demo
 
 First make sure that`--dump-info`is used during convert model, so that the `resnet18` directory has the files required by the SDK such as `pipeline.json`.
 
@@ -175,9 +157,7 @@ $ adb push tests/data/tiger.jpeg /data/local/tmp/resnet18/
 
 $ cd /path/to/install/
 $ adb push lib /data/local/tmp
-
-$ cd /path/to/install/example/build
-$ adb push image_classification /data/local/tmp/resnet18/
+$ adb push bin/image_classification /data/local/tmp/resnet18/
 ```
 
 Set up environment variable and execute the sample.
