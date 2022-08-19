@@ -105,5 +105,3 @@ RUN git clone https://github.com/openppl-public/ppl.cv.git &&\
     ./build.sh cuda
 ENV pplcv_DIR=/root/workspace/ppl.cv/cuda-build/install/lib/cmake/ppl
 
-### cp trt from pip to conda
-RUN cp -r /usr/local/lib/python${PYTHON_VERSION}/dist-packages/tensorrt* /opt/conda/lib/python${PYTHON_VERSION}/site-packages/
