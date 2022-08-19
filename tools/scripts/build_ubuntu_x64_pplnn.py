@@ -243,12 +243,12 @@ def install_pplnn(dep_dir):
     if nvcc is None or len(nvcc) < 1:
         # build CPU only
         os.system(
-            './build.sh -DPPLNN_USE_X86_64=ON  -DPPLNN_USE_OPENMP=ON -DPPLNN_ENABLE_PYTHON_API=ON'  # noqa: E501
+            './build.sh -DPPLNN_USE_X86_64=ON  -DPPLNN_ENABLE_PYTHON_API=ON'  # noqa: E501
         )
     else:
         # build with cuda
         os.system(
-            './build.sh -DPPLNN_USE_CUDA=ON -DPPLNN_USE_X86_64=ON  -DPPLNN_USE_OPENMP=ON -DPPLNN_ENABLE_PYTHON_API=ON'  # noqa: E501
+            './build.sh -DPPLNN_USE_CUDA=ON -DPPLNN_USE_X86_64=ON  -DPPLNN_ENABLE_PYTHON_API=ON'  # noqa: E501
         )
     os.system('cd python/package && ./build.sh')
     os.system(
