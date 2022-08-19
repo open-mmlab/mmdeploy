@@ -23,29 +23,6 @@ def cu_version_name(version: str) -> str:
     return 'cu' + versions[0] + versions[1]
 
 
-def install_protobuf(dep_dir) -> int:
-    """build and install protobuf.
-
-    Args:
-        wor_dir (_type_): _description_
-
-    Returns:
-        : _description_
-    """
-    os.chdir(dep_dir)
-    if not os.path.exists('protobuf-3.20.0'):
-        os.system(
-            'wget https://github.com/protocolbuffers/protobuf/releases/download/v3.20.0/protobuf-cpp-3.20.0.tar.gz'  # noqa: E501
-        )
-        os.system('tar xvf protobuf-cpp-3.20.0.tar.gz')
-
-    os.chdir(os.path.join(dep_dir, 'protobuf-3.20.0'))
-
-    install_dir = os.path.join(dep_dir, 'pbinstall')
-    os.system('./configure --prefix={}'.format(install_dir))
-    os.system('make -j {} && make install'.format(g_jobs))
-
-
 def ensure_env(work_dir, dep_dir):
     """check python, cmake and torch environment.
 
@@ -180,8 +157,8 @@ def ensure_env(work_dir, dep_dir):
         print('success')
 
     # protoc
-    install_protobuf(dep_dir)
-    protoc = os.path.join(dep_dir, 'pbinstall', 'bin', 'protoc')
+    # install_protobuf(dep_dir)
+    # protoc = os.path.join(dep_dir, 'pbinstall', 'bin', 'protoc')
 
     # opencv
     ocv = cmd_result('which opencv_version')
@@ -236,7 +213,7 @@ def ensure_env(work_dir, dep_dir):
     print('git bin\t\t:{}'.format(git))
     print('git version\t:{}'.format(
         cmd_result("git --version | awk '{print $3}' ")))
-    print('protoc \t:{}'.format(cmd_result('{} --version'.format(protoc))))
+    # print('protoc \t:{}'.format(cmd_result('{} --version'.format(protoc))))
     # work dir
     print('work dir \t:{}'.format(work_dir))
     # dep dir
@@ -246,65 +223,31 @@ def ensure_env(work_dir, dep_dir):
     return 0, envs
 
 
-def install_pyncnn(dep_dir):
-    print('-' * 10 + 'build and install pyncnn' + '-' * 10)
+def install_ort(dep_dir):
+    print('-' * 10 + 'install ort' + '-' * 10)
     time.sleep(2)
 
     # generate unzip and build dir
     os.chdir(dep_dir)
 
     # git clone
-    if not os.path.exists('ncnn'):
+    if not os.path.exists('onnxruntime-linux-x64-1.8.1'):
         os.system(
-            'git clone https://github.com/tencent/ncnn && cd ncnn && git checkout 20220729'  # noqa: E501
+            'wget wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz && tar xf onnxruntime-linux-x64-1.8.1.tgz'  # noqa: E501
         )
 
-    ncnn_dir = os.path.join(dep_dir, 'ncnn')
-    os.chdir(ncnn_dir)
+    ort_dir = os.path.join(dep_dir, 'onnxruntime-linux-x64-1.8.1')
 
-    # update submodule pybind11, gslang not required
-    os.system('git submodule init && git submodule update python/pybind11')
-    # build
-    if not os.path.exists('build'):
-        os.system('mkdir build')
-
-    os.chdir(os.path.join(ncnn_dir, 'build'))
-    pb_install = os.path.join(dep_dir, 'pbinstall')
-    pb_bin = os.path.join(pb_install, 'bin', 'protoc')
-    pb_lib = os.path.join(pb_install, 'lib', 'libprotobuf.so')
-    pb_include = os.path.join(pb_install, 'include')
-
-    cmd = 'cmake .. '
-    cmd += ' -DNCNN_PYTHON=ON '
-    cmd += ' -DProtobuf_LIBRARIES={} '.format(pb_lib)
-    cmd += ' -DProtobuf_PROTOC_EXECUTABLE={} '.format(pb_bin)
-    cmd += ' -DProtobuf_INCLUDE_DIR={} '.format(pb_include)
-    cmd += ' && make -j {} '.format(g_jobs)
-    cmd += ' && make install '
-    os.system(cmd)
-
-    # install
-    os.chdir(ncnn_dir)
-    os.system('cd python && python -m pip install -e .')
-    ncnn_cmake_dir = os.path.join(ncnn_dir, 'build', 'install', 'lib', 'cmake',
-                                  'ncnn')
-    assert (os.path.exists(ncnn_cmake_dir))
-    print('\n')
-    return ncnn_cmake_dir
+    return ort_dir
 
 
-def install_mmdeploy(work_dir, dep_dir, ncnn_cmake_dir):
+def install_mmdeploy(work_dir, dep_dir, ort_dir):
     print('-' * 10 + 'build and install mmdeploy' + '-' * 10)
     time.sleep(3)
 
     os.chdir(work_dir)
     if not os.path.exists('build'):
         os.system('mkdir build')
-
-    pb_install = os.path.join(dep_dir, 'pbinstall')
-    pb_bin = os.path.join(pb_install, 'bin', 'protoc')
-    pb_lib = os.path.join(pb_install, 'lib', 'libprotobuf.so')
-    pb_include = os.path.join(pb_install, 'include')
 
     cmd = 'cd build && cmake ..'
     cmd += ' -DCMAKE_C_COMPILER=gcc-7 '
@@ -313,25 +256,22 @@ def install_mmdeploy(work_dir, dep_dir, ncnn_cmake_dir):
     cmd += ' -DMMDEPLOY_BUILD_EXAMPLES=ON '
     cmd += ' -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON '
     cmd += ' -DMMDEPLOY_TARGET_DEVICES=cpu '
-    cmd += ' -DMMDEPLOY_TARGET_BACKENDS=ncnn '
+    cmd += ' -DMMDEPLOY_TARGET_BACKENDS=ort '
     cmd += ' -DMMDEPLOY_CODEBASES=all '
-    cmd += ' -DProtobuf_PROTOC_EXECUTABLE={} '.format(pb_bin)
-    cmd += ' -DProtobuf_LIBRARIES={} '.format(pb_lib)
-    cmd += ' -DProtobuf_INCLUDE_DIR={} '.format(pb_include)
-    cmd += ' -Dncnn_DIR={} '.format(ncnn_cmake_dir)
+    cmd += ' -Dort_DIR={} '.format(ort_dir)
     os.system(cmd)
 
     os.system('cd build && make -j {} && make install'.format(g_jobs))
-    os.system('python3 -m pip install -v -e .')
+    os.system('python3 -m pip install -e .')
     return 0
 
 
 def main():
-    """Auto install mmdeploy with ncnn. To verify this script:
+    """Auto install mmdeploy with ort. To verify this script:
 
     1) use `sudo docker run -v /path/to/mmdeploy:/root/mmdeploy -v /path/to/Miniconda3-latest-Linux-x86_64.sh:/root/miniconda.sh -it ubuntu:18.04 /bin/bash` # noqa: E501
     2) install conda and setup python environment
-    3) run `python3 tools/scripts/build_ubuntu_x64_ncnn.py`
+    3) run `python3 tools/scripts/build_ubuntu_x64_ort.py`
 
     Returns:
         _type_: _description_
@@ -348,9 +288,9 @@ def main():
     if success != 0:
         return -1
 
-    ncnn_cmake_dir = install_pyncnn(dep_dir)
+    ort_dir = install_ort(dep_dir)
 
-    if install_mmdeploy(work_dir, dep_dir, ncnn_cmake_dir) != 0:
+    if install_mmdeploy(work_dir, dep_dir, ort_dir) != 0:
         return -1
 
     if len(envs) > 0:
