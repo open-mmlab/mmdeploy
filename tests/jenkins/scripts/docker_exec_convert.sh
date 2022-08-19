@@ -17,7 +17,7 @@ function getFullName() {
 
 ## parameters
 export codebase=$1
-getFullName $codebas
+getFullName $codebase
 # backends=$d2
 
 ## clone ${codebase}
