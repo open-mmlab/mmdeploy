@@ -3,6 +3,7 @@
 import argparse
 import os
 import os.path as osp
+import pathlib
 import shutil
 import subprocess
 from glob import glob
@@ -12,18 +13,16 @@ import yaml
 
 from mmdeploy.backend.sdk.export_info import (get_preprocess,
                                               get_transform_static)
-from mmdeploy.utils import load_config
+from mmdeploy.utils import get_root_logger, load_config
 
+print(pathlib.Path(__file__).resolve())
+MMDEPLOY_PATH = pathlib.Path(__file__).parent.parent.parent.resolve()
 ELENA_BIN = 'OpFuse'
+logger = get_root_logger()
 
 CODEBASE = [
-    'mmclassification',
-    'mmdetection',
-    # 'mmpose',
-    'mmrotate',
-    'mmocr',
-    'mmsegmentation',
-    'mmediting'
+    'mmclassification', 'mmdetection', 'mmpose', 'mmrotate', 'mmocr',
+    'mmsegmentation', 'mmediting'
 ]
 
 DEPLOY_CFG = {
@@ -85,8 +84,8 @@ REGISTER_FUSE_KERNEL(#TAG#_cuda, "#TAG#_cuda",
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Extract transform.')
-    parser.add_argument('root_path', help='root path to codebase')
-    parser.add_argument('mmmdeploy_path', help='mmdeploy path')
+    parser.add_argument(
+        'root_path', help='parent path to codebase(mmdetection for example)')
     args = parser.parse_args()
     return args
 
@@ -113,8 +112,8 @@ def append_info(device, tag):
 
 
 def generate_source_code(preprocess, transform_static, tag, args):
-    kernel_base_dir = osp.join(args.mmmdeploy_path, 'csrc', 'mmdeploy',
-                               'preprocess', 'elena')
+    kernel_base_dir = osp.join(MMDEPLOY_PATH, 'csrc', 'mmdeploy', 'preprocess',
+                               'elena')
     cpu_work_dir = osp.join(kernel_base_dir, 'cpu_kernel')
     cuda_work_dir = osp.join(kernel_base_dir, 'cuda_kernel')
     dst_cpu_kernel_file = osp.join(cpu_work_dir, f'{tag}.cpp')
@@ -161,7 +160,7 @@ def extract_one_metafile(metafile, codebase, args):
             task_name = model['Results'][0]['Task']
             if task_name not in known_task:
                 continue
-            deploy_cfg = osp.join(args.mmmdeploy_path, DEPLOY_CFG[task_name])
+            deploy_cfg = osp.join(MMDEPLOY_PATH, DEPLOY_CFG[task_name])
             model_cfg = osp.join(args.root_path, codebase, cfg)
             extract_one_model(deploy_cfg, model_cfg, args)
         except Exception:
@@ -172,12 +171,15 @@ def main():
     args = parse_args()
     global ELENA_BIN
     elena_path = osp.abspath(
-        os.path.join(args.mmmdeploy_path, 'third_party', 'CVFusion', 'build',
+        os.path.join(MMDEPLOY_PATH, 'third_party', 'CVFusion', 'build',
                      'examples', 'MMDeploy', 'OpFuse'))
     if osp.exists(elena_path):
         ELENA_BIN = elena_path
 
     for cb in CODEBASE:
+        if not os.path.exists(osp.join(args.root_path, cb)):
+            logger.warning(f'skip codebase {cb} because it isn\'t exists.')
+            continue
         metafile_pattern = osp.join(args.root_path, cb, 'configs', '**/*.yml')
         metafiles = glob(metafile_pattern, recursive=True)
         for metafile in metafiles:
