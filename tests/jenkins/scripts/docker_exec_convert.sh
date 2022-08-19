@@ -22,7 +22,7 @@ getFullName $codebas
 
 ## clone ${codebase}
 cd /root/workspace
-git clone git@github.com:open-mmlab/${codebase_fullname}.git 
+git clone https://github.com/open-mmlab/${codebase_fullname}.git
 
 ## build mmdeploy
 cd mmdeploy
