@@ -8,7 +8,7 @@ from mmdeploy.utils import load_config
 
 
 def generate_datasample(h, w):
-    from mmseg.core import SegDataSample
+    from mmseg.data import SegDataSample
     metainfo = dict(img_shape=(h, w), ori_shape=(h, w), pad_shape=(h, w))
     data_sample = SegDataSample()
     data_sample.set_metainfo(metainfo)

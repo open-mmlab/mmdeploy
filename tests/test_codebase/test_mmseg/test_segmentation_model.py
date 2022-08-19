@@ -43,7 +43,7 @@ class TestEnd2EndModel:
         cls.wrapper.recover()
 
     def test_forward(self):
-        from mmseg.core import SegDataSample
+        from mmseg.data import SegDataSample
         imgs = torch.rand(1, 3, IMAGE_SIZE, IMAGE_SIZE)
         data_samples = [generate_datasample(IMAGE_SIZE, IMAGE_SIZE)]
         results = self.end2end_model.forward(imgs, data_samples)

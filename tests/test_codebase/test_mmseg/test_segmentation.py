@@ -93,7 +93,7 @@ def test_build_data_preprocessor():
 
 
 def test_get_visualizer():
-    from mmseg.core.visualization import SegLocalVisualizer
+    from mmseg.visualization import SegLocalVisualizer
     tmp_dir = TemporaryDirectory().name
     visualizer = task_processor.get_visualizer('ort', tmp_dir)
     assert isinstance(visualizer, SegLocalVisualizer)

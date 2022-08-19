@@ -31,8 +31,8 @@ test_evaluator = val_evaluator
 norm_cfg = dict(type='SyncBN', requires_grad=True, momentum=0.01)
 data_preprocessor = dict(
     type='SegDataPreProcessor',
-    mean=[72.39239876, 82.90891754, 73.15835921],
-    std=[1, 1, 1],
+    mean=[123.675, 116.28, 103.53],
+    std=[58.395, 57.12, 57.375],
     bgr_to_rgb=True,
     pad_val=0,
     seg_pad_val=255)
