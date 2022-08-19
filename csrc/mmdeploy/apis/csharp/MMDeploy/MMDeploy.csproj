@@ -14,10 +14,10 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <MMDeployExternalNativeDlls>$(MSBuildThisFileDirectory)\..\..\..\..</MMDeployExternalNativeDlls>
+    <MMDeployNativeDlls>$(MSBuildThisFileDirectory)\..\..\..\..\..</MMDeployNativeDlls>
   </PropertyGroup>
   <ItemGroup>
-    <Content CopyToOutputDirectory="PreserveNewest" Include="$(MMDeployExternalNativeDlls)\build\bin\Release\MMDeployExtern.dll" Pack="true" PackagePath="runtimes\win-x64\native\MMDeployExtern.dll" />
+    <Content CopyToOutputDirectory="PreserveNewest" Include="$(MMDeployNativeDlls)\build\bin\Release\mmdeploy.dll" Pack="true" PackagePath="runtimes\win-x64\native\mmdeploy.dll" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

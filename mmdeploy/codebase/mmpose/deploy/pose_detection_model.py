@@ -51,11 +51,14 @@ class End2EndModel(BaseBackendModel):
         self.model_cfg = model_cfg
         self.device = device
         self._init_wrapper(
-            backend=backend, backend_files=backend_files, device=device)
+            backend=backend,
+            backend_files=backend_files,
+            device=device,
+            **kwargs)
         # create head for decoding heatmap
         self.head = builder.build_head(model_cfg.model.head)
 
-    def _init_wrapper(self, backend, backend_files, device):
+    def _init_wrapper(self, backend, backend_files, device, **kwargs):
         """Initialize backend wrapper.
 
         Args:
@@ -71,7 +74,8 @@ class End2EndModel(BaseBackendModel):
             device=device,
             input_names=[self.input_name],
             output_names=output_names,
-            deploy_cfg=self.deploy_cfg)
+            deploy_cfg=self.deploy_cfg,
+            **kwargs)
 
     def forward(self,
                 batch_inputs: torch.Tensor,
@@ -184,8 +188,7 @@ class SDKEnd2EndModel(End2EndModel):
             bbox_ids.append(img_meta['bbox_id'])
 
         pred = self.wrapper.handle(
-            [batch_inputs[0].contiguous().detach().cpu().numpy()],
-            [sdk_boxes])[0]
+            [batch_inputs[0].contiguous().detach().cpu().numpy()], sdk_boxes)
 
         result = dict(
             preds=pred,

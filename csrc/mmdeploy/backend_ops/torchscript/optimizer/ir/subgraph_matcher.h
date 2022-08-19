@@ -17,6 +17,8 @@ class SubgraphMatcher {
  public:
   explicit SubgraphMatcher(const Graph& pattern, MatchAttribute match_attribute = TRY_MATCH);
 
+  ~SubgraphMatcher();
+
   bool matchesSubgraphFromAnchorNode(Node* anchor);
 
   /** \brief Return match map for nodes. */
@@ -27,7 +29,7 @@ class SubgraphMatcher {
 
  private:
   class SubgraphMatcherImpl;
-  std::unique_ptr<SubgraphMatcherImpl> impl_ = nullptr;
+  std::unique_ptr<SubgraphMatcherImpl> impl_;
 };
 
 }  // namespace torch_jit

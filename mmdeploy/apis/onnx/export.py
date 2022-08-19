@@ -7,7 +7,7 @@ import torch
 
 from mmdeploy.apis.core import PIPELINE_MANAGER
 from mmdeploy.core import RewriterContext, patch_model
-from mmdeploy.utils import Backend, get_root_logger
+from mmdeploy.utils import IR, Backend, get_ir_config, get_root_logger
 from .optimizer import *  # noqa
 from .passes import optimize_onnx
 
@@ -92,21 +92,21 @@ def export(model: torch.nn.Module,
         verbose=verbose,
         keep_initializers_as_inputs=keep_initializers_as_inputs)
     _add_or_update(deploy_cfg, 'ir_config', ir_config)
-
+    ir = IR.get(get_ir_config(deploy_cfg)['type'])
     if isinstance(backend, Backend):
         backend = backend.value
     backend_config = dict(type=backend)
     _add_or_update(deploy_cfg, 'backend_config', backend_config)
 
     context_info['cfg'] = deploy_cfg
+    context_info['ir'] = ir
     if 'backend' not in context_info:
         context_info['backend'] = backend
     if 'opset' not in context_info:
         context_info['opset'] = opset_version
 
     # patch model
-    patched_model = patch_model(
-        model, cfg=deploy_cfg, backend=backend, **patch_metas)
+    patched_model = patch_model(model, cfg=deploy_cfg, backend=backend, ir=ir)
 
     if 'onnx_custom_passes' not in context_info:
         onnx_custom_passes = optimize_onnx if optimize else None

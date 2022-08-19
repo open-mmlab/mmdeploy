@@ -5,19 +5,19 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <string>
 
-#include "model.h"
-#include "text_detector.h"
-#include "text_recognizer.h"
+#include "mmdeploy/model.h"
+#include "mmdeploy/text_detector.h"
+#include "mmdeploy/text_recognizer.h"
 
 struct ctx_t {
-  mm_mat_t* mat;
-  mm_text_detect_t* dets{};
+  mmdeploy_mat_t* mat;
+  mmdeploy_text_detection_t* dets{};
   int* det_count;
-  mm_text_recognize_t* regs{};
-  mm_handle_t recognizer;
+  mmdeploy_text_recognition_t* regs{};
+  mmdeploy_text_recognizer_t recognizer;
 };
 
-int det_to_reg(mm_text_detect_t* results, int* result_count, void* context,
+int det_to_reg(mmdeploy_text_detection_t* results, int* result_count, void* context,
                mmdeploy_sender_t* output) {
   auto ctx = static_cast<ctx_t*>(context);
   ctx->dets = results;
@@ -27,7 +27,7 @@ int det_to_reg(mm_text_detect_t* results, int* result_count, void* context,
   return ec;
 }
 
-int reg_cont(mm_text_recognize_t* results, void* context, mmdeploy_sender_t*) {
+int reg_cont(mmdeploy_text_recognition_t* results, void* context, mmdeploy_sender_t*) {
   static_cast<ctx_t*>(context)->regs = results;
   return 0;
 }
@@ -54,26 +54,25 @@ int main(int argc, char* argv[]) {
   mmdeploy_exec_info dbnet_exec_info{&prep_exec_info, "dbnet", thread};
   mmdeploy_exec_info post_exec_info{&dbnet_exec_info, "postprocess", pool};
 
-  mm_handle_t text_detector{};
+  mmdeploy_text_detector_t text_detector{};
   int status{};
 
-  mm_model_t det_model{};
+  mmdeploy_model_t det_model{};
   status = mmdeploy_model_create_by_path(det_model_path, &det_model);
-  if (status != MM_SUCCESS) {
+  if (status != MMDEPLOY_SUCCESS) {
     fprintf(stderr, "failed to create model %s\n", det_model_path);
     return 1;
   }
 
-  mm_model_t reg_model{};
+  mmdeploy_model_t reg_model{};
   status = mmdeploy_model_create_by_path(reg_model_path, &reg_model);
-  if (status != MM_SUCCESS) {
+  if (status != MMDEPLOY_SUCCESS) {
     fprintf(stderr, "failed to create model %s\n", det_model_path);
     return 1;
   }
 
-  status =
-      mmdeploy_text_detector_create_v2(det_model, device_name, 0, nullptr, &text_detector);
-  if (status != MM_SUCCESS) {
+  status = mmdeploy_text_detector_create_v2(det_model, device_name, 0, nullptr, &text_detector);
+  if (status != MMDEPLOY_SUCCESS) {
     fprintf(stderr, "failed to create text_detector, code: %d\n", (int)status);
     return 1;
   }
@@ -81,15 +80,15 @@ int main(int argc, char* argv[]) {
   mmdeploy_exec_info crnn_exec_info{&prep_exec_info, "crnnnet", thread};
   post_exec_info.next = &crnn_exec_info;
 
-  mm_handle_t text_recognizer{};
-  status = mmdeploy_text_recognizer_create_v2(reg_model, device_name, 0, nullptr,
-                                              &text_recognizer);
-  if (status != MM_SUCCESS) {
+  mmdeploy_text_recognizer_t text_recognizer{};
+  status = mmdeploy_text_recognizer_create_v2(reg_model, device_name, 0, nullptr, &text_recognizer);
+  if (status != MMDEPLOY_SUCCESS) {
     fprintf(stderr, "failed to create text_recognizer, code: %d\n", (int)status);
     return 1;
   }
 
-  mm_mat_t mat{img.data, img.rows, img.cols, 3, MM_BGR, MM_INT8};
+  mmdeploy_mat_t mat{
+      img.data, img.rows, img.cols, 3, MMDEPLOY_PIXEL_FORMAT_BGR, MMDEPLOY_DATA_TYPE_UINT8};
 
   mmdeploy_sender_t sender{};
 

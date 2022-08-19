@@ -205,7 +205,7 @@ namespace MMDeploy
 
         private unsafe void FormatResult(int matCount, int* resultCount, CDetect* results, ref List<DetectorOutput> output, out int total)
         {
-            total = 0;
+            total = matCount;
             for (int i = 0; i < matCount; i++)
             {
                 DetectorOutput outi = default;
@@ -213,7 +213,6 @@ namespace MMDeploy
                 {
                     outi.Add(results);
                     results++;
-                    total++;
                 }
 
                 output.Add(outi);

@@ -5,7 +5,7 @@ from torch import Tensor
 
 import mmdeploy
 from mmdeploy.core import FUNCTION_REWRITER, mark
-from mmdeploy.mmcv.ops import (ONNXNMSop, ONNXNMSRotatedOp,
+from mmdeploy.mmcv.ops import (ONNXNMSop, ONNXNMSRotatedOp, TRTBatchedNMSop,
                                TRTBatchedRotatedNMSop)
 
 
@@ -77,6 +77,7 @@ def select_rnms_index(scores: torch.Tensor,
 
 def _multiclass_nms_rotated(boxes: Tensor,
                             scores: Tensor,
+                            max_output_boxes_per_class: int = 1000,
                             iou_threshold: float = 0.1,
                             score_threshold: float = 0.05,
                             pre_top_k: int = -1,
@@ -127,14 +128,14 @@ def _multiclass_nms_rotated(boxes: Tensor,
     func_name='mmdeploy.codebase.mmrotate.core.post_processing.bbox_nms.'
     '_multiclass_nms_rotated',
     backend='tensorrt')
-def multiclass_nms_rotated_static(ctx,
-                                  boxes: Tensor,
-                                  scores: Tensor,
-                                  max_output_boxes_per_class: int = 1000,
-                                  iou_threshold: float = 0.5,
-                                  score_threshold: float = 0.05,
-                                  pre_top_k: int = -1,
-                                  keep_top_k: int = -1):
+def multiclass_nms_rotated__tensorrt(ctx,
+                                     boxes: Tensor,
+                                     scores: Tensor,
+                                     max_output_boxes_per_class: int = 1000,
+                                     iou_threshold: float = 0.5,
+                                     score_threshold: float = 0.05,
+                                     pre_top_k: int = -1,
+                                     keep_top_k: int = -1):
     """Wrapper for `multiclass_nms` with TensorRT.
 
     Args:
@@ -178,18 +179,14 @@ def multiclass_nms_rotated(*args, **kwargs):
         _multiclass_nms_rotated(*args, **kwargs)
 
 
-@mark(
-    'fake_multiclass_nms_rotated',
-    inputs=['boxes', 'scores'],
-    outputs=['dets', 'labels'])
-def fake_multiclass_nms_rotated(boxes: Tensor,
-                                scores: Tensor,
-                                max_output_boxes_per_class: int = 1000,
-                                iou_threshold: float = 0.5,
-                                score_threshold: float = 0.0,
-                                pre_top_k: int = -1,
-                                keep_top_k: int = -1,
-                                version: str = 'le90'):
+def _fake_multiclass_nms_rotated(boxes: Tensor,
+                                 scores: Tensor,
+                                 max_output_boxes_per_class: int = 1000,
+                                 iou_threshold: float = 0.5,
+                                 score_threshold: float = 0.0,
+                                 pre_top_k: int = -1,
+                                 keep_top_k: int = -1,
+                                 version: str = 'le90'):
     """Fake NMSRotated for multi-class bboxes which use horizontal bboxes for
     NMS, but return the rotated bboxes result.
 
@@ -218,5 +215,72 @@ def fake_multiclass_nms_rotated(boxes: Tensor,
 
     dets, labels = select_rnms_index(
         scores, boxes, selected_indices, batch_size, keep_top_k=keep_top_k)
+
+    return dets, labels
+
+
+@mark(
+    'fake_multiclass_nms_rotated',
+    inputs=['boxes', 'scores'],
+    outputs=['dets', 'labels'])
+def fake_multiclass_nms_rotated(*args, **kwargs):
+    """Wrapper function for `_fake_multiclass_nms_rotated`."""
+    return mmdeploy.codebase.mmrotate.core.post_processing.bbox_nms.\
+        _fake_multiclass_nms_rotated(*args, **kwargs)
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    func_name='mmdeploy.codebase.mmrotate.core.post_processing.bbox_nms.'
+    '_fake_multiclass_nms_rotated',
+    backend='tensorrt')
+def _fake_multiclass_nms_rotated__tensorrt(
+        ctx,
+        boxes: Tensor,
+        scores: Tensor,
+        max_output_boxes_per_class: int = 1000,
+        iou_threshold: float = 0.5,
+        score_threshold: float = 0.0,
+        pre_top_k: int = -1,
+        keep_top_k: int = -1,
+        version: str = 'le90'):
+    """Wrapper for `multiclass_nms` with TensorRT.
+
+    Args:
+        ctx (ContextCaller): The context with additional information.
+        boxes (Tensor): The bounding boxes of shape [N, num_boxes, 5].
+        scores (Tensor): The detection scores of shape
+            [N, num_boxes, num_classes].
+        max_output_boxes_per_class (int): Maximum number of output
+            boxes per class of nms. Defaults to 1000.
+        iou_threshold (float): IOU threshold of nms. Defaults to 0.5.
+        score_threshold (float): score threshold of nms.
+            Defaults to 0.05.
+        pre_top_k (int): Number of top K boxes to keep before nms.
+            Defaults to -1.
+        keep_top_k (int): Number of top K boxes to keep after nms.
+            Defaults to -1.
+
+    Returns:
+        tuple[Tensor, Tensor]: (dets, labels), `dets` of shape [N, num_det, 6]
+            and `labels` of shape [N, num_det].
+    """
+    batch_size = boxes.size(0)
+    device = boxes.device
+    hboxes = obb2xyxy(boxes, version)
+    hboxes = hboxes if hboxes.dim() == 4 else hboxes.unsqueeze(2)
+    keep_top_k = max_output_boxes_per_class if keep_top_k < 0 else min(
+        max_output_boxes_per_class, keep_top_k)
+    if pre_top_k > 512 * 10 or pre_top_k < 0:
+        pre_top_k = 512 * 10
+
+    dets, labels, index = TRTBatchedNMSop.apply(hboxes, scores,
+                                                int(scores.shape[-1]),
+                                                pre_top_k, keep_top_k,
+                                                iou_threshold, score_threshold,
+                                                -1, True)
+    dets = torch.cat([boxes, scores], dim=-1)
+    dets = torch.cat([dets, dets[:, :1, :] * 0], dim=1)
+    batch_inds = torch.arange(batch_size, device=device).view(-1, 1)
+    dets = dets[batch_inds, index, :]
 
     return dets, labels

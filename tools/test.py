@@ -65,6 +65,17 @@ def parse_args():
         help='the interval between each log, require setting '
         'speed-test first',
         default=100)
+    parser.add_argument(
+        '--batch-size',
+        type=int,
+        default=1,
+        help='the batch size for test, would override `samples_per_gpu`'
+        'in  data config.')
+    parser.add_argument(
+        '--uri',
+        action='store_true',
+        default='192.168.1.1:60000',
+        help='Remote ipv4:port or ipv6:port for inference on edge device.')
 
     args = parser.parse_args()
     return args

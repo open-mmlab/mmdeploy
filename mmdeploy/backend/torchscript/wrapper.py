@@ -93,7 +93,7 @@ class TorchscriptWrapper(BaseWrapper):
             outputs = dict(zip(self._output_names, outputs))
         return outputs
 
-    @TimeCounter.count_time()
+    @TimeCounter.count_time(Backend.TORCHSCRIPT.value)
     def __torchscript_execute(
             self, inputs: Sequence[torch.Tensor]) -> Sequence[torch.Tensor]:
         """Run inference with TorchScript.

@@ -15,7 +15,7 @@ def load_config(*args) -> List[mmcv.Config]:
         args (str | Sequence[str]): The path to the config file(s).
 
     Returns:
-        List[mmcv.Config]: The content of config.
+        List[mmcv.Config | dict]: The content of config.
     """
 
     def _load_config(cfg):

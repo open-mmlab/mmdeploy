@@ -5,7 +5,7 @@
 
 #include <stdexcept>
 
-#include "mmdeploy/apis/c/common.h"
+#include "mmdeploy/common.h"
 #include "pybind11/numpy.h"
 #include "pybind11/pybind11.h"
 #include "pybind11/stl.h"
@@ -18,7 +18,7 @@ namespace mmdeploy {
 
 std::map<std::string, void (*)(py::module &)> &gPythonBindings();
 
-mm_mat_t GetMat(const PyImage &img);
+mmdeploy_mat_t GetMat(const PyImage &img);
 
 class Value;
 

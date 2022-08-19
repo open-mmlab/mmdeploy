@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "mmdeploy/apis/c/segmentor.h"
+#include "mmdeploy/segmentor.h"
 
 #include "common.h"
 
@@ -9,26 +9,27 @@ namespace mmdeploy {
 class PySegmentor {
  public:
   PySegmentor(const char *model_path, const char *device_name, int device_id) {
-    auto status = mmdeploy_segmentor_create_by_path(model_path, device_name, device_id, &handle_);
-    if (status != MM_SUCCESS) {
+    auto status =
+        mmdeploy_segmentor_create_by_path(model_path, device_name, device_id, &segmentor_);
+    if (status != MMDEPLOY_SUCCESS) {
       throw std::runtime_error("failed to create segmentor");
     }
   }
   ~PySegmentor() {
-    mmdeploy_segmentor_destroy(handle_);
-    handle_ = {};
+    mmdeploy_segmentor_destroy(segmentor_);
+    segmentor_ = {};
   }
 
   std::vector<py::array_t<int>> Apply(const std::vector<PyImage> &imgs) {
-    std::vector<mm_mat_t> mats;
+    std::vector<mmdeploy_mat_t> mats;
     mats.reserve(imgs.size());
     for (const auto &img : imgs) {
       auto mat = GetMat(img);
       mats.push_back(mat);
     }
-    mm_segment_t *segm{};
-    auto status = mmdeploy_segmentor_apply(handle_, mats.data(), (int)mats.size(), &segm);
-    if (status != MM_SUCCESS) {
+    mmdeploy_segmentation_t *segm{};
+    auto status = mmdeploy_segmentor_apply(segmentor_, mats.data(), (int)mats.size(), &segm);
+    if (status != MMDEPLOY_SUCCESS) {
       throw std::runtime_error("failed to apply segmentor, code: " + std::to_string(status));
     }
     auto output = std::vector<py::array_t<int>>{};
@@ -43,15 +44,20 @@ class PySegmentor {
   }
 
  private:
-  mm_handle_t handle_{};
+  mmdeploy_segmentor_t segmentor_{};
 };
 
 static void register_python_segmentor(py::module &m) {
   py::class_<PySegmentor>(m, "Segmentor")
       .def(py::init([](const char *model_path, const char *device_name, int device_id) {
-        return std::make_unique<PySegmentor>(model_path, device_name, device_id);
-      }))
-      .def("__call__", &PySegmentor::Apply);
+             return std::make_unique<PySegmentor>(model_path, device_name, device_id);
+           }),
+           py::arg("model_path"), py::arg("device_name"), py::arg("device_id") = 0)
+      .def("__call__",
+           [](PySegmentor *self, const PyImage &img) -> py::array {
+             return self->Apply(std::vector{img})[0];
+           })
+      .def("batch", &PySegmentor::Apply);
 }
 
 class PythonSegmentorRegisterer {

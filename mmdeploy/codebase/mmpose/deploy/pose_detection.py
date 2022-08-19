@@ -37,6 +37,8 @@ def process_model_config(
     data_preprocessor = cfg.model.data_preprocessor
     sdk_pipeline = []
     channel_order = 'rgb'
+    if input_shape is None:
+        input_shape = np.array(cfg.codec.input_size)
 
     idx = 0
     while idx < len(test_pipeline):
@@ -161,7 +163,8 @@ class PoseDetection(BaseTask):
             self.model_cfg,
             self.deploy_cfg,
             device=self.device,
-            data_preprocessor=data_preprocessor)
+            data_preprocessor=data_preprocessor,
+            **kwargs)
         return model.eval().to(self.device)
 
     def create_input(self,

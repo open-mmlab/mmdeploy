@@ -6,7 +6,7 @@ import torch
 from packaging.version import parse as version_parse
 
 from mmdeploy.core import RewriterContext, patch_model
-from mmdeploy.utils import IR, Backend, get_root_logger
+from mmdeploy.utils import IR, Backend, get_ir_config, get_root_logger
 from ..core import PIPELINE_MANAGER
 
 
@@ -87,7 +87,8 @@ def trace(func: torch.nn.Module,
 
     # patch model
     if isinstance(func, torch.nn.Module):
-        func = patch_model(func, cfg=deploy_cfg, backend=backend)
+        ir = IR.get(get_ir_config(deploy_cfg)['type'])
+        func = patch_model(func, cfg=deploy_cfg, backend=backend, ir=ir)
 
     with RewriterContext(**context_info), torch.no_grad():
         # for exporting models with weight that depends on inputs
