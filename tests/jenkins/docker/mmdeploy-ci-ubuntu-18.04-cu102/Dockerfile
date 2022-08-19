@@ -1,14 +1,15 @@
-FROM nvcr.io/nvidia/tensorrt:22.03-py3
+FROM nvcr.io/nvidia/tensorrt:20.03-py3
 ARG PYTHON_VERSION=3.8
 ARG CUDA=10.2
 ARG ONNXRUNTIME_VERSION=1.8.1
 ARG PPLNN_VERSION=0.8.1
-ARG TENSORRT==8.2.3.0
-ARG CUDNN=8.2.1
+ARG TENSORRT=7.0.0
+ARG CUDNN=7.6.5
 ARG OPENCV_VERSION==4.5.5.62
 ARG TORCH_VERSION=1.10.0
 ARG TORCHVISION_VERSION=0.11.0
 ARG PPLCV_VERSION=0.7.0
+ARG NCNN_VERSION=20220721
 USER root
 
 
@@ -69,6 +70,7 @@ RUN /opt/conda/bin/conda install pytorch==${TORCH_VERSION} torchvision==${TORCHV
 RUN wget https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTIME_VERSION}/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz \
     && tar -zxvf onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz &&\
     pip install onnxruntime-gpu==${ONNXRUNTIME_VERSION}
+ENV ONNXRUNTIME_DIR=/root/workspace/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}
 
 ### install opencv
 RUN /opt/conda/bin/pip install opencv-python==${OPENCV_VERSION}
@@ -100,8 +102,7 @@ RUN git clone https://github.com/openppl-public/ppl.cv.git &&\
     cd ppl.cv &&\
     git checkout tags/v${PPLCV_VERSION} -b v${PPLCV_VERSION} &&\
     ./build.sh cuda
-
-ARG pplcv_DIR=/root/workspace/ppl.cv/cuda-build/install/lib/cmake/ppl
+ENV pplcv_DIR=/root/workspace/ppl.cv/cuda-build/install/lib/cmake/ppl
 
 ### cp trt from pip to conda
 RUN cp -r /usr/local/lib/python${PYTHON_VERSION}/dist-packages/tensorrt* /opt/conda/lib/python${PYTHON_VERSION}/site-packages/
