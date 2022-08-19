@@ -18,7 +18,7 @@ function getFullName() {
 ## parameters
 export codebase=$1
 getFullName $codebase
-# backends=$d2
+# backends=$2
 
 ## clone ${codebase}
 cd /root/workspace
@@ -49,8 +49,11 @@ do
 
     ## start regression  
     conda activate torch${TORCH_VERSION}
-    python ./tools/regression_test.py \
-        --codebase ${codebase} \
-        --work-dir "../mmdeploy_regression_working_dir/torch${TORCH_VERSION}"
+    conda run --name torch${TORCH_VERSION} "
+        python ./tools/regression_test.py \
+            --codebase ${codebase} \
+            --work-dir "../mmdeploy_regression_working_dir/torch${TORCH_VERSION}"
+    "
+
 
 done
