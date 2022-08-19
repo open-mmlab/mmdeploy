@@ -326,6 +326,10 @@ For more SDK C++ API usages, please read these [samples](https://github.com/open
 For the rest C, C# and Java API usages, please read [C demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csrc), [C# demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csharp) and [Java demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/java) respectively.
 We'll talk about them more in our next release.
 
+#### Accelerate preprocessing（Experimental）
+
+If you want to fuse preprocess for acceleration，please refer to this [doc](./02-how-to-run/fuse_transform.md)
+
 ## Evaluate Model
 
 You can test the performance of deployed model using `tool/test.py`. For example,
