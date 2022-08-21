@@ -255,90 +255,7 @@ cd /the/root/path/of/MMDeploy
 export MMDEPLOY_DIR=$(pwd)
 ```
 
-#### 编译选项说明
-
-<table class="docutils">
-<thead>
-  <tr>
-    <th>编译选项</th>
-    <th>取值范围</th>
-    <th>缺省值</th>
-    <th>说明</th>
-  </tr>
-</thead>
-<tbody>
-  <tr>
-    <td>MMDEPLOY_BUILD_SDK</td>
-    <td>{ON, OFF}</td>
-    <td>OFF</td>
-    <td>MMDeploy SDK 编译开关</td>
-  </tr>
-  <tr>
-    <td>MMDEPLOY_BUILD_SDK_PYTHON_API</td>
-    <td>{ON, OFF}</td>
-    <td>OFF</td>
-    <td>MMDeploy SDK python package的编译开关</td>
-  </tr>
-  <tr>
-    <td>MMDEPLOY_BUILD_SDK_JAVA_API</td>
-    <td>{ON, OFF}</td>
-    <td>OFF</td>
-    <td>MMDeploy SDK Java API的编译开关</td>
-  </tr>
-  <tr>
-    <td>MMDEPLOY_BUILD_TEST</td>
-    <td>{ON, OFF}</td>
-    <td>OFF</td>
-    <td>MMDeploy SDK 的单元测试程序编译开关</td>
-  </tr>
-  <tr>
-    <td>MMDEPLOY_TARGET_DEVICES</td>
-    <td>{"cpu", "cuda"}</td>
-    <td>cpu</td>
-    <td>设置目标设备。当有多个设备时，设备名称之间使用分号隔开。 比如，-DMMDEPLOY_TARGET_DEVICES="cpu;cuda"</td>
-  </tr>
-  <tr>
-    <td>MMDEPLOY_TARGET_BACKENDS</td>
-    <td>{"trt", "ort", "pplnn", "ncnn", "openvino", "torchscript"}</td>
-    <td>N/A</td>
-    <td> <b>默认情况下，SDK不设置任何后端</b>, 因为它与应用场景高度相关。 当选择多个后端时， 中间使用分号隔开。比如，<pre><code>-DMMDEPLOY_TARGET_BACKENDS="trt;ort;pplnn;ncnn;openvino"</code></pre>
-    构建时，几乎每个后端，都需传入一些路径变量，用来查找依赖包。<br>
-    1. <b>trt</b>: 表示 TensorRT。需要设置 <code>TENSORRT_DIR</code> 和 <code>CUDNN_DIR</code>。
-<pre><code>
--DTENSORRT_DIR=${TENSORRT_DIR}
--DCUDNN_DIR=${CUDNN_DIR}
-</code></pre>
-    2. <b>ort</b>: 表示 ONNXRuntime。需要设置 <code>ONNXRUNTIME_DIR</code>
-<pre><code>-DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR}</code></pre>
-    3. <b>pplnn</b>: 表示 PPL.NN。需要设置 <code>pplnn_DIR</code>
-<pre><code>-Dpplnn_DIR=${PPLNN_DIR}</code></pre>
-    4. <b>ncnn</b>: 表示 ncnn。需要设置 <code>ncnn_DIR</code>
-<pre><code>-Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn</code></pre>
-    5. <b>openvino</b>: 表示 OpenVINO。需要设置 <code>InferenceEngine_DIR</code>
-<pre><code>-DInferenceEngine_DIR=${INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/share</code></pre>
-    6. <b>torchscript</b>: TorchScript. 需要设置<code>Torch_DIR</code>
-<pre><code>-DTorch_DIR=${Torch_DIR}</code></pre>
-目前，<b>模型转换支持 torchscript，但 SDK 尚不支持 </b>
-   </td>
-  </tr>
-  <tr>
-    <td>MMDEPLOY_CODEBASES</td>
-    <td>{"mmcls", "mmdet", "mmseg", "mmedit", "mmocr", "all"}</td>
-    <td>all</td>
-    <td>用来设置 SDK 后处理组件，加载 OpenMMLab 算法仓库的后处理功能。如果选择多个 codebase，中间使用分号隔开。比如，<code>-DMMDEPLOY_CODEBASES="mmcls;mmdet"</code>。也可以通过 <code>-DMMDEPLOY_CODEBASES=all</code> 方式，加载所有 codebase。</td>
-  </tr>
-  <tr>
-    <td>MMDEPLOY_SHARED_LIBS</td>
-    <td>{ON, OFF}</td>
-    <td>ON</td>
-    <td>MMDeploy SDK 的动态库的编译开关。设置 OFF 时，编译静态库</td>
-  </tr>
-</tbody>
-</table>
-
-#### 编译安装 Model Converter
-
-##### 编译自定义算子
+#### 编译 Model Converter
 
 如果您选择了ONNXRuntime，TensorRT，ncnn 和 torchscript 任一种推理后端，您需要编译对应的自定义算子库。
 
@@ -378,7 +295,9 @@ export MMDEPLOY_DIR=$(pwd)
   make -j$(nproc) && make install
   ```
 
-##### 安装 Model Converter
+参考 [cmake 选项说明](cmake_option.md)
+
+#### 安装 Model Converter
 
 ```bash
 cd ${MMDEPLOY_DIR}
@@ -406,7 +325,6 @@ pip install -e .
       -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
       -DMMDEPLOY_TARGET_DEVICES=cpu \
       -DMMDEPLOY_TARGET_BACKENDS=ort \
-      -DMMDEPLOY_CODEBASES=all \
       -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR}
 
   make -j$(nproc) && make install
@@ -424,7 +342,6 @@ pip install -e .
       -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
       -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
       -DMMDEPLOY_TARGET_BACKENDS=trt \
-      -DMMDEPLOY_CODEBASES=all \
       -Dpplcv_DIR=${PPLCV_DIR}/cuda-build/install/lib/cmake/ppl \
       -DTENSORRT_DIR=${TENSORRT_DIR} \
       -DCUDNN_DIR=${CUDNN_DIR}

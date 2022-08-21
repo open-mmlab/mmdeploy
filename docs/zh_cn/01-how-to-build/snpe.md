@@ -112,61 +112,45 @@ $ unzip android-ndk-r23b-linux.zip
 $ export ANDROID_NDK_ROOT=`realpath android-ndk-r23b`
 ```
 
-### 2. 编译 mmdeploy SDK
+### 2. 编译 mmdeploy SDK 和 demo
 
 ```bash
 $ cd /path/to/mmdeploy
 $ mkdir build && cd build
 $ cmake .. \
-  -DMMDEPLOY_BUILD_SDK=ON   -DMMDEPLOY_CODEBASES=all \
+  -DMMDEPLOY_BUILD_SDK=ON \
   -DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK_ROOT}/build/cmake/android.toolchain.cmake \
-  -DMMDEPLOY_CODEBASES=all  -DMMDEPLOY_TARGET_BACKENDS=snpe \
+  -DMMDEPLOY_TARGET_BACKENDS=snpe \
   -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-30  \
   -DANDROID_STL=c++_static \
   -DOpenCV_DIR=${ANDROID_OCV_ROOT}/sdk/native/jni/abi-arm64-v8a \
-  -DMMDEPLOY_SHARED_LIBS=ON
+  -DMMDEPLOY_BUILD_EXAMPLES=ON
 
   $ make && make install
-```
-
-选项说明
-
-| 选项                          | 说明                                  |
-| ----------------------------- | ------------------------------------- |
-| DMMDEPLOY_CODEBASES=all       | 编译所有算法后处理                    |
-| CMAKE_TOOLCHAIN_FILE          | 加载 NDK 参数，主要用于选择编译器版本 |
-| MMDEPLOY_TARGET_BACKENDS=snpe | 使用 snpe 推理                        |
-| ANDROID_STL=c++\_static       | 避免 NDK 环境找不到合适的 c++ lib     |
-| MMDEPLOY_SHARED_LIBS=ON       | 官方 snpe 没有提供静态库              |
-
-### 3. 编译 demo
-
-```bash
-$ cd /path/to/install/example
-$ mkdir build && cd build
-
-$ cmake .. \
-  -DMMDEPLOY_CODEBASES=all \
-  -DCMAKE_TOOLCHAIN_FILE=${ANDROID_NDK_ROOT}/build/cmake/android.toolchain.cmake \
-  -DMMDEPLOY_CODEBASES=all  -DMMDEPLOY_TARGET_BACKENDS=snpe \
-  -DANDROID_ABI=arm64-v8a -DANDROID_PLATFORM=android-30  \
-  -DANDROID_STL=c++_static  \
-  -DOpenCV_DIR=${ANDROID_OCV_ROOT}/sdk/native/jni/abi-arm64-v8a \
-  -DMMDeploy_DIR=${PWD}/../../lib/cmake/MMDeploy
-
-$ make
-$ tree -L 1
-.
+  $ tree ./bin
+./bin
 ├── image_classification
 ├── image_restorer
 ├── image_segmentation
+├── mmdeploy_onnx2ncnn
 ├── object_detection
 ├── ocr
 ├── pose_detection
 └── rotated_object_detection
 ```
 
-## 4. 运行 demo
+选项说明
+
+| 选项                          | 说明                                  |
+| ----------------------------- | ------------------------------------- |
+| CMAKE_TOOLCHAIN_FILE          | 加载 NDK 参数，主要用于选择编译器版本 |
+| MMDEPLOY_TARGET_BACKENDS=snpe | 使用 snpe 推理                        |
+| ANDROID_STL=c++\_static       | 避免 NDK 环境找不到合适的 c++ lib     |
+| MMDEPLOY_SHARED_LIBS=ON       | 官方 snpe 没有提供静态库              |
+
+[这里](../01-how-to-build/cmake_option.md)是完整的编译选项说明
+
+## 3. 运行 demo
 
 先确认测试模型用了 `--dump-info`，这样 `resnet18` 目录才有 `pipeline.json` 等 SDK 所需文件。
 
@@ -179,9 +163,7 @@ $ adb push tests/data/tiger.jpeg /data/local/tmp/resnet18/
 
 $ cd /path/to/install/
 $ adb push lib /data/local/tmp
-
-$ cd /path/to/install/example/build
-$ adb push image_classification /data/local/tmp/resnet18/
+$ adb push bin/image_classification /data/local/tmp/resnet18/
 ```
 
 设置环境变量，执行样例
