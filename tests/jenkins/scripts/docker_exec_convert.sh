@@ -34,7 +34,8 @@ cmake .. -DMMDEPLOY_BUILD_SDK=ON -DMMDEPLOY_BUILD_EXAMPLES=ON \
         -DMMDEPLOY_BUILD_EXAMPLES=ON -DMMDEPLOY_ZIP_MODEL=ON \
         -DMMDEPLOY_TARGET_BACKENDS="ort;pplnn;openvino;ncnn" \
         -DMMDEPLOY_SHARED_LIBS=OFF \
-        -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR}
+        -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} \
+        -DPPLNN_DIR=${PPLNN_DIR}
 make -j $(nproc) && make install
 cd ../
 conda init bash

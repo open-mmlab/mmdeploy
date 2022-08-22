@@ -101,8 +101,8 @@ RUN /opt/conda/bin/pip install opencv-python==${OPENCV_VERSION}
 ### install ppl.nn
 RUN git clone --recursive https://github.com/openppl-public/ppl.nn.git &&\
     cd ppl.nn &&\
-    git checkout tags/v${PPLNN_VERSION} -b ${PPLNN_VERSION} 
-ENV pplnn_DIR=/root/workspace/ppl.nn/install/lib/cmake/ppl
+    ./build.sh -DPPLNN_USE_X86_64=ON  
+ENV PPLNN_DIR=/root/workspace/ppl.nn 
 ENV PYTHONPATH=/root/workspace/ppl.nn/install/lib:$PYTHONPATH
 
 ### build ncnn
@@ -132,7 +132,6 @@ RUN wget https://download.pytorch.org/libtorch/cu102/libtorch-shared-with-deps-1
 ENV Torch_DIR=/root/workspace/libtorch
 ENV LD_LIBRARY_PATH=$Torch_DIR/lib:$LD_LIBRARY_PATH
 
-### create conda env && install pytorch
 RUN /opt/conda/bin/conda init bash && \
     TORCH_VERSION_LIST=(1.8.0 1.9.0 1.10.0 1.11.0 1.12.0) && \
     TORCHVISION_VERSION_LIST=(0.9.0 0.10.0 0.11.0 0.12.0 0.13.0) && \
