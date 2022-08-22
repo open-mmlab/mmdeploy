@@ -112,10 +112,8 @@ Result<Value> ResizeImpl::Process(const Value& input) {
     SetTransformData(output, key, std::move(dst_img));
 
     // trace static info & runtime args
-    if (fuse_transform_ == true) {
-      output["__tracer__"].get_ref<Tracer&>().Resize(arg_.interpolation, {dst_h, dst_w},
-                                                     src_img.data_type());
-    }
+    output["__tracer__"].get_ref<Tracer&>().Resize(arg_.interpolation, {dst_h, dst_w},
+                                                   src_img.data_type());
   }
 
   MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));

@@ -42,10 +42,8 @@ Result<Value> DefaultFormatBundleImpl::Process(const Value& input) {
     }
 
     // trace static info & runtime args
-    if (fuse_transform_ == true) {
-      output["__tracer__"].get_ref<Tracer&>().DefaultFormatBundle(arg_.img_to_float,
-                                                                  in_tensor.data_type());
-    }
+    output["__tracer__"].get_ref<Tracer&>().DefaultFormatBundle(arg_.img_to_float,
+                                                                in_tensor.data_type());
 
     // transpose
     OUTCOME_TRY(tensor, HWC2CHW(tensor));

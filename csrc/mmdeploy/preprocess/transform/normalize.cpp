@@ -78,10 +78,8 @@ Result<Value> NormalizeImpl::Process(const Value& input) {
     output["img_norm_cfg"]["to_rgb"] = arg_.to_rgb;
 
     // trace static info & runtime args
-    if (fuse_transform_ == true) {
-      output["__tracer__"].get_ref<Tracer&>().Normalize(arg_.mean, arg_.std, arg_.to_rgb,
-                                                        desc.data_type);
-    }
+    output["__tracer__"].get_ref<Tracer&>().Normalize(arg_.mean, arg_.std, arg_.to_rgb,
+                                                      desc.data_type);
   }
   MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));
   return output;

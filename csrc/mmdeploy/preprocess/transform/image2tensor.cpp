@@ -30,9 +30,7 @@ Result<Value> ImageToTensorImpl::Process(const Value& input) {
     OUTCOME_TRY(auto dst, HWC2CHW(src_tensor));
     SetTransformData(output, key, std::move(dst));
 
-    if (fuse_transform_ == true) {
-      output["__tracer__"].get_ref<Tracer&>().ImageToTensor(src_tensor.data_type());
-    }
+    output["__tracer__"].get_ref<Tracer&>().ImageToTensor(src_tensor.data_type());
   }  // for key
   MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));
   return output;
