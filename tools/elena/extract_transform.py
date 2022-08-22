@@ -118,6 +118,8 @@ def generate_source_code(preprocess, transform_static, tag, args):
     cuda_work_dir = osp.join(kernel_base_dir, 'cuda_kernel')
     dst_cpu_kernel_file = osp.join(cpu_work_dir, f'{tag}.cpp')
     dst_cuda_kernel_file = osp.join(cuda_work_dir, f'{tag}.cu')
+    dst_cpu_elena_header_file = osp.join(cpu_work_dir, 'elena_int.h')
+    dst_cuda_elena_header_file = osp.join(cuda_work_dir, 'elena_int.h')
     json_work_dir = osp.join(kernel_base_dir, 'json')
 
     preprocess_json_path = osp.join(json_work_dir, f'{tag}_preprocess.json')
@@ -131,19 +133,21 @@ def generate_source_code(preprocess, transform_static, tag, args):
     if res.returncode == 0:
         append_info('cpu', tag)
         shutil.copyfile('source.c', dst_cpu_kernel_file)
+        shutil.copyfile('elena_int.h', dst_cpu_elena_header_file)
     os.remove('source.c')
     gen_cuda_cmd = f'{ELENA_BIN} {static_json_path} cuda'
     res = subprocess.run(gen_cuda_cmd, shell=True)
     if res.returncode == 0:
         append_info('cuda', tag)
         shutil.copyfile('source.cu', dst_cuda_kernel_file)
+        shutil.copyfile('elena_int.h', dst_cuda_elena_header_file)
     os.remove('source.cu')
     os.remove('elena_int.h')
 
 
 def extract_one_model(deploy_cfg_, model_cfg_, args):
     deploy_cfg, model_cfg = load_config(deploy_cfg_, model_cfg_)
-    preprocess = get_preprocess(deploy_cfg, model_cfg)
+    preprocess = get_preprocess(deploy_cfg, model_cfg, 'cuda')
     preprocess['model_cfg'] = model_cfg_
     transform_static, tag = get_transform_static(preprocess['transforms'])
     if tag is not None:
