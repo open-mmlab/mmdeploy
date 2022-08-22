@@ -1,4 +1,4 @@
-# 支持 RISCV
+# 支持 RISC-V
 
 ## 一、安装 mmdeploy
 

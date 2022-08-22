@@ -1,10 +1,10 @@
-# Build for RISCV
+# Build for RISC-V
 
-## 一、Install MMDeploy
+## 1. Install MMDeploy
 
 We need `mmdeploy_onnx2ncnn` program to convert a ncnn model，so we have to install ncnn engine. You can refer to this [doc](./linux-x86_64.md) for installation.
 
-## 二、Test the model
+## 2. Test the model
 
 Take Resnet-18 as an example. First refer to [documentation to install mmcls](https://github.com/open-mmlab/mmclassification) to install mmcls. Then use `tools/deploy.py` to convert a model.
 
@@ -23,9 +23,9 @@ $ python3 tools/deploy.py configs/mmcls/classification_ncnn_static.py $MODEL_CON
 $ python3 tools/test.py configs/mmcls/classification_ncnn_static.py $MODEL_CONFIG --model reset18/end2end.param resnet18/end2end.bin --metrics accuracy precision f1_score recall
 ```
 
-## 三、Build SDK
+## 3. Build SDK
 
-### 1. Download the compiler toolchain and set environment
+### 1) Download the compiler toolchain and set environment
 
 ```bash
 # download Xuantie-900-gcc-linux-5.10.4-glibc-x86_64-V2.2.6-20220516.tar.gz
@@ -34,7 +34,7 @@ $ tar xf Xuantie-900-gcc-linux-5.10.4-glibc-x86_64-V2.2.6-20220516.tar.gz
 $ export RISCV_ROOT_PATH=`realpath Xuantie-900-gcc-linux-5.10.4-glibc-x86_64-V2.2.6`
 ```
 
-### 2. Compile ncnn & opencv
+### 2) Compile ncnn & opencv
 
 ```bash
 # ncnn
@@ -53,7 +53,7 @@ $ cmake .. \
 $ make -j$(nproc) && make install
 ```
 
-### 3. Compile mmdeploy SDK & demo
+### 3) Compile mmdeploy SDK & demo
 
 ```bash
 $ cd /path/to/mmdeploy
@@ -83,7 +83,7 @@ $ tree -L 1 bin/
 └── rotated_object_detection
 ```
 
-### 4. Run the demo
+### 4) Run the demo
 
 First make sure that`--dump-info`is used during convert model, so that the `resnet18` directory has the files required by the SDK such as `pipeline.json`.
 
