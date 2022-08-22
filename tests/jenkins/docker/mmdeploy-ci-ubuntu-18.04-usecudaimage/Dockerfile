@@ -66,7 +66,7 @@ ENV PATH=$JAVA_HOME/bin:$PATH
 
 ### install tensorrt
 COPY /data2/shared/TensorRT-7.0.0.11.Ubuntu-18.04.x86_64-gnu.cuda-10.2.cudnn7.6.tar.gz /root/workspace/
-RUN tar -zxvf TensorRT-7.0.0.11.Ubuntu-18.04.x86_64-gnu.cuda-10.2.cudnn7.6.tar.gz &&\
+RUN tar -zxvf TensorRT-7.0.0.11.Ubuntu-18.04.x86_64-gnu.cuda-10.2.cudnn7.6.tar.gz  &&\
     /opt/conda/bin/pip install TensorRT-7.0.0.11/python/tensorrt-7.0.0.11-cp37-none-linux_x86_64.whl &&\
     /opt/conda/bin/pip install pycuda
 ENV TENSORRT_DIR=$(pwd)/TensorRT-7.0.0.11
