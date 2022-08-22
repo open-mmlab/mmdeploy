@@ -2,25 +2,10 @@
 import os
 import time
 
+from ubuntu_utils import (cmd_result, cu_version_name, simple_check_install,
+                          version_major, version_minor)
+
 g_jobs = 2
-
-
-def cmd_result(txt: str):
-    cmd = os.popen(txt)
-    return cmd.read().rstrip().lstrip()
-
-
-def version_major(txt: str) -> int:
-    return int(txt.split('.')[0])
-
-
-def version_minor(txt: str) -> int:
-    return int(txt.split('.')[1])
-
-
-def cu_version_name(version: str) -> str:
-    versions = version.split('.')
-    return 'cu' + versions[0] + versions[1]
 
 
 def ensure_env(work_dir, dep_dir):
@@ -103,16 +88,9 @@ def ensure_env(work_dir, dep_dir):
     os.system(
         '{} update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 200'  # noqa: E501
         .format(sudo))
+
     # wget
-    wget = cmd_result('which wget')
-    if wget is None or len(wget) < 1:
-        print('wget not found, try install wget ..', end='')
-        os.system('{} apt install wget -y'.format(sudo))
-        wget = cmd_result('which wget')
-        if wget is None or len(wget) < 1:
-            print('Check wget failed.')
-            return -1, envs
-        print('success')
+    wget = simple_check_install('wget', sudo)
 
     # check torch and mmcv, we try to install mmcv, it is not compulsory
     mmcv_version = None
@@ -146,19 +124,7 @@ def ensure_env(work_dir, dep_dir):
         pass
 
     # git
-    git = cmd_result('which git')
-    if git is None or len(git) < 1:
-        print('git not found, try install git ..', end='')
-        os.system('{} apt install git -y'.format(sudo))
-        git = cmd_result('which git')
-        if git is None or len(git) < 1:
-            print('Check wget failed.')
-            return -1, envs
-        print('success')
-
-    # protoc
-    # install_protobuf(dep_dir)
-    # protoc = os.path.join(dep_dir, 'pbinstall', 'bin', 'protoc')
+    git = simple_check_install('git', sudo)
 
     # opencv
     ocv = cmd_result('which opencv_version')

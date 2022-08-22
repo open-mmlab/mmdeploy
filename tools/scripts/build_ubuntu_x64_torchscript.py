@@ -2,25 +2,10 @@
 import os
 import time
 
+from ubuntu_utils import (cmd_result, cu_version_name, simple_check_install,
+                          version_major, version_minor)
+
 g_jobs = 2
-
-
-def cmd_result(txt: str):
-    cmd = os.popen(txt)
-    return cmd.read().rstrip().lstrip()
-
-
-def version_major(txt: str) -> int:
-    return int(txt.split('.')[0])
-
-
-def version_minor(txt: str) -> int:
-    return int(txt.split('.')[1])
-
-
-def cu_version_name(version: str) -> str:
-    versions = version.split('.')
-    return 'cu' + versions[0] + versions[1]
 
 
 def ensure_env(work_dir, dep_dir):
@@ -104,15 +89,7 @@ def ensure_env(work_dir, dep_dir):
         print('success')
 
     # wget
-    wget = cmd_result('which wget')
-    if wget is None or len(wget) < 1:
-        print('wget not found, try install wget ..', end='')
-        os.system('{} apt install wget -y'.format(sudo))
-        wget = cmd_result('which wget')
-        if wget is None or len(wget) < 1:
-            print('Check wget failed.')
-            return -1, envs
-        print('success')
+    wget = simple_check_install('wget', sudo)
 
     # check torch and mmcv, we try to install mmcv, it is not compulsory
     mmcv_version = None
@@ -145,20 +122,15 @@ def ensure_env(work_dir, dep_dir):
     except Exception:
         pass
 
-    # git
-    git = cmd_result('which git')
-    if git is None or len(git) < 1:
-        print('git not found, try install git ..', end='')
-        os.system('{} apt install git -y'.format(sudo))
-        git = cmd_result('which git')
-        if git is None or len(git) < 1:
-            print('Check wget failed.')
-            return -1, envs
-        print('success')
+    # if torch_version is None:
+    #     print('check pytorch version failed.')
+    #     return -1, envs
 
-    # protoc
-    # install_protobuf(dep_dir)
-    # protoc = os.path.join(dep_dir, 'pbinstall', 'bin', 'protoc')
+    # git
+    git = simple_check_install('git', sudo)
+
+    # unzip
+    unzip = simple_check_install('unzip', sudo)
 
     # opencv
     ocv = cmd_result('which opencv_version')
@@ -213,7 +185,7 @@ def ensure_env(work_dir, dep_dir):
     print('git bin\t\t:{}'.format(git))
     print('git version\t:{}'.format(
         cmd_result("git --version | awk '{print $3}' ")))
-    # print('protoc \t:{}'.format(cmd_result('{} --version'.format(protoc))))
+    print('unzip bin\t:{}'.format(unzip))
     # work dir
     print('work dir \t:{}'.format(work_dir))
     # dep dir
@@ -223,29 +195,45 @@ def ensure_env(work_dir, dep_dir):
     return 0, envs
 
 
-def install_openvino(dep_dir):
-    print('-' * 10 + 'install ort' + '-' * 10)
+def install_libtorch(dep_dir):
+    print('-' * 10 + 'install libtorch' + '-' * 10)
     time.sleep(2)
 
-    # generate unzip and build dir
     os.chdir(dep_dir)
+    unzipped_name = 'libtorch'
+    if os.path.exists(unzipped_name):
+        return os.path.join(dep_dir, unzipped_name)
 
-    # install python onnxruntime
-    os.system('python3 -m pip install openvino-dev')
-    # git clone
-    if not os.path.exists('onnxruntime-linux-x64-1.8.1'):
-        os.system(
-            'wget https://registrationcenter-download.intel.com/akdlm/irc_nas/18617/l_openvino_toolkit_p_2022.1.0.643_offline.sh'  # noqa: E501
-        )
-        os.system('tar xvf  onnxruntime-linux-x64-1.8.1.tgz')
+    torch_version = None
+    try:
+        import torch
+        torch_version = torch.__version__
+    except Exception:
+        pass
 
-    ort_dir = os.path.join(dep_dir, 'onnxruntime-linux-x64-1.8.1')
-    print('onnxruntime dir \t:{}'.format(ort_dir))
-    print('\n')
-    return ort_dir
+    if torch_version is None:
+        print('torch version is None, use 1.11.0')
+        torch_version = '1.11.0'
+
+    version_name = None
+    cuda = cmd_result(" nvidia-smi  | grep CUDA | awk '{print $9}' ")
+    if cuda is not None and len(cuda) > 0:
+        version_name = cu_version_name(cuda)
+    else:
+        version_name = 'cpu'
+    filename = 'libtorch-shared-with-deps-{}%2B{}.zip'.format(
+        torch_version, version_name)
+    url = 'https://download.pytorch.org/libtorch/{}/{}'.format(
+        version_name, filename)
+    os.system('wget {} -O libtorch.zip'.format(url))
+    os.system('unzip libtorch.zip')
+    if not os.path.exists(unzipped_name):
+        print('download or unzip libtorch failed.')
+        return None
+    return os.path.join(dep_dir, unzipped_name)
 
 
-def install_mmdeploy(work_dir, dep_dir, ort_dir):
+def install_mmdeploy(work_dir, libtorch_dir):
     print('-' * 10 + 'build and install mmdeploy' + '-' * 10)
     time.sleep(3)
 
@@ -253,15 +241,15 @@ def install_mmdeploy(work_dir, dep_dir, ort_dir):
     if not os.path.exists('build'):
         os.system('mkdir build')
 
-    cmd = 'cd build && cmake ..'
+    cmd = 'cd build &&  Torch_DIR={} cmake ..'.format(libtorch_dir)
     cmd += ' -DCMAKE_C_COMPILER=gcc-7 '
     cmd += ' -DCMAKE_CXX_COMPILER=g++-7 '
     cmd += ' -DMMDEPLOY_BUILD_SDK=ON '
     cmd += ' -DMMDEPLOY_BUILD_EXAMPLES=ON '
     cmd += ' -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON '
     cmd += ' -DMMDEPLOY_TARGET_DEVICES=cpu '
-    cmd += ' -DMMDEPLOY_TARGET_BACKENDS=ort '
-    cmd += ' -DONNXRUNTIME_DIR={} '.format(ort_dir)
+    cmd += ' -DMMDEPLOY_TARGET_BACKENDS=torchscript '
+    cmd += ' -DTORCHSCRIPT_DIR={} '.format(libtorch_dir)
     os.system(cmd)
 
     os.system('cd build && make -j {} && make install'.format(g_jobs))
@@ -291,9 +279,12 @@ def main():
     if success != 0:
         return -1
 
-    openvino_dir = install_openvino(dep_dir)
+    libtorch_dir = install_libtorch(dep_dir)
 
-    if install_mmdeploy(work_dir, dep_dir, openvino_dir) != 0:
+    if libtorch_dir is None:
+        return -1
+
+    if install_mmdeploy(work_dir, libtorch_dir) != 0:
         return -1
 
     if len(envs) > 0:
