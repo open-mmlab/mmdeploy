@@ -23,8 +23,9 @@ The script will also try to avoid affecting host environment:
 
 Here is the verified installation script:
 
-|          script           | OS version  |
-| :-----------------------: | :---------: |
-| build_ubuntu_x64_ncnn.py  | 18.04/20.04 |
-|  build_ubuntu_x64_ort.py  | 18.04/20.04 |
-| build_ubuntu_x64_pplnn.py | 18.04/20.04 |
+|             script              | OS version  |
+| :-----------------------------: | :---------: |
+|    build_ubuntu_x64_ncnn.py     | 18.04/20.04 |
+|     build_ubuntu_x64_ort.py     | 18.04/20.04 |
+|    build_ubuntu_x64_pplnn.py    | 18.04/20.04 |
+| build_ubuntu_x64_torchscript.py | 18.04/20.04 |
