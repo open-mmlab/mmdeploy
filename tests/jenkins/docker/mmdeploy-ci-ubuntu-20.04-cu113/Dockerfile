@@ -51,6 +51,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 ### install cmake
 RUN wget https://github.com/Kitware/CMake/releases/download/v3.24.1/cmake-3.24.1.tar.gz && \
+    tar -zxvf cmake-3.24.1.tar.gz && \
     cd cmake-3.24.1 && \
     ./bootstrap && \
     make && \
