@@ -1,8 +1,4 @@
 FROM nvcr.io/nvidia/tensorrt:22.03-py3
-<<<<<<< HEAD
-=======
-
->>>>>>> 33172f380e3e2fc153be6bb657b8320ab4f4b0cb
 ARG PYTHON_VERSION=3.8
 ARG CUDA=11.3
 ARG ONNXRUNTIME_VERSION=1.8.1
@@ -16,10 +12,8 @@ ARG PPLNN_version=0.8.1
 ARG PPLCV_VERSION=0.7.0
 USER root
 
-
 WORKDIR /root/workspace
 ENV DEBIAN_FRONTEND=nointeractive
-
 
 ### change the system source for installing libs
 ARG USE_SRC_INSIDE=true
@@ -59,6 +53,7 @@ RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Mini
     rm ~/miniconda.sh && \
     /opt/conda/bin/conda install -y python=${PYTHON_VERSION} conda-build pyyaml numpy ipython cython typing typing_extensions mkl mkl-include ninja && \
     /opt/conda/bin/conda clean -ya
+ENV PATH /opt/conda/bin:$PATH
 
 ### install jdk1.8
 RUN wget https://download.java.net/java/GA/jdk18/43f95e8614114aeaa8e8a5fcf20a682d/36/GPL/openjdk-18_linux-x64_bin.tar.gz &&\
@@ -66,24 +61,17 @@ tar xvf openjdk-18_linux-x64_bin.tar.gz && rm -rf openjdk-18_linux-x64_bin.tar.g
 ENV JAVA_HOME=/root/workspace/jdk-18
 ENV PATH=$JAVA_HOME/bin:$PATH
 
-### pytorch
-RUN /opt/conda/bin/conda install pytorch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION} cudatoolkit=${CUDA} -c pytorch
-ENV PATH /opt/conda/bin:$PATH
-
-
-WORKDIR /root/workspace
-
 ### install openmim
 RUN /opt/conda/bin/pip install openmim
 
 ### get onnxruntime
 RUN wget https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTIME_VERSION}/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz \
     && tar -zxvf onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz &&\
-    pip install onnxruntime-gpu==${ONNXRUNTIME_VERSION}
+    /opt/conda/bin/pip install onnxruntime-gpu==${ONNXRUNTIME_VERSION}
 ENV ONNXRUNTIME_DIR=/root/workspace/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}
 
-### install onnxruntme and openvino
-RUN /opt/conda/bin/pip install onnxruntime==${ONNXRUNTIME_VERSION} openvino-dev
+### install openvino
+RUN /opt/conda/bin/pip install openvino-dev
 
 ### install opencv
 RUN /opt/conda/bin/pip install opencv-python==${OPENCV_VERSION}
@@ -115,9 +103,8 @@ RUN git clone https://github.com/openppl-public/ppl.cv.git &&\
     ./build.sh cuda
 
 ### install libtorch
-RUN wget https://download.pytorch.org/libtorch/cu111/libtorch-shared-with-deps-1.8.1%2Bcu111.zip && \
-    unzip libtorch-shared-with-deps-1.8.1+cu111.zip && \
-    cd libtorch
+RUN wget https://download.pytorch.org/libtorch/cu111/libtorch-shared-with-deps-1.12.1%2Bcu113.zip && \
+    unzip libtorch-shared-with-deps-1.12.1+cu113.zip 
 ENV Torch_DIR=/root/workspace/libtorch
 ENV LD_LIBRARY_PATH=$Torch_DIR/lib:$LD_LIBRARY_PATH
 
