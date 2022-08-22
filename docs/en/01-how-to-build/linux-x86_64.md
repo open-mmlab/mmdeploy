@@ -365,7 +365,7 @@ You can also activate other engines after the model.
       -DMMDEPLOY_BUILD_EXAMPLES=ON \
       -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
       -DMMDEPLOY_TARGET_DEVICES=cpu \
-      -DMMDEPLOY_TARGET_BACKENDS=ort \
+      -DMMDEPLOY_TARGET_BACKENDS=pplnn \
       -Dpplnn_DIR=${PPLNN_DIR}/pplnn-build/install/lib/cmake/ppl
 
   make -j$(nproc) && make install

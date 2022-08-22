@@ -63,6 +63,7 @@ def get_table(onnx_path: str,
         platform=TargetPlatform.NCNN_INT8,
         device=device,
         verbose=1)
+
     # export quantized graph and quant table
     export_ppq_graph(
         graph=quantized,

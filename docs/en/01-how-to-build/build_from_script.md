@@ -21,7 +21,7 @@ The script will also try to avoid affecting host environment:
 - The dependencies of source code compilation are placed in the `mmdeploy-dep` directory at the same level as mmdeploy
 - The script not modify variables such as PATH, LD_LIBRARY_PATH, PYTHONPATH, etc.
 
-Here is the verified installation script:
+Here is the verified installation script. If you want mmdeploy to support multiple backends at the same time, you can execute each script once:
 
 |             script              | OS version  |
 | :-----------------------------: | :---------: |
