@@ -6,6 +6,11 @@
 #include "mmdeploy/core/utils/formatter.h"
 #include "torch/torch.h"
 
+#if MMDEPLOY_USE_CUDA
+#include "c10/cuda/CUDAGuard.h"
+#include "c10/cuda/CUDAStream.h"
+#endif
+
 #if MMDEPLOY_USE_TORCHVISION
 #include "torchvision/vision.h"
 MMDEPLOY_API void _mmdeploy_force_link_torchvision() { vision::detail::_register_ops(); }
@@ -21,6 +26,29 @@ class InferenceMode {
 #else
   at::AutoNonVariableTypeMode guard_;
 #endif
+};
+
+class StreamGuard {
+ public:
+  StreamGuard(const torch::Device& device, Stream stream)
+      : device_(device), stream_(std::move(stream)), device_guard_(device) {
+    stream_.Wait().value();
+  }
+
+  ~StreamGuard() {
+#if MMDEPLOY_USE_CUDA
+    auto device = stream_.GetDevice();
+    if (device.is_device()) {
+      Stream stream(device, (cudaStream_t)c10::cuda::getCurrentCUDAStream(device_.index()));
+      stream.Wait().value();
+    }
+#endif
+  }
+
+ private:
+  torch::Device device_;
+  Stream stream_;
+  c10::DeviceGuard device_guard_;
 };
 
 static Result<torch::ScalarType> FromDataType(DataType data_type) {
@@ -89,15 +117,16 @@ Result<void> TorchNet::Init(const Value& cfg) {
     module_.to(*torch_device_);
     auto forward = module_.get_method("forward");
 
-    auto ToDesc = [&](torch::jit::Value* value, const char* type) {
+    auto ToDesc = [&](torch::jit::Value* value, const char* type, int index) {
       MMDEPLOY_INFO("Found {}: {}", type, value->debugNameBase());
-      return TensorDesc{device_, DataType::kFLOAT, {}, value->debugNameBase()};
+      return TensorDesc{device_, DataType::kFLOAT, {}, "#" + std::to_string(index)};
     };
 
     auto inputs = forward.graph()->inputs();
+    int input_count = 0;
     for (int i = 1; i < inputs.size(); ++i) {
       if (inputs[i]->type()->kind() == c10::TypeKind::TensorType) {
-        input_tensor_.emplace_back(ToDesc(inputs[i], "input"));
+        input_tensor_.emplace_back(ToDesc(inputs[i], "input", input_count++));
       } else {
         MMDEPLOY_ERROR("Unsupported input type: {}", typeKindToString(inputs[i]->type()->kind()));
         return Status(eNotSupported);
@@ -105,14 +134,15 @@ Result<void> TorchNet::Init(const Value& cfg) {
     }
 
     auto outputs = forward.graph()->outputs();
+    int output_count = 0;
     for (const auto& output : outputs) {
       auto kind = output->type()->kind();
       if (kind == c10::TypeKind::TensorType) {
-        output_tensor_.emplace_back(ToDesc(output, "output"));
+        output_tensor_.emplace_back(ToDesc(output, "output", output_count++));
       } else if (output->type()->kind() == c10::TypeKind::TupleType) {
         for (const auto& v : output->node()->inputs()) {
           if (v->type()->kind() == c10::TypeKind::TensorType) {
-            output_tensor_.emplace_back(ToDesc(v, "output"));
+            output_tensor_.emplace_back(ToDesc(v, "output", output_count++));
           } else {
             MMDEPLOY_ERROR("Unsupported output type: {}", typeKindToString(v->type()->kind()));
             return Status(eNotSupported);
@@ -144,9 +174,9 @@ Result<void> TorchNet::Reshape(Span<TensorShape> input_shapes) {
 }
 
 Result<void> TorchNet::Forward() {
-  OUTCOME_TRY(stream_.Wait());
   try {
-    InferenceMode guard;
+    StreamGuard stream_guard(*torch_device_, stream_);
+    InferenceMode inference_guard;
     std::vector<torch::jit::IValue> inputs;
     for (auto& v : input_tensor_) {
       OUTCOME_TRY(auto data_type, FromDataType(v.data_type()));
