@@ -3,6 +3,7 @@
 mmcls_version=$1
 
 echo  "$mmcls_version"
+
 git clone  --depth 1 --single-branch --branch $mmcls_version git@github.com:open-mmlab/mmclassification.git ../mmclassification
 
 checkpoint=https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_b16x8_cifar10_20210528-bd6371c8.pth
