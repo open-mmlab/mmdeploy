@@ -105,7 +105,7 @@ RUN git clone https://github.com/openppl-public/ppl.cv.git &&\
     ./build.sh cuda
 
 ### install libtorch
-RUN wget https://download.pytorch.org/libtorch/cu111/libtorch-shared-with-deps-1.12.1%2Bcu113.zip && \
+RUN wget https://download.pytorch.org/libtorch/cu113/libtorch-shared-with-deps-1.12.1%2Bcu113.zip && \
     unzip libtorch-shared-with-deps-1.12.1+cu113.zip 
 ENV Torch_DIR=/root/workspace/libtorch
 ENV LD_LIBRARY_PATH=$Torch_DIR/lib:$LD_LIBRARY_PATH
