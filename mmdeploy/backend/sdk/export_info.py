@@ -499,11 +499,6 @@ def export2SDK(deploy_cfg: Union[str, mmcv.Config],
         sort_keys=False,
         indent=4)
     mmcv.dump(
-        transform_static,
-        '{}/transform_static.json'.format(work_dir),
-        sort_keys=False,
-        indent=4)
-    mmcv.dump(
         detail_info,
         '{}/detail.json'.format(work_dir),
         sort_keys=False,
