@@ -43,6 +43,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libopencv-dev \
     && rm -rf /var/lib/apt/lists/*
 
+### install miniconda
 RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh  && \
     chmod +x ~/miniconda.sh && \
     ~/miniconda.sh -b -p /opt/conda && \
@@ -52,6 +53,7 @@ RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Mini
 
 ENV PATH=/opt/conda/bin:$PATH
 
+### install jdk1.8
 RUN wget https://download.java.net/java/GA/jdk18/43f95e8614114aeaa8e8a5fcf20a682d/36/GPL/openjdk-18_linux-x64_bin.tar.gz &&\
 tar xvf openjdk-18_linux-x64_bin.tar.gz && rm -rf openjdk-18_linux-x64_bin.tar.gz
 ENV JAVA_HOME=/root/workspace/jdk-18
