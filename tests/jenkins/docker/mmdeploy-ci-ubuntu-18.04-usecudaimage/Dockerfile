@@ -38,7 +38,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libjpeg-dev \
         libpng-dev \
         ccache \
-        cmake \
         gcc \
         g++ \
         git \
@@ -48,6 +47,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libzip-dev \
         libopencv-dev \
     && rm -rf /var/lib/apt/lists/*
+
+### install cmake
+RUN wget https://github.com/Kitware/CMake/releases/download/v3.24.1/cmake-3.24.1.tar.gz && \
+    cd cmake-3.24.1 && \
+    ./bootstrap && \
+    make && \
+    make install 
 
 ### install miniconda
 RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh  && \

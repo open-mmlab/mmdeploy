@@ -10,6 +10,7 @@ ARG TORCHVISION_VERSION=0.11.0
 ARG MMCV_VERSION=1.5.3
 ARG PPLNN_version=0.8.1
 ARG PPLCV_VERSION=0.7.0
+ARG NCNN_VERSION=20220721
 
 USER root
 
@@ -18,7 +19,7 @@ ENV DEBIAN_FRONTEND=nointeractive
 ENV FORCE_CUDA="1"
 
 ### change the system source for installing libs
-ARG USE_SRC_INSIDE=true
+ARG USE_SRC_INSIDE=false
 RUN if [ ${USE_SRC_INSIDE} == true ] ; \
     then \
         sed -i s/archive.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list ; \
@@ -38,7 +39,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libjpeg-dev \
         libpng-dev \
         ccache \
-        cmake \
         gcc \
         g++ \
         git \
@@ -48,6 +48,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libzip-dev \
         libopencv-dev \
     && rm -rf /var/lib/apt/lists/*
+
+### install cmake
+RUN wget https://github.com/Kitware/CMake/releases/download/v3.24.1/cmake-3.24.1.tar.gz && \
+    cd cmake-3.24.1 && \
+    ./bootstrap && \
+    make && \
+    make install 
 
 RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh  && \
     chmod +x ~/miniconda.sh && \
