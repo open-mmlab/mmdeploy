@@ -9,9 +9,7 @@ namespace elena {
 
 class CenterCropImpl : public ::mmdeploy::CenterCropImpl {
  public:
-  explicit CenterCropImpl(const Value& args) : ::mmdeploy::CenterCropImpl(args) {
-    fuse_transform_ = true;
-  }
+  explicit CenterCropImpl(const Value& args) : ::mmdeploy::CenterCropImpl(args) {}
 
  protected:
   Result<Tensor> CropImage(const Tensor& tensor, int top, int left, int bottom,

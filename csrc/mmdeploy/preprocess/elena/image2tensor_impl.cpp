@@ -7,9 +7,7 @@ namespace elena {
 
 class ImageToTensorImpl : public ::mmdeploy::ImageToTensorImpl {
  public:
-  explicit ImageToTensorImpl(const Value& args) : ::mmdeploy::ImageToTensorImpl(args) {
-    fuse_transform_ = true;
-  }
+  explicit ImageToTensorImpl(const Value& args) : ::mmdeploy::ImageToTensorImpl(args) {}
 
  protected:
   Result<Tensor> HWC2CHW(const Tensor& tensor) override {

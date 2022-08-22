@@ -7,9 +7,7 @@ namespace elena {
 
 class DefaultFormatBundleImpl : public ::mmdeploy::DefaultFormatBundleImpl {
  public:
-  explicit DefaultFormatBundleImpl(const Value& args) : ::mmdeploy::DefaultFormatBundleImpl(args) {
-    fuse_transform_ = true;
-  }
+  explicit DefaultFormatBundleImpl(const Value& args) : ::mmdeploy::DefaultFormatBundleImpl(args) {}
 
  protected:
   Result<Tensor> ToFloat32(const Tensor& tensor, const bool& img_to_float) override {

@@ -9,7 +9,7 @@ namespace elena {
 
 class PadImpl : public ::mmdeploy::PadImpl {
  public:
-  PadImpl(const Value& args) : ::mmdeploy::PadImpl(args) { fuse_transform_ = true; }
+  PadImpl(const Value& args) : ::mmdeploy::PadImpl(args) {}
 
  protected:
   Result<Tensor> PadImage(const Tensor& img, const std::array<int, 4>& padding) override {

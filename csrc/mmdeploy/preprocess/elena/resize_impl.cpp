@@ -9,7 +9,7 @@ namespace elena {
 
 class ResizeImpl final : public ::mmdeploy::ResizeImpl {
  public:
-  ResizeImpl(const Value& args) : ::mmdeploy::ResizeImpl(args) { fuse_transform_ = true; }
+  ResizeImpl(const Value& args) : ::mmdeploy::ResizeImpl(args) {}
   ~ResizeImpl() = default;
 
  protected:

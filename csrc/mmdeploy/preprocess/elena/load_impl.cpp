@@ -9,9 +9,7 @@ namespace elena {
 
 class PrepareImageImpl : public ::mmdeploy::PrepareImageImpl {
  public:
-  explicit PrepareImageImpl(const Value& args) : ::mmdeploy::PrepareImageImpl(args) {
-    fuse_transform_ = true;
-  };
+  explicit PrepareImageImpl(const Value& args) : ::mmdeploy::PrepareImageImpl(args){};
   ~PrepareImageImpl() override = default;
 
  protected:

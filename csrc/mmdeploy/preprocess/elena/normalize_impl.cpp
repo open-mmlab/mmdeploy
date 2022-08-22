@@ -9,7 +9,7 @@ namespace elena {
 
 class NormalizeImpl : public ::mmdeploy::NormalizeImpl {
  public:
-  NormalizeImpl(const Value& value) : ::mmdeploy::NormalizeImpl(value) { fuse_transform_ = true; };
+  NormalizeImpl(const Value& value) : ::mmdeploy::NormalizeImpl(value){};
   ~NormalizeImpl() = default;
 
  protected:
