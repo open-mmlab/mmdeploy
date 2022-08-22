@@ -1,8 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import importlib
-import json
 import re
-from hashlib import sha256
 from typing import Dict, List, Tuple, Union
 
 import mmcv
@@ -12,6 +10,7 @@ from mmdeploy.utils import (Backend, Task, get_backend, get_codebase,
                             get_common_config, get_ir_config, get_root_logger,
                             get_task_type, is_dynamic_batch, load_config)
 from mmdeploy.utils.constants import SDK_TASK_MAP as task_map
+from .tracer import add_transform_tag, get_transform_static
 
 
 def get_mmdpeloy_version() -> str:
@@ -186,96 +185,6 @@ def get_inference_info(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
     if 'use_vulkan' in deploy_cfg['backend_config']:
         return_dict['use_vulkan'] = deploy_cfg['backend_config']['use_vulkan']
     return return_dict
-
-
-def get_transform_static(transforms: List) -> Tuple:
-    """Get the static transform information for Elena use.
-
-    Args:
-        transforms (List): transforms in model_cfg
-
-    Return:
-        tuple(): Composed of the static transform information and the tag.
-    """
-
-    # Current only support basic transform
-    supported_type = [
-        'LoadImageFromFile', 'DefaultFormatBundle', 'Resize', 'CenterCrop',
-        'Normalize', 'ImageToTensor', 'Collect', 'Pad'
-    ]
-    # each transform can only appear once
-    cnt = {}
-    for trans in transforms:
-        tp = trans['type']
-        if tp not in supported_type:
-            return None, None
-        if tp in cnt:
-            return None, None
-        cnt[tp] = 1
-
-    common_dtype = None
-    default_args = {
-        'LoadImageFromFile': {
-            'to_float32': False,
-            'color_type': 'color'
-        },
-        'DefaultFormatBundle': {
-            'img_to_float': True
-        },
-        'Resize': {},
-        'CenterCrop': {},
-        'Normalize': {
-            'to_rgb': True
-        },
-        'ImageToTensor': {},
-        'Collect': {},
-        'Pad': {}
-    }
-
-    transform_static = []
-    for trans in transforms:
-        trans_type = trans['type']
-        trans_args = default_args[trans_type]
-        if trans_type == 'LoadImageFromFile':
-            to_float32 = trans.get('to_float32', trans_args['to_float32'])
-            color_type = trans.get('color_type', trans_args['color_type'])
-            if color_type == 'color' or \
-                    color_type == 'color_ignore_orientation':
-                transform_static.append({'type': 'cvtColorBGR'})
-            else:
-                transform_static.append({'type': 'cvtColorGray'})
-            if to_float32 is True:
-                transform_static.append({'type': 'CastFloat'})
-                common_dtype = 'float32'
-        elif trans_type == 'Resize':
-            transform_static.append({'type': 'Resize'})
-        elif trans_type == 'CenterCrop':
-            transform_static.append({'type': 'CenterCrop'})
-        elif trans_type == 'Normalize':
-            to_rgb = trans.get('to_rgb', trans_args['to_rgb'])
-            if common_dtype is None or common_dtype != 'float32':
-                transform_static.append({'type': 'CastFloat'})
-                common_dtype = 'float32'
-            if to_rgb is True:
-                transform_static.append({'type': 'cvtColorRGB'})
-            transform_static.append({'type': 'Normalize'})
-        elif trans_type == 'ImageToTensor':
-            transform_static.append({'type': 'HWC2CHW'})
-        elif trans_type == 'Pad':
-            if common_dtype != 'float32':
-                return None, None
-            transform_static.append({'type': 'Pad'})
-        elif trans_type == 'DefaultFormatBundle':
-            img_to_float = trans.get('img_to_float',
-                                     trans_args['img_to_float'])
-            if img_to_float and (common_dtype is None
-                                 or common_dtype != 'float32'):
-                transform_static.append({'type': 'CastFloat'})
-            transform_static.append({'type': 'HWC2CHW'})
-    if common_dtype != 'float32':
-        return None, None
-    tag = sha256(json.dumps(transform_static).encode('utf-8')).hexdigest()
-    return transform_static, tag
 
 
 def get_preprocess(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
@@ -458,15 +367,6 @@ def get_detail(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
         onnx_config=ir_config,
         backend_config=backend_config,
         calib_config=calib_config)
-
-
-def add_transform_tag(pipeline_info: Dict, tag: str) -> Dict:
-    if tag is None:
-        return pipeline_info
-
-    pipeline_info['pipeline']['tasks'][0]['sha256'] = tag
-    pipeline_info['pipeline']['tasks'][0]['fuse_transform'] = False
-    return pipeline_info
 
 
 def export2SDK(deploy_cfg: Union[str, mmcv.Config],
