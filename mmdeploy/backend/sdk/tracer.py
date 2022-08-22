@@ -4,14 +4,28 @@ import json
 from hashlib import sha256
 from typing import Dict, List, Tuple
 
-from mmcv.utils import Registry
+
+class TraceFunc:
+    """Trace Transform."""
+
+    def __init__(self):
+        self.module_dict = dict()
+
+    def register_module(self, name):
+        if name in self.module_dict:
+            raise KeyError(f'{name} is already registered')
+
+        def _register(func):
+            self.module_dict[name] = func
+            return func
+
+        return _register
+
+    def get(self, name):
+        return self.module_dict[name]
 
 
-def __build_tracer_wrapper_func(name: str, registry: Registry):
-    return registry.module_dict[name]
-
-
-_TRANSFORM_WRAPPER = Registry('_TRANSFORM', __build_tracer_wrapper_func)
+_TRANSFORM_WRAPPER = TraceFunc()
 
 
 class State:
@@ -157,7 +171,7 @@ def get_transform_static(transforms: List) -> Tuple:
     for trans in transforms:
         tp = trans['type']
         args = trans
-        func = _TRANSFORM_WRAPPER.build(tp)
+        func = _TRANSFORM_WRAPPER.get(tp)
         flag, int_state, cur_state, elena_transforms = func(
             int_state, cur_state, args, elena_transforms)
         if flag is False:
