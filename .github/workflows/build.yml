@@ -124,6 +124,7 @@ jobs:
       - name: Setup Debug Session
         uses: csexton/debugger-action@master
       - name: Install dependencies2
+        run: |
           python -m pip install -r requirements.txt
           pip install -U pycuda
           python -m pip install -U numpy
@@ -173,6 +174,7 @@ jobs:
       - name: Setup Debug Session
         uses: csexton/debugger-action@master
       - name: Install dependencies2
+        run: |
           python -m pip install -r requirements.txt
           pip install -U pycuda
           python -m pip install -U numpy
