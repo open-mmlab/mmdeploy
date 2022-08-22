@@ -363,7 +363,7 @@ def main():
             backend=backend,
             output_file=osp.join(args.work_dir, f'output_{backend.value}.jpg'),
             show_result=args.show)
-        if backend in [Backend.SNPE, Backend.NCNN]:
+        if backend == Backend.SNPE:
             extra['uri'] = args.uri
 
         create_process(
