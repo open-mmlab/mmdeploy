@@ -121,6 +121,9 @@ jobs:
         run: |
           python -V
           python -m pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cu102/${{matrix.torch_version}}/index.html
+      - name: Setup Debug Session
+        uses: csexton/debugger-action@master
+      - name: Install dependencies2
           python -m pip install -r requirements.txt
           pip install -U pycuda
           python -m pip install -U numpy
@@ -167,6 +170,9 @@ jobs:
         run: |
           python -V
           python -m pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cu111/${{matrix.torch_version}}/index.html
+      - name: Setup Debug Session
+        uses: csexton/debugger-action@master
+      - name: Install dependencies2
           python -m pip install -r requirements.txt
           pip install -U pycuda
           python -m pip install -U numpy
