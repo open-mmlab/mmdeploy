@@ -18,7 +18,7 @@ MMDEPLOY_API void _mmdeploy_force_link_torchvision() { vision::detail::_register
 
 namespace mmdeploy {
 
-TorchNet::~TorchNet() = default;
+namespace {
 
 class InferenceMode {
 #if TORCH_VERSION_MAJOR == 1 && TORCH_VERSION_MINOR >= 10
@@ -51,7 +51,7 @@ class StreamGuard {
   c10::DeviceGuard device_guard_;
 };
 
-static Result<torch::ScalarType> FromDataType(DataType data_type) {
+Result<torch::ScalarType> FromDataType(DataType data_type) {
   switch (data_type) {
     case DataType::kFLOAT:
       return torch::ScalarType::Float;
@@ -69,7 +69,7 @@ static Result<torch::ScalarType> FromDataType(DataType data_type) {
   }
 }
 
-static Result<DataType> ToDataType(torch::ScalarType scalar_type) {
+Result<DataType> ToDataType(torch::ScalarType scalar_type) {
   switch (scalar_type) {
     case torch::ScalarType::Float:
       return DataType::kFLOAT;
@@ -86,6 +86,10 @@ static Result<DataType> ToDataType(torch::ScalarType scalar_type) {
       return Status(eNotSupported);
   }
 }
+
+}  // namespace
+
+TorchNet::~TorchNet() = default;
 
 Result<void> TorchNet::Init(const Value& cfg) {
   auto& context = cfg["context"];
