@@ -46,7 +46,7 @@ Result<Value> CenterCropImpl::Process(const Value& input) {
 
     OUTCOME_TRY(auto dst_tensor, CropImage(tensor, y1, x1, y2, x2));
 
-    auto shape = dst_tensor.desc().shape;
+    auto& shape = dst_tensor.desc().shape;
 
     output["img_shape"] = {shape[0], shape[1], shape[2], shape[3]};
     if (input.contains("scale_factor")) {
