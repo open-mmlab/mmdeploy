@@ -18,7 +18,7 @@ ENV DEBIAN_FRONTEND=nointeractive
 ENV FORCE_CUDA="1"
 
 ### change the system source for installing libs
-ARG USE_SRC_INSIDE=false
+ARG USE_SRC_INSIDE=true
 RUN if [ ${USE_SRC_INSIDE} == true ] ; \
     then \
         sed -i s/archive.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list ; \
