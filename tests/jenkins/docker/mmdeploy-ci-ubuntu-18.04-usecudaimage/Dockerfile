@@ -125,7 +125,7 @@ RUN git clone https://github.com/openppl-public/ppl.cv.git &&\
     ./build.sh cuda
 
 ### install zip
-RUN apt update && apt install zip
+RUN apt update && apt install -y zip 
 ### install libtorch
 RUN wget https://download.pytorch.org/libtorch/cu102/libtorch-shared-with-deps-1.12.1%2Bcu102.zip && \
     unzip libtorch-shared-with-deps-1.12.1+cu102.zip 
