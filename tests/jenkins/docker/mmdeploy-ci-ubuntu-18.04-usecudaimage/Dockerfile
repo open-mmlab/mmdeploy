@@ -1,10 +1,10 @@
-FROM nvcr.io/nvidia/tensorrt:20.03-py3
-ARG PYTHON_VERSION=3.6
+FROM nvidia/cuda:10.2-devel-ubuntu18.04
+ARG PYTHON_VERSION=3.7
 ARG CUDA=10.2
 ARG ONNXRUNTIME_VERSION=1.8.1
 ARG PPLNN_VERSION=0.8.1
 ARG TENSORRT=7.0.0
-ARG CUDNN=7.6.5
+ARG CUDNN=7.6
 ARG OPENCV_VERSION==4.5.5.62
 ARG TORCH_VERSION=1.10.0
 ARG TORCHVISION_VERSION=0.11.0
@@ -64,26 +64,36 @@ tar xvf openjdk-18_linux-x64_bin.tar.gz && rm -rf openjdk-18_linux-x64_bin.tar.g
 ENV JAVA_HOME=/root/workspace/jdk-18
 ENV PATH=$JAVA_HOME/bin:$PATH
 
-### pytorch
-RUN /opt/conda/bin/conda install pytorch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION} cudatoolkit=${CUDA} -c pytorch
+### install tensorrt
+COPY /data2/shared/TensorRT-7.0.0.11.Ubuntu-18.04.x86_64-gnu.cuda-10.2.cudnn7.6.tar.gz /root/workspace/
+RUN tar -zxvf TensorRT-7.0.0.11.Ubuntu-18.04.x86_64-gnu.cuda-10.2.cudnn7.6.tar.gz &&\
+    /opt/conda/bin/pip install TensorRT-7.0.0.11/python/tensorrt-7.0.0.11-cp37-none-linux_x86_64.whl &&\
+    /opt/conda/bin/pip install pycuda
+ENV TENSORRT_DIR=$(pwd)/TensorRT-7.0.0.11
+ENV LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
+
+### install cudnn
+COPY data2/shared/cudnn-10.2-linux-x64-v7.6.5.32.tgz /root/workspace/
+RUN tar -zxvf cudnn-10.2-linux-x64-v7.6.5.32.tgz
+ENV CUDNN_DIR=root/workspace/cuda
+ENV LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
 
 ### get onnxruntime
 RUN wget https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTIME_VERSION}/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz \
     && tar -zxvf onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz &&\
-    pip install onnxruntime-gpu==${ONNXRUNTIME_VERSION}
+    /opt/conda/bin/pip install onnxruntime-gpu==${ONNXRUNTIME_VERSION}
 ENV ONNXRUNTIME_DIR=/root/workspace/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}
+
+### install openvino
+RUN /opt/conda/bin/pip install openvino-dev
 
 ### install opencv
 RUN /opt/conda/bin/pip install opencv-python==${OPENCV_VERSION}
 
-### install openmim
-RUN /opt/conda/bin/pip install openmim
-
 ### install ppl.nn
 RUN git clone --recursive https://github.com/openppl-public/ppl.nn.git &&\
     cd ppl.nn &&\
-    git checkout tags/v${PPLNN_VERSION} -b ${PPLNN_VERSION}
-
+    git checkout tags/v${PPLNN_VERSION} -b ${PPLNN_VERSION} 
 ENV pplnn_DIR=/root/workspace/ppl.nn/install/lib/cmake/ppl
 ENV PYTHONPATH=/root/workspace/ppl.nn/install/lib:$PYTHONPATH
 
@@ -96,12 +106,28 @@ RUN git clone --recursive https://github.com/Tencent/ncnn.git &&\
     cmake -DNCNN_VULKAN=OFF -DNCNN_PYTHON=ON -DNCNN_BUILD_TOOLS=ON -DCMAKE_INSTALL_PREFIX=$NCNN_DIR/install .. &&\
     make -j $(nproc) && make install &&\
     cd $NCNN_DIR/python &&\
-    /opt/conda/bin/pip install -e . 
+    /opt/conda/bin/pip install -e .
+ENV ncnn_DIR=/root/workspace/ncnn/install/lib/cmake/ncnn
+ENV PYTHONPATH=/root/workspace/ncnn/python:$PYTHONPATH 
 
-### build sdk
+### install ppl.cv
 RUN git clone https://github.com/openppl-public/ppl.cv.git &&\
     cd ppl.cv &&\
     git checkout tags/v${PPLCV_VERSION} -b v${PPLCV_VERSION} &&\
     ./build.sh cuda
-ENV pplcv_DIR=/root/workspace/ppl.cv/cuda-build/install/lib/cmake/ppl
 
+### install libtorch
+RUN wget https://download.pytorch.org/libtorch/cu102/libtorch-shared-with-deps-1.12.1%2Bcu102.zip && \
+    unzip libtorch-shared-with-deps-1.12.1+cu102.zip 
+ENV Torch_DIR=/root/workspace/libtorch
+ENV LD_LIBRARY_PATH=$Torch_DIR/lib:$LD_LIBRARY_PATH
+
+### create conda env && install pytorch
+RUN /opt/conda/bin/conda init bash && \
+    TORCH_VERSION_LIST=(1.8.0 1.9.0 1.10.0 1.11.0 1.12.0) && \
+    TORCHVISION_VERSION_LIST=(0.9.0 0.10.0 0.11.0 0.12.0 0.13.0) && \
+    for i in `seq 0 1`; \
+    do \
+        /opt/conda/bin/conda create --name torch${TORCH_VERSION_LIST[$i]} --clone base -y; \
+        /opt/conda/bin/conda run -n torch${TORCH_VERSION_LIST[$i]} /opt/conda/envs/torch${TORCH_VERSION_LIST[$i]}/bin/pip install torch==${TORCH_VERSION_LIST[$i]}+cpu torchvision==${TORCHVISION_VERSION_LIST[$i]}+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html; \
+    done 
