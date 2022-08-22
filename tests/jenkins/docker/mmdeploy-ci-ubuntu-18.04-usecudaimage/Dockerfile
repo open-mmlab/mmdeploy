@@ -10,6 +10,7 @@ ARG TORCH_VERSION=1.10.0
 ARG TORCHVISION_VERSION=0.11.0
 ARG PPLCV_VERSION=0.7.0
 ARG NCNN_VERSION=20220721
+ARG HOST
 USER root
 
 
@@ -65,7 +66,7 @@ ENV JAVA_HOME=/root/workspace/jdk-18
 ENV PATH=$JAVA_HOME/bin:$PATH
 
 ### install tensorrt
-RUN wget http://127.0.0.1:9090/TensorRT-7.0.0.11.Ubuntu-18.04.x86_64-gnu.cuda-10.2.cudnn7.6.tar.gz && \
+RUN wget http://${HOST}/TensorRT-7.0.0.11.Ubuntu-18.04.x86_64-gnu.cuda-10.2.cudnn7.6.tar.gz && \
     tar -zxvf TensorRT-7.0.0.11.Ubuntu-18.04.x86_64-gnu.cuda-10.2.cudnn7.6.tar.gz  &&\
     /opt/conda/bin/pip install TensorRT-7.0.0.11/python/tensorrt-7.0.0.11-cp37-none-linux_x86_64.whl &&\
     /opt/conda/bin/pip install pycuda
@@ -73,7 +74,7 @@ ENV TENSORRT_DIR=$(pwd)/TensorRT-7.0.0.11
 ENV LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
 
 ### install cudnn
-RUN wget http://127.0.0.1:9090/cudnn-10.2-linux-x64-v7.6.5.32.tgz && \
+RUN wget http://${HOST}/cudnn-10.2-linux-x64-v7.6.5.32.tgz && \
     tar -zxvf cudnn-10.2-linux-x64-v7.6.5.32.tgz
 ENV CUDNN_DIR=root/workspace/cuda
 ENV LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
