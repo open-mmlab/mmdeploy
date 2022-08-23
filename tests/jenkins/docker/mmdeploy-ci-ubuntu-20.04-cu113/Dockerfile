@@ -1,4 +1,4 @@
-FROM nvcr.io/nvidia/tensorrt:2-py3
+FROM nvcr.io/nvidia/tensorrt:21.06-py3
 ARG PYTHON_VERSION=3.8
 ARG CUDA=11.3
 ARG ONNXRUNTIME_VERSION=1.8.1
