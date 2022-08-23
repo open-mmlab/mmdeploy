@@ -124,12 +124,16 @@ ENV LD_LIBRARY_PATH=$Torch_DIR/lib:$LD_LIBRARY_PATH
 RUN cp -r /usr/local/lib/python${PYTHON_VERSION}/dist-packages/tensorrt* /opt/conda/lib/python${PYTHON_VERSION}/site-packages/
 ENV TENSORRT_DIR=/workspace/tensorrt
 
-### create conda env && install pytorch
-RUN /opt/conda/bin/conda init bash && \
-    TORCH_VERSION_LIST=(1.8.0 1.9.0 1.10.0 1.11.0 1.12.0) && \
-    TORCHVISION_VERSION_LIST=(0.9.0 0.10.0 0.11.0 0.12.0 0.13.0) && \
-    for i in `seq 0 1`; \
-    do \
-        /opt/conda/bin/conda create --name torch${TORCH_VERSION_LIST[$i]} --clone base -y; \
-        /opt/conda/bin/conda install -n torch${TORCH_VERSION_LIST[$i]} -y pytorch==${TORCH_VERSION_LIST[i]} torchvision==${TORCHVISION_VERSION_LIST[i]} cudatoolkit=${CUDA} -c pytorch; \
-    done 
+# ### create conda env && install pytorch
+# RUN /opt/conda/bin/conda init bash && \
+#     TORCH_VERSION_LIST=(1.8.0 1.9.0 1.10.0 1.11.0 1.12.0) && \
+#     TORCHVISION_VERSION_LIST=(0.9.0 0.10.0 0.11.0 0.12.0 0.13.0) && \
+#     for i in `seq 0 1`; \
+#     do \
+#         /opt/conda/bin/conda create --name torch${TORCH_VERSION_LIST[$i]} --clone base -y; \
+#         /opt/conda/bin/conda install -n torch${TORCH_VERSION_LIST[$i]} -y pytorch==${TORCH_VERSION_LIST[i]} torchvision==${TORCHVISION_VERSION_LIST[i]} cudatoolkit=${CUDA} -c pytorch; \
+#     done
+
+### install pytorch
+RUN /opt/conda/bin/conda install pytorch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION} cudatoolkit=${CUDA} -c pytorch
+ENV PATH /opt/conda/bin:$PATH
