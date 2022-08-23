@@ -3,9 +3,6 @@
 ## parameters
 export docker_image=$1
 
-## build
-
-docker build tests/jenkins/docker/${docker_image}/ -t ${docker_image}
 container_id=$(
     docker run \
         -itd \

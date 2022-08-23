@@ -5,10 +5,6 @@
 docker_image=$1
 codebase_list=($2)
 
-## build
-
-docker build tests/jenkins/docker/${docker_image}/ -t ${docker_image}
-
 # docker run cmd for convert
 for codebase in ${codebase_list[@]}
 do
