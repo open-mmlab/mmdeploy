@@ -131,5 +131,5 @@ RUN /opt/conda/bin/conda init bash && \
     for i in `seq 0 1`; \
     do \
         /opt/conda/bin/conda create --name torch${TORCH_VERSION_LIST[$i]} --clone base -y; \
-        /opt/conda/bin/conda run -n torch${TORCH_VERSION_LIST[$i]} /opt/conda/envs/torch${TORCH_VERSION_LIST[$i]}/bin/conda install pytorch==${TORCH_VERSION_LIST[i]} torchvision==${TORCHVISION_VERSION_LIST[i]} cudatoolkit=${CUDA} -c pytorch; \
+        /opt/conda/bin/conda install -n torch${TORCH_VERSION_LIST[$i]} pytorch==${TORCH_VERSION_LIST[i]} torchvision==${TORCHVISION_VERSION_LIST[i]} cudatoolkit=${CUDA} -c pytorch; \
     done 
