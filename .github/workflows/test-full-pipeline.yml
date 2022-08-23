@@ -35,20 +35,23 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
-      - name: Install MMCV
+      - name: install libs
         run: |
-          pip install mmcv-full==1.4.8 -f https://download.openmmlab.com/mmcv/dist/cpu/${{matrix.torch_version}}/index.html
+          sudo apt update
+          sudo apt install gcc-multilib g++-multilib wget libprotobuf-dev protobuf-compiler libopencv-dev
+      - name: Install mmcls
+        run: |
+          pip install openmim
+          mmcls_version=v0.22.0
+          mim install mmcls==$mmcls_version
+          git clone  --depth 1 --single-branch --branch $mmcls_version https://github.com/open-mmlab/mmclassification.git ../mmclassification
           python -c 'import mmcv; print(mmcv.__version__)'
-      - name: Install dependencies
+      - name: Install mmdeploy dependencies
         run: |
           pip install cmake onnx
           pip install -r requirements/build.txt
           pip install -r requirements/runtime.txt
           pip install -r requirements/tests.txt
-      - name: install libs
-        run: |
-          sudo apt update
-          sudo apt install gcc-multilib g++-multilib wget libprotobuf-dev protobuf-compiler libopencv-dev
       - name: Install mmdeploy with onnxruntime backend
         run: |
           pip install onnxruntime==1.8.1
@@ -65,6 +68,7 @@ jobs:
                 -DMMDEPLOY_TARGET_DEVICES=cpu \
                 -DMMDEPLOY_BUILD_EXAMPLES=ON \
                 -DMMDEPLOY_BUILD_SDK=ON \
+                -DMMDEPLOY_CODEBASES=mmcls \
                 -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
                 -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
 
@@ -72,4 +76,8 @@ jobs:
           popd
           pip install -v -e .
       - name: Test mmcls full pipeline
-        run: bash .github/scripts/test_mmcls_full_pipeline.sh v0.22.0
+        run: |
+          export MMDEPLOY_DIR=$(pwd)
+          export ONNXRUNTIME_DIR=$MMDEPLOY_DIR/onnxruntime-linux-x64-1.8.1
+          export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$MMDEPLOY_DIR/build/install/lib:$LD_LIBRARY_PATH
+          bash .github/scripts/test_mmcls_full_pipeline.sh
