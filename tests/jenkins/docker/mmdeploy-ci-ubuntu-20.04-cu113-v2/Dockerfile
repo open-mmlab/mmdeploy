@@ -138,5 +138,5 @@ RUN /opt/conda/bin/pip install openmim
 
 RUN for i in `seq 0 3`; \
     do \
-        echo $i;
+        echo $i; \
     done
