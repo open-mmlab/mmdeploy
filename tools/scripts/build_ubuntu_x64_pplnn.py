@@ -8,7 +8,35 @@ from ubuntu_utils import cmd_result, ensure_base_env, get_job
 g_jobs = 2
 
 
-def install_pplnn(dep_dir):
+def install_pplcv(dep_dir, build_cuda):
+    print('-' * 10 + 'install pplcv' + '-' * 10)
+    time.sleep(2)
+
+    os.chdir(dep_dir)
+
+    pplcv_dir = os.path.join(dep_dir, 'ppl.cv')
+
+    # git clone
+    if not os.path.exists(pplcv_dir):
+        os.system('git clone https://github.com/openppl-public/ppl.cv/')
+
+    # build
+    os.chdir(pplcv_dir)
+    os.system('git checkout v0.7.0')
+    if build_cuda is True:
+        os.system('./build.sh cuda')
+        pplcv_cmake_dir = os.path.join(pplcv_dir,
+                                       'cuda-build/install/lib/cmake/ppl')
+    else:
+        os.system('./build.sh x86_64')
+        pplcv_cmake_dir = os.path.join(pplcv_dir,
+                                       'x86-64-build/install/lib/cmake/ppl')
+
+    print('\n')
+    return pplcv_cmake_dir
+
+
+def install_pplnn(dep_dir, build_cuda):
     print('-' * 10 + 'install pplnn' + '-' * 10)
     time.sleep(2)
 
@@ -24,17 +52,15 @@ def install_pplnn(dep_dir):
     # build
     os.chdir(pplnn_dir)
     os.system('git checkout v0.8.2')
-    nvcc = cmd_result('which nvcc')
-    if nvcc is None or len(nvcc) < 1:
-        # build CPU only
-        os.system(
-            './build.sh -DPPLNN_USE_X86_64=ON  -DPPLNN_ENABLE_PYTHON_API=ON'  # noqa: E501
-        )
-    else:
-        # build with cuda
+    if build_cuda is True:
         os.system(
             './build.sh -DPPLNN_USE_CUDA=ON -DPPLNN_USE_X86_64=ON  -DPPLNN_ENABLE_PYTHON_API=ON'  # noqa: E501
         )
+    else:
+        os.system(
+            './build.sh -DPPLNN_USE_X86_64=ON  -DPPLNN_ENABLE_PYTHON_API=ON'  # noqa: E501
+        )
+
     os.system('cd python/package && ./build.sh')
     os.system(
         'cd /tmp/pyppl-package/dist && python3 -m pip install pyppl*.whl --force-reinstall'  # noqa: E501
@@ -46,7 +72,7 @@ def install_pplnn(dep_dir):
     return pplnn_cmake_dir
 
 
-def install_mmdeploy(work_dir, pplnn_cmake_dir):
+def install_mmdeploy(work_dir, pplnn_cmake_dir, pplcv_cmake_dir, build_cuda):
     print('-' * 10 + 'build and install mmdeploy' + '-' * 10)
     time.sleep(3)
 
@@ -60,8 +86,14 @@ def install_mmdeploy(work_dir, pplnn_cmake_dir):
     cmd += ' -DMMDEPLOY_BUILD_SDK=ON '
     cmd += ' -DMMDEPLOY_BUILD_EXAMPLES=ON '
     cmd += ' -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON '
-    cmd += ' -DMMDEPLOY_TARGET_DEVICES=cpu '
     cmd += ' -DMMDEPLOY_TARGET_BACKENDS=pplnn '
+
+    if build_cuda is True:
+        cmd += ' -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" '
+    else:
+        cmd += ' -DMMDEPLOY_TARGET_DEVICES=cpu '
+
+    cmd += ' -Dpplcv_DIR={} '.format(pplcv_cmake_dir)
     cmd += ' -Dpplnn_DIR={} '.format(pplnn_cmake_dir)
     os.system(cmd)
 
@@ -109,9 +141,15 @@ def main():
             '{} update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 200'  # noqa: E501
             .format(sudo))
 
-    # install pplnn
-    pplnn_cmake_dir = install_pplnn(dep_dir)
-    if install_mmdeploy(work_dir, pplnn_cmake_dir) != 0:
+    # install pplcv and pplnn
+    nvcc = cmd_result('which nvcc')
+    build_cuda = False
+    if nvcc is not None and len(nvcc) > 1:
+        build_cuda = True
+    pplcv_cmake_dir = install_pplcv(dep_dir, build_cuda)
+    pplnn_cmake_dir = install_pplnn(dep_dir, build_cuda)
+    if install_mmdeploy(work_dir, pplnn_cmake_dir, pplcv_cmake_dir,
+                        build_cuda) != 0:
         return -1
 
     if len(envs) > 0:
