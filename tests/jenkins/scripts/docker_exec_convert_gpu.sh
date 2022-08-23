@@ -38,12 +38,11 @@ cmake .. -DMMDEPLOY_BUILD_SDK=ON \
         -DTENSORRT_DIR=${TENSORRT_DIR} \
         -DCUDNN_DIR=${CUDNN_DIR} \
         -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} \
-        -Dpplnn_DIR=${pplnn_DIR} \
+        -Dpplnn_DIR=${PPLNN_DIR}/pplnn-build/install/lib/cmake/ppl \
         -Dncnn_DIR=${ncnn_DIR} \
         -DInferenceEngine_DIR=${InferenceEngine_DIR} \
         -Dpplcv_DIR=/root/workspace/ppl.cv/cuda-build/install/lib/cmake/ppl \
-        -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" 
-        
+        -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
 make -j $(nproc) && make install
 cd ../
 conda init bash

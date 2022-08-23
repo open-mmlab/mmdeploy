@@ -22,30 +22,30 @@ ENV FORCE_CUDA="1"
 ARG USE_SRC_INSIDE=true
 RUN if [ ${USE_SRC_INSIDE} == true ] ; \
     then \
-    sed -i s/archive.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list ; \
-    sed -i s/security.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list ; \
-    echo "Use aliyun source for installing libs" ; \
+        sed -i s/archive.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list ; \
+        sed -i s/security.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list ; \
+        echo "Use aliyun source for installing libs" ; \
     else \
-    echo "Keep the download source unchanged" ; \
+        echo "Keep the download source unchanged" ; \
     fi
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates \
-    gnupg \
-    libssl-dev \
-    libprotobuf-dev protobuf-compiler \
-    build-essential \
-    libjpeg-dev \
-    libpng-dev \
-    ccache \
-    gcc \
-    g++ \
-    git \
-    vim \
-    wget \
-    curl \
-    libzip-dev \
-    libopencv-dev \
+        ca-certificates \
+        gnupg \
+        libssl-dev \
+        libprotobuf-dev protobuf-compiler \
+        build-essential \
+        libjpeg-dev \
+        libpng-dev \
+        ccache \
+        gcc \
+        g++ \
+        git \
+        vim \
+        wget \
+        curl \
+        libzip-dev \
+        libopencv-dev \
     && rm -rf /var/lib/apt/lists/*
 
 ### install cmake
@@ -68,7 +68,7 @@ ENV PATH=/opt/conda/bin:$PATH
 
 ### install jdk1.8
 RUN wget https://download.java.net/java/GA/jdk18/43f95e8614114aeaa8e8a5fcf20a682d/36/GPL/openjdk-18_linux-x64_bin.tar.gz &&\
-    tar xvf openjdk-18_linux-x64_bin.tar.gz && rm -rf openjdk-18_linux-x64_bin.tar.gz
+tar xvf openjdk-18_linux-x64_bin.tar.gz && rm -rf openjdk-18_linux-x64_bin.tar.gz
 ENV JAVA_HOME=/root/workspace/jdk-18
 ENV PATH=$JAVA_HOME/bin:$PATH
 
@@ -82,7 +82,9 @@ ENV LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
 
 ### install cudnn
 RUN wget http://${HOST}/cudnn-10.2-linux-x64-v7.6.5.32.tgz && \
-    tar -zxvf cudnn-10.2-linux-x64-v7.6.5.32.tgz
+    tar -zxvf cudnn-10.2-linux-x64-v7.6.5.32.tgz && \
+    cp -r cuda/include/cudnn.h /usr/local/cuda-10.2/include/ && \
+    cp -r cuda/lib64/libcudnn* /usr/local/cuda-10.2/lib64/
 ENV CUDNN_DIR=/root/workspace/cuda
 ENV LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
 
@@ -101,7 +103,7 @@ RUN /opt/conda/bin/pip install opencv-python==${OPENCV_VERSION}
 ### install ppl.nn
 RUN git clone --recursive https://github.com/openppl-public/ppl.nn.git &&\
     cd ppl.nn &&\
-    ./build.sh -DPPLNN_USE_X86_64=ON  
+    ./build.sh -DPPLNN_USE_X86_64=ON -DPPLNN_USE_CUDA=ON
 ENV PPLNN_DIR=/root/workspace/ppl.nn 
 ENV PYTHONPATH=/root/workspace/ppl.nn/install/lib:$PYTHONPATH
 
@@ -142,6 +144,6 @@ RUN /opt/conda/bin/conda init bash && \
     TORCHVISION_VERSION_LIST=(0.10.0 0.11.0 0.12.0 0.13.0) && \
     for i in `seq 0 1`; \
     do \
-    /opt/conda/bin/conda create --name torch${TORCH_VERSION_LIST[$i]} --clone base -y; \
-    /opt/conda/bin/conda install -n torch${TORCH_VERSION_LIST[$i]} -y pytorch==${TORCH_VERSION_LIST[i]} torchvision==${TORCHVISION_VERSION_LIST[i]} cudatoolkit=${CUDA} -c pytorch -c conda-forge; \
+        /opt/conda/bin/conda create --name torch${TORCH_VERSION_LIST[$i]} --clone base -y; \
+        /opt/conda/bin/conda install -n torch${TORCH_VERSION_LIST[$i]} -y pytorch==${TORCH_VERSION_LIST[i]} torchvision==${TORCHVISION_VERSION_LIST[i]} cudatoolkit=${CUDA} -c pytorch -c conda-forge; \
     done 
