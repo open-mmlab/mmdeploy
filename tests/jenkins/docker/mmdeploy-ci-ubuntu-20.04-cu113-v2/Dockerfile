@@ -146,4 +146,4 @@ RUN /opt/conda/bin/conda init bash && \
     /opt/conda/bin/conda create --clone base -n torch1.12.0 -y && \
     /opt/conda/bin/conda install -n torch1.12.0 -y pytorch==1.12.0 torchvision==0.13.0 cudatoolkit=${CUDA} -c pytorch -c conda-forge
     
-RUN git clone --revursive https://github.com/kumailf/mmdeploy.git
+RUN git clone --recursive https://github.com/kumailf/mmdeploy.git
