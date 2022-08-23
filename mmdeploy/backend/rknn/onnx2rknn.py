@@ -33,7 +33,6 @@ def onnx2rknn(onnx_model: str,
     deploy_cfg = load_config(deploy_cfg)[0]
 
     common_params = get_common_config(deploy_cfg)
-    # common_params.update(dict(mean_values=[0, 0, 0], std_values=[1, 1, 1]))
     onnx_params = get_onnx_config(deploy_cfg)
     quantization_cfg = get_quantization_config(deploy_cfg)
 

@@ -16,7 +16,9 @@ class RKNNWrapper(BaseWrapper):
 
     Args:
         model (str): Path of input RKNN model file.
-        target_platform (str): Device to put model.
+        common_config (Dict): Config args for RKNN.
+        output_names (Sequence[str]): Output names of the model.
+        verbose (bool): Whether verbose during inference.
 
     Examples:
         >>> from mmdeploy.backend.rknn import RKNNWrapper
