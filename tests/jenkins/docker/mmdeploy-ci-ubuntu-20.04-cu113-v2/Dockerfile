@@ -142,5 +142,5 @@ RUN /opt/conda/bin/conda init bash && \
     TORCHVISION_VERSION_LIST=(0.10.0 0.11.0 0.12.0 0.13.0) && \
     for i in {0..3}; \
     do \
-        /opt/conda/bin/conda create --clone base -n torch${TORCH_VERSION_LIST[$i]} -y; \
+        echo $i
     done
