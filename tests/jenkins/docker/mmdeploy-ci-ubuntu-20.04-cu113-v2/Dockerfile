@@ -142,5 +142,5 @@ RUN /opt/conda/bin/conda init bash && \
     TORCHVISION_VERSION_LIST=(0.10.0 0.11.0 0.12.0 0.13.0) && \
     for i in {0..3}; \
     do \
-        echo $i
+        echo $i; \
     done
