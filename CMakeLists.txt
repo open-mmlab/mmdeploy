@@ -34,6 +34,7 @@ option(MMDEPLOY_BUILD_EXAMPLES "build examples" OFF)
 option(MMDEPLOY_SPDLOG_EXTERNAL "use external spdlog" OFF)
 option(MMDEPLOY_ZIP_MODEL "support SDK model in zip format" OFF)
 option(MMDEPLOY_COVERAGE "build SDK for coverage" OFF)
+option(MMDEPLOY_ELENA_FUSION "use elena to fuse preprocess" OFF)
 
 set(MMDEPLOY_TARGET_DEVICES "cpu" CACHE STRING "target devices to support")
 set(MMDEPLOY_TARGET_BACKENDS "" CACHE STRING "target inference engines to support")
