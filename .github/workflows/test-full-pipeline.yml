@@ -41,7 +41,7 @@ jobs:
           sudo apt install gcc-multilib g++-multilib wget libprotobuf-dev protobuf-compiler libopencv-dev
       - name: Install mmcls
         run: |
-          pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cpu/${{matrix.torch_version}}/index.html
+          pip install mmcv-full==1.4.8 -f https://download.openmmlab.com/mmcv/dist/cpu/${{matrix.torch_version}}/index.html
           python -c 'import mmcv; print(mmcv.__version__)'
           mmcls_version=0.22.1
           pip install mmcls==$mmcls_version
