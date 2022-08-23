@@ -23,12 +23,12 @@ python3 tools/deploy.py \
 
 # prepare dataset
 mkdir -p data/cifar10
-url=https://raw.githubusercontent.com/RunningLeon/mmdeploy-testdata/master/data/cifar10/cifar-10-python.tar.gz
-wget -o data/cifar10/cifar-10-python.tar.gz $url
-tar -xzvf data/cifar10/cifar-10-python.tar.gz -C data/cifar10/
-# change to avoid md5 check
-sed -i "s/get_dist_info()/1,0/g" ../mmclassification/mmcls/datasets/cifar.py
+#wget -P data/cifar10/ https://raw.githubusercontent.com/RunningLeon/mmdeploy-testdata/master/data/cifar10/cifar-10-python.tar.gz
+#tar -xvf data/cifar10/cifar-10-python.tar.gz -C data/cifar10/
+## change to avoid md5 check
+#sed -i "s/get_dist_info()/1,0/g" ../mmclassification/mmcls/datasets/cifar.py
 
+echo "Running test with ort"
 python3 tools/test.py \
   $ort_cfg \
   $model_cfg \
@@ -37,8 +37,23 @@ python3 tools/test.py \
   --out $work_dir/out.pkl \
   --metrics accuracy \
   --device $device \
-  --log2file $work_dir/test.log \
+  --log2file $work_dir/test_ort.log \
   --speed-test \
-  --log-interval 1 \
-  --warmup 2 \
+  --log-interval 100 \
+  --warmup 100 \
+  --batch-size 64
+
+echo "Running test with sdk"
+python3 tools/test.py \
+  $sdk_cfg \
+  $model_cfg \
+  --model $work_dir \
+  --device $device \
+  --out $work_dir/out.pkl \
+  --metrics accuracy \
+  --device $device \
+  --log2file $work_dir/test_sdk.log \
+  --speed-test \
+  --log-interval 100 \
+  --warmup 100 \
   --batch-size 64
