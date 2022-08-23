@@ -4,7 +4,10 @@ mmcls_version=$1
 
 echo  "$mmcls_version"
 
-git clone  --depth 1 --single-branch --branch $mmcls_version https://github.com/open-mmlab/mmclassification.git ../mmclassification
+#git clone  --depth 1 --single-branch --branch $mmcls_version https://github.com/open-mmlab/mmclassification.git ../mmclassification
+cd ../mmclassification
+pip install -e .
+cd -
 
 checkpoint=https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_b16x8_cifar10_20210528-bd6371c8.pth
 model_cfg=../mmclassification/configs/resnet/resnet18_8xb16_cifar10.py
@@ -27,7 +30,7 @@ python tools/deploy.py \
 
 mkdir -p data/cifar10
 url=https://raw.githubusercontent.com/RunningLeon/mmdeploy-testdata/master/data/cifar10/cifar-10-python.tar.gz
-wget -o data/cifar10/cifar-10-python.tar.gz $url
+#wget -o data/cifar10/cifar-10-python.tar.gz $url
 tar -xzvf data/cifar10/cifar-10-python.tar.gz -C data/cifar10/
 
 # change to avoid md5 check
