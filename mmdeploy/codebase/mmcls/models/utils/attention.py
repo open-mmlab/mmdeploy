@@ -51,49 +51,14 @@ def multiheadattention__forward__ncnn(ctx, self, qkv_input):
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name=  # noqa: E251
-    'mmcls.models.utils.attention.WindowMSA.forward',
-    extra_checkers=LibVersionChecker('mmcls', min_version='0.21.0'))
-def window_msa__forward__default(ctx, self, x, mask=None):
-    B_, N, C = x.shape
-    qkv = self.qkv(x).reshape(B_, N, 3, self.num_heads,
-                              C // self.num_heads).permute(2, 0, 3, 1, 4)
-    # replace the gather operation with the split
-    q, k, v = [i.squeeze(0) for i in torch.split(qkv, 1, 0)]
-
-    q = q * self.scale
-    attn = (q @ k.transpose(-2, -1))
-
-    relative_position_bias = self.relative_position_bias_table[
-        self.relative_position_index.view(-1)].view(
-            self.window_size[0] * self.window_size[1],
-            self.window_size[0] * self.window_size[1], -1)  # Wh*Ww,Wh*Ww,nH
-    relative_position_bias = relative_position_bias.permute(
-        2, 0, 1).contiguous()  # nH, Wh*Ww, Wh*Ww
-    attn = attn + relative_position_bias.unsqueeze(0)
-
-    if mask is not None:
-        nW = mask.shape[0]
-        attn = attn.view(B_ // nW, nW, self.num_heads, N,
-                         N) + mask.unsqueeze(1).unsqueeze(0)
-        attn = attn.view(-1, self.num_heads, N, N)
-
-    means = torch.mean(attn, self.softmax.dim, keepdim=True)[0]
-    attn_exp = torch.exp(attn - means)
-    attn_exp_sum = torch.sum(attn_exp, self.softmax.dim, keepdim=True)
-    attn = attn_exp / attn_exp_sum
-    attn = self.attn_drop(attn)
-
-    x = (attn @ v).transpose(1, 2).reshape(B_, N, C)
-    x = self.proj(x)
-    x = self.proj_drop(x)
-    return x
-
-
-@FUNCTION_REWRITER.register_rewriter(
-    func_name=  # noqa: E251
     'mmcls.models.utils.ShiftWindowMSA.forward',
     extra_checkers=LibVersionChecker('mmcls', min_version='0.21.0'))
 def shift_window_msa__forward__default(ctx, self, query, hw_shape):
+    """Rewrite forward function of ShiftWindowMSA class for TensorRT.
+
+    1. replace dynamic padding with static padding and dynamic slice.
+    2. always do slice `x = x[:, :H, :W, :].contiguous()` for stability.
+    """
     if get_dynamic_axes(ctx.cfg) is None:
         # avoid the weird bug of torch to onnx
         return ctx.origin_func(self, query, hw_shape)
@@ -183,6 +148,10 @@ def shift_window_msa__get_attn_mask__default(ctx,
                                              window_size,
                                              shift_size,
                                              device=None):
+    """Rewrite get_attn_mask function of ShiftWindowMSA class.
+
+    Replace the loop of setitem with a simpler logic.
+    """
     if shift_size > 0:
         # calculate attention mask for SW-MSA
         w_mask = torch.cat([
