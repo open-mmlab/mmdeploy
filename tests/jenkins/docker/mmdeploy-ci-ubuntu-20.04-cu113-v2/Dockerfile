@@ -70,14 +70,6 @@ tar xvf openjdk-18_linux-x64_bin.tar.gz && rm -rf openjdk-18_linux-x64_bin.tar.g
 ENV JAVA_HOME=/root/workspace/jdk-18
 ENV PATH=$JAVA_HOME/bin:$PATH
 
-### install tensorrt
-RUN wget http://${HOST}/TensorRT-7.0.0.11.Ubuntu-18.04.x86_64-gnu.cuda-10.2.cudnn7.6.tar.gz && \
-    tar -zxvf TensorRT-7.0.0.11.Ubuntu-18.04.x86_64-gnu.cuda-10.2.cudnn7.6.tar.gz  &&\
-    /opt/conda/bin/pip install TensorRT-7.0.0.11/python/tensorrt-7.0.0.11-cp37-none-linux_x86_64.whl &&\
-    /opt/conda/bin/pip install pycuda
-ENV TENSORRT_DIR=/root/workspace/TensorRT-7.0.0.11
-ENV LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
-
 ### install cudnn
 RUN wget http://${HOST}/cudnn-11.3-linux-x64-v8.2.1.32.tgz && \
     tar -zxvf cudnn-11.3-linux-x64-v8.2.1.32.tgz && \
@@ -132,6 +124,14 @@ RUN wget https://download.pytorch.org/libtorch/cu113/libtorch-shared-with-deps-1
     unzip libtorch-shared-with-deps-1.12.1+cu113.zip 
 ENV Torch_DIR=/root/workspace/libtorch
 ENV LD_LIBRARY_PATH=$Torch_DIR/lib:$LD_LIBRARY_PATH
+
+### install tensorrt
+RUN wget http://${HOST}/TensorRT-7.0.0.11.Ubuntu-18.04.x86_64-gnu.cuda-10.2.cudnn7.6.tar.gz && \
+    tar -zxvf TensorRT-7.0.0.11.Ubuntu-18.04.x86_64-gnu.cuda-10.2.cudnn7.6.tar.gz  &&\
+    /opt/conda/bin/pip install TensorRT-7.0.0.11/python/tensorrt-7.0.0.11-cp37-none-linux_x86_64.whl &&\
+    /opt/conda/bin/pip install pycuda
+ENV TENSORRT_DIR=/root/workspace/TensorRT-7.0.0.11
+ENV LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
 
 ### install openmim
 RUN /opt/conda/bin/pip install openmim
