@@ -16,11 +16,6 @@ b) 模型转换
 $ export MODEL_CONFIG=/path/to/mmclassification/configs/resnet/resnet18_8xb16_cifar10.py
 $ export MODEL_PATH=https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_b16x8_cifar10_20210528-bd6371c8.pth
 
-# let import ncnn works
-export PYTHONPATH=${NCNN_ROOT}/build/python/ncnn:${PYTHONPATH}
-# add mmdeploy_onnx2ncnn to PATH
-export PATH=${MMDEPLOY_ROOT}/build/bin:${PATH}
-
 # 模型转换
 $ cd /path/to/mmdeploy
 $ python tools/deploy.py \
