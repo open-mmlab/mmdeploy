@@ -66,6 +66,13 @@ ENV TENSORRT_DIR=/workspace/tensorrt
 
 ### install openvino
 RUN /opt/conda/bin/pip install openvino-dev
+RUN git clone --recursive https://github.com/openvinotoolkit/openvino.git && \
+    cd openvino && \
+    chmod +x install_build_dependencies.sh && \
+    ./install_build_dependencies.sh && \
+    mkdir build && cd build && \
+    cmake -DCMAKE_BUILD_TYPE=Release .. && \
+    make --jobs=$(nproc --all)
 
 ### install opencv
 RUN /opt/conda/bin/pip install opencv-python==${OPENCV_VERSION}
