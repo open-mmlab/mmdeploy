@@ -42,7 +42,7 @@ jobs:
         run: sudo apt install gcc-multilib g++-multilib wget libprotobuf-dev protobuf-compiler libopencv-dev
       - name: Install mmdeploy with onnxruntime backend
         run: |
-          pip install onnxruntime==1.8.1
+          pip install onnxruntime==1.8.1 mmcv==1.4.8
           wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
           tar -zxvf onnxruntime-linux-x64-1.8.1.tgz
           export MMDEPLOY_DIR=$(pwd)
