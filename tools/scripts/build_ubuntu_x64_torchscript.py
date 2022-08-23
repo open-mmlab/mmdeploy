@@ -29,11 +29,19 @@ def install_libtorch(dep_dir):
         torch_version = '1.11.0'
 
     version_name = None
-    cuda = cmd_result(" nvidia-smi  | grep CUDA | awk '{print $9}' ")
+
+    # first check `nvcc` version, if failed, use `nvidia-smi`
+    cuda = cmd_result(
+        " nvcc --version | grep  release | awk '{print $5}' | awk -F , '{print $1}' "  # noqa: E501
+    )
+    if cuda is None or len(cuda) < 1:
+        cuda = cmd_result(" nvidia-smi  | grep CUDA | awk '{print $9}' ")
+
     if cuda is not None and len(cuda) > 0:
         version_name = cu_version_name(cuda)
     else:
         version_name = 'cpu'
+
     filename = 'libtorch-shared-with-deps-{}%2B{}.zip'.format(
         torch_version, version_name)
     url = 'https://download.pytorch.org/libtorch/{}/{}'.format(
