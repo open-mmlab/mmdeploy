@@ -19,5 +19,5 @@ do
             ${docker_image} /bin/bash
     )
     docker exec ${container_id} git clone --recursive https://github.com/kumailf/mmdeploy.git
-    docker exec ${container_id} bash -c "/root/workspace/mmdeploy/tests/jenkins/scripts/docker_exec_convert.sh ${codebase}"
+    docker exec ${container_id} bash -c "/root/workspace/mmdeploy/tests/jenkins/scripts/docker_exec_convert_gpu.sh ${codebase}"
 done
