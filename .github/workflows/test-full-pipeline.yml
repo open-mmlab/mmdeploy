@@ -43,7 +43,7 @@ jobs:
         run: |
           pip install mmcv-full==1.4.8 -f https://download.openmmlab.com/mmcv/dist/cpu/${{matrix.torch_version}}/index.html
           python -c 'import mmcv; print(mmcv.__version__)'
-          mmcls_version=0.22.1
+          mmcls_version=v0.22.0
           pip install mmcls==$mmcls_version
           git clone  --depth 1 --single-branch --branch $mmcls_version https://github.com/open-mmlab/mmclassification.git ../mmclassification
           python -c 'import mmcv; print(mmcv.__version__)'
