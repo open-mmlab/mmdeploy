@@ -122,7 +122,12 @@ def main():
     mmcv.mkdir_or_exist(osp.abspath(args.work_dir))
 
     if args.dump_info:
-        export2SDK(deploy_cfg, model_cfg, args.work_dir, pth=checkpoint_path)
+        export2SDK(
+            deploy_cfg,
+            model_cfg,
+            args.work_dir,
+            pth=checkpoint_path,
+            device=args.device)
 
     ret_value = mp.Value('d', 0, lock=False)
 
@@ -255,7 +260,7 @@ def main():
                     'ncnn quant table',
                     target=get_table,
                     args=(onnx_path, deploy_cfg, model_cfg, quant_onnx,
-                          quant_table, quant_image_dir),
+                          quant_table, quant_image_dir, args.device),
                     kwargs=dict(),
                     ret_value=ret_value)
 

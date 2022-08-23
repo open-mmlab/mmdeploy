@@ -223,7 +223,7 @@ class SDKEnd2EndModel(End2EndModel):
             list | dict: High resolution image or a evaluation results.
         """
         img = tensor2img(lq)
-        output = self.wrapper.invoke([img])[0]
+        output = self.wrapper.invoke(img)
         if test_mode:
             output = torch.from_numpy(output)
             output = output.permute(2, 0, 1)

@@ -24,7 +24,8 @@ def parse_args():
         nargs='+',
         help='regression test yaml path.',
         default=[
-            'mmcls', 'mmdet', 'mmseg', 'mmpose', 'mmocr', 'mmedit', 'mmrotate'
+            'mmcls', 'mmdet', 'mmseg', 'mmpose', 'mmocr', 'mmedit', 'mmrotate',
+            'mmdet3d'
         ])
     parser.add_argument(
         '-p',

@@ -1,6 +1,6 @@
 # 源码安装
 
-如果环境允许（网络良好且宿主机强劲），我们建议使用[docker 方式](build_from_docker.md)。
+如果环境允许（网络良好且宿主机强劲），我们建议使用 [docker 方式](build_from_docker.md) 。
 
 ## 下载
 

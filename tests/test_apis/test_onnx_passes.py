@@ -13,6 +13,9 @@ from mmdeploy.core import RewriterContext
 
 onnx_file = tempfile.NamedTemporaryFile(suffix='.onnx').name
 
+ort_cfg = dict(
+    backend_config=dict(type='onnxruntime'), onnx_config=dict(type='onnx'))
+
 
 def _find_next_node(start: int, nodes: List, op_type: str) -> Tuple[Any, int]:
     for idx, n in enumerate(nodes[start:]):
@@ -166,7 +169,7 @@ def test_flatten_cls_head():
     model = TestModel()
     x = torch.rand(1, 4, 8, 8)
 
-    with RewriterContext({}, onnx_custom_passes=_optimize_onnx):
+    with RewriterContext(ort_cfg, onnx_custom_passes=_optimize_onnx):
         torch.onnx.export(
             model,
             x,

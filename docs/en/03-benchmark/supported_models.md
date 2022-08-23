@@ -1,4 +1,4 @@
-## Supported Models
+## Supported models
 
 The table below lists the models that are guaranteed to be exportable to other backends.
 

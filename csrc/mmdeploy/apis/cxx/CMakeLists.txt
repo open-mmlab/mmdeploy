@@ -21,4 +21,8 @@ if (MMDEPLOY_BUILD_SDK_CXX_API)
     mmdeploy_export(${PROJECT_NAME})
     install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/mmdeploy/common.hpp
             DESTINATION include/mmdeploy)
+    install(DIRECTORY ${CMAKE_SOURCE_DIR}/demo/csrc/ DESTINATION example/cpp
+            FILES_MATCHING
+            PATTERN "*.cxx"
+            )
 endif ()

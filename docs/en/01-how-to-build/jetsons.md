@@ -229,7 +229,7 @@ export MMDEPLOY_DIR=$(pwd)
 ### Install Model Converter
 
 Since some operators adopted by OpenMMLab codebases are not supported by TensorRT, we build the custom TensorRT plugins to make it up, such as `roi_align`, `scatternd`, etc.
-You can find a full list of custom plugins from [here](../ops/tensorrt.md).
+You can find a full list of custom plugins from [here](../06-custom-ops/tensorrt.md).
 
 ```shell
 # build TensorRT custom operators
@@ -251,13 +251,14 @@ It takes about 5 minutes to install model converter on a Jetson Nano. So, please
 
 ### Install C/C++ Inference SDK
 
-1. Build SDK Libraries
+Build SDK Libraries and its demo as below:
 
 ```shell
 mkdir -p build && cd build
 cmake .. \
     -DMMDEPLOY_BUILD_SDK=ON \
     -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
+    -DMMDEPLOY_BUILD_EXAMPLES=ON \
     -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
     -DMMDEPLOY_TARGET_BACKENDS="trt" \
     -DMMDEPLOY_CODEBASES=all \
@@ -267,15 +268,6 @@ make -j$(nproc) && make install
 
 ```{note}
 It takes about 9 minutes to build SDK libraries on a Jetson Nano. So, please be patient until the installation is complete.
-```
-
-2. Build SDK demos
-
-```shell
-cd ${MMDEPLOY_DIR}/build/install/example
-mkdir -p build && cd build
-cmake .. -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy
-make -j$(nproc)
 ```
 
 ### Run a Demo

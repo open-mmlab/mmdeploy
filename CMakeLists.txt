@@ -5,7 +5,7 @@ endif ()
 message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
 
 cmake_minimum_required(VERSION 3.14)
-project(MMDeploy VERSION 0.6.0)
+project(MMDeploy VERSION 0.7.0)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -165,8 +165,6 @@ if (MMDEPLOY_BUILD_SDK)
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules
             DESTINATION lib/cmake/MMDeploy
             )
-
-    install(DIRECTORY ${CMAKE_SOURCE_DIR}/demo/csrc/ DESTINATION example)
 
     if (${CMAKE_VERSION} VERSION_LESS "3.17.0")
         install(SCRIPT cmake/post-install.cmake)

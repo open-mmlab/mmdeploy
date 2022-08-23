@@ -50,6 +50,40 @@
   print(torch.__file__)
   ```
 
+- enable_language(CUDA) error
+
+  ```
+  -- Selecting Windows SDK version 10.0.19041.0 to target Windows 10.0.19044.
+  -- Found CUDA: C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.1 (found version "11.1")
+  CMake Error at C:/Software/cmake/cmake-3.23.1-windows-x86_64/share/cmake-3.23/Modules/CMakeDetermineCompilerId.cmake:491 (message):
+    No CUDA toolset found.
+  Call Stack (most recent call first):
+    C:/Software/cmake/cmake-3.23.1-windows-x86_64/share/cmake-3.23/Modules/CMakeDetermineCompilerId.cmake:6 (CMAKE_DETERMINE_COMPILER_ID_BUILD)
+    C:/Software/cmake/cmake-3.23.1-windows-x86_64/share/cmake-3.23/Modules/CMakeDetermineCompilerId.cmake:59 (__determine_compiler_id_test)
+    C:/Software/cmake/cmake-3.23.1-windows-x86_64/share/cmake-3.23/Modules/CMakeDetermineCUDACompiler.cmake:339 (CMAKE_DETERMINE_COMPILER_ID)
+    C:/workspace/mmdeploy-0.6.0-windows-amd64-cuda11.1-tensorrt8.2.3.0/sdk/lib/cmake/MMDeploy/MMDeployConfig.cmake:27 (enable_language)
+    CMakeLists.txt:5 (find_package)
+  ```
+
+  **Cause：** CUDA Toolkit 11.1 was installed before Visual Studio, so the VS plugin was not installed. Or the version of VS is too new, so that the installation of the VS plugin is skipped during the installation of the CUDA Toolkit
+
+  **Solution：** This problem can be solved by manually copying the four files in `C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.1\extras\visual_studio_integration\MSBuildExtensions` to `C:\Software\Microsoft Visual Studio\2022\Community\Msbuild\Microsoft\VC\v170\BuildCustomizations` The specific path should be changed according to the actual situation.
+
+### ONNX Runtime
+
+- Under Windows system, when visualizing model inference result failed with the following error:
+  ```
+  onnxruntime.capi.onnxruntime_pybind11_state.Fail: [ONNXRuntimeError] : 1 : FAIL : Failed to load library, error code: 193
+  ```
+  **Cause：** In latest Windows systems, there are two `onnxruntime.dll` under the system path, and they will be loaded first, causing conflicts.
+  ```
+  C:\Windows\SysWOW64\onnxruntime.dll
+  C:\Windows\System32\onnxruntime.dll
+  ```
+  **Solution：** Choose one of the following two options
+  1. Copy the dll in the lib directory of the downloaded onnxruntime to the directory where mmdeploy_onnxruntime_ops.dll locates (It is recommended to use Everything to search the ops dll)
+  2. Rename the two dlls in the system path so that they cannot be loaded.
+
 ### Pip
 
 - pip installed package but could not `import` them.
