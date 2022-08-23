@@ -74,7 +74,7 @@ RUN /opt/conda/bin/pip install opencv-python==${OPENCV_VERSION}
 RUN git clone --recursive https://github.com/openppl-public/ppl.nn.git &&\
     cd ppl.nn &&\
     ./build.sh -DPPLNN_USE_X86_64=ON  
-ENV PPLNN_DIR=/root/workspace/ppl.nn 
+ENV pplnn_DIR=/root/workspace/ppl.nn 
 ENV PYTHONPATH=/root/workspace/ppl.nn/install/lib:$PYTHONPATH
 
 ### build ncnn
