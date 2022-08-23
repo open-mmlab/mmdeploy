@@ -9,7 +9,6 @@ ARG OPENCV_VERSION==4.5.5.62
 ARG TORCH_VERSION=1.10.0
 ARG TORCHVISION_VERSION=0.11.0
 ARG MMCV_VERSION=1.5.3
-ARG PPLNN_version=0.8.1
 ARG PPLCV_VERSION=0.7.0
 ARG NCNN_VERSION=20220721
 ENV FORCE_CUDA="1"
@@ -43,7 +42,7 @@ ENV PATH /opt/conda/bin:$PATH
 ### install cmake
 RUN wget https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0-linux-x86_64.tar.gz && \
     tar -xzvf cmake-3.20.0-linux-x86_64.tar.gz && \
-    sudo ln -sf $(pwd)/cmake-3.20.0-linux-x86_64/bin/* /usr/bin/
+    ln -sf $(pwd)/cmake-3.20.0-linux-x86_64/bin/* /usr/bin/
 
 ### install jdk1.8
 RUN wget https://download.java.net/java/GA/jdk18/43f95e8614114aeaa8e8a5fcf20a682d/36/GPL/openjdk-18_linux-x64_bin.tar.gz &&\
