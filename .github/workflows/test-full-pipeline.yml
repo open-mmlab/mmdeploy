@@ -41,9 +41,10 @@ jobs:
           sudo apt install gcc-multilib g++-multilib wget libprotobuf-dev protobuf-compiler libopencv-dev
       - name: Install mmcls
         run: |
-          pip install openmim
-          mmcls_version=v0.22.0
-          mim install mmcls==$mmcls_version
+          pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cpu/${{matrix.torch_version}}/index.html
+          python -c 'import mmcv; print(mmcv.__version__)'
+          mmcls_version=0.22.1
+          pip install mmcls==$mmcls_version
           git clone  --depth 1 --single-branch --branch $mmcls_version https://github.com/open-mmlab/mmclassification.git ../mmclassification
           python -c 'import mmcv; print(mmcv.__version__)'
       - name: Install mmdeploy dependencies
