@@ -1,8 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
+import sys
 import time
 
-from ubuntu_utils import cmd_result, ensure_base_env
+from ubuntu_utils import cmd_result, ensure_base_env, get_job
 
 g_jobs = 2
 
@@ -79,6 +80,10 @@ def main():
     Returns:
         _type_: _description_
     """
+    global g_jobs
+    g_jobs = get_job(sys.argv)
+    print('g_jobs {}'.format(g_jobs))
+
     work_dir = os.path.abspath(os.path.join(__file__, '..', '..', '..'))
     dep_dir = os.path.abspath(os.path.join(work_dir, '..', 'mmdeploy-dep'))
     if not os.path.exists(dep_dir):

@@ -8,6 +8,21 @@ def cmd_result(txt: str):
     return cmd.read().rstrip().lstrip()
 
 
+def get_job(argv) -> int:
+    # get nprocs, if user not specified, use max(2, nproc-1)
+    job = 2
+    if len(argv) <= 1:
+        print('your can use `python3 {} N` to set make -j [N]'.format(argv[0]))
+        nproc = cmd_result('nproc')
+        if nproc is not None and len(nproc) > 0:
+            job = max(int(nproc) - 1, 2)
+        else:
+            job = 2
+    else:
+        job = int(argv[1])
+    return job
+
+
 def version_major(txt: str) -> int:
     return int(txt.split('.')[0])
 
