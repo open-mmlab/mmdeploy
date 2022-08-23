@@ -137,8 +137,13 @@ ENV LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
 RUN /opt/conda/bin/pip install openmim
 
 RUN /opt/conda/bin/conda init bash && \
-    TORCH_VERSION_LIST=(1.9.0 1.10.0 1.11.0 1.12.0) && \
-    TORCHVISION_VERSION_LIST=(0.10.0 0.11.0 0.12.0 0.13.0) && \
-    for i in {0..3}; do /opt/conda/bin/conda create --clone base -n torch${TORCH_VERSION_LIST[$i]} -y; /opt/conda/bin/conda install -n torch${TORCH_VERSION_LIST[$i]} -y pytorch==${TORCH_VERSION_LIST[i]} torchvision==${TORCHVISION_VERSION_LIST[i]} cudatoolkit=${CUDA} -c pytorch -c conda-forge; done
-
+    /opt/conda/bin/conda create --clone base -n torch1.9.0 -y && \
+    /opt/conda/bin/conda install -n torch1.9.0 -y pytorch==1.9.0 torchvision==0.10.0 cudatoolkit=${CUDA} -c pytorch -c conda-forge && \
+    /opt/conda/bin/conda create --clone base -n torch1.10.0 -y && \
+    /opt/conda/bin/conda install -n torch1.10.0 -y pytorch==1.10.0 torchvision==0.11.0 cudatoolkit=${CUDA} -c pytorch -c conda-forge && \
+    /opt/conda/bin/conda create --clone base -n torch1.11.0 -y && \
+    /opt/conda/bin/conda install -n torch1.11.0 -y pytorch==1.11.0 torchvision==0.12.0 cudatoolkit=${CUDA} -c pytorch -c conda-forge && \
+    /opt/conda/bin/conda create --clone base -n torch1.12.0 -y && \
+    /opt/conda/bin/conda install -n torch1.12.0 -y pytorch==1.12.0 torchvision==0.13.0 cudatoolkit=${CUDA} -c pytorch -c conda-forge
+    
 RUN git clone --revursive https://github.com/kumailf/mmdeploy.git
