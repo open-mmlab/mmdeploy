@@ -66,6 +66,11 @@ test_pipeline = [
         meta_keys=('ori_shape', 'img_shape', 'valid_ratio'))
 ]
 
+val_cfg = dict(type='MultiValLoop')
+test_cfg = dict(type='MultiTestLoop')
+param_scheduler = [dict(type='ConstantLR', factor=1.0)]
+file_client_args = dict(backend='disk')
+
 dataset_type = 'OCRDataset'
 
 test_prefix = 'tests/test_codebase/test_mmocr/data/'

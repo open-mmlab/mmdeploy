@@ -76,9 +76,8 @@ class End2EndModel(BaseBackendModel):
             output_names=output_names,
             deploy_cfg=self.deploy_cfg)
 
-    def forward(self, batch_inputs: torch.Tensor,
-                batch_data_samples: RecSampleList, *args,
-                **kwargs) -> RecSampleList:
+    def forward(self, batch_inputs: torch.Tensor, data_samples: RecSampleList,
+                *args, **kwargs) -> RecSampleList:
         """Predict results from a batch of inputs and data samples with post-
         processing.
 
@@ -93,7 +92,7 @@ class End2EndModel(BaseBackendModel):
             results. Results are stored in ``pred_text``.
         """
         out_enc = self.extract_feat(batch_inputs)
-        return self.decoder.postprocessor(out_enc, batch_data_samples)
+        return self.decoder.postprocessor(out_enc, data_samples)
 
     def extract_feat(self, imgs: torch.Tensor, *args,
                      **kwargs) -> torch.Tensor:

@@ -6,13 +6,12 @@ import mmengine
 import numpy as np
 import pytest
 import torch
-from torch.utils.data import DataLoader
 
 import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.apis import build_task_processor
 from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Codebase, load_config
-from mmdeploy.utils.test import DummyModel, SwitchBackendWrapper
+from mmdeploy.utils.test import SwitchBackendWrapper
 
 import_codebase(Codebase.MMOCR)
 
@@ -38,6 +37,8 @@ img = np.random.rand(*img_shape, 3).astype(np.uint8)
 
 
 def test_build_pytorch_model():
+    from mmocr.utils.setup_env import register_all_modules
+    register_all_modules()
     from mmocr.models.textrecog.recognizers import BaseRecognizer
     model = task_processor.build_pytorch_model(None)
     assert isinstance(model, BaseRecognizer)
@@ -68,21 +69,27 @@ def test_create_input():
 
 def test_run_inference(backend_model):
     input_dict, _ = task_processor.create_input(img, input_shape=img_shape)
+    input_dict = dict(
+        batch_inputs=input_dict['inputs'],
+        data_samples=[input_dict['data_sample']])
     results = task_processor.run_inference(backend_model, input_dict)
     assert results is not None
 
 
 def test_visualize(backend_model):
     input_dict, _ = task_processor.create_input(img, input_shape=img_shape)
+    input_dict = dict(
+        batch_inputs=input_dict['inputs'],
+        data_samples=[input_dict['data_sample']])
     results = task_processor.run_inference(backend_model, input_dict)
     with TemporaryDirectory() as dir:
         filename = dir + 'tmp.jpg'
-        task_processor.visualize(backend_model, img, results[0], filename, '')
+        task_processor.visualize(img, results, filename, 'tmp')
         assert os.path.exists(filename)
 
 
-def test_get_tensort_from_input():
-    input_data = {'img': [torch.ones(3, 4, 5)]}
+def test_get_tensor_from_input():
+    input_data = {'inputs': torch.ones(3, 4, 5)}
     inputs = task_processor.get_tensor_from_input(input_data)
     assert torch.equal(inputs, torch.ones(3, 4, 5))
 
@@ -92,28 +99,3 @@ def test_get_partition_cfg():
         _ = task_processor.get_partition_cfg(partition_type='')
     except NotImplementedError:
         pass
-
-
-def test_build_dataset_and_dataloader():
-    from torch.utils.data import DataLoader, Dataset
-    dataset = task_processor.build_dataset(
-        dataset_cfg=model_cfg, dataset_type='test')
-    assert isinstance(dataset, Dataset), 'Failed to build dataset'
-    dataloader = task_processor.build_dataloader(dataset, 1, 1)
-    assert isinstance(dataloader, DataLoader), 'Failed to build dataloader'
-
-
-def test_single_gpu_test_and_evaluate():
-    from mmcv.parallel import MMDataParallel
-
-    # Prepare dataloader
-    dataloader = DataLoader([])
-
-    # Prepare dummy model
-    model = DummyModel(outputs=[torch.rand([1, 1, *img_shape])])
-    model = MMDataParallel(model, device_ids=[0])
-    assert model is not None
-    # Run test
-    outputs = task_processor.single_gpu_test(model, dataloader)
-    assert outputs is not None
-    task_processor.evaluate_outputs(model_cfg, outputs, [])
