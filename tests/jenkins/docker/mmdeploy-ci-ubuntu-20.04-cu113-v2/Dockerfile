@@ -142,6 +142,6 @@ RUN /opt/conda/bin/conda init bash && \
     TORCHVISION_VERSION_LIST=(0.10.0 0.11.0 0.12.0 0.13.0) && \
     for i in `seq 0 3`; \
     do \
-        /opt/conda/bin/conda create -n torch${TORCH_VERSION_LIST[$i]} --clone base -y; \
+        /opt/conda/bin/conda create --clone base -n torch${TORCH_VERSION_LIST[$i]} -y; \
         /opt/conda/bin/conda install -n torch${TORCH_VERSION_LIST[$i]} -y pytorch==${TORCH_VERSION_LIST[i]} torchvision==${TORCHVISION_VERSION_LIST[i]} cudatoolkit=${CUDA} -c pytorch -c conda-forge; \
     done
