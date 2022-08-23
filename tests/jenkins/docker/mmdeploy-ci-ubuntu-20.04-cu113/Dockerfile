@@ -1,4 +1,4 @@
-FROM nvcr.io/nvidia/tensorrt:21.06-py3
+FROM nvcr.io/nvidia/tensorrt:2-py3
 ARG PYTHON_VERSION=3.8
 ARG CUDA=11.3
 ARG ONNXRUNTIME_VERSION=1.8.1
@@ -89,7 +89,7 @@ RUN /opt/conda/bin/pip install opencv-python==${OPENCV_VERSION}
 ### install ppl.nn
 RUN git clone --recursive https://github.com/openppl-public/ppl.nn.git &&\
     cd ppl.nn &&\
-    ./build.sh -DPPLNN_USE_X86_64=ON  
+    ./build.sh -DPPLNN_USE_X86_64=ON -DPPLNN_USE_CUDA=ON 
 ENV PPLNN_DIR=/root/workspace/ppl.nn 
 ENV PYTHONPATH=/root/workspace/ppl.nn/install/lib:$PYTHONPATH
 
