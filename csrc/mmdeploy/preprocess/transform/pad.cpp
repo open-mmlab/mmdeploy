@@ -86,9 +86,11 @@ Result<Value> PadImpl::Process(const Value& input) {
     }
 
     // trace static info & runtime args
-    output["__tracer__"].get_ref<Tracer&>().Pad(
-        arg_.pad_val, {padding[1], padding[0], padding[3], padding[2]},
-        {(int)output_tensor.shape(1), (int)output_tensor.shape(2)}, output_tensor.data_type());
+    if (output.contains("__tracer__")) {
+      output["__tracer__"].get_ref<Tracer&>().Pad(
+          arg_.pad_val, {padding[1], padding[0], padding[3], padding[2]},
+          {(int)output_tensor.shape(1), (int)output_tensor.shape(2)}, output_tensor.data_type());
+    }
 
     SetTransformData(output, key, std::move(output_tensor));
   }

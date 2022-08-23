@@ -48,6 +48,13 @@ Result<Value> CenterCropImpl::Process(const Value& input) {
 
     auto& shape = dst_tensor.desc().shape;
 
+    // trace static info & runtime args
+    if (output.contains("__tracer__")) {
+      output["__tracer__"].get_ref<Tracer&>().CenterCrop(
+          {y1, x1, h - (int)shape[1] - y1, w - (int)shape[2] - x1}, {(int)shape[1], (int)shape[2]},
+          tensor.data_type());
+    }
+
     output["img_shape"] = {shape[0], shape[1], shape[2], shape[3]};
     if (input.contains("scale_factor")) {
       // image has been processed by `Resize` transform before.
@@ -63,11 +70,6 @@ Result<Value> CenterCropImpl::Process(const Value& input) {
     }
 
     SetTransformData(output, key, std::move(dst_tensor));
-
-    // trace static info & runtime args
-    output["__tracer__"].get_ref<Tracer&>().CenterCrop(
-        {y1, x1, h - (int)shape[1] - y1, w - (int)shape[2] - x1}, {(int)shape[1], (int)shape[2]},
-        tensor.data_type());
   }
 
   MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));
