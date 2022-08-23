@@ -126,11 +126,11 @@ ENV Torch_DIR=/root/workspace/libtorch
 ENV LD_LIBRARY_PATH=$Torch_DIR/lib:$LD_LIBRARY_PATH
 
 ### install tensorrt
-RUN wget http://${HOST}/TensorRT-7.0.0.11.Ubuntu-18.04.x86_64-gnu.cuda-10.2.cudnn7.6.tar.gz && \
-    tar -zxvf TensorRT-7.0.0.11.Ubuntu-18.04.x86_64-gnu.cuda-10.2.cudnn7.6.tar.gz  &&\
-    /opt/conda/bin/pip install TensorRT-7.0.0.11/python/tensorrt-7.0.0.11-cp37-none-linux_x86_64.whl &&\
+RUN wget http://${HOST}/TensorRT-8.2.1.8.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.g && \
+    tar -zxvf TensorRT-8.2.1.8.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz &&\
+    /opt/conda/bin/pip install TensorRT-8.2.1.8/python/tensorrt-8.2.1.8-cp38-none-linux_x86_64.whl && \
     /opt/conda/bin/pip install pycuda
-ENV TENSORRT_DIR=/root/workspace/TensorRT-7.0.0.11
+ENV TENSORRT_DIR=/root/workspace/TensorRT-8.2.1.8
 ENV LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
 
 ### install openmim
