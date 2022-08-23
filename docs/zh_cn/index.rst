@@ -96,6 +96,8 @@
    tutorial/03_pytorch2onnx.md
    tutorial/04_onnx_custom_op.md
    tutorial/05_onnx_model_editing.md
+   tutorial/06_introduction_to_tensorrt.md
+   tutorial/07_write_a_plugin.md
 
 .. toctree::
    :maxdepth: 1
