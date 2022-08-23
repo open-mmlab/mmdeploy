@@ -153,21 +153,8 @@ def ensure_base_env(work_dir, dep_dir):
         except Exception:
             # install mmcv
             print('mmcv not found, try install mmcv ..', end='')
-            cuda_version = cmd_result(
-                " nvidia-smi  | grep CUDA | awk '{print $9}' ")
-            if cuda_version is not None and len(cuda_version) > 2:
-
-                format_version = str(version_major(torch_version)) + '.' + str(
-                    version_minor(torch_version)) + '.0'
-                mmcv_url = 'https://download.openmmlab.com/mmcv/dist/{}/torch{}/index.html'.format(  # noqa: E501
-                    cu_version_name(cuda_version), format_version)
-                http_ret = cmd_result('wget {}'.format(mmcv_url))
-                if '404' not in http_ret:
-                    mmcv_version = '1.5.0'
-                    cmd = 'python3 -m pip install mmcv-full={} -f {}'.format(
-                        mmcv_version, mmcv_url)
-                    os.system(cmd)
-                print('success')
+            os.system('python3 -m pip install -U openmim')
+            os.system('mim install mmcv-full==1.5.1')
     except Exception:
         pass
 

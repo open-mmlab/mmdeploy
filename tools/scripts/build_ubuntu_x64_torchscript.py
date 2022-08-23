@@ -41,7 +41,9 @@ def install_libtorch(dep_dir):
     os.system('wget {} -O libtorch.zip'.format(url))
     os.system('unzip libtorch.zip')
     if not os.path.exists(unzipped_name):
-        print('download or unzip libtorch failed.')
+        print(
+            'download or unzip libtorch from {} failed, please check https://pytorch.org/get-started/locally/'  # noqa: E501
+            .format(url))
         return None
     return os.path.join(dep_dir, unzipped_name)
 
