@@ -19,15 +19,26 @@ workflow = [('train', 1)]
 label_convertor = dict(
     type='CTCConvertor', dict_type='DICT36', with_unknown=False, lower=True)
 
+dictionary = dict(
+    type='Dictionary',
+    dict_file='tests/test_codebase/test_mmocr/data/lower_english_digits.txt',
+    with_padding=True)
+
+default_scope = 'mmocr'
 model = dict(
-    type='CRNNNet',
+    type='mmocr.CRNN',
     preprocessor=None,
     backbone=dict(type='VeryDeepVgg', leaky_relu=False, input_channels=1),
     encoder=None,
-    decoder=dict(type='CRNNDecoder', in_channels=512, rnn_flag=True),
-    loss=dict(type='CTCLoss'),
-    label_convertor=label_convertor,
-    pretrained=None)
+    decoder=dict(
+        type='CRNNDecoder',
+        in_channels=512,
+        rnn_flag=True,
+        module_loss=dict(type='CTCModuleLoss', letter_case='lower'),
+        postprocessor=dict(type='CTCPostProcessor'),
+        dictionary=dictionary),
+    data_preprocessor=dict(
+        type='TextRecogDataPreprocessor', mean=[127], std=[127]))
 
 train_cfg = None
 test_cfg = None
@@ -42,35 +53,17 @@ total_epochs = 5
 # data
 img_norm_cfg = dict(mean=[127], std=[127])
 
-train_pipeline = [
-    dict(type='LoadImageFromFile', color_type='grayscale'),
-    dict(
-        type='ResizeOCR',
-        height=32,
-        min_width=100,
-        max_width=100,
-        keep_aspect_ratio=False),
-    dict(type='Normalize', **img_norm_cfg),
-    dict(type='DefaultFormatBundle'),
-    dict(
-        type='Collect',
-        keys=['img'],
-        meta_keys=['filename', 'resize_shape', 'text', 'valid_ratio']),
-]
 test_pipeline = [
-    dict(type='LoadImageFromFile', color_type='grayscale'),
     dict(
-        type='ResizeOCR',
+        type='RescaleToHeight',
         height=32,
         min_width=32,
         max_width=None,
-        keep_aspect_ratio=True),
-    dict(type='Normalize', **img_norm_cfg),
-    dict(type='DefaultFormatBundle'),
+        width_divisor=16),
+    dict(type='LoadOCRAnnotations', with_text=True),
     dict(
-        type='Collect',
-        keys=['img'],
-        meta_keys=['filename', 'resize_shape', 'valid_ratio']),
+        type='PackTextRecogInputs',
+        meta_keys=('ori_shape', 'img_shape', 'valid_ratio'))
 ]
 
 dataset_type = 'OCRDataset'
@@ -109,3 +102,5 @@ data = dict(
 evaluation = dict(interval=1, metric='acc')
 
 cudnn_benchmark = True
+
+visualizer = dict(type='TextRecogLocalVisualizer', name='visualizer')

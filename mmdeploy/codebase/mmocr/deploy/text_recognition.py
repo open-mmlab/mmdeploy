@@ -34,28 +34,20 @@ def process_model_config(model_cfg: mmcv.Config,
             test_pipeline[i].meta_keys = tuple(
                 j for j in test_pipeline[i].meta_keys if j != 'instances')
 
+        # for static exporting
+        if input_shape is not None and transform.type == 'RescaleToHeight':
+            resize = {
+                'height': input_shape[1],
+                'min_width': input_shape[0],
+                'max_width': input_shape[0]
+            }
+            test_pipeline[i].update(resize)
+
     test_pipeline = [
         transform for transform in test_pipeline
         if transform.type != 'LoadOCRAnnotations'
     ]
 
-    # for static exporting
-    if input_shape is not None:
-        resize = {
-            'height': input_shape[1],
-            'min_width': input_shape[0],
-            'max_width': input_shape[0],
-            'keep_aspect_ratio': False
-        }
-        if 'transforms' in test_pipeline[1]:
-            if test_pipeline[1].transforms[0].type == 'ResizeOCR':
-                test_pipeline[1].transforms[0].height = input_shape[1]
-                test_pipeline[1].transforms[0].max_width = input_shape[0]
-            else:
-                raise ValueError(f'Transforms[0] should be ResizeOCR, but got\
-                        {test_pipeline[1].transforms[0].type}')
-        else:
-            test_pipeline[1].update(resize)
     model_cfg.test_pipeline = test_pipeline
     return model_cfg
 
@@ -164,7 +156,8 @@ class TextRecognition(BaseTask):
             # prepare data
             if isinstance(img, np.ndarray):
                 # TODO: remove img_id.
-                data_ = dict(img=img, img_id=0)
+                data_ = dict(
+                    img=img, img_id=0, ori_shape=input_shape, instances=None)
             else:
                 # TODO: remove img_id.
                 data_ = dict(img_path=img, img_id=0)

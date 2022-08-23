@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import tempfile
 
-import mmcv
+import mmengine
 import numpy as np
 import pytest
 import torch
@@ -15,6 +15,11 @@ from mmdeploy.utils.test import (WrapModel, check_backend, get_model_outputs,
 
 import_codebase(Codebase.MMOCR)
 
+dictionary = dict(
+    type='Dictionary',
+    dict_file='tests/test_codebase/test_mmocr/data/lower_english_digits.txt',
+    with_padding=True)
+
 
 class FPNCNeckModel(FPNC):
 
@@ -25,8 +30,7 @@ class FPNCNeckModel(FPNC):
 
     def forward(self, inputs):
         neck_inputs = [
-            torch.ones(1, channel, inputs.shape[-2], inputs.shape[-1])
-            for channel in self.in_channels
+            inputs.repeat([1, channel, 1, 1]) for channel in self.in_channels
         ]
         output = self.neck.forward(neck_inputs)
         return output
@@ -53,43 +57,14 @@ def get_single_stage_text_detector_model():
         norm_eval=False,
         style='caffe')
     neck = dict(
-        type='FPNC',
-        in_channels=[64, 128, 256, 512],
-        lateral_channels=4,
-        out_channels=4)
-    bbox_head = dict(
+        type='FPNC', in_channels=[64, 128, 256, 512], lateral_channels=256)
+    det_head = dict(
         type='DBHead',
-        text_repr_type='quad',
-        in_channels=16,
-        loss=dict(type='DBLoss', alpha=5.0, beta=10.0, bbce_loss=True))
-    model = SingleStageTextDetector(backbone, neck, bbox_head)
+        in_channels=256,
+        module_loss=dict(type='DBModuleLoss'),
+        postprocessor=dict(type='DBPostprocessor', text_repr_type='quad'))
+    model = SingleStageTextDetector(backbone, det_head, neck)
 
-    model.requires_grad_(False)
-    return model
-
-
-def get_encode_decode_recognizer_model():
-    from mmocr.models.textrecog import EncodeDecodeRecognizer
-
-    cfg = dict(
-        preprocessor=None,
-        backbone=dict(type='VeryDeepVgg', leaky_relu=False, input_channels=1),
-        encoder=None,
-        decoder=dict(type='CRNNDecoder', in_channels=512, rnn_flag=True),
-        loss=dict(type='CTCLoss'),
-        label_convertor=dict(
-            type='CTCConvertor',
-            dict_type='DICT36',
-            with_unknown=False,
-            lower=True),
-        pretrained=None)
-
-    model = EncodeDecodeRecognizer(
-        backbone=cfg['backbone'],
-        encoder=cfg['encoder'],
-        decoder=cfg['decoder'],
-        loss=cfg['loss'],
-        label_convertor=cfg['label_convertor'])
     model.requires_grad_(False)
     return model
 
@@ -110,26 +85,26 @@ def get_fpnc_neck_model():
 
 
 def get_base_recognizer_model():
-    from mmocr.models.textrecog import CRNNNet
+    from mmocr.models.textrecog.recognizers import CRNN
 
     cfg = dict(
         preprocessor=None,
         backbone=dict(type='VeryDeepVgg', leaky_relu=False, input_channels=1),
         encoder=None,
-        decoder=dict(type='CRNNDecoder', in_channels=512, rnn_flag=True),
-        loss=dict(type='CTCLoss'),
-        label_convertor=dict(
-            type='CTCConvertor',
-            dict_type='DICT36',
-            with_unknown=False,
-            lower=True),
-        pretrained=None)
-
-    model = CRNNNet(
+        decoder=dict(
+            type='CRNNDecoder',
+            in_channels=512,
+            rnn_flag=True,
+            module_loss=dict(type='CTCModuleLoss', letter_case='lower'),
+            postprocessor=dict(type='CTCPostProcessor'),
+            dictionary=dictionary),
+        data_preprocessor=dict(
+            type='mmocr.TextRecogDataPreprocessor', mean=[127], std=[127]))
+    model = CRNN(
         backbone=cfg['backbone'],
+        encoder=None,
         decoder=cfg['decoder'],
-        loss=cfg['loss'],
-        label_convertor=cfg['label_convertor'])
+        data_preprocessor=cfg['data_preprocessor'])
     model.requires_grad_(False)
     return model
 
@@ -141,7 +116,7 @@ def test_bidirectionallstm(backend: Backend):
     bilstm = get_bidirectionallstm_model()
     bilstm.cpu().eval()
 
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = mmengine.Config(
         dict(
             backend_config=dict(type=backend.value),
             onnx_config=dict(output_names=['output'], input_shape=None),
@@ -182,7 +157,7 @@ def test_simple_test_of_single_stage_text_detector(backend: Backend):
     single_stage_text_detector = get_single_stage_text_detector_model()
     single_stage_text_detector.eval()
 
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = mmengine.Config(
         dict(
             backend_config=dict(type=backend.value),
             onnx_config=dict(input_shape=None),
@@ -192,11 +167,11 @@ def test_simple_test_of_single_stage_text_detector(backend: Backend):
             )))
 
     input = torch.rand(1, 3, 64, 64)
-    x = single_stage_text_detector.extract_feat(input)
-    model_outputs = single_stage_text_detector.bbox_head(x)
+    model_outputs = single_stage_text_detector._forward(input)
+    model_outputs = torch.stack(model_outputs, 1)
 
-    wrapped_model = WrapModel(single_stage_text_detector, 'simple_test')
-    rewrite_inputs = {'img': input}
+    wrapped_model = WrapModel(single_stage_text_detector, '_forward')
+    rewrite_inputs = {'batch_inputs': input}
     rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
@@ -219,7 +194,7 @@ def test_crnndecoder(backend: Backend, rnn_flag: bool):
     crnn_decoder = get_crnn_decoder_model(rnn_flag)
     crnn_decoder.cpu().eval()
 
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = mmengine.Config(
         dict(
             backend_config=dict(type=backend.value),
             onnx_config=dict(input_shape=None),
@@ -270,19 +245,20 @@ def test_crnndecoder(backend: Backend, rnn_flag: bool):
 
 @pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME])
 @pytest.mark.parametrize(
-    'img_metas', [[[{}]], [[{
+    'data_samples', [[[{}]], [[{
         'resize_shape': [32, 32],
         'valid_ratio': 1.0
     }]]])
 @pytest.mark.parametrize('is_dynamic', [True, False])
-def test_forward_of_base_recognizer(img_metas, is_dynamic, backend):
+def test_forward_of_encoder_decoder_recognizer(data_samples, is_dynamic,
+                                               backend):
     """Test forward base_recognizer."""
     check_backend(backend)
     base_recognizer = get_base_recognizer_model()
     base_recognizer.eval()
 
     if not is_dynamic:
-        deploy_cfg = mmcv.Config(
+        deploy_cfg = mmengine.Config(
             dict(
                 backend_config=dict(type=backend.value),
                 onnx_config=dict(input_shape=None),
@@ -291,7 +267,7 @@ def test_forward_of_base_recognizer(img_metas, is_dynamic, backend):
                     task='TextRecognition',
                 )))
     else:
-        deploy_cfg = mmcv.Config(
+        deploy_cfg = mmengine.Config(
             dict(
                 backend_config=dict(type=backend.value),
                 onnx_config=dict(
@@ -315,16 +291,11 @@ def test_forward_of_base_recognizer(img_metas, is_dynamic, backend):
 
     input = torch.rand(1, 1, 32, 32)
 
-    feat = base_recognizer.extract_feat(input)
-    out_enc = None
-    if base_recognizer.encoder is not None:
-        out_enc = base_recognizer.encoder(feat, img_metas)
-    model_outputs = base_recognizer.decoder(
-        feat, out_enc, None, img_metas, train_mode=False)
+    model_outputs = base_recognizer.forward(input)
     wrapped_model = WrapModel(
-        base_recognizer, 'forward', img_metas=img_metas[0])
+        base_recognizer, 'forward', data_samples=data_samples[0])
     rewrite_inputs = {
-        'img': input,
+        'batch_inputs': input,
     }
     rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_model=wrapped_model,
@@ -339,54 +310,13 @@ def test_forward_of_base_recognizer(img_metas, is_dynamic, backend):
     assert np.allclose(model_outputs, rewrite_outputs, rtol=1e-03, atol=1e-05)
 
 
-@pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME])
-def test_simple_test_of_encode_decode_recognizer(backend):
-    """Test simple_test encode_decode_recognizer."""
-    check_backend(backend)
-    encode_decode_recognizer = get_encode_decode_recognizer_model()
-    encode_decode_recognizer.eval()
-
-    deploy_cfg = mmcv.Config(
-        dict(
-            backend_config=dict(type=backend.value),
-            onnx_config=dict(input_shape=None),
-            codebase_config=dict(
-                type='mmocr',
-                task='TextRecognition',
-            )))
-
-    input = torch.rand(1, 1, 32, 32)
-    img_metas = [{'resize_shape': [32, 32], 'valid_ratio': 1.0}]
-
-    feat = encode_decode_recognizer.extract_feat(input)
-    out_enc = None
-    if encode_decode_recognizer.encoder is not None:
-        out_enc = encode_decode_recognizer.encoder(feat, img_metas)
-    model_outputs = encode_decode_recognizer.decoder(
-        feat, out_enc, None, img_metas, train_mode=False)
-
-    wrapped_model = WrapModel(
-        encode_decode_recognizer, 'simple_test', img_metas=img_metas)
-    rewrite_inputs = {'img': input}
-    rewrite_outputs, is_backend_output = get_rewrite_outputs(
-        wrapped_model=wrapped_model,
-        model_inputs=rewrite_inputs,
-        deploy_cfg=deploy_cfg)
-    if is_backend_output:
-        rewrite_outputs = rewrite_outputs[0]
-
-    model_outputs = model_outputs.cpu().numpy()
-    rewrite_outputs = rewrite_outputs.cpu().numpy()
-    assert np.allclose(model_outputs, rewrite_outputs, rtol=1e-03, atol=1e-05)
-
-
 @pytest.mark.parametrize('backend', [Backend.TENSORRT])
 def test_forward_of_fpnc(backend: Backend):
     """Test forward rewrite of fpnc."""
     check_backend(backend)
-    fpnc = get_fpnc_neck_model()
+    fpnc = get_fpnc_neck_model().cuda()
     fpnc.eval()
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = mmengine.Config(
         dict(
             backend_config=dict(
                 type=backend.value,
@@ -395,9 +325,9 @@ def test_forward_of_fpnc(backend: Backend):
                     dict(
                         input_shapes=dict(
                             inputs=dict(
-                                min_shape=[1, 3, 64, 64],
-                                opt_shape=[1, 3, 64, 64],
-                                max_shape=[1, 3, 64, 64])))
+                                min_shape=[1, 1, 64, 64],
+                                opt_shape=[1, 1, 64, 64],
+                                max_shape=[1, 1, 64, 64])))
                 ]),
             onnx_config=dict(
                 input_shape=None,
@@ -405,7 +335,7 @@ def test_forward_of_fpnc(backend: Backend):
                 output_names=['output']),
             codebase_config=dict(type='mmocr', task='TextDetection')))
 
-    input = torch.rand(1, 3, 64, 64).cuda()
+    input = torch.rand(1, 1, 64, 64).cuda()
     model_inputs = {
         'inputs': input,
     }
@@ -428,11 +358,12 @@ def test_forward_of_fpnc(backend: Backend):
 
 
 def get_sar_model_cfg(decoder_type: str):
-    label_convertor = dict(
-        type='AttnConvertor', dict_type='DICT90', with_unknown=True)
-
     model = dict(
         type='SARNet',
+        data_preprocessor=dict(
+            type='mmocr.TextRecogDataPreprocessor',
+            mean=[127, 127, 127],
+            std=[127, 127, 127]),
         backbone=dict(type='ResNet31OCR'),
         encoder=dict(
             type='SAREncoder',
@@ -441,41 +372,20 @@ def get_sar_model_cfg(decoder_type: str):
             enc_gru=False,
         ),
         decoder=dict(
-            type=decoder_type,
+            type='ParallelSARDecoder',
             enc_bi_rnn=False,
             dec_bi_rnn=False,
             dec_do_rnn=0,
             dec_gru=False,
             pred_dropout=0.1,
             d_k=512,
-            pred_concat=True),
-        loss=dict(type='SARLoss'),
-        label_convertor=label_convertor,
-        max_seq_len=30)
-    test_pipeline = [
-        dict(type='LoadImageFromFile'),
-        dict(
-            type='MultiRotateAugOCR',
-            rotate_degrees=[0, 90, 270],
-            transforms=[
-                dict(
-                    type='ResizeOCR',
-                    height=48,
-                    min_width=48,
-                    max_width=160,
-                    keep_aspect_ratio=True,
-                    width_downsample_ratio=0.25),
-                dict(type='ToTensorOCR'),
-                dict(
-                    type='Collect',
-                    keys=['img'],
-                    meta_keys=[
-                        'filename', 'ori_shape', 'resize_shape', 'valid_ratio'
-                    ]),
-            ])
-    ]
-    return mmcv.Config(
-        dict(model=model, data=dict(test=dict(pipeline=test_pipeline))))
+            pred_concat=True,
+            postprocessor=dict(type='AttentionPostprocessor'),
+            module_loss=dict(
+                type='CEModuleLoss', ignore_first_char=True, reduction='mean'),
+            dictionary=dictionary,
+            max_seq_len=30))
+    return mmengine.Config(dict(model=model))
 
 
 @pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME])
@@ -492,7 +402,7 @@ def test_sar_model(backend: Backend, decoder_type):
     pytorch_model = SARNet(**(sar_cfg.model))
     model_inputs = {'x': torch.rand(1, 3, 48, 160)}
 
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = mmengine.Config(
         dict(
             backend_config=dict(type=backend.value),
             onnx_config=dict(input_shape=None),

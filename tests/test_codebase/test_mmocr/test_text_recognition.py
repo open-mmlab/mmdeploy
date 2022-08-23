@@ -2,7 +2,7 @@
 import os
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 
-import mmcv
+import mmengine
 import numpy as np
 import pytest
 import torch
@@ -18,7 +18,7 @@ import_codebase(Codebase.MMOCR)
 
 model_cfg_path = 'tests/test_codebase/test_mmocr/data/crnn.py'
 model_cfg = load_config(model_cfg_path)[0]
-deploy_cfg = mmcv.Config(
+deploy_cfg = mmengine.Config(
     dict(
         backend_config=dict(type='onnxruntime'),
         codebase_config=dict(type='mmocr', task='TextRecognition'),
@@ -38,7 +38,7 @@ img = np.random.rand(*img_shape, 3).astype(np.uint8)
 
 
 def test_build_pytorch_model():
-    from mmocr.models.textrecog.recognizer import BaseRecognizer
+    from mmocr.models.textrecog.recognizers import BaseRecognizer
     model = task_processor.build_pytorch_model(None)
     assert isinstance(model, BaseRecognizer)
 

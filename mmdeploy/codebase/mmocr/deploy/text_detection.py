@@ -28,23 +28,17 @@ def process_model_config(model_cfg: mmcv.Config,
     Returns:
         mmcv.Config: the model config after processing.
     """
-    is_ndarray = isinstance(imgs[0], np.ndarray)
     pipeline = model_cfg.test_dataloader.dataset.pipeline
-
-    if is_ndarray:
-        pipeline[0].type = 'LoadImageFromNDArray'
 
     for i, transform in enumerate(pipeline):
         if transform.type == 'PackTextDetInputs':
             pipeline[i].meta_keys = tuple(j for j in pipeline[i].meta_keys
                                           if j != 'instances')
-
-    # for static exporting
-    if input_shape is not None:
-        pipeline[1].img_scale = tuple(input_shape)
-        pipeline[1].transforms[0].keep_ratio = False
-        pipeline[1].transforms[0].img_scale = tuple(input_shape)
-        model_cfg.test_dataloader.dataset.pipeline = pipeline
+        # for static exporting
+        if input_shape is not None and transform.type == 'Resize':
+            pipeline[i].keep_ratio = False
+            pipeline[i].scale = tuple(input_shape)
+    model_cfg.test_dataloader.dataset.pipeline = pipeline
     return model_cfg
 
 
@@ -147,11 +141,11 @@ class TextDetection(BaseTask):
         data = []
         for img in imgs:
             # prepare data
+            # TODO: remove img_id.
             if isinstance(img, np.ndarray):
-                # TODO: remove img_id.
-                data_ = dict(img=img, img_id=0)
+                data_ = dict(
+                    img=img, img_id=0, ori_shape=input_shape, instances=None)
             else:
-                # TODO: remove img_id.
                 data_ = dict(img_path=img, img_id=0)
             # build the data pipeline
             data_ = test_pipeline(data_)

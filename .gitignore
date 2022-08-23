@@ -148,3 +148,6 @@ bin/
 mmdeploy/backend/ncnn/onnx2ncnn
 
 /mmdeploy-*
+
+# OCR dicts
+dicts
