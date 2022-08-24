@@ -50,7 +50,7 @@ cd ../
 
 conda init bash
 ## start convert
-for TORCH_VERSION in 1.8.0 1.9.0
+for TORCH_VERSION in 1.9.0 1.10.0
 do
     /opt/conda/envs/torch${TORCH_VERSION}/bin/pip install -v -e .
     /opt/conda/envs/torch${TORCH_VERSION}/bin/pip install -r requirements/tests.txt
