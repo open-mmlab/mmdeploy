@@ -25,7 +25,7 @@ git clone https://github.com/open-mmlab/${codebase_fullname}.git
 
 #### cp cudnn,wait to be removed
 cp -r cuda/include/cudnn* /usr/local/cuda-11.3/include/
-
+export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 
 ## build mmdeploy
 cd mmdeploy
