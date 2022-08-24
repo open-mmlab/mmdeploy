@@ -4,7 +4,7 @@ pipeline {
     parameters {
         string(
             name: 'CODEBASES', 
-            defaultValue: 'mmdet mmcls', 
+            defaultValue: 'mmdet mmcls mmdet3d mmedit mmocr mmpose mmrotate mmseg', 
             description: 'select codebase'
         )
         choice(
