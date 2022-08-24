@@ -58,6 +58,8 @@ do
     conda run --name torch${TORCH_VERSION} "
         python ./tools/regression_test.py \
             --codebase ${codebase} \
-            --work-dir "../mmdeploy_regression_working_dir/${codebase}/torch${TORCH_VERSION}"
+            --work-dir "../mmdeploy_regression_working_dir/${codebase}/torch${TORCH_VERSION} \
+            --performance
+            "
     "
 done
