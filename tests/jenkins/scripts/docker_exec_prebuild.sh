@@ -3,3 +3,7 @@
 python ./tools/package_tools/mmdeploy_builder.py tools/package_tools/config/linux-x64.yml \
     --backend onnxruntime .
 mv mmdeploy-*-onnxruntime* /prebuild-mmdeploy
+
+/opt/conda/bin/pip install pytest 
+
+pytest -sv tests/
