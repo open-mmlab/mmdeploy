@@ -83,7 +83,7 @@ ENV LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
 ### install cudnn
 RUN wget http://${HOST}/cudnn-10.2-linux-x64-v7.6.5.32.tgz && \
     tar -zxvf cudnn-10.2-linux-x64-v7.6.5.32.tgz && \
-    cp -r cuda/include/cudnn.h /usr/local/cuda-10.2/include/ && \
+    cp -r cuda/include/cudnn.h* /usr/local/cuda-10.2/include/ && \
     cp -r cuda/lib64/libcudnn* /usr/local/cuda-10.2/lib64/
 ENV CUDNN_DIR=/root/workspace/cuda
 ENV LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH

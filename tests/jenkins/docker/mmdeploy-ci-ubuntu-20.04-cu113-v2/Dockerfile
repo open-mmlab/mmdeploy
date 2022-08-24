@@ -73,7 +73,7 @@ ENV PATH=$JAVA_HOME/bin:$PATH
 ### install cudnn
 RUN wget http://${HOST}/cudnn-11.3-linux-x64-v8.2.1.32.tgz && \
     tar -zxvf cudnn-11.3-linux-x64-v8.2.1.32.tgz && \
-    cp -r cuda/include/cudnn.h /usr/local/cuda-11.3/include/ && \
+    cp -r cuda/include/cudnn* /usr/local/cuda-11.3/include/ && \
     cp -r cuda/lib64/libcudnn* /usr/local/cuda-11.3/lib64/
 ENV CUDNN_DIR=/root/workspace/cuda
 ENV LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
