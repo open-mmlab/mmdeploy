@@ -44,7 +44,7 @@ cmake .. -DMMDEPLOY_BUILD_SDK=ON \
         -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} \
         -Dncnn_DIR=${ncnn_DIR} \
         -Dpplcv_DIR=/root/workspace/ppl.cv/cuda-build/install/lib/cmake/ppl \
-        -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" 
+        -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
 make -j $(nproc) && make install
 cd ../
 
@@ -56,7 +56,7 @@ do
     /opt/conda/envs/torch${TORCH_VERSION}/bin/pip install -r requirements/tests.txt
     ## build ${codebase}
     /opt/conda/envs/torch${TORCH_VERSION}/bin/mim install ${codebase}
-
+    cd ${codebase_fullname} && /opt/conda/bin/pip install -v -e . && cd ../
     ## start regression  
     conda run --name torch${TORCH_VERSION} "
         python ./tools/regression_test.py \
