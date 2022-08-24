@@ -56,7 +56,7 @@ do
     /opt/conda/envs/torch${TORCH_VERSION}/bin/pip install -r requirements/tests.txt
     ## build ${codebase}
     /opt/conda/envs/torch${TORCH_VERSION}/bin/mim install ${codebase}
-    cd ${codebase_fullname} && /opt/conda/bin/pip install -v -e . && cd ../
+    cd ../${codebase_fullname} && /opt/conda/bin/pip install -v -e . && cd ../mmdeploy
     ## start regression  
     conda run --name torch${TORCH_VERSION} "
         python ./tools/regression_test.py \
