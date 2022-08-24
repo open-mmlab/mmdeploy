@@ -51,7 +51,7 @@ b) 编译 ncnn & opencv
 
 # opencv
 git clone https://github.com/opencv/opencv.git
-mkdir build && cd build
+mkdir build_riscv && cd build_riscv
 cmake .. \
  -DCMAKE_TOOLCHAIN_FILE=/path/to/mmdeploy/cmake/toolchains/riscv64-linux-gnu.cmake \
  -DCMAKE_INSTALL_PREFIX=install \
@@ -67,7 +67,7 @@ c) 编译 mmdeploy SDK & demo
 
 ```bash
 cd /path/to/mmdeploy
-mkdir build && cd build
+mkdir build_riscv && cd build_riscv
 cmake .. \
   -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/riscv64-linux-gnu.cmake \
   -DMMDEPLOY_BUILD_SDK=ON \
@@ -75,9 +75,9 @@ cmake .. \
   -DMMDEPLOY_BUILD_EXAMPLES=ON \
   -DMMDEPLOY_TARGET_DEVICES="cpu" \
   -DMMDEPLOY_TARGET_BACKENDS="ncnn" \
-  -Dncnn_DIR=${ncnn_DIR}/build/install/lib/cmake/ncnn/ \
+  -Dncnn_DIR=${ncnn_DIR}/build-c906/install/lib/cmake/ncnn/ \
   -DMMDEPLOY_CODEBASES=all \
-  -DOpenCV_DIR=${OpenCV_DIR}/build/install/lib/cmake/opencv4
+  -DOpenCV_DIR=${OpenCV_DIR}/build_riscv/install/lib/cmake/opencv4
 
 make -j$(nproc) && make install
 ```
