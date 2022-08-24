@@ -41,3 +41,4 @@ git clone -b master git@github.com:open-mmlab/mmdeploy.git --recursive
 - [Android-aarch64](android.md)
 - [NVIDIA Jetson](jetsons.md)
 - [Qcom SNPE](snpe.md)
+- [RISC-V](riscv.md)
