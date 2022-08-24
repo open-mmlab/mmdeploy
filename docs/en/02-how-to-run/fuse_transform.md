@@ -6,7 +6,7 @@ When make inference with SDK, one can edit the pipeline.json to turn on the fuse
 
 To bring the ability of fuse transform to MMDeploy, you can refer to the use of CVFusion.
 
-## 1. 使用CVFusion
+## 1. Use CVFusion
 
 There are two ways to use CVFusion, one is to use the pre-generated kernel code, the other is to generate the code yourself.
 
@@ -14,30 +14,42 @@ A）Use pre-generated kernel code
 
 i) Download the kernel code from here，unzip it and copy the csrc folder to the mmdeploy root folder.
 
-```
 [elena_kernel-20220823.tar.gz](https://github.com/open-mmlab/mmdeploy/files/9399795/elena_kernel-20220823.tar.gz)
-```
 
 ii) Add option `-DMMDEPLOY_ELENA_FUSION=ON` when compile MMDeploy.
 
 B) Generate kernel code by yourself
+
 i) Compile CVFusion
-\`\`\` bash
+
+```bash
 $ git clone --recursive https://github.com/OpenComputeLab/CVFusion.git
 $ cd CVFusion
 $ bash build.sh
+```
 
-````
+```
 # add OpFuse to PATH
 $ export PATH=`pwd`/build/examples/MMDeploy:$PATH
 ```
-````
 
 ii) Download algorithm codebase
-`bash     $ tree -L 1 .     ├── mmdeploy     ├── mmclassification     ├── mmdetection     ├── mmsegmentation     ├── ...     `
+
+```bash
+$ tree -L 1 .
+├── mmdeploy
+├── mmclassification
+├── mmdetection
+├── mmsegmentation
+├── ...
+```
 
 iii) Generate kernel code
-`bash     python tools/elena/extract_transform.py ..     # The generated code will be saved to csrc/preprocess/elena/{cpu_kernel}/{cuda_kernel}     `
+
+```bash
+python tools/elena/extract_transform.py ..
+# The generated code will be saved to csrc/preprocess/elena/{cpu_kernel}/{cuda_kernel}
+```
 
 iv) Add option `-DMMDEPLOY_ELENA_FUSION=ON` when compile MMDeploy.
 
@@ -53,7 +65,7 @@ $ python tools/deploy.py \
     configs/mmcls/classification_onnxruntime_static.py \
     $MODEL_CONFIG \
     $MODEL_PATH \
-    /path/to/test.png \
+    tests/data/tiger.jpeg \
     --work-dir resnet18 \
     --device cpu \
     --dump-info

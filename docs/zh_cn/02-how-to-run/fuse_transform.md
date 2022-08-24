@@ -61,7 +61,7 @@ $ python tools/deploy.py \
     configs/mmcls/classification_onnxruntime_static.py \
     $MODEL_CONFIG \
     $MODEL_PATH \
-    /path/to/test.png \
+    tests/data/tiger.jpeg \
     --work-dir resnet18 \
     --device cpu \
     --dump-info
