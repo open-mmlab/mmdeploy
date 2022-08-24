@@ -44,7 +44,7 @@ cmake .. -DMMDEPLOY_BUILD_SDK=ON \
         -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} \
         -Dncnn_DIR=${ncnn_DIR} \
         -Dpplcv_DIR=/root/workspace/ppl.cv/cuda-build/install/lib/cmake/ppl \
-        -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
+        -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" 
 make -j $(nproc) && make install
 cd ../
 
