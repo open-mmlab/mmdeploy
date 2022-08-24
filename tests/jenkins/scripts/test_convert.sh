@@ -19,5 +19,5 @@ do
             ${docker_image} /bin/bash
     )
     nohup docker exec ${container_id} git clone --recursive https://github.com/kumailf/mmdeploy.git
-    nohup docker exec ${container_id} bash -c "/root/workspace/mmdeploy/tests/jenkins/scripts/docker_exec_convert_gpu.sh ${codebase}" > ${codebase}.log 2>&1 &
+    nohup docker exec ${container_id} bash -c "/root/workspace/mmdeploy/tests/jenkins/scripts/docker_exec_convert_gpu.sh ${codebase}" > /root/workspace/mmdeploy_regression_working_dir/${codebase}.log 2>&1 &
 done
