@@ -37,12 +37,11 @@ cmake .. -DMMDEPLOY_BUILD_SDK=ON \
         -DMMDEPLOY_BUILD_SDK_MONOLITHIC=ON -DMMDEPLOY_BUILD_TEST=ON \
         -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON -DMMDEPLOY_BUILD_SDK_JAVA_API=ON \
         -DMMDEPLOY_BUILD_EXAMPLES=ON -DMMDEPLOY_ZIP_MODEL=ON \
-        -DMMDEPLOY_TARGET_BACKENDS="trt;ort;pplnn;ncnn;torchscript" \
+        -DMMDEPLOY_TARGET_BACKENDS="trt;ort;ncnn" \
         -DMMDEPLOY_SHARED_LIBS=OFF \
         -DTENSORRT_DIR=${TENSORRT_DIR} \
         -DCUDNN_DIR=${CUDNN_DIR} \
         -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} \
-        -Dpplnn_DIR=${pplnn_DIR} \
         -Dncnn_DIR=${ncnn_DIR} \
         -Dpplcv_DIR=/root/workspace/ppl.cv/cuda-build/install/lib/cmake/ppl \
         -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
@@ -51,7 +50,7 @@ cd ../
 
 conda init bash
 ## start convert
-for TORCH_VERSION in 1.8.0 1.9.0 1.10.0 1.11.0 1.12.0
+for TORCH_VERSION in 1.8.0 1.9.0
 do
     /opt/conda/envs/torch${TORCH_VERSION}/bin/pip install -v -e .
     /opt/conda/envs/torch${TORCH_VERSION}/bin/pip install -r requirements/tests.txt
