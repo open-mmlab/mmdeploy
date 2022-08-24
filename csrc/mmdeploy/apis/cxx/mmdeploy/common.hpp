@@ -57,7 +57,10 @@ class Device {
  public:
   explicit Device(std::string name, int index = 0) : name_(std::move(name)), index_(index) {
     mmdeploy_device_t device{};
-    mmdeploy_device_create(name.c_str(), index, &device);
+    auto ec = mmdeploy_device_create(name_.c_str(), index, &device);
+    if (ec != MMDEPLOY_SUCCESS) {
+      throw_exception(static_cast<ErrorCode>(ec));
+    }
     device_.reset(device, [](auto p) { mmdeploy_device_destroy(p); });
   }
 

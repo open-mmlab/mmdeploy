@@ -2,7 +2,6 @@
 #include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/core/value.h"
-#include "mmdeploy/pipeline.h"
 #include "mmdeploy/pipeline.hpp"
 #include "opencv2/imgcodecs.hpp"
 
@@ -58,7 +57,7 @@ int main(int argc, char* argv[]) {
 
   cv::Mat mat = cv::imread(image_path);
   if (!mat.data) {
-    fprintf(stderr, "failed to open image %s\n,", image_path);
+    fprintf(stderr, "failed to open image %s\n", image_path);
     return -1;
   }
 
