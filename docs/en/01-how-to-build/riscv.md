@@ -66,22 +66,20 @@ c) Compile mmdeploy SDK & demo
 cd /path/to/mmdeploy
 mkdir build && cd build
 cmake .. \
-  -DMMDEPLOY_BUILD_RISCV_SERVER=ON \
-  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
   -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/riscv64-linux-gnu.cmake \
   -DMMDEPLOY_BUILD_SDK=ON \
   -DMMDEPLOY_SHARED_LIBS=OFF \
   -DMMDEPLOY_BUILD_EXAMPLES=ON \
   -DMMDEPLOY_TARGET_DEVICES="cpu" \
   -DMMDEPLOY_TARGET_BACKENDS="ncnn" \
-  -Dncnn_DIR={ncnn_DIR}/build/install/lib/cmake/ncnn/ \
+  -Dncnn_DIR=${ncnn_DIR}/build/install/lib/cmake/ncnn/ \
   -DMMDEPLOY_CODEBASES=all \
   -DOpenCV_DIR=${OpenCV_DIR}/build/install/lib/cmake/opencv4
 
 make -j$(nproc) && make install
 ```
 
-After `make install`, the examples will located in `install\bin`
+After `make install`, the examples will locate in `install\bin`
 
 ```
 tree -L 1 install/bin/
