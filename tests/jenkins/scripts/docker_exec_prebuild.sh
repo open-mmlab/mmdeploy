@@ -6,4 +6,4 @@ mv mmdeploy-*-onnxruntime* /prebuild-mmdeploy
 
 /opt/conda/bin/pip install pytest 
 
-pytest -sv tests/
+pytest -sv ./tests/
