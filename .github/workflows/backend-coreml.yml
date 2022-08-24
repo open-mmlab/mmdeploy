@@ -1,0 +1,80 @@
+name: backend-coreml
+
+on:
+  push:
+    paths:
+      - "csrc/**"
+      - "demo/csrc/**"
+      - "CMakeLists.txt"
+
+  pull_request:
+    paths:
+      - "csrc/**"
+      - "demo/csrc/**"
+      - "CMakeLists.txt"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  DEVELOPER_DIR: /Applications/Xcode_13.4.1.app/Contents/Developer
+permissions:
+  contents: read
+
+jobs:
+  build_macos_arm64:
+    runs-on: macos-12
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: install opencv
+        run: |
+          git clone --depth 1 https://github.com/opencv/opencv.git
+          cd opencv
+          mkdir build && cd build
+          cmake .. -DCMAKE_OSX_ARCHITECTURES="arm64" \
+            -DCMAKE_SYSTEM_PROCESSOR="arm64" \
+            -DOPENCV_FORCE_3RDPARTY_BUILD=ON \
+            -DBUILD_SHARED_LIBS=OFF \
+            -DBUILD_JAVA=OFF \
+            -DWITH_PNG=OFF \
+            -DWITH_IPP=OFF \
+            -DWITH_OPENJPEG=OFF \
+            -DBUILD_PERF_TESTS=OFF \
+            -DBUILD_TESTS=OFF \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=install
+          cmake --build . -j 3
+          cmake --build . --target install
+          mkdir $GITHUB_WORKSPACE/opencv-install
+          cp -r install/* $GITHUB_WORKSPACE/opencv-install
+      - name: build
+        run: |
+          mkdir build && cd build
+          cmake .. -DCMAKE_OSX_ARCHITECTURES="arm64" \
+            -DCMAKE_SYSTEM_PROCESSOR="arm64" \
+            -DMMDEPLOY_BUILD_SDK=ON \
+            -DMMDEPLOY_TARGET_DEVICES="cpu" \
+            -DMMDEPLOY_CODEBASES=all \
+            -DOpenCV_DIR=$GITHUB_WORKSPACE/opencv-install/lib/cmake/opencv4 \
+            -DMMDEPLOY_TARGET_BACKENDS="coreml" \
+            -DMMDEPLOY_BUILD_EXAMPLES=ON \
+            -DMMDEPLOY_SHARED_LIBS=OFF
+          cmake --build . -j 3
+          cmake --build . --target install 
+      - name: build-shared
+        run: |
+          mkdir build-shared && cd build-shared
+          cmake .. -DCMAKE_OSX_ARCHITECTURES="arm64" \
+            -DCMAKE_SYSTEM_PROCESSOR="arm64" \
+            -DMMDEPLOY_BUILD_SDK=ON \
+            -DMMDEPLOY_TARGET_DEVICES="cpu" \
+            -DMMDEPLOY_CODEBASES=all \
+            -DOpenCV_DIR=$GITHUB_WORKSPACE/opencv-install/lib/cmake/opencv4 \
+            -DMMDEPLOY_TARGET_BACKENDS="coreml" \
+            -DMMDEPLOY_BUILD_EXAMPLES=ON \
+            -DMMDEPLOY_SHARED_LIBS=ON
+          cmake --build . -j 3
+          cmake --build . --target install 
