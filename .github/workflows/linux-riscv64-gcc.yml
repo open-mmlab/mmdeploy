@@ -48,6 +48,7 @@ jobs:
       - name: install ncnn
         run: |
           git clone --recursive --depth 1 https://github.com/Tencent/ncnn.git
+          cd ncnn
           mkdir build_riscv && cd build_riscv
           cmake -DCMAKE_TOOLCHAIN_FILE=../toolchains/riscv64-linux-gnu.toolchain.cmake \
             -DNCNN_BUILD_TOOLS=OFF \
