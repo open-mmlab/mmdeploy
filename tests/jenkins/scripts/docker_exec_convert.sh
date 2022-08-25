@@ -26,7 +26,7 @@ git clone https://github.com/open-mmlab/${codebase_fullname}.git
 
 ## build mmdeploy
 cd mmdeploy
-mkdir -p builde4
+mkdir -p builde
 cd build
 cmake .. -DMMDEPLOY_BUILD_SDK=ON -DMMDEPLOY_BUILD_EXAMPLES=ON \
         -DMMDEPLOY_BUILD_SDK_MONOLITHIC=ON -DMMDEPLOY_BUILD_TEST=ON \
