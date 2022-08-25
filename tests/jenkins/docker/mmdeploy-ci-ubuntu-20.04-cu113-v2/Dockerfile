@@ -36,8 +36,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libjpeg-dev \
         libpng-dev \
         ccache \
-        gcc \
-        g++ \
+        gcc-7 \
+        g++-7 \
         git \
         vim \
         wget \
@@ -77,12 +77,14 @@ RUN wget http://${HOST}/cudnn-11.3-linux-x64-v8.2.1.32.tgz && \
     cp -r cuda/lib64/libcudnn* /usr/local/cuda-11.3/lib64/
 ENV CUDNN_DIR=/root/workspace/cuda
 ENV LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
+ENV CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-11.3
 
 ### get onnxruntime
 RUN wget https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTIME_VERSION}/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz \
     && tar -zxvf onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz &&\
     /opt/conda/bin/pip install onnxruntime-gpu==${ONNXRUNTIME_VERSION}
 ENV ONNXRUNTIME_DIR=/root/workspace/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}
+ENV LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 
 ### install openvino
 RUN /opt/conda/bin/pip install openvino-dev
@@ -116,6 +118,7 @@ RUN git clone https://github.com/openppl-public/ppl.cv.git &&\
     cd ppl.cv &&\
     git checkout tags/v${PPLCV_VERSION} -b v${PPLCV_VERSION} &&\
     ./build.sh cuda
+ENV pplcv_DIR=/root/workspace/ppl.cv/cuda-build/install/lib/cmake/ppl
 
 ### install zip
 RUN apt update && apt install -y zip 

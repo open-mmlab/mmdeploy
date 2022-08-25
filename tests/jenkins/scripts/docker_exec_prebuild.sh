@@ -2,10 +2,16 @@
 
 cd /root/workspace/mmdeploy
 
-python ./tools/package_tools/mmdeploy_builder.py tools/package_tools/config/linux-x64.yml \
-    --backend onnxruntime .
-mv mmdeploy-*-onnxruntime* /prebuild-mmdeploy
+/opt/conda/envs/torch1.10.0/bin/mim install mmcv
+/opt/conda/envs/torch1.10.0/bin/pip install pytest
+pip install pytest 
 
-/opt/conda/bin/pip install pytest 
+conda run --name torch1.10.0 "
+    python ./tools/package_tools/mmdeploy_builder.py tools/package_tools/configs/linux_x64.yaml .
+"
 
-pytest -sv ./tests/
+mv mmdeploy-*-onnxruntime* ./prebuild-mmdeploy
+
+conda run --name torch1.10.0 "
+    pytest -sv ./tests/
+"
