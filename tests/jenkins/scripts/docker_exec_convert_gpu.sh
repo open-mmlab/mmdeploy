@@ -28,6 +28,9 @@ cp -r cuda/include/cudnn* /usr/local/cuda-11.3/include/
 export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 
 ## build mmdeploy
+
+source ~/.bashrc
+
 ln -s /root/workspace/mmdeploy_benchmark /root/workspace/mmdeploy/data
 cd mmdeploy
 mkdir -p build
