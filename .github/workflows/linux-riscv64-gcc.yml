@@ -1,0 +1,74 @@
+name: build_riscv64_gcc
+
+on:
+  push:
+    paths:
+      - "csrc/**"
+      - "demo/csrc/**"
+      - "CMakeLists.txt"
+
+  pull_request:
+    paths-ignore:
+      - "csrc/**"
+      - "demo/csrc/**"
+      - "CMakeLists.txt"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build_riscv64_gcc:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: riscv64-gnu-toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install g++-riscv64-linux-gnu
+      - name: install opencv
+        run: |
+          git clone --depth 1 https://github.com/opencv/opencv.git
+          cd opencv
+          mkdir build_riscv && cd build_riscv
+          cmake .. \
+            -DCMAKE_TOOLCHAIN_FILE=/path/to/mmdeploy/cmake/toolchains/riscv64-linux-gnu.cmake \
+            -DCMAKE_INSTALL_PREFIX=install \
+            -DBUILD_PERF_TESTS=OFF \
+            -DBUILD_SHARED_LIBS=OFF \
+            -DBUILD_TESTS=OFF \
+            -DCMAKE_BUILD_TYPE=Release
+          make -j$(nproc)
+          make install
+          mkdir $GITHUB_WORKSPACE/opencv-install
+          cp -r install/* $GITHUB_WORKSPACE/opencv-install
+      - name: install ncnn
+        run: |
+          git clone --recursive --depth 1 https://github.com/Tencent/ncnn.git
+          mkdir build_riscv && cd build_riscv
+          cmake -DCMAKE_TOOLCHAIN_FILE=../toolchains/riscv64-linux-gnu.toolchain.cmake \
+            -DNCNN_BUILD_TOOLS=OFF \
+            -DNCNN_BUILD_EXAMPLES=OFF \
+            -DNCNN_BUILD_TESTS=OFF ..
+          make -j$(nproc)
+          make install
+          mkdir $GITHUB_WORKSPACE/ncnn-install
+          cp -r install/* $GITHUB_WORKSPACE/ncnn-install
+      - name: build
+        run: |
+          mkdir build && cd build
+          cmake .. \
+            -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/riscv64-linux-gnu.cmake \
+            -DMMDEPLOY_BUILD_SDK=ON \
+            -DMMDEPLOY_SHARED_LIBS=ON \
+            -DMMDEPLOY_BUILD_EXAMPLES=ON \
+            -DMMDEPLOY_TARGET_DEVICES="cpu" \
+            -DMMDEPLOY_TARGET_BACKENDS="ncnn" \
+            -Dncnn_DIR=$GITHUB_WORKSPACE/ncnn-install/lib/cmake/ncnn/ \
+            -DMMDEPLOY_CODEBASES=all \
+            -DOpenCV_DIR=$GITHUB_WORKSPACE/opencv-install/lib/cmake/opencv4
+          make -j$(nproc)
+          make install
