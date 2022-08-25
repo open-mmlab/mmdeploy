@@ -11,6 +11,8 @@ container_id=$(
     docker run \
         --gpus all \
         -itd \
+        -v /data2/checkpoints/${codebase}:/root/workspace/mmdeploy_checkpoints \
+        -v /data2/benchmark:/root/workspace/mmdeploy_benchmark \
         -v /data2/shared/prebuilt-mmdeploy:/root/workspace/prebuild-mmdeploy \
         --name ${container_name} \
         ${docker_image} /bin/bash

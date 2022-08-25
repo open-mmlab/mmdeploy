@@ -28,6 +28,7 @@ cp -r cuda/include/cudnn* /usr/local/cuda-11.3/include/
 export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 
 ## build mmdeploy
+ln -s /root/workspace/mmdeploy_benchmark /root/workspace/mmdeploy/data
 cd mmdeploy
 mkdir -p build
 cd build
@@ -50,10 +51,10 @@ make -j $(nproc) && make install
 cd ../
 
 ## start convert
-for TORCH_VERSION in 1.9.0 1.10.0
+for TORCH_VERSION in 1.10.0 1.11.0
 do
     /opt/conda/envs/torch${TORCH_VERSION}/bin/pip install -v -e .
-    /opt/conda/envs/torch${TORCH_VERSION}/bin/pip install -r requirements/tests.txt
+    /opt/conda/envs/torch${TORCH_VERSION}/bin/pip install -r requirements/tests.txt requirements/build.txt requirements/runtime.txt requirements/
     ## build ${codebase}
     /opt/conda/envs/torch${TORCH_VERSION}/bin/mim install ${codebase}
     cd ../${codebase_fullname} && /opt/conda/bin/pip install -v -e . && cd ../
@@ -63,5 +64,5 @@ do
             --codebase ${codebase} \
             --work-dir "../mmdeploy_regression_working_dir/${codebase}/torch${TORCH_VERSION}" \
             --performance
-    "
+    " > root/workspace/mmdeploy_regression_working_dir/${codebase}/torch${TORCH_VERSION}/convert.log 2>&1 &
 done

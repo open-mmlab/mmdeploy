@@ -7,6 +7,7 @@ ARG OPENCV_VERSION==4.5.5.62
 ARG TORCH_VERSION=1.10.0
 ARG TORCHVISION_VERSION=0.11.0
 ARG PPLCV_VERSION=0.7.0
+ARG PPLNN_VERSION=0.8.1
 ARG NCNN_VERSION=20220721
 ARG HOST
 USER root
@@ -94,17 +95,17 @@ RUN /opt/conda/bin/pip install openvino-dev
 RUN /opt/conda/bin/pip install opencv-python==${OPENCV_VERSION}
 
 ### install ppl.nn
-RUN git clone --recursive https://github.com/openppl-public/ppl.nn.git &&\
+RUN git clone --depth 1 --branch v${PPLNN_VERSION} --recursive https://github.com/openppl-public/ppl.nn.git &&\
     cd ppl.nn &&\
-    ./build.sh -DPPLNN_USE_X86_64=ON -DPPLNN_USE_CUDA=ON
+    ./build.sh -DPPLNN_USE_X86_64=ON -DPPLNN_USE_CUDA=ON -DPPLNN_ENABLE_PYTHON_API=ON -DPYTHON3_INCLUDE_DIRS=/opt/conda/include/python3.8 && \
+    /opt/conda/bin/pip install pyppl*.whl
 ENV PPLNN_DIR=/root/workspace/ppl.nn
 ENV pplnn_DIR=${PPLNN_DIR}/pplnn-build/install/lib/cmake/ppl
 ENV PYTHONPATH=/root/workspace/ppl.nn/install/lib:$PYTHONPATH
 
 ### build ncnn
-RUN git clone --recursive https://github.com/Tencent/ncnn.git &&\
+RUN git clone --depth 1 --branch ${NCNN_VERSION} --recursive https://github.com/Tencent/ncnn.git &&\
     cd ncnn &&\
-    git checkout tags/${NCNN_VERSION} -b ${NCNN_VERSION} && \
     export NCNN_DIR=$(pwd) &&\
     mkdir -p build && cd build &&\
     cmake -DNCNN_VULKAN=OFF -DNCNN_PYTHON=ON -DNCNN_BUILD_TOOLS=ON -DCMAKE_INSTALL_PREFIX=$NCNN_DIR/install .. &&\
@@ -115,10 +116,10 @@ ENV ncnn_DIR=/root/workspace/ncnn/install/lib/cmake/ncnn
 ENV PYTHONPATH=/root/workspace/ncnn/python:$PYTHONPATH 
 
 ### install ppl.cv
-RUN git clone https://github.com/openppl-public/ppl.cv.git &&\
+RUN git clone --depth 1 --branch v${PPLCV_VERSION} https://github.com/openppl-public/ppl.cv.git  &&\
     cd ppl.cv &&\
-    git checkout tags/v${PPLCV_VERSION} -b v${PPLCV_VERSION} &&\
     ./build.sh cuda
+    
 ENV pplcv_DIR=/root/workspace/ppl.cv/cuda-build/install/lib/cmake/ppl
 
 ### install zip
