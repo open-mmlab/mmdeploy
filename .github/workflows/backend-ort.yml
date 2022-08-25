@@ -22,11 +22,6 @@ jobs:
     strategy:
       matrix:
         python-version: [3.7]
-        torch: [1.9.0]
-        include:
-          - torch: 1.9.0
-            torch_version: torch1.9
-            torchvision: 0.10.0
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
