@@ -147,7 +147,8 @@ class TRTBatchedNMSop(torch.autograd.Function):
                 after_topk: int,
                 iou_threshold: float,
                 score_threshold: float,
-                background_label_id: int = -1):
+                background_label_id: int = -1,
+                return_index: bool = False):
         """Forward of batched nms.
 
         Args:
@@ -175,10 +176,13 @@ class TRTBatchedNMSop(torch.autograd.Function):
         batch_size, num_boxes, num_classes = scores.shape
 
         out_boxes = min(num_boxes, after_topk)
-        return torch.rand(batch_size, out_boxes,
-                          5).to(scores.device), torch.randint(
-                              0, num_classes,
-                              (batch_size, out_boxes)).to(scores.device)
+        ret = (torch.rand(batch_size, out_boxes, 5).to(scores.device),
+               torch.randint(0, num_classes,
+                             (batch_size, out_boxes)).to(scores.device))
+        if return_index:
+            ret = ret + (torch.randint(
+                0, out_boxes, (batch_size, out_boxes)).to(scores.device), )
+        return ret
 
     @staticmethod
     def symbolic(g,
@@ -189,7 +193,8 @@ class TRTBatchedNMSop(torch.autograd.Function):
                  after_topk: int,
                  iou_threshold: float,
                  score_threshold: float,
-                 background_label_id: int = -1):
+                 background_label_id: int = -1,
+                 return_index: bool = False):
         """Symbolic function for mmdeploy::TRTBatchedNMS."""
         return g.op(
             'mmdeploy::TRTBatchedNMS',
@@ -203,4 +208,5 @@ class TRTBatchedNMSop(torch.autograd.Function):
             keep_topk_i=after_topk,
             is_normalized_i=False,
             clip_boxes_i=False,
-            outputs=2)
+            return_index_i=return_index,
+            outputs=3 if return_index else 2)

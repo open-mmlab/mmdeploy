@@ -35,13 +35,13 @@ Result<void> Model::Init(const std::string& model_path) {
     }
     OUTCOME_TRY(auto meta, impl->ReadMeta());
 
-    MMDEPLOY_INFO("{} successfully load sdk model {}", entry.name, model_path);
+    MMDEPLOY_INFO("{} successfully load model {}", entry.name, model_path);
     impl_ = std::move(impl);
     meta_ = std::move(meta);
     return success();
   }
 
-  MMDEPLOY_ERROR("no ModelImpl can read sdk_model {}", model_path);
+  MMDEPLOY_ERROR("no ModelImpl can read model {}", model_path);
   return Status(eNotSupported);
 }
 
@@ -56,7 +56,7 @@ Result<void> Model::Init(const void* buffer, size_t size) {
     }
     OUTCOME_TRY(auto meta, impl->ReadMeta());
 
-    MMDEPLOY_INFO("successfully load sdk model {}", entry.name);
+    MMDEPLOY_INFO("Successfully load model {}", entry.name);
     impl_ = std::move(impl);
     meta_ = std::move(meta);
     return success();

@@ -37,6 +37,15 @@ class NonCopyable {
   NonCopyable& operator=(const NonCopyable&) = delete;
 };
 
+class NonMovable {
+ public:
+  NonMovable() = default;
+  NonMovable(const NonCopyable&) = delete;
+  NonMovable& operator=(const NonCopyable&) = delete;
+  NonMovable(NonMovable&&) noexcept = delete;
+  NonMovable& operator=(NonMovable&&) noexcept = delete;
+};
+
 }  // namespace mmdeploy
 
 #endif  // !CORE_TYPES_H

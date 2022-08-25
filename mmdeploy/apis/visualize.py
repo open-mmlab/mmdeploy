@@ -16,7 +16,8 @@ def visualize_model(model_cfg: Union[str, mmcv.Config],
                     device: str,
                     backend: Optional[Backend] = None,
                     output_file: Optional[str] = None,
-                    show_result: bool = False):
+                    show_result: bool = False,
+                    **kwargs):
     """Run inference with PyTorch or backend model and show results.
 
     Examples:

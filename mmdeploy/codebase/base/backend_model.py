@@ -71,7 +71,7 @@ class BaseBackendModel(BaseModel, metaclass=ABCMeta):
             from mmdeploy.backend.pplnn import PPLNNWrapper
             return PPLNNWrapper(
                 onnx_file=backend_files[0],
-                algo_file=backend_files[1],
+                algo_file=backend_files[1] if len(backend_files) > 1 else None,
                 device=device,
                 output_names=output_names)
         elif backend == Backend.NCNN:
@@ -108,5 +108,12 @@ class BaseBackendModel(BaseModel, metaclass=ABCMeta):
                 model=backend_files[0],
                 input_names=input_names,
                 output_names=output_names)
+        elif backend == Backend.SNPE:
+            from mmdeploy.backend.snpe import SNPEWrapper
+            uri = None
+            if 'uri' in kwargs:
+                uri = kwargs['uri']
+            return SNPEWrapper(
+                dlc_file=backend_files[0], uri=uri, output_names=output_names)
         else:
             raise NotImplementedError(f'Unknown backend type: {backend.value}')

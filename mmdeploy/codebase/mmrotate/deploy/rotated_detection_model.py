@@ -75,6 +75,33 @@ class End2EndModel(BaseBackendModel):
             output_names=output_names,
             deploy_cfg=self.deploy_cfg)
 
+    @staticmethod
+    def __clear_outputs(
+        test_outputs: List[Union[torch.Tensor, np.ndarray]]
+    ) -> List[Union[List[torch.Tensor], List[np.ndarray]]]:
+        """Removes additional outputs and detections with zero and negative
+        score.
+
+        Args:
+            test_outputs (List[Union[torch.Tensor, np.ndarray]]):
+                outputs of forward_test.
+
+        Returns:
+            List[Union[List[torch.Tensor], List[np.ndarray]]]:
+                outputs with without zero score object.
+        """
+        batch_size = len(test_outputs[0])
+
+        num_outputs = len(test_outputs)
+        outputs = [[None for _ in range(batch_size)]
+                   for _ in range(num_outputs)]
+
+        for i in range(batch_size):
+            inds = test_outputs[0][i, :, -1] > 0.0
+            for output_id in range(num_outputs):
+                outputs[output_id][i] = test_outputs[output_id][i, inds, ...]
+        return outputs
+
     def forward(self, img: Sequence[torch.Tensor],
                 img_metas: Sequence[Sequence[dict]], *args, **kwargs) -> list:
         """Run forward inference.
@@ -91,6 +118,7 @@ class End2EndModel(BaseBackendModel):
         input_img = img[0].contiguous()
         img_metas = img_metas[0]
         outputs = self.forward_test(input_img, img_metas, *args, **kwargs)
+        outputs = End2EndModel.__clear_outputs(outputs)
         batch_dets, batch_labels = outputs[:2]
         batch_size = input_img.shape[0]
         rescale = kwargs.get('rescale', False)
@@ -184,7 +212,7 @@ class SDKEnd2EndModel(End2EndModel):
         """
         results = []
         dets, labels = self.wrapper.invoke(
-            [img[0].contiguous().detach().cpu().numpy()])[0]
+            img[0].contiguous().detach().cpu().numpy())
         dets_results = [dets[labels == i, :] for i in range(len(self.CLASSES))]
         results.append(dets_results)
 

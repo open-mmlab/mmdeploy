@@ -30,8 +30,6 @@ git clone -b master git@github.com:open-mmlab/mmdeploy.git --recursive
   git clone -b master https://github.com/open-mmlab/mmdeploy.git MMDeploy
   cd MMDeploy
   git submodule update --init --recursive
-
-
   ```
 
 ## 编译
@@ -42,3 +40,4 @@ git clone -b master git@github.com:open-mmlab/mmdeploy.git --recursive
 - [Windows](windows.md)
 - [Android-aarch64](android.md)
 - [NVIDIA Jetson](jetsons.md)
+- [Qcom SNPE](snpe.md)

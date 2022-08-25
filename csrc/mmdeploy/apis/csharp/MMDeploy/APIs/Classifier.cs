@@ -106,7 +106,7 @@ namespace MMDeploy
 
         private unsafe void FormatResult(int matCount, int* resultCount, Label* results, ref List<ClassifierOutput> output, out int total)
         {
-            total = 0;
+            total = matCount;
             for (int i = 0; i < matCount; i++)
             {
                 ClassifierOutput outi = default;
@@ -114,7 +114,6 @@ namespace MMDeploy
                 {
                     outi.Add(results->Id, results->Score);
                     results++;
-                    total++;
                 }
 
                 output.Add(outi);

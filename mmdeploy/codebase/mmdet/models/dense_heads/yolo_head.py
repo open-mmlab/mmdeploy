@@ -9,7 +9,7 @@ from torch import Tensor
 from mmdeploy.codebase.mmdet import (get_post_processing_params,
                                      multiclass_nms,
                                      pad_with_value_if_necessary)
-from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.core import FUNCTION_REWRITER, mark
 from mmdeploy.utils import Backend, is_dynamic_shape
 
 
@@ -49,7 +49,14 @@ def yolov3_head__predict_by_feat(ctx,
             tuple[Tensor, Tensor]: batch_mlvl_bboxes, batch_mlvl_scores
     """
     deploy_cfg = ctx.cfg
-    is_dynamic_flag = is_dynamic_shape(deploy_cfg)
+    # mark pred_maps
+    @mark('yolo_head', inputs=['pred_maps'])
+    def __mark_pred_maps(pred_maps):
+        return pred_maps
+
+    pred_maps = __mark_pred_maps(pred_maps)
+
+    is_dynamic_flag = is_dynamic_shape(ctx.cfg)
     num_levels = len(pred_maps)
     pred_maps_list = [pred_maps[i].detach() for i in range(num_levels)]
 

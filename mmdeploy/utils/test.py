@@ -502,11 +502,9 @@ def get_backend_outputs(ir_file_path: str,
         if not (ncnn_apis.is_available()
                 and ncnn_apis.is_custom_ops_available()):
             return None
-        work_dir = tempfile.TemporaryDirectory().name
-        param_path, bin_path = ncnn_apis.get_output_model_file(
-            ir_file_path, work_dir)
-        ir_file_name = osp.splitext(osp.split(ir_file_path)[1])[0]
-        ncnn_apis.from_onnx(ir_file_path, osp.join(work_dir, ir_file_name))
+        param_path, bin_path = ncnn_apis.get_output_model_file(ir_file_path)
+        ncnn_files_prefix = osp.splitext(ir_file_path)[0]
+        ncnn_apis.from_onnx(ir_file_path, ncnn_files_prefix)
         backend_files = [param_path, bin_path]
         backend_feats = flatten_model_inputs
         device = 'cpu'

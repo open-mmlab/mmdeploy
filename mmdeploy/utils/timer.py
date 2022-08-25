@@ -157,4 +157,4 @@ class TimeCounter:
             ['Max', latency_max, fps_max],
         ])
         results.float_format = '.3'
-        print(results, file=open('report.txt', 'a'))
+        print(results)

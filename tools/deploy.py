@@ -54,6 +54,10 @@ def parse_args():
         help='Image directory for quantize model.')
     parser.add_argument(
         '--quant', action='store_true', help='Quantize model to low bit.')
+    parser.add_argument(
+        '--uri',
+        default='192.168.1.1:60000',
+        help='Remote ipv4:port or ipv6:port for inference on edge device.')
     args = parser.parse_args()
     return args
 
@@ -221,8 +225,8 @@ def main():
 
         if not is_available_ncnn():
             logger.error('ncnn support is not available, please make sure \
-                1) `onnx2ncnn` existed in `PATH` 2) python import ncnn success'
-                         )
+                1) `mmdeploy_onnx2ncnn` existed in `PATH` \
+                2) python import ncnn success')
             exit(1)
 
         import mmdeploy.apis.ncnn as ncnn_api
@@ -265,6 +269,30 @@ def main():
                 backend_files += [quant_param, quant_bin]
             else:
                 backend_files += [model_param_path, model_bin_path]
+
+    elif backend == Backend.SNPE:
+        from mmdeploy.apis.snpe import is_available as is_available
+
+        if not is_available():
+            logger.error('snpe support is not available, please check \
+                1) `snpe-onnx-to-dlc` existed in `PATH` 2) snpe only support \
+                    ubuntu18.04')
+            exit(1)
+
+        import mmdeploy.apis.snpe as snpe_api
+        from mmdeploy.apis.snpe import get_env_key, get_output_model_file
+
+        if get_env_key() not in os.environ:
+            os.environ[get_env_key()] = args.uri
+
+        PIPELINE_MANAGER.set_log_level(log_level, [snpe_api.from_onnx])
+
+        backend_files = []
+        for onnx_path in ir_files:
+            dlc_path = get_output_model_file(onnx_path, args.work_dir)
+            onnx_name = osp.splitext(osp.split(onnx_path)[1])[0]
+            snpe_api.from_onnx(onnx_path, osp.join(args.work_dir, onnx_name))
+            backend_files = [dlc_path]
 
     elif backend == Backend.OPENVINO:
         from mmdeploy.apis.openvino import \
@@ -331,17 +359,19 @@ def main():
 
     # for headless installation.
     if not headless:
-        # visualize model of the backend
+        extra = dict(
+            backend=backend,
+            output_file=osp.join(args.work_dir, f'output_{backend.value}.jpg'),
+            show_result=args.show)
+        if backend == Backend.SNPE:
+            extra['uri'] = args.uri
+
         create_process(
             f'visualize {backend.value} model',
             target=visualize_model,
             args=(model_cfg_path, deploy_cfg_path, backend_files,
                   args.test_img, args.device),
-            kwargs=dict(
-                backend=backend,
-                output_file=osp.join(args.work_dir,
-                                     f'output_{backend.value}.jpg'),
-                show_result=args.show),
+            kwargs=extra,
             ret_value=ret_value)
 
         # visualize pytorch model

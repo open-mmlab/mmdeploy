@@ -65,9 +65,13 @@ target_include_directories(mmdeploy_tests
         PRIVATE ${CMAKE_SOURCE_DIR}/third_party/catch2)
 target_include_directories(mmdeploy_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
+if (NOT (MMDEPLOY_SHARED_LIBS OR MSVC))
+    target_compile_options(mmdeploy_tests PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-fvisibility=hidden>)
+endif ()
+
 mmdeploy_load_static(mmdeploy_tests MMDeployStaticModules)
 mmdeploy_load_dynamic(mmdeploy_tests MMDeployDynamicModules)
 target_link_libraries(mmdeploy_tests PRIVATE
-        MMDeployLibs
-        mmdeploy_transform
-        mmdeploy_opencv_utils)
+    MMDeployLibs
+    mmdeploy_transform
+    mmdeploy_opencv_utils)

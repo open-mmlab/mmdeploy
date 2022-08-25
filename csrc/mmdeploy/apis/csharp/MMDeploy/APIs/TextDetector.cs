@@ -184,7 +184,7 @@ namespace MMDeploy
 
         private unsafe void FormatResult(int matCount, int* resultCount, TextDetect* results, ref List<TextDetectorOutput> output, out int total)
         {
-            total = 0;
+            total = matCount;
             for (int i = 0; i < matCount; i++)
             {
                 TextDetectorOutput outi = default;
@@ -192,7 +192,6 @@ namespace MMDeploy
                 {
                     outi.Add(results);
                     results++;
-                    total++;
                 }
 
                 output.Add(outi);

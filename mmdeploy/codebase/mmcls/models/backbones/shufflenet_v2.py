@@ -1,25 +1,17 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
-from mmcls.models.utils import channel_shuffle
 
 from mmdeploy.core import FUNCTION_REWRITER
-from mmdeploy.utils import Backend
 
 
-# torch.chunk will export dynamic shape slice, which will lead integer input
-# on ncnn backend. So the model needs to rewrite.
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmcls.models.backbones.shufflenet_v2.InvertedResidual.forward',
-    backend=Backend.NCNN.value)
-@FUNCTION_REWRITER.register_rewriter(
-    func_name='mmcls.models.backbones.shufflenet_v2.InvertedResidual.forward',
-    backend=Backend.TORCHSCRIPT.value)
-def shufflenetv2_backbone__forward__ncnn(ctx, self, x):
-    """Rewrite `forward` of InvertedResidual used in shufflenet_v2 for ncnn
-    backend.
+    func_name='mmcls.models.backbones.shufflenet_v2.InvertedResidual.forward')
+def shufflenetv2_backbone__forward__default(ctx, self, x):
+    """Rewrite `forward` of InvertedResidual used in shufflenet_v2.
 
     The chunk in original InvertedResidual.forward will convert to dynamic
-    `Slice` operator in ONNX, which will raise error in ncnn.
+    `Slice` operator in ONNX, which will raise error in ncnn, torchscript
+     and tensorrt. Here we replace `chunk` with `split`.
 
     Args:
         ctx (ContextCaller): The context with additional information.
@@ -29,6 +21,7 @@ def shufflenetv2_backbone__forward__ncnn(ctx, self, x):
         out (Tensor): A feature map output from InvertedResidual. The tensor
         shape (N, Cout, H, W).
     """
+    from mmcls.models.utils import channel_shuffle
     if self.stride > 1:
         out = torch.cat((self.branch1(x), self.branch2(x)), dim=1)
     else:

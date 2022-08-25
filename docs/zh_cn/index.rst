@@ -40,6 +40,7 @@
    04-developer-guide/support_new_model.md
    04-developer-guide/support_new_backend.md
    04-developer-guide/do_regression_test.md
+   04-developer-guide/partition_model.md
 
 .. toctree::
    :maxdepth: 1
@@ -50,6 +51,12 @@
    05-tutorial/03_pytorch2onnx.md
    05-tutorial/04_onnx_custom_op.md
    05-tutorial/05_onnx_model_editing.md
+
+.. toctree::
+   :maxdepth: 1
+   :caption: 附录
+
+   appendix/cross_build_snpe_service.md
 
 .. toctree::
    :maxdepth: 1

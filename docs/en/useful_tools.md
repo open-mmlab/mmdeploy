@@ -12,7 +12,7 @@ python tools/torch2onnx.py \
     ${MODEL_CFG} \
     ${CHECKPOINT} \
     ${INPUT_IMG} \
-    ${OUTPUT} \
+    --work-dir ${WORK_DIR} \
     --device cpu \
     --log-level INFO
 ```
@@ -23,7 +23,7 @@ python tools/torch2onnx.py \
 - `model_cfg` : The path of model config file in OpenMMLab codebase.
 - `checkpoint` : The path of the model checkpoint file.
 - `img` : The path of the image file used to convert the model.
-- `output` : The path of the output ONNX model.
+- `--work-dir` : Directory to save output ONNX models Default is `./work-dir`.
 - `--device` : The device used for conversion. If not specified, it will be set to `cpu`.
 - `--log-level` : To set log level which in `'CRITICAL', 'FATAL', 'ERROR', 'WARN', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'`. If not specified, it will be set to `INFO`.
 
@@ -128,3 +128,69 @@ python tools/onnx2ncnn.py \
 - `output_param` : The converted `ncnn` param path.
 - `output_bin` : The converted `ncnn` bin path.
 - `--log-level` : To set log level which in `'CRITICAL', 'FATAL', 'ERROR', 'WARN', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'`. If not specified, it will be set to `INFO`.
+
+## profile
+
+This tool helps to test latency of models with PyTorch, TensorRT and other backends. Note that the pre- and post-processing is excluded when computing inference latency.
+
+### Usage
+
+```bash
+python tools/profile.py \
+    ${DEPLOY_CFG} \
+    ${MODEL_CFG} \
+    ${IMAGE_DIR} \
+    --model ${MODEL} \
+    --device ${DEVICE} \
+    --shape ${SHAPE} \
+    --num-iter {NUM_ITER} \
+    --warmup {WARMUP}
+    --cfg-options ${CFG_OPTIONS}
+```
+
+### Description of all arguments
+
+- `deploy_cfg` : The path of the deploy config file in MMDeploy codebase.
+- `model_cfg` : The path of model config file in OpenMMLab codebase.
+- `image_dir` : The directory to image files that used to test the model.
+- `--model` : The path of the model to be tested.
+- `--shape` : Input shape of the model by `HxW`, e.g., `800x1344`. If not specified, it would use `input_shape` from deploy config.
+- `--num-iter` : Number of iteration to run inference. Default is `100`.
+- `--warmup` : Number of iteration to warm-up the machine. Default is `10`.
+- `--device` : The device type. If not specified, it will be set to `cuda:0`.
+- `--cfg-options` : Optional key-value pairs to be overrode for model config.
+
+### Example:
+
+```shell
+python tools/profile.py \
+    configs/mmcls/classification_tensorrt_dynamic-224x224-224x224.py \
+    ../mmclassification/configs/resnet/resnet18_8xb32_in1k.py \
+    ../mmdetection/demo \
+    --model work-dirs/mmcls/resnet/trt/end2end.engine \
+    --device cuda \
+    --shape 224x224 \
+    --num-iter 100 \
+    --warmup 10 \
+```
+
+And the output look like this:
+
+```text
+----- Settings:
++------------+---------+
+| batch size |    1    |
+|   shape    | 224x224 |
+| iterations |   100   |
+|   warmup   |    10   |
++------------+---------+
+----- Results:
++--------+------------+---------+
+| Stats  | Latency/ms |   FPS   |
++--------+------------+---------+
+|  Mean  |   1.535    | 651.656 |
+| Median |   1.665    | 600.569 |
+|  Min   |   1.308    | 764.341 |
+|  Max   |   1.689    | 591.983 |
++--------+------------+---------+
+```
