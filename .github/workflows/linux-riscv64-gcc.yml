@@ -35,7 +35,7 @@ jobs:
           cd opencv
           mkdir build_riscv && cd build_riscv
           cmake .. \
-            -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE/mmdeploy/cmake/toolchains/riscv64-linux-gnu.cmake \
+            -DCMAKE_TOOLCHAIN_FILE=$GITHUB_WORKSPACE/cmake/toolchains/riscv64-linux-gnu.cmake \
             -DCMAKE_INSTALL_PREFIX=install \
             -DBUILD_PERF_TESTS=OFF \
             -DBUILD_SHARED_LIBS=OFF \
