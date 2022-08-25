@@ -32,6 +32,12 @@ pipeline {
                 sh "tests/jenkins/scripts/test_convert.sh '${params.DOCKER_IMAGE}' '${params.CODEBASES}'"
             }
         }
+        
+        stage('Prebuild') {
+            steps {
+                sh "tests/jenkins/scripts/test_prebuild.sh '${params.DOCKER_IMAGE}'"
+            }
+        }
     }
   }
 
