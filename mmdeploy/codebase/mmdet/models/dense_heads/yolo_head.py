@@ -3,12 +3,12 @@ from typing import Sequence
 
 import numpy as np
 import torch
-from mmdet.core.utils.typing import OptConfigType
+from mmdet.utils.typing import OptConfigType
 from torch import Tensor
 
 from mmdeploy.codebase.mmdet import (get_post_processing_params,
-                                     multiclass_nms,
                                      pad_with_value_if_necessary)
+from mmdeploy.codebase.mmdet.models.layers import multiclass_nms
 from mmdeploy.core import FUNCTION_REWRITER, mark
 from mmdeploy.utils import Backend, is_dynamic_shape
 

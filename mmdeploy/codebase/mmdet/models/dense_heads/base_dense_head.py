@@ -2,14 +2,16 @@
 from typing import List, Optional
 
 import torch
-from mmdet.core.bbox.coder import (DeltaXYWHBBoxCoder, DistancePointBBoxCoder,
-                                   TBLRBBoxCoder)
-from mmdet.core.bbox.transforms import distance2bbox
+from mmdet.models.task_modules.coders import (DeltaXYWHBBoxCoder,
+                                              DistancePointBBoxCoder,
+                                              TBLRBBoxCoder)
+from mmdet.structures.bbox.transforms import distance2bbox
 from mmengine import ConfigDict
 from torch import Tensor
 
-from mmdeploy.codebase.mmdet import get_post_processing_params, multiclass_nms
-from mmdeploy.codebase.mmdet.core.ops import ncnn_detection_output_forward
+from mmdeploy.codebase.mmdet import get_post_processing_params
+from mmdeploy.codebase.mmdet.models.layers import multiclass_nms
+from mmdeploy.codebase.mmdet.ops import ncnn_detection_output_forward
 from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.utils import Backend, is_dynamic_shape
 
