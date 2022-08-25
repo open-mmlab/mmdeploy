@@ -1096,3 +1096,36 @@ def test_trt_grid_priors(backend, strides, input_list=None, save_dir=None):
             3: 'w'
         }),
         save_dir=save_dir)
+
+
+@pytest.mark.parametrize('backend', [TEST_TENSORRT])
+def test_dot_product_attention(backend, save_dir=None):
+    backend.check_env()
+
+    B = 2
+    Nt = 4
+    Ns = 4
+    E = 2
+    query = torch.rand(B, Nt, E)
+    key = torch.rand(B, Ns, E)
+    value = torch.rand(B, Ns, E)
+    mask = torch.rand(B, Nt, Ns)
+
+    def wrapped_function(query, key, value, mask=None):
+        from torch.nn.functional import _scaled_dot_product_attention
+        return _scaled_dot_product_attention(query, key, value, mask)
+
+    wrapped_model = WrapFunction(wrapped_function).eval()
+
+    with RewriterContext(
+            Config({'backend_config': {
+                'type': backend.backend_name
+            }}),
+            backend=backend.backend_name,
+            opset=11):
+        backend.run_and_validate(
+            wrapped_model, [query, key, value, mask],
+            'dot_product_attention',
+            input_names=['query', 'key', 'value', 'mask'],
+            output_names=['weight', 'out_mask'],
+            save_dir=save_dir)

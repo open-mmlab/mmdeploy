@@ -78,7 +78,7 @@ void ScaledDotProductAttentionTRT::configurePlugin(const nvinfer1::DynamicPlugin
   if (nbInputs != 4) {
     mask_dim = 0;
   } else {
-    mask_dim = in->desc.dims.nbDims;
+    mask_dim = in[3].desc.dims.nbDims;
   }
 }
 
@@ -96,7 +96,17 @@ int ScaledDotProductAttentionTRT::enqueue(const nvinfer1::PluginTensorDesc *inpu
   const void *query = inputs[0];
   const void *key = inputs[1];
   const void *value = inputs[2];
-  const void *mask = mask_dim == 0 ? nullptr : inputs[3];
+  const void *mask = nullptr;
+
+  if (mask_dim > 0) {
+    mask = inputs[3];
+    // check if mask need broadcast
+    if (inputDesc[3].dims.nbDims == 2 || inputDesc[3].dims.d[0] == 1) {
+      mask_dim = 2;
+    } else {
+      mask_dim = 3;
+    }
+  }
 
   void *weight = outputs[0];
   void *attn = outputs[1];

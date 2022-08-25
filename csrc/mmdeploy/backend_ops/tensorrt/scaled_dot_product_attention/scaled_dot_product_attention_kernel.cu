@@ -1,4 +1,9 @@
 // Copyright (c) OpenMMLab. All rights reserved
+#include <thrust/functional.h>
+#include <thrust/iterator/counting_iterator.h>
+#include <thrust/iterator/transform_iterator.h>
+#include <thrust/transform.h>
+
 #include <cmath>
 #include <vector>
 
@@ -40,6 +45,16 @@ cublasStatus_t cublasgemmStridedBatchedWrap<__half>(cublasHandle_t handle, cubla
 }
 
 template <typename scalar_t>
+struct get_mask : public thrust::unary_function<int, scalar_t> {
+  const scalar_t* _mask;
+  int32_t _size;
+
+  get_mask(const scalar_t* mask, int32_t size) : _mask(mask), _size(size) {}
+
+  __host__ __device__ scalar_t operator()(int x) const { return _mask[x % _size]; }
+};
+
+template <typename scalar_t>
 void dot_product_attention_impl(const scalar_t* query, const scalar_t* key, const scalar_t* value,
                                 const scalar_t* mask, scalar_t* attn, scalar_t* weight, int B,
                                 int Nt, int Ns, int E, int mask_dim,
@@ -55,6 +70,18 @@ void dot_product_attention_impl(const scalar_t* query, const scalar_t* key, cons
     auto beta = scalar_t(0);
     cublasgemmStridedBatchedWrap(cublas_handle, CUBLAS_OP_T, CUBLAS_OP_N, m, n, k, &alpha, key, k,
                                  Ns * E, query, k, Nt * E, &beta, attn, m, Nt * Ns, B);
+  }
+
+  if (mask_dim != 0 && mask != nullptr) {
+    thrust::plus<scalar_t> op;
+    if (mask_dim == 3) {
+      transform(thrust::cuda::par.on(stream), attn, attn + B * Nt * Ns, mask, attn, op);
+    } else if (mask_dim == 2) {
+      auto counting_iter = thrust::make_counting_iterator(0);
+      auto trans_iter =
+          thrust::make_transform_iterator(counting_iter, get_mask<scalar_t>(mask, Nt * Ns));
+      transform(thrust::cuda::par.on(stream), attn, attn + B * Nt * Ns, trans_iter, attn, op);
+    }
   }
 
   {
