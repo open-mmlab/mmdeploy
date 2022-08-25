@@ -146,4 +146,6 @@ RUN /opt/conda/bin/conda init bash && \
     do \
         /opt/conda/bin/conda create --name torch${TORCH_VERSION_LIST[$i]} --clone base -y; \
         /opt/conda/bin/conda install -n torch${TORCH_VERSION_LIST[$i]} -y pytorch==${TORCH_VERSION_LIST[i]} torchvision==${TORCHVISION_VERSION_LIST[i]} cudatoolkit=${CUDA} -c pytorch -c conda-forge; \
-    done 
+    done
+
+### install mmdeploy 

@@ -1,5 +1,10 @@
 #!/bin/bash
 
+#### to be removed
+apt install g++-7 gcc-7
+export pplcv_DIR=/root/workspace/ppl.cv/cuda-build/install/lib/cmake/ppl
+export CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-11.3
+
 cd /root/workspace/mmdeploy
 
 /opt/conda/envs/torch1.10.0/bin/mim install mmcv
