@@ -40,4 +40,3 @@ jobs:
         run: |
           python3 tools/scripts/build_ubuntu_x64_ort.py
           python3 -c 'import mmdeploy.apis.onnxruntime as ort_api; assert ort_api.is_available() and ort_api.is_custom_ops_available()'
-          python3 tools/check_env.py
