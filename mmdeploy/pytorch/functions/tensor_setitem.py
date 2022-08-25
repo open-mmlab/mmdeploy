@@ -4,7 +4,7 @@ from typing import Sequence
 import torch
 from packaging.version import parse
 
-from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.core import FUNCTION_REWRITER, SYMBOLIC_REWRITER
 
 
 @FUNCTION_REWRITER.register_rewriter(func_name='torch.Tensor.__setitem__')
@@ -71,3 +71,10 @@ def tensor__setitem__default(ctx, self, key, value):
     # self assign
     # Note that set item does not return any value
     self[...] = out
+
+
+if parse(torch.__version__) >= parse('1.12.0'):
+
+    @SYMBOLIC_REWRITER.register_symbolic('copy', is_pytorch=True)
+    def copy__default(ctx, g, x, y, non_blocking):
+        return x
