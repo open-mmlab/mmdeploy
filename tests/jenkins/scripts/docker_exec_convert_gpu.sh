@@ -54,7 +54,7 @@ cd ../
 for TORCH_VERSION in 1.10.0 1.11.0
 do
     /opt/conda/envs/torch${TORCH_VERSION}/bin/pip install -v -e .
-    /opt/conda/envs/torch${TORCH_VERSION}/bin/pip install -r requirements/tests.txt requirements/build.txt requirements/runtime.txt requirements/
+    /opt/conda/envs/torch${TORCH_VERSION}/bin/pip install -r requirements/tests.txt requirements/build.txt requirements/runtime.txt 
     ## build ${codebase}
     /opt/conda/envs/torch${TORCH_VERSION}/bin/mim install ${codebase}
     cd ../${codebase_fullname} && /opt/conda/bin/pip install -v -e . && cd /root/workspace/mmdeploy
