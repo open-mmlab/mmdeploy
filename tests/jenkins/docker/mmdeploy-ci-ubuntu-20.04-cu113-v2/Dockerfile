@@ -63,7 +63,8 @@ RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Mini
     /opt/conda/bin/conda install -y python=${PYTHON_VERSION} && \
     /opt/conda/bin/conda clean -ya
 
-### change the 
+### change the pip source
+RUN /opt/conda/bin/pip config set global.index-url https://mirrors.aliyun.com/pypi/simple 
 
 ENV PATH=/opt/conda/bin:$PATH
 
