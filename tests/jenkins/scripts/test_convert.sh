@@ -10,12 +10,14 @@ for codebase in ${codebase_list[@]}
 do
     log_dir=/data2/regression_log/$(date +%Y%m%d)/$(date +%Y%m%d%H%M)
     mkdir -p ${log_dir}
+    container_name=convert-${codebase}-$(date +%Y%m%d%H%M)
     container_id=$(
         docker run -itd \
             --gpus all \
             -v /data2/checkpoints/${codebase}:/root/workspace/mmdeploy_checkpoints \
             -v ${log_dir}:/root/workspace/mmdeploy_regression_working_dir \
             -v /data2/benchmark:/root/workspace/mmdeploy_benchmark \
+            --name ${container_name} \
             ${docker_image} /bin/bash
     )
     echo "container_id=${container_id}"
