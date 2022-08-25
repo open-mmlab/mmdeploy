@@ -63,6 +63,8 @@ RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Mini
     /opt/conda/bin/conda install -y python=${PYTHON_VERSION} && \
     /opt/conda/bin/conda clean -ya
 
+### change the 
+
 ENV PATH=/opt/conda/bin:$PATH
 
 ### install jdk1.8
@@ -142,11 +144,9 @@ ENV LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
 RUN /opt/conda/bin/pip install openmim
 
 RUN /opt/conda/bin/conda init bash && \
-    /opt/conda/bin/conda create --clone base -n torch1.9.0 -y && \
-    /opt/conda/bin/conda install -n torch1.9.0 -y pytorch==1.9.0 torchvision==0.10.0 cudatoolkit=${CUDA} -c pytorch -c conda-forge && \
     /opt/conda/bin/conda create --clone base -n torch1.10.0 -y && \
-    /opt/conda/bin/conda install -n torch1.10.0 -y pytorch==1.10.0 torchvision==0.11.0 cudatoolkit=${CUDA} -c pytorch -c conda-forge && \
+    /opt/conda/bin/pip install torch==1.10.0+cu113 torchvision==0.11.0+cu113 -f https://download.pytorch.org/whl/torch_stable.html && \
     /opt/conda/bin/conda create --clone base -n torch1.11.0 -y && \
-    /opt/conda/bin/conda install -n torch1.11.0 -y pytorch==1.11.0 torchvision==0.12.0 cudatoolkit=${CUDA} -c pytorch -c conda-forge && \
+    /opt/conda/bin/pip install torch==1.11.0+cu113 torchvision==0.12.0+cu113 -f https://download.pytorch.org/whl/torch_stable.html && \
     /opt/conda/bin/conda create --clone base -n torch1.12.0 -y && \
-    /opt/conda/bin/conda install -n torch1.12.0 -y pytorch==1.12.0 torchvision==0.13.0 cudatoolkit=${CUDA} -c pytorch -c conda-forge
+    /opt/conda/bin/pip install torch==1.12.0+cu113 torchvision==0.13.0+cu113 -f https://download.pytorch.org/whl/torch_stable.html && \
