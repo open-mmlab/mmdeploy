@@ -94,7 +94,7 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
 
     load_tensorrt_plugin()
     # create builder and network
-    logger = trt.Logger(log_level)
+    logger = trt.Logger(trt.Logger.INFO)
     builder = trt.Builder(logger)
     EXPLICIT_BATCH = 1 << (int)(
         trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH)
@@ -118,6 +118,15 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
 
     config = builder.create_builder_config()
     config.max_workspace_size = max_workspace_size
+    try:
+        import torch
+        cuda_version = torch.version.cuda
+        version_major = int(cuda_version.split('.')[0])
+        if version_major < 11:
+            # cu11 support cublasLt, so cudnn heuristic tactic should disable CUBLAS_LT # noqa E501
+            config.set_tactic_sources(1 << int(trt.TacticSource.CUBLAS))
+    except Exception:
+        pass
     profile = builder.create_optimization_profile()
 
     for input_name, param in input_shapes.items():
