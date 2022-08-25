@@ -1,5 +1,6 @@
 #!/bin/bash
 
+source ~/.bashrc
 ## func
 function getFullName() {
     local codebase_=$1
@@ -19,7 +20,7 @@ export codebase=$1
 getFullName $codebase
 # backends=$2
 
-source ~/.bashrc
+
 
 ## clone ${codebase}
 cd /root/workspace
