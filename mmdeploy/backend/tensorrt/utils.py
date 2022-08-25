@@ -124,7 +124,9 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
         version_major = int(cuda_version.split('.')[0])
         if version_major < 11:
             # cu11 support cublasLt, so cudnn heuristic tactic should disable CUBLAS_LT # noqa E501
-            config.set_tactic_sources(1 << int(trt.TacticSource.CUBLAS))
+            tactic_source = config.get_tactic_sources() - (
+                1 << int(trt.TacticSource.CUBLAS_LT))
+            config.set_tactic_sources(tactic_source)
     except Exception:
         pass
     profile = builder.create_optimization_profile()
