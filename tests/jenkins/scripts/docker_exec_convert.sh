@@ -26,7 +26,7 @@ git clone https://github.com/open-mmlab/${codebase_fullname}.git
 
 ## build mmdeploy
 cd mmdeploy
-mkdir -p build
+mkdir -p builde4
 cd build
 cmake .. -DMMDEPLOY_BUILD_SDK=ON -DMMDEPLOY_BUILD_EXAMPLES=ON \
         -DMMDEPLOY_BUILD_SDK_MONOLITHIC=ON -DMMDEPLOY_BUILD_TEST=ON \
@@ -35,7 +35,8 @@ cmake .. -DMMDEPLOY_BUILD_SDK=ON -DMMDEPLOY_BUILD_EXAMPLES=ON \
         -DMMDEPLOY_TARGET_BACKENDS="ort;pplnn;openvino;ncnn" \
         -DMMDEPLOY_SHARED_LIBS=OFF \
         -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} \
-        -DPPLNN_DIR=${PPLNN_DIR}
+        -DPPLNN_DIR=${PPLNN_DIR} 
+
 make -j $(nproc) && make install
 cd ../
 conda init bash
@@ -52,7 +53,7 @@ do
     conda run --name torch${TORCH_VERSION} "
         python ./tools/regression_test.py \
             --codebase ${codebase} \
-            --work-dir "../mmdeploy_regression_working_dir/${codebase}/torch${TORCH_VERSION}"
+            --work-dir "../mmdeploy_regression_working_dir/${codebase}/torch${TORCH_VERSION}" > convert.log
     "
 
 
