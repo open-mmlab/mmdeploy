@@ -63,9 +63,6 @@ def install_pplnn(dep_dir, build_cuda):
             './build.sh -DPPLNN_USE_X86_64=ON  -DPPLNN_ENABLE_PYTHON_API=ON'  # noqa: E501
         )
 
-    if not os.path.exists('/tmp'):
-        # mkdir for github action CI
-        os.system('mkdir -p /tmp/pyppl-package')
     os.system('cd python/package && ./build.sh')
     os.system(
         'cd /tmp/pyppl-package/dist && python3 -m pip install pyppl*.whl --force-reinstall'  # noqa: E501

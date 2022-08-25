@@ -67,6 +67,7 @@ def ensure_base_env(work_dir, dep_dir):
     print(description)
 
     os.system('python3 -m ensurepip')
+    os.system('python3 -m pip install wheel')
 
     sudo = 'sudo'
     if 'root' in cmd_result('whoami'):
