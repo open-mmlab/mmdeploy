@@ -11,7 +11,7 @@ cd /root/workspace/mmdeploy
 
 /opt/conda/envs/torch1.10.0/bin/mim install mmdet==v2.20.0
 cd /root/workspace
-git clone --depth 1 -branch v2.20.0 https://github.com/open-mmlab/mmdetection.git
+git clone --depth 1 --branch v2.20.0 https://github.com/open-mmlab/mmdetection.git
 
 cd /root/workspace/mmdeploy
 
