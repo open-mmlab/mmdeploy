@@ -92,10 +92,12 @@ do
     ## build ${codebase}
     mim install ${codebase}
     cd ../${codebase_fullname} && pip install -v -e . && cd /root/workspace/mmdeploy
-    ## start regression 
-    mkdir -p root/workspace/mmdeploy_regression_working_dir/${codebase}/torch${TORCH_VERSION}
+    ## start regression
+    log_dir=root/workspace/mmdeploy_regression_working_dir/${codebase}/torch${TORCH_VERSION}
+    log_path=${log_dir}/convert.log
+    mkdir -p ${log_dir}
     python ./tools/regression_test.py \
         --codebase ${codebase} \
-        --work-dir "../mmdeploy_regression_working_dir/${codebase}/torch${TORCH_VERSION}" \
-        --performance > root/workspace/mmdeploy_regression_working_dir/${codebase}/torch${TORCH_VERSION}/convert.log 2>&1 &
+        --work-dir ${log_dir} \
+        --performance > ${log_path}
 done
