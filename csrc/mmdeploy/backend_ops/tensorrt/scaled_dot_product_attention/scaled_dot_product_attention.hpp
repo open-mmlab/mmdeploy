@@ -44,9 +44,15 @@ class ScaledDotProductAttentionTRT : public TRTPluginBase {
   int getNbOutputs() const TRT_NOEXCEPT override;
   size_t getSerializationSize() const TRT_NOEXCEPT override;
   void serialize(void *buffer) const TRT_NOEXCEPT override;
+  void attachToContext(cudnnContext *cudnn, cublasContext *cublas,
+                       nvinfer1::IGpuAllocator *allocator) TRT_NOEXCEPT override;
+  void detachFromContext() TRT_NOEXCEPT override;
 
  private:
   int mask_dim;
+  cublasHandle_t _cublas_handle{};
+  cudnnHandle_t _cudnn_handle{};
+  cudnnTensorDescriptor_t _x_desc{}, _y_desc{};
 };
 
 class ScaledDotProductAttentionTRTCreator : public TRTPluginCreatorBase {

@@ -53,6 +53,24 @@ bool ScaledDotProductAttentionTRT::supportsFormatCombination(
     return ioDesc[pos].type == ioDesc[0].type && ioDesc[pos].format == ioDesc[0].format;
   }
 }
+
+// Attach the plugin object to an execution context and grant the plugin the
+// access to some context resource.
+void ScaledDotProductAttentionTRT::attachToContext(cudnnContext *cudnnContext,
+                                                   cublasContext *cublasContext,
+                                                   IGpuAllocator *gpuAllocator) TRT_NOEXCEPT {
+  _cublas_handle = cublasContext;
+  _cudnn_handle = cudnnContext;
+  cudnnCreateTensorDescriptor(&_x_desc);
+  cudnnCreateTensorDescriptor(&_y_desc);
+}
+
+// Detach the plugin object from its execution context.
+void ScaledDotProductAttentionTRT::detachFromContext() TRT_NOEXCEPT {
+  cudnnDestroyTensorDescriptor(_y_desc);
+  cudnnDestroyTensorDescriptor(_x_desc);
+}
+
 void ScaledDotProductAttentionTRT::configurePlugin(const nvinfer1::DynamicPluginTensorDesc *in,
                                                    int nbInputs,
                                                    const nvinfer1::DynamicPluginTensorDesc *out,
@@ -68,6 +86,8 @@ int ScaledDotProductAttentionTRT::enqueue(const nvinfer1::PluginTensorDesc *inpu
                                           const nvinfer1::PluginTensorDesc *outputDesc,
                                           const void *const *inputs, void *const *outputs,
                                           void *workSpace, cudaStream_t stream) TRT_NOEXCEPT {
+  cudnnSetStream(_cudnn_handle, stream);
+  cublasSetStream_v2(_cublas_handle, stream);
   int B = inputDesc[0].dims.d[0];  // batch * heads
   int Nt = inputDesc[0].dims.d[1];
   int Ns = inputDesc[1].dims.d[1];
@@ -78,15 +98,18 @@ int ScaledDotProductAttentionTRT::enqueue(const nvinfer1::PluginTensorDesc *inpu
   const void *value = inputs[2];
   const void *mask = mask_dim == 0 ? nullptr : inputs[3];
 
-  void *attn = outputs[0];
-  void *weight = outputs[1];
+  void *weight = outputs[0];
+  void *attn = outputs[1];
 
   auto data_type = inputDesc[0].type;
+  cudnnDataType_t cudnn_dtype{};
+  convert_trt2cudnn_dtype(data_type, &cudnn_dtype);
   switch (data_type) {
     case nvinfer1::DataType::kFLOAT:
       dot_product_attention_impl<float>((float *)query, (float *)key, (float *)value, (float *)mask,
                                         (float *)attn, (float *)weight, B, Nt, Ns, E, mask_dim,
-                                        stream);
+                                        _x_desc, _y_desc, cudnn_dtype, stream, _cublas_handle,
+                                        _cudnn_handle);
       break;
     default:
       return 1;
