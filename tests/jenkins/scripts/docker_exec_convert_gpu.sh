@@ -49,7 +49,6 @@ cmake .. -DMMDEPLOY_BUILD_SDK=ON \
 make -j $(nproc) && make install
 cd ../
 
-conda init bash
 ## start convert
 for TORCH_VERSION in 1.9.0 1.10.0
 do
