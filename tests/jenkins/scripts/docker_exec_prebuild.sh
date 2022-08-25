@@ -12,8 +12,7 @@ else
         export PATH="/opt/conda/bin:$PATH"
     fi
 fi
-unset __conda_setup && conda activate torch1.10.0 && conda env list
-
+unset __conda_setup
 
 #### to be removed
 apt install -y g++-7 gcc-7
