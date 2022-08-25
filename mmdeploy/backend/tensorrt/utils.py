@@ -94,7 +94,7 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
 
     load_tensorrt_plugin()
     # create builder and network
-    logger = trt.Logger(trt.Logger.INFO)
+    logger = trt.Logger(log_level)
     builder = trt.Builder(logger)
     EXPLICIT_BATCH = 1 << (int)(
         trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH)
