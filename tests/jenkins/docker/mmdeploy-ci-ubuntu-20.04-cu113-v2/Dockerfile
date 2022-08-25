@@ -77,6 +77,7 @@ RUN wget http://${HOST}/cudnn-11.3-linux-x64-v8.2.1.32.tgz && \
     cp -r cuda/lib64/libcudnn* /usr/local/cuda-11.3/lib64/
 ENV CUDNN_DIR=/root/workspace/cuda
 ENV LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
+ENV LD_LIBRARY_PATH=/usr/local/cuda-11.3/lib64/:$LD_LIBRARY_PATH
 ENV CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-11.3
 
 ### get onnxruntime

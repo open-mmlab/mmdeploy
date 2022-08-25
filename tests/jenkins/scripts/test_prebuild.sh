@@ -9,6 +9,7 @@ mkdir -p ${log_dir}
 container_name=prebuild-$(date +%Y%m%d%H%M)
 container_id=$(
     docker run \
+        --gpus all \
         -itd \
         -v /data2/shared/prebuilt-mmdeploy:/root/workspace/prebuild-mmdeploy \
         --name ${container_name} \
