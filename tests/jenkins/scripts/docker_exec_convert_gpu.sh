@@ -58,7 +58,8 @@ do
     ## build ${codebase}
     /opt/conda/envs/torch${TORCH_VERSION}/bin/mim install ${codebase}
     cd ../${codebase_fullname} && /opt/conda/bin/pip install -v -e . && cd ../
-    ## start regression  
+    ## start regression 
+    mkdir -p root/workspace/mmdeploy_regression_working_dir/${codebase}/torch${TORCH_VERSION}/convert.log
     conda run --name torch${TORCH_VERSION} "
         python ./tools/regression_test.py \
             --codebase ${codebase} \
