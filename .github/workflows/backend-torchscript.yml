@@ -39,3 +39,4 @@ jobs:
       - name: Install mmdeploy
         run: |
           python3 tools/scripts/build_ubuntu_x64_torchscript.py
+          python3 tools/check_env.py
