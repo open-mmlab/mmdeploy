@@ -23,7 +23,7 @@ getFullName $codebase
 cd /root/workspace
 git clone https://github.com/open-mmlab/${codebase_fullname}.git
 
-#### cp cudnn,wait to be removed
+#### wait to be removed
 cp -r cuda/include/cudnn* /usr/local/cuda-11.3/include/
 export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 
@@ -57,7 +57,7 @@ do
     /opt/conda/envs/torch${TORCH_VERSION}/bin/pip install -r requirements/tests.txt requirements/build.txt requirements/runtime.txt requirements/
     ## build ${codebase}
     /opt/conda/envs/torch${TORCH_VERSION}/bin/mim install ${codebase}
-    cd ../${codebase_fullname} && /opt/conda/bin/pip install -v -e . && cd ../
+    cd ../${codebase_fullname} && /opt/conda/bin/pip install -v -e . && cd /root/workspace/mmdeploy
     ## start regression 
     mkdir -p root/workspace/mmdeploy_regression_working_dir/${codebase}/torch${TORCH_VERSION}/convert.log
     conda run --name torch${TORCH_VERSION} "
