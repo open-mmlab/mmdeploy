@@ -47,7 +47,7 @@ def install_pyncnn(dep_dir):
     # git clone
     if not os.path.exists('ncnn'):
         os.system(
-            'git clone https://github.com/tencent/ncnn && cd ncnn && git checkout 20220729'  # noqa: E501
+            'git clone --depth 1 --branch 20220729  https://github.com/tencent/ncnn && cd ncnn'  # noqa: E501
         )
 
     ncnn_dir = os.path.join(dep_dir, 'ncnn')

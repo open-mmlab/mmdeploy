@@ -18,11 +18,12 @@ def install_pplcv(dep_dir, build_cuda):
 
     # git clone
     if not os.path.exists(pplcv_dir):
-        os.system('git clone https://github.com/openppl-public/ppl.cv/')
+        os.system(
+            'git clone --depth 1 --branch v0.7.0 https://github.com/openppl-public/ppl.cv/'  # noqa: E501
+        )
 
     # build
     os.chdir(pplcv_dir)
-    os.system('git checkout v0.7.0')
     if build_cuda is True:
         os.system('./build.sh cuda')
         pplcv_cmake_dir = os.path.join(pplcv_dir,
@@ -47,11 +48,12 @@ def install_pplnn(dep_dir, build_cuda):
 
     # git clone
     if not os.path.exists(pplnn_dir):
-        os.system('git clone https://github.com/openppl-public/ppl.nn/')
+        os.system(
+            'git clone --depth 1 --branch v0.8.2 https://github.com/openppl-public/ppl.nn/'  # noqa: E501
+        )
 
     # build
     os.chdir(pplnn_dir)
-    os.system('git checkout v0.8.2')
     if build_cuda is True:
         os.system(
             './build.sh -DPPLNN_USE_CUDA=ON -DPPLNN_USE_X86_64=ON  -DPPLNN_ENABLE_PYTHON_API=ON'  # noqa: E501
