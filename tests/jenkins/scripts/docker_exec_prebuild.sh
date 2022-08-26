@@ -1,5 +1,7 @@
 #!/bin/bash
 
+## keep container alive
+nohup sleep infinity > sleep.log 2>&1 &
 
 ## init conda
 __conda_setup="$('/opt/conda/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"

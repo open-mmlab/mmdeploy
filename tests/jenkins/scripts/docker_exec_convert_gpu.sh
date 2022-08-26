@@ -1,5 +1,8 @@
 #!/bin/bash
 
+## keep container alive
+nohup sleep infinity > sleep.log 2>&1 &
+
 ## init conda
 __conda_setup="$('/opt/conda/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
 if [ $? -eq 0 ]; then
@@ -94,7 +97,7 @@ do
     pip install -r requirements/build.txt
     ## build ${codebase}
     mim install ${codebase}
-    cd ../${codebase_fullname} && pip install -v -e . && cd /root/workspace/mmdeploy
+    pip install -v -e /root/workspace/${codebase_fullname} 
     ## start regression
     log_dir=/root/workspace/mmdeploy_regression_working_dir/${codebase}/torch${TORCH_VERSION}
     log_path=${log_dir}/convert.log
