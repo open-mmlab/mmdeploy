@@ -32,22 +32,10 @@ def import_codebase(codebase: Codebase):
                 f'Import mmdeploy.codebase.{codebase_name} failed.')
         importlib.import_module(f'mmdeploy.codebase.{lib}')
         importlib.import_module(f'{lib}.models')
-        if importlib.util.find_spec(f'{lib}.core'):
-            # not all codebases have core submodule
-            importlib.import_module(f'{lib}.core')
         importlib.import_module(f'{lib}.datasets')
-        if importlib.util.find_spec(f'{lib}.structures'):
-            # not all codebases have structures submodule
-            importlib.import_module(f'{lib}.structures')
-        if importlib.util.find_spec(f'{lib}.visualization'):
-            # not all codebases have visualization submodule
-            importlib.import_module(f'{lib}.visualization')
-        if importlib.util.find_spec(f'{lib}.visualizer'):
-            # not all codebases have visualizer submodule
-            importlib.import_module(f'{lib}.visualizer')
-        if importlib.util.find_spec(f'{lib}.engine'):
-            # not all codebases have engine submodule
-            importlib.import_module(f'{lib}.engine')
+        importlib.import_module(f'{lib}.structures')
+        importlib.import_module(f'{lib}.visualization')
+        importlib.import_module(f'{lib}.engine')
 
 
 __all__ = ['MMCodebase', 'BaseTask', 'get_codebase_class']
