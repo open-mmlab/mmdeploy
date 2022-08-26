@@ -61,7 +61,6 @@ cmake .. -DMMDEPLOY_BUILD_SDK=ON \
         -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" 
 
 make -j $(nproc) && make install
-cd ../
 
 # ## start convert
 # for TORCH_VERSION in 1.10.0 1.11.0
@@ -84,8 +83,10 @@ cd ../
 
 ## use activate
 
+cd /root/workspace/mmdeploy
 for TORCH_VERSION in 1.10.0 1.11.0
 do
+
     conda activate torch${TORCH_VERSION}
     pip install -v -e .
     pip install -r requirements/tests.txt requirements/build.txt requirements/runtime.txt 
