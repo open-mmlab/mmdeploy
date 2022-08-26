@@ -49,7 +49,7 @@ cd /root/workspace/mmdeploy
 
 ## use activate
 conda activate torch1.10.0
-mim install mmdet==v2.20.0
+mim install mmdet
 pip install -r requirements/tests.txt
 pip install -r requirements/runtime.txt 
 pip install -r requirements/build.txt
