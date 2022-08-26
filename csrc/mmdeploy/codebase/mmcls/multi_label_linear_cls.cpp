@@ -50,8 +50,6 @@ class MultiLabelLinearClsHead : public MMClassification {
     output.labels.reserve(num_classes_);
     std::vector<int> idx(class_num);
     iota(begin(idx), end(idx), 0);
-    partial_sort(begin(idx), begin(idx) + num_classes_, end(idx),
-                 [&](int i, int j) { return scores_data[i] > scores_data[j]; });
     for (int i = 0; i < num_classes_; ++i) {
       auto label = ClassifyOutput::Label{idx[i], scores_data[idx[i]]};
       MMDEPLOY_DEBUG("label_id: {}, score: {}", label.label_id, label.score);
