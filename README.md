@@ -69,6 +69,7 @@ Please read [getting_started](docs/en/get_started.md) for the basic usage of MMD
 
 - [Build](docs/en/01-how-to-build/build_from_source.md)
   - [Build from Docker](docs/en/01-how-to-build/build_from_docker.md)
+  - [Build from Script](docs/en/01-how-to-build/build_from_script.md)
   - [Build for Linux](docs/en/01-how-to-build/linux-x86_64.md)
   - [Build for Win10](docs/en/01-how-to-build/windows.md)
   - [Build for Android](docs/en/01-how-to-build/android.md)

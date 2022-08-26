@@ -1,4 +1,4 @@
-# Build From Source
+# Build from Source
 
 ## Download
 
