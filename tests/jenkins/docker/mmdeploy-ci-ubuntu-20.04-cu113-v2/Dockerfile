@@ -149,8 +149,10 @@ RUN /opt/conda/bin/pip install openmim
 
 RUN /opt/conda/bin/conda init bash && \
     /opt/conda/bin/conda create --clone base -n torch1.10.0 -y && \
-    /opt/conda/bin/pip install torch==1.10.0+cu113 torchvision==0.11.0+cu113 -f https://download.pytorch.org/whl/torch_stable.html && \
+    /opt/conda/envs/torch1.10.0/bin/pip install torch==1.10.0+cu113 torchvision==0.11.0+cu113 -f https://download.pytorch.org/whl/torch_stable.html && \
     /opt/conda/bin/conda create --clone base -n torch1.11.0 -y && \
-    /opt/conda/bin/pip install torch==1.11.0+cu113 torchvision==0.12.0+cu113 -f https://download.pytorch.org/whl/torch_stable.html && \
+    /opt/conda/envs/torch1.11.0/bin/bin/pip install torch==1.11.0+cu113 torchvision==0.12.0+cu113 -f https://download.pytorch.org/whl/torch_stable.html && \
     /opt/conda/bin/conda create --clone base -n torch1.12.0 -y && \
-    /opt/conda/bin/pip install torch==1.12.0+cu113 torchvision==0.13.0+cu113 -f https://download.pytorch.org/whl/torch_stable.html 
+    /opt/conda/envs/torch1.12.0/bin/bin/pip install torch==1.12.0+cu113 torchvision==0.13.0+cu113 -f https://download.pytorch.org/whl/torch_stable.html
+
+  
