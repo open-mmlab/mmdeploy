@@ -81,8 +81,6 @@ def parse_args():
         'in  data config.')
     parser.add_argument(
         '--uri',
-        action='store_true',
-        default='192.168.1.1:60000',
         help='Remote ipv4:port or ipv6:port for inference on edge device.')
 
     args = parser.parse_args()

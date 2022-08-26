@@ -50,7 +50,7 @@ jobs:
         run: |
           python -V
           python -m pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cu111/${{matrix.torch_version}}/index.html
-          python -m pip install -r requirements.txt
+          CFLAGS=`python -c 'import sysconfig;print("-I"+sysconfig.get_paths()["include"])'` python -m pip install -r requirements.txt
           python -m pip install -U numpy
 
       - name: Install mmcls
