@@ -39,6 +39,15 @@ def import_codebase(codebase: Codebase):
         if importlib.util.find_spec(f'{lib}.structures'):
             # not all codebases have structures submodule
             importlib.import_module(f'{lib}.structures')
+        if importlib.util.find_spec(f'{lib}.visualization'):
+            # not all codebases have visualization submodule
+            importlib.import_module(f'{lib}.visualization')
+        if importlib.util.find_spec(f'{lib}.visualizer'):
+            # not all codebases have visualizer submodule
+            importlib.import_module(f'{lib}.visualizer')
+        if importlib.util.find_spec(f'{lib}.engine'):
+            # not all codebases have engine submodule
+            importlib.import_module(f'{lib}.engine')
 
 
 __all__ = ['MMCodebase', 'BaseTask', 'get_codebase_class']

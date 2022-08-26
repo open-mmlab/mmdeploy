@@ -52,7 +52,7 @@ img = np.random.rand(*img_shape, 3)
 
 def test_build_test_runner():
     # Prepare dummy model
-    from mmdet.core import DetDataSample
+    from mmdet.structures import DetDataSample
     from mmengine.data import InstanceData
 
     data_sample = DetDataSample()

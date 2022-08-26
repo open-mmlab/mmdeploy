@@ -248,8 +248,9 @@ class BaseTask(metaclass=ABCMeta):
                     registry = VISUALIZERS
             else:
                 registry = VISUALIZERS
-
+            print(f'debugging mmdeploy.codebase.base.task.py line 251: what is cfg: {cfg}, registry: {registry}')
             VisualizerClass = registry.get(cfg.type)
+            print(f'debugging mmdeploy.codebase.base.task.py line 253: what is VisualizerClass: {VisualizerClass}')
             if VisualizerClass.check_instance_created(cfg.name):
                 return VisualizerClass.get_instance(cfg.name)
             else:
