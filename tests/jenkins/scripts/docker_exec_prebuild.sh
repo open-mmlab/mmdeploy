@@ -50,7 +50,9 @@ cd /root/workspace/mmdeploy
 ## use activate
 conda activate torch1.10.0
 mim install mmdet==v2.20.0
-pip install -r requirements/tests.txt requirements/runtime.txt requirements/build.txt
+pip install -r requirements/tests.txt
+pip install -r requirements/runtime.txt 
+pip install -r requirements/build.txt
 python ./tools/package_tools/mmdeploy_builder.py tools/package_tools/configs/linux_x64.yaml . > /root/workspace/log/build.log
 pip install mmdeploy-0.7.0-linux-x86_64-onnxruntime1.8.1/sdk/python/mmdeploy_python-0.7.0-cp38-none-linux_x86_64.whl
 pip install mmdeploy-0.7.0-linux-x86_64-onnxruntime1.8.1/dist/mmdeploy-0.7.0-py3-none-linux_x86_64.whl

@@ -89,7 +89,9 @@ do
 
     conda activate torch${TORCH_VERSION}
     pip install -v -e .
-    pip install -r requirements/tests.txt requirements/build.txt requirements/runtime.txt 
+    pip install -r requirements/tests.txt
+    pip install -r requirements/runtime.txt 
+    pip install -r requirements/build.txt
     ## build ${codebase}
     mim install ${codebase}
     cd ../${codebase_fullname} && pip install -v -e . && cd /root/workspace/mmdeploy
