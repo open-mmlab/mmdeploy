@@ -63,7 +63,7 @@ pip install mmdeploy-0.7.0-linux-x86_64-cuda11.3-tensorrt8.2.1.8/dist/mmdeploy-0
 pip install mmdeploy-0.7.0-linux-x86_64-cuda11.3-tensorrt8.2.1.8/sdk/python/mmdeploy_python-0.7.0-cp38-none-linux_x86_64.whl
 
 python tools/check_env.py > /root/workspace/log/check_env.log
-mv mmdeploy-*-onnxruntime* ./prebuild-mmdeploy
-mv mmdeploy-*-tensorrt* ./prebuild-mmdeploy
+mv mmdeploy-*-onnxruntime* /root/workspace/prebuild-mmdeploy 
+mv mmdeploy-*-tensorrt* /root/workspace/prebuild-mmdeploy
 
 python tools/regression_test.py --codebase mmdet --models ssd --backends onnxruntime tensorrt -p --device cuda > /root/workspace/log/test_prebuild.log
