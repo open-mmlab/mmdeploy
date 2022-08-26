@@ -125,7 +125,7 @@ def cascade_roi_head__predict_mask(ctx,
     aug_masks = []
     for i in range(self.num_stages):
         mask_results = self._mask_forward(i, x, mask_rois)
-        mask_pred = mask_results['mask_pred']
+        mask_pred = mask_results['mask_preds']
         aug_masks.append(mask_pred)
     mask_preds = sum(aug_masks) / len(aug_masks)
     num_det = det_bboxes.shape[1]

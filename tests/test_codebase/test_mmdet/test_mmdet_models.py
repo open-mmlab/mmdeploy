@@ -272,7 +272,7 @@ def test__anchorgenerator__single_level_grid_priors():
         import AnchorGenerator
 
     from mmdeploy.apis.onnx import export
-    from mmdeploy.codebase.mmdet.core import anchor  # noqa
+    import mmdeploy.codebase.mmdet.models.task_modules.prior_generators.anchor  # noqa
 
     generator = AnchorGenerator(
         scales=[8], ratios=[0.5, 1.0, 2.0], strides=[4])
@@ -792,7 +792,7 @@ def test_forward_of_base_detector(model_cfg_path, backend):
     model = init_detector(model_cfg, None, device='cpu')
 
     img = torch.randn(1, 3, 64, 64)
-    from mmdet.core import DetDataSample
+    from mmdet.structures import DetDataSample
     from mmengine import InstanceData
     data_sample = DetDataSample()
     img_meta = dict(img_shape=(800, 1216, 3))
@@ -1861,7 +1861,7 @@ def test_windows_msa(backend_type: Backend):
     model.cuda().eval()
     output_names = ['output']
 
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = Config(
         dict(
             backend_config=dict(
                 type=backend_type.value,
@@ -1903,7 +1903,7 @@ def test_shift_windows_msa(backend_type: Backend):
     model.cuda().eval()
     output_names = ['output']
 
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = Config(
         dict(
             backend_config=dict(
                 type=backend_type.value,
@@ -1938,26 +1938,25 @@ def test_shift_windows_msa(backend_type: Backend):
 def test_mlvl_point_generator__single_level_grid_priors__tensorrt(
         backend_type: Backend):
     check_backend(backend_type)
-    from mmdet.core.anchor import MlvlPointGenerator
+    from mmdet.models.task_modules.prior_generators import MlvlPointGenerator
     model = MlvlPointGenerator([8, 16, 32])
     output_names = ['output']
 
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = Config(
         dict(
             backend_config=dict(type=backend_type.value),
             onnx_config=dict(
                 input_shape=None,
-                input_names=['query'],
+                input_names=['featmap_size'],
                 output_names=output_names)))
 
     featmap_size = torch.Size([80, 80])
     with_stride = True
 
-    wrapped_model = WrapModel(model, 'single_level_grid_priors')
+    wrapped_model = WrapModel(model, 'single_level_grid_priors', level_idx=0,
+                              with_stride=with_stride)
     rewrite_inputs = {
-        'featmap_size': featmap_size,
-        'with_stride': with_stride,
-        'level_idx': 0
+        'featmap_size': featmap_size
     }
     _ = get_rewrite_outputs(
         wrapped_model=wrapped_model,

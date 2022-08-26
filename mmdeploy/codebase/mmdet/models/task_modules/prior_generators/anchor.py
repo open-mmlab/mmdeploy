@@ -64,7 +64,7 @@ grid_priors_trt = GridPriorsTRTOp.apply
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdet.core.anchor.anchor_generator.'
+    func_name='mmdet.models.task_modules.prior_generators.'
     'AnchorGenerator.single_level_grid_priors',
     backend='tensorrt')
 def anchorgenerator__single_level_grid_priors__trt(

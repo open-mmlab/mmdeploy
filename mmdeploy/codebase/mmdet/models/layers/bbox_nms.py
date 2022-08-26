@@ -266,7 +266,7 @@ def multiclass_nms_static(ctx,
 @mark('multiclass_nms', inputs=['boxes', 'scores'], outputs=['dets', 'labels'])
 def multiclass_nms(*args, **kwargs):
     """Wrapper function for `_multiclass_nms`."""
-    return mmdeploy.codebase.mmdet.core.post_processing._multiclass_nms(
+    return mmdeploy.codebase.mmdet.models.layers.bbox_nms._multiclass_nms(
         *args, **kwargs)
 
 
