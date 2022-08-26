@@ -2,7 +2,7 @@
 from typing import List, Tuple
 
 import torch
-from mmdet.core import ConfigType
+from mmdet.utils import ConfigType
 from torch import Tensor
 
 from mmdeploy.core import FUNCTION_REWRITER

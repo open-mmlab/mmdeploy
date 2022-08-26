@@ -32,10 +32,13 @@ def import_codebase(codebase: Codebase):
                 f'Import mmdeploy.codebase.{codebase_name} failed.')
         importlib.import_module(f'mmdeploy.codebase.{lib}')
         importlib.import_module(f'{lib}.models')
-        importlib.import_module(f'{lib}.core')
+        if importlib.util.find_spec(f'{lib}.core'):
+            # not all codebases have core submodule
+            importlib.import_module(f'{lib}.core')
         importlib.import_module(f'{lib}.datasets')
-        # for ut metrics registration
-        importlib.import_module(f'{lib}.metrics')
+        if importlib.util.find_spec(f'{lib}.structures'):
+            # not all codebases have structures submodule
+            importlib.import_module(f'{lib}.structures')
 
 
 __all__ = ['MMCodebase', 'BaseTask', 'get_codebase_class']
