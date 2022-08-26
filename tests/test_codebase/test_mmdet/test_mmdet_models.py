@@ -1947,16 +1947,17 @@ def test_mlvl_point_generator__single_level_grid_priors__tensorrt(
             backend_config=dict(type=backend_type.value),
             onnx_config=dict(
                 input_shape=None,
-                input_names=['featmap_size'],
+                input_names=['featmap_size', 'level_idx'],
                 output_names=output_names)))
 
-    featmap_size = torch.Size([80, 80])
+    featmap_size = torch.tensor([80, 80])
     with_stride = True
 
-    wrapped_model = WrapModel(model, 'single_level_grid_priors', level_idx=0,
-                              with_stride=with_stride)
+    wrapped_model = WrapModel(
+        model, 'single_level_grid_priors', with_stride=with_stride)
     rewrite_inputs = {
-        'featmap_size': featmap_size
+        'featmap_size': featmap_size,
+        'level_idx': torch.tensor(0)
     }
     _ = get_rewrite_outputs(
         wrapped_model=wrapped_model,
