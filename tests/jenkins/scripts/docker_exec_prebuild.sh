@@ -21,7 +21,8 @@ apt install -y g++-7 gcc-7
 export pplcv_DIR=/root/workspace/ppl.cv/cuda-build/install/lib/cmake/ppl
 export CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-11.3
 export LD_LIBRARY_PATH=/usr/local/cuda-11.3/lib64/:$LD_LIBRARY_PATH
-
+cp -r cuda/include/cudnn* /usr/local/cuda-11.3/include/
+export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 
 ln -s /root/workspace/mmdeploy_benchmark /root/workspace/mmdeploy/data
 
