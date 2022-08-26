@@ -35,11 +35,11 @@ class Context {
   }
   explicit Context(const Device& device) : Context() { Add(device); }
 
-  void Add(const Scheduler& scheduler, const std::string& name) {
+  void Add(const std::string& name, const Scheduler& scheduler) {
     mmdeploy_context_add(*this, MMDEPLOY_TYPE_SCHEDULER, name.c_str(), scheduler);
   }
 
-  void Add(const Model& model, const std::string& name) {
+  void Add(const std::string& name, const Model& model) {
     mmdeploy_context_add(*this, MMDEPLOY_TYPE_MODEL, name.c_str(), model);
   }
 

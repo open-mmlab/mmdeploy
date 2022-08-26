@@ -27,6 +27,13 @@ py::object ToPyObject(const Value &value);
 
 Value FromPyObject(const py::object &obj);
 
+class PythonBindingRegisterer {
+ public:
+  PythonBindingRegisterer(const char *name, void (*register_fn)(py::module &m)) {
+    gPythonBindings().emplace(name, register_fn);
+  }
+};
+
 }  // namespace mmdeploy
 
 #endif  // MMDEPLOY_CSRC_APIS_PYTHON_COMMON_H_

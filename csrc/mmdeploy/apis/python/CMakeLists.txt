@@ -6,6 +6,7 @@ project(mmdeploy_python)
 set(MMDEPLOY_PYTHON_SRCS
         common.cpp
         model.cpp
+        device.cpp
         executor.cpp
         pipeline.cpp)
 

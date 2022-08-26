@@ -67,10 +67,10 @@ int main(int argc, char* argv[]) {
 
   auto thread_pool = Scheduler::CreateThreadPool(4);
   auto infer_thread = Scheduler::CreateThread();
-  context.Add(thread_pool, "thread_pool");
-  context.Add(infer_thread, "infer_thread");
-  context.Add(Model(det_model_path), "text_detection");
-  context.Add(Model(reg_model_path), "text_recognition");
+  context.Add("thread_pool", thread_pool);
+  context.Add("infer_thread", infer_thread);
+  context.Add("text_detection", Model(det_model_path));
+  context.Add("text_recognition", Model(reg_model_path));
 
   Pipeline pipeline(config, context);
 
