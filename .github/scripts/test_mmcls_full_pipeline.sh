@@ -1,9 +1,7 @@
 #!/bin/bash
 
-#resnet18 + cifar10
-
-checkpoint=https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_b16x8_cifar10_20210528-bd6371c8.pth
-model_cfg=../mmclassification/configs/resnet/resnet18_8xb16_cifar10.py
+checkpoint=https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth
+model_cfg=../mmclassification/configs/resnet/resnet18_8xb32_in1k.py
 ort_cfg=configs/mmcls/classification_onnxruntime_dynamic.py
 sdk_cfg=configs/mmcls/classification_sdk_dynamic.py
 input_img=../mmclassification/demo/demo.JPEG
@@ -22,19 +20,17 @@ python3 tools/deploy.py \
   --dump-info
 
 # prepare dataset
-mkdir -p data/cifar10
-#wget -P data/cifar10/ https://raw.githubusercontent.com/RunningLeon/mmdeploy-testdata/master/data/cifar10/cifar-10-python.tar.gz
-#tar -xvf data/cifar10/cifar-10-python.tar.gz -C data/cifar10/
-## change to avoid md5 check
-#sed -i "s/get_dist_info()/1,0/g" ../mmclassification/mmcls/datasets/cifar.py
+mkdir -p data
+wget -P data/ https://github.com/open-mmlab/mmdeploy/files/9401216/imagenet-val100.zip
+unzip data/imagenet-val100.zip -d data/
 
-echo "Running test with ort"
+echo "\nRunning test with ort\n"
 python3 tools/test.py \
   $ort_cfg \
   $model_cfg \
   --model $work_dir/end2end.onnx \
   --device $device \
-  --out $work_dir/out.pkl \
+  --out $work_dir/ort_out.pkl \
   --metrics accuracy \
   --device $device \
   --log2file $work_dir/test_ort.log \
@@ -43,17 +39,17 @@ python3 tools/test.py \
   --warmup 100 \
   --batch-size 64
 
-echo "Running test with sdk"
+echo "\nRunning test with sdk\n"
 python3 tools/test.py \
   $sdk_cfg \
   $model_cfg \
   --model $work_dir \
   --device $device \
-  --out $work_dir/out.pkl \
+  --out $work_dir/sdk_out.pkl \
   --metrics accuracy \
   --device $device \
   --log2file $work_dir/test_sdk.log \
   --speed-test \
   --log-interval 100 \
   --warmup 100 \
-  --batch-size 64
+  --batch-size 1

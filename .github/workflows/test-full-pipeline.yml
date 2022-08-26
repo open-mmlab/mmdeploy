@@ -49,7 +49,7 @@ jobs:
           python -c 'import mmcv; print(mmcv.__version__)'
       - name: Install mmdeploy dependencies
         run: |
-          pip install cmake onnx
+          pip install cmake
           pip install -r requirements/build.txt
           pip install -r requirements/runtime.txt
           pip install -r requirements/tests.txt
@@ -69,7 +69,7 @@ jobs:
                 -DMMDEPLOY_TARGET_DEVICES=cpu \
                 -DMMDEPLOY_BUILD_EXAMPLES=ON \
                 -DMMDEPLOY_BUILD_SDK=ON \
-                -DMMDEPLOY_CODEBASES=mmcls \
+                -DMMDEPLOY_CODEBASES=all \
                 -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
                 -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
 
