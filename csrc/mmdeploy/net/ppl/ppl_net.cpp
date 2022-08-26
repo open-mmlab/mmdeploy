@@ -18,6 +18,11 @@
 #include "ppl/nn/engines/cuda/ops.h"
 #define PPL_CUDA_IMPORT_FROM_BUFFER 1
 #endif
+#if PPL_NN_HAS_RISCV
+#include "ppl/nn/engines/riscv/engine_factory.h"
+#include "ppl/nn/engines/riscv/engine_options.h"
+#include "ppl/nn/engines/riscv/ops.h"
+#endif
 
 namespace mmdeploy {
 
@@ -90,6 +95,18 @@ Result<void> PPLNet::Init(const Value& args) {
   if (device_.is_host()) {
     ppl::nn::x86::RegisterBuiltinOpImpls();
     engines_.emplace_back(ppl::nn::x86::EngineFactory::Create({}));
+  }
+#endif
+#if PPL_NN_HAS_RISCV
+  if (device_.is_host()) {
+    ppl::nn::riscv::RegisterBuiltinOpImpls();
+    ppl::nn::riscv::EngineOptions options{};
+    // TODO:
+    //   FP16 -> postprocess
+    options.forward_precision = ppl::common::DATATYPE_FLOAT32;
+    options.dynamic_tuning_level = 0;
+    options.winograd_level = 1;
+    engines_.emplace_back(ppl::nn::riscv::EngineFactory::Create(options));
   }
 #endif
 
