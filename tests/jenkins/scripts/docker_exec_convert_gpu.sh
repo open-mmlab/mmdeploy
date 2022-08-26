@@ -96,7 +96,7 @@ do
     mim install ${codebase}
     cd ../${codebase_fullname} && pip install -v -e . && cd /root/workspace/mmdeploy
     ## start regression
-    log_dir=root/workspace/mmdeploy_regression_working_dir/${codebase}/torch${TORCH_VERSION}
+    log_dir=/root/workspace/mmdeploy_regression_working_dir/${codebase}/torch${TORCH_VERSION}
     log_path=${log_dir}/convert.log
     mkdir -p ${log_dir}
     python ./tools/regression_test.py \
