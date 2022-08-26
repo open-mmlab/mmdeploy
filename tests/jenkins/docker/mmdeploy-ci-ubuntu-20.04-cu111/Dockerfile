@@ -77,12 +77,12 @@ ENV PATH=$JAVA_HOME/bin:$PATH
 ### install cudnn
 RUN wget http://${HOST}/cudnn-11.3-linux-x64-v8.2.1.32.tgz && \
     tar -zxvf cudnn-11.3-linux-x64-v8.2.1.32.tgz && \
-    cp -r cuda/include/cudnn* /usr/local/cuda-11.3/include/ && \
-    cp -r cuda/lib64/libcudnn* /usr/local/cuda-11.3/lib64/
+    cp -r cuda/include/cudnn* /usr/local/cuda-11.1/include/ && \
+    cp -r cuda/lib64/libcudnn* /usr/local/cuda-11.1/lib64/
 ENV CUDNN_DIR=/root/workspace/cuda
 ENV LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
-ENV LD_LIBRARY_PATH=/usr/local/cuda-11.3/lib64/:$LD_LIBRARY_PATH
-ENV CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-11.3
+ENV LD_LIBRARY_PATH=/usr/local/cuda-11.1/lib64/:$LD_LIBRARY_PATH
+ENV CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-11.1
 
 ### get onnxruntime
 RUN wget https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTIME_VERSION}/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz \
@@ -131,8 +131,8 @@ ENV pplcv_DIR=/root/workspace/ppl.cv/cuda-build/install/lib/cmake/ppl
 ### install zip
 RUN apt update && apt install -y zip 
 ### install libtorch
-RUN wget https://download.pytorch.org/libtorch/cu113/libtorch-shared-with-deps-1.12.1%2Bcu113.zip && \
-    unzip libtorch-shared-with-deps-1.12.1+cu113.zip 
+RUN wget https://download.pytorch.org/libtorch/cu111/libtorch-shared-with-deps-1.8.1%2Bcu111.zip && \
+    unzip libtorch-shared-with-deps-1.8.1+cu111.zip 
 ENV Torch_DIR=/root/workspace/libtorch
 ENV LD_LIBRARY_PATH=$Torch_DIR/lib:$LD_LIBRARY_PATH
 
