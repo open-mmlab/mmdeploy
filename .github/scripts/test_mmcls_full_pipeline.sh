@@ -35,11 +35,15 @@ python3 tools/test.py \
   --device $device \
   --log2file $work_dir/test_ort.log \
   --speed-test \
-  --log-interval 100 \
-  --warmup 100 \
-  --batch-size 64
+  --log-interval 50 \
+  --warmup 20 \
+  --batch-size 32
 
 echo "\nRunning test with sdk\n"
+
+# change topk for test
+sed -i 's/"topk": 5/"topk": 1000/g' work_dir/pipeline.json
+
 python3 tools/test.py \
   $sdk_cfg \
   $model_cfg \
@@ -50,6 +54,6 @@ python3 tools/test.py \
   --device $device \
   --log2file $work_dir/test_sdk.log \
   --speed-test \
-  --log-interval 100 \
-  --warmup 100 \
+  --log-interval 50 \
+  --warmup 20 \
   --batch-size 1
