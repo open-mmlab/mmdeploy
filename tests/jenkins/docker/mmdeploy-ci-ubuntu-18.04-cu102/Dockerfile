@@ -1,6 +1,7 @@
-FROM nvidia/cuda:10.2-devel-ubuntu18.04
+FROM nvidia/cuda:${CUDA}-devel-ubuntu18.04
 ARG PYTHON_VERSION=3.7
 ARG CUDA=10.2
+ARG CUDA_INT=102
 ARG ONNXRUNTIME_VERSION=1.8.1
 ARG PPLNN_VERSION=0.8.1
 ARG TENSORRT=7.0.0
@@ -73,21 +74,22 @@ ENV JAVA_HOME=/root/workspace/jdk-18
 ENV PATH=$JAVA_HOME/bin:$PATH
 
 ### install tensorrt
-RUN wget http://${HOST}/TensorRT-7.0.0.11.Ubuntu-18.04.x86_64-gnu.cuda-10.2.cudnn7.6.tar.gz && \
-    tar -zxvf TensorRT-7.0.0.11.Ubuntu-18.04.x86_64-gnu.cuda-10.2.cudnn7.6.tar.gz  &&\
+RUN wget http://${HOST}/TensorRT-7.0.0.11.Ubuntu-18.04.x86_64-gnu.cuda-${CUDA}.cudnn7.6.tar.gz && \
+    tar -zxvf TensorRT-7.0.0.11.Ubuntu-18.04.x86_64-gnu.cuda-${CUDA}.cudnn7.6.tar.gz  &&\
     /opt/conda/bin/pip install TensorRT-7.0.0.11/python/tensorrt-7.0.0.11-cp37-none-linux_x86_64.whl &&\
     /opt/conda/bin/pip install pycuda
 ENV TENSORRT_DIR=/root/workspace/TensorRT-7.0.0.11
 ENV LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
 
 ### install cudnn
-RUN wget http://${HOST}/cudnn-10.2-linux-x64-v7.6.5.32.tgz && \
-    tar -zxvf cudnn-10.2-linux-x64-v7.6.5.32.tgz && \
-    cp -r cuda/include/cudnn.h* /usr/local/cuda-10.2/include/ && \
-    cp -r cuda/lib64/libcudnn* /usr/local/cuda-10.2/lib64/
+RUN wget http://${HOST}/cudnn-${CUDA}-linux-x64-v7.6.5.32.tgz && \
+    tar -zxvf cudnn-${CUDA}-linux-x64-v7.6.5.32.tgz && \
+    cp -r cuda/include/cudnn.h* /usr/local/cuda-${CUDA}/include/ && \
+    cp -r cuda/lib64/libcudnn* /usr/local/cuda-${CUDA}/lib64/
 ENV CUDNN_DIR=/root/workspace/cuda
 ENV LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
-
+ENV CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-${CUDA}
+ 
 ### get onnxruntime
 RUN wget https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTIME_VERSION}/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz \
     && tar -zxvf onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz &&\
@@ -125,6 +127,7 @@ RUN git clone https://github.com/openppl-public/ppl.cv.git &&\
     cd ppl.cv &&\
     git checkout tags/v${PPLCV_VERSION} -b v${PPLCV_VERSION} &&\
     ./build.sh cuda
+ENV pplcv_DIR=/root/workspace/ppl.cv/cuda-build/install/lib/cmake/ppl
 
 ### install zip
 RUN apt update && apt install -y zip 

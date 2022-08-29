@@ -42,7 +42,8 @@ git clone https://github.com/open-mmlab/${codebase_fullname}.git
 #### wait to be removed
 cp -r cuda/include/cudnn* /usr/local/cuda-11.3/include/
 export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATHa
-export LD_LIBRARY_PATH=/root/workspace/TensorRT-8.2.1.8/lib:/root/workspace/onnxruntime-linux-x64-1.8.1/lib:/usr/local/cuda-11.3/lib64/:/root/workspace/cuda/lib64:/usr/local/nvidia/lib:/usr/local/nvidia/lib64
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH/\/root\/workspace\/libtorch\/lib:/}
+
 
 ## build mmdeploy
 ln -s /root/workspace/mmdeploy_benchmark /root/workspace/mmdeploy/data
