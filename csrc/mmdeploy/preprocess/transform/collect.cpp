@@ -60,7 +60,7 @@ Collect::Collect(const Value &args, int version) : Transform(args) {
   auto impl_creator = Registry<CollectImpl>::Get().GetCreator(specified_platform_, version);
   if (nullptr == impl_creator) {
     MMDEPLOY_ERROR("'Collect' is not supported on '{}' platform", specified_platform_);
-    throw std::domain_error("'Collect' is not supported on specified platform");
+    throw_exception(eEntryNotFound);
   }
   impl_ = impl_creator->Create(args);
 }
