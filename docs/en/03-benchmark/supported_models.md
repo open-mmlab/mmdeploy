@@ -1,4 +1,4 @@
-## Supported Models
+## Supported models
 
 The table below lists the models that are guaranteed to be exportable to other backends.
 
@@ -26,6 +26,7 @@ The table below lists the models that are guaranteed to be exportable to other b
 | ShuffleNetV1                | MMClassification |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |   [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v1)    |
 | ShuffleNetV2                | MMClassification |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |   [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v2)    |
 | VisionTransformer           | MMClassification |      Y      |      Y      |    Y     |  Y   |   ?   |    Y     |   Y    | [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/vision_transformer) |
+| SwinTransformer             | MMClassification |      Y      |      Y      |    Y     |  N   |   ?   |    N     |   N    | [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/swin_transformer)   |
 | FCN                         | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |         [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/fcn)          |
 | PSPNet[\*static](#note)     | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |        [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/pspnet)        |
 | DeepLabV3                   | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |      [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/deeplabv3)       |
@@ -62,10 +63,10 @@ The table below lists the models that are guaranteed to be exportable to other b
 | EDSR                        | MMEditing        |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |   N    |      [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/edsr)       |
 | RDN                         | MMEditing        |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   N    |       [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/rdn)       |
 | DBNet                       | MMOCR            |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |          [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/dbnet)          |
-| PANet                       | MMOCR            |      Y      |      Y      |    Y     |  Y   |   ?   |    Y     |   N    |          [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/panet)          |
-| DBNet                       | MMOCR            |      Y      |      Y      |    Y     |  Y   |   ?   |    Y     |   N    |         [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/psenet)          |
+| PANet                       | MMOCR            |      Y      |      Y      |    Y     |  Y   |   ?   |    Y     |   Y    |          [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/panet)          |
+| PSENet                      | MMOCR            |      Y      |      Y      |    Y     |  Y   |   ?   |    Y     |   Y    |         [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/psenet)          |
 | CRNN                        | MMOCR            |      Y      |      Y      |    Y     |  Y   |   Y   |    N     |   N    |         [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/crnn)          |
-| SAR                         | MMOCR            |      N      |      Y      |    N     |  N   |   N   |    N     |   N    |          [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/sar)          |
+| SAR[\*](#note)              | MMOCR            |      N      |      Y      |    N     |  N   |   N   |    N     |   N    |          [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/sar)          |
 | SATRN                       | MMOCR            |      Y      |      Y      |    Y     |  N   |   N   |    N     |   N    |         [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/satrn)         |
 | HRNet                       | MMPose           |      N      |      Y      |    Y     |  Y   |   N   |    Y     |   N    |     [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#hrnet-cvpr-2019)     |
 | MSPN                        | MMPose           |      N      |      Y      |    Y     |  Y   |   N   |    Y     |   N    |     [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#mspn-arxiv-2019)     |
@@ -83,3 +84,4 @@ The table below lists the models that are guaranteed to be exportable to other b
 - SSD: When you convert SSD model, you need to use min shape deploy config just like 300x300-512x512 rather than 320x320-1344x1344, for example $MMDEPLOY_DIR/configs/mmdet/detection/detection_tensorrt_dynamic-300x300-512x512.py.
 - YOLOX: YOLOX with ncnn only supports static shape.
 - Swin Transformer: For TensorRT, only version 8.4+ is supported.
+- SAR: Chinese text recognition model is not supported as the protobuf size of ONNX is limited.
