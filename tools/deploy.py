@@ -373,7 +373,7 @@ def main():
     elif backend == Backend.COREML:
         from mmdeploy.apis.coreml import from_torchscript, get_model_suffix
         coreml_pipeline_funcs = [from_torchscript]
-        PIPELINE_MANAGER.set_log_level(logging.INFO, coreml_pipeline_funcs)
+        PIPELINE_MANAGER.set_log_level(log_level, coreml_pipeline_funcs)
         model_inputs = get_model_inputs(deploy_cfg)
         coreml_files = []
         for model_id, torchscript_path in enumerate(ir_files):

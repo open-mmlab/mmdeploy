@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved.
 
 #include "coreml_net.h"
 #include "mmdeploy/core/model.h"

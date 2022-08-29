@@ -1,4 +1,4 @@
-# Macos 下构建方式
+# macOS 下构建方式
 
 ## 源码安装
 
@@ -83,7 +83,7 @@ brew install opencv
 
 #### 安装推理引擎
 
-MMDeploy 的 Model Converter 和 SDK 共享推理引擎。您可以参考下文，选择自己感兴趣的推理引擎安装。
+MMDeploy 的 Model Converter 和 SDK 共享推理引擎。您可以参考下文，选择自己感兴趣的推理引擎安装。这里重点介绍 Core ML。ONNX Runtime，ncnn 以及 TorchScript 的安装类似 linux 平台，可参考文档 [linux-x86_64](linux-x86_64.md) 进行安装。Core ML 模型的转化过程中使用 TorchScript 模型作为IR，为了支持自定义算子的情况，需要安装 libtorch，这里作简单说明。
 
 <table  class="docutils">
 <thead>
@@ -100,40 +100,6 @@ MMDeploy 的 Model Converter 和 SDK 共享推理引擎。您可以参考下文�
     <td>
 <pre><code>
 pip install coremltools
-</code></pre>
-    </td>
-
-</tr>
-  <tr>
-    <td>ONNXRuntime</td>
-    <td>onnxruntime<br>(>=1.10.0) </td>
-    <td>
-    1. 安装 onnxruntime 的 python 包
-       <pre><code>pip install onnxruntime==1.10.0</code></pre>
-    2. 从<a href="https://github.com/microsoft/onnxruntime/releases/tag/v1.10.0">这里</a>下载 onnxruntime 的预编译包。参考如下命令，解压压缩包并设置环境变量
-<pre><code>
-wget https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-osx-arm64-1.10.0.tgz
-tar -zxvf onnxruntime-osx-arm64-1.10.0.tgz
-cd onnxruntime-osx-arm64-1.10.0
-export ONNXRUNTIME_DIR=$(pwd)
-export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
-</code></pre>
-    </td>
-  </tr>
-  <tr>
-    <td>ncnn </td>
-    <td>ncnn </td>
-    <td>1. 请参考 ncnn的 <a href="https://github.com/Tencent/ncnn/wiki/how-to-build">wiki</a> 编译 ncnn。
-编译时，请打开<code>-DNCNN_PYTHON=ON</code><br>
-2. 将 ncnn 的根目录写入环境变量
-<pre><code>
-cd ncnn
-export NCNN_DIR=$(pwd)
-</code></pre>
-3. 安装 pyncnn
-<pre><code>
-cd ${NCNN_DIR}/python
-pip install -e .
 </code></pre>
     </td>
   </tr>
@@ -160,16 +126,6 @@ export Torch_DIR=$(pwd)/install/share/cmake/Torch
 </tbody>
 </table>
 
-注意: <br>
-如果您想使上述环境变量永久有效，可以把它们加入<code>~/.bashrc</code>。以 ONNXRuntime 的环境变量为例，
-
-```bash
-echo '# set env for onnxruntime' >> ~/.bashrc
-echo "export ONNXRUNTIME_DIR=${ONNXRUNTIME_DIR}" >> ~/.bashrc
-echo "export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH" >> ~/.bashrc
-source ~/.bashrc
-```
-
 ### 编译 MMDeploy
 
 ```bash
@@ -179,29 +135,11 @@ export MMDEPLOY_DIR=$(pwd)
 
 #### 编译 Model Converter
 
-如果您选择了ONNXRuntime，ncnn， 和 torchscript 任一种推理后端，您需要编译对应的自定义算子库。
+这里介绍使用 Core ML 作为推理后端所需的操作。
 
 - **Core ML**
 
   Core ML使用torchscript作为IR，故需要编译torchscript自定义算子。
-
-- **ONNXRuntime** 自定义算子
-
-  ```bash
-  cd ${MMDEPLOY_DIR}
-  mkdir -p build && cd build
-  cmake -DMMDEPLOY_TARGET_BACKENDS=ort -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
-  make -j$(nproc) && make install
-  ```
-
-- **ncnn** 自定义算子
-
-  ```bash
-  cd ${MMDEPLOY_DIR}
-  mkdir -p build && cd build
-  cmake -DMMDEPLOY_TARGET_BACKENDS=ncnn -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn ..
-  make -j$(nproc) && make install
-  ```
 
 - **torchscript** 自定义算子
 
@@ -228,23 +166,7 @@ pip install -e .
 
 #### 编译 SDK 和 Demos
 
-下文展示2个构建SDK的样例，分别用 ONNXRuntime 和 Core ML 作为推理引擎。您可以参考它们，激活其他的推理引擎。
-
-- cpu + ONNXRuntime
-
-  ```Bash
-  cd ${MMDEPLOY_DIR}
-  mkdir -p build && cd build
-  cmake .. \
-      -DMMDEPLOY_BUILD_SDK=ON \
-      -DMMDEPLOY_BUILD_EXAMPLES=ON \
-      -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
-      -DMMDEPLOY_TARGET_DEVICES=cpu \
-      -DMMDEPLOY_TARGET_BACKENDS=ort \
-      -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR}
-
-  make -j$(nproc) && make install
-  ```
+下文展示使用 Core ML 作为推理引擎，构建SDK的样例。
 
 - cpu + Core ML
 
