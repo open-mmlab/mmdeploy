@@ -23,6 +23,7 @@ export CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-11.3
 export LD_LIBRARY_PATH=/usr/local/cuda-11.3/lib64/:$LD_LIBRARY_PATH
 cp -r cuda/include/cudnn* /usr/local/cuda-11.3/include/
 export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/root/workspace/TensorRT-8.2.1.8/lib:/root/workspace/onnxruntime-linux-x64-1.8.1/lib:/usr/local/cuda-11.3/lib64/:/root/workspace/cuda/lib64:/usr/local/nvidia/lib:/usr/local/nvidia/lib64
 
 ln -s /root/workspace/mmdeploy_benchmark /root/workspace/mmdeploy/data
 
