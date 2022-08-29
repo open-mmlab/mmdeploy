@@ -1,0 +1,39 @@
+name: backend-pplnn
+
+on:
+  push:
+    paths-ignore:
+      - "demo/**"
+      - "tools/**"
+
+  pull_request:
+    paths-ignore:
+      - "demo/**"
+      - "tools/**"
+      - "docs/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  script_install:
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        python-version: [3.7]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install mmdeploy
+        run: |
+          python3 tools/scripts/build_ubuntu_x64_pplnn.py
+          python3 -m pip install torch==1.8.2 torchvision==0.9.2 --extra-index-url https://download.pytorch.org/whl/lts/1.8/cpu
+          python3 -m pip install mmcv-full==1.5.1  -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.8.0/index.html
+          python3 -c 'import mmdeploy.apis.pplnn as pplnn_api; assert pplnn_api.is_available()'

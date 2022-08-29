@@ -67,6 +67,7 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 
 - [快速上手](docs/zh_cn/get_started.md)
 - [编译](docs/zh_cn/01-how-to-build/build_from_source.md)
+  - [一键式脚本安装](docs/zh_cn/01-how-to-build/build_from_script.md)
   - [Build from Docker](docs/zh_cn/01-how-to-build/build_from_docker.md)
   - [Build for Linux](docs/zh_cn/01-how-to-build/linux-x86_64.md)
   - [Build for Win10](docs/zh_cn/01-how-to-build/windows.md)

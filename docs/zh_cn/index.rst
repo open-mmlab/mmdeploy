@@ -15,6 +15,8 @@
 
    01-how-to-build/build_from_source.md
    01-how-to-build/build_from_docker.md
+   01-how-to-build/build_from_script.md
+   01-how-to-build/cmake_option.md
 
 .. toctree::
    :maxdepth: 1
@@ -95,6 +97,8 @@
    tutorial/03_pytorch2onnx.md
    tutorial/04_onnx_custom_op.md
    tutorial/05_onnx_model_editing.md
+   tutorial/06_introduction_to_tensorrt.md
+   tutorial/07_write_a_plugin.md
 
 .. toctree::
    :maxdepth: 1
