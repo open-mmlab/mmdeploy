@@ -79,12 +79,12 @@ class Device {
   constexpr bool is_device() const noexcept { return platform_id() > 0; }
 
   constexpr bool operator==(const Device& other) const noexcept {
-    return platform_id_ == other.platform_id_ & &device_id_ == other.device_id_;
+    return platform_id_ == other.platform_id_ && device_id_ == other.device_id_;
   }
 
   constexpr bool operator!=(const Device& other) const noexcept { return !(*this == other); }
 
-  constexpr explicit operator bool() const noexcept { return platform_id_ >= 0 & &device_id_ >= 0; }
+  constexpr explicit operator bool() const noexcept { return platform_id_ >= 0 && device_id_ >= 0; }
 
   constexpr operator DeviceId() const noexcept {  // NOLINT
     return DeviceId(device_id_);
