@@ -108,7 +108,9 @@ class Span {
   }
 
   template <typename U>
-  friend bool operator==(const Span& a, const Span<U>& b) { return !(a != b); }
+  friend bool operator==(const Span& a, const Span<U>& b) {
+    return !(a != b);
+  }
 
  private:
   T* data_;
