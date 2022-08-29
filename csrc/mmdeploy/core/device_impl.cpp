@@ -323,6 +323,7 @@ int PlatformRegistry::Register(Creator creator) {
 
 int PlatformRegistry::AddAlias(const char* name, const char* target) {
   aliases_.emplace_back(name, target);
+  return 0;
 }
 
 int PlatformRegistry::GetNextId() {

@@ -12,6 +12,7 @@ std::ostream& operator<<(std::ostream& os, const aclmdlIODims& dims) {
     os << (i ? ", " : "") << dims.dims[i];
   }
   os << "]";
+  return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const aclmdlBatch& batch) {
@@ -20,6 +21,7 @@ std::ostream& operator<<(std::ostream& os, const aclmdlBatch& batch) {
     os << (i ? ", " : "") << batch.batch[i];
   }
   os << "]";
+  return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const aclmdlHW& hw) {
@@ -28,6 +30,7 @@ std::ostream& operator<<(std::ostream& os, const aclmdlHW& hw) {
     os << (i ? ", " : "") << "(" << hw.hw[i][0] << ", " << hw.hw[i][1] << ")";
   }
   os << "]";
+  return os;
 }
 
 namespace mmdeploy {
