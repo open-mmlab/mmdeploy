@@ -171,6 +171,7 @@ Result<void> TorchNet::Forward() {
     }
   } catch (const std::exception& e) {
     MMDEPLOY_ERROR("unhandled exception: {}", e.what());
+    return Status(eFail);
   }
   return success();
 }
