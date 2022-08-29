@@ -49,6 +49,7 @@ def yolov3_head__predict_by_feat(ctx,
             tuple[Tensor, Tensor]: batch_mlvl_bboxes, batch_mlvl_scores
     """
     deploy_cfg = ctx.cfg
+
     # mark pred_maps
     @mark('yolo_head', inputs=['pred_maps'])
     def __mark_pred_maps(pred_maps):

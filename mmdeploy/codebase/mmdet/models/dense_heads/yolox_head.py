@@ -157,7 +157,7 @@ def yolox_head__predict_by_feat__ncnn(
     Returns:
         output__ncnn (Tensor): outputs, shape is [N, num_det, 6].
     """
-    from mmdeploy.codebase.mmdet.core.ops import ncnn_detection_output_forward
+    from mmdeploy.codebase.mmdet.ops import ncnn_detection_output_forward
     from mmdeploy.utils import get_root_logger
     from mmdeploy.utils.config_utils import is_dynamic_shape
     dynamic_flag = is_dynamic_shape(ctx.cfg)
