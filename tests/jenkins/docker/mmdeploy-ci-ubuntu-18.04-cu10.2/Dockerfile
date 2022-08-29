@@ -38,8 +38,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libjpeg-dev \
         libpng-dev \
         ccache \
-        gcc \
-        g++ \
+        gcc-7 \
+        g++-7 \
         git \
         vim \
         wget \
