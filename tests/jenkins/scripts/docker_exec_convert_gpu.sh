@@ -106,5 +106,6 @@ do
     python ./tools/regression_test.py \
         --codebase ${codebase} \
         --work-dir ${log_dir} \
+        --backends tensorrt onnxruntime ncnn \
         --performance > ${log_path}
 done
