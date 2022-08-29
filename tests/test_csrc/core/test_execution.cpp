@@ -4,7 +4,7 @@
 #include <numeric>
 
 #include "catch.hpp"
-#include "mmdeploy/apis/c/executor.h"
+#include "mmdeploy/apis/c/mmdeploy/executor.h"
 #include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/core/value.h"
 #include "mmdeploy/execution/expand.h"
@@ -30,7 +30,7 @@ TEST_CASE("test basic execution", "[execution]") {
   static_assert(std::is_same_v<decltype(GetCompletionScheduler(b)), InlineScheduler>);
   auto c = Then(b, [](Value v) -> Value { return {{"c", v["a"].get<int>() + v["b"].get<int>()}}; });
   auto d = SyncWait(c);
-  MMDEPLOY_ERROR("{}", d);
+  MMDEPLOY_INFO("{}", d);
 }
 
 template <class Sender>
@@ -45,7 +45,7 @@ TEST_CASE("test split", "[execution]") {
   auto y = GetKey(s, "y");
   auto x_v = SyncWait(x);
   auto y_v = SyncWait(y);
-  MMDEPLOY_ERROR("x = {}, y = {}", x_v, y_v);
+  MMDEPLOY_INFO("x = {}, y = {}", x_v, y_v);
 }
 
 TEST_CASE("test when_all", "[execution]") {
@@ -56,7 +56,7 @@ TEST_CASE("test when_all", "[execution]") {
   auto e = Just(500);
   auto t = WhenAll(a, b, c, d, e);
   auto v = SyncWait(t);
-  MMDEPLOY_ERROR("v = {}", v);
+  MMDEPLOY_INFO("v = {}", v);
 }
 
 void Func() {
@@ -65,7 +65,7 @@ void Func() {
       LetValue(a, [](int& x, int& y) { return Then(Just(x + y), [](int v) { return v * v; }); });
   auto v = SyncWait(b);
   static_assert(std::is_same_v<decltype(v), std::tuple<int>>);
-  MMDEPLOY_ERROR("v = {}", v);
+  MMDEPLOY_INFO("v = {}", v);
 }
 
 TEST_CASE("test let_value", "[execution]") { Func(); }
@@ -78,7 +78,7 @@ TEST_CASE("test fork-join", "[execution]") {
   auto xy = WhenAll(x, y);
   auto v = SyncWait(xy);
   static_assert(std::is_same_v<decltype(v), std::tuple<Value, Value>>);
-  MMDEPLOY_ERROR("v = {}", v);
+  MMDEPLOY_INFO("v = {}", v);
 }
 
 TEST_CASE("test ensure_started", "[execution]") {
@@ -97,7 +97,7 @@ TEST_CASE("test ensure_started", "[execution]") {
   std::this_thread::sleep_for(std::chrono::milliseconds(500));
   MMDEPLOY_INFO("ensure_started sync_wait");
   auto v = SyncWait(c);
-  MMDEPLOY_ERROR("ensure_started: {}", v);
+  MMDEPLOY_INFO("ensure_started: {}", v);
 }
 
 TEST_CASE("test start_detached", "[execution]") {
@@ -119,7 +119,7 @@ TEST_CASE("test on", "[execution]") {
   auto b = On(pool.GetScheduler(), a);
   auto c = SyncWait(b);
   static_assert(std::is_same_v<decltype(c), std::tuple<int, int>>);
-  MMDEPLOY_ERROR("c = {}", c);
+  MMDEPLOY_INFO("c = {}", c);
 }
 
 mmdeploy_value_t f(mmdeploy_value_t v, void*) {
@@ -180,7 +180,7 @@ void TestFunc(const char* sched_name) {
   }
   SECTION("Bulk") {
     auto sender = Just(Value(Value::Array(100))) | Transfer(sched) |
-                  Bulk(100, [](size_t index, Value& v) { v[index] = index; });
+                  Bulk(100, [](size_t index, Value& v) { v[index] = (uint32_t)index; });
     auto [value] = SyncWait(std::move(sender));
     std::vector<int> a;
     std::vector<int> b;
@@ -246,7 +246,7 @@ TEST_CASE("test executor C API", "[execution]") {
   REQUIRE(b);
   auto c = mmdeploy_executor_sync_wait(b);
   REQUIRE(c);
-  MMDEPLOY_CRITICAL("{}", *(Value*)c);
+  MMDEPLOY_INFO("{}", *(Value*)c);
   mmdeploy_value_destroy(c);
 }
 

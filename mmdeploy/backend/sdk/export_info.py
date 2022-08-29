@@ -128,6 +128,8 @@ def get_models(deploy_cfg: Union[str, mmengine.Config],
         weights = replace_suffix(ir_name, '.bin')
         if 'precision' in deploy_cfg['backend_config']:
             precision = deploy_cfg['backend_config']['precision']
+    elif backend == Backend.SNPE:
+        net = replace_suffix(ir_name, '.dlc')
     elif backend in [Backend.ONNXRUNTIME, Backend.TORCHSCRIPT]:
         pass
     else:

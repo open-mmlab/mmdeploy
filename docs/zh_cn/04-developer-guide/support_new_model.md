@@ -1,8 +1,8 @@
-## 如何支持新的模型
+# 如何支持新的模型
 
 我们提供了多种工具来支持模型转换
 
-### 函数的重写器
+## 函数的重写器
 
 PyTorch 神经网络是用 python 编写的，可以简化算法的开发。但与此同时 Python 的流程控制和第三方库会使得网络导出为中间语言的过程变得困难。为此我们提供了一个“MonKey path”工具将不支持的功能重写为另一个可支持中间语言导出的功能。下述是一个具体的使用例子：
 
@@ -26,7 +26,7 @@ def repeat_static(ctx, input, *size):
 
 可参照[这些样例代码](https://github.com/open-mmlab/mmdeploy/blob/master/mmdeploy/codebase/mmcls/models/backbones/shufflenet_v2.py)。
 
-### 模型重载器
+## 模型重载器
 
 如果您想用另一个模块替换整个模块，我们还有另一个重载器，如下所示：
 
@@ -61,7 +61,7 @@ class SRCNNWrapper(nn.Module):
 
 网络中模块的所有实例都将替换为这个新类的实例。原始模块和部署配置将作为前两个参数进行传递。
 
-### 符号函数重写
+## 符号函数重写
 
 PyTorch 和 ONNX 之间的映射是通过 PyTorch 中的符号函数进行定义的。自定义符号函数可以帮助我们绕过一些推理引擎不支持的 ONNX 节点。
 

@@ -23,9 +23,6 @@ TRTBatchedRotatedNMS::TRTBatchedRotatedNMS(const std::string& name, NMSParameter
 TRTBatchedRotatedNMS::TRTBatchedRotatedNMS(const std::string& name, const void* data, size_t length)
     : TRTPluginBase(name) {
   deserialize_value(&data, &length, &param);
-  deserialize_value(&data, &length, &boxesSize);
-  deserialize_value(&data, &length, &scoresSize);
-  deserialize_value(&data, &length, &numPriors);
   deserialize_value(&data, &length, &mClipBoxes);
 }
 
@@ -94,23 +91,20 @@ int TRTBatchedRotatedNMS::enqueue(const nvinfer1::PluginTensorDesc* inputDesc,
   pluginStatus_t status = nmsInference(
       stream, batch_size, boxes_size, score_size, shareLocation, param.backgroundLabelId,
       num_priors, param.numClasses, topk, param.keepTopK, param.scoreThreshold, param.iouThreshold,
-      DataType::kFLOAT, locData, DataType::kFLOAT, confData, nmsedDets, nmsedLabels, workSpace,
-      param.isNormalized, false, mClipBoxes, rotated);
+      DataType::kFLOAT, locData, DataType::kFLOAT, confData, nmsedDets, nmsedLabels, nullptr,
+      workSpace, param.isNormalized, false, mClipBoxes, rotated);
   ASSERT(status == STATUS_SUCCESS);
 
   return 0;
 }
 
 size_t TRTBatchedRotatedNMS::getSerializationSize() const TRT_NOEXCEPT {
-  // NMSParameters, boxesSize,scoresSize,numPriors
-  return sizeof(NMSParameters) + sizeof(int) * 3 + sizeof(bool);
+  // NMSParameters,
+  return sizeof(NMSParameters) + sizeof(bool);
 }
 
 void TRTBatchedRotatedNMS::serialize(void* buffer) const TRT_NOEXCEPT {
   serialize_value(&buffer, param);
-  serialize_value(&buffer, boxesSize);
-  serialize_value(&buffer, scoresSize);
-  serialize_value(&buffer, numPriors);
   serialize_value(&buffer, mClipBoxes);
 }
 
@@ -140,9 +134,6 @@ const char* TRTBatchedRotatedNMS::getPluginVersion() const TRT_NOEXCEPT {
 
 IPluginV2DynamicExt* TRTBatchedRotatedNMS::clone() const TRT_NOEXCEPT {
   auto* plugin = new TRTBatchedRotatedNMS(mLayerName, param);
-  plugin->boxesSize = boxesSize;
-  plugin->scoresSize = scoresSize;
-  plugin->numPriors = numPriors;
   plugin->setPluginNamespace(mNamespace.c_str());
   plugin->setClipParam(mClipBoxes);
   return plugin;

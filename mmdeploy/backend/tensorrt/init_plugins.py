@@ -13,7 +13,9 @@ def get_ops_path() -> str:
     """
     candidates = [
         '../../lib/libmmdeploy_tensorrt_ops.so',
-        '../../lib/mmdeploy_tensorrt_ops.dll'
+        '../../lib/mmdeploy_tensorrt_ops.dll',
+        '../../../build/lib/libmmdeploy_tensorrt_ops.so',
+        '../../../build/bin/*/mmdeploy_tensorrt_ops.dll'
     ]
     return get_file_path(os.path.dirname(__file__), candidates)
 

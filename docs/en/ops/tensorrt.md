@@ -51,6 +51,12 @@
     - [Inputs](#inputs-7)
     - [Outputs](#outputs-7)
     - [Type Constraints](#type-constraints-7)
+  - [GridPriorsTRT](#gridpriorstrt)
+    - [Description](#description-8)
+    - [Parameters](#parameters-8)
+    - [Inputs](#inputs-8)
+    - [Outputs](#outputs-8)
+    - [Type Constraints](#type-constraints-8)
 
 <!-- TOC -->
 
@@ -363,3 +369,39 @@ Batched rotated NMS with a fixed number of output bounding boxes.
 #### Type Constraints
 
 - T:tensor(float32, Linear)
+
+### GridPriorsTRT
+
+#### Description
+
+Generate the anchors for object detection task.
+
+#### Parameters
+
+| Type  | Parameter  | Description                       |
+| ----- | ---------- | --------------------------------- |
+| `int` | `stride_w` | The stride of the feature width.  |
+| `int` | `stride_h` | The stride of the feature height. |
+
+#### Inputs
+
+<dl>
+<dt><tt>inputs[0]</tt>: T</dt>
+<dd>The base anchors; 2-D tensor with shape [num_base_anchor, 4].</dd>
+<dt><tt>inputs[1]</tt>: TAny</dt>
+<dd>height provider; 1-D tensor with shape [featmap_height]. The data will never been used.</dd>
+<dt><tt>inputs[2]</tt>: TAny</dt>
+<dd>width provider; 1-D tensor with shape [featmap_width]. The data will never been used.</dd>
+</dl>
+
+#### Outputs
+
+<dl>
+<dt><tt>outputs[0]</tt>: T</dt>
+<dd>output anchors; 2-D tensor of shape (num_base_anchor*featmap_height*featmap_widht, 4).</dd>
+</dl>
+
+#### Type Constraints
+
+- T:tensor(float32, Linear)
+- TAny: Any

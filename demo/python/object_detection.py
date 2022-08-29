@@ -2,18 +2,17 @@
 import argparse
 
 import cv2
-import numpy as np
 from mmdeploy_python import Detector
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
         description='show how to use sdk python api')
+    parser.add_argument('device_name', help='name of device, cuda or cpu')
     parser.add_argument(
-        'model_path', help='the directory path of mmdeploy model')
-    parser.add_argument('image_path', help='the path of an image')
-    parser.add_argument(
-        '--device-name', default='cpu', help='the name of device, cuda or cpu')
+        'model_path',
+        help='path of mmdeploy SDK model dumped by model converter')
+    parser.add_argument('image_path', help='path of an image')
     args = parser.parse_args()
     return args
 
@@ -22,11 +21,9 @@ def main():
     args = parse_args()
 
     img = cv2.imread(args.image_path)
-    detector = Detector(args.model_path, args.device_name, 0)
-    bboxes, labels, masks = detector([img])[0]
-    assert (isinstance(bboxes, np.ndarray))
-    assert (isinstance(labels, np.ndarray))
-    assert (isinstance(masks, list))
+    detector = Detector(
+        model_path=args.model_path, device_name=args.device_name, device_id=0)
+    bboxes, labels, masks = detector(img)
 
     indices = [i for i in range(len(bboxes))]
     for index, bbox, label_id in zip(indices, bboxes, labels):

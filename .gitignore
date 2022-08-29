@@ -6,6 +6,10 @@ __pycache__/
 # C extensions
 *.so
 onnx2ncnn
+mmdeploy_onnx2ncnn
+
+# Java classes
+*.class
 
 # Distribution / packaging
 .Python
@@ -151,3 +155,6 @@ mmdeploy/backend/ncnn/onnx2ncnn
 
 # OCR dicts
 dicts
+# snpe
+grpc-cpp-plugin
+service/snpe/grpc_cpp_plugin

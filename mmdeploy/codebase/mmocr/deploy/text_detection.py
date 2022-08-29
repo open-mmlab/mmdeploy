@@ -110,7 +110,11 @@ class TextDetection(BaseTask):
         """
         from .text_detection_model import build_text_detection_model
         model = build_text_detection_model(
-            model_files, self.model_cfg, self.deploy_cfg, device=self.device)
+            model_files,
+            self.model_cfg,
+            self.deploy_cfg,
+            device=self.device,
+            **kwargs)
         return model.eval()
 
     def create_input(self,

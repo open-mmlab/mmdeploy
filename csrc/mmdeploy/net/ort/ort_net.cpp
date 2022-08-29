@@ -77,7 +77,7 @@ Result<void> OrtNet::Init(const Value& args) {
     auto input_name = session_.GetInputName(i, allocator);
     auto type_info = session_.GetInputTypeInfo(i);
     auto shape = to_shape(type_info);
-    MMDEPLOY_INFO("input {}, shape = {}", i, shape);
+    MMDEPLOY_DEBUG("input {}, shape = {}", i, shape);
     filter_shape(shape);
     OUTCOME_TRY(auto data_type,
                 ConvertElementType(type_info.GetTensorTypeAndShapeInfo().GetElementType()));
@@ -91,7 +91,7 @@ Result<void> OrtNet::Init(const Value& args) {
     auto output_name = session_.GetOutputName(i, allocator);
     auto type_info = session_.GetOutputTypeInfo(i);
     auto shape = to_shape(type_info);
-    MMDEPLOY_INFO("output {}, shape = {}", i, shape);
+    MMDEPLOY_DEBUG("output {}, shape = {}", i, shape);
     filter_shape(shape);
     OUTCOME_TRY(auto data_type,
                 ConvertElementType(type_info.GetTensorTypeAndShapeInfo().GetElementType()));

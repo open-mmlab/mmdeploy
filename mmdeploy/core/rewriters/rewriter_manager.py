@@ -48,7 +48,11 @@ def patch_model(model: nn.Module,
 
     Examples:
         >>> from mmdeploy.core import patch_model
-        >>> patched_model = patch_model(model, cfg=deploy_cfg, backend=backend)
+        >>> from mmdeploy.utils import Backend, IR
+        >>> deploy_cfg = {}
+        >>> backend = Backend.DEFAULT.value
+        >>> ir = IR.ONNX
+        >>> patched_model = patch_model(model, deploy_cfg, backend, ir)
     """
     return MODULE_REWRITER.patch_model(model, cfg, backend, ir, recursive,
                                        **kwargs)
