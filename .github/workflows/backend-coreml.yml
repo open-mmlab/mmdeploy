@@ -63,7 +63,7 @@ jobs:
             -DMMDEPLOY_BUILD_EXAMPLES=ON \
             -DMMDEPLOY_SHARED_LIBS=OFF
           cmake --build . -j 3
-          cmake --build . --target install 
+          cmake --build . --target install
       - name: build-shared
         run: |
           mkdir build-shared && cd build-shared
@@ -77,4 +77,4 @@ jobs:
             -DMMDEPLOY_BUILD_EXAMPLES=ON \
             -DMMDEPLOY_SHARED_LIBS=ON
           cmake --build . -j 3
-          cmake --build . --target install 
+          cmake --build . --target install
