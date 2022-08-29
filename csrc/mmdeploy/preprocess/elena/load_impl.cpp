@@ -14,7 +14,7 @@ class PrepareImageImpl : public ::mmdeploy::PrepareImageImpl {
 
  protected:
   Result<Tensor> ConvertToBGR(const Mat& img) override {
-    DataType data_type = img.type();
+    auto data_type = img.type();
     auto format = img.pixel_format();
     TensorShape shape = {1, img.height(), img.width(), 3};
 
@@ -33,7 +33,7 @@ class PrepareImageImpl : public ::mmdeploy::PrepareImageImpl {
   }
 
   Result<Tensor> ConvertToGray(const Mat& img) override {
-    DataType data_type = img.type();
+    auto data_type = img.type();
     auto format = img.pixel_format();
     TensorShape shape = {1, img.height(), img.width(), 1};
 

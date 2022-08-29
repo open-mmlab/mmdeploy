@@ -14,9 +14,9 @@ class CenterCropImpl : public ::mmdeploy::CenterCropImpl {
  protected:
   Result<Tensor> CropImage(const Tensor& tensor, int top, int left, int bottom,
                            int right) override {
-    TensorDesc src_desc = tensor.desc();
-    DataType data_type = src_desc.data_type;
-    TensorShape shape = src_desc.shape;
+    auto& src_desc = tensor.desc();
+    auto data_type = src_desc.data_type;
+    auto shape = src_desc.shape;
     shape[1] = bottom - top + 1;  // h
     shape[2] = right - left + 1;  // w
 

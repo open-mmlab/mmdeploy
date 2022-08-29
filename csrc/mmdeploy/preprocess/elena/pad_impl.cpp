@@ -13,9 +13,9 @@ class PadImpl : public ::mmdeploy::PadImpl {
 
  protected:
   Result<Tensor> PadImage(const Tensor& img, const std::array<int, 4>& padding) override {
-    TensorDesc src_desc = img.desc();
-    DataType data_type = src_desc.data_type;
-    TensorShape shape = src_desc.shape;  // 1 x h x w x c
+    auto& src_desc = img.desc();
+    auto data_type = src_desc.data_type;
+    auto shape = src_desc.shape;  // 1 x h x w x c
     shape[1] += padding[1] + padding[3];
     shape[2] += padding[0] + padding[2];
 

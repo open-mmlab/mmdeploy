@@ -14,9 +14,9 @@ class NormalizeImpl : public ::mmdeploy::NormalizeImpl {
 
  protected:
   Result<Tensor> NormalizeImage(const Tensor& tensor) override {
-    TensorDesc src_desc = tensor.desc();
-    DataType data_type = DataType::kFLOAT;
-    TensorShape shape = src_desc.shape;
+    auto& src_desc = tensor.desc();
+    auto data_type = DataType::kFLOAT;
+    auto shape = src_desc.shape;
 
     TensorDesc dummy_desc = {Device{"cpu"}, data_type, shape};
     Tensor dummy(dummy_desc, dummy_buffer_);

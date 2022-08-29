@@ -14,8 +14,8 @@ class ResizeImpl final : public ::mmdeploy::ResizeImpl {
 
  protected:
   Result<Tensor> ResizeImage(const Tensor& img, int dst_h, int dst_w) override {
-    TensorDesc src_desc = img.desc();
-    DataType data_type = src_desc.data_type;
+    auto& src_desc = img.desc();
+    auto data_type = src_desc.data_type;
     TensorShape shape = {1, dst_h, dst_w, img.shape().back()};
 
     TensorDesc dummy_desc = {Device{"cpu"}, data_type, shape};

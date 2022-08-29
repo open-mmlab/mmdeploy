@@ -11,9 +11,9 @@ class ImageToTensorImpl : public ::mmdeploy::ImageToTensorImpl {
 
  protected:
   Result<Tensor> HWC2CHW(const Tensor& tensor) override {
-    TensorDesc src_desc = tensor.desc();
-    DataType data_type = src_desc.data_type;
-    TensorShape shape = src_desc.shape;
+    auto& src_desc = tensor.desc();
+    auto data_type = src_desc.data_type;
+    auto shape = src_desc.shape;
     shape = {shape[0], shape[3], shape[1], shape[2]};
 
     TensorDesc dummy_desc = {Device{"cpu"}, data_type, shape};

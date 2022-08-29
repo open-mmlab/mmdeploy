@@ -106,7 +106,7 @@ class CollectImpl : public ::mmdeploy::CollectImpl {
     auto img_fields = GetImageFields(input);
     for (auto& key : img_fields) {
       assert(input.contains(key));
-      Tensor src_tensor = input[key].get<Tensor>();
+      auto src_tensor = input[key].get<Tensor>();
       auto desc = src_tensor.desc();
       desc.device = device_;
       Tensor dst_tensor{desc};
