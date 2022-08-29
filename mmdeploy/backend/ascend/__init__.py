@@ -16,5 +16,5 @@ def is_available():
 __all__ = ['update_sdk_pipeline']
 
 if is_available():
-    from .wrapper import AscendWrapper
-    __all__ += ['AscendWrapper']
+    from .wrapper import AscendWrapper, Error
+    __all__ += ['AscendWrapper', 'Error']
