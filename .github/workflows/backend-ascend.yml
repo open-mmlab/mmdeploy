@@ -42,6 +42,7 @@ jobs:
           pkg-config --libs opencv
       - name: Install Ascend Toolkit
         run: |
+          mkdir -p $GITHUB_WORKSPACE/Ascend
           wget https://ascend-repo.obs.cn-east-2.myhuaweicloud.com/CANN/CANN%205.1.RC2/Ascend-cann-toolkit_5.1.RC2_linux-x86_64.run
           sh Ascend-cann-toolkit_5.1.RC2_linux-x86_64.run --install --install-path=$GITHUB_WORKSPACE/Ascend --quiet --chip=Ascend310 --blacklist=devtools
       - name: Build SDK Demo with Ascend backend
