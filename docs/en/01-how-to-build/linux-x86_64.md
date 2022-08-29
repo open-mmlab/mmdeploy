@@ -242,7 +242,7 @@ export LD_LIBRARY_PATH=$Torch_DIR/lib:$LD_LIBRARY_PATH
     <td>Ascend</td>
     <td>CANN</td>
     <td>
-    1. Install CANN follow <a href="https://support.huawei.com/enterprise/en/ascend-computing/cann-pid-251168373?category=installation-upgrade">official guide</a>.<br>
+    1. Install CANN follow <a href="https://www.hiascend.com/document/detail/en/CANNCommunityEdition/51RC1alphaX/softwareinstall/instg/atlasdeploy_03_0002.html">official guide</a>.<br>
     2. Setup environment
    <pre><code>
 export ASCEND_TOOLKIT_HOME="/usr/local/Ascend/ascend-toolkit/latest"
