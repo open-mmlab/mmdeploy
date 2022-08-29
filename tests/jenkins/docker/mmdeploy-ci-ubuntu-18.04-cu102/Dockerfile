@@ -1,4 +1,4 @@
-FROM nvidia/cuda:${CUDA}-devel-ubuntu18.04
+FROM nvidia/cuda:10.2-devel-ubuntu18.04
 ARG PYTHON_VERSION=3.7
 ARG CUDA=10.2
 ARG CUDA_INT=102
@@ -84,10 +84,11 @@ ENV LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
 ### install cudnn
 RUN wget http://${HOST}/cudnn-${CUDA}-linux-x64-v7.6.5.32.tgz && \
     tar -zxvf cudnn-${CUDA}-linux-x64-v7.6.5.32.tgz && \
-    cp -r cuda/include/cudnn.h* /usr/local/cuda-${CUDA}/include/ && \
+    cp -r cuda/include/cudnn* /usr/local/cuda-${CUDA}/include/ && \
     cp -r cuda/lib64/libcudnn* /usr/local/cuda-${CUDA}/lib64/
 ENV CUDNN_DIR=/root/workspace/cuda
 ENV LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
+ENV LD_LIBRARY_PATH=/usr/local/cuda-${CUDA}/lib64/:$LD_LIBRARY_PATH
 ENV CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-${CUDA}
  
 ### get onnxruntime
@@ -95,6 +96,7 @@ RUN wget https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTI
     && tar -zxvf onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz &&\
     /opt/conda/bin/pip install onnxruntime-gpu==${ONNXRUNTIME_VERSION}
 ENV ONNXRUNTIME_DIR=/root/workspace/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}
+ENV LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 
 ### install openvino
 RUN /opt/conda/bin/pip install openvino-dev
@@ -132,8 +134,8 @@ ENV pplcv_DIR=/root/workspace/ppl.cv/cuda-build/install/lib/cmake/ppl
 ### install zip
 RUN apt update && apt install -y zip 
 ### install libtorch
-RUN wget https://download.pytorch.org/libtorch/cu102/libtorch-shared-with-deps-1.12.1%2Bcu102.zip && \
-    unzip libtorch-shared-with-deps-1.12.1+cu102.zip 
+RUN wget https://download.pytorch.org/libtorch/cu${CUDA_INT}/libtorch-shared-with-deps-1.12.1%2Bcu${CUDA_INT}.zip && \
+    unzip libtorch-shared-with-deps-1.12.1+cu${CUDA_INT}.zip 
 ENV Torch_DIR=/root/workspace/libtorch
 ENV LD_LIBRARY_PATH=$Torch_DIR/lib:$LD_LIBRARY_PATH
 
@@ -144,12 +146,12 @@ RUN /opt/conda/bin/pip install openmim
 ### create conda env && install pytorch
 RUN /opt/conda/bin/conda init bash && \
     /opt/conda/bin/conda create --clone base -n torch1.9.0 -y && \
-    /opt/conda/envs/torch1.9.0/bin/pip install torch==1.9.0+cu102 torchvision==0.10.0+cu102 -f https://download.pytorch.org/whl/torch_stable.html && \
+    /opt/conda/envs/torch1.9.0/bin/pip install torch==1.9.0+cu${CUDA_INT} torchvision==0.10.0+cu${CUDA_INT} -f https://download.pytorch.org/whl/torch_stable.html && \
     /opt/conda/bin/conda create --clone base -n torch1.10.0 -y && \
-    /opt/conda/envs/torch1.10.0/bin/pip install torch==1.10.0+cu102 torchvision==0.11.0+cu102 -f https://download.pytorch.org/whl/torch_stable.html && \
+    /opt/conda/envs/torch1.10.0/bin/pip install torch==1.10.0+cu${CUDA_INT} torchvision==0.11.0+cu${CUDA_INT} -f https://download.pytorch.org/whl/torch_stable.html && \
     /opt/conda/bin/conda create --clone base -n torch1.11.0 -y && \
-    /opt/conda/envs/torch1.11.0/bin/pip install torch==1.11.0+cu102 torchvision==0.12.0+cu102 -f https://download.pytorch.org/whl/torch_stable.html && \
+    /opt/conda/envs/torch1.11.0/bin/pip install torch==1.11.0+cu${CUDA_INT} torchvision==0.12.0+cu${CUDA_INT} -f https://download.pytorch.org/whl/torch_stable.html && \
     /opt/conda/bin/conda create --clone base -n torch1.12.0 -y && \
-    /opt/conda/envs/torch1.12.0/bin/pip install torch==1.12.0+cu102 torchvision==0.13.0+cu102 -f https://download.pytorch.org/whl/torch_stable.html
+    /opt/conda/envs/torch1.12.0/bin/pip install torch==1.12.0+cu${CUDA_INT} torchvision==0.13.0+cu${CUDA_INT} -f https://download.pytorch.org/whl/torch_stable.html
 
    
