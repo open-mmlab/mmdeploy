@@ -52,7 +52,6 @@ class DataBuffer:
 
     def destroy(self):
         if self.handle is not None:
-            print('acl.destroy_data_buffer(self.handle)')
             acl.destroy_data_buffer(self.handle)
             acl.rt.free(self.data)
             self.handle = None
@@ -72,7 +71,6 @@ class Dataset:
         if self.handle is not None:
             for buffer in self.buffers:
                 buffer.destroy()
-            print('acl.mdl.destroy_dataset(self.handle)')
             acl.mdl.destroy_dataset(self.handle)
             self.handle = None
 
@@ -137,7 +135,6 @@ class ModelDesc:
 
     def destroy(self):
         if self._desc is not None:
-            print('acl.mdl.destroy_desc(self._desc)')
             acl.mdl.destroy_desc(self._desc)
             self._desc = None
 
@@ -238,7 +235,6 @@ class Context:
         if not _is_torch_npu_available:
             self._active = True
             if Context.ref_count == 0:
-                print('acl.init()')
                 ret = acl.init()
                 if ret == 0:
                     Context.owned_acl = True
@@ -258,7 +254,6 @@ class Context:
             return
         Context.ref_count -= 1
         if Context.ref_count == 0 and Context.owned_acl:
-            print('acl.finalize()')
             ret = acl.finalize()
             if ret == 0:
                 Context.owned_acl = False
@@ -347,7 +342,6 @@ class AscendWrapper(BaseWrapper):
             self._input.destroy()
             self._output.destroy()
             self._model_desc.destroy()
-            print('acl.mdl.unload(self._model_id)')
             acl.mdl.unload(self._model_id)
             self._model_id = None
         self._context.destroy()
