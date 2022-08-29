@@ -2,7 +2,7 @@
 import os.path as osp
 from typing import Any, Optional, Union
 
-import mmcv
+import mmengine
 import torch
 
 from mmdeploy.apis.core.pipeline_manager import PIPELINE_MANAGER, no_mp
@@ -14,8 +14,8 @@ from .torch_jit import trace
 def torch2torchscript(img: Any,
                       work_dir: str,
                       save_file: str,
-                      deploy_cfg: Union[str, mmcv.Config],
-                      model_cfg: Union[str, mmcv.Config],
+                      deploy_cfg: Union[str, mmengine.Config],
+                      model_cfg: Union[str, mmengine.Config],
                       model_checkpoint: Optional[str] = None,
                       device: str = 'cuda:0'):
     """Convert PyTorch model to torchscript model.
@@ -25,16 +25,16 @@ def torch2torchscript(img: Any,
             converting model.
         work_dir (str): A working directory to save files.
         save_file (str): Filename to save torchscript model.
-        deploy_cfg (str | mmcv.Config): Deployment config file or
+        deploy_cfg (str | mmengine.Config): Deployment config file or
             Config object.
-        model_cfg (str | mmcv.Config): Model config file or Config object.
+        model_cfg (str | mmengine.Config): Model config file or Config object.
         model_checkpoint (str): A checkpoint path of PyTorch model,
             defaults to `None`.
         device (str): A string specifying device type, defaults to 'cuda:0'.
     """
     # load deploy_cfg if necessary
     deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
-    mmcv.mkdir_or_exist(osp.abspath(work_dir))
+    mmengine.mkdir_or_exist(osp.abspath(work_dir))
 
     input_shape = get_input_shape(deploy_cfg)
 

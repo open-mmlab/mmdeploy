@@ -4,6 +4,7 @@ import re
 from typing import Dict, List, Tuple, Union
 
 import mmcv
+import mmengine
 
 from mmdeploy.apis import build_task_processor
 from mmdeploy.utils import (Backend, Task, get_backend, get_codebase,
@@ -19,12 +20,12 @@ def get_mmdpeloy_version() -> str:
     return version
 
 
-def get_task(deploy_cfg: mmcv.Config) -> Dict:
+def get_task(deploy_cfg: mmengine.Config) -> Dict:
     """Get the task info for mmdeploy.json. The task info is composed of
     task_name, the codebase name and the codebase version.
 
     Args:
-        deploy_cfg (mmcv.Config): Deploy config dict.
+        deploy_cfg (mmengine.Config): Deploy config dict.
 
     Return:
         dict: The task info.
@@ -41,13 +42,13 @@ def get_task(deploy_cfg: mmcv.Config) -> Dict:
         task=task_name, codebase=codebase_name, version=codebase_version)
 
 
-def get_model_name_customs(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
-                           work_dir: str) -> Tuple:
+def get_model_name_customs(deploy_cfg: mmengine.Config,
+                           model_cfg: mmengine.Config, work_dir: str) -> Tuple:
     """Get the model name and dump custom file.
 
     Args:
-        deploy_cfg (mmcv.Config): Deploy config dict.
-        model_cfg (mmcv.Config): The model config dict.
+        deploy_cfg (mmengine.Config): Deploy config dict.
+        model_cfg (mmengine.Config): The model config dict.
         work_dir (str): Work dir to save json files.
 
     Return:
@@ -74,13 +75,13 @@ def get_model_name_customs(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
     return name, customs
 
 
-def get_models(deploy_cfg: Union[str, mmcv.Config],
-               model_cfg: Union[str, mmcv.Config], work_dir: str) -> List:
+def get_models(deploy_cfg: Union[str, mmengine.Config],
+               model_cfg: Union[str, mmengine.Config], work_dir: str) -> List:
     """Get the output model informantion for deploy.json.
 
     Args:
-        deploy_cfg (mmcv.Config): Deploy config dict.
-        model_cfg (mmcv.Config): The model config dict.
+        deploy_cfg (mmengine.Config): Deploy config dict.
+        model_cfg (mmengine.Config): The model config dict.
         work_dir (str): Work dir to save json files.
 
     Return:
@@ -146,13 +147,13 @@ def get_models(deploy_cfg: Union[str, mmcv.Config],
     ]
 
 
-def get_inference_info(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
+def get_inference_info(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
                        work_dir: str) -> Dict:
     """Get the inference information for pipeline.json.
 
     Args:
-        deploy_cfg (mmcv.Config): Deploy config dict.
-        model_cfg (mmcv.Config): The model config dict.
+        deploy_cfg (mmengine.Config): Deploy config dict.
+        model_cfg (mmengine.Config): The model config dict.
         work_dir (str): Work dir to save json files.
 
     Return:
@@ -180,7 +181,7 @@ def get_inference_info(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
     return return_dict
 
 
-def get_preprocess(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config):
+def get_preprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config):
     task_processor = build_task_processor(
         model_cfg=model_cfg, deploy_cfg=deploy_cfg, device='cpu')
     pipeline = task_processor.get_preprocess()
@@ -231,12 +232,13 @@ def get_preprocess(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config):
         transforms=transforms)
 
 
-def get_postprocess(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config) -> Dict:
+def get_postprocess(deploy_cfg: mmengine.Config,
+                    model_cfg: mmengine.Config) -> Dict:
     """Get the post process information for pipeline.json.
 
     Args:
-        deploy_cfg (mmcv.Config): Deploy config dict.
-        model_cfg (mmcv.Config): The model config dict.
+        deploy_cfg (mmengine.Config): Deploy config dict.
+        model_cfg (mmengine.Config): The model config dict.
 
     Return:
         dict: Composed of the model name, type, module, input, params and
@@ -268,13 +270,13 @@ def get_postprocess(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config) -> Dict:
         output=output)
 
 
-def get_deploy(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
+def get_deploy(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
                work_dir: str) -> Dict:
     """Get the inference information for pipeline.json.
 
     Args:
-        deploy_cfg (mmcv.Config): Deploy config dict.
-        model_cfg (mmcv.Config): The model config dict.
+        deploy_cfg (mmengine.Config): Deploy config dict.
+        model_cfg (mmengine.Config): The model config dict.
         work_dir (str): Work dir to save json files.
 
     Return:
@@ -290,13 +292,13 @@ def get_deploy(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
     return dict(version=version, task=cls_name, models=models, customs=customs)
 
 
-def get_pipeline(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
+def get_pipeline(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
                  work_dir: str) -> Dict:
     """Get the inference information for pipeline.json.
 
     Args:
-        deploy_cfg (mmcv.Config): Deploy config dict.
-        model_cfg (mmcv.Config): The model config dict.
+        deploy_cfg (mmengine.Config): Deploy config dict.
+        model_cfg (mmengine.Config): The model config dict.
         work_dir (str): Work dir to save json files.
 
     Return:
@@ -320,13 +322,13 @@ def get_pipeline(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
             tasks=[preprocess, infer_info, postprocess]))
 
 
-def get_detail(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
+def get_detail(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
                pth: str) -> Dict:
     """Get the detail information for detail.json.
 
     Args:
-        deploy_cfg (mmcv.Config): Deploy config dict.
-        model_cfg (mmcv.Config): The model config dict.
+        deploy_cfg (mmengine.Config): Deploy config dict.
+        model_cfg (mmengine.Config): The model config dict.
         pth (str): The checkpoint weight of pytorch model.
 
     Return:
@@ -350,14 +352,15 @@ def get_detail(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
         calib_config=calib_config)
 
 
-def export2SDK(deploy_cfg: Union[str, mmcv.Config],
-               model_cfg: Union[str, mmcv.Config], work_dir: str, pth: str):
+def export2SDK(deploy_cfg: Union[str, mmengine.Config],
+               model_cfg: Union[str,
+                                mmengine.Config], work_dir: str, pth: str):
     """Export information to SDK. This function dump `deploy.json`,
     `pipeline.json` and `detail.json` to work dir.
 
     Args:
-        deploy_cfg (str | mmcv.Config): Deploy config file or dict.
-        model_cfg (str | mmcv.Config): Model config file or dict.
+        deploy_cfg (str | mmengine.Config): Deploy config file or dict.
+        model_cfg (str | mmengine.Config): Model config file or dict.
         work_dir (str): Work dir to save json files.
         pth (str): The path of the model checkpoint weights.
     """

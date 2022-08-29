@@ -1,16 +1,17 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Dict, Optional
+from typing import Dict
 
 import torch
-from mmocr.models.textdet.heads.base_textdet_head import SampleList
+from mmocr.utils.typing import DetSampleList
 
 from mmdeploy.core import FUNCTION_REWRITER
 
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmocr.models.textdet.heads.BaseTextDetHead.predict')
-def base_text_det_head__predict(ctx, self, x: torch.Tensor,
-                                batch_data_samples: SampleList) -> SampleList:
+def base_text_det_head__predict(
+        ctx, self, x: torch.Tensor,
+        batch_data_samples: DetSampleList) -> DetSampleList:
     """Rewrite `predict` of BaseTextDetHead for default backend.
 
     Rewrite this function to early return the results to avoid post processing.
@@ -36,16 +37,10 @@ def base_text_det_head__predict(ctx, self, x: torch.Tensor,
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmocr.models.textdet.heads.DBHead.forward')
-def db_head__forward(ctx,
-                     self,
-                     img: torch.Tensor,
-                     data_samples: Optional[SampleList] = None) -> SampleList:
-    """Rewrite `predict` of BaseTextDetHead for default backend.
-
-    Rewrite this function to early return the results to avoid post processing.
-    The process is not suitable for exporting to backends and better get
-    implemented in SDK.
+    func_name='mmocr.models.textdet.heads.DBHead.predict')
+def db_head__predict(ctx, self, x: torch.Tensor,
+                     batch_data_samples: DetSampleList) -> DetSampleList:
+    """Rewrite to avoid post-process of text detection head.
 
     Args:
         x (tuple[Tensor]): Multi-level features from the
@@ -58,8 +53,5 @@ def db_head__forward(ctx,
         SampleList: Detection results of each image
         after the post process.
     """
-    prob_map = self.binarize(img)
-    thr_map = self.threshold(img)
-    binary_map = self._diff_binarize(prob_map, thr_map, k=50)
-    outputs = torch.cat((prob_map, thr_map, binary_map), dim=1)
-    return outputs
+    outs = self(x, batch_data_samples, mode='predict')
+    return outs

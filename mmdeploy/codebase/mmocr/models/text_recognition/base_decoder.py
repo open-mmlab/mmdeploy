@@ -26,10 +26,6 @@ def base_decoder__forward(
         data_samples (list[TextRecogDataSample]): A list of N datasamples,
             containing meta information and gold annotations for each of
             the images. Defaults to None.
-
-    Returns:
-        list[TextRecogDataSample]:  A list of N datasamples of prediction
-        results. Results are stored in ``pred_text``.
     """
     out_dec = self(feat, out_enc, data_samples)
     return out_dec

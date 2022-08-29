@@ -180,7 +180,7 @@ def rpn_head__get_bboxes__ncnn(ctx,
             image size, scaling factor, etc.
         with_nms (bool): If True, do nms before return boxes.
             Default: True.
-        cfg (mmcv.Config | None): Test / postprocessing configuration,
+        cfg (mmengine.Config | None): Test / postprocessing configuration,
             if None, test_cfg would be used.
             Default: None.
 

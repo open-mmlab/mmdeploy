@@ -30,6 +30,12 @@ data_root = 'tests/test_codebase/test_mmocr/data'
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 
+test_pipeline = [
+    dict(
+        type='PackTextDetInputs',
+        meta_keys=('img_path', 'ori_shape', 'img_shape', 'scale_factor'))
+]
+
 test_dataloader = dict(
     batch_size=16,
     num_workers=8,
@@ -55,3 +61,4 @@ test_dataloader = dict(
         ]))
 
 visualizer = dict(type='TextDetLocalVisualizer', name='visualizer')
+default_scope = 'mmocr'

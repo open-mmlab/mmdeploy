@@ -1,16 +1,16 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Union
 
-import mmcv
+import mmengine
 
 from mmdeploy.utils import load_config
 
 
-def get_resize_ocr(model_cfg: Union[str, mmcv.Config]):
+def get_resize_ocr(model_cfg: Union[str, mmengine.Config]):
     """Get the test settings of ResizeOCR in model config.
 
     Args:
-        model_cfg (str | mmcv.Config): Model config file or loaded Config
+        model_cfg (str | mmengine.Config): Model config file or loaded Config
             object.
 
     Returns:

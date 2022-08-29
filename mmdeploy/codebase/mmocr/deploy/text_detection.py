@@ -1,10 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Callable, Dict, Optional, Sequence, Tuple, Union
 
-import mmcv
+import mmengine
 import numpy as np
 import torch
 from mmengine import Config
+from mmengine.dataset import pseudo_collate
 from mmengine.model import BaseDataPreprocessor
 from torch import nn
 
@@ -13,20 +14,20 @@ from mmdeploy.utils import Task, get_input_shape
 from .mmocr import MMOCR_TASK
 
 
-def process_model_config(model_cfg: mmcv.Config,
+def process_model_config(model_cfg: mmengine.Config,
                          imgs: Union[Sequence[str], Sequence[np.ndarray]],
                          input_shape: Optional[Sequence[int]] = None):
     """Process the model config.
 
     Args:
-        model_cfg (mmcv.Config): The model config.
+        model_cfg (mmengine.Config): The model config.
         imgs (Sequence[str] | Sequence[np.ndarray]): Input image(s), accepted
             data type are List[str], List[np.ndarray].
         input_shape (list[int]): A list of two integer in (width, height)
             format specifying input shape. Default: None.
 
     Returns:
-        mmcv.Config: the model config after processing.
+        mmengine.Config: the model config after processing.
     """
     pipeline = model_cfg.test_dataloader.dataset.pipeline
 
@@ -38,6 +39,11 @@ def process_model_config(model_cfg: mmcv.Config,
         if input_shape is not None and transform.type == 'Resize':
             pipeline[i].keep_ratio = False
             pipeline[i].scale = tuple(input_shape)
+
+    pipeline = [
+        transform for transform in pipeline
+        if transform.type != 'LoadOCRAnnotations'
+    ]
     model_cfg.test_dataloader.dataset.pipeline = pipeline
     return model_cfg
 
@@ -82,12 +88,12 @@ class TextDetection(BaseTask):
     """Text detection task class.
 
     Args:
-        model_cfg (mmcv.Config): Loaded model Config object..
-        deploy_cfg (mmcv.Config): Loaded deployment Config object.
+        model_cfg (mmengine.Config): Loaded model Config object..
+        deploy_cfg (mmengine.Config): Loaded deployment Config object.
         device (str): A string represents device type.
     """
 
-    def __init__(self, model_cfg: mmcv.Config, deploy_cfg: mmcv.Config,
+    def __init__(self, model_cfg: mmengine.Config, deploy_cfg: mmengine.Config,
                  device: str):
         super(TextDetection, self).__init__(model_cfg, deploy_cfg, device)
 
@@ -146,15 +152,14 @@ class TextDetection(BaseTask):
                 data_ = dict(
                     img=img, img_id=0, ori_shape=input_shape, instances=None)
             else:
-                data_ = dict(img_path=img, img_id=0)
+                data_ = dict(img_path=img, img_id=0, instances=None)
             # build the data pipeline
             data_ = test_pipeline(data_)
             data.append(data_)
-
-        data = data[0]
+        data = pseudo_collate(data)
         if data_preprocessor is not None:
-            data = data_preprocessor([data], False)
-            return data, data[0]
+            data = data_preprocessor(data, False)
+            return data, data['inputs']
         else:
             return data, BaseTask.get_tensor_from_input(data)
 

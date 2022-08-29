@@ -1,17 +1,17 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import mmcv
+import mmengine
 
 from mmdeploy.codebase import BaseTask, get_codebase_class, import_codebase
 from mmdeploy.utils import get_codebase, get_task_type
 
 
-def build_task_processor(model_cfg: mmcv.Config, deploy_cfg: mmcv.Config,
-                         device: str) -> BaseTask:
+def build_task_processor(model_cfg: mmengine.Config,
+                         deploy_cfg: mmengine.Config, device: str) -> BaseTask:
     """Build a task processor to manage the deployment pipeline.
 
     Args:
-        model_cfg (str | mmcv.Config): Model config file.
-        deploy_cfg (str | mmcv.Config): Deployment config file.
+        model_cfg (str | mmengine.Config): Model config file.
+        deploy_cfg (str | mmengine.Config): Deployment config file.
         device (str): A string specifying device type.
 
     Returns:
@@ -23,14 +23,15 @@ def build_task_processor(model_cfg: mmcv.Config, deploy_cfg: mmcv.Config,
     return codebase.build_task_processor(model_cfg, deploy_cfg, device)
 
 
-def get_predefined_partition_cfg(deploy_cfg: mmcv.Config, partition_type: str):
+def get_predefined_partition_cfg(deploy_cfg: mmengine.Config,
+                                 partition_type: str):
     """Get the predefined partition config.
 
     Notes:
         Currently only support mmdet codebase.
 
     Args:
-        deploy_cfg (mmcv.Config): use deploy config to get the codebase and
+        deploy_cfg (mmengine.Config): use deploy config to get the codebase and
             task type.
         partition_type (str): A string specifying partition type.
 

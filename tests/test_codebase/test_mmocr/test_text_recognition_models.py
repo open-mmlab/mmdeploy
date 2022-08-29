@@ -57,7 +57,7 @@ class TestEnd2EndModel:
             'img_shape': [IMAGE_SIZE, IMAGE_SIZE, 3],
             'scale_factor': [1., 1.]
         }
-        from mmengine.data import InstanceData
+        from mmengine.structures import InstanceData
         from mmocr.structures import TextRecogDataSample
         pred_instances = InstanceData(metainfo=img_meta)
         data_sample = TextRecogDataSample(pred_instances=pred_instances)

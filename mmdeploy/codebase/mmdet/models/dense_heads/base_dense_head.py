@@ -212,7 +212,7 @@ def base_dense_head__get_bboxes__ncnn(ctx,
             all scale level, each is a 4D-tensor, has shape
             (batch_size, num_priors * 1, H, W). Default None.
         img_metas (list[dict], Optional): Image meta info. Default None.
-        cfg (mmcv.Config, Optional): Test / postprocessing configuration,
+        cfg (mmengine.Config, Optional): Test / postprocessing configuration,
             if None, test_cfg would be used.  Default None.
         rescale (bool): If True, return boxes in original image space.
             Default False.

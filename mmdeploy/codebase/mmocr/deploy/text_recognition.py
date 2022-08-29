@@ -1,10 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Callable, Dict, Optional, Sequence, Tuple, Union
 
-import mmcv
+import mmengine
 import numpy as np
 import torch
 from mmengine import Config
+from mmengine.dataset import pseudo_collate
 from mmengine.model import BaseDataPreprocessor
 from torch import nn
 
@@ -13,20 +14,20 @@ from mmdeploy.utils import Task, get_input_shape
 from .mmocr import MMOCR_TASK
 
 
-def process_model_config(model_cfg: mmcv.Config,
+def process_model_config(model_cfg: mmengine.Config,
                          imgs: Union[Sequence[str], Sequence[np.ndarray]],
                          input_shape: Optional[Sequence[int]] = None):
     """Process the model config.
 
     Args:
-        model_cfg (mmcv.Config): The model config.
+        model_cfg (mmengine.Config): The model config.
         imgs (Sequence[str] | Sequence[np.ndarray]): Input image(s), accepted
             data type are List[str], List[np.ndarray].
         input_shape (list[int]): A list of two integer in (width, height)
             format specifying input shape. Default: None.
 
     Returns:
-        mmcv.Config: the model config after processing.
+        mmengine.Config: the model config after processing.
     """
     test_pipeline = model_cfg._cfg_dict.test_pipeline
     for i, transform in enumerate(test_pipeline):
@@ -94,12 +95,12 @@ class TextRecognition(BaseTask):
     """Text detection task class.
 
     Args:
-        model_cfg (mmcv.Config): Original PyTorch model config file.
-        deploy_cfg (mmcv.Config):  Loaded deployment config object.
+        model_cfg (mmengine.Config): Original PyTorch model config file.
+        deploy_cfg (mmengine.Config):  Loaded deployment config object.
         device (str): A string represents device type.
     """
 
-    def __init__(self, model_cfg: mmcv.Config, deploy_cfg: mmcv.Config,
+    def __init__(self, model_cfg: mmengine.Config, deploy_cfg: mmengine.Config,
                  device: str):
         super(TextRecognition, self).__init__(model_cfg, deploy_cfg, device)
 
@@ -165,10 +166,10 @@ class TextRecognition(BaseTask):
             data_ = test_pipeline(data_)
             data.append(data_)
 
-        data = data[0]
+        data = pseudo_collate(data)
         if data_preprocessor is not None:
-            data = data_preprocessor([data], False)
-            return data, data[0]
+            data = data_preprocessor(data, False)
+            return data, data['inputs']
         else:
             return data, BaseTask.get_tensor_from_input(data)
 

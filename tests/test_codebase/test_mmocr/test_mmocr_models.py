@@ -89,7 +89,7 @@ def get_base_recognizer_model():
 
     cfg = dict(
         preprocessor=None,
-        backbone=dict(type='VeryDeepVgg', leaky_relu=False, input_channels=1),
+        backbone=dict(type='MiniVGG', leaky_relu=False, input_channels=1),
         encoder=None,
         decoder=dict(
             type='CRNNDecoder',
@@ -168,10 +168,9 @@ def test_simple_test_of_single_stage_text_detector(backend: Backend):
 
     input = torch.rand(1, 3, 64, 64)
     model_outputs = single_stage_text_detector._forward(input)
-    model_outputs = torch.stack(model_outputs, 1)
 
     wrapped_model = WrapModel(single_stage_text_detector, '_forward')
-    rewrite_inputs = {'batch_inputs': input}
+    rewrite_inputs = {'inputs': input}
     rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
@@ -366,13 +365,12 @@ def get_sar_model_cfg(decoder_type: str):
             std=[127, 127, 127]),
         backbone=dict(type='ResNet31OCR'),
         encoder=dict(
-            type='SAREncoder',
+            type='mmocr.SAREncoder',
             enc_bi_rnn=False,
             enc_do_rnn=0.1,
-            enc_gru=False,
-        ),
+            enc_gru=False),
         decoder=dict(
-            type='ParallelSARDecoder',
+            type=f'mmocr.{decoder_type}',
             enc_bi_rnn=False,
             dec_bi_rnn=False,
             dec_do_rnn=0,
@@ -383,7 +381,15 @@ def get_sar_model_cfg(decoder_type: str):
             postprocessor=dict(type='AttentionPostprocessor'),
             module_loss=dict(
                 type='CEModuleLoss', ignore_first_char=True, reduction='mean'),
-            dictionary=dictionary,
+            dictionary=dict(
+                type='Dictionary',
+                dict_file='tests/test_codebase/test_mmocr/'
+                'data/lower_english_digits.txt',
+                with_start=True,
+                with_end=True,
+                same_start_end=True,
+                with_padding=True,
+                with_unknown=True),
             max_seq_len=30))
     return mmengine.Config(dict(model=model))
 
@@ -400,7 +406,18 @@ def test_sar_model(backend: Backend, decoder_type):
     sar_cfg = get_sar_model_cfg(decoder_type)
     sar_cfg.model.pop('type')
     pytorch_model = SARNet(**(sar_cfg.model))
-    model_inputs = {'x': torch.rand(1, 3, 48, 160)}
+
+    # img_meta = {
+    #     'ori_shape': [48, 160],
+    #     'img_shape': [48, 160, 3],
+    #     'scale_factor': [1., 1.]
+    # }
+    # from mmengine.structures import InstanceData
+    # from mmocr.structures import TextRecogDataSample
+    # pred_instances = InstanceData(metainfo=img_meta)
+    # data_sample = TextRecogDataSample(pred_instances=pred_instances)
+    # data_sample.set_metainfo(img_meta)
+    model_inputs = {'inputs': torch.rand(1, 3, 48, 160), 'data_samples': None}
 
     deploy_cfg = mmengine.Config(
         dict(
@@ -416,6 +433,10 @@ def test_sar_model(backend: Backend, decoder_type):
         pytorch_model, cfg=deploy_cfg, backend=backend.value)
     onnx_file_path = tempfile.NamedTemporaryFile(suffix='.onnx').name
     input_names = [k for k, v in model_inputs.items() if k != 'ctx']
+    # model_forward = patched_model.forward
+    # from functools import partial
+    # patched_model.forward = partial(patched_model.forward,
+    #                                 **{'data_samples': [data_sample]})
     with RewriterContext(
             cfg=deploy_cfg, backend=backend.value), torch.no_grad():
         torch.onnx.export(

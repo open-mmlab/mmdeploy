@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Sequence, Union
 
-import mmcv
+import mmengine
 import torch
 from mmengine.registry import Registry
 from mmocr.utils.typing import RecSampleList
@@ -22,9 +22,9 @@ class End2EndModel(BaseBackendModel):
         backend_files (Sequence[str]): Paths to all required backend files(e.g.
             '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
         device (str): A string represents device type.
-        deploy_cfg (str | mmcv.Config): Deployment config file or loaded Config
-            object.
-        model_cfg (str | mmcv.Config): Model config file or loaded Config
+        deploy_cfg (str | mmengine.Config): Deployment config file or loaded
+            Config object.
+        model_cfg (str | mmengine.Config): Model config file or loaded Config
             object.
     """
 
@@ -33,8 +33,8 @@ class End2EndModel(BaseBackendModel):
         backend: Backend,
         backend_files: Sequence[str],
         device: str,
-        deploy_cfg: Union[str, mmcv.Config] = None,
-        model_cfg: Union[str, mmcv.Config] = None,
+        deploy_cfg: Union[str, mmengine.Config] = None,
+        model_cfg: Union[str, mmengine.Config] = None,
     ):
         super(End2EndModel, self).__init__(deploy_cfg=deploy_cfg)
         model_cfg, deploy_cfg = load_config(model_cfg, deploy_cfg)
@@ -76,8 +76,8 @@ class End2EndModel(BaseBackendModel):
             output_names=output_names,
             deploy_cfg=self.deploy_cfg)
 
-    def forward(self, batch_inputs: torch.Tensor, data_samples: RecSampleList,
-                *args, **kwargs) -> RecSampleList:
+    def forward(self, inputs: torch.Tensor, data_samples: RecSampleList, *args,
+                **kwargs) -> RecSampleList:
         """Predict results from a batch of inputs and data samples with post-
         processing.
 
@@ -91,7 +91,7 @@ class End2EndModel(BaseBackendModel):
             list[TextRecogDataSample]:  A list of N datasamples of prediction
             results. Results are stored in ``pred_text``.
         """
-        out_enc = self.extract_feat(batch_inputs)
+        out_enc = self.extract_feat(inputs)
         return self.decoder.postprocessor(out_enc, data_samples)
 
     def extract_feat(self, imgs: torch.Tensor, *args,
@@ -130,16 +130,16 @@ class SDKEnd2EndModel(End2EndModel):
 
 
 def build_text_recognition_model(model_files: Sequence[str],
-                                 model_cfg: Union[str, mmcv.Config],
-                                 deploy_cfg: Union[str, mmcv.Config],
+                                 model_cfg: Union[str, mmengine.Config],
+                                 deploy_cfg: Union[str, mmengine.Config],
                                  device: str, **kwargs):
     """Build text recognition model for different backends.
 
     Args:
         model_files (Sequence[str]): Input model file(s).
-        model_cfg (str | mmcv.Config): Input model config file or Config
+        model_cfg (str | mmengine.Config): Input model config file or Config
             object.
-        deploy_cfg (str | mmcv.Config): Input deployment config file or
+        deploy_cfg (str | mmengine.Config): Input deployment config file or
             Config object.
         device (str):  Device to input model.
 

@@ -36,7 +36,7 @@ def rotated_anchor_head__get_bbox(ctx,
             scale levels, each is a 4D-tensor, has shape
             , 1., num_priors * 5, H, W).
         img_metas (list[dict], Optional): Image meta info. Default None.
-        cfg (mmcv.Config, Optional): Test / postprocessing configuration,
+        cfg (mmengine.Config, Optional): Test / postprocessing configuration,
             if None, test_cfg would be used.  Default None.
         rescale (bool): If True, return boxes in original image space.
             Default False.

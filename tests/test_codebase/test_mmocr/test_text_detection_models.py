@@ -25,7 +25,7 @@ class TestEnd2EndModel:
         # simplify backend inference
         cls.wrapper = SwitchBackendWrapper(ORTWrapper)
         cls.outputs = {
-            'outputs': torch.rand(1, 3, IMAGE_SIZE, IMAGE_SIZE),
+            'outputs': torch.rand(1, IMAGE_SIZE, IMAGE_SIZE),
         }
         cls.wrapper.set(outputs=cls.outputs)
         deploy_cfg = mmengine.Config(
@@ -49,16 +49,16 @@ class TestEnd2EndModel:
 
     @pytest.mark.parametrize(
         'ori_shape',
-        [[IMAGE_SIZE, IMAGE_SIZE, 3], [2 * IMAGE_SIZE, 2 * IMAGE_SIZE, 3]])
+        [[IMAGE_SIZE, IMAGE_SIZE], [2 * IMAGE_SIZE, 2 * IMAGE_SIZE]])
     def test_forward(self, ori_shape):
         imgs = torch.rand(1, 3, IMAGE_SIZE, IMAGE_SIZE)
         img_meta = {
             'ori_shape': ori_shape,
-            'img_shape': [IMAGE_SIZE, IMAGE_SIZE, 3],
+            'img_shape': [IMAGE_SIZE, IMAGE_SIZE],
             'scale_factor': [1., 1.],
             'img_path': ''
         }
-        from mmengine.data import InstanceData
+        from mmengine.structures import InstanceData
         from mmocr.structures import TextDetDataSample
         pred_instances = InstanceData(metainfo=img_meta)
         data_sample = TextDetDataSample(pred_instances=pred_instances)

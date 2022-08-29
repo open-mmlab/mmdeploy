@@ -29,7 +29,7 @@ def yolov3_head__get_bboxes(ctx,
         pred_maps (list[Tensor]): Raw predictions for a batch of images.
         img_metas (list[dict]):  Meta information of the image, e.g.,
             image size, scaling factor, etc.
-        cfg (mmcv.Config | None): Test / postprocessing configuration,
+        cfg (mmengine.Config | None): Test / postprocessing configuration,
             if None, test_cfg would be used. Default: None.
         rescale (bool): If True, return boxes in original image space.
             Default: False.
@@ -185,7 +185,7 @@ def yolov3_head__get_bboxes__ncnn(ctx,
         pred_maps (list[Tensor]): Raw predictions for a batch of images.
         with_nms (bool): If True, do nms before return boxes.
             Default: True.
-        cfg (mmcv.Config | None): Test / postprocessing configuration,
+        cfg (mmengine.Config | None): Test / postprocessing configuration,
             if None, test_cfg would be used. Default: None.
 
     Returns:

@@ -1,10 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import List, Optional, Sequence, Union
 
-import mmcv
+import mmengine
 import torch
-from mmengine.data import BaseDataElement
 from mmengine.registry import Registry
+from mmengine.structures import BaseDataElement
 from mmocr.structures import TextDetDataSample
 
 from mmdeploy.codebase.base import BaseBackendModel
@@ -23,9 +23,9 @@ class End2EndModel(BaseBackendModel):
         backend_files (Sequence[str]): Paths to all required backend files(e.g.
             '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
         device (str): A string represents device type.
-        deploy_cfg (str | mmcv.Config): Deployment config file or loaded Config
-            object.
-        model_cfg (str | mmcv.Config): Model config file or loaded Config
+        deploy_cfg (str | mmengine.Config): Deployment config file or loaded
+            Config object.
+        model_cfg (str | mmengine.Config): Model config file or loaded Config
             object.
     """
 
@@ -34,8 +34,8 @@ class End2EndModel(BaseBackendModel):
         backend: Backend,
         backend_files: Sequence[str],
         device: str,
-        deploy_cfg: Union[str, mmcv.Config] = None,
-        model_cfg: Union[str, mmcv.Config] = None,
+        deploy_cfg: Union[str, mmengine.Config] = None,
+        model_cfg: Union[str, mmengine.Config] = None,
     ):
         super(End2EndModel, self).__init__(deploy_cfg=deploy_cfg)
         model_cfg, deploy_cfg = load_config(model_cfg, deploy_cfg)
@@ -69,7 +69,7 @@ class End2EndModel(BaseBackendModel):
             deploy_cfg=self.deploy_cfg)
 
     def forward(self,
-                batch_inputs: torch.Tensor,
+                inputs: torch.Tensor,
                 data_samples: Optional[List[BaseDataElement]] = None,
                 mode: str = 'predict',
                 **kwargs) -> Sequence[TextDetDataSample]:
@@ -77,7 +77,7 @@ class End2EndModel(BaseBackendModel):
         processing.
 
         Args:
-            batch_inputs (torch.Tensor): Images of shape (N, C, H, W).
+            inputs (torch.Tensor): Images of shape (N, C, H, W).
             data_samples (List[BaseDataElement] | None): A list of N
                 datasamples, containing meta information and gold annotations
                 for each of the images.
@@ -98,7 +98,7 @@ class End2EndModel(BaseBackendModel):
                     Each element represents the polygon of the
                     instance, in (xn, yn) order.
         """
-        x = self.extract_feat(batch_inputs)
+        x = self.extract_feat(inputs)
         return self.det_head.postprocessor(x[0], data_samples)
 
     def extract_feat(self, batch_inputs: torch.Tensor) -> torch.Tensor:
@@ -143,16 +143,16 @@ class SDKEnd2EndModel(End2EndModel):
 
 
 def build_text_detection_model(model_files: Sequence[str],
-                               model_cfg: Union[str, mmcv.Config],
-                               deploy_cfg: Union[str, mmcv.Config],
+                               model_cfg: Union[str, mmengine.Config],
+                               deploy_cfg: Union[str, mmengine.Config],
                                device: str, **kwargs):
     """Build text detection model for different backends.
 
     Args:
         model_files (Sequence[str]): Input model file(s).
-        model_cfg (str | mmcv.Config): Input model config file or Config
+        model_cfg (str | mmengine.Config): Input model config file or Config
             object.
-        deploy_cfg (str | mmcv.Config): Input deployment config file or
+        deploy_cfg (str | mmengine.Config): Input deployment config file or
             Config object.
         device (str):  Device to input model.
 

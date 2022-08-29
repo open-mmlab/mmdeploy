@@ -51,7 +51,7 @@ def backend_model():
     ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
     wrapper = SwitchBackendWrapper(ORTWrapper)
     wrapper.set(outputs={
-        'output': torch.rand(1, 3, *img_shape),
+        'output': torch.rand(1, *img_shape),
     })
 
     yield task_processor.build_backend_model([''])
@@ -70,18 +70,14 @@ def test_create_input():
 
 def test_run_inference(backend_model):
     input_dict, _ = task_processor.create_input(img, input_shape=img_shape)
-    input_dict = dict(
-        batch_inputs=input_dict['inputs'],
-        data_samples=[input_dict['data_sample']])
+    input_dict.update(dict(inputs=input_dict['inputs'][0]))
     results = task_processor.run_inference(backend_model, input_dict)
     assert results is not None
 
 
 def test_visualize(backend_model):
     input_dict, _ = task_processor.create_input(img, input_shape=img_shape)
-    input_dict = dict(
-        batch_inputs=input_dict['inputs'],
-        data_samples=[input_dict['data_sample']])
+    input_dict.update(dict(inputs=input_dict['inputs'][0]))
     results = task_processor.run_inference(backend_model, input_dict)
     with TemporaryDirectory() as dir:
         filename = dir + 'tmp.jpg'

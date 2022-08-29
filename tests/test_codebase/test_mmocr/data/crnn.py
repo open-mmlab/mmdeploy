@@ -28,7 +28,7 @@ default_scope = 'mmocr'
 model = dict(
     type='mmocr.CRNN',
     preprocessor=None,
-    backbone=dict(type='VeryDeepVgg', leaky_relu=False, input_channels=1),
+    backbone=dict(type='MiniVGG', leaky_relu=False, input_channels=1),
     encoder=None,
     decoder=dict(
         type='CRNNDecoder',
