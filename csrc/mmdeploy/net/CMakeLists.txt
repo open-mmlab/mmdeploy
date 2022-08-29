@@ -26,7 +26,13 @@ if ("snpe" IN_LIST MMDEPLOY_TARGET_BACKENDS)
     add_subdirectory(snpe)
 endif ()
 
-add_subdirectory(acl)
+if ("acl" IN_LIST MMDEPLOY_TARGET_BACKENDS)
+    add_subdirectory(acl)
+endif ()
+
+if ("torchscript" IN_LIST MMDEPLOY_TARGET_BACKENDS)
+    add_subdirectory(torchscript)
+endif ()
 
 mmdeploy_add_module(${PROJECT_NAME} net_module.cpp)
 add_library(mmdeploy::net_module ALIAS ${PROJECT_NAME})
