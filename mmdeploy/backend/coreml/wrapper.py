@@ -31,7 +31,8 @@ class CoreMLWrapper(BaseWrapper):
     """
 
     def __init__(self, model_file: str):
-        self.model = ct.models.model.MLModel(model_file)
+        self.model = ct.models.model.MLModel(
+            model_file, compute_units=ct.ComputeUnit.ALL)
         spec = self.model.get_spec()
         output_names = [out.name for out in spec.description.output]
         super().__init__(output_names)
