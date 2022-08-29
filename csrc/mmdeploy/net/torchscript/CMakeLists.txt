@@ -16,10 +16,6 @@ target_link_directories(${PROJECT_NAME} INTERFACE
 target_link_libraries(${PROJECT_NAME} PRIVATE
         mmdeploy_torchscript_ops_obj)
 
-if ("cuda" IN_LIST MMDEPLOY_TARGET_DEVICES)
-        target_compile_definitions(${PROJECT_NAME} PRIVATE -DMMDEPLOY_USE_CUDA=1)
-endif ()
-
 if (TorchVision_FOUND)
     target_link_libraries(${PROJECT_NAME} PRIVATE TorchVision::TorchVision)
     target_compile_definitions(${PROJECT_NAME} PRIVATE -DMMDEPLOY_USE_TORCHVISION=1)
