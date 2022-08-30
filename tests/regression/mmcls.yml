@@ -33,13 +33,13 @@ globals:
 onnxruntime:
   pipeline_ort_static_fp32: &pipeline_ort_static_fp32
     convert_image: *convert_image
-    backend_test: *default_backend_test
-    sdk_config: *sdk_dynamic
+    backend_test: False
     deploy_config: configs/mmcls/classification_onnxruntime_static.py
 
   pipeline_ort_dynamic_fp32: &pipeline_ort_dynamic_fp32
     convert_image: *convert_image
-    backend_test: False
+    backend_test: *default_backend_test
+    sdk_config: *sdk_dynamic
     deploy_config: configs/mmcls/classification_onnxruntime_dynamic.py
 
 
