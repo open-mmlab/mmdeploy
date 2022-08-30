@@ -46,7 +46,7 @@ Result<void> Model::Init(const std::string& model_path) {
   return Status(eNotSupported);
 }
 
-std::string Model::GetModelPath() { return model_path_; }
+const std::string Model::GetModelPath() const { return model_path_; }
 
 Result<void> Model::Init(const void* buffer, size_t size) {
   auto registry = ModelRegistry::Get();

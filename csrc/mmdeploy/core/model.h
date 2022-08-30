@@ -98,7 +98,7 @@ class MMDEPLOY_API Model {
    * @brief get model_path that init with DirectoryModel
    * @return file path of an sdk model
    */
-  std::string GetModelPath();
+  const std::string GetModelPath() const;
 
  private:
   std::string model_path_;
