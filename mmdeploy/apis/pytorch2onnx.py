@@ -89,9 +89,9 @@ def torch2onnx(img: Any,
                                                True)
     optimize = onnx_cfg.get('optimize', False)
     if backend == Backend.NCNN.value:
-        '''NCNN backend needs a precise blob counts, while using onnx
+        """NCNN backend needs a precise blob counts, while using onnx
         optimizer will merge duplicate initilizers without reference count.
-        '''
+        """
         optimize = False
     with no_mp():
         export(
