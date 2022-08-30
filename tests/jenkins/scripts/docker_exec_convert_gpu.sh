@@ -68,6 +68,10 @@ cmake .. -DMMDEPLOY_BUILD_SDK=ON \
 make -j $(nproc) && make install
 
 
+
+
+## use activate
+
 cd /root/workspace/mmdeploy
 for TORCH_VERSION in 1.10.0 1.11.0
 do
@@ -86,13 +90,15 @@ do
         pip install -v -e /root/workspace/${codebase_fullname} 
     else 
         mim install ${codebase}
+        if [ $? -ne 0 ]; then
+            mim install mmcv-full
+            pip install -v -e /root/workspace/${codebase_fullname} 
+        fi
     fi
     ## start regression
     log_dir=/root/workspace/mmdeploy_regression_working_dir/${codebase}/torch${TORCH_VERSION}
-    log_env=${log_dir}/check_env.log
     log_path=${log_dir}/convert.log
     mkdir -p ${log_dir}
-    python ./tools/check_env.py > ${log_env} 2>&1 
     python ./tools/regression_test.py \
         --codebase ${codebase} \
         --work-dir ${log_dir} \
