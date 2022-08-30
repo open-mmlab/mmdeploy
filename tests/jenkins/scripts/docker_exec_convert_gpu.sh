@@ -91,6 +91,7 @@ do
     python ./tools/regression_test.py \
         --codebase ${codebase} \
         --work-dir ${log_dir} \
-        --backends tensorrt onnxruntime ncnn \
+        --backends tensorrt \
+        --models ssd \
         --performance 2>&1 | tee ${log_path}
 done
