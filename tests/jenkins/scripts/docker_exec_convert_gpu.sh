@@ -78,12 +78,14 @@ do
     pip install -r requirements/runtime.txt 
     pip install -r requirements/build.txt
     ## build ${codebase}
-    mim install ${codebase}
-    if [ $? -ne 0 ]; then
-        mim install mmcv-full
+    if [ ${codebase} == mmdet3d ]; then 
+        mim install mmcv-full==1.5.1
         pip install -v -e /root/workspace/${codebase_fullname} 
-    else
-        echo "mim install succeed"
+    elif [ ${codebase} == mmedit ]; then 
+        mim install mmcv-full==1.6.0
+        pip install -v -e /root/workspace/${codebase_fullname} 
+    else 
+        mim install ${codebase}
     fi
     ## start regression
     log_dir=/root/workspace/mmdeploy_regression_working_dir/${codebase}/torch${TORCH_VERSION}
