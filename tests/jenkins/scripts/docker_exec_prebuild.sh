@@ -48,4 +48,4 @@ python tools/check_env.py > /root/workspace/log/check_env.log
 mv mmdeploy-*-onnxruntime* /root/workspace/prebuild-mmdeploy 
 mv mmdeploy-*-tensorrt* /root/workspace/prebuild-mmdeploy
 
-python tools/regression_test.py --codebase mmdet --models ssd --backends onnxruntime tensorrt -p --device cuda > /root/workspace/log/test_prebuild.log
+python tools/regression_test.py --codebase mmdet --models ssd --backends onnxruntime tensorrt -p --device cuda 2>&1 | tee /root/workspace/log/test_prebuild.log
