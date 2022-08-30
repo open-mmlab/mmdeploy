@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from . import multi_head_attention_forward
 from .adaptive_pool import (adaptive_avg_pool2d__default,
                             adaptive_avg_pool2d__ncnn)
 from .atan2 import atan2__default
@@ -23,5 +24,5 @@ __all__ = [
     'triu__default', 'atan2__default', 'normalize__ncnn', 'expand__ncnn',
     'chunk__torchscript', 'masked_fill__onnxruntime',
     'tensor__setitem__default', 'adaptive_avg_pool2d__default',
-    'adaptive_avg_pool2d__ncnn'
+    'adaptive_avg_pool2d__ncnn', 'multi_head_attention_forward'
 ]

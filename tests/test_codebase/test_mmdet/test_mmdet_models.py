@@ -165,6 +165,70 @@ def get_reppoints_head_model():
     return model
 
 
+def get_detrhead_model():
+    """DETR head Config."""
+    from mmdet.models import build_head
+    model = build_head(
+        dict(
+            type='DETRHead',
+            num_classes=4,
+            in_channels=1,
+            transformer=dict(
+                type='Transformer',
+                encoder=dict(
+                    type='DetrTransformerEncoder',
+                    num_layers=1,
+                    transformerlayers=dict(
+                        type='BaseTransformerLayer',
+                        attn_cfgs=[
+                            dict(
+                                type='MultiheadAttention',
+                                embed_dims=4,
+                                num_heads=1,
+                                dropout=0.1)
+                        ],
+                        ffn_cfgs=dict(
+                            type='FFN',
+                            embed_dims=4,
+                            feedforward_channels=32,
+                            num_fcs=2,
+                            ffn_drop=0.,
+                            act_cfg=dict(type='ReLU', inplace=True),
+                        ),
+                        feedforward_channels=32,
+                        ffn_dropout=0.1,
+                        operation_order=('self_attn', 'norm', 'ffn', 'norm'))),
+                decoder=dict(
+                    type='DetrTransformerDecoder',
+                    return_intermediate=True,
+                    num_layers=1,
+                    transformerlayers=dict(
+                        type='DetrTransformerDecoderLayer',
+                        attn_cfgs=dict(
+                            type='MultiheadAttention',
+                            embed_dims=4,
+                            num_heads=1,
+                            dropout=0.1),
+                        ffn_cfgs=dict(
+                            type='FFN',
+                            embed_dims=4,
+                            feedforward_channels=32,
+                            num_fcs=2,
+                            ffn_drop=0.,
+                            act_cfg=dict(type='ReLU', inplace=True),
+                        ),
+                        feedforward_channels=32,
+                        ffn_dropout=0.1,
+                        operation_order=('self_attn', 'norm', 'cross_attn',
+                                         'norm', 'ffn', 'norm')),
+                )),
+            positional_encoding=dict(
+                type='SinePositionalEncoding', num_feats=2, normalize=True),
+            test_cfg=dict(max_per_img=100)))
+    model.requires_grad_(False)
+    return model
+
+
 def get_single_roi_extractor():
     """SingleRoIExtractor Config."""
     from mmdet.models.roi_heads import SingleRoIExtractor
@@ -1692,3 +1756,40 @@ def test_mlvl_point_generator__single_level_grid_priors__tensorrt(
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg,
         run_with_backend=False)
+
+
+@pytest.mark.parametrize('backend_type, ir_type',
+                         [(Backend.ONNXRUNTIME, 'onnx')])
+def test_detrhead_get_bboxes(backend_type: Backend, ir_type: str):
+    """Test get_bboxes rewrite of base dense head."""
+    check_backend(backend_type)
+    dense_head = get_detrhead_model()
+    dense_head.cpu().eval()
+    s = 128
+    img_metas = [{
+        'scale_factor': np.ones(4),
+        'pad_shape': (s, s, 3),
+        'img_shape': (s, s, 3)
+    }]
+
+    deploy_cfg = get_deploy_cfg(backend_type, ir_type)
+
+    seed_everything(1234)
+    cls_score = [[torch.rand(1, 100, 5) for i in range(5, 0, -1)]]
+    seed_everything(5678)
+    bboxes = [[torch.rand(1, 100, 4) for i in range(5, 0, -1)]]
+
+    # to get outputs of onnx model after rewrite
+    img_metas[0]['img_shape'] = torch.Tensor([s, s])
+    wrapped_model = WrapModel(dense_head, 'get_bboxes', img_metas=img_metas)
+    rewrite_inputs = {
+        'all_cls_scores_list': cls_score,
+        'all_bbox_preds_list': bboxes,
+    }
+    rewrite_outputs, _ = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg,
+        run_with_backend=False)
+
+    assert rewrite_outputs is not None

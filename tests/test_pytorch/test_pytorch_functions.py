@@ -390,3 +390,57 @@ def test_adaptive_avg_pool2d(output_size):
         deploy_cfg=deploy_cfg_ort,
         run_with_backend=True)
     assert torch.allclose(pytorch_output, rewrite_output[0])
+
+
+@backend_checker(Backend.TENSORRT)
+def test_scaled_dot_product_attention():
+    L = 10
+    B = 1
+    E = 4
+    q = k = v = torch.rand(B, L, E)
+    attn_mask = torch.rand(B, L, L)
+
+    from torch.nn.functional import _scaled_dot_product_attention
+    model = WrapFunction(_scaled_dot_product_attention)
+    pytorch_output = model(q, k, v, attn_mask)
+    deploy_cfg_ort = mmcv.Config(
+        dict(
+            onnx_config=dict(
+                input_shape=None,
+                input_names=['q', 'k', 'v', 'attn_mask'],
+                output_names=['output', 'attn']),
+            backend_config=dict(
+                type='tensorrt',
+                model_inputs=[
+                    dict(
+                        input_shapes=dict(
+                            q=dict(
+                                min_shape=q.shape,
+                                opt_shape=q.shape,
+                                max_shape=q.shape),
+                            k=dict(
+                                min_shape=k.shape,
+                                opt_shape=k.shape,
+                                max_shape=k.shape),
+                            v=dict(
+                                min_shape=v.shape,
+                                opt_shape=v.shape,
+                                max_shape=v.shape),
+                            attn_mask=dict(
+                                min_shape=attn_mask.shape,
+                                opt_shape=attn_mask.shape,
+                                max_shape=attn_mask.shape)))
+                ]),
+            codebase_config=dict(type='mmdet', task='ObjectDetection')))
+    rewrite_output, _ = get_rewrite_outputs(
+        model,
+        model_inputs={
+            'q': q,
+            'k': k,
+            'v': v,
+            'attn_mask': attn_mask
+        },
+        deploy_cfg=deploy_cfg_ort,
+        run_with_backend=True)
+    assert torch.allclose(pytorch_output[0],
+                          rewrite_output[0].to(pytorch_output[0].device))
