@@ -41,7 +41,7 @@ git clone https://github.com/open-mmlab/${codebase_fullname}.git
 
 #### wait to be removed
 cp -r cuda/include/cudnn* /usr/local/cuda-11.3/include/
-export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATHa
+export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH/\/root\/workspace\/libtorch\/lib:/}
 
 
@@ -67,23 +67,7 @@ cmake .. -DMMDEPLOY_BUILD_SDK=ON \
 
 make -j $(nproc) && make install
 
-# ## start convert
-# for TORCH_VERSION in 1.10.0 1.11.0
-# do
-#     /opt/conda/envs/torch${TORCH_VERSION}/bin/pip install -v -e .
-#     /opt/conda/envs/torch${TORCH_VERSION}/bin/pip install -r requirements/tests.txt requirements/build.txt requirements/runtime.txt 
-#     ## build ${codebase}
-#     /opt/conda/envs/torch${TORCH_VERSION}/bin/mim install ${codebase}
-#     cd ../${codebase_fullname} && /opt/conda/bin/pip install -v -e . && cd /root/workspace/mmdeploy
-#     ## start regression 
-#     mkdir -p root/workspace/mmdeploy_regression_working_dir/${codebase}/torch${TORCH_VERSION}
-#     conda run --name torch${TORCH_VERSION} "
-#         python ./tools/regression_test.py \
-#             --codebase ${codebase} \
-#             --work-dir "../mmdeploy_regression_working_dir/${codebase}/torch${TORCH_VERSION}" \
-#             --performance
-#     " > root/workspace/mmdeploy_regression_working_dir/${codebase}/torch${TORCH_VERSION}/convert.log 2>&1 &
-# done
+
 
 
 ## use activate
@@ -108,5 +92,5 @@ do
         --codebase ${codebase} \
         --work-dir ${log_dir} \
         --backends tensorrt onnxruntime ncnn \
-        --performance > ${log_path}
+        --performance 2>&1 | tee ${log_path}
 done
