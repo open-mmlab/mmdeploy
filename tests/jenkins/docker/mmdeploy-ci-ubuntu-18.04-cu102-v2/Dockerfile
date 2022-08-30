@@ -82,8 +82,8 @@ ENV TENSORRT_DIR=/root/workspace/TensorRT-7.2.3.4
 ENV LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
 
 ### install cudnn
-RUN wget http://${HOST}/cudnn-${CUDA}-linux-x64-v7.6.5.32.tgz && \
-    tar -zxvf cudnn-${CUDA}-linux-x64-v7.6.5.32.tgz && \
+RUN wget http://${HOST}/cudnn-10.2-linux-x64-v8.1.1.33.tgz && \
+    tar -zxvf cudnn-10.2-linux-x64-v8.1.1.33.tgz && \
     cp -r cuda/include/cudnn* /usr/local/cuda-${CUDA}/include/ && \
     cp -r cuda/lib64/libcudnn* /usr/local/cuda-${CUDA}/lib64/
 ENV CUDNN_DIR=/root/workspace/cuda
