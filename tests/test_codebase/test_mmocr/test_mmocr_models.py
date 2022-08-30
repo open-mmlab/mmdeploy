@@ -71,7 +71,7 @@ def get_single_stage_text_detector_model():
 
 def get_crnn_decoder_model(rnn_flag):
     from mmocr.models.textrecog.decoders import CRNNDecoder
-    model = CRNNDecoder(32, 4, rnn_flag=rnn_flag)
+    model = CRNNDecoder(32, dictionary, rnn_flag=rnn_flag)
 
     model.requires_grad_(False)
     return model
@@ -145,7 +145,7 @@ def test_bidirectionallstm(backend: Backend):
         model_output = model_outputs.cpu().numpy()
         rewrite_output = rewrite_outputs[0].cpu().numpy()
         assert np.allclose(
-            model_output, rewrite_output, rtol=1e-03, atol=1e-05)
+            model_output, rewrite_output, rtol=1e-03, atol=1e-04)
     else:
         assert rewrite_outputs is not None
 
@@ -204,15 +204,13 @@ def test_crnndecoder(backend: Backend, rnn_flag: bool):
 
     input = torch.rand(1, 32, 1, 64)
     out_enc = None
-    targets_dict = None
-    img_metas = None
+    data_samples = None
 
     # to get outputs of pytorch model
     model_inputs = {
         'feat': input,
         'out_enc': out_enc,
-        'targets_dict': targets_dict,
-        'img_metas': img_metas
+        'data_samples': data_samples
     }
     model_outputs = get_model_outputs(crnn_decoder, 'forward_train',
                                       model_inputs)
@@ -222,8 +220,7 @@ def test_crnndecoder(backend: Backend, rnn_flag: bool):
         crnn_decoder,
         'forward_train',
         out_enc=out_enc,
-        targets_dict=targets_dict,
-        img_metas=img_metas)
+        data_samples=data_samples)
     rewrite_inputs = {'feat': input}
     rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_model=wrapped_model,
@@ -236,8 +233,9 @@ def test_crnndecoder(backend: Backend, rnn_flag: bool):
                                                 rewrite_outputs):
             model_output = model_output.squeeze().cpu().numpy()
             rewrite_output = rewrite_output.squeeze()
+            print(model_outputs, rewrite_output)
             assert np.allclose(
-                model_output, rewrite_output, rtol=1e-03, atol=1e-05)
+                model_output, rewrite_output, rtol=1e-03, atol=1e-04)
     else:
         assert rewrite_outputs is not None
 
