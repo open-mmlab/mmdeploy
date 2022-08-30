@@ -97,6 +97,5 @@ do
         --codebase ${codebase} \
         --work-dir ${log_dir} \
         --backends tensorrt \
-        --models ResNet ssd masterrcnn fcn srcnn hrnet dbnet crnn PointPillars \
         --performance 2>&1 | tee ${log_path}
 done
