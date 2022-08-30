@@ -83,7 +83,12 @@ do
     pip install -r requirements/build.txt
     ## build ${codebase}
     mim install ${codebase}
-    pip install -v -e /root/workspace/${codebase_fullname} 
+    if [ $? -ne 0 ]; then
+        mim install mmcv
+        pip install -v -e /root/workspace/${codebase_fullname} 
+    else
+        echo "mim install succeed"
+    fi
     ## start regression
     log_dir=/root/workspace/mmdeploy_regression_working_dir/${codebase}/torch${TORCH_VERSION}
     log_path=${log_dir}/convert.log
