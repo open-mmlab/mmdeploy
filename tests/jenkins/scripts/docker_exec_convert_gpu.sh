@@ -77,14 +77,14 @@ for TORCH_VERSION in 1.10.0 1.11.0
 do
 
     conda activate torch${TORCH_VERSION}
-    pip install -v -e .
+    pip install -v .
     pip install -r requirements/tests.txt
     pip install -r requirements/runtime.txt 
     pip install -r requirements/build.txt
     ## build ${codebase}
     mim install ${codebase}
     if [ $? -ne 0 ]; then
-        mim install mmcv
+        mim install mmcv-full
         pip install -v -e /root/workspace/${codebase_fullname} 
     else
         echo "mim install succeed"

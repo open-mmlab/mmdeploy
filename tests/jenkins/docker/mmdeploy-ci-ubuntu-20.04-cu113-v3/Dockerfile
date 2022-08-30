@@ -131,6 +131,11 @@ ENV pplcv_DIR=/root/workspace/ppl.cv/cuda-build/install/lib/cmake/ppl
 
 ### install zip
 RUN apt update && apt install -y zip 
+### install libtorch
+RUN wget https://download.pytorch.org/libtorch/cu${CUDA_INT}/libtorch-shared-with-deps-1.12.1%2Bcu${CUDA_INT}.zip && \
+    unzip libtorch-shared-with-deps-1.12.1+cu${CUDA_INT}.zip 
+ENV Torch_DIR=/root/workspace/libtorch
+
 
 ### install tensorrt
 RUN wget http://${HOST}/TensorRT-8.2.1.8.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz && \
