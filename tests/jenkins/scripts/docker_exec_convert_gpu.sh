@@ -68,10 +68,6 @@ cmake .. -DMMDEPLOY_BUILD_SDK=ON \
 make -j $(nproc) && make install
 
 
-
-
-## use activate
-
 cd /root/workspace/mmdeploy
 for TORCH_VERSION in 1.10.0 1.11.0
 do
@@ -91,12 +87,14 @@ do
     fi
     ## start regression
     log_dir=/root/workspace/mmdeploy_regression_working_dir/${codebase}/torch${TORCH_VERSION}
+    log_env=${log_dir}/check_env.log
     log_path=${log_dir}/convert.log
     mkdir -p ${log_dir}
+    python ./tools/check_env.py > ${log_env} 2>&1 
     python ./tools/regression_test.py \
         --codebase ${codebase} \
         --work-dir ${log_dir} \
         --backends tensorrt \
-        --models ResNet ssd masterrcnn fcn srcnn hrnet dbnet crnn pointpillas
+        --models ResNet ssd masterrcnn fcn srcnn hrnet dbnet crnn pointpillas \
         --performance 2>&1 | tee ${log_path}
 done
