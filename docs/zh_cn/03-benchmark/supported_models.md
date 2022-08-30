@@ -20,6 +20,7 @@
 | Swin Transformer[\*](#note) | MMDetection      |      N      |      Y      |    Y     |  N   |   N   |    N     |   N    |          [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/swin)           |
 | VFNet                       | MMDetection      |      N      |      N      |    N     |  N   |   N   |    Y     |   N    |          [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/vfnet)          |
 | RepPoints                   | MMDetection      |      N      |      N      |    Y     |  N   |   ?   |    Y     |   N    |        [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/reppoints)        |
+| DETR                        | MMDetection      |      N      |      Y      |    Y     |  N   |   ?   |    N     |   N    |          [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/detr)           |
 | ResNet                      | MMClassification |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |       [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnet)       |
 | ResNeXt                     | MMClassification |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |      [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnext)       |
 | SE-ResNet                   | MMClassification |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |      [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/seresnet)      |

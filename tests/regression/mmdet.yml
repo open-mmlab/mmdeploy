@@ -323,3 +323,11 @@ models:
     pipelines:
       - *pipeline_seg_ort_dynamic_fp32
       - *pipeline_seg_trt_dynamic_fp32
+
+  - name: DETR
+    metafile: configs/detr/metafile.yml
+    model_configs:
+      - configs/detr/detr_r50_8x2_150e_coco.py
+    pipelines:
+      - *pipeline_seg_ort_dynamic_fp32
+      - *pipeline_seg_trt_dynamic_fp32
