@@ -63,12 +63,14 @@ void ScaledDotProductAttentionTRT::attachToContext(cudnnContext *cudnnContext,
   _cudnn_handle = cudnnContext;
   cudnnCreateTensorDescriptor(&_x_desc);
   cudnnCreateTensorDescriptor(&_y_desc);
+  cudnnCreateTensorDescriptor(&_mask_desc);
 }
 
 // Detach the plugin object from its execution context.
 void ScaledDotProductAttentionTRT::detachFromContext() TRT_NOEXCEPT {
   cudnnDestroyTensorDescriptor(_y_desc);
   cudnnDestroyTensorDescriptor(_x_desc);
+  cudnnDestroyTensorDescriptor(_mask_desc);
 }
 
 void ScaledDotProductAttentionTRT::configurePlugin(const nvinfer1::DynamicPluginTensorDesc *in,
@@ -86,8 +88,8 @@ int ScaledDotProductAttentionTRT::enqueue(const nvinfer1::PluginTensorDesc *inpu
                                           const nvinfer1::PluginTensorDesc *outputDesc,
                                           const void *const *inputs, void *const *outputs,
                                           void *workSpace, cudaStream_t stream) TRT_NOEXCEPT {
-  cudnnSetStream(_cudnn_handle, stream);
-  cublasSetStream_v2(_cublas_handle, stream);
+  if (CUDNN_STATUS_SUCCESS != cudnnSetStream(_cudnn_handle, stream)) return 1;
+  if (CUBLAS_STATUS_SUCCESS != cublasSetStream(_cublas_handle, stream)) return 1;
   int B = inputDesc[0].dims.d[0];  // batch * heads
   int Nt = inputDesc[0].dims.d[1];
   int Ns = inputDesc[1].dims.d[1];
@@ -98,17 +100,23 @@ int ScaledDotProductAttentionTRT::enqueue(const nvinfer1::PluginTensorDesc *inpu
   const void *value = inputs[2];
   const void *mask = nullptr;
 
+  int mask_dims[3];
+  mask_dims[0] = 0;
   if (mask_dim > 0) {
     mask = inputs[3];
     // check if mask need broadcast
-    if (inputDesc[3].dims.nbDims == 2 || inputDesc[3].dims.d[0] == 1) {
-      mask_dim = 2;
+    if (mask_dim == 2) {
+      mask_dims[0] = 1;
+      mask_dims[1] = inputDesc[3].dims.d[0];
+      mask_dims[2] = inputDesc[3].dims.d[1];
     } else {
-      mask_dim = 3;
+      mask_dims[0] = inputDesc[3].dims.d[0];
+      mask_dims[1] = inputDesc[3].dims.d[1];
+      mask_dims[2] = inputDesc[3].dims.d[2];
     }
   }
 
-  void *weight = outputs[0];
+  void *output = outputs[0];
   void *attn = outputs[1];
 
   auto data_type = inputDesc[0].type;
@@ -117,9 +125,9 @@ int ScaledDotProductAttentionTRT::enqueue(const nvinfer1::PluginTensorDesc *inpu
   switch (data_type) {
     case nvinfer1::DataType::kFLOAT:
       dot_product_attention_impl<float>((float *)query, (float *)key, (float *)value, (float *)mask,
-                                        (float *)attn, (float *)weight, B, Nt, Ns, E, mask_dim,
-                                        _x_desc, _y_desc, cudnn_dtype, stream, _cublas_handle,
-                                        _cudnn_handle);
+                                        (float *)attn, (float *)output, B, Nt, Ns, E, &mask_dims[0],
+                                        _x_desc, _y_desc, _mask_desc, cudnn_dtype, stream,
+                                        _cublas_handle, _cudnn_handle);
       break;
     default:
       return 1;

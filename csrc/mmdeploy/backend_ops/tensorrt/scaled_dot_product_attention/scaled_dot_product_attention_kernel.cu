@@ -45,49 +45,37 @@ cublasStatus_t cublasgemmStridedBatchedWrap<__half>(cublasHandle_t handle, cubla
 }
 
 template <typename scalar_t>
-struct get_mask : public thrust::unary_function<int, scalar_t> {
-  const scalar_t* _mask;
-  int32_t _size;
-
-  get_mask(const scalar_t* mask, int32_t size) : _mask(mask), _size(size) {}
-
-  __host__ __device__ scalar_t operator()(int x) const { return _mask[x % _size]; }
-};
-
-template <typename scalar_t>
 void dot_product_attention_impl(const scalar_t* query, const scalar_t* key, const scalar_t* value,
-                                const scalar_t* mask, scalar_t* attn, scalar_t* weight, int B,
-                                int Nt, int Ns, int E, int mask_dim,
+                                const scalar_t* mask, scalar_t* attn, scalar_t* output, int B,
+                                int Nt, int Ns, int E, const int* mask_dims,
                                 cudnnTensorDescriptor_t& x_desc, cudnnTensorDescriptor_t& y_desc,
-                                cudnnDataType_t cudnn_dtype, cudaStream_t stream,
-                                cublasHandle_t cublas_handle, cudnnHandle_t cudnn_handle) {
+                                cudnnTensorDescriptor_t& mask_desc, cudnnDataType_t cudnn_dtype,
+                                cudaStream_t stream, cublasHandle_t cublas_handle,
+                                cudnnHandle_t cudnn_handle) {
   {
     // Q @ K
     const int m = Ns;
     const int n = Nt;
     const int k = E;
-    auto alpha = scalar_t(1.0f / sqrt(float(E)));
-    auto beta = scalar_t(0);
+    const auto alpha = scalar_t(1.0f / sqrt(float(E)));
+    const auto beta = scalar_t(0);
     cublasgemmStridedBatchedWrap(cublas_handle, CUBLAS_OP_T, CUBLAS_OP_N, m, n, k, &alpha, key, k,
                                  Ns * E, query, k, Nt * E, &beta, attn, m, Nt * Ns, B);
   }
 
-  if (mask_dim != 0 && mask != nullptr) {
-    thrust::plus<scalar_t> op;
-    if (mask_dim == 3) {
-      transform(thrust::cuda::par.on(stream), attn, attn + B * Nt * Ns, mask, attn, op);
-    } else if (mask_dim == 2) {
-      auto counting_iter = thrust::make_counting_iterator(0);
-      auto trans_iter =
-          thrust::make_transform_iterator(counting_iter, get_mask<scalar_t>(mask, Nt * Ns));
-      transform(thrust::cuda::par.on(stream), attn, attn + B * Nt * Ns, trans_iter, attn, op);
-    }
+  if (mask_dims != nullptr && mask_dims[0] != 0) {
+    const auto alpha = scalar_t(1);
+    const auto beta = scalar_t(1);
+    cudnnSetTensor4dDescriptor(mask_desc, CUDNN_TENSOR_NCHW, cudnn_dtype, 1, mask_dims[0],
+                               mask_dims[1], mask_dims[2]);
+    cudnnSetTensor4dDescriptor(x_desc, CUDNN_TENSOR_NCHW, cudnn_dtype, 1, B, Nt, Ns);
+    cudnnAddTensor(cudnn_handle, &alpha, mask_desc, mask, &beta, x_desc, attn);
   }
 
   {
     // softmax attention
-    auto alpha = scalar_t(1);
-    auto beta = scalar_t(0);
+    const auto alpha = scalar_t(1);
+    const auto beta = scalar_t(0);
     cudnnSetTensor4dDescriptor(x_desc, CUDNN_TENSOR_NCHW, cudnn_dtype, B * Nt, Ns, 1, 1);
     cudnnSetTensor4dDescriptor(y_desc, CUDNN_TENSOR_NCHW, cudnn_dtype, B * Nt, Ns, 1, 1);
     cudnnSoftmaxForward(cudnn_handle, CUDNN_SOFTMAX_ACCURATE, CUDNN_SOFTMAX_MODE_INSTANCE, &alpha,
@@ -99,16 +87,17 @@ void dot_product_attention_impl(const scalar_t* query, const scalar_t* key, cons
     const int m = E;
     const int n = Nt;
     const int k = Ns;
-    auto alpha = scalar_t(1);
-    auto beta = scalar_t(0);
+    const auto alpha = scalar_t(1);
+    const auto beta = scalar_t(0);
     cublasgemmStridedBatchedWrap(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, m, n, k, &alpha, value, m,
-                                 Ns * E, (const scalar_t*)(attn), k, Ns * Nt, &beta, weight, m,
+                                 Ns * E, (const scalar_t*)(attn), k, Ns * Nt, &beta, output, m,
                                  Nt * E, B);
   }
 }
 
 template void dot_product_attention_impl<float>(
     const float* query, const float* key, const float* value, const float* mask, float* attn,
-    float* weight, int B, int Nt, int Ns, int E, int mask_dim, cudnnTensorDescriptor_t& x_desc,
-    cudnnTensorDescriptor_t& y_desc, cudnnDataType_t cudnn_dtype, cudaStream_t stream,
+    float* output, int B, int Nt, int Ns, int E, const int* mask_dims,
+    cudnnTensorDescriptor_t& x_desc, cudnnTensorDescriptor_t& y_desc,
+    cudnnTensorDescriptor_t& mask_desc, cudnnDataType_t cudnn_dtype, cudaStream_t stream,
     cublasHandle_t cublas_handle, cudnnHandle_t cudnn_handle);

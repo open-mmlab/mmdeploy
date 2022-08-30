@@ -106,73 +106,6 @@ make -j$(nproc) install
 
 ### Build MMDeploy
 
-#### Build Options Spec
-
-<table>
-<thead>
-  <tr>
-    <th>NAME</th>
-    <th>VALUE</th>
-    <th>DEFAULT</th>
-    <th>REMARK</th>
-  </tr>
-</thead>
-<tbody>
-  <tr>
-    <td>MMDEPLOY_BUILD_SDK</td>
-    <td>{ON, OFF}</td>
-    <td>OFF</td>
-    <td>Switch to build MMDeploy SDK</td>
-  </tr>
-  <tr>
-    <td>MMDEPLOY_BUILD_SDK_PYTHON_API</td>
-    <td>{ON, OFF}</td>
-    <td>OFF</td>
-    <td>switch to build MMDeploy SDK python package</td>
-  </tr>
-  <tr>
-    <td>MMDEPLOY_BUILD_SDK_JAVA_API</td>
-    <td>{ON, OFF}</td>
-    <td>OFF</td>
-    <td>switch to build MMDeploy SDK Java API</td>
-  </tr>
-  <tr>
-    <td>MMDEPLOY_BUILD_TEST</td>
-    <td>{ON, OFF}</td>
-    <td>OFF</td>
-    <td>Switch to build MMDeploy SDK unittest cases</td>
-  </tr>
-  <tr>
-    <td>MMDEPLOY_TARGET_DEVICES</td>
-    <td>{"cpu"}</td>
-    <td>cpu</td>
-    <td>Enable target device. <br>If you want use ncnn vulkan accelerate, you still fill <code>{"cpu"}</code> here. Because, vulkan accelerate is only for ncnn net. The other part of inference is still using cpu.</td>
-  </tr>
-  <tr>
-    <td>MMDEPLOY_TARGET_BACKENDS</td>
-    <td>{"ncnn"}</td>
-    <td>N/A</td>
-    <td>Enabling inference engine. <br><b>By default, no target inference engine is set, since it highly depends on the use case.</b><br> Only ncnn backend is supported for android platform now.<br>
-    After specifying the inference engine, it's package path has to be passed to cmake as follows, <br>
-    1. <b>ncnn</b>: ncnn. <code>ncnn_DIR</code> is needed.
-<pre><code>-Dncnn_DIR=${NCNN_DIR}/build_${ANDROID_ABI}/install/lib/cmake/ncnn</code></pre>
-   </td>
-  </tr>
-  <tr>
-    <td>MMDEPLOY_CODEBASES</td>
-    <td>{"mmcls", "mmdet", "mmseg", "mmedit", "mmocr", "all"}</td>
-    <td>N/A</td>
-    <td>Enable codebase's postprocess modules. It MUST be set by a semicolon separated list of codebase names. The currently supported codebases are 'mmcls', 'mmdet', 'mmedit', 'mmseg', 'mmocr'. Instead of listing them one by one, you can also pass <code>all</code> to enable them all, i.e., <code>-DMMDEPLOY_CODEBASES=all</code>Please manually edit <code>csrc/mmdeploy/apis/java/native/CMakeLists.txt</code> to avoid compilation errors.</td>
-  </tr>
-  <tr>
-    <td>MMDEPLOY_SHARED_LIBS</td>
-    <td>{ON, OFF}</td>
-    <td>ON</td>
-    <td>Switch to build shared library or static library of MMDeploy SDK. Now you should build static library for android. Bug will be fixed soon.</td>
-  </tr>
-</tbody>
-</table>
-
 #### Build SDK and Demos
 
 MMDeploy provides a recipe as shown below for building SDK with ncnn as inference engine for android.
@@ -189,7 +122,6 @@ MMDeploy provides a recipe as shown below for building SDK with ncnn as inferenc
       -DOpenCV_DIR=${OPENCV_ANDROID_SDK_DIR}/sdk/native/jni/abi-${ANDROID_ABI} \
       -Dncnn_DIR=${NCNN_DIR}/build_${ANDROID_ABI}/install/lib/cmake/ncnn \
       -DMMDEPLOY_TARGET_BACKENDS=ncnn \
-      -DMMDEPLOY_CODEBASES=all \
       -DMMDEPLOY_SHARED_LIBS=ON \
       -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake \
       -DANDROID_ABI=${ANDROID_ABI} \
@@ -198,3 +130,5 @@ MMDeploy provides a recipe as shown below for building SDK with ncnn as inferenc
 
   make -j$(nproc) && make install
   ```
+
+Please check [cmake build option spec](cmake_option.md)

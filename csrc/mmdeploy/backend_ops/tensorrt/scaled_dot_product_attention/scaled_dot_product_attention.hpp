@@ -52,7 +52,7 @@ class ScaledDotProductAttentionTRT : public TRTPluginBase {
   int mask_dim;
   cublasHandle_t _cublas_handle{};
   cudnnHandle_t _cudnn_handle{};
-  cudnnTensorDescriptor_t _x_desc{}, _y_desc{};
+  cudnnTensorDescriptor_t _x_desc{}, _y_desc{}, _mask_desc{};
 };
 
 class ScaledDotProductAttentionTRTCreator : public TRTPluginCreatorBase {

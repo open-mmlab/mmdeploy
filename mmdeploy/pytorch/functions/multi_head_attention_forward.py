@@ -25,6 +25,7 @@ class ScaledDotProductAttentionTRT(torch.autograd.Function):
         attn = torch.bmm(q, k.transpose(-2, -1))
         if attn_mask is not None:
             attn += attn_mask
+
         attn = attn.softmax(-1)
 
         # (B, Nt, Ns) x (B, Ns, E) -> (B, Nt, E)
@@ -44,7 +45,7 @@ class ScaledDotProductAttentionTRT(torch.autograd.Function):
 @FUNCTION_REWRITER.register_rewriter(
     func_name='torch.nn.functional._scaled_dot_product_attention',
     backend=Backend.TENSORRT.value)
-def _scaled_dot_product_attention__default(
+def _scaled_dot_product_attention__tensorrt(
     ctx,
     q: Tensor,
     k: Tensor,
