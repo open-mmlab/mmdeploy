@@ -137,7 +137,6 @@ RUN apt update && apt install -y zip
 RUN wget https://download.pytorch.org/libtorch/cu${CUDA_INT}/libtorch-shared-with-deps-1.12.1%2Bcu${CUDA_INT}.zip && \
     unzip libtorch-shared-with-deps-1.12.1+cu${CUDA_INT}.zip 
 ENV Torch_DIR=/root/workspace/libtorch
-ENV LD_LIBRARY_PATH=$Torch_DIR/lib:$LD_LIBRARY_PATH
 
 ### install openmim
 RUN /opt/conda/bin/pip install openmim
