@@ -343,6 +343,37 @@ def test_tensor_setitem(x, y):
         assert node.op_type != 'ScatterND'
 
 
+@backend_checker(Backend.ONNXRUNTIME)
+@pytest.mark.skipif(
+    parse(torch.__version__) < parse('1.9.0'), reason='requires torch>1.8.0')
+@pytest.mark.parametrize('x', [torch.rand(1, 3, 16, 16)])
+def test_tensor_setitem_scalar(x):
+    import onnx
+
+    from mmdeploy.utils.test import get_onnx_model
+
+    def setitem_slice(x):
+        H, W = x.shape[-2:]
+        x[:, :, 2:H - 2, 2:W - 2] = 1
+        x[:, :, 4:H - 4, 4:W - 4] = x.new_tensor(2)
+        return x
+
+    wrapped_func = WrapFunction(setitem_slice)
+    model_inputs = {'x': x}
+
+    deploy_cfg = mmcv.Config(
+        dict(
+            onnx_config=dict(input_shape=None),
+            backend_config=dict(type='onnxruntime'),
+            codebase_config=dict(type='mmdet', task='ObjectDetection')))
+    ir_file_path = get_onnx_model(wrapped_func, model_inputs, deploy_cfg)
+
+    onnx_model = onnx.load(ir_file_path)
+    nodes = onnx_model.graph.node
+    for node in nodes:
+        assert node.op_type != 'ScatterND'
+
+
 @pytest.mark.parametrize('output_size', [1, 3])
 def test_adaptive_avg_pool2d(output_size):
     input = torch.rand(1, 3, 6, 6)

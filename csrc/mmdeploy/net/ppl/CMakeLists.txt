@@ -18,4 +18,7 @@ if (PPLNN_USE_CUDA AND ("cuda" IN_LIST MMDEPLOY_TARGET_DEVICES))
 endif ()
 target_link_libraries(${PROJECT_NAME}
         PRIVATE ${PPLNN_LIBRARIES})
+if (PPLNN_USE_RISCV AND ("cpu" IN_LIST MMDEPLOY_TARGET_DEVICES))
+    target_compile_definitions(${PROJECT_NAME} PRIVATE -DPPL_NN_HAS_RISCV=1)
+endif ()
 add_library(mmdeploy::pplnn_net ALIAS ${PROJECT_NAME})

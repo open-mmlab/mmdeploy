@@ -163,6 +163,8 @@ class RotatedDetection(BaseTask):
         Returns:
             tuple: (data, img), meta information for the input image and input.
         """
+        from mmdet.datasets.pipelines import Compose
+
         if isinstance(imgs, (list, tuple)):
             if not isinstance(imgs[0], (np.ndarray, str)):
                 raise AssertionError('imgs must be strings or numpy arrays')
@@ -172,13 +174,12 @@ class RotatedDetection(BaseTask):
         else:
             raise AssertionError('imgs must be strings or numpy arrays')
         cfg = process_model_config(self.model_cfg, imgs, input_shape)
-        from mmdet.datasets.pipelines import Compose
         test_pipeline = Compose(cfg.data.test.pipeline)
 
         data_list = []
         for img in imgs:
             # prepare data
-            if isinstance(imgs[0], np.ndarray):
+            if isinstance(img, np.ndarray):
                 # directly add img
                 data = dict(img=img)
             else:
@@ -190,32 +191,17 @@ class RotatedDetection(BaseTask):
             # get tensor from list to stack for batch mode (rotated detection)
             data_list.append(data)
 
-        if isinstance(data_list[0]['img'], list) and len(data_list) > 1:
-            raise Exception('aug test does not support '
-                            f'inference with batch size '
-                            f'{len(data_list)}')
+        batch_data = collate(data_list, samples_per_gpu=len(imgs))
 
-        data = collate(data_list, samples_per_gpu=len(imgs))
-
-        # process img_metas
-        if isinstance(data['img_metas'], list):
-            data['img_metas'] = [
-                img_metas.data[0] for img_metas in data['img_metas']
-            ]
-        else:
-            data['img_metas'] = data['img_metas'].data
-
-        if isinstance(data['img'], list):
-            data['img'] = [img.data for img in data['img']]
-            if isinstance(data['img'][0], list):
-                data['img'] = [img[0] for img in data['img']]
-        else:
-            data['img'] = data['img'].data
+        for k, v in batch_data.items():
+            # batch_size > 1
+            if isinstance(v[0], DataContainer):
+                batch_data[k] = v[0].data
 
         if self.device != 'cpu':
-            data = scatter(data, [self.device])[0]
+            batch_data = scatter(batch_data, [self.device])[0]
 
-        return data, data['img']
+        return batch_data, batch_data['img']
 
     def visualize(self,
                   model: nn.Module,

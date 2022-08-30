@@ -28,6 +28,7 @@
 | ShuffleNetV1                | MMClassification |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v1)    |
 | ShuffleNetV2                | MMClassification |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v2)    |
 | VisionTransformer           | MMClassification |      Y      |      Y      |    Y     |  Y   |   ?   |    Y     | [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/vision_transformer) |
+| SwinTransformer             | MMClassification |      Y      |      Y      |    Y     |  N   |   ?   |    N     |  [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/swin_transformer)  |
 | FCN                         | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |         [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/fcn)          |
 | PSPNet[\*static](#note)     | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |        [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/pspnet)        |
 | DeepLabV3                   | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |      [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/deeplabv3)       |
@@ -81,4 +82,4 @@
   - static: This model only support static export. Please use `static` deploy config, just like $MMDEPLOY_DIR/configs/mmseg/segmentation_tensorrt_static-1024x2048.py.
 - SSD: When you convert SSD model, you need to use min shape deploy config just like 300x300-512x512 rather than 320x320-1344x1344, for example $MMDEPLOY_DIR/configs/mmdet/detection/detection_tensorrt_dynamic-300x300-512x512.py.
 - YOLOX: YOLOX with ncnn only supports static shape.
-- Swin Transformer: For TensorRT, only version 8.4+ is supported.
+- SAR: Chinese text recognition model is not supported as the protobuf size of ONNX is limited.

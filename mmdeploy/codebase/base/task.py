@@ -68,7 +68,7 @@ class BaseTask(metaclass=ABCMeta):
     def build_dataset(self,
                       dataset_cfg: Union[str, mmcv.Config],
                       dataset_type: str = 'val',
-                      is_sort_dataset: bool = True,
+                      is_sort_dataset: bool = False,
                       **kwargs) -> Dataset:
         """Build dataset for different codebase.
 
@@ -80,6 +80,7 @@ class BaseTask(metaclass=ABCMeta):
             is_sort_dataset (bool): When 'True', the dataset will be sorted
                 by image shape in ascending order if 'dataset_cfg'
                 contains information about height and width.
+                Default is `False`.
 
         Returns:
             Dataset: The built dataset.
@@ -140,14 +141,14 @@ class BaseTask(metaclass=ABCMeta):
 
     @abstractmethod
     def create_input(self,
-                     imgs: Union[str, np.ndarray],
+                     imgs: Union[str, np.ndarray, Sequence],
                      input_shape: Sequence[int] = None,
                      **kwargs) -> Tuple[Dict, torch.Tensor]:
         """Create input for model.
 
         Args:
-            imgs (str | np.ndarray): Input image(s), accepted data types are
-                `str`, `np.ndarray`.
+            imgs (str | np.ndarray | Sequence): Input image(s),
+                accepted data types are `str`, `np.ndarray`.
             input_shape (list[int]): Input shape of image in (width, height)
                 format, defaults to `None`.
 
