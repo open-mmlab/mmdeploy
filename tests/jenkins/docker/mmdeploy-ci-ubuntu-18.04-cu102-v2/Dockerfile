@@ -74,11 +74,11 @@ ENV JAVA_HOME=/root/workspace/jdk-18
 ENV PATH=$JAVA_HOME/bin:$PATH
 
 ### install tensorrt
-RUN wget http://${HOST}/TensorRT-7.0.0.11.Ubuntu-18.04.x86_64-gnu.cuda-${CUDA}.cudnn7.6.tar.gz && \
-    tar -zxvf TensorRT-7.0.0.11.Ubuntu-18.04.x86_64-gnu.cuda-${CUDA}.cudnn7.6.tar.gz  &&\
-    /opt/conda/bin/pip install TensorRT-7.0.0.11/python/tensorrt-7.0.0.11-cp37-none-linux_x86_64.whl &&\
+RUN wget http://${HOST}/TensorRT-7.2.3.4.Ubuntu-18.04.x86_64-gnu.cuda-10.2.cudnn8.1.tar.gz && \
+    tar -zxvf TensorRT-7.2.3.4.Ubuntu-18.04.x86_64-gnu.cuda-10.2.cudnn8.1.tar.gz  &&\
+    /opt/conda/bin/pip install TensorRT-7.2.3.4/python/tensorrt-7.2.3.4-cp37-none-linux_x86_64.whl &&\
     /opt/conda/bin/pip install pycuda
-ENV TENSORRT_DIR=/root/workspace/TensorRT-7.0.0.11
+ENV TENSORRT_DIR=/root/workspace/TensorRT-7.2.3.4
 ENV LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
 
 ### install cudnn
