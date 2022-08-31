@@ -4,5 +4,5 @@ from .vision_transformer import visiontransformer__forward__ncnn
 
 __all__ = [
     'shufflenetv2_backbone__forward__default',
-    'visiontransformer__forward__ncnn',
+    'visiontransformer__forward__ncnn'
 ]

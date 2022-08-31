@@ -580,6 +580,27 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
     <td align="center">-</td>
   </tr>
+  <tr>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmclassification/blob/master/configs/swin_transformer/swin-tiny_16xb64_in1k.py">Swin Transformer</a></td>
+    <td align="center">top-1</td>
+    <td align="center">81.18</td>
+    <td align="center">81.18</td>
+    <td align="center">81.18</td>
+    <td align="center">81.18</td>
+    <td align="center">81.18</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <td align="center">top-5</td>
+    <td align="center">95.61</td>
+    <td align="center">95.61</td>
+    <td align="center">95.61</td>
+    <td align="center">95.61</td>
+    <td align="center">95.61</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
 </tbody>
 </table>
 </div>
@@ -749,6 +770,19 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
     <td align="center">36.9</td>
     <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/detr/detr_r50_8x2_150e_coco.py">DETR</a></td>
+    <td align="center">Object Detection</td>
+    <td align="center">COCO2017</td>
+    <td align="center">box AP</td>
+    <td align="center">40.1</td>
+    <td align="center">40.1</td>
+    <td align="center">-</td>
+    <td align="center">40.1</td>
+    <td align="center">40.1</td>
     <td align="center">-</td>
     <td align="center">-</td>
   </tr>

@@ -16,19 +16,19 @@ find_package(CUDA REQUIRED)
 
 if (MSVC)
     set(CMAKE_CUDA_COMPILER ${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc.exe)
-    set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -Xcompiler=/wd4819,/wd4828")
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler=/wd4819,/wd4828")
     if (HAVE_CXX_FLAG_UTF_8)
-        set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -Xcompiler=/utf-8")
+        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler=/utf-8")
     endif ()
 else ()
     set(CMAKE_CUDA_COMPILER ${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc)
     # Explicitly set the cuda host compiler. Because the default host compiler #
     # selected by cmake maybe wrong.
     set(CMAKE_CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})
-    set(CUDA_NVCC_FLAGS
-            "${CUDA_NVCC_FLAGS} -Xcompiler=-fPIC,-Wall,-fvisibility=hidden")
+    set(CMAKE_CUDA_FLAGS
+            "${CMAKE_CUDA_FLAGS} -Xcompiler=-fPIC,-Wall,-fvisibility=hidden")
     if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-        set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -Xcompiler=-fno-gnu-unique")
+        set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler=-fno-gnu-unique")
     endif ()
 endif ()
 
@@ -62,10 +62,12 @@ if (NOT CMAKE_CUDA_ARCHITECTURES)
     endif ()
 endif ()
 
-set(CUDA_NVCC_FLAGS_DEBUG "-g -O0")
-set(CUDA_NVCC_FLAGS_RELEASE "-O3")
-set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS}")
+set(CMAKE_CUDA_FLAGS_DEBUG "-g -O0")
+set(CMAKE_CUDA_FLAGS_RELEASE "-O3")
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMMDEPLOY_USE_CUDA=1")
+
 if (NOT MSVC)
     set(CMAKE_CUDA_STANDARD 14)
 endif ()
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} ${CUDA_NVCC_FLAGS} ${_NVCC_FLAGS}")
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} ${_NVCC_FLAGS}")
