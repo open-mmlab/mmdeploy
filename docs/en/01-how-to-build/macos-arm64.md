@@ -1,4 +1,5 @@
 # Build for macOS-arm64
+
 - [Build for macOS-arm64](#build-for-macos-arm64)
   - [Install Toolchains](#install-toolchains)
   - [Install Dependencies](#install-dependencies)
@@ -6,9 +7,10 @@
     - [Install Dependencies for SDK](#install-dependencies-for-sdk)
     - [Install Inference Engines for MMDeploy](#install-inference-engines-for-mmdeploy)
   - [Build MMDeploy](#build-mmdeploy)
-      - [Build Model Converter](#build-model-converter)
-      - [Install Model Converter](#install-model-converter)
+    - [Build Model Converter](#build-model-converter)
+    - [Install Model Converter](#install-model-converter)
     - [Build SDK and Demo](#build-sdk-and-demo)
+
 ## Install Toolchains
 
 - cmake
@@ -59,7 +61,7 @@ Both MMDeploy's model converter and SDK share the same inference engines.
 
 You can select you interested inference engines and do the installation by following the given commands.
 
-This document focus on Core ML. The installation of ONNX Runtime, ncnn and TorchScript is similar to the linux platform, please refer to the document [linux-x86_64](linux-x86_64.md) for installation. 
+This document focus on Core ML. The installation of ONNX Runtime, ncnn and TorchScript is similar to the linux platform, please refer to the document [linux-x86_64](linux-x86_64.md) for installation.
 
 The TorchScript model is used as the IR in the conversion process of the Core ML model. In order to support the custom operator, libtorch needs to be installed.
 
