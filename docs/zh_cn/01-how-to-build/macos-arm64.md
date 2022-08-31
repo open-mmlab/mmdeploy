@@ -1,4 +1,16 @@
-# macOS 下构建方式
+# macOS-arm64 下构建方式
+
+- [macOS-arm64 下构建方式](#macos-arm64-下构建方式)
+  - [源码安装](#源码安装)
+    - [安装构建和编译工具链](#安装构建和编译工具链)
+    - [安装依赖包](#安装依赖包)
+      - [安装 MMDeploy Converter 依赖](#安装-mmdeploy-converter-依赖)
+      - [安装 MMDeploy SDK 依赖](#安装-mmdeploy-sdk-依赖)
+      - [安装推理引擎](#安装推理引擎)
+    - [编译 MMDeploy](#编译-mmdeploy)
+      - [编译 Model Converter](#编译-model-converter)
+      - [安装 Model Converter](#安装-model-converter)
+      - [编译 SDK 和 Demos](#编译-sdk-和-demos)
 
 ## 源码安装
 
