@@ -67,7 +67,7 @@ jobs:
 
           make -j8 && make install
           popd
-          pip install -v .
+          pip install -v -e .
       - name: Test mmcls full pipeline
         run: |
           mim install mmcls
