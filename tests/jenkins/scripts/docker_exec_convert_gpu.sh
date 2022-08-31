@@ -90,6 +90,10 @@ do
         mim install ${codebase}
         mim install mmcv-full==1.6.0
         pip install -v -e /root/workspace/${codebase_fullname} 
+    elif [ ${codebase} == mmrotate ]; then 
+        mim install ${codebase}
+        mim install mmcv-full==1.6.0
+        pip install -v -e /root/workspace/${codebase_fullname} 
     else 
         mim install ${codebase}
         if [ $? -ne 0 ]; then
