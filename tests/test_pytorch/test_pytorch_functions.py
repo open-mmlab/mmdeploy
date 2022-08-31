@@ -354,7 +354,7 @@ def test_tensor_setitem_scalar(x):
 
     def setitem_slice(x):
         H, W = x.shape[-2:]
-        x[:, :, 2:H - 2, 2:W - 2] = 1
+        x[:, 1:3] = 1
         x[:, :, 4:H - 4, 4:W - 4] = x.new_tensor(2)
         return x
 
