@@ -74,16 +74,16 @@ ENV JAVA_HOME=/root/workspace/jdk-18
 ENV PATH=$JAVA_HOME/bin:$PATH
 
 ### install tensorrt
-RUN wget http://${HOST}/TensorRT-7.0.0.11.Ubuntu-18.04.x86_64-gnu.cuda-${CUDA}.cudnn7.6.tar.gz && \
-    tar -zxvf TensorRT-7.0.0.11.Ubuntu-18.04.x86_64-gnu.cuda-${CUDA}.cudnn7.6.tar.gz  &&\
-    /opt/conda/bin/pip install TensorRT-7.0.0.11/python/tensorrt-7.0.0.11-cp37-none-linux_x86_64.whl &&\
+RUN wget http://${HOST}/TensorRT-7.2.3.4.Ubuntu-18.04.x86_64-gnu.cuda-10.2.cudnn8.1.tar.gz && \
+    tar -zxvf TensorRT-7.2.3.4.Ubuntu-18.04.x86_64-gnu.cuda-10.2.cudnn8.1.tar.gz  &&\
+    /opt/conda/bin/pip install TensorRT-7.2.3.4/python/tensorrt-7.2.3.4-cp37-none-linux_x86_64.whl &&\
     /opt/conda/bin/pip install pycuda
-ENV TENSORRT_DIR=/root/workspace/TensorRT-7.0.0.11
+ENV TENSORRT_DIR=/root/workspace/TensorRT-7.2.3.4
 ENV LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
 
 ### install cudnn
-RUN wget http://${HOST}/cudnn-${CUDA}-linux-x64-v7.6.5.32.tgz && \
-    tar -zxvf cudnn-${CUDA}-linux-x64-v7.6.5.32.tgz && \
+RUN wget http://${HOST}/cudnn-10.2-linux-x64-v8.1.1.33.tgz && \
+    tar -zxvf cudnn-10.2-linux-x64-v8.1.1.33.tgz && \
     cp -r cuda/include/cudnn* /usr/local/cuda-${CUDA}/include/ && \
     cp -r cuda/lib64/libcudnn* /usr/local/cuda-${CUDA}/lib64/
 ENV CUDNN_DIR=/root/workspace/cuda
@@ -137,7 +137,6 @@ RUN apt update && apt install -y zip
 RUN wget https://download.pytorch.org/libtorch/cu${CUDA_INT}/libtorch-shared-with-deps-1.12.1%2Bcu${CUDA_INT}.zip && \
     unzip libtorch-shared-with-deps-1.12.1+cu${CUDA_INT}.zip 
 ENV Torch_DIR=/root/workspace/libtorch
-ENV LD_LIBRARY_PATH=$Torch_DIR/lib:$LD_LIBRARY_PATH
 
 ### install openmim
 RUN /opt/conda/bin/pip install openmim
@@ -146,6 +145,8 @@ RUN /opt/conda/bin/pip install openmim
 ### create conda env && install pytorch
 RUN /opt/conda/bin/conda init bash && \
     /opt/conda/bin/conda create --clone base -n torch1.9.0 -y && \
+    /opt/conda/envs/torch1.8.0/bin/pip install torch==1.8.1+cu${CUDA_INT} torchvision==0.9.1+cu${CUDA_INT} -f https://download.pytorch.org/whl/torch_stable.html && \
+    /opt/conda/bin/conda create --clone base -n torch1.10.0 -y && \
     /opt/conda/envs/torch1.9.0/bin/pip install torch==1.9.0+cu${CUDA_INT} torchvision==0.10.0+cu${CUDA_INT} -f https://download.pytorch.org/whl/torch_stable.html && \
     /opt/conda/bin/conda create --clone base -n torch1.10.0 -y && \
     /opt/conda/envs/torch1.10.0/bin/pip install torch==1.10.0+cu${CUDA_INT} torchvision==0.11.0+cu${CUDA_INT} -f https://download.pytorch.org/whl/torch_stable.html && \
