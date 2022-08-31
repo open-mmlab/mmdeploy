@@ -83,9 +83,11 @@ do
     pip install -r requirements/build.txt
     ## build ${codebase}
     if [ ${codebase} == mmdet3d ]; then 
+        mim install ${codebase}
         mim install mmcv-full==1.5.1
         pip install -v -e /root/workspace/${codebase_fullname} 
     elif [ ${codebase} == mmedit ]; then 
+        mim install ${codebase}
         mim install mmcv-full==1.6.0
         pip install -v -e /root/workspace/${codebase_fullname} 
     else 
