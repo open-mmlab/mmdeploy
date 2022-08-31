@@ -40,7 +40,7 @@ cd /root/workspace
 git clone https://github.com/open-mmlab/${codebase_fullname}.git
 
 #### wait to be removed
-cp -r cuda/include/cudnn* /usr/local/cuda-11.3/include/
+
 export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH/\/root\/workspace\/libtorch\/lib:/}
 
