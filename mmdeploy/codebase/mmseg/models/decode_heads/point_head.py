@@ -11,7 +11,7 @@ def point_head__get_points_test__tensorrt(ctx, self, seg_logits,
                                           uncertainty_func, cfg):
     """Sample points for testing.
 
-    1. set `num_points` no greater than MAX_TOPK_K for tensorrt backend
+    1. set `num_points` no greater than TENSORRT_MAX_TOPK for tensorrt backend
 
     Args:
         seg_logits (Tensor): A tensor of shape (batch_size, num_classes,
@@ -26,12 +26,12 @@ def point_head__get_points_test__tensorrt(ctx, self, seg_logits,
             2) that contains [0, 1] x [0, 1] normalized coordinates of the
             most uncertain points from the ``height x width`` grid .
     """
-    from mmdeploy.apis.tensorrt import MAX_TOPK_K
+    from mmdeploy.utils.constants import TENSORRT_MAX_TOPK
 
-    if cfg.subdivision_num_points > MAX_TOPK_K:
+    if cfg.subdivision_num_points > TENSORRT_MAX_TOPK:
         logger = get_root_logger()
         logger.warning(f'cfg.subdivision_num_points would be changed from '
-                       f'{cfg.subdivision_num_points} to {MAX_TOPK_K} '
+                       f'{cfg.subdivision_num_points} to {TENSORRT_MAX_TOPK} '
                        f'due to restriction in TensorRT TopK layer ')
-        cfg.subdivision_num_points = MAX_TOPK_K
+        cfg.subdivision_num_points = TENSORRT_MAX_TOPK
     return ctx.origin_func(self, seg_logits, uncertainty_func, cfg)

@@ -2,8 +2,6 @@
 from mmdeploy.backend.tensorrt import is_available, is_custom_ops_available
 from ..core import PIPELINE_MANAGER
 
-MAX_TOPK_K = 3840
-
 __all__ = ['is_available', 'is_custom_ops_available']
 
 if is_available():
