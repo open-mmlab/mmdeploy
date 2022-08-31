@@ -76,8 +76,8 @@ ENV JAVA_HOME=/root/workspace/jdk-18
 ENV PATH=$JAVA_HOME/bin:$PATH
 
 ### install cudnn
-RUN wget http://${HOST}/cudnn-${CUDA}-linux-x64-v8.2.1.32.tgz && \
-    tar -zxvf cudnn-${CUDA}-linux-x64-v8.2.1.32.tgz && \
+RUN wget http://${HOST}/cudnn-11.3-linux-x64-v8.2.1.32.tgz && \
+    tar -zxvf cudnn-11.3-linux-x64-v8.2.1.32.tgz && \
     cp -r cuda/include/cudnn* /usr/local/cuda-${CUDA}/include/ && \
     cp -r cuda/lib64/libcudnn* /usr/local/cuda-${CUDA}/lib64/
 ENV CUDNN_DIR=/root/workspace/cuda
@@ -143,7 +143,6 @@ RUN wget http://${HOST}/TensorRT-8.2.1.8.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar
     /opt/conda/bin/pip install pycuda
 ENV TENSORRT_DIR=/root/workspace/TensorRT-8.2.1.8
 ENV LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
-ENV LD_LIBRARY_PATH=/usr/local/cuda-${CUDA}/lib64/:$LD_LIBRARY_PATH
 
 ### install openmim and onnx
 RUN /opt/conda/bin/pip install openmim
