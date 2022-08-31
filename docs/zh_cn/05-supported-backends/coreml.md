@@ -4,7 +4,7 @@
 
 ## 安装
 
-若要使用自定义算子，需要编译libtorch
+转换 mmdet 中的模型，需要编译 libtorch 支持 nms 等自定义算子
 
 ```bash
 cd ${PYTORCH_DIR}

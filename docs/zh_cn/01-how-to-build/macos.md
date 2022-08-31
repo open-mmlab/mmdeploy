@@ -22,42 +22,7 @@
 
 #### 安装 MMDeploy Converter 依赖
 
-<table class="docutils">
-<thead>
-  <tr>
-    <th>名称 </th>
-    <th>安装说明 </th>
-  </tr>
-</thead>
-<tbody>
-  <tr>
-    <td>conda </td>
-    <td>请参考<a href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html">官方说明</a>安装 conda。<br> 通过 conda 创建并激活 Python 环境。<br>
-<pre><code>
-conda create -n mmdeploy python=3.9 -y
-conda activate mmdeploy
-</code></pre>
-    </td>
-  </tr>
-  <tr>
-    <td>PyTorch <br>(>=1.8.0) </td>
-    <td>安装 PyTorch，要求版本是 torch>=1.8.0。可查看<a href="https://pytorch.org/">官网</a>获取更多详细的安装教程。
-<pre><code>
-conda install pytorch==1.8.0 torchvision==0.9.0 -c pytorch -c conda-forge
-</code></pre>
-    </td>
-  </tr>
-  <tr>
-    <td>mmcv-full </td>
-    <td>参考如下命令安装 mmcv-full。更多安装方式，可查看 <a href="https://github.com/open-mmlab/mmcv">mmcv 官网</a><br>
-<pre><code>
-export torch_version=torch1.8
-pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/cpu/${torch_version}/index.html
-</code></pre>
-    </td>
-  </tr>
-</tbody>
-</table>
+参考[get_started](../get_started.md)文档，安装conda、PyTorch 和 mmcv。
 
 #### 安装 MMDeploy SDK 依赖
 
