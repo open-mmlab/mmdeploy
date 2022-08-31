@@ -1,4 +1,9 @@
-#!/bin/bash
+#!/bin/sh
+
+set -e
+
+# print env
+python3 tools/check_env.py
 
 checkpoint=https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth
 model_cfg=../mmclassification/configs/resnet/resnet18_8xb32_in1k.py
