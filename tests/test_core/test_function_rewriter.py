@@ -89,54 +89,6 @@ def test_rewrite_empty_function():
 
 class TestHomonymicRewriter:
 
-    def test_rewrite_homonymic_functions(self):
-        import package
-        path1 = 'package.func'
-        path2 = 'package.module.func'
-
-        assert package.func() == 1
-        assert package.module.func() == 1
-
-        function_rewriter = FunctionRewriter()
-
-        @function_rewriter.register_rewriter(func_name=path1)
-        def func_2(ctx):
-            return 2
-
-        @function_rewriter.register_rewriter(
-            func_name=path2, backend=Backend.NCNN.value)
-        def func_3(ctx):
-            return 3
-
-        function_rewriter.enter(env=collect_env(Backend.NCNN, ir=IR.DEFAULT))
-        # This is a feature
-        assert package.func() == 2
-        assert package.module.func() == 3
-        function_rewriter.exit()
-
-        assert package.func() == 1
-        assert package.module.func() == 1
-
-        function_rewriter2 = FunctionRewriter()
-
-        @function_rewriter2.register_rewriter(
-            func_name=path1, backend=Backend.NCNN.value)
-        def func_4(ctx):
-            return 4
-
-        @function_rewriter2.register_rewriter(func_name=path2)
-        def func_5(ctx):
-            return 5
-
-        function_rewriter2.enter(env=collect_env(Backend.NCNN, ir=IR.DEFAULT))
-        # This is a feature
-        assert package.func() == 4
-        assert package.module.func() == 5
-        function_rewriter2.exit()
-
-        assert package.func() == 1
-        assert package.module.func() == 1
-
     def test_rewrite_homonymic_methods(self):
         import package
         path1 = 'package.C.method'

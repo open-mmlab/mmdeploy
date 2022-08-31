@@ -171,16 +171,25 @@ def get_inference_info(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
     input = ['prep_output']
     output = ['infer_output']
     ir_config = get_ir_config(deploy_cfg)
-    input_names = ir_config.get('input_names', None)
-    input_name = input_names[0] if input_names else 'input'
-    input_map = dict(img=input_name)
+
+    backend = get_backend(deploy_cfg=deploy_cfg)
+    if backend == Backend.TORCHSCRIPT:
+        output_names = ir_config.get('output_names', None)
+        input_map = dict(img='#0')
+        output_map = {name: f'#{i}' for i, name in enumerate(output_names)}
+    else:
+        input_names = ir_config.get('input_names', None)
+        input_name = input_names[0] if input_names else 'input'
+        input_map = dict(img=input_name)
+        output_map = {}
     return_dict = dict(
         name=name,
         type=type,
         module=module,
         input=input,
         output=output,
-        input_map=input_map)
+        input_map=input_map,
+        output_map=output_map)
     if 'use_vulkan' in deploy_cfg['backend_config']:
         return_dict['use_vulkan'] = deploy_cfg['backend_config']['use_vulkan']
     return return_dict

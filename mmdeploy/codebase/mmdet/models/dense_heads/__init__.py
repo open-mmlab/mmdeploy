@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from . import detr_head
 from .base_dense_head import (base_dense_head__get_bbox,
                               base_dense_head__get_bboxes__ncnn)
 from .fovea_head import fovea_head__get_bboxes
@@ -15,5 +16,5 @@ __all__ = [
     'yolox_head__get_bboxes', 'base_dense_head__get_bbox',
     'fovea_head__get_bboxes', 'base_dense_head__get_bboxes__ncnn',
     'ssd_head__get_bboxes__ncnn', 'yolox_head__get_bboxes__ncnn',
-    'gfl_head__get_bbox', 'reppoints_head__get_bboxes'
+    'gfl_head__get_bbox', 'reppoints_head__get_bboxes', 'detr_head'
 ]
