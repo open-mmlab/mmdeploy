@@ -144,9 +144,9 @@ RUN /opt/conda/bin/pip install openmim
 
 ### create conda env && install pytorch
 RUN /opt/conda/bin/conda init bash && \
+    /opt/conda/bin/conda create --clone base -n torch1.8.1 -y && \
+    /opt/conda/envs/torch1.8.1/bin/pip install torch==1.8.1+cu${CUDA_INT} torchvision==0.9.1+cu${CUDA_INT} -f https://download.pytorch.org/whl/torch_stable.html && \
     /opt/conda/bin/conda create --clone base -n torch1.9.0 -y && \
-    /opt/conda/envs/torch1.8.0/bin/pip install torch==1.8.1+cu${CUDA_INT} torchvision==0.9.1+cu${CUDA_INT} -f https://download.pytorch.org/whl/torch_stable.html && \
-    /opt/conda/bin/conda create --clone base -n torch1.10.0 -y && \
     /opt/conda/envs/torch1.9.0/bin/pip install torch==1.9.0+cu${CUDA_INT} torchvision==0.10.0+cu${CUDA_INT} -f https://download.pytorch.org/whl/torch_stable.html && \
     /opt/conda/bin/conda create --clone base -n torch1.10.0 -y && \
     /opt/conda/envs/torch1.10.0/bin/pip install torch==1.10.0+cu${CUDA_INT} torchvision==0.11.0+cu${CUDA_INT} -f https://download.pytorch.org/whl/torch_stable.html && \
