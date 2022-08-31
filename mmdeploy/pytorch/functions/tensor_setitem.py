@@ -29,7 +29,7 @@ def tensor__setitem__default(ctx, self, key, value):
 
     # value could be scalar or single value Tensor
     self_shape = self.shape
-    out_shape = [0] * len(self_shape)
+    out_shape = list(self_shape)
     for i, k in enumerate(key):
         start = 0 if k.start is None else k.start
         start = start if start >= 0 else self_shape[i] + start
