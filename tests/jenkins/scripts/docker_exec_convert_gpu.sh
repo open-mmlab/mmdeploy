@@ -84,7 +84,7 @@ do
     ## build ${codebase}
     if [ ${codebase} == mmdet3d ]; then 
         mim install ${codebase}
-        mim install mmcv-full==1.5.1
+        mim install mmcv-full==1.5.2
         pip install -v -e /root/workspace/${codebase_fullname} 
     elif [ ${codebase} == mmedit ]; then 
         mim install ${codebase}
