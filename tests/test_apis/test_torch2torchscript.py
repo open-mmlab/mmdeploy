@@ -3,7 +3,7 @@ import importlib
 import os.path as osp
 import tempfile
 
-import mmcv
+from mmengine import Config
 import pytest
 
 from mmdeploy.apis import torch2torchscript
@@ -16,7 +16,7 @@ output_name = get_random_name()
 
 
 def get_deploy_cfg(input_name, output_name):
-    return mmcv.Config(
+    return Config(
         dict(
             ir_config=dict(
                 type=IR.TORCHSCRIPT.value,
@@ -28,7 +28,7 @@ def get_deploy_cfg(input_name, output_name):
 
 
 def get_model_cfg():
-    return mmcv.Config(
+    return Config(
         dict(
             model=dict(
                 pretrained=None,

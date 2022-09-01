@@ -48,10 +48,10 @@ def generate_onnx_file():
 
 @pytest.fixture(autouse=True, scope='module')
 def generate_torchscript_file():
-    import mmcv
+    from mmengine import Config
 
     backend = Backend.TORCHSCRIPT.value
-    deploy_cfg = mmcv.Config({'backend_config': dict(type=backend)})
+    deploy_cfg = Config({'backend_config': dict(type=backend)})
 
     from mmdeploy.apis.torch_jit import trace
     context_info = dict(deploy_cfg=deploy_cfg)
