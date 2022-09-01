@@ -4,5 +4,5 @@ codebase_config = dict(model_type='sdk')
 
 backend_config = dict(pipeline=[
     dict(type='LoadImageFromFile'),
-    dict(type='Collect', keys=['img'], meta_keys=['filename', 'ori_shape'])
+    dict(type='PackTextDetInputs', meta_keys=['img_path', 'ori_shape'])
 ])

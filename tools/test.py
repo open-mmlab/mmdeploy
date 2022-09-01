@@ -3,7 +3,7 @@ import argparse
 import os.path as osp
 from copy import deepcopy
 
-from mmcv import DictAction
+from mmengine import DictAction
 
 from mmdeploy.apis import build_task_processor
 from mmdeploy.utils.config_utils import load_config

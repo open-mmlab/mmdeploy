@@ -3,7 +3,6 @@ import importlib
 import re
 from typing import Dict, List, Tuple, Union
 
-import mmcv
 import mmengine
 
 from mmdeploy.apis import build_task_processor
@@ -218,10 +217,11 @@ def get_preprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config):
             transform['keys'] = ['img']
         if 'key' in transform and transform['key'] == 'lq':
             transform['key'] = 'img'
-        if transform['type'] == 'Collect':
+        if transform['type'] == 'PackTextDetInputs':
             meta_keys += transform[
                 'meta_keys'] if 'meta_keys' in transform else []
             transform['meta_keys'] = list(set(meta_keys))
+            transforms[i]['type'] = 'Collect'
     assert transforms[0]['type'] == 'LoadImageFromFile', 'The first item type'\
         ' of pipeline should be LoadImageFromFile'
 
@@ -371,17 +371,17 @@ def export2SDK(deploy_cfg: Union[str, mmengine.Config],
     deploy_info = get_deploy(deploy_cfg, model_cfg, work_dir=work_dir)
     pipeline_info = get_pipeline(deploy_cfg, model_cfg, work_dir=work_dir)
     detail_info = get_detail(deploy_cfg, model_cfg, pth=pth)
-    mmcv.dump(
+    mmengine.dump(
         deploy_info,
         '{}/deploy.json'.format(work_dir),
         sort_keys=False,
         indent=4)
-    mmcv.dump(
+    mmengine.dump(
         pipeline_info,
         '{}/pipeline.json'.format(work_dir),
         sort_keys=False,
         indent=4)
-    mmcv.dump(
+    mmengine.dump(
         detail_info,
         '{}/detail.json'.format(work_dir),
         sort_keys=False,

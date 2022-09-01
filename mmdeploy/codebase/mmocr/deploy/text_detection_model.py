@@ -125,25 +125,30 @@ class End2EndModel(BaseBackendModel):
 class SDKEnd2EndModel(End2EndModel):
     """SDK inference class, converts SDK output to mmocr format."""
 
-    def forward(self, img: Sequence[torch.Tensor],
-                img_metas: Sequence[Sequence[dict]], *args, **kwargs) -> list:
+    def forward(self,
+                inputs: torch.Tensor,
+                data_samples: Optional[List[BaseDataElement]] = None,
+                mode: str = 'predict',
+                *args,
+                **kwargs) -> list:
         """Run forward inference.
 
         Args:
-            img (Sequence[torch.Tensor]): A list contains input image(s)
-                in [N x C x H x W] format.
-            img_metas (Sequence[Sequence[dict]]): A list of meta info for
-                image(s).
+            inputs (torch.Tensor): Images of shape (N, C, H, W).
+            data_samples (List[BaseDataElement] | None): A list of N
+                datasamples, containing meta information and gold annotations
+                for each of the images.
 
         Returns:
             list: A list contains predictions.
         """
-        boundaries = self.wrapper.invoke(
-            img[0].contiguous().detach().cpu().numpy())
+        boundaries = self.wrapper.invoke(inputs[0].permute(
+            [1, 2, 0]).contiguous().detach().cpu().numpy())
         boundaries = [list(x) for x in boundaries]
         return [
             dict(
-                boundary_result=boundaries, filename=img_metas[0]['filename'])
+                boundary_result=boundaries,
+                filename=data_samples[0]['filename'])
         ]
 
 

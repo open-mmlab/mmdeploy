@@ -3,7 +3,7 @@ from typing import List, Optional
 
 import torch
 from mmengine.config import ConfigDict
-from mmengine.data import InstanceData
+from mmengine.structures import InstanceData
 from torch import Tensor
 
 from mmdeploy.codebase.mmdet import get_post_processing_params

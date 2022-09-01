@@ -3,9 +3,10 @@ from typing import Any, List, Optional, Sequence, Union
 
 import numpy as np
 import torch
-from mmengine import BaseDataElement, Config
+from mmengine import Config
 from mmengine.model import BaseDataPreprocessor
 from mmengine.registry import Registry
+from mmengine.structures import BaseDataElement
 from torch import nn
 
 from mmdeploy.codebase.base import BaseBackendModel
@@ -55,7 +56,7 @@ class End2EndModel(BaseBackendModel):
             **kwargs)
 
     def forward(self,
-                batch_inputs: torch.Tensor,
+                inputs: torch.Tensor,
                 data_samples: Optional[List[BaseDataElement]] = None,
                 mode: str = 'predict') -> Any:
         """Run forward inference.
@@ -71,12 +72,12 @@ class End2EndModel(BaseBackendModel):
         """
         assert mode == 'predict', \
             'Backend model only support mode==predict,' f' but get {mode}'
-        if batch_inputs.device != torch.device(self.device):
+        if inputs.device != torch.device(self.device):
             get_root_logger().warning(f'expect input device {self.device}'
-                                      f' but get {batch_inputs.device}.')
-        batch_inputs = batch_inputs.to(self.device)
+                                      f' but get {inputs.device}.')
+        inputs = inputs.to(self.device)
         cls_score = self.wrapper({self.input_name:
-                                  batch_inputs})[self.output_names[0]]
+                                  inputs})[self.output_names[0]]
 
         from mmcls.models.heads.cls_head import ClsHead
         predict = ClsHead._get_predictions(
