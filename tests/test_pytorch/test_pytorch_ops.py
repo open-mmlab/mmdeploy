@@ -4,7 +4,7 @@ import tempfile
 import onnx
 import pytest
 import torch
-from mmcv import Config
+from mmengine import Config
 
 from mmdeploy.core import RewriterContext
 
@@ -18,7 +18,6 @@ def prepare_symbolics():
             'type': 'tensorrt'
         }}), 'tensorrt', opset=11)
     context.enter()
-
     yield
 
     context.exit()
@@ -118,6 +117,17 @@ def test_grid_sampler():
 
 
 @pytest.mark.usefixtures('prepare_symbolics')
+def test_roll():
+    x = torch.rand(1, 4, 4, 4)
+    shifts = [1, 1, 1]
+    dims = [3, 3, 3]
+    model = OpModel(torch.roll, shifts, dims).eval()
+    nodes = get_model_onnx_nodes(model, x)
+    assert nodes[-2].op_type == 'Slice'
+    assert nodes[-1].op_type == 'Concat'
+
+
+@pytest.mark.usefixtures('prepare_symbolics')
 def test_instance_norm():
     x = torch.rand(1, 2, 2, 2)
     model = OpModel(torch.group_norm, 1, torch.rand([2]), torch.rand([2]),
@@ -180,3 +190,12 @@ def test_hardsigmoid():
     model = torch.nn.Hardsigmoid().eval()
     nodes = get_model_onnx_nodes(model, x)
     assert nodes[0].op_type == 'HardSigmoid'
+
+
+@pytest.mark.usefixtures('prepare_symbolics')
+def test_prepare_onnx_paddings__tensorrt():
+    x = torch.rand(1, 4, 8, 8)
+    model = torch.onnx.symbolic_opset11._prepare_onnx_paddings()
+    nodes = get_model_onnx_nodes(model, x, (0, 1, 0, 1))
+    assert nodes[-1].op_type == 'Cast'
+    assert nodes[-2].op_type == 'Concat'

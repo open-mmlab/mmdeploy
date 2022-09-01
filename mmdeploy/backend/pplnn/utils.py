@@ -61,7 +61,6 @@ def register_engines(device_id: int,
         export_algo_file (str): File path for exporting PPLNN optimization
             file.
         import_algo_file (str): File path for loading PPLNN optimization file.
-
     Returns:
         list[pplnn.Engine]: A list of registered pplnn engines.
     """

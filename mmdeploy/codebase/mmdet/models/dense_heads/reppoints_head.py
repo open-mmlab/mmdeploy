@@ -1,11 +1,14 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Sequence
+from typing import List, Optional, Sequence
 
 import torch
+from mmengine.config import ConfigDict
+from mmengine.data import InstanceData
+from torch import Tensor
 
 from mmdeploy.codebase.mmdet import (get_post_processing_params,
-                                     multiclass_nms,
                                      pad_with_value_if_necessary)
+from mmdeploy.codebase.mmdet.models.layers import multiclass_nms
 from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.utils import is_dynamic_shape
 
@@ -30,7 +33,7 @@ def _bbox_post_decode(bboxes: torch.Tensor, max_shape: Sequence[int]):
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    'mmdet.models.dense_heads.RepPointsHead.points2bbox')
+    'mmdet.models.dense_heads.reppoints_head.RepPointsHead.points2bbox')
 def reppoints_head__points2bbox(ctx, self, pts, y_first=True):
     """Rewrite of `points2bbox` in `RepPointsHead`.
 
@@ -46,16 +49,17 @@ def reppoints_head__points2bbox(ctx, self, pts, y_first=True):
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    'mmdet.models.dense_heads.RepPointsHead.get_bboxes')
-def reppoints_head__get_bboxes(ctx,
-                               self,
-                               cls_scores,
-                               bbox_preds,
-                               score_factors=None,
-                               img_metas=None,
-                               cfg=None,
-                               rescale=None,
-                               **kwargs):
+    'mmdet.models.dense_heads.reppoints_head.RepPointsHead.predict_by_feat')
+def reppoints_head__predict_by_feat(
+        ctx,
+        self,
+        cls_scores: List[Tensor],
+        bbox_preds: List[Tensor],
+        score_factors: Optional[List[Tensor]] = None,
+        batch_img_metas: Optional[List[dict]] = None,
+        cfg: Optional[ConfigDict] = None,
+        rescale: bool = False,
+        with_nms: bool = True) -> InstanceData:
     """Rewrite `get_bboxes` of `RepPointsHead` for default backend.
 
     Rewrite this function to deploy model, transform network output for a
@@ -94,8 +98,8 @@ def reppoints_head__get_bboxes(ctx,
 
     mlvl_cls_scores = [cls_scores[i].detach() for i in range(num_levels)]
     mlvl_bbox_preds = [bbox_preds[i].detach() for i in range(num_levels)]
-    assert img_metas is not None
-    img_shape = img_metas[0]['img_shape']
+    assert batch_img_metas is not None
+    img_shape = batch_img_metas[0]['img_shape']
 
     assert len(cls_scores) == len(bbox_preds) == len(mlvl_priors)
     batch_size = cls_scores[0].shape[0]
@@ -147,6 +151,13 @@ def reppoints_head__get_bboxes(ctx,
     batch_scores = torch.cat(mlvl_valid_scores, dim=1)
     batch_bboxes = _bbox_post_decode(
         bboxes=batch_mlvl_bboxes_pred, max_shape=img_shape)
+
+    if cfg.get('min_bbox_size', -1) >= 0:
+        w = batch_bboxes[:, :, 2] - batch_bboxes[:, :, 0]
+        h = batch_bboxes[:, :, 3] - batch_bboxes[:, :, 1]
+        valid_mask = (w > cfg.min_bbox_size) & (h > cfg.min_bbox_size)
+        if not valid_mask.all():
+            batch_scores = batch_scores * valid_mask.unsqueeze(-1)
 
     if not self.use_sigmoid_cls:
         batch_scores = batch_scores[..., :self.num_classes]

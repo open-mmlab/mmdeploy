@@ -89,7 +89,7 @@ def standard_roi_head__predict_mask(ctx,
             Defaults to False.
 
     Returns:
-        list[:obj:`InstanceData`]: Detection results of each image
+        list[Tensor]: Detection results of each image
         after the post process.
         Each item usually contains following keys.
 
@@ -111,7 +111,7 @@ def standard_roi_head__predict_mask(ctx,
     mask_rois = torch.cat([batch_index, det_bboxes], dim=-1)
     mask_rois = mask_rois.view(-1, 5)
     mask_results = self._mask_forward(x, mask_rois)
-    mask_preds = mask_results['mask_pred']
+    mask_preds = mask_results['mask_preds']
     num_det = det_bboxes.shape[1]
     segm_results = self.mask_head.predict_by_feat(
         mask_preds,
