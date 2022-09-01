@@ -2,8 +2,8 @@
 import argparse
 import logging
 import subprocess
-from collections import OrderedDict
 from pathlib import Path
+from typing import Union
 
 import mmcv
 import openpyxl
@@ -68,12 +68,13 @@ def merge_report(work_dir: str, logger: logging.Logger):
     res_file = work_dir.joinpath(
         f'mmdeploy_regression_test_{mmdeploy.version.__version__}.xlsx')
     logger.info(f'Whole result report saving in {res_file}')
-
     if res_file.exists():
         # delete if it existed
         res_file.unlink()
-
     for report_file in work_dir.iterdir():
+        if report_file.name.startswith('.~'):
+            # skip unclosed temp file
+            continue
         if '_report.xlsx' not in report_file.name or \
                 report_file.name == res_file.name or \
                 not report_file.is_file():
@@ -469,15 +470,7 @@ def get_info_from_log_file(info_type: str, log_path: Path,
             metric_line.replace('\n', '').replace('\r', '').split(' - ')[-1]
         logger.info(f'Got metric_str = {metric_str}')
         logger.info(f'Got metric_info = {yaml_metric_key}')
-
-        if 'OrderedDict' in metric_str:
-            # mmdet
-            evaluate_result = eval(metric_str)
-            if not isinstance(evaluate_result, OrderedDict):
-                logger.warning(f'Got error metric_dict = {metric_str}')
-                return 'x'
-            metric = evaluate_result.get(yaml_metric_key, 0.00) * 100
-        elif 'accuracy_top' in metric_str:
+        if 'accuracy_top' in metric_str:
             # mmcls
             metric = eval(metric_str.split(': ')[-1])
             if metric <= 1:
@@ -503,6 +496,13 @@ def get_info_from_log_file(info_type: str, log_path: Path,
         elif yaml_metric_key in ['Eval-PSNR', 'Eval-SSIM']:
             # mmedit
             metric = eval(metric_str.split(': ')[-1])
+        elif 'bbox' in metric_str:
+            # mmdet
+            value_list = metric_str.split('  ')
+            for value in value_list:
+                if yaml_metric_key + ":" in value:
+                    metric = float(value.split(' ')[-1]) * 100
+                    break
         else:
             metric = 'x'
         info_value = metric
@@ -599,7 +599,6 @@ def get_fps_metric(shell_res: int, pytorch_metric: dict, metric_key: str,
         second_get_metric = True
     else:
         second_get_metric = False
-
     if second_get_metric:
         metric_key = metric_info.get(yaml_metric_info_name).get('metric_key')
         if shell_res != 0:
@@ -656,12 +655,11 @@ def get_backend_fps_metric(deploy_cfg_path: str, model_cfg_path: Path,
               f'--device {device_type} '
 
     codebase_name = get_codebase(str(deploy_cfg_path)).value
-    if codebase_name != 'mmedit':
-        # mmedit dont --metric
+    if codebase_name != 'mmedit' and codebase_name != 'mmdet':
+        # mmedit and mmdet dont --metric
         cmd_str += f'--metrics {eval_name} '
 
     logger.info(f'Process cmd = {cmd_str}')
-
     # Test backend
     shell_res = subprocess.run(
         cmd_str, cwd=str(Path(__file__).absolute().parent.parent),
@@ -779,7 +777,8 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
                        checkpoint_path: Path, work_dir: Path, device_type: str,
                        pytorch_metric: dict, metric_info: dict,
                        report_dict: dict, test_type: str,
-                       logger: logging.Logger, backend_file_name: [str, list],
+                       logger: logging.Logger,
+                       backend_file_name: Union[str, list],
                        report_txt_path: Path, metafile_dataset: str,
                        model_name: str):
     """Convert model to onnx and then get metric.
@@ -812,7 +811,6 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
     else:
         input_img_path = './tests/data/tiger.jpeg'
         test_img_path = None
-
     # get sdk_cfg info
     sdk_config = pipeline_info.get('sdk_config', None)
     if sdk_config is not None:
@@ -830,7 +828,6 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
                 logger.debug('new_tolerance is None, skip it ...')
                 continue
             metric_info[metric]['tolerance'] = new_tolerance
-
     if backend_test is False and sdk_config is None:
         test_type = 'convert'
 
@@ -927,7 +924,6 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
     else:
         convert_checkpoint_path = \
             str(backend_output_path.joinpath(backend_file_name))
-
     # load deploy_cfg
     deploy_cfg, model_cfg = \
         load_config(str(deploy_cfg_path),
@@ -938,11 +934,10 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
             str(model_cfg.dataset_type).upper().replace('DATASET', '')
     else:
         dataset_type = metafile_dataset
-
     # Test the model
     if convert_result and test_type == 'precision':
         # Get evaluation metric from model config
-        metrics_eval_list = model_cfg.evaluation.get('metric', [])
+        metrics_eval_list = model_cfg.test_evaluator.get('metric', [])
         if isinstance(metrics_eval_list, str):
             # some config is using str only
             metrics_eval_list = [metrics_eval_list]
@@ -1214,7 +1209,6 @@ def main():
                     model_name_origin, model_metafile_info, checkpoint_path,
                     model_cfg_path, model_config, metric_info, report_dict,
                     logger, report_txt_path, global_info.get('codebase_name'))
-
                 for pipeline in pipelines_info:
                     deploy_config = pipeline.get('deploy_config')
                     backend_name = get_backend(deploy_config).name.lower()

@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import mmcv
 import numpy as np
 import torch
+from mmengine import Config
 
 from mmdeploy.codebase import import_codebase
 from mmdeploy.codebase.mmdet import (clip_bboxes, get_post_processing_params,
@@ -39,7 +39,7 @@ def test_pad_with_value_if_necessary():
     assert np.allclose(padded_x.sum(), x.sum(), rtol=1e-03, atol=1e-05)
 
 
-config_with_mmdet_params = mmcv.Config(
+config_with_mmdet_params = Config(
     dict(
         codebase_config=dict(
             type='mmdet',

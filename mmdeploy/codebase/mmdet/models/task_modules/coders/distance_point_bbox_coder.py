@@ -1,18 +1,19 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import mmdet.core.bbox.transforms
+import mmdet.structures.bbox.transforms
 
 from mmdeploy.core import FUNCTION_REWRITER
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdet.core.bbox.coder.DistancePointBBoxCoder.decode',
+    func_name='mmdet.models.task_modules.coders.distance_point_bbox_coder.DistancePointBBoxCoder.decode',  # noqa
     backend='default')
 def distancepointbboxcoder__decode(ctx,
                                    self,
                                    points,
                                    pred_bboxes,
                                    max_shape=None):
-    """Rewrite `mmdet.core.bbox.coder.DistancePointBBoxCoder.decode`
+    """Rewrite `mmdet.models.task_modules.coders.distance_point_bbox_coder. \
+       DistancePointBBoxCoder.decode`
 
     Decode distance prediction to bounding box.
 
@@ -40,5 +41,5 @@ def distancepointbboxcoder__decode(ctx,
         max_shape = None
     # Rewrite add mmdet.core.bbox.transforms to find correct
     # rewriter, or you will not find correct rewriter.
-    return mmdet.core.bbox.transforms.distance2bbox(points, pred_bboxes,
-                                                    max_shape)
+    return mmdet.structures.bbox.transforms.distance2bbox(points, pred_bboxes,
+                                                          max_shape)

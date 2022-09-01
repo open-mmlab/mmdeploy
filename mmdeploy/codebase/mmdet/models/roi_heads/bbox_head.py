@@ -6,7 +6,8 @@ import torch.nn.functional as F
 from mmengine import ConfigDict
 from torch import Tensor
 
-from mmdeploy.codebase.mmdet import get_post_processing_params, multiclass_nms
+from mmdeploy.codebase.mmdet import get_post_processing_params
+from mmdeploy.codebase.mmdet.models.layers import multiclass_nms
 from mmdeploy.core import FUNCTION_REWRITER, mark
 
 

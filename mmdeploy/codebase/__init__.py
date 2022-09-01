@@ -32,8 +32,10 @@ def import_codebase(codebase: Codebase):
                 f'Import mmdeploy.codebase.{codebase_name} failed.')
         importlib.import_module(f'mmdeploy.codebase.{lib}')
         importlib.import_module(f'{lib}.models')
-        importlib.import_module(f'{lib}.core')
         importlib.import_module(f'{lib}.datasets')
+        importlib.import_module(f'{lib}.structures')
+        importlib.import_module(f'{lib}.visualization')
+        importlib.import_module(f'{lib}.engine')
 
 
 __all__ = ['MMCodebase', 'BaseTask', 'get_codebase_class']

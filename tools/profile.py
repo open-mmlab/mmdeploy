@@ -8,7 +8,7 @@ import torch
 from mmcv import DictAction
 from prettytable import PrettyTable
 
-from mmdeploy.apis import build_task_processor
+from mmdeploy.apis.utils import build_task_processor
 from mmdeploy.utils import get_root_logger
 from mmdeploy.utils.config_utils import (Backend, get_backend, get_input_shape,
                                          load_config)
@@ -102,24 +102,13 @@ def main():
     # create model an inputs
     task_processor = build_task_processor(model_cfg, deploy_cfg, args.device)
 
-    model_ext = osp.splitext(args.model[0])[1]
-    is_pytorch = model_ext in ['.pth', '.pt']
-    if is_pytorch:
-        # load pytorch model
-        model = task_processor.init_pytorch_model(args.model[0])
-        model = TorchWrapper(model)
-        backend = Backend.PYTORCH.value
-    else:
-        # load the model of the backend
-        model = task_processor.init_backend_model(args.model)
-        backend = get_backend(deploy_cfg).value
-
+    model = task_processor.build_backend_model(args.model)
+    backend = get_backend(deploy_cfg).value
     model = model.eval().to(args.device)
     is_device_cpu = args.device == 'cpu'
     with_sync = not is_device_cpu
     if not is_device_cpu:
         torch.backends.cudnn.benchmark = True
-
     image_files = get_images(args.image_dir)
     nrof_image = len(image_files)
     assert nrof_image > 0, f'No image files found in {args.image_dir}'
@@ -136,7 +125,8 @@ def main():
             warmup=args.warmup, log_interval=20, with_sync=with_sync):
         for image in image_files:
             data, _ = task_processor.create_input(image, input_shape)
-            model(**data)
+            model(data['inputs'].unsqueeze(0).to(args.device),
+                  [data['data_sample']])
 
     print('----- Settings:')
     settings = PrettyTable()

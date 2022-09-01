@@ -364,6 +364,7 @@ def export2SDK(deploy_cfg: Union[str, mmcv.Config],
         pth (str): The path of the model checkpoint weights.
     """
     deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
+    print(f'debugging what is type(model_cfg): {type(model_cfg)}')
     deploy_info = get_deploy(deploy_cfg, model_cfg, work_dir=work_dir)
     pipeline_info = get_pipeline(deploy_cfg, model_cfg, work_dir=work_dir)
     detail_info = get_detail(deploy_cfg, model_cfg, pth=pth)

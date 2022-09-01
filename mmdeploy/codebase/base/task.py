@@ -51,7 +51,7 @@ class BaseTask(metaclass=ABCMeta):
             self.scope = DefaultScope.get_instance(self.experiment_name)
 
         # lazy build visualizer
-        self.visualizer = self.model_cfg.visualizer
+        self.visualizer = self.model_cfg.get('visualizer', None)
 
     @abstractmethod
     def build_backend_model(self,
@@ -125,7 +125,6 @@ class BaseTask(metaclass=ABCMeta):
         dataset_cfg = load_config(dataset_cfg)[0]
         if 'pipeline' in backend_cfg:
             dataset_cfg.pipeline = backend_cfg.pipeline
-
         from mmengine.registry import DATASETS
         dataset = DATASETS.build(dataset_cfg)
         logger = get_root_logger()
@@ -249,8 +248,9 @@ class BaseTask(metaclass=ABCMeta):
                     registry = VISUALIZERS
             else:
                 registry = VISUALIZERS
-
+            print(f'debugging mmdeploy.codebase.base.task.py line 251: what is cfg: {cfg}, registry: {registry}')
             VisualizerClass = registry.get(cfg.type)
+            print(f'debugging mmdeploy.codebase.base.task.py line 253: what is VisualizerClass: {VisualizerClass}')
             if VisualizerClass.check_instance_created(cfg.name):
                 return VisualizerClass.get_instance(cfg.name)
             else:

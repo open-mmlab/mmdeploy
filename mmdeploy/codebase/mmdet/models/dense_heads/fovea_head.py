@@ -1,22 +1,28 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import torch
+from typing import List, Optional
 
-from mmdeploy.codebase.mmdet import get_post_processing_params, multiclass_nms
+import torch
+from mmengine.config import ConfigDict
+from mmengine.data import InstanceData
+from torch import Tensor
+
+from mmdeploy.codebase.mmdet import get_post_processing_params
+from mmdeploy.codebase.mmdet.models.layers import multiclass_nms
 from mmdeploy.core import FUNCTION_REWRITER
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    'mmdet.models.dense_heads.FoveaHead.get_bboxes')
-def fovea_head__get_bboxes(ctx,
-                           self,
-                           cls_scores,
-                           bbox_preds,
-                           score_factors=None,
-                           img_metas=None,
-                           cfg=None,
-                           rescale=None,
-                           **kwargs):
-    """Rewrite `get_bboxes` of `FoveaHead` for default backend.
+    'mmdet.models.dense_heads.fovea_head.FoveaHead.predict_by_feat')
+def fovea_head__predict_by_feat(ctx,
+                                self,
+                                cls_scores: List[Tensor],
+                                bbox_preds: List[Tensor],
+                                score_factors: Optional[List[Tensor]] = None,
+                                batch_img_metas: Optional[List[dict]] = None,
+                                cfg: Optional[ConfigDict] = None,
+                                rescale: bool = False,
+                                with_nms: bool = True) -> InstanceData:
+    """Rewrite `predict_by_feat` of `FoveaHead` for default backend.
 
     Rewrite this function to deploy model, transform network output for a
     batch into bbox predictions.
@@ -31,7 +37,7 @@ def fovea_head__get_bboxes(ctx,
         score_factors (list[Tensor], Optional): Score factor for
             all scale level, each is a 4D-tensor, has shape
             (batch_size, num_priors * 1, H, W). Default None.
-        img_metas (list[dict]):  Meta information of the image, e.g.,
+        batch_img_metas (list[dict]):  Meta information of the image, e.g.,
             image size, scaling factor, etc.
         cfg (mmcv.Config | None): Test / postprocessing configuration,
             if None, test_cfg would be used. Default: None.
@@ -47,39 +53,40 @@ def fovea_head__get_bboxes(ctx,
     cfg = self.test_cfg if cfg is None else cfg
     num_levels = len(cls_scores)
     featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
-    points_list = self.get_points(
-        featmap_sizes, bbox_preds[0].dtype, bbox_preds[0].device, flatten=True)
+    mlvl_priors = self.prior_generator.grid_priors(
+        featmap_sizes, dtype=bbox_preds[0].dtype, device=bbox_preds[0].device)
     cls_score_list = [cls_scores[i].detach() for i in range(num_levels)]
     bbox_pred_list = [bbox_preds[i].detach() for i in range(num_levels)]
-    img_shape = img_metas[0]['img_shape']
+    img_shape = batch_img_metas[0]['img_shape']
     batch_size = cls_scores[0].shape[0]
 
     det_bboxes = []
     det_scores = []
-    for cls_score, bbox_pred, stride, base_len, (y, x) \
-            in zip(cls_score_list, bbox_pred_list, self.strides,
-                   self.base_edge_list, points_list):
+    for cls_score, bbox_pred, base_len, point \
+            in zip(cls_score_list, bbox_pred_list,
+                   self.base_edge_list, mlvl_priors):
         assert cls_score.size()[-2:] == bbox_pred.size()[-2:]
-
+        x = point[:, 0]
+        y = point[:, 1]
         scores = cls_score.permute(0, 2, 3,
                                    1).reshape(batch_size, -1,
                                               self.cls_out_channels).sigmoid()
         bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1,
                                                           4).exp()
-        x1 = (stride * x - base_len * bbox_pred[:, :, 0]). \
+        x1 = (x - base_len * bbox_pred[:, :, 0]). \
             clamp(min=0, max=img_shape[1] - 1)
-        y1 = (stride * y - base_len * bbox_pred[:, :, 1]). \
+        y1 = (y - base_len * bbox_pred[:, :, 1]). \
             clamp(min=0, max=img_shape[0] - 1)
-        x2 = (stride * x + base_len * bbox_pred[:, :, 2]). \
+        x2 = (x + base_len * bbox_pred[:, :, 2]). \
             clamp(min=0, max=img_shape[1] - 1)
-        y2 = (stride * y + base_len * bbox_pred[:, :, 3]). \
+        y2 = (y + base_len * bbox_pred[:, :, 3]). \
             clamp(min=0, max=img_shape[0] - 1)
         bboxes = torch.stack([x1, y1, x2, y2], -1)
         det_bboxes.append(bboxes)
         det_scores.append(scores)
     det_bboxes = torch.cat(det_bboxes, dim=1)
     if rescale:
-        scale_factor = img_metas['scale_factor']
+        scale_factor = batch_img_metas['scale_factor']
         det_bboxes /= det_bboxes.new_tensor(scale_factor)
     det_scores = torch.cat(det_scores, dim=1)
 

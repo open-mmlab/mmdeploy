@@ -6,7 +6,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdet.core.bbox.coder.delta_xywh_bbox_coder.'
+    func_name='mmdet.models.task_modules.coders.delta_xywh_bbox_coder.'
     'DeltaXYWHBBoxCoder.decode',
     backend='default')
 def deltaxywhbboxcoder__decode(ctx,
@@ -39,7 +39,8 @@ def deltaxywhbboxcoder__decode(ctx,
     assert pred_bboxes.size(0) == bboxes.size(0)
     if pred_bboxes.ndim == 3:
         assert pred_bboxes.size(1) == bboxes.size(1)
-    from mmdet.core.bbox.coder.delta_xywh_bbox_coder import delta2bbox
+    from mmdet.models.task_modules.coders.delta_xywh_bbox_coder \
+        import delta2bbox
     decoded_bboxes = delta2bbox(bboxes, pred_bboxes, self.means, self.stds,
                                 max_shape, wh_ratio_clip, self.clip_border,
                                 self.add_ctr_clamp, self.ctr_clamp)
@@ -47,7 +48,7 @@ def deltaxywhbboxcoder__decode(ctx,
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdet.core.bbox.coder.delta_xywh_bbox_coder.delta2bbox',  # noqa
+    func_name='mmdet.models.task_modules.coders.delta_xywh_bbox_coder.delta2bbox',  # noqa
     backend='default')
 def delta2bbox(ctx,
                rois,
@@ -138,7 +139,7 @@ def delta2bbox(ctx,
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdet.core.bbox.coder.delta_xywh_bbox_coder.delta2bbox',  # noqa
+    func_name='mmdet.models.task_modules.coders.delta_xywh_bbox_coder.delta2bbox',  # noqa
     backend='ncnn')
 def delta2bbox__ncnn(ctx,
                      rois,

@@ -165,7 +165,7 @@ def _multiclass_nms_single(boxes: Tensor,
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdeploy.codebase.mmdet.core.post_processing._multiclass_nms')
+    func_name='mmdeploy.codebase.mmdet.models.layers._multiclass_nms')
 def multiclass_nms__default(ctx,
                             boxes: Tensor,
                             scores: Tensor,
@@ -222,7 +222,7 @@ def multiclass_nms__default(ctx,
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdeploy.codebase.mmdet.core.post_processing._multiclass_nms',
+    func_name='mmdeploy.codebase.mmdet.models.layers._multiclass_nms',
     backend='tensorrt')
 def multiclass_nms_static(ctx,
                           boxes: Tensor,
@@ -266,12 +266,12 @@ def multiclass_nms_static(ctx,
 @mark('multiclass_nms', inputs=['boxes', 'scores'], outputs=['dets', 'labels'])
 def multiclass_nms(*args, **kwargs):
     """Wrapper function for `_multiclass_nms`."""
-    return mmdeploy.codebase.mmdet.core.post_processing._multiclass_nms(
+    return mmdeploy.codebase.mmdet.models.layers._multiclass_nms(
         *args, **kwargs)
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdeploy.codebase.mmdet.core.post_processing._multiclass_nms',
+    func_name='mmdeploy.codebase.mmdet.models.layers._multiclass_nms',
     backend=Backend.TORCHSCRIPT.value)
 def multiclass_nms__torchscript(ctx,
                                 boxes: Tensor,

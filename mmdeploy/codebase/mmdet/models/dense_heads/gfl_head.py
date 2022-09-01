@@ -1,50 +1,52 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import List, Optional
+
 import torch
 import torch.nn.functional as F
+from mmengine.config import ConfigDict
+from mmengine.data import InstanceData
+from torch import Tensor
 
 from mmdeploy.codebase.mmdet import (get_post_processing_params,
-                                     multiclass_nms, pad_with_value)
+                                     pad_with_value)
+from mmdeploy.codebase.mmdet.models.layers import multiclass_nms
 from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.utils import Backend, get_backend, is_dynamic_shape
 
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.dense_heads.gfl_head.'
-    'GFLHead.get_bboxes')
-def gfl_head__get_bbox(ctx,
-                       self,
-                       cls_scores,
-                       bbox_preds,
-                       score_factors=None,
-                       img_metas=None,
-                       cfg=None,
-                       rescale=False,
-                       with_nms=True,
-                       **kwargs):
-    """Rewrite `get_bboxes` of `GFLHead` for default backend.
+    'GFLHead.predict_by_feat')
+def gfl_head__predict_by_feat(ctx,
+                              self,
+                              cls_scores: List[Tensor],
+                              bbox_preds: List[Tensor],
+                              score_factors: Optional[List[Tensor]] = None,
+                              batch_img_metas: Optional[List[dict]] = None,
+                              cfg: Optional[ConfigDict] = None,
+                              rescale: bool = False,
+                              with_nms: bool = True) -> InstanceData:
+    """Rewrite `predict_by_feat` of `GFLHead` for default backend.
 
     Rewrite this function to deploy model, transform network output for a
     batch into bbox predictions.
 
     Args:
         ctx (ContextCaller): The context with additional information.
-        self: The instance of the original class.
-        cls_scores (list[Tensor]): Classification scores for all
-            scale levels, each is a 4D-tensor, has shape
-            (batch_size, num_priors * num_classes, H, W).
-        bbox_preds (list[Tensor]): Box energies / deltas for all
-            scale levels, each is a 4D-tensor, has shape
-            (batch_size, num_priors * 4, H, W).
+        self (FoveaHead): The instance of the class FoveaHead.
+        cls_scores (list[Tensor]): Box scores for each scale level
+            with shape (N, num_anchors * num_classes, H, W).
+        bbox_preds (list[Tensor]): Box energies / deltas for each scale
+            level with shape (N, num_anchors * 4, H, W).
         score_factors (list[Tensor], Optional): Score factor for
             all scale level, each is a 4D-tensor, has shape
             (batch_size, num_priors * 1, H, W). Default None.
-        img_metas (list[dict], Optional): Image meta info. Default None.
-        cfg (mmcv.Config, Optional): Test / postprocessing configuration,
-            if None, test_cfg would be used.  Default None.
+        batch_img_metas (list[dict]):  Meta information of the image, e.g.,
+            image size, scaling factor, etc.
+        cfg (mmcv.Config | None): Test / postprocessing configuration,
+            if None, test_cfg would be used. Default: None.
         rescale (bool): If True, return boxes in original image space.
-            Default False.
-        with_nms (bool): If True, do nms before return boxes.
-            Default True.
+            Default: False.
 
     Returns:
         If with_nms == True:
@@ -76,8 +78,8 @@ def gfl_head__get_bbox(ctx,
             score_factors[i].detach() for i in range(num_levels)
         ]
         mlvl_score_factors = []
-    assert img_metas is not None
-    img_shape = img_metas[0]['img_shape']
+    assert batch_img_metas is not None
+    img_shape = batch_img_metas[0]['img_shape']
 
     assert len(cls_scores) == len(bbox_preds) == len(mlvl_priors)
     batch_size = cls_scores[0].shape[0]
