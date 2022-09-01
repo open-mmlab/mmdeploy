@@ -1,22 +1,28 @@
 #!/bin/sh
 
 set -e
-
 # print env
 python3 tools/check_env.py
 
-checkpoint=https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth
+deploy_cfg=configs/mmcls/classification_onnxruntime_dynamic.py
+device=cpu
 model_cfg=../mmclassification/configs/resnet/resnet18_8xb32_in1k.py
-ort_cfg=configs/mmcls/classification_onnxruntime_dynamic.py
-sdk_cfg=configs/mmcls/classification_sdk_dynamic.py
+checkpoint=https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth
+sdk_cfg=-configs/mmcls/classification_sdk_dynamic.py
 input_img=../mmclassification/demo/demo.JPEG
 work_dir=work_dir
 
+echo "------------------------------------------------------------------------------------------------------------"
+echo "deploy_cfg=$deploy_cfg"
+echo "model_cfg=$model_cfg"
+echo "checkpoint=$checkpoint"
+echo "device=$device"
+echo "------------------------------------------------------------------------------------------------------------"
+
 mkdir -p $work_dir
-device=cpu
 
 python3 tools/deploy.py \
-  $ort_cfg \
+  $deploy_cfg \
   $model_cfg \
   $checkpoint \
   $input_img \
@@ -25,13 +31,12 @@ python3 tools/deploy.py \
   --dump-info
 
 # prepare dataset
-mkdir -p data
 wget -P data/ https://github.com/open-mmlab/mmdeploy/files/9401216/imagenet-val100.zip
 unzip data/imagenet-val100.zip -d data/
 
-echo "\nRunning test with ort\n"
+echo "Running test with ort"
 python3 tools/test.py \
-  $ort_cfg \
+  $deploy_cfg \
   $model_cfg \
   --model $work_dir/end2end.onnx \
   --device $device \
@@ -44,7 +49,7 @@ python3 tools/test.py \
   --warmup 20 \
   --batch-size 32
 
-echo "\nRunning test with sdk\n"
+echo "Running test with sdk"
 
 # change topk for test
 sed -i 's/"topk": 5/"topk": 1000/g' work_dir/pipeline.json
