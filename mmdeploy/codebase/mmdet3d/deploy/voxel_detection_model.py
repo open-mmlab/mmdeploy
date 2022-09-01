@@ -2,6 +2,7 @@
 from typing import Dict, List, Sequence, Union
 
 import mmcv
+import mmengine
 import torch
 from mmcv.utils import Registry
 from torch.nn import functional as F
@@ -30,17 +31,17 @@ class VoxelDetectionModel(BaseBackendModel):
         backend_files (Sequence[str]): Paths to all required backend files
                 (e.g. '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
         device (str): A string specifying device type.
-        model_cfg (str | mmcv.Config): The model config.
-        deploy_cfg (str|mmcv.Config): Deployment config file or loaded Config
-            object.
+        model_cfg (str | mmengine.Config): The model config.
+        deploy_cfg (str|mmengine.Config): Deployment config file or loaded
+            Config object.
     """
 
     def __init__(self,
                  backend: Backend,
                  backend_files: Sequence[str],
                  device: str,
-                 model_cfg: mmcv.Config,
-                 deploy_cfg: Union[str, mmcv.Config] = None):
+                 model_cfg: mmengine.Config,
+                 deploy_cfg: Union[str, mmengine.Config] = None):
         super().__init__(deploy_cfg=deploy_cfg)
         self.deploy_cfg = deploy_cfg
         self.model_cfg = model_cfg
@@ -131,11 +132,11 @@ class VoxelDetectionModel(BaseBackendModel):
             pred_labels=pred_labels)
 
     @staticmethod
-    def voxelize(model_cfg: Union[str, mmcv.Config], points: torch.Tensor):
+    def voxelize(model_cfg: Union[str, mmengine.Config], points: torch.Tensor):
         """convert kitti points(N, >=3) to voxels.
 
         Args:
-            model_cfg (str | mmcv.Config): The model config.
+            model_cfg (str | mmengine.Config): The model config.
             points (torch.Tensor): [N, ndim] float tensor. points[:, :3]
                 contain xyz points and points[:, 3:] contain other information
                 like reflectivity.
@@ -172,8 +173,8 @@ class VoxelDetectionModel(BaseBackendModel):
         return voxels, num_points, coors_batch
 
     @staticmethod
-    def post_process(model_cfg: Union[str, mmcv.Config],
-                     deploy_cfg: Union[str, mmcv.Config],
+    def post_process(model_cfg: Union[str, mmengine.Config],
+                     deploy_cfg: Union[str, mmengine.Config],
                      outs: Dict,
                      img_metas: Dict,
                      device: str,
@@ -181,8 +182,8 @@ class VoxelDetectionModel(BaseBackendModel):
         """model post process.
 
         Args:
-            model_cfg (str | mmcv.Config): The model config.
-            deploy_cfg (str|mmcv.Config): Deployment config file or loaded
+            model_cfg (str | mmengine.Config): The model config.
+            deploy_cfg (str|mmengine.Config): Deployment config file or loaded
             Config object.
             outs (Dict): Output of model's head.
             img_metas(Dict): Meta info for pcd.
@@ -231,16 +232,16 @@ class VoxelDetectionModel(BaseBackendModel):
 
 
 def build_voxel_detection_model(model_files: Sequence[str],
-                                model_cfg: Union[str, mmcv.Config],
-                                deploy_cfg: Union[str,
-                                                  mmcv.Config], device: str):
+                                model_cfg: Union[str, mmengine.Config],
+                                deploy_cfg: Union[str, mmengine.Config],
+                                device: str):
     """Build 3d voxel object detection model for different backends.
 
     Args:
         model_files (Sequence[str]): Input model file(s).
-        model_cfg (str | mmcv.Config): Input model config file or Config
+        model_cfg (str | mmengine.Config): Input model config file or Config
             object.
-        deploy_cfg (str | mmcv.Config): Input deployment config file or
+        deploy_cfg (str | mmengine.Config): Input deployment config file or
             Config object.
         device (str):  Device to input model
 

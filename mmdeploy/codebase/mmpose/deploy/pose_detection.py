@@ -6,6 +6,7 @@ import os
 from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
 import mmcv
+import mmengine
 import numpy as np
 import torch
 from mmcv.parallel import collate
@@ -17,21 +18,21 @@ from mmdeploy.utils import Task, get_input_shape
 
 
 def process_model_config(
-    model_cfg: mmcv.Config,
+    model_cfg: mmengine.Config,
     imgs: Union[Sequence[str], Sequence[np.ndarray]],
     input_shape: Optional[Sequence[int]] = None,
 ):
     """Process the model config.
 
     Args:
-        model_cfg (mmcv.Config): The model config.
+        model_cfg (mmengine.Config): The model config.
         imgs (Sequence[str] | Sequence[np.ndarray]): Input image(s), accepted
             data type are List[str], List[np.ndarray].
         input_shape (list[int]): A list of two integer in (width, height)
             format specifying input shape. Default: None.
 
     Returns:
-        mmcv.Config: the model config after processing.
+        mmengine.Config: the model config after processing.
     """
     cfg = copy.deepcopy(model_cfg)
     test_pipeline = cfg.data.test.pipeline
@@ -78,13 +79,13 @@ class PoseDetection(BaseTask):
     """Pose detection task class.
 
     Args:
-        model_cfg (mmcv.Config): Original PyTorch model config file.
-        deploy_cfg (mmcv.Config): Deployment config file or loaded Config
+        model_cfg (mmengine.Config): Original PyTorch model config file.
+        deploy_cfg (mmengine.Config): Deployment config file or loaded Config
             object.
         device (str): A string represents device type.
     """
 
-    def __init__(self, model_cfg: mmcv.Config, deploy_cfg: mmcv.Config,
+    def __init__(self, model_cfg: mmengine.Config, deploy_cfg: mmengine.Config,
                  device: str):
         super().__init__(model_cfg, deploy_cfg, device)
 
@@ -258,7 +259,7 @@ class PoseDetection(BaseTask):
             win_name=window_name)
 
     @staticmethod
-    def evaluate_outputs(model_cfg: mmcv.Config,
+    def evaluate_outputs(model_cfg: mmengine.Config,
                          outputs: Sequence,
                          dataset: Dataset,
                          metrics: Optional[str] = None,
@@ -270,7 +271,7 @@ class PoseDetection(BaseTask):
         """Perform post-processing to predictions of model.
 
         Args:
-            model_cfg (mmcv.Config): The model config.
+            model_cfg (mmengine.Config): The model config.
             outputs (list): A list of predictions of model inference.
             dataset (Dataset): Input dataset to run test.
             metrics (str): Evaluation metrics, which depends on

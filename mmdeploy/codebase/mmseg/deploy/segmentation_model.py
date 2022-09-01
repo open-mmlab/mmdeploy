@@ -2,6 +2,7 @@
 from typing import List, Optional, Sequence, Union
 
 import mmcv
+import mmengine
 import numpy as np
 import torch
 from mmcv.utils import Registry
@@ -33,8 +34,8 @@ class End2EndModel(BaseBackendModel):
         device (str): A string represents device type.
         class_names (Sequence[str]): A list of string specifying class names.
         palette (np.ndarray): The palette of segmentation map.
-        deploy_cfg (str | mmcv.Config): Deployment config file or loaded Config
-            object.
+        deploy_cfg (str | mmengine.Config): Deployment config file or loaded
+            Config object.
     """
 
     def __init__(self,
@@ -170,11 +171,11 @@ class SDKEnd2EndModel(End2EndModel):
         return masks
 
 
-def get_classes_palette_from_config(model_cfg: Union[str, mmcv.Config]):
+def get_classes_palette_from_config(model_cfg: Union[str, mmengine.Config]):
     """Get class name and palette from config.
 
     Args:
-        model_cfg (str | mmcv.Config): Input model config file or
+        model_cfg (str | mmengine.Config): Input model config file or
             Config object.
     Returns:
         tuple(Sequence[str], np.ndarray): A list of string specifying names of
@@ -199,16 +200,16 @@ def get_classes_palette_from_config(model_cfg: Union[str, mmcv.Config]):
 
 
 def build_segmentation_model(model_files: Sequence[str],
-                             model_cfg: Union[str, mmcv.Config],
-                             deploy_cfg: Union[str, mmcv.Config], device: str,
-                             **kwargs):
+                             model_cfg: Union[str, mmengine.Config],
+                             deploy_cfg: Union[str, mmengine.Config],
+                             device: str, **kwargs):
     """Build object segmentation model for different backends.
 
     Args:
         model_files (Sequence[str]): Input model file(s).
-        model_cfg (str | mmcv.Config): Input model config file or Config
+        model_cfg (str | mmengine.Config): Input model config file or Config
             object.
-        deploy_cfg (str | mmcv.Config): Input deployment config file or
+        deploy_cfg (str | mmengine.Config): Input deployment config file or
             Config object.
         device (str):  Device to input model.
 

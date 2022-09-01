@@ -2,6 +2,7 @@
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import mmcv
+import mmengine
 import numpy as np
 import torch
 import torch.nn as nn
@@ -19,7 +20,7 @@ from .voxel_detection_model import VoxelDetectionModel
 @MMDET3D_TASK.register_module(Task.VOXEL_DETECTION.value)
 class VoxelDetection(BaseTask):
 
-    def __init__(self, model_cfg: mmcv.Config, deploy_cfg: mmcv.Config,
+    def __init__(self, model_cfg: mmengine.Config, deploy_cfg: mmengine.Config,
                  device: str):
         super().__init__(model_cfg, deploy_cfg, device)
 
@@ -107,13 +108,13 @@ class VoxelDetection(BaseTask):
             task='det')
 
     @staticmethod
-    def read_pcd_file(pcd: str, model_cfg: Union[str, mmcv.Config],
+    def read_pcd_file(pcd: str, model_cfg: Union[str, mmengine.Config],
                       device: str) -> Dict:
         """Read data from pcd file and run test pipeline.
 
         Args:
             pcd (str): Pcd file path.
-            model_cfg (str | mmcv.Config): The model config.
+            model_cfg (str | mmengine.Config): The model config.
             device (str): A string specifying device type.
 
         Returns:

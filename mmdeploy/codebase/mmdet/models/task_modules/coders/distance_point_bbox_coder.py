@@ -5,7 +5,8 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdet.models.task_modules.coders.distance_point_bbox_coder.DistancePointBBoxCoder.decode',  # noqa
+    func_name='mmdet.models.task_modules.coders.distance_point_bbox_coder'
+    '.DistancePointBBoxCoder.decode',
     backend='default')
 def distancepointbboxcoder__decode(ctx,
                                    self,
@@ -13,7 +14,7 @@ def distancepointbboxcoder__decode(ctx,
                                    pred_bboxes,
                                    max_shape=None):
     """Rewrite `mmdet.models.task_modules.coders.distance_point_bbox_coder. \
-       DistancePointBBoxCoder.decode`
+    DistancePointBBoxCoder.decode`
 
     Decode distance prediction to bounding box.
 
@@ -41,5 +42,5 @@ def distancepointbboxcoder__decode(ctx,
         max_shape = None
     # Rewrite add mmdet.core.bbox.transforms to find correct
     # rewriter, or you will not find correct rewriter.
-    return mmdet.structures.bbox.transforms.distance2bbox(points, pred_bboxes,
-                                                          max_shape)
+    return mmdet.structures.bbox.transforms.distance2bbox(
+        points, pred_bboxes, max_shape)

@@ -148,7 +148,6 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
             builder.int8_calibrator = config.int8_calibrator
 
     # create engine
-    print(f'debugging mmdeploy.backend.tensorrt.utils.py line 151" what is network: {network}, what is config: {config}')
     engine = builder.build_engine(network, config)
 
     assert engine is not None, 'Failed to create TensorRT engine'

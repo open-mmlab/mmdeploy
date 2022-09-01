@@ -2,6 +2,7 @@
 from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
 import mmcv
+import mmengine
 import numpy as np
 import torch
 from torch.utils.data import Dataset
@@ -11,20 +12,20 @@ from mmdeploy.utils import Task, get_input_shape
 from .mmsegmentation import MMSEG_TASK
 
 
-def process_model_config(model_cfg: mmcv.Config,
+def process_model_config(model_cfg: mmengine.Config,
                          imgs: Union[Sequence[str], Sequence[np.ndarray]],
                          input_shape: Optional[Sequence[int]] = None):
     """Process the model config.
 
     Args:
-        model_cfg (mmcv.Config): The model config.
+        model_cfg (mmengine.Config): The model config.
         imgs (Sequence[str] | Sequence[np.ndarray]): Input image(s), accepted
             data type are List[str], List[np.ndarray].
         input_shape (list[int]): A list of two integer in (width, height)
             format specifying input shape. Default: None.
 
     Returns:
-        mmcv.Config: the model config after processing.
+        mmengine.Config: the model config after processing.
     """
     from mmseg.apis.inference import LoadImage
     cfg = model_cfg.copy()
@@ -47,13 +48,13 @@ class Segmentation(BaseTask):
     """Segmentation task class.
 
     Args:
-        model_cfg (mmcv.Config): Original PyTorch model config file.
-        deploy_cfg (mmcv.Config): Deployment config file or loaded Config
+        model_cfg (mmengine.Config): Original PyTorch model config file.
+        deploy_cfg (mmengine.Config): Deployment config file or loaded Config
             object.
         device (str): A string represents device type.
     """
 
-    def __init__(self, model_cfg: mmcv.Config, deploy_cfg: mmcv.Config,
+    def __init__(self, model_cfg: mmengine.Config, deploy_cfg: mmengine.Config,
                  device: str):
         super(Segmentation, self).__init__(model_cfg, deploy_cfg, device)
 
@@ -220,7 +221,7 @@ class Segmentation(BaseTask):
         Args:
             outputs (list): A list of predictions of model inference.
             dataset (Dataset): Input dataset to run test.
-            model_cfg (mmcv.Config): The model config.
+            model_cfg (mmengine.Config): The model config.
             metrics (str): Evaluation metrics, which depends on
                 the codebase and the dataset, e.g., e.g., "mIoU" for generic
                 datasets, and "cityscapes" for Cityscapes in mmseg.

@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Optional, Union
 
-import mmcv
+import mmengine
 import torch
 from mmcv.utils import Registry
 from torch.utils.data import DataLoader, Dataset
@@ -10,7 +10,7 @@ from mmdeploy.codebase.base import CODEBASE, BaseTask, MMCodebase
 from mmdeploy.utils import Codebase, get_task_type
 
 
-def __build_mmseg_task(model_cfg: mmcv.Config, deploy_cfg: mmcv.Config,
+def __build_mmseg_task(model_cfg: mmengine.Config, deploy_cfg: mmengine.Config,
                        device: str, registry: Registry) -> BaseTask:
     task = get_task_type(deploy_cfg)
     return registry.module_dict[task.value](model_cfg, deploy_cfg, device)
@@ -29,13 +29,13 @@ class MMSegmentation(MMCodebase):
         super(MMSegmentation, self).__init__()
 
     @staticmethod
-    def build_task_processor(model_cfg: mmcv.Config, deploy_cfg: mmcv.Config,
-                             device: str):
+    def build_task_processor(model_cfg: mmengine.Config,
+                             deploy_cfg: mmengine.Config, device: str):
         """The interface to build the task processors of mmseg.
 
         Args:
-            model_cfg (str | mmcv.Config): Model config file.
-            deploy_cfg (str | mmcv.Config): Deployment config file.
+            model_cfg (str | mmengine.Config): Model config file.
+            deploy_cfg (str | mmengine.Config): Deployment config file.
             device (str): A string specifying device type.
 
         Returns:
@@ -44,13 +44,13 @@ class MMSegmentation(MMCodebase):
         return MMSEG_TASK.build(model_cfg, deploy_cfg, device)
 
     @staticmethod
-    def build_dataset(dataset_cfg: Union[str, mmcv.Config],
+    def build_dataset(dataset_cfg: Union[str, mmengine.Config],
                       dataset_type: str = 'val',
                       **kwargs) -> Dataset:
         """Build dataset for segmentation.
 
         Args:
-            dataset_cfg (str | mmcv.Config): The input dataset config.
+            dataset_cfg (str | mmengine.Config): The input dataset config.
             dataset_type (str): A string represents dataset type, e.g.: 'train'
                 , 'test', 'val'. Defaults to 'val'.
 

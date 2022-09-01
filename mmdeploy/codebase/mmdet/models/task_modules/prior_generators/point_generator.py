@@ -6,7 +6,8 @@ from mmdeploy.utils.constants import Backend
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdet.models.task_modules.prior_generators.MlvlPointGenerator.single_level_grid_priors',  # noqa
+    func_name='mmdet.models.task_modules.prior_generators.MlvlPointGenerator'
+    '.single_level_grid_priors',
     backend=Backend.TENSORRT.value)
 def mlvl_point_generator__single_level_grid_priors__tensorrt(
         ctx,

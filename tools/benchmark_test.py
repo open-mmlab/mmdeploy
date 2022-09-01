@@ -1,7 +1,9 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import os
-import yaml
 import sys
 import time
+
+import yaml
 
 assert os.path.exists('checkpoints')
 assert os.path.exists('images')

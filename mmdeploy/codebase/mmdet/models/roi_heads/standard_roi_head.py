@@ -111,7 +111,6 @@ def standard_roi_head__predict_mask(ctx,
     mask_rois = torch.cat([batch_index, det_bboxes], dim=-1)
     mask_rois = mask_rois.view(-1, 5)
     mask_results = self._mask_forward(x, mask_rois)
-    print(f'debugging mmdeploy.codebase.mmdet.models.roi_heads.standard_roi_head line 114: what is mask_results: {mask_results}')
     mask_preds = mask_results['mask_preds']
     num_det = det_bboxes.shape[1]
     segm_results = self.mask_head.predict_by_feat(

@@ -500,7 +500,7 @@ def get_info_from_log_file(info_type: str, log_path: Path,
             # mmdet
             value_list = metric_str.split('  ')
             for value in value_list:
-                if yaml_metric_key + ":" in value:
+                if yaml_metric_key + ':' in value:
                     metric = float(value.split(' ')[-1]) * 100
                     break
         else:
@@ -777,8 +777,8 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
                        checkpoint_path: Path, work_dir: Path, device_type: str,
                        pytorch_metric: dict, metric_info: dict,
                        report_dict: dict, test_type: str,
-                       logger: logging.Logger,
-                       backend_file_name: Union[str, list],
+                       logger: logging.Logger, backend_file_name: Union[str,
+                                                                        list],
                        report_txt_path: Path, metafile_dataset: str,
                        model_name: str):
     """Convert model to onnx and then get metric.

@@ -2,7 +2,7 @@
 import inspect
 from typing import Dict, List, Optional, Union
 
-import mmcv
+import mmengine
 from torch import nn
 
 from mmdeploy.utils.constants import IR, Backend
@@ -52,7 +52,7 @@ class ModuleRewriter:
 
     def patch_model(self,
                     model: nn.Module,
-                    cfg: mmcv.Config,
+                    cfg: mmengine.Config,
                     backend: str = Backend.DEFAULT.value,
                     ir: IR = IR.DEFAULT,
                     recursive: bool = True,
@@ -115,7 +115,7 @@ class ModuleRewriter:
 
         return module_class(module, cfg, **input_args)
 
-    def _replace_module(self, model: nn.Module, cfg: mmcv.Config,
+    def _replace_module(self, model: nn.Module, cfg: mmengine.Config,
                         recursive: bool, **kwargs):
         """DFS and replace target models."""
 

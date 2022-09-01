@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Dict
 
-import mmcv
+import mmengine
 import torch.nn as nn
 
 from mmdeploy.utils.constants import IR, Backend
@@ -28,7 +28,7 @@ SYMBOLIC_REWRITER = REWRITER_MANAGER.symbolic_rewriter
 
 
 def patch_model(model: nn.Module,
-                cfg: mmcv.Config,
+                cfg: mmengine.Config,
                 backend: str = Backend.DEFAULT.value,
                 ir: IR = IR.DEFAULT,
                 recursive: bool = True,

@@ -68,6 +68,7 @@ class PPLNNWrapper(BaseWrapper):
     def forward(self, inputs: Dict[str,
                                    torch.Tensor]) -> Dict[str, torch.Tensor]:
         """Run forward inference.
+
         Args:
             inputs (Dict[str, torch.Tensor]): Input name and tensor pairs.
         Return:

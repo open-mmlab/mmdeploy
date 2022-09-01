@@ -3,7 +3,7 @@ from typing import List, Optional, Sequence
 
 import torch
 from mmengine.config import ConfigDict
-from mmengine.data import InstanceData
+from mmengine.structures import InstanceData
 from torch import Tensor
 
 from mmdeploy.codebase.mmdet import (get_post_processing_params,
@@ -77,7 +77,7 @@ def reppoints_head__predict_by_feat(
             (batch_size, num_priors * 1, H, W). Default None.
         img_metas (list[dict]):  Meta information of the image, e.g.,
             image size, scaling factor, etc.
-        cfg (mmcv.Config | None): Test / postprocessing configuration,
+        cfg (mmengine.Config | None): Test / postprocessing configuration,
             if None, test_cfg would be used. Default: None.
         rescale (bool): If True, return boxes in original image space.
             Default: False.

@@ -7,9 +7,9 @@ import torch
 import torch.nn.functional as F
 from mmdet.models.detectors import BaseDetector
 from mmengine import Config
-from mmengine.data import BaseDataElement, InstanceData
 from mmengine.model.base_model.data_preprocessor import BaseDataPreprocessor
 from mmengine.registry import Registry
+from mmengine.structures import BaseDataElement, InstanceData
 from torch import Tensor, nn
 
 from mmdeploy.backend.base import get_backend_file_count

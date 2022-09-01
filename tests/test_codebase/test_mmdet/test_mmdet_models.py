@@ -1,9 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import tempfile
-
 import copy
 import os
 import random
+import tempfile
 from typing import Dict, List
 
 import mmcv
@@ -14,8 +13,8 @@ from mmengine import Config
 from mmengine.config import ConfigDict
 
 from mmdeploy.codebase import import_codebase
-from mmdeploy.utils import Backend, Codebase
 from mmdeploy.core.rewriters.rewriter_manager import RewriterContext
+from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import (WrapFunction, WrapModel, backend_checker,
                                  check_backend, get_model_outputs,
                                  get_onnx_model, get_rewrite_outputs)
@@ -165,8 +164,8 @@ def test__distancepointbboxcoder__decode(backend_type: Backend):
             onnx_config=dict(output_names=None, input_shape=None),
             backend_config=dict(type=backend_type.value, model_inputs=None),
             codebase_config=dict(type='mmdet', task='ObjectDetection')))
-    from mmdet.models.task_modules.coders.distance_point_bbox_coder \
-        import DistancePointBBoxCoder
+    from mmdet.models.task_modules.coders.distance_point_bbox_coder import \
+        DistancePointBBoxCoder
     coder = DistancePointBBoxCoder()
     # wrap function to enable rewrite
 
@@ -268,11 +267,11 @@ def test_multiclass_nms_with_keep_top_k(pre_top_k):
 def test__anchorgenerator__single_level_grid_priors():
     backend_type = 'tensorrt'
     import onnx
-    from mmdet.models.task_modules.prior_generators.anchor_generator \
-        import AnchorGenerator
+    from mmdet.models.task_modules.prior_generators.anchor_generator import \
+        AnchorGenerator
 
-    from mmdeploy.apis.onnx import export
     import mmdeploy.codebase.mmdet.models.task_modules.prior_generators.anchor  # noqa
+    from mmdeploy.apis.onnx import export
 
     generator = AnchorGenerator(
         scales=[8], ratios=[0.5, 1.0, 2.0], strides=[4])

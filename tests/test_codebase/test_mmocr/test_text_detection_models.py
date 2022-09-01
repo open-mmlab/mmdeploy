@@ -1,9 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import os.path as osp
-from tempfile import NamedTemporaryFile
-
-import mmcv
-import numpy as np
+import mmengine
 import pytest
 import torch
 
@@ -29,10 +25,10 @@ class TestEnd2EndModel:
         # simplify backend inference
         cls.wrapper = SwitchBackendWrapper(ORTWrapper)
         cls.outputs = {
-            'outputs': torch.rand(1, 3, IMAGE_SIZE, IMAGE_SIZE),
+            'outputs': torch.rand(1, IMAGE_SIZE, IMAGE_SIZE),
         }
         cls.wrapper.set(outputs=cls.outputs)
-        deploy_cfg = mmcv.Config(
+        deploy_cfg = mmengine.Config(
             {'onnx_config': {
                 'output_names': ['outputs']
             }})
@@ -53,39 +49,30 @@ class TestEnd2EndModel:
 
     @pytest.mark.parametrize(
         'ori_shape',
-        [[IMAGE_SIZE, IMAGE_SIZE, 3], [2 * IMAGE_SIZE, 2 * IMAGE_SIZE, 3]])
+        [[IMAGE_SIZE, IMAGE_SIZE], [2 * IMAGE_SIZE, 2 * IMAGE_SIZE]])
     def test_forward(self, ori_shape):
-        imgs = [torch.rand(1, 3, IMAGE_SIZE, IMAGE_SIZE)]
-        img_metas = [[{
+        imgs = torch.rand(1, 3, IMAGE_SIZE, IMAGE_SIZE)
+        img_meta = {
             'ori_shape': ori_shape,
-            'img_shape': [IMAGE_SIZE, IMAGE_SIZE, 3],
-            'scale_factor': [1., 1., 1., 1.],
-            'filename': ''
-        }]]
-        results = self.end2end_model.forward(imgs, img_metas)
+            'img_shape': [IMAGE_SIZE, IMAGE_SIZE],
+            'scale_factor': [1., 1.],
+            'img_path': ''
+        }
+        from mmengine.structures import InstanceData
+        from mmocr.structures import TextDetDataSample
+        pred_instances = InstanceData(metainfo=img_meta)
+        data_sample = TextDetDataSample(pred_instances=pred_instances)
+        data_sample.set_metainfo(img_meta)
+        results = self.end2end_model.forward(imgs, [data_sample])
         assert results is not None, 'failed to get output using '\
             'End2EndModel'
-
-    def test_forward_test(self):
-        imgs = torch.rand(2, 3, IMAGE_SIZE, IMAGE_SIZE)
-        results = self.end2end_model.forward_test(imgs)
-        assert isinstance(results[0], torch.Tensor)
-
-    def test_show_result(self):
-        input_img = np.zeros([IMAGE_SIZE, IMAGE_SIZE, 3])
-        img_path = NamedTemporaryFile(suffix='.jpg').name
-
-        result = {'boundary_result': [[1, 2, 3, 4, 5], [2, 2, 0, 4, 5]]}
-        self.end2end_model.show_result(
-            input_img, result, '', show=False, out_file=img_path)
-        assert osp.exists(img_path), 'Fails to create drawn image.'
 
 
 @backend_checker(Backend.ONNXRUNTIME)
 def test_build_text_detection_model():
     model_cfg_path = 'tests/test_codebase/test_mmocr/data/dbnet.py'
     model_cfg = load_config(model_cfg_path)[0]
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = mmengine.Config(
         dict(
             backend_config=dict(type='onnxruntime'),
             onnx_config=dict(output_names=['outputs']),

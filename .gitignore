@@ -153,6 +153,8 @@ mmdeploy/backend/ncnn/onnx2ncnn
 
 /mmdeploy-*
 
+# OCR dicts
+dicts
 # snpe
 grpc-cpp-plugin
 service/snpe/grpc_cpp_plugin

@@ -2,7 +2,7 @@
 import os.path as osp
 from typing import Dict, Union
 
-import mmcv
+import mmengine
 import onnx
 
 from mmdeploy.utils import (get_calib_filename, get_common_config,
@@ -14,7 +14,7 @@ from .utils import from_onnx, get_trt_log_level
 def onnx2tensorrt(work_dir: str,
                   save_file: str,
                   model_id: int,
-                  deploy_cfg: Union[str, mmcv.Config],
+                  deploy_cfg: Union[str, mmengine.Config],
                   onnx_model: Union[str, onnx.ModelProto],
                   device: str = 'cuda:0',
                   partition_type: str = 'end2end',
@@ -37,7 +37,7 @@ def onnx2tensorrt(work_dir: str,
         save_file (str): The base name of the file to save TensorRT engine.
             E.g. `end2end.engine`.
         model_id (int): Index of input model.
-        deploy_cfg (str | mmcv.Config): Deployment config.
+        deploy_cfg (str | mmengine.Config): Deployment config.
         onnx_model (str | onnx.ModelProto): input onnx model.
         device (str): A string specifying cuda device, defaults to 'cuda:0'.
         partition_type (str): Specifying partition type of a model, defaults to
@@ -47,7 +47,7 @@ def onnx2tensorrt(work_dir: str,
     # load deploy_cfg if necessary
     deploy_cfg = load_config(deploy_cfg)[0]
 
-    mmcv.mkdir_or_exist(osp.abspath(work_dir))
+    mmengine.mkdir_or_exist(osp.abspath(work_dir))
 
     common_params = get_common_config(deploy_cfg)
     model_params = get_model_inputs(deploy_cfg)[model_id]

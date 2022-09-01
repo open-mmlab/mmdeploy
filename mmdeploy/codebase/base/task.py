@@ -248,9 +248,7 @@ class BaseTask(metaclass=ABCMeta):
                     registry = VISUALIZERS
             else:
                 registry = VISUALIZERS
-            print(f'debugging mmdeploy.codebase.base.task.py line 251: what is cfg: {cfg}, registry: {registry}')
             VisualizerClass = registry.get(cfg.type)
-            print(f'debugging mmdeploy.codebase.base.task.py line 253: what is VisualizerClass: {VisualizerClass}')
             if VisualizerClass.check_instance_created(cfg.name):
                 return VisualizerClass.get_instance(cfg.name)
             else:
@@ -262,6 +260,7 @@ class BaseTask(metaclass=ABCMeta):
                   output_file: str,
                   window_name: str = '',
                   show_result: bool = False,
+                  draw_gt: bool = False,
                   **kwargs):
         """Visualize predictions of a model.
 
@@ -274,6 +273,8 @@ class BaseTask(metaclass=ABCMeta):
                 an empty string.
             show_result (bool): Whether to show result in windows, defaults
                 to `False`.
+            draw_gt (bool): Whether to show ground truth in windows, defaults
+                to `False`.
         """
         save_dir, save_name = osp.split(output_file)
         visualizer = self.get_visualizer(window_name, save_dir)
@@ -283,7 +284,8 @@ class BaseTask(metaclass=ABCMeta):
         visualizer.add_datasample(
             name,
             image,
-            pred_sample=result,
+            data_sample=result,
+            draw_gt=draw_gt,
             show=show_result,
             out_file=output_file)
 
