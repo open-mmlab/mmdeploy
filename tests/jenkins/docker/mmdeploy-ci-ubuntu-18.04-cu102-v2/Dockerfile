@@ -18,7 +18,7 @@ USER root
 WORKDIR /root/workspace
 ENV DEBIAN_FRONTEND=nointeractive
 ENV FORCE_CUDA="1"
-
+ENV CUDA_VERSION=10.2
 ### change the system source for installing libs
 ARG USE_SRC_INSIDE=true
 RUN if [ ${USE_SRC_INSIDE} == true ] ; \
@@ -55,7 +55,7 @@ RUN wget https://github.com/Kitware/CMake/releases/download/v3.24.1/cmake-3.24.1
     cd cmake-3.24.1 && \
     ./bootstrap && \
     make && \
-    make install 
+    make install
 
 ### install miniconda
 RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh  && \
@@ -79,6 +79,7 @@ RUN wget http://${HOST}/TensorRT-7.2.3.4.Ubuntu-18.04.x86_64-gnu.cuda-10.2.cudnn
     /opt/conda/bin/pip install TensorRT-7.2.3.4/python/tensorrt-7.2.3.4-cp37-none-linux_x86_64.whl &&\
     /opt/conda/bin/pip install pycuda
 ENV TENSORRT_DIR=/root/workspace/TensorRT-7.2.3.4
+ENV TENSORRT_VERSION=7.2.3.4
 ENV LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
 
 ### install cudnn
@@ -90,12 +91,13 @@ ENV CUDNN_DIR=/root/workspace/cuda
 ENV LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
 ENV LD_LIBRARY_PATH=/usr/local/cuda-${CUDA}/lib64/:$LD_LIBRARY_PATH
 ENV CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-${CUDA}
- 
+
 ### get onnxruntime
 RUN wget https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTIME_VERSION}/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz \
     && tar -zxvf onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz &&\
     /opt/conda/bin/pip install onnxruntime-gpu==${ONNXRUNTIME_VERSION}
 ENV ONNXRUNTIME_DIR=/root/workspace/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}
+ENV ONNXRUNTIME_VERSION=${ONNXRUNTIME_VERSION}
 ENV LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 
 ### install openvino
@@ -108,7 +110,7 @@ RUN /opt/conda/bin/pip install opencv-python==${OPENCV_VERSION}
 RUN git clone --recursive https://github.com/openppl-public/ppl.nn.git &&\
     cd ppl.nn &&\
     ./build.sh -DPPLNN_USE_X86_64=ON -DPPLNN_USE_CUDA=ON
-ENV PPLNN_DIR=/root/workspace/ppl.nn 
+ENV PPLNN_DIR=/root/workspace/ppl.nn
 ENV PYTHONPATH=/root/workspace/ppl.nn/install/lib:$PYTHONPATH
 
 ### build ncnn
@@ -122,7 +124,7 @@ RUN git clone --recursive https://github.com/Tencent/ncnn.git &&\
     cd $NCNN_DIR/python &&\
     /opt/conda/bin/pip install -e .
 ENV ncnn_DIR=/root/workspace/ncnn/install/lib/cmake/ncnn
-ENV PYTHONPATH=/root/workspace/ncnn/python:$PYTHONPATH 
+ENV PYTHONPATH=/root/workspace/ncnn/python:$PYTHONPATH
 
 ### install ppl.cv
 RUN git clone https://github.com/openppl-public/ppl.cv.git &&\
@@ -130,17 +132,6 @@ RUN git clone https://github.com/openppl-public/ppl.cv.git &&\
     git checkout tags/v${PPLCV_VERSION} -b v${PPLCV_VERSION} &&\
     ./build.sh cuda
 ENV pplcv_DIR=/root/workspace/ppl.cv/cuda-build/install/lib/cmake/ppl
-
-### install zip
-RUN apt update && apt install -y zip 
-### install libtorch
-RUN wget https://download.pytorch.org/libtorch/cu${CUDA_INT}/libtorch-shared-with-deps-1.12.1%2Bcu${CUDA_INT}.zip && \
-    unzip libtorch-shared-with-deps-1.12.1+cu${CUDA_INT}.zip 
-ENV Torch_DIR=/root/workspace/libtorch
-
-### install openmim
-RUN /opt/conda/bin/pip install openmim
-
 
 ### create conda env && install pytorch
 RUN /opt/conda/bin/conda init bash && \
@@ -154,5 +145,3 @@ RUN /opt/conda/bin/conda init bash && \
     /opt/conda/envs/torch1.11.0/bin/pip install torch==1.11.0+cu${CUDA_INT} torchvision==0.12.0+cu${CUDA_INT} -f https://download.pytorch.org/whl/torch_stable.html && \
     /opt/conda/bin/conda create --clone base -n torch1.12.0 -y && \
     /opt/conda/envs/torch1.12.0/bin/pip install torch==1.12.0+cu${CUDA_INT} torchvision==0.13.0+cu${CUDA_INT} -f https://download.pytorch.org/whl/torch_stable.html
-
-   

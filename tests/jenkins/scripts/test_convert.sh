@@ -14,7 +14,7 @@ do
     container_id=$(
         docker run -itd \
             --gpus all \
-            -v /data2/checkpoints/${codebase}:/root/workspace/mmdeploy_checkpoints \
+            -v /data2/checkpoints:/root/workspace/mmdeploy_checkpoints \
             -v ${log_dir}:/root/workspace/mmdeploy_regression_working_dir \
             -v /data2/benchmark:/root/workspace/mmdeploy_benchmark \
             --name ${container_name} \

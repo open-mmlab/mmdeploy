@@ -17,7 +17,7 @@ USER root
 WORKDIR /root/workspace
 ENV DEBIAN_FRONTEND=nointeractive
 ENV FORCE_CUDA="1"
-
+ENV CUDA_VERSION=11.3
 ### change the system source for installing libs
 ARG USE_SRC_INSIDE=true
 RUN if [ ${USE_SRC_INSIDE} == true ] ; \
@@ -54,7 +54,7 @@ RUN wget https://github.com/Kitware/CMake/releases/download/v3.24.1/cmake-3.24.1
     cd cmake-3.24.1 && \
     ./bootstrap && \
     make && \
-    make install 
+    make install
 
 ### install miniconda
 RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh  && \
@@ -65,7 +65,7 @@ RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Mini
     /opt/conda/bin/conda clean -ya
 
 ### change the pip source
-RUN /opt/conda/bin/pip config set global.index-url https://mirrors.aliyun.com/pypi/simple 
+RUN /opt/conda/bin/pip config set global.index-url https://mirrors.aliyun.com/pypi/simple
 
 ENV PATH=/opt/conda/bin:$PATH
 
@@ -90,6 +90,7 @@ RUN wget https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTI
     && tar -zxvf onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz &&\
     /opt/conda/bin/pip install onnxruntime-gpu==${ONNXRUNTIME_VERSION}
 ENV ONNXRUNTIME_DIR=/root/workspace/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}
+ENV ONNXRUNTIME_VERSION=${ONNXRUNTIME_VERSION}
 ENV LD_LIBRARY_PATH=${ONNXRUNTIME_DIR}/lib:$LD_LIBRARY_PATH
 
 ### install openvino
@@ -120,42 +121,36 @@ RUN git clone --depth 1 --branch ${NCNN_VERSION} --recursive https://github.com/
     cd $NCNN_DIR/python &&\
     /opt/conda/bin/pip install -e .
 ENV ncnn_DIR=/root/workspace/ncnn/install/lib/cmake/ncnn
-ENV PYTHONPATH=/root/workspace/ncnn/python:$PYTHONPATH 
+ENV PYTHONPATH=/root/workspace/ncnn/python:$PYTHONPATH
 
 ### install ppl.cv
 RUN git clone --depth 1 --branch v${PPLCV_VERSION} https://github.com/openppl-public/ppl.cv.git  &&\
     cd ppl.cv &&\
     ./build.sh cuda
-    
+
 ENV pplcv_DIR=/root/workspace/ppl.cv/cuda-build/install/lib/cmake/ppl
-
-### install zip
-RUN apt update && apt install -y zip 
-### install libtorch
-RUN wget https://download.pytorch.org/libtorch/cu${CUDA_INT}/libtorch-shared-with-deps-1.12.1%2Bcu${CUDA_INT}.zip && \
-    unzip libtorch-shared-with-deps-1.12.1+cu${CUDA_INT}.zip 
-ENV Torch_DIR=/root/workspace/libtorch
-
 
 ### install tensorrt
 RUN wget http://${HOST}/TensorRT-8.2.1.8.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz && \
     tar -zxvf TensorRT-8.2.1.8.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz &&\
     /opt/conda/bin/pip install TensorRT-8.2.1.8/python/tensorrt-8.2.1.8-cp38-none-linux_x86_64.whl && \
     /opt/conda/bin/pip install pycuda
+
 ENV TENSORRT_DIR=/root/workspace/TensorRT-8.2.1.8
+ENV TENSORRT_VERSION=8.2.1.8
+
 ENV LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
 
 ENV LD_LIBRARY_PATH=/usr/local/cuda-${CUDA}/lib64/:$LD_LIBRARY_PATH
 
-### install openmim and onnx
-RUN /opt/conda/bin/pip install openmim
-
 RUN /opt/conda/bin/conda init bash && \
+    /opt/conda/bin/conda create --clone base -n torch1.8.1 -y && \
+    /opt/conda/envs/torch1.11.0/bin/pip install torch==1.8.1+cu111 torchvision==0.9.1+cu111 -f https://download.pytorch.org/whl/torch_stable.html && \
+    /opt/conda/bin/conda create --clone base -n torch1.9.0 -y && \
+    /opt/conda/envs/torch1.11.0/bin/pip install torch==1.9.0+cu111 torchvision==0.10.0+cu111 -f https://download.pytorch.org/whl/torch_stable.html && \
     /opt/conda/bin/conda create --clone base -n torch1.10.0 -y && \
     /opt/conda/envs/torch1.10.0/bin/pip install torch==1.10.0+cu${CUDA_INT} torchvision==0.11.0+cu${CUDA_INT} -f https://download.pytorch.org/whl/torch_stable.html && \
     /opt/conda/bin/conda create --clone base -n torch1.11.0 -y && \
     /opt/conda/envs/torch1.11.0/bin/pip install torch==1.11.0+cu${CUDA_INT} torchvision==0.12.0+cu${CUDA_INT} -f https://download.pytorch.org/whl/torch_stable.html && \
     /opt/conda/bin/conda create --clone base -n torch1.12.0 -y && \
     /opt/conda/envs/torch1.12.0/bin/pip install torch==1.12.0+cu${CUDA_INT} torchvision==0.13.0+cu${CUDA_INT} -f https://download.pytorch.org/whl/torch_stable.html
-
-  
