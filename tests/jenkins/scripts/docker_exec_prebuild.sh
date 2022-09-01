@@ -35,6 +35,7 @@ cd /root/workspace/mmdeploy
 ## use activate
 conda activate torch1.10.0
 mim install mmdet
+pip install onnxruntime-gpu==1.6.0
 pip install -r requirements/tests.txt
 pip install -r requirements/runtime.txt 
 pip install -r requirements/build.txt
