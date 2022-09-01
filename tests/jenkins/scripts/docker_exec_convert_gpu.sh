@@ -109,5 +109,6 @@ do
         --codebase ${codebase} \
         --work-dir ${log_dir} \
         --backends tensorrt onnxruntime ncnn \
+        --device cuda:0 \
         --performance 2>&1 | tee ${log_path}
 done
