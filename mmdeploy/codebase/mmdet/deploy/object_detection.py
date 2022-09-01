@@ -5,6 +5,7 @@ from typing import Callable, Dict, Optional, Sequence, Tuple, Union
 import numpy as np
 import torch
 from mmengine import Config
+from mmengine.dataset import pseudo_collate
 from mmengine.model import BaseDataPreprocessor
 from mmengine.registry import Registry
 
@@ -185,10 +186,10 @@ class ObjectDetection(BaseTask):
             data_ = test_pipeline(data_)
             data.append(data_)
 
-        data = data[0]
+        data = pseudo_collate(data)
         if data_preprocessor is not None:
-            data = data_preprocessor([data], False)
-            return data, data[0]
+            data = data_preprocessor(data, False)
+            return data, data['inputs']
         else:
             return data, BaseTask.get_tensor_from_input(data)
 

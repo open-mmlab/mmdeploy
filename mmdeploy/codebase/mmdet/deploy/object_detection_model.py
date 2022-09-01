@@ -5,7 +5,6 @@ from typing import Any, List, Optional, Sequence, Tuple, Union
 import numpy as np
 import torch
 import torch.nn.functional as F
-from mmdet.models.detectors import BaseDetector
 from mmengine import Config
 from mmengine.model.base_model.data_preprocessor import BaseDataPreprocessor
 from mmengine.registry import Registry
@@ -168,24 +167,23 @@ class End2EndModel(BaseBackendModel):
         return result_masks.squeeze(0)
 
     def forward(self,
-                batch_inputs: torch.Tensor,
+                inputs: torch.Tensor,
                 data_samples: Optional[List[BaseDataElement]] = None,
                 mode: str = 'predict',
                 **kwargs) -> Any:
         assert mode == 'predict', 'Deploy model only allow mode=="predict".'
-        batch_inputs = batch_inputs.contiguous()
-        outputs = self.predict(batch_inputs)
+        inputs = inputs.contiguous()
+        outputs = self.predict(inputs)
         outputs = End2EndModel.__clear_outputs(outputs)
         batch_dets, batch_labels = outputs[:2]
         batch_masks = outputs[2] if len(outputs) == 3 else None
-        batch_size = batch_inputs.shape[0]
+        batch_size = inputs.shape[0]
         img_metas = [data_sample.metainfo for data_sample in data_samples]
-
-        results = [InstanceData() for _ in range(batch_size)]
+        results = []
         rescale = kwargs.get('rescale', True)
         for i in range(batch_size):
             dets, labels = batch_dets[i], batch_labels[i]
-            result = results[i]
+            result = InstanceData()
 
             bboxes = dets[:, :4]
             scores = dets[:, 4]
@@ -243,8 +241,8 @@ class End2EndModel(BaseBackendModel):
                 # aligned with mmdet to easily convert to numpy
                 masks = masks.cpu()
                 result.masks = masks
-
-        results = BaseDetector.convert_to_datasample(None, results)
+            data_samples[i].pred_instances = result
+            results.append(data_samples[i])
         return results
 
     def predict(self, imgs: Tensor) -> Tuple[np.ndarray, np.ndarray]:
