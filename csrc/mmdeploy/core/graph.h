@@ -36,7 +36,7 @@ class MMDEPLOY_API Node {
   __closure::_BinderBack<process_t, Node*> Process() { return {{}, {}, {this}}; }
 };
 
-class Builder {
+class MMDEPLOY_API Builder {
  public:
   virtual ~Builder() = default;
 

@@ -9,6 +9,7 @@ set(SRCS
         flatten.cpp
         unflatten.cpp
         flattened.cpp
-        pipeline.cpp)
-mmdeploy_add_module(${PROJECT_NAME} "${SRCS}")
+        pipeline.cpp
+        graph.cpp)
+mmdeploy_add_module(${PROJECT_NAME} LIBRARY "${SRCS}")
 add_library(mmdeploy::graph ALIAS ${PROJECT_NAME})

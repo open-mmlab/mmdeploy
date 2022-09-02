@@ -108,14 +108,14 @@ MMDEPLOY_API Result<Value> DistribAO(const Value& ao);
 // array of arrays -> array of arrays, this is equivalent to transpose
 MMDEPLOY_API Result<Value> DistribAA(const Value& a);
 
-std::tuple<Value::Array, std::vector<int>> FlattenArray(Value::Array values,
-                                                        const vector<bool>& predicate);
+MMDEPLOY_API std::tuple<Value::Array, std::vector<int>> FlattenArray(Value::Array values,
+                                                                     const vector<bool>& predicate);
 
-Value::Array UnflattenArray(Value::Array values, const vector<int>& index,
-                            const vector<bool>& predicate);
+MMDEPLOY_API Value::Array UnflattenArray(Value::Array values, const vector<int>& index,
+                                         const vector<bool>& predicate);
 
-Value::Array BroadcastArray(Value::Array values, const std::vector<int>& index,
-                            const vector<bool>& predicate);
+MMDEPLOY_API Value::Array BroadcastArray(Value::Array values, const std::vector<int>& index,
+                                         const vector<bool>& predicate);
 
 }  // namespace mmdeploy::graph
 
