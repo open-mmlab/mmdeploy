@@ -34,8 +34,8 @@ function getFullName() {
 export codebase=$1
 getFullName $codebase
 # backends=$2
-
 export MMDEPLOY_DIR=/root/workspace/mmdeploy
+
 #### TODO: to be removed
 export ONNXRUNTIME_DIR=/root/workspace/onnxruntime-linux-x64-1.8.1
 export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
@@ -45,8 +45,6 @@ export ONNXRUNTIME_VERSION=1.8.1
 cd /root/workspace
 wget https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTIME_VERSION}/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz 
 tar -zxvf onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz
-
-
 
 ## clone ${codebase}
 git clone --depth 1 --branch master https://github.com/open-mmlab/${codebase_fullname}.git /root/workspace/${codebase_fullname}
@@ -67,7 +65,7 @@ do
             -DMMDEPLOY_BUILD_SDK_MONOLITHIC=ON -DMMDEPLOY_BUILD_TEST=ON \
             -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON -DMMDEPLOY_BUILD_SDK_JAVA_API=ON \
             -DMMDEPLOY_BUILD_EXAMPLES=ON -DMMDEPLOY_ZIP_MODEL=ON \
-            -DMMDEPLOY_TARGET_BACKENDS="trt;ort;ncnn;torchscript" \
+            -DMMDEPLOY_TARGET_BACKENDS="trt;ort;ncnn;torchscript;pplnn" \
             -DMMDEPLOY_SHARED_LIBS=OFF \
             -DTENSORRT_DIR=${TENSORRT_DIR} \
             -DCUDNN_DIR=${CUDNN_DIR} \
@@ -75,6 +73,7 @@ do
             -Dncnn_DIR=${ncnn_DIR} \
             -DTorch_DIR=${Torch_DIR} \
             -Dpplcv_DIR=${pplcv_DIR} \
+            -Dpplnn_DIR=${pplnn_DIR} \
             -DMMDEPLOY_TARGET_DEVICES="cuda;cpu"
 
     make -j $(nproc) && make install && cd $MMDEPLOY_DIR
