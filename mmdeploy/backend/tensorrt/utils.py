@@ -42,7 +42,7 @@ def search_cuda_version() -> str:
     """try import torch.version.cuda, then try use cmd.
 
     Returns:
-        str: _description_
+        str: cuda version, for example 10.2
     """
 
     version = None
