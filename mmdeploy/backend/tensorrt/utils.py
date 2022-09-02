@@ -38,6 +38,55 @@ def load(path: str) -> trt.ICudaEngine:
         return engine
 
 
+def search_cuda_version() -> str:
+    """try import torch.version.cuda, then try use cmd.
+
+    Returns:
+        str: _description_
+    """
+
+    version = None
+    try:
+        import torch
+        version = torch.version.cuda
+    except Exception:
+        import os
+        import re
+        import sys
+
+        pattern = re.compile(r'[0-9]+\.[0-9]+')
+        platform = sys.platform.lower()
+
+        def cmd_result(txt: str):
+            cmd = os.popen(txt)
+            return cmd.read().rstrip().lstrip()
+
+        if platform == 'linux' or platform == 'darwin' or platform == 'freebsd':  # noqa E501
+            version = cmd_result(
+                " nvcc --version | grep  release | awk '{print $5}' | awk -F , '{print $1}' "  # noqa E501
+            )
+            if version is None or pattern.match(version) is None:
+                version = cmd_result(
+                    " nvidia-smi  | grep CUDA | awk '{print $9}' ")
+
+        elif platform == 'win32' or platform == 'cygwin':
+            # nvcc_release = "Cuda compilation tools, release 10.2, V10.2.89"
+            nvcc_release = cmd_result(' nvcc --version | find "release" ')
+            if nvcc_release is not None:
+                result = pattern.findall(nvcc_release)
+                if len(result) > 0:
+                    version = result[0]
+
+            if version is None or pattern.match(version) is None:
+                # nvidia_smi = "| NVIDIA-SMI 440.33.01    Driver Version: 440.33.01    CUDA Version: 10.2     |" # noqa E501
+                nvidia_smi = cmd_result(' nvidia-smi | find "CUDA Version" ')
+                result = pattern.findall(nvidia_smi)
+                if len(result) > 2:
+                    version = result[2]
+
+    return version
+
+
 def from_onnx(onnx_model: Union[str, onnx.ModelProto],
               output_file_prefix: str,
               input_shapes: Dict[str, Sequence[int]],
@@ -118,17 +167,16 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
 
     config = builder.create_builder_config()
     config.max_workspace_size = max_workspace_size
-    try:
-        import torch
-        cuda_version = torch.version.cuda
+
+    cuda_version = search_cuda_version()
+    if cuda_version is not None:
         version_major = int(cuda_version.split('.')[0])
         if version_major < 11:
             # cu11 support cublasLt, so cudnn heuristic tactic should disable CUBLAS_LT # noqa E501
             tactic_source = config.get_tactic_sources() - (
                 1 << int(trt.TacticSource.CUBLAS_LT))
             config.set_tactic_sources(tactic_source)
-    except Exception:
-        pass
+
     profile = builder.create_optimization_profile()
 
     for input_name, param in input_shapes.items():
