@@ -44,23 +44,21 @@ def process_model_config(model_cfg: Config,
     if isinstance(imgs[0], np.ndarray):
         cfg = cfg.copy()
         # set loading pipeline type
-        cfg.test_dataloader.dataset.pipeline[0].type = 'LoadImageFromNDArray'
+        cfg.test_pipeline[0].type = 'LoadImageFromNDArray'
 
-    # for static exporting
-    if input_shape is not None:
-        pipeline = cfg.test_dataloader.dataset.pipeline
-        print(f'debugging pipeline: {pipeline}')
-        pipeline[1]['scale'] = tuple(input_shape)
-        '''
-        transforms = pipeline[1]['transforms']
-        for trans in transforms:
-            trans_type = trans['type']
-            if trans_type == 'Resize':
-                trans['keep_ratio'] = False
-            elif trans_type == 'Pad':
-                trans['size_divisor'] = 1
-        '''
+    pipeline = cfg.test_pipeline
 
+    for i, transform in enumerate(pipeline):
+        # for static exporting
+        if input_shape is not None and transform.type == 'Resize':
+            pipeline[i].keep_ratio = False
+            pipeline[i].scale = tuple(input_shape)
+
+    pipeline = [
+        transform for transform in pipeline
+        if transform.type != 'LoadAnnotations'
+    ]
+    cfg.test_pipeline = pipeline
     return cfg
 
 
@@ -162,7 +160,7 @@ class ObjectDetection(BaseTask):
         # Drop pad_to_square when static shape. Because static shape should
         # ensure the shape before input image.
 
-        pipeline = cfg.test_dataloader.dataset.pipeline
+        pipeline = cfg.test_pipeline
         if not dynamic_flag:
             transform = pipeline[1]
             if 'transforms' in transform:
