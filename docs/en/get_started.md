@@ -109,7 +109,7 @@ The supported platform and device matrix is presented as following:
 </tbody>
 </table>
 
-**Note: if MMDeploy prebuilt package doesn't meet your target platforms or devices, please [build MMDeploy from source](./01-how-to-build/build_from_source.md)**
+**Note: if MMDeploy prebuilt package doesn't meet your target platforms or devices, please [build MMDeploy from source](01-how-to-build/build_from_source.md)**
 
 Take the latest precompiled package as example, you can install it as follows:
 
@@ -162,7 +162,7 @@ export LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
 <summary><b>Windows-x86_64</b></summary>
 </details>
 
-Please learn its prebuilt package from [this](./02-how-to-run/prebuilt_package_windows.md) guide.
+Please learn its prebuilt package from [this](02-how-to-run/prebuilt_package_windows.md) guide.
 
 ## Convert Model
 
@@ -197,7 +197,7 @@ python mmdeploy/tools/deploy.py \
 The converted model and its meta info will be found in the path specified by `--work-dir`.
 And they make up of MMDeploy Model that can be fed to MMDeploy SDK to do model inference.
 
-For more details about model conversion, you can read [how_to_convert_model](./02-how-to-run/convert_model.md). If you want to customize the conversion pipeline, you can edit the config file by following [this](./02-how-to-run/write_config.md) tutorial.
+For more details about model conversion, you can read [how_to_convert_model](02-how-to-run/convert_model.md). If you want to customize the conversion pipeline, you can edit the config file by following [this](02-how-to-run/write_config.md) tutorial.
 
 ```{tip}
 If MMDeploy-ONNXRuntime prebuild package is installed, you can convert the above model to onnx model and perform ONNX Runtime inference
@@ -343,4 +343,4 @@ python ${MMDEPLOY_DIR}/tools/test.py \
 Regarding the --model option, it represents the converted engine files path when using Model Converter to do performance test. But when you try to test the metrics by Inference SDK, this option refers to the directory path of MMDeploy Model.
 ```
 
-You can read [how to evaluate a model](02-how-to-run/how_to_evaluate_a_model.md) for more details.
+You can read [how to evaluate a model](02-how-to-run/profile_model.md) for more details.

@@ -24,7 +24,8 @@ def parse_args():
         nargs='+',
         help='regression test yaml path.',
         default=[
-            'mmcls', 'mmdet', 'mmseg', 'mmpose', 'mmocr', 'mmedit', 'mmrotate'
+            'mmcls', 'mmdet', 'mmseg', 'mmpose', 'mmocr', 'mmedit', 'mmrotate',
+            'mmdet3d'
         ])
     parser.add_argument(
         '-p',
@@ -153,6 +154,9 @@ def get_model_metafile_info(global_info: dict, model_info: dict,
 
     # get model metafile info
     metafile_path = Path(codebase_dir).joinpath(model_info.get('metafile'))
+    if not metafile_path.exists():
+        logger.warning(f'Metafile not exists: {metafile_path}')
+        return [], '', ''
     with open(metafile_path) as f:
         metafile_info = yaml.load(f, Loader=yaml.FullLoader)
 
@@ -984,6 +988,9 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
                     replace_top_in_pipeline_json(backend_output_path, logger)
 
                 log_path = gen_log_path(backend_output_path, 'sdk_test.log')
+                if backend_name == 'onnxruntime':
+                    # sdk only support onnxruntime of cpu
+                    device_type = 'cpu'
                 # sdk test
                 get_backend_fps_metric(
                     deploy_cfg_path=str(sdk_config),

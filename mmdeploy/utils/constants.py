@@ -83,3 +83,5 @@ SDK_TASK_MAP = {
     Task.ROTATED_DETECTION:
     dict(component='ResizeRBBox', cls_name='RotatedDetector')
 }
+
+TENSORRT_MAX_TOPK = 3840

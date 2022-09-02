@@ -1,4 +1,4 @@
-## Supported Models
+## Supported models
 
 The table below lists the models that are guaranteed to be exportable to other backends.
 
@@ -19,6 +19,8 @@ The table below lists the models that are guaranteed to be exportable to other b
 | Cascade Mask R-CNN          | MMDetection      |      N      |      Y      |    Y     |  N   |   N   |    Y     |  N   |      [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/cascade_rcnn)       |
 | Swin Transformer[\*](#note) | MMDetection      |      N      |      Y      |    Y     |  N   |   N   |    N     |  N   |          [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/swin)           |
 | VFNet                       | MMDetection      |      N      |      N      |    N     |  N   |   N   |    Y     |  N   |          [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/vfnet)          |
+| RepPoints                   | MMDetection      |      N      |      N      |    Y     |  N   |   ?   |    Y     |  N   |        [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/reppoints)        |
+| DETR                        | MMDetection      |      N      |      Y      |    Y     |  N   |   ?   |    N     |  N   |          [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/detr)           |
 | ResNet                      | MMClassification |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |  Y   |       [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnet)       |
 | ResNeXt                     | MMClassification |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |  Y   |      [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnext)       |
 | SE-ResNet                   | MMClassification |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |  Y   |      [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/seresnet)      |
@@ -26,34 +28,35 @@ The table below lists the models that are guaranteed to be exportable to other b
 | ShuffleNetV1                | MMClassification |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |  Y   |   [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v1)    |
 | ShuffleNetV2                | MMClassification |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |  Y   |   [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v2)    |
 | VisionTransformer           | MMClassification |      Y      |      Y      |    Y     |  Y   |   ?   |    Y     |  N   | [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/vision_transformer) |
+| SwinTransformer             | MMClassification |      Y      |      Y      |    Y     |  N   |   ?   |    N     |  N   |  [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/swin_transformer)  |
 | FCN                         | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |  Y   |         [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/fcn)          |
 | PSPNet[\*static](#note)     | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |  Y   |        [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/pspnet)        |
 | DeepLabV3                   | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |  N   |      [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/deeplabv3)       |
 | DeepLabV3+                  | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |  N   |    [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/deeplabv3plus)     |
 | Fast-SCNN[\*static](#note)  | MMSegmentation   |      Y      |      Y      |    Y     |  N   |   Y   |    Y     |  Y   |       [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/fastscnn)       |
 | UNet                        | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |  Y   |         [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/unet)         |
-| ANN[\*](#note)              | MMSegmentation   |      ?      |      Y      |    Y     |  N   |   N   |    N     |  N   |         [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/ann)          |
-| APCNet                      | MMSegmentation   |      ?      |      Y      |    Y     |  Y   |   N   |    N     |  Y   |        [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/apcnet)        |
-| BiSeNetV1                   | MMSegmentation   |      ?      |      Y      |    Y     |  Y   |   N   |    Y     |  Y   |      [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/bisenetv1)       |
-| BiSeNetV2                   | MMSegmentation   |      ?      |      Y      |    Y     |  Y   |   N   |    Y     |  N   |      [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/bisenetv2)       |
-| CGNet                       | MMSegmentation   |      ?      |      Y      |    Y     |  Y   |   N   |    Y     |  Y   |        [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/cgnet)         |
+| ANN[\*](#note)              | MMSegmentation   |      Y      |      Y      |    Y     |  N   |   N   |    N     |  N   |         [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/ann)          |
+| APCNet                      | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   N   |    N     |  Y   |        [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/apcnet)        |
+| BiSeNetV1                   | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |  Y   |      [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/bisenetv1)       |
+| BiSeNetV2                   | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |  N   |      [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/bisenetv2)       |
+| CGNet                       | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |  Y   |        [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/cgnet)         |
 | DMNet                       | MMSegmentation   |      ?      |      Y      |    N     |  N   |   N   |    N     |  N   |        [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/dmnet)         |
 | DNLNet                      | MMSegmentation   |      ?      |      Y      |    Y     |  Y   |   N   |    Y     |  N   |        [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/dnlnet)        |
-| EMANet                      | MMSegmentation   |      ?      |      Y      |    Y     |  N   |   N   |    Y     |  N   |        [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/emanet)        |
-| EncNet                      | MMSegmentation   |      ?      |      Y      |    Y     |  N   |   N   |    Y     |  N   |        [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/encnet)        |
-| ERFNet                      | MMSegmentation   |      ?      |      Y      |    Y     |  Y   |   N   |    Y     |  Y   |        [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/erfnet)        |
-| FastFCN                     | MMSegmentation   |      ?      |      Y      |    Y     |  Y   |   N   |    Y     |  N   |       [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/fastfcn)        |
-| GCNet                       | MMSegmentation   |      ?      |      Y      |    Y     |  N   |   N   |    N     |  N   |        [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/gcnet)         |
-| ICNet[\*](#note)            | MMSegmentation   |      ?      |      Y      |    Y     |  N   |   N   |    Y     |  N   |        [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/icnet)         |
-| ISANet                      | MMSegmentation   |      ?      |      Y      |    Y     |  N   |   N   |    Y     |  Y   |        [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/isanet)        |
+| EMANet                      | MMSegmentation   |      Y      |      Y      |    Y     |  N   |   N   |    Y     |  N   |        [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/emanet)        |
+| EncNet                      | MMSegmentation   |      Y      |      Y      |    Y     |  N   |   N   |    Y     |  N   |        [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/encnet)        |
+| ERFNet                      | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |  Y   |        [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/erfnet)        |
+| FastFCN                     | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |  N   |       [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/fastfcn)        |
+| GCNet                       | MMSegmentation   |      Y      |      Y      |    Y     |  N   |   N   |    N     |  N   |        [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/gcnet)         |
+| ICNet[\*](#note)            | MMSegmentation   |      Y      |      Y      |    Y     |  N   |   N   |    Y     |  N   |        [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/icnet)         |
+| ISANet[\*static](#note)     | MMSegmentation   |      N      |      Y      |    Y     |  N   |   N   |    Y     |  Y   |        [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/isanet)        |
 | NonLocal Net                | MMSegmentation   |      ?      |      Y      |    Y     |  Y   |   N   |    Y     |  N   |     [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/nonlocal_net)     |
 | OCRNet                      | MMSegmentation   |      ?      |      Y      |    Y     |  Y   |   N   |    Y     |  Y   |        [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/ocrnet)        |
-| PointRend                   | MMSegmentation   |      ?      |      Y      |    Y     |  N   |   N   |    Y     |  N   |      [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/point_rend)      |
-| Semantic FPN                | MMSegmentation   |      ?      |      Y      |    Y     |  Y   |   N   |    Y     |  Y   |       [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/sem_fpn)        |
-| STDC                        | MMSegmentation   |      ?      |      Y      |    Y     |  Y   |   N   |    Y     |  Y   |         [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/stdc)         |
+| PointRend                   | MMSegmentation   |      Y      |      Y      |    Y     |  N   |   N   |    Y     |  N   |      [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/point_rend)      |
+| Semantic FPN                | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |  Y   |       [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/sem_fpn)        |
+| STDC                        | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |  Y   |         [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/stdc)         |
 | UPerNet[\*](#note)          | MMSegmentation   |      ?      |      Y      |    Y     |  N   |   N   |    N     |  Y   |       [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/upernet)        |
 | DANet                       | MMSegmentation   |      ?      |      Y      |    Y     |  N   |   N   |    N     |  N   |        [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/danet)         |
-| Segmenter                   | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |  N   |      [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/segmenter)       |
+| Segmenter[\*static](#note)  | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |  N   |      [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/segmenter)       |
 | SRCNN                       | MMEditing        |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |  N   |      [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/srcnn)      |
 | ESRGAN                      | MMEditing        |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |  N   |     [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/esrgan)      |
 | SRGAN                       | MMEditing        |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |  N   | [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/srresnet_srgan)  |
@@ -63,7 +66,7 @@ The table below lists the models that are guaranteed to be exportable to other b
 | RDN                         | MMEditing        |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |  N   |       [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/rdn)       |
 | DBNet                       | MMOCR            |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |  N   |          [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/dbnet)          |
 | PANet                       | MMOCR            |      Y      |      Y      |    Y     |  Y   |   ?   |    Y     |  N   |          [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/panet)          |
-| DBNet                       | MMOCR            |      Y      |      Y      |    Y     |  Y   |   ?   |    Y     |  N   |         [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/psenet)          |
+| PSENet                      | MMOCR            |      Y      |      Y      |    Y     |  Y   |   ?   |    Y     |  N   |         [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/psenet)          |
 | CRNN                        | MMOCR            |      Y      |      Y      |    Y     |  Y   |   Y   |    N     |  N   |         [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/crnn)          |
 | SAR                         | MMOCR            |      N      |      Y      |    N     |  N   |   N   |    N     |  N   |          [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/sar)          |
 | SATRN                       | MMOCR            |      Y      |      Y      |    Y     |  N   |   N   |    N     |  N   |         [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/satrn)         |
@@ -82,4 +85,4 @@ The table below lists the models that are guaranteed to be exportable to other b
   - static: This model only support static export. Please use `static` deploy config, just like $MMDEPLOY_DIR/configs/mmseg/segmentation_tensorrt_static-1024x2048.py.
 - SSD: When you convert SSD model, you need to use min shape deploy config just like 300x300-512x512 rather than 320x320-1344x1344, for example $MMDEPLOY_DIR/configs/mmdet/detection/detection_tensorrt_dynamic-300x300-512x512.py.
 - YOLOX: YOLOX with ncnn only supports static shape.
-- Swin Transformer: For TensorRT, only version 8.4+ is supported.
+- SAR: Chinese text recognition model is not supported as the protobuf size of ONNX is limited.

@@ -1,0 +1,48 @@
+name: backend-ort
+
+on:
+  push:
+    paths-ignore:
+      - "demo/**"
+      - "tools/**"
+
+  pull_request:
+    paths-ignore:
+      - "demo/**"
+      - "tools/**"
+      - "docs/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  script_install:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        python-version: [3.7]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install mmdeploy
+        run: |
+          python3 tools/scripts/build_ubuntu_x64_ort.py
+          python3 -m pip install torch==1.8.2 torchvision==0.9.2 --extra-index-url https://download.pytorch.org/whl/lts/1.8/cpu
+          python3 -m pip install mmcv-full==1.5.1  -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.8.0/index.html
+          python3 -c 'import mmdeploy.apis.onnxruntime as ort_api; assert ort_api.is_available() and ort_api.is_custom_ops_available()'
+      - name: test mmcls full pipeline
+        run: |
+          pip install openmim
+          mim install mmcls
+          git clone  --depth 1 --single-branch --branch master https://github.com/open-mmlab/mmclassification.git ../mmclassification
+          export MMDEPLOY_DIR=$(pwd)
+          export ONNXRUNTIME_DIR=$MMDEPLOY_DIR/../mmdeploy-dep/onnxruntime-linux-x64-1.8.1
+          export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$MMDEPLOY_DIR/build/install/lib:$LD_LIBRARY_PATH
+          bash .github/scripts/test_mmcls_full_pipeline.sh

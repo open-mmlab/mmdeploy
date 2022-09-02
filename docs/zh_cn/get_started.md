@@ -104,7 +104,7 @@ mim install mmcv-full
 </tbody>
 </table>
 
-**注：对于不在上述表格中的软硬件平台，请参考[源码安装文档](./01-how-to-build/build_from_source.md)，正确安装和配置 MMDeploy。**
+**注：对于不在上述表格中的软硬件平台，请参考[源码安装文档](01-how-to-build/build_from_source.md)，正确安装和配置 MMDeploy。**
 
 以最新的预编译包为例，你可以参考以下命令安装：
 
@@ -157,12 +157,12 @@ export LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
 <summary><b>Windows-x86_64</b></summary>
 </details>
 
-请阅读 [这里](./02-how-to-run/prebuilt_package_windows.md)，了解 MMDeploy 预编译包在 Windows 平台下的使用方法。
+请阅读 [这里](02-how-to-run/prebuilt_package_windows.md)，了解 MMDeploy 预编译包在 Windows 平台下的使用方法。
 
 ## 模型转换
 
 在准备工作就绪后，我们可以使用 MMDeploy 中的工具 `tools/deploy.py`，将 OpenMMLab 的 PyTorch 模型转换成推理后端支持的格式。
-对于`tools/deploy.py` 的使用细节，请参考 [如何转换模型](./02-how-to-run/convert_model.md)。
+对于`tools/deploy.py` 的使用细节，请参考 [如何转换模型](02-how-to-run/convert_model.md)。
 
 以 [MMDetection](https://github.com/open-mmlab/mmdetection) 中的 `Faster R-CNN` 为例，我们可以使用如下命令，将 PyTorch 模型转换为 TenorRT 模型，从而部署到 NVIDIA GPU 上.
 
@@ -275,7 +275,7 @@ cv2.imwrite('output_detection.png', img)
 使用 C++ API 进行模型推理的流程符合下面的模式：
 ![image](https://user-images.githubusercontent.com/4560679/182554486-2bf0ff80-9e82-4a0f-bccc-5e1860444302.png)
 
-以下是这个流程的具体应用过程：
+以下是具体过程：
 
 ```C++
 #include <cstdlib>
@@ -344,4 +344,4 @@ python mmdeploy/tools/test.py \
 关于 --model 选项，当使用 Model Converter 进行推理时，它代表转换后的推理后端模型的文件路径。而当使用 SDK 测试模型精度时，该选项表示 MMDeploy Model 的路径.
 ```
 
-请阅读 [如何进行模型评估](./02-how-to-run/profile_model.md) 了解关于 `tools/test.py` 的使用细节。
+请阅读 [如何进行模型评估](02-how-to-run/profile_model.md) 了解关于 `tools/test.py` 的使用细节。

@@ -154,10 +154,10 @@ class SuperResolution(BaseTask):
 
         data = collate(data_arr, samples_per_gpu=len(imgs))
 
-        data['img'] = data['lq']
-
         if self.device != 'cpu':
             data = scatter(data, [self.device])[0]
+
+        data['img'] = data['lq']
 
         return data, data['img']
 
