@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import mmcv
 import numpy as np
+import pytest
 import torch
 
 from mmdeploy.codebase import import_codebase
@@ -9,7 +10,10 @@ from mmdeploy.codebase.mmdet import (clip_bboxes, get_post_processing_params,
                                      pad_with_value_if_necessary)
 from mmdeploy.utils import Codebase
 
-import_codebase(Codebase.MMDET)
+try:
+    import_codebase(Codebase.MMDET)
+except ImportError:
+    pytest.skip(f'{Codebase.MMDET} is not installed.', allow_module_level=True)
 
 
 def test_clip_bboxes():

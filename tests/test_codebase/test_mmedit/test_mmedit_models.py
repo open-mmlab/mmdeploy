@@ -5,14 +5,18 @@ from typing import Dict
 
 import mmcv
 import onnx
+import pytest
 import torch
-from mmedit.models.backbones.sr_backbones import SRCNN
 
 from mmdeploy.codebase import import_codebase
 from mmdeploy.core import RewriterContext
 from mmdeploy.utils import Backend, Codebase, get_onnx_config
 
-import_codebase(Codebase.MMEDIT)
+try:
+    import_codebase(Codebase.MMEDIT)
+except ImportError:
+    pytest.skip(
+        f'{Codebase.MMEDIT} is not installed.', allow_module_level=True)
 
 img = torch.rand(1, 3, 4, 4)
 model_file = tempfile.NamedTemporaryFile(suffix='.onnx').name
@@ -46,6 +50,7 @@ deploy_cfg = mmcv.Config(
 
 
 def test_srcnn():
+    from mmedit.models.backbones.sr_backbones import SRCNN
     pytorch_model = SRCNN()
     model_inputs = {'x': img}
 

@@ -12,7 +12,10 @@ from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
 
-import_codebase(Codebase.MMSEG)
+try:
+    import_codebase(Codebase.MMSEG)
+except ImportError:
+    pytest.skip(f'{Codebase.MMSEG} is not installed.', allow_module_level=True)
 
 NUM_CLASS = 19
 IMAGE_SIZE = 32

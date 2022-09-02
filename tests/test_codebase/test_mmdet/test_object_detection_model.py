@@ -14,7 +14,10 @@ from mmdeploy.codebase.mmdet.deploy.object_detection_model import End2EndModel
 from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
 
-import_codebase(Codebase.MMDET)
+try:
+    import_codebase(Codebase.MMDET)
+except ImportError:
+    pytest.skip(f'{Codebase.MMDET} is not installed.', allow_module_level=True)
 
 
 def assert_det_results(results, module_name: str = 'model'):
