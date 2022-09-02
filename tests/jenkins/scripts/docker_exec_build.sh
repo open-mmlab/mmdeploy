@@ -14,11 +14,13 @@ pip install -r requirements/build.txt
 ## 校验动态库构建
 mkdir -p build_share_libs
 cd build_share_libs
+
+#TODO add openvino
 cmake .. -DMMDEPLOY_BUILD_SDK=ON -DMMDEPLOY_BUILD_EXAMPLES=ON \
          -DMMDEPLOY_BUILD_SDK_MONOLITHIC=ON -DMMDEPLOY_BUILD_TEST=ON \
          -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON -DMMDEPLOY_BUILD_SDK_JAVA_API=ON \
          -DMMDEPLOY_BUILD_EXAMPLES=ON -DMMDEPLOY_ZIP_MODEL=ON \
-         -DMMDEPLOY_TARGET_BACKENDS="ort;trt;pplnn;openvino;ncnn;torchscript" \
+         -DMMDEPLOY_TARGET_BACKENDS="ort;trt;pplnn;ncnn;torchscript" \
          -DMMDEPLOY_SHARED_LIBS=ON \
          -DTENSORRT_DIR=${TENSORRT_DIR} \
          -DCUDNN_DIR=${CUDNN_DIR} \
@@ -40,7 +42,7 @@ cmake .. -DMMDEPLOY_BUILD_SDK=ON -DMMDEPLOY_BUILD_EXAMPLES=ON \
          -DMMDEPLOY_BUILD_SDK_MONOLITHIC=ON -DMMDEPLOY_BUILD_TEST=ON \
          -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON -DMMDEPLOY_BUILD_SDK_JAVA_API=ON \
          -DMMDEPLOY_BUILD_EXAMPLES=ON -DMMDEPLOY_ZIP_MODEL=ON \
-         -DMMDEPLOY_TARGET_BACKENDS="ort;trt;pplnn;openvino;ncnn;torchscript" \
+         -DMMDEPLOY_TARGET_BACKENDS="ort;trt;pplnn;ncnn;torchscript" \
          -DMMDEPLOY_SHARED_LIBS=OFF \
          -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} \
          -Dncnn_DIR=${ncnn_DIR} \

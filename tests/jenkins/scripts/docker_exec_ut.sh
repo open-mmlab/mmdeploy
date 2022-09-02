@@ -41,7 +41,7 @@ do
             -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON -DMMDEPLOY_BUILD_SDK_JAVA_API=ON \
             -DMMDEPLOY_COVERAGE=ON \
             -DMMDEPLOY_BUILD_EXAMPLES=ON -DMMDEPLOY_ZIP_MODEL=ON \
-            -DMMDEPLOY_TARGET_BACKENDS="trt;ort;ncnn;pplnn;torchscript;openvino" \
+            -DMMDEPLOY_TARGET_BACKENDS="trt;ort;ncnn;pplnn;torchscript" \
             -DMMDEPLOY_SHARED_LIBS=OFF \
             -DTENSORRT_DIR=${TENSORRT_DIR} \
             -DCUDNN_DIR=${CUDNN_DIR} \
@@ -60,7 +60,7 @@ do
     ./bin/mmdeploy_tests
     lcov --capture --directory . --output-file coverage.info
     ls -lah coverage.info
-    cp coverage.info $MMDEPLOY_DIR/../ut_log/$TORCH_VERSION_sdk_ut_converage.info
+    cp coverage.info $MMDEPLOY_DIR/../ut_log/${TORCH_VERSION}_sdk_ut_converage.info
 
     cd $MMDEPLOY_DIR
     pip install openmim
@@ -88,5 +88,5 @@ do
     coverage run --branch --source mmdeploy -m pytest -rsE tests
     coverage xml
     coverage report -m
-    cp coverage.xml $MMDEPLOY_DIR/../ut_log/$TORCH_VERSION_converter_ut_converage.xml
+    cp coverage.xml $MMDEPLOY_DIR/../ut_log/${TORCH_VERSION}_converter_converage.xml
 done
