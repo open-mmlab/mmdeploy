@@ -20,4 +20,4 @@ container_id=$(
         ${docker_image} /bin/bash
     )
 echo "container_id=${container_id}"
-nohup docker exec ${container_id} bash -c "git clone --recursive https://github.com/kumailf/mmdeploy.git && /root/workspace/mmdeploy_script/docker_exec_prebuild.sh" > ${log_dir}/prebuild.log 2>&1 &
+nohup docker exec ${container_id} bash -c "git clone --recursive https://github.com/open-mmlab/mmdeploy.git && /root/workspace/mmdeploy_script/docker_exec_prebuild.sh" > ${log_dir}/prebuild.log 2>&1 &

@@ -65,7 +65,7 @@ do
             -DMMDEPLOY_BUILD_SDK_MONOLITHIC=ON -DMMDEPLOY_BUILD_TEST=ON \
             -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON -DMMDEPLOY_BUILD_SDK_JAVA_API=ON \
             -DMMDEPLOY_BUILD_EXAMPLES=ON -DMMDEPLOY_ZIP_MODEL=ON \
-            -DMMDEPLOY_TARGET_BACKENDS="trt;ort;ncnn;torchscript;pplnn" \
+            -DMMDEPLOY_TARGET_BACKENDS="trt;ort;ncnn;torchscript" \
             -DMMDEPLOY_SHARED_LIBS=OFF \
             -DTENSORRT_DIR=${TENSORRT_DIR} \
             -DCUDNN_DIR=${CUDNN_DIR} \
@@ -73,7 +73,6 @@ do
             -Dncnn_DIR=${ncnn_DIR} \
             -DTorch_DIR=${Torch_DIR} \
             -Dpplcv_DIR=${pplcv_DIR} \
-            -Dpplnn_DIR=${pplnn_DIR} \
             -DMMDEPLOY_TARGET_DEVICES="cuda;cpu"
 
     make -j $(nproc) && make install && cd $MMDEPLOY_DIR

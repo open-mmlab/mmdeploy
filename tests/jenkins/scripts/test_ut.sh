@@ -20,5 +20,5 @@ do
             ${docker_image} /bin/bash
     )
     echo "container_id=${container_id}"
-    nohup docker exec ${container_id} bash -c "git clone --recursive https://github.com/kumailf/mmdeploy.git && /root/workspace/mmdeploy/tests/jenkins/scripts/docker_exec_ut.sh ${codebase}" > ${log_dir}/${codebase}.log 2>&1 &
+    nohup docker exec ${container_id} bash -c "git clone --recursive https://github.com/open-mmlab/mmdeploy.git && /root/workspace/mmdeploy/tests/jenkins/scripts/docker_exec_ut.sh ${codebase}" > ${log_dir}/${codebase}.log 2>&1 &
 done
