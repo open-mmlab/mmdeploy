@@ -169,8 +169,7 @@ def test_bidirectionallstm(backend: Backend):
     if is_backend_output:
         model_output = model_outputs.cpu().numpy()
         rewrite_output = rewrite_outputs[0].cpu().numpy()
-        assert np.allclose(
-            model_output, rewrite_output, rtol=1e-03, atol=1e-05)
+        assert np.allclose(model_output, rewrite_output, rtol=1e-3, atol=1e-4)
     else:
         assert rewrite_outputs is not None
 
@@ -263,7 +262,7 @@ def test_crnndecoder(backend: Backend, rnn_flag: bool):
             model_output = model_output.squeeze().cpu().numpy()
             rewrite_output = rewrite_output.squeeze()
             assert np.allclose(
-                model_output, rewrite_output, rtol=1e-03, atol=1e-05)
+                model_output, rewrite_output, rtol=1e-03, atol=1e-04)
     else:
         assert rewrite_outputs is not None
 

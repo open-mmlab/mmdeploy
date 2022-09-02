@@ -211,7 +211,7 @@ def multiclass_nms__default(ctx,
             pre_top_k=pre_top_k,
             keep_top_k=keep_top_k)
     else:
-        return _multiclass_nms(
+        return ctx.origin_func(
             boxes,
             scores,
             max_output_boxes_per_class=max_output_boxes_per_class,

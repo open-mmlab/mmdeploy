@@ -41,3 +41,19 @@ def parse_cuda_device_id(device: str) -> int:
         match_result.group(2)[1:])
 
     return device_id
+
+
+def parse_device_type(device: str) -> str:
+    """Parse device type from a string.
+
+    Args:
+        device (str): The typical style of string specifying cuda device,
+            e.g.: 'cuda:0', 'cpu', 'npu'.
+
+    Returns:
+        str: The parsed device type such as 'cuda', 'cpu', 'npu'.
+    """
+    device_type = device
+    if ':' in device:
+        device_type = device.split(':')[0]
+    return device_type

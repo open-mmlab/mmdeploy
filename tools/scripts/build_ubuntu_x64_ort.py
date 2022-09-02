@@ -35,6 +35,9 @@ def install_mmdeploy(work_dir, ort_dir):
     time.sleep(3)
 
     os.chdir(work_dir)
+    os.system('git submodule init')
+    os.system('git submodule update')
+
     if not os.path.exists('build'):
         os.system('mkdir build')
 

@@ -272,6 +272,8 @@ class Segmentation(BaseTask):
             dict: Nonthing for super resolution.
         """
         postprocess = self.model_cfg.model.decode_head
+        if isinstance(postprocess, list):
+            postprocess = postprocess[-1]
         return postprocess
 
     def get_model_name(self) -> str:
