@@ -132,7 +132,7 @@ ENV pplcv_DIR=/root/workspace/ppl.cv/cuda-build/install/lib/cmake/ppl
 ### install zip
 RUN apt update && apt install -y zip 
 ### install libtorch
-RUN for i in 1.10.0 1.11.0 1.12.0 do \
+RUN for i in 1.10.0 1.11.0 1.12.0; do \
         wget http://${HOST}/libtorch-cxx11-abi-shared-with-deps-${i}+cu${CUDA_INT}.zip; \
         unzip libtorch-cxx11-abi-shared-with-deps-${i}+cu${CUDA_INT}.zip; \
         mv libtorch libtorch${i} ;\
