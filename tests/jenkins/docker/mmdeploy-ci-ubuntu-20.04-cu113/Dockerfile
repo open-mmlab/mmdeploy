@@ -90,7 +90,7 @@ RUN wget https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTI
     && tar -zxvf onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz &&\
     /opt/conda/bin/pip install onnxruntime-gpu==${ONNXRUNTIME_VERSION}
 ENV ONNXRUNTIME_DIR=/root/workspace/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}
-ENV LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
+ENV LD_LIBRARY_PATH=${ONNXRUNTIME_DIR}/lib:$LD_LIBRARY_PATH
 
 ### install openvino
 RUN /opt/conda/bin/pip install openvino-dev
@@ -132,10 +132,15 @@ ENV pplcv_DIR=/root/workspace/ppl.cv/cuda-build/install/lib/cmake/ppl
 ### install zip
 RUN apt update && apt install -y zip 
 ### install libtorch
-RUN wget https://download.pytorch.org/libtorch/cu${CUDA_INT}/libtorch-shared-with-deps-1.12.1%2Bcu${CUDA_INT}.zip && \
-    unzip libtorch-shared-with-deps-1.12.1+cu${CUDA_INT}.zip 
+RUN for i in 1.10.0 1.11.0 1.12.0 do \
+        wget http://${HOST}/libtorch-cxx11-abi-shared-with-deps-${i}+cu${CUDA_INT}.zip; \
+        unzip libtorch-cxx11-abi-shared-with-deps-${i}+cu${CUDA_INT}.zip; \
+        mv libtorch libtorch${i} ;\
+    done
+
+
 ENV Torch_DIR=/root/workspace/libtorch
-ENV LD_LIBRARY_PATH=$Torch_DIR/lib:$LD_LIBRARY_PATH
+
 
 ### install tensorrt
 RUN wget http://${HOST}/TensorRT-8.2.1.8.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz && \
@@ -157,5 +162,6 @@ RUN /opt/conda/bin/conda init bash && \
     /opt/conda/envs/torch1.11.0/bin/pip install torch==1.11.0+cu${CUDA_INT} torchvision==0.12.0+cu${CUDA_INT} -f https://download.pytorch.org/whl/torch_stable.html && \
     /opt/conda/bin/conda create --clone base -n torch1.12.0 -y && \
     /opt/conda/envs/torch1.12.0/bin/pip install torch==1.12.0+cu${CUDA_INT} torchvision==0.13.0+cu${CUDA_INT} -f https://download.pytorch.org/whl/torch_stable.html
+
 
   
