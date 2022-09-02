@@ -3,6 +3,7 @@ import torch
 from mmdet.core.bbox.coder import (DeltaXYWHBBoxCoder, DistancePointBBoxCoder,
                                    TBLRBBoxCoder)
 from mmdet.core.bbox.transforms import distance2bbox
+from mmdet.models.dense_heads import PAAHead
 
 from mmdeploy.codebase.mmdet import (get_post_processing_params,
                                      multiclass_nms,
@@ -119,6 +120,8 @@ def base_dense_head__get_bbox(ctx,
             nms_pre_score = scores
             if with_score_factors:
                 nms_pre_score = nms_pre_score * score_factors
+                if isinstance(self, PAAHead):
+                    nms_pre_score = nms_pre_score.sqrt()
 
             # Get maximum scores for foreground classes.
             if self.use_sigmoid_cls:
@@ -154,6 +157,8 @@ def base_dense_head__get_bbox(ctx,
 
     if with_score_factors:
         batch_scores = batch_scores * batch_score_factors
+        if isinstance(self, PAAHead):
+            batch_scores = batch_scores.sqrt()
 
     if not with_nms:
         return batch_bboxes, batch_scores
@@ -338,6 +343,8 @@ def base_dense_head__get_bboxes__ncnn(ctx,
             0, 2, 1).unsqueeze(3) * batch_mlvl_score_factors.permute(
                 0, 2, 1).unsqueeze(3)
         batch_mlvl_scores = batch_mlvl_scores.squeeze(3).permute(0, 2, 1)
+        if isinstance(self, PAAHead):
+            batch_mlvl_scores = batch_mlvl_scores.sqrt()
 
     # flatten for ncnn DetectionOutput op inputs.
     batch_mlvl_vars = vars.expand_as(batch_mlvl_priors)
