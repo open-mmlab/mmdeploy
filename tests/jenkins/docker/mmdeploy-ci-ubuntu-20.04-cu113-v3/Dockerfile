@@ -142,6 +142,7 @@ RUN wget http://${HOST}/TensorRT-8.2.1.8.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar
     tar -zxvf TensorRT-8.2.1.8.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz &&\
     /opt/conda/bin/pip install TensorRT-8.2.1.8/python/tensorrt-8.2.1.8-cp38-none-linux_x86_64.whl && \
     /opt/conda/bin/pip install pycuda
+ENV TENSORRT_VERSION=8.2.1.8
 ENV TENSORRT_DIR=/root/workspace/TensorRT-8.2.1.8
 ENV LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
 
