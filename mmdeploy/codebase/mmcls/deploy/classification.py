@@ -247,7 +247,7 @@ class Classification(BaseTask):
         """
         input_shape = get_input_shape(self.deploy_cfg)
         cfg = process_model_config(self.model_cfg, '', input_shape)
-        preprocess = cfg.data.test.pipeline
+        preprocess = cfg.test_pipeline
         return preprocess
 
     def get_postprocess(self) -> Dict:
