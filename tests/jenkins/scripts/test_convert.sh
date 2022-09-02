@@ -17,7 +17,7 @@ do
             -v /data2/checkpoints/${codebase}:/root/workspace/mmdeploy_checkpoints \
             -v ${log_dir}:/root/workspace/mmdeploy_regression_working_dir \
             -v /data2/benchmark:/root/workspace/mmdeploy_benchmark \
-            -v /data2/shared/scripts:/root/workspace/mmdeploy_script \
+            -v ~/tests/jenkins/scripts:/root/workspace/mmdeploy_script \
             --name ${container_name} \
             ${docker_image} /bin/bash
     )
