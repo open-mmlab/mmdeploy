@@ -217,11 +217,19 @@ def get_preprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config):
             transform['keys'] = ['img']
         if 'key' in transform and transform['key'] == 'lq':
             transform['key'] = 'img'
+        if transform['type'] == 'Resize':
+            transform['size'] = transform['scale']
+            del transform['scale']
         if transform['type'] == 'PackTextDetInputs':
             meta_keys += transform[
                 'meta_keys'] if 'meta_keys' in transform else []
             transform['meta_keys'] = list(set(meta_keys))
             transforms[i]['type'] = 'Collect'
+        if transform['type'] == 'PackDetInputs':
+            transforms.insert(i, dict(type='DefaultFormatBundle'))
+            transform['type'] = 'Collect'
+            if 'keys' not in transform:
+                transform['keys'] = ['img']
     assert transforms[0]['type'] == 'LoadImageFromFile', 'The first item type'\
         ' of pipeline should be LoadImageFromFile'
 
