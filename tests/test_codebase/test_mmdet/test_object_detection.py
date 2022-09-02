@@ -21,6 +21,9 @@ import_codebase(Codebase.MMDET)
 
 model_cfg_path = 'tests/test_codebase/test_mmdet/data/model.py'
 model_cfg = load_config(model_cfg_path)[0]
+model_cfg.test_dataloader.dataset.data_root = \
+    'tests/test_codebase/test_mmdet/data'
+model_cfg.test_dataloader.dataset.ann_file = 'coco_sample.json'
 deploy_cfg = Config(
     dict(
         backend_config=dict(type='onnxruntime'),
@@ -66,7 +69,7 @@ def test_build_test_runner():
     pred_instances.scores = torch.rand((5, ))
     pred_instances.labels = torch.randint(0, 10, (5, ))
     data_sample.pred_instances = pred_instances
-    data_sample.img_id = "397133"
+    data_sample.img_id = 139
     data_sample.ori_shape = (800, 1216)
     outputs = [data_sample]
     model = DummyModel(outputs=outputs)
