@@ -16,7 +16,7 @@ do
         docker run -itd \
             --gpus all \
             -v ${log_dir}:/root/workspace/ut_log \
-            -v ~/tests/jenkins/scripts:/root/workspace/mmdeploy_script \
+            -v ~/mmdeploy/tests/jenkins/scripts:/root/workspace/mmdeploy_script \
             --name ${container_name} \
             ${docker_image} /bin/bash
     )

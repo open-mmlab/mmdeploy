@@ -15,7 +15,7 @@ container_id=$(
         -v /data2/benchmark:/root/workspace/mmdeploy_benchmark \
         -v /data2/shared/prebuilt-mmdeploy/$docker_image/$(date +%Y%m%d):/root/workspace/prebuild-mmdeploy \
         -v ${log_dir}:/root/workspace/log \
-        -v ~/tests/jenkins/scripts:/root/workspace/mmdeploy_script \
+        -v ~/mmdeploy/tests/jenkins/scripts:/root/workspace/mmdeploy_script \
         --name ${container_name} \
         ${docker_image} /bin/bash
     )
