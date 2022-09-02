@@ -147,8 +147,7 @@ class SDKEnd2EndModel(End2EndModel):
         boundaries = [list(x) for x in boundaries]
         return [
             dict(
-                boundary_result=boundaries,
-                filename=data_samples[0]['filename'])
+                boundary_result=boundaries, filename=data_samples[0].img_path)
         ]
 
 
