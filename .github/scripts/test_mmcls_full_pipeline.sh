@@ -8,7 +8,7 @@ deploy_cfg=configs/mmcls/classification_onnxruntime_dynamic.py
 device=cpu
 model_cfg=../mmclassification/configs/resnet/resnet18_8xb32_in1k.py
 checkpoint=https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth
-sdk_cfg=-configs/mmcls/classification_sdk_dynamic.py
+sdk_cfg=configs/mmcls/classification_sdk_dynamic.py
 input_img=../mmclassification/demo/demo.JPEG
 work_dir=work_dir
 
@@ -35,6 +35,7 @@ wget -P data/ https://github.com/open-mmlab/mmdeploy/files/9401216/imagenet-val1
 unzip data/imagenet-val100.zip -d data/
 
 echo "Running test with ort"
+
 python3 tools/test.py \
   $deploy_cfg \
   $model_cfg \
