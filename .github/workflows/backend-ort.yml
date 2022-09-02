@@ -39,7 +39,7 @@ jobs:
           python3 -c 'import mmdeploy.apis.onnxruntime as ort_api; assert ort_api.is_available() and ort_api.is_custom_ops_available()'
       - name: test mmcls full pipeline
         run: |
-          pip isntall openmim
+          pip install openmim
           mim install mmcls
           git clone  --depth 1 --single-branch --branch master https://github.com/open-mmlab/mmclassification.git ../mmclassification
           export MMDEPLOY_DIR=$(pwd)
