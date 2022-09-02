@@ -220,12 +220,19 @@ def get_preprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config):
         if transform['type'] == 'Resize':
             transform['size'] = transform['scale']
             del transform['scale']
+        if transform['type'] == 'ResizeEdge':
+            transforms['type'] = 'Resize'
+            transforms['keep_ratio'] = True
+            # now the sdk of class has bugs, because ResizeEdge not implement
+            # in sdk.
+            transforms['size'] = (transforms['scale'], transforms['scale'])
         if transform['type'] == 'PackTextDetInputs':
             meta_keys += transform[
                 'meta_keys'] if 'meta_keys' in transform else []
             transform['meta_keys'] = list(set(meta_keys))
             transforms[i]['type'] = 'Collect'
-        if transform['type'] == 'PackDetInputs':
+        if transform['type'] == 'PackDetInputs' or \
+           transform['type'] == 'PackClsInputs':
             transforms.insert(i, dict(type='DefaultFormatBundle'))
             transform['type'] = 'Collect'
             if 'keys' not in transform:
