@@ -68,7 +68,7 @@ class DeployTestRunner(Runner):
 
 @LOOPS.register_module()
 class DeployTestLoop(TestLoop):
-    """Loop for test.
+    """Loop for test. To skip data_preprocessor for SDK.
 
     Args:
         runner (Runner): A reference of runner.
@@ -79,27 +79,8 @@ class DeployTestLoop(TestLoop):
             False.
     """
 
-    def run(self, skip_preprocessor: bool = False) -> dict:
-        """Launch test."""
-        self.runner.call_hook('before_test')
-        self.runner.call_hook('before_test_epoch')
-        self.runner.model.eval()
-        for idx, data_batch in enumerate(self.dataloader):
-            if idx == 0:
-                continue
-            self.run_iter(idx, data_batch, skip_preprocessor)
-
-        # compute metrics
-        metrics = self.evaluator.evaluate(len(self.dataloader.dataset))
-        self.runner.call_hook('after_test_epoch', metrics=metrics)
-        self.runner.call_hook('after_test')
-        return metrics
-
     @torch.no_grad()
-    def run_iter(self,
-                 idx,
-                 data_batch: Sequence[dict],
-                 skip_preprocessor: bool = False) -> None:
+    def run_iter(self, idx, data_batch: Sequence[dict]) -> None:
         """Iterate one mini-batch.
 
         Args:
@@ -109,8 +90,7 @@ class DeployTestLoop(TestLoop):
             'before_test_iter', batch_idx=idx, data_batch=data_batch)
         # predictions should be sequence of BaseDataElement
         with autocast(enabled=self.fp16):
-            # if not skip_preprocessor:
-            data_batch = self.runner.model.data_preprocessor(data_batch, False)
+            # skip data_preprocessor to avoid Normalize and Padding for SDK
             outputs = self.runner.model._run_forward(
                 data_batch, mode='predict')
         self.evaluator.process(data_samples=outputs, data_batch=data_batch)
