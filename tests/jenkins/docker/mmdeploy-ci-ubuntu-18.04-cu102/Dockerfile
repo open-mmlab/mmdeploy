@@ -2,7 +2,7 @@ FROM nvidia/cuda:10.2-devel-ubuntu18.04
 ARG PYTHON_VERSION=3.7
 ARG CUDA=10.2
 ARG CUDA_INT=102
-ARG ONNXRUNTIME_VERSION=1.6.0
+ARG ONNXRUNTIME_VERSION=1.8.1
 ARG PPLNN_VERSION=0.8.1
 ARG TENSORRT=7.0.0
 ARG CUDNN=7.6
@@ -95,7 +95,7 @@ ENV CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-${CUDA}
 ### get onnxruntime
 RUN wget https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTIME_VERSION}/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz \
     && tar -zxvf onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz &&\
-    /opt/conda/bin/pip install onnxruntime-gpu==1.6.0
+    /opt/conda/bin/pip install onnxruntime==${ONNXRUNTIME_VERSION}
 ENV ONNXRUNTIME_DIR=/root/workspace/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}
 ENV ONNXRUNTIME_VERSION=${ONNXRUNTIME_VERSION}
 ENV LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
