@@ -1440,7 +1440,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">76.47</td>
-    <td align="center">-</td>
+    <td align="center">76.47</td>
     <td align="center">-</td>
     <td align="center">76.41</td>
     <td align="center">76.42</td>

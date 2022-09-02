@@ -1464,7 +1464,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">76.47</td>
-    <td align="center">-</td>
+    <td align="center">76.47</td>
     <td align="center">-</td>
     <td align="center">76.41</td>
     <td align="center">76.42</td>
