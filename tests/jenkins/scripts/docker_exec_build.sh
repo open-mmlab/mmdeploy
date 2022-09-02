@@ -7,7 +7,6 @@ export Torch_DIR=$(python -c "import torch;print(torch.utils.cmake_prefix_path +
 cd mmdeploy
 pip install openmim
 mim install mmcv-full
-pip install -v .
 pip install -r requirements/tests.txt
 pip install -r requirements/runtime.txt
 pip install -r requirements/build.txt

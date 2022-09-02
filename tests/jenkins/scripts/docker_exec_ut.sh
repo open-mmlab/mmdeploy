@@ -16,35 +16,16 @@ else
 fi
 unset __conda_setup
 
-## func
-function getFullName() {
-    local codebase_=$1
-    codebase_fullname=""
-    if [ "$codebase_" = "mmdet" ]; then codebase_fullname="mmdetection"; fi
-    if [ "$codebase_" = "mmcls" ]; then codebase_fullname="mmclassification"; fi
-    if [ "$codebase_" = "mmdet3d" ]; then codebase_fullname="mmdetection3d"; fi
-    if [ "$codebase_" = "mmedit" ]; then codebase_fullname="mmediting"; fi
-    if [ "$codebase_" = "mmocr" ]; then codebase_fullname="mmocr"; fi
-    if [ "$codebase_" = "mmpose" ]; then codebase_fullname="mmpose"; fi
-    if [ "$codebase_" = "mmrotate" ]; then codebase_fullname="mmrotate"; fi
-    if [ "$codebase_" = "mmseg" ]; then codebase_fullname="mmsegmentation"; fi
-}
+# install sys libs
+apt-get install lcov
 
 ## parameters
 export codebase=$1
-getFullName $codebase
-# backends=$2
 
 export MMDEPLOY_DIR=/root/workspace/mmdeploy
 #### TODO: to be removed
 export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH/\/root\/workspace\/libtorch\/lib:/}
-
-## clone ${codebase}
-git clone --depth 1 --branch master https://github.com/open-mmlab/${codebase_fullname}.git /root/workspace/${codebase_fullname}
-
-## build mmdeploy
-ln -s /root/workspace/mmdeploy_benchmark $MMDEPLOY_DIR/data
 
 for TORCH_VERSION in 1.10.0 1.11.0
 do
@@ -58,8 +39,9 @@ do
             -DMMDEPLOY_BUILD_EXAMPLES=ON \
             -DMMDEPLOY_BUILD_SDK_MONOLITHIC=ON -DMMDEPLOY_BUILD_TEST=ON \
             -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON -DMMDEPLOY_BUILD_SDK_JAVA_API=ON \
+            -DMMDEPLOY_COVERAGE=ON \
             -DMMDEPLOY_BUILD_EXAMPLES=ON -DMMDEPLOY_ZIP_MODEL=ON \
-            -DMMDEPLOY_TARGET_BACKENDS="trt;ort;ncnn;torchscript" \
+            -DMMDEPLOY_TARGET_BACKENDS="trt;ort;ncnn;pplnn;torchscript;openvino" \
             -DMMDEPLOY_SHARED_LIBS=OFF \
             -DTENSORRT_DIR=${TENSORRT_DIR} \
             -DCUDNN_DIR=${CUDNN_DIR} \
@@ -67,45 +49,44 @@ do
             -Dncnn_DIR=${ncnn_DIR} \
             -DTorch_DIR=${Torch_DIR} \
             -Dpplcv_DIR=${pplcv_DIR} \
+            -Dpplnn_DIR=${PPLNN_DIR} \
             -DMMDEPLOY_TARGET_DEVICES="cuda;cpu"
 
-    make -j $(nproc) && make install && cd $MMDEPLOY_DIR
+    make -j $(nproc) && make install
 
+    # sdk tests
+    mkdir -p mmdeploy_test_resources/transform
+    cp ../tests/data/tiger.jpeg mmdeploy_test_resources/transform/
+    ./bin/mmdeploy_tests
+    lcov --capture --directory . --output-file coverage.info
+    ls -lah coverage.info
+    cp coverage.info $MMDEPLOY_DIR/../ut_log/$TORCH_VERSION_sdk_ut_converage.info
+
+    cd $MMDEPLOY_DIR
     pip install openmim
     pip install -r requirements/tests.txt
     pip install -r requirements/runtime.txt
     pip install -r requirements/build.txt
     pip install -v .
-
     ## build ${codebase}
     if [ ${codebase} == mmdet3d ]; then
         mim install ${codebase}
         mim install mmcv-full==1.5.2
-        pip install -v /root/workspace/${codebase_fullname}
     elif [ ${codebase} == mmedit ]; then
         mim install ${codebase}
         mim install mmcv-full==1.6.0
-        pip install -v /root/workspace/${codebase_fullname}
     elif [ ${codebase} == mmrotate ]; then
         mim install ${codebase}
         mim install mmcv-full==1.6.0
-        pip install -v /root/workspace/${codebase_fullname}
     else
         mim install ${codebase}
         if [ $? -ne 0 ]; then
             mim install mmcv-full
-            pip install -v /root/workspace/${codebase_fullname}
         fi
     fi
-    ## start regression
-    log_dir=/root/workspace/mmdeploy_regression_working_dir/${codebase}/torch${TORCH_VERSION}
-    log_path=${log_dir}/convert.log
-    mkdir -p ${log_dir}
-    # ignore pplnn as it's too slow
-    python ./tools/regression_test.py \
-        --codebase ${codebase} \
-        --work-dir ${log_dir} \
-        --device cuda:0 \
-        --backends onnxruntime tensorrt ncnn torchscript openvino \
-        --performance 2>&1 | tee ${log_path}
+    ## start python tests
+    coverage run --branch --source mmdeploy -m pytest -rsE tests
+    coverage xml
+    coverage report -m
+    cp coverage.xml $MMDEPLOY_DIR/../ut_log/$TORCH_VERSION_converter_ut_converage.xml
 done
