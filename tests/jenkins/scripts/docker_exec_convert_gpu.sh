@@ -35,22 +35,16 @@ export codebase=$1
 getFullName $codebase
 # backends=$2
 
-## clone ${codebase}
-cd /root/workspace
-git clone --depth 1 --branch master https://github.com/open-mmlab/${codebase_fullname}.git
-
+export MMDEPLOY_DIR=/root/workspace/mmdeploy
 #### TODO: to be removed
 export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH/\/root\/workspace\/libtorch\/lib:/}
 
-## build mmdeploy
-ln -s /root/workspace/mmdeploy_benchmark /root/workspace/mmdeploy/data
-cd mmdeploy
-mkdir -p build
-cd build
+## clone ${codebase}
+git clone --depth 1 --branch master https://github.com/open-mmlab/${codebase_fullname}.git /root/workspace/${codebase_fullname}
 
-## use activate
-cd /root/workspace/mmdeploy
+## build mmdeploy
+ln -s /root/workspace/mmdeploy_benchmark $MMDEPLOY_DIR/data
 
 for TORCH_VERSION in 1.10.0 1.11.0
 do
@@ -59,6 +53,7 @@ do
     export Torch_DIR=$(python -c "import torch;print(torch.utils.cmake_prefix_path + '/Torch')")
     # need to build for each env
     # TODO add openvino
+    mkdir -p $MMDEPLOY_DIR/build && cd $MMDEPLOY_DIR/build
     cmake .. -DMMDEPLOY_BUILD_SDK=ON \
             -DMMDEPLOY_BUILD_EXAMPLES=ON \
             -DMMDEPLOY_BUILD_SDK_MONOLITHIC=ON -DMMDEPLOY_BUILD_TEST=ON \
@@ -71,10 +66,10 @@ do
             -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} \
             -Dncnn_DIR=${ncnn_DIR} \
             -DTorch_DIR=${Torch_DIR} \
-            -Dpplcv_DIR=/root/workspace/ppl.cv/cuda-build/install/lib/cmake/ppl \
+            -Dpplcv_DIR=${pplcv_DIR} \
             -DMMDEPLOY_TARGET_DEVICES="cuda;cpu"
 
-    make -j $(nproc) && make install
+    make -j $(nproc) && make install && cd $MMDEPLOY_DIR
 
     pip install openmim
     pip install -v .
@@ -105,9 +100,11 @@ do
     log_dir=/root/workspace/mmdeploy_regression_working_dir/${codebase}/torch${TORCH_VERSION}
     log_path=${log_dir}/convert.log
     mkdir -p ${log_dir}
+    # ignore pplnn as it's too slow
     python ./tools/regression_test.py \
         --codebase ${codebase} \
         --work-dir ${log_dir} \
         --device cuda:0 \
+        --backends onnxruntime tensorrt ncnn torchscript openvino \
         --performance 2>&1 | tee ${log_path}
 done

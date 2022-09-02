@@ -48,7 +48,8 @@ pip install mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-onnxruntime${ONNXRUNTIME_V
 pip install mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-cuda${CUDA_VERSION}-tensorrt${TENSORRT_VERSION}/dist/mmdeploy-${MMDEPLOY_VERSION}-py3-none-linux_x86_64.whl
 pip install mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-cuda{CUDA_VERSION}-tensorrt${TENSORRT_VERSION}/sdk/python/mmdeploy_python-${MMDEPLOY_VERSION}-cp38-none-linux_x86_64.whl
 
-python tools/check_env.py > /root/workspace/log/check_env.log
+python tools/check_env.py > /root/workspace/log/check_env.log 2>&1
+
 mv mmdeploy-*-onnxruntime* /root/workspace/prebuild-mmdeploy
 mv mmdeploy-*-tensorrt* /root/workspace/prebuild-mmdeploy
 
