@@ -95,10 +95,10 @@ def test_create_input():
 
 def test_visualize(backend_model):
     input_dict, _ = task_processor.create_input(img, input_shape=img_shape)
-    results = backend_model.test_step([input_dict])
+    results = backend_model.test_step(input_dict)[0]
     with TemporaryDirectory() as dir:
         filename = dir + '/tmp.jpg'
-        task_processor.visualize(img, results[0], filename, 'window')
+        task_processor.visualize(img, results, filename, 'window')
         assert os.path.exists(filename)
 
 
@@ -127,8 +127,8 @@ def test_build_dataset_and_dataloader():
 
 def test_build_test_runner():
     # Prepare dummy model
-    from mmcls.core import ClsDataSample
-    from mmengine.data import LabelData
+    from mmcls.structures import ClsDataSample
+    from mmengine.structures import LabelData
     label = LabelData(
         label=torch.tensor([0]),
         score=torch.rand(10),
@@ -137,6 +137,8 @@ def test_build_test_runner():
         ClsDataSample(
             pred_label=label,
             _pred_label=label,
+            gt_label=label,
+            _gt_label=label,
             metainfo=dict(
                 img_shape=(224, 224),
                 img_path='',
