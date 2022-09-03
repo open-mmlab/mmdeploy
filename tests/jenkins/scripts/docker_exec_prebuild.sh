@@ -18,6 +18,7 @@ unset __conda_setup
 
 #### to be removed
 apt install -y g++-7 gcc-7
+export CUDA_VERSION=11.3
 export CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-${CUDA_VERSION}
 export LD_LIBRARY_PATH=/usr/local/cuda-${CUDA_VERSION}/lib64/:$LD_LIBRARY_PATH
 cp -r cuda/include/cudnn* /usr/local/cuda-${CUDA_VERSION}/include/
@@ -46,7 +47,7 @@ export MMDEPLOY_VERSION=$(cat mmdeploy/version.py | grep "__version__ = " | awk 
 pip install mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-onnxruntime${ONNXRUNTIME_VERSION}/sdk/python/mmdeploy_python-${MMDEPLOY_VERSION}-cp38-none-linux_x86_64.whl
 pip install mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-onnxruntime${ONNXRUNTIME_VERSION}/dist/mmdeploy-${MMDEPLOY_VERSION}-py3-none-linux_x86_64.whl
 pip install mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-cuda${CUDA_VERSION}-tensorrt${TENSORRT_VERSION}/dist/mmdeploy-${MMDEPLOY_VERSION}-py3-none-linux_x86_64.whl
-pip install mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-cuda{CUDA_VERSION}-tensorrt${TENSORRT_VERSION}/sdk/python/mmdeploy_python-${MMDEPLOY_VERSION}-cp38-none-linux_x86_64.whl
+pip install mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-cuda${CUDA_VERSION}-tensorrt${TENSORRT_VERSION}/sdk/python/mmdeploy_python-${MMDEPLOY_VERSION}-cp38-none-linux_x86_64.whl
 
 python tools/check_env.py > /root/workspace/log/check_env.log 2>&1
 
