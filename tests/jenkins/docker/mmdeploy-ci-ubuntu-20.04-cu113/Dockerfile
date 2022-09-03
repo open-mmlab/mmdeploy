@@ -17,7 +17,7 @@ USER root
 WORKDIR /root/workspace
 ENV DEBIAN_FRONTEND=nointeractive
 ENV FORCE_CUDA="1"
-
+ENV CUDA_VERSION=11.3
 ### change the system source for installing libs
 ARG USE_SRC_INSIDE=true
 RUN if [ ${USE_SRC_INSIDE} == true ] ; \

@@ -8,7 +8,7 @@ codebase_list=($2)
 # docker run cmd for convert
 for codebase in ${codebase_list[@]}
 do
-    log_dir=/data2/regression_log/
+    log_dir=/data2/regression_log/$(date +%Y%m%d%H%M)
     mkdir -p ${log_dir}
     container_name=convert-${codebase}-$(date +%Y%m%d%H%M)
     container_id=$(
