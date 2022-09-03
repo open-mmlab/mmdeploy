@@ -13,7 +13,10 @@ from mmdeploy.utils.test import (WrapFunction, WrapModel, backend_checker,
                                  check_backend, get_onnx_model,
                                  get_rewrite_outputs)
 
-import_codebase(Codebase.MMDET)
+try:
+    import_codebase(Codebase.MMDET)
+except ImportError:
+    pytest.skip(f'{Codebase.MMDET} is not installed.', allow_module_level=True)
 
 
 @backend_checker(Backend.TENSORRT)

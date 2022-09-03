@@ -14,7 +14,7 @@ globals:
   convert_image_det: &convert_image_det
     input_img: *img_demo
     test_img: *img_dota_demo
-  backend_test: &default_backend_test True
+  backend_test: &default_backend_test False
 
 onnxruntime:
   # ======= detection =======
