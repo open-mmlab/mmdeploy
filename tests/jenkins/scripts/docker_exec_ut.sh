@@ -17,7 +17,7 @@ fi
 unset __conda_setup
 
 # install sys libs
-apt-get install lcov
+apt update && apt-get install -y lcov
 
 ## parameters
 export codebase=$1

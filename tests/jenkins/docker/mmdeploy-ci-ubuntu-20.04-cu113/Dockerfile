@@ -18,6 +18,7 @@ WORKDIR /root/workspace
 ENV DEBIAN_FRONTEND=nointeractive
 ENV FORCE_CUDA="1"
 ENV CUDA_VERSION=11.3
+ENV PYTHON_VERSION=3.8
 ### change the system source for installing libs
 ARG USE_SRC_INSIDE=true
 RUN if [ ${USE_SRC_INSIDE} == true ] ; \
@@ -46,6 +47,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         curl \
         libzip-dev \
         libopencv-dev \
+        lcov \
+        zip \
     && rm -rf /var/lib/apt/lists/*
 
 ### install cmake
