@@ -41,7 +41,7 @@ do
             -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON -DMMDEPLOY_BUILD_SDK_JAVA_API=ON \
             -DMMDEPLOY_COVERAGE=ON \
             -DMMDEPLOY_BUILD_EXAMPLES=ON -DMMDEPLOY_ZIP_MODEL=ON \
-            -DMMDEPLOY_TARGET_BACKENDS="trt;ort;ncnn;torchscript" \
+            -DMMDEPLOY_TARGET_BACKENDS="trt;ort;ncnn" \
             -DMMDEPLOY_SHARED_LIBS=OFF \
             -DTENSORRT_DIR=${TENSORRT_DIR} \
             -DCUDNN_DIR=${CUDNN_DIR} \
