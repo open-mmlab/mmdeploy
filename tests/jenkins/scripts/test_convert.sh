@@ -12,7 +12,7 @@ for codebase in ${codebase_list[@]}
 do
     log_dir=/data2/regression_log/convert_log/${date_snap}/${time_snap}
     mkdir -p ${log_dir}
-    container_name=convert-${codebase}-${date_snap}
+    container_name=convert-${codebase}-${time_snap}
     container_id=$(
         docker run -itd \
             --gpus all \

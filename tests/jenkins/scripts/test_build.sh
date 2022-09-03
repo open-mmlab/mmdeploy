@@ -9,7 +9,7 @@ time_snap=$(date +%Y%m%d%H%M)
 # docker run cmd for build
 log_dir=/data2/regression_log/build_log/${date_snap}/${time_snap}
 mkdir -p ${log_dir}
-container_name=build-$(date +%Y%m%d%H%M)
+container_name=build-${time_snap}
 container_id=$(docker run -itd --gpus all ${docker_image} /bin/bash)
 echo "container_id=${container_id} --name ${container_name}"
 

@@ -3,8 +3,11 @@
 ## parameters
 export docker_image=$1
 
-log_dir=/data2/regression_log/prebuild/$(date +%Y%m%d)/$(date +%Y%m%d%H%M)
+date_snap=$(date +%Y%m%d)
+time_snap=$(date +%Y%m%d%H%M)
+log_dir=/data2/regression_log/prebuild_log/${date_snap}/${time_snap}
 mkdir -p ${log_dir}
+container_name=convert-${codebase}-${time_snap}
 
 container_name=prebuild-$(date +%Y%m%d%H%M)
 container_id=$(
