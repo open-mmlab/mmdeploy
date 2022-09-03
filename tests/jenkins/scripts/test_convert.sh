@@ -5,12 +5,14 @@
 docker_image=$1
 codebase_list=($2)
 
+date_snap=$(date +%Y%m%d)
+time_snap=$(date +%Y%m%d%H%M)
 # docker run cmd for convert
 for codebase in ${codebase_list[@]}
 do
-    log_dir=/data2/regression_log/$(date +%Y%m%d)/$(date +%Y%m%d%H%M)
+    log_dir=/data2/regression_log/${date_snap}/${time_snap}
     mkdir -p ${log_dir}
-    container_name=convert-${codebase}-$(date +%Y%m%d%H%M)
+    container_name=convert-${codebase}-${date_snap}
     container_id=$(
         docker run -itd \
             --gpus all \
