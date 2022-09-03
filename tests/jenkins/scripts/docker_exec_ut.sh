@@ -16,6 +16,7 @@ else
 fi
 unset __conda_setup
 
+echo "time-$(date +%Y%m%d%H%M)"
 # install sys libs
 apt update && apt-get install -y lcov
 
@@ -89,3 +90,4 @@ do
     coverage report -m
     cp coverage.xml $MMDEPLOY_DIR/../ut_log/${TORCH_VERSION}_converter_converage.xml
 done
+echo "time-$(date +%Y%m%d%H%M)"

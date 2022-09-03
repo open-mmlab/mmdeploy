@@ -20,13 +20,14 @@ export codebase=$1
 getFullName $codebase
 # backends=$2
 
+echo "time-$(date +%Y%m%d%H%M)"
 ## clone ${codebase}
 cd /root/workspace
 git clone https://github.com/open-mmlab/${codebase_fullname}.git
 
 ## build mmdeploy
 cd mmdeploy
-mkdir -p builde
+mkdir -p build
 cd build
 cmake .. -DMMDEPLOY_BUILD_SDK=ON -DMMDEPLOY_BUILD_EXAMPLES=ON \
         -DMMDEPLOY_BUILD_SDK_MONOLITHIC=ON -DMMDEPLOY_BUILD_TEST=ON \
@@ -58,3 +59,5 @@ do
 
 
 done
+
+echo "time-$(date +%Y%m%d%H%M)"

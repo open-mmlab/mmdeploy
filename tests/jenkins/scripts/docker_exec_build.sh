@@ -15,7 +15,7 @@ fi
 unset __conda_setup
 
 export MMDEPLOY_DIR=/root/workspace/mmdeploy
-
+echo "time-$(date +%Y%m%d%H%M)"
 conda activate torch1.10.0
 # export libtorch cmake dir, ran example: /opt/conda/envs/torch1.11.0/lib/python3.8/site-packages/torch/share/cmake/Torch
 export Torch_DIR=$(python -c "import torch;print(torch.utils.cmake_prefix_path + '/Torch')")
@@ -77,3 +77,4 @@ do
     python tools/check_env.py
     # todo 插入校验语句，确认pip install 成功
 done
+echo "time-$(date +%Y%m%d%H%M)"

@@ -15,7 +15,7 @@ else
     fi
 fi
 unset __conda_setup
-
+echo "time-$(date +%Y%m%d%H%M)"
 #### to be removed
 if [ $CUDA_VERSION == 11.3.0 ]; then 
     export CUDA_VERSION=11.3
@@ -53,3 +53,5 @@ mv mmdeploy-*-tensorrt* /root/workspace/prebuild-mmdeploy
 
 python tools/regression_test.py --codebase mmdet --models ssd --backends onnxruntime tensorrt --performance \
   --device cuda:0 2>&1 | tee /root/workspace/log/test_prebuild.log
+
+echo "time-$(date +%Y%m%d%H%M)"

@@ -38,14 +38,11 @@ export MMDEPLOY_DIR=/root/workspace/mmdeploy
 
 #### TODO: to be removed
 export ONNXRUNTIME_DIR=/root/workspace/onnxruntime-linux-x64-1.8.1
-export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
+export ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH/\/root\/workspace\/libtorch\/lib:/}
 export ONNXRUNTIME_VERSION=1.8.1
 
-cd /root/workspace
-wget https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTIME_VERSION}/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz 
-tar -zxvf onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz
-
+echo "time-$(date +%Y%m%d%H%M)"
 ## clone ${codebase}
 git clone --depth 1 --branch master https://github.com/open-mmlab/${codebase_fullname}.git /root/workspace/${codebase_fullname}
 
@@ -115,3 +112,5 @@ do
         --backends onnxruntime tensorrt ncnn torchscript openvino \
         --performance 2>&1 | tee ${log_path}
 done
+
+echo "time-$(date +%Y%m%d%H%M)"
