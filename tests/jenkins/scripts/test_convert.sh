@@ -10,7 +10,7 @@ time_snap=$(date +%Y%m%d%H%M)
 # docker run cmd for convert
 for codebase in ${codebase_list[@]}
 do
-    log_dir=/data2/regression_log/${date_snap}/${time_snap}
+    log_dir=/data2/regression_log/convert_log/${date_snap}/${time_snap}
     mkdir -p ${log_dir}
     container_name=convert-${codebase}-${date_snap}
     container_id=$(

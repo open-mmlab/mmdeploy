@@ -4,9 +4,14 @@
 # export docker_image=mmdeploy-ci-ubuntu-18.04
 export docker_image=$1
 
-#TODO update to output log and change script path
-container_id=$(docker run -itd --gpus all ${docker_image} /bin/bash)
+odate_snap=$(date +%Y%m%d)
+time_snap=$(date +%Y%m%d%H%M)
+# docker run cmd for build
+log_dir=/data2/regression_log/build_log/${date_snap}/${time_snap}
+mkdir -p ${log_dir}
 container_name=build-$(date +%Y%m%d%H%M)
+container_id=$(docker run -itd --gpus all ${docker_image} /bin/bash)
 echo "container_id=${container_id} --name ${container_name}"
-docker exec -d ${container_id} git clone --depth 1 --branch master --recursive https://github.com/open-mmlab/mmdeploy.git
-docker exec -d ${container_id} bash -c "/root/workspace/mmdeploy/tests/jenkins/scripts/docker_exec_build.sh"
+
+nohup docker exec ${container_id} bash -c "git clone --depth 1 --branch master --recursive https://github.com/open-mmlab/mmdeploy.git &&\
+ /root/workspace/mmdeploy_script/docker_exec_build.sh" > ${log_dir}.log 2>&1 &
