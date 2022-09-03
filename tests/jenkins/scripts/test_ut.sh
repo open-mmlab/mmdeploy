@@ -6,12 +6,13 @@ docker_image=$1
 codebase_list=($2)
 
 date_snap=$(date +%Y%m%d%H%M)
+time_snap=$(date +%H%M%S)
 # docker run cmd for convert
 for codebase in ${codebase_list[@]}
 do
-    log_dir=/data2/ut_log/${date_snap}
+    log_dir=/data2/ut_log/${date_snap}/${date_snap}-${time_snap}
     mkdir -p ${log_dir}
-    container_name=ut-${codebase}-${date_snap}
+    container_name=ut-${codebase}-${date_snap}-${time_snap}
     container_id=$(
         docker run -itd \
             --gpus all \
