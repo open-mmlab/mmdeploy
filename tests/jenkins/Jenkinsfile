@@ -37,25 +37,6 @@ pipeline {
     }
 
     stages {
-        stage('matrix_Test') {
-            matrix {
-                axes {
-                    axis {
-                        name '_codebase'
-                        values strToList('${param.CODEBASES}')
-                    }
-                }
-                stages {
-                    stage('test') {
-                        steps {
-                            sh "tests/jenkins/scripts/test_convert.sh '${params.DOCKER_IMAGE}' '${_codebase}'" 
-                        }
-                    }
-                }
-            }
-
-        }
-
         stage('Build') {
             when {
                 expression { $params.EXEC_BUILD }
@@ -94,8 +75,3 @@ pipeline {
     }
 }
 
-
-def strToList(str) {
-    def a = "${str}".tokenize(" ")
-    return a
-}
