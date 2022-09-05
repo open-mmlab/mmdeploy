@@ -1,25 +1,19 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Dict, List, Sequence, Union
+from typing import Any, Dict, List, Optional, Sequence, Union
 
 import mmcv
-import mmengine
 import torch
-from mmcv.utils import Registry
-from torch.nn import functional as F
+from mmdet3d.structures.det3d_data_sample import SampleList
+from mmengine import Config
+from mmengine.model.base_model.data_preprocessor import BaseDataPreprocessor
+from mmengine.registry import Registry
+from mmengine.structures import BaseDataElement, InstanceData
 
 from mmdeploy.codebase.base import BaseBackendModel
-from mmdeploy.core import RewriterContext
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
-                            get_root_logger, load_config)
+                            load_config)
 
-
-def __build_backend_voxel_model(cls_name: str, registry: Registry, *args,
-                                **kwargs):
-    return registry.module_dict[cls_name](*args, **kwargs)
-
-
-__BACKEND_MODEL = mmcv.utils.Registry(
-    'backend_voxel_detectors', build_func=__build_backend_voxel_model)
+__BACKEND_MODEL = Registry('backend_voxel_detectors')
 
 
 @__BACKEND_MODEL.register_module('end2end')
@@ -31,8 +25,8 @@ class VoxelDetectionModel(BaseBackendModel):
         backend_files (Sequence[str]): Paths to all required backend files
                 (e.g. '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
         device (str): A string specifying device type.
-        model_cfg (str | mmengine.Config): The model config.
-        deploy_cfg (str|mmengine.Config): Deployment config file or loaded
+        model_cfg (str | Config): The model config.
+        deploy_cfg (str|Config): Deployment config file or loaded
             Config object.
     """
 
@@ -40,11 +34,13 @@ class VoxelDetectionModel(BaseBackendModel):
                  backend: Backend,
                  backend_files: Sequence[str],
                  device: str,
-                 model_cfg: mmengine.Config,
-                 deploy_cfg: Union[str, mmengine.Config] = None):
-        super().__init__(deploy_cfg=deploy_cfg)
+                 deploy_cfg: Union[str, Config],
+                 data_preprocessor: Optional[Union[dict,
+                                                   torch.nn.Module]] = None,
+                 **kwargs):
+        super().__init__(
+            deploy_cfg=deploy_cfg, data_preprocessor=data_preprocessor)
         self.deploy_cfg = deploy_cfg
-        self.model_cfg = model_cfg
         self.device = device
         self._init_wrapper(
             backend=backend, backend_files=backend_files, device=device)
@@ -64,13 +60,14 @@ class VoxelDetectionModel(BaseBackendModel):
             backend=backend,
             backend_files=backend_files,
             device=device,
+            input_names=[self.input_name],
             output_names=output_names,
             deploy_cfg=self.deploy_cfg)
 
     def forward(self,
-                points: Sequence[torch.Tensor],
-                img_metas: Sequence[dict],
-                return_loss=False):
+                inputs: dict,
+                data_samples: Optional[List[BaseDataElement]] = None,
+                mode: str = 'predict') -> Any:
         """Run forward inference.
 
         Args:
@@ -84,22 +81,15 @@ class VoxelDetectionModel(BaseBackendModel):
         Returns:
             list: A list contains predictions.
         """
-        result_list = []
-        for i in range(len(img_metas)):
-            voxels, num_points, coors = VoxelDetectionModel.voxelize(
-                self.model_cfg, points[i])
-            input_dict = {
-                'voxels': voxels,
-                'num_points': num_points,
-                'coors': coors
-            }
-            outputs = self.wrapper(input_dict)
-            result = VoxelDetectionModel.post_process(self.model_cfg,
-                                                      self.deploy_cfg, outputs,
-                                                      img_metas[i],
-                                                      self.device)[0]
-            result_list.append(result)
-        return result_list
+        preprocessed = inputs['voxels']
+        input_dict = {
+            'voxels': preprocessed['voxels'].to(self.device),
+            'num_points': preprocessed['num_points'].to(self.device),
+            'coors': preprocessed['coors'].to(self.device)
+        }
+        outputs = self.wrapper(input_dict)
+
+        return [outputs]
 
     def show_result(self,
                     data: Dict,
@@ -132,120 +122,252 @@ class VoxelDetectionModel(BaseBackendModel):
             pred_labels=pred_labels)
 
     @staticmethod
-    def voxelize(model_cfg: Union[str, mmengine.Config], points: torch.Tensor):
-        """convert kitti points(N, >=3) to voxels.
+    def convert_to_datasample(
+        data_samples: SampleList,
+        data_instances_3d: Optional[List[InstanceData]] = None,
+        data_instances_2d: Optional[List[InstanceData]] = None,
+    ) -> SampleList:
+        """Convert results list to `Det3DDataSample`.
+
+        Subclasses could override it to be compatible for some multi-modality
+        3D detectors.
 
         Args:
-            model_cfg (str | mmengine.Config): The model config.
-            points (torch.Tensor): [N, ndim] float tensor. points[:, :3]
-                contain xyz points and points[:, 3:] contain other information
-                like reflectivity.
+            data_samples (list[:obj:`Det3DDataSample`]): The input data.
+            data_instances_3d (list[:obj:`InstanceData`], optional): 3D
+                Detection results of each sample.
+            data_instances_2d (list[:obj:`InstanceData`], optional): 2D
+                Detection results of each sample.
 
         Returns:
-            voxels: [M, max_points, ndim] float tensor. only contain points
-                and returned when max_points != -1.
-            coordinates: [M, 3] int32 tensor, always returned.
-            num_points_per_voxel: [M] int32 tensor. Only returned when
-                max_points != -1.
+            list[:obj:`Det3DDataSample`]: Detection results of the
+            input. Each Det3DDataSample usually contains
+            'pred_instances_3d'. And the ``pred_instances_3d`` normally
+            contains following keys.
+
+            - scores_3d (Tensor): Classification scores, has a shape
+              (num_instance, )
+            - labels_3d (Tensor): Labels of 3D bboxes, has a shape
+              (num_instances, ).
+            - bboxes_3d (Tensor): Contains a tensor with shape
+              (num_instances, C) where C >=7.
+
+            When there are image prediction in some models, it should
+            contains  `pred_instances`, And the ``pred_instances`` normally
+            contains following keys.
+
+            - scores (Tensor): Classification scores of image, has a shape
+              (num_instance, )
+            - labels (Tensor): Predict Labels of 2D bboxes, has a shape
+              (num_instances, ).
+            - bboxes (Tensor): Contains a tensor with shape
+              (num_instances, 4).
         """
-        from mmcv.ops import Voxelization
-        model_cfg = load_config(model_cfg)[0]
-        if 'voxel_layer' in model_cfg.model.keys():
-            voxel_layer = model_cfg.model['voxel_layer']
-        elif 'pts_voxel_layer' in model_cfg.model.keys():
-            voxel_layer = model_cfg.model['pts_voxel_layer']
-        else:
-            raise
-        voxel_layer = Voxelization(**voxel_layer)
-        voxels, coors, num_points = [], [], []
-        for res in points:
-            res_voxels, res_coors, res_num_points = voxel_layer(res)
-            voxels.append(res_voxels)
-            coors.append(res_coors)
-            num_points.append(res_num_points)
-        voxels = torch.cat(voxels, dim=0)
-        num_points = torch.cat(num_points, dim=0)
-        coors_batch = []
-        for i, coor in enumerate(coors):
-            coor_pad = F.pad(coor, (1, 0), mode='constant', value=i)
-            coors_batch.append(coor_pad)
-        coors_batch = torch.cat(coors_batch, dim=0)
-        return voxels, num_points, coors_batch
+
+        assert (data_instances_2d is not None) or \
+               (data_instances_3d is not None),\
+               'please pass at least one type of data_samples'
+
+        if data_instances_2d is None:
+            data_instances_2d = [
+                InstanceData() for _ in range(len(data_instances_3d))
+            ]
+        if data_instances_3d is None:
+            data_instances_3d = [
+                InstanceData() for _ in range(len(data_instances_2d))
+            ]
+
+        for i, data_sample in enumerate(data_samples):
+            data_sample.pred_instances_3d = data_instances_3d[i]
+            data_sample.pred_instances = data_instances_2d[i]
+        return data_samples
 
     @staticmethod
-    def post_process(model_cfg: Union[str, mmengine.Config],
-                     deploy_cfg: Union[str, mmengine.Config],
-                     outs: Dict,
-                     img_metas: Dict,
-                     device: str,
-                     rescale=False):
-        """model post process.
+    def postprocess(model_cfg: Union[str, Config],
+                    deploy_cfg: Union[str, Config], outs: Dict, metas: Dict):
+        """postprocess outputs to datasamples.
 
         Args:
-            model_cfg (str | mmengine.Config): The model config.
-            deploy_cfg (str|mmengine.Config): Deployment config file or loaded
-            Config object.
-            outs (Dict): Output of model's head.
-            img_metas(Dict): Meta info for pcd.
-            device (str): A string specifying device type.
-            rescale (list[torch.Tensor]): whether th rescale bbox.
+            model_cfg (Union[str, Config]): _description_
+            deploy_cfg (Union[str, Config]): _description_
+            outs (Dict): _description_
+            metas (Dict): _description_
+
+        Raises:
+            NotImplementedError: _description_
+            NotImplementedError: _description_
+
         Returns:
-            list: A list contains predictions, include bboxes, scores, labels.
+            _type_: _description_
         """
-        from mmdet3d.core import bbox3d2result
-        from mmdet3d.models.builder import build_head
-        model_cfg = load_config(model_cfg)[0]
-        deploy_cfg = load_config(deploy_cfg)[0]
-        if 'bbox_head' in model_cfg.model.keys():
-            head_cfg = dict(**model_cfg.model['bbox_head'])
-        elif 'pts_bbox_head' in model_cfg.model.keys():
-            head_cfg = dict(**model_cfg.model['pts_bbox_head'])
+        if 'cls_score' not in outs or 'bbox_pred' not in outs or 'dir_cls_pred' not in outs:  # noqa: E501
+            raise RuntimeError('output tensor not found')
+
+        if 'test_cfg' not in model_cfg.model:
+            raise RuntimeError('test_cfg not found')
+
+        from mmengine.registry import MODELS
+        cls_score = outs['cls_score']
+        bbox_pred = outs['bbox_pred']
+        dir_cls_pred = outs['dir_cls_pred']
+        batch_input_metas = [data_samples.metainfo for data_samples in metas]
+
+        if 'bbox_head' in model_cfg.model:
+            # pointpillars postprocess
+            head = MODELS.build(model_cfg.model['bbox_head'])
+            data_instances_3d = head.predict_by_feat(
+                cls_scores=[cls_score],
+                bbox_preds=[bbox_pred],
+                dir_cls_preds=[dir_cls_pred],
+                batch_input_metas=batch_input_metas,
+                cfg=model_cfg.model.test_cfg)
+
+            data_samples = VoxelDetectionModel.convert_to_datasample(
+                data_samples=metas, data_instances_3d=data_instances_3d)
+
+        elif 'pts_bbox_head' in model_cfg.model:
+            # centerpoint postprocess
+            head = MODELS.build(model_cfg.model['pts_bbox_head'])
+            pts = model_cfg.model.test_cfg.pts
+
+            rets = []
+            scores_range = [0]
+            bbox_range = [0]
+            dir_range = [0]
+            for i, _ in enumerate(head.task_heads):
+                scores_range.append(scores_range[i] + head.num_classes[i])
+                bbox_range.append(bbox_range[i] + 8)
+                dir_range.append(dir_range[i] + 2)
+
+            for task_id in range(len(head.num_classes)):
+                num_class_with_bg = head.num_classes[task_id]
+
+                batch_heatmap = cls_score[:,
+                                          scores_range[task_id]:scores_range[
+                                              task_id + 1], ...].sigmoid()
+
+                batch_reg = bbox_pred[:,
+                                      bbox_range[task_id]:bbox_range[task_id] +
+                                      2, ...]
+                batch_hei = bbox_pred[:, bbox_range[task_id] +
+                                      2:bbox_range[task_id] + 3, ...]
+
+                if head.norm_bbox:
+                    batch_dim = torch.exp(bbox_pred[:, bbox_range[task_id] +
+                                                    3:bbox_range[task_id] + 6,
+                                                    ...])
+                else:
+                    batch_dim = bbox_pred[:, bbox_range[task_id] +
+                                          3:bbox_range[task_id] + 6, ...]
+
+                batch_vel = bbox_pred[:, bbox_range[task_id] +
+                                      6:bbox_range[task_id + 1], ...]
+
+                batch_rots = dir_cls_pred[:,
+                                          dir_range[task_id]:dir_range[task_id
+                                                                       + 1],
+                                          ...][:, 0].unsqueeze(1)
+                batch_rotc = dir_cls_pred[:,
+                                          dir_range[task_id]:dir_range[task_id
+                                                                       + 1],
+                                          ...][:, 1].unsqueeze(1)
+
+                temp = head.bbox_coder.decode(
+                    batch_heatmap,
+                    batch_rots,
+                    batch_rotc,
+                    batch_hei,
+                    batch_dim,
+                    batch_vel,
+                    reg=batch_reg,
+                    task_id=task_id)
+
+                assert pts['nms_type'] in ['circle', 'rotate']
+                batch_reg_preds = [box['bboxes'] for box in temp]
+                batch_cls_preds = [box['scores'] for box in temp]
+                batch_cls_labels = [box['labels'] for box in temp]
+                if pts['nms_type'] == 'circle':
+                    boxes3d = temp[0]['bboxes']
+                    scores = temp[0]['scores']
+                    labels = temp[0]['labels']
+                    centers = boxes3d[:, [0, 1]]
+                    boxes = torch.cat([centers, scores.view(-1, 1)], dim=1)
+                    from mmdet3d.models.layers import circle_nms
+                    keep = torch.tensor(
+                        circle_nms(
+                            boxes.detach().cpu().numpy(),
+                            pts['min_radius'][task_id],
+                            post_max_size=pts['post_max_size']),
+                        dtype=torch.long,
+                        device=boxes.device)
+
+                    boxes3d = boxes3d[keep]
+                    scores = scores[keep]
+                    labels = labels[keep]
+                    ret = dict(bboxes=boxes3d, scores=scores, labels=labels)
+                    ret_task = [ret]
+                    rets.append(ret_task)
+                else:
+                    rets.append(
+                        head.get_task_detections(num_class_with_bg,
+                                                 batch_cls_preds,
+                                                 batch_reg_preds,
+                                                 batch_cls_labels,
+                                                 batch_input_metas))
+
+            # Merge branches results
+            num_samples = len(rets[0])
+
+            ret_list = []
+            for i in range(num_samples):
+                temp_instances = InstanceData()
+                for k in rets[0][i].keys():
+                    if k == 'bboxes':
+                        bboxes = torch.cat([ret[i][k] for ret in rets])
+                        bboxes[:, 2] = bboxes[:, 2] - bboxes[:, 5] * 0.5
+                        bboxes = batch_input_metas[i]['box_type_3d'](
+                            bboxes, head.bbox_coder.code_size)
+                    elif k == 'scores':
+                        scores = torch.cat([ret[i][k] for ret in rets])
+                    elif k == 'labels':
+                        flag = 0
+                        for j, num_class in enumerate(head.num_classes):
+                            rets[j][i][k] += flag
+                            flag += num_class
+                        labels = torch.cat([ret[i][k].int() for ret in rets])
+                temp_instances.bboxes_3d = bboxes
+                temp_instances.scores_3d = scores
+                temp_instances.labels_3d = labels
+                ret_list.append(temp_instances)
+
+            data_samples = VoxelDetectionModel.convert_to_datasample(
+                metas, data_instances_3d=ret_list)
+
         else:
-            raise NotImplementedError('Not supported model.')
-        head_cfg['train_cfg'] = None
-        head_cfg['test_cfg'] = model_cfg.model['test_cfg']\
-            if 'pts' not in model_cfg.model['test_cfg'].keys()\
-            else model_cfg.model['test_cfg']['pts']
-        head = build_head(head_cfg)
-        if device == 'cpu':
-            logger = get_root_logger()
-            logger.warning(
-                'Don\'t suggest using CPU device. Post process can\'t support.'
-            )
-            if torch.cuda.is_available():
-                device = 'cuda'
-            else:
-                raise NotImplementedError(
-                    'Post process don\'t support device=cpu')
-        cls_scores = [outs['scores'].to(device)]
-        bbox_preds = [outs['bbox_preds'].to(device)]
-        dir_scores = [outs['dir_scores'].to(device)]
-        with RewriterContext(
-                cfg=deploy_cfg,
-                backend=deploy_cfg.backend_config.type,
-                opset=deploy_cfg.onnx_config.opset_version):
-            bbox_list = head.get_bboxes(
-                cls_scores, bbox_preds, dir_scores, img_metas, rescale=False)
-            bbox_results = [
-                bbox3d2result(bboxes, scores, labels)
-                for bboxes, scores, labels in bbox_list
-            ]
-        return bbox_results
+            raise NotImplementedError('mmdet3d model bbox_head not found')
+
+        return data_samples
 
 
-def build_voxel_detection_model(model_files: Sequence[str],
-                                model_cfg: Union[str, mmengine.Config],
-                                deploy_cfg: Union[str, mmengine.Config],
-                                device: str):
+def build_voxel_detection_model(
+        model_files: Sequence[str],
+        model_cfg: Union[str, Config],
+        deploy_cfg: Union[str, Config],
+        device: str,
+        data_preprocessor: Optional[Union[Config,
+                                          BaseDataPreprocessor]] = None,
+        **kwargs):
     """Build 3d voxel object detection model for different backends.
 
     Args:
         model_files (Sequence[str]): Input model file(s).
-        model_cfg (str | mmengine.Config): Input model config file or Config
+        model_cfg (str | Config): Input model config file or Config
             object.
-        deploy_cfg (str | mmengine.Config): Input deployment config file or
+        deploy_cfg (str | Config): Input deployment config file or
             Config object.
         device (str):  Device to input model
+        data_preprocessor (BaseDataPreprocessor | Config): The data
+            preprocessor of the model.
 
     Returns:
         VoxelDetectionModel: Detector for a configured backend.
@@ -256,11 +378,13 @@ def build_voxel_detection_model(model_files: Sequence[str],
     model_type = get_codebase_config(deploy_cfg).get('model_type', 'end2end')
 
     backend_detector = __BACKEND_MODEL.build(
-        model_type,
-        backend=backend,
-        backend_files=model_files,
-        device=device,
-        model_cfg=model_cfg,
-        deploy_cfg=deploy_cfg)
+        dict(
+            type=model_type,
+            backend=backend,
+            backend_files=model_files,
+            device=device,
+            deploy_cfg=deploy_cfg,
+            data_preprocessor=data_preprocessor,
+            **kwargs))
 
     return backend_detector

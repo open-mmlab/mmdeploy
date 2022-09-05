@@ -68,6 +68,7 @@ def visualize_model(model_cfg: Union[str, mmengine.Config],
             model = task_processor.build_backend_model(model)
 
     model_inputs, _ = task_processor.create_input(img, input_shape)
+
     with torch.no_grad():
         result = model.test_step(model_inputs)[0]
 
@@ -75,14 +76,20 @@ def visualize_model(model_cfg: Union[str, mmengine.Config],
         # check headless
         import tkinter
         tkinter.Tk()
+        
+        data_samples = None
+        if 'data_samples' in model_inputs:
+            data_samples = model_inputs['data_samples']
 
         task_processor.visualize(
             image=img,
             model=model,
             result=result,
+            data_samples=data_samples,
             output_file=output_file,
             window_name=backend.value,
             show_result=show_result)
+
     except Exception as e:
         from mmdeploy.utils import get_root_logger
         logger = get_root_logger()

@@ -60,15 +60,12 @@ def torch2onnx(img: Any,
     task_processor = build_task_processor(model_cfg, deploy_cfg, device)
 
     torch_model = task_processor.build_pytorch_model(model_checkpoint)
-    data, model_inputs = task_processor.create_input(
-        img,
-        input_shape,
-        data_preprocessor=getattr(torch_model, 'data_preprocessor', None))
+    data, model_inputs = task_processor.create_input(img, input_shape)
     if not isinstance(model_inputs, torch.Tensor) and len(model_inputs) == 1:
         model_inputs = model_inputs[0]
     data_samples = data['data_samples']
     patch_metas = {'data_samples': data_samples}
-    input_metas = {'data_samples': data_samples, 'mode': 'predict'}
+    input_metas = {'data_samples': data_samples, 'mode': task_processor.mode()}
 
     # export to onnx
     context_info = dict()

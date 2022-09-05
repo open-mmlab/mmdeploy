@@ -75,6 +75,7 @@ class BaseTask(metaclass=ABCMeta):
 
         from mmengine.registry import MODELS
         data_preprocessor = MODELS.build(preprocess_cfg)
+        data_preprocessor.to(self.device)
 
         return data_preprocessor
 
@@ -301,6 +302,15 @@ class BaseTask(metaclass=ABCMeta):
             draw_gt=draw_gt,
             show=show_result,
             out_file=output_file)
+
+    @abstractmethod
+    def mode(self) -> str:
+        """Get pytorch inference mode, it depends on codebase implementation.
+
+        Returns:
+            str: codebase inference mode
+        """
+        return 'predict'
 
     @staticmethod
     @abstractmethod
