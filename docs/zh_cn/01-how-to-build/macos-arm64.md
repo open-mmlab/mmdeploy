@@ -34,10 +34,11 @@
 
 #### 安装 MMDeploy Converter 依赖
 
-参考[get_started](../get_started.md)文档，安装conda、PyTorch 和 mmcv。
+参考[get_started](../get_started.md)文档，安装conda。
 
 ```bash
-conda install pytorch==1.9.0 torchvision==0.10.0 torchaudio==0.9.0 -c pytorch
+# install pytoch & mmcv-full
+conda install pytorch==1.9.0 torchvision==0.10.0 -c pytorch
 pip install mmcv-full==1.6.0 -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.9.0/index.html
 ```
 
@@ -65,7 +66,9 @@ brew install opencv
 
 #### 安装推理引擎
 
-MMDeploy 的 Model Converter 和 SDK 共享推理引擎。您可以参考下文，选择自己感兴趣的推理引擎安装。这里重点介绍 Core ML。ONNX Runtime，ncnn 以及 TorchScript 的安装类似 linux 平台，可参考文档 [linux-x86_64](linux-x86_64.md) 进行安装。Core ML 模型的转化过程中使用 TorchScript 模型作为IR，为了支持自定义算子的情况，需要安装 libtorch，这里作简单说明。
+MMDeploy 的 Model Converter 和 SDK 共享推理引擎。您可以参考下文，选择自己感兴趣的推理引擎安装。这里重点介绍 Core ML。ONNX Runtime，ncnn 以及 TorchScript 的安装类似 linux 平台，可参考文档 [linux-x86_64](linux-x86_64.md) 进行安装。
+
+Core ML 模型的转化过程中使用 TorchScript 模型作为IR，为了支持含有自定义算子的模型，如 mmdet 中的检测模型，需要安装 libtorch，这里作简单说明。
 
 <table  class="docutils">
 <thead>
@@ -90,16 +93,16 @@ pip install coremltools==6.0b2
   <td>libtorch</td>
   <td>
   1. libtorch暂不提供arm版本的library，故需要自行编译。编译时注意libtorch要和pytorch的版本保持一致，这样编译出的自定义算子才可以加载成功。<br>
-  2. 以libtorch 1.8.0为例，可通过如下命令安装:
+  2. 以libtorch 1.9.0为例，可通过如下命令安装:
 <pre><code>
-git clone -b v1.8.0 --recursive https://github.com/pytorch/pytorch.git
+git clone -b v1.9.0 --recursive https://github.com/pytorch/pytorch.git
 cd pytorch
 mkdir build && cd build
 cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
     -DPYTHON_EXECUTABLE=`which python` \
     -DCMAKE_INSTALL_PREFIX=install \
-    -DDISABLE_SVE=ON # low version like 1.8.0 of pytorch need DISABLE_SVE option
+    -DDISABLE_SVE=ON # low version like 1.9.0 of pytorch need DISABLE_SVE option
 make -j4 && make install
 export Torch_DIR=$(pwd)/install/share/cmake/Torch
 </code></pre>
@@ -121,7 +124,7 @@ export MMDEPLOY_DIR=$(pwd)
 
 - **Core ML**
 
-  Core ML使用torchscript作为IR，故需要编译torchscript自定义算子。
+  Core ML使用 torchscript 作为IR，某些 codebase 如 mmdet 需要编译 torchscript 自定义算子。
 
 - **torchscript** 自定义算子
 

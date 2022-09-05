@@ -31,10 +31,11 @@
 
 ### Install Dependencies for Model Converter
 
-Please refer to [get_started](../get_started.md) to install conda, PyTorch, mmcv.
+Please refer to [get_started](../get_started.md) to install conda.
 
 ```bash
-conda install pytorch==1.9.0 torchvision==0.10.0 torchaudio==0.9.0 -c pytorch
+# install pytorch & mmcv-full
+conda install pytorch==1.9.0 torchvision==0.10.0 -c pytorch
 pip install mmcv-full==1.6.0 -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.9.0/index.html
 ```
 
@@ -68,7 +69,7 @@ You can select you interested inference engines and do the installation by follo
 
 This document focus on Core ML. The installation of ONNX Runtime, ncnn and TorchScript is similar to the linux platform, please refer to the document [linux-x86_64](linux-x86_64.md) for installation.
 
-The TorchScript model is used as the IR in the conversion process of the Core ML model. In order to support the custom operator, libtorch needs to be installed.
+The TorchScript model is used as the IR in the conversion process of the Core ML model. In order to support the custom operator in some models like detection models in mmdet, libtorch needs to be installed.
 
 <table  class="docutils">
 <thead>
@@ -93,16 +94,16 @@ pip install coremltools==6.0b2
   <td>libtorch</td>
   <td>
   1. Libtorch doesn't provide prebuilt arm library for macOS, so you need to compile it yourself. Please note that the version of libtorch must be consistent with the version of pytorch. <br>
-  2. Take LibTorch 1.8.0 as an example. You can install it like this:
+  2. Take LibTorch 1.9.0 as an example. You can install it like this:
 <pre><code>
-git clone -b v1.8.0 --recursive https://github.com/pytorch/pytorch.git
+git clone -b v1.9.0 --recursive https://github.com/pytorch/pytorch.git
 cd pytorch
 mkdir build && cd build
 cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
     -DPYTHON_EXECUTABLE=`which python` \
     -DCMAKE_INSTALL_PREFIX=install \
-    -DDISABLE_SVE=ON # low version like 1.8.0 of pytorch need DISABLE_SVE option
+    -DDISABLE_SVE=ON # low version like 1.9.0 of pytorch need DISABLE_SVE option
 make -j4 && make install
 export Torch_DIR=$(pwd)/install/share/cmake/Torch
 </code></pre>
@@ -122,7 +123,7 @@ export MMDEPLOY_DIR=$(pwd)
 
 - **Core ML**
 
-  Core ML uses torchscript as IR, so you need to compile torchscript custom operators
+  Core ML uses torchscript as IR, to convert models in some codebases like mmdet, you need to compile torchscript custom operators
 
 - **torchscript** custom operators
 
