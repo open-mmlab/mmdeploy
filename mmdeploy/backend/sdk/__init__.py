@@ -2,10 +2,8 @@
 import importlib
 import os
 import sys
-from unicodedata import name
 
 from mmdeploy.utils import get_file_path
-from tools.regression_test import main
 
 _is_available = False
 
@@ -37,5 +35,3 @@ if is_available():
         __all__ = ['SDKWrapper']
     except Exception:
         pass
-
-from .wrapper import SDKWrapper
