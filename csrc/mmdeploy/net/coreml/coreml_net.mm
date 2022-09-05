@@ -31,7 +31,7 @@
 }
 
 - (id<MLFeatureProvider>)featuresAtIndex:(NSInteger)index {
-  MLDictionaryFeatureProvider *feature;
+  MLDictionaryFeatureProvider *feature = nil;
   NSMutableDictionary<NSString *, id> *input_dict =
       [[NSMutableDictionary<NSString *, id> alloc] init];
 
@@ -61,6 +61,7 @@
     if (error != nil) {
       MMDEPLOY_ERROR("init MLMultiArray failed with key: {}, error message: {}",
                      in.name(), [[error localizedDescription] UTF8String]);
+      return nil;
     }
 
     NSString *key = [NSString stringWithUTF8String:in.name()];
@@ -74,6 +75,7 @@
     MMDEPLOY_ERROR("init MLDictionaryFeatureProvider failed with index: {}, "
                    "error message: {}",
                    index, [[error localizedDescription] UTF8String]);
+    return nil;
   }
 
   return feature;
@@ -150,6 +152,7 @@ public:
     if (error != nil) {
       MMDEPLOY_ERROR("coreml forward failed, error message: {}",
                      [[error localizedDescription] UTF8String]);
+      return Status(eFail);
     }
 
     // extract output
@@ -162,12 +165,14 @@ public:
                                encoding:[NSString defaultCStringEncoding]];
         if (name == nil) {
           MMDEPLOY_ERROR("output name must not be nil");
+          return Status(eFail);
         }
         MLFeatureValue *output_value =
             [[output_feature featuresAtIndex:bid] featureValueForName:name];
         if (output_value == nil) {
           MMDEPLOY_ERROR("model output doesn't have name tensort: {}",
                          out.name());
+          return Status(eFail);
         }
 
         MLMultiArray *mlArray = [output_value multiArrayValue];
