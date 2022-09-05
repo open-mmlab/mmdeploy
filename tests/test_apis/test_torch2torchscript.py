@@ -3,8 +3,8 @@ import importlib
 import os.path as osp
 import tempfile
 
-from mmengine import Config
 import pytest
+from mmengine import Config
 
 from mmdeploy.apis import torch2torchscript
 from mmdeploy.utils import IR, Backend
