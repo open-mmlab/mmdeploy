@@ -26,6 +26,10 @@ if ("snpe" IN_LIST MMDEPLOY_TARGET_BACKENDS)
     add_subdirectory(snpe)
 endif ()
 
+if ("acl" IN_LIST MMDEPLOY_TARGET_BACKENDS)
+    add_subdirectory(acl)
+endif ()
+
 if ("torchscript" IN_LIST MMDEPLOY_TARGET_BACKENDS)
     add_subdirectory(torchscript)
 endif ()

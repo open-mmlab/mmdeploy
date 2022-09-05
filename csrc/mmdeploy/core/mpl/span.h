@@ -94,17 +94,23 @@ class Span {
 
   constexpr Span& operator=(const Span& other) noexcept = default;
 
-  friend bool operator==(const Span& a, const Span& b) {
-    if (a.size() != b.size()) return false;
+  template <typename U>
+  friend bool operator!=(const Span& a, const Span<U>& b) {
+    if (a.size() != b.size()) {
+      return true;
+    }
     for (size_type i = 0; i < a.size(); ++i) {
       if (a[i] != b[i]) {
-        return false;
+        return true;
       }
     }
-    return true;
+    return false;
   }
 
-  friend bool operator!=(const Span& a, const Span& b) { return !(a == b); }
+  template <typename U>
+  friend bool operator==(const Span& a, const Span<U>& b) {
+    return !(a != b);
+  }
 
  private:
   T* data_;

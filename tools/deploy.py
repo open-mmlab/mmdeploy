@@ -204,7 +204,7 @@ def main():
 
         from mmdeploy.apis.tensorrt import onnx2tensorrt
         PIPELINE_MANAGER.enable_multiprocess(True, [onnx2tensorrt])
-        PIPELINE_MANAGER.set_log_level(logging.INFO, [onnx2tensorrt])
+        PIPELINE_MANAGER.set_log_level(log_level, [onnx2tensorrt])
 
         backend_files = []
         for model_id, model_param, onnx_path in zip(
@@ -331,7 +331,7 @@ def main():
         from mmdeploy.apis.pplnn import from_onnx
 
         pplnn_pipeline_funcs = [from_onnx]
-        PIPELINE_MANAGER.set_log_level(logging.INFO, pplnn_pipeline_funcs)
+        PIPELINE_MANAGER.set_log_level(log_level, pplnn_pipeline_funcs)
 
         pplnn_files = []
         for onnx_path in ir_files:
@@ -351,13 +351,32 @@ def main():
             pplnn_files += [onnx_path, algo_file]
         backend_files = pplnn_files
 
+    elif backend == Backend.ASCEND:
+        from mmdeploy.apis.ascend import from_onnx
+
+        ascend_pipeline_funcs = [from_onnx]
+        PIPELINE_MANAGER.set_log_level(log_level, ascend_pipeline_funcs)
+
+        model_inputs = get_model_inputs(deploy_cfg)
+
+        om_files = []
+        for model_id, onnx_path in enumerate(ir_files):
+            om_path = osp.splitext(onnx_path)[0] + '.om'
+            from_onnx(onnx_path, args.work_dir, model_inputs[model_id])
+            om_files.append(om_path)
+        backend_files = om_files
+
+        if args.dump_info:
+            from mmdeploy.backend.ascend import update_sdk_pipeline
+            update_sdk_pipeline(args.work_dir)
+
     if args.test_img is None:
         args.test_img = args.img
 
     headless = False
     # check headless or not for all platforms.
-    import tkinter
     try:
+        import tkinter
         tkinter.Tk()
     except Exception:
         headless = True

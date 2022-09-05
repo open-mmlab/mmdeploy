@@ -638,6 +638,73 @@ def test_single_roi_extractor(backend_type: Backend):
             model_output, backend_output, rtol=1e-03, atol=1e-05)
 
 
+def test_single_roi_extractor__ascend():
+    check_backend(Backend.ASCEND)
+
+    # create wrap function
+    from mmdeploy.utils.test import WrapFunction
+    single_roi_extractor = get_single_roi_extractor()
+    out_channels = single_roi_extractor.out_channels
+
+    def single_roi_extractor_func(feat0, feat1, feat2, feat3, rois):
+        return single_roi_extractor([feat0, feat1, feat2, feat3], rois)
+
+    single_roi_extractor_wrapper = WrapFunction(single_roi_extractor_func)
+
+    # generate data
+    seed_everything(1234)
+    feats = [
+        torch.rand((1, out_channels, 200, 336)),
+        torch.rand((1, out_channels, 100, 168)),
+        torch.rand((1, out_channels, 50, 84)),
+        torch.rand((1, out_channels, 25, 42)),
+    ]
+    seed_everything(5678)
+    rois = torch.tensor([[0.0000, 587.8285, 52.1405, 886.2484, 341.5644]])
+
+    # create config
+    input_names = ['feat0', 'feat1', 'feat2', 'feat3', 'rois']
+    output_names = ['roi_feat']
+    model_inputs = dict(zip(input_names, feats + [rois]))
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(
+                type=Backend.ASCEND.value,
+                model_inputs=[
+                    dict(
+                        input_shapes=dict(
+                            feat0=feats[0].shape,
+                            feat1=feats[1].shape,
+                            feat2=feats[2].shape,
+                            feat3=feats[3].shape,
+                            rois=rois.shape))
+                ]),
+            onnx_config=dict(
+                input_names=input_names,
+                output_names=output_names,
+                input_shape=None),
+            codebase_config=dict(
+                type='mmdet',
+                task='ObjectDetection',
+            )))
+
+    # get torch output
+    model_outputs = get_model_outputs(single_roi_extractor_wrapper, 'forward',
+                                      model_inputs)
+
+    # get backend output
+    backend_outputs, _ = get_rewrite_outputs(
+        wrapped_model=single_roi_extractor_wrapper,
+        model_inputs=model_inputs,
+        deploy_cfg=deploy_cfg)
+    if isinstance(backend_outputs, dict):
+        backend_outputs = backend_outputs.values()
+    for model_output, backend_output in zip(model_outputs[0], backend_outputs):
+        model_output = model_output.squeeze().cpu().numpy()
+        backend_output = backend_output.squeeze()
+        assert model_output.shape == backend_output.shape
+
+
 def get_cascade_roi_head(is_instance_seg=False):
     """CascadeRoIHead Config."""
     num_stages = 3

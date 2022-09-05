@@ -35,6 +35,7 @@ PadImpl::PadImpl(const Value& args) : TransformImpl(args) {
   }
   arg_.pad_to_square = args.value("pad_to_square", false);
   arg_.padding_mode = args.value("padding_mode", std::string("constant"));
+  arg_.orientation_agnostic = args.value("orientation_agnostic", false);
 }
 
 Result<Value> PadImpl::Process(const Value& input) {
@@ -58,9 +59,19 @@ Result<Value> PadImpl::Process(const Value& input) {
       output["pad_fixed_size"].push_back(max_size);
       output["pad_fixed_size"].push_back(max_size);
     } else if (arg_.size[0] != 0 && arg_.size[1] != 0) {
-      padding = {0, 0, arg_.size[1] - width, arg_.size[0] - height};
-      output["pad_fixed_size"].push_back(arg_.size[0]);
-      output["pad_fixed_size"].push_back(arg_.size[1]);
+      if (arg_.orientation_agnostic) {
+        auto size_min = min(arg_.size[0], arg_.size[1]);
+        auto size_max = max(arg_.size[0], arg_.size[1]);
+        auto pad_h = width < height ? size_max : size_min;
+        auto pad_w = width < height ? size_min : size_max;
+        padding = {0, 0, pad_w - width, pad_h - height};
+        output["pad_fixed_size"].push_back(pad_h);
+        output["pad_fixed_size"].push_back(pad_w);
+      } else {
+        padding = {0, 0, arg_.size[1] - width, arg_.size[0] - height};
+        output["pad_fixed_size"].push_back(arg_.size[0]);
+        output["pad_fixed_size"].push_back(arg_.size[1]);
+      }
     } else if (arg_.size_divisor != 1) {
       auto pad_h = (height + arg_.size_divisor - 1) / arg_.size_divisor * arg_.size_divisor;
       auto pad_w = (width + arg_.size_divisor - 1) / arg_.size_divisor * arg_.size_divisor;

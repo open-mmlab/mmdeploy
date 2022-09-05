@@ -106,6 +106,9 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
                 model=backend_files[0],
                 input_names=input_names,
                 output_names=output_names)
+        elif backend == Backend.ASCEND:
+            from mmdeploy.backend.ascend import AscendWrapper
+            return AscendWrapper(model=backend_files[0], device=device)
         elif backend == Backend.SNPE:
             from mmdeploy.backend.snpe import SNPEWrapper
             uri = None
@@ -115,6 +118,10 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
                 dlc_file=backend_files[0], uri=uri, output_names=output_names)
         else:
             raise NotImplementedError(f'Unknown backend type: {backend.value}')
+
+    def destroy(self):
+        if hasattr(self, 'wrapper') and hasattr(self.wrapper, 'destroy'):
+            self.wrapper.destroy()
 
     @abstractmethod
     def forward(self, *args, **kwargs):

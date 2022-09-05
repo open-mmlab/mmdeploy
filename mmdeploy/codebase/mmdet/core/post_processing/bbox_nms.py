@@ -324,3 +324,90 @@ def multiclass_nms__torchscript(ctx,
         scores, boxes, keeps, batch_size, keep_top_k=keep_top_k)
 
     return dets, labels
+
+
+class AscendBatchNMSOp(torch.autograd.Function):
+
+    @staticmethod
+    def forward(ctx, bboxes: torch.Tensor, scores: torch.Tensor,
+                score_threshold: float, iou_threshold: float,
+                max_size_per_class: int, max_total_size: int):
+        """Dummy nms forward
+        Args:
+        boxes (torch.Tensor): boxes in shape (batch, N, C, 4).
+        scores (torch.Tensor): scores in shape (batch, N, C).
+        score_threshold (float): the score threshold.
+        iou_threshold (float): the iou threshold.
+        max_size_per_class (int): max size per class.
+        max_total_size (int): max total size.
+
+        Returns:
+            (torch.Tensor): boxes,(1, N, 4)
+            (torch.Tensor): scores,(1, N)
+            (torch.Tensor): classes,(1, N)
+            (torch.Tensor): num_dets,(1,)
+        """
+
+        # Python implementation for onnx export
+        nmsed_boxes = bboxes[:, :max_total_size, 0, :]
+        nmsed_scores = scores[:, :max_total_size, 0]
+        nmsed_classes = torch.arange(max_total_size, dtype=torch.long)
+        nmsed_num = torch.Tensor([max_total_size])
+
+        return nmsed_boxes, nmsed_scores, nmsed_classes, nmsed_num
+
+    @staticmethod
+    def symbolic(g, bboxes, scores, score_thr, iou_thr, max_size_p_class,
+                 max_t_size):
+        nmsed_boxes, nmsed_scores, nmsed_classes, nmsed_num = g.op(
+            'mmdeploy::BatchMultiClassNMS',
+            bboxes,
+            scores,
+            score_threshold_f=score_thr,
+            iou_threshold_f=iou_thr,
+            max_size_per_class_i=max_size_p_class,
+            max_total_size_i=max_t_size,
+            outputs=4)
+        return nmsed_boxes, nmsed_scores, nmsed_classes, nmsed_num
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    func_name='mmdeploy.codebase.mmdet.core.post_processing._multiclass_nms',
+    backend='ascend')
+def multiclass_nms__ascend(ctx,
+                           boxes: Tensor,
+                           scores: Tensor,
+                           max_output_boxes_per_class: int = 1000,
+                           iou_threshold: float = 0.5,
+                           score_threshold: float = 0.05,
+                           pre_top_k: int = -1,
+                           keep_top_k: int = -1):
+    """Wrapper for `multiclass_nms` with Ascend.
+
+    Args:
+        ctx (ContextCaller): The context with additional information.
+        boxes (Tensor): The bounding boxes of shape [N, num_boxes, 4].
+        scores (Tensor): The detection scores of shape
+            [N, num_boxes, num_classes].
+        max_output_boxes_per_class (int): Maximum number of output
+            boxes per class of nms. Defaults to 1000.
+        iou_threshold (float): IOU threshold of nms. Defaults to 0.5.
+        score_threshold (float): score threshold of nms.
+            Defaults to 0.05.
+        pre_top_k (int): Number of top K boxes to keep before nms.
+            Defaults to -1.
+        keep_top_k (int): Number of top K boxes to keep after nms.
+            Defaults to -1.
+
+    Returns:
+        tuple[Tensor, Tensor]: (dets, labels), `dets` of shape [N, num_det, 5]
+            and `labels` of shape [N, num_det].
+    """
+    boxes = boxes if boxes.dim() == 4 else boxes.unsqueeze(2)
+    keep_top_k = max_output_boxes_per_class if keep_top_k < 0 else min(
+        max_output_boxes_per_class, keep_top_k)
+    nmsed_boxes, nmsed_scores, nmsed_classes, _ = AscendBatchNMSOp.apply(
+        boxes, scores, score_threshold, iou_threshold, keep_top_k, keep_top_k)
+
+    dets = torch.cat([nmsed_boxes, nmsed_scores.unsqueeze(2)], dim=-1)
+    return dets, nmsed_classes

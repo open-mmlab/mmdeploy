@@ -100,6 +100,94 @@ def single_roi_extractor__forward__tensorrt(ctx,
                                     finest_scale, featmap_strides, aligned)
 
 
+class AscendRoiExtractor(Function):
+    """Create AscendRoiExtractor op.
+
+    This class is used to create a AscendRoiExtractor in ONNX for the Ascend
+    backend.
+    """
+
+    @staticmethod
+    def symbolic(g, *args):
+        """Symbolic function for creating onnx op."""
+        aligned = args[-1]
+        featmap_strides = [1 / stride for stride in args[-2]]
+        finest_scale = args[-3]
+        roi_scale_factor = args[-4]
+        sampling_ratio = args[-5]
+        pool_mode = args[-6]
+        output_size = args[-7]
+        inputs = args[:len(featmap_strides)]
+        rois = args[len(featmap_strides)]
+
+        return g.op(
+            'mmdeploy::RoiExtractor',
+            *inputs,
+            rois,
+            pooled_height_i=output_size[1],
+            pooled_width_i=output_size[0],
+            pool_mode_s=pool_mode,
+            sample_num_i=sampling_ratio,
+            roi_scale_factor_f=roi_scale_factor,
+            finest_scale_i=finest_scale,
+            spatial_scale_f=featmap_strides,
+            aligned_i=aligned,
+            outputs=1)
+
+    @staticmethod
+    def forward(ctx, *args):
+        """Run forward."""
+        # aligned = args[-1]
+        featmap_strides = args[-2]
+        # finest_scale = args[-3]
+        # roi_scale_factor = args[-4]
+        # sampling_ratio = args[-5]
+        output_size = args[-7]
+        inputs = args[:len(featmap_strides)]
+        rois = args[len(featmap_strides)]
+
+        num_proposals = rois.shape[0]
+        channel = inputs[0].shape[1]
+
+        return rois.new_zeros(
+            (num_proposals, channel, output_size[1], output_size[0]))
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    'mmdet.models.roi_heads.roi_extractors.'
+    'single_level_roi_extractor.SingleRoIExtractor.forward',
+    backend='ascend')
+def single_roi_extractor__forward__ascend(ctx,
+                                          self,
+                                          feats,
+                                          rois,
+                                          roi_scale_factor=None):
+    """Rewrite `forward` of `SingleRoIExtractor` for Ascend backend.
+
+    This function uses RoiExtractor op for Ascend deployment.
+    """
+    featmap_strides = self.featmap_strides
+    finest_scale = self.finest_scale
+
+    for roi_layer in self.roi_layers:
+        assert isinstance(
+            roi_layer,
+            RoIAlign), f'{type(roi_layer)} is not supported in Ascend.'
+
+    roi_layer = self.roi_layers[0]
+    out_size = roi_layer.output_size
+    sampling_ratio = roi_layer.sampling_ratio
+    pool_mode = roi_layer.pool_mode
+    aligned = roi_layer.aligned
+    if roi_scale_factor is None:
+        roi_scale_factor = 1.0
+
+    featmap_strides = [float(s) for s in featmap_strides]
+    return AscendRoiExtractor.apply(*feats, rois, out_size, pool_mode,
+                                    sampling_ratio, roi_scale_factor,
+                                    finest_scale, featmap_strides, aligned)
+
+
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.roi_heads.SingleRoIExtractor.forward')
 @mark('roi_extractor', inputs=['feats', 'rois'], outputs=['bbox_feats'])

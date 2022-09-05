@@ -13,6 +13,7 @@ from .masked_fill import masked_fill__onnxruntime
 from .normalize import normalize__ncnn
 from .repeat import tensor__repeat__tensorrt
 from .size import tensor__size__ncnn
+from .tensor_getitem import tensor__getitem__ascend
 from .tensor_setitem import tensor__setitem__default
 from .topk import topk__dynamic, topk__tensorrt
 from .triu import triu__default
@@ -23,6 +24,7 @@ __all__ = [
     'tensor__size__ncnn', 'topk__dynamic', 'topk__tensorrt', 'chunk__ncnn',
     'triu__default', 'atan2__default', 'normalize__ncnn', 'expand__ncnn',
     'chunk__torchscript', 'masked_fill__onnxruntime',
-    'tensor__setitem__default', 'adaptive_avg_pool2d__default',
-    'adaptive_avg_pool2d__ncnn', 'multi_head_attention_forward'
+    'tensor__setitem__default', 'tensor__getitem__ascend',
+    'adaptive_avg_pool2d__default', 'adaptive_avg_pool2d__ncnn',
+    'multi_head_attention_forward'
 ]
