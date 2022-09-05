@@ -281,7 +281,8 @@ class End2EndModel(BaseBackendModel):
                     win_name: str = '',
                     show: bool = True,
                     score_thr: float = 0.3,
-                    out_file=None):
+                    out_file=None,
+                    **kwargs):
         return BaseDetector.show_result(
             self,
             img=img,
@@ -289,7 +290,8 @@ class End2EndModel(BaseBackendModel):
             score_thr=score_thr,
             show=show,
             win_name=win_name,
-            out_file=out_file)
+            out_file=out_file,
+            **kwargs)
 
 
 @__BACKEND_MODEL.register_module('single_stage')
