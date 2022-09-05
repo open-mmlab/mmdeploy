@@ -2,7 +2,7 @@
 from typing import Optional, Union
 
 import mmengine
-from mmcv.utils import Registry
+from mmengine.registry import Registry
 from torch.utils.data import DataLoader, Dataset
 
 from mmdeploy.codebase.base import CODEBASE, BaseTask, MMCodebase

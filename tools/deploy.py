@@ -106,8 +106,8 @@ def main():
     pipeline_funcs = [
         torch2onnx, torch2torchscript, extract_model, create_calib_input_data
     ]
-    PIPELINE_MANAGER.enable_multiprocess(True, pipeline_funcs)
-    PIPELINE_MANAGER.set_log_level(log_level, pipeline_funcs)
+    # PIPELINE_MANAGER.enable_multiprocess(True, pipeline_funcs)
+    # PIPELINE_MANAGER.set_log_level(log_level, pipeline_funcs)
 
     deploy_cfg_path = args.deploy_cfg
     model_cfg_path = args.model_cfg
@@ -130,7 +130,7 @@ def main():
     ir_config = get_ir_config(deploy_cfg)
     ir_save_file = ir_config['save_file']
     ir_type = IR.get(ir_config['type'])
-    torch2ir(ir_type)(
+    torch2onnx(
         args.img,
         args.work_dir,
         ir_save_file,
@@ -138,6 +138,14 @@ def main():
         model_cfg_path,
         checkpoint_path,
         device=args.device)
+    # torch2ir(ir_type)(
+    #     args.img,
+    #     args.work_dir,
+    #     ir_save_file,
+    #     deploy_cfg_path,
+    #     model_cfg_path,
+    #     checkpoint_path,
+    #     device=args.device)
 
     # convert backend
     ir_files = [osp.join(args.work_dir, ir_save_file)]

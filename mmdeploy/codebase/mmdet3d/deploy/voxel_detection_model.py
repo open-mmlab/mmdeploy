@@ -1,10 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Dict, List, Sequence, Union
+from typing import Any, Dict, List, Sequence, Union, Optional, Tuple
 
 import mmcv
 import mmengine
 import torch
-from mmcv.utils import Registry
+from mmengine.registry import Registry
+from mmengine import Config
+from mmengine.model.base_model.data_preprocessor import BaseDataPreprocessor
+
 from torch.nn import functional as F
 
 from mmdeploy.codebase.base import BaseBackendModel
@@ -18,7 +21,7 @@ def __build_backend_voxel_model(cls_name: str, registry: Registry, *args,
     return registry.module_dict[cls_name](*args, **kwargs)
 
 
-__BACKEND_MODEL = mmcv.utils.Registry(
+__BACKEND_MODEL = Registry(
     'backend_voxel_detectors', build_func=__build_backend_voxel_model)
 
 
@@ -31,8 +34,8 @@ class VoxelDetectionModel(BaseBackendModel):
         backend_files (Sequence[str]): Paths to all required backend files
                 (e.g. '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
         device (str): A string specifying device type.
-        model_cfg (str | mmengine.Config): The model config.
-        deploy_cfg (str|mmengine.Config): Deployment config file or loaded
+        model_cfg (str | Config): The model config.
+        deploy_cfg (str|Config): Deployment config file or loaded
             Config object.
     """
 
@@ -40,8 +43,8 @@ class VoxelDetectionModel(BaseBackendModel):
                  backend: Backend,
                  backend_files: Sequence[str],
                  device: str,
-                 model_cfg: mmengine.Config,
-                 deploy_cfg: Union[str, mmengine.Config] = None):
+                 model_cfg: Config,
+                 deploy_cfg: Union[str, Config] = None):
         super().__init__(deploy_cfg=deploy_cfg)
         self.deploy_cfg = deploy_cfg
         self.model_cfg = model_cfg
@@ -132,11 +135,11 @@ class VoxelDetectionModel(BaseBackendModel):
             pred_labels=pred_labels)
 
     @staticmethod
-    def voxelize(model_cfg: Union[str, mmengine.Config], points: torch.Tensor):
+    def voxelize(model_cfg: Union[str, Config], points: torch.Tensor):
         """convert kitti points(N, >=3) to voxels.
 
         Args:
-            model_cfg (str | mmengine.Config): The model config.
+            model_cfg (str | Config): The model config.
             points (torch.Tensor): [N, ndim] float tensor. points[:, :3]
                 contain xyz points and points[:, 3:] contain other information
                 like reflectivity.
@@ -173,8 +176,8 @@ class VoxelDetectionModel(BaseBackendModel):
         return voxels, num_points, coors_batch
 
     @staticmethod
-    def post_process(model_cfg: Union[str, mmengine.Config],
-                     deploy_cfg: Union[str, mmengine.Config],
+    def post_process(model_cfg: Union[str, Config],
+                     deploy_cfg: Union[str, Config],
                      outs: Dict,
                      img_metas: Dict,
                      device: str,
@@ -182,8 +185,8 @@ class VoxelDetectionModel(BaseBackendModel):
         """model post process.
 
         Args:
-            model_cfg (str | mmengine.Config): The model config.
-            deploy_cfg (str|mmengine.Config): Deployment config file or loaded
+            model_cfg (str | Config): The model config.
+            deploy_cfg (str|Config): Deployment config file or loaded
             Config object.
             outs (Dict): Output of model's head.
             img_metas(Dict): Meta info for pcd.
@@ -230,20 +233,25 @@ class VoxelDetectionModel(BaseBackendModel):
             ]
         return bbox_results
 
-
 def build_voxel_detection_model(model_files: Sequence[str],
-                                model_cfg: Union[str, mmengine.Config],
-                                deploy_cfg: Union[str, mmengine.Config],
-                                device: str):
+                                model_cfg: Union[str, Config],
+                                deploy_cfg: Union[str, Config],
+                                device: str,
+                                data_preprocessor: Optional[Union[Config,
+                                                                BaseDataPreprocessor]] = None,
+                                **kwargs
+                                ):
     """Build 3d voxel object detection model for different backends.
 
     Args:
         model_files (Sequence[str]): Input model file(s).
-        model_cfg (str | mmengine.Config): Input model config file or Config
+        model_cfg (str | Config): Input model config file or Config
             object.
-        deploy_cfg (str | mmengine.Config): Input deployment config file or
+        deploy_cfg (str | Config): Input deployment config file or
             Config object.
         device (str):  Device to input model
+        data_preprocessor (BaseDataPreprocessor | Config): The data
+            preprocessor of the model.
 
     Returns:
         VoxelDetectionModel: Detector for a configured backend.
@@ -254,11 +262,13 @@ def build_voxel_detection_model(model_files: Sequence[str],
     model_type = get_codebase_config(deploy_cfg).get('model_type', 'end2end')
 
     backend_detector = __BACKEND_MODEL.build(
-        model_type,
-        backend=backend,
-        backend_files=model_files,
-        device=device,
-        model_cfg=model_cfg,
-        deploy_cfg=deploy_cfg)
+        dict(
+            type=model_type,
+            backend=backend,
+            backend_files=model_files,
+            device=device,
+            deploy_cfg=deploy_cfg,
+            data_preprocessor=data_preprocessor,
+            **kwargs))
 
     return backend_detector

@@ -1,14 +1,18 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from copy import deepcopy
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import mmcv
 import mmengine
 import numpy as np
 import torch
 import torch.nn as nn
-from mmcv.parallel import collate, scatter
-from mmdet3d.core.bbox import get_box_type
-from mmdet3d.datasets.pipelines import Compose
+# from mmcv.parallel import collate, scatter
+from mmdet3d.structures import get_box_type
+
+from mmengine.dataset import Compose, pseudo_collate
+from mmengine.model import BaseDataPreprocessor
+
 from torch.utils.data import DataLoader, Dataset
 
 from mmdeploy.codebase.base import BaseTask
@@ -36,10 +40,17 @@ class VoxelDetection(BaseTask):
             nn.Module: An initialized backend model.
         """
         from .voxel_detection_model import build_voxel_detection_model
+        
+        data_preprocessor = deepcopy(
+            self.model_cfg.model.get('data_preprocessor', {}))
+        # data_preprocessor.setdefault('type', 'mmdet3D.Det3DDataPreprocessor')
+        
         model = build_voxel_detection_model(
-            model_files, self.model_cfg, self.deploy_cfg, device=self.device)
+            model_files, self.model_cfg, self.deploy_cfg, device=self.device,
+            data_preprocessor=data_preprocessor)
+        model = model.to(self.device)
         return model
-
+    
     def build_pytorch_model(self,
                             model_checkpoint: Optional[str] = None,
                             cfg_options: Optional[Dict] = None,
@@ -59,24 +70,104 @@ class VoxelDetection(BaseTask):
         model = init_model(self.model_cfg, model_checkpoint, device)
         return model.eval()
 
-    def create_input(self, pcd: str, *args) -> Tuple[Dict, torch.Tensor]:
+    # def create_input(
+    #     self,
+    #     imgs: Union[str, np.ndarray],
+    #     input_shape: Optional[Sequence[int]] = None,
+    #     data_preprocessor: Optional[BaseDataPreprocessor] = None
+    # ) -> Tuple[Dict, torch.Tensor]:
+    #     """Create input for classifier.
+
+    #     Args:
+    #         imgs (Any): Input image(s), accepted data type are `str`,
+    #             `np.ndarray`, `torch.Tensor`.
+    #         input_shape (list[int]): A list of two integer in (width, height)
+    #             format specifying input shape. Default: None.
+
+    #     Returns:
+    #         tuple: (data, img), meta information for the input image and input.
+    #     """
+
+    #     model_cfg = self.model_cfg
+    #     assert 'test_pipeline' in model_cfg, \
+    #         f'test_pipeline not found in {model_cfg}.'
+    #     from mmengine.dataset import Compose
+    #     pipeline = deepcopy(model_cfg.test_pipeline)
+
+    #     if isinstance(imgs, str):
+    #         if pipeline[0]['type'] != 'LoadImageFromFile':
+    #             pipeline.insert(0, dict(type='LoadImageFromFile'))
+    #     else:
+    #         if pipeline[0]['type'] == 'LoadImageFromFile':
+    #             pipeline.pop(0)
+    #     pipeline = Compose(pipeline)
+
+    #     if isinstance(imgs, str):
+    #         data = {'img_path': imgs}
+    #     else:
+    #         data = {'img': imgs}
+    #     data = pipeline(data)
+    #     from mmengine.dataset import pseudo_collate
+    #     data = pseudo_collate([data])
+    #     if data_preprocessor is not None:
+    #         data = data_preprocessor(data, False)
+    #         return data, data['inputs']
+    #     else:
+    #         return data, BaseTask.get_tensor_from_input(data)
+
+    def create_input(
+        self,
+        pcd: str,
+        input_shape: Sequence[int] = None,
+        data_preprocessor: Optional[BaseDataPreprocessor] = None
+    ) -> Tuple[Dict, torch.Tensor]:
         """Create input for detector.
 
         Args:
             pcd (str): Input pcd file path.
+            input_shape (Sequence[int], optional): model input shape. Defaults to None.
+            data_preprocessor (Optional[BaseDataPreprocessor], optional): model input preprocess. Defaults to None.
 
         Returns:
             tuple: (data, input), meta information for the input pcd
                 and model input.
         """
-        data = VoxelDetection.read_pcd_file(pcd, self.model_cfg, self.device)
-        voxels, num_points, coors = VoxelDetectionModel.voxelize(
-            self.model_cfg, data['points'][0])
-        return data, (voxels, num_points, coors)
+        
+        import pdb
+        pdb.set_trace()
+        
+        cfg = self.model_cfg
+        test_pipeline = deepcopy(cfg.test_dataloader.dataset.pipeline)
+        test_pipeline = Compose(test_pipeline)
+        box_type_3d, box_mode_3d = \
+            get_box_type(cfg.test_dataloader.dataset.box_type_3d)
+
+        data = []
+        data_ = dict(
+                lidar_points=dict(lidar_path=pcd),
+                # for ScanNet demo we need axis_align_matrix
+                axis_align_matrix=np.eye(4),
+                box_type_3d=box_type_3d,
+                box_mode_3d=box_mode_3d)
+        data_ = test_pipeline(data_)
+        data.append(data_)
+        
+        collate_data = pseudo_collate(data)
+
+        if data_preprocessor is not None:
+            collate_data = data_preprocessor(collate_data, False)
+        return collate_data, collate_data['inputs']
+        
+        # return collate_data, collate_data['inputs']
+        
+        # data = VoxelDetection.read_pcd_file(pcd, self.model_cfg, self.device)
+        # voxels, num_points, coors = VoxelDetectionModel.voxelize(
+        #     self.model_cfg, data['points'][0])
+        # return data, (voxels, num_points, coors)
 
     def visualize(self,
                   model: torch.nn.Module,
-                  image: str,
+                  pcd_path: str,
                   result: list,
                   output_file: str,
                   window_name: str,
@@ -96,61 +187,82 @@ class VoxelDetection(BaseTask):
             score_thr (float): The score threshold to display the bbox.
                 Defaults to 0.3.
         """
-        from mmdet3d.apis import show_result_meshlab
-        data = VoxelDetection.read_pcd_file(image, self.model_cfg, self.device)
-        show_result_meshlab(
-            data,
-            result,
-            output_file,
-            score_thr,
+        from mmdet3d.registry import VISUALIZERS
+        cfg = self.model_cfg
+        visualizer = VISUALIZERS.build(cfg.visualizer)
+        visualizer.dataset_meta = model.dataset_meta
+        
+        # show the results
+        _, data_input = self.create_input(pcd=pcd_path)
+        
+        visualizer.add_datasample(
+            window_name,
+            data_input,
+            data_sample=result,
+            draw_gt=False,
             show=show_result,
-            snapshot=1 - show_result,
-            task='det')
+            wait_time=0,
+            out_file=output_file,
+            pred_score_thr=score_thr,
+            vis_task='det')
 
-    @staticmethod
-    def read_pcd_file(pcd: str, model_cfg: Union[str, mmengine.Config],
-                      device: str) -> Dict:
-        """Read data from pcd file and run test pipeline.
+        # from mmdet3d.apis import show_result_meshlab
+        # data = VoxelDetection.read_pcd_file(image, self.model_cfg, self.device)
+        # show_result_meshlab(
+        #     data,
+        #     result,
+        #     output_file,
+        #     score_thr,
+        #     show=show_result,
+        #     snapshot=1 - show_result,
+        #     task='det')
 
-        Args:
-            pcd (str): Pcd file path.
-            model_cfg (str | mmengine.Config): The model config.
-            device (str): A string specifying device type.
+    # @staticmethod
+    # def read_pcd_file(pcd: str, model_cfg: Union[str, mmengine.Config],
+    #                   device: str) -> Dict:
+    #     """Read data from pcd file and run test pipeline.
 
-        Returns:
-            dict: meta information for the input pcd.
-        """
-        if isinstance(pcd, (list, tuple)):
-            pcd = pcd[0]
-        model_cfg = load_config(model_cfg)[0]
-        test_pipeline = Compose(model_cfg.data.test.pipeline)
-        box_type_3d, box_mode_3d = get_box_type(
-            model_cfg.data.test.box_type_3d)
-        data = dict(
-            pts_filename=pcd,
-            box_type_3d=box_type_3d,
-            box_mode_3d=box_mode_3d,
-            # for ScanNet demo we need axis_align_matrix
-            ann_info=dict(axis_align_matrix=np.eye(4)),
-            sweeps=[],
-            # set timestamp = 0
-            timestamp=[0],
-            img_fields=[],
-            bbox3d_fields=[],
-            pts_mask_fields=[],
-            pts_seg_fields=[],
-            bbox_fields=[],
-            mask_fields=[],
-            seg_fields=[])
-        data = test_pipeline(data)
-        data = collate([data], samples_per_gpu=1)
-        data['img_metas'] = [
-            img_metas.data[0] for img_metas in data['img_metas']
-        ]
-        data['points'] = [point.data[0] for point in data['points']]
-        if device != 'cpu':
-            data = scatter(data, [device])[0]
-        return data
+    #     Args:
+    #         pcd (str): Pcd file path.
+    #         model_cfg (str | mmengine.Config): The model config.
+    #         device (str): A string specifying device type.
+
+    #     Returns:
+    #         dict: meta information for the input pcd.
+    #     """
+    #     if isinstance(pcd, (list, tuple)):
+    #         pcd = pcd[0]
+    #     model_cfg = load_config(model_cfg)[0]
+    #     test_pipeline = Compose(model_cfg.data.test.pipeline)
+    #     box_type_3d, box_mode_3d = get_box_type(
+    #         model_cfg.data.test.box_type_3d)
+    #     data = dict(
+    #         pts_filename=pcd,
+    #         box_type_3d=box_type_3d,
+    #         box_mode_3d=box_mode_3d,
+    #         # for ScanNet demo we need axis_align_matrix
+    #         ann_info=dict(axis_align_matrix=np.eye(4)),
+    #         sweeps=[],
+    #         # set timestamp = 0
+    #         timestamp=[0],
+    #         img_fields=[],
+    #         bbox3d_fields=[],
+    #         pts_mask_fields=[],
+    #         pts_seg_fields=[],
+    #         bbox_fields=[],
+    #         mask_fields=[],
+    #         seg_fields=[])
+    #     data = test_pipeline(data)
+    #     import pdb
+    #     pdb.set_trace()
+    #     # data = collate([data], samples_per_gpu=1)
+    #     data['img_metas'] = [
+    #         img_metas.data[0] for img_metas in data['img_metas']
+    #     ]
+    #     data['points'] = [point.data[0] for point in data['points']]
+    #     # if device != 'cpu':
+    #     #     data = scatter(data, [device])[0]
+    #     return data
 
     @staticmethod
     def run_inference(model: nn.Module,
