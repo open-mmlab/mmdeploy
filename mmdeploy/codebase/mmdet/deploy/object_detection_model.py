@@ -281,12 +281,18 @@ class End2EndModel(BaseBackendModel):
                     win_name: str = '',
                     show: bool = True,
                     score_thr: float = 0.3,
+                    bbox_color=(72, 101, 241),
+                    text_color=(72, 101, 241),
+                    mask_color=None,
                     out_file=None):
         return BaseDetector.show_result(
             self,
             img=img,
             result=result,
             score_thr=score_thr,
+            bbox_color=bbox_color,
+            text_color=text_color,
+            mask_color=mask_color,
             show=show,
             win_name=win_name,
             out_file=out_file)
