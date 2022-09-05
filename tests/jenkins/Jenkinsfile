@@ -18,28 +18,80 @@ pipeline {
             ], 
             description: 'Pick env'
         )
+        booleanParam(
+            name: 'EXEC_BUILD',
+            default: true,
+        )
+        booleanParam(
+            name: 'EXEC_PREBUILD',
+            default: true,
+        )
+        booleanParam(
+            name: 'EXEC_CONVERT',
+            default: true,
+        )
+        booleanParam(
+            name: 'EXEC_UNITTEST',
+            default: true,
+        )
     }
 
     stages {
-        stage('Build') { 
+        stage('matrix_Test') {
+            matrix {
+                axes {
+                    axis {
+                        name '_codebase', 
+                        value strToList(${param.CODEBASES})
+                    }
+                }
+            }
+            stage('test'){
+                steps{
+                sh "tests/jenkins/scripts/test_convert.sh '${params.DOCKER_IMAGE}' '${_codebase}'" 
+                }
+            }
+        }
+
+        stage('Build') {
+            when {
+                expression { $params.EXEC_BUILD }
+            }
             steps {
                 sh "tests/jenkins/scripts/test_build.sh '${params.DOCKER_IMAGE}'"
             }
         }
         
         stage('Convert') {
+            when {
+                expression { $params.EXEC_CONVERT }
+            }
             steps {
                 sh "tests/jenkins/scripts/test_convert.sh '${params.DOCKER_IMAGE}' '${params.CODEBASES}'"
             }
         }
         
         stage('Prebuild') {
+            when {
+                expression { $params.EXEC_PREBUILD }
+            }
             steps {
                 sh "tests/jenkins/scripts/test_prebuild.sh '${params.DOCKER_IMAGE}'"
+            }
+        }
+
+        stage('Unittest') {
+            when {
+                expression { $params.EXEC_UNITTEST }
+            }
+            steps {
+                sh "tests/jenkins/scripts/test_ut.sh '${params.DOCKER_IMAGE}' '${params.CODEBASES}'"
             }
         }
     }
   }
 
 
-
+def strToList(str) {
+    return str.tokenize(" ")
+}
