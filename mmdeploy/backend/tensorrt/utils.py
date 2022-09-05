@@ -1,5 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import logging
+import os
+import re
+import sys
 from typing import Dict, Optional, Sequence, Union
 
 import onnx
@@ -46,43 +49,43 @@ def search_cuda_version() -> str:
     """
 
     version = None
-    try:
-        import torch
-        version = torch.version.cuda
-    except Exception:
-        import os
-        import re
-        import sys
 
-        pattern = re.compile(r'[0-9]+\.[0-9]+')
-        platform = sys.platform.lower()
+    pattern = re.compile(r'[0-9]+\.[0-9]+')
+    platform = sys.platform.lower()
 
-        def cmd_result(txt: str):
-            cmd = os.popen(txt)
-            return cmd.read().rstrip().lstrip()
+    def cmd_result(txt: str):
+        cmd = os.popen(txt)
+        return cmd.read().rstrip().lstrip()
 
-        if platform == 'linux' or platform == 'darwin' or platform == 'freebsd':  # noqa E501
+    if platform == 'linux' or platform == 'darwin' or platform == 'freebsd':  # noqa E501
+        version = cmd_result(
+            " nvcc --version | grep  release | awk '{print $5}' | awk -F , '{print $1}' "  # noqa E501
+        )
+        if version is None or pattern.match(version) is None:
             version = cmd_result(
-                " nvcc --version | grep  release | awk '{print $5}' | awk -F , '{print $1}' "  # noqa E501
-            )
-            if version is None or pattern.match(version) is None:
-                version = cmd_result(
-                    " nvidia-smi  | grep CUDA | awk '{print $9}' ")
+                " nvidia-smi  | grep CUDA | awk '{print $9}' ")
 
-        elif platform == 'win32' or platform == 'cygwin':
-            # nvcc_release = "Cuda compilation tools, release 10.2, V10.2.89"
-            nvcc_release = cmd_result(' nvcc --version | find "release" ')
-            if nvcc_release is not None:
-                result = pattern.findall(nvcc_release)
-                if len(result) > 0:
-                    version = result[0]
+    elif platform == 'win32' or platform == 'cygwin':
+        # nvcc_release = "Cuda compilation tools, release 10.2, V10.2.89"
+        nvcc_release = cmd_result(' nvcc --version | find "release" ')
+        if nvcc_release is not None:
+            result = pattern.findall(nvcc_release)
+            if len(result) > 0:
+                version = result[0]
 
-            if version is None or pattern.match(version) is None:
-                # nvidia_smi = "| NVIDIA-SMI 440.33.01    Driver Version: 440.33.01    CUDA Version: 10.2     |" # noqa E501
-                nvidia_smi = cmd_result(' nvidia-smi | find "CUDA Version" ')
-                result = pattern.findall(nvidia_smi)
-                if len(result) > 2:
-                    version = result[2]
+        if version is None or pattern.match(version) is None:
+            # nvidia_smi = "| NVIDIA-SMI 440.33.01    Driver Version: 440.33.01    CUDA Version: 10.2     |" # noqa E501
+            nvidia_smi = cmd_result(' nvidia-smi | find "CUDA Version" ')
+            result = pattern.findall(nvidia_smi)
+            if len(result) > 2:
+                version = result[2]
+
+    if version is None or pattern.match(version) is None:
+        try:
+            import torch
+            version = torch.version.cuda
+        except Exception:
+            pass
 
     return version
 
