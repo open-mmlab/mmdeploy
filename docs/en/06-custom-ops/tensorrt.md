@@ -57,6 +57,12 @@
     - [Inputs](#inputs-8)
     - [Outputs](#outputs-8)
     - [Type Constraints](#type-constraints-8)
+  - [ScaledDotProductAttentionTRT](#scaleddotproductattentiontrt)
+    - [Description](#description-9)
+    - [Parameters](#parameters-9)
+    - [Inputs](#inputs-9)
+    - [Outputs](#outputs-9)
+    - [Type Constraints](#type-constraints-9)
 
 <!-- TOC -->
 
@@ -405,3 +411,39 @@ Generate the anchors for object detection task.
 
 - T:tensor(float32, Linear)
 - TAny: Any
+
+### ScaledDotProductAttentionTRT
+
+#### Description
+
+Dot product attention used to support multihead attention, read [Attention Is All You Need](https://arxiv.org/abs/1706.03762?context=cs) for more detail.
+
+#### Parameters
+
+None
+
+#### Inputs
+
+<dl>
+<dt><tt>inputs[0]</tt>: T</dt>
+<dd>query; 3-D tensor with shape [batch_size, sequence_length, embedding_size].</dd>
+<dt><tt>inputs[1]</tt>: T</dt>
+<dd>key; 3-D tensor with shape [batch_size, sequence_length, embedding_size].</dd>
+<dt><tt>inputs[2]</tt>: T</dt>
+<dd>value; 3-D tensor with shape [batch_size, sequence_length, embedding_size].</dd>
+<dt><tt>inputs[3]</tt>: T</dt>
+<dd>mask; 2-D/3-D tensor with shape [sequence_length, sequence_length] or [batch_size, sequence_length, sequence_length]. optional.</dd>
+</dl>
+
+#### Outputs
+
+<dl>
+<dt><tt>outputs[0]</tt>: T</dt>
+<dd>3-D tensor of shape [batch_size, sequence_length, embedding_size]. `softmax(q@k.T)@v`</dd>
+<dt><tt>outputs[1]</tt>: T</dt>
+<dd>3-D tensor of shape [batch_size, sequence_length, sequence_length]. `softmax(q@k.T)`</dd>
+</dl>
+
+#### Type Constraints
+
+- T:tensor(float32, Linear)
