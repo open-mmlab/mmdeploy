@@ -195,21 +195,8 @@ def get_preprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config):
         'filename', 'ori_filename', 'ori_shape', 'img_shape', 'pad_shape',
         'scale_factor', 'flip', 'flip_direction', 'img_norm_cfg', 'valid_ratio'
     ]
-    if 'transforms' in pipeline[-1]:
-        transforms = pipeline[-1]['transforms']
-        transforms.insert(0, pipeline[0])
-        for transform in transforms:
-            if transform['type'] == 'Resize':
-                transform['size'] = pipeline[-1].img_scale[::-1]
-                if 'img_scale' in transform:
-                    transform.pop('img_scale')
-    else:
-        pipeline = [
-            item for item in pipeline if item['type'] != 'MultiScaleFilpAug'
-        ]
-        transforms = pipeline
     transforms = [
-        item for item in transforms if 'Random' not in item['type']
+        item for item in pipeline if 'Random' not in item['type']
         and 'RescaleToZeroOne' not in item['type']
     ]
     for i, transform in enumerate(transforms):
@@ -221,7 +208,26 @@ def get_preprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config):
             meta_keys += transform[
                 'meta_keys'] if 'meta_keys' in transform else []
             transform['meta_keys'] = list(set(meta_keys))
+            transform['keys'] = ['img']
             transforms[i]['type'] = 'Collect'
+        if transform['type'] == 'Resize':
+            transforms[i]['size'] = transforms[i]['scale']
+
+    data_preprocessor = model_cfg.model.data_preprocessor
+    transforms.insert(-1, dict(type='DefaultFormatBundle'))
+    transforms.insert(
+        -2,
+        dict(
+            type='Pad',
+            size_divisor=data_preprocessor.get('pad_size_divisor', 1)))
+    transforms.insert(
+        -3,
+        dict(
+            type='Normalize',
+            to_rgb=data_preprocessor.get('bgr_to_rgb', False),
+            mean=data_preprocessor.get('mean', [0, 0, 0]),
+            std=data_preprocessor.get('std', [1, 1, 1])))
+
     assert transforms[0]['type'] == 'LoadImageFromFile', 'The first item type'\
         ' of pipeline should be LoadImageFromFile'
 
