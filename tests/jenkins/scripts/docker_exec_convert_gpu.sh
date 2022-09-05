@@ -33,7 +33,7 @@ function getFullName() {
 ## parameters
 export codebase=$1
 getFullName $codebase
-# backends=$2
+
 export MMDEPLOY_DIR=/root/workspace/mmdeploy
 
 #### TODO: to be removed
@@ -44,7 +44,7 @@ export ONNXRUNTIME_VERSION=1.8.1
 
 echo "time-$(date +%Y%m%d%H%M)"
 ## clone ${codebase}
-git clone --depth 1 --branch master https://github.com/open-mmlab/${codebase_fullname}.git /root/workspace/${codebase_fullname}
+git clone --depth 1 https://github.com/open-mmlab/${codebase_fullname}.git /root/workspace/${codebase_fullname}
 
 ## build mmdeploy
 ln -s /root/workspace/mmdeploy_benchmark $MMDEPLOY_DIR/data
