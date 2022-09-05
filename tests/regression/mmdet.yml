@@ -42,20 +42,17 @@ onnxruntime:
 
   pipeline_ort_dynamic_fp32: &pipeline_ort_dynamic_fp32
     convert_image: *convert_image
-    backend_test: *default_backend_test
-    sdk_config: *sdk_dynamic
+    backend_test: False
     deploy_config: configs/mmdet/detection/detection_onnxruntime_dynamic.py
 
   pipeline_seg_ort_static_fp32: &pipeline_seg_ort_static_fp32
     convert_image: *convert_image
-    backend_test: *default_backend_test
-#    sdk_config: *sdk_seg_static
+    backend_test: False
     deploy_config: configs/mmdet/instance-seg/instance-seg_onnxruntime_static.py
 
   pipeline_seg_ort_dynamic_fp32: &pipeline_seg_ort_dynamic_fp32
     convert_image: *convert_image
-    backend_test: *default_backend_test
-    sdk_config: *sdk_seg_dynamic
+    backend_test: False
     deploy_config: configs/mmdet/instance-seg/instance-seg_onnxruntime_dynamic.py
 
 tensorrt:
@@ -188,11 +185,7 @@ models:
         convert_image: *convert_image
         backend_test: *default_backend_test
         sdk_config: *sdk_dynamic
-#      - *pipeline_trt_dynamic_fp32
-#      - *pipeline_trt_dynamic_fp16
-#      - *pipeline_trt_dynamic_int8
       - *pipeline_ncnn_static_fp32
-#      - *pipeline_pplnn_dynamic_fp32
       - *pipeline_openvino_dynamic_fp32
 
   - name: SSD
