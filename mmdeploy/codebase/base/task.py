@@ -73,6 +73,7 @@ class BaseTask(metaclass=ABCMeta):
 
         from mmengine.registry import MODELS
         data_preprocessor = MODELS.build(preprocess_cfg)
+        data_preprocessor.to(self.device)
 
         return data_preprocessor
 
@@ -97,6 +98,8 @@ class BaseTask(metaclass=ABCMeta):
         model = deepcopy(self.model_cfg.model)
         preprocess_cfg = deepcopy(self.model_cfg.get('preprocess_cfg', {}))
         model.setdefault('data_preprocessor', preprocess_cfg)
+        
+        del model['data_preprocessor']
         model = MODELS.build(model)
         if model_checkpoint is not None:
             from mmengine.runner.checkpoint import load_checkpoint

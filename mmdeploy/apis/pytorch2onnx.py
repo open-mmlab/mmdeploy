@@ -63,12 +63,12 @@ def torch2onnx(img: Any,
     data, model_inputs = task_processor.create_input(
         img,
         input_shape,
-        data_preprocessor=getattr(torch_model, 'data_preprocessor', None))
+        data_preprocessor=task_processor.build_data_preprocessor())
     if not isinstance(model_inputs, torch.Tensor) and len(model_inputs) == 1:
         model_inputs = model_inputs[0]
     data_samples = data['data_samples']
     patch_metas = {'data_samples': data_samples}
-    input_metas = {'data_samples': data_samples, 'mode': 'predict'}
+    input_metas = {'data_samples': data_samples, 'mode': 'tensor'}
 
     # export to onnx
     context_info = dict()
