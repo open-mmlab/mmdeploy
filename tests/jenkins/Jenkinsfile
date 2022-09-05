@@ -42,7 +42,7 @@ pipeline {
                 axes {
                     axis {
                         name '_codebase'
-                        values '${param.CODEBASES}'.tokenize(' ')
+                        values strToList('${param.CODEBASES}')
                     }
                 }
                 stages {
@@ -94,3 +94,7 @@ pipeline {
     }
   }
 
+
+list strToList(str) {
+    return ${str}.tokenize(" ")
+}
