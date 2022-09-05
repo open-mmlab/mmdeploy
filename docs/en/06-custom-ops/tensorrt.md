@@ -416,7 +416,7 @@ Generate the anchors for object detection task.
 
 #### Description
 
-Dot product attention used to support multihead attention, read [Attention Is All You Need](chrome-extension://cdonnmffkdaoajfknoeeecmchibpmkmg/assets/pdf/web/viewer.html?file=https%3A%2F%2Farxiv.org%2Fpdf%2F1706.03762.pdf) for more detail.
+Dot product attention used to support multihead attention, read [Attention Is All You Need](https://arxiv.org/abs/1706.03762?context=cs) for more detail.
 
 #### Parameters
 
