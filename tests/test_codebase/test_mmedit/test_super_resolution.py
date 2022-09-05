@@ -3,7 +3,7 @@ import os
 import tempfile
 from tempfile import NamedTemporaryFile
 
-import mmcv
+from mmengine import Config
 import numpy as np
 import pytest
 import torch
@@ -18,7 +18,7 @@ import_codebase(Codebase.MMEDIT)
 
 model_cfg = 'tests/test_codebase/test_mmedit/data/model.py'
 model_cfg = load_config(model_cfg)[0]
-deploy_cfg = mmcv.Config(
+deploy_cfg = Config(
     dict(
         backend_config=dict(type='onnxruntime'),
         codebase_config=dict(type='mmedit', task='SuperResolution'),
@@ -102,7 +102,7 @@ def test_build_dataset():
                 },
             ]
         })
-    dataset_cfg = mmcv.Config(dict(data=data))
+    dataset_cfg = Config(dict(data=data))
     dataset = task_processor.build_dataset(
         dataset_cfg=dataset_cfg, dataset_type='test')
     assert dataset is not None, 'Failed to build dataset'

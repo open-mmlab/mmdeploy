@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import mmcv
 import numpy as np
 import torch
+from mmengine import Config
 
 import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.codebase import import_codebase
@@ -27,7 +27,7 @@ class TestEnd2EndModel:
             'outputs': torch.rand(3, 64, 64),
         }
         cls.wrapper.set(outputs=cls.outputs)
-        deploy_cfg = mmcv.Config(
+        deploy_cfg = Config(
             {'onnx_config': {
                 'output_names': ['outputs']
             }})
