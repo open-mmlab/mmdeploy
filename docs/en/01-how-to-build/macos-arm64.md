@@ -124,7 +124,7 @@ export MMDEPLOY_DIR=$(pwd)
   ```bash
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
-  cmake -DMMDEPLOY_TARGET_BACKENDS=torchscript -DTorch_DIR=${Torch_DIR} ..
+  cmake -DMMDEPLOY_TARGET_BACKENDS=coreml -DTorch_DIR=${Torch_DIR} ..
   make -j4 && make install
   ```
 
@@ -134,7 +134,7 @@ Please check [cmake build option](cmake_option.md).
 
 ```bash
 cd ${MMDEPLOY_DIR}
-pip install -e .
+pip install -v -e .
 ```
 
 **Note**
