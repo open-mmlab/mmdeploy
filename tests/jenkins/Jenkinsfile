@@ -92,9 +92,10 @@ pipeline {
             }
         }
     }
-  }
+}
 
 
 def strToList(str) {
-    return ${str}.tokenize(" ")
+    def a = "${str}".tokenize(" ")
+    return a
 }
