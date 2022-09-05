@@ -276,6 +276,7 @@ class End2EndModel(BaseBackendModel):
         return outputs
 
     def show_result(self,
+                    *args,
                     img: np.ndarray,
                     result: list,
                     win_name: str = '',
@@ -285,6 +286,7 @@ class End2EndModel(BaseBackendModel):
                     **kwargs):
         return BaseDetector.show_result(
             self,
+            *args,
             img=img,
             result=result,
             score_thr=score_thr,
