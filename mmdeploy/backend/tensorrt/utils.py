@@ -43,7 +43,6 @@ def load(path: str) -> trt.ICudaEngine:
 
 def search_cuda_version() -> str:
     """try cmd to get cuda version, then try `torch.cuda`
-
     Returns:
         str: cuda version, for example 10.2
     """
@@ -188,6 +187,15 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
         max_shape = param['max_shape']
         profile.set_shape(input_name, min_shape, opt_shape, max_shape)
     config.add_optimization_profile(profile)
+
+    cuda_version = search_cuda_version()
+    if cuda_version is not None:
+        version_major = int(cuda_version.split('.')[0])
+        if version_major < 11:
+            # cu11 support cublasLt, so cudnn heuristic tactic should disable CUBLAS_LT # noqa E501
+            tactic_source = config.get_tactic_sources() - (
+                1 << int(trt.TacticSource.CUBLAS_LT))
+            config.set_tactic_sources(tactic_source)
 
     if fp16_mode:
         if version.parse(trt.__version__) < version.parse('8'):

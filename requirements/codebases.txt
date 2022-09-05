@@ -4,3 +4,4 @@ mmedit @ git+https://github.com/open-mmlab/mmediting.git@1.x
 mmocr @ git+https://github.com/open-mmlab/mmocr.git@dev-1.x
 mmpose>=1.0.0rc0
 mmsegmentation>=1.0.0rc0
+mmdet3d==1.1.0rc1
