@@ -37,7 +37,7 @@ pipeline {
     }
 
     stages {
-        stages('matrix_Test') {
+        stage('matrix_Test') {
             matrix {
                 axes {
                     axis {
@@ -45,12 +45,15 @@ pipeline {
                         value strToList(${param.CODEBASES})
                     }
                 }
-            }
-            stage('test'){
-                steps{
-                sh "tests/jenkins/scripts/test_convert.sh '${params.DOCKER_IMAGE}' '${_codebase}'" 
+                stages {
+                    stage('test') {
+                        steps {
+                            sh "tests/jenkins/scripts/test_convert.sh '${params.DOCKER_IMAGE}' '${_codebase}'" 
+                        }
+                    }
                 }
             }
+
         }
 
         stage('Build') {
