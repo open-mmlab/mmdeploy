@@ -3,6 +3,7 @@ import os.path as osp
 from typing import Dict, List, Optional, Sequence, Union
 
 import mmcv
+import mmengine
 import numpy as np
 import torch
 from mmcv.utils import Registry
@@ -30,17 +31,17 @@ class End2EndModel(BaseBackendModel):
         backend_files (Sequence[str]): Paths to all required backend files(e.g.
             '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
         device (str): A string represents device type.
-        model_cfg(mmcv.Config): Input model config object.
-        deploy_cfg(str | mmcv.Config):Deployment config file or loaded Config
-            object.
+        model_cfg(mmengine.Config): Input model config object.
+        deploy_cfg(str | mmengine.Config):Deployment config file or loaded
+            Config object.
     """
 
     def __init__(self,
                  backend: Backend,
                  backend_files: Sequence[str],
                  device: str,
-                 model_cfg: mmcv.Config,
-                 deploy_cfg: Union[str, mmcv.Config] = None,
+                 model_cfg: mmengine.Config,
+                 deploy_cfg: Union[str, mmengine.Config] = None,
                  **kwargs):
         super().__init__(deploy_cfg=deploy_cfg)
         self.deploy_cfg = deploy_cfg
@@ -235,8 +236,8 @@ class SDKEnd2EndModel(End2EndModel):
 
 
 def build_super_resolution_model(model_files: Sequence[str],
-                                 model_cfg: Union[str, mmcv.Config],
-                                 deploy_cfg: Union[str, mmcv.Config],
+                                 model_cfg: Union[str, mmengine.Config],
+                                 deploy_cfg: Union[str, mmengine.Config],
                                  device: str, **kwargs):
     model_cfg = load_config(model_cfg)[0]
     deploy_cfg = load_config(deploy_cfg)[0]

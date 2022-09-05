@@ -1,7 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import mmocr.utils as utils
+from typing import Optional, Sequence
+
 import torch
 import torch.nn.functional as F
+from mmocr.structures import TextRecogDataSample
 
 from mmdeploy.core import FUNCTION_REWRITER
 
@@ -9,7 +11,11 @@ from mmdeploy.core import FUNCTION_REWRITER
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmocr.models.textrecog.encoders.SAREncoder.forward',
     backend='default')
-def sar_encoder__forward(ctx, self, feat, img_metas=None):
+def sar_encoder__forward(
+        ctx,
+        self,
+        feat: torch.Tensor,
+        data_samples: Optional[Sequence[TextRecogDataSample]] = None):
     """Rewrite `forward` of SAREncoder for default backend.
 
     Rewrite this function to:
@@ -19,25 +25,22 @@ def sar_encoder__forward(ctx, self, feat, img_metas=None):
     Args:
         ctx (ContextCaller): The context with additional information.
         self: The instance of the class SAREncoder.
-        feat (Tensor): Encoded feature map of shape (N, C, H, W).
-        img_metas (Optional[list[dict]]): A list of image info dict where each
-            dict has: 'img_shape', 'scale_factor', 'flip', and may also contain
-            'filename', 'ori_shape', 'pad_shape', and 'img_norm_cfg'.
-            For details on the values of these keys, see
-            :class:`mmdet.datasets.pipelines.Collect`.
+        feat (Tensor): Tensor of shape :math:`(N, D_i, H, W)`.
+        data_samples (list[TextRecogDataSample], optional): Batch of
+            TextRecogDataSample, containing valid_ratio information.
+            Defaults to None.
 
     Returns:
         holistic_feat (Tensor): A feature map output from SAREncoder. The shape
             [N, M].
     """
-    if img_metas is not None:
-        assert utils.is_type_list(img_metas, dict)
-        assert len(img_metas) == feat.size(0)
+    if data_samples is not None:
+        assert len(data_samples) == feat.size(0)
 
     valid_ratios = None
-    if img_metas is not None:
+    if data_samples is not None:
         valid_ratios = [
-            img_meta.get('valid_ratio', 1.0) for img_meta in img_metas
+            data_sample.get('valid_ratio', 1.0) for data_sample in data_samples
         ] if self.mask else None
 
     h_feat = int(feat.size(2))

@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-# mmcv dependency
+# mmcv & mmengine dependency
 try:
     from .calibration import create_calib_input_data
     from .extract_model import extract_model

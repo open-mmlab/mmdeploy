@@ -5,7 +5,7 @@ import tempfile
 from subprocess import PIPE, CalledProcessError, run
 from typing import Dict, Optional, Sequence, Union
 
-import mmcv
+import mmengine
 import onnx
 
 from mmdeploy.utils import get_root_logger
@@ -50,7 +50,7 @@ def get_output_model_file(onnx_path: str, work_dir: str) -> str:
     Returns:
         str: The path to the file where the export result will be located.
     """
-    mmcv.mkdir_or_exist(osp.abspath(work_dir))
+    mmengine.mkdir_or_exist(osp.abspath(work_dir))
     file_name = osp.splitext(osp.split(onnx_path)[1])[0]
     model_xml = osp.join(work_dir, file_name + '.xml')
     return model_xml

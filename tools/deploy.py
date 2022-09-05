@@ -5,7 +5,7 @@ import os
 import os.path as osp
 from functools import partial
 
-import mmcv
+import mmengine
 import torch.multiprocessing as mp
 from torch.multiprocessing import Process, set_start_method
 
@@ -119,7 +119,7 @@ def main():
     deploy_cfg, model_cfg = load_config(deploy_cfg_path, model_cfg_path)
 
     # create work_dir if not
-    mmcv.mkdir_or_exist(osp.abspath(args.work_dir))
+    mmengine.mkdir_or_exist(osp.abspath(args.work_dir))
 
     if args.dump_info:
         export2SDK(deploy_cfg, model_cfg, args.work_dir, pth=checkpoint_path)

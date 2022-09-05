@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Any, Optional, Sequence, Union
 
-import mmcv
+import mmengine
 import torch
 from torch import Tensor
 
@@ -10,11 +10,11 @@ from mmdeploy.core.rewriters.rewriter_utils import LibVersionChecker
 from mmdeploy.utils import Backend, load_config
 
 
-def get_post_processing_params(deploy_cfg: Union[str, mmcv.Config]):
+def get_post_processing_params(deploy_cfg: Union[str, mmengine.Config]):
     """Get mmdet post-processing parameters from config.
 
     Args:
-        deploy_cfg (str | mmcv.Config): The path or content of config.
+        deploy_cfg (str | mmengine.Config): The path or content of config.
 
     Returns:
         dict: A dict of parameters for mmdet.

@@ -3,6 +3,7 @@ import warnings
 from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
 import mmcv
+import mmengine
 import numpy as np
 import torch
 from mmcv.parallel import collate, scatter
@@ -13,20 +14,20 @@ from mmdeploy.codebase.mmedit.deploy.mmediting import MMEDIT_TASK
 from mmdeploy.utils import Task, get_input_shape, load_config
 
 
-def process_model_config(model_cfg: mmcv.Config,
+def process_model_config(model_cfg: mmengine.Config,
                          imgs: Union[Sequence[str], Sequence[np.ndarray]],
                          input_shape: Optional[Sequence[int]] = None):
     """Process the model config.
 
     Args:
-        model_cfg (mmcv.Config): The model config.
+        model_cfg (mmengine.Config): The model config.
         imgs (Sequence[str] | Sequence[np.ndarray]): Input image(s), accepted
             data type are List[str], List[np.ndarray].
         input_shape (list[int]): A list of two integer in (width, height)
             format specifying input shape. Default: None.
 
     Returns:
-        mmcv.Config: the model config after processing.
+        mmengine.Config: the model config after processing.
     """
     config = load_config(model_cfg)[0].copy()
     keys_to_remove = ['gt', 'gt_path']
@@ -67,12 +68,12 @@ class SuperResolution(BaseTask):
     """BaseTask class of super resolution task.
 
     Args:
-        model_cfg (mmcv.Config): Model config file.
-        deploy_cfg (mmcv.Config): Deployment config file.
+        model_cfg (mmengine.Config): Model config file.
+        deploy_cfg (mmengine.Config): Deployment config file.
         device (str): A string specifying device type.
     """
 
-    def __init__(self, model_cfg: mmcv.Config, deploy_cfg: mmcv.Config,
+    def __init__(self, model_cfg: mmengine.Config, deploy_cfg: mmengine.Config,
                  device: str):
         super().__init__(model_cfg, deploy_cfg, device)
 
@@ -258,7 +259,7 @@ class SuperResolution(BaseTask):
         """Evaluation function implemented in mmedit.
 
         Args:
-            model_cfg (mmcv.Config): The model config.
+            model_cfg (mmengine.Config): The model config.
             outputs (list): A list of result of model inference.
             dataset (Dataset): Input dataset to run test.
             metrics (str): Evaluation metrics, which depends on

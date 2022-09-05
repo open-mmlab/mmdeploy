@@ -1,11 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import os.path as osp
-from tempfile import NamedTemporaryFile
-
-import mmcv
-import numpy as np
 import pytest
 import torch
+from mmengine import BaseDataElement, Config, InstanceData
 
 import mmdeploy.backend.ncnn as ncnn_apis
 import mmdeploy.backend.onnxruntime as ort_apis
@@ -19,7 +15,7 @@ import_codebase(Codebase.MMDET)
 
 def assert_det_results(results, module_name: str = 'model'):
     assert results is not None, f'failed to get output using {module_name}'
-    assert isinstance(results, list)
+    assert isinstance(results, tuple)
     assert len(results) == 2
     assert results[0].shape[0] == results[1].shape[0]
     assert results[0].shape[1] == results[1].shape[1]
@@ -29,10 +25,11 @@ def assert_forward_results(results, module_name: str = 'model'):
     assert results is not None, f'failed to get output using {module_name}'
     assert isinstance(results, list)
     assert len(results) == 1
-    if isinstance(results[0], tuple):  # mask
-        assert len(results[0][0]) == 80
-    else:
-        assert len(results[0]) == 80
+    assert isinstance(results[0].pred_instances, InstanceData)
+    assert results[0].pred_instances.bboxes.shape[-1] == 4
+    assert results[0].pred_instances.scores.shape[0] == \
+        results[0].pred_instances.labels.shape[0] == \
+        results[0].pred_instances.bboxes.shape[0]
 
 
 @backend_checker(Backend.ONNXRUNTIME)
@@ -52,7 +49,7 @@ class TestEnd2EndModel:
             'labels': torch.rand(1, 10)
         }
         cls.wrapper.set(outputs=cls.outputs)
-        deploy_cfg = mmcv.Config(
+        deploy_cfg = Config(
             {'onnx_config': {
                 'output_names': ['dets', 'labels']
             }})
@@ -60,31 +57,28 @@ class TestEnd2EndModel:
         from mmdeploy.codebase.mmdet.deploy.object_detection_model import \
             End2EndModel
         cls.end2end_model = End2EndModel(Backend.ONNXRUNTIME, [''], 'cpu',
-                                         ['' for i in range(80)], deploy_cfg)
+                                         deploy_cfg)
 
     @classmethod
     def teardown_class(cls):
         cls.wrapper.recover()
 
     def test_forward(self):
-        imgs = [torch.rand(1, 3, 64, 64)]
-        img_metas = [[{
-            'ori_shape': [64, 64, 3],
-            'img_shape': [64, 64, 3],
-            'scale_factor': [1, 1, 1, 1],
-            'border': [0, 0, 0]
-        }]]
+        imgs = torch.rand(1, 3, 64, 64)
+        img_metas = [
+            BaseDataElement(metainfo={
+                'img_shape': [64, 64],
+                'scale_factor': [1, 1]
+            })
+        ]
         results = self.end2end_model.forward(imgs, img_metas)
         assert_forward_results(results, 'End2EndModel')
 
-    def test_show_result(self):
-        input_img = np.zeros([64, 64, 3])
-        img_path = NamedTemporaryFile(suffix='.jpg').name
-
-        result = (torch.rand(1, 10, 5), torch.rand(1, 10))
-        self.end2end_model.show_result(
-            input_img, result, '', show=False, out_file=img_path)
-        assert osp.exists(img_path)
+    def test_predict(self):
+        imgs = torch.rand(1, 3, 64, 64)
+        dets, labels = self.end2end_model.predict(imgs)
+        assert dets.shape[-1] == 5
+        assert labels.shape[0] == dets.shape[0]
 
 
 @backend_checker(Backend.ONNXRUNTIME)
@@ -107,7 +101,7 @@ class TestMaskEnd2EndModel:
             'masks': torch.rand(1, num_dets, 28, 28)
         }
         cls.wrapper.set(outputs=cls.outputs)
-        deploy_cfg = mmcv.Config({
+        deploy_cfg = Config({
             'onnx_config': {
                 'output_names': ['dets', 'labels', 'masks']
             },
@@ -121,19 +115,22 @@ class TestMaskEnd2EndModel:
         from mmdeploy.codebase.mmdet.deploy.object_detection_model import \
             End2EndModel
         cls.end2end_model = End2EndModel(Backend.ONNXRUNTIME, [''], 'cpu',
-                                         ['' for i in range(80)], deploy_cfg)
+                                         deploy_cfg)
 
     @classmethod
     def teardown_class(cls):
         cls.wrapper.recover()
 
     def test_forward(self):
-        imgs = [torch.rand(1, 3, 64, 64)]
-        img_metas = [[{
-            'ori_shape': [64, 64, 3],
-            'img_shape': [64, 64, 3],
-            'scale_factor': [1, 1, 1, 1],
-        }]]
+        imgs = torch.rand(1, 3, 64, 64)
+        img_metas = [
+            BaseDataElement(
+                metainfo={
+                    'img_shape': [64, 64],
+                    'ori_shape': [32, 32],
+                    'scale_factor': [1, 1]
+                })
+        ]
         results = self.end2end_model.forward(imgs, img_metas)
         assert_forward_results(results, 'mask End2EndModel')
 
@@ -158,62 +155,6 @@ def get_test_cfg_and_post_processing():
         'background_label_id': -1
     }
     return test_cfg, post_processing
-
-
-@backend_checker(Backend.ONNXRUNTIME)
-class TestPartitionSingleStageModel:
-
-    @classmethod
-    def setup_class(cls):
-        # force add backend wrapper regardless of plugins
-        # make sure ONNXRuntimeDetector can use ORTWrapper inside itself
-        from mmdeploy.backend.onnxruntime import ORTWrapper
-        ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
-
-        # simplify backend inference
-        cls.wrapper = SwitchBackendWrapper(ORTWrapper)
-        cls.outputs = {
-            'scores': torch.rand(1, 10, 80),
-            'boxes': torch.rand(1, 10, 4)
-        }
-        cls.wrapper.set(outputs=cls.outputs)
-
-        test_cfg, post_processing = get_test_cfg_and_post_processing()
-        model_cfg = mmcv.Config(dict(model=dict(test_cfg=test_cfg)))
-        deploy_cfg = mmcv.Config(
-            dict(codebase_config=dict(post_processing=post_processing)))
-
-        from mmdeploy.codebase.mmdet.deploy.object_detection_model import \
-            PartitionSingleStageModel
-        cls.model = PartitionSingleStageModel(
-            Backend.ONNXRUNTIME, [''],
-            'cpu', ['' for i in range(80)],
-            model_cfg=model_cfg,
-            deploy_cfg=deploy_cfg)
-
-    @classmethod
-    def teardown_class(cls):
-        cls.wrapper.recover()
-
-    def test_forward_test(self):
-        imgs = [torch.rand(1, 3, 64, 64)]
-        img_metas = [[{
-            'ori_shape': [64, 64, 3],
-            'img_shape': [64, 64, 3],
-            'scale_factor': [1, 1, 1, 1],
-        }]]
-        results = self.model.forward_test(imgs, img_metas)
-        assert_det_results(results, 'PartitionSingleStageModel')
-
-    def test_postprocess(self):
-        scores = torch.rand(1, 120, 80)
-        bboxes = torch.rand(1, 120, 4)
-
-        results = self.model.partition0_postprocess(
-            scores=scores, bboxes=bboxes)
-        assert_det_results(
-            results, '.partition0_postprocess of'
-            'PartitionSingleStageModel')
 
 
 def prepare_model_deploy_cfgs():
@@ -251,13 +192,13 @@ def prepare_model_deploy_cfgs():
         }
     }
     roi_head = dict(bbox_roi_extractor=bbox_roi_extractor, bbox_head=bbox_head)
-    model_cfg = mmcv.Config(
+    model_cfg = Config(
         dict(
             model=dict(
                 neck=dict(num_outs=0),
                 test_cfg=dict(rpn=test_cfg, rcnn=test_cfg),
                 roi_head=roi_head)))
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = Config(
         dict(codebase_config=dict(post_processing=post_processing)))
     return model_cfg, deploy_cfg
 
@@ -275,177 +216,11 @@ class DummyWrapper(torch.nn.Module):
 
 
 @backend_checker(Backend.ONNXRUNTIME)
-class TestPartitionTwoStageModel:
-
-    @classmethod
-    def setup_class(cls):
-        # force add backend wrapper regardless of plugins
-        # make sure ONNXRuntimeDetector can use ORTWrapper inside itself
-        from mmdeploy.backend.onnxruntime import ORTWrapper
-        ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
-
-        # simplify backend inference
-        cls.wrapper = SwitchBackendWrapper(ORTWrapper)
-        outputs = [
-            np.random.rand(1, 12, 80).astype(np.float32),
-            np.random.rand(1, 12, 4).astype(np.float32),
-        ] * 2
-
-        model_cfg, deploy_cfg = prepare_model_deploy_cfgs()
-
-        cls.wrapper.set(
-            outputs=outputs, model_cfg=model_cfg, deploy_cfg=deploy_cfg)
-
-        # replace original function in PartitionTwoStageModel
-        from mmdeploy.codebase.mmdet.deploy.object_detection_model import \
-            PartitionTwoStageModel
-
-        cls.model = PartitionTwoStageModel(
-            Backend.ONNXRUNTIME, ['', ''],
-            'cpu', ['' for i in range(80)],
-            model_cfg=model_cfg,
-            deploy_cfg=deploy_cfg)
-        feats = [torch.randn(1, 8, 14, 14) for i in range(5)]
-        scores = torch.rand(1, 10, 1)
-        bboxes = torch.rand(1, 10, 4)
-        bboxes[..., 2:4] = 2 * bboxes[..., :2]
-
-        cls_score = torch.rand(10, 81)
-        bbox_pred = torch.rand(10, 320)
-
-        cls.model.device = 'cpu'
-        cls.model.CLASSES = ['' for i in range(80)]
-        cls.model.first_wrapper = DummyWrapper([*feats, scores, bboxes])
-        cls.model.second_wrapper = DummyWrapper([cls_score, bbox_pred])
-
-    @classmethod
-    def teardown_class(cls):
-        cls.wrapper.recover()
-
-    def test_postprocess(self):
-        feats = [torch.randn(1, 8, 14, 14) for i in range(5)]
-        scores = torch.rand(1, 50, 1)
-        bboxes = torch.rand(1, 50, 4)
-        bboxes[..., 2:4] = 2 * bboxes[..., :2]
-
-        results = self.model.partition0_postprocess(
-            x=feats, scores=scores, bboxes=bboxes)
-        assert results is not None, 'failed to get output using '\
-            'partition0_postprocess of PartitionTwoStageDetector'
-        assert isinstance(results, tuple)
-        assert len(results) == 2
-
-        rois = torch.rand(1, 10, 5)
-        cls_score = torch.rand(10, 81)
-        bbox_pred = torch.rand(10, 320)
-        img_metas = [[{
-            'ori_shape': [32, 32, 3],
-            'img_shape': [32, 32, 3],
-            'scale_factor': [1, 1, 1, 1],
-        }]]
-        results = self.model.partition1_postprocess(
-            rois=rois,
-            cls_score=cls_score,
-            bbox_pred=bbox_pred,
-            img_metas=img_metas)
-        assert results is not None, 'failed to get output using '\
-            'partition1_postprocess of PartitionTwoStageDetector'
-        assert isinstance(results, tuple)
-        assert len(results) == 2
-
-    def test_forward(self):
-
-        class DummyPTSDetector(torch.nn.Module):
-            """A dummy wrapper for unit tests."""
-
-            def __init__(self, *args, **kwargs):
-                self.output_names = ['dets', 'labels']
-
-            def partition0_postprocess(self, *args, **kwargs):
-                return self.outputs0
-
-            def partition1_postprocess(self, *args, **kwargs):
-                return self.outputs1
-
-        import types
-        self.model.partition0_postprocess = types.MethodType(
-            DummyPTSDetector.partition0_postprocess, self.model)
-        self.model.partition1_postprocess = types.MethodType(
-            DummyPTSDetector.partition1_postprocess, self.model)
-        self.model.outputs0 = [torch.rand(2, 3)] * 2
-        self.model.outputs1 = [torch.rand(1, 9, 5), torch.rand(1, 9)]
-
-        imgs = [torch.rand(1, 3, 32, 32)]
-        img_metas = [[{
-            'ori_shape': [32, 32, 3],
-            'img_shape': [32, 32, 3],
-            'scale_factor': [1, 1, 1, 1],
-        }]]
-        results = self.model.forward(imgs, img_metas)
-        assert_forward_results(results, 'PartitionTwoStageModel')
-
-
-class TestGetClassesFromCfg:
-    data_cfg1 = mmcv.Config(
-        dict(
-            data=dict(
-                test=dict(type='CocoDataset'),
-                val=dict(type='CityscapesDataset'),
-                train=dict(type='CityscapesDataset'))))
-
-    data_cfg2 = mmcv.Config(
-        dict(
-            data=dict(
-                val=dict(type='CocoDataset'),
-                train=dict(type='CityscapesDataset'))))
-    data_cfg3 = mmcv.Config(dict(data=dict(train=dict(type='CocoDataset'))))
-    data_cfg4 = mmcv.Config(dict(data=dict(error=dict(type='CocoDataset'))))
-
-    data_cfg_classes_1 = mmcv.Config(
-        dict(
-            data=dict(
-                test=dict(classes=('a')),
-                val=dict(classes=('b')),
-                train=dict(classes=('b')))))
-
-    data_cfg_classes_2 = mmcv.Config(
-        dict(data=dict(val=dict(classes=('a')), train=dict(classes=('b')))))
-    data_cfg_classes_3 = mmcv.Config(
-        dict(data=dict(train=dict(classes=('a')))))
-    data_cfg_classes_4 = mmcv.Config(dict(classes=('a')))
-
-    @pytest.mark.parametrize('cfg',
-                             [data_cfg1, data_cfg2, data_cfg3, data_cfg4])
-    def test_get_classes_from_cfg(self, cfg):
-        from mmdet.datasets import DATASETS
-
-        from mmdeploy.codebase.mmdet.deploy.object_detection_model import \
-            get_classes_from_config
-
-        if 'error' in cfg.data:
-            with pytest.raises(RuntimeError):
-                get_classes_from_config(cfg)
-        else:
-            assert get_classes_from_config(
-                cfg) == DATASETS.module_dict['CocoDataset'].CLASSES
-
-    @pytest.mark.parametrize('cfg', [
-        data_cfg_classes_1, data_cfg_classes_2, data_cfg_classes_3,
-        data_cfg_classes_4
-    ])
-    def test_get_classes_from_custom_cfg(self, cfg):
-        from mmdeploy.codebase.mmdet.deploy.object_detection_model import \
-            get_classes_from_config
-
-        assert get_classes_from_config(cfg) == ['a']
-
-
-@backend_checker(Backend.ONNXRUNTIME)
 @pytest.mark.parametrize('partition_type', [None, 'end2end'])
 def test_build_object_detection_model(partition_type):
     _, post_processing = get_test_cfg_and_post_processing()
-    model_cfg = mmcv.Config(dict(data=dict(test={'type': 'CocoDataset'})))
-    deploy_cfg = mmcv.Config(
+    model_cfg = Config(dict(data=dict(test={'type': 'CocoDataset'})))
+    deploy_cfg = Config(
         dict(
             backend_config=dict(type='onnxruntime'),
             onnx_config=dict(output_names=['dets', 'labels']),
@@ -483,25 +258,23 @@ class TestNCNNEnd2EndModel:
             'output': torch.rand(1, 10, 6),
         }
         cls.wrapper.set(outputs=cls.outputs)
-        deploy_cfg = mmcv.Config({'onnx_config': {'output_names': ['output']}})
-        model_cfg = mmcv.Config({})
+        deploy_cfg = Config({'onnx_config': {'output_names': ['output']}})
+        model_cfg = Config({})
 
         from mmdeploy.codebase.mmdet.deploy.object_detection_model import \
             NCNNEnd2EndModel
         cls.ncnn_end2end_model = NCNNEnd2EndModel(Backend.NCNN, ['', ''],
-                                                  'cpu',
-                                                  ['' for i in range(80)],
-                                                  model_cfg, deploy_cfg)
+                                                  'cpu', model_cfg, deploy_cfg)
 
     @classmethod
     def teardown_class(cls):
         cls.wrapper.recover()
 
     @pytest.mark.parametrize('num_det', [10, 0])
-    def test_forward_test(self, num_det):
+    def test_predict(self, num_det):
         self.outputs = {
             'output': torch.rand(1, num_det, 6),
         }
         imgs = torch.rand(1, 3, 64, 64)
-        results = self.ncnn_end2end_model.forward_test(imgs)
+        results = self.ncnn_end2end_model.predict(imgs)
         assert_det_results(results, 'NCNNEnd2EndModel')

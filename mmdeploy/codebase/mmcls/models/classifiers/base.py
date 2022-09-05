@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import List, Optional
 
-from mmengine import BaseDataElement
+from mmengine.structures import BaseDataElement
 from torch import Tensor
 
 from mmdeploy.core import FUNCTION_REWRITER

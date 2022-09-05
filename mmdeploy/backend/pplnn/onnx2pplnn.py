@@ -11,13 +11,11 @@ def from_onnx(onnx_model: str,
               input_shapes: Optional[Sequence[Sequence[int]]] = None,
               **kwargs):
     """Convert ONNX to PPLNN.
-
     PPLNN is capable of optimizing onnx model. The optimized algorithm is saved
     into `algo_file` in json format. Note that `input_shapes` actually require
     multiple shapes of inputs in its original design. But in the pipeline of
     our codebase, we only pass one input shape which can be modified by users'
     own preferences.
-
     Args:
         output_file_prefix (str): File path to save PPLNN optimization
             algorithm and ONNX file
@@ -25,7 +23,6 @@ def from_onnx(onnx_model: str,
         device (str): A string specifying device, defaults to 'cuda:0'.
         input_shapes (Sequence[Sequence[int]] | None): Shapes for PPLNN
             optimization, default to None.
-
     Examples:
         >>> from mmdeploy.apis.pplnn import from_onnx
         >>>

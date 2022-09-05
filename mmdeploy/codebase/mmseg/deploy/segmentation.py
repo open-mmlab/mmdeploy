@@ -1,9 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
+from collections import defaultdict
 from copy import deepcopy
 from typing import Callable, Dict, Optional, Sequence, Tuple, Union
 
 import mmcv
+import mmengine
 import numpy as np
 import torch
 from mmengine import Config
@@ -14,27 +16,27 @@ from mmdeploy.codebase.base import CODEBASE, BaseTask, MMCodebase
 from mmdeploy.utils import Codebase, Task, get_input_shape, get_root_logger
 
 
-def process_model_config(model_cfg: Config,
+def process_model_config(model_cfg: mmengine.Config,
                          imgs: Union[Sequence[str], Sequence[np.ndarray]],
                          input_shape: Optional[Sequence[int]] = None):
     """Process the model config.
 
     Args:
-        model_cfg (Config): The model config.
+        model_cfg (mmengine.Config): The model config.
         imgs (Sequence[str] | Sequence[np.ndarray]): Input image(s), accepted
             data type are List[str], List[np.ndarray].
         input_shape (list[int]): A list of two integer in (width, height)
             format specifying input shape. Default: None.
 
     Returns:
-        Config: the model config after processing.
+        mmengine.Config: the model config after processing.
     """
     cfg = deepcopy(model_cfg)
 
     if isinstance(imgs[0], np.ndarray):
         cfg = cfg.copy()
         # set loading pipeline type
-        cfg.test_pipeline[0].type = 'LoadImageFromWebcam'
+        cfg.test_pipeline[0].type = 'LoadImageFromNDArray'
 
     # remove some training related pipeline
     removed_indices = []
@@ -109,13 +111,14 @@ class Segmentation(BaseTask):
     """Segmentation task class.
 
     Args:
-        model_cfg (Config): Original PyTorch model config file.
-        deploy_cfg (Config): Deployment config file or loaded Config
+        model_cfg (mmengine.Config): Original PyTorch model config file.
+        deploy_cfg (mmengine.Config): Deployment config file or loaded Config
             object.
         device (str): A string represents device type.
     """
 
-    def __init__(self, model_cfg: Config, deploy_cfg: Config, device: str):
+    def __init__(self, model_cfg: mmengine.Config, deploy_cfg: mmengine.Config,
+                 device: str):
         super(Segmentation, self).__init__(model_cfg, deploy_cfg, device)
 
     def build_backend_model(self,
@@ -143,7 +146,7 @@ class Segmentation(BaseTask):
 
     def create_input(
         self,
-        imgs: Union[str, np.ndarray],
+        imgs: Union[str, np.ndarray, Sequence],
         input_shape: Sequence[int] = None,
         data_preprocessor: Optional[BaseDataPreprocessor] = None
     ) -> Tuple[Dict, torch.Tensor]:
@@ -160,19 +163,27 @@ class Segmentation(BaseTask):
         """
         from mmengine.dataset import Compose
 
-        if isinstance(imgs, str):
-            data = dict(img_path=imgs)
-        else:
-            data = dict(img=imgs)
+        if not isinstance(imgs, (tuple, list)):
+            imgs = [imgs]
         cfg = process_model_config(self.model_cfg, imgs, input_shape)
         test_pipeline = Compose(cfg.test_pipeline)
-        data = test_pipeline(data)
+        batch_data = defaultdict(list)
+        for img in imgs:
+            if isinstance(img, str):
+                data = dict(img_path=img)
+            else:
+                data = dict(img=img)
+            data = test_pipeline(data)
+            batch_data['inputs'].append(data['inputs'])
+            batch_data['data_samples'].append(data['data_samples'])
+
+        # batch_data = pseudo_collate([batch_data])
         if data_preprocessor is not None:
-            data = data_preprocessor([data], False)
-            input_tensor = data[0]
+            batch_data = data_preprocessor(batch_data, False)
+            input_tensor = batch_data['inputs']
         else:
-            input_tensor = BaseTask.get_tensor_from_input(data)
-        return data, input_tensor
+            input_tensor = BaseTask.get_tensor_from_input(batch_data)
+        return batch_data, input_tensor
 
     def get_visualizer(self, name: str, save_dir: str):
         """
@@ -224,7 +235,7 @@ class Segmentation(BaseTask):
         if isinstance(image, str):
             image = mmcv.imread(image, channel_order='rgb')
         visualizer.add_datasample(
-            name, image, pred_sample=result.cpu(), show=show_result)
+            name, image, data_sample=result.cpu(), show=show_result)
 
     @staticmethod
     def get_partition_cfg(partition_type: str) -> Dict:

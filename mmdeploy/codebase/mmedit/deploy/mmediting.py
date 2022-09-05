@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Optional, Union
 
-import mmcv
+import mmengine
 import torch
 from mmcv.utils import Registry
 from torch.utils.data import DataLoader, Dataset
@@ -10,8 +10,9 @@ from mmdeploy.codebase.base import CODEBASE, BaseTask, MMCodebase
 from mmdeploy.utils import Codebase, get_task_type, load_config
 
 
-def __build_mmedit_task(model_cfg: mmcv.Config, deploy_cfg: mmcv.Config,
-                        device: str, registry: Registry) -> BaseTask:
+def __build_mmedit_task(model_cfg: mmengine.Config,
+                        deploy_cfg: mmengine.Config, device: str,
+                        registry: Registry) -> BaseTask:
     task = get_task_type(deploy_cfg)
     return registry.module_dict[task.value](model_cfg, deploy_cfg, device)
 
@@ -29,13 +30,14 @@ class MMEditing(MMCodebase):
         super().__init__()
 
     @staticmethod
-    def build_task_processor(model_cfg: mmcv.Config, deploy_cfg: mmcv.Config,
+    def build_task_processor(model_cfg: mmengine.Config,
+                             deploy_cfg: mmengine.Config,
                              device: str) -> BaseTask:
         """The interface to build the task processors of mmedit.
 
         Args:
-            model_cfg (mmcv.Config): Model config file.
-            deploy_cfg (mmcv.Config): Deployment config file.
+            model_cfg (mmengine.Config): Model config file.
+            deploy_cfg (mmengine.Config): Deployment config file.
             device (str): A string specifying device type.
 
         Returns:
@@ -44,12 +46,12 @@ class MMEditing(MMCodebase):
         return MMEDIT_TASK.build(model_cfg, deploy_cfg, device)
 
     @staticmethod
-    def build_dataset(dataset_cfg: Union[str, mmcv.Config], *args,
+    def build_dataset(dataset_cfg: Union[str, mmengine.Config], *args,
                       **kwargs) -> Dataset:
         """Build dataset for processor.
 
         Args:
-            dataset_cfg (str | mmcv.Config): The input dataset config.
+            dataset_cfg (str | mmengine.Config): The input dataset config.
 
         Returns:
             Dataset: A PyTorch dataset.

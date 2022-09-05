@@ -1,15 +1,15 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Any, Sequence, Union
 
-import mmcv
+import mmengine
 import numpy as np
 import torch
 
 from mmdeploy.utils import get_input_shape, load_config
 
 
-def inference_model(model_cfg: Union[str, mmcv.Config],
-                    deploy_cfg: Union[str, mmcv.Config],
+def inference_model(model_cfg: Union[str, mmengine.Config],
+                    deploy_cfg: Union[str, mmengine.Config],
                     backend_files: Sequence[str], img: Union[str, np.ndarray],
                     device: str) -> Any:
     """Run inference with PyTorch or backend model and show results.
@@ -27,8 +27,8 @@ def inference_model(model_cfg: Union[str, mmcv.Config],
                             backend_files, img, device)
 
     Args:
-        model_cfg (str | mmcv.Config): Model config file or Config object.
-        deploy_cfg (str | mmcv.Config): Deployment config file or Config
+        model_cfg (str | mmengine.Config): Model config file or Config object.
+        deploy_cfg (str | mmengine.Config): Deployment config file or Config
             object.
         backend_files (Sequence[str]): Input backend model file(s).
         img (str | np.ndarray): Input image file or numpy array for inference.

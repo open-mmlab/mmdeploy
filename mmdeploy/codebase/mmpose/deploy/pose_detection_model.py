@@ -2,6 +2,7 @@
 from typing import List, Optional, Sequence, Union
 
 import mmcv
+import mmengine
 import numpy as np
 import torch
 from mmcv.utils import Registry
@@ -28,9 +29,9 @@ class End2EndModel(BaseBackendModel):
         backend_files (Sequence[str]): Paths to all required backend files(e.g.
             '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
         device (str): A string represents device type.
-        deploy_cfg (str | mmcv.Config): Deployment config file or loaded Config
-            object.
-        deploy_cfg (str | mmcv.Config): Model config file or loaded Config
+        deploy_cfg (str | mmengine.Config): Deployment config file or loaded
+            Config object.
+        deploy_cfg (str | mmengine.Config): Model config file or loaded Config
             object.
     """
 
@@ -38,8 +39,8 @@ class End2EndModel(BaseBackendModel):
                  backend: Backend,
                  backend_files: Sequence[str],
                  device: str,
-                 deploy_cfg: Union[str, mmcv.Config] = None,
-                 model_cfg: Union[str, mmcv.Config] = None,
+                 deploy_cfg: Union[str, mmengine.Config] = None,
+                 model_cfg: Union[str, mmengine.Config] = None,
                  **kwargs):
         super(End2EndModel, self).__init__(deploy_cfg=deploy_cfg)
         from mmpose.models import builder
@@ -230,16 +231,16 @@ class SDKEnd2EndModel(End2EndModel):
 
 
 def build_pose_detection_model(model_files: Sequence[str],
-                               model_cfg: Union[str, mmcv.Config],
-                               deploy_cfg: Union[str, mmcv.Config],
+                               model_cfg: Union[str, mmengine.Config],
+                               deploy_cfg: Union[str, mmengine.Config],
                                device: str, **kwargs):
     """Build object segmentation model for different backends.
 
     Args:
         model_files (Sequence[str]): Input model file(s).
-        model_cfg (str | mmcv.Config): Input model config file or Config
+        model_cfg (str | mmengine.Config): Input model config file or Config
             object.
-        deploy_cfg (str | mmcv.Config): Input deployment config file or
+        deploy_cfg (str | mmengine.Config): Input deployment config file or
             Config object.
         device (str):  Device to input model.
 

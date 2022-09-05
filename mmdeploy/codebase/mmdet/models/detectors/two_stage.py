@@ -2,7 +2,8 @@
 import copy
 
 import torch
-from mmdet.core.utils import ForwardResults, OptSampleList
+from mmdet.models.detectors.base import ForwardResults
+from mmdet.structures.det_data_sample import OptSampleList
 
 from mmdeploy.core import FUNCTION_REWRITER, mark
 from mmdeploy.utils import is_dynamic_shape

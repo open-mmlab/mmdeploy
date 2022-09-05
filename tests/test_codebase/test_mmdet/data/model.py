@@ -1,6 +1,14 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+# model settings
+data_preprocessor = dict(
+    type='DetDataPreprocessor',
+    mean=[123.675, 116.28, 103.53],
+    std=[58.395, 57.12, 57.375],
+    bgr_to_rgb=True,
+    pad_size_divisor=32)
 model = dict(
     type='YOLOV3',
+    data_preprocessor=data_preprocessor,
     backbone=dict(
         type='MobileNetV2',
         out_indices=(2, 4, 6),
@@ -41,13 +49,6 @@ model = dict(
             loss_weight=2.0,
             reduction='sum'),
         loss_wh=dict(type='MSELoss', loss_weight=2.0, reduction='sum')),
-    # training and testing settings
-    train_cfg=dict(
-        assigner=dict(
-            type='GridAssigner',
-            pos_iou_thr=0.5,
-            neg_iou_thr=0.5,
-            min_pos_iou=0)),
     test_cfg=dict(
         nms_pre=1000,
         min_bbox_size=0,
@@ -57,53 +58,82 @@ model = dict(
         max_per_img=100))
 # dataset settings
 dataset_type = 'CocoDataset'
-data_root = '.'
-img_norm_cfg = dict(
-    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
-train_pipeline = [
-    dict(type='LoadImageFromFile', to_float32=True),
-    dict(type='LoadAnnotations', with_bbox=True),
-    dict(type='PhotoMetricDistortion'),
-    dict(
-        type='Expand',
-        mean=img_norm_cfg['mean'],
-        to_rgb=img_norm_cfg['to_rgb'],
-        ratio_range=(1, 2)),
-    dict(
-        type='MinIoURandomCrop',
-        min_ious=(0.4, 0.5, 0.6, 0.7, 0.8, 0.9),
-        min_crop_size=0.3),
-    dict(
-        type='Resize',
-        img_scale=[(320, 320), (416, 416)],
-        multiscale_mode='range',
-        keep_ratio=True),
-    dict(type='RandomFlip', flip_ratio=0.5),
-    dict(type='Normalize', **img_norm_cfg),
-    dict(type='Pad', size_divisor=32),
-    dict(type='DefaultFormatBundle'),
-    dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels'])
-]
+data_root = 'data/coco/'
+
+file_client_args = dict(backend='disk')
+
 test_pipeline = [
-    dict(type='LoadImageFromFile'),
+    dict(type='LoadImageFromFile', file_client_args=file_client_args),
+    dict(type='Resize', scale=(416, 416), keep_ratio=False),
     dict(
-        type='MultiScaleFlipAug',
-        img_scale=(416, 416),
-        flip=False,
-        transforms=[
-            dict(type='Resize', keep_ratio=True),
-            dict(type='RandomFlip'),
-            dict(type='Normalize', **img_norm_cfg),
-            dict(type='Pad', size_divisor=32),
-            dict(type='DefaultFormatBundle'),
-            dict(type='Collect', keys=['img'])
-        ])
+        type='PackDetInputs',
+        meta_keys=('img_id', 'img_path', 'ori_shape', 'img_shape',
+                   'scale_factor'))
 ]
-data = dict(
-    samples_per_gpu=24,
-    workers_per_gpu=4,
-    test=dict(
+
+val_dataloader = dict(
+    batch_size=24,
+    num_workers=4,
+    persistent_workers=True,
+    drop_last=False,
+    sampler=dict(type='DefaultSampler', shuffle=False),
+    dataset=dict(
         type=dataset_type,
-        ann_file='tests/test_codebase/test_mmdet/data/coco_sample.json',
-        img_prefix=data_root,
+        data_root=data_root,
+        ann_file='annotations/instances_val2017.json',
+        data_prefix=dict(img='val2017/'),
+        test_mode=True,
         pipeline=test_pipeline))
+test_dataloader = val_dataloader
+
+val_evaluator = dict(
+    type='CocoMetric',
+    ann_file=data_root + 'annotations/instances_val2017.json',
+    metric='bbox')
+test_evaluator = val_evaluator
+
+val_cfg = dict(type='ValLoop')
+test_cfg = dict(type='TestLoop')
+
+# learning rate
+param_scheduler = [
+    dict(
+        type='LinearLR', start_factor=0.001, by_epoch=False, begin=0, end=500),
+    dict(
+        type='MultiStepLR',
+        begin=0,
+        end=12,
+        by_epoch=True,
+        milestones=[8, 11],
+        gamma=0.1)
+]
+
+# optimizer
+optim_wrapper = dict(
+    type='OptimWrapper',
+    optimizer=dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001))
+
+default_scope = 'mmdet'
+
+default_hooks = dict(
+    timer=dict(type='IterTimerHook'),
+    logger=dict(type='LoggerHook', interval=50),
+    param_scheduler=dict(type='ParamSchedulerHook'),
+    checkpoint=dict(type='CheckpointHook', interval=1),
+    sampler_seed=dict(type='DistSamplerSeedHook'),
+    visualization=dict(type='DetVisualizationHook'))
+
+env_cfg = dict(
+    cudnn_benchmark=False,
+    mp_cfg=dict(mp_start_method='fork', opencv_num_threads=0),
+    dist_cfg=dict(backend='nccl'),
+)
+
+vis_backends = [dict(type='LocalVisBackend')]
+visualizer = dict(
+    type='DetLocalVisualizer', vis_backends=vis_backends, name='visualizer')
+log_processor = dict(type='LogProcessor', window_size=50, by_epoch=True)
+
+log_level = 'INFO'
+load_from = None
+resume = False

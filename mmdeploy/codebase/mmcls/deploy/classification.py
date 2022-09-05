@@ -185,9 +185,11 @@ class Classification(BaseTask):
         else:
             data = {'img': imgs}
         data = pipeline(data)
+        from mmengine.dataset import pseudo_collate
+        data = pseudo_collate([data])
         if data_preprocessor is not None:
-            data = data_preprocessor([data], False)
-            return data, data[0]
+            data = data_preprocessor(data, False)
+            return data, data['inputs']
         else:
             return data, BaseTask.get_tensor_from_input(data)
 

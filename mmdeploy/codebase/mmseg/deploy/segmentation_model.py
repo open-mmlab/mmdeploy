@@ -3,10 +3,10 @@ from typing import List, Optional, Sequence, Union
 
 import mmcv
 import torch
-from mmengine import BaseDataElement, Config
-from mmengine.data import PixelData
+from mmengine import Config
 from mmengine.model import BaseDataPreprocessor
 from mmengine.registry import Registry
+from mmengine.structures import BaseDataElement, PixelData
 from torch import nn
 
 from mmdeploy.codebase.base import BaseBackendModel
@@ -32,8 +32,8 @@ class End2EndModel(BaseBackendModel):
         device (str): A string represents device type.
         class_names (Sequence[str]): A list of string specifying class names.
         palette (np.ndarray): The palette of segmentation map.
-        deploy_cfg (str | Config): Deployment config file or loaded Config
-            object.
+        deploy_cfg (str | mmengine.Config): Deployment config file or loaded
+            Config object.
     """
 
     def __init__(self,
@@ -65,7 +65,7 @@ class End2EndModel(BaseBackendModel):
             **kwargs)
 
     def forward(self,
-                batch_inputs: torch.Tensor,
+                inputs: torch.Tensor,
                 data_samples: Optional[List[BaseDataElement]] = None,
                 mode: str = 'predict'):
         """Run forward inference.
@@ -83,12 +83,12 @@ class End2EndModel(BaseBackendModel):
         """
         assert mode == 'predict', \
             'Backend model only support mode==predict,' f' but get {mode}'
-        if batch_inputs.device != torch.device(self.device):
+        if inputs.device != torch.device(self.device):
             get_root_logger().warning(f'expect input device {self.device}'
-                                      f' but get {batch_inputs.device}.')
-        batch_inputs = batch_inputs.to(self.device)
+                                      f' but get {inputs.device}.')
+        inputs = inputs.to(self.device)
         batch_outputs = self.wrapper({self.input_name:
-                                      batch_inputs})[self.output_names[0]]
+                                      inputs})[self.output_names[0]]
 
         predictions = []
         for seg_pred, data_sample in zip(batch_outputs, data_samples):
@@ -98,7 +98,7 @@ class End2EndModel(BaseBackendModel):
                 img_shape = [int(_) for _ in image.shape[:2]]
                 pred_shape = [int(_) for _ in seg_pred.shape[2:]]
                 if img_shape != pred_shape:
-                    from mmseg.ops import resize
+                    from mmseg.models.utils import resize
                     ori_type = seg_pred.dtype
                     seg_pred = resize(
                         seg_pred.unsqueeze(0).to(torch.float32),
@@ -146,9 +146,9 @@ def build_segmentation_model(
 
     Args:
         model_files (Sequence[str]): Input model file(s).
-        model_cfg (str | Config): Input model config file or Config
+        model_cfg (str | mmengine.Config): Input model config file or Config
             object.
-        deploy_cfg (str | Config): Input deployment config file or
+        deploy_cfg (str | mmengine.Config): Input deployment config file or
             Config object.
         device (str):  Device to input model.
         data_preprocessor (BaseDataPreprocessor | Config): The data

@@ -4,10 +4,10 @@ import os
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 from typing import Any
 
-import mmcv
 import numpy as np
 import pytest
 import torch
+from mmengine import Config
 from torch.utils.data import DataLoader
 from torch.utils.data.dataset import Dataset
 
@@ -21,7 +21,7 @@ import_codebase(Codebase.MMDET)
 
 model_cfg_path = 'tests/test_codebase/test_mmdet/data/model.py'
 model_cfg = load_config(model_cfg_path)[0]
-deploy_cfg = mmcv.Config(
+deploy_cfg = Config(
     dict(
         backend_config=dict(type='onnxruntime'),
         codebase_config=dict(
@@ -48,6 +48,31 @@ onnx_file = NamedTemporaryFile(suffix='.onnx').name
 task_processor = build_task_processor(model_cfg, deploy_cfg, 'cpu')
 img_shape = (32, 32)
 img = np.random.rand(*img_shape, 3)
+
+
+def test_build_test_runner():
+    # Prepare dummy model
+    from mmdet.structures import DetDataSample
+    from mmengine.data import InstanceData
+
+    data_sample = DetDataSample()
+    img_meta = dict(img_shape=(800, 1216, 3))
+    gt_instances = InstanceData(metainfo=img_meta)
+    gt_instances.bboxes = torch.rand((5, 4))
+    gt_instances.labels = torch.rand((5, ))
+    data_sample.gt_instances = gt_instances
+    pred_instances = InstanceData(metainfo=img_meta)
+    pred_instances.bboxes = torch.rand((5, 4))
+    pred_instances.scores = torch.rand((5, ))
+    pred_instances.labels = torch.randint(0, 10, (5, ))
+    data_sample.pred_instances = pred_instances
+    outputs = [data_sample]
+    model = DummyModel(outputs=outputs)
+    assert model is not None
+    # Run test
+    with TemporaryDirectory() as dir:
+        runner = task_processor.build_test_runner(model, dir)
+        runner.test()
 
 
 @pytest.mark.parametrize('from_mmrazor', [True, False, '123', 0])
@@ -86,10 +111,11 @@ def backend_model():
     from mmdeploy.backend.onnxruntime import ORTWrapper
     ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
     wrapper = SwitchBackendWrapper(ORTWrapper)
-    wrapper.set(outputs={
-        'dets': torch.rand(1, 10, 5),
-        'labels': torch.rand(1, 10)
-    })
+    wrapper.set(
+        outputs={
+            'dets': torch.rand(1, 10, 5).sort(2).values,
+            'labels': torch.randint(0, 10, (1, 10))
+        })
 
     yield task_processor.build_backend_model([''])
 
@@ -130,22 +156,12 @@ def test_create_input(device):
     task_processor.device = original_device
 
 
-def test_run_inference(backend_model):
-    torch_model = task_processor.build_pytorch_model(None)
-    input_dict, _ = task_processor.create_input(img, input_shape=img_shape)
-    torch_results = task_processor.run_inference(torch_model, input_dict)
-    backend_results = task_processor.run_inference(backend_model, input_dict)
-    assert torch_results is not None
-    assert backend_results is not None
-    assert len(torch_results[0]) == len(backend_results[0])
-
-
 def test_visualize(backend_model):
     input_dict, _ = task_processor.create_input(img, input_shape=img_shape)
-    results = task_processor.run_inference(backend_model, input_dict)
+    results = backend_model.test_step([input_dict])
     with TemporaryDirectory() as dir:
         filename = dir + 'tmp.jpg'
-        task_processor.visualize(backend_model, img, results[0], filename, '')
+        task_processor.visualize(img, results, filename, 'window')
         assert os.path.exists(filename)
 
 
@@ -159,47 +175,16 @@ def test_get_partition_cfg(partition_type):
     assert partition_cfg == MMDET_PARTITION_CFG[partition_type]
 
 
-def test_get_tensort_from_input():
-    input_data = {'img': [torch.ones(3, 4, 5)]}
+def test_get_tensor_from_input():
+    input_data = {'inputs': torch.ones(3, 4, 5)}
     inputs = task_processor.get_tensor_from_input(input_data)
     assert torch.equal(inputs, torch.ones(3, 4, 5))
 
 
 def test_build_dataset_and_dataloader():
     dataset = task_processor.build_dataset(
-        dataset_cfg=model_cfg, dataset_type='test')
+        dataset_cfg=model_cfg.test_dataloader.dataset)
     assert isinstance(dataset, Dataset), 'Failed to build dataset'
-    dataloader = task_processor.build_dataloader(dataset, 1, 1)
+    dataloader_cfg = task_processor.model_cfg.test_dataloader
+    dataloader = task_processor.build_dataloader(dataloader_cfg)
     assert isinstance(dataloader, DataLoader), 'Failed to build dataloader'
-
-
-def test_single_gpu_test_and_evaluate():
-    from mmcv.parallel import MMDataParallel
-
-    class DummyDataset(Dataset):
-
-        def __getitem__(self, index):
-            return 0
-
-        def __len__(self):
-            return 0
-
-        def evaluate(self, *args, **kwargs):
-            return 0
-
-        def format_results(self, *args, **kwargs):
-            return 0
-
-    dataset = DummyDataset()
-    # Prepare dataloader
-    dataloader = DataLoader(dataset)
-
-    # Prepare dummy model
-    model = DummyModel(outputs=[torch.rand([1, 10, 5]), torch.rand([1, 10])])
-    model = MMDataParallel(model, device_ids=[0])
-    # Run test
-    outputs = task_processor.single_gpu_test(model, dataloader)
-    assert isinstance(outputs, list)
-    output_file = NamedTemporaryFile(suffix='.pkl').name
-    task_processor.evaluate_outputs(
-        model_cfg, outputs, dataset, 'bbox', out=output_file, format_only=True)
