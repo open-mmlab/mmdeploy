@@ -42,7 +42,7 @@ pipeline {
                 axes {
                     axis {
                         name '_codebase'
-                        value strToList(${param.CODEBASES})
+                        value strToList('${param.CODEBASES}')
                     }
                 }
                 stages {
