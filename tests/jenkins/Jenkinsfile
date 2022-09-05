@@ -95,6 +95,6 @@ pipeline {
   }
 
 
-list strToList(str) {
+def strToList(str) {
     return ${str}.tokenize(" ")
 }
