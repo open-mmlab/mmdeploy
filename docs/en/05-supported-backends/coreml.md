@@ -13,7 +13,7 @@ cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
     -DPYTHON_EXECUTABLE=`which python` \
     -DCMAKE_INSTALL_PREFIX=install \
-    -DDISABLE_SVE=ON # low version of pytorch need this option
+    -DDISABLE_SVE=ON # low version like 1.8.0 of pytorch need this option
 make install
 ```
 

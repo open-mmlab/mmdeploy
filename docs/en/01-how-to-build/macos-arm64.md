@@ -97,8 +97,8 @@ cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
     -DPYTHON_EXECUTABLE=`which python` \
     -DCMAKE_INSTALL_PREFIX=install \
-    -DDISABLE_SVE=ON
-make -j$(nproc) && make install
+    -DDISABLE_SVE=ON # low version like 1.8.0 of pytorch need DISABLE_SVE option
+make -j4 && make install
 export Torch_DIR=$(pwd)/install/share/cmake/Torch
 </code></pre>
   </td>
@@ -113,7 +113,7 @@ cd /the/root/path/of/MMDeploy
 export MMDEPLOY_DIR=$(pwd)
 ```
 
-#### Build Model Converter
+### Build Model Converter
 
 - **Core ML**
 
@@ -125,12 +125,12 @@ export MMDEPLOY_DIR=$(pwd)
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
   cmake -DMMDEPLOY_TARGET_BACKENDS=torchscript -DTorch_DIR=${Torch_DIR} ..
-  make -j$(nproc) && make install
+  make -j4 && make install
   ```
 
 Please check [cmake build option](cmake_option.md).
 
-#### Install Model Converter
+### Install Model Converter
 
 ```bash
 cd ${MMDEPLOY_DIR}
@@ -160,5 +160,5 @@ The following shows an example of building an SDK using Core ML as the inference
       -DMMDEPLOY_TARGET_BACKENDS=coreml \
       -DTorch_DIR=${Torch_DIR}
 
-  make -j$(nproc) && make install
+  make -j4 && make install
   ```

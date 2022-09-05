@@ -13,7 +13,7 @@ cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
     -DPYTHON_EXECUTABLE=`which python` \
     -DCMAKE_INSTALL_PREFIX=install \
-    -DDISABLE_SVE=ON # 低版本需要加上这个参数
+    -DDISABLE_SVE=ON # 低版本比如1.8.0需要加上这个参数
 make install
 ```
 

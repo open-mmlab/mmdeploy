@@ -94,8 +94,8 @@ cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
     -DPYTHON_EXECUTABLE=`which python` \
     -DCMAKE_INSTALL_PREFIX=install \
-    -DDISABLE_SVE=ON
-make -j$(nproc) && make install
+    -DDISABLE_SVE=ON # low version like 1.8.0 of pytorch need DISABLE_SVE option
+make -j4 && make install
 export Torch_DIR=$(pwd)/install/share/cmake/Torch
 </code></pre>
   </td>
@@ -124,7 +124,7 @@ export MMDEPLOY_DIR=$(pwd)
   cd ${MMDEPLOY_DIR}
   mkdir -p build && cd build
   cmake -DMMDEPLOY_TARGET_BACKENDS=torchscript -DTorch_DIR=${Torch_DIR} ..
-  make -j$(nproc) && make install
+  make -j4 && make install
   ```
 
 参考 [cmake 选项说明](cmake_option.md)
@@ -158,5 +158,5 @@ pip install -e .
       -DMMDEPLOY_TARGET_BACKENDS=coreml \
       -DTorch_DIR=${Torch_DIR}
 
-  make -j$(nproc) && make install
+  make -j4 && make install
   ```
