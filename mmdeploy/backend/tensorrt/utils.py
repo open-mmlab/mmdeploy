@@ -42,7 +42,7 @@ def load(path: str) -> trt.ICudaEngine:
 
 
 def search_cuda_version() -> str:
-    """try import torch.version.cuda, then try use cmd.
+    """try cmd to get cuda version, then try `torch.cuda`
 
     Returns:
         str: cuda version, for example 10.2
