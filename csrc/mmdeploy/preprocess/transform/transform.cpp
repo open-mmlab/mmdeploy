@@ -36,6 +36,11 @@ Transform::Transform(const Value &args) {
   Device device{"cpu"};
   if (args.contains("context")) {
     device = args["context"].value("device", device);
+    bool fuse_transform = args["context"].value("fuse_transform", false);
+    if (fuse_transform) {
+      specified_platform_ = "elena";
+      return;
+    }
   }
 
   Platform platform(device.platform_id());

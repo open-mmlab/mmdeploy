@@ -10,6 +10,7 @@ from mmdeploy.utils import (Backend, Task, get_backend, get_codebase,
                             get_common_config, get_ir_config, get_root_logger,
                             get_task_type, is_dynamic_batch, load_config)
 from mmdeploy.utils.constants import SDK_TASK_MAP as task_map
+from .tracer import add_transform_tag, get_transform_static
 
 
 def get_mmdpeloy_version() -> str:
@@ -400,6 +401,9 @@ def export2SDK(deploy_cfg: Union[str, mmcv.Config],
     deploy_info = get_deploy(deploy_cfg, model_cfg, work_dir, device)
     pipeline_info = get_pipeline(deploy_cfg, model_cfg, work_dir, device)
     detail_info = get_detail(deploy_cfg, model_cfg, pth=pth)
+    transform_static, tag = get_transform_static(
+        pipeline_info['pipeline']['tasks'][0]['transforms'])
+    pipeline_info = add_transform_tag(pipeline_info, tag)
     mmcv.dump(
         deploy_info,
         '{}/deploy.json'.format(work_dir),
