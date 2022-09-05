@@ -32,7 +32,8 @@
 ### Install Dependencies for Model Converter
 
 Please refer to [get_started](../get_started.md) to install conda, PyTorch, mmcv.
-``` bash
+
+```bash
 conda install pytorch==1.9.0 torchvision==0.10.0 torchaudio==0.9.0 -c pytorch
 pip install mmcv-full==1.6.0 -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.9.0/index.html
 ```
