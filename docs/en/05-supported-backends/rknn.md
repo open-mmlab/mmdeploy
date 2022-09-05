@@ -12,7 +12,7 @@ It is recommended to create a virtual environment for the project.
    git clone https://github.com/rockchip-linux/rknn-toolkit2
    ```
 
-2. install RKNN python package following [official doc](https://github.com/rockchip-linux/rknn-toolkit2/tree/master/doc).
+2. install RKNN python package following [official doc](https://github.com/rockchip-linux/rknn-toolkit2/tree/master/doc). In our testing, we used the rknn-toolkit 1.2.0 with commit id `834ba0b0a1ab8ee27024443d77b02b5ba48b67fc`.
 
 3. reinstall MMDeploy from source following the [instructions](../01-how-to-build/build_from_source.md). Note that there are conflicts between the pip dependencies of MMDeploy and RKNN. Here is the suggested packages versions for python 3.6:
 
@@ -37,7 +37,8 @@ python tools/deploy.py \
     /tmp/snapshots/yolov3_d53_mstrain-608_273e_coco_20210518_115020-a2c3acb8.pth \
     tests/data/tiger.jpeg \
     --work-dir ../deploy_result \
-    --device cpu
+    --device cpu \
+    --dump-info
 ```
 
 ## Deployment config
@@ -50,7 +51,6 @@ backend_config = dict(
     common_config=dict(
         mean_values=None,
         std_values=None,
-        output_tensor_type=None,
         target_platform='rk3588',
         optimization_level=3),
     quantization_config=dict(do_quantization=False, dataset=None),
