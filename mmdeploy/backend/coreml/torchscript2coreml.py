@@ -76,9 +76,10 @@ def from_torchscript(torchscript_model: Union[str,
     try:
         from mmdeploy.backend.torchscript import get_ops_path
         torch.ops.load_library(get_ops_path())
-    except Exception:
+    except Exception as e:
         get_root_logger().warning(
-            'Can not load custom ops. '
+            'Can not load custom ops because:\n'
+            f'{e}\n'
             'Some model might not be able to be converted.')
 
     if isinstance(torchscript_model, str):
