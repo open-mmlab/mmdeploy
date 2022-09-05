@@ -48,8 +48,8 @@ def process_model_config(model_cfg: Config,
             cfg.test_pipeline.pop(0)
     # check whether input_shape is valid
     if 'data_preprocessor' in cfg:
-        cfg.test_pipeline.insert(3, dict(type='Normalize',
-                                         **cfg['data_preprocessor']))
+        cfg.test_pipeline.insert(
+            3, dict(type='Normalize', **cfg['data_preprocessor']))
     if input_shape is not None:
         if 'crop_size' in cfg.test_pipeline[2]:
             crop_size = cfg.test_pipeline[2]['crop_size']

@@ -245,8 +245,7 @@ class TestGetInputShape:
 
 class TestCfgApplyMark:
 
-    config_with_mask = Config(
-        dict(partition_config=dict(apply_marks=True)))
+    config_with_mask = Config(dict(partition_config=dict(apply_marks=True)))
 
     def test_cfg_apply_marks_none(self):
         assert util.cfg_apply_marks(Config(dict())) is None
@@ -257,8 +256,7 @@ class TestCfgApplyMark:
 
 class TestGetPartitionConfig:
 
-    config_with_mask = Config(
-        dict(partition_config=dict(apply_marks=True)))
+    config_with_mask = Config(dict(partition_config=dict(apply_marks=True)))
     config_without_mask = Config(
         dict(partition_config=dict(apply_marks=False)))
 
