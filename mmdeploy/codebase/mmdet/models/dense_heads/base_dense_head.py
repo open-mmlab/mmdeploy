@@ -327,7 +327,8 @@ def base_dense_head__get_bboxes__ncnn(ctx,
     batch_mlvl_scores = torch.cat([
         batch_mlvl_scores[:, :, self.num_classes:],
         batch_mlvl_scores[:, :, 0:self.num_classes]
-    ], dim=2)
+    ],
+                                  dim=2)
     if isinstance(self.bbox_coder, TBLRBBoxCoder):
         batch_mlvl_bboxes = _tblr_pred_to_delta_xywh_pred(
             batch_mlvl_bboxes, vars[0:2])

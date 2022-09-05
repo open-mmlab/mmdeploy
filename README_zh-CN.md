@@ -55,7 +55,7 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 
 | ONNX Runtime | TensorRT | ppl.nn | ncnn | OpenVINO | LibTorch | snpe | Ascend | Core ML | more                                           |
 | ------------ | -------- | ------ | ---- | -------- | -------- | ---- | ------ | ------- | ---------------------------------------------- |
-| ✔️            | ✔️        | ✔️      | ✔️    | ✔️        | ✔️        | ✔️    | ✔️      | ✔️       | [benchmark](docs/en/03-benchmark/benchmark.md) |
+| ✔️           | ✔️       | ✔️     | ✔️   | ✔️       | ✔️       | ✔️   | ✔️     | ✔️      | [benchmark](docs/en/03-benchmark/benchmark.md) |
 
 ### SDK 可高度定制化
 

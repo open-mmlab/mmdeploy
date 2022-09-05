@@ -57,7 +57,7 @@ Models can be exported and run in the following backends, and more will be compa
 
 | ONNX Runtime | TensorRT | ppl.nn | ncnn | OpenVINO | LibTorch | snpe | Ascend | Core ML | more                                           |
 | ------------ | -------- | ------ | ---- | -------- | -------- | ---- | ------ | ------- | ---------------------------------------------- |
-| ✔️            | ✔️        | ✔️      | ✔️    | ✔️        | ✔️        | ✔️    | ✔️      | ✔️       | [benchmark](docs/en/03-benchmark/benchmark.md) |
+| ✔️           | ✔️       | ✔️     | ✔️   | ✔️       | ✔️       | ✔️   | ✔️     | ✔️      | [benchmark](docs/en/03-benchmark/benchmark.md) |
 
 ### Efficient and scalable C/C++ SDK Framework
 

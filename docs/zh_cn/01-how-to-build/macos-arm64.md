@@ -35,6 +35,10 @@
 #### 安装 MMDeploy Converter 依赖
 
 参考[get_started](../get_started.md)文档，安装conda、PyTorch 和 mmcv。
+``` bash
+conda install pytorch==1.9.0 torchvision==0.10.0 torchaudio==0.9.0 -c pytorch
+pip install mmcv-full==1.6.0 -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.9.0/index.html
+```
 
 #### 安装 MMDeploy SDK 依赖
 
