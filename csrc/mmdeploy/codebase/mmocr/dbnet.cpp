@@ -46,7 +46,7 @@ class DBHead : public MMOCR {
 
   Result<Value> operator()(const Value& _data, const Value& _prob) const {
     auto conf = _prob["output"].get<Tensor>();
-    if (!(conf.shape().size() == 4 && conf.data_type() == DataType::kFLOAT)) {
+    if (!(conf.shape().size() == 3 && conf.data_type() == DataType::kFLOAT)) {
       MMDEPLOY_ERROR("unsupported `output` tensor, shape: {}, dtype: {}", conf.shape(),
                      (int)conf.data_type());
       return Status(eNotSupported);
@@ -54,8 +54,6 @@ class DBHead : public MMOCR {
 
     // drop batch dimension
     conf.Squeeze(0);
-
-    conf = conf.Slice(0);
 
     std::vector<std::vector<cv::Point>> contours;
     std::vector<float> scores;

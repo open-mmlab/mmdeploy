@@ -223,7 +223,7 @@ class TextRecognition(BaseTask):
         """
         input_shape = get_input_shape(self.deploy_cfg)
         model_cfg = process_model_config(self.model_cfg, [''], input_shape)
-        preprocess = model_cfg.data.test.pipeline
+        preprocess = model_cfg.test_dataloader.dataset.pipeline
         return preprocess
 
     def get_postprocess(self) -> Dict:
@@ -232,7 +232,7 @@ class TextRecognition(BaseTask):
         Return:
             dict: Composed of the postprocess information.
         """
-        postprocess = self.model_cfg.label_convertor
+        postprocess = self.model_cfg.model.decoder.postprocessor
         return postprocess
 
     def get_model_name(self) -> str:

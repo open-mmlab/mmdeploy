@@ -59,17 +59,9 @@ def get_model_name_customs(deploy_cfg: mmengine.Config,
     name = task_processor.get_model_name()
     customs = []
     if task == Task.TEXT_RECOGNITION:
-        from mmocr.models.builder import build_convertor
-        label_convertor = model_cfg.model.label_convertor
-        assert label_convertor is not None, 'model_cfg contains no label '
-        'convertor'
-        max_seq_len = 40  # default value in EncodeDecodeRecognizer of mmocr
-        label_convertor.update(max_seq_len=max_seq_len)
-        label_convertor = build_convertor(label_convertor)
-        fd = open(f'{work_dir}/dict_file.txt', mode='w+')
-        for item in label_convertor.idx2char:
-            fd.write(item + '\n')
-        fd.close()
+        import shutil
+        shutil.copy(model_cfg.dictionary.dict_file,
+                    f'{work_dir}/dict_file.txt')
         customs.append('dict_file.txt')
     return name, customs
 

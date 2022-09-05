@@ -4,6 +4,7 @@ from typing import Sequence, Union
 import mmengine
 import torch
 from mmengine.registry import Registry
+from mmengine.structures import LabelData
 from mmocr.utils.typing import RecSampleList
 
 from mmdeploy.codebase.base import BaseBackendModel
@@ -127,8 +128,10 @@ class SDKEnd2EndModel(End2EndModel):
         """
         text, score = self.wrapper.invoke(inputs[0].permute(
             [1, 2, 0]).contiguous().detach().cpu().numpy())
-        data_samples[0].pred_text = text
-        # results = [dict(text=text, score=score)]
+        pred_text = LabelData()
+        pred_text.score = score
+        pred_text.item = text
+        data_samples[0].pred_text = pred_text
         return data_samples
 
 
