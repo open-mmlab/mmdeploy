@@ -319,6 +319,7 @@ pip install -e .
 
 - 有些依赖项是可选的。运行 `pip install -e .` 将进行最小化依赖安装。 如果需安装其他可选依赖项，请执行`pip install -r requirements/optional.txt`，
   或者 `pip install -e .[optional]`。其中，`[optional]`可以替换为：`all`、`tests`、`build` 或 `optional`。
+- cuda10 建议安装[补丁包](https://developer.nvidia.com/cuda-10.2-download-archive?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1804&target_type=runfilelocal)，否则模型运行可能出现 GEMM 相关错误
 
 #### 编译 SDK 和 Demos
 

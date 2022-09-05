@@ -323,6 +323,7 @@ pip install -e .
 - Some dependencies are optional. Simply running `pip install -e .` will only install the minimum runtime requirements.
   To use optional dependencies, install them manually with `pip install -r requirements/optional.txt` or specify desired extras when calling `pip` (e.g. `pip install -e .[optional]`).
   Valid keys for the extras field are: `all`, `tests`, `build`, `optional`.
+- It is recommended to [install patch for cuda10](https://developer.nvidia.com/cuda-10.2-download-archive?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1804&target_type=runfilelocal), otherwise GEMM related errors may occur when model runs
 
 ### Build SDK and Demo
 
