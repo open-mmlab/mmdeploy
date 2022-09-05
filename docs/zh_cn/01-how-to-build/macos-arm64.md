@@ -81,7 +81,7 @@ MMDeploy 的 Model Converter 和 SDK 共享推理引擎。您可以参考下文�
     <td>coremltools</td>
     <td>
 <pre><code>
-pip install coremltools
+pip install coremltools==6.0b2
 </code></pre>
     </td>
   </tr>
@@ -135,6 +135,11 @@ export MMDEPLOY_DIR=$(pwd)
 参考 [cmake 选项说明](cmake_option.md)
 
 #### 安装 Model Converter
+
+```bash
+# requirements/runtime.txt 中依赖项grpcio，通过pip安装的方式无法正常import, 需使用 conda 安装
+conda install grpcio
+```
 
 ```bash
 cd ${MMDEPLOY_DIR}

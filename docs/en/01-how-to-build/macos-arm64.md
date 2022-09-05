@@ -84,7 +84,7 @@ The TorchScript model is used as the IR in the conversion process of the Core ML
     <td>coremltools</td>
     <td>
 <pre><code>
-pip install coremltools
+pip install coremltools==6.0b2
 </code></pre>
     </td>
   </tr>
@@ -136,6 +136,11 @@ export MMDEPLOY_DIR=$(pwd)
 Please check [cmake build option](cmake_option.md).
 
 ### Install Model Converter
+
+```bash
+# You should use `conda install` to install the grpcio in requirements/runtime.txt
+conda install grpcio
+```
 
 ```bash
 cd ${MMDEPLOY_DIR}
