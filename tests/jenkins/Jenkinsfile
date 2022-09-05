@@ -23,19 +23,19 @@ pipeline {
     stages {
         stage('Build') { 
             steps {
-                sh "source tests/jenkins/scripts/test_build.sh '${params.DOCKER_IMAGE}'"
+                sh "tests/jenkins/scripts/test_build.sh '${params.DOCKER_IMAGE}'"
             }
         }
         
         stage('Convert') {
             steps {
-                sh "source tests/jenkins/scripts/test_convert.sh '${params.DOCKER_IMAGE}' '${params.CODEBASES}'"
+                sh "tests/jenkins/scripts/test_convert.sh '${params.DOCKER_IMAGE}' '${params.CODEBASES}'"
             }
         }
         
         stage('Prebuild') {
             steps {
-                sh "source tests/jenkins/scripts/test_prebuild.sh '${params.DOCKER_IMAGE}'"
+                sh "tests/jenkins/scripts/test_prebuild.sh '${params.DOCKER_IMAGE}'"
             }
         }
     }
