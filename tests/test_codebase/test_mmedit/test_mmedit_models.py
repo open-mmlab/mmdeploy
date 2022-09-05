@@ -6,7 +6,7 @@ from typing import Dict
 import mmengine
 import onnx
 import torch
-from mmedit.models.backbones.sr_backbones import SRCNN
+from mmedit.models.editors.srcnn import SRCNNNet
 
 from mmdeploy.codebase import import_codebase
 from mmdeploy.core import RewriterContext
@@ -46,7 +46,7 @@ deploy_cfg = mmengine.Config(
 
 
 def test_srcnn():
-    pytorch_model = SRCNN()
+    pytorch_model = SRCNNNet()
     model_inputs = {'x': img}
 
     onnx_file_path = tempfile.NamedTemporaryFile(suffix='.onnx').name

@@ -1,12 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
-import tempfile
-from tempfile import NamedTemporaryFile
+from tempfile import NamedTemporaryFile, TemporaryDirectory
 
 from mmengine import Config
 import numpy as np
 import pytest
 import torch
+from torch.utils.data import DataLoader
+from torch.utils.data.dataset import Dataset
 
 import mmdeploy.apis.onnxruntime as ort_apis
 from mmdeploy.apis import build_task_processor
@@ -32,14 +33,9 @@ deploy_cfg = Config(
             output_names=['output'])))
 input_img = np.random.rand(32, 32, 3)
 img_shape = [32, 32]
-input = {'lq': input_img}
+input = {'img': input_img}
 onnx_file = NamedTemporaryFile(suffix='.onnx').name
 task_processor = build_task_processor(model_cfg, deploy_cfg, 'cpu')
-
-
-def test_build_pytorch_model():
-    torch_model = task_processor.build_pytorch_model(None)
-    assert torch_model is not None
 
 
 @pytest.fixture
@@ -61,22 +57,18 @@ def test_build_backend_model(backend_model):
 
 
 def test_create_input():
-    inputs = task_processor.create_input(input_img, img_shape=img_shape)
+    inputs = task_processor.create_input(input_img, input_shape=img_shape)
     assert inputs is not None
 
 
 def test_visualize(backend_model):
-    result = task_processor.run_inference(backend_model, input)
-    with tempfile.TemporaryDirectory() as dir:
+    input_dict, _ = task_processor.create_input(input_img,
+                                                input_shape=img_shape)
+    results = backend_model.test_step(input_dict)[0]
+    with TemporaryDirectory() as dir:
         filename = dir + 'tmp.jpg'
-        task_processor.visualize(backend_model, input_img, result[0], filename,
-                                 'onnxruntime')
+        task_processor.visualize(input_img, results, filename, 'window')
         assert os.path.exists(filename)
-
-
-def test_run_inference(backend_model):
-    results = task_processor.run_inference(backend_model, input)
-    assert results is not None
 
 
 def test_get_tensor_from_input():
@@ -110,12 +102,23 @@ def test_build_dataset():
     assert dataloader is not None, 'Failed to build dataloader'
 
 
-def test_single_gpu_test(backend_model):
-    from mmcv.parallel import MMDataParallel
-    dataset = task_processor.build_dataset(model_cfg, dataset_type='test')
-    assert dataset is not None, 'Failed to build dataset'
-    dataloader = task_processor.build_dataloader(dataset, 1, 1)
-    assert dataloader is not None, 'Failed to build dataloader'
-    backend_model = MMDataParallel(backend_model, device_ids=[0])
-    outputs = task_processor.single_gpu_test(backend_model, dataloader)
-    assert outputs is not None, 'Failed to test model'
+def test_build_dataset_and_dataloader():
+    data = dict(
+        test={
+            'type': 'SRFolderDataset',
+            'lq_folder': 'tests/test_codebase/test_mmedit/data/imgs',
+            'gt_folder': 'tests/test_codebase/test_mmedit/data/imgs',
+            'scale': 1,
+            'filename_tmpl': '{}',
+            'pipeline': [
+                {
+                    'type': 'LoadImageFromFile'
+                },
+            ]
+        })
+    dataset = task_processor.build_dataset(
+        dataset_cfg=model_cfg.test_dataloader[-1].dataset)
+    assert isinstance(dataset, Dataset), 'Failed to build dataset'
+    dataloader_cfg = task_processor.model_cfg.test_dataloader[-1]
+    dataloader = task_processor.build_dataloader(dataloader_cfg)
+    assert isinstance(dataloader, DataLoader), 'Failed to build dataloader'

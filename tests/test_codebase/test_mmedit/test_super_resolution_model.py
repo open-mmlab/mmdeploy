@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import numpy as np
 import torch
 from mmengine import Config
+from mmengine.structures import BaseDataElement
 
 import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.codebase import import_codebase
@@ -43,11 +43,11 @@ class TestEnd2EndModel:
         cls.wrapper.recover()
 
     def test_forward(self):
-        input_img = np.random.rand(3, 32, 32)
-
-        results = self.end2end_model.forward(input_img, test_mode=False)
-        assert results is not None
-
-        results = self.end2end_model.forward(
-            input_img, test_mode=True, gt=torch.tensor(results[0]))
+        input_img = torch.rand(1, 3, 32, 32)
+        img_metas = [
+            BaseDataElement(metainfo={
+                'ori_img_shape': [3, 32, 32]
+            })
+        ]
+        results = self.end2end_model.forward(input_img, img_metas)
         assert results is not None
