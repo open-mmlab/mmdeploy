@@ -10,7 +10,6 @@ import torch
 import mmdeploy.backend.ncnn as ncnn_apis
 import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.codebase import import_codebase
-from mmdeploy.codebase.mmdet.deploy.object_detection_model import End2EndModel
 from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
 
@@ -18,6 +17,8 @@ try:
     import_codebase(Codebase.MMDET)
 except ImportError:
     pytest.skip(f'{Codebase.MMDET} is not installed.', allow_module_level=True)
+
+from mmdeploy.codebase.mmdet.deploy.object_detection_model import End2EndModel
 
 
 def assert_det_results(results, module_name: str = 'model'):
