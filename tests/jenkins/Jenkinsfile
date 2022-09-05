@@ -20,28 +20,28 @@ pipeline {
         )
         booleanParam(
             name: 'EXEC_BUILD',
-            default: true,
+            defaultValue: true,
         )
         booleanParam(
             name: 'EXEC_PREBUILD',
-            default: true,
+            defaultValue: true,
         )
         booleanParam(
             name: 'EXEC_CONVERT',
-            default: true,
+            defaultValue: true,
         )
         booleanParam(
             name: 'EXEC_UNITTEST',
-            default: true,
+            defaultValue: true,
         )
     }
 
     stages {
-        stage('matrix_Test') {
+        stages('matrix_Test') {
             matrix {
                 axes {
                     axis {
-                        name '_codebase', 
+                        name '_codebase'
                         value strToList(${param.CODEBASES})
                     }
                 }
