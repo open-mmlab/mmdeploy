@@ -1106,16 +1106,11 @@ def test_dot_product_attention(backend, save_dir=None):
     Nt = 4
     Ns = 4
     E = 2
-    query = torch.rand(B, Nt, E)
-    key = torch.rand(B, Ns, E)
-    value = torch.rand(B, Ns, E)
-    mask = torch.rand(B, Nt, Ns)
+    query = torch.rand(B, Nt, E).cuda()
+    key = torch.rand(B, Ns, E).cuda()
+    value = torch.rand(B, Ns, E).cuda()
 
-    def wrapped_function(query, key, value, mask=None):
-        from torch.nn.functional import _scaled_dot_product_attention
-        return _scaled_dot_product_attention(query, key, value, mask)
-
-    wrapped_model = WrapFunction(wrapped_function).eval()
+    model = torch.nn.MultiheadAttention(E, 2).cuda()
 
     with RewriterContext(
             Config({'backend_config': {
@@ -1124,8 +1119,8 @@ def test_dot_product_attention(backend, save_dir=None):
             backend=backend.backend_name,
             opset=11):
         backend.run_and_validate(
-            wrapped_model, [query, key, value, mask],
+            model, [query, key, value],
             'dot_product_attention',
-            input_names=['query', 'key', 'value', 'mask'],
-            output_names=['weight', 'out_mask'],
+            input_names=['query', 'key', 'value'],
+            output_names=['out', 'attn'],
             save_dir=save_dir)
