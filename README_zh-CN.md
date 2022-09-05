@@ -53,9 +53,9 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 
 ### 支持多种推理后端
 
-| ONNX Runtime | TensorRT | ppl.nn | ncnn | OpenVINO | LibTorch | snpe | Ascend | more                                              |
-| ------------ | -------- | ------ | ---- | -------- | -------- | ---- | ------ | ------------------------------------------------- |
-| ✔️           | ✔️       | ✔️     | ✔️   | ✔️       | ✔️       | ✔️   | ✔️     | [benchmark](docs/zh_cn/03-benchmark/benchmark.md) |
+| ONNX Runtime | TensorRT | ppl.nn | ncnn | OpenVINO | LibTorch | snpe | Ascend | Core ML | more                                           |
+| ------------ | -------- | ------ | ---- | -------- | -------- | ---- | ------ | ------- | ---------------------------------------------- |
+| ✔️           | ✔️       | ✔️     | ✔️   | ✔️       | ✔️       | ✔️   | ✔️     | ✔️      | [benchmark](docs/en/03-benchmark/benchmark.md) |
 
 ### SDK 可高度定制化
 
@@ -70,6 +70,7 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
   - [一键式脚本安装](docs/zh_cn/01-how-to-build/build_from_script.md)
   - [Build from Docker](docs/zh_cn/01-how-to-build/build_from_docker.md)
   - [Build for Linux](docs/zh_cn/01-how-to-build/linux-x86_64.md)
+  - [Build for macOS](docs/zh_cn/01-how-to-build/macos-arm64.md)
   - [Build for Win10](docs/zh_cn/01-how-to-build/windows.md)
   - [Build for Android](docs/zh_cn/01-how-to-build/android.md)
   - [Build for Jetson](docs/en/01-how-to-build/jetsons.md)

@@ -5,7 +5,8 @@ from torch import Tensor
 import mmdeploy
 from mmdeploy.core import FUNCTION_REWRITER, mark
 from mmdeploy.mmcv.ops import ONNXNMSop, TRTBatchedNMSop
-from mmdeploy.utils import Backend, is_dynamic_batch
+from mmdeploy.utils import IR, is_dynamic_batch
+from mmdeploy.utils.constants import Backend
 
 
 def select_nms_index(scores: torch.Tensor,
@@ -272,7 +273,68 @@ def multiclass_nms(*args, **kwargs):
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdeploy.codebase.mmdet.core.post_processing._multiclass_nms',
-    backend=Backend.TORCHSCRIPT.value)
+    backend=Backend.COREML.value)
+def multiclass_nms__coreml(ctx,
+                           boxes: Tensor,
+                           scores: Tensor,
+                           max_output_boxes_per_class: int = 1000,
+                           iou_threshold: float = 0.5,
+                           score_threshold: float = 0.05,
+                           pre_top_k: int = -1,
+                           keep_top_k: int = -1):
+    """rewrite for coreml batched nms.
+
+    Use coreml_nms from custom ops.
+    """
+
+    # load custom nms
+    from mmdeploy.backend.torchscript import get_ops_path, ops_available
+    assert ops_available(), 'coreml require custom torchscript ops support.'
+    torch.ops.load_library(get_ops_path())
+    try:
+        coreml_nms = torch.ops.mmdeploy.coreml_nms
+    except Exception:
+        raise Exception(
+            'Can not use coreml_nms. Please build torchscript custom ops.')
+
+    batch_size = scores.shape[0]
+    assert batch_size == 1, 'batched nms is not supported for now.'
+
+    # pre-topk
+    if pre_top_k > 0:
+        max_scores, _ = scores.max(-1)
+        _, topk_inds = max_scores.topk(pre_top_k)
+        boxes = boxes[:, topk_inds.squeeze(), ...]
+        scores = scores[:, topk_inds.squeeze(), ...]
+
+    def _xyxy2xywh(boxes):
+        xy0 = boxes[..., :2]
+        xy1 = boxes[..., 2:]
+        xy = (xy0 + xy1) / 2
+        wh = xy1 - xy0
+        return torch.cat([xy, wh], dim=-1)
+
+    def _xywh2xyxy(boxes):
+        xy = boxes[..., :2]
+        half_wh = boxes[..., 2:] / 2
+        return torch.cat([xy - half_wh, xy + half_wh], dim=-1)
+
+    boxes = _xyxy2xywh(boxes)
+    keep_top_k = keep_top_k if keep_top_k > 0 else max_output_boxes_per_class
+    boxes, scores, _, _ = coreml_nms(
+        boxes, scores, iou_threshold, score_threshold,
+        min(keep_top_k, max_output_boxes_per_class))
+
+    scores, labels = scores.max(-1)
+    boxes = _xywh2xyxy(boxes)
+    dets = torch.cat([boxes, scores.unsqueeze(-1)], dim=-1)
+
+    return dets, labels
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    func_name='mmdeploy.codebase.mmdet.core.post_processing._multiclass_nms',
+    ir=IR.TORCHSCRIPT)
 def multiclass_nms__torchscript(ctx,
                                 boxes: Tensor,
                                 scores: Tensor,

@@ -4,7 +4,9 @@ from .adaptive_pool import (adaptive_avg_pool2d__default,
                             adaptive_avg_pool2d__ncnn)
 from .atan2 import atan2__default
 from .chunk import chunk__ncnn, chunk__torchscript
+from .clip import clip__coreml
 from .expand import expand__ncnn
+from .flatten import flatten__coreml
 from .getattribute import tensor__getattribute__ncnn
 from .group_norm import group_norm__ncnn
 from .interpolate import interpolate__ncnn, interpolate__tensorrt
@@ -26,5 +28,5 @@ __all__ = [
     'chunk__torchscript', 'masked_fill__onnxruntime',
     'tensor__setitem__default', 'tensor__getitem__ascend',
     'adaptive_avg_pool2d__default', 'adaptive_avg_pool2d__ncnn',
-    'multi_head_attention_forward'
+    'multi_head_attention_forward', 'flatten__coreml', 'clip__coreml'
 ]

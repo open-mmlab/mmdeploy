@@ -55,9 +55,9 @@ The currently supported codebases and models are as follows, and more will be in
 
 Models can be exported and run in the following backends, and more will be compatible
 
-| ONNX Runtime | TensorRT | ppl.nn | ncnn | OpenVINO | LibTorch | snpe | Ascend | more                                           |
-| ------------ | -------- | ------ | ---- | -------- | -------- | ---- | ------ | ---------------------------------------------- |
-| ✔️           | ✔️       | ✔️     | ✔️   | ✔️       | ✔️       | ✔️   | ✔️     | [benchmark](docs/en/03-benchmark/benchmark.md) |
+| ONNX Runtime | TensorRT | ppl.nn | ncnn | OpenVINO | LibTorch | snpe | Ascend | Core ML | more                                           |
+| ------------ | -------- | ------ | ---- | -------- | -------- | ---- | ------ | ------- | ---------------------------------------------- |
+| ✔️           | ✔️       | ✔️     | ✔️   | ✔️       | ✔️       | ✔️   | ✔️     | ✔️      | [benchmark](docs/en/03-benchmark/benchmark.md) |
 
 ### Efficient and scalable C/C++ SDK Framework
 
@@ -71,6 +71,7 @@ Please read [getting_started](docs/en/get_started.md) for the basic usage of MMD
   - [Build from Docker](docs/en/01-how-to-build/build_from_docker.md)
   - [Build from Script](docs/en/01-how-to-build/build_from_script.md)
   - [Build for Linux](docs/en/01-how-to-build/linux-x86_64.md)
+  - [Build for macOS](docs/en/01-how-to-build/macos-arm64.md)
   - [Build for Win10](docs/en/01-how-to-build/windows.md)
   - [Build for Android](docs/en/01-how-to-build/android.md)
   - [Build for Jetson](docs/en/01-how-to-build/jetsons.md)
