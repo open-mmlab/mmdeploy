@@ -11,10 +11,10 @@ log_dir=/data2/regression_log/convert_log/${date_snap}/${time_snap}
 mkdir -p ${log_dir}
 
 ## make fifo
-    trap "exec 1000>&-; exec 1000<&-;exit 0" 2
-    mkfifo mulfifo
-    exec 1000<>mulfifo
-    rm -rf mulfifo
+trap "exec 1000>&-; exec 1000<&-;exit 0" 2
+mkfifo mulfifo
+exec 1000<>mulfifo
+rm -rf mulfifo
 for ((n=1;n<=2;n++))
 do
     echo >&1000
