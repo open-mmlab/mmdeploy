@@ -94,7 +94,7 @@ class PyPoseDetector {
   mmdeploy_pose_detector_t detector_{};
 };
 
-static void register_python_pose_detector(py::module &m) {
+static PythonBindingRegisterer register_pose_detector{[](py::module &m) {
   py::class_<PyPoseDetector>(m, "PoseDetector")
       .def(py::init([](const char *model_path, const char *device_name, int device_id) {
              return std::make_unique<PyPoseDetector>(model_path, device_name, device_id);
@@ -123,15 +123,6 @@ static void register_python_pose_detector(py::module &m) {
           py::arg("img"), py::arg("bboxes"))
       .def("batch", &PyPoseDetector::Apply, py::arg("imgs"),
            py::arg("bboxes") = std::vector<std::vector<Rect>>());
-}
-
-class PythonPoseDetectorRegisterer {
- public:
-  PythonPoseDetectorRegisterer() {
-    gPythonBindings().emplace("pose_detector", register_python_pose_detector);
-  }
-};
-
-static PythonPoseDetectorRegisterer python_pose_detector_registerer;
+}};
 
 }  // namespace mmdeploy

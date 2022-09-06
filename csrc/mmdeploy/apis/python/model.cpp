@@ -5,7 +5,7 @@
 
 namespace mmdeploy {
 
-static void register_python_model(py::module& m) {
+static PythonBindingRegisterer register_model{[](py::module& m) {
   py::class_<Model>(m, "Model")
       .def(py::init([](const py::str& path) {
         MMDEPLOY_DEBUG("py::init([](const py::str& path)");
@@ -16,13 +16,6 @@ static void register_python_model(py::module& m) {
         py::buffer_info info(py::buffer(buffer).request());
         return Model(info.ptr, info.size);
       }));
-}
-
-class PythonModelRegisterer {
- public:
-  PythonModelRegisterer() { gPythonBindings().emplace("model", register_python_model); }
-};
-
-static PythonModelRegisterer python_model_registerer;
+}};
 
 }  // namespace mmdeploy

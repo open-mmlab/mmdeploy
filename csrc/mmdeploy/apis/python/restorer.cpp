@@ -46,7 +46,7 @@ class PyRestorer {
   mmdeploy_restorer_t restorer_{};
 };
 
-static void register_python_restorer(py::module &m) {
+static PythonBindingRegisterer register_restorer{[](py::module &m) {
   py::class_<PyRestorer>(m, "Restorer")
       .def(py::init([](const char *model_path, const char *device_name, int device_id) {
              return std::make_unique<PyRestorer>(model_path, device_name, device_id);
@@ -57,13 +57,6 @@ static void register_python_restorer(py::module &m) {
              return self->Apply(std::vector{img})[0];
            })
       .def("batch", &PyRestorer::Apply);
-}
-
-class PythonRestorerRegisterer {
- public:
-  PythonRestorerRegisterer() { gPythonBindings().emplace("restorer", register_python_restorer); }
-};
-
-static PythonRestorerRegisterer python_restorer_registerer;
+}};
 
 }  // namespace mmdeploy

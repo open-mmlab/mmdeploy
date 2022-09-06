@@ -3,14 +3,19 @@
 #include "common.h"
 
 #include "mmdeploy/core/mat.h"
-#include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/core/model.h"
+#include "mmdeploy/core/utils/formatter.h"
 #include "pybind11/numpy.h"
 
 namespace mmdeploy {
 
-std::map<std::string, void (*)(py::module&)>& gPythonBindings() {
-  static std::map<std::string, void (*)(py::module&)> v;
+// std::map<std::string, void (*)(py::module&)>& gPythonBindings() {
+//   static std::map<std::string, void (*)(py::module&)> v;
+//   return v;
+// }
+
+std::vector<void (*)(py::module&)>& gPythonBindings() {
+  static std::vector<void (*)(py::module&)> v;
   return v;
 }
 
@@ -141,7 +146,7 @@ Value FromPyObject(const py::object& obj) {
 }  // namespace mmdeploy
 
 PYBIND11_MODULE(mmdeploy_python, m) {
-  for (const auto& [_, f] : mmdeploy::gPythonBindings()) {
+  for (const auto& f : mmdeploy::gPythonBindings()) {
     f(m);
   }
 }

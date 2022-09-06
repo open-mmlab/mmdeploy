@@ -17,7 +17,9 @@ using PyImage = py::array_t<uint8_t, py::array::c_style | py::array::forcecast>;
 
 namespace mmdeploy {
 
-std::map<std::string, void (*)(py::module &)> &gPythonBindings();
+// std::map<std::string, void (*)(py::module &)> &gPythonBindings();
+
+std::vector<void (*)(py::module &)> &gPythonBindings();
 
 mmdeploy_mat_t GetMat(const PyImage &img);
 
@@ -29,8 +31,8 @@ Value FromPyObject(const py::object &obj);
 
 class PythonBindingRegisterer {
  public:
-  PythonBindingRegisterer(const char *name, void (*register_fn)(py::module &m)) {
-    gPythonBindings().emplace(name, register_fn);
+  explicit PythonBindingRegisterer(void (*register_fn)(py::module &m)) {
+    gPythonBindings().push_back(register_fn);
   }
 };
 

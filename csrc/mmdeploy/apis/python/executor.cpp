@@ -44,16 +44,9 @@ struct PySender {
 
 using _python::PySender;
 
-static void register_python_executor(py::module& m) {
+static PythonBindingRegisterer register_sender{[](py::module& m) {
   py::class_<PySender, std::unique_ptr<PySender>>(m, "PySender")
       .def("__await__", &PySender::__await__);
-}
-
-class PythonExecutorRegisterer {
- public:
-  PythonExecutorRegisterer() { gPythonBindings().emplace("executor", register_python_executor); }
-};
-
-static PythonExecutorRegisterer python_executor_registerer;
+}};
 
 }  // namespace mmdeploy

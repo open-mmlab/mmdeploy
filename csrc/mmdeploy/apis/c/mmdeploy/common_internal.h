@@ -23,6 +23,8 @@ inline Value Take(mmdeploy_value_t v) {
   return value;
 }
 
+inline Value* Cast(mmdeploy_context_t c) { return reinterpret_cast<Value*>(c); }
+
 mmdeploy_value_t Take(Value v) {
   return Cast(new Value(std::move(v)));  // NOLINT
 }

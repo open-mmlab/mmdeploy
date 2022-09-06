@@ -65,7 +65,7 @@ class PyDetector {
   mmdeploy_detector_t detector_{};
 };
 
-static void register_python_detector(py::module &m) {
+static PythonBindingRegisterer register_detector{[](py::module &m) {
   py::class_<PyDetector>(m, "Detector")
       .def(py::init([](const char *model_path, const char *device_name, int device_id) {
              return std::make_unique<PyDetector>(model_path, device_name, device_id);
@@ -76,13 +76,6 @@ static void register_python_detector(py::module &m) {
              return self->Apply(std::vector{img})[0];
            })
       .def("batch", &PyDetector::Apply);
-}
-
-class PythonDetectorRegisterer {
- public:
-  PythonDetectorRegisterer() { gPythonBindings().emplace("detector", register_python_detector); }
-};
-
-static PythonDetectorRegisterer python_detector_registerer;
+}};
 
 }  // namespace mmdeploy

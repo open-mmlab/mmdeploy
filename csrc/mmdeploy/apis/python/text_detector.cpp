@@ -55,7 +55,7 @@ class PyTextDetector {
   mmdeploy_text_detector_t detector_{};
 };
 
-static void register_python_text_detector(py::module &m) {
+static PythonBindingRegisterer register_text_detector{[](py::module &m) {
   py::class_<PyTextDetector>(m, "TextDetector")
       .def(py::init([](const char *model_path, const char *device_name, int device_id) {
              return std::make_unique<PyTextDetector>(model_path, device_name, device_id);
@@ -66,15 +66,6 @@ static void register_python_text_detector(py::module &m) {
              return self->Apply(std::vector{img})[0];
            })
       .def("batch", &PyTextDetector::Apply);
-}
-
-class PythonTextDetectorRegisterer {
- public:
-  PythonTextDetectorRegisterer() {
-    gPythonBindings().emplace("text_detector", register_python_text_detector);
-  }
-};
-
-static PythonTextDetectorRegisterer python_text_detector_registerer;
+}};
 
 }  // namespace mmdeploy

@@ -70,8 +70,7 @@ MMDEPLOY_API void mmdeploy_restorer_destroy(mmdeploy_restorer_t restorer);
 /******************************************************************************
  * Experimental asynchronous APIs */
 
-MMDEPLOY_API int mmdeploy_restorer_create_v2(mmdeploy_model_t model, const char* device_name,
-                                             int device_id, mmdeploy_exec_info_t exec_info,
+MMDEPLOY_API int mmdeploy_restorer_create_v2(mmdeploy_model_t model, mmdeploy_context_t context,
                                              mmdeploy_restorer_t* restorer);
 
 MMDEPLOY_API int mmdeploy_restorer_create_input(const mmdeploy_mat_t* mats, int mat_count,

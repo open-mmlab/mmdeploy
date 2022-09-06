@@ -61,6 +61,7 @@ class Pipeline : public NonMovable {
     if (ec != MMDEPLOY_SUCCESS) {
       throw_exception(static_cast<ErrorCode>(ec));
     }
+    pipeline_ = pipeline;
   }
 
   ~Pipeline() {

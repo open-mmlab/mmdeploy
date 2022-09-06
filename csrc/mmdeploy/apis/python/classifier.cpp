@@ -20,7 +20,6 @@ class PyClassifier {
     classifier_ = {};
   }
 
-  // std::vector<py::array_t<float>>
   std::vector<std::vector<std::tuple<int, float>>> Apply(const std::vector<PyImage> &imgs) {
     std::vector<mmdeploy_mat_t> mats;
     mats.reserve(imgs.size());
@@ -54,7 +53,7 @@ class PyClassifier {
   mmdeploy_classifier_t classifier_{};
 };
 
-static void register_python_classifier(py::module &m) {
+static PythonBindingRegisterer register_classifier{[](py::module &m) {
   py::class_<PyClassifier>(m, "Classifier")
       .def(py::init([](const char *model_path, const char *device_name, int device_id) {
              return std::make_unique<PyClassifier>(model_path, device_name, device_id);
@@ -63,15 +62,6 @@ static void register_python_classifier(py::module &m) {
       .def("__call__",
            [](PyClassifier *self, const PyImage &img) { return self->Apply(std::vector{img})[0]; })
       .def("batch", &PyClassifier::Apply);
-}
-
-class PythonClassifierRegisterer {
- public:
-  PythonClassifierRegisterer() {
-    gPythonBindings().emplace("classifier", register_python_classifier);
-  }
-};
-
-static PythonClassifierRegisterer python_classifier_registerer;
+}};
 
 }  // namespace mmdeploy

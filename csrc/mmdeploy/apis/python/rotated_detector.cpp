@@ -61,7 +61,7 @@ class PyRotatedDetector {
   mmdeploy_rotated_detector_t detector_{};
 };
 
-static void register_python_rotated_detector(py::module &m) {
+static PythonBindingRegisterer register_rotated_detector{[](py::module &m) {
   py::class_<PyRotatedDetector>(m, "RotatedDetector")
       .def(py::init([](const char *model_path, const char *device_name, int device_id) {
              return std::make_unique<PyRotatedDetector>(model_path, device_name, device_id);
@@ -72,15 +72,6 @@ static void register_python_rotated_detector(py::module &m) {
              return self->Apply(std::vector{img})[0];
            })
       .def("batch", &PyRotatedDetector::Apply);
-}
-
-class PythonRotatedDetectorRegisterer {
- public:
-  PythonRotatedDetectorRegisterer() {
-    gPythonBindings().emplace("rotated_detector", register_python_rotated_detector);
-  }
-};
-
-static PythonRotatedDetectorRegisterer python_rotated_detector_registerer;
+}};
 
 }  // namespace mmdeploy

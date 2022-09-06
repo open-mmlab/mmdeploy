@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "mmdeploy/pipeline.h"
+#include "mmdeploy/pipeline.hpp"
 
 #include "common.h"
 #include "mmdeploy/common.h"
@@ -11,6 +11,7 @@ namespace mmdeploy {
 
 using namespace std::literals;
 
+#if 0
 class PyPipeline {
  public:
   PyPipeline(const py::dict& config, const char* device_name, int device_id) {
@@ -57,23 +58,39 @@ class PyPipeline {
  private:
   mmdeploy_pipeline_t pipeline_{};
 };
+#endif
 
-static void register_python_pipeline(py::module& m) {
-  py::class_<PyPipeline>(m, "Pipeline")
-      .def(py::init([](const py::object& config, const char* device_name, int device_id) {
-        return std::make_unique<PyPipeline>(config, device_name, device_id);
+static PythonBindingRegisterer register_pipeline{[](py::module& m) {
+  py::class_<Pipeline>(m, "Pipeline")
+      .def(py::init([](const py::object& config, const Context& context) {
+        auto _config = FromPyObject(config);
+        return std::make_unique<Pipeline>(_config, context);
       }))
       .def("__call__",
-           [](PyPipeline* pipeline, const py::args& args) { return pipeline->Apply2(args, false); })
-      .def("batch",
-           [](PyPipeline* pipeline, const py::args& args) { return pipeline->Apply2(args, true); });
-}
-
-class PythonPipelineRegisterer {
- public:
-  PythonPipelineRegisterer() { gPythonBindings().emplace("pipeline", register_python_pipeline); }
-};
-
-static PythonPipelineRegisterer python_pipeline_registerer;
+           [](Pipeline* pipeline, const py::args& args) {
+             auto inputs = FromPyObject(args);
+             for (auto& input : inputs) {
+               input = Value::Array{std::move(input)};
+             }
+             auto outputs = pipeline->Apply(inputs);
+             for (auto& output : outputs) {
+               output = std::move(output[0]);
+             }
+             py::tuple rets(outputs.size());
+             for (int i = 0; i < outputs.size(); ++i) {
+               rets[i] = ToPyObject(outputs[i]);
+             }
+             return rets;
+           })
+      .def("batch", [](Pipeline* pipeline, const py::args& args) {
+        auto inputs = FromPyObject(args);
+        auto outputs = pipeline->Apply(inputs);
+        py::tuple rets(outputs.size());
+        for (int i = 0; i < outputs.size(); ++i) {
+          rets[i] = ToPyObject(outputs[i]);
+        }
+        return rets;
+      });
+}};
 
 }  // namespace mmdeploy

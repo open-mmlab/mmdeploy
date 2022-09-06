@@ -27,12 +27,12 @@ set(TASK_LIST ${MMDEPLOY_TASKS})
 foreach (TASK ${COMMON_LIST})
     set(TARGET_NAME mmdeploy_${TASK})
     set(OBJECT_NAME mmdeploy_${TASK}_obj)
-    add_object(${OBJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/${TASK}.cpp)
+    add_object(${OBJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/mmdeploy/${TASK}.cpp)
     mmdeploy_add_library(${TARGET_NAME})
     target_link_libraries(${TARGET_NAME} PRIVATE ${OBJECT_NAME})
     target_include_directories(${TARGET_NAME} PUBLIC
             $<INSTALL_INTERFACE:include>)
-    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/${TASK}.h
+    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/mmdeploy/${TASK}.h
             DESTINATION include/mmdeploy)
 endforeach ()
 
@@ -44,14 +44,14 @@ target_link_libraries(mmdeploy_pipeline PUBLIC
 foreach (TASK ${TASK_LIST})
     set(TARGET_NAME mmdeploy_${TASK})
     set(OBJECT_NAME mmdeploy_${TASK}_obj)
-    add_object(${OBJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/${TASK}.cpp)
+    add_object(${OBJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/mmdeploy/${TASK}.cpp)
     mmdeploy_add_library(${TARGET_NAME})
     target_link_libraries(${TARGET_NAME} PRIVATE ${OBJECT_NAME}
             mmdeploy_pipeline)
     target_include_directories(${TARGET_NAME} PUBLIC
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
             $<INSTALL_INTERFACE:include>)
-    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/${TASK}.h
+    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/mmdeploy/${TASK}.h
             DESTINATION include/mmdeploy)
 endforeach ()
 
@@ -67,14 +67,14 @@ if (MMDEPLOY_BUILD_SDK_CSHARP_API OR MMDEPLOY_BUILD_SDK_MONOLITHIC)
     mmdeploy_load_dynamic(mmdeploy MMDeployDynamicModules)
     target_link_libraries(mmdeploy PRIVATE ${CAPI_OBJS})
     target_include_directories(mmdeploy PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
-        $<INSTALL_INTERFACE:include>)
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+            $<INSTALL_INTERFACE:include>)
     set(MMDEPLOY_VERSION ${MMDEPLOY_VERSION_MAJOR}
-        .${MMDEPLOY_VERSION_MINOR}
-        .${MMDEPLOY_VERSION_PATCH})
+            .${MMDEPLOY_VERSION_MINOR}
+            .${MMDEPLOY_VERSION_PATCH})
     string(REPLACE ";" "" MMDEPLOY_VERSION ${MMDEPLOY_VERSION})
     set_target_properties(mmdeploy PROPERTIES
-        VERSION ${MMDEPLOY_VERSION}
-        SOVERSION ${MMDEPLOY_VERSION_MAJOR})
+            VERSION ${MMDEPLOY_VERSION}
+            SOVERSION ${MMDEPLOY_VERSION_MAJOR})
     mmdeploy_export(mmdeploy)
 endif ()

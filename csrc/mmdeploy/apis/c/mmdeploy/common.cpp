@@ -2,7 +2,6 @@
 
 #include "common_internal.h"
 #include "executor_internal.h"
-#include "handle.h"
 #include "mmdeploy/core/mat.h"
 
 mmdeploy_value_t mmdeploy_value_copy(mmdeploy_value_t value) {
@@ -19,7 +18,28 @@ int mmdeploy_context_create(mmdeploy_context_t* context) {
   return 0;
 }
 
-void mmdeploy_context_destroy(mmdeploy_context_t context) { delete (Value*)context; }
+int mmdeploy_context_create_by_device(const char* device_name, int device_index,
+                                      mmdeploy_context_t* context) {
+  mmdeploy_device_t device{};
+  int ec = MMDEPLOY_SUCCESS;
+  mmdeploy_context_t _context{};
+  ec = mmdeploy_context_create(&_context);
+  if (ec != MMDEPLOY_SUCCESS) {
+    return ec;
+  }
+  ec = mmdeploy_device_create(device_name, device_index, &device);
+  if (ec != MMDEPLOY_SUCCESS) {
+    return ec;
+  }
+  ec = mmdeploy_context_add(_context, MMDEPLOY_TYPE_DEVICE, nullptr, device);
+  mmdeploy_device_destroy(device);
+  if (ec == MMDEPLOY_SUCCESS) {
+    *context = _context;
+  }
+  return ec;
+}
+
+void mmdeploy_context_destroy(mmdeploy_context_t context) { delete Cast(context); }
 
 int mmdeploy_common_create_input(const mmdeploy_mat_t* mats, int mat_count,
                                  mmdeploy_value_t* value) {
@@ -56,7 +76,7 @@ void mmdeploy_device_destroy(mmdeploy_device_t device) { delete (Device*)device;
 
 int mmdeploy_context_add(mmdeploy_context_t context, mmdeploy_context_type_t type, const char* name,
                          const void* object) {
-  auto& ctx = *(Value*)context;
+  auto& ctx = *Cast(context);
   switch (type) {
     case MMDEPLOY_TYPE_DEVICE: {
       Device device((const char*)object);

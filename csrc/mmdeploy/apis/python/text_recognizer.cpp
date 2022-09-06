@@ -66,7 +66,7 @@ class PyTextRecognizer {
   mmdeploy_text_recognizer_t recognizer_{};
 };
 
-static void register_python_text_recognizer(py::module &m) {
+static PythonBindingRegisterer register_text_recognizer{[](py::module &m) {
   py::class_<PyTextRecognizer>(m, "TextRecognizer")
       .def(py::init([](const char *model_path, const char *device_name, int device_id) {
              return std::make_unique<PyTextRecognizer>(model_path, device_name, device_id);
@@ -77,15 +77,6 @@ static void register_python_text_recognizer(py::module &m) {
       .def("__call__", [](PyTextRecognizer *self, const PyImage &img,
                           const std::vector<float> &bboxes) { return self->Apply(img, bboxes); })
       .def("batch", py::overload_cast<const std::vector<PyImage> &>(&PyTextRecognizer::Apply));
-}
-
-class PythonTextRecognizerRegisterer {
- public:
-  PythonTextRecognizerRegisterer() {
-    gPythonBindings().emplace("text_recognizer", register_python_text_recognizer);
-  }
-};
-
-static PythonTextRecognizerRegisterer python_text_recognizer_registerer;
+}};
 
 }  // namespace mmdeploy

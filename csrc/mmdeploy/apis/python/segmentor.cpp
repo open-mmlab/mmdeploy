@@ -47,7 +47,7 @@ class PySegmentor {
   mmdeploy_segmentor_t segmentor_{};
 };
 
-static void register_python_segmentor(py::module &m) {
+static PythonBindingRegisterer register_segmentor{[](py::module &m) {
   py::class_<PySegmentor>(m, "Segmentor")
       .def(py::init([](const char *model_path, const char *device_name, int device_id) {
              return std::make_unique<PySegmentor>(model_path, device_name, device_id);
@@ -58,13 +58,6 @@ static void register_python_segmentor(py::module &m) {
              return self->Apply(std::vector{img})[0];
            })
       .def("batch", &PySegmentor::Apply);
-}
-
-class PythonSegmentorRegisterer {
- public:
-  PythonSegmentorRegisterer() { gPythonBindings().emplace("segmentor", register_python_segmentor); }
-};
-
-static PythonSegmentorRegisterer python_segmentor_registerer;
+}};
 
 }  // namespace mmdeploy
