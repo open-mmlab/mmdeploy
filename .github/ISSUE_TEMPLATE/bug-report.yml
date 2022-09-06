@@ -1,0 +1,64 @@
+name: Bug report
+description: Create a report to help us improve
+
+
+body:
+- type: markdown
+  attributes:
+    value: >
+      ## Checklist
+      1. I have searched related issues but cannot get the expected help.
+      2. I have read the [FAQ documentation](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/faq.md) but cannot get the expected help.
+      3. The bug has not been fixed in the latest version.
+- type: textarea
+  attributes:
+    label: Describe the bug
+    placeholder: |
+
+      A clear and concise description of what the bug is.
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Reproduction
+    description: |
+
+      1. What command or script did you run?
+
+      ```none
+      A placeholder for the command.
+      ```
+
+      2. Did you make any modifications on the code or config? Did you understand what you have modified?
+- type: textarea
+  attributes:
+    label: Environment
+    description: |
+      1. Please run `python tools/check_env.py` to collect necessary environment information and paste it here.
+      2. You may add addition that may be helpful for locating the problem, such as
+         - How you installed PyTorch \[e.g., pip, conda, source\]
+         - Other environment variables that may be related (such as `$PATH`, `$LD_LIBRARY_PATH`, `$PYTHONPATH`, etc.)
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: Error traceback
+    description: |
+      If applicable, paste the error trackback here.
+    placeholder: |
+      ```none
+      A placeholder for trackback.
+      ```
+
+- type: textarea
+  attributes:
+    label: Bug fix
+    description: |
+      If you have already identified the reason, you can provide the information here. If you are willing to create a PR to fix it, please also leave a comment here and that would be much appreciated!
+
+- type: markdown
+  attributes:
+    value: >
+     Thanks for your bug report. We appreciate it a lot.
+
+labels: ['Bug']
