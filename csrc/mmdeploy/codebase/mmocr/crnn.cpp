@@ -87,22 +87,19 @@ class CTCConvertor : public MMOCR {
     return make_pointer(to_value(output));
   }
 
-  static std::pair<vector<int>, vector<float> > Tensor2Idx(const float* data, int w, int c,
-                                                           float valid_ratio) {
+  std::pair<vector<int>, vector<float> > Tensor2Idx(const float* data, int w, int c,
+                                                    float valid_ratio) {
     auto decode_len = std::min(w, static_cast<int>(std::ceil(w * valid_ratio)));
     vector<int> indexes;
     indexes.reserve(decode_len);
     vector<float> scores;
     scores.reserve(decode_len);
-    // vector<float> prob(c);
-    int prev = 36;
+    int prev = padding_idx_;
     for (int t = 0; t < decode_len; ++t, data += c) {
-      // softmax(data, prob.data(), c);
-
       vector<float> prob(data, data + c);
       auto iter = max_element(begin(prob), end(prob));
       auto index = static_cast<int>(iter - begin(prob));
-      if (index != 36 && index != prev) {
+      if (index != padding_idx_ && index != prev) {
         indexes.push_back(index);
         scores.push_back(*iter);
       }
@@ -122,19 +119,6 @@ class CTCConvertor : public MMOCR {
       text += idx2char_[idx];
     }
     return text;
-  }
-
-  // TODO: move softmax & top-k into model
-  static void softmax(const float* src, float* dst, int n) {
-    auto max_val = *std::max_element(src, src + n);
-    float sum{};
-    for (int i = 0; i < n; ++i) {
-      dst[i] = std::exp(src[i] - max_val);
-      sum += dst[i];
-    }
-    for (int i = 0; i < n; ++i) {
-      dst[i] /= sum;
-    }
   }
 
  protected:

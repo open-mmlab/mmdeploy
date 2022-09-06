@@ -246,6 +246,7 @@ def get_postprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
     module = get_codebase(deploy_cfg).value
     type = 'Task'
     name = 'postprocess'
+    params = dict()
     task = get_task_type(deploy_cfg)
     task_processor = build_task_processor(
         model_cfg=model_cfg, deploy_cfg=deploy_cfg, device='cpu')
@@ -261,9 +262,12 @@ def get_postprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
             component = post_processor.pop('type')
     output = ['post_output']
 
-    import shutil
-    shutil.copy(model_cfg.dictionary.dict_file, f'{work_dir}/dict_file.txt')
-    params = dict(dict_file='dict_file.txt')
+    if task == Task.TEXT_RECOGNITION:
+        import shutil
+        shutil.copy(model_cfg.dictionary.dict_file,
+                    f'{work_dir}/dict_file.txt')
+        with_padding = model_cfg.dictionary.get('with_padding', False)
+        params = dict(dict_file='dict_file.txt', with_padding=with_padding)
     return dict(
         type=type,
         module=module,
