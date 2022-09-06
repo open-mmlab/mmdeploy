@@ -61,6 +61,8 @@ def visualize_model(model_cfg: Union[str, mmengine.Config],
         assert len(model) > 0, 'Model should have at least one element.'
         assert all([isinstance(m, str) for m in model]), 'All elements in the \
             list should be str'
+            
+            
 
         if backend == Backend.PYTORCH:
             model = task_processor.build_pytorch_model(model[0])
@@ -68,6 +70,9 @@ def visualize_model(model_cfg: Union[str, mmengine.Config],
             model = task_processor.build_backend_model(model)
 
     model_inputs, _ = task_processor.create_input(img, input_shape)
+    import pdb
+    pdb.set_trace()
+
     with torch.no_grad():
         result = model.test_step(model_inputs)[0]
 

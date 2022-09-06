@@ -120,6 +120,9 @@ def export(model: torch.nn.Module,
             model_forward = model.forward
             model.forward = partial(model.forward, **input_metas)
 
+        import pdb
+        pdb.set_trace()
+        
         torch.onnx.export(
             patched_model,
             args,

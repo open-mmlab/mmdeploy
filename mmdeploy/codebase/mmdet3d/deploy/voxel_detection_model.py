@@ -7,22 +7,15 @@ import torch
 from mmengine.registry import Registry
 from mmengine import Config
 from mmengine.model.base_model.data_preprocessor import BaseDataPreprocessor
-
 from torch.nn import functional as F
+from mmengine.structures import BaseDataElement, InstanceData
 
 from mmdeploy.codebase.base import BaseBackendModel
 from mmdeploy.core import RewriterContext
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
                             get_root_logger, load_config)
 
-
-def __build_backend_voxel_model(cls_name: str, registry: Registry, *args,
-                                **kwargs):
-    return registry.module_dict[cls_name](*args, **kwargs)
-
-
-__BACKEND_MODEL = Registry(
-    'backend_voxel_detectors', build_func=__build_backend_voxel_model)
+__BACKEND_MODEL = Registry('backend_voxel_detectors')
 
 
 @__BACKEND_MODEL.register_module('end2end')
@@ -43,11 +36,47 @@ class VoxelDetectionModel(BaseBackendModel):
                  backend: Backend,
                  backend_files: Sequence[str],
                  device: str,
-                 model_cfg: Config,
-                 deploy_cfg: Union[str, Config] = None):
-        super().__init__(deploy_cfg=deploy_cfg)
+                 deploy_cfg: Union[str, Config],
+                 data_preprocessor: Optional[Union[dict, torch.nn.Module]] = None,
+                 **kwargs):
+        super().__init__(
+            deploy_cfg=deploy_cfg, data_preprocessor=data_preprocessor)
         self.deploy_cfg = deploy_cfg
-        self.model_cfg = model_cfg
+        self.device = device
+        self._init_wrapper(
+            backend=backend, backend_files=backend_files, device=device)
+
+    def _init_wrapper(self, backend: Backend, backend_files: Sequence[str],
+                      device: str):
+        """Initialize backend wrapper.
+
+        Args:
+            backend (Backend): The backend enum, specifying backend type.
+            backend_files (Sequence[str]): Paths to all required backend files
+                (e.g. '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
+            device (str): A string specifying device type.
+        """
+        output_names = self.output_names
+        self.wrapper = BaseBackendModel._build_wrapper(
+            backend=backend,
+            backend_files=backend_files,
+            device=device,
+            input_names=[self.input_name],
+            output_names=output_names,
+            deploy_cfg=self.deploy_cfg)
+
+
+    def __init__(self,
+                 backend: Backend,
+                 backend_files: Sequence[str],
+                 device: str,
+                 deploy_cfg: Union[str, Config],
+                 data_preprocessor: Optional[Union[dict, torch.nn.Module]] = None,
+                 **kwargs):
+        super().__init__(
+            deploy_cfg=deploy_cfg, data_preprocessor=data_preprocessor)
+        self.deploy_cfg = deploy_cfg
+        # self.model_cfg = model_cfg
         self.device = device
         self._init_wrapper(
             backend=backend, backend_files=backend_files, device=device)
@@ -71,9 +100,9 @@ class VoxelDetectionModel(BaseBackendModel):
             deploy_cfg=self.deploy_cfg)
 
     def forward(self,
-                points: Sequence[torch.Tensor],
-                img_metas: Sequence[dict],
-                return_loss=False):
+                inputs: dict,
+                data_samples: Optional[List[BaseDataElement]] = None,
+                mode: str = 'predict') -> Any:
         """Run forward inference.
 
         Args:
@@ -88,21 +117,29 @@ class VoxelDetectionModel(BaseBackendModel):
             list: A list contains predictions.
         """
         result_list = []
-        for i in range(len(img_metas)):
-            voxels, num_points, coors = VoxelDetectionModel.voxelize(
-                self.model_cfg, points[i])
-            input_dict = {
-                'voxels': voxels,
-                'num_points': num_points,
-                'coors': coors
-            }
-            outputs = self.wrapper(input_dict)
-            result = VoxelDetectionModel.post_process(self.model_cfg,
-                                                      self.deploy_cfg, outputs,
-                                                      img_metas[i],
-                                                      self.device)[0]
-            result_list.append(result)
+        preprocessed = inputs['voxels']
+        input_dict = {
+            'voxels': preprocessed['voxels'],
+            'num_points': preprocessed['num_points'],
+            'coors': preprocessed['coors']
+        }
+        import pdb
+        pdb.set_trace()
+        outputs = self.wrapper(input_dict)
+
         return result_list
+        # for i in range(len(img_metas)):
+            
+        #     voxels, num_points, coors = VoxelDetectionModel.voxelize(
+        #         self.model_cfg, points[i])
+
+        #     outputs = self.wrapper(input_dict)
+        #     result = VoxelDetectionModel.post_process(self.model_cfg,
+        #                                               self.deploy_cfg, outputs,
+        #                                               img_metas[i],
+        #                                               self.device)[0]
+        #     result_list.append(result)
+        # return result_list
 
     def show_result(self,
                     data: Dict,
@@ -112,6 +149,8 @@ class VoxelDetectionModel(BaseBackendModel):
                     show=False,
                     snapshot=False,
                     **kwargs):
+        import pdb
+        pdb.set_trace()
         from mmcv.parallel import DataContainer as DC
         from mmdet3d.core import show_result
         if isinstance(data['points'][0], DC):
@@ -135,47 +174,6 @@ class VoxelDetectionModel(BaseBackendModel):
             pred_labels=pred_labels)
 
     @staticmethod
-    def voxelize(model_cfg: Union[str, Config], points: torch.Tensor):
-        """convert kitti points(N, >=3) to voxels.
-
-        Args:
-            model_cfg (str | Config): The model config.
-            points (torch.Tensor): [N, ndim] float tensor. points[:, :3]
-                contain xyz points and points[:, 3:] contain other information
-                like reflectivity.
-
-        Returns:
-            voxels: [M, max_points, ndim] float tensor. only contain points
-                and returned when max_points != -1.
-            coordinates: [M, 3] int32 tensor, always returned.
-            num_points_per_voxel: [M] int32 tensor. Only returned when
-                max_points != -1.
-        """
-        from mmcv.ops import Voxelization
-        model_cfg = load_config(model_cfg)[0]
-        if 'voxel_layer' in model_cfg.model.keys():
-            voxel_layer = model_cfg.model['voxel_layer']
-        elif 'pts_voxel_layer' in model_cfg.model.keys():
-            voxel_layer = model_cfg.model['pts_voxel_layer']
-        else:
-            raise
-        voxel_layer = Voxelization(**voxel_layer)
-        voxels, coors, num_points = [], [], []
-        for res in points:
-            res_voxels, res_coors, res_num_points = voxel_layer(res)
-            voxels.append(res_voxels)
-            coors.append(res_coors)
-            num_points.append(res_num_points)
-        voxels = torch.cat(voxels, dim=0)
-        num_points = torch.cat(num_points, dim=0)
-        coors_batch = []
-        for i, coor in enumerate(coors):
-            coor_pad = F.pad(coor, (1, 0), mode='constant', value=i)
-            coors_batch.append(coor_pad)
-        coors_batch = torch.cat(coors_batch, dim=0)
-        return voxels, num_points, coors_batch
-
-    @staticmethod
     def post_process(model_cfg: Union[str, Config],
                      deploy_cfg: Union[str, Config],
                      outs: Dict,
@@ -195,7 +193,7 @@ class VoxelDetectionModel(BaseBackendModel):
         Returns:
             list: A list contains predictions, include bboxes, scores, labels.
         """
-        from mmdet3d.core import bbox3d2result
+        from mmdet3d.structures import bbox3d2result
         from mmdet3d.models.builder import build_head
         model_cfg = load_config(model_cfg)[0]
         deploy_cfg = load_config(deploy_cfg)[0]
@@ -260,7 +258,7 @@ def build_voxel_detection_model(model_files: Sequence[str],
 
     backend = get_backend(deploy_cfg)
     model_type = get_codebase_config(deploy_cfg).get('model_type', 'end2end')
-
+    
     backend_detector = __BACKEND_MODEL.build(
         dict(
             type=model_type,

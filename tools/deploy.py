@@ -374,13 +374,14 @@ def main():
         if backend == Backend.SNPE:
             extra['uri'] = args.uri
 
-        create_process(
-            f'visualize {backend.value} model',
-            target=visualize_model,
-            args=(model_cfg_path, deploy_cfg_path, backend_files,
-                  args.test_img, args.device),
-            kwargs=extra,
-            ret_value=ret_value)
+        visualize_model(model_cfg_path, deploy_cfg_path, backend_files, args.test_img, args.device)
+        # create_process(
+        #     f'visualize {backend.value} model',
+        #     target=visualize_model,
+        #     args=(model_cfg_path, deploy_cfg_path, backend_files,
+        #           args.test_img, args.device),
+        #     kwargs=extra,
+        #     ret_value=ret_value)
 
         # visualize pytorch model
         create_process(

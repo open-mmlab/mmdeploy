@@ -93,6 +93,8 @@ def torch2onnx(img: Any,
         """NCNN backend needs a precise blob counts, while using onnx optimizer
         will merge duplicate initilizers without reference count."""
         optimize = False
+    # import pdb
+    # pdb.set_trace()
     with no_mp():
         export(
             torch_model,
