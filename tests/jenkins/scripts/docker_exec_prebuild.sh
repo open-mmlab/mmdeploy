@@ -28,6 +28,19 @@ git clone --depth 1 --branch master https://github.com/open-mmlab/mmdetection.gi
 
 cd /root/workspace/mmdeploy
 
+for PYTHON_VERSION in 3.6 3.7 3.8 3.7
+do 
+    conda create -n python${PYTHON_VERSION} python=${PYTHON_VERSION}
+    conda activate python${PYTHON_VERSION}
+    pip install -r requirements/tests.txt
+    pip install -r requirements/runtime.txt
+    pip install -r requirements/build.txt
+    python ./tools/package_tools/mmdeploy_builder.py tools/package_tools/configs/linux_x64.yaml . > /root/workspace/log/build${PYTHON_VERSION}.log
+    mv mmdeploy-*-onnxruntime* /root/workspace/prebuild-mmdeploy/python${PYTHON_VERSION}
+    mv mmdeploy-*-tensorrt* /root/workspace/prebuild-mmdeploy/python${PYTHON_VERSION}
+done 
+
+
 ## use activate
 conda activate torch1.10.0
 pip install openmim
