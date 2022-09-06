@@ -11,17 +11,17 @@ time_snap=$(date +%Y%m%d%H%M)
 log_dir=/data2/regression_log/convert_log/${date_snap}/${time_snap}
 mkdir -p ${log_dir}
 
-## make fifo
+## make & init mutex
 trap "exec 1000>&-; exec 1000<&-;exit 0" 2
-mkfifo mulfifo
-exec 1000<>mulfifo
-rm -rf mulfifo
+mkfifo mutexfifo
+exec 1000<>mutexfifo
+rm -rf mutexfifo
 for ((n=1;n<=${max_job_nums};n++))
 do
     echo >&1000
 done
 
-# docker run cmd for convert
+## docker run cmd for convert
 for codebase in ${codebase_list[@]}
 do
     read -u1000
