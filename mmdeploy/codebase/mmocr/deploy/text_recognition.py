@@ -233,6 +233,8 @@ class TextRecognition(BaseTask):
             dict: Composed of the postprocess information.
         """
         postprocess = self.model_cfg.model.decoder.postprocessor
+        if postprocess.type == 'CTCPostProcessor':
+            postprocess.type = 'CTCConvertor'
         return postprocess
 
     def get_model_name(self) -> str:

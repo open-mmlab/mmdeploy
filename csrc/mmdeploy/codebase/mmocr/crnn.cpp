@@ -49,11 +49,10 @@ class CTCConvertor : public MMOCR {
       throw_exception(eInvalidArgument);
     }
     // CTCConverter
-    idx2char_.insert(begin(idx2char_), "<BLK>");
 
-    if (_cfg.value("with_unknown", false)) {
-      unknown_idx_ = static_cast<int>(idx2char_.size());
-      idx2char_.emplace_back("<UKN>");
+    if (_cfg.value("with_padding", false)) {
+      padding_idx_ = static_cast<int>(idx2char_.size());
+      idx2char_.emplace_back("<PAD>");
     }
 
     model_ = model;
@@ -95,13 +94,15 @@ class CTCConvertor : public MMOCR {
     indexes.reserve(decode_len);
     vector<float> scores;
     scores.reserve(decode_len);
-    vector<float> prob(c);
-    int prev = blank_idx_;
+    // vector<float> prob(c);
+    int prev = 36;
     for (int t = 0; t < decode_len; ++t, data += c) {
-      softmax(data, prob.data(), c);
+      // softmax(data, prob.data(), c);
+
+      vector<float> prob(data, data + c);
       auto iter = max_element(begin(prob), end(prob));
       auto index = static_cast<int>(iter - begin(prob));
-      if (index != blank_idx_ && index != prev) {
+      if (index != 36 && index != prev) {
         indexes.push_back(index);
         scores.push_back(*iter);
       }
@@ -166,7 +167,7 @@ class CTCConvertor : public MMOCR {
   Model model_;
 
   static constexpr const int blank_idx_{0};
-  int unknown_idx_{-1};
+  int padding_idx_{-1};
 
   vector<string> idx2char_;
 };

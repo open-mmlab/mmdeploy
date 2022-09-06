@@ -59,9 +59,6 @@ def get_model_name_customs(deploy_cfg: mmengine.Config,
     name = task_processor.get_model_name()
     customs = []
     if task == Task.TEXT_RECOGNITION:
-        import shutil
-        shutil.copy(model_cfg.dictionary.dict_file,
-                    f'{work_dir}/dict_file.txt')
         customs.append('dict_file.txt')
     return name, customs
 
@@ -188,15 +185,16 @@ def get_preprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config):
         'scale_factor', 'flip', 'flip_direction', 'img_norm_cfg', 'valid_ratio'
     ]
     transforms = [
-        item for item in pipeline if 'Random' not in item['type']
-        and 'RescaleToZeroOne' not in item['type']
+        item for item in pipeline
+        if 'Random' not in item['type'] and 'RescaleToZeroOne' not in
+        item['type'] and 'Annotation' not in item['type']
     ]
     for i, transform in enumerate(transforms):
         if 'keys' in transform and transform['keys'] == ['lq']:
             transform['keys'] = ['img']
         if 'key' in transform and transform['key'] == 'lq':
             transform['key'] = 'img'
-        if transform['type'] == 'PackTextDetInputs':
+        if transform['type'] in ('PackTextDetInputs', 'PackTextRecogInputs'):
             meta_keys += transform[
                 'meta_keys'] if 'meta_keys' in transform else []
             transform['meta_keys'] = list(set(meta_keys))
@@ -232,13 +230,14 @@ def get_preprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config):
         transforms=transforms)
 
 
-def get_postprocess(deploy_cfg: mmengine.Config,
-                    model_cfg: mmengine.Config) -> Dict:
+def get_postprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
+                    work_dir: str) -> Dict:
     """Get the post process information for pipeline.json.
 
     Args:
         deploy_cfg (mmengine.Config): Deploy config dict.
         model_cfg (mmengine.Config): The model config dict.
+        work_dir (str): Work dir to save json files.
 
     Return:
         dict: Composed of the model name, type, module, input, params and
@@ -250,17 +249,21 @@ def get_postprocess(deploy_cfg: mmengine.Config,
     task = get_task_type(deploy_cfg)
     task_processor = build_task_processor(
         model_cfg=model_cfg, deploy_cfg=deploy_cfg, device='cpu')
-    params = task_processor.get_postprocess()
+    post_processor = task_processor.get_postprocess()
 
     # TODO remove after adding instance segmentation to task processor
-    if task == Task.OBJECT_DETECTION and 'mask_thr_binary' in params:
+    if task == Task.OBJECT_DETECTION and 'mask_thr_binary' in post_processor:
         task = Task.INSTANCE_SEGMENTATION
 
     component = task_map[task]['component']
-    if task != Task.SUPER_RESOLUTION and task != Task.SEGMENTATION:
-        if 'type' in params:
-            component = params.pop('type')
+    if task not in (Task.SUPER_RESOLUTION, Task.SEGMENTATION):
+        if 'type' in post_processor:
+            component = post_processor.pop('type')
     output = ['post_output']
+
+    import shutil
+    shutil.copy(model_cfg.dictionary.dict_file, f'{work_dir}/dict_file.txt')
+    params = dict(dict_file='dict_file.txt')
     return dict(
         type=type,
         module=module,
@@ -306,7 +309,7 @@ def get_pipeline(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
     """
     preprocess = get_preprocess(deploy_cfg, model_cfg)
     infer_info = get_inference_info(deploy_cfg, model_cfg, work_dir=work_dir)
-    postprocess = get_postprocess(deploy_cfg, model_cfg)
+    postprocess = get_postprocess(deploy_cfg, model_cfg, work_dir)
     task = get_task_type(deploy_cfg)
     input_names = preprocess['input']
     output_names = postprocess['output']
