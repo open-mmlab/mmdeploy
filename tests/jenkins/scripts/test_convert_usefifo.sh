@@ -15,7 +15,7 @@ trap "exec 1000>&-; exec 1000<&-;exit 0" 2
 mkfifo mulfifo
 exec 1000<>mulfifo
 rm -rf mulfifo
-for ((n=1;n<=2;n++))
+for ((n=1;n<=4;n++))
 do
     echo >&1000
 done
