@@ -42,8 +42,6 @@ do
     mv mmdeploy-*-tensorrt* ${prebuilt_path}
 done 
 
-
-## use activate
 conda activate torch1.10.0
 pip install openmim
 mim install mmdet
