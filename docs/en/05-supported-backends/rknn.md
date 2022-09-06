@@ -37,8 +37,7 @@ python tools/deploy.py \
     /tmp/snapshots/yolov3_d53_mstrain-608_273e_coco_20210518_115020-a2c3acb8.pth \
     tests/data/tiger.jpeg \
     --work-dir ../deploy_result \
-    --device cpu \
-    --dump-info
+    --device cpu
 ```
 
 ## Deployment config

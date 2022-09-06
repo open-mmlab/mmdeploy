@@ -184,6 +184,32 @@ def test_size_of_tensor_static():
     'outputs: {}'.format(rewrite_outputs)
 
 
+@backend_checker(Backend.ASCEND)
+def test_size__ascend():
+
+    def model_func(input):
+        x = torch.Tensor.size(input, -1)
+        return torch.tensor(x)
+
+    input = torch.zeros([1, 2, 3, 4])
+    deploy_cfg_ascend = mmcv.Config(
+        dict(
+            onnx_config=dict(input_shape=None),
+            backend_config=dict(
+                type='ascend',
+                model_inputs=[dict(input_shapes=dict(input=input.shape))]),
+            codebase_config=dict(type='mmdet', task='ObjectDetection')))
+    wrapped_func = WrapFunction(model_func)
+    rewrite_outputs, _ = get_rewrite_outputs(
+        wrapped_func,
+        model_inputs={'input': input},
+        deploy_cfg=deploy_cfg_ascend,
+        run_with_backend=True)
+
+    assert rewrite_outputs is not None, 'Got unexpected rewrite '
+    'outputs: {}'.format(rewrite_outputs)
+
+
 class TestTopk:
 
     input = torch.rand(1, 5, 5, 5)
@@ -284,6 +310,32 @@ def test_normalize_ncnn(input, dim):
     param_path, bin_path = ncnn_apis.get_output_model_file(ir_file_path)
     assert osp.exists(param_path)
     assert osp.exists(bin_path)
+
+
+@backend_checker(Backend.ASCEND)
+def test_getitem__ascend():
+
+    input = torch.rand(1, 2, 3)
+
+    def tensor_getitem(x):
+        return x[..., -1]
+
+    # create wrapped model
+    wrapped_func = WrapFunction(tensor_getitem)
+    import tempfile
+
+    import onnx
+
+    from mmdeploy.core import RewriterContext
+    onnx_file = tempfile.NamedTemporaryFile(suffix='onnx').name
+
+    # convert model
+    with RewriterContext(
+            cfg={}, backend=Backend.ASCEND.value, opset=11), torch.no_grad():
+        torch.onnx.export(wrapped_func, input, onnx_file, opset_version=11)
+    onnx_model = onnx.load(onnx_file)
+    nodes = onnx_model.graph.node
+    assert nodes is not None
 
 
 @backend_checker(Backend.ONNXRUNTIME)

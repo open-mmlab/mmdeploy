@@ -26,8 +26,16 @@ if ("snpe" IN_LIST MMDEPLOY_TARGET_BACKENDS)
     add_subdirectory(snpe)
 endif ()
 
+if ("acl" IN_LIST MMDEPLOY_TARGET_BACKENDS)
+    add_subdirectory(acl)
+endif ()
+
 if ("torchscript" IN_LIST MMDEPLOY_TARGET_BACKENDS)
     add_subdirectory(torchscript)
+endif ()
+
+if ("coreml" IN_LIST MMDEPLOY_TARGET_BACKENDS)
+    add_subdirectory(coreml)
 endif ()
 
 mmdeploy_add_module(${PROJECT_NAME} net_module.cpp)

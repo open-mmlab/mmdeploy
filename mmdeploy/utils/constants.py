@@ -60,6 +60,8 @@ class Backend(AdvancedEnum):
     SDK = 'sdk'
     TORCHSCRIPT = 'torchscript'
     RKNN = 'rknn'
+    ASCEND = 'ascend'
+    COREML = 'coreml'
     DEFAULT = 'default'
 
 

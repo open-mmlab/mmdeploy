@@ -15,7 +15,10 @@ from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
 NUM_CLASS = 1000
 IMAGE_SIZE = 64
 
-import_codebase(Codebase.MMCLS)
+try:
+    import_codebase(Codebase.MMCLS)
+except ImportError:
+    pytest.skip(f'{Codebase.MMCLS} is not installed.', allow_module_level=True)
 
 
 @backend_checker(Backend.ONNXRUNTIME)

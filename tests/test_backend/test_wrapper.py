@@ -119,6 +119,18 @@ def onnx2backend(backend, onnx_file):
                     input_size_list=[[3, 8, 8]])))
         onnx2rknn(onnx_file, rknn_file, deploy_cfg)
         return rknn_file
+    elif backend == Backend.ASCEND:
+        import mmcv
+
+        from mmdeploy.apis.ascend import from_onnx
+        backend_dir = tempfile.TemporaryDirectory().name
+        work_dir = backend_dir
+        file_name = osp.splitext(osp.split(onnx_file)[1])[0]
+        backend_file = osp.join(work_dir, file_name + '.om')
+        model_inputs = mmcv.Config(
+            dict(input_shapes=dict(input=test_img.shape)))
+        from_onnx(onnx_file, work_dir, model_inputs)
+        return backend_file
 
 
 def create_wrapper(backend, model_files):
@@ -156,6 +168,10 @@ def create_wrapper(backend, model_files):
             common_config=dict(target_platform=target_platform),
             output_names=output_names)
         return rknn_model
+    elif backend == Backend.ASCEND:
+        from mmdeploy.backend.ascend import AscendWrapper
+        ascend_model = AscendWrapper(model_files)
+        return ascend_model
     else:
         raise NotImplementedError(f'Unknown backend type: {backend.value}')
 
@@ -188,6 +204,8 @@ def run_wrapper(backend, wrapper, input):
         return results
     elif backend == Backend.RKNN:
         results = wrapper({'input': input})
+    elif backend == Backend.ASCEND:
+        results = wrapper({'input': input})['output']
         return results
     else:
         raise NotImplementedError(f'Unknown backend type: {backend.value}')
@@ -195,7 +213,7 @@ def run_wrapper(backend, wrapper, input):
 
 ALL_BACKEND = [
     Backend.TENSORRT, Backend.ONNXRUNTIME, Backend.PPLNN, Backend.NCNN,
-    Backend.OPENVINO, Backend.TORCHSCRIPT, Backend.RKNN
+    Backend.OPENVINO, Backend.TORCHSCRIPT, Backend.ASCEND, Backend.RKNN
 ]
 
 

@@ -34,8 +34,6 @@ onnxruntime:
   # ======= detection =======
   pipeline_ort_detection_static_fp32: &pipeline_ort_detection_static_fp32
     convert_image: *convert_image_det
-    backend_test: *default_backend_test
-    sdk_config: *sdk_detection_dynamic
     deploy_config: configs/mmocr/text-detection/text-detection_onnxruntime_static.py
 
   pipeline_ort_detection_dynamic_fp32: &pipeline_ort_detection_dynamic_fp32

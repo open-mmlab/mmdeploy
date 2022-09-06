@@ -327,6 +327,10 @@ target_link_libraries(${name} PRIVATE mmdeploy ${OpenCV_LIBS})
 对于 C API、C# API、Java API 的使用方法，请分别阅读代码[C demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csrc)， [C# demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csharp) 和 [Java demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/java)。
 我们将在后续版本中详细讲述它们的用法。
 
+#### 加速预处理（实验性功能）
+
+若要对预处理进行加速，请查阅[此处](./02-how-to-run/fuse_transform.md)
+
 ## 模型精度评估
 
 为了测试部署模型的精度，推理效率，我们提供了 `tools/test.py` 来帮助完成相关工作。以上文中的部署模型为例：
