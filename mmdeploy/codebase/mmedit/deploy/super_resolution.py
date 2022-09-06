@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from copy import deepcopy
+import os.path as osp
 from typing import Any, Callable, Dict, Optional, Sequence, Tuple, Union
 
 import mmengine
@@ -81,7 +82,8 @@ def _get_dataset_metainfo(model_cfg: Config):
         if dataloader_name not in model_cfg:
             continue
         dataloader_cfg = model_cfg[dataloader_name]
-        dataset_cfg = dataloader_cfg.dataset
+        # TODO: how to process multi dataloader case?
+        dataset_cfg = dataloader_cfg[0].dataset
         dataset_cls = module_dict.get(dataset_cfg.type, None)
         if dataset_cls is None:
             continue
@@ -146,6 +148,7 @@ class SuperResolution(BaseTask):
         Returns:
             tuple: (data, img), meta information for the input image and input.
         """
+        print(f'debugging mmdeploy.codebase.mmedit.deploy.super_resolution.py line 149: what is data_preprocessor: {data_preprocessor}')
         from mmcv.transforms import Compose
 
         if isinstance(imgs, (list, tuple)):
@@ -171,6 +174,7 @@ class SuperResolution(BaseTask):
         data = pseudo_collate(data_arr)
         if data_preprocessor is not None:
             data = data_preprocessor(data, False)
+            print(f'debugging mmdeploy.codebase.mmedit.deploy.super_resolution line 175: what is data: {data}')
             return data, data['inputs']
         else:
             return data, BaseTask.get_tensor_from_input(data)
@@ -184,11 +188,97 @@ class SuperResolution(BaseTask):
         """
         from mmedit.utils import register_all_modules
         register_all_modules(init_default_scope=False)
+        vis_backends = [dict(type='LocalVisBackend')]
+        visualizer = Config(dict(type='ConcatImageVisualizer',
+                            vis_backends=vis_backends,
+                            fn_key='gt_path',
+                            img_keys=['pred_img'],
+                            bgr2rgb=True))
+        super().__setattr__('visualizer', visualizer)
+        print(f'debugging mmdeploy.codebase.mmedit.deploy.super_resolution.py line 189 what is name: {name}')
         visualizer = super().get_visualizer(name, save_dir)
         metainfo = _get_dataset_metainfo(self.model_cfg)
         if metainfo is not None:
             visualizer.dataset_meta = metainfo
         return visualizer
+
+    '''
+    def visualize(self,
+                  image: Union[str, np.ndarray],
+                  result: list,
+                  output_file: str,
+                  window_name: str = '',
+                  show_result: bool = False,
+                  draw_gt: bool = False,
+                  **kwargs):
+        """Visualize predictions of a model.
+
+        Args:
+            model (nn.Module): Input model.
+            image (str | np.ndarray): Input image to draw predictions on.
+            result (list): A list of predictions.
+            output_file (str): Output file to save drawn image.
+            window_name (str): The name of visualization window. Defaults to
+                an empty string.
+            show_result (bool): Whether to show result in windows, defaults
+                to `False`.
+            draw_gt (bool): Whether to show ground truth in windows, defaults
+                to `False`.
+        """
+        save_dir, _ = osp.split(output_file)
+        visualizer = self.get_visualizer(window_name, save_dir)
+
+        visualizer.add_datasample(data_sample=result)
+    '''
+    def visualize(self,
+                  image: Union[str, np.ndarray],
+                  result: Union[list, np.ndarray],
+                  output_file: str,
+                  window_name: str = '',
+                  show_result: bool = False,
+                  **kwargs) -> np.ndarray:
+        """Visualize result of a model. mmedit does not have visualizer, so
+        write visualize function directly.
+
+        Args:
+            model (nn.Module): Input model.
+            image (str | np.ndarray): Input image to draw predictions on.
+            result (list | np.ndarray): A list of result.
+            output_file (str): Output file to save drawn image.
+            window_name (str): The name of visualization window. Defaults to
+                an empty string.
+            show_result (bool): Whether to show result in windows, defaults
+                to `False`.
+        """
+        import mmcv
+        import warnings
+        if hasattr(result, 'pred_img'):
+            result = result.pred_img.data.detach().numpy()
+        else:
+            # for pytorch models
+            result = result.output.pred_img.data.detach().numpy()
+        if len(result.shape) == 4:
+            result = result[0]
+        print(f'debugging mmdeploy.codebase.mmedit.deploy.super_resolution.py line 263: what is result: {result}')
+        with torch.no_grad():
+            result = result.transpose(1, 2, 0)
+            result = np.clip(result, 0, 255)[:, :, ::-1].round()
+
+            # result = np.clip(result, 0, 1)[:, :, ::-1]
+            # result = (result * 255.0).round()
+            output_file = None if show_result else output_file
+
+            if show_result:
+                int_result = result.astype(np.uint8)
+                mmcv.imshow(int_result, window_name, 0)
+            if output_file is not None:
+                mmcv.imwrite(result, output_file)
+
+        if not (show_result or output_file):
+            warnings.warn(
+                'show_result==False and output_file is not specified, only '
+                'result image will be returned')
+            return result
 
     @staticmethod
     def get_partition_cfg(partition_type: str, **kwargs) -> Dict:
@@ -220,6 +310,7 @@ class SuperResolution(BaseTask):
         Return:
             dict: Composed of the preprocess information.
         """
+        return {}
         input_shape = get_input_shape(self.deploy_cfg)
         model_cfg = process_model_config(self.model_cfg, [''], input_shape)
         preprocess = model_cfg.test_pipeline
@@ -242,6 +333,7 @@ class SuperResolution(BaseTask):
         Return:
             str: the name of the model.
         """
+        return ""
         assert 'generator' in self.model_cfg.model, 'generator not in model '
         'config'
         assert 'type' in self.model_cfg.model.generator, 'generator contains '

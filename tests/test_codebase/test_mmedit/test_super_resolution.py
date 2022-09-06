@@ -62,9 +62,10 @@ def test_create_input():
 
 
 def test_visualize(backend_model):
-    input_dict, _ = task_processor.create_input(input_img,
+    input_dict, input = task_processor.create_input(input_img,
                                                 input_shape=img_shape)
-    results = backend_model.test_step(input_dict)[0]
+    print(f'debugging what is input_dict: {input_dict}')
+    results = backend_model.forward(input[0], data_samples=input_dict['data_samples'])[0]
     with TemporaryDirectory() as dir:
         filename = dir + 'tmp.jpg'
         task_processor.visualize(input_img, results, filename, 'window')

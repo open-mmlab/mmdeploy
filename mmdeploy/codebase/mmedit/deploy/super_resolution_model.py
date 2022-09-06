@@ -6,6 +6,7 @@ import torch
 from mmedit.structures import EditDataSample, PixelData
 from mmengine.registry import Registry
 from mmengine.structures import BaseDataElement
+from mmengine.model import stack_batch
 
 from mmdeploy.codebase.base import BaseBackendModel
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
@@ -58,7 +59,7 @@ class End2EndModel(BaseBackendModel):
             **kwargs)
 
     def forward(self,
-                lq: torch.Tensor,
+                inputs: torch.Tensor,
                 data_samples: Optional[List[BaseDataElement]] = None,
                 mode: str = 'predict',
                 **kwargs) -> Sequence[EditDataSample]:
@@ -80,18 +81,21 @@ class End2EndModel(BaseBackendModel):
         """
         assert mode == 'predict', \
             'Backend model only support mode==predict,' f' but get {mode}'
+        lq = stack_batch(inputs)
         if lq.device != torch.device(self.device):
             get_root_logger().warning(f'expect input device {self.device}'
                                       f' but get {lq.device}.')
         lq = lq.to(self.device)
         batch_outputs = self.wrapper({self.input_name:
-                                      lq})
+                                      lq})[self.output_names[0]]
+        print(f'debugging what is batch_outputs: {batch_outputs}')
         predictions = []
+
         for sr_pred, data_sample in zip(batch_outputs, data_samples):
+            print(f'debugging what is sr_pred: {sr_pred}, what is data_sample: {data_sample}')
             data_sample.set_data(
                 dict(pred_img=PixelData(**dict(data=sr_pred))))
             predictions.append(data_sample)
-
         return predictions
 
 
