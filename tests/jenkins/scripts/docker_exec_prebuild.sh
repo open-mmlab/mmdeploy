@@ -28,7 +28,7 @@ git clone --depth 1 --branch master https://github.com/open-mmlab/mmdetection.gi
 
 cd /root/workspace/mmdeploy
 
-for PYTHON_VERSION in 3.6 3.7 3.8 3.7
+for PYTHON_VERSION in 3.6 3.7 3.8 3.9
 do 
     conda create -n python${PYTHON_VERSION} python=${PYTHON_VERSION}
     conda activate python${PYTHON_VERSION}
