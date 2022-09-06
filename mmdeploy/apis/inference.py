@@ -48,6 +48,6 @@ def inference_model(model_cfg: Union[str, mmengine.Config],
     model_inputs, _ = task_processor.create_input(img, input_shape)
 
     with torch.no_grad():
-        result = model.test_step([model_inputs])
+        result = model.test_step(model_inputs)
 
     return result
