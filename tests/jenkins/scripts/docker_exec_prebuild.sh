@@ -36,8 +36,10 @@ do
     pip install -r requirements/runtime.txt
     pip install -r requirements/build.txt
     python ./tools/package_tools/mmdeploy_builder.py tools/package_tools/configs/linux_x64.yaml . > /root/workspace/log/build${PYTHON_VERSION}.log
-    mv mmdeploy-*-onnxruntime* /root/workspace/prebuild-mmdeploy/python${PYTHON_VERSION}
-    mv mmdeploy-*-tensorrt* /root/workspace/prebuild-mmdeploy/python${PYTHON_VERSION}
+    prebuilt_path=/root/workspace/prebuild-mmdeploy/python${PYTHON_VERSION}
+    mkdir -p ${prebuilt_path}
+    mv mmdeploy-*-onnxruntime* ${prebuilt_path}
+    mv mmdeploy-*-tensorrt* ${prebuilt_path}
 done 
 
 
