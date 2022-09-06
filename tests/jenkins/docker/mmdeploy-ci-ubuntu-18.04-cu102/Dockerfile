@@ -48,6 +48,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         curl \
         libzip-dev \
         libopencv-dev \
+        libpython${PYTHON_VERSION} \
         lcov \
         zip \
     && rm -rf /var/lib/apt/lists/*
