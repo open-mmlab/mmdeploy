@@ -42,6 +42,9 @@ export ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH/\/root\/workspace\/libtorch\/lib:/}
 export ONNXRUNTIME_VERSION=1.8.1
 
+## avoid dataloader OOM error of too many workers
+sed -i 's/workers_per_gpu=model_cfg.data.workers_per_gpu/workers_per_gpu=1/g' $MMDEPLOY_DIR/tools/test.py
+
 echo "time-$(date +%Y%m%d%H%M)"
 ## clone ${codebase}
 git clone --depth 1 https://github.com/open-mmlab/${codebase_fullname}.git /root/workspace/${codebase_fullname}
