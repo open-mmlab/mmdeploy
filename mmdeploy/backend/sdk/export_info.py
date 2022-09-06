@@ -135,6 +135,8 @@ def get_models(deploy_cfg: Union[str, mmcv.Config],
         net = replace_suffix(ir_name, '.om')
     elif backend == Backend.SNPE:
         net = replace_suffix(ir_name, '.dlc')
+    elif backend == Backend.RKNN:
+        net = replace_suffix(ir_name, '.rknn')
     elif backend in [Backend.ONNXRUNTIME, Backend.TORCHSCRIPT]:
         pass
     elif backend == Backend.COREML:

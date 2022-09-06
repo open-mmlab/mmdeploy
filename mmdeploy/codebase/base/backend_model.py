@@ -6,7 +6,7 @@ import mmcv
 import torch
 
 from mmdeploy.utils import (SDK_TASK_MAP, Backend, get_backend_config,
-                            get_ir_config, get_task_type)
+                            get_common_config, get_ir_config, get_task_type)
 
 
 class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
@@ -105,6 +105,13 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
             return TorchscriptWrapper(
                 model=backend_files[0],
                 input_names=input_names,
+                output_names=output_names)
+        elif backend == Backend.RKNN:
+            from mmdeploy.backend.rknn import RKNNWrapper
+            common_config = get_common_config(deploy_cfg)
+            return RKNNWrapper(
+                model=backend_files[0],
+                common_config=common_config,
                 output_names=output_names)
         elif backend == Backend.ASCEND:
             from mmdeploy.backend.ascend import AscendWrapper

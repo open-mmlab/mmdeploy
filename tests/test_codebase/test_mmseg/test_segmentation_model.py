@@ -85,6 +85,45 @@ class TestEnd2EndModel:
         assert osp.exists(img_path), 'Fails to create drawn image.'
 
 
+@backend_checker(Backend.RKNN)
+class TestRKNNModel:
+
+    @classmethod
+    def setup_class(cls):
+        # force add backend wrapper regardless of plugins
+        import mmdeploy.backend.rknn as rknn_apis
+        from mmdeploy.backend.rknn import RKNNWrapper
+        rknn_apis.__dict__.update({'RKNNWrapper': RKNNWrapper})
+
+        # simplify backend inference
+        cls.wrapper = SwitchBackendWrapper(RKNNWrapper)
+        cls.outputs = [torch.rand(1, 19, IMAGE_SIZE, IMAGE_SIZE)]
+        cls.wrapper.set(outputs=cls.outputs)
+        deploy_cfg = mmcv.Config({
+            'onnx_config': {
+                'output_names': ['outputs']
+            },
+            'backend_config': {
+                'common_config': {}
+            }
+        })
+
+        from mmdeploy.codebase.mmseg.deploy.segmentation_model import RKNNModel
+        class_names = ['' for i in range(NUM_CLASS)]
+        palette = np.random.randint(0, 255, size=(NUM_CLASS, 3))
+        cls.rknn_model = RKNNModel(
+            Backend.RKNN, [''],
+            device='cpu',
+            class_names=class_names,
+            palette=palette,
+            deploy_cfg=deploy_cfg)
+
+    def test_forward_test(self):
+        imgs = torch.rand(2, 3, IMAGE_SIZE, IMAGE_SIZE)
+        results = self.rknn_model.forward_test(imgs)
+        assert isinstance(results[0], np.ndarray)
+
+
 @pytest.mark.parametrize('from_file', [True, False])
 @pytest.mark.parametrize('data_type', ['train', 'val', 'test'])
 def test_get_classes_palette_from_config(from_file, data_type):

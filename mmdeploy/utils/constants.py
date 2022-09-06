@@ -59,6 +59,7 @@ class Backend(AdvancedEnum):
     OPENVINO = 'openvino'
     SDK = 'sdk'
     TORCHSCRIPT = 'torchscript'
+    RKNN = 'rknn'
     ASCEND = 'ascend'
     COREML = 'coreml'
     DEFAULT = 'default'

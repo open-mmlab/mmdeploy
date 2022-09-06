@@ -46,6 +46,9 @@ def backend_checker(backend: Backend, require_plugin: bool = False):
             from mmdeploy.apis.ncnn import is_custom_ops_available
     elif backend == Backend.OPENVINO:
         from mmdeploy.apis.openvino import is_available
+    elif backend == Backend.RKNN:
+        # device not require as backend is not really running
+        from mmdeploy.apis.rknn import is_available
     elif backend == Backend.ASCEND:
         from mmdeploy.apis.ascend import is_available
     else:
@@ -98,6 +101,13 @@ def check_backend(backend: Backend, require_plugin: bool = False):
         from mmdeploy.apis.openvino import is_available
     elif backend == Backend.TORCHSCRIPT:
         from mmdeploy.backend.torchscript import ops_available as is_available
+    elif backend == Backend.RKNN:
+        from mmdeploy.backend.rknn import is_available
+        if not is_available():
+            # skip CI in github
+            pytest.skip(f'{backend.value} package is not available')
+        # device required
+        from mmdeploy.backend.rknn import device_available as is_available
     elif backend == Backend.ASCEND:
         from mmdeploy.backend.ascend import is_available
     else:

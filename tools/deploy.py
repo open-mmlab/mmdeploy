@@ -98,7 +98,7 @@ def torch2ir(ir_type: IR):
 
 def main():
     args = parse_args()
-    set_start_method('spawn')
+    set_start_method('spawn', force=True)
     logger = get_root_logger()
     log_level = logging.getLevelName(args.log_level)
     logger.setLevel(log_level)
@@ -351,6 +351,30 @@ def main():
             pplnn_files += [onnx_path, algo_file]
         backend_files = pplnn_files
 
+    elif backend == Backend.RKNN:
+        from mmdeploy.apis.rknn import is_available as rknn_is_available
+        assert rknn_is_available(
+        ), 'RKNN is not available, please install RKNN first.'
+
+        from mmdeploy.apis.rknn import onnx2rknn
+        PIPELINE_MANAGER.enable_multiprocess(True, [onnx2rknn])
+        PIPELINE_MANAGER.set_log_level(logging.INFO, [onnx2rknn])
+
+        backend_files = []
+        for model_id, onnx_path in zip(range(len(ir_files)), ir_files):
+            pre_fix_name = osp.splitext(osp.split(onnx_path)[1])[0]
+            output_path = osp.join(args.work_dir, pre_fix_name + '.rknn')
+            import tempfile
+            dataset_file = tempfile.NamedTemporaryFile(suffix='.txt').name
+            with open(dataset_file, 'w') as f:
+                f.writelines([osp.abspath(args.img)])
+            onnx2rknn(
+                onnx_path,
+                output_path,
+                deploy_cfg_path,
+                dataset_file=dataset_file)
+
+            backend_files.append(output_path)
     elif backend == Backend.ASCEND:
         from mmdeploy.apis.ascend import from_onnx
 

@@ -657,6 +657,60 @@ class SDKEnd2EndModel(End2EndModel):
         return [det_results]
 
 
+@__BACKEND_MODEL.register_module('rknn')
+class RKNNModel(End2EndModel):
+    """RKNNModel.
+
+    RKNN inference class, converts RKNN output to mmdet format.
+    """
+
+    def __init__(self, backend: Backend, backend_files: Sequence[str],
+                 device: str, class_names: Sequence[str],
+                 model_cfg: Union[str, mmcv.Config],
+                 deploy_cfg: Union[str, mmcv.Config], **kwargs):
+        assert backend == Backend.RKNN, f'only supported RKNN, but give \
+            {backend.value}'
+
+        super(RKNNModel, self).__init__(backend, backend_files, device,
+                                        class_names, deploy_cfg, **kwargs)
+        # load cfg if necessary
+        model_cfg = load_config(model_cfg)[0]
+        self.model_cfg = model_cfg
+
+    def _get_bboxes(self, outputs):
+        from mmdet.models import build_head
+        head_cfg = self.model_cfg._cfg_dict.model.bbox_head
+        head = build_head(head_cfg)
+        if head_cfg.type == 'YOLOXHead':
+            ret = head.get_bboxes(
+                outputs[:3],
+                outputs[3:6],
+                outputs[6:9], [dict(scale_factor=None)],
+                cfg=self.model_cfg._cfg_dict.model.test_cfg)
+        elif head_cfg.type == 'YOLOV3Head':
+            ret = head.get_bboxes(
+                outputs, [dict(scale_factor=None)],
+                cfg=self.model_cfg._cfg_dict.model.test_cfg)
+        else:
+            raise NotImplementedError(f'{head_cfg.type} not supported yet.')
+        ret = [r.unsqueeze(0).cpu() for r in ret[0]]
+        return ret
+
+    def forward_test(self, imgs: torch.Tensor, *args, **kwargs):
+        """Implement forward test.
+
+        Args:
+            imgs (torch.Tensor): Input image(s) in [N x C x H x W] format.
+
+        Returns:
+            list[np.ndarray, np.ndarray]: dets of shape [N, num_det, 5] and
+                class labels of shape [N, num_det].
+        """
+        outputs = self.wrapper({self.input_name: imgs})
+        ret = self._get_bboxes(outputs)
+        return ret
+
+
 def get_classes_from_config(model_cfg: Union[str, mmcv.Config], **kwargs) -> \
         List[str]:
     """Get class name from config. The class name is the `classes` field if it
