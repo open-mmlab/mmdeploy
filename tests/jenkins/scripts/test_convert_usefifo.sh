@@ -4,6 +4,7 @@
 
 docker_image=$1
 codebase_list=($2)
+max_job_nums=${3:-'4'}
 
 date_snap=$(date +%Y%m%d)
 time_snap=$(date +%Y%m%d%H%M)
@@ -15,7 +16,7 @@ trap "exec 1000>&-; exec 1000<&-;exit 0" 2
 mkfifo mulfifo
 exec 1000<>mulfifo
 rm -rf mulfifo
-for ((n=1;n<=4;n++))
+for ((n=1;n<=${max_job_nums};n++))
 do
     echo >&1000
 done
