@@ -3,19 +3,17 @@ description: Create a report to help us improve
 
 
 body:
-- type: markdown
+- type: checkboxes
   attributes:
-    value: >
-      ## Checklist
-      1. I have searched related issues but cannot get the expected help.
-      2. I have read the [FAQ documentation](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/faq.md) but cannot get the expected help.
-      3. The bug has not been fixed in the latest version.
+    label: Checklist
+    options:
+    - label: I have searched related issues but cannot get the expected help.
+    - label: 2. I have read the [FAQ documentation](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/faq.md) but cannot get the expected help.
+    - label: 3. The bug has not been fixed in the latest version.
 - type: textarea
   attributes:
     label: Describe the bug
-    placeholder: |
-
-      A clear and concise description of what the bug is.
+    description: A clear and concise description of what the bug is.
   validations:
     required: true
 - type: textarea
@@ -30,6 +28,8 @@ body:
       ```
 
       2. Did you make any modifications on the code or config? Did you understand what you have modified?
+  validations:
+    required: true
 - type: textarea
   attributes:
     label: Environment
@@ -49,16 +49,11 @@ body:
       ```none
       A placeholder for trackback.
       ```
-
-- type: textarea
-  attributes:
-    label: Bug fix
-    description: |
-      If you have already identified the reason, you can provide the information here. If you are willing to create a PR to fix it, please also leave a comment here and that would be much appreciated!
-
 - type: markdown
   attributes:
     value: >
+     If you have already identified the reason, you can provide the information here. If you are willing to create a PR to fix it, please also leave a comment here and that would be much appreciated!
+
      Thanks for your bug report. We appreciate it a lot.
 
 labels: ['Bug']
