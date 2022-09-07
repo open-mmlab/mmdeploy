@@ -45,7 +45,8 @@ pipeline {
                     }
                     steps {
                         sh """
-                            tests/jenkins/scripts/test_build.sh '${params.DOCKER_IMAGE}' 
+                            tests/jenkins/scripts/test_build.sh '${params.DOCKER_IMAGE}' &&
+                            wait
                         """
                     }
                 }
@@ -69,7 +70,8 @@ pipeline {
                     }
                     steps {
                         sh """
-                            tests/jenkins/scripts/test_prebuild.sh '${params.DOCKER_IMAGE}' && wait 
+                            tests/jenkins/scripts/test_prebuild.sh '${params.DOCKER_IMAGE}' && \
+                            wait 
                         """
                     }
                 }
