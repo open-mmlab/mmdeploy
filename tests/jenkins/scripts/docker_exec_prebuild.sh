@@ -35,6 +35,7 @@ do
     conda create -n python${PYTHON_VERSION} python=${PYTHON_VERSION}
     conda activate python${PYTHON_VERSION}
     pip install pyyaml
+    pip install -r requirements/build.txt
     python ./tools/package_tools/mmdeploy_builder.py tools/package_tools/configs/linux_x64.yaml .
     prebuilt_path=/root/workspace/prebuild-mmdeploy/python${PYTHON_VERSION}
     mkdir -p ${prebuilt_path}
