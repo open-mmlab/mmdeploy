@@ -108,7 +108,6 @@ class RescaleToHeightImpl : public Module {
   int max_width_{-1};
   bool keep_aspect_ratio_{true};
   int width_divisor_{1};
-  std::string backend_;
   std::string resize_type_{"Resize"};
   Stream stream_;
 };
