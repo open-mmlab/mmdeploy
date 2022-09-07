@@ -34,7 +34,8 @@ for PYTHON_VERSION in 3.6 3.7 3.8 3.9
 do 
     conda create -n python${PYTHON_VERSION} python=${PYTHON_VERSION}
     conda activate python${PYTHON_VERSION}
-    python ./tools/package_tools/mmdeploy_builder.py tools/package_tools/configs/linux_x64.yaml . > /root/workspace/log/build${PYTHON_VERSION}.log
+    pip install pyyaml
+    python ./tools/package_tools/mmdeploy_builder.py tools/package_tools/configs/linux_x64.yaml .
     prebuilt_path=/root/workspace/prebuild-mmdeploy/python${PYTHON_VERSION}
     mkdir -p ${prebuilt_path}
     mv mmdeploy-*-onnxruntime* ${prebuilt_path}
@@ -49,10 +50,9 @@ pip install -r requirements/runtime.txt
 pip install -r requirements/build.txt
 
 export PYTHON_VERSION=$(python -V | awk '{print $2}' | awk '{split($0, a, "."); print a[1]a[2]}' )
+export MMDEPLOY_VERSION=$(cat mmdeploy/version.py | grep "__version__ = " | awk '{split($0,a,"= "); print a[2]}' | sed "s/'//g")
 cp /root/workspace/prebuild-mmdeploy/python${PYTHON_VERSION:0:1}.${PYTHON_VERSION:1}/* /root/workspace/mmdeploy 
 python ./tools/package_tools/mmdeploy_builder.py tools/package_tools/configs/linux_x64.yaml . > /root/workspace/log/build.log
-
-export MMDEPLOY_VERSION=$(cat mmdeploy/version.py | grep "__version__ = " | awk '{split($0,a,"= "); print a[2]}' | sed "s/'//g")
 
 pip install mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-onnxruntime${ONNXRUNTIME_VERSION}/sdk/python/mmdeploy_python-${MMDEPLOY_VERSION}-cp${PYTHON_VERSION}-*-linux_x86_64.whl
 pip install mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-onnxruntime${ONNXRUNTIME_VERSION}/dist/mmdeploy-${MMDEPLOY_VERSION}-*-linux_x86_64.whl
