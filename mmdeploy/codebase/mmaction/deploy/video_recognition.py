@@ -55,7 +55,7 @@ def process_model_config(model_cfg: mmengine.Config,
                 has_resize = True
                 keep_ratio = trans.get('keep_ratio', True)
                 scale = trans.scale
-            if trans['type'] in ['TenCrop', 'CenterCrop']:
+            if trans['type'] in ['TenCrop', 'CenterCrop', 'ThreeCrop']:
                 has_crop = True
                 crop_size = trans.crop_size
 

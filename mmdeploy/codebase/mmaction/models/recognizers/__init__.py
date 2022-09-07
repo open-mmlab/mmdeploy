@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-from .recognizer2d import recognizer2d__forward
+from .base import base_recognizer__forward
 
-__all__ = ['recognizer2d__forward']
+__all__ = ['base_recognizer__forward']

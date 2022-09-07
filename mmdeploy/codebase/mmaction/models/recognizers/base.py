@@ -7,8 +7,8 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    'mmaction.models.recognizers.Recognizer2D.forward')
-def recognizer2d__forward(
+    'mmaction.models.recognizers.BaseRecognizer.forward')
+def base_recognizer__forward(
         ctx,
         self,
         inputs: Tensor,
@@ -35,6 +35,4 @@ def recognizer2d__forward(
     num_segs = cls_scores.shape[0] // len(data_samples)
     cls_scores = self.cls_head.average_clip(cls_scores, num_segs=num_segs)
 
-    # predictions = self.cls_head.predict(feats, data_samples,
-    #                                     **predict_kwargs)
     return cls_scores
