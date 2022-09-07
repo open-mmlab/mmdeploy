@@ -4,7 +4,7 @@
 # export docker_image=mmdeploy-ci-ubuntu-18.04
 export docker_image=$1
 
-odate_snap=$(date +%Y%m%d)
+date_snap=$(date +%Y%m%d)
 time_snap=$(date +%Y%m%d%H%M)
 # docker run cmd for build
 log_dir=/data2/regression_log/build_log/${date_snap}/${time_snap}
