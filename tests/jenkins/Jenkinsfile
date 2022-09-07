@@ -44,7 +44,7 @@ pipeline {
                         expression { return params.EXEC_BUILD }
                     }
                     steps {
-                        sh "tests/jenkins/scripts/test_build.sh '${params.DOCKER_IMAGE}' && wait"
+                        sh "tests/jenkins/scripts/test_build.sh '${params.DOCKER_IMAGE}'"
                     }
                 }
                 
