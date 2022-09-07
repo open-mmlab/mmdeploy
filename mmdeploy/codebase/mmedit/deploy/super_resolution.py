@@ -30,6 +30,8 @@ def process_model_config(model_cfg: mmengine.Config,
         mmengine.Config: the model config after processing.
     """
     config = deepcopy(model_cfg)
+    if not hasattr(config, 'test_pipeline'):
+        config.__setattr__('test_pipeline', config.val_pipeline)
     keys_to_remove = ['gt', 'gt_path']
     # MMEdit doesn't support LoadImageFromWebcam.
     # Remove "LoadImageFromFile" and related metakeys.
@@ -47,7 +49,6 @@ def process_model_config(model_cfg: mmengine.Config,
             'keys': ['img']
         }
         config.test_pipeline.insert(1, resize)
-
     for key in keys_to_remove:
         for pipeline in list(config.test_pipeline):
             if 'key' in pipeline and key == pipeline['key']:
