@@ -4,9 +4,11 @@ from typing import List, Optional, Sequence, Union
 import mmengine
 import torch
 from mmedit.structures import EditDataSample, PixelData
+from mmengine import Config
+from mmengine.model.base_model.data_preprocessor import BaseDataPreprocessor
 from mmengine.registry import Registry
 from mmengine.structures import BaseDataElement
-from mmengine.model import stack_batch
+from torch import nn
 
 from mmdeploy.codebase.base import BaseBackendModel
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
@@ -35,8 +37,10 @@ class End2EndModel(BaseBackendModel):
                  device: str,
                  model_cfg: mmengine.Config,
                  deploy_cfg: Union[str, mmengine.Config] = None,
+                 data_preprocessor: Optional[Union[dict, nn.Module]] = None,
                  **kwargs):
-        super().__init__(deploy_cfg=deploy_cfg)
+        super().__init__(deploy_cfg=deploy_cfg,
+                         data_preprocessor=data_preprocessor)
         self.deploy_cfg = deploy_cfg
         self.test_cfg = model_cfg.test_cfg
         self.device = device
@@ -81,18 +85,17 @@ class End2EndModel(BaseBackendModel):
         """
         assert mode == 'predict', \
             'Backend model only support mode==predict,' f' but get {mode}'
-        lq = stack_batch(inputs)
+        lq = inputs
         if lq.device != torch.device(self.device):
             get_root_logger().warning(f'expect input device {self.device}'
                                       f' but get {lq.device}.')
         lq = lq.to(self.device)
         batch_outputs = self.wrapper({self.input_name:
                                       lq})[self.output_names[0]]
-        print(f'debugging what is batch_outputs: {batch_outputs}')
+        batch_outputs = self.data_preprocessor.destructor(batch_outputs)
         predictions = []
 
         for sr_pred, data_sample in zip(batch_outputs, data_samples):
-            print(f'debugging what is sr_pred: {sr_pred}, what is data_sample: {data_sample}')
             data_sample.set_data(
                 dict(pred_img=PixelData(**dict(data=sr_pred))))
             predictions.append(data_sample)
@@ -132,7 +135,11 @@ class SDKEnd2EndModel(End2EndModel):
 def build_super_resolution_model(model_files: Sequence[str],
                                  model_cfg: Union[str, mmengine.Config],
                                  deploy_cfg: Union[str, mmengine.Config],
-                                 device: str, **kwargs):
+                                 device: str,
+                                 data_preprocessor:
+                                 Optional[Union[Config,
+                                                BaseDataPreprocessor]] = None,
+                                 **kwargs):
     model_cfg = load_config(model_cfg)[0]
     deploy_cfg = load_config(deploy_cfg)[0]
 
@@ -146,6 +153,7 @@ def build_super_resolution_model(model_files: Sequence[str],
             device=device,
             model_cfg=model_cfg,
             deploy_cfg=deploy_cfg,
+            data_preprocessor=data_preprocessor,
             **kwargs))
 
     return backend_model

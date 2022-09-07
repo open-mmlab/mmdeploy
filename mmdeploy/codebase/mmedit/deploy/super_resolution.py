@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from copy import deepcopy
-import os.path as osp
 from typing import Any, Callable, Dict, Optional, Sequence, Tuple, Union
 
 import mmengine
@@ -125,11 +124,15 @@ class SuperResolution(BaseTask):
             nn.Module: An initialized backend model.
         """
         from .super_resolution_model import build_super_resolution_model
+        data_preprocessor = deepcopy(
+            self.model_cfg.model.get('data_preprocessor', {}))
+        data_preprocessor.setdefault('type', 'mmedit.EditDataPreprocessor')
         model = build_super_resolution_model(
             model_files,
             self.model_cfg,
             self.deploy_cfg,
             device=self.device,
+            data_preprocessor=data_preprocessor,
             **kwargs)
         return model
 
@@ -148,7 +151,6 @@ class SuperResolution(BaseTask):
         Returns:
             tuple: (data, img), meta information for the input image and input.
         """
-        print(f'debugging mmdeploy.codebase.mmedit.deploy.super_resolution.py line 149: what is data_preprocessor: {data_preprocessor}')
         from mmcv.transforms import Compose
 
         if isinstance(imgs, (list, tuple)):
@@ -174,7 +176,6 @@ class SuperResolution(BaseTask):
         data = pseudo_collate(data_arr)
         if data_preprocessor is not None:
             data = data_preprocessor(data, False)
-            print(f'debugging mmdeploy.codebase.mmedit.deploy.super_resolution line 175: what is data: {data}')
             return data, data['inputs']
         else:
             return data, BaseTask.get_tensor_from_input(data)
@@ -195,7 +196,6 @@ class SuperResolution(BaseTask):
                             img_keys=['pred_img'],
                             bgr2rgb=True))
         super().__setattr__('visualizer', visualizer)
-        print(f'debugging mmdeploy.codebase.mmedit.deploy.super_resolution.py line 189 what is name: {name}')
         visualizer = super().get_visualizer(name, save_dir)
         metainfo = _get_dataset_metainfo(self.model_cfg)
         if metainfo is not None:
@@ -250,8 +250,9 @@ class SuperResolution(BaseTask):
             show_result (bool): Whether to show result in windows, defaults
                 to `False`.
         """
-        import mmcv
         import warnings
+
+        import mmcv
         if hasattr(result, 'pred_img'):
             result = result.pred_img.data.detach().numpy()
         else:
@@ -259,15 +260,12 @@ class SuperResolution(BaseTask):
             result = result.output.pred_img.data.detach().numpy()
         if len(result.shape) == 4:
             result = result[0]
-        print(f'debugging mmdeploy.codebase.mmedit.deploy.super_resolution.py line 263: what is result: {result}')
         with torch.no_grad():
             result = result.transpose(1, 2, 0)
             result = np.clip(result, 0, 255)[:, :, ::-1].round()
-
             # result = np.clip(result, 0, 1)[:, :, ::-1]
             # result = (result * 255.0).round()
             output_file = None if show_result else output_file
-
             if show_result:
                 int_result = result.astype(np.uint8)
                 mmcv.imshow(int_result, window_name, 0)
@@ -310,7 +308,6 @@ class SuperResolution(BaseTask):
         Return:
             dict: Composed of the preprocess information.
         """
-        return {}
         input_shape = get_input_shape(self.deploy_cfg)
         model_cfg = process_model_config(self.model_cfg, [''], input_shape)
         preprocess = model_cfg.test_pipeline
@@ -333,7 +330,6 @@ class SuperResolution(BaseTask):
         Return:
             str: the name of the model.
         """
-        return ""
         assert 'generator' in self.model_cfg.model, 'generator not in model '
         'config'
         assert 'type' in self.model_cfg.model.generator, 'generator contains '
