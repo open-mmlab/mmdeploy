@@ -1,3 +1,4 @@
+pyyaml
 asynctest
 coverage
 flake8
