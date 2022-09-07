@@ -45,10 +45,10 @@ pipeline {
                     }
                     steps {
                         sh """
-                            tests/jenkins/scripts/test_build.sh '${params.DOCKER_IMAGE}'  
-                            wait  
-                            log_dir=/data2/regression/build_log/$(ls -l | tail -n 1 | awk '{print $9}')/$(ls -l | tail -n 1 | awk '{print $9}')/build.log  
-                            cat ${log_dir}
+                            tests/jenkins/scripts/test_build.sh '${params.DOCKER_IMAGE}'
+                            wait
+                            log_dir=/data2/regression/build_log/$(ls -l | tail -n 1 | awk '{print $9}')/$(ls -l | tail -n 1 | awk '{print $9}')/build.log
+                            cat ${log_dir
                         """
                     }
                 }
@@ -59,8 +59,8 @@ pipeline {
                     }
                     steps {
                         sh """
-                            tests/jenkins/scripts/test_convert.sh '${params.DOCKER_IMAGE}' '${params.CODEBASES}'  
-                            wait  
+                            tests/jenkins/scripts/test_convert.sh '${params.DOCKER_IMAGE}' '${params.CODEBASES}'
+                            wait
                             echo "finish!"
                         """
                     }
@@ -72,9 +72,9 @@ pipeline {
                     }
                     steps {
                         sh """
-                            tests/jenkins/scripts/test_prebuild.sh '${params.DOCKER_IMAGE}'  
-                            wait  
-                            log_dir=/data2/regression/prebuild_log/$(ls -l | tail -n 1 | awk '{print $9}')/$(ls -l | tail -n 1 | awk '{print $9}')/prebuild.log  
+                            tests/jenkins/scripts/test_prebuild.sh '${params.DOCKER_IMAGE}'
+                            wait
+                            log_dir=/data2/regression/prebuild_log/$(ls -l | tail -n 1 | awk '{print $9}')/$(ls -l | tail -n 1 | awk '{print $9}')/prebuild.log
                             cat ${log_dir}
                         """
                     }
@@ -86,8 +86,8 @@ pipeline {
                     }
                     steps {
                         sh """
-                            tests/jenkins/scripts/test_ut.sh '${params.DOCKER_IMAGE}' '${params.CODEBASES}'  
-                            wait  
+                            tests/jenkins/scripts/test_ut.sh '${params.DOCKER_IMAGE}' '${params.CODEBASES}'
+                            wait
                             echo "finish!"
                         """
                     }
