@@ -37,42 +37,43 @@ pipeline {
     }
 
     stages {
-        stage('Build') {
-            when {
-                expression { return params.EXEC_BUILD }
-            }
-            steps {
-                sh "tests/jenkins/scripts/test_build.sh '${params.DOCKER_IMAGE}'"
-            }
-        }
-        
-        stage('Convert') {
-            when {
-                expression { return params.EXEC_CONVERT }
-            }
-            steps {
-                sh "tests/jenkins/scripts/test_convert.sh '${params.DOCKER_IMAGE}' '${params.CODEBASES}'"
-            }
-        }
-        
+        stage('Regression') {
+            parallel {
+                stage('Build') {
+                    when {
+                        expression { return params.EXEC_BUILD }
+                    }
+                    steps {
+                        sh "tests/jenkins/scripts/test_build.sh '${params.DOCKER_IMAGE}'"
+                    }
+                }
+                
+                stage('Convert') {
+                    when {
+                        expression { return params.EXEC_CONVERT }
+                    }
+                    steps {
+                        sh "tests/jenkins/scripts/test_convert.sh '${params.DOCKER_IMAGE}' '${params.CODEBASES}'"
+                    }
+                }
+                
+                stage('Prebuild') {
+                    when {
+                        expression { return params.EXEC_PREBUILD }
+                    }
+                    steps {
+                        sh "tests/jenkins/scripts/test_prebuild.sh '${params.DOCKER_IMAGE}'"
+                    }
+                }
 
-    }
-    stages {
-        stage('Prebuild') {
-            when {
-                expression { return params.EXEC_PREBUILD }
-            }
-            steps {
-                sh "tests/jenkins/scripts/test_prebuild.sh '${params.DOCKER_IMAGE}'"
-            }
-        }
-
-        stage('Unittest') {
-            when {
-                expression { return params.EXEC_UNITTEST }
-            }
-            steps {
-                sh "tests/jenkins/scripts/test_ut.sh '${params.DOCKER_IMAGE}' '${params.CODEBASES}'"
+                stage('Unittest') {
+                    when {
+                        expression { return params.EXEC_UNITTEST }
+                    }
+                    steps {
+                        sh "tests/jenkins/scripts/test_ut.sh '${params.DOCKER_IMAGE}' '${params.CODEBASES}'"
+                    }
+                }
             }
         }
     }
