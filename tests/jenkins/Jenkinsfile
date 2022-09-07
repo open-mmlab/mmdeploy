@@ -55,6 +55,9 @@ pipeline {
             }
         }
         
+
+    }
+    stages {
         stage('Prebuild') {
             when {
                 expression { return params.EXEC_PREBUILD }
