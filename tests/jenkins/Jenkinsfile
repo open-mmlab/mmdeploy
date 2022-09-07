@@ -39,7 +39,7 @@ pipeline {
     stages {
         stage('Build') {
             when {
-                expression { $params.EXEC_BUILD }
+                expression { return params.EXEC_BUILD }
             }
             steps {
                 sh "tests/jenkins/scripts/test_build.sh '${params.DOCKER_IMAGE}'"
@@ -48,7 +48,7 @@ pipeline {
         
         stage('Convert') {
             when {
-                expression { $params.EXEC_CONVERT }
+                expression { return params.EXEC_CONVERT }
             }
             steps {
                 sh "tests/jenkins/scripts/test_convert.sh '${params.DOCKER_IMAGE}' '${params.CODEBASES}'"
@@ -57,7 +57,7 @@ pipeline {
         
         stage('Prebuild') {
             when {
-                expression { $params.EXEC_PREBUILD }
+                expression { return params.EXEC_PREBUILD }
             }
             steps {
                 sh "tests/jenkins/scripts/test_prebuild.sh '${params.DOCKER_IMAGE}'"
@@ -66,7 +66,7 @@ pipeline {
 
         stage('Unittest') {
             when {
-                expression { $params.EXEC_UNITTEST }
+                expression { return params.EXEC_UNITTEST }
             }
             steps {
                 sh "tests/jenkins/scripts/test_ut.sh '${params.DOCKER_IMAGE}' '${params.CODEBASES}'"
