@@ -28,4 +28,6 @@ echo "container_id=${container_id}"
 nohup docker exec ${container_id} bash -c "git clone --depth 1 --branch master --recursive https://github.com/open-mmlab/mmdeploy.git &&\
  /root/workspace/mmdeploy_script/docker_exec_prebuild.sh" > ${log_dir}/prebuild.log 2>&1 &
 wait
+docker stop $container_id
+
 echo ${log_dir}/prebuild.log

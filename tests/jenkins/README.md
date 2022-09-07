@@ -58,9 +58,30 @@ docker_exec_${Job_Type}.sh ## 在容器中实际运行的脚本
 ## Jenkinsfile
 Jenkins执行任务时所需的pipeline配置文件
 
+# 如何构建镜像
+## step1 
+由于部分文件需要登录才能下载(主要是nvidia相关)，因此需要先手动下载这些包，并存放至本机/data2/shared(可通过修改dockerfile来自定义路径)，需要下载的包为dockerfile中`http://${HOST}/`后所跟文件
+
+## step2
+在/data2/shared中启动一个文件下载服务
+```python
+cd /data2/shared
+nohup python3 -m http.server 8989 > file_server.log 2>&1 &
+```
+
+## step3
+执行构建命令
+```shell
+cd /the/path/mmdeploy
+docker build ./tests/jenkins/docker/mmdeploy-ci-${OS}-${OS_Version}-${CUDA_Version} \
+--build-arg HOST=${host_ip}:8989 \
+-t mmdeploy-ci-${OS}-${OS_Version}-${CUDA_Version}
+```
+
 # 如何运行
 ## step１
-在执行机上执行docker build ${image}执行，build镜像
+在执行机上build镜像
+
 ## step2
 连接至执行机，进行mmdeploy目录，执行test_${Job_Type}.sh脚本并传入参数，以执行mmdet mmcls在mmdeploy-ci-ubuntu-20.04-cu113的convert任务为例
 ```shell
@@ -69,6 +90,7 @@ cd the/path/mmdeploy
 ```
 ## step3
 shell返回container='xxx'，任务开始运行
+
 ## step4
 等待任务运行完成，查看日志
 
@@ -132,4 +154,3 @@ tree -L 1 -d
 ```shell
 ${exec_host_ip}:8989
 ```
-
