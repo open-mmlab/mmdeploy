@@ -25,3 +25,4 @@ do
     nohup docker exec ${container_id} bash -c "git clone --depth 1 --branch master --recursive https://github.com/open-mmlab/mmdeploy.git &&\
      /root/workspace/mmdeploy_script/docker_exec_ut.sh ${codebase}" > ${log_dir}/${codebase}.log 2>&1 &
 done
+wait
