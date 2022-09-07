@@ -1,6 +1,4 @@
 pipeline {
-    agent { label 'deploy_linux' }
-
     parameters {
         string(
             name: 'CODEBASES', 
@@ -40,6 +38,7 @@ pipeline {
         stage('Regression') {
             parallel {
                 stage('Build') {
+                    agent { label 'deploy_linux' }
                     when {
                         expression { return params.EXEC_BUILD }
                     }
@@ -47,8 +46,9 @@ pipeline {
                         sh "tests/jenkins/scripts/test_build.sh '${params.DOCKER_IMAGE}'"
                     }
                 }
-                
+
                 stage('Convert') {
+                    agent { label 'deploy_linux' }
                     when {
                         expression { return params.EXEC_CONVERT }
                     }
@@ -58,6 +58,7 @@ pipeline {
                 }
                 
                 stage('Prebuild') {
+                    agent { label 'deploy_linux' }
                     when {
                         expression { return params.EXEC_PREBUILD }
                     }
@@ -67,6 +68,7 @@ pipeline {
                 }
 
                 stage('Unittest') {
+                    agent { label 'deploy_linux' }
                     when {
                         expression { return params.EXEC_UNITTEST }
                     }
