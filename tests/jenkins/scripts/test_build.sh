@@ -23,3 +23,4 @@ nohup docker exec ${container_id} bash -c "git clone --depth 1 --branch master -
 /root/workspace/mmdeploy_script/docker_exec_build.sh" > ${log_dir}/build.log 2>&1 &
 
 wait
+cat ${log_dir}/build.log

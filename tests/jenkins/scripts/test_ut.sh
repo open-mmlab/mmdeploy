@@ -22,7 +22,9 @@ do
             ${docker_image} /bin/bash
     )
     echo "container_id=${container_id}"
-    nohup docker exec ${container_id} bash -c "git clone --depth 1 --branch master --recursive https://github.com/open-mmlab/mmdeploy.git &&\
-     /root/workspace/mmdeploy_script/docker_exec_ut.sh ${codebase}" > ${log_dir}/${codebase}.log 2>&1 &
+    nohup docker exec ${container_id} bash -c "git clone --depth 1 --branch master --recursive https://github.com/open-mmlab/mmdeploy.git && \
+    /root/workspace/mmdeploy_script/docker_exec_ut.sh ${codebase}" > ${log_dir}/${codebase}.log 2>&1 &
+    echo "${codebase} unittest finish!"
+    cat ${log_dir}/${codebase}.log
 done
 wait

@@ -42,6 +42,8 @@ do
         /root/workspace/mmdeploy_script/docker_exec_convert_gpu.sh ${codebase}" > ${log_dir}/${codebase}.log 2>&1 &
         wait 
         docker stop $container_id
+        echo "${codebase} convert finish!"
+        cat ${log_dir}/${codebase}.log
         echo >&1000
     }&
 done
