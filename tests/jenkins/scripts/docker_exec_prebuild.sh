@@ -26,7 +26,9 @@ ln -s /root/workspace/mmdeploy_benchmark /root/workspace/mmdeploy/data
 cd /root/workspace
 git clone --depth 1 --branch master https://github.com/open-mmlab/mmdetection.git
 
-cd /root/workspace/mmdeploy
+export MMDEPLOY_DIR=/root/workspace/mmdeploy
+
+cd ${MMDEPLOY_DIR}
 
 for PYTHON_VERSION in 3.6 3.7 3.8 3.9
 do 
@@ -47,7 +49,7 @@ pip install -r requirements/runtime.txt
 pip install -r requirements/build.txt
 
 export PYTHON_VERSION=$(python -V | awk '{print $2}' | awk '{split($0, a, "."); print a[1]a[2]}' )
-cp /root/workspace/prebuild-mmdeploy/python${PYTHON_VERSION/./}/* /root/workspace/mmdeploy 
+cp /root/workspace/prebuild-mmdeploy/python${PYTHON_VERSION:0:1}.${PYTHON_VERSION:1}/* /root/workspace/mmdeploy 
 python ./tools/package_tools/mmdeploy_builder.py tools/package_tools/configs/linux_x64.yaml . > /root/workspace/log/build.log
 
 export MMDEPLOY_VERSION=$(cat mmdeploy/version.py | grep "__version__ = " | awk '{split($0,a,"= "); print a[2]}' | sed "s/'//g")
@@ -58,9 +60,6 @@ pip install mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-cuda${CUDA_VERSION}-tensor
 pip install mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-cuda${CUDA_VERSION}-tensorrt${TENSORRT_VERSION}/sdk/python/mmdeploy_python-${MMDEPLOY_VERSION}-cp${PYTHON_VERSION}-*-linux_x86_64.whl
 
 python tools/check_env.py 2>&1 | tee /root/workspace/log/check_env.log 
-
-mv mmdeploy-*-onnxruntime* /root/workspace/prebuild-mmdeploy
-mv mmdeploy-*-tensorrt* /root/workspace/prebuild-mmdeploy
 
 python tools/regression_test.py --codebase mmdet --models ssd --backends onnxruntime tensorrt --performance \
   --device cuda:0 2>&1 | tee /root/workspace/log/test_prebuild.log
