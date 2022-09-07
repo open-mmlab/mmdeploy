@@ -79,9 +79,9 @@ int mmdeploy_context_add(mmdeploy_context_t context, mmdeploy_context_type_t typ
   auto& ctx = *Cast(context);
   switch (type) {
     case MMDEPLOY_TYPE_DEVICE: {
-      Device device((const char*)object);
+      const auto& device = *(Device*)object;
       ctx["device"] = device;
-      ctx["stream"] = Stream(device);
+      ctx["stream"] = Stream::GetDefault(device);
       break;
     }
     case MMDEPLOY_TYPE_SCHEDULER:

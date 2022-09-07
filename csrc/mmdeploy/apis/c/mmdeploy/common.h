@@ -86,6 +86,7 @@ typedef enum mmdeploy_context_type_t {
   MMDEPLOY_TYPE_STREAM = 1,
   MMDEPLOY_TYPE_MODEL = 2,
   MMDEPLOY_TYPE_SCHEDULER = 3,
+  MMDEPLOY_TYPE_MAT = 4,
 } mmdeploy_context_type_t;
 
 #if __cplusplus

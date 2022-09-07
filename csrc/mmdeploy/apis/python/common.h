@@ -19,22 +19,24 @@ namespace mmdeploy {
 
 // std::map<std::string, void (*)(py::module &)> &gPythonBindings();
 
-std::vector<void (*)(py::module &)> &gPythonBindings();
+std::vector<void (*)(py::module&)>& gPythonBindings();
 
-mmdeploy_mat_t GetMat(const PyImage &img);
+mmdeploy_mat_t GetMat(const PyImage& img);
 
 class Value;
 
-py::object ToPyObject(const Value &value);
+py::object ToPyObject(const Value& value);
 
-Value FromPyObject(const py::object &obj);
+Value FromPyObject(const py::object& obj);
 
 class PythonBindingRegisterer {
  public:
-  explicit PythonBindingRegisterer(void (*register_fn)(py::module &m)) {
+  explicit PythonBindingRegisterer(void (*register_fn)(py::module& m)) {
     gPythonBindings().push_back(register_fn);
   }
 };
+
+class Foo {};
 
 }  // namespace mmdeploy
 

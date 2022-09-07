@@ -2,8 +2,8 @@
 
 #include "common.h"
 
-#include "mmdeploy/core/mat.h"
-#include "mmdeploy/core/model.h"
+#include "mmdeploy/common.hpp"
+// #include "mmdeploy/core/mat.h"
 #include "mmdeploy/core/utils/formatter.h"
 #include "pybind11/numpy.h"
 
@@ -42,32 +42,6 @@ mmdeploy_mat_t GetMat(const PyImage& img) {
   return mat;
 }
 
-Mat _GetMat(const PyImage& img) {
-  auto info = img.request();
-  if (info.ndim != 3) {
-    fprintf(stderr, "info.ndim = %d\n", (int)info.ndim);
-    throw std::runtime_error("continuous uint8 HWC array expected");
-  }
-  auto channels = (int)info.shape[2];
-  PixelFormat format;
-  if (channels == 1) {
-    format = PixelFormat::kGRAYSCALE;
-  } else if (channels == 3) {
-    format = PixelFormat::kBGR;
-  } else {
-    throw std::runtime_error("images of 1 or 3 channels are supported");
-  }
-
-  return {
-      (int)info.shape[0],                             // height
-      (int)info.shape[1],                             // width
-      format,                                         // format
-      DataType::kINT8,                                // type
-      std::shared_ptr<void>(info.ptr, [](void*) {}),  // data
-      Device(0),                                      // device
-  };
-}
-
 py::object ToPyObject(const Value& value) {
   switch (value.type()) {
     case ValueType::kNull:
@@ -103,6 +77,8 @@ py::object ToPyObject(const Value& value) {
   }
 }
 
+std::optional<Value> _to_value_internal(const void* object, mmdeploy_context_type_t type);
+
 Value FromPyObject(const py::object& obj) {
   if (py::isinstance<py::none>(obj)) {
     return nullptr;
@@ -131,9 +107,11 @@ Value FromPyObject(const py::object& obj) {
     }
     return dst;
   } else if (py::isinstance<py::array>(obj)) {
-    return _GetMat(obj.cast<py::array>());
-  } else if (py::isinstance<Model>(obj)) {
-    return obj.cast<Model>();
+    const auto& array = obj.cast<py::array>();
+    return *_to_value_internal(&array, MMDEPLOY_TYPE_MAT);
+  } else if (py::isinstance<py::class_<Model>>(obj)) {
+    const auto& model = obj.cast<Model>();
+    return *_to_value_internal(&model, MMDEPLOY_TYPE_MODEL);
   } else {
     std::stringstream ss;
     ss << obj.get_type();
@@ -149,4 +127,8 @@ PYBIND11_MODULE(mmdeploy_python, m) {
   for (const auto& f : mmdeploy::gPythonBindings()) {
     f(m);
   }
+
+  using namespace mmdeploy;
+  py::class_<Foo>(m, "Foo").def(py::init([] { return Foo{}; }));
+  m.def("test_foo", [](py::object obj) { return py::isinstance<Foo>(obj); });
 }

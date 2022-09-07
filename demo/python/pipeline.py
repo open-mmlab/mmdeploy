@@ -3,10 +3,14 @@ import argparse
 import json
 
 import cv2
-from mmdeploy_python import Pipeline, Model
+from mmdeploy_python import Pipeline, Model, Context, Device, Foo, test_foo
 
-det_model = Model('/workspace/deploy_prototype/benchmark/_detection_tmp_model')
-reg_model = Model('/workspace/deploy_prototype/benchmark/_mmcls_tmp_model')
+foo = Foo()
+print(test_foo(foo))
+print(test_foo(0))
+
+det_model = Model('/workspace/mmdeploy/benchmark/_detection_tmp_model')
+reg_model = Model('/workspace/mmdeploy/benchmark/_mmcls_tmp_model')
 
 config = dict(
     type='Pipeline',
@@ -36,7 +40,9 @@ config = dict(
     ],
     output=['dets', 'labels'])
 
-pipeline = Pipeline(config, 'cuda', 0)
+device = Device('cuda')
+
+pipeline = Pipeline(config, Context(device))
 
 img = cv2.imread('/workspace/mmdetection/demo/demo.jpg')
 

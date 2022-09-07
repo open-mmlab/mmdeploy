@@ -1,3 +1,7 @@
+if (NOT MMDEPLOY_BUILD_SDK_JAVA_API)
+        return ()
+endif ()
+
 project(mmdeploy_java_package)
 
 find_package(Java REQUIRED)

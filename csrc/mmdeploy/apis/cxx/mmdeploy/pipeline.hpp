@@ -105,6 +105,7 @@ class Pipeline : public NonMovable {
     for (auto& output : outputs) {
       rets.push_back(std::move(output[0]));
     }
+    return rets;
   }
 
  private:
