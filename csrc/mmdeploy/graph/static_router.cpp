@@ -134,9 +134,13 @@ Result<unique_ptr<StaticRouter>> StaticRouterBuilder::Build(const Value& config)
       auto name = task_config.value<string>("name", "");
       auto type = task_config.value<string>("type", "");
       // propagate context
-      if (config.contains("context")) {
-        task_config["context"].update(config["context"]);
+      if (!task_config.contains("context")) {
+        task_config["context"] = Value::Object();
       }
+      if (config.contains("context")) {
+        update(task_config["context"].object(), config["context"].object(), 2);
+      }
+
       OUTCOME_TRY(auto builder, Builder::CreateFromConfig(task_config));
       if (builder) {
         auto node = builder->Build().value();

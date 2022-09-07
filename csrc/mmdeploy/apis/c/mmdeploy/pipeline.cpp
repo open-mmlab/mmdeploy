@@ -31,18 +31,6 @@
 //   return MMDEPLOY_E_FAIL;
 // }
 
-static void update(Value::Object& dst, const Value::Object& src, int depth) {
-  if (depth < 0) {
-    return;
-  }
-  for (const auto& [key, value] : src) {
-    auto ret = dst.insert({key, value});
-    if (!ret.second && ret.first->second.is_object() && value.is_object()) {
-      update(ret.first->second.object(), value.object(), depth - 1);
-    }
-  }
-}
-
 int mmdeploy_pipeline_create_v3(mmdeploy_value_t config, mmdeploy_context_t context,
                                 mmdeploy_pipeline_t* pipeline) {
   try {
@@ -51,7 +39,7 @@ int mmdeploy_pipeline_create_v3(mmdeploy_value_t config, mmdeploy_context_t cont
       if (!_config.contains("context")) {
         _config["context"] = Value::Object();
       }
-      update(_config.object(), Cast(context)->object(), 2);
+      update(_config["context"].object(), Cast(context)->object(), 2);
     }
     auto _handle = std::make_unique<AsyncHandle>(std::move(_config));
     *pipeline = Cast(_handle.release());

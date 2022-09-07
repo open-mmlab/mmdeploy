@@ -1040,6 +1040,18 @@ inline Value::Value(std::initializer_list<ValueRef> init, bool type_deduction, T
 
 inline Value make_pointer(Value v) { return std::make_shared<Value>(std::move(v)); }
 
+inline void update(Value::Object& dst, const Value::Object& src, int depth) {
+  if (depth < 0) {
+    return;
+  }
+  for (const auto& [key, value] : src) {
+    auto ret = dst.insert({key, value});
+    if (!ret.second && ret.first->second.is_object() && value.is_object()) {
+      update(ret.first->second.object(), value.object(), depth - 1);
+    }
+  }
+}
+
 }  // namespace mmdeploy
 
 #endif  // MMDEPLOY_TYPES_VALUE_H_
