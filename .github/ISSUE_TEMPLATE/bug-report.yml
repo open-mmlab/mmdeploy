@@ -20,14 +20,11 @@ body:
   attributes:
     label: Reproduction
     description: |
-
       1. What command or script did you run?
 
-      ```none
-      A placeholder for the command.
-      ```
-
       2. Did you make any modifications on the code or config? Did you understand what you have modified?
+    placeholder: |
+      A placeholder for the command.
   validations:
     required: true
 - type: textarea
@@ -38,6 +35,8 @@ body:
       2. You may add addition that may be helpful for locating the problem, such as
          - How you installed PyTorch \[e.g., pip, conda, source\]
          - Other environment variables that may be related (such as `$PATH`, `$LD_LIBRARY_PATH`, `$PYTHONPATH`, etc.)
+    placeholder: Environment here.
+    render: Shell
   validations:
     required: true
 - type: textarea
@@ -45,10 +44,8 @@ body:
     label: Error traceback
     description: |
       If applicable, paste the error trackback here.
-    placeholder: |
-      ```none
-      A placeholder for trackback.
-      ```
+    placeholder: Logs and traceback here.
+    render: Shell
 - type: markdown
   attributes:
     value: >
