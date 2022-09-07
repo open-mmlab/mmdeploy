@@ -14,4 +14,4 @@ container_id=$(docker run -itd --gpus all -v ~/mmdeploy/tests/jenkins/scripts:/r
 echo "container_id=${container_id} --name ${container_name}"
 
 nohup docker exec ${container_id} bash -c "git clone --depth 1 --branch master --recursive https://github.com/open-mmlab/mmdeploy.git &&\
- /root/workspace/mmdeploy_script/docker_exec_build.sh" > ${log_dir}.log 2>&1 &
+ /root/workspace/mmdeploy_script/docker_exec_build.sh" > ${log_dir}/build.log 2>&1 &
