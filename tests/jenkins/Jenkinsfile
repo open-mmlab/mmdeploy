@@ -1,4 +1,5 @@
 pipeline {
+    agent { label 'deploy_linux' }
     parameters {
         string(
             name: 'CODEBASES', 
