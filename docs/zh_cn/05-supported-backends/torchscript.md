@@ -47,6 +47,14 @@ make -j$(nproc)
 
 - You could follow the instructions of tutorial [How to convert model](../02-how-to-run/convert_model.md)
 
+## SDK backend
+
+TorchScript SDK backend may be built by passing `-DMMDEPLOY_TORCHSCRIPT_SDK_BACKEND=ON` to `cmake`.
+
+Notice that `libtorch` is sensitive to C++ ABI versions. On platforms defaulted to C++11 ABI (e.g. Ubuntu 16+) one may
+pass `-DCMAKE_CXX_FLAGS="-D_GLIBCXX_USE_CXX11_ABI=0"` to `cmake` to use pre-C++11 ABI for building. In this case all
+dependencies with ABI sensitive interfaces (e.g. OpenCV) must be built with pre-C++11 ABI.
+
 ## FAQs
 
 - Error: `projects/thirdparty/libtorch/share/cmake/Caffe2/Caffe2Config.cmake:96 (message):Your installed Caffe2 version uses cuDNN but I cannot find the cuDNN libraries.  Please set the proper cuDNN prefixes and / or install cuDNN.`

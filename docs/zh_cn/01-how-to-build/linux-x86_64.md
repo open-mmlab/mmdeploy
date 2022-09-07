@@ -235,6 +235,17 @@ export LD_LIBRARY_PATH=$Torch_DIR/lib:$LD_LIBRARY_PATH
   </code></pre>
   </td>
   </tr>
+  <tr>
+    <td>Ascend</td>
+    <td>CANN</td>
+    <td>
+    1. 按照 <a href="https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/60RC1alpha02/softwareinstall/instg/atlasdeploy_03_0002.html">官方指引</a> 安装 CANN 工具集.<br>
+    2. 配置环境
+   <pre><code>
+export ASCEND_TOOLKIT_HOME="/usr/local/Ascend/ascend-toolkit/latest"
+   </code></pre>
+    </td>
+  </tr>
 </tbody>
 </table>
 
@@ -308,6 +319,7 @@ pip install -e .
 
 - 有些依赖项是可选的。运行 `pip install -e .` 将进行最小化依赖安装。 如果需安装其他可选依赖项，请执行`pip install -r requirements/optional.txt`，
   或者 `pip install -e .[optional]`。其中，`[optional]`可以替换为：`all`、`tests`、`build` 或 `optional`。
+- cuda10 建议安装[补丁包](https://developer.nvidia.com/cuda-10.2-download-archive?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1804&target_type=runfilelocal)，否则模型运行可能出现 GEMM 相关错误
 
 #### 编译 SDK 和 Demos
 
@@ -345,6 +357,24 @@ pip install -e .
       -Dpplcv_DIR=${PPLCV_DIR}/cuda-build/install/lib/cmake/ppl \
       -DTENSORRT_DIR=${TENSORRT_DIR} \
       -DCUDNN_DIR=${CUDNN_DIR}
+
+  make -j$(nproc) && make install
+  ```
+
+- pplnn
+
+  ```Bash
+  cd ${MMDEPLOY_DIR}
+  mkdir -p build && cd build
+  cmake .. \
+      -DCMAKE_CXX_COMPILER=g++-7 \
+      -DMMDEPLOY_BUILD_SDK=ON \
+      -DMMDEPLOY_BUILD_EXAMPLES=ON \
+      -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
+      -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
+      -DMMDEPLOY_TARGET_BACKENDS=pplnn \
+      -Dpplcv_DIR=${PPLCV_DIR}/cuda-build/cuda-build/install/lib/cmake/ppl \
+      -Dpplnn_DIR=${PPLNN_DIR}/pplnn-build/install/lib/cmake/ppl
 
   make -j$(nproc) && make install
   ```

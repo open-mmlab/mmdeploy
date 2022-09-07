@@ -2,7 +2,7 @@
 import torch
 
 from mmdeploy.codebase.mmdet import get_post_processing_params, multiclass_nms
-from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.core import FUNCTION_REWRITER, mark
 
 
 @FUNCTION_REWRITER.register_rewriter(
@@ -48,6 +48,13 @@ def yolox_head__get_bboxes(ctx,
             tensor in the tuple is (N, num_box), and each element
             represents the class label of the corresponding box.
     """
+    # mark pred_maps
+    @mark('yolo_head', inputs=['cls_scores', 'bbox_preds', 'objectnesses'])
+    def __mark_pred_maps(cls_scores, bbox_preds, objectnesses):
+        return cls_scores, bbox_preds, objectnesses
+
+    cls_scores, bbox_preds, objectnesses = __mark_pred_maps(
+        cls_scores, bbox_preds, objectnesses)
     assert len(cls_scores) == len(bbox_preds) == len(objectnesses)
     device = cls_scores[0].device
     cfg = self.test_cfg if cfg is None else cfg
@@ -74,10 +81,10 @@ def yolox_head__get_bboxes(ctx,
     score_factor = torch.cat(flatten_objectness, dim=1).sigmoid()
     flatten_bbox_preds = torch.cat(flatten_bbox_preds, dim=1)
     flatten_priors = torch.cat(mlvl_priors)
-
     bboxes = self._bbox_decode(flatten_priors, flatten_bbox_preds)
     # directly multiply score factor and feed to nms
     scores = cls_scores * (score_factor.unsqueeze(-1))
+
     if not with_nms:
         return bboxes, scores
 

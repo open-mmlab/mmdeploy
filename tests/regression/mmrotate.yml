@@ -14,13 +14,13 @@ globals:
   convert_image_det: &convert_image_det
     input_img: *img_demo
     test_img: *img_dota_demo
-  backend_test: &default_backend_test True
+  backend_test: &default_backend_test False
 
 onnxruntime:
   # ======= detection =======
   pipeline_ort_detection_static_fp32: &pipeline_ort_detection_static_fp32
     convert_image: *convert_image_det
-    backend_test: *default_backend_test
+    backend_test: False
     deploy_config: configs/mmrotate/rotated-detection_onnxruntime_static.py
 
   pipeline_ort_detection_dynamic_fp32: &pipeline_ort_detection_dynamic_fp32

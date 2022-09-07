@@ -238,6 +238,17 @@ export LD_LIBRARY_PATH=$Torch_DIR/lib:$LD_LIBRARY_PATH
    </code></pre>
     </td>
   </tr>
+  <tr>
+    <td>Ascend</td>
+    <td>CANN</td>
+    <td>
+    1. Install CANN follow <a href="https://www.hiascend.com/document/detail/en/CANNCommunityEdition/51RC1alphaX/softwareinstall/instg/atlasdeploy_03_0002.html">official guide</a>.<br>
+    2. Setup environment
+   <pre><code>
+export ASCEND_TOOLKIT_HOME="/usr/local/Ascend/ascend-toolkit/latest"
+   </code></pre>
+    </td>
+  </tr>
 </tbody>
 </table>
 
@@ -312,6 +323,7 @@ pip install -e .
 - Some dependencies are optional. Simply running `pip install -e .` will only install the minimum runtime requirements.
   To use optional dependencies, install them manually with `pip install -r requirements/optional.txt` or specify desired extras when calling `pip` (e.g. `pip install -e .[optional]`).
   Valid keys for the extras field are: `all`, `tests`, `build`, `optional`.
+- It is recommended to [install patch for cuda10](https://developer.nvidia.com/cuda-10.2-download-archive?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1804&target_type=runfilelocal), otherwise GEMM related errors may occur when model runs
 
 ### Build SDK and Demo
 
@@ -350,6 +362,24 @@ You can also activate other engines after the model.
       -Dpplcv_DIR=${PPLCV_DIR}/cuda-build/install/lib/cmake/ppl \
       -DTENSORRT_DIR=${TENSORRT_DIR} \
       -DCUDNN_DIR=${CUDNN_DIR}
+
+  make -j$(nproc) && make install
+  ```
+
+- pplnn
+
+  ```Bash
+  cd ${MMDEPLOY_DIR}
+  mkdir -p build && cd build
+  cmake .. \
+      -DCMAKE_CXX_COMPILER=g++-7 \
+      -DMMDEPLOY_BUILD_SDK=ON \
+      -DMMDEPLOY_BUILD_EXAMPLES=ON \
+      -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
+      -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
+      -DMMDEPLOY_TARGET_BACKENDS=pplnn \
+      -Dpplcv_DIR=${PPLCV_DIR}/cuda-build/cuda-build/install/lib/cmake/ppl \
+      -Dpplnn_DIR=${PPLNN_DIR}/pplnn-build/install/lib/cmake/ppl
 
   make -j$(nproc) && make install
   ```

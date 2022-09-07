@@ -46,6 +46,11 @@ def backend_checker(backend: Backend, require_plugin: bool = False):
             from mmdeploy.apis.ncnn import is_custom_ops_available
     elif backend == Backend.OPENVINO:
         from mmdeploy.apis.openvino import is_available
+    elif backend == Backend.RKNN:
+        # device not require as backend is not really running
+        from mmdeploy.apis.rknn import is_available
+    elif backend == Backend.ASCEND:
+        from mmdeploy.apis.ascend import is_available
     else:
         warnings.warn('The backend checker is not available')
         return
@@ -96,6 +101,15 @@ def check_backend(backend: Backend, require_plugin: bool = False):
         from mmdeploy.apis.openvino import is_available
     elif backend == Backend.TORCHSCRIPT:
         from mmdeploy.backend.torchscript import ops_available as is_available
+    elif backend == Backend.RKNN:
+        from mmdeploy.backend.rknn import is_available
+        if not is_available():
+            # skip CI in github
+            pytest.skip(f'{backend.value} package is not available')
+        # device required
+        from mmdeploy.backend.rknn import device_available as is_available
+    elif backend == Backend.ASCEND:
+        from mmdeploy.backend.ascend import is_available
     else:
         warnings.warn('The backend checker is not available')
         return
@@ -537,6 +551,20 @@ def get_backend_outputs(ir_file_path: str,
         backend_files = [ir_file_path]
         device = 'cpu'
         backend_feats = [v for _, v in model_inputs.items()]
+    elif backend == Backend.ASCEND:
+        # Ascend model conversion
+        import mmdeploy.apis.ascend as ascend_apis
+        from mmdeploy.utils import get_model_inputs
+        if not ascend_apis.is_available():
+            return None
+        work_dir = osp.split(ir_file_path)[0]
+        # convert model
+        convert_args = get_model_inputs(deploy_cfg)
+        ascend_apis.from_onnx(ir_file_path, work_dir, convert_args[0])
+        om_file_name = osp.splitext(osp.split(ir_file_path)[1])[0]
+        backend_files = [osp.join(work_dir, om_file_name + '.om')]
+        backend_feats = flatten_model_inputs
+        device = 'cpu'
     else:
         raise NotImplementedError(
             f'Unimplemented backend type: {backend.value}')

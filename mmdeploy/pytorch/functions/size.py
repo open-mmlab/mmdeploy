@@ -22,3 +22,20 @@ def tensor__size__ncnn(ctx, self, *args):
         ret = [int(r) for r in ret]
         ret = tuple(ret)
     return ret
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    func_name='torch.Tensor.size', backend='ascend')
+def tensor__size__ascend(ctx, self, *args):
+    """Rewrite `size` for ascens backend.
+
+    Support negative index.
+    """
+
+    if len(args) != 0:
+        index = args[0]
+        if index < 0:
+            index = self.dim() + index
+            args = (index, )
+
+    return ctx.origin_func(self, *args)
