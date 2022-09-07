@@ -30,4 +30,4 @@ nohup docker exec ${container_id} bash -c "git clone --depth 1 --branch master -
 wait
 docker stop $container_id
 
-echo ${log_dir}/prebuild.log
+cat ${log_dir}/prebuild.log
