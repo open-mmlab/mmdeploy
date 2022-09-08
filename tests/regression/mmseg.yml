@@ -22,13 +22,9 @@ globals:
 onnxruntime:
   pipeline_ort_static_fp32: &pipeline_ort_static_fp32
     convert_image: *convert_image
-    backend_test: *default_backend_test
-    sdk_config: *sdk_dynamic
     deploy_config: configs/mmseg/segmentation_onnxruntime_static-1024x2048.py
 
   pipeline_ort_static_fp32_512x512: &pipeline_ort_static_fp32_512x512
-    convert_image: *convert_image
-    backend_test: False
     deploy_config: configs/mmseg/segmentation_onnxruntime_static-512x512.py
 
   pipeline_ort_dynamic_fp32: &pipeline_ort_dynamic_fp32

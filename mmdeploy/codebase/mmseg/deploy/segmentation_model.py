@@ -89,7 +89,9 @@ class End2EndModel(BaseBackendModel):
         inputs = inputs.to(self.device)
         batch_outputs = self.wrapper({self.input_name:
                                       inputs})[self.output_names[0]]
+        return self.pack_result(batch_outputs, data_samples)
 
+    def pack_result(self, batch_outputs, data_samples):
         predictions = []
         for seg_pred, data_sample in zip(batch_outputs, data_samples):
             # resize seg_pred to original image shape
@@ -115,8 +117,14 @@ class End2EndModel(BaseBackendModel):
 class SDKEnd2EndModel(End2EndModel):
     """SDK inference class, converts SDK output to mmseg format."""
 
-    def forward(self, img: Sequence[torch.Tensor],
-                img_metas: Sequence[Sequence[dict]], *args, **kwargs):
+    def __init__(self, *args, **kwargs):
+        kwargs['data_preprocessor'] = None
+        super(SDKEnd2EndModel, self).__init__(*args, **kwargs)
+
+    def forward(self,
+                inputs: torch.Tensor,
+                data_samples: Optional[List[BaseDataElement]] = None,
+                mode: str = 'predict'):
         """Run forward inference.
 
         Args:
@@ -130,8 +138,16 @@ class SDKEnd2EndModel(End2EndModel):
         Returns:
             list: A list contains predictions.
         """
-        masks = self.wrapper.invoke(img[0].contiguous().detach().cpu().numpy())
-        return masks
+        if isinstance(inputs, list):
+            inputs = inputs[0]
+        if inputs.shape[2] != 3:
+            inputs = inputs.permute(2, 1, 0)
+        outputs = self.wrapper.invoke(
+            inputs.contiguous().detach().cpu().numpy())
+        batch_outputs = torch.from_numpy(outputs).to(torch.int64).to(
+            self.device)
+        batch_outputs = batch_outputs.unsqueeze(0).unsqueeze(0)
+        return self.pack_result(batch_outputs, data_samples)
 
 
 def build_segmentation_model(

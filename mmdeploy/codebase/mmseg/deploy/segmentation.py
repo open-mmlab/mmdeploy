@@ -250,8 +250,26 @@ class Segmentation(BaseTask):
         input_shape = get_input_shape(self.deploy_cfg)
         load_from_file = self.model_cfg.test_pipeline[0]
         model_cfg = process_model_config(self.model_cfg, [''], input_shape)
-        preprocess = model_cfg.test_pipeline
+        preprocess = deepcopy(model_cfg.test_pipeline)
         preprocess[0] = load_from_file
+        dp = self.model_cfg.data_preprocessor
+        assert preprocess[1].type == 'Resize'
+        preprocess[1]['size'] = list(reversed(preprocess[1].pop('scale')))
+        if preprocess[-1].type == 'PackSegInputs':
+            preprocess[-1] = dict(
+                type='Normalize',
+                mean=dp.mean,
+                std=dp.std,
+                to_rgb=dp.bgr_to_rgb)
+        preprocess.append(dict(type='ImageToTensor', keys=['img']))
+        preprocess.append(
+            dict(
+                type='Collect',
+                keys=['img'],
+                meta_keys=[
+                    'img_shape', 'pad_shape', 'ori_shape', 'img_norm_cfg',
+                    'scale_factor'
+                ]))
         return preprocess
 
     def get_postprocess(self) -> Dict:
