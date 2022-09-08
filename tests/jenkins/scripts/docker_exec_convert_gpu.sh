@@ -109,4 +109,4 @@ for TORCH_VERSION in 1.10.0 1.11.0; do
         ${exec_performance} 2>&1 | tee ${log_path}
 done
 
-echo "end-time-$(date +%Y%m%d%H%M)"
+echo "end_time-$(date +%Y%m%d%H%M)"
