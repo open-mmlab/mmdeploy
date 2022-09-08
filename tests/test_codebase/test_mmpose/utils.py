@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import mmengine
 import torch
-from mmengine.data import InstanceData, PixelData
+from mmengine.structures import InstanceData, PixelData
 
 from mmdeploy.apis import build_task_processor
 from mmdeploy.utils import IR, Backend, Codebase, Task, load_config

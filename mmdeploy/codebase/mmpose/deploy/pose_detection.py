@@ -2,6 +2,7 @@
 
 import copy
 import os
+from collections import defaultdict
 from typing import Callable, Dict, Optional, Sequence, Tuple, Union
 
 import mmcv
@@ -181,7 +182,7 @@ class PoseDetection(BaseTask):
                 format specifying input shape. Defaults to ``None``.
 
         Returns:
-            tuple: (data, batch_inputs), meta information for the input image
+            tuple: (data, inputs), meta information for the input image
              and input.
         """
         from mmcv.transforms import Compose
@@ -197,7 +198,6 @@ class PoseDetection(BaseTask):
         # build the data pipeline
         test_pipeline = [TRANSFORMS.build(c) for c in cfg.test_pipeline]
         test_pipeline = Compose(test_pipeline)
-        batch_data = []
         if input_shape is not None:
             input_size = cfg.codec['input_size']
             if tuple(input_shape) != tuple(input_size):
@@ -206,6 +206,8 @@ class PoseDetection(BaseTask):
                                f'same as input_size in model config:'
                                f'{input_shape} vs {input_size}')
 
+        batch_data = defaultdict(list)
+        meta_data = _get_dataset_metainfo(self.model_cfg)
         for bbox in bboxes:
             # prepare data
             bbox_score = np.array([bbox[4] if len(bbox) == 5 else 1
@@ -215,16 +217,15 @@ class PoseDetection(BaseTask):
                 'bbox_score': bbox_score,
                 'bbox': bbox[None],  # shape (1, 4)
             }
+            data.update(meta_data)
             data = test_pipeline(data)
             data['inputs'] = data['inputs'].to(self.device)
-            batch_data.append(data)
+            batch_data['inputs'].append(data['inputs'])
+            batch_data['data_samples'].append(data['data_samples'])
 
         if data_preprocessor is not None:
             batch_data = data_preprocessor(batch_data, False)
-            input_tensor = batch_data[0]
-        else:
-            batch_data = batch_data[0]
-            input_tensor = BaseTask.get_tensor_from_input(batch_data)
+        input_tensor = batch_data['inputs']
         return batch_data, input_tensor
 
     def visualize(self,

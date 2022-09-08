@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from . import base, topdown
 
-from .base import base_pose_estimator__forward
-
-__all__ = ['base_pose_estimator__forward']
+__all__ = ['base', 'topdown']

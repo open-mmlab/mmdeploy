@@ -121,8 +121,8 @@ def test_estimator_forward(backend_type: Backend):
     model = task_processor.build_pytorch_model()
     model.requires_grad_(False)
     model.cpu().eval()
-    wrapped_model = WrapModel(model, 'forward', batch_data_samples=None)
-    rewrite_inputs = {'batch_inputs': torch.rand(1, 3, 256, 192)}
+    wrapped_model = WrapModel(model, 'forward', data_samples=None)
+    rewrite_inputs = {'inputs': torch.rand(1, 3, 256, 192)}
     rewrite_outputs, _ = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
