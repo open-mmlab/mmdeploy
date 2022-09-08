@@ -47,6 +47,6 @@ class MMDEPLOY_API SyncOnScopeExit {
   Stream& stream_;
 };
 
-}  // namespace mmdeploy::runtime
+}  // namespace mmdeploy::framework
 
 #endif  // MMDEPLOY_TRANSFORM_UTILS_H

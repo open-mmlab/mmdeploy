@@ -404,4 +404,4 @@ class CpuPlatformRegisterer {
 
 CpuPlatformRegisterer g_cpu_platform_registerer;
 
-}  // namespace mmdeploy::runtime
+}  // namespace mmdeploy::framework

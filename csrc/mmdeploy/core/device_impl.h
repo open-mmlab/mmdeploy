@@ -181,6 +181,6 @@ inline PlatformImpl* GetPlatformImpl(const Device& device) {
   return gPlatformRegistry().GetPlatformImpl(device);
 }
 
-}  // namespace mmdeploy::runtime
+}  // namespace mmdeploy::framework
 
 #endif

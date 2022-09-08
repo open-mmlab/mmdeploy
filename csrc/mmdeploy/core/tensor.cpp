@@ -198,4 +198,4 @@ Tensor Tensor::Slice(int start, int end) {
 
 TensorShape::value_type Tensor::shape(int dim) const { return desc().shape[dim]; }
 
-}  // namespace mmdeploy::runtime
+}  // namespace mmdeploy::framework

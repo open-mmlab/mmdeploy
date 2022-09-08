@@ -146,4 +146,4 @@ class CpuKernelImpl : public KernelImpl {
   Task task_;
 };
 
-}  // namespace mmdeploy::runtime
+}  // namespace mmdeploy::framework
