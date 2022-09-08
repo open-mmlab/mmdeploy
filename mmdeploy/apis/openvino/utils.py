@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Dict, List
 
-import mmcv
+import mmengine
 
 from mmdeploy.backend.openvino import ModelOptimizerOptions
 from mmdeploy.utils import get_model_inputs
@@ -30,12 +30,12 @@ def update_input_names(input_info: Dict[str, List],
     return input_info
 
 
-def get_input_info_from_cfg(deploy_cfg: mmcv.Config) -> Dict[str, List]:
+def get_input_info_from_cfg(deploy_cfg: mmengine.Config) -> Dict[str, List]:
     """Get the input names and shapes from the configs for OpenVINO Model
     Optimizer.
 
     Args:
-        deploy_cfg (mmcv.Config): Deployment config.
+        deploy_cfg (mmengine.Config): Deployment config.
 
     Returns:
         Dict[str, List]: A dict that stores the names and shapes of input.
@@ -53,12 +53,13 @@ def get_input_info_from_cfg(deploy_cfg: mmcv.Config) -> Dict[str, List]:
     return input_info
 
 
-def get_mo_options_from_cfg(deploy_cfg: mmcv.Config) -> ModelOptimizerOptions:
+def get_mo_options_from_cfg(
+        deploy_cfg: mmengine.Config) -> ModelOptimizerOptions:
     """Get additional parameters for the Model Optimizer from the deploy
     config.
 
     Args:
-        deploy_cfg (mmcv.Config): Deployment config.
+        deploy_cfg (mmengine.Config): Deployment config.
 
     Returns:
         ModelOptimizerOptions: A class that will contain additional arguments.

@@ -1,9 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
+from typing import Optional, Sequence
 
-import mmocr.utils as utils
 import torch
 import torch.nn.functional as F
+from mmocr.utils.typing import TextRecogDataSample
 from torch import nn
 
 from mmdeploy.core import FUNCTION_REWRITER, MODULE_REWRITER
@@ -13,12 +14,13 @@ from mmdeploy.core import FUNCTION_REWRITER, MODULE_REWRITER
     func_name='mmocr.models.textrecog.decoders.ParallelSARDecoder'
     '._2d_attention',
     backend='default')
-def parallel_sar_decoder__2d_attention(ctx,
-                                       self,
-                                       decoder_input,
-                                       feat,
-                                       holistic_feat,
-                                       valid_ratios=None):
+def parallel_sar_decoder__2d_attention(
+        ctx,
+        self,
+        decoder_input: torch.Tensor,
+        feat: torch.Tensor,
+        holistic_feat: torch.Tensor,
+        valid_ratios: Optional[Sequence[float]] = None) -> torch.Tensor:
     """Rewrite `_2d_attention` of ParallelSARDecoder for default backend.
 
     Rewrite this function to:
@@ -74,8 +76,7 @@ def parallel_sar_decoder__2d_attention(ctx,
     else:
         y = self.prediction(attn_feat)
     # bsz * (seq_len + 1) * num_classes
-    if self.train_mode:
-        y = self.pred_dropout(y)
+    y = self.pred_dropout(y)
 
     return y
 
@@ -147,33 +148,25 @@ def sequential_sar_decoder__2d_attention(ctx,
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmocr.models.textrecog.decoders.SequentialSARDecoder'
-    '.forward_train',
+    '.forward_test',
     backend='default')
-def sequential_sar_decoder__forward_train(ctx,
-                                          self,
-                                          feat,
-                                          out_enc,
-                                          targets_dict,
-                                          img_metas=None):
-    """Rewrite `forward_train` of SequentialSARDecoder for default backend.
+def sequential_sar_decoder__forward_test(
+        ctx,
+        self,
+        feat: torch.Tensor,
+        out_enc: torch.Tensor,
+        data_samples: Optional[Sequence[TextRecogDataSample]] = None):
+    """Rewrite `forward_test` of SequentialSARDecoder for default backend.
 
     Rewrite this function because LSTMCell has been replaced with LSTM. The two
-    class have different forward functions. The `forward_train` need adapt to
+    class have different forward functions. The `forward_test` need adapt to
     this change.
     """
-    if img_metas is not None:
-        assert utils.is_type_list(img_metas, dict)
-        assert len(img_metas) == feat.size(0)
-
     valid_ratios = None
-    if img_metas is not None:
+    if data_samples is not None:
         valid_ratios = [
-            img_meta.get('valid_ratio', 1.0) for img_meta in img_metas
+            data_sample.get('valid_ratio', 1.0) for data_sample in data_samples
         ] if self.mask else None
-
-    if self.train_mode:
-        targets = targets_dict['padded_targets'].to(feat.device)
-        tgt_embedding = self.embedding(targets)
 
     outputs = []
     start_token = torch.full((feat.size(0), ),
@@ -190,11 +183,8 @@ def sequential_sar_decoder__forward_train(ctx,
                 # has replaced LSTMCell with LSTM, forward func need rewrite
                 _, (hx1, cx1) = self.rnn_decoder_layer1(out_enc.unsqueeze(0))
                 _, (hx2, cx2) = self.rnn_decoder_layer2(hx1)
-            if not self.train_mode:
                 y_prev = start_token
         else:
-            if self.train_mode:
-                y_prev = tgt_embedding[:, i, :]
             y, hx1, cx1, hx2, cx2 = self._2d_attention(
                 y_prev,
                 feat,
@@ -204,13 +194,9 @@ def sequential_sar_decoder__forward_train(ctx,
                 hx2,
                 cx2,
                 valid_ratios=valid_ratios)
-            if self.train_mode:
-                y = self.pred_dropout(y)
-            else:
-                y = F.softmax(y, -1)
-                _, max_idx = torch.max(y, dim=1, keepdim=False)
-                char_embedding = self.embedding(max_idx)
-                y_prev = char_embedding
+            _, max_idx = torch.max(y, dim=1, keepdim=False)
+            char_embedding = self.embedding(max_idx)
+            y_prev = char_embedding
             outputs.append(y)
 
     outputs = torch.stack(outputs, 1)
@@ -257,9 +243,31 @@ class SequentialSARDecoder(nn.Module):
         self._module.train_mode = False
 
     def forward(self,
-                feat,
-                out_enc,
-                targets_dict=None,
-                img_metas=None,
-                train_mode=True):
-        return self._module.forward_test(feat, out_enc, img_metas)
+                feat: Optional[torch.Tensor] = None,
+                out_enc: Optional[torch.Tensor] = None,
+                data_samples: Optional[Sequence[TextRecogDataSample]] = None):
+        return self._module.forward_test(feat, out_enc, data_samples)
+
+    def predict(
+        self,
+        feat: Optional[torch.Tensor] = None,
+        out_enc: Optional[torch.Tensor] = None,
+        data_samples: Optional[Sequence[TextRecogDataSample]] = None
+    ) -> Sequence[TextRecogDataSample]:
+        """Perform forward propagation of the decoder and postprocessor.
+
+        Args:
+            feat (Tensor, optional): Features from the backbone. Defaults
+                to None.
+            out_enc (Tensor, optional): Features from the encoder. Defaults
+                to None.
+            data_samples (list[TextRecogDataSample]): A list of N datasamples,
+                containing meta information and gold annotations for each of
+                the images. Defaults to None.
+
+        Returns:
+            list[TextRecogDataSample]:  A list of N datasamples of prediction
+            results. Results are stored in ``pred_text``.
+        """
+        out_dec = self(feat, out_enc, data_samples)
+        return out_dec

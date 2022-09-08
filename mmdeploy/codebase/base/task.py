@@ -51,7 +51,7 @@ class BaseTask(metaclass=ABCMeta):
             self.scope = DefaultScope.get_instance(self.experiment_name)
 
         # lazy build visualizer
-        self.visualizer = self.model_cfg.visualizer
+        self.visualizer = self.model_cfg.get('visualizer', None)
 
     @abstractmethod
     def build_backend_model(self,
@@ -125,7 +125,6 @@ class BaseTask(metaclass=ABCMeta):
         dataset_cfg = load_config(dataset_cfg)[0]
         if 'pipeline' in backend_cfg:
             dataset_cfg.pipeline = backend_cfg.pipeline
-
         from mmengine.registry import DATASETS
         dataset = DATASETS.build(dataset_cfg)
         logger = get_root_logger()
@@ -249,7 +248,6 @@ class BaseTask(metaclass=ABCMeta):
                     registry = VISUALIZERS
             else:
                 registry = VISUALIZERS
-
             VisualizerClass = registry.get(cfg.type)
             if VisualizerClass.check_instance_created(cfg.name):
                 return VisualizerClass.get_instance(cfg.name)
@@ -262,6 +260,7 @@ class BaseTask(metaclass=ABCMeta):
                   output_file: str,
                   window_name: str = '',
                   show_result: bool = False,
+                  draw_gt: bool = False,
                   **kwargs):
         """Visualize predictions of a model.
 
@@ -274,6 +273,8 @@ class BaseTask(metaclass=ABCMeta):
                 an empty string.
             show_result (bool): Whether to show result in windows, defaults
                 to `False`.
+            draw_gt (bool): Whether to show ground truth in windows, defaults
+                to `False`.
         """
         save_dir, save_name = osp.split(output_file)
         visualizer = self.get_visualizer(window_name, save_dir)
@@ -283,7 +284,8 @@ class BaseTask(metaclass=ABCMeta):
         visualizer.add_datasample(
             name,
             image,
-            pred_sample=result,
+            data_sample=result,
+            draw_gt=draw_gt,
             show=show_result,
             out_file=output_file)
 

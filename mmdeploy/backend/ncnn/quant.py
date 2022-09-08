@@ -3,7 +3,7 @@ import os.path as osp
 from subprocess import call
 from typing import List
 
-import mmcv
+import mmengine
 
 from .init_plugins import get_ncnn2int8_path
 
@@ -19,7 +19,7 @@ def get_quant_model_file(onnx_path: str, work_dir: str) -> List[str]:
         List[str]: The path to the files where the export result will be
             located.
     """
-    mmcv.mkdir_or_exist(osp.abspath(work_dir))
+    mmengine.mkdir_or_exist(osp.abspath(work_dir))
     base_name = osp.splitext(osp.split(onnx_path)[1])[0]
     quant_onnx = osp.join(work_dir, base_name + '_quant.onnx')
     quant_table = osp.join(work_dir, base_name + '.table')

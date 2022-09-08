@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 model = dict(
-    type='DBNet',
+    type='mmocr.DBNet',
     backbone=dict(
         type='mmdet.ResNet',
         depth=18,
@@ -11,14 +11,19 @@ model = dict(
         init_cfg=dict(type='Pretrained', checkpoint='torchvision://resnet18'),
         norm_eval=False,
         style='caffe'),
-    neck=dict(type='FPNC', in_channels=[2, 4, 8, 16], lateral_channels=8),
-    bbox_head=dict(
+    neck=dict(
+        type='FPNC', in_channels=[64, 128, 256, 512], lateral_channels=256),
+    det_head=dict(
         type='DBHead',
-        text_repr_type='quad',
-        in_channels=8,
-        loss=dict(type='DBLoss', alpha=5.0, beta=10.0, bbce_loss=True)),
-    train_cfg=None,
-    test_cfg=None)
+        in_channels=256,
+        module_loss=dict(type='DBModuleLoss'),
+        postprocessor=dict(type='DBPostprocessor', text_repr_type='quad')),
+    data_preprocessor=dict(
+        type='mmocr.TextDetDataPreprocessor',
+        mean=[123.675, 116.28, 103.53],
+        std=[58.395, 57.12, 57.375],
+        bgr_to_rgb=True,
+        pad_size_divisor=32))
 
 dataset_type = 'IcdarDataset'
 data_root = 'tests/test_codebase/test_mmocr/data'
@@ -26,25 +31,34 @@ img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 
 test_pipeline = [
-    dict(type='LoadImageFromFile', color_type='color_ignore_orientation'),
     dict(
-        type='MultiScaleFlipAug',
-        img_scale=(128, 64),
-        flip=False,
-        transforms=[
-            dict(type='Resize', img_scale=(256, 128), keep_ratio=True),
-            dict(type='Normalize', **img_norm_cfg),
-            dict(type='Pad', size_divisor=32),
-            dict(type='ImageToTensor', keys=['img']),
-            dict(type='Collect', keys=['img']),
-        ])
+        type='PackTextDetInputs',
+        meta_keys=('img_path', 'ori_shape', 'img_shape', 'scale_factor'))
 ]
-data = dict(
-    samples_per_gpu=16,
-    test_dataloader=dict(samples_per_gpu=1),
-    test=dict(
-        type=dataset_type,
-        ann_file=data_root + '/text_detection.json',
-        img_prefix=data_root,
-        pipeline=test_pipeline))
-evaluation = dict(interval=100, metric='hmean-iou')
+
+test_dataloader = dict(
+    batch_size=16,
+    num_workers=8,
+    persistent_workers=True,
+    sampler=dict(type='DefaultSampler', shuffle=False),
+    dataset=dict(
+        type='ConcatDataset',
+        datasets=[
+            dict(
+                type='OCRDataset',
+                data_root='data/det/icdar2015',
+                ann_file='instances_test.json',
+                data_prefix=dict(img_path='imgs/'),
+                test_mode=True,
+                pipeline=None)
+        ],
+        pipeline=[
+            dict(type='Resize', scale=(1333, 736), keep_ratio=True),
+            dict(
+                type='mmocr.PackTextDetInputs',
+                meta_keys=('ori_shape', 'img_shape', 'scale_factor',
+                           'instances'))
+        ]))
+
+visualizer = dict(type='TextDetLocalVisualizer', name='visualizer')
+default_scope = 'mmocr'

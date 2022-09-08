@@ -1,21 +1,20 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Dict, List, Optional, Union
 
-import mmcv
 import mmengine
 
 from .constants import Backend, Codebase, Task
 from .utils import deprecate
 
 
-def load_config(*args) -> List[mmcv.Config]:
+def load_config(*args) -> List[mmengine.Config]:
     """Load the configuration and check the validity.
 
     Args:
         args (str | Sequence[str]): The path to the config file(s).
 
     Returns:
-        List[mmcv.Config | dict]: The content of config.
+        List[mmengine.Config | dict]: The content of config.
     """
 
     def _load_config(cfg):
@@ -32,11 +31,11 @@ def load_config(*args) -> List[mmcv.Config]:
     return configs
 
 
-def get_codebase_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
+def get_codebase_config(deploy_cfg: Union[str, mmengine.Config]) -> Dict:
     """Get the codebase_config from the config.
 
     Args:
-        deploy_cfg (str | mmcv.Config): The path or content of config.
+        deploy_cfg (str | mmengine.Config): The path or content of config.
 
     Returns:
         Dict : codebase config dict.
@@ -46,11 +45,11 @@ def get_codebase_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
     return codebase_config
 
 
-def get_task_type(deploy_cfg: Union[str, mmcv.Config]) -> Task:
+def get_task_type(deploy_cfg: Union[str, mmengine.Config]) -> Task:
     """Get the task type of the algorithm.
 
     Args:
-        deploy_cfg (str | mmcv.Config): The path or content of config.
+        deploy_cfg (str | mmengine.Config): The path or content of config.
 
     Returns:
         Task : An enumeration denotes the task type.
@@ -63,11 +62,11 @@ def get_task_type(deploy_cfg: Union[str, mmcv.Config]) -> Task:
     return Task.get(task)
 
 
-def get_codebase(deploy_cfg: Union[str, mmcv.Config]) -> Codebase:
+def get_codebase(deploy_cfg: Union[str, mmengine.Config]) -> Codebase:
     """Get the codebase from the config.
 
     Args:
-        deploy_cfg (str | mmcv.Config): The path or content of config.
+        deploy_cfg (str | mmengine.Config): The path or content of config.
 
     Returns:
         Codebase : An enumeration denotes the codebase type.
@@ -80,11 +79,11 @@ def get_codebase(deploy_cfg: Union[str, mmcv.Config]) -> Codebase:
     return Codebase.get(codebase)
 
 
-def get_backend_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
+def get_backend_config(deploy_cfg: Union[str, mmengine.Config]) -> Dict:
     """Get the backend_config from the config.
 
     Args:
-        deploy_cfg (str | mmcv.Config): The path or content of config.
+        deploy_cfg (str | mmengine.Config): The path or content of config.
 
     Returns:
         Dict : backend config dict.
@@ -94,11 +93,11 @@ def get_backend_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
     return backend_config
 
 
-def get_backend(deploy_cfg: Union[str, mmcv.Config]) -> Backend:
+def get_backend(deploy_cfg: Union[str, mmengine.Config]) -> Backend:
     """Get the backend from the config.
 
     Args:
-        deploy_cfg (str | mmcv.Config): The path or content of config.
+        deploy_cfg (str | mmengine.Config): The path or content of config.
 
     Returns:
         Backend: An enumeration denotes the backend type.
@@ -110,11 +109,11 @@ def get_backend(deploy_cfg: Union[str, mmcv.Config]) -> Backend:
     return Backend.get(backend)
 
 
-def get_ir_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
+def get_ir_config(deploy_cfg: Union[str, mmengine.Config]) -> Dict:
     """Get the IR parameters in export() from config.
 
     Args:
-        deploy_cfg (str | mmcv.Config): The path or content of config.
+        deploy_cfg (str | mmengine.Config): The path or content of config.
 
     Returns:
         Dict: The config dictionary of IR parameters
@@ -129,11 +128,11 @@ def get_ir_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
 
 
 @deprecate(dst_obj=get_ir_config)
-def get_onnx_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
+def get_onnx_config(deploy_cfg: Union[str, mmengine.Config]) -> Dict:
     """Get the onnx parameters in export() from config.
 
     Args:
-        deploy_cfg (str | mmcv.Config): The path or content of config.
+        deploy_cfg (str | mmengine.Config): The path or content of config.
 
     Returns:
         Dict: The config dictionary of onnx parameters
@@ -145,12 +144,12 @@ def get_onnx_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
     return onnx_config
 
 
-def is_dynamic_batch(deploy_cfg: Union[str, mmcv.Config],
+def is_dynamic_batch(deploy_cfg: Union[str, mmengine.Config],
                      input_name: Optional[str] = None) -> bool:
     """Check if input batch is dynamic.
 
     Args:
-        deploy_cfg (str | mmcv.Config): The path or content of config.
+        deploy_cfg (str | mmengine.Config): The path or content of config.
         input_name (Optional[str]): The name of input in onnx export parameter.
 
     Returns:
@@ -183,12 +182,12 @@ def is_dynamic_batch(deploy_cfg: Union[str, mmcv.Config],
     return False
 
 
-def is_dynamic_shape(deploy_cfg: Union[str, mmcv.Config],
+def is_dynamic_shape(deploy_cfg: Union[str, mmengine.Config],
                      input_name: Optional[str] = None) -> bool:
     """Check if input shape is dynamic.
 
     Args:
-        deploy_cfg (str | mmcv.Config): The path or content of config.
+        deploy_cfg (str | mmengine.Config): The path or content of config.
         input_name (Optional[str]): The name of input in onnx export parameter.
 
     Returns:
@@ -225,11 +224,11 @@ def is_dynamic_shape(deploy_cfg: Union[str, mmcv.Config],
     return False
 
 
-def get_input_shape(deploy_cfg: Union[str, mmcv.Config]) -> List[int]:
+def get_input_shape(deploy_cfg: Union[str, mmengine.Config]) -> List[int]:
     """Get the input shape for static exporting.
 
     Args:
-        deploy_cfg (str | mmcv.Config): The path or content of config.
+        deploy_cfg (str | mmengine.Config): The path or content of config.
 
     Returns:
         List[int]: The input shape for backend model (axis 2 and 3),
@@ -241,12 +240,12 @@ def get_input_shape(deploy_cfg: Union[str, mmcv.Config]) -> List[int]:
     return input_shape
 
 
-def cfg_apply_marks(deploy_cfg: Union[str, mmcv.Config]) -> Optional[bool]:
+def cfg_apply_marks(deploy_cfg: Union[str, mmengine.Config]) -> Optional[bool]:
     """Check if the model needs to be partitioned by checking if the config
     contains 'apply_marks'.
 
     Args:
-        deploy_cfg (str | mmcv.Config): The path or content of config.
+        deploy_cfg (str | mmengine.Config): The path or content of config.
 
     Returns:
         bool or None: Whether config contains 'apply_marks'.
@@ -260,12 +259,12 @@ def cfg_apply_marks(deploy_cfg: Union[str, mmcv.Config]) -> Optional[bool]:
 
 
 def get_partition_config(
-        deploy_cfg: Union[str, mmcv.Config]) -> Optional[Dict]:
+        deploy_cfg: Union[str, mmengine.Config]) -> Optional[Dict]:
     """Check if the model needs to be partitioned and get the config of
     partition.
 
     Args:
-        deploy_cfg (str | mmcv.Config): The path or content of config.
+        deploy_cfg (str | mmengine.Config): The path or content of config.
 
     Returns:
         dict or None: The config of partition.
@@ -281,11 +280,11 @@ def get_partition_config(
     return partition_config
 
 
-def get_calib_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
+def get_calib_config(deploy_cfg: Union[str, mmengine.Config]) -> Dict:
     """Check if the model has calibration configs.
 
     Args:
-        deploy_cfg (str | mmcv.Config): The path or content of config.
+        deploy_cfg (str | mmengine.Config): The path or content of config.
 
     Returns:
         dict: The config of calibration.
@@ -295,11 +294,12 @@ def get_calib_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
     return calib_config
 
 
-def get_calib_filename(deploy_cfg: Union[str, mmcv.Config]) -> Optional[str]:
+def get_calib_filename(
+        deploy_cfg: Union[str, mmengine.Config]) -> Optional[str]:
     """Check if the model needs to create calib and get filename of calib.
 
     Args:
-        deploy_cfg (str | mmcv.Config): The path or content of config.
+        deploy_cfg (str | mmengine.Config): The path or content of config.
 
     Returns:
         str | None: Could be the filename of output calib file or None.
@@ -316,11 +316,11 @@ def get_calib_filename(deploy_cfg: Union[str, mmcv.Config]) -> Optional[str]:
         return None
 
 
-def get_common_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
+def get_common_config(deploy_cfg: Union[str, mmengine.Config]) -> Dict:
     """Get common parameters from config.
 
     Args:
-        deploy_cfg (str | mmcv.Config): The path or content of config.
+        deploy_cfg (str | mmengine.Config): The path or content of config.
 
     Returns:
         dict: A dict of common parameters for a model.
@@ -330,11 +330,11 @@ def get_common_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
     return model_params
 
 
-def get_model_inputs(deploy_cfg: Union[str, mmcv.Config]) -> List[Dict]:
+def get_model_inputs(deploy_cfg: Union[str, mmengine.Config]) -> List[Dict]:
     """Get model input parameters from config.
 
     Args:
-        deploy_cfg (str | mmcv.Config): The path or content of config.
+        deploy_cfg (str | mmengine.Config): The path or content of config.
 
     Returns:
         list[dict]: A list of dict containing input parameters for a model.
@@ -345,13 +345,13 @@ def get_model_inputs(deploy_cfg: Union[str, mmcv.Config]) -> List[Dict]:
 
 
 def get_dynamic_axes(
-    deploy_cfg: Union[str, mmcv.Config],
+    deploy_cfg: Union[str, mmengine.Config],
     axes_names: List[str] = None
 ) -> Dict[str, Union[List[int], Dict[int, str]]]:
     """Get model dynamic axes from config.
 
     Args:
-        deploy_cfg (str | mmcv.Config): The path or content of config.
+        deploy_cfg (str | mmengine.Config): The path or content of config.
         axes_names (List[str]): List with names for dynamic axes.
 
     Returns:

@@ -38,10 +38,10 @@ def create_calib_input_data(calib_file: str,
 
     Args:
         calib_file (str): Input calibration file.
-        deploy_cfg (str | mmcv.Config): Deployment config.
-        model_cfg (str | mmcv.Config): The model config.
+        deploy_cfg (str | mmengine.Config): Deployment config.
+        model_cfg (str | mmengine.Config): The model config.
         model_checkpoint (str): PyTorch model checkpoint, defaults to `None`.
-        dataset_cfg (str | mmcv.Config): Dataset config, defaults to `None`
+        dataset_cfg (str | mmengine.Config): Dataset config, defaults to `None`
         dataset_type (str): A string specifying dataset type, e.g.: 'test',
             'val', defaults to 'val'.
         device (str): Specifying the device to run on, defaults to 'cpu'.

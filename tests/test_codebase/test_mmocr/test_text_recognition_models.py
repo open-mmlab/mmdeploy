@@ -1,9 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import os.path as osp
-from tempfile import NamedTemporaryFile
-
-import mmcv
-import numpy as np
+import mmengine
 import pytest
 import torch
 
@@ -32,7 +28,10 @@ class TestEnd2EndModel:
             'output': torch.rand(1, 9, 37),
         }
         cls.wrapper.set(outputs=cls.outputs)
-        deploy_cfg = mmcv.Config({'onnx_config': {'output_names': ['output']}})
+        deploy_cfg = mmengine.Config(
+            {'onnx_config': {
+                'output_names': ['output']
+            }})
         model_cfg_path = 'tests/test_codebase/test_mmocr/data/crnn.py'
         model_cfg = load_config(model_cfg_path)[0]
 
@@ -53,36 +52,26 @@ class TestEnd2EndModel:
         [[IMAGE_SIZE, IMAGE_SIZE, 3], [2 * IMAGE_SIZE, 2 * IMAGE_SIZE, 3]])
     def test_forward(self, ori_shape):
         imgs = [torch.rand(1, 3, IMAGE_SIZE, IMAGE_SIZE)]
-        img_metas = [[{
+        img_meta = {
             'ori_shape': ori_shape,
             'img_shape': [IMAGE_SIZE, IMAGE_SIZE, 3],
-            'scale_factor': [1., 1., 1., 1.],
-        }]]
-        results = self.end2end_model.forward(imgs, img_metas)
+            'scale_factor': [1., 1.]
+        }
+        from mmengine.structures import InstanceData
+        from mmocr.structures import TextRecogDataSample
+        pred_instances = InstanceData(metainfo=img_meta)
+        data_sample = TextRecogDataSample(pred_instances=pred_instances)
+        data_sample.set_metainfo(img_meta)
+        results = self.end2end_model.forward(imgs, [data_sample])
         assert results is not None, 'failed to get output using '\
             'End2EndModel'
-
-    def test_forward_test(self):
-        imgs = torch.rand(2, 3, IMAGE_SIZE, IMAGE_SIZE)
-        img_metas = [{}]
-        results = self.end2end_model.forward_test(imgs, img_metas)
-        assert isinstance(results[0], dict)
-
-    def test_show_result(self):
-        input_img = np.zeros([IMAGE_SIZE, IMAGE_SIZE, 3])
-        img_path = NamedTemporaryFile(suffix='.jpg').name
-
-        result = {'text': 'sier', 'score': [0.29, 0.62, 0.25, 0.54]}
-        self.end2end_model.show_result(
-            input_img, result, '', show=False, out_file=img_path)
-        assert osp.exists(img_path), 'Fails to create drawn image.'
 
 
 @backend_checker(Backend.ONNXRUNTIME)
 def test_build_text_recognition_model():
     model_cfg_path = 'tests/test_codebase/test_mmocr/data/crnn.py'
     model_cfg = load_config(model_cfg_path)[0]
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = mmengine.Config(
         dict(
             backend_config=dict(type='onnxruntime'),
             onnx_config=dict(output_names=['outputs']),
