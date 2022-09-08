@@ -214,6 +214,19 @@ set14_evaluator = [
     dict(type='SSIM', crop_border=2, prefix='Set14'),
 ]
 
+ut_data_root = 'tests/test_codebase/test_mmedit/data'
+ut_dataloader = dict(
+    num_workers=4,
+    persistent_workers=False,
+    drop_last=False,
+    sampler=dict(type='DefaultSampler', shuffle=False),
+    dataset=dict(
+        type='BasicImageDataset',
+        metainfo=dict(dataset_type='set14', task_name='sisr'),
+        data_root=ut_data_root,
+        data_prefix=dict(img='imgs', gt='imgs'),
+        pipeline=test_pipeline))
+
 # test config for DIV2K
 div2k_data_root = 'data/DIV2K'
 div2k_dataloader = dict(
@@ -238,12 +251,10 @@ div2k_evaluator = [
 # test config
 test_cfg = dict(type='MultiTestLoop')
 test_dataloader = [
-    set5_dataloader,
-    set14_dataloader,
-    div2k_dataloader,
+    ut_dataloader,
+    ut_dataloader
 ]
 test_evaluator = [
     set5_evaluator,
-    set14_evaluator,
-    div2k_evaluator,
+    set14_evaluator
 ]

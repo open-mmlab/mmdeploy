@@ -83,18 +83,35 @@ def _get_dataset_metainfo(model_cfg: Config):
             continue
         dataloader_cfg = model_cfg[dataloader_name]
         # TODO: how to process multi dataloader case?
-        dataset_cfg = dataloader_cfg[0].dataset
-        dataset_cls = module_dict.get(dataset_cfg.type, None)
-        if dataset_cls is None:
-            continue
-        if hasattr(dataset_cls, '_load_metainfo') and isinstance(
-                dataset_cls._load_metainfo, Callable):
-            meta = dataset_cls._load_metainfo(
-                dataset_cfg.get('metainfo', None))
-            if meta is not None:
-                return meta
-        if hasattr(dataset_cls, 'METAINFO'):
-            return dataset_cls.METAINFO
+        if type(dataloader_cfg) == list:
+            dataset_cfg = [loader.dataset for loader in dataloader_cfg]
+            dataset_cls = [module_dict.get(dataset.type, None)
+                           for dataset in dataset_cfg]
+            if dataset_cls == []:
+                continue
+            meta_list = []
+            for i, cls in enumerate(dataset_cls):
+                if hasattr(cls, '_load_metainfo') and \
+                   isinstance(cls._load_metainfo, Callable):
+                    meta = cls._load_metainfo(dataset_cfg[i].
+                                              get('metainfo', None))
+                    meta_list.append(meta)
+                if hasattr(cls, 'METAINFO'):
+                    meta_list.append(cls.METAINFO)
+            return meta_list
+        else:
+            dataset_cfg = dataloader_cfg[0].dataset
+            dataset_cls = module_dict.get(dataset_cfg.type, None)
+            if dataset_cls is None:
+                continue
+            if hasattr(dataset_cls, '_load_metainfo') and isinstance(
+                    dataset_cls._load_metainfo, Callable):
+                meta = dataset_cls._load_metainfo(
+                    dataset_cfg.get('metainfo', None))
+                if meta is not None:
+                    return meta
+            if hasattr(dataset_cls, 'METAINFO'):
+                return dataset_cls.METAINFO
 
     return None
 

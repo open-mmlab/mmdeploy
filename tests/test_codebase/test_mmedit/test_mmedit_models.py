@@ -45,6 +45,43 @@ deploy_cfg = mmengine.Config(
             output_names=['output'])))
 
 
+def test_base_edit_model_forward():
+    from typing import List, Optional
+
+    from mmedit.models.base_models.base_edit_model import BaseEditModel
+    from mmedit.structures import EditDataSample
+
+    from mmdeploy.codebase.mmedit import models  # noqa
+
+    class DummyBaseEditModel(BaseEditModel):
+
+        def __init__(self, generator, pixel_loss):
+            super().__init__(generator, pixel_loss)
+
+        def forward(self,
+                    inputs: torch.Tensor,
+                    data_samples: Optional[List[EditDataSample]] = None,
+                    mode: str = 'tensor',
+                    **kwargs):
+            return inputs
+    generator = dict(type='SRCNNNet',
+                     channels=(3, 64, 32, 3),
+                     kernel_sizes=(9, 1, 5),
+                     upscale_factor=4)
+    pixel_loss = dict(type='L1Loss',
+                      loss_weight=1.0,
+                      reduction='mean')
+    model = DummyBaseEditModel(generator, pixel_loss).eval()
+
+    model_output = model(input, None, mode='predict')
+
+    with RewriterContext({}):
+        backend_output = model(input)
+
+    assert model_output == input
+    assert backend_output == input
+
+
 def test_srcnn():
     pytorch_model = SRCNNNet()
     model_inputs = {'x': img}

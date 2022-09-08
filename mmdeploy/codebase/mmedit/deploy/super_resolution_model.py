@@ -92,12 +92,18 @@ class End2EndModel(BaseBackendModel):
         lq = lq.to(self.device)
         batch_outputs = self.wrapper({self.input_name:
                                       lq})[self.output_names[0]].to('cpu')
-        batch_outputs = self.data_preprocessor.destructor(batch_outputs)
+        if hasattr(self.data_preprocessor, 'destructor'):
+            batch_outputs = self.data_preprocessor.destructor(batch_outputs)
         predictions = []
 
         for sr_pred, data_sample in zip(batch_outputs, data_samples):
+            pred = EditDataSample()
+            pred.set_data(dict(pred_img=PixelData(**dict(data=sr_pred))))
+            data_sample.set_data(dict(output=pred))
+            '''
             data_sample.set_data(
                 dict(pred_img=PixelData(**dict(data=sr_pred))))
+            '''
             predictions.append(data_sample)
         return predictions
 
