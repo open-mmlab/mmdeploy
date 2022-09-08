@@ -175,13 +175,23 @@ models:
   - name: DBNet
     metafile: configs/textdet/dbnet/metafile.yml
     model_configs:
-      - configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py
+      - configs/textdet/dbnet/dbnet_resnet18_fpnc_1200e_icdar2015.py
     pipelines:
       - *pipeline_ts_detection_fp32
       - *pipeline_ort_detection_dynamic_fp32
-#      - *pipeline_trt_detection_dynamic_fp32
       - *pipeline_trt_detection_dynamic_fp16
-#      - *pipeline_trt_detection_dynamic_int8
+      - *pipeline_ncnn_detection_static_fp32
+      - *pipeline_pplnn_detection_dynamic_fp32
+      - *pipeline_openvino_detection_dynamic_fp32
+
+  - name: PANet
+    metafile: configs/textdet/panet/metafile.yml
+    model_configs:
+      - configs/textdet/panet/panet_resnet18_fpem-ffm_600e_icdar2015.py
+    pipelines:
+      - *pipeline_ts_detection_fp32
+      - *pipeline_ort_detection_dynamic_fp32
+      - *pipeline_trt_detection_dynamic_fp16
       - *pipeline_ncnn_detection_static_fp32
       - *pipeline_pplnn_detection_dynamic_fp32
       - *pipeline_openvino_detection_dynamic_fp32
@@ -189,17 +199,10 @@ models:
   - name: CRNN
     metafile: configs/textrecog/crnn/metafile.yml
     model_configs:
-      - configs/textrecog/crnn/crnn_academic_dataset.py
+      - configs/textrecog/crnn/crnn_mini-vgg_5e_mj.py
     pipelines:
       - *pipeline_ts_recognition_fp32
       - *pipeline_ort_recognition_dynamic_fp32
       - *pipeline_trt_recognition_dynamic_fp16
       - *pipeline_ncnn_recognition_static_fp32
       - *pipeline_pplnn_recognition_dynamic_fp32
-
-  - name: SAR
-    metafile: configs/textrecog/sar/metafile.yml
-    model_configs:
-      - configs/textrecog/sar/sar_r31_parallel_decoder_academic.py
-    pipelines:
-      - *pipeline_ort_recognition_dynamic_fp32
