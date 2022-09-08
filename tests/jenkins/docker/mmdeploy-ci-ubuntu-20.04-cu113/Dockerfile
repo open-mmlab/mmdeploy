@@ -144,7 +144,7 @@ ENV LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
 
 ENV LD_LIBRARY_PATH=/usr/local/cuda-${CUDA}/lib64/:$LD_LIBRARY_PATH
 
-### install openmim and onnx
+### install openmim
 RUN /opt/conda/bin/pip install openmim
 
 RUN /opt/conda/bin/conda init bash && \
