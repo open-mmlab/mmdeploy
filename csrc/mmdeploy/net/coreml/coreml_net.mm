@@ -83,7 +83,7 @@
 
 @end
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 namespace coreml {
 
 static Result<void> CheckInputOutputFeatureType(MLFeatureType type) {

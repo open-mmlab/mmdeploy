@@ -9,7 +9,7 @@
 #include "mmdeploy/core/module.h"
 #include "mmdeploy/core/utils/formatter.h"
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 namespace trt_detail {
 
@@ -225,4 +225,4 @@ class TRTNetCreator : public Creator<Net> {
 
 REGISTER_MODULE(Net, TRTNetCreator);
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework

@@ -21,7 +21,7 @@
 #include "SNPE/SNPEFactory.hpp"
 #include "mmdeploy/core/net.h"
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 class SNPENet : public Net {
  public:

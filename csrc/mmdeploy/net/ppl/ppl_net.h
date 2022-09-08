@@ -8,7 +8,7 @@
 #include "ppl/nn/engines/engine.h"
 #include "ppl/nn/runtime/runtime.h"
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 using PPLTensor = ppl::nn::Tensor;
 
@@ -53,6 +53,6 @@ class PPLNet : public Net {
   static constexpr const auto kHost = Device(0);
 };
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework
 
 #endif  // MMDEPLOY_SRC_NET_PPL_PPL_NET_H_

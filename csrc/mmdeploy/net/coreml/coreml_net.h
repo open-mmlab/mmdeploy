@@ -5,7 +5,7 @@
 
 #include "mmdeploy/core/net.h"
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 namespace coreml {
 class Execution;

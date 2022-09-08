@@ -7,7 +7,7 @@
 #include "mmdeploy/core/net.h"
 #include "mmdeploy/core/status_code.h"
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 class AclNet : public Net {
  public:

@@ -6,7 +6,7 @@
 #include "mmdeploy/core/model.h"
 #include "mmdeploy/core/utils/formatter.h"
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 SNPENet::~SNPENet() {}
 
