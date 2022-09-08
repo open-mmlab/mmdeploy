@@ -9,6 +9,8 @@
 
 namespace mmdeploy {
 
+namespace cxx {
+
 using TextRecognition = mmdeploy_text_recognition_t;
 
 class TextRecognizer : public NonMovable {
@@ -73,6 +75,11 @@ class TextRecognizer : public NonMovable {
  private:
   mmdeploy_text_recognizer_t recognizer_{};
 };
+
+}  // namespace cxx
+
+using cxx::TextRecognition;
+using cxx::TextRecognizer;
 
 }  // namespace mmdeploy
 

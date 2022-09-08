@@ -7,7 +7,7 @@
 #include "onnxruntime_c_api.h"
 #include "onnxruntime_cxx_api.h"
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 class OrtNet : public Net {
  public:

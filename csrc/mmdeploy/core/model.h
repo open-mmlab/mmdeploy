@@ -14,6 +14,8 @@
 
 namespace mmdeploy {
 
+namespace framework {
+
 struct model_meta_info_t {
   std::string name;
   std::string net;
@@ -156,10 +158,9 @@ class MMDEPLOY_API ModelRegistry {
   std::vector<Entry> entries_;
 };
 
-template <>
-struct is_cast_by_erasure<Model> : std::true_type {};
+}  // namespace runtime
 
-MMDEPLOY_REGISTER_TYPE_ID(Model, 5);
+MMDEPLOY_REGISTER_TYPE_ID(framework::Model, 5);
 
 }  // namespace mmdeploy
 

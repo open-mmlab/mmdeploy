@@ -39,8 +39,9 @@ struct TypeId<void> {
   struct TypeId<type> {                     \
     static constexpr type_id_t value = id;  \
   };                                        \
-  }
-
+  }                                         \
+  template <>                               \
+  struct is_cast_by_erasure<type> : std::true_type {};
 }  // namespace traits
 
 }  // namespace mmdeploy

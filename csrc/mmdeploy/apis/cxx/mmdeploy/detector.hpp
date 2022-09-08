@@ -8,6 +8,8 @@
 
 namespace mmdeploy {
 
+namespace cxx {
+
 using Detection = mmdeploy_detection_t;
 
 class Detector : public NonMovable {
@@ -61,6 +63,11 @@ class Detector : public NonMovable {
  private:
   mmdeploy_detector_t detector_{};
 };
+
+}  // namespace cxx
+
+using cxx::Detection;
+using cxx::Detector;
 
 }  // namespace mmdeploy
 

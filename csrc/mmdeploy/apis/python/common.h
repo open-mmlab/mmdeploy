@@ -13,17 +13,13 @@
 
 namespace py = pybind11;
 
+namespace mmdeploy::python {
+
 using PyImage = py::array_t<uint8_t, py::array::c_style | py::array::forcecast>;
-
-namespace mmdeploy {
-
-// std::map<std::string, void (*)(py::module &)> &gPythonBindings();
 
 std::vector<void (*)(py::module&)>& gPythonBindings();
 
 mmdeploy_mat_t GetMat(const PyImage& img);
-
-class Value;
 
 py::object ToPyObject(const Value& value);
 
@@ -38,6 +34,6 @@ class PythonBindingRegisterer {
 
 class Foo {};
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::python
 
 #endif  // MMDEPLOY_CSRC_APIS_PYTHON_COMMON_H_

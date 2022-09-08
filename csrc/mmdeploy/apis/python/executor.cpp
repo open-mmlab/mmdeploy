@@ -8,9 +8,7 @@
 #include "mmdeploy/execution/schedulers/single_thread_context.h"
 #include "mmdeploy/execution/schedulers/static_thread_pool.h"
 
-namespace mmdeploy {
-
-namespace _python {
+namespace mmdeploy::python {
 
 struct PySender {
   TypeErasedSender<Value> sender_;
@@ -40,13 +38,9 @@ struct PySender {
   }
 };
 
-}  // namespace _python
-
-using _python::PySender;
-
 static PythonBindingRegisterer register_sender{[](py::module& m) {
   py::class_<PySender, std::unique_ptr<PySender>>(m, "PySender")
       .def("__await__", &PySender::__await__);
 }};
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::python

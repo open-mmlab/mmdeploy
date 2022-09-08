@@ -8,6 +8,8 @@
 
 namespace mmdeploy {
 
+namespace cxx {
+
 using RotatedDetection = mmdeploy_rotated_detection_t;
 
 class RotatedDetector : public NonMovable {
@@ -62,6 +64,11 @@ class RotatedDetector : public NonMovable {
  private:
   mmdeploy_rotated_detector_t detector_{};
 };
+
+}  // namespace cxx
+
+using cxx::RotatedDetection;
+using cxx::RotatedDetector;
 
 }  // namespace mmdeploy
 

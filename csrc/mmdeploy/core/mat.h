@@ -12,6 +12,8 @@
 
 namespace mmdeploy {
 
+namespace framework {
+
 class MMDEPLOY_API Mat final {
  public:
   Mat() = default;
@@ -88,10 +90,9 @@ class MMDEPLOY_API Mat final {
   int bytes_{0};
 };
 
-template <>
-struct is_cast_by_erasure<Mat> : std::true_type {};
+}  // namespace runtime
 
-MMDEPLOY_REGISTER_TYPE_ID(Mat, 7);
+MMDEPLOY_REGISTER_TYPE_ID(framework::Mat, 7);
 
 }  // namespace mmdeploy
 

@@ -59,7 +59,7 @@ using namespace mmdeploy;
 class AddBboxField {
  public:
   Result<Value> operator()(const Value& img, const Value& dets) {
-    auto _img = img["ori_img"].get<Mat>();
+    auto _img = img["ori_img"].get<framework::Mat>();
     cv::Rect rect(0, 0, _img.width(), _img.height());
     if (dets.is_object() && dets.contains("bbox")) {
       auto _box = from_value<std::vector<float>>(dets["bbox"]);
@@ -122,7 +122,8 @@ int main() {
   }
 
   cv::Mat mat = cv::imread("../ezgif-5-6ec14aca55.jpg");
-  mmdeploy::Mat img(mat.rows, mat.cols, PixelFormat::kBGR, DataType::kINT8, mat.data, Device(0));
+  framework::Mat img(mat.rows, mat.cols, PixelFormat::kBGR, DataType::kINT8, mat.data,
+                     framework::Device(0));
 
   Value input = Value::Array{Value::Array{Value::Object{{"ori_img", img}}}};
 

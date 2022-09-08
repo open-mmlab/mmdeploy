@@ -7,7 +7,7 @@
 #include "mmdeploy/core/utils/formatter.h"
 #include "pybind11/numpy.h"
 
-namespace mmdeploy {
+namespace mmdeploy::python {
 
 // std::map<std::string, void (*)(py::module&)>& gPythonBindings() {
 //   static std::map<std::string, void (*)(py::module&)> v;
@@ -121,14 +121,14 @@ Value FromPyObject(const py::object& obj) {
   return nullptr;
 }
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::python
 
 PYBIND11_MODULE(mmdeploy_python, m) {
-  for (const auto& f : mmdeploy::gPythonBindings()) {
+  for (const auto& f : mmdeploy::python::gPythonBindings()) {
     f(m);
   }
 
-  using namespace mmdeploy;
+  using namespace mmdeploy::python;
   py::class_<Foo>(m, "Foo").def(py::init([] { return Foo{}; }));
   m.def("test_foo", [](py::object obj) { return py::isinstance<Foo>(obj); });
 }

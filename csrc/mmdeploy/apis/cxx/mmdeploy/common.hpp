@@ -23,9 +23,9 @@
 
 namespace mmdeploy {
 
-using Rect = mmdeploy_rect_t;
+namespace cxx {
 
-namespace {  // avoid conflict with internal classes, for now
+using Rect = mmdeploy_rect_t;
 
 class Model {
  public:
@@ -148,7 +148,12 @@ inline const mmdeploy_mat_t* reinterpret(const Mat* p) {
   return reinterpret_cast<const mmdeploy_mat_t*>(p);
 }
 
-}  // namespace
+}  // namespace cxx
+
+using cxx::Device;
+using cxx::Mat;
+using cxx::Model;
+using cxx::Rect;
 
 }  // namespace mmdeploy
 

@@ -3,7 +3,7 @@
 #include "common.h"
 #include "mmdeploy/common.hpp"
 
-namespace mmdeploy {
+namespace mmdeploy::python {
 
 static PythonBindingRegisterer register_model{[](py::module& m) {
   py::class_<Model>(m, "Model")

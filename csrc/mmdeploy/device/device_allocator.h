@@ -13,7 +13,7 @@
 #include "mmdeploy/core/device_impl.h"
 #include "mmdeploy/core/logger.h"
 
-namespace mmdeploy::device_allocator {
+namespace mmdeploy::framework::device_allocator {
 
 class Fallback : public AllocatorImpl {
  public:

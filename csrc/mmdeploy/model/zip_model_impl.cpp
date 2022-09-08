@@ -12,7 +12,7 @@
 
 using nlohmann::json;
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 class ZipModelImpl : public ModelImpl {
  public:

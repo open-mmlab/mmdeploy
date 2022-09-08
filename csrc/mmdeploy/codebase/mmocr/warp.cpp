@@ -17,7 +17,7 @@ namespace mmdeploy {
 class WarpBbox {
  public:
   Result<Value> operator()(const Value& img, const Value& det) {
-    auto ori_img = img["ori_img"].get<mmdeploy::Mat>();
+    auto ori_img = img["ori_img"].get<framework::Mat>();
     if (det.is_object() && det.contains("bbox")) {
       auto bbox = from_value<std::vector<cv::Point>>(det["bbox"]);
       auto patch = warp(mmdeploy::cpu::Mat2CVMat(ori_img), bbox);

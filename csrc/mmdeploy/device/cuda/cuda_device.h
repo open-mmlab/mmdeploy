@@ -8,7 +8,7 @@
 #include "mmdeploy/core/device_impl.h"
 #include "mmdeploy/core/types.h"
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 using CudaTask = std::function<void(cudaStream_t)>;
 

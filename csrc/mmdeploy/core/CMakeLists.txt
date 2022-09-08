@@ -28,7 +28,6 @@ endif ()
 set(SRCS
         device_impl.cpp
         logger.cpp
-        graph.cpp
         mat.cpp
         model.cpp
         module.cpp

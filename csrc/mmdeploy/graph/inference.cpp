@@ -9,6 +9,8 @@
 
 namespace mmdeploy::graph {
 
+using namespace framework;
+
 InferenceBuilder::InferenceBuilder(Value config) : Builder(std::move(config)) {}
 
 Result<unique_ptr<Node>> InferenceBuilder::BuildImpl() {

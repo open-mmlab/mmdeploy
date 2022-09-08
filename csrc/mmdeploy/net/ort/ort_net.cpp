@@ -9,7 +9,7 @@
 #include "mmdeploy/core/utils/formatter.h"
 #include "onnxruntime_register.h"
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 static TensorShape to_shape(const Ort::TypeInfo& info) {
   auto shape = info.GetTensorTypeAndShapeInfo().GetShape();

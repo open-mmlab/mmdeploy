@@ -10,6 +10,8 @@
 
 namespace mmdeploy {
 
+namespace framework {
+
 class Net {
  public:
   virtual ~Net() = default;
@@ -22,7 +24,9 @@ class Net {
   virtual Result<void> ForwardAsync(Event* event) = 0;
 };
 
-MMDEPLOY_DECLARE_REGISTRY(Net);
+}  // namespace runtime
+
+MMDEPLOY_DECLARE_REGISTRY(framework::Net);
 
 }  // namespace mmdeploy
 

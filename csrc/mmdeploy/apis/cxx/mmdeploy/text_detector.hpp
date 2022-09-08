@@ -8,6 +8,8 @@
 
 namespace mmdeploy {
 
+namespace cxx {
+
 using TextDetection = mmdeploy_text_detection_t;
 
 class TextDetector : public NonMovable {
@@ -62,6 +64,11 @@ class TextDetector : public NonMovable {
  private:
   mmdeploy_text_detector_t detector_{};
 };
+
+}  // namespace cxx
+
+using cxx::TextDetection;
+using cxx::TextDetector;
 
 }  // namespace mmdeploy
 

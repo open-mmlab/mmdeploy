@@ -11,9 +11,9 @@
 
 namespace mmdeploy {
 
-namespace {
+namespace python {
 
-Mat _get_mat(const PyImage& img) {
+framework::Mat _get_mat(const PyImage& img) {
   auto info = img.request();
   if (info.ndim != 3) {
     fprintf(stderr, "info.ndim = %d\n", (int)info.ndim);
@@ -35,23 +35,23 @@ Mat _get_mat(const PyImage& img) {
       format,                                         // format
       DataType::kINT8,                                // type
       std::shared_ptr<void>(info.ptr, [](void*) {}),  // data
-      Device(0),                                      // device
+      framework::Device(0),                             // device
   };
 }
-
-}  // namespace
 
 std::optional<Value> _to_value_internal(const void* object, mmdeploy_context_type_t type) {
   switch (type) {
     case MMDEPLOY_TYPE_MODEL:
-      return Value(*(const Model*)object);
+      return Value(*(const framework::Model*)object);
     case MMDEPLOY_TYPE_DEVICE:
-      return Value(*(const Device*)object);
+      return Value(*(const framework::Device*)object);
     case MMDEPLOY_TYPE_MAT:
       return _get_mat(*(const py::array*)object);
     default:
       return std::nullopt;
   }
 }
+
+}  // namespace python
 
 }  // namespace mmdeploy

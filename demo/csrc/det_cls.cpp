@@ -51,7 +51,7 @@ using namespace mmdeploy;
 class CropBox {
  public:
   Result<Value> operator()(const Value& img, const Value& dets) {
-    auto patch = img["ori_img"].get<Mat>();
+    auto patch = img["ori_img"].get<framework::Mat>();
     if (dets.is_object() && dets.contains("bbox")) {
       auto _box = from_value<std::vector<float>>(dets["bbox"]);
       cv::Rect rect(cv::Rect2f(cv::Point2f(_box[0], _box[1]), cv::Point2f(_box[2], _box[3])));
@@ -61,12 +61,12 @@ class CropBox {
   }
 
  private:
-  static Mat crop(const Mat& img, cv::Rect rect) {
+  static framework::Mat crop(const framework::Mat& img, cv::Rect rect) {
     cv::Mat mat(img.height(), img.width(), CV_8UC(img.channel()), img.data<void>());
     rect &= cv::Rect(cv::Point(0, 0), mat.size());
     mat = mat(rect).clone();
     std::shared_ptr<void> data(mat.data, [mat = mat](void*) {});
-    return Mat{mat.rows, mat.cols, img.pixel_format(), img.type(), std::move(data)};
+    return framework::Mat{mat.rows, mat.cols, img.pixel_format(), img.type(), std::move(data)};
   }
 };
 
@@ -103,7 +103,8 @@ int main() {
   }
 
   cv::Mat mat = cv::imread("../demo.jpg");
-  mmdeploy::Mat img(mat.rows, mat.cols, PixelFormat::kBGR, DataType::kINT8, mat.data, Device(0));
+  framework::Mat img(mat.rows, mat.cols, PixelFormat::kBGR, DataType::kINT8, mat.data,
+                     framework::Device(0));
 
   Value input = Value::Array{Value::Array{Value::Object{{"ori_img", img}}}};
 

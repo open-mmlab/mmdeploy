@@ -290,8 +290,6 @@ MMDEPLOY_REGISTER_TYPE_ID(Doge, 3456);
 
 }  // namespace mmdeploy
 
-template <>
-struct mmdeploy::is_cast_by_erasure<Meow> : std::true_type {};
 
 TEST_CASE("test dynamic interface for value", "[value]") {
   Value meow(Meow{100});

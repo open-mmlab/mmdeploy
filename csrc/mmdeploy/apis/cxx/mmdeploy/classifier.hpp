@@ -8,6 +8,8 @@
 
 namespace mmdeploy {
 
+namespace cxx {
+
 using Classification = mmdeploy_classification_t;
 
 class Classifier : public NonMovable {
@@ -61,6 +63,11 @@ class Classifier : public NonMovable {
  private:
   mmdeploy_classifier_t classifier_{};
 };
+
+}  // namespace cxx
+
+using cxx::Classification;
+using cxx::Classifier;
 
 }  // namespace mmdeploy
 

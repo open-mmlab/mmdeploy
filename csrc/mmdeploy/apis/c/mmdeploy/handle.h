@@ -13,6 +13,8 @@
 
 namespace mmdeploy {
 
+using namespace framework;
+
 namespace {
 
 class AsyncHandle {

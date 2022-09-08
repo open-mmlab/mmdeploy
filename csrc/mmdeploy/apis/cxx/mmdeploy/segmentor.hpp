@@ -8,6 +8,8 @@
 
 namespace mmdeploy {
 
+namespace cxx {
+
 using Segmentation = mmdeploy_segmentation_t;
 
 class Segmentor : public NonMovable {
@@ -58,6 +60,11 @@ class Segmentor : public NonMovable {
  private:
   mmdeploy_segmentor_t segmentor_{};
 };
+
+}  // namespace cxx
+
+using cxx::Segmentation;
+using cxx::Segmentor;
 
 }  // namespace mmdeploy
 

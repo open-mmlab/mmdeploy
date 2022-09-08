@@ -9,6 +9,8 @@
 
 namespace mmdeploy {
 
+namespace cxx {
+
 class Scheduler {
  public:
   explicit Scheduler(mmdeploy_scheduler_t scheduler) {
@@ -111,6 +113,12 @@ class Pipeline : public NonMovable {
  private:
   mmdeploy_pipeline_t pipeline_{};
 };
+
+}  // namespace cxx
+
+using cxx::Context;
+using cxx::Pipeline;
+using cxx::Scheduler;
 
 }  // namespace mmdeploy
 

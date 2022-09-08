@@ -7,7 +7,7 @@
 #include "mmdeploy/core/logger.h"
 #include "mmdeploy/core/utils/formatter.h"
 
-namespace mmdeploy {
+namespace mmdeploy::python {
 
 using namespace std::literals;
 
@@ -36,7 +36,7 @@ class PyPipeline {
     if (status != MMDEPLOY_SUCCESS) {
       throw std::runtime_error("failed to apply pipeline, code = "s + std::to_string(status));
     }
-    auto& outputs = *(Value*)outputs_ptr;
+    auto& outputs =* (Value*)outputs_ptr;
     if (!is_batch) {
       for (auto& output : outputs) {
         output = std::move(output[0]);
@@ -93,4 +93,4 @@ static PythonBindingRegisterer register_pipeline{[](py::module& m) {
       });
 }};
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::python

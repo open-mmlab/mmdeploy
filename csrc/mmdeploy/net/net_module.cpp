@@ -17,7 +17,7 @@
 using std::string;
 using std::vector;
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 struct NetModule::Impl {
   using Input = std::map<std::string, Tensor>;

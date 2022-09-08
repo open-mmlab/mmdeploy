@@ -8,6 +8,8 @@
 
 namespace mmdeploy {
 
+namespace cxx {
+
 class Restorer : public NonMovable {
  public:
   Restorer(const Model& model, const Device& device) {
@@ -56,6 +58,10 @@ class Restorer : public NonMovable {
  private:
   mmdeploy_restorer_t restorer_{};
 };
+
+}  // namespace cxx
+
+using cxx::Restorer;
 
 }  // namespace mmdeploy
 

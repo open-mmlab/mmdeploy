@@ -4,7 +4,7 @@
 #include "mmdeploy/common.hpp"
 #include "mmdeploy/pipeline.hpp"
 
-namespace mmdeploy {
+namespace mmdeploy::python {
 
 static PythonBindingRegisterer register_device{[](py::module& m) {
   py::class_<Device>(m, "Device")

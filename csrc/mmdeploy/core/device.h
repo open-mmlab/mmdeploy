@@ -16,6 +16,8 @@
 
 namespace mmdeploy {
 
+namespace framework {
+
 class Platform;
 class Device;
 class Stream;
@@ -343,18 +345,11 @@ class MMDEPLOY_API PlatformRegistry {
 
 MMDEPLOY_API PlatformRegistry& gPlatformRegistry();
 
-template <>
-struct is_cast_by_erasure<Device> : std::true_type {};
-template <>
-struct is_cast_by_erasure<Buffer> : std::true_type {};
-template <>
-struct is_cast_by_erasure<Stream> : std::true_type {};
-template <>
-struct is_cast_by_erasure<Event> : std::true_type {};
+}  // namespace runtime
 
-MMDEPLOY_REGISTER_TYPE_ID(Device, 1);
-MMDEPLOY_REGISTER_TYPE_ID(Buffer, 2);
-MMDEPLOY_REGISTER_TYPE_ID(Stream, 3);
-MMDEPLOY_REGISTER_TYPE_ID(Event, 4);
+MMDEPLOY_REGISTER_TYPE_ID(framework::Device, 1);
+MMDEPLOY_REGISTER_TYPE_ID(framework::Buffer, 2);
+MMDEPLOY_REGISTER_TYPE_ID(framework::Stream, 3);
+MMDEPLOY_REGISTER_TYPE_ID(framework::Event, 4);
 
 }  // namespace mmdeploy

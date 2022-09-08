@@ -8,6 +8,8 @@
 
 namespace mmdeploy {
 
+namespace cxx {
+
 using PoseDetection = mmdeploy_pose_detection_t;
 
 class PoseDetector : public NonMovable {
@@ -72,6 +74,11 @@ class PoseDetector : public NonMovable {
  private:
   mmdeploy_pose_detector_t detector_{};
 };
+
+}  // namespace cxx
+
+using cxx::PoseDetection;
+using cxx::PoseDetector;
 
 }  // namespace mmdeploy
 

@@ -7,7 +7,7 @@
 #include "mmdeploy/core/tensor.h"
 #include "mmdeploy/core/value.h"
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 class NetModule {
  public:

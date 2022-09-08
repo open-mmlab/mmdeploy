@@ -9,7 +9,7 @@
 
 using nlohmann::json;
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 class DirectoryModelImpl : public ModelImpl {
  public:
