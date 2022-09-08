@@ -6,9 +6,22 @@
 
 namespace mmdeploy::python {
 
+std::pair<std::string, int> parse_device(const std::string& device) {
+  auto pos = device.find(':');
+  if (pos == std::string::npos) {
+    return {device, 0};  // logic for index -1 is not ready on some devices
+  }
+  auto name = device.substr(0, pos);
+  auto index = std::stoi(device.substr(pos + 1));
+  return {name, index};
+}
+
 static PythonBindingRegisterer register_device{[](py::module& m) {
   py::class_<Device>(m, "Device")
-      .def(py::init([](const std::string& name) { return Device(name, 0); }))
+      .def(py::init([](const std::string& device) {
+        auto [name, index] = parse_device(device);
+        return Device(name, index);
+      }))
       .def(py::init([](const std::string& name, int index) { return Device(name, index); }));
 }};
 
@@ -27,4 +40,4 @@ static PythonBindingRegisterer register_scheduler{[](py::module& m) {
       .def_static("create_thread", [] { return Scheduler::CreateThread(); });
 }};
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::python

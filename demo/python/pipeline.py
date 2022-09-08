@@ -3,50 +3,65 @@ import argparse
 import json
 
 import cv2
-from mmdeploy_python import Pipeline, Model, Context, Device, Foo, test_foo
+from mmdeploy_python import Pipeline, Model, Context, Device
 
-foo = Foo()
-print(test_foo(foo))
-print(test_foo(0))
 
-det_model = Model('/workspace/mmdeploy/benchmark/_detection_tmp_model')
-reg_model = Model('/workspace/mmdeploy/benchmark/_mmcls_tmp_model')
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description='Demo of MMDeploy SDK pipeline API')
+    parser.add_argument('device', help='name of device, cuda or cpu')
+    parser.add_argument('det_model_path', help='path of detection model')
+    parser.add_argument('cls_model_path', help='path of classification model')
+    parser.add_argument('image_path', help='path to test image')
+    args = parser.parse_args()
+    return args
 
-config = dict(
-    type='Pipeline',
-    input='img',
-    tasks=[
-        dict(
-            type='Inference',
-            input='img',
-            output='dets',
-            params=dict(model=det_model)),
-        dict(
-            type='Pipeline',
-            input=['boxes=*dets', 'imgs=+img'],
-            tasks=[
-                dict(
-                    type='Task',
-                    module='CropBox',
-                    input=['imgs', 'boxes'],
-                    output='patches'),
-                dict(
-                    type='Inference',
-                    input='patches',
-                    output='labels',
-                    params=dict(model=reg_model))
-            ],
-            output='*labels')
-    ],
-    output=['dets', 'labels'])
 
-device = Device('cuda')
+def main():
+    args = parse_args()
 
-pipeline = Pipeline(config, Context(device))
+    det_model = Model(args.det_model_path)
+    reg_model = Model(args.cls_model_path)
 
-img = cv2.imread('/workspace/mmdetection/demo/demo.jpg')
+    config = dict(
+        type='Pipeline',
+        input='img',
+        tasks=[
+            dict(
+                type='Inference',
+                input='img',
+                output='dets',
+                params=dict(model=det_model)),
+            dict(
+                type='Pipeline',
+                # flatten dets ([[a]] -> [a]) and broadcast img
+                input=['boxes=*dets', 'imgs=+img'],
+                tasks=[
+                    dict(
+                        type='Task',
+                        module='CropBox',
+                        input=['imgs', 'boxes'],
+                        output='patches'),
+                    dict(
+                        type='Inference',
+                        input='patches',
+                        output='labels',
+                        params=dict(model=reg_model))
+                ],
+                # unflatten labels ([a] -> [[a]])
+                output='*labels')
+        ],
+        output=['dets', 'labels'])
 
-output = pipeline(dict(ori_img=img))
+    device = Device(args.device)
+    pipeline = Pipeline(config, Context(device))
 
-print(output)
-# print(json.dumps(output, indent=2))
+    img = cv2.imread(args.image_path)
+
+    output = pipeline(dict(ori_img=img))
+
+    print(json.dumps(output, indent=4))
+
+
+if __name__ == '__main__':
+    main()

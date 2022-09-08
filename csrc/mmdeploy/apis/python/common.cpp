@@ -4,6 +4,7 @@
 
 #include "mmdeploy/common.hpp"
 // #include "mmdeploy/core/mat.h"
+#include "mmdeploy/core/model.h"
 #include "mmdeploy/core/utils/formatter.h"
 #include "pybind11/numpy.h"
 
@@ -109,9 +110,10 @@ Value FromPyObject(const py::object& obj) {
   } else if (py::isinstance<py::array>(obj)) {
     const auto& array = obj.cast<py::array>();
     return *_to_value_internal(&array, MMDEPLOY_TYPE_MAT);
-  } else if (py::isinstance<py::class_<Model>>(obj)) {
-    const auto& model = obj.cast<Model>();
-    return *_to_value_internal(&model, MMDEPLOY_TYPE_MODEL);
+  } else if (py::isinstance<Model>(obj)) {
+    const auto& model =
+        *reinterpret_cast<framework::Model*>(static_cast<mmdeploy_model_t>(obj.cast<Model>()));
+    return model;
   } else {
     std::stringstream ss;
     ss << obj.get_type();
