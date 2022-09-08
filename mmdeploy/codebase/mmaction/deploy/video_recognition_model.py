@@ -77,10 +77,11 @@ class End2EndModel(BaseBackendModel):
         """Run forward inference.
 
         Args:
-            img (List[torch.Tensor]): A list contains input image(s)
-                in [N x num_crops * num_segs x C x H x W] format.
-            *args: Other arguments.
-            **kwargs: Other key-pair arguments.
+            inputs (torch.Tensor): The input tensor with shape
+                (N, C, ...) in general.
+            data_samples (List[``ActionDataSample`1], optional): The
+                annotation data of every samples. Defaults to None.
+            mode (str): Return what kind of value. Defaults to ``predict``.
 
         Returns:
             list: A list contains predictions.
@@ -99,6 +100,10 @@ class End2EndModel(BaseBackendModel):
         for score in cls_scores:
             label = LabelData(item=score)
             predictions.append(label)
+
+        for data_sample, pred_instances in zip(predictions, data_samples):
+            data_sample.pred_scores = pred_instances
+
         return predictions
 
 

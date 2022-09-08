@@ -1,9 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-
 from .mmaction import MMACTION_TASK
-import os.path as osp
-from copy import deepcopy
-from typing import Callable, Dict, Optional, Sequence, Tuple, Union, Any
+from typing import Dict, Optional, Sequence, Tuple, Union, Any
 
 import numpy as np
 import torch
@@ -151,20 +148,6 @@ class VideoRecognition(BaseTask):
             return data, BaseTask.get_tensor_from_input(data)
 
     @staticmethod
-    def run_inference(model, model_inputs: Dict[str, torch.Tensor]):
-        """Run inference once for a segmentation model of mmseg.
-
-        Args:
-            model (nn.Module): Input model.
-            model_inputs (dict): A dict containing model inputs tensor and
-                meta info.
-
-        Returns:
-            list: The predictions of model inference.
-        """
-        return model(**model_inputs)
-
-    @staticmethod
     def get_partition_cfg(partition_type: str) -> Dict:
         """Get a certain partition config.
 
@@ -197,7 +180,7 @@ class VideoRecognition(BaseTask):
         """
         input_shape = get_input_shape(self.deploy_cfg)
         model_cfg = process_model_config(self.model_cfg, [''], input_shape)
-        preprocess = model_cfg.data.val.pipeline
+        preprocess = model_cfg.test_pipeline
         return preprocess
 
     def get_postprocess(self) -> Dict:
@@ -206,7 +189,7 @@ class VideoRecognition(BaseTask):
         Return:
             dict: Composed of the postprocess information.
         """
-        postprocess = self.model_cfg.cls_head.type
+        postprocess = self.model_cfg.model.cls_head
         return postprocess
 
     def get_model_name(self) -> str:
