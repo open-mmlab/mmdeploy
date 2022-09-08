@@ -472,4 +472,4 @@ CudaPlatformImpl& gCudaPlatform() {
   return Access::get<CudaPlatformImpl>(platform);
 }
 
-}  // namespace mmdeploy::runtime
+}  // namespace mmdeploy::framework

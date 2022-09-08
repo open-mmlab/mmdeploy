@@ -398,4 +398,4 @@ PlatformRegistry& gPlatformRegistry() {
   return instance;
 }
 
-}  // namespace mmdeploy::runtime
+}  // namespace mmdeploy::framework

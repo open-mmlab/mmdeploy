@@ -100,4 +100,4 @@ Result<void> ModelRegistry::Register(const std::string& name, Creator creator) {
   return success();
 }
 
-}  // namespace mmdeploy::runtime
+}  // namespace mmdeploy::framework

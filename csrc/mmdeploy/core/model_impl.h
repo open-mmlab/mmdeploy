@@ -51,6 +51,6 @@ class ModelImpl {
   virtual Result<deploy_meta_info_t> ReadMeta() const = 0;
 };
 
-}  // namespace mmdeploy::runtime
+}  // namespace mmdeploy::framework
 
 #endif  // MMDEPLOY_MODEL_IMPL_H

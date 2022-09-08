@@ -69,4 +69,4 @@ Device Mat::device() const { return buf_.GetDevice(); }
 Buffer& Mat::buffer() { return buf_; }
 const Buffer& Mat::buffer() const { return buf_; }
 
-}  // namespace mmdeploy::runtime
+}  // namespace mmdeploy::framework

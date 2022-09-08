@@ -39,4 +39,4 @@ SyncOnScopeExit::~SyncOnScopeExit() {
   }
 }
 
-}  // namespace mmdeploy::runtime
+}  // namespace mmdeploy::framework
