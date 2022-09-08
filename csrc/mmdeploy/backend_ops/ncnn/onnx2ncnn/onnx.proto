@@ -36,7 +36,7 @@ package onnx;
 //
 // Protobuf compatibility
 //
-// To simplify runtime compatibility, ONNX is defined using the subset of protobuf
+// To simplify framework compatibility, ONNX is defined using the subset of protobuf
 // that is compatible with both protobuf v2 and v3. This means that we do not use any
 // protobuf features that are only available in one of the two versions.
 //
@@ -207,13 +207,13 @@ message ModelProto {
   // in the referenced operator sets.
   repeated OperatorSetIdProto opset_import = 8;
 
-  // The name of the runtime or tool used to generate this model.
-  // This field SHOULD be present to indicate which implementation/tool/runtime
+  // The name of the framework or tool used to generate this model.
+  // This field SHOULD be present to indicate which implementation/tool/framework
   // emitted the model.
   optional string producer_name = 2;
 
-  // The version of the runtime or tool used to generate this model.
-  // This field SHOULD be present to indicate which implementation/tool/runtime
+  // The version of the framework or tool used to generate this model.
+  // This field SHOULD be present to indicate which implementation/tool/framework
   // emitted the model.
   optional string producer_version = 3;
 
