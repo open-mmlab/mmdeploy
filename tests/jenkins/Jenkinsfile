@@ -17,6 +17,11 @@ pipeline {
             ], 
             description: 'Pick env'
         )
+        string(
+            name: 'EXEC_PERFORMANCE',
+            defaultValue: 'y',
+            description: 'exec performance or not,use y/n'
+        )
         booleanParam(
             name: 'EXEC_BUILD',
             defaultValue: true,
@@ -33,6 +38,7 @@ pipeline {
             name: 'EXEC_UNITTEST',
             defaultValue: true,
         )
+
     }
 
     stages {
@@ -54,7 +60,7 @@ pipeline {
                         expression { return params.EXEC_CONVERT }
                     }
                     steps {
-                        sh "tests/jenkins/scripts/test_convert.sh '${params.DOCKER_IMAGE}' '${params.CODEBASES}'"
+                        sh "tests/jenkins/scripts/test_convert.sh '${params.DOCKER_IMAGE}' '${params.CODEBASES}' '${params.EXEC_PERFORMANCE}'"
                     }
                 }
                 

@@ -22,7 +22,7 @@ ENV CUDA_VERSION=10.2
 ENV PYTHON_VERSION=3.7
 ### change the system source for installing libs
 ARG USE_SRC_INSIDE=true
-RUN if [ ${USE_SRC_INSIDE} == true ] ; \
+RUN if [ ${USE_SRC_INSIDE} ] ; \
     then \
         sed -i s/archive.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list ; \
         sed -i s/security.ubuntu.com/mirrors.aliyun.com/g /etc/apt/sources.list ; \

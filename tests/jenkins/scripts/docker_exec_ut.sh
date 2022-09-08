@@ -1,10 +1,10 @@
 #!/bin/bash
 
 ## keep container alive
-nohup sleep infinity > sleep.log 2>&1 &
+nohup sleep infinity >sleep.log 2>&1 &
 
 ## init conda
-__conda_setup="$('/opt/conda/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
+__conda_setup="$('/opt/conda/bin/conda' 'shell.bash' 'hook' 2>/dev/null)"
 if [ $? -eq 0 ]; then
     eval "$__conda_setup"
 else
@@ -16,20 +16,13 @@ else
 fi
 unset __conda_setup
 
-echo "time-$(date +%Y%m%d%H%M)"
-# install sys libs
-apt update && apt-get install -y lcov
+echo "start_time-$(date +%Y%m%d%H%M)"
 
 ## parameters
 export codebase=$1
-
 export MMDEPLOY_DIR=/root/workspace/mmdeploy
-#### TODO: to be removed
-export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH=${LD_LIBRARY_PATH/\/root\/workspace\/libtorch\/lib:/}
 
-for TORCH_VERSION in 1.10.0 1.11.0
-do
+for TORCH_VERSION in 1.10.0 1.11.0; do
     conda activate torch${TORCH_VERSION}
     # export libtorch cmake dir, ran example: /opt/conda/envs/torch1.11.0/lib/python3.8/site-packages/torch/share/cmake/Torch
     export Torch_DIR=$(python -c "import torch;print(torch.utils.cmake_prefix_path + '/Torch')")
@@ -37,20 +30,20 @@ do
     # TODO add openvino
     mkdir -p $MMDEPLOY_DIR/build && cd $MMDEPLOY_DIR/build
     cmake .. -DMMDEPLOY_BUILD_SDK=ON \
-            -DMMDEPLOY_BUILD_EXAMPLES=ON \
-            -DMMDEPLOY_BUILD_SDK_MONOLITHIC=ON -DMMDEPLOY_BUILD_TEST=ON \
-            -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON -DMMDEPLOY_BUILD_SDK_JAVA_API=ON \
-            -DMMDEPLOY_COVERAGE=ON \
-            -DMMDEPLOY_BUILD_EXAMPLES=ON -DMMDEPLOY_ZIP_MODEL=ON \
-            -DMMDEPLOY_TARGET_BACKENDS="trt;ort;ncnn" \
-            -DMMDEPLOY_SHARED_LIBS=OFF \
-            -DTENSORRT_DIR=${TENSORRT_DIR} \
-            -DCUDNN_DIR=${CUDNN_DIR} \
-            -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} \
-            -Dncnn_DIR=${ncnn_DIR} \
-            -DTorch_DIR=${Torch_DIR} \
-            -Dpplcv_DIR=${pplcv_DIR} \
-            -DMMDEPLOY_TARGET_DEVICES="cuda;cpu"
+        -DMMDEPLOY_BUILD_EXAMPLES=ON \
+        -DMMDEPLOY_BUILD_SDK_MONOLITHIC=ON -DMMDEPLOY_BUILD_TEST=ON \
+        -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON -DMMDEPLOY_BUILD_SDK_JAVA_API=ON \
+        -DMMDEPLOY_COVERAGE=ON \
+        -DMMDEPLOY_BUILD_EXAMPLES=ON -DMMDEPLOY_ZIP_MODEL=ON \
+        -DMMDEPLOY_TARGET_BACKENDS="trt;ort;ncnn" \
+        -DMMDEPLOY_SHARED_LIBS=OFF \
+        -DTENSORRT_DIR=${TENSORRT_DIR} \
+        -DCUDNN_DIR=${CUDNN_DIR} \
+        -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} \
+        -Dncnn_DIR=${ncnn_DIR} \
+        -DTorch_DIR=${Torch_DIR} \
+        -Dpplcv_DIR=${pplcv_DIR} \
+        -DMMDEPLOY_TARGET_DEVICES="cuda;cpu"
 
     make -j $(nproc) && make install
 
@@ -90,4 +83,4 @@ do
     coverage report -m
     cp coverage.xml $MMDEPLOY_DIR/../ut_log/${TORCH_VERSION}_converter_converage.xml
 done
-echo "time-$(date +%Y%m%d%H%M)"
+echo "end_time-$(date +%Y%m%d%H%M)"

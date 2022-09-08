@@ -66,7 +66,7 @@ Jenkins执行任务时所需的pipeline配置文件
 在/data2/shared中启动一个文件下载服务
 ```python
 cd /data2/shared
-nohup python3 -m http.server 8989 > file_server.log 2>&1 &
+nohup python3 -m http.server 9000 > file_server.log 2>&1 &
 ```
 
 ## step3
@@ -74,7 +74,7 @@ nohup python3 -m http.server 8989 > file_server.log 2>&1 &
 ```shell
 cd /the/path/mmdeploy
 docker build ./tests/jenkins/docker/mmdeploy-ci-${OS}-${OS_Version}-${CUDA_Version} \
---build-arg HOST=${host_ip}:8989 \
+--build-arg HOST=${host_ip}:9000 \
 -t mmdeploy-ci-${OS}-${OS_Version}-${CUDA_Version}
 ```
 

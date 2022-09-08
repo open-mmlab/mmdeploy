@@ -1,11 +1,12 @@
 #!/bin/bash
 
 ## parameters
-
 docker_image=$1
 codebase_list=($2)
-max_job_nums=${3:-'4'}
+exec_performance=${3:-'y'}
+max_job_nums=${4:-'4'}
 
+## make log_dir
 date_snap=$(date +%Y%m%d)
 time_snap=$(date +%Y%m%d%H%M)
 log_dir=/data2/regression_log/convert_log/${date_snap}/${time_snap}
@@ -16,16 +17,14 @@ trap "exec 1000>&-; exec 1000<&-;exit 0" 2
 mkfifo mutexfifo
 exec 1000<>mutexfifo
 rm -rf mutexfifo
-for ((n=1;n<=${max_job_nums};n++))
-do
+for ((n = 1; n <= ${max_job_nums}; n++)); do
     echo >&1000
 done
 
 ## docker run cmd for convert
-for codebase in ${codebase_list[@]}
-do
+for codebase in ${codebase_list[@]}; do
     read -u1000
-    { 
+    {
         container_name=convert-${codebase}-${time_snap}
         container_id=$(
             docker run -itd \
@@ -39,15 +38,15 @@ do
         )
         echo "container_id=${container_id}"
         nohup docker exec ${container_id} bash -c "git clone --depth 1 --branch master --recursive https://github.com/open-mmlab/mmdeploy.git &&\
-        /root/workspace/mmdeploy_script/docker_exec_convert_gpu.sh ${codebase}" > ${log_dir}/${codebase}.log 2>&1 &
-        wait 
+        /root/workspace/mmdeploy_script/docker_exec_convert_gpu.sh ${codebase} ${exec_performance}" >${log_dir}/${codebase}.log 2>&1 &
+        wait
         docker stop $container_id
         echo "${codebase} convert finish!"
         cat ${log_dir}/${codebase}.log
         echo >&1000
-    }&
+    } &
 done
 
-wait 
+wait
 exec 1000>&-
 exec 1000<&-
