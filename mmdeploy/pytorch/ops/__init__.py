@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .adaptive_avg_pool import adaptive_avg_pool2d__ncnn
+from .adaptive_pool import adaptive_avg_pool2d__ncnn
 from .gelu import gelu__ncnn
 from .grid_sampler import grid_sampler__default
 from .hardsigmoid import hardsigmoid__default

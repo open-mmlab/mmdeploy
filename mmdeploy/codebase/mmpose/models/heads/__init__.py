@@ -1,8 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .heatmap_head import heatmap_head__predict
-from .mspn_head import mspn_head__predict
-from .regression_head import regression_head__predict
+from . import heatmap_head, mspn_head, regression_head
 
-__all__ = [
-    'regression_head__predict', 'heatmap_head__predict', 'mspn_head__predict'
-]
+__all__ = ['heatmap_head', 'mspn_head', 'regression_head']
