@@ -140,8 +140,8 @@ class SDKEnd2EndModel(End2EndModel):
         """
         if isinstance(inputs, list):
             inputs = inputs[0]
-        if inputs.shape[2] != 3:
-            inputs = inputs.permute(2, 1, 0)
+        # inputs are c,h,w, sdk requested h,w,c
+        inputs = inputs.permute(2, 1, 0)
         outputs = self.wrapper.invoke(
             inputs.contiguous().detach().cpu().numpy())
         batch_outputs = torch.from_numpy(outputs).to(torch.int64).to(

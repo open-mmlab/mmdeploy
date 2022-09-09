@@ -80,7 +80,6 @@ def test_build_backend_model(backend_model):
 def test_create_input():
     img_path = 'tests/data/tiger.jpeg'
     data_preprocessor = task_processor.build_data_preprocessor()
-    print(data_preprocessor, type(data_preprocessor))
     inputs = task_processor.create_input(
         img_path, input_shape=img_shape, data_preprocessor=data_preprocessor)
     assert isinstance(inputs, tuple) and len(inputs) == 2
