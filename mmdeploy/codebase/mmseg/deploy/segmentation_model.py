@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import List, Optional, Sequence, Union
 
-import mmcv
 import torch
 from mmengine import Config
 from mmengine.model import BaseDataPreprocessor
@@ -95,17 +94,14 @@ class End2EndModel(BaseBackendModel):
         predictions = []
         for seg_pred, data_sample in zip(batch_outputs, data_samples):
             # resize seg_pred to original image shape
-            if 'img_path' in data_sample.metainfo:
-                image = mmcv.imread(data_sample.metainfo['img_path'])
-                img_shape = [int(_) for _ in image.shape[:2]]
-                pred_shape = [int(_) for _ in seg_pred.shape[2:]]
-                if img_shape != pred_shape:
-                    from mmseg.models.utils import resize
-                    ori_type = seg_pred.dtype
-                    seg_pred = resize(
-                        seg_pred.unsqueeze(0).to(torch.float32),
-                        size=img_shape,
-                        mode='nearest').squeeze(0).to(ori_type)
+            metainfo = data_sample.metainfo
+            if metainfo['ori_shape'] != metainfo['img_shape']:
+                from mmseg.models.utils import resize
+                ori_type = seg_pred.dtype
+                seg_pred = resize(
+                    seg_pred.unsqueeze(0).to(torch.float32),
+                    size=metainfo['ori_shape'],
+                    mode='nearest').squeeze(0).to(ori_type)
             data_sample.set_data(
                 dict(pred_sem_seg=PixelData(**dict(data=seg_pred))))
             predictions.append(data_sample)
@@ -141,7 +137,7 @@ class SDKEnd2EndModel(End2EndModel):
         if isinstance(inputs, list):
             inputs = inputs[0]
         # inputs are c,h,w, sdk requested h,w,c
-        inputs = inputs.permute(2, 1, 0)
+        inputs = inputs.permute(1, 2, 0)
         outputs = self.wrapper.invoke(
             inputs.contiguous().detach().cpu().numpy())
         batch_outputs = torch.from_numpy(outputs).to(torch.int64).to(
