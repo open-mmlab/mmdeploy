@@ -127,6 +127,20 @@ std::pair<std::string, int> parse_device(const std::string& device) {
   return {name, index};
 }
 
+static PythonBindingRegisterer register_model{[](py::module& m) {
+  py::class_<Model>(m, "Model")
+      .def(py::init([](const py::str& path) {
+        MMDEPLOY_DEBUG("py::init([](const py::str& path)");
+        return Model(path.cast<std::string>().c_str());
+      }))
+      .def(py::init([](const py::bytes& buffer) {
+        MMDEPLOY_DEBUG("py::init([](const py::bytes& buffer)");
+        py::buffer_info info(py::buffer(buffer).request());
+        return Model(info.ptr, info.size);
+      }));
+}};
+
+
 static PythonBindingRegisterer register_device{[](py::module& m) {
   py::class_<Device>(m, "Device")
       .def(py::init([](const std::string& device) {

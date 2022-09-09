@@ -6,7 +6,6 @@ project(mmdeploy_python)
 set(MMDEPLOY_PYTHON_SRCS
         common.cpp
         internal.cpp
-        model.cpp
         executor.cpp
         pipeline.cpp)
 
