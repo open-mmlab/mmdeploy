@@ -32,8 +32,6 @@ class PythonBindingRegisterer {
   }
 };
 
-class Foo {};
-
 }  // namespace mmdeploy::python
 
 #endif  // MMDEPLOY_CSRC_APIS_PYTHON_COMMON_H_

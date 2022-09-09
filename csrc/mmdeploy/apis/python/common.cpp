@@ -156,8 +156,4 @@ PYBIND11_MODULE(mmdeploy_python, m) {
   for (const auto& f : mmdeploy::python::gPythonBindings()) {
     f(m);
   }
-
-  using namespace mmdeploy::python;
-  py::class_<Foo>(m, "Foo").def(py::init([] { return Foo{}; }));
-  m.def("test_foo", [](py::object obj) { return py::isinstance<Foo>(obj); });
 }
