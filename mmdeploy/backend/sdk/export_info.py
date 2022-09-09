@@ -212,15 +212,27 @@ def get_preprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config):
         item for item in transforms if 'Random' not in item['type']
         and 'RescaleToZeroOne' not in item['type']
     ]
+    if model_cfg.default_scope == 'mmedit':
+        transforms.insert(1, model_cfg.model.data_preprocessor)
     for i, transform in enumerate(transforms):
         if 'keys' in transform and transform['keys'] == ['lq']:
             transform['keys'] = ['img']
         if 'key' in transform and transform['key'] == 'lq':
             transform['key'] = 'img'
+        if transform['type'] == 'ToTensor':
+            transform['type'] = 'ImageToTensor'
+        if transform['type'] == 'EditDataPreprocessor':
+            transform['type'] = 'Normalize'
         if transform['type'] == 'PackTextDetInputs':
             meta_keys += transform[
                 'meta_keys'] if 'meta_keys' in transform else []
             transform['meta_keys'] = list(set(meta_keys))
+            transforms[i]['type'] = 'Collect'
+        if transform['type'] == 'PackEditInputs':
+            meta_keys += transform[
+                'meta_keys'] if 'meta_keys' in transform else []
+            transform['meta_keys'] = list(set(meta_keys))
+            transform['keys'] = ['img']
             transforms[i]['type'] = 'Collect'
     assert transforms[0]['type'] == 'LoadImageFromFile', 'The first item type'\
         ' of pipeline should be LoadImageFromFile'
