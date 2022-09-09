@@ -1,8 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
-from copy import copy
 from tempfile import NamedTemporaryFile, TemporaryDirectory
-from typing import Any
 
 import numpy as np
 import pytest
@@ -76,39 +74,14 @@ def test_build_test_runner():
         runner = task_processor.build_test_runner(model, dir)
         wrapped_func = WrapFunction(runner.test)
 
-        with RewriterContext({}, 'onnxruntime'):
+        with RewriterContext({}):
             _ = wrapped_func()
 
 
-@pytest.mark.parametrize('from_mmrazor', [True, False, '123', 0])
-def test_build_pytorch_model(from_mmrazor: Any):
-    from mmdet.models import BaseDetector
-    if from_mmrazor is False:
-        _task_processor = task_processor
-    else:
-        _model_cfg_path = 'tests/test_codebase/test_mmdet/data/' \
-            'mmrazor_model.py'
-        _model_cfg = load_config(_model_cfg_path)[0]
-        _model_cfg.algorithm.architecture.model.type = 'mmdet.YOLOV3'
-        _model_cfg.algorithm.architecture.model.backbone.type = \
-            'mmcls.SearchableShuffleNetV2'
-        _deploy_cfg = copy.deepcopy(deploy_cfg)
-        _deploy_cfg.codebase_config['from_mmrazor'] = from_mmrazor
-        _task_processor = build_task_processor(_model_cfg, _deploy_cfg, 'cpu')
-
-    if not isinstance(from_mmrazor, bool):
-        with pytest.raises(
-                TypeError,
-                match='`from_mmrazor` attribute must be '
-                'boolean type! '
-                f'but got: {from_mmrazor}'):
-            _ = _task_processor.from_mmrazor
-        return
-    assert from_mmrazor == _task_processor.from_mmrazor
-    if from_mmrazor:
-        pytest.importorskip('mmrazor', reason='mmrazor is not installed.')
-    model = _task_processor.build_pytorch_model(None)
-    assert isinstance(model, BaseDetector)
+def test_build_pytorch_model():
+    from mmedit.models import BaseEditModel
+    model = task_processor.build_pytorch_model(None)
+    assert isinstance(model, BaseEditModel)
 
 
 def test_build_backend_model(backend_model):
