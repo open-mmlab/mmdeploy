@@ -6,31 +6,6 @@
 #include "executor_internal.h"
 #include "handle.h"
 
-// int mmdeploy_pipeline_create(mmdeploy_value_t config, const char* device_name, int device_id,
-//                              mmdeploy_exec_info_t exec_info, mmdeploy_pipeline_t* pipeline) {
-//   try {
-//     auto _config = *Cast(config);
-//     if (exec_info) {
-//       auto& info = _config["context"]["executor"] = Value::kObject;
-//       for (auto p = exec_info; p; p = p->next) {
-//         info[p->task_name] = *Cast(p->scheduler);
-//         if (p->next == exec_info) {
-//           MMDEPLOY_ERROR("circle detected in exec_info list.");
-//           return MMDEPLOY_E_INVALID_ARG;
-//         }
-//       }
-//     }
-//     auto _handle = std::make_unique<AsyncHandle>(device_name, device_id, std::move(_config));
-//     *pipeline = Cast(_handle.release());
-//     return MMDEPLOY_SUCCESS;
-//   } catch (const std::exception& e) {
-//     MMDEPLOY_ERROR("exception caught: {}", e.what());
-//   } catch (...) {
-//     MMDEPLOY_ERROR("unknown exception caught");
-//   }
-//   return MMDEPLOY_E_FAIL;
-// }
-
 int mmdeploy_pipeline_create_v3(mmdeploy_value_t config, mmdeploy_context_t context,
                                 mmdeploy_pipeline_t* pipeline) {
   try {
