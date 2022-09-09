@@ -159,6 +159,7 @@ def get_model_metafile_info(global_info: dict, model_info: dict,
 
     model_meta_info = dict()
     for meta_model in metafile_info.get('Models'):
+        print(f'debugging tools/regression_test.py line 162: what is meta_model: {meta_model}, what is model_config_files: {model_config_files}')
         if str(meta_model.get('Config')) not in model_config_files:
             # skip if the model not in model_config_files
             logger.warning(f'{meta_model.get("Config")} '
@@ -303,25 +304,27 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
 
     # Get dataset
     using_dataset = dict()
+    print(f'debugging tools/regression_test.py line 307: what is test_yaml_metric_info: {test_yaml_metric_info}')
     for _, v in test_yaml_metric_info.items():
         if v.get('dataset') is None:
             continue
         dataset_list = v.get('dataset', [])
         if not isinstance(dataset_list, list):
             dataset_list = [dataset_list]
+        print(f'debugging tools/regression_test.py line 314: what is dataset_list: {dataset_list}')
         for metric_dataset in dataset_list:
             dataset_tmp = using_dataset.get(metric_dataset, [])
             if v.get('task_name') not in dataset_tmp:
                 dataset_tmp.append(v.get('task_name'))
             using_dataset.update({metric_dataset: dataset_tmp})
-
+    print(f'debugging tools/regression_test.py line 320: what is using_dataset: {using_dataset}')
     # Get metrics info from metafile
     for metafile_metric in metafile_metric_info:
         pytorch_meta_metric = metafile_metric.get('Metrics')
-
+        print(f'debugging regression_test.py line 324: what is metafile_metric: {metafile_metric}')
         dataset = metafile_metric.get('Dataset', '')
         task_name = metafile_metric.get('Task', '')
-
+        print(f'debugging regression_test.py line 327: what is dataset: {dataset}, what is task_name: {task_name}')
         if task_name == 'Restorers':
             # mmedit
             dataset = 'Set5'
@@ -330,7 +333,7 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
             logger.info(f'dataset not in {using_dataset}, skip it...')
             continue
         dataset_type += f'{dataset} | '
-
+        print(f'debugging regression_test.py line 334: what is using_dataset.get(dataset, []): {using_dataset.get(dataset, [])}')
         if task_name not in using_dataset.get(dataset, []):
             # only add the metric with the correct dataset
             logger.info(f'task_name ({task_name}) is not in'
@@ -1125,7 +1128,7 @@ def main():
     ]
 
     for deploy_yaml in deploy_yaml_list:
-
+        print(f'debugging tools/regression_Test.py line 1128: what is deploy_yaml: {deploy_yaml}')
         if not Path(deploy_yaml).exists():
             raise FileNotFoundError(f'deploy_yaml {deploy_yaml} not found, '
                                     'please check !')
