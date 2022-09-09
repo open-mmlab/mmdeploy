@@ -19,29 +19,14 @@ namespace {
 
 Value config_template(const Model& model) {
   // clang-format off
-  static Value v{
-    {
-      "pipeline", {
-        {"input", {"image"}},
-        {"output", {"det"}},
-        {
-          "tasks",{
-            {
-              {"name", "mmrotate"},
-              {"type", "Inference"},
-              {"params", {{"model", "TBD"}}},
-              {"input", {"image"}},
-              {"output", {"det"}}
-            }
-          }
-        }
-      }
-    }
+  return  {
+    {"name", "mmrotate"},
+    {"type", "Inference"},
+    {"params", {{"model", model}}},
+    {"input", {"image"}},
+    {"output", {"det"}}
   };
   // clang-format on
-  auto config = v;
-  config["pipeline"]["tasks"][0]["params"]["model"] = model;
-  return config;
 }
 
 }  // namespace

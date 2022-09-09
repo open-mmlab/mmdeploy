@@ -93,7 +93,6 @@ int mmdeploy_text_recognizer_create_input(const mmdeploy_mat_t* images, int imag
   try {
     Value::Array input_images;
     Value::Array input_bboxes;
-    auto _bboxes = bboxes;
 
     auto add_bbox = [&](Mat img, const mmdeploy_text_detection_t* det) {
       if (det) {
@@ -110,22 +109,15 @@ int mmdeploy_text_recognizer_create_input(const mmdeploy_mat_t* images, int imag
       Mat _mat{images[i].height,         images[i].width, PixelFormat(images[i].format),
                DataType(images[i].type), images[i].data,  Device{"cpu"}};
       if (bboxes && bbox_count) {
-        // skip images with no boxes
-        if (bbox_count[i] == 0) {
-          continue;
-        }
         for (int j = 0; j < bbox_count[i]; ++j) {
-          add_bbox(_mat, &_bboxes[j]);
+          add_bbox(_mat, bboxes++);
         }
-        _bboxes += bbox_count[i];
-      } else {
+      } else {  // inference with whole image
         add_bbox(_mat, nullptr);
-        _bboxes += 1;
       }
     }
 
-    Value input{std::move(input_images), std::move(input_bboxes)};
-    *output = Take(std::move(input));
+    *output = Take(Value{std::move(input_images), std::move(input_bboxes)});
     return MMDEPLOY_SUCCESS;
   } catch (const std::exception& e) {
     MMDEPLOY_ERROR("exception caught: {}", e.what());
@@ -172,7 +164,6 @@ MMDEPLOY_API int mmdeploy_text_recognizer_get_result(mmdeploy_value_t output,
   }
   try {
     std::vector<mmocr::TextRecognition> recognitions;
-    std::vector<int> indices;
     from_value(Cast(output)->front(), recognitions);
 
     size_t count = recognitions.size();

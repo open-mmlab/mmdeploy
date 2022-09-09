@@ -6,8 +6,6 @@ set(SRCS
         task.cpp
         static_router.cpp
         inference.cpp
-        flatten.cpp
-        unflatten.cpp
         flattened.cpp
         pipeline.cpp
         graph.cpp)
