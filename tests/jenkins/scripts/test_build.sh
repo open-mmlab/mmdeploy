@@ -8,7 +8,7 @@ export docker_image=$1
 date_snap=$(date +%Y%m%d)
 time_snap=$(date +%Y%m%d%H%M)
 log_dir=/data2/regression_log/build_log/${date_snap}/${time_snap}
-mkdir -p ${log_dir}
+mkdir -p -m 777 ${log_dir}
 
 ## docker run cmd for build
 container_name=build-${time_snap}

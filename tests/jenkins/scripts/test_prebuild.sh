@@ -7,9 +7,9 @@ export docker_image=$1
 date_snap=$(date +%Y%m%d)
 time_snap=$(date +%Y%m%d%H%M)
 log_dir=/data2/regression_log/prebuild_log/${date_snap}/${time_snap}
-mkdir -p ${log_dir}
+mkdir -p -m 777 ${log_dir}
 prebuilt_dir=/data2/shared/prebuilt-mmdeploy/${docker_image}/${date_snap}/${time_snap}
-mkdir -p ${prebuilt_dir}
+mkdir -p -m 777 ${prebuilt_dir}
 container_name=convert-${codebase}-${time_snap}
 
 container_name=prebuild-$(date +%Y%m%d%H%M)

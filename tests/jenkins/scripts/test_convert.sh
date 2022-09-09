@@ -10,7 +10,7 @@ max_job_nums=${4:-'4'}
 date_snap=$(date +%Y%m%d)
 time_snap=$(date +%Y%m%d%H%M)
 log_dir=/data2/regression_log/convert_log/${date_snap}/${time_snap}
-mkdir -p ${log_dir}
+mkdir -p -m 777 ${log_dir}
 
 ## make & init mutex
 trap "exec 1000>&-; exec 1000<&-;exit 0" 2
