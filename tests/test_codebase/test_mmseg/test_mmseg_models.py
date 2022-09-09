@@ -22,13 +22,12 @@ def test_encoderdecoder_predict(backend):
     task_processor = generate_mmseg_task_processor(deploy_cfg=deploy_cfg)
     segmentor = task_processor.build_pytorch_model()
     size = 256
-    batch_inputs = torch.randn(1, 3, size, size)
-    batch_data_samples = [generate_datasample(size, size)]
-    wrapped_model = WrapModel(
-        segmentor, 'predict', batch_data_samples=batch_data_samples)
-    model_outputs = wrapped_model(batch_inputs)[0].pred_sem_seg.data
+    inputs = torch.randn(1, 3, size, size)
+    data_samples = [generate_datasample(size, size)]
+    wrapped_model = WrapModel(segmentor, 'predict', data_samples=data_samples)
+    model_outputs = wrapped_model(inputs)[0].pred_sem_seg.data
     rewrite_inputs = {
-        'batch_inputs': batch_inputs,
+        'inputs': inputs,
     }
     rewrite_outputs, _ = get_rewrite_outputs(
         wrapped_model=wrapped_model,
@@ -44,16 +43,13 @@ def test_basesegmentor_forward(backend):
     task_processor = generate_mmseg_task_processor(deploy_cfg=deploy_cfg)
     segmentor = task_processor.build_pytorch_model()
     size = 256
-    batch_inputs = torch.randn(1, 3, size, size)
-    batch_data_samples = [generate_datasample(size, size)]
+    inputs = torch.randn(1, 3, size, size)
+    data_samples = [generate_datasample(size, size)]
     wrapped_model = WrapModel(
-        segmentor,
-        'forward',
-        batch_data_samples=batch_data_samples,
-        mode='predict')
-    model_outputs = wrapped_model(batch_inputs)[0].pred_sem_seg.data
+        segmentor, 'forward', data_samples=data_samples, mode='predict')
+    model_outputs = wrapped_model(inputs)[0].pred_sem_seg.data
     rewrite_inputs = {
-        'batch_inputs': batch_inputs,
+        'inputs': inputs,
     }
     rewrite_outputs, _ = get_rewrite_outputs(
         wrapped_model=wrapped_model,
