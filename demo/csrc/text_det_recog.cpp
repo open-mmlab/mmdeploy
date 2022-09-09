@@ -65,8 +65,8 @@ int main(int argc, char* argv[]) {
 
   Context context(Device(device_name, 0));
 
-  auto thread_pool = Scheduler::CreateThreadPool(4);
-  auto infer_thread = Scheduler::CreateThread();
+  auto thread_pool = Scheduler::ThreadPool(4);
+  auto infer_thread = Scheduler::Thread();
   context.Add("thread_pool", thread_pool);
   context.Add("infer_thread", infer_thread);
   context.Add("text_detection", Model(det_model_path));

@@ -17,10 +17,10 @@ class Scheduler {
     scheduler_.reset(scheduler, [](auto p) { mmdeploy_scheduler_destroy(p); });
   }
 
-  static Scheduler CreateThreadPool(int num_threads) {
+  static Scheduler ThreadPool(int num_threads) {
     return Scheduler(mmdeploy_executor_create_thread_pool(num_threads));
   }
-  static Scheduler CreateThread() { return Scheduler(mmdeploy_executor_create_thread()); }
+  static Scheduler Thread() { return Scheduler(mmdeploy_executor_create_thread()); }
 
   operator mmdeploy_scheduler_t() const noexcept { return scheduler_.get(); }
 

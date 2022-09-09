@@ -35,9 +35,8 @@ static PythonBindingRegisterer register_context{[](py::module& m) {
 
 static PythonBindingRegisterer register_scheduler{[](py::module& m) {
   py::class_<Scheduler>(m, "Scheduler")
-      .def_static("create_thread_pool",
-                  [](int n_workers) { return Scheduler::CreateThreadPool(n_workers); })
-      .def_static("create_thread", [] { return Scheduler::CreateThread(); });
+      .def_static("thread_pool", [](int n_workers) { return Scheduler::ThreadPool(n_workers); })
+      .def_static("thread", [] { return Scheduler::Thread(); });
 }};
 
 }  // namespace mmdeploy::python
