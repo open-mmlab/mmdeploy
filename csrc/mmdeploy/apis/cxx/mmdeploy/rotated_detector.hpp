@@ -14,8 +14,8 @@ using RotatedDetection = mmdeploy_rotated_detection_t;
 
 class RotatedDetector : public NonMovable {
  public:
-  RotatedDetector(const Model& model, const Device& device) {
-    auto ec = mmdeploy_rotated_detector_create(model, device.name(), device.index(), &detector_);
+  RotatedDetector(const Model& model, const Context& context) {
+    auto ec = mmdeploy_rotated_detector_create_v2(model, context, &detector_);
     if (ec != MMDEPLOY_SUCCESS) {
       throw_exception(static_cast<ErrorCode>(ec));
     }

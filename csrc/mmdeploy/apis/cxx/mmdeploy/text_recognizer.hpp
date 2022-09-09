@@ -15,8 +15,8 @@ using TextRecognition = mmdeploy_text_recognition_t;
 
 class TextRecognizer : public NonMovable {
  public:
-  TextRecognizer(const Model& model, const Device& device) {
-    auto ec = mmdeploy_text_recognizer_create(model, device.name(), device.index(), &recognizer_);
+  TextRecognizer(const Model& model, const Context& context) {
+    auto ec = mmdeploy_text_recognizer_create_v2(model, context, &recognizer_);
     if (ec != MMDEPLOY_SUCCESS) {
       throw_exception(static_cast<ErrorCode>(ec));
     }

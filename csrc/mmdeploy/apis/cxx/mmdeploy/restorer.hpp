@@ -12,8 +12,8 @@ namespace cxx {
 
 class Restorer : public NonMovable {
  public:
-  Restorer(const Model& model, const Device& device) {
-    auto ec = mmdeploy_restorer_create(model, device.name(), device.index(), &restorer_);
+  Restorer(const Model& model, const Context& context) {
+    auto ec = mmdeploy_restorer_create_v2(model, context, &restorer_);
     if (ec != MMDEPLOY_SUCCESS) {
       throw_exception(static_cast<ErrorCode>(ec));
     }

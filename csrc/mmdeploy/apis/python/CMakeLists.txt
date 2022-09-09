@@ -7,7 +7,6 @@ set(MMDEPLOY_PYTHON_SRCS
         common.cpp
         internal.cpp
         model.cpp
-        device.cpp
         executor.cpp
         pipeline.cpp)
 

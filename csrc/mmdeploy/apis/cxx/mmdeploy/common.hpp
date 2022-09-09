@@ -11,6 +11,7 @@
 #include "mmdeploy/core/mpl/span.h"
 #include "mmdeploy/core/status_code.h"
 #include "mmdeploy/core/types.h"
+#include "mmdeploy/executor.h"
 #include "mmdeploy/model.h"
 
 #ifndef MMDEPLOY_CXX_USE_OPENCV
@@ -148,12 +149,58 @@ inline const mmdeploy_mat_t* reinterpret(const Mat* p) {
   return reinterpret_cast<const mmdeploy_mat_t*>(p);
 }
 
+class Scheduler {
+ public:
+  explicit Scheduler(mmdeploy_scheduler_t scheduler) {
+    scheduler_.reset(scheduler, [](auto p) { mmdeploy_scheduler_destroy(p); });
+  }
+
+  static Scheduler ThreadPool(int num_threads) {
+    return Scheduler(mmdeploy_executor_create_thread_pool(num_threads));
+  }
+  static Scheduler Thread() { return Scheduler(mmdeploy_executor_create_thread()); }
+
+  operator mmdeploy_scheduler_t() const noexcept { return scheduler_.get(); }
+
+ private:
+  std::shared_ptr<mmdeploy_scheduler> scheduler_;
+};
+
+class Context {
+ public:
+  Context() {
+    mmdeploy_context_t context{};
+    mmdeploy_context_create(&context);
+    context_.reset(context, [](auto p) { mmdeploy_context_destroy(p); });
+  }
+  /* implicit */ Context(const Device& device) : Context() { Add(device); }
+
+  void Add(const std::string& name, const Scheduler& scheduler) {
+    mmdeploy_context_add(*this, MMDEPLOY_TYPE_SCHEDULER, name.c_str(), scheduler);
+  }
+
+  void Add(const std::string& name, const Model& model) {
+    mmdeploy_context_add(*this, MMDEPLOY_TYPE_MODEL, name.c_str(), model);
+  }
+
+  void Add(const Device& device) {
+    mmdeploy_context_add(*this, MMDEPLOY_TYPE_DEVICE, nullptr, device);
+  }
+
+  operator mmdeploy_context_t() const noexcept { return context_.get(); }
+
+ private:
+  std::shared_ptr<mmdeploy_context> context_;
+};
+
 }  // namespace cxx
 
+using cxx::Context;
 using cxx::Device;
 using cxx::Mat;
 using cxx::Model;
 using cxx::Rect;
+using cxx::Scheduler;
 
 }  // namespace mmdeploy
 
