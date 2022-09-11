@@ -38,6 +38,7 @@ class ORTWrapper(BaseWrapper):
                  device: str,
                  output_names: Optional[Sequence[str]] = None):
         # get the custom op path
+    
         ort_custom_op_path = get_ops_path()
         session_options = ort.SessionOptions()
         # register custom op for onnxruntime
