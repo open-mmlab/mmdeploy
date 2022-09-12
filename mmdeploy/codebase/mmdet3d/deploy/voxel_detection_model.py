@@ -199,6 +199,12 @@ class VoxelDetectionModel(BaseBackendModel):
             data_samples.metainfo for data_samples in metas
         ]
         
+        import numpy as np
+        ccc = np.load('/home/PJLAB/konghuanjun/ccc.npy')
+        ddd = cls_score.cpu().numpy()
+        diff = ddd - ccc
+        print('postprocess cls_scores max {}'.format(diff.max()))
+        
         data_instances_3d = head.predict_by_feat(cls_scores=[cls_score], 
                                                  bbox_preds=[bbox_pred], 
                                                  dir_cls_preds=[dir_cls_pred],
