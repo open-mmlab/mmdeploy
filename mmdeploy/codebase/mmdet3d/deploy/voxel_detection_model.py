@@ -210,6 +210,8 @@ class VoxelDetectionModel(BaseBackendModel):
                                                  dir_cls_preds=[dir_cls_pred],
                                                  batch_input_metas=batch_input_metas,
                                                  cfg=model_cfg.model.test_cfg)
+        import pdb
+        pdb.set_trace()
         data_instances_2d = [
             InstanceData() for _ in range(len(data_instances_3d))
         ]
