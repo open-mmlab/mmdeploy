@@ -1,8 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import pytest
 import torch
-
 from mmengine import Config
+
 from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Backend, Codebase, load_config
 from mmdeploy.utils.test import WrapModel, check_backend, get_rewrite_outputs
@@ -15,9 +15,8 @@ except ImportError:
 
 
 @pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME])
-@pytest.mark.parametrize('model_cfg_path', [
-    'tests/test_codebase/test_mmaction/data/model.py'
-])
+@pytest.mark.parametrize('model_cfg_path',
+                         ['tests/test_codebase/test_mmaction/data/model.py'])
 def test_forward_of_base_recognizer(model_cfg_path, backend):
     check_backend(backend)
     deploy_cfg = Config(
@@ -43,8 +42,8 @@ def test_forward_of_base_recognizer(model_cfg_path, backend):
     img_meta = dict(img_shape=(224, 224))
     data_sample.set_metainfo(img_meta)
     rewrite_inputs = {'inputs': img}
-    wrapped_model = WrapModel(model, 'forward', data_samples=[
-                              data_sample], mode='predict')
+    wrapped_model = WrapModel(
+        model, 'forward', data_samples=[data_sample], mode='predict')
     rewrite_outputs, _ = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,

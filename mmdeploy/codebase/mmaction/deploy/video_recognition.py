@@ -1,16 +1,16 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .mmaction import MMACTION_TASK
-from typing import Dict, Optional, Sequence, Tuple, Union, Any
+from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
+import mmengine
 import numpy as np
 import torch
-import mmengine
-from mmengine.model import BaseDataPreprocessor
 from mmengine.dataset import pseudo_collate
+from mmengine.model import BaseDataPreprocessor
 
 from mmdeploy.codebase.base import BaseTask
 from mmdeploy.utils import Task, get_root_logger
 from mmdeploy.utils.config_utils import get_input_shape
+from .mmaction import MMACTION_TASK
 
 
 def process_model_config(model_cfg: mmengine.Config,
@@ -62,9 +62,8 @@ def process_model_config(model_cfg: mmengine.Config,
                 f' but given: {input_shape}')
         if has_resize and (not has_crop):
             if keep_ratio:
-                logger.error(
-                    'Resize should set `keep_ratio` to False'
-                    ' when `input shape` is given.')
+                logger.error('Resize should set `keep_ratio` to False'
+                             ' when `input shape` is given.')
             if tuple(input_shape) != scale:
                 logger.error(
                     f'`input shape` should be equal to `scale`: {scale},'
@@ -130,8 +129,7 @@ class VideoRecognition(BaseTask):
             raise AssertionError('imgs must be strings')
 
         from mmcv.transforms.wrappers import Compose
-        model_cfg = process_model_config(self.model_cfg, imgs,
-                                         input_shape)
+        model_cfg = process_model_config(self.model_cfg, imgs, input_shape)
         test_pipeline = Compose(model_cfg.test_pipeline)
 
         data = []

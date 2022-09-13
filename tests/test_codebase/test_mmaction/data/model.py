@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 default_scope = 'mmaction'
 default_hooks = dict(
     runtime_info=dict(type='RuntimeInfoHook'),

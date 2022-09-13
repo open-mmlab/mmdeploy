@@ -25,8 +25,7 @@ class MMACTION(MMCodebase):
 
     @staticmethod
     def build_task_processor(model_cfg: mmengine.Config,
-                             deploy_cfg: mmengine.Config,
-                             device: str):
+                             deploy_cfg: mmengine.Config, device: str):
         """The interface to build the task processors of mmaction.
 
         Args:

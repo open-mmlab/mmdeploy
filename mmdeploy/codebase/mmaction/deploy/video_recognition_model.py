@@ -1,18 +1,17 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-from typing import Sequence, Union, Optional, List, Any
+from typing import Any, List, Optional, Sequence, Union
 
-import torch
 import mmengine
+import torch
+from mmaction.utils import LabelList
 from mmengine import Config
 from mmengine.registry import Registry
 from mmengine.structures import BaseDataElement, LabelData
-from mmaction.utils import LabelList
-from mmdeploy.utils import get_root_logger
+
 from mmdeploy.codebase.base import BaseBackendModel
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
-                            load_config)
-
+                            get_root_logger, load_config)
 
 __BACKEND_MODEL = Registry('backend_video_recognizer')
 
@@ -47,7 +46,10 @@ class End2EndModel(BaseBackendModel):
         self.deploy_cfg = deploy_cfg
         self.model_cfg = model_cfg
         self._init_wrapper(
-            backend=backend, backend_files=backend_files, device=device, **kwargs)
+            backend=backend,
+            backend_files=backend_files,
+            device=device,
+            **kwargs)
         self.device = device
 
     def _init_wrapper(self, backend: Backend, backend_files: Sequence[str],
@@ -94,7 +96,7 @@ class End2EndModel(BaseBackendModel):
                                       f' but get {inputs.device}.')
         inputs = inputs.to(self.device)
         cls_scores = self.wrapper({self.input_name:
-                                  inputs})[self.output_names[0]]
+                                   inputs})[self.output_names[0]]
 
         predictions: LabelList = []
         for score in cls_scores:
@@ -110,8 +112,7 @@ class End2EndModel(BaseBackendModel):
 def build_video_recognition_model(model_files: Sequence[str],
                                   model_cfg: Union[str, mmengine.Config],
                                   deploy_cfg: Union[str, mmengine.Config],
-                                  device: str,
-                                  **kwargs):
+                                  device: str, **kwargs):
     """Build text recognition model for different backends.
 
     Args:

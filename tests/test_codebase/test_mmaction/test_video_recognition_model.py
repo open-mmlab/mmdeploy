@@ -8,7 +8,6 @@ from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Backend, Codebase, load_config
 from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
 
-
 IMAGE_SIZE = 224
 
 import_codebase(Codebase.MMACTION)
@@ -49,8 +48,7 @@ class TestEnd2EndModel:
         inputs = torch.rand(1, 3, 3, IMAGE_SIZE, IMAGE_SIZE)
         from mmaction.structures import ActionDataSample
         data_sample = ActionDataSample(
-            metainfo=dict(
-                img_shape=(IMAGE_SIZE, IMAGE_SIZE)))
+            metainfo=dict(img_shape=(IMAGE_SIZE, IMAGE_SIZE)))
         results = self.end2end_model.forward(
             inputs, [data_sample], mode='predict')
         assert results is not None, 'failed to get output using '\

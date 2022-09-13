@@ -8,13 +8,12 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmaction.models.recognizers.BaseRecognizer.forward')
-def base_recognizer__forward(
-        ctx,
-        self,
-        inputs: Tensor,
-        data_samples: OptSampleList = None,
-        mode: str = 'tensor',
-        **kwargs):
+def base_recognizer__forward(ctx,
+                             self,
+                             inputs: Tensor,
+                             data_samples: OptSampleList = None,
+                             mode: str = 'tensor',
+                             **kwargs):
     """Rewrite `forward` of Recognizer2D for default backend.
 
     Args:
