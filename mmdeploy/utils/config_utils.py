@@ -380,3 +380,26 @@ def get_dynamic_axes(
                 raise KeyError('No names were found to define dynamic axes.')
         dynamic_axes = dict(zip(axes_names, dynamic_axes))
     return dynamic_axes
+
+
+def get_precision(deploy_cfg: Union[str, mmengine.Config]) -> str:
+    """Get precision of config.
+
+    Args:
+        deploy_cfg (str | mmengine.Config): The path or content of config.
+
+    Returns:
+        str: The precision of target backend.
+    """
+    precision = 'FP32'
+    deploy_cfg = load_config(deploy_cfg)[0]
+    backend = get_backend(deploy_cfg=deploy_cfg)
+    if backend == Backend.TENSORRT:
+        common_cfg = get_common_config(deploy_cfg)
+        if common_cfg.get('fp16_mode', False):
+            precision = 'FP16'
+        if common_cfg.get('int8_mode', False):
+            precision = 'INT8'
+    if backend == Backend.NCNN and 'precision' in deploy_cfg['backend_config']:
+        precision = deploy_cfg['backend_config']['precision']
+    return precision

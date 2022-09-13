@@ -286,7 +286,7 @@ class SuperResolution(BaseTask):
         for stat in stats:
             logger.info('Eval-{}: {}'.format(stat, stats[stat]))
 
-    def get_preprocess(self) -> Dict:
+    def get_preprocess(self, *args, **kwargs) -> Dict:
         """Get the preprocess information for SDK.
 
         Return:
@@ -300,7 +300,7 @@ class SuperResolution(BaseTask):
                 item['std'] = [255, 255, 255]
         return preprocess
 
-    def get_postprocess(self) -> Dict:
+    def get_postprocess(self, *args, **kwargs) -> Dict:
         """Get the postprocess information for SDK.
 
         Return:
@@ -308,7 +308,7 @@ class SuperResolution(BaseTask):
         """
         return dict()
 
-    def get_model_name(self) -> str:
+    def get_model_name(self, *args, **kwargs) -> str:
         """Get the model name.
 
         Return:
