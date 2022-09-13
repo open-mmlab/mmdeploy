@@ -101,10 +101,10 @@ class End2EndModel(BaseBackendModel):
             label = LabelData(item=score)
             predictions.append(label)
 
-        for data_sample, pred_instances in zip(predictions, data_samples):
+        for data_sample, pred_instances in zip(data_samples, predictions):
             data_sample.pred_scores = pred_instances
 
-        return predictions
+        return data_samples
 
 
 def build_video_recognition_model(model_files: Sequence[str],
