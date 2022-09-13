@@ -347,6 +347,6 @@ inline AllocatorImplPtr CreatePoolBucketizer(size_t min_size, size_t max_size, s
   return CreateBucketizer(min_size, max_size, step_size, creator);
 }
 
-}  // namespace mmdeploy::device_allocator
+}  // namespace mmdeploy::framework::device_allocator
 
 #endif  // MMDEPLOY_SRC_CORE_DEVICE_ALLOCATOR_H_

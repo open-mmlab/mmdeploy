@@ -191,4 +191,4 @@ class CudaDeviceGuard {
   int prev_device_id_;
 };
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework

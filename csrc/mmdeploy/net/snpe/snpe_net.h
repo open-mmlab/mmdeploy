@@ -56,6 +56,6 @@ class SNPENet : public Net {
   zdl::DlSystem::TensorMap input_tensor_map_;
 };
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework
 
 #endif  // MMDEPLOY_SRC_NET_SNPE_SNPE_NET_H_

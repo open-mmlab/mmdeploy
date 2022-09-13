@@ -35,7 +35,7 @@ framework::Mat _get_mat(const PyImage& img) {
       format,                                         // format
       DataType::kINT8,                                // type
       std::shared_ptr<void>(info.ptr, [](void*) {}),  // data
-      framework::Device(0),                             // device
+      framework::Device(0),                           // device
   };
 }
 

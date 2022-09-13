@@ -22,6 +22,6 @@ class NetModule {
   std::unique_ptr<Impl> impl_;
 };
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework
 
 #endif  // MMDEPLOY_SRC_MODULE_NET_MODULE_H_

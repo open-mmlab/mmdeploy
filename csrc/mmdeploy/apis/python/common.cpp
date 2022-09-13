@@ -140,7 +140,6 @@ static PythonBindingRegisterer register_model{[](py::module& m) {
       }));
 }};
 
-
 static PythonBindingRegisterer register_device{[](py::module& m) {
   py::class_<Device>(m, "Device")
       .def(py::init([](const std::string& device) {

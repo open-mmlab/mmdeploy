@@ -238,4 +238,4 @@ class NetModuleCreator : public Creator<Module> {
 
 REGISTER_MODULE(Module, NetModuleCreator);
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework

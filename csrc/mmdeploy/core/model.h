@@ -158,7 +158,7 @@ class MMDEPLOY_API ModelRegistry {
   std::vector<Entry> entries_;
 };
 
-}  // namespace runtime
+}  // namespace framework
 
 MMDEPLOY_REGISTER_TYPE_ID(framework::Model, 5);
 

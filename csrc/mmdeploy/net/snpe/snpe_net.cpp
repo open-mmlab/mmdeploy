@@ -259,4 +259,4 @@ class SNPENetCreator : public Creator<Net> {
 
 REGISTER_MODULE(Net, SNPENetCreator);
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework

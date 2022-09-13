@@ -47,7 +47,7 @@ inline std::optional<T> operator/(const Maybe& maybe, identity<T>) {
   }
   return std::nullopt;
 }
-}  // namespace _get_path
+}  // namespace _maybe
 
 using _maybe::Maybe;
 

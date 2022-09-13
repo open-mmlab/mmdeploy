@@ -11,4 +11,4 @@ class AclPlatformRegisterer {
 
 AclPlatformRegisterer g_acl_platform_registerer;
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework

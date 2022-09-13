@@ -65,4 +65,4 @@ class DirectoryModelRegister {
 
 static DirectoryModelRegister directory_model_register;
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework

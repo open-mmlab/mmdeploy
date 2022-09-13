@@ -200,4 +200,4 @@ class OrtNetCreator : public Creator<Net> {
 
 REGISTER_MODULE(Net, OrtNetCreator);
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework

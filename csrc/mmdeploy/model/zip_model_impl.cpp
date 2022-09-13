@@ -143,4 +143,4 @@ class ZipModelImplRegister {
 
 static ZipModelImplRegister folder_model_register;
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework

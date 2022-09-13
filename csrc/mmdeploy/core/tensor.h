@@ -82,7 +82,7 @@ class MMDEPLOY_API Tensor {
 
 // static_assert(sizeof(Tensor) == 80);
 
-}  // namespace runtime
+}  // namespace framework
 
 MMDEPLOY_REGISTER_TYPE_ID(framework::Tensor, 6);
 
