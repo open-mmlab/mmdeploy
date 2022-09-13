@@ -186,5 +186,6 @@ def build_text_detection_model(model_files: Sequence[str],
             deploy_cfg=deploy_cfg,
             model_cfg=model_cfg,
             **kwargs))
+    backend_text_detector = backend_text_detector.to(device)
 
     return backend_text_detector

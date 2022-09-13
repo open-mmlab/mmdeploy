@@ -167,5 +167,6 @@ def build_text_recognition_model(model_files: Sequence[str],
             deploy_cfg=deploy_cfg,
             model_cfg=model_cfg,
             **kwargs))
+    backend_text_recognizer = backend_text_recognizer.to(device)
 
     return backend_text_recognizer
