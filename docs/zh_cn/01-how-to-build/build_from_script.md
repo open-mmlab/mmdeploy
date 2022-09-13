@@ -20,6 +20,20 @@ $ python3 tools/scripts/build_ubuntu_x64_ncnn.py $(nproc)
 
 - 源码编译的依赖，都放在与 mmdeploy 同级的 `mmdeploy-dep` 目录中
 - 不会主动修改 PATH、LD_LIBRARY_PATH、PYTHONPATH 等变量
+- 会打印需要修改的环境变量，**需要注意最终的输出信息**
+
+脚本最终会执行 `python3 tools/check_env.py`，安装成功应显示对应 backend 的版本号和 `ops_is_available: True`，例如：
+
+```bash
+$ python3 tools/check_env.py
+..
+2022-09-13 14:49:13,767 - mmdeploy - INFO - **********Backend information**********
+2022-09-13 14:49:14,116 - mmdeploy - INFO - onnxruntime: 1.8.0	ops_is_avaliable : True
+2022-09-13 14:49:14,131 - mmdeploy - INFO - tensorrt: 8.4.1.5	ops_is_avaliable : True
+2022-09-13 14:49:14,139 - mmdeploy - INFO - ncnn: 1.0.20220901	ops_is_avaliable : True
+2022-09-13 14:49:14,150 - mmdeploy - INFO - pplnn_is_avaliable: True
+..
+```
 
 这是已验证的安装脚本。如果想让 mmdeploy 同时支持多种 backend，每个脚本执行一次即可：
 
