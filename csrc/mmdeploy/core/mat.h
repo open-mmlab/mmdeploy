@@ -90,7 +90,7 @@ class MMDEPLOY_API Mat final {
   int bytes_{0};
 };
 
-}  // namespace runtime
+}  // namespace framework
 
 MMDEPLOY_REGISTER_TYPE_ID(framework::Mat, 7);
 

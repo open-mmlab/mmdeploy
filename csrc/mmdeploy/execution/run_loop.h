@@ -84,6 +84,7 @@ class RunLoop {
     bool operator==(const _Scheduler& other) const noexcept { return loop_ == other.loop_; }
 
     _Scheduler(const _Scheduler& other) = default;
+
    private:
     friend _ScheduleTask tag_invoke(schedule_t, const _Scheduler& self) {
       return _ScheduleTask{self.loop_};
