@@ -212,7 +212,19 @@ class TRTGatherTopk(torch.autograd.Function):
     @staticmethod
     def symbolic(g, x, inds):
         """symbolic of gather topk."""
-        return g.op('mmdeploy::GatherTopk', x, inds)
+        out = g.op('mmdeploy::GatherTopk', x, inds, outputs=1)
+
+        # set output size deduce from
+        x_type = x.type()
+        inds_type = inds.type()
+        x_size = x_type.symbolic_sizes()
+        inds_size = inds_type.symbolic_sizes()
+        if x_size is not None and inds_size is not None:
+            inds_dims = len(inds_size)
+            out_size = inds_size + x_size[inds_dims:]
+            out_type = out.type().with_sizes(out_size)
+            out.setType(out_type)
+        return out
 
 
 @FUNCTION_REWRITER.register_rewriter(
@@ -227,7 +239,7 @@ def __gather_topk__trt(ctx,
     _ = ctx
     if is_batched:
         outputs = [
-            TRTGatherTopk.apply(x, inds) if x is not None else None
+            TRTGatherTopk.apply(x, inds).to(x.dtype) if x is not None else None
             for x in inputs
         ]
     else:
