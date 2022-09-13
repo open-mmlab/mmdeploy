@@ -139,4 +139,6 @@ class DynamicBatchSchedCreator : public Creator<Scheduler> {
 
 REGISTER_MODULE(Scheduler, DynamicBatchSchedCreator);
 
+MMDEPLOY_DEFINE_REGISTRY(TypeErasedScheduler<Value>);
+
 }  // namespace mmdeploy

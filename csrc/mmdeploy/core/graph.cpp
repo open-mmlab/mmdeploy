@@ -137,6 +137,4 @@ Result<std::vector<std::string>> ParseStringArray(const Value& value) {
 
 MMDEPLOY_DEFINE_REGISTRY(graph::Builder);
 
-MMDEPLOY_DEFINE_REGISTRY(TypeErasedScheduler<Value>);
-
 }  // namespace mmdeploy

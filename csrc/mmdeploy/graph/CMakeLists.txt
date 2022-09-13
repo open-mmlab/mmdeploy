@@ -6,8 +6,6 @@ set(SRCS
         task.cpp
         static_router.cpp
         inference.cpp
-        flattened.cpp
-        pipeline.cpp
-        graph.cpp)
+        pipeline.cpp)
 mmdeploy_add_module(${PROJECT_NAME} LIBRARY "${SRCS}")
 add_library(mmdeploy::graph ALIAS ${PROJECT_NAME})

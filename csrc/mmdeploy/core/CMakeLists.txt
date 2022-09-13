@@ -36,6 +36,7 @@ set(SRCS
         status_code.cpp
         tensor.cpp
         registry.cpp
+        graph.cpp
         utils/device_utils.cpp
         utils/formatter.cpp
         utils/stacktrace.cpp

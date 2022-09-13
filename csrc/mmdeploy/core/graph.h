@@ -61,14 +61,12 @@ class MMDEPLOY_API Builder {
   string name_;
   vector<string> inputs_;
   vector<string> outputs_;
-  // vector<string> inputs_internal_;
-  // vector<string> outputs_internal_;
   vector<bool> flatten_;
   vector<bool> broadcast_;
   vector<bool> unflatten_;
 };
 
-Result<std::vector<std::string>> ParseStringArray(const Value& value);
+MMDEPLOY_API Result<std::vector<std::string>> ParseStringArray(const Value& value);
 
 }  // namespace graph
 
