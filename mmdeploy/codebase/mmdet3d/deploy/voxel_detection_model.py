@@ -118,9 +118,9 @@ class VoxelDetectionModel(BaseBackendModel):
         """
         preprocessed = inputs['voxels']
         input_dict = {
-            'voxels': preprocessed['voxels'],
-            'num_points': preprocessed['num_points'],
-            'coors': preprocessed['coors']
+            'voxels': preprocessed['voxels'].to(self.device),
+            'num_points': preprocessed['num_points'].to(self.device),
+            'coors': preprocessed['coors'].to(self.device)
         }
         outputs = self.wrapper(input_dict)
 
@@ -184,8 +184,6 @@ class VoxelDetectionModel(BaseBackendModel):
         head = MODELS.build(model_cfg.model['bbox_head'])
         
         if 'cls_score' not in outs or 'bbox_pred' not in outs or 'dir_cls_pred' not in outs:
-            import pdb
-            pdb.set_trace()
             raise RuntimeError('output tensor not found')
         
         if 'test_cfg' not in model_cfg.model:
@@ -210,8 +208,6 @@ class VoxelDetectionModel(BaseBackendModel):
                                                  dir_cls_preds=[dir_cls_pred],
                                                  batch_input_metas=batch_input_metas,
                                                  cfg=model_cfg.model.test_cfg)
-        import pdb
-        pdb.set_trace()
         data_instances_2d = [
             InstanceData() for _ in range(len(data_instances_3d))
         ]

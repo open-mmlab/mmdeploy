@@ -66,6 +66,8 @@ def torch2onnx(img: Any,
         img,
         input_shape,
         data_preprocessor=task_processor.build_data_preprocessor())
+    import pdb
+    pdb.set_trace()
     if not isinstance(model_inputs, torch.Tensor) and len(model_inputs) == 1:
         model_inputs = model_inputs[0]
     data_samples = data['data_samples']

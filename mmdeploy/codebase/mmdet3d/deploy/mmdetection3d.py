@@ -229,10 +229,19 @@ class VoxelDetection(BaseTask):
         data.append(data_)
         
         collate_data = pseudo_collate(data)
-
+        data[0]['inputs']['points'] = data[0]['inputs']['points'].to(self.device)
+        
+        import pdb
+        pdb.set_trace()
+        
+        # for index in range(len(collate_data['inputs']['points'])):
+        #     collate_data['inputs']['points'][index] = collate_data['inputs']['points'][index].to(self.device)
+        
         if data_preprocessor is not None:
             collate_data = data_preprocessor(collate_data, False)
             del collate_data['inputs']['voxels']['voxel_centers']
+            # for key in collate_data['inputs']['voxels'].keys():
+            #     collate_data['inputs']['voxels'][key] = collate_data['inputs']['voxels'][key].to(self.device)
         return collate_data, collate_data['inputs']
 
 
@@ -268,8 +277,6 @@ class VoxelDetection(BaseTask):
             predictions = VoxelDetectionModel.postprocess(model_cfg=self.model_cfg, deploy_cfg=self.deploy_cfg, outs=result[0], metas=result[1])
         else:
             predictions = result
-        # import pdb
-        # pdb.set_trace()
         
         visualizer.add_datasample(
             window_name,
