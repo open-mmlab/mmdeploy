@@ -85,11 +85,11 @@ def test_build_dataset_and_dataloader():
     assert isinstance(dataloader, DataLoader), 'Failed to build dataloader'
 
 
-# def test_build_test_runner(backend_model):
-#     from mmdeploy.codebase.base.runner import DeployTestRunner
-#     temp_dir = TemporaryDirectory().name
-#     runner = task_processor.build_test_runner(backend_model, temp_dir)
-#     assert isinstance(runner, DeployTestRunner)
+def test_build_test_runner(backend_model):
+    from mmdeploy.codebase.base.runner import DeployTestRunner
+    temp_dir = TemporaryDirectory().name
+    runner = task_processor.build_test_runner(backend_model, temp_dir)
+    assert isinstance(runner, DeployTestRunner)
 
 
 def test_get_preprocess():
