@@ -65,7 +65,7 @@ if (MMDEPLOY_BUILD_SDK_CSHARP_API OR MMDEPLOY_BUILD_SDK_MONOLITHIC)
     add_library(mmdeploy SHARED)
     mmdeploy_load_static(mmdeploy MMDeployStaticModules)
     mmdeploy_load_dynamic(mmdeploy MMDeployDynamicModules)
-    target_link_libraries(mmdeploy PRIVATE ${CAPI_OBJS})
+    target_link_libraries(mmdeploy PRIVATE ${CAPI_OBJS} mmdeploy_execution)
     target_include_directories(mmdeploy PUBLIC
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
             $<INSTALL_INTERFACE:include>)
