@@ -17,13 +17,14 @@ function(add_example dep name)
         endif ()
         if (MMDEPLOY_BUILD_SDK_MONOLITHIC)
             target_link_libraries(${name} PRIVATE mmdeploy ${OpenCV_LIBS})
-        else ()# Load MMDeploy modules
-        mmdeploy_load_static(${name} MMDeployStaticModules)
-        mmdeploy_load_dynamic(${name} MMDeployDynamicModules)
-        # Link to MMDeploy libraries
-        target_link_libraries(${name} PRIVATE MMDeployLibs ${OpenCV_LIBS})
-    endif ()
-    install(TARGETS ${name} RUNTIME DESTINATION bin)
+        else ()
+            # Load MMDeploy modules
+            mmdeploy_load_static(${name} MMDeployStaticModules)
+            mmdeploy_load_dynamic(${name} MMDeployDynamicModules)
+            # Link to MMDeploy libraries
+            target_link_libraries(${name} PRIVATE MMDeployLibs ${OpenCV_LIBS})
+        endif ()
+        install(TARGETS ${name} RUNTIME DESTINATION bin)
     endif ()
 endfunction()
 
@@ -37,8 +38,8 @@ add_example(rotated_detector rotated_object_detection)
 
 #add_example("" async_ocr)
 #add_example("" async_ocr_v2)
-add_example("" det_cls)
-add_example("" det_pose)
+#add_example("" det_cls)
+#add_example("" det_pose)
 
 if (MMDEPLOY_BUILD_SDK_CXX_API)
     add_example(classifier classifier)
