@@ -3,7 +3,7 @@ import argparse
 import json
 
 import cv2
-from mmdeploy_python import Pipeline, Model, Context, Device
+from mmdeploy_python import Context, Device, Model, Pipeline
 
 
 def parse_args():
