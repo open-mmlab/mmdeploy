@@ -940,6 +940,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
     # Test the model
     if convert_result and test_type == 'precision':
         # Get evaluation metric from model config
+        print(f'debugging regression_test.py line 943: model_cfg.test_evaluator: {model_cfg.test_evaluator}')
         metrics_eval_list = model_cfg.test_evaluator.get('metric', [])
         if isinstance(metrics_eval_list, str):
             # some config is using str only
