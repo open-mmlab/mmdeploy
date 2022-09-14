@@ -194,3 +194,5 @@ ${exec_host_ip}:8989
   - cudnn-8.4.1.50
 
 ## windows
+- OpenCV 4.6.0
+- pplcv
