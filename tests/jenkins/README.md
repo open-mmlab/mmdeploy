@@ -194,5 +194,8 @@ ${exec_host_ip}:8989
   - cudnn-8.4.1.50
 
 ## windows
-- OpenCV 4.6.0
+- OpenCV 4.6.0 
 - pplcv
+- ONNXRuntime>=1.8.1
+- TensorRT-8.2.3.0.Windows10.x86_64.cuda-11.4.cudnn8.2
+- cudnn-11.3-windows-x64-v8.2.1.32
