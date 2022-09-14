@@ -154,3 +154,43 @@ tree -L 1 -d
 ```shell
 ${exec_host_ip}:8989
 ```
+
+# 各个docker镜像包含内容
+## mmdeploy-ci-ubuntu-18.04-cu102
+- miniconda
+- cmake3.24
+- jdk1.8
+- opencv4.5
+- TensorRT
+  - TensorRT-8.4.3.1-cudnn8.4
+  - TensorRT-8.2.5.1-cudnn8.2
+- cudnn
+  - cudnn-8.2.4.15
+  - cudnn-8.4.1.50
+- onnxruntime1.8.1
+- pplnn
+- ncnn
+- pplcv
+- conda env
+  - torch1.8.1
+  - torch1.9.0
+  - torch1.10.0
+  - torch1.11.0
+  - torch1.12.0
+  - 
+## mmdeploy-ci-ubuntu-20.04-cu111
+- TensorRT
+  - TensorRT-8.4.1.5-cudnn8.4
+  - TensorRT-8.2.5.1-cudnn8.2
+- cudnn
+  - cudnn-8.2.1.32
+  - cudnn-8.4.1.50
+## mmdeploy-ci-ubuntu-20.04-cu113
+- TensorRT
+  - TensorRT-8.4.1.5-cudnn8.4
+  - TensorRT-8.2.5.1-cudnn8.2
+- cudnn
+  - cudnn-8.2.1.32
+  - cudnn-8.4.1.50
+
+## windows
