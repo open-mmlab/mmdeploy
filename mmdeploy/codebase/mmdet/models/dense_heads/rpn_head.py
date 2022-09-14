@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
 
-from mmdeploy.codebase.mmdet import (get_post_processing_params,
+from mmdeploy.codebase.mmdet import (gather_topk, get_post_processing_params,
                                      multiclass_nms,
                                      pad_with_value_if_necessary)
 from mmdeploy.core import FUNCTION_REWRITER
@@ -104,11 +104,17 @@ def rpn_head__get_bboxes(ctx,
 
         if pre_topk > 0:
             _, topk_inds = scores.squeeze(2).topk(pre_topk)
-            batch_inds = torch.arange(batch_size, device=device).unsqueeze(-1)
-            prior_inds = topk_inds.new_zeros((1, 1))
-            anchors = anchors[prior_inds, topk_inds, :]
-            bbox_pred = bbox_pred[batch_inds, topk_inds, :]
-            scores = scores[batch_inds, topk_inds, :]
+            bbox_pred, scores = gather_topk(
+                bbox_pred,
+                scores,
+                inds=topk_inds,
+                batch_size=batch_size,
+                is_batched=True)
+            anchors = gather_topk(
+                anchors,
+                inds=topk_inds,
+                batch_size=batch_size,
+                is_batched=False)
         mlvl_valid_bboxes.append(bbox_pred)
         mlvl_scores.append(scores)
         mlvl_valid_anchors.append(anchors)
