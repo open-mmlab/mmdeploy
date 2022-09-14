@@ -447,10 +447,14 @@ def get_info_from_log_file(info_type: str, log_path: Path,
             line_index = -1
         else:
             line_index = -2
-
-        if yaml_metric_key in ['accuracy_top-1', 'mIoU', 'Eval-PSNR']:
+        if yaml_metric_key == 'mIoU':
+            metric_line = lines[-1]
+            info_value = metric_line.split('mIoU: ')[1].split(' ')[0]
+            info_value = float(info_value)
+            return info_value
+        elif yaml_metric_key in ['accuracy_top-1', 'Eval-PSNR']:
             # info in last second line
-            # mmcls, mmseg, mmedit
+            # mmcls, mmeg, mmedit
             metric_line = lines[line_index - 1]
         elif yaml_metric_key == 'AP':
             # info in last tenth line
@@ -655,10 +659,6 @@ def get_backend_fps_metric(deploy_cfg_path: str, model_cfg_path: Path,
               f'--device {device_type} '
 
     codebase_name = get_codebase(str(deploy_cfg_path)).value
-    if codebase_name != 'mmedit' and codebase_name != 'mmdet':
-        # mmedit and mmdet dont --metric
-        cmd_str += f'--metrics {eval_name} '
-
     logger.info(f'Process cmd = {cmd_str}')
     # Test backend
     shell_res = subprocess.run(
@@ -937,7 +937,10 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
     # Test the model
     if convert_result and test_type == 'precision':
         # Get evaluation metric from model config
-        metrics_eval_list = model_cfg.test_evaluator.get('metric', [])
+        if codebase_name == 'mmseg':
+            metrics_eval_list = model_cfg.val_evaluator.iou_metrics
+        else:
+            metrics_eval_list = model_cfg.test_evaluator.get('metric', [])
         if isinstance(metrics_eval_list, str):
             # some config is using str only
             metrics_eval_list = [metrics_eval_list]

@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from .adaptive_pool import (adaptive_avg_pool2d__default,
+                            adaptive_avg_pool2d__ncnn)
 from .atan2 import atan2__default
 from .chunk import chunk__ncnn, chunk__torchscript
 from .expand import expand__ncnn
@@ -18,7 +20,8 @@ __all__ = [
     'tensor__getattribute__ncnn', 'group_norm__ncnn', 'interpolate__ncnn',
     'interpolate__tensorrt', 'linear__ncnn', 'tensor__repeat__tensorrt',
     'tensor__size__ncnn', 'topk__dynamic', 'topk__tensorrt', 'chunk__ncnn',
-    'triu__default', 'atan2__default', 'normalize__ncnn', 'expand__ncnn',
-    'chunk__torchscript', 'masked_fill__onnxruntime',
-    'tensor__setitem__default'
+    'triu__default', 'atan2__default', 'adaptive_avg_pool2d__default',
+    'normalize__ncnn', 'expand__ncnn', 'chunk__torchscript',
+    'masked_fill__onnxruntime', 'tensor__setitem__default',
+    'adaptive_avg_pool2d__ncnn'
 ]

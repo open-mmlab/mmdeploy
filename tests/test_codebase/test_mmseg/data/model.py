@@ -2,44 +2,44 @@
 # dataset settings
 dataset_type = 'CityscapesDataset'
 data_root = '.'
-img_norm_cfg = dict(
-    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 crop_size = (128, 128)
 
 test_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(
-        type='MultiScaleFlipAug',
-        img_scale=(128, 128),
-        flip=False,
-        transforms=[
-            dict(type='Resize', keep_ratio=True),
-            dict(type='RandomFlip'),
-            dict(type='Normalize', **img_norm_cfg),
-            dict(type='ImageToTensor', keys=['img']),
-            dict(type='Collect', keys=['img']),
-        ])
+    dict(type='Resize', scale=crop_size, keep_ratio=False),
+    # add loading annotation after ``Resize`` because ground truth
+    # does not need to do resize data transform
+    dict(type='LoadAnnotations', reduce_zero_label=True),
+    dict(type='PackSegInputs')
 ]
-data = dict(
-    samples_per_gpu=1,
-    workers_per_gpu=1,
-    val=dict(
+val_dataloader = dict(
+    batch_size=1,
+    num_workers=1,
+    persistent_workers=True,
+    sampler=dict(type='DefaultSampler', shuffle=False),
+    dataset=dict(
         type=dataset_type,
         data_root=data_root,
-        img_dir='',
-        ann_dir='',
-        pipeline=test_pipeline),
-    test=dict(
-        type=dataset_type,
-        data_root=data_root,
-        img_dir='',
-        ann_dir='',
+        data_prefix=dict(img_path='', seg_map_path=''),
         pipeline=test_pipeline))
+test_dataloader = val_dataloader
+
+val_evaluator = dict(type='IoUMetric', iou_metrics=['mIoU'])
+test_evaluator = val_evaluator
 
 # model settings
 norm_cfg = dict(type='SyncBN', requires_grad=True, momentum=0.01)
+data_preprocessor = dict(
+    type='SegDataPreProcessor',
+    mean=[123.675, 116.28, 103.53],
+    std=[58.395, 57.12, 57.375],
+    bgr_to_rgb=True,
+    pad_val=0,
+    seg_pad_val=255)
+
 model = dict(
     type='EncoderDecoder',
+    data_preprocessor=data_preprocessor,
     backbone=dict(
         type='FastSCNN',
         downsample_dw_channels=(32, 48),
@@ -64,6 +64,33 @@ model = dict(
         align_corners=False,
         loss_decode=dict(
             type='CrossEntropyLoss', use_sigmoid=True, loss_weight=1)),
+
     # model training and testing settings
     train_cfg=dict(),
     test_cfg=dict(mode='whole'))
+
+# from default_runtime
+default_scope = 'mmseg'
+env_cfg = dict(
+    cudnn_benchmark=True,
+    mp_cfg=dict(mp_start_method='fork', opencv_num_threads=0),
+    dist_cfg=dict(backend='nccl'),
+)
+log_level = 'INFO'
+load_from = None
+resume = False
+
+vis_backends = [dict(type='LocalVisBackend')]
+visualizer = dict(
+    type='SegLocalVisualizer', vis_backends=vis_backends, name='visualizer')
+
+# from schedules
+val_cfg = dict(type='ValLoop')
+test_cfg = dict(type='TestLoop')
+default_hooks = dict(
+    timer=dict(type='IterTimerHook'),
+    logger=dict(type='LoggerHook', interval=50),
+    param_scheduler=dict(type='ParamSchedulerHook'),
+    checkpoint=dict(type='CheckpointHook', by_epoch=False, interval=2000),
+    sampler_seed=dict(type='DistSamplerSeedHook'),
+)
