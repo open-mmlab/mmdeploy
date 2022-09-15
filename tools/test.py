@@ -132,8 +132,7 @@ def main():
                 warmup=args.warmup,
                 log_interval=args.log_interval,
                 with_sync=with_sync,
-                file=args.log2file,
-                logger=runner.logger):
+                file=args.log2file):
             runner.test()
     else:
         runner.test()
