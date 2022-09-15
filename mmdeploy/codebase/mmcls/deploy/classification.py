@@ -47,6 +47,9 @@ def process_model_config(model_cfg: Config,
         if cfg.test_pipeline[0]['type'] == 'LoadImageFromFile':
             cfg.test_pipeline.pop(0)
     # check whether input_shape is valid
+    if 'data_preprocessor' in cfg:
+        cfg.test_pipeline.insert(
+            3, dict(type='Normalize', **cfg['data_preprocessor']))
     if input_shape is not None:
         if 'crop_size' in cfg.test_pipeline[2]:
             crop_size = cfg.test_pipeline[2]['crop_size']
@@ -166,12 +169,11 @@ class Classification(BaseTask):
             tuple: (data, img), meta information for the input image and input.
         """
 
-        model_cfg = self.model_cfg
+        model_cfg = process_model_config(self.model_cfg, imgs, input_shape)
         assert 'test_pipeline' in model_cfg, \
             f'test_pipeline not found in {model_cfg}.'
         from mmengine.dataset import Compose
         pipeline = deepcopy(model_cfg.test_pipeline)
-
         if isinstance(imgs, str):
             if pipeline[0]['type'] != 'LoadImageFromFile':
                 pipeline.insert(0, dict(type='LoadImageFromFile'))
@@ -247,7 +249,7 @@ class Classification(BaseTask):
         """
         input_shape = get_input_shape(self.deploy_cfg)
         cfg = process_model_config(self.model_cfg, '', input_shape)
-        preprocess = cfg.data.test.pipeline
+        preprocess = cfg.test_pipeline
         return preprocess
 
     def get_postprocess(self) -> Dict:

@@ -148,7 +148,7 @@ def test_shufflenetv2_backbone__forward(backend_type: Backend):
 @pytest.mark.parametrize('backend_type', [Backend.NCNN])
 def test_vision_transformer_backbone__forward(backend_type: Backend):
 
-    from mmcls.core import ClsDataSample
+    from mmcls.structures import ClsDataSample
 
     from mmdeploy.core import patch_model
     import_codebase(Codebase.MMCLS)

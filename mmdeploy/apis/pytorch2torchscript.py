@@ -40,7 +40,6 @@ def torch2torchscript(img: Any,
 
     from mmdeploy.apis import build_task_processor
     task_processor = build_task_processor(model_cfg, deploy_cfg, device)
-
     torch_model = task_processor.build_pytorch_model(model_checkpoint)
     _, model_inputs = task_processor.create_input(
         img,
@@ -48,11 +47,11 @@ def torch2torchscript(img: Any,
         data_preprocessor=getattr(torch_model, 'data_preprocessor', None))
     if not isinstance(model_inputs, torch.Tensor):
         model_inputs = model_inputs[0]
-
     context_info = dict(deploy_cfg=deploy_cfg)
     backend = get_backend(deploy_cfg).value
     output_prefix = osp.join(work_dir, osp.splitext(save_file)[0])
-
+    if model_inputs.device != device:
+        model_inputs = model_inputs.to(device)
     with no_mp():
         trace(
             torch_model,

@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import mmcv
 import torch
+from mmengine import Config
 
 from mmdeploy.utils import Backend
 from mmdeploy.utils.test import check_backend, get_rewrite_outputs
@@ -13,7 +13,7 @@ def test_multiheadattention_ncnn():
     model = MultiheadAttention(embed_dims, num_heads, batch_first=True)
     query = torch.rand(1, 3, embed_dims)
 
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = Config(
         dict(
             onnx_config=dict(input_shape=None),
             backend_config=dict(type=Backend.NCNN.value),

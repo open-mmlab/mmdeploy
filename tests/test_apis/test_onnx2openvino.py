@@ -3,11 +3,11 @@ import os
 import os.path as osp
 import tempfile
 
-import mmcv
 import numpy as np
 import pytest
 import torch
 import torch.nn as nn
+from mmengine import Config
 
 from mmdeploy.utils import Backend
 from mmdeploy.utils.test import backend_checker, get_random_name
@@ -61,12 +61,12 @@ def get_outputs(pytorch_model, openvino_model_path, input, input_name,
 
 
 def get_base_deploy_cfg():
-    deploy_cfg = mmcv.Config(dict(backend_config=dict(type='openvino')))
+    deploy_cfg = Config(dict(backend_config=dict(type='openvino')))
     return deploy_cfg
 
 
 def get_deploy_cfg_with_mo_args():
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = Config(
         dict(
             backend_config=dict(
                 type='openvino',
@@ -131,7 +131,7 @@ def test_get_input_info_from_cfg():
     from mmdeploy.apis.openvino import get_input_info_from_cfg
 
     # Test 1
-    deploy_cfg = mmcv.Config()
+    deploy_cfg = Config()
     with pytest.raises(KeyError):
         get_input_info_from_cfg(deploy_cfg)
 
@@ -140,7 +140,7 @@ def test_get_input_info_from_cfg():
     height, width = 600, 1000
     shape = [1, 3, height, width]
     expected_input_info = {input_name: shape}
-    deploy_cfg = mmcv.Config({
+    deploy_cfg = Config({
         'backend_config': {
             'model_inputs': [{
                 'opt_shapes': expected_input_info

@@ -5,7 +5,6 @@ from typing import Any, List, Optional, Sequence, Tuple, Union
 import numpy as np
 import torch
 import torch.nn.functional as F
-from mmdet.models.detectors import BaseDetector
 from mmengine import Config
 from mmengine.model.base_model.data_preprocessor import BaseDataPreprocessor
 from mmengine.registry import Registry
@@ -168,24 +167,23 @@ class End2EndModel(BaseBackendModel):
         return result_masks.squeeze(0)
 
     def forward(self,
-                batch_inputs: torch.Tensor,
+                inputs: torch.Tensor,
                 data_samples: Optional[List[BaseDataElement]] = None,
                 mode: str = 'predict',
                 **kwargs) -> Any:
         assert mode == 'predict', 'Deploy model only allow mode=="predict".'
-        batch_inputs = batch_inputs.contiguous()
-        outputs = self.predict(batch_inputs)
+        inputs = inputs.contiguous()
+        outputs = self.predict(inputs)
         outputs = End2EndModel.__clear_outputs(outputs)
         batch_dets, batch_labels = outputs[:2]
         batch_masks = outputs[2] if len(outputs) == 3 else None
-        batch_size = batch_inputs.shape[0]
+        batch_size = inputs.shape[0]
         img_metas = [data_sample.metainfo for data_sample in data_samples]
-
-        results = [InstanceData() for _ in range(batch_size)]
+        results = []
         rescale = kwargs.get('rescale', True)
         for i in range(batch_size):
             dets, labels = batch_dets[i], batch_labels[i]
-            result = results[i]
+            result = InstanceData()
 
             bboxes = dets[:, :4]
             scores = dets[:, 4]
@@ -243,8 +241,8 @@ class End2EndModel(BaseBackendModel):
                 # aligned with mmdet to easily convert to numpy
                 masks = masks.cpu()
                 result.masks = masks
-
-        results = BaseDetector.convert_to_datasample(None, results)
+            data_samples[i].pred_instances = result
+            results.append(data_samples[i])
         return results
 
     def predict(self, imgs: Tensor) -> Tuple[np.ndarray, np.ndarray]:
@@ -584,11 +582,13 @@ class SDKEnd2EndModel(End2EndModel):
     """SDK inference class, converts SDK output to mmdet format."""
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.has_mask = self.deploy_cfg.codebase_config.get('has_mask', False)
+        kwargs['data_preprocessor'] = None
+        super(SDKEnd2EndModel, self).__init__(*args, **kwargs)
 
-    def forward(self, img: Sequence[Tensor], img_metas: Sequence[dict], *args,
-                **kwargs):
+    def forward(self,
+                inputs: torch.Tensor,
+                data_samples: Optional[List[BaseDataElement]] = None,
+                mode: str = 'predict'):
         """Run forward inference.
 
         Args:
@@ -601,24 +601,29 @@ class SDKEnd2EndModel(End2EndModel):
         Returns:
             list: A list contains predictions.
         """
-        from mmdet.core import bbox2result
+        if isinstance(inputs, list):
+            inputs = inputs[0]
+        # inputs are c,h,w, sdk requested h,w,c
+        inputs = inputs.permute(1, 2, 0)
         dets, labels, masks = self.wrapper.invoke(
-            img[0].contiguous().detach().cpu().numpy())
-        det_results = bbox2result(dets[np.newaxis, ...], labels[np.newaxis,
-                                                                ...],
-                                  len(self.CLASSES))
-        if self.has_mask:
-            segm_results = [[] for _ in range(len(self.CLASSES))]
-            ori_h, ori_w = img_metas[0]['ori_shape'][:2]
-            for bbox, label, mask in zip(dets, labels, masks):
-                img_mask = np.zeros((ori_h, ori_w), dtype=np.uint8)
-                left = int(max(np.floor(bbox[0]) - 1, 0))
-                top = int(max(np.floor(bbox[1]) - 1, 0))
-                img_mask[top:top + mask.shape[0],
-                         left:left + mask.shape[1]] = mask
-                segm_results[label].append(img_mask)
-            return [(det_results, segm_results)]
-        return [det_results]
+            inputs.contiguous().detach().cpu().numpy())
+        dets = torch.from_numpy(dets).to(self.device).unsqueeze(0)
+        labels = torch.from_numpy(labels).to(torch.int64).to(
+            self.device).unsqueeze(0)
+        predictions = []
+        masks = np.concatenate(masks, 0)
+        for det, label, mask, data_sample in zip(dets, labels, masks,
+                                                 data_samples):
+            pred_instances = InstanceData()
+            pred_instances.scores = det[..., 4]
+            pred_instances.bboxes = det[..., :4]
+            pred_instances.labels = label
+            pred_instances.masks = torch.from_numpy(mask).\
+                to(self.device).unsqueeze(0)
+
+            data_sample.pred_instances = pred_instances
+            predictions.append(data_sample)
+        return predictions
 
 
 def build_object_detection_model(
