@@ -10,18 +10,16 @@ from mmdeploy.utils.config_utils import load_config
 from mmdeploy.utils.timer import TimeCounter
 
 '''
-python3 test.py \
-configs/mmyolo/detection/detection_tensorrt_static-640x640.py \
-/home/ubuntu/workspace/github/openmmlab/yolobenchmark/configs/yolov5/yolov5_s-v61_syncbn_8xb16-300e_coco.py \
---model /home/ubuntu/workspace/github/openmmlab/fmmdeploy/work_dir/end2end.engine \
+configs/mmyolo/detection/detection_tensorrt_static-640x640.py 
+/home/ubuntu/workspace/github/openmmlab/yolobenchmark/configs/yolov5/yolov5_s-v61_syncbn_8xb16-300e_coco.py 
+--model /home/ubuntu/workspace/github/openmmlab/mmdeploy/work_dir/end2end.engine 
 --device cuda:0
 '''
 
 '''
-python3 test.py \
-configs/mmdet/detection/detection_tensorrt-fp16_static-640x640.py \
-/home/ubuntu/workspace/github/openmmlab/mmdetection/configs/yolox/yolox_s_8xb8-300e_coco.py \
---model /home/ubuntu/workspace/github/openmmlab/fmmdeploy/work_dir/end2end.engine \
+configs/mmdet/detection/detection_tensorrt-fp16_static-640x640.py 
+/home/ubuntu/workspace/github/openmmlab/mmdetection/configs/yolox/yolox_s_8xb8-300e_coco.py
+--model /home/ubuntu/workspace/github/openmmlab/mmdeploy/work_dir/end2end.engine
 --device cuda:0
 '''
 

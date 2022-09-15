@@ -10,8 +10,8 @@ from mmdeploy.utils import is_dynamic_shape
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    'mmdet.models.detectors.single_stage.SingleStageDetector.forward')
-def single_stage_detector__forward(ctx,
+    'mmyolo.models.detectors.yolo_detector.YOLODetector.forward')
+def yolo_detector__forward(ctx,
                                    self,
                                    batch_inputs: torch.Tensor,
                                    data_samples: OptSampleList = None,
