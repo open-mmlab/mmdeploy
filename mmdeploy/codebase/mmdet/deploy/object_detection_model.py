@@ -607,36 +607,20 @@ class SDKEnd2EndModel(End2EndModel):
         inputs = inputs.permute(1, 2, 0)
         dets, labels, masks = self.wrapper.invoke(
             inputs.contiguous().detach().cpu().numpy())
-        dets = torch.from_numpy(dets).to(
-            self.device).unsqueeze(0)
+        dets = torch.from_numpy(dets).to(self.device).unsqueeze(0)
         labels = torch.from_numpy(labels).to(torch.int64).to(
             self.device).unsqueeze(0)
         predictions = []
         masks = np.concatenate(masks, 0)
-        print(f'debugging dets.shape: {dets.shape}, masks: {len(masks)}')
-        for det, label, mask, data_sample in zip(dets, labels, masks, data_samples):
-            print(f'debugging mmdpeloy.codebase.mmdet.deploy.object_detection_model.py line 616: what is data_sample: {data_sample}')
+        for det, label, mask, data_sample in zip(dets, labels, masks,
+                                                 data_samples):
             pred_instances = InstanceData()
             pred_instances.scores = det[..., 4]
             pred_instances.bboxes = det[..., :4]
             pred_instances.labels = label
-            pred_instances.masks = torch.from_numpy(mask).to(self.device).unsqueeze(0)
-            '''
-            if masks is not None:
-                print(f'debugging mmdeploy.codebase.mmdet.deploy.object_detection_model.py line 622: what is mask.shape: {masks}')
-                segm_results = []
-                ori_h, ori_w = data_sample.metainfo['ori_shape'][:2]
-                mask = torch.from_numpy(mask).to(torch.int64).to(
-                    self.device).unsqueeze(0)
-                for det_item, label_item in zip(det, label):
-                    img_mask = torch.zeros((ori_h, ori_w), dtype=torch.uint8)
-                    left = int(max(torch.floor(det_item[0]) - 1, 0))
-                    top = int(max(torch.floor(det_item[1]) - 1, 0))
-                    img_mask[top:top + mask.shape[0],
-                             left:left + mask.shape[1]] = mask
-                    segm_results.append(img_mask)
-                pred_instances.masks = segm_results
-            '''
+            pred_instances.masks = torch.from_numpy(mask).\
+                to(self.device).unsqueeze(0)
+
             data_sample.pred_instances = pred_instances
             predictions.append(data_sample)
         return predictions
