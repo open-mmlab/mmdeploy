@@ -40,10 +40,11 @@ def torch2torchscript(img: Any,
 
     from mmdeploy.apis import build_task_processor
     task_processor = build_task_processor(model_cfg, deploy_cfg, device)
-    data_preprocessor = task_processor.build_data_preprocessor()
     torch_model = task_processor.build_pytorch_model(model_checkpoint)
     _, model_inputs = task_processor.create_input(
-        img, input_shape, data_preprocessor=data_preprocessor)
+        img,
+        input_shape,
+        data_preprocessor=getattr(torch_model, 'data_preprocessor', None))
     if not isinstance(model_inputs, torch.Tensor):
         model_inputs = model_inputs[0]
     context_info = dict(deploy_cfg=deploy_cfg)
