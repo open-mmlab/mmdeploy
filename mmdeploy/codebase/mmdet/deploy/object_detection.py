@@ -44,7 +44,7 @@ def process_model_config(model_cfg: mmcv.Config,
             trans_type = trans['type']
             if trans_type == 'Resize':
                 trans['keep_ratio'] = False
-            elif trans_type == 'Pad':
+            elif trans_type == 'Pad' and 'size_divisor' in trans:
                 trans['size_divisor'] = 1
 
     cfg.data.test.pipeline = replace_ImageToTensor(cfg.data.test.pipeline)
