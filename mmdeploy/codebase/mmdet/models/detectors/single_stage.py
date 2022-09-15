@@ -3,6 +3,7 @@ import copy
 
 import torch
 from mmdet.models.detectors.base import ForwardResults
+from mmdet.structures import DetDataSample
 from mmdet.structures.det_data_sample import OptSampleList
 
 from mmdeploy.core import FUNCTION_REWRITER
@@ -39,6 +40,8 @@ def single_stage_detector__forward(ctx,
                 (num_instances, ).
     """
     data_samples = copy.deepcopy(data_samples)
+    if data_samples is None:
+        data_samples = [DetDataSample()]
     deploy_cfg = ctx.cfg
 
     # get origin input shape as tensor to support onnx dynamic shape
