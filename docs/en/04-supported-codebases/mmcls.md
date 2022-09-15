@@ -14,22 +14,17 @@ There are several methods to install mmdeploy, among which you can choose an app
 
 **Method I:** Install precompiled package
 
-If your target device is NVIDIA GPU, it is recommended to follow [this](../01-how-to-build/install_prebuilt_package.md) guide to install the precompiled package and its corresponding inference engine - `TensorRT`.
-
-<!-- The supported platform and device and inference engine matrix by precompiled package is presented as following:
-
-| **Platform**   | **Device** | **Inference Engine** |
-| -------------- | :--------: | :------------------: |
-| Linux-x86_64   |    CPU     |     ONNX Runtime     |
-| Linux-x86_64   |    CUDA    |       TensorRT       |
-| Windows-x86_64 |    CPU     |     ONNX Runtime     |
-| Windows-x86_64 |    CUDA    |       TensorRT       |
--->
+**TODO**. MMDeploy hasn't released based on dev-1.x branch.
 
 **Method II:** Build using scripts
 
 If your target platform is **Ubuntu 18.04 or later version**, we encourage you to run
-[scripts](../01-how-to-build/build_from_script.md), by which mmdeploy as well as the inference engines, such as ONNX Runtime, ncnn, pplnn and torchscript, can be installed automatically.
+[scripts](../01-how-to-build/build_from_script.md). For example, the following commands help install mmdeploy as well as inference engine - `ONNX Runtime` automatically.
+
+```shell
+git clone --recursive -b dev-1.x https://github.com/open-mmlab/mmdeploy.git
+python3 tools/scripts/build_ubuntu_x64_ort.py $(nproc)
+```
 
 **Method III:** Build from source
 
@@ -42,7 +37,6 @@ You can use `tools/deploy.py` to convert mmcls models to the specified backend m
 The following shows an example about converting `resnet18` model to onnx model that can be inferred by ONNX Runtime.
 
 ```shell
-git clone --recursive https://github.com/open-mmlab/mmdeploy.git
 cd mmdeploy
 
 # download mmcls model
@@ -61,7 +55,7 @@ python tools/deploy.py \
     --dump-info
 ```
 
-It is crucial to specify the correct deployment config during model conversion. We've already provided builtin deployment config [files](https://github.com/open-mmlab/mmdeploy/tree/master/configs/mmcls) of all supported backends for mmclassification. The config filename pattern is:
+It is crucial to specify the correct deployment config during model conversion. We've already provided builtin deployment config [files](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/configs/mmcls) of all supported backends for mmclassification. The config filename pattern is:
 
 ```
 classification_{backend}-{precision}_{static | dynamic}_{shape}.py
@@ -72,7 +66,7 @@ classification_{backend}-{precision}_{static | dynamic}_{shape}.py
 - **{static | dynamic}:** static shape or dynamic shape
 - **{shape}:** input shape or shape range of a model
 
-Therefore, in the above example, you can also convert `resnet18` to other backend models by changing the deployment config file `mmclassification_onnxruntime_dynamic.py` to [others](https://github.com/open-mmlab/mmdeploy/tree/master/configs/mmcls), e.g., converting to tensorrt model by `classification_tensorrt-fp16_dynamic-224x224-224x224.py`.
+Therefore, in the above example, you can also convert `resnet18` to other backend models by changing the deployment config file `mmclassification_onnxruntime_dynamic.py` to [others](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/configs/mmcls), e.g., converting to tensorrt model by `classification_tensorrt-fp16_dynamic-224x224-224x224.py`.
 
 ```{tip}
 When converting mmcls models to tensorrt models, --device should be set to "cuda"
