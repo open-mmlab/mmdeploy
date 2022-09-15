@@ -135,7 +135,7 @@ export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 ```shell
 # 安装 MMDeploy TensorRT 自定义算子库和推理 SDK
 wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.8.0/mmdeploy-0.8.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
-tar -zxvf mmdeploy-v0.8.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
+tar -zxvf mmdeploy-0.8.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
 cd mmdeploy-0.8.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
 pip install dist/mmdeploy-0.8.0-py3-none-linux_x86_64.whl
 pip install sdk/python/mmdeploy_python-0.8.0-cp38-none-linux_x86_64.whl
