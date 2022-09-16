@@ -1,30 +1,175 @@
-# MMDetection Support
+# MMDetection Deployment
 
-MMDetection is an open source object detection toolbox based on PyTorch. It is a part of the [OpenMMLab](https://openmmlab.com/) project.
+[MMDetection](https://github.com/open-mmlab/mmdetection) aka `mmdet` is an open source object detection toolbox based on PyTorch. It is a part of the [OpenMMLab](https://openmmlab.com/) project.
 
-## MMDetection installation tutorial
+## Installation
 
-Please refer to [get_started.md](https://github.com/open-mmlab/mmdetection/blob/master/docs/en/get_started.md) for installation.
+### Install mmdet
 
-## List of MMDetection models supported by MMDeploy
+If you have already done that, move on to the next section. Otherwise, please follow the [guide](https://mmdetection.readthedocs.io/en/3.x/get_started.html) to finish mmdet installation.
 
-|       Model        |         Task         | OnnxRuntime | TensorRT | ncnn | PPLNN | OpenVINO |                                     Model config                                     |
-| :----------------: | :------------------: | :---------: | :------: | :--: | :---: | :------: | :----------------------------------------------------------------------------------: |
-|        ATSS        |   ObjectDetection    |      Y      |    Y     |  N   |   N   |    Y     |     [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/atss)     |
-|        FCOS        |   ObjectDetection    |      Y      |    Y     |  Y   |   N   |    Y     |     [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/fcos)     |
-|      FoveaBox      |   ObjectDetection    |      Y      |    N     |  N   |   N   |    Y     |   [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/foveabox)   |
-|        FSAF        |   ObjectDetection    |      Y      |    Y     |  Y   |   Y   |    Y     |     [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/fsaf)     |
-|     RetinaNet      |   ObjectDetection    |      Y      |    Y     |  Y   |   Y   |    Y     |  [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/retinanet)   |
-|        SSD         |   ObjectDetection    |      Y      |    Y     |  Y   |   N   |    Y     |     [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/ssd)      |
-|       VFNet        |   ObjectDetection    |      N      |    N     |  N   |   N   |    Y     |    [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/vfnet)     |
-|       YOLOv3       |   ObjectDetection    |      Y      |    Y     |  Y   |   N   |    Y     |     [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/yolo)     |
-|       YOLOX        |   ObjectDetection    |      Y      |    Y     |  Y   |   N   |    Y     |    [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/yolox)     |
-|   Cascade R-CNN    |   ObjectDetection    |      Y      |    Y     |  N   |   Y   |    Y     | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/cascade_rcnn) |
-|    Faster R-CNN    |   ObjectDetection    |      Y      |    Y     |  Y   |   Y   |    Y     | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/faster_rcnn)  |
-| Faster R-CNN + DCN |   ObjectDetection    |      Y      |    Y     |  Y   |   Y   |    Y     | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/faster_rcnn)  |
-|        GFL         |   ObjectDetection    |      Y      |    Y     |  N   |   ?   |    Y     |     [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/gfl)      |
-|     RepPoints      |   ObjectDetection    |      N      |    Y     |  N   |   ?   |    Y     |  [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/reppoints)   |
-|        DETR        |   ObjectDetection    |      Y      |    Y     |  N   |   ?   |    Y     |     [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/detr)     |
-| Cascade Mask R-CNN | InstanceSegmentation |      Y      |    N     |  N   |   N   |    Y     | [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/cascade_rcnn) |
-|     Mask R-CNN     | InstanceSegmentation |      Y      |    Y     |  N   |   N   |    Y     |  [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/mask_rcnn)   |
-|  Swin Transformer  | InstanceSegmentation |      Y      |    Y     |  N   |   N   |    N     |     [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/swin)     |
+### Install mmdeploy
+
+There are several methods to install mmdeploy, among which you can choose an appropriate one according to your target platform and device.
+
+**Method I:** Install precompiled package
+
+> **TODO**. MMDeploy hasn't released based on dev-1.x branch.
+
+**Method II:** Build using scripts
+
+If your target platform is **Ubuntu 18.04 or later version**, we encourage you to run
+[scripts](../01-how-to-build/build_from_script.md). For example, the following commands help install mmdeploy as well as inference engine - `ONNX Runtime` automatically.
+
+```shell
+git clone --recursive -b dev-1.x https://github.com/open-mmlab/mmdeploy.git
+cd mmdeploy
+python3 tools/scripts/build_ubuntu_x64_ort.py $(nproc)
+export PYTHONPATH=$(pwd)/build/lib:$PYTHONPATH
+export LD_LIBRARY_PATH=$(pwd)/../mmdeploy-dep/onnxruntime-linux-x64-1.8.1/lib/:$LD_LIBRARY_PATH
+```
+
+**Method III:** Build from source
+
+If neither **I** nor **II** meets your requirements, [building mmdeploy from source](../01-how-to-build/build_from_source.md) is the last option.
+
+## Convert model
+
+You can use `tools/deploy.py` to convert mmdet models to the specified backend models. Its detailed usage can be learned from [here](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/02-how-to-run/convert_model.md#usage).
+
+The following shows an example about converting `faster r-cnn` model to onnx model that can be inferred by ONNX Runtime.
+
+```shell
+cd mmdeploy
+# download faster r-cnn model from mmdet model zoo
+mim download mmdet --config faster-rcnn_r50_fpn_1x_coco --dest .
+# convert mmdet model to onnxruntime model with dynamic shape
+python tools/deploy.py \
+    configs/mmdet/detection/detection_onnxruntime_dynamic.py \
+    faster-rcnn_r50_fpn_1x_coco.py \
+    faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth \
+    tests/data/tiger.jpeg \
+    --work-dir mmdeploy_models/mmdet/ort \
+    --device cpu \
+    --show \
+    --dump-info
+```
+
+It is crucial to specify the correct deployment config during model conversion. We've already provided builtin deployment config [files](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/configs/mmdet) of all supported backends for mmdetection, under which the config file path follows the pattern:
+
+```
+{task}/{task}_{backend}-{precision}_{static | dynamic}_{shape}.py
+```
+
+- **{task}:** task in mmdetection.
+
+  There are two of them. One is `detection` and the other is `instance-seg`, indicating instance segmentation.
+
+  mmdet models like `RetinaNet`, `Faster R-CNN` and `DETR` and so on belongs to `detection` task. While `Mask R-CNN` is one of `instance-seg` models. You can find more of them in chapter [Supported models](#supported-models).
+
+  **DO remember to use** `detection/detection_*.py` deployment config file when trying to converting detection models and use `instance-seg/instance-seg_*.py` to deploy instance segmentation models.
+
+- **{backend}:** inference backend, such as onnxruntime, tensorrt, pplnn, ncnn, openvino, coreml and etc.
+
+- **{precision}:** fp16, int8. When it's empty, it means fp32
+
+- **{static | dynamic}:** static shape or dynamic shape
+
+- **{shape}:** input shape or shape range of a model
+
+Therefore, in the above example, you can also convert `faster r-cnn` to other backend models by changing the deployment config file `detection_onnxruntime_dynamic.py` to [others](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/configs/mmdet/detection), e.g., converting to tensorrt-fp16 model by `detection_tensorrt-fp16_dynamic-320x320-1344x1344.py`.
+
+```{tip}
+When converting mmdet models to tensorrt models, --device should be set to "cuda"
+```
+
+## Model Specification
+
+Before moving on to model inference chapter, let us talk more about the converted model structure which is very important to do model inference.
+
+The converted model locates in the working directory like `mmdeploy_models/mmdet/ort` in the previous example. It includes:
+
+```
+mmdeploy_models/mmdet/ort
+├── deploy.json
+├── detail.json
+├── end2end.onnx
+└── pipeline.json
+```
+
+in which,
+
+- **end2end.onnx**: backend model which can be inferred by ONNX Runtime
+- **deploy.json**: meta information about backend model
+- **pipeline.json**: inference pipeline of mmdeploy SDK
+- **detail.json**: conversion parameters
+
+And the whole package **mmdeploy_models/mmdet/ort** is defined as **mmdeploy SDK model**. In other words, **mmdeploy SDK model** includes not only backend model but also inference meta information.
+
+## Backend model inference
+
+mmdeploy provides a unified API named as `inference_model` to do this job, making all inference backends API transparent to users.
+
+Take the previous converted `end2end.onnx` model as an example,
+
+```python
+from mmdeploy.apis.utils import build_task_processor
+from mmdeploy.utils import get_input_shape, load_config
+import torch
+
+deploy_cfg = 'configs/mmdet/detection/detection_onnxruntime_dynamic.py'
+model_cfg = './faster-rcnn_r50_fpn_1x_coco.py'
+device = 'cpu'
+backend_model = ['./mmdeploy_models/mmdet/ort/end2end.onnx']
+image = './tests/data/tiger.jpeg'
+
+# read deploy_cfg and model_cfg
+deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
+
+# build task and backend model
+task_processor = build_task_processor(model_cfg, deploy_cfg, device)
+model = task_processor.build_backend_model(backend_model)
+
+# process input image
+input_shape = get_input_shape(deploy_cfg)
+model_inputs, _ = task_processor.create_input(image, input_shape)
+
+# do model inference
+with torch.no_grad():
+    result = model.test_step(model_inputs)
+
+# visualize results
+task_processor.visualize(
+    image=image,
+    model=model,
+    result=result[0],
+    window_name='visualize',
+    output_file='output_detection.png')
+```
+
+## SDK model inference
+
+TODO
+
+## Supported models
+
+|                                              Model                                               |         Task         | OnnxRuntime | TensorRT | ncnn | PPLNN | OpenVINO |
+| :----------------------------------------------------------------------------------------------: | :------------------: | :---------: | :------: | :--: | :---: | :------: |
+|            [ATSS](https://github.com/open-mmlab/mmdetection/tree/master/configs/atss)            |   ObjectDetection    |      Y      |    Y     |  N   |   N   |    Y     |
+|            [FCOS](https://github.com/open-mmlab/mmdetection/tree/master/configs/fcos)            |   ObjectDetection    |      Y      |    Y     |  Y   |   N   |    Y     |
+|        [FoveaBox](https://github.com/open-mmlab/mmdetection/tree/master/configs/foveabox)        |   ObjectDetection    |      Y      |    N     |  N   |   N   |    Y     |
+|            [FSAF](https://github.com/open-mmlab/mmdetection/tree/master/configs/fsaf)            |   ObjectDetection    |      Y      |    Y     |  Y   |   Y   |    Y     |
+|       [RetinaNet](https://github.com/open-mmlab/mmdetection/tree/master/configs/retinanet)       |   ObjectDetection    |      Y      |    Y     |  Y   |   Y   |    Y     |
+|             [SSD](https://github.com/open-mmlab/mmdetection/tree/master/configs/ssd)             |   ObjectDetection    |      Y      |    Y     |  Y   |   N   |    Y     |
+|           [VFNet](https://github.com/open-mmlab/mmdetection/tree/master/configs/vfnet)           |   ObjectDetection    |      N      |    N     |  N   |   N   |    Y     |
+|           [YOLOv3](https://github.com/open-mmlab/mmdetection/tree/master/configs/yolo)           |   ObjectDetection    |      Y      |    Y     |  Y   |   N   |    Y     |
+|           [YOLOX](https://github.com/open-mmlab/mmdetection/tree/master/configs/yolox)           |   ObjectDetection    |      Y      |    Y     |  Y   |   N   |    Y     |
+|   [Cascade R-CNN](https://github.com/open-mmlab/mmdetection/tree/master/configs/cascade_rcnn)    |   ObjectDetection    |      Y      |    Y     |  N   |   Y   |    Y     |
+|    [Faster R-CNN](https://github.com/open-mmlab/mmdetection/tree/master/configs/faster_rcnn)     |   ObjectDetection    |      Y      |    Y     |  Y   |   Y   |    Y     |
+| [Faster R-CNN + DCN](https://github.com/open-mmlab/mmdetection/tree/master/configs/faster_rcnn)  |   ObjectDetection    |      Y      |    Y     |  Y   |   Y   |    Y     |
+|             [GFL](https://github.com/open-mmlab/mmdetection/tree/master/configs/gfl)             |   ObjectDetection    |      Y      |    Y     |  N   |   ?   |    Y     |
+|       [RepPoints](https://github.com/open-mmlab/mmdetection/tree/master/configs/reppoints)       |   ObjectDetection    |      N      |    Y     |  N   |   ?   |    Y     |
+|            [DETR](https://github.com/open-mmlab/mmdetection/tree/master/configs/detr)            |   ObjectDetection    |      Y      |    Y     |  N   |   ?   |    Y     |
+| [Cascade Mask R-CNN](https://github.com/open-mmlab/mmdetection/tree/master/configs/cascade_rcnn) | InstanceSegmentation |      Y      |    N     |  N   |   N   |    Y     |
+|      [Mask R-CNN](https://github.com/open-mmlab/mmdetection/tree/master/configs/mask_rcnn)       | InstanceSegmentation |      Y      |    Y     |  N   |   N   |    Y     |
+|      [Swin Transformer](https://github.com/open-mmlab/mmdetection/tree/master/configs/swin)      | InstanceSegmentation |      Y      |    Y     |  N   |   N   |    N     |
