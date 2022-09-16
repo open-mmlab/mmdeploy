@@ -49,14 +49,14 @@ python ./tools/deploy.py \
 
 ### 参数描述
 
-- `deploy_cfg` : MMDeploy 中用于部署的配置文件路径。
-- `model_cfg` : OpenMMLab 系列代码库中使用的模型配置文件路径。
-- `checkpoint` : OpenMMLab 系列代码库的模型文件路径。
-- `img` : 用于模型转换时使用的图像文件路径。
+- `deploy_cfg` : mmdeploy 针对此模型的部署配置，包含推理框架类型、是否量化、输入 shape 是否动态等。配置文件之间可能有引用关系，`mmdeploy/mmcls/classification_ncnn_static.py` 是一个示例。
+- `model_cfg` : mm 算法库的模型配置，例如 `mmclassification/configs/vision_transformer/vit-base-p32_ft-64xb64_in1k-384.py`，与 mmdeploy 的路径无关。
+- `checkpoint` : torch 模型路径。可以 http/https 开头，详见 `mmcv.FileClient`   的实现。
+- `img` : 模型转换时，用做测试的图像或点云文件路径。
 - `--test-img` : 用于测试模型的图像文件路径。默认设置成`None`。
 - `--work-dir` : 工作目录，用来保存日志和模型文件。
 - `--calib-dataset-cfg` : 此参数只有int8模式下生效，用于校准数据集配置文件。若在int8模式下未传入参数，则会自动使用模型配置文件中的'val'数据集进行校准。
-- `--device` : 用于模型转换的设备。 默认是`cpu`。
+- `--device` : 用于模型转换的设备。 默认是`cpu`，对于 trt 可使用 `cuda:0` 这种形式。
 - `--log-level` : 设置日记的等级，选项包括`'CRITICAL'， 'FATAL'， 'ERROR'， 'WARN'， 'WARNING'， 'INFO'， 'DEBUG'， 'NOTSET'`。 默认是`INFO`。
 - `--show` : 是否显示检测的结果。
 - `--dump-info` : 是否输出 SDK 信息。
@@ -82,7 +82,7 @@ python ./tools/deploy.py \
 
 ## 如何评测模型
 
-您可以尝试去评测转换出来的模型 ，参考 [profile 模型](./profile_model.md)。
+您可以尝试去评测转换出来的模型 ，参考 [profile 模型](profile_model.md)。
 
 ## 各后端已支持导出的模型列表
 

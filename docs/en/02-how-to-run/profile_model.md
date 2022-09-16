@@ -25,6 +25,9 @@ ${MODEL_CFG} \
 [--metric-options ${METRIC_OPTIONS}]
 [--log2file work_dirs/output.txt]
 [--batch-size ${BATCH_SIZE}]
+[--speed-test] \
+[--warmup ${WARM_UP}] \
+[--log-interval ${LOG_INTERVERL}] \
 ```
 
 ## Description of all arguments
@@ -44,6 +47,9 @@ ${MODEL_CFG} \
   format will be kwargs for dataset.evaluate() function.
 - `--log2file`: log evaluation results (and speed) to file.
 - `--batch-size`: the batch size for inference, which would override `samples_per_gpu` in data config. Default is `1`. Note that not all models support `batch_size>1`.
+- `--speed-test`:  Whether to activate speed test.
+- `--warmup`: warmup before counting inference elapse, require setting speed-test first.
+- `--log-interval`: The interval between each log, require setting speed-test first.
 
 \* Other arguments in `tools/test.py` are used for speed test. They have no concern with evaluation.
 
@@ -55,7 +61,8 @@ python tools/test.py \
     {MMCLS_DIR}/configs/resnet/resnet50_b32x8_imagenet.py \
     --model model.onnx \
     --out out.pkl \
-    --device cuda:0
+    --device cpu \
+    --speed-test
 ```
 
 ## Note

@@ -15,7 +15,7 @@ ONNX 是目前模型部署中最重要的中间表示之一。学懂了 ONNX 的
 
 ![image](https://user-images.githubusercontent.com/47652064/163531613-9eb3c851-933e-4b0d-913a-bf92ac36e80b.png)
 
-回忆一下我们[第一篇教程](./01_introduction_to_model_deployment.md)知识：跟踪法只能通过实际运行一遍模型的方法导出模型的静态图，即无法识别出模型中的控制流（如循环）；脚本化则能通过解析模型来正确记录所有的控制流。我们以下面这段代码为例来看一看这两种转换方法的区别：
+回忆一下我们[第一篇教程](01_introduction_to_model_deployment.md) 知识：跟踪法只能通过实际运行一遍模型的方法导出模型的静态图，即无法识别出模型中的控制流（如循环）；脚本化则能通过解析模型来正确记录所有的控制流。我们以下面这段代码为例来看一看这两种转换方法的区别：
 
 ```python
 import torch
@@ -143,7 +143,8 @@ dynamic_axes_0 = {
     'in' : [0],
     'out' : [0]
 }
-``
+```
+
 由于 ONNX 要求每个动态维度都有一个名字，这样写的话会引出一条 UserWarning，警告我们通过列表的方式设置动态维度的话系统会自动为它们分配名字。一种显式添加动态维度名字的方法如下：
 ```python
 dynamic_axes_0 = {
@@ -341,6 +342,6 @@ def _interpolate_helper(name, dim, interpolate_mode):
 
 1. Asinh 算子出现于第 9 个 ONNX 算子集。PyTorch 在 9 号版本的符号表文件中是怎样支持这个算子的？
 2. BitShift 算子出现于第11个 ONNX 算子集。PyTorch 在 11 号版本的符号表文件中是怎样支持这个算子的？
-3. 在\[第一篇教程\](./chapter_01_introduction_to_model_deployment.md）中，我们讲过 PyTorch （截至第 11 号算子集）不支持在插值中设置动态的放缩系数。这个系数对应 `torch.onnx.symbolic_helper._interpolate_helper`的symbolic_fn的Resize算子映射关系中的哪个参数？我们是如何修改这一参数的？
+3. 在 [第一篇教程](01_introduction_to_model_deployment.md) 中，我们讲过 PyTorch （截至第 11 号算子集）不支持在插值中设置动态的放缩系数。这个系数对应 `torch.onnx.symbolic_helper._interpolate_helper`的symbolic_fn的Resize算子映射关系中的哪个参数？我们是如何修改这一参数的？
 
 练习的答案会在下期教程中揭晓。

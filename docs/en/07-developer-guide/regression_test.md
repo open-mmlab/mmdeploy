@@ -1,52 +1,20 @@
-# 如何进行回归测试
+# How to do regression test
 
-<!-- -->
+This tutorial describes how to do regression test. The deployment configuration file contains  codebase config and inference config.
 
-这篇教程介绍了如何进行回归测试。部署配置文件由`每个codebase的回归配置文件`，`推理框架配置信息`组成。
-
-<!-- TOC -->
-
-- [如何进行回归测试](#如何进行回归测试)
-  - [1. 环境搭建](#1-环境搭建)
-    - [MMDeploy的安装及配置](#mmdeploy的安装及配置)
-    - [Python环境依赖](#python环境依赖)
-  - [2. 用法](#2-用法)
-    - [参数解析](#参数解析)
-    - [注意事项](#注意事项)
-  - [例子](#例子)
-  - [3. 回归测试配置文件](#3-回归测试配置文件)
-    - [示例及参数解析](#示例及参数解析)
-  - [4. 生成的报告](#4-生成的报告)
-    - [模板](#模板)
-    - [示例](#示例)
-  - [5. 支持的后端](#5-支持的后端)
-  - [6. 支持的Codebase及其Metric](#6-支持的codebase及其metric)
-  - [7. 注意事项](#7-注意事项)
-  - [8. 常见问题](#8-常见问题)
-
-<!-- TOC -->
-
-## 1. 环境搭建
-
-### MMDeploy的安装及配置
-
-本章节的内容，需要提前根据[build 文档](../01-how-to-build/build_from_source.md)将 MMDeploy 安装配置好之后，才能进行。
-
-### Python环境依赖
-
-需要安装 test 的环境
+### 1. Python Environment
 
 ```shell
 pip install -r requirements/tests.txt
 ```
 
-如果在使用过程是 numpy 报错，则更新一下 numpy
+If pip throw an exception, try to upgrade numpy.
 
 ```shell
 pip install -U numpy
 ```
 
-## 2. 用法
+## 2. Usage
 
 ```shell
 python ./tools/regression_test.py \
@@ -60,27 +28,27 @@ python ./tools/regression_test.py \
     [--checkpoint-dir "$CHECKPOINT_DIR"]
 ```
 
-### 参数解析
+### Description
 
-- `--codebase` : 需要测试的 codebase，eg.`mmdet`, 测试多个 `mmcls mmdet ...`
-- `--backends` : 筛选测试的后端, 默认测全部`backend`, 也可传入若干个后端，例如 `onnxruntime tesnsorrt`。如果需要一同进行 SDK 的测试，需要在 `tests/regression/${codebase}.yml` 里面的 `sdk_config` 进行配置。
-- `--models` : 指定测试的模型, 默认测试 `yml` 中所有模型, 也可传入若干个模型名称，模型名称可参考相关yml配置文件。例如 `ResNet SE-ResNet "Mask R-CNN"`。注意的是，可传入只有字母和数字组成模型名称，例如 `resnet seresnet maskrcnn`。
-- `--work-dir` : 模型转换、报告生成的路径，默认是`../mmdeploy_regression_working_dir`，注意路径中不要不含空格等特殊字符。
-- `--checkpoint-dir`: PyTorch 模型文件下载保存路径，默认是`../mmdeploy_checkpoints`，注意路径中不要不含空格等特殊字符。
-- `--device` : 使用的设备，默认 `cuda`。
-- `--log-level` : 设置日记的等级，选项包括`'CRITICAL'， 'FATAL'， 'ERROR'， 'WARN'， 'WARNING'， 'INFO'， 'DEBUG'， 'NOTSET'`。默认是`INFO`。
-- `-p` 或 `--performance` : 是否测试精度，加上则测试转换+精度，不加上则只测试转换
+- `--codebase` : The codebase to test, eg.`mmdet`. If you want to test multiple codebase, use `mmcls mmdet ...`
+- `--backends` : The backend to test. By default, all `backend`s would be tested. You can use `onnxruntime tesensorrt`to choose several backends. If you also need to test the SDK, you need to configure the `sdk_config` in `tests/regression/${codebase}.yml`.
+- `--models` : Specify the model to be tested. All models in `yml` are tested by default. You can also give some model names. For the model name, please refer to the relevant yml configuration file. For example `ResNet SE-ResNet "Mask R-CNN"`. Model name can only contain numbers and letters.
+- `--work-dir` : The directory of model convert and report, use `../mmdeploy_regression_working_dir` by default.
+- `--checkpoint-dir`: The path of downloaded torch model, use `../mmdeploy_checkpoints` by default.
+- `--device` : device type, use `cuda` by default
+- `--log-level` : These options are available:`'CRITICAL', 'FATAL', 'ERROR', 'WARN', 'WARNING', 'INFO', 'DEBUG',  'NOTSET'`. The default value is `INFO`.
+- `-p` or `--performance` : Test precision or not. If not enabled, only model convert would be tested.
 
-### 注意事项
+### Notes
 
-对于 Windows 用户：
+For Windows user:
 
-1. 要在 shell 命令中使用 `&&` 连接符，需要下载并使用 `PowerShell 7 Preview 5+`。
-2. 如果您使用 conda env，可能需要在 regression_test.py 中将 `python3` 更改为 `python`，因为 `%USERPROFILE%\AppData\Local\Microsoft\WindowsApps` 目录中有 `python3.exe`。
+1. To use the `&&` connector in shell commands, you need to download `PowerShell 7 Preview 5+`.
+2. If you are using conda env, you may need to change `python3` to `python` in regression_test.py because there is `python3.exe` in `%USERPROFILE%\AppData\Local\Microsoft\WindowsApps` directory.
 
-## 例子
+## Example
 
-1. 测试 mmdet 和 mmpose 的所有 backend 的 **转换+精度**
+1. Test all backends of mmdet and mmpose for **model convert and precision**
 
 ```shell
 python ./tools/regression_test.py \
@@ -91,7 +59,7 @@ python ./tools/regression_test.py \
     --performance
 ```
 
-2. 测试 mmdet 和 mmpose 的某几个 backend 的 **转换+精度**
+2. Test **model convert and precision** of some backends of mmdet and mmpose
 
 ```shell
 python ./tools/regression_test.py \
@@ -103,7 +71,7 @@ python ./tools/regression_test.py \
     -p
 ```
 
-3. 测试 mmdet 和 mmpose 的某几个 backend，**只测试转换**
+3. Test some backends of mmdet and mmpose, **only test model convert**
 
 ```shell
 python ./tools/regression_test.py \
@@ -114,7 +82,7 @@ python ./tools/regression_test.py \
     --log-level INFO
 ```
 
-4. 测试 mmdet 和 mmcls 的某几个 models，**只测试转换**
+4. Test some models of mmdet and mmcls, **only test model convert**
 
 ```shell
 python ./tools/regression_test.py \
@@ -125,49 +93,49 @@ python ./tools/regression_test.py \
     --log-level INFO
 ```
 
-## 3. 回归测试配置文件
+## 3. Regression Test Tonfiguration
 
-### 示例及参数解析
+### Example and parameter description
 
 ```yaml
 globals:
-  codebase_dir: ../mmocr # 回归测试的 codebase 路径
-  checkpoint_force_download: False # 回归测试是否重新下载模型即使其已经存在
-  images: # 测试使用图片
+  codebase_dir: ../mmocr # codebase path to test
+  checkpoint_force_download: False # whether to redownload the model even if it already exists
+  images:
     img_densetext_det: &img_densetext_det ../mmocr/demo/demo_densetext_det.jpg
     img_demo_text_det: &img_demo_text_det ../mmocr/demo/demo_text_det.jpg
     img_demo_text_ocr: &img_demo_text_ocr ../mmocr/demo/demo_text_ocr.jpg
     img_demo_text_recog: &img_demo_text_recog ../mmocr/demo/demo_text_recog.jpg
-  metric_info: &metric_info # 指标参数
-    hmean-iou: # 命名根据 metafile.Results.Metrics
-      eval_name: hmean-iou # 命名根据 test.py --metrics args 入参名称
-      metric_key: 0_hmean-iou:hmean # 命名根据 eval 写入 log 的 key name
-      tolerance: 0.1 # 容忍的阈值区间
-      task_name: Text Detection # 命名根据模型 metafile.Results.Task
-      dataset: ICDAR2015 #命名根据模型 metafile.Results.Dataset
-    word_acc: # 同上
+  metric_info: &metric_info
+    hmean-iou: # metafile.Results.Metrics
+      eval_name: hmean-iou #  test.py --metrics args
+      metric_key: 0_hmean-iou:hmean # the key name of eval log
+      tolerance: 0.1 # tolerated threshold interval
+      task_name: Text Detection # the name of metafile.Results.Task
+      dataset: ICDAR2015 # the name of metafile.Results.Dataset
+    word_acc: # same as hmean-iou, also a kind of metric
       eval_name: acc
       metric_key: 0_word_acc_ignore_case
       tolerance: 0.2
       task_name: Text Recognition
       dataset: IIIT5K
-  convert_image_det: &convert_image_det # det转换会使用到的图片
+  convert_image_det: &convert_image_det # the image that will be used by detection model convert
     input_img: *img_densetext_det
     test_img: *img_demo_text_det
   convert_image_rec: &convert_image_rec
     input_img: *img_demo_text_recog
     test_img: *img_demo_text_recog
-  backend_test: &default_backend_test True # 是否对 backend 进行精度测试
-  sdk: # SDK 配置文件
+  backend_test: &default_backend_test True # whether test model precision for backend
+  sdk: # SDK config
     sdk_detection_dynamic: &sdk_detection_dynamic configs/mmocr/text-detection/text-detection_sdk_dynamic.py
     sdk_recognition_dynamic: &sdk_recognition_dynamic configs/mmocr/text-recognition/text-recognition_sdk_dynamic.py
 
 onnxruntime:
   pipeline_ort_recognition_static_fp32: &pipeline_ort_recognition_static_fp32
-    convert_image: *convert_image_rec # 转换过程中使用的图片
-    backend_test: *default_backend_test # 是否进行后端测试，存在则判断，不存在则视为 False
-    sdk_config: *sdk_recognition_dynamic # 是否进行SDK测试，存在则使用特定的 SDK config 进行测试，不存在则视为不进行 SDK 测试
-    deploy_config: configs/mmocr/text-recognition/text-recognition_onnxruntime_static.py # 使用的 deploy cfg 路径，基于 mmdeploy 的路径
+    convert_image: *convert_image_rec # the image used by model conversion
+    backend_test: *default_backend_test # whether inference on the backend
+    sdk_config: *sdk_recognition_dynamic # test SDK or not. If it exists, use a specific SDK config for testing
+    deploy_config: configs/mmocr/text-recognition/text-recognition_onnxruntime_static.py # the deploy cfg path to use, based on mmdeploy path
 
   pipeline_ort_recognition_dynamic_fp32: &pipeline_ort_recognition_dynamic_fp32
     convert_image: *convert_image_rec
@@ -193,22 +161,22 @@ tensorrt:
     deploy_config: configs/mmocr/text-detection/text-detection_tensorrt-fp16_dynamic-320x320-2240x2240.py
 
 openvino:
-  # 此处省略，内容同上
+  # same as onnxruntime backend configuration
 ncnn:
-  # 此处省略，内容同上
+  # same as onnxruntime backend configuration
 pplnn:
-  # 此处省略，内容同上
+  # same as onnxruntime backend configuration
 torchscript:
-  # 此处省略，内容同上
+  # same as onnxruntime backend configuration
 
 
 models:
-  - name: crnn # 模型名称
-    metafile: configs/textrecog/crnn/metafile.yml # 模型对应的 metafile 的路径，相对于 codebase 的路径
-    codebase_model_config_dir: configs/textrecog/crnn # `model_configs` 的父文件夹路径，相对于 codebase 的路径
-    model_configs: # 需要测试的 config 名称
+  - name: crnn # model name
+    metafile: configs/textrecog/crnn/metafile.yml # the path of model metafile, based on codebase path
+    codebase_model_config_dir: configs/textrecog/crnn # the basepath of `model_configs`, based on codebase path
+    model_configs: # the config name to teset
       - crnn_academic_dataset.py
-    pipelines: # 使用的 pipeline
+    pipelines: # pipeline name
       - *pipeline_ort_recognition_dynamic_fp32
 
   - name: dbnet
@@ -220,24 +188,16 @@ models:
       - *pipeline_ort_detection_dynamic_fp32
       - *pipeline_trt_detection_dynamic_fp16
 
-      # 特殊的 pipeline 可以这样加入
+      # special pipeline can be added like this
       - convert_image: xxx
         backend_test: xxx
         sdk_config: xxx
         deploy_config: configs/mmocr/text-detection/xxx
 ```
 
-## 4. 生成的报告
+## 4. Generated Report
 
-### 模板
-
-|      | Model    | Model Config      | Task             | Checkpoint     | Dataset    | Backend  | Deploy Config   | Static or Dynamic | Precision Type | Conversion Result | metric_1    | metric_2    | metric_n    | Test Pass    |
-| ---- | -------- | ----------------- | ---------------- | -------------- | ---------- | -------- | --------------- | ----------------- | -------------- | ----------------- | ----------- | ----------- | ----------- | ------------ |
-| 序号 | 模型名称 | model config 路径 | 执行的 task name | `.pth`模型路径 | 数据集名称 | 后端名称 | deploy cfg 路径 | 动态 or 静态      | 测试精度       | 模型转换结果      | 指标 1 数值 | 指标 2 数值 | 指标 n 数值 | 后端测试结果 |
-
-### 示例
-
-这是 MMOCR 生成的报告
+This is an example of mmocr regression test report.
 
 |     | Model | Model Config                                                     | Task             | Checkpoint                                                                                                   | Dataset   | Backend         | Deploy Config                                                                          | Static or Dynamic | Precision Type | Conversion Result | hmean-iou | word_acc | Test Pass |
 | --- | ----- | ---------------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------ | --------- | --------------- | -------------------------------------------------------------------------------------- | ----------------- | -------------- | ----------------- | --------- | -------- | --------- |
@@ -249,7 +209,7 @@ models:
 | 5   | dbnet | ../mmocr/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py | Text Detection   | ${WORK_DIR}/mmocr/dbnet/tensorrt/dynamic/dbnet_r18_fpnc_sbn_1200e_icdar2015_20210329-ba3ab597/end2end.engine | ICDAR     | tensorrt        | configs/mmocr/text-detection/text-detection_tensorrt-fp16_dynamic-320x320-2240x2240.py | dynamic           | fp16           | True              | 0.793302  | -        | True      |
 | 6   | dbnet | ../mmocr/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py | Text Detection   | ${WORK_DIR}/mmocr/dbnet/tensorrt/dynamic/dbnet_r18_fpnc_sbn_1200e_icdar2015_20210329-ba3ab597                | ICDAR     | SDK-tensorrt    | configs/mmocr/text-detection/text-detection_sdk_dynamic.py                             | dynamic           | fp16           | True              | 0.795073  | -        | True      |
 
-## 5. 支持的后端
+## 5. Supported Backends
 
 - [x] ONNX Runtime
 - [x] TensorRT
@@ -260,7 +220,7 @@ models:
 - [x] SNPE
 - [x] MMDeploy SDK
 
-## 6. 支持的Codebase及其Metric
+## 6. Supported Codebase and Metrics
 
 | Codebase | Metric   | Support            |
 | -------- | -------- | ------------------ |
@@ -275,11 +235,3 @@ models:
 |          | acc      | :heavy_check_mark: |
 | mmedit   | PSNR     | :heavy_check_mark: |
 |          | SSIM     | :heavy_check_mark: |
-
-## 7. 注意事项
-
-暂无
-
-## 8. 常见问题
-
-暂无
