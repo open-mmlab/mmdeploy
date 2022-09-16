@@ -23,7 +23,9 @@ If your target platform is **Ubuntu 18.04 or later version**, we encourage you t
 
 ```shell
 git clone --recursive -b dev-1.x https://github.com/open-mmlab/mmdeploy.git
+cd mmdeploy
 python3 tools/scripts/build_ubuntu_x64_ort.py $(nproc)
+export PYTHONPATH=$(pwd)/build/lib:$PYTHONPATH
 ```
 
 **Method III:** Build from source
@@ -40,16 +42,15 @@ The following shows an example about converting `resnet18` model to onnx model t
 cd mmdeploy
 
 # download mmcls model
-pip install openmim
-mim download mmcls --config resnet18_8xb16_cifar10 --dest .
+mim download mmcls --config resnet18_8xb32_in1k --dest .
 
 # convert mmcls model to onnxruntime model with dynamic shape
 python tools/deploy.py \
     configs/mmcls/classification_onnxruntime_dynamic.py \
-    resnet18_8xb16_cifar10.py \
-    resnet18_b16x8_cifar10_20210528-bd6371c8.pth \
+    resnet18_8xb32_in1k.py \
+    resnet18_8xb32_in1k_20210831-fbbb1da6.pth \
     tests/data/tiger.jpeg \
-    --work-dir mmdeploy_models \
+    --work-dir mmdeploy_models/mmcls/ort \
     --device cpu \
     --show \
     --dump-info
@@ -83,13 +84,12 @@ import cv2
 img = cv2.imread('tests/data/tiger.jpeg')
 
 # create a classifier
-classifier = Classifier(model_path='./mmdeploy_models', device_name='cpu', device_id=0)
+classifier = Classifier(model_path='./mmdeploy_models/mmcls/ort', device_name='cpu', device_id=0)
 # perform inference
 result = classifier(img)
 # show inference result
-indices = [i for i in range(len(bboxes))]
 for label_id, score in result:
-        print(label_id, score)
+    print(label_id, score)
 ```
 
 Besides python API, mmdeploy Inference SDK also provides other FFI (Foreign Function Interface), such as C, C++, C#, Java and so on. You can learn the usage from the [demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo).
