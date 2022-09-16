@@ -6,7 +6,7 @@
 
 ### Install mmcls
 
-If you have already done that, move on to the next section. Otherwise, please follow this [quick guide](https://github.com/open-mmlab/mmclassification/tree/1.x#installation) to finish mmcls installation.
+If you have already done that, move on to [the next section](#install-mmdeploy). Otherwise, please follow this [quick guide](https://github.com/open-mmlab/mmclassification/tree/1.x#installation) to finish mmcls installation.
 
 ### Install mmdeploy
 
@@ -35,14 +35,14 @@ If neither **I** nor **II** meets your requirements, [building mmdeploy from sou
 
 ## Convert model
 
-You can use `tools/deploy.py` to convert mmcls models to the specified backend models. Its detailed usage can be learned from [here](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/02-how-to-run/convert_model.md#usage).
+You can use [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/blob/dev-1.x/tools/deploy.py) to convert mmcls models to the specified backend models. Its detailed usage can be learned from [here](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/02-how-to-run/convert_model.md#usage).
 
 The following shows an example about converting `resnet18` model to onnx model that can be inferred by ONNX Runtime.
 
 ```shell
 cd mmdeploy
 
-# download mmcls model
+# download resnet18 model from mmcls model zoo
 mim download mmcls --config resnet18_8xb32_in1k --dest .
 
 # convert mmcls model to onnxruntime model with dynamic shape
@@ -68,7 +68,7 @@ classification_{backend}-{precision}_{static | dynamic}_{shape}.py
 - **{static | dynamic}:** static shape or dynamic shape
 - **{shape}:** input shape or shape range of a model
 
-Therefore, in the above example, you can also convert `resnet18` to other backend models by changing the deployment config file `mmclassification_onnxruntime_dynamic.py` to [others](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/configs/mmcls), e.g., converting to tensorrt model by `classification_tensorrt-fp16_dynamic-224x224-224x224.py`.
+Therefore, in the above example, you can also convert `resnet18` to other backend models by changing the deployment config file `classification_onnxruntime_dynamic.py` to [others](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/configs/mmcls), e.g., converting to tensorrt-fp16 model by `classification_tensorrt-fp16_dynamic-224x224-224x224.py`.
 
 ```{tip}
 When converting mmcls models to tensorrt models, --device should be set to "cuda"
@@ -91,7 +91,7 @@ mmdeploy_models/mmcls/ort
 in which,
 
 - **end2end.onnx**: backend model which can be inferred by ONNX Runtime
-- **deploy.json**: meta information of `end2end.onnx`
+- **deploy.json**: meta information about backend model
 - **pipeline.json**: inference pipeline of mmdeploy SDK
 - **detail.json**: conversion parameters
 
