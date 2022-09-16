@@ -2,12 +2,9 @@ globals:
   codebase_dir: ../mmsegmentation
   checkpoint_force_download: False
   images:
-    img_leftImg8bit: &img_leftImg8bit ../mmsegmentation/tests/data/pseudo_cityscapes_dataset/leftImg8bit/frankfurt_000000_000294_leftImg8bit.png
+    img_leftImg8bit: &img_leftImg8bit ../mmsegmentation/tests/data/pseudo_cityscapes_dataset/leftImg8bit/val/frankfurt/frankfurt_000000_000294_leftImg8bit.png
     img_loveda_0: &img_loveda_0 ../mmsegmentation/tests/data/pseudo_loveda_dataset/img_dir/0.png
-    img_loveda_1: &img_loveda_1 ../mmsegmentation/tests/data/pseudo_loveda_dataset/img_dir/1.png
-    img_loveda_2: &img_loveda_2 ../mmsegmentation/tests/data/pseudo_loveda_dataset/img_dir/2.png
-    img_potsdam: &img_potsdam ../mmsegmentation/tests/data/pseudo_potsdam_dataset/img_dir/2_10_0_0_512_512.png
-    img_vaihingen: &img_vaihingen ../mmsegmentation/tests/data/pseudo_vaihingen_dataset/img_dir/area1_0_0_512_512.png
+
   metric_info: &metric_info
     mIoU: # named after metafile.Results.Metrics
       eval_name: mIoU # test.py --metrics args
@@ -25,13 +22,9 @@ globals:
 onnxruntime:
   pipeline_ort_static_fp32: &pipeline_ort_static_fp32
     convert_image: *convert_image
-    backend_test: *default_backend_test
-    sdk_config: *sdk_dynamic
     deploy_config: configs/mmseg/segmentation_onnxruntime_static-1024x2048.py
 
   pipeline_ort_static_fp32_512x512: &pipeline_ort_static_fp32_512x512
-    convert_image: *convert_image
-    backend_test: False
     deploy_config: configs/mmseg/segmentation_onnxruntime_static-512x512.py
 
   pipeline_ort_dynamic_fp32: &pipeline_ort_dynamic_fp32
@@ -129,13 +122,11 @@ models:
   - name: FCN
     metafile: configs/fcn/fcn.yml
     model_configs:
-      - configs/fcn/fcn_r50-d8_512x1024_40k_cityscapes.py
+      - configs/fcn/fcn_r50-d8_4xb2-40k_cityscapes-512x1024.py
     pipelines:
       - *pipeline_ts_fp32
       - *pipeline_ort_dynamic_fp32
-#      - *pipeline_trt_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
-#      - *pipeline_trt_dynamic_int8
       - *pipeline_ncnn_static_fp32
       - *pipeline_pplnn_dynamic_fp32
       - *pipeline_openvino_dynamic_fp32
@@ -143,7 +134,7 @@ models:
   - name: PSPNet
     metafile: configs/pspnet/pspnet.yml
     model_configs:
-      - configs/pspnet/pspnet_r50-d8_512x1024_80k_cityscapes.py
+      - configs/pspnet/pspnet_r50-d8_4xb2-40k_cityscapes-512x1024.py
     pipelines:
       - *pipeline_ts_fp32
       - *pipeline_ort_static_fp32
@@ -155,7 +146,7 @@ models:
   - name: deeplabv3
     metafile: configs/deeplabv3/deeplabv3.yml
     model_configs:
-      - configs/deeplabv3/deeplabv3_r50-d8_512x1024_40k_cityscapes.py
+      - configs/deeplabv3/deeplabv3_r50-d8_4xb2-40k_cityscapes-512x1024.py
     pipelines:
       - *pipeline_ts_fp32
       - *pipeline_ort_dynamic_fp32
@@ -167,7 +158,7 @@ models:
   - name: deeplabv3+
     metafile: configs/deeplabv3plus/deeplabv3plus.yml
     model_configs:
-      - configs/deeplabv3plus/deeplabv3plus_r50-d8_512x1024_40k_cityscapes.py
+      - configs/deeplabv3plus/deeplabv3plus_r50-d8_4xb2-40k_cityscapes-512x1024.py
     pipelines:
       - *pipeline_ts_fp32
       - *pipeline_ort_dynamic_fp32
@@ -179,7 +170,7 @@ models:
   - name: Fast-SCNN
     metafile: configs/fastscnn/fastscnn.yml
     model_configs:
-      - configs/fastscnn/fast_scnn_lr0.12_8x4_160k_cityscapes.py
+      - configs/fastscnn/fast_scnn_8xb4-160k_cityscapes-512x1024.py
     pipelines:
       - *pipeline_ts_fp32
       - *pipeline_ort_static_fp32
@@ -190,7 +181,7 @@ models:
   - name: UNet
     metafile: configs/unet/unet.yml
     model_configs:
-      - configs/unet/fcn_unet_s5-d16_4x4_512x1024_160k_cityscapes.py
+      - configs/unet/unet-s5-d16_fcn_4xb4-160k_cityscapes-512x1024.py
     pipelines:
       - *pipeline_ts_fp32
       - *pipeline_ort_dynamic_fp32
@@ -202,7 +193,7 @@ models:
   - name: ANN
     metafile: configs/ann/ann.yml
     model_configs:
-      - configs/ann/ann_r50-d8_512x1024_40k_cityscapes.py
+      - configs/ann/ann_r50-d8_4xb2-40k_cityscapes-512x1024.py
     pipelines:
       - *pipeline_ort_static_fp32
       - *pipeline_trt_static_fp16
@@ -210,7 +201,7 @@ models:
   - name: APCNet
     metafile: configs/apcnet/apcnet.yml
     model_configs:
-      - configs/apcnet/apcnet_r50-d8_512x1024_40k_cityscapes.py
+      - configs/apcnet/apcnet_r50-d8_4xb2-40k_cityscapes-512x1024.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
@@ -219,7 +210,7 @@ models:
   - name: BiSeNetV1
     metafile: configs/bisenetv1/bisenetv1.yml
     model_configs:
-      - configs/bisenetv1/bisenetv1_r18-d32_4x4_1024x1024_160k_cityscapes.py
+      - configs/bisenetv1/bisenetv1_r18-d32_4xb4-160k_cityscapes-1024x1024.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
@@ -229,7 +220,7 @@ models:
   - name: BiSeNetV2
     metafile: configs/bisenetv2/bisenetv2.yml
     model_configs:
-      - configs/bisenetv2/bisenetv2_fcn_4x4_1024x1024_160k_cityscapes.py
+      - configs/bisenetv2/bisenetv2_fcn_4xb4-160k_cityscapes-1024x1024.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
@@ -239,7 +230,7 @@ models:
   - name: CGNet
     metafile: configs/cgnet/cgnet.yml
     model_configs:
-      - configs/cgnet/cgnet_512x1024_60k_cityscapes.py
+      - configs/cgnet/cgnet_fcn_4xb8-60k_cityscapes-512x1024.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
@@ -249,7 +240,7 @@ models:
   - name: EMANet
     metafile: configs/emanet/emanet.yml
     model_configs:
-      - configs/emanet/emanet_r50-d8_512x1024_80k_cityscapes.py
+      - configs/emanet/emanet_r50-d8_4xb2-80k_cityscapes-512x1024.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
@@ -258,7 +249,7 @@ models:
   - name: EncNet
     metafile: configs/encnet/encnet.yml
     model_configs:
-      - configs/encnet/encnet_r50-d8_512x1024_40k_cityscapes.py
+      - configs/encnet/encnet_r50-d8_4xb2-40k_cityscapes-512x1024.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
@@ -267,7 +258,7 @@ models:
   - name: ERFNet
     metafile: configs/erfnet/erfnet.yml
     model_configs:
-      - configs/erfnet/erfnet_fcn_4x4_512x1024_160k_cityscapes.py
+      - configs/erfnet/erfnet_fcn_4xb4-160k_cityscapes-512x1024.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
@@ -277,7 +268,7 @@ models:
   - name: FastFCN
     metafile: configs/fastfcn/fastfcn.yml
     model_configs:
-      - configs/fastfcn/fastfcn_r50-d32_jpu_aspp_512x1024_80k_cityscapes.py
+      - configs/fastfcn/fastfcn_r50-d32_jpu_aspp_4xb2-80k_cityscapes-512x1024.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
@@ -287,7 +278,7 @@ models:
   - name: GCNet
     metafile: configs/gcnet/gcnet.yml
     model_configs:
-      - configs/gcnet/gcnet_r50-d8_512x1024_40k_cityscapes.py
+      - configs/gcnet/gcnet_r50-d8_4xb2-40k_cityscapes-512x1024.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
@@ -295,7 +286,7 @@ models:
   - name: ICNet
     metafile: configs/icnet/icnet.yml
     model_configs:
-      - configs/icnet/icnet_r18-d8_832x832_80k_cityscapes.py
+      - configs/icnet/icnet_r18-d8_4xb2-80k_cityscapes-832x832.py
     pipelines:
       - *pipeline_ort_static_fp32
       - *pipeline_trt_static_fp16
@@ -304,26 +295,26 @@ models:
   - name: ISANet
     metafile: configs/isanet/isanet.yml
     model_configs:
-      - configs/isanet/isanet_r50-d8_512x1024_40k_cityscapes.py
+      - configs/isanet/isanet_r50-d8_4xb2-40k_cityscapes-512x1024.py
     pipelines:
-      - *pipeline_ort_dynamic_fp32
-      - *pipeline_trt_dynamic_fp16
-      - *pipeline_openvino_dynamic_fp32
+      - *pipeline_ort_static_fp32
+      - *pipeline_trt_static_fp16
+      - *pipeline_openvino_static_fp32
 
   - name: OCRNet
     metafile: configs/ocrnet/ocrnet.yml
     model_configs:
-      - configs/ocrnet/ocrnet_hr18s_512x1024_40k_cityscapes.py
+      - configs/ocrnet/ocrnet_hr18s_4xb2-40k_cityscapes-512x1024.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
-      - *pipeline_trt_dynamic_fp16
+      - *pipeline_trt_dynamic_fp32
       - *pipeline_ncnn_static_fp32
       - *pipeline_openvino_dynamic_fp32
 
   - name: PointRend
     metafile: configs/point_rend/point_rend.yml
     model_configs:
-      - configs/point_rend/pointrend_r50_512x1024_80k_cityscapes.py
+      - configs/point_rend/pointrend_r50_4xb2-80k_cityscapes-512x1024.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
@@ -332,18 +323,18 @@ models:
   - name: Semantic FPN
     metafile: configs/sem_fpn/sem_fpn.yml
     model_configs:
-      - configs/sem_fpn/fpn_r50_512x1024_80k_cityscapes.py
+      - configs/sem_fpn/fpn_r50_4xb2-80k_cityscapes-512x1024.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
-      - *pipeline_trt_dynamic_fp16
+      - *pipeline_trt_dynamic_fp32
       - *pipeline_ncnn_static_fp32
       - *pipeline_openvino_dynamic_fp32
 
   - name: STDC
     metafile: configs/stdc/stdc.yml
     model_configs:
-      - configs/stdc/stdc1_in1k-pre_512x1024_80k_cityscapes.py
-      - configs/stdc/stdc2_in1k-pre_512x1024_80k_cityscapes.py
+      - configs/stdc/stdc1_in1k-pre_4xb12-80k_cityscapes-512x1024.py
+      - configs/stdc/stdc2_in1k-pre_4xb12-80k_cityscapes-512x1024.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
@@ -353,15 +344,15 @@ models:
   - name: UPerNet
     metafile: configs/upernet/upernet.yml
     model_configs:
-      - configs/upernet/upernet_r50_512x1024_40k_cityscapes.py
+      - configs/upernet/upernet_r50_4xb2-40k_cityscapes-512x1024.py
     pipelines:
       - *pipeline_ort_static_fp32
       - *pipeline_trt_static_fp16
   - name: Segmenter
     metafile: configs/segmenter/segmenter.yml
     model_configs:
-      - configs/segmenter/segmenter_vit-s_mask_8x1_512x512_160k_ade20k.py
-      - configs/segmenter/segmenter_vit-s_linear_8x1_512x512_160k_ade20k.py
+      - configs/segmenter/segmenter_vit-s_fcn_8xb1-160k_ade20k-512x512.py
+      - configs/segmenter/segmenter_vit-s_mask_8xb1-160k_ade20k-512x512.py
     pipelines:
       - *pipeline_ort_static_fp32_512x512
       - *pipeline_trt_static_fp32_512x512

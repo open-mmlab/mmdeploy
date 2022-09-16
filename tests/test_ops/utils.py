@@ -3,10 +3,10 @@ import os
 import subprocess
 import tempfile
 
-import mmcv
 import onnx
 import pytest
 import torch
+from mmengine import Config
 
 import mmdeploy.apis.tensorrt as trt_apis
 from mmdeploy.utils import Backend
@@ -114,7 +114,7 @@ class TestTensorRTExporter:
                     dynamic_axes=dynamic_axes,
                     opset_version=11)
 
-        deploy_cfg = mmcv.Config(
+        deploy_cfg = Config(
             dict(
                 backend_config=dict(
                     type='tensorrt',

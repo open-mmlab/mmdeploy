@@ -194,12 +194,24 @@ def get_preprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config):
             transform['keys'] = ['img']
         if 'key' in transform and transform['key'] == 'lq':
             transform['key'] = 'img'
+        if transform['type'] == 'ResizeEdge':
+            transform['type'] = 'Resize'
+            transform['keep_ratio'] = True
+            # now the sdk of class has bugs, because ResizeEdge not implement
+            # in sdk.
+            transform['size'] = (transform['scale'], transform['scale'])
         if transform['type'] in ('PackTextDetInputs', 'PackTextRecogInputs'):
             meta_keys += transform[
                 'meta_keys'] if 'meta_keys' in transform else []
             transform['meta_keys'] = list(set(meta_keys))
             transform['keys'] = ['img']
             transforms[i]['type'] = 'Collect'
+        if transform['type'] == 'PackDetInputs' or \
+           transform['type'] == 'PackClsInputs':
+            transforms.insert(i, dict(type='DefaultFormatBundle'))
+            transform['type'] = 'Collect'
+            if 'keys' not in transform:
+                transform['keys'] = ['img']
         if transform['type'] == 'Resize':
             transforms[i]['size'] = transforms[i]['scale']
 

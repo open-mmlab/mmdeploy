@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import torch
+from mmseg.structures import SegDataSample
 
 from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.utils import is_dynamic_shape
@@ -7,7 +7,12 @@ from mmdeploy.utils import is_dynamic_shape
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmseg.models.segmentors.BaseSegmentor.forward')
-def base_segmentor__forward(ctx, self, img, img_metas=None, **kwargs):
+def base_segmentor__forward(ctx,
+                            self,
+                            inputs,
+                            data_samples=None,
+                            mode='predict',
+                            **kwargs):
     """Rewrite `forward` for default backend.
 
     Support configured dynamic/static shape for model input.
@@ -15,27 +20,23 @@ def base_segmentor__forward(ctx, self, img, img_metas=None, **kwargs):
     Args:
         ctx (ContextCaller): The context with additional information.
         self: The instance of the original class.
-        img (Tensor | List[Tensor]): Input image tensor(s).
-        img_metas (List[dict]): List of dicts containing image's meta
+        inputs (Tensor | List[Tensor]): Input image tensor(s).
+        data_samples (List[dict]): List of dicts containing image's meta
             information such as `img_shape`.
 
     Returns:
         torch.Tensor: Output segmentation map pf shape [N, 1, H, W].
     """
-    if img_metas is None:
-        img_metas = [{}]
-    else:
-        assert len(img_metas) == 1, 'do not support aug_test'
-        img_metas = img_metas[0]
-    if isinstance(img, list):
-        img = img[0]
-    assert isinstance(img, torch.Tensor)
+    if data_samples is None:
+        data_samples = [SegDataSample()]
 
     deploy_cfg = ctx.cfg
     is_dynamic_flag = is_dynamic_shape(deploy_cfg)
     # get origin input shape as tensor to support onnx dynamic shape
-    img_shape = img.shape[2:]
+    img_shape = inputs.shape[2:]
     if not is_dynamic_flag:
         img_shape = [int(val) for val in img_shape]
-    img_metas[0]['img_shape'] = img_shape
-    return self.simple_test(img, img_metas, **kwargs)
+    for data_sample in data_samples:
+        data_sample.set_field(
+            name='img_shape', value=img_shape, field_type='metainfo')
+    return self.predict(inputs, data_samples)

@@ -21,6 +21,9 @@ import_codebase(Codebase.MMDET)
 
 model_cfg_path = 'tests/test_codebase/test_mmdet/data/model.py'
 model_cfg = load_config(model_cfg_path)[0]
+model_cfg.test_dataloader.dataset.data_root = \
+    'tests/test_codebase/test_mmdet/data'
+model_cfg.test_dataloader.dataset.ann_file = 'coco_sample.json'
 deploy_cfg = Config(
     dict(
         backend_config=dict(type='onnxruntime'),
@@ -53,7 +56,7 @@ img = np.random.rand(*img_shape, 3)
 def test_build_test_runner():
     # Prepare dummy model
     from mmdet.structures import DetDataSample
-    from mmengine.data import InstanceData
+    from mmengine.structures import InstanceData
 
     data_sample = DetDataSample()
     img_meta = dict(img_shape=(800, 1216, 3))
@@ -66,6 +69,8 @@ def test_build_test_runner():
     pred_instances.scores = torch.rand((5, ))
     pred_instances.labels = torch.randint(0, 10, (5, ))
     data_sample.pred_instances = pred_instances
+    data_sample.img_id = 139
+    data_sample.ori_shape = (800, 1216)
     outputs = [data_sample]
     model = DummyModel(outputs=outputs)
     assert model is not None
@@ -158,7 +163,7 @@ def test_create_input(device):
 
 def test_visualize(backend_model):
     input_dict, _ = task_processor.create_input(img, input_shape=img_shape)
-    results = backend_model.test_step([input_dict])
+    results = backend_model.test_step(input_dict)[0]
     with TemporaryDirectory() as dir:
         filename = dir + 'tmp.jpg'
         task_processor.visualize(img, results, filename, 'window')

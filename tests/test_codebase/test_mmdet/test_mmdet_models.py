@@ -5,7 +5,7 @@ import random
 import tempfile
 from typing import Dict, List
 
-import mmcv
+import mmengine
 import numpy as np
 import pytest
 import torch
@@ -784,15 +784,14 @@ def test_forward_of_base_detector(model_cfg_path, backend):
                     keep_top_k=100,
                     background_label_id=-1,
                 ))))
-
-    model_cfg = Config(dict(model=mmcv.load(model_cfg_path)))
+    model_cfg = Config(dict(model=mmengine.load(model_cfg_path)))
     model_cfg.model = _replace_r50_with_r18(model_cfg.model)
     from mmdet.apis import init_detector
     model = init_detector(model_cfg, None, device='cpu')
 
     img = torch.randn(1, 3, 64, 64)
     from mmdet.structures import DetDataSample
-    from mmengine import InstanceData
+    from mmengine.structures import InstanceData
     data_sample = DetDataSample()
     img_meta = dict(img_shape=(800, 1216, 3))
     gt_instances = InstanceData(metainfo=img_meta)

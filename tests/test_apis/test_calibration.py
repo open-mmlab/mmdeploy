@@ -4,7 +4,7 @@ import tempfile
 from multiprocessing import Process
 
 import h5py
-import mmcv
+from mmengine import Config
 
 from mmdeploy.apis import create_calib_input_data
 
@@ -13,7 +13,7 @@ ann_file = 'tests/data/annotation.json'
 
 
 def get_end2end_deploy_cfg():
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = Config(
         dict(
             onnx_config=dict(
                 dynamic_axes={
@@ -84,7 +84,7 @@ def get_model_cfg():
             ])
     ]
 
-    model_cfg = mmcv.Config(
+    model_cfg = Config(
         dict(
             data=dict(
                 samples_per_gpu=1,

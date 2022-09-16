@@ -42,7 +42,7 @@ def gfl_head__predict_by_feat(ctx,
             (batch_size, num_priors * 1, H, W). Default None.
         batch_img_metas (list[dict]):  Meta information of the image, e.g.,
             image size, scaling factor, etc.
-        cfg (mmcv.Config | None): Test / postprocessing configuration,
+        cfg (Config | None): Test / postprocessing configuration,
             if None, test_cfg would be used. Default: None.
         rescale (bool): If True, return boxes in original image space.
             Default: False.
