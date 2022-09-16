@@ -180,6 +180,13 @@ class Classification(BaseTask):
         else:
             if pipeline[0]['type'] == 'LoadImageFromFile':
                 pipeline.pop(0)
+        # move PackClsInputs to the last of list for CIFAR10 dataset configs.
+        move_pipeline = []
+        while pipeline[-1]['type'] != 'PackClsInputs':
+            sub_pipeline = pipeline.pop(-1)
+            move_pipeline = [sub_pipeline] + move_pipeline
+        pipeline = pipeline[:-1] + move_pipeline + pipeline[-1:]
+
         pipeline = Compose(pipeline)
 
         if isinstance(imgs, str):
