@@ -21,7 +21,7 @@ from mmdeploy.utils import (IR, Backend, get_backend, get_calib_filename,
 
 """
 configs/mmyolo/detection/detection_onnxruntime_static.py
-/home/ubuntu/workspace/github/openmmlab/yolobenchmark/configs/yolov5/yolov5_s-v61_syncbn_8xb16-300e_coco.py
+/home/ubuntu/workspace/github/openmmlab/TEST/yolobenchmark/configs/yolov5/yolov5_s-v61_syncbn_8xb16-300e_coco.py
 mmyolov5.pt
 /home/ubuntu/workspace/github/openmmlab/mmdetection/demo/demo.jpg
 --work-dir
@@ -32,7 +32,7 @@ cuda:0
 """
 """
 /home/ubuntu/workspace/github/openmmlab/mmdeploy/configs/mmyolo/detection/detection_tensorrt_static-640x640.py
-/home/ubuntu/workspace/github/openmmlab/yolobenchmark/configs/yolov5/yolov5_s-v61_syncbn_8xb16-300e_coco.py
+/home/ubuntu/workspace/github/openmmlab/TEST/yolobenchmark/configs/yolov5/yolov5_s-v61_syncbn_8xb16-300e_coco.py
 mmyolov5.pt
 /home/ubuntu/workspace/github/openmmlab/mmdetection/demo/demo.jpg
 --work-dir
