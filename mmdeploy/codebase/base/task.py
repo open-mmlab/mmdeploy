@@ -176,10 +176,10 @@ class BaseTask(metaclass=ABCMeta):
                     ' field of config. Please set '\
                     '`visualization=dict(type="VisualizationHook")`'
 
-                # cfg.default_hooks.visualization.enable = True
+                cfg.default_hooks.visualization.enable = True
                 cfg.default_hooks.visualization.show = show
                 cfg.default_hooks.visualization.wait_time = wait_time
-                # cfg.default_hooks.visualization.out_dir = show_dir
+                cfg.default_hooks.visualization.out_dir = show_dir
                 cfg.default_hooks.visualization.interval = interval
 
             return cfg
@@ -237,8 +237,8 @@ class BaseTask(metaclass=ABCMeta):
             save_dir (str): The save directory of visualizer.
         """
         cfg = deepcopy(self.visualizer)
-        # cfg.name = name
-        # cfg.save_dir = save_dir
+        cfg.name = name
+        cfg.save_dir = save_dir
         from mmengine.registry import VISUALIZERS, DefaultScope
         with DefaultScope.overwrite_default_scope(cfg.pop('_scope_', None)):
             # get the global default scope
