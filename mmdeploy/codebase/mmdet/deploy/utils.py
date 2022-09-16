@@ -214,16 +214,6 @@ class TRTGatherTopk(torch.autograd.Function):
         """symbolic of gather topk."""
         out = g.op('mmdeploy::GatherTopk', x, inds, outputs=1)
 
-        # set output size deduce from
-        x_type = x.type()
-        inds_type = inds.type()
-        x_size = x_type.symbolic_sizes()
-        inds_size = inds_type.symbolic_sizes()
-        if x_size is not None and inds_size is not None:
-            inds_dims = len(inds_size)
-            out_size = inds_size + x_size[inds_dims:]
-            out_type = out.type().with_sizes(out_size)
-            out.setType(out_type)
         return out
 
 
@@ -238,10 +228,14 @@ def __gather_topk__trt(ctx,
     """TensorRT gather_topk."""
     _ = ctx
     if is_batched:
-        outputs = [
-            TRTGatherTopk.apply(x, inds).to(x.dtype) if x is not None else None
-            for x in inputs
-        ]
+        index_shape = inds.shape
+        index_dim = inds.dim()
+        outputs = [None for _ in inputs]
+        for i, x in enumerate(inputs):
+            out = TRTGatherTopk.apply(x, inds).to(x.dtype)
+            out_shape = [*index_shape, *x.shape[index_dim:]]
+            out = out.reshape(out_shape)
+            outputs[i] = out
     else:
         prior_inds = inds.new_zeros((1, 1))
         outputs = [
