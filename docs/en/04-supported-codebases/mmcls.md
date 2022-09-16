@@ -96,13 +96,13 @@ Besides python API, mmdeploy Inference SDK also provides other FFI (Foreign Func
 
 ## Supported models
 
-| Model             | TorchScript | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |                                          Model config                                           |
-| :---------------- | :---------: | :----------: | :------: | :--: | :---: | :------: | :---------------------------------------------------------------------------------------------: |
-| ResNet            |      Y      |      Y       |    Y     |  Y   |   Y   |    Y     |       [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnet)       |
-| ResNeXt           |      Y      |      Y       |    Y     |  Y   |   Y   |    Y     |      [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnext)       |
-| SE-ResNet         |      Y      |      Y       |    Y     |  Y   |   Y   |    Y     |      [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/seresnet)      |
-| MobileNetV2       |      Y      |      Y       |    Y     |  Y   |   Y   |    Y     |    [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/mobilenet_v2)    |
-| ShuffleNetV1      |      Y      |      Y       |    Y     |  Y   |   Y   |    Y     |   [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v1)    |
-| ShuffleNetV2      |      Y      |      Y       |    Y     |  Y   |   Y   |    Y     |   [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v2)    |
-| VisionTransformer |      Y      |      Y       |    Y     |  Y   |   ?   |    Y     | [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/vision_transformer) |
-| SwinTransformer   |      Y      |      Y       |    Y     |  N   |   ?   |    N     |  [config](https://github.com/open-mmlab/mmclassification/tree/master/configs/swin_transformer)  |
+| Model                                                                                                      | TorchScript | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |
+| :--------------------------------------------------------------------------------------------------------- | :---------: | :----------: | :------: | :--: | :---: | :------: |
+| [ResNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnet)                        |      Y      |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [ResNeXt](https://github.com/open-mmlab/mmclassification/tree/master/configs/resnext)                      |      Y      |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [SE-ResNet](https://github.com/open-mmlab/mmclassification/tree/master/configs/seresnet)                   |      Y      |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [MobileNetV2](https://github.com/open-mmlab/mmclassification/tree/master/configs/mobilenet_v2)             |      Y      |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [ShuffleNetV1](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v1)           |      Y      |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [ShuffleNetV2](https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v2)           |      Y      |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [VisionTransformer](https://github.com/open-mmlab/mmclassification/tree/master/configs/vision_transformer) |      Y      |      Y       |    Y     |  Y   |   ?   |    Y     |
+| [SwinTransformer](https://github.com/open-mmlab/mmclassification/tree/master/configs/swin_transformer)     |      Y      |      Y       |    Y     |  N   |   ?   |    N     |
