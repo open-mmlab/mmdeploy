@@ -104,10 +104,9 @@ def rpn_head__get_bboxes(ctx,
 
         if pre_topk > 0:
             _, topk_inds = scores.squeeze(2).topk(pre_topk)
-            bbox_pred, scores, score_factors = gather_topk(
+            bbox_pred, scores = gather_topk(
                 bbox_pred,
                 scores,
-                score_factors,
                 inds=topk_inds,
                 batch_size=batch_size,
                 is_batched=True)

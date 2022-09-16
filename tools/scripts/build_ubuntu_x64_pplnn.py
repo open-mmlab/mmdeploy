@@ -104,6 +104,7 @@ def install_mmdeploy(work_dir, pplnn_cmake_dir, pplcv_cmake_dir, build_cuda):
 
     os.system('cd build && make -j {} && make install'.format(g_jobs))
     os.system('python3 -m pip install -e .')
+    os.system('python3 tools/check_env.py')
     return 0
 
 

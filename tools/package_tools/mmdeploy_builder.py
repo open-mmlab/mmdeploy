@@ -163,8 +163,8 @@ def build_mmdeploy(cfg, mmdeploy_dir, dist_dir=None):
         build_cmd = 'cmake --build . --config Release -- /m'
         _call_command(build_cmd, build_dir)
         install_cmd = 'cmake --install . --config Release'
-        _remove_if_exist(build_dir, 'lib', 'Release')
         _call_command(install_cmd, build_dir)
+        _remove_if_exist(osp.join(build_dir, 'lib', 'Release'))
     else:
         # build cmd
         build_cmd = 'cmake --build . -- -j$(nproc) && cmake --install .'
