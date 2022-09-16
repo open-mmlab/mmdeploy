@@ -9,7 +9,7 @@ from mmengine import Config
 from mmengine.model.base_model.data_preprocessor import BaseDataPreprocessor
 from torch.nn import functional as F
 from mmengine.structures import BaseDataElement, InstanceData
-from mmdet3d.structures.det3d_data_sample import (ForwardResults, OptSampleList, SampleList)
+from mmdet3d.structures.det3d_data_sample import SampleList
 from mmdeploy.codebase.base import BaseBackendModel
 from mmdeploy.core import RewriterContext
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
@@ -160,8 +160,8 @@ class VoxelDetectionModel(BaseBackendModel):
     @staticmethod
     def convert_to_datasample(
         data_samples: SampleList,
-        data_instances_3d: OptInstanceList = None,
-        data_instances_2d: OptInstanceList = None,
+        data_instances_3d: Optional[List[InstanceData]] = None,
+        data_instances_2d: Optional[List[InstanceData]] = None,
     ) -> SampleList:
         """Convert results list to `Det3DDataSample`.
 
@@ -387,13 +387,10 @@ class VoxelDetectionModel(BaseBackendModel):
                 temp_instances.labels_3d = labels
                 ret_list.append(temp_instances)
                 
-            import pdb
-            pdb.set_trace()
-            data_samples = convert_to_datasample(metas, data_instances_3d=ret_list)
+            data_samples = VoxelDetectionModel.convert_to_datasample(metas, data_instances_3d=ret_list)
 
         else:
             raise NotImplementedError('mmdet3d model bbox_head not found')
-        
 
         return data_samples
 
