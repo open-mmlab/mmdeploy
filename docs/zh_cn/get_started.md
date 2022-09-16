@@ -104,7 +104,7 @@ mim install mmcv-full
 </tbody>
 </table>
 
-**注：对于不在上述表格中的软硬件平台，请参考[源码安装文档](./01-how-to-build/build_from_source.md)，正确安装和配置 MMDeploy。**
+**注：对于不在上述表格中的软硬件平台，请参考[源码安装文档](01-how-to-build/build_from_source.md)，正确安装和配置 MMDeploy。**
 
 以最新的预编译包为例，你可以参考以下命令安装：
 
@@ -113,11 +113,11 @@ mim install mmcv-full
 
 ```shell
 # 安装 MMDeploy ONNX Runtime 自定义算子库和推理 SDK
-wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.7.0/mmdeploy-0.7.0-linux-x86_64-onnxruntime1.8.1.tar.gz
-tar -zxvf mmdeploy-0.7.0-linux-x86_64-onnxruntime1.8.1.tar.gz
-cd mmdeploy-0.7.0-linux-x86_64-onnxruntime1.8.1
-pip install dist/mmdeploy-0.7.0-py3-none-linux_x86_64.whl
-pip install sdk/python/mmdeploy_python-0.7.0-cp38-none-linux_x86_64.whl
+wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.8.0/mmdeploy-0.8.0-linux-x86_64-onnxruntime1.8.1.tar.gz
+tar -zxvf mmdeploy-0.8.0-linux-x86_64-onnxruntime1.8.1.tar.gz
+cd mmdeploy-0.8.0-linux-x86_64-onnxruntime1.8.1
+pip install dist/mmdeploy-0.8.0-py3-none-linux_x86_64.whl
+pip install sdk/python/mmdeploy_python-0.8.0-cp38-none-linux_x86_64.whl
 cd ..
 # 安装推理引擎 ONNX Runtime
 pip install onnxruntime==1.8.1
@@ -134,11 +134,11 @@ export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 
 ```shell
 # 安装 MMDeploy TensorRT 自定义算子库和推理 SDK
-wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.7.0/mmdeploy-0.7.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
-tar -zxvf mmdeploy-v0.7.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
-cd mmdeploy-0.7.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
-pip install dist/mmdeploy-0.7.0-py3-none-linux_x86_64.whl
-pip install sdk/python/mmdeploy_python-0.7.0-cp38-none-linux_x86_64.whl
+wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.8.0/mmdeploy-0.8.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
+tar -zxvf mmdeploy-0.8.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
+cd mmdeploy-0.8.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
+pip install dist/mmdeploy-0.8.0-py3-none-linux_x86_64.whl
+pip install sdk/python/mmdeploy_python-0.8.0-cp38-none-linux_x86_64.whl
 cd ..
 # 安装推理引擎 TensorRT
 # !!! 从 NVIDIA 官网下载 TensorRT-8.2.3.0 CUDA 11.x 安装包并解压到当前目录
@@ -157,12 +157,12 @@ export LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
 <summary><b>Windows-x86_64</b></summary>
 </details>
 
-请阅读 [这里](./02-how-to-run/prebuilt_package_windows.md)，了解 MMDeploy 预编译包在 Windows 平台下的使用方法。
+请阅读 [这里](02-how-to-run/prebuilt_package_windows.md)，了解 MMDeploy 预编译包在 Windows 平台下的使用方法。
 
 ## 模型转换
 
 在准备工作就绪后，我们可以使用 MMDeploy 中的工具 `tools/deploy.py`，将 OpenMMLab 的 PyTorch 模型转换成推理后端支持的格式。
-对于`tools/deploy.py` 的使用细节，请参考 [如何转换模型](./02-how-to-run/convert_model.md)。
+对于`tools/deploy.py` 的使用细节，请参考 [如何转换模型](02-how-to-run/convert_model.md)。
 
 以 [MMDetection](https://github.com/open-mmlab/mmdetection) 中的 `Faster R-CNN` 为例，我们可以使用如下命令，将 PyTorch 模型转换为 TenorRT 模型，从而部署到 NVIDIA GPU 上.
 
@@ -226,7 +226,7 @@ result = inference_model(
 你可以直接运行预编译包中的 demo 程序，输入 SDK Model 和图像，进行推理，并查看推理结果。
 
 ```shell
-cd mmdeploy-0.7.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
+cd mmdeploy-0.8.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
 # 运行 python demo
 python sdk/example/python/object_detection.py cuda ../mmdeploy_model/faster-rcnn ../mmdetection/demo/demo.jpg
 # 运行 C/C++ demo
@@ -275,7 +275,7 @@ cv2.imwrite('output_detection.png', img)
 使用 C++ API 进行模型推理的流程符合下面的模式：
 ![image](https://user-images.githubusercontent.com/4560679/182554486-2bf0ff80-9e82-4a0f-bccc-5e1860444302.png)
 
-以下是这个流程的具体应用过程：
+以下是具体过程：
 
 ```C++
 #include <cstdlib>
@@ -327,6 +327,10 @@ target_link_libraries(${name} PRIVATE mmdeploy ${OpenCV_LIBS})
 对于 C API、C# API、Java API 的使用方法，请分别阅读代码[C demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csrc)， [C# demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csharp) 和 [Java demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/java)。
 我们将在后续版本中详细讲述它们的用法。
 
+#### 加速预处理（实验性功能）
+
+若要对预处理进行加速，请查阅[此处](./02-how-to-run/fuse_transform.md)
+
 ## 模型精度评估
 
 为了测试部署模型的精度，推理效率，我们提供了 `tools/test.py` 来帮助完成相关工作。以上文中的部署模型为例：
@@ -344,4 +348,4 @@ python mmdeploy/tools/test.py \
 关于 --model 选项，当使用 Model Converter 进行推理时，它代表转换后的推理后端模型的文件路径。而当使用 SDK 测试模型精度时，该选项表示 MMDeploy Model 的路径.
 ```
 
-请阅读 [如何进行模型评估](./02-how-to-run/profile_model.md) 了解关于 `tools/test.py` 的使用细节。
+请阅读 [如何进行模型评估](02-how-to-run/profile_model.md) 了解关于 `tools/test.py` 的使用细节。
