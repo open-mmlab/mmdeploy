@@ -7,9 +7,8 @@ from mmengine.structures import InstanceData
 from torch import Tensor
 
 from mmdeploy.codebase.mmdet import get_post_processing_params
-from mmdeploy.codebase.mmdet.models.layers import multiclass_nms
+from mmdeploy.codebase.mmyolo.models.layers import multiclass_nms
 from mmdeploy.core import FUNCTION_REWRITER
-
 '''
 cls_scores: List[Tensor],
 bbox_preds: List[Tensor],
@@ -19,18 +18,20 @@ cfg: Optional[ConfigDict] = None,
 rescale: bool = True,
 with_nms: bool = True) -> List[InstanceData]:
 '''
+
+
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmyolo.models.dense_heads.yolov5_head.'
     'YOLOv5Head.predict_by_feat')
 def yolov5_head__predict_by_feat(ctx,
-                                self,
-                                cls_scores: List[Tensor],
-                                bbox_preds: List[Tensor],
-                                objectnesses: Optional[List[Tensor]],
-                                batch_img_metas: Optional[List[dict]] = None,
-                                cfg: Optional[ConfigDict] = None,
-                                rescale: bool = False,
-                                with_nms: bool = True) -> List[InstanceData]:
+                                 self,
+                                 cls_scores: List[Tensor],
+                                 bbox_preds: List[Tensor],
+                                 objectnesses: Optional[List[Tensor]],
+                                 batch_img_metas: Optional[List[dict]] = None,
+                                 cfg: Optional[ConfigDict] = None,
+                                 rescale: bool = False,
+                                 with_nms: bool = True) -> List[InstanceData]:
     """Rewrite `predict_by_feat` of `YOLOXHead` for default backend.
 
     Rewrite this function to deploy model, transform network output for a
@@ -65,27 +66,23 @@ def yolov5_head__predict_by_feat(ctx,
             represents the class label of the corresponding box.
     """
     assert len(cls_scores) == len(bbox_preds) == len(objectnesses)
-
     cfg = self.test_cfg if cfg is None else cfg
     batch_size = bbox_preds[0].shape[0]
     featmap_sizes = [cls_score.shape[2:] for cls_score in cls_scores]
     mlvl_priors = self.prior_generator.grid_priors(
-        featmap_sizes,
-        dtype=cls_scores[0].dtype,
-        device=cls_scores[0].device)
+        featmap_sizes, dtype=cls_scores[0].dtype, device=cls_scores[0].device)
     flatten_priors = torch.cat(mlvl_priors)
 
     mlvl_strides = [
         flatten_priors.new_full(
-            (featmap_size.numel() * self.num_base_priors,), stride) for
-        featmap_size, stride in zip(featmap_sizes, self.featmap_strides)
+            (featmap_size.numel() * self.num_base_priors, ), stride)
+        for featmap_size, stride in zip(featmap_sizes, self.featmap_strides)
     ]
 
     flatten_stride = torch.cat(mlvl_strides)
 
     flatten_cls_scores = [
-        cls_score.permute(0, 2, 3, 1).reshape(batch_size, -1,
-                                              self.num_classes)
+        cls_score.permute(0, 2, 3, 1).reshape(batch_size, -1, self.num_classes)
         for cls_score in cls_scores
     ]
     flatten_bbox_preds = [
@@ -101,18 +98,24 @@ def yolov5_head__predict_by_feat(ctx,
     score_factor = torch.cat(flatten_objectness, dim=1).sigmoid()
     flatten_bbox_preds = torch.cat(flatten_bbox_preds, dim=1)
 
-    bboxes = self.bbox_coder.decode(
-        flatten_priors[None], flatten_bbox_preds, flatten_stride)
+    bboxes = self.bbox_coder.decode(flatten_priors[None], flatten_bbox_preds,
+                                    flatten_stride)
 
     # directly multiply score factor and feed to nms
     scores = cls_scores * (score_factor.unsqueeze(-1))
     max_scores, _ = torch.max(scores, 1)
     mask = max_scores >= cfg.score_thr
     scores = scores.where(mask, scores.new_zeros(1))
-
+    # add a pad for bboxes, or the results are wrong.
+    img_meta = batch_img_metas[0]
+    pad_param = img_meta['pad_param']
+    bboxes -= bboxes.new_tensor(
+        [pad_param[2], pad_param[0], pad_param[2], pad_param[0]])
+    if rescale:
+        scale_factor = img_meta['scale_factor']
+        bboxes /= bboxes.new_tensor(scale_factor).repeat((1, 2))
     if not with_nms:
         return bboxes, scores
-
     deploy_cfg = ctx.cfg
     post_params = get_post_processing_params(deploy_cfg)
     max_output_boxes_per_class = post_params.max_output_boxes_per_class

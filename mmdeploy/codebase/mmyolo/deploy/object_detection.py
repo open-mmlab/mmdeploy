@@ -223,7 +223,6 @@ class ObjectDetection(BaseTask):
         Return:
             dict: Composed of the postprocess information.
         """
-        assert 1==2
         postprocess = self.model_cfg.model.test_cfg
         if 'rpn' in postprocess:
             postprocess['min_bbox_size'] = postprocess['rpn']['min_bbox_size']

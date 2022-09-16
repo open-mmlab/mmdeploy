@@ -12,7 +12,7 @@ from mmdeploy.utils.timer import TimeCounter
 '''
 configs/mmyolo/detection/detection_tensorrt_static-640x640.py 
 /home/ubuntu/workspace/github/openmmlab/yolobenchmark/configs/yolov5/yolov5_s-v61_syncbn_8xb16-300e_coco.py 
---model /home/ubuntu/workspace/github/openmmlab/mmdeploy/work_dir/end2end.engine 
+--model /home/ubuntu/workspace/github/openmmlab/mmdeploy/work_dir_trt/end2end.engine 
 --device cuda:0
 '''
 
