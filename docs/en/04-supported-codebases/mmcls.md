@@ -14,7 +14,7 @@ There are several methods to install mmdeploy, among which you can choose an app
 
 **Method I:** Install precompiled package
 
-**TODO**. MMDeploy hasn't released based on dev-1.x branch.
+> **TODO**. MMDeploy hasn't released based on dev-1.x branch.
 
 **Method II:** Build using scripts
 
@@ -26,6 +26,7 @@ git clone --recursive -b dev-1.x https://github.com/open-mmlab/mmdeploy.git
 cd mmdeploy
 python3 tools/scripts/build_ubuntu_x64_ort.py $(nproc)
 export PYTHONPATH=$(pwd)/build/lib:$PYTHONPATH
+export LD_LIBRARY_PATH=$(pwd)/../mmdeploy-dep/onnxruntime-linux-x64-1.8.1/lib/:$LD_LIBRARY_PATH
 ```
 
 **Method III:** Build from source
@@ -73,9 +74,49 @@ Therefore, in the above example, you can also convert `resnet18` to other backen
 When converting mmcls models to tensorrt models, --device should be set to "cuda"
 ```
 
-## Inference model
+## Model Specification
 
-After the installation, you can perform inference by mmdeploy inference SDK.
+Before moving on to model inference chapter, let us talk more about the converted model structure which is very important to do model inference.
+
+The converted model locates in the working directory like `mmdeploy_models/mmcls/ort` in the previous example. It includes:
+
+```
+mmdeploy_models/mmcls/ort
+├── deploy.json
+├── detail.json
+├── end2end.onnx
+└── pipeline.json
+```
+
+in which,
+
+- **end2end.onnx**: backend model which can be inferred by ONNX Runtime
+- **deploy.json**: meta information of `end2end.onnx`
+- **pipeline.json**: inference pipeline of mmdeploy SDK
+- **detail.json**: conversion parameters
+
+And the whole package **mmdeploy_models/mmcls/ort** is defined as **mmdeploy SDK model**. In other words, **mmdeploy SDK model** includes not only backend model but also inference meta information.
+
+## Backend model inference
+
+mmdeploy provides a unified API named as `inference_model` to do this job, making all inference backends API transparent to users.
+
+Take the previous converted `end2end.onnx` model as an example,
+
+```shell
+from mmdeploy.apis import inference_model
+result = inference_model(
+  model_cfg='./resnet18_8xb32_in1k.py',
+  deploy_cfg='configs/mmcls/classification_onnxruntime_dynamic.py',
+  backend_files=['mmdeploy_models/mmcls/ort/end2end.onnx'],
+  img='tests/data/tiger.jpeg',
+  device='cpu')
+print(result)
+```
+
+## SDK model inference
+
+You can also perform SDK model inference like following,
 
 ```python
 from mmdeploy_python import Classifier
@@ -92,7 +133,7 @@ for label_id, score in result:
     print(label_id, score)
 ```
 
-Besides python API, mmdeploy Inference SDK also provides other FFI (Foreign Function Interface), such as C, C++, C#, Java and so on. You can learn the usage from the [demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo).
+Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Interface), such as C, C++, C#, Java and so on. You can learn their usage from [demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo).
 
 ## Supported models
 
