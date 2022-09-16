@@ -221,6 +221,7 @@ class VoxelDetection(BaseTask):
         data = []
         data_ = dict(
                 lidar_points=dict(lidar_path=pcd),
+                timestamp=1,
                 # for ScanNet demo we need axis_align_matrix
                 axis_align_matrix=np.eye(4),
                 box_type_3d=box_type_3d,
@@ -230,9 +231,6 @@ class VoxelDetection(BaseTask):
         
         collate_data = pseudo_collate(data)
         data[0]['inputs']['points'] = data[0]['inputs']['points'].to(self.device)
-        
-        import pdb
-        pdb.set_trace()
         
         # for index in range(len(collate_data['inputs']['points'])):
         #     collate_data['inputs']['points'][index] = collate_data['inputs']['points'][index].to(self.device)

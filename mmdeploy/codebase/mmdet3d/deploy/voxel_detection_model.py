@@ -9,7 +9,7 @@ from mmengine import Config
 from mmengine.model.base_model.data_preprocessor import BaseDataPreprocessor
 from torch.nn import functional as F
 from mmengine.structures import BaseDataElement, InstanceData
-
+from mmdet3d.structures.det3d_data_sample import (ForwardResults, OptSampleList, SampleList)
 from mmdeploy.codebase.base import BaseBackendModel
 from mmdeploy.core import RewriterContext
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
@@ -156,6 +156,68 @@ class VoxelDetectionModel(BaseBackendModel):
             show=show,
             snapshot=snapshot,
             pred_labels=pred_labels)
+        
+    @staticmethod
+    def convert_to_datasample(
+        data_samples: SampleList,
+        data_instances_3d: OptInstanceList = None,
+        data_instances_2d: OptInstanceList = None,
+    ) -> SampleList:
+        """Convert results list to `Det3DDataSample`.
+
+        Subclasses could override it to be compatible for some multi-modality
+        3D detectors.
+
+        Args:
+            data_samples (list[:obj:`Det3DDataSample`]): The input data.
+            data_instances_3d (list[:obj:`InstanceData`], optional): 3D
+                Detection results of each sample.
+            data_instances_2d (list[:obj:`InstanceData`], optional): 2D
+                Detection results of each sample.
+
+        Returns:
+            list[:obj:`Det3DDataSample`]: Detection results of the
+            input. Each Det3DDataSample usually contains
+            'pred_instances_3d'. And the ``pred_instances_3d`` normally
+            contains following keys.
+
+            - scores_3d (Tensor): Classification scores, has a shape
+              (num_instance, )
+            - labels_3d (Tensor): Labels of 3D bboxes, has a shape
+              (num_instances, ).
+            - bboxes_3d (Tensor): Contains a tensor with shape
+              (num_instances, C) where C >=7.
+
+            When there are image prediction in some models, it should
+            contains  `pred_instances`, And the ``pred_instances`` normally
+            contains following keys.
+
+            - scores (Tensor): Classification scores of image, has a shape
+              (num_instance, )
+            - labels (Tensor): Predict Labels of 2D bboxes, has a shape
+              (num_instances, ).
+            - bboxes (Tensor): Contains a tensor with shape
+              (num_instances, 4).
+        """
+
+        assert (data_instances_2d is not None) or \
+               (data_instances_3d is not None),\
+               'please pass at least one type of data_samples'
+
+        if data_instances_2d is None:
+            data_instances_2d = [
+                InstanceData() for _ in range(len(data_instances_3d))
+            ]
+        if data_instances_3d is None:
+            data_instances_3d = [
+                InstanceData() for _ in range(len(data_instances_2d))
+            ]
+
+        for i, data_sample in enumerate(data_samples):
+            data_sample.pred_instances_3d = data_instances_3d[i]
+            data_sample.pred_instances = data_instances_2d[i]
+        return data_samples
+
 
     @staticmethod
     def postprocess(model_cfg: Union[str, Config],
@@ -177,47 +239,162 @@ class VoxelDetectionModel(BaseBackendModel):
         Returns:
             _type_: _description_
         """
-        if 'bbox_head' not in model_cfg.model:
-            raise NotImplementedError('mmdet3d model bbox_head not found')
-
-        from mmengine.registry import MODELS
-        head = MODELS.build(model_cfg.model['bbox_head'])
-        
         if 'cls_score' not in outs or 'bbox_pred' not in outs or 'dir_cls_pred' not in outs:
             raise RuntimeError('output tensor not found')
         
         if 'test_cfg' not in model_cfg.model:
             raise RuntimeError('test_cfg not found')
         
+        from mmengine.registry import MODELS
         cls_score = outs['cls_score']
         bbox_pred = outs['bbox_pred']
         dir_cls_pred = outs['dir_cls_pred']
-        
         batch_input_metas = [
             data_samples.metainfo for data_samples in metas
         ]
         
-        import numpy as np
-        ccc = np.load('/home/PJLAB/konghuanjun/ccc.npy')
-        ddd = cls_score.cpu().numpy()
-        diff = ddd - ccc
-        print('postprocess cls_scores max {}'.format(diff.max()))
+        if 'bbox_head' in model_cfg.model:
+            # pointpillars postprocess
+            head = MODELS.build(model_cfg.model['bbox_head'])
+            import numpy as np
+            ccc = np.load('/home/PJLAB/konghuanjun/ccc.npy')
+            ddd = cls_score.cpu().numpy()
+            diff = ddd - ccc
+            print('postprocess cls_scores max {}'.format(diff.max()))
+            data_instances_3d = head.predict_by_feat(cls_scores=[cls_score], 
+                                                    bbox_preds=[bbox_pred], 
+                                                    dir_cls_preds=[dir_cls_pred],
+                                                    batch_input_metas=batch_input_metas,
+                                                    cfg=model_cfg.model.test_cfg)
+            
+            data_samples=convert_to_datasample(data_samples=metas, data_instances_3d=data_instances_3d )
+            # data_instances_2d = [
+            #     InstanceData() for _ in range(len(data_instances_3d))
+            # ]
+            
+            # data_samples = metas
+            # for i, data_sample in enumerate(data_samples):
+            #     data_sample.pred_instances_3d = data_instances_3d[i]
+            #     data_sample.pred_instances = data_instances_2d[i]
+            
+        elif 'pts_bbox_head' in model_cfg.model:
+            # centerpoint postprocess
+            head = MODELS.build(model_cfg.model['pts_bbox_head'])
+            pts = model_cfg.model.test_cfg.pts
+
+            rets = []
+            scores_range = [0]
+            bbox_range = [0]
+            dir_range = [0]
+            for i, task_head in enumerate(head.task_heads):
+                scores_range.append(scores_range[i] + head.num_classes[i])
+                bbox_range.append(bbox_range[i] + 8)
+                dir_range.append(dir_range[i] + 2)
         
-        data_instances_3d = head.predict_by_feat(cls_scores=[cls_score], 
-                                                 bbox_preds=[bbox_pred], 
-                                                 dir_cls_preds=[dir_cls_pred],
-                                                 batch_input_metas=batch_input_metas,
-                                                 cfg=model_cfg.model.test_cfg)
-        data_instances_2d = [
-            InstanceData() for _ in range(len(data_instances_3d))
-        ]
+            for task_id in range(len(head.num_classes)):
+                num_class_with_bg = head.num_classes[task_id]
+
+                batch_heatmap = cls_score[:, scores_range[task_id]:scores_range[task_id + 1],
+                    ...].sigmoid()
+
+                batch_reg = bbox_pred[:,
+                                        bbox_range[task_id]:bbox_range[task_id] + 2,
+                                        ...]
+                batch_hei = bbox_pred[:, bbox_range[task_id] +
+                                        2:bbox_range[task_id] + 3, ...]
+
+                if head.norm_bbox:
+                    batch_dim = torch.exp(bbox_pred[:, bbox_range[task_id] +
+                                                        3:bbox_range[task_id] + 6,
+                                                        ...])
+                else:
+                    batch_dim = bbox_pred[:, bbox_range[task_id] +
+                                            3:bbox_range[task_id] + 6, ...]
+
+                batch_vel = bbox_pred[:, bbox_range[task_id] +
+                                        6:bbox_range[task_id + 1], ...]
+
+                batch_rots = dir_cls_pred[:,
+                                        dir_range[task_id]:dir_range[task_id + 1],
+                                        ...][:, 0].unsqueeze(1)
+                batch_rotc = dir_cls_pred[:,
+                                        dir_range[task_id]:dir_range[task_id + 1],
+                                        ...][:, 1].unsqueeze(1)
+
+                temp = head.bbox_coder.decode(
+                    batch_heatmap,
+                    batch_rots,
+                    batch_rotc,
+                    batch_hei,
+                    batch_dim,
+                    batch_vel,
+                    reg=batch_reg,
+                    task_id=task_id)
+                
+                assert pts['nms_type'] in ['circle', 'rotate']
+                batch_reg_preds = [box['bboxes'] for box in temp]
+                batch_cls_preds = [box['scores'] for box in temp]
+                batch_cls_labels = [box['labels'] for box in temp]
+                if pts['nms_type'] == 'circle':
+                    boxes3d = temp[0]['bboxes']
+                    scores = temp[0]['scores']
+                    labels = temp[0]['labels']
+                    centers = boxes3d[:, [0, 1]]
+                    boxes = torch.cat([centers, scores.view(-1, 1)], dim=1)
+                    from mmdet3d.models.layers import circle_nms
+                    keep = torch.tensor(
+                        circle_nms(
+                            boxes.detach().cpu().numpy(),
+                            pts['min_radius'][task_id],
+                            post_max_size=pts['post_max_size']),
+                        dtype=torch.long,
+                        device=boxes.device)
+
+                    boxes3d = boxes3d[keep]
+                    scores = scores[keep]
+                    labels = labels[keep]
+                    ret = dict(bboxes=boxes3d, scores=scores, labels=labels)
+                    ret_task = [ret]
+                    rets.append(ret_task)
+                else:
+                    rets.append(
+                        head.get_task_detections(num_class_with_bg, batch_cls_preds,
+                                                batch_reg_preds, batch_cls_labels,
+                                                batch_input_metas))
+
+            # Merge branches results
+            num_samples = len(rets[0])
+
+            ret_list = []
+            for i in range(num_samples):
+                temp_instances = InstanceData()
+                for k in rets[0][i].keys():
+                    if k == 'bboxes':
+                        bboxes = torch.cat([ret[i][k] for ret in rets])
+                        bboxes[:, 2] = bboxes[:, 2] - bboxes[:, 5] * 0.5
+                        bboxes = batch_input_metas[i]['box_type_3d'](bboxes,
+                                                            head.bbox_coder.code_size)
+                    elif k == 'scores':
+                        scores = torch.cat([ret[i][k] for ret in rets])
+                    elif k == 'labels':
+                        flag = 0
+                        for j, num_class in enumerate(head.num_classes):
+                            rets[j][i][k] += flag
+                            flag += num_class
+                        labels = torch.cat([ret[i][k].int() for ret in rets])
+                temp_instances.bboxes_3d = bboxes
+                temp_instances.scores_3d = scores
+                temp_instances.labels_3d = labels
+                ret_list.append(temp_instances)
+                
+            import pdb
+            pdb.set_trace()
+            data_samples = convert_to_datasample(metas, data_instances_3d=ret_list)
+
+        else:
+            raise NotImplementedError('mmdet3d model bbox_head not found')
         
-        data_samples = metas
-        
-        for i, data_sample in enumerate(data_samples):
-            data_sample.pred_instances_3d = data_instances_3d[i]
-            data_sample.pred_instances = data_instances_2d[i]
-        
+
         return data_samples
 
 

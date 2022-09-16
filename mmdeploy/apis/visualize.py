@@ -71,17 +71,17 @@ def visualize_model(model_cfg: Union[str, mmengine.Config],
 
     with torch.no_grad():
         
-        DT= model_inputs['inputs']['voxels']['voxels'].cpu().numpy()
-        GT = np.load('/home/PJLAB/konghuanjun/mmdet3dcv2/mmdetection3d/voxels.npy')
-        print('input voxels diff {}'.format((GT - DT).max()))
+        # DT= model_inputs['inputs']['voxels']['voxels'].cpu().numpy()
+        # GT = np.load('/home/PJLAB/konghuanjun/mmdet3dcv2/mmdetection3d/voxels.npy')
+        # print('input voxels diff {}'.format((GT - DT).max()))
         
-        DT= model_inputs['inputs']['voxels']['coors'].cpu().numpy()
-        GT = np.load('/home/PJLAB/konghuanjun/mmdet3dcv2/mmdetection3d/coors.npy')
-        print('input coors diff {}'.format((GT - DT).max()))
+        # DT= model_inputs['inputs']['voxels']['coors'].cpu().numpy()
+        # GT = np.load('/home/PJLAB/konghuanjun/mmdet3dcv2/mmdetection3d/coors.npy')
+        # print('input coors diff {}'.format((GT - DT).max()))
         
-        DT= model_inputs['inputs']['voxels']['num_points'].cpu().numpy()
-        GT = np.load('/home/PJLAB/konghuanjun/mmdet3dcv2/mmdetection3d/num_inputs.npy')
-        print('input num points diff {}'.format((GT - DT).max()))
+        # DT= model_inputs['inputs']['voxels']['num_points'].cpu().numpy()
+        # GT = np.load('/home/PJLAB/konghuanjun/mmdet3dcv2/mmdetection3d/num_inputs.npy')
+        # print('input num points diff {}'.format((GT - DT).max()))
         
         result = model.test_step(model_inputs)[0]
 
