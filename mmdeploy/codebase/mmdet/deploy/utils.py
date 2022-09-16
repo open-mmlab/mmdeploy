@@ -232,6 +232,8 @@ def __gather_topk__trt(ctx,
         index_dim = inds.dim()
         outputs = [None for _ in inputs]
         for i, x in enumerate(inputs):
+            if x is None:
+                continue
             out = TRTGatherTopk.apply(x, inds).to(x.dtype)
             out_shape = [*index_shape, *x.shape[index_dim:]]
             out = out.reshape(out_shape)
