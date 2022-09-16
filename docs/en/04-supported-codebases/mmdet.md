@@ -6,7 +6,7 @@
 
 ### Install mmdet
 
-If you have already done that, move on to the next section. Otherwise, please follow the [guide](https://mmdetection.readthedocs.io/en/3.x/get_started.html) to finish mmdet installation.
+If you have already done that, move on to [the next section.](#install-mmdeploy) Otherwise, please follow the [guide](https://mmdetection.readthedocs.io/en/3.x/get_started.html) to finish mmdet installation.
 
 ### Install mmdeploy
 
@@ -35,7 +35,7 @@ If neither **I** nor **II** meets your requirements, [building mmdeploy from sou
 
 ## Convert model
 
-You can use `tools/deploy.py` to convert mmdet models to the specified backend models. Its detailed usage can be learned from [here](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/02-how-to-run/convert_model.md#usage).
+You can use [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/blob/dev-1.x/tools/deploy.py) to convert mmdet models to the specified backend models. Its detailed usage can be learned from [here](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/02-how-to-run/convert_model.md#usage).
 
 The following shows an example about converting `faster r-cnn` model to onnx model that can be inferred by ONNX Runtime.
 
