@@ -29,10 +29,11 @@ def letterbox(im, new_shape=(640, 640), color=(114, 114, 114), auto=False, scale
 
     if shape[::-1] != new_unpad:  # resize
         im = cv2.resize(im, new_unpad, interpolation=cv2.INTER_LINEAR)
+    im_copy = im.copy()
     top, bottom = int(round(dh - 0.1)), int(round(dh + 0.1))
     left, right = int(round(dw - 0.1)), int(round(dw + 0.1))
     im = cv2.copyMakeBorder(im, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)  # add border
-    return im, r, (dw, dh)
+    return im, im_copy, r, (dw, dh)
 
 names = ['person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus', 'train', 'truck', 'boat', 'traffic light',
          'fire hydrant', 'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog', 'horse', 'sheep', 'cow',
@@ -54,8 +55,7 @@ image_path = Path('data/coco/train2017')
 for i in image_path.glob('*.jpg'):
 
     image = cv2.imread(str(i))
-    image_orin = image.copy()
-    image, ratio, dwdh = letterbox(image, auto=False)
+    image, image_orin, ratio, dwdh = letterbox(image, auto=False)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     image_Copy = image.copy()
 
