@@ -25,3 +25,11 @@
 | [PANet](https://github.com/open-mmlab/mmocr/blob/main/configs/textdet/panet/panet_r18_fpem_ffm_600e_icdar2015.py) | ICDAR2015 |   0.795    | 0.792 @thr=0.9 |
 
 备注：[mmocr](https://github.com/open-mmlab/mmocr) 使用 `shapely` 计算 IoU，实现方法会导致轻微的精度差异
+
+### 姿态检测任务
+
+|                                                                      model                                                                       | dataset  | fp32 AP | int8 AP |
+| :----------------------------------------------------------------------------------------------------------------------------------------------: | :------: | :-----: | :-----: |
+| [Hourglass](https://github.com/open-mmlab/mmpose/blob/master/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/hourglass52_coco_256x256.py) | COCO2017 |  0.726  |  0.713  |
+
+备注：测试转换后的模型精度时，对于 mmpose 模型，在模型配置文件中 `flip_test` 需设置为 `False`。
