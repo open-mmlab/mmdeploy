@@ -1,0 +1,60 @@
+name: backend-snpe
+
+on:
+  push:
+    paths-ignore:
+      - "demo/**"
+      - "tools/**"
+
+  pull_request:
+    paths-ignore:
+      - "demo/**"
+      - "tools/**"
+      - "docs/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build_sdk_demo:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: update
+        run: sudo apt update
+      - name: Install dependencies
+        run: |
+          sudo apt install wget libprotobuf-dev protobuf-compiler
+          sudo apt update
+          sudo apt install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev libc++1-9 libc++abi1-9
+          sudo add-apt-repository ppa:ignaciovizzo/opencv3-nonfree
+          sudo apt install libopencv-dev
+          pkg-config --libs opencv
+      - name: Install snpe
+        run: |
+          wget https://media.githubusercontent.com/media/tpoisonooo/mmdeploy_snpe_testdata/main/snpe-1.59.tar.gz
+          tar xf snpe-1.59.tar.gz
+          pushd snpe-1.59.0.3230
+          pwd
+          popd
+      - name: Build SDK Demo with SNPE backend
+        run: |
+          mkdir -p build && pushd build
+          export SNPE_ROOT=/home/runner/work/mmdeploy/mmdeploy/snpe-1.59.0.3230
+          export LD_LIBRARY_PATH=${SNPE_ROOT}/lib/x86_64-linux-clang:${LD_LIBRARY_PATH}
+          export MMDEPLOY_SNPE_X86_CI=1
+          cmake .. -DCMAKE_CXX_COMPILER=g++-7    -DMMDEPLOY_SHARED_LIBS=ON   -DMMDEPLOY_BUILD_SDK=ON       -DMMDEPLOY_BUILD_SDK_PYTHON_API=OFF  -DMMDEPLOY_TARGET_DEVICES=cpu       -DMMDEPLOY_TARGET_BACKENDS=snpe  -DMMDEPLOY_CODEBASES=all
+          make -j2
+          make install
+          pushd install/example
+          mkdir build && pushd build
+          cmake ../cpp -DMMDeploy_DIR=${PWD}/../../lib/cmake/MMDeploy
+          make -j2
+          ls ./*
+          popd
+          popd
+          popd

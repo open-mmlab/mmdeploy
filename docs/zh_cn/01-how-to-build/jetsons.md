@@ -207,7 +207,7 @@ export MMDEPLOY_DIR=$(pwd)
 
 由于一些算子采用的是 OpenMMLab 代码库中的实现，并不被 TenorRT 支持，
 因此我们需要自定义 TensorRT 插件，例如 `roi_align`， `scatternd` 等。
-你可以从[这里](../../en/ops/tensorrt.md)找到完整的自定义插件列表。
+你可以从[这里](../06-custom-ops/tensorrt.md)找到完整的自定义插件列表。
 
 ```shell
 # 编译 TensorRT 自定义算子
@@ -227,13 +227,14 @@ pip install -v -e .
 
 如果你不需要使用 MMDeploy C/C++ Inference SDK 则可以跳过本步骤。
 
-1. 编译 SDK Libraries
+1. 编译 SDK Libraries 和 Demos
 
    ```shell
    mkdir -p build && cd build
    cmake .. \
        -DMMDEPLOY_BUILD_SDK=ON \
        -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
+       -DMMDEPLOY_BUILD_EXAMPLES=ON \
        -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
        -DMMDEPLOY_TARGET_BACKENDS="trt" \
        -DMMDEPLOY_CODEBASES=all \
@@ -241,16 +242,7 @@ pip install -v -e .
    make -j$(nproc) && make install
    ```
 
-2. 编译 SDK demos
-
-   ```shell
-   cd ${MMDEPLOY_DIR}/build/install/example
-   mkdir -p build && cd build
-   cmake .. -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy
-   make -j$(nproc)
-   ```
-
-3. 运行 demo
+2. 运行 demo
 
    以目标检测为例:
 

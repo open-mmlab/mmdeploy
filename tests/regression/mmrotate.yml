@@ -14,13 +14,13 @@ globals:
   convert_image_det: &convert_image_det
     input_img: *img_demo
     test_img: *img_dota_demo
-  backend_test: &default_backend_test True
+  backend_test: &default_backend_test False
 
 onnxruntime:
   # ======= detection =======
   pipeline_ort_detection_static_fp32: &pipeline_ort_detection_static_fp32
     convert_image: *convert_image_det
-    backend_test: *default_backend_test
+    backend_test: False
     deploy_config: configs/mmrotate/rotated-detection_onnxruntime_static.py
 
   pipeline_ort_detection_dynamic_fp32: &pipeline_ort_detection_dynamic_fp32
@@ -44,6 +44,32 @@ models:
     metafile: configs/rotated_retinanet/metafile.yml
     model_configs:
       - configs/rotated_retinanet/rotated_retinanet_obb_r50_fpn_1x_dota_le135.py
+    pipelines:
+      - *pipeline_ort_detection_dynamic_fp32
+      - *pipeline_trt_detection_dynamic_fp32
+      - *pipeline_trt_detection_dynamic_fp16
+
+  - name: oriented_rcnn
+    metafile: configs/oriented_rcnn/metafile.yml
+    model_configs:
+      - configs/oriented_rcnn/oriented_rcnn_r50_fpn_fp16_1x_dota_le90.py
+    pipelines:
+      - *pipeline_ort_detection_dynamic_fp32
+      - *pipeline_trt_detection_dynamic_fp32
+      - *pipeline_trt_detection_dynamic_fp16
+
+  - name: gliding_vertex
+    metafile: configs/gliding_vertex/metafile.yml
+    model_configs:
+      - configs/gliding_vertex/gliding_vertex_r50_fpn_1x_dota_le90.py
+    pipelines:
+      - *pipeline_trt_detection_dynamic_fp32
+      - *pipeline_trt_detection_dynamic_fp16
+
+  - name: RoITransformer
+    metafile: configs/roi_trans/metafile.yml
+    model_configs:
+      - configs/roi_trans/roi_trans_r50_fpn_1x_dota_le90.py
     pipelines:
       - *pipeline_ort_detection_dynamic_fp32
       - *pipeline_trt_detection_dynamic_fp32

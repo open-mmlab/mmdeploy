@@ -1,6 +1,6 @@
-# 源码安装
+# 源码手动安装
 
-如果环境允许（网络良好且宿主机强劲），我们建议使用[docker 方式](build_from_docker.md)。
+如果网络良好，我们建议使用 [docker](build_from_docker.md) 或 [一键式脚本](build_from_script.md) 方式。
 
 ## 下载
 
@@ -30,8 +30,6 @@ git clone -b master git@github.com:open-mmlab/mmdeploy.git --recursive
   git clone -b master https://github.com/open-mmlab/mmdeploy.git MMDeploy
   cd MMDeploy
   git submodule update --init --recursive
-
-
   ```
 
 ## 编译
@@ -42,3 +40,5 @@ git clone -b master git@github.com:open-mmlab/mmdeploy.git --recursive
 - [Windows](windows.md)
 - [Android-aarch64](android.md)
 - [NVIDIA Jetson](jetsons.md)
+- [Qcom SNPE](snpe.md)
+- [RISC-V](riscv.md)

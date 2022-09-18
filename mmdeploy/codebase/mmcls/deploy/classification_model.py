@@ -41,15 +41,19 @@ class End2EndModel(BaseBackendModel):
         device: str,
         class_names: Sequence[str],
         deploy_cfg: Union[str, mmcv.Config] = None,
+        **kwargs,
     ):
         super(End2EndModel, self).__init__(deploy_cfg=deploy_cfg)
         self.CLASSES = class_names
         self.deploy_cfg = deploy_cfg
         self._init_wrapper(
-            backend=backend, backend_files=backend_files, device=device)
+            backend=backend,
+            backend_files=backend_files,
+            device=device,
+            **kwargs)
 
     def _init_wrapper(self, backend: Backend, backend_files: Sequence[str],
-                      device: str):
+                      device: str, **kwargs):
         output_names = self.output_names
         self.wrapper = BaseBackendModel._build_wrapper(
             backend=backend,
@@ -57,7 +61,8 @@ class End2EndModel(BaseBackendModel):
             device=device,
             input_names=[self.input_name],
             output_names=output_names,
-            deploy_cfg=self.deploy_cfg)
+            deploy_cfg=self.deploy_cfg,
+            **kwargs)
 
     def forward(self, img: List[torch.Tensor], *args, **kwargs) -> list:
         """Run forward inference.
@@ -134,10 +139,28 @@ class SDKEnd2EndModel(End2EndModel):
             list: A list contains predictions.
         """
 
-        pred = self.wrapper.invoke(
-            [img[0].contiguous().detach().cpu().numpy()])[0]
+        pred = self.wrapper.invoke(img[0].contiguous().detach().cpu().numpy())
         pred = np.array(pred, dtype=np.float32)
         return pred[np.argsort(pred[:, 0])][np.newaxis, :, 1]
+
+
+@__BACKEND_MODEL.register_module('rknn')
+class RKNNEnd2EndModel(End2EndModel):
+    """RKNN inference class, converts RKNN output to mmcls format."""
+
+    def forward_test(self, imgs: torch.Tensor, *args, **kwargs) -> \
+            List[np.ndarray]:
+        """The interface for forward test.
+
+        Args:
+            imgs (torch.Tensor): Input image(s) in [N x C x H x W] format.
+
+        Returns:
+            List[np.ndarray]: A list of classification prediction.
+        """
+        outputs = self.wrapper({self.input_name: imgs})
+        outputs = [out.numpy() for out in outputs]
+        return outputs
 
 
 def get_classes_from_config(model_cfg: Union[str, mmcv.Config]):

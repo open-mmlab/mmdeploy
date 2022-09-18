@@ -329,6 +329,20 @@ def get_common_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
     return model_params
 
 
+def get_quantization_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
+    """Get quantization parameters from config.
+
+    Args:
+        deploy_cfg (str | mmcv.Config): The path or content of config.
+
+    Returns:
+        dict: A dict of quantization parameters for a model.
+    """
+    backend_config = deploy_cfg['backend_config']
+    model_params = backend_config.get('quantization_config', dict())
+    return model_params
+
+
 def get_model_inputs(deploy_cfg: Union[str, mmcv.Config]) -> List[Dict]:
     """Get model input parameters from config.
 

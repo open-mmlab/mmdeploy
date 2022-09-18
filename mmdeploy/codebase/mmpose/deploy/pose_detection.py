@@ -8,7 +8,7 @@ from typing import Any, Dict, Optional, Sequence, Tuple, Union
 import mmcv
 import numpy as np
 import torch
-from mmcv.parallel import collate
+from mmcv.parallel import DataContainer
 from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
@@ -101,7 +101,11 @@ class PoseDetection(BaseTask):
         """
         from .pose_detection_model import build_pose_detection_model
         model = build_pose_detection_model(
-            model_files, self.model_cfg, self.deploy_cfg, device=self.device)
+            model_files,
+            self.model_cfg,
+            self.deploy_cfg,
+            device=self.device,
+            **kwargs)
         return model.eval()
 
     def init_pytorch_model(self,
@@ -125,7 +129,7 @@ class PoseDetection(BaseTask):
         return model
 
     def create_input(self,
-                     imgs: Union[str, np.ndarray],
+                     imgs: Union[str, np.ndarray, Sequence],
                      input_shape: Sequence[int] = None,
                      **kwargs) -> Tuple[Dict, torch.Tensor]:
         """Create input for pose detection.
@@ -139,6 +143,7 @@ class PoseDetection(BaseTask):
         Returns:
             tuple: (data, img), meta information for the input image and input.
         """
+        from mmcv.parallel import collate, scatter
         from mmpose.datasets.dataset_info import DatasetInfo
         from mmpose.datasets.pipelines import Compose
 
@@ -147,28 +152,30 @@ class PoseDetection(BaseTask):
         dataset_info = cfg.data.test.dataset_info
         dataset_info = DatasetInfo(dataset_info)
 
-        if isinstance(imgs, str):
-            imgs = mmcv.imread(imgs)
-        height, width = imgs.shape[:2]
-        # create dummy person results
-        person_results = [{'bbox': np.array([0, 0, width, height])}]
-        bboxes = np.array([box['bbox'] for box in person_results])
+        if isinstance(imgs, (str, np.ndarray)):
+            imgs = [imgs]
+        if isinstance(imgs[0], str):
+            imgs = [mmcv.imread(img) for img in imgs]
+        bboxes = []
+        for img in imgs:
+            height, width = img.shape[:2]
+            bboxes.append(np.array([0, 0, width, height]))
 
         # build the data pipeline
         test_pipeline = Compose(cfg.test_pipeline)
         dataset_name = dataset_info.dataset_name
         flip_pairs = dataset_info.flip_pairs
-        batch_data = []
         if input_shape is not None:
             image_size = input_shape
         else:
             image_size = np.array(cfg.data_cfg['image_size'])
 
-        for bbox in bboxes:
+        batch_data = []
+        for img, bbox in zip(imgs, bboxes):
             # prepare data
             data = {
                 'img':
-                imgs,
+                img,
                 'bbox_score':
                 bbox[4] if len(bbox) == 5 else 1,
                 'bbox_id':
@@ -202,13 +209,13 @@ class PoseDetection(BaseTask):
             data = test_pipeline(data)
             batch_data.append(data)
 
-        batch_data = collate(batch_data, samples_per_gpu=1)
-        # scatter not work so just move image to cuda device
-        batch_data['img'] = batch_data['img'].to(torch.device(self.device))
-        # get all img_metas of each bounding box
-        batch_data['img_metas'] = [
-            img_metas[0] for img_metas in batch_data['img_metas'].data
-        ]
+        batch_data = collate(batch_data, samples_per_gpu=len(imgs))
+        if self.device != 'cpu':
+            batch_data = scatter(batch_data, [self.device])[0]
+        for k, v in batch_data.items():
+            # batch_size > 1
+            if isinstance(v, DataContainer):
+                batch_data[k] = v.data[0]
         return batch_data, batch_data['img']
 
     def visualize(self,

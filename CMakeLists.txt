@@ -5,10 +5,13 @@ endif ()
 message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
 
 cmake_minimum_required(VERSION 3.14)
-project(MMDeploy VERSION 0.6.0)
+project(MMDeploy VERSION 0.8.0)
 
 set(CMAKE_CXX_STANDARD 17)
 
+set(MMDEPLOY_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+set(MMDEPLOY_VERSION_MINOR ${PROJECT_VERSION_MINOR})
+set(MMDEPLOY_VERSION_PATCH ${PROJECT_VERSION_PATCH})
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 if (MSVC)
@@ -21,13 +24,18 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 # options
 option(MMDEPLOY_SHARED_LIBS "build shared libs" ON)
 option(MMDEPLOY_BUILD_SDK "build MMDeploy SDK" OFF)
+option(MMDEPLOY_BUILD_SDK_MONOLITHIC "build single lib for SDK API" OFF)
 option(MMDEPLOY_BUILD_TEST "build unittests" OFF)
 option(MMDEPLOY_BUILD_SDK_PYTHON_API "build SDK Python API" OFF)
 option(MMDEPLOY_BUILD_SDK_CXX_API "build SDK C++ API" OFF)
 option(MMDEPLOY_BUILD_SDK_CSHARP_API "build SDK C# API support" OFF)
 option(MMDEPLOY_BUILD_SDK_JAVA_API "build SDK JAVA API" OFF)
+option(MMDEPLOY_BUILD_EXAMPLES "build examples" OFF)
 option(MMDEPLOY_SPDLOG_EXTERNAL "use external spdlog" OFF)
 option(MMDEPLOY_ZIP_MODEL "support SDK model in zip format" OFF)
+option(MMDEPLOY_COVERAGE "build SDK for coverage" OFF)
+option(MMDEPLOY_ELENA_FUSION "use elena to fuse preprocess" OFF)
+
 set(MMDEPLOY_TARGET_DEVICES "cpu" CACHE STRING "target devices to support")
 set(MMDEPLOY_TARGET_BACKENDS "" CACHE STRING "target inference engines to support")
 set(MMDEPLOY_CODEBASES "all" CACHE STRING "select OpenMMLab codebases")
@@ -43,6 +51,11 @@ else ()
 endif ()
 
 set(MMDEPLOY_TASKS "" CACHE INTERNAL "")
+
+if (MMDEPLOY_COVERAGE)
+    add_compile_options(-coverage -fprofile-arcs -ftest-coverage)
+    add_link_options(-coverage -lgcov)
+endif ()
 
 # when CUDA devices are enabled, the environment variable ASAN_OPTIONS=protect_shadow_gap=0
 # must be set at runtime
@@ -64,6 +77,10 @@ if (MSVC)
     add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/Zc:__cplusplus>)
     add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/wd4251>)
 endif ()
+
+if(APPLE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fobjc-arc")
+endif()
 
 add_library(MMDeployStaticModules INTERFACE)
 add_library(MMDeployDynamicModules INTERFACE)
@@ -97,6 +114,11 @@ if (MMDEPLOY_BUILD_SDK)
         add_subdirectory(csrc/mmdeploy/apis/java)
     endif ()
 
+    if (MMDEPLOY_BUILD_EXAMPLES)
+        include(${CMAKE_SOURCE_DIR}/cmake/opencv.cmake)
+        add_subdirectory(demo/csrc)
+    endif ()
+
     # export MMDeploy package
     install(EXPORT MMDeployTargets
             FILE MMDeployTargets.cmake
@@ -110,7 +132,10 @@ if (MMDEPLOY_BUILD_SDK)
     mmdeploy_add_deps(ort BACKENDS ${MMDEPLOY_TARGET_BACKENDS} DEPS ONNXRUNTIME)
     mmdeploy_add_deps(ncnn BACKENDS ${MMDEPLOY_TARGET_BACKENDS} DEPS ncnn)
     mmdeploy_add_deps(openvino BACKENDS ${MMDEPLOY_TARGET_BACKENDS} DEPS InferenceEngine)
-    mmdeploy_add_deps(pplnn BACKENDS ${MMDEPLOY_TARGET_BACKENDS} DEPS pplnn)
+    if (NOT MMDEPLOY_SHARED_LIBS)
+        mmdeploy_add_deps(pplnn BACKENDS ${MMDEPLOY_TARGET_BACKENDS} DEPS pplnn)
+    endif ()
+    mmdeploy_add_deps(snpe BACKENDS ${MMDEPLOY_TARGET_BACKENDS} DEPS snpe)
 
     include(CMakePackageConfigHelpers)
     # generate the config file that is includes the exports
@@ -145,8 +170,6 @@ if (MMDEPLOY_BUILD_SDK)
             ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules
             DESTINATION lib/cmake/MMDeploy
             )
-
-    install(DIRECTORY ${CMAKE_SOURCE_DIR}/demo/csrc/ DESTINATION example)
 
     if (${CMAKE_VERSION} VERSION_LESS "3.17.0")
         install(SCRIPT cmake/post-install.cmake)

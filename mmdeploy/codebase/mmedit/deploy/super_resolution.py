@@ -89,7 +89,11 @@ class SuperResolution(BaseTask):
         """
         from .super_resolution_model import build_super_resolution_model
         model = build_super_resolution_model(
-            model_files, self.model_cfg, self.deploy_cfg, device=self.device)
+            model_files,
+            self.model_cfg,
+            self.deploy_cfg,
+            device=self.device,
+            **kwargs)
         return model
 
     def init_pytorch_model(self,
@@ -150,10 +154,10 @@ class SuperResolution(BaseTask):
 
         data = collate(data_arr, samples_per_gpu=len(imgs))
 
-        data['img'] = data['lq']
-
         if self.device != 'cpu':
             data = scatter(data, [self.device])[0]
+
+        data['img'] = data['lq']
 
         return data, data['img']
 

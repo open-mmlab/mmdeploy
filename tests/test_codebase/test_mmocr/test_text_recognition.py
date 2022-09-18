@@ -14,7 +14,10 @@ from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Codebase, load_config
 from mmdeploy.utils.test import DummyModel, SwitchBackendWrapper
 
-import_codebase(Codebase.MMOCR)
+try:
+    import_codebase(Codebase.MMOCR)
+except ImportError:
+    pytest.skip(f'{Codebase.MMOCR} is not installed.', allow_module_level=True)
 
 model_cfg_path = 'tests/test_codebase/test_mmocr/data/crnn.py'
 model_cfg = load_config(model_cfg_path)[0]

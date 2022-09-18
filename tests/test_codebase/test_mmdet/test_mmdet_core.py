@@ -9,10 +9,14 @@ import torch
 from mmdeploy.codebase import import_codebase
 from mmdeploy.core.rewriters.rewriter_manager import RewriterContext
 from mmdeploy.utils import Backend, Codebase
-from mmdeploy.utils.test import (WrapFunction, backend_checker, check_backend,
-                                 get_onnx_model, get_rewrite_outputs)
+from mmdeploy.utils.test import (WrapFunction, WrapModel, backend_checker,
+                                 check_backend, get_onnx_model,
+                                 get_rewrite_outputs)
 
-import_codebase(Codebase.MMDET)
+try:
+    import_codebase(Codebase.MMDET)
+except ImportError:
+    pytest.skip(f'{Codebase.MMDET} is not installed.', allow_module_level=True)
 
 
 @backend_checker(Backend.TENSORRT)
@@ -149,12 +153,76 @@ def test_tblr2bbox(backend_type: Backend):
         assert rewrite_outputs is not None
 
 
-def test_distance2bbox():
-    from mmdeploy.codebase.mmdet.core import distance2bbox
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
+def test_distance2bbox(backend_type: Backend):
+    check_backend(backend_type)
+    deploy_cfg = mmcv.Config(
+        dict(
+            onnx_config=dict(output_names=None, input_shape=None),
+            backend_config=dict(type=backend_type.value, model_inputs=None),
+            codebase_config=dict(type='mmdet', task='ObjectDetection')))
+
+    # wrap function to enable rewrite
+    def distance2bbox(*args, **kwargs):
+        import mmdet.core.bbox.transforms
+        return mmdet.core.bbox.transforms.distance2bbox(*args, **kwargs)
+
     points = torch.rand(3, 2)
     distance = torch.rand(3, 4)
-    bbox = distance2bbox(points, distance)
-    assert bbox.shape == torch.Size([3, 4])
+    original_outputs = distance2bbox(points, distance)
+
+    # wrap function to nn.Module, enable torch.onnx.export
+    wrapped_func = WrapFunction(distance2bbox)
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_func,
+        model_inputs={
+            'points': points,
+            'distance': distance
+        },
+        deploy_cfg=deploy_cfg)
+
+    if is_backend_output:
+        model_output = original_outputs.squeeze().cpu().numpy()
+        rewrite_output = rewrite_outputs[0].squeeze()
+        assert np.allclose(
+            model_output, rewrite_output, rtol=1e-03, atol=1e-05)
+    else:
+        assert rewrite_outputs is not None
+
+
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
+def test__distancepointbboxcoder__decode(backend_type: Backend):
+    check_backend(backend_type)
+    deploy_cfg = mmcv.Config(
+        dict(
+            onnx_config=dict(output_names=None, input_shape=None),
+            backend_config=dict(type=backend_type.value, model_inputs=None),
+            codebase_config=dict(type='mmdet', task='ObjectDetection')))
+    from mmdet.core.bbox.coder import DistancePointBBoxCoder
+    coder = DistancePointBBoxCoder()
+    # wrap function to enable rewrite
+
+    wrapped_model = WrapModel(coder, 'decode')
+
+    points = torch.rand(3, 2)
+    pred_bboxes = torch.rand(3, 4)
+    original_outputs = coder.decode(points, pred_bboxes)
+
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs={
+            'points': points,
+            'pred_bboxes': pred_bboxes
+        },
+        deploy_cfg=deploy_cfg)
+
+    if is_backend_output:
+        model_output = original_outputs.squeeze().cpu().numpy()
+        rewrite_output = rewrite_outputs[0].squeeze()
+        assert np.allclose(
+            model_output, rewrite_output, rtol=1e-03, atol=1e-05)
+    else:
+        assert rewrite_outputs is not None
 
 
 @backend_checker(Backend.ONNXRUNTIME)
@@ -275,3 +343,49 @@ def test__anchorgenerator__single_level_grid_priors():
             find_trt_grid_priors = True
 
     assert find_trt_grid_priors
+
+
+@backend_checker(Backend.ASCEND)
+def test_multiclass_nms__ascend():
+    from mmdeploy.codebase.mmdet.core import multiclass_nms
+    deploy_cfg = mmcv.Config(
+        dict(
+            onnx_config=dict(
+                input_names=['boxes', 'scores'],
+                output_names=['dets', 'labels'],
+                input_shape=None),
+            backend_config=dict(
+                type='ascend',
+                model_inputs=[
+                    dict(input_shapes=dict(boxes=[1, 5, 4], scores=[1, 5, 8]))
+                ]),
+            codebase_config=dict(
+                type='mmdet',
+                task='ObjectDetection',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    iou_threshold=0.5,
+                    max_output_boxes_per_class=20,
+                    pre_top_k=-1,
+                    keep_top_k=10,
+                    background_label_id=-1,
+                ))))
+
+    boxes = torch.rand(1, 5, 4)
+    scores = torch.rand(1, 5, 8)
+    max_output_boxes_per_class = 20
+    keep_top_k = 10
+    wrapped_func = WrapFunction(
+        multiclass_nms,
+        max_output_boxes_per_class=max_output_boxes_per_class,
+        keep_top_k=keep_top_k)
+    rewrite_outputs, _ = get_rewrite_outputs(
+        wrapped_func,
+        model_inputs={
+            'boxes': boxes,
+            'scores': scores
+        },
+        deploy_cfg=deploy_cfg)
+
+    assert rewrite_outputs is not None, 'Got unexpected rewrite '\
+        'outputs: {}'.format(rewrite_outputs)

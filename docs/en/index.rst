@@ -15,6 +15,8 @@ You can switch between Chinese and English documents in the lower-left corner of
 
    01-how-to-build/build_from_source.md
    01-how-to-build/build_from_docker.md
+   01-how-to-build/build_from_script.md
+   01-how-to-build/cmake_option.md
 
 .. toctree::
    :maxdepth: 1
@@ -22,8 +24,9 @@ You can switch between Chinese and English documents in the lower-left corner of
 
    02-how-to-run/convert_model.md
    02-how-to-run/write_config.md
-   02-how-to-run/how_to_evaluate_a_model.md
-   02-how-to-run/how_to_measure_performance_of_models.md
+   02-how-to-run/profile_model.md
+   02-how-to-run/quantize_model.md
+   02-how-to-run/useful_tools.md
 
 .. toctree::
    :maxdepth: 1
@@ -31,6 +34,8 @@ You can switch between Chinese and English documents in the lower-left corner of
 
    03-benchmark/supported_models.md
    03-benchmark/benchmark.md
+   03-benchmark/benchmark_edge.md
+   03-benchmark/quantization.md
 
 .. toctree::
    :maxdepth: 1
@@ -49,35 +54,45 @@ You can switch between Chinese and English documents in the lower-left corner of
    :maxdepth: 1
    :caption: Backend Support
 
-   05-supported-backends/onnxruntime.md
-   05-supported-backends/tensorrt.md
-   05-supported-backends/openvino.md
    05-supported-backends/ncnn.md
+   05-supported-backends/onnxruntime.md
+   05-supported-backends/openvino.md
    05-supported-backends/pplnn.md
+   05-supported-backends/snpe.md
+   05-supported-backends/tensorrt.md
    05-supported-backends/torchscript.md
 
 .. toctree::
    :maxdepth: 1
    :caption: Custom Ops
 
-   ops/onnxruntime.md
-   ops/tensorrt.md
-   ops/ncnn.md
+   06-custom-ops/onnxruntime.md
+   06-custom-ops/tensorrt.md
+   06-custom-ops/ncnn.md
 
 .. toctree::
    :maxdepth: 1
    :caption: Developer Guide
 
-   06-developer-guide/support_new_model.md
-   06-developer-guide/support_new_backend.md
-   06-developer-guide/add_test_units_for_backend_ops.md
-   06-developer-guide/test_rewritten_models.md
-   06-developer-guide/partition_model.md
+   07-developer-guide/architecture.md
+   07-developer-guide/support_new_model.md
+   07-developer-guide/support_new_backend.md
+   07-developer-guide/add_backend_ops_unittest.md
+   07-developer-guide/test_rewritten_models.md
+   07-developer-guide/partition_model.md
+   07-developer-guide/regression_test.md
 
 .. toctree::
    :maxdepth: 1
-   :caption: Tutorials on Model Deployment
+   :caption: Experimental feature
 
+   experimental/onnx_optimizer.md
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Appendix
+
+   appendix/cross_build_snpe_service.md
 
 .. toctree::
    :maxdepth: 1

@@ -29,6 +29,7 @@ class MMDEPLOY_API PadImpl : public TransformImpl {
     int size_divisor;
     float pad_val;
     bool pad_to_square;
+    bool orientation_agnostic;
     std::string padding_mode;
   };
   using ArgType = struct pad_arg_t;

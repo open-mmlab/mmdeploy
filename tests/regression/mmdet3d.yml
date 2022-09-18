@@ -1,0 +1,106 @@
+globals:
+  codebase_dir: ../mmdetection3d
+  checkpoint_force_download: False
+  images:
+    kitti_input: &kitti_input ../mmdetection3d/demo/data/kitti/kitti_000008.bin
+    nus_input: &nus_input ./tests/data/n008-2018-08-01-15-16-36-0400__LIDAR_TOP__1533151612397179.pcd.bin
+
+  metric_info: &metric_info
+    AP: # named after metafile.Results.Metrics
+      eval_name: bbox # test.py --metrics args
+      metric_key: bbox_mAP # eval OrderedDict key name
+      tolerance: 1 # metric ±n%
+      task_name: 3D Object Detection # metafile.Results.Task
+      dataset: KITTI # metafile.Results.Dataset
+    mAP:
+      eval_name: bbox
+      metric_key: bbox_mAP
+      tolerance: 1 # metric ±n%
+      task_name: 3D Object Detection
+      dataset: nuScenes
+    NDS:
+      eval_name: bbox
+      metric_key: bbox_mAP
+      tolerance: 1 # metric ±n%
+      task_name: 3D Object Detection
+      dataset: nuScenes
+  backend_test: &default_backend_test False
+
+  convert_image: &convert_image
+    input_img: *kitti_input
+    test_img: *kitti_input
+
+
+  convert_image_nus: &convert_image_nus
+    input_img: *nus_input
+    test_img: *nus_input
+
+onnxruntime:
+  pipeline_ort_dynamic_kitti_fp32: &pipeline_ort_dynamic_kitti_fp32
+    convert_image: *convert_image
+    backend_test: False
+    deploy_config: configs/mmdet3d/voxel-detection/voxel-detection_onnxruntime_dynamic.py
+
+  pipeline_ort_dynamic_nus_fp32: &pipeline_ort_dynamic_nus_fp32
+    convert_image: *convert_image_nus
+    backend_test: False
+    deploy_config: configs/mmdet3d/voxel-detection/voxel-detection_onnxruntime_dynamic.py
+
+tensorrt:
+  pipeline_trt_dynamic_nus_fp32_64x4: &pipeline_trt_dynamic_nus_fp32_64x4
+    convert_image: *convert_image_nus
+    backend_test: *default_backend_test
+    deploy_config: configs/mmdet3d/voxel-detection/voxel-detection_tensorrt_dynamic-nus-64x4.py
+
+  pipeline_trt_dynamic_nus_fp32_20x5: &pipeline_trt_dynamic_nus_fp32_20x5
+    convert_image: *convert_image_nus
+    backend_test: *default_backend_test
+    deploy_config: configs/mmdet3d/voxel-detection/voxel-detection_tensorrt_dynamic-nus-20x5.py
+
+  pipeline_trt_dynamic_kitti_fp32: &pipeline_trt_dynamic_kitti_fp32
+    convert_image: *convert_image
+    backend_test: *default_backend_test
+    deploy_config: configs/mmdet3d/voxel-detection/voxel-detection_tensorrt_dynamic-kitti-32x4.py
+
+openvino:
+  pipeline_openvino_dynamic_kitti_fp32: &pipeline_openvino_dynamic_kitti_fp32
+    convert_image: *convert_image
+    backend_test: *default_backend_test
+    deploy_config: configs/mmdet3d/voxel-detection/voxel-detection_openvino_dynamic-kitti-32x4.py
+
+  pipeline_openvino_dynamic_nus_fp32_64x4: &pipeline_openvino_dynamic_nus_fp32_64x4
+    convert_image: *convert_image_nus
+    backend_test: *default_backend_test
+    deploy_config: configs/mmdet3d/voxel-detection/voxel-detection_openvino_dynamic-nus-64x4.py
+
+  pipeline_openvino_dynamic_nus_fp32_20x5: &pipeline_openvino_dynamic_nus_fp32_20x5
+    convert_image: *convert_image_nus
+    backend_test: *default_backend_test
+    deploy_config: configs/mmdet3d/voxel-detection/voxel-detection_openvino_dynamic-nus-20x5.py
+
+models:
+  - name: PointPillars
+    metafile: configs/pointpillars/metafile.yml
+    model_configs:
+      - configs/pointpillars/hv_pointpillars_secfpn_6x8_160e_kitti-3d-3class.py
+      - configs/pointpillars/hv_pointpillars_secfpn_6x8_160e_kitti-3d-car.py
+    pipelines:
+      - *pipeline_ort_dynamic_kitti_fp32
+      - *pipeline_openvino_dynamic_kitti_fp32
+      - *pipeline_trt_dynamic_kitti_fp32
+  - name: PointPillars
+    metafile: configs/pointpillars/metafile.yml
+    model_configs:
+      - configs/pointpillars/hv_pointpillars_secfpn_sbn-all_4x8_2x_nus-3d.py
+    pipelines:
+      - *pipeline_ort_dynamic_nus_fp32
+      - *pipeline_openvino_dynamic_nus_fp32_64x4
+      - *pipeline_trt_dynamic_nus_fp32_64x4
+  - name: CenterPoint
+    metafile: configs/centerpoint/metafile.yml
+    model_configs:
+      - configs/centerpoint/centerpoint_02pillar_second_secfpn_circlenms_4x8_cyclic_20e_nus.py
+    pipelines:
+      - *pipeline_ort_dynamic_nus_fp32
+      - *pipeline_openvino_dynamic_nus_fp32_20x5
+      - *pipeline_trt_dynamic_nus_fp32_20x5

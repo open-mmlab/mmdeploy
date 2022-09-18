@@ -14,14 +14,14 @@ from .mmclassification import MMCLS_TASK
 
 
 def process_model_config(model_cfg: mmcv.Config,
-                         imgs: Union[str, np.ndarray],
+                         imgs: Sequence[Union[str, np.ndarray]],
                          input_shape: Optional[Sequence[int]] = None):
     """Process the model config.
 
     Args:
         model_cfg (mmcv.Config): The model config.
-        imgs (str | np.ndarray): Input image(s), accepted data type are `str`,
-            `np.ndarray`.
+        imgs (Sequence[str | np.ndarray]): Input image(s), accepted
+            data type are `str`, `np.ndarray`.
         input_shape (list[int]): A list of two integer in (width, height)
             format specifying input shape. Default: None.
 
@@ -29,7 +29,7 @@ def process_model_config(model_cfg: mmcv.Config,
         mmcv.Config: the model config after processing.
     """
     cfg = model_cfg.deepcopy()
-    if isinstance(imgs, str):
+    if isinstance(imgs[0], str):
         if cfg.data.test.pipeline[0]['type'] != 'LoadImageFromFile':
             cfg.data.test.pipeline.insert(0, dict(type='LoadImageFromFile'))
     else:
@@ -76,7 +76,11 @@ class Classification(BaseTask):
         from .classification_model import build_classification_model
 
         model = build_classification_model(
-            model_files, self.model_cfg, self.deploy_cfg, device=self.device)
+            model_files,
+            self.model_cfg,
+            self.deploy_cfg,
+            device=self.device,
+            **kwargs)
 
         return model.eval()
 
@@ -106,14 +110,14 @@ class Classification(BaseTask):
         return model.eval()
 
     def create_input(self,
-                     imgs: Union[str, np.ndarray],
+                     imgs: Union[str, np.ndarray, Sequence],
                      input_shape: Optional[Sequence[int]] = None) \
             -> Tuple[Dict, torch.Tensor]:
         """Create input for classifier.
 
         Args:
-            imgs (Any): Input image(s), accepted data type are `str`,
-                `np.ndarray`, `torch.Tensor`.
+            imgs (Union[str, np.ndarray, Sequence]): Input image(s),
+                accepted data type are `str`, `np.ndarray`, Sequence.
             input_shape (list[int]): A list of two integer in (width, height)
                 format specifying input shape. Default: None.
 
@@ -122,15 +126,19 @@ class Classification(BaseTask):
         """
         from mmcls.datasets.pipelines import Compose
         from mmcv.parallel import collate, scatter
+        if isinstance(imgs, (str, np.ndarray)):
+            imgs = [imgs]
         cfg = process_model_config(self.model_cfg, imgs, input_shape)
-        if isinstance(imgs, str):
-            data = dict(img_info=dict(filename=imgs), img_prefix=None)
-        else:
-            data = dict(img=imgs)
+        data_list = []
         test_pipeline = Compose(cfg.data.test.pipeline)
-        data = test_pipeline(data)
-        data = collate([data], samples_per_gpu=1)
-        data['img'] = [data['img']]
+        for img in imgs:
+            if isinstance(img, str):
+                data = dict(img_info=dict(filename=img), img_prefix=None)
+            else:
+                data = dict(img=img)
+            data = test_pipeline(data)
+            data_list.append(data)
+        data = collate(data_list, samples_per_gpu=len(data_list))
         if self.device != 'cpu':
             data = scatter(data, [self.device])[0]
         return data, data['img']
@@ -233,8 +241,6 @@ class Classification(BaseTask):
             log_file (str | None): The file to write the evaluation results.
                 Defaults to `None` and the results will only print on stdout.
         """
-        import warnings
-
         from mmcv.utils import get_logger
         logger = get_logger('test', log_file=log_file, log_level=logging.INFO)
 
@@ -243,7 +249,7 @@ class Classification(BaseTask):
             for k, v in results.items():
                 logger.info(f'{k} : {v:.2f}')
         else:
-            warnings.warn('Evaluation metrics are not specified.')
+            logger.warning('Evaluation metrics are not specified.')
             scores = np.vstack(outputs)
             pred_score = np.max(scores, axis=1)
             pred_label = np.argmax(scores, axis=1)
@@ -270,7 +276,7 @@ class Classification(BaseTask):
             dict: Composed of the preprocess information.
         """
         input_shape = get_input_shape(self.deploy_cfg)
-        cfg = process_model_config(self.model_cfg, '', input_shape)
+        cfg = process_model_config(self.model_cfg, [''], input_shape)
         preprocess = cfg.data.test.pipeline
         return preprocess
 
@@ -281,8 +287,14 @@ class Classification(BaseTask):
             dict: Composed of the postprocess information.
         """
         postprocess = self.model_cfg.model.head
-        assert 'topk' in postprocess, 'model config lack topk'
-        postprocess.topk = max(postprocess.topk)
+        if 'topk' not in postprocess:
+            topk = (1, )
+            logger = get_root_logger()
+            logger.warning('no topk in postprocess config, using default \
+                 topk value.')
+        else:
+            topk = postprocess.topk
+        postprocess.topk = max(topk)
         return postprocess
 
     def get_model_name(self) -> str:

@@ -4,7 +4,7 @@
 #include "catch.hpp"
 // clang-format on
 
-#include "mmdeploy/apis/c/segmentor.h"
+#include "mmdeploy/apis/c/mmdeploy/segmentor.h"
 #include "opencv2/opencv.hpp"
 #include "test_resource.h"
 
@@ -13,23 +13,24 @@ using namespace std;
 TEST_CASE("test segmentor's c api", "[.segmentor][resource]") {
   auto test = [](const string &device, const string &backend, const string &model_path,
                  const vector<string> &img_list) {
-    mm_handle_t handle{nullptr};
-    auto ret = mmdeploy_segmentor_create_by_path(model_path.c_str(), device.c_str(), 0, &handle);
-    REQUIRE(ret == MM_SUCCESS);
+    mmdeploy_segmentor_t segmentor{nullptr};
+    auto ret = mmdeploy_segmentor_create_by_path(model_path.c_str(), device.c_str(), 0, &segmentor);
+    REQUIRE(ret == MMDEPLOY_SUCCESS);
 
     vector<cv::Mat> cv_mats;
-    vector<mm_mat_t> mats;
+    vector<mmdeploy_mat_t> mats;
     for (auto &img_path : img_list) {
       cv::Mat mat = cv::imread(img_path);
       REQUIRE(!mat.empty());
       cv_mats.push_back(mat);
-      mats.push_back({mat.data, mat.rows, mat.cols, mat.channels(), MM_BGR, MM_INT8});
+      mats.push_back({mat.data, mat.rows, mat.cols, mat.channels(), MMDEPLOY_PIXEL_FORMAT_BGR,
+                      MMDEPLOY_DATA_TYPE_UINT8});
     }
 
-    mm_segment_t *results{nullptr};
+    mmdeploy_segmentation_t *results{nullptr};
     int count = 0;
-    ret = mmdeploy_segmentor_apply(handle, mats.data(), (int)mats.size(), &results);
-    REQUIRE(ret == MM_SUCCESS);
+    ret = mmdeploy_segmentor_apply(segmentor, mats.data(), (int)mats.size(), &results);
+    REQUIRE(ret == MMDEPLOY_SUCCESS);
     REQUIRE(results != nullptr);
 
     auto result_ptr = results;
@@ -39,7 +40,7 @@ TEST_CASE("test segmentor's c api", "[.segmentor][resource]") {
     }
 
     mmdeploy_segmentor_release_result(results, (int)mats.size());
-    mmdeploy_segmentor_destroy(handle);
+    mmdeploy_segmentor_destroy(segmentor);
   };
 
   auto gResources = MMDeployTestResources::Get();

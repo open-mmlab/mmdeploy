@@ -202,7 +202,9 @@ class VoxelDetectionModel(BaseBackendModel):
         else:
             raise NotImplementedError('Not supported model.')
         head_cfg['train_cfg'] = None
-        head_cfg['test_cfg'] = model_cfg.model['test_cfg']
+        head_cfg['test_cfg'] = model_cfg.model['test_cfg']\
+            if 'pts' not in model_cfg.model['test_cfg'].keys()\
+            else model_cfg.model['test_cfg']['pts']
         head = build_head(head_cfg)
         if device == 'cpu':
             logger = get_root_logger()

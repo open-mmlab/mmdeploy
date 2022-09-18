@@ -40,16 +40,20 @@ class End2EndModel(BaseBackendModel):
                  backend_files: Sequence[str],
                  device: str,
                  model_cfg: mmcv.Config,
-                 deploy_cfg: Union[str, mmcv.Config] = None):
+                 deploy_cfg: Union[str, mmcv.Config] = None,
+                 **kwargs):
         super().__init__(deploy_cfg=deploy_cfg)
         self.deploy_cfg = deploy_cfg
         self.test_cfg = model_cfg.test_cfg
         self.allowed_metrics = {'PSNR': psnr, 'SSIM': ssim}
         self._init_wrapper(
-            backend=backend, backend_files=backend_files, device=device)
+            backend=backend,
+            backend_files=backend_files,
+            device=device,
+            **kwargs)
 
     def _init_wrapper(self, backend: Backend, backend_files: Sequence[str],
-                      device: str):
+                      device: str, **kwargs):
         output_names = self.output_names
         self.wrapper = BaseBackendModel._build_wrapper(
             backend=backend,
@@ -57,7 +61,8 @@ class End2EndModel(BaseBackendModel):
             device=device,
             input_names=[self.input_name],
             output_names=output_names,
-            deploy_cfg=self.deploy_cfg)
+            deploy_cfg=self.deploy_cfg,
+            **kwargs)
 
     def forward(self,
                 lq: torch.Tensor,
@@ -218,7 +223,7 @@ class SDKEnd2EndModel(End2EndModel):
             list | dict: High resolution image or a evaluation results.
         """
         img = tensor2img(lq)
-        output = self.wrapper.invoke([img])[0]
+        output = self.wrapper.invoke(img)
         if test_mode:
             output = torch.from_numpy(output)
             output = output.permute(2, 0, 1)
@@ -231,8 +236,8 @@ class SDKEnd2EndModel(End2EndModel):
 
 def build_super_resolution_model(model_files: Sequence[str],
                                  model_cfg: Union[str, mmcv.Config],
-                                 deploy_cfg: Union[str,
-                                                   mmcv.Config], device: str):
+                                 deploy_cfg: Union[str, mmcv.Config],
+                                 device: str, **kwargs):
     model_cfg = load_config(model_cfg)[0]
     deploy_cfg = load_config(deploy_cfg)[0]
 
@@ -245,6 +250,7 @@ def build_super_resolution_model(model_files: Sequence[str],
         backend_files=model_files,
         device=device,
         model_cfg=model_cfg,
-        deploy_cfg=deploy_cfg)
+        deploy_cfg=deploy_cfg,
+        **kwargs)
 
     return backend_model

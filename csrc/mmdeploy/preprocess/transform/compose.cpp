@@ -14,19 +14,26 @@ Compose::Compose(const Value& args, int version) : Transform(args) {
   Value context;
   context = args["context"];
   context["stream"].get_to(stream_);
+  bool fuse_transform = args.value("fuse_transform", false);
+  if (fuse_transform) {
+    std::string sha256 = args.value("sha256", std::string(""));
+    context["fuse_transform"] = true;
+    context["sha256"] = sha256;
+  }
   for (auto cfg : args["transforms"]) {
     cfg["context"] = context;
     auto type = cfg.value("type", std::string{});
     MMDEPLOY_DEBUG("creating transform: {} with cfg: {}", type, mmdeploy::to_json(cfg).dump(2));
     auto creator = Registry<Transform>::Get().GetCreator(type, version);
     if (!creator) {
-      MMDEPLOY_ERROR("unable to find creator: {}", type);
-      throw std::invalid_argument("unable to find creator");
+      MMDEPLOY_ERROR("Unable to find Transform creator: {}. Available transforms: {}", type,
+                     Registry<Transform>::Get().List());
+      throw_exception(eEntryNotFound);
     }
     auto transform = creator->Create(cfg);
     if (!transform) {
-      MMDEPLOY_ERROR("failed to create transform: {}", type);
-      throw std::invalid_argument("failed to create transform");
+      MMDEPLOY_ERROR("Failed to create transform: {}, config: {}", type, cfg);
+      throw_exception(eFail);
     }
     transforms_.push_back(std::move(transform));
   }

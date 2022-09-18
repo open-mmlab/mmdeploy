@@ -6,8 +6,8 @@ import mmcv
 import torch
 
 from mmdeploy.apis.core.pipeline_manager import no_mp
-from mmdeploy.utils import (get_backend, get_dynamic_axes, get_input_shape,
-                            get_onnx_config, load_config)
+from mmdeploy.utils import (Backend, get_backend, get_dynamic_axes,
+                            get_input_shape, get_onnx_config, load_config)
 from .core import PIPELINE_MANAGER
 from .onnx import export
 
@@ -61,7 +61,11 @@ def torch2onnx(img: Any,
 
     torch_model = task_processor.init_pytorch_model(model_checkpoint)
     data, model_inputs = task_processor.create_input(img, input_shape)
-    input_metas = dict(img_metas=data.get('img_metas', None))
+    if 'img_metas' in data:
+        input_metas = dict(img_metas=data['img_metas'])
+    else:
+        # codebases like mmedit do not have img_metas argument
+        input_metas = None
     if not isinstance(model_inputs, torch.Tensor) and len(model_inputs) == 1:
         model_inputs = model_inputs[0]
 
@@ -84,6 +88,10 @@ def torch2onnx(img: Any,
     keep_initializers_as_inputs = onnx_cfg.get('keep_initializers_as_inputs',
                                                True)
     optimize = onnx_cfg.get('optimize', False)
+    if backend == Backend.NCNN.value:
+        """NCNN backend needs a precise blob counts, while using onnx optimizer
+        will merge duplicate initilizers without reference count."""
+        optimize = False
     with no_mp():
         export(
             torch_model,

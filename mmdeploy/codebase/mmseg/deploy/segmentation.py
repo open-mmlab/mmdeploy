@@ -4,6 +4,7 @@ from typing import Any, Dict, Optional, Sequence, Tuple, Union
 import mmcv
 import numpy as np
 import torch
+from mmcv.parallel import DataContainer
 from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
@@ -30,15 +31,17 @@ def process_model_config(model_cfg: mmcv.Config,
     cfg = model_cfg.copy()
 
     if isinstance(imgs[0], np.ndarray):
-        cfg = cfg.copy()
         # set loading pipeline type
-        cfg.data.test.pipeline[0].type = 'LoadImageFromWebcam'
+        cfg.data.test.pipeline[0] = LoadImage()
     # for static exporting
     if input_shape is not None:
-        cfg.data.test.pipeline[1]['img_scale'] = tuple(input_shape)
-        cfg.data.test.pipeline[1]['transforms'][0]['keep_ratio'] = False
-    cfg.data.test.pipeline = [LoadImage()] + cfg.data.test.pipeline[1:]
-
+        for pipeline in cfg.data.test.pipeline[1:]:
+            if 'img_scale' in pipeline:
+                pipeline['img_scale'] = tuple(input_shape)
+            if 'transforms' in pipeline:
+                for trans in pipeline['transforms']:
+                    if 'keep_ratio' in trans:
+                        trans['keep_ratio'] = False
     return cfg
 
 
@@ -70,7 +73,11 @@ class Segmentation(BaseTask):
         """
         from .segmentation_model import build_segmentation_model
         model = build_segmentation_model(
-            model_files, self.model_cfg, self.deploy_cfg, device=self.device)
+            model_files,
+            self.model_cfg,
+            self.deploy_cfg,
+            device=self.device,
+            **kwargs)
         return model.eval()
 
     def init_pytorch_model(self,
@@ -99,7 +106,7 @@ class Segmentation(BaseTask):
         return model.eval()
 
     def create_input(self,
-                     imgs: Union[str, np.ndarray],
+                     imgs: Union[str, np.ndarray, Sequence],
                      input_shape: Sequence[int] = None) \
             -> Tuple[Dict, torch.Tensor]:
         """Create input for segmentor.
@@ -115,28 +122,31 @@ class Segmentation(BaseTask):
         """
         from mmcv.parallel import collate, scatter
         from mmseg.datasets.pipelines import Compose
-        if not isinstance(imgs, (list, tuple)):
+        if isinstance(imgs, (str, np.ndarray)):
             imgs = [imgs]
+        imgs = [mmcv.imread(_) for _ in imgs]
         cfg = process_model_config(self.model_cfg, imgs, input_shape)
         test_pipeline = Compose(cfg.data.test.pipeline)
         data_list = []
         for img in imgs:
             # prepare data
-            data = dict(img=img)
+            if isinstance(img, str):
+                data = dict(img_info=dict(filename=img), img_prefix=None)
+            else:
+                data = dict(img=img)
             # build the data pipeline
             data = test_pipeline(data)
             data_list.append(data)
 
-        data = collate(data_list, samples_per_gpu=len(imgs))
-
-        data['img_metas'] = [
-            img_metas.data[0] for img_metas in data['img_metas']
-        ]
-        data['img'] = [img.data[0][None, :] for img in data['img']]
+        batch_data = collate(data_list, samples_per_gpu=len(imgs))
         if self.device != 'cpu':
-            data = scatter(data, [self.device])[0]
+            batch_data = scatter(batch_data, [self.device])[0]
 
-        return data, data['img']
+        for k, v in batch_data.items():
+            # batch_size > 1
+            if isinstance(v[0], DataContainer):
+                batch_data[k] = v[0].data
+        return batch_data, batch_data['img']
 
     def visualize(self,
                   model,
@@ -262,6 +272,8 @@ class Segmentation(BaseTask):
             dict: Nonthing for super resolution.
         """
         postprocess = self.model_cfg.model.decode_head
+        if isinstance(postprocess, list):
+            postprocess = postprocess[-1]
         return postprocess
 
     def get_model_name(self) -> str:

@@ -53,9 +53,9 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 
 ### 支持多种推理后端
 
-| ONNX Runtime | TensorRT | ppl.nn | ncnn | OpenVINO | more                                              |
-| ------------ | -------- | ------ | ---- | -------- | ------------------------------------------------- |
-| ✔️           | ✔️       | ✔️     | ✔️   | ✔️       | [benchmark](docs/zh_cn/03-benchmark/benchmark.md) |
+| ONNX Runtime | TensorRT | ppl.nn | ncnn | OpenVINO | LibTorch | snpe | Ascend | Core ML | RKNN | more                                           |
+| ------------ | -------- | ------ | ---- | -------- | -------- | ---- | ------ | ------- | ---- | ---------------------------------------------- |
+| ✔️           | ✔️       | ✔️     | ✔️   | ✔️       | ✔️       | ✔️   | ✔️     | ✔️      | ✔️   | [benchmark](docs/en/03-benchmark/benchmark.md) |
 
 ### SDK 可高度定制化
 
@@ -63,30 +63,46 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 - Net 推理
 - Module 后处理
 
-## [快速上手](docs/zh_cn/get_started.md)
+## [中文文档](https://mmdeploy.readthedocs.io/zh_CN/latest/)
 
+- [快速上手](docs/zh_cn/get_started.md)
 - [编译](docs/zh_cn/01-how-to-build/build_from_source.md)
+  - [一键式脚本安装](docs/zh_cn/01-how-to-build/build_from_script.md)
   - [Build from Docker](docs/zh_cn/01-how-to-build/build_from_docker.md)
   - [Build for Linux](docs/zh_cn/01-how-to-build/linux-x86_64.md)
+  - [Build for macOS](docs/zh_cn/01-how-to-build/macos-arm64.md)
   - [Build for Win10](docs/zh_cn/01-how-to-build/windows.md)
   - [Build for Android](docs/zh_cn/01-how-to-build/android.md)
   - [Build for Jetson](docs/en/01-how-to-build/jetsons.md)
+  - [Build for SNPE](docs/zh_cn/01-how-to-build/snpe.md)
 - 使用
   - [把模型转换到推理 Backend](docs/zh_cn/02-how-to-run/convert_model.md)
   - [配置转换参数](docs/zh_cn/02-how-to-run/write_config.md)
   - [量化](docs/zh_cn/02-how-to-run/quantize_model.md)
   - [测试转换完成的模型](docs/zh_cn/02-how-to-run/profile_model.md)
+  - [工具集介绍](docs/zh_cn/02-how-to-run/useful_tools.md)
 - 开发指南
-  - [支持新模型](docs/zh_cn/04-developer-guide/support_new_model.md)
-  - [增加推理 Backend](docs/zh_cn/04-developer-guide/support_new_backend.md)
-  - [回归测试](docs/zh_cn/04-developer-guide/do_regression_test.md)
+  - [软件架构](docs/zh_cn/07-developer-guide/architecture.md)
+  - [支持新模型](docs/zh_cn/07-developer-guide/support_new_model.md)
+  - [增加推理 backend](docs/zh_cn/07-developer-guide/support_new_backend.md)
+  - [模型分块](docs/zh_cn/07-developer-guide/partition_model.md)
+  - [测试重写模型](docs/zh_cn/07-developer-guide/test_rewritten_models.md)
+  - [backend 算子测试](docs/zh_cn/07-developer-guide/add_backend_ops_unittest.md)
+  - [回归测试](docs/zh_cn/07-developer-guide/regression_test.md)
+- 各 backend 自定义算子列表
+  - [ncnn](docs/zh_cn/06-custom-ops/ncnn.md)
+  - [onnxruntime](docs/zh_cn/06-custom-ops/onnxruntime.md)
+  - [tensorrt](docs/zh_cn/06-custom-ops/tensorrt.md)
 - [FAQ](docs/zh_cn/faq.md)
 - [贡献者手册](.github/CONTRIBUTING.md)
 
 ## 新人解说
 
-- [01 术语解释、加载第一个模型](docs/zh_cn/05-tutorial/01_introduction_to_model_deployment.md)
-- [02 转成 onnx](docs/zh_cn/05-tutorial/02_challenges.md)
+- [01 术语解释、加载第一个模型](docs/zh_cn/tutorial/01_introduction_to_model_deployment.md)
+- [02 部署常见问题](docs/zh_cn/tutorial/02_challenges.md)
+- [03 torch转onnx](docs/zh_cn/tutorial/03_pytorch2onnx.md)
+- [04 让torch支持更多onnx算子](docs/zh_cn/tutorial/04_onnx_custom_op.md)
+- [05 调试onnx模型](docs/zh_cn/tutorial/05_onnx_model_editing.md)
 
 ## 基准与模型库
 

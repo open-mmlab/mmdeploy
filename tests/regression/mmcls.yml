@@ -33,8 +33,7 @@ globals:
 onnxruntime:
   pipeline_ort_static_fp32: &pipeline_ort_static_fp32
     convert_image: *convert_image
-    backend_test: *default_backend_test
-    sdk_config: *sdk_dynamic
+    backend_test: False
     deploy_config: configs/mmcls/classification_onnxruntime_static.py
 
   pipeline_ort_dynamic_fp32: &pipeline_ort_dynamic_fp32
@@ -144,6 +143,18 @@ models:
       - *pipeline_pplnn_dynamic_fp32
       - *pipeline_openvino_dynamic_fp32
 
+  - name: DenseNet
+    metafile: configs/densenet/metafile.yml
+    model_configs:
+      - configs/densenet/densenet121_4xb256_in1k.py
+    pipelines:
+      - *pipeline_ts_fp32
+      - *pipeline_ort_dynamic_fp32
+      - *pipeline_trt_dynamic_fp16
+      - *pipeline_ncnn_static_fp32
+      - *pipeline_pplnn_dynamic_fp32
+      - *pipeline_openvino_dynamic_fp32
+
   - name: SE-ResNet
     metafile: configs/seresnet/metafile.yml
     model_configs:
@@ -201,3 +212,12 @@ models:
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_static_fp16_384x384
       - *pipeline_ncnn_static_fp32
+
+  - name: SwinTransformer
+    metafile: configs/swin_transformer/metafile.yml
+    model_configs:
+      - configs/swin_transformer/swin-tiny_16xb64_in1k.py
+    pipelines:
+      - *pipeline_ts_fp32
+      - *pipeline_ort_dynamic_fp32
+      - *pipeline_trt_static_fp16

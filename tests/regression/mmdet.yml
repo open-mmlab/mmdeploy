@@ -37,26 +37,22 @@ globals:
 onnxruntime:
   pipeline_ort_static_fp32: &pipeline_ort_static_fp32
     convert_image: *convert_image
-    backend_test: *default_backend_test
-    sdk_config: *sdk_dynamic
+    backend_test: False
     deploy_config: configs/mmdet/detection/detection_onnxruntime_static.py
 
   pipeline_ort_dynamic_fp32: &pipeline_ort_dynamic_fp32
     convert_image: *convert_image
-    backend_test: *default_backend_test
-    sdk_config: *sdk_dynamic
+    backend_test: False
     deploy_config: configs/mmdet/detection/detection_onnxruntime_dynamic.py
 
   pipeline_seg_ort_static_fp32: &pipeline_seg_ort_static_fp32
     convert_image: *convert_image
-    backend_test: *default_backend_test
-#    sdk_config: *sdk_seg_static
+    backend_test: False
     deploy_config: configs/mmdet/instance-seg/instance-seg_onnxruntime_static.py
 
   pipeline_seg_ort_dynamic_fp32: &pipeline_seg_ort_dynamic_fp32
     convert_image: *convert_image
-    backend_test: *default_backend_test
-    sdk_config: *sdk_seg_dynamic
+    backend_test: False
     deploy_config: configs/mmdet/instance-seg/instance-seg_onnxruntime_dynamic.py
 
 tensorrt:
@@ -168,13 +164,13 @@ pplnn:
 torchscript:
   pipeline_ts_fp32: &pipeline_ts_fp32
     convert_image: *convert_image
-    backend_test: False
+    backend_test: *default_backend_test
     deploy_config: configs/mmdet/detection/detection_torchscript.py
 
   # ============= seg ================
   pipeline_seg_ts_fp32: &pipeline_seg_ts_fp32
     convert_image: *convert_image
-    backend_test: False
+    backend_test: *default_backend_test
     deploy_config: configs/mmdet/instance-seg/instance-seg_torchscript.py
 
 models:
@@ -185,11 +181,11 @@ models:
     pipelines:
       - *pipeline_ts_fp32
       - *pipeline_ort_dynamic_fp32
-#      - *pipeline_trt_dynamic_fp32
-      - *pipeline_trt_dynamic_fp16
-#      - *pipeline_trt_dynamic_int8
+      - deploy_config: configs/mmdet/detection/detection_tensorrt-fp16_dynamic-64x64-608x608.py
+        convert_image: *convert_image
+        backend_test: *default_backend_test
+        sdk_config: *sdk_dynamic
       - *pipeline_ncnn_static_fp32
-#      - *pipeline_pplnn_dynamic_fp32
       - *pipeline_openvino_dynamic_fp32
 
   - name: SSD
@@ -202,6 +198,7 @@ models:
       - deploy_config: configs/mmdet/detection/detection_tensorrt-fp16_dynamic-300x300-512x512.py
         convert_image: *convert_image
         backend_test: *default_backend_test
+        sdk_config: *sdk_dynamic
       - deploy_config: configs/mmdet/detection/single-stage_ncnn_static-300x300.py
         convert_image: *convert_image
         backend_test: False
@@ -217,6 +214,16 @@ models:
       - *pipeline_ncnn_static_fp32
       - *pipeline_pplnn_dynamic_fp32
       - *pipeline_openvino_dynamic_fp32
+
+  - name: Cascade Mask R-CNN
+    metafile: configs/cascade_rcnn/metafile.yml
+    model_configs:
+      - configs/cascade_rcnn/cascade_mask_rcnn_r50_fpn_1x_coco.py
+    pipelines:
+      - *pipeline_seg_ts_fp32
+      - *pipeline_seg_ort_dynamic_fp32
+      - *pipeline_seg_trt_dynamic_fp32
+      - *pipeline_seg_openvino_dynamic_fp32
 
   - name: FCOS
     metafile: configs/fcos/metafile.yml
@@ -306,6 +313,14 @@ models:
     metafile: configs/swin/metafile.yml
     model_configs:
       - configs/swin/mask_rcnn_swin-t-p4-w7_fpn_1x_coco.py
+    pipelines:
+      - *pipeline_seg_ort_dynamic_fp32
+      - *pipeline_seg_trt_dynamic_fp32
+
+  - name: DETR
+    metafile: configs/detr/metafile.yml
+    model_configs:
+      - configs/detr/detr_r50_8x2_150e_coco.py
     pipelines:
       - *pipeline_seg_ort_dynamic_fp32
       - *pipeline_seg_trt_dynamic_fp32

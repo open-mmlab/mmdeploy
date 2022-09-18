@@ -380,10 +380,12 @@ class TestParseDeviceID:
     def test_cpu(self):
         device = 'cpu'
         assert util.parse_device_id(device) == -1
+        assert util.parse_device_type(device) == 'cpu'
 
     def test_cuda(self):
         device = 'cuda'
         assert util.parse_device_id(device) == 0
+        assert util.parse_device_type(device) == 'cuda'
 
     def test_cuda10(self):
         device = 'cuda:10'
@@ -417,7 +419,7 @@ def test_AdvancedEnum():
     not importlib.util.find_spec('mmedit'), reason='requires mmedit')
 def test_export_info():
     with tempfile.TemporaryDirectory() as dir:
-        export2SDK(correct_deploy_cfg, correct_model_cfg, dir, '')
+        export2SDK(correct_deploy_cfg, correct_model_cfg, dir, '', 'cpu')
         deploy_json = os.path.join(dir, 'deploy.json')
         pipeline_json = os.path.join(dir, 'pipeline.json')
         detail_json = os.path.join(dir, 'detail.json')

@@ -44,7 +44,17 @@ def roi_align_default(ctx, g, input: Tensor, rois: Tensor,
     backend = get_backend(ctx.cfg)
     if backend == Backend.PPLNN:
         domain = 'mmcv'
-    elif backend == Backend.ONNXRUNTIME:
+        return g.op(
+            f'{domain}::MMCVRoiAlign',
+            input,
+            rois,
+            output_height_i=output_size[0],
+            output_width_i=output_size[1],
+            spatial_scale_f=spatial_scale,
+            sampling_ratio_i=sampling_ratio,
+            mode_s=pool_mode,
+            aligned_i=aligned)
+    else:
         from torch.onnx.symbolic_opset9 import _cast_Long
         from torch.onnx.symbolic_opset11 import add, select, squeeze
         batch_indices = _cast_Long(
@@ -96,15 +106,3 @@ def roi_align_default(ctx, g, input: Tensor, rois: Tensor,
                 sampling_ratio_i=sampling_ratio,
                 mode_s=pool_mode,
                 aligned_i=aligned)
-    else:
-        domain = 'mmdeploy'
-    return g.op(
-        f'{domain}::MMCVRoiAlign',
-        input,
-        rois,
-        output_height_i=output_size[0],
-        output_width_i=output_size[1],
-        spatial_scale_f=spatial_scale,
-        sampling_ratio_i=sampling_ratio,
-        mode_s=pool_mode,
-        aligned_i=aligned)

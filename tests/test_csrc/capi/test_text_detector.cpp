@@ -3,7 +3,7 @@
 #include "catch.hpp"
 // clang-format on
 
-#include "mmdeploy/apis/c/text_detector.h"
+#include "mmdeploy/apis/c/mmdeploy/text_detector.h"
 #include "mmdeploy/core/logger.h"
 #include "opencv2/opencv.hpp"
 #include "test_resource.h"
@@ -12,25 +12,26 @@ using namespace std;
 
 TEST_CASE("test text detector's c api", "[.text-detector][resource]") {
   auto test = [](const string& device, const string& model_path, const vector<string>& img_list) {
-    mm_handle_t handle{nullptr};
+    mmdeploy_text_detector_t detector{nullptr};
     auto ret =
-        mmdeploy_text_detector_create_by_path(model_path.c_str(), device.c_str(), 0, &handle);
-    REQUIRE(ret == MM_SUCCESS);
+        mmdeploy_text_detector_create_by_path(model_path.c_str(), device.c_str(), 0, &detector);
+    REQUIRE(ret == MMDEPLOY_SUCCESS);
 
     vector<cv::Mat> cv_mats;
-    vector<mm_mat_t> mats;
+    vector<mmdeploy_mat_t> mats;
     for (auto& img_path : img_list) {
       cv::Mat mat = cv::imread(img_path);
       REQUIRE(!mat.empty());
       cv_mats.push_back(mat);
-      mats.push_back({mat.data, mat.rows, mat.cols, mat.channels(), MM_BGR, MM_INT8});
+      mats.push_back({mat.data, mat.rows, mat.cols, mat.channels(), MMDEPLOY_PIXEL_FORMAT_BGR,
+                      MMDEPLOY_DATA_TYPE_UINT8});
     }
 
-    mm_text_detect_t* results{nullptr};
+    mmdeploy_text_detection_t* results{nullptr};
     int* result_count{nullptr};
-    ret = mmdeploy_text_detector_apply(handle, mats.data(), (int)mats.size(), &results,
+    ret = mmdeploy_text_detector_apply(detector, mats.data(), (int)mats.size(), &results,
                                        &result_count);
-    REQUIRE(ret == MM_SUCCESS);
+    REQUIRE(ret == MMDEPLOY_SUCCESS);
 
     auto result_ptr = results;
     for (auto i = 0; i < mats.size(); ++i) {
@@ -45,7 +46,7 @@ TEST_CASE("test text detector's c api", "[.text-detector][resource]") {
     }
 
     mmdeploy_text_detector_release_result(results, result_count, (int)mats.size());
-    mmdeploy_text_detector_destroy(handle);
+    mmdeploy_text_detector_destroy(detector);
   };
 
   auto& gResources = MMDeployTestResources::Get();

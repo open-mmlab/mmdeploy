@@ -76,7 +76,11 @@ class TextDetection(BaseTask):
         """
         from .text_detection_model import build_text_detection_model
         model = build_text_detection_model(
-            model_files, self.model_cfg, self.deploy_cfg, device=self.device)
+            model_files,
+            self.model_cfg,
+            self.deploy_cfg,
+            device=self.device,
+            **kwargs)
         return model.eval()
 
     def init_pytorch_model(self,
@@ -103,7 +107,7 @@ class TextDetection(BaseTask):
         return model.eval()
 
     def create_input(self,
-                     imgs: Union[str, np.ndarray],
+                     imgs: Union[str, np.ndarray, Sequence],
                      input_shape: Sequence[int] = None) \
             -> Tuple[Dict, torch.Tensor]:
         """Create input for segmentor.
@@ -145,32 +149,17 @@ class TextDetection(BaseTask):
             # get tensor from list to stack for batch mode (text detection)
             data_list.append(data)
 
-        if isinstance(data_list[0]['img'], list) and len(data_list) > 1:
-            raise Exception('aug test does not support '
-                            f'inference with batch size '
-                            f'{len(data_list)}')
+        batch_data = collate(data_list, samples_per_gpu=len(imgs))
 
-        data = collate(data_list, samples_per_gpu=len(imgs))
-
-        # process img_metas
-        if isinstance(data['img_metas'], list):
-            data['img_metas'] = [
-                img_metas.data[0] for img_metas in data['img_metas']
-            ]
-        else:
-            data['img_metas'] = data['img_metas'].data
-
-        if isinstance(data['img'], list):
-            data['img'] = [img.data for img in data['img']]
-            if isinstance(data['img'][0], list):
-                data['img'] = [img[0] for img in data['img']]
-        else:
-            data['img'] = data['img'].data
+        for k, v in batch_data.items():
+            # batch_size > 1
+            if isinstance(v[0], DataContainer):
+                batch_data[k] = v[0].data
 
         if self.device != 'cpu':
-            data = scatter(data, [self.device])[0]
+            batch_data = scatter(batch_data, [self.device])[0]
 
-        return data, data['img']
+        return batch_data, batch_data['img']
 
     def visualize(self,
                   model: nn.Module,

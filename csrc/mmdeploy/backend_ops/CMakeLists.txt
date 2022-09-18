@@ -32,7 +32,8 @@ if ("ncnn" IN_LIST MMDEPLOY_TARGET_BACKENDS)
 endif ()
 
 # build TorchScript ops
-if ("torchscript" IN_LIST MMDEPLOY_TARGET_BACKENDS)
-  message(STATUS "Build torchsciprt custom ops")
+if ("torchscript" IN_LIST MMDEPLOY_TARGET_BACKENDS
+    OR "coreml" IN_LIST MMDEPLOY_TARGET_BACKENDS)
+  message(STATUS "Build torchscript custom ops")
   add_subdirectory(torchscript)
 endif ()
