@@ -50,7 +50,7 @@ If neither **I** nor **II** meets your requirements, [building mmdeploy from sou
 
 You can use [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/blob/dev-1.x/tools/deploy.py) to convert mmcls models to the specified backend models. Its detailed usage can be learned from [here](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/02-how-to-run/convert_model.md#usage).
 
-The following shows an example about converting `resnet18` model to onnx model that can be inferred by ONNX Runtime.
+The command below shows an example about converting `resnet18` model to onnx model that can be inferred by ONNX Runtime.
 
 ```shell
 cd mmdeploy
