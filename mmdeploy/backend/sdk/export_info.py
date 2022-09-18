@@ -218,8 +218,10 @@ def get_preprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config):
         if 'key' in transform and transform['key'] == 'lq':
             transform['key'] = 'img'
         if transform['type'] == 'Resize':
-            transform['size'] = transform['scale']
-            del transform['scale']
+            # codebase like mmseg use `size` in pipeline
+            if 'scale' in transform and 'size' not in transform:
+                transform['size'] = transform['scale']
+                del transform['scale']
         if transform['type'] == 'ResizeEdge':
             transform['type'] = 'Resize'
             transform['keep_ratio'] = True
