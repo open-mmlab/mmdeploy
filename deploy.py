@@ -19,6 +19,7 @@ from mmdeploy.utils import (IR, Backend, get_backend, get_calib_filename,
                             get_partition_config, get_root_logger, load_config,
                             target_wrapper)
 
+### yolov5
 """
 configs/mmyolo/detection/detection_onnxruntime_static.py
 /home/ubuntu/workspace/github/openmmlab/TEST/yolobenchmark/configs/yolov5/yolov5_s-v61_syncbn_8xb16-300e_coco.py
@@ -41,6 +42,7 @@ work_dir_trt_yolov5
 --device
 cuda:0
 """
+### yolox
 """
 /home/ubuntu/workspace/github/openmmlab/mmdeploy/configs/mmdet/detection/detection_tensorrt_static-640x640.py
 /home/ubuntu/workspace/github/openmmlab/mmdetection/configs/yolox/yolox_s_8xb8-300e_coco.py
@@ -48,6 +50,17 @@ cuda:0
 /home/ubuntu/workspace/github/openmmlab/mmdetection/demo/demo.jpg
 --work-dir
 work_dir_trt_yolox
+--show
+--device
+cuda:0
+"""
+"""
+/home/ubuntu/workspace/github/openmmlab/mmdeploy/configs/mmdet/detection/detection_onnxruntime_static.py
+/home/ubuntu/workspace/github/openmmlab/mmdetection/configs/yolox/yolox_s_8xb8-300e_coco.py
+/home/ubuntu/workspace/github/openmmlab/mmdetection/checkpoints/yolox_s_8x8_300e_coco_20211121_095711-4592a793.pth
+/home/ubuntu/workspace/github/openmmlab/mmdetection/demo/demo.jpg
+--work-dir
+work_dir_ort_yolox
 --show
 --device
 cuda:0

@@ -190,6 +190,11 @@ class End2EndModel(BaseBackendModel):
             bboxes = dets[:, :4]
             scores = dets[:, 4]
 
+            if 'pad_param' in img_metas[i]:
+                pad_param = img_metas[i]['pad_param']
+                offset = torch.from_numpy(pad_param[[2, 0, 2, 0]]).to(dets)
+                bboxes -= offset
+
             # perform rescale
             if rescale:
                 scale_factor = img_metas[i]['scale_factor']
@@ -202,15 +207,7 @@ class End2EndModel(BaseBackendModel):
                 scale_factor = torch.from_numpy(scale_factor).to(dets)
                 bboxes /= scale_factor
 
-            if 'border' in img_metas[i]:
-                # offset pixel of the top-left corners between original image
-                # and padded/enlarged image, 'border' is used when exporting
-                # CornerNet and CentripetalNet to onnx
-                x_off = img_metas[i]['border'][2]
-                y_off = img_metas[i]['border'][0]
-                bboxes[:, ::2] -= x_off
-                bboxes[:, 1::2] -= y_off
-                bboxes *= (bboxes > 0)
+
 
             result.scores = scores
             result.bboxes = bboxes
