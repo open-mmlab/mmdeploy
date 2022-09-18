@@ -35,7 +35,7 @@ export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 cd ${MMDEPLOY_DIR} # To MMDeploy root directory
 mkdir -p build && cd build
 cmake -DMMDEPLOY_TARGET_BACKENDS=ort -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
-make -j$(nproc)
+make -j$(nproc) && make install
 ```
 
 ## How to convert a model
