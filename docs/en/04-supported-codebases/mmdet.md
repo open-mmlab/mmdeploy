@@ -1,12 +1,25 @@
 # MMDetection Deployment
 
+- [MMDetection Deployment](#mmdetection-deployment)
+  - [Installation](#installation)
+    - [Install mmdet](#install-mmdet)
+    - [Install mmdeploy](#install-mmdeploy)
+  - [Convert model](#convert-model)
+  - [Model Specification](#model-specification)
+  - [Model inference](#model-inference)
+    - [Backend model inference](#backend-model-inference)
+    - [SDK model inference](#sdk-model-inference)
+  - [Supported models](#supported-models)
+
+______________________________________________________________________
+
 [MMDetection](https://github.com/open-mmlab/mmdetection) aka `mmdet` is an open source object detection toolbox based on PyTorch. It is a part of the [OpenMMLab](https://openmmlab.com/) project.
 
 ## Installation
 
 ### Install mmdet
 
-If you have already done that, move on to [the next section.](#install-mmdeploy) Otherwise, please follow the [guide](https://mmdetection.readthedocs.io/en/3.x/get_started.html) to finish mmdet installation.
+Please follow the [installation guide](https://mmdetection.readthedocs.io/en/3.x/get_started.html) to install mmdet. If you have already done that, please move on to [the next section](#install-mmdeploy).
 
 ### Install mmdeploy
 
@@ -19,7 +32,7 @@ There are several methods to install mmdeploy, among which you can choose an app
 **Method II:** Build using scripts
 
 If your target platform is **Ubuntu 18.04 or later version**, we encourage you to run
-[scripts](../01-how-to-build/build_from_script.md). For example, the following commands help install mmdeploy as well as inference engine - `ONNX Runtime` automatically.
+[scripts](../01-how-to-build/build_from_script.md). For example, the following commands install mmdeploy as well as inference engine - `ONNX Runtime`.
 
 ```shell
 git clone --recursive -b dev-1.x https://github.com/open-mmlab/mmdeploy.git
@@ -37,7 +50,7 @@ If neither **I** nor **II** meets your requirements, [building mmdeploy from sou
 
 You can use [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/blob/dev-1.x/tools/deploy.py) to convert mmdet models to the specified backend models. Its detailed usage can be learned from [here](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/02-how-to-run/convert_model.md#usage).
 
-The following shows an example about converting `faster r-cnn` model to onnx model that can be inferred by ONNX Runtime.
+The command below shows an example about converting `Faster R-CNN` model to onnx model that can be inferred by ONNX Runtime.
 
 ```shell
 cd mmdeploy
@@ -85,7 +98,7 @@ When converting mmdet models to tensorrt models, --device should be set to "cuda
 
 ## Model Specification
 
-Before moving on to model inference chapter, let us talk more about the converted model structure which is very important to do model inference.
+Before moving on to model inference chapter, let's know more about the converted model structure which is very important for model inference.
 
 The converted model locates in the working directory like `mmdeploy_models/mmdet/ort` in the previous example. It includes:
 
@@ -104,13 +117,15 @@ in which,
 - **pipeline.json**: inference pipeline of mmdeploy SDK
 - **detail.json**: conversion parameters
 
-And the whole package **mmdeploy_models/mmdet/ort** is defined as **mmdeploy SDK model**. In other words, **mmdeploy SDK model** includes not only backend model but also inference meta information.
+The whole package **mmdeploy_models/mmdet/ort** is defined as **mmdeploy SDK model**, i.e., **mmdeploy SDK model** includes both backend model and inference meta information.
 
-## Backend model inference
+## Model inference
 
-mmdeploy provides a unified API named as `inference_model` to do this job, making all inference backends API transparent to users.
+### Backend model inference
 
-Take the previous converted `end2end.onnx` model as an example,
+MMDeploy provides a unified API named as `inference_model` to inference model, making all inference backends API transparent to users.
+
+Take the previous converted `end2end.onnx` model as an example, you can use the following code to inference the model and visualize the results.
 
 ```python
 from mmdeploy.apis.utils import build_task_processor
@@ -147,7 +162,7 @@ task_processor.visualize(
     output_file='output_detection.png')
 ```
 
-## SDK model inference
+### SDK model inference
 
 TODO
 
