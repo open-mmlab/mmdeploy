@@ -6,7 +6,7 @@ import torch
 from mmengine import Config
 from mmengine.model import BaseDataPreprocessor
 from mmengine.registry import Registry
-from mmengine.structures import BaseDataElement
+from mmengine.structures import BaseDataElement, LabelData
 from torch import nn
 
 from mmdeploy.codebase.base import BaseBackendModel
@@ -90,7 +90,12 @@ class End2EndModel(BaseBackendModel):
 class SDKEnd2EndModel(End2EndModel):
     """SDK inference class, converts SDK output to mmcls format."""
 
-    def forward(self, img: List[torch.Tensor], *args, **kwargs) -> list:
+    def forward(self,
+                inputs: torch.Tensor,
+                data_samples: Optional[List[BaseDataElement]] = None,
+                mode: str = 'predict',
+                *args,
+                **kwargs) -> list:
         """Run forward inference.
 
         Args:
@@ -103,9 +108,15 @@ class SDKEnd2EndModel(End2EndModel):
             list: A list contains predictions.
         """
 
-        pred = self.wrapper.invoke(img[0].contiguous().detach().cpu().numpy())
+        pred = self.wrapper.invoke(inputs[0].permute(
+            1, 2, 0).contiguous().detach().cpu().numpy())
         pred = np.array(pred, dtype=np.float32)
-        return pred[np.argsort(pred[:, 0])][np.newaxis, :, 1]
+        pred[np.argsort(pred[:, 0])][np.newaxis, :, 1]
+        pred_label = LabelData()
+        # TODO need register metrics calculation in deploy or refactor SDK API
+        raise NotImplementedError('Not supported yet.')
+        data_samples[0].pred_label = pred_label
+        return data_samples
 
 
 def build_classification_model(

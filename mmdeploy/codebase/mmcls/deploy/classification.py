@@ -46,10 +46,6 @@ def process_model_config(model_cfg: Config,
     else:
         if cfg.test_pipeline[0]['type'] == 'LoadImageFromFile':
             cfg.test_pipeline.pop(0)
-    # check whether input_shape is valid
-    if 'data_preprocessor' in cfg:
-        cfg.test_pipeline.insert(
-            3, dict(type='Normalize', **cfg['data_preprocessor']))
     if input_shape is not None:
         if 'crop_size' in cfg.test_pipeline[2]:
             crop_size = cfg.test_pipeline[2]['crop_size']
@@ -249,8 +245,40 @@ class Classification(BaseTask):
         """
         input_shape = get_input_shape(self.deploy_cfg)
         cfg = process_model_config(self.model_cfg, '', input_shape)
-        preprocess = cfg.test_pipeline
-        return preprocess
+        pipeline = cfg.test_pipeline
+        meta_keys = [
+            'filename', 'ori_filename', 'ori_shape', 'img_shape', 'pad_shape',
+            'scale_factor', 'flip', 'flip_direction', 'img_norm_cfg',
+            'valid_ratio'
+        ]
+        transforms = [
+            item for item in pipeline if 'Random' not in item['type']
+        ]
+        for i, transform in enumerate(transforms):
+            if transform['type'] == 'PackClsInputs':
+                meta_keys += transform[
+                    'meta_keys'] if 'meta_keys' in transform else []
+                transform['meta_keys'] = list(set(meta_keys))
+                transform['keys'] = ['img']
+                transforms[i]['type'] = 'Collect'
+            if transform['type'] == 'Resize':
+                transforms[i]['size'] = transforms[i]['scale']
+            # TODO implement ResizeEdge in SDK
+            if transform['type'] == 'ResizeEdge':
+                transform['type'] = 'Resize'
+                transform['keep_ratio'] = False
+                transform['size'] = (transform['scale'], transform['scale'])
+
+        data_preprocessor = self.model_cfg.data_preprocessor
+        transforms.insert(-1, dict(type='ImageToTensor', keys=['img']))
+        transforms.insert(
+            -2,
+            dict(
+                type='Normalize',
+                to_rgb=data_preprocessor.get('bgr_to_rgb', False),
+                mean=data_preprocessor.get('mean', [0, 0, 0]),
+                std=data_preprocessor.get('std', [1, 1, 1])))
+        return transforms
 
     def get_postprocess(self, *args, **kwargs) -> Dict:
         """Get the postprocess information for SDK.
@@ -267,7 +295,7 @@ class Classification(BaseTask):
         else:
             topk = postprocess.topk
         postprocess.topk = max(topk)
-        return postprocess
+        return dict(type=postprocess.pop('type'), params=postprocess)
 
     def get_model_name(self, *args, **kwargs) -> str:
         """Get the model name.
