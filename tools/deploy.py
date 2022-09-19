@@ -421,7 +421,7 @@ def main():
     if backend == Backend.SNPE:
         extra['uri'] = args.uri
 
-    # render backend inference result, try visualize
+    # get backend inference result, try render
     create_process(
         f'visualize {backend.value} model',
         target=visualize_model,
@@ -430,7 +430,7 @@ def main():
         kwargs=extra,
         ret_value=ret_value)
 
-    # render pytorch model inference result, try visualize if possible
+    # get pytorch model inference result, try visualize if possible
     create_process(
         'visualize pytorch model',
         target=visualize_model,
