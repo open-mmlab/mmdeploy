@@ -142,7 +142,7 @@ val_dataloader = dict(
     dataset=dict(
         type='VideoDataset',
         ann_file='tests/test_codebase/test_mmaction/data/ann.txt',
-        data_prefix=dict(video='tests/test_codebase/test_action/data/video'),
+        data_prefix=dict(video='tests/test_codebase/test_mmaction/data/video'),
         pipeline=[
             dict(type='DecordInit'),
             dict(
@@ -166,7 +166,7 @@ test_dataloader = dict(
     dataset=dict(
         type='VideoDataset',
         ann_file='tests/test_codebase/test_mmaction/data/ann.txt',
-        data_prefix=dict(video='tests/test_codebase/test_action/data/video'),
+        data_prefix=dict(video='tests/test_codebase/test_mmaction/data/video'),
         pipeline=[
             dict(type='DecordInit'),
             dict(
