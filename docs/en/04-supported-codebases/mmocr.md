@@ -107,8 +107,7 @@ python tools/deploy.py \
     resources/converter/text_recog.jpg \
     --work-dir mmdeploy_models/mmocr/crnn/ort \
     --device cpu \
-    --show \
-    --dump-info
+    --show
 ```
 
 You can also convert the above models to other backend models by changing the deployment config file `*_onnxruntime_dynamic.py` to [others](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/configs/mmocr), e.g., converting `dbnet` to tensorrt-fp32 model by `text-detection/text-detection_tensorrt-_dynamic-320x320-2240x2240.py`.
