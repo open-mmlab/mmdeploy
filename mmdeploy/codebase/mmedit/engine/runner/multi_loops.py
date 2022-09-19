@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from typing import Sequence
 
 from mmengine.runner.amp import autocast
