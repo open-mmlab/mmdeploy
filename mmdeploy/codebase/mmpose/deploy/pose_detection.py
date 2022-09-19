@@ -305,7 +305,7 @@ class PoseDetection(BaseTask):
         for k, v in sorted(results.items()):
             logger.info(f'{k}: {v:.4f}')
 
-    def get_model_name(self) -> str:
+    def get_model_name(self, *args, **kwargs) -> str:
         """Get the model name.
 
         Return:
@@ -324,7 +324,7 @@ class PoseDetection(BaseTask):
         """
         raise NotImplementedError('Not supported yet.')
 
-    def get_preprocess(self) -> Dict:
+    def get_preprocess(self, *args, **kwargs) -> Dict:
         """Get the preprocess information for SDK.
 
         Return:
@@ -335,7 +335,7 @@ class PoseDetection(BaseTask):
         preprocess = model_cfg.data.test.pipeline
         return preprocess
 
-    def get_postprocess(self) -> Dict:
+    def get_postprocess(self, *args, **kwargs) -> Dict:
         """Get the postprocess information for SDK."""
         postprocess = {'type': 'UNKNOWN'}
         if self.model_cfg.model.type == 'TopDown':

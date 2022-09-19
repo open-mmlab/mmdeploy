@@ -322,7 +322,7 @@ class BaseTask(metaclass=ABCMeta):
         return input_data['inputs']
 
     @abstractmethod
-    def get_preprocess(self) -> Dict:
+    def get_preprocess(self, *args, **kwargs) -> Dict:
         """Get the preprocess information for SDK.
 
         Return:
@@ -331,7 +331,7 @@ class BaseTask(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def get_postprocess(self) -> Dict:
+    def get_postprocess(self, *args, **kwargs) -> Dict:
         """Get the postprocess information for SDK.
 
         Return:
@@ -340,7 +340,7 @@ class BaseTask(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def get_model_name(self) -> str:
+    def get_model_name(self, *args, **kwargs) -> str:
         """Get the model name.
 
         Return:

@@ -241,7 +241,7 @@ class Segmentation(BaseTask):
     def get_partition_cfg(partition_type: str) -> Dict:
         raise NotImplementedError('Not supported yet.')
 
-    def get_preprocess(self) -> Dict:
+    def get_preprocess(self, *args, **kwargs) -> Dict:
         """Get the preprocess information for SDK.
 
         Return:
@@ -272,7 +272,7 @@ class Segmentation(BaseTask):
                 ]))
         return preprocess
 
-    def get_postprocess(self) -> Dict:
+    def get_postprocess(self, *args, **kwargs) -> Dict:
         """Get the postprocess information for SDK.
 
         Return:
@@ -281,7 +281,7 @@ class Segmentation(BaseTask):
         postprocess = self.model_cfg.model.decode_head
         return postprocess
 
-    def get_model_name(self) -> str:
+    def get_model_name(self, *args, **kwargs) -> str:
         """Get the model name.
 
         Return:

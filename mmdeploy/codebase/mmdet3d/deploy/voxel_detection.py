@@ -199,7 +199,7 @@ class VoxelDetection(BaseTask):
             eval_kwargs.update(dict(metric=metrics, **kwargs))
             dataset.evaluate(outputs, **eval_kwargs)
 
-    def get_model_name(self) -> str:
+    def get_model_name(self, *args, **kwargs) -> str:
         """Get the model name.
 
         Return:
@@ -230,7 +230,7 @@ class VoxelDetection(BaseTask):
         """
         raise NotImplementedError
 
-    def get_postprocess(self) -> Dict:
+    def get_postprocess(self, *args, **kwargs) -> Dict:
         """Get the postprocess information for SDK.
 
         Return:
@@ -238,7 +238,7 @@ class VoxelDetection(BaseTask):
         """
         raise NotImplementedError
 
-    def get_preprocess(self) -> Dict:
+    def get_preprocess(self, *args, **kwargs) -> Dict:
         """Get the preprocess information for SDK.
 
         Return:
