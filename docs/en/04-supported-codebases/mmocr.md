@@ -6,7 +6,7 @@
 - [Convert model](#convert-model)
   - [Convert text detection model](#convert-text-detection-model)
   - [Convert text recognition model](#convert-text-recognition-model)
-- [Model Specification](#model-specification)
+- [Model specification](#model-specification)
 - [Model Inference](#model-inference)
   - [Backend model inference](#backend-model-inference)
   - [SDK model inference](#sdk-model-inference)
@@ -14,7 +14,7 @@
 
 ______________________________________________________________________
 
-[MMOCR](https://github.com/open-mmlab/mmocr/tree/1.x) is an open-source toolbox based on PyTorch and mmdetection for text detection, text recognition, and the corresponding downstream tasks including key information extraction. It is a part of the [OpenMMLab](https://openmmlab.com/) project.
+[MMOCR](https://github.com/open-mmlab/mmocr/tree/1.x) aka `mmocr` is an open-source toolbox based on PyTorch and mmdetection for text detection, text recognition, and the corresponding downstream tasks including key information extraction. It is a part of the [OpenMMLab](https://openmmlab.com/) project.
 
 ## Installation
 
@@ -84,7 +84,7 @@ python tools/deploy.py \
     configs/mmocr/text-detection/text-detection_onnxruntime_dynamic.py \
     dbnet_resnet18_fpnc_1200e_icdar2015.py \
     dbnet_resnet18_fpnc_1200e_icdar2015_20220825_221614-7c0e94f2.pth \
-    resources/converter/text_det.jpg \
+    demo/resources/text_det.jpg \
     --work-dir mmdeploy_models/mmocr/dbnet/ort \
     --device cpu \
     --show \
@@ -102,7 +102,7 @@ python tools/deploy.py \
     configs/mmocr/text-recognition/text-recognition_onnxruntime_dynamic.py \
     crnn_mini-vgg_5e_mj.py \
     crnn_mini-vgg_5e_mj_20220826_224120-8afbedbb.pth \
-    resources/converter/text_recog.jpg \
+    demo/resources/text_recog.jpg \
     --work-dir mmdeploy_models/mmocr/crnn/ort \
     --device cpu \
     --show \
@@ -115,7 +115,7 @@ You can also convert the above models to other backend models by changing the de
 When converting mmocr models to tensorrt models, --device should be set to "cuda"
 ```
 
-## Model Specification
+## Model specification
 
 Before moving on to model inference chapter, let's know more about the converted model structure which is very important for model inference.
 
@@ -155,7 +155,7 @@ deploy_cfg = 'configs/mmocr/text-detection/text-detection_onnxruntime_dynamic.py
 model_cfg = 'dbnet_resnet18_fpnc_1200e_icdar2015.py'
 device = 'cpu'
 backend_model = ['./mmdeploy_models/mmocr/dbnet/ort/end2end.onnx']
-image = './resources/converter/text_det.jpg'
+image = './demo/resources/text_det.jpg'
 
 # read deploy_cfg and model_cfg
 deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
@@ -195,7 +195,7 @@ Given the above SDK models of `dbnet` and `crnn`, you can also perform SDK model
 import cv2
 from mmdeploy_python import TextDetector
 
-img = cv2.imread('resources/converter/text_det.jpg')
+img = cv2.imread('demo/resources/text_det.jpg')
 # create text detector
 detector = TextDetector(
     model_path='mmdeploy_models/mmocr/dbnet/ort',
@@ -217,7 +217,7 @@ if len(bboxes) > 0:
 import cv2
 from mmdeploy_python import TextRecognizer
 
-img = cv2.imread('resources/converter/text_recog.jpg')
+img = cv2.imread('demo/resources/text_recog.jpg')
 # create text recognizer
 recognizer = TextRecognizer(
   model_path='mmdeploy_models/mmocr/crnn/ort',

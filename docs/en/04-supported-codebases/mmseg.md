@@ -68,7 +68,7 @@ python tools/deploy.py \
     configs/mmseg/segmentation_onnxruntime_dynamic.py \
     unet-s5-d16_fcn_4xb4-160k_cityscapes-512x1024.py \
     fcn_unet_s5-d16_4x4_512x1024_160k_cityscapes_20211210_145204-6860854e.pth \
-    resources/converter/cityscapes.png \
+    demo/resources/cityscapes.png \
     --work-dir mmdeploy_models/mmseg/ort \
     --device cpu \
     --show
@@ -131,7 +131,7 @@ deploy_cfg = 'configs/mmseg/segmentation_onnxruntime_dynamic.py'
 model_cfg = './unet-s5-d16_fcn_4xb4-160k_cityscapes-512x1024.py'
 device = 'cpu'
 backend_model = ['./mmdeploy_models/mmseg/ort/end2end.onnx']
-image = './resources/converter/cityscapes.png'
+image = './demo/resources/cityscapes.png'
 
 # read deploy_cfg and model_cfg
 deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
@@ -166,7 +166,7 @@ from mmdeploy_python import Segmentor
 import cv2
 import numpy as np
 
-img = cv2.imread('./resources/converter/cityscapes.png')
+img = cv2.imread('./demo/resources/cityscapes.png')
 
 # create a classifier
 segmentor = Segmentor(model_path='./mmdeploy_models/mmseg/ort', device_name='cpu', device_id=0)

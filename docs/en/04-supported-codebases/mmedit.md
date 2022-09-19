@@ -1,20 +1,130 @@
-# MMEditing Support
+# MMEditing Deployment
 
-[MMEditing](https://github.com/open-mmlab/mmediting) is an open-source image and video editing toolbox based on PyTorch. It is a part of the [OpenMMLab](https://openmmlab.com/) project.
+- [Installation](#installation)
+  - [Install mmedit](#install-mmedit)
+  - [Install mmdeploy](#install-mmdeploy)
+- [Convert model](#convert-model)
+  - [Convert super resolution model](#convert-super-resolution-model)
+- [Model specification](#model-specification)
+- [Model inference](#model-inference)
+  - [Backend model inference](#backend-model-inference)
+  - [SDK model inference](#sdk-model-inference)
+- [Supported models](#supported-models)
 
-## MMEditing installation tutorial
+______________________________________________________________________
 
-Please refer to [official installation guide](https://mmediting.readthedocs.io/en/latest/install.html#installation) to install the codebase.
+[MMEditing](https://github.com/open-mmlab/mmediting/tree/1.x) aka `mmedit` is an open-source image and video editing toolbox based on PyTorch. It is a part of the [OpenMMLab](https://openmmlab.com/) project.
 
-## MMEditing models support
+## Installation
 
-| Model       | Task             | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |                                          Model config                                          |
-| :---------- | :--------------- | :----------: | :------: | :--: | :---: | :------: | :--------------------------------------------------------------------------------------------: |
-| SRCNN       | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |     [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/srcnn)      |
-| ESRGAN      | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |     [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/esrgan)     |
-| ESRGAN-PSNR | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |     [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/esrgan)     |
-| SRGAN       | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     | [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/srresnet_srgan) |
-| SRResNet    | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     | [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/srresnet_srgan) |
-| Real-ESRGAN | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |  [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/real_esrgan)   |
-| EDSR        | super-resolution |      Y       |    Y     |  Y   |   N   |    Y     |      [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/edsr)      |
-| RDN         | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |      [config](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/rdn)       |
+### Install mmedit
+
+Please follow the [installation guide](https://github.com/open-mmlab/mmediting/tree/1.x#installation) to install mmedit. If you have already done that, please move on to [the next section](#install-mmdeploy).
+
+### Install mmdeploy
+
+There are several methods to install mmdeploy, among which you can choose an appropriate one according to your target platform and device.
+
+**Method I:** Install precompiled package
+
+> **TODO**. MMDeploy hasn't released based on dev-1.x branch.
+
+**Method II:** Build using scripts
+
+If your target platform is **Ubuntu 18.04 or later version**, we encourage you to run
+[scripts](../01-how-to-build/build_from_script.md). For example, the following commands install mmdeploy as well as inference engine - `ONNX Runtime`.
+
+```shell
+git clone --recursive -b dev-1.x https://github.com/open-mmlab/mmdeploy.git
+cd mmdeploy
+python3 tools/scripts/build_ubuntu_x64_ort.py $(nproc)
+export PYTHONPATH=$(pwd)/build/lib:$PYTHONPATH
+export LD_LIBRARY_PATH=$(pwd)/../mmdeploy-dep/onnxruntime-linux-x64-1.8.1/lib/:$LD_LIBRARY_PATH
+```
+
+**Method III:** Build from source
+
+If neither **I** nor **II** meets your requirements, [building mmdeploy from source](../01-how-to-build/build_from_source.md) is the last option.
+
+## Convert model
+
+You can use [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/blob/dev-1.x/tools/deploy.py) to convert mmedit models to the specified backend models. Its detailed usage can be learned from [here](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/02-how-to-run/convert_model.md#usage).
+
+When using `tools/deploy.py`, it is crucial to specify the correct deployment config. We've already provided builtin deployment config [files](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/configs/mmedit) of all supported backends for mmedit, under which the config file path follows the pattern:
+
+```
+{task}/{task}_{backend}-{precision}_{static | dynamic}_{shape}.py
+```
+
+- **{task}:** task in mmedit.
+
+  MMDeploy supports models of one task in mmedit, i.e., `super resolution`. Please refer to chapter [supported models](#supported-models) for task-model organization.
+
+  **DO remember to use** the corresponding deployment config file when trying to convert models of different tasks.
+
+- **{backend}:** inference backend, such as onnxruntime, tensorrt, pplnn, ncnn, openvino, coreml etc.
+
+- **{precision}:** fp16, int8. When it's empty, it means fp32
+
+- **{static | dynamic}:** static shape or dynamic shape
+
+- **{shape}:** input shape or shape range of a model
+
+### Convert super resolution model
+
+The command below shows an example about converting `ESRGAN` model to onnx model that can be inferred by ONNX Runtime.
+
+```shell
+```
+
+## Model specification
+
+Before moving on to model inference chapter, let's know more about the converted model structure which is very important for model inference.
+
+The converted model locates in the working directory like `mmdeploy_models/mmedit/ort` in the previous example. It includes:
+
+```
+mmdeploy_models/mmedit/ort
+├── deploy.json
+├── detail.json
+├── end2end.onnx
+└── pipeline.json
+```
+
+in which,
+
+- **end2end.onnx**: backend model which can be inferred by ONNX Runtime
+- **deploy.json**: meta information about backend model
+- **pipeline.json**: inference pipeline of mmdeploy SDK
+- **detail.json**: conversion parameters
+
+The whole package **mmdeploy_models/mmedit/ort** is defined as **mmdeploy SDK model**, i.e., **mmdeploy SDK model** includes both backend model and inference meta information.
+
+## Model inference
+
+### Backend model inference
+
+MMDeploy provides a unified API named as `inference_model` to inference model, making all inference backends API transparent to users.
+
+Take the previous converted `end2end.onnx` model as an example, you can use the following code to inference the model and visualize the results.
+
+```python
+
+```
+
+### SDK model inference
+
+TODO
+
+## Supported models
+
+| Model                                                                                            | Task             | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |
+| :----------------------------------------------------------------------------------------------- | :--------------- | :----------: | :------: | :--: | :---: | :------: |
+| [SRCNN](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/srcnn)             | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [ESRGAN](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/esrgan)           | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [ESRGAN-PSNR](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/esrgan)      | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [SRGAN](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/srresnet_srgan)    | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [SRResNet](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/srresnet_srgan) | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [Real-ESRGAN](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/real_esrgan) | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [EDSR](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/edsr)               | super-resolution |      Y       |    Y     |  Y   |   N   |    Y     |
+| [RDN](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/rdn)                 | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |

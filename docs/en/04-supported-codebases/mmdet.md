@@ -4,7 +4,7 @@
   - [Install mmdet](#install-mmdet)
   - [Install mmdeploy](#install-mmdeploy)
 - [Convert model](#convert-model)
-- [Model Specification](#model-specification)
+- [Model specification](#model-specification)
 - [Model inference](#model-inference)
   - [Backend model inference](#backend-model-inference)
   - [SDK model inference](#sdk-model-inference)
@@ -60,7 +60,7 @@ python tools/deploy.py \
     configs/mmdet/detection/detection_onnxruntime_dynamic.py \
     faster-rcnn_r50_fpn_1x_coco.py \
     faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth \
-    tests/data/tiger.jpeg \
+    demo/resources/det.jpg \
     --work-dir mmdeploy_models/mmdet/ort \
     --device cpu \
     --show \
@@ -95,7 +95,7 @@ Therefore, in the above example, you can also convert `faster r-cnn` to other ba
 When converting mmdet models to tensorrt models, --device should be set to "cuda"
 ```
 
-## Model Specification
+## Model specification
 
 Before moving on to model inference chapter, let's know more about the converted model structure which is very important for model inference.
 
@@ -135,7 +135,7 @@ deploy_cfg = 'configs/mmdet/detection/detection_onnxruntime_dynamic.py'
 model_cfg = './faster-rcnn_r50_fpn_1x_coco.py'
 device = 'cpu'
 backend_model = ['./mmdeploy_models/mmdet/ort/end2end.onnx']
-image = './tests/data/tiger.jpeg'
+image = './demo/resources/det.jpg'
 
 # read deploy_cfg and model_cfg
 deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
