@@ -267,7 +267,7 @@ class VoxelDetectionModel(BaseBackendModel):
                                                     batch_input_metas=batch_input_metas,
                                                     cfg=model_cfg.model.test_cfg)
             
-            data_samples=convert_to_datasample(data_samples=metas, data_instances_3d=data_instances_3d )
+            data_samples=VoxelDetectionModel.convert_to_datasample(data_samples=metas, data_instances_3d=data_instances_3d )
             # data_instances_2d = [
             #     InstanceData() for _ in range(len(data_instances_3d))
             # ]
