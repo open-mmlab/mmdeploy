@@ -1,11 +1,15 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from itertools import zip_longest
 from typing import List, Optional, Sequence, Union
 
-import mmcv
 import mmengine
 import numpy as np
 import torch
-from mmcv.utils import Registry
+import torch.nn as nn
+from mmengine import Config
+from mmengine.model import BaseDataPreprocessor
+from mmengine.registry import Registry
+from mmengine.structures import BaseDataElement
 
 from mmdeploy.codebase.base import BaseBackendModel
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
@@ -16,8 +20,7 @@ def __build_backend_model(cls_name: str, registry: Registry, *args, **kwargs):
     return registry.module_dict[cls_name](*args, **kwargs)
 
 
-__BACKEND_MODEL = mmcv.utils.Registry(
-    'backend_pose_detectors', build_func=__build_backend_model)
+__BACKEND_MODEL = Registry('backend_segmentors')
 
 
 @__BACKEND_MODEL.register_module('end2end')
@@ -41,21 +44,21 @@ class End2EndModel(BaseBackendModel):
                  device: str,
                  deploy_cfg: Union[str, mmengine.Config] = None,
                  model_cfg: Union[str, mmengine.Config] = None,
+                 data_preprocessor: Optional[Union[dict, nn.Module]] = None,
                  **kwargs):
-        super(End2EndModel, self).__init__(deploy_cfg=deploy_cfg)
+        super(End2EndModel, self).__init__(
+            deploy_cfg=deploy_cfg, data_preprocessor=data_preprocessor)
         from mmpose.models import builder
-
         self.deploy_cfg = deploy_cfg
         self.model_cfg = model_cfg
+        self.device = device
         self._init_wrapper(
             backend=backend,
             backend_files=backend_files,
             device=device,
             **kwargs)
-        # create base_head for decoding heatmap
-        base_head = builder.build_head(model_cfg.model.keypoint_head)
-        base_head.test_cfg = model_cfg.model.test_cfg
-        self.base_head = base_head
+        # create head for decoding heatmap
+        self.head = builder.build_head(model_cfg.model.head)
 
     def _init_wrapper(self, backend, backend_files, device, **kwargs):
         """Initialize backend wrapper.
@@ -76,13 +79,17 @@ class End2EndModel(BaseBackendModel):
             deploy_cfg=self.deploy_cfg,
             **kwargs)
 
-    def forward(self, img: torch.Tensor, img_metas: Sequence[Sequence[dict]],
-                *args, **kwargs):
+    def forward(self,
+                inputs: torch.Tensor,
+                data_samples: Optional[List[BaseDataElement]],
+                mode: str = 'predict',
+                **kwargs):
         """Run forward inference.
 
         Args:
-            img (torch.Tensor): Input image(s) in [N x C x H x W] format.
-            img_metas (Sequence[Sequence[dict]]): A list of meta info for
+            inputs (torch.Tensor): Input image(s) in [N x C x H x W]
+                format.
+            data_samples (Sequence[Sequence[dict]]): A list of meta info for
                 image(s).
             *args: Other arguments.
             **kwargs: Other key-pair arguments.
@@ -90,69 +97,65 @@ class End2EndModel(BaseBackendModel):
         Returns:
             list: A list contains predictions.
         """
-        batch_size, _, img_height, img_width = img.shape
-        input_img = img.contiguous()
-        outputs = self.forward_test(input_img, img_metas, *args, **kwargs)
-        heatmaps = outputs[0]
-        key_points = self.base_head.decode(
-            img_metas, heatmaps, img_size=[img_width, img_height])
-        return key_points
+        assert mode == 'predict', \
+            'Backend model only support mode==predict,' f' but get {mode}'
+        inputs = inputs.contiguous().to(self.device)
+        batch_outputs = self.wrapper({self.input_name: inputs})
+        batch_outputs = self.wrapper.output_to_list(batch_outputs)
+        batch_heatmaps = batch_outputs[0]
+        # flip test
+        test_cfg = self.model_cfg.model.test_cfg
+        if test_cfg.get('flip_test', False):
+            from mmpose.models.utils.tta import flip_heatmaps
+            batch_inputs_flip = inputs.flip(-1).contiguous()
+            batch_outputs_flip = self.wrapper(
+                {self.input_name: batch_inputs_flip})
+            batch_heatmaps_flip = self.wrapper.output_to_list(
+                batch_outputs_flip)[0]
+            flip_indices = data_samples[0].metainfo['flip_indices']
+            batch_heatmaps_flip = flip_heatmaps(
+                batch_heatmaps_flip,
+                flip_mode=test_cfg.get('flip_mode', 'heatmap'),
+                flip_indices=flip_indices,
+                shift_heatmap=test_cfg.get('shift_heatmap', False))
+            batch_heatmaps = (batch_heatmaps + batch_heatmaps_flip) * 0.5
+        results = self.pack_result(batch_heatmaps, data_samples)
+        return results
 
-    def forward_test(self, imgs: torch.Tensor, *args, **kwargs) -> \
-            List[np.ndarray]:
-        """The interface for forward test.
+    def pack_result(self, heatmaps, data_samples):
+        preds = self.head.decode(heatmaps)
+        if isinstance(preds, tuple):
+            batch_pred_instances, batch_pred_fields = preds
+        else:
+            batch_pred_instances = preds
+            batch_pred_fields = None
+        assert len(batch_pred_instances) == len(data_samples)
+        if batch_pred_fields is None:
+            batch_pred_fields = []
 
-        Args:
-            imgs (torch.Tensor): Input image(s) in [N x C x H x W] format.
+        for pred_instances, pred_fields, data_sample in zip_longest(
+                batch_pred_instances, batch_pred_fields, data_samples):
 
-        Returns:
-            List[np.ndarray]: A list of segmentation map.
-        """
-        outputs = self.wrapper({self.input_name: imgs})
-        outputs = self.wrapper.output_to_list(outputs)
-        outputs = [out.detach().cpu().numpy() for out in outputs]
-        return outputs
+            gt_instances = data_sample.gt_instances
 
-    def show_result(self,
-                    img: np.ndarray,
-                    result: list,
-                    win_name: str = '',
-                    skeleton: Optional[Sequence[Sequence[int]]] = None,
-                    pose_kpt_color: Optional[Sequence[Sequence[int]]] = None,
-                    pose_link_color: Optional[Sequence[Sequence[int]]] = None,
-                    show: bool = False,
-                    out_file: Optional[str] = None,
-                    **kwargs):
-        """Show predictions of pose.
+            # convert keypoint coordinates from input space to image space
+            bbox_centers = gt_instances.bbox_centers
+            bbox_scales = gt_instances.bbox_scales
+            input_size = data_sample.metainfo['input_size']
 
-        Args:
-            img: (np.ndarray): Input image to draw predictions.
-            result (list): A list of predictions.
-            win_name (str): The name of visualization window. Default is ''.
-            skeleton (Sequence[Sequence[int]])The connection of keypoints.
-                skeleton is 0-based indexing.
-            pose_kpt_color (np.array[Nx3]): Color of N keypoints.
-                If ``None``, do not draw keypoints.
-            pose_link_color (np.array[Mx3]): Color of M links.
-                If ``None``, do not draw links.
-            show (bool): Whether to show plotted image in windows.
-                Defaults to ``True``.
-            out_file (str): Output image file to save drawn predictions.
+            pred_instances.keypoints = pred_instances.keypoints / input_size \
+                * bbox_scales + bbox_centers - 0.5 * bbox_scales
 
-        Returns:
-            np.ndarray: Drawn image, only if not ``show`` or ``out_file``.
-        """
-        from mmpose.models.detectors import TopDown
-        return TopDown.show_result(
-            self,
-            img,
-            result,
-            skeleton=skeleton,
-            pose_kpt_color=pose_kpt_color,
-            pose_link_color=pose_link_color,
-            show=show,
-            out_file=out_file,
-            win_name=win_name)
+            # add bbox information into pred_instances
+            pred_instances.bboxes = gt_instances.bboxes
+            pred_instances.bbox_scores = gt_instances.bbox_scores
+
+            data_sample.pred_instances = pred_instances
+
+            if pred_fields is not None:
+                data_sample.pred_fields = pred_fields
+
+        return data_samples
 
 
 @__BACKEND_MODEL.register_module('sdk')
@@ -160,7 +163,8 @@ class SDKEnd2EndModel(End2EndModel):
     """SDK inference class, converts SDK output to mmcls format."""
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        kwargs['data_preprocessor'] = None
+        super(SDKEnd2EndModel, self).__init__(*args, **kwargs)
         self.ext_info = self.deploy_cfg.ext_info
 
     def _xywh2cs(self, x, y, w, h, padding=1.25):
@@ -192,11 +196,11 @@ class SDKEnd2EndModel(End2EndModel):
         """convert xywh to x1 y1 x2 y2."""
         return x, y, x + w - 1, y + h - 1
 
-    def forward(self, img: List[torch.Tensor], *args, **kwargs) -> list:
+    def forward(self, inputs: List[torch.Tensor], *args, **kwargs) -> list:
         """Run forward inference.
 
         Args:
-            img (List[torch.Tensor]): A list contains input image(s)
+            inputs (List[torch.Tensor]): A list contains input image(s)
                 in [N x C x H x W] format.
             *args: Other arguments.
             **kwargs: Other key-pair arguments.
@@ -205,7 +209,7 @@ class SDKEnd2EndModel(End2EndModel):
             list: A list contains predictions.
         """
         image_paths = []
-        boxes = np.zeros(shape=(img.shape[0], 6))
+        boxes = np.zeros(shape=(inputs.shape[0], 6))
         bbox_ids = []
         sdk_boxes = []
         for i, img_meta in enumerate(kwargs['img_metas']):
@@ -219,8 +223,8 @@ class SDKEnd2EndModel(End2EndModel):
             image_paths.append(img_meta['image_file'])
             bbox_ids.append(img_meta['bbox_id'])
 
-        pred = self.wrapper.handle(img[0].contiguous().detach().cpu().numpy(),
-                                   sdk_boxes)
+        pred = self.wrapper.handle(
+            [inputs[0].contiguous().detach().cpu().numpy()], sdk_boxes)
 
         result = dict(
             preds=pred,
@@ -230,10 +234,14 @@ class SDKEnd2EndModel(End2EndModel):
         return result
 
 
-def build_pose_detection_model(model_files: Sequence[str],
-                               model_cfg: Union[str, mmengine.Config],
-                               deploy_cfg: Union[str, mmengine.Config],
-                               device: str, **kwargs):
+def build_pose_detection_model(
+        model_files: Sequence[str],
+        model_cfg: Union[str, mmengine.Config],
+        deploy_cfg: Union[str, mmengine.Config],
+        device: str,
+        data_preprocessor: Optional[Union[Config,
+                                          BaseDataPreprocessor]] = None,
+        **kwargs):
     """Build object segmentation model for different backends.
 
     Args:
@@ -247,19 +255,27 @@ def build_pose_detection_model(model_files: Sequence[str],
     Returns:
         BaseBackendModel: Pose model for a configured backend.
     """
+    from mmpose.models.data_preprocessors import PoseDataPreprocessor
+
     # load cfg if necessary
     deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
 
     backend = get_backend(deploy_cfg)
     model_type = get_codebase_config(deploy_cfg).get('model_type', 'end2end')
-
+    if isinstance(data_preprocessor, dict):
+        dp = data_preprocessor.copy()
+        dp_type = dp.pop('type')
+        assert dp_type == 'PoseDataPreprocessor'
+        data_preprocessor = PoseDataPreprocessor(**dp)
     backend_pose_model = __BACKEND_MODEL.build(
-        model_type,
-        backend=backend,
-        backend_files=model_files,
-        device=device,
-        model_cfg=model_cfg,
-        deploy_cfg=deploy_cfg,
-        **kwargs)
+        dict(
+            type=model_type,
+            backend=backend,
+            backend_files=model_files,
+            device=device,
+            deploy_cfg=deploy_cfg,
+            model_cfg=model_cfg,
+            data_preprocessor=data_preprocessor,
+            **kwargs))
 
     return backend_pose_model
