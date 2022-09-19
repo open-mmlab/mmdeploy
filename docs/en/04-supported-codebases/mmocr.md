@@ -1,18 +1,16 @@
 # MMOCR Deployment
 
-- [MMOCR Deployment](#mmocr-deployment)
-  - [Installation](#installation)
-    - [Install mmocr](#install-mmocr)
-    - [Install mmdeploy](#install-mmdeploy)
-  - [Convert model](#convert-model)
-    - [Convert text detection model](#convert-text-detection-model)
-    - [Convert text recognition model](#convert-text-recognition-model)
-  - [Model Specification](#model-specification)
-  - [Model Inference](#model-inference)
-    - [Backend model inference](#backend-model-inference)
-    - [SDK model inference](#sdk-model-inference)
-  - [Supported models](#supported-models)
-  - [Reminder](#reminder)
+- [Installation](#installation)
+  - [Install mmocr](#install-mmocr)
+  - [Install mmdeploy](#install-mmdeploy)
+- [Convert model](#convert-model)
+  - [Convert text detection model](#convert-text-detection-model)
+  - [Convert text recognition model](#convert-text-recognition-model)
+- [Model Specification](#model-specification)
+- [Model Inference](#model-inference)
+  - [Backend model inference](#backend-model-inference)
+  - [SDK model inference](#sdk-model-inference)
+- [Supported models](#supported-models)
 
 ______________________________________________________________________
 
@@ -63,9 +61,9 @@ When using `tools/deploy.py`, it is crucial to specify the correct deployment co
 
   MMDeploy supports models of two tasks of mmocr, one is `text detection` and the other is `text-recogntion`.
 
-  **DO remember to use** the corresponding deployment config file when trying to converting models of different tasks.
+  **DO remember to use** the corresponding deployment config file when trying to convert models of different tasks.
 
-- **{backend}:** inference backend, such as onnxruntime, tensorrt, pplnn, ncnn, openvino, coreml and etc.
+- **{backend}:** inference backend, such as onnxruntime, tensorrt, pplnn, ncnn, openvino, coreml etc.
 
 - **{precision}:** fp16, int8. When it's empty, it means fp32
 
@@ -107,7 +105,8 @@ python tools/deploy.py \
     resources/converter/text_recog.jpg \
     --work-dir mmdeploy_models/mmocr/crnn/ort \
     --device cpu \
-    --show
+    --show \
+    --dump-info
 ```
 
 You can also convert the above models to other backend models by changing the deployment config file `*_onnxruntime_dynamic.py` to [others](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/configs/mmocr), e.g., converting `dbnet` to tensorrt-fp32 model by `text-detection/text-detection_tensorrt-_dynamic-320x320-2240x2240.py`.
@@ -120,7 +119,7 @@ When converting mmocr models to tensorrt models, --device should be set to "cuda
 
 Before moving on to model inference chapter, let's know more about the converted model structure which is very important for model inference.
 
-The converted model locates in the working directory like `mmdeploy_models/mmocr/ort/text-detection` in the previous example. It includes:
+The converted model locates in the working directory like `mmdeploy_models/mmocr/dbnet/ort` in the previous example. It includes:
 
 ```
 mmdeploy_models/mmocr/dbnet/ort
@@ -188,7 +187,48 @@ Map 'deploy_cfg', 'model_cfg', 'backend_model' and 'image' to corresponding argu
 
 ### SDK model inference
 
-TODO
+Given the above SDK models of `dbnet` and `crnn`, you can also perform SDK model inference like following,
+
+#### Text detection SDK model inference
+
+```python
+import cv2
+from mmdeploy_python import TextDetector
+
+img = cv2.imread('resources/converter/text_det.jpg')
+# create text detector
+detector = TextDetector(
+    model_path='mmdeploy_models/mmocr/dbnet/ort',
+    device_name='cpu',
+    device_id=0)
+# do model inference
+bboxes = detector(img)
+# draw detected bbox into the input image
+if len(bboxes) > 0:
+    pts = ((bboxes[:, 0:8] + 0.5).reshape(len(bboxes), -1,
+                                          2).astype(int))
+    cv2.polylines(img, pts, True, (0, 255, 0), 2)
+    cv2.imwrite('output_ocr.png', img)
+```
+
+#### Text Recognition SDK model inference
+
+```python
+import cv2
+from mmdeploy_python import TextRecognizer
+
+img = cv2.imread('resources/converter/text_recog.jpg')
+# create text recognizer
+recognizer = TextRecognizer(
+  model_path='mmdeploy_models/mmocr/crnn/ort',
+  device_name='cpu',
+  device_id=0
+)
+# do model inference
+texts = recognizer(img)
+# print the result
+print(texts)
+```
 
 ## Supported models
 
@@ -200,148 +240,3 @@ TODO
 | [CRNN](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/crnn)   | text-recognition |      Y      |      Y      |    Y     |  Y   |   Y   |    N     |
 | [SAR](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/sar)     | text-recognition |      N      |      Y      |    N     |  N   |   N   |    N     |
 | [SATRN](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/satrn) | text-recognition |      Y      |      Y      |    Y     |  N   |   N   |    N     |
-
-## Reminder
-
-Note that ncnn, pplnn, and OpenVINO only support the configs of DBNet18 for DBNet.
-
-For the PANet with the [checkpoint](https://download.openmmlab.com/mmocr/textdet/panet/panet_r18_fpem_ffm_sbn_600e_icdar2015_20210219-42dbe46a.pth) pretrained on ICDAR dataset, if you want to convert the model to TensorRT with 16 bits float point, please try the following script.
-
-```python
-# Copyright (c) OpenMMLab. All rights reserved.
-from typing import Sequence
-
-import torch
-import torch.nn.functional as F
-
-from mmdeploy.core import FUNCTION_REWRITER
-from mmdeploy.utils.constants import Backend
-
-FACTOR = 32
-ENABLE = False
-CHANNEL_THRESH = 400
-
-
-@FUNCTION_REWRITER.register_rewriter(
-    func_name='mmocr.models.textdet.necks.FPEM_FFM.forward',
-    backend=Backend.TENSORRT.value)
-def fpem_ffm__forward__trt(ctx, self, x: Sequence[torch.Tensor], *args,
-                           **kwargs) -> Sequence[torch.Tensor]:
-    """Rewrite `forward` of FPEM_FFM for tensorrt backend.
-
-    Rewrite this function avoid overflow for tensorrt-fp16 with the checkpoint
-    `https://download.openmmlab.com/mmocr/textdet/panet/panet_r18_fpem_ffm
-    _sbn_600e_icdar2015_20210219-42dbe46a.pth`
-
-    Args:
-        ctx (ContextCaller): The context with additional information.
-        self: The instance of the class FPEM_FFM.
-        x (List[Tensor]): A list of feature maps of shape (N, C, H, W).
-
-    Returns:
-        outs (List[Tensor]): A list of feature maps of shape (N, C, H, W).
-    """
-    c2, c3, c4, c5 = x
-    # reduce channel
-    c2 = self.reduce_conv_c2(c2)
-    c3 = self.reduce_conv_c3(c3)
-    c4 = self.reduce_conv_c4(c4)
-
-    if ENABLE:
-        bn_w = self.reduce_conv_c5[1].weight / torch.sqrt(
-            self.reduce_conv_c5[1].running_var + self.reduce_conv_c5[1].eps)
-        bn_b = self.reduce_conv_c5[
-            1].bias - self.reduce_conv_c5[1].running_mean * bn_w
-        bn_w = bn_w.reshape(1, -1, 1, 1).repeat(1, 1, c5.size(2), c5.size(3))
-        bn_b = bn_b.reshape(1, -1, 1, 1).repeat(1, 1, c5.size(2), c5.size(3))
-        conv_b = self.reduce_conv_c5[0].bias.reshape(1, -1, 1, 1).repeat(
-            1, 1, c5.size(2), c5.size(3))
-        c5 = FACTOR * (self.reduce_conv_c5[:-1](c5)) - (FACTOR - 1) * (
-            bn_w * conv_b + bn_b)
-        c5 = self.reduce_conv_c5[-1](c5)
-    else:
-        c5 = self.reduce_conv_c5(c5)
-
-    # FPEM
-    for i, fpem in enumerate(self.fpems):
-        c2, c3, c4, c5 = fpem(c2, c3, c4, c5)
-        if i == 0:
-            c2_ffm = c2
-            c3_ffm = c3
-            c4_ffm = c4
-            c5_ffm = c5
-        else:
-            c2_ffm += c2
-            c3_ffm += c3
-            c4_ffm += c4
-            c5_ffm += c5
-
-    # FFM
-    c5 = F.interpolate(
-        c5_ffm,
-        c2_ffm.size()[-2:],
-        mode='bilinear',
-        align_corners=self.align_corners)
-    c4 = F.interpolate(
-        c4_ffm,
-        c2_ffm.size()[-2:],
-        mode='bilinear',
-        align_corners=self.align_corners)
-    c3 = F.interpolate(
-        c3_ffm,
-        c2_ffm.size()[-2:],
-        mode='bilinear',
-        align_corners=self.align_corners)
-    outs = [c2_ffm, c3, c4, c5]
-    return tuple(outs)
-
-
-@FUNCTION_REWRITER.register_rewriter(
-    func_name='mmocr.models.backbones.resnet.BasicBlock.forward',
-    backend=Backend.TENSORRT.value)
-def basic_block__forward__trt(ctx, self, x: torch.Tensor) -> torch.Tensor:
-    """Rewrite `forward` of BasicBlock for tensorrt backend.
-
-    Rewrite this function avoid overflow for tensorrt-fp16 with the checkpoint
-    `https://download.openmmlab.com/mmocr/textdet/panet/panet_r18_fpem_ffm
-    _sbn_600e_icdar2015_20210219-42dbe46a.pth`
-
-    Args:
-        ctx (ContextCaller): The context with additional information.
-        self: The instance of the class FPEM_FFM.
-        x (Tensor): The input tensor of shape (N, C, H, W).
-
-    Returns:
-        outs (Tensor): The output tensor of shape (N, C, H, W).
-    """
-    if self.conv1.in_channels < CHANNEL_THRESH:
-        return ctx.origin_func(self, x)
-
-    identity = x
-
-    out = self.conv1(x)
-    out = self.norm1(out)
-    out = self.relu(out)
-
-    out = self.conv2(out)
-
-    if torch.abs(self.norm2(out)).max() < 65504:
-        out = self.norm2(out)
-        out += identity
-        out = self.relu(out)
-        return out
-    else:
-        global ENABLE
-        ENABLE = True
-        # the output of the last bn layer exceeds the range of fp16
-        w1 = self.norm2.weight / torch.sqrt(self.norm2.running_var +
-                                            self.norm2.eps)
-        bias = self.norm2.bias - self.norm2.running_mean * w1
-        w1 = w1.reshape(1, -1, 1, 1).repeat(1, 1, out.size(2), out.size(3))
-        bias = bias.reshape(1, -1, 1, 1).repeat(1, 1, out.size(2),
-                                                out.size(3)) + identity
-        out = self.relu(w1 * (out / FACTOR) + bias / FACTOR)
-
-        return out
-
-```
