@@ -99,7 +99,6 @@ class End2EndModel(BaseBackendModel):
         """
         assert mode == 'predict', \
             'Backend model only support mode==predict,' f' but get {mode}'
-        batch_size, _, img_height, img_width = inputs.shape
         inputs = inputs.contiguous().to(self.device)
         batch_outputs = self.wrapper({self.input_name: inputs})
         batch_outputs = self.wrapper.output_to_list(batch_outputs)
