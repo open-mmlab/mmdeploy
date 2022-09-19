@@ -6,9 +6,9 @@ from typing import Dict, List, Tuple, Union
 import mmengine
 
 from mmdeploy.apis import build_task_processor
-from mmdeploy.utils import (Backend, Task, get_backend, get_codebase,
-                            get_common_config, get_ir_config, get_root_logger,
-                            get_task_type, is_dynamic_batch, load_config)
+from mmdeploy.utils import (Task, get_backend, get_codebase, get_ir_config,
+                            get_precision, get_root_logger, get_task_type,
+                            is_dynamic_batch, load_config)
 from mmdeploy.utils.constants import SDK_TASK_MAP as task_map
 
 
@@ -59,17 +59,6 @@ def get_model_name_customs(deploy_cfg: mmengine.Config,
     name = task_processor.get_model_name()
     customs = []
     if task == Task.TEXT_RECOGNITION:
-        from mmocr.models.builder import build_convertor
-        label_convertor = model_cfg.model.label_convertor
-        assert label_convertor is not None, 'model_cfg contains no label '
-        'convertor'
-        max_seq_len = 40  # default value in EncodeDecodeRecognizer of mmocr
-        label_convertor.update(max_seq_len=max_seq_len)
-        label_convertor = build_convertor(label_convertor)
-        fd = open(f'{work_dir}/dict_file.txt', mode='w+')
-        for item in label_convertor.idx2char:
-            fd.write(item + '\n')
-        fd.close()
         customs.append('dict_file.txt')
     return name, customs
 
@@ -90,60 +79,31 @@ def get_models(deploy_cfg: Union[str, mmengine.Config],
     name, _ = get_model_name_customs(deploy_cfg, model_cfg, work_dir)
     precision = 'FP32'
     ir_name = get_ir_config(deploy_cfg)['save_file']
-    net = ir_name
     weights = ''
-    backend = get_backend(deploy_cfg=deploy_cfg)
+    backend = get_backend(deploy_cfg=deploy_cfg).value
 
-    def replace_suffix(file_name: str, dst_suffix: str) -> str:
-        """Replace the suffix to the destination one.
+    backend_net = dict(
+        tensorrt=lambda file: re.sub(r'\.[a-z]+', '.engine', file),
+        openvino=lambda file: re.sub(r'\.[a-z]+', '.xml', file),
+        ncnn=lambda file: re.sub(r'\.[a-z]+', '.param', file),
+        snpe=lambda file: re.sub(r'\.[a-z]+', '.dlc', file))
+    backend_weights = dict(
+        pplnn=lambda file: re.sub(r'\.[a-z]+', '.json', file),
+        openvino=lambda file: re.sub(r'\.[a-z]+', '.bin', file),
+        ncnn=lambda file: re.sub(r'\.[a-z]+', '.bin', file))
+    net = backend_net.get(backend, lambda x: x)(ir_name)
+    weights = backend_weights.get(backend, lambda x: weights)(ir_name)
 
-        Args:
-            file_name (str): The file name to be operated.
-            dst_suffix (str): The destination suffix.
-
-        Return:
-            str: The file name of which the suffix has been replaced.
-        """
-        return re.sub(r'\.[a-z]+', dst_suffix, file_name)
-
-    if backend == Backend.TENSORRT:
-        net = replace_suffix(ir_name, '.engine')
-        common_cfg = get_common_config(deploy_cfg)
-        fp16_mode = common_cfg.get('fp16_mode', False)
-        int8_mode = common_cfg.get('int8_mode', False)
-        if fp16_mode:
-            precision = 'FP16'
-        if int8_mode:
-            precision = 'INT8'
-    elif backend == Backend.PPLNN:
-        precision = 'FP16'
-        weights = replace_suffix(ir_name, '.json')
-        net = ir_name
-    elif backend == Backend.OPENVINO:
-        net = replace_suffix(ir_name, '.xml')
-        weights = replace_suffix(ir_name, '.bin')
-    elif backend == Backend.NCNN:
-        net = replace_suffix(ir_name, '.param')
-        weights = replace_suffix(ir_name, '.bin')
-        if 'precision' in deploy_cfg['backend_config']:
-            precision = deploy_cfg['backend_config']['precision']
-    elif backend == Backend.SNPE:
-        net = replace_suffix(ir_name, '.dlc')
-    elif backend in [Backend.ONNXRUNTIME, Backend.TORCHSCRIPT]:
-        pass
-    else:
-        raise NotImplementedError(f'Not supported backend: {backend.value}.')
-
+    precision = get_precision(deploy_cfg)
     dynamic_shape = is_dynamic_batch(deploy_cfg, input_name='input')
-    batch_size = 1
     return [
         dict(
             name=name,
             net=net,
             weights=weights,
-            backend=backend.value,
+            backend=backend,
             precision=precision,
-            batch_size=batch_size,
+            batch_size=1,
             dynamic_shape=dynamic_shape)
     ]
 
@@ -162,20 +122,16 @@ def get_inference_info(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
             input_map.
     """
     name, _ = get_model_name_customs(deploy_cfg, model_cfg, work_dir)
-    type = 'Task'
-    module = 'Net'
-    input = ['prep_output']
-    output = ['infer_output']
     ir_config = get_ir_config(deploy_cfg)
     input_names = ir_config.get('input_names', None)
     input_name = input_names[0] if input_names else 'input'
     input_map = dict(img=input_name)
     return_dict = dict(
         name=name,
-        type=type,
-        module=module,
-        input=input,
-        output=output,
+        type='Task',
+        module='Net',
+        input=['prep_output'],
+        output=['infer_output'],
         input_map=input_map)
     if 'use_vulkan' in deploy_cfg['backend_config']:
         return_dict['use_vulkan'] = deploy_cfg['backend_config']['use_vulkan']
@@ -185,107 +141,42 @@ def get_inference_info(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
 def get_preprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config):
     task_processor = build_task_processor(
         model_cfg=model_cfg, deploy_cfg=deploy_cfg, device='cpu')
-    pipeline = task_processor.get_preprocess()
-    type = 'Task'
-    module = 'Transform'
-    name = 'Preprocess'
-    input = ['img']
-    output = ['prep_output']
-    meta_keys = [
-        'filename', 'ori_filename', 'ori_shape', 'img_shape', 'pad_shape',
-        'scale_factor', 'flip', 'flip_direction', 'img_norm_cfg', 'valid_ratio'
-    ]
-    if 'transforms' in pipeline[-1]:
-        transforms = pipeline[-1]['transforms']
-        transforms.insert(0, pipeline[0])
-        for transform in transforms:
-            if transform['type'] == 'Resize':
-                transform['size'] = pipeline[-1].img_scale[::-1]
-                if 'img_scale' in transform:
-                    transform.pop('img_scale')
-    else:
-        pipeline = [
-            item for item in pipeline if item['type'] != 'MultiScaleFilpAug'
-        ]
-        transforms = pipeline
-    transforms = [
-        item for item in transforms if 'Random' not in item['type']
-        and 'RescaleToZeroOne' not in item['type']
-    ]
-    for i, transform in enumerate(transforms):
-        if 'keys' in transform and transform['keys'] == ['lq']:
-            transform['keys'] = ['img']
-        if 'key' in transform and transform['key'] == 'lq':
-            transform['key'] = 'img'
-        if transform['type'] == 'Resize':
-            transform['size'] = transform['scale']
-            del transform['scale']
-        if transform['type'] == 'ResizeEdge':
-            transform['type'] = 'Resize'
-            transform['keep_ratio'] = True
-            # now the sdk of class has bugs, because ResizeEdge not implement
-            # in sdk.
-            transform['size'] = (transform['scale'], transform['scale'])
-        if transform['type'] == 'PackTextDetInputs':
-            meta_keys += transform[
-                'meta_keys'] if 'meta_keys' in transform else []
-            transform['meta_keys'] = list(set(meta_keys))
-            transforms[i]['type'] = 'Collect'
-        if transform['type'] in [
-                'PackDetInputs', 'PackClsInputs', 'PackSegInputs'
-        ]:
-            transforms.insert(i, dict(type='DefaultFormatBundle'))
-            transform['type'] = 'Collect'
-            if 'keys' not in transform:
-                transform['keys'] = ['img']
-    assert transforms[0]['type'] == 'LoadImageFromFile', 'The first item type'\
-        ' of pipeline should be LoadImageFromFile'
-
+    transforms = task_processor.get_preprocess()
+    assert transforms[0]['type'] == 'LoadImageFromFile', 'The first item'\
+        ' type of pipeline should be LoadImageFromFile'
     return dict(
-        type=type,
-        module=module,
-        name=name,
-        input=input,
-        output=output,
+        type='Task',
+        module='Transform',
+        name='Preprocess',
+        input=['img'],
+        output=['prep_output'],
         transforms=transforms)
 
 
-def get_postprocess(deploy_cfg: mmengine.Config,
-                    model_cfg: mmengine.Config) -> Dict:
+def get_postprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
+                    work_dir: str) -> Dict:
     """Get the post process information for pipeline.json.
 
     Args:
         deploy_cfg (mmengine.Config): Deploy config dict.
         model_cfg (mmengine.Config): The model config dict.
+        work_dir (str): Work dir to save json files.
 
     Return:
         dict: Composed of the model name, type, module, input, params and
             output.
     """
-    module = get_codebase(deploy_cfg).value
-    type = 'Task'
-    name = 'postprocess'
-    task = get_task_type(deploy_cfg)
     task_processor = build_task_processor(
         model_cfg=model_cfg, deploy_cfg=deploy_cfg, device='cpu')
-    params = task_processor.get_postprocess()
+    post_processor = task_processor.get_postprocess(work_dir)
 
-    # TODO remove after adding instance segmentation to task processor
-    if task == Task.OBJECT_DETECTION and 'mask_thr_binary' in params:
-        task = Task.INSTANCE_SEGMENTATION
-
-    component = task_map[task]['component']
-    if task != Task.SUPER_RESOLUTION and task != Task.SEGMENTATION:
-        if 'type' in params:
-            component = params.pop('type')
-    output = ['post_output']
     return dict(
-        type=type,
-        module=module,
-        name=name,
-        component=component,
-        params=params,
-        output=output)
+        type='Task',
+        module=get_codebase(deploy_cfg).value,
+        name='postprocess',
+        component=post_processor['type'],
+        params=post_processor.get('params', dict()),
+        output=['post_output'])
 
 
 def get_deploy(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
@@ -324,7 +215,7 @@ def get_pipeline(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
     """
     preprocess = get_preprocess(deploy_cfg, model_cfg)
     infer_info = get_inference_info(deploy_cfg, model_cfg, work_dir=work_dir)
-    postprocess = get_postprocess(deploy_cfg, model_cfg)
+    postprocess = get_postprocess(deploy_cfg, model_cfg, work_dir)
     task = get_task_type(deploy_cfg)
     input_names = preprocess['input']
     output_names = postprocess['output']
@@ -383,7 +274,6 @@ def export2SDK(deploy_cfg: Union[str, mmengine.Config],
         pth (str): The path of the model checkpoint weights.
     """
     deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
-    print(f'debugging what is type(model_cfg): {type(model_cfg)}')
     deploy_info = get_deploy(deploy_cfg, model_cfg, work_dir=work_dir)
     pipeline_info = get_pipeline(deploy_cfg, model_cfg, work_dir=work_dir)
     detail_info = get_detail(deploy_cfg, model_cfg, pth=pth)

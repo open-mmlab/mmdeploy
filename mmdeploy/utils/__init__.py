@@ -22,7 +22,7 @@ if importlib.util.find_spec('mmcv') is not None:
                                get_dynamic_axes, get_input_shape,
                                get_ir_config, get_model_inputs,
                                get_onnx_config, get_partition_config,
-                               get_task_type, is_dynamic_batch,
+                               get_precision, get_task_type, is_dynamic_batch,
                                is_dynamic_shape, load_config)
 
     # yapf: enable
@@ -33,5 +33,5 @@ if importlib.util.find_spec('mmcv') is not None:
         'get_codebase_config', 'get_common_config', 'get_dynamic_axes',
         'get_input_shape', 'get_ir_config', 'get_model_inputs',
         'get_onnx_config', 'get_partition_config', 'get_task_type',
-        'is_dynamic_batch', 'is_dynamic_shape', 'load_config'
+        'is_dynamic_batch', 'is_dynamic_shape', 'load_config', 'get_precision'
     ]

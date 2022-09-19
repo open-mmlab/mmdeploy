@@ -241,7 +241,7 @@ class Segmentation(BaseTask):
     def get_partition_cfg(partition_type: str) -> Dict:
         raise NotImplementedError('Not supported yet.')
 
-    def get_preprocess(self) -> Dict:
+    def get_preprocess(self, *args, **kwargs) -> Dict:
         """Get the preprocess information for SDK.
 
         Return:
@@ -253,15 +253,15 @@ class Segmentation(BaseTask):
         preprocess = model_cfg.test_pipeline
         preprocess[0] = load_from_file
         assert preprocess[1].type == 'Resize'
-        preprocess[1]['scale'] = list(reversed(preprocess[1]['scale']))
-        # TODO: may need to update after PR 1040
+        preprocess[1]['size'] = list(reversed(preprocess[1].pop('scale')))
+        preprocess = preprocess[:2]
         dp = self.model_cfg.data_preprocessor
-        if preprocess[-1].type == 'PackSegInputs':
-            preprocess[-1] = dict(
+        preprocess.append(
+            dict(
                 type='Normalize',
                 mean=dp.mean,
                 std=dp.std,
-                to_rgb=dp.bgr_to_rgb)
+                to_rgb=dp.bgr_to_rgb))
         preprocess.append(dict(type='ImageToTensor', keys=['img']))
         preprocess.append(
             dict(
@@ -273,16 +273,17 @@ class Segmentation(BaseTask):
                 ]))
         return preprocess
 
-    def get_postprocess(self) -> Dict:
+    def get_postprocess(self, *args, **kwargs) -> Dict:
         """Get the postprocess information for SDK.
 
         Return:
             dict: Nonthing for super resolution.
         """
-        postprocess = self.model_cfg.model.decode_head
+        params = self.model_cfg.model.decode_head
+        postprocess = dict(params=params, type='ResizeMask')
         return postprocess
 
-    def get_model_name(self) -> str:
+    def get_model_name(self, *args, **kwargs) -> str:
         """Get the model name.
 
         Return:
