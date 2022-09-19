@@ -216,7 +216,7 @@ def get_preprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config):
     move_pipeline = []
     import re
     while re.search('Pack[a-z | A-Z]+Inputs',
-                    transforms[-1]['type']) is not None:
+                    transforms[-1]['type']) is None:
         sub_pipeline = transforms.pop(-1)
         move_pipeline = [sub_pipeline] + move_pipeline
         transforms = transforms[:-1] + move_pipeline + transforms[-1:]
