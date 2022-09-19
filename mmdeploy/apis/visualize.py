@@ -75,10 +75,15 @@ def visualize_model(model_cfg: Union[str, mmengine.Config],
     with torch.no_grad():
         result = model.test_step(model_inputs)[0]
 
+    data_samples = None
+    if 'data_samples' in model_inputs:
+        data_samples = model_inputs['data_samples']
+
     task_processor.visualize(
         image=img,
         model=model,
-        result=[result, model_inputs['data_samples']],
+        result=result,
+        data_samples=data_samples,
         output_file=output_file,
         window_name=backend.value,
         show_result=show_result)
