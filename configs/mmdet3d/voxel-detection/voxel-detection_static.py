@@ -4,10 +4,3 @@ codebase_config = dict(
 onnx_config = dict(
     input_names=['placeholder', 'num_points', 'voxels', 'coors'],
     output_names=['cls_score', 'bbox_pred', 'dir_cls_pred'])
-
-#(Pdb) p dir_cls_pred.shape
-#torch.Size([4, 248, 216])
-#(Pdb) p bbox_pred.shape
-#torch.Size([14, 248, 216])
-#(Pdb) p cls_score.shape
-#torch.Size([2, 248, 216])

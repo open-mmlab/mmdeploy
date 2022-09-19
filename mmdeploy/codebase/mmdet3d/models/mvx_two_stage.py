@@ -1,6 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from mmdeploy.core import FUNCTION_REWRITER
 import torch
+
+from mmdeploy.core import FUNCTION_REWRITER
+
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet3d.models.detectors.mvx_two_stage.MVXTwoStageDetector._forward')
@@ -23,7 +25,8 @@ def mvxtwostagedetector__simple_test(ctx,
         list[dict]: Decoded bbox, scores and labels after nms.
     """
     _, pts_feats = self.extract_feat(
-        batch_inputs_dict=batch_inputs_dict, batch_input_metas=batch_input_metas)
+        batch_inputs_dict=batch_inputs_dict,
+        batch_input_metas=batch_input_metas)
     outs = self.pts_bbox_head(pts_feats)
     bbox_preds, scores, dir_scores = [], [], []
     for task_res in outs:
@@ -38,25 +41,3 @@ def mvxtwostagedetector__simple_test(ctx,
     scores = torch.cat(scores, dim=1)
     dir_scores = torch.cat(dir_scores, dim=1)
     return scores, bbox_preds, dir_scores
-
-
-# @FUNCTION_REWRITER.register_rewriter(
-#     'mmdet3d.models.detectors.mvx_two_stage.MVXTwoStageDetector.extract_feat')
-# def mvxtwostagedetector__extract_feat(ctx, self, voxels, num_points, coors,
-#                                       img, img_metas):
-#     """Rewrite this func to remove voxelize op.
-
-#     Args:
-#         voxels (torch.Tensor): Point features or raw points in shape (N, M, C).
-#         num_points (torch.Tensor): Number of points in each voxel.
-#         coors (torch.Tensor): Coordinates of each voxel.
-#         img (torch.Tensor): Input image.
-#         img_metas (list[dict]): Meta information of samples.
-
-#     Returns:
-#         tuple(torch.Tensor) : image feature and points feather.
-#     """
-#     img_feats = self.extract_img_feat(img, img_metas)
-#     pts_feats = self.extract_pts_feat(voxels, num_points, coors, img_feats,
-#                                       img_metas)
-#     return (img_feats, pts_feats)
