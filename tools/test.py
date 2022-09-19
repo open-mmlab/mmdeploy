@@ -6,7 +6,8 @@ from copy import deepcopy
 from mmengine import DictAction
 
 from mmdeploy.apis import build_task_processor
-from mmdeploy.utils.config_utils import load_config
+from mmdeploy.utils.config_utils import get_backend, load_config
+from mmdeploy.utils.constants import Backend
 from mmdeploy.utils.timer import TimeCounter
 
 
@@ -88,6 +89,8 @@ def main():
 
     # load deploy_cfg
     deploy_cfg, model_cfg = load_config(deploy_cfg_path, model_cfg_path)
+    if get_backend(deploy_cfg) == Backend.SDK:
+        model_cfg.test_cfg.type = 'DeployTestLoop'
 
     # work_dir is determined in this priority: CLI > segment in file > filename
     if args.work_dir is not None:
