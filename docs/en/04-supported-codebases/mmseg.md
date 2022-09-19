@@ -50,7 +50,7 @@ python tools/deploy.py \
     configs/mmseg/segmentation_onnxruntime_dynamic.py \
     unet-s5-d16_fcn_4xb4-160k_cityscapes-512x1024.py \
     fcn_unet_s5-d16_4x4_512x1024_160k_cityscapes_20211210_145204-6860854e.pth \
-    tests/data/tiger.jpeg \
+    resources/converter/cityscapes.png \
     --work-dir mmdeploy_models/mmseg/ort \
     --device cpu \
     --show \
@@ -114,7 +114,7 @@ deploy_cfg = 'configs/mmseg/segmentation_onnxruntime_dynamic.py'
 model_cfg = './unet-s5-d16_fcn_4xb4-160k_cityscapes-512x1024.py'
 device = 'cpu'
 backend_model = ['./mmdeploy_models/mmseg/ort/end2end.onnx']
-image = './tests/data/tiger.jpeg'
+image = './resources/converter/cityscapes.png'
 
 # read deploy_cfg and model_cfg
 deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
