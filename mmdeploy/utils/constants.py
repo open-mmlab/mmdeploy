@@ -39,7 +39,7 @@ class Codebase(AdvancedEnum):
     MMDET3D = 'mmdet3d'
     MMPOSE = 'mmpose'
     MMROTATE = 'mmrotate'
-    MMYOLO =  'mmyolo'
+    MMYOLO = 'mmyolo'
 
 
 class IR(AdvancedEnum):

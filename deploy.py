@@ -19,7 +19,7 @@ from mmdeploy.utils import (IR, Backend, get_backend, get_calib_filename,
                             get_partition_config, get_root_logger, load_config,
                             target_wrapper)
 
-### yolov5
+# yolov5
 """
 configs/mmyolo/detection/detection_onnxruntime_static.py
 /home/ubuntu/workspace/github/openmmlab/TEST/yolobenchmark/configs/yolov5/yolov5_s-v61_syncbn_8xb16-300e_coco.py
@@ -42,7 +42,6 @@ work_dir_trt_yolov5
 --device
 cuda:0
 """
-### yolox
 """
 /home/ubuntu/workspace/github/openmmlab/mmdeploy/configs/mmdet/detection/detection_tensorrt_static-640x640.py
 /home/ubuntu/workspace/github/openmmlab/mmdetection/configs/yolox/yolox_s_8xb8-300e_coco.py
@@ -65,6 +64,18 @@ work_dir_ort_yolox
 --device
 cuda:0
 """
+''' 动态 shape
+/home/ubuntu/workspace/github/openmmlab/mmdeploy/configs/mmyolo/detection/detection_tensorrt_dynamic-320x320-960x960.py
+/home/ubuntu/workspace/github/openmmlab/TEST/yolobenchmark/configs/yolov5/yolov5_s-v61_syncbn_8xb16-300e_coco.py
+mmyolov5.pt
+/home/ubuntu/workspace/github/openmmlab/mmdetection/demo/demo.jpg
+--work-dir
+work_dir_trt_yolov5
+--show
+--device
+cuda:0
+'''
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Export model to backends.')

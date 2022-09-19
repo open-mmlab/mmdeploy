@@ -12,11 +12,11 @@ from mmdeploy.utils import is_dynamic_shape
 @FUNCTION_REWRITER.register_rewriter(
     'mmyolo.models.detectors.yolo_detector.YOLODetector.forward')
 def yolo_detector__forward(ctx,
-                                   self,
-                                   batch_inputs: torch.Tensor,
-                                   data_samples: OptSampleList = None,
-                                   mode: str = 'tensor',
-                                   **kwargs) -> ForwardResults:
+                           self,
+                           batch_inputs: torch.Tensor,
+                           data_samples: OptSampleList = None,
+                           mode: str = 'tensor',
+                           **kwargs) -> ForwardResults:
     """Rewrite `forward` for default backend.
 
     Support configured dynamic/static shape for model input and return

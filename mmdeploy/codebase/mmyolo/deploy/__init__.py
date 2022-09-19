@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .object_detection import ObjectDetection, MMYolo
+from .object_detection import MMYolo, ObjectDetection
 from .utils import (clip_bboxes, get_post_processing_params, pad_with_value,
                     pad_with_value_if_necessary)
 

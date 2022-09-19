@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import copy
 from typing import List, Optional
 
 import torch
@@ -9,10 +10,8 @@ from torch import Tensor
 from mmdeploy.codebase.mmdet import get_post_processing_params
 from mmdeploy.codebase.mmyolo.models.layers import multiclass_nms
 from mmdeploy.core import FUNCTION_REWRITER
-from mmdeploy.utils import Backend
-import copy
 
-#  backend=Backend.TENSORRT.value
+
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmyolo.models.dense_heads.yolov5_head.'
     'YOLOv5Head.predict_by_feat')
@@ -44,15 +43,14 @@ def yolov5_head__predict_by_feat(ctx,
 
     mlvl_strides = [
         flatten_priors.new_full(
-            (featmap_size.numel() * self.num_base_priors, ), stride) for
-        featmap_size, stride in zip(featmap_sizes, self.featmap_strides)
+            (featmap_size.numel() * self.num_base_priors, ), stride)
+        for featmap_size, stride in zip(featmap_sizes, self.featmap_strides)
     ]
     flatten_stride = torch.cat(mlvl_strides)
 
     # flatten cls_scores, bbox_preds and objectness
     flatten_cls_scores = [
-        cls_score.permute(0, 2, 3, 1).reshape(num_imgs, -1,
-                                              self.num_classes)
+        cls_score.permute(0, 2, 3, 1).reshape(num_imgs, -1, self.num_classes)
         for cls_score in cls_scores
     ]
     flatten_bbox_preds = [
@@ -73,8 +71,7 @@ def yolov5_head__predict_by_feat(ctx,
     flatten_bbox_preds = torch.cat(flatten_bbox_preds, dim=1)
     flatten_objectness = torch.cat(flatten_objectness, dim=1).sigmoid()
     bboxes = self.bbox_coder.decode(flatten_priors[None], flatten_bbox_preds,
-                                        flatten_stride)
-
+                                    flatten_stride)
 
     # directly multiply score factor and feed to nms
     scores = cls_scores * (flatten_objectness.unsqueeze(-1))

@@ -9,19 +9,20 @@ from mmdeploy.apis import build_task_processor
 from mmdeploy.utils.config_utils import load_config
 from mmdeploy.utils.timer import TimeCounter
 
+# Test
 '''
-configs/mmyolo/detection/detection_tensorrt_static-640x640.py 
-/home/ubuntu/workspace/github/openmmlab/yolobenchmark/configs/yolov5/yolov5_s-v61_syncbn_8xb16-300e_coco.py 
---model /home/ubuntu/workspace/github/openmmlab/mmdeploy/work_dir_trt/end2end.engine 
+configs/mmyolo/detection/detection_tensorrt_static-640x640.py
+../yolobenchmark/configs/yolov5/yolov5_s-v61_syncbn_8xb16-300e_coco.py
+--model work_dir_trt/end2end.engine
+--device cuda:0
+'''
+'''
+configs/mmdet/detection/detection_tensorrt-fp16_static-640x640.py
+../mmdetection/configs/yolox/yolox_s_8xb8-300e_coco.py
+--model work_dir/end2end.engine
 --device cuda:0
 '''
 
-'''
-configs/mmdet/detection/detection_tensorrt-fp16_static-640x640.py 
-/home/ubuntu/workspace/github/openmmlab/mmdetection/configs/yolox/yolox_s_8xb8-300e_coco.py
---model /home/ubuntu/workspace/github/openmmlab/mmdeploy/work_dir/end2end.engine
---device cuda:0
-'''
 
 def parse_args():
     parser = argparse.ArgumentParser(

@@ -1,18 +1,15 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from functools import partial
 from typing import Any, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import torch
 import torch.nn.functional as F
-from mmdet.models.detectors import BaseDetector
 from mmengine import Config
 from mmengine.model.base_model.data_preprocessor import BaseDataPreprocessor
 from mmengine.registry import Registry
 from mmengine.structures import BaseDataElement, InstanceData
 from torch import Tensor, nn
 
-from mmdeploy.backend.base import get_backend_file_count
 from mmdeploy.codebase.base import BaseBackendModel
 from mmdeploy.codebase.mmdet import get_post_processing_params, multiclass_nms
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
@@ -207,8 +204,6 @@ class End2EndModel(BaseBackendModel):
                 scale_factor = torch.from_numpy(scale_factor).to(dets)
                 bboxes /= scale_factor
 
-
-
             result.scores = scores
             result.bboxes = bboxes
             result.labels = labels
@@ -340,8 +335,6 @@ class PartitionSingleStageModel(End2EndModel):
         outputs = self.wrapper.output_to_list(outputs)
         scores, bboxes = outputs[:2]
         return self.partition0_postprocess(scores, bboxes)
-
-
 
 
 def build_object_detection_model(
