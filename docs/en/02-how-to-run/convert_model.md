@@ -32,14 +32,14 @@ python ./tools/deploy.py \
 
 ### Description of all arguments
 
-- `deploy_cfg` : The path of deploy config file in MMDeploy codebase.
-- `model_cfg` : The path of model config file in OpenMMLab codebase.
-- `checkpoint` : The path of model checkpoint file.
-- `img` : The path of image file that used to convert model.
+- `deploy_cfg` : The deployment configuration of mmdeploy for the model, including the type of inference framework, whether quantize, whether the input shape is dynamic, etc. There may be a reference relationship between configuration files, `mmdeploy/mmcls/classification_ncnn_static.py` is an example.
+- `model_cfg` : Model configuration for algorithm library, e.g. `mmclassification/configs/vision_transformer/vit-base-p32_ft-64xb64_in1k-384.py`, regardless of the path to mmdeploy.
+- `checkpoint` : torch model path. It can start with http/https, see the implementation of `mmcv.FileClient` for details.
+- `img` : The path to the image or point cloud file used for testing during model conversion.
 - `--test-img` : The path of image file that used to test model. If not specified, it will be set to `None`.
 - `--work-dir` : The path of work directory that used to save logs and models.
 - `--calib-dataset-cfg` : Only valid in int8 mode. Config used for calibration. If not specified, it will be set to `None` and  use "val" dataset in model config for calibration.
-- `--device` : The device used for conversion. If not specified, it will be set to `cpu`.
+- `--device` : The device used for model conversion. If not specified, it will be set to `cpu`, for trt use `cuda:0` format.
 - `--log-level` : To set log level which in `'CRITICAL', 'FATAL', 'ERROR', 'WARN', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'`. If not specified, it will be set to `INFO`.
 - `--show` : Whether to show detection outputs.
 - `--dump-info` : Whether to output information for SDK.
@@ -65,7 +65,7 @@ python ./tools/deploy.py \
 
 ## How to evaluate the exported models
 
-You can try to evaluate model, referring to [how_to_evaluate_a_model](./how_to_evaluate_a_model.md).
+You can try to evaluate model, referring to [how_to_evaluate_a_model](profile_model.md).
 
 ## List of supported models exportable to other backends
 

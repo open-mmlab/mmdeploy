@@ -49,11 +49,10 @@ class CTCConvertor : public MMOCR {
       throw_exception(eInvalidArgument);
     }
     // CTCConverter
-    idx2char_.insert(begin(idx2char_), "<BLK>");
 
-    if (_cfg.value("with_unknown", false)) {
-      unknown_idx_ = static_cast<int>(idx2char_.size());
-      idx2char_.emplace_back("<UKN>");
+    if (_cfg.value("with_padding", false)) {
+      padding_idx_ = static_cast<int>(idx2char_.size());
+      idx2char_.emplace_back("<PAD>");
     }
 
     model_ = model;
@@ -88,20 +87,19 @@ class CTCConvertor : public MMOCR {
     return make_pointer(to_value(output));
   }
 
-  static std::pair<vector<int>, vector<float> > Tensor2Idx(const float* data, int w, int c,
-                                                           float valid_ratio) {
+  std::pair<vector<int>, vector<float> > Tensor2Idx(const float* data, int w, int c,
+                                                    float valid_ratio) {
     auto decode_len = std::min(w, static_cast<int>(std::ceil(w * valid_ratio)));
     vector<int> indexes;
     indexes.reserve(decode_len);
     vector<float> scores;
     scores.reserve(decode_len);
-    vector<float> prob(c);
-    int prev = blank_idx_;
+    int prev = padding_idx_;
     for (int t = 0; t < decode_len; ++t, data += c) {
-      softmax(data, prob.data(), c);
+      vector<float> prob(data, data + c);
       auto iter = max_element(begin(prob), end(prob));
       auto index = static_cast<int>(iter - begin(prob));
-      if (index != blank_idx_ && index != prev) {
+      if (index != padding_idx_ && index != prev) {
         indexes.push_back(index);
         scores.push_back(*iter);
       }
@@ -121,19 +119,6 @@ class CTCConvertor : public MMOCR {
       text += idx2char_[idx];
     }
     return text;
-  }
-
-  // TODO: move softmax & top-k into model
-  static void softmax(const float* src, float* dst, int n) {
-    auto max_val = *std::max_element(src, src + n);
-    float sum{};
-    for (int i = 0; i < n; ++i) {
-      dst[i] = std::exp(src[i] - max_val);
-      sum += dst[i];
-    }
-    for (int i = 0; i < n; ++i) {
-      dst[i] /= sum;
-    }
   }
 
  protected:
@@ -166,7 +151,7 @@ class CTCConvertor : public MMOCR {
   Model model_;
 
   static constexpr const int blank_idx_{0};
-  int unknown_idx_{-1};
+  int padding_idx_{-1};
 
   vector<string> idx2char_;
 };
