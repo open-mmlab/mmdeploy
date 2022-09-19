@@ -72,6 +72,10 @@ def visualize_model(model_cfg: Union[str, mmcv.Config],
         result = task_processor.run_inference(model, model_inputs)[0]
 
     try:
+        # check headless
+        import tkinter
+        tkinter.Tk()
+
         task_processor.visualize(
             image=img,
             model=model,
@@ -83,5 +87,5 @@ def visualize_model(model_cfg: Union[str, mmcv.Config],
         from mmdeploy.utils import get_root_logger
         logger = get_root_logger()
         logger.warn(
-            f'render and display result failed, it would be OK for headless device, exception {e}'  # noqa: E501
+            f'render and display result skipped for headless device, exception {e}'  # noqa: E501
         )
