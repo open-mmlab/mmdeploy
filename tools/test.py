@@ -6,10 +6,10 @@ from copy import deepcopy
 from mmengine import DictAction
 
 from mmdeploy.apis import build_task_processor
+from mmdeploy.core import RewriterContext
 from mmdeploy.utils.config_utils import get_backend, load_config
 from mmdeploy.utils.constants import Backend
 from mmdeploy.utils.timer import TimeCounter
-from mmdeploy.core import RewriterContext
 
 
 def parse_args():
