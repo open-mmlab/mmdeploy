@@ -95,8 +95,7 @@ def test_create_input():
 
 def test_visualize(backend_model):
     data_preprocessor = task_processor.build_data_preprocessor()
-    input_dict, _ = task_processor.create_input(input_img,
-                                                img_shape,
+    input_dict, _ = task_processor.create_input(input_img, img_shape,
                                                 data_preprocessor)
 
     with torch.no_grad():
@@ -125,20 +124,21 @@ def test_build_dataset_and_dataloader():
         data_root='tests/test_codebase/test_mmedit/data',
         data_prefix=dict(img='imgs', gt='imgs'),
         # filename_tmpl=dict(img='{}_x4', gt='{}'),
-        pipeline=[dict(
-            type='LoadImageFromFile',
-            key='img',
-            color_type='color',
-            channel_order='rgb',
-            imdecode_backend='cv2'), ]
-        )
-    dataset = task_processor.build_dataset(
-        dataset_cfg=data)
+        pipeline=[
+            dict(
+                type='LoadImageFromFile',
+                key='img',
+                color_type='color',
+                channel_order='rgb',
+                imdecode_backend='cv2'),
+        ])
+    dataset = task_processor.build_dataset(dataset_cfg=data)
     assert isinstance(dataset, Dataset), 'Failed to build dataset'
-    dataloader_cfg = dict(num_workers=4,
-                          persistent_workers=False,
-                          drop_last=False,
-                          sampler=dict(type='DefaultSampler', shuffle=False),
-                          dataset=data)
+    dataloader_cfg = dict(
+        num_workers=4,
+        persistent_workers=False,
+        drop_last=False,
+        sampler=dict(type='DefaultSampler', shuffle=False),
+        dataset=data)
     dataloader = task_processor.build_dataloader(dataloader_cfg)
     assert isinstance(dataloader, DataLoader), 'Failed to build dataloader'

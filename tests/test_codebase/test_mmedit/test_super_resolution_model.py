@@ -27,10 +27,7 @@ class TestEnd2EndModel:
             'outputs': torch.rand(3, 64, 64),
         }
         cls.wrapper.set(outputs=cls.outputs)
-        deploy_cfg = Config(
-            {'onnx_config': {
-                'output_names': ['outputs']
-            }})
+        deploy_cfg = Config({'onnx_config': {'output_names': ['outputs']}})
         model_cfg = 'tests/test_codebase/test_mmedit/data/model.py'
         model_cfg = load_config(model_cfg)[0]
         from mmdeploy.codebase.mmedit.deploy.super_resolution_model import \
@@ -44,10 +41,6 @@ class TestEnd2EndModel:
 
     def test_forward(self):
         input_img = torch.rand(1, 3, 32, 32)
-        img_metas = [
-            BaseDataElement(metainfo={
-                'ori_img_shape': [3, 32, 32]
-            })
-        ]
+        img_metas = [BaseDataElement(metainfo={'ori_img_shape': [3, 32, 32]})]
         results = self.end2end_model.forward(input_img, img_metas)
         assert results is not None

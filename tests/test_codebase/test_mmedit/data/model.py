@@ -250,11 +250,5 @@ div2k_evaluator = [
 
 # test config
 test_cfg = dict(type='MultiTestLoop')
-test_dataloader = [
-    ut_dataloader,
-    ut_dataloader
-]
-test_evaluator = [
-    set5_evaluator,
-    set14_evaluator
-]
+test_dataloader = [ut_dataloader, ut_dataloader]
+test_evaluator = [set5_evaluator, set14_evaluator]

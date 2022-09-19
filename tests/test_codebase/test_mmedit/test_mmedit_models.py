@@ -64,13 +64,13 @@ def test_base_edit_model_forward():
                     mode: str = 'tensor',
                     **kwargs):
             return inputs
-    generator = dict(type='SRCNNNet',
-                     channels=(3, 64, 32, 3),
-                     kernel_sizes=(9, 1, 5),
-                     upscale_factor=4)
-    pixel_loss = dict(type='L1Loss',
-                      loss_weight=1.0,
-                      reduction='mean')
+
+    generator = dict(
+        type='SRCNNNet',
+        channels=(3, 64, 32, 3),
+        kernel_sizes=(9, 1, 5),
+        upscale_factor=4)
+    pixel_loss = dict(type='L1Loss', loss_weight=1.0, reduction='mean')
     model = DummyBaseEditModel(generator, pixel_loss).eval()
 
     model_output = model(input, None, mode='predict')
