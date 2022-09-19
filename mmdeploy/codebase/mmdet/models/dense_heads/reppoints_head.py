@@ -119,6 +119,7 @@ def reppoints_head__get_bboxes(ctx,
         else:
             scores = scores.softmax(-1)
 
+        # TODO: figure out why we can't reshape after permute deirectly
         bbox_pred = bbox_pred.permute(0, 2, 3, 1)
         bbox_pred = bbox_pred.reshape(batch_size, -1)
         bbox_pred = (bbox_pred + 0).reshape(batch_size, -1, 4)
