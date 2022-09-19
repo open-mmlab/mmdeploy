@@ -1,6 +1,6 @@
 # Test on embedded device
 
-Here are the test conclusions of our edge devices. You can directly obtain the results of your own environment with [model profiling](../02-how-to-run/how_to_evaluate_a_model.md).
+Here are the test conclusions of our edge devices. You can directly obtain the results of your own environment with [model profiling](../02-how-to-run/profile_model.md).
 
 ## Software and hardware environment
 

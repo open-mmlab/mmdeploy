@@ -1,18 +1,18 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
 
-import mmcv
 import numpy as np
 import pytest
 import torch
 import torch.nn.functional as F
+from mmengine import Config
 from packaging.version import parse
 
 from mmdeploy.utils import Backend
 from mmdeploy.utils.test import (WrapFunction, backend_checker,
                                  get_rewrite_outputs)
 
-deploy_cfg_ncnn = mmcv.Config(
+deploy_cfg_ncnn = Config(
     dict(
         onnx_config=dict(input_shape=None),
         backend_config=dict(type='ncnn', model_inputs=None, use_vulkan=False),
@@ -20,7 +20,7 @@ deploy_cfg_ncnn = mmcv.Config(
 
 
 def get_trt_config(output_names, shape):
-    deploy_cfg_tensorrt = mmcv.Config(
+    deploy_cfg_tensorrt = Config(
         dict(
             onnx_config=dict(input_shape=None, output_names=output_names),
             backend_config=dict(
@@ -297,7 +297,7 @@ def test_masked_fill_onnxruntime(input):
     def masked_fill_caller(*arg, **kwargs):
         return torch.masked_fill(*arg, **kwargs)
 
-    deploy_cfg_ort = mmcv.Config(
+    deploy_cfg_ort = Config(
         dict(
             onnx_config=dict(input_shape=None),
             backend_config=dict(type='onnxruntime'),
@@ -330,7 +330,7 @@ def test_tensor_setitem(x, y):
     wrapped_func = WrapFunction(setitem_slice)
     model_inputs = {'x': x, 'y': y}
 
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = Config(
         dict(
             onnx_config=dict(input_shape=None),
             backend_config=dict(type='onnxruntime'),

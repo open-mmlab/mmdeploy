@@ -5,9 +5,9 @@ import os
 import tempfile
 from functools import partial
 
-import mmcv
 import pytest
 import torch.multiprocessing as mp
+from mmengine import Config
 
 import mmdeploy.utils as util
 from mmdeploy.backend.sdk.export_info import export2SDK
@@ -16,9 +16,9 @@ from mmdeploy.utils.constants import Backend, Codebase, Task
 from mmdeploy.utils.test import get_random_name
 
 correct_model_path = 'tests/data/srgan.py'
-correct_model_cfg = mmcv.Config.fromfile(correct_model_path)
+correct_model_cfg = Config.fromfile(correct_model_path)
 correct_deploy_path = 'tests/data/super-resolution.py'
-correct_deploy_cfg = mmcv.Config.fromfile(correct_deploy_path)
+correct_deploy_cfg = Config.fromfile(correct_deploy_path)
 empty_file_path = tempfile.NamedTemporaryFile(suffix='.py').name
 empty_path = './a.py'
 
@@ -58,7 +58,7 @@ class TestLoadConfig:
         configs = util.load_config(*args)
         for v in zip(configs, args):
             if isinstance(v[1], str):
-                cfg = mmcv.Config.fromfile(v[1])
+                cfg = Config.fromfile(v[1])
             else:
                 cfg = v[1]
             assert v[0]._cfg_dict == cfg._cfg_dict
@@ -67,7 +67,7 @@ class TestLoadConfig:
 class TestGetCodebaseConfig:
 
     def test_get_codebase_config_empty(self):
-        assert util.get_codebase_config(mmcv.Config(dict())) == {}
+        assert util.get_codebase_config(Config(dict())) == {}
 
     def test_get_codebase_config(self):
         codebase_config = util.get_codebase_config(correct_deploy_path)
@@ -78,7 +78,7 @@ class TestGetTaskType:
 
     def test_get_task_type_none(self):
         with pytest.raises(AssertionError):
-            util.get_task_type(mmcv.Config(dict()))
+            util.get_task_type(Config(dict()))
 
     def test_get_task_type(self):
         assert util.get_task_type(correct_deploy_path) == Task.SUPER_RESOLUTION
@@ -88,7 +88,7 @@ class TestGetCodebase:
 
     def test_get_codebase_none(self):
         with pytest.raises(AssertionError):
-            util.get_codebase(mmcv.Config(dict()))
+            util.get_codebase(Config(dict()))
 
     def test_get_codebase(self):
         assert util.get_codebase(correct_deploy_path) == Codebase.MMEDIT
@@ -97,7 +97,7 @@ class TestGetCodebase:
 class TestGetBackendConfig:
 
     def test_get_backend_config_empty(self):
-        assert util.get_backend_config(mmcv.Config(dict())) == {}
+        assert util.get_backend_config(Config(dict())) == {}
 
     def test_get_backend_config(self):
         backend_config = util.get_backend_config(correct_deploy_path)
@@ -108,7 +108,7 @@ class TestGetBackend:
 
     def test_get_backend_none(self):
         with pytest.raises(AssertionError):
-            util.get_backend(mmcv.Config(dict()))
+            util.get_backend(Config(dict()))
 
     def test_get_backend(self):
         assert util.get_backend(correct_deploy_path) == Backend.ONNXRUNTIME
@@ -117,7 +117,7 @@ class TestGetBackend:
 class TestGetOnnxConfig:
 
     def test_get_onnx_config_empty(self):
-        assert util.get_onnx_config(mmcv.Config(dict())) == {}
+        assert util.get_onnx_config(Config(dict())) == {}
 
     def test_get_onnx_config(self):
         onnx_config = dict(
@@ -146,10 +146,10 @@ class TestGetOnnxConfig:
 
 class TestIsDynamic:
 
-    config_with_onnx_config = mmcv.Config(
+    config_with_onnx_config = Config(
         dict(onnx_config=dict(), backend_config=dict(type='default')))
 
-    config_with_dynamic_axes = mmcv.Config(
+    config_with_dynamic_axes = Config(
         dict(
             onnx_config=dict(
                 type='onnx',
@@ -160,7 +160,7 @@ class TestIsDynamic:
                 }}),
             backend_config=dict(type='default')))
 
-    config_with_dynamic_axes_and_input_names = mmcv.Config(
+    config_with_dynamic_axes_and_input_names = Config(
         dict(
             onnx_config=dict(
                 type='onnx',
@@ -172,7 +172,7 @@ class TestIsDynamic:
                 }}),
             backend_config=dict(type='default')))
 
-    config_with_dynamic_axes_list = mmcv.Config(
+    config_with_dynamic_axes_list = Config(
         dict(
             onnx_config=dict(
                 type='onnx', input_names=['image'], dynamic_axes=[[0, 2, 3]]),
@@ -223,11 +223,11 @@ class TestIsDynamic:
 
 
 class TestGetInputShape:
-    config_without_input_shape = mmcv.Config(
+    config_without_input_shape = Config(
         dict(onnx_config=dict(input_shape=None)))
-    config_with_input_shape = mmcv.Config(
+    config_with_input_shape = Config(
         dict(onnx_config=dict(input_shape=[1, 1])))
-    config_with_error_shape = mmcv.Config(
+    config_with_error_shape = Config(
         dict(onnx_config=dict(input_shape=[1, 1, 1])))
 
     def test_get_input_shape_none(self):
@@ -245,11 +245,10 @@ class TestGetInputShape:
 
 class TestCfgApplyMark:
 
-    config_with_mask = mmcv.Config(
-        dict(partition_config=dict(apply_marks=True)))
+    config_with_mask = Config(dict(partition_config=dict(apply_marks=True)))
 
     def test_cfg_apply_marks_none(self):
-        assert util.cfg_apply_marks(mmcv.Config(dict())) is None
+        assert util.cfg_apply_marks(Config(dict())) is None
 
     def test_cfg_apply_marks(self):
         assert util.cfg_apply_marks(TestCfgApplyMark.config_with_mask) is True
@@ -257,13 +256,12 @@ class TestCfgApplyMark:
 
 class TestGetPartitionConfig:
 
-    config_with_mask = mmcv.Config(
-        dict(partition_config=dict(apply_marks=True)))
-    config_without_mask = mmcv.Config(
+    config_with_mask = Config(dict(partition_config=dict(apply_marks=True)))
+    config_without_mask = Config(
         dict(partition_config=dict(apply_marks=False)))
 
     def test_get_partition_config_none(self):
-        assert util.get_partition_config(mmcv.Config(dict())) is None
+        assert util.get_partition_config(Config(dict())) is None
 
     def test_get_partition_config_without_mask(self):
         assert util.get_partition_config(
@@ -275,10 +273,10 @@ class TestGetPartitionConfig:
 
 
 class TestGetCalib:
-    config_with_calib = mmcv.Config(
+    config_with_calib = Config(
         dict(calib_config=dict(create_calib=True, calib_file='calib_data.h5')))
 
-    config_without_calib = mmcv.Config(
+    config_without_calib = Config(
         dict(
             calib_config=dict(create_calib=False, calib_file='calib_data.h5')))
 
@@ -287,7 +285,7 @@ class TestGetCalib:
             create_calib=True, calib_file='calib_data.h5')
 
     def test_get_calib_filename_none(self):
-        assert util.get_calib_filename(mmcv.Config(dict())) is None
+        assert util.get_calib_filename(Config(dict())) is None
 
     def test_get_calib_filename_false(self):
         assert util.get_calib_filename(
@@ -299,7 +297,7 @@ class TestGetCalib:
 
 
 class TestGetCommonConfig:
-    config_with_common_config = mmcv.Config(
+    config_with_common_config = Config(
         dict(
             backend_config=dict(
                 type='tensorrt', common_config=dict(fp16_mode=False))))
@@ -312,7 +310,7 @@ class TestGetCommonConfig:
 
 class TestGetModelInputs:
 
-    config_with_model_inputs = mmcv.Config(
+    config_with_model_inputs = Config(
         dict(backend_config=dict(model_inputs=[dict(input_shapes=None)])))
 
     def test_model_inputs(self):
@@ -327,7 +325,7 @@ class TestGetDynamicAxes:
     input_name = get_random_name()
 
     def test_with_empty_cfg(self):
-        deploy_cfg = mmcv.Config()
+        deploy_cfg = Config()
         with pytest.raises(KeyError):
             util.get_dynamic_axes(deploy_cfg)
 
@@ -339,14 +337,14 @@ class TestGetDynamicAxes:
                 3: 'width'
             }
         }
-        deploy_cfg = mmcv.Config(
+        deploy_cfg = Config(
             dict(onnx_config=dict(dynamic_axes=expected_dynamic_axes)))
         dynamic_axes = util.get_dynamic_axes(deploy_cfg)
         assert expected_dynamic_axes == dynamic_axes
 
     def test_can_not_get_axes_from_list_without_names(self):
         axes = [[0, 2, 3]]
-        deploy_cfg = mmcv.Config(dict(onnx_config=dict(dynamic_axes=axes)))
+        deploy_cfg = Config(dict(onnx_config=dict(dynamic_axes=axes)))
         with pytest.raises(KeyError):
             util.get_dynamic_axes(deploy_cfg)
 
@@ -354,7 +352,7 @@ class TestGetDynamicAxes:
         axes = [[0, 2, 3]]
         expected_dynamic_axes = {self.input_name: axes[0]}
         axes_names = [self.input_name]
-        deploy_cfg = mmcv.Config(dict(onnx_config=dict(dynamic_axes=axes)))
+        deploy_cfg = Config(dict(onnx_config=dict(dynamic_axes=axes)))
         dynamic_axes = util.get_dynamic_axes(deploy_cfg, axes_names)
         assert expected_dynamic_axes == dynamic_axes
 
@@ -365,7 +363,7 @@ class TestGetDynamicAxes:
             self.input_name: axes[0],
             output_name: axes[1]
         }
-        deploy_cfg = mmcv.Config(
+        deploy_cfg = Config(
             dict(
                 onnx_config=dict(
                     input_names=[self.input_name],

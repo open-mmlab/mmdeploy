@@ -1,28 +1,28 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import torch.nn.functional as F
-
 from mmdeploy.core import FUNCTION_REWRITER
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmseg.models.segmentors.EncoderDecoder.simple_test')
-def encoder_decoder__simple_test(ctx, self, img, img_meta, **kwargs):
-    """Rewrite `simple_test` for default backend.
+    func_name='mmseg.models.segmentors.EncoderDecoder.predict')
+def encoder_decoder__predict(ctx, self, inputs, data_samples, **kwargs):
+    """Rewrite `predict` for default backend.
 
-    Support configured dynamic/static shape for model input and return
-    segmentation map as Tensor instead of numpy array.
+    1. only support mode=`whole` inference
+    2. skip calling self.postprocess_result
 
     Args:
         ctx (ContextCaller): The context with additional information.
         self: The instance of the original class.
-        img (Tensor | List[Tensor]): Input image tensor(s).
-        img_meta (dict): Dict containing image's meta information
-            such as `img_shape`.
+        inputs (Tensor): Inputs with shape (N, C, H, W).
+        data_samples (SampleList): The seg data samples.
 
     Returns:
         torch.Tensor: Output segmentation map pf shape [N, 1, H, W].
     """
-    seg_logit = self.encode_decode(img, img_meta)
-    seg_logit = F.softmax(seg_logit, dim=1)
+    batch_img_metas = []
+    for data_sample in data_samples:
+        batch_img_metas.append(data_sample.metainfo)
+    x = self.extract_feat(inputs)
+    seg_logit = self.decode_head.predict(x, batch_img_metas, self.test_cfg)
     seg_pred = seg_logit.argmax(dim=1, keepdim=True)
     return seg_pred

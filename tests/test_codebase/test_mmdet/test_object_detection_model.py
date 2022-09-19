@@ -1,7 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import pytest
 import torch
-from mmengine import BaseDataElement, Config, InstanceData
+from mmengine import Config
+from mmengine.structures import BaseDataElement, InstanceData
 
 import mmdeploy.backend.ncnn as ncnn_apis
 import mmdeploy.backend.onnxruntime as ort_apis

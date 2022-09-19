@@ -238,6 +238,17 @@ export LD_LIBRARY_PATH=$Torch_DIR/lib:$LD_LIBRARY_PATH
    </code></pre>
     </td>
   </tr>
+  <tr>
+    <td>Ascend</td>
+    <td>CANN</td>
+    <td>
+    1. Install CANN follow <a href="https://www.hiascend.com/document/detail/en/CANNCommunityEdition/51RC1alphaX/softwareinstall/instg/atlasdeploy_03_0002.html">official guide</a>.<br>
+    2. Setup environment
+   <pre><code>
+export ASCEND_TOOLKIT_HOME="/usr/local/Ascend/ascend-toolkit/latest"
+   </code></pre>
+    </td>
+  </tr>
 </tbody>
 </table>
 
@@ -258,90 +269,7 @@ cd /the/root/path/of/MMDeploy
 export MMDEPLOY_DIR=$(pwd)
 ```
 
-### Build Options Spec
-
-<table class="docutils">
-<thead>
-  <tr>
-    <th>NAME</th>
-    <th>VALUE</th>
-    <th>DEFAULT</th>
-    <th>REMARK</th>
-  </tr>
-</thead>
-<tbody>
-  <tr>
-    <td>MMDEPLOY_BUILD_SDK</td>
-    <td>{ON, OFF}</td>
-    <td>OFF</td>
-    <td>Switch to build MMDeploy SDK</td>
-  </tr>
-  <tr>
-    <td>MMDEPLOY_BUILD_SDK_PYTHON_API</td>
-    <td>{ON, OFF}</td>
-    <td>OFF</td>
-    <td>switch to build MMDeploy SDK python package</td>
-  </tr>
-  <tr>
-    <td>MMDEPLOY_BUILD_SDK_JAVA_API</td>
-    <td>{ON, OFF}</td>
-    <td>switch to build MMDeploy SDK Java API</td>
-  </tr>
-  <tr>
-    <td>MMDEPLOY_BUILD_TEST</td>
-    <td>{ON, OFF}</td>
-    <td>OFF</td>
-    <td>Switch to build MMDeploy SDK unittest cases</td>
-  </tr>
-  <tr>
-    <td>MMDEPLOY_TARGET_DEVICES</td>
-    <td>{"cpu", "cuda"}</td>
-    <td>cpu</td>
-    <td>Enable target device. You can enable more by
-   passing a semicolon separated list of device names to <code>MMDEPLOY_TARGET_DEVICES</code> variable, e.g. <code>-DMMDEPLOY_TARGET_DEVICES="cpu;cuda"</code> </td>
-  </tr>
-  <tr>
-    <td>MMDEPLOY_TARGET_BACKENDS</td>
-    <td>{"trt", "ort", "pplnn", "ncnn", "openvino", "torchscript"}</td>
-    <td>N/A</td>
-    <td>Enabling inference engine. <b>By default, no target inference engine is set, since it highly depends on the use case.</b> When more than one engine are specified, it has to be set with a semicolon separated list of inference backend names, e.g. <pre><code>-DMMDEPLOY_TARGET_BACKENDS="trt;ort;pplnn;ncnn;openvino"</code></pre>
-    After specifying the inference engine, it's package path has to be passed to cmake as follows, <br>
-    1. <b>trt</b>: TensorRT. <code>TENSORRT_DIR</code> and <code>CUDNN_DIR</code> are needed.
-<pre><code>
--DTENSORRT_DIR=${TENSORRT_DIR}
--DCUDNN_DIR=${CUDNN_DIR}
-</code></pre>
-    2. <b>ort</b>: ONNXRuntime. <code>ONNXRUNTIME_DIR</code> is needed.
-<pre><code>-DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR}</code></pre>
-    3. <b>pplnn</b>: PPL.NN. <code>pplnn_DIR</code> is needed.
-<pre><code>-Dpplnn_DIR=${PPLNN_DIR}</code></pre>
-    4. <b>ncnn</b>: ncnn. <code>ncnn_DIR</code> is needed.
-<pre><code>-Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn</code></pre>
-    5. <b>openvino</b>: OpenVINO. <code>InferenceEngine_DIR</code> is needed.
-<pre><code>-DInferenceEngine_DIR=${INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/share</code></pre>
-    6. <b>torchscript</b>: TorchScript. <code>Torch_DIR</code> is needed.
-<pre><code>-DTorch_DIR=${Torch_DIR}</code></pre>
-Currently, <b>The Model Converter supports torchscript, but SDK doesn't</b>.
-   </td>
-  </tr>
-  <tr>
-    <td>MMDEPLOY_CODEBASES</td>
-    <td>{"mmcls", "mmdet", "mmseg", "mmedit", "mmocr", "all"}</td>
-    <td>all</td>
-    <td>Enable codebase's postprocess modules. You can provide a semicolon separated list of codebase names to enable them, e.g., <code>-DMMDEPLOY_CODEBASES="mmcls;mmdet"</code>. Or you can pass <code>all</code> to enable them all, i.e., <code>-DMMDEPLOY_CODEBASES=all</code></td>
-  </tr>
-  <tr>
-    <td>MMDEPLOY_SHARED_LIBS</td>
-    <td>{ON, OFF}</td>
-    <td>ON</td>
-    <td>Switch to build shared library or static library of MMDeploy SDK</td>
-  </tr>
-</tbody>
-</table>
-
-### Build Model Converter
-
-#### Build Custom Ops
+#### Build Model Converter
 
 If one of inference engines among ONNXRuntime, TensorRT, ncnn and libtorch is selected, you have to build the corresponding custom ops.
 
@@ -381,6 +309,8 @@ If one of inference engines among ONNXRuntime, TensorRT, ncnn and libtorch is se
   make -j$(nproc) && make install
   ```
 
+Please check [cmake build option](cmake_option.md).
+
 #### Install Model Converter
 
 ```bash
@@ -393,6 +323,7 @@ pip install -e .
 - Some dependencies are optional. Simply running `pip install -e .` will only install the minimum runtime requirements.
   To use optional dependencies, install them manually with `pip install -r requirements/optional.txt` or specify desired extras when calling `pip` (e.g. `pip install -e .[optional]`).
   Valid keys for the extras field are: `all`, `tests`, `build`, `optional`.
+- It is recommended to [install patch for cuda10](https://developer.nvidia.com/cuda-10.2-download-archive?target_os=Linux&target_arch=x86_64&target_distro=Ubuntu&target_version=1804&target_type=runfilelocal), otherwise GEMM related errors may occur when model runs
 
 ### Build SDK and Demo
 
@@ -411,7 +342,6 @@ You can also activate other engines after the model.
       -DMMDEPLOY_BUILD_EXAMPLES=ON \
       -DMMDEPLOY_TARGET_DEVICES=cpu \
       -DMMDEPLOY_TARGET_BACKENDS=ort \
-      -DMMDEPLOY_CODEBASES=all \
       -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR}
 
   make -j$(nproc) && make install
@@ -429,10 +359,27 @@ You can also activate other engines after the model.
       -DMMDEPLOY_BUILD_EXAMPLES=ON \
       -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
       -DMMDEPLOY_TARGET_BACKENDS=trt \
-      -DMMDEPLOY_CODEBASES=all \
       -Dpplcv_DIR=${PPLCV_DIR}/cuda-build/install/lib/cmake/ppl \
       -DTENSORRT_DIR=${TENSORRT_DIR} \
       -DCUDNN_DIR=${CUDNN_DIR}
+
+  make -j$(nproc) && make install
+  ```
+
+- pplnn
+
+  ```Bash
+  cd ${MMDEPLOY_DIR}
+  mkdir -p build && cd build
+  cmake .. \
+      -DCMAKE_CXX_COMPILER=g++-7 \
+      -DMMDEPLOY_BUILD_SDK=ON \
+      -DMMDEPLOY_BUILD_EXAMPLES=ON \
+      -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
+      -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
+      -DMMDEPLOY_TARGET_BACKENDS=pplnn \
+      -Dpplcv_DIR=${PPLCV_DIR}/cuda-build/cuda-build/install/lib/cmake/ppl \
+      -Dpplnn_DIR=${PPLNN_DIR}/pplnn-build/install/lib/cmake/ppl
 
   make -j$(nproc) && make install
   ```
