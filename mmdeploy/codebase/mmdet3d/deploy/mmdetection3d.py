@@ -1,32 +1,25 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from copy import deepcopy
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
-import os.path as osp
-from unittest import result
-import numpy as np
-import torch
-import mmengine
-from mmengine import Config
-from mmengine.model import BaseDataPreprocessor
-from mmengine.registry import Registry
-from mmengine.dataset import Compose, pseudo_collate
-from .voxel_detection_model import VoxelDetectionModel
-from mmdeploy.utils import Backend
-# Copyright (c) OpenMMLab. All rights reserved.
 
 import mmcv
+import mmengine
+import numpy as np
+import torch
 import torch.nn as nn
-# from mmcv.parallel import collate, scatter
 from mmdet3d.structures import get_box_type
-
-
+from mmengine import Config
+from mmengine.dataset import Compose, pseudo_collate
+from mmengine.model import BaseDataPreprocessor
+from mmengine.registry import Registry
 from torch.utils.data import DataLoader, Dataset
 
 from mmdeploy.codebase.base import CODEBASE, BaseTask, MMCodebase
-from mmdeploy.utils import Codebase, Task, get_root_logger
-from mmdeploy.utils.config_utils import get_input_shape, is_dynamic_shape
+from mmdeploy.utils import Backend, Codebase, Task, get_root_logger
+from .voxel_detection_model import VoxelDetectionModel
 
 MMDET3D_TASK = Registry('mmdet3d_tasks')
+
 
 @CODEBASE.register_module(Codebase.MMDET3D.value)
 class MMDetection3d(MMCodebase):
@@ -34,94 +27,6 @@ class MMDetection3d(MMCodebase):
 
     task_registry = MMDET3D_TASK
 
-
-    # @staticmethod
-    # def build_task_processor(model_cfg: mmengine.Config,
-    #                          deploy_cfg: mmengine.Config,
-    #                          device: str) -> BaseTask:
-    #     """The interface to build the task processors of mmdet3d.
-
-    #     Args:
-    #         model_cfg (str | mmengine.Config): Model config file.
-    #         deploy_cfg (str | mmengine.Config): Deployment config file.
-    #         device (str): A string specifying device type.
-
-    #     Returns:
-    #         BaseTask: A task processor.
-    #     """
-    #     return MMDET3D_TASK.build(model_cfg, deploy_cfg, device)
-
-    # @staticmethod
-    # def build_dataset(dataset_cfg: Union[str, mmengine.Config], *args,
-    #                   **kwargs) -> Dataset:
-    #     """Build dataset for detection3d.
-
-    #     Args:
-    #         dataset_cfg (str | mmengine.Config): The input dataset config.
-
-    #     Returns:
-    #         Dataset: A PyTorch dataset.
-    #     """
-    #     from mmdet3d.datasets import build_dataset as build_dataset_mmdet3d
-
-    #     from mmdeploy.utils import load_config
-    #     dataset_cfg = load_config(dataset_cfg)[0]
-    #     data = dataset_cfg.data
-
-    #     dataset = build_dataset_mmdet3d(data.test)
-    #     return dataset
-
-    # @staticmethod
-    # def build_dataloader(dataset: Dataset,
-    #                      samples_per_gpu: int,
-    #                      workers_per_gpu: int,
-    #                      num_gpus: int = 1,
-    #                      dist: bool = False,
-    #                      shuffle: bool = False,
-    #                      seed: Optional[int] = None,
-    #                      runner_type: str = 'EpochBasedRunner',
-    #                      persistent_workers: bool = True,
-    #                      **kwargs) -> DataLoader:
-    #     """Build dataloader for detection3d.
-
-    #     Args:
-    #         dataset (Dataset): Input dataset.
-    #         samples_per_gpu (int): Number of training samples on each GPU, i.e.
-    #             ,batch size of each GPU.
-    #         workers_per_gpu (int): How many subprocesses to use for data
-    #             loading for each GPU.
-    #         num_gpus (int): Number of GPUs. Only used in non-distributed
-    #             training.
-    #         dist (bool): Distributed training/test or not.
-    #             Defaults  to `False`.
-    #         shuffle (bool): Whether to shuffle the data at every epoch.
-    #             Defaults to `False`.
-    #         seed (int): An integer set to be seed. Default is `None`.
-    #         runner_type (str): Type of runner. Default: `EpochBasedRunner`.
-    #         persistent_workers (bool): If True, the data loader will not
-    #             shutdown the worker processes after a dataset has been consumed
-    #             once. This allows to maintain the workers `Dataset` instances
-    #             alive. This argument is only valid when PyTorch>=1.7.0.
-    #             Default: False.
-    #         kwargs: Any other keyword argument to be used to initialize
-    #             DataLoader.
-
-    #     Returns:
-    #         DataLoader: A PyTorch dataloader.
-    #     """
-    #     from mmdet3d.datasets import \
-    #         build_dataloader as build_dataloader_mmdet3d
-    #     return build_dataloader_mmdet3d(
-    #         dataset,
-    #         samples_per_gpu,
-    #         workers_per_gpu,
-    #         num_gpus=num_gpus,
-    #         dist=dist,
-    #         shuffle=shuffle,
-    #         seed=seed,
-    #         runner_type=runner_type,
-    #         persistent_workers=persistent_workers,
-    #         **kwargs)
 
 def _get_dataset_metainfo(model_cfg: Config):
     """Get metainfo of dataset.
@@ -132,7 +37,6 @@ def _get_dataset_metainfo(model_cfg: Config):
     Returns:
         list[str]: A list of string specifying names of different class.
     """
-    from mmdet3d.registry import DATASETS
 
     for dataloader_name in [
             'test_dataloader', 'val_dataloader', 'train_dataloader'
@@ -144,6 +48,7 @@ def _get_dataset_metainfo(model_cfg: Config):
         if 'metainfo' in dataset_cfg:
             return dataset_cfg.metainfo
     return None
+
 
 @MMDET3D_TASK.register_module(Task.VOXEL_DETECTION.value)
 class VoxelDetection(BaseTask):
@@ -164,35 +69,19 @@ class VoxelDetection(BaseTask):
             nn.Module: An initialized backend model.
         """
         from .voxel_detection_model import build_voxel_detection_model
-        
+
         data_preprocessor = deepcopy(
             self.model_cfg.model.get('data_preprocessor', {}))
         data_preprocessor.setdefault('type', 'mmdet3D.Det3DDataPreprocessor')
-        
+
         model = build_voxel_detection_model(
-            model_files, self.model_cfg, self.deploy_cfg, device=self.device,
+            model_files,
+            self.model_cfg,
+            self.deploy_cfg,
+            device=self.device,
             data_preprocessor=data_preprocessor)
         model = model.to(self.device)
         return model
-    
-    # def build_pytorch_model(self,
-    #                         model_checkpoint: Optional[str] = None,
-    #                         cfg_options: Optional[Dict] = None,
-    #                         **kwargs) -> torch.nn.Module:
-    #     """Initialize torch model.
-
-    #     Args:
-    #         model_checkpoint (str): The checkpoint file of torch model,
-    #             defaults to `None`.
-    #         cfg_options (dict): Optional config key-pair parameters.
-    #     Returns:
-    #         nn.Module: An initialized torch model generated by other OpenMMLab
-    #             codebases.
-    #     """
-    #     from mmdet3d.apis import init_model
-    #     device = self.device
-    #     model = init_model(self.model_cfg, model_checkpoint, device)
-    #     return model.eval()
 
     def create_input(
         self,
@@ -204,14 +93,14 @@ class VoxelDetection(BaseTask):
 
         Args:
             pcd (str): Input pcd file path.
-            input_shape (Sequence[int], optional): model input shape. Defaults to None.
-            data_preprocessor (Optional[BaseDataPreprocessor], optional): model input preprocess. Defaults to None.
+            input_shape (Sequence[int], optional): model input shape.Defaults to None. # noqa: E501
+            data_preprocessor (Optional[BaseDataPreprocessor], optional): model input preprocess. Defaults to None. # noqa: E501
 
         Returns:
             tuple: (data, input), meta information for the input pcd
                 and model input.
         """
-        
+
         cfg = self.model_cfg
         test_pipeline = deepcopy(cfg.test_dataloader.dataset.pipeline)
         test_pipeline = Compose(test_pipeline)
@@ -220,28 +109,23 @@ class VoxelDetection(BaseTask):
 
         data = []
         data_ = dict(
-                lidar_points=dict(lidar_path=pcd),
-                timestamp=1,
-                # for ScanNet demo we need axis_align_matrix
-                axis_align_matrix=np.eye(4),
-                box_type_3d=box_type_3d,
-                box_mode_3d=box_mode_3d)
+            lidar_points=dict(lidar_path=pcd),
+            timestamp=1,
+            # for ScanNet demo we need axis_align_matrix
+            axis_align_matrix=np.eye(4),
+            box_type_3d=box_type_3d,
+            box_mode_3d=box_mode_3d)
         data_ = test_pipeline(data_)
         data.append(data_)
-        
+
         collate_data = pseudo_collate(data)
-        data[0]['inputs']['points'] = data[0]['inputs']['points'].to(self.device)
-        
-        # for index in range(len(collate_data['inputs']['points'])):
-        #     collate_data['inputs']['points'][index] = collate_data['inputs']['points'][index].to(self.device)
-        
+        data[0]['inputs']['points'] = data[0]['inputs']['points'].to(
+            self.device)
+
         if data_preprocessor is not None:
             collate_data = data_preprocessor(collate_data, False)
             del collate_data['inputs']['voxels']['voxel_centers']
-            # for key in collate_data['inputs']['voxels'].keys():
-            #     collate_data['inputs']['voxels'][key] = collate_data['inputs']['voxels'][key].to(self.device)
         return collate_data, collate_data['inputs']
-
 
     def visualize(self,
                   image: Union[str, np.ndarray],
@@ -263,19 +147,21 @@ class VoxelDetection(BaseTask):
             draw_gt (bool, optional): _description_. Defaults to False.
         """
         cfg = self.model_cfg
-        # from mmdet3d.registry import VISUALIZERS
-        # visualizer = VISUALIZERS.build(cfg.visualizer)
         visualizer = super().get_visualizer(window_name, output_file)
         visualizer.dataset_meta = _get_dataset_metainfo(cfg)
-        
+
         # show the results
         _, data_input = self.create_input(pcd=image)
-        
+
         if Backend(window_name) != Backend.PYTORCH:
-            predictions = VoxelDetectionModel.postprocess(model_cfg=self.model_cfg, deploy_cfg=self.deploy_cfg, outs=result[0], metas=result[1])
+            predictions = VoxelDetectionModel.postprocess(
+                model_cfg=self.model_cfg,
+                deploy_cfg=self.deploy_cfg,
+                outs=result[0],
+                metas=result[1])
         else:
             predictions = result
-        
+
         visualizer.add_datasample(
             window_name,
             dict(points=data_input['points'][0]),

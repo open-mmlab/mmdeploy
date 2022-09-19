@@ -106,8 +106,8 @@ def main():
     pipeline_funcs = [
         torch2onnx, torch2torchscript, extract_model, create_calib_input_data
     ]
-    # PIPELINE_MANAGER.enable_multiprocess(True, pipeline_funcs)
-    # PIPELINE_MANAGER.set_log_level(log_level, pipeline_funcs)
+    PIPELINE_MANAGER.enable_multiprocess(True, pipeline_funcs)
+    PIPELINE_MANAGER.set_log_level(log_level, pipeline_funcs)
 
     deploy_cfg_path = args.deploy_cfg
     model_cfg_path = args.model_cfg
@@ -130,7 +130,7 @@ def main():
     ir_config = get_ir_config(deploy_cfg)
     ir_save_file = ir_config['save_file']
     ir_type = IR.get(ir_config['type'])
-    torch2onnx(
+    torch2ir(ir_type)(
         args.img,
         args.work_dir,
         ir_save_file,
@@ -138,14 +138,6 @@ def main():
         model_cfg_path,
         checkpoint_path,
         device=args.device)
-    # torch2ir(ir_type)(
-    #     args.img,
-    #     args.work_dir,
-    #     ir_save_file,
-    #     deploy_cfg_path,
-    #     model_cfg_path,
-    #     checkpoint_path,
-    #     device=args.device)
 
     # convert backend
     ir_files = [osp.join(args.work_dir, ir_save_file)]
@@ -368,38 +360,30 @@ def main():
     headless = False
     # for headless installation.
     if not headless:
-        # extra = dict(
-        #     backend=backend,
-        #     output_file=osp.join(args.work_dir, f'output_{backend.value}.jpg'),
-        #     show_result=args.show)
-        # if backend == Backend.SNPE:
-        #     extra['uri'] = args.uri
-
-        visualize_model(model_cfg_path, deploy_cfg_path, backend_files, args.test_img, args.device, backend=backend,
+        extra = dict(
+            backend=backend,
             output_file=osp.join(args.work_dir, f'output_{backend.value}.jpg'),
             show_result=args.show)
-        # create_process(
-        #     f'visualize {backend.value} model',
-        #     target=visualize_model,
-        #     args=(model_cfg_path, deploy_cfg_path, backend_files,
-        #           args.test_img, args.device),
-        #     kwargs=extra,
-        #     ret_value=ret_value)
+        if backend == Backend.SNPE:
+            extra['uri'] = args.uri
+        create_process(
+            f'visualize {backend.value} model',
+            target=visualize_model,
+            args=(model_cfg_path, deploy_cfg_path, backend_files,
+                  args.test_img, args.device),
+            kwargs=extra,
+            ret_value=ret_value)
 
-        # visualize pytorch model
-        visualize_model(model_cfg_path, deploy_cfg_path, [checkpoint_path], args.test_img, args.device,backend=Backend.PYTORCH,
+        create_process(
+            'visualize pytorch model',
+            target=visualize_model,
+            args=(model_cfg_path, deploy_cfg_path, [checkpoint_path],
+                  args.test_img, args.device),
+            kwargs=dict(
+                backend=Backend.PYTORCH,
                 output_file=osp.join(args.work_dir, 'output_pytorch.jpg'),
-                show_result=args.show)
-        # create_process(
-        #     'visualize pytorch model',
-        #     target=visualize_model,
-        #     args=(model_cfg_path, deploy_cfg_path, [checkpoint_path],
-        #           args.test_img, args.device),
-        #     kwargs=dict(
-        #         backend=Backend.PYTORCH,
-        #         output_file=osp.join(args.work_dir, 'output_pytorch.jpg'),
-        #         show_result=args.show),
-        #     ret_value=ret_value)
+                show_result=args.show),
+            ret_value=ret_value)
     else:
         logger.warning(
             '\"visualize_model\" has been skipped may be because it\'s \

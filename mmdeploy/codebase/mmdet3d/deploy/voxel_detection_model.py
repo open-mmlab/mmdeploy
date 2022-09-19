@@ -1,19 +1,17 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Any, Dict, List, Sequence, Union, Optional, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Union
 
 import mmcv
-import mmengine
 import torch
-from mmengine.registry import Registry
+from mmdet3d.structures.det3d_data_sample import SampleList
 from mmengine import Config
 from mmengine.model.base_model.data_preprocessor import BaseDataPreprocessor
-from torch.nn import functional as F
+from mmengine.registry import Registry
 from mmengine.structures import BaseDataElement, InstanceData
-from mmdet3d.structures.det3d_data_sample import SampleList
+
 from mmdeploy.codebase.base import BaseBackendModel
-from mmdeploy.core import RewriterContext
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
-                            get_root_logger, load_config)
+                            load_config)
 
 __BACKEND_MODEL = Registry('backend_voxel_detectors')
 
@@ -37,7 +35,8 @@ class VoxelDetectionModel(BaseBackendModel):
                  backend_files: Sequence[str],
                  device: str,
                  deploy_cfg: Union[str, Config],
-                 data_preprocessor: Optional[Union[dict, torch.nn.Module]] = None,
+                 data_preprocessor: Optional[Union[dict,
+                                                   torch.nn.Module]] = None,
                  **kwargs):
         super().__init__(
             deploy_cfg=deploy_cfg, data_preprocessor=data_preprocessor)
@@ -62,40 +61,6 @@ class VoxelDetectionModel(BaseBackendModel):
             backend_files=backend_files,
             device=device,
             input_names=[self.input_name],
-            output_names=output_names,
-            deploy_cfg=self.deploy_cfg)
-
-
-    def __init__(self,
-                 backend: Backend,
-                 backend_files: Sequence[str],
-                 device: str,
-                 deploy_cfg: Union[str, Config],
-                 data_preprocessor: Optional[Union[dict, torch.nn.Module]] = None,
-                 **kwargs):
-        super().__init__(
-            deploy_cfg=deploy_cfg, data_preprocessor=data_preprocessor)
-        self.deploy_cfg = deploy_cfg
-        # self.model_cfg = model_cfg
-        self.device = device
-        self._init_wrapper(
-            backend=backend, backend_files=backend_files, device=device)
-
-    def _init_wrapper(self, backend: Backend, backend_files: Sequence[str],
-                      device: str):
-        """Initialize backend wrapper.
-
-        Args:
-            backend (Backend): The backend enum, specifying backend type.
-            backend_files (Sequence[str]): Paths to all required backend files
-                (e.g. '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
-            device (str): A string specifying device type.
-        """
-        output_names = self.output_names
-        self.wrapper = BaseBackendModel._build_wrapper(
-            backend=backend,
-            backend_files=backend_files,
-            device=device,
             output_names=output_names,
             deploy_cfg=self.deploy_cfg)
 
@@ -126,7 +91,6 @@ class VoxelDetectionModel(BaseBackendModel):
 
         return [outputs]
 
-
     def show_result(self,
                     data: Dict,
                     result: List,
@@ -156,7 +120,7 @@ class VoxelDetectionModel(BaseBackendModel):
             show=show,
             snapshot=snapshot,
             pred_labels=pred_labels)
-        
+
     @staticmethod
     def convert_to_datasample(
         data_samples: SampleList,
@@ -218,13 +182,10 @@ class VoxelDetectionModel(BaseBackendModel):
             data_sample.pred_instances = data_instances_2d[i]
         return data_samples
 
-
     @staticmethod
     def postprocess(model_cfg: Union[str, Config],
-                     deploy_cfg: Union[str, Config],
-                     outs: Dict,
-                     metas: Dict):
-        """postprocess outputs to datasamples
+                    deploy_cfg: Union[str, Config], outs: Dict, metas: Dict):
+        """postprocess outputs to datasamples.
 
         Args:
             model_cfg (Union[str, Config]): _description_
@@ -239,20 +200,18 @@ class VoxelDetectionModel(BaseBackendModel):
         Returns:
             _type_: _description_
         """
-        if 'cls_score' not in outs or 'bbox_pred' not in outs or 'dir_cls_pred' not in outs:
+        if 'cls_score' not in outs or 'bbox_pred' not in outs or 'dir_cls_pred' not in outs:  # noqa: E501
             raise RuntimeError('output tensor not found')
-        
+
         if 'test_cfg' not in model_cfg.model:
             raise RuntimeError('test_cfg not found')
-        
+
         from mmengine.registry import MODELS
         cls_score = outs['cls_score']
         bbox_pred = outs['bbox_pred']
         dir_cls_pred = outs['dir_cls_pred']
-        batch_input_metas = [
-            data_samples.metainfo for data_samples in metas
-        ]
-        
+        batch_input_metas = [data_samples.metainfo for data_samples in metas]
+
         if 'bbox_head' in model_cfg.model:
             # pointpillars postprocess
             head = MODELS.build(model_cfg.model['bbox_head'])
@@ -261,22 +220,24 @@ class VoxelDetectionModel(BaseBackendModel):
             ddd = cls_score.cpu().numpy()
             diff = ddd - ccc
             print('postprocess cls_scores max {}'.format(diff.max()))
-            data_instances_3d = head.predict_by_feat(cls_scores=[cls_score], 
-                                                    bbox_preds=[bbox_pred], 
-                                                    dir_cls_preds=[dir_cls_pred],
-                                                    batch_input_metas=batch_input_metas,
-                                                    cfg=model_cfg.model.test_cfg)
-            
-            data_samples=VoxelDetectionModel.convert_to_datasample(data_samples=metas, data_instances_3d=data_instances_3d )
+            data_instances_3d = head.predict_by_feat(
+                cls_scores=[cls_score],
+                bbox_preds=[bbox_pred],
+                dir_cls_preds=[dir_cls_pred],
+                batch_input_metas=batch_input_metas,
+                cfg=model_cfg.model.test_cfg)
+
+            data_samples = VoxelDetectionModel.convert_to_datasample(
+                data_samples=metas, data_instances_3d=data_instances_3d)
             # data_instances_2d = [
             #     InstanceData() for _ in range(len(data_instances_3d))
             # ]
-            
+
             # data_samples = metas
             # for i, data_sample in enumerate(data_samples):
             #     data_sample.pred_instances_3d = data_instances_3d[i]
             #     data_sample.pred_instances = data_instances_2d[i]
-            
+
         elif 'pts_bbox_head' in model_cfg.model:
             # centerpoint postprocess
             head = MODELS.build(model_cfg.model['pts_bbox_head'])
@@ -290,36 +251,39 @@ class VoxelDetectionModel(BaseBackendModel):
                 scores_range.append(scores_range[i] + head.num_classes[i])
                 bbox_range.append(bbox_range[i] + 8)
                 dir_range.append(dir_range[i] + 2)
-        
+
             for task_id in range(len(head.num_classes)):
                 num_class_with_bg = head.num_classes[task_id]
 
-                batch_heatmap = cls_score[:, scores_range[task_id]:scores_range[task_id + 1],
-                    ...].sigmoid()
+                batch_heatmap = cls_score[:,
+                                          scores_range[task_id]:scores_range[
+                                              task_id + 1], ...].sigmoid()
 
                 batch_reg = bbox_pred[:,
-                                        bbox_range[task_id]:bbox_range[task_id] + 2,
-                                        ...]
+                                      bbox_range[task_id]:bbox_range[task_id] +
+                                      2, ...]
                 batch_hei = bbox_pred[:, bbox_range[task_id] +
-                                        2:bbox_range[task_id] + 3, ...]
+                                      2:bbox_range[task_id] + 3, ...]
 
                 if head.norm_bbox:
                     batch_dim = torch.exp(bbox_pred[:, bbox_range[task_id] +
-                                                        3:bbox_range[task_id] + 6,
-                                                        ...])
+                                                    3:bbox_range[task_id] + 6,
+                                                    ...])
                 else:
                     batch_dim = bbox_pred[:, bbox_range[task_id] +
-                                            3:bbox_range[task_id] + 6, ...]
+                                          3:bbox_range[task_id] + 6, ...]
 
                 batch_vel = bbox_pred[:, bbox_range[task_id] +
-                                        6:bbox_range[task_id + 1], ...]
+                                      6:bbox_range[task_id + 1], ...]
 
                 batch_rots = dir_cls_pred[:,
-                                        dir_range[task_id]:dir_range[task_id + 1],
-                                        ...][:, 0].unsqueeze(1)
+                                          dir_range[task_id]:dir_range[task_id
+                                                                       + 1],
+                                          ...][:, 0].unsqueeze(1)
                 batch_rotc = dir_cls_pred[:,
-                                        dir_range[task_id]:dir_range[task_id + 1],
-                                        ...][:, 1].unsqueeze(1)
+                                          dir_range[task_id]:dir_range[task_id
+                                                                       + 1],
+                                          ...][:, 1].unsqueeze(1)
 
                 temp = head.bbox_coder.decode(
                     batch_heatmap,
@@ -330,7 +294,7 @@ class VoxelDetectionModel(BaseBackendModel):
                     batch_vel,
                     reg=batch_reg,
                     task_id=task_id)
-                
+
                 assert pts['nms_type'] in ['circle', 'rotate']
                 batch_reg_preds = [box['bboxes'] for box in temp]
                 batch_cls_preds = [box['scores'] for box in temp]
@@ -358,9 +322,11 @@ class VoxelDetectionModel(BaseBackendModel):
                     rets.append(ret_task)
                 else:
                     rets.append(
-                        head.get_task_detections(num_class_with_bg, batch_cls_preds,
-                                                batch_reg_preds, batch_cls_labels,
-                                                batch_input_metas))
+                        head.get_task_detections(num_class_with_bg,
+                                                 batch_cls_preds,
+                                                 batch_reg_preds,
+                                                 batch_cls_labels,
+                                                 batch_input_metas))
 
             # Merge branches results
             num_samples = len(rets[0])
@@ -372,8 +338,8 @@ class VoxelDetectionModel(BaseBackendModel):
                     if k == 'bboxes':
                         bboxes = torch.cat([ret[i][k] for ret in rets])
                         bboxes[:, 2] = bboxes[:, 2] - bboxes[:, 5] * 0.5
-                        bboxes = batch_input_metas[i]['box_type_3d'](bboxes,
-                                                            head.bbox_coder.code_size)
+                        bboxes = batch_input_metas[i]['box_type_3d'](
+                            bboxes, head.bbox_coder.code_size)
                     elif k == 'scores':
                         scores = torch.cat([ret[i][k] for ret in rets])
                     elif k == 'labels':
@@ -386,8 +352,9 @@ class VoxelDetectionModel(BaseBackendModel):
                 temp_instances.scores_3d = scores
                 temp_instances.labels_3d = labels
                 ret_list.append(temp_instances)
-                
-            data_samples = VoxelDetectionModel.convert_to_datasample(metas, data_instances_3d=ret_list)
+
+            data_samples = VoxelDetectionModel.convert_to_datasample(
+                metas, data_instances_3d=ret_list)
 
         else:
             raise NotImplementedError('mmdet3d model bbox_head not found')
@@ -395,14 +362,14 @@ class VoxelDetectionModel(BaseBackendModel):
         return data_samples
 
 
-def build_voxel_detection_model(model_files: Sequence[str],
-                                model_cfg: Union[str, Config],
-                                deploy_cfg: Union[str, Config],
-                                device: str,
-                                data_preprocessor: Optional[Union[Config,
-                                                                BaseDataPreprocessor]] = None,
-                                **kwargs
-                                ):
+def build_voxel_detection_model(
+        model_files: Sequence[str],
+        model_cfg: Union[str, Config],
+        deploy_cfg: Union[str, Config],
+        device: str,
+        data_preprocessor: Optional[Union[Config,
+                                          BaseDataPreprocessor]] = None,
+        **kwargs):
     """Build 3d voxel object detection model for different backends.
 
     Args:
@@ -422,7 +389,7 @@ def build_voxel_detection_model(model_files: Sequence[str],
 
     backend = get_backend(deploy_cfg)
     model_type = get_codebase_config(deploy_cfg).get('model_type', 'end2end')
-    
+
     backend_detector = __BACKEND_MODEL.build(
         dict(
             type=model_type,

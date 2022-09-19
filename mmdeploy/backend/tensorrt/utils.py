@@ -1,5 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import logging
+import os
+import re
+import sys
 from typing import Dict, Optional, Sequence, Union
 
 import onnx
@@ -8,9 +11,7 @@ from packaging import version
 
 from mmdeploy.utils import get_root_logger
 from .init_plugins import load_tensorrt_plugin
-import os
-import re
-import sys
+
 
 def save(engine: trt.ICudaEngine, path: str) -> None:
     """Serialize TensorRT engine to disk.
@@ -38,6 +39,7 @@ def load(path: str) -> trt.ICudaEngine:
             engine_bytes = f.read()
         engine = runtime.deserialize_cuda_engine(engine_bytes)
         return engine
+
 
 def search_cuda_version() -> str:
     """try cmd to get cuda version, then try `torch.cuda`
@@ -85,6 +87,7 @@ def search_cuda_version() -> str:
             pass
 
     return version
+
 
 def from_onnx(onnx_model: Union[str, onnx.ModelProto],
               output_file_prefix: str,
@@ -174,7 +177,7 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
         max_shape = param['max_shape']
         profile.set_shape(input_name, min_shape, opt_shape, max_shape)
     config.add_optimization_profile(profile)
-    
+
     cuda_version = search_cuda_version()
     if cuda_version is not None:
         version_major = int(cuda_version.split('.')[0])

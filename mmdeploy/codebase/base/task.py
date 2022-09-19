@@ -98,7 +98,7 @@ class BaseTask(metaclass=ABCMeta):
         model = deepcopy(self.model_cfg.model)
         preprocess_cfg = deepcopy(self.model_cfg.get('preprocess_cfg', {}))
         model.setdefault('data_preprocessor', preprocess_cfg)
-        
+
         del model['data_preprocessor']
         model = MODELS.build(model)
         if model_checkpoint is not None:
