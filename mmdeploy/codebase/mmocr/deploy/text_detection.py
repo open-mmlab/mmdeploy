@@ -6,6 +6,7 @@ import numpy as np
 import torch
 from mmengine import Config
 from mmengine.dataset import pseudo_collate
+from mmengine.dist import cast_data_device
 from mmengine.model import BaseDataPreprocessor
 from torch import nn
 
@@ -161,6 +162,8 @@ class TextDetection(BaseTask):
             data_ = test_pipeline(data_)
             data.append(data_)
         data = pseudo_collate(data)
+        data['inputs'] = cast_data_device(data['inputs'],
+                                          torch.device(self.device))
         if data_preprocessor is not None:
             data = data_preprocessor(data, False)
             return data, data['inputs']
