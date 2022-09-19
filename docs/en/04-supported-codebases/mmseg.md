@@ -53,8 +53,7 @@ python tools/deploy.py \
     resources/converter/cityscapes.png \
     --work-dir mmdeploy_models/mmseg/ort \
     --device cpu \
-    --show \
-    --dump-info
+    --show
 ```
 
 It is crucial to specify the correct deployment config during model conversion. We've already provided builtin deployment config [files](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/configs/mmseg) of all supported backends for mmsegmentation. The config filename pattern is:
