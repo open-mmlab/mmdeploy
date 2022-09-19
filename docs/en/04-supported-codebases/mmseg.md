@@ -136,7 +136,7 @@ task_processor.visualize(
     model=model,
     result=result[0],
     window_name='visualize',
-    output_file='output_segmentation.png')
+    output_file='./output_segmentation.png')
 ```
 
 ### SDK model inference
