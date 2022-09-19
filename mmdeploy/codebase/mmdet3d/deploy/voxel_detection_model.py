@@ -215,11 +215,6 @@ class VoxelDetectionModel(BaseBackendModel):
         if 'bbox_head' in model_cfg.model:
             # pointpillars postprocess
             head = MODELS.build(model_cfg.model['bbox_head'])
-            import numpy as np
-            ccc = np.load('/home/PJLAB/konghuanjun/ccc.npy')
-            ddd = cls_score.cpu().numpy()
-            diff = ddd - ccc
-            print('postprocess cls_scores max {}'.format(diff.max()))
             data_instances_3d = head.predict_by_feat(
                 cls_scores=[cls_score],
                 bbox_preds=[bbox_pred],
@@ -229,14 +224,6 @@ class VoxelDetectionModel(BaseBackendModel):
 
             data_samples = VoxelDetectionModel.convert_to_datasample(
                 data_samples=metas, data_instances_3d=data_instances_3d)
-            # data_instances_2d = [
-            #     InstanceData() for _ in range(len(data_instances_3d))
-            # ]
-
-            # data_samples = metas
-            # for i, data_sample in enumerate(data_samples):
-            #     data_sample.pred_instances_3d = data_instances_3d[i]
-            #     data_sample.pred_instances = data_instances_2d[i]
 
         elif 'pts_bbox_head' in model_cfg.model:
             # centerpoint postprocess
@@ -247,7 +234,7 @@ class VoxelDetectionModel(BaseBackendModel):
             scores_range = [0]
             bbox_range = [0]
             dir_range = [0]
-            for i, task_head in enumerate(head.task_heads):
+            for i, _ in enumerate(head.task_heads):
                 scores_range.append(scores_range[i] + head.num_classes[i])
                 bbox_range.append(bbox_range[i] + 8)
                 dir_range.append(dir_range[i] + 2)
