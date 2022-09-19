@@ -66,6 +66,7 @@ def process_model_config(model_cfg: mmengine.Config,
 
 def _get_dataset_metainfo(model_cfg: Config):
     """Get metainfo of dataset.
+
     Args:
         model_cfg Config: Input model Config object.
     Returns:

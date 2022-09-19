@@ -19,7 +19,6 @@ def multi_test_loop__run_iter(
         idx (int): The index of the current batch in the loop.
         data_batch (Sequence[dict]): Batch of data
             from dataloader.
-
     """
     self.runner.call_hook(
             'before_test_iter', batch_idx=idx, data_batch=data_batch)
