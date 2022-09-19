@@ -296,7 +296,6 @@ class SuperResolution(BaseTask):
 
     def get_preprocess(self, *args, **kwargs) -> Dict:
         """Get the preprocess information for SDK.
-
         Return:
             dict: Composed of the preprocess information.
         """
@@ -310,11 +309,15 @@ class SuperResolution(BaseTask):
 
     def get_postprocess(self, *args, **kwargs) -> Dict:
         """Get the postprocess information for SDK.
-
         Return:
-            dict: Nonthing for super resolution.
+            dict: Postprocess config for super resolution.
         """
-        return dict()
+        from mmdeploy.utils import get_task_type
+        from mmdeploy.utils.constants import SDK_TASK_MAP as task_map
+        task = get_task_type(self.deploy_cfg)
+        component = task_map[task]['component']
+        post_processor = {'type': component}
+        return post_processor
 
     def get_model_name(self, *args, **kwargs) -> str:
         """Get the model name.
