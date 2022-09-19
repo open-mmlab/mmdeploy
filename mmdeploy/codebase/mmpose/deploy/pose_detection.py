@@ -196,10 +196,18 @@ class PoseDetection(BaseTask):
         bboxes = np.array([box['bbox'] for box in person_results])
 
         # build the data pipeline
-        test_pipeline = [TRANSFORMS.build(c) for c in cfg.test_pipeline]
+        test_pipeline = [
+            TRANSFORMS.build(c) for c in cfg.test_dataloader.dataset.pipeline
+        ]
         test_pipeline = Compose(test_pipeline)
         if input_shape is not None:
-            input_size = cfg.codec['input_size']
+            if isinstance(cfg.codec, dict):
+                codec = cfg.codec
+            elif isinstance(cfg.codec, list):
+                codec = cfg.codec[0]
+            else:
+                raise TypeError(f'Unsupported type {type(cfg.codec)}')
+            input_size = codec['input_size']
             if tuple(input_shape) != tuple(input_size):
                 logger = get_root_logger()
                 logger.warning(f'Input shape from deploy config is not '
@@ -295,6 +303,7 @@ class PoseDetection(BaseTask):
         input_shape = get_input_shape(self.deploy_cfg)
         model_cfg = process_model_config(self.model_cfg, [''], input_shape)
         preprocess = model_cfg.test_dataloader.dataset.pipeline
+        preprocess[0].type = 'LoadImageFromFile'
         return preprocess
 
     def get_postprocess(self) -> Dict:
