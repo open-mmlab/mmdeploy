@@ -75,6 +75,24 @@ When using `tools/deploy.py`, it is crucial to specify the correct deployment co
 The command below shows an example about converting `ESRGAN` model to onnx model that can be inferred by ONNX Runtime.
 
 ```shell
+cd mmdeploy
+# download esrgan model from mmedit model zoo
+mim download mmedit --config esrgan_psnr-x4c64b23g32_1xb16-1000k_div2k --dest .
+# convert esrgan model to onnxruntime model with dynamic shape
+python tools/deploy.py \
+  configs/mmedit/super-resolution/super-resolution_onnxruntime_dynamic.py \
+  esrgan_psnr-x4c64b23g32_1xb16-1000k_div2k.py \
+  esrgan_psnr_x4c64b23g32_1x16_1000k_div2k_20200420-bf5c993c.pth \
+  demo/resources/face.png \
+  --work-dir mmdeploy_models/mmedit/ort \
+  --device cpu \
+  --show
+```
+
+You can also convert the above model to other backend models by changing the deployment config file `*_onnxruntime_dynamic.py` to [others](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/configs/mmedit), e.g., converting to tensorrt model by `super-resolution/super-resolution_tensorrt-_dynamic-32x32-512x512.py`.
+
+```{tip}
+When converting mmocr models to tensorrt models, --device should be set to "cuda"
 ```
 
 ## Model specification
@@ -109,7 +127,38 @@ MMDeploy provides a unified API named as `inference_model` to inference model, m
 Take the previous converted `end2end.onnx` model as an example, you can use the following code to inference the model and visualize the results.
 
 ```python
+from mmdeploy.apis.utils import build_task_processor
+from mmdeploy.utils import get_input_shape, load_config
+import torch
 
+deploy_cfg = 'configs/mmedit/super-resolution/super-resolution_onnxruntime_dynamic.py'
+model_cfg = 'esrgan_psnr-x4c64b23g32_1xb16-1000k_div2k.py'
+device = 'cpu'
+backend_model = ['./mmdeploy_models/mmedit/ort/end2end.onnx']
+image = './demo/resources/face.png'
+
+# read deploy_cfg and model_cfg
+deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
+
+# build task and backend model
+task_processor = build_task_processor(model_cfg, deploy_cfg, device)
+model = task_processor.build_backend_model(backend_model)
+
+# process input image
+input_shape = get_input_shape(deploy_cfg)
+model_inputs, _ = task_processor.create_input(image, input_shape)
+
+# do model inference
+with torch.no_grad():
+    result = model.test_step(model_inputs)
+
+# visualize results
+task_processor.visualize(
+    image=image,
+    model=model,
+    result=result[0],
+    window_name='visualize',
+    output_file='output_restorer.bmp')
 ```
 
 ### SDK model inference
