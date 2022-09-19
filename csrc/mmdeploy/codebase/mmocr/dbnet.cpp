@@ -52,9 +52,6 @@ class DBHead : public MMOCR {
       return Status(eNotSupported);
     }
 
-    // drop batch dimension
-    conf.Squeeze(0);
-
     std::vector<std::vector<cv::Point>> contours;
     std::vector<float> scores;
     OUTCOME_TRY(impl_->Process(conf, mask_thr_, max_candidates_, contours, scores));
