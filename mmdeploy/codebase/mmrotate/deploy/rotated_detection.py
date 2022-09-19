@@ -268,9 +268,10 @@ class RotatedDetection(BaseTask):
         Returns:
             torch.Tensor: An image in `Tensor`.
         """
-        if isinstance(input_data['img'], DataContainer):
-            return input_data['img'].data[0]
-        return input_data['img'][0]
+        img_data = input_data['img'][0]
+        if isinstance(img_data, DataContainer):
+            return img_data.data[0]
+        return img_data
 
     @staticmethod
     def evaluate_outputs(model_cfg,

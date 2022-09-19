@@ -59,6 +59,7 @@ def rotated_anchor_head__get_bbox(ctx,
     featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
     mlvl_priors = self.anchor_generator.grid_priors(
         featmap_sizes, dtype=bbox_preds[0].dtype, device=bbox_preds[0].device)
+    mlvl_priors = [priors.unsqueeze(0) for priors in mlvl_priors]
 
     mlvl_cls_scores = [cls_scores[i].detach() for i in range(num_levels)]
     mlvl_bbox_preds = [bbox_preds[i].detach() for i in range(num_levels)]
@@ -86,7 +87,6 @@ def rotated_anchor_head__get_bbox(ctx,
         bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, 5)
         if not is_dynamic_flag:
             priors = priors.data
-        priors = priors.expand(batch_size, -1, priors.size(-1))
         if pre_topk > 0:
             priors = pad_with_value_if_necessary(priors, 1, pre_topk)
             bbox_pred = pad_with_value_if_necessary(bbox_pred, 1, pre_topk)
@@ -101,9 +101,9 @@ def rotated_anchor_head__get_bbox(ctx,
                 max_scores, _ = nms_pre_score[..., :-1].max(-1)
             _, topk_inds = max_scores.topk(pre_topk)
             batch_inds = torch.arange(
-                batch_size,
-                device=bbox_pred.device).view(-1, 1).expand_as(topk_inds)
-            priors = priors[batch_inds, topk_inds, :]
+                batch_size, device=bbox_pred.device).view(-1, 1)
+            prior_inds = topk_inds.new_zeros((1, 1))
+            priors = priors[prior_inds, topk_inds, :]
             bbox_pred = bbox_pred[batch_inds, topk_inds, :]
             scores = scores[batch_inds, topk_inds, :]
 
