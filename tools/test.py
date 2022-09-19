@@ -8,6 +8,7 @@ from mmengine import DictAction
 from mmdeploy.apis import build_task_processor
 from mmdeploy.utils.config_utils import load_config
 from mmdeploy.utils.timer import TimeCounter
+from mmdeploy.core import RewriterContext
 
 
 def parse_args():
@@ -106,9 +107,18 @@ def main():
 
     # prepare the dataset loader
     test_dataloader = deepcopy(model_cfg['test_dataloader'])
-    dataset = task_processor.build_dataset(test_dataloader['dataset'])
-    test_dataloader['dataset'] = dataset
-    dataloader = task_processor.build_dataloader(test_dataloader)
+    if type(test_dataloader) == list:
+        dataset = []
+        for loader in test_dataloader:
+            ds = task_processor.build_dataset(loader['dataset'])
+            dataset.append(ds)
+            loader['dataset'] = ds
+            loader = task_processor.build_dataloader(loader)
+        dataloader = test_dataloader
+    else:
+        dataset = task_processor.build_dataset(test_dataloader['dataset'])
+        test_dataloader['dataset'] = dataset
+        dataloader = task_processor.build_dataloader(test_dataloader)
 
     # load the model of the backend
     model = task_processor.build_backend_model(args.model)
@@ -132,11 +142,18 @@ def main():
                 warmup=args.warmup,
                 log_interval=args.log_interval,
                 with_sync=with_sync,
-                file=args.log2file,
-                logger=runner.logger):
-            runner.test()
+                file=args.log2file):
+            with RewriterContext({}):
+                # mmedit v1.0.0rc has bugs, should be rewritten.
+                # later mmedit will fix this bug, so we can
+                # remove this rewriter.
+                runner.test()
     else:
-        runner.test()
+        with RewriterContext({}):
+            # mmedit v1.0.0rc has bugs, should be rewritten.
+            # later mmedit will fix this bug, so we can
+            # remove this rewriter.
+            runner.test()
 
 
 if __name__ == '__main__':
