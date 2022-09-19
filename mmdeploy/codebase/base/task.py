@@ -101,7 +101,6 @@ class BaseTask(metaclass=ABCMeta):
             load_checkpoint(model, model_checkpoint)
         model = model.to(self.device)
         model.eval()
-
         return model
 
     def build_dataset(self,
@@ -185,7 +184,10 @@ class BaseTask(metaclass=ABCMeta):
         if dataloader is None:
             dataloader = model_cfg.test_dataloader
         if not isinstance(dataloader, DataLoader):
-            dataloader = self.build_dataloader(dataloader)
+            if type(dataloader) == list:
+                dataloader = [self.build_dataloader(dl) for dl in dataloader]
+            else:
+                dataloader = self.build_dataloader(dataloader)
 
         model_cfg = _merge_cfg(model_cfg)
 
