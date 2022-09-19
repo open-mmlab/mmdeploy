@@ -1,5 +1,18 @@
 # MMSegmentation Deployment
 
+- [Installation](#installation)
+  - [Install mmseg](#install-mmseg)
+  - [Install mmdeploy](#install-mmdeploy)
+- [Convert model](#convert-model)
+- [Model specification](#model-specification)
+- [Model inference](#model-inference)
+  - [Backend model inference](#backend-model-inference)
+  - [SDK model inference](#sdk-model-inference)
+- [Supported models](#supported-models)
+- [Reminder](#reminder)
+
+______________________________________________________________________
+
 [MMSegmentation](https://github.com/open-mmlab/mmsegmentation/tree/1.x) aka `mmseg` is an open source semantic segmentation toolbox based on PyTorch. It is a part of the [OpenMMLab](https://openmmlab.com/) project.
 
 ## Installation
@@ -28,6 +41,11 @@ python3 tools/scripts/build_ubuntu_x64_ort.py $(nproc)
 export PYTHONPATH=$(pwd)/build/lib:$PYTHONPATH
 export LD_LIBRARY_PATH=$(pwd)/../mmdeploy-dep/onnxruntime-linux-x64-1.8.1/lib/:$LD_LIBRARY_PATH
 ```
+
+**NOTE**:
+
+- Adding `$(pwd)/build/lib` to `PYTHONPATH` is for importing mmdeploy SDK python module - `mmdeploy_python`, which will be presented in chapter [SDK model inference](#sdk-model-inference).
+- When [inference onnx model by ONNX Runtime](#backend-model-inference), it requests ONNX Runtime library be found. Thus, we add it to `LD_LIBRARY_PATH`.
 
 **Method III:** Build from source
 
@@ -62,7 +80,7 @@ It is crucial to specify the correct deployment config during model conversion. 
 segmentation_{backend}-{precision}_{static | dynamic}_{shape}.py
 ```
 
-- **{backend}:** inference backend, such as onnxruntime, tensorrt, pplnn, ncnn, openvino, coreml and etc.
+- **{backend}:** inference backend, such as onnxruntime, tensorrt, pplnn, ncnn, openvino, coreml etc.
 - **{precision}:** fp16, int8. When it's empty, it means fp32
 - **{static | dynamic}:** static shape or dynamic shape
 - **{shape}:** input shape or shape range of a model
@@ -73,7 +91,7 @@ Therefore, in the above example, you can also convert `unet` to other backend mo
 When converting mmseg models to tensorrt models, --device should be set to "cuda"
 ```
 
-## Model Specification
+## Model specification
 
 Before moving on to model inference chapter, let's know more about the converted model structure which is very important for model inference.
 
