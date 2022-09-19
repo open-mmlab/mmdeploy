@@ -218,10 +218,8 @@ def get_preprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config):
         if 'key' in transform and transform['key'] == 'lq':
             transform['key'] = 'img'
         if transform['type'] == 'Resize':
-            # codebase like mmseg use `size` in pipeline
-            if 'scale' in transform and 'size' not in transform:
-                transform['size'] = transform['scale']
-                del transform['scale']
+            transform['size'] = transform['scale']
+            del transform['scale']
         if transform['type'] == 'ResizeEdge':
             transform['type'] = 'Resize'
             transform['keep_ratio'] = True
@@ -233,8 +231,9 @@ def get_preprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config):
                 'meta_keys'] if 'meta_keys' in transform else []
             transform['meta_keys'] = list(set(meta_keys))
             transforms[i]['type'] = 'Collect'
-        if transform['type'] == 'PackDetInputs' or \
-           transform['type'] == 'PackClsInputs':
+        if transform['type'] in [
+                'PackDetInputs', 'PackClsInputs', 'PackSegInputs'
+        ]:
             transforms.insert(i, dict(type='DefaultFormatBundle'))
             transform['type'] = 'Collect'
             if 'keys' not in transform:

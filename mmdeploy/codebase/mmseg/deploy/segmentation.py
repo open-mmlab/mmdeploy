@@ -250,11 +250,12 @@ class Segmentation(BaseTask):
         input_shape = get_input_shape(self.deploy_cfg)
         load_from_file = self.model_cfg.test_pipeline[0]
         model_cfg = process_model_config(self.model_cfg, [''], input_shape)
-        preprocess = deepcopy(model_cfg.test_pipeline)
+        preprocess = model_cfg.test_pipeline
         preprocess[0] = load_from_file
-        dp = self.model_cfg.data_preprocessor
         assert preprocess[1].type == 'Resize'
-        preprocess[1]['size'] = list(reversed(preprocess[1].pop('scale')))
+        preprocess[1]['scale'] = list(reversed(preprocess[1]['scale']))
+        # TODO: may need to update after PR 1040
+        dp = self.model_cfg.data_preprocessor
         if preprocess[-1].type == 'PackSegInputs':
             preprocess[-1] = dict(
                 type='Normalize',
