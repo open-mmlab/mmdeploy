@@ -1,17 +1,18 @@
 # MMOCR Deployment
 
-- [Installation](#installation)
-  - [Install mmocr](#install-mmocr)
-  - [Install mmdeploy](#install-mmdeploy)
-- [Convert model](#convert-model)
-  - [Convert text detection model](#convert-text-detection-model)
-  - [Convert text recognition model](#convert-text-recognition-model)
-- [Model Specification](#model-specification)
-- [Model Inference](#model-inference)
-  - [Backend model inference](#backend-model-inference)
-  - [SDK model inference](#sdk-model-inference)
-- [Supported models](#supported-models)
-- [Reminder](#reminder)
+- [MMOCR Deployment](#mmocr-deployment)
+  - [Installation](#installation)
+    - [Install mmocr](#install-mmocr)
+    - [Install mmdeploy](#install-mmdeploy)
+  - [Convert model](#convert-model)
+    - [Convert text detection model](#convert-text-detection-model)
+    - [Convert text recognition model](#convert-text-recognition-model)
+  - [Model Specification](#model-specification)
+  - [Model Inference](#model-inference)
+    - [Backend model inference](#backend-model-inference)
+    - [SDK model inference](#sdk-model-inference)
+  - [Supported models](#supported-models)
+  - [Reminder](#reminder)
 
 ______________________________________________________________________
 
@@ -72,7 +73,7 @@ When using `tools/deploy.py`, it is crucial to specify the correct deployment co
 
 - **{shape}:** input shape or shape range of a model
 
-In the next two chapters, we will task `dbnet` model from text detection task and `crnn` model from text recognition task respectively as examples, showing how to convert them to onnx model that can be inferred by ONNX Runtime.
+In the next two chapters, we will task `dbnet` model from `text detection` task and `crnn` model from `text recognition` task respectively as examples, showing how to convert them to onnx model that can be inferred by ONNX Runtime.
 
 ### Convert text detection model
 
@@ -148,8 +149,43 @@ MMDeploy provides a unified API named as `inference_model` to inference model, m
 Take the previous converted `end2end.onnx` mode of `dbnet` as an example, you can use the following code to inference the model and visualize the results.
 
 ```python
+from mmdeploy.apis.utils import build_task_processor
+from mmdeploy.utils import get_input_shape, load_config
+import torch
 
+deploy_cfg = 'configs/mmocr/text-detection/text-detection_onnxruntime_dynamic.py'
+model_cfg = 'dbnet_resnet18_fpnc_1200e_icdar2015.py'
+device = 'cpu'
+backend_model = ['./mmdeploy_models/mmocr/dbnet/ort/end2end.onnx']
+image = './resources/converter/text_det.jpg'
+
+# read deploy_cfg and model_cfg
+deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
+
+# build task and backend model
+task_processor = build_task_processor(model_cfg, deploy_cfg, device)
+model = task_processor.build_backend_model(backend_model)
+
+# process input image
+input_shape = get_input_shape(deploy_cfg)
+model_inputs, _ = task_processor.create_input(image, input_shape)
+
+# do model inference
+with torch.no_grad():
+    result = model.test_step(model_inputs)
+
+# visualize results
+task_processor.visualize(
+    image=image,
+    model=model,
+    result=result[0],
+    window_name='visualize',
+    output_file='output_ocr.png')
 ```
+
+**Tip**:
+
+Map 'deploy_cfg', 'model_cfg', 'backend_model' and 'image' to corresponding arguments in chapter [convert text recognition model](#convert-text-recognition-model), you will get the ONNX Runtime inference results of `crnn` onnx model.
 
 ### SDK model inference
 
