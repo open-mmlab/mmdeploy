@@ -82,8 +82,3 @@ SDK_TASK_MAP = {
     Task.ROTATED_DETECTION:
     dict(component='ResizeRBBox', cls_name='RotatedDetector')
 }
-
-PACK_LIST = {
-    'PackClsInputs', 'PackDetInputs', 'PackSegInputs', 'PackTextDetInputs',
-    'PackEditInputs', 'Pack3DDetInputs'
-}
