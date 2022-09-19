@@ -357,7 +357,6 @@ def main():
     except Exception:
         headless = True
 
-    headless = False
     # for headless installation.
     if not headless:
         extra = dict(
@@ -366,6 +365,7 @@ def main():
             show_result=args.show)
         if backend == Backend.SNPE:
             extra['uri'] = args.uri
+
         create_process(
             f'visualize {backend.value} model',
             target=visualize_model,
@@ -374,6 +374,7 @@ def main():
             kwargs=extra,
             ret_value=ret_value)
 
+        # visualize pytorch model
         create_process(
             'visualize pytorch model',
             target=visualize_model,
