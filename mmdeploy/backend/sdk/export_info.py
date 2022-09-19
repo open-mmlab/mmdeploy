@@ -9,7 +9,6 @@ from mmdeploy.apis import build_task_processor
 from mmdeploy.utils import (Backend, Task, get_backend, get_codebase,
                             get_common_config, get_ir_config, get_root_logger,
                             get_task_type, is_dynamic_batch, load_config)
-from mmdeploy.utils.constants import PACK_LIST
 from mmdeploy.utils.constants import SDK_TASK_MAP as task_map
 
 
@@ -215,7 +214,9 @@ def get_preprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config):
     ]
     # move PackClsInputs to the last of list for CIFAR10 dataset configs.
     move_pipeline = []
-    while transforms[-1]['type'] not in PACK_LIST:
+    import re
+    while re.search('Pack[a-z | A-Z]+Inputs',
+                    transforms[-1]['type']) is not None:
         sub_pipeline = transforms.pop(-1)
         move_pipeline = [sub_pipeline] + move_pipeline
         transforms = transforms[:-1] + move_pipeline + transforms[-1:]
