@@ -159,7 +159,34 @@ task_processor.visualize(
 
 ### SDK model inference
 
-TODO
+You can also perform SDK model inference like following,
+
+```python
+from mmdeploy_python import Segmentor
+import cv2
+import numpy as np
+
+img = cv2.imread('./resources/converter/cityscapes.png')
+
+# create a classifier
+segmentor = Segmentor(model_path='./mmdeploy_models/mmseg/ort', device_name='cpu', device_id=0)
+# perform inference
+seg = segmentor(img)
+
+# visualize inference result
+## random a palette with size 256x3
+palette = np.random.randint(0, 256, size=(256, 3))
+color_seg = np.zeros((seg.shape[0], seg.shape[1], 3), dtype=np.uint8)
+for label, color in enumerate(palette):
+  color_seg[seg == label, :] = color
+# convert to BGR
+color_seg = color_seg[..., ::-1]
+img = img * 0.5 + color_seg * 0.5
+img = img.astype(np.uint8)
+cv2.imwrite('output_segmentation.png', img)
+```
+
+Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Interface), such as C, C++, C#, Java and so on. You can learn their usage from [demos](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/demo).
 
 ## Supported models
 

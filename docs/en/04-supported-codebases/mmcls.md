@@ -1,15 +1,14 @@
 # MMClassification Deployment
 
-- [MMClassification Deployment](#mmclassification-deployment)
-  - [Installation](#installation)
-    - [Install mmcls](#install-mmcls)
-    - [Install mmdeploy](#install-mmdeploy)
-  - [Convert model](#convert-model)
-  - [Model Specification](#model-specification)
-  - [Model inference](#model-inference)
-    - [Backend model inference](#backend-model-inference)
-    - [SDK model inference](#sdk-model-inference)
-  - [Supported models](#supported-models)
+- [Installation](#installation)
+  - [Install mmcls](#install-mmcls)
+  - [Install mmdeploy](#install-mmdeploy)
+- [Convert model](#convert-model)
+- [Model Specification](#model-specification)
+- [Model inference](#model-inference)
+  - [Backend model inference](#backend-model-inference)
+  - [SDK model inference](#sdk-model-inference)
+- [Supported models](#supported-models)
 
 ______________________________________________________________________
 
@@ -148,7 +147,7 @@ for label_id, score in result:
     print(label_id, score)
 ```
 
-Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Interface), such as C, C++, C#, Java and so on. You can learn their usage from [demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo).
+Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Interface), such as C, C++, C#, Java and so on. You can learn their usage from [demos](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/demo).
 
 ## Supported models
 

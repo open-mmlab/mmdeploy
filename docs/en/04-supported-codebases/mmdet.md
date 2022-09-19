@@ -1,15 +1,14 @@
 # MMDetection Deployment
 
-- [MMDetection Deployment](#mmdetection-deployment)
-  - [Installation](#installation)
-    - [Install mmdet](#install-mmdet)
-    - [Install mmdeploy](#install-mmdeploy)
-  - [Convert model](#convert-model)
-  - [Model Specification](#model-specification)
-  - [Model inference](#model-inference)
-    - [Backend model inference](#backend-model-inference)
-    - [SDK model inference](#sdk-model-inference)
-  - [Supported models](#supported-models)
+- [Installation](#installation)
+  - [Install mmdet](#install-mmdet)
+  - [Install mmdeploy](#install-mmdeploy)
+- [Convert model](#convert-model)
+- [Model Specification](#model-specification)
+- [Model inference](#model-inference)
+  - [Backend model inference](#backend-model-inference)
+  - [SDK model inference](#sdk-model-inference)
+- [Supported models](#supported-models)
 
 ______________________________________________________________________
 
@@ -80,9 +79,9 @@ It is crucial to specify the correct deployment config during model conversion. 
 
   mmdet models like `RetinaNet`, `Faster R-CNN` and `DETR` and so on belongs to `detection` task. While `Mask R-CNN` is one of `instance-seg` models. You can find more of them in chapter [Supported models](#supported-models).
 
-  **DO remember to use** `detection/detection_*.py` deployment config file when trying to converting detection models and use `instance-seg/instance-seg_*.py` to deploy instance segmentation models.
+  **DO remember to use** `detection/detection_*.py` deployment config file when trying to convert detection models and use `instance-seg/instance-seg_*.py` to deploy instance segmentation models.
 
-- **{backend}:** inference backend, such as onnxruntime, tensorrt, pplnn, ncnn, openvino, coreml and etc.
+- **{backend}:** inference backend, such as onnxruntime, tensorrt, pplnn, ncnn, openvino, coreml etc.
 
 - **{precision}:** fp16, int8. When it's empty, it means fp32
 
