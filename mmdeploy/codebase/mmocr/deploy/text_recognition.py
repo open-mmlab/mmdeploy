@@ -6,6 +6,7 @@ import numpy as np
 import torch
 from mmengine import Config
 from mmengine.dataset import pseudo_collate
+from mmengine.dist import cast_data_device
 from mmengine.model import BaseDataPreprocessor
 from torch import nn
 
@@ -167,6 +168,8 @@ class TextRecognition(BaseTask):
             data.append(data_)
 
         data = pseudo_collate(data)
+        data['inputs'] = cast_data_device(data['inputs'],
+                                          torch.device(self.device))
         if data_preprocessor is not None:
             data = data_preprocessor(data, False)
             return data, data['inputs']
@@ -223,7 +226,7 @@ class TextRecognition(BaseTask):
         """
         input_shape = get_input_shape(self.deploy_cfg)
         model_cfg = process_model_config(self.model_cfg, [''], input_shape)
-        preprocess = model_cfg.data.test.pipeline
+        preprocess = model_cfg.test_dataloader.dataset.pipeline
         return preprocess
 
     def get_postprocess(self) -> Dict:
@@ -232,7 +235,9 @@ class TextRecognition(BaseTask):
         Return:
             dict: Composed of the postprocess information.
         """
-        postprocess = self.model_cfg.label_convertor
+        postprocess = self.model_cfg.model.decoder.postprocessor
+        if postprocess.type == 'CTCPostProcessor':
+            postprocess.type = 'CTCConvertor'
         return postprocess
 
     def get_model_name(self) -> str:

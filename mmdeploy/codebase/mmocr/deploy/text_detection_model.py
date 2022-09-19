@@ -4,7 +4,7 @@ from typing import List, Optional, Sequence, Union
 import mmengine
 import torch
 from mmengine.registry import Registry
-from mmengine.structures import BaseDataElement
+from mmengine.structures import BaseDataElement, InstanceData
 from mmocr.structures import TextDetDataSample
 
 from mmdeploy.codebase.base import BaseBackendModel
@@ -144,12 +144,14 @@ class SDKEnd2EndModel(End2EndModel):
         """
         boundaries = self.wrapper.invoke(inputs[0].permute(
             [1, 2, 0]).contiguous().detach().cpu().numpy())
+        polygons = [boundary[:-1] for boundary in boundaries]
+        scores = torch.Tensor([boundary[-1] for boundary in boundaries])
         boundaries = [list(x) for x in boundaries]
-        return [
-            dict(
-                boundary_result=boundaries,
-                filename=data_samples[0]['filename'])
-        ]
+        pred_instances = InstanceData()
+        pred_instances.polygons = polygons
+        pred_instances.scores = scores
+        data_samples[0].pred_instances = pred_instances
+        return data_samples
 
 
 def build_text_detection_model(model_files: Sequence[str],
@@ -184,5 +186,6 @@ def build_text_detection_model(model_files: Sequence[str],
             deploy_cfg=deploy_cfg,
             model_cfg=model_cfg,
             **kwargs))
+    backend_text_detector = backend_text_detector.to(device)
 
     return backend_text_detector

@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from copy import deepcopy
+from functools import partial
 from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
 import torch
@@ -13,6 +14,7 @@ from ..core import PIPELINE_MANAGER
 @PIPELINE_MANAGER.register_pipeline()
 def trace(func: torch.nn.Module,
           inputs: Union[torch.Tensor, Tuple],
+          input_metas: Optional[Dict] = None,
           output_path_prefix: Optional[str] = None,
           backend: Union[Backend, str] = 'default',
           context_info: Dict = dict(),
@@ -89,6 +91,7 @@ def trace(func: torch.nn.Module,
     if isinstance(func, torch.nn.Module):
         ir = IR.get(get_ir_config(deploy_cfg)['type'])
         func = patch_model(func, cfg=deploy_cfg, backend=backend, ir=ir)
+        func.forward = partial(func.forward, **input_metas)
 
     with RewriterContext(**context_info), torch.no_grad():
         # for exporting models with weight that depends on inputs

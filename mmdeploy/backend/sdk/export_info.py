@@ -59,17 +59,6 @@ def get_model_name_customs(deploy_cfg: mmengine.Config,
     name = task_processor.get_model_name()
     customs = []
     if task == Task.TEXT_RECOGNITION:
-        from mmocr.models.builder import build_convertor
-        label_convertor = model_cfg.model.label_convertor
-        assert label_convertor is not None, 'model_cfg contains no label '
-        'convertor'
-        max_seq_len = 40  # default value in EncodeDecodeRecognizer of mmocr
-        label_convertor.update(max_seq_len=max_seq_len)
-        label_convertor = build_convertor(label_convertor)
-        fd = open(f'{work_dir}/dict_file.txt', mode='w+')
-        for item in label_convertor.idx2char:
-            fd.write(item + '\n')
-        fd.close()
         customs.append('dict_file.txt')
     return name, customs
 
@@ -195,41 +184,27 @@ def get_preprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config):
         'filename', 'ori_filename', 'ori_shape', 'img_shape', 'pad_shape',
         'scale_factor', 'flip', 'flip_direction', 'img_norm_cfg', 'valid_ratio'
     ]
-    if 'transforms' in pipeline[-1]:
-        transforms = pipeline[-1]['transforms']
-        transforms.insert(0, pipeline[0])
-        for transform in transforms:
-            if transform['type'] == 'Resize':
-                transform['size'] = pipeline[-1].img_scale[::-1]
-                if 'img_scale' in transform:
-                    transform.pop('img_scale')
-    else:
-        pipeline = [
-            item for item in pipeline if item['type'] != 'MultiScaleFilpAug'
-        ]
-        transforms = pipeline
     transforms = [
-        item for item in transforms if 'Random' not in item['type']
-        and 'RescaleToZeroOne' not in item['type']
+        item for item in pipeline
+        if 'Random' not in item['type'] and 'RescaleToZeroOne' not in
+        item['type'] and 'Annotation' not in item['type']
     ]
     for i, transform in enumerate(transforms):
         if 'keys' in transform and transform['keys'] == ['lq']:
             transform['keys'] = ['img']
         if 'key' in transform and transform['key'] == 'lq':
             transform['key'] = 'img'
-        if transform['type'] == 'Resize':
-            transform['size'] = transform['scale']
-            del transform['scale']
         if transform['type'] == 'ResizeEdge':
             transform['type'] = 'Resize'
             transform['keep_ratio'] = True
             # now the sdk of class has bugs, because ResizeEdge not implement
             # in sdk.
             transform['size'] = (transform['scale'], transform['scale'])
-        if transform['type'] == 'PackTextDetInputs':
+        if transform['type'] in ('PackTextDetInputs', 'PackTextRecogInputs'):
             meta_keys += transform[
                 'meta_keys'] if 'meta_keys' in transform else []
             transform['meta_keys'] = list(set(meta_keys))
+            transform['keys'] = ['img']
             transforms[i]['type'] = 'Collect'
         if transform['type'] == 'PackDetInputs' or \
            transform['type'] == 'PackClsInputs':
@@ -237,6 +212,24 @@ def get_preprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config):
             transform['type'] = 'Collect'
             if 'keys' not in transform:
                 transform['keys'] = ['img']
+        if transform['type'] == 'Resize':
+            transforms[i]['size'] = transforms[i]['scale']
+
+    data_preprocessor = model_cfg.model.data_preprocessor
+    transforms.insert(-1, dict(type='DefaultFormatBundle'))
+    transforms.insert(
+        -2,
+        dict(
+            type='Pad',
+            size_divisor=data_preprocessor.get('pad_size_divisor', 1)))
+    transforms.insert(
+        -3,
+        dict(
+            type='Normalize',
+            to_rgb=data_preprocessor.get('bgr_to_rgb', False),
+            mean=data_preprocessor.get('mean', [0, 0, 0]),
+            std=data_preprocessor.get('std', [1, 1, 1])))
+
     assert transforms[0]['type'] == 'LoadImageFromFile', 'The first item type'\
         ' of pipeline should be LoadImageFromFile'
 
@@ -249,13 +242,14 @@ def get_preprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config):
         transforms=transforms)
 
 
-def get_postprocess(deploy_cfg: mmengine.Config,
-                    model_cfg: mmengine.Config) -> Dict:
+def get_postprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
+                    work_dir: str) -> Dict:
     """Get the post process information for pipeline.json.
 
     Args:
         deploy_cfg (mmengine.Config): Deploy config dict.
         model_cfg (mmengine.Config): The model config dict.
+        work_dir (str): Work dir to save json files.
 
     Return:
         dict: Composed of the model name, type, module, input, params and
@@ -264,20 +258,28 @@ def get_postprocess(deploy_cfg: mmengine.Config,
     module = get_codebase(deploy_cfg).value
     type = 'Task'
     name = 'postprocess'
+    params = dict()
     task = get_task_type(deploy_cfg)
     task_processor = build_task_processor(
         model_cfg=model_cfg, deploy_cfg=deploy_cfg, device='cpu')
-    params = task_processor.get_postprocess()
+    post_processor = task_processor.get_postprocess()
 
     # TODO remove after adding instance segmentation to task processor
-    if task == Task.OBJECT_DETECTION and 'mask_thr_binary' in params:
+    if task == Task.OBJECT_DETECTION and 'mask_thr_binary' in post_processor:
         task = Task.INSTANCE_SEGMENTATION
 
     component = task_map[task]['component']
-    if task != Task.SUPER_RESOLUTION and task != Task.SEGMENTATION:
-        if 'type' in params:
-            component = params.pop('type')
+    if task not in (Task.SUPER_RESOLUTION, Task.SEGMENTATION):
+        if 'type' in post_processor:
+            component = post_processor.pop('type')
     output = ['post_output']
+
+    if task == Task.TEXT_RECOGNITION:
+        import shutil
+        shutil.copy(model_cfg.dictionary.dict_file,
+                    f'{work_dir}/dict_file.txt')
+        with_padding = model_cfg.dictionary.get('with_padding', False)
+        params = dict(dict_file='dict_file.txt', with_padding=with_padding)
     return dict(
         type=type,
         module=module,
@@ -323,7 +325,7 @@ def get_pipeline(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
     """
     preprocess = get_preprocess(deploy_cfg, model_cfg)
     infer_info = get_inference_info(deploy_cfg, model_cfg, work_dir=work_dir)
-    postprocess = get_postprocess(deploy_cfg, model_cfg)
+    postprocess = get_postprocess(deploy_cfg, model_cfg, work_dir)
     task = get_task_type(deploy_cfg)
     input_names = preprocess['input']
     output_names = postprocess['output']
