@@ -86,16 +86,17 @@ def _get_dataset_metainfo(model_cfg: Config):
         # TODO: how to process multi dataloader case?
         if type(dataloader_cfg) == list:
             dataset_cfg = [loader.dataset for loader in dataloader_cfg]
-            dataset_cls = [module_dict.get(dataset.type, None)
-                           for dataset in dataset_cfg]
+            dataset_cls = [
+                module_dict.get(dataset.type, None) for dataset in dataset_cfg
+            ]
             if dataset_cls == []:
                 continue
             meta_list = []
             for i, cls in enumerate(dataset_cls):
                 if hasattr(cls, '_load_metainfo') and \
                    isinstance(cls._load_metainfo, Callable):
-                    meta = cls._load_metainfo(dataset_cfg[i].
-                                              get('metainfo', None))
+                    meta = cls._load_metainfo(dataset_cfg[i].get(
+                        'metainfo', None))
                     meta_list.append(meta)
                 if hasattr(cls, 'METAINFO'):
                     meta_list.append(cls.METAINFO)
@@ -209,11 +210,13 @@ class SuperResolution(BaseTask):
         from mmedit.utils import register_all_modules
         register_all_modules(init_default_scope=False)
         vis_backends = [dict(type='LocalVisBackend')]
-        visualizer = Config(dict(type='ConcatImageVisualizer',
-                            vis_backends=vis_backends,
-                            fn_key='gt_path',
-                            img_keys=['pred_img'],
-                            bgr2rgb=True))
+        visualizer = Config(
+            dict(
+                type='ConcatImageVisualizer',
+                vis_backends=vis_backends,
+                fn_key='gt_path',
+                img_keys=['pred_img'],
+                bgr2rgb=True))
         super().__setattr__('visualizer', visualizer)
         visualizer = super().get_visualizer(name, save_dir)
         metainfo = _get_dataset_metainfo(self.model_cfg)

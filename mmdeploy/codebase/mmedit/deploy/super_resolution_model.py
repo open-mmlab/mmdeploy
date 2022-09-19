@@ -39,8 +39,8 @@ class End2EndModel(BaseBackendModel):
                  deploy_cfg: Union[str, mmengine.Config] = None,
                  data_preprocessor: Optional[Union[dict, nn.Module]] = None,
                  **kwargs):
-        super().__init__(deploy_cfg=deploy_cfg,
-                         data_preprocessor=data_preprocessor)
+        super().__init__(
+            deploy_cfg=deploy_cfg, data_preprocessor=data_preprocessor)
         self.deploy_cfg = deploy_cfg
         self.test_cfg = model_cfg.test_cfg
         self.device = device
@@ -138,14 +138,14 @@ class SDKEnd2EndModel(End2EndModel):
         return [output]
 
 
-def build_super_resolution_model(model_files: Sequence[str],
-                                 model_cfg: Union[str, mmengine.Config],
-                                 deploy_cfg: Union[str, mmengine.Config],
-                                 device: str,
-                                 data_preprocessor:
-                                 Optional[Union[Config,
-                                                BaseDataPreprocessor]] = None,
-                                 **kwargs):
+def build_super_resolution_model(
+        model_files: Sequence[str],
+        model_cfg: Union[str, mmengine.Config],
+        deploy_cfg: Union[str, mmengine.Config],
+        device: str,
+        data_preprocessor: Optional[Union[Config,
+                                          BaseDataPreprocessor]] = None,
+        **kwargs):
     model_cfg = load_config(model_cfg)[0]
     deploy_cfg = load_config(deploy_cfg)[0]
 

@@ -8,11 +8,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmedit.engine.runner.multi_loops.MultiTestLoop.run_iter')
-def multi_test_loop__run_iter(
-        ctx,
-        self,
-        idx: int,
-        data_batch: Sequence[dict]):
+def multi_test_loop__run_iter(ctx, self, idx: int, data_batch: Sequence[dict]):
     """Rewrite `run_iter` of MultiTestLoop for default backend.
 
     Args:
@@ -21,7 +17,7 @@ def multi_test_loop__run_iter(
             from dataloader.
     """
     self.runner.call_hook(
-            'before_test_iter', batch_idx=idx, data_batch=data_batch)
+        'before_test_iter', batch_idx=idx, data_batch=data_batch)
     # outputs should be sequence of BaseDataElement
     with autocast(enabled=self.fp16):
         predictions = self.runner.model.test_step(data_batch)
