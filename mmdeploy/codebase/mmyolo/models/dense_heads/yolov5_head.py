@@ -63,7 +63,6 @@ def yolov5_head__predict_by_feat(ctx,
             objectness.permute(0, 2, 3, 1).reshape(num_imgs, -1)
             for objectness in objectnesses
         ]
-        # flatten_objectness = torch.cat(flatten_objectness, dim=1).sigmoid()
     else:
         flatten_objectness = [None for _ in range(len(featmap_sizes))]
 
@@ -79,15 +78,6 @@ def yolov5_head__predict_by_feat(ctx,
     mask = max_scores >= cfg.score_thr
     scores = scores.where(mask, scores.new_zeros(1))
 
-    # # add a pad for bboxes, or the results are wrong.
-    # img_meta = batch_img_metas[0]
-    # pad_param = img_meta['pad_param']
-    # bboxes -= bboxes.new_tensor(
-    #     [pad_param[2], pad_param[0], pad_param[2], pad_param[0]])
-    # if rescale:
-    #     scale_factor = img_meta['scale_factor']
-    #     bboxes /= bboxes.new_tensor(scale_factor).repeat((1, 2))
-
     if not with_nms:
         return bboxes, scores
     deploy_cfg = ctx.cfg
@@ -97,7 +87,6 @@ def yolov5_head__predict_by_feat(ctx,
     score_threshold = cfg.get('score_thr', post_params.score_threshold)
     pre_top_k = post_params.pre_top_k
     keep_top_k = cfg.get('max_per_img', post_params.keep_top_k)
-    keep_top_k = 20
 
     return multiclass_nms(bboxes, scores, max_output_boxes_per_class,
                           iou_threshold, score_threshold, pre_top_k,
