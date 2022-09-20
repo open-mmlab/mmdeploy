@@ -206,7 +206,7 @@ class ObjectDetection(BaseTask):
             f'Unknown partition_type {partition_type}'
         return MMDET_PARTITION_CFG[partition_type]
 
-    def get_preprocess(self) -> Dict:
+    def get_preprocess(self, *args, **kwargs) -> Dict:
         """Get the preprocess information for SDK.
 
         Return:
@@ -217,7 +217,7 @@ class ObjectDetection(BaseTask):
         preprocess = model_cfg.test_pipeline
         return preprocess
 
-    def get_postprocess(self) -> Dict:
+    def get_postprocess(self, *args, **kwargs) -> Dict:
         """Get the postprocess information for SDK.
 
         Return:
@@ -233,7 +233,7 @@ class ObjectDetection(BaseTask):
                     'mask_thr_binary']
         return postprocess
 
-    def get_model_name(self) -> str:
+    def get_model_name(self, *args, **kwargs) -> str:
         """Get the model name.
 
         Return:
