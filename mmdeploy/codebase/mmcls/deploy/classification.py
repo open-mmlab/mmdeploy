@@ -266,7 +266,7 @@ class Classification(BaseTask):
         data_preprocessor = self.model_cfg.data_preprocessor
         transforms.insert(-1, dict(type='ImageToTensor', keys=['img']))
         transforms.insert(
-            -3,
+            -2,
             dict(
                 type='Normalize',
                 to_rgb=data_preprocessor.get('to_rgb', False),
