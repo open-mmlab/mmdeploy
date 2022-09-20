@@ -125,14 +125,14 @@ class End2EndModel(BaseBackendModel):
     def pack_result(self,
                     preds: Sequence[InstanceData],
                     data_samples: List[BaseDataElement],
-                    map2origin: bool = True):
+                    convert_corrodinate: bool = True):
         """Pack pred results to mmseg format
         Args:
             preds (Sequence[InstanceData]): Prediction of keypoints.
             data_samples (List[BaseDataElement]): A list of meta info for
                 image(s).
-            map2origin (bool): Whether to convert keypoints coordinates.
-                default is True.
+            convert_corrodinate (bool): Whether to convert keypoints
+                coordinates to original image space. Default is True.
         Returns:
             data_samples (List[BaseDataElement])：
                 updated data_samples with predictions.
@@ -151,7 +151,7 @@ class End2EndModel(BaseBackendModel):
 
             gt_instances = data_sample.gt_instances
             # convert keypoint coordinates from input space to image space
-            if map2origin:
+            if convert_corrodinate:
                 input_size = data_sample.metainfo['input_size']
                 bbox_centers = gt_instances.bbox_centers
                 bbox_scales = gt_instances.bbox_scales
@@ -210,7 +210,7 @@ class SDKEnd2EndModel(End2EndModel):
             pred_results.append(pred)
 
         results = self.pack_result(
-            pred_results, data_samples, map2origin=False)
+            pred_results, data_samples, convert_corrodinate=False)
         return results
 
 
