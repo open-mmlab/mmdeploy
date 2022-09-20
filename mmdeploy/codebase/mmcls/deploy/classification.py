@@ -250,6 +250,7 @@ class Classification(BaseTask):
 
     def get_preprocess(self, *args, **kwargs) -> Dict:
         """Get the preprocess information for SDK.
+
         Return:
             dict: Composed of the preprocess information.
         """
@@ -299,6 +300,7 @@ class Classification(BaseTask):
 
     def get_postprocess(self, *args, **kwargs) -> Dict:
         """Get the postprocess information for SDK.
+
         Return:
             dict: Composed of the postprocess information.
         """
