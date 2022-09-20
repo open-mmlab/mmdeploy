@@ -17,6 +17,12 @@ configs/mmyolo/detection/detection_tensorrt_static-640x640.py
 --device cuda:0
 '''
 '''
+configs/mmyolo/detection/detection_onnxruntime_static.py
+../yolobenchmark/configs/yolov5/yolov5_s-v61_syncbn_8xb16-300e_coco.py
+--model work_dir_ort/end2end.onnx
+--device cuda:0
+'''
+'''
 configs/mmdet/detection/detection_tensorrt-fp16_static-640x640.py
 ../mmdetection/configs/yolox/yolox_s_8xb8-300e_coco.py
 --model work_dir/end2end.engine
