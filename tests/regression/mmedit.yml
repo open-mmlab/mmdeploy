@@ -3,7 +3,7 @@ globals:
   checkpoint_force_download: False
   images:
     img_face: &img_face ../mmediting/tests/data/image/face/000001.png
-    img_bg: &img_bg ../mmediting/tests/data/matting_dataset/bg/GT26r.jpg
+    img_bg: &img_bg ../mmediting/tests/data/image/gt/baboon.png
   metric_info: &metric_info
     DIV2K PSNR: # named after metafile.Results.Metrics
       eval_name: PSNR # test.py --metrics args
@@ -88,7 +88,7 @@ tensorrt:
     convert_image: *convert_image
     backend_test: *default_backend_test
     sdk_config: *sdk_dynamic
-    deploy_config: configs/mmedit/super-resolution/super-resolution_tensorrt-fp16_dynamic-32x32-800x800.py
+    deploy_config: configs/mmedit/super-resolution/super-resolution_tensorrt-fp16_dynamic-32x32-512x512.py
 
   pipeline_trt_dynamic_int8: &pipeline_trt_dynamic_int8
     convert_image: *convert_image
