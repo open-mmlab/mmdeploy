@@ -109,6 +109,7 @@ def main():
 
     # prepare the dataset loader
     test_dataloader = deepcopy(model_cfg['test_dataloader'])
+    test_dataloader['batch_size'] = args.batch_size
     dataset = task_processor.build_dataset(test_dataloader['dataset'])
     test_dataloader['dataset'] = dataset
     dataloader = task_processor.build_dataloader(test_dataloader)

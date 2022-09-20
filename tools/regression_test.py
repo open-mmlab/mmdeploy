@@ -874,7 +874,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
               f'--device {device_type} ' \
               '--log-level INFO'
 
-    if sdk_config is not None:
+    if sdk_config is not None and test_type == 'precision':
         cmd_str += ' --dump-info'
 
     if test_img_path is not None:

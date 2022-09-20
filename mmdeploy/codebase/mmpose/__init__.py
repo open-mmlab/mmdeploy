@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .deploy import MMPose, PoseDetection
+from .deploy import PoseDetection
 from .models import *  # noqa: F401,F403
 
-__all__ = ['MMPose', 'PoseDetection']
+__all__ = ['PoseDetection']
