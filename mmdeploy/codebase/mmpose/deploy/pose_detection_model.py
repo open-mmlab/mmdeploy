@@ -160,7 +160,6 @@ class End2EndModel(BaseBackendModel):
                 keypoints += bbox_centers - 0.5 * bbox_scales
                 pred_instances.keypoints = keypoints
 
-            # add bbox information into pred_instances
             pred_instances.bboxes = gt_instances.bboxes
             pred_instances.bbox_scores = gt_instances.bbox_scores
 
