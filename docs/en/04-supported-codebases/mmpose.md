@@ -52,7 +52,18 @@ You can use [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/blob/dev-1.
 The command below shows an example about converting `hrnet` model to onnx model that can be inferred by ONNX Runtime.
 
 ```shell
-
+cd mmdeploy
+# download hrnet model from mmpose model zoo
+mim download mmpose --config td-hm_hrnet-w32_8xb64-210e_coco-256x192 --dest .
+# convert mmdet model to onnxruntime model with static shape
+python tools/deploy.py \
+    configs/mmpose/pose-detection_onnxruntime_static.py \
+    td-hm_hrnet-w32_8xb64-210e_coco-256x192.py \
+    hrnet_w32_coco_256x192-c78dce93_20200708.pth \
+    demo/resources/human-pose.jpg \
+    --work-dir mmdeploy_models/mmpose/ort \
+    --device cpu \
+    --show
 ```
 
 It is crucial to specify the correct deployment config during model conversion. We've already provided builtin deployment config [files](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/configs/mmpose) of all supported backends for mmpose. The config filename pattern is:
@@ -104,7 +115,38 @@ MMDeploy provides a unified API named as `inference_model` to inference model, m
 Take the previous converted `end2end.onnx` model as an example, you can use the following code to inference the model and visualize the results.
 
 ```python
+from mmdeploy.apis.utils import build_task_processor
+from mmdeploy.utils import get_input_shape, load_config
+import torch
 
+deploy_cfg = 'configs/mmpose/pose-detection_onnxruntime_static.py'
+model_cfg = 'td-hm_hrnet-w32_8xb64-210e_coco-256x192.py'
+device = 'cpu'
+backend_model = ['./mmdeploy_models/mmpose/ort/end2end.onnx']
+image = './demo/resources/human-pose.jpg'
+
+# read deploy_cfg and model_cfg
+deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
+
+# build task and backend model
+task_processor = build_task_processor(model_cfg, deploy_cfg, device)
+model = task_processor.build_backend_model(backend_model)
+
+# process input image
+input_shape = get_input_shape(deploy_cfg)
+model_inputs, _ = task_processor.create_input(image, input_shape)
+
+# do model inference
+with torch.no_grad():
+    result = model.test_step(model_inputs)
+
+# visualize results
+task_processor.visualize(
+    image=image,
+    model=model,
+    result=result[0],
+    window_name='visualize',
+    output_file='output_pose.png')
 ```
 
 ### SDK model inference
