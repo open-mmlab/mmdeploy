@@ -123,7 +123,6 @@ def test_build_dataset_and_dataloader():
         metainfo=dict(dataset_type='div2k', task_name='sisr'),
         data_root='tests/test_codebase/test_mmedit/data',
         data_prefix=dict(img='imgs', gt='imgs'),
-        # filename_tmpl=dict(img='{}_x4', gt='{}'),
         pipeline=[
             dict(
                 type='LoadImageFromFile',
