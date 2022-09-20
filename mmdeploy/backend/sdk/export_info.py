@@ -20,12 +20,12 @@ def get_mmdpeloy_version() -> str:
 
 
 def get_task(deploy_cfg: mmengine.Config) -> Dict:
-    """Get the task info for mmdeploy.json. The task info is composed of
-    task_name, the codebase name and the codebase version.
+    """Get the task info for mmdeploy.json.
 
+    The task info is composed of
+    task_name, the codebase name and the codebase version.
     Args:
         deploy_cfg (mmengine.Config): Deploy config dict.
-
     Return:
         dict: The task info.
     """
@@ -49,7 +49,6 @@ def get_model_name_customs(deploy_cfg: mmengine.Config,
         deploy_cfg (mmengine.Config): Deploy config dict.
         model_cfg (mmengine.Config): The model config dict.
         work_dir (str): Work dir to save json files.
-
     Return:
         tuple(): Composed of the model name and the custom info.
     """
@@ -71,7 +70,6 @@ def get_models(deploy_cfg: Union[str, mmengine.Config],
         deploy_cfg (mmengine.Config): Deploy config dict.
         model_cfg (mmengine.Config): The model config dict.
         work_dir (str): Work dir to save json files.
-
     Return:
         list[dict]: The list contains dicts composed of the model name, net,
             weghts, backend, precision batchsize and dynamic_shape.
@@ -116,7 +114,6 @@ def get_inference_info(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
         deploy_cfg (mmengine.Config): Deploy config dict.
         model_cfg (mmengine.Config): The model config dict.
         work_dir (str): Work dir to save json files.
-
     Return:
         dict: Composed of the model name, type, module, input, output and
             input_map.
@@ -161,7 +158,6 @@ def get_postprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
         deploy_cfg (mmengine.Config): Deploy config dict.
         model_cfg (mmengine.Config): The model config dict.
         work_dir (str): Work dir to save json files.
-
     Return:
         dict: Composed of the model name, type, module, input, params and
             output.
@@ -187,7 +183,6 @@ def get_deploy(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
         deploy_cfg (mmengine.Config): Deploy config dict.
         model_cfg (mmengine.Config): The model config dict.
         work_dir (str): Work dir to save json files.
-
     Return:
         dict: Composed of version, task, models and customs.
     """
@@ -209,7 +204,6 @@ def get_pipeline(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
         deploy_cfg (mmengine.Config): Deploy config dict.
         model_cfg (mmengine.Config): The model config dict.
         work_dir (str): Work dir to save json files.
-
     Return:
         dict: Composed of input node name, output node name and the tasks.
     """
@@ -239,7 +233,6 @@ def get_detail(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
         deploy_cfg (mmengine.Config): Deploy config dict.
         model_cfg (mmengine.Config): The model config dict.
         pth (str): The checkpoint weight of pytorch model.
-
     Return:
         dict: Composed of version, codebase, codebase_config, onnx_config,
             backend_config and calib_config.
@@ -264,9 +257,10 @@ def get_detail(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
 def export2SDK(deploy_cfg: Union[str, mmengine.Config],
                model_cfg: Union[str,
                                 mmengine.Config], work_dir: str, pth: str):
-    """Export information to SDK. This function dump `deploy.json`,
-    `pipeline.json` and `detail.json` to work dir.
+    """Export information to SDK.
 
+    This function dump `deploy.json`,
+    `pipeline.json` and `detail.json` to work dir.
     Args:
         deploy_cfg (str | mmengine.Config): Deploy config file or dict.
         model_cfg (str | mmengine.Config): Model config file or dict.

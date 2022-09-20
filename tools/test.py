@@ -109,10 +109,20 @@ def main():
 
     # prepare the dataset loader
     test_dataloader = deepcopy(model_cfg['test_dataloader'])
-    test_dataloader['batch_size'] = args.batch_size
-    dataset = task_processor.build_dataset(test_dataloader['dataset'])
-    test_dataloader['dataset'] = dataset
-    dataloader = task_processor.build_dataloader(test_dataloader)
+    if type(test_dataloader) == list:
+        dataset = []
+        for loader in test_dataloader:
+            ds = task_processor.build_dataset(loader['dataset'])
+            dataset.append(ds)
+            loader['dataset'] = ds
+            loader['batch_size'] = args.batch_size
+            loader = task_processor.build_dataloader(loader)
+        dataloader = test_dataloader
+    else:
+        test_dataloader['batch_size'] = args.batch_size
+        dataset = task_processor.build_dataset(test_dataloader['dataset'])
+        test_dataloader['dataset'] = dataset
+        dataloader = task_processor.build_dataloader(test_dataloader)
 
     # load the model of the backend
     model = task_processor.build_backend_model(args.model)
