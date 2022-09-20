@@ -6,7 +6,6 @@ from copy import deepcopy
 from mmengine import DictAction
 
 from mmdeploy.apis import build_task_processor
-from mmdeploy.core import RewriterContext
 from mmdeploy.utils.config_utils import get_backend, load_config
 from mmdeploy.utils.constants import Backend
 from mmdeploy.utils.timer import TimeCounter
@@ -148,17 +147,9 @@ def main():
                 log_interval=args.log_interval,
                 with_sync=with_sync,
                 file=args.log2file):
-            with RewriterContext({}):
-                # mmedit v1.0.0rc has bugs, should be rewritten.
-                # later mmedit will fix this bug, so we can
-                # remove this rewriter.
-                runner.test()
-    else:
-        with RewriterContext({}):
-            # mmedit v1.0.0rc has bugs, should be rewritten.
-            # later mmedit will fix this bug, so we can
-            # remove this rewriter.
             runner.test()
+    else:
+        runner.test()
 
 
 if __name__ == '__main__':
