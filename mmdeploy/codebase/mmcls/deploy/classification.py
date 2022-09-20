@@ -46,6 +46,10 @@ def process_model_config(model_cfg: Config,
     else:
         if cfg.test_pipeline[0]['type'] == 'LoadImageFromFile':
             cfg.test_pipeline.pop(0)
+    # check whether input_shape is valid
+    if 'data_preprocessor' in cfg:
+        cfg.test_pipeline.insert(
+            3, dict(type='Normalize', **cfg['data_preprocessor']))
     if input_shape is not None:
         if 'crop_size' in cfg.test_pipeline[2]:
             crop_size = cfg.test_pipeline[2]['crop_size']
@@ -164,18 +168,11 @@ class Classification(BaseTask):
         Returns:
             tuple: (data, img), meta information for the input image and input.
         """
-
+        assert 'test_pipeline' in self.model_cfg, \
+            f'test_pipeline not found in {self.model_cfg}.'
         model_cfg = process_model_config(self.model_cfg, imgs, input_shape)
-        assert 'test_pipeline' in model_cfg, \
-            f'test_pipeline not found in {model_cfg}.'
         from mmengine.dataset import Compose
         pipeline = deepcopy(model_cfg.test_pipeline)
-        if isinstance(imgs, str):
-            if pipeline[0]['type'] != 'LoadImageFromFile':
-                pipeline.insert(0, dict(type='LoadImageFromFile'))
-        else:
-            if pipeline[0]['type'] == 'LoadImageFromFile':
-                pipeline.pop(0)
         pipeline = Compose(pipeline)
 
         if isinstance(imgs, str):
@@ -269,15 +266,7 @@ class Classification(BaseTask):
                 transform['keep_ratio'] = False
                 transform['size'] = (transform['scale'], transform['scale'])
 
-        data_preprocessor = self.model_cfg.data_preprocessor
         transforms.insert(-1, dict(type='ImageToTensor', keys=['img']))
-        transforms.insert(
-            -2,
-            dict(
-                type='Normalize',
-                to_rgb=data_preprocessor.get('bgr_to_rgb', False),
-                mean=data_preprocessor.get('mean', [0, 0, 0]),
-                std=data_preprocessor.get('std', [1, 1, 1])))
         return transforms
 
     def get_postprocess(self, *args, **kwargs) -> Dict:

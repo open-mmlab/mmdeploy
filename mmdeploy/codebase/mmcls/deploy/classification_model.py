@@ -6,7 +6,7 @@ import torch
 from mmengine import Config
 from mmengine.model import BaseDataPreprocessor
 from mmengine.registry import Registry
-from mmengine.structures import BaseDataElement, LabelData
+from mmengine.structures import BaseDataElement
 from torch import nn
 
 from mmdeploy.codebase.base import BaseBackendModel
@@ -91,7 +91,7 @@ class SDKEnd2EndModel(End2EndModel):
     """SDK inference class, converts SDK output to mmcls format."""
 
     def forward(self,
-                inputs: torch.Tensor,
+                inputs: Sequence[torch.Tensor],
                 data_samples: Optional[List[BaseDataElement]] = None,
                 mode: str = 'predict',
                 *args,
@@ -100,23 +100,26 @@ class SDKEnd2EndModel(End2EndModel):
 
         Args:
             img (List[torch.Tensor]): A list contains input image(s)
-                in [N x C x H x W] format.
+                in [C x H x W] format.
             *args: Other arguments.
             **kwargs: Other key-pair arguments.
 
         Returns:
             list: A list contains predictions.
         """
+        cls_score = []
+        for input in inputs:
+            pred = self.wrapper.invoke(
+                input.permute(1, 2, 0).contiguous().detach().cpu().numpy())
+            pred = np.array(pred, dtype=np.float32)
+            pred = pred[np.argsort(pred[:, 0])][np.newaxis, :, 1]
+            cls_score.append(torch.from_numpy(pred).to(self.device))
 
-        pred = self.wrapper.invoke(inputs[0].permute(
-            1, 2, 0).contiguous().detach().cpu().numpy())
-        pred = np.array(pred, dtype=np.float32)
-        pred[np.argsort(pred[:, 0])][np.newaxis, :, 1]
-        pred_label = LabelData()
-        # TODO need register metrics calculation in deploy or refactor SDK API
-        raise NotImplementedError('Not supported yet.')
-        data_samples[0].pred_label = pred_label
-        return data_samples
+        cls_score = torch.cat(cls_score, 0)
+        from mmcls.models.heads.cls_head import ClsHead
+        predict = ClsHead._get_predictions(
+            None, cls_score, data_samples=data_samples)
+        return predict
 
 
 def build_classification_model(
