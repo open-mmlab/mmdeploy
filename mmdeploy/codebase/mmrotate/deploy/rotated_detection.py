@@ -64,7 +64,7 @@ def process_model_config(model_cfg: mmcv.Config,
         transforms = cfg.data.test.pipeline[1]['transforms']
         for trans in transforms:
             trans_type = trans['type']
-            if trans_type == 'Pad':
+            if trans_type == 'Pad' and 'size_divisor' in trans:
                 trans['size_divisor'] = 1
 
     cfg.data.test.pipeline = replace_ImageToTensor(cfg.data.test.pipeline)
