@@ -6,7 +6,8 @@ from .base import BaseTask, MMCodebase, get_codebase_class
 
 extra_dependent_library = {
     Codebase.MMOCR: ['mmdet'],
-    Codebase.MMROTATE: ['mmdet']
+    Codebase.MMROTATE: ['mmdet'],
+    Codebase.MMYOLO: ['mmyolo']
 }
 
 
@@ -33,8 +34,9 @@ def import_codebase(codebase: Codebase):
         importlib.import_module(f'mmdeploy.codebase.{lib}')
         importlib.import_module(f'{lib}.models')
         importlib.import_module(f'{lib}.datasets')
-        importlib.import_module(f'{lib}.structures')
-        importlib.import_module(f'{lib}.visualization')
+        if lib != 'mmyolo':
+            importlib.import_module(f'{lib}.structures')
+            importlib.import_module(f'{lib}.visualization')
         importlib.import_module(f'{lib}.engine')
 
 
