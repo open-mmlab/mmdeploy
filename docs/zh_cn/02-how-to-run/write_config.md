@@ -189,4 +189,4 @@ detection_tensorrt-int8_dynamic-320x320-1344x1344.py
 
 ## 6. 如何编写模型配置文件
 
-请根据模型具体任务的代码库，编写模型配置文件。 模型配置文件用于初始化模型，详情请参考[MMClassification](https://github.com/open-mmlab/mmclassification/blob/master/docs/zh_CN/tutorials/config.md)，[MMDetection](https://github.com/open-mmlab/mmdetection/blob/master/docs/zh_cn/tutorials/config.md)， [MMSegmentation](https://github.com/open-mmlab/mmsegmentation/blob/master/docs/zh_cn/tutorials/config.md)， [MMOCR](https://github.com/open-mmlab/mmocr/blob/main/docs/zh_cn/tutorials/config.md)，[MMEditing](https://github.com/open-mmlab/mmediting/blob/master/docs/zh_cn/config.md)。
+请根据模型具体任务的代码库，编写模型配置文件。 模型配置文件用于初始化模型，详情请参考[MMClassification](https://github.com/open-mmlab/mmclassification/blob/master/docs/zh_CN/tutorials/config.md)，[MMDetection](https://github.com/open-mmlab/mmdetection/blob/master/docs/zh_cn/tutorials/config.md)， [MMSegmentation](https://github.com/open-mmlab/mmsegmentation/blob/master/docs/zh_cn/tutorials/config.md)， [MMOCR](https://github.com/open-mmlab/mmocr/blob/main/docs/en/tutorials/config.md)，[MMEditing](https://github.com/open-mmlab/mmediting/blob/master/docs/zh_cn/config.md)。
