@@ -116,9 +116,11 @@ def main():
             ds = task_processor.build_dataset(loader['dataset'])
             dataset.append(ds)
             loader['dataset'] = ds
+            loader['batch_size'] = args.batch_size
             loader = task_processor.build_dataloader(loader)
         dataloader = test_dataloader
     else:
+        test_dataloader['batch_size'] = args.batch_size
         dataset = task_processor.build_dataset(test_dataloader['dataset'])
         test_dataloader['dataset'] = dataset
         dataloader = task_processor.build_dataloader(test_dataloader)

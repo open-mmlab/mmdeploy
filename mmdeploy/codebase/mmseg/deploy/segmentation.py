@@ -250,17 +250,18 @@ class Segmentation(BaseTask):
         input_shape = get_input_shape(self.deploy_cfg)
         load_from_file = self.model_cfg.test_pipeline[0]
         model_cfg = process_model_config(self.model_cfg, [''], input_shape)
-        preprocess = deepcopy(model_cfg.test_pipeline)
+        preprocess = model_cfg.test_pipeline
         preprocess[0] = load_from_file
-        dp = self.model_cfg.data_preprocessor
         assert preprocess[1].type == 'Resize'
         preprocess[1]['size'] = list(reversed(preprocess[1].pop('scale')))
-        if preprocess[-1].type == 'PackSegInputs':
-            preprocess[-1] = dict(
+        preprocess = preprocess[:2]
+        dp = self.model_cfg.data_preprocessor
+        preprocess.append(
+            dict(
                 type='Normalize',
                 mean=dp.mean,
                 std=dp.std,
-                to_rgb=dp.bgr_to_rgb)
+                to_rgb=dp.bgr_to_rgb))
         preprocess.append(dict(type='ImageToTensor', keys=['img']))
         preprocess.append(
             dict(
@@ -278,7 +279,8 @@ class Segmentation(BaseTask):
         Return:
             dict: Nonthing for super resolution.
         """
-        postprocess = self.model_cfg.model.decode_head
+        params = self.model_cfg.model.decode_head
+        postprocess = dict(params=params, type='ResizeMask')
         return postprocess
 
     def get_model_name(self, *args, **kwargs) -> str:

@@ -1,20 +1,19 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
 import copy
-import logging
 import os
-from typing import Any, Dict, Optional, Sequence, Tuple, Union
+from collections import defaultdict
+from typing import Callable, Dict, Optional, Sequence, Tuple, Union
 
 import mmcv
 import mmengine
 import numpy as np
 import torch
-from mmcv.parallel import collate
-from torch.utils.data import Dataset
+from mmengine.model import BaseDataPreprocessor
+from mmengine.registry import Registry
 
-from mmdeploy.codebase.base import BaseTask
-from mmdeploy.codebase.mmpose.deploy.mmpose import MMPOSE_TASK
-from mmdeploy.utils import Task, get_input_shape
+from mmdeploy.codebase.base import CODEBASE, BaseTask, MMCodebase
+from mmdeploy.utils import Codebase, Task, get_input_shape, get_root_logger
 
 
 def process_model_config(
@@ -35,12 +34,12 @@ def process_model_config(
         mmengine.Config: the model config after processing.
     """
     cfg = copy.deepcopy(model_cfg)
-    test_pipeline = cfg.data.test.pipeline
+    test_pipeline = cfg.test_dataloader.dataset.pipeline
+    data_preprocessor = cfg.model.data_preprocessor
     sdk_pipeline = []
-    color_type = 'color'
     channel_order = 'rgb'
     if input_shape is None:
-        input_shape = np.array(cfg.data_cfg['image_size'])
+        input_shape = np.array(cfg.codec.input_size)
 
     idx = 0
     while idx < len(test_pipeline):
@@ -58,11 +57,9 @@ def process_model_config(
             idx = idx + 2
             continue
 
-        if trans.type == 'LoadImageFromFile':
-            if 'color_type' in trans:
-                color_type = trans['color_type']  # NOQA
-            if 'channel_order' in trans:
-                channel_order = trans['channel_order']
+        if trans.type == 'LoadImage':
+            if not data_preprocessor.bgr_to_rgb:
+                channel_order = 'bgr'
         if trans.type == 'TopDownAffine':
             trans['image_size'] = input_shape
         if trans.type == 'TopDownGetBboxCenterScale':
@@ -70,8 +67,52 @@ def process_model_config(
 
         sdk_pipeline.append(trans)
         idx = idx + 1
-    cfg.data.test.pipeline = sdk_pipeline
+    cfg.test_dataloader.dataset.pipeline = sdk_pipeline
     return cfg
+
+
+def _get_dataset_metainfo(model_cfg: mmengine.Config):
+    """Get metainfo of dataset.
+
+    Args:
+        model_cfg Config: Input model Config object.
+    Returns:
+        (list[str], list[np.ndarray]): Class names and palette
+    """
+    from mmpose import datasets  # noqa
+    from mmpose.registry import DATASETS
+
+    module_dict = DATASETS.module_dict
+
+    for dataloader_name in [
+            'test_dataloader', 'val_dataloader', 'train_dataloader'
+    ]:
+        if dataloader_name not in model_cfg:
+            continue
+        dataloader_cfg = model_cfg[dataloader_name]
+        dataset_cfg = dataloader_cfg.dataset
+        dataset_mmpose = module_dict.get(dataset_cfg.type, None)
+        if dataset_mmpose is None:
+            continue
+        if hasattr(dataset_mmpose, '_load_metainfo') and isinstance(
+                dataset_mmpose._load_metainfo, Callable):
+            meta = dataset_mmpose._load_metainfo(
+                dataset_cfg.get('metainfo', None))
+            if meta is not None:
+                return meta
+        if hasattr(dataset_mmpose, 'METAINFO'):
+            return dataset_mmpose.METAINFO
+
+    return None
+
+
+MMPOSE_TASK = Registry('mmpose_tasks')
+
+
+@CODEBASE.register_module(Codebase.MMPOSE.value)
+class MMPose(MMCodebase):
+    """mmpose codebase class."""
+    task_registry = MMPOSE_TASK
 
 
 @MMPOSE_TASK.register_module(Task.POSE_DETECTION.value)
@@ -89,6 +130,22 @@ class PoseDetection(BaseTask):
                  device: str):
         super().__init__(model_cfg, deploy_cfg, device)
 
+    def build_pytorch_model(self,
+                            model_checkpoint: Optional[str] = None,
+                            cfg_options: Optional[Dict] = None,
+                            **kwargs) -> torch.nn.Module:
+        from mmpose.apis import init_model
+        from mmpose.utils import register_all_modules
+        register_all_modules()
+        self.model_cfg.model.test_cfg['flip_test'] = False
+
+        model = init_model(
+            self.model_cfg,
+            model_checkpoint,
+            device=self.device,
+            cfg_options=cfg_options)
+        return model
+
     def build_backend_model(self,
                             model_files: Sequence[str] = None,
                             **kwargs) -> torch.nn.Module:
@@ -101,37 +158,20 @@ class PoseDetection(BaseTask):
             nn.Module: An initialized backend model.
         """
         from .pose_detection_model import build_pose_detection_model
+        data_preprocessor = self.model_cfg.model.data_preprocessor
         model = build_pose_detection_model(
             model_files,
             self.model_cfg,
             self.deploy_cfg,
             device=self.device,
+            data_preprocessor=data_preprocessor,
             **kwargs)
-        return model.eval()
-
-    def build_pytorch_model(self,
-                            model_checkpoint: Optional[str] = None,
-                            **kwargs) -> torch.nn.Module:
-        """Initialize torch model.
-
-        Args:
-            model_checkpoint (str): The checkpoint file of torch model,
-                defaults to `None`.
-
-        Returns:
-            nn.Module: An initialized torch model generated by other OpenMMLab
-                codebases.
-        """
-        from mmcv.cnn.utils import revert_sync_batchnorm
-        from mmpose.apis import init_pose_model
-        model = init_pose_model(self.model_cfg, model_checkpoint, self.device)
-        model = revert_sync_batchnorm(model)
-        model.eval()
-        return model
+        return model.eval().to(self.device)
 
     def create_input(self,
                      imgs: Union[str, np.ndarray],
                      input_shape: Sequence[int] = None,
+                     data_preprocessor: Optional[BaseDataPreprocessor] = None,
                      **kwargs) -> Tuple[Dict, torch.Tensor]:
         """Create input for pose detection.
 
@@ -142,16 +182,12 @@ class PoseDetection(BaseTask):
                 format specifying input shape. Defaults to ``None``.
 
         Returns:
-            tuple: (data, img), meta information for the input image and input.
+            tuple: (data, inputs), meta information for the input image
+             and input.
         """
-        from mmpose.datasets.dataset_info import DatasetInfo
-        from mmpose.datasets.pipelines import Compose
-
+        from mmcv.transforms import Compose
+        from mmpose.registry import TRANSFORMS
         cfg = self.model_cfg
-
-        dataset_info = cfg.data.test.dataset_info
-        dataset_info = DatasetInfo(dataset_info)
-
         if isinstance(imgs, str):
             imgs = mmcv.imread(imgs)
         height, width = imgs.shape[:2]
@@ -160,64 +196,47 @@ class PoseDetection(BaseTask):
         bboxes = np.array([box['bbox'] for box in person_results])
 
         # build the data pipeline
-        test_pipeline = Compose(cfg.test_pipeline)
-        dataset_name = dataset_info.dataset_name
-        flip_pairs = dataset_info.flip_pairs
-        batch_data = []
+        test_pipeline = [
+            TRANSFORMS.build(c) for c in cfg.test_dataloader.dataset.pipeline
+        ]
+        test_pipeline = Compose(test_pipeline)
         if input_shape is not None:
-            image_size = input_shape
-        else:
-            image_size = np.array(cfg.data_cfg['image_size'])
+            if isinstance(cfg.codec, dict):
+                codec = cfg.codec
+            elif isinstance(cfg.codec, list):
+                codec = cfg.codec[0]
+            else:
+                raise TypeError(f'Unsupported type {type(cfg.codec)}')
+            input_size = codec['input_size']
+            if tuple(input_shape) != tuple(input_size):
+                logger = get_root_logger()
+                logger.warning(f'Input shape from deploy config is not '
+                               f'same as input_size in model config:'
+                               f'{input_shape} vs {input_size}')
 
+        batch_data = defaultdict(list)
+        meta_data = _get_dataset_metainfo(self.model_cfg)
         for bbox in bboxes:
             # prepare data
+            bbox_score = np.array([bbox[4] if len(bbox) == 5 else 1
+                                   ])  # shape (1,)
             data = {
-                'img':
-                imgs,
-                'bbox_score':
-                bbox[4] if len(bbox) == 5 else 1,
-                'bbox_id':
-                0,  # need to be assigned if batch_size > 1
-                'dataset':
-                dataset_name,
-                'joints_3d':
-                np.zeros((cfg.data_cfg.num_joints, 3), dtype=np.float32),
-                'joints_3d_visible':
-                np.zeros((cfg.data_cfg.num_joints, 3), dtype=np.float32),
-                'rotation':
-                0,
-                'ann_info': {
-                    'image_size': np.array(image_size),
-                    'num_joints': cfg.data_cfg['num_joints'],
-                    'flip_pairs': flip_pairs
-                }
+                'img': imgs,
+                'bbox_score': bbox_score,
+                'bbox': bbox[None],  # shape (1, 4)
             }
-
-            # for compatibility of mmpose
-            try:
-                # for mmpose<=v0.25.1
-                from mmpose.apis.inference import _box2cs
-                center, scale = _box2cs(cfg, bbox)
-                data['center'] = center
-                data['scale'] = scale
-            except ImportError:
-                # for mmpose>=v0.26.0
-                data['bbox'] = bbox
-
+            data.update(meta_data)
             data = test_pipeline(data)
-            batch_data.append(data)
+            data['inputs'] = data['inputs'].to(self.device)
+            batch_data['inputs'].append(data['inputs'])
+            batch_data['data_samples'].append(data['data_samples'])
 
-        batch_data = collate(batch_data, samples_per_gpu=1)
-        # scatter not work so just move image to cuda device
-        batch_data['img'] = batch_data['img'].to(torch.device(self.device))
-        # get all img_metas of each bounding box
-        batch_data['img_metas'] = [
-            img_metas[0] for img_metas in batch_data['img_metas'].data
-        ]
-        return batch_data, batch_data['img']
+        if data_preprocessor is not None:
+            batch_data = data_preprocessor(batch_data, False)
+        input_tensor = batch_data['inputs']
+        return batch_data, input_tensor
 
     def visualize(self,
-                  model: torch.nn.Module,
                   image: Union[str, np.ndarray],
                   result: list,
                   output_file: str,
@@ -227,7 +246,6 @@ class PoseDetection(BaseTask):
         """Visualize predictions of a model.
 
         Args:
-            model (nn.Module): Input model.
             image (str | np.ndarray): Input image to draw predictions on.
             result (list): A list of predictions.
             output_file (str): Output file to save drawn image.
@@ -236,74 +254,25 @@ class PoseDetection(BaseTask):
             show_result (bool): Whether to show result in windows, defaults
                 to `False`.
         """
-        from mmpose.datasets.dataset_info import DatasetInfo
-        dataset_info = self.model_cfg.data.test.dataset_info
-        dataset_info = DatasetInfo(dataset_info)
-        skeleton = dataset_info.skeleton
-        pose_kpt_color = dataset_info.pose_kpt_color
-        pose_link_color = dataset_info.pose_link_color
-        if hasattr(model, 'module'):
-            model = model.module
+        from mmpose.apis.inference import dataset_meta_from_config
+        from mmpose.visualization import PoseLocalVisualizer
+
+        save_dir, filename = os.path.split(output_file)
+        name = os.path.splitext(filename)[0]
+        dataset_meta = dataset_meta_from_config(
+            self.model_cfg, dataset_mode='test')
+        visualizer = PoseLocalVisualizer(name=name, save_dir=save_dir)
+        visualizer.set_dataset_meta(dataset_meta)
+
         if isinstance(image, str):
-            image = mmcv.imread(image)
-        # convert result
-        result = [dict(keypoints=pose) for pose in result['preds']]
-        model.show_result(
+            image = mmcv.imread(image, channel_order='rgb')
+        visualizer.add_datasample(
+            name,
             image,
-            result,
-            skeleton=skeleton,
-            pose_kpt_color=pose_kpt_color,
-            pose_link_color=pose_link_color,
-            out_file=output_file,
+            data_sample=result,
+            draw_gt=False,
             show=show_result,
-            win_name=window_name)
-
-    @staticmethod
-    def evaluate_outputs(model_cfg: mmengine.Config,
-                         outputs: Sequence,
-                         dataset: Dataset,
-                         metrics: Optional[str] = None,
-                         out: Optional[str] = None,
-                         metric_options: Optional[dict] = None,
-                         format_only: bool = False,
-                         log_file: Optional[str] = None,
-                         **kwargs):
-        """Perform post-processing to predictions of model.
-
-        Args:
-            model_cfg (mmengine.Config): The model config.
-            outputs (list): A list of predictions of model inference.
-            dataset (Dataset): Input dataset to run test.
-            metrics (str): Evaluation metrics, which depends on
-                the codebase and the dataset, e.g., e.g., "mIoU" for generic
-                datasets, and "cityscapes" for Cityscapes in mmseg.
-            out (str): Output result file in pickle format, defaults to `None`.
-            metric_options (dict): Custom options for evaluation, will be
-                kwargs for dataset.evaluate() function. Defaults to `None`.
-            format_only (bool): Format the output results without perform
-                evaluation. It is useful when you want to format the result
-                to a specific format and submit it to the test server. Defaults
-                to `False`.
-            log_file (str | None): The file to write the evaluation results.
-                Defaults to `None` and the results will only print on stdout.
-        """
-        from mmcv.utils import get_logger
-        logger = get_logger('test', log_file=log_file, log_level=logging.INFO)
-
-        res_folder = '.'
-        if out:
-            logger.info(f'\nwriting results to {out}')
-            mmcv.dump(outputs, out)
-            res_folder, _ = os.path.split(out)
-        os.makedirs(res_folder, exist_ok=True)
-
-        eval_config = model_cfg.get('evaluation', {}).copy()
-        if metrics is not None:
-            eval_config.update(dict(metric=metrics))
-
-        results = dataset.evaluate(outputs, res_folder, **eval_config)
-        for k, v in sorted(results.items()):
-            logger.info(f'{k}: {v:.4f}')
+            out_file=output_file)
 
     def get_model_name(self, *args, **kwargs) -> str:
         """Get the model name.
@@ -330,9 +299,11 @@ class PoseDetection(BaseTask):
         Return:
             dict: Composed of the preprocess information.
         """
+        # TODO: make it work with sdk
         input_shape = get_input_shape(self.deploy_cfg)
         model_cfg = process_model_config(self.model_cfg, [''], input_shape)
-        preprocess = model_cfg.data.test.pipeline
+        preprocess = model_cfg.test_dataloader.dataset.pipeline
+        preprocess[0].type = 'LoadImageFromFile'
         return preprocess
 
     def get_postprocess(self, *args, **kwargs) -> Dict:
@@ -343,39 +314,3 @@ class PoseDetection(BaseTask):
                 'type'] = self.model_cfg.model.keypoint_head.type + 'Decode'
             postprocess.update(self.model_cfg.model.test_cfg)
         return postprocess
-
-    @staticmethod
-    def get_tensor_from_input(input_data: Dict[str, Any],
-                              **kwargs) -> torch.Tensor:
-        """Get input tensor from input data.
-
-        Args:
-            input_data (dict): Input data containing meta info and image
-                tensor.
-        Returns:
-            torch.Tensor: An image in `Tensor`.
-        """
-        img = input_data['img']
-        if isinstance(img, (list, tuple)):
-            img = img[0]
-        return img
-
-    @staticmethod
-    def run_inference(model, model_inputs: Dict[str, torch.Tensor]):
-        """Run inference once for a pose model of mmpose.
-
-        Args:
-            model (nn.Module): Input model.
-            model_inputs (dict): A dict containing model inputs tensor and
-                meta info.
-
-        Returns:
-            list: The predictions of model inference.
-        """
-        output = model(
-            **model_inputs,
-            return_loss=False,
-            return_heatmap=False,
-            target=None,
-            target_weight=None)
-        return [output]
