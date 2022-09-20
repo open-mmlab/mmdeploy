@@ -5,10 +5,11 @@ codebase_config = dict(model_type='sdk')
 backend_config = dict(pipeline=[
     dict(type='LoadImageFromFile', channel_order='bgr'),
     dict(
-        type='Collect',
+        type='PackPoseInputs',
         keys=['img'],
         meta_keys=[
-            'image_file', 'bbox', 'rotation', 'bbox_score', 'flip_pairs'
+            'id', 'img_id', 'img_path', 'ori_shape', 'img_shape', 'input_size',
+            'flip_indices', 'category'
         ])
 ])
 
