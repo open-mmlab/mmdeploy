@@ -86,8 +86,6 @@ class FunctionRewriter:
         Returns:
             Callable: The process of registering function.
         """
-        print('*' * 30)
-        print(func_name)
         return self._registry.register_object(func_name, backend, ir,
                                               extra_checkers, **kwargs)
 
