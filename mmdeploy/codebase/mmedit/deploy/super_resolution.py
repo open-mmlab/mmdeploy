@@ -302,11 +302,34 @@ class SuperResolution(BaseTask):
         """
         input_shape = get_input_shape(self.deploy_cfg)
         model_cfg = process_model_config(self.model_cfg, [''], input_shape)
+        meta_keys = [
+            'filename', 'ori_filename', 'ori_shape', 'img_shape', 'pad_shape',
+            'scale_factor', 'flip', 'flip_direction', 'img_norm_cfg',
+            'valid_ratio'
+        ]
         preprocess = model_cfg.test_pipeline
         for item in preprocess:
             if 'Normalize' == item['type'] and 'std' in item:
                 item['std'] = [255, 255, 255]
-        return preprocess
+
+        preprocess.insert(1, model_cfg.model.data_preprocessor)
+        transforms = preprocess
+        for i, transform in enumerate(transforms):
+            if 'keys' in transform and transform['keys'] == ['lq']:
+                transform['keys'] = ['img']
+            if 'key' in transform and transform['key'] == 'lq':
+                transform['key'] = 'img'
+            if transform['type'] == 'ToTensor':
+                transform['type'] = 'ImageToTensor'
+            if transform['type'] == 'EditDataPreprocessor':
+                transform['type'] = 'Normalize'
+            if transform['type'] == 'PackEditInputs':
+                meta_keys += transform[
+                    'meta_keys'] if 'meta_keys' in transform else []
+                transform['meta_keys'] = list(set(meta_keys))
+                transform['keys'] = ['img']
+                transforms[i]['type'] = 'Collect'
+        return transforms
 
     def get_postprocess(self, *args, **kwargs) -> Dict:
         """Get the postprocess information for SDK.
