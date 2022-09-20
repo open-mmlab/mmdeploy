@@ -88,7 +88,7 @@ class End2EndModel(BaseBackendModel):
         Args:
             inputs (torch.Tensor): Input image(s) in [N x C x H x W]
                 format.
-            data_samples (Sequence[Sequence[dict]]): A list of meta info for
+            data_samples (List[BaseDataElement]): A list of meta info for
                 image(s).
             *args: Other arguments.
             **kwargs: Other key-pair arguments.
@@ -125,13 +125,13 @@ class End2EndModel(BaseBackendModel):
     def pack_result(self,
                     preds: Sequence[InstanceData],
                     data_samples: List[BaseDataElement],
-                    convert_corrodinate: bool = True):
-        """Pack pred results to mmseg format
+                    convert_coordinate: bool = True):
+        """Pack pred results to mmpose format
         Args:
             preds (Sequence[InstanceData]): Prediction of keypoints.
             data_samples (List[BaseDataElement]): A list of meta info for
                 image(s).
-            convert_corrodinate (bool): Whether to convert keypoints
+            convert_coordinate (bool): Whether to convert keypoints
                 coordinates to original image space. Default is True.
         Returns:
             data_samples (List[BaseDataElement])：
@@ -151,7 +151,7 @@ class End2EndModel(BaseBackendModel):
 
             gt_instances = data_sample.gt_instances
             # convert keypoint coordinates from input space to image space
-            if convert_corrodinate:
+            if convert_coordinate:
                 input_size = data_sample.metainfo['input_size']
                 bbox_centers = gt_instances.bbox_centers
                 bbox_scales = gt_instances.bbox_scales
@@ -173,7 +173,7 @@ class End2EndModel(BaseBackendModel):
 
 @__BACKEND_MODEL.register_module('sdk')
 class SDKEnd2EndModel(End2EndModel):
-    """SDK inference class, converts SDK output to mmseg format."""
+    """SDK inference class, converts SDK output to mmpose format."""
 
     def __init__(self, *args, **kwargs):
         kwargs['data_preprocessor'] = None
@@ -190,7 +190,9 @@ class SDKEnd2EndModel(End2EndModel):
         Args:
             inputs (List[torch.Tensor]): A list contains input image(s)
                 in [H x W x C] format.
-            data_samples: Other arguments.
+            data_samples (List[BaseDataElement]):
+                Data samples of image metas.
+            mode (str): test mode, only support 'predict'
             **kwargs: Other key-pair arguments.
 
         Returns:
@@ -210,7 +212,7 @@ class SDKEnd2EndModel(End2EndModel):
             pred_results.append(pred)
 
         results = self.pack_result(
-            pred_results, data_samples, convert_corrodinate=False)
+            pred_results, data_samples, convert_coordinate=False)
         return results
 
 
