@@ -47,9 +47,6 @@ def process_model_config(model_cfg: Config,
         if cfg.test_pipeline[0]['type'] == 'LoadImageFromFile':
             cfg.test_pipeline.pop(0)
     # check whether input_shape is valid
-    if 'data_preprocessor' in cfg:
-        cfg.test_pipeline.insert(
-            3, dict(type='Normalize', **cfg['data_preprocessor']))
     if input_shape is not None:
         if 'crop_size' in cfg.test_pipeline[2]:
             crop_size = cfg.test_pipeline[2]['crop_size']
@@ -139,7 +136,7 @@ class Classification(BaseTask):
         """
         from .classification_model import build_classification_model
 
-        data_preprocessor = deepcopy(self.model_cfg.get('preprocess_cfg', {}))
+        data_preprocessor = self.model_cfg.data_preprocessor
         data_preprocessor.setdefault('type', 'mmcls.ClsDataPreprocessor')
 
         model = build_classification_model(
@@ -259,14 +256,22 @@ class Classification(BaseTask):
                 transform['keys'] = ['img']
                 transforms[i]['type'] = 'Collect'
             if transform['type'] == 'Resize':
-                transforms[i]['size'] = transforms[i]['scale']
-            # TODO implement ResizeEdge in SDK
+                transforms[i]['size'] = transforms[i].pop('scale')
             if transform['type'] == 'ResizeEdge':
-                transform['type'] = 'Resize'
-                transform['keep_ratio'] = False
-                transform['size'] = (transform['scale'], transform['scale'])
+                transforms[i] = dict(
+                    type='Resize',
+                    keep_ratio=True,
+                    size=(transform['scale'], -1))
 
+        data_preprocessor = self.model_cfg.data_preprocessor
         transforms.insert(-1, dict(type='ImageToTensor', keys=['img']))
+        transforms.insert(
+            -3,
+            dict(
+                type='Normalize',
+                to_rgb=data_preprocessor.get('to_rgb', False),
+                mean=data_preprocessor.get('mean', [0, 0, 0]),
+                std=data_preprocessor.get('std', [1, 1, 1])))
         return transforms
 
     def get_postprocess(self, *args, **kwargs) -> Dict:
