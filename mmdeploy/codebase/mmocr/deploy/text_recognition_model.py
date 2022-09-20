@@ -4,6 +4,7 @@ from typing import Sequence, Union
 import mmengine
 import torch
 from mmengine.registry import Registry
+from mmengine.structures import LabelData
 from mmocr.utils.typing import RecSampleList
 
 from mmdeploy.codebase.base import BaseBackendModel
@@ -112,21 +113,26 @@ class End2EndModel(BaseBackendModel):
 class SDKEnd2EndModel(End2EndModel):
     """SDK inference class, converts SDK output to mmocr format."""
 
-    def forward(self, img: Sequence[torch.Tensor],
-                img_metas: Sequence[Sequence[dict]], *args, **kwargs):
+    def forward(self, inputs: Sequence[torch.Tensor],
+                data_samples: RecSampleList, *args, **kwargs):
         """Run forward inference.
 
         Args:
-            imgs (torch.Tensor | Sequence[torch.Tensor]): Image input tensor.
-            img_metas (Sequence[dict]): List of image information.
+            inputs (torch.Tensor): Image input tensor.
+            data_samples (list[TextRecogDataSample]): A list of N datasamples,
+                containing meta information and gold annotations for each of
+                the images.
 
         Returns:
             list[str]: Text label result of each image.
         """
-        text, score = self.wrapper.invoke(
-            img[0].contiguous().detach().cpu().numpy())
-        results = [dict(text=text, score=score)]
-        return results
+        text, score = self.wrapper.invoke(inputs[0].permute(
+            [1, 2, 0]).contiguous().detach().cpu().numpy())
+        pred_text = LabelData()
+        pred_text.score = score
+        pred_text.item = text
+        data_samples[0].pred_text = pred_text
+        return data_samples
 
 
 def build_text_recognition_model(model_files: Sequence[str],
@@ -161,5 +167,6 @@ def build_text_recognition_model(model_files: Sequence[str],
             deploy_cfg=deploy_cfg,
             model_cfg=model_cfg,
             **kwargs))
+    backend_text_recognizer = backend_text_recognizer.to(device)
 
     return backend_text_recognizer
