@@ -31,10 +31,6 @@ def delta2bbox(priors, pred_bboxes, stride):
                                      dtype=torch.float32)
         return bbox_corner @ matrix_center.to(bbox_corner.device)
 
-    # x_center = (priors[..., 0] + priors[..., 2]) * 0.5
-    # y_center = (priors[..., 1] + priors[..., 3]) * 0.5
-    # w = priors[..., 2] - priors[..., 0]
-    # h = priors[..., 3] - priors[..., 1]
     x_center, y_center, w, h = xyxy2xywh(priors).unbind(2)
 
     # The anchor of mmdetection has been offset by 0.5
