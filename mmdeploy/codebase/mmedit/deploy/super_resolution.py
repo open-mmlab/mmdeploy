@@ -307,9 +307,6 @@ class SuperResolution(BaseTask):
             'valid_ratio'
         ]
         preprocess = model_cfg.test_pipeline
-        for item in preprocess:
-            if 'Normalize' == item['type'] and 'std' in item:
-                item['std'] = [255, 255, 255]
 
         preprocess.insert(1, model_cfg.model.data_preprocessor)
         transforms = preprocess
@@ -322,6 +319,7 @@ class SuperResolution(BaseTask):
                 transform['type'] = 'ImageToTensor'
             if transform['type'] == 'EditDataPreprocessor':
                 transform['type'] = 'Normalize'
+                transform['to_rgb'] = transform.get('to_rgb', False)
             if transform['type'] == 'PackEditInputs':
                 meta_keys += transform[
                     'meta_keys'] if 'meta_keys' in transform else []
