@@ -96,6 +96,8 @@ class BaseTask(metaclass=ABCMeta):
 
         model = deepcopy(self.model_cfg.model)
         preprocess_cfg = deepcopy(self.model_cfg.get('preprocess_cfg', {}))
+        preprocess_cfg.update(
+            deepcopy(self.model_cfg.get('data_preprocessor', {})))
         model.setdefault('data_preprocessor', preprocess_cfg)
         model = MODELS.build(model)
         if model_checkpoint is not None:
@@ -188,7 +190,10 @@ class BaseTask(metaclass=ABCMeta):
         if dataloader is None:
             dataloader = model_cfg.test_dataloader
         if not isinstance(dataloader, DataLoader):
-            dataloader = self.build_dataloader(dataloader)
+            if type(dataloader) == list:
+                dataloader = [self.build_dataloader(dl) for dl in dataloader]
+            else:
+                dataloader = self.build_dataloader(dataloader)
 
         model_cfg = _merge_cfg(model_cfg)
 

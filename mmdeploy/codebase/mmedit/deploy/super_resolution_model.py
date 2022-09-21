@@ -1,25 +1,20 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import os.path as osp
-from typing import Dict, List, Optional, Sequence, Union
+from typing import List, Optional, Sequence, Union
 
-import mmcv
 import mmengine
-import numpy as np
 import torch
-from mmcv.utils import Registry
-from mmedit.core import psnr, ssim, tensor2img
+from mmedit.structures import EditDataSample, PixelData
+from mmengine import Config
+from mmengine.model.base_model.data_preprocessor import BaseDataPreprocessor
+from mmengine.registry import Registry
+from mmengine.structures import BaseDataElement
+from torch import nn
 
 from mmdeploy.codebase.base import BaseBackendModel
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
-                            load_config)
+                            get_root_logger, load_config)
 
-
-def __build_backend_model(cls_name: str, registry: Registry, *args, **kwargs):
-    return registry.module_dict[cls_name](*args, **kwargs)
-
-
-__BACKEND_MODEL = mmcv.utils.Registry(
-    'backend_models', build_func=__build_backend_model)
+__BACKEND_MODEL = Registry('backend_models')
 
 
 @__BACKEND_MODEL.register_module('end2end')
@@ -42,11 +37,13 @@ class End2EndModel(BaseBackendModel):
                  device: str,
                  model_cfg: mmengine.Config,
                  deploy_cfg: Union[str, mmengine.Config] = None,
+                 data_preprocessor: Optional[Union[dict, nn.Module]] = None,
                  **kwargs):
-        super().__init__(deploy_cfg=deploy_cfg)
+        super().__init__(
+            deploy_cfg=deploy_cfg, data_preprocessor=data_preprocessor)
         self.deploy_cfg = deploy_cfg
         self.test_cfg = model_cfg.test_cfg
-        self.allowed_metrics = {'PSNR': psnr, 'SSIM': ssim}
+        self.device = device
         self._init_wrapper(
             backend=backend,
             backend_files=backend_files,
@@ -66,10 +63,10 @@ class End2EndModel(BaseBackendModel):
             **kwargs)
 
     def forward(self,
-                lq: torch.Tensor,
-                test_mode: bool = False,
-                *args,
-                **kwargs) -> Union[list, dict]:
+                inputs: torch.Tensor,
+                data_samples: Optional[List[BaseDataElement]] = None,
+                mode: str = 'predict',
+                **kwargs) -> Sequence[EditDataSample]:
         """Run test inference for restorer.
 
         We want forward() to output an image or a evaluation result.
@@ -86,115 +83,30 @@ class End2EndModel(BaseBackendModel):
         Returns:
             list | dict: High resolution image or a evaluation results.
         """
+        assert mode == 'predict', \
+            'Backend model only support mode==predict,' f' but get {mode}'
+        lq = inputs
+        if lq.device != torch.device(self.device):
+            get_root_logger().warning(f'expect input device {self.device}'
+                                      f' but get {lq.device}.')
+        lq = lq.to(self.device)
+        batch_outputs = self.wrapper({self.input_name:
+                                      lq})[self.output_names[0]].to('cpu')
+        if hasattr(self.data_preprocessor, 'destructor'):
+            batch_outputs = self.data_preprocessor.destructor(
+                batch_outputs.to(self.data_preprocessor.outputs_std.device))
+        predictions = []
 
-        if test_mode:
-            return self.forward_test(lq, *args, **kwargs)
-        else:
-            return self.forward_dummy(lq, *args, **kwargs)
-
-    def forward_test(self,
-                     lq: torch.Tensor,
-                     gt: Optional[torch.Tensor] = None,
-                     meta: List[Dict] = None,
-                     save_path=None,
-                     *args,
-                     **kwargs):
-        """Run inference for restorer to generate evaluation result.
-
-        Args:
-            lq (torch.Tensor): The input low-quality image of the model.
-            gt (torch.Tensor): The ground truth of input image. Defaults to
-                `None`.
-            meta (List[Dict]): The meta infomations of MMEditing.
-            save_path (str): Path to save image. Default: None.
-            *args: Other arguments.
-            **kwargs: Other key-pair arguments.
-
-        Returns:
-            dict: Evaluation results.
-        """
-        outputs = self.forward_dummy(lq)
-        result = self.test_post_process(outputs, lq, gt)
-
-        # Align to mmediting BasicRestorer
-        if save_path:
-            outputs = [torch.from_numpy(i) for i in outputs]
-
-            lq_path = meta[0]['lq_path']
-            folder_name = osp.splitext(osp.basename(lq_path))[0]
-            save_path = osp.join(save_path, f'{folder_name}.png')
-
-            mmcv.imwrite(tensor2img(outputs), save_path)
-
-        return result
-
-    def forward_dummy(self, lq: torch.Tensor, *args, **kwargs):
-        """Run test inference for restorer with backend wrapper.
-
-        Args:
-            lq (torch.Tensor): The input low-quality image of the model.
-
-        Returns:
-            list[np.ndarray] : High resolution image.
-        """
-        outputs = self.wrapper({self.input_name: lq})
-        outputs = self.wrapper.output_to_list(outputs)
-        outputs = [out.detach().cpu().numpy() for out in outputs]
-        return outputs
-
-    def evaluate(self, output: Union[torch.Tensor, np.ndarray],
-                 gt: torch.Tensor):
-        """Evaluation function implemented in mmedit.
-
-        Args:
-            output (torch.Tensor | np.ndarray): Model output with
-                shape (n, c, h, w).
-            gt (torch.Tensor): GT Tensor with shape (n, c, h, w).
-
-        Returns:
-            dict: Evaluation results.
-        """
-        crop_border = self.test_cfg.crop_border
-
-        if isinstance(output, np.ndarray):
-            output = torch.from_numpy(output)
-        output = tensor2img(output)
-        gt = tensor2img(gt)
-
-        eval_result = dict()
-        for metric in self.test_cfg.metrics:
-            eval_result[metric] = self.allowed_metrics[metric](output, gt,
-                                                               crop_border)
-        return eval_result
-
-    def test_post_process(self,
-                          outputs: List[np.ndarray],
-                          lq: torch.Tensor,
-                          gt: Optional[torch.Tensor] = None):
-        """Get evaluation results by post-processing model outputs.
-
-        Args:
-            output (list[np.ndarray]) : The output high resolution image.
-            lq (torch.Tensor): The input low-quality image of the model.
-            gt (torch.Tensor): The ground truth of input image, default is
-                `None`.
-
-        Returns:
-            dict: Evaluation results.
-        """
-        if self.test_cfg is not None and self.test_cfg.get('metrics', None):
-            assert gt is not None, (
-                'evaluation with metrics must have gt images.')
-            results = dict(eval_result=self.evaluate(outputs[0], gt))
-        else:
-            results = dict(lq=lq.cpu(), output=outputs)
-            if gt is not None:
-                results['gt'] = gt.cpu()
-
-        return results
-
-    def show_result(self, *args, **kwargs):
-        raise NotImplementedError
+        for sr_pred, data_sample in zip(batch_outputs, data_samples):
+            pred = EditDataSample()
+            pred.set_data(dict(pred_img=PixelData(**dict(data=sr_pred))))
+            data_sample.set_data(dict(output=pred))
+            '''
+            data_sample.set_data(
+                dict(pred_img=PixelData(**dict(data=sr_pred))))
+            '''
+            predictions.append(data_sample)
+        return predictions
 
 
 @__BACKEND_MODEL.register_module('sdk')
@@ -203,10 +115,10 @@ class SDKEnd2EndModel(End2EndModel):
 
     def forward(self,
                 lq: torch.Tensor,
-                gt: Optional[torch.Tensor] = None,
-                test_mode: bool = False,
+                data_samples: Optional[List[BaseDataElement]] = None,
+                mode: str = 'predict',
                 *args,
-                **kwargs) -> Union[list, dict]:
+                **kwargs) -> list:
         """Run test inference for restorer.
 
         We want forward() to output an image or a evaluation result.
@@ -223,35 +135,32 @@ class SDKEnd2EndModel(End2EndModel):
         Returns:
             list | dict: High resolution image or a evaluation results.
         """
-        img = tensor2img(lq)
-        output = self.wrapper.invoke(img)
-        if test_mode:
-            output = torch.from_numpy(output)
-            output = output.permute(2, 0, 1)
-            output = output / 255.
-            results = self.test_post_process([output], lq, gt)
-            return results
-        else:
-            return [output]
+        output = self.wrapper.invoke(lq[0].contiguous().detach().cpu().numpy())
+        return [output]
 
 
-def build_super_resolution_model(model_files: Sequence[str],
-                                 model_cfg: Union[str, mmengine.Config],
-                                 deploy_cfg: Union[str, mmengine.Config],
-                                 device: str, **kwargs):
+def build_super_resolution_model(
+        model_files: Sequence[str],
+        model_cfg: Union[str, mmengine.Config],
+        deploy_cfg: Union[str, mmengine.Config],
+        device: str,
+        data_preprocessor: Optional[Union[Config,
+                                          BaseDataPreprocessor]] = None,
+        **kwargs):
     model_cfg = load_config(model_cfg)[0]
     deploy_cfg = load_config(deploy_cfg)[0]
 
     backend = get_backend(deploy_cfg)
     model_type = get_codebase_config(deploy_cfg).get('model_type', 'end2end')
-
     backend_model = __BACKEND_MODEL.build(
-        model_type,
-        backend=backend,
-        backend_files=model_files,
-        device=device,
-        model_cfg=model_cfg,
-        deploy_cfg=deploy_cfg,
-        **kwargs)
+        dict(
+            type=model_type,
+            backend=backend,
+            backend_files=model_files,
+            device=device,
+            model_cfg=model_cfg,
+            deploy_cfg=deploy_cfg,
+            data_preprocessor=data_preprocessor,
+            **kwargs))
 
     return backend_model
