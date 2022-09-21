@@ -200,12 +200,12 @@ class End2EndModel(BaseBackendModel):
                 scale_factor = torch.from_numpy(scale_factor).to(dets)
                 bboxes /= scale_factor
 
-            if 'border' in img_metas[i]:
+            if 'pad_param' in img_metas[i]:
                 # offset pixel of the top-left corners between original image
-                # and padded/enlarged image, 'border' is used when exporting
+                # and padded/enlarged image, 'pad_param' is used when exporting
                 # CornerNet and CentripetalNet to onnx
-                x_off = img_metas[i]['border'][2]
-                y_off = img_metas[i]['border'][0]
+                x_off = img_metas[i]['pad_param'][2]
+                y_off = img_metas[i]['pad_param'][0]
                 bboxes[:, ::2] -= x_off
                 bboxes[:, 1::2] -= y_off
                 bboxes *= (bboxes > 0)
