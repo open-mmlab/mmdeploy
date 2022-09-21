@@ -20,9 +20,10 @@ Note:
 
 ### OCR detection
 
-|                                                       model                                                       |  dataset  | fp32 hmean |   int8 hmean   |
-| :---------------------------------------------------------------------------------------------------------------: | :-------: | :--------: | :------------: |
-| [PANet](https://github.com/open-mmlab/mmocr/blob/main/configs/textdet/panet/panet_r18_fpem_ffm_600e_icdar2015.py) | ICDAR2015 |   0.795    | 0.792 @thr=0.9 |
+|                                                            model                                                             |  dataset  | fp32 hmean |   int8 hmean   |
+| :--------------------------------------------------------------------------------------------------------------------------: | :-------: | :--------: | :------------: |
+|      [PANet](https://github.com/open-mmlab/mmocr/blob/main/configs/textdet/panet/panet_r18_fpem_ffm_600e_icdar2015.py)       | ICDAR2015 |   0.795    | 0.792 @thr=0.9 |
+| [TextSnake](https://github.com/open-mmlab/mmocr/blob/main/configs/textdet/textsnake/textsnake_r50_fpn_unet_1200e_ctw1500.py) |  CTW1500  |   0.817    |     0.818      |
 
 Note:  [mmocr](https://github.com/open-mmlab/mmocr)  Uses 'shapely' to compute IoU, which results in a slight difference in accuracy
 
