@@ -90,22 +90,36 @@ class End2EndModel(BaseBackendModel):
 class SDKEnd2EndModel(End2EndModel):
     """SDK inference class, converts SDK output to mmcls format."""
 
-    def forward(self, img: List[torch.Tensor], *args, **kwargs) -> list:
+    def forward(self,
+                inputs: Sequence[torch.Tensor],
+                data_samples: Optional[List[BaseDataElement]] = None,
+                mode: str = 'predict',
+                *args,
+                **kwargs) -> list:
         """Run forward inference.
 
         Args:
             img (List[torch.Tensor]): A list contains input image(s)
-                in [N x C x H x W] format.
+                in [C x H x W] format.
             *args: Other arguments.
             **kwargs: Other key-pair arguments.
 
         Returns:
             list: A list contains predictions.
         """
+        cls_score = []
+        for input in inputs:
+            pred = self.wrapper.invoke(
+                input.permute(1, 2, 0).contiguous().detach().cpu().numpy())
+            pred = np.array(pred, dtype=np.float32)
+            pred = pred[np.argsort(pred[:, 0])][np.newaxis, :, 1]
+            cls_score.append(torch.from_numpy(pred).to(self.device))
 
-        pred = self.wrapper.invoke(img[0].contiguous().detach().cpu().numpy())
-        pred = np.array(pred, dtype=np.float32)
-        return pred[np.argsort(pred[:, 0])][np.newaxis, :, 1]
+        cls_score = torch.cat(cls_score, 0)
+        from mmcls.models.heads.cls_head import ClsHead
+        predict = ClsHead._get_predictions(
+            None, cls_score, data_samples=data_samples)
+        return predict
 
 
 def build_classification_model(
