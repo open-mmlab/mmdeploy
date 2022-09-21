@@ -1,11 +1,14 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import os.path as osp
+
 import mmcv
 import pytest
 import torch
-import os.path as osp
 
 import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.codebase import import_codebase
+from mmdeploy.codebase.mmdet3d.deploy.monocular_detection_model import \
+    build_monocular_detection_model
 from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
 
@@ -72,9 +75,9 @@ class TestMonocularDetectionModel:
         reason='Only support GPU test',
         condition=not torch.cuda.is_available())
     def test_forward_and_show_result(self):
+        from mmdet3d.core import Box3DMode
         from mmdet3d.core.bbox.structures.box_3d_mode import \
             CameraInstance3DBoxes
-        from mmdet3d.core import Box3DMode
         img = [torch.rand(1, 3, 64, 64)]
         img_metas = [[{
             'filename':
@@ -119,8 +122,6 @@ def test_build_monocular_detection_model():
     # simplify backend inference
     with SwitchBackendWrapper(ORTWrapper) as wrapper:
         wrapper.set(model_cfg=model_cfg, deploy_cfg=deploy_cfg)
-        from mmdeploy.codebase.mmdet3d.deploy.monocular_detection_model \
-            import build_monocular_detection_model
         monoculardetector = build_monocular_detection_model([''], model_cfg,
                                                             deploy_cfg, 'cpu')
         assert isinstance(monoculardetector, MonocularDetectionModel)

@@ -22,6 +22,7 @@ __BACKEND_MODEL = mmcv.utils.Registry(
 @__BACKEND_MODEL.register_module('end2end')
 class MonocularDetectionModel(BaseBackendModel):
     """End to end model for inference of monocular detection.
+
     Args:
         backend (Backend): The backend enum, specifying backend type.
         backend_files (Sequence[str]): Paths to all required backend files
@@ -48,6 +49,7 @@ class MonocularDetectionModel(BaseBackendModel):
     def _init_wrapper(self, backend: Backend, backend_files: Sequence[str],
                       device: str):
         """Initialize backend wrapper.
+
         Args:
             backend (Backend): The backend enum, specifying backend type.
             backend_files (Sequence[str]): Paths to all required backend files
@@ -68,6 +70,7 @@ class MonocularDetectionModel(BaseBackendModel):
                 return_loss: bool = False,
                 rescale: bool = False):
         """Run forward inference.
+
         Args:
             points (Sequence[torch.Tensor]): A list contains input pcd(s)
                 in [N, ndim] float tensor. points[:, :3] contain xyz points
@@ -126,6 +129,7 @@ def build_monocular_detection_model(model_files: Sequence[str],
                                     deploy_cfg: Union[str, mmcv.Config],
                                     device: str):
     """Build monocular detection model for different backends.
+
     Args:
         model_files (Sequence[str]): Input model file(s).
         model_cfg (str | mmcv.Config): Input model config file or Config

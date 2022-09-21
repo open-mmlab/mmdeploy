@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 dataset_type = 'NuScenesMonoDataset'
 data_root = 'data/nuscenes/'
 class_names = [

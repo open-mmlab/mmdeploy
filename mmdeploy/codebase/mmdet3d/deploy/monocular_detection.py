@@ -33,6 +33,7 @@ class MonocularDetection(BaseTask):
                            model_files: Sequence[str] = None,
                            **kwargs) -> torch.nn.Module:
         """Initialize backend model.
+
         Args:
             model_files (Sequence[str]): Input model files.
         Returns:
@@ -48,6 +49,7 @@ class MonocularDetection(BaseTask):
                            cfg_options: Optional[Dict] = None,
                            **kwargs) -> torch.nn.Module:
         """Initialize torch model.
+
         Args:
             model_checkpoint (str): The checkpoint file of torch model,
                 defaults to `None`.
@@ -66,6 +68,7 @@ class MonocularDetection(BaseTask):
                      input_shape: Sequence[int] = None) \
             -> Tuple[Dict, torch.Tensor]:
         """Create input for detector.
+
         Args:
             pcd (str): Input pcd file path.
         Returns:
@@ -140,6 +143,7 @@ class MonocularDetection(BaseTask):
                   show_result: bool = False,
                   score_thr: float = 0.3):
         """Visualize predictions of a model.
+
         Args:
             model (nn.Module): Input model.
             image (str): Pcd file to draw predictions on.
@@ -169,6 +173,7 @@ class MonocularDetection(BaseTask):
     def run_inference(model: nn.Module,
                       model_inputs: Dict[str, torch.Tensor]) -> List:
         """Run inference once for a object detection model of mmdet3d.
+
         Args:
             model (nn.Module): Input model.
             model_inputs (dict): A dict containing model inputs tensor and
@@ -214,6 +219,7 @@ class MonocularDetection(BaseTask):
 
     def get_model_name(self) -> str:
         """Get the model name.
+
         Return:
             str: the name of the model.
         """
@@ -222,6 +228,7 @@ class MonocularDetection(BaseTask):
     def get_tensor_from_input(self, input_data: Dict[str, Any],
                               **kwargs) -> torch.Tensor:
         """Get input tensor from input data.
+
         Args:
             input_data (dict): Input data containing meta info and image
                 tensor.
@@ -232,6 +239,7 @@ class MonocularDetection(BaseTask):
 
     def get_partition_cfg(partition_type: str, **kwargs) -> Dict:
         """Get a certain partition config for mmdet.
+
         Args:
             partition_type (str): A string specifying partition type.
         Returns:
@@ -241,6 +249,7 @@ class MonocularDetection(BaseTask):
 
     def get_postprocess(self) -> Dict:
         """Get the postprocess information for SDK.
+
         Return:
             dict: Composed of the postprocess information.
         """
@@ -248,6 +257,7 @@ class MonocularDetection(BaseTask):
 
     def get_preprocess(self) -> Dict:
         """Get the preprocess information for SDK.
+
         Return:
             dict: Composed of the preprocess information.
         """
@@ -260,6 +270,7 @@ class MonocularDetection(BaseTask):
                         out_dir=None,
                         show_score_thr=0.3):
         """Test model with single gpu.
+
         This method tests model with single gpu and gives the 'show' option.
         By setting ``show=True``, it saves the visualization results under
         ``out_dir``.
