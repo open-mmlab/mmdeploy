@@ -86,7 +86,8 @@ python tools/deploy.py \
   demo/resources/face.png \
   --work-dir mmdeploy_models/mmedit/ort \
   --device cpu \
-  --show
+  --show \
+  --dump-info
 ```
 
 You can also convert the above model to other backend models by changing the deployment config file `*_onnxruntime_dynamic.py` to [others](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/configs/mmedit), e.g., converting to tensorrt model by `super-resolution/super-resolution_tensorrt-_dynamic-32x32-512x512.py`.
@@ -163,7 +164,26 @@ task_processor.visualize(
 
 ### SDK model inference
 
-TODO
+You can also perform SDK model inference like following,
+
+```python
+from mmdeploy_python import Restorer
+import cv2
+
+img = cv2.imread('./demo/resources/face.png')
+
+# create a classifier
+restorer = Restorer(model_path='./mmdeploy_models/mmedit/ort', device_name='cpu', device_id=0)
+# perform inference
+result = restorer(img)
+
+# visualize inference result
+# convert to BGR
+result = result[..., ::-1]
+cv2.imwrite('output_restorer.bmp', result)
+```
+
+Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Interface), such as C, C++, C#, Java and so on. You can learn their usage from [demos](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/demo).
 
 ## Supported models
 

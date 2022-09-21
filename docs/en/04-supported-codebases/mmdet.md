@@ -163,7 +163,30 @@ task_processor.visualize(
 
 ### SDK model inference
 
-TODO
+You can also perform SDK model inference like following,
+
+```python
+from mmdeploy_python import Detector
+import cv2
+
+img = cv2.imread('./demo/resources/det.jpg')
+
+# create a detector
+detector = Detector(model_path='./mmdeploy_models/mmdet/ort', device_name='cpu', device_id=0)
+# perform inference
+bboxes, labels, masks = detector(img)
+
+# visualize inference result
+indices = [i for i in range(len(bboxes))]
+for index, bbox, label_id in zip(indices, bboxes, labels):
+  [left, top, right, bottom], score = bbox[0:4].astype(int), bbox[4]
+  if score < 0.3:
+    continue
+
+  cv2.rectangle(img, (left, top), (right, bottom), (0, 255, 0))
+
+cv2.imwrite('output_detection.png', img)
+```
 
 ## Supported models
 
