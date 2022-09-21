@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import torch
 from mmengine.config import ConfigDict
@@ -23,14 +23,8 @@ def yolov5_head__predict_by_feat(ctx,
                                  batch_img_metas: Optional[List[dict]] = None,
                                  cfg: Optional[ConfigDict] = None,
                                  rescale: bool = False,
-                                 with_nms: bool = True) -> List[InstanceData]:
+                                 with_nms: bool = True) -> Tuple[InstanceData]:
     assert len(cls_scores) == len(bbox_preds)
-    if objectnesses is None:
-        with_objectnesses = False
-    else:
-        with_objectnesses = True
-        assert len(cls_scores) == len(objectnesses)
-
     cfg = self.test_cfg if cfg is None else cfg
     cfg = copy.deepcopy(cfg)
 
@@ -58,13 +52,10 @@ def yolov5_head__predict_by_feat(ctx,
         for bbox_pred in bbox_preds
     ]
 
-    if with_objectnesses:
-        flatten_objectness = [
-            objectness.permute(0, 2, 3, 1).reshape(num_imgs, -1)
-            for objectness in objectnesses
-        ]
-    else:
-        flatten_objectness = [None for _ in range(len(featmap_sizes))]
+    flatten_objectness = [
+        objectness.permute(0, 2, 3, 1).reshape(num_imgs, -1)
+        for objectness in objectnesses
+    ]
 
     cls_scores = torch.cat(flatten_cls_scores, dim=1).sigmoid()
     flatten_bbox_preds = torch.cat(flatten_bbox_preds, dim=1)
@@ -74,9 +65,6 @@ def yolov5_head__predict_by_feat(ctx,
 
     # directly multiply score factor and feed to nms
     scores = cls_scores * (flatten_objectness.unsqueeze(-1))
-    max_scores, _ = torch.max(scores, 1)
-    mask = max_scores >= cfg.score_thr
-    scores = scores.where(mask, scores.new_zeros(1))
 
     if not with_nms:
         return bboxes, scores
