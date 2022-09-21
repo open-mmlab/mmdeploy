@@ -56,9 +56,6 @@ class TestMonocularDetectionModel:
             }
         })
 
-        # from mmdeploy.utils import load_config
-        # model_cfg_path = 'tests/test_codebase/test_mmdet3d/data/model_cfg.py'
-        # model_cfg = load_config(model_cfg_path)[0]
         cls.end2end_model = MonocularDetectionModel(
             Backend.ONNXRUNTIME,
             [''],
