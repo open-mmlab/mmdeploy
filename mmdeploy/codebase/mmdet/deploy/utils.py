@@ -200,6 +200,53 @@ def __gather_topk(*inputs: Sequence[torch.Tensor],
     return outputs
 
 
+class TRTGatherTopk(torch.autograd.Function):
+
+    @staticmethod
+    def forward(ctx, x: torch.Tensor, inds: torch.Tensor):
+        """Implement of gather topk."""
+        batch_size = x.size(0)
+        batch_inds = torch.arange(batch_size, device=inds.device).unsqueeze(-1)
+        return x[batch_inds, inds, ...]
+
+    @staticmethod
+    def symbolic(g, x, inds):
+        """symbolic of gather topk."""
+        out = g.op('mmdeploy::GatherTopk', x, inds, outputs=1)
+
+        return out
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    'mmdeploy.codebase.mmdet.deploy.utils.__gather_topk',
+    backend=Backend.TENSORRT.value)
+def __gather_topk__trt(ctx,
+                       *inputs: Sequence[torch.Tensor],
+                       inds: torch.Tensor,
+                       batch_size: int,
+                       is_batched: bool = True) -> Tuple[torch.Tensor]:
+    """TensorRT gather_topk."""
+    _ = ctx
+    if is_batched:
+        index_shape = inds.shape
+        index_dim = inds.dim()
+        outputs = [None for _ in inputs]
+        for i, x in enumerate(inputs):
+            if x is None:
+                continue
+            out = TRTGatherTopk.apply(x, inds).to(x.dtype)
+            out_shape = [*index_shape, *x.shape[index_dim:]]
+            out = out.reshape(out_shape)
+            outputs[i] = out
+    else:
+        prior_inds = inds.new_zeros((1, 1))
+        outputs = [
+            x[prior_inds, inds, ...] if x is not None else None for x in inputs
+        ]
+
+    return outputs
+
+
 @FUNCTION_REWRITER.register_rewriter(
     'mmdeploy.codebase.mmdet.deploy.utils.__gather_topk',
     backend=Backend.COREML.value)
