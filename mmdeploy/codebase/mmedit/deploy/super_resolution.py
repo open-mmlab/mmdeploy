@@ -1,17 +1,17 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import warnings
-from typing import Any, Dict, Optional, Sequence, Tuple, Union
+from copy import deepcopy
+from typing import Any, Callable, Dict, Optional, Sequence, Tuple, Union
 
-import mmcv
 import mmengine
 import numpy as np
 import torch
-from mmcv.parallel import collate, scatter
-from torch.utils.data import Dataset
+from mmengine import Config
+from mmengine.dataset import pseudo_collate
+from mmengine.model import BaseDataPreprocessor
 
 from mmdeploy.codebase.base import BaseTask
 from mmdeploy.codebase.mmedit.deploy.mmediting import MMEDIT_TASK
-from mmdeploy.utils import Task, get_input_shape, load_config
+from mmdeploy.utils import Task, get_input_shape
 
 
 def process_model_config(model_cfg: mmengine.Config,
@@ -29,7 +29,9 @@ def process_model_config(model_cfg: mmengine.Config,
     Returns:
         mmengine.Config: the model config after processing.
     """
-    config = load_config(model_cfg)[0].copy()
+    config = deepcopy(model_cfg)
+    if not hasattr(config, 'test_pipeline'):
+        config.__setattr__('test_pipeline', config.val_pipeline)
     keys_to_remove = ['gt', 'gt_path']
     # MMEdit doesn't support LoadImageFromWebcam.
     # Remove "LoadImageFromFile" and related metakeys.
@@ -44,10 +46,9 @@ def process_model_config(model_cfg: mmengine.Config,
         resize = {
             'type': 'Resize',
             'scale': (input_shape[0], input_shape[1]),
-            'keys': ['lq']
+            'keys': ['img']
         }
         config.test_pipeline.insert(1, resize)
-
     for key in keys_to_remove:
         for pipeline in list(config.test_pipeline):
             if 'key' in pipeline and key == pipeline['key']:
@@ -63,6 +64,59 @@ def process_model_config(model_cfg: mmengine.Config,
     return config
 
 
+def _get_dataset_metainfo(model_cfg: Config):
+    """Get metainfo of dataset.
+
+    Args:
+        model_cfg Config: Input model Config object.
+    Returns:
+        list[str]: A list of string specifying names of different class.
+    """
+    from mmedit import datasets  # noqa
+    from mmedit.registry import DATASETS
+
+    module_dict = DATASETS.module_dict
+
+    for dataloader_name in [
+            'test_dataloader', 'val_dataloader', 'train_dataloader'
+    ]:
+        if dataloader_name not in model_cfg:
+            continue
+        dataloader_cfg = model_cfg[dataloader_name]
+        if isinstance(dataloader_cfg, list):
+            dataset_cfg = [loader.dataset for loader in dataloader_cfg]
+            dataset_list = [
+                module_dict.get(dataset.type, None) for dataset in dataset_cfg
+            ]
+            if len(dataset_list) == 0:
+                continue
+            meta_list = []
+            for i, dataset in enumerate(dataset_list):
+                if hasattr(dataset, '_load_metainfo') and \
+                   isinstance(dataset._load_metainfo, Callable):
+                    meta = dataset._load_metainfo(dataset_cfg[i].get(
+                        'metainfo', None))
+                    meta_list.append(meta)
+                if hasattr(dataset, 'METAINFO'):
+                    meta_list.append(dataset.METAINFO)
+            return meta_list
+        else:
+            dataset_cfg = dataloader_cfg[0].dataset
+            dataset_cls = module_dict.get(dataset_cfg.type, None)
+            if dataset_cls is None:
+                continue
+            if hasattr(dataset_cls, '_load_metainfo') and isinstance(
+                    dataset_cls._load_metainfo, Callable):
+                meta = dataset_cls._load_metainfo(
+                    dataset_cfg.get('metainfo', None))
+                if meta is not None:
+                    return meta
+            if hasattr(dataset_cls, 'METAINFO'):
+                return dataset_cls.METAINFO
+
+    return None
+
+
 @MMEDIT_TASK.register_module(Task.SUPER_RESOLUTION.value)
 class SuperResolution(BaseTask):
     """BaseTask class of super resolution task.
@@ -75,7 +129,7 @@ class SuperResolution(BaseTask):
 
     def __init__(self, model_cfg: mmengine.Config, deploy_cfg: mmengine.Config,
                  device: str):
-        super().__init__(model_cfg, deploy_cfg, device)
+        super(SuperResolution, self).__init__(model_cfg, deploy_cfg, device)
 
     def build_backend_model(self,
                             model_files: Sequence[str] = None,
@@ -89,36 +143,23 @@ class SuperResolution(BaseTask):
             nn.Module: An initialized backend model.
         """
         from .super_resolution_model import build_super_resolution_model
+        data_preprocessor = deepcopy(
+            self.model_cfg.model.get('data_preprocessor', {}))
+        data_preprocessor.setdefault('type', 'mmedit.EditDataPreprocessor')
         model = build_super_resolution_model(
             model_files,
             self.model_cfg,
             self.deploy_cfg,
             device=self.device,
+            data_preprocessor=data_preprocessor,
             **kwargs)
         return model
 
-    def build_pytorch_model(self,
-                            model_checkpoint: Optional[str] = None,
-                            **kwargs) -> torch.nn.Module:
-        """Initialize torch model.
-
-        Args:
-            model_checkpoint (str): The checkpoint file of torch model,
-                defaults to `None`.
-
-        Returns:
-            nn.Module: An initialized torch model generated by other OpenMMLab
-                codebases.
-        """
-        from mmedit.apis import init_model
-        model = init_model(self.model_cfg, model_checkpoint, self.device)
-        model.forward = model.forward_dummy
-        return model.eval()
-
     def create_input(self,
                      imgs: Union[str, np.ndarray],
-                     input_shape: Optional[Sequence[int]] = None,
-                     **kwargs) -> Tuple[Dict, torch.Tensor]:
+                     input_shape: Sequence[int] = None,
+                     data_preprocessor: Optional[BaseDataPreprocessor] = None)\
+            -> Tuple[Dict, torch.Tensor]:
         """Create input for editing processor.
 
         Args:
@@ -129,7 +170,7 @@ class SuperResolution(BaseTask):
         Returns:
             tuple: (data, img), meta information for the input image and input.
         """
-        from mmedit.datasets.pipelines import Compose
+        from mmcv.transforms import Compose
 
         if isinstance(imgs, (list, tuple)):
             if not isinstance(imgs[0], (np.ndarray, str)):
@@ -142,35 +183,55 @@ class SuperResolution(BaseTask):
         cfg = process_model_config(self.model_cfg, imgs, input_shape)
 
         test_pipeline = Compose(cfg.test_pipeline)
-
         data_arr = []
         for img in imgs:
             if isinstance(img, np.ndarray):
-                data = dict(lq=img)
+                data = dict(img=img)
             else:
-                data = dict(lq_path=img)
+                data = dict(img_path=img)
 
             data = test_pipeline(data)
             data_arr.append(data)
+        data = pseudo_collate(data_arr)
+        if data_preprocessor is not None:
+            data = data_preprocessor(data, False)
+            return data, data['inputs']
+        else:
+            return data, BaseTask.get_tensor_from_input(data)
 
-        data = collate(data_arr, samples_per_gpu=len(imgs))
+    def get_visualizer(self, name: str, save_dir: str):
+        """Visualize predictions of a model.
 
-        data['img'] = data['lq']
-
-        if self.device != 'cpu':
-            data = scatter(data, [self.device])[0]
-
-        return data, data['img']
+        Args:
+            name (str): The name of visualization window.
+            save_dir (str): The directory to save images.
+        """
+        from mmedit.utils import register_all_modules
+        register_all_modules(init_default_scope=False)
+        vis_backends = [dict(type='LocalVisBackend')]
+        visualizer = Config(
+            dict(
+                type='ConcatImageVisualizer',
+                vis_backends=vis_backends,
+                fn_key='gt_path',
+                img_keys=['pred_img'],
+                bgr2rgb=True))
+        super().__setattr__('visualizer', visualizer)
+        visualizer = super().get_visualizer(name, save_dir)
+        metainfo = _get_dataset_metainfo(self.model_cfg)
+        if metainfo is not None:
+            visualizer.dataset_meta = metainfo
+        return visualizer
 
     def visualize(self,
-                  model: torch.nn.Module,
                   image: Union[str, np.ndarray],
                   result: Union[list, np.ndarray],
                   output_file: str,
                   window_name: str = '',
                   show_result: bool = False,
                   **kwargs) -> np.ndarray:
-        """Visualize result of a model.
+        """Visualize result of a model. mmedit does not have visualizer, so
+        write visualize function directly.
 
         Args:
             model (nn.Module): Input model.
@@ -182,16 +243,20 @@ class SuperResolution(BaseTask):
             show_result (bool): Whether to show result in windows, defaults
                 to `False`.
         """
+        import warnings
+
+        import mmcv
+        if hasattr(result, 'pred_img'):
+            result = result.pred_img.data.detach().numpy()
+        else:
+            # for pytorch models
+            result = result.output.pred_img.data.detach().numpy()
         if len(result.shape) == 4:
             result = result[0]
-
         with torch.no_grad():
             result = result.transpose(1, 2, 0)
-            result = np.clip(result, 0, 1)[:, :, ::-1]
-            result = (result * 255.0).round()
-
+            result = np.clip(result, 0, 255)[:, :, ::-1].round()
             output_file = None if show_result else output_file
-
             if show_result:
                 int_result = result.astype(np.uint8)
                 mmcv.imshow(int_result, window_name, 0)
@@ -203,24 +268,6 @@ class SuperResolution(BaseTask):
                 'show_result==False and output_file is not specified, only '
                 'result image will be returned')
             return result
-
-    @staticmethod
-    def run_inference(model: torch.nn.Module,
-                      model_inputs: Dict[str, torch.Tensor]) -> list:
-        """Run inference once for a super resolution model of mmedit.
-
-        Args:
-            model (nn.Module): Input model.
-            model_inputs (dict): A dict containing model inputs tensor and
-                meta info.
-
-        Returns:
-            list: The predictions of model inference.
-        """
-        result = model(model_inputs['lq'])
-        if not isinstance(result[0], np.ndarray):
-            result = [result[0].detach().cpu().numpy()]
-        return result
 
     @staticmethod
     def get_partition_cfg(partition_type: str, **kwargs) -> Dict:
@@ -244,47 +291,7 @@ class SuperResolution(BaseTask):
         Returns:
             torch.Tensor: An image in `Tensor`.
         """
-        return input_data['lq']
-
-    @staticmethod
-    def evaluate_outputs(model_cfg,
-                         outputs: list,
-                         dataset: Dataset,
-                         metrics: Optional[str] = None,
-                         out: Optional[str] = None,
-                         metric_options: Optional[dict] = None,
-                         format_only: bool = False,
-                         log_file: Optional[str] = None,
-                         **kwargs) -> None:
-        """Evaluation function implemented in mmedit.
-
-        Args:
-            model_cfg (mmengine.Config): The model config.
-            outputs (list): A list of result of model inference.
-            dataset (Dataset): Input dataset to run test.
-            metrics (str): Evaluation metrics, which depends on
-                the codebase and the dataset, e.g., "PSNR", "SSIM" in mmedit.
-            out (str): Output result file in pickle format, defaults to `None`.
-            metric_options (dict): Custom options for evaluation, will be
-                kwargs for dataset.evaluate() function. Defaults to `None`.
-            format_only (bool): Format the output results without perform
-                evaluation. It is useful when you want to format the result
-                to a specific format and submit it to the test server. Defaults
-                to `False`.
-            log_file (str | None): The file to write the evaluation results.
-                Defaults to `None` and the results will only print on stdout.
-        """
-        from mmcv.utils import get_logger
-        logger = get_logger('test', log_file=log_file)
-
-        if out:
-            logger.debug(f'writing results to {out}')
-            mmcv.dump(outputs, out)
-        # The Dataset doesn't need metrics
-        # print metrics
-        stats = dataset.evaluate(outputs)
-        for stat in stats:
-            logger.info('Eval-{}: {}'.format(stat, stats[stat]))
+        return input_data['img']
 
     def get_preprocess(self, *args, **kwargs) -> Dict:
         """Get the preprocess information for SDK.
@@ -294,19 +301,47 @@ class SuperResolution(BaseTask):
         """
         input_shape = get_input_shape(self.deploy_cfg)
         model_cfg = process_model_config(self.model_cfg, [''], input_shape)
+        meta_keys = [
+            'filename', 'ori_filename', 'ori_shape', 'img_shape', 'pad_shape',
+            'scale_factor', 'flip', 'flip_direction', 'img_norm_cfg',
+            'valid_ratio'
+        ]
         preprocess = model_cfg.test_pipeline
         for item in preprocess:
             if 'Normalize' == item['type'] and 'std' in item:
                 item['std'] = [255, 255, 255]
-        return preprocess
+
+        preprocess.insert(1, model_cfg.model.data_preprocessor)
+        transforms = preprocess
+        for i, transform in enumerate(transforms):
+            if 'keys' in transform and transform['keys'] == ['lq']:
+                transform['keys'] = ['img']
+            if 'key' in transform and transform['key'] == 'lq':
+                transform['key'] = 'img'
+            if transform['type'] == 'ToTensor':
+                transform['type'] = 'ImageToTensor'
+            if transform['type'] == 'EditDataPreprocessor':
+                transform['type'] = 'Normalize'
+            if transform['type'] == 'PackEditInputs':
+                meta_keys += transform[
+                    'meta_keys'] if 'meta_keys' in transform else []
+                transform['meta_keys'] = list(set(meta_keys))
+                transform['keys'] = ['img']
+                transforms[i]['type'] = 'Collect'
+        return transforms
 
     def get_postprocess(self, *args, **kwargs) -> Dict:
         """Get the postprocess information for SDK.
 
         Return:
-            dict: Nonthing for super resolution.
+            dict: Postprocess config for super resolution.
         """
-        return dict()
+        from mmdeploy.utils import get_task_type
+        from mmdeploy.utils.constants import SDK_TASK_MAP as task_map
+        task = get_task_type(self.deploy_cfg)
+        component = task_map[task]['component']
+        post_processor = {'type': component}
+        return post_processor
 
     def get_model_name(self, *args, **kwargs) -> str:
         """Get the model name.

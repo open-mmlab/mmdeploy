@@ -311,17 +311,20 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
             dataset_list = [dataset_list]
         for metric_dataset in dataset_list:
             dataset_tmp = using_dataset.get(metric_dataset, [])
-            if v.get('task_name') not in dataset_tmp:
-                dataset_tmp.append(v.get('task_name'))
+            if isinstance(v.get('task_name'), list):
+                tasklist = v.get('task_name')
+                for task in tasklist:
+                    if task not in dataset_tmp:
+                        dataset_tmp.append(task)
+            else:
+                if v.get('task_name') not in dataset_tmp:
+                    dataset_tmp.append(v.get('task_name'))
             using_dataset.update({metric_dataset: dataset_tmp})
-
     # Get metrics info from metafile
     for metafile_metric in metafile_metric_info:
         pytorch_meta_metric = metafile_metric.get('Metrics')
-
         dataset = metafile_metric.get('Dataset', '')
         task_name = metafile_metric.get('Task', '')
-
         if task_name == 'Restorers':
             # mmedit
             dataset = 'Set5'
@@ -330,7 +333,6 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
             logger.info(f'dataset not in {using_dataset}, skip it...')
             continue
         dataset_type += f'{dataset} | '
-
         if task_name not in using_dataset.get(dataset, []):
             # only add the metric with the correct dataset
             logger.info(f'task_name ({task_name}) is not in'
@@ -497,7 +499,7 @@ def get_info_from_log_file(info_type: str, log_path: Path,
             metric = evaluate_result.get(yaml_metric_key, 0.00)
             if yaml_metric_key == '0_word_acc_ignore_case':
                 metric *= 100
-        elif yaml_metric_key in ['Eval-PSNR', 'Eval-SSIM']:
+        elif 'PSNR' in yaml_metric_key or 'SSIM' in yaml_metric_key:
             # mmedit
             metric = eval(metric_str.split(': ')[-1])
         elif 'bbox' in metric_str:
@@ -949,7 +951,6 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
         logger.info(f'Got metrics_eval_list = {metrics_eval_list}')
         if len(metrics_eval_list) == 0 and codebase_name == 'mmedit':
             metrics_eval_list = ['PSNR']
-
         # test the model metric
         for metric_name in metrics_eval_list:
             if backend_test:
@@ -1128,7 +1129,6 @@ def main():
     ]
 
     for deploy_yaml in deploy_yaml_list:
-
         if not Path(deploy_yaml).exists():
             raise FileNotFoundError(f'deploy_yaml {deploy_yaml} not found, '
                                     'please check !')

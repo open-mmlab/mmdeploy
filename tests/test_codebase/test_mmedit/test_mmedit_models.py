@@ -3,10 +3,10 @@ import os.path as osp
 import tempfile
 from typing import Dict
 
-import mmcv
+import mmengine
 import onnx
 import torch
-from mmedit.models.backbones.sr_backbones import SRCNN
+from mmedit.models.editors.srcnn import SRCNNNet
 
 from mmdeploy.codebase import import_codebase
 from mmdeploy.core import RewriterContext
@@ -17,7 +17,7 @@ import_codebase(Codebase.MMEDIT)
 img = torch.rand(1, 3, 4, 4)
 model_file = tempfile.NamedTemporaryFile(suffix='.onnx').name
 
-deploy_cfg = mmcv.Config(
+deploy_cfg = mmengine.Config(
     dict(
         codebase_config=dict(
             type='mmedit',
@@ -45,8 +45,45 @@ deploy_cfg = mmcv.Config(
             output_names=['output'])))
 
 
+def test_base_edit_model_forward():
+    from typing import List, Optional
+
+    from mmedit.models.base_models.base_edit_model import BaseEditModel
+    from mmedit.structures import EditDataSample
+
+    from mmdeploy.codebase.mmedit import models  # noqa
+
+    class DummyBaseEditModel(BaseEditModel):
+
+        def __init__(self, generator, pixel_loss):
+            super().__init__(generator, pixel_loss)
+
+        def forward(self,
+                    inputs: torch.Tensor,
+                    data_samples: Optional[List[EditDataSample]] = None,
+                    mode: str = 'tensor',
+                    **kwargs):
+            return inputs
+
+    generator = dict(
+        type='SRCNNNet',
+        channels=(3, 64, 32, 3),
+        kernel_sizes=(9, 1, 5),
+        upscale_factor=4)
+    pixel_loss = dict(type='L1Loss', loss_weight=1.0, reduction='mean')
+    model = DummyBaseEditModel(generator, pixel_loss).eval()
+
+    model_output = model(input, None, mode='predict')
+
+    with RewriterContext({}):
+        backend_output = model(input)
+
+    assert model_output == input
+    assert backend_output == input
+
+
 def test_srcnn():
-    pytorch_model = SRCNN()
+    pytorch_model = SRCNNNet()
     model_inputs = {'x': img}
 
     onnx_file_path = tempfile.NamedTemporaryFile(suffix='.onnx').name
