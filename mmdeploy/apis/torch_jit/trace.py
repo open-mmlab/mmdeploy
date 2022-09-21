@@ -91,7 +91,8 @@ def trace(func: torch.nn.Module,
     if isinstance(func, torch.nn.Module):
         ir = IR.get(get_ir_config(deploy_cfg)['type'])
         func = patch_model(func, cfg=deploy_cfg, backend=backend, ir=ir)
-        func.forward = partial(func.forward, **input_metas)
+        if context_info['cfg']['codebase_config']['type'] == 'mmocr':
+            func.forward = partial(func.forward, **input_metas)
 
     with RewriterContext(**context_info), torch.no_grad():
         # for exporting models with weight that depends on inputs
