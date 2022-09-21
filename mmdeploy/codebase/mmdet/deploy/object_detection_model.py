@@ -584,6 +584,7 @@ class SDKEnd2EndModel(End2EndModel):
     def __init__(self, *args, **kwargs):
         kwargs['data_preprocessor'] = None
         super(SDKEnd2EndModel, self).__init__(*args, **kwargs)
+        self.has_mask = self.deploy_cfg.codebase_config.get('has_mask', False)
 
     def forward(self,
                 inputs: torch.Tensor,
@@ -607,23 +608,29 @@ class SDKEnd2EndModel(End2EndModel):
         inputs = inputs.permute(1, 2, 0)
         dets, labels, masks = self.wrapper.invoke(
             inputs.contiguous().detach().cpu().numpy())
-        dets = torch.from_numpy(dets).to(self.device).unsqueeze(0)
-        labels = torch.from_numpy(labels).to(torch.int64).to(
-            self.device).unsqueeze(0)
-        predictions = []
-        masks = np.concatenate(masks, 0)
-        for det, label, mask, data_sample in zip(dets, labels, masks,
-                                                 data_samples):
-            pred_instances = InstanceData()
-            pred_instances.scores = det[..., 4]
-            pred_instances.bboxes = det[..., :4]
-            pred_instances.labels = label
-            pred_instances.masks = torch.from_numpy(mask).\
-                to(self.device).unsqueeze(0)
+        result = InstanceData()
+        if self.has_mask:
+            segm_results = []
+            ori_h, ori_w = data_samples[0].ori_shape[:2]
+            for bbox, mask in zip(dets, masks):
+                img_mask = np.zeros((ori_h, ori_w), dtype=np.uint8)
+                left = int(max(np.floor(bbox[0]) - 1, 0))
+                top = int(max(np.floor(bbox[1]) - 1, 0))
+                img_mask[top:top + mask.shape[0],
+                         left:left + mask.shape[1]] = mask
+                segm_results.append(torch.from_numpy(img_mask))
+            if len(segm_results) > 0:
+                result.masks = torch.stack(segm_results, 0).to(self.device)
+            else:
+                result.masks = torch.zeros([0, ori_h, ori_w]).to(self.device)
+        dets = torch.from_numpy(dets).to(self.device)
+        labels = torch.from_numpy(labels).to(torch.int64).to(self.device)
+        result.bboxes = dets[:, :4]
+        result.scores = dets[:, 4]
+        result.labels = labels
+        data_samples[0].pred_instances = result
 
-            data_sample.pred_instances = pred_instances
-            predictions.append(data_sample)
-        return predictions
+        return data_samples
 
 
 def build_object_detection_model(

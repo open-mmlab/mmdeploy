@@ -244,7 +244,7 @@ class TextRecognition(BaseTask):
                 transform['keys'] = ['img']
                 transforms[i]['type'] = 'Collect'
             if transform['type'] == 'Resize':
-                transforms[i]['size'] = transforms[i]['scale']
+                transforms[i]['size'] = transforms[i].pop('scale')
 
         data_preprocessor = model_cfg.model.data_preprocessor
         transforms.insert(-1, dict(type='DefaultFormatBundle'))
