@@ -7,8 +7,6 @@ import torch
 
 import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.codebase import import_codebase
-from mmdeploy.codebase.mmdet3d.deploy.monocular_detection_model import \
-    build_monocular_detection_model
 from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
 
@@ -17,8 +15,8 @@ try:
 except ImportError:
     pytest.skip(
         f'{Codebase.MMDET3D} is not installed.', allow_module_level=True)
-from mmdeploy.codebase.mmdet3d.deploy.monocular_detection_model import \
-    MonocularDetectionModel
+from mmdeploy.codebase.mmdet3d.deploy.monocular_detection_model import (
+    MonocularDetectionModel, build_monocular_detection_model)
 
 
 @backend_checker(Backend.ONNXRUNTIME)
