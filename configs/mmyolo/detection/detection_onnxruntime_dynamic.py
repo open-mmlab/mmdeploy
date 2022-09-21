@@ -1,1 +1,2 @@
-_base_ = ['../_base_/base_dynamic.py', '../../_base_/backends/onnxruntime.py']
+_base_ = ['../../mmdet/detection/detection_onnxruntime_dynamic.py']
+codebase_config = dict(type='mmyolo', task='ObjectDetection')
