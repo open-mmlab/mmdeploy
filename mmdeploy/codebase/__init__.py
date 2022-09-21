@@ -7,7 +7,7 @@ from .base import BaseTask, MMCodebase, get_codebase_class
 extra_dependent_library = {
     Codebase.MMOCR: ['mmdet'],
     Codebase.MMROTATE: ['mmdet'],
-    Codebase.MMYOLO: ['mmyolo']
+    Codebase.MMYOLO: ['mmdet']
 }
 
 
