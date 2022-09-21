@@ -11,7 +11,7 @@ MMYOLO_TASK = Registry('mmyolo_tasks')
 
 @CODEBASE.register_module(Codebase.MMYOLO.value)
 class MMYolo(MMCodebase):
-    """MMDetection codebase class."""
+    """MMYolo codebase class."""
 
     task_registry = MMYOLO_TASK
 
