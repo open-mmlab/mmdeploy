@@ -47,8 +47,6 @@ def torch2torchscript(img: Any,
         data_preprocessor=getattr(torch_model, 'data_preprocessor', None))
     if not isinstance(model_inputs, torch.Tensor) and len(model_inputs) == 1:
         model_inputs = model_inputs[0]
-    data_samples = data['data_samples']
-    input_metas = {'data_samples': data_samples, 'mode': 'predict'}
 
     context_info = dict(deploy_cfg=deploy_cfg)
     backend = get_backend(deploy_cfg).value
@@ -59,7 +57,6 @@ def torch2torchscript(img: Any,
         trace(
             torch_model,
             model_inputs,
-            input_metas=input_metas,
             output_path_prefix=output_prefix,
             backend=backend,
             context_info=context_info,
