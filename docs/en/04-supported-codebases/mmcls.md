@@ -113,19 +113,41 @@ The whole package **mmdeploy_models/mmcls/ort** is defined as **mmdeploy SDK mod
 
 ### Backend model inference
 
-MMDeploy provides a unified API named as `inference_model` to inference model, making all inference backends API transparent to users.
-
 Take the previous converted `end2end.onnx` model as an example, you can use the following code to inference the model.
 
 ```shell
-from mmdeploy.apis import inference_model
-result = inference_model(
-  model_cfg='./resnet18_8xb32_in1k.py',
-  deploy_cfg='configs/mmcls/classification_onnxruntime_dynamic.py',
-  backend_files=['mmdeploy_models/mmcls/ort/end2end.onnx'],
-  img='tests/data/tiger.jpeg',
-  device='cpu')
-print(result)
+from mmdeploy.apis.utils import build_task_processor
+from mmdeploy.utils import get_input_shape, load_config
+import torch
+
+deploy_cfg = 'configs/mmcls/classification_onnxruntime_dynamic.py'
+model_cfg = './resnet18_8xb32_in1k.py'
+device = 'cpu'
+backend_model = ['./mmdeploy_models/mmcls/ort/end2end.onnx']
+image = 'tests/data/tiger.jpeg'
+
+# read deploy_cfg and model_cfg
+deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
+
+# build task and backend model
+task_processor = build_task_processor(model_cfg, deploy_cfg, device)
+model = task_processor.build_backend_model(backend_model)
+
+# process input image
+input_shape = get_input_shape(deploy_cfg)
+model_inputs, _ = task_processor.create_input(image, input_shape)
+
+# do model inference
+with torch.no_grad():
+    result = model.test_step(model_inputs)
+
+# visualize results
+task_processor.visualize(
+    image=image,
+    model=model,
+    result=result[0],
+    window_name='visualize',
+    output_file='output_classification.png')
 ```
 
 ### SDK model inference

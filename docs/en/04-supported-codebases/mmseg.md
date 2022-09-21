@@ -118,8 +118,6 @@ The whole package **mmdeploy_models/mmseg/ort** is defined as **mmdeploy SDK mod
 
 ### Backend model inference
 
-MMDeploy provides a unified API named as `inference_model` to inference model, making all inference backends API transparent to users.
-
 Take the previous converted `end2end.onnx` model as an example, you can use the following code to inference the model and visualize the results.
 
 ```python

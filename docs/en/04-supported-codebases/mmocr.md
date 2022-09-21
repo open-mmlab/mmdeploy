@@ -142,8 +142,6 @@ The whole package **mmdeploy_models/mmocr/dbnet/ort** is defined as **mmdeploy S
 
 ### Backend model inference
 
-MMDeploy provides a unified API named as `inference_model` to inference model, making all inference backends API transparent to users.
-
 Take the previous converted `end2end.onnx` mode of `dbnet` as an example, you can use the following code to inference the model and visualize the results.
 
 ```python
