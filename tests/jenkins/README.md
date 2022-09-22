@@ -177,7 +177,6 @@ ${exec_host_ip}:8989
   - torch1.10.0
   - torch1.11.0
   - torch1.12.0
-  - 
 ## mmdeploy-ci-ubuntu-20.04-cu111
 - TensorRT
   - TensorRT-8.4.1.5-cudnn8.4
@@ -186,11 +185,28 @@ ${exec_host_ip}:8989
   - cudnn-8.2.1.32
   - cudnn-8.4.1.50
 ## mmdeploy-ci-ubuntu-20.04-cu113
+- miniconda
+- cmake3.24.1
+- jdk1.8
+- opencv4.5
 - TensorRT
   - TensorRT-8.4.1.5-cudnn8.4
   - TensorRT-8.2.5.1-cudnn8.2
 - cudnn
   - cudnn-8.2.1.32
   - cudnn-8.4.1.50
+  onnxruntime1.8.1
+- pplnn0.8.1
+- ncnn20220721
+- pplcv0.7.0
+- conda env
+  - torch1.10.0
+  - torch1.11.0
+  - torch1.12.0
 
 ## windows
+- OpenCV 4.6.0 
+- pplcv
+- ONNXRuntime>=1.8.1
+- TensorRT-8.2.3.0.Windows10.x86_64.cuda-11.4.cudnn8.2
+- cudnn-11.3-windows-x64-v8.2.1.32
