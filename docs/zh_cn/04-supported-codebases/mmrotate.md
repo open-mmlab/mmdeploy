@@ -1,48 +1,33 @@
-# mmrotate 模型支持列表
+# MMRotate 模型部署
 
-[mmrotate](https://github.com/open-mmlab/mmrotate) 是一个基于 PyTorch 的旋转物体检测的开源工具箱，也是 [OpenMMLab](https://openmmlab.com/)  项目的一部分。
+- [安装](#安装)
+  - [安装 mmcls](#安装-mmrotate)
+  - [安装 mmdeploy](#安装-mmdeploy)
+- [模型转换](#模型转换)
+- [模型规范](#模型规范)
+- [模型推理](#模型推理)
+  - [后端模型推理](#后端模型推理)
+  - [SDK 模型推理](#sdk-模型推理)
+- [模型支持列表](#模型支持列表)
 
-## 安装 mmrotate
+______________________________________________________________________
 
-参照 [official installation guide](https://mmrotate.readthedocs.io/en/latest/install.html)。
+[MMRotate](https://github.com/open-mmlab/mmrotate) 是一个基于 PyTorch 的旋转物体检测的开源工具箱，也是 [OpenMMLab](https://openmmlab.com/) 项目的一部分。
 
-## 支持列表
+## 安装
 
-| Model            | Task             | ONNX Runtime | TensorRT | NCNN | PPLNN | OpenVINO |                                          Model config                                          |
-| :--------------- | :--------------- | :----------: | :------: | :--: | :---: | :------: | :--------------------------------------------------------------------------------------------: |
-| RotatedRetinaNet | RotatedDetection |      Y       |    Y     |  N   |   N   |    N     | [config](https://github.com/open-mmlab/mmrotate/blob/main/configs/rotated_retinanet/README.md) |
-| Oriented RCNN    | RotatedDetection |      Y       |    Y     |  N   |   N   |    N     |   [config](https://github.com/open-mmlab/mmrotate/blob/main/configs/oriented_rcnn/README.md)   |
-| Gliding Vertex   | RotatedDetection |      N       |    Y     |  N   |   N   |    N     |  [config](https://github.com/open-mmlab/mmrotate/blob/main/configs/gliding_vertex/README.md)   |
-| RoI Transformer  | RotatedDetection |      Y       |    Y     |  N   |   N   |    N     |     [config](https://github.com/open-mmlab/mmrotate/blob/main/configs/roi_trans/README.md)     |
+### 安装 mmrotate
 
-### 使用举例
+### 安装 mmdeploy
 
-```bash
-# convert ort
-python tools/deploy.py \
-configs/mmrotate/rotated-detection_onnxruntime_dynamic.py \
-$MMROTATE_DIR/configs/rotated_retinanet/rotated_retinanet_obb_r50_fpn_1x_dota_le135.py \
-$MMROTATE_DIR/checkpoints/rotated_retinanet_obb_r50_fpn_1x_dota_le135-e4131166.pth \
-$MMROTATE_DIR/demo/demo.jpg \
---work-dir work-dirs/mmrotate/rotated_retinanet/ort \
---device cpu
+## 模型转换
 
-# compute metric
-python tools/test.py \
-    configs/mmrotate/rotated-detection_onnxruntime_dynamic.py \
-    $MMROTATE_DIR/configs/rotated_retinanet/rotated_retinanet_obb_r50_fpn_1x_dota_le135.py \
-    --model work-dirs/mmrotate/rotated_retinanet/ort/end2end.onnx \
-    --metrics mAP
+## 模型规范
 
-# generate submit file
-python tools/test.py \
-    configs/mmrotate/rotated-detection_onnxruntime_dynamic.py \
-    $MMROTATE_DIR/configs/rotated_retinanet/rotated_retinanet_obb_r50_fpn_1x_dota_le135.py \
-    --model work-dirs/mmrotate/rotated_retinanet/ort/end2end.onnx \
-    --format-only \
-    --metric-options submission_dir=work-dirs/mmrotate/rotated_retinanet/ort/Task1_results
-```
+## 模型推理
 
-注意：
+### 后端模型推理
 
-- mmrotate 模型需要额外输入，但我们无法直接获取它。在导出模型时，可以使用 `$MMROTATE_DIR/demo/demo.jpg` 作为输入。
+### SDK 模型推理
+
+## 模型支持列表

@@ -60,7 +60,7 @@ When using `tools/deploy.py`, it is crucial to specify the correct deployment co
 
   MMDeploy supports models of one task in mmedit, i.e., `super resolution`. Please refer to chapter [supported models](#supported-models) for task-model organization.
 
-  **DO remember to use** the corresponding deployment config file when trying to convert models of different tasks.
+  **DO REMEMBER TO USE** the corresponding deployment config file when trying to convert models of different tasks.
 
 - **{backend}:** inference backend, such as onnxruntime, tensorrt, pplnn, ncnn, openvino, coreml etc.
 

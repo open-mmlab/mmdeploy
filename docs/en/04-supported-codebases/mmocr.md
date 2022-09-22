@@ -61,7 +61,7 @@ When using `tools/deploy.py`, it is crucial to specify the correct deployment co
 
   MMDeploy supports models of two tasks of mmocr, one is `text detection` and the other is `text-recogntion`.
 
-  **DO remember to use** the corresponding deployment config file when trying to convert models of different tasks.
+  **DO REMEMBER TO USE** the corresponding deployment config file when trying to convert models of different tasks.
 
 - **{backend}:** inference backend, such as onnxruntime, tensorrt, pplnn, ncnn, openvino, coreml etc.
 
