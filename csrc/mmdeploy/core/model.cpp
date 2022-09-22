@@ -20,6 +20,7 @@ Model::Model(const std::string& model_path) {
 Model::Model(const void* buffer, size_t size) { Init(buffer, size).value(); }
 
 Result<void> Model::Init(const std::string& model_path) {
+  model_path_ = model_path;
   if (!fs::exists(model_path)) {
     MMDEPLOY_ERROR("'{}' doesn't exist", model_path);
     return Status(eFileNotExist);
@@ -44,6 +45,8 @@ Result<void> Model::Init(const std::string& model_path) {
   MMDEPLOY_ERROR("no ModelImpl can read model {}", model_path);
   return Status(eNotSupported);
 }
+
+const std::string& Model::GetModelPath() const { return model_path_; }
 
 Result<void> Model::Init(const void* buffer, size_t size) {
   auto registry = ModelRegistry::Get();

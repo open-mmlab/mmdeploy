@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import List, Optional, Sequence, Union
 
+import numpy as np
 import torch
 from mmengine import Config
 from mmengine.model import BaseDataPreprocessor
@@ -107,6 +108,26 @@ class End2EndModel(BaseBackendModel):
             predictions.append(data_sample)
 
         return predictions
+
+
+@__BACKEND_MODEL.register_module('rknn')
+class RKNNModel(End2EndModel):
+    """SDK inference class, converts RKNN output to mmseg format."""
+
+    def forward_test(self, imgs: torch.Tensor, *args, **kwargs) -> \
+            List[np.ndarray]:
+        """The interface for forward test.
+
+        Args:
+            imgs (torch.Tensor): Input image(s) in [N x C x H x W] format.
+
+        Returns:
+            List[np.ndarray]: A list of segmentation map.
+        """
+        outputs = self.wrapper({self.input_name: imgs})
+        outputs = [output.argmax(dim=1, keepdim=True) for output in outputs]
+        outputs = [out.detach().cpu().numpy() for out in outputs]
+        return outputs
 
 
 @__BACKEND_MODEL.register_module('sdk')

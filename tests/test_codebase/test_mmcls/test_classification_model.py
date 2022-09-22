@@ -1,5 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
+import numpy as np
+import pytest
 import torch
 from mmengine import Config
 
@@ -9,8 +11,12 @@ from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
 
 IMAGE_SIZE = 64
+NUM_CLASS = 1000
 
-import_codebase(Codebase.MMCLS)
+try:
+    import_codebase(Codebase.MMCLS)
+except ImportError:
+    pytest.skip(f'{Codebase.MMCLS} is not installed.', allow_module_level=True)
 
 
 @backend_checker(Backend.ONNXRUNTIME)
@@ -51,6 +57,44 @@ class TestEnd2EndModel:
             imgs, [data_sample], mode='predict')
         assert results is not None, 'failed to get output using '\
             'End2EndModel'
+
+
+@backend_checker(Backend.RKNN)
+class TestRKNNEnd2EndModel:
+
+    @classmethod
+    def setup_class(cls):
+        # force add backend wrapper regardless of plugins
+        import mmdeploy.backend.rknn as rknn_apis
+        from mmdeploy.backend.rknn import RKNNWrapper
+        rknn_apis.__dict__.update({'RKNNWrapper': RKNNWrapper})
+
+        # simplify backend inference
+        cls.wrapper = SwitchBackendWrapper(RKNNWrapper)
+        cls.outputs = [torch.rand(1, 1, IMAGE_SIZE, IMAGE_SIZE)]
+        cls.wrapper.set(outputs=cls.outputs)
+        deploy_cfg = Config({
+            'onnx_config': {
+                'output_names': ['outputs']
+            },
+            'backend_config': {
+                'common_config': {}
+            }
+        })
+
+        from mmdeploy.codebase.mmcls.deploy.classification_model import \
+            RKNNEnd2EndModel
+        class_names = ['' for i in range(NUM_CLASS)]
+        cls.end2end_model = RKNNEnd2EndModel(
+            Backend.RKNN, [''],
+            device='cpu',
+            class_names=class_names,
+            deploy_cfg=deploy_cfg)
+
+    def test_forward_test(self):
+        imgs = torch.rand(2, 3, IMAGE_SIZE, IMAGE_SIZE)
+        results = self.end2end_model.forward_test(imgs)
+        assert isinstance(results[0], np.ndarray)
 
 
 @backend_checker(Backend.ONNXRUNTIME)

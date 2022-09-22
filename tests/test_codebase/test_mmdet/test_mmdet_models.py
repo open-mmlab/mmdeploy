@@ -19,7 +19,10 @@ from mmdeploy.utils.test import (WrapFunction, WrapModel, backend_checker,
                                  check_backend, get_model_outputs,
                                  get_onnx_model, get_rewrite_outputs)
 
-import_codebase(Codebase.MMDET)
+try:
+    import_codebase(Codebase.MMDET)
+except ImportError:
+    pytest.skip(f'{Codebase.MMDET} is not installed.', allow_module_level=True)
 
 
 @backend_checker(Backend.TENSORRT)
@@ -58,6 +61,52 @@ def test_multiclass_nms_static():
 
     boxes = torch.rand(1, 5, 4).cuda()
     scores = torch.rand(1, 5, 8).cuda()
+    max_output_boxes_per_class = 20
+    keep_top_k = 10
+    wrapped_func = WrapFunction(
+        multiclass_nms,
+        max_output_boxes_per_class=max_output_boxes_per_class,
+        keep_top_k=keep_top_k)
+    rewrite_outputs, _ = get_rewrite_outputs(
+        wrapped_func,
+        model_inputs={
+            'boxes': boxes,
+            'scores': scores
+        },
+        deploy_cfg=deploy_cfg)
+
+    assert rewrite_outputs is not None, 'Got unexpected rewrite '\
+        'outputs: {}'.format(rewrite_outputs)
+
+
+@backend_checker(Backend.ASCEND)
+def test_multiclass_nms__ascend():
+    from mmdeploy.codebase.mmdet.models.layers.bbox_nms import multiclass_nms
+    deploy_cfg = Config(
+        dict(
+            onnx_config=dict(
+                input_names=['boxes', 'scores'],
+                output_names=['dets', 'labels'],
+                input_shape=None),
+            backend_config=dict(
+                type='ascend',
+                model_inputs=[
+                    dict(input_shapes=dict(boxes=[1, 5, 4], scores=[1, 5, 8]))
+                ]),
+            codebase_config=dict(
+                type='mmdet',
+                task='ObjectDetection',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    iou_threshold=0.5,
+                    max_output_boxes_per_class=20,
+                    pre_top_k=-1,
+                    keep_top_k=10,
+                    background_label_id=-1,
+                ))))
+
+    boxes = torch.rand(1, 5, 4)
+    scores = torch.rand(1, 5, 8)
     max_output_boxes_per_class = 20
     keep_top_k = 10
     wrapped_func = WrapFunction(
@@ -460,6 +509,70 @@ def get_reppoints_head_model():
     return model
 
 
+def get_detrhead_model():
+    """DETR head Config."""
+    from mmdet.models import build_head
+    model = build_head(
+        dict(
+            type='DETRHead',
+            num_classes=4,
+            in_channels=1,
+            transformer=dict(
+                type='Transformer',
+                encoder=dict(
+                    type='DetrTransformerEncoder',
+                    num_layers=1,
+                    transformerlayers=dict(
+                        type='BaseTransformerLayer',
+                        attn_cfgs=[
+                            dict(
+                                type='MultiheadAttention',
+                                embed_dims=4,
+                                num_heads=1,
+                                dropout=0.1)
+                        ],
+                        ffn_cfgs=dict(
+                            type='FFN',
+                            embed_dims=4,
+                            feedforward_channels=32,
+                            num_fcs=2,
+                            ffn_drop=0.,
+                            act_cfg=dict(type='ReLU', inplace=True),
+                        ),
+                        feedforward_channels=32,
+                        ffn_dropout=0.1,
+                        operation_order=('self_attn', 'norm', 'ffn', 'norm'))),
+                decoder=dict(
+                    type='DetrTransformerDecoder',
+                    return_intermediate=True,
+                    num_layers=1,
+                    transformerlayers=dict(
+                        type='DetrTransformerDecoderLayer',
+                        attn_cfgs=dict(
+                            type='MultiheadAttention',
+                            embed_dims=4,
+                            num_heads=1,
+                            dropout=0.1),
+                        ffn_cfgs=dict(
+                            type='FFN',
+                            embed_dims=4,
+                            feedforward_channels=32,
+                            num_fcs=2,
+                            ffn_drop=0.,
+                            act_cfg=dict(type='ReLU', inplace=True),
+                        ),
+                        feedforward_channels=32,
+                        ffn_dropout=0.1,
+                        operation_order=('self_attn', 'norm', 'cross_attn',
+                                         'norm', 'ffn', 'norm')),
+                )),
+            positional_encoding=dict(
+                type='SinePositionalEncoding', num_feats=2, normalize=True),
+            test_cfg=dict(max_per_img=100)))
+    model.requires_grad_(False)
+    return model
+
+
 def get_single_roi_extractor():
     """SingleRoIExtractor Config."""
     from mmdet.models.roi_heads import SingleRoIExtractor
@@ -853,6 +966,73 @@ def test_single_roi_extractor(backend_type: Backend):
         backend_output = backend_output.squeeze()
         assert np.allclose(
             model_output, backend_output, rtol=1e-03, atol=1e-05)
+
+
+def test_single_roi_extractor__ascend():
+    check_backend(Backend.ASCEND)
+
+    # create wrap function
+    from mmdeploy.utils.test import WrapFunction
+    single_roi_extractor = get_single_roi_extractor()
+    out_channels = single_roi_extractor.out_channels
+
+    def single_roi_extractor_func(feat0, feat1, feat2, feat3, rois):
+        return single_roi_extractor([feat0, feat1, feat2, feat3], rois)
+
+    single_roi_extractor_wrapper = WrapFunction(single_roi_extractor_func)
+
+    # generate data
+    seed_everything(1234)
+    feats = [
+        torch.rand((1, out_channels, 200, 336)),
+        torch.rand((1, out_channels, 100, 168)),
+        torch.rand((1, out_channels, 50, 84)),
+        torch.rand((1, out_channels, 25, 42)),
+    ]
+    seed_everything(5678)
+    rois = torch.tensor([[0.0000, 587.8285, 52.1405, 886.2484, 341.5644]])
+
+    # create config
+    input_names = ['feat0', 'feat1', 'feat2', 'feat3', 'rois']
+    output_names = ['roi_feat']
+    model_inputs = dict(zip(input_names, feats + [rois]))
+    deploy_cfg = mmengine.Config(
+        dict(
+            backend_config=dict(
+                type=Backend.ASCEND.value,
+                model_inputs=[
+                    dict(
+                        input_shapes=dict(
+                            feat0=feats[0].shape,
+                            feat1=feats[1].shape,
+                            feat2=feats[2].shape,
+                            feat3=feats[3].shape,
+                            rois=rois.shape))
+                ]),
+            onnx_config=dict(
+                input_names=input_names,
+                output_names=output_names,
+                input_shape=None),
+            codebase_config=dict(
+                type='mmdet',
+                task='ObjectDetection',
+            )))
+
+    # get torch output
+    model_outputs = get_model_outputs(single_roi_extractor_wrapper, 'forward',
+                                      model_inputs)
+
+    # get backend output
+    backend_outputs, _ = get_rewrite_outputs(
+        wrapped_model=single_roi_extractor_wrapper,
+        model_inputs=model_inputs,
+        deploy_cfg=deploy_cfg)
+    if isinstance(backend_outputs, dict):
+        backend_outputs = backend_outputs.values()
+    for model_output, backend_output in zip(model_outputs[0], backend_outputs):
+        model_output = model_output.squeeze().cpu().numpy()
+        backend_output = backend_output.squeeze()
+        assert model_output.shape == backend_output.shape
 
 
 def get_cascade_roi_head(is_instance_seg=False):
@@ -1962,3 +2142,40 @@ def test_mlvl_point_generator__single_level_grid_priors__tensorrt(
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg,
         run_with_backend=False)
+
+
+@pytest.mark.parametrize('backend_type, ir_type',
+                         [(Backend.ONNXRUNTIME, 'onnx')])
+def test_detrhead_get_bboxes(backend_type: Backend, ir_type: str):
+    """Test get_bboxes rewrite of base dense head."""
+    check_backend(backend_type)
+    dense_head = get_detrhead_model()
+    dense_head.cpu().eval()
+    s = 128
+    img_metas = [{
+        'scale_factor': np.ones(4),
+        'pad_shape': (s, s, 3),
+        'img_shape': (s, s, 3)
+    }]
+
+    deploy_cfg = get_deploy_cfg(backend_type, ir_type)
+
+    seed_everything(1234)
+    cls_score = [[torch.rand(1, 100, 5) for i in range(5, 0, -1)]]
+    seed_everything(5678)
+    bboxes = [[torch.rand(1, 100, 4) for i in range(5, 0, -1)]]
+
+    # to get outputs of onnx model after rewrite
+    img_metas[0]['img_shape'] = torch.Tensor([s, s])
+    wrapped_model = WrapModel(dense_head, 'get_bboxes', img_metas=img_metas)
+    rewrite_inputs = {
+        'all_cls_scores_list': cls_score,
+        'all_bbox_preds_list': bboxes,
+    }
+    rewrite_outputs, _ = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg,
+        run_with_backend=False)
+
+    assert rewrite_outputs is not None

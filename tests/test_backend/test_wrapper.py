@@ -15,6 +15,7 @@ ts_file = tempfile.NamedTemporaryFile(suffix='.pt').name
 test_img = torch.rand(1, 3, 8, 8)
 output_names = ['output']
 input_names = ['input']
+target_platform = 'rk3588'  # rknn pre-compiled model need device
 
 
 @pytest.mark.skip(reason='This a not test class but a utility class.')
@@ -103,6 +104,33 @@ def onnx2backend(backend, onnx_file):
         work_dir = backend_dir
         from_onnx(onnx_file, work_dir, input_info, output_names)
         return backend_file
+    elif backend == Backend.RKNN:
+        import mmcv
+
+        from mmdeploy.apis.rknn import onnx2rknn
+        rknn_file = onnx_file.replace('.onnx', '.rknn')
+        deploy_cfg = mmcv.Config(
+            dict(
+                backend_config=dict(
+                    type='rknn',
+                    common_config=dict(target_platform=target_platform),
+                    quantization_config=dict(
+                        do_quantization=False, dataset=None),
+                    input_size_list=[[3, 8, 8]])))
+        onnx2rknn(onnx_file, rknn_file, deploy_cfg)
+        return rknn_file
+    elif backend == Backend.ASCEND:
+        import mmcv
+
+        from mmdeploy.apis.ascend import from_onnx
+        backend_dir = tempfile.TemporaryDirectory().name
+        work_dir = backend_dir
+        file_name = osp.splitext(osp.split(onnx_file)[1])[0]
+        backend_file = osp.join(work_dir, file_name + '.om')
+        model_inputs = mmcv.Config(
+            dict(input_shapes=dict(input=test_img.shape)))
+        from_onnx(onnx_file, work_dir, model_inputs)
+        return backend_file
 
 
 def create_wrapper(backend, model_files):
@@ -133,6 +161,17 @@ def create_wrapper(backend, model_files):
         torchscript_model = TorchscriptWrapper(
             model_files, input_names=input_names, output_names=output_names)
         return torchscript_model
+    elif backend == Backend.RKNN:
+        from mmdeploy.backend.rknn import RKNNWrapper
+        rknn_model = RKNNWrapper(
+            model_files,
+            common_config=dict(target_platform=target_platform),
+            output_names=output_names)
+        return rknn_model
+    elif backend == Backend.ASCEND:
+        from mmdeploy.backend.ascend import AscendWrapper
+        ascend_model = AscendWrapper(model_files)
+        return ascend_model
     else:
         raise NotImplementedError(f'Unknown backend type: {backend.value}')
 
@@ -163,13 +202,18 @@ def run_wrapper(backend, wrapper, input):
     elif backend == Backend.TORCHSCRIPT:
         results = wrapper({'input': input})['output']
         return results
+    elif backend == Backend.RKNN:
+        results = wrapper({'input': input})
+    elif backend == Backend.ASCEND:
+        results = wrapper({'input': input})['output']
+        return results
     else:
         raise NotImplementedError(f'Unknown backend type: {backend.value}')
 
 
 ALL_BACKEND = [
     Backend.TENSORRT, Backend.ONNXRUNTIME, Backend.PPLNN, Backend.NCNN,
-    Backend.OPENVINO, Backend.TORCHSCRIPT
+    Backend.OPENVINO, Backend.TORCHSCRIPT, Backend.ASCEND, Backend.RKNN
 ]
 
 

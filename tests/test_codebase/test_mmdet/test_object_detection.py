@@ -17,7 +17,10 @@ from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Codebase, load_config
 from mmdeploy.utils.test import DummyModel, SwitchBackendWrapper
 
-import_codebase(Codebase.MMDET)
+try:
+    import_codebase(Codebase.MMDET)
+except ImportError:
+    pytest.skip(f'{Codebase.MMDET} is not installed.', allow_module_level=True)
 
 model_cfg_path = 'tests/test_codebase/test_mmdet/data/model.py'
 model_cfg = load_config(model_cfg_path)[0]

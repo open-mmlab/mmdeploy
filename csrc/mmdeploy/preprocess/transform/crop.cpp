@@ -3,6 +3,7 @@
 #include "crop.h"
 
 #include "mmdeploy/archive/json_archive.h"
+#include "mmdeploy/preprocess/transform/tracer.h"
 
 using namespace std;
 
@@ -46,6 +47,13 @@ Result<Value> CenterCropImpl::Process(const Value& input) {
     OUTCOME_TRY(auto dst_tensor, CropImage(tensor, y1, x1, y2, x2));
 
     auto& shape = dst_tensor.desc().shape;
+
+    // trace static info & runtime args
+    if (output.contains("__tracer__")) {
+      output["__tracer__"].get_ref<Tracer&>().CenterCrop(
+          {y1, x1, h - (int)shape[1] - y1, w - (int)shape[2] - x1}, {(int)shape[1], (int)shape[2]},
+          tensor.data_type());
+    }
 
     output["img_shape"] = {shape[0], shape[1], shape[2], shape[3]};
     if (input.contains("scale_factor")) {

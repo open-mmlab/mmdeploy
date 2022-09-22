@@ -624,27 +624,6 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
     <td align="center">-</td>
   </tr>
-  <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmclassification/blob/master/configs/vision_transformer/vit-base-p16_ft-64xb64_in1k-384.py">Vision Transformer</a></td>
-    <td align="center">top-1</td>
-    <td align="center">85.43</td>
-    <td align="center">85.43</td>
-    <td align="center">-</td>
-    <td align="center">85.43</td>
-    <td align="center">85.42</td>
-    <td align="center">-</td>
-    <td align="center">-</td>
-  </tr>
-  <tr>
-    <td align="center">top-5</td>
-    <td align="center">97.77</td>
-    <td align="center">97.77</td>
-    <td align="center">-</td>
-    <td align="center">97.77</td>
-    <td align="center">97.76</td>
-    <td align="center">-</td>
-    <td align="center">-</td>
-  </tr>
 </tbody>
 </table>
 </div>
@@ -890,29 +869,6 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">39.3</td>
     <td align="center">35.4</td>
     <td align="center">-</td>
-    <td align="center">-</td>
-    <td align="center">-</td>
-  </tr>
-  <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmdetection/blob/master/configs/swin/mask_rcnn_swin-t-p4-w7_fpn_1x_coco.py">Swin-Transformer</a></td>
-    <td align="center" rowspan="2">Instance Segmentation</td>
-    <td align="center" rowspan="2">COCO2017</td>
-    <td align="center">box AP</td>
-    <td align="center">42.7</td>
-    <td align="center">-</td>
-    <td align="center">42.7</td>
-    <td align="center">42.5</td>
-    <td align="center">37.7</td>
-    <td align="center">-</td>
-    <td align="center">-</td>
-  </tr>
-  <tr>
-    <td align="center">mask AP</td>
-    <td align="center">39.3</td>
-    <td align="center">-</td>
-    <td align="center">39.3</td>
-    <td align="center">39.3</td>
-    <td align="center">35.4</td>
     <td align="center">-</td>
     <td align="center">-</td>
   </tr>
@@ -1640,18 +1596,6 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">43.34</td>
     <td align="center">43.35</td>
     <td align="center">-</td>
-    <td align="center">-</td>
-  </tr>
-  <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/blob/master/configs/segmenter/segmenter_vit-s_linear_8x1_512x512_160k_ade20k.py">Segmenter</a></td>
-    <td align="center">ADE20K</td>
-    <td align="center">mIoU</td>
-    <td align="center">44.32</td>
-    <td align="center">44.29</td>
-    <td align="center">44.29</td>
-    <td align="center">44.29</td>
-    <td align="center">43.34</td>
-    <td align="center">43.35</td>
     <td align="center">-</td>
   </tr>
 </tbody>

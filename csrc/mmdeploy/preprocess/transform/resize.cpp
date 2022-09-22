@@ -6,6 +6,7 @@
 
 #include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/core/tensor.h"
+#include "mmdeploy/preprocess/transform/tracer.h"
 
 using namespace std;
 
@@ -109,6 +110,12 @@ Result<Value> ResizeImpl::Process(const Value& input) {
     output["keep_ratio"] = arg_.keep_ratio;
 
     SetTransformData(output, key, std::move(dst_img));
+
+    // trace static info & runtime args
+    if (output.contains("__tracer__")) {
+      output["__tracer__"].get_ref<Tracer&>().Resize(arg_.interpolation, {dst_h, dst_w},
+                                                     src_img.data_type());
+    }
   }
 
   MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));

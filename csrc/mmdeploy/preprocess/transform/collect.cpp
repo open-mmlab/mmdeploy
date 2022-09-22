@@ -7,7 +7,7 @@
 
 namespace mmdeploy {
 
-CollectImpl::CollectImpl(const Value &args) {
+CollectImpl::CollectImpl(const Value &args) : TransformImpl(args) {
   if (!args.contains("keys") || !args["keys"].is_array()) {
     throw std::invalid_argument("'keys' is missed in arguments, or it is not an array as expected");
   }
@@ -57,7 +57,12 @@ Result<Value> CollectImpl::Process(const Value &input) {
 }
 
 Collect::Collect(const Value &args, int version) : Transform(args) {
-  impl_ = Registry<CollectImpl>::Get().GetCreator("cpu", version)->Create(args);
+  auto impl_creator = Registry<CollectImpl>::Get().GetCreator(specified_platform_, version);
+  if (nullptr == impl_creator) {
+    MMDEPLOY_ERROR("'Collect' is not supported on '{}' platform", specified_platform_);
+    throw_exception(eEntryNotFound);
+  }
+  impl_ = impl_creator->Create(args);
 }
 
 Result<Value> Collect::Process(const Value &input) { return impl_->Process(input); }

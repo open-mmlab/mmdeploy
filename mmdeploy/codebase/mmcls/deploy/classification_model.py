@@ -35,12 +35,16 @@ class End2EndModel(BaseBackendModel):
                  backend_files: Sequence[str],
                  device: str,
                  deploy_cfg: Union[str, Config] = None,
-                 data_preprocessor: Optional[Union[dict, nn.Module]] = None):
+                 data_preprocessor: Optional[Union[dict, nn.Module]] = None,
+                 **kwargs):
         super(End2EndModel, self).__init__(
             deploy_cfg=deploy_cfg, data_preprocessor=data_preprocessor)
         self.deploy_cfg = deploy_cfg
         self._init_wrapper(
-            backend=backend, backend_files=backend_files, device=device)
+            backend=backend,
+            backend_files=backend_files,
+            device=device,
+            **kwargs)
         self.device = device
 
     def _init_wrapper(self, backend: Backend, backend_files: Sequence[str],
@@ -120,6 +124,25 @@ class SDKEnd2EndModel(End2EndModel):
         predict = ClsHead._get_predictions(
             None, cls_score, data_samples=data_samples)
         return predict
+
+
+@__BACKEND_MODEL.register_module('rknn')
+class RKNNEnd2EndModel(End2EndModel):
+    """RKNN inference class, converts RKNN output to mmcls format."""
+
+    def forward_test(self, imgs: torch.Tensor, *args, **kwargs) -> \
+            List[np.ndarray]:
+        """The interface for forward test.
+
+        Args:
+            imgs (torch.Tensor): Input image(s) in [N x C x H x W] format.
+
+        Returns:
+            List[np.ndarray]: A list of classification prediction.
+        """
+        outputs = self.wrapper({self.input_name: imgs})
+        outputs = [out.numpy() for out in outputs]
+        return outputs
 
 
 def build_classification_model(
