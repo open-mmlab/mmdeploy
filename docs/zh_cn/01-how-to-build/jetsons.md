@@ -165,7 +165,7 @@ conda activate mmdeploy
 
 - 安装 h5py 和 pycuda
 
-  Model Converter 使用 HDF5 存储 TensorRT INT8 量化的校准数据；需要 pycuda 获取结果和拷贝显存
+  Model Converter 使用 HDF5 存储 TensorRT INT8 量化的校准数据；需要 pycuda 拷贝显存
 
   ```shell
   sudo apt-get install -y pkg-config libhdf5-100 libhdf5-dev
