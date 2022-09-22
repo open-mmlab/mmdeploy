@@ -39,7 +39,7 @@ for codebase in ${codebase_list[@]}; do
                 ${docker_image} /bin/bash
         )
         echo "container_id=${container_id}"
-        nohup docker exec ${container_id} bash -c "git clone --depth 1 --branch master --recursive https://github.com/open-mmlab/mmdeploy.git &&\
+        nohup docker exec ${container_id} bash -c "git clone --depth 1 --branch ${mmdeploy_branch} --recursive ${repo_url} &&\
         /root/workspace/mmdeploy_script/docker_exec_convert_gpu.sh ${codebase} ${exec_performance}" >${log_dir}/${codebase}.log 2>&1 &
         wait
         docker stop $container_id

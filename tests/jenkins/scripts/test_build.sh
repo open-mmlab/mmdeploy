@@ -1,8 +1,9 @@
 #!/bin/bash
 
 ## parameters
-# export docker_image=mmdeploy-ci-ubuntu-18.04
-export docker_image=$1
+docker_image=$(grep docker_image ../conf/start.config | sed 's/docker_image=//')
+mmdeploy_branch=$(grep mmdeploy_branch ../conf/start.config | sed 's/mmdeploy_branch=//')
+repo_url=$(grep repo_url ../conf/start.config | sed 's/repo_url=//')
 
 ## make log_dir
 date_snap=$(date +%Y%m%d)
@@ -21,7 +22,7 @@ container_id=$(
 )
 echo "container_id=${container_id} --name ${container_name}"
 
-nohup docker exec ${container_id} bash -c "git clone --depth 1 --branch master --recursive https://github.com/open-mmlab/mmdeploy.git &&\
+nohup docker exec ${container_id} bash -c "git clone --depth 1 --branch ${mmdeploy_branch} --recursive ${repo_url} &&\
 /root/workspace/mmdeploy_script/docker_exec_build.sh" >${log_dir}/build.log 2>&1 &
 
 wait

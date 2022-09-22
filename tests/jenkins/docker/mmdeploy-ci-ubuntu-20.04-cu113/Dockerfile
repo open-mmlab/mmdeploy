@@ -82,7 +82,7 @@ ENV PATH=$JAVA_HOME/bin:$PATH
 RUN wget http://${HOST}/cudnn-${CUDA}-linux-x64-v8.2.1.32.tgz && \
     tar -zxvf cudnn-${CUDA}-linux-x64-v8.2.1.32.tgz && \
     cp -r cuda/include/cudnn* /usr/local/cuda-${CUDA}/include/ && \
-    cp -r cuda/lib64/libcudnn* /usr/local/cuda-${CUDA}/lib64/
+    cp -r cuda/lib63/libcudnn* /usr/local/cuda-${CUDA}/lib64/
 ENV CUDNN_DIR=/root/workspace/cuda
 ENV LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
 ENV LD_LIBRARY_PATH=/usr/local/cuda-${CUDA}/lib64/:$LD_LIBRARY_PATH
@@ -132,6 +132,15 @@ RUN git clone --depth 1 --branch v${PPLCV_VERSION} https://github.com/openppl-pu
     ./build.sh cuda
     
 ENV pplcv_DIR=/root/workspace/ppl.cv/cuda-build/install/lib/cmake/ppl
+
+### install tensorrt
+RUN wget http://${HOST}/TensorRT-8.2..8.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz && \
+    tar -zxvf TensorRT-8.2.1.8.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz &&\
+    wget http://${HOST}/TensorRT-8.2.1.8.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz && \
+    tar -zxvf TensorRT-8.2.1.8.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz &&\
+    wget http://${HOST}/TensorRT-8.2.1.8.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz && \
+    tar -zxvf TensorRT-8.2.1.8.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz &&\
+
 
 ### install tensorrt
 RUN wget http://${HOST}/TensorRT-8.2.1.8.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz && \
