@@ -135,6 +135,8 @@ class VoxelDetection(BaseTask):
                 and model input.
         """
 
+        preproc = self.build_data_preprocessor()
+
         cfg = self.model_cfg
         test_pipeline = deepcopy(cfg.test_dataloader.dataset.pipeline)
         test_pipeline = Compose(test_pipeline)
@@ -156,8 +158,8 @@ class VoxelDetection(BaseTask):
         data[0]['inputs']['points'] = data[0]['inputs']['points'].to(
             self.device)
 
-        if data_preprocessor is not None:
-            collate_data = data_preprocessor(collate_data, False)
+        if preproc is not None:
+            collate_data = preproc(collate_data, False)
             del collate_data['inputs']['voxels']['voxel_centers']
         return collate_data, collate_data['inputs']
 
