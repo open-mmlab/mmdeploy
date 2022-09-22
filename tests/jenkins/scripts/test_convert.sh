@@ -1,10 +1,12 @@
 #!/bin/bash
 
 ## parameters
-docker_image=$1
-codebase_list=($2)
-exec_performance=${3:-'y'}
-max_job_nums=${4:-'4'}
+docker_image=$(grep docker_image ../conf/start.config | sed 's/docker_image=//')
+codebase_list=$(grep codebase_list ../conf/start.config | sed 's/codebase_list=//')
+exec_performance=$(grep exec_performance ../conf/start.config | sed 's/exec_performance=//')
+max_job_nums=$(grep max_job_nums ../conf/start.config | sed 's/max_job_nums=//')
+mmdeploy_branch=$(grep mmdeploy_branch ../conf/start.config | sed 's/mmdeploy_branch=//')
+repo_url=$(grep repo_url ../conf/start.config | sed 's/repo_url=//')
 
 ## make log_dir
 date_snap=$(date +%Y%m%d)
