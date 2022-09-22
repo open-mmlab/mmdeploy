@@ -357,3 +357,11 @@ class VoxelDetection(BaseTask):
             for _ in range(batch_size):
                 prog_bar.update()
         return results
+
+    def mode(self) -> str:
+        """Get pytorch inference mode, it depends on codebase implementation.
+
+        Returns:
+            str: codebase inference mode
+        """
+        return 'tensor'
