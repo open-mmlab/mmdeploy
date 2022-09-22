@@ -175,16 +175,18 @@ It takes about 1 hour 40 minutes to install MMCV on a Jetson Nano. So, please be
 #### Install ONNX
 
 ```shell
+# Execute one of the following commands
 pip install onnx
+conda install -c conda-forge onnx
 ```
 
-#### Install h5py
+#### Install h5py and pycuda
 
-Model Converter employs HDF5 to save the calibration data for TensorRT INT8 quantization.
+Model Converter employs HDF5 to save the calibration data for TensorRT INT8 quantization and needs `pycuda` to copy device memory.
 
 ```shell
 sudo apt-get install -y pkg-config libhdf5-100 libhdf5-dev
-pip install versioned-hdf5
+pip install versioned-hdf5 pycuda
 ```
 
 ```{note}
