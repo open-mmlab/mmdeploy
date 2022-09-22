@@ -31,7 +31,3 @@ ______________________________________________________________________
 ### SDK model inference
 
 ## Supported models
-
-|                                            Model                                             |      Task      | OnnxRuntime | TensorRT | ncnn | PPLNN | OpenVINO |
-| :------------------------------------------------------------------------------------------: | :------------: | :---------: | :------: | :--: | :---: | :------: |
-| [PointPillars](https://github.com/open-mmlab/mmdetection3d/blob/master/configs/pointpillars) | VoxelDetection |      Y      |    Y     |  N   |   N   |    Y     |

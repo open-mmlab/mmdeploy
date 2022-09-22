@@ -18,7 +18,7 @@ ______________________________________________________________________
 
 ### Install mmdet
 
-Please follow the [installation guide](https://mmdetection.readthedocs.io/en/3.x/get_started.html) to install mmdet. If you have already done that, please move on to [the next section](#install-mmdeploy).
+Please follow the [installation guide](https://mmdetection.readthedocs.io/en/3.x/get_started.html) to install mmdet.
 
 ### Install mmdeploy
 
@@ -79,7 +79,7 @@ It is crucial to specify the correct deployment config during model conversion. 
 
   mmdet models like `RetinaNet`, `Faster R-CNN` and `DETR` and so on belongs to `detection` task. While `Mask R-CNN` is one of `instance-seg` models. You can find more of them in chapter [Supported models](#supported-models).
 
-  **DO remember to use** `detection/detection_*.py` deployment config file when trying to convert detection models and use `instance-seg/instance-seg_*.py` to deploy instance segmentation models.
+  **DO REMEMBER TO USE** `detection/detection_*.py` deployment config file when trying to convert detection models and use `instance-seg/instance-seg_*.py` to deploy instance segmentation models.
 
 - **{backend}:** inference backend, such as onnxruntime, tensorrt, pplnn, ncnn, openvino, coreml etc.
 
@@ -112,9 +112,7 @@ mmdeploy_models/mmdet/ort
 in which,
 
 - **end2end.onnx**: backend model which can be inferred by ONNX Runtime
-- **deploy.json**: meta information about backend model
-- **pipeline.json**: inference pipeline of mmdeploy SDK
-- **detail.json**: conversion parameters
+- \***.json**: the necessary information for mmdeploy SDK
 
 The whole package **mmdeploy_models/mmdet/ort** is defined as **mmdeploy SDK model**, i.e., **mmdeploy SDK model** includes both backend model and inference meta information.
 
@@ -185,6 +183,8 @@ for index, bbox, label_id in zip(indices, bboxes, labels):
 
 cv2.imwrite('output_detection.png', img)
 ```
+
+Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Interface), such as C, C++, C#, Java and so on. You can learn their usage from [demos](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/demo).
 
 ## Supported models
 

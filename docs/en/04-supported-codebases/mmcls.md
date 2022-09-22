@@ -18,7 +18,7 @@ ______________________________________________________________________
 
 ### Install mmcls
 
-Please follow this [quick guide](https://github.com/open-mmlab/mmclassification/tree/1.x#installation) to install mmcls. If you have already done that, move on to [the next section](#install-mmdeploy).
+Please follow this [quick guide](https://github.com/open-mmlab/mmclassification/tree/1.x#installation) to install mmcls.
 
 ### Install mmdeploy
 
@@ -103,9 +103,7 @@ mmdeploy_models/mmcls/ort
 in which,
 
 - **end2end.onnx**: backend model which can be inferred by ONNX Runtime
-- **deploy.json**: meta information about backend model
-- **pipeline.json**: inference pipeline of mmdeploy SDK
-- **detail.json**: conversion parameters
+- \***.json**: the necessary information for mmdeploy SDK
 
 The whole package **mmdeploy_models/mmcls/ort** is defined as **mmdeploy SDK model**, i.e., **mmdeploy SDK model** includes both backend model and inference meta information.
 
@@ -115,7 +113,7 @@ The whole package **mmdeploy_models/mmcls/ort** is defined as **mmdeploy SDK mod
 
 Take the previous converted `end2end.onnx` model as an example, you can use the following code to inference the model.
 
-```shell
+```python
 from mmdeploy.apis.utils import build_task_processor
 from mmdeploy.utils import get_input_shape, load_config
 import torch

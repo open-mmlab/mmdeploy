@@ -20,7 +20,7 @@ ______________________________________________________________________
 
 ### Install mmocr
 
-Please follow the [installation guide](https://mmocr.readthedocs.io/en/dev-1.x/get_started/install.html) to install mmocr. If you have already done that, please move on to [the next section](#install-mmdeploy).
+Please follow the [installation guide](https://mmocr.readthedocs.io/en/dev-1.x/get_started/install.html) to install mmocr.
 
 ### Install mmdeploy
 
@@ -132,9 +132,7 @@ mmdeploy_models/mmocr/dbnet/ort
 in which,
 
 - **end2end.onnx**: backend model which can be inferred by ONNX Runtime
-- **deploy.json**: meta information about backend model
-- **pipeline.json**: inference pipeline of mmdeploy SDK
-- **detail.json**: conversion parameters
+- \***.json**: the necessary information for mmdeploy SDK
 
 The whole package **mmdeploy_models/mmocr/dbnet/ort** is defined as **mmdeploy SDK model**, i.e., **mmdeploy SDK model** includes both backend model and inference meta information.
 
@@ -227,6 +225,8 @@ texts = recognizer(img)
 # print the result
 print(texts)
 ```
+
+Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Interface), such as C, C++, C#, Java and so on. You can learn their usage from [demos](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/demo).
 
 ## Supported models
 

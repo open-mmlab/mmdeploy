@@ -19,7 +19,7 @@ ______________________________________________________________________
 
 ### Install mmedit
 
-Please follow the [installation guide](https://github.com/open-mmlab/mmediting/tree/1.x#installation) to install mmedit. If you have already done that, please move on to [the next section](#install-mmdeploy).
+Please follow the [installation guide](https://github.com/open-mmlab/mmediting/tree/1.x#installation) to install mmedit.
 
 ### Install mmdeploy
 
@@ -113,9 +113,7 @@ mmdeploy_models/mmedit/ort
 in which,
 
 - **end2end.onnx**: backend model which can be inferred by ONNX Runtime
-- **deploy.json**: meta information about backend model
-- **pipeline.json**: inference pipeline of mmdeploy SDK
-- **detail.json**: conversion parameters
+- \***.json**: the necessary information for mmdeploy SDK
 
 The whole package **mmdeploy_models/mmedit/ort** is defined as **mmdeploy SDK model**, i.e., **mmdeploy SDK model** includes both backend model and inference meta information.
 

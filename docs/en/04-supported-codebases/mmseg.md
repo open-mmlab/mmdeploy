@@ -19,7 +19,7 @@ ______________________________________________________________________
 
 ### Install mmseg
 
-Please follow the [installation guide](https://mmsegmentation.readthedocs.io/en/1.x/get_started.html) to install mmseg. If you have already done that, please move on to [the next section](#install-mmdeploy).
+Please follow the [installation guide](https://mmsegmentation.readthedocs.io/en/1.x/get_started.html) to install mmseg.
 
 ### Install mmdeploy
 
@@ -71,7 +71,8 @@ python tools/deploy.py \
     demo/resources/cityscapes.png \
     --work-dir mmdeploy_models/mmseg/ort \
     --device cpu \
-    --show
+    --show \
+    --dump-info
 ```
 
 It is crucial to specify the correct deployment config during model conversion. We've already provided builtin deployment config [files](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/configs/mmseg) of all supported backends for mmsegmentation. The config filename pattern is:
@@ -108,9 +109,7 @@ mmdeploy_models/mmseg/ort
 in which,
 
 - **end2end.onnx**: backend model which can be inferred by ONNX Runtime
-- **deploy.json**: meta information about backend model
-- **pipeline.json**: inference pipeline of mmdeploy SDK
-- **detail.json**: conversion parameters
+- \***.json**: the necessary information for mmdeploy SDK
 
 The whole package **mmdeploy_models/mmseg/ort** is defined as **mmdeploy SDK model**, i.e., **mmdeploy SDK model** includes both backend model and inference meta information.
 
