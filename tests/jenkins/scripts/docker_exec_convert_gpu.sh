@@ -32,6 +32,8 @@ function getFullName() {
 
 ## parameters
 export codebase=$1
+export TENSORRT_VERSION=$(grep tensorrt_version ../conf/start.config | sed 's/tensorrt_version=//')
+
 getFullName $codebase
 if [ '$2' -eq 'y' ]; then
     exec_performance = '--performance'
@@ -43,6 +45,10 @@ export MMDEPLOY_DIR=/root/workspace/mmdeploy
 echo "start_time-$(date +%Y%m%d%H%M)"
 ## clone ${codebase}
 git clone --depth 1 https://github.com/open-mmlab/${codebase_fullname}.git /root/workspace/${codebase_fullname}
+
+## init tensorrt
+TENSORRT_DIR=/root/workspace/TensorRT-${TENSORRT_VERSION}
+LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
 
 ## build mmdeploy
 ln -s /root/workspace/mmdeploy_benchmark $MMDEPLOY_DIR/data
