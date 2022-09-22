@@ -62,7 +62,7 @@ commands:
           name: Install PyTorch
           command: |
             python -m pip install torch==<< parameters.torch >>+<< parameters.platform >> torchvision==<< parameters.torchvision >>+<< parameters.platform >> -f https://download.pytorch.org/whl/torch_stable.html
-  install_mmengin:
+  install_mmengine:
     steps:
       - run:
           name: Install mmengine
@@ -201,7 +201,7 @@ jobs:
       - checkout_full
       - upgrade_pip
       - install_pytorch
-      - install_mmengin
+      - install_mmengine
       - install_mmcv_cpu
       - run:
           name: Install ONNX Runtime
@@ -262,7 +262,7 @@ jobs:
           command: bash mmdeploy/.circleci/scripts/linux/install_python.sh
       - upgrade_pip
       - install_pytorch
-      - install_mmengin
+      - install_mmengine
       - install_mmcv_cpu
       - run:
           name: Install ONNX Runtime
