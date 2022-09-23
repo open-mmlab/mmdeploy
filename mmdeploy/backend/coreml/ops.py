@@ -24,14 +24,24 @@ def coreml_nms(context, node):
     context.add(tuple(results), torch_name=node.outputs[0])
 
 
-@register_torch_op
-def log2(context, node):
-    """bind log2."""
-    import numpy as np
+@register_torch_op(override=True)
+def stack(context, node):
     inputs = _get_inputs(context, node)
-    x = inputs[0]
-    log_x = mb.log(x=x)
-    context.add(mb.mul(x=log_x, y=1 / np.log(2.0)), node.name)
+
+    values = inputs[0]
+
+    if len(inputs) < 2:
+        axis = 0
+    else:
+        axis = inputs[1]
+        if hasattr(axis, 'val'):
+            axis = axis.val
+        if axis < 0:
+            val_dim = len(values[0].shape)
+            axis = axis + val_dim + 1
+
+    res = mb.stack(values=values, axis=axis, name=node.name)
+    context.add(res)
 
 
 @register_torch_op

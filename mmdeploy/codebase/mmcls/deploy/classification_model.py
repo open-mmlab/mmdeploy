@@ -130,19 +130,34 @@ class SDKEnd2EndModel(End2EndModel):
 class RKNNEnd2EndModel(End2EndModel):
     """RKNN inference class, converts RKNN output to mmcls format."""
 
-    def forward_test(self, imgs: torch.Tensor, *args, **kwargs) -> \
-            List[np.ndarray]:
-        """The interface for forward test.
+    def forward(self,
+                inputs: torch.Tensor,
+                data_samples: Optional[List[BaseDataElement]] = None,
+                mode: str = 'predict') -> Any:
+        """Run forward inference.
 
         Args:
-            imgs (torch.Tensor): Input image(s) in [N x C x H x W] format.
+            inputs (Tensor): Inputs with shape (N, C, H, W).
+            data_samples (List[:obj:`DetDataSample`]): The Data
+                Samples. It usually includes information such as
+                `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.
 
         Returns:
-            List[np.ndarray]: A list of classification prediction.
+            list: A list contains predictions.
         """
-        outputs = self.wrapper({self.input_name: imgs})
-        outputs = [out.numpy() for out in outputs]
-        return outputs
+        assert mode == 'predict', \
+            'Backend model only support mode==predict,' f' but get {mode}'
+        if inputs.device != torch.device(self.device):
+            get_root_logger().warning(f'expect input device {self.device}'
+                                      f' but get {inputs.device}.')
+        inputs = inputs.to(self.device)
+        cls_score = self.wrapper({self.input_name: inputs})[0]
+
+        from mmcls.models.heads.cls_head import ClsHead
+        predict = ClsHead._get_predictions(
+            None, cls_score, data_samples=data_samples)
+
+        return predict
 
 
 def build_classification_model(

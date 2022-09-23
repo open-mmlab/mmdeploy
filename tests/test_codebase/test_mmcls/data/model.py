@@ -55,7 +55,7 @@ model = dict(
         loss=dict(type='CrossEntropyLoss', loss_weight=1.0),
         topk=(1, 5)))
 dataset_type = 'ImageNet'
-preprocess_cfg = dict(
+data_preprocessor = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [
     dict(type='LoadImageFromFile'),

@@ -641,50 +641,62 @@ class RKNNModel(End2EndModel):
     """
 
     def __init__(self, backend: Backend, backend_files: Sequence[str],
-                 device: str, class_names: Sequence[str],
-                 model_cfg: Union[str, Config], deploy_cfg: Union[str, Config],
-                 **kwargs):
-        assert backend == Backend.RKNN, f'only supported RKNN, but give \
+                 device: str, model_cfg: Union[str, Config],
+                 deploy_cfg: Union[str, Config], **kwargs):
+        assert backend == Backend.RKNN, f'only supported ncnn, but give \
             {backend.value}'
 
         super(RKNNModel, self).__init__(backend, backend_files, device,
-                                        class_names, deploy_cfg, **kwargs)
+                                        deploy_cfg, **kwargs)
         # load cfg if necessary
         model_cfg = load_config(model_cfg)[0]
         self.model_cfg = model_cfg
 
-    def _get_bboxes(self, outputs):
+    def _get_bboxes(self, outputs, metainfos):
         from mmdet.models import build_head
         head_cfg = self.model_cfg._cfg_dict.model.bbox_head
         head = build_head(head_cfg)
         if head_cfg.type == 'YOLOXHead':
-            ret = head.get_bboxes(
+            ret = head.predict_by_feat(
                 outputs[:3],
                 outputs[3:6],
-                outputs[6:9], [dict(scale_factor=None)],
-                cfg=self.model_cfg._cfg_dict.model.test_cfg)
+                outputs[6:9],
+                metainfos,
+                cfg=self.model_cfg._cfg_dict.model.test_cfg,
+                rescale=True)
         elif head_cfg.type == 'YOLOV3Head':
-            ret = head.get_bboxes(
-                outputs, [dict(scale_factor=None)],
-                cfg=self.model_cfg._cfg_dict.model.test_cfg)
+            ret = head.predict_by_feat(
+                outputs,
+                metainfos,
+                cfg=self.model_cfg._cfg_dict.model.test_cfg,
+                rescale=True)
         else:
             raise NotImplementedError(f'{head_cfg.type} not supported yet.')
-        ret = [r.unsqueeze(0).cpu() for r in ret[0]]
         return ret
 
-    def forward_test(self, imgs: torch.Tensor, *args, **kwargs):
+    def forward(self,
+                inputs: torch.Tensor,
+                data_samples: Optional[List[BaseDataElement]] = None,
+                mode: str = 'predict',
+                *args,
+                **kwargs):
         """Implement forward test.
 
         Args:
-            imgs (torch.Tensor): Input image(s) in [N x C x H x W] format.
+            inputs (Tensor): Inputs with shape (N, C, H, W).
+            data_samples (List[:obj:`DetDataSample`]): The Data
+                Samples. It usually includes information such as
+                `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.
 
         Returns:
             list[np.ndarray, np.ndarray]: dets of shape [N, num_det, 5] and
                 class labels of shape [N, num_det].
         """
-        outputs = self.wrapper({self.input_name: imgs})
-        ret = self._get_bboxes(outputs)
-        return ret
+        outputs = self.wrapper({self.input_name: inputs})
+        ret = self._get_bboxes(outputs, [i.metainfo for i in data_samples])
+        for i in range(len(ret)):
+            data_samples[i].pred_instances = ret[i]
+        return data_samples
 
 
 def build_object_detection_model(

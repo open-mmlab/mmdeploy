@@ -1,6 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import List
+
 import torch
-from mmdet.core import bbox_cxcywh_to_xyxy
+from torch import Tensor
 from torch.nn import functional as F
 
 from mmdeploy.core import FUNCTION_REWRITER
@@ -32,18 +34,19 @@ def detrhead__forward_single__default(ctx, self, x, img_metas):
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    'mmdet.models.dense_heads.DETRHead.get_bboxes')
-def detrhead__get_bboxes__default(ctx,
-                                  self,
-                                  all_cls_scores_list,
-                                  all_bbox_preds_list,
-                                  img_metas,
-                                  rescale=False):
+    'mmdet.models.dense_heads.DETRHead.predict_by_feat')
+def detrhead__predict_by_feat__default(ctx,
+                                       self,
+                                       all_cls_scores_list: List[Tensor],
+                                       all_bbox_preds_list: List[Tensor],
+                                       batch_img_metas: List[dict],
+                                       rescale: bool = True):
     """Rewrite `get_bboxes` of `FoveaHead` for default backend."""
+    from mmdet.structures.bbox import bbox_cxcywh_to_xyxy
     cls_scores = all_cls_scores_list[-1][-1]
     bbox_preds = all_bbox_preds_list[-1][-1]
 
-    img_shape = img_metas[0]['img_shape']
+    img_shape = batch_img_metas[0]['img_shape']
     max_per_img = self.test_cfg.get('max_per_img', self.num_query)
     batch_size = cls_scores.size(0)
     # `batch_index_offset` is used for the gather of concatenated tensor

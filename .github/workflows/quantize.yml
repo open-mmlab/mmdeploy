@@ -55,7 +55,7 @@ jobs:
       - name: Install mmcls
         run: |
           python -m pip install openmim
-          mim install $(cat requirements/codebases.txt | grep mmcls)
+          python -m mim install $(cat requirements/codebases.txt | grep mmcls)
           git clone --depth 1 --branch 1.x https://github.com/open-mmlab/mmclassification.git ~/mmclassification
           cd ~/mmclassification && python -m pip install . && cd -
       - name: Install ppq

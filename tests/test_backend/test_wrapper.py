@@ -85,10 +85,12 @@ def onnx2backend(backend, onnx_file):
     elif backend == Backend.ONNXRUNTIME:
         return onnx_file
     elif backend == Backend.PPLNN:
-        from mmdeploy.apis.pplnn import onnx2pplnn
-        algo_file = tempfile.NamedTemporaryFile(suffix='.json').name
-        onnx2pplnn(algo_file=algo_file, onnx_model=onnx_file)
-        return onnx_file, algo_file
+        from mmdeploy.apis.pplnn import from_onnx
+        output_file_prefix = tempfile.NamedTemporaryFile().name
+        from_onnx(onnx_file, output_file_prefix=output_file_prefix)
+        algo_file = output_file_prefix + '.json'
+        output_file = output_file_prefix + '.onnx'
+        return output_file, algo_file
     elif backend == Backend.NCNN:
         from mmdeploy.backend.ncnn.init_plugins import get_onnx2ncnn_path
         onnx2ncnn_path = get_onnx2ncnn_path()

@@ -119,8 +119,8 @@ class RotatedDetection(BaseTask):
         """
         import warnings
 
-        from mmcv.runner import load_checkpoint
-        from mmdet.core import get_classes
+        from mmdet.evaluation import get_classes
+        from mmengine.runner import load_checkpoint
         from mmrotate.models import build_detector
 
         if isinstance(self.model_cfg, str):

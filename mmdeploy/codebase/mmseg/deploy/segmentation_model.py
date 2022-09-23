@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import List, Optional, Sequence, Union
 
-import numpy as np
 import torch
 from mmengine import Config
 from mmengine.model import BaseDataPreprocessor
@@ -114,20 +113,30 @@ class End2EndModel(BaseBackendModel):
 class RKNNModel(End2EndModel):
     """SDK inference class, converts RKNN output to mmseg format."""
 
-    def forward_test(self, imgs: torch.Tensor, *args, **kwargs) -> \
-            List[np.ndarray]:
-        """The interface for forward test.
+    def forward(self,
+                inputs: torch.Tensor,
+                data_samples: Optional[List[BaseDataElement]] = None,
+                mode: str = 'predict'):
+        """Run forward inference.
 
         Args:
-            imgs (torch.Tensor): Input image(s) in [N x C x H x W] format.
+            inputs (Tensor): Inputs with shape (N, C, H, W).
+            data_samples (List[:obj:`DetDataSample`]): The Data
+                Samples. It usually includes information such as
+                `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.
 
         Returns:
-            List[np.ndarray]: A list of segmentation map.
+            list: A list contains predictions.
         """
-        outputs = self.wrapper({self.input_name: imgs})
-        outputs = [output.argmax(dim=1, keepdim=True) for output in outputs]
-        outputs = [out.detach().cpu().numpy() for out in outputs]
-        return outputs
+        assert mode == 'predict', \
+            'Backend model only support mode==predict,' f' but get {mode}'
+        if inputs.device != torch.device(self.device):
+            get_root_logger().warning(f'expect input device {self.device}'
+                                      f' but get {inputs.device}.')
+        inputs = inputs.to(self.device)
+        batch_outputs = self.wrapper({self.input_name: inputs})[0]
+        batch_outputs = batch_outputs.argmax(dim=1, keepdim=True)
+        return self.pack_result(batch_outputs, data_samples)
 
 
 @__BACKEND_MODEL.register_module('sdk')

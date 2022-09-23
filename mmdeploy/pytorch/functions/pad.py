@@ -27,7 +27,7 @@ def _prepare_onnx_paddings__tensorrt(ctx, g, input, pad):
             where m is in range [0, n].
     """
     torch_version = version_parse(torch.__version__)
-    if torch_version.minor < 10:
+    if torch_version.major == 1 and torch_version.minor < 10:
         return ctx.origin_func(g, input, pad)
     # The desired order of paddings is
     # dim_0_begin, dim_1_begin, ... , dim_0_end, ..., dim_n_end.

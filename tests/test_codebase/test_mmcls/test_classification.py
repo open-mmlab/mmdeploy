@@ -36,10 +36,16 @@ deploy_cfg = Config(
             output_names=['output'])))
 
 onnx_file = NamedTemporaryFile(suffix='.onnx').name
-task_processor = build_task_processor(model_cfg, deploy_cfg, 'cpu')
+task_processor = None
 img_shape = (64, 64)
 num_classes = 1000
 img = np.random.rand(*img_shape, 3)
+
+
+@pytest.fixture(autouse=True)
+def init_task_processor():
+    global task_processor
+    task_processor = build_task_processor(model_cfg, deploy_cfg, 'cpu')
 
 
 @pytest.mark.parametrize('from_mmrazor', [True, False, '123', 0])

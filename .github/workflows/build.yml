@@ -44,11 +44,13 @@ jobs:
         run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install unittest dependencies
         run: |
-          pip install openmim
-          pip install -r requirements.txt -r requirements/backends.txt
-          mim install -r requirements/codebases.txt
-          pip install -U numpy
-          pip list
+          python -m pip install openmim
+          python -m pip install -r requirements.txt -r requirements/backends.txt
+          python -m mim install "mmcv>=2.0.0rc1"
+          git clone --depth 1 --branch 1.x https://github.com/open-mmlab/mmediting.git ../mmedit && python -m pip install ../mmedit
+          python -m mim install -r requirements/codebases.txt
+          python -m pip install -U numpy
+          python -m pip list
       - name: Build and install
         run: |
           rm -rf .eggs && pip install -e .
@@ -119,12 +121,14 @@ jobs:
       - name: Install dependencies
         run: |
           python -V
-          pip install openmim
-          pip install -r requirements.txt -r requirements/backends.txt
-          mim install -r requirements/codebases.txt
-          pip install -U pycuda
-          pip install -U numpy
-          pip list
+          export CFLAGS=`python -c 'import sysconfig;print("-I"+sysconfig.get_paths()["include"])'`
+          python -m pip install openmim
+          python -m pip install -r requirements.txt -r requirements/backends.txt
+          python -m mim install "mmcv>=2.0.0rc1"
+          git clone --depth 1 --branch 1.x https://github.com/open-mmlab/mmediting.git ../mmedit && python -m pip install ../mmedit
+          CFLAGS=$CFLAGS python -m mim install -r requirements/codebases.txt
+          python -m pip install -U pycuda numpy
+          python -m pip list
       - name: Build and install
         run: |
           rm -rf .eggs && pip install -e .
@@ -166,11 +170,14 @@ jobs:
       - name: Install dependencies
         run: |
           python -V
-          pip install openmim
-          pip install -r requirements.txt -r requirements/backends.txt
-          mim install -r requirements/codebases.txt
-          pip install -U pycuda numpy
-          pip list
+          export CFLAGS=`python -c 'import sysconfig;print("-I"+sysconfig.get_paths()["include"])'`
+          python -m pip install openmim
+          python -m pip install -r requirements.txt -r requirements/backends.txt
+          python -m mim install "mmcv>=2.0.0rc1"
+          git clone --depth 1 --branch 1.x https://github.com/open-mmlab/mmediting.git ../mmedit && python -m pip install ../mmedit
+          python -m mim install -r requirements/codebases.txt
+          python -m pip install -U pycuda numpy
+          python -m pip list
       - name: Build and install
         run: |
           rm -rf .eggs && pip install -e .

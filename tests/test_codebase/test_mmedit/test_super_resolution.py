@@ -40,7 +40,13 @@ input_img = np.random.rand(32, 32, 3)
 img_shape = [32, 32]
 input = {'img': input_img}
 onnx_file = NamedTemporaryFile(suffix='.onnx').name
-task_processor = build_task_processor(model_cfg, deploy_cfg, 'cpu')
+task_processor = None
+
+
+@pytest.fixture(autouse=True)
+def init_task_processor():
+    global task_processor
+    task_processor = build_task_processor(model_cfg, deploy_cfg, 'cpu')
 
 
 @pytest.fixture

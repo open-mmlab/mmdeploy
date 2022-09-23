@@ -15,7 +15,7 @@ from mmdeploy.utils import target_wrapper
 from mmdeploy.utils.constants import Backend, Codebase, Task
 from mmdeploy.utils.test import get_random_name
 
-correct_model_path = 'tests/data/srgan.py'
+correct_model_path = 'tests/test_codebase/test_mmedit/data/model.py'
 correct_model_cfg = Config.fromfile(correct_model_path)
 correct_deploy_path = 'tests/data/super-resolution.py'
 correct_deploy_cfg = Config.fromfile(correct_deploy_path)

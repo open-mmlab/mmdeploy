@@ -178,14 +178,6 @@ def test_hardsigmoid():
 
 
 @pytest.mark.usefixtures('prepare_symbolics')
-def test_prepare_onnx_paddings__tensorrt():
-    x = torch.rand(1, 4, 8, 8)
-    model = torch.onnx.symbolic_opset11._prepare_onnx_paddings()
-    nodes = get_model_onnx_nodes(model, x, (0, 1, 0, 1))
-    assert nodes[-1].op_type == 'Cast'
-    assert nodes[-2].op_type == 'Concat'
-
-
 def test_layer_norm():
     x = torch.rand(2, 1, 4)
     model = torch.nn.LayerNorm(4).eval()

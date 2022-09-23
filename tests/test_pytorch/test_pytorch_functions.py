@@ -511,3 +511,23 @@ def test_mod__tensorrt(num):
         run_with_backend=True)
     assert torch.allclose(
         pytorch_output, rewrite_output[0], rtol=1e-3, atol=1e-5)
+
+
+@backend_checker(Backend.TENSORRT)
+def test_prepare_onnx_paddings__tensorrt():
+    input = torch.rand(1, 3, 6, 6).cuda()
+
+    def _pad_(x):
+        a, b = [torch.tensor(2)] * 2
+        x = torch.nn.ZeroPad2d((0, a, 0, b))(x)
+        return x
+
+    model = WrapFunction(_pad_)
+    pytorch_output = model(input)
+    rewrite_output, _ = get_rewrite_outputs(
+        model,
+        model_inputs={'x': input},
+        deploy_cfg=get_trt_config(['output'], shape=[1, 3, 6, 6]),
+        run_with_backend=True)
+    assert torch.allclose(
+        pytorch_output, rewrite_output[0], rtol=1e-3, atol=1e-5)

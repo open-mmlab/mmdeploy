@@ -122,7 +122,9 @@ def reppoints_head__predict_by_feat(
             scores = scores.sigmoid()
         else:
             scores = scores.softmax(-1)
-        bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, 4)
+        bbox_pred = bbox_pred.permute(0, 2, 3, 1)
+        bbox_pred = bbox_pred.reshape(batch_size, -1)
+        bbox_pred = (bbox_pred + 0).reshape(batch_size, -1, 4)
         if not is_dynamic_flag:
             priors = priors.data
         if pre_topk > 0:

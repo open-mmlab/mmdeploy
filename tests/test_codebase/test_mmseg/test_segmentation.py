@@ -25,11 +25,17 @@ model_cfg_path = 'tests/test_codebase/test_mmseg/data/model.py'
 model_cfg = load_config(model_cfg_path)[0]
 deploy_cfg = generate_mmseg_deploy_config()
 
-task_processor = build_task_processor(model_cfg, deploy_cfg, 'cpu')
+task_processor = None
 img_shape = (32, 32)
 tiger_img_path = 'tests/data/tiger.jpeg'
 img = mmcv.imread(tiger_img_path)
 img = mmcv.imresize(img, img_shape)
+
+
+@pytest.fixture(autouse=True)
+def init_task_processor():
+    global task_processor
+    task_processor = build_task_processor(model_cfg, deploy_cfg, 'cpu')
 
 
 @pytest.mark.parametrize('from_mmrazor', [True, False, '123', 0])

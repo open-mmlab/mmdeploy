@@ -79,8 +79,8 @@ class ShortScaleAspectJitterImpl : public Module {
     dst_height = static_cast<int>(std::ceil(1.0 * dst_height / scale_divisor) * scale_divisor);
     dst_width = static_cast<int>(std::ceil(1.0 * dst_width / scale_divisor) * scale_divisor);
 
-    std::vector<float> scale_factor = {(float) (1.0 * dst_width / img_shape[2]),
-                                       (float) (1.0 * dst_height / img_shape[1])};
+    std::vector<float> scale_factor = {(float)(1.0 * dst_width / img_shape[2]),
+                                       (float)(1.0 * dst_height / img_shape[1])};
 
     img_resize = ResizeImage(img, dst_height, dst_width);
     Value output = input;

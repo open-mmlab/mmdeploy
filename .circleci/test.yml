@@ -83,7 +83,9 @@ commands:
           name: Install requirements
           command: |
             cd mmdeploy
-            mim install -r requirements/codebases.txt
+            git clone --depth 1 --branch 1.x https://github.com/open-mmlab/mmediting.git ../mmedit
+            python -m pip install ../mmedit
+            python -m mim install -r requirements/codebases.txt
             python -m pip install -r requirements/tests.txt
             python -m pip install -r requirements/runtime.txt
             python -m pip install -U numpy

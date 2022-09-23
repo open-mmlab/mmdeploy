@@ -62,7 +62,7 @@ def test_multiclass_nms_static():
     boxes = torch.rand(1, 5, 4).cuda()
     scores = torch.rand(1, 5, 8).cuda()
     max_output_boxes_per_class = 20
-    keep_top_k = 10
+    keep_top_k = 5
     wrapped_func = WrapFunction(
         multiclass_nms,
         max_output_boxes_per_class=max_output_boxes_per_class,
@@ -512,6 +512,8 @@ def get_reppoints_head_model():
 def get_detrhead_model():
     """DETR head Config."""
     from mmdet.models import build_head
+    from mmdet.utils import register_all_modules
+    register_all_modules()
     model = build_head(
         dict(
             type='DETRHead',
@@ -1155,12 +1157,12 @@ def test_cascade_roi_head(backend_type: Backend):
             score_thr=0.05,
             nms=dict(type='nms', iou_threshold=0.5),
             max_per_img=100))
-    model_inputs = {'x': x}
+    model_inputs = {'x': x, 'rpn_results_list': [proposals]}
     wrapped_model = WrapModel(
         cascade_roi_head,
         'predict_bbox',
         batch_img_metas=[batch_img_metas],
-        rpn_results_list=[proposals],
+        # rpn_results_list=[proposals],
         rcnn_test_cfg=rcnn_test_cfg)
     backend_outputs, _ = get_rewrite_outputs(
         wrapped_model=wrapped_model,
@@ -1336,7 +1338,7 @@ def get_yolov3_head_model():
             score_thr=0.05,
             conf_thr=0.005,
             nms=dict(type='nms', iou_threshold=0.45),
-            max_per_img=100))
+            max_per_img=10))
     from mmdet.models.dense_heads import YOLOV3Head
     model = YOLOV3Head(
         num_classes=4,
@@ -2146,8 +2148,8 @@ def test_mlvl_point_generator__single_level_grid_priors__tensorrt(
 
 @pytest.mark.parametrize('backend_type, ir_type',
                          [(Backend.ONNXRUNTIME, 'onnx')])
-def test_detrhead_get_bboxes(backend_type: Backend, ir_type: str):
-    """Test get_bboxes rewrite of base dense head."""
+def test_detrhead__predict_by_feat(backend_type: Backend, ir_type: str):
+    """Test predict_by_feat rewrite of base dense head."""
     check_backend(backend_type)
     dense_head = get_detrhead_model()
     dense_head.cpu().eval()
@@ -2167,7 +2169,8 @@ def test_detrhead_get_bboxes(backend_type: Backend, ir_type: str):
 
     # to get outputs of onnx model after rewrite
     img_metas[0]['img_shape'] = torch.Tensor([s, s])
-    wrapped_model = WrapModel(dense_head, 'get_bboxes', img_metas=img_metas)
+    wrapped_model = WrapModel(
+        dense_head, 'predict_by_feat', batch_img_metas=img_metas)
     rewrite_inputs = {
         'all_cls_scores_list': cls_score,
         'all_bbox_preds_list': bboxes,
